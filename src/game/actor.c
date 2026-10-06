@@ -1077,7 +1077,7 @@ s32 Character_AttackPoint(Character *c) {
 
 /* Turn by the animation's root rotation. */
 static inline void Character_ApplyRootTurn(Character *c) {
-    f32 yaw = func_002E2D00(c->a.angle[1] + func_001F6140(c->motion, 0.0f));
+    f32 yaw = func_002E2D00(c->a.angle[1] + Motion_RootRotation(c->motion, 0.0f));
 
     c->a.angle[1] = yaw;
     sceVu0UnitMatrix(c->a.rot);
@@ -1095,7 +1095,7 @@ void Character_RootTurn(Character *c) {
 void Character_RootMove(Character *c) {
     sceVu0FVECTOR d;
 
-    func_001F6370(c->motion, d, 0.0f);
+    Motion_RootMovement(c->motion, d, 0.0f);
     Character_ApplyRootTurn(c);
     sceVu0ApplyMatrix(d, c->a.rot, d);
     if (!c->a.unk2B) {
@@ -1110,7 +1110,7 @@ void Character_RootMove(Character *c) {
 void Character_RootMoveMasked(Character *c) {
     sceVu0FVECTOR d;
 
-    func_001F6370(c->motion, d, 0.0f);
+    Motion_RootMovement(c->motion, d, 0.0f);
     Character_ApplyRootTurn(c);
     sceVu0ApplyMatrix(d, c->a.rot, d);
     Actor_Move(&c->a, d);
@@ -1289,7 +1289,7 @@ void Character_EventReset(Character *c) {
 /* 0x00126450 */
 void Character_BackToNormal(Character *c) {
     c->unk14D0 = 0;
-    func_001F6E10(c->motion);
+    Motion_Unfreeze(c->motion);
     c->unkE0 = 1;
     c->unkE1 = 0;
     c->unkF4 = 0;

@@ -189,7 +189,7 @@ void SceneGame_StateEntry(Scene *game) {
 #ifdef HG_NATIVE
         if (!hg_debug_no_partner())   /* native/platform/debug.c: HG_NOPARTNER */
 #endif
-        SetupCharacter(prog, partner, func_003A10B0);
+        SetupCharacter(prog, partner, CharLoad_PartnerModel);
         p = gProgress;
         Progress_SetVar(p, 0x27, 0);
         flag = (AT(game, SG_ENTRY, s32) & ENTRY_FLAG) ? 1 : 0;
@@ -197,14 +197,14 @@ void SceneGame_StateEntry(Scene *game) {
         Progress_SetFlag(prog, 0x28);
         switch (AT(game, SG_ENTRY, s32)) {
         case 0x2A:
-            SetupCharacter(prog, fiona, func_003A1860);
+            SetupCharacter(prog, fiona, CharLoad_FionaModel);
             Progress_SetVar(p, 0x26, 1);
             AT(game, 0xF6CD28, u8) = 0;
             Progress_SetFlag(prog, 3);
             Progress_SetFlag(prog, 8);
             break;
         case 0x37:
-            SetupCharacter(prog, fiona, func_003A1720);
+            SetupCharacter(prog, fiona, CharLoad_FionaClothes);
             Progress_SetVar(p, 0x26, 0);
             AT(game, 0xF6CD28, u8) = 0;
             Progress_SetFlag(prog, 8);
@@ -216,7 +216,7 @@ void SceneGame_StateEntry(Scene *game) {
         default:   /* HG_ROOM debug start in any other room: Fiona as in a new game, placed
                     * once the room is in (SceneGame_EnterRoom) */
             sDebugPlace = 1;
-            SetupCharacter(prog, fiona, func_003A1860);
+            SetupCharacter(prog, fiona, CharLoad_FionaModel);
             Progress_SetVar(p, 0x26, 1);
             AT(game, 0xF6CD28, u8) = 0;
             break;
@@ -232,18 +232,18 @@ void SceneGame_StateEntry(Scene *game) {
         func_002A7C70(save + 0x50, (u8 *)game + 0x48);
         p = gProgress;
         switch (Progress_GetVar(p, 0x26) & 0xFF) {
-        case 0: SetupCharacter(prog, fiona, func_003A1720); break;
-        case 1: SetupCharacter(prog, fiona, func_003A1860); break;
-        case 2: SetupCharacter(prog, fiona, func_003A15A0); break;
-        case 3: SetupCharacter(prog, fiona, func_003A1420); break;
-        case 6: SetupCharacter(prog, fiona, func_003A1310); break;
-        case 7: SetupCharacter(prog, fiona, func_003A1220); break;
-        case 8: SetupCharacter(prog, fiona, func_003A1190); break;
+        case 0: SetupCharacter(prog, fiona, CharLoad_FionaClothes); break;
+        case 1: SetupCharacter(prog, fiona, CharLoad_FionaModel); break;
+        case 2: SetupCharacter(prog, fiona, CharLoad_Costume2); break;
+        case 3: SetupCharacter(prog, fiona, CharLoad_Costume3); break;
+        case 6: SetupCharacter(prog, fiona, CharLoad_Costume6); break;
+        case 7: SetupCharacter(prog, fiona, CharLoad_Costume7); break;
+        case 8: SetupCharacter(prog, fiona, CharLoad_Costume8); break;
         }
         switch (Progress_GetVar(p, 0x27) & 0xFF) {
-        case 0: SetupCharacter(prog, partner, func_003A10B0); break;
-        case 1: SetupCharacter(prog, partner, func_003A1020); break;
-        case 2: SetupCharacter(prog, partner, func_003A0F90); break;
+        case 0: SetupCharacter(prog, partner, CharLoad_PartnerModel); break;
+        case 1: SetupCharacter(prog, partner, CharLoad_DogModelA); break;
+        case 2: SetupCharacter(prog, partner, CharLoad_DogModelB); break;
         }
         CharLoad_Partner(prog, save[0x1A]);
     }
@@ -736,7 +736,7 @@ void SceneGame_EnterRoom(Scene *g) {
             if ((u8)i >= 7 && (u8)i < 10) {
                 void *part = ((void *(*)(u8 *))AT(AT(cr, 0x28, u8 *), 0xC, void *))(cr);
 
-                part = func_002DC6E0(0x890, part);
+                part = Model_new(0x890, part);
                 if (part != NULL) {
                     part = Kind33Model_ctor(part);
                 }
@@ -1738,7 +1738,7 @@ static inline __attribute__((always_inline)) u8 *creature_new(u8 *cr, u32 k, s32
     if (k >= 7 && k < 10) {
         void *part = ((void *(*)(u8 *))AT(AT(cr, 0x28, u8 *), 0xC, void *))(cr);
 
-        part = func_002DC6E0(0x890, part);
+        part = Model_new(0x890, part);
         if (part != NULL) {
             part = Kind33Model_ctor(part);
         }
@@ -1877,7 +1877,7 @@ void SceneGame_RoomCreatures(Scene *g) {
         AT(pool, slot * 4, u8 *) = o;
         AT(AT(pool, slot * 4, u8 *), 0x20, s32) = slot;
         if (slot >= 7 && slot < 10) {
-            void *mm = func_002DC6E0(0x890, VCALL_AT(pool, 0x28, 0xC, void *(*)(void *))(pool));
+            void *mm = Model_new(0x890, VCALL_AT(pool, 0x28, 0xC, void *(*)(void *))(pool));
 
             if (mm != NULL) {
                 mm = Kind33Model_ctor(mm);
@@ -2727,7 +2727,7 @@ void *LoadingEmblem_dtor(u8 *o, s32 flags) {
 
 /* 0x0038C8D0 */
 void *Kind33Model_ctor(u8 *m) {
-    func_0016FCD0(m);
+    HumanModel_BaseCtor(m);
     AT(m, 0x0, void **) = D_00474460;
     return m;
 }

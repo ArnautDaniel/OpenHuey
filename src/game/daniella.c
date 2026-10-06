@@ -430,7 +430,7 @@ void Daniella_Update(Pursuer *p) {
     Stalker_ThinkStart(p);
     if (func_00217510(p) != 0) {
         func_00296FC0(p);
-        if (func_0029B4B0(p) != 0 || (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
+        if (func_0029B4B0(p) != 0 || (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
             Daniella_BlowEffect(p);
         }
         if (ptmf_test(st)) {
@@ -605,7 +605,7 @@ void Kind34_Update(Pursuer *p) {
     Stalker_ThinkStart(p);
     if (func_00217510(p) != 0) {
         func_00296FC0(p);
-        if (func_0029B4B0(p) != 0 || (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
+        if (func_0029B4B0(p) != 0 || (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
             Kind34_BlowEffect(p);
         }
         if (ptmf_test(st)) {
@@ -666,7 +666,7 @@ void Kind35_Update(Pursuer *p) {
     Stalker_ThinkStart(p);
     if (func_00217510(p) != 0) {
         func_00296FC0(p);
-        if (func_0029B4B0(p) != 0 || (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
+        if (func_0029B4B0(p) != 0 || (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
             Kind35_BlowEffect(p);
         }
         if (ptmf_test(st)) {
@@ -702,7 +702,7 @@ void Kind36_Update(Pursuer *p) {
     Stalker_ThinkStart(p);
     if (func_00217510(p) != 0) {
         func_00296FC0(p);
-        if (func_0029B4B0(p) != 0 || (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
+        if (func_0029B4B0(p) != 0 || (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
             Kind36_BlowEffect(p);
         }
         if (ptmf_test(st)) {

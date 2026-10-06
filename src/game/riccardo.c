@@ -305,7 +305,7 @@ void Riccardo_Update(Pursuer *p) {
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
             func_0029D4C0(p, -1);
         }
-        if (MOTION_ANIM(p) == 0x600 && (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 1)) {
+        if (MOTION_ANIM(p) == 0x600 && (Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 1)) {
             func_0029D410(p, 0x24, 5, 0, 0, NULL);
         }
         func_00213E30(p);
@@ -474,7 +474,7 @@ extern const PTMF D_00415758;
    (+0x171C entry +0x104, 0x24 bytes: +0xC reach), it lands (Relation_Request kind 1 with the
    entry's damage); at the animation's end, on to the next (Riccardo_StateAfterBlow) */
 static inline void Riccardo_Blow(Pursuer *p) {
-    if ((func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 2) && func_00283870(p) != 0) {
+    if ((Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 2) && func_00283870(p) != 0) {
         u8 *e = PU(p, 0x171C, u8 *) + p->c.unk104[0] * 0x24;
 
         if (Actor_Distance(&p->c.a, p->target->a.pos) < AT(e, 0xC, f32)) {
@@ -878,7 +878,7 @@ void Riccardo_Impact(Pursuer *p) {
     u8 *mgr;
     s32 jolt[4] = { 2, 0, 0, 0 };   /* kind 2 */
 
-    if (!(func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
+    if (!(Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 0x20)) {
         return;
     }
     mgr = gEffects;
@@ -916,7 +916,7 @@ void Riccardo_StateBlowHewie(Pursuer *p) {
 
     sceVu0CopyVector(fiona, gCharPlayer->a.pos);
     sceVu0CopyVector(hewie, gCharPartner->a.pos);
-    if (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 2) {
+    if (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 2) {
         f32 a;
 
         if (func_00283870(p) == 0 || PU(p, 0x1545, u8) != 1 ||
@@ -936,7 +936,7 @@ void Riccardo_StateBlowHewie(Pursuer *p) {
             f32 at[4] __attribute__((aligned(16)));
             u32 k;
 
-            if (!(func_00211910(p->c.a.pos, hewie, fiona) <= 4.0f) ||
+            if (!(Vec_LineDistance(p->c.a.pos, hewie, fiona) <= 4.0f) ||
                 Actor_Distance(&p->c.a, hewie) < Actor_Distance(&p->c.a, fiona)) {
                 /* Hewie */
                 if ((Riccardo_AttackForDistance(p, gCharPartner) & 0xFF) != 0xFF) {
@@ -986,7 +986,7 @@ void Riccardo_StateBlowHewie(Pursuer *p) {
         Actor_SetState(&p->c.a, &D_00415748);
         Riccardo_StateAfterBlow(p);
     }
-    if ((func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 1) &&
+    if ((Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 1) &&
         100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 50.0f) {
         func_0029D410(p, 0x15, 7, 0, 0, NULL);
     }
@@ -997,7 +997,7 @@ extern const PTMF D_00415738;
 
 /* is `pt` clear of the swing at `at` (not within 4 of the line to it, or no nearer than it) */
 static inline s32 Riccardo_OutOfLine(Pursuer *p, const f32 *at, const f32 *pt) {
-    return !(func_00211910(p->c.a.pos, at, pt) <= 4.0f) || Actor_Distance(&p->c.a, at) < Actor_Distance(&p->c.a, pt);
+    return !(Vec_LineDistance(p->c.a.pos, at, pt) <= 4.0f) || Actor_Distance(&p->c.a, at) < Actor_Distance(&p->c.a, pt);
 }
 
 /* state: his blow at Fiona. At the hit key he aims (+0x100 bits) if he may go for her, sees her
@@ -1017,7 +1017,7 @@ void Riccardo_StateBlowFiona(Pursuer *p) {
 
     sceVu0CopyVector(fiona, gCharPlayer->a.pos);
     sceVu0CopyVector(hewie, gCharPartner->a.pos);
-    if (func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 2) {
+    if (Motion_EventFlags(p->c.motion, 0, -1, 1) & 0xFF & 2) {
         f32 a;
 
         if (!(func_00283870(p) & 0xFF) || PU(p, 0x1544, u8) == 0 ||
@@ -1073,7 +1073,7 @@ void Riccardo_StateBlowFiona(Pursuer *p) {
             if (tri != (u32)-1 && func_002187D0(p, tri, obj) != 0 &&
                 p->c.a.pos[1] - obj[1] < 10.0f && !(p->c.a.pos[1] - obj[1] <= -15.0f) &&
                 Riccardo_OutOfLine(p, obj, fiona) &&
-                (!(func_00211910(p->c.a.pos, obj, hewie) <= 4.0f) ||
+                (!(Vec_LineDistance(p->c.a.pos, obj, hewie) <= 4.0f) ||
                  Actor_Distance(&p->c.a, obj) < Actor_Distance(&p->c.a, hewie) || PU(p, 0x1545, u8) == 0)) {
                 sceVu0CopyVector((f32 *)((u8 *)p + 0x1770), obj);
                 p->c.unk100 = 0;
@@ -1134,7 +1134,7 @@ end:
         Actor_SetState(&p->c.a, &D_00415738);
         Riccardo_StateAfterBlow(p);
     }
-    if ((func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 1) &&
+    if ((Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 1) &&
         100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 50.0f) {
         if (p->c.unk104[0] == 0) {
             func_0029D410(p, 0x22, 7, 0, 0, NULL);

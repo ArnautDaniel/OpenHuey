@@ -565,7 +565,7 @@ void Hewie_FollowAnim(Hewie *h) {
         return;
     }
     MOTION_U8(h->c.motion, 0x4D8) = 1;
-    func_001F6AF0(h->c.motion);
+    Motion_Update(h->c.motion);
     MOTION_U8(h->c.motion, 0x4D8) = 0;
     h->c.a.room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
     sceVu0CopyVector(h->c.a.pos, Skel_Bone(MOTION_SKELETON(h->c.motion), 0) + 12);
@@ -671,7 +671,7 @@ void Hewie_AnimUpdate(Hewie *h) {
         } else {
             VCALL(h->c.motion, 0x40, void (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 0.0f, 0.0f);
         }
-        func_001F6AF0(h->c.motion);
+        Motion_Update(h->c.motion);
     }
     room = h->c.a.room;
     if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p) && h->c.a.navTri != NAV_NONE) {
@@ -830,7 +830,7 @@ s32 Hewie_PlaceOn(Hewie *h, u32 tri, const f32 *heading, f32 *pos) {
     s32 r = Character_Place(&h->c, tri, heading, pos);
 
     if (*((u8 *)gProgress + 0x1FBEC1) == 0) {
-        func_002DDE20(h->c.motion, HW(h, 0xF36F0, s32), -1);
+        Motion_Play(h->c.motion, HW(h, 0xF36F0, s32), -1);
         VCALL(h->c.motion, 0x50, void (*)(void *, Hewie *))(h->c.motion, h);
     }
     HW(h, 0xF3608, s32) = 0;
@@ -936,7 +936,7 @@ s32 Hewie_PlaceInRoom(Hewie *h, s32 room, u32 tri, s32 side) {
     }
     if (room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
         h->c.a.navTri = tri;
-        func_002DDED0(h->c.motion, 0, -1);
+        Motion_PlayTable(h->c.motion, 0, -1);
         Hewie_ToDefault(h);
         return 0;
     }
@@ -992,7 +992,7 @@ static void report_fiona_near(Hewie *h) {
 
 /* heading turned by the animation, orientation rebuilt */
 static void turn_by_anim(Hewie *h) {
-    f32 yaw = func_002E2D00(h->c.a.angle[1] + func_001F6140(h->c.motion, 0.0f));
+    f32 yaw = func_002E2D00(h->c.a.angle[1] + Motion_RootRotation(h->c.motion, 0.0f));
 
     h->c.a.angle[1] = yaw;
     sceVu0UnitMatrix(h->c.a.rot);
@@ -1004,7 +1004,7 @@ static void root_motion(Hewie *h) {
     sceVu0FVECTOR root;
     f32 k;
 
-    func_001F6370(h->c.motion, root, 0.0f);
+    Motion_RootMovement(h->c.motion, root, 0.0f);
     k = VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
     *(s32 *)&root[1] = 0;
     root[2] = root[2] * k;
@@ -1032,7 +1032,7 @@ void Hewie_Think(Hewie *h) {
     VCALL(h, 0x88, void (*)(Hewie *))(h);
     p = gProgress;
     if (*((u8 *)p + 0x1FBEC1) == 1) {
-        HW(h, 0xF3798, s32) = func_001F1B90((u8 *)h + 0xF3748, (f32 *)D_0047E3B0);
+        HW(h, 0xF3798, s32) = Gesture_Update((u8 *)h + 0xF3748, (f32 *)D_0047E3B0);
     }
     HW(h, 0xF3558, u8) = 0;
     HW(h, 0xF3582, u8) = 1;
@@ -1073,7 +1073,7 @@ static inline void Hewie_StartScene(Hewie *h, Progress *p) {
     HW(h, 0xF373C, s32) = 0;
     HW(h, 0xF3712, s16) = 0;
     Actor_SetState(&h->c.a, &D_003B0280);
-    func_002DDE20(h->c.motion, 0, -1);
+    Motion_Play(h->c.motion, 0, -1);
     VCALL(h->c.motion, 0x50, void (*)(void *, Hewie *))(h->c.motion, h);
     Hewie_SetAction(h, 0x83, 0);
 }
@@ -1268,9 +1268,9 @@ void func_00143550(Hewie *h, s32 blend) {
         return;
     }
     if (blend != -1) {
-        func_002DDC60(h->c.motion, a, blend, -1);
+        Motion_PlayBlend(h->c.motion, a, blend, -1);
     } else {
-        func_002DDED0(h->c.motion, a, -1);
+        Motion_PlayTable(h->c.motion, a, -1);
     }
 }
 
@@ -1322,7 +1322,7 @@ void func_001654E0(Hewie *h, s32 a, s32 anim) {
 /* Start that animation if it is not playing. */
 void func_0014F5B0(Hewie *h) {
     if (MOTION_ANIM(h->c.motion) != HW(h, 0xF35B8, s32)) {
-        func_002DDED0(h->c.motion, HW(h, 0xF35B8, s32), -1);
+        Motion_PlayTable(h->c.motion, HW(h, 0xF35B8, s32), -1);
     }
 }
 
@@ -1380,21 +1380,21 @@ void func_00154DC0(Hewie *h) {
 
 void func_0014E280(Hewie *h) {
     if (func_00140CD0(h, 1) == 0) {
-        func_002DDED0(h->c.motion, 0x1C04, -1);
+        Motion_PlayTable(h->c.motion, 0x1C04, -1);
         Hewie_SetBehaviour(h, &D_003B1B38);
     }
 }
 
 void func_00151740(Hewie *h) {
     if (func_00140CD0(h, 1) == 0) {
-        func_002DDED0(h->c.motion, 0x1C04, -1);
+        Motion_PlayTable(h->c.motion, 0x1C04, -1);
         Hewie_SetBehaviour(h, &D_003B19A8);
     }
 }
 
 void func_0015BD10(Hewie *h) {
     if (func_00140CD0(h, 1) == 0) {
-        func_002DDED0(h->c.motion, 0x1C04, -1);
+        Motion_PlayTable(h->c.motion, 0x1C04, -1);
         Hewie_SetBehaviour(h, &D_003B1778);
     }
 }
@@ -1513,7 +1513,7 @@ void func_0014B4D0(Hewie *h) {
         sceVu0FVECTOR root;
         f32 y = h->c.a.pos[1];
 
-        func_001F6370(h->c.motion, root, 0.0f);
+        Motion_RootMovement(h->c.motion, root, 0.0f);
         sceVu0ApplyMatrix(root, h->c.a.rot, root);
         Actor_Move(&h->c.a, root);
         h->c.a.pos[1] = y + root[1];
@@ -1526,7 +1526,7 @@ void func_001531F0(Hewie *h) {
     if (ANIM_DONE(h) && MOTION_ANIM(h->c.motion) == 0x1C01) {
         Hewie_ToDefault(h);
     } else if (func_00140CD0(h, 1) == 0) {
-        func_002DDED0(h->c.motion, 0x1C01, -1);
+        Motion_PlayTable(h->c.motion, 0x1C01, -1);
     }
 }
 
@@ -1635,7 +1635,7 @@ void func_0014B780(Hewie *h) {
         if (func_001669A0(h) != 0) {
             func_00143550(h, -1);
         } else {
-            func_002DDED0(h->c.motion, 0x1C03, -1);
+            Motion_PlayTable(h->c.motion, 0x1C03, -1);
             HW(h, 0xF36B8, s32) = 30;
             Hewie_SetBehaviour(h, &D_003B1C50);
         }
@@ -1717,9 +1717,9 @@ void func_00149EC0(Hewie *h) {
     }
     if (MOTION_ANIM(h->c.motion) == 0x1300) {
         if (!(Progress_GameMode(gProgress) & 0xFF)) {
-            func_002DDC60(h->c.motion, 0, 5, -1);
+            Motion_PlayBlend(h->c.motion, 0, 5, -1);
         } else {
-            func_002DDC60(h->c.motion, 3, 5, -1);
+            Motion_PlayBlend(h->c.motion, 3, 5, -1);
         }
         return;
     }
@@ -1730,14 +1730,14 @@ void func_00149EC0(Hewie *h) {
 void func_00149270(Hewie *h) {
     switch (HEWIE_ACTION(h)) {
     case 0x4B:
-        func_002DDED0(h->c.motion, 0x1C05, -1);
+        Motion_PlayTable(h->c.motion, 0x1C05, -1);
         break;
     case 0x4A:
-        func_002DDED0(h->c.motion, 0x1D00, -1);
+        Motion_PlayTable(h->c.motion, 0x1D00, -1);
         HW(h, 0xF36BC, s32) = (h->c.hp == h->c.hpMax) ? 1 : 0;
         break;
     case 0x49:
-        func_002DDED0(h->c.motion, 0x1C04, -1);
+        Motion_PlayTable(h->c.motion, 0x1C04, -1);
         break;
     }
     Hewie_SetBehaviour(h, &D_003B1D00);
@@ -1764,7 +1764,7 @@ static inline void Hewie_ForcedMove(Hewie *h) {
     f32 k;
 
     h->c.a.navMask |= 0x80001;
-    func_001F6370(h->c.motion, root, 0.0f);
+    Motion_RootMovement(h->c.motion, root, 0.0f);
     k = VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
     *(s32 *)&root[1] = 0;
     root[2] = root[2] * k;
@@ -1816,7 +1816,7 @@ void func_00157360(Hewie *h) {
             Hewie_ToDefault(h);
         } else if (MOTION_ANIM(h->c.motion) == 0x2213) {
             if (h->c.a.unkC4 != 2) {
-                func_002DDED0(h->c.motion, 0x1003, -1);
+                Motion_PlayTable(h->c.motion, 0x1003, -1);
             } else {
                 func_0013C300(h);
             }
@@ -1913,7 +1913,7 @@ void func_0014DE70(Hewie *h) {
             HW(h, 0xF36B4, s32) -= 1;
         }
     } else if (func_00140CD0(h, 0) == 0) {
-        func_002DDED0(h->c.motion, 9, -1);
+        Motion_PlayTable(h->c.motion, 9, -1);
     }
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
@@ -2040,7 +2040,7 @@ s32 func_0013AAE0(Hewie *h, s32 exit) {
 
 static inline void Hewie_PlayIfNot(Hewie *h, s32 cur, s32 anim) {
     if (cur != anim) {
-        func_002DDED0(h->c.motion, anim, -1);
+        Motion_PlayTable(h->c.motion, anim, -1);
     }
 }
 
@@ -2132,21 +2132,21 @@ s32 func_001382F0(Hewie *h) {
 void func_0013FC70(Hewie *h) {
     switch (HW(h, 0xF3640, s32)) {
     case 0:
-        func_002DDB30(h->c.motion, 0x1F00);
+        Motion_PlayTableNoCheck(h->c.motion, 0x1F00);
         break;
     case 1:
-        func_002DDB30(h->c.motion, 0x1F01);
+        Motion_PlayTableNoCheck(h->c.motion, 0x1F01);
         break;
     case 2:
-        func_002DDB30(h->c.motion, 0x1F02);
+        Motion_PlayTableNoCheck(h->c.motion, 0x1F02);
         break;
     case 3:
         if (--HW(h, 0xF3644, s32) < 0) {
             HW(h, 0xF3644, s32) = (s32)(15.0f * RNG01()) * 30 + 30;
             if (RNG01() < 0.5f) {
-                func_002DDB30(h->c.motion, 0x1F00);
+                Motion_PlayTableNoCheck(h->c.motion, 0x1F00);
             } else {
-                func_002DDB30(h->c.motion, 0x1F01);
+                Motion_PlayTableNoCheck(h->c.motion, 0x1F01);
             }
         }
         break;
@@ -2170,7 +2170,7 @@ void func_0015BB20(Hewie *h) {
         Hewie_Start(h, HW(h, 0xF366D, u8) == 0 ? 6 : 8);
     } else if (func_00140CD0(h, 0) == 0) {
         Hewie_Mark4(h);
-        func_002DDED0(h->c.motion, 0x1C02, -1);
+        Motion_PlayTable(h->c.motion, 0x1C02, -1);
     }
 }
 
@@ -2213,7 +2213,7 @@ void func_0015F8A0(Hewie *h) {
         sceVu0FVECTOR root, to;
         f32 k;
 
-        func_001F6370(h->c.motion, root, 0.0f);
+        Motion_RootMovement(h->c.motion, root, 0.0f);
         k = VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
         root[2] = root[2] * k;
         sceVu0ApplyMatrix(root, h->c.a.rot, root);
@@ -2259,7 +2259,7 @@ void func_0014A790(Hewie *h) {
     f32 k;
     s32 r;
 
-    func_001F6370(h->c.motion, root, 0.0f);
+    Motion_RootMovement(h->c.motion, root, 0.0f);
     k = VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
     *(s32 *)&root[1] = 0;
     root[2] = root[2] * k;
@@ -2323,7 +2323,7 @@ void func_00165510(Hewie *h, s32 st) {
         HW(h, 0xF36F0, s32) = 0;
         break;
     }
-    func_002DDE20(h->c.motion, HW(h, 0xF36F0, s32), -1);
+    Motion_Play(h->c.motion, HW(h, 0xF36F0, s32), -1);
     func_0013D1F0(h, 0);
     if (h->c.a.unkC4 == 2) {
         Hewie_Start(h, 0x52);
@@ -2436,9 +2436,9 @@ void func_0014A180(Hewie *h) {
         return;
     }
     if (!(Progress_GameMode(gProgress) & 0xFF)) {
-        func_002DDED0(h->c.motion, 0x1300, 0);
+        Motion_PlayTable(h->c.motion, 0x1300, 0);
     } else {
-        func_002DDED0(h->c.motion, 0x1300, 3);
+        Motion_PlayTable(h->c.motion, 0x1300, 3);
     }
     *(s32 *)((u8 *)MOTION_PTR(h->c.motion, 0x6A4) + 0x1C) = 0;
     if (d <= 0.0f) {
@@ -2637,7 +2637,7 @@ void func_0014EC10(Hewie *h) {
         HW(h, 0xF3604, s32) = 8;
         HW(h, 0xF3608, s32) = 10;
     }
-    func_002DD110(h->c.motion, HW(h, 0xF368C, Character *)->a.pos, &a, &turn);
+    Motion_LookAt(h->c.motion, HW(h, 0xF368C, Character *)->a.pos, &a, &turn);
     yaw = func_002E2D00(h->c.a.angle[1] + turn);
     HW(h, 0xF3614, f32) = a;
     HW(h, 0xF3618, f32) = func_002E2D00(yaw - h->c.a.angle[1]);
@@ -2695,7 +2695,7 @@ void func_0014B8F0(Hewie *h) {
         Hewie_SetBehaviour(h, &D_003B1C40);
         VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
     }
-    func_001F6240(h->c.motion, root, 0.0f);
+    Motion_RootTranslation(h->c.motion, root, 0.0f);
     func_0010E640(v, HEWIE_SPOT(h), root[2]);
     Actor_Move(&h->c.a, v);
     HW(h, 0xF3558, u8) = 1;
@@ -2714,7 +2714,7 @@ void func_00153B00(Hewie *h) {
     v[0] = 0.0f;
     v[1] = 0.0f;
     v[2] = HW(h, 0xF36C8, f32);
-    func_002E3190(m, HW(h, 0xF36C4, f32));
+    Mtx_TurnY(m, HW(h, 0xF36C4, f32));
     func_002E2DA0(v, m, v);
     Actor_Move(&h->c.a, v);
     HW(h, 0xF3558, u8) = 1;
@@ -2754,7 +2754,7 @@ void func_0013FA40(Hewie *h) {
     switch (HW(h, 0xF3648, s32)) {
     case 0:
         if (h->c.a.unkC4 == 1) {
-            func_002DDB30(h->c.motion, 0x2002);
+            Motion_PlayTableNoCheck(h->c.motion, 0x2002);
             break;
         }
         HW(h, 0xF364C, s32) -= 1;
@@ -2762,10 +2762,10 @@ void func_0013FA40(Hewie *h) {
             break;
         }
         if (HW(h, 0xF3650, s32) == 0) {
-            func_002DDB30(h->c.motion, 0x2000);
+            Motion_PlayTableNoCheck(h->c.motion, 0x2000);
             HW(h, 0xF3650, s32) = 1;
         } else {
-            func_002DDB30(h->c.motion, 0x2001);
+            Motion_PlayTableNoCheck(h->c.motion, 0x2001);
             HW(h, 0xF3650, s32) = 0;
         }
         r = (s32)(2.0f * RNG01());
@@ -2784,13 +2784,13 @@ void func_0013FA40(Hewie *h) {
         break;
     case 1:
         if (h->c.a.unkC4 == 1) {
-            func_002DDB30(h->c.motion, 0x2002);
+            Motion_PlayTableNoCheck(h->c.motion, 0x2002);
         } else {
-            func_002DDB30(h->c.motion, 0x2000);
+            Motion_PlayTableNoCheck(h->c.motion, 0x2000);
         }
         break;
     case 2:
-        func_002DDB30(h->c.motion, 0x2001);
+        Motion_PlayTableNoCheck(h->c.motion, 0x2001);
         break;
     }
 }
@@ -2838,7 +2838,7 @@ void func_00149370(Hewie *h) {
         } else {
             HW(h, 0xF36B8, s32) = 1;
             if (MOTION_ANIM(h->c.motion) != 0x1300) {
-                func_002DDED0(h->c.motion, 0x1300, -1);
+                Motion_PlayTable(h->c.motion, 0x1300, -1);
             }
         }
     }
@@ -2872,7 +2872,7 @@ void func_0015F0A0(Hewie *h) {
             HW(h, 0xF3604, s32) = 8;
             HW(h, 0xF3608, s32) = 10;
         }
-        func_002DD110(h->c.motion, v, &a, &turn);
+        Motion_LookAt(h->c.motion, v, &a, &turn);
         if (HW(h, 0xF3620, u8) == 0) {
             a = 0.0f;
         }
@@ -2884,7 +2884,7 @@ void func_0015F0A0(Hewie *h) {
         HW(h, 0xF3608, s32) = 10;
     }
     if (!func_00140CD0(h, 0) && MOTION_ANIM(h->c.motion) != 3) {
-        func_002DDED0(h->c.motion, 3, -1);
+        Motion_PlayTable(h->c.motion, 3, -1);
     }
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
@@ -2948,9 +2948,9 @@ void func_00157770(Hewie *h) {
     HW(h, 0xF3558, u8) = 1;
     if (y < h->c.a.pos[1]) {
         if (HW(h, 0xF36B4, s32) == 0) {
-            func_002DDED0(h->c.motion, 0x2212, -1);
+            Motion_PlayTable(h->c.motion, 0x2212, -1);
         } else {
-            func_002DDED0(h->c.motion, 0x2213, -1);
+            Motion_PlayTable(h->c.motion, 0x2213, -1);
         }
         Hewie_SetBehaviour(h, &D_003B18A8);
     } else {
@@ -2963,10 +2963,10 @@ void func_00157770(Hewie *h) {
             if (act == 0x20 || act == 0x1F) {
                 switch (h->c.unk104[0]) {
                 case 1:
-                    func_002DDED0(h->c.motion, HW(h, 0xF36B4, s32) == 0 ? 0x2205 : 0x2208, -1);
+                    Motion_PlayTable(h->c.motion, HW(h, 0xF36B4, s32) == 0 ? 0x2205 : 0x2208, -1);
                     break;
                 case 2:
-                    func_002DDED0(h->c.motion, HW(h, 0xF36B4, s32) == 0 ? 0x220E : 0x2211, -1);
+                    Motion_PlayTable(h->c.motion, HW(h, 0xF36B4, s32) == 0 ? 0x220E : 0x2211, -1);
                     break;
                 }
             }
@@ -3060,7 +3060,7 @@ void func_00136900(Hewie *h) {
         how = 3;
         if (HW(h, HMOVE_LOCK, s16) != 0) {
             HW(h, HMOVE_LOCK, s16)--;
-            func_002E3190(rot, HW(h, HMOVE_CAMYAW, f32));
+            Mtx_TurnY(rot, HW(h, HMOVE_CAMYAW, f32));
         } else {
             f32 d[4] __attribute__((aligned(16)));
 
@@ -3068,7 +3068,7 @@ void func_00136900(Hewie *h) {
             if (__builtin_sqrtf(sceVu0InnerProduct(d, d)) < k001.f) {
                 HW(h, HMOVE_MODE, u8) = 2;
                 HW(h, 0xF379C, u32) = 0x3C0EFA35;   /* 0.5 degrees */
-                func_002E3190(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
+                Mtx_TurnY(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
             }
         }
         func_002E2DA0(v, rot, n);
@@ -3093,7 +3093,7 @@ void func_00136900(Hewie *h) {
     }
     switch (how) {
     case 3:
-        func_002E3190(rot, HW(h, HMOVE_CAMYAW, f32));
+        Mtx_TurnY(rot, HW(h, HMOVE_CAMYAW, f32));
         func_002E2DA0(v, rot, n);
         func_0010E640(&HW(h, HMOVE_DIR, f32), v, -1.0f);
         break;
@@ -3109,7 +3109,7 @@ void func_00136900(Hewie *h) {
         sceVu0ApplyMatrix(&HW(h, HMOVE_DIR, f32), h->c.a.rot, v);
         break;
     case 0:
-        func_002E3190(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
+        Mtx_TurnY(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
         func_002E2DA0(v, rot, n);
         func_0010E640(&HW(h, HMOVE_DIR, f32), v, -1.0f);
         break;
@@ -3459,7 +3459,7 @@ s32 func_00139A70(Hewie *h) {
 /* the animation's stride this frame (its root motion's z by the model's speed (+0x48)), at
    least 0 */
 static f32 stride(Hewie *h, f32 *v) {
-    func_001F6370(h->c.motion, v, 0.0f);
+    Motion_RootMovement(h->c.motion, v, 0.0f);
     v[2] *= VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
     return v[2];
 }
@@ -3580,7 +3580,7 @@ void func_0013A650(Hewie *h) {
         func_0013A430(h, 0x59);
         return;
     }
-    if ((u8)func_001F4770(h->c.motion, 0, 0, 1) & 1) {
+    if ((u8)Motion_EventFlags(h->c.motion, 0, 0, 1) & 1) {
         switch (anim) {
         case 0x1C01:
             func_0013A430(h, 0x60);
@@ -3616,7 +3616,7 @@ void func_0013A650(Hewie *h) {
             break;
         }
     }
-    if (((u8)func_001F4770(h->c.motion, 0, 0, 1) & 0x10) && anim == 0x1001 &&
+    if (((u8)Motion_EventFlags(h->c.motion, 0, 0, 1) & 0x10) && anim == 0x1001 &&
         (u8)VCALL(gProgress, 0x50, s32 (*)(Progress *))(gProgress) == 1 &&
         h->c.a.room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) &&
         (NavMesh_Tri(gNavMesh, h->c.a.navTri)->flags & 0x02008000) == 0x02008000) {
@@ -4278,7 +4278,7 @@ void func_0013FDE0(Hewie *h) {
 
 /* one of three tail animations by his animation group: c for groups 2 / 6, b for 1 / 5, else a */
 static void tail_play(Hewie *h, s32 g, s32 a, s32 b, s32 c) {
-    func_002DDB30(h->c.motion, g == 6 || g == 2 ? c : g == 5 || g == 1 ? b : a);
+    Motion_PlayTableNoCheck(h->c.motion, g == 6 || g == 2 ? c : g == 5 || g == 1 ? b : a);
 }
 
 /* a wag: every so often (+0xF3658 counting down) wag (`wag`) for 10..35 frames, then rest
@@ -4564,7 +4564,7 @@ void func_001407C0(Hewie *h) {
 extern void func_00143400(Hewie *h);
 
 static inline void pose_play(Hewie *h, s32 anim) {
-    func_002DDED0(h->c.motion, anim, -1);
+    Motion_PlayTable(h->c.motion, anim, -1);
 }
 
 /* the transition out of animation group g shared by most poses */
@@ -4852,9 +4852,9 @@ void func_00141C00(Hewie *h, u32 kind) {
 /* play `anim`, or restart it when it is already playing */
 static void play_again(Hewie *h, s32 cur, s32 anim) {
     if (cur != anim) {
-        func_002DDED0(h->c.motion, anim, -1);
+        Motion_PlayTable(h->c.motion, anim, -1);
     } else {
-        func_002DDE20(h->c.motion, anim, -1);
+        Motion_Play(h->c.motion, anim, -1);
     }
 }
 
@@ -5180,7 +5180,7 @@ s32 func_00144B30(Hewie *h) {
             f32 m[4][4] __attribute__((aligned(16)));
             f32 dir[4] __attribute__((aligned(16))) = { 0.0f, 0.0f, 1.0f, 0.0f };
 
-            func_002E3190(m, VCALL(doors, 0x3C, f32 (*)(VObject *, u32))(doors, e));
+            Mtx_TurnY(m, VCALL(doors, 0x3C, f32 (*)(VObject *, u32))(doors, e));
             func_002E2DA0(dir, m, dir);
             if (sceVu0InnerProduct(d, dir) < 5.0f) {
                 HW(h, 0xF36B4, s32) = e & 0xFF;
@@ -5279,7 +5279,7 @@ void func_00145080(Hewie *h) {
         break;
     }
     n = HW(h, 0xF3664, s32)++;
-    func_001F6370(h->c.motion, root, 0.0f);
+    Motion_RootMovement(h->c.motion, root, 0.0f);
     root[2] *= VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
     f = (root[2] - 0x1.1eb852p-2f /* 0.28 */) / 0x1.0f5c2ap+1f /* 2.12 */;
     if (f < 0.0f) {
@@ -5469,7 +5469,7 @@ void func_00146130(Hewie *h) {
 
         if (in_his_room(h, c)) {
             head_of(c, at);
-            func_002DD110(h->c.motion, at, &pitch, &yaw);
+            Motion_LookAt(h->c.motion, at, &pitch, &yaw);
         } else {
             pitch = 0.0f;
             yaw = 0.0f;
@@ -5492,7 +5492,7 @@ void func_00146130(Hewie *h) {
         case 5:
             if (in_his_room(h, HW(h, 0xF3544, Character *))) {
                 head_of(HW(h, 0xF3544, Character *), at);
-                func_002DD110(h->c.motion, at, &pitch, &yaw);
+                Motion_LookAt(h->c.motion, at, &pitch, &yaw);
                 if (HW(h, 0xF3600, u32) == 5) {
                     pitch = 0.0f;
                 }
@@ -5574,7 +5574,7 @@ void func_00146130(Hewie *h) {
             break;
         }
     } else {
-        func_002DD110(h->c.motion, &HW(h, 0xF35F0, f32), &pitch, &yaw);
+        Motion_LookAt(h->c.motion, &HW(h, 0xF35F0, f32), &pitch, &yaw);
     }
     if (!(pitch <= 0x1.2d97c80000000p+1f /* 2.3561945 */)) {
         pitch = 0x1.2d97c80000000p+1f /* 2.3561945 */;
@@ -5731,7 +5731,7 @@ static f32 run_turn(Hewie *h) {
     f32 root[4] __attribute__((aligned(16)));
     f32 speed, turn = 0.0f, yaw;
 
-    func_001F6370(h->c.motion, root, 0.0f);
+    Motion_RootMovement(h->c.motion, root, 0.0f);
     root[2] *= VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
     speed = root[2];
     if (!(speed < 0.0f)) {
@@ -5759,7 +5759,7 @@ void func_001476C0(Hewie *h) {
     f32 v[4] __attribute__((aligned(16)));
 
     if (func_00140CD0(h, 5) == 0 && anim != 0x202) {
-        func_002DDED0(h->c.motion, 0x202, -1);
+        Motion_PlayTable(h->c.motion, 0x202, -1);
     }
     HW(h, 0xF3604, s32) = 8;
     HW(h, 0xF3608, s32) = 0;
@@ -5792,7 +5792,7 @@ void func_001476C0(Hewie *h) {
     HW(h, 0xF36C8, f32) = h->c.a.pos[1];
     HW(h, 0xF36CC, s32) = 0;
     turn_toward(h, HW(h, 0xF36D0, f32), 0x1.0c1524p-1f /* 30 degrees */);
-    func_002DDED0(h->c.motion, 0x1E01, -1);
+    Motion_PlayTable(h->c.motion, 0x1E01, -1);
     HW(h, 0xF356C, u32) |= 0x80000000;
     h->c.a.unk2D = 1;
     func_0013A430(h, 0x68);
@@ -5930,14 +5930,14 @@ void func_001480C0(Hewie *h) {
             anim = MOTION_ANIM(h->c.motion);
             if (room < 10.0f) {
                 if (anim != 0x200) {
-                    func_002DDED0(h->c.motion, 0x200, -1);
+                    Motion_PlayTable(h->c.motion, 0x200, -1);
                 }
             } else if (room < 20.0f) {
                 if (anim != 0x201) {
-                    func_002DDED0(h->c.motion, 0x201, -1);
+                    Motion_PlayTable(h->c.motion, 0x201, -1);
                 }
             } else if (anim != 0x202) {
-                func_002DDED0(h->c.motion, 0x202, -1);
+                Motion_PlayTable(h->c.motion, 0x202, -1);
             }
         }
         break;
@@ -6000,7 +6000,7 @@ void func_001489D0(Hewie *h) {
         }
     }
     h->c.a.navMask |= 0x80001;
-    func_001F6370(h->c.motion, root, 0.0f);
+    Motion_RootMovement(h->c.motion, root, 0.0f);
     k = VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
     root[1] = 0.0f;
     root[2] *= k;
@@ -6063,7 +6063,7 @@ void func_00148D00(Hewie *h) {
         case 0x1D00:
             HW(h, 0xF36B8, s32) = 3;
             HW(h, 0xF36C0, s32) = 3;
-            func_002DDE20(h->c.motion, 0x1D01, -1);
+            Motion_Play(h->c.motion, 0x1D01, -1);
             break;
         case 0x1D01:
             HW(h, 0xF36B8, s32) -= 1;
@@ -6075,7 +6075,7 @@ void func_00148D00(Hewie *h) {
                     h->c.hp = h->c.hpMax;
                 }
             }
-            func_002DDE20(h->c.motion, HW(h, 0xF36B8, s32) == 0 ? 0x1D02 : 0x1D01, -1);
+            Motion_Play(h->c.motion, HW(h, 0xF36B8, s32) == 0 ? 0x1D02 : 0x1D01, -1);
             break;
         case 0x1D02:
             if (h->c.hp == h->c.hpMax) {
@@ -6165,7 +6165,7 @@ void func_001499F0(Hewie *h) {
     a = Actor_HeadingTo(&h->c.a, h->c.unk110);
     step = run_turn(h);
     left = turn_toward(h, a, step);
-    func_002DD110(h->c.motion, h->c.unk110, &HW(h, 0xF3614, f32), &HW(h, 0xF3618, f32));
+    Motion_LookAt(h->c.motion, h->c.unk110, &HW(h, 0xF3614, f32), &HW(h, 0xF3618, f32));
     HW(h, 0xF3604, s32) = 8;
     HW(h, 0xF3608, s32) = 0;
     if (left <= 0x1.0c15240000000p+0f /* 1.0471976 */) {
@@ -6181,7 +6181,7 @@ void func_001499F0(Hewie *h) {
 
 /* his root motion forward this frame (scaled to the ground, motion +0x48), into `root` */
 static f32 root_ahead(Hewie *h, f32 *root) {
-    func_001F6370(h->c.motion, root, 0.0f);
+    Motion_RootMovement(h->c.motion, root, 0.0f);
     root[2] *= VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
     return root[2];
 }
@@ -6201,7 +6201,7 @@ void func_0014A340(Hewie *h) {
     if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
         if (h->c.unk104[1] != -1) {
             if (MOTION_ANIM(h->c.motion) != h->c.unk104[1]) {
-                func_002DDED0(h->c.motion, h->c.unk104[1], -1);
+                Motion_PlayTable(h->c.motion, h->c.unk104[1], -1);
             }
         } else {
             func_00141C00(h, HEWIE_ACTION(h) == 0x41 ? 7 : 9);
@@ -6299,7 +6299,7 @@ void func_0014A920(Hewie *h) {
         }
         left = Actor_TurnToward(&h->c.a, HW(h, 0x10C, f32), step);
         if (left == 0.0f && AT(h->c.motion, 0x550, f32) <= 0.0f) {
-            func_002DDC60(h->c.motion, !(u8)Progress_GameMode(gProgress) ? 0 : 3, 5, -1);
+            Motion_PlayBlend(h->c.motion, !(u8)Progress_GameMode(gProgress) ? 0 : 3, 5, -1);
         }
         mv = 0.25f;
     } else {
@@ -6338,7 +6338,7 @@ void func_0014A920(Hewie *h) {
                 HW(h, 0xF36B4, s32) = 1;
             }
         } else {
-            func_002DDED0(h->c.motion, h->c.unk104[1], -1);
+            Motion_PlayTable(h->c.motion, h->c.unk104[1], -1);
         }
     } else if (HW(h, 0xF36B4, s32) == 0) {
         rest = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
@@ -6356,7 +6356,7 @@ void func_0014A920(Hewie *h) {
             }
             HW(h, 0xF36C4, f32) = r;
             HW(h, 0xF36B4, s32) = 1;
-            func_002DDED0(h->c.motion, 0x1300, !(u8)Progress_GameMode(gProgress) ? 0 : 3);
+            Motion_PlayTable(h->c.motion, 0x1300, !(u8)Progress_GameMode(gProgress) ? 0 : 3);
             AT(MOTION_PTR(h->c.motion, 0x6A4), 0x1C, f32) = 1.0f;
         }
     }
@@ -6371,7 +6371,7 @@ static void slide_root(Hewie *h) {
     f32 root[4] __attribute__((aligned(16)));
     f32 k;
 
-    func_001F6370(h->c.motion, root, 0.0f);
+    Motion_RootMovement(h->c.motion, root, 0.0f);
     k = VCALL(h->c.motion, 0x48, f32 (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
     root[1] = 0.0f;
     root[2] *= k;
@@ -6437,16 +6437,16 @@ void func_0014BB10(Hewie *h) {
 
     turn_toward(h, HW(h, 0x10C, f32), 0x1.6571860000000p-3f /* 0.17453294 */);
     if (ANIM_DONE(h) && MOTION_ANIM(h->c.motion) != 0x1E05) {
-        func_002DDE20(h->c.motion, 0x1E05, -1);
+        Motion_Play(h->c.motion, 0x1E05, -1);
         HW(h, 0xF36CC, f32) = 0x1.49f55a0000000p+0f /* 1.2889 */;
     }
     if (MOTION_ANIM(h->c.motion) == 0x1E04) {
-        func_001F6240(h->c.motion, root, 0.0f);
+        Motion_RootTranslation(h->c.motion, root, 0.0f);
         func_0010E640(v, &HW(h, 0xF36E0, f32), root[2]);
         Actor_Move(&h->c.a, v);
         HW(h, 0xF3558, u8) = 1;
         ground = h->c.a.pos[1];
-        if (!((u8)func_001F4770(h->c.motion, 0, 0, 1) & 2)) {
+        if (!((u8)Motion_EventFlags(h->c.motion, 0, 0, 1) & 2)) {
             y = HW(h, 0xF36C8, f32) + root[1];
         } else {
             y = HW(h, 0xF36C8, f32) + root[1] * HW(h, 0xF36C4, f32);
@@ -6466,7 +6466,7 @@ void func_0014BB10(Hewie *h) {
     HW(h, 0xF36C8, f32) = h->c.a.pos[1];
     if (!(ground <= h->c.a.pos[1])) {
         h->c.a.pos[1] = ground;
-        func_002DDE20(h->c.motion, 0x1E06, -1);
+        Motion_Play(h->c.motion, 0x1E06, -1);
         Hewie_SetBehaviour(h, &D_003B1C30);
     }
 }
@@ -6494,20 +6494,20 @@ void func_0014BE80(Hewie *h) {
         a = Actor_HeadingTo(&h->c.a, h->c.unk110);
         HW(h, 0x10C, f32) = a;
         turn_toward(h, a, 0x1.6571860000000p-2f /* 0.34906587 */);
-        func_001F6240(h->c.motion, d, 0.0f);
+        Motion_RootTranslation(h->c.motion, d, 0.0f);
         func_0010E640(v, &HW(h, 0xF36E0, f32), d[2]);
         Actor_Move(&h->c.a, v);
         HW(h, 0xF3558, u8) = 1;
         y = HW(h, 0xF36C8, f32) + d[1] * HW(h, 0xF36C4, f32);
         h->c.a.pos[1] = y;
         HW(h, 0xF36C8, f32) = y;
-        func_002DDED0(h->c.motion, 0x1E04, -1);
+        Motion_PlayTable(h->c.motion, 0x1E04, -1);
         h->c.a.unk2D = 1;
         Hewie_SetBehaviour(h, &D_003B1C20);
         return;
     }
     if (func_00140CD0(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x202) {
-        func_002DDED0(h->c.motion, 0x202, -1);
+        Motion_PlayTable(h->c.motion, 0x202, -1);
     }
     if (!(u8)func_00139DE0(h)) {
         func_00141C00(h, 8);
@@ -6692,7 +6692,7 @@ void func_0014CF40(Hewie *h) {
     a = Actor_HeadingTo(&h->c.a, gCharPursuer->a.pos);
     step = run_turn(h);
     left = turn_toward(h, a, step);
-    func_002DD110(h->c.motion, gCharPursuer->a.pos, &HW(h, 0xF3614, f32), &HW(h, 0xF3618, f32));
+    Motion_LookAt(h->c.motion, gCharPursuer->a.pos, &HW(h, 0xF3614, f32), &HW(h, 0xF3618, f32));
     HW(h, 0xF3604, s32) = 8;
     HW(h, 0xF3608, s32) = 0;
     if (!(left <= 0x1.0c15240000000p+0f /* 1.0471976 */)) {
@@ -6706,7 +6706,7 @@ void func_0014CF40(Hewie *h) {
         Hewie_SetBehaviour(h, &D_003B1BD8);
     } else {
         if (func_00140CD0(h, 0) == 0) {
-            func_002DDED0(h->c.motion, 4, -1);
+            Motion_PlayTable(h->c.motion, 4, -1);
         }
         VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
     }
@@ -7019,7 +7019,7 @@ void func_0014EE20(Hewie *h) {
             HW(h, 0xF3604, s32) = 8;
             HW(h, 0xF3608, s32) = 10;
         }
-        func_002DD110(h->c.motion, HW(h, 0xF368C, Actor *)->pos, &pitch, &yaw);
+        Motion_LookAt(h->c.motion, HW(h, 0xF368C, Actor *)->pos, &pitch, &yaw);
         a = func_002E2D00(h->c.a.angle[1] + yaw);
         HW(h, 0xF3614, f32) = pitch;
         HW(h, 0xF3618, f32) = func_002E2D00(a - h->c.a.angle[1]);
@@ -7133,7 +7133,7 @@ void func_0014FC70(Hewie *h) {
         return;
     }
     if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
-        func_002DE030(h->c.motion, 0x2218, 9, -1, (f32)HW(h, 0xF36B4, s32));
+        Motion_PlayWith(h->c.motion, 0x2218, 9, -1, (f32)HW(h, 0xF36B4, s32));
         Hewie_SetBehaviour(h, &D_003B1A28);
     }
     leap_fly(h);
@@ -7188,7 +7188,7 @@ void func_0014FF10(Hewie *h) {
         d = -d;
     }
     HW(h, 0xF36D0, f32) = d / fn;
-    func_002DDED0(h->c.motion, 0x1E01, -1);
+    Motion_PlayTable(h->c.motion, 0x1E01, -1);
     HW(h, 0xF3558, u8) = 1;
     func_0013A430(h, 0x68);
     Hewie_SetBehaviour(h, &D_003B1A18);
@@ -7257,7 +7257,7 @@ void func_00150C10(Hewie *h) {
     }
     a = HW(h, 0x10C, f32);
     back = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
-    func_002DE030(h->c.motion, 0x8000, 8, -1, 10.0f);
+    Motion_PlayWith(h->c.motion, 0x8000, 8, -1, 10.0f);
     v[1] = 0.0f;
     v[3] = 0.0f;
     v[0] = D_003B12A0[0][0];
@@ -7339,10 +7339,10 @@ void func_00151190(Hewie *h) {
         anim = MOTION_ANIM(h->c.motion);
         if ((u8)func_00139DE0(h) == 1) {
             if (anim != 0x202) {
-                func_002DDED0(h->c.motion, 0x202, -1);
+                Motion_PlayTable(h->c.motion, 0x202, -1);
             }
         } else if (anim != 0x201) {
-            func_002DDED0(h->c.motion, 0x201, -1);
+            Motion_PlayTable(h->c.motion, 0x201, -1);
         }
     }
 }
@@ -7409,7 +7409,7 @@ void func_00151D10(Hewie *h) {
         }
     } else {
         a = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + func_0031C5C0(n[0], n[2]));
-        func_002E3190(m, a);
+        Mtx_TurnY(m, a);
         v[2] = 1.0f;
         v[0] = 0.0f;
         v[1] = 0.0f;
@@ -7518,7 +7518,7 @@ void func_001523D0(Hewie *h) {
         return;
     }
     if (func_00140CD0(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x202) {
-        func_002DDED0(h->c.motion, 0x202, -1);
+        Motion_PlayTable(h->c.motion, 0x202, -1);
     }
     if (!there) {
         if (!(u8)func_00139DE0(h)) {
@@ -7586,7 +7586,7 @@ void func_00152D60(Hewie *h) {
         if (MOTION_ANIM(h->c.motion) == 0x202) {
             Hewie_SetBehaviour(h, &D_003B1968);
         } else {
-            func_002DDED0(h->c.motion, 0x202, -1);
+            Motion_PlayTable(h->c.motion, 0x202, -1);
         }
     }
     if (!there) {
@@ -7918,7 +7918,7 @@ void func_00155A30(Hewie *h) {
         if (MOTION_ANIM(h->c.motion) != 0x1E03) {
             if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
                 h->c.a.unk2D = 0;
-                func_002DDED0(h->c.motion, 0x1E03, -1);
+                Motion_PlayTable(h->c.motion, 0x1E03, -1);
             }
         } else {
             if (HW(h, 0xF36C0, s32) == 0) {
@@ -7931,7 +7931,7 @@ void func_00155A30(Hewie *h) {
             }
             if (ANIM_DONE(h)) {
                 h->c.a.unk2D = 0;
-                func_002DDE20(h->c.motion, 0x201, -1);
+                Motion_Play(h->c.motion, 0x201, -1);
             }
         }
     } else if (ANIM_DONE(h)) {
@@ -7976,7 +7976,7 @@ void func_00155D00(Hewie *h) {
     VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, h->c.a.navTri, g);
     if (h->c.a.pos[1] < g[1]) {
         if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
-            func_002DDED0(h->c.motion, 0x1E03, -1);
+            Motion_PlayTable(h->c.motion, 0x1E03, -1);
         }
         if (HW(h, 0xF3604, s32) != 0) {
             HW(h, 0xF3604, s32) = 0;
@@ -8105,7 +8105,7 @@ void func_00155FF0(Hewie *h) {
     if (h->c.a.pos[1] < g[1]) {
         h->c.a.pos[1] = g[1];
         if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
-            func_002DDED0(h->c.motion, 0x1E03, -1);
+            Motion_PlayTable(h->c.motion, 0x1E03, -1);
         }
         HW(h, 0xF356C, u32) &= 0x7FFFFFFF;
         HW(h, 0xF36C0, s32) = 0;
@@ -8147,7 +8147,7 @@ void func_001569C0(Hewie *h) {
         return;
     }
     if (func_00140CD0(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x202) {
-        func_002DDED0(h->c.motion, 0x202, -1);
+        Motion_PlayTable(h->c.motion, 0x202, -1);
     }
     if (AT(h->c.motion, 0x550, f32) <= 0.0f) {
         rest = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
@@ -8216,7 +8216,7 @@ void func_001569C0(Hewie *h) {
                 a = Actor_HeadingTo(&h->c.a, HW(h, 0xF3544, Character *)->a.pos);
                 HW(h, 0xF36D0, f32) = a;
                 turn_toward(h, a, 0x1.0c15240000000p-1f /* 0.5235988 */);
-                func_002DDED0(h->c.motion, 0x1E01, -1);
+                Motion_PlayTable(h->c.motion, 0x1E01, -1);
                 HW(h, 0xF356C, u32) |= 0x80000000;
                 h->c.a.unk2D = 1;
                 func_0013A430(h, 0x68);
@@ -8251,13 +8251,13 @@ void func_00157480(Hewie *h) {
             switch (h->c.unk104[0]) {
             case 1:
                 if (anim != 0x2206) {
-                    func_002DDE20(h->c.motion, 0x2206, -1);
+                    Motion_Play(h->c.motion, 0x2206, -1);
                 }
                 break;
             case 2:
                 /* (the original tests for 0x2211 but starts 0x220F) */
                 if (anim != 0x2211) {
-                    func_002DDE20(h->c.motion, 0x220F, -1);
+                    Motion_Play(h->c.motion, 0x220F, -1);
                 }
                 break;
             }
@@ -8268,11 +8268,11 @@ void func_00157480(Hewie *h) {
     HW(h, 0xF3558, u8) = 1;
     if (y < h->c.a.pos[1]) {
         if (HW(h, 0xF36B4, s32) == 0) {
-            func_002DDED0(h->c.motion, 0x2212, -1);
+            Motion_PlayTable(h->c.motion, 0x2212, -1);
         } else {
             Progress *p = gProgress;
 
-            func_002DDED0(h->c.motion, 0x2213, -1);
+            Motion_PlayTable(h->c.motion, 0x2213, -1);
             if ((u8)VCALL(p, 0x50, s32 (*)(Progress *))(p) == 1 &&
                 h->c.a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p) &&
                 /* (the original reads the flags at address 0x3C for a triangle off the mesh) */
@@ -8325,11 +8325,11 @@ void func_001579C0(Hewie *h) {
             if (grip == 1 || grip == 2) {
                 if ((u8)func_00138460(h, 2) == 1) {
                     HW(h, 0xF36B4, s32) = 0;
-                    func_002DDE20(h->c.motion, grip == 1 ? 0x2204 : 0x220D, -1);
+                    Motion_Play(h->c.motion, grip == 1 ? 0x2204 : 0x220D, -1);
                 } else {
                     HW(h, 0xF36B4, s32) = 1;
                     VCALL(h, 0x94, void (*)(Hewie *, s32))(h, 10);
-                    func_002DDE20(h->c.motion, grip == 1 ? 0x2207 : 0x2210, -1);
+                    Motion_Play(h->c.motion, grip == 1 ? 0x2207 : 0x2210, -1);
                 }
                 HW(h, 0xF36C8, f32) = root[1];
                 HW(h, 0xF36E0, f32) = root[0];
@@ -8352,7 +8352,7 @@ void func_001579C0(Hewie *h) {
 void func_00157E30(Hewie *h) {
     f32 y0, t, g;
 
-    if (func_001F4770(h->c.motion, 0, 0, 1) & 0xFF & 0x20) {
+    if (Motion_EventFlags(h->c.motion, 0, 0, 1) & 0xFF & 0x20) {
         func_0013A1C0(h, HW(h, 0xF3585, u8) == 1 ? 1 : 0);
     }
     if (ANIM_DONE(h)) {
@@ -8362,7 +8362,7 @@ void func_00157E30(Hewie *h) {
     slide_root(h);
     switch (HW(h, 0xF36B4, s32)) {
     case 0:
-        if (func_001F4770(h->c.motion, 0, 0, 1) & 0xFF & 2) {
+        if (Motion_EventFlags(h->c.motion, 0, 0, 1) & 0xFF & 2) {
             HW(h, 0xF36B4, s32) = 1;
         }
         HW(h, 0xF3582, u8) = 0;
@@ -8432,7 +8432,7 @@ void func_001580F0(Hewie *h) {
         hewie_want(h, 0, 0);
         return;
     }
-    if (func_001F4770(h->c.motion, 0, 0, 1) & 0xFF & 0x20) {
+    if (Motion_EventFlags(h->c.motion, 0, 0, 1) & 0xFF & 0x20) {
         func_0013A1C0(h, HW(h, 0xF3585, u8) == 1 ? 1 : 0);
     }
     if (ANIM_DONE(h)) {
@@ -8467,14 +8467,14 @@ void func_001580F0(Hewie *h) {
             case 0:
             case 1:
                 if (MOTION_ANIM(h->c.motion) != 0x2218) {
-                    func_002DDE20(h->c.motion, 0x2218, -1);
+                    Motion_Play(h->c.motion, 0x2218, -1);
                 }
                 bite_pursuer(h, 5, 10);
                 break;
             case 2:
                 HW(h, 0xF36B4, u32) = 0;
                 HW(h, 0xF36C4, f32) = 0.0f;
-                func_002DDE20(h->c.motion, 0x2219, -1);
+                Motion_Play(h->c.motion, 0x2219, -1);
                 Hewie_SetBehaviour(h, &D_003B1828);
                 break;
             }
@@ -8490,7 +8490,7 @@ void func_001580F0(Hewie *h) {
                 case 0:
                 case 1:
                     if (MOTION_ANIM(h->c.motion) != (g2 ? 0x220A : 0x2201)) {
-                        func_002DDE20(h->c.motion, g2 ? 0x220A : 0x2201, -1);
+                        Motion_Play(h->c.motion, g2 ? 0x220A : 0x2201, -1);
                     }
                     if (g2) {
                         bite_pursuer(h, HW(h, 0xF3585, u8) == 0 ? 0 : 1, HW(h, 0xF3585, u8) == 0 ? 2 : 3);
@@ -8501,11 +8501,11 @@ void func_001580F0(Hewie *h) {
                 case 2:
                     HW(h, 0xF36B4, u32) = 0;
                     HW(h, 0xF36C4, f32) = 0.0f;
-                    func_002DDE20(h->c.motion, g2 ? 0x220B : 0x2202, -1);
+                    Motion_Play(h->c.motion, g2 ? 0x220B : 0x2202, -1);
                     Hewie_SetBehaviour(h, g2 ? &D_003B1858 : &D_003B1838);
                     break;
                 case 3:
-                    func_002DDE20(h->c.motion, g2 ? 0x220C : 0x2203, -1);
+                    Motion_Play(h->c.motion, g2 ? 0x220C : 0x2203, -1);
                     HW(h, 0xF36C4, f32) = h->c.a.pos[1];
                     h->c.moveMode = 4;
                     h->c.moveSub = 10;
@@ -8519,14 +8519,14 @@ void func_001580F0(Hewie *h) {
                 case 0:
                 case 1:
                     if (MOTION_ANIM(h->c.motion) != 0x2215) {
-                        func_002DDE20(h->c.motion, 0x2215, -1);
+                        Motion_Play(h->c.motion, 0x2215, -1);
                     }
                     bite_pursuer(h, 4, 3);
                     break;
                 case 2:
                     HW(h, 0xF36B4, u32) = 0;
                     HW(h, 0xF36C4, f32) = 0.0f;
-                    func_002DDE20(h->c.motion, 0x2216, -1);
+                    Motion_Play(h->c.motion, 0x2216, -1);
                     Hewie_SetBehaviour(h, &D_003B1878);
                     break;
                 }
@@ -8632,19 +8632,19 @@ void func_00159040(Hewie *h) {
         switch (HEWIE_ACTION(h)) {
         case 0x22:
         case 0x21:
-            func_002DDE20(h->c.motion, 0x2218, -1);
+            Motion_Play(h->c.motion, 0x2218, -1);
             break;
         case 0x20:
         case 0x1F:
             switch (h->c.unk104[0]) {
             case 1:
-                func_002DDE20(h->c.motion, 0x2201, -1);
+                Motion_Play(h->c.motion, 0x2201, -1);
                 break;
             case 2:
-                func_002DDE20(h->c.motion, 0x220A, -1);
+                Motion_Play(h->c.motion, 0x220A, -1);
                 break;
             case 0:
-                func_002DDE20(h->c.motion, 0x2215, -1);
+                Motion_Play(h->c.motion, 0x2215, -1);
                 break;
             }
             break;
@@ -8733,7 +8733,7 @@ void func_00159770(Hewie *h) {
     switch (HEWIE_ACTION(h)) {
     case 0x22:
     case 0x21:
-        func_002DDED0(h->c.motion, 0x2217, -1);
+        Motion_PlayTable(h->c.motion, 0x2217, -1);
         break;
     case 0x20:
     case 0x1F:
@@ -8742,14 +8742,14 @@ void func_00159770(Hewie *h) {
             if (gCharPursuer->unk153C != 0xB) {
                 a = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
             }
-            func_002DDED0(h->c.motion, 0x2200, -1);
+            Motion_PlayTable(h->c.motion, 0x2200, -1);
             break;
         case 2:
             a = func_002E2D00(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
-            func_002DDED0(h->c.motion, 0x2209, -1);
+            Motion_PlayTable(h->c.motion, 0x2209, -1);
             break;
         case 0:
-            func_002DDED0(h->c.motion, 0x2214, -1);
+            Motion_PlayTable(h->c.motion, 0x2214, -1);
             break;
         }
         break;
@@ -8882,10 +8882,10 @@ void func_0015A460(Hewie *h) {
     anim = MOTION_ANIM(h->c.motion);
     if ((u8)func_00139DE0(h) == 1) {
         if (anim != 0x202) {
-            func_002DDED0(h->c.motion, 0x202, -1);
+            Motion_PlayTable(h->c.motion, 0x202, -1);
         }
     } else if (anim != 0x201) {
-        func_002DDED0(h->c.motion, 0x201, -1);
+        Motion_PlayTable(h->c.motion, 0x201, -1);
     }
 }
 
@@ -8962,17 +8962,17 @@ void func_0015AE10(Hewie *h) {
     case 0x18:
         if (HW(h, 0xF36B4, s32) == 0) {
             if (func_00140CD0(h, 1) == 0) {
-                func_002DDED0(h->c.motion, 0x1C06, -1);
+                Motion_PlayTable(h->c.motion, 0x1C06, -1);
                 Hewie_SetBehaviour(h, &D_003B1788);
             }
         } else if (func_00140CD0(h, 2) == 0) {
-            func_002DDED0(h->c.motion, 0x1C07, -1);
+            Motion_PlayTable(h->c.motion, 0x1C07, -1);
             Hewie_SetBehaviour(h, &D_003B1798);
         }
         break;
     case 0x19:
         if (func_00140CD0(h, 1) == 0) {
-            func_002DDED0(h->c.motion, 0x1C00, -1);
+            Motion_PlayTable(h->c.motion, 0x1C00, -1);
             Hewie_SetBehaviour(h, &D_003B17A8);
         }
         break;
@@ -8980,7 +8980,7 @@ void func_0015AE10(Hewie *h) {
         switch (MOTION_ANIM(h->c.motion)) {
         case 0x106:
             if (ANIM_DONE(h)) {
-                func_002DDED0(h->c.motion, 8, -1);
+                Motion_PlayTable(h->c.motion, 8, -1);
             }
             break;
         case 8:
@@ -8990,20 +8990,20 @@ void func_0015AE10(Hewie *h) {
             break;
         default:
             if (func_00140CD0(h, 1) == 0) {
-                func_002DDED0(h->c.motion, 0x106, -1);
+                Motion_PlayTable(h->c.motion, 0x106, -1);
             }
             break;
         }
         break;
     case 0x1A:
         if (func_00140CD0(h, 0) == 0) {
-            func_002DDED0(h->c.motion, 0x1C08, -1);
+            Motion_PlayTable(h->c.motion, 0x1C08, -1);
             Hewie_SetBehaviour(h, &D_003B17B8);
         }
         break;
     case 0x1B:
         if (func_00140CD0(h, 0) == 0) {
-            func_002DDED0(h->c.motion, 0x1C09, -1);
+            Motion_PlayTable(h->c.motion, 0x1C09, -1);
             Hewie_SetBehaviour(h, &D_003B17C8);
         }
         break;
@@ -9140,7 +9140,7 @@ void func_0015BD90(Hewie *h) {
     step = run_turn(h);
     turn_toward(h, HW(h, 0xF36C4, f32), step);
     if (func_00140CD0(h, 5) == 0 && MOTION_ANIM(h->c.motion) != 0x204) {
-        func_002DDED0(h->c.motion, 0x204, -1);
+        Motion_PlayTable(h->c.motion, 0x204, -1);
     }
 }
 
@@ -9486,10 +9486,10 @@ void func_0015E880(Hewie *h) {
 
         if (HW(h, 0xF35C0, s32) == 2) {
             if (anim != 5) {
-                func_002DDED0(h->c.motion, 5, -1);
+                Motion_PlayTable(h->c.motion, 5, -1);
             }
         } else if (anim != 4) {
-            func_002DDED0(h->c.motion, 4, -1);
+            Motion_PlayTable(h->c.motion, 4, -1);
         }
     }
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
@@ -9504,10 +9504,10 @@ static void stance(Hewie *h) {
 
         if (HW(h, 0xF35C0, s32) == 2) {
             if (anim != 5) {
-                func_002DDED0(h->c.motion, 5, -1);
+                Motion_PlayTable(h->c.motion, 5, -1);
             }
         } else if (anim != 4) {
-            func_002DDED0(h->c.motion, 4, -1);
+            Motion_PlayTable(h->c.motion, 4, -1);
         }
     }
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
@@ -9575,7 +9575,7 @@ void func_0015F2E0(Hewie *h) {
             HW(h, 0xF3604, s32) = 8;
             HW(h, 0xF3608, s32) = 10;
         }
-        func_002DD110(h->c.motion, at, &pitch, &yaw);
+        Motion_LookAt(h->c.motion, at, &pitch, &yaw);
         if (HW(h, 0xF3620, u8) == 0) {
             pitch = 0.0f;
         }
@@ -9594,7 +9594,7 @@ void func_0015F2E0(Hewie *h) {
         return;
     }
     if (func_00140CD0(h, 0) == 0 && MOTION_ANIM(h->c.motion) != 3) {
-        func_002DDED0(h->c.motion, 3, -1);
+        Motion_PlayTable(h->c.motion, 3, -1);
     }
     VCALL(h->c.motion, 0x54, void (*)(void *))(h->c.motion);
 }
@@ -9892,7 +9892,7 @@ s32 func_001662A0(Hewie *h, HewiePlacement *pl) {
     HEWIE_SIDE(h) = pl->side;
     if (*((u8 *)gProgress + 0x1FBEC1) == 0 && pl->room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
         h->c.a.navTri = pl->tri;
-        func_002DDED0(h->c.motion, 0, -1);
+        Motion_PlayTable(h->c.motion, 0, -1);
         hewie_want(h, 0, 0);
         return 0;
     }
@@ -10307,7 +10307,7 @@ void Hewie_Update(Hewie *h) {
                 }
             }
             if (*((u8 *)p + 0x1FBEC1) == 1) {
-                HW(h, 0xF3798, s32) = func_001F1B90((u8 *)h + 0xF3748, (f32 *)D_0047E3B0);
+                HW(h, 0xF3798, s32) = Gesture_Update((u8 *)h + 0xF3748, (f32 *)D_0047E3B0);
             }
             ptmf_scall(h, &h->c.a.state);
             ptmf_scall(h, HEWIE_STATE(h));
@@ -10427,7 +10427,7 @@ static void sniff(Hewie *h, s32 anim, const PTMF *st) {
         HW(h, 0xF3604, s32) = 4;
         HW(h, 0xF3608, s32) = 10;
     }
-    func_002DDED0(h->c.motion, anim, -1);
+    Motion_PlayTable(h->c.motion, anim, -1);
     *HEWIE_STATE(h) = *st;
 }
 

@@ -766,7 +766,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         MODE(h) = 0;
         anim(h, 4);
         CMD(h) = 0;
-        func_002DDED0(h->c.motion, HW(h, 0x104, s32), -1);
+        Motion_PlayTable(h->c.motion, HW(h, 0x104, s32), -1);
         HW(h, 0xE1, s8) = 1;
         STATE(h, func_0014B4D0);
         return;
@@ -775,7 +775,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         MODE(h) = 0;
         anim(h, 4);
         CMD(h) = 0;
-        func_002DDC60(h->c.motion, HW(h, 0x104, s32), HW(h, 0x108, s32), -1);
+        Motion_PlayBlend(h->c.motion, HW(h, 0x104, s32), HW(h, 0x108, s32), -1);
         HW(h, 0xE1, s8) = 1;
         STATE(h, func_0014B4D0);
         return;
@@ -783,7 +783,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         MODE(h) = 0;
         anim(h, 4);
         CMD(h) = 0;
-        func_002DDBA0(h->c.motion, HW(h, 0x104, s32), HW(h, 0x108, s32));
+        Motion_PlayBlend8(h->c.motion, HW(h, 0x104, s32), HW(h, 0x108, s32));
         HW(h, 0xE1, s8) = 1;
         STATE(h, func_0014B4D0);
         return;
@@ -1068,7 +1068,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         CMD(h) = 0;
         HW(h, 0xF36C8, f32) = 4.0f;
         HW(h, 0xF36CC, f32) = 0.5f;
-        func_002DDED0(h->c.motion, 0x1000, -1);
+        Motion_PlayTable(h->c.motion, 0x1000, -1);
         func_0013A430(h, 0x66);
         STATE(h, func_00153B00);
         return;
@@ -1078,7 +1078,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         CMD(h) = 0;
         HW(h, 0xF36C8, f32) = 1.5f;
         HW(h, 0xF36CC, f32) = 0.5f;
-        func_002DDED0(h->c.motion, 0x1000, -1);
+        Motion_PlayTable(h->c.motion, 0x1000, -1);
         if (HW(h, 0x104, s32) == 1) {
             func_0013A430(h, 0x65);
         } else {
@@ -1099,7 +1099,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
         CMD(h) = 0;
         HW(h, 0xF36C8, f32) = 5.0f;
         HW(h, 0xF36CC, f32) = 1.0f;
-        func_002DDED0(h->c.motion, 0x1000, -1);
+        Motion_PlayTable(h->c.motion, 0x1000, -1);
         func_0013A430(h, 0x66);
         if (a == 0x6B) {
             STATE(h, func_00153B00);
@@ -1170,7 +1170,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
     case 0x74:
         MODE(h) = 0;
         CMD(h) = 0;
-        func_002DDED0(h->c.motion, 0x2213, -1);
+        Motion_PlayTable(h->c.motion, 0x2213, -1);
         func_0013A430(h, 0x66);
         STATE(h, func_00150610);
         return;
@@ -1223,7 +1223,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
     case 0x79:
         HW(h, 0x2D, u8) = 1;
         MODE(h) = 0xB;
-        func_002DDED0(h->c.motion, 0x1301, -1);
+        Motion_PlayTable(h->c.motion, 0x1301, -1);
         CMD(h) = 0;
         HW(h, 0xF3604, s32) = 4;
         HW(h, 0xF3608, s32) = 0;
@@ -1305,7 +1305,7 @@ void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
 
         MODE(h) = 0;
         anim(h, 8);
-        func_002DD110(h->c.motion, (f32 *)((u8 *)h + 0xF3630), &dist, &ang);
+        Motion_LookAt(h->c.motion, (f32 *)((u8 *)h + 0xF3630), &dist, &ang);
         to = func_002E2D00(h->c.a.angle[1] + ang);
         HW(h, 0xF3614, f32) = dist;
         HW(h, 0xF3618, f32) = func_002E2D00(to - h->c.a.angle[1]);

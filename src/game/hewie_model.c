@@ -1,4 +1,4 @@
-/* Hewie's model (vtable D_0046B240, 0xB90 bytes, built by func_003A10B0 in model.c; two
+/* Hewie's model (vtable D_0046B240, 0xB90 bytes, built by CharLoad_PartnerModel in model.c; two
  * subclasses D_0046B8F0 / D_0046B9B0 differ only in their destructors). On top of the model
  * base it fits his body to the floor as a dog stands - a back frame +0x7D0 from a point behind
  * him to his position, a front frame +0xB40 from his position to a point ahead - and plants
@@ -46,8 +46,8 @@ void *DogModelB_Table(void);
 
 static void HewieModel_Destroy(u8 *m, s32 flags) {
     AT(m, 0x0, void **) = D_0046B240;
-    func_001002C0(m + 0xA80, func_0016FC80, 0x60, 2);
-    func_001002C0(m + 0x960, func_001F7E40, 0x90, 2);
+    func_001002C0(m + 0xA80, IK2_Destroy, 0x60, 2);
+    func_001002C0(m + 0x960, IK3_Destroy, 0x90, 2);
     AT(m, 0x0, void **) = D_0046F9E0;
     AT(m, 0x0, void **) = D_0046B210;
     AT(m, 0x1D0, void **) = D_0046B1C0;
@@ -246,7 +246,7 @@ u8 DogModel_FootDown(u8 *m, s32 foot, s32 dt) {
         while (!(t < n)) {
             t -= n;
         }
-        func_001F36B0(trk, c[i], t);
+        Track_Sample(trk, c[i], t);
     }
     if (*trkA != NULL && **(s32 **)trkA != 0 && *trkB != NULL && **(s32 **)trkB != 0) {
         return !(c[0][foot & 1] <= 0.0f) && !(c[1][foot & 1] <= 0.0f);
@@ -289,13 +289,13 @@ void DogModel_LegIK(u8 *m, f32 *fr, f32 *fl, f32 *hr, f32 *hl) {
     u8 *b = AT(m, 0x4C0, u8 *) + 0x10;
 
     sceVu0SubVector(d, (f32 *)(b + 0x3E0), (f32 *)(b + 0x530));
-    func_001F04B0(m + 0x960, SKEL(m), 8, 9, 10, 11, BIND(m, 9, 0x20), BIND(m, 10, 0x20), BIND(m, 11, 0x20), 1.0f,
+    IK3_Setup(m + 0x960, SKEL(m), 8, 9, 10, 11, BIND(m, 9, 0x20), BIND(m, 10, 0x20), BIND(m, 11, 0x20), 1.0f,
                   -1.0f, __builtin_sqrtf(__builtin_fabsf(d[1] * d[1] + d[0] * d[0] + d[2] * d[2])));
     sceVu0SubVector(d, (f32 *)(b + 0x5A0), (f32 *)(b + 0x6F0));
-    func_001F04B0(m + 0x9F0, SKEL(m), 12, 13, 14, 15, BIND(m, 13, 0x20), BIND(m, 14, 0x20), BIND(m, 15, 0x20),
+    IK3_Setup(m + 0x9F0, SKEL(m), 12, 13, 14, 15, BIND(m, 13, 0x20), BIND(m, 14, 0x20), BIND(m, 15, 0x20),
                   1.0f, -1.0f, __builtin_sqrtf(__builtin_fabsf(d[1] * d[1] + d[0] * d[0] + d[2] * d[2])));
-    func_001F1250(m + 0xA80, SKEL(m), 0x15, 0x16, 0x17, BIND(m, 0x16, 0x20), BIND(m, 0x17, 0x20), 0.0f);
-    func_001F1250(m + 0xAE0, SKEL(m), 0x1A, 0x1B, 0x1C, BIND(m, 0x1B, 0x20), BIND(m, 0x1C, 0x20), 0.0f);
+    IK2_Setup(m + 0xA80, SKEL(m), 0x15, 0x16, 0x17, BIND(m, 0x16, 0x20), BIND(m, 0x17, 0x20), 0.0f);
+    IK2_Setup(m + 0xAE0, SKEL(m), 0x1A, 0x1B, 0x1C, BIND(m, 0x1B, 0x20), BIND(m, 0x1C, 0x20), 0.0f);
     sceVu0CopyVector((f32 *)(m + 0x980), fr);
     sceVu0CopyVector((f32 *)(m + 0xA10), fl);
     sceVu0CopyVector((f32 *)(m + 0xAA0), hr);
@@ -392,7 +392,7 @@ static void floor_point(u8 *m, u8 *a, f32 (*mtx)[4], f32 *p, f32 along) {
     p[2] = along;
     p[3] = 1.0f;
     sceVu0ApplyMatrix(p, mtx, p);
-    func_002DC710(m, p, a);
+    Motion_OntoFloor(m, p, a);
 }
 
 /* a frame along `dir` (unit; its Z), level sideways (X = (dir.z, 0, -dir.x)) */
@@ -470,16 +470,16 @@ f32 DogModel_FloorLevel(u8 *m, u8 *a, f32 ahead, f32 behind) {
     pf[2] = behind;
     pf[3] = 1.0f;
     sceVu0ApplyMatrix(pf, mtx, pf);
-    func_002DC710(m, pb, a);
-    func_002DC710(m, pf, a);
+    Motion_OntoFloor(m, pb, a);
+    Motion_OntoFloor(m, pf, a);
     sceVu0SubVector(d, pb, pf);
     sceVu0Normalize(d, d);
     sceVu0ScaleVector(pb, d, ahead);
     sceVu0AddVector(pb, pb, (f32 *)(a + 0x10));
     sceVu0ScaleVector(pf, d, behind);
     sceVu0AddVector(pf, pf, (f32 *)(a + 0x10));
-    func_002DC710(m, pb, a);
-    func_002DC710(m, pf, a);
+    Motion_OntoFloor(m, pb, a);
+    Motion_OntoFloor(m, pf, a);
     sceVu0SubVector(d, pb, pf);
     sceVu0Normalize(d, d);
     return __builtin_sqrtf(__builtin_fabsf(d[2] * d[2] + d[0] * d[0]));

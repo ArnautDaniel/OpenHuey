@@ -207,7 +207,7 @@ s32 Fiona_PointOfInterest(Fiona *f, f32 *out) {
         return 0;
     }
     if (f->c.moveSub == 0x1B) {
-        if ((func_001F4770(f->c.motion, 0, 0, 1) & 0xFF) & 0x2) {
+        if ((Motion_EventFlags(f->c.motion, 0, 0, 1) & 0xFF) & 0x2) {
             return 0;
         }
         *(s32 *)&v[0] = 0;
@@ -220,7 +220,7 @@ s32 Fiona_PointOfInterest(Fiona *f, f32 *out) {
     if (f->c.moveSub != 0x1A) {
         return 0;
     }
-    if (!((func_001F4770(f->c.motion, 0, -1, 1) & 0xFF) & 0x2)) {
+    if (!((Motion_EventFlags(f->c.motion, 0, -1, 1) & 0xFF) & 0x2)) {
         return 0;
     }
     switch (Progress_GetVar(gProgress, 0x26) & 0xFF) {
@@ -382,7 +382,7 @@ void Fiona_FollowAnim(Fiona *f) {
     if (f->c.a.disabled) {
         return;
     }
-    func_001F6AF0(f->c.motion);
+    Motion_Update(f->c.motion);
     if (VCALL(gCutscene, 0x54, s32 (*)(VObject *, s32, s32))(gCutscene, 0, 0) > 0) {
         MOTION_U8(f->c.motion, 0x850) = 1;
     }
@@ -575,7 +575,7 @@ void Fiona_Interrupted(Fiona *f) {
 
 /* Animation blend weight (motion +0x6A4 -> +0x1C), mirrored at +0x1AD628. */
 static inline void Fiona_SetPose(Fiona *f, s32 set, s32 variant, f32 w) {
-    func_002DDE20(f->c.motion, set, variant);
+    Motion_Play(f->c.motion, set, variant);
     *(f32 *)((u8 *)MOTION_PTR(f->c.motion, 0x6A4) + 0x1C) = w;
     FI(f, 0x1AD628, f32) = w;
 }
@@ -672,7 +672,7 @@ void Fiona_Think(Fiona *f) {
     func_001A1CA0(f);
     p = gProgress;
     if ((Progress_TestFlag(p, 0xD) & 0xFF) == 1 && !(Progress_TestFlag(p, 0x2B) & 0xFF)) {
-        FI(f, 0x1AD6B8, s32) = func_001F1B90((u8 *)f + 0x1AD668, (f32 *)D_0047E3B0);
+        FI(f, 0x1AD6B8, s32) = Gesture_Update((u8 *)f + 0x1AD668, (f32 *)D_0047E3B0);
     }
     FI(f, 0x1AD6BC, s32) = -1;
     VCALL(f, 0x88, void (*)(Fiona *))(f);
@@ -749,9 +749,9 @@ void Fiona_AnimUpdate(Fiona *f) {
             VCALL(f->c.motion, 0x40, void (*)(void *, Fiona *, f32, f32))(f->c.motion, f, 0.0f, 0.0f);
         }
     }
-    func_002DCB40(f->c.motion);
-    func_002DC960(f->c.motion);
-    func_001F6AF0(f->c.motion);
+    Motion_Hands(f->c.motion);
+    Motion_Eyes(f->c.motion);
+    Motion_Update(f->c.motion);
     room = f->c.a.room;
     if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress) && f->c.a.navTri != NAV_NONE) {
         VCALL(f->c.motion, 0x4C, void (*)(void *, u32, Fiona *))(f->c.motion, FI(f, 0x1AD5BC, u8), f);
@@ -822,7 +822,7 @@ void func_00199ED0(Fiona *f) {
     }
     if (Actor_TurnToward(&f->c.a, func_0031C5C0(FI(f, 0x1AD570, f32), FI(f, 0x1AD578, f32)),
                       0x1.657186p-3f /* 10 deg */) == 0.0f) {
-        func_002DDD20(f->c.motion, 0x1200, -1);
+        Motion_PlayOwnBlend(f->c.motion, 0x1200, -1);
         Actor_SetState(&f->c.a, &D_003B27F8);
     }
 }
@@ -862,7 +862,7 @@ void func_001998F0(Fiona *f) {
             return;
         }
         if (*(s32 *)((u8 *)m + 0x55C) == 0x1203) {
-            func_002DDE20(m, 0x1202, -1);
+            Motion_Play(m, 0x1202, -1);
             Actor_SetState(&f->c.a, &D_003B2828);
         } else {
             Fiona_ToIdle(f);
@@ -878,7 +878,7 @@ void func_001998F0(Fiona *f) {
         return;
     }
     if (FIONA_PUSH_OBJ(f) == -1 && func_00188280(f, 1, 0x1.19999ap+1f /* 2.2 */) == -1) {
-        func_002DDE20(f->c.motion, 0x1202, -1);
+        Motion_Play(f->c.motion, 0x1202, -1);
         Actor_SetState(&f->c.a, &D_003B2808);
         return;
     }
@@ -886,7 +886,7 @@ void func_001998F0(Fiona *f) {
         || VCALL(gObstacles, 0x30, s32 (*)(VObject *, s32, f32 *))(gObstacles, FIONA_PUSH_OBJ(f), FIONA_STICK(f)) != 0) {
         /* it won't move: strain */
         FI(f, 0x1AD5D2, u8) = 1;
-        func_002DDE20(f->c.motion, 0x1203, -1);
+        Motion_Play(f->c.motion, 0x1203, -1);
         return;
     }
     {
@@ -895,7 +895,7 @@ void func_001998F0(Fiona *f) {
         VCALL(objs, 0x3C, void (*)(VObject *, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), FIONA_STICK(f));
         VCALL(objs, 0x1C, void (*)(VObject *, s32, s32))(objs, FIONA_PUSH_OBJ(f), 0);
         VCALL(objs, 0x20, void (*)(VObject *, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), FIONA_STICK(f));
-        func_002DDE20(f->c.motion, 0x1201, -1);
+        Motion_Play(f->c.motion, 0x1201, -1);
         VCALL(objs, 0x28, void (*)(VObject *, s32, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), 0, FIONA_STICK(f));
         Actor_PlaySound(&f->c.a, 0x45, 5, 0, 0, NULL);
         Actor_SetState(&f->c.a, &D_003B2818);
@@ -959,20 +959,20 @@ void func_001991E0(Fiona *f) {
                 VCALL(objs, 0x3C, void (*)(VObject *, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), FIONA_STICK(f));
                 VCALL(objs, 0x1C, void (*)(VObject *, s32, s32))(objs, FIONA_PUSH_OBJ(f), 0);
                 VCALL(objs, 0x20, void (*)(VObject *, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), FIONA_STICK(f));
-                func_002DDE20(f->c.motion, 0x1201, -1);
+                Motion_Play(f->c.motion, 0x1201, -1);
                 VCALL(objs, 0x28, void (*)(VObject *, s32, s32, f32 *))(objs, FIONA_PUSH_OBJ(f), 0, FIONA_STICK(f));
                 return;
             }
             FI(f, 0x1AD5D2, u8) = 1;
-            func_002DDE20(f->c.motion, 0x1203, -1);
+            Motion_Play(f->c.motion, 0x1203, -1);
             return;
         }
-        func_002DDE20(f->c.motion, 0x1202, -1);
+        Motion_Play(f->c.motion, 0x1202, -1);
         Actor_SetState(&f->c.a, &D_003B2838);
     } else if (anim == 0x1203) {
         FI(f, 0x1AD5D2, u8) = 1;
     }
-    if ((func_001F4770(f->c.motion, 0, 0, 1) & 0xFF) & 0x2) {
+    if ((Motion_EventFlags(f->c.motion, 0, 0, 1) & 0xFF) & 0x2) {
         VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0x40, 0x10);
     }
 }
@@ -1056,7 +1056,7 @@ void Fiona_Vt38(Fiona *f) {
         FI(f, 0x1AD71C, s32) = 0;
         f->c.moveMode = 0xA;
         f->unk1AD580 = 0xB;
-        func_002DDE20(f->c.motion, 0xB01, -1);
+        Motion_Play(f->c.motion, 0xB01, -1);
         Actor_SetState(&f->c.a, &D_003B27D8);
         return;
     }
@@ -1369,13 +1369,13 @@ void func_0019C210(Fiona *f) {
                 f->savedYaw = func_0031C5C0(FI(f, 0x1AD550, f32), FI(f, 0x1AD558, f32));
             }
             if (!(FI(f, 0x1AD584, s32) & 0x1)) {
-                func_002DDED0(f->c.motion, 0xB02, -1);
+                Motion_PlayTable(f->c.motion, 0xB02, -1);
             }
         } else if (MOTION_ANIM(m) == 0xB02 && (MOTION_EVENTS(m) & 0x20) != 0) {
             Fiona_ToIdle(f);
         }
     }
-    func_001F6370(f->c.motion, root, 0.0f);
+    Motion_RootMovement(f->c.motion, root, 0.0f);
     if (!(root[2] <= 0.0f)) {
         f32 yaw0 = f->c.a.angle[1];
 
@@ -1442,7 +1442,7 @@ void func_0019F1E0(Fiona *f) {
             if (FI(f, 0x1AD5EC, s32) != 0) {
                 FI(f, 0x1AD5EC, s32) -= 1;
             }
-            func_001F6370(f->c.motion, r, 0.0f);
+            Motion_RootMovement(f->c.motion, r, 0.0f);
             Mtx_AtHeading(m, f->c.a.pos,
                           FI(f, 0x1AD58C, s32) != 0 ? f->savedYaw
                                                     : func_0031C5C0(FI(f, 0x1AD550, f32), FI(f, 0x1AD558, f32)));
@@ -1463,7 +1463,7 @@ void func_0019F1E0(Fiona *f) {
                 }
                 f->c.moveMode = 4;
                 f->unk1AD580 = 0xA;
-                func_002DDED0(f->c.motion, 0x1001, -1);
+                Motion_PlayTable(f->c.motion, 0x1001, -1);
                 Actor_SetState(&f->c.a, &D_003B2798);
                 return;
             }
@@ -1586,7 +1586,7 @@ static inline s32 Fiona_ReadsPad(Fiona *f, Progress *p) {
         return f->c.moveSub == 9 || f->c.moveSub == 0x12;
     }
     if (mode == 8) {
-        return f->unk1AD580 == 5 && ((func_001F4770(f->c.motion, 0, 0, 1) & 0xFF) & 0x20);
+        return f->unk1AD580 == 5 && ((Motion_EventFlags(f->c.motion, 0, 0, 1) & 0xFF) & 0x20);
     }
     return 0;
 }
@@ -1650,7 +1650,7 @@ void Fiona_Update(Fiona *f) {
     } else {
         func_0019F1E0(f);
     }
-    FIONA_CMD(f) = func_001F1B90((u8 *)f + 0x1AD668, (f32 *)(Fiona_ReadsPad(f, p) ? D_0047E3B0 : NULL));
+    FIONA_CMD(f) = Gesture_Update((u8 *)f + 0x1AD668, (f32 *)(Fiona_ReadsPad(f, p) ? D_0047E3B0 : NULL));
 
     hewie = Fiona_Touching(f) == 1;
     ptmf_scall(f, &f->c.a.state);
@@ -1722,7 +1722,7 @@ void Fiona_Vt34(Fiona *f, s32 door) {
             sceVu0FVECTOR v;
             f32 h;
 
-            func_002E3190(m, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
+            Mtx_TurnY(m, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
             func_002E2DA0(v, m, (f32 *)((u8 *)f + 0x1AD5A0));
             func_0010E640(v, v, -1.0f);
             h = func_0031C5C0(v[0], v[2]);
@@ -1900,19 +1900,19 @@ void Fiona_Requests(Fiona *f) {
         break;
     case 7:
         f->unk1AD580 = 0x11;
-        func_002DDED0(f->c.motion, f->c.unk104[0], -1);
+        Motion_PlayTable(f->c.motion, f->c.unk104[0], -1);
         f->c.unkE1 = 1;
         Actor_SetState(&f->c.a, &D_003B2718);
         break;
     case 8:
         f->unk1AD580 = 0x11;
-        func_002DDC60(f->c.motion, f->c.unk104[0], f->c.unk104[1], -1);
+        Motion_PlayBlend(f->c.motion, f->c.unk104[0], f->c.unk104[1], -1);
         f->c.unkE1 = 1;
         Actor_SetState(&f->c.a, &D_003B2728);
         break;
     case 9:
         f->unk1AD580 = 0x11;
-        func_002DDBA0(f->c.motion, f->c.unk104[0], f->c.unk104[1]);
+        Motion_PlayBlend8(f->c.motion, f->c.unk104[0], f->c.unk104[1]);
         f->c.unkE1 = 1;
         Actor_SetState(&f->c.a, &D_003B2738);
         break;
@@ -1977,7 +1977,7 @@ void Fiona_Requests(Fiona *f) {
             f->c.unkE1 = 1;
             break;
         }
-        func_002DDC60(f->c.motion, f->c.unk104[0], f->c.unk104[1], -1);
+        Motion_PlayBlend(f->c.motion, f->c.unk104[0], f->c.unk104[1], -1);
         frames = *(s32 *)((u8 *)(*(void **)((u8 *)(*(void **)((u8 *)MOTION_PTR(f->c.motion, 0x6A4) + 0x20)) + 4)) + 0xC);
         d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
             gSceneGameF29740, f->c.a.pos, f->c.unk128, f->c.unk124, f->c.unk12C);
@@ -2076,7 +2076,7 @@ void func_001A1FD0(Fiona *f) {
     if (f->c.unk14D0 > 0) {
         f->c.unk14D0 -= 1;
         if (f->c.unk14D0 <= 0) {
-            func_001F6E10(f->c.motion);
+            Motion_Unfreeze(f->c.motion);
         }
     }
     if (FI(f, 0x1AD5F0, s32) != 0) {
@@ -2146,7 +2146,7 @@ extern const PTMF D_003B27C8;          /* start pushing */
 static inline void Fiona_Exhausted(Fiona *f, s32 g) {
     FI(f, 0x1AD5E8, s32) = (s32)(3.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *, s32, s32))(gRandom, 0, g)) * 30 + 120;
     f->unk1AD580 = 0xF;
-    func_002DDED0(f->c.motion, 0x207, -1);
+    Motion_PlayTable(f->c.motion, 0x207, -1);
 }
 
 static inline void Fiona_Stand(Fiona *f) {
@@ -2184,7 +2184,7 @@ void func_0019C600(Fiona *f) {
                         if ((Progress_GameMode(gProgress) & 0xFF) == 1 && FI(f, 0x1AD584, s32) == 0
                             && FIONA_FEAR(f) < 20.0f && FI(f, 0x1AD5F8, s32) < 360) {
                             if (++FI(f, 0x1AD5C0, u32) >= 90) {
-                                func_002DDED0(f->c.motion, 1, -1);   /* rest */
+                                Motion_PlayTable(f->c.motion, 1, -1);   /* rest */
                             } else {
                                 func_001855F0(f, -1);
                             }
@@ -2292,10 +2292,10 @@ void func_0019C600(Fiona *f) {
     }
 
     /* root motion, scaled down when the stick points away from where she faces */
-    func_001F6370(f->c.motion, d, 0.0f);
+    Motion_RootMovement(f->c.motion, d, 0.0f);
     dz = d[2] * VCALL(f->c.motion, 0x44, f32 (*)(void *, Fiona *))(f->c.motion, f);
     d[2] = dz;
-    func_002E3190(m, f->savedYaw);
+    Mtx_TurnY(m, f->savedYaw);
     func_002E2DA0(d, m, d);
     axis[2] = 1.0f;
     *(s32 *)&axis[0] = 0;
@@ -3259,9 +3259,9 @@ void StrikeMark_Start(u8 *p) {
  * once) */
 static void fiona_idle(Fiona *f, s32 anim, s32 blend, s32 variant) {
     if (blend == -1) {
-        func_002DDED0(f->c.motion, anim, variant);
+        Motion_PlayTable(f->c.motion, anim, variant);
     } else {
-        func_002DDC60(f->c.motion, anim, blend, variant);
+        Motion_PlayBlend(f->c.motion, anim, blend, variant);
     }
 }
 
@@ -3456,7 +3456,7 @@ void func_00187650(Fiona *f) {
             if (!((n[0] <= 0.0f ? -n[0] : n[0]) <= 0.5f) || !((n[2] <= 0.0f ? -n[2] : n[2]) <= 0.5f)) {
                 FI(f, FMOVE_LOCK, s16) = 3;
                 FI(f, FMOVE_MODE, u8) = 1;
-                func_002E3190(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
+                Mtx_TurnY(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
                 func_002E2DA0(v, rot, n);
                 func_0010E640(v, v, -1.0f);
                 FI(f, FMOVE_HEADING, f32) = func_0031C5C0(v[0], v[2]);
@@ -3492,7 +3492,7 @@ void func_00187650(Fiona *f) {
         how = 3;
         if (FI(f, FMOVE_LOCK, s16) != 0) {
             FI(f, FMOVE_LOCK, s16)--;
-            func_002E3190(rot, FI(f, FMOVE_CAMYAW, f32));
+            Mtx_TurnY(rot, FI(f, FMOVE_CAMYAW, f32));
         } else {
             f32 d[4] __attribute__((aligned(16)));
 
@@ -3500,7 +3500,7 @@ void func_00187650(Fiona *f) {
             if (__builtin_sqrtf(sceVu0InnerProduct(d, d)) < k001.f) {
                 FI(f, FMOVE_MODE, u8) = 2;
                 FI(f, 0x1AD5B4, u32) = 0x3C0EFA35;   /* 0.5 degrees */
-                func_002E3190(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
+                Mtx_TurnY(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
             }
         }
         func_002E2DA0(v, rot, n);
@@ -3525,7 +3525,7 @@ void func_00187650(Fiona *f) {
     }
     switch (how) {
     case 3:
-        func_002E3190(rot, FI(f, FMOVE_CAMYAW, f32));
+        Mtx_TurnY(rot, FI(f, FMOVE_CAMYAW, f32));
         func_002E2DA0(v, rot, n);
         func_0010E640(&FI(f, FMOVE_DIR, f32), v, -1.0f);
         break;
@@ -3541,7 +3541,7 @@ void func_00187650(Fiona *f) {
         sceVu0ApplyMatrix(&FI(f, FMOVE_DIR, f32), f->c.a.rot, v);
         break;
     case 0:
-        func_002E3190(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
+        Mtx_TurnY(rot, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
         func_002E2DA0(v, rot, n);
         func_0010E640(&FI(f, FMOVE_DIR, f32), v, -1.0f);
         break;
@@ -3784,7 +3784,7 @@ void func_00186180(Fiona *f) {
             yaw = 0.0f;
         } else {
             VCALL(c->motion, 0x60, void (*)(void *, f32 *))(c->motion, &FI(f, FLOOK_POINT, f32));
-            func_002DD110(f->c.motion, &FI(f, FLOOK_POINT, f32), &pitch, &yaw);
+            Motion_LookAt(f->c.motion, &FI(f, FLOOK_POINT, f32), &pitch, &yaw);
             if (!(pitch <= kPitchMax.f)) {
                 pitch = kPitchMax.f;
             }
@@ -3840,7 +3840,7 @@ void func_00181F20(Fiona *f) {
     if (f->c.unk14D0 != 0 && f->c.unk14D0 != 5) {
         return;
     }
-    if ((u8)func_001F4770(f->c.motion, 0, 0, 1) & 1) {
+    if ((u8)Motion_EventFlags(f->c.motion, 0, 0, 1) & 1) {
         switch (AT(f->c.motion, 0x55C, s32)) {
         case 1:
             if (f->c.moveMode == 0xD) {
@@ -3880,7 +3880,7 @@ void func_00181F20(Fiona *f) {
         }
         }
     }
-    if ((u8)func_001F4770(f->c.motion, 0, 0, 1) & 0x10) {
+    if ((u8)Motion_EventFlags(f->c.motion, 0, 0, 1) & 0x10) {
         switch (AT(f->c.motion, 0x55C, s32)) {
         case 0x403:
             Actor_PlaySound(&f->c.a, 0xF, 5, 0, 0, NULL);
@@ -3959,12 +3959,12 @@ void func_001869D0(Fiona *f) {
     if ((u8)Progress_TestFlag(p, 8) == 1) {
         return;
     }
-    l = (u8)func_002DD420(f->c.motion, left, 1, 0.0f, 1.0f);
-    r = (u8)func_002DD420(f->c.motion, right, 0, 0.0f, 1.0f);
+    l = (u8)Motion_FootPos(f->c.motion, left, 1, 0.0f, 1.0f);
+    r = (u8)Motion_FootPos(f->c.motion, right, 0, 0.0f, 1.0f);
     if (fiona_motion_kind(AT(f->c.motion, 0x55C, s32)) == 0) {
         if (AT(f->c.motion, 0x554, s32) != -1 && !(AT(f->c.motion, 0x550, f32) <= 0.0f)) {
-            l = (u8)func_002DD860(f->c.motion, 1, 0.0f);
-            r = (u8)func_002DD860(f->c.motion, 0, 0.0f);
+            l = (u8)Motion_FootDownPrev(f->c.motion, 1, 0.0f);
+            r = (u8)Motion_FootDownPrev(f->c.motion, 0, 0.0f);
         } else {
             l = 1;
             r = 1;
@@ -4076,7 +4076,7 @@ void func_001869D0(Fiona *f) {
     }
     base += FI(f, FSTEP_COUNT, s32) & 3;
     FI(f, FSTEP_COUNT, s32)++;
-    func_001F6370(f->c.motion, speed, 0.0f);
+    Motion_RootMovement(f->c.motion, speed, 0.0f);
     x = (speed[2] - k04.f) / k07.f;
     if (x < 0.0f) {
         x = 0.0f;
@@ -4183,7 +4183,7 @@ s32 func_00188280(Fiona *f, s32 pick, f32 reach) {
     d[0] = 0.0f;
     d[1] = 0.0f;
     d[2] = 1.0f;
-    func_002E3190(m, ang);
+    Mtx_TurnY(m, ang);
     func_002E2DA0(FIONA_STICK(f), m, d);
     FI(f, 0x1AD574, f32) = 0.0f;
     FIONA_PUSH_OBJ(f) = -1;
@@ -4218,7 +4218,7 @@ void func_00185FC0(Fiona *f) {
     yaw = 0.0f;
     pitch = 0.0f;
     if (FI(f, FLOOK_ON, u8) == 1) {
-        func_002DD110(f->c.motion, (f32 *)((u8 *)f + FLOOK_POINT), &pitch, &yaw);
+        Motion_LookAt(f->c.motion, (f32 *)((u8 *)f + FLOOK_POINT), &pitch, &yaw);
         if (!(pitch <= kUp.f)) {
             pitch = kUp.f;
         }
@@ -4257,7 +4257,7 @@ void func_00188960(Fiona *f) {
         sceVu0SubVector(d, (f32 *)(a + 0x10), (f32 *)(pu + 0x10));
         dist = __builtin_sqrtf(__builtin_fabsf(d[2] * d[2] + d[0] * d[0]));
         rsum = AT(a, 0xC8, f32) + AT(gCharPursuer, 0xC8, f32);
-        func_001F6370(AT(gCharPursuer, 0xF0, u8 *), v, 0.0f);
+        Motion_RootMovement(AT(gCharPursuer, 0xF0, u8 *), v, 0.0f);
         along = 0;
         if (!(v[2] <= 0.0f)) {
             sceVu0CopyMatrix(m, (f32 (*)[4])((u8 *)gCharPursuer + 0x60));
@@ -4332,7 +4332,7 @@ void func_00185CF0(Fiona *f) {
             change = 1;
         }
         if (change == 1) {
-            func_002DDED0(f->c.motion, base, 0x204);
+            Motion_PlayTable(f->c.motion, base, 0x204);
         }
         m = f->c.motion;
         AT(AT(m, 0x6A4, u8 *), 0x1C, f32) = b;
@@ -4352,7 +4352,7 @@ void func_00185CF0(Fiona *f) {
             change = 1;
         }
         if (change == 1) {
-            func_002DDED0(f->c.motion, base, 0x201);
+            Motion_PlayTable(f->c.motion, base, 0x201);
         }
         m = f->c.motion;
         AT(AT(m, 0x6A4, u8 *), 0x1C, f32) = a;
@@ -4360,7 +4360,7 @@ void func_00185CF0(Fiona *f) {
         return;
     }
     if (!(cur == base && next == -1)) {
-        func_002DDED0(f->c.motion, base, -1);
+        Motion_PlayTable(f->c.motion, base, -1);
     }
     AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = 1.0f;
 }
@@ -4379,10 +4379,10 @@ void func_0018A5D0(Fiona *f) {
             func_001855F0(f, -1);
         } else if (func_002E2D00(FI(f, 0x1AD5E0, f32) - AT(f, 0x54, f32)) < 0.0f) {
             if (AT(f->c.motion, 0x55C, s32) != 0x400) {
-                func_002DDED0(f->c.motion, 0x400, -1);
+                Motion_PlayTable(f->c.motion, 0x400, -1);
             }
         } else if (AT(f->c.motion, 0x55C, s32) != 0x401) {
-            func_002DDED0(f->c.motion, 0x401, -1);
+            Motion_PlayTable(f->c.motion, 0x401, -1);
         }
     }
     Actor_SetState(&f->c.a, &D_003B2DC8);
@@ -4447,7 +4447,7 @@ void func_00185310(Fiona *f) {
     cur = AT(f->c.motion, 0x55C, s32);
     if (FI(f, 0x1AD584, s32) & 2) {
         if (cur != 0x206) {
-            func_002DDED0(f->c.motion, 0x206, -1);
+            Motion_PlayTable(f->c.motion, 0x206, -1);
             AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = 1.0f;
         }
         return;
@@ -4468,7 +4468,7 @@ void func_00185310(Fiona *f) {
             change = 1;
         }
         if (change == 1) {
-            func_002DDED0(f->c.motion, 0x202, 0x205);
+            Motion_PlayTable(f->c.motion, 0x202, 0x205);
         }
         AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = b;
         FI(f, FWALK_BLEND, f32) = b;
@@ -4487,14 +4487,14 @@ void func_00185310(Fiona *f) {
             change = 1;
         }
         if (change == 1) {
-            func_002DDED0(f->c.motion, 0x202, 0x203);
+            Motion_PlayTable(f->c.motion, 0x202, 0x203);
         }
         AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = a;
         FI(f, FWALK_BLEND, f32) = a;
         return;
     }
     if (!(cur == 0x202 && next == -1)) {
-        func_002DDED0(f->c.motion, 0x202, -1);
+        Motion_PlayTable(f->c.motion, 0x202, -1);
     }
     AT(AT(f->c.motion, 0x6A4, u8 *), 0x1C, f32) = 1.0f;
 }
@@ -4514,38 +4514,38 @@ extern const PTMF D_003B2C18;
 void func_00184570(Fiona *f) {
     if ((u8)Progress_TestFlag(gProgress, 0x25) != 0) {
         if (VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.5f) {
-            func_002DDED0(f->c.motion, 1, -1);
+            Motion_PlayTable(f->c.motion, 1, -1);
         } else {
-            func_002DDED0(f->c.motion, 0xC02, -1);
+            Motion_PlayTable(f->c.motion, 0xC02, -1);
         }
         return;
     }
     switch (f->c.moveSub) {
     case 0x29:
     case 0x2F:
-        func_002DDED0(f->c.motion, 0xC02, -1);
+        Motion_PlayTable(f->c.motion, 0xC02, -1);
         break;
     case 0x2E:
-        func_002DDED0(f->c.motion, 0xC0E, -1);
+        Motion_PlayTable(f->c.motion, 0xC0E, -1);
         break;
     case 0x23:
-        func_002DDED0(f->c.motion, 0xC04, -1);
+        Motion_PlayTable(f->c.motion, 0xC04, -1);
         break;
     case 0x24:
-        func_002DDED0(f->c.motion, 0xC06, -1);
+        Motion_PlayTable(f->c.motion, 0xC06, -1);
         break;
     case 0x2C:
-        func_002DDED0(f->c.motion, 0xC02, -1);
+        Motion_PlayTable(f->c.motion, 0xC02, -1);
         break;
     case 0x2A:
-        func_002DDED0(f->c.motion, 0xC0A, -1);
+        Motion_PlayTable(f->c.motion, 0xC0A, -1);
         break;
     case 0x25:
     case 0x27:
-        func_002DDED0(f->c.motion, 0xC03, -1);
+        Motion_PlayTable(f->c.motion, 0xC03, -1);
         break;
     case 0x2D:
-        func_002DDED0(f->c.motion, 0xC00, -1);
+        Motion_PlayTable(f->c.motion, 0xC00, -1);
         break;
     }
 }
@@ -4559,13 +4559,13 @@ void func_0018F580(Fiona *f) {
         FI(f, 0x1AD5FC, u8) = 1;
         FI(f, 0x1AD600, Character *) = FI(f, 0x1AD664, Character *);
     }
-    if ((u8)func_001F4770(f->c.motion, 0, 0, 1) & 2) {
+    if ((u8)Motion_EventFlags(f->c.motion, 0, 0, 1) & 2) {
         func_00183F10(f);
     }
     m = f->c.motion;
     if ((MOTION_EVENTS(m) & 0x20) != 0) {
         if (*(s32 *)((u8 *)m + 0x55C) == 0xC0E) {
-            func_002DDE20(m, 0xC0F, -1);
+            Motion_Play(m, 0xC0F, -1);
             return;
         }
         Fiona_ToIdle(f);
@@ -4813,7 +4813,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
     }
     f->targetParam = 0;
     f->c.unk14D0 = 0;
-    func_001F6E10(f->c.motion);
+    Motion_Unfreeze(f->c.motion);
     f->c.a.unk2D = 1;
     func_00184BF0(f);
     f->c.unk100 = st[2];
@@ -4987,7 +4987,7 @@ void func_0018BFC0(Fiona *f) {
         return;
     }
     if (AT(m, 0x55C, s32) != 0x1405 && AT(m, 0x55C, s32) != 0x1406) {
-        func_002DDED0(m, 0x1405, -1);
+        Motion_PlayTable(m, 0x1405, -1);
     }
     Actor_SetState(&f->c.a, &D_003B2D38);
 }
@@ -5007,17 +5007,17 @@ void func_0018BA70(Fiona *f) {
         aa = a <= 0.0f ? -a : a;
         if (FI(f, 0x1AD6C0, s32) == 0) {
             Actor_PlaySound(&f->c.a, 0x3F, 5, 0, 0, NULL);
-            func_002DDED0(f->c.motion, 0x100F, -1);
+            Motion_PlayTable(f->c.motion, 0x100F, -1);
         } else {
             Actor_PlaySound(&f->c.a, 0x3F, 5, 0, 0, NULL);
             if (aa < 0x1.0c1524p+0f /* 60 deg */) {
-                func_002DDED0(f->c.motion, 0x1004, -1);
+                Motion_PlayTable(f->c.motion, 0x1004, -1);
             } else if (!(aa <= 0x1.0c1524p+1f /* 120 deg */)) {
-                func_002DDED0(f->c.motion, 0x1005, -1);
+                Motion_PlayTable(f->c.motion, 0x1005, -1);
             } else if (a < 0.0f) {
-                func_002DDED0(f->c.motion, 0x1007, -1);
+                Motion_PlayTable(f->c.motion, 0x1007, -1);
             } else {
-                func_002DDED0(f->c.motion, 0x1006, -1);
+                Motion_PlayTable(f->c.motion, 0x1006, -1);
             }
         }
         func_002A8440((u8 *)p + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
@@ -5037,20 +5037,20 @@ void func_00194230(Fiona *f) {
         Actor_PlaySound(&f->c.a, 0x43, 5, 0, 0, NULL);
         switch (f->c.unk104[0]) {
         case 4:
-            func_002DDED0(f->c.motion, 0xF05, -1);
+            Motion_PlayTable(f->c.motion, 0xF05, -1);
             break;
         case 1:
             FI(f, 0x1AD5FC, u8) = 1;
-            func_002DDED0(f->c.motion, 0xF02, -1);
+            Motion_PlayTable(f->c.motion, 0xF02, -1);
             break;
         case 2:
-            func_002DDED0(f->c.motion, 0xF04, -1);
+            Motion_PlayTable(f->c.motion, 0xF04, -1);
             break;
         case 3:
             if (f->target != NULL) {
                 FI(f, 0x1AD5FC, u8) = 1;
             }
-            func_002DDED0(f->c.motion, 0xF03, -1);
+            Motion_PlayTable(f->c.motion, 0xF03, -1);
             break;
         }
         Actor_SetState(&f->c.a, &D_003B2998);
@@ -5078,11 +5078,11 @@ void func_00193E90(Fiona *f) {
     if (d[1] < 20.0f) {
         FI(f, 0x1AD6C4, s32) = 0;
         f->c.moveMode = 0xB;
-        func_002DDED0(f->c.motion, 0xF02, -1);
+        Motion_PlayTable(f->c.motion, 0xF02, -1);
         Actor_PlaySound(&f->c.a, 0x3F, 5, 0, 0, NULL);
     } else {
         FI(f, 0x1AD6C4, s32) = 1;
-        func_002DDED0(f->c.motion, 0x70A, -1);
+        Motion_PlayTable(f->c.motion, 0x70A, -1);
         Actor_PlaySound(&f->c.a, 0x40, 5, 0, 0, NULL);
     }
     y = d[1];
@@ -5197,7 +5197,7 @@ static inline __attribute__((always_inline)) void pull_back_move(Fiona *f) {
         f32 d[4] __attribute__((aligned(16)));
         f32 r[4][4] __attribute__((aligned(16)));
 
-        func_001F6370(f->c.motion, d, 0.0f);
+        Motion_RootMovement(f->c.motion, d, 0.0f);
         sceVu0UnitMatrix(r);
         sceVu0RotMatrixY(r, r, FI(f, 0x1AD6D0, f32));
         sceVu0ApplyMatrix(d, r, d);
@@ -5229,14 +5229,14 @@ void func_00190380(Fiona *f) {
     m = f->c.motion;
     cur = AT(m, 0x55C, s32);
     if (cur == 0x100D) {
-        if (!(func_001F4770(m, 0, 0, 1) & 0xFF & 2)) {
+        if (!(Motion_EventFlags(m, 0, 0, 1) & 0xFF & 2)) {
             done = 1;
-            func_002DDED0(f->c.motion, 0x1503, -1);
+            Motion_PlayTable(f->c.motion, 0x1503, -1);
         }
     } else if (cur == 0x100A || cur == 0xB02 || cur == 0xB01) {
-        if (!(func_001F4770(m, 0, 0, 1) & 0xFF & 2)) {
+        if (!(Motion_EventFlags(m, 0, 0, 1) & 0xFF & 2)) {
             done = 1;
-            func_002DDED0(f->c.motion, 0xB03, -1);
+            Motion_PlayTable(f->c.motion, 0xB03, -1);
         }
     }
     if (done == 0) {
@@ -5244,7 +5244,7 @@ void func_00190380(Fiona *f) {
         FI(f, 0x1AD6C4, s32) = -1;
         FI(f, 0x1AD6D0, f32) = f->c.a.angle[1];
         if (!(Actor_TriFreeFor(f, &f->c.a) & 0xFF)) {
-            func_002DDED0(f->c.motion, 0x1100, -1);
+            Motion_PlayTable(f->c.motion, 0x1100, -1);
         } else {
             f32 v[4] __attribute__((aligned(16)));
 
@@ -5254,10 +5254,10 @@ void func_00190380(Fiona *f) {
             func_002E2DA0(v, f->c.a.rot, v);
             sceVu0AddVector(v, v, f->c.a.pos);
             if (Actor_TriTo(&f->c.a, v, 0x80001) == (u32)-1) {
-                func_002DDED0(f->c.motion, 0x1100, -1);
+                Motion_PlayTable(f->c.motion, 0x1100, -1);
             } else {
                 back = 1;
-                func_002DDED0(f->c.motion, 0x1101, -1);
+                Motion_PlayTable(f->c.motion, 0x1101, -1);
             }
         }
     }
@@ -5302,16 +5302,16 @@ void func_00191800(Fiona *f) {
         }
         if (aa < kHalfPi.f) {
             FI(f, 0x1AD6C8, s32) = 0;
-            func_002DDED0(f->c.motion, 0x1008, -1);
+            Motion_PlayTable(f->c.motion, 0x1008, -1);
         } else {
             FI(f, 0x1AD6C8, s32) = 1;
             FI(f, 0x1AD6D0, f32) = func_002E2D00(kPi.f + FI(f, 0x1AD6D0, f32));
             if (FI(f, 0x1AD584, s32) & 2) {
                 FI(f, 0x1AD6C4, s32) = -1;
                 f->c.a.angle[1] = FI(f, 0x1AD6D0, f32);
-                func_002DDED0(f->c.motion, 0xB04, -1);
+                Motion_PlayTable(f->c.motion, 0xB04, -1);
             } else {
-                func_002DDED0(f->c.motion, 0x100B, -1);
+                Motion_PlayTable(f->c.motion, 0x100B, -1);
             }
         }
         if (FI(f, 0x1AD584, s32) & 2) {
@@ -5359,16 +5359,16 @@ void func_00190FA0(Fiona *f) {
     if (aa < kHalfPi.f) {
         FI(f, 0x1AD6C8, s32) = 0;
         FI(f, 0x1AD6D0, f32) = a;
-        func_002DDE20(f->c.motion, 0x1008, -1);
+        Motion_Play(f->c.motion, 0x1008, -1);
     } else {
         FI(f, 0x1AD6C8, s32) = 1;
         FI(f, 0x1AD6D0, f32) = func_002E2D00(kPi.f + a);
         if (FI(f, 0x1AD584, s32) & 2) {
             FI(f, 0x1AD6C4, s32) = -1;
             f->c.a.angle[1] = FI(f, 0x1AD6D0, f32);
-            func_002DDE20(f->c.motion, 0xB04, -1);
+            Motion_Play(f->c.motion, 0xB04, -1);
         } else {
-            func_002DDE20(f->c.motion, 0x100B, -1);
+            Motion_Play(f->c.motion, 0x100B, -1);
         }
     }
     FI(f, 0x1AD6C0, s32) = -1;
@@ -5394,13 +5394,13 @@ extern const PTMF D_003B2B18;
  * `front` + 1, left / right `front` + 3 / + 2 */
 static inline __attribute__((always_inline)) void fall_by_side(Fiona *f, f32 aa, f32 a, s32 front) {
     if (aa < 0x1.0c1524p+0f /* 60 deg */) {
-        func_002DDED0(f->c.motion, front, -1);
+        Motion_PlayTable(f->c.motion, front, -1);
     } else if (!(aa <= 0x1.0c1524p+1f /* 120 deg */)) {
-        func_002DDED0(f->c.motion, front + 1, -1);
+        Motion_PlayTable(f->c.motion, front + 1, -1);
     } else if (a < 0.0f) {
-        func_002DDED0(f->c.motion, front + 3, -1);
+        Motion_PlayTable(f->c.motion, front + 3, -1);
     } else {
-        func_002DDED0(f->c.motion, front + 2, -1);
+        Motion_PlayTable(f->c.motion, front + 2, -1);
     }
 }
 
@@ -5435,7 +5435,7 @@ void func_00190B50(Fiona *f) {
         switch (f->c.moveSub) {
         case 0xC:
             Actor_PlaySound(&f->c.a, 0x3E, 5, 0, 0, NULL);
-            func_002DDED0(f->c.motion, 0x100E, -1);
+            Motion_PlayTable(f->c.motion, 0x100E, -1);
             func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
             break;
         case 0xE:
@@ -5445,7 +5445,7 @@ void func_00190B50(Fiona *f) {
             break;
         case 0xD:
             Actor_PlaySound(&f->c.a, 0x3F, 5, 0, 0, NULL);
-            func_002DDED0(f->c.motion, 0x100F, -1);
+            Motion_PlayTable(f->c.motion, 0x100F, -1);
             func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
             break;
         case 0xF:
@@ -5490,7 +5490,7 @@ static inline __attribute__((always_inline)) void led_away(Fiona *f, s32 anim, c
         FI(f, 0x1AD6D0, f32) = 0x1.99999ap-3f /* 0.2 */ *
             VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
                 gSceneGameF29740, f->c.a.pos, f->c.unk128, f->c.unk124, f->c.unk12C);
-        func_002DDD20(f->c.motion, anim, -1);
+        Motion_PlayOwnBlend(f->c.motion, anim, -1);
         FI(f, 0x1AD6D8, f32) = FI(f, 0x10C, f32);
         a = func_002E2D00(FI(f, 0x10C, f32) - f->c.a.angle[1]);
         FI(f, 0x1AD6DC, f32) = 0x1.99999ap-3f /* 0.2 */ * (a <= 0.0f ? -a : a);
@@ -5604,7 +5604,7 @@ void func_00193C60(Fiona *f) {
     if (FI(f, 0x1AD6C0, s32) != 0) {
         if (FI(f, 0x1AD6C4, s32) != 0 && AT(f->c.motion, 0x55C, s32) != 0x70B &&
             (MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
-            func_002DDED0(f->c.motion, 0x70B, -1);
+            Motion_PlayTable(f->c.motion, 0x70B, -1);
         }
         f->c.a.pos[0] = f->c.a.pos[0] - FI(f, 0x1AD6D0, f32);
         f->c.a.pos[1] = f->c.a.pos[1] - FI(f, 0x1AD6D4, f32);
@@ -5717,13 +5717,13 @@ void func_0018BCC0(Fiona *f) {
             if (held == 0) {
                 f->c.a.unk2D = 1;
                 f->c.moveMode = 0;
-                func_002DDE20(f->c.motion, 0x1407, -1);
+                Motion_Play(f->c.motion, 0x1407, -1);
             }
         }
         break;
     case 0x1405:
         if ((MOTION_EVENTS(m) & 0x20) != 0) {
-            func_002DDE20(m, 0x1406, -1);
+            Motion_Play(m, 0x1406, -1);
         }
         break;
     }
@@ -5735,7 +5735,7 @@ extern const PTMF D_003B2AC8, D_003B2AD8, D_003B2AE8, D_003B2AF8;
 static inline __attribute__((always_inline)) void floored(Fiona *f, const PTMF *next) {
     f->c.a.unk2D = 0;
     FI(f, 0x1AD6C0, s32) = 0;
-    func_002DDED0(f->c.motion, 0xB01, -1);
+    Motion_PlayTable(f->c.motion, 0xB01, -1);
     f->c.moveMode = 0xA;
     f->unk1AD580 = 0xB;
     FI(f, 0x1AD710, u8) = 1;
@@ -5758,7 +5758,7 @@ void func_001913F0(Fiona *f) {
             if (cur == 0x1008) {
                 if (!(FI(f, 0x1AD584, s32) & 2)) {
                     f->c.a.unk2D = 1;
-                    func_002DDE20(f->c.motion, 0x100A, -1);
+                    Motion_Play(f->c.motion, 0x100A, -1);
                     Actor_SetState(&f->c.a, &D_003B2AC8);
                 } else {
                     floored(f, &D_003B2AD8);
@@ -5768,7 +5768,7 @@ void func_001913F0(Fiona *f) {
             floored(f, &D_003B2AF8);
         } else if (cur == 0x100B) {
             f->c.a.unk2D = 1;
-            func_002DDE20(f->c.motion, 0x100D, -1);
+            Motion_Play(f->c.motion, 0x100D, -1);
             Actor_SetState(&f->c.a, &D_003B2AE8);
         }
     }
@@ -5798,7 +5798,7 @@ extern const PTMF D_003B29D8;
 void func_00193BB0(Fiona *f) {
     FI(f, 0x1AD5BC, u8) = 0;
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
-        func_002DDED0(f->c.motion, 0x70C, -1);
+        Motion_PlayTable(f->c.motion, 0x70C, -1);
         Actor_SetState(&f->c.a, &D_003B29D8);
     }
 }
@@ -5857,7 +5857,7 @@ void func_00193900(Fiona *f) {
 void func_00193B10(Fiona *f) {
     FI(f, 0x1AD5BC, u8) = 0;
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
-        func_002DDE20(f->c.motion, 0x100D, -1);
+        Motion_Play(f->c.motion, 0x100D, -1);
         Actor_SetState(&f->c.a, &D_003B29E8);
     }
     Character_RootMoveMasked(&f->c);
@@ -5936,7 +5936,7 @@ void func_00192F70(Fiona *f) {
         Fiona_ToIdle(f);
         return;
     }
-    if (func_001F4770(f->c.motion, 0, 0, 1) & 0xFF & 2) {
+    if (Motion_EventFlags(f->c.motion, 0, 0, 1) & 0xFF & 2) {
         VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0x60, 8);
     }
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
@@ -5997,13 +5997,13 @@ void func_00192CE0(Fiona *f) {
         return;
     }
     if (c->moveMode != 8) {
-        func_002DDED0(f->c.motion, 0xF02, -1);
+        Motion_PlayTable(f->c.motion, 0xF02, -1);
         Actor_SetState(&f->c.a, &D_003B2A18);
     } else if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
-        func_002DDE20(f->c.motion, 0x1401, -1);
+        Motion_Play(f->c.motion, 0x1401, -1);
         Actor_SetState(&f->c.a, &D_003B2A28);
     }
-    if (func_001F4770(f->c.motion, 0, 0, 1) & 0xFF & 2) {
+    if (Motion_EventFlags(f->c.motion, 0, 0, 1) & 0xFF & 2) {
         VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0x60, 8);
     }
     Character_RootMoveMasked(&f->c);
@@ -6027,13 +6027,13 @@ void func_00192800(Fiona *f) {
     Character *c;
 
     f->c.a.unk2A = 1;
-    if (func_001F4770(f->c.motion, 0, 0, 1) & 0xFF & 2) {
+    if (Motion_EventFlags(f->c.motion, 0, 0, 1) & 0xFF & 2) {
         VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0x60, 8);
     }
     FI(f, 0x1AD5BC, u8) = 0;
     c = gCharacters[f->c.unk100];
     if (c == NULL || c->a.active == 0 || c->a.disabled == 1) {
-        func_002DDED0(f->c.motion, 0xF02, -1);
+        Motion_PlayTable(f->c.motion, 0xF02, -1);
         Actor_SetState(&f->c.a, &D_003B2A38);
         return;
     }
@@ -6047,11 +6047,11 @@ void func_00192800(Fiona *f) {
         }
     }
     if (c->moveMode != 8) {
-        func_002DDED0(f->c.motion, 0xF02, -1);
+        Motion_PlayTable(f->c.motion, 0xF02, -1);
         Actor_SetState(&f->c.a, &D_003B2A48);
     } else if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         if (FI(f, 0x1AD6C0, s32) != 0) {
-            func_002DDE20(f->c.motion, 0x1403, -1);
+            Motion_Play(f->c.motion, 0x1403, -1);
             Actor_SetState(&f->c.a, &D_003B2A58);
         } else {
             FI(f, 0x1AD6CC, s32) = FI(f, 0x1AD6CC, s32) + 1;
@@ -6059,10 +6059,10 @@ void func_00192800(Fiona *f) {
                 if (AT(gProgress, 0x1FBEC1, u8) == 0) {
                     Progress_SetFlag(gProgress, 0x2B);
                 }
-                func_002DDE20(f->c.motion, 0x1404, -1);
+                Motion_Play(f->c.motion, 0x1404, -1);
                 Actor_SetState(&f->c.a, &D_003B2A68);
             } else {
-                func_002DDE20(f->c.motion, 0x1401, -1);
+                Motion_Play(f->c.motion, 0x1401, -1);
                 if (AT(gProgress, 0x1FBEC1, u8) == 1 &&
                     VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) < 0.25f) {
                     Actor_PlaySound(&f->c.a, 0x38, 5, 0, 0, NULL);
@@ -6109,12 +6109,12 @@ void func_001924F0(Fiona *f) {
     FI(f, 0x1AD5BC, u8) = 0;
     c = gCharacters[f->c.unk100];
     if (c == NULL || c->a.active == 0 || c->a.disabled == 1) {
-        func_002DDED0(f->c.motion, 0xF02, -1);
+        Motion_PlayTable(f->c.motion, 0xF02, -1);
         Actor_SetState(&f->c.a, &D_003B2A78);
         return;
     }
     if (c->moveMode != 8) {
-        func_002DDED0(f->c.motion, 0xF02, -1);
+        Motion_PlayTable(f->c.motion, 0xF02, -1);
         Actor_SetState(&f->c.a, &D_003B2A88);
     } else if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0 && AT(f->c.motion, 0x55C, s32) == 0x1404 &&
                !(Progress_TestFlag(gProgress, 0x2C) & 0xFF)) {
@@ -6350,9 +6350,9 @@ static inline __attribute__((always_inline)) void walk_turn_anim(Fiona *f, s32 a
                 f->c.moveSub = 1;
             }
             if ((Progress_GameMode(gProgress) & 0xFF) == 2) {
-                func_002DDD20(f->c.motion, anim, 5);
+                Motion_PlayOwnBlend(f->c.motion, anim, 5);
             } else {
-                func_002DDD20(f->c.motion, anim, 0);
+                Motion_PlayOwnBlend(f->c.motion, anim, 0);
             }
             AT(MOTION_PTR(f->c.motion, 0x6A4), 0x1C, f32) = 0.5f;
             WALK_ANIM_SPEED(f) = WALK_ANIM_SPEED(f) * 2.0f;
@@ -6362,9 +6362,9 @@ static inline __attribute__((always_inline)) void walk_turn_anim(Fiona *f, s32 a
                 f->c.moveSub = 1;
             }
             if ((Progress_GameMode(gProgress) & 0xFF) == 2) {
-                func_002DDD20(f->c.motion, anim, 5);
+                Motion_PlayOwnBlend(f->c.motion, anim, 5);
             } else {
-                func_002DDD20(f->c.motion, anim, 0);
+                Motion_PlayOwnBlend(f->c.motion, anim, 0);
             }
             AT(MOTION_PTR(f->c.motion, 0x6A4), 0x1C, f32) = k;
         }
@@ -6373,9 +6373,9 @@ static inline __attribute__((always_inline)) void walk_turn_anim(Fiona *f, s32 a
             f->c.moveSub = 1;
         }
         if ((Progress_GameMode(gProgress) & 0xFF) == 2) {
-            func_002DDD20(f->c.motion, anim, 5);
+            Motion_PlayOwnBlend(f->c.motion, anim, 5);
         } else {
-            func_002DDD20(f->c.motion, anim, 0);
+            Motion_PlayOwnBlend(f->c.motion, anim, 0);
         }
         AT(MOTION_PTR(f->c.motion, 0x6A4), 0x1C, f32) = 1.0f;
         WALK_FLAGS(f) |= 0x100;
@@ -6473,7 +6473,7 @@ s32 func_00188C10(Fiona *f) {
         }
         Character_WaypointAhead(&f->c, &aheadTri, ahead, 3.0f);
         yaw = Actor_HeadingTo(&f->c.a, ahead);
-        func_001F6370(f->c.motion, v, 0.0f);
+        Motion_RootMovement(f->c.motion, v, 0.0f);
         fwd = v[2];
         if (fwd < 0.0f) {
             fwd = 0.0f;
@@ -6531,7 +6531,7 @@ s32 func_00188C10(Fiona *f) {
         /* turning on the way: the step is the turn's root motion */
         WALK_STEP(f) = 0.0f;
         if (door_anim_done(f)) {
-            func_001F6370(f->c.motion, out, 0.0f);
+            Motion_RootMovement(f->c.motion, out, 0.0f);
             if (WALK_FLAGS(f) & 2) {
                 t = out[0];
             } else {
@@ -6613,9 +6613,9 @@ step:
         }
         if (Fiona_AnimGroup(AT(f->c.motion, 0x55C, s32)) != 0) {
             if ((Progress_GameMode(gProgress) & 0xFF) == 2) {
-                func_002DDC60(f->c.motion, 5, 5, -1);
+                Motion_PlayBlend(f->c.motion, 5, 5, -1);
             } else {
-                func_002DDC60(f->c.motion, 0, 5, -1);
+                Motion_PlayBlend(f->c.motion, 0, 5, -1);
             }
         }
         return 1;
@@ -6678,7 +6678,7 @@ void func_00196FC0(Fiona *f) {
     } else {
         VCALL(gDoors, 0x1C, void (*)(VObject *, u32, s32, s32))(gDoors, *(u8 *)&f->c.unk100, 0, 0x20000);
     }
-    func_002DDD20(f->c.motion, FI(f, 0x1AD6CC, s32), -1);
+    Motion_PlayOwnBlend(f->c.motion, FI(f, 0x1AD6CC, s32), -1);
     f->c.a.unk2B = 1;
     f->c.a.unk2A = 1;
     Actor_SetState(&f->c.a, &D_003B28F8);
@@ -6798,7 +6798,7 @@ void func_001967D0(Fiona *f) {
         d = -func_002E2D00(FI(f, 0x1AD65C, f32) - f->c.a.angle[1]);
     }
     FI(f, 0x1AD6D4, f32) = kSeventh.f * d;
-    func_002DDD20(f->c.motion, FI(f, 0x1AD6CC, s32), -1);
+    Motion_PlayOwnBlend(f->c.motion, FI(f, 0x1AD6CC, s32), -1);
     Actor_SetState(&f->c.a, &D_003B2918);
 }
 
@@ -6813,7 +6813,7 @@ void func_001964C0(Fiona *f) {
     if (r != 0) {
         return;
     }
-    func_002DDD20(f->c.motion, FI(f, 0x1AD6CC, s32), -1);
+    Motion_PlayOwnBlend(f->c.motion, FI(f, 0x1AD6CC, s32), -1);
     Actor_SetState(&f->c.a, &D_003B2938);
 }
 
@@ -6911,7 +6911,7 @@ static inline __attribute__((always_inline)) void script_anim_keep(Fiona *f, s32
                 }
             }
         } else if (AT(f->c.motion, 0x55C, s32) != a) {
-            func_002DDED0(f->c.motion, a, -1);
+            Motion_PlayTable(f->c.motion, a, -1);
         }
     }
 }
@@ -6930,7 +6930,7 @@ void func_0018A950(Fiona *f) {
     script_anim_keep(f, 0x14);
     d = VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(
         gSceneGameF29740, f->c.a.pos, f->c.unk128, f->c.unk124, f->c.unk12C);
-    func_001F6370(f->c.motion, root, 0.0f);
+    Motion_RootMovement(f->c.motion, root, 0.0f);
     Character_WaypointAhead(&f->c, &tri, at, 3.0f);
     turn = Actor_TurnToward(&f->c.a, Actor_HeadingTo(&f->c.a, at), kTenDeg.f);
     if (root[2] < 0.0f) {
@@ -6945,7 +6945,7 @@ void func_0018A950(Fiona *f) {
     if (f->c.unk128 < f->c.unk124) {
         return;
     }
-    func_001F6370(f->c.motion, root, 0.0f);
+    Motion_RootMovement(f->c.motion, root, 0.0f);
     if (d < root[2]) {
         root[0] = 0.0f;
         root[1] = 0.0f;
@@ -7010,7 +7010,7 @@ void func_0018B190(Fiona *f) {
     u32 tri;
     s32 n;
 
-    func_001F6370(f->c.motion, root, 0.0f);
+    Motion_RootMovement(f->c.motion, root, 0.0f);
     Character_WaypointAhead(&f->c, &tri, at, 3.0f);
     turn = Actor_TurnToward(&f->c.a, Actor_HeadingTo(&f->c.a, at), kTenDeg.f);
     if (root[2] < 0.0f) {
@@ -7064,7 +7064,7 @@ void func_0018C080(Fiona *f) {
     }
     if (door_anim_done(f) && AT(f->c.motion, 0x55C, s32) != 2) {
         Actor_PlaySound(&f->c.a, 0x44, 5, 0, 0, NULL);
-        func_002DDED0(f->c.motion, 2, -1);
+        Motion_PlayTable(f->c.motion, 2, -1);
     }
     Character_RootMoveMasked(&f->c);
 }
@@ -7576,7 +7576,7 @@ static inline __attribute__((always_inline)) f32 fiona_abs_wrap(f32 t) {
  * right behind it */
 static inline __attribute__((always_inline)) void door_slam(Fiona *f, VObject *doors, u32 i, s32 pulled) {
     f->c.unk14D0 = 5;
-    func_001F6E30(f->c.motion);
+    Motion_Freeze(f->c.motion);
     VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0x90, 8);
     VCALL(doors, 0x68, void (*)(VObject *, u32, s32))(doors, i, pulled);
 }
@@ -7962,14 +7962,14 @@ void func_0018C240(Fiona *f) {
         door_give_up(f, gProgress);
         return;
     }
-    if ((func_001F4770(f->c.motion, 0, 0, 1) & 0xFF) & 2) {
+    if ((Motion_EventFlags(f->c.motion, 0, 0, 1) & 0xFF) & 2) {
         f->c.moveMode = 0;
         f->c.a.unk2D = 0;
         if ((Progress_GetVar(gProgress, 0x26) & 0xFF) != 8) {
             func_00180E90(f, 10.0f);
         }
     }
-    if ((func_001F4770(f->c.motion, 0, 0, 1) & 0xFF) & 0x20) {
+    if ((Motion_EventFlags(f->c.motion, 0, 0, 1) & 0xFF) & 0x20) {
         v[0] = 0.0f;
         v[1] = 0.0f;
         v[2] = -AT(f, 0xC8, f32);
@@ -7979,8 +7979,8 @@ void func_0018C240(Fiona *f) {
         func_00181880(f, to, 0);
     }
     Actor_TurnToward(&f->c.a, f->savedYaw, kTwelveDeg.f);
-    func_001F6370(f->c.motion, v, 0.0f);
-    func_002E3190(m, f->savedYaw);
+    Motion_RootMovement(f->c.motion, v, 0.0f);
+    Mtx_TurnY(m, f->savedYaw);
     func_002E2DA0(v, m, v);
     Actor_Move(&f->c.a, v);
 }
@@ -7996,7 +7996,7 @@ void func_0018C540(Fiona *f) {
     if (FI(f, 0x1AD5D7, u8) == 1 && Actor_Distance(&f->c.a, gCharPursuer->a.pos) < 30.0f) {
         f->savedYaw = Actor_HeadingTo(&f->c.a, gCharPursuer->a.pos);
     }
-    func_002DDED0(f->c.motion, 0x403, -1);
+    Motion_PlayTable(f->c.motion, 0x403, -1);
     Actor_SetState(&f->c.a, &D_003B2D28);
 }
 
@@ -8026,7 +8026,7 @@ void func_0018C660(Fiona *f) {
         if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
             door_give_up(f, gProgress);
         }
-        if (!((func_001F4770(f->c.motion, 0, -1, 1) & 0xFF) & 2)) {
+        if (!((Motion_EventFlags(f->c.motion, 0, -1, 1) & 0xFF) & 2)) {
             break;
         }
         things = gPlacedThings;
@@ -8071,7 +8071,7 @@ void func_0018C660(Fiona *f) {
         if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
             door_give_up(f, gProgress);
         }
-        if (!((func_001F4770(f->c.motion, 0, -1, 1) & 0xFF) & 2)) {
+        if (!((Motion_EventFlags(f->c.motion, 0, -1, 1) & 0xFF) & 2)) {
             break;
         }
         things = gPlacedThings;
@@ -8109,7 +8109,7 @@ void func_0018CCA0(Fiona *f) {
         switch (f->c.moveSub) {
         case 0x31:
             FI(f, 0x1AD6D0, f32) = f->c.a.angle[1];
-            func_002DDED0(f->c.motion, 0xD00, -1);
+            Motion_PlayTable(f->c.motion, 0xD00, -1);
             break;
         case 0x32:
             FI(f, 0x1AD6D0, f32) = f->c.a.angle[1];
@@ -8122,11 +8122,11 @@ void func_0018CCA0(Fiona *f) {
                     FI(f, 0x1AD6D0, f32) = yaw;
                 }
             }
-            func_002DDED0(f->c.motion, 0xD01, -1);
+            Motion_PlayTable(f->c.motion, 0xD01, -1);
             break;
         case 0x33:
             FI(f, 0x1AD6D0, f32) = f->c.a.angle[1];
-            func_002DDED0(f->c.motion, 0xD02, -1);
+            Motion_PlayTable(f->c.motion, 0xD02, -1);
             break;
         }
         Actor_SetState(&f->c.a, &D_003B2D18);
@@ -8160,7 +8160,7 @@ void func_0018D010(Fiona *f) {
 /* D_003B25E8 (request 0xC / 6): animation 0x8000 (8, speed 10) while she turns to unk104[2]
  * (a tenth of the way a frame; D_003B2CF8) */
 void func_0018D100(Fiona *f) {
-    func_002DE030(f->c.motion, 0x8000, 8, -1, 10.0f);
+    Motion_PlayWith(f->c.motion, 0x8000, 8, -1, 10.0f);
     Actor_SetState(&f->c.a, &D_003B2CF8);
     FI(f, 0x1AD6D0, f32) = *(f32 *)&f->c.unk104[2];
     FI(f, 0x1AD6D4, f32) = 0x1.99999ap-4f /* 0.1 */ * fiona_abs_wrap(*(f32 *)&f->c.unk104[2] - f->c.a.angle[1]);
@@ -8213,7 +8213,7 @@ void func_0018D5C0(Fiona *f) {
     gesture_look(f);
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         func_00183F10(f);
-        func_002DDE20(f->c.motion, 0xC0C, -1);
+        Motion_Play(f->c.motion, 0xC0C, -1);
         Actor_SetState(&f->c.a, &D_003B2CE8);
     }
     Character_RootMoveMasked(&f->c);
@@ -8229,7 +8229,7 @@ void func_0018D7E0(Fiona *f) {
     }
     gesture_look(f);
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
-        func_002DDE20(f->c.motion, 0xC0B, -1);
+        Motion_Play(f->c.motion, 0xC0B, -1);
         Actor_SetState(&f->c.a, &D_003B2CD8);
     }
     Character_RootMoveMasked(&f->c);
@@ -8247,7 +8247,7 @@ void func_0018DA00(Fiona *f) {
         func_00185CF0(f);
         return;
     }
-    func_002DDED0(f->c.motion, 0xC0A, -1);
+    Motion_PlayTable(f->c.motion, 0xC0A, -1);
     Actor_SetState(&f->c.a, &D_003B2CC8);
 }
 
@@ -8273,14 +8273,14 @@ void func_0018DC30(Fiona *f) {
                     ((Character *)gCharPartner)->moveMode == 0xC) {
                     FI(f, 0x1AD6C0, s32) = 3;
                 }
-                func_002DDE20(f->c.motion, 0xC08, -1);
+                Motion_Play(f->c.motion, 0xC08, -1);
                 break;
             case 0xC08:
                 FI(f, 0x1AD6C0, s32) -= 1;
                 if (FI(f, 0x1AD6C0, s32) == 0) {
-                    func_002DDE20(f->c.motion, 0xC09, -1);
+                    Motion_Play(f->c.motion, 0xC09, -1);
                 } else {
-                    func_002DDE20(f->c.motion, 0xC08, -1);
+                    Motion_Play(f->c.motion, 0xC08, -1);
                 }
                 break;
             case 0xC09:
@@ -8320,13 +8320,13 @@ void func_0018E2B0(Fiona *f) {
     }
     switch (f->c.moveSub) {
     case 0x2B:
-        func_002DDED0(f->c.motion, 0xC0D, -1);
+        Motion_PlayTable(f->c.motion, 0xC0D, -1);
         break;
     case 0x28:
-        func_002DDED0(f->c.motion, 0xC07, -1);
+        Motion_PlayTable(f->c.motion, 0xC07, -1);
         break;
     case 0x24:
-        func_002DDED0(f->c.motion, 0xC06, -1);
+        Motion_PlayTable(f->c.motion, 0xC06, -1);
         break;
     }
     Actor_SetState(&f->c.a, &D_003B2CB8);
@@ -8481,7 +8481,7 @@ void func_001906A0(Fiona *f) {
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
         f->c.a.unk2D = 0;
         FI(f, 0x1AD6C0, s32) = 0;
-        func_002DDED0(f->c.motion, 0xB01, -1);
+        Motion_PlayTable(f->c.motion, 0xB01, -1);
         f->c.moveMode = 0xA;
         f->unk1AD580 = 0xB;
         FI(f, 0x1AD710, u8) = 1;
@@ -8495,7 +8495,7 @@ void func_001906A0(Fiona *f) {
         f32 m[4][4] __attribute__((aligned(16)));
         f32 v[4] __attribute__((aligned(16)));
 
-        func_001F6370(f->c.motion, v, 0.0f);
+        Motion_RootMovement(f->c.motion, v, 0.0f);
         sceVu0UnitMatrix(m);
         sceVu0RotMatrixY(m, m, FI(f, 0x1AD6D0, f32));
         sceVu0ApplyMatrix(v, m, v);
@@ -8524,7 +8524,7 @@ void func_001908E0(Fiona *f) {
         FI(f, 0x1AD6C0, s32) = -1;
         FI(f, 0x1AD6C4, s32) = -1;
         FI(f, 0x1AD6D0, f32) = f->c.a.angle[1];
-        func_002DDED0(f->c.motion, 0xB00, -1);
+        Motion_PlayTable(f->c.motion, 0xB00, -1);
         Actor_PlaySound(&f->c.a, 0x40, 5, 0, 0, NULL);
         func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
         Actor_SetState(&f->c.a, &D_003B2B28);
@@ -8562,7 +8562,7 @@ void func_001943D0(Fiona *f) {
         }
         Actor_PlaySound(&f->c.a, 0x90, 5, 0, 0, NULL);
         f->c.unk14D0 = 5;
-        func_001F6E30(f->c.motion);
+        Motion_Freeze(f->c.motion);
         FI(f, 0x1AD6C0, s32) |= hit;
         FI(f, 0x1AD6CC, s32) |= FI(f, 0x1AD6C8, s32);
         FI(f, 0x1AD6C8, s32) = 0;
@@ -8588,7 +8588,7 @@ void func_001943D0(Fiona *f) {
         door_give_up(f, p);
         return;
     }
-    if ((func_001F4770(f->c.motion, 0, 0, 1) & 0xFF) & 2) {
+    if ((Motion_EventFlags(f->c.motion, 0, 0, 1) & 0xFF) & 2) {
         return;
     }
     {
@@ -8638,7 +8638,7 @@ void func_001949D0(Fiona *f) {
     FI(f, 0x1AD6C4, s32) = 0;
     FI(f, 0x1AD6C8, s32) = 0;
     FI(f, 0x1AD6CC, s32) = 0;
-    func_002DDD20(f->c.motion, 0xE01, -1);
+    Motion_PlayOwnBlend(f->c.motion, 0xE01, -1);
     Actor_SetState(&f->c.a, &D_003B2988);
 }
 
@@ -8699,12 +8699,12 @@ void func_00194AD0(Fiona *f) {
             shove_effects(f, hit, 0);
         }
         f->c.unk14D0 = 5;
-        func_001F6E30(f->c.motion);
+        Motion_Freeze(f->c.motion);
         FI(f, 0x1AD6C8, s32) = 0;
     }
     if (door_anim_done(f)) {
         if (AT(f->c.motion, 0x55C, s32) == 0xE00) {
-            func_002DE030(f->c.motion, 0, 0x101, -1, 10.0f);
+            Motion_PlayWith(f->c.motion, 0, 0x101, -1, 10.0f);
         } else {
             if (FI(f, 0x1AD6C4, s32) == 0) {
                 hewie_react(f, 10);
@@ -8731,7 +8731,7 @@ void func_00195C70(Fiona *f) {
     if (door_anim_done(f)) {
         if (v == 7 || v == 6) {
             VCALL(f->c.motion, 0x30, void (*)(void *))(f->c.motion);
-            func_002DDED0(f->c.motion, 0xE00, -1);
+            Motion_PlayTable(f->c.motion, 0xE00, -1);
         } else {
             f32 k = 1.0f, j;
 
@@ -8747,7 +8747,7 @@ void func_00195C70(Fiona *f) {
             } else {
                 FI(f, 0x1AD6D0, f32) = j;
             }
-            func_002DDED0(f->c.motion, 0xE00, 2);
+            Motion_PlayTable(f->c.motion, 0xE00, 2);
             AT(MOTION_PTR(f->c.motion, 0x6A4), 0x1C, f32) = FI(f, 0x1AD6D0, f32);
         }
         FI(f, 0x1AD6C0, s32) = 0;
@@ -8797,9 +8797,9 @@ void func_00196070(Fiona *f) {
         return;
     }
     if (f->c.unk104[0] == 0) {
-        func_002DDD20(f->c.motion, 0x600, -1);
+        Motion_PlayOwnBlend(f->c.motion, 0x600, -1);
     } else {
-        func_002DDD20(f->c.motion, 0x602, -1);
+        Motion_PlayOwnBlend(f->c.motion, 0x602, -1);
     }
     Actor_SetState(&f->c.a, &D_003B2958);
 }
@@ -8854,7 +8854,7 @@ void func_00197FF0(Fiona *f) {
     } else {
         f32 d[4] __attribute__((aligned(16)));
 
-        func_001F6370(f->c.motion, d, 0.0f);
+        Motion_RootMovement(f->c.motion, d, 0.0f);
         Character_RootTurn(&f->c);
         sceVu0ApplyMatrix(d, (f32 (*)[4])((u8 *)f + 0x60), d);
         sceVu0AddVector(f->c.a.pos, f->c.a.pos, d);
@@ -8880,9 +8880,9 @@ void func_00198A70(Fiona *f) {
     f->c.a.unk2A = 1;
     f->c.moveSub = 7;
     if (f->c.unk104[0] != 0) {
-        func_002DDD20(f->c.motion, 0x700, -1);
+        Motion_PlayOwnBlend(f->c.motion, 0x700, -1);
     } else {
-        func_002DDD20(f->c.motion, 0x704, -1);
+        Motion_PlayOwnBlend(f->c.motion, 0x704, -1);
     }
     Actor_SetState(&f->c.a, &D_003B2858);
 }
@@ -8987,36 +8987,36 @@ void func_00198240(Fiona *f) {
                         if (blocked) {
                             if (anim != 0x708) {
                                 moved = 1;
-                                func_002DDD20(f->c.motion, 0x708, -1);
+                                Motion_PlayOwnBlend(f->c.motion, 0x708, -1);
                             }
                         } else {
                             if (anim == 0x700 || anim == 0x702) {
-                                func_002DDE20(f->c.motion, 0x703, -1);
+                                Motion_Play(f->c.motion, 0x703, -1);
                             } else {
-                                func_002DDD20(f->c.motion, 0x703, -1);
+                                Motion_PlayOwnBlend(f->c.motion, 0x703, -1);
                             }
                             moved = 1;
                             Actor_SetState(&f->c.a, &D_003B2878);
                         }
                     } else {
                         if (anim == 0x700 || anim == 0x702) {
-                            func_002DDE20(f->c.motion, 0x701, -1);
+                            Motion_Play(f->c.motion, 0x701, -1);
                         } else {
-                            func_002DDD20(f->c.motion, 0x701, -1);
+                            Motion_PlayOwnBlend(f->c.motion, 0x701, -1);
                         }
                         moved = 1;
                     }
                     break;
                 case 1:
                     moved = 1;
-                    func_002DDE20(f->c.motion, 0x702, -1);
+                    Motion_Play(f->c.motion, 0x702, -1);
                     break;
                 case 4:
                     if (FI(f, 0x1AD5D7, u8) == 1 &&
                         ((RoomSlots_Bytes(gProgress, *(u8 *)&f->c.unk100, 2) & 0xFF) & 4)) {
-                        func_002DDD20(f->c.motion, 0x708, -1);
+                        Motion_PlayOwnBlend(f->c.motion, 0x708, -1);
                     } else {
-                        func_002DDD20(f->c.motion, 0x703, -1);
+                        Motion_PlayOwnBlend(f->c.motion, 0x703, -1);
                         Actor_SetState(&f->c.a, &D_003B2888);
                     }
                     moved = 1;
@@ -9024,7 +9024,7 @@ void func_00198240(Fiona *f) {
                 case 5:
                 case 9:
                     moved = 1;
-                    func_002DDD20(f->c.motion, 0x702, -1);
+                    Motion_PlayOwnBlend(f->c.motion, 0x702, -1);
                     break;
                 }
             } else {
@@ -9039,33 +9039,33 @@ void func_00198240(Fiona *f) {
                     switch (anim - 0x700) {
                     case 0:
                         moved = 1;
-                        func_002DDD20(f->c.motion, 0x707, -1);
+                        Motion_PlayOwnBlend(f->c.motion, 0x707, -1);
                         Actor_SetState(&f->c.a, &D_003B28A8);
                         break;
                     case 1:
                     case 9:
                         moved = 1;
-                        func_002DDD20(f->c.motion, 0x706, -1);
+                        Motion_PlayOwnBlend(f->c.motion, 0x706, -1);
                         break;
                     case 2: case 4: case 6: case 8:
                         ladder_end(f, 1, end);
                         if (f->c.a.pos[1] - end[1] < 3.0f) {
                             if (anim == 0x704 || anim == 0x706) {
-                                func_002DDE20(f->c.motion, 0x707, -1);
+                                Motion_Play(f->c.motion, 0x707, -1);
                             } else {
-                                func_002DDD20(f->c.motion, 0x707, -1);
+                                Motion_PlayOwnBlend(f->c.motion, 0x707, -1);
                             }
                             Actor_SetState(&f->c.a, &D_003B2898);
                         } else if (anim == 0x704 || anim == 0x706) {
-                            func_002DDE20(f->c.motion, 0x705, -1);
+                            Motion_Play(f->c.motion, 0x705, -1);
                         } else {
-                            func_002DDD20(f->c.motion, 0x705, -1);
+                            Motion_PlayOwnBlend(f->c.motion, 0x705, -1);
                         }
                         moved = 1;
                         break;
                     case 5:
                         moved = 1;
-                        func_002DDE20(f->c.motion, 0x706, -1);
+                        Motion_Play(f->c.motion, 0x706, -1);
                         break;
                     }
                 }
@@ -9074,10 +9074,10 @@ void func_00198240(Fiona *f) {
         if (idle == 1) {
             switch (anim - 0x700) {
             case 0: case 2: case 4: case 6:
-                func_002DDD20(f->c.motion, 0x708, -1);
+                Motion_PlayOwnBlend(f->c.motion, 0x708, -1);
                 break;
             case 1: case 5:
-                func_002DDD20(f->c.motion, 0x709, -1);
+                Motion_PlayOwnBlend(f->c.motion, 0x709, -1);
                 break;
             }
             moved = 1;
@@ -9105,7 +9105,7 @@ void func_00198240(Fiona *f) {
     {
         f32 d[4] __attribute__((aligned(16)));
 
-        func_001F6370(f->c.motion, d, 0.0f);
+        Motion_RootMovement(f->c.motion, d, 0.0f);
         Character_RootTurn(&f->c);
         sceVu0ApplyMatrix(d, (f32 (*)[4])((u8 *)f + 0x60), d);
         sceVu0AddVector(f->c.a.pos, f->c.a.pos, d);
@@ -9180,7 +9180,7 @@ void func_00194FC0(Fiona *f) {
             shove_effects(f, hit, 0);
         }
         f->c.unk14D0 = 5;
-        func_001F6E30(f->c.motion);
+        Motion_Freeze(f->c.motion);
         FI(f, 0x1AD6C0, s32) |= hit;
         FI(f, 0x1AD6CC, s32) |= FI(f, 0x1AD6C8, s32);
         FI(f, 0x1AD6C8, s32) = 0;
@@ -9193,7 +9193,7 @@ void func_00194FC0(Fiona *f) {
         }
         return;
     }
-    if (!((func_001F4770(f->c.motion, 0, -1, 1) & 0xFF) & 2)) {
+    if (!((Motion_EventFlags(f->c.motion, 0, -1, 1) & 0xFF) & 2)) {
         return;
     }
     if (v == 7 && !(FI(f, 0x1AD6D4, f32) <= 0.0f)) {
@@ -9216,7 +9216,7 @@ void func_00194FC0(Fiona *f) {
     who = func_00181880(f, at, 1);
     if (v != 7 && v != 6 && Actor_TriTo(&f->c.a, at, 0x20018) == (u32)-1) {
         if (door_anim_done(f)) {
-            func_002DE030(f->c.motion, 0, 0x101, -1, 10.0f);
+            Motion_PlayWith(f->c.motion, 0, 0x101, -1, 10.0f);
         }
         Actor_SetState(&f->c.a, &D_003B2978);
         return;

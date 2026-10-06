@@ -415,7 +415,7 @@ s32 Room92_Cmd03(void) {
     rot[0] = 0.0f;
     rot[1] = 0.0f;
     rot[2] = a;
-    func_002E3190(m, a);
+    Mtx_TurnY(m, a);
     off[0] = 0.0f;
     off[1] = 0x1.0ccccc0000000p+1f /* 2.1 */;
     off[2] = 1.5f + 0.5f * VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd);

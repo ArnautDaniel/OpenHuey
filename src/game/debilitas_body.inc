@@ -289,7 +289,7 @@ void Debilitas_HeadFor(Pursuer *p, Character *c) {
    60 units away */
 static inline void Debilitas_Grab(Pursuer *p) {
     Character_RootMoveMasked(&p->c);
-    if ((func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) && !(PU(p, 0x1760, u8) & 1)) {
+    if ((Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 2) && !(PU(p, 0x1760, u8) & 1)) {
         Progress *pr = gProgress;
 
         if (VCALL(pr, 0x2C, s32 (*)(Progress *, u32, s32, s32, f32))(pr, *(u8 *)&p->c.a.slot, 0x1E, 0, 5.0f) != 0) {

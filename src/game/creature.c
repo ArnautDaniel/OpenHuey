@@ -2942,7 +2942,7 @@ s32 func_00325410(Character *c, s32 exit);
 static inline f32 cr19_stride(Character *c) {
     f32 v[4] __attribute__((aligned(16)));
 
-    func_001F6370(c->motion, v, 0.0f);
+    Motion_RootMovement(c->motion, v, 0.0f);
     *(s32 *)&v[1] = 0;
     if (v[2] < 0.0f) {
         v[2] = 0.0f;
@@ -3547,7 +3547,7 @@ void func_00326130(Character *c, f32 dist) {
 static inline void cr19_root_move(Character *c) {
     f32 v[4] __attribute__((aligned(16)));
 
-    func_001F6370(c->motion, v, 0.0f);
+    Motion_RootMovement(c->motion, v, 0.0f);
     *(s32 *)&v[1] = 0;
     sceVu0ApplyMatrix(v, c->a.rot, v);
     Actor_Move(&c->a, v);
@@ -3569,7 +3569,7 @@ void func_00326680(Character *c) {
     switch (AT(k, 0x6C, u8)) {
     case 0:
         if (AT(k, 0x60, u8) == 0) {
-            func_002DDED0(c->motion, 0, -1);
+            Motion_PlayTable(c->motion, 0, -1);
             AT(k, 0x60, u8)++;
         }
         if ((u32)AT(k, 0x40, s16) % 90 == 0) {
@@ -3580,7 +3580,7 @@ void func_00326680(Character *c) {
         break;
     case 1:
         if (AT(k, 0x60, u8) == 0) {
-            func_002DDED0(c->motion, 0x1C00, -1);
+            Motion_PlayTable(c->motion, 0x1C00, -1);
             AT(k, 0x60, u8)++;
         }
         if ((u32)AT(k, 0x40, s16) % 90 == 0) {
@@ -3725,7 +3725,7 @@ void func_00327540(Character *c) {
 
     switch (AT(k, 0x60, u8)) {
     case 0:
-        func_002DDED0(c->motion, 0x1001, -1);
+        Motion_PlayTable(c->motion, 0x1001, -1);
         AT(k, 0x28, f32) = AT(k, 0x28, f32) - AT(k, 0x2C, f32);
         AT(k, 0x2C, f32) = AT(k, 0x2C, f32) + 0x1.5c28f6p-4f;   /* 0.085 */
         if (AT(k, 0x28, f32) <= 0.0f) {
@@ -3744,7 +3744,7 @@ void func_00327540(Character *c) {
         break;
     case 2:
         AT(k, 0x40, s16) = 0;
-        func_002DDED0(c->motion, 0x1800, -1);
+        Motion_PlayTable(c->motion, 0x1800, -1);
         AT(k, 0x60, u8)++;
         break;
     case 3:
@@ -3808,7 +3808,7 @@ s32 func_003279F0(Character *c, f32 *goal) {
         sceVu0SubVector(d, goal, c->a.pos);
         *(s32 *)&d[1] = 0;
         sceVu0Normalize(d, d);
-        func_001F6370(c->motion, v, 0.0f);
+        Motion_RootMovement(c->motion, v, 0.0f);
         *(s32 *)&v[1] = 0;
         func_0010E640(d, d, v[2]);
         Actor_Move(&c->a, d);
@@ -3943,7 +3943,7 @@ void func_00327DD0(Character *c) {
         sceVu0UnitMatrix(c->a.rot);
         sceVu0RotMatrixY(c->a.rot, c->a.rot, h);
         Actor_PlaySound(&c->a, 8, 5, 0, 0, NULL);
-        func_002DDED0(c->motion, 0x1900, -1);
+        Motion_PlayTable(c->motion, 0x1900, -1);
         AT(k, 0x60, u8)++;
         return;
     }
@@ -3953,7 +3953,7 @@ void func_00327DD0(Character *c) {
         }
         Actor_PlaySound(&c->a, 9, 5, 0, 0, NULL);
         Actor_PlaySound(&c->a, 4, 5, 0, 0, NULL);
-        func_002DDED0(c->motion, 0x1901, -1);
+        Motion_PlayTable(c->motion, 0x1901, -1);
         AT(k, 0x60, u8)++;
         return;
     case 2:
@@ -3967,7 +3967,7 @@ void func_00327DD0(Character *c) {
             return;
         }
         AT(c, 0xF8, s32) = 4;
-        func_002DDED0(c->motion, 0x1902, -1);
+        Motion_PlayTable(c->motion, 0x1902, -1);
         Threat_Raise((u8 *)gProgress + 0x7B8, 75.0f);
         func_002A8440((u8 *)gProgress + 0x7A8, 0x80, c->a.room, c->a.navTri, 0xFFFF);
         AT(k, 0x60, u8)++;
@@ -4015,9 +4015,9 @@ void func_003284F0(Character *c) {
             break;
         }
         if (CR19_TURN_LEFT(c, h) < 0x1.921fb6p+0f) {
-            func_002DDED0(c->motion, 0x1001, -1);
+            Motion_PlayTable(c->motion, 0x1001, -1);
         } else {
-            func_002DDED0(c->motion, 0x1000, -1);
+            Motion_PlayTable(c->motion, 0x1000, -1);
         }
         Actor_PlaySound(&c->a, 3, 5, 0, 0, NULL);
         AT(k, 0x60, u8)++;
@@ -4050,7 +4050,7 @@ void func_003284F0(Character *c) {
     }
     case 2:
         AT(k, 0x40, s16) = 0;
-        func_002DDED0(c->motion, 0x1800, -1);
+        Motion_PlayTable(c->motion, 0x1800, -1);
         AT(k, 0x60, u8)++;
         return;
     case 3:
@@ -4162,7 +4162,7 @@ void func_0032AE80(Character *c) {
             Model_BodyFrames(c->motion, c, 0.0f, 0.0f);
         }
     }
-    func_001F6AF0(c->motion);
+    Motion_Update(c->motion);
 }
 
 /* its model released (+0xD1 loaded: the model's +0x10) */
@@ -4274,8 +4274,8 @@ void func_0032AF00(Character *c) {
     if ((Progress_TestFlag(gProgress, 8) & 0xFF) == 1) {
         return;
     }
-    left = func_002DD420(c->motion, l, 1, 0.0f, 1.0f);
-    right = func_002DD420(c->motion, r, 0, 0.0f, 1.0f);
+    left = Motion_FootPos(c->motion, l, 1, 0.0f, 1.0f);
+    right = Motion_FootPos(c->motion, r, 0, 0.0f, 1.0f);
     if (AT(c->motion, 0x55C, s32) == 0x200) {
         if (right == 1 && AT(k, 0x73, u8) == 0) {
             Actor_PlaySound(&c->a, 6, 5, 0, 0, NULL);
@@ -4337,7 +4337,7 @@ void func_0032BB50(Character *c) {
                 func_003257B0(c);
             }
         } else {
-            f32 h = func_002E2D00(c->a.angle[1] + func_001F6140(c->motion, 0.0f));
+            f32 h = func_002E2D00(c->a.angle[1] + Motion_RootRotation(c->motion, 0.0f));
 
             c->a.angle[1] = h;
             sceVu0UnitMatrix(c->a.rot);
@@ -4659,7 +4659,7 @@ void func_0032C040(Character *c) {
     }
     VCALL(c, 0x1C, void (*)(Character *))(c);
     VCALL(c, 0x5C, void (*)(Character *))(c);
-    func_002DDED0(c->motion, 0, -1);
+    Motion_PlayTable(c->motion, 0, -1);
     AT(k, 0x69, u8) = 0;
 }
 
@@ -4706,7 +4706,7 @@ static inline void cr19_first(Character *c, s32 anim) {
     u8 *k = CR(c);
 
     if (AT(k, 0x60, u8) == 0) {
-        func_002DDED0(c->motion, anim, -1);
+        Motion_PlayTable(c->motion, anim, -1);
         AT(k, 0x60, u8)++;
     }
 }
@@ -4743,7 +4743,7 @@ void func_0032B210(Character *c, u8 st) {
             } sp;
             s32 slot;
 
-            func_002DDED0(c->motion, 0x1801, -1);
+            Motion_PlayTable(c->motion, 0x1801, -1);
             AT(k, 0x60, u8)++;
             if (c->unkE4 != 1 || c->unk152C != 0xF) {
                 c->unkE4 = 0;

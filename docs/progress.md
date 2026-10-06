@@ -90,8 +90,8 @@ Gotchas found on the way (all in the code/tester now):
   calling the real function where the original inlined it (a call would show up in the trace).
 
 Also open: the model/motion code found while decoding the formats (skeleton init
-`ModelBase_Loaded`, motion lookup `func_001F4B80`, track setup `func_001F4C10`, sampler
-`func_001F36B0`, pose `func_001F5930`, Euler matrix `func_002E2E00`, mesh draw `func_001BDF80`
+`ModelBase_Loaded`, motion lookup `Motion_AnimEntry`, track setup `Motion_SetupTrack`, sampler
+`Track_Sample`, pose `Motion_PoseChain`, Euler matrix `Mtx_FromEuler`, mesh draw `func_001BDF80`
 -> `func_001BDDD0` / `func_001BD830`, VU1 packets via `func_002B89C0`).
 
 ### Work-style notes

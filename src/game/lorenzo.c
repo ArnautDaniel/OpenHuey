@@ -592,7 +592,7 @@ void Lorenzo2_SlamDust(Pursuer *p) {
     VObject *rnd;
     u8 i;
 
-    if (MOTION_ANIM(p) != 0x2301 || !(func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2)) {
+    if (MOTION_ANIM(p) != 0x2301 || !(Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 2)) {
         return;
     }
     sceVu0CopyVector(dp.pos, Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x32) + 0xC);
@@ -651,7 +651,7 @@ void Lorenzo2_BlowSparks(Pursuer *p) {
     default:
         return;
     }
-    if (!(func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 0x20)) {
+    if (!(Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 0x20)) {
         return;
     }
     sp.one = 1.0f;
@@ -706,7 +706,7 @@ s32 Lorenzo2_SlamImpact(Pursuer *p) {
     if (!p->c.a.active || func_00217510(p) == 0 || MOTION_ANIM(p) != 0x2301) {
         return 0;
     }
-    return (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 0x20) ? 1 : 0;
+    return (Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 0x20) ? 1 : 0;
 }
 
 extern const PTMF D_00423AA8;
@@ -741,7 +741,7 @@ void Lorenzo2_StartGrab(Pursuer *p) {
 /* 0x0030A650 */
 void Lorenzo2_StateSweep(Pursuer *p) {
     Character_RootMoveMasked(&p->c);
-    if (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) {
+    if (Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 2) {
         u8 *e = PU(p, 0x171C, u8 *) + 0x48;
         u32 hit = 0;
         f32 d;
@@ -887,9 +887,9 @@ static inline void Burst_Init(void **obj) {
 /* 0x0030A210 */
 void Lorenzo2_StateGrab(Pursuer *p) {
     Character_RootMoveMasked(&p->c);
-    if (func_001F4770(p->c.motion, 0, 0xC, 1) & 0xFF & 2) {
+    if (Motion_EventFlags(p->c.motion, 0, 0xC, 1) & 0xFF & 2) {
         sceVu0CopyVector(p->c.unk110, p->target->a.pos);
-    } else if (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) {
+    } else if (Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 2) {
         u8 *e = PU(p, 0x171C, u8 *) + 0x6C;
         u32 hit = func_002179F0(p, (s32)(u32)p->c.unk110, AT(e, 0xC, f32)) & 0xFF;
         u8 *mgr;
@@ -947,7 +947,7 @@ static inline s32 Lorenzo2_Underground(Pursuer *p) {
    once each (+0x1760); its end ends the step */
 static inline void Lorenzo2b_Sweep(Pursuer *p) {
     Character_RootMoveMasked(&p->c);
-    if (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) {
+    if (Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 2) {
         u32 hit = func_00217920(p) & 0xFF;
 
         if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
@@ -1505,7 +1505,7 @@ void Kind39_SlamDust(Pursuer *p) {
     VObject *rnd;
     u8 i;
 
-    if (MOTION_ANIM(p) != 0x2301 || !(func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2)) {
+    if (MOTION_ANIM(p) != 0x2301 || !(Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 2)) {
         return;
     }
     sceVu0CopyVector(dp.pos, Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x32) + 0xC);
@@ -1552,7 +1552,7 @@ void Kind39_BlowSparks(Pursuer *p) {
     default:
         return;
     }
-    if (!(func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 0x20)) {
+    if (!(Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 0x20)) {
         return;
     }
     sp.one = 1.0f;
@@ -1594,9 +1594,9 @@ void Kind39_BonePositions(Pursuer *p, s32 *e, f32 *a, f32 *b) {
 /* 0x00363FA0 */
 void Kind39_StateGrab(Pursuer *p) {
     Character_RootMoveMasked(&p->c);
-    if (func_001F4770(p->c.motion, 0, 0xC, 1) & 0xFF & 2) {
+    if (Motion_EventFlags(p->c.motion, 0, 0xC, 1) & 0xFF & 2) {
         sceVu0CopyVector(p->c.unk110, p->target->a.pos);
-    } else if (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) {
+    } else if (Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 2) {
         u8 *e = PU(p, 0x171C, u8 *) + 0x6C;
         u32 hit = func_002179F0(p, (s32)(u32)p->c.unk110, AT(e, 0xC, f32)) & 0xFF;
         u8 *mgr;
@@ -1636,7 +1636,7 @@ s32 Kind39_SlamImpact(Pursuer *p) {
     if (!p->c.a.active || func_00217510(p) == 0 || MOTION_ANIM(p) != 0x2301) {
         return 0;
     }
-    return (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 0x20) ? 1 : 0;
+    return (Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 0x20) ? 1 : 0;
 }
 
 /* 0x003658D0 */

@@ -3664,7 +3664,7 @@ s32 func_0032D430(u8 *self) {
     switch (S32(self, 0x1624)) {
     case 0:
         if (S32(self, 0x1628) != 0) {
-            func_002DE030(PTR(self, 0xF0), 0x9000, 1, -1, 5.0f);
+            Motion_PlayWith(PTR(self, 0xF0), 0x9000, 1, -1, 5.0f);
             S32(self, 0x162C) = (s32)(60.0f * (1.0f + animal_rnd()));
             S32(self, 0x1628) = 0;
         }
@@ -3682,7 +3682,7 @@ s32 func_0032D430(u8 *self) {
         break;
     case 1:
         if (S32(self, 0x1628) != 0) {
-            func_002DE030(PTR(self, 0xF0), 0x9001, 1, -1, 5.0f);
+            Motion_PlayWith(PTR(self, 0xF0), 0x9001, 1, -1, 5.0f);
             S32(self, 0x1628) = 0;
         }
         if (ANIMAL_CLIP_DONE(self) && animal_rnd() < 0.5f) {
@@ -3701,7 +3701,7 @@ s32 func_0032D430(u8 *self) {
         break;
     case 5:
         if (S32(self, 0x1628) != 0) {
-            func_002DE030(PTR(self, 0xF0), 0x9002, 1, -1, 5.0f);
+            Motion_PlayWith(PTR(self, 0xF0), 0x9002, 1, -1, 5.0f);
             S32(self, 0x1628) = 0;
         }
         if (ANIMAL_CLIP_DONE(self)) {
@@ -3712,7 +3712,7 @@ s32 func_0032D430(u8 *self) {
         f32 away[4] __attribute__((aligned(16)));
 
         if (S32(self, 0x1628) != 0) {
-            func_002DE030(PTR(self, 0xF0), 0x9002, 1, -1, 5.0f);
+            Motion_PlayWith(PTR(self, 0xF0), 0x9002, 1, -1, 5.0f);
             S32(self, 0x1628) = 0;
             func_0032CF40(self, (f32 *)D_01991600);
         }
@@ -3729,7 +3729,7 @@ s32 func_0032D430(u8 *self) {
         f32 dz, dx;
 
         if (S32(self, 0x1628) != 0) {
-            func_002DE030(PTR(self, 0xF0), 0x9003, 1, -1, 5.0f);
+            Motion_PlayWith(PTR(self, 0xF0), 0x9003, 1, -1, 5.0f);
             S32(self, 0x1628) = 0;
         }
         animal_face(self, F32(self, 0x163C), F32(self, 0x1640));
@@ -3753,7 +3753,7 @@ static inline __attribute__((always_inline)) s32 animal_step(u8 *self) {
     u8 done = func_0032D430(self) & 0xFF;
     u8 l, r;
 
-    func_001F6370(PTR(self, 0xF0), d, 0.0f);
+    Motion_RootMovement(PTR(self, 0xF0), d, 0.0f);
     Character_RootTurn((Character *)self);
     sceVu0ApplyMatrix(d, (f32 (*)[4])(self + 0x60), d);
     sceVu0AddVector(CHAR_POS(self), CHAR_POS(self), d);

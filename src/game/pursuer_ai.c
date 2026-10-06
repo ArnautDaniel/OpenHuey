@@ -603,7 +603,7 @@ f32 func_002140A0(Pursuer *p, f32 heading, f32 step) {
         h = func_002E2D00(cur - step);
     }
     p->c.a.angle[1] = h;
-    func_002E3190(p->c.a.rot, h);
+    Mtx_TurnY(p->c.a.rot, h);
     return func_002E2D00(heading - h);
 }
 
@@ -613,7 +613,7 @@ s32 func_00214890(Pursuer *p, u32 *triOut, f32 *posOut, f32 step) {
         f32 v[4] __attribute__((aligned(16)));
         u8 *m;
 
-        func_001F6370(p->c.motion, v, 0.0f);
+        Motion_RootMovement(p->c.motion, v, 0.0f);
         m = p->c.motion;
         step = v[2] * VCALL(m, 0x44, f32 (*)(void *, Pursuer *))(m, p);
     }
@@ -1947,7 +1947,7 @@ s32 func_002143D0(Pursuer *p, const f32 *pos) {
     u8 *mo;
     f32 d, ad;
 
-    func_001F6370(p->c.motion, v, 0.0f);
+    Motion_RootMovement(p->c.motion, v, 0.0f);
     mo = p->c.motion;
     v[2] *= VCALL(mo, 0x44, f32 (*)(void *, Pursuer *))(mo, p);
     d = func_002E2D00(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
@@ -1967,7 +1967,7 @@ s32 func_002143D0(Pursuer *p, const f32 *pos) {
     if (Actor_Distance(&p->c.a, pos) <= v[2] && Actor_TriTo(&p->c.a, pos, -1) != (u32)-1) {
         sceVu0SubVector(v, pos, p->c.a.pos);
     } else {
-        func_002E3190(m, Actor_HeadingTo(&p->c.a, pos));
+        Mtx_TurnY(m, Actor_HeadingTo(&p->c.a, pos));
         func_002E2DA0(v, m, v);
     }
     Actor_Move(&p->c.a, v);
@@ -2149,7 +2149,7 @@ s32 func_00214620(Pursuer *p, s32 unused) {
     u32 tri;
     s32 last;
 
-    func_001F6370(p->c.motion, v, 0.0f);
+    Motion_RootMovement(p->c.motion, v, 0.0f);
     m = p->c.motion;
     step = v[2] * VCALL(m, 0x44, f32 (*)(void *, Pursuer *))(m, p);
     if (!(step < 0.0f)) {
@@ -2513,7 +2513,7 @@ static s32 Npc_Senses(Pursuer *p, s32 fionaRoom) {
         } else {
             PU(p, 0x158C, f32) = room == gCharPartner->a.room ? Npc_DistanceTo(p, gCharPartner, v) : -1.0f;
         }
-        func_001F6370(p->c.motion, vel, 0.0f);
+        Motion_RootMovement(p->c.motion, vel, 0.0f);
         vel[2] *= VCALL((VObject *)p->c.motion, 0x44, f32 (*)(void *, Pursuer *))(p->c.motion, p);
         if ((p->c.unk128 < p->c.unk124) == 1) {
             /* still walking: is the way ahead (30 units, then this frame's step) clear? */

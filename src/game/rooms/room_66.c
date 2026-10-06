@@ -283,8 +283,8 @@ s32 Room66_CharHook(void *self, Character *c, u8 *cmd) {
     if (AT(c->motion, 0x550, f32) <= 0.0f && ((!wasL && l) || (!wasR && r))) {
         Actor_PlaySound(&c->a, AT(c->motion, 0x55C, s32) == 0x201 ? 4 : 3, 6, 0, 0, NULL);
     }
-    fl = func_002DD420(c->motion, posL, 0, 0.0f, 1.0f);
-    fr = func_002DD420(c->motion, posR, 1, 0.0f, 1.0f);
+    fl = Motion_FootPos(c->motion, posL, 0, 0.0f, 1.0f);
+    fr = Motion_FootPos(c->motion, posR, 1, 0.0f, 1.0f);
     mgr = gEffects;
     for (k = 0; k < 2; k++) {
         if (AT(c->motion, 0x550, f32) <= 0.0f && !wasL && fl) {

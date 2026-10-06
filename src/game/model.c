@@ -40,28 +40,28 @@ extern void *D_004737F0[];
 extern void *D_00473810[];
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-void *func_0016F740(u8 *p);
-void *func_0016FAE0(u8 *p);
-void *func_0016FB60(u8 *p);
-void *func_0016FB80(u8 *p);
-void *func_0016FB90(u8 *p);
-void *func_0016FC10(u8 *p);
-void *func_00170460(u8 *p);
-void *func_00170650(u8 *p);
-void *func_00170670(u8 *p);
-void *func_001706F0(u8 *p);
-void *func_00170A30(u8 *p);
-void *func_00170D10(u8 *p);
-void *func_00170F10(u8 *p);
-void *func_00170F90(u8 *p);
+void *Part_ctor(u8 *p);
+void *Capsule_ctor(u8 *p);
+void *Part60_ctor(u8 *p);
+void *SpringSet_ctor(u8 *p);
+void *BonePoint_ctor(u8 *p);
+void *HangPoint_ctor(u8 *p);
+void *SwayPointA_ctor(u8 *p);
+void *SprungPoint_ctor(u8 *p);
+void *BoneHangPoint_ctor(u8 *p);
+void *IK2_ctor(u8 *p);
+void *SwayPointB_ctor(u8 *p);
+void *Part50_ctor(u8 *p);
+void *HairPoint_ctor(u8 *p);
+void *HangingPart_ctor(u8 *p);
 
 extern void *D_0046D730[];
 extern void *D_0046D7B0[];
 extern void *D_0046EB40[];
 extern void *D_0046F580[];
 extern void *D_0047A6F0[];
-void *func_0026B1E0(u8 *o, s32 flags);
-void *func_002BAFD0(u8 *o, s32 flags);
+void *ScreenBlend_dtor(u8 *o, s32 flags);
+void *Fog_dtor(u8 *o, s32 flags);
 void *DustMoteSource_dtor(u8 *o, s32 flags);
 
 void Model_HalfHip(void *self, u32 *out);
@@ -217,7 +217,8 @@ s32 Costume8Model_BufferSize(void);
 void DustMoteSource_Start(u8 *o);
 
 /* placement new (models) */
-void *func_002DC6E0(u32 size, void *p) {
+/* 0x002DC6E0 */
+void *Model_new(u32 size, void *p) {
     return p;
 }
 
@@ -248,7 +249,8 @@ static inline void DrawObj_Init(u8 *o) {
     AT(o, 0x24, s32) = 0;
 }
 
-void *func_0016F770(u8 *o) {
+/* 0x0016F770 */
+void *DrawObj_ctor(u8 *o) {
     DrawObj_Init(o);
     return o;
 }
@@ -286,17 +288,19 @@ static inline void ModelBase_Zero(u8 *m) {
 }
 
 /* the model base class's constructor */
-void *func_0016F4B0(u8 *m) {
+/* 0x0016F4B0 */
+void *ModelBase_ctor(u8 *m) {
     AT(m, 0x0, void **) = D_0046B210;
-    func_0016F770(m + 0x10);
-    func_0016F740(m + 0x1D0);
+    DrawObj_ctor(m + 0x10);
+    Part_ctor(m + 0x1D0);
     ModelBase_Zero(m);
     AT(m, 0x0, void **) = D_0046F9E0;
     return m;
 }
 
 /* an element of Hewie's model's first array (0x90 bytes) */
-void *func_00208160(void *p) {
+/* 0x00208160 */
+void *DogModelArray_ctor(void *p) {
     u8 *e = p;
 
     AT(e, 0x58, void **) = D_0046B0C0;
@@ -304,29 +308,31 @@ void *func_00208160(void *p) {
 }
 
 /* the partner's (Hewie's) model: allocated from the scene heap, put at character `slot` +0xF0 */
-void func_003A10B0(Progress *p, u32 slot) {
+/* 0x003A10B0 */
+void CharLoad_PartnerModel(Progress *p, u32 slot) {
     VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
-    u8 *m = func_002DC6E0(0xB90, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, 0xB90));
+    u8 *m = Model_new(0xB90, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, 0xB90));
 
     if (m != NULL) {
-        func_0016F4B0(m);
+        ModelBase_ctor(m);
         AT(m, 0x0, void **) = D_0046B240;
         AT(m, 0x890, u8) = 0;
-        func_00100340(m + 0x960, func_00208160, func_001F7E40, 0x90, 2);
-        func_00100340(m + 0xA80, func_001706F0, func_0016FC80, 0x60, 2);
+        func_00100340(m + 0x960, DogModelArray_ctor, IK3_Destroy, 0x90, 2);
+        func_00100340(m + 0xA80, IK2_ctor, IK2_Destroy, 0x60, 2);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
 
 extern void *D_0046B9B0[];
 
-/* the dog model's constructor (the plain base by func_0016FCD0), kind `kind` (+0x890) */
-void *func_00208210(u8 *m, u8 kind) {
-    func_0016FCD0(m);
+/* the dog model's constructor (the plain base by HumanModel_BaseCtor), kind `kind` (+0x890) */
+/* 0x00208210 */
+void *DogModel_ctor(u8 *m, u8 kind) {
+    HumanModel_BaseCtor(m);
     AT(m, 0x0, void **) = D_0046B240;
     AT(m, 0x890, u8) = kind;
-    func_00100340(m + 0x960, func_00208160, func_001F7E40, 0x90, 2);
-    func_00100340(m + 0xA80, func_001706F0, func_0016FC80, 0x60, 2);
+    func_00100340(m + 0x960, DogModelArray_ctor, IK3_Destroy, 0x90, 2);
+    func_00100340(m + 0xA80, IK2_ctor, IK2_Destroy, 0x60, 2);
     return m;
 }
 
@@ -337,14 +343,16 @@ extern void *D_0047A6F0[], *D_0046FF20[], *D_00471000[], *D_00470E60[], *D_00470
     *D_0046D730[], *D_0046D7B0[], *D_0046B0E0[], *D_00479660[], *D_00479F90[], *D_004703B0[],
     *D_00475CA0[], *D_00472BD0[], *D_0046FF60[], *D_0046EC60[], *D_0046EA90[];
 extern void *D_00469D00[], *D_0046FC30[];
-extern void *func_0016FC30(u8 *m);
+extern void *HumanModel_PartsCtor(u8 *m);
 
-void **func_00208070(void **o) {   /* event 0xD9 */
+/* 0x00208070 */
+void **DustMoteSource_Init(void **o) {   /* event 0xD9 */
     o[0] = D_0047A6F0;
     return o;
 }
 
-void **func_00208090(void **o) {   /* event 0xC8: dust */
+/* 0x00208090 */
+void **SpriteBurst_InitDust(void **o) {   /* event 0xC8: dust */
     o[0] = D_0046FF20;
     o[0x610 / 4] = D_00469D00;
     ((s32 *)o)[0x614 / 4] = -1;
@@ -352,12 +360,14 @@ void **func_00208090(void **o) {   /* event 0xC8: dust */
     return o;
 }
 
-void **func_002082A0(void **o) {   /* event 0xA9 */
+/* 0x002082A0 */
+void **Effect71000_Init(void **o) {   /* event 0xA9 */
     o[0] = D_00471000;
     return o;
 }
 
-void **func_002082C0(void **o) {   /* event 0xA0 */
+/* 0x002082C0 */
+void **Splash_InitEvent(void **o) {   /* event 0xA0 */
     o[0] = D_00470E60;
     o[0x3D0 / 4] = D_00469D00;
     ((s32 *)o)[0x3D4 / 4] = -1;
@@ -365,7 +375,8 @@ void **func_002082C0(void **o) {   /* event 0xA0 */
     return o;
 }
 
-void **func_00208300(void **o) {   /* event 0x9F */
+/* 0x00208300 */
+void **SpeckSwarm_InitEvent(void **o) {   /* event 0x9F */
     o[0] = D_00470E40;
     o[0x610 / 4] = D_00469D00;
     ((s32 *)o)[0x614 / 4] = -1;
@@ -373,13 +384,15 @@ void **func_00208300(void **o) {   /* event 0x9F */
     return o;
 }
 
-void **func_00208340(void **o) {   /* event 0x9C */
+/* 0x00208340 */
+void **Fog_Init(void **o) {   /* event 0x9C */
     o[0] = D_0046EB40;
     return o;
 }
 
 /* the room effect base's destructor */
-void **func_00208360(void **o, s32 flags) {
+/* 0x00208360 */
+void **RoomEffectBase_dtor(void **o, s32 flags) {
     if (o != NULL) {
         o[0] = D_0046D730;
         if ((s16)flags > 0) {
@@ -389,14 +402,16 @@ void **func_00208360(void **o, s32 flags) {
     return o;
 }
 
-void **func_002083B0(void **o) {   /* event 0x9B */
+/* 0x002083B0 */
+void **ScreenBlend_Init(void **o) {   /* event 0x9B */
     o[0] = D_0046D7B0;
     return o;
 }
 
 /* Fiona's costume 8 model (event 0x97) */
-void *func_002083D0(u8 *m) {
-    func_0016FC30(m);
+/* 0x002083D0 */
+void *Costume8Model_ctor(u8 *m) {
+    HumanModel_PartsCtor(m);
     AT(m, 0x0, void **) = D_0046B0E0;
     AT(m, 0x9A0, u8) = 8;
     AT(m, 0x0, void **) = D_00479660;
@@ -417,39 +432,47 @@ static inline void *part30_dtor(void *o, s32 flags, void **vtbl) {
     return o;
 }
 
-void *func_002088F0(void *o, s32 flags) {
+/* 0x002088F0 */
+void *WindHangPoint_dtor(void *o, s32 flags) {
     return part30_dtor(o, flags, D_00479F90);
 }
 
-void *func_00208950(void *o) {
+/* 0x00208950 */
+void *WindHangPoint_ctor(void *o) {
     AT(o, 0x30, void **) = D_00479F90;
     return o;
 }
 
-void *func_00208970(void *o, s32 flags) {
+/* 0x00208970 */
+void *CostumeHangPoint_dtor(void *o, s32 flags) {
     return part30_dtor(o, flags, D_00475CA0);
 }
 
-void *func_002089D0(void *o) {
+/* 0x002089D0 */
+void *CostumeHangPoint_ctor(void *o) {
     AT(o, 0x30, void **) = D_00475CA0;
     return o;
 }
 
-void *func_00208E30(void *o, s32 flags) {
+/* 0x00208E30 */
+void *HairPoint2_dtor(void *o, s32 flags) {
     return part30_dtor(o, flags, D_00472BD0);
 }
 
-void **func_00208EB0(void **o) {   /* event 0x8C */
+/* 0x00208EB0 */
+void **Effect6FF60_Init(void **o) {   /* event 0x8C */
     o[0] = D_0046FF60;
     return o;
 }
 
-void **func_00208F10(void **o) {   /* event 0x65 */
+/* 0x00208F10 */
+void **DepthRange_Init(void **o) {   /* event 0x65 */
     o[0] = D_0046EC60;
     return o;
 }
 
-void **func_00208F30(void **o, u32 n) {   /* event 0x35 */
+/* 0x00208F30 */
+void **Butterflies_Init(void **o, u32 n) {   /* event 0x35 */
     o[0] = D_0046EA90;
     AT(o, 0x8C, f32) = (f32)n;
     return o;
@@ -459,25 +482,27 @@ void **func_00208F30(void **o, u32 n) {   /* event 0x35 */
 
 extern void *D_0046B8F0[], *D_00479420[], *D_00478490[], *D_00475BC0[], *D_00475AE0[], *D_004703A0[],
     *D_00470440[], *D_004703D0[], *D_00470620[];
-extern void *func_00170080(void *, s32);
-void *func_00208E90(void *p);
+extern void *SwayPointA_dtor(void *, s32);
+void *FionaModelArray_ctor(void *p);
 
-/* the dog model's constructor on the full base (func_0016F4B0), kind `kind`, vtable `vtbl` */
+/* the dog model's constructor on the full base (ModelBase_ctor), kind `kind`, vtable `vtbl` */
 static inline void *dog_model(u8 *m, u8 kind, void **vtbl) {
-    func_0016F4B0(m);
+    ModelBase_ctor(m);
     AT(m, 0x0, void **) = D_0046B240;
     AT(m, 0x890, u8) = kind;
-    func_00100340(m + 0x960, func_00208160, func_001F7E40, 0x90, 2);
-    func_00100340(m + 0xA80, func_001706F0, func_0016FC80, 0x60, 2);
+    func_00100340(m + 0x960, DogModelArray_ctor, IK3_Destroy, 0x90, 2);
+    func_00100340(m + 0xA80, IK2_ctor, IK2_Destroy, 0x60, 2);
     AT(m, 0x0, void **) = vtbl;
     return m;
 }
 
-void *func_002080D0(u8 *m, u8 kind) {   /* Hewie, kind 2 (event 0xB7) */
+/* 0x002080D0 */
+void *DogModelB_ctor(u8 *m, u8 kind) {   /* Hewie, kind 2 (event 0xB7) */
     return dog_model(m, kind, D_0046B9B0);
 }
 
-void *func_00208180(u8 *m, u8 kind) {   /* Hewie, kind 1 (event 0xB7) */
+/* 0x00208180 */
+void *DogModelA_ctor(u8 *m, u8 kind) {   /* Hewie, kind 1 (event 0xB7) */
     return dog_model(m, kind, D_0046B8F0);
 }
 
@@ -491,12 +516,13 @@ static inline void parts40(u8 *from, u8 *to) {
 }
 
 /* Fiona's costume 7 (0xD50 bytes) */
-void *func_00208420(u8 *m, s32 kind) {
-    func_0016FC30(m);
+/* 0x00208420 */
+void *Costume7Model_ctor(u8 *m, s32 kind) {
+    HumanModel_PartsCtor(m);
     AT(m, 0x0, void **) = D_0046B0E0;
     AT(m, 0x9A0, u8) = kind;
     AT(m, 0x0, void **) = D_00479420;
-    func_00100340(m + 0x9B0, func_00170670, func_001702F0, 0x50, 5);
+    func_00100340(m + 0x9B0, BoneHangPoint_ctor, BoneHangPoint_dtor, 0x50, 5);
     AT(m, 0xB74, s32) = 0;
     AT(m, 0xB70, s32) = 0;
     AT(m, 0xBB0, void **) = D_00470440;
@@ -512,15 +538,16 @@ void *func_00208420(u8 *m, s32 kind) {
 }
 
 /* Fiona's costume 6 (0xDE0 bytes) */
-void *func_002084D0(u8 *m, s32 kind) {
-    func_0016FC30(m);
+/* 0x002084D0 */
+void *Costume6Model_ctor(u8 *m, s32 kind) {
+    HumanModel_PartsCtor(m);
     AT(m, 0x0, void **) = D_0046B0E0;
     AT(m, 0x9A0, u8) = kind;
     AT(m, 0x0, void **) = D_00478490;
     AT(m, 0x9E0, void **) = D_004703D0;
     AT(m, 0xA34, s32) = 0;
     AT(m, 0xA30, s32) = 0;
-    func_00100340(m + 0xA40, func_0016FC10, func_0016FBB0, 0x50, 4);
+    func_00100340(m + 0xA40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
     parts40(m + 0xB80, m + 0xD00);
     AT(m, 0xD34, s32) = 0;
     AT(m, 0xD30, s32) = 0;
@@ -533,11 +560,11 @@ void *func_002084D0(u8 *m, s32 kind) {
 /* Fiona's costumes 3 and 2: twelve / eight 0x50 nodes, single parts, sixteen 0x50 nodes, parts
  * of 0x40, three 0x50 nodes and more parts */
 static inline void *costume_model(u8 *m, s32 kind, void **vtbl, s32 n, u32 at) {
-    func_0016FC30(m);
+    HumanModel_PartsCtor(m);
     AT(m, 0x0, void **) = D_0046B0E0;
     AT(m, 0x9A0, u8) = kind;
     AT(m, 0x0, void **) = vtbl;
-    func_00100340(m + 0x9B0, func_00170460, func_00170080, 0x50, n);
+    func_00100340(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, n);
     AT(m, at + 0x4, s32) = 0;
     AT(m, at + 0x0, s32) = 0;
     AT(m, at + 0x40, void **) = D_004703D0;
@@ -549,38 +576,41 @@ static inline void *costume_model(u8 *m, s32 kind, void **vtbl, s32 n, u32 at) {
     AT(m, at + 0x170, void **) = D_004703D0;
     AT(m, at + 0x1C4, s32) = 0;
     AT(m, at + 0x1C0, s32) = 0;
-    func_00100340(m + at + 0x1D0, func_002089D0, func_00208970, 0x50, 0x10);
+    func_00100340(m + at + 0x1D0, CostumeHangPoint_ctor, CostumeHangPoint_dtor, 0x50, 0x10);
     AT(m, at + 0x704, s32) = 0;
     AT(m, at + 0x700, s32) = 0;
     parts40(m + at + 0x710, m + at + 0x890);
-    func_00100340(m + at + 0x890, func_00208950, func_002088F0, 0x50, 3);
+    func_00100340(m + at + 0x890, WindHangPoint_ctor, WindHangPoint_dtor, 0x50, 3);
     AT(m, at + 0x9B4, s32) = 0;
     AT(m, at + 0x9B0, s32) = 0;
     parts40(m + at + 0x9C0, m + at + 0xB40);
     return m;
 }
 
-void *func_00208650(u8 *m) {
+/* 0x00208650 */
+void *Costume3Model_ctor(u8 *m) {
     return costume_model(m, 3, D_00475BC0, 8, 0xC60);
 }
 
-void *func_002089F0(u8 *m) {
+/* 0x002089F0 */
+void *Costume2Model_ctor(u8 *m) {
     return costume_model(m, 2, D_00475AE0, 0xC, 0xDA0);
 }
 
 /* Fiona's costume 1 (her sheet model, D_00470620) */
-void *func_00208C90(u8 *m) {
-    func_0016FC30(m);
+/* 0x00208C90 */
+void *FionaModel_ctor(u8 *m) {
+    HumanModel_PartsCtor(m);
     AT(m, 0x0, void **) = D_0046B0E0;
     AT(m, 0x9A0, u8) = 1;
     AT(m, 0x0, void **) = D_00470620;
-    func_00100340(m + 0x9B0, func_00208E90, func_00208E30, 0x50, 0x20);
+    func_00100340(m + 0x9B0, FionaModelArray_ctor, HairPoint2_dtor, 0x50, 0x20);
     AT(m, 0x13E4, s32) = 0;
     AT(m, 0x13E0, s32) = 0;
     AT(m, 0x1420, void **) = D_004703D0;
     AT(m, 0x1474, s32) = 0;
     AT(m, 0x1470, s32) = 0;
-    func_00100340(m + 0x1480, func_0016FC10, func_0016FBB0, 0x50, 4);
+    func_00100340(m + 0x1480, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
     parts40(m + 0x15C0, m + 0x1740);
     AT(m, 0x1774, s32) = 0;
     AT(m, 0x1770, s32) = 0;
@@ -592,7 +622,8 @@ void *func_00208C90(u8 *m) {
 
 /* the script's value (u16) for character id `id`: a step slot's (+0x578, id 0xF0..0xFA) or a
  * character slot's (+0x590; 0 for none) */
-u32 func_00208F80(VObject *ev, s32 id) {
+/* 0x00208F80 */
+u32 Events_ScriptCharValue(VObject *ev, s32 id) {
     u32 i;
 
     if ((id & 0xFF) >= 0xF0 && (id & 0xFF) < 0xFB) {
@@ -607,38 +638,42 @@ u32 func_00208F80(VObject *ev, s32 id) {
 }
 
 /* the second dog model (D_0046B9B0, 0xB90 bytes) for character `slot` */
-void func_003A0F90(Progress *p, u32 slot) {
+/* 0x003A0F90 */
+void CharLoad_DogModelB(Progress *p, u32 slot) {
     VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
-    u8 *m = func_002DC6E0(0xB90, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, 0xB90));
+    u8 *m = Model_new(0xB90, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, 0xB90));
 
     if (m != NULL) {
-        func_00208210(m, 2);
+        DogModel_ctor(m, 2);
         AT(m, 0x0, void **) = D_0046B9B0;
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
 
 extern void *D_0046C160[], *D_0046B0E0[], *D_00470620[], *D_00472BD0[];
-extern void *func_00208E30(void *, s32);
+extern void *HairPoint2_dtor(void *, s32);
 
 /* the human characters' model base: the model, two of 0x60 at +0x8D0 / +0x930, kind +0x9A0 */
-void *func_00170690(u8 *m, s32 kind) {
-    func_0016F4B0(m);
+/* 0x00170690 */
+void *HumanModel_ctor(u8 *m, s32 kind) {
+    ModelBase_ctor(m);
     AT(m, 0x0, void **) = D_0046C160;
-    func_001706F0(m + 0x8D0);
-    func_001706F0(m + 0x930);
+    IK2_ctor(m + 0x8D0);
+    IK2_ctor(m + 0x930);
     AT(m, 0x0, void **) = D_0046B0E0;
     AT(m, 0x9A0, u8) = kind;
     return m;
 }
 
-void *func_001706F0(u8 *p) {
+/* 0x001706F0 */
+void *IK2_ctor(u8 *p) {
     FLD(p, 0x58, void **) = D_0046B0D0;
     return p;
 }
 
 /* an element of Fiona's model's first array (0x50 bytes) */
-void *func_00208E90(void *p) {
+/* 0x00208E90 */
+void *FionaModelArray_ctor(void *p) {
     u8 *e = p;
 
     AT(e, 0x30, void **) = D_00472BD0;
@@ -648,38 +683,41 @@ void *func_00208E90(void *p) {
 extern void *D_0046FF40[], *D_0046FF00[];
 
 /* a room effect of the event command 0x7F (0xA0 bytes): its vtable */
-void *func_00208EF0(void *p) {
+/* 0x00208EF0 */
+void *EvEffect7F_Init(void *p) {
     AT(p, 0x0, void **) = D_0046FF00;
     return p;
 }
 
 /* a room effect of the event command 0x86 (0xA0 bytes): its vtable */
-void *func_00208ED0(void *p) {
+/* 0x00208ED0 */
+void *EvEffect86_Init(void *p) {
     AT(p, 0x0, void **) = D_0046FF40;
     return p;
 }
 
 /* the player's (Fiona's) model (0x1820 bytes), put at character `slot` +0xF0 */
-void func_003A1860(Progress *p, u32 slot) {
+/* 0x003A1860 */
+void CharLoad_FionaModel(Progress *p, u32 slot) {
     VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
-    u8 *m = func_002DC6E0(0x1820, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, 0x1820));
+    u8 *m = Model_new(0x1820, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, 0x1820));
 
     if (m != NULL) {
         u8 *e;
 
-        func_00170690(m, 1);
+        HumanModel_ctor(m, 1);
         AT(m, 0x0, void **) = D_00470620;
-        func_00100340(m + 0x9B0, func_00208E90, func_00208E30, 0x50, 0x20);
-        func_0016FB80(m + 0x13B0);
-        func_00170670(m + 0x13F0);
-        func_0016FB80(m + 0x1440);
-        func_00100340(m + 0x1480, func_0016FC10, func_0016FBB0, 0x50, 4);
+        func_00100340(m + 0x9B0, FionaModelArray_ctor, HairPoint2_dtor, 0x50, 0x20);
+        SpringSet_ctor(m + 0x13B0);
+        BoneHangPoint_ctor(m + 0x13F0);
+        SpringSet_ctor(m + 0x1440);
+        func_00100340(m + 0x1480, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
         for (e = m + 0x15C0; e < m + 0x1740; e += 0x40) {
-            func_0016FB90(e);
+            BonePoint_ctor(e);
         }
-        func_0016FB80(m + 0x1740);
-        func_00170650(m + 0x1780);
-        func_0016FB80(m + 0x17E0);
+        SpringSet_ctor(m + 0x1740);
+        SprungPoint_ctor(m + 0x1780);
+        SpringSet_ctor(m + 0x17E0);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
@@ -688,28 +726,29 @@ extern void *D_00470540[];
 
 /* Fiona's model in her clothes (0x1270 bytes, vtable D_00470540), put at character `slot` +0xF0:
  * twelve 0x50 nodes, single parts, four 0x50 nodes, six parts of 0x40 and more single parts */
-void func_003A1720(Progress *p, u32 slot) {
+/* 0x003A1720 */
+void CharLoad_FionaClothes(Progress *p, u32 slot) {
     VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
-    u8 *m = func_002DC6E0(0x1270, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, 0x1270));
+    u8 *m = Model_new(0x1270, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, 0x1270));
 
     if (m != NULL) {
         u8 *e;
 
-        func_00170690(m, 0);
+        HumanModel_ctor(m, 0);
         AT(m, 0x0, void **) = D_00470540;
-        func_00100340(m + 0x9B0, func_00170460, func_00170080, 0x50, 0xC);
-        func_0016FB80(m + 0xD70);
-        func_00170670(m + 0xDB0);
-        func_0016FB80(m + 0xE00);
-        func_00100340(m + 0xE40, func_0016FC10, func_0016FBB0, 0x50, 4);
+        func_00100340(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, 0xC);
+        SpringSet_ctor(m + 0xD70);
+        BoneHangPoint_ctor(m + 0xDB0);
+        SpringSet_ctor(m + 0xE00);
+        func_00100340(m + 0xE40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
         for (e = m + 0xF80; e < m + 0x1100; e += 0x40) {
-            func_0016FB90(e);
+            BonePoint_ctor(e);
         }
-        func_0016FB80(m + 0x1100);
-        func_00170650(m + 0x1140);
-        func_0016FB80(m + 0x11A0);
-        func_00170670(m + 0x11E0);
-        func_0016FB80(m + 0x1230);
+        SpringSet_ctor(m + 0x1100);
+        SprungPoint_ctor(m + 0x1140);
+        SpringSet_ctor(m + 0x11A0);
+        BoneHangPoint_ctor(m + 0x11E0);
+        SpringSet_ctor(m + 0x1230);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
@@ -719,16 +758,16 @@ void func_003A1720(Progress *p, u32 slot) {
  * character `slot` +0xF0 ---- */
 
 extern void *D_00479420[], *D_00478490[], *D_00475BC0[], *D_00475AE0[];
-extern void *func_00170080(void *, s32);
-extern void *func_002089D0(void *);
-extern void *func_00208970(void *, s32);
-extern void *func_00208950(void *);
-extern void *func_002088F0(void *, s32);
+extern void *SwayPointA_dtor(void *, s32);
+extern void *CostumeHangPoint_ctor(void *);
+extern void *CostumeHangPoint_dtor(void *, s32);
+extern void *WindHangPoint_ctor(void *);
+extern void *WindHangPoint_dtor(void *, s32);
 
 static inline u8 *setup_alloc(Progress *p, u32 size) {
     VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
 
-    return func_002DC6E0(size, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, size));
+    return Model_new(size, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, size));
 }
 
 /* parts of 0x40 from `from` to `to` */
@@ -736,65 +775,69 @@ static inline void setup_parts40(u8 *from, u8 *to) {
     u8 *e;
 
     for (e = from; e < to; e += 0x40) {
-        func_0016FB90(e);
+        BonePoint_ctor(e);
     }
 }
 
 /* partner 1: the first dog model (D_0046B8F0) */
-void func_003A1020(Progress *p, u32 slot) {
+/* 0x003A1020 */
+void CharLoad_DogModelA(Progress *p, u32 slot) {
     u8 *m = setup_alloc(p, 0xB90);
 
     if (m != NULL) {
-        func_00208210(m, 1);
+        DogModel_ctor(m, 1);
         AT(m, 0x0, void **) = D_0046B8F0;
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
 
 /* Fiona's costume 8 (0x9B0 bytes, the bare base) */
-void func_003A1190(Progress *p, u32 slot) {
+/* 0x003A1190 */
+void CharLoad_Costume8(Progress *p, u32 slot) {
     u8 *m = setup_alloc(p, 0x9B0);
 
     if (m != NULL) {
-        func_00170690(m, 8);
+        HumanModel_ctor(m, 8);
         AT(m, 0x0, void **) = D_00479660;
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
 
-/* Fiona's costume 7 (0xD50 bytes; as func_00208420) */
-void func_003A1220(Progress *p, u32 slot) {
+/* Fiona's costume 7 (0xD50 bytes; as Costume7Model_ctor) */
+/* 0x003A1220 */
+void CharLoad_Costume7(Progress *p, u32 slot) {
     u8 *m = setup_alloc(p, 0xD50);
 
     if (m != NULL) {
-        func_00170690(m, 7);
+        HumanModel_ctor(m, 7);
         AT(m, 0x0, void **) = D_00479420;
-        func_00100340(m + 0x9B0, func_00170670, func_001702F0, 0x50, 5);
-        func_0016FB80(m + 0xB40);
-        func_00170650(m + 0xB80);
-        func_0016FB80(m + 0xBE0);
-        func_00170650(m + 0xC20);
-        func_0016FB80(m + 0xC80);
-        func_00170670(m + 0xCC0);
-        func_0016FB80(m + 0xD10);
+        func_00100340(m + 0x9B0, BoneHangPoint_ctor, BoneHangPoint_dtor, 0x50, 5);
+        SpringSet_ctor(m + 0xB40);
+        SprungPoint_ctor(m + 0xB80);
+        SpringSet_ctor(m + 0xBE0);
+        SprungPoint_ctor(m + 0xC20);
+        SpringSet_ctor(m + 0xC80);
+        BoneHangPoint_ctor(m + 0xCC0);
+        SpringSet_ctor(m + 0xD10);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
 
-/* Fiona's costume 6 (0xDE0 bytes; as func_002084D0) */
-void func_003A1310(Progress *p, u32 slot) {
+/* Fiona's costume 6 (0xDE0 bytes; as Costume6Model_ctor) */
+/* 0x003A1310 */
+void CharLoad_Costume6(Progress *p, u32 slot) {
     u8 *m = setup_alloc(p, 0xDE0);
 
     if (m != NULL) {
-        func_00170690(m, 6);
+        HumanModel_ctor(m, 6);
         AT(m, 0x0, void **) = D_00478490;
-        func_00170670(m + 0x9B0);
-        func_0016FB80(m + 0xA00);
-        func_00100340(m + 0xA40, func_0016FC10, func_0016FBB0, 0x50, 4);
+        BoneHangPoint_ctor(m + 0x9B0);
+        SpringSet_ctor(m + 0xA00);
+        func_00100340(m + 0xA40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
         setup_parts40(m + 0xB80, m + 0xD00);
-        func_0016FB80(m + 0xD00);   /* (the loop's end, passed through a0) */
-        func_00170650(m + 0xD40);
-        func_0016FB80(m + 0xDA0);
+        SpringSet_ctor(m + 0xD00);   /* (the loop's end, passed through a0) */
+        SprungPoint_ctor(m + 0xD40);
+        SpringSet_ctor(m + 0xDA0);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
@@ -802,26 +845,27 @@ void func_003A1310(Progress *p, u32 slot) {
 /* Fiona's costumes 3 and 2 (as costume_model): n 0x50 nodes, single parts, sixteen 0x50
  * nodes, parts of 0x40, three 0x50 nodes and more parts */
 static inline void setup_costume(u8 *m, s32 kind, void **vtbl, s32 n, u32 at) {
-    func_00170690(m, kind);
+    HumanModel_ctor(m, kind);
     AT(m, 0x0, void **) = vtbl;
-    func_00100340(m + 0x9B0, func_00170460, func_00170080, 0x50, n);
-    func_0016FB80(m + at);
-    func_00170670(m + at + 0x40);
-    func_0016FB80(m + at + 0x90);
-    func_00170650(m + at + 0xD0);
-    func_0016FB80(m + at + 0x130);
-    func_00170670(m + at + 0x170);
-    func_0016FB80(m + at + 0x1C0);
-    func_00100340(m + at + 0x200, func_002089D0, func_00208970, 0x50, 0x10);
-    func_0016FB80(m + at + 0x700);
+    func_00100340(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, n);
+    SpringSet_ctor(m + at);
+    BoneHangPoint_ctor(m + at + 0x40);
+    SpringSet_ctor(m + at + 0x90);
+    SprungPoint_ctor(m + at + 0xD0);
+    SpringSet_ctor(m + at + 0x130);
+    BoneHangPoint_ctor(m + at + 0x170);
+    SpringSet_ctor(m + at + 0x1C0);
+    func_00100340(m + at + 0x200, CostumeHangPoint_ctor, CostumeHangPoint_dtor, 0x50, 0x10);
+    SpringSet_ctor(m + at + 0x700);
     setup_parts40(m + at + 0x740, m + at + 0x8C0);
-    func_00100340(m + at + 0x8C0, func_00208950, func_002088F0, 0x50, 3);   /* (the loop's end, a0) */
-    func_0016FB80(m + at + 0x9B0);
+    func_00100340(m + at + 0x8C0, WindHangPoint_ctor, WindHangPoint_dtor, 0x50, 3);   /* (the loop's end, a0) */
+    SpringSet_ctor(m + at + 0x9B0);
     setup_parts40(m + at + 0x9F0, m + at + 0xB70);
 }
 
 /* Fiona's costume 3 (0x17A0 bytes) */
-void func_003A1420(Progress *p, u32 slot) {
+/* 0x003A1420 */
+void CharLoad_Costume3(Progress *p, u32 slot) {
     u8 *m = setup_alloc(p, 0x17A0);
 
     if (m != NULL) {
@@ -831,7 +875,8 @@ void func_003A1420(Progress *p, u32 slot) {
 }
 
 /* Fiona's costume 2 (0x18E0 bytes) */
-void func_003A15A0(Progress *p, u32 slot) {
+/* 0x003A15A0 */
+void CharLoad_Costume2(Progress *p, u32 slot) {
     u8 *m = setup_alloc(p, 0x18E0);
 
     if (m != NULL) {
@@ -981,10 +1026,11 @@ const char *EventHumanModel_ModelFile(void *m, u32 n) {
 }
 
 /* the one-node set +0x11A0: node +0x1140 on bone 0x19 */
-void func_002F70C0(u8 *m) {
+/* 0x002F70C0 */
+void EventHumanModel_Set11A0(u8 *m) {
     u8 *node = m + 0x1140;
 
-    func_002EE960(m + 0x11A0);
+    SpringSet_Clear(m + 0x11A0);
     spring_link(m + 0x11A0, node);
     AT(m, 0x11A0, f32) = 0.0f;
     AT(m, 0x11A4, f32) = 0.0f;
@@ -1003,12 +1049,13 @@ void func_002F70C0(u8 *m) {
 
 /* the set +0x1100: 4 nodes (+0xE40) on bones 0x25..0x28 and 6 collision spheres (+0xF80,
  * chained by +0x2C from +0x1118) */
-void func_002F7180(u8 *m) {
+/* 0x002F7180 */
+void EventHumanModel_Set1100(u8 *m) {
     static const s32 sColBones[6] = {0x1A, 0x2A, 0x21, 0x1B, 0x2B, 0x21};
     u8 *set = m + 0x1100;
     s32 i;
 
-    func_002EE960(set);
+    SpringSet_Clear(set);
     for (i = 0; i < 4; i++) {
         spring_link(set, m + 0xE40 + i * 0x50);
     }
@@ -1036,21 +1083,22 @@ void func_002F7180(u8 *m) {
         AT(node, 0x20, u8) = (i == 0);
     }
     for (i = 0; i < 5; i++) {
-        func_002EE690(m + 0xF80 + i * 0x40, sColBones[i], 0.0f, 0.0f, 0.0f, 1.0f);
+        Sphere_Set(m + 0xF80 + i * 0x40, sColBones[i], 0.0f, 0.0f, 0.0f, 1.0f);
     }
-    func_002EE690(m + 0x10C0, sColBones[5], 0.0f, 1.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0x10C0, sColBones[5], 0.0f, 1.0f, 0.0f, 1.0f);
 }
 
 /* the set +0xD70: 12 nodes (+0x9B0) in 6 pairs - bones, kinds and tables per pair, the first
  * of each pair leading, the phases 1 / 2 x 2 pi / 18 */
-void func_002F73C0(u8 *m) {
+/* 0x002F73C0 */
+void EventHumanModel_SetD70(u8 *m) {
     static u8 *const sTables[6] = {D_0041A4C0, D_0041A4C0, D_0041A4D0, D_0041A4D0, D_0041A4E0, D_0041A4F0};
     static const s32 sBones[6] = {0xB, 0x11, 0xD, 0x13, 0xF, 0x15};
     static const u32 sPhase[2] = {0x3EB2B8C3, 0x3F32B8C3};
     u8 *set = m + 0xD70;
     s32 i, j;
 
-    func_002EE960(set);
+    SpringSet_Clear(set);
     for (i = 0; i < 12; i++) {
         spring_link(set, m + 0x9B0 + i * 0x50);
     }
@@ -1071,20 +1119,21 @@ void func_002F73C0(u8 *m) {
 
 /* her own setup: the five spring sets (the +0xE00 node on bone 0x29, the +0x1230 one on
  * 0x30), then a reset (+0x850) */
-void func_002F7620(u8 *m) {
+/* 0x002F7620 */
+void EventHumanModel_Setup(u8 *m) {
     u8 *node;
 
-    func_002F73C0(m);
-    func_002EE960(m + 0xE00);
+    EventHumanModel_SetD70(m);
+    SpringSet_Clear(m + 0xE00);
     node = m + 0xDB0;
     spring_link(m + 0xE00, node);
     spring_set(m + 0xE00, 0x3DCCCCCD /* 0.1f */, 0x3F7D70A4 /* 0.99f */, m);
     AT(node, 0x40, f32) = 1.0f;
     AT(node, 0x24, s32) = 0x29;
     AT(node, 0x20, u8) = 1;
-    func_002F7180(m);
-    func_002F70C0(m);
-    func_002EE960(m + 0x1230);
+    EventHumanModel_Set1100(m);
+    EventHumanModel_Set11A0(m);
+    SpringSet_Clear(m + 0x1230);
     node = m + 0x11E0;
     spring_link(m + 0x1230, node);
     spring_set(m + 0x1230, 0x3DCCCCCD /* 0.1f */, 0x3F7D70A4 /* 0.99f */, m);
@@ -1127,15 +1176,15 @@ void EventHumanModel_Springs(u8 *o) {
         n = 0x1E;
     }
     for (k = 0; k < 5; k++) {
-        func_002EE8A0(o + sSets[k]);
+        SpringSet_Begin(o + sSets[k]);
     }
     for (i = 0; i < n; i++) {
         for (k = 0; k < 5; k++) {
-            func_002EE900(o + sSets[k]);
+            SpringSet_Step(o + sSets[k]);
         }
     }
     for (k = 0; k < 5; k++) {
-        func_002EE840(o + sSets[k]);
+        SpringSet_Finish(o + sSets[k]);
     }
     AT(o, 0x850, u8) = 0;
 }
@@ -1165,7 +1214,7 @@ void EventHumanModel_Loaded(u8 *m) {
     AT(m, 0x8BC, s32) = 0x2E;
     AT(m, 0x8B0, s32) = 0x21;
     AT(m, 0x8B4, s32) = 0x17;
-    func_002F7620(m);
+    EventHumanModel_Setup(m);
     AT(m, 0x9C, u8) = 4;
     AT(m, 0x9D, u8) = 0xC0;
     for (i = 1; i < 11; i++) {
@@ -1174,7 +1223,7 @@ void EventHumanModel_Loaded(u8 *m) {
     }
 }
 
-/* ---- Fiona's costume 6 (vtable D_00478490, built by func_002084D0): three spring sets -
+/* ---- Fiona's costume 6 (vtable D_00478490, built by Costume6Model_ctor): three spring sets -
  * +0xA00 one node (+0x9B0), +0xD00 four hanging nodes (+0xA40) with six collision spheres
  * (+0xB80), +0xDA0 one node (+0xD40) ---- */
 
@@ -1189,7 +1238,7 @@ void *Costume6Model_dtor(void *p, s32 flags) {
         AT(m, 0x0, void **) = D_00478490;
         AT(m, 0xD70, void **) = D_00470440;
         AT(m, 0xD70, void **) = D_004703B0;
-        func_001002C0(m + 0xA40, func_0016FBB0, 0x50, 4);
+        func_001002C0(m + 0xA40, HangPoint_dtor, 0x50, 4);
         AT(m, 0x9E0, void **) = D_004703D0;
         AT(m, 0x9E0, void **) = D_004703B0;
         AT(m, 0x0, void **) = D_0046B0E0;
@@ -1293,10 +1342,11 @@ void *Costume6Model_ModelFile(void *self, u32 i) {
 }
 
 /* the one-node set +0xDA0: node +0xD40 on bone 0xC */
-void func_00349AB0(u8 *m) {
+/* 0x00349AB0 */
+void Costume6Model_SetDA0(u8 *m) {
     u8 *node = m + 0xD40;
 
-    func_002EE960(m + 0xDA0);
+    SpringSet_Clear(m + 0xDA0);
     spring_link(m + 0xDA0, node);
     AT(m, 0xDA0, f32) = 0.0f;
     AT(m, 0xDA4, f32) = 0.0f;
@@ -1315,12 +1365,13 @@ void func_00349AB0(u8 *m) {
 
 /* the set +0xD00: 4 nodes (+0xA40) on bones 0x18..0x1B and 6 collision spheres (+0xB80,
  * chained by +0x2C from +0xD18) */
-void func_00349B70(u8 *m) {
+/* 0x00349B70 */
+void Costume6Model_SetD00(u8 *m) {
     static const s32 sColBones[6] = {0xD, 0x1D, 0x14, 0xE, 0x1E, 0x14};
     u8 *set = m + 0xD00;
     s32 i;
 
-    func_002EE960(set);
+    SpringSet_Clear(set);
     for (i = 0; i < 4; i++) {
         spring_link(set, m + 0xA40 + i * 0x50);
     }
@@ -1348,23 +1399,24 @@ void func_00349B70(u8 *m) {
         AT(node, 0x20, u8) = (i == 0);
     }
     for (i = 0; i < 5; i++) {
-        func_002EE690(m + 0xB80 + i * 0x40, sColBones[i], 0.0f, 0.0f, 0.0f, 1.0f);
+        Sphere_Set(m + 0xB80 + i * 0x40, sColBones[i], 0.0f, 0.0f, 0.0f, 1.0f);
     }
-    func_002EE690(m + 0xCC0, sColBones[5], 0.0f, 1.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xCC0, sColBones[5], 0.0f, 1.0f, 0.0f, 1.0f);
 }
 
 /* her setup: the three spring sets (the +0xA00 node on bone 0x1C), then a reset (+0x850) */
-void func_00349DB0(u8 *m) {
+/* 0x00349DB0 */
+void Costume6Model_Setup(u8 *m) {
     u8 *node = m + 0x9B0;
 
-    func_002EE960(m + 0xA00);
+    SpringSet_Clear(m + 0xA00);
     spring_link(m + 0xA00, node);
     spring_set(m + 0xA00, 0x3DCCCCCD /* 0.1f */, 0x3F7D70A4 /* 0.99f */, m);
     AT(node, 0x40, f32) = 1.0f;
     AT(node, 0x24, s32) = 0x1C;
     AT(node, 0x20, u8) = 1;
-    func_00349B70(m);
-    func_00349AB0(m);
+    Costume6Model_SetD00(m);
+    Costume6Model_SetDA0(m);
     AT(m, 0x850, u8) = 1;
 }
 
@@ -1399,17 +1451,17 @@ void Costume6Model_Springs(u8 *o) {
         }
         n = 0x1E;
     }
-    func_002EE8A0(o + 0xA00);
-    func_002EE8A0(o + 0xD00);
-    func_002EE8A0(o + 0xDA0);
+    SpringSet_Begin(o + 0xA00);
+    SpringSet_Begin(o + 0xD00);
+    SpringSet_Begin(o + 0xDA0);
     for (i = 0; i < n; i++) {
-        func_002EE900(o + 0xA00);
-        func_002EE900(o + 0xD00);
-        func_002EE900(o + 0xDA0);
+        SpringSet_Step(o + 0xA00);
+        SpringSet_Step(o + 0xD00);
+        SpringSet_Step(o + 0xDA0);
     }
-    func_002EE840(o + 0xA00);
-    func_002EE840(o + 0xD00);
-    func_002EE840(o + 0xDA0);
+    SpringSet_Finish(o + 0xA00);
+    SpringSet_Finish(o + 0xD00);
+    SpringSet_Finish(o + 0xDA0);
     AT(o, 0x850, u8) = 0;
 }
 
@@ -1434,7 +1486,7 @@ void Costume6Model_Loaded(u8 *m) {
     AT(m, 0x8BC, s32) = 0x21;
     AT(m, 0x8B0, s32) = 0x14;
     AT(m, 0x8B4, s32) = 0xA;
-    func_00349DB0(m);
+    Costume6Model_Setup(m);
     for (i = 0; i < sizeof(sLoose); i++) {
         AT(m, sLoose[i], u8) = 4;
         AT(m, sLoose[i] + 1, u8) = 0x40;
@@ -1467,10 +1519,10 @@ void *FionaModel_dtor(void *p, s32 flags) {
         AT(m, 0x0, void **) = D_00470620;
         AT(m, 0x17B0, void **) = D_00470440;
         AT(m, 0x17B0, void **) = D_004703B0;
-        func_001002C0(m + 0x1480, func_0016FBB0, 0x50, 4);
+        func_001002C0(m + 0x1480, HangPoint_dtor, 0x50, 4);
         AT(m, 0x1420, void **) = D_004703D0;
         AT(m, 0x1420, void **) = D_004703B0;
-        func_001002C0(m + 0x9B0, func_00208E30, 0x50, 0x20);
+        func_001002C0(m + 0x9B0, HairPoint2_dtor, 0x50, 0x20);
         AT(m, 0x0, void **) = D_0046B0E0;
         HumanModel_dtor(m, 0);
         if ((s16)flags > 0) {
@@ -1563,7 +1615,7 @@ const char *DogModel_Textures(void) {
 }
 
 extern void CharModel_Loaded(u8 *m);
-extern void func_002F80D0(u8 *m);
+extern void FionaModel_Setup(u8 *m);
 
 /* Fiona's model, once loaded: the base setup, the parts' roles (+0x890..: which mesh part is
  * which), her own setup, and per-part draw settings (4, 0x40) */
@@ -1585,7 +1637,7 @@ void FionaModel_Loaded(u8 *m) {
     AT(m, 0x8BC, s32) = 0x42;
     AT(m, 0x8B0, s32) = 0x35;
     AT(m, 0x8B4, s32) = 0x2B;
-    func_002F80D0(m);
+    FionaModel_Setup(m);
     for (i = 0; i < 12; i++) {
         AT(m, sParts[i], u8) = 4;
         AT(m, sParts[i] + 1, u8) = 0x40;
@@ -1656,7 +1708,7 @@ void ModelBase_Loaded(u8 *m) {
     AT(m, 0x1DC, u8 *) = AT(m, 0x810, u8 *);
     AT(m, 0x1D8, u8 *) = AT(m, 0x4CC, u8 *);
     AT(m, 0x4D8, u8) = 0;
-    func_001F4910(m);
+    Model_ResetMotion(m);
 }
 
 extern void *D_004562B0;
@@ -1664,7 +1716,8 @@ extern void *D_004562B0;
 /* reset the model's motion state: the two motion slots (+0x564, 0xA0 each; current +0x540,
  * next +0x544) and the three blend channels (+0x6B0, 0x60 each), freeing their skeletons and
  * buffers */
-void func_001F4910(u8 *m) {
+/* 0x001F4910 */
+void Model_ResetMotion(u8 *m) {
     void *bufs = D_004562B0;
     void *skels = D_004562A8;
     u8 *slot;
@@ -1829,17 +1882,18 @@ void CharModel_VtCC(u8 *m) {
 void CharModel_VtD0(u8 *m) {
 }
 
-extern void func_002F7E90(u8 *m);
-extern void func_002F7C50(u8 *m);
-extern void func_002F7B90(u8 *m);
+extern void FionaModel_Nodes(u8 *m);
+extern void FionaModel_Set1740(u8 *m);
+extern void FionaModel_Set17E0(u8 *m);
 
 /* Fiona's own setup: append her node (+0x13F0; next +0x28, prev +0x2C) to her list
  * (+0x1470 head, +0x1474 tail) and set her defaults */
-void func_002F80D0(u8 *m) {
+/* 0x002F80D0 */
+void FionaModel_Setup(u8 *m) {
     u8 *node = m + 0x13F0;
 
-    func_002F7E90(m);
-    func_002EE960(m + 0x1440);
+    FionaModel_Nodes(m);
+    SpringSet_Clear(m + 0x1440);
     if (AT(m, 0x1470, u8 *) != NULL && AT(m, 0x1474, u8 *) != NULL) {
         AT(AT(m, 0x1474, u8 *), 0x28, u8 *) = node;
         AT(node, 0x28, u8 *) = NULL;
@@ -1861,8 +1915,8 @@ void func_002F80D0(u8 *m) {
     AT(m, 0x1430, f32) = 1.0f;
     AT(m, 0x1414, s32) = 0x3D;
     AT(m, 0x1410, u8) = 1;
-    func_002F7C50(m);
-    func_002F7B90(m);
+    FionaModel_Set1740(m);
+    FionaModel_Set17E0(m);
     AT(m, 0x850, u8) = 1;
 }
 
@@ -1871,7 +1925,8 @@ extern u8 D_0041A510[], D_0041A520[], D_0041A530[], D_0041A540[], D_0041A550[], 
 /* Fiona's 32 secondary-motion nodes (+0x9B0, 0x50 each; on the list +0x13E0/+0x13E4): 8
  * groups of 4 (the hair and clothes?), each node: +0x20 first of its group, +0x24 bone,
  * +0x40 weight, +0x44 kind, +0x48 table, +0x4C phase */
-void func_002F7E90(u8 *m) {
+/* 0x002F7E90 */
+void FionaModel_Nodes(u8 *m) {
     static u8 *const sTables[8] = {
         D_0041A560, D_0041A510, D_0041A510, D_0041A540,
         D_0041A550, D_0041A520, D_0041A520, D_0041A530,
@@ -1880,7 +1935,7 @@ void func_002F7E90(u8 *m) {
     union { u32 u; f32 f; } twoPi = {0x40C90FDB};
     s32 i, g;
 
-    func_002EE960(m + 0x13B0);
+    SpringSet_Clear(m + 0x13B0);
     for (i = 0; i < 32; i++) {
         u8 *node = m + 0x9B0 + i * 0x50;
 
@@ -1920,7 +1975,8 @@ void func_002F7E90(u8 *m) {
 }
 
 /* clear a secondary-motion set (its node list +0x30/+0x34) */
-void func_002EE960(u8 *set) {
+/* 0x002EE960 */
+void SpringSet_Clear(u8 *set) {
     AT(set, 0x34, s32) = 0;
     AT(set, 0x30, s32) = 0;
     AT(set, 0x18, s32) = 0;
@@ -1928,11 +1984,12 @@ void func_002EE960(u8 *set) {
 
 /* Fiona's second secondary-motion set (+0x1740): 4 nodes (+0x1480) on bones 0x39..0x3C, and
  * 6 collision spheres (+0x15C0, 0x40 each, chained by +0x2C from +0x1758) */
-void func_002F7C50(u8 *m) {
+/* 0x002F7C50 */
+void FionaModel_Set1740(u8 *m) {
     static const s32 sColBones[6] = {0x2E, 0x3E, 0x35, 0x2F, 0x3F, 0x35};
     s32 i;
 
-    func_002EE960(m + 0x1740);
+    SpringSet_Clear(m + 0x1740);
     for (i = 0; i < 4; i++) {
         u8 *node = m + 0x1480 + i * 0x50;
 
@@ -1978,13 +2035,14 @@ void func_002F7C50(u8 *m) {
         AT(node, 0x20, u8) = (i == 0);
     }
     for (i = 0; i < 5; i++) {
-        func_002EE690(m + 0x15C0 + i * 0x40, sColBones[i], 0.0f, 0.0f, 0.0f, 1.0f);
+        Sphere_Set(m + 0x15C0 + i * 0x40, sColBones[i], 0.0f, 0.0f, 0.0f, 1.0f);
     }
-    func_002EE690(m + 0x1700, sColBones[5], 0.0f, 1.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0x1700, sColBones[5], 0.0f, 1.0f, 0.0f, 1.0f);
 }
 
 /* set a collision sphere: centre (bone-local, w 1), radius and its inverse, bone */
-void func_002EE690(u8 *col, s32 bone, f32 x, f32 y, f32 z, f32 r) {
+/* 0x002EE690 */
+void Sphere_Set(u8 *col, s32 bone, f32 x, f32 y, f32 z, f32 r) {
     AT(col, 0x10, f32) = x;
     AT(col, 0x14, f32) = y;
     AT(col, 0x18, f32) = z;
@@ -1995,10 +2053,11 @@ void func_002EE690(u8 *col, s32 bone, f32 x, f32 y, f32 z, f32 r) {
 }
 
 /* Fiona's third secondary-motion set (+0x17E0): one node (+0x1780) on bone 0x2D */
-void func_002F7B90(u8 *m) {
+/* 0x002F7B90 */
+void FionaModel_Set17E0(u8 *m) {
     u8 *node = m + 0x1780;
 
-    func_002EE960(m + 0x17E0);
+    SpringSet_Clear(m + 0x17E0);
     if (AT(m, 0x1810, u8 *) != NULL && AT(m, 0x1814, u8 *) != NULL) {
         AT(AT(m, 0x1814, u8 *), 0x28, u8 *) = node;
         AT(node, 0x28, u8 *) = NULL;
@@ -2025,7 +2084,7 @@ void func_002F7B90(u8 *m) {
     AT(m, 0x17D0, f32) = 1.0f;
 }
 
-extern void func_001F7890(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend);
+extern void Motion_Start(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend);
 
 /* the motion back to the default speeds (+0x87C / +0x880) from the start, its flags +0x85C /
    +0x85D cleared */
@@ -2041,59 +2100,66 @@ static inline void motion_defaults(u8 *m) {
 }
 
 /* play animation `anim` with these flags, variant and blend at the default speeds */
-void func_002DE030(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
+/* 0x002DE030 */
+void Motion_PlayWith(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
     motion_defaults(m);
-    func_001F7890(m, anim, flags, variant, blend);
+    Motion_Start(m, anim, flags, variant, blend);
 }
 
 /* play animation `anim` (its flags from the table +0x874, 6 bytes per entry) from the start,
  * at the default speeds +0x87C / +0x880 */
-void func_002DDE20(u8 *m, s32 anim, s32 variant) {
-    s32 i = func_001F4710(m, anim);
+/* 0x002DDE20 */
+void Motion_Play(u8 *m, s32 anim, s32 variant) {
+    s32 i = Motion_AnimIndex(m, anim);
     u32 flags = i != -1 ? AT(AT(m, 0x874, u8 *), i * 6 + 4, u16) : 0;
 
     motion_defaults(m);
-    func_001F7890(m, anim, flags & 0xFFFF, variant, 0.0f);
+    Motion_Start(m, anim, flags & 0xFFFF, variant, 0.0f);
 }
 
-/* func_002DDE20 blended in over `blend` frames */
-void func_002DDC60(u8 *m, s32 anim, s32 blend, s32 variant) {
-    s32 i = func_001F4710(m, anim);
+/* Motion_Play blended in over `blend` frames */
+/* 0x002DDC60 */
+void Motion_PlayBlend(u8 *m, s32 anim, s32 blend, s32 variant) {
+    s32 i = Motion_AnimIndex(m, anim);
     u32 flags = i != -1 ? AT(AT(m, 0x874, u8 *), i * 6 + 4, u16) : 0;
 
     motion_defaults(m);
-    func_001F7890(m, anim, flags & 0xFFFF, variant, (f32)blend);
+    Motion_Start(m, anim, flags & 0xFFFF, variant, (f32)blend);
 }
 
-/* func_002DDC60 with flag 8 added to the animation's, the default variant */
-void func_002DDBA0(u8 *m, s32 anim, s32 blend) {
-    s32 i = func_001F4710(m, anim);
+/* Motion_PlayBlend with flag 8 added to the animation's, the default variant */
+/* 0x002DDBA0 */
+void Motion_PlayBlend8(u8 *m, s32 anim, s32 blend) {
+    s32 i = Motion_AnimIndex(m, anim);
     u32 flags = i != -1 ? AT(AT(m, 0x874, u8 *), i * 6 + 4, u16) : 0;
 
     motion_defaults(m);
-    func_001F7890(m, anim, (flags | 8) & 0xFFFF, -1, (f32)blend);
+    Motion_Start(m, anim, (flags | 8) & 0xFFFF, -1, (f32)blend);
 }
 
 /* the same blended over the animation's own frames (the table's first s16) */
-void func_002DDD20(u8 *m, s32 anim, s32 variant) {
-    s32 i = func_001F4710(m, anim);
+/* 0x002DDD20 */
+void Motion_PlayOwnBlend(u8 *m, s32 anim, s32 variant) {
+    s32 i = Motion_AnimIndex(m, anim);
     f32 blend = (f32)(i != -1 ? AT(AT(m, 0x874, u8 *), i * 6, s16) : 0);
     u32 flags;
 
-    i = func_001F4710(m, anim);
+    i = Motion_AnimIndex(m, anim);
     flags = i != -1 ? AT(AT(m, 0x874, u8 *), i * 6 + 4, u16) : 0;
     motion_defaults(m);
-    func_001F7890(m, anim, (flags | 8) & 0xFFFF, variant, blend);
+    Motion_Start(m, anim, (flags | 8) & 0xFFFF, variant, blend);
 }
 
 /* the model's +0x6A4 object gets flag 0x40 */
-void func_001F6E30(u8 *m) {
+/* 0x001F6E30 */
+void Motion_Freeze(u8 *m) {
     AT(AT(m, 0x6A4, u8 *), 0x18, u32) |= 0x40;
 }
 
 /* the index of animation `anim` in the motion file (+0x4C4: at its +0xC a table: count, then
  * 8-byte entries from +0x10 starting with the id); -1: not there */
-s32 func_001F4710(u8 *m, s32 anim) {
+/* 0x001F4710 */
+s32 Motion_AnimIndex(u8 *m, s32 anim) {
     u8 *mtn = AT(m, 0x4C4, u8 *);
     u8 *tbl;
     u32 i;
@@ -2112,7 +2178,8 @@ s32 func_001F4710(u8 *m, s32 anim) {
 
 /* the entry (0x14 bytes from +0x10: +0x4 the body's motion, +0x8.. the 3 parts') of animation
  * `anim` in motion file `mtn` (the last match in its id table); NULL: not there */
-u8 *func_001F4B80(u8 *m, u8 *mtn, s32 anim) {
+/* 0x001F4B80 */
+u8 *Motion_AnimEntry(u8 *m, u8 *mtn, s32 anim) {
     u8 *tbl;
     s32 j = -1;
     u32 i;
@@ -2132,16 +2199,16 @@ u8 *func_001F4B80(u8 *m, u8 *mtn, s32 anim) {
     return mtn + j * 0x14 + 0x10;
 }
 
-extern void func_001F71E0(u8 *m, s32 anim, s32 part, u32 flags, s32 variant, f32 blend);
-extern void func_001F6E50(u8 *m, s32 anim, s32 part, u32 flags, u8 *channel, f32 blend);
-extern void func_001F7460(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend);
+extern void Motion_StartBody(u8 *m, s32 anim, s32 part, u32 flags, s32 variant, f32 blend);
+extern void Motion_StartPart(u8 *m, s32 anim, s32 part, u32 flags, u8 *channel, f32 blend);
+extern void Motion_PlayWhenFree(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend);
 
 /* animation `anim`'s entry, from the main motion file (+0x4C4) or else the second (+0x4C8) */
 static u8 *motion_entry(u8 *m, s32 anim) {
-    u8 *e = func_001F4B80(m, AT(m, 0x4C4, u8 *), anim);
+    u8 *e = Motion_AnimEntry(m, AT(m, 0x4C4, u8 *), anim);
 
     if (e == NULL) {
-        e = func_001F4B80(m, AT(m, 0x4C8, u8 *), anim);
+        e = Motion_AnimEntry(m, AT(m, 0x4C8, u8 *), anim);
     }
     return e;
 }
@@ -2149,7 +2216,8 @@ static u8 *motion_entry(u8 *m, s32 anim) {
 /* start animation `anim`: the body (if the animation has it), then each of the 3 parts that
  * the animation covers (blend channels +0x6B0); a part it doesn't cover keeps / resumes its
  * own animation (+0x4E4) */
-void func_001F7890(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
+/* 0x001F7890 */
+void Motion_Start(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
     s32 k;
 
 #ifdef HG_NATIVE
@@ -2160,7 +2228,7 @@ void func_001F7890(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
     AT(m, 0x4E0, s32) = AT(m, 0x4DC, s32);
     AT(m, 0x4DC, s32) = anim;
     if (AT(motion_entry(m, anim), 0x4, s32) != 0) {
-        func_001F71E0(m, anim, 1, flags, variant, blend);
+        Motion_StartBody(m, anim, 1, flags, variant, blend);
     } else {
         for (k = 0; k < 3; k++) {
             if (AT(motion_entry(m, anim), 0x8 + k * 4, s32) != 0) {
@@ -2170,7 +2238,7 @@ void func_001F7890(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
     }
     for (k = 0; k < 3; k++) {
         if (AT(motion_entry(m, anim), 0x8 + k * 4, s32) != 0) {
-            func_001F6E50(m, anim, k + 2, flags, m + k * 0x60 + 0x6B0, blend);
+            Motion_StartPart(m, anim, k + 2, flags, m + k * 0x60 + 0x6B0, blend);
             if (AT(m, 0x504 + k * 0x14, u8)) {
                 AT(m, 0x504 + k * 0x14, u8) = 0;
                 AT(m, 0x4E4 + k * 4, s32) = AT(m, 0x508 + k * 0x14, s32);
@@ -2179,18 +2247,19 @@ void func_001F7890(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
             s32 own = AT(m, 0x4E4 + k * 4, s32);
 
             if (own != -1 && own != AT(m, 0x6C8 + k * 0x60, s32)) {
-                func_001F7460(m, own, flags, -1, blend);
+                Motion_PlayWhenFree(m, own, flags, -1, blend);
             }
         }
     }
 }
 
-extern void func_001F4C10(u8 *m, u8 **motion, u8 **skel, s32 anim, s32 part);
+extern void Motion_SetupTrack(u8 *m, u8 **motion, u8 **skel, s32 anim, s32 part);
 
 /* start animation `anim` on part channel `ch` (0x60 bytes at +0x6B0: its two slots of 0x1C at
  * +0x1C, current +0x54 / previous +0x58, the animation +0x18), the old one blending out over
  * `blend` frames; the slot's old motion and skeleton are freed first */
-void func_001F6E50(u8 *m, s32 anim, s32 part, u32 flags, u8 *ch, f32 blend) {
+/* 0x001F6E50 */
+void Motion_StartPart(u8 *m, s32 anim, s32 part, u32 flags, u8 *ch, f32 blend) {
     u8 *cur;
 
     AT(ch, 0x8, f32) = blend;
@@ -2220,7 +2289,7 @@ void func_001F6E50(u8 *m, s32 anim, s32 part, u32 flags, u8 *ch, f32 blend) {
         AT(AT(ch, 0x54, u8 *), 0x14, u8 *) = NULL;
     }
     cur = AT(ch, 0x54, u8 *);
-    func_001F4C10(m, (u8 **)(cur + 0x10), (u8 **)(cur + 0x14), anim, part);
+    Motion_SetupTrack(m, (u8 **)(cur + 0x10), (u8 **)(cur + 0x14), anim, part);
     AT(AT(ch, 0x54, u8 *), 0x0, f32) = 0.0f;
     AT(AT(ch, 0x54, u8 *), 0x8, f32) = 1.0f;
     AT(AT(ch, 0x54, u8 *), 0x18, s32) = 0;
@@ -2254,7 +2323,8 @@ static inline void motion_drop_queued_parts(u8 *m) {
  * body's (unless already playing), or waits (+0x4F0..) while the body still blends; one covering
  * only parts goes to each such part, waiting (+0x504..) while that part's channel blends - a part
  * under a whole-body animation (playing or queued) just remembers it (+0x4E4) */
-void func_001F7460(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
+/* 0x001F7460 */
+void Motion_PlayWhenFree(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
     u32 c = motion_covers(motion_entry(m, anim));
     s32 k;
 
@@ -2269,7 +2339,7 @@ void func_001F7460(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
             AT(m, 0x4FC, f32) = blend;
             AT(m, 0x500, s32) = variant;
         } else {
-            func_001F7890(m, anim, flags, variant, blend);
+            Motion_Start(m, anim, flags, variant, blend);
         }
         if (c == 0x1F) {
             motion_drop_queued_parts(m);
@@ -2289,7 +2359,7 @@ void func_001F7460(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
             continue;
         }
         if (AT(m, 0x6BC + k * 0x60, f32) == 0.0f) {
-            func_001F7890(m, anim, flags, variant, blend);
+            Motion_Start(m, anim, flags, variant, blend);
             continue;
         }
         AT(m, 0x504 + k * 0x14, u8) = 1;
@@ -2301,8 +2371,8 @@ void func_001F7460(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend) {
     }
 }
 
-extern void func_001F5020(u8 *m, s32 slot);
-extern void func_001F6FD0(u8 *m, s32 anim, s32 variant);
+extern void Motion_FreeSlot(u8 *m, s32 slot);
+extern void Motion_EventKeys(u8 *m, s32 anim, s32 variant);
 
 #define MOTION_SLOT(m, i) ((m) + 0x564 + (i) * 0xA0)
 
@@ -2313,7 +2383,8 @@ static s32 motion_frames(u8 *motion) {
 
 /* start body animation `anim` (with `variant`, -1: none) in the other motion slot, cross-fading
  * from the current one over `blend`; synced animations (flag 2 in both) keep the phase */
-void func_001F71E0(u8 *m, s32 anim, s32 part, u32 flags, s32 variant, f32 blend) {
+/* 0x001F71E0 */
+void Motion_StartBody(u8 *m, s32 anim, s32 part, u32 flags, s32 variant, f32 blend) {
     u8 *cur;
     u8 *prev;
 
@@ -2336,9 +2407,9 @@ void func_001F71E0(u8 *m, s32 anim, s32 part, u32 flags, s32 variant, f32 blend)
             AT(AT(m, 0x6A8, u8 *), 0x18, u32) |= 0x10;
         }
     }
-    func_001F5020(m, AT(m, 0x540, s32));
+    Motion_FreeSlot(m, AT(m, 0x540, s32));
     cur = AT(m, 0x6A4, u8 *);
-    func_001F4C10(m, (u8 **)(cur + 0x20), (u8 **)(cur + 0x28), anim, part);
+    Motion_SetupTrack(m, (u8 **)(cur + 0x20), (u8 **)(cur + 0x28), anim, part);
     cur = AT(m, 0x6A4, u8 *);
     prev = AT(m, 0x6A8, u8 *);
     if (AT(cur, 0x18, u32) & AT(prev, 0x18, u32) & 2) {
@@ -2354,7 +2425,7 @@ void func_001F71E0(u8 *m, s32 anim, s32 part, u32 flags, s32 variant, f32 blend)
     AT(AT(m, 0x6A4, u8 *), 0x98, s32) = 0;
     if (variant != -1) {
         cur = AT(m, 0x6A4, u8 *);
-        func_001F4C10(m, (u8 **)(cur + 0x24), (u8 **)(cur + 0x2C), variant, part);
+        Motion_SetupTrack(m, (u8 **)(cur + 0x24), (u8 **)(cur + 0x2C), variant, part);
         cur = AT(m, 0x6A4, u8 *);
         prev = AT(m, 0x6A8, u8 *);
         if (AT(cur, 0x18, u32) & AT(prev, 0x18, u32) & 2) {
@@ -2369,12 +2440,13 @@ void func_001F71E0(u8 *m, s32 anim, s32 part, u32 flags, s32 variant, f32 blend)
         AT(AT(m, 0x6A4, u8 *), 0x14, f32) = 1.0f;
         AT(AT(m, 0x6A4, u8 *), 0x9C, s32) = 0;
     }
-    func_001F6FD0(m, anim, variant);
+    Motion_EventKeys(m, anim, variant);
 }
 
 /* free motion slot `i`'s two tracks (skeleton +0x28, data +0x20 / +0x30) and clear their
  * 12 keys (+0x38, 8 apart) */
-void func_001F5020(u8 *m, s32 i) {
+/* 0x001F5020 */
+void Motion_FreeSlot(u8 *m, s32 i) {
     void *skels = D_004562A8;
     void *bufs = D_004562B0;
     u8 *slot = MOTION_SLOT(m, i);
@@ -2406,7 +2478,8 @@ void func_001F5020(u8 *m, s32 i) {
 /* set up a motion track of animation `anim`'s part `part` (1 the body, 2.. the 3 parts): a
  * chain of per-bone keys (*keys) and a skeleton (*skel), each bone with its index in the
  * model's bone table */
-void func_001F4C10(u8 *m, u8 **keys, u8 **skel, s32 anim, s32 part) {
+/* 0x001F4C10 */
+void Motion_SetupTrack(u8 *m, u8 **keys, u8 **skel, s32 anim, s32 part) {
     u8 *e = motion_entry(m, anim);
     u8 *mot = e + AT(e, part * 4, u32);
     u8 *tracks;
@@ -2437,7 +2510,8 @@ void func_001F4C10(u8 *m, u8 **keys, u8 **skel, s32 anim, s32 part) {
 /* the event keys of the current motion slot's animation and variant (-1: none): a chain per
  * track (+0x30 / +0x34) of the animation's event part, and the 12 event tracks (+0x38 + k * 8:
  * the key of track -1 - k, if any) */
-void func_001F6FD0(u8 *m, s32 anim, s32 variant) {
+/* 0x001F6FD0 */
+void Motion_EventKeys(u8 *m, s32 anim, s32 variant) {
     s32 ids[2];
     void *bufs = D_004562B0;
     s32 t, k, i;
@@ -2495,7 +2569,8 @@ void HumanModel_HeadPos(u8 *m, f32 *out) {
 }
 
 /* motion: clear flag 0x40 of the current track (+0x6A4, flags +0x18) */
-void func_001F6E10(u8 *m) {
+/* 0x001F6E10 */
+void Motion_Unfreeze(u8 *m) {
     AT(AT(m, 0x6A4, u8 *), 0x18, u32) &= ~0x40;
 }
 
@@ -2518,7 +2593,8 @@ static s32 gesture_step(s32 *state, f32 len, s32 aimed, s32 gesture) {
 }
 
 /* 0: back (more than pi - 0.6 off forward) */
-s32 func_001F1AD0(u8 *g, f32 len, f32 ang) {
+/* 0x001F1AD0 */
+s32 Gesture_Back(u8 *g, f32 len, f32 ang) {
     if (ang <= 0.0f) {
         ang = -ang;
     }
@@ -2526,7 +2602,8 @@ s32 func_001F1AD0(u8 *g, f32 len, f32 ang) {
 }
 
 /* 1: forward (within 0.6) */
-s32 func_001F1A10(u8 *g, f32 len, f32 ang) {
+/* 0x001F1A10 */
+s32 Gesture_Forward(u8 *g, f32 len, f32 ang) {
     if (ang <= 0.0f) {
         ang = -ang;
     }
@@ -2534,28 +2611,32 @@ s32 func_001F1A10(u8 *g, f32 len, f32 ang) {
 }
 
 /* 2: R3 pressed with the stick centred */
-s32 func_001F19C0(u8 *g, f32 len, f32 ang) {
+/* 0x001F19C0 */
+s32 Gesture_R3(u8 *g, f32 len, f32 ang) {
     return len < 0x1.99999ap-2f /* 0.4 */ && (D_0047E37C & PAD_R3) ? 2 : -1;
 }
 
 /* 3: right (within 0.6 of +pi/2) */
-s32 func_001F1900(u8 *g, f32 len, f32 ang) {
+/* 0x001F1900 */
+s32 Gesture_Right(u8 *g, f32 len, f32 ang) {
     return gesture_step(&AT(g, 0x34, s32), len,
                         !(ang <= 0x1.f10c38p-1f /* pi/2 - 0.6 */) && ang < 0x1.15dca8p+1f /* pi/2 + 0.6 */, 3);
 }
 
 /* 4: left (within 0.6 of -pi/2) */
-s32 func_001F1840(u8 *g, f32 len, f32 ang) {
+/* 0x001F1840 */
+s32 Gesture_Left(u8 *g, f32 len, f32 ang) {
     return gesture_step(&AT(g, 0x38, s32), len,
                         !(ang <= -0x1.15dca8p+1f /* -pi/2 - 0.6 */) && ang < -0x1.f10c38p-1f /* -pi/2 + 0.6 */, 4);
 }
 
-extern const PTMF16 D_003D5C68[5];   /* the gesture recognizers (func_001F1AD0, func_001F1A10, ..) */
+extern const PTMF16 D_003D5C68[5];   /* the gesture recognizers (Gesture_Back, Gesture_Forward, ..) */
 
 /* a stick gesture, each frame: the recognizers (5, state +0x14/+0x28 each) are fed the
  * stick's length and direction in turn until one reports a gesture (not -1); the rest are
  * reset (+0x28). No stick: all reset. Returns the gesture, -1 = none. */
-s32 func_001F1B90(u8 *g, f32 *stick) {
+/* 0x001F1B90 */
+s32 Gesture_Update(u8 *g, f32 *stick) {
     f32 len, ang;
     s32 r = -1;
     u32 i;
@@ -2602,12 +2683,13 @@ static void motion_root(u8 *m, s32 slot, s32 k, f32 dt, f32 *out) {
             t -= (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32);
         } while (!(t < (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32)));
     }
-    func_001F36B0(track, tmp, t);
+    Track_Sample(track, tmp, t);
     sceVu0ScaleVector(out, tmp + 4, AT(s, 0x574 + k * 4, f32));
 }
 
 /* the current slot's (+0x540) root translation at its time + dt (0 if it has none) */
-void func_001F6240(u8 *m, f32 *out, f32 dt) {
+/* 0x001F6240 */
+void Motion_RootTranslation(u8 *m, f32 *out, f32 dt) {
     out[0] = 0.0f;
     out[1] = 0.0f;
     out[2] = 0.0f;
@@ -2618,7 +2700,8 @@ void func_001F6240(u8 *m, f32 *out, f32 dt) {
 /* the motion's root movement over dt: the current slot (+0x540) and the previous one
  * (+0x544), each blended with its layer by the track's weight (+0x6A4/+0x6A8 +0x1C), then
  * cross-faded by +0x550 while a fade runs (+0x54C > 0) */
-void func_001F6370(u8 *m, f32 *out, f32 dt) {
+/* 0x001F6370 */
+void Motion_RootMovement(u8 *m, f32 *out, f32 dt) {
     f32 cur[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 0.0f};
     f32 prev[4] __attribute__((aligned(16))) = {0.0f, 0.0f, 0.0f, 0.0f};
     f32 layer[4] __attribute__((aligned(16)));
@@ -2672,7 +2755,8 @@ static f32 track_unwrap(f32 n, f32 cur) {
 /* sample an animation track { keys, format (+ 0x10000: constant), key count } at time t:
  * out[0..2] rotation or position, out[4..6] position (formats 2, 4, 7), out[0..7] a matrix
  * row pair (6); between keys rotations and positions are interpolated (angles the short way) */
-void func_001F36B0(void *track, f32 *out, f32 t) {
+/* 0x001F36B0 */
+void Track_Sample(void *track, f32 *out, f32 t) {
     u8 *trk = track;
     u32 flags = AT(trk, 0x4, u32);
     f32 base = (flags & 0x10000) ? 0.0f : (f32)(s32)t;
@@ -2809,7 +2893,8 @@ void func_001F36B0(void *track, f32 *out, f32 t) {
 
 /* the current slot's root rotation (track 0, y) at its time + dt, scaled by its weight;
  * 0 without an animation */
-f32 func_001F6140(u8 *m, f32 dt) {
+/* 0x001F6140 */
+f32 Motion_RootRotation(u8 *m, f32 dt) {
     u8 *s = m + AT(m, 0x540, s32) * 0xA0;
     f32 tmp[8] __attribute__((aligned(16)));
     void *anim = AT(s, 0x584, void *);
@@ -2830,14 +2915,15 @@ f32 func_001F6140(u8 *m, f32 dt) {
             t -= (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32);
         } while (!(t < (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32)));
     }
-    func_001F36B0(track, tmp, t);
+    Track_Sample(track, tmp, t);
     return AT(s, 0x574, f32) * tmp[1];
 }
 
 /* the event flags of layer `layer`'s motion at its current frame + `dt` frames (m +0x4D4: per
  * motion of the library +0x4C4, one byte per frame); wrapped into the motion when `loop` and
  * the track loops (+0x18 bit 1), else 0 outside it */
-s32 func_001F4770(u8 *m, s32 layer, s32 dt, u32 loop) {
+/* 0x001F4770 */
+s32 Motion_EventFlags(u8 *m, s32 layer, s32 dt, u32 loop) {
     u8 *ev = AT(m, 0x4D4, u8 *);
     u8 *lib = AT(m, 0x4C4, u8 *);
     s32 id, idx = -1;
@@ -2887,7 +2973,7 @@ s32 func_001F4770(u8 *m, s32 layer, s32 dt, u32 loop) {
     return bytes[t];
 }
 
-extern void func_001F5F70(u8 *m, f32 *out, void *trkA, void *trkB, f32 ta, f32 tb, f32 w);   /* a bone's position */
+extern void Track_Blend(u8 *m, f32 *out, void *trkA, void *trkB, f32 ta, f32 tb, f32 w);   /* a bone's position */
 
 /* `base` + dt * `speed`, wrapped into an animation of `anim`'s length (0 without one) */
 static f32 motion_time(u8 *anim, f32 base, f32 dt, f32 speed) {
@@ -2911,7 +2997,8 @@ static f32 motion_time(u8 *anim, f32 base, f32 dt, f32 speed) {
 /* a foot (`left` or right) at the motion's time + dt: its position (out; z scaled by
  * `zscale`, w = 1), cross-faded from the previous track (+0x6A8) by +0x550, and whether it is
  * on the ground (the current track's contact channel +0x50); 0 without contact data */
-s32 func_002DD420(u8 *m, f32 *out, s32 left, f32 dt, f32 zscale) {
+/* 0x002DD420 */
+s32 Motion_FootPos(u8 *m, f32 *out, s32 left, f32 dt, f32 zscale) {
     u8 *cur = AT(m, 0x6A4, u8 *);
     u8 *prev;
     f32 contact[8] __attribute__((aligned(16)));
@@ -2932,14 +3019,14 @@ s32 func_002DD420(u8 *m, f32 *out, s32 left, f32 dt, f32 zscale) {
     }
     p0 = motion_time(AT(prev, 0x20, u8 *), AT(prev, 0x0, f32), dt, AT(prev, 0x10, f32));
     p1 = motion_time(AT(prev, 0x24, u8 *), AT(prev, 0x4, f32), dt, AT(prev, 0x14, f32));
-    func_001F36B0(AT(cur, 0x50, void *), contact, c0);
+    Track_Sample(AT(cur, 0x50, void *), contact, c0);
     k = left != 0 ? 2 : 1;
     cur = AT(m, 0x6A4, u8 *);
-    func_001F5F70(m, pa, AT(cur, 0x38 + k * 8, void *), AT(cur, 0x3C + k * 8, void *), c0, c1,
+    Track_Blend(m, pa, AT(cur, 0x38 + k * 8, void *), AT(cur, 0x3C + k * 8, void *), c0, c1,
                   1.0f - AT(cur, 0x1C, f32));
     prev = AT(m, 0x6A8, u8 *);
     if (AT(prev, 0x20, void *) != NULL) {
-        func_001F5F70(m, pb, AT(prev, 0x38 + k * 8, void *), AT(prev, 0x3C + k * 8, void *), p0, p1,
+        Track_Blend(m, pb, AT(prev, 0x38 + k * 8, void *), AT(prev, 0x3C + k * 8, void *), p0, p1,
                       1.0f - AT(prev, 0x1C, f32));
         func_0010E610(pa, pb, pa, AT(m, 0x550, f32));
     }
@@ -2953,7 +3040,8 @@ s32 func_002DD420(u8 *m, f32 *out, s32 left, f32 dt, f32 zscale) {
 /* a bone's channel blended between two tracks: track A at ta and B at tb, out = B * w +
  * A * (1 - w) (xyz; format 2 tracks have a second vector at out + 0x10); with only one track,
  * that one (the original takes the second vector from A even when only B exists) */
-void func_001F5F70(u8 *m, f32 *out, void *trackA, void *trackB, f32 ta, f32 tb, f32 w) {
+/* 0x001F5F70 */
+void Track_Blend(u8 *m, f32 *out, void *trackA, void *trackB, f32 ta, f32 tb, f32 w) {
     s32 *trkA = trackA, *trkB = trackB;
     f32 a[8] __attribute__((aligned(16)));
     f32 b[8] __attribute__((aligned(16)));
@@ -2963,10 +3051,10 @@ void func_001F5F70(u8 *m, f32 *out, void *trackA, void *trackB, f32 ta, f32 tb, 
     b[0] = b[1] = b[2] = 0.0f;
     b[4] = b[5] = b[6] = 0.0f;
     if (trkA != NULL && *trkA != 0) {
-        func_001F36B0(trkA, a, ta);
+        Track_Sample(trkA, a, ta);
     }
     if (trkB != NULL && *trkB != 0) {
-        func_001F36B0(trkB, b, tb);
+        Track_Sample(trkB, b, tb);
     }
     if (trkA != NULL && *trkA != 0 && trkB != NULL && *trkB != 0) {
         func_0010E610(out, b, a, w);
@@ -3010,7 +3098,7 @@ void HumanModel_BodyFrames(u8 *m, u8 *a, f32 back, f32 front) {
 
         VCALL(gNavMesh, 0x2C, void (*)(NavMesh *, u32, f32 *))(gNavMesh, AT(a, 0x34, u32), n);
         ny = n[1];
-        func_001F6370(m, v, 0.0f);
+        Motion_RootMovement(m, v, 0.0f);
         k = v[2] * (ny * ny);
         l[0] = 0.0f;
         l[1] = 0.0f;
@@ -3022,36 +3110,36 @@ void HumanModel_BodyFrames(u8 *m, u8 *a, f32 back, f32 front) {
         r[3] = 1.0f;
         sceVu0ApplyMatrix(l, (f32 (*)[4])(m + 0x7D0), l);
         sceVu0ApplyMatrix(r, (f32 (*)[4])(m + 0x7D0), r);
-        func_002DC710(m, l, a);
-        func_002DC710(m, r, a);
+        Motion_OntoFloor(m, l, a);
+        Motion_OntoFloor(m, r, a);
     } else {
-        u32 dl = (u8)func_002DD420(m, l, 1, 0.0f, 1.0f);
-        u32 dr = (u8)func_002DD420(m, r, 0, 0.0f, 1.0f);
+        u32 dl = (u8)Motion_FootPos(m, l, 1, 0.0f, 1.0f);
+        u32 dr = (u8)Motion_FootPos(m, r, 0, 0.0f, 1.0f);
         s32 useL = 1, useR = 1;
 
         sceVu0ApplyMatrix(l, (f32 (*)[4])(m + 0x7D0), l);
         sceVu0ApplyMatrix(r, (f32 (*)[4])(m + 0x7D0), r);
         if (AT(AT(m, 0x6A4, u8 *), 0x18, u32) & 0x100) {
             if (dl == 1 && AT(AT(m, 0x6A8, u8 *), 0x20, void *) != NULL) {
-                dl = (u8)func_002DD860(m, 1, 0.0f);
+                dl = (u8)Motion_FootDownPrev(m, 1, 0.0f);
             }
             if (dl == 0) {
                 useL = 0;
             }
             if (dr == 1 && AT(AT(m, 0x6A8, u8 *), 0x20, void *) != NULL) {
-                dr = (u8)func_002DD860(m, 0, 0.0f);
+                dr = (u8)Motion_FootDownPrev(m, 0, 0.0f);
             }
             if (dr == 0) {
                 useR = 0;
             }
         }
         if (useL == 1) {
-            func_002DC710(m, l, a);
+            Motion_OntoFloor(m, l, a);
         } else {
             l[1] = AT(a, 0x14, f32);
         }
         if (useR == 1) {
-            func_002DC710(m, r, a);
+            Motion_OntoFloor(m, r, a);
         } else {
             r[1] = AT(a, 0x14, f32);
         }
@@ -3069,7 +3157,8 @@ void HumanModel_BodyFrames(u8 *m, u8 *a, f32 back, f32 front) {
  * (vtable +0x24: the edge crossed, 3 inside, 4 lost); in a triangle the mesh gives its height
  * (+0x14); at a wall (no neighbour, or a marked one (+0x18 bit 0x80) blocked by the
  * character's mask +0xC0) its height continues along the line to where it was crossed */
-void func_002DC710(u8 *m, f32 *p, u8 *a) {
+/* 0x002DC710 */
+void Motion_OntoFloor(u8 *m, f32 *p, u8 *a) {
     NavMesh *nm;
     NavTri *t;
     u32 tri = AT(a, 0x34, u32);
@@ -3118,7 +3207,8 @@ extern s32 D_004157A0[];   /* hand poses: per pose 5 key frames { s32, s32, f32 
  * right) say, forwards or backwards by the hand's state (+0x85C / +0x85D), into +0x38 / +0x48
  * (poses 0..6 as they are, others fall back to the defaults +0x87C / +0x880); a restarted
  * motion resets them */
-void func_002DCB40(u8 *m) {
+/* 0x002DCB40 */
+void Motion_Hands(u8 *m) {
     u8 ev[5];
     s32 hand, i, k, idx, bit;
     u32 pose, on;
@@ -3140,7 +3230,7 @@ void func_002DCB40(u8 *m) {
     if (AT(m, 0x874, u8 *) == NULL) {
         return;
     }
-    k = func_001F4710(m, AT(m, 0x55C, s32));
+    k = Motion_AnimIndex(m, AT(m, 0x55C, s32));
     if (k == -1) {
         return;
     }
@@ -3149,7 +3239,7 @@ void func_002DCB40(u8 *m) {
         return;
     }
     for (i = 0; i < 5; i++) {
-        ev[i] = func_001F4770(m, 0, i, -2);
+        ev[i] = Motion_EventFlags(m, 0, i, -2);
     }
     for (hand = 0; hand < 2; hand++) {
         s32 *tbl;
@@ -3186,7 +3276,8 @@ extern f32 D_00415B60[14];   /* the eyelids through a blink */
 
 /* the eyes, each frame: a blink plays the eyelid curve over 14 frames (+0x870 counts, both
  * lids +0x74 / +0x78); from frame 30 a new blink starts at random, surely by frame 150 */
-void func_002DC960(u8 *m) {
+/* 0x002DC960 */
+void Motion_Eyes(u8 *m) {
     if (AT(m, 0x870, s32) < 14) {
         AT(m, 0x78, f32) = D_00415B60[AT(m, 0x870, s32)];
         AT(m, 0x74, f32) = D_00415B60[AT(m, 0x870, s32)];
@@ -3209,19 +3300,20 @@ void Model_HalfHip(void *self, u32 *out) {
     out[3] = 0;
 }
 
-extern void func_001F4F40(u8 *m);
-extern void func_001F4D70(u8 *m);
-extern void func_001F5850(u8 *m);
-extern void *func_001F56F0(u8 *m, void *a, void *b, f32 t);   /* the blend of two poses */
-extern void func_001F5D70(u8 *m, void *skel);
-extern void func_001F5130(u8 *m);
+extern void Motion_ExtraChannels(u8 *m);
+extern void Motion_KeepInStep(u8 *m);
+extern void Motion_ApplyChains(u8 *m);
+extern void *Motion_BlendLists(u8 *m, void *a, void *b, f32 t);   /* the blend of two poses */
+extern void Skel_WorldPose(u8 *m, void *skel);
+extern void Motion_Advance(u8 *m);
 
 /* the motion player, each frame: start the queued motion (+0x4F0) and the queued layer
  * motions (+0x504, 3 x 0x14) once their fades are over (a layer waits a frame when the main
  * motion just started), free the faded-out layers' buffers, advance the tracks, then blend
  * the pose: each track's two animations, the current with the previous one (+0x550), the three
- * layers; the skeleton is built from it (+0x810), then vtable +0x18 and func_001F5130 */
-void func_001F6AF0(u8 *m) {
+ * layers; the skeleton is built from it (+0x810), then vtable +0x18 and Motion_Advance */
+/* 0x001F6AF0 */
+void Motion_Update(u8 *m) {
     void *chains, *skels, *a, *b;
     s32 started = 0;
     s32 i;
@@ -3231,7 +3323,7 @@ void func_001F6AF0(u8 *m) {
     AT(AT(m, 0x764, u8 *), 0xC, u32) &= ~0x80;
     AT(AT(m, 0x7C4, u8 *), 0xC, u32) &= ~0x80;
     if (AT(m, 0x4F0, u8) != 0 && AT(m, 0x54C, f32) <= 0.0f) {
-        func_001F7890(m, AT(m, 0x4F4, s32), AT(m, 0x4F8, u16), AT(m, 0x500, s32), AT(m, 0x4FC, f32));
+        Motion_Start(m, AT(m, 0x4F4, s32), AT(m, 0x4F8, u16), AT(m, 0x500, s32), AT(m, 0x4FC, f32));
         AT(m, 0x4F0, u8) = 0;
         started = 1;
         AT(AT(m, 0x6A4, u8 *), 0x18, u32) |= 0x80;
@@ -3243,7 +3335,7 @@ void func_001F6AF0(u8 *m) {
             continue;
         }
         if (!started) {
-            func_001F7890(m, AT(q, 0x508, s32), AT(q, 0x50C, u16), AT(q, 0x514, s32), AT(q, 0x510, f32));
+            Motion_Start(m, AT(q, 0x508, s32), AT(q, 0x50C, u16), AT(q, 0x514, s32), AT(q, 0x510, f32));
             AT(q, 0x504, u8) = 0;
             AT(AT(m, 0x704 + i * 0x60, u8 *), 0xC, u32) |= 0x80;
         } else {
@@ -3270,46 +3362,47 @@ void func_001F6AF0(u8 *m) {
         }
     }
     if (AT(m, 0x54C, f32) <= 0.0f) {
-        func_001F5020(m, AT(m, 0x544, s32));
+        Motion_FreeSlot(m, AT(m, 0x544, s32));
         if (AT(AT(m, 0x6A4, u8 *), 0x18, u32) & 8) {
             AT(AT(m, 0x6A4, u8 *), 0x18, u32) &= ~0x10;
         }
     }
-    func_001F4F40(m);
-    func_001F4D70(m);
-    func_001F5850(m);
-    a = func_001F56F0(m, AT(AT(m, 0x6A4, u8 *), 0x28, void *), AT(AT(m, 0x6A4, u8 *), 0x2C, void *),
+    Motion_ExtraChannels(m);
+    Motion_KeepInStep(m);
+    Motion_ApplyChains(m);
+    a = Motion_BlendLists(m, AT(AT(m, 0x6A4, u8 *), 0x28, void *), AT(AT(m, 0x6A4, u8 *), 0x2C, void *),
                       1.0f - AT(AT(m, 0x6A4, u8 *), 0x1C, f32));
-    b = func_001F56F0(m, AT(AT(m, 0x6A8, u8 *), 0x28, void *), AT(AT(m, 0x6A8, u8 *), 0x2C, void *),
+    b = Motion_BlendLists(m, AT(AT(m, 0x6A8, u8 *), 0x28, void *), AT(AT(m, 0x6A8, u8 *), 0x2C, void *),
                       1.0f - AT(AT(m, 0x6A8, u8 *), 0x1C, f32));
-    AT(m, 0x6AC, void *) = func_001F56F0(m, a, b, AT(m, 0x550, f32));
+    AT(m, 0x6AC, void *) = Motion_BlendLists(m, a, b, AT(m, 0x550, f32));
     for (i = 0; i < 3; i++) {
-        AT(m, 0x70C + i * 0x60, void *) = func_001F56F0(m, AT(AT(m, 0x704 + i * 0x60, u8 *), 0x14, void *),
+        AT(m, 0x70C + i * 0x60, void *) = Motion_BlendLists(m, AT(AT(m, 0x704 + i * 0x60, u8 *), 0x14, void *),
                                                         AT(AT(m, 0x708 + i * 0x60, u8 *), 0x14, void *),
                                                         AT(m, 0x6C0 + i * 0x60, f32));
     }
-    func_001F5D70(m, AT(m, 0x810, void *));
+    Skel_WorldPose(m, AT(m, 0x810, void *));
     VCALL(m, 0x18, void (*)(u8 *))(m);
-    func_001F5130(m);
+    Motion_Advance(m);
 }
 
 /* the current track's extra channels at its time: four (+0x68, 8 bytes apart) into +0x58..,
  * two (+0x88) into the hand poses +0x38 / +0x48 */
-void func_001F4F40(u8 *m) {
+/* 0x001F4F40 */
+void Motion_ExtraChannels(u8 *m) {
     s32 i;
 
     for (i = 0; i < 4; i++) {
         s32 *trk = AT(AT(m, 0x6A4, u8 *), 0x68 + i * 8, s32 *);
 
         if (trk != NULL && *trk != 0) {
-            func_001F36B0(trk, (f32 *)(m + 0x58 + i * 4), AT(AT(m, 0x6A4, u8 *), 0x0, f32));
+            Track_Sample(trk, (f32 *)(m + 0x58 + i * 4), AT(AT(m, 0x6A4, u8 *), 0x0, f32));
         }
     }
     for (i = 0; i < 2; i++) {
         s32 *trk = AT(AT(m, 0x6A4, u8 *), 0x88 + i * 8, s32 *);
 
         if (trk != NULL && *trk != 0) {
-            func_001F36B0(trk, (f32 *)(m + 0x38 + i * 16), AT(AT(m, 0x6A4, u8 *), 0x0, f32));
+            Track_Sample(trk, (f32 *)(m + 0x38 + i * 16), AT(AT(m, 0x6A4, u8 *), 0x0, f32));
         }
     }
 }
@@ -3323,7 +3416,8 @@ static f32 anim_frames(u8 *anim) {
  * second animation (+0x588) follows the first's phase and their speeds (+0x574 / +0x578)
  * meet by the blend +0x580; while the motion fades (+0x54C) between two step-synced tracks
  * (flag 2), the tracks' speeds (+0x10) meet the same way by +0x550 instead */
-void func_001F4D70(u8 *m) {
+/* 0x001F4D70 */
+void Motion_KeepInStep(u8 *m) {
     s32 i;
 
     if (AT(m, 0x54C, f32) != 0.0f) {
@@ -3365,11 +3459,12 @@ void func_001F4D70(u8 *m) {
     }
 }
 
-extern void func_001F5930(u8 *m, void *chain, void *anim, f32 t, f32 w);   /* pose a chain from an animation */
+extern void Motion_PoseChain(u8 *m, void *chain, void *anim, f32 t, f32 w);   /* pose a chain from an animation */
 
 /* apply the animations to their bone chains: the layers' (3 x 2 at +0x6CC, 0x1C apart) and
  * the two slots' two animations (+0x584) */
-void func_001F5850(u8 *m) {
+/* 0x001F5850 */
+void Motion_ApplyChains(u8 *m) {
     s32 i, j;
 
     for (i = 0; i < 3; i++) {
@@ -3377,7 +3472,7 @@ void func_001F5850(u8 *m) {
             u8 *s = m + i * 0x60 + j * 0x1C + 0x6CC;
 
             if (AT(s, 0x10, void *) != NULL) {
-                func_001F5930(m, AT(s, 0x14, void *), AT(s, 0x10, void *), AT(s, 0x0, f32), AT(s, 0x18, f32));
+                Motion_PoseChain(m, AT(s, 0x14, void *), AT(s, 0x10, void *), AT(s, 0x0, f32), AT(s, 0x18, f32));
             }
         }
     }
@@ -3386,7 +3481,7 @@ void func_001F5850(u8 *m) {
             u8 *s = m + i * 0xA0 + 0x564 + j * 4;
 
             if (AT(s, 0x20, void *) != NULL) {
-                func_001F5930(m, AT(s, 0x28, void *), AT(s, 0x20, void *), AT(s, 0x0, f32), AT(s, 0x98, f32));
+                Motion_PoseChain(m, AT(s, 0x28, void *), AT(s, 0x20, void *), AT(s, 0x0, f32), AT(s, 0x98, f32));
             }
         }
     }
@@ -3395,7 +3490,8 @@ void func_001F5850(u8 *m) {
 /* blend two bone lists { +0x4 first bone (next +0x48, id +0x40), +0x8 count }: the longer
  * one (by t, or the other by 1 - t) takes in each of its bones the other's bone with the same
  * id; returns the blended list (one missing: the other) */
-void *func_001F56F0(u8 *m, void *listA, void *listB, f32 t) {
+/* 0x001F56F0 */
+void *Motion_BlendLists(u8 *m, void *listA, void *listB, f32 t) {
     u8 *a = listA, *b = listB;
     f32 tmp[4] __attribute__((aligned(16)));
     u8 *big, *small, *n;
@@ -3434,7 +3530,7 @@ void *func_001F56F0(u8 *m, void *listA, void *listB, f32 t) {
     return big;
 }
 
-extern void func_002E2E00(void *mat, f32 *rot, const f32 *trans);   /* bone matrix */
+extern void Mtx_FromEuler(void *mat, f32 *rot, const f32 *trans);   /* bone matrix */
 
 /* sample one track at `t` into the motion's rotation (+0x820) and translation (+0x830): kinds
  * 0 (rotation only: the bind translation), 2 / 7 (both), others (translation only: the bind
@@ -3443,15 +3539,15 @@ static void pose_sample(u8 *m, u8 *bones, u8 *trk, f32 t) {
     switch (AT(trk, 0x8, u16)) {
     case 7:
     case 2:
-        func_001F36B0(trk + 4, (f32 *)(m + 0x820), t);
+        Track_Sample(trk + 4, (f32 *)(m + 0x820), t);
         break;
     case 0:
-        func_001F36B0(trk + 4, (f32 *)(m + 0x820), t);
+        Track_Sample(trk + 4, (f32 *)(m + 0x820), t);
         sceVu0CopyVector((f32 *)(m + 0x830), (f32 *)(bones + AT(trk, 0x0, s32) * 0x70 + 0x20));
         break;
     default:
         sceVu0CopyVector((f32 *)(m + 0x820), (f32 *)(bones + AT(trk, 0x0, s32) * 0x70 + 0x10));
-        func_001F36B0(trk + 4, (f32 *)(m + 0x830), t);
+        Track_Sample(trk + 4, (f32 *)(m + 0x830), t);
         break;
     }
 }
@@ -3460,7 +3556,8 @@ static void pose_sample(u8 *m, u8 *bones, u8 *trk, f32 t) {
  * track (bone +0x0, kind +0x8, next +0x10), +0x8 count } at frame `t`. With `w` > 0 each bone
  * not in the motion's fixed list (+0x844, +0x840 entries) is eased: turned from its pose a
  * frame earlier towards the new one by `w` (shortest way), its position mixed the same */
-void func_001F5930(u8 *m, void *chain, void *anim, f32 t, f32 w) {
+/* 0x001F5930 */
+void Motion_PoseChain(u8 *m, void *chain, void *anim, f32 t, f32 w) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB}, kNegPi = {0xC0490FDB};
     f32 axis[4] __attribute__((aligned(16)));
     f32 q[4] __attribute__((aligned(16)));
@@ -3477,7 +3574,7 @@ void func_001F5930(u8 *m, void *chain, void *anim, f32 t, f32 w) {
     for (i = 0; i < AT(anim, 0x8, s32); i++) {
         if (AT(trk, 0x0, s32) >= 0) {
             pose_sample(m, bones, trk, t);
-            func_002E2E00(b, (f32 *)(m + 0x820), (f32 *)(m + 0x830));
+            Mtx_FromEuler(b, (f32 *)(m + 0x820), (f32 *)(m + 0x830));
             ease = 1;
             for (k = 0; k < AT(m, 0x840, s16); k++) {
                 if (AT(m, 0x844, s8 *)[k] == AT(b, 0x40, s32)) {
@@ -3486,7 +3583,7 @@ void func_001F5930(u8 *m, void *chain, void *anim, f32 t, f32 w) {
             }
             if (ease && !(w <= 0.0f)) {
                 pose_sample(m, bones, trk, t - 1.0f);
-                func_002E2E00(prev, (f32 *)(m + 0x820), (f32 *)(m + 0x830));
+                Mtx_FromEuler(prev, (f32 *)(m + 0x820), (f32 *)(m + 0x830));
                 q[3] = 0.0f;
                 q[0] = 0.0f;
                 q[2] = 0.0f;
@@ -3543,7 +3640,8 @@ static void wrap_pi(f32 *a) {
 
 /* a bone matrix from Euler angles `rot` (X, then Y, then Z; wrapped into -pi..pi in place) and
  * the position `trans` */
-void func_002E2E00(void *mat, f32 *rot, const f32 *trans) {
+/* 0x002E2E00 */
+void Mtx_FromEuler(void *mat, f32 *rot, const f32 *trans) {
     f32 (*m)[4] = mat;
 
     wrap_pi(&rot[0]);
@@ -3578,7 +3676,8 @@ static u8 *bone_find(u8 *list, s32 id) {
  * its parent's matrix (the first: the model's, +0x7D0) times its local pose - from the blended
  * animation (+0x6AC), else the first layer that animates it (+0x70C, 3 x 0x60), else the bind
  * pose (the skeleton's record +0x10 / +0x20) - and, unless +0x4D8, reported to +0x14 */
-void func_001F5D70(u8 *m, void *skel) {
+/* 0x001F5D70 */
+void Skel_WorldPose(u8 *m, void *skel) {
     f32 bind[4][4] __attribute__((aligned(16)));
     u8 *rec = AT(m, 0x4C0, u8 *) + 0x10;
     u8 *b = AT(skel, 0x4, u8 *);
@@ -3597,7 +3696,7 @@ void func_001F5D70(u8 *m, void *skel) {
                 sceVu0MulMatrix((f32 (*)[4])b, (f32 (*)[4])AT(b, 0x44, u8 *), (f32 (*)[4])local);
             }
         } else {
-            func_002E2E00(bind, (f32 *)(rec + 0x10), (f32 *)(rec + 0x20));
+            Mtx_FromEuler(bind, (f32 *)(rec + 0x10), (f32 *)(rec + 0x20));
             if (i == 0) {
                 sceVu0MulMatrix((f32 (*)[4])b, (f32 (*)[4])(m + 0x7D0), bind);
             } else {
@@ -3702,7 +3801,8 @@ static f32 fade_weight(f32 left, f32 len) {
  * - each pair { time, -, prev, -, speed, ... anim +0x20, carry +0x98 }; the first animation sets
  * the slot's flags 0x20 (wrapped) and 0x400 (at its end) - then the fade (+0x54C counts down,
  * weight +0x550), and the 3 layers' two animations (+0x6CC, 0x1C each) and fades (+0x6B8) */
-void func_001F5130(u8 *m) {
+/* 0x001F5130 */
+void Motion_Advance(u8 *m) {
     u8 *slot = NULL, *a;
     s32 k, j, i, w;
 
@@ -3762,7 +3862,7 @@ void func_001F5130(u8 *m) {
     }
 }
 
-extern void func_00211530(u8 *m, f32 *right, f32 *left, f32 height);   /* bend the legs to the feet */
+extern void Model_LegIK(u8 *m, f32 *right, f32 *left, f32 height);   /* bend the legs to the feet */
 
 /* a foot bone's position (row 3 of its matrix) into `out`; with the slope weight `k` < 1 its
  * height above the floor is eased: out = position (+0x800) + side (+0x7F0) x k x (its offset
@@ -3812,29 +3912,29 @@ void HumanModel_PlantFeet(u8 *m, s32 on, u8 *a) {
     flags = AT(AT(m, 0x6A4, u8 *), 0x18, u32);
     if (!(flags & 4) && (flags & 0x100)) {
         if (dl == 1 && AT(AT(m, 0x6A8, u8 *), 0x20, void *) != NULL) {
-            dl = (u8)func_002DD860(m, 1, 0.0f);
+            dl = (u8)Motion_FootDownPrev(m, 1, 0.0f);
         }
         if (dl == 0) {
             useL = 0;
         }
         if (dr == 1 && AT(AT(m, 0x6A8, u8 *), 0x20, void *) != NULL) {
-            dr = (u8)func_002DD860(m, 0, 0.0f);
+            dr = (u8)Motion_FootDownPrev(m, 0, 0.0f);
         }
         if (dr == 0) {
             useR = 0;
         }
     }
     if (useL == 1) {
-        func_002DC710(m, l, a);
+        Motion_OntoFloor(m, l, a);
     } else {
         l[1] = AT(a, 0x14, f32);
     }
     if (useR == 1) {
-        func_002DC710(m, r, a);
+        Motion_OntoFloor(m, r, a);
     } else {
         r[1] = AT(a, 0x14, f32);
     }
-    func_00211530(m, r, l, AT(m, 0x804, f32));
+    Model_LegIK(m, r, l, AT(m, 0x804, f32));
     AT(m, 0x8C4, f32) = k;
 }
 
@@ -3900,7 +4000,7 @@ s32 Model_FootDown(u8 *m, s32 foot, s32 ofs) {
         t = t - len;
     }
     if (AT(slot, 0x50, void *) != NULL && AT(AT(slot, 0x50, u8 *), 0x0, void *) != NULL) {
-        func_001F36B0(AT(slot, 0x50, void *), c, t);
+        Track_Sample(AT(slot, 0x50, void *), c, t);
     }
     return !(c[foot] <= 0.0f);
 }
@@ -3947,16 +4047,17 @@ static void leg_target(u8 *ik, const f32 *foot, const f32 *toFoot, f32 height) {
 /* bend the legs so the feet reach `right` / `left` with the body `height` lower: two-bone IK
  * from hip to ankle (right +0x890 / +0x894 / +0x898, left +0x8A0 / +0x8A4 / +0x8A8), then the
  * ankle and foot (+0x89C / +0x8AC) moved by how far the solved ankle went */
-void func_00211530(u8 *m, f32 *right, f32 *left, f32 height) {
+/* 0x00211530 */
+void Model_LegIK(u8 *m, f32 *right, f32 *left, f32 height) {
     f32 dr[4] __attribute__((aligned(16)));
     f32 dl[4] __attribute__((aligned(16)));
     f32 er[4] __attribute__((aligned(16)));
     f32 el[4] __attribute__((aligned(16)));
     f32 *a, *b;
 
-    func_001F1250(m + 0x8D0, AT(m, 0x810, void *), AT(m, 0x890, s32), AT(m, 0x894, s32), AT(m, 0x898, s32),
+    IK2_Setup(m + 0x8D0, AT(m, 0x810, void *), AT(m, 0x890, s32), AT(m, 0x894, s32), AT(m, 0x898, s32),
                   BIND_X(m, AT(m, 0x894, s32)), BIND_X(m, AT(m, 0x898, s32)), -1.0f);
-    func_001F1250(m + 0x930, AT(m, 0x810, void *), AT(m, 0x8A0, s32), AT(m, 0x8A4, s32), AT(m, 0x8A8, s32),
+    IK2_Setup(m + 0x930, AT(m, 0x810, void *), AT(m, 0x8A0, s32), AT(m, 0x8A4, s32), AT(m, 0x8A8, s32),
                   BIND_X(m, AT(m, 0x8A4, s32)), BIND_X(m, AT(m, 0x8A8, s32)), -1.0f);
     a = Skel_Bone(AT(m, 0x810, void *), AT(m, 0x898, s32));
     b = Skel_Bone(AT(m, 0x810, void *), AT(m, 0x89C, s32));
@@ -3985,7 +4086,8 @@ void func_00211530(u8 *m, f32 *right, f32 *left, f32 height) {
 /* set up a two-bone IK solver { +0x0 root position, +0x10 middle, +0x20 end (the target), +0x40
  * lengths and bend, +0x4C / +0x50 / +0x54 the chain's nodes }: from the bones root / mid / end
  * of `skel` */
-void func_001F1250(u8 *ik, void *skel, s32 root, s32 mid, s32 end, f32 len1, f32 len2, f32 bend) {
+/* 0x001F1250 */
+void IK2_Setup(u8 *ik, void *skel, s32 root, s32 mid, s32 end, f32 len1, f32 len2, f32 bend) {
     f32 *r = Skel_Bone(skel, root);
     f32 *mi = Skel_Bone(skel, mid);
     f32 *e = Skel_Bone(skel, end);
@@ -4001,8 +4103,8 @@ void func_001F1250(u8 *ik, void *skel, s32 root, s32 mid, s32 end, f32 len1, f32
     AT(ik, 0x48, f32) = bend;
 }
 
-extern s32 func_001F10C0(u8 *ik, f32 *root, f32 *mid, f32 *end, f32 *pole, f32 len1, f32 len2, f32 bend);   /* 0: solved */
-extern void func_001F0F40(u8 *ik);   /* turn the chain's bones to the solution */
+extern s32 IK2_PlaceMiddle(u8 *ik, f32 *root, f32 *mid, f32 *end, f32 *pole, f32 len1, f32 len2, f32 bend);   /* 0: solved */
+extern void IK2_AimBones(u8 *ik);   /* turn the chain's bones to the solution */
 
 /* +0x8 solve: from the chain root's position (and its Z axis as the bend direction, +0x30),
  * place the middle joint for the end target; a target out of reach is pulled in to the
@@ -4015,7 +4117,7 @@ void IK2_dtor(u8 *ik) {
     sceVu0CopyVector((f32 *)ik, AT(ik, 0x4C, f32 *) + 12);
     sceVu0CopyVector((f32 *)(ik + 0x10), AT(ik, 0x50, f32 *) + 12);
     sceVu0CopyVector((f32 *)(ik + 0x30), AT(ik, 0x4C, f32 *) + 8);
-    if (func_001F10C0(ik, (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30), AT(ik, 0x40, f32),
+    if (IK2_PlaceMiddle(ik, (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30), AT(ik, 0x40, f32),
                       AT(ik, 0x44, f32), AT(ik, 0x48, f32)) != 0) {
         sceVu0SubVector(d, (f32 *)(ik + 0x20), (f32 *)ik);
         sceVu0Normalize(d, d);
@@ -4024,13 +4126,14 @@ void IK2_dtor(u8 *ik) {
         AT(ik, 0x24, f32) = 0.0f + AT(ik, 0x4, f32) + d[1] * len;
         AT(ik, 0x28, f32) = 0.0f + AT(ik, 0x8, f32) + d[2] * len;
     }
-    func_001F0F40(ik);
+    IK2_AimBones(ik);
 }
 
 /* place the middle joint `mid` of a two-bone chain (lengths len1, len2) from `root` towards
  * `end`, bent to the side of `pole` x direction (scaled by `bend`); 1 when `end` is out of
  * reach (the chain then points straight at it). (The EE's square root takes |x|.) */
-s32 func_001F10C0(u8 *ik, f32 *root, f32 *mid, f32 *end, f32 *pole, f32 len1, f32 len2, f32 bend) {
+/* 0x001F10C0 */
+s32 IK2_PlaceMiddle(u8 *ik, f32 *root, f32 *mid, f32 *end, f32 *pole, f32 len1, f32 len2, f32 bend) {
     f32 d[4] __attribute__((aligned(16)));
     f32 side[4] __attribute__((aligned(16)));
     f32 dist, a, h, l1;
@@ -4075,7 +4178,8 @@ static void ik_aim(f32 (*m)[4], const f32 *from, const f32 *to, const f32 *pole)
 
 /* turn the chain's bones to the solved joints: the root (+0x4C) towards the middle, the
  * middle (+0x50) towards the end */
-void func_001F0F40(u8 *ik) {
+/* 0x001F0F40 */
+void IK2_AimBones(u8 *ik) {
     ik_aim((f32 (*)[4])AT(ik, 0x4C, u8 *), (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x30));
     ik_aim((f32 (*)[4])AT(ik, 0x50, u8 *), (f32 *)(ik + 0x10), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30));
 }
@@ -4122,7 +4226,7 @@ void IK2_Loaded(u8 *ik) {
     sceVu0SubVector(a, AT(ik, 0x50, f32 *) + 12, AT(ik, 0x4C, f32 *) + 12);
     sceVu0SubVector(b, AT(ik, 0x54, f32 *) + 12, AT(ik, 0x50, f32 *) + 12);
     sceVu0OuterProduct(z, a, b);
-    if (func_001F10C0(ik, (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30), AT(ik, 0x40, f32),
+    if (IK2_PlaceMiddle(ik, (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30), AT(ik, 0x40, f32),
                       AT(ik, 0x44, f32), sceVu0InnerProduct(AT(ik, 0x4C, f32 *) + 8, z) <= 0.0f ? 1.0f : -1.0f) != 0) {
         sceVu0SubVector(d, (f32 *)(ik + 0x20), (f32 *)ik);
         sceVu0Normalize(d, d);
@@ -4150,18 +4254,21 @@ static void ik_madd(f32 *out, const f32 *a, const f32 *b, f32 s) {
 }
 
 /* out = a + b * s (a method of the solver) */
-void func_001F17F0(u8 *ik, f32 *out, const f32 *a, const f32 *b, f32 s) {
+/* 0x001F17F0 */
+void IK_MulAdd(u8 *ik, f32 *out, const f32 *a, const f32 *b, f32 s) {
     ik_madd(out, a, b, s);
 }
 
 /* v's component along unit `axis` (*along) and its distance from it (*off) */
-void func_001F1430(u8 *ik, const f32 *axis, const f32 *v, f32 *off, f32 *along) {
+/* 0x001F1430 */
+void IK_AxisSplit(u8 *ik, const f32 *axis, const f32 *v, f32 *off, f32 *along) {
     *along = sceVu0InnerProduct((f32 *)axis, (f32 *)v);
     *off = __builtin_sqrtf(__builtin_fabsf(0.0f + sceVu0InnerProduct((f32 *)v, (f32 *)v) - *along * *along));
 }
 
 /* how far round from b to c (by the angles they make with a) a lies: ang(a,b) / (ang(a,b) + ang(a,c)) */
-f32 func_001F1330(u8 *ik, f32 *a, f32 *b, f32 *c) {
+/* 0x001F1330 */
+f32 IK_RoundFraction(u8 *ik, f32 *a, f32 *b, f32 *c) {
     f32 la = __builtin_sqrtf(__builtin_fabsf(sceVu0InnerProduct(a, a)));
     f32 lb = __builtin_sqrtf(__builtin_fabsf(sceVu0InnerProduct(b, b)));
     f32 lc = __builtin_sqrtf(__builtin_fabsf(sceVu0InnerProduct(c, c)));
@@ -4192,7 +4299,8 @@ static void slerp(f32 *out, const f32 *p, const f32 *q, f32 w, f32 t) {
 
 /* the unit vector `t` of the way round from `a` to `b`, through `mid` when a and b lie on its
    either side (the arc then goes round by way of it) */
-void func_001F14A0(u8 *ik, f32 *out, f32 *a, f32 *mid, f32 *b, f32 t) {
+/* 0x001F14A0 */
+void IK_RoundVector(u8 *ik, f32 *out, f32 *a, f32 *mid, f32 *b, f32 t) {
     f32 ca[4] __attribute__((aligned(16)));
     f32 cb[4] __attribute__((aligned(16)));
     f32 w1, w2, sum;
@@ -4217,7 +4325,8 @@ void func_001F14A0(u8 *ik, f32 *out, f32 *a, f32 *mid, f32 *b, f32 t) {
  * direction is `t` of the way round from where the knee (as a two-bone chain root / knee+hock)
  * to where the hock (as root+knee / hock) would put it, by way of the line to the root; a foot
  * out of reach (+0x80) is pulled in first (returns 1) */
-s32 func_001F0600(u8 *ik, f32 *root, f32 *knee, f32 *hock, f32 *foot, f32 *pole, f32 len1, f32 len2,
+/* 0x001F0600 */
+s32 IK3_PlaceKneeHock(u8 *ik, f32 *root, f32 *knee, f32 *hock, f32 *foot, f32 *pole, f32 len1, f32 len2,
                   f32 len3, f32 bend1, f32 bend2, f32 t) {
     f32 up[4] __attribute__((aligned(16)));
     f32 dk[4] __attribute__((aligned(16)));
@@ -4231,16 +4340,16 @@ s32 func_001F0600(u8 *ik, f32 *root, f32 *knee, f32 *hock, f32 *foot, f32 *pole,
     up[1] = -dk[1];
     up[2] = -dk[2];
     up[3] = 0.0f;
-    r1 = func_001F10C0(ik, root, knee, foot, pole, len1, len2 + len3, bend1);
+    r1 = IK2_PlaceMiddle(ik, root, knee, foot, pole, len1, len2 + len3, bend1);
     sceVu0SubVector(dk, knee, foot);
     sceVu0Normalize(dk, dk);
-    r2 = func_001F10C0(ik, root, hock, foot, pole, len1 + len2, len3, bend2);
+    r2 = IK2_PlaceMiddle(ik, root, hock, foot, pole, len1 + len2, len3, bend2);
     sceVu0SubVector(dh, hock, foot);
     sceVu0Normalize(dh, dh);
     dist = __builtin_sqrtf(__builtin_fabsf(sceVu0InnerProduct(up, up)));
     sceVu0Normalize(up, up);
     if (r1 == 0 && r2 == 0) {
-        func_001F14A0(ik, dir, dk, up, dh, t);
+        IK_RoundVector(ik, dir, dk, up, dh, t);
     } else {
         sceVu0CopyVector(dir, dk);
     }
@@ -4249,19 +4358,21 @@ s32 func_001F0600(u8 *ik, f32 *root, f32 *knee, f32 *hock, f32 *foot, f32 *pole,
         ik_madd(foot, root, up, -AT(ik, 0x80, f32));
     }
     ik_madd(hock, foot, dir, len3);
-    func_001F10C0(ik, root, knee, hock, pole, len1, len2, bend1);
+    IK2_PlaceMiddle(ik, root, knee, hock, pole, len1, len2, bend1);
     return out;
 }
 
 /* turn the bones to the solved joints: root -> knee, knee -> hock, hock -> foot */
-void func_001F08C0(u8 *ik) {
+/* 0x001F08C0 */
+void IK3_AimBones(u8 *ik) {
     ik_aim((f32 (*)[4])AT(ik, 0x4C, u8 *), (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x30));
     ik_aim((f32 (*)[4])AT(ik, 0x50, u8 *), (f32 *)(ik + 0x10), (f32 *)(ik + 0x60), (f32 *)(ik + 0x30));
     ik_aim((f32 (*)[4])AT(ik, 0x78, u8 *), (f32 *)(ik + 0x60), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30));
 }
 
 /* set up: from the bones root / knee / hock / foot of `skel`, the lengths, the bends, the reach */
-void func_001F04B0(u8 *ik, void *skel, s32 root, s32 knee, s32 hock, s32 foot, f32 len1, f32 len2, f32 len3,
+/* 0x001F04B0 */
+void IK3_Setup(u8 *ik, void *skel, s32 root, s32 knee, s32 hock, s32 foot, f32 len1, f32 len2, f32 len3,
                    f32 bend1, f32 bend2, f32 reach) {
     f32 *r = Skel_Bone(skel, root);
     f32 *k = Skel_Bone(skel, knee);
@@ -4288,10 +4399,10 @@ void func_001F04B0(u8 *ik, void *skel, s32 root, s32 knee, s32 hock, s32 foot, f
 /* +0x8 solve with the current lower-leg blend */
 /* 0x001F0450 */
 void IK3_dtor(u8 *ik) {
-    func_001F0600(ik, (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x60), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30),
+    IK3_PlaceKneeHock(ik, (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x60), (f32 *)(ik + 0x20), (f32 *)(ik + 0x30),
                   AT(ik, 0x40, f32), AT(ik, 0x44, f32), AT(ik, 0x70, f32), AT(ik, 0x48, f32), AT(ik, 0x74, f32),
                   AT(ik, 0x7C, f32));
-    func_001F08C0(ik);
+    IK3_AimBones(ik);
 }
 
 /* +0xC solve keeping the leg's pose: the bend direction is the root's Z; the blend +0x7C is
@@ -4315,20 +4426,20 @@ void IK3_Loaded(u8 *ik) {
     sceVu0CopyVector((f32 *)(ik + 0x60), AT(ik, 0x78, f32 *) + 12);
     sceVu0CopyVector(pole, AT(ik, 0x4C, f32 *) + 8);
     sceVu0SubVector(v, footAt, AT(ik, 0x78, f32 *) + 12);
-    func_001F1430(ik, pole, v, &off, &along);
-    func_001F17F0(ik, flat, (f32 *)(ik + 0x20), pole, -along);
-    func_001F10C0(ik, (f32 *)ik, kneeAt, footAt, pole, AT(ik, 0x40, f32), AT(ik, 0x44, f32) + AT(ik, 0x70, f32),
+    IK_AxisSplit(ik, pole, v, &off, &along);
+    IK_MulAdd(ik, flat, (f32 *)(ik + 0x20), pole, -along);
+    IK2_PlaceMiddle(ik, (f32 *)ik, kneeAt, footAt, pole, AT(ik, 0x40, f32), AT(ik, 0x44, f32) + AT(ik, 0x70, f32),
                   AT(ik, 0x48, f32));
-    func_001F10C0(ik, (f32 *)ik, hockAt, footAt, pole, AT(ik, 0x40, f32) + AT(ik, 0x44, f32), AT(ik, 0x70, f32),
+    IK2_PlaceMiddle(ik, (f32 *)ik, hockAt, footAt, pole, AT(ik, 0x40, f32) + AT(ik, 0x44, f32), AT(ik, 0x70, f32),
                   AT(ik, 0x74, f32));
     sceVu0SubVector(v, AT(ik, 0x78, f32 *) + 12, footAt);
     sceVu0SubVector(kneeAt, kneeAt, footAt);
     sceVu0SubVector(hockAt, hockAt, footAt);
-    AT(ik, 0x7C, f32) = func_001F1330(ik, v, kneeAt, hockAt);
-    func_001F0600(ik, (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x60), flat, pole, AT(ik, 0x40, f32),
+    AT(ik, 0x7C, f32) = IK_RoundFraction(ik, v, kneeAt, hockAt);
+    IK3_PlaceKneeHock(ik, (f32 *)ik, (f32 *)(ik + 0x10), (f32 *)(ik + 0x60), flat, pole, AT(ik, 0x40, f32),
                   AT(ik, 0x44, f32), off, AT(ik, 0x48, f32), AT(ik, 0x74, f32), AT(ik, 0x7C, f32));
-    func_001F17F0(ik, (f32 *)(ik + 0x20), flat, pole, along);
-    func_001F08C0(ik);
+    IK_MulAdd(ik, (f32 *)(ik + 0x20), flat, pole, along);
+    IK3_AimBones(ik);
     sceVu0CopyVector(footAt, (f32 *)(ik + 0x20));
 }
 
@@ -4364,20 +4475,20 @@ void FionaModel_Springs(u8 *o) {
         }
         n = 0x1E;
     }
-    func_002EE8A0(o + 0x13B0);
-    func_002EE8A0(o + 0x1440);
-    func_002EE8A0(o + 0x1740);
-    func_002EE8A0(o + 0x17E0);
+    SpringSet_Begin(o + 0x13B0);
+    SpringSet_Begin(o + 0x1440);
+    SpringSet_Begin(o + 0x1740);
+    SpringSet_Begin(o + 0x17E0);
     for (i = 0; i < n; i++) {
-        func_002EE900(o + 0x13B0);
-        func_002EE900(o + 0x1440);
-        func_002EE900(o + 0x1740);
-        func_002EE900(o + 0x17E0);
+        SpringSet_Step(o + 0x13B0);
+        SpringSet_Step(o + 0x1440);
+        SpringSet_Step(o + 0x1740);
+        SpringSet_Step(o + 0x17E0);
     }
-    func_002EE840(o + 0x13B0);
-    func_002EE840(o + 0x1440);
-    func_002EE840(o + 0x1740);
-    func_002EE840(o + 0x17E0);
+    SpringSet_Finish(o + 0x13B0);
+    SpringSet_Finish(o + 0x1440);
+    SpringSet_Finish(o + 0x1740);
+    SpringSet_Finish(o + 0x17E0);
     AT(o, 0x850, u8) = 0;
 }
 
@@ -4385,7 +4496,8 @@ void FionaModel_Springs(u8 *o) {
  * +0x30, next +0x28), each with its vtable at +0x30 of itself. */
 
 /* begin a frame: each point (+0xC) with the system's +0x14 */
-void func_002EE8A0(u8 *s) {
+/* 0x002EE8A0 */
+void SpringSet_Begin(u8 *s) {
     u8 *p;
 
     for (p = AT(s, 0x18, u8 *); p != NULL; p = AT(p, 0x2C, u8 *)) {
@@ -4394,7 +4506,8 @@ void func_002EE8A0(u8 *s) {
 }
 
 /* one step: each link (+0x10) */
-void func_002EE900(u8 *s) {
+/* 0x002EE900 */
+void SpringSet_Step(u8 *s) {
     u8 *l;
 
     for (l = AT(s, 0x30, u8 *); l != NULL; l = AT(l, 0x28, u8 *)) {
@@ -4403,7 +4516,8 @@ void func_002EE900(u8 *s) {
 }
 
 /* finish the frame: each link (+0x14) */
-void func_002EE840(u8 *s) {
+/* 0x002EE840 */
+void SpringSet_Finish(u8 *s) {
     u8 *l;
 
     for (l = AT(s, 0x30, u8 *); l != NULL; l = AT(l, 0x28, u8 *)) {
@@ -4969,7 +5083,7 @@ void SprungPoint_AdjustBone(u8 *p, u8 *s) {
     sceVu0CopyVector(b + 12, (f32 *)p);
 }
 
-extern void func_001F6870(u8 *m, s32 layer, s32 a, s32 b, f32 *light);   /* queue the model's drawing */
+extern void Model_DrawWithShadow(u8 *m, s32 layer, s32 a, s32 b, f32 *light);   /* queue the model's drawing */
 
 /* draw the model in `layer` (a, b: the character's draw parameters) with its light (+0x6C) */
 /* 0x002DDAC0 */
@@ -4977,7 +5091,7 @@ void Model_Draw(u8 *m, s32 layer, s32 a, s32 b) {
     f32 light[4] __attribute__((aligned(16)));
 
     VCALL(m, 0x6C, void (*)(u8 *, f32 *))(m, light);
-    func_001F6870(m, layer, a, b, light);
+    Model_DrawWithShadow(m, layer, a, b, light);
 }
 
 #ifdef HG_NATIVE
@@ -5326,7 +5440,8 @@ static void gl_draw_model(u8 *m) {
 /* draw the model in `layer` (a, b: the character's draw parameters, kept at +0x28 / +0x2C;
  * layer 0x14 none), then its shadow volumes (+0x1D0, layer 6) unless +0x4D9 or in layers
  * 0x14 / 0x17 / 0x1C. (The original queues the model drawer, layer 0xB twice around masks.) */
-void func_001F6870(u8 *m, s32 layer, s32 a, s32 b, f32 *light) {
+/* 0x001F6870 */
+void Model_DrawWithShadow(u8 *m, s32 layer, s32 a, s32 b, f32 *light) {
     if (layer == 0x14) {
         AT(m, 0x28, s32) = -1;
         AT(m, 0x2C, s32) = -1;
@@ -5344,12 +5459,13 @@ void func_001F6870(u8 *m, s32 layer, s32 a, s32 b, f32 *light) {
 #endif
 
 /* `m` = a turn of `a` about Y */
-void func_002E3190(f32 (*m)[4], f32 a) {
+/* 0x002E3190 */
+void Mtx_TurnY(f32 (*m)[4], f32 a) {
     sceVu0UnitMatrix(m);
     sceVu0RotMatrixY(m, m, a);
 }
 
-/* reset the play state before a new animation (as func_002DDE20): +0x85C / +0x85D off, the
+/* reset the play state before a new animation (as Motion_Play): +0x85C / +0x85D off, the
  * speeds +0x38 / +0x3C and +0x48 / +0x4C from the defaults +0x87C / +0x880, +0x40 / +0x50 zero */
 static void motion_reset_play(u8 *m) {
     motion_defaults(m);
@@ -5357,34 +5473,37 @@ static void motion_reset_play(u8 *m) {
 
 /* play animation `anim` (variant `variant`) blending in over the frames the table (+0x874)
  * gives at +0, with its flags (+4); an animation not in the table cuts in at once */
-void func_002DDED0(u8 *m, s32 anim, s32 variant) {
+/* 0x002DDED0 */
+void Motion_PlayTable(u8 *m, s32 anim, s32 variant) {
     s32 i;
     f32 blend;
     u32 flags;
 
-    if (func_001F4710(m, anim) == -1) {
+    if (Motion_AnimIndex(m, anim) == -1) {
         motion_reset_play(m);
-        func_001F7890(m, anim, 0, -1, 0.0f);
+        Motion_Start(m, anim, 0, -1, 0.0f);
         return;
     }
-    i = func_001F4710(m, anim);
+    i = Motion_AnimIndex(m, anim);
     blend = (f32)(i != -1 ? AT(AT(m, 0x874, u8 *), i * 6, s16) : 0);
-    i = func_001F4710(m, anim);
+    i = Motion_AnimIndex(m, anim);
     flags = i != -1 ? AT(AT(m, 0x874, u8 *), i * 6 + 4, u16) : 0;
     motion_reset_play(m);
-    func_001F7890(m, anim, flags & 0xFFFF, variant, blend);
+    Motion_Start(m, anim, flags & 0xFFFF, variant, blend);
 }
 
 /* play animation `anim` driven from outside: both motion layers' flag 0x10 (no own time) */
-void func_002DD040(u8 *m, s32 anim) {
-    func_002DDED0(m, anim, 0);
+/* 0x002DD040 */
+void Motion_PlayDriven(u8 *m, s32 anim) {
+    Motion_PlayTable(m, anim, 0);
     AT(AT(m, 0x6A4, u8 *), 0x18, u32) |= 0x10;
     AT(AT(m, 0x6A8, u8 *), 0x18, u32) |= 0x10;
 }
 
 /* the motion's time (+0x6A4 +0) = how far cutscene frame `frame` is into its shot (director
    +0x20), shared by the three blend channels' time pointers (+0x704, 0x60 apart) */
-void func_002DD090(u8 *m, s32 frame) {
+/* 0x002DD090 */
+void Motion_CutsceneTime(u8 *m, s32 frame) {
     s32 i;
 
     *AT(m, 0x6A4, f32 *) = (f32)VCALL(gCutscene, 0x20, s32 (*)(VObject *, s32))(gCutscene, frame);
@@ -5400,7 +5519,8 @@ void func_002DD090(u8 *m, s32 frame) {
 /* how the model (its frame +0x7D0: up +0x7E0, forward +0x7F0) has to look at `target` from its
  * eye (+0x860, in model space): the pitch (atan2 of the height over the level distance) and
  * the turn (the angle from forward on the level, negative to the left) */
-void func_002DD110(u8 *m, const f32 *target, f32 *pitch, f32 *turn) {
+/* 0x002DD110 */
+void Motion_LookAt(u8 *m, const f32 *target, f32 *pitch, f32 *turn) {
     f32 v[4] __attribute__((aligned(16)));
     f32 p[4] __attribute__((aligned(16)));
     f32 *up = (f32 *)(m + 0x7E0), *fwd = (f32 *)(m + 0x7F0);
@@ -5437,7 +5557,8 @@ void func_002DD110(u8 *m, const f32 *target, f32 *pitch, f32 *turn) {
 
 /* is foot `foot` down (the contact track +0x50, channel `foot`) `ofs` frames from now in the
  * previous slot's animation (+0x6A8; the time wrapped into it) */
-u32 func_002DD860(void *motion, s32 foot, f32 ofs) {
+/* 0x002DD860 */
+u32 Motion_FootDownPrev(void *motion, s32 foot, f32 ofs) {
     f32 c[4] __attribute__((aligned(16)));
     u8 *slot = AT(motion, 0x6A8, u8 *);
     f32 t, len;
@@ -5458,7 +5579,7 @@ u32 func_002DD860(void *motion, s32 foot, f32 ofs) {
         t = t - len;
     }
     if (AT(slot, 0x50, void *) != NULL && AT(AT(slot, 0x50, u8 *), 0x0, void *) != NULL) {
-        func_001F36B0(AT(slot, 0x50, void *), c, t);
+        Track_Sample(AT(slot, 0x50, void *), c, t);
     }
     return !(c[foot] <= 0.0f);
 }
@@ -5473,7 +5594,8 @@ extern void *D_0046B1C0[], *D_0046B0D0[], *D_004703B0[];
 
 /* the human characters' model base before its kind (vtable D_0046B210): drawing object, the
    +0x1D0 part, the model fields */
-void *func_0016FCD0(u8 *m) {
+/* 0x0016FCD0 */
+void *HumanModel_BaseCtor(u8 *m) {
     AT(m, 0x0, void **) = D_0046B210;
     DrawObj_Init(m + 0x10);
     AT(m, 0x1D0, void **) = D_00469D00;
@@ -5485,8 +5607,9 @@ void *func_0016FCD0(u8 *m) {
 }
 
 /* the human model base with its two 0x60 parts' vtables (+0x928 / +0x988) */
-void *func_0016FC30(u8 *m) {
-    func_0016FCD0(m);
+/* 0x0016FC30 */
+void *HumanModel_PartsCtor(u8 *m) {
+    HumanModel_BaseCtor(m);
     AT(m, 0x0, void **) = D_0046C160;
     AT(m, 0x928, void **) = D_0046B0D0;
     AT(m, 0x988, void **) = D_0046B0D0;
@@ -5499,7 +5622,8 @@ void *HumanModel_dtor(u8 *m, s32 flags) {
     return HumanModel_Destroy(m, flags);
 }
 
-void *func_0016FAE0(u8 *p) {
+/* 0x0016FAE0 */
+void *Capsule_ctor(u8 *p) {
     FLD(p, 0x30, void **) = D_00470390;
     return p;
 }
@@ -5517,15 +5641,18 @@ static inline void *Part_Destroy(u8 *e, s32 at, void **vt, void **base, s32 flag
     return e;
 }
 
-void *func_0016F680(void *e, s32 flags) {
+/* 0x0016F680 */
+void *Part46B1C0_dtor(void *e, s32 flags) {
     return Part_Destroy(e, 0x0, D_0046B1C0, D_00469D00, flags);
 }
 
-void *func_0016F6E0(void *e, s32 flags) {
+/* 0x0016F6E0 */
+void *Part46ADA0_dtor(void *e, s32 flags) {
     return Part_Destroy(e, 0x0, D_0046ADA0, D_00469D00, flags);
 }
 
-void *func_0016F740(u8 *p) {
+/* 0x0016F740 */
+void *Part_ctor(u8 *p) {
     FLD(p, 0x0, void **) = D_00469D00;
     FLD(p, 0x4, s32) = -1;
     FLD(p, 0x0, void **) = D_0046B1C0;
@@ -5533,14 +5660,16 @@ void *func_0016F740(u8 *p) {
     return p;
 }
 
-void *func_0016F990(void *e, s32 flags) {
+/* 0x0016F990 */
+void *Part_delete(void *e, s32 flags) {
     if (e != NULL && (s16)flags > 0) {
         func_00100490(e);
     }
     return e;
 }
 
-void *func_0016FC80(void *e, s32 flags) {
+/* 0x0016FC80 */
+void *IK2_Destroy(void *e, s32 flags) {
     if (e != NULL) {
         AT(e, 0x58, void **) = D_0046B0D0;
         if ((s16)flags > 0) {
@@ -5551,7 +5680,8 @@ void *func_0016FC80(void *e, s32 flags) {
 }
 
 /* the three-bone IK solver's destructor */
-void *func_001F7E40(void *e, s32 flags) {
+/* 0x001F7E40 */
+void *IK3_Destroy(void *e, s32 flags) {
     if (e != NULL) {
         AT(e, 0x58, void **) = D_0046B0C0;
         AT(e, 0x58, void **) = D_0046B0D0;
@@ -5565,79 +5695,96 @@ void *func_001F7E40(void *e, s32 flags) {
 extern void *D_004702B0[], *D_00473810[], *D_00470700[], *D_00470440[], *D_004703D0[],
     *D_00472350[], *D_004737F0[], *D_00470460[], *D_00472C10[];
 
-void *func_0016FBB0(void *e, s32 flags) {
+/* 0x0016FBB0 */
+void *HangPoint_dtor(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_004702B0, D_004703B0, flags);
 }
 
-void *func_0016FC10(u8 *p) {
+/* 0x0016FC10 */
+void *HangPoint_ctor(u8 *p) {
     FLD(p, 0x30, void **) = D_004702B0;
     return p;
 }
 
-void *func_0016FB00(void *e, s32 flags) {
+/* 0x0016FB00 */
+void *Part60_dtor(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_00473810, D_004703B0, flags);
 }
 
-void *func_0016FB60(u8 *p) {
+/* 0x0016FB60 */
+void *Part60_ctor(u8 *p) {
     FLD(p, 0x30, void **) = D_00473810;
     return p;
 }
 
-void *func_0016FB80(u8 *p) {
+/* 0x0016FB80 */
+void *SpringSet_ctor(u8 *p) {
     FLD(p, 0x34, s32) = 0;
     FLD(p, 0x30, s32) = 0;
     return p;
 }
 
-void *func_0016FB90(u8 *p) {
+/* 0x0016FB90 */
+void *BonePoint_ctor(u8 *p) {
     FLD(p, 0x30, void **) = D_004703A0;
     return p;
 }
 
-void *func_00170080(void *e, s32 flags) {
+/* 0x00170080 */
+void *SwayPointA_dtor(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_00470700, D_004703B0, flags);
 }
 
-void *func_00170290(void *e, s32 flags) {
+/* 0x00170290 */
+void *SprungPoint_dtor(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_00470440, D_004703B0, flags);
 }
 
-void *func_001702F0(void *e, s32 flags) {
+/* 0x001702F0 */
+void *BoneHangPoint_dtor(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_004703D0, D_004703B0, flags);
 }
 
-void *func_001709D0(void *e, s32 flags) {
+/* 0x001709D0 */
+void *SwayPointB_dtor(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_00472350, D_004703B0, flags);
 }
 
-void *func_00170A30(u8 *p) {
+/* 0x00170A30 */
+void *SwayPointB_ctor(u8 *p) {
     FLD(p, 0x30, void **) = D_00472350;
     return p;
 }
 
-void *func_00170CB0(void *e, s32 flags) {
+/* 0x00170CB0 */
+void *Part50_dtor(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_004737F0, D_004703B0, flags);
 }
 
-void *func_00170D10(u8 *p) {
+/* 0x00170D10 */
+void *Part50_ctor(u8 *p) {
     FLD(p, 0x30, void **) = D_004737F0;
     return p;
 }
 
-void *func_00170EB0(void *e, s32 flags) {
+/* 0x00170EB0 */
+void *HairPoint_dtor(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_00470460, D_004703B0, flags);
 }
 
-void *func_00170F10(u8 *p) {
+/* 0x00170F10 */
+void *HairPoint_ctor(u8 *p) {
     FLD(p, 0x30, void **) = D_00470460;
     return p;
 }
 
-void *func_00170F30(void *e, s32 flags) {
+/* 0x00170F30 */
+void *HangingPart_dtor(void *e, s32 flags) {
     return Part_Destroy(e, 0x30, D_00472C10, D_004703B0, flags);
 }
 
-void *func_00170F90(u8 *p) {
+/* 0x00170F90 */
+void *HangingPart_ctor(u8 *p) {
     FLD(p, 0x30, void **) = D_00472C10;
     return p;
 }
@@ -5672,7 +5819,8 @@ void *CharModel_dtor(void *p, s32 flags) {
     return m;
 }
 
-void *func_00170460(u8 *p) {
+/* 0x00170460 */
+void *SwayPointA_ctor(u8 *p) {
     FLD(p, 0x30, void **) = D_00470700;
     return p;
 }
@@ -5691,16 +5839,16 @@ void *Kind18Model_dtor(void *p, s32 flags) {
         AT(m, 0x0, void **) = D_00476F50;
         if (m != NULL) {
             AT(m, 0x0, void **) = D_00470540;
-            func_0016F990(m + 0x1230, -1);
-            func_001702F0(m + 0x11E0, -1);
-            func_0016F990(m + 0x11A0, -1);
-            func_00170290(m + 0x1140, -1);
-            func_0016F990(m + 0x1100, -1);
-            func_001002C0(m + 0xE40, func_0016FBB0, 0x50, 4);
-            func_0016F990(m + 0xE00, -1);
-            func_001702F0(m + 0xDB0, -1);
-            func_0016F990(m + 0xD70, -1);
-            func_001002C0(m + 0x9B0, func_00170080, 0x50, 0xC);
+            Part_delete(m + 0x1230, -1);
+            BoneHangPoint_dtor(m + 0x11E0, -1);
+            Part_delete(m + 0x11A0, -1);
+            SprungPoint_dtor(m + 0x1140, -1);
+            Part_delete(m + 0x1100, -1);
+            func_001002C0(m + 0xE40, HangPoint_dtor, 0x50, 4);
+            Part_delete(m + 0xE00, -1);
+            BoneHangPoint_dtor(m + 0xDB0, -1);
+            Part_delete(m + 0xD70, -1);
+            func_001002C0(m + 0x9B0, SwayPointA_dtor, 0x50, 0xC);
             CharModel_dtor(m, 0);
         }
         if ((s16)flags > 0) {
@@ -5715,7 +5863,7 @@ void Kind18Model_ShowParts(void) {
 }
 
 extern void CharModel_Loaded(u8 *m);
-extern void func_002F7620(u8 *m);
+extern void EventHumanModel_Setup(u8 *m);
 
 /* +0xC loaded (as EventHumanModel_Loaded): the base setup, the parts' roles, her own setup, per-part draw
  * settings for parts 0xA0..0xA8, 0xAE..0xB4 and 0xD2..0xD6 */
@@ -5737,7 +5885,7 @@ void Kind18Model_Loaded(u8 *m) {
     AT(m, 0x8BC, s32) = 0x2E;
     AT(m, 0x8B0, s32) = 0x21;
     AT(m, 0x8B4, s32) = 0x17;
-    func_002F7620(m);
+    EventHumanModel_Setup(m);
     for (i = 0; i < 12; i++) {
         AT(m, sParts[i], u8) = 4;
         AT(m, sParts[i] + 1, u8) = 0x40;
@@ -5751,24 +5899,25 @@ void Kind18Model_Frame(u8 *m) {
 }
 
 extern void *D_00470540[], *D_004703A0[];
-extern void *func_00170080(void *, s32);
+extern void *SwayPointA_dtor(void *, s32);
 
 /* a human event character's model (vtable D_00470540, 0x1270 bytes) of `kind`: twelve 0x50
    parts at +0x9B0, four at +0xE40, six 0x40 parts at +0xF80 and the single parts between */
-void *func_001700E0(u8 *m, s32 kind) {
+/* 0x001700E0 */
+void *EventHumanModel_ctor(u8 *m, s32 kind) {
     u8 *e;
 
-    func_0016FC30(m);
+    HumanModel_PartsCtor(m);
     AT(m, 0x0, void **) = D_0046B0E0;
     AT(m, 0x9A0, u8) = kind;
     AT(m, 0x0, void **) = D_00470540;
-    func_00100340(m + 0x9B0, func_00170460, func_00170080, 0x50, 0xC);
+    func_00100340(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, 0xC);
     AT(m, 0xDA4, s32) = 0;
     AT(m, 0xDA0, s32) = 0;
     AT(m, 0xDE0, void **) = D_004703D0;
     AT(m, 0xE34, s32) = 0;
     AT(m, 0xE30, s32) = 0;
-    func_00100340(m + 0xE40, func_0016FC10, func_0016FBB0, 0x50, 4);
+    func_00100340(m + 0xE40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
     for (e = m + 0xF80; e < m + 0x1100; e += 0x40) {
         AT(e, 0x30, void **) = D_004703A0;
     }
@@ -5794,10 +5943,10 @@ void *EventHumanModel_dtor(void *p, s32 flags) {
         AT(m, 0x1210, void **) = D_004703B0;
         AT(m, 0x1170, void **) = D_00470440;
         AT(m, 0x1170, void **) = D_004703B0;
-        func_001002C0(m + 0xE40, func_0016FBB0, 0x50, 4);
+        func_001002C0(m + 0xE40, HangPoint_dtor, 0x50, 4);
         AT(m, 0xDE0, void **) = D_004703D0;
         AT(m, 0xDE0, void **) = D_004703B0;
-        func_001002C0(m + 0x9B0, func_00170080, 0x50, 0xC);
+        func_001002C0(m + 0x9B0, SwayPointA_dtor, 0x50, 0xC);
         AT(m, 0x0, void **) = D_0046B0E0;
         HumanModel_dtor(m, 0);
         if ((s16)flags > 0) {
@@ -5813,7 +5962,7 @@ void *EventHumanModel_dtor(void *p, s32 flags) {
 static inline u8 *Model_New(Progress *p, u32 size) {
     VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
 
-    return func_002DC6E0(size, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, size));
+    return Model_new(size, VCALL(heap, 0x10, void *(*)(VObject *, u32))(heap, size));
 }
 
 extern void *D_00474460[], *D_00473BD0[], *D_00476F50[], *D_0046F9E0[], *D_00479740[],
@@ -5823,23 +5972,25 @@ extern void *D_00474460[], *D_00473BD0[], *D_00476F50[], *D_0046F9E0[], *D_00479
 extern void *D_0046C160[];   /* the base with two parts at +0x8D0 / +0x930 */
 
 /* a model on the full base with its two parts (+0x8D0, +0x930), vtable D_00479740 */
-void *func_0038C910(u8 *m) {
-    func_0016F4B0(m);
+/* 0x0038C910 */
+void *Kind12Model_ctor(u8 *m) {
+    ModelBase_ctor(m);
     AT(m, 0x0, void **) = D_0046C160;
-    func_001706F0(m + 0x8D0);
-    func_001706F0(m + 0x930);
+    IK2_ctor(m + 0x8D0);
+    IK2_ctor(m + 0x930);
     AT(m, 0x0, void **) = D_00479740;
     return m;
 }
 
 /* the same with 24 more parts (0x50 each, +0x9A0), vtable D_00471CE0 */
-void *func_0038C960(u8 *m) {
-    func_0016F4B0(m);
+/* 0x0038C960 */
+void *Lorenzo2Model_ctor(u8 *m) {
+    ModelBase_ctor(m);
     AT(m, 0x0, void **) = D_0046C160;
-    func_001706F0(m + 0x8D0);
-    func_001706F0(m + 0x930);
+    IK2_ctor(m + 0x8D0);
+    IK2_ctor(m + 0x930);
     AT(m, 0x0, void **) = D_00471CE0;
-    func_00100340(m + 0x9A0, func_00170A30, func_001709D0, 0x50, 0x18);
+    func_00100340(m + 0x9A0, SwayPointB_ctor, SwayPointB_dtor, 0x50, 0x18);
     AT(m, 0x1154, s32) = 0;
     AT(m, 0x1150, s32) = 0;
     return m;
@@ -5847,14 +5998,15 @@ void *func_0038C960(u8 *m) {
 
 extern void *D_004703A0[];
 
-/* a model on the base func_0016FCD0 with 6 parts (0x50, +0x890) and 8 members (0x40, +0xA70,
+/* a model on the base HumanModel_BaseCtor with 6 parts (0x50, +0x890) and 8 members (0x40, +0xA70,
  * their vtable at +0x30), vtable D_00471DA0 */
-void *func_0038CB60(u8 *m) {
+/* 0x0038CB60 */
+void *LorenzoModel_ctor(u8 *m) {
     u8 *e;
 
-    func_0016FCD0(m);
+    HumanModel_BaseCtor(m);
     AT(m, 0x0, void **) = D_00471DA0;
-    func_00100340(m + 0x890, func_0016FC10, func_0016FBB0, 0x50, 6);
+    func_00100340(m + 0x890, HangPoint_ctor, HangPoint_dtor, 0x50, 6);
     for (e = m + 0xA70; e < m + 0xC70; e += 0x40) {
         AT(e, 0x30, void **) = D_004703A0;
     }
@@ -5865,15 +6017,16 @@ void *func_0038CB60(u8 *m) {
 
 /* a model on the full base with its two parts (+0x8D0 / +0x930), 4 parts (0x50, +0x9A0) and
  * 2 members (0x40, +0xB20), vtable D_0046C0A0 */
-void *func_0038D4D0(u8 *m) {
+/* 0x0038D4D0 */
+void *DebilitasModel_ctor(u8 *m) {
     u8 *e;
 
-    func_0016F4B0(m);
+    ModelBase_ctor(m);
     AT(m, 0x0, void **) = D_0046C160;
-    func_001706F0(m + 0x8D0);
-    func_001706F0(m + 0x930);
+    IK2_ctor(m + 0x8D0);
+    IK2_ctor(m + 0x930);
     AT(m, 0x0, void **) = D_0046C0A0;
-    func_00100340(m + 0x9A0, func_0016FC10, func_0016FBB0, 0x50, 4);
+    func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
     AT(m, 0xB14, s32) = 0;
     AT(m, 0xB10, s32) = 0;
     for (e = m + 0xB20; e < m + 0xBA0; e += 0x40) {
@@ -5884,21 +6037,22 @@ void *func_0038D4D0(u8 *m) {
 
 /* a model on the full base with its two parts, 6 parts (0x50, +0x9A0), 6 members (0x40,
  * +0xB80) and 24 more parts (0x50, +0xD40), vtable D_00471C20 */
-void *func_0038C9E0(u8 *m) {
+/* 0x0038C9E0 */
+void *Kind09Model_ctor(u8 *m) {
     u8 *e;
 
-    func_0016F4B0(m);
+    ModelBase_ctor(m);
     AT(m, 0x0, void **) = D_0046C160;
-    func_001706F0(m + 0x8D0);
-    func_001706F0(m + 0x930);
+    IK2_ctor(m + 0x8D0);
+    IK2_ctor(m + 0x930);
     AT(m, 0x0, void **) = D_00471C20;
-    func_00100340(m + 0x9A0, func_0016FC10, func_0016FBB0, 0x50, 6);
+    func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 6);
     for (e = m + 0xB80; e < m + 0xD00; e += 0x40) {
         AT(e, 0x30, void **) = D_004703A0;
     }
     AT(m, 0xD34, s32) = 0;
     AT(m, 0xD30, s32) = 0;
-    func_00100340(m + 0xD40, func_00170A30, func_001709D0, 0x50, 0x18);
+    func_00100340(m + 0xD40, SwayPointB_ctor, SwayPointB_dtor, 0x50, 0x18);
     AT(m, 0x14F4, s32) = 0;
     AT(m, 0x14F0, s32) = 0;
     return m;
@@ -5911,18 +6065,18 @@ extern void *D_00470390[];
 static inline void model_1310(u8 *m, void **vtbl) {
     u8 *e;
 
-    func_0016F4B0(m);
+    ModelBase_ctor(m);
     AT(m, 0x0, void **) = D_0046C160;
-    func_001706F0(m + 0x8D0);
-    func_001706F0(m + 0x930);
+    IK2_ctor(m + 0x8D0);
+    IK2_ctor(m + 0x930);
     AT(m, 0x0, void **) = vtbl;
-    func_00100340(m + 0x9A0, func_0016FC10, func_0016FBB0, 0x50, 4);
+    func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
     for (e = m + 0xAE0; e < m + 0xBE0; e += 0x40) {
         AT(e, 0x30, void **) = D_004703A0;
     }
     AT(m, 0xC14, s32) = 0;
     AT(m, 0xC10, s32) = 0;
-    func_00100340(m + 0xC20, func_0016FB60, func_0016FB00, 0x60, 0xC);
+    func_00100340(m + 0xC20, Part60_ctor, Part60_dtor, 0x60, 0xC);
     AT(m, 0x10D4, s32) = 0;
     AT(m, 0x10D0, s32) = 0;
     for (e = m + 0x10E0; e < m + 0x1310; e += 0x70) {
@@ -5931,15 +6085,17 @@ static inline void model_1310(u8 *m, void **vtbl) {
 }
 
 /* the gallery's 0x1310-byte model, vtable D_00473BD0 */
-void *func_0038CC90(u8 *m) {
+/* 0x0038CC90 */
+void *Kind23Model_ctor(u8 *m) {
     model_1310(m, D_00473BD0);
     return m;
 }
 
 /* the same with 4 more parts (0x50, +0x1310), vtable D_00470480 */
-void *func_0038CEE0(u8 *m) {
+/* 0x0038CEE0 */
+void *RiccardoModel_ctor(u8 *m) {
     model_1310(m, D_00470480);
-    func_00100340(m + 0x1310, func_00170D10, func_00170CB0, 0x50, 4);
+    func_00100340(m + 0x1310, Part50_ctor, Part50_dtor, 0x50, 4);
     AT(m, 0x1484, s32) = 0;
     AT(m, 0x1480, s32) = 0;
     return m;
@@ -5949,31 +6105,32 @@ void *func_0038CEE0(u8 *m) {
  * their +0x30 / +0x34 cleared), 6 parts (0x50, +0xAA0), 2 + 2 members (0x70 at +0xC80, 0x40 at
  * +0xD60), 10 parts (0x70, +0xDE0), 5 members (0x70, +0x1240), one (+0x1470, vtable at +0x30)
  * and 2 parts (0x50, +0x14D0) */
-void *func_0038D160(u8 *m) {
+/* 0x0038D160 */
+void *DaniellaModel_ctor(u8 *m) {
     u8 *e;
 
-    func_0016F4B0(m);
+    ModelBase_ctor(m);
     AT(m, 0x0, void **) = D_0046C160;
-    func_001706F0(m + 0x8D0);
-    func_001706F0(m + 0x930);
+    IK2_ctor(m + 0x8D0);
+    IK2_ctor(m + 0x930);
     AT(m, 0x0, void **) = D_004702D0;
     for (e = m + 0x9A0; e < m + 0xAA0; e += 0x40) {
         AT(e, 0x34, s32) = 0;
         AT(e, 0x30, s32) = 0;
     }
-    func_00100340(m + 0xAA0, func_00170F90, func_00170F30, 0x50, 6);
+    func_00100340(m + 0xAA0, HangingPart_ctor, HangingPart_dtor, 0x50, 6);
     for (e = m + 0xC80; e < m + 0xD60; e += 0x70) {
         AT(e, 0x30, void **) = D_00470390;
     }
     for (e = m + 0xD60; e < m + 0xDE0; e += 0x40) {
         AT(e, 0x30, void **) = D_004703A0;
     }
-    func_00100340(m + 0xDE0, func_00170F10, func_00170EB0, 0x70, 0xA);
+    func_00100340(m + 0xDE0, HairPoint_ctor, HairPoint_dtor, 0x70, 0xA);
     for (e = m + 0x1240; e < m + 0x1470; e += 0x70) {
         AT(e, 0x30, void **) = D_00470390;
     }
     AT(m, 0x14A0, void **) = D_00470440;
-    func_00100340(m + 0x14D0, func_00170670, func_001702F0, 0x50, 2);
+    func_00100340(m + 0x14D0, BoneHangPoint_ctor, BoneHangPoint_dtor, 0x50, 2);
     return m;
 }
 
@@ -5983,7 +6140,7 @@ void CharLoad_Kind33Model(Progress *p, u32 slot) {
     u8 *m = Model_New(p, 0x890);
 
     if (m != NULL) {
-        func_0016F4B0(m);
+        ModelBase_ctor(m);
         AT(m, 0x0, void **) = D_00474460;
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
@@ -5997,17 +6154,17 @@ void CharLoad_Kind23Model(Progress *p, u32 slot) {
     if (m != NULL) {
         u8 *e;
 
-        func_0016FC30(m);
+        HumanModel_PartsCtor(m);
         AT(m, 0x0, void **) = D_00473BD0;
-        func_00100340(m + 0x9A0, func_0016FC10, func_0016FBB0, 0x50, 4);
+        func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
         for (e = m + 0xAE0; e < m + 0xBE0; e += 0x40) {
-            func_0016FB90(e);
+            BonePoint_ctor(e);
         }
-        func_0016FB80(m + 0xBE0);
-        func_00100340(m + 0xC20, func_0016FB60, func_0016FB00, 0x60, 0xC);
-        func_0016FB80(m + 0x10A0);
+        SpringSet_ctor(m + 0xBE0);
+        func_00100340(m + 0xC20, Part60_ctor, Part60_dtor, 0x60, 0xC);
+        SpringSet_ctor(m + 0x10A0);
         for (e = m + 0x10E0; e < m + 0x1310; e += 0x70) {
-            func_0016FAE0(e);
+            Capsule_ctor(e);
         }
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
@@ -6019,7 +6176,7 @@ void CharLoad_Kind18Model(Progress *p, u32 slot) {
     u8 *m = Model_New(p, 0x1270);
 
     if (m != NULL) {
-        func_001700E0(m, 5);
+        EventHumanModel_ctor(m, 5);
         AT(m, 0x0, void **) = D_00476F50;
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
@@ -6031,7 +6188,7 @@ void CharLoad_Kind14Model(Progress *p, u32 slot) {
     u8 *m = Model_New(p, 0x890);
 
     if (m != NULL) {
-        func_0016F4B0(m);
+        ModelBase_ctor(m);
         AT(m, 0x0, void **) = D_00472700;
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
@@ -6045,31 +6202,33 @@ void CharLoad_Kind13Model(Progress *p, u32 slot) {
     if (m != NULL) {
         u8 *e;
 
-        func_00170690(m, 0);
+        HumanModel_ctor(m, 0);
         AT(m, 0x0, void **) = D_00470540;
-        func_00100340(m + 0x9B0, func_00170460, func_00170080, 0x50, 0xC);
-        func_0016FB80(m + 0xD70);
-        func_00170670(m + 0xDB0);
-        func_0016FB80(m + 0xE00);
-        func_00100340(m + 0xE40, func_0016FC10, func_0016FBB0, 0x50, 4);
+        func_00100340(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, 0xC);
+        SpringSet_ctor(m + 0xD70);
+        BoneHangPoint_ctor(m + 0xDB0);
+        SpringSet_ctor(m + 0xE00);
+        func_00100340(m + 0xE40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
         for (e = m + 0xF80; e < m + 0x1100; e += 0x40) {
-            func_0016FB90(e);
+            BonePoint_ctor(e);
         }
-        func_0016FB80(m + 0x1100);
-        func_00170650(m + 0x1140);
-        func_0016FB80(m + 0x11A0);
-        func_00170670(m + 0x11E0);
-        func_0016FB80(m + 0x1230);
+        SpringSet_ctor(m + 0x1100);
+        SprungPoint_ctor(m + 0x1140);
+        SpringSet_ctor(m + 0x11A0);
+        BoneHangPoint_ctor(m + 0x11E0);
+        SpringSet_ctor(m + 0x1230);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
 
-void *func_00170650(u8 *p) {
+/* 0x00170650 */
+void *SprungPoint_ctor(u8 *p) {
     FLD(p, 0x30, void **) = D_00470440;
     return p;
 }
 
-void *func_00170670(u8 *p) {
+/* 0x00170670 */
+void *BoneHangPoint_ctor(u8 *p) {
     FLD(p, 0x30, void **) = D_004703D0;
     return p;
 }
@@ -6080,7 +6239,7 @@ void CharLoad_PlainModel(Progress *p, u32 slot) {
     u8 *m = Model_New(p, 0x890);
 
     if (m != NULL) {
-        func_0016FCD0(m);
+        HumanModel_BaseCtor(m);
         AT(m, 0x0, void **) = D_0046F9E0;
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
@@ -6092,7 +6251,7 @@ void CharLoad_Kind12Model(Progress *p, u32 slot) {
     u8 *m = Model_New(p, 0x9A0);
 
     if (m != NULL) {
-        func_0016FC30(m);
+        HumanModel_PartsCtor(m);
         AT(m, 0x0, void **) = D_00479740;
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
@@ -6106,13 +6265,13 @@ void CharLoad_LorenzoModel(Progress *p, u32 slot) {
     if (m != NULL) {
         u8 *e;
 
-        func_0016F4B0(m);
+        ModelBase_ctor(m);
         AT(m, 0x0, void **) = D_00471DA0;
-        func_00100340(m + 0x890, func_0016FC10, func_0016FBB0, 0x50, 6);
+        func_00100340(m + 0x890, HangPoint_ctor, HangPoint_dtor, 0x50, 6);
         for (e = m + 0xA70; e < m + 0xC70; e += 0x40) {
-            func_0016FB90(e);
+            BonePoint_ctor(e);
         }
-        func_0016FB80(m + 0xCC0);
+        SpringSet_ctor(m + 0xCC0);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
@@ -6123,10 +6282,10 @@ void CharLoad_Lorenzo2Model(Progress *p, u32 slot) {
     u8 *m = Model_New(p, 0x1160);
 
     if (m != NULL) {
-        func_0016FC30(m);
+        HumanModel_PartsCtor(m);
         AT(m, 0x0, void **) = D_00471CE0;
-        func_00100340(m + 0x9A0, func_00170A30, func_001709D0, 0x50, 0x18);
-        func_0016FB80(m + 0x1120);
+        func_00100340(m + 0x9A0, SwayPointB_ctor, SwayPointB_dtor, 0x50, 0x18);
+        SpringSet_ctor(m + 0x1120);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
@@ -6139,15 +6298,15 @@ void CharLoad_Kind09Model(Progress *p, u32 slot) {
     if (m != NULL) {
         u8 *e;
 
-        func_0016FC30(m);
+        HumanModel_PartsCtor(m);
         AT(m, 0x0, void **) = D_00471C20;
-        func_00100340(m + 0x9A0, func_0016FC10, func_0016FBB0, 0x50, 6);
+        func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 6);
         for (e = m + 0xB80; e < m + 0xD00; e += 0x40) {
-            func_0016FB90(e);
+            BonePoint_ctor(e);
         }
-        func_0016FB80(m + 0xD00);
-        func_00100340(m + 0xD40, func_00170A30, func_001709D0, 0x50, 0x18);
-        func_0016FB80(m + 0x14C0);
+        SpringSet_ctor(m + 0xD00);
+        func_00100340(m + 0xD40, SwayPointB_ctor, SwayPointB_dtor, 0x50, 0x18);
+        SpringSet_ctor(m + 0x14C0);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
@@ -6160,20 +6319,20 @@ void CharLoad_RiccardoModel(Progress *p, u32 slot) {
     if (m != NULL) {
         u8 *e;
 
-        func_0016FC30(m);
+        HumanModel_PartsCtor(m);
         AT(m, 0x0, void **) = D_00470480;
-        func_00100340(m + 0x9A0, func_0016FC10, func_0016FBB0, 0x50, 4);
+        func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
         for (e = m + 0xAE0; e < m + 0xBE0; e += 0x40) {
-            func_0016FB90(e);
+            BonePoint_ctor(e);
         }
-        func_0016FB80(m + 0xBE0);
-        func_00100340(m + 0xC20, func_0016FB60, func_0016FB00, 0x60, 0xC);
-        func_0016FB80(m + 0x10A0);
+        SpringSet_ctor(m + 0xBE0);
+        func_00100340(m + 0xC20, Part60_ctor, Part60_dtor, 0x60, 0xC);
+        SpringSet_ctor(m + 0x10A0);
         for (e = m + 0x10E0; e < m + 0x1310; e += 0x70) {
-            func_0016FAE0(e);
+            Capsule_ctor(e);
         }
-        func_00100340(m + 0x1310, func_00170D10, func_00170CB0, 0x50, 4);
-        func_0016FB80(m + 0x1450);
+        func_00100340(m + 0x1310, Part50_ctor, Part50_dtor, 0x50, 4);
+        SpringSet_ctor(m + 0x1450);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
@@ -6186,25 +6345,25 @@ void CharLoad_DaniellaModel(Progress *p, u32 slot) {
     if (m != NULL) {
         u8 *e;
 
-        func_0016FC30(m);
+        HumanModel_PartsCtor(m);
         AT(m, 0x0, void **) = D_004702D0;
-        func_0016FB80(m + 0x9A0);
-        func_0016FB80(m + 0x9E0);
-        func_0016FB80(m + 0xA20);
-        func_0016FB80(m + 0xA60);
-        func_00100340(m + 0xAA0, func_00170F90, func_00170F30, 0x50, 6);
+        SpringSet_ctor(m + 0x9A0);
+        SpringSet_ctor(m + 0x9E0);
+        SpringSet_ctor(m + 0xA20);
+        SpringSet_ctor(m + 0xA60);
+        func_00100340(m + 0xAA0, HangingPart_ctor, HangingPart_dtor, 0x50, 6);
         for (e = m + 0xC80; e < m + 0xD60; e += 0x70) {
-            func_0016FAE0(e);
+            Capsule_ctor(e);
         }
         for (e = m + 0xD60; e < m + 0xDE0; e += 0x40) {
-            func_0016FB90(e);
+            BonePoint_ctor(e);
         }
-        func_00100340(m + 0xDE0, func_00170F10, func_00170EB0, 0x70, 0xA);
+        func_00100340(m + 0xDE0, HairPoint_ctor, HairPoint_dtor, 0x70, 0xA);
         for (e = m + 0x1240; e < m + 0x1470; e += 0x70) {
-            func_0016FAE0(e);
+            Capsule_ctor(e);
         }
-        func_00170650(m + 0x1470);
-        func_00100340(m + 0x14D0, func_00170670, func_001702F0, 0x50, 2);
+        SprungPoint_ctor(m + 0x1470);
+        func_00100340(m + 0x14D0, BoneHangPoint_ctor, BoneHangPoint_dtor, 0x50, 2);
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
 }
@@ -6217,12 +6376,12 @@ void CharLoad_DebilitasModel(Progress *p, u32 slot) {
     if (m != NULL) {
         u8 *e;
 
-        func_0016FC30(m);
+        HumanModel_PartsCtor(m);
         AT(m, 0x0, void **) = D_0046C0A0;
-        func_00100340(m + 0x9A0, func_0016FC10, func_0016FBB0, 0x50, 4);
-        func_0016FB80(m + 0xAE0);
+        func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+        SpringSet_ctor(m + 0xAE0);
         for (e = m + 0xB20; e < m + 0xBA0; e += 0x40) {
-            func_0016FB90(e);
+            BonePoint_ctor(e);
         }
     }
     AT(gCharacters[slot], 0xF0, void *) = m;
@@ -6230,15 +6389,17 @@ void CharLoad_DebilitasModel(Progress *p, u32 slot) {
 
 /* play animation `anim` with its table entry's (+0x874, 6 bytes each) flags, blended in over
  * the entry's frames (no check for a missing entry) */
-void func_002DDB30(u8 *m, s32 anim) {
-    s32 i = func_001F4710(m, anim);
+/* 0x002DDB30 */
+void Motion_PlayTableNoCheck(u8 *m, s32 anim) {
+    s32 i = Motion_AnimIndex(m, anim);
     u8 *e = AT(m, 0x874, u8 *) + i * 6;
 
-    func_001F7460(m, anim, AT(e, 0x4, u16), -1, (f32)AT(e, 0x0, s16));
+    Motion_PlayWhenFree(m, anim, AT(e, 0x4, u16), -1, (f32)AT(e, 0x0, s16));
 }
 
 /* the distance of point `c` from the line through `a` and `b` */
-f32 func_00211910(const f32 *a, const f32 *b, const f32 *c) {
+/* 0x00211910 */
+f32 Vec_LineDistance(const f32 *a, const f32 *b, const f32 *c) {
     f32 d[4] __attribute__((aligned(16)));
     f32 p[4] __attribute__((aligned(16)));
     f32 r[4] __attribute__((aligned(16)));
@@ -6258,7 +6419,8 @@ f32 func_00211910(const f32 *a, const f32 *b, const f32 *c) {
 }
 
 /* destructor (vtable D_0046D7B0) */
-void *func_0026B1E0(u8 *o, s32 flags) {
+/* 0x0026B1E0 */
+void *ScreenBlend_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046D7B0;
         AT(o, 0x0, void **) = D_0046D730;
@@ -6270,7 +6432,8 @@ void *func_0026B1E0(u8 *o, s32 flags) {
 }
 
 /* destructor (vtable D_0046EB40) */
-void *func_002BAFD0(u8 *o, s32 flags) {
+/* 0x002BAFD0 */
+void *Fog_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046EB40;
         AT(o, 0x0, void **) = D_0046D730;
@@ -6372,11 +6535,12 @@ void *Kind12Model_dtor(void *p, s32 flags) {
     return m;
 }
 
-/* Fiona's costume 2: the one-node set +0xEA0, node +0xE40 on bone 0x19 (as func_002F70C0) */
-void func_00337760(u8 *m) {
+/* Fiona's costume 2: the one-node set +0xEA0, node +0xE40 on bone 0x19 (as EventHumanModel_Set11A0) */
+/* 0x00337760 */
+void Costume2Model_SetEA0(u8 *m) {
     u8 *node = m + 0xE40;
 
-    func_002EE960(m + 0xEA0);
+    SpringSet_Clear(m + 0xEA0);
     spring_link(m + 0xEA0, node);
     AT(m, 0xEA0, f32) = 0.0f;
     AT(m, 0xEA4, f32) = 0.0f;
@@ -6393,16 +6557,17 @@ void func_00337760(u8 *m) {
     AT(node, 0x50, f32) = 1.0f;
 }
 
-/* (as func_002F73C0)  the set +0xD70: 12 nodes (+0x9B0) in 6 pairs - bones, kinds and tables per pair, the first
+/* (as EventHumanModel_SetD70)  the set +0xD70: 12 nodes (+0x9B0) in 6 pairs - bones, kinds and tables per pair, the first
  * of each pair leading, the phases 1 / 2 x 2 pi / 18 */
-void func_00337820(u8 *m) {
+/* 0x00337820 */
+void Costume2Model_SetD70(u8 *m) {
     static u8 *const sTables[6] = {D_0042F280, D_0042F280, D_0042F290, D_0042F290, D_0042F2A0, D_0042F2B0};
     static const s32 sBones[6] = {0xB, 0x11, 0xD, 0x13, 0xF, 0x15};
     static const u32 sPhase[2] = {0x3EB2B8C3, 0x3F32B8C3};
     u8 *set = m + 0xD70;
     s32 i, j;
 
-    func_002EE960(set);
+    SpringSet_Clear(set);
     for (i = 0; i < 12; i++) {
         spring_link(set, m + 0x9B0 + i * 0x50);
     }
@@ -6449,7 +6614,7 @@ static inline void costume_cols(u8 *set, u8 *col, s32 bd) {
         }
     }
     for (i = 0; i < 6; i++) {
-        func_002EE690(col + i * 0x40, sBones[i] + bd, 0.0f, 0.0f, 0.0f, i < 2 ? 0x1.99999ap-1f /* 0.8 */ : 1.0f);
+        Sphere_Set(col + i * 0x40, sBones[i] + bd, 0.0f, 0.0f, 0.0f, i < 2 ? 0x1.99999ap-1f /* 0.8 */ : 1.0f);
     }
 }
 
@@ -6460,7 +6625,7 @@ static inline void costume_hang16(u8 *m, u32 at, s32 bd, const f32 *len, const s
     u8 *set = m + at + 0x6D0;
     s32 i;
 
-    func_002EE960(set);
+    SpringSet_Clear(set);
     for (i = 0; i < 16; i++) {
         spring_link(set, m + at + 0x1D0 + i * 0x50);
     }
@@ -6484,7 +6649,7 @@ static inline void costume_hang3(u8 *m, u32 at, s32 bd, const f32 *len, const s3
     u8 *set = m + at + 0x980;
     s32 i;
 
-    func_002EE960(set);
+    SpringSet_Clear(set);
     for (i = 0; i < 3; i++) {
         spring_link(set, m + at + 0x890 + i * 0x50);
     }
@@ -6508,7 +6673,7 @@ static inline void costume_hang3(u8 *m, u32 at, s32 bd, const f32 *len, const s3
 
 /* a one-node set (gravity 0.1, damping 0.99), its node anchored on `bone`, length 1 */
 static inline void costume_node(u8 *m, u8 *set, u8 *node, s32 bone) {
-    func_002EE960(set);
+    SpringSet_Clear(set);
     spring_link(set, node);
     spring_set(set, 0x3DCCCCCD /* 0.1f */, 0x3F7D70A4 /* 0.99f */, m);
     AT(node, 0x40, f32) = 1.0f;
@@ -6521,47 +6686,47 @@ static inline void costume_frame(u8 *m, u32 at) {
     s32 n = AT(m, 0x850, u8) ? 30 : 1;
     s32 i;
 
-    func_002EE8A0(m + at - 0x30);
-    func_002EE8A0(m + at + 0x60);
-    func_002EE8A0(m + at + 0x100);
-    func_002EE8A0(m + at + 0x190);
-    func_002EE8A0(m + at + 0x6D0);
-    func_002EE8A0(m + at + 0x980);
+    SpringSet_Begin(m + at - 0x30);
+    SpringSet_Begin(m + at + 0x60);
+    SpringSet_Begin(m + at + 0x100);
+    SpringSet_Begin(m + at + 0x190);
+    SpringSet_Begin(m + at + 0x6D0);
+    SpringSet_Begin(m + at + 0x980);
     for (i = 0; i < n; i++) {
-        func_002EE900(m + at - 0x30);
-        func_002EE900(m + at + 0x60);
-        func_002EE900(m + at + 0x100);
-        func_002EE900(m + at + 0x190);
-        func_002EE900(m + at + 0x6D0);
-        func_002EE900(m + at + 0x980);
+        SpringSet_Step(m + at - 0x30);
+        SpringSet_Step(m + at + 0x60);
+        SpringSet_Step(m + at + 0x100);
+        SpringSet_Step(m + at + 0x190);
+        SpringSet_Step(m + at + 0x6D0);
+        SpringSet_Step(m + at + 0x980);
     }
-    func_002EE840(m + at - 0x30);
-    func_002EE840(m + at + 0x60);
-    func_002EE840(m + at + 0x100);
-    func_002EE840(m + at + 0x190);
-    func_002EE840(m + at + 0x6D0);
-    func_002EE840(m + at + 0x980);
+    SpringSet_Finish(m + at - 0x30);
+    SpringSet_Finish(m + at + 0x60);
+    SpringSet_Finish(m + at + 0x100);
+    SpringSet_Finish(m + at + 0x190);
+    SpringSet_Finish(m + at + 0x6D0);
+    SpringSet_Finish(m + at + 0x980);
     AT(m, 0x850, u8) = 0;
 }
 
-extern void *func_002088F0(void *e, s32 flags);
-extern void *func_00208970(void *e, s32 flags);
-extern void *func_00170080(void *e, s32 flags);
+extern void *WindHangPoint_dtor(void *e, s32 flags);
+extern void *CostumeHangPoint_dtor(void *e, s32 flags);
+extern void *SwayPointA_dtor(void *e, s32 flags);
 extern void *D_00475AE0[], *D_00475BC0[];
 
 /* +0x8 destructor (undoes costume_model) */
 static inline void *costume_dtor(u8 *m, s32 flags, void **vtbl, s32 n, u32 at) {
     if (m != NULL) {
         AT(m, 0x0, void **) = vtbl;
-        func_001002C0(m + at + 0x890, func_002088F0, 0x50, 3);
-        func_001002C0(m + at + 0x1D0, func_00208970, 0x50, 0x10);
+        func_001002C0(m + at + 0x890, WindHangPoint_dtor, 0x50, 3);
+        func_001002C0(m + at + 0x1D0, CostumeHangPoint_dtor, 0x50, 0x10);
         AT(m, at + 0x170, void **) = D_004703D0;
         AT(m, at + 0x170, void **) = D_004703B0;
         AT(m, at + 0xD0, void **) = D_00470440;
         AT(m, at + 0xD0, void **) = D_004703B0;
         AT(m, at + 0x40, void **) = D_004703D0;
         AT(m, at + 0x40, void **) = D_004703B0;
-        func_001002C0(m + 0x9B0, func_00170080, 0x50, n);
+        func_001002C0(m + 0x9B0, SwayPointA_dtor, 0x50, n);
         AT(m, 0x0, void **) = D_0046B0E0;
         HumanModel_dtor(m, 0);
         if ((s16)flags > 0) {
@@ -6575,8 +6740,8 @@ extern f32 D_0042F300[], D_0042F370[], D_0042F3F0[], D_0042F460[];
 extern s32 D_0042F2C0[], D_0042F360[], D_0042F3B0[], D_0042F450[];
 extern u8 D_0042F340[], D_0042F350[], D_0047ADC8[], D_0047B284[], D_0042F430[], D_0042F440[],
     D_0047ADCC[], D_0047B288[], D_0042F390[], D_0042F3A0[];
-void func_00337760(u8 *m);
-void func_003385F0(u8 *m);
+void Costume2Model_SetEA0(u8 *m);
+void Costume3Model_SetD60(u8 *m);
 
 /* costume 2 */
 /* 0x00336DB0 */
@@ -6647,7 +6812,8 @@ void Costume2Model_SetPoint(u8 *self, f32 x, f32 y, f32 z) {
     F32(self, 0xE98) = z;
 }
 
-void func_00336FE0(u8 *m) {
+/* 0x00336FE0 */
+void Costume2Model_Hang3(u8 *m) {
     costume_hang3(m, 0xDA0, 0, D_0042F370, D_0042F360, D_0047ADC8, D_0047B284, 24.0f);
 }
 
@@ -6696,7 +6862,8 @@ void Costume2Model_ShowParts(u8 *m, s32 look) {
     }
 }
 
-void func_00337430(u8 *m) {
+/* 0x00337430 */
+void Costume2Model_Hang16(u8 *m) {
     costume_hang16(m, 0xDA0, 0, D_0042F300, D_0042F2C0, D_0042F340, D_0042F350, 0x3F060A92 /* pi / 6 */);
 }
 
@@ -6715,13 +6882,14 @@ void *Costume2Model_ModelFile(void *self, u32 i) {
 }
 
 /* her springs, then a reset (+0x850) */
-void func_00337A80(u8 *m) {
-    func_00337820(m);
+/* 0x00337A80 */
+void Costume2Model_SpringSetup(u8 *m) {
+    Costume2Model_SetD70(m);
     costume_node(m, m + 0xE00, m + 0xDB0, 0x28);
-    func_00337760(m);
+    Costume2Model_SetEA0(m);
     costume_node(m, m + 0xF30, m + 0xEE0, 0x3F);
-    func_00337430(m);
-    func_00336FE0(m);
+    Costume2Model_Hang16(m);
+    Costume2Model_Hang3(m);
     AT(m, 0x850, u8) = 1;
 }
 
@@ -6750,7 +6918,7 @@ void Costume2Model_Loaded(u8 *m) {
     AT(m, 0x8BC, s32) = 0x3D;
     AT(m, 0x8B0, s32) = 0x21;
     AT(m, 0x8B4, s32) = 0x17;
-    func_00337A80(m);
+    Costume2Model_SpringSetup(m);
     AT(m, 0x98, u8) = 4;
     AT(m, 0x99, u8) = 0xC0;
     for (i = 0; i < sizeof(sParts); i++) {
@@ -6765,13 +6933,13 @@ void Costume2Model_MotionTable(u8 *self) {
     PTR(self, 0x844) = D_0042F270;
 }
 
-/* ---- Fiona's costume 7 (D_00479420, built by func_00208420): four spring sets - +0xB40 five
+/* ---- Fiona's costume 7 (D_00479420, built by Costume7Model_ctor): four spring sets - +0xB40 five
    anchored nodes (+0x9B0, bones 0x1A..0x1E), +0xBE0 / +0xC80 one node each (+0xB80 bone 0xC,
    +0xC20 bone 0xD), +0xD10 one node (+0xCC0, bone 0xE) ---- */
 
 /* a one-node set (no gravity, damping 0.75), its node anchored on `bone` (0.9 long) */
 static inline void spring_one(u8 *m, u8 *set, u8 *node, s32 bone) {
-    func_002EE960(set);
+    SpringSet_Clear(set);
     spring_link(set, node);
     AT(set, 0x0, f32) = 0.0f;
     AT(set, 0x4, f32) = 0.0f;
@@ -6799,7 +6967,7 @@ void *Costume7Model_dtor(u8 *m, s32 flags) {
         AT(m, 0xC50, void **) = D_004703B0;
         AT(m, 0xBB0, void **) = D_00470440;
         AT(m, 0xBB0, void **) = D_004703B0;
-        func_001002C0(m + 0x9B0, func_001702F0, 0x50, 5);
+        func_001002C0(m + 0x9B0, BoneHangPoint_dtor, 0x50, 5);
         AT(m, 0x0, void **) = D_0046B0E0;
         HumanModel_dtor(m, 0);
         if ((s16)flags > 0) {
@@ -6884,20 +7052,23 @@ void *Costume7Model_ModelFile(void *self, u32 i) {
     return NULL;
 }
 
-void func_00353F80(u8 *m) {
+/* 0x00353F80 */
+void Costume7Model_SpringC80(u8 *m) {
     spring_one(m, m + 0xC80, m + 0xC20, 0xD);
 }
 
-void func_00354040(u8 *m) {
+/* 0x00354040 */
+void Costume7Model_SpringBE0(u8 *m) {
     spring_one(m, m + 0xBE0, m + 0xB80, 0xC);
 }
 
 /* the five anchored nodes on +0xB40 */
-void func_00354100(u8 *m) {
+/* 0x00354100 */
+void Costume7Model_AnchoredNodes(u8 *m) {
     u8 *set = m + 0xB40;
     s32 i;
 
-    func_002EE960(set);
+    SpringSet_Clear(set);
     for (i = 0; i < 5; i++) {
         spring_link(set, m + 0x9B0 + i * 0x50);
     }
@@ -6912,10 +7083,11 @@ void func_00354100(u8 *m) {
 }
 
 /* her springs, then a reset (+0x850) */
-void func_00354210(u8 *m) {
-    func_00354100(m);
-    func_00354040(m);
-    func_00353F80(m);
+/* 0x00354210 */
+void Costume7Model_Setup(u8 *m) {
+    Costume7Model_AnchoredNodes(m);
+    Costume7Model_SpringBE0(m);
+    Costume7Model_SpringC80(m);
     costume_node(m, m + 0xD10, m + 0xCC0, 0xE);
     AT(m, 0x850, u8) = 1;
 }
@@ -6926,20 +7098,20 @@ void Costume7Model_Springs(u8 *m) {
     s32 n = AT(m, 0x850, u8) ? 30 : 1;
     s32 i;
 
-    func_002EE8A0(m + 0xB40);
-    func_002EE8A0(m + 0xBE0);
-    func_002EE8A0(m + 0xC80);
-    func_002EE8A0(m + 0xD10);
+    SpringSet_Begin(m + 0xB40);
+    SpringSet_Begin(m + 0xBE0);
+    SpringSet_Begin(m + 0xC80);
+    SpringSet_Begin(m + 0xD10);
     for (i = 0; i < n; i++) {
-        func_002EE900(m + 0xB40);
-        func_002EE900(m + 0xBE0);
-        func_002EE900(m + 0xC80);
-        func_002EE900(m + 0xD10);
+        SpringSet_Step(m + 0xB40);
+        SpringSet_Step(m + 0xBE0);
+        SpringSet_Step(m + 0xC80);
+        SpringSet_Step(m + 0xD10);
     }
-    func_002EE840(m + 0xB40);
-    func_002EE840(m + 0xBE0);
-    func_002EE840(m + 0xC80);
-    func_002EE840(m + 0xD10);
+    SpringSet_Finish(m + 0xB40);
+    SpringSet_Finish(m + 0xBE0);
+    SpringSet_Finish(m + 0xC80);
+    SpringSet_Finish(m + 0xD10);
     AT(m, 0x850, u8) = 0;
 }
 
@@ -6962,7 +7134,7 @@ void Costume7Model_Loaded(u8 *m) {
     AT(m, 0x8BC, s32) = 0x23;
     AT(m, 0x8B0, s32) = 0x16;
     AT(m, 0x8B4, s32) = 0xA;
-    func_00354210(m);
+    Costume7Model_Setup(m);
     for (i = 0; i < sizeof(sParts); i++) {
         AT(m, sParts[i], u8) = 4;
         AT(m, sParts[i] + 1, u8) = 0x40;
@@ -7025,11 +7197,13 @@ void Costume3Model_SetPoint(u8 *self, f32 x, f32 y, f32 z) {
     F32(self, 0xD58) = z;
 }
 
-void func_00338040(u8 *m) {
+/* 0x00338040 */
+void Costume3Model_Hang3(u8 *m) {
     costume_hang3(m, 0xC60, -4, D_0042F460, D_0042F450, D_0047ADCC, D_0047B288, 20.0f);
 }
 
-void func_003382C0(u8 *m) {
+/* 0x003382C0 */
+void Costume3Model_Hang16(u8 *m) {
     costume_hang16(m, 0xC60, -4, D_0042F3F0, D_0042F3B0, D_0042F430, D_0042F440, 0x3F1C61AB /* 35 degrees */);
 }
 
@@ -7047,11 +7221,12 @@ void *Costume3Model_ModelFile(void *self, u32 i) {
     return NULL;
 }
 
-/* the one-node set +0xD60, node +0xD00 on bone 0x15 (as func_00337760) */
-void func_003385F0(u8 *m) {
+/* the one-node set +0xD60, node +0xD00 on bone 0x15 (as Costume2Model_SetEA0) */
+/* 0x003385F0 */
+void Costume3Model_SetD60(u8 *m) {
     u8 *node = m + 0xD00;
 
-    func_002EE960(m + 0xD60);
+    SpringSet_Clear(m + 0xD60);
     spring_link(m + 0xD60, node);
     AT(m, 0xD60, f32) = 0.0f;
     AT(m, 0xD64, f32) = 0.0f;
@@ -7068,14 +7243,15 @@ void func_003385F0(u8 *m) {
     AT(node, 0x50, f32) = 1.0f;
 }
 
-/* the set +0xC30: 8 hair nodes (+0x9B0) in 4 pairs on bones 0xB..0x12 (as func_00337820) */
-void func_003386B0(u8 *m) {
+/* the set +0xC30: 8 hair nodes (+0x9B0) in 4 pairs on bones 0xB..0x12 (as Costume2Model_SetD70) */
+/* 0x003386B0 */
+void Costume3Model_SetC30(u8 *m) {
     static u8 *const sTables[4] = {D_0042F390, D_0042F390, D_0042F3A0, D_0042F3A0};
     static const u32 sPhase[2] = {0x3EB2B8C3, 0x3F32B8C3};
     u8 *set = m + 0xC30;
     s32 i, j;
 
-    func_002EE960(set);
+    SpringSet_Clear(set);
     for (i = 0; i < 8; i++) {
         spring_link(set, m + 0x9B0 + i * 0x50);
     }
@@ -7094,13 +7270,14 @@ void func_003386B0(u8 *m) {
     }
 }
 
-void func_00338880(u8 *m) {
-    func_003386B0(m);
+/* 0x00338880 */
+void Costume3Model_SpringSetup(u8 *m) {
+    Costume3Model_SetC30(m);
     costume_node(m, m + 0xCC0, m + 0xC70, 0x24);
-    func_003385F0(m);
+    Costume3Model_SetD60(m);
     costume_node(m, m + 0xDF0, m + 0xDA0, 0x3B);
-    func_003382C0(m);
-    func_00338040(m);
+    Costume3Model_Hang16(m);
+    Costume3Model_Hang3(m);
     AT(m, 0x850, u8) = 1;
 }
 
@@ -7127,7 +7304,7 @@ void Costume3Model_Loaded(u8 *m) {
     AT(m, 0x8BC, s32) = 0x39;
     AT(m, 0x8B0, s32) = 0x1D;
     AT(m, 0x8B4, s32) = 0x13;
-    func_00338880(m);
+    Costume3Model_SpringSetup(m);
     for (i = 0; i < sizeof(sParts); i++) {
         AT(m, sParts[i], u8) = 4;
         AT(m, sParts[i] + 1, u8) = 0x40;

@@ -491,7 +491,7 @@ void Cutscene_Update(u8 *d) {
         u8 *s = SLOT(d, i);
 
         if (s[0] != 0 && s[1] != 0) {
-            func_002DD090(AT(SLOT_CHAR(s), 0xF0, u8 *), FRAME(d));
+            Motion_CutsceneTime(AT(SLOT_CHAR(s), 0xF0, u8 *), FRAME(d));
         }
     }
     Cutscene_Cues(d);
@@ -766,7 +766,7 @@ void Cutscene_ReleaseActors(u8 *d) {
         if (s[3] != 0) {
             VCALL(AT(SLOT_CHAR(s), 0xF0, VObject *), 0x30, void (*)(VObject *))(AT(SLOT_CHAR(s), 0xF0, VObject *));
         }
-        func_001F4910(AT(SLOT_CHAR(s), 0xF0, u8 *));
+        Model_ResetMotion(AT(SLOT_CHAR(s), 0xF0, u8 *));
         AT(SLOT_CHAR(s), 0x29, u8) = (s[4] & 0x7F) == 1 ? 0 : 1;
     }
 }
@@ -839,15 +839,15 @@ void Cutscene_StartShot(u8 *d, s32 b, s32 rec) {
             } else if (i <= 25) {
                 AT(SLOT_CHAR(s), 0x29, u8) = 0;
                 s[1] = 1;
-                func_001F4910(AT(SLOT_CHAR(s), 0xF0, u8 *));
+                Model_ResetMotion(AT(SLOT_CHAR(s), 0xF0, u8 *));
                 AT(AT(SLOT_CHAR(s), 0xF0, u8 *), 0x4C8, u8 *) = shot_part(shot, i * 4);
                 AT(SLOT_CHAR(s), 0xE0, u8) = 1;
-                func_002DD040(AT(SLOT_CHAR(s), 0xF0, u8 *), 0x8000);
+                Motion_PlayDriven(AT(SLOT_CHAR(s), 0xF0, u8 *), 0x8000);
             }
         } else if (i != 0) {
             AT(SLOT_CHAR(s), 0x29, u8) = 1;
             s[1] = 0;
-            func_001F4910(AT(SLOT_CHAR(s), 0xF0, u8 *));
+            Model_ResetMotion(AT(SLOT_CHAR(s), 0xF0, u8 *));
         }
     }
     for (k = 0; k < 8; k++) {

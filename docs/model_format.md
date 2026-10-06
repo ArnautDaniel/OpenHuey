@@ -61,7 +61,7 @@ From looking at the converted models; names with `?` are guesses.
 | `HEW_1xx.MTN` | | extra motion banks (same format as the PCK's motion bank) |
 
 Hewie's model class: vtable `D_0046B240`, 0xB90 bytes at Character +0xF0, built by
-`func_003A10B0` (base `func_0016F4B0`). Fiona's loader `Fiona_LoadFiles` (vtbl +0x14) shows the
+`CharLoad_PartnerModel` (base `ModelBase_ctor`). Fiona's loader `Fiona_LoadFiles` (vtbl +0x14) shows the
 load: the .PCK goes raw to Character +0x1540, the .MRK to +0x1AA540 (Fiona).
 
 ## .PCK
@@ -166,7 +166,7 @@ wounded / bandaged leg.
 
 ## Motions (PCK resource 3, and .MTN files)
 
-Read by `func_001F4B80` / `func_001F4C10`, sampled by `func_001F36B0`, posed by `func_001F5930`.
+Read by `Motion_AnimEntry` / `Motion_SetupTrack`, sampled by `Track_Sample`, posed by `Motion_PoseChain`.
 
 Bank: `u32 records, u32 ?, u32 ?, u32 idMap`. Id map (at bank + idMap): `u32 count`, then at +0x10
 `(u32 motion id, u32 record index)` pairs (Hewie: 0x000.., 0x100.., 0x200.., ...).
@@ -191,5 +191,5 @@ Part: `u32 tracks, u32 frames, u32 trackTable` (from the part). Track (0xC bytes
 One key per frame; the game interpolates linearly between frames (angles the short way round).
 A track's values **replace** the bone's rest values (rest record +0x10 Euler, +0x20 translation);
 a rotation-only track keeps the rest translation and vice versa. Bone local matrix
-(`func_002E2E00`): rotate X, then Y, then Z, then translate (row-vector `Rx Ry Rz T`);
+(`Mtx_FromEuler`): rotate X, then Y, then Z, then translate (row-vector `Rx Ry Rz T`);
 world = local x parent world.

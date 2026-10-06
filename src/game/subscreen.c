@@ -1982,7 +1982,7 @@ void Gallery_ModelMotions(SubScreen *s) {
         s32 next = AT(m, 0x55C, s32) == 0x801 ? 0x802 : AT(m, 0x55C, s32) == 0x800 ? 0x801 : -1;
 
         if (next != -1) {
-            func_002DDED0(m, next, -1);
+            Motion_PlayTable(m, next, -1);
             return;
         }
     }
@@ -1990,9 +1990,9 @@ void Gallery_ModelMotions(SubScreen *s) {
         return;
     }
     if (k < 0x18 || k == 0x19) {
-        func_002DDED0(m, D_0044BE90[k][0], -1);
+        Motion_PlayTable(m, D_0044BE90[k][0], -1);
     } else {
-        func_002DE030(m, D_0044BE90[k][0], 1, -1, 5.0f);
+        Motion_PlayWith(m, D_0044BE90[k][0], 1, -1, 5.0f);
     }
 }
 
@@ -2227,16 +2227,16 @@ void Gallery_StateModelLoad(SubScreen *s) {
     AT(s, 0xA8E3C, u8) = 1;
     k = SUB_PAGE(s, 0x0, u8);
     if (k >= 6 && k < 9) {
-        func_002DE030(SUB_GALLERY_MODEL(s), 0x1F00, 1, -1, 5.0f);
-        func_002DE030(SUB_GALLERY_MODEL(s), 0x2000, 1, -1, 5.0f);
-        func_002DE030(SUB_GALLERY_MODEL(s), 0x2102, 1, -1, 5.0f);
+        Motion_PlayWith(SUB_GALLERY_MODEL(s), 0x1F00, 1, -1, 5.0f);
+        Motion_PlayWith(SUB_GALLERY_MODEL(s), 0x2000, 1, -1, 5.0f);
+        Motion_PlayWith(SUB_GALLERY_MODEL(s), 0x2102, 1, -1, 5.0f);
     }
     k = SUB_PAGE(s, 0x0, u8);
     m = SUB_GALLERY_MODEL(s);
     if (k < 0x18 || k == 0x19) {
-        func_002DDED0(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], -1);
+        Motion_PlayTable(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], -1);
     } else {
-        func_002DE030(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], 1, -1, 5.0f);
+        Motion_PlayWith(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], 1, -1, 5.0f);
     }
     SUB_PAGE(s, 0x2, u8) = 0;
 }
@@ -3115,28 +3115,28 @@ u8 *Gallery_MakeModel(SubScreen *s, u8 k) {
     u8 *mem = AT(s, 0xA8DFC, u8 *), *m, *pck;
     VObject *bm;
 
-#define NEW(size, ctor) (mem == NULL ? NULL : (m = func_002DC6E0(size, mem)) == NULL ? NULL : (u8 *)(ctor))
+#define NEW(size, ctor) (mem == NULL ? NULL : (m = Model_new(size, mem)) == NULL ? NULL : (u8 *)(ctor))
     switch (k) {
-    case 0: m = NEW(0x1270, func_001700E0(m, 0)); break;
-    case 1: m = NEW(0x18E0, func_002089F0(m)); break;
-    case 2: m = NEW(0x17A0, func_00208650(m)); break;
-    case 3: m = NEW(0xD50, func_00208420(m, 7)); break;
-    case 4: m = NEW(0xDE0, func_002084D0(m, 6)); break;
-    case 5: m = NEW(0x9B0, func_002083D0(m)); break;
-    case 6: m = NEW(0xB90, func_00208210(m, 0)); break;
-    case 7: m = NEW(0xB90, func_00208180(m, 1)); break;
-    case 8: m = NEW(0xB90, func_002080D0(m, 2)); break;
-    case 9: case 10: m = NEW(0xBA0, func_0038D4D0(m)); break;
-    case 11: case 12: m = NEW(0x1580, func_0038D160(m)); break;
-    case 13: case 14: m = NEW(0x1490, func_0038CEE0(m)); break;
-    case 15: case 16: m = NEW(0x1310, func_0038CC90(m)); break;
-    case 17: case 18: m = NEW(0xD00, func_0038CB60(m)); break;
-    case 19: case 20: m = NEW(0x1500, func_0038C9E0(m)); break;
-    case 21: case 22: m = NEW(0x1160, func_0038C960(m)); break;
-    case 23: m = NEW(0x9A0, func_0038C910(m)); break;
+    case 0: m = NEW(0x1270, EventHumanModel_ctor(m, 0)); break;
+    case 1: m = NEW(0x18E0, Costume2Model_ctor(m)); break;
+    case 2: m = NEW(0x17A0, Costume3Model_ctor(m)); break;
+    case 3: m = NEW(0xD50, Costume7Model_ctor(m, 7)); break;
+    case 4: m = NEW(0xDE0, Costume6Model_ctor(m, 6)); break;
+    case 5: m = NEW(0x9B0, Costume8Model_ctor(m)); break;
+    case 6: m = NEW(0xB90, DogModel_ctor(m, 0)); break;
+    case 7: m = NEW(0xB90, DogModelA_ctor(m, 1)); break;
+    case 8: m = NEW(0xB90, DogModelB_ctor(m, 2)); break;
+    case 9: case 10: m = NEW(0xBA0, DebilitasModel_ctor(m)); break;
+    case 11: case 12: m = NEW(0x1580, DaniellaModel_ctor(m)); break;
+    case 13: case 14: m = NEW(0x1490, RiccardoModel_ctor(m)); break;
+    case 15: case 16: m = NEW(0x1310, Kind23Model_ctor(m)); break;
+    case 17: case 18: m = NEW(0xD00, LorenzoModel_ctor(m)); break;
+    case 19: case 20: m = NEW(0x1500, Kind09Model_ctor(m)); break;
+    case 21: case 22: m = NEW(0x1160, Lorenzo2Model_ctor(m)); break;
+    case 23: m = NEW(0x9A0, Kind12Model_ctor(m)); break;
     case 25: m = NEW(0x890, Kind33Model_ctor(m)); break;
     case 27: m = NEW(0x890, Kind14Model_ctor(m)); break;
-    case 24: case 26: case 28: case 29: case 30: case 31: m = NEW(0x890, func_0016F4B0(m)); break;
+    case 24: case 26: case 28: case 29: case 30: case 31: m = NEW(0x890, ModelBase_ctor(m)); break;
     default:
         return NULL;
     }
@@ -3162,10 +3162,10 @@ u8 *Gallery_MakeModel(SubScreen *s, u8 k) {
     return m;
 }
 
-/* model classes D_00472700 / D_00474460 over the plain one (func_0016FCD0) */
+/* model classes D_00472700 / D_00474460 over the plain one (HumanModel_BaseCtor) */
 /* 0x0038C890 */
 void *Kind14Model_ctor(u8 *m) {
-    func_0016FCD0(m);
+    HumanModel_BaseCtor(m);
     AT(m, 0x0, void **) = D_00472700;
     return m;
 }
@@ -3884,9 +3884,9 @@ static void gallery_motion(SubScreen *s, u8 *m) {
     u8 k = SUB_PAGE(s, 0x0, u8);
 
     if (k < 0x18 || k == 0x19) {
-        func_002DDED0(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], -1);
+        Motion_PlayTable(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], -1);
     } else {
-        func_002DE030(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], 1, -1, 5.0f);
+        Motion_PlayWith(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], 1, -1, 5.0f);
     }
 }
 
@@ -4070,9 +4070,9 @@ void Gallery_StateModel(SubScreen *s) {
             sceVu0TransMatrix(mat, mat, (f32 *)((u8 *)s + 0xA8E20));
             m = SUB_GALLERY_MODEL(s);
             VCALL(m, 0x28, void (*)(u8 *, f32 (*)[4]))(m, mat);
-            func_002DCB40(SUB_GALLERY_MODEL(s));
-            func_002DC960(SUB_GALLERY_MODEL(s));
-            func_001F6AF0(SUB_GALLERY_MODEL(s));
+            Motion_Hands(SUB_GALLERY_MODEL(s));
+            Motion_Eyes(SUB_GALLERY_MODEL(s));
+            Motion_Update(SUB_GALLERY_MODEL(s));
             m = SUB_GALLERY_MODEL(s);
             VCALL(m, 0x3C, void (*)(u8 *))(m);
             m = SUB_GALLERY_MODEL(s);

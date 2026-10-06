@@ -355,7 +355,7 @@ void Debilitas3_Stairs(Pursuer *p) {
  * 60 units away - as Debilitas's */
 static inline void Debilitas3_Grab(Pursuer *p) {
     Character_RootMoveMasked(&p->c);
-    if ((func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) && !(PU(p, 0x1760, u8) & 1)) {
+    if ((Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 2) && !(PU(p, 0x1760, u8) & 1)) {
         Progress *pr = gProgress;
 
         if (VCALL(pr, 0x2C, s32 (*)(Progress *, u32, s32, s32, f32))(pr, *(u8 *)&p->c.a.slot, 0x1E, 0, 5.0f) != 0) {

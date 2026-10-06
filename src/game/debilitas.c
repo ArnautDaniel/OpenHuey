@@ -166,7 +166,7 @@ void Debilitas_StunDown(Pursuer *p) {
     if (p->c.unk14D0 > 0) {
         p->c.unk14D0--;
         if (p->c.unk14D0 <= 0) {
-            func_001F6E10(p->c.motion);
+            Motion_Unfreeze(p->c.motion);
         }
     }
 }

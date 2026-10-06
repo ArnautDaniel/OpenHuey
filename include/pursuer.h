@@ -416,16 +416,16 @@ static inline void Pursuer_PlayAnim(Pursuer *p, s32 anim) {
             return;
         }
         if (((AT(AT(m, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) != 0) != 1) {
-            s32 i = func_001F4710(m, anim);
+            s32 i = Motion_AnimIndex(m, anim);
             u16 fl = i != -1 ? AT(AT(m, 0x874, u8 *) + i * 6, 0x4, u16) : 0;
 
             if (fl & 4) {
                 return;
             }
         }
-        func_002DDED0(p->c.motion, anim, -1);
+        Motion_PlayTable(p->c.motion, anim, -1);
     } else {
-        func_002DDED0(m, anim, -1);
+        Motion_PlayTable(m, anim, -1);
     }
 }
 
@@ -436,7 +436,7 @@ static inline void Pursuer_PlayAnimBlend(Pursuer *p, s32 anim) {
     if (AT(m, 0x55C, s32) == anim) {
         Pursuer_PlayAnim(p, anim);
     } else {
-        func_002DDE20(m, anim, -1);
+        Motion_Play(m, anim, -1);
     }
 }
 

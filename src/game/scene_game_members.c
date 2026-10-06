@@ -2324,7 +2324,7 @@ s32 func_002230A0(VObject *doors, u32 k, const f32 *pos) {
     dir[0] = 0.0f;
     dir[1] = 0.0f;
     dir[2] = 1.0f;   /* (w is left unset, as in the original) */
-    func_002E3190(m, AT(e, 0x44, f32));
+    Mtx_TurnY(m, AT(e, 0x44, f32));
     func_002E2DA0(dir, m, dir);
     sceVu0SubVector(diff, (f32 *)pos, (f32 *)(e + 0x20));
     return !(sceVu0InnerProduct(dir, diff) < 0.0f);
@@ -2879,9 +2879,9 @@ void func_0025FA50(u8 *obj) {
         return;
     }
     if (AT(obj, 0x9C, u16) == 9) {
-        func_001F36B0(obj + 0x98, (f32 *)(obj + 0x20), (f32)AT(obj, 0x90, s32));
+        Track_Sample(obj + 0x98, (f32 *)(obj + 0x20), (f32)AT(obj, 0x90, s32));
     } else {
-        func_001F36B0(obj + 0x98, (f32 *)(obj + 0x10), (f32)AT(obj, 0x90, s32));
+        Track_Sample(obj + 0x98, (f32 *)(obj + 0x10), (f32)AT(obj, 0x90, s32));
     }
     AT(obj, 0x90, s32)++;
     if (AT(obj, 0x90, s32) < AT(obj, 0xA0, s32)) {

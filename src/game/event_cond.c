@@ -622,7 +622,7 @@ s32 EventCond_Eval(VObject *ev) {
     case 0x34: {   /* character pc[1] (in the scene)'s animation flags have pc[2] */
         u8 *c = cond_char(p, pc[1]);
 
-        if (c != NULL && (PC(ev)[2] & (u8)func_001F4770(AT(c, 0xF0, void *), 0, 0, 1))) {
+        if (c != NULL && (PC(ev)[2] & (u8)Motion_EventFlags(AT(c, 0xF0, void *), 0, 0, 1))) {
             r = 1;
         }
         break;

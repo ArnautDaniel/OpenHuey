@@ -419,8 +419,8 @@ static u8 *script_by_id(VObject *ev, u32 id) {
     }
 }
 
-/* room effect slot `k` made anew from the effects' pool (+0x1400): `which` 0 a func_00208F30
- * (`arg`), 1 a func_00208F10, 2 a func_002083B0, 3 a func_00208EF0, 4 a func_00208340 */
+/* room effect slot `k` made anew from the effects' pool (+0x1400): `which` 0 a Butterflies_Init
+ * (`arg`), 1 a DepthRange_Init, 2 a ScreenBlend_Init, 3 a EvEffect7F_Init, 4 a Fog_Init */
 static void room_effect_slot(s32 k, s32 which, s32 arg) {
     u8 *fx = gRoomEffects;
     u8 **slot = (u8 **)(fx + 0x1438) + k;
@@ -435,11 +435,11 @@ static void room_effect_slot(s32 k, s32 which, s32 arg) {
         u8 *e = func_002672F0(0xA0, mem);
 
         if (e != NULL) {
-            e = which == 4   ? func_00208340((void **)e)
-                : which == 3 ? func_00208EF0(e)
-                : which == 2 ? func_002083B0((void **)e)
-                : which      ? func_00208F10((void **)e)
-                             : func_00208F30((void **)e, arg);
+            e = which == 4   ? Fog_Init((void **)e)
+                : which == 3 ? EvEffect7F_Init(e)
+                : which == 2 ? ScreenBlend_Init((void **)e)
+                : which      ? DepthRange_Init((void **)e)
+                             : Butterflies_Init((void **)e, arg);
         }
         *slot = e;
         VCALL(*slot, 0xC, void (*)(u8 *))(*slot);
@@ -533,7 +533,7 @@ static u8 *char_present(Progress *p, s32 id) {
 static u8 *model_alloc(Progress *p, u32 size) {
     VObject *pool = (VObject *)((u8 *)p + 0x6FBF00);
 
-    return func_002DC6E0(size, VCALL(pool, 0x10, void *(*)(VObject *, s32))(pool, size));
+    return Model_new(size, VCALL(pool, 0x10, void *(*)(VObject *, s32))(pool, size));
 }
 
 static void *partner_model(Progress *p, s32 k) {
@@ -542,7 +542,7 @@ static void *partner_model(Progress *p, s32 k) {
     if (m == NULL) {
         return m;
     }
-    return k == 0 ? func_00208210(m, 0) : k == 1 ? func_00208180(m, 1) : func_002080D0(m, 2);
+    return k == 0 ? DogModel_ctor(m, 0) : k == 1 ? DogModelA_ctor(m, 1) : DogModelB_ctor(m, 2);
 }
 
 /* (0xC8 / 0xD9) a scene effect of `size` bytes made by `ctor` in a free slot of the effect
@@ -577,43 +577,43 @@ static void fiona_model(Progress *p, s32 k) {
     case 0:
         m = model_alloc(p, 0x1270);
         if (m != NULL) {
-            m = func_001700E0(m, 0);
+            m = EventHumanModel_ctor(m, 0);
         }
         break;
     case 1:
         m = model_alloc(p, 0x1820);
         if (m != NULL) {
-            m = func_00208C90(m);
+            m = FionaModel_ctor(m);
         }
         break;
     case 2:
         m = model_alloc(p, 0x18E0);
         if (m != NULL) {
-            m = func_002089F0(m);
+            m = Costume2Model_ctor(m);
         }
         break;
     case 3:
         m = model_alloc(p, 0x17A0);
         if (m != NULL) {
-            m = func_00208650(m);
+            m = Costume3Model_ctor(m);
         }
         break;
     case 6:
         m = model_alloc(p, 0xDE0);
         if (m != NULL) {
-            m = func_002084D0(m, 6);
+            m = Costume6Model_ctor(m, 6);
         }
         break;
     case 7:
         m = model_alloc(p, 0xD50);
         if (m != NULL) {
-            m = func_00208420(m, 7);
+            m = Costume7Model_ctor(m, 7);
         }
         break;
     case 8:
         m = model_alloc(p, 0x9B0);
         if (m != NULL) {
-            m = func_002083D0(m);
+            m = Costume8Model_ctor(m);
         }
         break;
     default:
@@ -944,7 +944,7 @@ void EventCmd_Run(VObject *ev) {
         AT(c, 0xE2, u8) = 1;
         AT(c, 0xE3, u8) = 1;
         AT(c, 0x29, u8) = 0;
-        func_002DE030(AT(c, 0xF0, void *), (u16)be16(PC(ev) + 2), PC(ev)[4], -1, (f32)PC(ev)[5]);
+        Motion_PlayWith(AT(c, 0xF0, void *), (u16)be16(PC(ev) + 2), PC(ev)[4], -1, (f32)PC(ev)[5]);
         break;
     }
     case 0x9E: {   /* wait for character pc[1]'s animation to come round (track flag 0x20) */
@@ -1016,10 +1016,10 @@ void EventCmd_Run(VObject *ev) {
         break;
     case 0x86:   /* room effect pc[1] (32) made anew (a D_0046FF40 effect) at (3 x be32 / 1000),
                   * kind pc[14] */
-        room_effect_new(ev, (u8 * (*)(u8 *))func_00208ED0, 1);
+        room_effect_new(ev, (u8 * (*)(u8 *))EvEffect86_Init, 1);
         break;
     case 0x7F:   /* the same with a D_0046FF00 effect, no kind */
-        room_effect_new(ev, (u8 * (*)(u8 *))func_00208EF0, 0);
+        room_effect_new(ev, (u8 * (*)(u8 *))EvEffect7F_Init, 0);
         break;
     case 0x26:   /* script variable pc[1] (+0x810) = be32 */
         AT((u8 *)ev + pc[1] * 4, 0x810, s32) = be32(pc + 2);
@@ -1475,7 +1475,7 @@ void EventCmd_Run(VObject *ev) {
         }
         break;
     case 0xD7:   /* Hewie's motion set be16 pc[1..2] */
-        func_002DDE20(AT(gCharPartner, 0xF0, void *), be16(pc + 1), -1);
+        Motion_Play(AT(gCharPartner, 0xF0, void *), be16(pc + 1), -1);
         break;
     case 0x9B:   /* room effect 0x1E: pc[6] 0 gone, else made anew and set going (le32 pc[1..4], pc[5]) */
         if (pc[6] == 0) {
@@ -1734,9 +1734,9 @@ void EventCmd_Run(VObject *ev) {
             func_00266C70(gRoomEffects, 0x1D, &arg);
         }
         break;
-    case 0xD9: {   /* a scene effect (func_00208070, 0x50 bytes) at (3 x be32 / 1000), size be32 pc[13..] / 1000 */
+    case 0xD9: {   /* a scene effect (DustMoteSource_Init, 0x50 bytes) at (3 x be32 / 1000), size be32 pc[13..] / 1000 */
         u8 *mgr = gEffects;
-        s32 slot = scene_effect_new(mgr, 0x50, func_00208070);
+        s32 slot = scene_effect_new(mgr, 0x50, DustMoteSource_Init);
         struct {
             f32 pos[4];
             f32 size;
@@ -1750,10 +1750,10 @@ void EventCmd_Run(VObject *ev) {
         func_002D6090(mgr, slot, &arg);
         break;
     }
-    case 0xC8: {   /* dust (func_00208090, 0x720 bytes) of kind pc[1] at (3 x be32 pc[2..] / 1000):
+    case 0xC8: {   /* dust (SpriteBurst_InitDust, 0x720 bytes) of kind pc[1] at (3 x be32 pc[2..] / 1000):
                     * colour pc[14..16] if pc[17], else grey 0x80 (kind 0) / 0x50; size 16 */
         u8 *mgr = gEffects;
-        s32 slot = scene_effect_new(mgr, 0x720, func_00208090);
+        s32 slot = scene_effect_new(mgr, 0x720, SpriteBurst_InitDust);
         struct {
             f32 pos[4];
             s32 kind, r, g, b, size;
@@ -1781,10 +1781,10 @@ void EventCmd_Run(VObject *ev) {
         func_002D6090(mgr, slot, &arg);
         break;
     }
-    case 0x8C: {   /* a scene effect (func_00208EB0, 0xE40 bytes) at (3 x be32 / 1000) with this script's
+    case 0x8C: {   /* a scene effect (Effect6FF60_Init, 0xE40 bytes) at (3 x be32 / 1000) with this script's
                     * vector pc[13] (+0x894, 0x14 each), be32 pc[14..], pc[18], be32 pc[19..] / 1000 */
         u8 *mgr = gEffects;
-        s32 slot = scene_effect_new(mgr, 0xE40, func_00208EB0);
+        s32 slot = scene_effect_new(mgr, 0xE40, Effect6FF60_Init);
         struct {
             f32 pos[4];
             f32 v[4];
@@ -1818,10 +1818,10 @@ void EventCmd_Run(VObject *ev) {
         VCALL((VObject *)gCharPlayer, 0x14, void (*)(VObject *))((VObject *)gCharPlayer);
         AT(gCharPlayer, 0x28, u8) = 0;
         break;
-    case 0x9F: {   /* a scene effect (func_00208300, 0x800 bytes): pc[1], at (3 x be32 pc[2..] / 1000),
+    case 0x9F: {   /* a scene effect (SpeckSwarm_InitEvent, 0x800 bytes): pc[1], at (3 x be32 pc[2..] / 1000),
                     * pc[14], then pc[15..18] */
         u8 *mgr = gEffects;
-        s32 slot = scene_effect_new(mgr, 0x800, func_00208300);
+        s32 slot = scene_effect_new(mgr, 0x800, SpeckSwarm_InitEvent);
         struct {
             f32 a, pos[3], b;
             s32 c[4];
@@ -1839,10 +1839,10 @@ void EventCmd_Run(VObject *ev) {
         func_002D6090(mgr, slot, &arg);
         break;
     }
-    case 0xA0: {   /* a scene effect (func_002082C0, 0x4E0 bytes): pc[1], pc[2], at (3 x be32 pc[3..] /
+    case 0xA0: {   /* a scene effect (Splash_InitEvent, 0x4E0 bytes): pc[1], pc[2], at (3 x be32 pc[3..] /
                     * 1000), pc[15], then pc[16..19] */
         u8 *mgr = gEffects;
-        s32 slot = scene_effect_new(mgr, 0x4E0, func_002082C0);
+        s32 slot = scene_effect_new(mgr, 0x4E0, Splash_InitEvent);
         struct {
             f32 a, b, pos[3], c;
             s32 d[4];
@@ -1861,10 +1861,10 @@ void EventCmd_Run(VObject *ev) {
         func_002D6090(mgr, slot, &arg);
         break;
     }
-    case 0xA9: {   /* a scene effect (func_002082A0, 0x60 bytes), its slot kept in variable pc[1]: pc[2],
+    case 0xA9: {   /* a scene effect (Effect71000_Init, 0x60 bytes), its slot kept in variable pc[1]: pc[2],
                     * then 8 x be32 pc[3..] / 1000 */
         u8 *mgr = gEffects;
-        s32 slot = scene_effect_new(mgr, 0x60, func_002082A0);
+        s32 slot = scene_effect_new(mgr, 0x60, Effect71000_Init);
         struct {
             f32 a, v[8];
         } arg __attribute__((aligned(16)));
@@ -2081,7 +2081,7 @@ void EventCmd_Character(VObject *ev) {
         break;
     }
     case 0x7B:   /* wait for its model's flags */
-        if ((pc[2] & (u8)func_001F4770(AT(c, 0xF0, u8 *), 0, 0, 1)) == 0) {
+        if ((pc[2] & (u8)Motion_EventFlags(AT(c, 0xF0, u8 *), 0, 0, 1)) == 0) {
             AT(ev, 0x700, u8) = 1;
         }
         break;

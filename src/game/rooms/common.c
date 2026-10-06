@@ -315,7 +315,7 @@ void WindowFlash_Draw(u8 *o) {
     }
     shape = D_00444A70[AT(o, 0x4, s32)];
     n = shape[0];
-    func_002E3190(m, func_002E2D00(AT(obj, 0x14, f32) + AT(o, 0x8, f32)));
+    Mtx_TurnY(m, func_002E2D00(AT(obj, 0x14, f32) + AT(o, 0x8, f32)));
     for (k = 0; k < n; k++) {
         s32 id = shape[k + 1];
 

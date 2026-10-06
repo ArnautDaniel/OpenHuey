@@ -228,7 +228,7 @@ extern void *D_0046C0A0[];
 void *DebilitasModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_0046C0A0;
-        func_001002C0(m + 0x9A0, func_0016FBB0, 0x50, 4);
+        func_001002C0(m + 0x9A0, HangPoint_dtor, 0x50, 4);
         HumanModel_Destroy(m, flags);
     }
     return m;
@@ -275,7 +275,7 @@ s32 DebilitasModel_Part3(u8 *m) {
 void DebilitasModel_Springs(u8 *m) {
     s32 i;
 
-    func_002EE960(m + 0xAE0);
+    SpringSet_Clear(m + 0xAE0);
     for (i = 0; i < 4; i++) {
         u8 *node = m + 0x9A0 + i * 0x50;
 
@@ -327,8 +327,8 @@ void DebilitasModel_Springs(u8 *m) {
     AT(m, 0xAB0, u8) = 0;
     AT(m, 0xA6C, u8 *) = m + 0x9A0;
     AT(m, 0xABC, u8 *) = m + 0x9A0;
-    func_002EE690(m + 0xB20, 2, 0.0f, 0.0f, 0.0f, 0x1.ccccccp+0f);   /* 1.8 */
-    func_002EE690(m + 0xB60, 2, 1.0f, 0.0f, 0.0f, 0x1.ccccccp+0f);
+    Sphere_Set(m + 0xB20, 2, 0.0f, 0.0f, 0.0f, 0x1.ccccccp+0f);   /* 1.8 */
+    Sphere_Set(m + 0xB60, 2, 1.0f, 0.0f, 0.0f, 0x1.ccccccp+0f);
     AT(m, 0x850, u8) = 1;
 }
 
@@ -376,11 +376,11 @@ void DebilitasModel_Vt3C(u8 *m) {
     s32 n = AT(m, 0x850, u8) != 0 ? 30 : 1;
     s32 i;
 
-    func_002EE8A0(m + 0xAE0);
+    SpringSet_Begin(m + 0xAE0);
     for (i = 0; i < n; i++) {
-        func_002EE900(m + 0xAE0);
+        SpringSet_Step(m + 0xAE0);
     }
-    func_002EE840(m + 0xAE0);
+    SpringSet_Finish(m + 0xAE0);
     AT(m, 0x850, u8) = 0;
 }
 
@@ -589,11 +589,11 @@ extern void *D_00470440[], *D_004703B0[];
 void *DaniellaModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_004702D0;
-        func_001002C0(m + 0x14D0, func_001702F0, 0x50, 2);
+        func_001002C0(m + 0x14D0, BoneHangPoint_dtor, 0x50, 2);
         AT(m, 0x14A0, void **) = D_00470440;
         AT(m, 0x14A0, void **) = D_004703B0;
-        func_001002C0(m + 0xDE0, func_00170EB0, 0x70, 0xA);
-        func_001002C0(m + 0xAA0, func_00170F30, 0x50, 6);
+        func_001002C0(m + 0xDE0, HairPoint_dtor, 0x70, 0xA);
+        func_001002C0(m + 0xAA0, HangingPart_dtor, 0x50, 6);
         HumanModel_Destroy(m, flags);
     }
     return m;
@@ -696,7 +696,7 @@ void DaniellaModel_BackCapsules(u8 *m, s32 pose) {
 void DaniellaModel_PartsA60(u8 *m) {
     s32 i;
 
-    func_002EE960(m + 0xA60);
+    SpringSet_Clear(m + 0xA60);
     for (i = 0; i < 2; i++) {
         Set_AddLink(m + 0xA60, m + 0x14D0 + i * 0x50);
     }
@@ -749,7 +749,7 @@ void DaniellaModel_Hair(u8 *m) {
     };
     s32 i;
 
-    func_002EE960(m + 0x9A0);
+    SpringSet_Clear(m + 0x9A0);
     for (i = 0; i < 10; i++) {
         Set_AddLink(m + 0x9A0, m + 0xDE0 + i * 0x70);
     }
@@ -773,7 +773,7 @@ void DaniellaModel_Hair(u8 *m) {
 /* the one part on the set +0xA20 (bone 0x17) */
 /* 0x002EDA90 */
 void DaniellaModel_PartA20(u8 *m) {
-    func_002EE960(m + 0xA20);
+    SpringSet_Clear(m + 0xA20);
     Set_AddLink(m + 0xA20, m + 0x1470);
     Set_Init(m + 0xA20, m, 0.0f, 0.0f, 0.0f, 0.75f);
     AT(m, 0x14B0, f32) = 0x1.cccccc0p-1f;   /* 0.9 */
@@ -791,7 +791,7 @@ void DaniellaModel_Hanging(u8 *m) {
     static const f32 sStiff[3] = {0x1.99999ap-3f, 0x1.99999ap-4f, 0.0f};   /* 0.2, 0.1, 0 */
     s32 i;
 
-    func_002EE960(m + 0x9E0);
+    SpringSet_Clear(m + 0x9E0);
     for (i = 0; i < 6; i++) {
         Set_AddLink(m + 0x9E0, m + 0xAA0 + i * 0x50);
     }
@@ -812,8 +812,8 @@ void DaniellaModel_Hanging(u8 *m) {
     }
     Capsule_Set(m + 0xC80, 0x19, 0x29, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f);
     Capsule_Set(m + 0xCF0, 0x17, 0x17, 1.5f, 0.0f, -0.5f, 1.0f, -1.5f, 0.0f, -0.5f);
-    func_002EE690(m + 0xD60, 0x1F, 0.0f, 0.0f, 0.0f, 1.0f);
-    func_002EE690(m + 0xDA0, 0x1F, 0.0f, 1.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xD60, 0x1F, 0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xDA0, 0x1F, 0.0f, 1.0f, 0.0f, 1.0f);
 }
 
 /* the six hanging parts at rest: each its length (+0x40) along bone 0x1F's Z axis bent by the
@@ -878,22 +878,22 @@ void DaniellaModel_Vt3C(u8 *m) {
         nHair = AT(m, 0x1574, s32);
         n = AT(m, 0x1570, s32);
     }
-    func_002EE8A0(m + 0x9E0);
-    func_002EE8A0(m + 0xA20);
-    func_002EE8A0(m + 0x9A0);
-    func_002EE8A0(m + 0xA60);
+    SpringSet_Begin(m + 0x9E0);
+    SpringSet_Begin(m + 0xA20);
+    SpringSet_Begin(m + 0x9A0);
+    SpringSet_Begin(m + 0xA60);
     for (i = 0; i < n; i++) {
-        func_002EE900(m + 0x9E0);
-        func_002EE900(m + 0xA20);
-        func_002EE900(m + 0xA60);
+        SpringSet_Step(m + 0x9E0);
+        SpringSet_Step(m + 0xA20);
+        SpringSet_Step(m + 0xA60);
     }
     for (i = 0; i < nHair; i++) {
-        func_002EE900(m + 0x9A0);
+        SpringSet_Step(m + 0x9A0);
     }
-    func_002EE840(m + 0x9E0);
-    func_002EE840(m + 0xA20);
-    func_002EE840(m + 0x9A0);
-    func_002EE840(m + 0xA60);
+    SpringSet_Finish(m + 0x9E0);
+    SpringSet_Finish(m + 0xA20);
+    SpringSet_Finish(m + 0x9A0);
+    SpringSet_Finish(m + 0xA60);
     AT(m, 0x850, u8) = 0;
 }
 
@@ -1121,9 +1121,9 @@ extern void *D_00470480[];
 void *RiccardoModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_00470480;
-        func_001002C0(m + 0x1310, func_00170CB0, 0x50, 4);
-        func_001002C0(m + 0xC20, func_0016FB00, 0x60, 0xC);
-        func_001002C0(m + 0x9A0, func_0016FBB0, 0x50, 4);
+        func_001002C0(m + 0x1310, Part50_dtor, 0x50, 4);
+        func_001002C0(m + 0xC20, Part60_dtor, 0x60, 0xC);
+        func_001002C0(m + 0x9A0, HangPoint_dtor, 0x50, 4);
         HumanModel_Destroy(m, flags);
     }
     return m;
@@ -1184,7 +1184,7 @@ s32 RiccardoModel_Part3(u8 *m) {
 void RiccardoModel_Parts1450(u8 *m) {
     s32 i;
 
-    func_002EE960(m + 0x1450);
+    SpringSet_Clear(m + 0x1450);
     for (i = 0; i < 4; i++) {
         Set_AddLink(m + 0x1450, m + 0x1310 + i * 0x50);
     }
@@ -1234,7 +1234,7 @@ void RiccardoModel_PartsRest(u8 *m) {
 void RiccardoModel_Parts10A0(u8 *m) {
     s32 i;
 
-    func_002EE960(m + 0x10A0);
+    SpringSet_Clear(m + 0x10A0);
     for (i = 0; i < 12; i++) {
         Set_AddLink(m + 0x10A0, m + 0xC20 + i * 0x60);
     }
@@ -1269,7 +1269,7 @@ void RiccardoModel_Parts10A0(u8 *m) {
 void RiccardoModel_PartsBE0(u8 *m) {
     s32 i;
 
-    func_002EE960(m + 0xBE0);
+    SpringSet_Clear(m + 0xBE0);
     for (i = 0; i < 4; i++) {
         Set_AddLink(m + 0xBE0, m + 0x9A0 + i * 0x50);
     }
@@ -1284,10 +1284,10 @@ void RiccardoModel_PartsBE0(u8 *m) {
         AT(n, 0x24, s32) = 0x16 + i;
         AT(n, 0x20, u8) = i % 2 == 0;
     }
-    func_002EE690(m + 0xAE0, 2, -0x1.99999ap-1f, 0.0f, 0.0f, 1.0f);
-    func_002EE690(m + 0xB20, 2, 0.0f, 0.0f, 0.0f, 1.0f);
-    func_002EE690(m + 0xB60, 2, 0x1.99999ap-1f, 0.0f, 0.0f, 1.0f);
-    func_002EE690(m + 0xBA0, 2, 0x1.99999ap+0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xAE0, 2, -0x1.99999ap-1f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xB20, 2, 0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xB60, 2, 0x1.99999ap-1f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xBA0, 2, 0x1.99999ap+0f, 0.0f, 0.0f, 1.0f);
 }
 
 /* all his springs */
@@ -1309,17 +1309,17 @@ void RiccardoModel_Vt3C(u8 *m) {
         RiccardoModel_PartsRest(m);
         n = 30;
     }
-    func_002EE8A0(m + 0xBE0);
-    func_002EE8A0(m + 0x10A0);
-    func_002EE8A0(m + 0x1450);
+    SpringSet_Begin(m + 0xBE0);
+    SpringSet_Begin(m + 0x10A0);
+    SpringSet_Begin(m + 0x1450);
     for (i = 0; i < n; i++) {
-        func_002EE900(m + 0xBE0);
-        func_002EE900(m + 0x10A0);
-        func_002EE900(m + 0x1450);
+        SpringSet_Step(m + 0xBE0);
+        SpringSet_Step(m + 0x10A0);
+        SpringSet_Step(m + 0x1450);
     }
-    func_002EE840(m + 0xBE0);
-    func_002EE840(m + 0x10A0);
-    func_002EE840(m + 0x1450);
+    SpringSet_Finish(m + 0xBE0);
+    SpringSet_Finish(m + 0x10A0);
+    SpringSet_Finish(m + 0x1450);
     AT(m, 0x850, u8) = 0;
 }
 
@@ -1437,7 +1437,7 @@ extern void *D_00471CE0[];
 void *Lorenzo2Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_00471CE0;
-        func_001002C0(m + 0x9A0, func_001709D0, 0x50, 0x18);
+        func_001002C0(m + 0x9A0, SwayPointB_dtor, 0x50, 0x18);
         HumanModel_Destroy(m, flags);
     }
     return m;
@@ -1476,7 +1476,7 @@ void Lorenzo2Model_SwayPoints(u8 *m) {
     static const u32 sPhases[4] = {0x3DB2B8C3, 0x3E32B8C3, 0x3E860A92, 0x3EB2B8C3};
     s32 i;
 
-    func_002EE960(m + 0x1120);
+    SpringSet_Clear(m + 0x1120);
     for (i = 0; i < 24; i++) {
         Set_AddLink(m + 0x1120, m + 0x9A0 + i * 0x50);
     }
@@ -1500,11 +1500,11 @@ void Lorenzo2Model_Vt3C(u8 *m) {
     s32 n = AT(m, 0x850, u8) != 0 ? 30 : 1;
     s32 i;
 
-    func_002EE8A0(m + 0x1120);
+    SpringSet_Begin(m + 0x1120);
     for (i = 0; i < n; i++) {
-        func_002EE900(m + 0x1120);
+        SpringSet_Step(m + 0x1120);
     }
-    func_002EE840(m + 0x1120);
+    SpringSet_Finish(m + 0x1120);
     AT(m, 0x850, u8) = 0;
 }
 
@@ -1710,7 +1710,7 @@ extern void *D_00471DA0[];
 void *LorenzoModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_00471DA0;
-        func_001002C0(m + 0x890, func_0016FBB0, 0x50, 6);
+        func_001002C0(m + 0x890, HangPoint_dtor, 0x50, 6);
         AT(m, 0x0, void **) = D_0046F9E0;
         AT(m, 0x0, void **) = D_0046B210;
         AT(m, 0x1D0, void **) = D_0046B1C0;
@@ -1809,13 +1809,13 @@ f32 LorenzoModel_SlopeKeep(u8 *m, u8 *a) {
     fr[0] = 0.0f;
     fr[1] = 0.0f;
     sceVu0ApplyMatrix(fr, rot, fr);
-    func_002DC710(m, fr, a);
+    Motion_OntoFloor(m, fr, a);
     bk[2] = -8.0f;
     bk[3] = 1.0f;
     bk[0] = 0.0f;
     bk[1] = 0.0f;
     sceVu0ApplyMatrix(bk, rot, bk);
-    func_002DC710(m, bk, a);
+    Motion_OntoFloor(m, bk, a);
     sceVu0SubVector(d, fr, bk);
     sceVu0Normalize(d, d);
     return __builtin_sqrtf(d[2] * d[2] + d[0] * d[0]);
@@ -1930,7 +1930,7 @@ void LorenzoModel_BodyFrames(u8 *m, u8 *a, f32 front, f32 back) {
     p[2] = front;
     p[1] = 0.0f;
     sceVu0ApplyMatrix(p, rot, p);
-    func_002DC710(m, p, a);
+    Motion_OntoFloor(m, p, a);
     sceVu0SubVector(p, p, (f32 *)(a + 0x10));
     sceVu0Normalize(p, p);
     Chair_Frame((f32 (*)[4])(m + 0xC70), p);
@@ -1939,7 +1939,7 @@ void LorenzoModel_BodyFrames(u8 *m, u8 *a, f32 front, f32 back) {
     p[2] = back;
     p[0] = 0.0f;
     sceVu0ApplyMatrix(p, rot, p);
-    func_002DC710(m, p, a);
+    Motion_OntoFloor(m, p, a);
     sceVu0SubVector(p, (f32 *)(a + 0x10), p);
     sceVu0Normalize(p, p);
     Chair_Frame((f32 (*)[4])(m + 0x7D0), p);
@@ -1955,7 +1955,7 @@ void Lorenzo2Model_Points(u8 *m) {
     };
     s32 i;
 
-    func_002EE960(m + 0xCC0);
+    SpringSet_Clear(m + 0xCC0);
     for (i = 0; i < 6; i++) {
         Set_AddLink(m + 0xCC0, m + 0x890 + i * 0x50);
     }
@@ -1971,7 +1971,7 @@ void Lorenzo2Model_Points(u8 *m) {
         AT(n, 0x20, u8) = i % 3 == 0;
     }
     for (i = 0; i < 8; i++) {
-        func_002EE690(m + 0xA70 + i * 0x40, sSpheres[i].bone, 0.0f, sSpheres[i].y, sSpheres[i].z, 1.0f);
+        Sphere_Set(m + 0xA70 + i * 0x40, sSpheres[i].bone, 0.0f, sSpheres[i].y, sSpheres[i].z, 1.0f);
     }
 }
 
@@ -1981,11 +1981,11 @@ void LorenzoModel_Vt3C(u8 *m) {
     s32 n = AT(m, 0x850, u8) != 0 ? 30 : 1;
     s32 i;
 
-    func_002EE8A0(m + 0xCC0);
+    SpringSet_Begin(m + 0xCC0);
     for (i = 0; i < n; i++) {
-        func_002EE900(m + 0xCC0);
+        SpringSet_Step(m + 0xCC0);
     }
-    func_002EE840(m + 0xCC0);
+    SpringSet_Finish(m + 0xCC0);
     AT(m, 0x850, u8) = 0;
 }
 
@@ -2088,8 +2088,8 @@ extern u8 D_00424450[], D_00424460[], D_00424470[], D_00424480[];
 void *Kind09Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_00471C20;
-        func_001002C0(m + 0xD40, func_001709D0, 0x50, 0x18);
-        func_001002C0(m + 0x9A0, func_0016FBB0, 0x50, 6);
+        func_001002C0(m + 0xD40, SwayPointB_dtor, 0x50, 0x18);
+        func_001002C0(m + 0x9A0, HangPoint_dtor, 0x50, 6);
         AT(m, 0x0, void **) = D_0046C160;
         AT(m, 0x988, void **) = D_0046B0D0;
         AT(m, 0x928, void **) = D_0046B0D0;
@@ -2151,7 +2151,7 @@ void Lorenzo2Model_Strands(u8 *m) {
     static const u32 kAngle[4] = {0x3EB2B8C3, 0x3F32B8C3, 0x3F860A92, 0x3FB2B8C3};   /* 20 .. 80 deg */
     s32 i, s, j;
 
-    func_002EE960(m + 0x14C0);
+    SpringSet_Clear(m + 0x14C0);
     for (i = 0; i < 0x18; i++) {
         spring_link(m + 0x14C0, m + 0xD40 + i * 0x50);
     }
@@ -2182,7 +2182,7 @@ void Lorenzo2Model_Strands(u8 *m) {
 void Lorenzo2Model_Hanging(u8 *m) {
     s32 i;
 
-    func_002EE960(m + 0xD00);
+    SpringSet_Clear(m + 0xD00);
     for (i = 0; i < 6; i++) {
         spring_link(m + 0xD00, m + 0x9A0 + i * 0x50);
     }
@@ -2215,12 +2215,12 @@ void Lorenzo2Model_Hanging(u8 *m) {
         AT(n, 0x24, s32) = 0x2F + i;
         AT(n, 0x20, u8) = i == 0 || i == 3;
     }
-    func_002EE690(m + 0xB80, 0x24, 0.0f, 0.0f, 0.0f, 1.0f);
-    func_002EE690(m + 0xBC0, 0x35, 0.0f, 0.0f, 0.0f, 1.0f);
-    func_002EE690(m + 0xC00, 0x25, 0.0f, 0.0f, 0.0f, 1.0f);
-    func_002EE690(m + 0xC40, 0x36, 0.0f, 0.0f, 0.0f, 1.0f);
-    func_002EE690(m + 0xC80, 0x2B, 0.0f, 0.0f, 0.0f, 1.0f);
-    func_002EE690(m + 0xCC0, 0x2B, 0.0f, 1.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xB80, 0x24, 0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xBC0, 0x35, 0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xC00, 0x25, 0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xC40, 0x36, 0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xC80, 0x2B, 0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xCC0, 0x2B, 0.0f, 1.0f, 0.0f, 1.0f);
 }
 
 /* +0x3C settle his springs: 30 steps the first time (+0x850), else one */
@@ -2228,14 +2228,14 @@ void Lorenzo2Model_Hanging(u8 *m) {
 void Kind09Model_Vt3C(u8 *m) {
     s32 n = AT(m, 0x850, u8) ? 30 : 1, i;
 
-    func_002EE8A0(m + 0xD00);
-    func_002EE8A0(m + 0x14C0);
+    SpringSet_Begin(m + 0xD00);
+    SpringSet_Begin(m + 0x14C0);
     for (i = 0; i < n; i++) {
-        func_002EE900(m + 0xD00);
-        func_002EE900(m + 0x14C0);
+        SpringSet_Step(m + 0xD00);
+        SpringSet_Step(m + 0x14C0);
     }
-    func_002EE840(m + 0xD00);
-    func_002EE840(m + 0x14C0);
+    SpringSet_Finish(m + 0xD00);
+    SpringSet_Finish(m + 0x14C0);
     AT(m, 0x850, u8) = 0;
 }
 
@@ -2337,7 +2337,7 @@ void Kind23Model_PartsRest(u8 *m) {
 void Kind23Model_Parts10A0(u8 *m) {
     s32 i;
 
-    func_002EE960(m + 0x10A0);
+    SpringSet_Clear(m + 0x10A0);
     for (i = 0; i < 12; i++) {
         Set_AddLink(m + 0x10A0, m + 0xC20 + i * 0x60);
     }
@@ -2372,7 +2372,7 @@ void Kind23Model_Parts10A0(u8 *m) {
 void Kind23Model_PartsBE0(u8 *m) {
     s32 i;
 
-    func_002EE960(m + 0xBE0);
+    SpringSet_Clear(m + 0xBE0);
     for (i = 0; i < 4; i++) {
         Set_AddLink(m + 0xBE0, m + 0x9A0 + i * 0x50);
     }
@@ -2387,10 +2387,10 @@ void Kind23Model_PartsBE0(u8 *m) {
         AT(n, 0x24, s32) = 0x16 + i;
         AT(n, 0x20, u8) = i % 2 == 0;
     }
-    func_002EE690(m + 0xAE0, 2, -0x1.99999ap-1f, 0.0f, 0.0f, 1.0f);
-    func_002EE690(m + 0xB20, 2, 0.0f, 0.0f, 0.0f, 1.0f);
-    func_002EE690(m + 0xB60, 2, 0x1.99999ap-1f, 0.0f, 0.0f, 1.0f);
-    func_002EE690(m + 0xBA0, 2, 0x1.99999ap+0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xAE0, 2, -0x1.99999ap-1f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xB20, 2, 0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xB60, 2, 0x1.99999ap-1f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xBA0, 2, 0x1.99999ap+0f, 0.0f, 0.0f, 1.0f);
 }
 
 /* a model's +0x850 on, then Kind23Model_PartsBE0 and Kind23Model_Parts10A0 */
@@ -2409,8 +2409,8 @@ extern void *D_00473BD0[];
 void *Kind23Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_00473BD0;
-        func_001002C0(m + 0xC20, func_0016FB00, 0x60, 0xC);
-        func_001002C0(m + 0x9A0, func_0016FBB0, 0x50, 4);
+        func_001002C0(m + 0xC20, Part60_dtor, 0x60, 0xC);
+        func_001002C0(m + 0x9A0, HangPoint_dtor, 0x50, 4);
         AT(m, 0x0, void **) = D_0046C160;
         AT(m, 0x988, void **) = D_0046B0D0;
         AT(m, 0x928, void **) = D_0046B0D0;
@@ -2440,14 +2440,14 @@ void Kind23Model_Vt3C(u8 *m) {
         Kind23Model_PartsRest(m);
         n = 30;
     }
-    func_002EE8A0(m + 0xBE0);
-    func_002EE8A0(m + 0x10A0);
+    SpringSet_Begin(m + 0xBE0);
+    SpringSet_Begin(m + 0x10A0);
     for (i = 0; i < n; i++) {
-        func_002EE900(m + 0xBE0);
-        func_002EE900(m + 0x10A0);
+        SpringSet_Step(m + 0xBE0);
+        SpringSet_Step(m + 0x10A0);
     }
-    func_002EE840(m + 0xBE0);
-    func_002EE840(m + 0x10A0);
+    SpringSet_Finish(m + 0xBE0);
+    SpringSet_Finish(m + 0x10A0);
     AT(m, 0x850, u8) = 0;
 }
 
