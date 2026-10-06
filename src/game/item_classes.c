@@ -1009,7 +1009,7 @@ static s32 use_sound_only(s32 need_24_4, s32 id) {
     Progress *p = gProgress;
 
     if ((AT(p, 0x30, u32) & 0x8000) || (need_24_4 && !(AT(p, 0x24, u32) & 4)) ||
-        VCALL(gItems, 0xC, s32 (*)(VObject *, s32))(gItems, id) == 0) {
+        VCALL(gSubScreen, 0xC, s32 (*)(VObject *, s32))(gSubScreen, id) == 0) {
         return 0;
     }
     VCALL(gSound, 0x14, void (*)(VObject *, s32, s32))(gSound, 0xC, 5);
@@ -1295,7 +1295,7 @@ s32 func_003445D0(void *o) {
         s32 room = AT(gCharPartner, 0x30, s32);
 
         if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p) &&
-            VCALL(gItems, 0xC, s32 (*)(VObject *, s32))(gItems, 0x27F) != 0) {
+            VCALL(gSubScreen, 0xC, s32 (*)(VObject *, s32))(gSubScreen, 0x27F) != 0) {
             VCALL(gSound, 0x14, void (*)(VObject *, s32, s32))(gSound, 0xC, 5);
             return 8;
         }

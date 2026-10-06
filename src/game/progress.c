@@ -1095,7 +1095,7 @@ void func_00174920(Progress *p) {
         player_take_action(b, 0x1154);
     }
     if ((D_0047E37C & 0x1000) && !noAct) {
-        VObject *sub = gItems;
+        VObject *sub = gSubScreen;
         s32 item = VCALL(sub, 0x14, s32 (*)(VObject *))(sub);
         s32 n = VCALL(sub, 0x18, s32 (*)(VObject *))(sub);
 

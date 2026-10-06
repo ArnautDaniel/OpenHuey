@@ -1,4 +1,4 @@
-/* The item manager (gItems): Fiona's inventory and equipment. */
+/* The item manager (gSubScreen): Fiona's inventory and equipment. */
 #include "common.h"
 #include "game.h"
 #include "globals.h"

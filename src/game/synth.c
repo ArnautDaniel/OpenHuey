@@ -103,7 +103,7 @@ void *func_00322C40(u8 *o, s32 flags) {
 
 /* the six materials' counts (items 0x70..0x75) into +0x118..; any at all */
 s32 func_00322970(u8 *o) {
-    u8 *items = (u8 *)gItems + 8;
+    u8 *items = (u8 *)gSubScreen + 8;
     s32 any = 0, i;
 
     for (i = 0; i < 6; i++) {
@@ -245,7 +245,7 @@ void func_00324410(u8 *o) {
     s8 m = func_00322580(o);
 
     if (m >= 0) {
-        func_00260BB0((u8 *)gItems + 8, m + 0x70);
+        func_00260BB0((u8 *)gSubScreen + 8, m + 0x70);
         o[0x11E] = m;
         o[0x11F] = 0;
         SY_STEP(o) = -1;
@@ -436,7 +436,7 @@ static void sy_finish(u8 *o) {
         if (n == 0) {
             o[0x14A] = -1;
         } else {
-            u8 *items = (u8 *)gItems + 8;
+            u8 *items = (u8 *)gSubScreen + 8;
             s32 list[8], k = 0, j, id;
 
             for (j = 0; j < 8; j++) {

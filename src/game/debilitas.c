@@ -346,7 +346,7 @@ void func_0012B490(Pursuer *p) {
         }
     } else if (next != -2) {
         if (next == 0x1C) {
-            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 3, 0x80, 0x1E);
+            VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 3, 0x80, 0x1E);
         }
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, PU(p, 0x1758, s32));
     }

@@ -451,15 +451,15 @@ void func_002CA8C0(u8 *d) {
     b = (u8)VCALL((VObject *)d, 0x74, s32 (*)(u8 *))(d);
     if (LAST(d) != FRAME(d)) {
         if (a != AT(d, 0x298, u8)) {
-            VCALL(gScreenFade, 0x14, void (*)(VObject *, s32, s32, s32))(gScreenFade, 2, a != 0, 0x2D0);
+            VCALL(gRumble, 0x14, void (*)(VObject *, s32, s32, s32))(gRumble, 2, a != 0, 0x2D0);
         }
         if (b != AT(d, 0x299, u8)) {
-            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, u8, s32))(gScreenFade, 2, AT(d, 0x29A + b, u8), 0x2D0);
+            VCALL(gRumble, 0x18, void (*)(VObject *, s32, u8, s32))(gRumble, 2, AT(d, 0x29A + b, u8), 0x2D0);
         }
     } else {
         a = b = 0;
-        VCALL(gScreenFade, 0x14, void (*)(VObject *, s32, s32, s32))(gScreenFade, 2, 0, 1);
-        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 2, 0, 1);
+        VCALL(gRumble, 0x14, void (*)(VObject *, s32, s32, s32))(gRumble, 2, 0, 1);
+        VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 2, 0, 1);
     }
     AT(d, 0x298, u8) = a;
     AT(d, 0x299, u8) = b;
@@ -490,8 +490,8 @@ void func_002CAB90(u8 *d) {
         }
     }
     func_002CBBE0(d);
-    VCALL(gScreenFade, 0x14, void (*)(VObject *, s32, s32, s32))(gScreenFade, 2, 0, 1);
-    VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 2, 0, 1);
+    VCALL(gRumble, 0x14, void (*)(VObject *, s32, s32, s32))(gRumble, 2, 0, 1);
+    VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 2, 0, 1);
     fx = gRoomEffects;
     if (AT(d, 0x238, u8)) {
         effect_need(fx, 0x1D, D_0046EB40);

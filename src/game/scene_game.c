@@ -173,7 +173,7 @@ void SceneGame_StateEntry(Scene *game) {
     func_002E2890((u8 *)game + 0x706480, &sGameStateNull);
     AT(game, 0x105344D, u8) = 0;
     AT(game, 0x105344E, u8) = 0;
-    VCALL(gScreenFade, 0x10, void (*)(VObject *))(gScreenFade);
+    VCALL(gRumble, 0x10, void (*)(VObject *))(gRumble);
     AT(game, 0x106503C, s32) = 0;
     VCALL(gCamera, 0xC, void (*)(VObject *))(gCamera);
     obj560 = gSound;
@@ -1171,7 +1171,7 @@ void func_0039EAB0(Scene *g) {
     if (Progress_TestFlag(prog, 0xC)) {
         VObject *snd;
 
-        VCALL(gScreenFade, 0x10, void (*)(VObject *))(gScreenFade);
+        VCALL(gRumble, 0x10, void (*)(VObject *))(gRumble);
         VCALL(gFileLoader, 0x1C, void (*)(VObject *))(gFileLoader);
         ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C800);
         menu = 1;
@@ -1195,7 +1195,7 @@ void func_0039EAB0(Scene *g) {
         if (camdir_busy(g) && !(u8)Progress_TestFlag(prog, 0x19)) {
             if ((*flags & 0xF) == 0 && AT(g, 0x44, s32) == 0 &&
                 !VCALL(ev, 0xBC, s32 (*)(VObject *))(ev) && gMovie != NULL) {
-                VCALL(gScreenFade, 0x2C, void (*)(VObject *, s32))(gScreenFade, 1);
+                VCALL(gRumble, 0x2C, void (*)(VObject *, s32))(gRumble, 1);
                 func_002F60B0((u8 *)g + 0x73EBA0, (D_0047E360 == 0 ? 0x80 : 0) | 1);
                 func_002F02F0((u8 *)g + 0x7F8);
                 menu = 1;
@@ -1203,7 +1203,7 @@ void func_0039EAB0(Scene *g) {
             }
         } else if (!VCALL(ev, 0xBC, s32 (*)(VObject *))(ev) && gMovie == NULL &&
                    !(u8)Progress_TestFlag(prog, 0x19)) {
-            VCALL(gScreenFade, 0x2C, void (*)(VObject *, s32))(gScreenFade, 1);
+            VCALL(gRumble, 0x2C, void (*)(VObject *, s32))(gRumble, 1);
             func_002F60B0((u8 *)g + 0x73EBA0, D_0047E360 == 0 ? 0x80 : 0);
             func_002F02F0((u8 *)g + 0x7F8);
             menu = 1;
@@ -1211,7 +1211,7 @@ void func_0039EAB0(Scene *g) {
         }
     }
     if (Progress_TestFlag(prog, 4) && !menu) {
-        VCALL(gScreenFade, 0x2C, void (*)(VObject *, s32))(gScreenFade, 1);
+        VCALL(gRumble, 0x2C, void (*)(VObject *, s32))(gRumble, 1);
         ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C830);
     }
     Progress_ClearFlag(prog, 0xC);
@@ -2039,7 +2039,7 @@ void func_0039DF10(Scene *g) {
             }
             return;
         }
-        VCALL(gScreenFade, 0x2C, void (*)(VObject *, s32))(gScreenFade, 0);
+        VCALL(gRumble, 0x2C, void (*)(VObject *, s32))(gRumble, 0);
         to_play(g, &D_0044C860);
     }
     Progress_ClearFlag(prog, 6);
@@ -2103,7 +2103,7 @@ void func_0039D990(Scene *g) {
     }
     func_002F6050((u8 *)g + 0x73EBA0);
     if (Progress_TestFlag(prog, 6)) {
-        VCALL(gScreenFade, 0x2C, void (*)(VObject *, s32))(gScreenFade, 0);
+        VCALL(gRumble, 0x2C, void (*)(VObject *, s32))(gRumble, 0);
         func_0039BB60(g);
         to_play(g, &D_0044C870);
     }
@@ -2132,7 +2132,7 @@ void func_0039E7D0(Scene *g) {
     SubScreen_Update((SubScreen *)((u8 *)g + 0xF87240));
     func_002A7630((u8 *)g + 0x1004);
     if (Progress_TestFlag(prog, 4)) {
-        VCALL(gScreenFade, 0x2C, void (*)(VObject *, s32))(gScreenFade, 0);
+        VCALL(gRumble, 0x2C, void (*)(VObject *, s32))(gRumble, 0);
         to_play(g, &D_0044C840);
     }
     Progress_ClearFlag(prog, 4);
@@ -2336,7 +2336,7 @@ void SceneGame_OnSoftReset(u8 *g) {
     if (VCALL(gFileLoader, 0x24, s32 (*)(void *))(gFileLoader) != 3) {
         return;
     }
-    VCALL(gScreenFade, 0x10, void (*)(VObject *))(gScreenFade);
+    VCALL(gRumble, 0x10, void (*)(VObject *))(gRumble);
     snd = gSound;
     VCALL(snd, 0x8C, void (*)(VObject *))(snd);
     VCALL(snd, 0xC, void (*)(VObject *))(snd);

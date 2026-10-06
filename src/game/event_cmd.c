@@ -556,7 +556,7 @@ static void cmd_sound(VObject *ev, Progress *p, const u8 *pc) {
  * 99 of (an "only if missing" one she has becomes item 0x75) given with message 0x8011, or none
  * left: message 0x801A */
 static void cmd_gift(VObject *ev, Progress *p) {
-    u8 *items = (u8 *)gItems + 0x8;
+    u8 *items = (u8 *)gSubScreen + 0x8;
     s32 item;
 
     if (AT(p, 0x874, u8) != 0) {
@@ -583,7 +583,7 @@ static void cmd_gift(VObject *ev, Progress *p) {
         VObject *im;
 
         Msg_SetParamSystem((u8 *)ev + 0x708, 0, item & 0xFFFF);
-        im = gItems;
+        im = gSubScreen;
         func_00261090((u8 *)im + 0x8, item, 1);
         VCALL(im, 0x20, void (*)(VObject *, s32, s32))(im, 0, item);
         AT(ev, 0x703, u8) = 1;
@@ -1270,7 +1270,7 @@ void func_002029B0(VObject *ev) {
         VCALL(gSound, 0x18, void (*)(VObject *, s32, s32))(gSound, be32(pc + 1), pc[5]);
         break;
     case 0x6D:   /* the item manager's +0x4 = pc[1]; progress flag 4 */
-        AT(gItems, 0x4, u8) = pc[1];
+        AT(gSubScreen, 0x4, u8) = pc[1];
         Progress_SetFlag(p, 4);
         break;
     case 0x72:
@@ -1326,9 +1326,9 @@ void func_002029B0(VObject *ev) {
         break;
     case 0x71:   /* screen fade: pc[1] 0 out (1, 1), else pc[2]; over be16 pc[3..4] */
         if (pc[1] == 0) {
-            VCALL(gScreenFade, 0x14, void (*)(VObject *, s32, s32, u32))(gScreenFade, 1, 1, be16(pc + 3));
+            VCALL(gRumble, 0x14, void (*)(VObject *, s32, s32, u32))(gRumble, 1, 1, be16(pc + 3));
         } else {
-            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, u32))(gScreenFade, 1, pc[2], be16(pc + 3));
+            VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, u32))(gRumble, 1, pc[2], be16(pc + 3));
         }
         break;
     case 0x83: {   /* item: the progress' +0xFBE counts; this script's +0xD0 of be16 pc[1..2], pc[3] */
@@ -1338,7 +1338,7 @@ void func_002029B0(VObject *ev) {
         pc = PC(ev);
         n = pc[3];
         id = VCALL(ev, 0xD0, s32 (*)(VObject *, u32))(ev, be16(pc + 1));
-        func_00261090((u8 *)gItems + 0x8, id, n);
+        func_00261090((u8 *)gSubScreen + 0x8, id, n);
         break;
     }
     case 0x88: {   /* a noise of loudness pc[1] in this room at triangle be16 pc[2..3] */
@@ -1462,7 +1462,7 @@ void func_002029B0(VObject *ev) {
     case 0xBE: {   /* wait on the item manager's +0x20 (pc[1], this script's item pc[2]) */
         s32 item = VCALL(ev, 0xD0, s32 (*)(VObject *, s32))(ev, pc[2]);
 
-        EV_WAIT(ev) = VCALL(gItems, 0x20, u8 (*)(VObject *, s32, s32))(gItems, PC(ev)[1], item);
+        EV_WAIT(ev) = VCALL(gSubScreen, 0x20, u8 (*)(VObject *, s32, s32))(gSubScreen, PC(ev)[1], item);
         break;
     }
     case 0xBF: {   /* Fiona's +0x1AD5F4 = be32 pc[1..4] / 1000 (0..100) */
@@ -1537,7 +1537,7 @@ void func_002029B0(VObject *ev) {
         func_001FB5F0(ev);
         break;
     case 0xD1:
-        VCALL(gItems, 0x2C, void (*)(VObject *, s32))(gItems, (s8)pc[1]);
+        VCALL(gSubScreen, 0x2C, void (*)(VObject *, s32))(gSubScreen, (s8)pc[1]);
         break;
     case 0xD2:
         VCALL(gPlacedThings, 0x24, void (*)(VObject *))(gPlacedThings);
@@ -1681,7 +1681,7 @@ void func_002029B0(VObject *ev) {
         } else {
             id = 0x273;
         }
-        if (VCALL(gItems, 0xC, s32 (*)(VObject *, s32))(gItems, id) != 0) {
+        if (VCALL(gSubScreen, 0xC, s32 (*)(VObject *, s32))(gSubScreen, id) != 0) {
             VCALL(gSound, 0x14, void (*)(VObject *, u32, u32))(gSound, 0xC, 5);
         }
         break;
@@ -2257,21 +2257,21 @@ void func_002003C0(VObject *ev) {
                            VCALL(ev, 0xD0, u32 (*)(VObject *, u32))(ev, n) & 0xFFFF);
         break;
     case 0x0C:
-        func_00260BB0((u8 *)gItems + 8, n);
+        func_00260BB0((u8 *)gSubScreen + 8, n);
         break;
     case 0x0D:   /* give / take an item, with the pickup sound */
         if (AT(p, 0x30, u32) & 0x8000) {
-            if ((n & 0x8000) && VCALL(gItems, 0xC, s32 (*)(VObject *, u32))(gItems, n & 0x7FFF)) {
+            if ((n & 0x8000) && VCALL(gSubScreen, 0xC, s32 (*)(VObject *, u32))(gSubScreen, n & 0x7FFF)) {
                 VCALL(gSound, 0x14, void (*)(VObject *, s32, s32))(gSound, 0xC, 5);
             }
         } else {
-            if (!(n & 0x8000) && VCALL(gItems, 0xC, s32 (*)(VObject *, u32))(gItems, n)) {
+            if (!(n & 0x8000) && VCALL(gSubScreen, 0xC, s32 (*)(VObject *, u32))(gSubScreen, n)) {
                 VCALL(gSound, 0x14, void (*)(VObject *, s32, s32))(gSound, 0xC, 5);
             }
         }
         break;
     case 0x0E:
-        VCALL(gItems, 0xC, s32 (*)(VObject *, u32))(gItems, n);
+        VCALL(gSubScreen, 0xC, s32 (*)(VObject *, u32))(gSubScreen, n);
         break;
     case 0x0F:   /* the flag in event variable n */
         flag_set((u8 *)p + 0x1C, AT(ev, 0x810 + n * 4, s32));
@@ -2280,7 +2280,7 @@ void func_002003C0(VObject *ev) {
         flag_clear((u8 *)p + 0x1C, AT(ev, 0x810 + n * 4, s32));
         break;
     case 0x11:
-        VCALL(gItems, 0x38, void (*)(VObject *, u32))(gItems, n);
+        VCALL(gSubScreen, 0x38, void (*)(VObject *, u32))(gSubScreen, n);
         break;
     case 0x12:   /* a resident flag */
         flag_set(gSystemData + 0x24, n);

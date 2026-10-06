@@ -103,7 +103,7 @@ s32 func_002CCED0(void *o) {
         }
         return 0;
     }
-    func_00261090((u8 *)gItems + 8, 2, 1);
+    func_00261090((u8 *)gSubScreen + 8, 2, 1);
     AT(gProgress, 0x84, u32) |= 0x80000000;
     return 2;
 }

@@ -471,7 +471,7 @@ void *func_001BE7A0(u8 *s, s32 flags) {
 
     AT(s, 0x300, void **) = D_0046F4F0;   /* rumble */
     AT(s, 0x300, void **) = D_0046AE30;
-    gScreenFade = NULL;
+    gRumble = NULL;
 
     AT(s, 0x40, void **) = D_0046ADB0;    /* pads */
     AT(s, 0x58, void **) = D_0046ADC4;

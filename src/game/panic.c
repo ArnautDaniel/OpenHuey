@@ -64,7 +64,7 @@ void func_002F0500(u8 *o) {
         }
         d = d * scale;
         a = a * scale;
-        switch (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1)) {
+        switch (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 1)) {
         case 0x86:
         case 0x87:
             b = b * 1.25f;
@@ -435,8 +435,8 @@ void func_002EFA50(u8 *o, f32 amount) {
     if (amount < 0.0f) {
         return;
     }
-    if (gItems != NULL) {
-        switch (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1)) {
+    if (gSubScreen != NULL) {
+        switch (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 1)) {
         case 0x87:
             amount *= 0.75f;
             break;
@@ -469,6 +469,6 @@ void func_002EF2B0(u8 *o) {
         return;
     }
     func_00122C20(gCharPlayer, 0x29, 5, sPitch[stage - 1], 0, 0);
-    VCALL(gScreenFade, 0x20, void (*)(VObject *, const u8 *, const u8 *))(gScreenFade, stage == 5 ? D_0041A090 : NULL,
+    VCALL(gRumble, 0x20, void (*)(VObject *, const u8 *, const u8 *))(gRumble, stage == 5 ? D_0041A090 : NULL,
                                                                           sTint[stage - 1]);
 }

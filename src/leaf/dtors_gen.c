@@ -204,7 +204,7 @@ void *func_001BF220(u8 *o, s32 flags) {
 void *func_001BF280(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AE30;
-        gScreenFade = NULL;
+        gRumble = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }

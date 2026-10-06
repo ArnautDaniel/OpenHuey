@@ -406,7 +406,7 @@ void func_001A38E0(Fiona *f) {
             && !(VCALL(gCamDirector, 0x38, u32 (*)(VObject *))(gCamDirector) & 0xFF)) {
             if (f->c.unkE4 == 1) {
                 f->c.unk152C = 0xA;
-            } else if (VCALL(gItems, 0x10, s32 (*)(VObject *))(gItems) == AREA_SPECIAL) {
+            } else if (VCALL(gSubScreen, 0x10, s32 (*)(VObject *))(gSubScreen) == AREA_SPECIAL) {
                 if (FI(f, 0x1AD62C, u16) == 0) {
                     f->c.unk152C = 0x1C;
                 } else {
@@ -447,7 +447,7 @@ void func_001A3EE0(Fiona *f) {
     VCALL(gDoors, 0x4C, void (*)(VObject *, s32))(gDoors, 0);
     MOTION_PTR(f->c.motion, 0x4D4) = (u8 *)f + 0x1AA540;
     func_00182FC0(f);
-    if (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1) == AREA_SPECIAL) {
+    if (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 1) == AREA_SPECIAL) {
         f->c.unkE4 = 0;
         FI(f, 0x1AD62C, u16) = 0;
         f->unk1AD630 = 1;
@@ -775,7 +775,7 @@ void func_0019A0D0(Fiona *f, u32 arg, u32 flag) {
     }
     f->c.moveMode = 4;
     f->c.moveSub = 0xA;
-    VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xD0, 0xC);
+    VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0xD0, 0xC);
     f->c.unk100 = arg & 0xFF;
     if ((flag & 0xFF) == 1) {
         func_00182E80(f);
@@ -957,7 +957,7 @@ void func_001991E0(Fiona *f) {
         FI(f, 0x1AD5D2, u8) = 1;
     }
     if ((func_001F4770(f->c.motion, 0, 0, 1) & 0xFF) & 0x2) {
-        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0x40, 0x10);
+        VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0x40, 0x10);
     }
 }
 
@@ -1122,7 +1122,7 @@ void func_001A1CA0(Fiona *f) {
             f->c.unkE4 = 1;
             FIONA_FADE_T(f) = 0;
         }
-    } else if (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1) != AREA_SPECIAL
+    } else if (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 1) != AREA_SPECIAL
                || (Progress_TestFlag(p, 0xA) & 0xFF) != 1) {
         f->unk1AD630 = 0;
         FIONA_FADE_T(f) = 0;
@@ -2078,7 +2078,7 @@ void func_001A1FD0(Fiona *f) {
                 /* nothing */
             } else if (g == 2) {
                 /* running */
-                if (gItems == NULL || VCALL(gItems, 0x10, s32 (*)(VObject *))(gItems) != 0x8C) {
+                if (gSubScreen == NULL || VCALL(gSubScreen, 0x10, s32 (*)(VObject *))(gSubScreen) != 0x8C) {
                     func_00181010(f, (func_00177620(p) & 0xFF) == 2 ? 0x1.111112p-4f /* 1/15 */
                                                                      : 0x1.7e4b18p-5f /* 0x3D3F258C */);
                 }
@@ -2117,7 +2117,7 @@ void func_001A1FD0(Fiona *f) {
             f->c.unkE4 = 1;
             FIONA_FADE_T(f) = 0;
         }
-    } else if (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1) == AREA_SPECIAL
+    } else if (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 1) == AREA_SPECIAL
                && f->c.moveMode == 0 && f->c.moveSub == 0) {
         if (f->unk1AD630 == 0) {
             if (f->c.unkE4 == 1 && ++FIONA_FADE_T(f) == 60) {
@@ -3224,10 +3224,10 @@ void func_00184BF0(Fiona *f) {
     }
 }
 
-/* show the model parts for what she has equipped (gItems +0x10: equipment slots 1 and 3;
+/* show the model parts for what she has equipped (gSubScreen +0x10: equipment slots 1 and 3;
  * items 0x86..0x89 -> part variants 1..4, else 0; items 0x8A..0x8D -> 6..9, else 5) */
 void func_00182FC0(Fiona *f) {
-    VObject *equip = gItems;
+    VObject *equip = gSubScreen;
     void *m = f->c.motion;
 
     switch (VCALL(equip, 0x10, s32 (*)(VObject *, s32))(equip, 1)) {
@@ -3352,7 +3352,7 @@ void func_001855F0(Fiona *f, s32 blend) {
  * scales it: 0x8A less gain, 0x8B less gain and more loss, 0x8C no gain and double loss,
  * 0x8D none */
 void func_00181010(Fiona *f, f32 d) {
-    VObject *items = (VObject *)gItems;
+    VObject *items = (VObject *)gSubScreen;
     f32 v;
 
     if (items != NULL) {
@@ -4105,7 +4105,7 @@ void func_001869D0(Fiona *f) {
         x = 1.0f;
     }
     vol = (u32)(2.0f * x) & 0x7F;
-    if (gItems != NULL && VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 0) == 0x80) {
+    if (gSubScreen != NULL && VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 0) == 0x80) {
         func_00122C20(&f->c.a, base, bank, -0x30, (s8)vol, NULL);
         noise = f->c.moveMode == 0 && f->c.moveSub == 2 ? 5 : 1;
     } else {
@@ -4725,7 +4725,7 @@ extern void func_002EFA50(u8 *panic, f32 amount);           /* a fright (less wi
 extern const PTMF D_003B2DD8, D_003B2DE8, D_003B2DF8, D_003B2E08, D_003B2E18, D_003B2E28, D_003B2E38;
 extern const PTMF D_003B2E48, D_003B2E58, D_003B2E68, D_003B2E78, D_003B2E88;
 
-#define CHARM_ITEM 0x88   /* worn (the item manager gItems +0x10, slot 1), she cannot be caught */
+#define CHARM_ITEM 0x88   /* worn (the item manager gSubScreen +0x10, slot 1), she cannot be caught */
 
 /* the reaction for request `req` (the state block's [1]), -1: none. While an event runs or
  * progress flag 8 is set, none; a request about character [2] needs it present. 0xD falls
@@ -4799,7 +4799,7 @@ s32 func_00184E00(Fiona *f, s32 req) {
         return -1;
     case 3:
         if (m == 4 && f->c.moveSub == 0x10) {
-            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xFF, 0x10);
+            VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0xFF, 0x10);
             return -1;
         }
         return 0x10;
@@ -4812,7 +4812,7 @@ s32 func_00184E00(Fiona *f, s32 req) {
         if (m == 4 || m == 0xA || (m == 0 && f->unk1AD580 == 0xF)) {
             return -1;
         }
-        if (gItems != NULL && VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1) == CHARM_ITEM) {
+        if (gSubScreen != NULL && VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 1) == CHARM_ITEM) {
             return 0x20;
         }
         if (m == 3 && f->c.moveSub == 7) {
@@ -4848,7 +4848,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
     }
     p = gProgress;
     func_002EFA50((u8 *)p + 0x7B8, *(f32 *)&st[5]);
-    if (kind == 0x20 && gItems != NULL && VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1) == CHARM_ITEM) {
+    if (kind == 0x20 && gSubScreen != NULL && VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 1) == CHARM_ITEM) {
         return -1;
     }
     f->targetParam = 0;
@@ -4867,7 +4867,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
         u32 i;
         s32 n;
 
-        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xA0, 8);
+        VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0xA0, 8);
         nav = gNavMesh;
         f->c.a.unk2A = 0;
         FI(f, 0x1AD6C0, s32) = 1;
@@ -4907,7 +4907,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
     case 0xD:
     case 0xE:
     case 0xF:
-        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, kind != 0xE && kind != 0xC ? 0xA0 : 0x80, 8);
+        VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, kind != 0xE && kind != 0xC ? 0xA0 : 0x80, 8);
         if (f->c.unk100 != 0xFF && f->c.unk100 != 1) {
             func_00177630(p, 1);
         }
@@ -4918,14 +4918,14 @@ s32 func_00182340(Fiona *f, s32 *st) {
         Actor_SetState(&f->c.a, &D_003B2E68);
         break;
     case 0xB:
-        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xD0, 0xC);
+        VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0xD0, 0xC);
         func_00177630(p, 1);
         f->c.a.unk2A = 1;
         f->c.unk104[0] = st[4];
         Actor_SetState(&f->c.a, &D_003B2E58);
         break;
     case 0xA:
-        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xD0, 0xC);
+        VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0xD0, 0xC);
         if (f->c.unk100 != 0xFF && f->c.unk100 != 1) {
             func_00177630(p, 1);
         }
@@ -4956,13 +4956,13 @@ s32 func_00182340(Fiona *f, s32 *st) {
     case 0x10:
         f->c.a.unk2D = 0;
         Progress_SetFlag(p, 0x2B);
-        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xFF, 0x10);
+        VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0xFF, 0x10);
         f->c.a.unk2A = 0;
         FI(f, 0x1AD6CC, s32) = 0;
         Actor_SetState(&f->c.a, &D_003B2E08);
         break;
     case 0x20:
-        if (gItems != NULL && VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 1) == CHARM_ITEM) {
+        if (gSubScreen != NULL && VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 1) == CHARM_ITEM) {
             return -1;
         }
         if (st[4] != 5) {
@@ -4999,12 +4999,12 @@ s32 func_00182340(Fiona *f, s32 *st) {
             }
             Actor_SetState(&f->c.a, &D_003B2DF8);
         } else if ((func_001235C0(f, &f->c.a) & 0xFF) == 1) {
-            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xD0, 0xC);
+            VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0xD0, 0xC);
             f->c.unk100 = 0xFF;
             f->c.a.unk2A = 1;
             Actor_SetState(&f->c.a, &D_003B2DD8);
         } else {
-            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0x80, 8);
+            VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0x80, 8);
             f->c.unk100 = 2;
             f->c.a.unk2A = 0;
             f->c.moveSub = 0xC;
@@ -5074,7 +5074,7 @@ extern u32 func_00123710(void *self, s32 door, s32 side, const f32 *ofs, f32 *ou
  * holding her, set +0x1AD5FC) */
 void func_00194230(Fiona *f) {
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
-        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0x80, 8);
+        VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0x80, 8);
         func_00122C20(&f->c.a, 0x43, 5, 0, 0, NULL);
         switch (f->c.unk104[0]) {
         case 4:
@@ -5658,7 +5658,7 @@ void func_00193C60(Fiona *f) {
     f->c.a.unk2A = 0;
     f->c.a.navTri = FI(f, 0x1AD6C8, u32);
     sceVu0CopyVector(f->c.a.pos, (f32 *)((u8 *)f + 0x1AD6E0));
-    VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xD0, 0xC);
+    VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0xD0, 0xC);
     if (FI(f, 0x1AD6C4, s32) == 0) {
         func_00181180(f, 0x7D, 5, 0, 0);
         Actor_SetState(&f->c.a, &D_003B29B8);
@@ -5981,7 +5981,7 @@ void func_00192F70(Fiona *f) {
         return;
     }
     if (func_001F4770(f->c.motion, 0, 0, 1) & 0xFF & 2) {
-        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0x60, 8);
+        VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0x60, 8);
     }
     if (AT(f->c.motion, 0x550, f32) <= 0.0f) {
         if (AT(gProgress, 0x1FBEC1, u8) == 1 &&
@@ -6048,7 +6048,7 @@ void func_00192CE0(Fiona *f) {
         Actor_SetState(&f->c.a, &D_003B2A28);
     }
     if (func_001F4770(f->c.motion, 0, 0, 1) & 0xFF & 2) {
-        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0x60, 8);
+        VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0x60, 8);
     }
     func_00125A10(&f->c);
 }
@@ -6072,7 +6072,7 @@ void func_00192800(Fiona *f) {
 
     f->c.a.unk2A = 1;
     if (func_001F4770(f->c.motion, 0, 0, 1) & 0xFF & 2) {
-        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0x60, 8);
+        VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0x60, 8);
     }
     FI(f, 0x1AD5BC, u8) = 0;
     c = gCharacters[f->c.unk100];
@@ -7231,7 +7231,7 @@ void func_001800E0(Fiona *f) {
             if (k < speed) {
                 speed = 0.0f + k + 0.75f * (1.0f - k);
             }
-            if (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 3) != 0x8C) {
+            if (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 3) != 0x8C) {
                 if ((func_00177620(p) & 0xFF) == 2) {
                     func_00181010(f, kFearFast.f);
                 } else {
@@ -7437,8 +7437,8 @@ extern void func_00125E10(Character *c, f32 *pos, s32 big);
 void func_00180E90(Fiona *f, f32 amount) {
     f32 v;
 
-    if (gItems != NULL) {
-        switch (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 3)) {
+    if (gSubScreen != NULL) {
+        switch (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 3)) {
         case 0x8D:
             break;
         case 0x8C:
@@ -7639,7 +7639,7 @@ static inline __attribute__((always_inline)) f32 fiona_abs_wrap(f32 t) {
 static inline __attribute__((always_inline)) void door_slam(Fiona *f, VObject *doors, u32 i, s32 pulled) {
     f->c.unk14D0 = 5;
     func_001F6E30(f->c.motion);
-    VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0x90, 8);
+    VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0x90, 8);
     VCALL(doors, 0x68, void (*)(VObject *, u32, s32))(doors, i, pulled);
 }
 
@@ -7743,8 +7743,8 @@ s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
 /* her panic's recovery delay (FI 0x1AD5F8) back to 1800 frames - with accessory 0x8C never,
  * 0x8B half the time, 0x8A three times in four */
 void func_00182E80(Fiona *f) {
-    if (gItems != NULL) {
-        switch (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 3)) {
+    if (gSubScreen != NULL) {
+        switch (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 3)) {
         case 0x8D:
             break;
         case 0x8C:
@@ -8622,7 +8622,7 @@ void func_001943D0(Fiona *f) {
 
     if (hit != 0 || FI(f, 0x1AD6C8, s32) != 0) {
         if ((hit & 4) || FI(f, 0x1AD6C8, s32) != 0) {
-            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 0, 0xC0, 0xC);
+            VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 0, 0xC0, 0xC);
         }
         if (hit & 2) {
             AT(p, 0xFB6, s16) = AT(p, 0xFB6, s16) + 3;
@@ -9343,8 +9343,8 @@ void func_00194FC0(Fiona *f) {
         if (v == 7) {
             dmg = 0xA;
             kind = 2;
-            if (gItems != NULL) {
-                if (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 0) == 0x83 &&
+            if (gSubScreen != NULL) {
+                if (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 0) == 0x83 &&
                     fiona_chance(0x1.99999ap-4f /* 0.1 */)) {
                     dmg = 0x64;
                     FI(f, 0x1AD6D0, f32) = -1.0f;
@@ -9356,8 +9356,8 @@ void func_00194FC0(Fiona *f) {
         } else if (v == 6) {
             dmg = 5;
             kind = 1;
-            if (gItems != NULL) {
-                if (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 0) == 0x83 &&
+            if (gSubScreen != NULL) {
+                if (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 0) == 0x83 &&
                     fiona_chance(0x1.99999ap-4f /* 0.1 */)) {
                     dmg = 0x32;
                     FI(f, 0x1AD6D0, f32) = -1.0f;
@@ -9369,8 +9369,8 @@ void func_00194FC0(Fiona *f) {
         } else {
             dmg = 1;
             kind = 1;
-            if (gItems != NULL) {
-                switch (VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 0)) {
+            if (gSubScreen != NULL) {
+                switch (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 0)) {
                 case 0x83:
                     if (fiona_chance(0x1.99999ap-4f /* 0.1 */)) {
                         kind = 2;

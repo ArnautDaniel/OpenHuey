@@ -179,7 +179,7 @@ void func_00209390(u8 *ev, u8 phase) {
         for (i = 0; i < 17; i++) {
             AT(ev, 0x564 + i * 0x18, s32) = 0;
         }
-        VCALL(gItems, 0x28, void (*)(VObject *))(gItems);
+        VCALL(gSubScreen, 0x28, void (*)(VObject *))(gSubScreen);
         VCALL(gMusic, 0x8, void (*)(VObject *, s32, s32, s32, f32))(gMusic, 0xFF, 0, 0, 1.0f);
         AT(ev, 0x80C, s32) = 0;
         o = EV_ROOM(ev);

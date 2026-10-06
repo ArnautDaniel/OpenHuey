@@ -5645,7 +5645,7 @@ void func_002961D0(Pursuer *p) {
     case -2:
         break;
     case 0x1C:
-        VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 3, 0x80, 30);
+        VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 3, 0x80, 30);
         /* fallthrough */
     default:
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, PU(p, 0x1758, s32));
@@ -6604,7 +6604,7 @@ void func_002804B0(Pursuer *p) {
             /* the door won't open for it: give up on it, with a rumble */
             VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, 0xC);
             p->c.a.unk2D = 1;
-            VCALL(gScreenFade, 0x18, void (*)(VObject *, s32, s32, s32))(gScreenFade, 3, 0x80, 0xF);
+            VCALL(gRumble, 0x18, void (*)(VObject *, s32, s32, s32))(gRumble, 3, 0x80, 0xF);
         }
     }
     func_00126270(&p->c);

@@ -650,7 +650,7 @@ void func_0037ED50(u8 *o) {
     }
     if ((flags & 0x80) && (D_0047E36C & MENU_CONFIRM)) {
         if (id != -1) {
-            func_00261090((u8 *)gItems + 8, id, o[0x14B]);
+            func_00261090((u8 *)gSubScreen + 8, id, o[0x14B]);
         }
         for (i = 0; i < 0x40; i++) {
             if (i != 0x38) {

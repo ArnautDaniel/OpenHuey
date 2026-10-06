@@ -1293,7 +1293,7 @@ void func_002E1380(Character *c) {
     }
     p = gProgress;
     creature_at_doors(c, 0x8A);
-    AT(k, 0x9C, s8) = VCALL(gItems, 0x10, s32 (*)(VObject *, s32))(gItems, 3) == 0x8D;
+    AT(k, 0x9C, s8) = VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 3) == 0x8D;
     func_002E06E0(c);
     if (AT(k, 0x37, s8) == 0) {
         func_002DEFA0(c);

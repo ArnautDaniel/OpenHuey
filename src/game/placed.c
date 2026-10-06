@@ -299,8 +299,8 @@ static void ball_drop(u8 *b) {
 void *func_002D5F40(u8 *b, s32 flags) {
     if (b != NULL) {
         AT(b, 0x0, void **) = D_0046F520;
-        if (gItems != NULL) {
-            u8 *items = (u8 *)gItems + 8;
+        if (gSubScreen != NULL) {
+            u8 *items = (u8 *)gSubScreen + 8;
 
             if (!(func_00260CF0(items, 0x90) & 0xFF)) {
                 func_00261090(items, 0x90, 1);
@@ -584,8 +584,8 @@ void func_002D5A50(u8 *b) {
 static inline __attribute__((always_inline)) u32 thing_put(u8 *b, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
     u32 r = func_00121000(b, tri, pos, rot, rr, h) & 0xFF;
 
-    if (r == 1 && gItems != NULL) {
-        VCALL(gItems, 0x1C, void (*)(VObject *))(gItems);
+    if (r == 1 && gSubScreen != NULL) {
+        VCALL(gSubScreen, 0x1C, void (*)(VObject *))(gSubScreen);
     }
     return r;
 }
@@ -2999,8 +2999,8 @@ u32 func_00354E70(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
     if (AT(o, 0x14, f32) < fl[1]) {
         AT(o, 0x14, f32) = fl[1];
     }
-    if (gItems != NULL) {
-        VCALL(gItems, 0x1C, void (*)(VObject *))(gItems);
+    if (gSubScreen != NULL) {
+        VCALL(gSubScreen, 0x1C, void (*)(VObject *))(gSubScreen);
     }
     return r;
 }

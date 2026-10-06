@@ -44,7 +44,7 @@ extern VObject *gRandom;       /* random numbers */
 extern VObject *gDoors;       /* doors */
 extern VObject *gRooms;       /* rooms */
 extern VObject *gEvents;       /* room objects */
-extern VObject *gScreenFade;       /* controller vibration */
+extern VObject *gRumble;       /* controller vibration */
 extern void *gNavMesh;          /* nav mesh */
 
 extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];

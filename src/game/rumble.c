@@ -1,4 +1,4 @@
-/* Controller rumble (system +0x300, vtable 0x46F4F0, global gScreenFade): five channels, each
+/* Controller rumble (system +0x300, vtable 0x46F4F0, global gRumble): five channels, each
  * with a small-motor value A (on: 1.0 in 16.16) and a large-motor strength B (0..255 in 16.16)
  * held for a number of frames; channel 4 can also follow two command lists. Each frame the
  * strongest values go to the pad manager (system +0x40, +0xC). */
@@ -44,7 +44,7 @@ extern void func_00100490(void *p);   /* operator delete */
 /* constructor: register, reset (vtable +0xC) */
 void *func_002D4630(Rumble *f) {
     f->vtbl = D_0046F4F0;
-    gScreenFade = (VObject *)f;
+    gRumble = (VObject *)f;
     RUMBLE_VCALL(f, 0xC, void (*)(Rumble *))(f);
     return f;
 }
@@ -54,7 +54,7 @@ Rumble *func_0020DF90(Rumble *f, s32 flags) {
     if (f != NULL) {
         f->vtbl = D_0046F4F0;
         f->vtbl = D_0046AE30;
-        gScreenFade = NULL;
+        gRumble = NULL;
         if ((s16)flags > 0) {
             func_00100490(f);
         }

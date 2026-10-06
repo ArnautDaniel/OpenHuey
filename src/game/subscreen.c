@@ -131,7 +131,7 @@ void SubScreen_ApplyOptions(VObject *s) {
     f32 vol;
 
     VCALL(s, 0x34, void (*)(VObject *, s32))(s, (s8)opt[6]);
-    o = gScreenFade;
+    o = gRumble;
     VCALL(o, 0x10, void (*)(VObject *))(o);
     if ((s8)opt[4] == 1) {
         VCALL(o, 0x28, void (*)(VObject *, s32))(o, 1);
@@ -965,7 +965,7 @@ void Options_StateVibration(SubScreen *s) {
 
     if (!s->fading) {
         if ((D_0047E36C & MENU_LEFT) || (D_0047E36C & MENU_RIGHT)) {
-            o = gScreenFade;
+            o = gRumble;
             if (s->opt[4] == 1) {
                 s->opt[4] = 0;
                 VCALL(o, 0x10, void (*)(VObject *))(o);
@@ -980,13 +980,13 @@ void Options_StateVibration(SubScreen *s) {
             Sound_PlaySE(SE_CURSOR);
         }
         if (D_0047E36C & MENU_CONFIRM) {
-            o = gScreenFade;
+            o = gRumble;
             opt[4] = s->opt[4];
             VCALL(o, 0x10, void (*)(VObject *))(o);
             VIB_ENABLE(o, opt[4] == 1);
             opt_back(s, 0x2B);
         } else if (opt_cancelled()) {
-            o = gScreenFade;
+            o = gRumble;
             s->opt[4] = opt[4];
             VCALL(o, 0x10, void (*)(VObject *))(o);
             VIB_ENABLE(o, opt[4] == 1);
@@ -1152,7 +1152,7 @@ void Options_StateDefaults(SubScreen *s) {
         sys[0x33] = 0;
         sub_copy_options(s);
         VCALL((VObject *)s, 0x34, void (*)(VObject *, s32))((VObject *)s, sys[0x36]);
-        o = gScreenFade;
+        o = gRumble;
         VCALL(o, 0x10, void (*)(VObject *))(o);
         VIB_ENABLE(o, sys[0x34] == 1);
         o = gSound;

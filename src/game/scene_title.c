@@ -53,7 +53,7 @@ void *PoolEntry_dtor(void *e, s32 flags) {
 void *SubScreenBase_ctor(SubScreen *w) {
     u8 *pool = w->pool;
 
-    gItems = (VObject *)w;
+    gSubScreen = (VObject *)w;
     w->vtbl = D_0046A090;
     gSubPool = pool;
     AT(pool, 0x0, void **) = D_0046A078;
@@ -998,7 +998,7 @@ void *SubScreenBase_dtor(SubScreen *w, s32 flags) {
             Pool_Destroy(pool);
         }
         if (w != NULL) {
-            gItems = NULL;
+            gSubScreen = NULL;
         }
         if ((s16)flags > 0) {
             func_00100490(w);
@@ -1132,7 +1132,7 @@ static inline void task_end_child(Task *t) {
 }
 
 /* the sub screen (D_0047A790): its load / save screens, text object and two text tasks, then
- * the base (D_0046A090): the pool's entries, the globals gSubPool / gItems cleared */
+ * the base (D_0046A090): the pool's entries, the globals gSubPool / gSubScreen cleared */
 void *func_002D0110(SubScreen *w, s32 flags) {
     if (w != NULL) {
         u8 *o = (u8 *)w;
@@ -1151,7 +1151,7 @@ void *func_002D0110(SubScreen *w, s32 flags) {
         AT(o, 0x1210, void **) = D_004699E0;
         func_001002C0(o + 0x10, PoolEntry_dtor, 0x18, 0xC0);
         gSubPool = NULL;
-        gItems = NULL;
+        gSubScreen = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }

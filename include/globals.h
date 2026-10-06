@@ -17,14 +17,14 @@ extern VObject *gSound;         /* 0x0044E560 the sound driver */
 extern VObject *gCamera;        /* 0x0044E4B8 */
 extern VObject *gCamDirector;   /* 0x0044E4F8 the camera director */
 extern VObject *gCutscene;      /* 0x0044FE10 the cutscene director */
-extern VObject *gScreenFade;    /* 0x0044E7A8 */
+extern VObject *gRumble;        /* 0x0044E7A8 controller rumble (Rumble, rumble.c) */
 extern VObject *gLights;        /* 0x0044E4C8 the scene's lights */
 extern VObject *gEvents;        /* 0x0044E4D0 the event system (scripts and their variables) */
 extern VObject *gRooms;         /* 0x0044E568 the room map and the doors between rooms */
 extern VObject *gDoors;         /* 0x0044E558 */
 extern VObject *gObstacles;     /* 0x0044FE08 */
 extern VObject *gPlacedThings;  /* 0x0044F260 */
-extern VObject *gItems;         /* 0x0044E988 the item manager */
+extern VObject *gSubScreen;     /* 0x0044E988 the sub screen (menus; its item list at +8) */
 extern VObject *gRoutePlanner;  /* 0x0044E580 */
 extern VObject *gPad;           /* 0x0044FEB0 the pad manager */
 extern VObject *gSystem;        /* 0x0044F7F8 the system object */

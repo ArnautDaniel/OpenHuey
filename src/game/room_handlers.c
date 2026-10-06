@@ -685,7 +685,7 @@ s32 func_002FCC30(void *self, void *a1, u8 *cmd) {
 
     switch (cmd[3]) {
     case 0: {
-        u8 *items = (u8 *)gItems + 8;
+        u8 *items = (u8 *)gSubScreen + 8;
         s32 a = 1 - (func_00260CF0(items, 0x91) & 0xFF);
         s32 b;
 
@@ -707,11 +707,11 @@ s32 func_002FCC30(void *self, void *a1, u8 *cmd) {
         ev = gEvents;
         got = VCALL(ev, 0x34, u32 (*)(VObject *, s32))(ev, 0);
         if (got & 0xFF) {
-            func_00261090((u8 *)gItems + 8, 0x91, got & 0xFF);
+            func_00261090((u8 *)gSubScreen + 8, 0x91, got & 0xFF);
             VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 0);
         }
         if (got & 0xFF00) {
-            func_00261090((u8 *)gItems + 8, 0x92, (got >> 8) & 0xFF);
+            func_00261090((u8 *)gSubScreen + 8, 0x92, (got >> 8) & 0xFF);
             VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 1);
         }
         break;
@@ -2208,7 +2208,7 @@ static inline s32 item238_sound(u32 bit) {
     Progress *p = gProgress;
 
     if (!(AT(p, 0x30, u32) & 0x8000) && (AT(p, 0xE4, u32) & bit) &&
-        VCALL(gItems, 0xC, s32 (*)(VObject *, s32))(gItems, 0x238) != 0) {
+        VCALL(gSubScreen, 0xC, s32 (*)(VObject *, s32))(gSubScreen, 0x238) != 0) {
         VCALL(gSound, 0x14, void (*)(VObject *, u32, u32))(gSound, 0xC, 5);
     }
     return 1;
