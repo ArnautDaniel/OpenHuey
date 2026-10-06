@@ -85,8 +85,8 @@ src/game/model.c func_00170A30
 src/game/model.c func_00170D10
 src/game/model.c func_00170F10
 src/game/model.c func_00170F90
-src/game/char_load.c RoomObj_ctor
-src/game/char_load.c Room26Obj_ctor
+src/game/char_load.c Pursuer_ctor
+src/game/char_load.c Kind38_ctor
 src/game/pursuer.c Kind33_ctor
 src/game/pursuer.c Kind32_ctor
 src/game/pursuer.c Kind31_ctor

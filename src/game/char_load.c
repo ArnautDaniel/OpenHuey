@@ -10,7 +10,7 @@
 #include "model.h"
 #include "pursuer.h"
 
-void *Room26Obj_ctor(void *p, s32 arg);
+void *Kind38_ctor(void *p, s32 arg);
 
 typedef struct {
     u32 size;
@@ -55,7 +55,7 @@ static const CharKind sKinds[0x28] = {
     [35] = { 0x1800, Kind35_ctor, func_00170D30 },
     [36] = { 0x1800, Kind36_ctor, func_00170D30 },
     [37] = { 0x1840, Kind37_ctor, func_0016F860 },
-    [38] = { 0x1800, Room26Obj_ctor, func_00170710 },
+    [38] = { 0x1800, Kind38_ctor, func_00170710 },
     [39] = { 0x1800, Kind39_ctor, func_00170910 },
 };
 
@@ -72,7 +72,7 @@ extern void *D_00469C60[];
 extern void *D_0046D810[];
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-void *RoomObj_ctor(u8 *p, u32 id, s32 arg);
+void *Pursuer_ctor(u8 *p, u32 id, s32 arg);
 
 extern void *D_00478FF0[];
 static inline void *b0_RoomCtor(void *p, u32 id, s32 arg, void **vtbl) {
@@ -129,7 +129,7 @@ s32 CharLoad_Partner(Progress *p, u32 id) {   /* (a u8) */
 }
 
 /* 0x001727C0 */
-void *Room26Obj_ctor(void *p, s32 arg) {
+void *Kind38_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x26, arg, D_00478FF0);
 }
 
@@ -212,7 +212,7 @@ s32 CharLoad_EventChar(Progress *p, u32 id, u32 slot) {
     }
     obj = func_00124E50((void *)0x17C0, mem);
     if (obj != NULL) {
-        obj = RoomObj_ctor(obj, id, slot);
+        obj = Pursuer_ctor(obj, id, slot);
     }
     Characters_Register(p, slot, obj);
     k->model(p, slot);
@@ -222,7 +222,7 @@ s32 CharLoad_EventChar(Progress *p, u32 id, u32 slot) {
 
 /* Room object constructor: base 0x469C20 -> 0x469C60 -> 0x46D810; id at +0x153C. */
 /* 0x00171090 */
-void *RoomObj_ctor(u8 *p, u32 id, s32 arg) {
+void *Pursuer_ctor(u8 *p, u32 id, s32 arg) {
     FLD(p, 0x0, void **) = D_00469C20;
     FLD(p, 0x20, s32) = arg;
     FLD(p, 0x24, s32) = 0x2000000;
