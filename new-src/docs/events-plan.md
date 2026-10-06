@@ -50,13 +50,19 @@ game's event bytecode.
 
 ## Decisions (2026-10-06)
 
-- Vocabulary: a general scripting vocabulary that hides the game's quirks (`door-open`, not
-  setting a door's flag bit), rather than the decomp's own terms. The decomp's names belong in
-  comments, so each word can still be checked against the original.
-
-## Questions for you
-
-- The vocabulary: should the words read like the game's terms (`flag-set`, `exit-in`) or a
-  more general scripting vocabulary?
-- One file per room (as above), or grouped by area of the castle?
-- Should the converter live in `new-src/tools/` (C or Python), or in Forth itself?
+1. Vocabulary: a general scripting vocabulary that hides the game's quirks (`door-open`, not
+   setting a door's flag bit). The decomp's names go in comments, so each word can be checked
+   against the original.
+2. Files: grouped by area of the castle (not one per room).
+3. The converter is Python (new-src/tools/).
+4. Conversion is one-time: afterwards the Forth is the source and is edited by hand; the
+   converter stays only to check against the original.
+5. Every command and condition is understood before converting (no raw placeholders). New
+   understanding may be backported to src as names and comments.
+6. The rooms' own C commands and conditions are ported to Forth too.
+7. Each script phase runs as a Forth task (waits are `wait` / `yield`).
+8. C owns the game state (progress, flags, items, doors) as structs; Forth reaches it through
+   field words.
+9. Match the original's behaviour and timing as closely as possible.
+Also: the Forth may grow lists and higher-order words (map, reduce, ...) where they make the
+scripts simpler.
