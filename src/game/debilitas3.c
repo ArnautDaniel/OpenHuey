@@ -730,3 +730,54 @@ void func_00330F60(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
         func_00126F80(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
     }
 }
+
+extern u8 D_0042E720[], D_0042F110[], D_0042F160[], D_0042ED60[], D_0042EDA8[], D_0042ECF0[], D_0042ED40[];
+extern u8 D_0042E940[], D_0042E980[], D_0042E5B0[], D_0042E710[], D_0047ADC0[];
+extern const PTMF D_0042E540;
+
+/* (as func_002CF1C0) the D_00474FD0 Debilitas's vtable +0xF4: its setup over the Pursuer's -
+ * its tables and stats (165 hp and +0x16E8 18 when gProgress+0x30 bit 0x8000 is set, else 110
+ * hp and 12; Hewie bite tolerance 30) */
+void func_00331280(Pursuer *p) {
+    func_0029FB20(p);
+    if (AT(gProgress, 0x30, u32) & 0x8000) {
+        p->c.hpMax = 165;
+        PU(p, 0x171C, u8 *) = D_0042E720;
+        PU(p, 0x1730, u8 *) = D_0042F110;
+        PU(p, 0x1740, u8 *) = D_0042F160;
+        PU(p, 0x173C, u8 *) = D_0042ED60;
+        PU(p, 0x1748, u8 *) = D_0042EDA8;
+        PU(p, 0x16DC, s32) = 30;
+        PU(p, 0x16E8, f32) = 18.0f;
+    } else {
+        p->c.hpMax = 110;
+        PU(p, 0x171C, u8 *) = D_0042E720;
+        PU(p, 0x1730, u8 *) = D_0042ECF0;
+        PU(p, 0x1740, u8 *) = D_0042ED40;
+        PU(p, 0x173C, u8 *) = D_0042ED60;
+        PU(p, 0x1748, u8 *) = D_0042EDA8;
+        PU(p, 0x16DC, s32) = 30;
+        PU(p, 0x16E8, f32) = 12.0f;
+    }
+    PU(p, 0x16D4, s32) = 300;
+    PU(p, 0x16D8, s32) = 1800;
+    PU(p, 0x16D0, s32) = 1350;
+    PU(p, 0x16E0, s32) = 9000;
+    PU(p, 0x16E4, s32) = 150;
+    p->c.a.radius = 5.0f;
+    p->c.a.height = 20.0f;
+    p->c.hp = p->c.hpMax;
+    p->c.hearThreshold = 0;
+    PU(p, 0x16B4, u8) = 3;
+    PU(p, 0x1714, const PTMF *) = &D_0042E540;
+    PU(p, 0x1720, u8 *) = D_0042E940;
+    PU(p, 0x1724, u8 *) = D_0042E980;
+    PU(p, 0x16AC, u8 *) = D_0042E5B0;
+    PU(p, 0x16B0, u8 *) = D_0042E710;
+    PU(p, 0x1734, u8 *) = D_0047ADC0;
+    PU(p, 0x17EC, s32) = 0;
+    PU(p, 0x1694, f32) = 6.0f;
+    PU(p, 0x169C, f32) = 1.5f;
+    PU(p, 0x1698, f32) = 13.0f;
+    PU(p, 0x16A0, s32) = 0;
+}
