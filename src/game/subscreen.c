@@ -2630,3 +2630,121 @@ void func_0038A2E0(SubScreen *s) {
         GALLERY_HEIGHT(s) = D_0044B9F4[SUB_PAGE(s, 0x0, u8)][0];
     }
 }
+
+/* ---- the music gallery ---- */
+
+extern u8 D_0044BF30[][6];   /* per track: its unlock flag (u16), title (u16), BGM number */
+extern VObject *D_0044E970;  /* the music director */
+extern void *D_0044E980;     /* the ADX player */
+extern s32 func_002D20D0(void *adx);   /* the stream is free */
+
+#define MUSIC_WANT(track, pause, restart) \
+    VCALL(D_0044E970, 0x8, void (*)(VObject *, s32, s32, s32, f32))(D_0044E970, track, pause, restart, 1.0f)
+#define SUB_MUSIC_NEXT(s) SUB_PAGE(s, 0x1, u8)      /* the track to start (0xFF none) */
+#define SUB_MUSIC_PLAYING(s) SUB_PAGE(s, 0x2, u8)   /* the track playing (0xFF none) */
+
+static inline s32 music_unlocked(u8 k) {
+    u16 f = AT(D_0044BF30[k], 0x0, u16);
+
+    return (AT(D_0044E978, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) != 0;
+}
+
+/* the music gallery (screen kind 0x8D): the language 1, the headings, the tracks of the
+ * current one's group (titles, "???" until unlocked), the current one highlighted and the one
+ * playing marked; the help lines (other while one plays), the group number of 4, the arrows */
+void func_00388400(SubScreen *s) {
+    u8 g;
+    s32 k, b;
+    u8 *msg, alpha;
+
+    s->kind = 0x8D;
+    sub_panels(s);
+    D_0047B350 = 1;
+    Task_ShowText(&s->text, 0x30, 0x3B, 0x80, Task_MessageText(&s->text, 0xF), 0x80, 0x30, 0x10, 0x15);
+    Task_ShowText(&s->text, 0x58, 0x3B, 0x80, Task_MessageText(&s->text, 0x10), 0x80, 0x30, 0x10, 0x15);
+    g = SUB_PAGE(s, 0x0, u8) >> 3;
+    for (k = g * 8; k < (g + 1) * 8 && k < 0x1B; k++) {
+        u8 color;
+        s32 y = (k % 8) * 35 + 0x5E;
+
+        if (k == SUB_PAGE(s, 0x0, u8)) {
+            color = 0x82;
+        } else {
+            color = k == SUB_MUSIC_PLAYING(s) ? 0x81 : 0x80;
+        }
+        Task_Printf(&s->text, 0x30, y, color, D_00463FD0, k + 1);
+        if (music_unlocked(k)) {
+            Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, AT(D_0044BF30[k], 0x2, u16)), 0x80,
+                          0x30, 0x10, 0x15);
+        } else {
+            Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, 0x16E), 0x80, 0x30, 0x10, 0x15);
+        }
+    }
+    Task_ShowText(&s->text, 0x46, 0x186, 0x80, Task_MessageText(&s->text, 0x1C8), 0x80, 0x30, 0x10, 0x15);
+    msg = Task_MessageText(&s->text, SUB_MUSIC_PLAYING(s) == 0xFF ? 0x13 : 0x1C7);
+    Task_ShowText(&s->text, Task_MessageWidth(&s->text, 0x12, 0x10) + 0x56, 0x186, 0x80, msg, 0x80, 0x30, 0x10, 0x15);
+    Task_Printf(&s->text, 0x186, 0x176, 0x80, D_00463FD8, g + 1, 4);
+    b = 0x80 - ((s->frame << 2) & 0xFF);
+    alpha = b > 0 ? b : -b;
+    SubScreen_DrawPart(s, 0x168, 0x170, 0x1A, alpha, 0);
+    SubScreen_DrawPart(s, 0x1B3, 0x170, 0x1B, alpha, 0);
+}
+
+/* state: the music gallery - confirm an unlocked track (the music stopped, it queued and
+ * marked playing; a buzzer if locked), the cursor round its group of 8 (up / down; 27 tracks)
+ * and through the groups (left / previous, right / next), cancel stops the music (or, when
+ * the stream is busy, closes); once the stream is free the queued track starts. Then the list. */
+void func_003888A0(SubScreen *s) {
+    if (!s->fading) {
+        u8 *k = &SUB_PAGE(s, 0x0, u8);
+        u32 pad = D_0047E36C;
+
+        if (pad & MENU_CONFIRM) {
+            if (music_unlocked(*k)) {
+                MUSIC_WANT(0xFF, 0, 0);
+                SUB_MUSIC_PLAYING(s) = *k;
+                SUB_MUSIC_NEXT(s) = *k;
+            } else {
+                Sound_PlaySE(SE_BUZZER);
+            }
+        } else if (pad & MENU_UP) {
+            if (*k == 0) {
+                *k = 7;
+            } else {
+                *k = (*k - 1) % 8 + (*k >> 3) * 8;
+            }
+            if (*k >= 0x1B) {
+                *k = 0x1A;
+            }
+            Sound_PlaySE(SE_CURSOR);
+        } else if (pad & MENU_DOWN) {
+            *k = (*k + 1) % 8 + (*k >> 3) * 8;
+            if (*k >= 0x1B) {
+                *k = 0x18;
+            }
+            Sound_PlaySE(SE_CURSOR);
+        } else if (pad & (MENU_LEFT | MENU_PREV)) {
+            *k = (*k >> 3) == 0 ? 0x18 : ((*k >> 3) - 1) * 8;
+            Sound_PlaySE(SE_CURSOR);
+        } else if (pad & (MENU_RIGHT | MENU_NEXT)) {
+            *k = (*k >> 3) < 3 ? ((*k >> 3) + 1) * 8 : 0;
+            Sound_PlaySE(SE_CURSOR);
+        } else if (pad & MENU_CANCEL) {
+            if (func_002D20D0(D_0044E980) == 0) {
+                MUSIC_WANT(0xFF, 0, 0);
+                SUB_MUSIC_NEXT(s) = 0xFF;
+            } else {
+                s->close = 1;
+            }
+        }
+        if (func_002D20D0(D_0044E980) != 0) {
+            if (SUB_MUSIC_NEXT(s) != 0xFF) {
+                MUSIC_WANT(D_0044BF30[SUB_MUSIC_NEXT(s)][4], 0, 1);
+                SUB_MUSIC_NEXT(s) = 0xFF;
+            } else if (SUB_MUSIC_PLAYING(s) != 0xFF) {
+                SUB_MUSIC_PLAYING(s) = 0xFF;
+            }
+        }
+    }
+    func_00388400(s);
+}
