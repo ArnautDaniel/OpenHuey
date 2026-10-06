@@ -120,6 +120,10 @@ int room_load(Room *r, int id) {
     sec = pac_section(&r->pac, PAC_NAV, &size);
     navmesh_build(&r->nav, sec, size);
     load_look(r);
+    if (r->mesh.ndyn > 0) {
+        r->moving_v = malloc((size_t)r->mesh.ndv * 3 * sizeof(MeshVertex));
+        r->moving_d = malloc((size_t)r->mesh.ndyn * sizeof(MeshDraw));
+    }
     return 1;
 }
 
@@ -130,6 +134,9 @@ void room_free(Room *r) {
         render_texture_free(r->textures[i]);
     }
     render_mesh_free(&r->gpu);
+    render_mesh_free(&r->moving);
+    free(r->moving_v);
+    free(r->moving_d);
     roommesh_free(&r->mesh);
     navmesh_free(&r->nav);
     free(r->pac.data);
@@ -137,11 +144,40 @@ void room_free(Room *r) {
     r->id = -1;
 }
 
-void room_draw(const Room *r, const Mat4 *view_proj) {
+void room_tick(Room *r) {
+    roommesh_tick(&r->mesh);
+}
+
+/* the draws [first, end) of parts lo..hi (the mesh keeps them in part order) */
+static void draw_parts(Room *r, const Mat4 *vp, int lo, int hi) {
+    int first = 0, end;
+
+    while (first < r->mesh.nd && r->mesh.d[first].part < lo) {
+        first++;
+    }
+    for (end = first; end < r->mesh.nd && r->mesh.d[end].part <= hi; end++) {
+    }
+    if (end > first) {
+        render_mesh(&r->gpu, vp, r->mesh.d + first, end - first, r->textures, r->ntextures, r->groups);
+    }
+}
+
+void room_draw(Room *r, const Mat4 *view_proj, Vec3 eye, Vec3 forward) {
     if (r->id < 0) {
         return;
     }
-    render_mesh(&r->gpu, view_proj, r->mesh.d, r->mesh.nd, r->textures, r->ntextures, r->groups);
+    draw_parts(r, view_proj, MESH_SOLID, MESH_SEE_THROUGH);
+    if (r->mesh.ndyn > 0) {
+        int n = roommesh_dynamic(&r->mesh, eye, forward, r->moving_v, r->moving_d), nv = 0, i;
+
+        for (i = 0; i < n; i++) {
+            nv = r->moving_d[i].first + r->moving_d[i].count > nv ? r->moving_d[i].first + r->moving_d[i].count : nv;
+        }
+        render_mesh_update(&r->moving, r->moving_v, nv > 0 ? nv : 1);
+        render_mesh(&r->moving, view_proj, r->moving_d, n, r->textures, r->ntextures, r->groups);
+    }
+    draw_parts(r, view_proj, MESH_PART3, MESH_GLOW);
+    draw_parts(r, view_proj, MESH_BLOOM_MASK, MESH_BLOOM_MASK);
 }
 
 int room_floor_below(const Room *r, float x, float y, float z, float *out) {

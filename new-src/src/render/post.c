@@ -169,7 +169,7 @@ static const char *kCompositeFs =
     "layout(location = 10) uniform float u_vignette;\n"
     "layout(location = 11) uniform float u_grain;\n"
     "layout(location = 12) uniform float u_time;\n"
-    "layout(location = 13) uniform int u_debug;\n"   /* 1 occlusion, 2 bloom, 3 depth, 4 mask */
+    "layout(location = 13) uniform int u_debug;\n"   /* 1 occlusion, 2 bloom, 3 depth (black near, white 1500 away), 4 mask */
     "layout(location = 14) uniform vec4 u_fog_near_color;\n"   /* the room's fog (a: 0 off) */
     "layout(location = 15) uniform vec4 u_fog_far_color;\n"
     "layout(location = 16) uniform vec2 u_fog_range;\n"
@@ -189,7 +189,7 @@ static const char *kCompositeFs =
     "    if (u_debug == 2) { o_color = vec4(pow(texture(u_bloom, v_uv).rgb, vec3(1.0 / 2.2)), 1.0); return; }\n"
     "    if (u_debug == 4) { o_color = vec4(vec3(texture(u_mask, v_uv).r), 1.0); return; }\n"
     "    if (u_debug == 3) { float z = u_proj.w / (texture(u_depth, v_uv).r * 2.0 - 1.0 + u_proj.z);\n"
-    "                        o_color = vec4(vec3(fract(z / 100.0)), 1.0); return; }\n"
+    "                        o_color = vec4(vec3(clamp(z / 1500.0, 0.0, 1.0)), 1.0); return; }\n"
     "    vec3 c = texture(u_scene, v_uv).rgb;\n"
     "    float ao = texture(u_ao, v_uv).r;\n"
     "    c *= mix(1.0, ao * ao, u_ao_strength);\n"
@@ -201,8 +201,11 @@ static const char *kCompositeFs =
     "    s += soft * u_tint_glow.rgb * u_tint_glow.a;\n"
     /* (the second colour sees the screen after the first: its blurred copy has the glow too) */
     "    s += (s - soft * (1.0 + 3.0 * u_tint_glow.rgb * u_tint_glow.a) * u_tint_contrast.rgb) * u_tint_contrast.a;\n"
-    "    if (u_fog_near_color.a + u_fog_far_color.a > 0.0 && d < 1.0 && z > u_fog_range.x) {\n"
+    /* (the game starts the ramp sharply at its near distance - its fixed cameras keep things
+     * beyond it; ours roam, so it fades in over the last 40% before) */
+    "    if (u_fog_near_color.a + u_fog_far_color.a > 0.0 && d < 1.0 && z > u_fog_range.x * 0.6) {\n"
     "        vec4 fc = mix(u_fog_near_color, u_fog_far_color, clamp((z - u_fog_range.x) / max(u_fog_range.y - u_fog_range.x, 1e-3), 0.0, 1.0));\n"
+    "        fc.a *= smoothstep(u_fog_range.x * 0.6, u_fog_range.x, z);\n"
     "        s = mix(s, fc.rgb, clamp(fc.a, 0.0, 1.0));\n"
     "    }\n"
     "    s += 5.0 * pow(max(texture(u_glow, v_uv).rgb, 0.0), vec3(1.0 / 2.2)) * u_room_bloom.rgb * u_room_bloom.a;\n"

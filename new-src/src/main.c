@@ -93,7 +93,7 @@ static void draw(Engine *e) {
     view = camera_view(&e->camera);
     vp = mat4_mul(proj, view);
     render_camera(&proj, &view, e->camera.pos, e->camera.znear, e->camera.zfar);
-    room_draw(&e->room, &vp);
+    room_draw(&e->room, &vp, e->camera.pos, camera_forward(&e->camera));
     for (i = 0; i < MAX_ACTORS; i++) {
         actor_draw(&e->actors[i], &vp);
     }

@@ -26,7 +26,7 @@ PRIVATE>
     ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on
     ['] gfx.ssao on  0.9e ['] gfx.ssao-strength float!  20e ['] gfx.ssao-radius float!
     ['] gfx.bloom on  0.9e ['] gfx.bloom-threshold float!  0.12e ['] gfx.bloom-strength float!
-    ['] gfx.fog on  0.0012e ['] gfx.fog-density float!  150e ['] gfx.fog-start float!
+    ['] gfx.fog off  0.0012e ['] gfx.fog-density float!  150e ['] gfx.fog-start float!   \ (the rooms have their own)
     ['] gfx.shadows on
     1 ['] gfx.tonemap int!  0.35e ['] gfx.vignette float!  0.025e ['] gfx.grain float!
     1e ['] gfx.saturation float!  1e ['] gfx.contrast float!  1e ['] gfx.exposure float! ;
@@ -36,7 +36,7 @@ PRIVATE>
     look-enhanced
     2 ['] gfx.tonemap int!  1.25e ['] gfx.exposure float!
     0.6e ['] gfx.bloom-threshold float!  0.25e ['] gfx.bloom-strength float!
-    0.0025e ['] gfx.fog-density float!  80e ['] gfx.fog-start float!
+    ['] gfx.fog on  0.0025e ['] gfx.fog-density float!  80e ['] gfx.fog-start float!
     0.55e ['] gfx.vignette float!  0.045e ['] gfx.grain float!
     0.8e ['] gfx.saturation float!  1.08e ['] gfx.contrast float! ;
 

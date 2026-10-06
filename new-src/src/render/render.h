@@ -59,7 +59,7 @@ typedef struct RenderSettings {
     int32_t room_fog;        /* the room's own fog, tint and bloom (part of the original look) */
     int32_t room_tint;
     int32_t room_bloom;
-    int32_t debug;           /* show a buffer instead: 1 occlusion, 2 bloom, 3 depth (bands of 100 units),
+    int32_t debug;           /* show a buffer instead: 1 occlusion, 2 bloom, 3 depth (white 1500 away),
                               * 4 the bloom mask */
 } RenderSettings;
 

@@ -140,10 +140,14 @@ PRIM(p_room_info) {   /* ( -- ) a summary of the loaded room */
     for (i = 0; i < r->mesh.nd; i++) {
         parts[r->mesh.d[i].part]++;
     }
-    forth_printf(f, "room %03X: %zu bytes, %d triangles in %d draws (solid %d, see-through %d, glow %d), %d textures, "
-                    "%d nav triangles\n",
+    for (i = 0; i < r->mesh.ndyn; i++) {
+        parts[MESH_ANIMATED] += r->mesh.dyn[i].frames > 0;
+    }
+    forth_printf(f, "room %03X: %zu bytes, %d triangles in %d draws (solid %d, see-through %d, glow %d, mask %d), "
+                    "%d moving (%d flip books), %d textures, %d nav triangles\n",
                  r->id, r->pac.size, r->mesh.nv / 3, r->mesh.nd, parts[MESH_SOLID], parts[MESH_SEE_THROUGH],
-                 parts[MESH_GLOW], r->ntextures, r->nav.ntris);
+                 parts[MESH_GLOW], parts[MESH_BLOOM_MASK], r->mesh.ndyn, parts[MESH_ANIMATED], r->ntextures,
+                 r->nav.ntris);
 }
 
 /* the room's camera setups (PAC section 5): 32-byte entries - eye x, y, z, field of view in
@@ -492,6 +496,7 @@ void engine_tick(Engine *e) {
     for (i = 0; i < MAX_ACTORS; i++) {
         actor_tick(&e->actors[i]);
     }
+    room_tick(&e->room);
 }
 
 void engine_draw_2d(Engine *e) {
