@@ -21,6 +21,7 @@ script views.fs
 script rooms.fs
 script player.fs
 script doors.fs
+script hewie.fs
 
 0.06e 0.06e 0.08e clear-color
 first-room

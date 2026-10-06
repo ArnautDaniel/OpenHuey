@@ -79,7 +79,9 @@ Comments: `( ... )` and `\ to the end of the line`.
 `prelude.fs` (the language), then `game.fs`, which loads the rest with `script name.fs`:
 `vectors.fs` (float vectors, the camera's position and angles), `freecam.fs`, `views.fs` (the
 room's camera setups), `rooms.fs` (stepping through rooms), `player.fs` (playing as Fiona),
-`doors.fs` (Space at an exit goes through to the room it leads to; `.exits` lists them).
+`doors.fs` (Space at an exit goes through to the room it leads to; `.exits` lists them),
+`hewie.fs` (Hewie keeps up with her: trots, runs, stands watching; arrives at her side in a new
+room).
 
 The console (`` ` ``) evaluates whatever is typed, so any of this can be changed while the game
 runs: redefine a word and the next tick uses it (words already compiled into others keep the
