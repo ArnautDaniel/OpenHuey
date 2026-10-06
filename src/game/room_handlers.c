@@ -5686,6 +5686,78 @@ static void effect_795C0_init(void **obj) {
     obj[0] = D_004795C0;
 }
 
+#ifdef HG_NATIVE
+extern f32 func_0031C248(f32 x);   /* sinf */
+
+/* D_004795C0's +0x14 draw: at the corner +0x4 picks (0..3: (-15, -15), (15, -15), (15, 15),
+ * (-15, 15); -1 none) a cone of light - its tip at height 16, an octagon of radius 4.5 at 10 -
+ * added into the bloom's mask (layer 0x26) as a fan shaded from nothing at the tip to alpha
+ * 0x20 round the rim, when all of it is in view */
+void func_00358CA0(u8 *o) {
+    f32 clip[4][4] __attribute__((aligned(16)));
+    f32 pt[9][4] __attribute__((aligned(16)));
+    f32 x, z, d;
+    s32 k;
+
+    switch (AT(o, 0x4, s32)) {
+    case 0:
+        x = -15.0f;
+        z = -15.0f;
+        break;
+    case 1:
+        x = 15.0f;
+        z = -15.0f;
+        break;
+    case 2:
+        x = 15.0f;
+        z = 15.0f;
+        break;
+    case 3:
+        x = -15.0f;
+        z = 15.0f;
+        break;
+    default:
+        return;
+    }
+    d = 4.5f * func_0031C248(0x1.921fb6p-1f /* pi / 4 */);
+    pt[0][0] = x;        pt[0][1] = 16.0f; pt[0][2] = z;
+    pt[1][0] = x + 4.5f; pt[1][1] = 10.0f; pt[1][2] = z;
+    pt[2][0] = x + d;    pt[2][1] = 10.0f; pt[2][2] = z + d;
+    pt[3][0] = x;        pt[3][1] = 10.0f; pt[3][2] = z + 4.5f;
+    pt[4][0] = x - d;    pt[4][1] = 10.0f; pt[4][2] = z + d;
+    pt[5][0] = x - 4.5f; pt[5][1] = 10.0f; pt[5][2] = z;
+    pt[6][0] = x - d;    pt[6][1] = 10.0f; pt[6][2] = z - d;
+    pt[7][0] = x;        pt[7][1] = 10.0f; pt[7][2] = z - 4.5f;
+    pt[8][0] = x + d;    pt[8][1] = 10.0f; pt[8][2] = z - d;
+    for (k = 0; k < 9; k++) {
+        pt[k][3] = 1.0f;
+    }
+    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    for (k = 0; k < 9; k++) {
+        f32 v[4] __attribute__((aligned(16)));
+
+        sceVu0ApplyMatrix(v, clip, pt[k]);
+        if (!(v[0] <= v[3]) || v[0] < -v[3] || !(v[1] <= v[3]) || v[1] < -v[3] || !(v[2] <= v[3]) || v[2] < -v[3]) {
+            return;
+        }
+    }
+    glr_layer(0x26);
+    for (k = 1; k <= 8; k++) {   /* the fan, closing on its first rim point */
+        f32 tri[3][4];
+        f32 st[3][2] = {{0}};
+        u8 col[3][4] = {{0, 0, 0, 0}, {0, 0, 0, 0x20}, {0, 0, 0, 0x20}};
+
+        sceVu0CopyVector(tri[0], pt[0]);
+        sceVu0CopyVector(tri[1], pt[k]);
+        sceVu0CopyVector(tri[2], pt[k % 8 + 1]);
+        AT(&tri[0][3], 0, u32) = AT(&tri[1][3], 0, u32) = AT(&tri[2][3], 0, u32) = 0;
+        glr_strip(&clip[0][0], 3, &tri[0][0], &st[0][0], &col[0][0], NULL, 0,
+                  0x40 | 0x10000 | 0x20000);   /* blended, GLR_PRIM_ADD, GLR_PRIM_NOZW */
+    }
+    glr_layer(-1);
+}
+#endif
+
 /* (as func_00300A20)  byte 4 0 starts the 8-byte effect D_004795C0 (parameters from byte 3), its
  * slot kept in event variable byte 3 + 2; else that effect is ended */
 s32 func_003104D0(void *self, void *a1, u8 *cmd) {
