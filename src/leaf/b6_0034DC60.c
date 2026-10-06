@@ -1,6 +1,7 @@
 #include "common.h"
 #include "ptmf.h"
 #include "globals.h"
+#include "progress.h"
 
 extern u32 D_00442950[];
 extern u32 D_00442C10[];
@@ -15,7 +16,6 @@ extern u32 D_004434B0[];
 extern u32 D_0047AF60[];
 extern u32 D_0047AF80[];
 extern u32 D_0047AF94[];
-extern u8 *gProgress;
 extern u8 D_00462DF0[];
 extern u8 D_00462E10[];
 extern u8 D_00462E30[];
@@ -122,7 +122,7 @@ s32 func_00351120(void *self, void *dest) {
 }
 
 s32 func_00351150(void) {
-    *(u32 *)(gProgress + 0x84) |= 0x800000;
+    *(u32 *)((u8 *)gProgress + 0x84) |= 0x800000;
     return 2;
 }
 
@@ -131,7 +131,7 @@ s32 func_003511E0(void *self, void *dest) {
 }
 
 s32 func_00351210(void) {
-    *(u32 *)(gProgress + 0x84) |= 0x1000000;
+    *(u32 *)((u8 *)gProgress + 0x84) |= 0x1000000;
     return 2;
 }
 
@@ -140,7 +140,7 @@ s32 func_003512A0(void *self, void *dest) {
 }
 
 s32 func_003512D0(void) {
-    *(u32 *)(gProgress + 0x84) |= 0x2000000;
+    *(u32 *)((u8 *)gProgress + 0x84) |= 0x2000000;
     return 2;
 }
 
@@ -173,6 +173,6 @@ s32 func_00351C90(void *self, void *dest) {
 }
 
 s32 func_00351CC0(void) {
-    *(u32 *)(gProgress + 0x84) |= 0x4000000;
+    *(u32 *)((u8 *)gProgress + 0x84) |= 0x4000000;
     return 2;
 }

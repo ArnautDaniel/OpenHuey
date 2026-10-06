@@ -28,7 +28,6 @@ extern u32 D_01970D40[8];      /* the call arguments */
 extern u8 D_01970C80[0xB4];    /* a bank's description (command 0xA) */
 extern u8 D_003D8990[8][2];    /* the positioned sounds: bank, sound - 0x18 */
 extern u32 D_003D8930[8][3];   /* the banks' header / table sizes and sound memory addresses */
-extern Progress *gProgress;
 
 #define BANK(d, k) ((d) + 0x84 + (k) * 0x10)
 #define XFER(d, k) ((d) + 0x108 + (k) * 0x18)

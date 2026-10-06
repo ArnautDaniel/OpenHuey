@@ -1,5 +1,6 @@
 #include "common.h"
 #include "ptmf.h"
+#include "progress.h"
 
 extern u32 D_0043ACB0[];
 extern u32 D_0043AFD0[];
@@ -18,7 +19,6 @@ extern u32 D_0043B6E0[];
 extern u32 D_0043CDC0[];
 extern u32 D_0043DC50[];
 extern u32 D_0047AEC0[];
-extern u8 *gProgress;
 extern u8 D_0043B6A0[], D_0043B660[];
 extern u8 D_0043B6C0[], D_0043B680[];
 extern u8 D_0043C260[], D_0043C348[], D_0043C2D0[], D_0043C210[], D_0043C338[], D_0043C2B0[];
@@ -136,7 +136,7 @@ void func_003460F0(void *self, s32 i, f32 *out) {
 
 /* Picks one of four table sets depending on story flag 0x8000 (gProgress+0x30) and `alt`. */
 void func_00346E10(u8 *p, s32 alt) {
-    if (*(u32 *)(gProgress + 0x30) & 0x8000) {
+    if (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) {
         if (alt) {
             *(s32 *)(p + 0x16B8) = 2;
             *(void **)(p + 0x1730) = D_0043CC20;
@@ -176,11 +176,11 @@ f32 func_00346F40(void) {
 }
 
 void *func_00347290(void) {
-    return (*(u32 *)(gProgress + 0x30) & 0x8000) ? D_0043B6C0 : D_0043B680;
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043B6C0 : D_0043B680;
 }
 
 void *func_003472D0(void) {
-    return (*(u32 *)(gProgress + 0x30) & 0x8000) ? D_0043B6A0 : D_0043B660;
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043B6A0 : D_0043B660;
 }
 
 /* Advances three angles (+0x4 by 0.5 deg, +0x8 by 0.1 deg, +0xC by -0.1 deg), wrapped to [-pi, pi]. */
@@ -235,11 +235,11 @@ f32 func_00348320(void) {
 }
 
 void *func_00348620(void) {
-    return (*(u32 *)(gProgress + 0x30) & 0x8000) ? D_0043CDA0 : D_0043CD60;
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043CDA0 : D_0043CD60;
 }
 
 void *func_00348660(void) {
-    return (*(u32 *)(gProgress + 0x30) & 0x8000) ? D_0043CD80 : D_0043CD40;
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043CD80 : D_0043CD40;
 }
 
 void *func_00348970(void) {

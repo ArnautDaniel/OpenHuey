@@ -140,7 +140,6 @@ u32 func_00219450(Pursuer *p) {
 
 /* ---- batch 2 ---- */
 
-extern Progress *gProgress;
 extern Character *gCharPlayer;    /* Fiona */
 extern VObject *gSceneGameF29740; /* path planner */
 

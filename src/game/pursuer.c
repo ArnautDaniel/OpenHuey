@@ -64,7 +64,6 @@ void func_0028ED20(Pursuer *p) {
 /* ---- batch 2 ---- */
 
 
-extern Progress *gProgress;
 extern Character *gCharPlayer;    /* Fiona */
 
 

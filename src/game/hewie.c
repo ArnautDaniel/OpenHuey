@@ -6,7 +6,6 @@
 #include "sce/libvu0.h"
 #include "globals.h"
 
-extern Progress *gProgress;
 extern Character *gCharacters[];   /* (the game reads up to slot 6, gCharPlayer, through it) */
 extern Character *gCharPlayer;    /* Fiona */
 extern Character *gCharPartner;   /* Hewie */

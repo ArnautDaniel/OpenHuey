@@ -2,6 +2,7 @@
 #include "common.h"
 #include "ptmf.h"
 #include "globals.h"
+#include "progress.h"
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -29,7 +30,6 @@ extern u8 D_00419870[];
 extern u8 D_00419950[];
 extern void *D_00419A30[];
 extern u8 D_00419A60[];
-extern u8 *gProgress;
 extern u8 D_00419A80[];
 extern u8 D_00419AA0[];
 extern u8 D_00419AE0[];
@@ -65,7 +65,7 @@ void *func_002E7750(void *self, s32 i) { return D_00419A30[i]; }
 void *func_002E7770(void) { return D_00419A60; }
 
 s32 func_002E7880(void) {
-    u8 *e = gProgress + 0x10D4;
+    u8 *e = (u8 *)gProgress + 0x10D4;
     s32 i;
 
     for (i = 0; i < 4; i++, e += 16) {
@@ -93,7 +93,7 @@ void *func_002E79B0(void *self, s32 i) { return D_0047AC88[i]; }
 /* (as func_002E7880) last frame's noise requests (gProgress +0x10D4) of kind 0xD8 / 0xD7 and
    loudness 0x20 or more */
 s32 func_0036FC90(void) {
-    u8 *e = gProgress + 0x10D4;
+    u8 *e = (u8 *)gProgress + 0x10D4;
     s32 i;
 
     for (i = 0; i < 4; i++, e += 16) {
@@ -105,7 +105,7 @@ s32 func_0036FC90(void) {
 }
 
 s32 func_0036F8D0(void) {
-    u8 *e = gProgress + 0x10D4;
+    u8 *e = (u8 *)gProgress + 0x10D4;
     s32 i;
 
     for (i = 0; i < 4; i++, e += 16) {

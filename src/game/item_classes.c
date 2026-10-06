@@ -6,6 +6,7 @@
 #include "game.h"
 #include "item.h"
 #include "globals.h"
+#include "progress.h"
 
 extern void func_0025FEF0(void *p);   /* operator delete (pool entries) */
 extern void *D_0046C790[];            /* a pool entry */

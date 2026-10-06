@@ -14,7 +14,6 @@
 extern Character *gCharPlayer;
 extern Character *gCharPursuer;
 extern Character *gCharacters[6];
-extern Progress *gProgress;
 
 #define RNG01() VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)
 

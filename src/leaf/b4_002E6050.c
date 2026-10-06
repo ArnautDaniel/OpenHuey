@@ -2,6 +2,7 @@
 #include "common.h"
 #include "ptmf.h"
 #include "globals.h"
+#include "progress.h"
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -44,7 +45,6 @@ extern u8 D_00418BA0[];
 extern u8 D_00418BF0[];
 extern void *D_00418D70[];
 extern u8 D_00418DB0[];
-extern u8 *gProgress;
 extern u8 D_00418DC0[];
 extern u8 D_00418E40[];
 extern u8 D_00418F40[];
@@ -110,7 +110,7 @@ void *func_002E6FC0(void *self, s32 i) { return D_00418D70[i]; }
 void *func_002E6FE0(void) { return D_00418DB0; }
 
 s32 func_002E71C0(void) {
-    u8 *e = gProgress + 0x10D4;
+    u8 *e = (u8 *)gProgress + 0x10D4;
     s32 i;
 
     for (i = 0; i < 4; i++, e += 16) {

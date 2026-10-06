@@ -2,6 +2,7 @@
 #include "common.h"
 #include "ptmf.h"
 #include "globals.h"
+#include "progress.h"
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -22,7 +23,6 @@ extern u8 D_0046FC00[], D_004699E0[], D_004699C0[];
 extern u8 D_0046F5C0[], D_004699E0[], D_004699C0[];
 extern u8 D_0046D7D0[];
 extern u8 D_004699E0[], D_0046A1C0[];
-extern u8 *gProgress;
 extern u8 D_00414390[];
 extern u8 D_004143B0[];
 extern u8 D_00414430[];
@@ -112,7 +112,7 @@ void *func_002D1580(u8 *p) {
 
 /* Progress constructor: registers the global instance. */
 void *func_002D15C0(u8 *p) {
-    gProgress = p;
+    gProgress = (Progress *)p;
     return p;
 }
 

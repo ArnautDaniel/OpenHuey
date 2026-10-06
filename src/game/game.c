@@ -3,6 +3,7 @@
 #include "game.h"
 #include "input.h"
 #include "globals.h"
+#include "progress.h"
 
 extern void func_001136E8(s32 status);         /* exit() */
 extern s32 func_0037E1F0(s32 *result);         /* load the embedded IOP module, *result = its status */
@@ -140,7 +141,6 @@ extern Scene *SceneTitle_ctor(void *mem); /* mode 2: opening movie, title screen
 extern Scene *SceneGame_ctor(void *mem);  /* mode 3: gameplay (16 MB) */
 extern Scene *Scene5_ctor(void *mem);     /* mode 5: the ending */
 extern void func_001779B0(void *obj, s32 param);
-extern void *gProgress;     /* include/progress.h */
 
 static Scene *Game_NewScene(Game *game, u32 size, Scene *(*ctor)(void *), u8 slot) {
     void *mem = VCALL(&game->sceneHeap, 0x10, void *(*)(VObject *, u32))(&game->sceneHeap, size);

@@ -5,8 +5,8 @@
 #include "navmesh.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "progress.h"
 
-extern VObject *gProgress;    /* +0xC current room */
 
 extern void func_002FF650(VObject *snd, s32 id, s32 arg2, const f32 *pos, s32 arg4, s32 arg5);
 
@@ -20,7 +20,7 @@ s32 func_00122B50(Actor *a, f32 *out) {
         return 0;
     }
     if (!(VCALL(rooms, 0x80, u32 (*)(VObject *, s32, f32 *))(
-              rooms, VCALL(gProgress, 0xC, s32 (*)(VObject *))(gProgress), cur) & 0xFF)) {
+              rooms, VCALL((VObject *)gProgress, 0xC, s32 (*)(VObject *))((VObject *)gProgress), cur) & 0xFF)) {
         return 0;
     }
     sceVu0SubVector(out, own, cur);
@@ -214,7 +214,7 @@ s32 func_001235C0(void *self, Actor *a) {
     if (NavMesh_Tri(nm, a->navTri)->flags & NAV_NO_STAND) {
         return 0;
     }
-    prog = gProgress;
+    prog = (VObject *)gProgress;
     for (i = 0; i < 8; i++) {
         if (func_00177BF0(prog, i, *(u8 *)&a->slot) & 0x20) {
             return 0;
@@ -624,7 +624,7 @@ void func_00124890(Actor *a, s32 kind) {
     VObject *rng, *rooms, *objs;
     u32 area, n;
 
-    if (a->room != VCALL(gProgress, 0xC, s32 (*)(VObject *))(gProgress)) {
+    if (a->room != VCALL((VObject *)gProgress, 0xC, s32 (*)(VObject *))((VObject *)gProgress)) {
         return;
     }
     if (kind == 1) {
@@ -846,7 +846,7 @@ void func_00124F20(Character *c, u32 door) {
         return;
     }
     room = c->a.room;
-    if (room != VCALL(gProgress, 0xC, s32 (*)(VObject *))(gProgress) || c->a.navTri == NAV_NONE) {
+    if (room != VCALL((VObject *)gProgress, 0xC, s32 (*)(VObject *))((VObject *)gProgress) || c->a.navTri == NAV_NONE) {
         return;
     }
     area = NavMesh_TriFlags(gNavMesh, c->a.navTri) & 0x300000;   /* (off the mesh: the PS2 reads address 0x3C) */
@@ -929,7 +929,7 @@ void func_001254B0(Character *c) {
     u8 i;
 
     for (i = 0; i < 8; i++) {
-        if (func_00177BF0(gProgress, i, *(u8 *)&c->a.slot) & 0x1) {
+        if (func_00177BF0((VObject *)gProgress, i, *(u8 *)&c->a.slot) & 0x1) {
             break;
         }
     }
@@ -1089,7 +1089,7 @@ s32 func_00125AD0(Character *c, u32 tri, const f32 *heading, f32 *pos) {
     }
     func_002A8410(c->state2);
     if (Character_Tracked(c)) {
-        VCALL(gProgress, 0x34, void (*)(VObject *, u32))(gProgress, *(u8 *)&c->a.slot);
+        VCALL((VObject *)gProgress, 0x34, void (*)(VObject *, u32))((VObject *)gProgress, *(u8 *)&c->a.slot);
     }
     return r;
 }
@@ -1116,7 +1116,7 @@ void func_00125BE0(Character *c) {
     func_002A8410(c->state);
     func_002A8410(c->state2);
     if (Character_Tracked(c)) {
-        VCALL(gProgress, 0x34, void (*)(VObject *, u32))(gProgress, *(u8 *)&c->a.slot);
+        VCALL((VObject *)gProgress, 0x34, void (*)(VObject *, u32))((VObject *)gProgress, *(u8 *)&c->a.slot);
     }
 }
 
@@ -1130,7 +1130,7 @@ s32 func_00125D80(Character *c) {
         if (s == 4 || s == 5) {
             return 1;
         }
-        if ((func_00177770(gProgress, *(u8 *)&c->a.slot) & 0xFF) == 1) {
+        if ((func_00177770((VObject *)gProgress, *(u8 *)&c->a.slot) & 0xFF) == 1) {
             return 1;
         }
     }
@@ -1209,7 +1209,7 @@ void func_00126360(Character *c) {
     func_002A8410(c->state);
     func_002A8410(c->state2);
     if (Character_Tracked(c)) {
-        VCALL(gProgress, 0x34, void (*)(VObject *, u32))(gProgress, *(u8 *)&c->a.slot);
+        VCALL((VObject *)gProgress, 0x34, void (*)(VObject *, u32))((VObject *)gProgress, *(u8 *)&c->a.slot);
     }
     c->unkE0 = 0;
     c->unkE1 = 0;
@@ -1227,7 +1227,7 @@ void func_00126450(Character *c) {
     c->unkE0 = 1;
     c->unkE1 = 0;
     c->unkF4 = 0;
-    VCALL(gProgress, 0x34, void (*)(VObject *, u32))(gProgress, *(u8 *)&c->a.slot);
+    VCALL((VObject *)gProgress, 0x34, void (*)(VObject *, u32))((VObject *)gProgress, *(u8 *)&c->a.slot);
 }
 
 void func_001264B0(Character *c) {
@@ -1263,7 +1263,7 @@ void func_00126810(Character *c) {
     func_002A8410(c->state);
     func_002A8410(c->state2);
     if (Character_Tracked(c)) {
-        VCALL(gProgress, 0x34, void (*)(VObject *, u32))(gProgress, *(u8 *)&c->a.slot);
+        VCALL((VObject *)gProgress, 0x34, void (*)(VObject *, u32))((VObject *)gProgress, *(u8 *)&c->a.slot);
     }
     c->unkE2 = 0;
     c->unkE3 = 0;
@@ -1626,7 +1626,7 @@ s32 func_001264D0(Character *c, f32 *out) {
     if (rooms == NULL || gDoors == NULL) {
         return 0;
     }
-    prog = gProgress;
+    prog = (VObject *)gProgress;
     cur = VCALL(prog, 0xC, s32 (*)(VObject *))(prog);
     exit = VCALL(rooms, 0x3C, u32 (*)(VObject *, u32, s32))(rooms, next, cur) & 0xFF;
     if (exit == 0xFF) {
@@ -1668,7 +1668,7 @@ s32 func_001264D0(Character *c, f32 *out) {
  * of rooms between (32 loudness per room hop; quiet sounds only through rooms progress marks).
  * The chosen event is copied to `heard` (heardSlot 0xFF: none). */
 void func_001269C0(Character *c) {
-    VObject *prog = gProgress;
+    VObject *prog = (VObject *)gProgress;
     VObject *rooms = gRooms;
     NavMesh *nm = gNavMesh;
     VObject *doors = gDoors;
@@ -1756,7 +1756,7 @@ void func_001269C0(Character *c) {
             }
         }
         if ((s32)c->hearThreshold < loud) {
-            NoiseEvent *e = &NOISE_EVENTS(gProgress)[i];
+            NoiseEvent *e = &NOISE_EVENTS((VObject *)gProgress)[i];
 
             c->heardSlot = i;
             c->heard.level = e->level;

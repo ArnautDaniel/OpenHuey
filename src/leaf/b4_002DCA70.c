@@ -2,6 +2,7 @@
 #include "common.h"
 #include "ptmf.h"
 #include "globals.h"
+#include "progress.h"
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -16,7 +17,6 @@ static inline f32 B4_FLT(u32 bits) {
 #define LOAD(name, dest) \
     VCALL(gFileLoader, 0xC, s32 (*)(void *, const char *, void *, s32, s32))(gFileLoader, name, dest, 0x4000000, 0)
 
-extern u8 *gProgress;
 extern u8 D_0046FB50[], D_00469C60[], D_00469C20[];
 extern u8 D_00416A50[];
 extern u8 D_00416AF0[];
@@ -123,7 +123,7 @@ s32 func_002DE830(u8 *p) { return p[0x156E] != 0; }
 
 /* Saves this object's state into a 36-byte slot of the progress block (+0x878). */
 void func_002DE840(u8 *p, s32 slot, u32 v) {
-    u8 *e = gProgress + slot * 36;
+    u8 *e = (u8 *)gProgress + slot * 36;
 
     F(e, 0x878, u32) = F(p, 0x30, u32);
     F(e, 0x87C, u32) = F(p, 0x154C, u32);

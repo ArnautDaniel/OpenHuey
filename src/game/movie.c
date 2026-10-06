@@ -4,6 +4,7 @@
 #include "common.h"
 #include "ptmf.h"
 #include "globals.h"
+#include "progress.h"
 
 
 typedef struct MovieLib {
@@ -142,7 +143,6 @@ _Static_assert(__builtin_offsetof(Movie, volume) == 0x1C8, "Movie.volume");
 extern void *Scene_vtable[];
 extern void *D_0046EA60[];       /* Movie */
 extern void *D_0046ECC0[];       /* SceneMovie (the boot logo) */
-extern u8 *gProgress;            /* +0x9F0: the movie volume option */
 extern u8 *D_0045D1F0;
 extern void func_0011F9A0(void *p);           /* delete (scene heap) */
 extern void *func_00114DA8(s32 align, s32 size);   /* memalign */
@@ -677,7 +677,7 @@ Movie *func_002B70D0(Movie *m) {
     m->frames = NULL;
     m->volume[2] = *(f32 *)(gSystemData + 0x38);
     if (gProgress != NULL) {
-        m->volume[3] = *(f32 *)(gProgress + 0x9F0);
+        m->volume[3] = *(f32 *)((u8 *)gProgress + 0x9F0);
     } else {
         m->volume[3] = 1.0f;
     }
@@ -775,7 +775,7 @@ void func_002FED30(Movie *m) {
     if (m->ply == NULL) {
         VCALL(m, 0x14, void (*)(Movie *))(m);
     }
-    m->frames = gProgress + 0xCA6C0;
+    m->frames = (u8 *)gProgress + 0xCA6C0;
     func_0023E878(m->ply, 0x10, 0x20, 0);
     Movie_SetState(m, &D_0041CA80);
 }
@@ -789,7 +789,6 @@ void func_002FED30(Movie *m) {
 extern void *D_0046EAB0[], *D_0046EAE0[], *D_0046EB10[], *D_0046EC30[], *D_0046EC90[], *D_00474F80[];
 extern const PTMF D_00412730, D_00412740, D_00412750, D_004128D0, D_004128E0, D_0042E428;   /* func_002B6BB0 */
 extern void *func_00115B68(void *d, const void *s, u32 n);   /* memcpy */
-extern s32 Progress_TestFlag(void *p, u32 id);
 #ifdef HG_NATIVE
 extern void glr_vram_draw(u32 addr, s32 layer);   /* native/platform/glr.c */
 extern void glr_vram_blit(s32 layer);
@@ -834,7 +833,7 @@ static inline __attribute__((always_inline)) void movie_entry(Movie *m, s32 w, s
     if (m->ply == NULL) {
         VCALL(m, 0x14, void (*)(Movie *))(m);
     }
-    m->frames = gProgress + at;
+    m->frames = (u8 *)gProgress + at;
     if (setting) {
         func_0023E878(m->ply, 0x10, 0x20, 0);
     }

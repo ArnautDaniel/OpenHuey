@@ -654,7 +654,6 @@ void SaveScreen_Load(BootCard *b) {
 
 #include "progress.h"
 
-extern Progress *gProgress;
 extern const char *func_0037E3F0(void);   /* the game data file's name */
 extern void func_002A76E0(u8 *p);         /* four bytes cleared */
 extern void func_002A8060(u8 *p);         /* a fresh save's progress */

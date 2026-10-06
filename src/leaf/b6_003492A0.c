@@ -1,5 +1,6 @@
 #include "common.h"
 #include "ptmf.h"
+#include "progress.h"
 
 extern u32 D_0043EA90[];
 extern u32 D_0043EAE0[];
@@ -26,7 +27,6 @@ extern u32 D_0047AEF0[];
 extern u32 D_0047AEF4[];
 extern u32 D_0047AEF8[];
 extern u32 D_0047AF00[];
-extern u8 *gProgress;
 extern u8 D_0043DC10[], D_0043DBD0[];
 extern u8 D_0043DC30[], D_0043DBF0[];
 extern u8 D_0043EA80[];
@@ -42,11 +42,11 @@ f32 func_003492B0(void) {
 }
 
 void *func_003495B0(void) {
-    return (*(u32 *)(gProgress + 0x30) & 0x8000) ? D_0043DC30 : D_0043DBF0;
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043DC30 : D_0043DBF0;
 }
 
 void *func_003495F0(void) {
-    return (*(u32 *)(gProgress + 0x30) & 0x8000) ? D_0043DC10 : D_0043DBD0;
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043DC10 : D_0043DBD0;
 }
 
 void *func_003498D0(void) {

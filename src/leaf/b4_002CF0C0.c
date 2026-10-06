@@ -3,6 +3,7 @@
 #include "ptmf.h"
 #include "globals.h"
 #include "navmesh.h"
+#include "progress.h"
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -16,7 +17,6 @@ extern void *D_00413490[];
 extern u8 D_004134C0[];
 extern void *D_0047AC00[];
 extern u8 D_0045D4A0[], D_0045D4C0[], D_0045D4E0[], D_0045D500[], D_0045D520[], D_0045D540[];
-extern u8 *gProgress;
 extern u8 D_00413550[];
 extern u8 D_00413530[], D_004134F0[], D_00413510[], D_004134D0[];
 extern u8 D_0046C790[], D_0046BA68[], D_0046ED30[], D_0046DB80[], D_00469D00[], D_0046F350[];

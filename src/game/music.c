@@ -30,7 +30,6 @@
 #include "ptmf.h"
 #include "globals.h"
 
-extern Progress *gProgress;
 extern u8 *gCharPursuer;
 extern u8 *gCharSlot2;        /* the character in slot 2 */
 extern u8 *gCharPlayer;

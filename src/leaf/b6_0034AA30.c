@@ -1,5 +1,6 @@
 #include "common.h"
 #include "ptmf.h"
+#include "progress.h"
 
 extern s32 gCharPlayer;
 extern u32 D_0043FA80[];
@@ -31,7 +32,6 @@ extern u32 D_0047AF14[];
 extern u32 D_0047AF18[];
 extern u32 D_0047AF38[];
 extern u32 D_0047AF3C[];
-extern u8 *gProgress;
 extern u8 D_00441810[], D_004417D0[];
 extern u8 D_00441830[], D_004417F0[];
 
@@ -200,9 +200,9 @@ s32 func_0034D280(u8 *p) {
 }
 
 void *func_0034D980(void) {
-    return (*(u32 *)(gProgress + 0x30) & 0x8000) ? D_00441830 : D_004417F0;
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_00441830 : D_004417F0;
 }
 
 void *func_0034D9C0(void) {
-    return (*(u32 *)(gProgress + 0x30) & 0x8000) ? D_00441810 : D_004417D0;
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_00441810 : D_004417D0;
 }

@@ -651,7 +651,6 @@ s32 func_001B92F0(VObject *r, s32 x0, s32 y0, s32 x1, s32 y1, s32 x2, s32 y2, s3
 #endif
 
 #include "progress.h"
-extern Progress *gProgress;
 
 #ifdef HG_NATIVE
 /* +0x5C clear the 128 x 112 glow work buffer to black (the original: a sprite in layer 0x29 at

@@ -1,5 +1,6 @@
 #include "common.h"
 #include "ptmf.h"
+#include "progress.h"
 
 extern u32 D_00438D30[];
 extern u32 D_00438D60[];
@@ -35,7 +36,6 @@ extern u32 D_0047AE90[];
 extern u32 D_0047AEA8[];
 extern u32 D_0047AEB0[];
 extern u8 *gCharPursuer;
-extern u8 *gProgress;
 
 void *func_003448D0(void) {
     return D_00438D30;
@@ -116,7 +116,7 @@ s32 func_00344B10(void) {
     if (mode == 4 || mode == 5) {
         return 0;
     }
-    return gProgress[0x1130] != 0xFE;
+    return ((u8 *)gProgress)[0x1130] != 0xFE;
 }
 
 void *func_00344BF0(void) {
@@ -166,7 +166,7 @@ s32 func_00344D10(void) {
     if (p == NULL || p[0x28] == 0 || *(s32 *)(p + 0xE8) == 0) {
         return 0;
     }
-    return gProgress[0x1130] != 0xFE;
+    return ((u8 *)gProgress)[0x1130] != 0xFE;
 }
 
 void *func_00344DE0(void) {

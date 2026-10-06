@@ -6,7 +6,6 @@
 #include "globals.h"
 
 extern Character *gCharacters[6];
-extern Progress *gProgress;
 
 extern void func_001855F0(Fiona *f, s32);
 extern void func_00125D40(Character *c);
