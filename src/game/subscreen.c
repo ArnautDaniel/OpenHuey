@@ -1211,7 +1211,7 @@ void func_00384CE0(SubScreen *s) {
 
 extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
 extern s32 func_0038A2C0(void *s, u32 k);   /* (a u8) */
-extern s32 func_003941C0(void);
+extern s32 func_003941C0(u8 *o);   /* the file's entries (+0x15F8) */
 extern const char D_00463A60[];
 
 #define SUB_TEXT(s) ((Task *)((u8 *)(s) + 0x97868))
@@ -1243,9 +1243,9 @@ void func_0037E580(u8 *s) {
     }
 }
 
-/* half of (func_003941C0 - 1) */
-u8 func_0037E650(void) {
-    return (u8)((func_003941C0() - 1) / 2);
+/* the file's last page: its entries (+0x15F8, func_003941C0) two to a page */
+u8 func_0037E650(u8 *s) {
+    return (u8)(((s32)func_003941C0(s) - 1) / 2);
 }
 
 extern void func_00260A60(void *items, s32 k);
@@ -1486,7 +1486,7 @@ extern const PTMF D_0044B3C8, D_0044B3D8, D_0044B3E8, D_0044B3F8;
  * (D_0044B3C8 / D_0044B3D8) or back to the map (D_0044B3E8 / D_0044B3F8); cancel closes. Its
  * panels, the page number and, with more than one, the arrows blinking; the file. */
 void func_00394260(SubScreen *s) {
-    u8 last = func_0037E650();
+    u8 last = func_0037E650((u8 *)s);
 
     if (!s->fading) {
         u8 old = SUB_FILE_PAGE(s);
