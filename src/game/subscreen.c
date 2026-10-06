@@ -1563,3 +1563,65 @@ void func_00385F60(SubScreen *s) {
         ptmf_set(&s->state, &D_0044C108);
     }
 }
+
+/* ---- page openings and states ---- */
+
+extern void func_00386550(SubScreen *s);
+extern void func_002BDAB0(BootCard *b);   /* the card screens' step */
+extern const PTMF D_0044C050;
+
+/* open the page: its start values (+4 / +6 0x100 / 0xE0, +9 set), fading in (step 0x10), set
+ * up (func_00386550), then state D_0044C050 */
+void func_00387E00(SubScreen *s) {
+    SUB_PAGE(s, 0x4, s16) = 0x100;
+    SUB_PAGE(s, 0x6, s16) = 0xE0;
+    SUB_PAGE(s, 0x8, u8) = 0;
+    SUB_PAGE(s, 0x9, u8) = 1;
+    SUB_PAGE(s, 0xA, u8) = 0;
+    SUB_PAGE(s, 0xB, u8) = 0;
+    SUB_PAGE(s, 0xC, u8) = 0;
+    s->fading = 1;
+    s->fade = 0;
+    s->fadeStep = 0x10;
+    func_00386550(s);
+    ptmf_set(&s->state, &D_0044C050);
+}
+
+/* state: the page's own object (+0xA8C80, screen kind 0x86) runs (+0x10); when it is done
+ * (+0x158) it ends (+0x14) and progress flag 4 is set */
+void func_00390790(SubScreen *s) {
+    VObject *o = (VObject *)s->page;
+
+    s->kind = 0x86;
+    sub_panels(s);
+    if (o != NULL) {
+        VCALL(o, 0x10, void (*)(VObject *))(o);
+    }
+    if (s->fading || (o != NULL && AT(o, 0x158, u8) == 0)) {
+        return;
+    }
+    if (o != NULL) {
+        VCALL(o, 0x14, void (*)(VObject *))(o);
+    }
+    Progress_SetFlag(gProgress, 4);
+}
+
+/* state: the save screens (screen kind 0x85): done (card state < 0) it closes (progress flag 4)
+ * and stays drawn; else the card runs (flag 4 cleared) */
+void func_003912E0(SubScreen *s) {
+    s->kind = 0x85;
+    if (s->card.state < 0) {
+        if (!s->fading) {
+            s->close = 1;
+            if (gProgress != NULL) {
+                Progress_SetFlag(gProgress, 4);
+            }
+        }
+        SaveScreen_Draw(&s->card, 0);
+        return;
+    }
+    func_002BDAB0(&s->card);
+    if (gProgress != NULL) {
+        Progress_ClearFlag(gProgress, 4);
+    }
+}
