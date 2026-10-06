@@ -5493,3 +5493,365 @@ void func_00337820(u8 *m) {
         }
     }
 }
+
+/* ---- Fiona's costumes 2 (D_00475AE0, `at` 0xDA0) and 3 (D_00475BC0, `at` 0xC60): the same
+   layout from `at` (see costume_model), costume 3's bones 4 lower. Six spring sets: at - 0x30
+   (the 12 / 8 hair nodes at +0x9B0), at + 0x60 (node at + 0x10), at + 0x100 (node at + 0xA0),
+   at + 0x190 (node at + 0x140), at + 0x6D0 (16 nodes at + 0x1D0, colliders at + 0x710) and
+   at + 0x980 (3 nodes at + 0x890, colliders at + 0x9C0) ---- */
+
+/* a set's six collision spheres at `col` (bones b, b + 1, b - 5, b + 0x1A, b - 6, b + 0x19;
+   the first two smaller), chained by +0x2C from the set's +0x18 */
+static inline void costume_cols(u8 *set, u8 *col, s32 bd) {
+    static const s32 sBones[6] = {0x20, 0x21, 0x1B, 0x3A, 0x1A, 0x39};
+    s32 i;
+
+    for (i = 0; i < 6; i++) {
+        u8 *c = col + i * 0x40;
+
+        AT(c, 0x2C, u8 *) = NULL;
+        if (AT(set, 0x18, u8 *) == NULL) {
+            AT(set, 0x18, u8 *) = c;
+        } else {
+            u8 *last = AT(set, 0x18, u8 *);
+
+            while (AT(last, 0x2C, u8 *) != NULL) {
+                last = AT(last, 0x2C, u8 *);
+            }
+            AT(last, 0x2C, u8 *) = c;
+        }
+    }
+    for (i = 0; i < 6; i++) {
+        func_002EE690(col + i * 0x40, sBones[i] + bd, 0.0f, 0.0f, 0.0f, i < 2 ? 0x1.99999ap-1f /* 0.8 */ : 1.0f);
+    }
+}
+
+/* the 16 hanging nodes on the set at + 0x6D0: lengths, bones, anchored flags and kinds from
+   tables; the swing limit `anchored` for anchored nodes, 60 degrees for the others */
+static inline void costume_hang16(u8 *m, u32 at, s32 bd, const f32 *len, const s32 *bone,
+                                  const u8 *anch, const u8 *kind, u32 anchored) {
+    u8 *set = m + at + 0x6D0;
+    s32 i;
+
+    func_002EE960(set);
+    for (i = 0; i < 16; i++) {
+        spring_link(set, m + at + 0x1D0 + i * 0x50);
+    }
+    spring_set(set, 0x3DCCCCCD /* 0.1f */, 0x3F4CCCCD /* 0.8f */, m);
+    for (i = 0; i < 16; i++) {
+        u8 *node = m + at + 0x1D0 + i * 0x50;
+
+        AT(node, 0x40, f32) = len[i];
+        AT(node, 0x24, s32) = bone[i];
+        AT(node, 0x20, u8) = anch[i];
+        AT(node, 0x44, u8) = kind[i];
+        AT(node, 0x48, u32) = anch[i] ? anchored : 0x3F860A92;   /* pi / 3 */
+    }
+    costume_cols(set, m + at + 0x710, bd);
+}
+
+/* the 3 hanging nodes on the set at + 0x980 (swing limit 120 degrees), then its gravity
+   (0, 1.5, -1.5) and +0xC `grav` */
+static inline void costume_hang3(u8 *m, u32 at, s32 bd, const f32 *len, const s32 *bone,
+                                 const u8 *anch, const u8 *kind, f32 grav) {
+    u8 *set = m + at + 0x980;
+    s32 i;
+
+    func_002EE960(set);
+    for (i = 0; i < 3; i++) {
+        spring_link(set, m + at + 0x890 + i * 0x50);
+    }
+    spring_set(set, 0x3DCCCCCD /* 0.1f */, 0x3F4CCCCD /* 0.8f */, m);
+    for (i = 0; i < 3; i++) {
+        u8 *node = m + at + 0x890 + i * 0x50;
+
+        AT(node, 0x40, f32) = len[i];
+        AT(node, 0x24, s32) = bone[i];
+        AT(node, 0x20, u8) = anch[i];
+        AT(node, 0x44, u8) = kind[i];
+        AT(node, 0x48, u32) = 0x40060A92;   /* 2 pi / 3 */
+        AT(node, 0x4C, u8) = 0;
+    }
+    costume_cols(set, m + at + 0x9C0, bd);
+    AT(set, 0x0, f32) = 0.0f;
+    AT(set, 0x4, f32) = 1.5f;
+    AT(set, 0x8, f32) = -1.5f;
+    AT(set, 0xC, f32) = grav;
+}
+
+/* a one-node set (gravity 0.1, damping 0.99), its node anchored on `bone`, length 1 */
+static inline void costume_node(u8 *m, u8 *set, u8 *node, s32 bone) {
+    func_002EE960(set);
+    spring_link(set, node);
+    spring_set(set, 0x3DCCCCCD /* 0.1f */, 0x3F7D70A4 /* 0.99f */, m);
+    AT(node, 0x40, f32) = 1.0f;
+    AT(node, 0x24, s32) = bone;
+    AT(node, 0x20, u8) = 1;
+}
+
+/* the six sets a frame: one step, or 30 to settle after a reset (+0x850) */
+static inline void costume_frame(u8 *m, u32 at) {
+    s32 n = AT(m, 0x850, u8) ? 30 : 1;
+    s32 i;
+
+    func_002EE8A0(m + at - 0x30);
+    func_002EE8A0(m + at + 0x60);
+    func_002EE8A0(m + at + 0x100);
+    func_002EE8A0(m + at + 0x190);
+    func_002EE8A0(m + at + 0x6D0);
+    func_002EE8A0(m + at + 0x980);
+    for (i = 0; i < n; i++) {
+        func_002EE900(m + at - 0x30);
+        func_002EE900(m + at + 0x60);
+        func_002EE900(m + at + 0x100);
+        func_002EE900(m + at + 0x190);
+        func_002EE900(m + at + 0x6D0);
+        func_002EE900(m + at + 0x980);
+    }
+    func_002EE840(m + at - 0x30);
+    func_002EE840(m + at + 0x60);
+    func_002EE840(m + at + 0x100);
+    func_002EE840(m + at + 0x190);
+    func_002EE840(m + at + 0x6D0);
+    func_002EE840(m + at + 0x980);
+    AT(m, 0x850, u8) = 0;
+}
+
+extern void *func_002088F0(void *e, s32 flags);
+extern void *func_00208970(void *e, s32 flags);
+extern void *func_00170080(void *e, s32 flags);
+extern void *D_00475AE0[], *D_00475BC0[];
+
+/* +0x8 destructor (undoes costume_model) */
+static inline void *costume_dtor(u8 *m, s32 flags, void **vtbl, s32 n, u32 at) {
+    if (m != NULL) {
+        AT(m, 0x0, void **) = vtbl;
+        func_001002C0(m + at + 0x890, func_002088F0, 0x50, 3);
+        func_001002C0(m + at + 0x1D0, func_00208970, 0x50, 0x10);
+        AT(m, at + 0x170, void **) = D_004703D0;
+        AT(m, at + 0x170, void **) = D_004703B0;
+        AT(m, at + 0xD0, void **) = D_00470440;
+        AT(m, at + 0xD0, void **) = D_004703B0;
+        AT(m, at + 0x40, void **) = D_004703D0;
+        AT(m, at + 0x40, void **) = D_004703B0;
+        func_001002C0(m + 0x9B0, func_00170080, 0x50, n);
+        AT(m, 0x0, void **) = D_0046B0E0;
+        func_0016F9E0(m, 0);
+        if ((s16)flags > 0) {
+            func_002DC6D0(m);
+        }
+    }
+    return m;
+}
+
+extern f32 D_0042F300[], D_0042F370[], D_0042F3F0[], D_0042F460[];
+extern s32 D_0042F2C0[], D_0042F360[], D_0042F3B0[], D_0042F450[];
+extern u8 D_0042F340[], D_0042F350[], D_0047ADC8[], D_0047B284[], D_0042F430[], D_0042F440[],
+    D_0047ADCC[], D_0047B288[], D_0042F390[], D_0042F3A0[];
+void func_00337760(u8 *m);
+void func_003385F0(u8 *m);
+
+/* costume 2 */
+void *func_00336DB0(u8 *m, s32 flags) {
+    return costume_dtor(m, flags, D_00475AE0, 0xC, 0xDA0);
+}
+
+void func_00336FE0(u8 *m) {
+    costume_hang3(m, 0xDA0, 0, D_0042F370, D_0042F360, D_0047ADC8, D_0047B284, 24.0f);
+}
+
+/* +0xC4 which of the swappable parts show (part flag 2 hides; as func_002F6E60): 0..4 one of
+   +0xEE / +0xF6 / +0xF8 / +0xF0, 5..9 one set of the eight at +0x9A.. */
+void func_00337260(u8 *m, s32 look) {
+    u32 k = look & 0xFF;
+
+    if (k < 5) {
+        AT(m, 0xEE, u8) |= 2;
+        AT(m, 0xF6, u8) |= 2;
+        AT(m, 0xF8, u8) |= 2;
+        AT(m, 0xF0, u8) |= 2;
+        switch (k) {
+        case 1: AT(m, 0xEE, u8) &= ~2; break;
+        case 2: AT(m, 0xF6, u8) &= ~2; break;
+        case 3: AT(m, 0xF8, u8) &= ~2; break;
+        case 4: AT(m, 0xF0, u8) &= ~2; break;
+        }
+        return;
+    }
+    AT(m, 0x9A, u8) |= 2;
+    AT(m, 0x9C, u8) |= 2;
+    AT(m, 0x9E, u8) |= 2;
+    AT(m, 0xE8, u8) |= 2;
+    AT(m, 0xA0, u8) |= 2;
+    AT(m, 0xA2, u8) |= 2;
+    AT(m, 0xEA, u8) |= 2;
+    AT(m, 0xEC, u8) |= 2;
+    switch (k) {
+    case 5:
+        AT(m, 0x9A, u8) &= ~2;
+        AT(m, 0x9C, u8) &= ~2;
+        break;
+    case 6: AT(m, 0x9E, u8) &= ~2; break;
+    case 7: AT(m, 0xE8, u8) &= ~2; break;
+    case 8:
+        AT(m, 0xA0, u8) &= ~2;
+        AT(m, 0xA2, u8) &= ~2;
+        break;
+    case 9:
+        AT(m, 0xEA, u8) &= ~2;
+        AT(m, 0xEC, u8) &= ~2;
+        break;
+    }
+}
+
+void func_00337430(u8 *m) {
+    costume_hang16(m, 0xDA0, 0, D_0042F300, D_0042F2C0, D_0042F340, D_0042F350, 0x3F060A92 /* pi / 6 */);
+}
+
+/* her springs, then a reset (+0x850) */
+void func_00337A80(u8 *m) {
+    func_00337820(m);
+    costume_node(m, m + 0xE00, m + 0xDB0, 0x28);
+    func_00337760(m);
+    costume_node(m, m + 0xF30, m + 0xEE0, 0x3F);
+    func_00337430(m);
+    func_00336FE0(m);
+    AT(m, 0x850, u8) = 1;
+}
+
+/* +0x3C */
+void func_00337BE0(u8 *m) {
+    costume_frame(m, 0xDA0);
+}
+
+/* +0xC loaded: the base setup, the parts' roles, her springs, per-part draw settings */
+void func_00337CF0(u8 *m) {
+    static const u8 sParts[] = {0xA4, 0xA6, 0xA8, 0xAA, 0xAC, 0xAE, 0xB4, 0xB6, 0xB8, 0xBA, 0xFA, 0xFC, 0xFE};
+    u32 i;
+
+    func_001F1FE0(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x1E;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x3D;
+    AT(m, 0x8B0, s32) = 0x21;
+    AT(m, 0x8B4, s32) = 0x17;
+    func_00337A80(m);
+    AT(m, 0x98, u8) = 4;
+    AT(m, 0x99, u8) = 0xC0;
+    for (i = 0; i < sizeof(sParts); i++) {
+        AT(m, sParts[i], u8) = 4;
+        AT(m, sParts[i] + 1, u8) = 0x40;
+    }
+}
+
+/* costume 3 */
+void *func_00337E20(u8 *m, s32 flags) {
+    return costume_dtor(m, flags, D_00475BC0, 8, 0xC60);
+}
+
+/* +0x84..+0x94: part roles */
+s32 func_00337FE0(void) { return 3; }
+s32 func_00337FF0(void) { return 7; }
+s32 func_00338000(void) { return 0x18; }
+s32 func_00338010(void) { return 0x37; }
+s32 func_00338020(void) { return 0x13; }
+
+void func_00338040(u8 *m) {
+    costume_hang3(m, 0xC60, -4, D_0042F460, D_0042F450, D_0047ADCC, D_0047B288, 20.0f);
+}
+
+void func_003382C0(u8 *m) {
+    costume_hang16(m, 0xC60, -4, D_0042F3F0, D_0042F3B0, D_0042F430, D_0042F440, 0x3F1C61AB /* 35 degrees */);
+}
+
+/* the one-node set +0xD60, node +0xD00 on bone 0x15 (as func_00337760) */
+void func_003385F0(u8 *m) {
+    u8 *node = m + 0xD00;
+
+    func_002EE960(m + 0xD60);
+    spring_link(m + 0xD60, node);
+    AT(m, 0xD60, f32) = 0.0f;
+    AT(m, 0xD64, f32) = 0.0f;
+    AT(m, 0xD68, f32) = 0.0f;
+    AT(m, 0xD70, f32) = 0.75f;
+    AT(m, 0xD74, u8 *) = m;
+    AT(m, 0xD80, u8) = 0;
+    AT(m, 0xD7C, s32) = 0;
+    AT(node, 0x40, u32) = 0x3F666666;   /* 0.9f */
+    AT(node, 0x24, s32) = 0x15;
+    AT(node, 0x20, u8) = 1;
+    AT(node, 0x58, f32) = 1.0f;
+    AT(node, 0x54, f32) = 1.0f;
+    AT(node, 0x50, f32) = 1.0f;
+}
+
+/* the set +0xC30: 8 hair nodes (+0x9B0) in 4 pairs on bones 0xB..0x12 (as func_00337820) */
+void func_003386B0(u8 *m) {
+    static u8 *const sTables[4] = {D_0042F390, D_0042F390, D_0042F3A0, D_0042F3A0};
+    static const u32 sPhase[2] = {0x3EB2B8C3, 0x3F32B8C3};
+    u8 *set = m + 0xC30;
+    s32 i, j;
+
+    func_002EE960(set);
+    for (i = 0; i < 8; i++) {
+        spring_link(set, m + 0x9B0 + i * 0x50);
+    }
+    spring_set(set, 0x3E4CCCCD /* 0.2f */, 0x3F666666 /* 0.9f */, m);
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 2; j++) {
+            u8 *node = m + 0x9B0 + (i * 2 + j) * 0x50;
+
+            AT(node, 0x40, u32) = 0x3ED182AA;
+            AT(node, 0x24, s32) = 0xB + i * 2 + j;
+            AT(node, 0x44, s32) = (i & 1) ? 6 : 2;
+            AT(node, 0x48, u8 *) = sTables[i];
+            AT(node, 0x20, u8) = (j == 0);
+            AT(node, 0x4C, u32) = sPhase[j];
+        }
+    }
+}
+
+void func_00338880(u8 *m) {
+    func_003386B0(m);
+    costume_node(m, m + 0xCC0, m + 0xC70, 0x24);
+    func_003385F0(m);
+    costume_node(m, m + 0xDF0, m + 0xDA0, 0x3B);
+    func_003382C0(m);
+    func_00338040(m);
+    AT(m, 0x850, u8) = 1;
+}
+
+void func_003389E0(u8 *m) {
+    costume_frame(m, 0xC60);
+}
+
+void func_00338AF0(u8 *m) {
+    static const u8 sParts[] = {0x9C, 0x9E, 0xA0, 0xA2, 0xB2, 0xB4, 0xB6, 0xB8, 0xBA, 0xBC, 0xE4, 0xE6, 0xE8, 0xEA};
+    u32 i;
+
+    func_001F1FE0(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x1A;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x39;
+    AT(m, 0x8B0, s32) = 0x1D;
+    AT(m, 0x8B4, s32) = 0x13;
+    func_00338880(m);
+    for (i = 0; i < sizeof(sParts); i++) {
+        AT(m, sParts[i], u8) = 4;
+        AT(m, sParts[i] + 1, u8) = 0x40;
+    }
+}
