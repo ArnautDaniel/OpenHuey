@@ -159,6 +159,7 @@ STUB_RET_PROB = [0.5]         # --stub-ret-prob
 OUTPARAM_BYTES = [OUTPARAM]   # --outparam
 OUTPARAM_AT: dict[tuple[int, int], int] = {}   # --outparam-at: (callee, argument index) -> bytes
 OUTPARAM_MOD: dict[tuple[int, int], int] = {}  # --outparam-mod: (callee, argument index) -> modulus
+OUTPARAM_FLOATS: dict[tuple[int, int], list[float]] = {}  # --outparam-floats: (callee, argument index) -> values
 STACK_ARG_BYTES = [16]        # --stack-arg-bytes: how much of a local passed by reference compares
 STRICT_VU0 = [False]          # --strict-vu0: emulated libvu0 calls also compare as calls
 TRACE_RECENT = [False]        # -v: keep the last pcs, for a runaway's report
@@ -522,6 +523,10 @@ class CPU:
                 v = random.Random(self.call_n * 1009 + k * 13 + 7).getrandbits(8 * n)
                 if (target, k) in OUTPARAM_MOD:   # a small value (e.g. a valid index) in the low word
                     v = (v & ~0xFFFFFFFF) | ((v & 0xFFFFFFFF) % OUTPARAM_MOD[(target, k)])
+                if (target, k) in OUTPARAM_FLOATS:   # fixed floats (e.g. a matrix that keeps points in view)
+                    fl = OUTPARAM_FLOATS[(target, k)]
+                    n = 4 * len(fl)
+                    v = sum(f2b(x) << (32 * i) for i, x in enumerate(fl))
                 self.m.write(p, n, v)
                 for i in range(n):  # not the function's own store (see arg_value)
                     self.m.written.pop(Memory.norm(p + i), None)
@@ -2011,6 +2016,9 @@ def option_parser() -> argparse.ArgumentParser:
     ap.add_argument("--outparam-mod", action="append", default=[],
                     help="CALLEE:ARG:MOD - the first word that stub writes through argument ARG is "
                          "taken modulo MOD (e.g. a valid triangle index); repeatable")
+    ap.add_argument("--outparam-floats", action="append", default=[],
+                    help="CALLEE:ARG:F0,F1,... - that stub writes these floats through argument ARG "
+                         "(e.g. a clip matrix keeping points in view); repeatable")
     ap.add_argument("--inline", action="append", default=[],
                     help="a pure (leaf) game function run in place rather than stubbed: the C may "
                          "call it fewer times (a getter whose result the original drops); repeatable")
@@ -2119,6 +2127,10 @@ def test_function(rom: bytes, build, src: Path, func: str, opts) -> int:
     for spec in opts.outparam_mod:
         addr, arg, n = (int(x, 0) for x in spec.split(":"))
         OUTPARAM_MOD[(addr, arg)] = n
+    OUTPARAM_FLOATS.clear()
+    for spec in opts.outparam_floats:
+        addr, arg, fl = spec.split(":")
+        OUTPARAM_FLOATS[(int(addr, 0), int(arg, 0))] = [float(x) for x in fl.split(",")]
     STACK_ARG_BYTES[0] = max(1, min(16, opts.stack_arg_bytes))
     STRICT_VU0[0] = opts.strict_vu0
     TRACE_RECENT[0] = opts.verbose

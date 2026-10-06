@@ -4302,6 +4302,92 @@ static inline void obj_effect(u8 *o, u32 f) {
     func_002D6090(D_0044E578, slot, &prm);
 }
 
+/* the effect D_00479AC0 (0x10 bytes; +0x4 its frame 0..4, 5 done, +0x8 a turn, +0xC the object):
+ * a flash in the shape of a window (half of its outline, D_00444980, mirrored for points 12..23)
+ * at the object, turned with it, each frame a fan through some of the outline (D_00444A70: a
+ * count, then the points) */
+extern const s8 *D_00444A70[];
+extern const f32 D_00444980[12][3];
+extern void func_002E3190(f32 (*m)[4], f32 angle);                 /* turn about y */
+extern void func_002E2DA0(f32 *out, f32 (*m)[4], const f32 *v);
+extern void func_0026B180(void *drawer, u32 rgba, s32 layer, s32 sub);
+extern void *D_0046D7A0[], *D_00469D00[];
+#ifdef HG_NATIVE
+extern void glr_layer(s32 layer);
+extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
+                      u64 tex0, u32 prim);
+
+/* +0x14 draw: when all of the shape is in view, the screen brightened (func_0026B180,
+ * 0x80808080 in layer 0x28) and the shape added in white into layer 0x26 (the bloom's mask;
+ * the original's triangle fan, additive, no depth writes). (Checked against the original with
+ * its GS packet rebuilt, 2026-10-06.) */
+void func_00360BF0(u8 *o) {
+    static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD};   /* 0.1 */
+    f32 pt[24][4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    const s8 *shape;
+    u8 *obj = AT(o, 0xC, u8 *);
+    u8 drawer[0x20] __attribute__((aligned(16)));
+    VObject *cam;
+    s32 n, k;
+
+    if (AT(o, 0x4, s32) == 5) {
+        return;
+    }
+    shape = D_00444A70[AT(o, 0x4, s32)];
+    n = shape[0];
+    func_002E3190(m, func_002E2D00(AT(obj, 0x14, f32) + AT(o, 0x8, f32)));
+    for (k = 0; k < n; k++) {
+        s32 id = shape[k + 1];
+
+        if (id < 12) {
+            v[0] = D_00444980[id][0];
+            v[1] = D_00444980[id][1];
+            v[2] = k01.f + D_00444980[id][2];
+        } else {
+            v[0] = -D_00444980[23 - id][0];
+            v[1] = D_00444980[23 - id][1];
+            v[2] = k01.f + D_00444980[23 - id][2];
+        }
+        func_002E2DA0(v, m, v);
+        sceVu0AddVector(pt[k], (f32 *)(obj + 0x20), v);
+        pt[k][3] = 1.0f;
+    }
+    cam = D_0044E4B8;
+    VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, m);
+    for (k = 0; k < n; k++) {
+        sceVu0ApplyMatrix(v, m, pt[k]);
+        if (!(v[0] <= v[3]) || v[0] < -v[3] || !(v[1] <= v[3]) || v[1] < -v[3] || !(v[2] <= v[3]) || v[2] < -v[3]) {
+            return;
+        }
+    }
+    AT(drawer, 0x0, void **) = D_0046D7A0;
+    AT(drawer, 0x4, s32) = -1;
+    func_0026B180(drawer, 0x80808080, 0x28, 0);
+    {
+        f32 tri[3][4];
+        f32 st[3][2] = {{0}};
+        u8 col[3][4];
+
+        for (k = 0; k < 3; k++) {
+            col[k][0] = col[k][1] = col[k][2] = col[k][3] = 0x80;
+        }
+        glr_layer(0x26);
+        for (k = 1; k + 1 < n; k++) {   /* the fan */
+            sceVu0CopyVector(tri[0], pt[0]);
+            sceVu0CopyVector(tri[1], pt[k]);
+            sceVu0CopyVector(tri[2], pt[k + 1]);
+            AT(&tri[0][3], 0, u32) = AT(&tri[1][3], 0, u32) = AT(&tri[2][3], 0, u32) = 0;
+            glr_strip(&m[0][0], 3, &tri[0][0], &st[0][0], &col[0][0], NULL, 0,
+                      0x40 | 0x10000 | 0x20000);   /* blended, GLR_PRIM_ADD, GLR_PRIM_NOZW */
+        }
+        glr_layer(-1);
+    }
+    AT(drawer, 0x0, void **) = D_00469D00;
+}
+#endif
+
 /* room 0x02 (D_003F03C8): the pursuer is about, in a mode other than 0, 1 or 5, and progress
  * +0x1130 isn't 0xFE */
 s32 func_002A8F50(void) {
