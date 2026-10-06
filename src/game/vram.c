@@ -183,6 +183,63 @@ void func_001C1460(u8 *v, s32 id) {
     }
 }
 
+/* +0x1C free entry `id`: its pages (8 / 4-bit H formats: their upper bits, both halves or one;
+ * else the page bits), then its CLUT slot (the region emptied with its last) */
+void func_001C1520(u8 *v, s32 id) {
+    VramEntry *e;
+    u32 p, end;
+
+    if (id < 0) {
+        return;
+    }
+    e = (VramEntry *)(v + 0x98) + id;
+    if (!e->used) {
+        return;
+    }
+    e->used = 0;
+    e->locked = 0;
+    switch ((u16)e->psm) {
+    case PSMT4HH:
+    case PSMT4HL:
+    case PSMT8H: {
+        u32 bits = (u16)e->psm == PSMT4HH ? 2 : (u16)e->psm == PSMT4HL ? 1 : 3;
+
+        if (e->page == -1) {
+            break;
+        }
+        end = e->page + (u16)e->npages;
+        for (p = e->page; p < end; p++) {
+            VRAM_PAGEMAP_HI(v)[(p * 2) >> 5] &= ~(bits << ((p * 2) & 0x1F));
+        }
+        break;
+    }
+    default:
+        if (e->page == -1) {
+            break;
+        }
+        end = e->page + (u16)e->npages;
+        for (p = e->page; p < end; p++) {
+            VRAM_PAGEMAP(v)[p >> 5] &= ~(1u << (p & 0x1F));
+        }
+        break;
+    }
+    if ((u16)e->cpsm != PSM_NONE) {
+        s16 c = (s16)(e->cregion * 16 | (u16)e->cslot);
+
+        if (c != -1) {
+            VramClutRegion *r = VRAM_CLUT_REGION(v, c >> 4);
+
+            r->mask &= ~(1 << (c & 0xF));
+            if (--r->count == 0) {
+                r->psm = PSM_NONE;
+                r->mask = 0;
+                r->count = 0;
+                r->capacity = 0;
+            }
+        }
+    }
+}
+
 /* +0x20 free every entry that isn't kept resident (+0x1C) */
 void func_001C14A0(VObject *v) {
     VramEntry *e = (VramEntry *)((u8 *)v + 0x98);
