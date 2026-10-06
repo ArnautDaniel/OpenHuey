@@ -7032,3 +7032,91 @@ s32 func_00340230(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+#include "input.h"
+
+extern void *D_004798B0[];
+extern f32 D_0047E3A0[4];   /* left stick */
+
+static void effect_798B0_init(void **obj) {
+    obj[0] = D_004798B0;
+}
+
+/* a cursor effect (D_004798B0) at (x, y) kept in script variables 7 / 8, its slot in 6: byte 3 0
+ * puts it at (246, 242); 1 moves it 4 a frame by the stick or the d-pad (x 0..492, y 0..420),
+ * waiting (2) until confirm (event 4 +0x5C) or cancel (+0x60); 2 ends it */
+s32 func_0033A470(void *self, void *a1, u8 *cmd) {
+    VObject *ev;
+    s32 slot;
+    f32 v[4] __attribute__((aligned(16)));
+    f32 a;
+    u16 pos[2];
+
+    switch (cmd[3]) {
+    case 0:
+        slot = Effect_New(D_0044E578, 0xC, effect_798B0_init);
+        ev = D_0044E4D0;
+        VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 6, slot);
+        pos[0] = 0xF6;
+        pos[1] = 0xF2;
+        VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 7, pos[0]);
+        VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 8, pos[1]);
+        func_002D6090(D_0044E578, slot, pos);
+        return 1;
+    case 1:
+        break;
+    case 2:
+        slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 6);
+        func_002D6090(D_0044E578, slot, NULL);
+        return 1;
+    default:
+        return 1;
+    }
+    ev = D_0044E4D0;
+    slot = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 6);
+    pos[0] = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 7);
+    pos[1] = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 8);
+    sceVu0CopyVector(v, D_0047E3A0);
+    v[0] += (f32)(((D_0047E374 & PAD_RIGHT) != 0) - ((D_0047E374 & PAD_LEFT) != 0));
+    v[2] += (f32)(((D_0047E374 & PAD_DOWN) != 0) - ((D_0047E374 & PAD_UP) != 0));
+    a = v[0];
+    if (a <= 0.0f) {
+        a = -a;
+    }
+    if (!(a <= 0.5f)) {
+        if (v[0] < 0.0f) {
+            pos[0] = pos[0] < 4 ? 0 : pos[0] - 4;
+        } else {
+            pos[0] += 4;
+            if (pos[0] >= 0x1ED) {
+                pos[0] = 0x1EC;
+            }
+        }
+    }
+    a = v[2];
+    if (a <= 0.0f) {
+        a = -a;
+    }
+    if (!(a <= 0.5f)) {
+        if (v[2] < 0.0f) {
+            pos[1] = pos[1] < 4 ? 0 : pos[1] - 4;
+        } else {
+            pos[1] += 4;
+            if (pos[1] >= 0x1A5) {
+                pos[1] = 0x1A4;
+            }
+        }
+    }
+    VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 7, pos[0]);
+    VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 8, pos[1]);
+    func_002D6090(D_0044E578, slot, pos);
+    if (D_0047E36C & MENU_CONFIRM) {
+        VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 4);
+        return 1;
+    }
+    if (D_0047E36C & MENU_CANCEL) {
+        VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 4);
+        return 1;
+    }
+    return 2;
+}
