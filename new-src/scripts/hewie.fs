@@ -1,5 +1,7 @@
 \ hewie.fs - Hewie keeps up with Fiona: he trots when she gets a little away, runs when she is
 \ far, and stands watching her when she's close. On a new room he arrives at her side.
+IN: hewie
+USING: engine vectors state player ;
 
 variable hewie        -1 hewie !
 variable hewie-room   -1 hewie-room !

@@ -2,6 +2,7 @@
 \   T{ 1 2 + -> 3 }T
 \ runs the code before `->`, then checks the stack against the values after it.
 \ `testing name` labels what follows; `test-summary` prints the totals and sets the exit status.
+IN: tester
 
 variable #tests   variable #errors
 variable t-depth  variable t-n  variable t-bad

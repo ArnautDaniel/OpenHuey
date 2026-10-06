@@ -2,6 +2,8 @@
 \   W A S D  walk (relative to the view)     Shift  run
 \ The camera takes the room's own setup nearest to her and keeps her in sight - roughly what
 \ the game's camera director does - or follows behind her in a room without setups.
+IN: player
+USING: engine keys vectors views state ;
 
 variable fiona        -1 fiona !
 

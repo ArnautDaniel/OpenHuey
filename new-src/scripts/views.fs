@@ -1,5 +1,7 @@
 \ views.fs - the room's own camera setups (the views the game cuts between): [ and ] step
 \ through them. The free camera keeps working from wherever a view puts it.
+IN: views
+USING: engine vectors ;
 
 variable view  -1 view !
 

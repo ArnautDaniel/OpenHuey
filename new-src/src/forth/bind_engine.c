@@ -508,6 +508,7 @@ void engine_draw_2d(Engine *e) {
 }
 
 void bind_engine(Forth *f) {
+    Vocab *saved = f->m.current, *engine = forth_vocab(f, "engine");
     static const struct {
         const char *name;
         Code code;
@@ -533,6 +534,8 @@ void bind_engine(Forth *f) {
     };
     size_t i;
 
+    forth_set_current(f, engine);   /* the engine's words: scripts say USING: engine ; */
+    engine->state = VOCAB_LOADED;
     for (i = 0; i < sizeof(prims) / sizeof(prims[0]); i++) {
         forth_prim(f, prims[i].name, prims[i].code);
     }
@@ -593,4 +596,5 @@ void bind_engine(Forth *f) {
     field(f, "gfx.ambient-b", offsetof(RenderSettings, ambient.z));
     field(f, "gfx.rim", offsetof(RenderSettings, rim));
     field(f, "gfx.debug", offsetof(RenderSettings, debug));
+    f->m.current = saved;
 }

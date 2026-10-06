@@ -78,9 +78,7 @@ static int load_scripts(Forth *f) {
     if (forth_include(f, path) != 0) {
         return 0;
     }
-    /* scripts include each other relative to the scripts folder */
-    snprintf(path, sizeof(path), ": scripts-dir s\" %s\" ;", dir);
-    forth_eval(f, path, strlen(path), "main");
+    forth_add_root(f, dir);   /* where USING: finds vocabularies */
     snprintf(path, sizeof(path), "%s/game.fs", dir);
     return forth_include(f, path) == 0;
 }

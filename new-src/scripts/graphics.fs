@@ -1,12 +1,16 @@
 \ graphics.fs - the look of the picture: presets, and a settings menu (F1).
 \ The settings are C's (render.h RenderSettings), reached through the gfx fields: flags and
 \ counts are 32-bit (l@ l!), the rest floats (sf@ sf!).
+IN: graphics
+USING: engine strings state ;
 
 \ ---- presets ----
+<PRIVATE
 : on  ( field -- ) gfx swap execute 1 swap l! ;
 : off ( field -- ) gfx swap execute 0 swap l! ;
 : int! ( n field -- ) gfx swap execute l! ;
 : float! ( field -- ) ( F: x -- ) gfx swap execute sf! ;
+PRIVATE>
 
 \ as the PS2 showed it: no effects, a 4:3 picture
 : look-original
@@ -38,6 +42,7 @@
 \ An item is a record: label (address, length), kind, the field's word, and for numbers
 \ min, max, step - in thousandths, so all of it fits in cells.
 
+<PRIVATE
 0 constant flag        \ on / off
 1 constant count       \ min .. max by 1
 2 constant doubling    \ 1 2 4 8 ...
@@ -48,9 +53,6 @@
 7 constant item-cells
 create items 48 item-cells * cells allot
 variable #items
-
-\ a string copied into the dictionary (s" text" in the interpreter is only a scratch buffer)
-: keep ( addr len -- addr' len )  dup >r here dup >r swap move r> r> dup allot align ;
 
 : item ( label-addr label-len field-xt kind min max step -- )
     #items @ item-cells * cells items + >r
@@ -102,7 +104,7 @@ variable tbl
 
 \ ---- saving: the settings written out as Forth, read back at start-up ----
 : settings-file ( -- addr len )
-    0 path-len !  user-dir path+  s" graphics.fs" path+  path path-len @ ;
+    str-reset  user-dir +str  s" graphics.fs" +str  str ;
 
 : save-item ( rec -- )
     dup kind action = if  drop exit  then
@@ -117,6 +119,8 @@ defer save-graphics
     #items @ 0 ?do  i rec save-item  loop
     end-file  ." saved " settings-file type cr ;
 ' (save-graphics) is save-graphics
+
+PRIVATE>
 
 \ ---- the items ----
 s" Preset: as on the PS2"  ' look-original  action 0 0 0 item

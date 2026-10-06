@@ -21,6 +21,30 @@ for this game. Names are case-insensitive.
   emptied; a task that errs is stopped; an `on-tick` hook that errs is removed. `' word catch`
   runs a word and gives -1 instead of unwinding (`error-message` has the text).
 
+## Vocabularies (as in Factor)
+
+Words live in vocabularies. A file starts by saying where its definitions go and what it uses:
+
+```forth
+\ scripts/player.fs
+IN: player
+USING: engine keys vectors views state ;
+```
+
+- `USING: a b ;` loads each vocabulary that isn't loaded yet from its file - `a` is
+  `scripts/a.fs`, `a.b` is `scripts/a/b.fs` - and makes its words visible here. `USE: a` does one.
+- A file sees only its own words, the vocabularies it lists, and the core (`forth`: the
+  language itself, from forth.c and prelude.fs). Nothing leaks in from files it didn't ask for.
+- Its own definitions win over everything; a used vocabulary's win over the core. If two used
+  vocabularies define the same name, using it is an error: say which, `vocab:name`.
+- `<PRIVATE ... PRIVATE>` puts helpers in `name.private`: visible in the file, not to its users
+  (`name.private:word` still reaches one, for debugging).
+- Vocabularies loading each other (a cycle of USING:s) is an error.
+- The prompt (console, `--eval`, the `forth` tool) sees every loaded vocabulary; `USING:` there
+  narrows nothing, it loads. `vocabs` lists them, `vocab-words name` lists one, `words` lists
+  what the current source sees.
+- The engine's C words are the `engine` vocabulary.
+
 ## Writing words
 
 ```forth
@@ -86,7 +110,8 @@ Comments: `( ... )` and `\ to the end of the line`.
 
 ## The scripts
 
-`prelude.fs` (the language), then `game.fs`, which loads the rest with `script name.fs`:
+`prelude.fs` (the language, `IN: forth`), then `game.fs` (`IN: game`), whose `USING:` pulls in the
+rest; each file is a vocabulary of the same name - `state` (shared flags), `keys`, `strings`,
 `vectors.fs` (float vectors, the camera's position and angles), `freecam.fs`, `views.fs` (the
 room's camera setups), `rooms.fs` (stepping through rooms), `player.fs` (playing as Fiona),
 `doors.fs` (Space at an exit goes through to the room it leads to; `.exits` lists them),

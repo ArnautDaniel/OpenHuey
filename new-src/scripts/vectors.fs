@@ -1,4 +1,6 @@
 \ vectors.fs - 3D vectors on the float stack ( F: x y z ), and the camera's position and angles.
+IN: vectors
+USING: engine ;
 
 fvariable k
 \ scale a vector

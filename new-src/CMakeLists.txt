@@ -26,7 +26,7 @@ enable_testing()
 file(GLOB FORTH_TESTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_*.fs")
 foreach(t ${FORTH_TESTS})
     get_filename_component(name "${t}" NAME_WE)
-    add_test(NAME ${name} COMMAND forth-tool "${CMAKE_CURRENT_SOURCE_DIR}/tests/tester.fs" "${t}")
+    add_test(NAME ${name} COMMAND forth-tool "${t}")
 endforeach()
 
 # ---- the game ----

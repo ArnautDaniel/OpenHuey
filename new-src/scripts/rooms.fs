@@ -1,4 +1,6 @@
 \ rooms.fs - going from room to room (PageUp / PageDown), the camera put in each one's middle.
+IN: rooms
+USING: engine vectors views state ;
 
 fvariable lx  fvariable ly  fvariable lz  fvariable hx  fvariable hy  fvariable hz
 : mid ( F: a b -- m )  f+ f2/ ;

@@ -3,6 +3,8 @@
 \ words that lay down branches and patch them: `here` is the next cell of the definition
 \ being compiled, and branch targets are absolute addresses.
 
+IN: forth
+
 : true  -1 ;
 : false 0 ;
 : cell+ cell + ;

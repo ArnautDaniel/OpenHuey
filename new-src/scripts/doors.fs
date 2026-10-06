@@ -1,6 +1,8 @@
 \ doors.fs - going from room to room. The game's door table says which exit of a room leads to
 \ which exit of another; each exit has nav triangles: "out" and "through" (at the doorway) and
 \ "in" (where someone arriving stands). Standing at an exit, Space goes through.
+IN: doors
+USING: engine vectors views state player ;
 
 \ the exit she is standing at (one that leads somewhere), or -1
 variable t

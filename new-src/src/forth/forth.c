@@ -179,10 +179,12 @@ static Word *new_word(Forth *f, const char *name, size_t len, Code code) {
     align_here(f);
     w = allot(f, sizeof(Word));
     memset(w, 0, sizeof(Word));
-    w->link = f->latest;
+    w->vocab = f->m.current;
+    w->link = f->m.current->latest;
     w->code = code;
     w->len = (uint8_t)len;
     memcpy(w->name, name, len);
+    f->m.current->latest = w;
     f->latest = w;
     return w;
 }
@@ -198,10 +200,70 @@ static int same_name(const char *a, const char *b, size_t n) {
     return 1;
 }
 
-Word *forth_find(Forth *f, const char *name, size_t len) {
+/* ---- vocabularies ---- */
+
+static Vocab *vocab_find(Forth *f, const char *name, size_t len) {
+    Vocab *v;
+
+    for (v = f->vocabs; v != NULL; v = v->next) {
+        if (strlen(v->name) == len && same_name(v->name, name, len)) {
+            return v;
+        }
+    }
+    return NULL;
+}
+
+Vocab *forth_vocab(Forth *f, const char *name) {
+    Vocab *v = vocab_find(f, name, strlen(name));
+
+    if (v == NULL) {
+        v = calloc(1, sizeof(Vocab));
+        snprintf(v->name, sizeof(v->name), "%s", name);
+        v->next = f->vocabs;
+        f->vocabs = v;
+    }
+    return v;
+}
+
+static void order_add(Manifest *m, Vocab *v) {
+    int i;
+
+    for (i = 0; i < m->norder; i++) {
+        if (m->order[i] == v) {
+            return;
+        }
+    }
+    if (m->norder < ORDER_MAX) {
+        m->order[m->norder++] = v;
+    }
+}
+
+void forth_set_current(Forth *f, Vocab *v) {
+    f->m.current = v;
+    order_add(&f->m, v);
+}
+
+void forth_add_root(Forth *f, const char *dir) {
+    if (f->nroots < 4) {
+        snprintf(f->roots[f->nroots++], sizeof(f->roots[0]), "%s", dir);
+    }
+}
+
+/* a source's starting view: only the core; definitions into `scratch` until IN: */
+static Manifest fresh_manifest(Forth *f, int listener) {
+    Manifest m;
+
+    memset(&m, 0, sizeof(m));
+    m.current = forth_vocab(f, "scratch");
+    m.order[m.norder++] = m.current;
+    m.listener = listener;
+    return m;
+}
+
+static Word *in_vocab(Vocab *v, const char *name, size_t len) {
     Word *w;
 
-    for (w = f->latest; w != NULL; w = w->link) {
+    for (w = v->latest; w != NULL; w = w->link) {
         if (w->len == len && !(w->flags & WORD_HIDDEN) && same_name(w->name, name, len)) {
             return w;
         }
@@ -209,16 +271,63 @@ Word *forth_find(Forth *f, const char *name, size_t len) {
     return NULL;
 }
 
-/* the word defined right after w (where w's body ends), or NULL for the latest */
-static Word *word_after(Forth *f, Word *w) {
-    Word *x;
+/* the one word of that name among vocabularies (an error if two have it) */
+static Word *unique(Forth *f, Word *found, Word *w, const char *name, size_t len) {
+    if (found != NULL && w != NULL && found != w) {
+        forth_error(f, "%.*s is in both %s and %s: say %s:%.*s or %s:%.*s", (int)len, name, found->vocab->name,
+                    w->vocab->name, found->vocab->name, (int)len, name, w->vocab->name, (int)len, name);
+    }
+    return found != NULL ? found : w;
+}
 
-    for (x = f->latest; x != NULL; x = x->link) {
-        if (x->link == w) {
-            return x;
+/* Lookup: `vocab:name` exactly; else the source's own vocabulary, then the ones it uses
+ * (exactly one may have the name), then - at the prompt - every loaded one, then the core */
+Word *forth_find(Forth *f, const char *name, size_t len) {
+    Word *found = NULL, *w;
+    Vocab *v;
+    size_t i;
+    int k;
+
+    for (i = 1; i + 1 < len; i++) {
+        if (name[i] == ':') {
+            v = vocab_find(f, name, i);
+            if (v != NULL) {
+                return in_vocab(v, name + i + 1, len - i - 1);
+            }
+            break;
         }
     }
-    return NULL;
+    if ((w = in_vocab(f->m.current, name, len)) != NULL) {
+        return w;
+    }
+    for (k = 0; k < f->m.norder; k++) {
+        if (f->m.order[k] != f->core && f->m.order[k] != f->m.current) {
+            found = unique(f, found, in_vocab(f->m.order[k], name, len), name, len);
+        }
+    }
+    if (found == NULL && f->m.listener) {
+        for (v = f->vocabs; v != NULL; v = v->next) {
+            if (v != f->core) {
+                found = unique(f, found, in_vocab(v, name, len), name, len);
+            }
+        }
+    }
+    return found != NULL ? found : in_vocab(f->core, name, len);
+}
+
+/* the word defined right after w (where w's body ends), or NULL if none */
+static Word *word_after(Forth *f, Word *w) {
+    Word *best = NULL, *x;
+    Vocab *v;
+
+    for (v = f->vocabs; v != NULL; v = v->next) {
+        for (x = v->latest; x != NULL; x = x->link) {
+            if (x > w && (best == NULL || x < best)) {
+                best = x;
+            }
+        }
+    }
+    return best;
 }
 
 /* ---- the inner interpreter ---- */
@@ -893,6 +1002,8 @@ static void include_file(Forth *f, const char *path, size_t plen) {
     char *name = malloc(plen + 1), *text;
     size_t len;
 
+    Manifest saved = f->m;
+
     memcpy(name, path, plen);
     name[plen] = 0;
     text = read_file(name, &len);
@@ -900,7 +1011,9 @@ static void include_file(Forth *f, const char *path, size_t plen) {
         forth_error(f, "include: can't read %s", name);
         /* (name leaks on this path: errors are rare and it is tiny) */
     }
+    f->m = fresh_manifest(f, 0);
     evaluate(f, text, len, name, text);
+    f->m = saved;   /* (on an error the catch point puts its own view back) */
 }
 
 /* run text with a catch point; on error: back to interpreting, stacks emptied (ABORT) */
@@ -909,8 +1022,12 @@ int forth_eval(Forth *f, const char *text, size_t len, const char *name) {
     int level = f->nsrc, depth = f->depth;
     Cell *ip = IP;
     Task *t = f->t;
+    Manifest saved = f->m;
 
+    f->m = f->listener;   /* text from the prompt sees every loaded vocabulary */
     if (setjmp(jb) != 0) {
+        f->listener = f->m;
+        f->m = saved;
         f->catch = prev;
         while (f->nsrc > level) {
             pop_source(f);
@@ -926,14 +1043,18 @@ int forth_eval(Forth *f, const char *text, size_t len, const char *name) {
     f->catch = &jb;
     evaluate(f, text, len, name, NULL);
     f->catch = prev;
+    f->listener = f->m;   /* (USING: and IN: at the prompt last) */
+    f->m = saved;
     return 0;
 }
 
 int forth_include(Forth *f, const char *path) {
     jmp_buf jb, *prev = f->catch;
     int level = f->nsrc, depth = f->depth;
+    Manifest saved = f->m;
 
     if (setjmp(jb) != 0) {
+        f->m = saved;
         f->catch = prev;
         while (f->nsrc > level) {
             pop_source(f);
@@ -954,8 +1075,10 @@ int forth_call(Forth *f, Word *w) {
     int depth = f->depth;
     Cell *ip = IP;
     Task *t = f->t;
+    Manifest saved = f->m;
 
     if (setjmp(jb) != 0) {
+        f->m = saved;
         f->catch = prev;
         f->depth = depth;
         f->t = t;
@@ -1080,7 +1203,7 @@ PRIM(p_dotquote) {   /* ." text" */
 
     if (f->compiling) {
         compile_string(f, s, len);
-        comma(f, (Cell)forth_find(f, "type", 4));
+        comma(f, (Cell)f->w_type);
     } else {
         forth_type(f, s, len);
     }
@@ -1121,22 +1244,154 @@ PRIM(p_evaluate) {
 
 /* ---- inspecting the system ---- */
 
-PRIM(p_words) {
+static void list_words(Forth *f, Vocab *v) {
     Word *x;
-    int col = 0;
+    int col = (int)strlen(v->name) + 2;
 
-    for (x = f->latest; x != NULL; x = x->link) {
+    forth_printf(f, "%s: ", v->name);
+    for (x = v->latest; x != NULL; x = x->link) {
         if (x->flags & WORD_HIDDEN || x->len == 0) {
             continue;
         }
         if (col + x->len + 1 > 78) {
-            forth_type(f, "\n", 1);
-            col = 0;
+            forth_type(f, "\n  ", 3);
+            col = 2;
         }
         forth_printf(f, "%s ", x->name);
         col += x->len + 1;
     }
     forth_type(f, "\n", 1);
+}
+PRIM(p_words) {   /* the words this source sees, by vocabulary */
+    int k;
+
+    for (k = 0; k < f->m.norder; k++) {
+        if (f->m.order[k] != f->core) {
+            list_words(f, f->m.order[k]);
+        }
+    }
+    list_words(f, f->core);
+}
+PRIM(p_vocab_words) {   /* vocab-words name */
+    size_t len;
+    const char *name = parse_name(f, &len, "vocab-words");
+    Vocab *v = vocab_find(f, name, len);
+
+    if (v == NULL) {
+        forth_error(f, "no vocabulary %.*s", (int)len, name);
+    }
+    list_words(f, v);
+}
+PRIM(p_vocabs) {   /* every vocabulary */
+    Vocab *v;
+
+    for (v = f->vocabs; v != NULL; v = v->next) {
+        forth_printf(f, "%s%s ", v->name, v->state == VOCAB_LOADING ? "(loading)" : "");
+    }
+    forth_type(f, "\n", 1);
+}
+
+/* IN: name - definitions from here go into the vocabulary `name` */
+PRIM(p_in) {
+    size_t len;
+    const char *name = parse_name(f, &len, "IN:");
+    char buf[VOCAB_NAME_MAX + 1];
+    Vocab *v;
+
+    snprintf(buf, sizeof(buf), "%.*s", (int)len, name);
+    v = forth_vocab(f, buf);
+    if (v->state == VOCAB_NEW) {
+        v->state = VOCAB_LOADED;   /* (a file included directly, not through USING:) */
+    }
+    forth_set_current(f, v);
+}
+
+/* the file for vocabulary a.b: <root>/a/b.fs */
+static int vocab_file(Forth *f, const char *name, size_t len, char *path, size_t n) {
+    int r;
+    size_t i;
+
+    for (r = 0; r < f->nroots; r++) {
+        FILE *fp;
+        int k = snprintf(path, n, "%s/", f->roots[r]);
+
+        for (i = 0; i < len && (size_t)k + 4 < n; i++) {
+            path[k++] = name[i] == '.' ? '/' : name[i];
+        }
+        snprintf(path + k, n - (size_t)k, ".fs");
+        if ((fp = fopen(path, "rb")) != NULL) {
+            fclose(fp);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* a vocabulary, loaded from its file if it isn't yet */
+static Vocab *require(Forth *f, const char *name, size_t len) {
+    Vocab *v = vocab_find(f, name, len);
+    char path[1024], buf[VOCAB_NAME_MAX + 1];
+    jmp_buf jb, *prev = f->catch;
+
+    if (v != NULL && v->state == VOCAB_LOADED) {
+        return v;
+    }
+    if (v != NULL && v->state == VOCAB_LOADING) {
+        forth_error(f, "USING: %.*s - it is still loading (vocabularies using each other)", (int)len, name);
+    }
+    if (len > VOCAB_NAME_MAX || !vocab_file(f, name, len, path, sizeof(path))) {
+        forth_error(f, "USING: no vocabulary %.*s (no %.*s.fs in the scripts)", (int)len, name, (int)len, name);
+    }
+    snprintf(buf, sizeof(buf), "%.*s", (int)len, name);
+    v = forth_vocab(f, buf);
+    v->state = VOCAB_LOADING;
+    if (setjmp(jb) != 0) {   /* the file failed: not loaded after all; pass the error on */
+        f->catch = prev;
+        v->state = VOCAB_NEW;
+        longjmp(*prev, 1);
+    }
+    f->catch = &jb;
+    include_file(f, path, strlen(path));
+    f->catch = prev;
+    v->state = VOCAB_LOADED;
+    return v;
+}
+
+/* USING: a b c ; - this source uses these vocabularies (loading them if needed) */
+PRIM(p_using) {
+    for (;;) {
+        size_t len;
+        const char *name = parse_name(f, &len, "USING:");
+
+        if (len == 1 && name[0] == ';') {
+            return;
+        }
+        order_add(&f->m, require(f, name, len));
+    }
+}
+PRIM(p_use) {   /* USE: name - one vocabulary */
+    size_t len;
+    const char *name = parse_name(f, &len, "USE:");
+
+    order_add(&f->m, require(f, name, len));
+}
+
+/* <PRIVATE ... PRIVATE> - helpers in name.private: visible here, not to other users */
+PRIM(p_private_begin) {
+    char buf[VOCAB_NAME_MAX + 1];
+    Vocab *v;
+
+    snprintf(buf, sizeof(buf), "%.55s.private", f->m.current->name);
+    v = forth_vocab(f, buf);
+    v->parent = f->m.current;
+    v->state = VOCAB_LOADED;
+    forth_set_current(f, v);
+}
+PRIM(p_private_end) {
+    if (f->m.current->parent == NULL) {
+        forth_error(f, "PRIVATE> without <PRIVATE");
+    }
+    f->m.current = f->m.current->parent;
 }
 
 static const char *word_kind(Word *x) {
@@ -1150,11 +1405,14 @@ static const char *word_kind(Word *x) {
 
 /* the word at x, if x is one (a literal that is an execution token) */
 static Word *as_word(Forth *f, Cell x) {
+    Vocab *v;
     Word *w;
 
-    for (w = f->latest; w != NULL; w = w->link) {
-        if ((Cell)w == x) {
-            return w;
+    for (v = f->vocabs; v != NULL; v = v->next) {
+        for (w = v->latest; w != NULL; w = w->link) {
+            if ((Cell)w == x) {
+                return w;
+            }
         }
     }
     return NULL;
@@ -1220,8 +1478,10 @@ PRIM(p_catch) {
     Task *t = f->t;
     int sp = t->sp, rp = t->rp, fp = t->fp, depth = f->depth, nsrc = f->nsrc, silent = f->silent;
     Cell *ip = IP, compiling = f->compiling;
+    Manifest saved = f->m;
 
     if (setjmp(jb) != 0) {
+        f->m = saved;
         f->catch = prev;
         f->t = t;
         t->sp = sp;
@@ -1401,7 +1661,9 @@ static void define_core(Forth *f) {
         {"'", p_tick}, {"create", p_create}, {">body", p_tobody}, {"latest", p_latest},
         {"find", p_find}, {"parse-name", p_parse_name}, {"parse-line", p_parse_line}, {"char", p_char}, {"include", p_include},
         {"included", p_included}, {"evaluate", p_evaluate}, {"execute", p_execute},
-        {"words", p_words}, {"see", p_see}, {"bye", p_bye}, {"catch", p_catch}, {"error-message", p_error_message},
+        {"words", p_words}, {"see", p_see}, {"vocabs", p_vocabs}, {"vocab-words", p_vocab_words},
+        {"IN:", p_in}, {"USING:", p_using}, {"USE:", p_use}, {"<PRIVATE", p_private_begin},
+        {"PRIVATE>", p_private_end}, {"bye", p_bye}, {"catch", p_catch}, {"error-message", p_error_message},
         {"i", p_i}, {"j", p_j}, {"leave", p_leave}, {"unloop", p_unloop},
         {"yield", p_yield}, {"wait", p_wait}, {"spawn", p_spawn}, {"kill", p_kill}, {"me", p_me},
         {"frame", p_frame}, {"tick-tasks", p_tick_tasks}, {".tasks", p_tasks},
@@ -1437,6 +1699,7 @@ static void define_core(Forth *f) {
         prim_word(f, immediates[i].name, immediates[i].code, WORD_IMMEDIATE, 0);
     }
     f->w_comma = forth_find(f, ",", 1);
+    f->w_type = forth_find(f, "type", 4);
     forth_constant(f, "cell", (Cell)sizeof(Cell));
 }
 
@@ -1447,11 +1710,16 @@ Forth *forth_new(size_t dict_bytes) {
     f->here = f->mem;
     f->end = f->mem + dict_bytes;
     f->base = 10;
+    f->core = forth_vocab(f, "forth");
+    f->core->state = VOCAB_LOADED;
+    f->m.current = f->core;
+    f->m.order[f->m.norder++] = f->core;
     f->main = calloc(1, sizeof(Task));
     snprintf(f->main->name, sizeof(f->main->name), "interpreter");
     f->t = f->main;
     forth_set_output(f, NULL, NULL);
     define_core(f);
+    f->listener = fresh_manifest(f, 1);
     return f;
 }
 
@@ -1464,6 +1732,12 @@ void forth_free(Forth *f) {
     }
     while (f->nsrc > 0) {
         pop_source(f);
+    }
+    while (f->vocabs != NULL) {
+        Vocab *v = f->vocabs;
+
+        f->vocabs = v->next;
+        free(v);
     }
     free(f->main);
     free(f->mem);

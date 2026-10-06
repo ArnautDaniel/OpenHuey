@@ -34,6 +34,7 @@ int main(int argc, char **argv) {
     int i, interactive = argc == 1, failed = 0;
 
     forth_prim(f, "exit-status", p_exit_status);
+    forth_add_root(f, dir);
     snprintf(prelude, sizeof(prelude), "%s/prelude.fs", dir);
     if (forth_include(f, prelude) != 0) {
         return 1;
@@ -41,8 +42,18 @@ int main(int argc, char **argv) {
     for (i = 1; i < argc && !f->bye; i++) {
         if (strcmp(argv[i], "-i") == 0) {
             interactive = 1;
-        } else if (forth_include(f, argv[i]) != 0) {
-            failed = 1;
+        } else {
+            char root[1024], *slash;
+
+            snprintf(root, sizeof(root), "%s", argv[i]);   /* its folder: for its USING:s */
+            slash = strrchr(root, '/');
+            if (slash != NULL) {
+                *slash = 0;
+                forth_add_root(f, root);
+            }
+            if (forth_include(f, argv[i]) != 0) {
+                failed = 1;
+            }
         }
     }
     if (interactive) {
