@@ -2897,3 +2897,76 @@ void func_0038BC70(SubScreen *s) {
     func_0038DBE0(s);
     sub_fade_back(s);
 }
+
+extern const char D_00463FE0[];   /* the pictures' file of a group */
+extern const PTMF D_0044C040;
+
+/* load the art gallery's group `g` of pictures into the work buffer (any load in progress
+ * cancelled first) */
+static inline void art_group_load(SubScreen *s, VObject *ld, u8 g) {
+    char name[0x20];
+
+    SUB_PAGE(s, 0x3, u8) = 1;
+    func_0026EDD0(name, 0x20, D_00463FE0, g);
+    VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(
+        ld, name, VCALL(gProgress, 0x88, void *(*)(Progress *))(gProgress), 0x6000000, 0);
+}
+
+/* state: the art gallery's list - up / down round the group of 8 (48 pictures), left /
+ * previous and right / next to the group before / after (its pictures loaded), confirm an
+ * unlocked picture (state D_0044C040; a buzzer if locked), cancel closes; then the list */
+void func_00387F00(SubScreen *s) {
+    if (!s->fading) {
+        VObject *ld = gFileLoader;
+        u8 *k = &SUB_PAGE(s, 0x0, u8);
+        u32 pad;
+
+        if (VCALL(ld, 0x28, s32 (*)(VObject *, u32))(ld, 0x6000000) != 2) {
+            SUB_PAGE(s, 0x3, u8) = 0;
+        }
+        SUB_PAGE(s, 0x1, u8) = *k;
+        pad = D_0047E36C;
+        if (pad & MENU_CONFIRM) {
+            u16 f = D_0044BFE0[*k];
+
+            if (AT(D_0044E978, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) {
+                ptmf_set(&s->state, &D_0044C040);
+                Sound_PlaySE(SE_DECIDE);
+            } else {
+                Sound_PlaySE(SE_BUZZER);
+            }
+        } else if (pad & MENU_UP) {
+            if (*k == 0) {
+                *k = 7;
+            } else {
+                *k = (*k - 1) % 8 + (*k >> 3) * 8;
+            }
+            if (*k >= 0x30) {
+                *k = 0x2F;
+            }
+        } else if (pad & MENU_DOWN) {
+            *k = (*k + 1) % 8 + (*k >> 3) * 8;
+            if (*k >= 0x30) {
+                *k = 0x30;
+            }
+        } else if (pad & (MENU_LEFT | MENU_PREV)) {
+            if (SUB_PAGE(s, 0x3, u8) != 0) {
+                VCALL(ld, 0x14, void (*)(VObject *, u32))(ld, 0x6000000);
+            }
+            *k = (*k >> 3) == 0 ? 0x28 : ((*k >> 3) - 1) * 8;
+            art_group_load(s, ld, *k >> 3);
+        } else if (pad & (MENU_RIGHT | MENU_NEXT)) {
+            if (SUB_PAGE(s, 0x3, u8) != 0) {
+                VCALL(ld, 0x14, void (*)(VObject *, u32))(ld, 0x6000000);
+            }
+            *k = (*k >> 3) < 5 ? ((*k >> 3) + 1) * 8 : 0;
+            art_group_load(s, ld, *k >> 3);
+        } else if (pad & MENU_CANCEL) {
+            s->close = 1;
+        }
+        if (SUB_PAGE(s, 0x1, u8) != *k) {
+            Sound_PlaySE(SE_CURSOR);
+        }
+    }
+    func_00386550(s);
+}
