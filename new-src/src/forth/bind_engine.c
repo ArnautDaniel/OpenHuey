@@ -397,6 +397,70 @@ PRIM(p_f_to_s) {   /* ( places -- addr len ) ( F: x -- ) */
 
 PRIM(p_gfx) { PUSH(&gRender); }
 
+/* ---- files: the player's own folder, and writing Forth's output into a file ---- */
+
+PRIM(p_user_dir) {   /* ( -- addr len ) where settings are kept (made if needed; ends with /) */
+    static char *dir;
+
+    if (dir == NULL) {
+        dir = SDL_GetPrefPath("hg2", "new-src");
+    }
+    if (dir == NULL) {
+        forth_error(f, "user-dir: %s", SDL_GetError());
+    }
+    PUSH(dir);
+    PUSH(strlen(dir));
+}
+PRIM(p_file_exists) {   /* ( addr len -- flag ) */
+    Cell n = POP(), a = POP();
+    char path[1024];
+    FILE *fp;
+
+    snprintf(path, sizeof(path), "%.*s", (int)n, (const char *)a);
+    fp = fopen(path, "rb");
+    if (fp != NULL) {
+        fclose(fp);
+    }
+    PUSH(fp != NULL ? -1 : 0);
+}
+
+static FILE *sOutFile;
+static OutputFn sSavedOut;
+static void *sSavedCtx;
+
+static void file_output(void *ctx, const char *s, size_t n) {
+    fwrite(s, 1, n, (FILE *)ctx);
+}
+PRIM(p_to_file) {   /* ( addr len -- ) what Forth prints goes into this file until end-file */
+    Cell n = POP(), a = POP();
+    char path[1024];
+
+    if (sOutFile != NULL) {
+        forth_error(f, "to-file: already writing a file");
+    }
+    snprintf(path, sizeof(path), "%.*s", (int)n, (const char *)a);
+    sOutFile = fopen(path, "w");
+    if (sOutFile == NULL) {
+        forth_error(f, "to-file: can't write %s", path);
+    }
+    sSavedOut = f->out;
+    sSavedCtx = f->out_ctx;
+    forth_set_output(f, file_output, sOutFile);
+}
+PRIM(p_end_file) {
+    if (sOutFile != NULL) {
+        fclose(sOutFile);
+        sOutFile = NULL;
+        forth_set_output(f, sSavedOut, sSavedCtx);
+    }
+}
+PRIM(p_xt_to_name) {   /* ( xt -- addr len ) a word's name */
+    Word *x = (Word *)POP();
+
+    PUSH(x->name);
+    PUSH(x->len);
+}
+
 PRIM(p_ticks) { PUSH(gEngine.ticks); }
 PRIM(p_dt) { FPUSH(1.0 / TICKS_PER_SECOND); }
 PRIM(p_clear_color) {   /* ( F: r g b -- ) the background */
@@ -462,7 +526,8 @@ void bind_engine(Forth *f) {
         {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},
         {"pen-scale", p_pen_scale}, {"draw-text", p_draw_text}, {"draw-rect", p_draw_rect},
         {"screen-size", p_screen_size}, {"char-size", p_char_size}, {"n>s", p_n_to_s}, {"f>s$", p_f_to_s},
-        {"gfx", p_gfx},
+        {"gfx", p_gfx}, {"user-dir", p_user_dir}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
+        {"end-file", p_end_file}, {"xt>name", p_xt_to_name},
         {"clear-color", p_clear_color}, {"screenshot", p_screenshot}, {"console!", p_console},
         {"data-dir", p_data_dir},
     };

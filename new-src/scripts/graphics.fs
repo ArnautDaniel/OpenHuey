@@ -35,7 +35,7 @@
     0.8e ['] gfx.saturation float!  1.08e ['] gfx.contrast float! ;
 
 \ ---- the menu ----
-\ An item is a record: label (address, length), kind, the field's address, and for numbers
+\ An item is a record: label (address, length), kind, the field's word, and for numbers
 \ min, max, step - in thousandths, so all of it fits in cells.
 
 0 constant flag        \ on / off
@@ -52,7 +52,7 @@ variable #items
 \ a string copied into the dictionary (s" text" in the interpreter is only a scratch buffer)
 : keep ( addr len -- addr' len )  dup >r here dup >r swap move r> r> dup allot align ;
 
-: item ( label-addr label-len field-addr kind min max step -- )
+: item ( label-addr label-len field-xt kind min max step -- )
     #items @ item-cells * cells items + >r
     r@ 6 cells + !  r@ 5 cells + !  r@ 4 cells + !  r@ 3 cells + !  r@ 2 cells + !
     keep r@ cell+ !  r> !
@@ -61,7 +61,8 @@ variable #items
 : rec ( i -- addr ) item-cells * cells items + ;
 : label ( rec -- addr len )  dup @ swap cell+ @ ;
 : kind ( rec -- k ) 3 cells + @ ;
-: field ( rec -- addr ) 2 cells + @ ;
+: slot ( rec -- x ) 2 cells + @ ;                 \ the field word (an action: its word)
+: field ( rec -- addr ) slot gfx swap execute ;
 : lo ( rec -- n ) 4 cells + @ ;
 : hi ( rec -- n ) 5 cells + @ ;
 : step ( rec -- n ) 6 cells + @ ;
@@ -96,35 +97,54 @@ variable tbl
                     over clamp-count swap field l! endof
         number of   >r s>f r@ step thousandths f* r@ field sf@ f+
                     r@ lo thousandths r@ hi thousandths fclamp r> field sf! endof
-        action of   nip field execute endof
+        action of   nip slot execute endof
     endcase ;
+
+\ ---- saving: the settings written out as Forth, read back at start-up ----
+: settings-file ( -- addr len )
+    0 path-len !  user-dir path+  s" graphics.fs" path+  path path-len @ ;
+
+: save-item ( rec -- )
+    dup kind action = if  drop exit  then
+    dup kind number = if  dup field sf@ 6 f>s$ type  else  dup field l@ n>s type  then
+    ."  gfx " dup slot xt>name type
+    kind number = if  ."  sf!"  else  ."  l!"  then  cr ;
+
+defer save-graphics
+: (save-graphics)
+    settings-file to-file
+    ." \ graphics settings, saved from the menu (F1)" cr
+    #items @ 0 ?do  i rec save-item  loop
+    end-file  ." saved " settings-file type cr ;
+' (save-graphics) is save-graphics
 
 \ ---- the items ----
 s" Preset: as on the PS2"  ' look-original  action 0 0 0 item
 s" Preset: enhanced"       ' look-enhanced  action 0 0 0 item
 s" Preset: cinematic"      ' look-cinematic action 0 0 0 item
-s" Picture"         gfx gfx.aspect choice 0 1   s" fill the screen" s" 4:3" 2 names item
-s" Antialiasing"    gfx gfx.msaa doubling 1 8 0 item
-s" Resolution scale" gfx gfx.scale number 500 2000 250 item
-s" Texture filter"  gfx gfx.anisotropy number 1000 16000 1000 item
-s" Ambient occlusion" gfx gfx.ssao flag 0 1 0 item
-s"   strength"      gfx gfx.ssao-strength number 0 1000 100 item
-s"   radius"        gfx gfx.ssao-radius number 4000 60000 2000 item
-s" Bloom"           gfx gfx.bloom flag 0 1 0 item
-s"   threshold"     gfx gfx.bloom-threshold number 100 3000 100 item
-s"   strength"      gfx gfx.bloom-strength number 0 1000 20 item
-s" Fog"             gfx gfx.fog flag 0 1 0 item
-s"   density"       gfx gfx.fog-density number 0 10 1 item
-s"   start"         gfx gfx.fog-start number 0 1000000 25000 item
-s" Contact shadows" gfx gfx.shadows flag 0 1 0 item
-s" Tone mapping"    gfx gfx.tonemap choice 0 2   s" clip" s" soft" s" filmic" 3 names item
-s" Exposure"        gfx gfx.exposure number 250 4000 50 item
-s" Saturation"      gfx gfx.saturation number 0 2000 50 item
-s" Contrast"        gfx gfx.contrast number 500 2000 25 item
-s" Vignette"        gfx gfx.vignette number 0 1000 50 item
-s" Film grain"      gfx gfx.grain number 0 100 5 item
-s" Rim light"       gfx gfx.rim number 0 1500 50 item
-s" Show a buffer"   gfx gfx.debug choice 0 3   s" no" s" occlusion" s" bloom" s" depth" 4 names item
+s" Picture"         ' gfx.aspect choice 0 1   s" fill the screen" s" 4:3" 2 names item
+s" Antialiasing"    ' gfx.msaa doubling 1 8 0 item
+s" Resolution scale" ' gfx.scale number 500 2000 250 item
+s" Texture filter"  ' gfx.anisotropy number 1000 16000 1000 item
+s" Ambient occlusion" ' gfx.ssao flag 0 1 0 item
+s"   strength"      ' gfx.ssao-strength number 0 1000 100 item
+s"   radius"        ' gfx.ssao-radius number 4000 60000 2000 item
+s" Bloom"           ' gfx.bloom flag 0 1 0 item
+s"   threshold"     ' gfx.bloom-threshold number 100 3000 100 item
+s"   strength"      ' gfx.bloom-strength number 0 1000 20 item
+s" Fog"             ' gfx.fog flag 0 1 0 item
+s"   density"       ' gfx.fog-density number 0 10 1 item
+s"   start"         ' gfx.fog-start number 0 1000000 25000 item
+s" Contact shadows" ' gfx.shadows flag 0 1 0 item
+s" Tone mapping"    ' gfx.tonemap choice 0 2   s" clip" s" soft" s" filmic" 3 names item
+s" Exposure"        ' gfx.exposure number 250 4000 50 item
+s" Saturation"      ' gfx.saturation number 0 2000 50 item
+s" Contrast"        ' gfx.contrast number 500 2000 25 item
+s" Vignette"        ' gfx.vignette number 0 1000 50 item
+s" Film grain"      ' gfx.grain number 0 100 5 item
+s" Rim light"       ' gfx.rim number 0 1500 50 item
+s" Save as my default" ' save-graphics action 0 0 0 item
+s" Show a buffer"   ' gfx.debug choice 0 3   s" no" s" occlusion" s" bloom" s" depth" 4 names item
 
 \ ---- showing it ----
 variable selected  0 selected !
@@ -156,3 +176,5 @@ variable row-h  variable col-w
 ' draw-menu on-draw
 
 look-enhanced
+: load-settings  settings-file file-exists? if  settings-file included  then ;
+' load-settings catch drop

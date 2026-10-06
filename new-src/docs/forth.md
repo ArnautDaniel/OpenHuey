@@ -73,6 +73,16 @@ Comments: `( ... )` and `\ to the end of the line`.
 | `clear-color` | `F: r g b --` | |
 | `screenshot` | `addr len --` | save the next frame as a PNG |
 | `console!` | `flag --` | open or close the console |
+| `gfx` | `-- addr` | the picture's settings: `gfx.msaa gfx.aspect gfx.ssao gfx.bloom gfx.fog gfx.shadows gfx.tonemap gfx.debug` (l@ l!), `gfx.scale gfx.anisotropy gfx.ssao-radius gfx.ssao-strength gfx.bloom-threshold gfx.bloom-strength gfx.fog-density gfx.fog-start gfx.fog-r/g/b gfx.exposure gfx.saturation gfx.contrast gfx.vignette gfx.grain gfx.light-x/y/z gfx.light-r/g/b gfx.ambient-r/g/b gfx.rim` (sf@ sf!) |
+| `on-draw`, `off-draw` | `xt --` | run a word every frame to draw 2D |
+| `pen-color`, `pen-scale` | `rgba --`, `n --` | colour (0xRRGGBBAA) and text size for the drawing words |
+| `draw-text`, `draw-rect` | `addr len x y --`, `x y w h --` | in window pixels from the top left |
+| `screen-size`, `char-size` | `-- w h` | |
+| `n>s`, `f>s$` | `n -- addr len`, `places F: x -- addr len` | numbers as text |
+| `user-dir`, `file-exists?` | `-- addr len`, `addr len -- flag` | the player's settings folder |
+| `to-file`, `end-file` | `addr len --`, `--` | what Forth prints goes into a file in between |
+| `xt>name` | `xt -- addr len` | a word's name |
+| `act.shadow` | | an actor's contact-shadow radius (sf@ sf!) |
 
 ## The scripts
 
@@ -81,7 +91,7 @@ Comments: `( ... )` and `\ to the end of the line`.
 room's camera setups), `rooms.fs` (stepping through rooms), `player.fs` (playing as Fiona),
 `doors.fs` (Space at an exit goes through to the room it leads to; `.exits` lists them),
 `hewie.fs` (Hewie keeps up with her: trots, runs, stands watching; arrives at her side in a new
-room).
+room), `graphics.fs` (presets, the F1 menu - a small menu system in Forth - and saving them).
 
 The console (`` ` ``) evaluates whatever is typed, so any of this can be changed while the game
 runs: redefine a word and the next tick uses it (words already compiled into others keep the

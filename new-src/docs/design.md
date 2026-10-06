@@ -23,8 +23,24 @@ draws whatever state the scripts left behind.
 ```
 main.c   poll input -> console (if open) -> 0..4 ticks at 60 Hz -> draw
 tick     Forth tasks (forth_run_tasks), then on-tick hooks, then actors' motions advance
-draw     room mesh, actors (skinned on the CPU), console / 2D
+draw     room mesh, actors (skinned on the CPU, contact shadows) into the HDR scene target
+         -> post (render/post.c) onto the window -> on-draw hooks, hint, console (2D)
 ```
+
+## The picture
+
+- The scene is drawn in linear colour into an RGBA16F target, multisampled (MSAA, alpha to
+  coverage for cut-out textures). The game's colours are display values: textures are sRGB,
+  vertex colours raised to 2.2 - with every effect off the result matches the original.
+- After the scene (`post.c`): ambient occlusion from the depth buffer, bloom (a 6-level chain),
+  distance fog, exposure, tone mapping (clip, a soft shoulder that keeps the original look,
+  or ACES), saturation, contrast, vignette, grain, then display encoding.
+- Widescreen: the camera's field of view is vertical, so a wider window shows more at the sides
+  (the game's own fovs span the width of a 4:3 picture and are converted). `gfx.aspect` 1 gives
+  the original 4:3 picture with bars.
+- Every setting is a field of `RenderSettings` (render.h), reached from Forth as `gfx gfx.*`;
+  `graphics.fs` has the presets, the F1 menu, and saving (the settings written out as a Forth
+  script in the player's folder, read back at start-up).
 
 The game logic runs at a fixed 60 ticks a second whatever the display rate, so scripts can count
 ticks (`wait`, `dt`).
