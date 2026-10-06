@@ -2864,6 +2864,155 @@ void func_002FD150(u8 *e) {
 }
 
 
+/* ---- D_0047A6D0 (as D_00470E00): one dust mote in the fog's colour, drifting along a heading
+ * (+0xA8 / +0xAC), fading in to 0x40 over its life (+0xB0) and out again (+0xB4 its alpha),
+ * fainter within 64 of the camera ---- */
+
+extern f32 func_0031C248(f32 x);   /* sinf */
+extern VObject *D_0044E4F8;         /* the camera director */
+extern f32 func_0031C058(f32 x);   /* cosf */
+
+/* +0xC set up: the drawer's settings (one 32 x 32 cell at (32, 64), blended 0x40, layer 0x19,
+ * palette 2) */
+void func_0037B920(u8 *e) {
+    AT(e, 0xB8, s32) = 0;
+    AT(e, 0xBC, u8) = 0;
+    AT(e, 0x78, s64) = -1;
+    AT(e, 0x84, s32) = 0;
+    AT(e, 0x88, s32) = 0;
+    AT(e, 0x8C, s32) = 0;
+    AT(e, 0x90, s32) = 0x19;
+    AT(e, 0x94, s16) = 1;
+    AT(e, 0x96, s16) = 0x20;
+    AT(e, 0x98, s16) = 0x40;
+    AT(e, 0x9A, s16) = 0x20;
+    AT(e, 0x9C, s16) = 0x20;
+    AT(e, 0x9E, s16) = 0x200;
+    AT(e, 0xA0, s16) = 0x100;
+    AT(e, 0xA2, s8) = 0x40;
+    AT(e, 0xA3, s8) = 1;
+    AT(e, 0xA4, s8) = 1;
+    AT(e, 0xA5, s8) = 0x10;
+    AT(e, 0xA6, s8) = 2;
+}
+
+/* +0x18 start: arg { position, heading (+0x10), already going (+0x14) } - or none: stopped. The
+ * colour a quarter of the fog's (room effect 0x1D; else grey 0x10), placed within 5 of the
+ * point, 10..20 wide and 5..7 high, moving 0.1 a frame along the heading, living 150..181
+ * frames; one already going starts part way through its life */
+void func_0037B370(u8 *e, u8 *arg) {
+    static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD};
+    VObject *rnd;
+    QuadRec *r;
+    u8 *fog;
+
+    if (arg == NULL) {
+        AT(e, 0xBC, u8) = 1;
+        return;
+    }
+    r = ONE_REC(e, AT(e, 0xB8, s32));
+    fog = func_00266C40(D_0044E4C0, 0x1D);
+    if (fog != NULL) {
+        u32 c = AT(fog, 0x14, u32);
+
+        r->rgba[0] = (s32)(c & 0xFF) >> 2;
+        r->rgba[1] = (s32)(c & 0xFF00) >> 10;
+        r->rgba[2] = (s32)(c & 0xFF0000) >> 18;
+    } else {
+        r->rgba[2] = 0x10;
+        r->rgba[1] = 0x10;
+        r->rgba[0] = 0x10;
+    }
+    r->rgba[3] = 0;
+    sceVu0CopyVector(r->pos, (f32 *)arg);
+    rnd = D_0044E550;
+    r->pos[0] = r->pos[0] + 10.0f * (burst_rnd(rnd) - 0.5f);
+    r->pos[2] = r->pos[2] + 10.0f * (burst_rnd(rnd) - 0.5f);
+    r->w = 10.0f + 10.0f * burst_rnd(rnd);
+    r->h = 5.0f + 2.0f * burst_rnd(rnd);
+    r->turn = 0.0f;
+    r->frame = 0;
+    AT(e, 0xA8, f32) = k01.f * func_0031C248(AT(arg, 0x10, f32));
+    AT(e, 0xAC, f32) = k01.f * func_0031C058(AT(arg, 0x10, f32));
+    AT(e, 0xB0, s32) = (burst_int(rnd) & 0x1F) + 0x96;
+    if (AT(arg, 0x14, s32) != 0) {
+        f32 t = burst_rnd(rnd);
+        s32 n;
+
+        if (t < k01.f) {
+            r->rgba[3] = (s32)(640.0f * t);
+        } else {
+            r->rgba[3] = 0x40;
+        }
+        n = (s32)((f32)AT(e, 0xB0, s32) * t);
+        AT(e, 0xB0, s32) -= n;
+        r->pos[0] = r->pos[0] + AT(e, 0xA8, f32) * (f32)(n + r->rgba[3] * 2);
+        r->pos[2] = r->pos[2] + AT(e, 0xAC, f32) * (f32)(n + r->rgba[3] * 2);
+    }
+    AT(e, 0xB4, s32) = r->rgba[3];
+}
+
+/* +0x10 update (0 once gone): carried over and moved; fading in (by 0 / 1 a frame) to 0x40, then
+ * living out its time, then fading out; fainter by the distance squared / 4096 within 64 of
+ * the camera */
+s32 func_0037B710(u8 *e) {
+    f32 eye[4] __attribute__((aligned(16)));
+    u32 *src, *dst;
+    QuadRec *r;
+    f32 dx, dy, dz, d2;
+    s32 k;
+
+    if (AT(e, 0xBC, u8) == 1) {
+        return 0;
+    }
+    AT(e, 0xB8, s32) ^= 1;
+    src = (u32 *)ONE_REC(e, AT(e, 0xB8, s32) ^ 1);
+    dst = (u32 *)ONE_REC(e, AT(e, 0xB8, s32));
+    for (k = 0; k < 12; k++) {
+        dst[k] = src[k];
+    }
+    r = ONE_REC(e, AT(e, 0xB8, s32));
+    r->pos[0] = r->pos[0] + AT(e, 0xA8, f32);
+    r->pos[2] = r->pos[2] + AT(e, 0xAC, f32);
+    if (AT(e, 0xB0, s32) != 0) {
+        if (AT(e, 0xB4, s32) < 0x40) {
+            AT(e, 0xB4, s32) += burst_int(D_0044E550) & 1;
+            if (AT(e, 0xB4, s32) >= 0x41) {
+                AT(e, 0xB4, s32) = 0x40;
+            }
+        } else {
+            AT(e, 0xB0, s32)--;
+        }
+    } else {
+        AT(e, 0xB4, s32) -= burst_int(D_0044E550) & 1;
+        if (AT(e, 0xB4, s32) <= 0) {
+            return 0;
+        }
+    }
+    r->rgba[3] = AT(e, 0xB4, s32);
+    VCALL(D_0044E4B8, 0x20, void (*)(VObject *, f32 *))(D_0044E4B8, eye);
+    dy = r->pos[1] - eye[1];
+    dx = r->pos[0] - eye[0];
+    dz = r->pos[2] - eye[2];
+    d2 = dy * dy + dx * dx + dz * dz;
+    if (d2 < 4096.0f) {
+        r->rgba[3] = (s32)((f32)r->rgba[3] * (d2 / 4096.0f));
+    }
+    return 1;
+}
+
+/* +0x14 draw (not while stopped, nor during a cut: the director's +0x38) */
+void func_0037B680(u8 *e) {
+    if (AT(e, 0xBC, u8) == 1) {
+        return;
+    }
+    if ((u8)VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) == 1) {
+        return;
+    }
+    AT(e, 0x80, QuadRec *) = ONE_REC(e, AT(e, 0xB8, s32));
+    func_002E56C0(e + 0x70);
+}
+
 /* ---- D_00470E20 (0x1C58 bytes): 64 smoke puffs rising from around (15.5, 11, 22.5), in two
  * buffers of quad records (+0x10 + 0xC00 x the current one +0x1C50), velocities at +0x1850 (16
  * each), the quad drawer at +0x1810; a puff fades from height 20 (every other frame) and is
