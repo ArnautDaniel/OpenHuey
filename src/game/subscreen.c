@@ -3281,7 +3281,7 @@ extern const char D_00464208[];   /* "%3d" */
 
 #define MOVIE_COUNT 0x6E
 
-typedef void (*MovieRectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s32, s32, s32, s32);
+typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s32, s32, s32, s32);
 
 /* movie `i` was seen (or everything is open) */
 static s32 movie_seen(s32 i) {
@@ -3397,15 +3397,15 @@ void func_0038E0C0(SubScreen *s) {
             u8 *thumbs = (u8 *)gProgress + 0x16C0;
 
             VCALL(tc, 0x10, void (*)(VObject *, void *, s32))(tc, thumbs + ((u32 *)thumbs)[s->page[0] + 1], 0x27);
-            VCALL(D_0044E4F0, 0x7C, MovieRectFn)(D_0044E4F0, 0x158, 0xB0, 0x70, 0x60, 0, 0, 0x70, 0x60, 0x80808080,
+            VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0x158, 0xB0, 0x70, 0x60, 0, 0, 0x70, 0x60, 0x80808080,
                                                  0, 0x27, 0x30, -1);
             VCALL(tc, 0x14, void (*)(VObject *, s32))(tc, 0x27);
         } else {
-            VCALL(D_0044E4F0, 0x7C, MovieRectFn)(D_0044E4F0, 0x158, 0xB0, 0x70, 0x60, 0x10, 0, 0x70, 0x60, 0x80808080,
+            VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0x158, 0xB0, 0x70, 0x60, 0x10, 0, 0x70, 0x60, 0x80808080,
                                                  0, 0x1B, 0x30, 1);
         }
     }
-    VCALL(D_0044E4F0, 0x7C, MovieRectFn)(D_0044E4F0, 0x140, 0x80, 0x10, 0xC0, 0, 0, 0x10, 0xC0, 0x80808080, 0, 0x1B,
+    VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0x140, 0x80, 0x10, 0xC0, 0, 0, 0x10, 0xC0, 0x80808080, 0, 0x1B,
                                          0x30, 0);
 }
 
@@ -3417,8 +3417,6 @@ typedef struct {
 } CostumeText;
 extern const CostumeText D_0044B700[9];   /* Fiona's six, then Hewie's three */
 
-void func_0038EAE0(SubScreen *s);
-
 #define COST_FIONA(s, i) SUB_PAGE(s, (i), u8)        /* Fiona's costumes (0x80 locked, 0xFF ends) */
 #define COST_FIONA_SEL(s) SUB_PAGE(s, 0x7, u8)       /* the one worn */
 #define COST_HEWIE(s, i) SUB_PAGE(s, 0x8 + (i), u8)  /* Hewie's */
@@ -3427,6 +3425,61 @@ void func_0038EAE0(SubScreen *s);
 #define COST_OPEN(s) SUB_PAGE(s, 0xE, u8)            /* the row's list is open */
 #define COST_FIONA_CUR(s) SUB_PAGE(s, 0xF, u8)
 #define COST_HEWIE_CUR(s) SUB_PAGE(s, 0x10, u8)
+
+/* one tile of the costume page's frames (sheet 0x19) */
+static void cost_tile(s32 x, s32 y, s32 w, s32 h, s32 u, s32 v) {
+    VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, x, y, w, h, u, v, w, h, 0x80808080, 2, 0x19, 0x33, 1);
+}
+
+/* one row of a frame: its tiles' x, width and u across (`n` of them), at `y` from the
+ * sheet's row `v` (0x30 top, 0x50 middle, 0x70 bottom) */
+static void cost_row(const s16 (*cols)[3], s32 n, s32 y, s32 h, s32 v) {
+    s32 i;
+
+    for (i = 0; i < n; i++) {
+        cost_tile(cols[i][0], y, cols[i][1], h, cols[i][2], v);
+    }
+}
+
+/* the costume page's frames: the rows' (one more with Hewie here), then - not on "done" -
+ * the row's costumes' (as many as are unlocked) and, with that list open, the description's */
+void func_0038EAE0(SubScreen *s) {
+    static const s16 kRows[2][3] = {{0x10, 0x68, 0}, {0x78, 0x20, 0x98}};
+    static const s16 kList[3][3] = {{0xA8, 0x98, 0}, {0x140, 0x78, 0x20}, {0x1B8, 0x38, 0x80}};
+    static const s16 kNote[4][3] = {{0x10, 0x98, 0}, {0xA8, 0x78, 0x20}, {0x120, 0x78, 0x20}, {0x198, 0x58, 0x60}};
+    s32 rows = COST_HEWIE_SEL(s) == 0xFF ? 3 : 4;
+    s32 i, n, k;
+
+    cost_row(kRows, 2, 0x18, 0x20, 0x30);
+    for (i = 1; i < rows; i++) {
+        cost_row(kRows, 2, 0x18 + i * 0x20, 0x20, 0x50);
+    }
+    cost_row(kRows, 2, 0x18 + i * 0x20, 0x20, 0x70);
+    if (COST_ROW(s) == 2) {
+        return;
+    }
+    cost_row(kList, 3, 0x20, 0x20, 0x30);
+    k = COST_ROW(s) == 0 ? 0 : 8;
+    n = 0;
+    do {
+        if (!(SUB_PAGE(s, k, u8) & 0x80)) {
+            n++;
+        }
+    } while (SUB_PAGE(s, k++, u8) != 0xFF);
+    for (i = 1; i < n + 1; i++) {
+        cost_row(kList, 3, 0x20 + i * 0x20, 0x20, 0x50);
+    }
+    cost_row(kList, 3, 0x20 + i * 0x20, 0x20, 0x70);
+    if (COST_OPEN(s) == 0) {
+        return;
+    }
+    cost_row(kNote, 4, 0x128, 0x20, 0x30);
+    for (i = 1; i < 3; i++) {
+        cost_row(kNote, 4, 0x128 + i * 0x20, 0x20, 0x50);
+    }
+    cost_row(kNote, 4, 0x188, 0x10, 0x50);
+    cost_row(kNote, 4, 0x198, 0x20, 0x70);
+}
 
 /* the costumes chosen are worn (vars 0x26 / 0x27) and the page ends (flag 4) */
 static void costume_done(SubScreen *s, s32 hewie) {
