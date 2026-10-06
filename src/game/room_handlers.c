@@ -7381,6 +7381,27 @@ static void effect_798B0_init(void **obj) {
     obj[0] = D_004798B0;
 }
 
+#ifdef HG_NATIVE
+#include "gl2d.h"
+
+/* the cursor's +0x14 draw (+0x4 1: off): texels 176..256 x 0..112 of texture 0xC shown 20 x 28
+ * at its point (+0x6, +0x8), opaque */
+void func_0035CEE0(u8 *o) {
+    u8 *tex;
+    s32 x, y;
+
+    if (AT(o, 0x4, u8) == 1) {
+        return;
+    }
+    if (TexCache_Resident(0xC, 0, 0x30, &tex) == -1) {
+        return;
+    }
+    x = AT(o, 0x6, u16);
+    y = AT(o, 0x8, u16);
+    gl2d_sprite(0x30, x, y, x + 20, y + 28, tex, 176, 0, 256, 112, 0x80808080, 0, gl2d_blend(0x8000000064ull));
+}
+#endif
+
 /* a cursor effect (D_004798B0) at (x, y) kept in script variables 7 / 8, its slot in 6: byte 3 0
  * puts it at (246, 242); 1 moves it 4 a frame by the stick or the d-pad (x 0..492, y 0..420),
  * waiting (2) until confirm (event 4 +0x5C) or cancel (+0x60); 2 ends it */
