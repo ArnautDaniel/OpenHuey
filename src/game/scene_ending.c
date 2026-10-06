@@ -11,6 +11,7 @@
 #include "texcache.h"
 #include "input.h"
 #include "sound.h"
+#include "globals.h"
 
 typedef struct SceneEnding {
     /* 0x00 */ Scene base;
@@ -46,14 +47,11 @@ extern void *D_0047A790[];          /* the sub screen */
 extern void *D_0046D7D0[], *D_0046A0D0[];   /* the message object, its base */
 extern void *D_0046A110[], *D_0046A100[];   /* the BGM controller, its base */
 extern void *D_0046ECC0[];          /* SceneMovie */
-extern void *gBootMessage;
 extern void *gMusic;            /* the BGM controller */
 extern void *gAdx;            /* the ADX sound system */
 extern void *gSceneTable;            /* the scene table: scenes[] at +4, the scene heap at +0x10D9040 */
 extern void *gMovie;            /* the movie playing */
 extern u8 *gSystemData;              /* the system data */
-extern VObject *gRenderer;         /* the renderer */
-extern VObject *gFileLoader;
 extern u8 D_0047B350;               /* the message language set */
 extern u8 *D_01991EC4;              /* the message text */
 extern const char D_004638F8[];     /* "STAFF_ROLL.SFD" */

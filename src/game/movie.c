@@ -3,6 +3,7 @@
  * (native/platform/sofdec.c on PC). */
 #include "common.h"
 #include "ptmf.h"
+#include "globals.h"
 
 
 typedef struct MovieLib {
@@ -146,8 +147,6 @@ extern Movie *gMovie;        /* the movie playing */
 extern u8 *gSystemData;           /* +0x38: the master volume */
 extern u8 *gProgress;            /* +0x9F0: the movie volume option */
 extern u8 *D_0045D1F0;
-extern VObject *gFileLoader;
-extern VObject *gRenderer;      /* renderer */
 extern void func_0011F9A0(void *p);           /* delete (scene heap) */
 extern void *func_00114DA8(s32 align, s32 size);   /* memalign */
 extern void func_00114FD0(void *p);           /* free */
@@ -201,7 +200,6 @@ static inline s32 movie_level(Movie *m) {
 extern void *D_0046EA40[], *D_0046D730[], *D_0046FC30[], *D_00469D00[];
 extern void func_002672E0(void *p);   /* delete (effects' heap) */
 extern void func_002E56C0(u8 *quad);
-extern VObject *gVram;
 
 /* the movie's current frame copied into a texture page (`page` 2): its GS TEX0, or -1 when
  * there is none. (PC: no movie frames yet - CRI Sofdec is not available) */
@@ -793,7 +791,6 @@ void func_002FED30(Movie *m) {
 
 extern void *D_0046EAB0[], *D_0046EAE0[], *D_0046EB10[], *D_0046EC30[], *D_0046EC90[], *D_00474F80[];
 extern const PTMF D_00412730, D_00412740, D_00412750, D_004128D0, D_004128E0, D_0042E428;   /* func_002B6BB0 */
-extern VObject *gTexCache;   /* the texture cache */
 extern void *func_00115B68(void *d, const void *s, u32 n);   /* memcpy */
 extern s32 Progress_TestFlag(void *p, u32 id);
 #ifdef HG_NATIVE

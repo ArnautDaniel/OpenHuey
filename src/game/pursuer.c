@@ -3,9 +3,9 @@
 #include "pursuer.h"
 #include "progress.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 extern Character *gCharPartner;   /* Hewie */
-extern VObject *gSound;       /* sound driver */
 
 /* nothing */
 void func_00283EE0(Pursuer *p) {
@@ -65,11 +65,6 @@ void func_0028ED20(Pursuer *p) {
 
 extern Progress *gProgress;
 extern Character *gCharPlayer;    /* Fiona */
-extern VObject *gBootMessage;     /* message display */
-extern VObject *gFileLoader;
-extern VObject *gRandom;       /* random numbers */
-extern VObject *gDoors;       /* doors */
-extern VObject *gRooms;       /* rooms */
 extern void *gNavMesh;          /* nav mesh */
 
 
@@ -584,7 +579,6 @@ void func_00283A50(Pursuer *p, s32 *bones, f32 *a, f32 *b) {
 
 /* ---- batch 3 ---- */
 
-extern VObject *gEvents;       /* room objects */
 extern Character *gCharacters[6];
 extern void *D_003EC8E0;
 
@@ -1047,7 +1041,6 @@ void func_00296ED0(Pursuer *p) {
 
 /* ---- batch 4 ---- */
 
-extern VObject *gCutscene;
 extern void *D_0046A620[], *D_00474560[], *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
 extern const PTMF D_003ED190, D_003ED1A0, D_003ED0B0, D_003ECE20, D_003ED510, D_003ED520, D_003ECDA0,
     D_003ECF00;
@@ -5487,7 +5480,6 @@ s32 func_0029A710(Pursuer *p) {
 /* ---- batch 14 ---- */
 
 extern const PTMF D_003ED0C0, D_003ED040, D_003ECC00, D_003ECC10, D_003EC910, D_003EC920;
-extern VObject *gScreenFade;   /* controller vibration */
 
 /* look around: the head swept by a sine over vtable +0x2DC frames (full swing +0x2E0, half
  * at the ends), then back to straight ahead */

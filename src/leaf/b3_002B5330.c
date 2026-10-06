@@ -2,6 +2,7 @@
  * (or one entry of it), likely per-class descriptor/state tables. */
 #include "common.h"
 #include "ptmf.h"
+#include "globals.h"
 
 extern u32 D_00410F10[];
 extern u8 D_00410F50[];
@@ -100,9 +101,7 @@ void func_002B6130(u8 *self, u8 *src) {
 
 extern u8 *D_0045D1F0;
 
-extern void *gRenderer; /* global manager object (virtual calls) */
 
-extern void *gRenderer;
 
 /* Stores its arguments, then tail-calls gRenderer->vfunc_0xC(self, c, 0). */
 /* Merges two descriptors into the one at self->0x11C: words 4..C are ORed,

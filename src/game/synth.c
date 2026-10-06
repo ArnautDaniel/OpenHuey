@@ -20,10 +20,9 @@
 #include "input.h"
 #include "sound.h"
 #include "texcache.h"
+#include "globals.h"
 
 extern void *D_00474020[];
-extern VObject *gItems;   /* the item manager */
-extern VObject *gRandom;   /* random numbers: +0x18 / +0x1C -> 0..1 */
 extern u8 D_0047B350;
 extern void func_00322560(void *p);                 /* delete (the sub screen's pool) */
 extern u32 func_00260CF0(void *items, s32 id);      /* how many of an item */

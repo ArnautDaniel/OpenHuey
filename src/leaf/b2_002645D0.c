@@ -1,6 +1,7 @@
 /* Leaf functions func_002645D0..func_00265C60 (batch 2). */
 #include "common.h"
 #include "ptmf.h"
+#include "globals.h"
 
 typedef s32 (*LoaderLoadFn)(void *loader, const char *name, void *dest, s32 flags, s32 arg);
 
@@ -11,7 +12,6 @@ typedef struct B2_Obj {
     u64 data; /* +0x10 */
 } B2_Obj;
 
-extern void *gFileLoader;
 extern char D_0045A7E0[]; /* file name */
 extern char D_0045A800[]; /* file name */
 extern char D_0045A820[]; /* file name */

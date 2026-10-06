@@ -2,8 +2,8 @@
 #include "common.h"
 #include "game.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
-extern VObject *gRandom;   /* the random number generator */
 
 extern void *D_00474000[], *D_0046FC30[], *D_00469D00[], *D_0046F580[];
 extern void func_002D63B0(void *p);   /* free (the effect manager's heap) */
@@ -236,7 +236,6 @@ void func_00350810(VObject *o, const u8 *params) {
     VCALL(o, 0x10, s32 (*)(VObject *))(o);
 }
 
-extern VObject *gRenderer;   /* the renderer */
 
 /* fill draw object `d` from `p` and queue it with the renderer (+0xC, layer 0x19) */
 void func_00350660(ModelDraw *d, const ModelDrawParams *p) {
@@ -503,7 +502,6 @@ void func_00347540(VObject *o, const s32 *params) {
 }
 
 
-extern VObject *gRandom;   /* random numbers: +0x10 an integer */
 
 /* +0x10 each frame (returns 0 once every particle has left): 16 particles, double-buffered
  * (+0x10, 0x300 per buffer, 0x30 each), drift by their velocity (+0x820) plus a wind
@@ -604,8 +602,6 @@ extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, con
                       u64 tex0, u32 prim);
 extern void glr_caustic_begin(void);
 extern void glr_caustic_glow(s32 aref);
-extern VObject *gCamera;   /* the camera */
-extern VObject *gTexCache;   /* the texture cache */
 extern f32 func_002E2D00(f32 angle);   /* wrap an angle into -pi..pi */
 extern f32 func_0031C058(f32 x);       /* cosf */
 extern f32 func_0031C248(f32 x);       /* sinf */
@@ -685,7 +681,6 @@ s32 func_0034E9E0(u8 *d) {
 #include "effectmgr.h"
 
 extern void *D_00479400[], *D_00479AE0[], *D_00479AA0[];
-extern VObject *gSound;   /* the sound driver */
 extern void *gNavMesh;      /* the nav mesh: +0x3C the triangle under a point, +0x14 the floor height in one */
 extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 
@@ -1441,7 +1436,6 @@ extern f32 func_002E2BC0(const f32 *v);                 /* heading of v */
 extern void func_002E2C10(f32 *out, f32 angle);         /* the unit vector of a heading */
 extern void func_002E2CA0(f32 *out, f32 *v, f32 angle); /* v turned about y */
 extern f32 D_00412710[8];   /* the butterflies' colours (RGBA words) by number & 7 */
-extern VObject *gCamDirector;   /* the camera director's interface: +0x38 a cut is on */
 
 /* +0x8 destructor */
 void *func_002B8E70(void *o, s32 flags) {

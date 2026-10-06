@@ -6,6 +6,7 @@
 #include "pursuer.h"
 #include "progress.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 extern void *D_0046F6B0[];
 
@@ -1349,7 +1350,6 @@ void func_0034CDC0(Pursuer *p) {
     Riccardo_Behaviour(p, &D_00442908, &D_00442918, func_0034BFF0, 0);
 }
 
-extern VObject *gRenderer;   /* the renderer */
 extern f32 func_0031C058(f32 x);   /* cosf */
 extern f32 func_0031C248(f32 x);   /* sinf */
 extern u8 D_00442210[], D_004422B0[], D_00442890[], D_004428B0[], D_004428E0[];
@@ -1429,8 +1429,6 @@ void func_0034D320(Pursuer *p) {
     VCALL(p, 0x100, void (*)(Pursuer *))(p);
 }
 
-extern VObject *gCamera;   /* the camera */
-extern VObject *gTexCache;   /* the texture cache */
 
 /* vtable +0x2C: the draw (as func_00320000, always shown) */
 void func_0034D840(Pursuer *p) {

@@ -8,13 +8,12 @@
 #include "progress.h"
 #include "ptmf.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 extern Character *gCharPlayer;
 extern Character *gCharPursuer;
 extern Character *gCharacters[6];
 extern Progress *gProgress;
-extern VObject *gRandom;   /* random numbers: +0x1C -> 0..1 */
-extern VObject *gRooms;   /* the rooms */
 extern void *gNavMesh;      /* the walk mesh */
 
 #define RNG01() VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)

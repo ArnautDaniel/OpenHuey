@@ -7,6 +7,7 @@
 #include "actor.h"
 #include "progress.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 extern void *D_0046FAA0[], *D_0046FB50[], *D_00469C60[], *D_00469C20[];
 extern void func_00124DA0(Actor *a);
@@ -139,8 +140,6 @@ void func_002E1340(Character *c) {
 
 extern Character *gCharacters[];
 extern Character *gCharPlayer;
-extern VObject *gRandom;   /* random numbers: +0x10 an integer */
-extern VObject *gRooms;   /* the rooms */
 extern s32 func_00126F80(Character *c, s32 target, s32 unused2, s32 side, s32 unused4);
 
 /* per kind (+0x1571): +0x8 a byte, +0x0 a float, +0x6 a short */
@@ -398,8 +397,6 @@ s32 func_002DFF70(Character *c) {
     return creature_close_in(c, t);
 }
 
-extern VObject *gEvents;   /* the events: +0x10 (pos, spot, -1) a position at event spot */
-extern VObject *gDoors;   /* the doors */
 
 /* placed at a random triangle of its room (only in the room being played) on its level
  * `level` (0 / 1: flag 0x100000 / 0x200000 free; -1 / 2: not both; flag 8 never), away from
@@ -1266,7 +1263,6 @@ void func_002E06E0(Character *c) {
 }
 
 extern void func_0010E5F0(f32 *dst, const f32 *src);   /* libvu0: copy x, y, z */
-extern VObject *gItems;                            /* the items */
 extern const PTMF D_004166B0, D_004166C0, D_004166D0, D_004166E0, D_004166F0;
 
 /* +0x30 per frame: its trail (+0x50 / +0x60 / +0x70 in turn: its position 12 above its bob),
@@ -1605,7 +1601,6 @@ void func_002E2740(u8 *m) {
     }
 }
 
-extern VObject *gBootMessage;
 
 /* a pending message (+0x38681 set, its id +0x38680) shown */
 /* (possibly dead code: nothing in the game references it) */
@@ -2921,7 +2916,6 @@ s32 func_00325B60(Character *c) {
     return 0;
 }
 
-extern VObject *gRenderer;   /* the renderer */
 extern f32 func_002E2D00(f32 angle);
 
 /* +0x2C its draw light: the first door it may use (+0x1590 by slot; none: layer 0xA). Its
@@ -4078,7 +4072,6 @@ void func_0032AF00(Character *c) {
     AT(k, 0x73, u8) = right;
 }
 
-extern VObject *gTexCache;   /* the texture cache */
 
 /* +0x2C draw, once out (+0x6E: and its trip begun, +0x6F) or not resting (+0x4A): lit
    (+0xE4: its light +0x80 unless layer 0x17), else on layer 0xF faded by +0x71 (0x80 at most;

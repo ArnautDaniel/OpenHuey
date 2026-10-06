@@ -15,12 +15,8 @@
 #include "progress.h"
 #include "ptmf.h"
 #include "task.h"
+#include "globals.h"
 
-extern VObject *gRenderer;   /* the renderer */
-extern VObject *gTexCache;   /* the texture cache */
-extern VObject *gSound;   /* the sound driver */
-extern VObject *gEvents;   /* the room objects */
-extern VObject *gBootMessage;
 extern u8 *gAdx;        /* the sound mix (+0x114 the volume) */
 extern VObject *D_00456DF0;   /* the music director */
 extern u8 *gMovie;        /* the movie playing */

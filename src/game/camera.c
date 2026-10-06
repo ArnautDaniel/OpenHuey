@@ -4,6 +4,7 @@
 #include "game.h"
 #include "ptmf.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 typedef struct Camera {
     /* 0x000 */ void **vtbl;
@@ -53,7 +54,6 @@ typedef struct CameraSet {
 
 extern void *D_00469A60[];
 extern void *D_00469B40[];
-extern Camera *gCamera;
 extern void func_00100490(void *p);   /* operator delete */
 extern f32 func_0031C5C0(f32 x, f32 z);   /* heading of (x, z) */
 
@@ -308,7 +308,6 @@ void func_00122810(Camera *c) {
     c->unk294 = c->unk29C;
 }
 
-extern VObject *gRandom;               /* random numbers: +0x18 -> 0..1 */
 extern f32 func_0031C338(f32 x);         /* tanf */
 extern void func_0025C6F0(f32 *q, const f32 *axis, f32 angle);
 extern void func_0025C770(const f32 *q, f32 (*m)[4]);

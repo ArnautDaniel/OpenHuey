@@ -4,8 +4,8 @@
 /* The sound driver (global gSound): banks of sound effects played by id. */
 #include "common.h"
 #include "game.h"
+#include "globals.h"
 
-extern VObject *gSound;   /* the sound driver */
 
 /* banks */
 #define SE_BANK_MENU 5    /* the system / menu sounds */

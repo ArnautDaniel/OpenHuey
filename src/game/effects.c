@@ -5,8 +5,8 @@
 #include "common.h"
 #include "game.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
-extern VObject *gCamera;   /* the camera */
 
 static u32 rd32(const u8 *p) {
     return p[0] | (p[1] << 8) | (p[2] << 16) | ((u32)p[3] << 24);
@@ -105,7 +105,6 @@ void func_002C6540(u8 *e, const f32 *d) {
 }
 
 
-extern VObject *gCutscene;    /* +0x80: the character in slot i (0xFF none) */
 extern void *gCharacters[6];
 extern void func_001267F0(void *c, s32 light);
 extern s32 func_00126800(void *c);
@@ -189,7 +188,6 @@ void func_002BB1A0(u8 *o) {
 }
 
 
-extern VObject *gRenderer;   /* the renderer */
 
 /* a fog drawer: colours, range, queued with the renderer in `layer` */
 void func_002BC000(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b) {
@@ -266,8 +264,6 @@ void func_002E56C0(u8 *d) {
 #ifdef HG_NATIVE
 extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
                       u64 tex0, u32 prim);
-extern VObject *gTexCache;   /* the texture cache */
-extern VObject *gCamera;   /* the camera */
 
 #define GLR_PRIM_ADD 0x10000u
 #define GLR_PRIM_NOZW 0x20000u
@@ -533,7 +529,6 @@ void func_002CF3A0(u8 *f, s32 kind) {
  * rests) */
 
 extern void *D_0046FF00[], *D_0046D730[], *D_0046FC30[];
-extern VObject *gRandom;   /* random numbers: +0x10 an integer, +0x18 0..1 */
 extern void func_002672E0(void *p);   /* delete (effects' heap) */
 
 /* +0x8 destructor */
@@ -1268,7 +1263,6 @@ void func_00319B10(void) {
 
 extern u8 *gCreatures;   /* the creature manager: its list of 10 at +0x0 */
 extern void *gCharPlayer;
-extern VObject *gCamera;   /* the camera */
 extern f32 *func_0017CE80(void *skel, s32 bone);
 
 /* `pos` is in view (clip space) and, unless the reflection covers the screen (+0x10), its
@@ -1367,7 +1361,6 @@ extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, con
                       u64 tex0, u32 prim);
 extern s32 func_00126800(void *c);            /* a character's draw layer (+0x152C) */
 extern void func_001267F0(void *c, s32 layer);
-extern VObject *gCamDirector;
 #define GLR_PRIM_MASK 0x100000u
 
 typedef struct ReflCamera {   /* camera +0x88's set (CameraSet) */
@@ -2310,8 +2303,6 @@ static const u8 kShardFace[6][4] = {
 #ifdef HG_NATIVE
 extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
                       u64 tex0, u32 prim);
-extern VObject *gVram;   /* the VRAM manager */
-extern VObject *gTexCache;   /* the texture cache */
 
 /* the shards as textured boxes, drawn with OpenGL (from field base fb: texture fb+0x14, its cell fb+0x0 / fb+0x4,
  * size fb+0x8 / fb+0xC, colour fb+0x10; `n` shards `stride` bytes apart from +0x10; `kind` 1: dead ones
@@ -3396,7 +3387,6 @@ void func_002FD150(u8 *e) {
  * fainter within 64 of the camera ---- */
 
 extern f32 func_0031C248(f32 x);   /* sinf */
-extern VObject *gCamDirector;         /* the camera director */
 extern f32 func_0031C058(f32 x);   /* cosf */
 
 /* +0xC set up: the drawer's settings (one 32 x 32 cell at (32, 64), blended 0x40, layer 0x19,
@@ -4245,7 +4235,6 @@ static void swarm_axis(f32 *pos, f32 *v, f32 *a, f32 centre) {
 /* +0x10 update: flip the buffers; each speck carried over, now and then (1 in 10) a new
  * heading, moved, turned at random, its alpha by the camera's distance */
 s32 func_002FDD70(u8 *e) {
-    extern VObject *gCamera;
     f32 cam[4] __attribute__((aligned(16)));
     VObject *rnd;
     f32 dx, dy, dz, d2;
@@ -5180,7 +5169,6 @@ void func_003608A0(u8 *o) {
  * (-226, -100) from y 30 into water at 0. Each lands as a spray (and the single one with a
  * ring) and starts over after a random wait ---- */
 
-extern VObject *gSound;   /* the sound driver */
 extern void func_002FF650(VObject *snd, s32 id, s32 arg2, const f32 *pos, s32 arg4, s32 arg5);
 
 /* the ring's start parameters (D_00479AE0) */
@@ -5770,7 +5758,6 @@ s32 func_003166B0(u8 *e) {
 extern void *D_00479E50[];
 extern u8 *gCharSlot4;   /* character slot 0 */
 extern u8 *gCharSlot2;   /* character slot 2 (the stalker) */
-extern VObject *gCamDirector;   /* the camera director */
 extern f32 func_002E2D00(f32 angle);
 
 static void marker_spark_init(void **obj) {

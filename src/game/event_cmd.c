@@ -12,12 +12,11 @@
 #include "hewie.h"
 #include "effectmgr.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 extern void *gCharacters[6];
 extern u8 *gCharPlayer;
 extern u8 *gCharPartner;
-extern VObject *gCamera;   /* the camera */
-extern VObject *gRooms;   /* the rooms */
 extern u8 D_0047B350;         /* the message language set */
 extern VObject *D_00456E00;
 extern void func_0016D480(Progress *p, s32 room);
@@ -26,7 +25,6 @@ extern void func_001792C0(Progress *p, u8 slot);
 extern void func_002EC470(void *o, s32);
 extern void func_00177200(Progress *p, s32 slot);
 extern void func_002003C0(VObject *ev);
-extern VObject *gDoors;   /* the doors */
 
 /* (these return a byte the callers mask: declared s32, cast at the use) */
 extern s32 func_001770D0(Progress *p, s32 id);   /* character id -> gCharacters index (0xFF) */
@@ -41,19 +39,13 @@ extern u8 *func_00266C40(void *fx, s32 k);   /* effect slot k (NULL: none) */
 extern void *func_002672F0(u32 size, void *place);   /* placement new */
 extern u8 *func_00208ED0(u8 *e);                   /* a D_0046FF40 effect */
 extern u8 *func_00208EF0(u8 *e);                   /* a D_0046FF00 effect */
-extern VObject *gLights;   /* the scene's lights */
-extern VObject *gSound;   /* the sound driver */
-extern VObject *gRenderer;   /* the renderer */
 extern void func_00122C20(u8 *c, s32 a, s32 b, s32, s32, s32);
 extern s32 func_001F4770(u8 *model, s32, s32, s32);
 extern void func_001267F0(u8 *c, s32 n);
 extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
 extern void *gCharPursuer;
 extern VObject *gCharSlot2;   /* the stalker */
-extern VObject *gObstacles;   /* the obstacles */
-extern VObject *gCamDirector;   /* the camera director's interface */
 extern void *gMovie;      /* the movie playing */
-extern VObject *gItems;   /* the item manager */
 extern void func_002EF9E0(void *o, f32 v);
 extern void func_002EC3C0(void *o, u32 id);
 extern void func_002EC450(void *o, u32 id);
@@ -62,7 +54,6 @@ extern void func_00182E80(u8 *f);
 extern void func_0019A280(u8 *f, s32 n);
 extern void func_0019A210(u8 *f, s32 n);
 extern u8 *D_003D6760[];   /* the built-in action scripts (ids 0x80..) */
-extern VObject *gScreenFade;   /* the screen fades */
 extern u8 *func_00208F30(u8 *e, s32 n);
 extern u8 *func_00208F10(u8 *e);
 extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
@@ -72,8 +63,6 @@ extern void func_0019A420(u8 *f, s32 who, s32 n);
 extern s32 func_00177260(Progress *p, s32 slot);
 extern void func_00177300(Progress *p, s32 slot);
 extern void *gCharSlot3;      /* the character in slot 3 */
-extern VObject *gFileLoader;
-extern VObject *gRandom;   /* random numbers */
 extern VObject *D_00456DE8;
 extern void func_002F0260(void *panic, u32 stage);
 extern void func_0019A0D0(u8 *f, s32 who, s32 on);
@@ -83,8 +72,6 @@ extern void func_001780C0(Progress *p, s32 door, s32 a, s32 b);   /* a door's st
 extern u32 func_00260CF0(void *list, s32 item);   /* how many */
 extern u8 D_003D6A60[];   /* stalker kind -> gift table row */
 extern u8 D_003D6A90[];   /* gift tables: 8 x (only if missing, item) */
-extern VObject *gPlacedThings;   /* the placed things */
-extern VObject *gCutscene;   /* the director */
 extern void func_002EF4D0(void *panic, s32 n);
 extern void func_001FB5F0(VObject *ev);
 extern void func_002DDE20(void *motion, s32 set, s32 variant);
@@ -2205,7 +2192,6 @@ void func_002013F0(VObject *ev) {
     }
 }
 
-extern VObject *gSound;   /* the sound driver */
 extern u8 *gSystemData;        /* resident data */
 extern void func_00178450(Progress *p, u32 n);
 extern void func_00178500(Progress *p, u32 n);
@@ -2851,7 +2837,6 @@ void func_00200B00(VObject *ev) {
 
 /* ---- movies and the cutscene director (opcodes 0x60 / 0x61 / 0x62 / 0x6E / 0x89) ---- */
 
-extern VObject *gCutscene;   /* the cutscene director */
 extern s32 func_001768B0(Progress *p, const char *path, u32 kind);
 extern s32 func_002B6410(void *movie);   /* 2 playing, 0 done, -1 none */
 extern s32 func_002B64F0(void *movie);

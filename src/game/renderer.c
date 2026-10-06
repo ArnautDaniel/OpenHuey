@@ -4,6 +4,7 @@
 #include "common.h"
 #include "gl2d.h"
 #include "game.h"
+#include "globals.h"
 
 extern void *func_00115D20(void *p, s32 c, u32 n);   /* memset */
 
@@ -53,7 +54,6 @@ extern void func_001B7ED0(u8 *r);
 extern void func_001B79F0(u8 *r);
 extern void func_001B7370(u8 *r);
 extern void func_001B71E0(u8 *r);
-extern VObject *gRandom;   /* random number generator */
 
 #define RNG_REAL1() VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom)
 
@@ -78,7 +78,6 @@ void func_001B83D0(u8 *r, s32 mode) {
     }
 }
 
-extern VObject *gVram;   /* VRAM allocator (system +0x30CF40) */
 
 /* Allocate the renderer's VRAM (allocator +0x18: address, pixel format 0x13 = 8-bit indexed,
  * width, height): one 0xFF area (+0x304BE4) and 11 layers (+0x304BB8: 10 of 256x256 below
@@ -527,7 +526,6 @@ s32 func_001BB470(u8 *r, s32 id, TexHeader *t, s32 layer) {
 
 #include "ptmf.h"
 
-extern VObject *gVram;   /* the VRAM manager */
 extern PTMF D_0047E300[];     /* palette generators by mode: (this, index, arg) -> RGBA */
 
 #ifdef HG_NATIVE
@@ -588,8 +586,6 @@ void func_001B9810(VObject *r, const s32 *b) {
         r, b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12]);
 }
 
-extern VObject *gTexCache;   /* the texture cache */
-extern VObject *gRenderer;   /* the renderer (this one) */
 
 #define SX32(x) ((s64)(s32)(u32)(x))
 

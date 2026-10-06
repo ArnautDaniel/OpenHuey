@@ -1,4 +1,5 @@
 #include "common.h"
+#include "globals.h"
 extern u8 *gCharPlayer; /* global manager object */
 #include "ptmf.h"
 #include "progress.h"
@@ -25,7 +26,6 @@ extern u8 D_00460F60[];
 extern u8 D_00460F80[];
 extern u8 D_00460FA0[];
 extern u8 D_00460FC0[];
-extern void *gFileLoader;
 
 /* gProgress+0x30 bit 0x8000 selects between two data sets (difficulty/mode flag?) */
 static inline s32 b5_prog_flag8000(void) {

@@ -1,4 +1,5 @@
 #include "common.h"
+#include "globals.h"
 extern u8 *gCharPlayer; /* global manager object */
 #include "ptmf.h"
 #include "progress.h"
@@ -45,7 +46,6 @@ extern u8 D_00461340[];
 extern u8 D_00461380[];
 extern u8 D_004613A0[];
 extern u8 D_004613C0[];
-extern void *gFileLoader;
 
 /* gCharPlayer +0x1AD5F4: f32 clamped to 0..100; +0x1AD5F8: s32 clamped to 0..1800 */
 static inline void b5_adjust_meters(f32 df, s32 di) {

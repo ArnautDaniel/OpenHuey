@@ -8,8 +8,8 @@
 #include "game.h"
 #include "progress.h"
 #include "ptmf.h"
+#include "globals.h"
 
-extern VObject *gRooms;   /* the rooms (+0x10 the door at an exit, +0x44 a door's flags) */
 extern void func_002A8440(void *noise, s32 level, s32 room, u32 tri, s32 exitId);   /* make a noise */
 
 #define CMD(p, k) ((u8 *)(p) + 0x10B0 + (k) * 0xC)

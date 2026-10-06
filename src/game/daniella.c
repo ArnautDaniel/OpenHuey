@@ -6,6 +6,7 @@
 #include "pursuer.h"
 #include "progress.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 extern void *D_0046BBB0[];
 

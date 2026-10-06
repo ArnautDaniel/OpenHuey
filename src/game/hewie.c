@@ -4,8 +4,8 @@
 #include "progress.h"
 #include "navmesh.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
-extern VObject *gBootMessage;      /* message display, also used in game */
 extern Progress *gProgress;
 extern Character *gCharacters[];   /* (the game reads up to slot 6, gCharPlayer, through it) */
 extern Character *gCharPlayer;    /* Fiona */
@@ -64,7 +64,6 @@ extern void func_00130AF0(Hewie *h, s32 action, s32 arg);
 
 extern s32 func_001235C0(Actor *a, Actor *b);
 extern u32 func_00177620(Progress *p);          /* u8 */
-extern VObject *gCamDirector;
 
 /* Group of his current animation (0 idle .. 0xE, 0xF other). */
 s32 func_001669A0(Hewie *h) {
@@ -203,7 +202,6 @@ s32 func_0013B2C0(Hewie *h, s32 act) {
     return act;
 }
 
-extern VObject *gRandom;   /* random numbers: +0x1C -> 0..1 */
 #define RNG01() VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)
 
 /* One chance in `n`: sets +0xF3586. */
@@ -574,8 +572,6 @@ void func_00167AF0(Hewie *h) {
 
 extern s32 func_00143D20(Hewie *h);
 extern void func_00124890(Actor *a, s32 side);
-extern VObject *gRooms;   /* rooms */
-extern VObject *gEvents;   /* room objects */
 
 
 /* vtable +0x38: room (re-)entry. In play: active only in the room being played (placed on his
@@ -625,7 +621,6 @@ void func_00168700(Hewie *h) {
     MOTION_PTR(h->c.motion, 0x4D4) = HEWIE_MRK(h);
 }
 
-extern VObject *gFileLoader;
 extern void *func_001776B0(Progress *p, s32);
 
 /* LoadAsync(name, dest) for his files, tagged with his file id. */
@@ -854,7 +849,6 @@ s32 func_001683D0(Hewie *h, u32 tri, const f32 *heading, f32 *pos) {
 extern f32 func_001244D0(Actor *a, const f32 *p);     /* heading towards a point */
 extern f32 func_002E2D00(f32 angle);                  /* angle wrapped to -pi..pi */
 extern u32 func_00138460(Hewie *h, s32 slot);         /* u8 */
-extern VObject *gDoors;                           /* doors: +0x40(door) -> usable */
 
 /* vtable +0x68: may character `slot` start interaction `kind` with him now (kind 5: through
  * `door`)? For kinds 1..4, if he stands idle facing roughly towards the caller (within 3pi/8),
@@ -3008,7 +3002,6 @@ void func_00157770(Hewie *h) {
 /* ---- Hewie under the player's control (gProgress +0x1FBEC1): his movement input, as
  * Fiona's (fiona.c func_00187650) ---- */
 
-extern VObject *gCamera;   /* the camera */
 extern void func_002E3190(sceVu0FMATRIX m, f32 yaw);
 extern void func_002E2DA0(f32 *out, sceVu0FMATRIX m, const f32 *v);
 extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
@@ -3369,7 +3362,6 @@ u32 func_00137FE0(Hewie *h, u32 done, s32 damage, s32 bone, f32 margin) {
     return hit;
 }
 
-extern VObject *gRandom;   /* random numbers: +0x1C 0..1 */
 
 /* whether he dares go for the character in `slot`: from trust level 2, a 1-in-16 roll under
    his level + 1 + his feeling for its kind (+0xF367C.. / 5, at most 8) */
@@ -3440,7 +3432,6 @@ s32 func_001391E0(Hewie *h, s32 praise, s8 by) {
     return 1;
 }
 
-extern VObject *gPlacedThings;   /* the placed things (+0xC: entry i of 128) */
 #define F_PI_2 0x1.921fb6p+0f   /* 0x3FC90FDB */
 
 /* Fiona's angle to a point, |wrapped| (from her heading) */
@@ -3674,7 +3665,6 @@ void func_0013A650(Hewie *h) {
     }
 }
 
-extern VObject *gDoors;   /* the doors */
 extern const s16 D_003B127E[];   /* by how often Fiona hit him (+0xF35C4): the 1-in-16 he sulks */
 
 extern u32 func_00177BF0(Progress *p, u32 door, u32 slot);   /* u8 flags */
@@ -5276,7 +5266,6 @@ s32 func_00144B30(Hewie *h) {
 
 /* ---- footsteps ---- */
 
-extern VObject *gSound;   /* the sound driver */
 
 /* his feet: each foot (motion +0x64, feet 0..3) that touches down this frame leaves a print in
  * rooms 7, 0xD1 and 0x106 (at its bone, deep when walking group 8) and makes a step sound by the

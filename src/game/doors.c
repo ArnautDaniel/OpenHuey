@@ -11,11 +11,9 @@
 #include "progress.h"
 #include "actor.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
-extern VObject *gDoors;   /* the doors */
-extern VObject *gRooms;   /* the rooms: +0x10 (room, exit) the door id */
 extern VObject *gNavMesh;   /* the nav mesh */
-extern VObject *gEvents;   /* the events */
 extern Character *gCharacters[];
 extern void *D_0046C540[], *D_0046C5D0[], *D_0046C780[], *D_0046D800[], *D_00469D00[];
 extern const f32 D_003E51A0[][8];   /* door kinds' areas: 4 (x, z) corners */
@@ -500,7 +498,6 @@ void func_002238F0(VObject *d) {
 
 /* ---- a door sound and the noise it makes ---- */
 
-extern VObject *gSound;   /* the sound driver */
 extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 extern void func_002A8440(u8 *noise, s32 loud, s32 room, s32 tri, s32 door);   /* make a noise */
 
@@ -545,7 +542,6 @@ void func_00220D10(u8 *e, s32 id, s32 how) {
  *   rooms seen (bits) ---- */
 
 extern void *D_0046C520[], *D_0046C530[];
-extern VObject *gRoutePlanner;
 extern s32 func_00178610(Progress *p, u32 d);   /* the door is locked (u8) */
 extern s32 func_00178200(Progress *p, u32 d, s32 side);   /* it opens from that side (u8) */
 

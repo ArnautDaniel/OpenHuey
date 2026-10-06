@@ -3,6 +3,7 @@
 #include "game.h"
 #include "navmesh.h"
 #include "progress.h"
+#include "globals.h"
 
 /* Field at a byte offset, for SceneGame members whose types aren't known yet. */
 
@@ -19,10 +20,6 @@ extern const PTMF sGameStateNull;
 extern const PTMF D_0044C7A0;   /* stored at +0x1053450 */
 extern const PTMF D_0044C7B0;   /* next state */
 
-extern VObject *gRandom;
-extern VObject *gSound;
-extern VObject *gScreenFade;
-extern VObject *gCamera;
 extern void *gSystemData;        /* resident data; +0x190 holds the save buffer used here */
 extern void *gAdx;
 extern void *D_004562B0;
@@ -215,7 +212,7 @@ extern void *D_0047A790[];          /* the sub screen */
 extern void *D_0046A110[];          /* the music controller */
 extern void *D_00473440[];
 extern const PTMF sSceneEntryState;
-extern void *gSceneGameF29740, *gRoutePlanner, *gLights, *gCamDirector, *gRoomEffects, *gEffects;
+extern void *gSceneGameF29740, *gRoomEffects, *gEffects;
 extern void *gMusic, *D_0045D1F0, *D_00456DE8;
 
 extern void func_002D15C0(void *);
@@ -307,7 +304,7 @@ Scene *SceneGame_ctor(Scene *g) {
     c->unk153C = 1;
     c->a.vtbl = D_0046A120;
     AT(g, 0xF29740, void **) = D_0046ABB0;
-    gRoutePlanner = (u8 *)g + 0xF6A940;
+    gRoutePlanner = (VObject *)((u8 *)g + 0xF6A940);
     AT(g, 0xF6A940, void **) = D_0046C520;
 
     o = (u8 *)g + 0xF6AFB0;
@@ -324,7 +321,7 @@ Scene *SceneGame_ctor(Scene *g) {
     for (i = 0; i < 17; i++) {
         AT(o, 0x564 + i * 0x18, s32) = 0;
     }
-    gLights = (u8 *)g + 0xF6C1C0;
+    gLights = (VObject *)((u8 *)g + 0xF6C1C0);
     AT(o, 0x6FC, s32) = 0;
 
     o = (u8 *)g + 0xF6C1C0;
@@ -346,7 +343,7 @@ Scene *SceneGame_ctor(Scene *g) {
     AT(o, 0x60, void **) = D_0046C6F0;
     AT(o, 0x64, void **) = D_0046C660;
     AT(o, 0x60, void **) = D_0046C668;
-    gCamDirector = o + 0x60;
+    gCamDirector = (VObject *)(o + 0x60);
 
     o = (u8 *)g + 0xF6CD30;
     AT(o, 0x1400, void **) = D_004699E0;
@@ -439,8 +436,6 @@ extern void func_001AABC0(void *o);
 extern void func_00267250(void *o);
 extern void func_002D6330(void *o);
 extern void func_00385030(SubScreen *s, void *save);
-extern VObject *gObstacles;
-extern VObject *gRooms;   /* the rooms */
 extern const PTMF D_0044C7C0; /* { 0, -1, func_003A0390 } */
 extern void *gCharacters[6];
 
@@ -516,7 +511,6 @@ void func_0039AD90(Scene *g) {
     }
 }
 
-extern VObject *gFileLoader;
 extern s32 func_00120660(void *rooms, s32 slot);   /* room slot still loading */
 extern void func_0031E130(void *o);
 extern void func_002E2820(void *o);
@@ -588,7 +582,6 @@ void func_003A0160(Scene *g) {
 }
 
 extern u8 *gCharPartner;
-extern VObject *gPlacedThings;
 extern u8 *gCreatures;        /* the creatures: 10 slots (7.. 9 have an extra part) */
 extern u8 *gCharSlot2;        /* the stalker currently in play */
 extern const s32 D_0044C6E0[]; /* rooms flagged at +0x1FBF00 (-1 terminated) */
@@ -783,7 +776,6 @@ void func_0039BAE0(Scene *g, s32 set, u8 a, s32 b) {
     }
 }
 
-extern VObject *gEvents;   /* the event system (its second base) */
 extern void func_00175DE0(Progress *p);
 extern void func_002F0500(void *o);
 extern void func_002A7720(void *o);
@@ -865,7 +857,7 @@ void func_003A0060(Scene *g) {
 
 extern const PTMF D_0044C598;   /* the scenes' callback while saving the game */
 extern const PTMF D_0044C800, D_0044C810, D_0044C820, D_0044C830;   /* sub-states: menus */
-extern void *gDoors, *gSceneTable;
+extern void *gSceneTable;
 extern void *gMovie;        /* the movie playing */
 extern s8 D_0047E360;           /* the pad: 0 = not connected */
 extern VObject *D_00456DF0;
@@ -1594,7 +1586,6 @@ extern void *func_002E2330(u32 size, void *place);   /* placement new */
 extern void *func_0038C8D0(void *m);    /* a creature's extra part */
 extern void func_00110878(u8 *out);     /* the date and time (Sony libcdvd clock) */
 extern void func_003851B0(void *sub, u8 *save);
-extern VObject *gPlacedThings;
 extern void *D_00469C20[], *D_00469C60[], *D_00474080[], *D_0046FAA0[];
 
 #define SG_ROOM(g) VCALL((VObject *)(g), 0xA4, s32 (*)(Scene *))(g)
@@ -1987,7 +1978,6 @@ extern void func_002F3910(void *fader);
 extern void func_002F0260(void *panic, u32 stage);
 extern s32 func_00178A30(Progress *p, u32 d);
 extern s32 func_001773A0(Progress *p, u32 slot, u8 quick);
-extern VObject *gTexCache;   /* the texture cache */
 
 /* the frozen world drawn (rooms, progress - `chars`: 0 unless flag 0x17, 1 with the placed
  * things unless 0x17 without 0x24, 2 both always - effects, panic, the event's message, the
@@ -2319,7 +2309,6 @@ extern void func_002D2330(void *bgm);
 extern void func_0031E0B0(void *o);
 extern void func_00267140(void *o);
 extern void func_0017D1B0(void *o);
-extern VObject *gRenderer;   /* the renderer */
 
 /* clear the 17 words at +0x2718 */
 void func_00179E60(u8 *o) {

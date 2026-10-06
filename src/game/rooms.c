@@ -5,6 +5,7 @@
 #include "progress.h"
 #include "sce/libvu0.h"
 #include "navmesh.h"
+#include "globals.h"
 
 /* +0xC set the rooms' state: the 13 saved words `saved` (NULL: none), then rebuild (+0x90) */
 void func_0021C760(VObject *rooms, const s32 *saved) {
@@ -75,7 +76,6 @@ s32 func_0021B160(VObject *r, u16 d) {
     return (AT(r, 0x4 + (d >> 5) * 4, u32) & (1u << (d & 0x1F))) != 0;
 }
 
-extern VObject *gFileLoader;
 extern char D_004572A0[];   /* "OBSTACLE.MTN" */
 
 /* start loading the obstacles' motions (OBSTACLE.MTN) into +0x380 */
@@ -224,14 +224,12 @@ s32 func_0021BEB0(VObject *r, s32 room, s32 exit) {
 /* ---- the door table (D_003DCFC0: two sides {room, exit, tri at +4} 6 bytes apart, flags +0xC)
  * and the room table (D_003D8BC0: per room 8 exits {3 triangles, camera area}, 0x40 bytes) ---- */
 
-extern VObject *gDoors;   /* the doors */
 extern u8 D_003D8BC0[];
 extern f32 D_003DE8C0[];      /* the rooms' centres (x, y, z) */
 extern f32 func_002E2D00(f32 angle);
 extern f32 func_002E2BC0(const f32 *v);   /* heading of v */
 extern s32 func_00178840(Progress *p, s32 room, s32 exit);
 extern void *D_0046C480[], *D_0046C3E0[];
-extern VObject *gRooms;   /* the rooms (this) */
 extern void func_00100490(void *o);   /* operator delete */
 
 #define DOOR_SIDE(def, s) ((const u8 *)(def) + (s) * 6)
@@ -1100,7 +1098,6 @@ void func_0017D370(u8 *o) {
     obstacle_moved(o);
 }
 
-extern VObject *gSound;   /* the sound driver */
 extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 extern void func_002A8440(u8 *noise, s32 loud, s32 room, s32 tri, s32 door);   /* make a noise */
 
@@ -1147,7 +1144,6 @@ void func_0017F8F0(u8 *o) {
  * places (+0x580, 8 each) and spots (+0x5B0, 0x10 each) ---- */
 
 extern void *D_0046C320[], *D_0046C380[];
-extern VObject *gObstacles;
 extern VObject *D_00456DF8;   /* the room's objects: +0x18 (name) the object */
 extern u8 *D_0047A938[];      /* obstacle kinds: offset (x, z), n parts, then n x 0x10 */
 extern const char D_0047A940[], D_0047A948[], D_0047A950[];   /* "oshi00" */

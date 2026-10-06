@@ -1,6 +1,7 @@
 /* Leaf functions, batch 4 (0x002CC840..): getters, constant returns, constructors. */
 #include "common.h"
 #include "ptmf.h"
+#include "globals.h"
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -13,7 +14,6 @@ extern u8 D_00412EA0[], D_00412F00[], D_00412FB0[], D_00413160[], D_004131A0[];
 extern void *D_00413490[];
 extern u8 D_004134C0[];
 extern void *D_0047AC00[];
-extern void *gFileLoader;
 extern u8 D_0045D4A0[], D_0045D4C0[], D_0045D4E0[], D_0045D500[], D_0045D520[], D_0045D540[];
 #include "item.h"
 extern u8 D_00413550[];
@@ -21,7 +21,7 @@ extern u8 D_00413530[], D_004134F0[], D_00413510[], D_004134D0[];
 extern u8 D_0046C790[], D_0046BA68[], D_0046ED30[], D_0046DB80[], D_00469D00[], D_0046F350[];
 extern u8 D_0046BAA0[], D_0046BA80[], D_0046DB40[], D_0046D770[], D_0046C780[], D_0046D800[];
 extern u8 D_0046C3E0[], D_0046A9D0[], D_0046D780[];
-extern void *gCutscene, *D_00456E00, *gRooms, *gNavMesh;
+extern void *D_00456E00, *gNavMesh;
 
 /* tail call to virtual slot 0x8 */
 s32 func_002CC840(void *self) {
@@ -93,7 +93,6 @@ s32 func_002CCDE0(void) {
 }
 
 extern void func_00261090(void *list, s32 a, s32 b);
-extern u8 *gItems;   /* the items */
 
 /* +0x38: a counter (+0x10) that runs 9000 frames; then it goes (the items' +8 list, func_00261090
    (2, 1)) and Progress +0x84 bit 31 is set */
@@ -104,7 +103,7 @@ s32 func_002CCED0(void *o) {
         }
         return 0;
     }
-    func_00261090(gItems + 8, 2, 1);
+    func_00261090((u8 *)gItems + 8, 2, 1);
     AT(gProgress, 0x84, u32) |= 0x80000000;
     return 2;
 }

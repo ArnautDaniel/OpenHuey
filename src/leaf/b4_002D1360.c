@@ -1,6 +1,7 @@
 /* Leaf functions, batch 4 (func_002D1360..func_002DCA50). */
 #include "common.h"
 #include "ptmf.h"
+#include "globals.h"
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -19,9 +20,7 @@ extern u8 D_00469D00[], D_0046C770[];
 extern u8 D_0046A9B0[];
 extern void *gCreatures;
 extern u8 D_0046FC00[], D_004699E0[], D_004699C0[];
-extern void *gPlacedThings;
 extern u8 D_0046F5C0[], D_004699E0[], D_004699C0[];
-extern void *gBootMessage;
 extern u8 D_0046D7D0[];
 extern u8 D_004699E0[], D_0046A1C0[];
 extern u8 *gProgress;
@@ -30,7 +29,6 @@ extern u8 D_004143B0[];
 extern u8 D_00414430[];
 extern void *D_0047AC18[];
 extern void *D_0047AC20[];
-extern void *gFileLoader;
 extern char D_0045D890[];
 extern u8 *D_0045D1F0;
 extern char D_0045D9E0[];
@@ -85,7 +83,7 @@ void *func_002D1490(u8 *p) {
 void *func_002D1510(u8 *p) {
     u8 *a = p + 0xA040;
 
-    gPlacedThings = p;
+    gPlacedThings = (VObject *)p;
     F(p, 0x0, void *) = D_0046F5C0;
     F(a, 0x0, void *) = D_004699E0;
     F(a, 0x4, u32) = 0;
@@ -98,7 +96,7 @@ void *func_002D1510(u8 *p) {
 }
 
 void *func_002D1560(u8 *p) {
-    gBootMessage = p;
+    gBootMessage = (VObject *)p;
     F(p, 0x0, void *) = D_0046D7D0;
     return p;
 }

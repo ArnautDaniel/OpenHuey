@@ -4,6 +4,7 @@
 #include "bgm.h"
 #include "game.h"
 #include "ptmf.h"
+#include "globals.h"
 
 
 typedef struct Bgm {
@@ -17,7 +18,6 @@ typedef struct Bgm {
 
 _Static_assert(__builtin_offsetof(Bgm, volume) == 0x110, "Bgm.volume");
 
-extern VObject *gSound;      /* the sound driver: +0x6C the output mode */
 extern u8 *gSystemData;           /* +0x38: the master volume */
 extern void ADXT_Destroy(void *adxt);
 extern void *ADXT_Create(s32 maxch, void *work, s32 size);
@@ -98,7 +98,6 @@ void func_002D1FD0(Bgm *b) {
     }
 }
 
-extern VObject *gFileLoader;
 extern void ADXT_Stop(void *adxt);
 extern void ADXT_Pause(void *adxt, s32 on);
 extern s32 ADXT_GetStat(void *adxt);

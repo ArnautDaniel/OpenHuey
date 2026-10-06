@@ -4,6 +4,7 @@
  * strongest values go to the pad manager (system +0x40, +0xC). */
 #include "common.h"
 #include "game.h"
+#include "globals.h"
 
 typedef struct RumbleChannel {
     /* 0x00 */ s16 timeA;
@@ -38,14 +39,12 @@ _Static_assert(__builtin_offsetof(Rumble, listB) == 0x80, "Rumble.listB");
 #define RUMBLE_VCALL(f, off, type) ((type)(f)->vtbl[(off) / 4])
 
 extern void *D_0046F4F0[], *D_0046AE30[];
-extern Rumble *gScreenFade;      /* the fader */
-extern VObject *gPad;    /* the pad manager (system +0x40) */
 extern void func_00100490(void *p);   /* operator delete */
 
 /* constructor: register, reset (vtable +0xC) */
 void *func_002D4630(Rumble *f) {
     f->vtbl = D_0046F4F0;
-    gScreenFade = f;
+    gScreenFade = (VObject *)f;
     RUMBLE_VCALL(f, 0xC, void (*)(Rumble *))(f);
     return f;
 }

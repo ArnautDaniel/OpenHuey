@@ -2,6 +2,7 @@
  * room, see sRooms in event.c; base D_0046DB80): their destructors and small table getters.
  * Each room's class gives the event system the room's data tables (by slot, see the vtables). */
 #include "common.h"
+#include "globals.h"
 
 extern void func_00100490(void *p);   /* operator delete */
 
@@ -410,8 +411,6 @@ u32 func_0037A980(void *o, s32 i) { return ((u32 *)D_0047B130)[i]; }   /* D_0047
 
 extern Character *gCharacters[];
 extern Character *gCharPursuer;
-extern VObject *gCamera;   /* the camera: +0xD4 (pos) on screen */
-extern VObject *gEvents;   /* the events: +0x30 (var, value), +0x34 (var), +0x5C (n) */
 extern s32 func_001770D0(Progress *p, s32 kind);   /* the slot of character kind (0xFF) */
 extern void func_00125960(Character *c);
 extern f32 func_002E2D00(f32 a);
@@ -555,7 +554,6 @@ s32 func_002E69B0(VObject *self, void *a1, u8 *cmd) { return swing_three(self, c
 extern void *D_00479A80[], *D_0047A3D0[], *D_0047A730[];
 extern s32 D_0047B274, D_0047B278, D_0047B27C;   /* the nudge countdowns */
 extern const char *D_004193A8, *D_004193AC;
-extern VObject *gBootMessage;
 extern Character *gCharPartner;
 extern void func_0016CEC0(Progress *p, const char *name);
 extern s32 func_0016CD60(Progress *p, s32 who, s32 arg);
@@ -671,7 +669,6 @@ s32 func_002E7A50(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-extern VObject *gItems;   /* the items: +0x8 the list */
 extern u32 func_00260CF0(void *list, s32 item);   /* how many */
 extern void func_00261090(void *list, s32 item, s32 n);   /* given */
 
@@ -723,7 +720,6 @@ s32 func_002FCC30(void *self, void *a1, u8 *cmd) {
 }
 
 extern u8 *gRoomEffects;        /* the room's effects */
-extern VObject *gCutscene;   /* the cutscene director: +0x34 its frame */
 extern void *D_0046EC60[], *D_00472F60[];   /* a depth range, a lit quad */
 extern void *func_002672F0(u32 size, void *place);
 extern s32 func_00266C70(u8 *fx, s32 n, void *arg);
@@ -872,7 +868,6 @@ s32 func_002B12D0(void) {
 }
 
 extern void *D_00478BC0[];   /* a 0x14-byte effect (props.c) */
-extern VObject *gPlacedThings;   /* the placed things */
 extern u8 *gCharSlot2;        /* the stalker in play */
 extern s32 func_0029A710(void *p);
 extern s32 func_00177620(Progress *p);
@@ -1174,7 +1169,6 @@ s32 func_002B2A80(void *self, void *a1, u8 *cmd) {
 #include "texcache.h"
 
 extern void *D_0047A370[], *D_0046F580[];
-extern VObject *gRandom;   /* random numbers */
 extern void func_002D63B0(void *p);   /* free (the effect manager's heap) */
 extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
 extern f32 func_0031C058(f32 x);   /* cosf */
@@ -1923,7 +1917,6 @@ s32 func_002B2D50(void *self, void *a1, u8 *cmd) {
 }
 
 extern const char *const D_00403964;   /* "movechair_3" */
-extern VObject *gSound;   /* the sound driver */
 extern f32 func_0031C4C0(f32 x);   /* asinf */
 extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 
@@ -2203,8 +2196,6 @@ s32 func_002AC600(void *a0, void *a1, u8 *arg) {
     return 1;
 }
 
-extern VObject *gItems;   /* the item manager */
-extern VObject *gSound;   /* the sound driver */
 extern s32 func_001788F0(Progress *p, u32 door);
 
 /* door be16 cmd[3..4]: func_001788F0 */
@@ -2568,8 +2559,6 @@ s32 func_002AD7B0(void *self, void *a1, u8 *cmd) {
 extern const char *D_003F43A0, *D_003FA760, *D_003F17B8, *D_003F17C8, *D_003F0DC4, *D_003FA078;   /* room object names */
 extern u32 D_0047E36C;   /* menu buttons pressed this frame (MENU_*) */
 extern u32 D_0047E364;   /* menu buttons, repeating */
-extern VObject *gCamDirector;   /* the camera director's interface */
-extern VObject *gRandom;   /* random numbers */
 
 /* a dial `o` on progress var `var` (0..6, 30 degrees each, from `off`): byte 3 of `step` 0 set
  * to it (`hide` also clears its +0), 1 turned by left / right (event +0x60 1 when changed, 0 when
@@ -4749,8 +4738,6 @@ extern s32 D_0047B250;                   /* room 0x4C: what the player has done 
 extern void *D_00476BB0[], *D_00472370[];
 extern u8 *gCreatures;                   /* the creatures: 7 pointers; +0x28 vtable */
 extern VObject *D_00456E00;
-extern VObject *gDoors;              /* the doors */
-extern VObject *gRandom;              /* random numbers */
 extern void func_0025F810(u8 *o);
 extern f32 func_00124490(void *a, f32 *p);
 extern s32 func_00183190(void *f);

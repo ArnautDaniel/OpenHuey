@@ -5,6 +5,7 @@
 #include "progress.h"
 #include "navmesh.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 extern void *gCharacters[6];
 extern u8 *gCharPlayer;
@@ -42,36 +43,26 @@ extern s32 func_001FBF70(VObject *ev, s32 id);   /* the step slot for id */
 extern s32 func_00176D80(Progress *p, s32 item);
 extern s32 func_00176DD0(Progress *p, u32 button, u32 how);   /* pad button held / pressed */
 extern s32 func_001241F0(void *a, void *b, f32 margin, f32 vmargin);   /* a and b close */
-extern VObject *gRandom;   /* random numbers: +0x18 -> 0..1 */
 extern s32 func_002DE1C0(u8 *zone, u8 *c);   /* character in a zone */
 extern s32 func_002DE2F0(u8 *zone, f32 *p, f32 r, f32 h);   /* a point against a zone (bits) */
 extern s32 func_0019A2B0(u8 *c);             /* the player can be controlled */
 extern u8 *gCharSlot2;                        /* the stalker in play */
-extern VObject *gRooms;                   /* the rooms */
-extern VObject *gSound;                   /* the sound driver */
 extern s32 func_00178980(Progress *p, s32 room, s32 exit);   /* the door at that exit is open */
 extern s32 func_00178610(Progress *p, u32 door);
 extern s32 func_001667C0(u8 *h);
 extern u32 func_00260540(void *items);
-extern VObject *gCamDirector;   /* the camera director's interface */
-extern VObject *gItems;   /* the item manager */
-extern VObject *gObstacles;   /* the obstacles */
-extern VObject *gCutscene;   /* the cutscene director */
 extern s32 func_00177BF0(Progress *p, s32 a, s32 slot);
 extern s32 func_0013D4A0(u8 *h, s32 n);
 extern s32 func_00139060(u8 *h);
 extern u32 func_001F4770(void *motion, s32, s32, s32);   /* animation state flags (u8) */
 extern s32 func_001364F0(u8 *h);
 extern u32 func_00260CF0(void *list, s32 item);   /* how many */
-extern VObject *gCamera;   /* the camera */
-extern VObject *gDoors;   /* the doors */
 extern NavMesh *gNavMesh;   /* the nav mesh */
 extern u8 *gCreatures;        /* the placed characters */
 extern s32 func_001235C0(u8 *a, u8 *c);
 extern void *gAdx;
 extern s32 func_002D2120(void *o);
 extern s32 func_002D20D0(void *o);
-extern VObject *gFileLoader;
 extern s32 func_00177260(Progress *p, s32 slot);
 extern f32 func_00124490(u8 *c, f32 *pos);   /* distance */
 extern VObject *D_00456E00;

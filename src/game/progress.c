@@ -6,8 +6,8 @@
 #include "ptmf.h"
 #include "sce/libvu0.h"
 #include "task.h"
+#include "globals.h"
 
-extern VObject *gRooms; /* the rooms (+0x10: the current room) */
 
 s32 Progress_TestFlag(Progress *p, u32 id) {
     if (id >= PROGRESS_NUM_FLAGS) {
@@ -68,7 +68,6 @@ void func_001779B0(Progress *p, s32 entry) {
     AT(p, 0x6FC214, s32) = entry;
 }
 
-extern VObject *gSound;   /* the sound driver */
 extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
 static const char sBankHd[] = "D_%01X000.HD";
 static const char sBankSdt[] = "D_%01X000.SDT";
@@ -190,7 +189,6 @@ void func_001765D0(Progress *p) {
     }
 }
 
-extern VObject *gCamDirector;   /* the camera director's interface */
 
 extern u8 *gCharPlayer;
 
@@ -353,7 +351,6 @@ s32 func_00177200(Progress *p, u32 slot) {
 
 /* ---- the doors' states (+0x124, a word per door: bit 1, bit 2, bit 3 = unlocked) ---- */
 
-extern VObject *gDoors;   /* the doors */
 
 #define DOOR_STATE(p, d) AT(p, 0x124 + ((d) & 0xFFFF) * 4, u32)
 
@@ -1002,8 +999,6 @@ void func_001739A0(Progress *p) {
 extern s32 func_0019A2B0(u8 *c);   /* the player can be controlled (u8) */
 extern void func_0019A420(u8 *c, s32, s32);
 extern u32 D_0047E37C;
-extern VObject *gEvents;
-extern VObject *gItems;        /* the sub screen (items) */
 
 static void act_copy(u8 *dst, const u8 *src) {
     AT(dst, 0x0, s32) = AT(src, 0x0, s32);
@@ -1188,7 +1183,6 @@ s32 func_00177870(Progress *p, u32 k) {
 }
 
 
-extern VObject *gTexCache;   /* the texture cache */
 
 /* the characters, drawn each frame (texture cache +0x18 and +0x6FC218 (+0x20) reset first):
  * each active and visible one draws (+0x2C); while the world is stopped (+0x8 bit 0x800000)
@@ -1702,7 +1696,7 @@ extern void func_00100490(void *p);
 extern void *Progress_vtable[], *D_0046A9C0[], *D_0046A9B0[], *D_0046FC00[], *D_0046A980[];
 extern void *D_0046F5C0[], *D_0046A950[], *D_0046D7D0[], *D_0046A0D0[], *D_0046A1C0[];
 extern void *D_004699C0[], *D_004699E0[];
-extern void *gCreatures, *gPlacedThings, *gBootMessage;
+extern void *gCreatures;
 
 #define VT(o, off) AT(o, off, void **)
 
@@ -1803,7 +1797,6 @@ s32 func_0016CCC0(Progress *p) { return 1; }   /* +0x7C */
 void func_0016CD20(Progress *p) {}            /* +0x84 */
 s32 func_0016CD10(Progress *p) { return 0; }   /* +0x88 */
 
-extern VObject *gFileLoader;
 
 /* the object at +0x73EC80: destructor (its base, vtable D_00469D00) */
 void *func_0016CC40(void *o, s32 flags) {

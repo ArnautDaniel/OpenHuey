@@ -2,6 +2,7 @@
  * (replaced on PC by native/platform/pad.c). */
 #include "common.h"
 #include "game.h"
+#include "globals.h"
 
 
 extern s32 func_001EF990(s32 mode);                 /* libpad2: init */

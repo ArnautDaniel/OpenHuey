@@ -1,6 +1,7 @@
 /* The item manager (gItems): Fiona's inventory and equipment. */
 #include "common.h"
 #include "game.h"
+#include "globals.h"
 
 /* +0x10: the item in equipment slot `slot` (+0x15E0[slot], its +0xC; -1: empty slot) */
 s32 func_00260690(u8 *items, u8 slot) {

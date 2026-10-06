@@ -1,6 +1,7 @@
 /* Leaf functions, batch 4 (0x002CC840..): getters, constant returns, constructors. */
 #include "common.h"
 #include "ptmf.h"
+#include "globals.h"
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -13,7 +14,6 @@ extern u8 D_00412EA0[], D_00412F00[], D_00412FB0[], D_00413160[], D_004131A0[];
 extern void *D_00413490[];
 extern u8 D_004134C0[];
 extern void *D_0047AC00[];
-extern void *gFileLoader;
 extern u8 D_0045D4A0[], D_0045D4C0[], D_0045D4E0[], D_0045D500[], D_0045D520[], D_0045D540[];
 extern u8 *gProgress;
 extern u8 D_00413550[];
@@ -21,7 +21,7 @@ extern u8 D_00413530[], D_004134F0[], D_00413510[], D_004134D0[];
 extern u8 D_0046C790[], D_0046BA68[], D_0046ED30[], D_0046DB80[], D_00469D00[], D_0046F350[];
 extern u8 D_0046BAA0[], D_0046BA80[], D_0046DB40[], D_0046D770[], D_0046C780[], D_0046D800[];
 extern u8 D_0046C3E0[], D_0046A9D0[], D_0046D780[];
-extern void *gCutscene, *gEvents, *D_00456E00, *gRooms, *gNavMesh;
+extern void *D_00456E00, *gNavMesh;
 
 void func_002CF0C0(u8 *p, s32 v) { F(p, 0x1660, s32) = v != 0 ? v : 900; }
 void func_002CF0E0(u8 *p) { F(p, 0x1660, s32) = 600; }
@@ -47,7 +47,7 @@ void *func_002D0FE0(u8 *p) {
 }
 
 void *func_002D1000(u8 *p) {
-    gCutscene = p;
+    gCutscene = (VObject *)p;
     F(p, 0x0, void *) = D_0046ED30;
     return p;
 }
@@ -68,7 +68,7 @@ void *func_002D1040(u8 *p) {
 }
 
 void *func_002D1080(u8 *p) {
-    gEvents = p;
+    gEvents = (VObject *)p;
     F(p, 0x0, void *) = D_0046BAA0;
     return p;
 }
@@ -115,7 +115,7 @@ void *func_002D1260(u8 *p) {
 }
 
 void *func_002D12C0(u8 *p) {
-    gRooms = p;
+    gRooms = (VObject *)p;
     F(p, 0x0, void *) = D_0046C3E0;
     return p;
 }

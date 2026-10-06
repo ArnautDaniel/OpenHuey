@@ -5,8 +5,8 @@
 #include "game.h"
 #include "ptmf.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
-extern VObject *gCamera;   /* the camera */
 extern u8 D_0041D820[];       /* the 3D distance curves */
 
 /* fill the 3D block for a sound at `pos` */

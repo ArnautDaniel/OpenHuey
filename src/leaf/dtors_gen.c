@@ -2,21 +2,11 @@
  * stores, members / the class's global pointer cleared, then operator delete when flags > 0)
  * and generated from it (2026-10-05). */
 #include "common.h"
+#include "globals.h"
 
-extern void *gCamera;
-extern void *gLights;
-extern void *gTexCache;
-extern void *gRenderer;
-extern void *gCamDirector;
-extern void *gSound;
 extern void *gNavMesh;
-extern void *gScreenFade;
 extern void *gSystemData;
 extern void *gAdx;
-extern void *gVram;
-extern void *gSystem;
-extern void *gCutscene;
-extern void *gPad;
 extern void *gMovieLib;
 extern void *gMemCard;
 extern void *D_00456DE8;
@@ -82,7 +72,6 @@ extern void *D_0047A3F0[];
 extern void *D_0047A410[];
 extern void *D_0047A430[];
 extern void *D_0047A6F0[];
-extern void *gBootMessage;
 extern void *gSceneGameF29740;
 extern void func_00100490(void *p);
 extern void func_002672E0(void *p);

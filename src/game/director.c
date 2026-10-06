@@ -28,17 +28,10 @@
 #include "progress.h"
 #include "ptmf.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 extern VObject *gCharacters[6];
-extern VObject *gFileLoader;
-extern VObject *gCutscene;   /* the director */
-extern VObject *gCamera;   /* the camera */
-extern VObject *gLights;   /* the scene's lights */
 extern u8 *gRoomEffects;        /* the effects (SceneGame +0xF6CD30) */
-extern VObject *gRenderer;   /* the renderer */
-extern VObject *gCamDirector;   /* the camera director */
-extern VObject *gDoors;   /* the doors */
-extern VObject *gScreenFade;   /* the screen fades */
 extern VObject *D_00456DF8;   /* the room's placed objects */
 extern const char D_0045D2A8[], D_0045D2B8[], D_0045D2C8[], D_0045D2D8[];   /* "%s\\CUT%03X.DP", "%s\\%s.DH", "%s\\MARK.BIN", "%s\\PARAMS.BIN" */
 extern const PTMF D_00412920, D_00412930, D_00412940;   /* states: loading, first shot, playing */

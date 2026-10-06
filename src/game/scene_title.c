@@ -7,6 +7,7 @@
 #include "scene_title.h"
 #include "input.h"
 #include "sound.h"
+#include "globals.h"
 
 
 
@@ -22,8 +23,7 @@ extern const PTMF sGameStateNull;
 extern void *gSceneTitle;            /* the title scene */
 extern void *gMusic;
 extern void *gAdx;            /* the ADX sound system */
-extern void *gItems, *gSubPool;
-extern void *gBootMessage;
+extern void *gSubPool;
 extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);   /* __construct_array */
 extern void func_0025FEF0(void *p);   /* operator delete (pool entries) */
 extern void func_002D2370(void *bgm, void *work);
@@ -53,7 +53,7 @@ void *PoolEntry_dtor(void *e, s32 flags) {
 void *SubScreenBase_ctor(SubScreen *w) {
     u8 *pool = w->pool;
 
-    gItems = w;
+    gItems = (VObject *)w;
     w->vtbl = D_0046A090;
     gSubPool = pool;
     AT(pool, 0x0, void **) = D_0046A078;
@@ -86,7 +86,7 @@ SceneTitle *SceneTitle_ctor(SceneTitle *t) {
     t->base.vtbl = Scene_vtable;
     ptmf_set(&t->base.state, &sSceneEntryState);
     gSceneTitle = t;
-    gBootMessage = t->msg;
+    gBootMessage = (VObject *)t->msg;
     t->base.vtbl = D_0046A040;
     AT(t->msg, 0, void **) = D_0046D7D0;
     Task_Construct(&t->task);
@@ -144,7 +144,6 @@ void SceneTitle_StateEntry(SceneTitle *t) {
     }
 }
 
-extern VObject *gFileLoader;
 void SceneTitle_StateAttractStart(SceneTitle *t);
 void SceneTitle_StateTitle(SceneTitle *t);
 void SceneTitle_SeqLoad(SceneTitle *t);
@@ -281,7 +280,6 @@ void SceneTitle_StateOpening(SceneTitle *t) {
     title_movie_wait(t, SceneTitle_StateOpeningFade);
 }
 
-extern VObject *gRenderer;      /* the renderer */
 static const PTMF sSceneFinish = {0, 0x14, {(void *)0}};   /* virtual +0x14 */
 
 /* the renderer's +0x7C: a rectangle (x, y, w, h; colour; layer ...) */
@@ -481,7 +479,6 @@ void SceneTitle_SeqFadeIn(SceneTitle *t) {
     }
 }
 
-extern VObject *gTexCache;   /* the texture cache */
 
 /* the title picture's two textures: their VRAM slots (+0x11DA84 / +0x11DA88; bit 31 just
  * assigned) and entries (+0x11DA8C / +0x11DA90) */
@@ -520,7 +517,6 @@ void SceneTitle_PrepareBackground(SceneTitle *t) {
         gRenderer, t->backImage, 0x280, 0x1C0, 0);
 }
 
-extern VObject *gVram;   /* the VRAM manager */
 
 #ifdef HG_NATIVE
 #include "gl2d.h"
@@ -1179,7 +1175,7 @@ void *Scene5_ctor(u8 *s) {
     Task_ctor(&w->text);
     TextObj_ctor(w->textObj);
     BootCard_ctor(&w->card);
-    gBootMessage = s + 0xA9180;
+    gBootMessage = (VObject *)(s + 0xA9180);
     AT(s, 0xA9180, void **) = D_0046D7D0;
     gMusic = s + 0x1174E4;
     AT(s, 0x1174E4, void **) = D_0046A110;

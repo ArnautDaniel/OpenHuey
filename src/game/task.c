@@ -11,6 +11,7 @@
 #include "input.h"
 #include "sound.h"
 #include "gl2d.h"
+#include "globals.h"
 
 
 extern u8 *D_01991EC0[];        /* message tables, by language */
@@ -22,9 +23,6 @@ extern u16 D_0044B010[][2];     /* box position presets */
 extern u8 D_0047B140[];         /* frames per glyph, by speed */
 extern u8 D_0047B144[];         /* the choice cursor glyph */
 extern u8 D_0047B148[];         /* the page arrow glyph */
-extern void *gTexCache;        /* texture cache */
-extern void *gRenderer;        /* renderer */
-extern void *gVram;        /* VRAM manager */
 
 extern void func_00100490(void *p);   /* operator delete */
 extern s32 func_0026ED98(char *buf, s32 n, const char *fmt, va_list ap);   /* vsnprintf */

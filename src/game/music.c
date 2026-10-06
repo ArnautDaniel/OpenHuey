@@ -28,14 +28,13 @@
 #include "game.h"
 #include "progress.h"
 #include "ptmf.h"
+#include "globals.h"
 
-extern VObject *gSound;   /* the sound driver */
 extern u8 *gSystemData;        /* +0x38: the music volume */
 extern Progress *gProgress;
 extern u8 *gCharPursuer;
 extern u8 *gCharSlot2;        /* the character in slot 2 */
 extern u8 *gCharPlayer;
-extern VObject *gEvents;   /* the room objects */
 extern void *D_00456DF0;      /* the director */
 extern const PTMF sGameStateNull;
 extern const PTMF D_004128A0;   /* func_002C25F0: a track volume fade */

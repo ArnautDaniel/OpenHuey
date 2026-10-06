@@ -8,6 +8,7 @@
 #include "game.h"
 #include "progress.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 extern VObject *gNavMesh;   /* the nav mesh */
 extern void *func_00120D60(void *pool, u32 i);   /* BlockPool: block i if in use */
@@ -16,7 +17,6 @@ extern void *D_00469C20[];   /* Actor */
 extern void *D_0046F5C0[], *D_00469A00[], *D_004699C0[], *D_004699E0[], *D_0046A950[];
 extern void *D_0046F520[], *D_004727E0[], *D_00472840[], *D_004758A0[], *D_00475A80[], *D_00475960[],
     *D_00475900[], *D_004759C0[], *D_00475A20[], *D_00479E70[], *D_00479ED0[], *D_00479500[];
-extern VObject *gPlacedThings;
 extern void func_00100490(void *p);   /* operator delete */
 extern void func_00121360(void *p);   /* delete (the pool's: nothing) */
 
@@ -258,7 +258,6 @@ void func_002D69E0(u8 *mgr) {
 
 #include "effectmgr.h"
 
-extern VObject *gItems;   /* the items: +0x8 the list */
 extern u32 func_00260CF0(void *list, s32 item);   /* how many */
 extern void func_00261090(void *list, s32 item, s32 n);   /* given */
 extern VObject *gCharPlayer;
@@ -687,7 +686,6 @@ void func_002D5D10(u8 *b) {
 #include "ptmf.h"
 
 extern void func_00124DB0(void *a);   /* the actor's set-up */
-extern VObject *gCamDirector, *gEvents;
 extern const PTMF D_003AF1B8;   /* a thing's resting state */
 extern void sceVu0RotMatrix(f32 (*out)[4], f32 (*m)[4], const f32 *rot);
 
@@ -1046,7 +1044,6 @@ void func_003154B0(u8 *o) {
  * it goes off (sound 0x8E and a D_00474FB0 burst at it) when the shared checks say so ---- */
 
 extern void *D_00472840[], *D_00479500[], *D_00476B50[];
-extern VObject *gRandom;
 extern void func_00355940(u8 *o);   /* D_00479500 +0x30 */
 extern void func_00355960(u8 *o);   /* D_00479500 +0xC */
 extern void func_003546B0(u8 *o);
@@ -2144,7 +2141,6 @@ void func_0036A980(u8 *o, f32 *arg) {
     sceVu0Normalize((f32 *)(o + 0xF40), (f32 *)(o + 0xF40));
 }
 
-extern VObject *gCamera;   /* the camera */
 
 /* a nav triangle's flags (+0x3C of its 0x50 bytes; 0 past the count +0x8 or with no table +0x4) */
 static inline u32 nav_tri_flags(VObject *nav, u32 tri) {
@@ -2618,7 +2614,6 @@ void func_00335820(u8 *o) {
 extern VObject *gCharSlot2;          /* the second stalker */
 extern VObject *gSceneGameF29740;
 extern VObject *D_00456DF8;          /* the room objects */
-extern VObject *gTexCache, *gRenderer;
 extern s32 func_002187D0(void *p, u32 tri, const f32 *pos);
 extern f32 func_001257B0(void *c, u32 goalTri, const f32 *goal, u32 mask);
 extern s32 func_0029A850(void *p);
@@ -3097,7 +3092,6 @@ void func_00333FA0(u8 *b) {
     }
 }
 
-extern VObject *gSound;   /* the sound driver */
 extern void func_002FF650(VObject *snd, s32 id, s32 arg2, const f32 *pos, s32 arg4, s32 arg5);
 
 /* +0x30 each frame, while the game runs: gone after 7.5 s; Fiona's kick (0.4 up); the pursuer
@@ -3134,7 +3128,6 @@ void func_003688D0(u8 *o) {
 extern u32 func_001788F0(Progress *p, u32 door);    /* u8 */
 extern u32 func_00122B50(u8 *o, f32 *out);          /* u8: where its sound is heard from */
 extern void *D_0047A050[];
-extern VObject *gRooms;
 
 /* its burst (0x7A0 bytes, D_0047A050, a quad drawer at +0x610) */
 static inline void Burst1_Init(void **obj) {

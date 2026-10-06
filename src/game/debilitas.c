@@ -8,6 +8,7 @@
 #include "pursuer.h"
 #include "progress.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 /* his functions defined further down */
 void func_0012B490(Pursuer *p);

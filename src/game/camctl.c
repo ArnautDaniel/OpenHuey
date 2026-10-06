@@ -3,8 +3,8 @@
 #include "common.h"
 #include "game.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
-extern VObject *gCamera;   /* the camera */
 
 /* reset for a new room: reset the camera, no setup selected, default light direction */
 void func_00225550(u8 *d) {
@@ -33,7 +33,6 @@ void func_00225550(u8 *d) {
     ((void (*)(u8 *))AT(AT(d, 0x64, u8 *), 0x78, void *))(d);
 }
 
-extern VObject *gRenderer;   /* the renderer */
 extern const PTMF D_003E5240;  /* { 0, -1, func_00224770 } */
 extern const PTMF D_003E5250;  /* { 0, -1, func_00224740 } */
 
@@ -684,9 +683,6 @@ void func_002243D0(u8 *o, s32 rate) {
 
 extern void func_00100490(void *p);   /* operator delete */
 extern void *D_0046C660[], *D_0046C668[], *D_0046C6F0[];
-extern void *gCamDirector;
-extern VObject *gCamera;   /* the camera */
-extern VObject *gCutscene;   /* the cutscene director */
 
 /* destructor: its two vtables (+0x64, +0x60), the global gCamDirector cleared, its state reset
  * (+0x2C / +0x38 0, +0x50 6, the spline +0x8..+0x20 cleared) */

@@ -7,6 +7,7 @@
 #include "navmesh.h"
 #include "model.h"
 #include "input.h"
+#include "globals.h"
 
 extern void *D_00469D00[], *D_0046ADA0[], *D_0046B210[], *D_0046F9E0[], *D_0046B240[], *D_0046B0C0[];
 extern void *gCharacters[6];
@@ -2883,7 +2884,6 @@ void func_002DCB40(u8 *m) {
 
 
 extern f32 D_00415B60[14];   /* the eyelids through a blink */
-extern VObject *gRandom;  /* random numbers: +0x1C -> 0..1 */
 
 /* the eyes, each frame: a blink plays the eyelid curve over 14 frames (+0x870 counts, both
  * lids +0x74 / +0x78); from frame 30 a new blink starts at random, surely by frame 150 */
@@ -4566,10 +4566,6 @@ void func_002DDAC0(u8 *m, s32 layer, s32 a, s32 b) {
 }
 
 
-extern VObject *gBootMessage;   /* (also the characters' texture sets: +0x24 slot, +0x28 entry) */
-extern VObject *gTexCache;     /* the texture cache */
-extern VObject *gRenderer;     /* the renderer */
-extern VObject *gCamera;     /* the camera */
 extern void func_001F3530(u8 *shadow, s32 a, s32 b, f32 *light, s32 layer);   /* the shadow drawer */
 
 #ifdef HG_NATIVE
@@ -4602,7 +4598,6 @@ static ModelBuf sMb;
  * 4th colour row is the ambient. A vertex at world P with normal N gets
  *   min(ambient + sum_i colour_i * max(dir_i.N^, 0) * max(1 + falloff_i * (dir_i.P - dir_i.L_i), 0), 128)
  * (0x80 = 1.0 against the texture), alpha 127. */
-extern VObject *gLights;   /* the scene's lights */
 static f32 sLDir[4][4] __attribute__((aligned(16)));
 static f32 sLCol[4][4] __attribute__((aligned(16)));
 static f32 sLFall[4];
@@ -4984,7 +4979,6 @@ void func_002DD040(u8 *m, s32 anim) {
     AT(AT(m, 0x6A8, u8 *), 0x18, u32) |= 0x10;
 }
 
-extern VObject *gCutscene;   /* the cutscene director */
 
 /* the motion's time (+0x6A4 +0) = how far cutscene frame `frame` is into its shot (director
    +0x20), shared by the three blend channels' time pointers (+0x704, 0x60 apart) */

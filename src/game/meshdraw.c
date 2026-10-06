@@ -2,15 +2,13 @@
 #include "common.h"
 #include "game.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
-extern VObject *gRenderer;   /* the renderer */
-extern VObject *gCamera;   /* the camera */
 
 #ifdef HG_NATIVE
 /* the PC renderer (native/platform/glr.h): batches are drawn with OpenGL instead of the VU1 */
 extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
                       u64 tex0, u32 prim);
-extern VObject *gTexCache;   /* the texture cache */
 static f32 sGlMvp[4][4];   /* the current batch's local-to-clip matrix */
 static const void *sGlTex; /* its texture's .TEX entry (NULL: untextured) */
 static u64 sGlTex0;

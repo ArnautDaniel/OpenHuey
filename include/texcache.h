@@ -5,9 +5,8 @@
  * a screen owns, e.g. 0x18 / 0x19 the sub screen's), uploaded through the renderer. */
 #include "common.h"
 #include "game.h"
+#include "globals.h"
 
-extern VObject *gTexCache;   /* the texture cache */
-extern VObject *gRenderer;   /* the renderer */
 
 /* The VRAM slot of texture `id` of `group` and its header (*tex), uploading it into renderer
  * layer `layer` first if it isn't resident (slot bit 31); -1 if it isn't cached or the upload

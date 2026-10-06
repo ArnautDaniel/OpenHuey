@@ -13,11 +13,10 @@
 #include "gs.h"
 #include "ptmf.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 #define V(p, off) ((f32 *)((u8 *)(p) + (off)))
 
-extern void *gCamera;   /* camera */
-extern void *gRenderer;   /* renderer */
 extern u64 func_002B71D0(s32);
 
 /* the rectangle's corners: x, y (0 / 1: 512 units from the 0x700 origin), kick */

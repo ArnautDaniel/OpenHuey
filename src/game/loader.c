@@ -4,6 +4,7 @@
  * native/platform/crifs.c, which reads the extracted folder). */
 #include "common.h"
 #include "game.h"
+#include "globals.h"
 
 
 #define LOADER_DIRS 208
@@ -15,8 +16,6 @@ extern s32 func_00118278(const char *a, const char *b);             /* strcmp */
 extern char *func_001183C0(char *dst, const char *src);             /* strcpy */
 extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
 extern const char D_0044F7F0[];   /* "." (the root) */
-extern VObject *gSystem;       /* the system object */
-extern VObject *gSound;       /* the sound driver */
 
 /* init: 256 empty request slots, the root's listing, the folder slots' listing buffers */
 void func_0016C530(u8 *l) {
@@ -169,7 +168,6 @@ void func_00169680(u8 *l) {
 #define REQ_DIR(q) AT(q, 0xC, void *)
 #define REQ_NAME(q) ((char *)(q) + 0x20)
 
-extern VObject *gFileLoader;
 extern char *func_00118978(char *dst, const char *src, u32 n);   /* strncpy */
 extern void *func_00100660(u32 size);                          /* operator new */
 extern void func_00100490(void *p);                            /* operator delete */

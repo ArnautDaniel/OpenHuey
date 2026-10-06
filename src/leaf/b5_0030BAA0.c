@@ -1,6 +1,7 @@
 #include "common.h"
 #include "ptmf.h"
 #include "progress.h"
+#include "globals.h"
 
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
@@ -42,7 +43,6 @@ extern u8 D_00425520[];
 extern u8 D_004258D0[];
 extern u8 D_004259B0[];
 extern void *D_00426760[];
-extern void *gSound;
 extern void *D_0047AD20[];
 extern void *D_0047AD24[];
 extern void *D_0047AD28[];

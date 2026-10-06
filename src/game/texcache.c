@@ -3,6 +3,7 @@
 #include "common.h"
 #include "game.h"
 #include "ptmf.h"
+#include "globals.h"
 
 
 typedef struct TexEntry {
@@ -147,14 +148,11 @@ void func_001F44A0(TexCache *c) {
     }
 }
 
-extern TexCache *gTexCache;
-extern void *gVram;   /* VRAM manager */
-extern void *gRenderer;   /* renderer */
 
 /* TEX0 to draw cached texture `sel` (group 0) with, uploading it first when its VRAM slot was
  * just (re)assigned. 0 if there's no such texture. */
 u64 func_002B71D0(s32 sel) {
-    TexCache *c = gTexCache;
+    TexCache *c = (TexCache *)gTexCache;
     s32 slot;
     u8 *tex;
     u64 tex0;

@@ -1,6 +1,7 @@
 /* Leaf functions, batch 4 (func_002E7300..func_002E79B0). */
 #include "common.h"
 #include "ptmf.h"
+#include "globals.h"
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 

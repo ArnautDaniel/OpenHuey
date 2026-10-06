@@ -14,6 +14,7 @@
 #include "ptmf.h"
 #include "input.h"
 #include "actor.h"
+#include "globals.h"
 
 typedef struct GameOver {
     /* 0x00 */ u8 mode;
@@ -50,15 +51,10 @@ extern const PTMF D_0041A1B0;   /* func_002F2180 */
 extern const PTMF D_0041A1C0;   /* func_002F0BB0 */
 extern const char D_0045E2E0[];  /* the movie */
 
-extern VObject *gFileLoader;
 extern void *gMovie;        /* the movie playing */
 extern u8 *gAdx;          /* the music player */
 extern VObject *gMusic;     /* the music: +0x8 play (track, 0, 0, volume) */
 extern VObject *D_00456DF0;
-extern VObject *gCamDirector;     /* the camera director */
-extern VObject *gSound;     /* the sound driver */
-extern VObject *gRenderer;     /* the renderer */
-extern VObject *gTexCache;     /* the texture cache */
 extern u8 *gRoomEffects;          /* the room's effects */
 extern u8 *gEffects;          /* the effect manager */
 extern void *D_0046D750[];      /* a screen tint */

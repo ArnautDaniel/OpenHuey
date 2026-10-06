@@ -4,11 +4,9 @@
 #include "actor.h"
 #include "navmesh.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
-extern VObject *gRooms;   /* room manager: +0x80 GetRoomOrigin(room, out) -> bool */
-extern VObject *gSound;   /* sound manager */
 extern VObject *gProgress;    /* +0xC current room */
-extern VObject *gFileLoader;  /* +0x28 load state(file id): 2 = done */
 
 extern void func_002FF650(VObject *snd, s32 id, s32 arg2, const f32 *pos, s32 arg4, s32 arg5);
 
@@ -176,7 +174,6 @@ s32 func_00122C90(void *self, u32 triA, u32 triB, const f32 *posA, const f32 *po
 
 #define NAV_NO_STAND 0x80001     /* triangle flags where nothing may stand */
 
-extern VObject *gDoors;      /* +0x2C(i, arg) -> bool, 8 entries */
 extern u32 func_00177BF0(VObject *prog, u32 i, u32 slot);   /* returns u8 flags */
 extern u32 func_00177A20(VObject *prog, u32 i, u32 slot);   /* returns u8 flags */
 
@@ -618,8 +615,6 @@ f32 func_00124530(Actor *a, f32 target, f32 step) {
     return (rest <= 0.0f) ? -rest : rest;
 }
 
-extern VObject *gRandom;      /* random numbers: +0x18 / +0x1C -> f32 in 0..1 */
-extern VObject *gEvents;      /* +0x10(point, id, tri) -> bool: point taken by room object `id` */
 
 /* Teleport to a random free triangle of the current room's mesh (only if the actor is in the
  * current room). `kind` selects the area flags: 0 -> 0x100000, 1 -> 0x200000, else both;
@@ -923,7 +918,6 @@ void func_00124F20(Character *c, u32 door) {
     c->door = pick;
 }
 
-extern VObject *gRenderer;   /* GS manager: +0x70 set screen fade colour (RGBA, A in the top byte) */
 
 /* vtable +0x80: screen fade by how far the character is past the boundary of the first region
  * flagged for its slot (progress flag bit 0): alpha 0..128 over half the boundary length. */
@@ -1324,7 +1318,6 @@ f32 func_00126E40(Character *c) {
     return Character_PathRemaining(c);
 }
 
-extern VObject *gRoutePlanner;   /* SceneGame +0xF6A940 (vtable 0x46C520) */
 
 /* Forward to gRoutePlanner +0xC (the route planner) with the character's buffers at +0x148C and
    +0x138C after the first three arguments. */

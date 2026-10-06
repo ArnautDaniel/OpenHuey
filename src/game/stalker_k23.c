@@ -6,8 +6,8 @@
 #include "pursuer.h"
 #include "progress.h"
 #include "texcache.h"
+#include "globals.h"
 
-extern VObject *gCamera;   /* the camera */
 extern void func_001267F0(Character *c, s32 v);
 
 /* vtable +0xE4: at a door it breaks (func_00178980), outside the ending (gProgress+0x1FBEC1),

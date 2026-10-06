@@ -5,8 +5,8 @@
 #include "game.h"
 #include "progress.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
-extern VObject *gItems;   /* the item manager */
 extern u8 *gCharPlayer;
 extern void func_002EF580(u8 *o);
 extern void func_002EFBE0(u8 *o);
@@ -116,7 +116,6 @@ void func_002F0500(u8 *o) {
     AT(o, 0x18, f32) = 0.0f;
 }
 
-extern VObject *gCamera;   /* the camera */
 extern void func_00122C20(u8 *c, s32 a, s32 b, s32 c2, s32 d, s32 e);
 extern void func_002EF2B0(u8 *o);
 
@@ -453,7 +452,6 @@ void func_002EFB70(u8 *o, f32 amount) {
     fright(o, amount);
 }
 
-extern VObject *gScreenFade;   /* the screen fades */
 extern const u8 D_0041A040[], D_0041A050[], D_0041A060[], D_0041A070[], D_0041A080[], D_0041A090[];
 
 /* while the screen's effect is full (+0x34 1): Fiona's breath (sound 0x29, pitched by the

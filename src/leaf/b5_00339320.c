@@ -1,5 +1,6 @@
 #include "common.h"
 #include "ptmf.h"
+#include "globals.h"
 
 /* Field access by byte offset into objects whose layout is not yet known. */
 /* gFileLoader vtable +0xC: start loading file `name` into `dest` (flags 0x4000000) */
@@ -37,7 +38,6 @@ extern u8 D_004616E0[];
 extern u8 D_00461700[];
 extern u8 D_00461720[];
 extern u8 D_00461740[];
-extern void *gFileLoader;
 
 s32 func_00339320(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_004613E0, dest);

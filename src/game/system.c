@@ -3,6 +3,7 @@
 #include "common.h"
 #include "game.h"
 #include "ptmf.h"
+#include "globals.h"
 
 
 extern void *gSystemData;   /* the Game (set by its base constructor) */
@@ -39,15 +40,9 @@ void *func_0020E7B0(void *e) {
 }
 
 /* Global pointers to the parts (set by the constructor). */
-extern void *gSystem;    /* the system object */
-extern void *gPad;    /* +0x40 */
 extern void *gMemCard;    /* +0x390 */
-extern VObject *gRenderer; /* +0x460: the renderer */
 extern void *gAdx;    /* +0x305280 */
 extern void *gMovieLib;    /* +0x305280 +0x7C44 */
-extern void *gVram;    /* +0x30CF40 */
-extern void *gFileLoader;   /* +0x319900 */
-extern void *gSound;    /* +0x395D44 */
 
 extern void *D_0046ADF0[], *D_0046ADD0[], *D_0046ADB0[], *D_0046ADC4[], *D_0046AD88[], *D_0046AE90[], *D_0046AEB4[];
 extern void *D_0046AC50[], *D_0046AF00[], *D_0046AF0C[], *D_0046C740[], *D_0046B050[], *D_0046A1E0[];
@@ -69,9 +64,9 @@ void *func_0020E340(u8 *s) {
     s32 i;
 
     AT(s, 0x0, void **) = D_0046ADF0;
-    gSystem = s;
+    gSystem = (VObject *)s;
     AT(s, 0x20, void **) = D_0046AD88;
-    gPad = s + 0x40;
+    gPad = (VObject *)(s + 0x40);
     AT(s, 0x40, void **) = D_0046ADD0;
     func_002D4680(s + 0x40, D_0047E360);
     for (i = 0; i < 16; i++) {
@@ -106,13 +101,13 @@ void *func_0020E340(u8 *s) {
     func_00115D20(p + 0x7C4C, 0, 0x20);
     func_00115D20(p + 0x7C6C, 0, 0x30);
 
-    gVram = s + 0x30CF40;
+    gVram = (VObject *)(s + 0x30CF40);
     AT(s, 0x30CF40, void **) = D_0046B050;
-    gFileLoader = s + 0x319900;
+    gFileLoader = (VObject *)(s + 0x319900);
     AT(s, 0x319900, void **) = D_0046A1E0;
 
     p = s + 0x395D40;
-    gSound = p + 4;
+    gSound = (VObject *)(p + 4);
     AT(p, 0x0, void **) = D_0046BF20;
     AT(p, 0x4, void **) = D_0046BF2C;
     func_00100340(p + 0x84, func_0020E7D0, (void (*)(void *, s32))func_001BEC10, 0x10, 8);
@@ -199,7 +194,6 @@ void *func_0020E280(u8 *t) {
 }
 
 extern void *D_00469A60[];
-extern void *gCamera;   /* Game +0x14D9B00 */
 
 void *func_0020E260(VObject *o) {
     gCamera = o;
@@ -256,7 +250,6 @@ void *func_0020E110(u8 *p) {
 }
 
 extern void *D_0046B1D0[];
-extern void *gTexCache;      /* Game +0x14E8C90 */
 
 /* reset: 64 empty slots; the ids of the renderer's 10 layers (renderer +0x3C) */
 static inline void Slots_Reset(u8 *o) {
@@ -282,7 +275,7 @@ static inline void Slots_Reset(u8 *o) {
 /* Game +0x14E8C90 (shut down by func_001F4100): constructor */
 void *func_001F4600(u8 *o) {
     AT(o, 0x0, void **) = D_0046B1D0;
-    gTexCache = o;
+    gTexCache = (VObject *)o;
     Slots_Reset(o);
     return o;
 }
@@ -424,7 +417,6 @@ void *func_001BEC10(u8 *e, s32 flags) {
 
 extern void *D_0046AE10[], *D_0046AF90[], *D_0046AF20[], *D_0046A220[], *D_0046ACF0[];
 extern void *D_0046AEC0[], *D_0046AED0[], *D_0046AE60[], *D_0046F4F0[], *D_0046AE30[];
-extern void *gScreenFade;
 extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
 
 /* destructor (vtable +0x8): the members in reverse, each with its vtable chain and global cleared */

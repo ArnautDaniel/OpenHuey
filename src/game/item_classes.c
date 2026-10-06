@@ -5,6 +5,7 @@
 #include "common.h"
 #include "game.h"
 #include "item.h"
+#include "globals.h"
 
 extern void func_0025FEF0(void *p);   /* operator delete (pool entries) */
 extern void *D_0046C790[];            /* a pool entry */
@@ -710,7 +711,6 @@ s32 func_0035BBC0(void *o) {
 
 /* ---- +0x28: start loading the item's picture into `dst` ---- */
 
-extern VObject *gFileLoader;
 
 #define ITEM_LOAD(name, dst) \
     VCALL(gFileLoader, 0xC, s32 (*)(VObject *, const char *, s32, s32, s32))(gFileLoader, name, dst, 0x4000000, 0)
@@ -1002,8 +1002,6 @@ s32 func_00351B40(void *o) {
     return 4;
 }
 
-extern VObject *gItems;   /* the items */
-extern VObject *gSound;   /* the sound driver */
 
 /* no use here: unless Progress +0x30 bit 0x8000, while item `id` is held, a sound (bank 0xC,
    5); else nothing */
@@ -1334,7 +1332,6 @@ void func_0035BC30(u8 *o, const u8 *m) {
     AT(o, 0x8, s32) = 0;
 }
 
-extern VObject *gCamDirector;   /* the camera director */
 extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 
 /* the room-object glow (vtable D_00479870, made by func_0034B210) +0x10 update: 0 while unset
@@ -1570,7 +1567,6 @@ s32 func_002D27E0(VObject *it) {
 #include "gl2d.h"
 #include "sce/libvu0.h"
 
-extern VObject *gCamera;   /* the camera */
 extern void *D_0046D7A0[], *D_00469D00[];
 extern void func_0026B180(void *drawer, u32 rgba, s32 layer, s32 sub);
 extern f32 func_0031C058(f32 x);   /* cosf */

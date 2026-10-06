@@ -4,6 +4,7 @@
 #include "common.h"
 #include "game.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 extern void *D_0046B4B0[], *D_0046B4F0[], *D_0046B530[], *D_0046B570[], *D_0046B5B0[], *D_0046B5F0[];
 extern void *D_0046B630[], *D_0046B670[], *D_0046B6B0[], *D_0046B6F0[], *D_0046B730[], *D_0046B770[];
@@ -116,8 +117,6 @@ void func_00209840(u8 *ev, void *script) {
 #include "progress.h"
 #include "task.h"
 
-extern VObject *gSound;   /* the sound driver */
-extern VObject *gItems;   /* the item manager */
 extern VObject *gMusic;
 extern u8 D_003D6230[], D_003D6240[];   /* built-in scripts run after phases 2 and 1 */
 extern void func_00121890(u8 *ev, u8 *script);   /* start a script */
@@ -248,7 +247,6 @@ void func_001FBD70(VObject *ev, s32 slot, s32 act) {
     VCALL(ev, 0xE4, void (*)(VObject *, s32, u8 *))(ev, slot, script);
 }
 
-extern VObject *gRooms;   /* the rooms: +0x48 (room, entry) the event area of an entry */
 
 /* +0xE8 the middle of the event area room entry `k` leads to (the room table +0x48 of the
  * current room; its line +0x10 -> +0x30 halved, the height +0x14), w 1, into `out`. 0: no
@@ -563,7 +561,6 @@ s32 func_001FB1B0(u8 *ev, s32 n) {
 }
 
 
-extern VObject *gRenderer;   /* the renderer */
 
 /* draw the event's screen fade (+0x20) in renderer layer `layer` */
 void func_001FBA20(u8 *ev, s32 layer) {
@@ -690,7 +687,6 @@ s32 func_001FB880(u8 *ev, const f32 *pos, f32 *out) {
     return 1;
 }
 
-extern VObject *gRooms;   /* the rooms */
 
 /* the room's point `n` (the table +0x10, by the rooms' +0x48 index for the current room):
  * three vectors (+0x10 / +0x20 / +0x30); 0 if none */
@@ -729,7 +725,6 @@ s32 func_001FB520(void *ev, s32 room) {
 
 extern void func_00100490(void *p);   /* operator delete */
 extern void *D_0046BA80[], *D_0046BAA0[];
-extern VObject *gEvents;   /* the events */
 
 /* destructor of class D_0046BA80 */
 void *func_0020C120(void **o, s32 flags) {
@@ -755,9 +750,7 @@ void *func_0020C170(void **o, s32 flags) {
 }
 
 extern u8 *gCharSlot2;        /* character slot 2 (the stalker) */
-extern VObject *gRandom;   /* random numbers */
 extern void *D_0046B3A0[], *D_0046B3B8[], *D_0046ED30[], *D_0046BB20[], *D_0046F350[], *D_00469D00[];
-extern VObject *gCutscene;   /* the cutscene director */
 extern void *func_001FB3B0(void *, s32);
 extern void *func_001FB400(void *, s32);
 extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */

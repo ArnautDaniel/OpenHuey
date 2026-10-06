@@ -1,5 +1,6 @@
 #include "common.h"
 #include "ptmf.h"
+#include "globals.h"
 
 extern u32 D_004365C0[];
 extern u32 D_00436600[];
@@ -38,7 +39,6 @@ extern u32 D_00438CF8[];
 extern u32 D_00438D10[];
 extern u32 D_0047AE78[];
 extern u8 D_00461CC0[];
-extern void *gFileLoader;
 
 u32 func_00340E40(void *self, s32 i) {
     return D_004365C0[i];

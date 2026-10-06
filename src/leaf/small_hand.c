@@ -5,10 +5,9 @@
 #include "progress.h"
 #include "actor.h"
 #include "pursuer.h"
+#include "globals.h"
 
 extern void func_002E56C0(u8 *quad);
-extern VObject *gDoors;   /* the doors */
-extern VObject *gFileLoader;
 
 /* rooms 0xC0 / 0xC1 / 0xC2 / 0xC3 (D_0042E3E0, D_0043F098, D_0043F8B8, D_004400C8): the timer at
  * progress +0x764 has run out */

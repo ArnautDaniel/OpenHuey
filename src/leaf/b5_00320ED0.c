@@ -1,6 +1,7 @@
 #include "common.h"
 #include "ptmf.h"
 #include "progress.h"
+#include "globals.h"
 
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))
@@ -43,7 +44,6 @@ extern u8 D_00460BE0[];
 extern void *D_0047ADB4[];
 extern void *D_0047ADB8[];
 extern u32 D_0047E36C;
-extern void *gFileLoader;
 
 void *func_00320ED0(void) {
     return D_0042B200;
@@ -203,7 +203,6 @@ void func_0032D3E0(u8 *self, s32 a, f32 x, f32 y) {
  * runs off to; +0x16A8 / +0x16A9 its feet down last frame. D_01991600: who it watches ---- */
 
 extern u8 *gCharPlayer, *gCharPartner, *gCharPursuer;
-extern void *gRandom;   /* random numbers */
 extern u8 D_01991600[];
 extern f32 func_002E2D00(f32 angle);   /* wrapped into -pi..pi */
 extern f32 func_002E2BC0(const f32 *v);   /* heading of v */

@@ -5,6 +5,7 @@
 #include "game.h"
 #include "model.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 extern f32 *func_0017CE80(u8 *skel, s32 bone);   /* a bone's matrix */
 
@@ -1919,7 +1920,6 @@ void func_0030EDF0(u8 *m) {
 
 extern void *D_00472700[];
 extern void *D_0046F9E0[], *D_0046B210[], *D_0046B1C0[], *D_00469D00[], *D_0046ADA0[];
-extern VObject *gTexCache;   /* the texture cache */
 extern void func_002DDAC0(u8 *m, s32 layer, s32 a, s32 b);
 
 /* +0x8: destructor */

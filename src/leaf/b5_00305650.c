@@ -1,6 +1,7 @@
 #include "common.h"
 #include "ptmf.h"
 #include "progress.h"
+#include "globals.h"
 
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
@@ -48,7 +49,6 @@ extern u8 D_0045EC90[];
 extern u8 D_0045ECB0[];
 extern u8 D_0045ECD0[];
 extern void *D_0047AD08[];
-extern void *gFileLoader;
 
 /* gProgress+0x30 bit 0x8000 selects between two data sets (difficulty/mode flag?) */
 static inline s32 b5_prog_flag8000(void) {

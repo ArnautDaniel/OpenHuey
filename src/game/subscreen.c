@@ -12,11 +12,10 @@
 #include "gs.h"
 #include "texcache.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 
-extern VObject *gFileLoader;
 extern u8 *gSystemData;          /* the system data; +0x30 the options */
-extern VObject *gScreenFade;     /* the pad actuator (vibration) */
 extern VObject *D_00456DF0;
 extern void *gMovie;        /* the movie playing */
 extern void *gAdx;        /* the ADX sound system (music) */
@@ -455,7 +454,6 @@ extern void func_002CF390(void *ov, u32 rgba);
 void SubScreen_DrawFadeFromBlack(SubScreen *s);
 
 
-extern VObject *gVram;   /* the VRAM manager */
 
 /* a fixed piece of the screen (SUBBACK.TEX, VRAM group 0x19): texture, u, v, w, h, x, y */
 extern u16 D_0044C160[][7];
@@ -810,7 +808,6 @@ void SubScreen_DrawRun(SubScreen *s) {
     }
 }
 
-extern VObject *gCamDirector;
 void SubScreen_DrawFadeBack(SubScreen *s);
 
 /* draw state: fade back to black over the screen; at black restore the menu's background
@@ -2045,7 +2042,6 @@ void func_00397AB0(SubScreen *s) {
 
 /* ---- the clear results ---- */
 
-extern VObject *gEvents;   /* the events (+0x34: the play time's hours / minutes / seconds) */
 
 /* the results page set up: the ending's flag noted (system data +0x2C bit 18 / 19 by the
  * difficulty, progress var 0x2E 0 / 1; page[2] set when new), the play time (59:59 at most)
@@ -2139,8 +2135,6 @@ void func_00385C30(SubScreen *s) {
 /* ---- the model gallery's model ---- */
 
 extern u8 *func_0038C160(SubScreen *s, u8 k);   /* the gallery model made */
-extern VObject *gCamDirector;   /* the camera director */
-extern VObject *gCamera;   /* the camera */
 extern f32 D_0044BB70[];      /* per entry: the camera's extra distance */
 extern f32 D_0044B9F4[][3];   /* per entry: the camera's height */
 extern const PTMF D_0044B9C0;
@@ -2805,8 +2799,6 @@ void func_00387920(SubScreen *s) {
 
 /* ---- the model gallery's start ---- */
 
-extern VObject *gLights;   /* the scene's lights */
-extern VObject *gCutscene;   /* the director */
 extern u8 *gRoomEffects;        /* the room effects */
 extern u8 *func_00266C40(void *fx, s32 k);
 extern void func_002670F0(u8 *fx, s32 n);
@@ -3062,7 +3054,6 @@ extern void *func_00208210(u8 *m, u8 kind), *func_00208180(u8 *m, u8 kind), *fun
 extern void *func_0038D4D0(u8 *m), *func_0038D160(u8 *m), *func_0038CEE0(u8 *m), *func_0038CC90(u8 *m);
 extern void *func_0038CB60(u8 *m), *func_0038C9E0(u8 *m), *func_0038C960(u8 *m), *func_0038C910(u8 *m);
 extern void *func_0016F4B0(u8 *m), *func_0038C8D0(void *o), *func_0038C890(u8 *m);
-extern VObject *gBootMessage;   /* (also the characters' texture sets) */
 
 /* the gallery's model `k` made in the work memory (+0xA8DFC): its class by the entry, the
  * loaded .PCK's parts hooked up (+0x4C0 / +0x4D0 / +0x4CC / +0x4C4), its textures as texture
@@ -3815,7 +3806,6 @@ void func_003894F0(SubScreen *s) {
 
 /* ---- the model gallery ---- */
 
-extern VObject *gBootMessage;
 extern u8 D_0044BF10[];   /* per entry: its motions */
 extern void *D_0046EB40[], *D_0046D7B0[];
 extern void func_00267160(void *fx);

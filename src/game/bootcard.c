@@ -12,6 +12,7 @@
 #include "sound.h"
 #include "gs.h"
 #include "texcache.h"
+#include "globals.h"
 
 #define AT32(p, off) AT(p, off, s32)
 
@@ -261,7 +262,6 @@ void SaveScreen_Init(BootCard *b, void *buf0, void *buf1) {
     b->buf1 = buf1;
 }
 
-extern VObject *gVram;   /* the VRAM manager */
 
 /* the save screen's parts (texture group 0x19): texture, CLUT (0x80: blend with the alpha
  * channel as is), u, v, w, h, x, y, screen w, h */
@@ -656,7 +656,6 @@ void SaveScreen_Load(BootCard *b) {
 
 #include "progress.h"
 
-extern VObject *gFileLoader;
 extern Progress *gProgress;
 extern const char *func_0037E3F0(void);   /* the game data file's name */
 extern void func_002A76E0(u8 *p);         /* four bytes cleared */

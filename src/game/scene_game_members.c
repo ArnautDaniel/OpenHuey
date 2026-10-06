@@ -4,14 +4,12 @@
 #include "game.h"
 #include "navmesh.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 extern void func_00120EC0(void *pool, u8 *base, u32 size, u32 n, u8 *used);   /* BlockPool init */
 extern void func_00100340(void *array, void *(*ctor)(void *), void *(*dtor)(void *, s32), u32 size, u32 n);
-extern VObject *gTexCache;   /* the texture cache */
 extern void *D_0046C320[], *D_0046ECF0[], *D_0046C540[];
-extern void *gObstacles, *D_00456DF8;
-extern VObject *gDoors;   /* the doors */
-extern VObject *gRooms;   /* the rooms */
+extern void *D_00456DF8;
 extern void *func_0021A370(void *, s32);
 extern void *func_002D11C0(void *);
 extern void *func_002D0CE0(void *, s32);
@@ -92,7 +90,7 @@ void func_00223D60(u8 *p) {
 /* a manager of 5 objects of 0xB0 bytes (vtable D_0046C320, global gObstacles) */
 void *func_002D10C0(u8 *p) {
     AT(p, 0x0, void **) = D_0046C320;
-    gObstacles = p;
+    gObstacles = (VObject *)p;
     func_00100340(p + 0x10, func_002D1120, func_0021A370, 0xB0, 5);
     return p;
 }
@@ -442,10 +440,7 @@ void *func_00221E70(u8 *d, s32 i) {
 /* ---- SceneGame +0xF6C1C0 (vtable D_0046B300, global gLights): the scene's lights (16, set
  * through +0x20; an ambient colour at +0x10) and two VRAM areas (+0x320 / +0x324) ---- */
 
-extern VObject *gVram;   /* the VRAM manager */
-extern VObject *gRenderer;   /* the renderer */
 
-extern VObject *gCamera;   /* the camera */
 
 /* clip-space point c inside the view volume (|x|, |y|, |z| within w) */
 static s32 clip_inside(const f32 *c) {
@@ -575,7 +570,6 @@ void func_001F9710(u8 *o, s32 i, u8 on, const f32 *pos, f32 a, f32 b) {
 }
 
 extern void *D_0046B300[], *D_0046B350[];
-extern VObject *gLights;   /* the scene's lights */
 extern void func_00100490(void *p);   /* operator delete */
 
 /* +0x8: destructor (the global goes) */
@@ -914,7 +908,6 @@ void func_001FA530(u8 *o, s32 i) {
     VCALL((VObject *)o, 0x20, void (*)(VObject *, f32 *, s32))((VObject *)o, l, i);
 }
 
-extern VObject *gFileLoader;
 static const char sHmbPck[] = "O_HMB\\HMB_000.PCK";
 static const char sHmbTex[] = "O_HMB\\HMB_000.TEX";
 
@@ -935,7 +928,6 @@ s32 func_00221E80(u8 *d, s32 i) {
     return AT(d, 0x50C8 + i * 4, s32) != 0;
 }
 
-extern VObject *gFileLoader;
 extern char D_0044E4A0[];   /* "ST_%03X\\ST_%03X.PAC" */
 extern s32 func_0026EDD0(char *buf, s32 size, const char *fmt, ...);   /* snprintf */
 extern char *func_001183C0(char *d, const char *s);                     /* strcpy */
@@ -1043,7 +1035,6 @@ s32 func_00120660(u8 *rm, s32 slot) {
     return 1;
 }
 
-extern VObject *gBootMessage;
 
 /* SceneGame +0x706480: hook its message data (+0x27680) up to message slot 6 (result at
  * +0x38681) */
@@ -1053,9 +1044,7 @@ void func_002E2820(u8 *o) {
         gBootMessage, AT(o, 0x38680, u8), o + 0x27680);
 }
 
-extern VObject *gEvents;
 extern VObject *gRoomEffects;
-extern VObject *gCamera;   /* the camera */
 extern u8 D_0047B350;
 extern u8 *D_01991EC4;   /* the current room's section 10 */
 extern void func_0017CC00(void *o, void *a, void *b, void *c);
@@ -1677,8 +1666,6 @@ void func_00303E60(u8 *m, s8 page) {
 
 extern u16 *D_0041F8B0[];      /* per map: each page's title message */
 extern u8 D_00420570[];        /* the alternative room entries (0x18 each) */
-extern VObject *gTexCache;    /* the texture cache */
-extern VObject *gSound;    /* the sound driver */
 extern f32 func_0031C058(f32 x);   /* cosf */
 extern f32 func_0031C248(f32 x);   /* sinf */
 extern u32 Text_LineWidth(Task *t, u8 *text, s32 glyphW);   /* (a u16, masked here as the original does) */
@@ -2323,7 +2310,6 @@ s32 func_002230A0(VObject *doors, u32 k, const f32 *pos) {
 extern VObject *D_00456DF0;
 extern u8 *gMovie;
 extern u8 *gAdx;   /* the BGM player */
-extern VObject *gSound;   /* the sound driver */
 extern void func_002EF9E0(void *o);
 extern void func_002D1FD0(void *bgm);
 extern void func_002B6340(void *movie);
@@ -2417,7 +2403,6 @@ void func_002A7720(u8 *o) {
     }
 }
 
-extern VObject *gCamDirector;   /* the camera director (interface) */
 extern s32 func_0029A8C0(u8 *pu, s32);
 extern u32 func_0029CE50(u8 *pu);
 extern s32 func_002EC170(u8 *o);
@@ -2456,7 +2441,6 @@ void func_002EC3C0(u8 *o, s32 sec) {
     AT(o, 0x4, u32) = AT(o, 0x4, u32) >= AT(o, 0x4, u32) - d ? AT(o, 0x4, u32) - d : 0;
 }
 
-extern VObject *gRandom;    /* random numbers: +0x18 / +0x1C -> 0..1 */
 extern void *func_00114FA8(u32 size);   /* malloc */
 extern void func_00114FD0(void *p);     /* free */
 extern s32 func_00126F30(void *c, s32 from, s32 to, s32 a3, s32 a4, s32 fromPt, s32 toPt, s32 mode);   /* a route (>= 0) */
@@ -3269,7 +3253,6 @@ void func_002A8440(u8 *n, s32 loud, s32 room, s32 tri, s32 door) {
 }
 
 
-extern VObject *gRandom;    /* random numbers: +0x18 -> 0..1 */
 extern u8 D_0047AC90[];        /* per noise level: summon chance, hunted chance (percent) */
 extern u32 D_00419DC0[];       /* the seconds before the pursuer can be summoned, by kind */
 extern s32 func_001788F0(void *p, u32 door);   /* a door is open (u8) */

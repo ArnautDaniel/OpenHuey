@@ -3,6 +3,7 @@
 #include "common.h"
 #include "scene_boot.h"
 #include "input.h"
+#include "globals.h"
 
 extern void *Scene_vtable[];
 extern void *SceneBoot_vtable[];
@@ -20,10 +21,7 @@ extern const PTMF sSceneBootStateSequence; /* -> SceneBoot_StateSequence */
 extern const PTMF sSceneBootStateDone;     /* -> SceneBoot_StateDone */
 extern const PTMF16 sSceneBootSteps[8];    /* boot steps, run in order */
 
-extern VObject *gFileLoader;  /* +0x34 Load(name, dest), +0xC LoadAsync?(name, dest, flags) */
-extern VObject *gBootMessage; /* = &SceneBoot.msg while the boot scene exists */
 extern VObject *gSystemData;   /* global object, type unknown (+0x1C/+0x20 return resident buffers) */
-extern VObject *gTexCache;   /* global object, type unknown (+0x10 upload(buf, n), +0x18 per frame) */
 
 extern void func_0011F9A0(void *mem);   /* operator delete for scene memory? */
 extern void func_0026BCC0(void *msg);
@@ -177,8 +175,6 @@ extern s8 D_0047E360;          /* 0 = (no controller?): boot steps then wait for
 extern u8 D_0047B350;
 extern void *D_01991EC0;       /* SUBSCR\MSG_BASE.BIN, once loaded */
 extern void *D_01991EC8;       /* SUBSCR\MSG_SUB.BIN, once loaded */
-extern VObject *gRenderer;    /* GS packet / texture manager: +0x10 alloc(kind, qwords), +0x44 upload? */
-extern VObject *gVram;    /* +0x28 builds a TEX0 register value */
 
 static const char sMsgSubBin[] = "SUBSCR\\MSG_SUB.BIN";
 static const char sMsgBaseBin[] = "SUBSCR\\MSG_BASE.BIN";
@@ -602,7 +598,6 @@ extern void func_00323510(u8 *o, u8 row, u8 v, s32 a);
 extern void func_003230B0(u8 *o, u8 k, u8 v);
 extern s32 func_00322970(u8 *o);
 extern void func_00261090(u8 *items, s32 id, s32 n);    /* an item added (n of it) */
-extern VObject *gItems;                             /* the item manager */
 extern const u8 D_00460A00[22];
 extern const char D_00463AB0[];                         /* its count's format */
 extern const PTMF D_0044AE10, D_0044AE20;

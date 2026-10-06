@@ -1,6 +1,7 @@
 /* Random number generator (Mersenne Twister; vtable around 0x46AB60, global gRandom). */
 #include "common.h"
 #include "game.h"
+#include "globals.h"
 
 /* MW runtime soft-float doubles, as raw IEEE bit patterns in 64-bit registers. */
 extern u64 func_00100230(u32 x);             /* (double)x */
@@ -23,7 +24,6 @@ u64 func_001A43D0(VObject *rng) {
 }
 
 extern void *D_0046AB50[];
-extern VObject *gRandom;   /* the random number generator */
 
 /* constructor: register, seed (vtable +0xC) */
 VObject *func_001A48C0(VObject *rng, s32 seed) {
@@ -127,7 +127,6 @@ VObject *func_001A4850(VObject *r, s32 flags) {
 }
 
 extern void *D_0046AB80[];
-extern VObject *gRandom;
 extern void func_00100490(void *p);   /* operator delete */
 
 /* +0x8 destructor (the global goes) */

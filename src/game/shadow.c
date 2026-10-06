@@ -22,14 +22,12 @@
 #include "common.h"
 #include "game.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
 extern f32 *func_0017CE80(void *skeleton, s32 bone);   /* bone node */
 extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
 extern void sceVu0FTOI4Vector(s32 *out, const f32 *in);
 extern VObject *gNavMesh;   /* the nav mesh: +0x14 the floor height at a point on a triangle */
-extern VObject *gLights;   /* the lights */
-extern VObject *gRenderer;   /* the renderer */
-extern VObject *gCamera;   /* the camera */
 
 /* queue shadow `s` of its model's bone `bone` (on nav triangle `tri`, the light offset `light`,
  * the model's layer `layer`) for each light that casts it there, if the lights allow a shadow
@@ -419,7 +417,6 @@ s32 func_001F2B80(u8 *s) {
  * D_003EC080, its normal at +4), +0x60 the light (5 above it), +0x70 how far the box goes ---- */
 
 extern f32 D_003EC080[][4], D_003EC0C0[4], D_003EC0D0[4], D_003EC130[4];
-extern VObject *gRenderer;   /* the renderer */
 
 /* the shadow from light `l`: 1 if there is one (not out of the light's reach), with its
  * strength (the light's, its falloff at the doorway, the angle it meets the door, the scene's

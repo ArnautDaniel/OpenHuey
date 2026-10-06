@@ -2,6 +2,7 @@
  * areas of the PS2's 4 MB of video memory (the renderer's layers, textures, CLUTs). */
 #include "common.h"
 #include "game.h"
+#include "globals.h"
 
 
 /* allocation entry (0x12 bytes, 64 at +0x98) */
@@ -594,7 +595,6 @@ s32 func_001C0020(VObject *v, u8 *tex, u32 n) {
     return VCALL(v, 0x5C, s32 (*)(VObject *, TexHeader *, s32))(v, (TexHeader *)(tex + 0x10 + n * 0x10), 0);
 }
 
-extern VObject *gFileLoader;
 extern void *func_00100550(u32 size);   /* malloc */
 extern void func_00100470(void *p);     /* free */
 

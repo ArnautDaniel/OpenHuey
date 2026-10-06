@@ -3,9 +3,9 @@
 #include "fiona.h"
 #include "progress.h"
 #include "navmesh.h"
+#include "globals.h"
 
 extern Character *gCharacters[6];
-extern VObject *gBootMessage;      /* message display, also used in game */
 extern Progress *gProgress;
 
 extern void func_001855F0(Fiona *f, s32);
@@ -102,7 +102,6 @@ void func_0019AB40(Fiona *f) {
 }
 
 extern void func_00125CC0(Character *c);
-extern VObject *gRandom;   /* random numbers: +0x1C -> 0..1 */
 
 /* vtable +0x5C: activate (Character part), then reset her own state; two timers get random
  * lengths (300 + 330 * r frames, 300 + 30 * int(20 * r)). */
@@ -218,7 +217,6 @@ s32 func_0019A450(Fiona *f, f32 *out) {
     }
 }
 
-extern VObject *gDoors;   /* doors: +0x40(door) -> usable */
 
 /* Can she start interaction `kind` now (with character `otherSlot`, 0xFF = none; door `door`
  * for kind 5)? Depends on what she is doing (moveMode/moveSub). */
@@ -283,7 +281,6 @@ s32 func_0019A670(Fiona *f, u32 kind, u32 otherSlot, u32 door) {
 
 extern void func_00127650(Character *c);
 extern void func_00127660(Character *c);
-extern VObject *gFileLoader;
 
 void func_001A4330(Fiona *f) {
 }
@@ -333,7 +330,6 @@ void func_001A4340(Fiona *f) {
 }
 
 extern void func_001F6AF0(void *motion);
-extern VObject *gCutscene;
 
 /* vtable +0x48: follow the animation (cutscene): position from the root bone, room from
  * progress, triangle from the mesh. */
@@ -361,7 +357,6 @@ void func_001A3000(Fiona *f) {
 extern void func_00126360(Character *c);
 extern void func_00187650(Fiona *f);
 extern void func_001792C0(Progress *p, s32);
-extern VObject *gCamDirector;
 
 /* vtable +0x90: full stop - movement, interaction and the related progress flags. */
 void func_0019D190(Fiona *f) {
@@ -389,8 +384,6 @@ void func_0019D190(Fiona *f) {
     Progress_ClearFlag(p, 0x17);
 }
 
-extern VObject *gItems;   /* +0x10 current area id (0x89: special) */
-extern VObject *gRenderer;   /* GS manager: +0x70 screen fade colour */
 
 #define AREA_SPECIAL 0x89
 
@@ -771,7 +764,6 @@ s32 func_0019A2B0(Fiona *f) {
     return 1;
 }
 
-extern VObject *gScreenFade;   /* sound effects: +0x18(?, id, ?) */
 extern void func_00182E80(Fiona *f);
 extern const PTMF D_003B27E8;
 
@@ -819,7 +811,6 @@ void func_00199ED0(Fiona *f) {
 extern s32 func_001241F0(Actor *a, Actor *b, f32 margin, f32 vmargin);
 extern s32 func_00188280(Fiona *f, s32, f32 reach);
 extern void func_00122C20(Actor *a, s32 id, s32 arg2, s32 arg3, s32 arg4, const f32 *pos);
-extern VObject *gObstacles;   /* pushable objects: +0x30 blocked(id, dir), +0x3C/+0x1C/+0x20/+0x28 move */
 extern const PTMF D_003B2808;  /* push: let go */
 extern const PTMF D_003B2818;  /* push: moving */
 extern const PTMF D_003B2828;  /* push: stop straining */
@@ -970,8 +961,6 @@ void func_001991E0(Fiona *f) {
     }
 }
 
-extern VObject *gRooms;      /* rooms */
-extern VObject *gEvents;      /* room objects: +0x2C(chr) */
 extern s32 func_00122B50(Actor *a, f32 *out);
 extern void func_001264C0(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5);
 extern void func_00126270(Character *c);
@@ -1711,7 +1700,6 @@ void func_001A3110(Fiona *f) {
     }
 }
 
-extern VObject *gCamera;   /* camera: +0x68 heading */
 extern void func_002E3190(sceVu0FMATRIX out, f32 angle);
 extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
 extern s32 func_00126F80(Character *c, s32 target, s32 unused2, s32 side, s32 unused4);
@@ -2355,7 +2343,6 @@ extern void func_001779F0(Progress *p, u32 item, u32 slot);   /* mark item seen 
 extern const PTMF D_003B25C8, D_003B25D8, D_003B25E8, D_003B25F8, D_003B2608, D_003B2618;
 extern const PTMF D_003B2628, D_003B2638, D_003B2648, D_003B2658, D_003B2668, D_003B2678;
 extern const PTMF D_003B2688;
-extern VObject *gRooms;   /* rooms */
 
 /* +0x1AD71C mood request (9 = asked by Hewie's command), +0x1AD720 its argument;
  * +0x1AD724 the period counter of the +0x1AD719 alternation. */
@@ -3078,8 +3065,6 @@ void func_0019D4E0(Fiona *f) {
     }
 }
 
-extern VObject *gDoors;   /* the doors */
-extern VObject *gRooms;   /* the rooms */
 extern void func_00178C10(Progress *p, s32 room, s32 door, s32 arg);
 extern void func_00178A90(Progress *p, s32 room, s32 door, s32 arg);
 extern void func_001779C0(Progress *p, s32 door, s32 slot);
@@ -3951,7 +3936,6 @@ extern u32 func_00123710(void *self, s32 door, s32 side, const f32 *ofs, f32 *ou
 extern u32 func_00124320(Actor *a, const f32 *target, u32 tri, const f32 *from, u32 mask);
 extern void func_00125E10(Character *c, f32 *pos, s32 big);
 extern f32 D_003B2478, D_003B247C;   /* the ladder's foot offset (x, z) */
-extern VObject *gSound;         /* the sound system */
 
 #define FSTEP_LEFT  0x1AD5D0   /* u8: left foot down last frame */
 #define FSTEP_RIGHT 0x1AD5D1   /* u8: right foot down last frame */
@@ -8085,7 +8069,6 @@ void func_0018C540(Fiona *f) {
     Actor_SetState(&f->c.a, &D_003B2D28);
 }
 
-extern VObject *gPlacedThings;   /* the placed things */
 
 /* her hand: where the thing leaves it (motion +0x78 the bone) */
 static inline __attribute__((always_inline)) void fiona_hand(Fiona *f, f32 *out) {

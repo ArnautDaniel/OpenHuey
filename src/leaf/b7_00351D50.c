@@ -1,6 +1,7 @@
 /* Batch 7 leaf functions, 0x00351D50.. : resource-table getters, small state objects. */
 #include "common.h"
 #include "ptmf.h"
+#include "globals.h"
 
 #define B7_W(p, off)  (*(s32 *)((u8 *)(p) + (off)))
 #define B7_H(p, off)  (*(s16 *)((u8 *)(p) + (off)))
@@ -8,7 +9,6 @@
 #define B7_F(p, off)  (*(f32 *)((u8 *)(p) + (off)))
 #define B7_D(p, off)  (*(s64 *)((u8 *)(p) + (off)))
 
-extern void *gFileLoader; /* +0xC LoadAsync?(name, dest, flags, 0) */
 
 extern char D_00462F30[];
 extern u8 D_004434D0[], D_00443510[], D_00443560[], D_004435E0[], D_00443680[];

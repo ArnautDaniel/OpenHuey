@@ -2,6 +2,7 @@
 #include "common.h"
 #include "game.h"
 #include "input.h"
+#include "globals.h"
 
 extern void func_001136E8(s32 status);         /* exit() */
 extern s32 func_0037E1F0(s32 *result);         /* load the embedded IOP module, *result = its status */
@@ -10,7 +11,6 @@ extern void func_001F44D0(void *obj);           /* init Game.unk14E8C90 */
 extern void func_001F4100(void *obj);           /* shut down Game.unk14E8C90 */
 extern void func_002BFB20(void *obj);           /* init Game.unk20 */
 
-extern VObject *gFileLoader; /* the game's file loader (see SceneBoot) */
 
 extern const PTMF sGameStateMain;     /* { 0, -1, Game_StateMain } */
 extern const PTMF sGameStateShutdown; /* { 0, -1, Game_StateShutdown } */
@@ -194,7 +194,6 @@ void Game_StartNextScene(Game *game) {
 }
 
 extern const char D_0045D7C0[], D_0045D7D0[], D_0045D7E0[];   /* C_0000.HD / .SDT / .BD */
-extern VObject *gSound;                 /* the sound driver */
 extern void *func_00114DA8(u32 align, u32 size);   /* memalign */
 extern void func_00114FD0(void *p);                /* free */
 
@@ -245,7 +244,6 @@ void func_002BFB20(void *obj) {
     *(s32 *)(d + 0x4C) = 0;
 }
 
-extern VObject *gRenderer;   /* the renderer */
 
 /* Options defaults: sound mode from the sound driver (+0x6C), the video mode and screen offset
  * from the renderer, +4 on, +8 = 1.0. */
@@ -352,7 +350,6 @@ void *func_002D0DF0(u8 *o, s32 flags) {
 /* ---- the game's destructor (2026-10-05) ---- */
 
 extern void *D_0046ADB0[], *D_0046ADC4[], *D_0046ADD0[], *D_0046AD88[];
-extern void *gPad;
 
 /* Game +0x69B00's destructor: its vtables (and its +0x18 member's), gPad cleared */
 void *func_001BE150(u8 *o, s32 flags) {
@@ -372,7 +369,7 @@ void *func_001BE150(u8 *o, s32 flags) {
 
 extern void *Game_vtable[], *D_0046BEE0[], *D_0046BF08[], *D_0046A1C0[], *D_004699E0[];
 extern void *D_00469A60[], *D_00469B40[], *D_0046ADF0[];
-extern void *gSystemData, *gSceneTable, *gCamera, *D_004562A8, *D_004562B0;
+extern void *gSystemData, *gSceneTable, *D_004562A8, *D_004562B0;
 extern void *func_001F4590(u8 *, s32), *func_0020D920(u8 *, s32), *func_0020D8D0(u8 *, s32);
 extern void *func_0020D9C0(u8 *, s32), *func_0020D970(u8 *, s32);
 extern void *func_001A4850(void *, s32), *func_0020E000(u8 *, s32), *func_00169280(void *, s32);

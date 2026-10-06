@@ -4,11 +4,9 @@
  * 3 = a texture group of the slots object gTexCache. */
 #include "common.h"
 #include "game.h"
+#include "globals.h"
 
 
-extern VObject *gRenderer;   /* the renderer */
-extern VObject *gVram;   /* the VRAM manager */
-extern VObject *gTexCache;   /* texture groups (Game +0x14E8C90) */
 extern const u8 D_003EA970[]; /* per slot: kind, group, ? */
 extern const u8 D_003EA971[];
 

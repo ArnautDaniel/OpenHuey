@@ -4,10 +4,8 @@
 #include "pursuer.h"
 #include "progress.h"
 #include "sce/libvu0.h"
+#include "globals.h"
 
-extern VObject *gRandom;   /* random numbers */
-extern VObject *gDoors;   /* doors */
-extern VObject *gRooms;   /* rooms */
 
 /* ---- defaults shared by the stalker vtables (0x179600..0x179970) ---- */
 
@@ -143,7 +141,6 @@ u32 func_00219450(Pursuer *p) {
 
 extern Progress *gProgress;
 extern Character *gCharPlayer;    /* Fiona */
-extern VObject *gEvents;       /* room objects */
 extern void *gNavMesh;          /* nav mesh */
 extern VObject *gSceneGameF29740; /* path planner */
 
