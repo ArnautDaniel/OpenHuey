@@ -5323,3 +5323,62 @@ s32 func_0037AFB0(void *self, void *a1, u8 *cmd) {
 s32 func_00352F50(VObject *self, void *a1, u8 *cmd) {
     return hangers_swing(self, cmd, 0, 3, 1.0f, 0, 4, 4, 5);
 }
+
+extern void *D_004799D0[], *D_0047A430[], *D_00479F50[];
+
+static void effect_799d0_init(void **obj) {
+    obj[0] = D_004799D0;
+}
+
+static void effect_7a430_init(void **obj) {
+    obj[0] = D_0047A430;
+}
+
+/* (as func_002B11D0) the 0xD40-byte effect D_004799D0 started with byte 3 */
+s32 func_0033A0B0(void *self, void *a1, u8 *cmd) {
+    u8 *mgr = D_0044E578;
+    u8 b = cmd[3];
+
+    func_002D6090(mgr, Effect_New(mgr, 0xD40, effect_799d0_init), &b);
+    return 1;
+}
+
+/* (as func_002B11D0) the 0x14-byte effect D_0047A430 started with byte 3 as a word */
+s32 func_0034A250(void *self, void *a1, u8 *cmd) {
+    u8 *mgr = D_0044E578;
+    s32 w = cmd[3];
+
+    func_002D6090(mgr, Effect_New(mgr, 0x14, effect_7a430_init), &w);
+    return 1;
+}
+
+static void effect_1c60_init(void **obj) {
+    obj[0] = D_00479F50;
+    obj[0x1810 / 4] = D_00469D00;
+    ((s32 *)obj)[0x1814 / 4] = -1;
+    obj[0x1810 / 4] = D_0046FC30;
+}
+
+/* (as func_002B2A80) byte 3 0: the effect D_00479F50 spawned (told 1), its slot in event var
+   0; 1: it is told 0 */
+s32 func_00342A30(void *self, void *a1, u8 *cmd) {
+    switch (cmd[3]) {
+    case 0: {
+        u8 *mgr = D_0044E578;
+        s32 slot = Effect_New(mgr, 0x1C60, effect_1c60_init);
+
+        func_002D6090(mgr, slot, (void *)1);
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 0, slot);
+        break;
+    }
+    case 1: {
+        s32 slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0);
+
+        if (slot != -1) {
+            func_002D6090(D_0044E578, slot, NULL);
+        }
+        break;
+    }
+    }
+    return 1;
+}
