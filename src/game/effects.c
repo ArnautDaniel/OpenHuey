@@ -2633,6 +2633,211 @@ s32 func_00363130(u8 *e) {
 }
 
 
+/* ---- D_00479600 (0x80 bytes): a strike's mark - between two points of a model (+0x50 from
+ * its bone +0x98, +0x60 from its bone +0x9C; none: two points by Fiona's bone 0x23), a frame
+ * (+0x10, its z axis from the second point to the first), drawn as a glow at the first point
+ * and a streak 4 long beyond it; after 2 frames (+0x70) the model gives off smoke (D_00479800)
+ * and the mark is done (+0x78). +0x74 the model ---- */
+
+extern void *gCharPlayer;
+extern u8 *D_0044F808;   /* character slot 2 (the stalker) */
+extern void *D_00479800[];
+extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
+extern void func_002E56C0(u8 *quad);
+
+/* the two points: the model's bones, or Fiona's bone 0x23 at (-3.5, 0, 1) and (-1, 0, 1) */
+static inline void mark_points(u8 *o) {
+    u8 *c = AT(o, 0x74, u8 *);
+
+    if (c != NULL) {
+        s32 bone = VCALL(c, 0x98, s32 (*)(u8 *))(c);
+
+        sceVu0CopyVector((f32 *)(o + 0x50), func_0017CE80(AT(c, 0x810, void *), bone) + 12);
+        bone = VCALL(c, 0x9C, s32 (*)(u8 *))(c);
+        sceVu0CopyVector((f32 *)(o + 0x60), func_0017CE80(AT(c, 0x810, void *), bone) + 12);
+    } else {
+        f32 m[4][4] __attribute__((aligned(16)));
+        f32 v[4] __attribute__((aligned(16)));
+
+        sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(AT(gCharPlayer, 0xF0, u8 *), 0x810, void *), 0x23));
+        v[0] = -3.5f;
+        v[2] = 1.0f;
+        v[3] = 1.0f;
+        v[1] = 0.0f;
+        sceVu0ApplyMatrix((f32 *)(o + 0x50), m, v);
+        v[0] = -1.0f;
+        v[2] = 1.0f;
+        v[3] = 1.0f;
+        v[1] = 0.0f;
+        sceVu0ApplyMatrix((f32 *)(o + 0x60), m, v);
+    }
+}
+
+/* +0x18 start: arg { 0xFF and a model; or: no game - done; non-zero - the stalker's model;
+ * zero - Fiona }: the points and the frame (y up, or z when the line is vertical) */
+void func_0035A290(u8 *o, s32 *arg) {
+    f32 *m = (f32 *)(o + 0x10);
+
+    AT(o, 0x78, u8) = 0;
+    if (arg[0] == 0xFF) {
+        if (arg[1] == 0) {
+            AT(o, 0x78, u8) = 1;
+        } else {
+            AT(o, 0x74, s32) = arg[1];
+        }
+    } else if (gProgress == NULL) {
+        AT(o, 0x78, u8) = 1;
+    } else if (arg[0] != 0) {
+        AT(o, 0x74, u32) = AT(D_0044F808, 0xF0, u32);
+    } else {
+        AT(o, 0x74, s32) = 0;
+    }
+    if (AT(o, 0x78, u8)) {
+        return;
+    }
+    mark_points(o);
+    sceVu0UnitMatrix((f32 (*)[4])m);
+    sceVu0SubVector(m + 8, (f32 *)(o + 0x50), (f32 *)(o + 0x60));
+    sceVu0Normalize(m + 8, m + 8);
+    if (m[9] < 1.0f && !(m[9] <= -1.0f)) {
+        m[4] = 0.0f;
+        m[5] = 1.0f;
+        m[6] = 0.0f;
+    } else {
+        m[4] = 0.0f;
+        m[5] = 0.0f;
+        m[6] = 1.0f;
+    }
+    m[7] = 0.0f;
+    sceVu0OuterProduct(m, m + 4, m + 8);
+    sceVu0Normalize(m, m);
+    sceVu0OuterProduct(m + 4, m + 8, m);
+    sceVu0Normalize(m + 4, m + 4);
+}
+
+static inline void mark_smoke_init(void **obj) {
+    obj[0] = D_00479800;
+    obj[0x610 / 4] = D_00469D00;
+    ((s32 *)obj)[0x614 / 4] = -1;
+    obj[0x610 / 4] = D_0046FC30;
+}
+
+/* +0x10 update: 0 once done; after the wait the smoke from the model, and done */
+s32 func_0035AD40(u8 *o) {
+    u8 *mgr;
+
+    if (AT(o, 0x78, u8) == 1) {
+        return 0;
+    }
+    AT(o, 0x70, s32)--;
+    if (AT(o, 0x70, s32) > 0) {
+        return 1;
+    }
+    mgr = D_0044E578;
+    func_002D6090(mgr, Effect_New(mgr, 0x6E0, mark_smoke_init), AT(o, 0x74, void *));
+    return 0;
+}
+
+#ifdef HG_NATIVE
+/* +0x14 draw (not while the effects are paused or once done): in the mark's frame a glow at the
+ * first point (a 2 x 2 quad across x / y, cell (320, 128) 32 x 32, additive) and the streak -
+ * two quads 2 wide from 0.2 behind to 3.8 beyond it, one across y, one across x (cell (256,
+ * 128) 64 x 32) - then, with the first point in view, a faint grey band over the screen's
+ * bottom 64 lines at its depth (the original's eight 64-wide scissored sprites, layer 0x1E) */
+void func_0035A4F0(u8 *o) {
+    static const f32 kGlow[4][4] = {{-1.0f, 1.0f, 0.3f, 1.0f}, {1.0f, 1.0f, 0.3f, 1.0f},
+                                    {-1.0f, -1.0f, 0.3f, 1.0f}, {1.0f, -1.0f, 0.3f, 1.0f}};
+    static const f32 kStreakY[4][4] = {{0.0f, 1.0f, -0.2f, 1.0f}, {0.0f, 1.0f, 3.8f, 1.0f},
+                                       {0.0f, -1.0f, -0.2f, 1.0f}, {0.0f, -1.0f, 3.8f, 1.0f}};
+    static const f32 kStreakX[4][4] = {{1.0f, 0.0f, -0.2f, 1.0f}, {1.0f, 0.0f, 3.8f, 1.0f},
+                                       {-1.0f, 0.0f, -0.2f, 1.0f}, {-1.0f, 0.0f, 3.8f, 1.0f}};
+    QuadDrawer d;
+    QuadRec rec __attribute__((aligned(16)));
+    f32 corner[4][4] __attribute__((aligned(16)));
+    f32 clip[4][4] __attribute__((aligned(16)));
+    f32 c[4] __attribute__((aligned(16)));
+    s32 k;
+
+    if (func_002D6010(D_0044E578) != 0 || AT(o, 0x78, u8) == 1) {
+        return;
+    }
+    rec.rgba[0] = 0x80;
+    rec.rgba[1] = 0x46;
+    rec.rgba[2] = 0x46;
+    rec.rgba[3] = 0x80;
+    sceVu0CopyVector(rec.pos, (f32 *)(o + 0x50));
+    rec.w = 1.0f;
+    rec.h = 1.0f;
+    rec.turn = 0.0f;
+    rec.frame = 0;
+    d.vtbl = D_0046FC30;
+    d.a = -1;
+    d.tex = (u64)-1;
+    d.rec = &rec;
+    AT(&d, 0x14, f32 *) = corner[0];
+    d.cx = 0.0f;
+    d.cy = 0.0f;
+    d.layer = 0x19;
+    d.count = 1;
+    d.cellX = 0x140;
+    d.cellY = 0x80;
+    d.cellW = 0x20;
+    d.cellH = 0x20;
+    d.texW = 0x200;
+    d.texH = 0x100;
+    d.flags = 0x42;
+    d.frames = 1;
+    d.texId = 1;
+    d.texGroup = 0x10;
+    d.palette = -1;
+    for (k = 0; k < 4; k++) {
+        sceVu0ApplyMatrix(corner[k], (f32 (*)[4])(o + 0x10), kGlow[k]);
+    }
+    func_002E56C0((u8 *)&d);
+    d.cellX = 0x100;
+    d.cellY = 0x80;
+    d.cellW = 0x40;
+    d.cellH = 0x20;
+    for (k = 0; k < 4; k++) {
+        sceVu0ApplyMatrix(corner[k], (f32 (*)[4])(o + 0x10), kStreakY[k]);
+    }
+    func_002E56C0((u8 *)&d);
+    for (k = 0; k < 4; k++) {
+        sceVu0ApplyMatrix(corner[k], (f32 (*)[4])(o + 0x10), kStreakX[k]);
+    }
+    func_002E56C0((u8 *)&d);
+    d.vtbl = D_00469D00;
+
+    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+    sceVu0ApplyMatrix(c, clip, (f32 *)(o + 0x50));
+    if (!(c[0] <= c[3]) || c[0] < -c[3] || !(c[1] <= c[3]) || c[1] < -c[3] || !(c[2] <= c[3]) || c[2] < -c[3]) {
+        return;
+    }
+    {
+        /* the band in PS2 clip space (w 1) at the point's depth: GS pixel (x, y) is clip
+         * (x - 256, y - 224) / 2047 */
+        static const f32 kIdentity[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+        static const f32 kX[2] = {0.0f, 512.0f}, kY[2] = {384.0f, 448.0f};
+        f32 xyzw[4][4];
+        f32 st[4][2] = {{0}};
+        u8 col[4][4];
+
+        for (k = 0; k < 4; k++) {
+            xyzw[k][0] = (kX[k & 1] - 256.0f) / 2047.0f;
+            xyzw[k][1] = (kY[k >> 1] - 224.0f) / 2047.0f;
+            xyzw[k][2] = c[2] / c[3];
+            AT(&xyzw[k][3], 0, u32) = 0;
+            col[k][0] = col[k][1] = col[k][2] = 0x80;
+            col[k][3] = 8;
+        }
+        glr_layer(0x1E);
+        glr_strip(kIdentity, 4, &xyzw[0][0], &st[0][0], &col[0][0], NULL, 0, 0x40 | 0x20000);   /* blended, no z writes */
+        glr_layer(-1);
+    }
+}
+#endif
+
+
 /* ---- D_00470A50 (0x3858 bytes): 128 motes rising from around (0, 70, 35), in two buffers of
  * quad records (+0x10 + 0x1800 x the current one +0x3850), their velocities at +0x3050 (16
  * each), drawn by the quad drawer at +0x3010; a mote is renewed past height 130 or, counted on
