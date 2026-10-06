@@ -79,7 +79,7 @@ void glr_screen2(uint32_t rgba, int contrast, int blur);
 /* func_0021C840 this frame (renderer layer 0x2A): the screen's corners darkened, by up to
  * strength / 128, fading to nothing at the middles of the edges (moved by `offset` pixels) */
 void glr_vignette(int strength, int offset);
-/* room 0x61's haze over the screen (func_00374E50) */
+/* room 0x61's haze over the screen (LightShaft_Draw) */
 void glr_haze(float phase, float sway);
 void glr_haze_fix(float phase, float sway, int fix);
 void glr_haze2(float phase, float size);

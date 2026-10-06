@@ -1194,7 +1194,8 @@ void **func_001261D0(void **obj, s32 flags) {
     return obj;
 }
 
-void **func_00126220(void **obj, s32 flags) {
+/* 0x00126220 */
+void **EffectBase_dtor(void **obj, s32 flags) {
     if (obj != NULL) {
         *obj = D_0046F580;
         if ((s16)flags > 0) {

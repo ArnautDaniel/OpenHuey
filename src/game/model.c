@@ -62,7 +62,7 @@ extern void *D_0046F580[];
 extern void *D_0047A6F0[];
 void *func_0026B1E0(u8 *o, s32 flags);
 void *func_002BAFD0(u8 *o, s32 flags);
-void *func_0037B9A0(u8 *o, s32 flags);
+void *DustMoteSource_dtor(u8 *o, s32 flags);
 
 void Model_HalfHip(void *self, u32 *out);
 
@@ -107,7 +107,7 @@ s32 func_00353E20(void);
 s32 func_00353E30(void);
 s32 func_00353E40(void);
 s32 func_00353E50(void);
-void func_0037BC90(void);
+void DustMoteSource_Draw(void);
 void func_0033E730(void);
 s32 func_00336F80(void);
 s32 func_00336F90(void);
@@ -214,7 +214,7 @@ void func_003544A0(u8 *p);
 void *func_0035B060(void *self, u32 i);
 
 s32 func_0035B000(void);
-void func_0037BE70(u8 *o);
+void DustMoteSource_Start(u8 *o);
 
 /* placement new (models) */
 void *func_002DC6E0(u32 size, void *p) {
@@ -4745,7 +4745,8 @@ void func_0036A1C0(u8 *p, u8 *s) {
 }
 
 /* destructor (vtable D_0047A6F0) */
-void *func_0037B9A0(u8 *o, s32 flags) {
+/* 0x0037B9A0 */
+void *DustMoteSource_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0047A6F0;
         AT(o, 0x0, void **) = D_0046F580;
@@ -4756,10 +4757,12 @@ void *func_0037B9A0(u8 *o, s32 flags) {
     return o;
 }
 
-void func_0037BC90(void) {
+/* 0x0037BC90 */
+void DustMoteSource_Draw(void) {
 }
 
-void func_0037BE70(u8 *o) {
+/* 0x0037BE70 */
+void DustMoteSource_Start(u8 *o) {
     AT(o, 0x44, u8) = 0;
 }
 

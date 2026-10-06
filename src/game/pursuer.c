@@ -126,7 +126,7 @@ extern void *D_0046F580[];
 extern void *D_00472F60[];
 extern void *D_00479FF0[];
 void *func_00316D80(u8 *o, s32 flags);
-void *func_0036A4D0(u8 *o, s32 flags);
+void *Effect79FF0_dtor(u8 *o, s32 flags);
 
 extern const char *const D_0042C358;
 extern const PTMF D_0042C8F0;
@@ -141,7 +141,7 @@ extern u8 D_0043DC30[], D_0043DBF0[];
 
 extern u8 D_00441830[], D_004417F0[];
 
-void func_0036A580(void);
+void Effect79FF0_Draw(void);
 
 extern const PTMF D_00422348;            /* a creature state */
 extern void *D_004726E0[];   /* the strand (creature.c) */
@@ -253,9 +253,9 @@ static void strand_init(void **obj) {
 Character *Kind09_dtor(Character *c, s32 flags);
 void Kind09_Behaviour25C(Character *c);
 void Kind09_BehaviourSearch(Character *c);
-void func_0036A530(u8 *o, s32 *m);
-void func_0036A7F0(u8 *o);
-s32 func_0036A590(u8 *o);
+void Effect79FF0_SetParams(u8 *o, s32 *m);
+void Effect79FF0_Start(u8 *o);
+s32 Effect79FF0_Update(u8 *o);
 
 /* in play: func_00124890(-1) */
 static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p) {
@@ -11571,7 +11571,8 @@ u8 *func_0034D980(Pursuer *p) {
 }
 
 /* destructor (vtable D_00479FF0) */
-void *func_0036A4D0(u8 *o, s32 flags) {
+/* 0x0036A4D0 */
+void *Effect79FF0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479FF0;
         AT(o, 0x0, void **) = D_0046F580;
@@ -11584,7 +11585,8 @@ void *func_0036A4D0(u8 *o, s32 flags) {
 
 /* D_00479FB0 effect message: none sets +0x34 (done); else +0x2C its word 0, and below 2 in word 1
  * +0x30 30 */
-void func_0036A530(u8 *o, s32 *m) {
+/* 0x0036A530 */
+void Effect79FF0_SetParams(u8 *o, s32 *m) {
     if (m == NULL) {
         AT(o, 0x34, u8) = 1;
         return;
@@ -11595,13 +11597,15 @@ void func_0036A530(u8 *o, s32 *m) {
     }
 }
 
-void func_0036A580(void) {
+/* 0x0036A580 */
+void Effect79FF0_Draw(void) {
 }
 
 /* D_00479FB0's update: while the pursuer is in state 4 / action 0x11 (and not stopped, +0x34,
  * nor its delay +0x30 run out) each of its ten timers (+0x4..) counts down; at most one at 0 a
  * frame restarts (10..41) and lets a strand (kind = the pursuer's, +0x2C) drip */
-s32 func_0036A590(u8 *o) {
+/* 0x0036A590 */
+s32 Effect79FF0_Update(u8 *o) {
     VObject *rnd;
     u8 *mgr;
     u8 spawned = 0;
@@ -11639,7 +11643,8 @@ s32 func_0036A590(u8 *o) {
 }
 
 /* its set up: +0x34 0, +0x30 -1, ten random 0..15 from +0x4 */
-void func_0036A7F0(u8 *o) {
+/* 0x0036A7F0 */
+void Effect79FF0_Start(u8 *o) {
     VObject *rnd;
     s32 i;
 

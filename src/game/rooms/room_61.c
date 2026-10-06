@@ -317,7 +317,8 @@ s32 func_003116B0(void *self, void *a1, u8 *cmd) {
 }
 
 /* +0x8 destructor (the quad drawer's inlined) */
-u8 *func_00374B30(u8 *o, s32 flags) {
+/* 0x00374B30 */
+u8 *LightShaft_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -359,7 +360,8 @@ void func_00374BC0(u8 *o, s32 i) {
 
 /* +0x18 start: NULL stops it; kind (+0x10) 0 the motes from the position (+0x0), 1 the haze
  * on, 2 off */
-void func_00374DB0(u8 *o, u8 *arg) {
+/* 0x00374DB0 */
+void LightShaft_SetParams(u8 *o, u8 *arg) {
     s32 i;
 
     if (arg == NULL) {
@@ -392,7 +394,8 @@ void func_00374DB0(u8 *o, u8 *arg) {
  * 33 columns 8 apart each moved down 16 sin(a) (2 + (1 + cos a) / 2) / 16 (a = +0x6E0 + 90
  * degrees a column) and all of it 2 sin(+0x6E4) right; that blended back over the screen at
  * 0x48 / 128 */
-void func_00374E50(u8 *o) {
+/* 0x00374E50 */
+void LightShaft_Draw(u8 *o) {
     static const s8 kOrder[6] = {0, 2, 4, 5, 1, 3};
     f32 clip[4][4] __attribute__((aligned(16)));
     f32 xyzw[6][4] __attribute__((aligned(16)));
@@ -460,7 +463,8 @@ void func_00374E50(u8 *o) {
 /* +0x10 update: the buffers swapped (the motes copied over), the texture scrolled 3.2 / 16
  * texels; each mote turns, wobbles 0.1 about its angle and rises; on every other frame it
  * fades by 0 or 1 and starts over once gone. The haze's phases on by 3 .. 5 and 1 .. 3 degrees */
-s32 func_00376200(u8 *o) {
+/* 0x00376200 */
+s32 LightShaft_Update(u8 *o) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
     VObject *rnd;
     f32 t;
@@ -517,7 +521,8 @@ s32 func_00376200(u8 *o) {
 
 /* +0xC set up: a random scroll; the motes' drawer: layer 0x19, texture group 0x10 cell
  * (0x1A0, 0x40) 32 x 32 of 512 x 256, additive, 5 frames; the haze at random phases */
-void func_003765B0(u8 *o) {
+/* 0x003765B0 */
+void LightShaft_Start(u8 *o) {
     VObject *rnd = gRandom;
 
     AT(o, 0x6EC, s32) = 0;
@@ -546,7 +551,8 @@ void func_003765B0(u8 *o) {
 }
 
 /* +0x8 destructor */
-void **func_00377B10(void **o, s32 flags) {
+/* 0x00377B10 */
+void **Glint_dtor(void **o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -560,7 +566,8 @@ void **func_00377B10(void **o, s32 flags) {
 
 /* +0x14 draw: unless the effects are paused, a white 1 x 1 sprite (group 0x10 cell (0x40,
  * 0x20) 32 x 32 of 512 x 256) at the bone, in layer 0x26 */
-void func_00377B70(void) {
+/* 0x00377B70 */
+void Glint_Draw(void) {
     struct {
         void **vtbl;
         s32 a;
@@ -614,10 +621,12 @@ void func_00377B70(void) {
 }
 
 /* +0x10 update */
-s32 func_00377CA0(void) {
+/* 0x00377CA0 */
+s32 Glint_Update(void) {
     return 1;
 }
 
 /* +0xC set up */
-void func_00377CB0(void) {
+/* 0x00377CB0 */
+void Glint_Start(void) {
 }

@@ -32,13 +32,13 @@ u32 func_00126EC0(void *p);
 
 extern void *D_0046F580[];
 extern void *D_00479600[];
-void *func_0035A230(u8 *o, s32 flags);
+void *StrikeMark_dtor(u8 *o, s32 flags);
 
 #define B7_W(p, off)  (*(s32 *)((u8 *)(p) + (off)))
 
 #define B7_B(p, off)  (*(u8 *)((u8 *)(p) + (off)))
 
-void func_0035AE90(u8 *p);
+void StrikeMark_Start(u8 *p);
 
 u32 func_00126EC0(void *p) {
     if (FLD(p, 0xF8, s32) == 6) {
@@ -3208,7 +3208,8 @@ void func_002E2DA0(f32 *out, f32 (*m)[4], const f32 *v) {
 }
 
 /* destructor (vtable D_00479600) */
-void *func_0035A230(u8 *o, s32 flags) {
+/* 0x0035A230 */
+void *StrikeMark_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479600;
         AT(o, 0x0, void **) = D_0046F580;
@@ -3219,7 +3220,8 @@ void *func_0035A230(u8 *o, s32 flags) {
     return o;
 }
 
-void func_0035AE90(u8 *p) {
+/* 0x0035AE90 */
+void StrikeMark_Start(u8 *p) {
     B7_B(p, 0x78) = 0;
     B7_W(p, 0x74) = 0;
     B7_W(p, 0x70) = 2;

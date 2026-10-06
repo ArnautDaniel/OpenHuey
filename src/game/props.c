@@ -39,11 +39,11 @@ void *Kind32_MotionFiles(void);
 
 extern u32 D_0043B6E0[];
 extern u32 D_0043CDC0[];
-void func_00345E20(u8 *p);
+void Room66Effect_Start(u8 *p);
 void *Kind34_MotionFiles(void);
 void Kind34_DoorOffset(void *self, s32 i, f32 *out);
 void Kind34_ActionOffsets(void *self, s32 i, f32 *out);
-s32 func_003476A0(f32 *a);
+s32 Room55Effect_Update(f32 *a);
 void *Kind35_MotionFiles(void);
 
 s32 func_00345FF0(void);
@@ -54,7 +54,7 @@ void Kind34_FilesLoaded(Pursuer *p);
 extern void *D_00478B70[];
 void *func_00347640(u8 *o, s32 flags);
 
-s32 func_00350C40(f32 *a);
+s32 Room4EEffect_Update(f32 *a);
 
 /* an effect's quad drawer (at `drawer`) given the current one of its records (`size` apart from
  * +0x10, the index at `idx`), and drawn */
@@ -63,9 +63,9 @@ static inline __attribute__((always_inline)) void quad_step(u8 *o, u32 drawer, u
     func_002E56C0(o + drawer);
 }
 
-void func_0033C110(u8 *o);
-void func_0035F9B0(u8 *o);
-void func_00371E00(u8 *o);
+void DustShaft_Draw(u8 *o);
+void CeilingDrips_Draw(u8 *o);
+void Embers_Start(u8 *o);
 
 /* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
  * slots 3..5 */
@@ -133,7 +133,8 @@ Character *Kind34_dtor(Character *c, s32 flags);
 Character *Kind35_dtor(Character *c, s32 flags);
 
 /* (class D_00474000, room 0x2A) +0x8 destructor (the quad drawer at +0x610 inlined) */
-u8 *func_00321910(u8 *o, s32 flags) {
+/* 0x00321910 */
+u8 *Room2AWisps_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -148,7 +149,8 @@ u8 *func_00321910(u8 *o, s32 flags) {
 }
 
 /* (class D_00474000, room 0x2A) +0xC reset: a random delay (0x5A..0x79) and its settings */
-void func_00322430(u8 *o) {
+/* 0x00322430 */
+void Room2AWisps_Start(u8 *o) {
     AT(o, 0x8EC, s32) = (VCALL(gRandom, 0x10, u32 (*)(VObject *))(gRandom) & 0x1F) + 0x5A;
     AT(o, 0x8F0, s32) = 0;
     AT(o, 0x8F4, s32) = 0;
@@ -185,7 +187,8 @@ typedef union {
 
 /* +0x18 start: at its fixed spot by the room's (211.28, 2.125, -220.567), 16 particles spread
  * up to 100 to one side */
-void func_00321D20(u8 *o, f32 *params) {
+/* 0x00321D20 */
+void Room2AWisps_SetParams(u8 *o, f32 *params) {
     static const F32Bits kX = {0x435347AE}, kZ = {0xC35C9127}, kSpeed = {0xBDCCCCCD};
     VObject *rng;
     s32 i;
@@ -248,7 +251,8 @@ void func_003219A0(u8 *o, s32 i) {
 }
 
 /* (class D_00478BC0) +0xC reset: three random angles in -pi..pi */
-void func_00350A10(u8 *o) {
+/* 0x00350A10 */
+void Effect78BC0_Start(u8 *o) {
     static const F32Bits kPi = {0x40490FDB};
     VObject *rng = gRandom;
     s32 k;
@@ -266,7 +270,8 @@ void func_00350A10(u8 *o) {
 extern void *D_00478BC0[], *D_0046F580[], *D_00478B70[], *D_00469D00[];
 
 /* +0x8 destructor */
-u8 *func_003507B0(u8 *o, s32 flags) {
+/* 0x003507B0 */
+u8 *Effect78BC0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00478BC0;
         AT(o, 0x0, void **) = D_0046F580;
@@ -300,7 +305,8 @@ static inline __attribute__((always_inline)) s32 spin_step(u8 *o, u32 stepX, u32
     return 1;
 }
 
-s32 func_00350910(u8 *o) {
+/* 0x00350910 */
+s32 Effect78BC0_Update(u8 *o) {
     return spin_step(o, 0x3C0EFA35, 0x3AE4C389);
 }
 
@@ -328,7 +334,8 @@ typedef struct ModelDraw {
 void func_00350660(ModelDraw *d, const ModelDrawParams *p);   /* queue a model draw */
 
 /* +0x14 draw: model +0x10 at its spot (65.64, 6.1, 70.94), turned by its angles */
-void func_00350860(u8 *o) {
+/* 0x00350860 */
+void Effect78BC0_Draw(u8 *o) {
     static const F32Bits kX = {0x42834704}, kY = {0x40C33333}, kZ = {0x428DE227}, kR = {0x421F3333};
     ModelDraw d __attribute__((aligned(16)));
     ModelDrawParams p __attribute__((aligned(16)));
@@ -351,7 +358,8 @@ void func_00350860(u8 *o) {
 }
 
 /* +0x18 start: model 0x30 (params[0] 0) or 0x2C, then a first update */
-void func_00350810(VObject *o, const u8 *params) {
+/* 0x00350810 */
+void Effect78BC0_SetParams(VObject *o, const u8 *params) {
     if (params == NULL) {
         return;
     }
@@ -377,12 +385,13 @@ void func_00350660(ModelDraw *d, const ModelDrawParams *p) {
 
 /* ---- class D_00477E10 (room 0x55, 0x18 bytes): a light caustic like D_00478BC0's, over the
  * whole room (texture 3, 160 across) at height +0x14; +0x4/+0x8/+0xC its turns (updated by
- * func_003476A0), +0x10 the glow threshold ---- */
+ * Room55Effect_Update), +0x10 the glow threshold ---- */
 
 extern void *D_00477E10[];
 
 /* +0x8 destructor */
-u8 *func_003474E0(u8 *o, s32 flags) {
+/* 0x003474E0 */
+u8 *Room55Effect_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00477E10;
         AT(o, 0x0, void **) = D_0046F580;
@@ -394,7 +403,8 @@ u8 *func_003474E0(u8 *o, s32 flags) {
 }
 
 /* +0xC reset: three random angles in -pi..pi */
-void func_003477A0(u8 *o) {
+/* 0x003477A0 */
+void Room55Effect_Start(u8 *o) {
     static const F32Bits kPi = {0x40490FDB};
     VObject *rng = gRandom;
     s32 k;
@@ -419,7 +429,8 @@ void *Kind35_MotionFiles(void) {
 }
 
 /* +0x14 draw */
-void func_003475A0(u8 *o) {
+/* 0x003475A0 */
+void Room55Effect_Draw(u8 *o) {
     ModelDraw d __attribute__((aligned(16)));
     ModelDrawParams p __attribute__((aligned(16)));
 
@@ -453,7 +464,8 @@ void *func_00347640(u8 *o, s32 flags) {
 }
 
 /* Advances three angles (+0x4 by 0.5 deg, +0x8 by 0.1 deg, +0xC by -0.1 deg), wrapped to [-pi, pi]. */
-s32 func_003476A0(f32 *a) {
+/* 0x003476A0 */
+s32 Room55Effect_Update(f32 *a) {
     a[1] += 0x1.1df46ap-7f /* 0.008726646 */;
     if (!(a[1] <= 0x1.921fb6p+1f /* 3.1415927 */)) {
         a[1] -= 0x1.921fb6p+2f /* 6.2831855 */;
@@ -471,12 +483,13 @@ s32 func_003476A0(f32 *a) {
 
 /* ---- class D_00478BE0 (room 0x4E, 0x10 bytes): a light caustic (texture 8, 120 across) at
  * (-8.77, -7.4, -0.007), glow threshold 0x80; +0x4/+0x8/+0xC its turns (updated by
- * func_00350C40) ---- */
+ * Room4EEffect_Update) ---- */
 
 extern void *D_00478BE0[];
 
 /* +0x8 destructor */
-u8 *func_00350B30(u8 *o, s32 flags) {
+/* 0x00350B30 */
+u8 *Room4EEffect_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00478BE0;
         AT(o, 0x0, void **) = D_0046F580;
@@ -488,7 +501,8 @@ u8 *func_00350B30(u8 *o, s32 flags) {
 }
 
 /* +0xC reset: three random angles in -pi..pi */
-void func_00350D40(u8 *o) {
+/* 0x00350D40 */
+void Room4EEffect_Start(u8 *o) {
     static const F32Bits kPi = {0x40490FDB};
     VObject *rng = gRandom;
     s32 k;
@@ -501,7 +515,8 @@ void func_00350D40(u8 *o) {
 }
 
 /* +0x14 draw */
-void func_00350B90(u8 *o) {
+/* 0x00350B90 */
+void Room4EEffect_Draw(u8 *o) {
     static const F32Bits kX = {0xC10C3F14}, kY = {0xC0ECCCCD}, kZ = {0xBBEBEDFA};
     ModelDraw d __attribute__((aligned(16)));
     ModelDrawParams p __attribute__((aligned(16)));
@@ -523,7 +538,8 @@ void func_00350B90(u8 *o) {
     d.vtbl = D_00469D00;
 }
 
-s32 func_00350C40(f32 *a) {
+/* 0x00350C40 */
+s32 Room4EEffect_Update(f32 *a) {
     a[1] += 0x1.1df46ap-7f /* 0.008726646 */;
     if (!(a[1] <= 0x1.921fb6p+1f /* 3.1415927 */)) {
         a[1] -= 0x1.921fb6p+2f /* 6.2831855 */;
@@ -539,8 +555,9 @@ s32 func_00350C40(f32 *a) {
     return 1;
 }
 
-/* (as func_00350B90)  +0x14 draw: model 0x30 */
-void func_00377D20(u8 *o) {
+/* (as Room4EEffect_Draw)  +0x14 draw: model 0x30 */
+/* 0x00377D20 */
+void Effect7A3D0_Draw(u8 *o) {
     static const F32Bits kX = {0xC3610000}, kY = {0xC27E7AE2}, kZ = {0xC48CA000};
     ModelDraw d __attribute__((aligned(16)));
     ModelDrawParams p __attribute__((aligned(16)));
@@ -564,7 +581,8 @@ void func_00377D20(u8 *o) {
 
 /* (class D_0047A3F0)  +0x14 draw: model 0x2A at (0, 30.1, 0), 3750 across, its turns +0x4..,
  * dimmed to 0x40 */
-void func_00378050(u8 *o) {
+/* 0x00378050 */
+void BackdropModel_Draw(u8 *o) {
     static const F32Bits kY = {0x41F0CCCD};
     ModelDraw d __attribute__((aligned(16)));
     ModelDrawParams p __attribute__((aligned(16)));
@@ -589,14 +607,16 @@ void func_00378050(u8 *o) {
 /* ---- class D_0047A410: model 0x2C turning slowly about y at (400, 27.1, -125) ---- */
 
 /* +0xC reset: a random turn */
-void func_00378470(u8 *o) {
+/* 0x00378470 */
+void TurningModel_Start(u8 *o) {
     f32 r = VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom);
 
     AT(o, 0x4, f32) = 0x1.921fb6p+1f * (360.0f * (r - 0.5f)) / 180.0f;
 }
 
 /* +0x10 update: half a degree on */
-s32 func_00378410(u8 *o) {
+/* 0x00378410 */
+s32 TurningModel_Update(u8 *o) {
     static const F32Bits kHalfDeg = {0x3C0EFA35}, kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
 
     AT(o, 0x4, f32) = AT(o, 0x4, f32) + kHalfDeg.f;
@@ -607,7 +627,8 @@ s32 func_00378410(u8 *o) {
 }
 
 /* +0x14 draw: 1000 across, dimmed to 0x40 */
-void func_00378370(u8 *o) {
+/* 0x00378370 */
+void TurningModel_Draw(u8 *o) {
     static const F32Bits kY = {0x41D8CCCD};
     ModelDraw d __attribute__((aligned(16)));
     ModelDrawParams p __attribute__((aligned(16)));
@@ -631,7 +652,8 @@ void func_00378370(u8 *o) {
 
 /* (class D_0047A430)  +0x14 draw, dimmed to 0x40 at height 27.1: with +0x10 model 0x2A at (0, 50),
  * 500 across, all three turns; else model 0x2C at (775, -420), 1500 across, turned about y only */
-void func_00378570(u8 *o) {
+/* 0x00378570 */
+void BackdropModel2_Draw(u8 *o) {
     static const F32Bits kY = {0x41D8CCCD};
     ModelDraw d __attribute__((aligned(16)));
     ModelDrawParams p __attribute__((aligned(16)));
@@ -664,7 +686,8 @@ void func_00378570(u8 *o) {
 
 /* +0x18 start: params[0] 0 at height 45.1 (threshold 0x60), else -5.9 (0x58); then a first
  * update */
-void func_00347540(VObject *o, const s32 *params) {
+/* 0x00347540 */
+void Room55Effect_SetParams(VObject *o, const s32 *params) {
     static const F32Bits kHigh = {0x42346666}, kLow = {0xC0BCCCCD};
 
     if (params == NULL) {
@@ -684,7 +707,8 @@ void func_00347540(VObject *o, const s32 *params) {
  * (+0x10, 0x300 per buffer, 0x30 each), drift by their velocity (+0x820) plus a wind
  * (+0x8E0..) whose phase (+0x8F0) changes at random; they spin (+0x660 by +0x760 degrees),
  * count frames up to +0x643, and respawn once past x = 300 */
-s32 func_00321FE0(u8 *o) {
+/* 0x00321FE0 */
+s32 Room2AWisps_Update(u8 *o) {
     static const union { u32 u; f32 f; } k0005 = {0x3BA3D70A}, k005 = {0x3D4CCCCD}, kPi = {0x40490FDB},
         kTwoPi = {0x40C90FDB};
     s32 i, k;
@@ -748,7 +772,8 @@ s32 func_00321FE0(u8 *o) {
 
 /* +0x14 draw: each of the 16 particles is a unit quad in the xz plane turned by its spin
  * (+0x660), drawn by the quad drawer (+0x610) from the current buffer's record */
-void func_00321E30(u8 *o) {
+/* 0x00321E30 */
+void Room2AWisps_Draw(u8 *o) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 c[4][4] __attribute__((aligned(16)));
     s32 i;
@@ -849,7 +874,8 @@ s32 func_0034E9E0(u8 *d) {
 extern void *D_00479400[], *D_00479AE0[], *D_00479AA0[];
 
 /* +0x8 destructor (the quad drawer at +0x610 inlined) */
-u8 *func_003532A0(u8 *o, s32 flags) {
+/* 0x003532A0 */
+u8 *FallingDrops_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -893,7 +919,8 @@ void func_00353330(u8 *o, s32 i) {
 }
 
 /* +0x14 draw: the current buffer's 16 records */
-void func_003534F0(u8 *o) {
+/* 0x003534F0 */
+void FallingDrops_Draw(u8 *o) {
     AT(o, 0x620, u8 *) = DROP(o, 0);
     func_002E56C0(o + 0x610);
 }
@@ -925,7 +952,8 @@ static void spray_init(void **obj) {
 
 /* +0x10 update: swap buffers, carry each drop over and drop it; a landed one splashes (the
  * first drop also with sound 2..4 of bank 6) and starts again */
-s32 func_00353520(u8 *o) {
+/* 0x00353520 */
+s32 FallingDrops_Update(u8 *o) {
     VObject *rng = gRandom;
     u8 *mgr = gEffects;
     VObject *nav;
@@ -1026,7 +1054,8 @@ s32 func_00353520(u8 *o) {
 }
 
 /* +0xC reset: the quad drawer's settings and 16 new drops */
-void func_00353BD0(u8 *o) {
+/* 0x00353BD0 */
+void FallingDrops_Start(u8 *o) {
     s32 i;
 
     AT(o, 0x688, s32) = 0;
@@ -1067,7 +1096,8 @@ extern f32 D_0043B640[], D_0043B644[];   /* the spots: x, z (read as pairs) */
 #define SMOKE_PUFF(o, i) ((o) + AT(o, 0x1BB0, s32) * 0xC00 + (i) * 0x30 + 0x10)
 
 /* +0x8 destructor (the quad drawers at +0x1840 and +0x1878 inlined) */
-u8 *func_003453D0(u8 *o, s32 flags) {
+/* 0x003453D0 */
+u8 *Room66Effect_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -1141,7 +1171,8 @@ void func_00345490(u8 *o, s32 i, s32 again) {
 }
 
 /* +0x14 draw: the puffs, then the glow */
-void func_00345A00(u8 *o) {
+/* 0x00345A00 */
+void Room66Effect_Draw(u8 *o) {
     AT(o, 0x1850, u8 *) = SMOKE_PUFF(o, 0);
     func_002E56C0(o + 0x1840);
     AT(o, 0x1888, u8 *) = o + 0x1810;
@@ -1151,7 +1182,8 @@ void func_00345A00(u8 *o) {
 /* +0x10 update (0 once it has died down and no puff shows): swap buffers; each puff grows,
  * turns, sways and rises, and starts again above 50 or (every other frame, fading faster the
  * weaker it is) once faded out; the glow's alpha is the number showing (+0..7) times +0x1BB4 */
-s32 func_00345A60(u8 *o) {
+/* 0x00345A60 */
+s32 Room66Effect_Update(u8 *o) {
     static const F32Bits k001 = {0x3C23D70A}, k02 = {0x3E4CCCCD}, k01 = {0x3DCCCCCD}, kPi = {0x40490FDB},
                          k2Pi = {0x40C90FDB};
     VObject *rng = gRandom;
@@ -1208,7 +1240,8 @@ s32 func_00345A60(u8 *o) {
     return 1;
 }
 
-void func_00345E20(u8 *p) {
+/* 0x00345E20 */
+void Room66Effect_Start(u8 *p) {
     s32 i;
 
     *(s32 *)(p + 0x1BB0) = 0;
@@ -1279,7 +1312,8 @@ void Kind34_ActionOffsets(void *self, s32 i, f32 *out) {
 
 /* +0x18 start: a byte < 0 makes it die down; else spot (byte & 0xF) * 2: 64 puffs and the glow
  * (pinkish white, 20 across, 12 up at the spot; texture group 0x10, cell (0xA0, 0x40)) */
-void func_003458A0(u8 *o, const s8 *params) {
+/* 0x003458A0 */
+void Room66Effect_SetParams(u8 *o, const s8 *params) {
     s32 i;
 
     if (params == NULL) {
@@ -1335,7 +1369,8 @@ extern void *D_00479580[];
 #define FIRE_REC(o, base, i) ((o) + AT(o, 0x6CE8, s32) * 0x1800 + (i) * 0x30 + (base))
 
 /* +0x8 destructor (the quad drawers at +0x60B0, +0x6078 and +0x6040 inlined) */
-u8 *func_003570C0(u8 *o, s32 flags) {
+/* 0x003570C0 */
+u8 *BigFire_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -1354,7 +1389,8 @@ u8 *func_003570C0(u8 *o, s32 flags) {
 }
 
 /* +0xC set up */
-void func_00358200(u8 *o) {
+/* 0x00358200 */
+void BigFire_Start(u8 *o) {
     AT(o, 0x6CE8, s32) = 0;
 }
 
@@ -1450,7 +1486,8 @@ void func_003571B0(u8 *o, s32 i, s32 again) {
  * glow flickers (alpha 0x30 / 0x38); each flame fades (and reddens less), wanders (its heading
  * by up to 15 degrees a frame, 5 once out), drifts out by its drift less 0.1 plus |cos| / 10,
  * rises ever slower, and starts again once faded */
-s32 func_00357BF0(u8 *o) {
+/* 0x00357BF0 */
+s32 BigFire_Update(u8 *o) {
     static const F32Bits k004 = {0x3D23D70A}, kTurn = {0x3D567750}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB},
                          kM0015 = {0xBC75C28F}, kM0005 = {0xBBA3D70A}, kMinusPi = {0xC0490FDB},
                          kM01 = {0xBDCCCCCD}, k001 = {0x3C23D70A}, k01 = {0x3DCCCCCD}, k005 = {0x3D4CCCCD};
@@ -1559,7 +1596,8 @@ s32 func_00357BF0(u8 *o) {
 }
 
 /* +0x14 draw: (while it burns) the smoke and the glow, then the flames */
-void func_00357B60(u8 *o) {
+/* 0x00357B60 */
+void BigFire_Draw(u8 *o) {
     if (AT(o, 0x6CEC, s32) == 0) {
         AT(o, 0x6050, u8 *) = FIRE_REC(o, 0x10, 0);
         func_002E56C0(o + 0x6040);
@@ -1573,7 +1611,8 @@ void func_00357B60(u8 *o) {
 /* +0x18 start: params[0] is the out flag; lit, the three drawers (texture group 0x10: smoke
  * cell (0x80, 0) 64 x 32 x 0x20, flames (0x6C, 0x4C) 8 x 8 additive, glow (0xA0, 0x40) 32 x 32
  * additive), 128 puffs, 32 tongues, and the glow (orange, 5 across at (-128, 5, 14)) */
-void func_00357940(u8 *o, const s32 *params) {
+/* 0x00357940 */
+void BigFire_SetParams(u8 *o, const s32 *params) {
     s32 i;
 
     if (params == NULL) {
@@ -1974,7 +2013,8 @@ extern void *D_00476BD0[];
 #define SMOKE2_PUFF(o, i) ((o) + AT(o, 0x36B0, s32) * 0x1800 + (i) * 0x30 + 0x10)
 
 /* +0x8 destructor (the quad drawers at +0x3078 and +0x3040 inlined) */
-u8 *func_0033C480(u8 *o, s32 flags) {
+/* 0x0033C480 */
+u8 *SpiralSmoke_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -2028,7 +2068,8 @@ void func_0033C540(u8 *o, s32 i, s32 again) {
 }
 
 /* +0x14 draw: the puffs, then the glow */
-void func_0033C7D0(u8 *o) {
+/* 0x0033C7D0 */
+void SpiralSmoke_Draw(u8 *o) {
     AT(o, 0x3050, u8 *) = SMOKE2_PUFF(o, 0);
     func_002E56C0(o + 0x3040);
     AT(o, 0x3088, u8 *) = o + 0x3010;
@@ -2038,7 +2079,8 @@ void func_0033C7D0(u8 *o) {
 /* +0x10 update: swap buffers; each puff grows, turns, spirals out (by up to 10 degrees a frame,
  * 0.05 wider) and rises, its colour dimming a step a frame and (every other frame) its alpha
  * too, starting again once faded; the glow flickers (alpha 0x38 / 0x40) */
-s32 func_0033C830(u8 *o) {
+/* 0x0033C830 */
+s32 SpiralSmoke_Update(u8 *o) {
     static const F32Bits k005 = {0x3D4CCCCD}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB}, kX = {0x42193333};
     VObject *rng = gRandom;
     s32 i, k;
@@ -2087,7 +2129,8 @@ s32 func_0033C830(u8 *o) {
 
 /* +0xC set up: the drawers (puffs: 128, additive, palette 2; glow: one, additive), 128 puffs
  * and the glow (pinkish, 32 across at (38, 15, -11)) */
-void func_0033CB40(u8 *o) {
+/* 0x0033CB40 */
+void SpiralSmoke_Start(u8 *o) {
     s32 i;
 
     AT(o, 0x36B0, s32) = 0;
@@ -2155,7 +2198,8 @@ extern f32 D_004309D0[];   /* the five spots (x, y, z) */
 #define DRIP_LIFE(o, k, j) AT((o) + (k) * 0x40 + (j) * 4, 0x1C0, s32)
 
 /* +0x8 destructor */
-u8 *func_0033CCC0(u8 *o, s32 flags) {
+/* 0x0033CCC0 */
+u8 *Drips_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00476BF0;
         AT(o, 0x0, void **) = D_0046F580;
@@ -2213,7 +2257,8 @@ void func_0033CD20(u8 *o, s32 k) {
 
 /* +0x14 draw: every live ripple, a flat quad of its size and turn at the spot and its height,
  * blue-grey at alpha its life */
-void func_0033CFD0(u8 *o) {
+/* 0x0033CFD0 */
+void Drips_Draw(u8 *o) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
     f32 c[4][4] __attribute__((aligned(16)));
@@ -2295,7 +2340,8 @@ void func_0033CFD0(u8 *o) {
 /* +0x10 update: each spot's switch counts down - turning on (90 frames) starts its sound (the
  * next of four, if the bank is loaded), off (90..345); while on, the sound is kept going and a
  * new ripple starts; then its ripples move */
-s32 func_0033D2C0(u8 *o) {
+/* 0x0033D2C0 */
+s32 Drips_Update(u8 *o) {
     VObject *snd = gSound;
     VObject *rng = gRandom;
     s32 k, j;
@@ -2334,7 +2380,8 @@ s32 func_0033D2C0(u8 *o) {
 
 /* +0xC set up: the five spots on or off at random, their ripples reset; a running one is run
  * on 64 frames */
-void func_0033D4B0(u8 *o) {
+/* 0x0033D4B0 */
+void Drips_Start(u8 *o) {
     VObject *rng = gRandom;
     s32 k, j, n;
 
@@ -2387,8 +2434,9 @@ extern void *D_00479800[];
 extern void *D_0047A050[];
 extern void *D_0047A750[];
 
-/* (as func_00321910)  (class D_00479800, room 0x2A) +0x8 destructor (the quad drawer at +0x610 inlined) */
-u8 *func_0035B3C0(u8 *o, s32 flags) {
+/* (as Room2AWisps_dtor)  (class D_00479800, room 0x2A) +0x8 destructor (the quad drawer at +0x610 inlined) */
+/* 0x0035B3C0 */
+u8 *BoneSmoke_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -2402,8 +2450,9 @@ u8 *func_0035B3C0(u8 *o, s32 flags) {
     return o;
 }
 
-/* (as func_00321910)  (class D_0047A050, room 0x2A) +0x8 destructor (the quad drawer at +0x610 inlined) */
-u8 *func_0036D360(u8 *o, s32 flags) {
+/* (as Room2AWisps_dtor)  (class D_0047A050, room 0x2A) +0x8 destructor (the quad drawer at +0x610 inlined) */
+/* 0x0036D360 */
+u8 *ThingPuff_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -2417,8 +2466,9 @@ u8 *func_0036D360(u8 *o, s32 flags) {
     return o;
 }
 
-/* (as func_00350910)  +0x10 update: turn */
-s32 func_00377DD0(u8 *o) {
+/* (as Effect78BC0_Update)  +0x10 update: turn */
+/* 0x00377DD0 */
+s32 Effect7A3D0_Update(u8 *o) {
     static const F32Bits kPi = {0x40490FDB}, kMinusPi = {0xC0490FDB}, k2Pi = {0x40C90FDB},
                          kStepX = {0x3C0EFA35}, kStepYZ = {0x3AE4C389};
 
@@ -2437,8 +2487,9 @@ s32 func_00377DD0(u8 *o) {
     return 1;
 }
 
-/* (as func_00350A10)  (class D_00478BC0) +0xC reset: three random angles in -pi..pi */
-void func_00377ED0(u8 *o) {
+/* (as Effect78BC0_Start)  (class D_00478BC0) +0xC reset: three random angles in -pi..pi */
+/* 0x00377ED0 */
+void Effect7A3D0_Start(u8 *o) {
     static const F32Bits kPi = {0x40490FDB};
     VObject *rng = gRandom;
     s32 k;
@@ -2450,8 +2501,9 @@ void func_00377ED0(u8 *o) {
     }
 }
 
-/* (as func_00350A10)  (class D_00478BC0) +0xC reset: three random angles in -pi..pi */
-void func_003781F0(u8 *o) {
+/* (as Effect78BC0_Start)  (class D_00478BC0) +0xC reset: three random angles in -pi..pi */
+/* 0x003781F0 */
+void BackdropModel_Start(u8 *o) {
     static const F32Bits kPi = {0x40490FDB};
     VObject *rng = gRandom;
     s32 k;
@@ -2463,8 +2515,9 @@ void func_003781F0(u8 *o) {
     }
 }
 
-/* (as func_00350A10)  (class D_00478BC0) +0xC reset: three random angles in -pi..pi */
-void func_00378750(u8 *o) {
+/* (as Effect78BC0_Start)  (class D_00478BC0) +0xC reset: three random angles in -pi..pi */
+/* 0x00378750 */
+void BackdropModel2_Start(u8 *o) {
     static const F32Bits kPi = {0x40490FDB};
     VObject *rng = gRandom;
     s32 k;
@@ -2476,8 +2529,9 @@ void func_00378750(u8 *o) {
     }
 }
 
-/* (as func_00321910)  (class D_0047A750, room 0x2A) +0x8 destructor (the quad drawer at +0x610 inlined) */
-u8 *func_0037D0A0(u8 *o, s32 flags) {
+/* (as Room2AWisps_dtor)  (class D_0047A750, room 0x2A) +0x8 destructor (the quad drawer at +0x610 inlined) */
+/* 0x0037D0A0 */
+u8 *LightRing_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -2491,7 +2545,7 @@ u8 *func_0037D0A0(u8 *o, s32 flags) {
     return o;
 }
 
-/* ---- destructors of the same shape in other effect classes (one or two quad drawers inlined; generated from func_00321910 / func_003453D0) ---- */
+/* ---- destructors of the same shape in other effect classes (one or two quad drawers inlined; generated from Room2AWisps_dtor / Room66Effect_dtor) ---- */
 
 extern void *D_00474FB0[], *D_00476BB0[], *D_004795E0[], *D_00479A60[], *D_00479E50[], *D_0047A310[], *D_0047A350[];
 
@@ -2525,48 +2579,59 @@ static inline __attribute__((always_inline)) u8 *fx_dtor2(u8 *o, s32 flags, void
     return o;
 }
 
-u8 *func_00365F40(u8 *o, s32 flags) {
+/* 0x00365F40 */
+u8 *Spark_dtor(u8 *o, s32 flags) {
     return fx_dtor2(o, flags, D_00479E50, 0xD0, 0x108);
 }
 
-u8 *func_003710C0(u8 *o, s32 flags) {
+/* 0x003710C0 */
+u8 *Embers_dtor(u8 *o, s32 flags) {
     return fx_dtor2(o, flags, D_0047A310, 0xF10, 0xF48);
 }
 
-u8 *func_00374420(u8 *o, s32 flags) {
+/* 0x00374420 */
+u8 *LorenzoSpark_dtor(u8 *o, s32 flags) {
     return fx_dtor1(o, flags, D_0047A350, 0xD0);
 }
 
-u8 *func_00359220(u8 *o, s32 flags) {
+/* 0x00359220 */
+u8 *Cr19Bubbles_dtor(u8 *o, s32 flags) {
     return fx_dtor2(o, flags, D_004795E0, 0x2410, 0x2448);
 }
 
-u8 *func_0033BE00(u8 *o, s32 flags) {
+/* 0x0033BE00 */
+u8 *DustShaft_dtor(u8 *o, s32 flags) {
     return fx_dtor1(o, flags, D_00476BB0, 0x6010);
 }
 
-void func_0033C110(u8 *o) {
+/* 0x0033C110 */
+void DustShaft_Draw(u8 *o) {
     quad_step(o, 0x6010, 0x7450, 0x3000);
 }
 
-u8 *func_0032E890(u8 *o, s32 flags) {
+/* 0x0032E890 */
+u8 *ThingBurst_dtor(u8 *o, s32 flags) {
     return fx_dtor2(o, flags, D_00474FB0, 0xC10, 0xC48);
 }
 
-u8 *func_0035F5B0(u8 *o, s32 flags) {
+/* 0x0035F5B0 */
+u8 *CeilingDrips_dtor(u8 *o, s32 flags) {
     return fx_dtor1(o, flags, D_00479A60, 0x550);
 }
 
-void func_0035F9B0(u8 *o) {
+/* 0x0035F9B0 */
+void CeilingDrips_Draw(u8 *o) {
     quad_step(o, 0x550, 0x5C0, 0x2A0);
 }
 
-/* (as func_00350910, slower) */
-s32 func_003780F0(u8 *o) {
+/* (as Effect78BC0_Update, slower) */
+/* 0x003780F0 */
+s32 BackdropModel_Update(u8 *o) {
     return spin_step(o, 0x3A64C389, 0x393702D4);
 }
 
-s32 func_00378650(u8 *o) {
+/* 0x00378650 */
+s32 BackdropModel2_Update(u8 *o) {
     return spin_step(o, 0x3AE4C389, 0x3A64C389);
 }
 
@@ -2720,7 +2785,8 @@ void func_00371400(u8 *o, s32 i, s32 fresh) {
 
 /* +0x18 start: arg { flames too }: the drawers set up (flames 24 of a 32 x 32 cell at (384,
  * 128); embers 16 of 8 x 8 at (108, 76); blended, palette 6) and every one started; none: off */
-void func_003716C0(u8 *o, s32 *arg) {
+/* 0x003716C0 */
+void Embers_SetParams(u8 *o, s32 *arg) {
     s32 i;
 
     if (arg == NULL) {
@@ -2773,7 +2839,8 @@ void func_003716C0(u8 *o, s32 *arg) {
 }
 
 /* +0x14 draw: the flames (if any), then the embers */
-void func_00371860(u8 *o) {
+/* 0x00371860 */
+void Embers_Draw(u8 *o) {
     if (AT(o, 0x10C4, u8) == 1) {
         return;
     }
@@ -2800,7 +2867,8 @@ static inline f32 ember_sway(f32 *a, VObject *rnd) {
 /* +0x10 update: flip the buffers; the flames shrink (out at 0), turn, sway (0.1) and rise,
  * fading 2..3 every other frame and restarted once faded; the embers turn, sway (0.2) and rise,
  * fading 7..10 every other frame and restarted once faded. 0 once off */
-s32 func_00371900(u8 *o) {
+/* 0x00371900 */
+s32 Embers_Update(u8 *o) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};   /* multiplied first */
     VObject *rnd;
     s32 i, k;
@@ -2866,7 +2934,8 @@ s32 func_00371900(u8 *o) {
     return 1;
 }
 
-void func_00371E00(u8 *o) {
+/* 0x00371E00 */
+void Embers_Start(u8 *o) {
     AT(o, 0x10C0, s32) = 0;
     AT(o, 0x10C4, u8) = 0;
 }
@@ -2923,7 +2992,8 @@ static inline void wisps_source(u8 *o, f32 *p) {
 }
 
 /* +0x18 start: from character `c` (none: Fiona), all 16 placed there hidden */
-void func_0035B5C0(u8 *o, u8 *c) {
+/* 0x0035B5C0 */
+void BoneSmoke_SetParams(u8 *o, u8 *c) {
     f32 p[4] __attribute__((aligned(16)));
     s32 i;
 
@@ -2935,7 +3005,8 @@ void func_0035B5C0(u8 *o, u8 *c) {
 }
 
 /* +0x14 draw (not while the effects are paused) */
-void func_0035B6A0(u8 *o) {
+/* 0x0035B6A0 */
+void BoneSmoke_Draw(u8 *o) {
     if (func_002D6010(gEffects) == 0) {
         AT(o, 0x620, QuadRec *) = WISPS_REC(o, AT(o, 0x6CC, s32), 0);
         func_002E56C0(o + 0x610);
@@ -2946,7 +3017,8 @@ void func_0035B6A0(u8 *o) {
  * drifting and rising 0.02; fading in by 3..6 to 0x10 (then marked, its red 0x7F), then out by
  * 0..1 on the even frames. The first 16 frames one more is restarted at the source, shown. 0
  * once none shows */
-s32 func_0035B700(u8 *o) {
+/* 0x0035B700 */
+s32 BoneSmoke_Update(u8 *o) {
     VObject *rnd = gRandom;
     u8 done = 1;
     s32 i, k;
@@ -2995,7 +3067,8 @@ s32 func_0035B700(u8 *o) {
 
 /* +0xC set up: frame 0; the drawer (16 quads of a 32 x 32 cell at (0 or 32 at random, 64),
  * blended, the first palette, layer 0x19, half a unit down) */
-void func_0035BA60(u8 *o) {
+/* 0x0035BA60 */
+void BoneSmoke_Start(u8 *o) {
     AT(o, 0x6CC, s32) = 0;
     AT(o, 0x6D0, s32) = 0;
     AT(o, 0x618, s64) = -1;

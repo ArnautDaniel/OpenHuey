@@ -25,7 +25,7 @@
 
 #define B5_PI 0x1.921fb60000000p+1f /* 3.14159274 */ /* 0x40490FDB */
 
-void func_003062F0(u8 *self, f32 *src);
+void DriftingFlecks_SetParams(u8 *self, f32 *src);
 
 #define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
 
@@ -34,16 +34,16 @@ extern void *D_00471060[];
 extern void *D_00479AC0[];
 extern void *D_00479B00[];
 extern void *D_0047A3D0[];
-void *func_00306290(u8 *o, s32 flags);
-void *func_00360B60(u8 *o, s32 flags);
-void *func_00361940(u8 *o, s32 flags);
-void *func_00377CC0(u8 *o, s32 flags);
+void *DriftingFlecks_dtor(u8 *o, s32 flags);
+void *WindowFlash_dtor(u8 *o, s32 flags);
+void *Effect79B00_dtor(u8 *o, s32 flags);
+void *Effect7A3D0_dtor(u8 *o, s32 flags);
 
-void func_00360BC0(u8 *o, s32 *prm);
-s32 func_00361220(u8 *o);
-void func_00361250(u8 *o);
+void WindowFlash_SetParams(u8 *o, s32 *prm);
+s32 WindowFlash_Update(u8 *o);
+void WindowFlash_Start(u8 *o);
 
-void func_003634E0(void);
+void Effect79B00_Start(void);
 
 /* Tail call of the sub-object's virtual +0x14 with the value at +0x73EDC0. */
 void func_0016CD30(u8 *p, s32 a1, s32 a2, s32 a3) {
@@ -103,7 +103,8 @@ void func_002FCB30(void) {
 }
 
 /* destructor (vtable D_00471060) */
-void *func_00306290(u8 *o, s32 flags) {
+/* 0x00306290 */
+void *DriftingFlecks_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00471060;
         AT(o, 0x0, void **) = D_0046F580;
@@ -114,7 +115,8 @@ void *func_00306290(u8 *o, s32 flags) {
     return o;
 }
 
-void func_003062F0(u8 *self, f32 *src) {
+/* 0x003062F0 */
+void DriftingFlecks_SetParams(u8 *self, f32 *src) {
     if (src != NULL && src[0] == 0.0f) {
         F32(self, 0x10) = src[1];
         F32(self, 0x14) = src[2];
@@ -283,7 +285,8 @@ extern void *D_0046D7A0[], *D_00469D00[];
  * 0x80808080 in layer 0x28) and the shape added in white into layer 0x26 (the bloom's mask;
  * the original's triangle fan, additive, no depth writes). (Checked against the original with
  * its GS packet rebuilt, 2026-10-06.) */
-void func_00360BF0(u8 *o) {
+/* 0x00360BF0 */
+void WindowFlash_Draw(u8 *o) {
     static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD};   /* 0.1 */
     f32 pt[24][4] __attribute__((aligned(16)));
     f32 m[4][4] __attribute__((aligned(16)));
@@ -351,7 +354,8 @@ void func_00360BF0(u8 *o) {
 #endif
 
 /* (+0x10) counts +0x4 up to 5; 0 then */
-s32 func_00361220(u8 *o) {
+/* 0x00361220 */
+s32 WindowFlash_Update(u8 *o) {
     if (AT(o, 0x4, s32) == 5) {
         return 0;
     }
@@ -359,12 +363,14 @@ s32 func_00361220(u8 *o) {
     return 1;
 }
 
-void func_00361250(u8 *o) {
+/* 0x00361250 */
+void WindowFlash_Start(u8 *o) {
     AT(o, 0x4, s32) = -1;
 }
 
 /* destructor (vtable D_00479B00) */
-void *func_00361940(u8 *o, s32 flags) {
+/* 0x00361940 */
+void *Effect79B00_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479B00;
         AT(o, 0x0, void **) = D_0046F580;
@@ -375,11 +381,13 @@ void *func_00361940(u8 *o, s32 flags) {
     return o;
 }
 
-void func_003634E0(void) {
+/* 0x003634E0 */
+void Effect79B00_Start(void) {
 }
 
 /* destructor (vtable D_0047A3D0) */
-void *func_00377CC0(u8 *o, s32 flags) {
+/* 0x00377CC0 */
+void *Effect7A3D0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0047A3D0;
         AT(o, 0x0, void **) = D_0046F580;
@@ -560,7 +568,8 @@ void func_0032D270(u8 *self, s32 a, f32 x, f32 y) {
 }
 
 /* destructor (vtable D_00479AC0) */
-void *func_00360B60(u8 *o, s32 flags) {
+/* 0x00360B60 */
+void *WindowFlash_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479AC0;
         AT(o, 0x0, void **) = D_0046F580;
@@ -572,7 +581,8 @@ void *func_00360B60(u8 *o, s32 flags) {
 }
 
 /* (+0x18) set: { +0xC, +0x8 (f32) }, +0x4 -1 */
-void func_00360BC0(u8 *o, s32 *prm) {
+/* 0x00360BC0 */
+void WindowFlash_SetParams(u8 *o, s32 *prm) {
     if (prm != NULL) {
         AT(o, 0xC, s32) = prm[0];
         AT(o, 0x8, s32) = prm[1];

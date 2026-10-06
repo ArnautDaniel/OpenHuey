@@ -101,7 +101,8 @@ s32 func_0034B210(void *self, void *a1, u8 *cmd) {
 }
 
 /* destructor (vtable D_00479870) */
-void *func_0035BBD0(u8 *o, s32 flags) {
+/* 0x0035BBD0 */
+void *ObjectGlow_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479870;
         AT(o, 0x0, void **) = D_0046F580;
@@ -112,6 +113,7 @@ void *func_0035BBD0(u8 *o, s32 flags) {
     return o;
 }
 
-void func_0035C9E0(u8 *o) {
+/* 0x0035C9E0 */
+void ObjectGlow_Start(u8 *o) {
     AT(o, 0x5, u8) = 0xFF;
 }

@@ -2031,11 +2031,13 @@ static inline u8 *Burst4_Destroy(u8 *o, void **vtbl, u32 at, s32 flags) {
     return o;
 }
 
-u8 *func_0036A860(u8 *o, s32 flags) {
+/* 0x0036A860 */
+u8 *BurstA_dtor(u8 *o, s32 flags) {
     return Burst4_Destroy(o, D_0047A010, 0xB50, flags);
 }
 
-u8 *func_0036BCC0(u8 *o, s32 flags) {
+/* 0x0036BCC0 */
+u8 *BurstB_dtor(u8 *o, s32 flags) {
     return Burst4_Destroy(o, D_0047A030, 0x1A50, flags);
 }
 
@@ -2053,7 +2055,8 @@ static inline void Burst4_Draw(u8 *o, u32 at, s32 cur, const u32 *base, const u3
     }
 }
 
-void func_0036B130(u8 *o) {
+/* 0x0036B130 */
+void BurstA_Draw(u8 *o) {
     static const u32 base[4] = {0x10, 0x610, 0x670, 0xAF0}, stride[4] = {0x300, 0x30, 0x240, 0x30};
 
     if (func_002D6010(gEffects) != 0) {
@@ -2062,7 +2065,8 @@ void func_0036B130(u8 *o) {
     Burst4_Draw(o, 0xB50, AT(o, 0xFAC, s32), base, stride);
 }
 
-void func_0036C7B0(u8 *o) {
+/* 0x0036C7B0 */
+void BurstB_Draw(u8 *o) {
     static const u32 base[4] = {0x10, 0xC10, 0xD30, 0x1930}, stride[4] = {0x600, 0x90, 0x600, 0x90};
 
     if (func_002D6010(gEffects) != 0) {
@@ -2094,7 +2098,8 @@ static inline void burst_quad(QuadDrawer *q, f32 cy, s16 count, s16 x, s16 y, s1
 }
 
 /* the 0xFC0-byte burst's set up: frame 0, its four drawers (the last with its corners at +0xF60) */
-void func_0036BB00(u8 *o) {
+/* 0x0036BB00 */
+void BurstA_Start(u8 *o) {
     AT(o, 0xFAC, s32) = 0;
     AT(o, 0xFB0, u8) = 0;
     AT(o, 0xFA0, s32) = 0;
@@ -2131,7 +2136,8 @@ static inline void burst_rec7f(u8 *r, s32 frames, s32 alpha) {
  * rising (records +0x670, velocities +0xDB0, rates +0xE70, heights +0xE40) and the ring on the
  * ground (+0xAF0, corners +0xF60, size +0xFA8), turned to the floor under the player (+0xF20
  * .. +0xF40: across, its normal, along) */
-void func_0036A980(u8 *o, f32 *arg) {
+/* 0x0036A980 */
+void BurstA_SetParams(u8 *o, f32 *arg) {
     static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD}, k005 = {0x3D4CCCCD}, kPi = {0x40490FDB},
                                           k002 = {0x3CA3D70A};
     VObject *rnd;
@@ -2428,7 +2434,8 @@ static inline __attribute__((always_inline)) s32 burst_update(u8 *o, const Burst
     return 1;
 }
 
-s32 func_0036B200(u8 *o) {
+/* 0x0036B200 */
+s32 BurstA_Update(u8 *o) {
     static const BurstShape kA = {0xFAC, 0xFB0, 0xFA4, 16, 0x10, 0x300, 0xC30, 0xCF0, 0xEA0, 0xEE0,
                                   1, 0x610, 0x30, 0xBBB, 12, 0x670, 0x240, 0xDB0, 0xE70,
                                   1, 0xAF0, 0x30, 0xFA8, 0xF60, 0xF20, 2.0f, 8, 4.0f, 8.0f};
@@ -2436,7 +2443,8 @@ s32 func_0036B200(u8 *o) {
     return burst_update(o, &kA);
 }
 
-s32 func_0036C880(u8 *o) {
+/* 0x0036C880 */
+s32 BurstB_Update(u8 *o) {
     static const BurstShape kB = {0x22BC, 0x22C0, 0x22B4, 32, 0x10, 0x600, 0x1B30, 0x1CB0, 0x20B0, 0x2130,
                                   3, 0xC10, 0x90, 0x1ABB, 32, 0xD30, 0x600, 0x1E30, 0x2030,
                                   3, 0x1930, 0x90, 0x22B8, 0x21F0, 0x21B0, 2.0f, 8, 4.0f, 8.0f};
@@ -2451,7 +2459,8 @@ s32 func_0036C880(u8 *o) {
 
 /* +0x18 start (arg: the point): the pieces thrown out round it (2..4 big, brown), the puffs
  * rising from it (every other one half alpha) */
-void func_0032E950(u8 *o, f32 *arg) {
+/* 0x0032E950 */
+void ThingBurst_SetParams(u8 *o, f32 *arg) {
     static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD}, k005 = {0x3D4CCCCD}, kPi = {0x40490FDB},
                                           k360 = {0x43B40000}, k15 = {0x3FC00000}, k25 = {0x40200000};   /* multiplied first */
     VObject *rnd;
@@ -2514,7 +2523,8 @@ void func_0032E950(u8 *o, f32 *arg) {
 }
 
 /* +0x14 draw (not while the effects are paused): the pieces, then the puffs */
-void func_0032EEB0(u8 *o) {
+/* 0x0032EEB0 */
+void ThingBurst_Draw(u8 *o) {
     if (func_002D6010(gEffects) == 0) {
         AT(o, 0xC20, u8 *) = o + AT(o, 0xFC8, s32) * 0x300 + 0x10;
         func_002E56C0(o + 0xC10);
@@ -2525,7 +2535,8 @@ void func_0032EEB0(u8 *o) {
 
 /* +0x10 update: as the bursts' (the pieces growing 0.05, their push by a sixth, falls for 10
  * frames, rising 2 / 4 x their fall), no flash or ring */
-s32 func_0032EF30(u8 *o) {
+/* 0x0032EF30 */
+s32 ThingBurst_Update(u8 *o) {
     static const BurstShape kC = {0xFC8, 0xFCC, 0xFC4, 16, 0x10, 0x300, 0xC80, 0xD40, 0xF40, 0xF80,
                                   0, 0, 0, 0, 16, 0x610, 0x300, 0xE00, 0xF00,
                                   0, 0, 0, 0, 0, 0, 6.0f, 10, 2.0f, 4.0f, 0x1.99999ap-5f /* 0.05 */};
@@ -2607,7 +2618,8 @@ extern f32 D_004469A8, D_004469AC, D_004469B0;   /* the three points' offsets ac
  * +0x21F0, the drawer +0x1AF8 showing three); 32 pieces (+0x10, velocities +0x1B30, falls
  * +0x1CB0, drifts +0x20B0 / +0x2130) and 32 puffs (+0xD30, velocities +0x1E30, rates +0x2030,
  * heights +0x1FB0) shared round them */
-void func_0036BDE0(u8 *o, f32 *arg) {
+/* 0x0036BDE0 */
+void BurstB_SetParams(u8 *o, f32 *arg) {
     static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD}, k005 = {0x3D4CCCCD}, kPi = {0x40490FDB},
                                           k002 = {0x3CA3D70A}, k13 = {0x3FA66666};
     VObject *rnd, *cam, *nav;
@@ -2751,7 +2763,8 @@ void func_0036BDE0(u8 *o, f32 *arg) {
 }
 
 /* the 0x22D0-byte burst's set up: frame 0, the first three drawers */
-void func_0036D210(u8 *o) {
+/* 0x0036D210 */
+void BurstB_Start(u8 *o) {
     AT(o, 0x22BC, s32) = 0;
     AT(o, 0x22C0, u8) = 0;
     AT(o, 0x22B0, s32) = 0;
@@ -3499,7 +3512,8 @@ landed:
 
 /* +0x18 start (arg: the point): each puff a 0x48 x 0x30 cell (16 frames), every other one half
  * alpha, within 1 across of the point and 1 up, 0.1..2.1 big, thrown out and up */
-void func_0036D3F0(u8 *o, f32 *arg) {
+/* 0x0036D3F0 */
+void ThingPuff_SetParams(u8 *o, f32 *arg) {
     static const union { u32 u; f32 f; } k05 = {0x3F000000}, k15 = {0x3FC00000}, k25 = {0x40200000};   /* multiplied first */
     VObject *rnd;
     f32 x, y, z;
@@ -3537,7 +3551,8 @@ void func_0036D3F0(u8 *o, f32 *arg) {
 }
 
 /* +0x14 draw (not while the effects are paused) */
-void func_0036D6C0(u8 *o) {
+/* 0x0036D6C0 */
+void ThingPuff_Draw(u8 *o) {
     if (func_002D6010(gEffects) == 0) {
         AT(o, 0x620, u8 *) = o + AT(o, 0x790, s32) * 0x300 + 0x10;
         func_002E56C0(o + 0x610);
@@ -3546,7 +3561,8 @@ void func_0036D6C0(u8 *o) {
 
 /* +0x10 update: flip the buffers; each puff still showing carried over, moved and pulled down,
  * out once under the floor (where the floor counts), else fading by 1..8; 0 once all gone */
-s32 func_0036D720(u8 *o) {
+/* 0x0036D720 */
+s32 ThingPuff_Update(u8 *o) {
     VObject *nav, *rnd;
     f32 g[4] __attribute__((aligned(16)));
     s32 i;
@@ -3589,7 +3605,8 @@ s32 func_0036D720(u8 *o) {
 }
 
 /* +0xC set up: frame 0, the drawer (16 quads of a 4 x 4 cell at (14, 110), blended) */
-void func_0036D9A0(u8 *o) {
+/* 0x0036D9A0 */
+void ThingPuff_Start(u8 *o) {
     AT(o, 0x790, s32) = 0;
     AT(o, 0x794, u8) = 0;
     AT(o, 0x788, s32) = 0;

@@ -67,7 +67,8 @@ s32 func_0034A250(void *self, void *a1, u8 *cmd) {
 }
 
 /* destructor (vtable D_0047A430) */
-void *func_003784F0(u8 *o, s32 flags) {
+/* 0x003784F0 */
+void *BackdropModel2_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0047A430;
         AT(o, 0x0, void **) = D_0046F580;
@@ -79,7 +80,8 @@ void *func_003784F0(u8 *o, s32 flags) {
 }
 
 /* (+0x18) set: +0x10 = the first word */
-void func_00378550(u8 *o, s32 *prm) {
+/* 0x00378550 */
+void BackdropModel2_SetParams(u8 *o, s32 *prm) {
     if (prm != NULL) {
         AT(o, 0x10, s32) = prm[0];
     }

@@ -235,7 +235,8 @@ void *func_00310A10(void *self, s32 i) {
 }
 
 /* destructor (vtable D_004795C0) */
-void *func_00358C20(u8 *o, s32 flags) {
+/* 0x00358C20 */
+void *Room60Effect_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_004795C0;
         AT(o, 0x0, void **) = D_0046F580;
@@ -246,7 +247,8 @@ void *func_00358C20(u8 *o, s32 flags) {
     return o;
 }
 
-void func_00358C80(u8 *p, u8 *src) {
+/* 0x00358C80 */
+void Room60Effect_SetParams(u8 *p, u8 *src) {
     if (src != NULL) {
         B7_W(p, 0x4) = *src;
     }
@@ -258,7 +260,8 @@ void func_00358C80(u8 *p, u8 *src) {
  * (-15, 15); -1 none) a cone of light - its tip at height 16, an octagon of radius 4.5 at 10 -
  * added into the bloom's mask (layer 0x26) as a fan shaded from nothing at the tip to alpha
  * 0x20 round the rim, when all of it is in view */
-void func_00358CA0(u8 *o) {
+/* 0x00358CA0 */
+void Room60Effect_Draw(u8 *o) {
     f32 clip[4][4] __attribute__((aligned(16)));
     f32 pt[9][4] __attribute__((aligned(16)));
     f32 x, z, d;
@@ -324,6 +327,8 @@ void func_00358CA0(u8 *o) {
 
 #endif
 
-s32 func_00359200(u8 *p) { return B7_W(p, 0x4) >= 0; }
+/* 0x00359200 */
+s32 Room60Effect_Update(u8 *p) { return B7_W(p, 0x4) >= 0; }
 
-void func_00359210(u8 *p) { B7_W(p, 0x4) = -1; }
+/* 0x00359210 */
+void Room60Effect_Start(u8 *p) { B7_W(p, 0x4) = -1; }

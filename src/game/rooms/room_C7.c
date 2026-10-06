@@ -307,7 +307,8 @@ s32 func_0033A980(void *self, void *a1, u8 *cmd) {
 }
 
 /* destructor (vtable D_004798B0) */
-void *func_0035CE40(u8 *o, s32 flags) {
+/* 0x0035CE40 */
+void *RoomC7Cursor_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_004798B0;
         AT(o, 0x0, void **) = D_0046F580;
@@ -319,7 +320,8 @@ void *func_0035CE40(u8 *o, s32 flags) {
 }
 
 /* (+0x18) set: { u16, u16 } into +0x6 / +0x8 and on (+0x4 0); none: off (+0x4 1) */
-void func_0035CEA0(u8 *o, u16 *prm) {
+/* 0x0035CEA0 */
+void RoomC7Cursor_SetParams(u8 *o, u16 *prm) {
     if (prm == NULL) {
         AT(o, 0x4, u8) = 1;
         return;
@@ -333,7 +335,8 @@ void func_0035CEA0(u8 *o, u16 *prm) {
 
 /* the cursor's +0x14 draw (+0x4 1: off): texels 176..256 x 0..112 of texture 0xC shown 20 x 28
  * at its point (+0x6, +0x8), opaque */
-void func_0035CEE0(u8 *o) {
+/* 0x0035CEE0 */
+void RoomC7Cursor_Draw(u8 *o) {
     u8 *tex;
     s32 x, y;
 
@@ -351,16 +354,19 @@ void func_0035CEE0(u8 *o) {
 #endif
 
 /* (+0x10) still on */
-s32 func_0035D180(u8 *o) {
+/* 0x0035D180 */
+s32 RoomC7Cursor_Update(u8 *o) {
     return AT(o, 0x4, u8) != 1;
 }
 
-void func_0035D190(u8 *o) {
+/* 0x0035D190 */
+void RoomC7Cursor_Start(u8 *o) {
     AT(o, 0x4, u8) = 0;
 }
 
 /* destructor (vtable D_004799D0) */
-void *func_0035D7E0(u8 *o, s32 flags) {
+/* 0x0035D7E0 */
+void *Debris_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_004799D0;
         AT(o, 0x0, void **) = D_0046F580;
@@ -371,11 +377,13 @@ void *func_0035D7E0(u8 *o, s32 flags) {
     return o;
 }
 
-void func_0035F0F0(void) {
+/* 0x0035F0F0 */
+void Debris_Start(void) {
 }
 
 /* destructor (vtable D_0047A3F0) */
-void *func_00377FF0(u8 *o, s32 flags) {
+/* 0x00377FF0 */
+void *BackdropModel_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0047A3F0;
         AT(o, 0x0, void **) = D_0046F580;

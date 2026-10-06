@@ -67,7 +67,8 @@ s32 func_0034B6E0(void) {
 }
 
 /* destructor (vtable D_0047A410) */
-void *func_00378310(u8 *o, s32 flags) {
+/* 0x00378310 */
+void *TurningModel_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0047A410;
         AT(o, 0x0, void **) = D_0046F580;

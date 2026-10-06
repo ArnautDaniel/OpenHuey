@@ -46,13 +46,13 @@ void *Kind39_MotionFiles(void);
 
 #define B5_PI 0x1.921fb60000000p+1f /* 3.14159274 */ /* 0x40490FDB */
 
-void func_00305650(u8 *self, f32 *src);
+void Effect71000_SetParams(u8 *self, f32 *src);
 
 #define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
 
-void func_003168E0(u8 *self);
+void FloorSplat_Start(u8 *self);
 
-void func_0034E960(u8 *p);
+void Fire_Start(u8 *p);
 
 #define B7_W(p, off)  (*(s32 *)((u8 *)(p) + (off)))
 
@@ -62,10 +62,10 @@ void func_0034E960(u8 *p);
 
 #define B7_D(p, off)  (*(s64 *)((u8 *)(p) + (off)))
 
-void func_00352A70(u8 *p);
-void func_00358270(u8 *p, s32 *src);
-s32 func_00358B30(u8 *p);
-void func_00358C10(u8 *p);
+void Wisps_Start(u8 *p);
+void FloorGlow_SetParams(u8 *p, s32 *src);
+s32 FloorGlow_Update(u8 *p);
+void FloorGlow_Start(u8 *p);
 
 extern void *D_00479B20[];
 /* Field access by byte offset into objects whose layout is not yet known. */
@@ -73,7 +73,7 @@ extern void *D_00479B20[];
 
 #define S64(p, off) (*(s64 *)((u8 *)(p) + (off)))
 
-void func_0037C520(u8 *self);
+void DropletFlash_Start(u8 *self);
 
 extern const char *const D_00405618, *const D_0040561C;   /* "kibako" (the box), "a_koushi" (the grate) */
 
@@ -84,10 +84,10 @@ static f32 shaft_rnd(VObject *rnd) {
 #define HAZE2_REC(o, buf, i) ((o) + (buf) * 0xC00 + (i) * 0x30 + 0x10)
 
 void func_003767C0(u8 *o, s32 i);
-void func_00377970(u8 *o);
-s32 func_00377590(u8 *o);
+void Room49Effect_Start(u8 *o);
+s32 Room49Effect_Update(u8 *o);
 #ifdef HG_NATIVE
-void func_00376990(u8 *o);
+void Room49Effect_Draw(u8 *o);
 #endif
 
 /* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
@@ -125,9 +125,9 @@ static inline __attribute__((always_inline)) void quad_step(u8 *o, u32 drawer, u
     func_002E56C0(o + drawer);
 }
 
-void func_003600D0(u8 *o);
-void func_00368E80(u8 *o);
-void func_00369AE0(u8 *o);
+void OneDrip_Draw(u8 *o);
+void SmokeTrail_Draw(u8 *o);
+void SparkSpray_Draw(u8 *o);
 
 static u32 rd32(const u8 *p) {
     return p[0] | (p[1] << 8) | (p[2] << 16) | ((u32)p[3] << 24);
@@ -825,7 +825,8 @@ extern void *D_0046FF20[], *D_0046F580[];
 #define BURST_VEL(e, i) ((f32 *)((e) + 0x648) + (i) * 3)
 
 /* +0x8 destructor (the quad drawer's inlined) */
-u8 *func_002E8060(u8 *o, s32 flags) {
+/* 0x002E8060 */
+u8 *SpriteBurst_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -849,7 +850,8 @@ static s32 burst_int(VObject *rnd) {
 
 /* +0x18 start: arg { position, +0x10 kind, +0x14 RGB (kind 3: light), +0x20 the alpha /
  * spread } */
-void func_002E80F0(u8 *e, u8 *arg) {
+/* 0x002E80F0 */
+void SpriteBurst_SetParams(u8 *e, u8 *arg) {
     VObject *rnd;
     QuadRec *r;
     f32 *v;
@@ -1005,7 +1007,8 @@ void func_002E80F0(u8 *e, u8 *arg) {
 }
 
 /* +0x14 draw the current buffer */
-void func_002E8800(u8 *e) {
+/* 0x002E8800 */
+void SpriteBurst_Draw(u8 *e) {
     AT(e, 0x620, QuadRec *) = BURST_REC(e, AT(e, 0x710, s32), 0);
     func_002E56C0(e + 0x610);
 }
@@ -1041,7 +1044,8 @@ static void burst_fade(QuadRec *r, VObject *rnd, s32 extra) {
 
 /* +0x10 update: flip the buffers, carrying each sprite over and moving it; 0 when all have
  * gone */
-s32 func_002E8830(u8 *e) {
+/* 0x002E8830 */
+s32 SpriteBurst_Update(u8 *e) {
     VObject *rnd = gRandom;
     s32 done = 1;
     s32 i;
@@ -1129,7 +1133,8 @@ s32 func_002E8830(u8 *e) {
 
 /* +0xC set up: the drawer's settings (a 16-frame strip of 32 x 32 cells at a random column
  * 0 / 32, row 64) */
-void func_002E9040(u8 *e) {
+/* 0x002E9040 */
+void SpriteBurst_Start(u8 *e) {
     AT(e, 0x710, s32) = 0;
     AT(e, 0x618, s64) = -1;
     AT(e, 0x628, s32) = 0;
@@ -1733,12 +1738,13 @@ void func_00317C70(u8 *e, u8 *arg) {
 /* ---- D_004795A0 (0x10 bytes; room 0x60's event object 1): a glow whose strength (+0x8)
  * follows a level (+0x4): up to the level and back down to 30 (+0xC 0 / 1), or for level 0x80
  * slowly up to 0x38 (2); 0xFF done (its +0xC / +0x10 / +0x18 in src/leaf/b7_00351D50.c). Its
- * draw (+0x14, func_003582D0) is the light's glow ---- */
+ * draw (+0x14, FloorGlow_Draw) is the light's glow ---- */
 
 extern void *D_004795A0[], *D_0046F580[];
 
 /* +0x8 destructor */
-u8 *func_00358210(u8 *e, s32 flags) {
+/* 0x00358210 */
+u8 *FloorGlow_dtor(u8 *e, s32 flags) {
     if (e != NULL) {
         AT(e, 0x0, void **) = D_004795A0;
         AT(e, 0x0, void **) = D_0046F580;
@@ -1749,7 +1755,8 @@ u8 *func_00358210(u8 *e, s32 flags) {
     return e;
 }
 
-void func_00358270(u8 *p, s32 *src) {
+/* 0x00358270 */
+void FloorGlow_SetParams(u8 *p, s32 *src) {
     if (src == NULL) {
         B7_W(p, 0x4) = 0;
         return;
@@ -1768,7 +1775,8 @@ void func_00358270(u8 *p, s32 *src) {
  * strength +0x8 fading to nothing at the rims, depth tested without writes (layer 0x19): a
  * pool on the floor (radius 20, 8 sides, y 0.3) and a cone from 16 below up to a ring of 16
  * at y 20.2; only when all of it is in view */
-void func_003582D0(u8 *e) {
+/* 0x003582D0 */
+void FloorGlow_Draw(u8 *e) {
     f32 p[26][4] __attribute__((aligned(16)));
     f32 clip[4][4] __attribute__((aligned(16)));
     f32 r = 20.0f * func_0031C248(0x1.921fb60000000p-1f /* 0.7853982 */);
@@ -1833,7 +1841,8 @@ void func_003582D0(u8 *e) {
 #endif
 
 /* Fade step: +4 speed, +8 value, +C state (0 up to +4, 1 down to 30, 2 up to 56, 0xFF done). */
-s32 func_00358B30(u8 *p) {
+/* 0x00358B30 */
+s32 FloorGlow_Update(u8 *p) {
     switch (B7_W(p, 0xC)) {
     case 0:
         B7_W(p, 0x8) += B7_W(p, 0x4) >> 4;
@@ -1860,7 +1869,8 @@ s32 func_00358B30(u8 *p) {
     return 1;
 }
 
-void func_00358C10(u8 *p) {
+/* 0x00358C10 */
+void FloorGlow_Start(u8 *p) {
     B7_W(p, 0x4) = 0;
     B7_W(p, 0x8) = 0;
     B7_W(p, 0xC) = 0;
@@ -1869,13 +1879,14 @@ void func_00358C10(u8 *p) {
 /* ---- D_00479320 (0x218 bytes): 4 wisps rising and swirling about a point (+0x1D0), in two
  * buffers of sprite instances (+0x10 + 0xC0 x the current one +0x210; 0x30 each), per wisp a
  * rise speed (+0x1E0), angle (+0x1F0) and radius (+0x200) about the point; drawn by the quad
- * drawer at +0x190 (set up by func_00352A70). +0x214 its kind: low 12 bits 0 a lasting flame
+ * drawer at +0x190 (set up by Wisps_Start). +0x214 its kind: low 12 bits 0 a lasting flame
  * (slow, respawning), else a burst; bit 0x8000 it ends with room effect 0 ---- */
 
 extern void *D_00479320[];
 
 /* +0x8 destructor (the quad drawer's inlined) */
-u8 *func_003521F0(u8 *o, s32 flags) {
+/* 0x003521F0 */
+u8 *Wisps_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -1936,7 +1947,8 @@ void func_00352280(u8 *o, s32 i, s32 again) {
 
 /* +0x18 start: at the point `arg` (its vector), of kind arg +0x10, the 4 wisps placed (a
  * lasting flame's as first ones) */
-void func_00352620(u8 *o, u8 *arg) {
+/* 0x00352620 */
+void Wisps_SetParams(u8 *o, u8 *arg) {
     s32 i;
 
     if (arg == NULL) {
@@ -1956,7 +1968,8 @@ void func_00352620(u8 *o, u8 *arg) {
 }
 
 /* +0x14 draw: the current buffer through the quad drawer */
-void func_003526D0(u8 *o) {
+/* 0x003526D0 */
+void Wisps_Draw(u8 *o) {
     AT(o, 0x1A0, u8 *) = o + AT(o, 0x210, s32) * 0xC0 + 0x10;
     func_002E56C0(o + 0x190);
 }
@@ -1965,7 +1978,8 @@ void func_003526D0(u8 *o) {
  * (a lasting flame) or stays out; a live one swirls (its radius growing 0.02 / a burst 0.04,
  * its angle by up to 15 degrees), rises (its speed falling by 0.015 to 0.05) and is placed
  * about the point. 0 once all are out (with bit 0x8000: also once room effect 0 is gone) */
-s32 func_00352700(u8 *o) {
+/* 0x00352700 */
+s32 Wisps_Update(u8 *o) {
     static const union { u32 u; f32 f; } k002 = {0x3CA3D70A}, k004 = {0x3D23D70A}, kSlow = {0xBC75C28F},
         k005 = {0x3D4CCCCD}, kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
     VObject *rnd = gRandom;
@@ -2019,7 +2033,8 @@ s32 func_00352700(u8 *o) {
 }
 
 /* Initialises a render/texture setting block at +0x198. */
-void func_00352A70(u8 *p) {
+/* 0x00352A70 */
+void Wisps_Start(u8 *p) {
     B7_W(p, 0x210) = 0;
     B7_W(p, 0x214) = 0;
     B7_D(p, 0x198) = -1;
@@ -2049,7 +2064,8 @@ void func_00352A70(u8 *p) {
 extern void *D_0046F5A0[];
 
 /* +0x8 destructor (the quad drawer's inlined) */
-u8 *func_002D63F0(u8 *o, s32 flags) {
+/* 0x002D63F0 */
+u8 *RisingSmoke_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -2100,14 +2116,16 @@ void func_002D6480(u8 *o, s32 i, s32 again) {
 }
 
 /* +0x14 draw: the current buffer through the quad drawer */
-void func_002D6700(u8 *o) {
+/* 0x002D6700 */
+void RisingSmoke_Draw(u8 *o) {
     AT(o, 0x1820, u8 *) = o + AT(o, 0x1C50, s32) * 0xC00 + 0x10;
     func_002E56C0(o + 0x1810);
 }
 
 /* +0x10 update: into the other buffer, each particle grown (0.05), turned (3 degrees) and
  * moved; anew above height 25 or once faded */
-s32 func_002D6730(u8 *o) {
+/* 0x002D6730 */
+s32 RisingSmoke_Update(u8 *o) {
     static const union { u32 u; f32 f; } kGrow = {0x3D4CCCCD}, kTurn = {0x3D567750}, kPi = {0x40490FDB},
         kTwoPi = {0x40C90FDB};
     s32 i, k;
@@ -2145,7 +2163,8 @@ s32 func_002D6730(u8 *o) {
 
 /* +0xC set up: the quad drawer's settings (64 instances of one 32 x 32 cell at (0, 64) of
  * texture 1 / 0x10, layer 0x19), buffer 0, every particle placed */
-void func_002D6920(u8 *o) {
+/* 0x002D6920 */
+void RisingSmoke_Start(u8 *o) {
     s32 i;
 
     AT(o, 0x1C50, s32) = 0;
@@ -2216,7 +2235,8 @@ void func_0033BE90(u8 *o, s32 i, s32 again) {
 /* +0x10 update: flip the buffers; each mote carried over, growing 0.02, turning half a degree,
  * moving, slowing its fall under 6 and restarted under -3; on the even frames fading in to
  * 0x21 then out to 0 (and restarted) */
-s32 func_0033C140(u8 *o) {
+/* 0x0033C140 */
+s32 DustShaft_Update(u8 *o) {
     s32 i, k;
 
     AT(o, 0x7450, s32) ^= 1;
@@ -2261,7 +2281,8 @@ s32 func_0033C140(u8 *o) {
 
 /* +0xC set up: buffer 0, the drawer (256 quads of a 32 x 32 cell at (32, 64), blended, the
  * first palette, layer 0x19), every mote started */
-void func_0033C3C0(u8 *o) {
+/* 0x0033C3C0 */
+void DustShaft_Start(u8 *o) {
     s32 i;
 
     AT(o, 0x7450, s32) = 0;
@@ -2288,11 +2309,13 @@ void func_0033C3C0(u8 *o) {
 }
 
 /* the effect manager's objects' +0x18 for those that take nothing */
-void func_002D63E0(void) {
+/* 0x002D63E0 */
+void EffectBase_SetParams(void) {
 }
 
 /* ... and +0x1C: -1 */
-s32 func_002D63D0(void) {
+/* 0x002D63D0 */
+s32 EffectBase_Query(void) {
     return -1;
 }
 
@@ -2326,7 +2349,8 @@ _Static_assert(sizeof(Shard) == 0xE0, "Shard");
 #define SHARD_RND() VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom)
 
 /* +0x8 destructor */
-u8 *func_002E9B00(u8 *e, s32 flags) {
+/* 0x002E9B00 */
+u8 *Effect6FF60_dtor(u8 *e, s32 flags) {
     if (e != NULL) {
         AT(e, 0x0, void **) = D_0046FF60;
         if (e != NULL) {
@@ -2340,7 +2364,8 @@ u8 *func_002E9B00(u8 *e, s32 flags) {
 }
 
 /* +0xC set up: nothing */
-void func_002EB380(u8 *e) {
+/* 0x002EB380 */
+void Effect6FF60_Start(u8 *e) {
 }
 
 /* throw shard `i`: a random box (each corner's coordinates 0..1 with its signs), size, turn,
@@ -2423,7 +2448,8 @@ void func_002E9B60(u8 *e, s32 i) {
 
 /* +0x18 start (arg { origin, +0x10.. its colour etc., +0x24 u16, +0x26 the kind, +0x28 the
  * floor below the origin }) */
-void func_002EA5B0(u8 *e, u8 *arg) {
+/* 0x002EA5B0 */
+void Effect6FF60_SetParams(u8 *e, u8 *arg) {
     s32 i;
 
     if (arg == NULL) {
@@ -2446,7 +2472,8 @@ void func_002EA5B0(u8 *e, u8 *arg) {
 /* +0x10 update: the shards tumble and fall; under the origin's height (+0xE14) one still
  * falling fast bounces (at half its sideways speed, 0.3 of its fall), else it settles. 1 while
  * any moves. */
-s32 func_002EB1C0(u8 *e) {
+/* 0x002EB1C0 */
+s32 Effect6FF60_Update(u8 *e) {
     s32 any = 0, i, k;
 
     for (i = 0; i < 16; i++) {
@@ -2604,7 +2631,8 @@ static inline void shards_draw(u8 *e, u32 fb, s32 n, u32 stride, s32 kind) {
 
 /* +0x14 draw: the shards (texture +0xE34, its cell +0xE20 / +0xE24, size +0xE28 / +0xE2C,
  * colour +0xE30) */
-void func_002EA660(u8 *e) {
+/* 0x002EA660 */
+void Effect6FF60_Draw(u8 *e) {
     shards_draw(e, 0xE20, 16, sizeof(Shard), 1);
 }
 #endif
@@ -2676,7 +2704,8 @@ void func_0035D840(u8 *e, s32 i) {
 
 /* +0x18 start (arg: the kind): its spot (+0xD10) and heading (+0xD38), the texture's cell
  * (0, 0.32) / size 0.68 / colour / texture 4, the small-piece flag, then all 16 thrown */
-void func_0035E2C0(u8 *e, u8 *arg) {
+/* 0x0035E2C0 */
+void Debris_SetParams(u8 *e, u8 *arg) {
     s32 i;
 
     if (arg == NULL) {
@@ -2722,14 +2751,16 @@ void func_0035E2C0(u8 *e, u8 *arg) {
 
 #ifdef HG_NATIVE
 /* +0x14 draw (OpenGL) */
-void func_0035E420(u8 *e) {
+/* 0x0035E420 */
+void Debris_Draw(u8 *e) {
     shards_draw(e, 0xD20, 16, 0xD0, 0);
 }
 #endif
 
 /* +0x10 update: the pieces tumble and fall, the bigger the faster (each frame 0.01 x their
  * size's volume plus 0.09 more); 0 once the last one is below 500 */
-s32 func_0035EF70(u8 *e) {
+/* 0x0035EF70 */
+s32 Debris_Update(u8 *e) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB}, k001 = {0x3C23D70A},
                                           kFall = {0xBDB851EC};
     s32 on = 1, i, k;
@@ -2829,7 +2860,8 @@ void func_003619A0(u8 *e, Shard *s, s32 first) {
 
 /* +0x18 start: arg { the drop height, the texture's cell u / v, size w / h (floats), colour,
  * +0x18 the texture (u16) }; all 32 started */
-void func_00362400(u8 *e, u8 *arg) {
+/* 0x00362400 */
+void Effect79B00_SetParams(u8 *e, u8 *arg) {
     s32 i;
 
     if (arg == NULL) {
@@ -2849,7 +2881,8 @@ void func_00362400(u8 *e, u8 *arg) {
 
 #ifdef HG_NATIVE
 /* +0x14 draw (OpenGL) */
-void func_003624A0(u8 *e) {
+/* 0x003624A0 */
+void Effect79B00_Draw(u8 *e) {
     shards_draw(e, 0x1C14, 32, sizeof(Shard), 2);
 }
 #endif
@@ -2858,7 +2891,8 @@ void func_003624A0(u8 *e) {
  * its volume more a frame); on its floor it lands - a bouncing one thrown back up at a fifth
  * of its fall, tilted up to 54 degrees off upright in a random direction; a landed one fades
  * by 8 and starts over once gone. Always 1 */
-s32 func_00363130(u8 *e) {
+/* 0x00363130 */
+s32 Effect79B00_Update(u8 *e) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB}, k005 = {0x3D4CCCCD},
                                           k02 = {0x3E4CCCCD};   /* multiplied first */
     VObject *rnd = gRandom;
@@ -2966,7 +3000,8 @@ static inline void mark_points(u8 *o) {
 
 /* +0x18 start: arg { 0xFF and a model; or: no game - done; non-zero - the stalker's model;
  * zero - Fiona }: the points and the frame (y up, or z when the line is vertical) */
-void func_0035A290(u8 *o, s32 *arg) {
+/* 0x0035A290 */
+void StrikeMark_SetParams(u8 *o, s32 *arg) {
     f32 *m = (f32 *)(o + 0x10);
 
     AT(o, 0x78, u8) = 0;
@@ -3014,7 +3049,8 @@ static inline void mark_smoke_init(void **obj) {
 }
 
 /* +0x10 update: 0 once done; after the wait the smoke from the model, and done */
-s32 func_0035AD40(u8 *o) {
+/* 0x0035AD40 */
+s32 StrikeMark_Update(u8 *o) {
     u8 *mgr;
 
     if (AT(o, 0x78, u8) == 1) {
@@ -3035,7 +3071,8 @@ s32 func_0035AD40(u8 *o) {
  * two quads 2 wide from 0.2 behind to 3.8 beyond it, one across y, one across x (cell (256,
  * 128) 64 x 32) - then, with the first point in view, a faint grey band over the screen's
  * bottom 64 lines at its depth (the original's eight 64-wide scissored sprites, layer 0x1E) */
-void func_0035A4F0(u8 *o) {
+/* 0x0035A4F0 */
+void StrikeMark_Draw(u8 *o) {
     static const f32 kGlow[4][4] = {{-1.0f, 1.0f, 0.3f, 1.0f}, {1.0f, 1.0f, 0.3f, 1.0f},
                                     {-1.0f, -1.0f, 0.3f, 1.0f}, {1.0f, -1.0f, 0.3f, 1.0f}};
     static const f32 kStreakY[4][4] = {{0.0f, 1.0f, -0.2f, 1.0f}, {0.0f, 1.0f, 3.8f, 1.0f},
@@ -3139,7 +3176,8 @@ extern void *D_00470A50[];
 #define MOTE_VEL(e, i) ((f32 *)((e) + 0x3050 + (i) * 0x10))
 
 /* +0x8 destructor (the quad drawer's inlined) */
-u8 *func_002F9210(u8 *o, s32 flags) {
+/* 0x002F9210 */
+u8 *RisingMotes_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -3189,14 +3227,16 @@ void func_002F92A0(u8 *e, s32 i, s32 again) {
 }
 
 /* +0x14 draw the current buffer */
-void func_002F9520(u8 *e) {
+/* 0x002F9520 */
+void RisingMotes_Draw(u8 *e) {
     AT(e, 0x3020, QuadRec *) = MOTE_REC(e, AT(e, 0x3850, s32), 0);
     func_002E56C0(e + 0x3010);
 }
 
 /* +0x10 update: flip the buffers, each mote carried over, growing, turning (3 degrees) and
  * moving */
-s32 func_002F9550(u8 *e) {
+/* 0x002F9550 */
+s32 RisingMotes_Update(u8 *e) {
     s32 i, k;
 
     AT(e, 0x3850, s32) ^= 1;
@@ -3235,7 +3275,8 @@ s32 func_002F9550(u8 *e) {
 
 /* +0xC set up: the drawer's settings (a 16-frame strip of 32 x 32 cells, row 64, layer 0x19),
  * every mote placed */
-void func_002F9750(u8 *e) {
+/* 0x002F9750 */
+void RisingMotes_Start(u8 *e) {
     s32 i;
 
     AT(e, 0x3850, s32) = 0;
@@ -3272,7 +3313,8 @@ extern void *D_00470A70[];
 #define SPARK_VEL(e, i) ((f32 *)((e) + 0xC50 + (i) * 0x10))
 
 /* +0x8 destructor (the quad drawer's inlined) */
-u8 *func_002F9810(u8 *o, s32 flags) {
+/* 0x002F9810 */
+u8 *OrangeSparks_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -3325,7 +3367,8 @@ void func_002F98A0(u8 *e, s32 i, s32 again) {
 
 /* +0x18 a gust (arg: ending): blown back (x -0.2, z -0.3 at least) and up, or flung away as
  * it ends */
-void func_002F9B40(u8 *e, s32 *arg) {
+/* 0x002F9B40 */
+void OrangeSparks_SetParams(u8 *e, s32 *arg) {
     s32 i;
 
     AT(e, 0xE54, s32) = *arg;
@@ -3358,7 +3401,8 @@ void func_002F9B40(u8 *e, s32 *arg) {
 }
 
 /* +0x14 draw the current buffer */
-void func_002F9D80(u8 *e) {
+/* 0x002F9D80 */
+void OrangeSparks_Draw(u8 *e) {
     AT(e, 0xC20, QuadRec *) = SPARK_REC(e, AT(e, 0xE50, s32), 0);
     func_002E56C0(e + 0xC10);
 }
@@ -3375,7 +3419,8 @@ static s32 spark_spent(u8 *e, QuadRec *r, s32 i) {
 
 /* +0x10 update: flip the buffers, each spark carried over, drifting (x / z +0.01, y -0.01 a
  * frame) and fading; 0 when all are out */
-s32 func_002F9DB0(u8 *e) {
+/* 0x002F9DB0 */
+s32 OrangeSparks_Update(u8 *e) {
     s32 done = 1;
     s32 i, k;
 
@@ -3414,7 +3459,8 @@ s32 func_002F9DB0(u8 *e) {
 
 /* +0xC set up: the drawer's settings (additive; a 16-frame strip of 32 x 32 cells at (96, 64),
  * layer 0x19), every spark placed */
-void func_002F9FF0(u8 *e) {
+/* 0x002F9FF0 */
+void OrangeSparks_Start(u8 *e) {
     s32 i;
 
     AT(e, 0xE50, s32) = 0;
@@ -3455,7 +3501,8 @@ extern void *D_00470E00[];
 #define ONE_REC(e, buf) ((QuadRec *)((e) + 0x10) + (buf))
 
 /* +0x8 destructor (the quad drawer's inlined) */
-u8 *func_002FCDC0(u8 *o, s32 flags) {
+/* 0x002FCDC0 */
+u8 *SinkingSprite_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -3470,7 +3517,8 @@ u8 *func_002FCDC0(u8 *o, s32 flags) {
 }
 
 /* +0x18 start: arg { RGBA (4 x s32), position, velocity }, size 0.2 .. 0.4 */
-void func_002FCE50(u8 *e, u8 *arg) {
+/* 0x002FCE50 */
+void SinkingSprite_SetParams(u8 *e, u8 *arg) {
     QuadRec *r;
     f32 s;
 
@@ -3497,14 +3545,16 @@ void func_002FCE50(u8 *e, u8 *arg) {
 }
 
 /* +0x14 draw the current buffer */
-void func_002FCF40(u8 *e) {
+/* 0x002FCF40 */
+void SinkingSprite_Draw(u8 *e) {
     AT(e, 0x80, QuadRec *) = ONE_REC(e, AT(e, 0xB8, s32));
     func_002E56C0(e + 0x70);
 }
 
 /* +0x10 update: every other call 0 (gone); else carried over and, while visible, faded by
  * 0..3, falling faster (to about -0.05 a frame), moved and grown */
-s32 func_002FCF70(u8 *e) {
+/* 0x002FCF70 */
+s32 SinkingSprite_Update(u8 *e) {
     u32 *src, *dst;
     QuadRec *r;
     s32 k;
@@ -3544,7 +3594,8 @@ s32 func_002FCF70(u8 *e) {
 
 /* +0xC set up: the drawer's settings (one 32 x 32 cell at (64, 64), blended 0x20, layer
  * 0x19) */
-void func_002FD150(u8 *e) {
+/* 0x002FD150 */
+void SinkingSprite_Start(u8 *e) {
     AT(e, 0xB8, s32) = 0;
     AT(e, 0xBC, u8) = 0;
     AT(e, 0x78, s64) = -1;
@@ -3572,7 +3623,8 @@ void func_002FD150(u8 *e) {
 
 /* +0xC set up: the drawer's settings (one 32 x 32 cell at (32, 64), blended 0x40, layer 0x19,
  * palette 2) */
-void func_0037B920(u8 *e) {
+/* 0x0037B920 */
+void DustMote_Start(u8 *e) {
     AT(e, 0xB8, s32) = 0;
     AT(e, 0xBC, u8) = 0;
     AT(e, 0x78, s64) = -1;
@@ -3598,7 +3650,8 @@ void func_0037B920(u8 *e) {
  * colour a quarter of the fog's (room effect 0x1D; else grey 0x10), placed within 5 of the
  * point, 10..20 wide and 5..7 high, moving 0.1 a frame along the heading, living 150..181
  * frames; one already going starts part way through its life */
-void func_0037B370(u8 *e, u8 *arg) {
+/* 0x0037B370 */
+void DustMote_SetParams(u8 *e, u8 *arg) {
     static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD};
     VObject *rnd;
     QuadRec *r;
@@ -3653,7 +3706,8 @@ void func_0037B370(u8 *e, u8 *arg) {
 /* +0x10 update (0 once gone): carried over and moved; fading in (by 0 / 1 a frame) to 0x40, then
  * living out its time, then fading out; fainter by the distance squared / 4096 within 64 of
  * the camera */
-s32 func_0037B710(u8 *e) {
+/* 0x0037B710 */
+s32 DustMote_Update(u8 *e) {
     f32 eye[4] __attribute__((aligned(16)));
     u32 *src, *dst;
     QuadRec *r;
@@ -3700,7 +3754,8 @@ s32 func_0037B710(u8 *e) {
 }
 
 /* +0x14 draw (not while stopped, nor during a cut: the director's +0x38) */
-void func_0037B680(u8 *e) {
+/* 0x0037B680 */
+void DustMote_Draw(u8 *e) {
     if (AT(e, 0xBC, u8) == 1) {
         return;
     }
@@ -3743,7 +3798,8 @@ static inline void mote_start(u8 *e, u8 *mgr, s32 going) {
 
 /* +0x18 start: arg { position, heading in degrees } (none: stopped); six motes at once (already
  * going), their timers and two more at random */
-void func_0037BA00(u8 *e, f32 *arg) {
+/* 0x0037BA00 */
+void DustMoteSource_SetParams(u8 *e, f32 *arg) {
     u8 *mgr;
     VObject *rnd;
     s32 i;
@@ -3768,7 +3824,8 @@ void func_0037BA00(u8 *e, f32 *arg) {
 }
 
 /* +0x10 update (0 once stopped): each timer counts down; run out, a new mote and 300 more */
-s32 func_0037BCA0(u8 *e) {
+/* 0x0037BCA0 */
+s32 DustMoteSource_Update(u8 *e) {
     u8 *mgr;
     s32 i;
 
@@ -3797,7 +3854,8 @@ s32 func_0037BCA0(u8 *e) {
 
 /* +0xC set up: the drawer's settings (4 frames of 32 x 32 from (0x80, 0) of texture 0x10, layer
  * 0x19, blended 0x40) */
-void func_0037E170(u8 *e) {
+/* 0x0037E170 */
+void LightRing_Start(u8 *e) {
     AT(e, 0x6F0, s32) = 0;
     AT(e, 0x6F4, u8) = 0;
     AT(e, 0x618, s64) = -1;
@@ -3822,7 +3880,8 @@ void func_0037E170(u8 *e) {
 /* +0x18 start: arg { position, falling (+0x10) } (none: stopped). The ring at the point, radius
  * 3, alpha 0x80, speed 4 (falling: -1, else raised 5 first); the sparks around the point, 0.2..0.6
  * big, turned at random, spinning, 10..20 up and moving 0.1..0.35 a frame (down when falling) */
-void func_0037D130(u8 *e, f32 *arg) {
+/* 0x0037D130 */
+void LightRing_SetParams(u8 *e, f32 *arg) {
     static const union { u32 u; f32 f; } kFifth = {0x3E4CCCCD}, kTwoFifths = {0x3ECCCCCD}, kTenth = {0x3DCCCCCD},
         kQuarter = {0x3E800000};
     VObject *rnd;
@@ -3870,7 +3929,8 @@ void func_0037D130(u8 *e, f32 *arg) {
 /* +0x10 update (0 once stopped): the ring spreads, slowing (by 2 to 0.2, then by 0.01 to 0.1) and
  * fading by 7; its width 7 / 4.5 / 3 x its alpha's share; each spark still seen carried over,
  * resized and turned at random, spiralling and moving up or down, fading by 1..4 */
-s32 func_0037DD20(u8 *e) {
+/* 0x0037DD20 */
+s32 LightRing_Update(u8 *e) {
     static const union { u32 u; f32 f; } kFifth = {0x3E4CCCCD}, kTwoFifths = {0x3ECCCCCD}, kTenth = {0x3DCCCCCD},
         kHundredth = {0x3C23D70A}, kTwentieth = {0x3D4CCCCD}, kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
     VObject *rnd;
@@ -3954,7 +4014,8 @@ s32 func_0037DD20(u8 *e) {
  * round the point between radius - width and radius, its inner edge at the ring's alpha and the
  * outer one clear, showing the 16 x 16 texels at (200, 70) of texture 1 (group 0x10), added
  * without depth writes - then the sparks */
-void func_0037D4E0(u8 *e) {
+/* 0x0037D4E0 */
+void LightRing_Draw(u8 *e) {
     extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
                           u64 tex0, u32 prim);
     extern u32 func_002D6010(u8 *mgr);   /* the effects are paused */
@@ -4013,7 +4074,8 @@ void func_0037D4E0(u8 *e) {
 
 /* +0xC set up: the drawer's settings (a 32 x 32 cell at (0x180, 0x80), blended 0x40, layer
  * 0x19, palette 9) */
-void func_00374AA0(u8 *e) {
+/* 0x00374AA0 */
+void LorenzoSpark_Start(u8 *e) {
     AT(e, 0x128, s32) = 0;
     AT(e, 0x12C, u8) = 0;
     AT(e, 0xD8, s64) = -1;
@@ -4039,7 +4101,8 @@ void func_00374AA0(u8 *e) {
  * stopped). Both records at the point, white, the size, turned at random, rising 0.1 x rise and
  * drifting sideways (0.1 / 0.05 at most); growing (growth - 1) x size a frame and fading 0x80 /
  * life a frame (at least 1) */
-void func_003744B0(u8 *e, f32 *arg) {
+/* 0x003744B0 */
+void LorenzoSpark_SetParams(u8 *e, f32 *arg) {
     static const union { u32 u; f32 f; } kTenth = {0x3DCCCCCD}, kFifth = {0x3E4CCCCD};
     f32 at[4] __attribute__((aligned(16)));
     VObject *rnd;
@@ -4089,7 +4152,8 @@ void func_003744B0(u8 *e, f32 *arg) {
 
 /* +0x10 update (0 once both are gone): each record still seen grows, turns (up to 3 degrees,
  * the way it drifts), moves, fades and dims - out once black */
-s32 func_003747D0(u8 *e) {
+/* 0x003747D0 */
+s32 LorenzoSpark_Update(u8 *e) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
     VObject *rnd;
     s32 i, k;
@@ -4142,7 +4206,8 @@ s32 func_003747D0(u8 *e) {
 }
 
 /* +0x14 draw the current buffer, unless the effects are paused or both are gone */
-void func_00374750(u8 *e) {
+/* 0x00374750 */
+void LorenzoSpark_Draw(u8 *e) {
     if (func_002D6010(gEffects) == 0 && AT(e, 0x12C, u8) == 0) {
         AT(e, 0xE0, QuadRec *) = SPARK2_REC(e, AT(e, 0x128, s32), 0);
         func_002E56C0(e + 0xD0);
@@ -4160,7 +4225,8 @@ extern void *D_00470E20[];
 #define PUFF_VEL(e, i) ((f32 *)((e) + 0x1850 + (i) * 0x10))
 
 /* +0x8 destructor (the quad drawer's inlined) */
-u8 *func_002FD1D0(u8 *o, s32 flags) {
+/* 0x002FD1D0 */
+u8 *SmokePuffs_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -4209,19 +4275,22 @@ void func_002FD260(u8 *e, s32 i, s32 again) {
 }
 
 /* +0x18 stop */
-void func_002FD4E0(u8 *e) {
+/* 0x002FD4E0 */
+void SmokePuffs_SetParams(u8 *e) {
     AT(e, 0x1C54, u8) = 1;
 }
 
 /* +0x14 draw the current buffer */
-void func_002FD4F0(u8 *e) {
+/* 0x002FD4F0 */
+void SmokePuffs_Draw(u8 *e) {
     AT(e, 0x1820, QuadRec *) = PUFF_REC(e, AT(e, 0x1C50, s32), 0);
     func_002E56C0(e + 0x1810);
 }
 
 /* +0x10 update (0 once stopped): flip the buffers, each puff carried over, growing, turning (1
  * degree) and moving */
-s32 func_002FD520(u8 *e) {
+/* 0x002FD520 */
+s32 SmokePuffs_Update(u8 *e) {
     s32 i, k;
 
     if (AT(e, 0x1C54, u8) == 1) {
@@ -4266,7 +4335,8 @@ s32 func_002FD520(u8 *e) {
 
 /* +0xC set up: the drawer's settings (a 16-frame strip of 32 x 32 cells, row 64, layer 0x19),
  * every puff placed */
-void func_002FD760(u8 *e) {
+/* 0x002FD760 */
+void SmokePuffs_Start(u8 *e) {
     s32 i;
 
     AT(e, 0x1C50, s32) = 0;
@@ -4305,7 +4375,8 @@ extern void *D_00470E40[];
 #define SWARM_ACC(e, i) ((f32 *)((e) + 0x708 + (i) * 0xC))
 
 /* +0x8 destructor (the quad drawer's inlined) */
-u8 *func_002FD820(u8 *o, s32 flags) {
+/* 0x002FD820 */
+u8 *SpeckSwarm_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -4341,7 +4412,8 @@ static void swarm_heading(u8 *e, s32 i, VObject *rnd) {
 
 /* +0x18 start: arg { f32 count (16 at most), centre, spread, RGB, alpha (each speck up to 15
  * / 7 off, from 8 / 4 below) } */
-void func_002FD8B0(u8 *e, u8 *arg) {
+/* 0x002FD8B0 */
+void SpeckSwarm_SetParams(u8 *e, u8 *arg) {
     VObject *rnd;
     s32 i, r0, g0, b0, a0;
 
@@ -4391,7 +4463,8 @@ void func_002FD8B0(u8 *e, u8 *arg) {
 }
 
 /* +0x14 draw the current buffer */
-void func_002FDD40(u8 *e) {
+/* 0x002FDD40 */
+void SpeckSwarm_Draw(u8 *e) {
     AT(e, 0x620, QuadRec *) = SWARM_REC(e, AT(e, 0x7F4, s32), 0);
     func_002E56C0(e + 0x610);
 }
@@ -4411,7 +4484,8 @@ static void swarm_axis(f32 *pos, f32 *v, f32 *a, f32 centre) {
 
 /* +0x10 update: flip the buffers; each speck carried over, now and then (1 in 10) a new
  * heading, moved, turned at random, its alpha by the camera's distance */
-s32 func_002FDD70(u8 *e) {
+/* 0x002FDD70 */
+s32 SpeckSwarm_Update(u8 *e) {
     f32 cam[4] __attribute__((aligned(16)));
     VObject *rnd;
     f32 dx, dy, dz, d2;
@@ -4455,7 +4529,8 @@ s32 func_002FDD70(u8 *e) {
 
 /* +0xC set up: the drawer's settings (a 4 x 4 cell at (238, 78), blended 0x20, palette 2,
  * layer 0x19) */
-void func_002FE230(u8 *e) {
+/* 0x002FE230 */
+void SpeckSwarm_Start(u8 *e) {
     AT(e, 0x7F4, s32) = 0;
     AT(e, 0x618, s64) = -1;
     AT(e, 0x624, s32) = 0;
@@ -4488,7 +4563,8 @@ extern void *D_00470E60[];
 #define SPLASH_DRAG(e, i) ((f32 *)((e) + 0x480 + (i) * 8))
 
 /* +0x8 destructor (the quad drawer's inlined) */
-u8 *func_002FE2B0(u8 *o, s32 flags) {
+/* 0x002FE2B0 */
+u8 *Splash_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -4505,7 +4581,8 @@ u8 *func_002FE2B0(u8 *o, s32 flags) {
 /* +0x18 start: arg { f32 who (0xFE the pursuer, 1 the partner, else Fiona), f32 count (10 at
  * most), the point (its height the ground), spread, RGB (each speck up to 15 off, from 8
  * below), alpha (up to 7, from 4 below) } */
-void func_002FE340(u8 *e, f32 *arg) {
+/* 0x002FE340 */
+void Splash_SetParams(u8 *e, f32 *arg) {
     f32 dir[4] __attribute__((aligned(16)));
     VObject *rnd;
     s32 who, i, r0, g0, b0, a0;
@@ -4570,7 +4647,8 @@ void func_002FE340(u8 *e, f32 *arg) {
 }
 
 /* +0x14 draw the current buffer */
-void func_002FE800(u8 *e) {
+/* 0x002FE800 */
+void Splash_Draw(u8 *e) {
     AT(e, 0x3E0, QuadRec *) = SPLASH_REC(e, AT(e, 0x4D8, s32), 0);
     func_002E56C0(e + 0x3D0);
 }
@@ -4578,7 +4656,8 @@ void func_002FE800(u8 *e) {
 /* +0x10 update: flip the buffers; every other call 0 (and once all are gone); each visible
  * speck carried over, falling (hard while rising), jittered, moved, and on the ground faded
  * by 0x20 and thrown up again */
-s32 func_002FE830(u8 *e) {
+/* 0x002FE830 */
+s32 Splash_Update(u8 *e) {
     VObject *rnd;
     s32 i, k;
 
@@ -4630,7 +4709,8 @@ s32 func_002FE830(u8 *e) {
 
 /* +0xC set up: the drawer's settings (a 4 x 4 cell at (238, 78), blended 0x20, palette 2,
  * layer 0x19) */
-void func_002FEBD0(u8 *e) {
+/* 0x002FEBD0 */
+void Splash_Start(u8 *e) {
     AT(e, 0x4D8, s32) = 0;
     AT(e, 0x4DC, u8) = 0;
     AT(e, 0x3D8, s64) = -1;
@@ -4662,7 +4742,8 @@ extern void *D_00470F30[], *D_00472BF0[];
 #define BLOOD_VEL(e, i) ((f32 *)((e) + 0xC50 + (i) * 0x10))
 
 /* +0x8 destructor (the quad drawer's inlined) */
-u8 *func_002FF6D0(u8 *o, s32 flags) {
+/* 0x002FF6D0 */
+u8 *BloodSpray_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -4678,7 +4759,8 @@ u8 *func_002FF6D0(u8 *o, s32 flags) {
 
 /* +0x18 start: arg { the point, +0x10 the triangle << 8, or by whose (0 Fiona, 1 the partner,
  * 0xFE the pursuer) triangle; +0x14 heavy (bigger, brighter, faster drops) } */
-void func_002FF760(u8 *e, u8 *arg) {
+/* 0x002FF760 */
+void BloodSpray_SetParams(u8 *e, u8 *arg) {
     f32 p[4] __attribute__((aligned(16)));
     VObject *rnd;
     u32 who;
@@ -4735,7 +4817,8 @@ void func_002FF760(u8 *e, u8 *arg) {
 }
 
 /* +0x14 draw the current buffer, unless the effects are paused or all are gone */
-void func_002FFC70(u8 *e) {
+/* 0x002FFC70 */
+void BloodSpray_Draw(u8 *e) {
     if (func_002D6010(gEffects) == 0 && AT(e, 0xE58, u8) == 0) {
         AT(e, 0xC20, QuadRec *) = BLOOD_REC(e, AT(e, 0xE50, s32), 0);
         func_002E56C0(e + 0xC10);
@@ -4752,7 +4835,8 @@ static void splat_init(void **obj) {
 /* +0x10 update (0 once all are gone): flip the buffers; each live drop carried over,
  * shrinking, falling (slower once falling), stopped by the floor; a drop gone leaves a splat
  * half the time */
-s32 func_002FFCF0(u8 *e) {
+/* 0x002FFCF0 */
+s32 BloodSpray_Update(u8 *e) {
     struct {
         f32 pos[4];
         s32 tri;
@@ -4827,7 +4911,8 @@ s32 func_002FFCF0(u8 *e) {
 
 /* +0xC set up: the drawer's settings (a 16-frame strip of 32 x 32 cells at (96, 64), layer
  * 0x19) */
-void func_00300130(u8 *e) {
+/* 0x00300130 */
+void BloodSpray_Start(u8 *e) {
     AT(e, 0xE50, s32) = 0;
     AT(e, 0xE58, u8) = 0;
     AT(e, 0xC18, s64) = -1;
@@ -4857,7 +4942,8 @@ void func_00300130(u8 *e) {
 extern void *D_00471000[];
 
 /* +0x8 destructor */
-void *func_003055F0(void *o, s32 flags) {
+/* 0x003055F0 */
+void *Effect71000_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00471000;
         if (o != NULL) {
@@ -4871,7 +4957,8 @@ void *func_003055F0(void *o, s32 flags) {
 }
 
 /* Copies a light/pose record when its type field (src[0]) is 0; angles are given in degrees. */
-void func_00305650(u8 *self, f32 *src) {
+/* 0x00305650 */
+void Effect71000_SetParams(u8 *self, f32 *src) {
     if (src != NULL && src[0] == 0.0f) {
         F32(self, 0x10) = src[1];
         F32(self, 0x14) = src[2];
@@ -4887,7 +4974,8 @@ void func_00305650(u8 *self, f32 *src) {
 }
 
 /* +0xC set up: at its place, a random step (-0.25..0.25), waiting 1 or 31 frames */
-void func_00305DD0(u8 *o) {
+/* 0x00305DD0 */
+void Effect71000_Start(u8 *o) {
     VObject *rnd;
 
     AT(o, 0x38, s32) = 0;
@@ -4932,7 +5020,8 @@ static inline __attribute__((always_inline)) void wander_axis(u8 *o, s32 cur, s3
 /* +0x10 update: waiting, or walking toward the target (then waiting 1..91 frames); there, 1 in
  * 8 a new target (somewhere in the range, or back home) a tenth of the way a step, else a nudge
  * and a short wait */
-s32 func_003059C0(u8 *o) {
+/* 0x003059C0 */
+s32 Effect71000_Update(u8 *o) {
     f32 cx, tx;
 
     if (AT(o, 0x50, s32) != 0) {
@@ -4986,7 +5075,8 @@ s32 func_003059C0(u8 *o) {
 }
 
 /* +0x14 draw: the quad facing along its step, at the offset, turned and placed */
-void func_00305700(u8 *o) {
+/* 0x00305700 */
+void Effect71000_Draw(u8 *o) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB};
     f32 m[4][4] __attribute__((aligned(16)));
     f32 dir[4] __attribute__((aligned(16)));
@@ -5079,7 +5169,8 @@ void func_00305700(u8 *o) {
 extern void *D_00479AE0[];
 
 /* +0x8 destructor */
-void *func_00361260(void *o, s32 flags) {
+/* 0x00361260 */
+void *SplashRing_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479AE0;
         if (o != NULL) {
@@ -5093,12 +5184,14 @@ void *func_00361260(void *o, s32 flags) {
 }
 
 /* +0xC set up */
-void func_00361930(u8 *o) {
+/* 0x00361930 */
+void SplashRing_Start(u8 *o) {
     AT(o, 0x31, u8) = 0;
 }
 
 /* +0x10 update (0 once it has faded out) */
-s32 func_003618B0(u8 *o) {
+/* 0x003618B0 */
+s32 SplashRing_Update(u8 *o) {
     if (AT(o, 0x30, u8) == 1) {
         AT(o, 0x24, u16) += 0x10;
         if (AT(o, 0x23, u8) < AT(o, 0x24, u16)) {
@@ -5117,7 +5210,8 @@ s32 func_003618B0(u8 *o) {
 }
 
 /* +0x18 start: at params' position (+0x0) with its colour (+0x10) and growth (+0x14) */
-void func_003612C0(u8 *o, const u8 *params) {
+/* 0x003612C0 */
+void SplashRing_SetParams(u8 *o, const u8 *params) {
     if (params == NULL) {
         return;
     }
@@ -5136,7 +5230,8 @@ void func_003612C0(u8 *o, const u8 *params) {
 /* +0x14 draw: the ring as a closed strip (outer and inner point by turns, 22.5 degrees apart),
  * flat in its colour at alpha +0x24, added without depth writes (layer 0x19); only when all of
  * it is in view */
-void func_00361340(u8 *o) {
+/* 0x00361340 */
+void SplashRing_Draw(u8 *o) {
     f32 p[34][4] __attribute__((aligned(16)));
     f32 clip[4][4] __attribute__((aligned(16)));
     u8 rgba[34][4];
@@ -5210,7 +5305,8 @@ typedef struct SprayParams {
 #define SPRAY_DROP(o, i) ((o) + AT(o, 0x648, s32) * 0x300 + (i) * 0x30 + 0x10)
 
 /* +0x8 destructor (the quad drawer at +0x610 inlined) */
-u8 *func_003604E0(u8 *o, s32 flags) {
+/* 0x003604E0 */
+u8 *DropletSpray_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -5225,7 +5321,8 @@ u8 *func_003604E0(u8 *o, s32 flags) {
 }
 
 /* +0xC set up: the quad drawer's settings */
-void func_00360AE0(u8 *o) {
+/* 0x00360AE0 */
+void DropletSpray_Start(u8 *o) {
     AT(o, 0x648, s32) = 0;
     AT(o, 0x714, u8) = 0;
     AT(o, 0x618, s64) = -1;
@@ -5249,7 +5346,8 @@ void func_00360AE0(u8 *o) {
 
 /* +0x18 start: n droplets fanned evenly round (each heading jittered by up to 30% of the
  * share), out from pos at their distance and `lift` above it, turned at random */
-void func_00360570(u8 *o, const SprayParams *sp) {
+/* 0x00360570 */
+void DropletSpray_SetParams(u8 *o, const SprayParams *sp) {
     static const union { u32 u; f32 f; } k03 = {0x3E99999A}, kPi = {0x40490FDB};
     VObject *rng;
     f32 share, jitter;
@@ -5300,7 +5398,8 @@ void func_00360570(u8 *o, const SprayParams *sp) {
 
 /* +0x10 update (0 once it has ended): swap buffers, carry each droplet over and move it, its
  * alpha down by one */
-s32 func_003608F0(u8 *o) {
+/* 0x003608F0 */
+s32 DropletSpray_Update(u8 *o) {
     s32 i, k;
 
     if (AT(o, 0x714, u8) == 1) {
@@ -5339,7 +5438,8 @@ s32 func_003608F0(u8 *o) {
 }
 
 /* +0x14 draw (until it has ended) */
-void func_003608A0(u8 *o) {
+/* 0x003608A0 */
+void DropletSpray_Draw(u8 *o) {
     if (AT(o, 0x714, u8) != 0) {
         return;
     }
@@ -5407,7 +5507,8 @@ void func_0035F640(u8 *o, s32 i) {
 /* +0x10 update: flip the buffers; each drop carried over, waiting, or falling until under its
  * floor (none: below 0, restarted quietly): there a spray of 16 (and a drip sound, one of three
  * in turn, if the driver has room), and it starts over */
-s32 func_0035F9E0(u8 *o) {
+/* 0x0035F9E0 */
+s32 CeilingDrips_Update(u8 *o) {
     VObject *nav = (VObject *)gNavMesh;
     u8 *mgr = gEffects;
     VObject *snd = gSound;
@@ -5470,7 +5571,8 @@ s32 func_0035F9E0(u8 *o) {
 
 /* +0xC set up: the drawer (14 quads of an 8 x 8 cell at (108, 76), additive with glow), every
  * drop started */
-void func_0035FDD0(u8 *o) {
+/* 0x0035FDD0 */
+void CeilingDrips_Start(u8 *o) {
     s32 i;
 
     AT(o, 0x5C0, s32) = 0;
@@ -5522,13 +5624,15 @@ void func_0035FF30(u8 *o) {
     AT(o, 0xB0, s32) = (s32)(k90.f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) + 30;
 }
 
-void func_003600D0(u8 *o) {
+/* 0x003600D0 */
+void OneDrip_Draw(u8 *o) {
     quad_step(o, 0x70, 0xAC, 0x30);
 }
 
 /* +0x10 update: flip the buffers; the drop waiting or falling; once below 0 a ring and a
  * single droplet where it hit (at 0.1), and it starts over */
-s32 func_00360100(u8 *o) {
+/* 0x00360100 */
+s32 OneDrip_Update(u8 *o) {
     QuadRec *r;
     s32 k;
 
@@ -5581,7 +5685,8 @@ s32 func_00360100(u8 *o) {
 
 /* +0xC set up: the drawer (one quad of an 8 x 8 cell at (108, 76), additive with glow), the
  * drop started */
-void func_00360460(u8 *o) {
+/* 0x00360460 */
+void OneDrip_Start(u8 *o) {
     AT(o, 0xAC, s32) = 0;
     AT(o, 0x78, s64) = -1;
     AT(o, 0x84, s32) = 0;
@@ -5661,7 +5766,8 @@ void func_00355AA0(u8 *o) {
 extern void *D_00479890[];
 
 /* +0x8 destructor */
-void *func_0035C9F0(void *o, s32 flags) {
+/* 0x0035C9F0 */
+void *WallShadow_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479890;
         if (o != NULL) {
@@ -5675,23 +5781,27 @@ void *func_0035C9F0(void *o, s32 flags) {
 }
 
 /* +0xC set up */
-void func_0035CE30(u8 *o) {
+/* 0x0035CE30 */
+void WallShadow_Start(u8 *o) {
     AT(o, 0x4, u8) = 0;
 }
 
 /* +0x10 update: 0 once gone */
-s32 func_0035CE20(u8 *o) {
+/* 0x0035CE20 */
+s32 WallShadow_Update(u8 *o) {
     return (AT(o, 0x4, u8) ^ 1) != 0;
 }
 
 /* +0x18 start: gone */
-void func_0035CA50(u8 *o) {
+/* 0x0035CA50 */
+void WallShadow_SetParams(u8 *o) {
     AT(o, 0x4, u8) = 1;
 }
 
 #ifdef HG_NATIVE
 /* +0x14 draw (until gone, and only when all of it is in view): the eight quads, layer 0x1E */
-void func_0035CA60(u8 *o) {
+/* 0x0035CA60 */
+void WallShadow_Draw(u8 *o) {
     f32 p[4][4] __attribute__((aligned(16))) = {
         {127.0f, 26.0f, -114.0f, 1.0f}, {127.0f, 26.0f, -130.0f, 1.0f},
         {127.0f, 1.0f, -114.0f, 1.0f}, {127.0f, 1.0f, -130.0f, 1.0f},
@@ -5742,7 +5852,8 @@ void func_0035CA60(u8 *o) {
 #define SPLAT_REC(e) ((QuadRec *)((e) + 0x10) + AT(e, 0x134, s32))
 
 /* +0x8 destructor (the quad drawer's inlined) */
-u8 *func_003161F0(u8 *e, s32 flags) {
+/* 0x003161F0 */
+u8 *FloorSplat_dtor(u8 *e, s32 flags) {
     if (e == NULL) {
         return e;
     }
@@ -5798,7 +5909,8 @@ static inline void splat_corner(u8 *e, s32 off, f32 x, f32 z) {
  * stain brown; dropped onto the floor below (nav +0x40, from the point to the record) - none
  * or a hole: gone - lifted half the floor normal (+0x2C) along it, its frame built round the
  * normal unless that is straight up */
-void func_00316280(u8 *e, u8 *arg) {
+/* 0x00316280 */
+void FloorSplat_SetParams(u8 *e, u8 *arg) {
     f32 at[4] __attribute__((aligned(16)));
     f32 out[4] __attribute__((aligned(16)));
     QuadRec *r;
@@ -5882,7 +5994,8 @@ void func_00316280(u8 *e, u8 *arg) {
 }
 
 /* +0x14 draw, until gone */
-void func_00316660(u8 *e) {
+/* 0x00316660 */
+void FloorSplat_Draw(u8 *e) {
     if (AT(e, 0x138, u8) != 0) {
         return;
     }
@@ -5893,7 +6006,8 @@ void func_00316660(u8 *e) {
 /* +0x10 update (0 once gone): flip the buffers (the new one copied from the old); while seen
  * it fades (blood by 0..3 a frame, a stain one in four frames) and grows by 0.1, its corners
  * laid out again in the floor's frame */
-s32 func_003166B0(u8 *e) {
+/* 0x003166B0 */
+s32 FloorSplat_Update(u8 *e) {
     QuadRec *r;
 
     if (AT(e, 0x138, u8) == 1) {
@@ -5931,7 +6045,8 @@ s32 func_003166B0(u8 *e) {
     return 1;
 }
 
-void func_003168E0(u8 *self) {
+/* 0x003168E0 */
+void FloorSplat_Start(u8 *self) {
     S32(self, 0x134) = 0;
     self[0x138] = 0;
 }
@@ -6049,7 +6164,8 @@ static inline void spark_white(QuadRec *r, s32 alpha) {
  * cells }: a size 0.49 or under gives a small glow and a tiny rising flare (cell (192, 64),
  * palette 3), else a glow and a flare dimmed under size 1; other cells: (320, 160) 64 x 64,
  * palette 7. None: gone */
-void func_00366270(u8 *o, SparkPrm *arg) {
+/* 0x00366270 */
+void Spark_SetParams(u8 *o, SparkPrm *arg) {
     static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD}, k02 = {0x3E4CCCCD}, k04 = {0x3ECCCCCD};   /* multiplied first */
     VObject *rnd;
     QuadRec *r;
@@ -6161,7 +6277,8 @@ static inline s32 spark_live(u8 *o) {
 }
 
 /* +0x14 draw (not while paused): placed at the bone if due, the flare then the glow */
-void func_00366910(u8 *o) {
+/* 0x00366910 */
+void Spark_Draw(u8 *o) {
     if (func_002D6010(gEffects) != 0) {
         return;
     }
@@ -6220,7 +6337,8 @@ static inline void spark_step(u8 *o, QuadRec *r, const f32 *v, f32 grow) {
 
 /* +0x10 update: placed at the bone if due; flip the frames, each quad carried over and
  * stepped while it shows (the glow growing up to 0.1, the flare 0.2); 0 once both are out */
-s32 func_00366A30(u8 *o) {
+/* 0x00366A30 */
+s32 Spark_Update(u8 *o) {
     s32 k;
 
     if (spark_live(o) < 0) {
@@ -6272,7 +6390,8 @@ static inline void spark_drawer(u8 *d) {
 }
 
 /* +0xC set up: frame 0, both drawers */
-void func_003670E0(u8 *o) {
+/* 0x003670E0 */
+void Spark_Start(u8 *o) {
     AT(o, 0x168, s32) = 0;
     AT(o, 0x16C, u8) = 0;
     AT(o, 0x16D, u8) = 0;
@@ -6541,7 +6660,8 @@ void func_00301E70(u8 *o) {
 
 /* +0xC: each fleck at x -2..2 drifting out (by up to 0.05 x), forward 0.1..0.3, white, size
  * 0.4..0.8 by 0.4..0.8 */
-void func_003069B0(u8 *o) {
+/* 0x003069B0 */
+void DriftingFlecks_Start(u8 *o) {
     VObject *rnd = gRandom;
     s32 i;
 
@@ -6568,7 +6688,8 @@ void func_003069B0(u8 *o) {
 
 /* +0x10: each fleck drifts (nudged now and then by up to 0.05 each way); out of the area it
  * fades 0x30 a frame. 0 once all are gone */
-s32 func_003067B0(u8 *o) {
+/* 0x003067B0 */
+s32 DriftingFlecks_Update(u8 *o) {
     VObject *rnd = gRandom;
     s32 any = 0;
     s32 i;
@@ -6605,7 +6726,8 @@ s32 func_003067B0(u8 *o) {
 
 /* +0x14: each fleck a unit quad scaled by its size, turned along its drift, at its place in
  * the area, drawn by a quad drawer (D_0046FC30) */
-void func_003063A0(u8 *o) {
+/* 0x003063A0 */
+void DriftingFlecks_Draw(u8 *o) {
     s32 i;
 
     for (i = 0; i < 64; i++) {
@@ -6710,8 +6832,9 @@ extern void *D_00479F70[];
 extern void *D_00478B50[];
 extern void *D_00479A80[];
 
-/* (as func_002D63F0)  +0x8 destructor (the quad drawer's inlined) */
-u8 *func_00376730(u8 *o, s32 flags) {
+/* (as RisingSmoke_dtor)  +0x8 destructor (the quad drawer's inlined) */
+/* 0x00376730 */
+u8 *Room49Effect_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -6756,7 +6879,8 @@ void func_003767C0(u8 *o, s32 i) {
 #ifdef HG_NATIVE
 /* D_0047A390's +0x14 draw (PC; the PS2 sends GS packets): unless stopped, the motes, then the
  * haze as room 0x61's (phases +0x1A48 / +0x1A4C) over the screen at 0x60 */
-void func_00376990(u8 *o) {
+/* 0x00376990 */
+void Room49Effect_Draw(u8 *o) {
     if (AT(o, 0x1A58, u8) == 1) {
         return;
     }
@@ -6771,7 +6895,8 @@ void func_00376990(u8 *o) {
 /* +0x10 update: the buffers swapped, the frames counted; each mote turns, wobbles 0.1 about its
  * angle and rises, fading by 0 or 1 on every other frame (to 0); one frame in 8 each one gone
  * comes back one time in 16. The haze's phases on by 3 .. 5 and 1 .. 3 degrees */
-s32 func_00377590(u8 *o) {
+/* 0x00377590 */
+s32 Room49Effect_Update(u8 *o) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB}, kTenth = {0x3DCCCCCD};
     VObject *rnd;
     f32 t;
@@ -6830,7 +6955,8 @@ s32 func_00377590(u8 *o) {
 
 /* +0xC set up: the motes' drawer (layer 0x19, texture group 0x40 cell (0x1A0, 0x40) 32 x 32 of
  * 512 x 256, 5 frames), every mote started hidden, the haze at random phases */
-void func_00377970(u8 *o) {
+/* 0x00377970 */
+void Room49Effect_Start(u8 *o) {
     VObject *rnd;
     s32 i;
 
@@ -6863,8 +6989,9 @@ void func_00377970(u8 *o) {
     AT(o, 0x1A4C, f32) = 0x1.921fb6p+1f /* pi */ * (360.0f * (shaft_rnd(rnd) - 0.5f)) / 180.0f;
 }
 
-/* (as func_002FCDC0)  +0x8 destructor (the quad drawer's inlined) */
-u8 *func_0037B2E0(u8 *o, s32 flags) {
+/* (as SinkingSprite_dtor)  +0x8 destructor (the quad drawer's inlined) */
+/* 0x0037B2E0 */
+u8 *DustMote_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -6878,8 +7005,9 @@ u8 *func_0037B2E0(u8 *o, s32 flags) {
     return o;
 }
 
-/* (as func_002F9810)  +0x8 destructor (the quad drawer's inlined) */
-u8 *func_0037BE80(u8 *o, s32 flags) {
+/* (as OrangeSparks_dtor)  +0x8 destructor (the quad drawer's inlined) */
+/* 0x0037BE80 */
+u8 *DropletFlash_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -6893,8 +7021,9 @@ u8 *func_0037BE80(u8 *o, s32 flags) {
     return o;
 }
 
-/* as func_00314910 */
-void func_0037C520(u8 *self) {
+/* as StrandSplash_Start */
+/* 0x0037C520 */
+void DropletFlash_Start(u8 *self) {
     S32(self, 0xF60) = 0;
     self[0xF64] = 0;
     S64(self, 0xC18) = -1;
@@ -6916,8 +7045,9 @@ void func_0037C520(u8 *self) {
     self[0xC46] = 0xFF;
 }
 
-/* (as func_002F9210)  +0x8 destructor (the quad drawer's inlined) */
-u8 *func_0037C5A0(u8 *o, s32 flags) {
+/* (as RisingMotes_dtor)  +0x8 destructor (the quad drawer's inlined) */
+/* 0x0037C5A0 */
+u8 *AshFlakes_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -6972,7 +7102,8 @@ void func_0037C630(u8 *e, s32 i, s32 spread) {
 }
 
 /* +0x14 draw: each flake a 2 x 2 quad in the xz plane turned by its angles */
-void func_0037C9E0(u8 *e) {
+/* 0x0037C9E0 */
+void AshFlakes_Draw(u8 *e) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 c[4][4] __attribute__((aligned(16)));
     s32 i;
@@ -6997,7 +7128,8 @@ void func_0037C9E0(u8 *e) {
 /* +0x10 update (0 once stopped, +0x4474): flip the buffers; each shown flake carried over,
  * rising a little faster at random, moving with the wind, turning, its frame counting to
  * +0x3043; then up to three dead ones back */
-s32 func_0037CB90(u8 *e) {
+/* 0x0037CB90 */
+s32 AshFlakes_Update(u8 *e) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kNegPi = {0xC0490FDB}, kTwoPi = {0x40C90FDB};
     VObject *rnd = gRandom;
     s32 i, k, n;
@@ -7050,7 +7182,8 @@ s32 func_0037CB90(u8 *e) {
 
 /* +0xC set up: the drawer's settings (16 frames of 32 x 32, row 0xE0, palette 11), the spot,
  * the wind (0.2, 2, 0), every flake hidden */
-void func_0037CFA0(u8 *e) {
+/* 0x0037CFA0 */
+void AshFlakes_Start(u8 *e) {
     s32 i;
 
     ASH_BUF(e) = 0;
@@ -7084,8 +7217,9 @@ void func_0037CFA0(u8 *e) {
     }
 }
 
-/* (as func_002F9810)  +0x8 destructor (the quad drawer's inlined) */
-u8 *func_00368BB0(u8 *o, s32 flags) {
+/* (as OrangeSparks_dtor)  +0x8 destructor (the quad drawer's inlined) */
+/* 0x00368BB0 */
+u8 *SmokeTrail_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -7136,7 +7270,8 @@ void func_00368C40(u8 *o, s32 i, s32 stagger) {
 }
 
 /* +0x18 start: from object `src` (all 32 puffs, staggered); none: off */
-void func_00368E10(u8 *o, u8 *src) {
+/* 0x00368E10 */
+void SmokeTrail_SetParams(u8 *o, u8 *src) {
     s32 i;
 
     if (src == NULL) {
@@ -7150,13 +7285,15 @@ void func_00368E10(u8 *o, u8 *src) {
     }
 }
 
-void func_00368E80(u8 *o) {
+/* 0x00368E80 */
+void SmokeTrail_Draw(u8 *o) {
     quad_step(o, 0xC10, 0xE58, 0x600);
 }
 
 /* +0x10 update: flip the buffers; each puff carried over, fading (a faded one restarts while
  * on), shrinking, turning a degree, drifting; 0 once off and all faded */
-s32 func_00368EB0(u8 *o) {
+/* 0x00368EB0 */
+s32 SmokeTrail_Update(u8 *o) {
     u8 done = 1;
     s32 i, k;
 
@@ -7202,7 +7339,8 @@ s32 func_00368EB0(u8 *o) {
 
 /* +0xC set up: the drawer's settings (32 quads of a 32 x 32 cell at (384, 128), blended,
  * palette 6, layer 0x19) */
-void func_003690F0(u8 *o) {
+/* 0x003690F0 */
+void SmokeTrail_Start(u8 *o) {
     AT(o, 0xE58, s32) = 0;
     AT(o, 0xC18, s64) = -1;
     AT(o, 0xC28, s32) = 0;
@@ -7222,8 +7360,9 @@ void func_003690F0(u8 *o) {
     AT(o, 0xC46, s8) = 6;
 }
 
-/* (as func_002D63F0)  +0x8 destructor (the quad drawer's inlined) */
-u8 *func_00369170(u8 *o, s32 flags) {
+/* (as RisingSmoke_dtor)  +0x8 destructor (the quad drawer's inlined) */
+/* 0x00369170 */
+u8 *WispColumn_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -7276,7 +7415,8 @@ void func_00369200(u8 *o, s32 i, s32 stagger) {
 }
 
 /* +0x18 start (alpha 0x10, all 64 staggered); none: off */
-void func_00369330(u8 *o, void *on) {
+/* 0x00369330 */
+void WispColumn_SetParams(u8 *o, void *on) {
     s32 i;
 
     if (on == NULL) {
@@ -7291,7 +7431,8 @@ void func_00369330(u8 *o, void *on) {
 }
 
 /* +0x14 draw (while the alpha is up) */
-void func_003693A0(u8 *o) {
+/* 0x003693A0 */
+void WispColumn_Draw(u8 *o) {
     if (AT(o, 0x1C51, u8)) {
         AT(o, 0x1820, u8 *) = o + AT(o, 0x1C54, s32) * 0xC00 + 0x10;
         func_002E56C0(o + 0x1810);
@@ -7300,7 +7441,8 @@ void func_003693A0(u8 *o) {
 
 /* +0x10 update: flip the buffers; each wisp carried over at the current alpha, turning 10
  * degrees, rising, restarted past 60; 0 once faded out */
-s32 func_003693F0(u8 *o) {
+/* 0x003693F0 */
+s32 WispColumn_Update(u8 *o) {
     s32 i, k;
 
     if (AT(gCharPursuer, 0x153C, u8) != 0xC && VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector)) {
@@ -7343,7 +7485,8 @@ s32 func_003693F0(u8 *o) {
 
 /* +0xC set up: the drawer's settings (64 quads of a 32 x 32 cell at (384, 128), blended 0x80,
  * palette 6, layer 0x19) */
-void func_00369610(u8 *o) {
+/* 0x00369610 */
+void WispColumn_Start(u8 *o) {
     AT(o, 0x1C54, s32) = 0;
     AT(o, 0x1818, s64) = -1;
     AT(o, 0x1828, s32) = 0;
@@ -7363,8 +7506,9 @@ void func_00369610(u8 *o) {
     AT(o, 0x1846, s8) = 6;
 }
 
-/* (as func_002D63F0)  +0x8 destructor (the quad drawer's inlined) */
-u8 *func_00369690(u8 *o, s32 flags) {
+/* (as RisingSmoke_dtor)  +0x8 destructor (the quad drawer's inlined) */
+/* 0x00369690 */
+u8 *SparkSpray_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -7449,7 +7593,8 @@ void func_00369720(u8 *o, s32 i, s32 side, s32 delayed) {
 }
 
 /* +0x18 start: arg { side } (all 64, delayed in turn); none: off */
-void func_00369A60(u8 *o, u8 *arg) {
+/* 0x00369A60 */
+void SparkSpray_SetParams(u8 *o, u8 *arg) {
     s32 side, i;
 
     if (arg == NULL) {
@@ -7464,14 +7609,16 @@ void func_00369A60(u8 *o, u8 *arg) {
     AT(o, 0x20D0, u8) = 0;
 }
 
-void func_00369AE0(u8 *o) {
+/* 0x00369AE0 */
+void SparkSpray_Draw(u8 *o) {
     quad_step(o, 0x1810, 0x20D8, 0xC00);
 }
 
 /* +0x10 update (gone at once in a cutscene): flip the buffers; each spark carried over, a
  * held one counting down to its start, a shown one fading (restarted when out, while on),
  * growing by 0.5, turning 10 degrees, pulled and moved; 0 once off and all faded */
-s32 func_00369B10(u8 *o) {
+/* 0x00369B10 */
+s32 SparkSpray_Update(u8 *o) {
     u8 done = 1;
     s32 i, k;
 
@@ -7518,7 +7665,8 @@ s32 func_00369B10(u8 *o) {
 
 /* +0xC set up: the drawer's settings (64 quads of a 32 x 32 cell at (0, 64), blended 0x40,
  * the first palette, layer 0x19) */
-void func_00369D80(u8 *o) {
+/* 0x00369D80 */
+void SparkSpray_Start(u8 *o) {
     AT(o, 0x20D8, s32) = 0;
     AT(o, 0x1818, s64) = -1;
     AT(o, 0x1828, s32) = 0;
@@ -7538,8 +7686,9 @@ void func_00369D80(u8 *o) {
     AT(o, 0x1846, s8) = -1;
 }
 
-/* (as func_002D63F0)  +0x8 destructor (the quad drawer's inlined) */
-u8 *func_0034E0E0(u8 *o, s32 flags) {
+/* (as RisingSmoke_dtor)  +0x8 destructor (the quad drawer's inlined) */
+/* 0x0034E0E0 */
+u8 *Fire_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -7622,7 +7771,8 @@ void func_0034E170(u8 *o, s32 i, s32 hidden) {
 
 /* +0x18 start: arg { the spot (negative: put out), big }: every flame started, those past 16
  * (small) or 32 (big) hidden */
-void func_0034E500(u8 *o, s32 *arg) {
+/* 0x0034E500 */
+void Fire_SetParams(u8 *o, s32 *arg) {
     s32 i;
 
     if (arg == NULL) {
@@ -7646,7 +7796,8 @@ void func_0034E500(u8 *o, s32 *arg) {
 /* +0x10 update: flip the buffers; each flame showing carried over, growing 0.04, turning half
  * a degree, rising, fading in by up to 7 (to 0x60 small / 0x40 big, then marked) and out by up
  * to 7 (big: 3); unless put out, one hidden flame a frame restarted. 0 once none shows */
-s32 func_0034E620(u8 *o) {
+/* 0x0034E620 */
+s32 Fire_Update(u8 *o) {
     VObject *rnd = gRandom;
     u8 done = 1;
     s32 i, k;
@@ -7711,7 +7862,8 @@ s32 func_0034E620(u8 *o) {
     return done != 1;
 }
 
-void func_0034E960(u8 *p) {
+/* 0x0034E960 */
+void Fire_Start(u8 *p) {
     *(s32 *)(p + 0x1C50) = 0;
     p[0x1C5C] = 0;
     *(s64 *)(p + 0x1818) = -1;
@@ -7733,14 +7885,16 @@ void func_0034E960(u8 *p) {
     p[0x1846] = 0xFF;
 }
 
-/* (as func_002D6700)  +0x14 draw: the current buffer through the quad drawer */
-void func_0034E5F0(u8 *o) {
+/* (as RisingSmoke_Draw)  +0x14 draw: the current buffer through the quad drawer */
+/* 0x0034E5F0 */
+void Fire_Draw(u8 *o) {
     AT(o, 0x1820, u8 *) = o + AT(o, 0x1C50, s32) * 0xC00 + 0x10;
     func_002E56C0(o + 0x1810);
 }
 
-/* (as func_002FCDC0)  +0x8 destructor (the quad drawer's inlined) */
-u8 *func_0035FEA0(u8 *o, s32 flags) {
+/* (as SinkingSprite_dtor)  +0x8 destructor (the quad drawer's inlined) */
+/* 0x0035FEA0 */
+u8 *OneDrip_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }

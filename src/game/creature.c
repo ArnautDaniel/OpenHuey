@@ -44,20 +44,20 @@ void *func_002E2220(u8 *p);
 
 #define S64(p, off) (*(s64 *)((u8 *)(p) + (off)))
 
-void func_00314910(u8 *self);
+void StrandSplash_Start(u8 *self);
 
 #define U32(p, off) (*(u32 *)((u8 *)(p) + (off)))
 
 #define F32(p, off) (*(f32 *)((u8 *)(p) + (off)))
 
-void func_0031E920(u8 *self, u8 *src);
-void func_0031E9A0(u8 *self);
+void Effect737D0_SetParams(u8 *self, u8 *src);
+void Effect737D0_Start(u8 *self);
 
-void func_0031E980(u8 *o);
+void Effect737D0_Draw(u8 *o);
 void func_0032A890(Character *c);
 void func_0032C000(Character *c);
 
-s32 func_0031E990(void);
+s32 Effect737D0_Update(void);
 void func_00325D60(void);
 void func_0032A0D0(void);
 
@@ -80,7 +80,7 @@ extern const PTMF D_0042C720;
 
 #define B7_D(p, off)  (*(s64 *)((u8 *)(p) + (off)))
 
-void func_0035A170(u8 *p);
+void Cr19Bubbles_Start(u8 *p);
 
 /* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
  * slots 3..5 */
@@ -1761,7 +1761,8 @@ extern void *D_0046F580[];
 #define VANISH_SPARK(o, i) ((o) + AT(o, 0x3A8, s32) * 0x180 + (i) * 0x30 + 0x70)
 
 /* +0x8 destructor (the quad drawer at +0x370 inlined) */
-u8 *func_00312040(u8 *o, s32 flags) {
+/* 0x00312040 */
+u8 *CreatureVanish_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -1777,7 +1778,8 @@ u8 *func_00312040(u8 *o, s32 flags) {
 
 /* +0xC set up: the drawer (texture group 0x10, additive), the glow 5 across, the sparks 4
  * across with their drag ((0.005 + 0.025 x random) / 2, in doubles), shrink and fade */
-void func_003128E0(u8 *o) {
+/* 0x003128E0 */
+void CreatureVanish_Start(u8 *o) {
     static const union { u32 u; f32 f; } k0005 = {0x3BA3D70A}, k002 = {0x3CA3D70A};
     VObject *rng;
     s32 i;
@@ -1830,7 +1832,8 @@ static inline __attribute__((always_inline)) s8 vanish_sign(VObject *rng) {
 
 /* +0x18 start: at params' position (+0x0) in its colour (+0x10); each spark a little darker,
  * flung out at random (up to 0.5 a frame each way, upward only), its zig-zag 0.0125..0.05 */
-void func_003120D0(u8 *o, const u8 *params) {
+/* 0x003120D0 */
+void CreatureVanish_SetParams(u8 *o, const u8 *params) {
     VObject *rng;
     u8 *g = VANISH_GLOW(o);
     s32 i;
@@ -1867,7 +1870,8 @@ void func_003120D0(u8 *o, const u8 *params) {
 
 /* +0x14 draw (unless the effects are paused): the glow (cell (0, 0x60), 15 frames), then the
  * sparks (cell (0x60, 0x40)) */
-void func_00312450(u8 *o) {
+/* 0x00312450 */
+void CreatureVanish_Draw(u8 *o) {
     if (func_002D6010(gEffects) != 0) {
         return;
     }
@@ -1886,7 +1890,8 @@ void func_00312450(u8 *o) {
 }
 
 /* +0x10 update (0 once all of it is done) */
-s32 func_00312510(u8 *o) {
+/* 0x00312510 */
+s32 CreatureVanish_Update(u8 *o) {
     VObject *rng;
     u8 *g;
     s32 i, k;
@@ -2031,7 +2036,8 @@ extern void *D_00472390[];
 #define LOOP_REC(o) ((o) + AT(o, 0xA8, s32) * 0x30 + 0x10)
 
 /* +0x8 destructor (the quad drawer's inlined) */
-u8 *func_00312B50(u8 *o, s32 flags) {
+/* 0x00312B50 */
+u8 *LoopingSprite_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -2046,7 +2052,8 @@ u8 *func_00312B50(u8 *o, s32 flags) {
 }
 
 /* +0x18 start: at the position given; NULL stops it */
-void func_00312BE0(u8 *o, f32 *at) {
+/* 0x00312BE0 */
+void LoopingSprite_SetParams(u8 *o, f32 *at) {
     if (at == NULL) {
         AT(o, 0xB0, u8) = 1;
         return;
@@ -2055,14 +2062,16 @@ void func_00312BE0(u8 *o, f32 *at) {
 }
 
 /* +0x14 draw */
-void func_00312C30(u8 *o) {
+/* 0x00312C30 */
+void LoopingSprite_Draw(u8 *o) {
     AT(o, 0x80, u8 *) = LOOP_REC(o);
     func_002E56C0(o + 0x70);
 }
 
 /* +0x10 update: the buffers swapped (the record copied over); every +0xAC frames the next
  * frame, after the last (+0xA3) the first again at a new turn. 0 once stopped */
-s32 func_00312C60(u8 *o) {
+/* 0x00312C60 */
+s32 LoopingSprite_Update(u8 *o) {
     static const union { u32 u; f32 f; } k2Pi = {0x40C90FDB};
     u32 *dst, *src;
     u32 i;
@@ -2092,7 +2101,8 @@ s32 func_00312C60(u8 *o) {
 }
 
 /* +0xC set up: grey, half-transparent, 1.6 across, a random turn; the drawer's settings */
-void func_00312D90(u8 *o) {
+/* 0x00312D90 */
+void LoopingSprite_Start(u8 *o) {
     static const union { u32 u; f32 f; } k2Pi = {0x40C90FDB}, kSize = {0x3FCCCCCD};
     u8 *r;
 
@@ -2140,7 +2150,8 @@ extern u32 D_00429850[], D_004298F0[], D_00429990[], D_00429A30[], D_00429AD0[],
 #define STRAND_BONE(o, i) (Skel_Bone(AT(AT(gCharSlot2, 0xF0, u8 *), 0x810, void *), (i)) + 12)
 
 /* +0x8 destructor (the quad drawer's inlined) */
-u8 *func_00313030(u8 *o, s32 flags) {
+/* 0x00313030 */
+u8 *Effect726E0_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -2155,7 +2166,8 @@ u8 *func_00313030(u8 *o, s32 flags) {
 }
 
 /* +0xC set up */
-void func_00313FC0(u8 *o) {
+/* 0x00313FC0 */
+void Effect726E0_Start(u8 *o) {
     AT(o, 0x21C, u8) = 0;
 }
 
@@ -2169,7 +2181,8 @@ static inline __attribute__((always_inline)) void strand_cells(u8 *s, VObject *r
 /* +0x18 start: arg { the stalker's kind, the strand's kind (1 orange, 2 white, else purple) };
  * the bone chain by kind (none: stopped), a random length and first pair, the first segment
  * from that bone a little off at random, turned 45 degrees (give or take 5) each segment */
-void func_003130C0(u8 *o, s32 *arg) {
+/* 0x003130C0 */
+void Effect726E0_SetParams(u8 *o, s32 *arg) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
     f32 d[4] __attribute__((aligned(16)));
     f32 a[4] __attribute__((aligned(16)));
@@ -2288,7 +2301,8 @@ void func_003130C0(u8 *o, s32 *arg) {
 
 /* +0x14 draw (unless the effects are paused or it stopped): each live segment as two crossed
  * quads in its frame (x along, the second turned a quarter) */
-void func_003136C0(u8 *o) {
+/* 0x003136C0 */
+void Effect726E0_Draw(u8 *o) {
     f32 c[4][4] __attribute__((aligned(16)));
     f32 h, len;
     s32 k;
@@ -2361,7 +2375,8 @@ void func_003136C0(u8 *o) {
  * chain: no new segment; else the segment aimed down the bones); every live segment fades by
  * 8..15 (gone under 17) with new cells; for a kind of strand, after +0x208 frames a drop
  * (D_004727C0) from the newest segment, in its colour by the fade. 0 once it stopped */
-s32 func_00313980(u8 *o) {
+/* 0x00313980 */
+s32 Effect726E0_Update(u8 *o) {
     VObject *rnd;
     u8 *s;
     s32 cur, k;
@@ -2475,7 +2490,8 @@ s32 func_00313980(u8 *o) {
 #define DROP_PULL(o, i) ((f32 *)((o) + 0xDE0 + (i) * 0xC))
 
 /* +0x8 destructor (the quad drawer's inlined) */
-u8 *func_00314260(u8 *o, s32 flags) {
+/* 0x00314260 */
+u8 *StrandSplash_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -2500,7 +2516,8 @@ static s32 clamp_colour(s32 c) {
 /* +0x18 start (arg: colour 0..127 x3, position, size): every droplet at the point in the
  * colour, a random alpha and size, flung out at random (slower the bigger) and pulled back by
  * 10..30% of its speed */
-void func_003142F0(u8 *o, s32 *arg) {
+/* 0x003142F0 */
+void StrandSplash_SetParams(u8 *o, s32 *arg) {
     static const union { u32 u; f32 f; } kTenth = {0x3DCCCCCD}, kFifth = {0x3E4CCCCD},
                                          kThreeTenths = {0x3E99999A};
     VObject *rnd;
@@ -2594,14 +2611,16 @@ static inline void drops_draw(u8 *o, s32 cr, s32 cg, s32 cb) {
 }
 
 /* +0x14 draw: the droplets, a white flash on the first frame */
-void func_003145A0(u8 *o) {
+/* 0x003145A0 */
+void StrandSplash_Draw(u8 *o) {
     drops_draw(o, 0xC0, 0xC0, 0xC0);
 }
 
 /* +0x10 update: flip the buffers (the new one copied from the old); every droplet still seen
  * flickers, slows by its pull and moves on; it goes out once it has (nearly) stopped rising or
  * falling. 0 once none was left last time */
-s32 func_00314700(u8 *o) {
+/* 0x00314700 */
+s32 StrandSplash_Update(u8 *o) {
     static const union { u32 u; f32 f; } kHundredth = {0x3C23D70A}, kMinusHundredth = {0xBC23D70A};
     VObject *rnd;
     s32 i;
@@ -2641,7 +2660,8 @@ s32 func_00314700(u8 *o) {
     return 1;
 }
 
-void func_00314910(u8 *self) {
+/* 0x00314910 */
+void StrandSplash_Start(u8 *self) {
     S32(self, 0xF60) = 0;
     self[0xF64] = 0;
     S64(self, 0xC18) = -1;
@@ -2667,8 +2687,9 @@ void func_00314910(u8 *self) {
 extern void *D_004737D0[];
 extern void *D_00474080[];
 
-/* (as func_00313030)  +0x8 destructor (the quad drawer's inlined) */
-u8 *func_0031E890(u8 *o, s32 flags) {
+/* (as Effect726E0_dtor)  +0x8 destructor (the quad drawer's inlined) */
+/* 0x0031E890 */
+u8 *Effect737D0_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -2682,7 +2703,8 @@ u8 *func_0031E890(u8 *o, s32 flags) {
     return o;
 }
 
-void func_0031E920(u8 *self, u8 *src) {
+/* 0x0031E920 */
+void Effect737D0_SetParams(u8 *self, u8 *src) {
     U32(self, 0x10) = U32(src, 0x0);
     U32(self, 0x14) = U32(src, 0x4);
     U32(self, 0x18) = U32(src, 0x8);
@@ -2698,16 +2720,19 @@ void func_0031E920(u8 *self, u8 *src) {
 }
 
 /* its quad drawer (+0x40) on its one record (+0x10), drawn */
-void func_0031E980(u8 *o) {
+/* 0x0031E980 */
+void Effect737D0_Draw(u8 *o) {
     AT(o, 0x50, u8 *) = o + 0x10;
     func_002E56C0(o + 0x40);
 }
 
-s32 func_0031E990(void) {
+/* 0x0031E990 */
+s32 Effect737D0_Update(void) {
     return 0x1;
 }
 
-void func_0031E9A0(u8 *self) {
+/* 0x0031E9A0 */
+void Effect737D0_Start(u8 *self) {
     S64(self, 0x48) = -1;
     S32(self, 0x58) = 0;
     S32(self, 0x5C) = 0;
@@ -2726,10 +2751,11 @@ void func_0031E9A0(u8 *self) {
     self[0x76] = 0xFF;
 }
 
-/* (class D_0047A710, as func_003142F0)  +0x18 start (arg: colour 0..127 x3, position): every
+/* (class D_0047A710, as StrandSplash_SetParams)  +0x18 start (arg: colour 0..127 x3, position): every
  * droplet at the point in the colour, a random alpha and size (0.2..0.6), flung out at random
  * (slower the bigger, three times as fast upwards) and pulled back by 20..50% of its speed */
-void func_0037BF10(u8 *o, s32 *arg) {
+/* 0x0037BF10 */
+void DropletFlash_SetParams(u8 *o, s32 *arg) {
     static const union { u32 u; f32 f; } kFifth = {0x3E4CCCCD}, kTwoFifths = {0x3ECCCCCD},
                                          kThreeTenths = {0x3E99999A};
     VObject *rnd;
@@ -2774,14 +2800,16 @@ void func_0037BF10(u8 *o, s32 *arg) {
 
 /* (class D_0047A710)  +0x14 draw: the droplets, a reddish flash (0x80, 0x50, 0x40) on the first
  * frame */
-void func_0037C1B0(u8 *o) {
+/* 0x0037C1B0 */
+void DropletFlash_Draw(u8 *o) {
     drops_draw(o, 0x80, 0x50, 0x40);
 }
 
-/* (as func_00314700)  +0x10 update: flip the buffers (the new one copied from the old); every droplet still seen
+/* (as StrandSplash_Update)  +0x10 update: flip the buffers (the new one copied from the old); every droplet still seen
  * flickers, slows by its pull and moves on; it goes out once it has (nearly) stopped rising or
  * falling. 0 once none was left last time */
-s32 func_0037C310(u8 *o) {
+/* 0x0037C310 */
+s32 DropletFlash_Update(u8 *o) {
     static const union { u32 u; f32 f; } kHundredth = {0x3C23D70A}, kMinusHundredth = {0xBC23D70A};
     VObject *rnd;
     s32 i;
@@ -4977,7 +5005,8 @@ void func_00359570(u8 *o, s32 i) {
 
 /* +0x18 start: arg { the spot, +0x10 its triangle (-1: nothing) }; every bubble hidden, 0.1 ..
  * 0.4 big, every drop hidden at 0.5 */
-void func_003597B0(u8 *o, u8 *arg) {
+/* 0x003597B0 */
+void Cr19Bubbles_SetParams(u8 *o, u8 *arg) {
     static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD};   /* multiplied first */
     VObject *rnd;
     s32 i;
@@ -5034,7 +5063,8 @@ void func_003597B0(u8 *o, u8 *arg) {
 }
 
 /* +0x14 draw (not while the effects are paused): the bubbles, then the drops */
-void func_00359980(u8 *o) {
+/* 0x00359980 */
+void Cr19Bubbles_Draw(u8 *o) {
     if (func_002D6010(gEffects) == 0) {
         AT(o, 0x2420, QuadRec *) = GONE_BUBBLE(o, AT(o, 0x2910, s32), 0);
         func_002E56C0(o + 0x2410);
@@ -5056,7 +5086,8 @@ static void gone_splat_init(void **obj) {
  * by 0.05..0.1 (to 0.7) for 90 frames, then shrinking (out under 0.3); each drop showing fading
  * in / out by 1..2, shrinking (out at 0), turning and flying; until frame 150 one hidden drop a
  * frame thrown. 0 once nothing shows */
-s32 func_00359A00(u8 *o) {
+/* 0x00359A00 */
+s32 Cr19Bubbles_Update(u8 *o) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};   /* multiplied first */
     VObject *rnd;
     u8 done = 1;
@@ -5200,7 +5231,8 @@ s32 func_00359A00(u8 *o) {
 }
 
 /* Initialises two render setting blocks at +0x2418 and +0x2450. */
-void func_0035A170(u8 *p) {
+/* 0x0035A170 */
+void Cr19Bubbles_Start(u8 *p) {
     B7_W(p, 0x2910) = 0;
     B7_W(p, 0x2914) = 0;
     B7_D(p, 0x2418) = -1;

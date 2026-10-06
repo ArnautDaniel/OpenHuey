@@ -343,7 +343,7 @@ void glr_vignette(int strength, int offset) {
     put_post(POST_VIGNETTE, 0x2A, (uint32_t)strength, (uint32_t)offset);   /* its packet's layer */
 }
 
-/* room 0x61's haze (func_00374E50, its packet's layer 0x2A): phase of the columns' waves, and
+/* room 0x61's haze (LightShaft_Draw, its packet's layer 0x2A): phase of the columns' waves, and
  * how far right all of it is moved */
 void glr_haze(float phase, float sway) {
     GlrDraw *d = put_post(POST_HAZE, 0x2A, 0, 0);
@@ -354,7 +354,7 @@ void glr_haze(float phase, float sway) {
     d->mvp[3] = 0.0f;   /* over the screen at 0x48 */
 }
 
-/* as glr_haze, over the screen at `fix` / 128 (D_0047A390's, func_00376990: 0x60) */
+/* as glr_haze, over the screen at `fix` / 128 (D_0047A390's, Room49Effect_Draw: 0x60) */
 void glr_haze_fix(float phase, float sway, int fix) {
     GlrDraw *d = put_post(POST_HAZE, 0x2A, (uint32_t)fix, 0);
 
@@ -364,7 +364,7 @@ void glr_haze_fix(float phase, float sway, int fix) {
     d->mvp[3] = 0.0f;
 }
 
-/* the heat haze effect D_0047A2F0 (func_00370100, layer 0x2A): as room 0x61's with the waves'
+/* the heat haze effect D_0047A2F0 (Room92Effect_Draw, layer 0x2A): as room 0x61's with the waves'
  * base strength `size` and no sway, over the screen by a horizontal alpha ramp (0x20 at the
  * edges, 0x60 in the middle, halved) */
 void glr_haze2(float phase, float size) {
@@ -1847,7 +1847,7 @@ static void run_post(const GlrDraw *d) {
         post(21, sFbo, GLR_WIDTH, GLR_HEIGHT, sReflPrep, sMask);
         break;
     }
-    case POST_HAZE:   /* func_00374E50: the screen halved, blended half with itself in 33 wavering
+    case POST_HAZE:   /* LightShaft_Draw: the screen halved, blended half with itself in 33 wavering
                        * columns, then that over the screen at 0x48 / 128 (or the draw's own) */
         p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,
                                  GL_COLOR_BUFFER_BIT, GL_NEAREST);

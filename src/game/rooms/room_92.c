@@ -550,7 +550,8 @@ s32 func_003434A0(void *self, void *a1, u8 *cmd) {
 }
 
 /* destructor (vtable D_0047A2F0) */
-void *func_00370030(u8 *o, s32 flags) {
+/* 0x00370030 */
+void *Room92Effect_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0047A2F0;
         AT(o, 0x0, void **) = D_0046F580;
@@ -562,7 +563,8 @@ void *func_00370030(u8 *o, s32 flags) {
 }
 
 /* an effect message: +0xC its word 0 (word 1 set: +0x8 too); a 0 there becomes 3 / 3 and +0x10 */
-void func_00370090(u8 *o, s32 *m) {
+/* 0x00370090 */
+void Room92Effect_SetParams(u8 *o, s32 *m) {
     if (m == NULL) {
         return;
     }
@@ -584,7 +586,8 @@ void func_00370090(u8 *o, s32 *m) {
  * with itself in 32 wavering columns (column k moved down 16 sin(a) (+0x8 + (1 + cos a) / 2)
  * / 16, a = +0x4 + 90 degrees a column), over the screen by an alpha ramp (0x20 at the edges,
  * 0x60 in the middle) at half, in layer 0x2A */
-void func_00370100(u8 *o) {
+/* 0x00370100 */
+void Room92Effect_Draw(u8 *o) {
     VObject *cam = gCamera;
 
     if (AT(o, 0x11, u8) == 1) {
@@ -612,9 +615,10 @@ void func_00370100(u8 *o) {
 
 #endif
 
-/* its update (func_00371030's): done (+0x11) stops it (0); else the angle (+0x4) turns on by
+/* its update (Room92Effect_Start's): done (+0x11) stops it (0); else the angle (+0x4) turns on by
  * 50..70 degrees, and +0x8 eases toward +0xC by 0.1 */
-s32 func_00370F00(u8 *o) {
+/* 0x00370F00 */
+s32 Room92Effect_Update(u8 *o) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTenth = {0x3DCCCCCD};
     f32 r;
 
@@ -641,7 +645,8 @@ s32 func_00370F00(u8 *o) {
 }
 
 /* an effect set up: +0x4 a random angle (-pi..pi), +0x8 / +0xC 2, +0x10 on, +0x11 off */
-void func_00371030(u8 *o) {
+/* 0x00371030 */
+void Room92Effect_Start(u8 *o) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
     f32 r;
 
