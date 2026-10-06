@@ -2684,12 +2684,9 @@ static inline f32 cr19_stride(Character *c) {
 
 /* reset: stopped (its path dropped), speed 0.7, a wait of 150 / 300 / 450 (+0x42), no target;
    its flags +0x6B kept only with bit 0x80 */
-static inline void cr19_reset(Character *c) {
+static inline void cr19_settle(Character *c) {
     u8 *k = CR(c);
 
-    AT(k, 0x69, u8) = 0;
-    AT(c, 0xF8, s32) = 0;
-    func_00127060(c);
     AT(k, 0x64, u8) = 0;
     AT(k, 0x60, u8) = 0;
     AT(k, 0x40, s16) = 0;
@@ -2704,6 +2701,13 @@ static inline void cr19_reset(Character *c) {
     AT(k, 0x38, s32) = 0;
     AT(k, 0x34, s32) = 0;
     AT(k, 0x30, s32) = 0;
+}
+
+static inline void cr19_reset(Character *c) {
+    AT(CR(c), 0x69, u8) = 0;
+    AT(c, 0xF8, s32) = 0;
+    func_00127060(c);
+    cr19_settle(c);
 }
 
 /* (as func_002DF470) on the way to `tri`: while not there the path ahead is looked at (one
@@ -3002,4 +3006,153 @@ void func_00324CD0(Character *c, s32 a1, s32 a2, s32 mode, u8 kind, s32 str, s32
         }
     }
     VCALL(c, 0x64, void (*)(Character *, s32, s32, s32))(c, a1, a2, mode);
+}
+
+extern s32 func_00178300(Progress *p, s32 room, u32 exit, s32 slot);
+
+/* (as func_002DFA50) travelling (unless in an event, flag 0x18): off screen the distance to
+   the next door (+0x14C4) runs down by 0.35; at a door (+0x61) it walks the path at 0.35. On
+   arriving at the door (+0x14C0): if the way is open (func_00178980, func_00178300 kind 2)
+   and the door isn't shut, through it - into the room being played at the exit's spot facing
+   in, its doors noted (+0x50) - else the next leg's distance; a closed way is marked (+0x148C
+   bit), the trip ends (+0x68), and without the kind-2 way its state +0x8 is 2 */
+void func_003257B0(Character *c) {
+    u8 *k = CR(c);
+    Progress *p = gProgress;
+    VObject *rooms;
+    u8 arrived = 0;
+    u32 exit;
+
+    if (Progress_TestFlag(p, 0x18) == 0) {
+        if (AT(k, 0x61, u8) != 1) {
+            f32 *left = &AT(&c->unk14C4, 0, f32);
+
+            *left = *left - 0x1.666666p-2f;   /* 0.35 */
+            if (*left < 0.0f) {
+                *left = 0.0f;
+                arrived = 1;
+            }
+        } else {
+            func_001272B0(c, 0x1.666666p-2f);
+            if (!(c->unk128 < c->unk124)) {
+                arrived = 1;
+            }
+        }
+    }
+    if (arrived != 1) {
+        return;
+    }
+    rooms = D_0044E568;
+    exit = VCALL(rooms, 0x3C, u32 (*)(VObject *, u32, s32))(rooms, c->unk14C0, c->a.room) & 0xFF;
+    AT(k, 0x63, u8) = exit;
+    if (exit == 0xFF) {
+        AT(k, 0x61, u8) = 0;
+        c->a.navTri = NAV_NONE;
+        return;
+    }
+    if ((Progress_CurRoomFlag(p, c->a.room, exit) & 0xFF) == 1) {
+        return;
+    }
+    if (!(func_00178980(p, c->a.room, exit) & 0xFF) || !(func_00178300(p, c->a.room, exit, 2) & 0xFF)) {
+        c->unk148C[c->unk14C0 >> 5] |= 1 << (c->unk14C0 & 0x1F);
+        AT(k, 0x61, u8) = 0;
+        c->a.navTri = NAV_NONE;
+        c->unk1388 = c->unk1384;
+        AT(k, 0x68, u8) = 1;
+        if (!(func_00178300(p, c->a.room, exit, 2) & 0xFF)) {
+            AT(k, 0x8, s32) = 2;
+        }
+        return;
+    }
+    AT(k, 0x61, u8) = 0;
+    func_00325410(c, exit);
+    if (c->a.room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        f32 at[4] __attribute__((aligned(16)));
+        f32 in[4] __attribute__((aligned(16)));
+        f32 d[4] __attribute__((aligned(16)));
+        f32 yaw;
+        u32 tri;
+
+        tri = VCALL(D_0044E568, 0x30, u32 (*)(VObject *, u32, f32 *))(D_0044E568, AT(k, 0x63, u8), at);
+        VCALL(D_0044E568, 0x34, u32 (*)(VObject *, u32, f32 *))(D_0044E568, AT(k, 0x63, u8), in);
+        sceVu0SubVector(d, in, at);
+        yaw = func_0031C5C0(d[0], d[2]);
+        VCALL(c, 0x28, void (*)(Character *, u32, f32 *, f32 *))(c, tri, &yaw, at);
+        creature_at_doors(c, 0x50);
+    } else {
+        c->a.navTri = NAV_NONE;
+        AT(&c->unk14C4, 0, f32) = (f32)VCALL(rooms, 0x38, s32 (*)(VObject *, u32, s32))(rooms, c->unk14C0, c->a.room);
+        c->unk1388 = c->unk1384;
+    }
+}
+
+/* +0x84 its action (+0x14E8): action 4 with sub 4 / 2 / 1 (unless already in move 4) settles it
+   in state 2 (+0x69 / +0x62), move 4; the action is then cleared */
+void func_00325D70(Character *c) {
+    u8 *k = CR(c);
+
+    if (AT(c, 0xF8, s32) != 4 && AT(c, 0x14E8, s32) == 4) {
+        s32 a = AT(c, 0x14EC, s32);
+
+        if (a == 4 || a == 2 || a == 1) {
+            c->unk124 = c->unk128;
+            func_00127060(c);
+            AT(k, 0x69, u8) = 2;
+            AT(k, 0x62, u8) = 2;
+            AT(c, 0xF8, s32) = 4;
+            func_00127060(c);
+            cr19_settle(c);
+        }
+    }
+    if (AT(c, 0x14E8, s32) != 0) {
+        AT(c, 0x14E8, s32) = 0;
+    }
+}
+
+extern const f32 D_0042C650[17];   /* turns */
+void func_0032B080(Character *c, f32 *pos);
+
+/* a target (+0x30) near Fiona: out to her side (alternately right / left, `dist` + 0..15 away,
+   turned by a random table turn after the first), until one is on the mesh off its own
+   triangle (17 tries); its triangle (+0x20) */
+u32 func_00325EC0(Character *c, f32 dist) {
+    u8 *k = CR(c);
+    VObject *rnd = D_0044E550;
+    f32 tbl[17];
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    f32 off[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 yaw = 0.0f;
+    s32 i, s;
+
+    for (i = 0; i < 17; i++) {
+        tbl[i] = D_0042C650[i];
+    }
+    for (i = 0; i < 17; i++) {
+        off[3] = 0.0f;
+        off[2] = 0.0f;
+        off[1] = 0.0f;
+        off[0] = 0.0f;
+        sceVu0CopyVector(d, off);
+        sceVu0CopyVector((f32 *)(k + 0x30), off);
+        s = i % 2 == 0 ? 1 : -1;
+        sceVu0UnitMatrix(m);
+        v[3] = 0.0f;
+        v[1] = 0.0f;
+        v[0] = 0.0f;
+        v[2] = (f32)s * (dist + (f32)(VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0xF));
+        sceVu0ApplyMatrix(off, m, v);
+        sceVu0AddVector(off, gCharPlayer->a.pos, off);
+        sceVu0RotMatrixY(m, m, yaw);
+        sceVu0ApplyMatrix(d, m, v);
+        sceVu0AddVector((f32 *)(k + 0x30), gCharPlayer->a.pos, d);
+        func_0032B080(c, (f32 *)(k + 0x30));
+        yaw = tbl[VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0xF];
+        AT(k, 0x20, u32) = func_00123D20(&gCharPlayer->a, (f32 *)(k + 0x30));
+        if (func_00124480(&c->a, (f32 *)(k + 0x30), c->pathReq->mask) != NAV_NONE && c->a.navTri != AT(k, 0x20, u32)) {
+            break;
+        }
+    }
+    return AT(k, 0x20, u32);
 }
