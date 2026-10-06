@@ -6050,3 +6050,114 @@ s32 func_003102E0(void *self, void *a1, u8 *cmd) {
     VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 6, v + 1);
     return v + 1 < 61 ? 2 : 1;
 }
+
+extern const char *D_00435978;
+
+/* the room object named D_00435978 falling over: byte 3 0 starts it (angle +0x30, speed +0x34
+ * and acceleration +0x38 0, jerk +0x3C 0.005); 1 steps them, its tilt +0x10 = (1 - sin(90 -
+ * angle)) * pi/2, waiting (2) until the angle reaches 90; 2 puts it down (sin(pi/2)) */
+s32 func_00340AD0(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB};
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_00435978);
+    f32 a;
+
+    switch (cmd[3]) {
+    case 0:
+        AT(o, 0x30, s32) = 0;
+        AT(o, 0x34, s32) = 0;
+        AT(o, 0x38, s32) = 0;
+        AT(o, 0x3C, u32) = 0x3BA3D70A;   /* 0.005 */
+        return 1;
+    case 1:
+        AT(o, 0x38, f32) = AT(o, 0x38, f32) + AT(o, 0x3C, f32);
+        AT(o, 0x34, f32) = AT(o, 0x34, f32) + AT(o, 0x38, f32);
+        AT(o, 0x30, f32) = AT(o, 0x30, f32) + AT(o, 0x34, f32);
+        a = AT(o, 0x30, f32) < 90.0f ? AT(o, 0x30, f32) : 90.0f;
+        AT(o, 0x10, f32) = (1.0f - func_0031C248(kPi.f * (90.0f - a) / 180.0f)) * kHalfPi.f;
+        return AT(o, 0x30, f32) < 90.0f ? 2 : 1;
+    case 2:
+        AT(o, 0x10, f32) = func_0031C248(kHalfPi.f);
+        return 1;
+    }
+    return 1;
+}
+
+extern const char *D_0042E408;
+
+/* the room object named D_0042E408 swung about its rest (+0x30 from +0x20): byte 3 0 starts it
+ * (phase +0x34 0, amplitude +0x3C 0.25); 1 steps the phase on 60 degrees and the amplitude down
+ * 0.05, x +0x20 / z +0x28 = rest + amplitude * sin, waiting (2) until it has died out; 2 puts it
+ * at (-16.5, -5.6) */
+s32 func_0032E2A0(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kStep = {0x3F860A92}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB},
+                                          kDecay = {0x3D4CCCCD};
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_0042E408);
+    f32 a;
+
+    switch (cmd[3]) {
+    case 0:
+        sceVu0CopyVector((f32 *)(o + 0x30), (f32 *)(o + 0x20));
+        AT(o, 0x34, s32) = 0;
+        AT(o, 0x3C, u32) = 0x3E800000;   /* 0.25 */
+        return 1;
+    case 1:
+        a = AT(o, 0x34, f32) + kStep.f;
+        AT(o, 0x34, f32) = a;
+        if (!(a <= kPi.f)) {
+            AT(o, 0x34, f32) = a - k2Pi.f;
+        }
+        AT(o, 0x3C, f32) = AT(o, 0x3C, f32) - kDecay.f;
+        AT(o, 0x20, f32) = AT(o, 0x30, f32) + AT(o, 0x3C, f32) * func_0031C248(AT(o, 0x34, f32));
+        AT(o, 0x28, f32) = AT(o, 0x38, f32) + AT(o, 0x3C, f32) * func_0031C248(AT(o, 0x34, f32));
+        return AT(o, 0x3C, f32) <= 0.0f ? 1 : 2;
+    case 2:
+        AT(o, 0x20, u32) = 0xC1840000;   /* -16.5 */
+        AT(o, 0x28, u32) = 0xC0B340E1;   /* -5.6017 */
+        return 1;
+    }
+    return 1;
+}
+
+extern const char *D_00437D40[];   /* room objects 8, 9 */
+
+/* room objects 8 / 9 raised (+0x24 down 0.2 a call to 0) while the event manager's +0x58 test 4 /
+ * 5 holds, else lowered back (up 0.4 a call to 0.7) */
+s32 func_00342370(void) {
+    static const union { u32 u; f32 f; } kDown = {0x3E4CCCCD}, kTop = {0x3F333333}, kUp = {0x3ECCCCCD};
+    VObject *objs = D_00456DF8, *ev = D_0044E4D0;
+    s32 k;
+
+    for (k = 8; k < 10; k++) {
+        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00437D40[k - 8]);
+        u8 on = 0;
+        f32 y;
+
+        if (k == 8) {
+            if ((u8)VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, 4) == 1) {
+                on = 1;
+            }
+        } else if ((u8)VCALL(ev, 0x58, s32 (*)(VObject *, s32))(ev, 5) == 1) {
+            on = 1;
+        }
+        if (o == NULL) {
+            continue;
+        }
+        y = AT(o, 0x24, f32);
+        if (on == 1) {
+            if (!(y <= 0.0f)) {
+                y -= kDown.f;
+                AT(o, 0x24, f32) = y;
+                if (y < 0.0f) {
+                    AT(o, 0x24, f32) = 0.0f;
+                }
+            }
+        } else if (y < kTop.f) {
+            y += kUp.f;
+            AT(o, 0x24, f32) = y;
+            if (!(y <= kTop.f)) {
+                AT(o, 0x24, f32) = kTop.f;
+            }
+        }
+    }
+    return 1;
+}
