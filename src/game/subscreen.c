@@ -3117,3 +3117,159 @@ u8 *func_0038C160(SubScreen *s, u8 k) {
     }
     return m;
 }
+
+/* ---- the word plate's letters ---- */
+
+typedef struct WordKey {
+    u16 ch;     /* the letter; '@' done */
+    u16 x, y;   /* its place on the screen */
+} WordKey;
+
+extern WordKey D_0044B640[3][10];
+extern s32 func_00260540(u8 *items);              /* the word plates held */
+extern void func_00261040(u8 *items, u8 *word);   /* a word plate added */
+extern const char D_00464210[];                    /* the plates left */
+
+#define SUB_WORD_CURSOR(s) ((s)->unkA8C57)          /* row << 4 | column */
+#define SUB_WORD(s) ((s)->unkA8C58)                 /* the word, 8 letters */
+#define SUB_WORD_LEN(s) ((s)->unkA8C60)
+#define WORD_KEY(c) (D_0044B640[(c) >> 4][(c) & 0xF])
+
+/* the key on from `c` along its row (right, else left; round), past the key's other cells */
+static u8 word_step(u8 c, s32 right) {
+    WordKey *row = D_0044B640[c >> 4];
+    s32 col = c & 0xF, next;
+
+    for (;;) {
+        next = right ? (col + 1) % 10 : col != 0 ? col - 1 : 9;
+        if (row[col].ch != row[next].ch) {
+            break;
+        }
+        col = next;
+    }
+    return (c & 0xF0) + next;
+}
+
+/* the cursor on the first key showing letter `ch` */
+static void word_find(SubScreen *s, u16 ch) {
+    s32 r, c;
+
+    for (r = 0; r < 3; r++) {
+        for (c = 0; c < 10; c++) {
+            if (ch == D_0044B640[r][c].ch) {
+                SUB_WORD_CURSOR(s) = r << 4 | c;
+                return;
+            }
+        }
+    }
+}
+
+/* in the golem rooms (0x23 / 0x49 / 0x66) */
+static inline s32 word_golem_room(Progress *p) {
+    return VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x23 || VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x49 ||
+           VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x66;
+}
+
+/* state: making a word plate - confirm types the key's letter (8 at most, then the cursor on
+ * "done") or, on done, makes the plate (fewer than 10, a word typed: the word plate added, the
+ * word in parameter 3, flag 4, progress +0x20 bit 0; in the golem rooms quietly, sound 2);
+ * cancel takes a letter back (none: closes); start goes to done; up / down by rows, left /
+ * right by keys, next / previous to the letter after / before. Then the word, its cursor, the
+ * key's light and the plates left */
+void func_003908B0(SubScreen *s) {
+    s32 i;
+    u8 ch[2];
+
+    if (!s->fading) {
+        if (D_0047E36C & MENU_CONFIRM) {
+            u16 c = WORD_KEY(SUB_WORD_CURSOR(s)).ch;
+
+            if (c == '@') {
+                if ((u32)func_00260540(s->pool) < 10) {
+                    if (SUB_WORD_LEN(s) != 0) {
+                        Progress *p;
+                        char word[9];
+
+                        func_00261040(s->pool, SUB_WORD(s));
+                        for (i = 0; i < 8; i++) {
+                            word[i] = SUB_WORD(s)[i];
+                        }
+                        word[8] = 0;
+                        Msg_PrintfParam(&s->text, 3, D_00464218, word);
+                        p = gProgress;
+                        Progress_SetFlag(p, 4);
+                        if (word_golem_room(p)) {
+                            Sound_Play(D_0044E560, 2, 6);
+                            s->quietClose = 1;
+                        }
+                        AT(p, 0x20, u32) |= 1;
+                    }
+                } else {
+                    Progress_SetFlag(gProgress, 4);
+                }
+            } else if (SUB_WORD_LEN(s) < 8) {
+                SUB_WORD(s)[SUB_WORD_LEN(s)] = c;
+                SUB_WORD_LEN(s)++;
+                if (SUB_WORD_LEN(s) == 8) {
+                    SUB_WORD_CURSOR(s) = 0x27;
+                }
+                if (word_golem_room(gProgress)) {
+                    Sound_Play(D_0044E560, 0, 6);
+                } else {
+                    Sound_PlaySE(SE_DECIDE);
+                }
+            }
+        } else if (D_0047E36C & MENU_CANCEL) {
+            if (SUB_WORD_LEN(s) == 0) {
+                Progress_SetFlag(gProgress, 4);
+            } else {
+                SUB_WORD_LEN(s)--;
+                SUB_WORD(s)[SUB_WORD_LEN(s)] = 0;
+                Sound_PlaySE(SE_CANCEL);
+            }
+        } else {
+            u8 old = SUB_WORD_CURSOR(s);
+
+            if (D_0047E37C & PAD_START) {
+                SUB_WORD_CURSOR(s) = 0x27;
+            }
+            if (D_0047E36C & MENU_UP) {
+                SUB_WORD_CURSOR(s) += SUB_WORD_CURSOR(s) < 0x10 ? 0x20 : -0x10;
+            } else if (D_0047E36C & MENU_DOWN) {
+                SUB_WORD_CURSOR(s) += SUB_WORD_CURSOR(s) < 0x20 ? 0x10 : -0x20;
+            }
+            if (D_0047E36C & MENU_LEFT) {
+                SUB_WORD_CURSOR(s) = word_step(SUB_WORD_CURSOR(s), 0);
+            } else if (D_0047E36C & MENU_RIGHT) {
+                SUB_WORD_CURSOR(s) = word_step(SUB_WORD_CURSOR(s), 1);
+            }
+            if (D_0047E36C & MENU_NEXT) {
+                u16 c = WORD_KEY(SUB_WORD_CURSOR(s)).ch;
+
+                word_find(s, c == 'Z' ? '@' : c + 1);
+            } else if (D_0047E36C & MENU_PREV) {
+                u16 c = WORD_KEY(SUB_WORD_CURSOR(s)).ch;
+
+                word_find(s, c == '@' ? 'Z' : c - 1);
+            }
+            if (old != SUB_WORD_CURSOR(s)) {
+                Sound_PlaySE(SE_CURSOR);
+            }
+        }
+    }
+    s->kind = 0x84;
+    sub_panels(s);
+    ch[1] = 0;
+    for (i = 0; i < 8; i++) {
+        if (SUB_WORD(s)[i] != 0) {
+            ch[0] = SUB_WORD(s)[i];
+            Task_ShowText(&s->text, 0x68 + i * 0x28, 0x54, 0, ch, 0x80, 0x30, 0x20, 0x24);
+        }
+    }
+    if (SUB_WORD_LEN(s) < 8) {
+        SubScreen_DrawPart(s, (u16)(SUB_WORD_LEN(s) * 40 + 0x60), 0x50, 0xF, 0x80, 0);
+    }
+    SubScreen_DrawPart(s, WORD_KEY(SUB_WORD_CURSOR(s)).x, WORD_KEY(SUB_WORD_CURSOR(s)).y, 0xE, 0x40, 0);
+    SubScreen_DrawPart(s, 0x180, 0x140, 0xD, 0x80, 0);
+    Task_Printf(&s->text, 0x198, 0x148, 0, D_00464210, 10 - func_00260540(s->pool));
+}
