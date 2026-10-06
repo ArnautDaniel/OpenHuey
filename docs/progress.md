@@ -33,7 +33,7 @@ Screenshots: `docs/img/native_*.png`.
 - To check against the real game: the dark boxes behind the menu entries (they come from the
   entries' CLUT 1 background colour); the Dolby logo sits left of centre.
 - Untranscribed but known: the base-class destructor of the block pool (`D_004699E0` +8 points
-  at 0x00120EF0, inside `func_00120EC0`'s label: needs a symbol before it can be called natively);
+  at 0x00120EF0, inside `BlockPool_Init`'s label: needs a symbol before it can be called natively);
   the movie states `func_002B6710`, `func_002B68B0`, `func_002B69B0`.
 - New this round (all difftested): the message / dialog system (`task.c`), the boot memory card
   check (`bootcard.c`), the memory card manager (`memcard.c`), movies (`movie.c`), music
@@ -71,7 +71,7 @@ next session). Hewie is paused, not abandoned.
 - Next small ones: `func_00139460` (147), `func_0013F220` (147, path distance to a character,
   already called as `f32 func_0013F220(Hewie *, Character *)`), `func_0013A1C0`,
   `func_0013EFB0` (fills a target point, -1 none), `func_0013FDE0`, `func_0014C210`, ...
-- The big ones, last: `func_00130AF0` (5759 instructions: start action N, 129 callers; split by
+- The big ones, last: `Hewie_SetAction` (5759 instructions: start action N, 129 callers; split by
   action ranges to test), `func_00141C00` (1404, move kind N), `func_00140CD0` (969, target
   check), vtable `func_00167BC0` (+0x30 main update), `func_00166DF0` (+0x34 door),
   `func_001635B0` (+0x88), `func_00163DC0` (+0x84).

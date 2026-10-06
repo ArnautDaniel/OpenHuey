@@ -180,7 +180,7 @@ s32 func_002A9460(void) {
     f32 t = 80.0f - AT(p, 0x7BC, f32);
 
     if (!(t < 0.0f)) {
-        func_002EFB70(p + 0x7B8, t);
+        Panic_FrightRaw(p + 0x7B8, t);
     }
     return 1;
 }

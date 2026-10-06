@@ -324,7 +324,7 @@ void func_002CE6B0(Pursuer *p) {
 }
 
 /* a grab at Fiona: at the animation's hit key, once, if she's within reach (gProgress vtable
- * +0x2C), it lands (func_00178070 kind 1); over when the animation ends, she's out of sight, or
+ * +0x2C), it lands (Relation_Request kind 1); over when the animation ends, she's out of sight, or
  * 60 units away - as Debilitas's */
 static inline void Debilitas3_Grab(Pursuer *p) {
     func_00125A10(&p->c);
@@ -332,7 +332,7 @@ static inline void Debilitas3_Grab(Pursuer *p) {
         Progress *pr = gProgress;
 
         if (VCALL(pr, 0x2C, s32 (*)(Progress *, u32, s32, s32, f32))(pr, *(u8 *)&p->c.a.slot, 0x1E, 0, 5.0f) != 0) {
-            func_00178070(pr, *(u8 *)&p->c.a.slot, 1, 6, 0, 3, 10.0f);
+            Relation_Request(pr, *(u8 *)&p->c.a.slot, 1, 6, 0, 3, 10.0f);
             PU(p, 0x1760, u8) |= 1;
         }
     }
@@ -416,7 +416,7 @@ void func_002CE100(Pursuer *p) {
     f32 pos[4] __attribute__((aligned(16)));
     u32 hit;
 
-    sceVu0CopyVector(pos, func_0017CE80(MOTION_AT(p, 0x810, u8 *), AT(e, 0x4, s32)) + 0xC);
+    sceVu0CopyVector(pos, Skel_Bone(MOTION_AT(p, 0x810, u8 *), AT(e, 0x4, s32)) + 0xC);
     if (func_00124480(&p->c.a, pos, p->c.a.navMask & ~0x40) == (u32)-1) {
         func_00297B40(p, 0x1004, (((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) != 0);
         p->c.moveSub = 0;
@@ -434,7 +434,7 @@ void func_002CE100(Pursuer *p) {
         f32 roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         s16 stun = roll < AT(e, 0x18, f32) ? 0x8000 : 0;
 
-        func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+        Relation_Request(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
     }
     PU(p, 0x1764, s32) = 12;
     if ((((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) == 0) {
@@ -648,7 +648,7 @@ void func_003301D0(Pursuer *p) {
     f32 pos[4] __attribute__((aligned(16)));
     u32 hit;
 
-    sceVu0CopyVector(pos, func_0017CE80(MOTION_AT(p, 0x810, u8 *), AT(e, 0x4, s32)) + 0xC);
+    sceVu0CopyVector(pos, Skel_Bone(MOTION_AT(p, 0x810, u8 *), AT(e, 0x4, s32)) + 0xC);
     if (func_00124480(&p->c.a, pos, p->c.a.navMask & ~0x40) == (u32)-1) {
         func_00297B40(p, 0x1004, (((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) != 0);
         p->c.moveSub = 0;
@@ -666,7 +666,7 @@ void func_003301D0(Pursuer *p) {
         f32 roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         s16 stun = roll < AT(e, 0x18, f32) ? 0x8000 : 0;
 
-        func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+        Relation_Request(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
     }
     PU(p, 0x1764, s32) = 12;
     if ((((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) == 0) {

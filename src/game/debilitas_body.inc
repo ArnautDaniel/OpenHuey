@@ -47,7 +47,7 @@ s32 func_00127FC0(Pursuer *p) {
     if (PU(p, 0x16C8, u8) == 4) {
         return 0;
     }
-    if ((func_00177AB0(gProgress, 1, p->c.a.slot) & 0xFF) != 0xFF) {
+    if ((PursuerGroup_Find(gProgress, 1, p->c.a.slot) & 0xFF) != 0xFF) {
         return 0;
     }
     if (VCALL(p, 0xE8, s32 (*)(Pursuer *))(p) & 0xFF) {
@@ -269,7 +269,7 @@ void func_0012BAA0(Pursuer *p, Character *c) {
 }
 
 /* a grab at Fiona: at the animation's hit key, once, if she's within reach (gProgress vtable
-   +0x2C), it lands (func_00178070 kind 1); over when the animation ends, she's out of sight, or
+   +0x2C), it lands (Relation_Request kind 1); over when the animation ends, she's out of sight, or
    60 units away */
 static inline void Debilitas_Grab(Pursuer *p) {
     func_00125A10(&p->c);
@@ -277,7 +277,7 @@ static inline void Debilitas_Grab(Pursuer *p) {
         Progress *pr = gProgress;
 
         if (VCALL(pr, 0x2C, s32 (*)(Progress *, u32, s32, s32, f32))(pr, *(u8 *)&p->c.a.slot, 0x1E, 0, 5.0f) != 0) {
-            func_00178070(pr, *(u8 *)&p->c.a.slot, 1, 6, 0, 3, 10.0f);
+            Relation_Request(pr, *(u8 *)&p->c.a.slot, 1, 6, 0, 3, 10.0f);
             PU(p, 0x1760, u8) |= 1;
         }
     }
@@ -504,14 +504,14 @@ extern const PTMF D_003AFFE0, D_003AFFF0;
 
 /* state: his blow, after the turn to Fiona. The hit point is the bone of the attack entry
    (+0x171C, +0x94); off the nav mesh it misses (flinch, state D_003AFFE0). Otherwise when it
-   reaches Fiona or Hewie it lands: func_00178070 with the entry's kind and damage, stunning
+   reaches Fiona or Hewie it lands: Relation_Request with the entry's kind and damage, stunning
    (0x8000) when a 0..100 roll is under its stun chance; then the flinch and state D_003AFFF0 */
 void func_00128A20(Pursuer *p) {
     u8 *e = PU(p, 0x171C, u8 *) + 0x90;
     f32 pos[4] __attribute__((aligned(16)));
     u32 hit;
 
-    sceVu0CopyVector(pos, func_0017CE80(MOTION_AT(p, 0x810, u8 *), AT(e, 0x4, s32)) + 0xC);
+    sceVu0CopyVector(pos, Skel_Bone(MOTION_AT(p, 0x810, u8 *), AT(e, 0x4, s32)) + 0xC);
     if (func_00124480(&p->c.a, pos, p->c.a.navMask & ~0x40) == (u32)-1) {
         func_00297B40(p, 0x1004, (((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) != 0);
         p->c.moveSub = 0;
@@ -529,7 +529,7 @@ void func_00128A20(Pursuer *p) {
         f32 roll = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom);
         s16 stun = roll < AT(e, 0x18, f32) ? 0x8000 : 0;
 
-        func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+        Relation_Request(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
     }
     PU(p, 0x1764, s32) = 12;
     if ((((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) == 0) {
@@ -593,7 +593,7 @@ void func_00129DB0(Pursuer *p) {
         func_002837C0(p, 0xFF);
     }
     if (PU(p, 0x17B0, u8) != 0xFF) {
-        ds = func_00177BF0(gProgress, PU(p, 0x17B0, u8), *(u8 *)&p->c.a.slot) & 0xFF;
+        ds = PursuerGroup_Fields(gProgress, PU(p, 0x17B0, u8), *(u8 *)&p->c.a.slot) & 0xFF;
     }
     switch (PU(p, 0x175C, s32)) {
     case 0xD:

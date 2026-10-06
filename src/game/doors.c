@@ -188,7 +188,7 @@ s32 Doors_AnimUserSpot(VObject *d, u32 i, s32 anim, f32 *out, f32 *rot, s32 buf)
         p[0] = pass == 0 ? rec[0] : 0.0f;
         p[1] = 0.0f;
         p[2] = rec[1];
-        func_002E3130(m, (f32 *)(e + 0x30), AT(e, 0x54, f32));
+        Mtx_AtHeading(m, (f32 *)(e + 0x30), AT(e, 0x54, f32));
         func_002E2DD0(to, m, p);
         tri = AT(e, 0x18, u32);
         sceVu0CopyVector(from, (f32 *)(e + 0x30));
@@ -348,7 +348,7 @@ s32 Doors_NavSpot(VObject *d, u32 i, const f32 *off, f32 *out) {
     if (VCALL(d, 0x18, s32 (*)(VObject *, u32, f32 *))(d, i, side) == 0) {
         a = func_002E2D00(PI_F + a);
     }
-    func_002E3130(m, (f32 *)(e + 0x30), a);
+    Mtx_AtHeading(m, (f32 *)(e + 0x30), a);
     func_002E2DD0(to, m, off);
     tri = AT(e, 0x18, u32);
     sceVu0CopyVector(from, (f32 *)(e + 0x30));
@@ -424,9 +424,9 @@ void Doors_SaveDoor(VObject *d, s32 room, u32 i) {
     e = DOOR(d, i);
     who = AT(e, 0x70, s32) != 2 ? AT(e, 0x7C, u8) : 0xFF;
     if (AT(e, 0x78, s32) == 0) {
-        func_00178C10(p, room, i, who);
+        DoorHold_Open(p, room, i, who);
     } else {
-        func_00178A90(p, room, i, who);
+        DoorHold_Shut(p, room, i, who);
     }
 }
 
@@ -486,7 +486,7 @@ s32 Doors_InArea(VObject *d, s32 kind, u32 i, const f32 *pos) {
     if (!(dy <= 5.0f)) {
         return 0;
     }
-    func_002E3130(m, (f32 *)(e + 0x30), AT(e, 0x54, f32));
+    Mtx_AtHeading(m, (f32 *)(e + 0x30), AT(e, 0x54, f32));
     q = D_003E51A0[kind];
     v[1] = 0.0f;
     for (k = 0; k < 4; k++) {
@@ -530,7 +530,7 @@ void Door_PlaySound(u8 *e, s32 id, s32 how) {
     s32 slot, loud = 0, room;
     u32 door;
 
-    func_002FF650(gSound, id & 0xFFFF, 5, (f32 *)(e + 0x10), 0, 0);
+    Sound_PlayBankAt(gSound, id & 0xFFFF, 5, (f32 *)(e + 0x10), 0, 0);
     switch (AT(e, 0x6C, s32)) {
     case 2: slot = 2; break;
     case 1: slot = 1; break;

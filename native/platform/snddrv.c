@@ -93,7 +93,7 @@ static int sAutoVoice;          /* D_0000D1BC */
 static int sInited;
 static int sLog;          /* HG_SNDLOG: the commands on stderr */
 
-/* an SDT entry unpacked (IRX 0x39FC; the EE's func_0021F5C0), type 2 moved onto type 1's
+/* an SDT entry unpacked (IRX 0x39FC; the EE's SndTable_Unpack), type 2 moved onto type 1's
    layout (0x41B8) */
 typedef struct Entry {
     unsigned flags;             /* 1 even priority wins, 2 fixed pan, 4 continues, 0x10 any free

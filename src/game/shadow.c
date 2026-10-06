@@ -1,11 +1,11 @@
 /* Character shadows: shadow volumes of per-bone boxes, counted in renderer layer 6.
  *
  * A model's shadow object (model +0x1D0, vtable D_0046B1C0) is queued in layer 6 once per
- * light that casts it (func_001F3530). Its draw (func_001F2B80) extrudes the bone boxes away
+ * light that casts it (Shadow_Queue). Its draw (Shadow_Draw) extrudes the bone boxes away
  * from the light and draws their volumes with a counter in the half-size layer-6 buffer: the
  * PS2 does it in the buffer's alpha, read through a palette that adds or takes 1 (lights +0x30),
  * starting at 0x7F; z-pass against the scene's depth copied down to half size. The light's
- * blocker quads' volumes count the other way (func_001F2060), so a character's shadow doesn't
+ * blocker quads' volumes count the other way (Shadow_BlockerVolumes), so a character's shadow doesn't
  * fall where a wall already shades the light. Where the count ends above 0x7F the shadow's
  * colour is written (its opacity from the light's falloff), and layer 6's end blurs the buffer
  * and takes it off the screen. On PC glr keeps the count in a stencil buffer.
@@ -33,13 +33,14 @@
 /* queue shadow `s` of its model's bone `bone` (on nav triangle `tri`, the light offset `light`,
  * the model's layer `layer`) for each light that casts it there, if the lights allow a shadow
  * at its foot (lights +0x2C) */
-void func_001F3530(u8 *s, s32 tri, s32 bone, f32 *light, s32 layer) {
+/* 0x001F3530 */
+void Shadow_Queue(u8 *s, s32 tri, s32 bone, f32 *light, s32 layer) {
     f32 p[4] __attribute__((aligned(16)));
     f32 q[4] __attribute__((aligned(16)));
     s32 idx[3];
     s32 i;
 
-    AT(s, 0x2D0, f32 *) = func_0017CE80(AT(s, 0xC, void *), bone);
+    AT(s, 0x2D0, f32 *) = Skel_Bone(AT(s, 0xC, void *), bone);
     sceVu0CopyVector(p, AT(s, 0x2D0, f32 *) + 12);
     if (gNavMesh != NULL) {
         VCALL(gNavMesh, 0x14, void (*)(VObject *, s32, f32 *))((VObject *)gNavMesh, tri, p);
@@ -65,7 +66,8 @@ void func_001F3530(u8 *s, s32 tri, s32 bone, f32 *light, s32 layer) {
 /* the outline of bone box `box` (of the boxes `base`) seen along `l` (box space, scaled to the
  * shadow's length): faces facing along it (n . l >= 0) are lit, an edge of an odd number of lit
  * faces is on the outline; vertices of lit faces and outline edges are extruded by -l */
-void func_001F2900(u8 *s, u8 *base, u8 *box, f32 *l) {
+/* 0x001F2900 */
+void Shadow_Outline(u8 *s, u8 *base, u8 *box, f32 *l) {
     u8 *v = base + AT(box, 0x10, s32);
     u8 *e = base + AT(box, 0xC, s32);
     u8 *f = base + AT(box, 0x8, s32);
@@ -137,7 +139,8 @@ static s32 shadow_project(u8 *s, f32 (*scr)[4], f32 (*clip)[4], f32 *v, s32 *out
 
 /* project the volume's vertices (box vertices `v`, then the extruded ones) with `scr` (the
  * half-size screen matrix of the bone) into +0x1C0 / +0x240; 0 if one is out of view (`clip`) */
-s32 func_001F2560(u8 *s, f32 (*scr)[4], f32 (*clip)[4], f32 *v) {
+/* 0x001F2560 */
+s32 Shadow_Project(u8 *s, f32 (*scr)[4], f32 (*clip)[4], f32 *v) {
     s32 i;
 
     for (i = 0; i < 8; i++) {
@@ -166,10 +169,11 @@ static void shadow_ndc(const s32 *p, f32 *out) {
     out[2] = (2.0f * (f32)p[2] - zMax - zMin) / (zMax - zMin);
 }
 
-/* lights +0x30 (func_001FA0E0): one quad of a shadow volume (a strip of 4 projected points),
+/* lights +0x30 (Lights_ShadowQuad): one quad of a shadow volume (a strip of 4 projected points),
  * counting +1 when its screen winding is negative (`flip` the other way); a degenerate one
  * counts nothing. 0: no room for it (never, on PC) */
-s32 func_001FA0E0(VObject *l, s32 *p0, s32 *p1, s32 *p2, s32 *p3, s32 flip) {
+/* 0x001FA0E0 */
+s32 Lights_ShadowQuad(VObject *l, s32 *p0, s32 *p1, s32 *p2, s32 *p3, s32 flip) {
     s32 cross = (p1[0] - p0[0]) * (p2[1] - p0[1]) - (p1[1] - p0[1]) * (p2[0] - p0[0]);
     f32 xyz[4][3];
 
@@ -189,7 +193,8 @@ s32 func_001FA0E0(VObject *l, s32 *p0, s32 *p1, s32 *p2, s32 *p3, s32 flip) {
  * the middle +0x50; +0x40 the count of their vectors) facing away from it, extruded from the
  * light (5 above it) by its length and again by 1/5 of it, counting the other way. 0 (no
  * shadow) if one is partly out of view */
-s32 func_001F2060(u8 *s) {
+/* 0x001F2060 */
+s32 Shadow_BlockerVolumes(u8 *s) {
     VObject *lights = gLights, *cam = gCamera;
     s32 n = VCALL(lights, 0x40, s32 (*)(VObject *))(lights);
     f32 scr[4][4] __attribute__((aligned(16)));
@@ -256,9 +261,9 @@ s32 func_001F2060(u8 *s) {
                 sceVu0FTOI4Vector(sc[i], t);
                 sc[i][2] = sc[i][2] / 16;
             }
-            if (!func_001FA0E0(lights, sc[0], sc[1], sc[4], sc[5], 1) || !func_001FA0E0(lights, sc[1], sc[3], sc[5], sc[7], 1) ||
-                !func_001FA0E0(lights, sc[3], sc[2], sc[7], sc[6], 1) || !func_001FA0E0(lights, sc[2], sc[0], sc[6], sc[4], 1) ||
-                !func_001FA0E0(lights, sc[4], sc[5], sc[6], sc[7], 1)) {
+            if (!Lights_ShadowQuad(lights, sc[0], sc[1], sc[4], sc[5], 1) || !Lights_ShadowQuad(lights, sc[1], sc[3], sc[5], sc[7], 1) ||
+                !Lights_ShadowQuad(lights, sc[3], sc[2], sc[7], sc[6], 1) || !Lights_ShadowQuad(lights, sc[2], sc[0], sc[6], sc[4], 1) ||
+                !Lights_ShadowQuad(lights, sc[4], sc[5], sc[6], sc[7], 1)) {
                 return 0;
             }
         }
@@ -270,7 +275,8 @@ s32 func_001F2060(u8 *s) {
  * strength, +0x24 / +0x28 falloff, +0x2C length; out of range or under 2: none), scaled in the
  * tinted layers; then the bone boxes' volumes and the blockers', and the colour where they
  * count. 0: nothing drawn */
-s32 func_001F2B80(u8 *s) {
+/* 0x001F2B80 */
+s32 Shadow_Draw(u8 *s) {
     VObject *lights = gLights, *cam = gCamera;
     f32 rec[12] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -350,15 +356,15 @@ s32 func_001F2B80(u8 *s) {
         if (AT(s, 0x2E0, u32) & (1u << h)) {
             continue;
         }
-        sceVu0CopyMatrix(b, (f32 (*)[4])func_0017CE80(AT(s, 0xC, void *), AT(box, 0x0, s32)));
+        sceVu0CopyMatrix(b, (f32 (*)[4])Skel_Bone(AT(s, 0xC, void *), AT(box, 0x0, s32)));
         sceVu0MulMatrix(bs, scr, b);
         sceVu0MulMatrix(bc, clip, b);
         sceVu0InversMatrix(inv, b);
         sceVu0Normalize(l, d);
         sceVu0ApplyMatrix(l, inv, l);
         func_0010E640(l, l, rec[11]);
-        func_001F2900(s, base, box, l);
-        if (func_001F2560(s, bs, bc, (f32 *)(base + AT(box, 0x10, s32))) == 0) {
+        Shadow_Outline(s, base, box, l);
+        if (Shadow_Project(s, bs, bc, (f32 *)(base + AT(box, 0x10, s32))) == 0) {
             glr_shadow_cancel();
             return 0;
         }
@@ -368,9 +374,9 @@ s32 func_001F2B80(u8 *s) {
             if (AT(s, 0x128 + i, u8) == 0) {
                 continue;
             }
-            if (!func_001FA0E0(lights, (s32 *)(s + 0x1C0 + v[0] * 0x10), (s32 *)(s + 0x1C0 + v[1] * 0x10),
+            if (!Lights_ShadowQuad(lights, (s32 *)(s + 0x1C0 + v[0] * 0x10), (s32 *)(s + 0x1C0 + v[1] * 0x10),
                                (s32 *)(s + 0x1C0 + v[3] * 0x10), (s32 *)(s + 0x1C0 + v[2] * 0x10), 0) ||
-                !func_001FA0E0(lights, (s32 *)(s + 0x240 + v[1] * 0x10), (s32 *)(s + 0x240 + v[0] * 0x10),
+                !Lights_ShadowQuad(lights, (s32 *)(s + 0x240 + v[1] * 0x10), (s32 *)(s + 0x240 + v[0] * 0x10),
                                (s32 *)(s + 0x240 + v[2] * 0x10), (s32 *)(s + 0x240 + v[3] * 0x10), 0)) {
                 glr_shadow_cancel();
             return 0;
@@ -389,7 +395,7 @@ s32 func_001F2B80(u8 *s) {
                     p = q;
                     q = t;
                 }
-                if (!func_001FA0E0(lights, (s32 *)(s + 0x1C0 + p * 0x10), (s32 *)(s + 0x1C0 + q * 0x10),
+                if (!Lights_ShadowQuad(lights, (s32 *)(s + 0x1C0 + p * 0x10), (s32 *)(s + 0x1C0 + q * 0x10),
                                    (s32 *)(s + 0x240 + p * 0x10), (s32 *)(s + 0x240 + q * 0x10), 0)) {
                     glr_shadow_cancel();
             return 0;
@@ -397,7 +403,7 @@ s32 func_001F2B80(u8 *s) {
             }
         }
     }
-    if (!(u8)func_001F2060(s) || AT(s, 0x110, s32) >= AT(s, 0x118, s32)) {
+    if (!(u8)Shadow_BlockerVolumes(s) || AT(s, 0x110, s32) >= AT(s, 0x118, s32)) {
         glr_shadow_cancel();
         return 0;
     }
@@ -418,7 +424,8 @@ extern f32 D_003EC080[][4], D_003EC0C0[4], D_003EC0D0[4], D_003EC130[4];
 /* the shadow from light `l`: 1 if there is one (not out of the light's reach), with its
  * strength (the light's, its falloff at the doorway, the angle it meets the door, the scene's
  * brightness) */
-s32 func_002786D0(u8 *o, s32 l) {
+/* 0x002786D0 */
+s32 DoorShadow_FromLight(u8 *o, s32 l) {
     VObject *lights = gLights;
     f32 rec[12] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -478,9 +485,10 @@ s32 func_002786D0(u8 *o, s32 l) {
 
 /* the door's shadow from each of the (up to 3) lights reaching `pos` on nav triangle `tri`
  * (lights +0x2C: a shadow may fall there; +0x14 the lights of the spot), queued in renderer
- * layer 6 when func_002786D0 finds one. (The original makes the +0x2C call without setting its
+ * layer 6 when DoorShadow_FromLight finds one. (The original makes the +0x2C call without setting its
  * arguments: they are this function's own tri and pos, still in their registers.) */
-void func_00278D60(u8 *o, u32 tri, f32 *pos, f32 *rot) {
+/* 0x00278D60 */
+void DoorShadow_Queue(u8 *o, u32 tri, f32 *pos, f32 *rot) {
     VObject *lights = gLights;
     s32 l[3];
     s32 i;
@@ -498,7 +506,7 @@ void func_00278D60(u8 *o, u32 tri, f32 *pos, f32 *rot) {
         sceVu0UnitMatrix((f32 (*)[4])(o + 0x10));
         sceVu0RotMatrix((f32 (*)[4])(o + 0x10), (f32 (*)[4])(o + 0x10), rot);
         sceVu0TransMatrix((f32 (*)[4])(o + 0x10), (f32 (*)[4])(o + 0x10), pos);
-        if ((func_002786D0(o, l[i]) & 0xFF) == 1) {
+        if ((DoorShadow_FromLight(o, l[i]) & 0xFF) == 1) {
             VCALL(r, 0xC, void (*)(VObject *, u8 *, s32, s32))(r, o, 6, 0);
         }
     }
@@ -580,7 +588,8 @@ static void door_shadow_side(u8 *o, s32 *p0, s32 *p1, s32 *p2, s32 *p3) {
 
 /* +0xC draw (layer 6): the box's sides into the shadow buffer (page 0x180, 256 x 224) as
  * gouraud strips with OpenGL; 0 if it is partly out of view */
-s32 func_002789B0(u8 *o) {
+/* 0x002789B0 */
+s32 DoorShadow_Draw(u8 *o) {
     VObject *cam = gCamera;
     f32 p[8][4] __attribute__((aligned(16)));
     s32 s[8][4] __attribute__((aligned(16)));

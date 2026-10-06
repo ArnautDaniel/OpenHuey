@@ -66,7 +66,7 @@ static void duck(f32 down, s32 normal) {
     VCALL(gSound, 0x94, void (*)(VObject *, u8))(gSound, (u8)(u32)(0.0f + 255.0f - 255.0f * down));
     AT(gAdx, 0x114, f32) = v;
     clamp01(&AT(gAdx, 0x114, f32));
-    func_002D1FD0(gAdx);
+    Bgm_ApplyVolume(gAdx);
     if (D_00456DF0 != NULL) {
         if (!normal) {
             VCALL(D_00456DF0, 0x44, void (*)(VObject *, f32))(D_00456DF0, v);
@@ -83,7 +83,7 @@ static void duck(f32 down, s32 normal) {
 
 /* the dimming rectangle, alpha `a`, drawn */
 static void dim(u8 *o, f32 a) {
-    func_002CF390(o + 0x120, ((u32)a << 24) & 0xFF000000);
+    Overlay_SetColor(o + 0x120, ((u32)a << 24) & 0xFF000000);
 }
 
 static void dim_draw(u8 *o) {
@@ -171,7 +171,8 @@ static void choose(u8 *o) {
 /* ---- the movie pause ---- */
 
 /* opening */
-void func_002F4330(u8 *o) {
+/* 0x002F4330 */
+void MoviePause_StateOpening(u8 *o) {
     T(o) += 0x1.99999a0000000p-3f /* 0.2 */;
     if (!(T(o) <= 1.0f)) {
         T(o) = 1.0f;
@@ -186,7 +187,8 @@ void func_002F4330(u8 *o) {
 }
 
 /* open: Cancel skips the movie; Start (or Confirm in message mode) goes back to it */
-void func_002F4090(u8 *o) {
+/* 0x002F4090 */
+void MoviePause_StateOpen(u8 *o) {
     dim_draw(o);
     movie_texts(o);
     if (!MESSAGE_ONLY(o)) {
@@ -207,7 +209,8 @@ void func_002F4090(u8 *o) {
 }
 
 /* skipping: darkening to near black; then progress flag 0x1A */
-void func_002F39E0(u8 *o) {
+/* 0x002F39E0 */
+void MoviePause_StateSkip(u8 *o) {
     T(o) += 0x1.99999a0000000p-3f /* 0.2 */;
     if (!(T(o) <= 1.0f)) {
         T(o) = 1.0f;
@@ -223,7 +226,8 @@ void func_002F39E0(u8 *o) {
 }
 
 /* closing (back to the movie, or the game): then progress flag 6 */
-void func_002F3D30(u8 *o) {
+/* 0x002F3D30 */
+void MoviePause_StateClosing(u8 *o) {
     T(o) -= 0x1.99999a0000000p-3f /* 0.2 */;
     if (T(o) <= 0.0f) {
         T(o) = 0.0f;
@@ -238,7 +242,8 @@ void func_002F3D30(u8 *o) {
 /* ---- the pause ---- */
 
 /* opening */
-void func_002F5C80(u8 *o) {
+/* 0x002F5C80 */
+void Pause_StateOpening(u8 *o) {
     T(o) += 0x1.99999a0000000p-3f /* 0.2 */;
     if (!(T(o) <= 1.0f)) {
         T(o) = 1.0f;
@@ -251,7 +256,8 @@ void func_002F5C80(u8 *o) {
 }
 
 /* open: Start closes it, Select opens the menu (message mode: Confirm closes it) */
-void func_002F59A0(u8 *o) {
+/* 0x002F59A0 */
+void Pause_StateOpen(u8 *o) {
     if (!MESSAGE_ONLY(o)) {
         if (D_0047E37C & PAD_START) {
             STATE(o) = D_0041A200;
@@ -270,7 +276,8 @@ void func_002F59A0(u8 *o) {
 }
 
 /* closing: then progress flag 6 */
-void func_002F55C0(u8 *o) {
+/* 0x002F55C0 */
+void Pause_StateClosing(u8 *o) {
     T(o) -= 0x1.99999a0000000p-3f /* 0.2 */;
     if (T(o) <= 0.0f) {
         T(o) = 0.0f;
@@ -283,7 +290,8 @@ void func_002F55C0(u8 *o) {
 }
 
 /* the menu: "back" closes, "quit" asks */
-void func_002F5280(u8 *o) {
+/* 0x002F5280 */
+void Pause_StateMenu(u8 *o) {
     choose(o);
     dim_draw(o);
     menu_texts(o);
@@ -300,7 +308,8 @@ void func_002F5280(u8 *o) {
 }
 
 /* closing from the menu: then progress flag 6 */
-void func_002F4E40(u8 *o) {
+/* 0x002F4E40 */
+void Pause_StateMenuClosing(u8 *o) {
     T(o) -= 0x1.99999a0000000p-3f /* 0.2 */;
     if (T(o) <= 0.0f) {
         T(o) = 0.0f;
@@ -313,7 +322,8 @@ void func_002F4E40(u8 *o) {
 }
 
 /* "quit?": yes quits, no (or Cancel) goes back to the pause */
-void func_002F4A30(u8 *o) {
+/* 0x002F4A30 */
+void Pause_StateQuitAsk(u8 *o) {
     choose(o);
     dim_draw(o);
     confirm_texts(o, 128.0f * T(o));
@@ -333,7 +343,8 @@ void func_002F4A30(u8 *o) {
 }
 
 /* quitting: darkening to near black; then progress flags 6 and 0x1C (to the title) */
-void func_002F46B0(u8 *o) {
+/* 0x002F46B0 */
+void Pause_StateQuit(u8 *o) {
     T(o) += 0x1.99999a0000000p-3f /* 0.2 */;
     if (!(T(o) <= 1.0f)) {
         T(o) = 1.0f;
@@ -346,7 +357,8 @@ void func_002F46B0(u8 *o) {
 }
 
 /* open in mode `mode`: the movie's sound effects paused in mode 1 */
-void func_002F60B0(u8 *o, u8 mode) {
+/* 0x002F60B0 */
+void Pause_Open(u8 *o, u8 mode) {
     T(o) = 0.0f;
     MODE(o) = mode;
     switch (MODE(o) & 0x0F) {
@@ -375,7 +387,8 @@ void func_002F60B0(u8 *o, u8 mode) {
 }
 
 /* each frame open: the texture cache's layers and the boot message's reset, the state run */
-void func_002F6050(u8 *o) {
+/* 0x002F6050 */
+void Pause_Update(u8 *o) {
     VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
     VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
     ptmf_scall(o, &STATE(o));

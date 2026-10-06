@@ -116,7 +116,7 @@ s32 func_002ACD50(void *self, void *a1, u8 *cmd) {
                     at[1] = 30.0f;
                     at[2] = 30.0f;
                     at[0] = 0.0f;
-                    func_002FF650(gSound, 2, 6, at, 0, 0);
+                    Sound_PlayBankAt(gSound, 2, 6, at, 0, 0);
                 }
             }
             AT(o, 0x24, f32) = kShut.f;

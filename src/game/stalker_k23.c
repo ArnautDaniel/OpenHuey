@@ -13,7 +13,7 @@
 #include "pursuer_ai.h"
 #include "stalker_progress.h"
 
-void func_0031FBE0(Pursuer *p);
+void TintStalker_SetDelay(Pursuer *p);
 
 s32 func_0031FBF0(void);
 s32 func_0031FC00(void);
@@ -37,11 +37,12 @@ f32 func_0031FC10(void);
 f32 func_0031FC20(void);
 f32 func_0031FC30(void);
 s32 func_0031FC40(u8 *self);
-void *func_00320190(void);
+void *TintStalker_Table(void);
 
 /* vtable +0xE4: at a door it breaks (func_00178980), outside the ending (gProgress+0x1FBEC1),
    while opening or attacking it: use and damage it and change room through it (vtable +0x28) */
-void func_0031F3E0(Pursuer *p, s32 exit) {
+/* 0x0031F3E0 */
+void TintStalker_BreakDoor(Pursuer *p, s32 exit) {
     Progress *pr = gProgress;
 
     if (!(func_00178980(pr, p->c.a.room, exit) & 0xFF) || AT(pr, 0x1FBEC1, u8) != 0) {
@@ -52,26 +53,28 @@ void func_0031F3E0(Pursuer *p, s32 exit) {
     case 0x29:
     case 0xD:
         pr = gProgress;
-        func_00178DB0(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
-        func_00178A90(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+        DoorHold_Take(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+        DoorHold_Shut(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
         VCALL(p, 0x28, void (*)(Pursuer *, s32, s32, s32))(p, VCALL(gRooms, 0x28, s32 (*)(VObject *, s32))(gRooms, exit), 0, 0);
         break;
     }
 }
 
-/* vtable +0xF0: in the ending, use the door and close it behind (func_00178C10) */
-void func_0031F4E0(Pursuer *p, s32 exit) {
+/* vtable +0xF0: in the ending, use the door and close it behind (DoorHold_Open) */
+/* 0x0031F4E0 */
+void TintStalker_EndingDoor(Pursuer *p, s32 exit) {
     Progress *pr = gProgress;
 
     if (AT(pr, 0x1FBEC1, u8) != 0) {
-        func_00178DB0(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
-        func_00178C10(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+        DoorHold_Take(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+        DoorHold_Open(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
     }
 }
 
 /* the tint fade: in ramps the alpha down by 4 from 130 to 112, out ramps it to 0 and hides it;
    the renderer's tint (+0x64) is grey with that alpha, and off (+0x6C) while hidden */
-void func_0031F560(Pursuer *p) {
+/* 0x0031F560 */
+void TintStalker_Fade(Pursuer *p) {
     VObject *r;
 
     switch (PU(p, 0x17D0, s8)) {
@@ -112,7 +115,8 @@ static inline void k23_show(Pursuer *p) {
 
 /* the tint per frame: once the delay +0x17C4 has run out (it counts only while free: not in
    states 1 / 2, not moving 0x11 / 9) it shows on screen; hidden ones fade out off screen */
-void func_0031F6E0(Pursuer *p) {
+/* 0x0031F6E0 */
+void TintStalker_Tint(Pursuer *p) {
     if (PU(p, 0x17C4, s32) != 0) {
         if (func_00217510(p) != 0) {
             if (!PU(p, 0x17C8, u8) || (p->c.a.unkC4 == 2 && PU(p, 0x17D0, s8) != 3)) {
@@ -129,7 +133,7 @@ void func_0031F6E0(Pursuer *p) {
         PU(p, 0x17D0, s8) != 2 && func_00217510(p) != 0) {
         PU(p, 0x17D0, s8) = 2;
     }
-    func_0031F560(p);
+    TintStalker_Fade(p);
 }
 
 extern u8 D_0042A7F0[], D_0042A830[], D_0042A860[], D_0042A8A0[], D_0042A8D0[], D_0042A900[],
@@ -150,7 +154,8 @@ static u8 *const sAttackTables[2][17] = {
 };
 
 /* vtable +0x130: the attack table for a situation; in the ending situation 15 has its own */
-void func_0031F880(Pursuer *p, s8 situation) {
+/* 0x0031F880 */
+void TintStalker_AttackTable(Pursuer *p, s8 situation) {
     s32 alt;
 
     if (AT(gProgress, 0x1FBEC1, u8) != 0 && situation == 15) {
@@ -163,7 +168,8 @@ void func_0031F880(Pursuer *p, s8 situation) {
 
 /* vtable +0x200: done at the door in the ending or without a side (+0x104), else the
    Pursuer's */
-void func_0031FB80(Pursuer *p) {
+/* 0x0031FB80 */
+void TintStalker_DoorDone(Pursuer *p) {
     if (AT(gProgress, 0x1FBEC1, u8) != 0 || p->c.unk104[0] == 0) {
         PURSUER_STEP_DONE(p) = 1;
         return;
@@ -172,7 +178,8 @@ void func_0031FB80(Pursuer *p) {
 }
 
 /* +0x17C4 / +0x17C8 = 150, then func_002927D0 */
-void func_0031FBE0(Pursuer *p) {
+/* 0x0031FBE0 */
+void TintStalker_SetDelay(Pursuer *p) {
     PU(p, 0x17C4, s32) = 0x96;
     func_002927D0(p);
 }
@@ -216,8 +223,9 @@ s32 func_0031FC40(u8 *self) {
 }
 
 /* vtable +0x30: its frame update: the stalkers' (Stalker_ThinkStart / Stalker_ThinkEnd) with
-   the tint (func_0031F6E0) before the model and stance */
-void func_0031FCE0(Pursuer *p) {
+   the tint (TintStalker_Tint) before the model and stance */
+/* 0x0031FCE0 */
+void TintStalker_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
@@ -240,14 +248,15 @@ void func_0031FCE0(Pursuer *p) {
         func_0029D7F0(p);
     }
     Stalker_ThinkTimers(p);
-    func_0031F6E0(p);
+    TintStalker_Tint(p);
     VCALL(p, 0x40, void (*)(Pursuer *))(p);
     VCALL(p, 0x100, void (*)(Pursuer *))(p);
 }
 
 /* vtable +0x5C: the Pursuer's reset with the tint off; in the ending the Hewie bite tolerance
    is 20 */
-void func_0031FFA0(Pursuer *p) {
+/* 0x0031FFA0 */
+void TintStalker_Reset(Pursuer *p) {
     func_0029E520(p);
     PU(p, 0x17C4, s32) = 0;
     PU(p, 0x17C8, u8) = 0;
@@ -260,7 +269,8 @@ void func_0031FFA0(Pursuer *p) {
 /* vtable +0x2C: the draw while the tint shows; on layer 0x11 between the texture cache's
    +0x18 and the camera's matrices (+0x4C / +0x50 / +0x58 / +0x54 through one matrix) and its
    +0x14 after */
-void func_00320000(Pursuer *p) {
+/* 0x00320000 */
+void TintStalker_Draw(Pursuer *p) {
     f32 mtx[4][4] __attribute__((aligned(16)));
     VObject *cam;
     u8 *m;
@@ -286,7 +296,8 @@ void func_00320000(Pursuer *p) {
     }
 }
 
-void *func_00320190(void) {
+/* 0x00320190 */
+void *TintStalker_Table(void) {
     return b5_prog_flag8000() ? D_0042A300 : D_0042A2C0;
 }
 
@@ -295,7 +306,8 @@ extern u8 D_0042A380[], D_0042A4D0[], D_0042A4E0[], D_0042A770[], D_0042A7A0[], 
 
 /* vtable +0xF4: its setup over the Pursuer's (func_0029FB20): tables and stats (more health
    and a closer reach when gProgress+0x30 bit 0x8000 is set), the tint off, layer 0x11 */
-void func_003201D0(Pursuer *p) {
+/* 0x003201D0 */
+void TintStalker_Setup(Pursuer *p) {
     void *m;
 
     func_0029FB20(p);

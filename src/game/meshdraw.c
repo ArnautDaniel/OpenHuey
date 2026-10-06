@@ -17,35 +17,36 @@ static f32 sGlMvp[4][4];   /* the current batch's local-to-clip matrix */
 static const void *sGlTex; /* its texture's .TEX entry (NULL: untextured) */
 static u64 sGlTex0;
 static u32 sGlPrim;
-static u32 sGlKindPrim;    /* the kind-4 part's blending (func_0025C8C0): GLR_PRIM_ADD | NOZW */
+static u32 sGlKindPrim;    /* the kind-4 part's blending (RoomMesh_Billboard): GLR_PRIM_ADD | NOZW */
 #define GLR_PRIM_ADD 0x10000u
 #define GLR_PRIM_NOZW 0x20000u
 #endif
 
-void func_0025C8C0(u8 *o);                 /* a kind-4 part's batch */
-extern void func_0025DB10(u8 *o, s32 which);
-void func_0025D970(u8 *o);
-extern void func_0025D560(u8 *o);
-s32 *func_0025DD80(u8 *o, s32 *batch);   /* the lit layout's batch writer: the next batch */
-extern s32 *func_0025E100(u8 *o, s32 *batch);
+void RoomMesh_Billboard(u8 *o);                 /* a kind-4 part's batch */
+extern void RoomMesh_ViewEdge(u8 *o, s32 which);
+void RoomMesh_BatchOutOfView(u8 *o);
+extern void RoomMesh_PlaceBatch(u8 *o);
+s32 *RoomMesh_WriteBatchLit(u8 *o, s32 *batch);   /* the lit layout's batch writer: the next batch */
+extern s32 *RoomMesh_WriteBatch0(u8 *o, s32 *batch);
 
 #ifdef HG_NATIVE
 /* vtable +0xC of a mesh (the room's parts, +0x8; part kind +0x18), drawn with OpenGL. Per batch
  * (until -1): its texture (+0x80, TEX0 looked up only when it changed), colour bits
  * (+0x84..+0x8A) and local matrix (stored transposed at +0x90); the camera's clip matrix times
- * it and the batch's state (texture, PRIM bits) go to the vertex writer (by +0x4: func_0025E100,
- * or the lit layout func_0025DD80). Kind 4 parts blend as their flip book says
- * (func_0025C8C0); kind 5 parts draw without depth writes, each batch normal or additive by
+ * it and the batch's state (texture, PRIM bits) go to the vertex writer (by +0x4: RoomMesh_WriteBatch0,
+ * or the lit layout RoomMesh_WriteBatchLit). Kind 4 parts blend as their flip book says
+ * (RoomMesh_Billboard); kind 5 parts draw without depth writes, each batch normal or additive by
  * its header's bit 8. 0 without a mesh. */
-s32 func_0025E2B0(u8 *o) {
+/* 0x0025E2B0 */
+s32 RoomMesh_Draw(u8 *o) {
     VObject *cam;
     s32 *mesh;
     f32 b[4][4] __attribute__((aligned(16)));
 
     AT(o, 0x4, s32) = AT(o, 0x68, s32);
     AT(o, 0xD4, s32) = 0;
-    func_0025DB10(o, 0);
-    func_0025DB10(o, 1);
+    RoomMesh_ViewEdge(o, 0);
+    RoomMesh_ViewEdge(o, 1);
     mesh = AT(o, 0x8, s32 *);
     if (mesh == NULL) {
         return 0;
@@ -72,7 +73,7 @@ s32 func_0025E2B0(u8 *o) {
             if (AT(o, 0x80, s32) != -1) {
                 newTex = 1;
                 if (AT(o, 0x80, s32) != AT(o, 0x64, s32)) {
-                    AT(o, 0x10, u64) = func_002B71D0(AT(o, 0x80, s32));
+                    AT(o, 0x10, u64) = TexCache_Tex0(AT(o, 0x80, s32));
                 }
             }
             for (i = 0; i < 4; i++) {
@@ -83,15 +84,15 @@ s32 func_0025E2B0(u8 *o) {
                 mesh += 4;
             }
             if (AT(o, 0x60, u8) != 0) {
-                func_0025D970(o);
+                RoomMesh_BatchOutOfView(o);
             } else {
                 AT(o, 0xD0, u8) = 0xFF;
             }
             if (AT(o, 0x85, u8) != 0) {
-                func_0025D560(o);
+                RoomMesh_PlaceBatch(o);
             }
             if (AT(o, 0x18, s32) == 4) {
-                func_0025C8C0(o);
+                RoomMesh_Billboard(o);
             }
             VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, b);
             sceVu0MulMatrix(b, b, (f32 (*)[4])(o + 0x90));
@@ -106,9 +107,9 @@ s32 func_0025E2B0(u8 *o) {
                             : NULL;
             sGlPrim = (newTex << 4) | 0xC | AT(o, 0x84, u8) << 6 | (AT(o, 0x18, s32) == 4 ? sGlKindPrim : kind5);
             if (AT(o, 0x4, s32) == 1) {
-                mesh = func_0025DD80(o, mesh);
+                mesh = RoomMesh_WriteBatchLit(o, mesh);
             } else if (AT(o, 0x4, s32) == 0) {
-                mesh = func_0025E100(o, mesh);
+                mesh = RoomMesh_WriteBatch0(o, mesh);
             }
         } while (mesh[0] != -1);
     }
@@ -119,7 +120,8 @@ s32 func_0025E2B0(u8 *o) {
 /* the view's side edge `which` (0 left, 1 right): the camera's direction (+0xA0) turned about
  * its up axis (+0xA4) by fov / 1.3, at the look-at distance from the eye -> +0x20 + 16 * which;
  * then that point swung back about y -> +0x40 + 16 * which (the edge planes for culling) */
-void func_0025DB10(u8 *o, s32 which) {
+/* 0x0025DB10 */
+void RoomMesh_ViewEdge(u8 *o, s32 which) {
     static const union { u32 u; f32 f; } k13 = {0x3FA66666};
     VObject *cam = gCamera;
     f32 eye[4] __attribute__((aligned(16)));
@@ -142,7 +144,7 @@ void func_0025DB10(u8 *o, s32 which) {
     sceVu0SubVector(t, at, eye);
     len = __builtin_sqrtf(sceVu0InnerProduct(t, t));
     ang = VCALL(cam, 0x64, f32 (*)(VObject *))(cam) / k13.f;
-    func_0025C6F0(q, up, which == 0 ? ang : -ang);
+    Quat_FromAxisAngle(q, up, which == 0 ? ang : -ang);
     m[3][3] = 1.0f;
     m[0][3] = 0.0f;
     m[1][3] = 0.0f;
@@ -150,7 +152,7 @@ void func_0025DB10(u8 *o, s32 which) {
     m[3][0] = 0.0f;   /* unset in the original (garbage times w); no NaN / infinity on PC */
     m[3][1] = 0.0f;
     m[3][2] = 0.0f;
-    func_0025C770(q, m);
+    Quat_ToMatrix(q, m);
     sceVu0ApplyMatrix(t, m, dir);
     sceVu0ScaleVector(t, t, len);
     sceVu0AddVector(p, eye, t);
@@ -170,14 +172,15 @@ void func_0025DB10(u8 *o, s32 which) {
     AT(o, 0x4C + (which & 0xFF) * 16, f32) = e[3];
 }
 
-s32 func_0025CB50(u8 *o, const f32 *st);   /* a kind-4 batch's animated texture coordinates */
+s32 RoomMesh_FlipBook(u8 *o, const f32 *st);   /* a kind-4 batch's animated texture coordinates */
 s32 func_002B7500(u8 *batch);   /* send a batch's vertices to VU1 */
 
 /* mode 0 batch writer: the batch's vertex count (+0x7C; count & 3 gives the padding) locates
  * its sections - texture coordinates (s, t), colours (RGBA bytes), positions (x, y, z, w) -
  * and it is sent unless hidden (+0xD0 not 0xFF, or its group +0x8A is off in the mask +0x6C;
- * kind 4 parts take their texture coordinates from func_0025CB50). Returns the next batch. */
-s32 *func_0025E100(u8 *o, s32 *batch) {
+ * kind 4 parts take their texture coordinates from RoomMesh_FlipBook). Returns the next batch. */
+/* 0x0025E100 */
+s32 *RoomMesh_WriteBatch0(u8 *o, s32 *batch) {
     struct {
         s32 n;
         s32 *batch;
@@ -216,7 +219,7 @@ s32 *func_0025E100(u8 *o, s32 *batch) {
     a.xyz = (f32 *)xyz;
     a.batch = batch;
     if (AT(o, 0x18, s32) == 4) {
-        ok = func_0025CB50(o, (const f32 *)batch);
+        ok = RoomMesh_FlipBook(o, (const f32 *)batch);
         a.st = o + 0x240 + (AT(o, 0xD4, s32) - 1) * 32;
     } else {
         a.st = batch;
@@ -244,7 +247,8 @@ s32 *func_0025E100(u8 *o, s32 *batch) {
  * padding) locates its sections - texture coordinates (s, t, q floats), colours (two words a
  * vertex, not decoded yet: drawn grey), positions (x, y, z, w with the GS flags) - drawn unless
  * hidden as in mode 0. No surveyed room uses it. Returns the next batch. */
-s32 *func_0025DD80(u8 *o, s32 *batch) {
+/* 0x0025DD80 */
+s32 *RoomMesh_WriteBatchLit(u8 *o, s32 *batch) {
     static f32 *st;
     static u8 *rgba;
     static s32 cap;
@@ -336,10 +340,11 @@ static inline f32 side_of(f32 ax, f32 az, f32 bx, f32 bz, f32 px, f32 pz) {
     return ax * (bz - pz) + px * (az - bz) + bx * (pz - az);
 }
 
-/* a batch out of view: its place (+0xC0 / +0xC8) against the view's edges (func_0025DB10: the
+/* a batch out of view: its place (+0xC0 / +0xC8) against the view's edges (RoomMesh_ViewEdge: the
  * side points +0x20 / +0x30, swung back +0x40 / +0x50) seen from the eye - outside both side
  * edges, or outside all three of the edges behind; +0xD0 0xFF hides it (else 0) */
-void func_0025D970(u8 *o) {
+/* 0x0025D970 */
+void RoomMesh_BatchOutOfView(u8 *o) {
     f32 eye[4] __attribute__((aligned(16)));
     f32 px = AT(o, 0xC0, f32), pz = AT(o, 0xC8, f32);
     f32 ax = AT(o, 0x20, f32), az = AT(o, 0x28, f32), bx = AT(o, 0x30, f32), bz = AT(o, 0x38, f32);
@@ -374,7 +379,8 @@ void func_0025D970(u8 *o) {
 /* a batch's view-dependent placement: parallax (+0x86 = 2 / 4 / 8 / 16: moved sideways by
  * 0.2 / 0.25 / 0.33 / 0.5 of the camera's offset +0x20) and billboards (+0x88 = 2 upright, 4
  * facing the eye) */
-void func_0025D560(u8 *o) {
+/* 0x0025D560 */
+void RoomMesh_PlaceBatch(u8 *o) {
     static const union { u32 u; f32 f; } k02 = {0x3E4CCCCD}, k033 = {0x3EA8F5C3};
     VObject *cam = gCamera;
     f32 ofs[4] __attribute__((aligned(16)));
@@ -451,7 +457,7 @@ static void obj_strip(u8 *o, f32 (*mvp)[4], s32 n, const f32 *xyzw, const f32 *s
 
     glr_strip(&mvp[0][0], n, xyzw, st, rgba,
               tex == -1 ? NULL : VCALL(gTexCache, 0xC, void *(*)(VObject *, s32, s32))(gTexCache, tex, 0),
-              tex == -1 ? 0 : func_002B71D0(tex), 0xC | (tex != -1 ? 0x10 : 0) | (AT(o, 0x40, u8) & 1 ? 0x40 : 0));
+              tex == -1 ? 0 : TexCache_Tex0(tex), 0xC | (tex != -1 ? 0x10 : 0) | (AT(o, 0x40, u8) & 1 ? 0x40 : 0));
 }
 
 /* a rigid part (func_00267D60): compressed streams, model scale 32 - s16 position deltas from
@@ -572,15 +578,16 @@ static void gl_placed_object(u8 *o) {
 #endif
 
 #ifdef HG_NATIVE
-/* ---- PC: a positioned room mesh (doors and the like; the original func_0025F0A0 builds VU1
+/* ---- PC: a positioned room mesh (doors and the like; the original PlacedMesh_Draw builds VU1
  * packets with func_0025EF40 / func_0025EB70 per batch) drawn with OpenGL ----
  *
  * The mesh (+0x8) is the room's batch list: per batch a header { vertex count, texture id (-1
  * none), flags (bits 0..7 the GS PRIM ABE etc., 24..31 a group shown by the mask +0x90) }, a
- * 4 x 4 matrix (columns), then the vertices in the room's mode 0 layout (func_0025E100); -1
+ * 4 x 4 matrix (columns), then the vertices in the room's mode 0 layout (RoomMesh_WriteBatch0); -1
  * ends it. The object stands at +0x70 turned by +0x80. Mode +0x68 1 (the lit layout) isn't
  * read yet. */
-s32 func_0025F0A0(u8 *o) {
+/* 0x0025F0A0 */
+s32 PlacedMesh_Draw(u8 *o) {
     VObject *cam = gCamera;
     f32 t[4][4] __attribute__((aligned(16)));
     f32 r[4][4] __attribute__((aligned(16)));
@@ -629,7 +636,7 @@ s32 func_0025F0A0(u8 *o) {
         if (g == 0 || (AT(o, 0x90 + (g >> 5) * 4, u32) & (1u << (g & 0x1F)))) {
             glr_strip(&mvp[0][0], n, (const f32 *)xyz, (const f32 *)st, rgba,
                       tex == -1 ? NULL : VCALL(gTexCache, 0xC, void *(*)(VObject *, s32, s32))(gTexCache, tex, 0),
-                      tex == -1 ? 0 : func_002B71D0(tex), (tex != -1 ? 0x10 : 0) | 0xC | (flags & 0xFF) << 6);
+                      tex == -1 ? 0 : TexCache_Tex0(tex), (tex != -1 ? 0x10 : 0) | 0xC | (flags & 0xFF) << 6);
         }
         mesh = (s32 *)(xyz + n * 16);
     }
@@ -639,14 +646,16 @@ s32 func_0025F0A0(u8 *o) {
 
 /* a positioned room mesh's last batch is shown: its group (+0xAC) is 0 or on in the mask
  * (+0x90) */
-s32 func_0025EEE0(u8 *o) {
+/* 0x0025EEE0 */
+s32 PlacedMesh_LastShown(u8 *o) {
     u8 g = AT(o, 0xAC, u8);
 
     return g == 0 || (AT(o, 0x90 + (g >> 5) * 4, u32) & (1u << (g & 0x1F))) != 0;
 }
 
 /* vtable +0xC of a placed object's model: its packets by its flags (+0x8 bit 0, bit 1) */
-s32 func_00268090(u8 *o) {
+/* 0x00268090 */
+s32 PlacedModel_Draw(u8 *o) {
 #ifdef HG_NATIVE
     gl_placed_object(o);
     return 1;
@@ -672,7 +681,8 @@ s32 func_00268090(u8 *o) {
  * step; past 1 they wrap back by whole units (and down to 0 at least) and v moves on by that
  * many v steps. Hidden batches (group +0x8A off in the mask +0x6C) are just passed. Moves on
  * to the next batch (+0xD4); 1 */
-s32 func_0025CB50(u8 *o, const f32 *st) {
+/* 0x0025CB50 */
+s32 RoomMesh_FlipBook(u8 *o, const f32 *st) {
     static const union { u32 u; f32 f; } k256th = {0x3B800000}, k16th = {0x3C800000};
     u8 *ent = o + 0xD8 + AT(o, 0xD4, s32) * 7;
     u8 g = AT(o, 0x8A, u8);
@@ -748,7 +758,8 @@ s32 func_0025CB50(u8 *o, const f32 *st) {
  * face the camera (1 and 6 staying upright) - the batch matrix (+0x90) turned to the view about
  * its own place; then its blending (for the batch's GL draw): types 4..6 additive (+0x84 on) without
  * depth writes, the others normal with depth writes */
-void func_0025C8C0(u8 *o) {
+/* 0x0025C8C0 */
+void RoomMesh_Billboard(u8 *o) {
     u8 *ent = o + 0xD8 + AT(o, 0xD4, s32) * 7;
     u8 type = ent[2];
 
@@ -785,7 +796,8 @@ void func_0025C8C0(u8 *o) {
 #endif
 
 /* reset a room mesh drawer: no matrix row (+0x90), no mesh (+0x4), parallax off (+0x60, +0x68) */
-void func_0025EEC0(u8 *o) {
+/* 0x0025EEC0 */
+void RoomMesh_Reset(u8 *o) {
     AT(o, 0x90, s32) = 0;
     AT(o, 0x94, s32) = 0;
     AT(o, 0x98, s32) = 0;

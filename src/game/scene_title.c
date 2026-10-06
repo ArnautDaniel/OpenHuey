@@ -35,10 +35,10 @@ extern const PTMF sGameStateNull;
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-s32 func_00384C50(u8 *g, s32 a1);
-s32 func_00384C60(u8 *g);
-void func_00384C70(u8 *g, s32 n);
-s32 func_00384CB0(u8 *g, s32 n);
+s32 SubScreen_Part97980(u8 *g, s32 a1);
+s32 SubScreen_Byte97A8F(u8 *g);
+void SubScreen_SetBit(u8 *g, s32 n);
+s32 SubScreen_TestBit(u8 *g, s32 n);
 
 /* a pool entry: constructor / destructor */
 void *PoolEntry_ctor(void *e) {
@@ -114,12 +114,13 @@ SceneTitle *SceneTitle_ctor(SceneTitle *t) {
     t->returnTo = 0;
     t->extras = 0;
     t->seq = sGameStateNull;
-    func_002D2370(gAdx, t->bgmWork);
-    func_002E34D0((u8 *)&t->bgm);
+    Bgm_Init(gAdx, t->bgmWork);
+    BgmCtl_ctor((u8 *)&t->bgm);
     return t;
 }
 
-void func_002E34D0(u8 *p) {
+/* 0x002E34D0 */
+void BgmCtl_ctor(u8 *p) {
     p[0x5] = 0xFF;
     p[0x4] = 0xFF;
     F(p, 0x8, u32) = 0;
@@ -145,7 +146,7 @@ void SceneTitle_StateEntry(SceneTitle *t) {
     }
     t->next = 0;
     t->movieSkipped = 0;
-    func_0026BCC0(t->msg);
+    Message_Init(t->msg);
     SubScreen_Start(&t->sub);
     SubScreen_ApplyOptions((VObject *)&t->sub);
     D_0047B350 = 2;
@@ -186,7 +187,7 @@ void SceneTitle_StateTitle(SceneTitle *t) {
     if (ptmf_test(seq)) {
         ptmf_scall(t, seq);
     }
-    func_002E3200(&t->bgm);
+    BgmCtl_Update(&t->bgm);
 }
 
 extern void *D_0046ECC0[];        /* SceneMovie */
@@ -412,7 +413,7 @@ void SceneTitle_SeqLoad(SceneTitle *t) {
         if (!(*v <= 1.0f)) {
             *v = 1.0f;
         }
-        func_002D1FD0(gAdx);
+        Bgm_ApplyVolume(gAdx);
     }
     load_bank_part(snd, D_0044E900, 0x4C);
     load_bank_part(snd, D_0044E910, 0x50);
@@ -574,20 +575,24 @@ void SceneTitle_DrawPressStartGlow(SceneTitle *t, f32 alpha) {
 }
 
 /* (the scene) its part +0x97980's func_00303E60 */
-s32 func_00384C50(u8 *g, s32 a1) {
+/* 0x00384C50 */
+s32 SubScreen_Part97980(u8 *g, s32 a1) {
     return ((s32 (*)(u8 *, s32))func_00303E60)(g + 0x97980, a1);   /* (void: v0 as it was left) */
 }
 
-s32 func_00384C60(u8 *g) {
+/* 0x00384C60 */
+s32 SubScreen_Byte97A8F(u8 *g) {
     return AT(g, 0x97A8F, s8);
 }
 
 /* bit n of the scene's 0x97740 bitmap set / tested */
-void func_00384C70(u8 *g, s32 n) {
+/* 0x00384C70 */
+void SubScreen_SetBit(u8 *g, s32 n) {
     AT(g, 0x97740 + (n >> 5) * 4, u32) |= 1u << (n & 0x1F);
 }
 
-s32 func_00384CB0(u8 *g, s32 n) {
+/* 0x00384CB0 */
+s32 SubScreen_TestBit(u8 *g, s32 n) {
     return (AT(g, 0x97740 + (n >> 5) * 4, u32) & (1u << (n & 0x1F))) != 0;
 }
 
@@ -741,7 +746,7 @@ void SceneTitle_DrawMenuPanel(SceneTitle *t, f32 alpha, f32 open) {
 #endif
 
 void SceneTitle_DrawMenu(SceneTitle *t, f32 alpha);
-void func_0012E270(SceneTitle *t);
+void SceneTitle_SeqMenuToTitle(SceneTitle *t);
 void SceneTitle_SeqLoadGame(SceneTitle *t);
 void SceneTitle_SeqOptions(SceneTitle *t);
 
@@ -778,7 +783,7 @@ void SceneTitle_SeqMenu(SceneTitle *t) {
         Sound_PlaySE(SE_CANCEL);
         t->timer = 0;
         BGM_WANT(0xFF, 0, 0, 1.0f);
-        ptmf_set_fn(&t->seq, func_0012E270);
+        ptmf_set_fn(&t->seq, SceneTitle_SeqMenuToTitle);
         return;
     }
     if (old == t->cursor && ((D_0047E36C & MENU_CONFIRM) || (D_0047E37C & PAD_START))) {
@@ -885,7 +890,7 @@ void SceneTitle_StateNewGame(SceneTitle *t);
 void SceneTitle_SeqLeave(SceneTitle *t) {
     VObject *snd;
 
-    if (!(u8)func_002D20D0(gAdx)) {
+    if (!(u8)Bgm_IsPlaying(gAdx)) {
         return;
     }
     if (t->loaded) {
@@ -936,7 +941,7 @@ void SceneTitle_Finish(SceneTitle *t) {
         VCALL(SCENE_TABLE_SCENE(1), 0x14, void (*)(Scene *))(SCENE_TABLE_SCENE(1));
     }
     VCALL(gTexCache, 0x14, void (*)(VObject *, s32))(gTexCache, 0x19);
-    func_0026BC00((VObject *)t->msg);
+    Message_ClearAll((VObject *)t->msg);
     t->base.request = SCENE_REQ_FINISH;
 }
 
@@ -986,7 +991,8 @@ static inline void Pool_Destroy(u8 *pool) {
 }
 
 /* the entry pool (gSubPool): destructor */
-void *func_00130920(u8 *pool, s32 flags) {
+/* 0x00130920 */
+void *SubPool_dtor(u8 *pool, s32 flags) {
     if (pool != NULL) {
         Pool_Destroy(pool);
         if ((s16)flags > 0) {
@@ -1022,8 +1028,8 @@ SceneTitle *SceneTitle_dtor(SceneTitle *t, s32 flags) {
         Task *task;
 
         t->base.vtbl = D_0046A040;
-        func_002E31D0(&t->bgm);
-        func_002D2330(gAdx);
+        BgmCtl_StopNow(&t->bgm);
+        Bgm_Release(gAdx);
         if (&t->bgm != NULL) {
             t->bgm.vtbl = D_0046A110;
             if (&t->bgm != NULL) {
@@ -1063,7 +1069,7 @@ SceneTitle *SceneTitle_dtor(SceneTitle *t, s32 flags) {
             t->base.vtbl = Scene_vtable;
         }
         if ((s16)flags > 0) {
-            func_0011F9A0(t);
+            SceneHeap_delete(t);
         }
     }
     return t;
@@ -1137,7 +1143,8 @@ static inline void task_end_child(Task *t) {
 
 /* the sub screen (D_0047A790): its load / save screens, text object and two text tasks, then
  * the base (D_0046A090): the pool's entries, the globals gSubPool / gSubScreen cleared */
-void *func_002D0110(SubScreen *w, s32 flags) {
+/* 0x002D0110 */
+void *SubScreen_dtor(SubScreen *w, s32 flags) {
     if (w != NULL) {
         u8 *o = (u8 *)w;
 
@@ -1184,17 +1191,18 @@ void *Scene5_ctor(u8 *s) {
     gMusic = (VObject *)(s + 0x1174E4);
     AT(s, 0x1174E4, void **) = D_0046A110;
     AT(s, 0x117500, PTMF) = sGameStateNull;
-    func_002D2370(gAdx, s + 0xF4300);
-    func_002E34D0(s + 0x1174E4);
+    Bgm_Init(gAdx, s + 0xF4300);
+    BgmCtl_ctor(s + 0x1174E4);
     return s;
 }
 
-extern void func_0012DA20(SceneTitle *t, f32 alpha);   /* the menu, at `alpha` */
+extern void SceneTitle_DrawMenuAt(SceneTitle *t, f32 alpha);   /* the menu, at `alpha` */
 extern const PTMF D_003B0250;
 
-/* back from the menu to the title over 16 frames: the menu fading out (func_0012DA20) and a
+/* back from the menu to the title over 16 frames: the menu fading out (SceneTitle_DrawMenuAt) and a
  * black screen lifting while the picture, logo and PRESS START come back; then D_003B0250 */
-void func_0012E270(SceneTitle *t) {
+/* 0x0012E270 */
+void SceneTitle_SeqMenuToTitle(SceneTitle *t) {
     f32 f = (f32)t->timer++ / 15.0f;
     s32 done = 0;
     u32 a;
@@ -1203,7 +1211,7 @@ void func_0012E270(SceneTitle *t) {
         f = 1.0f;
         done = 1;
     }
-    func_0012DA20(t, 1.0f - f);
+    SceneTitle_DrawMenuAt(t, 1.0f - f);
     a = (u32)(127.0f * f);
     if (a >= 0x80) {
         a = 0x7F;
@@ -1222,7 +1230,8 @@ void func_0012E270(SceneTitle *t) {
 /* the title menu at `alpha`: the language 2, the glow's phase on; with the files loaded the
  * background and panel, the items (NEW GAME / LOAD GAME / OPTIONS, and the two extras once
  * the game is finished) and the cursor's item lit by a pulsing added copy */
-void func_0012DA20(SceneTitle *t, f32 alpha) {
+/* 0x0012DA20 */
+void SceneTitle_DrawMenuAt(SceneTitle *t, f32 alpha) {
     static const s16 kY[5] = {0x40, 0x70, 0xA0, 0xD0, 0x100};
     f32 glow;
     u8 sel;

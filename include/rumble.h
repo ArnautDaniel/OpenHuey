@@ -34,8 +34,8 @@ typedef struct Rumble {
 } Rumble;
 
 /* rumble.c */
-extern void *func_002D4630(Rumble *f);   /* rumble constructor (rumble.c) */
-extern Rumble *func_0020DF90(Rumble *f, s32 flags);
-extern void func_002D42A0(Rumble *f);   /* fader tick */
+extern void *Rumble_ctor(Rumble *f);   /* rumble constructor (rumble.c) */
+extern Rumble *Rumble_dtor(Rumble *f, s32 flags);
+extern void Rumble_Tick(Rumble *f);   /* fader tick */
 
 #endif /* RUMBLE_H */

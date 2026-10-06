@@ -237,13 +237,13 @@ extern u8 D_003D6230[], D_003D6240[];   /* built-in scripts run after phases 2 a
 #define EV_ROOM(ev) ((VObject *)((ev) + 0x120 + AT(ev, 0x560, s32) * 4))
 
 static void run_script(u8 *ev, u8 *script) {
-    func_00121890(ev, script);
+    Script_Start(ev, script);
     AT(ev, 0x700, u8) = 0;
     while (*AT(ev, 0x4, u8 *) != 0xFF) {
         if (*AT(ev, 0x4, u8 *) >= 0xF0) {
-            func_00121730(ev);
+            Script_RunControl(ev);
         } else {
-            func_002029B0((VObject *)ev);
+            EventCmd_Run((VObject *)ev);
         }
     }
 }
@@ -458,9 +458,9 @@ void func_00209060(VObject *ev, u8 *c) {
     AT(ev, 0x700, u8) = 0;
     while (*AT(ev, 0x4, u8 *) != 0xFF) {
         if (*AT(ev, 0x4, u8 *) >= 0xF0) {
-            func_00121730((u8 *)ev);
+            Script_RunControl((u8 *)ev);
         } else {
-            func_00201B90(ev);
+            Event_RunScript(ev);
         }
     }
     AT(ev, 0x4, u8 *) = pc;
@@ -597,9 +597,9 @@ void func_00209210(VObject *ev) {
         AT(e, 0x700, u8) = 0;
         while (*AT(e, 0x4, u8 *) != 0xFF) {
             if (*AT(e, 0x4, u8 *) >= 0xF0) {
-                func_00121730(e);
+                Script_RunControl(e);
             } else {
-                func_00201B90(ev);
+                Event_RunScript(ev);
             }
             if (AT(e, 0x700, u8) != 0) {
                 break;
@@ -675,12 +675,12 @@ void func_001FBA20(u8 *ev, s32 layer) {
 
 /* set the event's screen fade (+0x20) colour (a second entry point inside func_001FBA20's block) */
 void func_001FBA50(u8 *ev, u32 r, u32 g, u32 b, u32 a) {
-    func_002CF390(ev + 0x20, (u32)(u8)r << 24 | (u32)(u8)g << 16 | (u32)(u8)b << 8 | (u8)a);
+    Overlay_SetColor(ev + 0x20, (u32)(u8)r << 24 | (u32)(u8)g << 16 | (u32)(u8)b << 8 | (u8)a);
 }
 
 /* the screen fade: colour `rgba`, drawn in renderer layer `layer` */
 void func_001FBA80(u8 *ev, u32 rgba, s32 layer) {
-    func_002CF390(ev + 0x20, rgba);
+    Overlay_SetColor(ev + 0x20, rgba);
 #ifdef HG_NATIVE
     {
         extern void glr_overlay(u32 rgba);

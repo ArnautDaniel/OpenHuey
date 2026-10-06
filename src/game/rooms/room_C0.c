@@ -40,7 +40,7 @@ s32 func_0032DCE0(void *self, u32 i, s32 a, s32 b) {
 /* rooms 0xC0 / 0xC1 / 0xC2 / 0xC3 (D_0042E3E0, D_0043F098, D_0043F8B8, D_004400C8): the timer at
  * progress +0x764 has run out */
 s32 func_0032DD10(void) {
-    return func_002EC410((u8 *)gProgress + 0x764) == 0;
+    return Countdown_Seconds((u8 *)gProgress + 0x764) == 0;
 }
 
 /* (self->*D_01991610[i])(a, b) */

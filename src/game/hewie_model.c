@@ -161,7 +161,7 @@ s32 func_001F7EB0(u8 *m) {
 
 /* +0x60: his head's position */
 void func_001F7EC0(u8 *m, f32 *out) {
-    sceVu0CopyVector(out, func_0017CE80(SKEL(m), 0x1F) + 12);
+    sceVu0CopyVector(out, Skel_Bone(SKEL(m), 0x1F) + 12);
 }
 
 /* +0x28: the model matrix (both body frames) = `mtx` */
@@ -192,7 +192,7 @@ void func_001F8110(u8 *m, f32 *out) {
     f32 hip[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
 
-    sceVu0CopyVector(hip, func_0017CE80(SKEL(m), 0x1D) + 12);
+    sceVu0CopyVector(hip, Skel_Bone(SKEL(m), 0x1D) + 12);
     sceVu0SubVector(d, hip, (f32 *)(m + 0x800));
     out[0] = 0.0f;
     out[1] = 0.5f * -d[1];
@@ -287,7 +287,7 @@ void func_001F8450(u8 *m, f32 *fr, f32 *fl, f32 *hr, f32 *hl) {
 static void foot_at(u8 *m, s32 i, f32 *out) {
     f32 b[4][4] __attribute__((aligned(16)));
 
-    sceVu0CopyMatrix(b, (f32 (*)[4])func_0017CE80(SKEL(m), sFootBones[i]));
+    sceVu0CopyMatrix(b, (f32 (*)[4])Skel_Bone(SKEL(m), sFootBones[i]));
     sceVu0CopyVector(out, b[3]);
 }
 
@@ -469,10 +469,10 @@ static void bone_turn(f32 (*b)[4], const f32 *axis1, f32 a1, const f32 *axis2, f
     f32 r2[4][4] __attribute__((aligned(16)));
     f32 r[4][4] __attribute__((aligned(16)));
 
-    func_0025C6F0(q, axis1, a1);
-    func_0025C770(q, r1);
-    func_0025C6F0(q, axis2, a2);
-    func_0025C770(q, r2);
+    Quat_FromAxisAngle(q, axis1, a1);
+    Quat_ToMatrix(q, r1);
+    Quat_FromAxisAngle(q, axis2, a2);
+    Quat_ToMatrix(q, r2);
     sceVu0MulMatrix(r, r2, r1);
     sceVu0CopyVector(r[3], b[3]);
     b[3][0] = 0.0f;
@@ -487,7 +487,7 @@ static void neck_turn(u8 *m, f32 (*b)[4], s32 ref, f32 k) {
     f32 side[4] __attribute__((aligned(16)));
     f32 up[4] __attribute__((aligned(16)));
     f32 fwd[4] __attribute__((aligned(16)));
-    f32 *r = func_0017CE80(SKEL(m), ref);
+    f32 *r = Skel_Bone(SKEL(m), ref);
 
     sceVu0CopyVector(fwd, r + 8);
     fwd[1] = 0.0f;

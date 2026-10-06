@@ -1241,13 +1241,13 @@ s32 func_00177770(Progress *p, s32 id) {
     return 0;
 }
 
-/* load event character `id` into `slot` and, when it came, set it up (func_0016D180); 1 if
+/* load event character `id` into `slot` and, when it came, set it up (CharLoad_Buffers); 1 if
  * loaded */
 s32 func_0016D670(Progress *p, u32 id, u32 slot) {
-    u32 ok = (u8)func_0016D6D0(p, id, slot);
+    u32 ok = (u8)CharLoad_EventChar(p, id, slot);
 
     if (ok) {
-        func_0016D180(p, (u8)slot);
+        CharLoad_Buffers(p, (u8)slot);
     }
     return ok;
 }
@@ -1445,7 +1445,7 @@ void func_00177F00(Progress *p, u32 slot, s32 bone, s32 arg, f32 f) {
     f32 at[4] __attribute__((aligned(16)));
     u8 *model = AT(gCharacters[slot & 0xFF], 0xF0, u8 *);
 
-    sceVu0CopyVector(at, func_0017CE80(AT(model, 0x810, void *), bone) + 12);
+    sceVu0CopyVector(at, Skel_Bone(AT(model, 0x810, void *), bone) + 12);
     VCALL(p, 0x30, void (*)(Progress *, u32, f32 *, s32, f32))(p, slot, at, arg, f);
 }
 
@@ -1497,12 +1497,12 @@ s32 func_00176D80(Progress *p) {
     return ((s32 (*)(void *, s32))func_00183190)(f, 1) != 0;
 }
 
-/* the parts at +0x6FC218 (func_0026BC00), +0x6FC340 (vtable +0x24) and +0x706440 */
+/* the parts at +0x6FC218 (Message_ClearAll), +0x6FC340 (vtable +0x24) and +0x706440 */
 /* (possibly dead code: nothing in the game references it) */
 void func_00176720(Progress *p) {
     VObject *o = (VObject *)((u8 *)p + 0x6FC340);
 
-    func_0026BC00((VObject *)((u8 *)p + 0x6FC218));
+    Message_ClearAll((VObject *)((u8 *)p + 0x6FC218));
     VCALL(o, 0x24, void (*)(VObject *))(o);
     func_002E2920((u8 *)p + 0x706440);
 }

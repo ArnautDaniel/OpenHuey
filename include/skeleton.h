@@ -5,10 +5,10 @@
 #include "common.h"
 
 /* skeleton.c */
-extern void func_0017D220(u8 *pool);
-extern s32 func_0017CE60(u8 *node, f32 *parent);
-extern f32 *func_0017CE80(u8 *skel, s32 bone);   /* bone matrix */
-extern u8 *func_0017D000(u8 *pool, u32 nBones);   /* allocate a skeleton */
-extern void func_0017CED0(u8 *pool, u8 *skel);   /* free a skeleton */
+extern void SkelPool_FreeAll(u8 *pool);
+extern s32 SkelNode_SetParent(u8 *node, f32 *parent);
+extern f32 *Skel_Bone(u8 *skel, s32 bone);   /* bone matrix */
+extern u8 *SkelPool_Alloc(u8 *pool, u32 nBones);   /* allocate a skeleton */
+extern void SkelPool_Free(u8 *pool, u8 *skel);   /* free a skeleton */
 
 #endif /* SKELETON_H */

@@ -30,7 +30,8 @@ static inline s32 be32(const u8 *p) {
 }
 
 /* +0x14: step over the condition at the pc (0x11 carries a string: 3 + its length) */
-void func_001FC700(VObject *ev) {
+/* 0x001FC700 */
+void EventCond_Skip(VObject *ev) {
     u8 *pc = PC(ev);
 
     if (pc[0] == 0x11) {
@@ -40,8 +41,8 @@ void func_001FC700(VObject *ev) {
     }
 }
 
-extern s32 func_002DE1C0(u8 *zone, u8 *c);   /* character in a zone */
-extern s32 func_002DE2F0(u8 *zone, f32 *p, f32 r, f32 h);   /* a point against a zone (bits) */
+extern s32 Zone_HasAnyChar(u8 *zone, u8 *c);   /* character in a zone */
+extern s32 Zone_TestCylinder(u8 *zone, f32 *p, f32 r, f32 h);   /* a point against a zone (bits) */
 extern VObject *D_00456E00;
 
 /* the character with script id `id` if it is active (+0x28), else NULL */
@@ -60,7 +61,8 @@ static f32 cond_deg(f32 a) {
 }
 
 /* +0x10: evaluate the condition at the pc (and step over it) */
-s32 func_001FC760(VObject *ev) {
+/* 0x001FC760 */
+s32 EventCond_Eval(VObject *ev) {
     Progress *p = gProgress;
     const u8 *pc = PC(ev);
     u8 r = 0;
@@ -122,7 +124,7 @@ s32 func_001FC760(VObject *ev) {
     case 0x02:     /* character pc[1] (in this room) entered area pc[2] */
     case 0x03:     /* ... left it */
         if (cond_char(p, pc[1]) != NULL && AT(cond_char(p, PC(ev)[1]), 0x30, s32) == AT(ev, 0x560, s32)) {
-            s32 x = (s8)func_001FC390(ev, cond_char(p, PC(ev)[1]), PC(ev)[2]);
+            s32 x = (s8)EventCond_AreaCross(ev, cond_char(p, PC(ev)[1]), PC(ev)[2]);
 
             r = x == (pc[0] == 0x02 ? 1 : -1);
         }
@@ -165,7 +167,7 @@ s32 func_001FC760(VObject *ev) {
         break;
     case 0x0E:     /* 0xF0..0xFA: that step slot runs; else character pc[1] is held (+0xE0) */
         if (pc[1] >= 0xF0 && pc[1] < 0xFB) {
-            r = AT(ev, 0x564 + (u8)func_001FBF70(ev, pc[1]) * 0x18, s32) != 0;
+            r = AT(ev, 0x564 + (u8)Event_CharSlot(ev, pc[1]) * 0x18, s32) != 0;
         } else if (cond_char(p, pc[1]) != NULL) {
             r = AT(cond_char(p, PC(ev)[1]), 0xE0, u8) != 0;
         }
@@ -287,7 +289,7 @@ s32 func_001FC760(VObject *ev) {
             u8 bits;
 
             sceVu0CopyVector(v, (f32 *)(c + 0x40));
-            bits = (u8)func_002DE2F0((u8 *)ev + 0xBF0 + PC(ev)[2] * 0x30, v, AT(c, 0xC8, f32), AT(c, 0xCC, f32));
+            bits = (u8)Zone_TestCylinder((u8 *)ev + 0xBF0 + PC(ev)[2] * 0x30, v, AT(c, 0xC8, f32), AT(c, 0xCC, f32));
             r = (PC(ev)[3] & bits) == PC(ev)[3];
         }
         break;
@@ -297,7 +299,7 @@ s32 func_001FC760(VObject *ev) {
         u8 *c = cond_char(p, pc[1]);
 
         if (c != NULL && AT(ev, 0x560, s32) == AT(c, 0x30, s32)) {
-            u8 bits = (u8)func_002DE2F0((u8 *)ev + 0xBF0 + PC(ev)[2] * 0x30, (f32 *)(c + 0x10), AT(c, 0xC8, f32),
+            u8 bits = (u8)Zone_TestCylinder((u8 *)ev + 0xBF0 + PC(ev)[2] * 0x30, (f32 *)(c + 0x10), AT(c, 0xC8, f32),
                                         AT(c, 0xCC, f32));
 
             r = (PC(ev)[3] & bits) == PC(ev)[3];
@@ -305,7 +307,7 @@ s32 func_001FC760(VObject *ev) {
         break;
     }
     case 0x37:     /* character pc[1] is in zone pc[2] (+0xBF0) */
-        r = (u8)func_002DE1C0((u8 *)ev + 0xBF0 + PC(ev)[2] * 0x30, cond_char(p, pc[1]));
+        r = (u8)Zone_HasAnyChar((u8 *)ev + 0xBF0 + PC(ev)[2] * 0x30, cond_char(p, pc[1]));
         break;
     case 0x3D:     /* the player can be controlled and the progress state is below 4 */
         r = (u8)func_0019A2B0((Fiona *)((u8 *)gCharPlayer)) == 1 && AT(p, 0x7B8, u8) < 4;
@@ -395,10 +397,10 @@ s32 func_001FC760(VObject *ev) {
             r = 1;
         }
         break;
-    case 0x18: {   /* character pc[1]: func_00177BF0 (pc[2]) has bit 4 */
+    case 0x18: {   /* character pc[1]: PursuerGroup_Fields (pc[2]) has bit 4 */
         u8 i = (u8)func_001770D0(p, pc[1]);
 
-        if (i != 0xFF && ((u8)func_00177BF0(p, PC(ev)[2], i) & 4)) {
+        if (i != 0xFF && ((u8)PursuerGroup_Fields(p, PC(ev)[2], i) & 4)) {
             r = 1;
         }
         break;
@@ -739,11 +741,11 @@ s32 func_001FC760(VObject *ev) {
         }
         break;
     }
-    case 0x5C:   /* gAdx: pc[1] 0 func_002D2120, else func_002D20D0 (none: 1) */
+    case 0x5C:   /* gAdx: pc[1] 0 Bgm_CanStart, else Bgm_IsPlaying (none: 1) */
         if (pc[1] == 0) {
-            r = gAdx != NULL ? func_002D2120(gAdx) : 1;
+            r = gAdx != NULL ? Bgm_CanStart(gAdx) : 1;
         } else {
-            r = gAdx != NULL ? func_002D20D0(gAdx) : 1;
+            r = gAdx != NULL ? Bgm_IsPlaying(gAdx) : 1;
         }
         break;
     case 0x5E:   /* the item manager's +0x3C (be16 pc[1..2]) */
@@ -882,7 +884,8 @@ static s32 line_side(const f32 *p, const f32 *a, const f32 *b) {
  * word 0 set): 1 entered, -1 left (the event's +0xD8 inside test); a gate (an entry's line
  * +0x10 -> +0x20, heights +0x14 .. +0x8): the side it came to when its step crossed the line
  * at a height within the gate; else 0 */
-s32 func_001FC390(VObject *ev, u8 *c, s32 area) {
+/* 0x001FC390 */
+s32 EventCond_AreaCross(VObject *ev, u8 *c, s32 area) {
     u32 *tbl = AT(ev, 0x10, u32 *);
     u8 *e;
     NavMesh *nm;
@@ -937,7 +940,8 @@ s32 func_001FC390(VObject *ev, u8 *c, s32 area) {
 
 /* is character `c` (active, in the current room) in zone `zone`: its point (+0x74) fully
  * inside (bits 1 and 2) */
-s32 func_002DE0F0(u8 *zone, u8 *c) {
+/* 0x002DE0F0 */
+s32 Zone_HasChar(u8 *zone, u8 *c) {
     f32 pt[4] __attribute__((aligned(16)));
     s32 room;
 
@@ -951,18 +955,19 @@ s32 func_002DE0F0(u8 *zone, u8 *c) {
     if (!(u8)VCALL((VObject *)c, 0x74, s32 (*)(VObject *, f32 *))((VObject *)c, pt)) {
         return 0;
     }
-    return ((u8)func_002DE2F0(zone, pt, 0.0f, 0.0f) & 3) == 3;
+    return ((u8)Zone_TestCylinder(zone, pt, 0.0f, 0.0f) & 3) == 3;
 }
 
 /* is character `c` in zone `zone` - or, for NULL, any active character in this room (its
  * point +0x74 fully inside: bits 1 and 2) */
-s32 func_002DE1C0(u8 *zone, u8 *c) {
+/* 0x002DE1C0 */
+s32 Zone_HasAnyChar(u8 *zone, u8 *c) {
     f32 pt[4] __attribute__((aligned(16)));
     Progress *p;
     u8 i;
 
     if (c != NULL) {
-        return func_002DE0F0(zone, c);
+        return Zone_HasChar(zone, c);
     }
     p = gProgress;
     for (i = 0; i < 6; i++) {
@@ -971,7 +976,7 @@ s32 func_002DE1C0(u8 *zone, u8 *c) {
         if (k != NULL && AT(k, 0x28, u8) != 0 &&
             AT(k, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p) &&
             (u8)VCALL(k, 0x74, s32 (*)(u8 *, f32 *))(k, pt) &&
-            ((u8)func_002DE2F0(zone, pt, 0.0f, 0.0f) & 3) == 3) {
+            ((u8)Zone_TestCylinder(zone, pt, 0.0f, 0.0f) & 3) == 3) {
             return 1;
         }
     }
@@ -981,7 +986,8 @@ s32 func_002DE1C0(u8 *zone, u8 *c) {
 /* a zone (on +0x4; a cylinder: centre +0x10, radius +0x20, height +0x24, either way up) against
  * a point `p` with radius `r` and height `h`: bit 1 they overlap in height, 4 it is within it in
  * height, 2 they overlap across, 8 its centre is inside across */
-s32 func_002DE2F0(u8 *z, f32 *p, f32 r, f32 h) {
+/* 0x002DE2F0 */
+s32 Zone_TestCylinder(u8 *z, f32 *p, f32 r, f32 h) {
     f32 hz = AT(z, 0x24, f32);
     f32 dy, ah, az, d2;
     s32 bits = 0;

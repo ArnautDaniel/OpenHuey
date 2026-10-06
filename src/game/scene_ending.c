@@ -81,19 +81,20 @@ static inline u32 msg_width(Task *t, s32 id) {
 #define SCENE_TABLE_SCENE(i) (*(Scene **)((u8 *)gSceneTable + 4 + (i) * 4))
 #define LOADER_LOAD(name, dst) VCALL(gFileLoader, 0x34, void (*)(VObject *, const char *, void *))(gFileLoader, name, dst)
 
-void func_00372050(SceneEnding *s, u8 alpha);
-void func_00372330(SceneEnding *s);
-void func_003723A0(SceneEnding *s);
-void func_00372690(SceneEnding *s);
-void func_00372A90(SceneEnding *s);
-void func_003738C0(SceneEnding *s);
-void func_00373E50(SceneEnding *s);
-void func_00373EB0(SceneEnding *s);
-void func_003741A0(SceneEnding *s);
-void func_00374260(SceneEnding *s);
+void SceneEnding_DrawPicture(SceneEnding *s, u8 alpha);
+void SceneEnding_SeqSave(SceneEnding *s);
+void SceneEnding_SeqTitleMessage(SceneEnding *s);
+void SceneEnding_SeqUnlocks(SceneEnding *s);
+void SceneEnding_SeqResults(SceneEnding *s);
+void SceneEnding_SeqSetup(SceneEnding *s);
+void SceneEnding_StateResults(SceneEnding *s);
+void SceneEnding_StateStaffFade(SceneEnding *s);
+void SceneEnding_StateStaffRoll(SceneEnding *s);
+void SceneEnding_StateStart(SceneEnding *s);
 
 /* destructor */
-SceneEnding *func_00371E10(SceneEnding *s, s32 flags) {
+/* 0x00371E10 */
+SceneEnding *SceneEnding_dtor(SceneEnding *s, s32 flags) {
     if (s != NULL) {
         u8 *bgm = END_BGM(s);
         u8 *msg = END_MSG(s);
@@ -101,8 +102,8 @@ SceneEnding *func_00371E10(SceneEnding *s, s32 flags) {
         Task *task = &s->task;
 
         s->base.vtbl = D_0047A330;
-        func_002E31D0((BgmCtl *)bgm);
-        func_002D2330(gAdx);
+        BgmCtl_StopNow((BgmCtl *)bgm);
+        Bgm_Release(gAdx);
         if (bgm != NULL) {
             AT(bgm, 0, void **) = D_0046A110;
             if (bgm != NULL) {
@@ -137,14 +138,15 @@ SceneEnding *func_00371E10(SceneEnding *s, s32 flags) {
             s->base.vtbl = Scene_vtable;
         }
         if ((s16)flags > 0) {
-            func_0011F9A0(s);
+            SceneHeap_delete(s);
         }
     }
     return s;
 }
 
 /* format into `buf` (9 bytes) */
-void func_00371FE0(SceneEnding *s, char *buf, const char *fmt, ...) {
+/* 0x00371FE0 */
+void SceneEnding_Format(SceneEnding *s, char *buf, const char *fmt, ...) {
     va_list ap;
 
     va_start(ap, fmt);
@@ -156,7 +158,8 @@ void func_00371FE0(SceneEnding *s, char *buf, const char *fmt, ...) {
 #include "gl2d.h"
 
 /* the ending's picture over the whole screen (512 x 448 texels), at `alpha` 0..0x80 */
-void func_00372050(SceneEnding *s, u8 alpha) {
+/* 0x00372050 */
+void SceneEnding_DrawPicture(SceneEnding *s, u8 alpha) {
     gl2d_sprite(0x30, 0, 0, 512, 448, END_PIC_TEX(s), 0.5f, 0.5f, 512.5f, 448.5f, ((u32)alpha << 24) | 0x808080, 0,
                 0x40);
 }
@@ -164,7 +167,8 @@ void func_00372050(SceneEnding *s, u8 alpha) {
 
 /* +0x14 finish: end the movie scene, drop the message set 6 and the textures (group 0x19),
  * reset the message object, ask to be finished */
-void func_00372230(SceneEnding *s) {
+/* 0x00372230 */
+void SceneEnding_Finish(SceneEnding *s) {
     Scene *m = SCENE_TABLE_SCENE(1);
     VObject *msg;
 
@@ -176,13 +180,14 @@ void func_00372230(SceneEnding *s) {
     VCALL(msg, 0x14, void (*)(VObject *, s32))(msg, 6);
     VCALL(msg, 0xC, void (*)(VObject *, s32))(msg, 6);
     VCALL(gTexCache, 0x14, void (*)(VObject *, s32))(gTexCache, 0x19);
-    func_0026BC00((VObject *)END_MSG(s));
+    Message_ClearAll((VObject *)END_MSG(s));
     s->base.request = SCENE_REQ_FINISH;
 }
 
 /* the last state: the clear-data save (the sub screen); once it's closed, back to the title
  * (mode 2) */
-void func_00372330(SceneEnding *s) {
+/* 0x00372330 */
+void SceneEnding_SeqSave(SceneEnding *s) {
     SubScreen_Update(END_SUB(s));
     if (END_SUB(s)->open) {
         return;
@@ -210,7 +215,7 @@ static inline void ending_picture(SceneEnding *s) {
         }
     }
     if (s->picAlpha) {
-        func_00372050(s, s->picAlpha);
+        SceneEnding_DrawPicture(s, s->picAlpha);
     }
 }
 
@@ -223,10 +228,10 @@ static inline void ending_fade_to_save(SceneEnding *s) {
     VCALL(gMusic, 0x8, void (*)(VObject *, s32, s32, s32, f32))(gMusic, 0xFF, 0, 0, 1.0f);
     END_SUB(s)->mode = SUB_MODE_SAVE_9;
     Task_Close(&s->task);
-    ptmf_set_fn(END_SEQ(s), func_00372330);
+    ptmf_set_fn(END_SEQ(s), SceneEnding_SeqSave);
 }
 
-/* titles 3..6 have a message of their own (func_003723A0): its width (message 0x13) kept */
+/* titles 3..6 have a message of their own (SceneEnding_SeqTitleMessage): its width (message 0x13) kept */
 static inline s32 ending_title_message(SceneEnding *s) {
     switch (s->title) {
     case 3:
@@ -238,14 +243,15 @@ static inline s32 ending_title_message(SceneEnding *s) {
         s->news = -(s32)msg_width(&s->task, 0x13);
         s->newsX = (u32)(s->news + 0x200) >> 1;
         Task_Close(&s->task);
-        ptmf_set_fn(END_SEQ(s), func_003723A0);
+        ptmf_set_fn(END_SEQ(s), SceneEnding_SeqTitleMessage);
         return 1;
     }
     return 0;
 }
 
 /* results: the picture fades in, the title's message (0x14..0x17 for titles 3..6), out */
-void func_003723A0(SceneEnding *s) {
+/* 0x003723A0 */
+void SceneEnding_SeqTitleMessage(SceneEnding *s) {
     s32 id = 0;
 
     ending_picture(s);
@@ -290,7 +296,8 @@ void func_003723A0(SceneEnding *s) {
 
 /* results: the picture fades in; what was unlocked (0x1C the first clear, 0x1D, 0x1E); then
  * the title's message or the fade */
-void func_00372690(SceneEnding *s) {
+/* 0x00372690 */
+void SceneEnding_SeqUnlocks(SceneEnding *s) {
     ending_picture(s);
     Task_Run(&s->task);
     switch (s->step) {
@@ -368,9 +375,10 @@ static inline s32 bit_test(u32 *bits, s32 n) {
 
 /* the results: the picture fades in and half out, the record shows - ENDING, TIME, DOG LEVEL,
  * PANIC, ITEM, CRITICAL HEWIE INJURIES, ENEMIES DEFEATED and TYPE, the values the type came
- * from highlighted; a button, then the unlocks (the system data's +0x24 bits, func_00372690),
- * the title's message (func_003723A0) or the fade to the save */
-void func_00372A90(SceneEnding *s) {
+ * from highlighted; a button, then the unlocks (the system data's +0x24 bits, SceneEnding_SeqUnlocks),
+ * the title's message (SceneEnding_SeqTitleMessage) or the fade to the save */
+/* 0x00372A90 */
+void SceneEnding_SeqResults(SceneEnding *s) {
     u8 *sys = gSystemData;
     u8 *st = sys + 0x190;
     char buf[12];
@@ -408,7 +416,7 @@ void func_00372A90(SceneEnding *s) {
         ending_label(s, id, 0x60, color);
 
         /* the play time */
-        func_00371FE0(s, buf, D_00463760, AT(st, 0x100C, u8), AT(st, 0x100D, u8), AT(st, 0x100E, u8));
+        SceneEnding_Format(s, buf, D_00463760, AT(st, 0x100C, u8), AT(st, 0x100D, u8), AT(st, 0x100E, u8));
         switch (s->title) {
         case 6:
         case 9:
@@ -456,12 +464,12 @@ void func_00372A90(SceneEnding *s) {
                 color = 0;
                 break;
             }
-            func_00371FE0(s, buf, D_00463778, c);
+            SceneEnding_Format(s, buf, D_00463778, c);
             ending_value(s, buf, 0xA0, color);
         }
 
         /* panic, items, critical Hewie injuries, enemies defeated */
-        func_00371FE0(s, buf, D_00463780, AT(st, 0x100A, s16));
+        SceneEnding_Format(s, buf, D_00463780, AT(st, 0x100A, s16));
         ending_value(s, buf, 0xC0, s->title == 8);
 
         /* the percentage */
@@ -470,16 +478,16 @@ void func_00372A90(SceneEnding *s) {
             char pct[2] = "%";
             s32 x;
 
-            func_00371FE0(s, buf, D_00463780,
+            SceneEnding_Format(s, buf, D_00463780,
                           (s32)(k100.f * (f32)AT(st, 0x1006, s16) / (f32)AT(st, 0x1008, s16)));
             x = (Text_LineWidth(&s->task, (u8 *)buf, 0x10) & 0xFFFF) +
                 (Text_LineWidth(&s->task, (u8 *)pct, 0x10) & 0xFFFF);
             Task_PrintfEx(&s->task, 0x1E0 - x, 0xE0, s->title == 4 ? 2 : 0, s->textAlpha, 0x33, D_00463788, buf);
         }
 
-        func_00371FE0(s, buf, D_00463780, AT(st, 0x1002, s16));
+        SceneEnding_Format(s, buf, D_00463780, AT(st, 0x1002, s16));
         ending_value(s, buf, 0x100, s->title == 3 ? 2 : 0);
-        func_00371FE0(s, buf, D_00463780, AT(st, 0x1004, s16));
+        SceneEnding_Format(s, buf, D_00463780, AT(st, 0x1004, s16));
         ending_value(s, buf, 0x120, s->title == 5 ? 2 : 0);
 
         /* the type */
@@ -623,7 +631,7 @@ void func_00372A90(SceneEnding *s) {
             s->step = 0;
             s->textAlpha = 0;
             Task_Close(&s->task);
-            ptmf_set_fn(END_SEQ(s), func_00372690);
+            ptmf_set_fn(END_SEQ(s), SceneEnding_SeqUnlocks);
         } else if (!ending_title_message(s)) {
             s->step++;
         }
@@ -716,14 +724,15 @@ static inline s32 ending_title(SceneEnding *s, u8 *st) {
 }
 
 /* the results' setup: the sub screen and message object reset, the ending's picture and
- * MSG_END loaded, the dog level and type worked out, the results music (0x33); then func_00372A90 */
-void func_003738C0(SceneEnding *s) {
+ * MSG_END loaded, the dog level and type worked out, the results music (0x33); then SceneEnding_SeqResults */
+/* 0x003738C0 */
+void SceneEnding_SeqSetup(SceneEnding *s) {
     u8 *st = gSystemData + 0x190;
     VObject *msg;
     VObject *snd;
 
     SubScreen_Start(END_SUB(s));
-    func_0026BCC0(END_MSG(s));
+    Message_Init(END_MSG(s));
     switch (AT(st, 0x111, u8)) {
     case 0:
         LOADER_LOAD(D_00463840, END_PIC_FILE(s));
@@ -766,30 +775,32 @@ void func_003738C0(SceneEnding *s) {
             *v = 1.0f;
         }
     }
-    func_002D1FD0(gAdx);
+    Bgm_ApplyVolume(gAdx);
     VCALL(gMusic, 0x8, void (*)(VObject *, s32, s32, s32, f32))(gMusic, 0x33, 0, 0, 1.0f);
-    ptmf_set_fn(END_SEQ(s), func_00372A90);
+    ptmf_set_fn(END_SEQ(s), SceneEnding_SeqResults);
 }
 
 /* state: the results (their own state at +0x117500), then the BGM */
-void func_00373E50(SceneEnding *s) {
+/* 0x00373E50 */
+void SceneEnding_StateResults(SceneEnding *s) {
     PTMF *seq = END_SEQ(s);
 
     if (ptmf_test(seq)) {
         ptmf_scall(s, seq);
     }
-    func_002E3200((BgmCtl *)END_BGM(s));
+    BgmCtl_Update((BgmCtl *)END_BGM(s));
 }
 
 /* state: fade the staff roll out (sound and picture, 1/30 a frame; at 0 its scene is
- * finished); once it's gone, the results (func_003738C0) */
-void func_00373EB0(SceneEnding *s) {
+ * finished); once it's gone, the results (SceneEnding_SeqSetup) */
+/* 0x00373EB0 */
+void SceneEnding_StateStaffFade(SceneEnding *s) {
     u8 *m = gMovie;
     f32 l;
 
     if (m == NULL) {
-        ptmf_set_fn(&s->base.state, func_00373E50);
-        ptmf_set_fn(END_SEQ(s), func_003738C0);
+        ptmf_set_fn(&s->base.state, SceneEnding_StateResults);
+        ptmf_set_fn(END_SEQ(s), SceneEnding_SeqSetup);
         return;
     }
     l = END_VOLUME(s) - 0x1.111112p-5f;
@@ -832,7 +843,8 @@ void func_00373EB0(SceneEnding *s) {
 }
 
 /* state: the staff roll (Start, once it shows, skips it), then its fade */
-void func_003741A0(SceneEnding *s) {
+/* 0x003741A0 */
+void SceneEnding_StateStaffRoll(SceneEnding *s) {
     s32 skip = 0;
 
     if ((D_0047E37C & PAD_START) && gMovie != NULL && AT(gMovie, 0x1B4, u8)) {
@@ -841,11 +853,12 @@ void func_003741A0(SceneEnding *s) {
     if (gMovie != NULL && !skip) {
         return;
     }
-    ptmf_set_fn(&s->base.state, func_00373EB0);
+    ptmf_set_fn(&s->base.state, SceneEnding_StateStaffFade);
 }
 
 /* state: start the staff roll as scene 1 at full volume */
-void func_00374260(SceneEnding *s) {
+/* 0x00374260 */
+void SceneEnding_StateStart(SceneEnding *s) {
     void *table = gSceneTable;
     VObject *heap = (VObject *)((u8 *)table + 0x10D9040);
     Scene *movie;
@@ -877,10 +890,11 @@ void func_00374260(SceneEnding *s) {
     if (ok) {
         func_002B6D10(gMovie, D_004638F8, 1, 0);
     }
-    ptmf_set_fn(&s->base.state, func_003741A0);
+    ptmf_set_fn(&s->base.state, SceneEnding_StateStaffRoll);
 }
 
 /* +0x10 entry: the staff roll */
-void func_003743B0(SceneEnding *s) {
-    ptmf_set_fn(&s->base.state, func_00374260);
+/* 0x003743B0 */
+void SceneEnding_StateEntry(SceneEnding *s) {
+    ptmf_set_fn(&s->base.state, SceneEnding_StateStart);
 }

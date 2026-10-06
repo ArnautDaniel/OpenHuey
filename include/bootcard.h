@@ -13,6 +13,6 @@ extern BootCard *BootCard_dtor(BootCard *b, s32 flags);   /* BootCard destructor
 extern void SaveScreen_Init(BootCard *b, void *buf0, void *buf1);
 extern void SaveScreen_Draw(BootCard *b, s32 flags);
 extern void SaveScreen_Load(BootCard *b);
-extern void func_002BDAB0(BootCard *b);   /* the card screens' step */
+extern void BootCard_StateSave(BootCard *b);   /* the card screens' step */
 
 #endif /* BOOTCARD_H */

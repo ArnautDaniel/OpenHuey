@@ -95,7 +95,7 @@ s32 func_0034B210(void *self, void *a1, u8 *cmd) {
     msg.obj = o;
     func_002D6090(gEffects, slot, &msg);
     if (VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector) == 0 && on != 0) {
-        func_002FF650(gSound, 1, 6, (f32 *)(o + 0x20), 0, 0);
+        Sound_PlayBankAt(gSound, 1, 6, (f32 *)(o + 0x20), 0, 0);
     }
     return 1;
 }

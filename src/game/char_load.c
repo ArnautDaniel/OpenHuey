@@ -10,7 +10,7 @@
 #include "model.h"
 #include "pursuer.h"
 
-void *func_001727C0(void *p, s32 arg);
+void *Room26Obj_ctor(void *p, s32 arg);
 
 typedef struct {
     u32 size;
@@ -55,7 +55,7 @@ static const CharKind sKinds[0x28] = {
     [35] = { 0x1800, func_00173420, func_00170D30 },
     [36] = { 0x1800, func_001733D0, func_00170D30 },
     [37] = { 0x1840, func_00172BE0, func_0016F860 },
-    [38] = { 0x1800, func_001727C0, func_00170710 },
+    [38] = { 0x1800, Room26Obj_ctor, func_00170710 },
     [39] = { 0x1800, func_00173290, func_00170910 },
 };
 
@@ -72,7 +72,7 @@ extern void *D_00469C60[];
 extern void *D_0046D810[];
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-void *func_00171090(u8 *p, u32 id, s32 arg);
+void *RoomObj_ctor(u8 *p, u32 id, s32 arg);
 
 extern void *D_00478FF0[];
 static inline void *b0_RoomCtor(void *p, u32 id, s32 arg, void **vtbl) {
@@ -88,7 +88,8 @@ static inline void *b0_RoomCtor(void *p, u32 id, s32 arg, void **vtbl) {
 
 /* load character kind `id` into slot 2: 1 when it's there; 0 when slot 2 is taken, the kind has
    no character or the heap is full */
-s32 func_00171160(Progress *p, u32 id) {   /* (a u8) */
+/* 0x00171160 */
+s32 CharLoad_Partner(Progress *p, u32 id) {   /* (a u8) */
     const CharKind *k;
     VObject *heap;
     void *mem;
@@ -100,7 +101,7 @@ s32 func_00171160(Progress *p, u32 id) {   /* (a u8) */
     }
 #ifdef HG_NATIVE
     if (!sReady[id]) {
-        hg_skipped("func_00171160: a character kind whose class is not in C yet");
+        hg_skipped("CharLoad_Partner: a character kind whose class is not in C yet");
         return 0;
     }
 #endif
@@ -123,11 +124,12 @@ s32 func_00171160(Progress *p, u32 id) {   /* (a u8) */
     }
     Characters_Register(p, 2, obj);
     k->model(p, 2);
-    func_0016D180(p, 2);
+    CharLoad_Buffers(p, 2);
     return 1;
 }
 
-void *func_001727C0(void *p, s32 arg) {
+/* 0x001727C0 */
+void *Room26Obj_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x26, arg, D_00478FF0);
 }
 
@@ -135,7 +137,8 @@ void *func_001727C0(void *p, s32 arg) {
  * block from the scene heap (+0x166C; +0x1668 set), split in order to +0x1670, +0x1678,
  * +0x1674, (none for the fourth, though its size is counted), +0x167C, +0x1680, +0x1684; an
  * empty one gets no pointer (0) */
-void func_0016D180(Progress *p, s32 slot) {
+/* 0x0016D180 */
+void CharLoad_Buffers(Progress *p, s32 slot) {
     static const u16 sAt[7] = { 0x1670, 0x1678, 0x1674, 0, 0x167C, 0x1680, 0x1684 };
     u8 *c = (u8 *)gCharacters[slot];
     const u32 *size = VCALL(c, 0xFC, const u32 *(*)(void *))(c);
@@ -187,7 +190,8 @@ s32 Characters_Register(void *self, u32 kind, void *obj) {
 /* load character kind `id` as an event character into `slot` (3..5, free): 0x17C0 bytes from
    the scene heap, its kind's model; 1 when it's there, 0 when not (no character for that kind:
    none either) */
-s32 func_0016D6D0(Progress *p, u32 id, u32 slot) {
+/* 0x0016D6D0 */
+s32 CharLoad_EventChar(Progress *p, u32 id, u32 slot) {
     VObject *heap = (VObject *)((u8 *)p + 0x6FBF00);
     const CharKind *k;
     void *mem;
@@ -208,7 +212,7 @@ s32 func_0016D6D0(Progress *p, u32 id, u32 slot) {
     }
     obj = func_00124E50((void *)0x17C0, mem);
     if (obj != NULL) {
-        obj = func_00171090(obj, id, slot);
+        obj = RoomObj_ctor(obj, id, slot);
     }
     Characters_Register(p, slot, obj);
     k->model(p, slot);
@@ -217,7 +221,8 @@ s32 func_0016D6D0(Progress *p, u32 id, u32 slot) {
 }
 
 /* Room object constructor: base 0x469C20 -> 0x469C60 -> 0x46D810; id at +0x153C. */
-void *func_00171090(u8 *p, u32 id, s32 arg) {
+/* 0x00171090 */
+void *RoomObj_ctor(u8 *p, u32 id, s32 arg) {
     FLD(p, 0x0, void **) = D_00469C20;
     FLD(p, 0x20, s32) = arg;
     FLD(p, 0x24, s32) = 0x2000000;

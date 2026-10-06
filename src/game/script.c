@@ -12,14 +12,16 @@
 #define SC_DEPTH(s) AT(s, 0x8, u8)
 
 /* start running `script` */
-void func_00121890(u8 *s, u8 *script) {
+/* 0x00121890 */
+void Script_Start(u8 *s, u8 *script) {
     SC_PC(s) = script;
     SC_DEPTH(s) = 0;
 }
 
 /* skip the rest of the current block: to its else (F7) or past its end, stepping over nested
  * blocks */
-void func_00121380(u8 *s) {
+/* 0x00121380 */
+void Script_SkipBlock(u8 *s) {
     u8 depth = SC_DEPTH(s);
     u8 found = 0;
 
@@ -69,7 +71,8 @@ void func_00121380(u8 *s) {
 
 /* an if: evaluate its condition chain (the and / or ops combine left to right); false: skip
  * to the else or the end */
-void func_001214F0(u8 *s) {
+/* 0x001214F0 */
+void Script_If(u8 *s) {
     u8 depth = SC_DEPTH(s);
     u8 done = 0;
     u8 result = 0;
@@ -127,20 +130,21 @@ void func_001214F0(u8 *s) {
         }
     } while (done != 1);
     if (!result) {
-        func_00121380(s);
+        Script_SkipBlock(s);
     }
 }
 
 /* run the control ops at the pc, up to the next command (or the script's end) */
-void func_00121730(u8 *s) {
+/* 0x00121730 */
+void Script_RunControl(u8 *s) {
     u8 op;
 
     while ((op = *SC_PC(s)) >= 0xF0) {
         if (op < 0xF7) {
-            func_001214F0(s);
+            Script_If(s);
         } else if (op == 0xF7) {
             SC_PC(s)++;
-            func_00121380(s);
+            Script_SkipBlock(s);
         } else if (op == 0xF8) {
             SC_DEPTH(s)--;
             SC_PC(s)++;
@@ -150,7 +154,7 @@ void func_00121730(u8 *s) {
         } else if (op == 0xF9) {
             SC_DEPTH(s)--;
             SC_PC(s)++;
-            func_00121380(s);
+            Script_SkipBlock(s);
         } else if (op == 0xFB) {
             SC_DEPTH(s)--;
             SC_PC(s)++;

@@ -12,7 +12,8 @@
 
 /* genrand_res53: uniform double in [0, 1) with 53-bit resolution, from two 32-bit outputs
  * (vtable +0x10). Returned as a double in v0. */
-u64 func_001A43D0(VObject *rng) {
+/* 0x001A43D0 */
+u64 Random_Res53(VObject *rng) {
     u32 a = VCALL(rng, 0x10, u32 (*)(VObject *))(rng) >> 5;
     u32 b = VCALL(rng, 0x10, u32 (*)(VObject *))(rng) >> 6;
     u64 x = func_0011F208(DBL_2POW26, func_00100230(a));
@@ -23,7 +24,8 @@ u64 func_001A43D0(VObject *rng) {
 extern void *D_0046AB50[];
 
 /* constructor: register, seed (vtable +0xC) */
-VObject *func_001A48C0(VObject *rng, s32 seed) {
+/* 0x001A48C0 */
+VObject *Random_ctor(VObject *rng, s32 seed) {
     rng->vtbl = D_0046AB50;
     gRandom = rng;
     VCALL(rng, 0xC, void (*)(VObject *, s32))(rng, seed);
@@ -39,7 +41,8 @@ VObject *func_001A48C0(VObject *rng, s32 seed) {
 #define MT_TWIST(u, v) ((((u) & 0x80000000u) | ((v) & 0x7FFFFFFFu)) >> 1 ^ ((v) & 1 ? 0x9908B0DFu : 0))
 
 /* +0xC init_genrand(seed) */
-void func_001A4630(VObject *r, u32 seed) {
+/* 0x001A4630 */
+void Random_Seed(VObject *r, u32 seed) {
     u32 *mt = MT(r);
     u32 j;
 
@@ -51,7 +54,8 @@ void func_001A4630(VObject *r, u32 seed) {
 }
 
 /* refill the state once all outputs are used */
-void func_001A46D0(VObject *r) {
+/* 0x001A46D0 */
+void Random_Refill(VObject *r) {
     u32 *p;
     s32 j;
 
@@ -71,10 +75,11 @@ void func_001A46D0(VObject *r) {
 }
 
 /* +0x10 genrand_int32 */
-u32 func_001A45A0(VObject *r) {
+/* 0x001A45A0 */
+u32 Random_Int32(VObject *r) {
     u32 y;
 
-    func_001A46D0(r);
+    Random_Refill(r);
     y = *MT_NEXT(r)++;
     y ^= y >> 11;
     y ^= (y << 7) & 0x9D2C5680u;
@@ -88,29 +93,34 @@ u32 func_001A45A0(VObject *r) {
 #define DBL_HALF 0x3FE0000000000000ULL
 
 /* +0x14 genrand_int31 */
-u32 func_001A4570(VObject *r) {
+/* 0x001A4570 */
+u32 Random_Int31(VObject *r) {
     return MT_INT32(r) >> 1;
 }
 
 /* +0x18 genrand_real1: [0, 1] */
-f32 func_001A4510(VObject *r) {
+/* 0x001A4510 */
+f32 Random_Real1(VObject *r) {
     return func_0011F878(func_0011F458(func_00100230(MT_INT32(r)), DBL_2POW32M1));
 }
 
 /* +0x1C genrand_real2: [0, 1) (RNG01() in the game code) */
-f32 func_001A44C0(VObject *r) {
+/* 0x001A44C0 */
+f32 Random_Real2(VObject *r) {
     return func_0011F878(func_0011F458(func_00100230(MT_INT32(r)), DBL_2POW32));
 }
 
 /* +0x20 genrand_real3: (0, 1) */
-f32 func_001A4460(VObject *r) {
+/* 0x001A4460 */
+f32 Random_Real3(VObject *r) {
     return func_0011F878(func_0011F458(func_0011F148(DBL_HALF, func_00100230(MT_INT32(r))), DBL_2POW32));
 }
 
 extern void *D_0046AB80[];
 
 /* +0x8 destructor */
-VObject *func_001A4850(VObject *r, s32 flags) {
+/* 0x001A4850 */
+VObject *Random_dtor(VObject *r, s32 flags) {
     if (r != NULL) {
         r->vtbl = D_0046AB50;
         r->vtbl = D_0046AB80;
@@ -125,7 +135,8 @@ VObject *func_001A4850(VObject *r, s32 flags) {
 extern void *D_0046AB80[];
 
 /* +0x8 destructor (the global goes) */
-void *func_001A4910(void *o, s32 flags) {
+/* 0x001A4910 */
+void *RandomBase_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AB80;
         if (o != NULL) {

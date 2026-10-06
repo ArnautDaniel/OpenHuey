@@ -11,7 +11,8 @@
 extern const char D_0044FEA0[];                     /* pad IOP module */
 
 /* init: libpad2, its IOP module, a socket for port 0 */
-void func_001BE6A0(u8 *pads) {
+/* 0x001BE6A0 */
+void Pads_Init(u8 *pads) {
     u8 *p = pads + 0x40;
 
     func_001EF990(0);
@@ -33,10 +34,11 @@ void func_001BE6A0(u8 *pads) {
 #define PAD_PHASE(p) AT(p, 0xC, s32)
 #define PAD_ACTCOUNT(p) AT(p, 0x244, s32)
 
-void func_002D4780(u8 *pads);   /* input state from the pad data (below) */
+void Pads_BuildInput(u8 *pads);   /* input state from the pad data (below) */
 
 /* +0xC set the motors of port `port` (only port 0): small on / off, large strength */
-void func_001BE1F0(u8 *pads, s32 port, s32 small, s32 large) {
+/* 0x001BE1F0 */
+void Pads_SetMotors(u8 *pads, s32 port, s32 small, s32 large) {
     s32 n = (u8)port;
 
     if (n <= 0) {
@@ -46,7 +48,8 @@ void func_001BE1F0(u8 *pads, s32 port, s32 small, s32 large) {
 }
 
 /* per-frame tick: read the pad (profile first), send changed motor values, update the input */
-void func_001BE4B0(u8 *pads) {
+/* 0x001BE4B0 */
+void Pads_Tick(u8 *pads) {
     u8 *p = pads + 0x40;
     s32 bytes = 0, data = 0, changed = 1;
     u8 m;
@@ -95,7 +98,7 @@ void func_001BE4B0(u8 *pads) {
         AT(p, 0x24A, u8) = AT(p, 0x248, u8);
         AT(p, 0x24B, u8) = AT(p, 0x249, u8);
     }
-    func_002D4780(pads);
+    Pads_BuildInput(pads);
 }
 
 /* the pad state the game reads (+0x10): buttons (pressed = 1) and 16 analog bytes (sticks RX, RY,
@@ -107,7 +110,8 @@ typedef struct PadData {
 } PadData;
 
 /* +0x10 port `port`'s pad data (only port 0): 0 when read, 2 no pad, 1 busy, -1 no such port */
-s32 func_001BE220(u8 *pads, s32 port, PadData *out) {
+/* 0x001BE220 */
+s32 Pads_GetData(u8 *pads, s32 port, PadData *out) {
     u8 *p;
     u32 amask;
     s8 i;
@@ -172,7 +176,8 @@ extern const u8 D_0047E3D0[16];   /* analog map */
 #define SETBIT(w, n, b) ((w) = ((w) & ~(1u << (n))) | ((u32)((b) & 1) << (n)))
 
 /* the face buttons into the input state of port `port` (cross, triangle, circle, square) */
-void func_0037E320(u8 *pads, s32 port) {
+/* 0x0037E320 */
+void Pads_FaceButtons(u8 *pads, s32 port) {
     u32 b = AT(pads + port * 0x14, 4, u32);
     InputState *in = &D_0047E360 + port;
 
@@ -232,7 +237,8 @@ static inline void Input_Stick(f32 *out, u8 bx, u8 by) {
 }
 
 /* Build the input state from port 0's pad data (pad manager +0x10). */
-void func_002D4780(u8 *pads) {
+/* 0x002D4780 */
+void Pads_BuildInput(u8 *pads) {
     InputState *in = &D_0047E360;
     s32 wasConnected = in->connected != 0;
     PadData *d = (PadData *)(pads + 4);
@@ -263,7 +269,7 @@ void func_002D4780(u8 *pads) {
     SETBIT(in->held, 1, BIT(b, 5) | (d->analog[2] >= 0xC1));
     SETBIT(in->held, 3, BIT(b, 7) | (d->analog[2] < 0x40));
     SETBIT(in->held, 2, BIT(b, 6) | (d->analog[3] >= 0xC1));
-    func_0037E320(pads, 0);
+    Pads_FaceButtons(pads, 0);
     SETBIT(in->held, 6, BIT(AT(pads, 4, u32), 10));
     *(u16 *)&in->pressed = 0;
     SETBIT(in->held, 7, BIT(AT(pads, 4, u32), 11));

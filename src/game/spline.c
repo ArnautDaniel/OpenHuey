@@ -6,7 +6,8 @@
 #include "spline.h"
 
 /* move to time u (if within the keys): *t = u, *seg = the segment holding it */
-void func_0025F6B0(u8 *s, f32 *t, s32 *seg, f32 u) {
+/* 0x0025F6B0 */
+void Spline_SeekTo(u8 *s, f32 *t, s32 *seg, f32 u) {
     f32 *p;
     s32 k;
 
@@ -39,12 +40,14 @@ void func_0025F6B0(u8 *s, f32 *t, s32 *seg, f32 u) {
 }
 
 /* move the spline's own time to u */
-void func_0025F6A0(u8 *s, f32 u) {
-    func_0025F6B0(s, (f32 *)s, (s32 *)(s + 0x14), u);
+/* 0x0025F6A0 */
+void Spline_Seek(u8 *s, f32 u) {
+    Spline_SeekTo(s, (f32 *)s, (s32 *)(s + 0x14), u);
 }
 
 /* set up: n keys of `dims` components from `keys` */
-void func_0025F7A0(u8 *s, s32 dims, s32 n, f32 *keys) {
+/* 0x0025F7A0 */
+void Spline_Init(u8 *s, s32 dims, s32 n, f32 *keys) {
     AT(s, 0x0, s32) = 0;
     AT(s, 0x4, s32) = 0;
     AT(s, 0x8, s32) = 0;
@@ -61,13 +64,14 @@ void func_0025F7A0(u8 *s, s32 dims, s32 n, f32 *keys) {
 }
 
 /* component `comp` at time u (or at the current time if u is outside the keys) */
-f32 func_0025F580(u8 *s, s32 comp, f32 u) {
+/* 0x0025F580 */
+f32 Spline_Eval(u8 *s, s32 comp, f32 u) {
     f32 t = AT(s, 0x0, f32);
     s32 seg = AT(s, 0x14, s32);
     f32 *p;
     f32 x, y, a, a3, b2, b1;
 
-    func_0025F6B0(s, &t, &seg, u);
+    Spline_SeekTo(s, &t, &seg, u);
     if (comp < 0 || comp >= AT(s, 0x18, s32)) {
         return 0.0f;
     }

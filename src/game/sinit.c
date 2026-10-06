@@ -1734,7 +1734,7 @@ void func_00464A70(void) {
     func_0020E7F0(&gGame);
     gGame.vtbl = Game_vtable;
     func_0020E340((u8 *)&gGame.unk69AC0);
-    func_001A48C0((VObject *)(g + 0x400000), 0x1571);
+    Random_ctor((VObject *)(g + 0x400000), 0x1571);
     func_0020E280(g + 0x400A00);
     func_0020E260((VObject *)(g + 0x14D9B00));
     func_0020E1A0(g + 0x14D9DD0);

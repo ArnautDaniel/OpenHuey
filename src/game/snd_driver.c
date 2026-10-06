@@ -3,7 +3,7 @@
  * driver, sound effects (2D, or placed in 3D from the block at +0x10), sequences, volumes and
  * the output mode. It talks to SNDDRV.IRX through the EE sound library (snd_lib.c).
  *
- *   +0x10   the 3D block of the next sound (func_0021EB10; func_002FF4B0 fills it)
+ *   +0x10   the 3D block of the next sound (SndLib_Place; Sound_SetPosition fills it)
  *   +0x68   the output mode the sound was placed for
  *   +0x70   module ids (+0x70..+0x7C)
  *   +0x80   the IOP transfer buffer (0x4000 bytes)
@@ -96,7 +96,7 @@ void func_0020E8D0(u8 *d) {
         v = 0xFF;
     }
     D_01970D40[2] = v;
-    func_0021FB70(0x240000, D_01970D40);
+    SndLib_Call(0x240000, D_01970D40);
 }
 
 /* set the master volume (0..1) */
@@ -148,7 +148,7 @@ void func_0020E9F0(u8 *d, u32 which) {
     }
     AT(d, 0x10, u8) = v;
     AT(d, 0x14, f32) = AT(d, 0x1D8, f32);
-    func_0021FB70(0x260000, D_01970D40);
+    SndLib_Call(0x260000, D_01970D40);
 }
 
 /* stop every voice (command 0x35, 2) */
@@ -157,7 +157,7 @@ void func_0020EB30(u8 *d) {
     D_01970D40[3] = 0xFFFFFF;
     D_01970D40[4] = 2;
     D_01970D40[5] = 0xFF;
-    func_0021FB70(0x350000, D_01970D40);
+    SndLib_Call(0x350000, D_01970D40);
 }
 
 /* stop the positioned sounds but those of banks 3 and 4 */
@@ -172,7 +172,7 @@ void func_0020EB70(u8 *d) {
         }
     }
     D_01970D40[4] = 0x80000000;
-    func_0021FB70(0x290000, D_01970D40);
+    SndLib_Call(0x290000, D_01970D40);
 }
 
 /* stop all the positioned sounds */
@@ -185,7 +185,7 @@ void func_0020EC00(u8 *d) {
         D_01970D40[3] |= 1 << D_003D8990[i][1];
     }
     D_01970D40[4] = 0x80000000;
-    func_0021FB70(0x290000, D_01970D40);
+    SndLib_Call(0x290000, D_01970D40);
 }
 
 /* the positioned sounds' state `s` (command 0x35, 2) */
@@ -199,7 +199,7 @@ void func_0020EC70(u8 *d, u32 s) {
     }
     D_01970D40[4] = 2;
     D_01970D40[5] = s & 0xFF;
-    func_0021FB70(0x350000, D_01970D40);
+    SndLib_Call(0x350000, D_01970D40);
 }
 
 /* bank `k`'s file loaded (the loader's state 2) */
@@ -247,7 +247,7 @@ void func_0020EF50(u8 *d, u32 ch, u32 v) {
         D_01970D40[3] = 3;
         D_01970D40[5] = D_01970D40[4] = AT(d, 0x1C8 + ch * 2, u16);
         D_01970D40[6] = 0;
-        func_0021FB70(0x150000, D_01970D40);
+        SndLib_Call(0x150000, D_01970D40);
     }
 }
 
@@ -277,7 +277,7 @@ void func_0020F070(u8 *d, s8 mode) {
         D_01970D40[2] = 1;
         func_001D4750(0);
     }
-    func_0021FB70(0x160000, D_01970D40);
+    SndLib_Call(0x160000, D_01970D40);
 }
 
 /* unload bank `k` (a sequence stopped first) */
@@ -295,9 +295,9 @@ void func_0020F0D0(u8 *d, u32 k) {
     if (BANK_TYPE(d, k) != 0) {
         D_01970D40[2] = 1;
         D_01970D40[3] = 0xB;
-        func_0021FB70(0x1A0000, D_01970D40);
+        SndLib_Call(0x1A0000, D_01970D40);
     }
-    func_0021FB70(k | 0xB0000, D_01970C80);
+    SndLib_Call(k | 0xB0000, D_01970C80);
     LOADED(d, k) = 0;
 }
 
@@ -331,7 +331,7 @@ void func_0020F1B0(u8 *d, u32 k) {
     if (BANK_TYPE(d, k) == 0) {
         AT(D_01970C80, 0x8C, u32) = 0;
         AT(D_01970C80, 0x90, u32) = AT(b, 0x4, u32);
-        func_0021FB70(k | 0xA0000, D_01970C80);
+        SndLib_Call(k | 0xA0000, D_01970C80);
     } else {
         AT(D_01970C80, 0x8C, u32) = AT(b, 0x4, u32);
         AT(D_01970C80, 0x90, u32) = 0;
@@ -339,16 +339,16 @@ void func_0020F1B0(u8 *d, u32 k) {
         AT(D_01970C80, 0xA9, u8) = 0;
         AT(D_01970C80, 0xAA, u8) = k;
         AT(D_01970C80, 0xAB, u8) = 0;
-        func_0021FB70(k | 0xA0000, D_01970C80);
+        SndLib_Call(k | 0xA0000, D_01970C80);
         D_01970D40[0] = k;
-        func_0021FB70(0xC0000, D_01970D40);
-        func_0021FB70(0xD0000, D_01970D40);
-        func_0021FB70(0x170000, D_01970D40);
+        SndLib_Call(0xC0000, D_01970D40);
+        SndLib_Call(0xD0000, D_01970D40);
+        SndLib_Call(0x170000, D_01970D40);
         D_01970D40[2] = 0xFF;
-        func_0021FB70(0x1B0000, D_01970D40);
+        SndLib_Call(0x1B0000, D_01970D40);
         D_01970D40[2] = k;
         D_01970D40[3] = 1;
-        func_0021FB70(0x380000, D_01970D40);
+        SndLib_Call(0x380000, D_01970D40);
     }
     LOADED(d, k) = 1;
 }
@@ -361,7 +361,7 @@ s32 func_0020F3D0(u8 *x) {
     if (AT(x, 0x10, u8) == 0) {
         return 1;
     }
-    if (func_0021F2D0(0x120000, 1) != 0) {
+    if (SndLib_TransferBusy(0x120000, 1) != 0) {
         return 1;
     }
     n = AT(x, 0x4, u32);
@@ -375,12 +375,12 @@ s32 func_0020F3D0(u8 *x) {
     } else {
         AT(x, 0x4, u32) = 0;
     }
-    func_0021F840(AT(x, 0x8, u32), AT(x, 0x14, u32), n, 0, 0);
+    SndLib_DmaToIop(AT(x, 0x8, u32), AT(x, 0x14, u32), n, 0, 0);
     D_01970D40[2] = AT(x, 0x14, u32);
     D_01970D40[3] = AT(x, 0xC, u32);
     D_01970D40[5] = 1;
     D_01970D40[4] = n;
-    func_0021F9F0(0x120000, D_01970D40);
+    SndLib_Transfer(0x120000, D_01970D40);
     AT(x, 0x8, u32) += n;
     AT(x, 0xC, u32) += n;
     return 1;
@@ -431,13 +431,13 @@ void func_0020F570(u8 *d, u32 k, u32 src, u32 size) {
             n = left;
             left = 0;
         }
-        func_0021F840(src, AT(d, 0x80, u32), n, 0, 0);
+        SndLib_DmaToIop(src, AT(d, 0x80, u32), n, 0, 0);
         D_01970D40[2] = AT(d, 0x80, u32);
         D_01970D40[5] = 1;
         D_01970D40[3] = to;
         D_01970D40[4] = n;
-        func_0021F9F0(0x120000, D_01970D40);
-        while (func_0021F2D0(0x120000, 1) != 0) {
+        SndLib_Transfer(0x120000, D_01970D40);
+        while (SndLib_TransferBusy(0x120000, 1) != 0) {
         }
     }
     AT(D_01970C80, 0x84, u32) = AT(d, 0x80, u32);
@@ -454,7 +454,7 @@ void func_0020F6C0(u8 *d, u32 k, u32 src, u32 size) {
     }
     to = AT(BANK(d, k), 0x4, u32);
     if (to != 0) {
-        func_0021F840(src, to, size, 0, 0);
+        SndLib_DmaToIop(src, to, size, 0, 0);
         BANK_TYPE(d, k) = 1;
     }
 }
@@ -468,9 +468,9 @@ void func_0020F740(u8 *d, u32 k, u32 src, u32 size) {
     }
     to = AT(BANK(d, k), 0x4, u32);
     if (to != 0) {
-        func_0021F3D0((u8 *)src, size);
-        func_0021F4A0(k, (u8 *)src, size, AT(d, 0x7DC + (k - 4) * 4, u16 *));
-        func_0021F840(src, to, size, 0, 0);
+        SndTable_Count((u8 *)src, size);
+        SndTable_Curves(k, (u8 *)src, size, AT(d, 0x7DC + (k - 4) * 4, u16 *));
+        SndLib_DmaToIop(src, to, size, 0, 0);
         BANK_TYPE(d, k) = 0;
     }
 }
@@ -484,7 +484,7 @@ void func_0020F810(u8 *d, u32 k, u32 src, u32 size) {
     }
     to = AT(BANK(d, k), 0x0, u32);
     if (to != 0) {
-        func_0021F840(src, to, size, 0, 0);
+        SndLib_DmaToIop(src, to, size, 0, 0);
     }
 }
 
@@ -497,7 +497,7 @@ u16 func_0020F870(u8 *d, u32 k) {
         return 0;
     }
     D_01970D40[0] = k;
-    return *(u16 *)func_0021FB70(0x210000, D_01970D40);
+    return *(u16 *)SndLib_Call(0x210000, D_01970D40);
 }
 
 s32 func_0020F8E0(u8 *d, u32 k, u32 tempo) {
@@ -507,7 +507,7 @@ s32 func_0020F8E0(u8 *d, u32 k, u32 tempo) {
     }
     D_01970D40[0] = k;
     D_01970D40[2] = tempo & 0xFFFF;
-    return (s32)func_0021FB70(0x200000, D_01970D40);
+    return (s32)SndLib_Call(0x200000, D_01970D40);
 }
 
 /* its volume (0x1F) */
@@ -517,7 +517,7 @@ u8 func_0020F950(u8 *d, u32 k) {
         return 0;
     }
     D_01970D40[0] = k;
-    return *(u8 *)func_0021FB70(0x1F0000, D_01970D40);
+    return *(u8 *)SndLib_Call(0x1F0000, D_01970D40);
 }
 
 s32 func_0020F9C0(u8 *d, u32 k, u32 v) {
@@ -527,7 +527,7 @@ s32 func_0020F9C0(u8 *d, u32 k, u32 v) {
     }
     D_01970D40[0] = k;
     D_01970D40[2] = v & 0xFF;
-    return (s32)func_0021FB70(0x1E0000, D_01970D40);
+    return (s32)SndLib_Call(0x1E0000, D_01970D40);
 }
 
 s32 func_0020FA30(u8 *d, u32 k, u32 a, u32 b) {
@@ -538,7 +538,7 @@ s32 func_0020FA30(u8 *d, u32 k, u32 a, u32 b) {
     D_01970D40[0] = k;
     D_01970D40[3] = b & 0xFF;
     D_01970D40[2] = a & 0xFF;
-    return (s32)func_0021FB70(0x1C0000, D_01970D40);
+    return (s32)SndLib_Call(0x1C0000, D_01970D40);
 }
 
 s32 func_0020FAB0(u8 *d, u32 k, u32 a) {
@@ -548,7 +548,7 @@ s32 func_0020FAB0(u8 *d, u32 k, u32 a) {
     }
     D_01970D40[0] = k;
     D_01970D40[2] = a & 0xFF;
-    return (s32)func_0021FB70(0x1B0000, D_01970D40);
+    return (s32)SndLib_Call(0x1B0000, D_01970D40);
 }
 
 /* func_0020FA30 with the second argument read from `p` */
@@ -567,7 +567,7 @@ s32 func_0020FB50(u8 *d, u32 k, u32 a, u32 b) {
     D_01970D40[2] = k;
     D_01970D40[3] = a;
     D_01970D40[4] = b & 0xFF;
-    return (s32)func_0021FB70(0x230000, D_01970D40);
+    return (s32)SndLib_Call(0x230000, D_01970D40);
 }
 
 s32 func_0020FBD0(u8 *d, u32 k, u32 a) {
@@ -577,7 +577,7 @@ s32 func_0020FBD0(u8 *d, u32 k, u32 a) {
     }
     D_01970D40[2] = k;
     D_01970D40[3] = a & 0xFF;
-    return (s32)func_0021FB70(0x380000, D_01970D40);
+    return (s32)SndLib_Call(0x380000, D_01970D40);
 }
 
 /* restart from `pos`, keeping its volume and tempo */
@@ -590,14 +590,14 @@ void func_0020FC40(u8 *d, u32 k, u32 pos) {
         return;
     }
     D_01970D40[0] = k;
-    vol = *(u8 *)func_0021FB70(0x1F0000, D_01970D40);
-    tempo = *func_0021FB70(0x210000, D_01970D40);
+    vol = *(u8 *)SndLib_Call(0x1F0000, D_01970D40);
+    tempo = *SndLib_Call(0x210000, D_01970D40);
     D_01970D40[2] = pos;
-    func_0021FB70(0x180000, D_01970D40);
+    SndLib_Call(0x180000, D_01970D40);
     D_01970D40[2] = vol;
-    func_0021FB70(0x1E0000, D_01970D40);
+    SndLib_Call(0x1E0000, D_01970D40);
     D_01970D40[2] = tempo;
-    func_0021FB70(0x200000, D_01970D40);
+    SndLib_Call(0x200000, D_01970D40);
 }
 
 /* stop */
@@ -609,7 +609,7 @@ void func_0020FD20(u8 *d, u32 k) {
     D_01970D40[0] = k;
     D_01970D40[2] = 0;
     D_01970D40[3] = 0xB;
-    func_0021FB70(0x1A0000, D_01970D40);
+    SndLib_Call(0x1A0000, D_01970D40);
 }
 
 /* play (from `pos` unless negative) with `mode` */
@@ -621,10 +621,10 @@ void func_0020FD90(u8 *d, u32 k, u32 pos, u32 mode) {
     D_01970D40[0] = k;
     if (!(pos & 0x80000000)) {
         D_01970D40[2] = pos;
-        func_0021FB70(0x180000, D_01970D40);
+        SndLib_Call(0x180000, D_01970D40);
     }
     D_01970D40[2] = mode & 0xFF;
-    func_0021FB70(0x190000, D_01970D40);
+    SndLib_Call(0x190000, D_01970D40);
 }
 
 /* ---- sound effects ---- */
@@ -637,7 +637,7 @@ void func_0020FE30(u8 *d, u32 id, u32 k) {
     }
     D_01970D40[0] = k;
     D_01970D40[2] = id | 0x80000000;
-    func_0021FB70(0x280000, D_01970D40);
+    SndLib_Call(0x280000, D_01970D40);
 }
 
 /* play sound `id` of bank `k` placed by the 3D block (`vol`, `pitch`: offsets; id bit 30:
@@ -668,7 +668,7 @@ void func_0020FEA0(u8 *d, u32 id, u32 k, s8 vol, s8 pitch) {
     }
     AT(d, 0x10, u8) = v;
     AT(d, 0x14, f32) = AT(d, 0x1D8, f32);
-    func_0021FB70(0x260000, D_01970D40);
+    SndLib_Call(0x260000, D_01970D40);
 }
 
 /* play sound `id` of bank `k` unplaced */
@@ -684,7 +684,7 @@ void func_00210070(u8 *d, u32 id, u32 k) {
     }
     D_01970D40[4] = k;
     D_01970D40[3] = 0x7840;
-    func_0021FB70(0x260000, D_01970D40);
+    SndLib_Call(0x260000, D_01970D40);
 }
 
 /* stop the voices in masks `a`, `b` */
@@ -692,7 +692,7 @@ void func_00210120(u8 *d, u32 a, u32 b) {
     D_01970D40[2] = a & 0xFFFFFF;
     D_01970D40[3] = b & 0xFFFFFF;
     D_01970D40[4] = 0x80000000;
-    func_0021FB70(0x290000, D_01970D40);
+    SndLib_Call(0x290000, D_01970D40);
 }
 
 /* stop all voices */
@@ -752,8 +752,8 @@ void func_002102E0(u8 *d) {
     AT(d, 0x70, s32) = func_001BC0F0(d, D_00457260, 0, 0, 0);
     AT(d, 0x74, s32) = func_001BC0F0(d, D_00457270, 0, 0, 0);
     AT(d, 0x78, s32) = func_001BC0F0(d, D_00457280, 0, 0, 0);
-    func_00220340();
-    func_00220150(0xA, 0x2000);
+    SndLib_Clear();
+    SndLib_StartServer(0xA, 0x2000);
     AT(D_01970C40, 0x0, s32) = -1;
     AT(D_01970C40, 0x4, s32) = 0x1FFFFF;
     AT(D_01970C40, 0x8, s32) = 0;
@@ -764,29 +764,29 @@ void func_002102E0(u8 *d) {
     AT(D_01970C40, 0x16, s16) = 0x1B;
     AT(D_01970C40, 0x18, s16) = 0x17;
     AT(D_01970C40, 0x1A, s16) = 1;
-    AT(d, 0x7C, s32) = func_001BC0F0(d, D_00457290, func_00220440(D_01970B10, D_01970C40), (s32)D_01970B10, 0);
-    func_00220270();
-    func_00220210();
+    AT(d, 0x7C, s32) = func_001BC0F0(d, D_00457290, SndLib_DriverArgs(D_01970B10, D_01970C40), (s32)D_01970B10, 0);
+    SndLib_Bind();
+    SndLib_SendState();
     D_01970D40[2] = 1;
-    func_0021FB70(0x80000, D_01970D40);
+    SndLib_Call(0x80000, D_01970D40);
     D_01970D40[2] = 0;
     D_01970D40[3] = 3;
     D_01970D40[4] = 0;
     D_01970D40[5] = 0;
     D_01970D40[6] = 1;
-    func_0021FB70(0x150000, D_01970D40);
+    SndLib_Call(0x150000, D_01970D40);
     D_01970D40[2] = 1;
     D_01970D40[4] = 0;
     D_01970D40[3] = 3;
     D_01970D40[6] = 1;
     D_01970D40[5] = 0;
-    func_0021FB70(0x150000, D_01970D40);
+    SndLib_Call(0x150000, D_01970D40);
     AT(d, 0x1CA, s16) = 0;
     AT(d, 0x1C8, s16) = 0;
     VCALL(d, 0x130, void (*)(u8 *, s32))(d, 1);
     D_01970D40[2] = 0;
     D_01970D40[3] = 0xFFFFFF;
-    func_0021FB70(0x70000, D_01970D40);
+    SndLib_Call(0x70000, D_01970D40);
     AT(d, 0x80, u32) = func_002744D8(0x4000);
     for (i = 0; i < 8; i++) {
         u8 *b = BANK(d, i);
@@ -810,7 +810,7 @@ void func_002102E0(u8 *d) {
     VCALL(d, 0x170, void (*)(u8 *, f32))(d, 1.0f);
     AT(d, 0x1D4, f32) = 1.0f;
     AT(d, 0x1D8, f32) = 1000.0f;
-    func_0021FB70(0x360002, NULL);
+    SndLib_Call(0x360002, NULL);
 }
 
 extern void *D_0046BF20[], *D_0046BF2C[], *D_0046AF90[], *D_0046AD88[];

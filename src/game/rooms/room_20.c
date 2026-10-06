@@ -276,7 +276,7 @@ s32 func_002AED60(void *self, void *a1, u8 *cmd) {
             at[0] = -85.0f;
             at[1] = 30.0f;
             at[2] = 90.0f;
-            func_002FF650(gSound, 0x40000001, 6, at, 0, 0);
+            Sound_PlayBankAt(gSound, 0x40000001, 6, at, 0, 0);
         }
         AT(o, 0x14, f32) = kPi.f * (15.0f * func_0031C248(kPi.f * AT(o, 0x30, f32) / 180.0f)) / 180.0f;
         if (!(AT(o, 0x14, f32) <= kPi.f)) {

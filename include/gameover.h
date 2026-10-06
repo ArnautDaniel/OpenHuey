@@ -31,7 +31,7 @@ typedef struct GameOver {
 } GameOver;
 
 /* gameover.c */
-extern void func_002F39B0(u8 *o);
-extern void func_002F3910(GameOver *o);
+extern void GameOver_Reset(u8 *o);
+extern void GameOver_Update(GameOver *o);
 
 #endif /* GAMEOVER_H */

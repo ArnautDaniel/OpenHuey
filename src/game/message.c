@@ -49,7 +49,8 @@ static inline void Message_Reset(u8 *m) {
 }
 
 /* init */
-void func_0026BCC0(u8 *m) {
+/* 0x0026BCC0 */
+void Message_Init(u8 *m) {
     Message_Reset(m);
 }
 
@@ -59,7 +60,8 @@ void *func_0026EFF0(void) {
 }
 
 /* clear all slots (+0xC), then init */
-void func_0026BC00(VObject *m) {
+/* 0x0026BC00 */
+void Message_ClearAll(VObject *m) {
     s32 i;
 
     for (i = 0; i < 7; i++) {
@@ -91,8 +93,10 @@ static inline s32 MsgSlot_Upload(MsgSlot *s, u32 *tex, s32 first) {
     return 1;
 }
 
-s32 func_0026B690(MsgSlot *s, u32 *tex) { return MsgSlot_Upload(s, tex, 0); }
-s32 func_0026B570(MsgSlot *s, u32 *tex) { return MsgSlot_Upload(s, tex, 1); }
+/* 0x0026B690 */
+s32 MsgSlot_Upload0(MsgSlot *s, u32 *tex) { return MsgSlot_Upload(s, tex, 0); }
+/* 0x0026B570 */
+s32 MsgSlot_Upload1(MsgSlot *s, u32 *tex) { return MsgSlot_Upload(s, tex, 1); }
 
 #ifdef HG_NATIVE
 #include <stdlib.h>
@@ -156,7 +160,8 @@ static u32 *tex_copy(MsgSlot *s, u32 *tex) {
 #endif
 
 /* +0x8 set slot `i`'s textures (a .TEX file); 1 if done */
-s32 func_0026BB00(u8 *m, s32 i, u32 *tex) {
+/* 0x0026BB00 */
+s32 Message_SetSlot(u8 *m, s32 i, u32 *tex) {
     MsgSlot *s = MSG_SLOT(m, i);
 
 #ifdef HG_NATIVE
@@ -166,9 +171,9 @@ s32 func_0026BB00(u8 *m, s32 i, u32 *tex) {
     s->kind = D_003EA970[(u8)i * 3];
     switch (s->kind) {
     case 1:
-        return (u8)func_0026B690(s, tex);
+        return (u8)MsgSlot_Upload0(s, tex);
     case 2:
-        return (u8)func_0026B570(s, tex);
+        return (u8)MsgSlot_Upload1(s, tex);
     case 3:
         s->kind = 3;
         s->cur = 0xFF;
@@ -193,7 +198,8 @@ static inline void MsgSlot_Clear(MsgSlot *s) {
 }
 
 /* +0xC release slot `i` */
-void func_0026B9C0(u8 *m, s32 i) {
+/* 0x0026B9C0 */
+void Message_ReleaseSlot(u8 *m, s32 i) {
     MsgSlot *s = MSG_SLOT(m, i);
     VObject *v;
     u32 j;
@@ -222,7 +228,8 @@ void func_0026B9C0(u8 *m, s32 i) {
 }
 
 /* +0x10 show texture `sel` of slot `i` with `data` (bit 7 of sel: hidden) */
-s32 func_0026B950(u8 *m, s32 i, u8 *data, s32 sel) {
+/* 0x0026B950 */
+s32 Message_Show(u8 *m, s32 i, u8 *data, s32 sel) {
     MsgSlot *s = MSG_SLOT(m, i);
 
     if (s->kind != 0 && (u8)sel < s->count && !((u8)sel & 0x80)) {
@@ -234,13 +241,15 @@ s32 func_0026B950(u8 *m, s32 i, u8 *data, s32 sel) {
 }
 
 /* +0x14 show nothing */
-void func_0026B4A0(u8 *m, s32 i) {
+/* 0x0026B4A0 */
+void Message_ShowNothing(u8 *m, s32 i) {
     MSG_SLOT(m, i)->cur = 0xFF;
     MSG_SLOT(m, i)->data = NULL;
 }
 
 /* +0x18 unhide */
-void func_0026B4D0(u8 *m, s32 i) {
+/* 0x0026B4D0 */
+void Message_Unhide(u8 *m, s32 i) {
     MsgSlot *s = MSG_SLOT(m, i);
 
     if (s->data != NULL && s->cur != 0xFF) {
@@ -249,7 +258,8 @@ void func_0026B4D0(u8 *m, s32 i) {
 }
 
 /* +0x1C hide */
-void func_0026B520(u8 *m, s32 i) {
+/* 0x0026B520 */
+void Message_Hide(u8 *m, s32 i) {
     MsgSlot *s = MSG_SLOT(m, i);
 
     if (s->data != NULL && s->cur != 0xFF) {
@@ -258,13 +268,15 @@ void func_0026B520(u8 *m, s32 i) {
 }
 
 /* +0x20 */
-void func_001762A0(u8 *m) {
+/* 0x001762A0 */
+void Message_ForgetLast(u8 *m) {
     MSG_LAST(m) = 0xFF;
 }
 
 /* +0x24 what to draw texture `sel` of slot `i` with: the layer (bit 31: slot changed since last
  * time) when it is the one shown, else its VRAM entry (kind 1) or texture group id (kind 3) */
-s32 func_0026B860(u8 *m, s32 i, s32 sel, s32 unused) {
+/* 0x0026B860 */
+s32 Message_DrawTarget(u8 *m, s32 i, s32 sel, s32 unused) {
     MsgSlot *s = MSG_SLOT(m, i);
     s32 r;
 
@@ -293,7 +305,8 @@ s32 func_0026B860(u8 *m, s32 i, s32 sel, s32 unused) {
 }
 
 /* +0x28 the texture entry for texture `sel` of slot `i` (the shown data, or the .TEX entry) */
-u8 *func_0026B7B0(u8 *m, s32 i, u32 sel) {
+/* 0x0026B7B0 */
+u8 *Message_TexEntry(u8 *m, s32 i, u32 sel) {
     MsgSlot *s = MSG_SLOT(m, i);
 
     if (s->kind == 0) {

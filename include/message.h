@@ -7,7 +7,7 @@
 typedef struct VObject VObject;
 
 /* message.c */
-extern void func_0026BCC0(u8 *m);
-extern void func_0026BC00(VObject *m);
+extern void Message_Init(u8 *m);
+extern void Message_ClearAll(VObject *m);
 
 #endif /* MESSAGE_H */

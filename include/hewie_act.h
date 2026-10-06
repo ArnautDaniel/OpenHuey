@@ -7,6 +7,6 @@
 typedef struct Hewie Hewie;
 
 /* hewie_act.c */
-extern void func_00130AF0(Hewie *h, s32 act, s32 arg);   /* his action */
+extern void Hewie_SetAction(Hewie *h, s32 act, s32 arg);   /* his action */
 
 #endif /* HEWIE_ACT_H */

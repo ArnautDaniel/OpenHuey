@@ -35,7 +35,7 @@ static inline void swing_to(u8 *o, f32 a) {
     pos[0] = -45.0f * func_0031C058(AT(o, 0x14, f32));
     pos[2] = -45.0f * -func_0031C248(AT(o, 0x14, f32));
     pos[3] = 1.0f;
-    func_002FF650(gSound, 0x80000002, 6, pos, 0, 0);
+    Sound_PlayBankAt(gSound, 0x80000002, 6, pos, 0, 0);
 }
 
 void *func_0034A4C0(void *o, s32 flags) { return room_dtor(o, flags, D_004785F0, D_0046DB80); }
@@ -76,7 +76,7 @@ s32 func_0034A5C0(void *self, u32 i, s32 a, s32 b) {
 }
 
 s32 func_0034A5F0(void) {
-    return func_002EC410((u8 *)gProgress + 0x764) == 0;
+    return Countdown_Seconds((u8 *)gProgress + 0x764) == 0;
 }
 
 /* (self->*D_01991990[i])(a, b) */

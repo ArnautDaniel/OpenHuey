@@ -120,7 +120,7 @@ s32 func_002B37D0(void *self, void *a1, u8 *cmd) {
                 f32 at[4] __attribute__((aligned(16)));
 
                 sceVu0CopyVector(at, (f32 *)(o + 0x20));
-                func_002FF650(snd, 6, 6, at, 0, 0);
+                Sound_PlayBankAt(snd, 6, 6, at, 0, 0);
             }
             AT(o, 0x24, f32) = AT(o, 0x24, f32) - kStep.f;
             if (AT(o, 0x24, f32) < kLow.f) {

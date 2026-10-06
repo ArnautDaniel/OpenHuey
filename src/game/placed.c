@@ -2269,7 +2269,7 @@ static inline void ring_corner(u8 *o, u32 at, f32 x, f32 z) {
     c[0] = 1.5f * x;
     c[3] = 1.0f;
     c[2] = z;
-    func_002E2CA0(t, c, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
+    Vec_TurnY(t, c, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
     AT(o, at, f32) = t[0];
     AT(o, at + 4, f32) = t[1];
     AT(o, at + 8, f32) = t[2];
@@ -2630,7 +2630,7 @@ void func_0036BDE0(u8 *o, f32 *arg) {
         c[3] = 1.0f;
         c[0] = xs[i];
         c[1] = 0.0f;
-        func_002E2CA0(t, c, VCALL(cam, 0x68, f32 (*)(VObject *))(cam));
+        Vec_TurnY(t, c, VCALL(cam, 0x68, f32 (*)(VObject *))(cam));
         AT(r, 0x10, f32) = q[0] + t[0];
         AT(r, 0x14, f32) = q[1] + t[1];
         AT(r, 0x18, f32) = q[2] + t[2];
@@ -3266,7 +3266,7 @@ void func_003688D0(u8 *o) {
     }
     thing_kick_up(o, 0x1.99999ap-2f);   /* 0.4 */
     if (func_00367EA0(o) != 0) {
-        func_002FF650(gSound, 4, 6, (f32 *)(o + 0x10), 0, 0);
+        Sound_PlayBankAt(gSound, 4, 6, (f32 *)(o + 0x10), 0, 0);
         func_00177FA0(p, (f32 *)(o + 0x10), 4, 2, 0x28, 0, 0.0f);
         AT(o, 0x28, u8) = 0;
     }

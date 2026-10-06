@@ -1,5 +1,5 @@
 /* Pursuer: the shared base of the stalkers (Debilitas, Daniella, Riccardo, Lorenzo) and the
- * story characters loaded into character slot 2 by func_00171160 (0x28 kinds).
+ * story characters loaded into character slot 2 by CharLoad_Partner (0x28 kinds).
  *
  * Classes: Actor (vtable 0x469C20) -> Character (0x469C60) -> NPC (0x46C220, 64 entries:
  * navigation / doors / vision, code 0x211C80..0x219530, src/game/pursuer_ai.c) -> Pursuer

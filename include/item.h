@@ -49,7 +49,7 @@ static inline s32 item_offer(Progress *p, void *o) {
 
 /* door `door` of the room is open (state bit 4) */
 static inline s32 item_door_open(Progress *p, u32 door) {
-    return func_00177BF0(p, door, 0) & 0xFF & 4;
+    return PursuerGroup_Fields(p, door, 0) & 0xFF & 4;
 }
 
 /* door `door` open and route `route` taken */

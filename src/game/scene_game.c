@@ -174,8 +174,8 @@ void SceneGame_StateEntry(Scene *game) {
     f32 *settingDst;
 
     VCALL(obj550, 0xC, void (*)(VObject *, s32))(obj550, 0x1571);
-    func_00179EA0(D_004562B0);
-    func_0017D220(D_004562A8);
+    ChainPool_FreeAll(D_004562B0);
+    SkelPool_FreeAll(D_004562A8);
     func_00176780((u8 *)prog);
     AT(game, 0xF6CD29, u8) = 0;
     func_00120C80((u8 *)game + 0x73EE80);
@@ -244,7 +244,7 @@ void SceneGame_StateEntry(Scene *game) {
         case 1: SetupCharacter(prog, partner, func_003A1020); break;
         case 2: SetupCharacter(prog, partner, func_003A0F90); break;
         }
-        func_00171160(prog, save[0x1A]);
+        CharLoad_Partner(prog, save[0x1A]);
     }
 
     func_0016D350(prog, (Progress_TestFlag(prog, 3) & 0xFF) == 1);
@@ -252,8 +252,8 @@ void SceneGame_StateEntry(Scene *game) {
     func_00176550(prog);
     func_001F9D90((u8 *)game + 0xF6C1C0);
     obj980 = gAdx;
-    func_002D2370(obj980, (u8 *)game + 0x1030240);
-    func_002E34D0((u8 *)game + 0x1053424);
+    Bgm_Init(obj980, (u8 *)game + 0x1030240);
+    BgmCtl_ctor((u8 *)game + 0x1053424);
     AT(game, 0x1053440, PTMF) = sGameStateNull;
     func_002E2890((u8 *)game + 0x706480, &sGameStateNull);
     AT(game, 0x105344D, u8) = 0;
@@ -272,7 +272,7 @@ void SceneGame_StateEntry(Scene *game) {
     if (!(*settingDst <= 1.0f)) {
         *settingDst = 1.0f;
     }
-    func_002D1FD0(obj980);
+    Bgm_ApplyVolume(obj980);
     AT(game, 0x1065040, s32) = VCALL(obj550, 0x10, u32 (*)(VObject *))(obj550) & 0xFF;
     Progress_ClearFlag(prog, 0x2B);
     Progress_ClearFlag(prog, 0x2C);
@@ -474,7 +474,7 @@ static inline void rng_tick(Scene *g) {
     }
     AT(rng, 0x0, void **) = D_00476F40;
     AT(rng, 0x4, s32) = -1;
-    func_0033E2A0(rng, AT(g, 0x1065040, s32));
+    Loading_DrawFrame(rng, AT(g, 0x1065040, s32));
     AT(rng, 0x0, void **) = D_00469D00;
 }
 
@@ -506,8 +506,8 @@ s32 func_003A04A0(Scene *g) {
         return 1;
     }
     SubScreen_Start((SubScreen *)((u8 *)g + 0xF87240));
-    func_002F39B0((u8 *)g + 0x73EB40);
-    func_0031E150((u8 *)g + 0x1053480);
+    GameOver_Reset((u8 *)g + 0x73EB40);
+    AvoidPrompt_Load((u8 *)g + 0x1053480);
     if (AT(g, 0xF6CD28, u8) != 1) {
         func_001771A0(prog, 1);
         VCALL(gRooms, 0xC, void (*)(VObject *, void *))(gRooms, NULL);
@@ -819,7 +819,7 @@ void func_0039CDC0(Scene *g) {
     func_00175DE0(prog);
     if (!((s32 (*)(u8 *))AT(AT(dir, 0x64, u8 *), 0x6C, void *))(dir)) {
         if (!(u8)Progress_TestFlag(prog, 0xF)) {
-            func_002F0500((u8 *)g + 0x7F8);
+            Panic_Update((u8 *)g + 0x7F8);
         }
         func_002A7720((u8 *)g + 0xA20);
     }
@@ -862,10 +862,10 @@ void func_003A0060(Scene *g) {
     Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
     PTMF *sub = &AT(g, 0x1053440, PTMF);
 
-    if (func_00100B80(sub, &D_0044C7F0) && AT(g, 0x106503C, void *) != NULL) {
+    if (__ptmf_cmpr(sub, &D_0044C7F0) && AT(g, 0x106503C, void *) != NULL) {
         func_002C5980(AT(g, 0x106503C, void *));
     }
-    func_002E3200((BgmCtl *)((u8 *)g + 0x1053424));
+    BgmCtl_Update((BgmCtl *)((u8 *)g + 0x1053424));
     if (!(u8)Progress_TestFlag(prog, 8) && !(u8)Progress_TestFlag(prog, 0x2A)) {
         func_0021C840(D_0045D1F0, 0x32, 0);
     }
@@ -922,7 +922,7 @@ extern const PTMF D_0044C588;   /* the gameplay sub-state "in play" (func_0039EA
 
 /* the gameplay sub-state is "in play" */
 s32 func_00399BF0(Scene *g) {
-    return func_00100B80(&AT(g, 0x1053440, PTMF), &D_0044C588) == 0;
+    return __ptmf_cmpr(&AT(g, 0x1053440, PTMF), &D_0044C588) == 0;
 }
 
 void func_00399C30(Scene *g, u8 a, u8 b) {
@@ -1115,7 +1115,7 @@ void func_0039EAB0(Scene *g) {
         AT(g, 0x115C, f32) = AT(g, 0x1158, f32);
         AT(gAdx, 0x118, f32) = AT(g, 0x1158, f32);
         clamp01(&AT(gAdx, 0x118, f32));
-        func_002D1FD0(gAdx);
+        Bgm_ApplyVolume(gAdx);
     }
 
     if (!(u8)Progress_TestFlag(prog, 8)) {
@@ -1141,7 +1141,7 @@ void func_0039EAB0(Scene *g) {
         }
         Task_Draw((Task *)((u8 *)g + 0xF6B6B8));
         VCALL((u8 *)g + 0xF87240, 0x24, void (*)(void *))((u8 *)g + 0xF87240);
-        func_0031DE10((u8 *)g + 0x1053480);
+        AvoidPrompt_Update((u8 *)g + 0x1053480);
     } else if (Progress_TestFlag(prog, 0x28)) {
         rng_tick(g);
     }
@@ -1159,7 +1159,7 @@ void func_0039EAB0(Scene *g) {
         VCALL(snd, 0xAC, void (*)(VObject *, f32))(snd, 1.0f);
         AT(gAdx, 0x120, f32) = 1.0f;
         clamp01(&AT(gAdx, 0x120, f32));
-        func_002D1FD0(gAdx);
+        Bgm_ApplyVolume(gAdx);
         if (D_00456DF0 != NULL) {
             VCALL(D_00456DF0, 0x24, void (*)(VObject *, f32))(D_00456DF0, 1.0f);
         }
@@ -1176,16 +1176,16 @@ void func_0039EAB0(Scene *g) {
             if ((*flags & 0xF) == 0 && AT(g, 0x44, s32) == 0 &&
                 !VCALL(ev, 0xBC, s32 (*)(VObject *))(ev) && gMovie != NULL) {
                 VCALL(gRumble, 0x2C, void (*)(VObject *, s32))(gRumble, 1);
-                func_002F60B0((u8 *)g + 0x73EBA0, (D_0047E360 == 0 ? 0x80 : 0) | 1);
-                func_002F02F0((u8 *)g + 0x7F8);
+                Pause_Open((u8 *)g + 0x73EBA0, (D_0047E360 == 0 ? 0x80 : 0) | 1);
+                Panic_Pause((u8 *)g + 0x7F8);
                 menu = 1;
                 ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C810);
             }
         } else if (!VCALL(ev, 0xBC, s32 (*)(VObject *))(ev) && gMovie == NULL &&
                    !(u8)Progress_TestFlag(prog, 0x19)) {
             VCALL(gRumble, 0x2C, void (*)(VObject *, s32))(gRumble, 1);
-            func_002F60B0((u8 *)g + 0x73EBA0, D_0047E360 == 0 ? 0x80 : 0);
-            func_002F02F0((u8 *)g + 0x7F8);
+            Pause_Open((u8 *)g + 0x73EBA0, D_0047E360 == 0 ? 0x80 : 0);
+            Panic_Pause((u8 *)g + 0x7F8);
             menu = 1;
             ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C820);
         }
@@ -1969,11 +1969,11 @@ void func_0039DF10(Scene *g) {
     func_00209390((u8 *)g + SG_EVENT, 3);
     if (!(u8)Progress_TestFlag(prog, 8)) {
         frozen_draw(g, 1, 1);
-        func_0031DE10((u8 *)g + 0x1053480);
+        AvoidPrompt_Update((u8 *)g + 0x1053480);
     } else if (Progress_TestFlag(prog, 0x28)) {
         rng_tick(g);
     }
-    func_002F6050((u8 *)g + 0x73EBA0);
+    Pause_Update((u8 *)g + 0x73EBA0);
     if (Progress_TestFlag(prog, 6)) {
         if (Progress_TestFlag(prog, 0x1C)) {
             VObject *loader = gFileLoader;
@@ -2044,11 +2044,11 @@ void func_0039D990(Scene *g) {
     }
     if (!(u8)Progress_TestFlag(prog, 8)) {
         frozen_draw(g, 0, 0);
-        func_0031DE10((u8 *)g + 0x1053480);
+        AvoidPrompt_Update((u8 *)g + 0x1053480);
     } else if (Progress_TestFlag(prog, 0x28)) {
         rng_tick(g);
     }
-    func_002F6050((u8 *)g + 0x73EBA0);
+    Pause_Update((u8 *)g + 0x73EBA0);
     if (Progress_TestFlag(prog, 6)) {
         VCALL(gRumble, 0x2C, void (*)(VObject *, s32))(gRumble, 0);
         func_0039BB60(g);
@@ -2095,7 +2095,7 @@ void func_0039E380(Scene *g) {
     Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
     u8 *cam = (u8 *)g + SG_CAMDIR;
 
-    func_002F3910((GameOver *)((u8 *)g + 0x73EB40));
+    GameOver_Update((GameOver *)((u8 *)g + 0x73EB40));
     if (AT(g, 0x73EB41, u8) != 0 && !Progress_TestFlag(prog, 8)) {
         func_00224EE0(cam);
         func_00224C60(cam);
@@ -2129,7 +2129,7 @@ void func_0039E380(Scene *g) {
     Progress_SetFlag(prog, 8);
     AT(g, 0x1FBF01, u8) = 0;
     VCALL((VObject *)gCamDirector, 0x40, void (*)(VObject *, f32))(gCamDirector, -1.0f);
-    func_002F0260((u8 *)g + 0x7F8, 0);
+    Panic_SetStage((u8 *)g + 0x7F8, 0);
     func_00178A30(prog, 0x10C);
     VCALL(g, 0xE8, void (*)(Scene *, s32, s32, s32))(g, VCALL(g, 0xA4, s32 (*)(Scene *))(g), 1, 0);
     VCALL((VObject *)gCharPartner, 0x64, void (*)(void *, s32, s32, s32))(gCharPartner, 0x37, -1, 0);
@@ -2389,9 +2389,9 @@ void SceneGame_OnSoftReset(u8 *g) {
         VCALL(sc, 0x14, void (*)(void *))(sc);
     }
     AT(VCALL(gRenderer, 0x2C, u8 *(*)(VObject *))(gRenderer), 0x1C, u8) = 0;
-    func_002E31D0((BgmCtl *)(g + 0x1053424));
+    BgmCtl_StopNow((BgmCtl *)(g + 0x1053424));
     bgm = (u8 *)gAdx;
-    func_002D2330((Bgm *)bgm);
+    Bgm_Release((Bgm *)bgm);
     VCALL((VObject *)(g + 0x6FC380), 0x24, void (*)(VObject *))((VObject *)(g + 0x6FC380));
     ((void (*)(void *))func_00267140)(g + 0xF6CD30);
     func_0031E0B0(g + 0x1053480);
@@ -2410,7 +2410,7 @@ void SceneGame_OnSoftReset(u8 *g) {
             *vol = 1.0f;
         }
     }
-    func_002D1FD0((Bgm *)bgm);
+    Bgm_ApplyVolume((Bgm *)bgm);
     func_00179E60(D_004562B0);
     func_0017D1B0(D_004562A8);
     g[0x11] = 1;
@@ -2754,12 +2754,12 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     func_002D0DF0(g + 0x706480, -1);
     func_002D0EE0(g + 0x6FC380, -1);
     func_002D00A0(g + 0x6FC258, -1);
-    func_00168C20((Heap *)(g + 0x6FBF40), -1);
+    Heap_dtor((Heap *)(g + 0x6FBF40), -1);
     func_0020E820(g + 0x48, -1);
     func_002D0F90(g + 0x40, 0);
     AT(g, 0x0, void **) = Scene_vtable;
     if ((s16)flags > 0) {
-        func_0011F9A0(g);
+        SceneHeap_delete(g);
     }
     return g;
 }

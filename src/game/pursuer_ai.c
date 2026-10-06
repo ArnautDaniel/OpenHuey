@@ -187,8 +187,8 @@ u32 func_00211B00(Pursuer *p, u32 tri) {
 void func_00211C80(Pursuer *p, s32 a2) {
     Progress *pr = gProgress;
 
-    func_00178DB0(pr, p->c.a.room, a2, *(u8 *)&p->c.a.slot);
-    func_00178C10(pr, p->c.a.room, a2, *(u8 *)&p->c.a.slot);
+    DoorHold_Take(pr, p->c.a.room, a2, *(u8 *)&p->c.a.slot);
+    DoorHold_Open(pr, p->c.a.room, a2, *(u8 *)&p->c.a.slot);
 }
 
 /* door `door` shut, the other side ... (doors +0x20 / +0x1C, progress) */
@@ -199,7 +199,7 @@ void func_00212CA0(Pursuer *p, u32 door) {
     VCALL(d, 0x20, void (*)(VObject *, u32, s32, s32))(d, door, 1, 0x60000);
     VCALL(d, 0x1C, void (*)(VObject *, u32, s32, s32))(d, door, 0, 0x60000);
     pr = gProgress;
-    func_00178A90(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), door, 0xFF);
+    DoorHold_Shut(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), door, 0xFF);
 }
 
 void func_00212D30(Pursuer *p, u32 door) {
@@ -209,7 +209,7 @@ void func_00212D30(Pursuer *p, u32 door) {
     VCALL(d, 0x20, void (*)(VObject *, u32, s32, s32))(d, door, 0, 0x60000);
     VCALL(d, 0x1C, void (*)(VObject *, u32, s32, s32))(d, door, 1, 0x60000);
     pr = gProgress;
-    func_00178C10(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), door, 0xFF);
+    DoorHold_Open(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), door, 0xFF);
 }
 
 /* plan a path to the point beside door `door` (vtable +0x9C offset); 1 if +0xDC agrees */
@@ -246,7 +246,7 @@ void func_00213E30(Pursuer *p) {
     s32 bone = VCALL(m, 0x80, s32 (*)(void *))(m);
     f32 h;
 
-    sceVu0CopyVector(v, func_0017CE80(MOTION_AT(p, 0x810, u8 *), bone) + 0xC);
+    sceVu0CopyVector(v, Skel_Bone(MOTION_AT(p, 0x810, u8 *), bone) + 0xC);
     h = v[1] - MOTION_AT(p, 0x804, f32);
     if (h < 3.0f) {
         h = 3.0f;
@@ -343,7 +343,7 @@ s32 func_00217600(Pursuer *p) {
     f32 v[4] __attribute__((aligned(16)));
     u32 tri;
 
-    func_002E2C10(v, p->c.a.angle[1]);
+    Heading_Vector(v, p->c.a.angle[1]);
     sceVu0ScaleVector(v, v, p->c.a.height);
     sceVu0AddVector(v, v, p->c.a.pos);
     tri = func_00124480(&p->c.a, v, p->c.a.navMask);
@@ -475,7 +475,7 @@ s32 func_002131A0(void) {
         for (i = 0; (u32)i < 5; i++) {
             s32 valid = i >= 0 && (u32)i < AT(gNavMesh, 0x14, u32);
 
-            if ((valid & 0xFF) == 1 && (func_00177A20(pr, i & 0xFF, 0) & 0xFF & 1)) {
+            if ((valid & 0xFF) == 1 && (RoomSlots_Bytes(pr, i & 0xFF, 0) & 0xFF & 1)) {
                 return i;
             }
         }
@@ -676,7 +676,7 @@ s32 func_00217ED0(Pursuer *p, f32 angle, f32 dist) {
     f32 w[4] __attribute__((aligned(16)));
     u32 tri;
 
-    func_002E2C10(v, func_002E2D00(angle + func_001244D0(&p->c.a, p->target->a.pos)));
+    Heading_Vector(v, func_002E2D00(angle + func_001244D0(&p->c.a, p->target->a.pos)));
     sceVu0ScaleVector(v, v, dist);
     sceVu0AddVector(w, p->c.a.pos, v);
     tri = func_00124480(&p->c.a, w, p->c.a.navMask);
@@ -800,8 +800,8 @@ s32 func_00211CF0(Pursuer *p, s32 exit) {
         return 2;
     case 6:
         pr = gProgress;
-        func_00178DB0(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
-        func_00178750(pr, p->c.a.room, exit);
+        DoorHold_Take(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+        DoorHold_Release(pr, p->c.a.room, exit);
         /* fallthrough */
     case 4:
         if (!(VCALL(gRooms, 0x78, s32 (*)(VObject *, s32, s32))(gRooms, p->c.a.room, exit) & 0xFF)) {
@@ -879,7 +879,7 @@ f32 func_00212730(Pursuer *p, s32 exit) {
         VCALL(rm, 0x34, void (*)(VObject *, s32, f32 *))(rm, exit, b);
     }
     sceVu0SubVector(d, a, b);
-    return func_002E2BC0(d);
+    return Vec_Heading(d);
 }
 
 /* turn to the root motion's direction (rotated to the walk mesh slope through triangle +0x34) */
@@ -1283,7 +1283,7 @@ s32 func_00217FC0(Pursuer *p, f32 dist) {
         u32 tri;
         s32 ok = 0;
 
-        func_002E2C10(v, func_002E2D00(a + func_001244D0(&p->c.a, p->target->a.pos)));
+        Heading_Vector(v, func_002E2D00(a + func_001244D0(&p->c.a, p->target->a.pos)));
         sceVu0ScaleVector(v, v, dist);
         sceVu0AddVector(w, p->c.a.pos, v);
         tri = func_00124480(&p->c.a, w, p->c.a.navMask);
@@ -1427,7 +1427,7 @@ u32 func_00211E00(Pursuer *p, s32 exit) {
     if ((func_00178980(pr, p->c.a.room, exit) & 0xFF) == 1) {
         return 4;
     }
-    if ((func_00178840(pr, p->c.a.room, exit) & 0xFF) == 1) {
+    if ((DoorHold_Usable(pr, p->c.a.room, exit) & 0xFF) == 1) {
         return (VCALL(rm, 0x4C, s32 (*)(VObject *, s32, s32))(rm, p->c.a.room, exit) & 0xFF) == 1 ? 6 : 3;
     }
     return 5;
@@ -1441,7 +1441,7 @@ u32 func_00217D30(Pursuer *p, f32 heading, f32 dist) {
     void *nm;
     u32 tri, flags, i;
 
-    func_002E2C10(v, func_002E2D00(heading));
+    Heading_Vector(v, func_002E2D00(heading));
     sceVu0ScaleVector(v, v, dist);
     sceVu0AddVector(w, p->c.a.pos, v);
     tri = func_00124480(&p->c.a, w, 0);
@@ -1661,7 +1661,7 @@ f32 func_00212550(Pursuer *p, u32 exit) {
 
             for (i = 0; i < 8; i++) {
                 if (VCALL(dd, 0x40, s32 (*)(VObject *, u32))(dd, i & 0xFF) != 0 &&
-                    Progress_CurRoomFlag(pr, p->c.a.room, i & 0xFF) != 0 && (func_00177BF0(pr, i & 0xFF, 0) & 0xFF & 4)) {
+                    Progress_CurRoomFlag(pr, p->c.a.room, i & 0xFF) != 0 && (PursuerGroup_Fields(pr, i & 0xFF, 0) & 0xFF & 4)) {
                     found = i & 0xFF;
                     break;
                 }
@@ -1787,10 +1787,10 @@ u32 func_00212850(Pursuer *p) {
             (Progress_CurRoomFlag(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), i & 0xFF) & 0xFF) != 1) {
             continue;
         }
-        st = func_00177BF0(pr, i & 0xFF, *(u8 *)&p->c.a.slot) & 0xFF;
+        st = PursuerGroup_Fields(pr, i & 0xFF, *(u8 *)&p->c.a.slot) & 0xFF;
         if (VCALL(rm, 0x70, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i & 0xFF) != 0) {
             st &= 0xFF;
-            if ((st & 4) && ((st ^ (func_00177BF0(pr, i & 0xFF, 0) & 0xFF)) & 0x10)) {
+            if ((st & 4) && ((st ^ (PursuerGroup_Fields(pr, i & 0xFF, 0) & 0xFF)) & 0x10)) {
                 return i & 0xFF;
             }
             if (st & 8) {
@@ -2059,14 +2059,14 @@ void func_00213270(Pursuer *p, u32 door) {
         VCALL(d, 0x20, void (*)(VObject *, u32, s32, s32))(d, door, 0, 0x60000);
         VCALL(d, 0x1C, void (*)(VObject *, u32, s32, s32))(d, door, 1, 0x60000);
         pr = gProgress;
-        func_00178C10(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), door, 0xFF);
+        DoorHold_Open(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), door, 0xFF);
     } else {
         Progress *pr;
 
         VCALL(d, 0x20, void (*)(VObject *, u32, s32, s32))(d, door, 1, 0x60000);
         VCALL(d, 0x1C, void (*)(VObject *, u32, s32, s32))(d, door, 0, 0x60000);
         pr = gProgress;
-        func_00178A90(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), door, 0xFF);
+        DoorHold_Shut(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), door, 0xFF);
     }
     p->c.a.unk2B = 0;
     p->c.a.unk2D = 0;
@@ -2264,7 +2264,7 @@ u32 func_00216E00(Pursuer *p, u32 tri, const f32 *pos, f32 *out) {
                 t = next;
             }
             sceVu0SubVector(d2, c, pos);
-            func_002E2C10(v, func_002E2BC0(d2));
+            Heading_Vector(v, Vec_Heading(d2));
             sceVu0ScaleVector(v, v, 0x1.99999a0000000p-4f /* 0.1 */);
             sceVu0AddVector(out, e, v);
             return t;
@@ -2338,7 +2338,7 @@ s32 func_00218430(Pursuer *p, Character *c) {
 
         sceVu0SubVector(dir, at, p->c.a.pos);
         sceVu0Normalize(dir, dir);
-        func_002E2CA0(off, dir, 0x1.921fb60000000p+0f /* 1.5707964 */);
+        Vec_TurnY(off, dir, 0x1.921fb60000000p+0f /* 1.5707964 */);
         sceVu0Normalize(off, off);
         sceVu0ScaleVector(off, off, c->a.radius);
         for (i = 0; i < 9; i = (i + 1) & 0xFF) {
@@ -2350,7 +2350,7 @@ s32 func_00218430(Pursuer *p, Character *c) {
                 (func_00122C90(&p->c.a, p->c.a.navTri, t, me, pt, mask) & 0xFF) == 1) {
                 return 1;
             }
-            func_002E2CA0(off, off, 0x1.921fb60000000p-2f /* 0.3926991 */);
+            Vec_TurnY(off, off, 0x1.921fb60000000p-2f /* 0.3926991 */);
         }
     }
     return 0;

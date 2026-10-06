@@ -420,12 +420,12 @@ static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, cons
     PU(p, 0x14EC, s32) = 0;
 }
 
-/* its slot's progress entry (func_00177870) 1: func_001777D0; -1 */
+/* its slot's progress entry (func_00177870) 1: SlotCmd_Cancel; -1 */
 static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) {
     Progress *g = gProgress;
 
     if ((u8)func_00177870(g, *(u8 *)&p->c.a.slot) == 1) {
-        func_001777D0(g, *(u8 *)&p->c.a.slot);
+        SlotCmd_Cancel(g, *(u8 *)&p->c.a.slot);
     }
     return -1;
 }
@@ -3118,7 +3118,7 @@ static inline __attribute__((always_inline)) void animal_face(u8 *self, f32 x, f
     t[2] = z;
     t[3] = 1.0f;
     sceVu0SubVector(t, t, CHAR_POS(self));
-    a = func_002E2D00(func_002E2BC0(t));
+    a = func_002E2D00(Vec_Heading(t));
     d = func_002E2D00(a - func_002E2D00(F32(self, 0x54)));
     F32(self, 0x54) = func_002E2D00(0.0f + F32(self, 0x54) + k03.f * d);
 }
@@ -3718,7 +3718,7 @@ void func_0035BC30(u8 *o, const u8 *m) {
     AT(o, 0x8, s32) = 0;
 }
 
-extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
+extern void Sound_PlayBankAt(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 
 /* the room-object glow (vtable D_00479870, made by func_0034B210) +0x10 update: 0 while unset
  * (+0x5 0xFF). On (+0x7) it fades in (+0x4 up to 0x40 by 2), off it fades out; at 0 it is unset,
@@ -3740,7 +3740,7 @@ s32 func_0035C8C0(u8 *o) {
             o[5] = 0xFF;
             VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, o[6], -1);
             if (VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector) == 0) {
-                func_002FF650(gSound, 2, 6, (f32 *)(AT(o, 0xC, u8 *) + 0x20), 0, 0);
+                Sound_PlayBankAt(gSound, 2, 6, (f32 *)(AT(o, 0xC, u8 *) + 0x20), 0, 0);
             }
             return 0;
         }
@@ -3969,7 +3969,7 @@ static s32 glow_in_view(f32 (*clip)[4], const f32 *pt) {
 /* the glow +0x14 draw (while set): around its room object (+0xC, at floor height -1)
  * - a disc of radius r (by its kind +0x5) fading out from the middle (alpha +0x4), added into
  *   layer 0x26 (the bloom's mask); only when all of it is in view (kind 0: the disc left out
- *   then, and the screen also brightened, func_0026B180 0x40808080 in layer 0x28)
+ *   then, and the screen also brightened, Bloom_Start 0x40808080 in layer 0x28)
  * - eight faint cyan strips standing 40 high at radius r + 5, turning with its phase (+0x8),
  *   added in layer 2, when all in view */
 void func_0035BCA0(u8 *o) {
@@ -4016,7 +4016,7 @@ void func_0035BCA0(u8 *o) {
 
         AT(drawer, 0x0, void **) = D_0046D7A0;
         AT(drawer, 0x4, s32) = -1;
-        func_0026B180(drawer, 0x40808080, 0x28, 0);
+        Bloom_Start(drawer, 0x40808080, 0x28, 0);
         AT(drawer, 0x0, void **) = D_00469D00;
     }
     if (!clipped) {

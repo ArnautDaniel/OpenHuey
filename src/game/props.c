@@ -115,12 +115,12 @@ static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, cons
     PU(p, 0x14EC, s32) = 0;
 }
 
-/* its slot's progress entry (func_00177870) 1: func_001777D0; -1 */
+/* its slot's progress entry (func_00177870) 1: SlotCmd_Cancel; -1 */
 static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) {
     Progress *g = gProgress;
 
     if ((u8)func_00177870(g, *(u8 *)&p->c.a.slot) == 1) {
-        func_001777D0(g, *(u8 *)&p->c.a.slot);
+        SlotCmd_Cancel(g, *(u8 *)&p->c.a.slot);
     }
     return -1;
 }
@@ -1010,7 +1010,7 @@ s32 func_00353520(u8 *o) {
         }
         if (landed == 1) {
             if (i == 0) {
-                func_002FF650(snd, AT(o, 0x68C, s32) + 2, 6, (f32 *)(p + 0x10), 0, 0);
+                Sound_PlayBankAt(snd, AT(o, 0x68C, s32) + 2, 6, (f32 *)(p + 0x10), 0, 0);
                 if (AT(o, 0x68C, s32) >= 2) {
                     AT(o, 0x68C, s32) = 0;
                 } else {
@@ -1757,7 +1757,7 @@ void func_002B9B00(u8 *o) {
         AT(o, 0x40, f32) = AT(o, 0x40, f32) + a;
     }
     sceVu0SubVector(e, (f32 *)(o + 0x10), (f32 *)(o + 0x20));
-    if (!(func_002E2D00(func_002E2BC0(e) - AT(o, 0x44, f32)) <= 0.0f)) {
+    if (!(func_002E2D00(Vec_Heading(e) - AT(o, 0x44, f32)) <= 0.0f)) {
         t = AT(o, 0x44, f32) + kPi.f * (15.0f + 20.0f * RND()) / 180.0f;
         AT(o, 0x44, f32) = t;
         AT(o, 0x44, f32) = func_002E2D00(t);
@@ -1768,7 +1768,7 @@ void func_002B9B00(u8 *o) {
     }
     rng = gRandom;
     speed = k04.f + k04.f * RND();
-    func_002E2C10(v, AT(o, 0x44, f32));
+    Heading_Vector(v, AT(o, 0x44, f32));
     sceVu0ScaleVector(v, v, speed);
     sceVu0AddVector((f32 *)(o + 0x20), (f32 *)(o + 0x20), v);
     AT(o, 0x60, f32) = func_002E2D00(AT(o, 0x60, f32) + (k60.f + 20.0f * RND()));
@@ -1911,13 +1911,13 @@ void func_002B9010(u8 *o) {
         v[2] = AT(o, 0x84, f32);
         v[3] = 0.0f;
         bob = bob + k04.f * func_0031C248(func_002E2D00(c + (AT(o, 0x68, f32) + AT(o, 0x70, f32))));
-        func_002E2CA0(v, v, func_002E2D00(a));
+        Vec_TurnY(v, v, func_002E2D00(a));
         y = AT(o, 0x14, f32) + v[1];
         x = AT(o, 0x10, f32) + v[0];
         z = AT(o, 0x18, f32) + v[2];
         sceVu0SubVector(d, (f32 *)(o + 0x20), (f32 *)(o + 0x10));
         turn = (f32)(i + 1) * ((f32)sign * k50.f);
-        func_002E2CA0(d, d, func_002E2D00(turn));
+        Vec_TurnY(d, d, func_002E2D00(turn));
         at[1] = y + bob;
         at[0] = x + d[0];
         at[2] = z + d[2];
@@ -2301,7 +2301,7 @@ s32 func_0033D2C0(u8 *o) {
                 AT(o, 0x18 + k * 4, s32) = 0x5A;
                 if ((u8)VCALL(snd, 0xA4, s32 (*)(VObject *, s32))(snd, 6) == 1) {
                     AT(o, 0x6C0 + k * 4, s32) = AT(o, 0x6D4, s32);
-                    func_002FF650(snd, (AT(o, 0x6C0 + k * 4, s32) + 7) | 0x40000000, 6, (f32 *)(o + 0x30 + k * 0x10), 0, 0);
+                    Sound_PlayBankAt(snd, (AT(o, 0x6C0 + k * 4, s32) + 7) | 0x40000000, 6, (f32 *)(o + 0x30 + k * 0x10), 0, 0);
                     AT(o, 0x6D4, s32)++;
                     AT(o, 0x6D4, s32) &= 3;
                 }
@@ -2311,7 +2311,7 @@ s32 func_0033D2C0(u8 *o) {
         }
         if (AT(o, 0x4 + k * 4, s32) != 0) {
             if (AT(o, 0x6C0 + k * 4, s32) != -1) {
-                func_002FF650(snd, (AT(o, 0x6C0 + k * 4, s32) + 7) | 0xC0000000, 6, (f32 *)(o + 0x30 + k * 0x10), 0, 0);
+                Sound_PlayBankAt(snd, (AT(o, 0x6C0 + k * 4, s32) + 7) | 0xC0000000, 6, (f32 *)(o + 0x30 + k * 0x10), 0, 0);
             }
             for (j = 0; j < 16; j++) {
                 if (DRIP_LIFE(o, k, j) == 0) {
@@ -2895,12 +2895,12 @@ static inline void wisps_source(u8 *o, f32 *p) {
     if (c != NULL) {
         s32 bone = VCALL(c, 0x98, s32 (*)(u8 *))(c);
 
-        sceVu0CopyVector(p, func_0017CE80(AT(c, 0x810, void *), bone) + 12);
+        sceVu0CopyVector(p, Skel_Bone(AT(c, 0x810, void *), bone) + 12);
     } else {
         f32 m[4][4] __attribute__((aligned(16)));
         f32 v[4] __attribute__((aligned(16)));
 
-        sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(AT(gCharPlayer, 0xF0, u8 *), 0x810, void *), 0x23));
+        sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(AT(AT(gCharPlayer, 0xF0, u8 *), 0x810, void *), 0x23));
         v[0] = -3.5f;
         v[2] = 1.0f;
         v[3] = 1.0f;

@@ -111,7 +111,7 @@ void SubPool_Reset(u8 *pool) {
     for (i = 0; i < 4; i++) {
         AT(pool, 0x15E0 + i * 4, s32) = 0;
     }
-    func_00120EC0((BlockPool *)(pool + 0x1208), pool + 8, 0x18, 0xC0, pool + 0x1220);
+    BlockPool_Init((BlockPool *)(pool + 0x1208), pool + 8, 0x18, 0xC0, pool + 0x1220);
 }
 
 /* destructor (vtable D_0046EC80) */
@@ -184,7 +184,7 @@ static void opt_apply_volume(VObject *snd, f32 vol) {
         if (!(*v <= 1.0f)) {
             *v = 1.0f;
         }
-        func_002D1FD0(gAdx);
+        Bgm_ApplyVolume(gAdx);
     }
 }
 
@@ -570,7 +570,7 @@ static void sub_draw_fade(SubScreen *s) {
         AT(ov, 0x4, s32) = -1;
         AT(ov, 0x10, s32) = -1;
         AT(ov, 0x14, u8) = 0;
-        func_002CF390(ov, (u32)s->fade << 24);
+        Overlay_SetColor(ov, (u32)s->fade << 24);
         VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, ov, 0x31, 0);
         AT(ov, 0x0, void **) = D_00469D00;
     } else {
@@ -603,7 +603,7 @@ static void sub_set_volume(SubScreen *s, f32 vol) {
     if (!(AT(bgm, 0x114, f32) <= 1.0f)) {
         AT(bgm, 0x114, f32) = 1.0f;
     }
-    func_002D1FD0((Bgm *)bgm);
+    Bgm_ApplyVolume((Bgm *)bgm);
     if (D_00456DF0 != NULL) {
         VCALL(D_00456DF0, 0x44, void (*)(VObject *, f32))(D_00456DF0, vol);
     }
@@ -1657,7 +1657,7 @@ void func_003912E0(SubScreen *s) {
         SaveScreen_Draw(&s->card, 0);
         return;
     }
-    func_002BDAB0(&s->card);
+    BootCard_StateSave(&s->card);
     if (gProgress != NULL) {
         Progress_ClearFlag(gProgress, 4);
     }
@@ -2028,7 +2028,7 @@ void func_00397AB0(SubScreen *s) {
         AT(ov, 0x10, s32) = -1;
         AT(ov, 0x14, u8) = 0;
         AT(ov, 0x24, s32) = 0;
-        func_002CF390(ov, (u32)s->fade << 24);
+        Overlay_SetColor(ov, (u32)s->fade << 24);
         VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, ov, 0x31, 0);
         AT(ov, 0x0, void **) = D_00469D00;
     } else {
@@ -2262,7 +2262,7 @@ static void sub_fade_back(SubScreen *s) {
         AT(ov, 0x10, s32) = -1;
         AT(ov, 0x14, u8) = 0;
         AT(ov, 0x24, s32) = 0;
-        func_002CF390(ov, (u32)s->fade << 24);
+        Overlay_SetColor(ov, (u32)s->fade << 24);
         VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, ov, 0x31, 0);
         AT(ov, 0x0, void **) = D_00469D00;
     } else {
@@ -2740,14 +2740,14 @@ void func_003888A0(SubScreen *s) {
             *k = (*k >> 3) < 3 ? ((*k >> 3) + 1) * 8 : 0;
             Sound_PlaySE(SE_CURSOR);
         } else if (pad & MENU_CANCEL) {
-            if (func_002D20D0(gAdx) == 0) {
+            if (Bgm_IsPlaying(gAdx) == 0) {
                 MUSIC_WANT(0xFF, 0, 0);
                 SUB_MUSIC_NEXT(s) = 0xFF;
             } else {
                 s->close = 1;
             }
         }
-        if (func_002D20D0(gAdx) != 0) {
+        if (Bgm_IsPlaying(gAdx) != 0) {
             if (SUB_MUSIC_NEXT(s) != 0xFF) {
                 MUSIC_WANT(D_0044BF30[SUB_MUSIC_NEXT(s)][4], 0, 1);
                 SUB_MUSIC_NEXT(s) = 0xFF;

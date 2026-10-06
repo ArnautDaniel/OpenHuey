@@ -55,7 +55,7 @@ int func_002700E8(void *cd, unsigned fno, unsigned mode, void *send, int ssize, 
 }
 
 /* the EE's own RPC server (registered by the game's server thread, which isn't run): the IOP
-   side calls the game's handler func_0021F0E0 directly */
+   side calls the game's handler SndLib_ServerCall directly */
 void func_00270328(void *queue, int thread) { (void)queue; (void)thread; }
 void func_002703C0(void *sd, unsigned id, void *func, void *buf, void *cfunc, void *cbuf, void *queue) {
     (void)sd; (void)id; (void)func; (void)buf; (void)cfunc; (void)cbuf; (void)queue;

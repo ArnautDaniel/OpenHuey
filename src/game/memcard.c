@@ -18,10 +18,11 @@ extern void *D_0046AE90[], *D_0046AEB4[], *D_0046AD88[], *D_0046AE60[];
 
 /* the states (libmc) */
 
-void *func_001BF2E0(u8 *o, s32 flags);
+void *MemCardBase_dtor(u8 *o, s32 flags);
 
 /* destructor (vtable D_0046AE60) */
-void *func_001BF2E0(u8 *o, s32 flags) {
+/* 0x001BF2E0 */
+void *MemCardBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AE60;
         gMemCard = NULL;
@@ -41,7 +42,8 @@ static inline void request(MemCard *mc, s32 port, void (*state)(MemCard *)) {
 }
 
 /* +0x8 */
-MemCard *func_001BF550(MemCard *mc, s32 flags) {
+/* 0x001BF550 */
+MemCard *MemCard_dtor(MemCard *mc, s32 flags) {
     if (mc != NULL) {
         mc->vtbl = D_0046AE90;
         mc->subVtbl = D_0046AEB4;
@@ -58,13 +60,15 @@ MemCard *func_001BF550(MemCard *mc, s32 flags) {
 }
 
 /* +0xC check the card in `port` */
-void func_001BF340(MemCard *mc, s32 port) {
+/* 0x001BF340 */
+void MemCard_Check(MemCard *mc, s32 port) {
     mc->error = -1;
     request(mc, port, func_00226220);
 }
 
 /* +0x10 */
-void func_001BF390(MemCard *mc, s32 port, s32 arg, void *buf, s32 size) {
+/* 0x001BF390 */
+void MemCard_Request10(MemCard *mc, s32 port, s32 arg, void *buf, s32 size) {
     mc->arg38 = arg;
     mc->buf = buf;
     mc->size = size;
@@ -72,7 +76,8 @@ void func_001BF390(MemCard *mc, s32 port, s32 arg, void *buf, s32 size) {
 }
 
 /* +0x14 write `size` bytes from `buf` at `offset` of the game data file */
-void func_001BF3F0(MemCard *mc, s32 port, void *buf, s32 offset, s32 size) {
+/* 0x001BF3F0 */
+void MemCard_Write(MemCard *mc, s32 port, void *buf, s32 offset, s32 size) {
     mc->buf = buf;
     mc->offset = offset;
     mc->size = size;
@@ -80,7 +85,8 @@ void func_001BF3F0(MemCard *mc, s32 port, void *buf, s32 offset, s32 size) {
 }
 
 /* +0x18 read `size` bytes at `offset` of the game data file into `buf` */
-void func_001BF450(MemCard *mc, s32 port, void *buf, s32 offset, s32 size) {
+/* 0x001BF450 */
+void MemCard_Read(MemCard *mc, s32 port, void *buf, s32 offset, s32 size) {
     mc->buf = buf;
     mc->offset = offset;
     mc->size = size;
@@ -88,23 +94,27 @@ void func_001BF450(MemCard *mc, s32 port, void *buf, s32 offset, s32 size) {
 }
 
 /* +0x1C */
-void func_001BF4B0(MemCard *mc, s32 port) {
+/* 0x001BF4B0 */
+void MemCard_Request1C(MemCard *mc, s32 port) {
     request(mc, port, func_00225860);
 }
 
 /* +0x20 */
-void func_001BF500(MemCard *mc, s32 port) {
+/* 0x001BF500 */
+void MemCard_Request20(MemCard *mc, s32 port) {
     request(mc, port, func_00225770);
 }
 
 /* every frame: run the request's state */
-void func_00226510(MemCard *mc) {
+/* 0x00226510 */
+void MemCard_Tick(MemCard *mc) {
     if (ptmf_test(&mc->state)) {
         ptmf_scall(mc, &mc->state);
     }
 }
 
 /* shut the memory card library down (the mc argument is unused) */
-s32 func_00226560(MemCard *mc) {
+/* 0x00226560 */
+s32 MemCard_Shutdown(MemCard *mc) {
     return func_00110B60();
 }

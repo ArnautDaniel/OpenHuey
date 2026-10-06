@@ -65,7 +65,7 @@ s32 func_002ADB10(void) {
     at[0] = AT(e, 0x20, f32);
     at[1] = AT(e, 0x24, f32);
     at[2] = AT(e, 0x28, f32);
-    func_002FF650(gSound, 0xC0000000, 6, at, 0, 0);
+    Sound_PlayBankAt(gSound, 0xC0000000, 6, at, 0, 0);
     return 1;
 }
 

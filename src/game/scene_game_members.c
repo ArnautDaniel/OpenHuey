@@ -87,7 +87,7 @@ void func_002A8410(u8 *p) {
 
 /* a pool of 128 blocks of 0x140 bytes */
 void func_002D7680(u8 *p) {
-    func_00120EC0((BlockPool *)(p + 0xA040), p + 0x40, 0x140, 0x80, p + 0xA058);
+    BlockPool_Init((BlockPool *)(p + 0xA040), p + 0x40, 0x140, 0x80, p + 0xA058);
 }
 
 void func_002ECB50(u8 *p) {
@@ -196,11 +196,11 @@ void func_002F08E0(u8 *p) {
 void func_002E2B20(u8 *p) {
     s32 i;
 
-    func_00120EC0((BlockPool *)(p + 0xDC40), p + 0x40, 0x1600, 0xA, p + 0xDC58);
+    BlockPool_Init((BlockPool *)(p + 0xDC40), p + 0x40, 0x1600, 0xA, p + 0xDC58);
     for (i = 0; i < 10; i++) {
         AT(p, i * 4, s32) = 0;
     }
-    func_00120EC0((BlockPool *)(p + 0xF630), p + 0xDC80, 0x890, 3, p + 0xF648);
+    BlockPool_Init((BlockPool *)(p + 0xF630), p + 0xDC80, 0x890, 3, p + 0xF648);
     AT(p, 0x38681, u8) = 0;
 }
 
@@ -423,7 +423,7 @@ void func_00176780(u8 *prog) {
             func_002A8410(prog + 0x1134 + i * 0xE0 + j * 0x20);
         }
     }
-    func_0026BCC0(prog + 0x6FC218);
+    Message_Init(prog + 0x6FC218);
     func_002D7680(prog + 0x6FC340);
     func_002E2B20(prog + 0x706440);
 }
@@ -832,11 +832,11 @@ void func_001FA710(u8 *l, f32 (*dir)[4], f32 (*col)[4], f32 *fall, f32 (*lpos)[4
         up[0] = 0.0f;
         sceVu0OuterProduct(axis, up, d);
         sceVu0Normalize(axis, axis);
-        func_0025C6F0(q, axis, AT(x, 0x20, f32));
-        func_0025C770(q, m);
+        Quat_FromAxisAngle(q, axis, AT(x, 0x20, f32));
+        Quat_ToMatrix(q, m);
         sceVu0ApplyMatrix(d, m, d);
-        func_0025C6F0(q, up, AT(x, 0x24, f32));
-        func_0025C770(q, m);
+        Quat_FromAxisAngle(q, up, AT(x, 0x24, f32));
+        Quat_ToMatrix(q, m);
         sceVu0ApplyMatrix(d, m, d);
         dir[0][slot] = d[0];
         dir[1][slot] = d[1];
@@ -1028,7 +1028,7 @@ void func_001AABC0(u8 *o) {
 void func_00267250(u8 *o) {
     s32 i;
 
-    func_00120EC0((BlockPool *)(o + 0x1400), o, 0xA0, 0x20, o + 0x1418);
+    BlockPool_Init((BlockPool *)(o + 0x1400), o, 0xA0, 0x20, o + 0x1418);
     for (i = 0; i < 32; i++) {
         AT(o, 0x1438 + i * 4, s32) = 0;
     }
@@ -1338,7 +1338,7 @@ void func_00222F60(VObject *d, u8 *sec) {
             continue;
         }
         e = (u8 *)d + i * 0x210;
-        func_0025EEC0(e + 0x90);
+        RoomMesh_Reset(e + 0x90);
         e += 0x10;
         func_00221880(e);
         /* (the original then skips doors whose byte +0x70 equals -1, which a byte never is) */
@@ -2348,7 +2348,7 @@ void func_002A7720(u8 *o) {
     if (AT(o, 0x4, s32) > 0) {
         AT(o, 0x4, s32)--;
         if (!(AT(o, 0x0, f32) < 0.0f)) {
-            ((void (*)(void *))func_002EF9E0)((u8 *)gProgress + 0x7B8);
+            ((void (*)(void *))Threat_Raise)((u8 *)gProgress + 0x7B8);
         } else {
             f32 x = AT(o, 0x0, f32);
 
@@ -2385,7 +2385,7 @@ void func_002A7720(u8 *o) {
     if (old != AT(o, 0x10, f32)) {
         VCALL(gSound, 0xAC, void (*)(VObject *, f32))(gSound, AT(o, 0x10, f32));
         AT(gAdx, 0x120, f32) = clamp01(AT(o, 0x10, f32));
-        func_002D1FD0(gAdx);   /* the music player, passed through a0 */
+        Bgm_ApplyVolume(gAdx);   /* the music player, passed through a0 */
         if (D_00456DF0 != NULL) {
             VCALL(D_00456DF0, 0x24, void (*)(VObject *, f32))(D_00456DF0, AT(o, 0x10, f32));
         }
@@ -3341,11 +3341,11 @@ void func_00220E80(u8 *door) {
     AT(obj, 0x8, void *) = AT(door, 0x0, void *);
     AT(obj, 0x18, s32) = 0;
     VCALL(gRenderer, 0xC, void (*)(VObject *, u8 *, s32, s32))(gRenderer, obj, 1, 0);
-    if (!func_0025EEE0(obj) || !(AT(door, 0x64, f32) < 0.0f)) {
+    if (!PlacedMesh_LastShown(obj) || !(AT(door, 0x64, f32) < 0.0f)) {
         return;
     }
     if (AT(door, 0x72, u8) == 1) {
-        func_00278D60(door + 0x190, AT(door, 0x8, u32), (f32 *)(door + 0x10), (f32 *)(door + 0x30));
+        DoorShadow_Queue(door + 0x190, AT(door, 0x8, u32), (f32 *)(door + 0x10), (f32 *)(door + 0x30));
     }
     if (!(AT(door, 0x64, f32) <= -78.75f)) {
         return;
@@ -3385,9 +3385,9 @@ static void door_settle(u8 *door, s32 open) {
     p = gProgress;
     room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
     if (open) {
-        func_00178C10(p, room, AT(door, 0x4, u8), 0xFF);
+        DoorHold_Open(p, room, AT(door, 0x4, u8), 0xFF);
     } else {
-        func_00178A90(p, room, AT(door, 0x4, u8), 0xFF);
+        DoorHold_Shut(p, room, AT(door, 0x4, u8), 0xFF);
     }
 }
 

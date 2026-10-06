@@ -20,10 +20,11 @@ extern const char D_0044F7F0[];   /* "." (the root) */
 
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-void func_001695D0(u8 *p);
+void Lzss_Start(u8 *p);
 
 /* init: 256 empty request slots, the root's listing, the folder slots' listing buffers */
-void func_0016C530(u8 *l) {
+/* 0x0016C530 */
+void Loader_Init(u8 *l) {
     s32 i;
 
     AT(l, 0x12808, s32) = 0;
@@ -53,7 +54,8 @@ void func_0016C530(u8 *l) {
 
 /* Register data folder `dir`: index + 1 if it already is, 0 once its listing is loaded, -1 if
  * there's no free slot. */
-s32 func_0016B2B0(u8 *l, const char *dir) {
+/* 0x0016B2B0 */
+s32 Loader_RegisterDir(u8 *l, const char *dir) {
     s32 i, free = -1;
 
     if (dir == NULL) {
@@ -151,11 +153,12 @@ extern const char D_0044F268[];   /* "ST_%03X" */
 static inline void Loader_AddDir(u8 *l, VObject *sys, const char *dir) {
     do {
         VCALL(sys, 0x1C, void (*)(VObject *))(sys);
-    } while (func_0016B2B0(l, dir) < 0);
+    } while (Loader_RegisterDir(l, dir) < 0);
 }
 
 /* Register all data folders: the stages ST_000..ST_108, then the rest. */
-void func_00169680(u8 *l) {
+/* 0x00169680 */
+void Loader_RegisterAll(u8 *l) {
     VObject *sys = gSystem;
     char name[0x100];
     u32 i;
@@ -177,7 +180,8 @@ void func_00169680(u8 *l) {
 #define ADXF_STAT_ERROR 4
 
 /* Split "FOLDER\FILE" into the folder's listing (+0x3C lookup; none: the root) and the name. */
-void func_001694D0(u8 *q, const char *path) {
+/* 0x001694D0 */
+void Loader_SplitPath(u8 *q, const char *path) {
     char dir[0x100];
     s32 i;
 
@@ -203,7 +207,8 @@ void func_001694D0(u8 *q, const char *path) {
 /* LZSS decompression: +0x18 source (4-byte header), +0x1C destination.
  * Flag bit 1 = literal byte, 0 = 16-bit back-reference (len = low 4 bits + 2,
  * distance = high 12 bits); a zero reference ends the stream. */
-void func_001695D0(u8 *p) {
+/* 0x001695D0 */
+void Lzss_Start(u8 *p) {
     u8 *src = FLD(p, 0x18, u8 *) + 4;
     u8 *dst = FLD(p, 0x1C, u8 *);
     u32 bits = 1;
@@ -237,12 +242,13 @@ void func_001695D0(u8 *p) {
 }
 
 /* +0x2C size of file `path` in sectors (0: not found) */
-s32 func_00169450(VObject *l, const char *path) {
+/* 0x00169450 */
+s32 Loader_FileSectors(VObject *l, const char *path) {
     u8 *q = func_00100660(0x128);
     void *f;
     s32 n;
 
-    func_001694D0(q, path);
+    Loader_SplitPath(q, path);
     f = func_001C9438(REQ_NAME(q), REQ_DIR(q));
     func_00100490(q);
     if (f == NULL) {
@@ -254,18 +260,20 @@ s32 func_00169450(VObject *l, const char *path) {
 }
 
 /* +0x30 size of file `path` in bytes (whole sectors) */
-u32 func_00169420(VObject *l, const char *path) {
+/* 0x00169420 */
+u32 Loader_FileSize(VObject *l, const char *path) {
     return VCALL(l, 0x2C, s32 (*)(VObject *, const char *))(l, path) << 11;
 }
 
 /* +0x34 load all of file `path` into `dst` (waiting; retried on read errors); returns its size */
-u32 func_001692F0(VObject *l, const char *path, u32 dst) {
+/* 0x001692F0 */
+u32 Loader_LoadNow(VObject *l, const char *path, u32 dst) {
     u8 *q = func_00100660(0x128);
     void *f;
     s32 st;
     u32 size;
 
-    func_001694D0(q, path);
+    Loader_SplitPath(q, path);
     do {
         f = func_001C9438(REQ_NAME(q), REQ_DIR(q));
     } while (f == NULL);
@@ -290,7 +298,8 @@ u32 func_001692F0(VObject *l, const char *path, u32 dst) {
 }
 
 /* +0x3C the listing of registered folder `dir` (NULL: the root's); NULL if not registered */
-void *func_0016B1F0(u8 *l, const char *dir) {
+/* 0x0016B1F0 */
+void *Loader_DirListing(u8 *l, const char *dir) {
     s32 i;
 
     if (dir == NULL) {
@@ -317,7 +326,7 @@ typedef struct LoadReq {
     /* 0x018 */ u32 dst;
     /* 0x01C */ s32 notify;     /* hand the data on when done */
     /* 0x020 */ char name[0x100];
-    /* 0x120 */ u8 kind;        /* 0: callback (func_001695D0); else a sound bank part (| 0x80) */
+    /* 0x120 */ u8 kind;        /* 0: callback (Lzss_Start); else a sound bank part (| 0x80) */
     /* 0x121 */ u8 bank;
     /* 0x122 */ u8 pad122[2];
     /* 0x124 */ u32 size;
@@ -351,7 +360,8 @@ static inline void Loader_Retire(u8 *l, LoadReq *q) {
 
 /* Per-frame tick: advance the request at the read index (open, read, wait, hand sound data to
  * the sound driver: +0x4C / +0x54 / +0x50 / +0x5C by kind, +0x70 = driver busy). */
-void func_0016BFB0(u8 *l) {
+/* 0x0016BFB0 */
+void Loader_Tick(u8 *l) {
     VObject *drv = gSound;
     LoadReq *q;
     s32 n, st;
@@ -405,7 +415,7 @@ void func_0016BFB0(u8 *l) {
             }
             if (q->notify != 0 && q->size != 0) {
                 if (q->kind == 0) {
-                    func_001695D0((u8 *)q);
+                    Lzss_Start((u8 *)q);
                 } else {
                     if ((VCALL(drv, 0x70, s32 (*)(VObject *, s32))(drv, q->bank) & 0xFF) == 1) {
                         return;
@@ -463,7 +473,8 @@ void func_0016BFB0(u8 *l) {
 /* +0xC queue loading `path` into `dst` (flags `flags`): with `buf`, `dst` says what to do with
  * the data once loaded (bit 31: a sound bank part, kind bits 28-29, bank bits 24-27) and `buf`
  * is where it goes. Returns the request id (an equal request already queued: its id). */
-s32 func_0016BBD0(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
+/* 0x0016BBD0 */
+s32 Loader_Queue(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
     LoadReq *t = func_00100660(0x128), *q;
     u32 i;
     s32 id;
@@ -479,7 +490,7 @@ s32 func_0016BBD0(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
     t->kind = 0;
     t->size = 0;
     t->group = flags;
-    func_001694D0((u8 *)t, path);
+    Loader_SplitPath((u8 *)t, path);
     if (buf != 0) {
         if (dst & 0x80000000) {
             t->notify = -1;
@@ -506,7 +517,7 @@ s32 func_0016BBD0(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
     }
     if (LOADER_WR(l) + 1 == LOADER_RD(l)) {   /* full: work until there is room */
         do {
-            func_0016BFB0(l);
+            Loader_Tick(l);
         } while (LOADER_WR(l) + 1 == LOADER_RD(l));
     }
     while (++LOADER_LASTID(l) == 0) {
@@ -571,7 +582,8 @@ static void Loader_DropGroup(u8 *l, s32 group) {
 
 /* +0x14 cancel the requests of `group`: the one in progress is stopped (or dropped if it
  * hasn't started reading), the queued ones dropped */
-void func_0016B8E0(u8 *l, s32 group) {
+/* 0x0016B8E0 */
+void Loader_CancelGroup(u8 *l, s32 group) {
     LoadReq *q = LOADER_REQ(l, LOADER_RD(l));
 
     if (q->group == group) {
@@ -581,7 +593,8 @@ void func_0016B8E0(u8 *l, s32 group) {
 }
 
 /* +0x18 the same, waiting for the read in progress to stop */
-void func_0016B750(u8 *l, s32 group) {
+/* 0x0016B750 */
+void Loader_CancelGroupWait(u8 *l, s32 group) {
     LoadReq *q = LOADER_REQ(l, LOADER_RD(l));
 
     if (q->group == group) {
@@ -591,7 +604,8 @@ void func_0016B750(u8 *l, s32 group) {
 }
 
 /* +0x1C cancel everything */
-void func_0016B600(u8 *l) {
+/* 0x0016B600 */
+void Loader_CancelAll(u8 *l) {
     u8 i;
 
     LoadReq_Cancel(LOADER_REQ(l, LOADER_RD(l)), 0);
@@ -604,7 +618,8 @@ void func_0016B600(u8 *l) {
 }
 
 /* +0x10 cancel request `id` (+0x10 of the request; 0 none) */
-void func_0016BA70(u8 *l, s32 id) {
+/* 0x0016BA70 */
+void Loader_Cancel(u8 *l, s32 id) {
     LoadReq *q;
     u8 i;
 
@@ -627,7 +642,8 @@ void func_0016BA70(u8 *l, s32 id) {
 
 /* +0x20 the state of request `id`: ADXF's (2 while it isn't open yet), 3 (done) if it is no
  * longer queued */
-s32 func_0016B550(u8 *l, s32 id) {
+/* 0x0016B550 */
+s32 Loader_State(u8 *l, s32 id) {
     u8 i;
 
     for (i = LOADER_RD(l); i != LOADER_WR(l); i++) {
@@ -648,7 +664,8 @@ static inline void LoaderBase_Destroy(VObject *l) {
     }
 }
 
-void *func_0016C840(VObject *l, s32 flags) {
+/* 0x0016C840 */
+void *LoaderBase_dtor(VObject *l, s32 flags) {
     if (l != NULL) {
         LoaderBase_Destroy(l);
         if ((s16)flags > 0) {
@@ -659,7 +676,8 @@ void *func_0016C840(VObject *l, s32 flags) {
 }
 
 /* the loader: destructor */
-void *func_00169280(VObject *l, s32 flags) {
+/* 0x00169280 */
+void *Loader_dtor(VObject *l, s32 flags) {
     if (l != NULL) {
         *(void ***)l = D_0046A1E0;
         if (l != NULL) {
@@ -673,7 +691,8 @@ void *func_00169280(VObject *l, s32 flags) {
 }
 
 /* close the files of all 256 request slots */
-void func_0016BF50(u8 *l) {
+/* 0x0016BF50 */
+void Loader_CloseAll(u8 *l) {
     s32 i;
 
     for (i = 0; i < 256; i++) {

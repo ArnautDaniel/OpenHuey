@@ -347,16 +347,16 @@ void func_001F7AC0(u8 *m) {
     void *bufs;
     s32 i, j, k;
 
-    func_0017CED0(skels, AT(m, 0x810, u8 *));
+    SkelPool_Free(skels, AT(m, 0x810, u8 *));
     AT(m, 0x810, s32) = 0;
     bufs = D_004562B0;
     for (i = 0; i < 2; i++) {
         for (j = 0; j < 2; j++) {
             u8 *s = m + i * 0xA0 + j * 4;
 
-            func_0017CED0(skels, AT(s, 0x58C, u8 *));
-            func_00179BC0(bufs, AT(s, 0x584, void *));
-            func_00179BC0(bufs, AT(s, 0x594, void *));
+            SkelPool_Free(skels, AT(s, 0x58C, u8 *));
+            ChainPool_Free(bufs, AT(s, 0x584, void *));
+            ChainPool_Free(bufs, AT(s, 0x594, void *));
             AT(s, 0x58C, s32) = 0;
             AT(s, 0x584, s32) = 0;
             AT(s, 0x594, s32) = 0;
@@ -366,9 +366,9 @@ void func_001F7AC0(u8 *m) {
         for (j = 0; j < 2; j++) {
             u8 *s = m + i * 0x60 + j * 0x1C;
 
-            func_00179BC0(bufs, AT(s, 0x6DC, void *));
+            ChainPool_Free(bufs, AT(s, 0x6DC, void *));
             AT(s, 0x6DC, s32) = 0;
-            func_0017CED0(skels, AT(s, 0x6E0, u8 *));
+            SkelPool_Free(skels, AT(s, 0x6E0, u8 *));
             AT(s, 0x6E0, s32) = 0;
         }
     }
@@ -502,7 +502,7 @@ void func_002EE530(u8 *cap, s32 b1, s32 b2, f32 x1, f32 y1, f32 z1, f32 r, f32 x
 /* a part's anchor: its bone's position when anchored (+0x20), else the point it hangs from */
 static inline void Part_Anchor(u8 *p, u8 *set, f32 *at) {
     if (AT(p, 0x20, u8) != 0) {
-        sceVu0CopyVector(at, func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x24, s32)) + 12);
+        sceVu0CopyVector(at, Skel_Bone(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x24, s32)) + 12);
     } else {
         sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
     }
@@ -653,7 +653,7 @@ static inline void Parts_Rest(u8 *p, s32 n, s32 size, const f32 *dir, u8 *owner)
         AT(p, 0x14, f32) = 0.0f;
         AT(p, 0x10, f32) = 0.0f;
         if (AT(p, 0x20, u8) != 0) {
-            sceVu0CopyVector(at, func_0017CE80(AT(owner, 0x810, u8 *), AT(p, 0x24, s32)) + 12);
+            sceVu0CopyVector(at, Skel_Bone(AT(owner, 0x810, u8 *), AT(p, 0x24, s32)) + 12);
         } else {
             sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
         }
@@ -667,7 +667,7 @@ static inline void Parts_Rest(u8 *p, s32 n, s32 size, const f32 *dir, u8 *owner)
 void func_002ED6E0(u8 *m) {
     f32 down[4] __attribute__((aligned(16)));
 
-    sceVu0CopyVector(down, func_0017CE80(AT(AT(m, 0x9B4, u8 *), 0x810, u8 *), 0) + 8);
+    sceVu0CopyVector(down, Skel_Bone(AT(AT(m, 0x9B4, u8 *), 0x810, u8 *), 0) + 8);
     Parts_Rest(m + 0xDE0, 10, 0x70, down, AT(m, 0x9B4, u8 *));
 }
 
@@ -757,11 +757,11 @@ void func_002EDE30(u8 *m) {
         AT(p, 0x14, f32) = 0.0f;
         AT(p, 0x10, f32) = 0.0f;
         if (AT(p, 0x20, u8) != 0) {
-            sceVu0CopyVector(at, func_0017CE80(AT(AT(m, 0x9F4, u8 *), 0x810, u8 *), AT(p, 0x24, s32)) + 12);
+            sceVu0CopyVector(at, Skel_Bone(AT(AT(m, 0x9F4, u8 *), 0x810, u8 *), AT(p, 0x24, s32)) + 12);
         } else {
             sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
         }
-        sceVu0CopyVector(d, func_0017CE80(AT(AT(m, 0x9F4, u8 *), 0x810, u8 *), 0x1F) + 8);
+        sceVu0CopyVector(d, Skel_Bone(AT(AT(m, 0x9F4, u8 *), 0x810, u8 *), 0x1F) + 8);
         sceVu0ScaleVector(d, d, AT(p, 0x44, f32));
         sceVu0AddVector(d, d, (f32 *)(m + 0x9E0));
         sceVu0Normalize(d, d);
@@ -926,7 +926,7 @@ void func_002EE220(u8 *cap, f32 *out, const f32 *pt, f32 k) {
 /* +0x14: its bone's matrix from the point: X toward the point, Y toward the partner, at the
    anchor */
 void func_002EEF90(u8 *pt, u8 *set) {
-    f32 *mtx = func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(pt, 0x24, s32));
+    f32 *mtx = Skel_Bone(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(pt, 0x24, s32));
     f32 at[4] __attribute__((aligned(16)));
     f32 side[4] __attribute__((aligned(16)));
 
@@ -952,7 +952,7 @@ void func_002EEF90(u8 *pt, u8 *set) {
    (3 times their depth), kept about 0.438 from its partner, damped, held at its length from
    the anchor */
 void func_002EF0A0(u8 *pt, u8 *set) {
-    f32 *mtx = func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(pt, 0x24, s32));
+    f32 *mtx = Skel_Bone(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(pt, 0x24, s32));
     f32 at[4] __attribute__((aligned(16)));
     f32 prev[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -1001,7 +1001,7 @@ void func_003168F0(u8 *p, u8 *set) {
     u8 *c;
 
     sceVu0CopyVector(prev, (f32 *)p);
-    sceVu0CopyVector(g, func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), 0x1F) + 8);
+    sceVu0CopyVector(g, Skel_Bone(AT(AT(set, 0x14, u8 *), 0x810, u8 *), 0x1F) + 8);
     sceVu0ScaleVector(g, g, AT(p, 0x44, f32));
     sceVu0AddVector(vel, vel, g);
     sceVu0SubVector(vel, vel, (f32 *)set);
@@ -1022,9 +1022,9 @@ void func_003168F0(u8 *p, u8 *set) {
 void func_002EE4B0(u8 *cap, u8 *m) {
     f32 mtx[4][4] __attribute__((aligned(16)));
 
-    sceVu0CopyMatrix(mtx, (f32 (*)[4])func_0017CE80(AT(m, 0x810, u8 *), AT(cap, 0x28, s32)));
+    sceVu0CopyMatrix(mtx, (f32 (*)[4])Skel_Bone(AT(m, 0x810, u8 *), AT(cap, 0x28, s32)));
     sceVu0ApplyMatrix((f32 *)cap, mtx, (f32 *)(cap + 0x10));
-    sceVu0CopyMatrix(mtx, (f32 (*)[4])func_0017CE80(AT(m, 0x810, u8 *), AT(cap, 0x60, s32)));
+    sceVu0CopyMatrix(mtx, (f32 (*)[4])Skel_Bone(AT(m, 0x810, u8 *), AT(cap, 0x60, s32)));
     sceVu0ApplyMatrix((f32 *)(cap + 0x40), mtx, (f32 *)(cap + 0x50));
 }
 
@@ -1116,13 +1116,13 @@ void func_002F64F0(u8 *m) {
     u8 *p = m + 0xC20;
     s32 i;
 
-    sceVu0CopyVector(down, func_0017CE80(AT(AT(m, 0x10B4, u8 *), 0x810, u8 *), 1) + 8);
+    sceVu0CopyVector(down, Skel_Bone(AT(AT(m, 0x10B4, u8 *), 0x810, u8 *), 1) + 8);
     for (i = 0; i < 12; i++, p += 0x60) {
         AT(p, 0x18, f32) = 0.0f;
         AT(p, 0x14, f32) = 0.0f;
         AT(p, 0x10, f32) = 0.0f;
         if (AT(p, 0x20, u8) != 0) {
-            sceVu0CopyVector(at, func_0017CE80(AT(AT(m, 0x10B4, u8 *), 0x810, u8 *), AT(p, 0x24, s32)) + 12);
+            sceVu0CopyVector(at, Skel_Bone(AT(AT(m, 0x10B4, u8 *), 0x810, u8 *), AT(p, 0x24, s32)) + 12);
         } else {
             sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
         }
@@ -1310,7 +1310,7 @@ void func_0031EA10(u8 *p, u8 *set) {
 
     sceVu0CopyVector(prev, (f32 *)p);
     sceVu0SubVector(vel, vel, (f32 *)set);
-    mtx = func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x24, s32));
+    mtx = Skel_Bone(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x24, s32));
     t[0] = AT(p, 0x40, f32);
     t[3] = 1.0f;
     t[1] = 0.0f;
@@ -1451,8 +1451,8 @@ static inline void SwayPoint_Step(u8 *p, u8 *set) {
     f32 d[4] __attribute__((aligned(16)));
     f32 prev[4] __attribute__((aligned(16)));
     f32 *vel = (f32 *)(p + 0x10);
-    f32 *own = func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x24, s32));
-    f32 *from = func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x44, s32));
+    f32 *own = Skel_Bone(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x24, s32));
+    f32 *from = Skel_Bone(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x44, s32));
     f32 ang, dot;
 
     if (AT(p, 0x20, u8) != 0) {
@@ -1505,8 +1505,8 @@ static inline void SwayPoint_Step(u8 *p, u8 *set) {
 /* its bone: X from the anchor to the point, Y the hanging bone's outward axis, at the anchor */
 static inline void SwayPoint_Pose(u8 *p, u8 *set) {
     f32 at[4] __attribute__((aligned(16)));
-    f32 (*own)[4] = (f32 (*)[4])func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x24, s32));
-    f32 *from = func_0017CE80(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x44, s32));
+    f32 (*own)[4] = (f32 (*)[4])Skel_Bone(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x24, s32));
+    f32 *from = Skel_Bone(AT(AT(set, 0x14, u8 *), 0x810, u8 *), AT(p, 0x44, s32));
 
     if (AT(p, 0x20, u8) != 0) {
         sceVu0CopyVector(at, own[3]);
@@ -1570,10 +1570,10 @@ void func_001F94B0(f32 (*out)[4], f32 (*axes)[4], f32 a, f32 b) {
     q[2] = 0.0f;
     q[1] = 0.0f;
     q[0] = 0.0f;
-    func_0025C6F0(q, axes[0], a);
-    func_0025C770(q, ra);
-    func_0025C6F0(q, axes[1], b);
-    func_0025C770(q, rb);
+    Quat_FromAxisAngle(q, axes[0], a);
+    Quat_ToMatrix(q, ra);
+    Quat_FromAxisAngle(q, axes[1], b);
+    Quat_ToMatrix(q, rb);
     sceVu0MulMatrix(r, rb, ra);
     sceVu0CopyVector(t, out[3]);   /* (kept by the original, unused) */
     out[3][0] = 0.0f;
@@ -1641,7 +1641,7 @@ f32 func_0030E3C0(u8 *m) {
 
 /* +0x60: bone 0x13's position */
 void func_0030E340(u8 *m, f32 *out) {
-    sceVu0CopyVector(out, func_0017CE80(AT(m, 0x810, u8 *), 0x13) + 12);
+    sceVu0CopyVector(out, Skel_Bone(AT(m, 0x810, u8 *), 0x13) + 12);
 }
 
 /* is the actor on the floor (its height within 1e-4 of the mesh under it, or below) */
@@ -1727,11 +1727,11 @@ void func_0030E580(u8 *m, s32 kind, f32 (*out)[4], f32 (*ref)[4]) {
         func_001F94B0(out, (f32 (*)[4])(m + 0xC70), 0.0f, 0x1.333334p-2f * -AT(m, 0x858, f32));
         break;
     case 0x12:
-        func_001F93E0(frame, (f32 (*)[4])func_0017CE80(AT(m, 0x810, u8 *), 0xB), (f32 *)(m + 0xC80));
+        func_001F93E0(frame, (f32 (*)[4])Skel_Bone(AT(m, 0x810, u8 *), 0xB), (f32 *)(m + 0xC80));
         func_001F94B0(out, frame, 0x1.99999ap-2f * AT(m, 0x854, f32), 0x1.333334p-2f * -AT(m, 0x858, f32));
         break;
     case 0x13:
-        func_001F93E0(frame, (f32 (*)[4])func_0017CE80(AT(m, 0x810, u8 *), 0x12), (f32 *)(m + 0xC80));
+        func_001F93E0(frame, (f32 (*)[4])Skel_Bone(AT(m, 0x810, u8 *), 0x12), (f32 *)(m + 0xC80));
         func_001F94B0(out, frame, 0x1.99999ap-3f * AT(m, 0x854, f32), 0x1.99999ap-2f * -AT(m, 0x858, f32));
         break;
     case 0xA: {
@@ -2165,13 +2165,13 @@ void func_00320590(u8 *m) {
     u8 *p = m + 0xC20;
     s32 i;
 
-    sceVu0CopyVector(down, func_0017CE80(AT(AT(m, 0x10B4, u8 *), 0x810, u8 *), 1) + 8);
+    sceVu0CopyVector(down, Skel_Bone(AT(AT(m, 0x10B4, u8 *), 0x810, u8 *), 1) + 8);
     for (i = 0; i < 12; i++, p += 0x60) {
         AT(p, 0x18, f32) = 0.0f;
         AT(p, 0x14, f32) = 0.0f;
         AT(p, 0x10, f32) = 0.0f;
         if (AT(p, 0x20, u8) != 0) {
-            sceVu0CopyVector(at, func_0017CE80(AT(AT(m, 0x10B4, u8 *), 0x810, u8 *), AT(p, 0x24, s32)) + 12);
+            sceVu0CopyVector(at, Skel_Bone(AT(AT(m, 0x10B4, u8 *), 0x810, u8 *), AT(p, 0x24, s32)) + 12);
         } else {
             sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
         }

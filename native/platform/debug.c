@@ -8,7 +8,7 @@
  *   HG_NOPARTNER=1   no partner (Hewie) in the game scene
  *   HG_WATCHDOG=<s>  after <s> seconds print a backtrace and stop (endless loops)
  *   HG_EVSTUCK=1     stop with the script bytes when an event script steps onto a byte that
- *                    isn't a command (src/game/event_cmd.c func_001FF9E0) */
+ *                    isn't a command (src/game/event_cmd.c EventCmd_Skip) */
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,13 +32,13 @@ void hg_debug_next_scene(int32_t *mode, int32_t *param) {
 
 /* HG_FASTBOOT=1: boot step `fn` (a logo, the Capcom movie or the caution screen) is skipped */
 int32_t hg_debug_skip_boot_step(const void *fn) {
-    extern char func_0037FC60[], func_0037FAC0[], func_0037F7D0[], func_0037F980[];
+    extern char SceneBoot_StepCri[], SceneBoot_StepDolby[], SceneBoot_StepCapcom[], SceneBoot_StepCaution[];
     const char *v = getenv("HG_FASTBOOT");
 
     if (v == NULL || v[0] == 0 || v[0] == '0') {
         return 0;
     }
-    return fn == func_0037FC60 || fn == func_0037FAC0 || fn == func_0037F7D0 || fn == func_0037F980;
+    return fn == SceneBoot_StepCri || fn == SceneBoot_StepDolby || fn == SceneBoot_StepCapcom || fn == SceneBoot_StepCaution;
 }
 
 /* HG_NOPARTNER=1: no partner (Hewie) in the game scene (his class isn't fully decompiled) */
@@ -59,7 +59,7 @@ int32_t hg_debug_nochars(void) {
     return getenv("HG_NOCHARS") != NULL;
 }
 
-/* an event script command whose C isn't written yet (func_002029B0): logged once, skipped */
+/* an event script command whose C isn't written yet (EventCmd_Run): logged once, skipped */
 void hg_debug_todo_opcode(int32_t op) {
     static uint8_t seen[256];
 
@@ -69,7 +69,7 @@ void hg_debug_todo_opcode(int32_t op) {
     }
 }
 
-/* an event script condition whose C isn't written yet (func_001FC760): logged once, false */
+/* an event script condition whose C isn't written yet (EventCond_Eval): logged once, false */
 void hg_debug_todo_cond(int32_t op) {
     static uint8_t seen[256];
 

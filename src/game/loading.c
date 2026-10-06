@@ -25,7 +25,8 @@ extern void *D_0046D7A0[];
 /* the loading screen, frame `frame`: the camera at a fixed spot, the emblem (`o`, a model object)
  * turning (its rotation from the frame count) drawn in layers 1 and 0x26, the screen dimmed, and
  * the box for the "Now Loading" message (0x808B) */
-void func_0033E2A0(u8 *o, s32 frame) {
+/* 0x0033E2A0 */
+void Loading_DrawFrame(u8 *o, s32 frame) {
     VObject *tc = gTexCache, *cam = gCamera, *r;
     u8 dim[0x10] __attribute__((aligned(16)));
     Task t;
@@ -72,7 +73,7 @@ void func_0033E2A0(u8 *o, s32 frame) {
 
     AT(dim, 0x0, void **) = D_0046D7A0;
     AT(dim, 0x4, s32) = -1;
-    func_0026B180(dim, 0x5A623C32, 0x28, 0);
+    Bloom_Start(dim, 0x5A623C32, 0x28, 0);
     VCALL(tc, 0x18, void (*)(VObject *))(tc);
 
     Task_Construct(&t);
@@ -167,7 +168,8 @@ u8 *gl_gfm_part(u8 *part, f32 (*mvp)[4], const u8 *tex, s32 csa) {
  * parts' extra rotations, +0x70 1: only the last part): GAME_FIX.GFM's first model, texture 2
  * of group 0x10, its parts chained, each turned and moved relative to the previous (palette:
  * the part's +0x4). */
-s32 func_0033D9F0(u8 *o) {
+/* 0x0033D9F0 */
+s32 LoadingEmblem_Draw(u8 *o) {
     VObject *tc = gTexCache, *cam;
     f32 world[4][4] __attribute__((aligned(16)));
     f32 view[4][4] __attribute__((aligned(16)));

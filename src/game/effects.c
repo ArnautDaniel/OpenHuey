@@ -338,14 +338,14 @@ void *func_002C64E0(u8 *o, s32 flags) {
 extern void *D_0046D7A0[];
 
 /* +0x14 draw (a screen bloom): when its colour (+0x10) has alpha, a temporary bloom drawer
- * (func_0026B180) in layer 0x28, subtracting for modes 1 and 4 (+0x14) */
+ * (Bloom_Start) in layer 0x28, subtracting for modes 1 and 4 (+0x14) */
 void func_0026B2C0(u8 *o) {
     u8 drawer[0x20] __attribute__((aligned(16)));
 
     AT(drawer, 0x0, void **) = D_0046D7A0;
     AT(drawer, 0x4, s32) = -1;
     if (AT(o, 0x10, u32) & 0xFF000000) {
-        func_0026B180(drawer, AT(o, 0x10, u32), 0x28, AT(o, 0x14, s32) == 1 || AT(o, 0x14, s32) == 4);
+        Bloom_Start(drawer, AT(o, 0x10, u32), 0x28, AT(o, 0x14, s32) == 1 || AT(o, 0x14, s32) == 4);
     }
     AT(drawer, 0x0, void **) = D_00469D00;
 }
@@ -1459,7 +1459,7 @@ s32 func_00317920(u8 *e, s32 i) {
     if (c == NULL || AT(c, 0x28, u8) == 0 || AT(c, 0x29, u8) == 1) {
         return 0;
     }
-    sceVu0CopyVector(pos, func_0017CE80(AT(AT(c, 0xF0, u8 *), 0x810, void *), 0) + 12);
+    sceVu0CopyVector(pos, Skel_Bone(AT(AT(c, 0xF0, u8 *), 0x810, void *), 0) + 12);
     return refl_near_quad(e, pos, i == 0 ? 10.0f : 20.0f, i == 1 ? 15.0f : 30.0f);
 }
 
@@ -1474,7 +1474,7 @@ s32 func_003175B0(u8 *e, s32 i) {
         return 0;
     }
     if (i >= 7) {
-        sceVu0CopyVector(pos, func_0017CE80(AT(AT(o, 0xF0, u8 *), 0x810, void *), 0) + 12);
+        sceVu0CopyVector(pos, Skel_Bone(AT(AT(o, 0xF0, u8 *), 0x810, void *), 0) + 12);
         my = 10.0f;
     } else {
         sceVu0CopyVector(pos, (f32 *)(o + 0x10));
@@ -2941,14 +2941,14 @@ static inline void mark_points(u8 *o) {
     if (c != NULL) {
         s32 bone = VCALL(c, 0x98, s32 (*)(u8 *))(c);
 
-        sceVu0CopyVector((f32 *)(o + 0x50), func_0017CE80(AT(c, 0x810, void *), bone) + 12);
+        sceVu0CopyVector((f32 *)(o + 0x50), Skel_Bone(AT(c, 0x810, void *), bone) + 12);
         bone = VCALL(c, 0x9C, s32 (*)(u8 *))(c);
-        sceVu0CopyVector((f32 *)(o + 0x60), func_0017CE80(AT(c, 0x810, void *), bone) + 12);
+        sceVu0CopyVector((f32 *)(o + 0x60), Skel_Bone(AT(c, 0x810, void *), bone) + 12);
     } else {
         f32 m[4][4] __attribute__((aligned(16)));
         f32 v[4] __attribute__((aligned(16)));
 
-        sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(AT(gCharPlayer, 0xF0, u8 *), 0x810, void *), 0x23));
+        sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(AT(AT(gCharPlayer, 0xF0, u8 *), 0x810, void *), 0x23));
         v[0] = -3.5f;
         v[2] = 1.0f;
         v[3] = 1.0f;
@@ -5454,7 +5454,7 @@ s32 func_0035F9E0(u8 *o) {
             func_002D6090(mgr, Effect_New(mgr, 0x720, spray_init), &sp);
             func_0035F640(o, i);
             if ((VCALL(snd, 0xA4, s32 (*)(VObject *, s32))(snd, 6) & 0xFF) == 1) {
-                func_002FF650(snd, AT(o, 0x634, s32) | 0x40000000, 6, sp.pos, 0, 0);
+                Sound_PlayBankAt(snd, AT(o, 0x634, s32) | 0x40000000, 6, sp.pos, 0, 0);
                 AT(o, 0x634, s32)++;
                 if (AT(o, 0x634, s32) >= 3) {
                     AT(o, 0x634, s32) = 0;
@@ -6016,7 +6016,7 @@ void func_00366000(u8 *o) {
     f32 k;
 
     AT(o, 0x16D, u8) = 0;
-    sceVu0CopyVector(p, func_0017CE80(AT(AT(o, 0x140, u8 *), 0x810, void *), AT(o, 0x144, s32)) + 12);
+    sceVu0CopyVector(p, Skel_Bone(AT(AT(o, 0x140, u8 *), 0x810, void *), AT(o, 0x144, s32)) + 12);
     sceVu0CopyVector(SPARK_GLOW(o, AT(o, 0x168, s32))->pos, p);
     sceVu0CopyVector(SPARK_FLARE(o, AT(o, 0x168, s32))->pos, p);
     if (!AT(o, 0x16E, u8)) {
@@ -6489,7 +6489,7 @@ void func_00301E70(u8 *o) {
     if (AT(o, 0x1D, u8) == 0 || AT(o, 0x1C, u8) == 1) {
         return;
     }
-    sceVu0CopyVector(c, func_0017CE80(AT(AT(o, 0x4, u8 *), 0x810, void *), 0) + 12);
+    sceVu0CopyVector(c, Skel_Bone(AT(AT(o, 0x4, u8 *), 0x810, void *), 0) + 12);
     c[3] = 1.0f;
     cam = gCamera;
     VCALL(cam, 0x48, void (*)(VObject *, f32 (*)[4]))(cam, m);

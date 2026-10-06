@@ -61,7 +61,7 @@ typedef struct SubScreen SubScreen;
 extern void *SubScreenBase_ctor(SubScreen *w);
 extern void *TextObj_ctor(u8 *o);
 extern SceneTitle *SceneTitle_ctor(SceneTitle *t);   /* mode 2: opening movie, title screen, menus */
-extern void func_002E34D0(u8 *p);
+extern void BgmCtl_ctor(u8 *p);
 extern void *TextObj_dtor(u8 *o, s32 flags);
 extern void *SubScreenBase_dtor(SubScreen *w, s32 flags);
 extern void *Scene5_ctor(u8 *s);   /* mode 5: the ending */

@@ -5,7 +5,7 @@
 #include "common.h"
 
 /* script.c */
-extern void func_00121890(u8 *s, u8 *script);   /* start a script */
-extern void func_00121730(u8 *s);   /* a control op (0xF0..) */
+extern void Script_Start(u8 *s, u8 *script);   /* start a script */
+extern void Script_RunControl(u8 *s);   /* a control op (0xF0..) */
 
 #endif /* SCRIPT_H */

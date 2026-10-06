@@ -404,13 +404,13 @@ void func_001225F0(Camera *c, f32 (*out)[4]) {
     q[2] = 0.0f;
     q[1] = 0.0f;
     q[0] = 0.0f;
-    func_0025C6F0(q, c->unk70, c->roll);
+    Quat_FromAxisAngle(q, c->unk70, c->roll);
     /* the translation row is left unset (the original's stack garbage, times w = 0); cleared so
      * that garbage can't be a NaN / infinity on PC */
     rot[3][0] = 0.0f;
     rot[3][1] = 0.0f;
     rot[3][2] = 0.0f;
-    func_0025C770(q, rot);
+    Quat_ToMatrix(q, rot);
     sceVu0ApplyMatrix(c->unk80, rot, s);
     sceVu0CameraMatrix(out, c->unk60, c->unk70, c->unk80);
 }
@@ -505,14 +505,14 @@ void func_001221E0(Camera *c, f32 pitch, f32 yaw) {
     sceVu0SubVector(v, c->target, c->eye);
     sceVu0OuterProduct(v, c->unk80, v);
     sceVu0Normalize(v, v);
-    func_0025C6F0(q, v, pitch);
+    Quat_FromAxisAngle(q, v, pitch);
 #ifdef HG_NATIVE
     if (yaw == 0.0f) {
         r[3][0] = r[3][1] = r[3][2] = 0.0f;   /* (unset in the original then; no NaN on PC) */
         r[3][3] = 1.0f;
     }
 #endif
-    func_0025C770(q, r);
+    Quat_ToMatrix(q, r);
     sceVu0SubVector(v, c->target, c->eye);
     sceVu0ApplyMatrix(v, r, v);
     c->target[0] = v[0] + c->eye[0];
@@ -596,14 +596,14 @@ void func_00122370(Camera *c, f32 pitch, f32 yaw) {
     sceVu0SubVector(v, c->target, c->eye);
     sceVu0OuterProduct(v, c->unk80, v);
     sceVu0Normalize(v, v);
-    func_0025C6F0(q, v, pitch);
+    Quat_FromAxisAngle(q, v, pitch);
 #ifdef HG_NATIVE
     if (yaw == 0.0f) {
         r[3][0] = r[3][1] = r[3][2] = 0.0f;   /* (unset in the original then; no NaN on PC) */
         r[3][3] = 1.0f;
     }
 #endif
-    func_0025C770(q, r);
+    Quat_ToMatrix(q, r);
     sceVu0SubVector(v, c->eye, c->target);
     sceVu0ApplyMatrix(v, r, v);
     c->eye[0] = v[0] + c->target[0];

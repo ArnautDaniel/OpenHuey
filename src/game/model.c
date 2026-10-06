@@ -596,7 +596,7 @@ u32 func_00208F80(VObject *ev, s32 id) {
     u32 i;
 
     if ((id & 0xFF) >= 0xF0 && (id & 0xFF) < 0xFB) {
-        i = (u8)func_001FBF70(ev, id);
+        i = (u8)Event_CharSlot(ev, id);
         return AT(ev, 0x578 + i * 0x18, u16);
     }
     i = (u8)func_001770D0(gProgress, id);
@@ -1097,14 +1097,14 @@ void func_002F7780(u8 *o) {
     if (AT(o, 0x850, u8) == 0) {
         n = 1;
     } else {
-        sceVu0CopyVector(down, func_0017CE80(AT(AT(o, 0x1114, u8 *), 0x810, void *), 0x21) + 8);
+        sceVu0CopyVector(down, Skel_Bone(AT(AT(o, 0x1114, u8 *), 0x810, void *), 0x21) + 8);
         p = o + 0xE40;
         for (i = 0; i < 4; i++) {
             AT(p, 0x18, f32) = 0.0f;
             AT(p, 0x14, f32) = 0.0f;
             AT(p, 0x10, f32) = 0.0f;
             if (AT(p, 0x20, u8) != 0) {
-                sceVu0CopyVector(at, func_0017CE80(AT(AT(o, 0x1114, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
+                sceVu0CopyVector(at, Skel_Bone(AT(AT(o, 0x1114, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
             } else {
                 sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
             }
@@ -1352,14 +1352,14 @@ void func_00349E80(u8 *o) {
     if (AT(o, 0x850, u8) == 0) {
         n = 1;
     } else {
-        sceVu0CopyVector(down, func_0017CE80(AT(AT(o, 0xD14, u8 *), 0x810, void *), 0x14) + 8);
+        sceVu0CopyVector(down, Skel_Bone(AT(AT(o, 0xD14, u8 *), 0x810, void *), 0x14) + 8);
         p = o + 0xA40;
         for (i = 0; i < 4; i++) {
             AT(p, 0x18, f32) = 0.0f;
             AT(p, 0x14, f32) = 0.0f;
             AT(p, 0x10, f32) = 0.0f;
             if (AT(p, 0x20, u8) != 0) {
-                sceVu0CopyVector(at, func_0017CE80(AT(AT(o, 0xD14, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
+                sceVu0CopyVector(at, Skel_Bone(AT(AT(o, 0xD14, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
             } else {
                 sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
             }
@@ -1591,13 +1591,13 @@ void func_001F7C40(u8 *m) {
     s32 i;
 
     AT(m, 0x4C8, s32) = 0;
-    skel = func_0017D000(D_004562A8, AT(AT(m, 0x4C0, u8 *), 0, s32));
+    skel = SkelPool_Alloc(D_004562A8, AT(AT(m, 0x4C0, u8 *), 0, s32));
     node = AT(skel, 4, u8 *);
     bone = AT(m, 0x4C0, u8 *) + 0x10;
     for (i = 0; i < AT(skel, 8, s32); i++) {
         AT(node, 0x40, s32) = i;
         if (AT(bone, 0, s32) >= 0)
-            func_0017CE60(node, func_0017CE80(skel, AT(bone, 0, s32)));
+            SkelNode_SetParent(node, Skel_Bone(skel, AT(bone, 0, s32)));
         node = AT(node, 0x48, u8 *);
         bone += 0x70;
     }
@@ -1630,10 +1630,10 @@ void func_001F4910(u8 *m) {
         for (j = 0; j < 2; j++) {
             u8 *s = slot + j * 4;
 
-            func_0017CED0(skels, AT(s, 0x28, u8 *));
+            SkelPool_Free(skels, AT(s, 0x28, u8 *));
             AT(s, 0x28, s32) = 0;
-            func_00179BC0(bufs, AT(s, 0x20, void *));
-            func_00179BC0(bufs, AT(s, 0x30, void *));
+            ChainPool_Free(bufs, AT(s, 0x20, void *));
+            ChainPool_Free(bufs, AT(s, 0x30, void *));
             AT(s, 0x20, s32) = 0;
             AT(s, 0x30, s32) = 0;
             AT(slot, 0x1C, s32) = 0;
@@ -1661,9 +1661,9 @@ void func_001F4910(u8 *m) {
         for (j = 0; j < 2; j++) {
             u8 *s = ch + j * 0x1C;
 
-            func_0017CED0(skels, AT(s, 0x30, u8 *));
+            SkelPool_Free(skels, AT(s, 0x30, u8 *));
             AT(s, 0x30, s32) = 0;
-            func_00179BC0(bufs, AT(s, 0x2C, void *));
+            ChainPool_Free(bufs, AT(s, 0x2C, void *));
             AT(s, 0x2C, s32) = 0;
         }
     }
@@ -2147,12 +2147,12 @@ void func_001F6E50(u8 *m, s32 anim, s32 part, u32 flags, u8 *ch, f32 blend) {
     }
     cur = AT(ch, 0x54, u8 *);
     if (AT(cur, 0x10, void *) != NULL) {
-        func_00179BC0(D_004562B0, AT(cur, 0x10, void *));
+        ChainPool_Free(D_004562B0, AT(cur, 0x10, void *));
         AT(AT(ch, 0x54, u8 *), 0x10, void *) = NULL;
     }
     cur = AT(ch, 0x54, u8 *);
     if (AT(cur, 0x14, u8 *) != NULL) {
-        func_0017CED0(D_004562A8, AT(cur, 0x14, u8 *));
+        SkelPool_Free(D_004562A8, AT(cur, 0x14, u8 *));
         AT(AT(ch, 0x54, u8 *), 0x14, u8 *) = NULL;
     }
     cur = AT(ch, 0x54, u8 *);
@@ -2320,15 +2320,15 @@ void func_001F5020(u8 *m, s32 i) {
         u8 *t = slot + j * 4;
 
         if (AT(t, 0x28, u8 *) != NULL) {
-            func_0017CED0(skels, AT(t, 0x28, u8 *));
+            SkelPool_Free(skels, AT(t, 0x28, u8 *));
             AT(t, 0x28, s32) = 0;
         }
         if (AT(t, 0x20, void *) != NULL) {
-            func_00179BC0(bufs, AT(t, 0x20, void *));
+            ChainPool_Free(bufs, AT(t, 0x20, void *));
             AT(t, 0x20, s32) = 0;
         }
         if (AT(t, 0x30, void *) != NULL) {
-            func_00179BC0(bufs, AT(t, 0x30, void *));
+            ChainPool_Free(bufs, AT(t, 0x30, void *));
             AT(t, 0x30, s32) = 0;
         }
         for (k = 0; k < 12; k++) {
@@ -2350,8 +2350,8 @@ void func_001F4C10(u8 *m, u8 **keys, u8 **skel, s32 anim, s32 part) {
     u8 *node;
     s32 i;
 
-    *keys = func_00179CD0(D_004562B0, AT(mot, 0, s32));
-    *skel = func_0017D000(D_004562A8, AT(mot, 0, s32));
+    *keys = ChainPool_Alloc(D_004562B0, AT(mot, 0, s32));
+    *skel = SkelPool_Alloc(D_004562A8, AT(mot, 0, s32));
     node = AT(*skel, 0x4, u8 *);
     key = AT(*keys, 0x4, u8 *);
     tracks = mot + AT(mot, 0x8, u32);
@@ -2393,7 +2393,7 @@ void func_001F6FD0(u8 *m, s32 anim, s32 variant) {
         chain = (u8 **)(AT(m, 0x6A4, u8 *) + t * 4 + 0x30);
         e = motion_entry(m, ids[t]);
         evp = e + AT(e, 0, u32);
-        *chain = func_00179CD0(bufs, AT(evp, 0, s32));
+        *chain = ChainPool_Alloc(bufs, AT(evp, 0, s32));
         key = AT(*chain, 0x4, u8 *);
         tracks = evp + AT(evp, 0x8, u32);
         for (i = 0; i < AT(*chain, 0x8, s32); i++) {
@@ -2424,7 +2424,7 @@ void func_001F6FD0(u8 *m, s32 anim, s32 variant) {
 /* the position of the model's reference bone (+0x8B0, in the skeleton +0x810): its matrix's
  * translation row */
 void func_001F1DE0(u8 *m, f32 *out) {
-    u8 *mtx = (u8 *)func_0017CE80(AT(m, 0x810, void *), AT(m, 0x8B0, s32));
+    u8 *mtx = (u8 *)Skel_Bone(AT(m, 0x810, void *), AT(m, 0x8B0, s32));
 
     sceVu0CopyVector(out, (f32 *)(mtx + 0x30));
 }
@@ -3194,11 +3194,11 @@ void func_001F6AF0(u8 *m) {
         }
         s = l + AT(l, 0x6B4, s32) * 0x1C;
         if (AT(s, 0x6DC, void *) != NULL) {
-            func_00179BC0(chains, AT(s, 0x6DC, void *));
+            ChainPool_Free(chains, AT(s, 0x6DC, void *));
             AT(s, 0x6DC, void *) = NULL;
         }
         if (AT(s, 0x6E0, void *) != NULL) {
-            func_0017CED0(skels, AT(s, 0x6E0, u8 *));
+            SkelPool_Free(skels, AT(s, 0x6E0, u8 *));
             AT(s, 0x6E0, void *) = NULL;
         }
     }
@@ -3359,7 +3359,7 @@ void *func_001F56F0(u8 *m, void *listA, void *listB, f32 t) {
 
         for (k = 0; k < AT(small, 0x8, s32); k++, o = AT(o, 0x48, u8 *)) {
             if (AT(n, 0x40, s32) == AT(o, 0x40, s32)) {
-                func_0025C440(tmp, (f32 (*)[4])n, (f32 (*)[4])n, (f32 (*)[4])o, t);
+                Bone_BlendMatrix(tmp, (f32 (*)[4])n, (f32 (*)[4])n, (f32 (*)[4])o, t);
                 break;
             }
         }
@@ -3436,7 +3436,7 @@ void func_001F5930(u8 *m, void *chain, void *anim, f32 t, f32 w) {
                 cur[3][2] = 0.0f;
                 sceVu0TransposeMatrix(r, r);
                 sceVu0MulMatrix(r, cur, r);
-                func_0025C630(q, axis, r);
+                Mtx_ToAxisAngle(q, axis, r);
                 axis[3] = axis[3] * w;
                 if (!(axis[3] <= kPi.f)) {
                     do {
@@ -3448,8 +3448,8 @@ void func_001F5930(u8 *m, void *chain, void *anim, f32 t, f32 w) {
                         axis[3] = axis[3] + kTwoPi.f;
                     } while (axis[3] < kNegPi.f);
                 }
-                func_0025C6F0(q, axis, axis[3]);
-                func_0025C770(q, r);
+                Quat_FromAxisAngle(q, axis, axis[3]);
+                Quat_ToMatrix(q, r);
                 sceVu0InterVector(p0, p1, p0, w);
                 sceVu0MulMatrix((f32 (*)[4])b, r, (f32 (*)[4])b);
                 sceVu0CopyVector((f32 *)(b + 0x30), p0);
@@ -3702,7 +3702,7 @@ static void foot_point(u8 *m, s32 bone, f32 *out, f32 k) {
     f32 v[4] __attribute__((aligned(16)));
     f32 a, b, c, d;
 
-    sceVu0CopyVector(out, func_0017CE80(AT(m, 0x810, void *), bone) + 12);
+    sceVu0CopyVector(out, Skel_Bone(AT(m, 0x810, void *), bone) + 12);
     if (k < 1.0f) {
         a = sceVu0InnerProduct((f32 *)(m + 0x7D0), (f32 *)(m + 0x800));
         b = sceVu0InnerProduct((f32 *)(m + 0x7F0), (f32 *)(m + 0x800));
@@ -3884,11 +3884,11 @@ void func_00211530(u8 *m, f32 *right, f32 *left, f32 height) {
                   BIND_X(m, AT(m, 0x894, s32)), BIND_X(m, AT(m, 0x898, s32)), -1.0f);
     func_001F1250(m + 0x930, AT(m, 0x810, void *), AT(m, 0x8A0, s32), AT(m, 0x8A4, s32), AT(m, 0x8A8, s32),
                   BIND_X(m, AT(m, 0x8A4, s32)), BIND_X(m, AT(m, 0x8A8, s32)), -1.0f);
-    a = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x898, s32));
-    b = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x89C, s32));
+    a = Skel_Bone(AT(m, 0x810, void *), AT(m, 0x898, s32));
+    b = Skel_Bone(AT(m, 0x810, void *), AT(m, 0x89C, s32));
     sceVu0SubVector(dr, b + 12, a + 12);
-    a = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x8A8, s32));
-    b = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x8AC, s32));
+    a = Skel_Bone(AT(m, 0x810, void *), AT(m, 0x8A8, s32));
+    b = Skel_Bone(AT(m, 0x810, void *), AT(m, 0x8AC, s32));
     sceVu0SubVector(dl, b + 12, a + 12);
     sceVu0CopyVector(er, (f32 *)(AT(m, 0x924, u8 *) + 0x30));
     sceVu0CopyVector(el, (f32 *)(AT(m, 0x984, u8 *) + 0x30));
@@ -3896,13 +3896,13 @@ void func_00211530(u8 *m, f32 *right, f32 *left, f32 height) {
     leg_target(m + 0x930, left, dl, height);
     VCALL(m + 0x928, 0x8, void (*)(u8 *))(m + 0x8D0);
     VCALL(m + 0x988, 0x8, void (*)(u8 *))(m + 0x930);
-    a = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x898, s32));
-    b = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x89C, s32));
+    a = Skel_Bone(AT(m, 0x810, void *), AT(m, 0x898, s32));
+    b = Skel_Bone(AT(m, 0x810, void *), AT(m, 0x89C, s32));
     sceVu0SubVector(dr, (f32 *)(m + 0x8F0), er);
     sceVu0AddVector(a + 12, a + 12, dr);
     sceVu0AddVector(b + 12, b + 12, dr);
-    a = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x8A8, s32));
-    b = func_0017CE80(AT(m, 0x810, void *), AT(m, 0x8AC, s32));
+    a = Skel_Bone(AT(m, 0x810, void *), AT(m, 0x8A8, s32));
+    b = Skel_Bone(AT(m, 0x810, void *), AT(m, 0x8AC, s32));
     sceVu0SubVector(dl, (f32 *)(m + 0x950), el);
     sceVu0AddVector(a + 12, a + 12, dl);
     sceVu0AddVector(b + 12, b + 12, dl);
@@ -3912,9 +3912,9 @@ void func_00211530(u8 *m, f32 *right, f32 *left, f32 height) {
  * lengths and bend, +0x4C / +0x50 / +0x54 the chain's nodes }: from the bones root / mid / end
  * of `skel` */
 void func_001F1250(u8 *ik, void *skel, s32 root, s32 mid, s32 end, f32 len1, f32 len2, f32 bend) {
-    f32 *r = func_0017CE80(skel, root);
-    f32 *mi = func_0017CE80(skel, mid);
-    f32 *e = func_0017CE80(skel, end);
+    f32 *r = Skel_Bone(skel, root);
+    f32 *mi = Skel_Bone(skel, mid);
+    f32 *e = Skel_Bone(skel, end);
 
     AT(ik, 0x4C, f32 *) = r;
     AT(ik, 0x50, f32 *) = mi;
@@ -4187,10 +4187,10 @@ void func_001F08C0(u8 *ik) {
 /* set up: from the bones root / knee / hock / foot of `skel`, the lengths, the bends, the reach */
 void func_001F04B0(u8 *ik, void *skel, s32 root, s32 knee, s32 hock, s32 foot, f32 len1, f32 len2, f32 len3,
                    f32 bend1, f32 bend2, f32 reach) {
-    f32 *r = func_0017CE80(skel, root);
-    f32 *k = func_0017CE80(skel, knee);
-    f32 *h = func_0017CE80(skel, hock);
-    f32 *f = func_0017CE80(skel, foot);
+    f32 *r = Skel_Bone(skel, root);
+    f32 *k = Skel_Bone(skel, knee);
+    f32 *h = Skel_Bone(skel, hock);
+    f32 *f = Skel_Bone(skel, foot);
 
     AT(ik, 0x4C, f32 *) = r;
     AT(ik, 0x50, f32 *) = k;
@@ -4268,14 +4268,14 @@ void func_002F81A0(u8 *o) {
     if (AT(o, 0x850, u8) == 0) {
         n = 1;
     } else {
-        sceVu0CopyVector(down, func_0017CE80(AT(AT(o, 0x1754, u8 *), 0x810, void *), 0x35) + 8);
+        sceVu0CopyVector(down, Skel_Bone(AT(AT(o, 0x1754, u8 *), 0x810, void *), 0x35) + 8);
         p = o + 0x1480;
         for (i = 0; i < 4; i++) {
             AT(p, 0x18, f32) = 0.0f;
             AT(p, 0x14, f32) = 0.0f;
             AT(p, 0x10, f32) = 0.0f;
             if (AT(p, 0x20, u8) != 0) {
-                sceVu0CopyVector(at, func_0017CE80(AT(AT(o, 0x1754, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
+                sceVu0CopyVector(at, Skel_Bone(AT(AT(o, 0x1754, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
             } else {
                 sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
             }
@@ -4337,7 +4337,7 @@ void func_002EE840(u8 *s) {
 void func_002EE570(u8 *p, u8 *model) {
     f32 m[4][4] __attribute__((aligned(16)));
 
-    sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(model, 0x810, void *), AT(p, 0x28, s32)));
+    sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(AT(model, 0x810, void *), AT(p, 0x28, s32)));
     sceVu0ApplyMatrix((f32 *)p, m, (f32 *)(p + 0x10));
 }
 
@@ -4353,8 +4353,8 @@ void func_00315F00(u8 *l, u8 *s) {
     f32 d[4] __attribute__((aligned(16)));
     f32 x[4] __attribute__((aligned(16)));
     f32 side[4] __attribute__((aligned(16)));
-    f32 *a = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(l, 0x24, s32));
-    f32 *b = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(l, 0x44, s32));
+    f32 *a = Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(l, 0x24, s32));
+    f32 *b = Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(l, 0x44, s32));
     f32 ang, sa, sl, sr, inv, k1, k2;
 
     if (AT(l, 0x20, u8) != 0) {
@@ -4474,7 +4474,7 @@ void func_002EE970(u8 *p, u8 *s) {
     sceVu0SubVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), (f32 *)s);
     sceVu0ScaleVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), AT(s, 0x10, f32));
     sceVu0AddVector((f32 *)p, (f32 *)p, (f32 *)(p + 0x10));
-    sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)));
+    sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)));
     sceVu0CopyVector(anchor, m[3]);
     sceVu0SubVector(d, (f32 *)p, anchor);
     k = sceVu0InnerProduct(d, m[1]);
@@ -4520,7 +4520,7 @@ void func_002ECE50(u8 *p, u8 *s) {
     sceVu0ScaleVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), AT(s, 0x10, f32));
     sceVu0AddVector((f32 *)p, (f32 *)p, (f32 *)(p + 0x10));
     if (AT(p, 0x20, u8) != 0) {
-        sceVu0CopyVector(anchor, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
+        sceVu0CopyVector(anchor, Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
     } else {
         sceVu0CopyVector(anchor, AT(p, 0x2C, f32 *));
     }
@@ -4549,7 +4549,7 @@ void func_00338C20(u8 *p, u8 *s) {
         u8 *q = AT(p, 0x2C, u8 *);
 
         if (AT(q, 0x20, u8) != 0) {
-            sceVu0CopyVector(anchor, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(q, 0x24, s32)) + 12);
+            sceVu0CopyVector(anchor, Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(q, 0x24, s32)) + 12);
         } else {
             sceVu0CopyVector(anchor, AT(q, 0x2C, f32 *));
         }
@@ -4568,7 +4568,7 @@ void func_00338C20(u8 *p, u8 *s) {
     sceVu0ScaleVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), AT(s, 0x10, f32));
     sceVu0AddVector((f32 *)p, (f32 *)p, (f32 *)(p + 0x10));
     if (AT(p, 0x20, u8) != 0) {
-        sceVu0CopyVector(anchor, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
+        sceVu0CopyVector(anchor, Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
     } else {
         sceVu0CopyVector(anchor, AT(p, 0x2C, f32 *));
     }
@@ -4577,7 +4577,7 @@ void func_00338C20(u8 *p, u8 *s) {
     sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
     sceVu0AddVector((f32 *)p, anchor, d);
     sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
-    sceVu0CopyVector(axis, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)));
+    sceVu0CopyVector(axis, Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)));
     ang = func_0031C3C0(sceVu0InnerProduct(d, axis));
     if (!(ang <= AT(p, 0x48, f32))) {
         f32 sa = func_0031C248(ang);
@@ -4614,7 +4614,7 @@ void func_00369DF0(u8 *p, u8 *s) {
         u8 *q = AT(p, 0x2C, u8 *);
 
         if (AT(q, 0x20, u8) != 0) {
-            sceVu0CopyVector(anchor, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(q, 0x24, s32)) + 12);
+            sceVu0CopyVector(anchor, Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(q, 0x24, s32)) + 12);
         } else {
             sceVu0CopyVector(anchor, AT(q, 0x2C, f32 *));
         }
@@ -4636,8 +4636,8 @@ void func_00369DF0(u8 *p, u8 *s) {
     } else {
         bone = AT(AT(AT(p, 0x2C, u8 *), 0x2C, u8 *), 0x24, s32);
     }
-    sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), (s32)AT(s, 0xC, f32)));
-    sceVu0CopyVector(root, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), bone) + 12);
+    sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), (s32)AT(s, 0xC, f32)));
+    sceVu0CopyVector(root, Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), bone) + 12);
     sceVu0ApplyMatrix(d, m, d);
     sceVu0SubVector(d, d, root);
     sceVu0Normalize(d, d);
@@ -4650,7 +4650,7 @@ void func_00369DF0(u8 *p, u8 *s) {
     sceVu0ScaleVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), AT(s, 0x10, f32));
     sceVu0AddVector((f32 *)p, (f32 *)p, (f32 *)(p + 0x10));
     if (AT(p, 0x20, u8) != 0) {
-        sceVu0CopyVector(anchor, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
+        sceVu0CopyVector(anchor, Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
     } else {
         sceVu0CopyVector(anchor, AT(p, 0x2C, f32 *));
     }
@@ -4658,7 +4658,7 @@ void func_00369DF0(u8 *p, u8 *s) {
     sceVu0Normalize(d, d);
     sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
     sceVu0AddVector((f32 *)p, anchor, d);
-    sceVu0CopyVector(axis, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)));
+    sceVu0CopyVector(axis, Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)));
     ang = func_0031C3C0(sceVu0InnerProduct(d, axis));
     if (!(ang <= AT(p, 0x48, f32))) {
         f32 sa = func_0031C248(ang);
@@ -4691,7 +4691,7 @@ void func_0036A1C0(u8 *p, u8 *s) {
     if (AT(p, 0x4C, u8) == 0) {
         func_002EE710(p, s);
     }
-    a = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
+    a = Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
     if (AT(p, 0x20, u8) != 0) {
         sceVu0CopyVector(anchor, a + 12);
         sceVu0SubVector(x, (f32 *)p, anchor);
@@ -4699,7 +4699,7 @@ void func_0036A1C0(u8 *p, u8 *s) {
     } else {
         sceVu0CopyVector(anchor, AT(p, 0x2C, f32 *));
         sceVu0SubVector(x, (f32 *)p, anchor);
-        sceVu0CopyVector(z, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(AT(p, 0x2C, u8 *), 0x24, s32)) + 8);
+        sceVu0CopyVector(z, Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(AT(p, 0x2C, u8 *), 0x24, s32)) + 8);
     }
     sceVu0CopyVector(a, x);
     sceVu0OuterProduct(a + 4, z, a);
@@ -4753,7 +4753,7 @@ void func_002EE5C0(u8 *c, f32 *out, f32 *at, f32 k) {
  * into the bone's X / Y plane and kept within -0.2..0.2 along X and -0.2..0.3 along Y of it */
 void func_002EEDA0(u8 *p, u8 *s) {
     static const union { u32 u; f32 f; } k03 = {0x3E99999A}, k02 = {0x3E4CCCCD}, kn02 = {0xBE4CCCCD};
-    f32 *b = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
+    f32 *b = Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
     f32 prev[4] __attribute__((aligned(16)));
     f32 o[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -4802,8 +4802,8 @@ void *func_002F6DD0(void) {
 /* +0x14 of a hanging point: its anchor bone (+0x24) is aimed at it - X from the anchor to the
  * point, Y the hanging bone's (+0x44) side axis (+0x48), made square, at the anchor */
 void func_00315E00(u8 *p, u8 *s) {
-    f32 *a = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
-    f32 *b = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x44, s32));
+    f32 *a = Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
+    f32 *b = Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x44, s32));
     f32 anchor[4] __attribute__((aligned(16)));
 
     if (AT(p, 0x20, u8) != 0) {
@@ -4825,7 +4825,7 @@ void func_00315E00(u8 *p, u8 *s) {
  * position, or the point it hangs from, +0x2C) to the point, keeping the Y axis of the anchor's
  * bone, made square, at the anchor */
 void func_002EE710(u8 *p, u8 *s) {
-    f32 *a = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
+    f32 *a = Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
     f32 anchor[4] __attribute__((aligned(16)));
     f32 x[4] __attribute__((aligned(16)));
     f32 up[4] __attribute__((aligned(16)));
@@ -4837,7 +4837,7 @@ void func_002EE710(u8 *p, u8 *s) {
     } else {
         sceVu0CopyVector(anchor, AT(p, 0x2C, f32 *));
         sceVu0SubVector(x, (f32 *)p, anchor);
-        sceVu0CopyVector(up, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(AT(p, 0x2C, u8 *), 0x24, s32)) + 4);
+        sceVu0CopyVector(up, Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(AT(p, 0x2C, u8 *), 0x24, s32)) + 4);
     }
     sceVu0CopyVector(a, x);
     sceVu0OuterProduct(a + 8, a, up);
@@ -4851,7 +4851,7 @@ void func_002EE710(u8 *p, u8 *s) {
 /* +0x14 of a sprung point: its bone (+0x24) moves to it, its axes scaled by +0x50 / +0x54 /
  * +0x58 */
 void func_002EED20(u8 *p, u8 *s) {
-    f32 *b = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
+    f32 *b = Skel_Bone(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
 
     sceVu0ScaleVector(b, b, AT(p, 0x50, f32));
     sceVu0ScaleVector(b + 4, b + 4, AT(p, 0x54, f32));
@@ -4900,7 +4900,7 @@ static f32 sLCol[4][4] __attribute__((aligned(16)));
 static f32 sLFall[4];
 
 static void light_setup(u8 *m) {
-    f32 *root = func_0017CE80(AT(m, 0x18, void *), AT(m, 0x2C, s32));
+    f32 *root = Skel_Bone(AT(m, 0x18, void *), AT(m, 0x2C, s32));
 
     VCALL(gLights, 0x10, void (*)(VObject *, f32 *, s32, f32 (*)[4], f32 (*)[4], f32 *, f32 (*)[4]))(
         gLights, root != NULL ? root + 12 : NULL, AT(m, 0x28, s32), sLDir, sLCol, sLFall, NULL);
@@ -4972,7 +4972,7 @@ static void mb_reserve(s32 n) {
 
 /* bone `b`'s skinning matrix */
 static void bone_skin(u8 *m, s32 b, f32 (*out)[4]) {
-    sceVu0MulMatrix(out, (f32 (*)[4])func_0017CE80(AT(m, 0x810, void *), b),
+    sceVu0MulMatrix(out, (f32 (*)[4])Skel_Bone(AT(m, 0x810, void *), b),
                     (f32 (*)[4])(AT(m, 0x4C0, u8 *) + 0x10 + b * 0x70 + 0x30));
 }
 
@@ -5227,7 +5227,7 @@ void func_001F6870(u8 *m, s32 layer, s32 a, s32 b, f32 *light) {
     gl_draw_model(m);
     glr_layer(-1);
     if (AT(m, 0x4D9, u8) == 0 && layer != 0x17 && layer != 0x14 && layer != 0x1C) {
-        func_001F3530(m + 0x1D0, a, b, light, layer);
+        Shadow_Queue(m + 0x1D0, a, b, light, layer);
     }
 }
 #endif
@@ -5355,7 +5355,7 @@ u32 func_002DD860(void *motion, s32 foot, f32 ofs) {
 f32 func_002DD970(void) { return 1.0f; }
 
 /* ---- the stalkers' and event characters' models (built by the loaders func_0016F420 ..
- * func_00170FB0 for func_00171160) ---- */
+ * func_00170FB0 for CharLoad_Partner) ---- */
 
 extern void *D_0046B1C0[], *D_0046B0D0[], *D_004703B0[];
 

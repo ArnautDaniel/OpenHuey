@@ -898,7 +898,7 @@ Movie *func_002B6FC0(Movie *m, s32 flags) {
             m->base.vtbl = Scene_vtable;
         }
         if ((s16)flags > 0) {
-            func_0011F9A0(m);
+            SceneHeap_delete(m);
         }
     }
     return m;
@@ -937,7 +937,7 @@ Movie *func_002C8C10(Movie *m, s32 flags) {
         m->base.vtbl = D_0046ECC0;
         func_002B6FC0(m, 0);
         if ((s16)flags > 0) {
-            func_0011F9A0(m);
+            SceneHeap_delete(m);
         }
     }
     return m;
@@ -975,7 +975,7 @@ Movie *func_002FEC50(Movie *m, s32 flags) {
         m->frames = NULL;
         func_002B6FC0(m, 0);
         if ((s16)flags > 0) {
-            func_0011F9A0(m);
+            SceneHeap_delete(m);
         }
     }
     return m;
@@ -1022,7 +1022,7 @@ void func_002FED30(Movie *m) {
 /* ---- movie classes 1..6 (func_001768B0's `kind`): movies the game draws itself, decoded into
  * two frames (+0x1B8, `frameBuf` the one written next). Each frame drawn is sent to VRAM 0xC0000
  * and most put it on the screen as a sprite. Their +0x18 fills in a frame description for
- * whoever shows the movie (the game over screen, func_002F0940): w, h, the frames, the frame
+ * whoever shows the movie (the game over screen, GameOver_DrawMovieFrame): w, h, the frames, the frame
  * written next, plain - and returns `loop`. ---- */
 
 extern void *D_0046EAB0[], *D_0046EAE0[], *D_0046EB10[], *D_0046EC30[], *D_0046EC90[], *D_00474F80[];
@@ -1039,7 +1039,7 @@ static inline __attribute__((always_inline)) Movie *movie_dtor(Movie *m, s32 fla
         m->frames = NULL;
         func_002B6FC0(m, 0);
         if ((s16)flags > 0) {
-            func_0011F9A0(m);
+            SceneHeap_delete(m);
         }
     }
     return m;

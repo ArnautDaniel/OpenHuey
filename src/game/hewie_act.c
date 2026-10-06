@@ -1,4 +1,4 @@
-/* Hewie's actions (func_00130AF0): taking up action `act` sets what he does next - his
+/* Hewie's actions (Hewie_SetAction): taking up action `act` sets what he does next - his
  * behaviour (a pointer to member, HEWIE_STATE), his animation group (+0xF3604, changed with a
  * 10-frame blend +0xF3608), timers (+0xF355C, +0xF36B4..), his target (+0xF3544) and command
  * flags (+0xF356C). An action he can't do (the target out of sight, a floor that doesn't
@@ -38,9 +38,9 @@ static inline void instead(Hewie *h, s32 act, s32 arg) {
     s32 r = func_0013B2C0(h, act);
 
     if (r != act) {
-        func_00130AF0(h, r, 0);
+        Hewie_SetAction(h, r, 0);
     } else {
-        func_00130AF0(h, act, arg);
+        Hewie_SetAction(h, act, arg);
     }
 }
 
@@ -156,7 +156,8 @@ static inline void face(Hewie *h) {
 static const s32 sWait[8] = {300, 360, 420, 480, 540, 600, 660, 720};
 extern const s32 D_003B13D0[8];
 
-void func_00130AF0(Hewie *h, s32 act, s32 arg) {
+/* 0x00130AF0 */
+void Hewie_SetAction(Hewie *h, s32 act, s32 arg) {
     s32 a;
 
     HEWIE_ACTION(h) = act;

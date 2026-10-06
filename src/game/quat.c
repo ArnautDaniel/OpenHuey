@@ -4,7 +4,8 @@
 #include "msl.h"
 
 /* the rotation by `angle` about the unit `axis` */
-void func_0025C6F0(f32 *q, const f32 *axis, f32 angle) {
+/* 0x0025C6F0 */
+void Quat_FromAxisAngle(f32 *q, const f32 *axis, f32 angle) {
     f32 h = 0.5f * angle;
     f32 s = func_0031C248(h);
 
@@ -15,7 +16,8 @@ void func_0025C6F0(f32 *q, const f32 *axis, f32 angle) {
 }
 
 /* its 3 x 3 rotation matrix (the translation row is left as it is) */
-void func_0025C770(const f32 *q, f32 (*m)[4]) {
+/* 0x0025C770 */
+void Quat_ToMatrix(const f32 *q, f32 (*m)[4]) {
     f32 x = q[0], y = q[1], z = q[2], w = q[3];
 
     m[0][0] = 1.0f + -2.0f * (y * y + z * z);
@@ -37,7 +39,8 @@ void func_0025C770(const f32 *q, f32 (*m)[4]) {
 
 /* blend bone matrix `a` towards `b` by `t` into `out`: the rotation from a to b as an axis and
  * angle, turned by t of it (the quaternion left in `q`), the positions mixed */
-void func_0025C440(f32 *q, f32 (*out)[4], f32 (*a)[4], f32 (*b)[4], f32 t) {
+/* 0x0025C440 */
+void Bone_BlendMatrix(f32 *q, f32 (*out)[4], f32 (*a)[4], f32 (*b)[4], f32 t) {
     f32 axis[4] __attribute__((aligned(16)));
     f32 tb[4] __attribute__((aligned(16)));
     f32 ta[4] __attribute__((aligned(16)));
@@ -70,7 +73,7 @@ void func_0025C440(f32 *q, f32 (*out)[4], f32 (*a)[4], f32 (*b)[4], f32 t) {
     q[1] = axis[1] * s;
     q[2] = axis[2] * s;
     q[3] = func_0031C058(h);
-    func_0025C770(q, r);
+    Quat_ToMatrix(q, r);
     sceVu0MulMatrix(out, r, ra);
     sceVu0InterVector(p, tb, ta, t);
     sceVu0TransMatrix(out, out, p);

@@ -529,7 +529,7 @@ s32 func_0021B540(VObject *r, s32 room, s32 except) {
         s32 seen = 0;
 
         to[k] = -1;
-        if (func_00178840(p, room, k)) {
+        if (DoorHold_Usable(p, room, k)) {
             continue;
         }
         t = VCALL(r, 0x18, s32 (*)(VObject *, s32, s32))(r, room, k);
@@ -578,7 +578,7 @@ f32 func_0021B3E0(VObject *r, u32 exit) {
         return 0.0f;
     }
     sceVu0SubVector(d, b, a);
-    return func_002E2BC0(d);
+    return Vec_Heading(d);
 }
 
 /* +0x8 destructor */
@@ -1105,7 +1105,7 @@ void func_0017FA60(u8 *o) {
     if (AT(o, 0x10, s32) == 6) {
         Progress *p;
 
-        func_002FF650(gSound, 0, 6, (f32 *)(o + 0x40), 0, 0);
+        Sound_PlayBankAt(gSound, 0, 6, (f32 *)(o + 0x40), 0, 0);
         p = gProgress;
         func_002A8440((u8 *)p + 0x778, 0x1F, VCALL(p, 0xC, s32 (*)(Progress *))(p), AT(o, 0x54, s32), 0xFFFF);
     }

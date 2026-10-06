@@ -13,7 +13,8 @@ _Static_assert(__builtin_offsetof(Bgm, volume) == 0x110, "Bgm.volume");
 
 /* Set up the music stream on work buffer `work` (NULL: none): looping, stereo or mono as the
  * sound settings say, full volume. */
-void func_002D2370(Bgm *b, void *work) {
+/* 0x002D2370 */
+void Bgm_Init(Bgm *b, void *work) {
     if (b->work != NULL) {
         if (b->adxt != NULL) {
             ADXT_Destroy(b->adxt);
@@ -59,7 +60,8 @@ void func_002D2370(Bgm *b, void *work) {
 }
 
 /* apply the volume (0.1 dB, -99.9 dB for silence) while the stream is on */
-void func_002D1FD0(Bgm *b) {
+/* 0x002D1FD0 */
+void Bgm_ApplyVolume(Bgm *b) {
     f32 v = b->volume[4] * (b->volume[2] * (b->volume[1] * (b->volume[0] * b->volume[3])));
     s32 db;
 
@@ -82,7 +84,8 @@ void func_002D1FD0(Bgm *b) {
 #define ADXT_STAT_PLAYEND 6
 
 /* stop */
-void func_002D1F90(Bgm *b) {
+/* 0x002D1F90 */
+void Bgm_Stop(Bgm *b) {
     if (b->adxt != NULL) {
         b->name[0] = 0;
         b->dir = 0;
@@ -91,14 +94,16 @@ void func_002D1F90(Bgm *b) {
 }
 
 /* resume */
-void func_002D20A0(Bgm *b) {
+/* 0x002D20A0 */
+void Bgm_Resume(Bgm *b) {
     if (b->adxt != NULL) {
         ADXT_Pause(b->adxt, 0);
     }
 }
 
 /* nonzero while the track plays (or with nothing to play) */
-s32 func_002D20D0(Bgm *b) {
+/* 0x002D20D0 */
+s32 Bgm_IsPlaying(Bgm *b) {
     if (b->adxt == NULL) {
         return 1;
     }
@@ -109,7 +114,8 @@ s32 func_002D20D0(Bgm *b) {
 }
 
 /* nonzero once the track can start; a track that has ended starts again */
-s32 func_002D2120(Bgm *b) {
+/* 0x002D2120 */
+s32 Bgm_CanStart(Bgm *b) {
     if (b->adxt == NULL) {
         return 1;
     }
@@ -128,7 +134,8 @@ s32 func_002D2120(Bgm *b) {
 
 /* play track `path` (folder\name or a name in the current folder), looping or not, paused or
  * not */
-void func_002D21B0(Bgm *b, const char *path, s32 loop, s32 pause) {
+/* 0x002D21B0 */
+void Bgm_Play(Bgm *b, const char *path, s32 loop, s32 pause) {
     char dir[256];
     s32 i;
 
@@ -164,7 +171,8 @@ void func_002D21B0(Bgm *b, const char *path, s32 loop, s32 pause) {
 }
 
 /* release the stream */
-void func_002D2330(Bgm *b) {
+/* 0x002D2330 */
+void Bgm_Release(Bgm *b) {
     if (b->adxt != NULL) {
         ADXT_Destroy(b->adxt);
         b->adxt = NULL;
@@ -186,7 +194,8 @@ extern BgmTrack D_00416800[];   /* the tracks */
 
 /* every frame: follow the wanted track (fade out to stop, start a new one at full volume),
  * step the fade and the level, set the stream's volume */
-void func_002E3200(BgmCtl *c) {
+/* 0x002E3200 */
+void BgmCtl_Update(BgmCtl *c) {
     Bgm *b;
     s32 start = 0;
     f32 v;
@@ -203,13 +212,13 @@ void func_002E3200(BgmCtl *c) {
     }
     if (c->cur != 0xFF) {
         b = gAdx;
-        if (func_002D2120(b) && func_002D20D0(b)) {
+        if (Bgm_CanStart(b) && Bgm_IsPlaying(b)) {
             c->fade = 0.0f;
             c->fadeSpeed = 0.0f;
             c->cur = 0xFF;
             c->req = 0xFF;
             if (b != NULL) {
-                func_002D1F90(b);
+                Bgm_Stop(b);
             }
         }
         c->fade += c->fadeSpeed;
@@ -222,7 +231,7 @@ void func_002E3200(BgmCtl *c) {
             c->fadeSpeed = 0.0f;
             if (c->cur != 0xFF) {
                 if (b != NULL) {
-                    func_002D1F90(b);
+                    Bgm_Stop(b);
                 }
                 c->cur = 0xFF;
             }
@@ -255,18 +264,19 @@ void func_002E3200(BgmCtl *c) {
         if (!(b->volume[0] <= 1.0f)) {
             b->volume[0] = 1.0f;
         }
-        func_002D1FD0(b);
+        Bgm_ApplyVolume(b);
     }
     if (start) {
         c->cur = c->req;
-        func_002D21B0(b, D_00416800[c->cur].name, D_00416800[c->cur].loop, c->pause);
+        Bgm_Play(b, D_00416800[c->cur].name, D_00416800[c->cur].loop, c->pause);
     }
 }
 
 /* stop the music at once */
-void func_002E31D0(BgmCtl *c) {
+/* 0x002E31D0 */
+void BgmCtl_StopNow(BgmCtl *c) {
     if (gAdx != NULL) {
-        func_002D1F90(gAdx);
+        Bgm_Stop(gAdx);
     }
 }
 
@@ -275,7 +285,8 @@ extern void *D_0046A100[];   /* its base */
 
 /* +0x8 want track `track` (0xFF: none, fade out) at level `level`; `restart`: from the start
  * even if it's the one playing; `pause`: start it paused */
-void func_00130A40(BgmCtl *c, s32 track, s32 pause, s32 restart, f32 level) {
+/* 0x00130A40 */
+void BgmCtl_Want(BgmCtl *c, s32 track, s32 pause, s32 restart, f32 level) {
     c->req = track;
     if ((u8)track != 0xFF) {
         c->level = level;
@@ -287,7 +298,8 @@ void func_00130A40(BgmCtl *c, s32 track, s32 pause, s32 restart, f32 level) {
 }
 
 /* +0xC */
-BgmCtl *func_001309D0(BgmCtl *c, s32 flags) {
+/* 0x001309D0 */
+BgmCtl *BgmCtl_dtor(BgmCtl *c, s32 flags) {
     if (c != NULL) {
         c->vtbl = D_0046A110;
         if (c != NULL) {

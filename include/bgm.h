@@ -29,13 +29,13 @@ typedef struct Bgm {
 } Bgm;
 
 /* bgm.c */
-extern void func_002D2370(Bgm *b, void *work);
-extern void func_002D1FD0(Bgm *b);   /* apply the music volume */
-extern void func_002D20A0(Bgm *b);
-extern s32 func_002D20D0(Bgm *b);   /* the stream is free */
-extern s32 func_002D2120(Bgm *b);
-extern void func_002D2330(Bgm *b);
-extern void func_002E3200(BgmCtl *c);
-extern void func_002E31D0(BgmCtl *c);
+extern void Bgm_Init(Bgm *b, void *work);
+extern void Bgm_ApplyVolume(Bgm *b);   /* apply the music volume */
+extern void Bgm_Resume(Bgm *b);
+extern s32 Bgm_IsPlaying(Bgm *b);   /* the stream is free */
+extern s32 Bgm_CanStart(Bgm *b);
+extern void Bgm_Release(Bgm *b);
+extern void BgmCtl_Update(BgmCtl *c);
+extern void BgmCtl_StopNow(BgmCtl *c);
 
 #endif /* BGM_H */

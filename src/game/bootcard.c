@@ -36,7 +36,7 @@ static const char sSlots12[] = "1,2";
 #define MSG_LOADED 0x17
 
 extern u8 D_00463A50[];
-void *func_0037E3F0(void);
+void *SaveIcon_Data(void);
 
 static inline void sys_copy(SysData *d, const SysData *s) {
     s32 i;
@@ -231,7 +231,8 @@ BootCard *BootCard_ctor(BootCard *b) {
     return b;
 }
 
-void *func_0037E3F0(void) {
+/* 0x0037E3F0 */
+void *SaveIcon_Data(void) {
     return D_00463A50;
 }
 
@@ -718,7 +719,8 @@ static inline void sys_keep(BootCard *b) {
 /* the game saved into save `cursor`: its header marked, the progress written (progress +0x70)
  * and its place kept in the system data (and system flag 0x100000 set); the sums of the system
  * data, the header and the save made right */
-void func_002BD6A0(BootCard *b) {
+/* 0x002BD6A0 */
+void BootCard_WriteSave(BootCard *b) {
     u8 *h;
 
     SAVE_HEADER(b->sys, b->cursor)[8] = 0;
@@ -734,7 +736,8 @@ void func_002BD6A0(BootCard *b) {
 
 /* fresh game data: no last save; 12 empty headers; an empty save area (a new game's progress,
  * its sum left -1) */
-void func_002BD8C0(BootCard *b) {
+/* 0x002BD8C0 */
+void BootCard_FreshData(BootCard *b) {
     u8 *d;
     s32 i;
 
@@ -775,7 +778,8 @@ void func_002BD8C0(BootCard *b) {
  * choosing the save (13: "overwrite?"); 14..17 written in turn: the system data, the save's
  * header sum spoiled (D_0047ABF8), the save, its header; 18 done; 50 "which card"; 100 / 101 a message, then back to 1; 150
  * saved; 200 "quit?"; 300 cancelled / finished (-1) */
-void func_002BDAB0(BootCard *b) {
+/* 0x002BDAB0 */
+void BootCard_StateSave(BootCard *b) {
     MemCard *mc = gMemCard;
     u8 flags = 0;
     s32 st;
@@ -870,14 +874,14 @@ void func_002BDAB0(BootCard *b) {
                 Sound_PlaySE(SE_BUZZER);
                 b->state = 101;
             } else {
-                func_002BD8C0(b);
+                BootCard_FreshData(b);
                 if (D_0047B264 == MC_UNFORMATTED) {
                     Task_OpenAt(&b->task, 0x35, (u8)b->hidden);
                     MEMCARD_POLL(mc, b->port);
                     b->state++;
                 } else {
                     Task_OpenAt(&b->task, 0x33, (u8)b->hidden);
-                    MEMCARD_CREATE(mc, b->port, func_0037E3F0(), b->sys, SAVE_DATA_OFF);
+                    MEMCARD_CREATE(mc, b->port, SaveIcon_Data(), b->sys, SAVE_DATA_OFF);
                     b->state = 8;
                 }
             }
@@ -936,7 +940,7 @@ void func_002BDAB0(BootCard *b) {
         }
         if (st == 0) {
             Task_OpenAt(&b->task, 0x33, (u8)b->hidden);
-            MEMCARD_CREATE(mc, b->port, func_0037E3F0(), b->sys, SAVE_DATA_OFF);
+            MEMCARD_CREATE(mc, b->port, SaveIcon_Data(), b->sys, SAVE_DATA_OFF);
             b->state++;
         } else {
             Task_OpenAt(&b->task, 0x37, (u8)b->hidden);
@@ -1042,7 +1046,7 @@ void func_002BDAB0(BootCard *b) {
                 b->state++;
             } else {
                 Task_OpenAt(&b->task, 0x33, (u8)b->hidden);
-                func_002BD6A0(b);
+                BootCard_WriteSave(b);
                 slots_scan(b);
                 b->state = 14;
             }
@@ -1088,7 +1092,7 @@ void func_002BDAB0(BootCard *b) {
                 b->state = 100;
             } else {
                 Task_OpenAt(&b->task, 0x33, (u8)b->hidden);
-                func_002BD6A0(b);
+                BootCard_WriteSave(b);
                 slots_scan(b);
                 b->state++;
             }

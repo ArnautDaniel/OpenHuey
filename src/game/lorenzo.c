@@ -349,11 +349,11 @@ void func_00309BA0(Pursuer *p, s32 *e, f32 *a, f32 *b) {
         sceVu0CopyVector(b, gCharPlayer->a.pos);
         return;
     }
-    sceVu0CopyVector(a, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
+    sceVu0CopyVector(a, Skel_Bone(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
     if (e[2] >= 0) {
-        sceVu0CopyVector(b, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[2]) + 0xC);
+        sceVu0CopyVector(b, Skel_Bone(MOTION_AT(p, 0x810, u8 *), e[2]) + 0xC);
     } else {
-        sceVu0CopyVector(b, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
+        sceVu0CopyVector(b, Skel_Bone(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
     }
 }
 
@@ -562,7 +562,7 @@ void func_00309680(Pursuer *p) {
     if (MOTION_ANIM(p) != 0x2301 || !(func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2)) {
         return;
     }
-    sceVu0CopyVector(dp.pos, func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x32) + 0xC);
+    sceVu0CopyVector(dp.pos, Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x32) + 0xC);
     dp.pos[3] = 1.0f;
     dp.kind = 2;
     dp.b = 0x50;
@@ -621,7 +621,7 @@ void func_00309890(Pursuer *p) {
         return;
     }
     sp.one = 1.0f;
-    sceVu0CopyVector(at, func_0017CE80(MOTION_AT(p, 0x810, u8 *), bone) + 0xC);
+    sceVu0CopyVector(at, Skel_Bone(MOTION_AT(p, 0x810, u8 *), bone) + 0xC);
     rnd = gRandom;
     mgr = gEffects;
     for (i = 0; i < 7; i++) {
@@ -698,7 +698,7 @@ void func_0030A4D0(Pursuer *p) {
 }
 
 /* state: a sweep that hits both: at its key (2) Fiona and Hewie within the reach of attack
-   entry 2 (+0x171C +0x48: +0xC reach) and on the mesh are hit (func_00178070 with the entry,
+   entry 2 (+0x171C +0x48: +0xC reach) and on the mesh are hit (Relation_Request with the entry,
    stunning by its +0x18 chance), once each (+0x1760); its end ends the step */
 void func_0030A650(Pursuer *p) {
     func_00125A10(&p->c);
@@ -720,7 +720,7 @@ void func_0030A650(Pursuer *p) {
         if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
             s16 stun = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x18, f32) ? 0x8000 : 0;
 
-            func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+            Relation_Request(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
             PU(p, 0x1764, s32) = 12;
         }
     }
@@ -746,7 +746,7 @@ extern const PTMF D_00423A88;
    toward his target: a point along the path (func_00214890), or where he is when it's out of
    reach; state D_00423A88 (func_0030A850) */
 /* the end of a sinking: out of contact (+0x29 / +0x2D), the sink effect where he stood, moved
-   to the exit of func_00177AB0 kind 9 if any, 15 frames underground (+0x1624); returns the
+   to the exit of PursuerGroup_Find kind 9 if any, 15 frames underground (+0x1624); returns the
    distance (func_00214B90) to his target's point `t` on the mesh */
 static inline f32 Lorenzo2_Sink(Pursuer *p, f32 *t) {
     struct {
@@ -763,7 +763,7 @@ static inline f32 Lorenzo2_Sink(Pursuer *p, f32 *t) {
     sceVu0CopyVector(sk.pos, p->c.a.pos);
     sk.kind = 0;
     func_002D6090(mgr, slot, &sk);
-    k = func_00177AB0(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF;
+    k = PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF;
     if (k != 0xFF) {
         p->c.a.navTri = VCALL(gRooms, 0x34, u32 (*)(VObject *, u32, f32 *))(gRooms, k, p->c.a.pos);
     }
@@ -855,7 +855,7 @@ void func_0030A210(Pursuer *p) {
         if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
             s16 stun = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x18, f32) ? 0x8000 : 0;
 
-            func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+            Relation_Request(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
             PU(p, 0x1764, s32) = 12;
         }
         sceVu0CopyVector((f32 *)((u8 *)p + 0x1770), p->c.unk110);
@@ -901,7 +901,7 @@ static inline s32 Lorenzo2_Underground(Pursuer *p) {
 }
 
 /* the sweep of the other class (func_003643E0): at its key (2) whoever it touches
-   (func_00217920) is hit (func_00178070 with attack entry 2, stunning by its +0x18 chance),
+   (func_00217920) is hit (Relation_Request with attack entry 2, stunning by its +0x18 chance),
    once each (+0x1760); its end ends the step */
 static inline void Lorenzo2b_Sweep(Pursuer *p) {
     func_00125A10(&p->c);
@@ -912,7 +912,7 @@ static inline void Lorenzo2b_Sweep(Pursuer *p) {
             u8 *e = PU(p, 0x171C, u8 *) + 0x48;
             s16 stun = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x18, f32) ? 0x8000 : 0;
 
-            func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+            Relation_Request(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
             PU(p, 0x1764, s32) = 12;
         }
     }
@@ -981,7 +981,7 @@ void func_0030A850(Pursuer *p) {
 extern const PTMF D_00423A68;
 
 /* start of his stalk from below: when he may go for his target, it's reachable by the mesh and
-   there's no exit for him (func_00177AB0 kind 9): finish the walk, then close in (state
+   there's no exit for him (PursuerGroup_Find kind 9): finish the walk, then close in (state
    D_00423A68, Lorenzo2_Approach); otherwise action 0x17 */
 void func_0030AF20(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
@@ -994,7 +994,7 @@ void func_0030AF20(Pursuer *p) {
     }
     sceVu0CopyVector(t, p->target->a.pos);
     tri = func_00216E00(p, p->target->a.navTri, t, t);
-    if (func_001257B0(&p->c, tri, t, -1) < 0.0f || (func_00177AB0(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
+    if (func_001257B0(&p->c, tri, t, -1) < 0.0f || (PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
         p->c.unk104[0] = 0;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
         return;
@@ -1080,7 +1080,7 @@ void func_0030B540(Pursuer *p) {
 extern const PTMF D_00423A28;
 
 /* start of sinking to come up by his target: when it's 30 or more away by the mesh and there's
-   no exit for him (func_00177AB0 kind 9), finish the walk and sink (Lorenzo2_SinkBehind).
+   no exit for him (PursuerGroup_Find kind 9), finish the walk and sink (Lorenzo2_SinkBehind).
    Otherwise: out of reach or when he may not go, action 0x17; else his grab (0x13, attack 1) */
 void func_0030B840(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
@@ -1090,7 +1090,7 @@ void func_0030B840(Pursuer *p) {
     sceVu0CopyVector(t, p->target->a.pos);
     tri = func_00216E00(p, p->target->a.navTri, t, t);
     d = func_001257B0(&p->c, tri, t, -1);
-    if (d < 30.0f || (func_00177AB0(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
+    if (d < 30.0f || (PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
         if (d < 0.0f || !(func_00283870(p) & 0xFF)) {
             p->c.unk104[0] = 0;
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
@@ -1249,7 +1249,7 @@ void func_0030CA80(Pursuer *p) {
         u8 mode = Progress_GetVar(pr, 0x26) & 0xFF;
 
         if (mode != 7 && mode != 6) {
-            func_00178070(pr, *(u8 *)&p->c.a.slot, 1, 3, 0, 0, 100.0f);
+            Relation_Request(pr, *(u8 *)&p->c.a.slot, 1, 3, 0, 0, 100.0f);
         }
     }
     func_0029C8C0(p);
@@ -1261,7 +1261,7 @@ s32 func_0030CB40(Pursuer *p) {
     Progress *pr = gProgress;
 
     if ((func_00177870(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
-        func_001777D0(pr, *(u8 *)&p->c.a.slot);
+        SlotCmd_Cancel(pr, *(u8 *)&p->c.a.slot);
     }
     return -1;
 }
@@ -1323,7 +1323,7 @@ void func_0030CBE0(Pursuer *p) {
             ptmf_scall(p, st);
         }
         if (func_00283870(p) != 0 && ((func_00217920(p) & 0xFF) & 1)) {
-            func_00178070(pr, *(u8 *)&p->c.a.slot, 1, 3, 0, 0, 100.0f);
+            Relation_Request(pr, *(u8 *)&p->c.a.slot, 1, 3, 0, 0, 100.0f);
         }
         VCALL(p, 0x110, void (*)(Pursuer *))(p);
         if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
@@ -1442,7 +1442,7 @@ void func_003636D0(Pursuer *p) {
     if (MOTION_ANIM(p) != 0x2301 || !(func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2)) {
         return;
     }
-    sceVu0CopyVector(dp.pos, func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x32) + 0xC);
+    sceVu0CopyVector(dp.pos, Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x32) + 0xC);
     dp.pos[3] = 1.0f;
     dp.kind = 2;
     dp.b = 0x50;
@@ -1489,7 +1489,7 @@ void func_003638E0(Pursuer *p) {
         return;
     }
     sp.one = 1.0f;
-    sceVu0CopyVector(at, func_0017CE80(MOTION_AT(p, 0x810, u8 *), bone) + 0xC);
+    sceVu0CopyVector(at, Skel_Bone(MOTION_AT(p, 0x810, u8 *), bone) + 0xC);
     rnd = gRandom;
     mgr = gEffects;
     for (i = 0; i < 7; i++) {
@@ -1511,11 +1511,11 @@ void func_00363BF0(Pursuer *p, s32 *e, f32 *a, f32 *b) {
         sceVu0CopyVector(b, gCharPlayer->a.pos);
         return;
     }
-    sceVu0CopyVector(a, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
+    sceVu0CopyVector(a, Skel_Bone(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
     if (e[2] >= 0) {
-        sceVu0CopyVector(b, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[2]) + 0xC);
+        sceVu0CopyVector(b, Skel_Bone(MOTION_AT(p, 0x810, u8 *), e[2]) + 0xC);
     } else {
-        sceVu0CopyVector(b, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
+        sceVu0CopyVector(b, Skel_Bone(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
     }
 }
 
@@ -1535,7 +1535,7 @@ void func_00363FA0(Pursuer *p) {
         if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
             s16 stun = 100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom) <= AT(e, 0x18, f32) ? 0x8000 : 0;
 
-            func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+            Relation_Request(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
             PU(p, 0x1764, s32) = 12;
         }
         sceVu0CopyVector((f32 *)((u8 *)p + 0x1770), p->c.unk110);
@@ -1731,7 +1731,7 @@ void func_00364CD0(Pursuer *p) {
     }
     sceVu0CopyVector(t, p->target->a.pos);
     tri = func_00216E00(p, p->target->a.navTri, t, t);
-    if (func_001257B0(&p->c, tri, t, -1) < 0.0f || (func_00177AB0(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
+    if (func_001257B0(&p->c, tri, t, -1) < 0.0f || (PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
         p->c.unk104[0] = 0;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);
         return;
@@ -1755,7 +1755,7 @@ void func_003655F0(Pursuer *p) {
     sceVu0CopyVector(t, p->target->a.pos);
     tri = func_00216E00(p, p->target->a.navTri, t, t);
     d = func_001257B0(&p->c, tri, t, -1);
-    if (d < 30.0f || (func_00177AB0(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
+    if (d < 30.0f || (PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF) != 0xFF) {
         if (d < 0.0f || !(func_00283870(p) & 0xFF)) {
             p->c.unk104[0] = 0;
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x17);

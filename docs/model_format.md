@@ -73,7 +73,7 @@ load: the .PCK goes raw to Character +0x1540, the .MRK to +0x1AA540 (Fiona).
 |---|---|---|
 | 0 | +0x4C0 | skeleton + meshes |
 | 1 | +0x4D0 | morphing parts: faces, hands (`func_001BD650`) |
-| 2 | +0x4CC | per-bone shadow volumes (6 vertices each), drawable at +0x1D0 (`func_001F2B80`) |
+| 2 | +0x4CC | per-bone shadow volumes (6 vertices each), drawable at +0x1D0 (`Shadow_Draw`) |
 | 3 | +0x4C4 | motion bank (starts with the same count as the .MRK) |
 
 ### Resource 0: skeleton

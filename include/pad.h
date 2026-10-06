@@ -5,7 +5,7 @@
 #include "common.h"
 
 /* pad.c */
-extern void func_001BE6A0(u8 *pads);
-extern void func_001BE4B0(u8 *pads);   /* pad tick */
+extern void Pads_Init(u8 *pads);
+extern void Pads_Tick(u8 *pads);   /* pad tick */
 
 #endif /* PAD_H */

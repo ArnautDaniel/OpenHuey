@@ -7,7 +7,7 @@
 typedef struct VObject VObject;
 
 /* random.c */
-extern VObject *func_001A48C0(VObject *rng, s32 seed);   /* random number generator (Game +0x400000) */
-extern VObject *func_001A4850(VObject *r, s32 flags);
+extern VObject *Random_ctor(VObject *rng, s32 seed);   /* random number generator (Game +0x400000) */
+extern VObject *Random_dtor(VObject *r, s32 flags);
 
 #endif /* RANDOM_H */

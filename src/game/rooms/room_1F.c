@@ -78,14 +78,14 @@ s32 func_002AE1B0(void *self, void *a1, u8 *cmd) {
             AT(o, 0x30, f32) = 0.0f;
             AT(o, 0x18, f32) = 0.0f;
             if (i == 0) {
-                func_002FF650(snd, 0, 6, at, 0, 0);
+                Sound_PlayBankAt(snd, 0, 6, at, 0, 0);
             }
             break;
         case 1:
             AT(o, 0x30, f32) = AT(o, 0x30, f32) + 6.0f;
             if (!(AT(o, 0x30, f32) < 360.0f)) {
                 if (i == 0) {
-                    func_002FF650(snd, 0, 6, at, 0, 0);
+                    Sound_PlayBankAt(snd, 0, 6, at, 0, 0);
                 }
                 AT(o, 0x30, f32) = AT(o, 0x30, f32) - 360.0f;
             }

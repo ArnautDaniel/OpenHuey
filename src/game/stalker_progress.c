@@ -16,27 +16,32 @@
 #define DOOR(p, d) AT(p, 0x124 + ((d) & 0xFFFF) * 4, u32)
 
 /* slot `k`'s command is cancelled (sub 2) */
-void func_001777D0(Progress *p, u32 slot) {
+/* 0x001777D0 */
+void SlotCmd_Cancel(Progress *p, u32 slot) {
     CMD(p, slot & 0xFF)[1] = 2;
 }
 
 /* slot `k`'s command is under way (sub 1) */
-void func_001777F0(Progress *p, u32 slot) {
+/* 0x001777F0 */
+void SlotCmd_Start(Progress *p, u32 slot) {
     CMD(p, slot & 0xFF)[1] = 1;
 }
 
 /* its arg */
-u32 func_00177810(Progress *p, u32 slot) {
+/* 0x00177810 */
+u32 SlotCmd_Arg(Progress *p, u32 slot) {
     return CMD(p, slot & 0xFF)[3];
 }
 
 /* its kind (0: none) */
-u32 func_00177830(Progress *p, u32 slot) {
+/* 0x00177830 */
+u32 SlotCmd_Kind(Progress *p, u32 slot) {
     return CMD(p, slot & 0xFF)[0];
 }
 
 /* the slot it is for */
-u32 func_00177850(Progress *p, u32 slot) {
+/* 0x00177850 */
+u32 SlotCmd_Target(Progress *p, u32 slot) {
     return CMD(p, slot & 0xFF)[2];
 }
 
@@ -57,7 +62,8 @@ static inline s32 cmd_busy(Progress *p, u8 k) {
 
 /* give slot `slot` command `kind` (arg, n, f) towards slot `other`, when neither is busy: 1 if
    given */
-s32 func_00177890(Progress *p, s32 kind, s32 arg, u8 other, u8 slot, s32 n, f32 f) {
+/* 0x00177890 */
+s32 SlotCmd_Give(Progress *p, s32 kind, s32 arg, u8 other, u8 slot, s32 n, f32 f) {
     u8 *c;
 
     if (cmd_busy(p, other) || cmd_busy(p, slot)) {
@@ -74,12 +80,14 @@ s32 func_00177890(Progress *p, s32 kind, s32 arg, u8 other, u8 slot, s32 n, f32 
 }
 
 /* slot `slot` leaves room `room`'s slot bits (which clears every bit up to it) */
-void func_001779C0(Progress *p, u32 room, u32 slot) {
+/* 0x001779C0 */
+void RoomSlots_Leave(Progress *p, u32 room, u32 slot) {
     AT(p, 0x1000 + (room & 0xFF) * 4, u8) &= (u8)(-2 << (slot & 0xFF));
 }
 
 /* slot `slot` is in room `room` */
-void func_001779F0(Progress *p, u32 room, u32 slot) {
+/* 0x001779F0 */
+void RoomSlots_Enter(Progress *p, u32 room, u32 slot) {
     AT(p, 0x1000 + (room & 0xFF) * 4, u8) |= (u8)(1 << (slot & 0xFF));
 }
 
@@ -99,7 +107,8 @@ static inline u8 group_fields(const u8 *g, u8 bit) {
 
 /* the first of the 8 pursuer groups with slot `slot` in one of the fields `kind` asks for; 0xFF
    if none */
-s32 func_00177AB0(void *p, s32 kind, u8 slot) {
+/* 0x00177AB0 */
+s32 PursuerGroup_Find(void *p, s32 kind, u8 slot) {
     u8 bit = 1 << slot;
     u8 i;
 
@@ -112,12 +121,14 @@ s32 func_00177AB0(void *p, s32 kind, u8 slot) {
 }
 
 /* the fields of group `i` that have slot `slot` */
-u32 func_00177BF0(Progress *p, u32 i, u32 slot) {
+/* 0x00177BF0 */
+u32 PursuerGroup_Fields(Progress *p, u32 i, u32 slot) {
     return group_fields((u8 *)p + 0xFD0 + (i & 0xFF) * 6, 1 << (slot & 0xFF));
 }
 
 /* which of room `room`'s 4 slot-bit bytes (+0x1000) have slot `slot` (bit n: byte n) */
-s32 func_00177A20(Progress *p, s32 room, s32 slot) {
+/* 0x00177A20 */
+s32 RoomSlots_Bytes(Progress *p, s32 room, s32 slot) {
     u8 *r = (u8 *)p + 0x1000 + (room & 0xFF) * 4;
     u8 bit = 1 << (slot & 0xFF);
     u8 has = 0;
@@ -130,7 +141,8 @@ s32 func_00177A20(Progress *p, s32 room, s32 slot) {
 }
 
 /* slot `slot`'s relation request: hit/kind, sub, u16, s16, f32 (on +0x1014) */
-void func_00178070(Progress *p, u32 slot, s32 a2, s32 a3, s32 a4, s32 a5, f32 f) {
+/* 0x00178070 */
+void Relation_Request(Progress *p, u32 slot, s32 a2, s32 a3, s32 a4, s32 a5, f32 f) {
     u8 *r = (u8 *)p + 0x1014 + (slot & 0xFF) * 0x10;
 
     r[0] = a2;
@@ -151,7 +163,8 @@ static inline s32 door_fixed(u16 d) {
 }
 
 /* let go of the held door at exit `exit` (clears bit 2 too): 1 if it was held */
-s32 func_00178750(Progress *p, s32 room, s32 exit) {
+/* 0x00178750 */
+s32 DoorHold_Release(Progress *p, s32 room, s32 exit) {
     u16 d = door_at(room, exit);
     u32 w;
 
@@ -171,7 +184,8 @@ s32 func_00178750(Progress *p, s32 room, s32 exit) {
 }
 
 /* the door at exit `exit`: unlocked, or its bit 2 */
-s32 func_00178840(Progress *p, s32 room, s32 exit) {
+/* 0x00178840 */
+s32 DoorHold_Usable(Progress *p, s32 room, s32 exit) {
     u16 d = door_at(room, exit);
     u32 w;
 
@@ -211,7 +225,8 @@ static inline void door_heard(Progress *p, s32 room, u16 d, u32 slot) {
 }
 
 /* shut the held door at exit `exit` of room `room` (slot `slot`): 1 if done */
-s32 func_00178A90(Progress *p, s32 room, s32 exit, u32 slot) {
+/* 0x00178A90 */
+s32 DoorHold_Shut(Progress *p, s32 room, s32 exit, u32 slot) {
     u16 d = door_at(room, exit);
     u32 w;
 
@@ -232,7 +247,8 @@ s32 func_00178A90(Progress *p, s32 room, s32 exit, u32 slot) {
 }
 
 /* open it (not when bit 2) */
-s32 func_00178C10(Progress *p, s32 room, s32 exit, u32 slot) {
+/* 0x00178C10 */
+s32 DoorHold_Open(Progress *p, s32 room, s32 exit, u32 slot) {
     u16 d = door_at(room, exit);
     u32 w;
 
@@ -258,7 +274,8 @@ s32 func_00178C10(Progress *p, s32 room, s32 exit, u32 slot) {
 /* take hold of the door at exit `exit` from side `side` (0xFF any; else its lock sides as
    func_00178200): 0 if now held by the caller, 1 if it can't be (fixed, locked that side or
    already held) */
-u32 func_00178DB0(Progress *p, s32 room, s32 exit, u32 side) {
+/* 0x00178DB0 */
+u32 DoorHold_Take(Progress *p, s32 room, s32 exit, u32 side) {
     u16 d = door_at(room, exit);
     u32 lock;
     u8 ok;
@@ -297,7 +314,8 @@ u32 func_00178DB0(Progress *p, s32 room, s32 exit, u32 side) {
 }
 
 /* a countdown (+0x4, frames) in seconds, at least 1 while it runs (gProgress +0x764) */
-s32 func_002EC410(u8 *t) {
+/* 0x002EC410 */
+s32 Countdown_Seconds(u8 *t) {
     u32 n = AT(t, 0x4, u32);
 
     if (n / 30 == 0 && n != 0) {
@@ -308,7 +326,8 @@ s32 func_002EC410(u8 *t) {
 
 /* the threat meter (gProgress +0x7B8) raised by `amount`: a big one (10 or more) also holds it
    for 30 frames and counts half toward +0x14 */
-void func_002EF9E0(u8 *o, f32 amount) {
+/* 0x002EF9E0 */
+void Threat_Raise(u8 *o, f32 amount) {
     if (amount < 0.0f) {
         return;
     }

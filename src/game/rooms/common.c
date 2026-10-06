@@ -279,7 +279,7 @@ extern const f32 D_00444980[12][3];
 extern void *D_0046D7A0[], *D_00469D00[];
 #ifdef HG_NATIVE
 
-/* +0x14 draw: when all of the shape is in view, the screen brightened (func_0026B180,
+/* +0x14 draw: when all of the shape is in view, the screen brightened (Bloom_Start,
  * 0x80808080 in layer 0x28) and the shape added in white into layer 0x26 (the bloom's mask;
  * the original's triangle fan, additive, no depth writes). (Checked against the original with
  * its GS packet rebuilt, 2026-10-06.) */
@@ -326,7 +326,7 @@ void func_00360BF0(u8 *o) {
     }
     AT(drawer, 0x0, void **) = D_0046D7A0;
     AT(drawer, 0x4, s32) = -1;
-    func_0026B180(drawer, 0x80808080, 0x28, 0);
+    Bloom_Start(drawer, 0x80808080, 0x28, 0);
     {
         f32 tri[3][4];
         f32 st[3][2] = {{0}};
@@ -526,7 +526,7 @@ s32 func_0030FA90(void *self, void *a1, u8 *cmd) {
 
         o = obj_named(D_00428050[g * 4]);
         sceVu0CopyVector(pos, (f32 *)(o + 0x20));
-        func_002FF650(gSound, cmd[4] == 3 ? 0xC : 0x8000000C, 6, pos, 0, 0);
+        Sound_PlayBankAt(gSound, cmd[4] == 3 ? 0xC : 0x8000000C, 6, pos, 0, 0);
         break;
     }
     case 5: {

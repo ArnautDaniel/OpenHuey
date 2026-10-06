@@ -36,7 +36,7 @@ static inline void swing_to2(u8 *o, f32 a) {
     pos[0] = 45.0f * func_0031C248(AT(o, 0x14, f32));
     pos[3] = 1.0f;
     pos[2] = 45.0f * func_0031C058(AT(o, 0x14, f32));
-    func_002FF650(gSound, 0x80000002, 6, pos, 0, 0);
+    Sound_PlayBankAt(gSound, 0x80000002, 6, pos, 0, 0);
 }
 
 void *func_0034A9B0(void *o, s32 flags) { return room_dtor(o, flags, D_00478630, D_0046DB80); }
@@ -77,7 +77,7 @@ s32 func_0034AAB0(void *self, u32 i, s32 a, s32 b) {
 }
 
 s32 func_0034AAE0(void) {
-    return func_002EC410((u8 *)gProgress + 0x764) == 0;
+    return Countdown_Seconds((u8 *)gProgress + 0x764) == 0;
 }
 
 /* (self->*D_019919C0[i])(a, b) */
@@ -90,7 +90,7 @@ s32 func_0034AB40(void) {
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_004400F0[0]);
 
     if (o != NULL) {
-        func_002FF650(gSound, 3, 6, (f32 *)(o + 0x20), 0, 0);
+        Sound_PlayBankAt(gSound, 3, 6, (f32 *)(o + 0x20), 0, 0);
     }
     return 1;
 }
@@ -110,7 +110,7 @@ s32 func_0034ABB0(void) {
     if (AT(gCharPlayer, 0x14E8, s32) != 7) {
         char_set_action((u8 *)gCharPlayer, &act);
     }
-    func_002EF9E0((u8 *)gProgress + 0x7B8, 50.0f);
+    Threat_Raise((u8 *)gProgress + 0x7B8, 50.0f);
     return 1;
 }
 

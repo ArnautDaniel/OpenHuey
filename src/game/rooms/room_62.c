@@ -96,7 +96,7 @@ s32 func_00308C20(void *self, void *a1, u8 *cmd) {
         AT(e, 0x24, f32) = 0x1.666666p-1f;
         D_0047B280 = v * kBounce.f;
         sceVu0CopyVector(at, (f32 *)(e + 0x20));
-        func_002FF650(gSound, 0, 6, at, 0, 0);
+        Sound_PlayBankAt(gSound, 0, 6, at, 0, 0);
         if (D_0047B280 < 0x1.99999ap-3f /* 0.2 */) {
             AT(e, 0x74, s32) = 1;
             return 1;
@@ -115,7 +115,7 @@ s32 func_00308D70(void *self, void *a1, u8 *cmd) {
         AT(o, 0x30, f32) = 0.0f;
         AT(o, 0x34, u32) = 0x3C23D70A;   /* 0.01 */
         if (cmd[4] == 0) {
-            func_002FF650(gSound, 7, 6, (f32 *)(o + 0x20), 0, 0);
+            Sound_PlayBankAt(gSound, 7, 6, (f32 *)(o + 0x20), 0, 0);
         }
         return 1;
     }

@@ -624,7 +624,7 @@ void func_0012A4C0(Pursuer *p) {
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
         }
         if (PU(p, 0x1588, f32) < 10.0f && !(PU(p, 0x1588, f32) <= 0.0f) && gCharPlayer->moveMode == 0 &&
-            gCharPlayer->moveSub != 0 && (func_00177AB0(gProgress, 4, 0) & 0xFF) == 0xFF) {
+            gCharPlayer->moveSub != 0 && (PursuerGroup_Find(gProgress, 4, 0) & 0xFF) == 0xFF) {
             VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x1000);
             PU(p, 0x162C, s32) = 0;
         }

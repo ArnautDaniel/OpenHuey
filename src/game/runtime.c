@@ -20,7 +20,8 @@ void *func_00100650(void) {
     return D_0044C900;
 }
 /* __ptmf_cmpr: whether two member function pointers differ */
-s32 func_00100B80(const PTMF *a, const PTMF *b) {
+/* 0x00100B80 */
+s32 __ptmf_cmpr(const PTMF *a, const PTMF *b) {
     return (a->this_delta ^ b->this_delta) | (a->vtbl_offset ^ b->vtbl_offset) |
            (a->u.vptr_offset ^ b->u.vptr_offset) ? 1 : 0;
 }

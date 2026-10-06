@@ -90,7 +90,7 @@ s32 func_002AFB20(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990AD8[i & 0xFF], a, b);
 }
 
-/* room 0x23 (D_00401828): none of the six slots' func_00177BF0 bits 0..3, and the stalker is
+/* room 0x23 (D_00401828): none of the six slots' PursuerGroup_Fields bits 0..3, and the stalker is
  * about but not active, in mode 2, 6 or 7 */
 s32 func_002AFB50(void) {
     u32 acc = 0;
@@ -99,7 +99,7 @@ s32 func_002AFB50(void) {
     u8 k;
 
     for (i = 0; i < 6; i++) {
-        acc |= (u8)func_00177BF0(gProgress, 0, i & 0xFF);
+        acc |= (u8)PursuerGroup_Fields(gProgress, 0, i & 0xFF);
     }
     if (acc & 0xF) {
         return 0;

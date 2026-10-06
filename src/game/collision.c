@@ -5,7 +5,8 @@ typedef struct { f32 x, y, z, w; } Vec4;
 typedef struct { Vec4 v[3]; u32 pad[8]; } Tri;          /* 0x50 bytes */
 typedef struct { u32 unk0; Tri *tris; u32 count; } TriMesh;
 
-s32 func_0017CA80(TriMesh *mesh, u32 index, Vec4 *p) {
+/* 0x0017CA80 */
+s32 NavMesh_PointInTri(TriMesh *mesh, u32 index, Vec4 *p) {
     Tri *tri;
     s32 inside = 0;
     u32 i;

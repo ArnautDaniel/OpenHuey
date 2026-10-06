@@ -96,7 +96,7 @@ SceneBoot *SceneBoot_dtor(SceneBoot *boot, s32 flags) {
     gBootMessage = NULL;
     boot->base.vtbl = Scene_vtable;
     if ((s16)flags > 0) {
-        func_0011F9A0(boot);
+        SceneHeap_delete(boot);
     }
     return boot;
 }
@@ -111,7 +111,7 @@ void SceneBoot_StateLoadSystem(SceneBoot *boot) {
     VObject *loader;
     VObject *res;
 
-    func_0026BCC0((u8 *)&boot->msg);
+    Message_Init((u8 *)&boot->msg);
     loader = gFileLoader;
     VCALL(loader, 0x34, void (*)(VObject *, const char *, void *))(loader, sErrMesTex, boot->errMesTex);
     VCALL(gBootMessage, 0x8, void (*)(VObject *, s32, void *))(gBootMessage, 6, boot->errMesTex);
@@ -166,7 +166,7 @@ void SceneBoot_StateDone(SceneBoot *boot) {
 
     VCALL(msg, 0x14, void (*)(VObject *, s32))(msg, 6);
     VCALL(msg, 0xC, void (*)(VObject *, s32))(msg, 6);
-    func_0026BC00(&boot->msg);
+    Message_ClearAll(&boot->msg);
     ((s32 *)gSystemData)[1] = 2;
     ((s32 *)gSystemData)[4] = 2;
     VCALL(boot, 0x14, void (*)(SceneBoot *))(boot);
@@ -184,7 +184,8 @@ static const char sMsgBaseBin[] = "SUBSCR\\MSG_BASE.BIN";
 static const char sMsgBaseTex[] = "SUBSCR\\MSG_BASE.TEX";
 
 /* Load the subtitle message file into the resident buffer. */
-void func_0037EC00(SceneBoot *boot) {
+/* 0x0037EC00 */
+void SceneBoot_LoadSubtitles(SceneBoot *boot) {
     VObject *res = (VObject *)gSystemData;
 
     VCALL(gFileLoader, 0x34, void (*)(VObject *, const char *, void *))(
@@ -217,7 +218,8 @@ static u8 *BootSprite_Image(s32 line, s32 prio) {
 
 /* Draw the single large boot message picture (slot 6, line 0): 512 x 512 from the top left,
  * opaque, layer 1. */
-void func_0037F2E0(SceneBoot *boot) {
+/* 0x0037F2E0 */
+void SceneBoot_DrawPicture(SceneBoot *boot) {
     u8 *img = BootSprite_Image(0, 1);
 
     if (img != NULL) {
@@ -227,7 +229,8 @@ void func_0037F2E0(SceneBoot *boot) {
 
 /* Draw the two boot message lines (slot 6, lines 0 and 1): 512 x 256 each, one under the
  * other, opaque, layer 0x30. */
-void func_0037F510(SceneBoot *boot) {
+/* 0x0037F510 */
+void SceneBoot_DrawLines(SceneBoot *boot) {
     s32 i;
 
     for (i = 0; i < 2; i++) {
@@ -239,8 +242,8 @@ void func_0037F510(SceneBoot *boot) {
     }
 }
 #else
-void func_0037F2E0(SceneBoot *boot);
-void func_0037F510(SceneBoot *boot);
+void SceneBoot_DrawPicture(SceneBoot *boot);
+void SceneBoot_DrawLines(SceneBoot *boot);
 #endif
 
 /* Shared start of the boot steps: without (a controller?), show the message and wait
@@ -251,7 +254,7 @@ static inline s32 SceneBoot_WaitButton(SceneBoot *boot) {
     }
     if (boot->stepFlag != 0) {
         if (!(D_0047E37C & 0x4000)) {
-            func_0037F510(boot);
+            SceneBoot_DrawLines(boot);
             return 1;
         }
         boot->stepFlag = 0;
@@ -260,7 +263,8 @@ static inline s32 SceneBoot_WaitButton(SceneBoot *boot) {
 }
 
 /* Boot step: load the boot message texts. */
-u32 func_0037FEF0(SceneBoot *boot) {
+/* 0x0037FEF0 */
+u32 SceneBoot_StepTexts(SceneBoot *boot) {
     VObject *res;
     VObject *loader;
 
@@ -277,13 +281,14 @@ u32 func_0037FEF0(SceneBoot *boot) {
         loader, sMsgBaseTex, VCALL(res, 0x10, void *(*)(VObject *))(res));
     VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(
         gTexCache, VCALL(res, 0x10, void *(*)(VObject *))(res), 0x14);
-    func_0037EC00(boot);
+    SceneBoot_LoadSubtitles(boot);
     D_0047B350 = 2;
     return 0;
 }
 
 /* Boot step (first): just the button wait. */
-u32 func_00380410(SceneBoot *boot) {
+/* 0x00380410 */
+u32 SceneBoot_StepButton(SceneBoot *boot) {
     return SceneBoot_WaitButton(boot);
 }
 
@@ -329,7 +334,8 @@ static inline s32 BootLogo_Frame(SceneBoot *boot, BootScreen *scr) {
 }
 
 /* Boot step: CRI logo (loaded by SceneBoot_StateLoadSystem); starts loading the Dolby logo. */
-u32 func_0037FC60(SceneBoot *boot) {
+/* 0x0037FC60 */
+u32 SceneBoot_StepCri(SceneBoot *boot) {
     VObject *gs;
     BootScreen *scr;
 
@@ -356,7 +362,8 @@ u32 func_0037FC60(SceneBoot *boot) {
 }
 
 /* Boot step: Dolby logo, once its load has finished. */
-u32 func_0037FAC0(SceneBoot *boot) {
+/* 0x0037FAC0 */
+u32 SceneBoot_StepDolby(SceneBoot *boot) {
     VObject *gs;
     BootScreen *scr;
 
@@ -388,7 +395,8 @@ static const PTMF sSceneFinish = {0, 0x14, {(void *)0}};   /* virtual +0x14 */
 #define SCENE_TABLE_SCENE(i) (*(Scene **)((u8 *)gSceneTable + 4 + (i) * 4))
 
 /* Boot step: the Capcom logo movie, as scene 1, until it's over (Start skips it). */
-u32 func_0037F7D0(SceneBoot *boot) {
+/* 0x0037F7D0 */
+u32 SceneBoot_StepCapcom(SceneBoot *boot) {
     Scene *movie;
     void *mem;
     s32 ok;
@@ -437,7 +445,8 @@ u32 func_0037F7D0(SceneBoot *boot) {
 }
 
 /* Boot step: run the object at +0xC7440 until it reports done (+0xC7444 < 0). */
-u32 func_0037FE50(SceneBoot *boot) {
+/* 0x0037FE50 */
+u32 SceneBoot_StepObject(SceneBoot *boot) {
     if (boot->stepTimer == 0) {
         SaveScreen_Init(&boot->card, 0, 0);
         boot->card.state = 0;
@@ -452,7 +461,8 @@ u32 func_0037FE50(SceneBoot *boot) {
 }
 
 /* Boot step (last): the caution screen, shown with tasks[0] until frame 0x3F. */
-u32 func_0037F980(SceneBoot *boot) {
+/* 0x0037F980 */
+u32 SceneBoot_StepCaution(SceneBoot *boot) {
     if (boot->stepTimer == 0x3F) {
         Task_Close(&boot->tasks[0]);
         return 0;
@@ -465,7 +475,7 @@ u32 func_0037F980(SceneBoot *boot) {
     }
     boot->stepTimer++;
     if (boot->stepTimer != 0) {
-        func_0037F2E0(boot);
+        SceneBoot_DrawPicture(boot);
         Task_Open(&boot->tasks[0], 1);
     }
     Task_Run(&boot->tasks[0]);
@@ -480,7 +490,8 @@ static const char sCountFmt[] = "%d";
 /* Boot step: progressive scan. Holding triangle + cross at boot asks whether to switch to 480p
  * (tasks[0] runs the question); after switching, the choice must be confirmed within 10 s
  * (countdown via tasks[2]) or the previous video mode is restored. */
-u32 func_00380050(SceneBoot *boot) {
+/* 0x00380050 */
+u32 SceneBoot_StepProgressive(SceneBoot *boot) {
     VObject *gs;
     s32 result = 1;
     s32 counting = 0;
@@ -571,10 +582,10 @@ u32 func_00380050(SceneBoot *boot) {
             boot->stepFlag = 0;
         }
     }
-    func_002CF390(&boot->unkC75D0Vtbl, (u32)(busy ? 0x5F : 0) << 24);
+    Overlay_SetColor(&boot->unkC75D0Vtbl, (u32)(busy ? 0x5F : 0) << 24);
     VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, &boot->unkC75D0Vtbl, 0x31, 0);
     if (boot->stepTimer != 0 && ask->mode) {
-        func_0037F2E0(boot);
+        SceneBoot_DrawPicture(boot);
     }
     return busy ? busy : result;
 }
@@ -592,7 +603,8 @@ extern const PTMF D_0044AE10, D_0044AE20;
  * in a box, its sound played once (+0x152) - or message 5 for none; when done and confirmed,
  * the item added, the places cleared (but +0x150), the task closed and the next state
  * (func_00322970: D_0044AE10, else D_0044AE20) */
-void func_0037ED50(u8 *o) {
+/* 0x0037ED50 */
+void ItemFound_StateShow(u8 *o) {
     Task *t = (Task *)(o + 0x14);
     u8 flags = func_00322CD0(o, (s8)o[0x14A] >= 0);
     s32 id = -1, i;

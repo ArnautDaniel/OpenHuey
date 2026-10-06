@@ -195,16 +195,16 @@ void func_0020C660(Pursuer *p, s32 exit) {
     }
 }
 
-/* vtable +0xF0: the door `exit` of her room used (func_00178DB0), then damaged: in mode 2
-   (+0x16B8) by func_00178C10, otherwise func_00178A90 */
+/* vtable +0xF0: the door `exit` of her room used (DoorHold_Take), then damaged: in mode 2
+   (+0x16B8) by DoorHold_Open, otherwise DoorHold_Shut */
 void func_0020C730(Pursuer *p, s32 exit) {
     Progress *pr = gProgress;
 
-    func_00178DB0(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+    DoorHold_Take(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
     if (PU(p, 0x16B8, s32) == 2) {
-        func_00178C10(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+        DoorHold_Open(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
     } else {
-        func_00178A90(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+        DoorHold_Shut(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
     }
 }
 
@@ -222,7 +222,7 @@ void func_0020C7C0(Pursuer *p) {
     switch (MOTION_ANIM(p)) {
     case 0x1904:
         atHand = 0;
-        sceVu0CopyVector(pos, func_0017CE80(AT(gCharPlayer->motion, 0x810, u8 *), 0x17) + 0xC);
+        sceVu0CopyVector(pos, Skel_Bone(AT(gCharPlayer->motion, 0x810, u8 *), 0x17) + 0xC);
         hp.big = 1.0f;
         break;
     case 0x1A01: {
@@ -231,7 +231,7 @@ void func_0020C7C0(Pursuer *p) {
 
         atHand = 0;
         bone = VCALL(fm, 0x80, s32 (*)(void *))(fm);
-        sceVu0CopyVector(pos, func_0017CE80(AT(gCharPlayer->motion, 0x810, u8 *), bone) + 0xC);
+        sceVu0CopyVector(pos, Skel_Bone(AT(gCharPlayer->motion, 0x810, u8 *), bone) + 0xC);
         hp.big = 1.0f;
         break;
     }
@@ -262,9 +262,9 @@ void func_0020C7C0(Pursuer *p) {
         off[1] = D_003D8910[1];
         off[2] = reach;
         off[3] = D_003D8910[3];
-        sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D));
+        sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D));
         func_002E2DA0(pos, m, off);
-        sceVu0CopyVector(hand, func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
+        sceVu0CopyVector(hand, Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
         sceVu0AddVector(pos, pos, hand);
     }
     hp.kind = 0xFE;
@@ -290,18 +290,18 @@ static inline void Daniella_HitPoints(Pursuer *p, s32 *e, f32 *a, f32 *b, const 
         off[1] = reach[1];
         off[2] = reach[2];
         off[3] = reach[3];
-        sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D));
+        sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D));
         func_002E2DA0(a, m, off);
-        sceVu0CopyVector(t, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
+        sceVu0CopyVector(t, Skel_Bone(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
         sceVu0AddVector(a, a, t);
-        sceVu0CopyVector(b, func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
+        sceVu0CopyVector(b, Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
         return;
     }
-    sceVu0CopyVector(a, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
+    sceVu0CopyVector(a, Skel_Bone(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
     if (e[2] >= 0) {
-        sceVu0CopyVector(b, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[2]) + 0xC);
+        sceVu0CopyVector(b, Skel_Bone(MOTION_AT(p, 0x810, u8 *), e[2]) + 0xC);
     } else {
-        sceVu0CopyVector(b, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
+        sceVu0CopyVector(b, Skel_Bone(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
     }
 }
 
@@ -715,7 +715,7 @@ void func_00346330(Pursuer *p) {
     switch (MOTION_ANIM(p)) {
     case 0x1904:
         atHand = 0;
-        sceVu0CopyVector(pos, func_0017CE80(AT(gCharPlayer->motion, 0x810, u8 *), 0x17) + 0xC);
+        sceVu0CopyVector(pos, Skel_Bone(AT(gCharPlayer->motion, 0x810, u8 *), 0x17) + 0xC);
         hp.big = 1.0f;
         break;
     case 0x1A01: {
@@ -724,7 +724,7 @@ void func_00346330(Pursuer *p) {
 
         atHand = 0;
         bone = VCALL(fm, 0x80, s32 (*)(void *))(fm);
-        sceVu0CopyVector(pos, func_0017CE80(AT(gCharPlayer->motion, 0x810, u8 *), bone) + 0xC);
+        sceVu0CopyVector(pos, Skel_Bone(AT(gCharPlayer->motion, 0x810, u8 *), bone) + 0xC);
         hp.big = 1.0f;
         break;
     }
@@ -755,9 +755,9 @@ void func_00346330(Pursuer *p) {
         off[1] = D_0043CD30[1];
         off[2] = reach;
         off[3] = D_0043CD30[3];
-        sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D));
+        sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D));
         func_002E2DA0(pos, m, off);
-        sceVu0CopyVector(hand, func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
+        sceVu0CopyVector(hand, Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
         sceVu0AddVector(pos, pos, hand);
     }
     hp.kind = 0xFE;
@@ -780,7 +780,7 @@ void func_00347B80(Pursuer *p) {
     switch (MOTION_ANIM(p)) {
     case 0x1904:
         atHand = 0;
-        sceVu0CopyVector(pos, func_0017CE80(AT(gCharPlayer->motion, 0x810, u8 *), 0x17) + 0xC);
+        sceVu0CopyVector(pos, Skel_Bone(AT(gCharPlayer->motion, 0x810, u8 *), 0x17) + 0xC);
         hp.big = 1.0f;
         break;
     case 0x1A01: {
@@ -789,7 +789,7 @@ void func_00347B80(Pursuer *p) {
 
         atHand = 0;
         bone = VCALL(fm, 0x80, s32 (*)(void *))(fm);
-        sceVu0CopyVector(pos, func_0017CE80(AT(gCharPlayer->motion, 0x810, u8 *), bone) + 0xC);
+        sceVu0CopyVector(pos, Skel_Bone(AT(gCharPlayer->motion, 0x810, u8 *), bone) + 0xC);
         hp.big = 1.0f;
         break;
     }
@@ -820,9 +820,9 @@ void func_00347B80(Pursuer *p) {
         off[1] = D_0043DBC0[1];
         off[2] = reach;
         off[3] = D_0043DBC0[3];
-        sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D));
+        sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D));
         func_002E2DA0(pos, m, off);
-        sceVu0CopyVector(hand, func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
+        sceVu0CopyVector(hand, Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
         sceVu0AddVector(pos, pos, hand);
     }
     hp.kind = 0xFE;
@@ -845,7 +845,7 @@ void func_00348B10(Pursuer *p) {
     switch (MOTION_ANIM(p)) {
     case 0x1904:
         atHand = 0;
-        sceVu0CopyVector(pos, func_0017CE80(AT(gCharPlayer->motion, 0x810, u8 *), 0x17) + 0xC);
+        sceVu0CopyVector(pos, Skel_Bone(AT(gCharPlayer->motion, 0x810, u8 *), 0x17) + 0xC);
         hp.big = 1.0f;
         break;
     case 0x1A01: {
@@ -854,7 +854,7 @@ void func_00348B10(Pursuer *p) {
 
         atHand = 0;
         bone = VCALL(fm, 0x80, s32 (*)(void *))(fm);
-        sceVu0CopyVector(pos, func_0017CE80(AT(gCharPlayer->motion, 0x810, u8 *), bone) + 0xC);
+        sceVu0CopyVector(pos, Skel_Bone(AT(gCharPlayer->motion, 0x810, u8 *), bone) + 0xC);
         hp.big = 1.0f;
         break;
     }
@@ -885,9 +885,9 @@ void func_00348B10(Pursuer *p) {
         off[1] = D_0043EA70[1];
         off[2] = reach;
         off[3] = D_0043EA70[3];
-        sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D));
+        sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D));
         func_002E2DA0(pos, m, off);
-        sceVu0CopyVector(hand, func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
+        sceVu0CopyVector(hand, Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x2D) + 0xC);
         sceVu0AddVector(pos, pos, hand);
     }
     hp.kind = 0xFE;
@@ -904,16 +904,16 @@ void func_00348B10(Pursuer *p) {
 extern const f32 D_0043CD20[4], D_0043DBB0[4], D_0043EA60[4];
 
 /* the first: vtable +0xF0: the door `exit` used, then damaged: in mode 2, in the ending
-   (gProgress+0x1FBEC1) or with gProgress+0x30 bit 0x8000 by func_00178C10, otherwise
-   func_00178A90 */
+   (gProgress+0x1FBEC1) or with gProgress+0x30 bit 0x8000 by DoorHold_Open, otherwise
+   DoorHold_Shut */
 void func_00346270(Pursuer *p, s32 exit) {
     Progress *pr = gProgress;
 
-    func_00178DB0(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+    DoorHold_Take(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
     if (PU(p, 0x16B8, s32) == 2 || AT(pr, 0x1FBEC1, u8) != 0 || (AT(pr, 0x30, u32) & 0x8000)) {
-        func_00178C10(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+        DoorHold_Open(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
     } else {
-        func_00178A90(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+        DoorHold_Shut(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
     }
 }
 

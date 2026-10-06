@@ -66,7 +66,7 @@ void glr_glow(void);
 /* renderer +0x5C: the glow buffer is cleared to black */
 void glr_glow_clear(void);
 
-/* func_002699D0 this frame: the screen bloom - a blurred half-size copy of the screen goes into
+/* Bloom_Draw this frame: the screen bloom - a blurred half-size copy of the screen goes into
  * the glow buffer and over the screen, tinted by `rgba` (0x80 = 1.0) at alpha / 2; added, or
  * subtracted when `subtract` */
 void glr_bloom(uint32_t rgba, int subtract);

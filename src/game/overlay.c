@@ -1,7 +1,7 @@
 /* Overlay: a full-screen colour rectangle drawn in a renderer layer (the boot scene dims the
  * screen behind its dialogs with one). vtable D_0046F350: +0x8 dtor, +0xC draw.
  *
- *   +0x08 u64  stamp (func_002B71D0, refreshed when +0x24 changes)
+ *   +0x08 u64  stamp (TexCache_Tex0, refreshed when +0x24 changes)
  *   +0x10 s32  +0x24 when the stamp was taken
  *   +0x70 .. +0xE0  camera vectors: +0x70 eye (camera +0x24), +0x80 / +0x90 camera axes
  *        (+0xA4 / +0xA0), +0xA0 their cross product, +0xB0 .. +0xD0 scratch, +0xE0 a point in
@@ -23,7 +23,8 @@
 extern s32 D_00414310[4][3];
 
 /* set the colour (RGBA, alpha in the top byte) */
-void func_002CF390(void *ov, u32 rgba) {
+/* 0x002CF390 */
+void Overlay_SetColor(void *ov, u32 rgba) {
     AT(ov, 0xF8, u32) = rgba;
 }
 
@@ -33,7 +34,8 @@ void func_002CF390(void *ov, u32 rgba) {
 /* the rectangle: a blended strip over the corners (0 / 1: 512 game pixels, from y -32) in the
  * overlay colour, in the layer being drawn; the camera vectors placed per corner as the
  * original does */
-void func_002CF700(void *ov) {
+/* 0x002CF700 */
+void Overlay_DrawRect(void *ov) {
     f32 rel[4], tmp[4], xy[8];
     u8 c[16];
     s32 i;
@@ -53,16 +55,17 @@ void func_002CF700(void *ov) {
     glr_prim2d(-1, GLR_2D_STRIP, 4, xy, NULL, c, NULL, 0, 0x40);
 }
 #else
-void func_002CF700(void *ov);
+void Overlay_DrawRect(void *ov);
 #endif
 
 /* +0xC draw: place the camera vectors (when +0x24 changed, refresh the stamp first), then the
  * packet. Always draws. */
-s32 func_002CF8C0(void *ov) {
+/* 0x002CF8C0 */
+s32 Overlay_Draw(void *ov) {
     void *cam;
 
     if (AT(ov, 0x24, s32) != AT(ov, 0x10, s32)) {
-        AT(ov, 0x8, u64) = func_002B71D0(0);
+        AT(ov, 0x8, u64) = TexCache_Tex0(0);
     }
     cam = gCamera;
     VCALL(cam, 0x24, void (*)(void *, f32 *))(cam, V(ov, 0x70));
@@ -74,14 +77,15 @@ s32 func_002CF8C0(void *ov) {
     sceVu0AddVector(V(ov, 0xB0), V(ov, 0xC0), V(ov, 0xD0));
     VCALL(cam, 0x20, void (*)(void *, f32 *))(cam, V(ov, 0xE0));
     sceVu0AddVector(V(ov, 0xE0), V(ov, 0xE0), V(ov, 0xB0));
-    func_002CF700(ov);
+    Overlay_DrawRect(ov);
     AT(ov, 0x10, s32) = AT(ov, 0x24, s32);
     return 1;
 }
 
-/* the screen bloom (vtable D_0046D7A0; its draw func_002699D0): colour `rgba`, subtracted when
+/* the screen bloom (vtable D_0046D7A0; its draw Bloom_Draw): colour `rgba`, subtracted when
  * `sub`, drawn in renderer layer `layer`; the renderer's glow pass (+0x58) runs this frame too */
-void func_0026B180(u8 *o, u32 rgba, s32 layer, s32 sub) {
+/* 0x0026B180 */
+void Bloom_Start(u8 *o, u32 rgba, s32 layer, s32 sub) {
     VObject *r = (VObject *)gRenderer;
 
     AT(o, 0x8, u32) = rgba;
@@ -95,7 +99,8 @@ void func_0026B180(u8 *o, u32 rgba, s32 layer, s32 sub) {
  * 8 wider ones at 1/8 added back), an eighth of it added into the renderer's glow buffer, and
  * stretched over the screen tinted by +0x8 (0x80 = 1.0) at its alpha / 2 - added, or subtracted
  * when +0xC. On PC glr does the passes (the original's 0x209 qwords of GS sprites) */
-s32 func_002699D0(u8 *o) {
+/* 0x002699D0 */
+s32 Bloom_Draw(u8 *o) {
     extern void glr_bloom(u32 rgba, s32 subtract);   /* native/platform/glr.c */
 
     glr_bloom(AT(o, 0x8, u32), AT(o, 0xC, s32) != 0);

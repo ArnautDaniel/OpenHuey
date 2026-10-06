@@ -16,10 +16,11 @@ _Static_assert(__builtin_offsetof(Rumble, listB) == 0x80, "Rumble.listB");
 
 extern void *D_0046F4F0[], *D_0046AE30[];
 
-void *func_001BF280(u8 *o, s32 flags);
+void *RumbleBase_dtor(u8 *o, s32 flags);
 
 /* destructor (vtable D_0046AE30) */
-void *func_001BF280(u8 *o, s32 flags) {
+/* 0x001BF280 */
+void *RumbleBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AE30;
         gRumble = NULL;
@@ -30,7 +31,8 @@ void *func_001BF280(u8 *o, s32 flags) {
     return o;
 }
 /* constructor: register, reset (vtable +0xC) */
-void *func_002D4630(Rumble *f) {
+/* 0x002D4630 */
+void *Rumble_ctor(Rumble *f) {
     f->vtbl = D_0046F4F0;
     gRumble = (VObject *)f;
     RUMBLE_VCALL(f, 0xC, void (*)(Rumble *))(f);
@@ -38,7 +40,8 @@ void *func_002D4630(Rumble *f) {
 }
 
 /* +0x8 destructor */
-Rumble *func_0020DF90(Rumble *f, s32 flags) {
+/* 0x0020DF90 */
+Rumble *Rumble_dtor(Rumble *f, s32 flags) {
     if (f != NULL) {
         f->vtbl = D_0046F4F0;
         f->vtbl = D_0046AE30;
@@ -51,14 +54,16 @@ Rumble *func_0020DF90(Rumble *f, s32 flags) {
 }
 
 /* +0xC reset: clear (vtable +0x10), enabled */
-void func_002D45F0(Rumble *f) {
+/* 0x002D45F0 */
+void Rumble_Reset(Rumble *f) {
     RUMBLE_VCALL(f, 0x10, void (*)(Rumble *))(f);
     f->enabled = 1;
     f->unk5 = 0;
 }
 
 /* +0x10 clear all channels and lists */
-void func_002D45A0(Rumble *f) {
+/* 0x002D45A0 */
+void Rumble_Clear(Rumble *f) {
     s32 i;
 
     for (i = 0; i < 5; i++) {
@@ -76,7 +81,8 @@ void func_002D45A0(Rumble *f) {
 }
 
 /* +0x14 set value A of channel `c` (on: 1.0, off: 0) for `time` frames */
-void func_002D4260(Rumble *f, s32 c, s32 on, s32 time) {
+/* 0x002D4260 */
+void Rumble_SetA(Rumble *f, s32 c, s32 on, s32 time) {
     RumbleChannel *ch = &f->ch[(u8)c];
 
     ch->timeA = (u16)time & 0xFFF;
@@ -85,7 +91,8 @@ void func_002D4260(Rumble *f, s32 c, s32 on, s32 time) {
 }
 
 /* +0x18 set value B of channel `c` to `v` for `time` frames */
-void func_002D4220(Rumble *f, s32 c, s32 v, s32 time) {
+/* 0x002D4220 */
+void Rumble_SetB(Rumble *f, s32 c, s32 v, s32 time) {
     RumbleChannel *ch = &f->ch[(u8)c];
 
     ch->timeB = (u16)time & 0xFFF;
@@ -94,7 +101,8 @@ void func_002D4220(Rumble *f, s32 c, s32 v, s32 time) {
 }
 
 /* +0x1C move value B of channel `c` from `from` to `to` over `time` frames */
-void func_002D41B0(Rumble *f, s32 c, s32 from, s32 to, s32 time) {
+/* 0x002D41B0 */
+void Rumble_MoveB(Rumble *f, s32 c, s32 from, s32 to, s32 time) {
     RumbleChannel *ch = &f->ch[(u8)c];
     s32 n = (u16)time & 0xFFF;
 
@@ -104,7 +112,8 @@ void func_002D41B0(Rumble *f, s32 c, s32 from, s32 to, s32 time) {
 }
 
 /* +0x20 start the command lists (A: channel 4 value A, B: channel 4 value B) */
-void func_002D4070(Rumble *f, const RumbleCmd *a, const RumbleCmd *b) {
+/* 0x002D4070 */
+void Rumble_StartLists(Rumble *f, const RumbleCmd *a, const RumbleCmd *b) {
     const RumbleCmd *e;
 
     f->posA = 0;
@@ -150,12 +159,14 @@ void func_002D4070(Rumble *f, const RumbleCmd *a, const RumbleCmd *b) {
 }
 
 /* +0x24 a command list is running */
-s32 func_002D3FA0(Rumble *f) {
+/* 0x002D3FA0 */
+s32 Rumble_ListRunning(Rumble *f) {
     return f->listB != NULL || f->listA != NULL;
 }
 
 /* +0x28 enable / disable (disabling stops the motors) */
-void func_002D4020(Rumble *f, s32 on) {
+/* 0x002D4020 */
+void Rumble_Enable(Rumble *f, s32 on) {
     f->enabled = on;
     if (!(u8)on) {
         VCALL(gPad, 0xC, void (*)(VObject *, s32, s32, s32))(gPad, 0, 0, 0);
@@ -163,7 +174,8 @@ void func_002D4020(Rumble *f, s32 on) {
 }
 
 /* +0x2C */
-void func_002D3FC0(Rumble *f, s32 v) {
+/* 0x002D3FC0 */
+void Rumble_Set2C(Rumble *f, s32 v) {
     f->unk5 = v;
     if ((u8)v == 1) {
         VCALL(gPad, 0xC, void (*)(VObject *, s32, s32, s32))(gPad, 0, 0, 0);
@@ -230,7 +242,8 @@ static inline s32 Rumble_StepList(Rumble *f, s16 *time, s32 *step, s32 *value, c
 }
 
 /* per-frame tick: run the channels, send the strongest small / large motor values */
-void func_002D42A0(Rumble *f) {
+/* 0x002D42A0 */
+void Rumble_Tick(Rumble *f) {
     s32 maxA = 0, maxB = 0, i;
 
     if (!f->enabled) {

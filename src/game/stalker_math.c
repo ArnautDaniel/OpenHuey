@@ -8,7 +8,8 @@
 #include "msl.h"
 
 /* the unit vector of heading `angle` */
-void func_002E2C10(f32 *out, f32 angle) {
+/* 0x002E2C10 */
+void Heading_Vector(f32 *out, f32 angle) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 fwd[4] __attribute__((aligned(16)));
 
@@ -22,7 +23,8 @@ void func_002E2C10(f32 *out, f32 angle) {
 }
 
 /* `v` turned by `angle` about Y */
-void func_002E2CA0(f32 *out, f32 *v, f32 angle) {
+/* 0x002E2CA0 */
+void Vec_TurnY(f32 *out, f32 *v, f32 angle) {
     f32 m[4][4] __attribute__((aligned(16)));
 
     sceVu0UnitMatrix(m);
@@ -31,7 +33,8 @@ void func_002E2CA0(f32 *out, f32 *v, f32 angle) {
 }
 
 /* the heading of `v` (10, out of range, when it has no X/Z) */
-f32 func_002E2BC0(const f32 *v) {
+/* 0x002E2BC0 */
+f32 Vec_Heading(const f32 *v) {
     if (v[0] == 0.0f && v[2] == 0.0f) {
         return 10.0f;
     }
@@ -39,32 +42,36 @@ f32 func_002E2BC0(const f32 *v) {
 }
 
 /* the matrix turned to heading `angle`, at `pos` */
-void func_002E3130(f32 (*m)[4], f32 *pos, f32 angle) {
+/* 0x002E3130 */
+void Mtx_AtHeading(f32 (*m)[4], f32 *pos, f32 angle) {
     sceVu0UnitMatrix(m);
     sceVu0RotMatrixY(m, m, angle);
     sceVu0TransMatrix(m, m, pos);
 }
 
 /* `from` + `dist` along heading `angle` */
-void func_00211A30(f32 *out, f32 *from, f32 angle, f32 dist) {
+/* 0x00211A30 */
+void Vec_Along(f32 *out, f32 *from, f32 angle, f32 dist) {
     f32 d[4] __attribute__((aligned(16)));
 
-    func_002E2C10(d, angle);
+    Heading_Vector(d, angle);
     sceVu0ScaleVector(d, d, dist);
     sceVu0AddVector(out, from, d);
 }
 
 /* `dist` ahead of the actor (its position +0x10, heading +0x54) */
-void func_00211A90(u8 *a, f32 dist, f32 *out) {
+/* 0x00211A90 */
+void Actor_PointAhead(u8 *a, f32 dist, f32 *out) {
     f32 d[4] __attribute__((aligned(16)));
 
-    func_002E2C10(d, AT(a, 0x54, f32));
+    Heading_Vector(d, AT(a, 0x54, f32));
     sceVu0ScaleVector(d, d, dist);
     sceVu0AddVector(out, (f32 *)(a + 0x10), d);
 }
 
 /* rotation matrix `m` as axis + angle (q: x, y, z the axis, w the angle) */
-void func_0025C630(f32 *unused, f32 *q, f32 (*m)[4]) {
+/* 0x0025C630 */
+void Mtx_ToAxisAngle(f32 *unused, f32 *q, f32 (*m)[4]) {
     q[0] = m[2][1] - m[1][2];
     q[1] = m[0][2] - m[2][0];
     q[2] = m[1][0] - m[0][1];

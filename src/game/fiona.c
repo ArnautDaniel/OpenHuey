@@ -228,7 +228,7 @@ s32 func_0019A450(Fiona *f, f32 *out) {
         sceVu0FMATRIX m;
         s32 bone = VCALL(f->c.motion, 0x78, s32 (*)(void *))(f->c.motion);
 
-        sceVu0CopyMatrix(m, (void *)func_0017CE80(MOTION_SKELETON(f->c.motion), bone));
+        sceVu0CopyMatrix(m, (void *)Skel_Bone(MOTION_SKELETON(f->c.motion), bone));
         v[2] = 6.0f;
         v[3] = 1.0f;
         *(s32 *)&v[0] = 0;
@@ -240,7 +240,7 @@ s32 func_0019A450(Fiona *f, f32 *out) {
     default: {
         s32 bone = VCALL(f->c.motion, 0x74, s32 (*)(void *))(f->c.motion);
 
-        sceVu0CopyVector(out, func_0017CE80(MOTION_SKELETON(f->c.motion), bone) + 12);
+        sceVu0CopyVector(out, Skel_Bone(MOTION_SKELETON(f->c.motion), bone) + 12);
         return 1;
     }
     }
@@ -373,7 +373,7 @@ void func_001A3000(Fiona *f) {
     }
     VCALL(f->c.motion, 0x3C, void (*)(void *))(f->c.motion);
     f->c.a.room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
-    sceVu0CopyVector(f->c.a.pos, func_0017CE80(MOTION_SKELETON(f->c.motion), 0) + 12);
+    sceVu0CopyVector(f->c.a.pos, Skel_Bone(MOTION_SKELETON(f->c.motion), 0) + 12);
     f->c.a.navTri = VCALL(gNavMesh, 0x3C, u32 (*)(NavMesh *, f32 *, s32))(gNavMesh, f->c.a.pos, 0);
 }
 
@@ -1242,9 +1242,9 @@ s32 func_001A12B0(Fiona *f) {
         return -1;
     }
     q = gProgress;
-    o = gCharacters[func_00177850(q, SLOT_U8(f)) & 0xFF];
-    kind = func_00177830(q, SLOT_U8(f)) & 0xFF;
-    type = func_00177810(q, SLOT_U8(f)) & 0xFF;
+    o = gCharacters[SlotCmd_Target(q, SLOT_U8(f)) & 0xFF];
+    kind = SlotCmd_Kind(q, SLOT_U8(f)) & 0xFF;
+    type = SlotCmd_Arg(q, SLOT_U8(f)) & 0xFF;
     if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && !(Progress_TestFlag(p, 8) & 0xFF)
         && o != NULL && o->a.active == 1 && o->a.disabled == 0) {
         if (kind == 1) {
@@ -1269,7 +1269,7 @@ s32 func_001A12B0(Fiona *f) {
                     FI(f, 0x1AD6F0, u32) = tri;
                     FI(f, 0x1AD6F4, f32) = func_002E2D00(turn + o->a.angle[1]);
                     sceVu0CopyVector((f32 *)((u8 *)f + 0x1AD700), target);
-                    func_001777F0(p, SLOT_U8(f));
+                    SlotCmd_Start(p, SLOT_U8(f));
                     return 0;
                 }
             }
@@ -1297,14 +1297,14 @@ s32 func_001A12B0(Fiona *f) {
                     } else {
                         ang = func_002E2D00(base - a / 180.0f);
                     }
-                    func_002E3130(m, f->c.a.pos, ang);
+                    Mtx_AtHeading(m, f->c.a.pos, ang);
                     func_002E2DD0(pt, m, offs);
                     tri = func_00123D20(&f->c.a, pt);
                     if (tri != NAV_NONE && tri == func_00124320(&f->c.a, pt, h->a.navTri, h->a.pos, FIONA_NAV_MASK)) {
                         *(f32 *)&h->unk104[2] = ang;
                         h->unk104[0] = tri;
                         *(f32 *)&f->c.unk104[2] = func_002E2D00(F_PI + ang);
-                        func_001777F0(p, SLOT_U8(f));
+                        SlotCmd_Start(p, SLOT_U8(f));
                         /* queue it (the original copies a local whose other fields are never set) */
                         f->c.state2[0] = 0xC;
                         f->c.state2[1] = type;
@@ -1323,7 +1323,7 @@ s32 func_001A12B0(Fiona *f) {
             }
         }
     }
-    func_001777D0(p, SLOT_U8(f));
+    SlotCmd_Cancel(p, SLOT_U8(f));
     return -1;
 }
 
@@ -1419,7 +1419,7 @@ void func_0019F1E0(Fiona *f) {
                 FI(f, 0x1AD5EC, s32) -= 1;
             }
             func_001F6370(f->c.motion, r, 0.0f);
-            func_002E3130(m, f->c.a.pos,
+            Mtx_AtHeading(m, f->c.a.pos,
                           FI(f, 0x1AD58C, s32) != 0 ? f->savedYaw
                                                     : func_0031C5C0(FI(f, 0x1AD550, f32), FI(f, 0x1AD558, f32)));
             func_002E2DD0(r, m, r);
@@ -2388,7 +2388,7 @@ void func_001A0370(Fiona *f) {
                 st[0] = 0;
                 break;
             }
-            func_001779F0(gProgress, (u8)st[2], SLOT_U8(f));
+            RoomSlots_Enter(gProgress, (u8)st[2], SLOT_U8(f));
             f->c.unk100 = st[2];
             f->c.unk104[0] = st[1];
             f->c.moveSub = 6;
@@ -2532,7 +2532,7 @@ static inline s32 Fiona_ExitUsable(Fiona *f, Progress *p, VObject *rooms, u32 i)
     if (func_00178610(p, route) & 0xFF) {
         return 0;
     }
-    if (func_00178840(p, f->c.a.room, i) & 0xFF) {
+    if (DoorHold_Usable(p, f->c.a.room, i) & 0xFF) {
         return 0;
     }
     return (func_00178200(p, route, SLOT_U8(f)) & 0xFF) == 1;
@@ -2985,7 +2985,7 @@ void func_0019D4E0(Fiona *f) {
             FIONA_MOOD(f) = 0;
             break;
         }
-        if (!(func_00177BF0(p, FIONA_EXIT(f), 0) & 0x4)) {
+        if (!(PursuerGroup_Fields(p, FIONA_EXIT(f), 0) & 0x4)) {
             break;
         }
         if (func_00178980(p, f->c.a.room, FIONA_EXIT(f)) & 0xFF) {
@@ -3131,7 +3131,7 @@ void func_00184BF0(Fiona *f) {
     VObject *doors;
 
     if (st == 3) {
-        func_001779C0(gProgress, AT(c, 0x100, u8), AT(c, 0x20, u8));
+        RoomSlots_Leave(gProgress, AT(c, 0x100, u8), AT(c, 0x20, u8));
         AT(c, 0x104, s32) = AT(c, 0x100, s32);
         return;
     }
@@ -3147,7 +3147,7 @@ void func_00184BF0(Fiona *f) {
     if (!DOOR_ISOPEN(doors, AT(c, 0x100, u8))) {
         if ((u8)DOOR_KIND(doors, AT(c, 0x100, u8)) == 1
             && (u16)ROOM_DOOR_LINK(gRooms, AT(c, 0x30, s32), AT(c, 0x100, u8)) != 0xFFFF) {
-            func_00178C10(gProgress, AT(c, 0x30, s32), AT(c, 0x100, u8), 0xFF);
+            DoorHold_Open(gProgress, AT(c, 0x30, s32), AT(c, 0x100, u8), 0xFF);
         }
         doors = gDoors;
         DOOR_SET(doors, 0x20, AT(c, 0x100, u8), 0, 0x60000);
@@ -3155,7 +3155,7 @@ void func_00184BF0(Fiona *f) {
     } else {
         if ((u8)DOOR_KIND(doors, AT(c, 0x100, u8)) == 1
             && (u16)ROOM_DOOR_LINK(gRooms, AT(c, 0x30, s32), AT(c, 0x100, u8)) != 0xFFFF) {
-            func_00178A90(gProgress, AT(c, 0x30, s32), AT(c, 0x100, u8), 0xFF);
+            DoorHold_Shut(gProgress, AT(c, 0x30, s32), AT(c, 0x100, u8), 0xFF);
         }
         doors = gDoors;
         DOOR_SET(doors, 0x20, AT(c, 0x100, u8), 1, 0x60000);
@@ -4617,14 +4617,14 @@ void func_0018F870(Fiona *f) {
             Actor_SetState(&f->c.a, &D_003B2BA8);
             break;
         case 0x24:
-            if ((u8)func_00177890(gProgress, 2, 4, (u8)f->c.a.slot, 1, 0, 0.0f) != 1) {
+            if ((u8)SlotCmd_Give(gProgress, 2, 4, (u8)f->c.a.slot, 1, 0, 0.0f) != 1) {
                 Fiona_ToIdle(f);
             } else {
                 Actor_SetState(&f->c.a, &D_003B2BB8);
             }
             break;
         case 0x2B:
-            if ((u8)func_00177890(gProgress, 2, 0, (u8)f->c.a.slot, 1, 0, 0.0f) != 1) {
+            if ((u8)SlotCmd_Give(gProgress, 2, 0, (u8)f->c.a.slot, 1, 0, 0.0f) != 1) {
                 f->c.moveSub = 0x2F;
                 Actor_SetState(&f->c.a, &D_003B2BD8);
             } else {
@@ -4632,7 +4632,7 @@ void func_0018F870(Fiona *f) {
             }
             break;
         case 0x28:
-            if ((u8)func_00177890(gProgress, 2, 2, (u8)f->c.a.slot, 1, 0, 0.0f) != 1) {
+            if ((u8)SlotCmd_Give(gProgress, 2, 2, (u8)f->c.a.slot, 1, 0, 0.0f) != 1) {
                 f->c.moveSub = 0x29;
                 Actor_SetState(&f->c.a, &D_003B2BF8);
             } else {
@@ -4707,13 +4707,13 @@ s32 func_00184E00(Fiona *f, s32 req) {
             return req == 1 ? 0xC : 0xD;
         }
         for (i = 0; i < 8; i = (i + 1) & 0xFF) {
-            if (func_00177BF0(p, i, (u8)f->c.a.slot) & 0xFF & 0x20) {
+            if (PursuerGroup_Fields(p, i, (u8)f->c.a.slot) & 0xFF & 0x20) {
                 return req == 1 ? 0xC : 0xD;
             }
         }
         n = gNavMesh->numDoors;
         for (i = 0; (s32)i < n; i++) {
-            if (func_00177A20(p, i & 0xFF, (u8)f->c.a.slot) & 0xFF & 8) {
+            if (RoomSlots_Bytes(p, i & 0xFF, (u8)f->c.a.slot) & 0xFF & 8) {
                 return req == 1 ? 0xC : 0xD;
             }
         }
@@ -4777,7 +4777,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
         return -1;
     }
     p = gProgress;
-    func_002EFA50((u8 *)p + 0x7B8, *(f32 *)&st[5]);
+    Panic_Fright((u8 *)p + 0x7B8, *(f32 *)&st[5]);
     if (kind == 0x20 && gSubScreen != NULL && VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 1) == CHARM_ITEM) {
         return -1;
     }
@@ -4806,7 +4806,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
         }
         if (FI(f, 0x1AD6C0, s32) != 0) {
             for (i = 0; i < 8; i = (i + 1) & 0xFF) {
-                if (func_00177BF0(p, i, (u8)f->c.a.slot) & 0xFF & 0x20) {
+                if (PursuerGroup_Fields(p, i, (u8)f->c.a.slot) & 0xFF & 0x20) {
                     FI(f, 0x1AD6C0, s32) = 0;
                     break;
                 }
@@ -4815,7 +4815,7 @@ s32 func_00182340(Fiona *f, s32 *st) {
         if (FI(f, 0x1AD6C0, s32) != 0) {
             n = nav->numDoors;
             for (i = 0; (s32)i < n; i++) {
-                if (func_00177A20(p, i & 0xFF, (u8)f->c.a.slot) & 0xFF & 8) {
+                if (RoomSlots_Bytes(p, i & 0xFF, (u8)f->c.a.slot) & 0xFF & 8) {
                     FI(f, 0x1AD6C0, s32) = 0;
                     break;
                 }
@@ -5317,7 +5317,7 @@ void func_00190FA0(Fiona *f) {
     FI(f, 0x1AD5BC, u8) = 0;
     a = VCALL(gDoors, 0x3C, f32 (*)(VObject *, u32))(gDoors, (u8)f->c.unk104[0]);
     p = gProgress;
-    if (!(func_00177BF0(p, (u8)f->c.unk104[0], (u8)f->c.a.slot) & 0xFF & 0x10)) {
+    if (!(PursuerGroup_Fields(p, (u8)f->c.unk104[0], (u8)f->c.a.slot) & 0xFF & 0x10)) {
         a = func_002E2D00(kPi.f + a);
     }
     FI(f, 0x1AD6C4, s32) = 0;
@@ -5499,7 +5499,7 @@ extern const PTMF D_003B2D58;
  * D_003B2D58 */
 void func_0018B9D0(Fiona *f) {
     if ((MOTION_EVENTS(f->c.motion) & 0x400) != 0) {
-        func_002EF9E0((u8 *)gProgress + 0x7B8, 75.0f);
+        Threat_Raise((u8 *)gProgress + 0x7B8, 75.0f);
         Actor_SetState(&f->c.a, &D_003B2D58);
     }
     func_00125A10(&f->c);
@@ -5753,7 +5753,7 @@ void func_001913F0(Fiona *f) {
         u32 i;
 
         for (i = 0; i < 8; i = (i + 1) & 0xFF) {
-            if (func_00177BF0(p, i, (u8)f->c.a.slot) & 0xFF & 1) {
+            if (PursuerGroup_Fields(p, i, (u8)f->c.a.slot) & 0xFF & 1) {
                 return;
             }
         }
@@ -5794,7 +5794,7 @@ void func_00191280(Fiona *f) {
 extern const PTMF D_003B29E8;
 
 /* after the crawl-catch short pull (D_003B29B8): at the motion's event 0x20 she stands, out
- * of the door region she is in (func_001779C0), first func_00182E80 after a fall */
+ * of the door region she is in (RoomSlots_Leave), first func_00182E80 after a fall */
 void func_00193900(Fiona *f) {
     FI(f, 0x1AD5BC, u8) = 0;
     if ((MOTION_EVENTS(f->c.motion) & 0x20) != 0) {
@@ -5805,13 +5805,13 @@ void func_00193900(Fiona *f) {
             Progress *p = gProgress;
 
             for (i = 0; i < n; i++) {
-                if (func_00177A20(p, i & 0xFF, (u8)f->c.a.slot) & 0xFF & 1) {
+                if (RoomSlots_Bytes(p, i & 0xFF, (u8)f->c.a.slot) & 0xFF & 1) {
                     break;
                 }
             }
         }
         if (i != n) {
-            func_001779C0(gProgress, i & 0xFF, (u8)f->c.a.slot);
+            RoomSlots_Leave(gProgress, i & 0xFF, (u8)f->c.a.slot);
         }
         f->c.a.unk2D = 0;
         if (FI(f, 0x1AD6C4, s32) != 0) {
@@ -6128,9 +6128,9 @@ static inline void door_kind(Fiona *f, s32 kind, s32 anim) {
 }
 
 /* state D_003B26C8 / D_003B26D8 / D_003B2608 (and 0x2E98): start. Out (0x15): to the spot
- * (D_003B28E8); no spot: idle, the door shut behind (doors +0x20 / +0x1C, func_00178A90). In
- * (0x14) through a door that isn't locked (func_00178840 != 1): the same, opening it the other
- * way (func_00178C10). A locked one: a try at it - slow: from where she is when hurrying is
+ * (D_003B28E8); no spot: idle, the door shut behind (doors +0x20 / +0x1C, DoorHold_Shut). In
+ * (0x14) through a door that isn't locked (DoorHold_Usable != 1): the same, opening it the other
+ * way (DoorHold_Open). A locked one: a try at it - slow: from where she is when hurrying is
  * blocked (D_003B28B8), else from the spot (D_003B28C8); quick: from the spot (D_003B28D8) */
 void func_00197640(Fiona *f) {
     f32 at[4] __attribute__((aligned(16)));
@@ -6177,14 +6177,14 @@ void func_00197640(Fiona *f) {
             doors = gDoors;
             VCALL(doors, 0x20, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 1, 0x60000);
             VCALL(doors, 0x1C, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 0, 0x60000);
-            func_00178A90(p, f->c.a.room, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
+            DoorHold_Shut(p, f->c.a.room, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
             return;
         }
         tri = FI(f, 0x1AD6C0, s32);
         door_walk(f, tri, at, dir[1], &D_003B28E8);
         return;
     }
-    if ((func_00178840(gProgress, f->c.a.room, *(u8 *)&f->c.unk100) & 0xFF) != 1) {
+    if ((DoorHold_Usable(gProgress, f->c.a.room, *(u8 *)&f->c.unk100) & 0xFF) != 1) {
         if (f->c.unk104[0] == 0) {
             if (quick == 1) {
                 door_kind(f, 0, 0x600);
@@ -6220,7 +6220,7 @@ void func_00197640(Fiona *f) {
             doors = gDoors;
             VCALL(doors, 0x20, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 0, 0x60000);
             VCALL(doors, 0x1C, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 1, 0x60000);
-            func_00178C10(p, f->c.a.room, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
+            DoorHold_Open(p, f->c.a.room, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
             return;
         }
         tri = FI(f, 0x1AD6C0, s32);
@@ -6609,7 +6609,7 @@ step:
 
 /* D_003B28E8: walking to the spot; there, a door that is barred for her (exit bit 8) or whose
  * state (func_00178980) says it can't be used this way makes her give up; else unless it holds
- * her back (func_00178DB0) it is opened (doors +0x1C) with the door animation (D_003B28F8) */
+ * her back (DoorHold_Take) it is opened (doors +0x1C) with the door animation (D_003B28F8) */
 void func_00196FC0(Fiona *f) {
     Progress *p;
     s32 r;
@@ -6624,7 +6624,7 @@ void func_00196FC0(Fiona *f) {
         return;
     }
     p = gProgress;
-    if ((func_00177BF0(p, *(u8 *)&f->c.unk100, 2) & 0xFF) & 8) {
+    if ((PursuerGroup_Fields(p, *(u8 *)&f->c.unk100, 2) & 0xFF) & 8) {
         door_give_up(f, p);
         return;
     }
@@ -6638,7 +6638,7 @@ void func_00196FC0(Fiona *f) {
         door_give_up(f, p);
         return;
     }
-    if ((func_00178DB0(p, f->c.a.room, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot) & 0xFF) != 0) {
+    if ((DoorHold_Take(p, f->c.a.room, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot) & 0xFF) != 0) {
         door_give_up(f, p);
         return;
     }
@@ -6668,7 +6668,7 @@ void func_00196EF0(Fiona *f) {
 
 /* D_003B2908: stepping out; at the animation's event 0x20 she is free again (nav flags
  * 0x28020018): the door shut behind her (doors +0x20 / +0x1C; the progress told,
- * func_00178C10 in / func_00178A90 out) and idle. Every frame: shown (unk2D) unless still in
+ * DoorHold_Open in / DoorHold_Shut out) and idle. Every frame: shown (unk2D) unless still in
  * the door's region (doors +0x18) on a triangle without flag 0x20000 */
 void func_00196C20(Fiona *f) {
     s32 r;
@@ -6686,12 +6686,12 @@ void func_00196C20(Fiona *f) {
             VCALL(doors, 0x20, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 0, 0x60000);
             VCALL(doors, 0x1C, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 1, 0x60000);
             p = gProgress;
-            func_00178C10(p, f->c.a.room, *(u8 *)&f->c.unk100, 0xFF);
+            DoorHold_Open(p, f->c.a.room, *(u8 *)&f->c.unk100, 0xFF);
         } else {
             VCALL(doors, 0x20, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 1, 0x60000);
             VCALL(doors, 0x1C, void (*)(VObject *, u32, s32, s32))(doors, *(u8 *)&f->c.unk100, 0, 0x60000);
             p = gProgress;
-            func_00178A90(p, f->c.a.room, *(u8 *)&f->c.unk100, 0xFF);
+            DoorHold_Shut(p, f->c.a.room, *(u8 *)&f->c.unk100, 0xFF);
         }
         door_give_up(f, p);
     }
@@ -7065,7 +7065,7 @@ void func_0017FD50(Fiona *f, s32 kind, Character *c) {
             bone = VCALL(c->motion, 0x90, s32 (*)(void *))(c->motion);
             break;
         }
-        sceVu0CopyVector(at, func_0017CE80(AT(c->motion, 0x810, void *), bone) + 12);
+        sceVu0CopyVector(at, Skel_Bone(AT(c->motion, 0x810, void *), bone) + 12);
         hp.pos[0] = at[0];
         hp.pos[1] = at[1];
         hp.pos[2] = at[2];
@@ -7194,16 +7194,16 @@ void func_001800E0(Fiona *f) {
             f->c.a.navTri = (u32)-1;
             if ((func_00178980(p, f->c.a.room, f->c.door) & 0xFF) == 0) {
                 if ((func_001785B0(p, f->c.a.room, f->c.door) & 0xFF) == 1 ||
-                    (func_00178840(p, f->c.a.room, f->c.door) & 0xFF) == 1 ||
+                    (DoorHold_Usable(p, f->c.a.room, f->c.door) & 0xFF) == 1 ||
                     (func_00178300(p, f->c.a.room, f->c.door, *(u8 *)&f->c.a.slot) & 0xFF) == 0) {
                     LINK_LEFT(f) = -1.0f;
                     return;
                 }
-                if ((func_00178DB0(p, f->c.a.room, f->c.door, *(u8 *)&f->c.a.slot) & 0xFF) == 1) {
+                if ((DoorHold_Take(p, f->c.a.room, f->c.door, *(u8 *)&f->c.a.slot) & 0xFF) == 1) {
                     LINK_LEFT(f) = -1.0f;
                     return;
                 }
-                func_00178C10(p, f->c.a.room, f->c.door, *(u8 *)&f->c.a.slot);
+                DoorHold_Open(p, f->c.a.room, f->c.door, *(u8 *)&f->c.a.slot);
             }
             LINK_LEFT(f) = (f32)VCALL(rooms, 0x38, s32 (*)(VObject *, u32, s32))(rooms, LINK(f), f->c.a.room);
             return;
@@ -7554,7 +7554,7 @@ static inline __attribute__((always_inline)) void door_slam(Fiona *f, VObject *d
 /* run through (and slam) a door she faces (within 45 degrees; `ahead`: facing her way, else
  * looking back) on her way toward `to`, standing at its side 4 (push: an open door she may go
  * through) or 1 (pull: a closed one, sound 0x91); the progress is told who was shut out
- * (func_00178070). 1 if anyone was */
+ * (Relation_Request). 1 if anyone was */
 s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB},
                                          kQuarterPi = {0x3F490FDB};
@@ -7584,20 +7584,20 @@ s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
             }
             facing = facing - a;
             if (fiona_abs_wrap(facing) < kQuarterPi.f && (func_001785B0(p, f->c.a.room, i) & 0xFF) == 0 &&
-                (func_00178840(p, f->c.a.room, i) & 0xFF) == 0 &&
+                (DoorHold_Usable(p, f->c.a.room, i) & 0xFF) == 0 &&
                 (tri = func_00124480(&f->c.a, to, 0)) != (u32)-1 && (fiona_tri_flags(nm, tri) & 0x20000) &&
-                (func_00178DB0(p, f->c.a.room, i, *(u8 *)&f->c.a.slot) & 0xFF) == 0) {
+                (DoorHold_Take(p, f->c.a.room, i, *(u8 *)&f->c.a.slot) & 0xFF) == 0) {
                 u16 region;
 
                 door_slam(f, doors, i, 0);
                 region = VCALL(gRooms, 0x10, s32 (*)(VObject *, s32, u32))(gRooms, f->c.a.room, i);
                 who = 0;
-                if (FI(f, 0x1AD5D5, u8) == 1 && (func_00177BF0(p, i, 1) & 0x14) == 0x14) {
+                if (FI(f, 0x1AD5D5, u8) == 1 && (PursuerGroup_Fields(p, i, 1) & 0x14) == 0x14) {
                     who |= 2;
                 }
                 if (FI(f, 0x1AD5D6, u8) == 1) {
                     if (FI(f, 0x1AD5D7, u8) == 1) {
-                        if ((func_00177BF0(p, i, 2) & 0x14) == 0x14) {
+                        if ((PursuerGroup_Fields(p, i, 2) & 0x14) == 0x14) {
                             who |= 4;
                         }
                     } else if ((func_00126EC0(gCharPursuer) & 0xFFFF) == region &&
@@ -7619,20 +7619,20 @@ s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
             facing = facing - a;
             if (fiona_abs_wrap(facing) < kQuarterPi.f && (tri = func_00124480(&f->c.a, to, 0)) != (u32)-1 &&
                 (fiona_tri_flags(nm, tri) & 0x20000) &&
-                (func_00178DB0(p, f->c.a.room, i, *(u8 *)&f->c.a.slot) & 0xFF) == 0) {
+                (DoorHold_Take(p, f->c.a.room, i, *(u8 *)&f->c.a.slot) & 0xFF) == 0) {
                 u32 s;
 
                 func_00122C20(&f->c.a, 0x91, 5, 0, 0, NULL);
                 door_slam(f, doors, i, 1);
                 who = 0;
                 if (FI(f, 0x1AD5D5, u8) == 1) {
-                    s = func_00177BF0(p, i, 1) & 0xFF;
+                    s = PursuerGroup_Fields(p, i, 1) & 0xFF;
                     if ((s & 4) && (s & 0x18)) {
                         who |= 2;
                     }
                 }
                 if (FI(f, 0x1AD5D7, u8) == 1) {
-                    s = func_00177BF0(p, i, 2) & 0xFF;
+                    s = PursuerGroup_Fields(p, i, 2) & 0xFF;
                     if ((s & 4) && (s & 0x18)) {
                         who |= 4;
                     }
@@ -7644,7 +7644,7 @@ s32 func_00181880(Fiona *f, f32 *to, u8 ahead) {
     if (who == 0) {
         return 0;
     }
-    func_00178070(p, *(u8 *)&f->c.a.slot, who, 5, 3, i, 0.0f);
+    Relation_Request(p, *(u8 *)&f->c.a.slot, who, 5, 3, i, 0.0f);
     return 1;
 }
 
@@ -7859,7 +7859,7 @@ void func_00183F10(Fiona *f) {
                 v[0] = 0.0f;
                 v[1] = 0.0f;
                 v[2] = d - 5.0f;
-                func_002E3130(m, (f32 *)((u8 *)f + 0x1AD6E0), FI(f, 0x1AD6D0, f32));
+                Mtx_AtHeading(m, (f32 *)((u8 *)f + 0x1AD6E0), FI(f, 0x1AD6D0, f32));
                 func_002E2DD0(at, m, v);
                 tri = func_00124480(&f->c.a, at, 0x29020008);
                 if (tri != (u32)-1) {
@@ -7974,7 +7974,7 @@ void func_0018C540(Fiona *f) {
 static inline __attribute__((always_inline)) void fiona_hand(Fiona *f, f32 *out) {
     s32 bone = VCALL(f->c.motion, 0x78, s32 (*)(void *))(f->c.motion);
 
-    sceVu0CopyVector(out, func_0017CE80(AT(f->c.motion, 0x810, void *), bone) + 12);
+    sceVu0CopyVector(out, Skel_Bone(AT(f->c.motion, 0x810, void *), bone) + 12);
 }
 
 /* D_003B2D18: letting go of an item (moveSub 0x31 throw, 0x32 drop, 0x33 set down) while
@@ -8304,7 +8304,7 @@ void func_0018E2B0(Fiona *f) {
 
 /* D_003B2C68 / D_003B2CA8: waiting for Hewie to be ready for a held command (his action 0x48,
  * func_001669A0 1, the animation done); then the command registered with the progress
- * (func_00177890 2, 0x2B: 1 / 0x28: 3 / 0x24: 5) and its gesture; Hewie gone, busy otherwise,
+ * (SlotCmd_Give 2, 0x2B: 1 / 0x28: 3 / 0x24: 5) and its gesture; Hewie gone, busy otherwise,
  * or the command refused: idle */
 void func_0018E510(Fiona *f) {
     s32 b;
@@ -8340,7 +8340,7 @@ void func_0018E510(Fiona *f) {
         door_give_up(f, gProgress);
         return;
     }
-    if ((func_00177890(gProgress, 2, b, *(u8 *)&f->c.a.slot, 1, 0, 0.0f) & 0xFF) == 1) {
+    if ((SlotCmd_Give(gProgress, 2, b, *(u8 *)&f->c.a.slot, 1, 0, 0.0f) & 0xFF) == 1) {
         Actor_SetState(&f->c.a, next);
         return;
     }
@@ -8478,7 +8478,7 @@ void func_001906A0(Fiona *f) {
     p = gProgress;
     AT(f, 0xC0, u32) &= ~1;
     for (i = 0; i < 8; i++) {
-        if ((func_00177BF0(p, i, *(u8 *)&f->c.a.slot) & 0xFF) & 1) {
+        if ((PursuerGroup_Fields(p, i, *(u8 *)&f->c.a.slot) & 0xFF) & 1) {
             return;
         }
     }
@@ -8587,9 +8587,9 @@ void func_001943D0(Fiona *f) {
             u16 dmg = (u16)(u32)(5.0f * AT(p, 0xA04, f32));
 
             if ((func_00181650(f) & 0xFF) == 1) {
-                func_00178070(p, *(u8 *)&f->c.a.slot, who, 2, dmg, -0x8000, 0.0f);
+                Relation_Request(p, *(u8 *)&f->c.a.slot, who, 2, dmg, -0x8000, 0.0f);
             } else {
-                func_00178070(p, *(u8 *)&f->c.a.slot, who, 2, dmg, 0, 0.0f);
+                Relation_Request(p, *(u8 *)&f->c.a.slot, who, 2, dmg, 0, 0.0f);
             }
         }
         FI(f, 0x1AD6C8, s32) = func_001813D0(f, FI(f, 0x1AD6CC, u32), 5, NULL, -1.0f);
@@ -8732,7 +8732,7 @@ void func_00195C70(Fiona *f) {
 }
 
 /* D_003B2958: the scripted door opened; at the animation's event 0x20 the progress told (in:
- * func_00178750, out: func_00178660), idle */
+ * DoorHold_Release, out: func_00178660), idle */
 void func_00195EE0(Fiona *f) {
     Progress *p;
 
@@ -8741,7 +8741,7 @@ void func_00195EE0(Fiona *f) {
     }
     p = gProgress;
     if (f->c.moveSub == 0x14) {
-        func_00178750(p, f->c.a.room, *(u8 *)&f->c.unk100);
+        DoorHold_Release(p, f->c.a.room, *(u8 *)&f->c.unk100);
     } else {
         ((void (*)(Progress *, s32, s32))func_00178660)(p, f->c.a.room, *(u8 *)&f->c.unk100);
     }
@@ -8749,7 +8749,7 @@ void func_00195EE0(Fiona *f) {
 }
 
 /* D_003B2948: walking to the scripted door's spot; there, unless it holds her back
- * (func_00178DB0), its animation (single 0x600 / double 0x602, D_003B2958); else idle */
+ * (DoorHold_Take), its animation (single 0x600 / double 0x602, D_003B2958); else idle */
 void func_00196070(Fiona *f) {
     s32 r = func_00188C10(f);
     Progress *p;
@@ -8762,7 +8762,7 @@ void func_00196070(Fiona *f) {
         return;
     }
     p = gProgress;
-    if ((func_00178DB0(p, f->c.a.room, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot) & 0xFF) != 0) {
+    if ((DoorHold_Take(p, f->c.a.room, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot) & 0xFF) != 0) {
         door_give_up(f, p);
         return;
     }
@@ -8819,7 +8819,7 @@ void func_00197FF0(Fiona *f) {
         p = gProgress;
         f->unk1AD588 = 0;
         f->c.a.unk2A = 0;
-        func_001779C0(p, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
+        RoomSlots_Leave(p, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
         door_give_up(f, p);
     } else {
         f32 d[4] __attribute__((aligned(16)));
@@ -8840,7 +8840,7 @@ void func_00198A70(Fiona *f) {
     if (r < 0) {
         Progress *p = gProgress;
 
-        func_001779C0(p, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
+        RoomSlots_Leave(p, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
         door_give_up(f, p);
         return;
     }
@@ -8881,7 +8881,7 @@ void func_00198C50(Fiona *f) {
     if (FI(f, 0x1AD6C0, s32) == -1) {
         Progress *p = gProgress;
 
-        func_001779C0(p, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
+        RoomSlots_Leave(p, *(u8 *)&f->c.unk100, *(u8 *)&f->c.a.slot);
         door_give_up(f, p);
         return;
     }
@@ -8952,7 +8952,7 @@ void func_00198240(Fiona *f) {
                     ladder_end(f, 0, end);
                     if (end[1] - f->c.a.pos[1] < 18.0f) {
                         u8 blocked = FI(f, 0x1AD5D7, u8) == 1 &&
-                                     ((func_00177A20(gProgress, *(u8 *)&f->c.unk100, 2) & 0xFF) & 4);
+                                     ((RoomSlots_Bytes(gProgress, *(u8 *)&f->c.unk100, 2) & 0xFF) & 4);
 
                         if (blocked) {
                             if (anim != 0x708) {
@@ -8983,7 +8983,7 @@ void func_00198240(Fiona *f) {
                     break;
                 case 4:
                     if (FI(f, 0x1AD5D7, u8) == 1 &&
-                        ((func_00177A20(gProgress, *(u8 *)&f->c.unk100, 2) & 0xFF) & 4)) {
+                        ((RoomSlots_Bytes(gProgress, *(u8 *)&f->c.unk100, 2) & 0xFF) & 4)) {
                         func_002DDD20(f->c.motion, 0x708, -1);
                     } else {
                         func_002DDD20(f->c.motion, 0x703, -1);
@@ -9001,7 +9001,7 @@ void func_00198240(Fiona *f) {
                 /* up */
                 idle = 0;
                 if (FI(f, 0x1AD5D7, u8) == 1 &&
-                    ((func_00177A20(gProgress, *(u8 *)&f->c.unk100, 2) & 0xFF) & 2) &&
+                    ((RoomSlots_Bytes(gProgress, *(u8 *)&f->c.unk100, 2) & 0xFF) & 2) &&
                     f->c.a.pos[1] - gCharPursuer->a.pos[1] < AT(gCharPursuer, 0xCC, f32)) {
                     idle = 1;
                 }
@@ -9181,7 +9181,7 @@ void func_00194FC0(Fiona *f) {
         } else {
             bone = VCALL(f->c.motion, 0x74, s32 (*)(void *))(f->c.motion);
         }
-        sceVu0CopyVector(at, func_0017CE80(AT(f->c.motion, 0x810, void *), bone) + 12);
+        sceVu0CopyVector(at, Skel_Bone(AT(f->c.motion, 0x810, void *), bone) + 12);
     }
     who = func_00181880(f, at, 1);
     if (v != 7 && v != 6 && func_00124480(&f->c.a, at, 0x20018) == (u32)-1) {
@@ -9200,7 +9200,7 @@ void func_00194FC0(Fiona *f) {
         f32 pt[4] __attribute__((aligned(16)));
 
         if (v == 7) {
-            sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(f->c.motion, 0x810, void *),
+            sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(AT(f->c.motion, 0x810, void *),
                                                           VCALL(f->c.motion, 0x78, s32 (*)(void *))(f->c.motion)));
             o[0] = -10.0f;
             o[1] = 0.0f;
@@ -9209,7 +9209,7 @@ void func_00194FC0(Fiona *f) {
             sceVu0ApplyMatrix(pt, m, o);
             reach = 10.0f;
         } else if (v == 6) {
-            sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(f->c.motion, 0x810, void *),
+            sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(AT(f->c.motion, 0x810, void *),
                                                           VCALL(f->c.motion, 0x78, s32 (*)(void *))(f->c.motion)));
             o[0] = 0.0f;
             o[1] = 0.0f;
@@ -9218,7 +9218,7 @@ void func_00194FC0(Fiona *f) {
             sceVu0ApplyMatrix(pt, m, o);
             reach = 3.0f;
         } else {
-            sceVu0CopyVector(pt, func_0017CE80(AT(f->c.motion, 0x810, void *),
+            sceVu0CopyVector(pt, Skel_Bone(AT(f->c.motion, 0x810, void *),
                                                VCALL(f->c.motion, 0x74, s32 (*)(void *))(f->c.motion)) + 12);
             reach = 2.0f;
         }
@@ -9289,7 +9289,7 @@ void func_00194FC0(Fiona *f) {
         }
         d = (u16)(u32)((f32)dmg * AT(p, 0xA04, f32));
         if (who != 0) {
-            func_00178070(p, *(u8 *)&f->c.a.slot, who, kind, d, extra, 0.0f);
+            Relation_Request(p, *(u8 *)&f->c.a.slot, who, kind, d, extra, 0.0f);
         }
         FI(f, 0x1AD6C8, s32) = func_001813D0(f, FI(f, 0x1AD6CC, u32), d, pt, reach);
     }

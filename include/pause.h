@@ -5,7 +5,7 @@
 #include "common.h"
 
 /* pause.c */
-extern void func_002F60B0(u8 *o, u8 mode);
-extern void func_002F6050(u8 *o);
+extern void Pause_Open(u8 *o, u8 mode);
+extern void Pause_Update(u8 *o);
 
 #endif /* PAUSE_H */

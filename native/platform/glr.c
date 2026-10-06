@@ -626,7 +626,7 @@ static const char *kQuadVs =
  * The glow (renderer +0x58), B the 128 x 112 glow buffer:
  *   0  B fades, through A: A = B * 0x40 >> 7, then B + ((A - B) * 0x40 >> 7)
  *   1  over the screen: B * 0x40 >> 7 added, B stretched with bilinear filtering
- * The screen bloom (func_002699D0):
+ * The screen bloom (Bloom_Draw):
  *   2  H = the screen at every other pixel (uFix < 0: only where the frame's alpha isn't 0,
  *      the bloom's alpha test)
  *   3  H2 = the sum of H * 0x40 >> 7 at 8 offsets: (+-1, +-1), (+-2, 0), (0, +-2)
@@ -1904,7 +1904,7 @@ static void run_post(const GlrDraw *d) {
         post(10, sFbo, GLR_WIDTH, GLR_HEIGHT, sViewDepth, 0);
         break;
     }
-    case POST_BLOOM:   /* func_002699D0: H blurred, into the glow buffer and over the screen */
+    case POST_BLOOM:   /* Bloom_Draw: H blurred, into the glow buffer and over the screen */
         p_glProgramUniform1f(sPostProg, sPostFixLoc, -1.0f);   /* mode 2 with the alpha test */
         post(2, sHalfFbo[0], GLR_HALF_W, GLR_HALF_H, sColor, 0);
         post(3, sHalfFbo[1], GLR_HALF_W, GLR_HALF_H, sHalf[0], 0);

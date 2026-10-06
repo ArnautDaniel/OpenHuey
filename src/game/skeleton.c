@@ -4,7 +4,8 @@
 #include "skeleton.h"
 
 /* free everything */
-void func_0017D220(u8 *pool) {
+/* 0x0017D220 */
+void SkelPool_FreeAll(u8 *pool) {
     s32 i;
 
     for (i = 0; i < 21; i++) {
@@ -15,7 +16,8 @@ void func_0017D220(u8 *pool) {
 /* Bone nodes: a 4x4 matrix, then +0x40 index, +0x44 parent, +0x48 next. */
 
 /* link `node` after `prev` (0: prev already has a next) */
-s32 func_0017CE30(u8 *prev, u8 *node) {
+/* 0x0017CE30 */
+s32 SkelNode_Link(u8 *prev, u8 *node) {
     if (AT(prev, 0x48, u8 *) != NULL) {
         return 0;
     }
@@ -24,7 +26,8 @@ s32 func_0017CE30(u8 *prev, u8 *node) {
 }
 
 /* set the node's parent (0: none given) */
-s32 func_0017CE60(u8 *node, f32 *parent) {
+/* 0x0017CE60 */
+s32 SkelNode_SetParent(u8 *node, f32 *parent) {
     if (parent == NULL) {
         return 0;
     }
@@ -33,7 +36,8 @@ s32 func_0017CE60(u8 *node, f32 *parent) {
 }
 
 /* the skeleton's bone `bone` (its matrix; NULL past the end) */
-f32 *func_0017CE80(u8 *skel, s32 bone) {
+/* 0x0017CE80 */
+f32 *Skel_Bone(u8 *skel, s32 bone) {
     u8 *node = AT(skel, 4, u8 *);
     s32 i = 0;
 
@@ -49,7 +53,8 @@ f32 *func_0017CE80(u8 *skel, s32 bone) {
 
 /* allocate a skeleton of `nBones` linked nodes (NULL: none free; a short chain if the nodes
  * run out) */
-u8 *func_0017D000(u8 *pool, u32 nBones) {
+/* 0x0017D000 */
+u8 *SkelPool_Alloc(u8 *pool, u32 nBones) {
     u8 *skel = NULL;
     u8 *first = NULL;   /* (left unset by the original for 0 bones) */
     u8 *node = NULL;
@@ -86,7 +91,7 @@ u8 *func_0017D000(u8 *pool, u32 nBones) {
         if (i == 0) {
             first = node;
         } else {
-            func_0017CE30(prev, node);
+            SkelNode_Link(prev, node);
         }
     }
     AT(skel, 4, u8 *) = first;
@@ -95,7 +100,8 @@ u8 *func_0017D000(u8 *pool, u32 nBones) {
 }
 
 /* free a skeleton and its nodes (NULL: nothing) */
-void func_0017CED0(u8 *pool, u8 *skel) {
+/* 0x0017CED0 */
+void SkelPool_Free(u8 *pool, u8 *skel) {
     s32 i;
     u32 n;
 
@@ -104,7 +110,7 @@ void func_0017CED0(u8 *pool, u8 *skel) {
     }
     if (AT(skel, 4, u8 *) != NULL) {
         for (i = AT(skel, 8, s32) - 1; i >= 0; i--) {
-            u8 *node = (u8 *)func_0017CE80(skel, i);
+            u8 *node = (u8 *)Skel_Bone(skel, i);
 
             AT(node, 0x44, s32) = 0;
             AT(node, 0x48, s32) = 0;

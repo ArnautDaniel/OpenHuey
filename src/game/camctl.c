@@ -133,7 +133,7 @@ void func_002252B0(u8 *d, s32 target) {
             f32 v[4];
 
             func_00219E10(d, AT(d, 0x70, s32), 1.0f);
-            func_0025F6A0(d + 8, func_002197A0(d, 2, 0.0f));
+            Spline_Seek(d + 8, func_002197A0(d, 2, 0.0f));
             func_00219D70(d, v, 0.0f);
             cam = gCamera;
             VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
@@ -163,7 +163,7 @@ void func_002251C0(u8 *d) {
         return;
     }
     VCALL(gCamera, 0x70, void (*)(VObject *, f32))(gCamera, 0.0f);
-    func_0025F6A0(d + 8, func_002197A0(d, 2, 0.0f));
+    Spline_Seek(d + 8, func_002197A0(d, 2, 0.0f));
 }
 
 /* the setup changed since it was taken (+0x78 / +0x7C against +0x6C / +0x70) */
@@ -204,29 +204,29 @@ void func_00219E10(u8 *d, s32 setup, f32 t) {
     for (i = 0; i < AT(d, 0x34, s32); i++) {
         keys = (f32 *)((u8 *)keys + data[2 + i * 2] * data[3 + i * 2] * 32);
     }
-    func_0025F7A0(d + 8, data[2 + AT(d, 0x34, s32) * 2], data[3 + AT(d, 0x34, s32) * 2], keys);
+    Spline_Init(d + 8, data[2 + AT(d, 0x34, s32) * 2], data[3 + AT(d, 0x34, s32) * 2], keys);
     AT(d, 0x28, f32) = 0.0f;
     AT(d, 0x24, f32) = 0.0f;
     end = (f32)AT(d, 0x18, s32);
     u = keys[0];
-    b[0][0] = func_0025F580(d + 8, 3, u);
-    b[0][1] = func_0025F580(d + 8, 4, u);
-    b[0][2] = func_0025F580(d + 8, 5, u);
-    a[0][0] = func_0025F580(d + 8, 0, u);
-    a[0][1] = func_0025F580(d + 8, 1, u);
-    a[0][2] = func_0025F580(d + 8, 2, u);
+    b[0][0] = Spline_Eval(d + 8, 3, u);
+    b[0][1] = Spline_Eval(d + 8, 4, u);
+    b[0][2] = Spline_Eval(d + 8, 5, u);
+    a[0][0] = Spline_Eval(d + 8, 0, u);
+    a[0][1] = Spline_Eval(d + 8, 1, u);
+    a[0][2] = Spline_Eval(d + 8, 2, u);
     u = u + 1.0f;
     cur = 0;
     while (u < end) {
         f32 dx, dy, dz, ex, ey, ez;
 
         cur ^= 1;
-        b[cur][0] = func_0025F580(d + 8, 3, u);
-        b[cur][1] = func_0025F580(d + 8, 4, u);
-        b[cur][2] = func_0025F580(d + 8, 5, u);
-        a[cur][0] = func_0025F580(d + 8, 0, u);
-        a[cur][1] = func_0025F580(d + 8, 1, u);
-        a[cur][2] = func_0025F580(d + 8, 2, u);
+        b[cur][0] = Spline_Eval(d + 8, 3, u);
+        b[cur][1] = Spline_Eval(d + 8, 4, u);
+        b[cur][2] = Spline_Eval(d + 8, 5, u);
+        a[cur][0] = Spline_Eval(d + 8, 0, u);
+        a[cur][1] = Spline_Eval(d + 8, 1, u);
+        a[cur][2] = Spline_Eval(d + 8, 2, u);
         u = u + 1.0f;
         dy = b[0][1] - b[1][1];
         dx = b[0][0] - b[1][0];
@@ -239,7 +239,7 @@ void func_00219E10(u8 *d, s32 setup, f32 t) {
     }
     AT(d, 0x0, f32) = kSpeed.f / (AT(d, 0x24, f32) / 100.0f);
     AT(d, 0x4, f32) = kSpeed.f / (AT(d, 0x28, f32) / 100.0f);
-    func_0025F6A0(d + 8, t);
+    Spline_Seek(d + 8, t);
 }
 
 /* the point of the target to keep in view: its position (+0x38) + offset (+0x40) */
@@ -270,15 +270,15 @@ f32 func_002197A0(u8 *d, s32 mode, f32 t) {
 #endif
     sceVu0CopyVector(p, AT(d, 0x38, f32 *));
     sceVu0AddVector(p, p, (f32 *)(d + 0x40));
-    func_0025F580(d + 8, 3, u);
-    func_0025F580(d + 8, 4, u);
-    func_0025F580(d + 8, 5, u);
+    Spline_Eval(d + 8, 3, u);
+    Spline_Eval(d + 8, 4, u);
+    Spline_Eval(d + 8, 5, u);
     n = AT(d, 0x10, s32);
     for (k = 0; k < n; k++) {
         f32 tk = (f32)(s32)AT(d, 0xC, f32 *)[k * 8];
-        f32 x = func_0025F580(d + 8, 3, tk);
-        f32 y = func_0025F580(d + 8, 4, tk);
-        f32 z = func_0025F580(d + 8, 5, tk);
+        f32 x = Spline_Eval(d + 8, 3, tk);
+        f32 y = Spline_Eval(d + 8, 4, tk);
+        f32 z = Spline_Eval(d + 8, 5, tk);
         f32 dz = z - p[2], dx = x - p[0], dy = y - p[1];
         f32 hd = __builtin_sqrtf(dz * dz + dx * dx);
         f32 dd;
@@ -309,9 +309,9 @@ f32 func_002197A0(u8 *d, s32 mode, f32 t) {
     end = (f32)(s32)keys[kb * 8] + (f32)((s32)keys[hi * 8] - (s32)keys[kb * 8]) / 2.0f;
     u = (f32)(s32)keys[lo * 8] + (f32)((s32)keys[kb * 8] - (s32)keys[lo * 8]) / 2.0f;
     while (u < end) {
-        f32 x = func_0025F580(d + 8, 3, u);
-        f32 y = func_0025F580(d + 8, 4, u);
-        f32 z = func_0025F580(d + 8, 5, u);
+        f32 x = Spline_Eval(d + 8, 3, u);
+        f32 y = Spline_Eval(d + 8, 4, u);
+        f32 z = Spline_Eval(d + 8, 5, u);
         f32 dz = z - p[2], dx = x - p[0], dy = y - p[1];
         f32 hd = __builtin_sqrtf(dz * dz + dx * dx);
         f32 dd;
@@ -343,9 +343,9 @@ f32 func_002197A0(u8 *d, s32 mode, f32 t) {
 void func_00219D70(u8 *d, f32 *out, f32 t) {
     f32 u = t < 1.0f ? AT(d, 0x8, f32) : t;
 
-    out[0] = func_0025F580(d + 8, 3, u);
-    out[1] = func_0025F580(d + 8, 4, u);
-    out[2] = func_0025F580(d + 8, 5, u);
+    out[0] = Spline_Eval(d + 8, 3, u);
+    out[1] = Spline_Eval(d + 8, 4, u);
+    out[2] = Spline_Eval(d + 8, 5, u);
     out[3] = 1.0f;
 }
 
@@ -353,9 +353,9 @@ void func_00219D70(u8 *d, f32 *out, f32 t) {
 void func_00219CD0(u8 *d, f32 *out, f32 t) {
     f32 u = t < 1.0f ? AT(d, 0x8, f32) : t;
 
-    out[0] = func_0025F580(d + 8, 0, u);
-    out[1] = func_0025F580(d + 8, 1, u);
-    out[2] = func_0025F580(d + 8, 2, u);
+    out[0] = Spline_Eval(d + 8, 0, u);
+    out[1] = Spline_Eval(d + 8, 1, u);
+    out[2] = Spline_Eval(d + 8, 2, u);
     out[3] = 1.0f;
 }
 
@@ -397,7 +397,7 @@ void func_00224EE0(u8 *d) {
         f32 v[3];
 
         if (AT(d, 0xB0, s32) != 0) {
-            func_0025F6A0(d + 8, func_00219530(d, func_002197A0(d, 2, 0.0f), 0.0f));
+            Spline_Seek(d + 8, func_00219530(d, func_002197A0(d, 2, 0.0f), 0.0f));
         }
         func_00219D70(d, v, 0.0f);
         cam = gCamera;
@@ -428,17 +428,17 @@ f32 func_00219530(u8 *d, f32 to, f32 from) {
         t = from;
         end = to;
     }
-    pts[0][0] = func_0025F580(d + 8, 3, t);
-    pts[0][1] = func_0025F580(d + 8, 4, t);
-    pts[0][2] = func_0025F580(d + 8, 5, t);
+    pts[0][0] = Spline_Eval(d + 8, 3, t);
+    pts[0][1] = Spline_Eval(d + 8, 4, t);
+    pts[0][2] = Spline_Eval(d + 8, 5, t);
     t += AT(d, 0x0, f32);
     while (t < end) {
         f32 *p = pts[cur & 1];
         f32 dx, dy, dz;
 
-        p[0] = func_0025F580(d + 8, 3, t);
-        p[1] = func_0025F580(d + 8, 4, t);
-        p[2] = func_0025F580(d + 8, 5, t);
+        p[0] = Spline_Eval(d + 8, 3, t);
+        p[1] = Spline_Eval(d + 8, 4, t);
+        p[2] = Spline_Eval(d + 8, 5, t);
         cur ^= 1;
         dy = pts[0][1] - pts[1][1];
         dx = pts[0][0] - pts[1][0];
@@ -512,10 +512,10 @@ void func_00224C60(u8 *d) {
         changed = 1;
         func_00219E10(d, AT(d, 0x70, s32), 1.0f);
         if (AT(d, 0xB0, u8 *) != NULL) {
-            func_0025F6A0(d + 8, func_002197A0(d, 2, 0.0f));
-            func_0025F6A0(d + 8, func_00219530(d, func_002197A0(d, 2, 0.0f), 0.0f));
+            Spline_Seek(d + 8, func_002197A0(d, 2, 0.0f));
+            Spline_Seek(d + 8, func_00219530(d, func_002197A0(d, 2, 0.0f), 0.0f));
         } else {
-            func_0025F6A0(d + 8, 1.0f);
+            Spline_Seek(d + 8, 1.0f);
         }
     }
     if (changed) {
@@ -770,7 +770,7 @@ f32 func_00224680(u8 *d) {
 /* the path (+0x8) to u, if there is one */
 void func_002246B0(u8 *d, f32 u) {
     if (AT(d, 0x70, s32) != -1) {
-        func_0025F6A0(d + 0x8, u);
+        Spline_Seek(d + 0x8, u);
     }
 }
 

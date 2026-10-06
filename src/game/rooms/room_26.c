@@ -28,7 +28,7 @@ static void chair_creak(VObject *snd, u32 id, f32 *pos, s32 vol) {
     AT(pos, 0x0, u32) = 0x40058ADB;
     AT(pos, 0x4, u32) = 0x3E99999A;
     AT(pos, 0x8, u32) = 0xC00582AA;
-    func_002FF650(snd, id, 6, pos, vol, 0);
+    Sound_PlayBankAt(snd, id, 6, pos, vol, 0);
 }
 
 void *func_002B03C0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E400, D_0046DB80); }

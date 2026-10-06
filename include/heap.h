@@ -30,8 +30,8 @@ typedef struct BlockPool {
 } BlockPool;
 
 /* heap.c */
-extern Heap *func_00168C20(Heap *h, s32 flags);
-extern void func_0011F9A0(void *p);   /* delete (scene heap) */
-extern void func_00120EC0(BlockPool *p, u8 *base, u32 size, u32 n, u8 *used);   /* BlockPool init */
+extern Heap *Heap_dtor(Heap *h, s32 flags);
+extern void SceneHeap_delete(void *p);   /* delete (scene heap) */
+extern void BlockPool_Init(BlockPool *p, u8 *base, u32 size, u32 n, u8 *used);   /* BlockPool init */
 
 #endif /* HEAP_H */

@@ -56,7 +56,7 @@ void func_00122C20(Actor *a, s32 id, s32 arg2, s32 arg3, s32 arg4, const f32 *po
     if (a->unk2C == 1) {
         return;
     }
-    func_002FF650(gSound, id, arg2, pos != NULL ? pos : a->pos, arg3, arg4);
+    Sound_PlayBankAt(gSound, id, arg2, pos != NULL ? pos : a->pos, arg3, arg4);
 }
 
 #define NAV_REACHED ((u32)-1)
@@ -236,13 +236,13 @@ s32 func_001235C0(void *self, Actor *a) {
     }
     prog = (VObject *)gProgress;
     for (i = 0; i < 8; i++) {
-        if (func_00177BF0((Progress *)prog, i, *(u8 *)&a->slot) & 0x20) {
+        if (PursuerGroup_Fields((Progress *)prog, i, *(u8 *)&a->slot) & 0x20) {
             return 0;
         }
     }
     n = nm->numDoors;
     for (i = 0; i < n; i++) {
-        if (func_00177A20((Progress *)prog, i, *(u8 *)&a->slot) & 0x8) {
+        if (RoomSlots_Bytes((Progress *)prog, i, *(u8 *)&a->slot) & 0x8) {
             return 0;
         }
     }
@@ -943,7 +943,7 @@ void func_001254B0(Character *c) {
     u8 i;
 
     for (i = 0; i < 8; i++) {
-        if (func_00177BF0((Progress *)((VObject *)gProgress), i, *(u8 *)&c->a.slot) & 0x1) {
+        if (PursuerGroup_Fields((Progress *)((VObject *)gProgress), i, *(u8 *)&c->a.slot) & 0x1) {
             break;
         }
     }
@@ -1237,7 +1237,7 @@ void func_001264B0(Character *c) {
 
 /* Forward to the sound manager. */
 void func_001264C0(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5) {
-    ((void (*)(VObject *, s32, s32, s32, s32, s32))func_002FF600)(gSound, a1, a2, a3, a4, a5);
+    ((void (*)(VObject *, s32, s32, s32, s32, s32))Sound_PlayAt)(gSound, a1, a2, a3, a4, a5);
 }
 
 void func_001267F0(Character *c, s32 v) {

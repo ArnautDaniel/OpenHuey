@@ -60,5 +60,5 @@ s32 func_0034A460(void *self, u32 i, s32 a, s32 b) {
 }
 
 s32 func_0034A490(void) {
-    return func_002EC410((u8 *)gProgress + 0x764) == 0;
+    return Countdown_Seconds((u8 *)gProgress + 0x764) == 0;
 }

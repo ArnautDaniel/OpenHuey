@@ -137,7 +137,7 @@ void *func_0020E340(u8 *s) {
     }
     AT(s, 0x40, void **) = D_0046ADB0;
     AT(s, 0x58, void **) = D_0046ADC4;
-    func_002D4630((Rumble *)(s + 0x300));
+    Rumble_ctor((Rumble *)(s + 0x300));
 
     gMemCard = (MemCard *)(s + 0x390);
     AT(s, 0x390, void **) = D_0046AE90;
@@ -426,7 +426,7 @@ void func_001BF080(u8 *s) {
     AT(s, 0x10, s32) = func_001BC0F0(s + 0x20, D_0044FEE8, 0, 0, 0);
     func_001AACD0(s + 0x305280);
     func_002102E0(s + 0x395D40);
-    func_001BE6A0(s + 0x40);
+    Pads_Init(s + 0x40);
     func_00226570(s + 0x390);
     func_001B83D0(s + 0x460, 2);
     VCALL(s + 0x30CF40, 0xC, void (*)(void *))(s + 0x30CF40);
@@ -443,8 +443,8 @@ void func_001BF080(u8 *s) {
     AT(s, 0x18, s32) = func_0026BE80(3, func_001BED80, 0);
     func_0026CCE8(3);
     AT(s, 0x1C, s32) = D_0047B20C;
-    func_0016C530(s + 0x319900);
-    func_00169680(s + 0x319900);
+    Loader_Init(s + 0x319900);
+    Loader_RegisterAll(s + 0x319900);
 }
 
 /* destructor (vtable D_0046AE10) */
@@ -509,10 +509,10 @@ void func_001BEEF0(u8 *s) {
     func_001B85B0(s + 0x460);
     func_00210230(s + 0x395D40);
     func_001AACC0(s + 0x305280);
-    func_0016BFB0(s + 0x319900);
-    func_002D42A0((Rumble *)(s + 0x300));
-    func_001BE4B0(s + 0x40);
-    func_00226510((MemCard *)(s + 0x390));
+    Loader_Tick(s + 0x319900);
+    Rumble_Tick((Rumble *)(s + 0x300));
+    Pads_Tick(s + 0x40);
+    MemCard_Tick((MemCard *)(s + 0x390));
 }
 
 /* ---- the rest of the system object (2026-10-05) ---- */
@@ -652,9 +652,9 @@ void func_001BEDD0(u8 *s) {
     RemoveIntcHandler(3, AT(s, 0x18, s32));
     RemoveIntcHandler(2, AT(s, 0x14, s32));
     func_001BE480(s + 0x40);
-    func_00226560((MemCard *)(s + 0x390));
+    MemCard_Shutdown((MemCard *)(s + 0x390));
     func_001EEA38();
-    func_0016BF50(s + 0x319900);
+    Loader_CloseAll(s + 0x319900);
     func_00210180(s + 0x395D40);
     func_001AAC60(s + 0x305280);
     func_0010D3E0(0);
@@ -667,7 +667,7 @@ void func_001BEE70(u8 *s) {
     func_001B85B0(s + 0x460);
     func_00210230(s + 0x395D40);
     func_001AACC0(s + 0x305280);
-    func_0016BFB0(s + 0x319900);
-    func_002D42A0((Rumble *)(s + 0x300));
-    func_001BE4B0(s + 0x40);
+    Loader_Tick(s + 0x319900);
+    Rumble_Tick((Rumble *)(s + 0x300));
+    Pads_Tick(s + 0x40);
 }

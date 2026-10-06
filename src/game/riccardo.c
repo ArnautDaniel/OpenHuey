@@ -109,7 +109,7 @@ void func_002D7CE0(Pursuer *p) {
 }
 
 /* vtable +0xE4: at a door he breaks (func_00178980) while opening or attacking it: use and
-   damage it (func_00178DB0 / func_00178A90) and change room through it (vtable +0x28) */
+   damage it (DoorHold_Take / DoorHold_Shut) and change room through it (vtable +0x28) */
 void func_002D7D20(Pursuer *p, s32 exit) {
     Progress *pr;
 
@@ -121,8 +121,8 @@ void func_002D7D20(Pursuer *p, s32 exit) {
     case 0x29:
     case 0xD:
         pr = gProgress;
-        func_00178DB0(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
-        func_00178A90(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+        DoorHold_Take(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+        DoorHold_Shut(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
         VCALL(p, 0x28, void (*)(Pursuer *, s32, s32, s32))(p, VCALL(gRooms, 0x28, s32 (*)(VObject *, s32))(gRooms, exit), 0, 0);
         break;
     }
@@ -140,11 +140,11 @@ void func_002D8120(Pursuer *p, s32 *e, f32 *a, f32 *b) {
         sceVu0CopyVector(b, gCharPlayer->a.pos);
         return;
     }
-    sceVu0CopyVector(a, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
+    sceVu0CopyVector(a, Skel_Bone(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
     if (e[2] >= 0) {
-        sceVu0CopyVector(b, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[2]) + 0xC);
+        sceVu0CopyVector(b, Skel_Bone(MOTION_AT(p, 0x810, u8 *), e[2]) + 0xC);
     } else {
-        sceVu0CopyVector(b, func_0017CE80(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
+        sceVu0CopyVector(b, Skel_Bone(MOTION_AT(p, 0x810, u8 *), e[1]) + 0xC);
     }
 }
 
@@ -446,14 +446,14 @@ void func_002D8AC0(Pursuer *p) {
 extern const PTMF D_00415758;
 
 /* a blow: at its hit key, if he may go for his target and it's within the reach of the blow
-   (+0x171C entry +0x104, 0x24 bytes: +0xC reach), it lands (func_00178070 kind 1 with the
+   (+0x171C entry +0x104, 0x24 bytes: +0xC reach), it lands (Relation_Request kind 1 with the
    entry's damage); at the animation's end, on to the next (func_002D8AC0) */
 static inline void Riccardo_Blow(Pursuer *p) {
     if ((func_001F4770(p->c.motion, 0, -1, 1) & 0xFF & 2) && func_00283870(p) != 0) {
         u8 *e = PU(p, 0x171C, u8 *) + p->c.unk104[0] * 0x24;
 
         if (func_00124490(&p->c.a, p->target->a.pos) < AT(e, 0xC, f32)) {
-            func_00178070(gProgress, *(u8 *)&p->c.a.slot, 1, AT(e, 0x10, u8), AT(e, 0x12, u16), AT(e, 0x4, s16), AT(e, 0x14, f32));
+            Relation_Request(gProgress, *(u8 *)&p->c.a.slot, 1, AT(e, 0x10, u8), AT(e, 0x12, u16), AT(e, 0x4, s16), AT(e, 0x14, f32));
         }
     }
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
@@ -545,7 +545,7 @@ void func_002D7E20(Pursuer *p, Character *who) {
     {
         f32 pos[4] __attribute__((aligned(16)));
 
-        sceVu0CopyVector(pos, func_0017CE80(AT(who->motion, 0x810, u8 *), bone) + 0xC);
+        sceVu0CopyVector(pos, Skel_Bone(AT(who->motion, 0x810, u8 *), bone) + 0xC);
         hp.pos[0] = pos[0];
         hp.pos[1] = pos[1];
         hp.pos[2] = pos[2];
@@ -749,7 +749,7 @@ s32 func_002DBA90(Pursuer *p, f32 *out) {
         f32 ahead[4] __attribute__((aligned(16)));
         void *nav;
 
-        func_00211A90((u8 *)&p->c.a, 1000.0f, ahead);
+        Actor_PointAhead((u8 *)&p->c.a, 1000.0f, ahead);
         nav = gNavMesh;
         for (;;) {
             u8 *t = tri < AT(nav, 0x8, u32) && AT(nav, 0x4, u8 *) != NULL ? AT(nav, 0x4, u8 *) + tri * 0x50 : NULL;
@@ -766,7 +766,7 @@ s32 func_002DBA90(Pursuer *p, f32 *out) {
 #endif
             edge = VCALL(nav, 0x20, s32 (*)(void *, u32, f32 *, f32 *))(nav, tri, p->c.a.pos, ahead);
             if (edge == 3) {
-                func_00211A30(ahead, ahead, p->c.a.angle[1], 1000.0f);
+                Vec_Along(ahead, ahead, p->c.a.angle[1], 1000.0f);
                 continue;
             }
             if (edge == 4) {
@@ -786,12 +786,12 @@ s32 func_002DBA90(Pursuer *p, f32 *out) {
         f32 m[4][4] __attribute__((aligned(16)));
         u32 tri;
 
-        sceVu0CopyVector(head, func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x31) + 0xC);
+        sceVu0CopyVector(head, Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x31) + 0xC);
         off[0] = D_00415660[0];
         off[1] = D_00415660[1];
         off[2] = D_00415660[2];
         off[3] = D_00415660[3];
-        sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(MOTION_AT(p, 0x810, u8 *), 0x31));
+        sceVu0CopyMatrix(m, (f32 (*)[4])Skel_Bone(MOTION_AT(p, 0x810, u8 *), 0x31));
         func_002E2DA0(out, m, off);
         sceVu0AddVector(out, out, head);
         tri = func_00124480(&p->c.a, out, 0x20008);
@@ -872,7 +872,7 @@ extern const PTMF D_00415748;
 
 /* state: his blow at Hewie. At the hit key, if he may go for him, hears him within 30, and Hewie
    is in front within 30 degrees: unless Fiona stands in the way (within 4 of the line to Hewie,
-   and no further), it's Hewie's blow (func_002D8840: on a hit func_00178070 kind 2 with the entry,
+   and no further), it's Hewie's blow (func_002D8840: on a hit Relation_Request kind 2 with the entry,
    else debris where it lands); in her way it's hers (6: the heavy entry 8 with its stun and
    debris, 4: a stun three times in four, 3; none: debris only). Until the hit he turns to
    Hewie; at the animation's end, on (func_002D8AC0); now and then a grunt (sound 0x15) */
@@ -906,7 +906,7 @@ void func_002D8DF0(Pursuer *p) {
                 func_00124490(&p->c.a, hewie) < func_00124490(&p->c.a, fiona)) {
                 /* Hewie */
                 if ((func_002D8840(p, gCharPartner) & 0xFF) != 0xFF) {
-                    func_00178070(gProgress, *(u8 *)&p->c.a.slot, 2, AT(e, 0x10, u8), AT(e, 0x12, u16), 0, AT(e, 0x14, f32));
+                    Relation_Request(gProgress, *(u8 *)&p->c.a.slot, 2, AT(e, 0x10, u8), AT(e, 0x12, u16), 0, AT(e, 0x14, f32));
                 } else if (func_002DBA90(p, at) & 0xFF) {
                     Riccardo_Debris(at);
                 }
@@ -933,7 +933,7 @@ void func_002D8DF0(Pursuer *p) {
                     break;
                 }
                 if (k != 0xFF) {
-                    func_00178070(gProgress, *(u8 *)&p->c.a.slot, 1, k, AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+                    Relation_Request(gProgress, *(u8 *)&p->c.a.slot, 1, k, AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
                 }
             }
         }
@@ -1048,7 +1048,7 @@ void func_002D9500(Pursuer *p) {
         if ((p->c.unk100 & 2) && PU(p, 0x1545, u8) == 1 &&
             (func_002175B0(&p->c.a, &gCharPartner->a) & 0xFF) == 1 && Riccardo_OutOfLine(p, hewie, fiona)) {
             if ((func_002D8840(p, gCharPartner) & 0xFF) != 0xFF) {
-                func_00178070(gProgress, *(u8 *)&p->c.a.slot, 2, AT(e, 0x10, u8), AT(e, 0x12, u16), 0, AT(e, 0x14, f32));
+                Relation_Request(gProgress, *(u8 *)&p->c.a.slot, 2, AT(e, 0x10, u8), AT(e, 0x12, u16), 0, AT(e, 0x14, f32));
             } else if (func_002DBA90(p, at) & 0xFF) {
                 Riccardo_Debris(at);
             }
@@ -1085,7 +1085,7 @@ void func_002D9500(Pursuer *p) {
                     break;
                 }
                 if (k != 0xFF) {
-                    func_00178070(gProgress, *(u8 *)&p->c.a.slot, 1, k, AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+                    Relation_Request(gProgress, *(u8 *)&p->c.a.slot, 1, k, AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
                 }
             }
             p->c.unk100 = 0;
@@ -1552,7 +1552,7 @@ void func_0034D320(Pursuer *p) {
     VCALL(p, 0x100, void (*)(Pursuer *))(p);
 }
 
-/* vtable +0x2C: the draw (as func_00320000, always shown) */
+/* vtable +0x2C: the draw (as TintStalker_Draw, always shown) */
 void func_0034D840(Pursuer *p) {
     f32 mtx[4][4] __attribute__((aligned(16)));
     VObject *cam;

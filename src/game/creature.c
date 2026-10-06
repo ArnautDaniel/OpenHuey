@@ -130,12 +130,12 @@ static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, cons
     PU(p, 0x14EC, s32) = 0;
 }
 
-/* its slot's progress entry (func_00177870) 1: func_001777D0; -1 */
+/* its slot's progress entry (func_00177870) 1: SlotCmd_Cancel; -1 */
 static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) {
     Progress *g = gProgress;
 
     if ((u8)func_00177870(g, *(u8 *)&p->c.a.slot) == 1) {
-        func_001777D0(g, *(u8 *)&p->c.a.slot);
+        SlotCmd_Cancel(g, *(u8 *)&p->c.a.slot);
     }
     return -1;
 }
@@ -2137,7 +2137,7 @@ extern void *D_004726E0[];
 extern u32 D_00429850[], D_004298F0[], D_00429990[], D_00429A30[], D_00429AD0[], D_00429B70[];
 
 #define STRAND_SEG(o, k) ((o) + (k) * 0x50)
-#define STRAND_BONE(o, i) (func_0017CE80(AT(AT(gCharSlot2, 0xF0, u8 *), 0x810, void *), (i)) + 12)
+#define STRAND_BONE(o, i) (Skel_Bone(AT(AT(gCharSlot2, 0xF0, u8 *), 0x810, void *), (i)) + 12)
 
 /* +0x8 destructor (the quad drawer's inlined) */
 u8 *func_00313030(u8 *o, s32 flags) {
@@ -3577,7 +3577,7 @@ void func_00326950(Character *c) {
         if (!((AT(c, 0x1590 + (d & 0xFF) * 2, u16) & ((1 << *(u8 *)&c->a.slot) & 0xFFFF)) != 0)) {
             continue;
         }
-        if (func_00177BF0(p, d, 2) & 0xFF & 4) {
+        if (PursuerGroup_Fields(p, d, 2) & 0xFF & 4) {
             continue;
         }
         cr19_enter(c, 5);
@@ -3886,7 +3886,7 @@ void func_00327DD0(Character *c) {
                 AT(k, 0x6C, u8) = 0;
                 break;
             }
-            func_002E3130(m, gCharPlayer->a.pos, h);
+            Mtx_AtHeading(m, gCharPlayer->a.pos, h);
             func_002E2DD0(at, m, off);
             tri = func_00123D20(&gCharPlayer->a, at);
             if (tri == NAV_NONE) {
@@ -3939,7 +3939,7 @@ void func_00327DD0(Character *c) {
         }
         AT(c, 0xF8, s32) = 4;
         func_002DDED0(c->motion, 0x1902, -1);
-        func_002EF9E0((u8 *)gProgress + 0x7B8, 75.0f);
+        Threat_Raise((u8 *)gProgress + 0x7B8, 75.0f);
         func_002A8440((u8 *)gProgress + 0x7A8, 0x80, c->a.room, c->a.navTri, 0xFFFF);
         AT(k, 0x60, u8)++;
         return;
@@ -4827,7 +4827,7 @@ void func_00329440(Character *c) {
         if (!((AT(c, 0x1590 + (d & 0xFF) * 2, u16) & ((1 << *(u8 *)&c->a.slot) & 0xFFFF)) != 0)) {
             continue;
         }
-        if (!(func_00177BF0(p, d, 2) & 0xFF & 4)) {
+        if (!(PursuerGroup_Fields(p, d, 2) & 0xFF & 4)) {
             continue;
         }
         cr19_enter(c, 0x11);

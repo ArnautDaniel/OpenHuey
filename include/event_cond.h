@@ -7,6 +7,6 @@
 typedef struct VObject VObject;
 
 /* event_cond.c */
-extern s32 func_001FC390(VObject *ev, u8 *c, s32 area);   /* a character's relation to an area */
+extern s32 EventCond_AreaCross(VObject *ev, u8 *c, s32 area);   /* a character's relation to an area */
 
 #endif /* EVENT_COND_H */

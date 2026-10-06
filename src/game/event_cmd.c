@@ -1,4 +1,4 @@
-/* The event script commands (opcodes 0x00..0xDA; 0xF0.. are control ops, func_00121730).
+/* The event script commands (opcodes 0x00..0xDA; 0xF0.. are control ops, Script_RunControl).
  * A command reads its operands at the script pc (event +0x4); afterwards the pc advances (vt
  * +0xC) unless the command waits (+0x700) or jumped (+0x701). Operands are big-endian. */
 #include "common.h"
@@ -39,20 +39,20 @@
 
 extern u8 D_0047B350;         /* the message language set */
 extern VObject *D_00456E00;
-extern void func_002003C0(VObject *ev);
+extern void EventCmd_Flags(VObject *ev);
 
 /* (these return a byte the callers mask: declared s32, cast at the use) */
-extern void func_001FBE90(VObject *ev, s32 a, s32 b);
+extern void Event_StartAction(VObject *ev, s32 a, s32 b);
 extern u8 *D_003D6760[];   /* the built-in action scripts (ids 0x80..) */
 extern VObject *D_00456DE8;
 extern u8 D_003D6A60[];   /* stalker kind -> gift table row */
 extern u8 D_003D6A90[];   /* gift tables: 8 x (only if missing, item) */
-void func_001FBAE0(VObject *ev, u8 *s, s32 c);
+void Event_StepReset(VObject *ev, u8 *s, s32 c);
 /* opcode groups handled elsewhere */
-extern void func_001FFE00(VObject *ev);
-extern void func_002013F0(VObject *ev);
-extern void func_00200870(VObject *ev);
-extern void func_00200B00(VObject *ev);
+extern void EventCmd_Movie(VObject *ev);
+extern void EventCmd_Character(VObject *ev);
+extern void EventCmd_Pursuer(VObject *ev);
+extern void EventCmd_Hewie(VObject *ev);
 
 #define PC(ev) AT(ev, 0x4, u8 *)
 #define EV_WAIT(ev) AT(ev, 0x700, u8)
@@ -61,7 +61,7 @@ extern void func_00200B00(VObject *ev);
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-void func_002CF6F0(u8 *p);
+void EventCmd_ClearMark(u8 *p);
 
 static inline u32 be16(const u8 *p) {
     return (p[0] << 8 | p[1]) & 0xFFFF;
@@ -134,10 +134,10 @@ static void cmd_action(VObject *ev, Progress *p, const u8 *pc) {
         return;
     }
     if (pc[2] >= 0xF0 && pc[2] < 0xFB) {
-        u8 k = (u8)func_001FBF70(ev, pc[2]);
+        u8 k = (u8)Event_CharSlot(ev, pc[2]);
 
         if (AT(ev, 0x564 + k * 0x18, s32) == 0 || PC(ev)[0] == 0x92) {
-            func_001FBE90(ev, PC(ev)[2], PC(ev)[3]);
+            Event_StartAction(ev, PC(ev)[2], PC(ev)[3]);
         }
     } else {
         u8 *c = char_by_id(p, pc[2]);
@@ -163,7 +163,7 @@ static void cmd_action_end(VObject *ev, Progress *p, const u8 *pc) {
     u8 i;
 
     if (pc[1] >= 0xF0 && pc[1] < 0xFB) {
-        u8 k = (u8)func_001FBF70(ev, pc[1]);
+        u8 k = (u8)Event_CharSlot(ev, pc[1]);
 
         AT(ev, 0x564 + k * 0x18, s32) = 0;
         return;
@@ -256,16 +256,17 @@ static void cmd_scene_change(VObject *ev, Progress *p, const u8 *pc) {
     AT(p, 0x1151, u8) = PC(ev)[3];
 }
 
-extern void func_001FFC70(VObject *ev);
+extern void EventCmd_Music(VObject *ev);
 extern VObject *D_00456DF0;       /* the music */
 extern void *D_003D6A40[];        /* the fades' steps by kind */
-void func_001FBE00(VObject *ev, s32 prio, void *step);
+void Event_StartStep(VObject *ev, s32 prio, void *step);
 
 /* event commands on a pursuer-type character (pc[1]; slots 2..5): 0x2A its +0x1660 = be32,
  * 0x2E be16 (0xFFFF: one step on in +0x1620, below +0x1621) to func_00218C20, 0x2F action
  * pc[2] (0, 2, 3), 0x30 another, 0x3E put into room be16 (0xFFFF: its own) at be16 how pc[6]
  * (at most 2), 0x31 its +0x31C with pc[2] != 0 */
-void func_00200870(VObject *ev) {
+/* 0x00200870 */
+void EventCmd_Pursuer(VObject *ev) {
     Progress *p = gProgress;
     u8 i = func_001770D0(p, PC(ev)[1]);
     u8 *c = i >= 2 && i < 6 ? (u8 *)gCharacters[i] : NULL;
@@ -370,7 +371,8 @@ extern VObject *D_00456DF8;   /* the room's placed objects (+0x18 by name) */
 /* event command 0x50: the room's placed object named by the room handler (+0x34 of pc[2]):
  * pc[1] 0 shown (pc[3]), 1 / 2 animation pc[3] once / looped, 3 animation reset, 4 hidden and
  * stopped */
-void func_001FFB70(VObject *ev) {
+/* 0x001FFB70 */
+void EventCmd_PlacedObject(VObject *ev) {
     VObject *room = (VObject *)((u8 *)ev + 0x120 + AT(ev, 0x560, s32) * 4);
     const char *name = VCALL(room, 0x34, const char *(*)(VObject *, s32))(room, PC(ev)[2]);
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
@@ -459,13 +461,13 @@ static void cmd_sound(VObject *ev, Progress *p, const u8 *pc) {
         at[1] = (f32)be32(PC(ev) + 0xA) / 1000.0f;
         at[2] = (f32)be32(PC(ev) + 0xE) / 1000.0f;
         pc = PC(ev);
-        func_002FF650(gSound, be32(pc + 1), pc[5] & 0x3F, at, (s8)pc[0x12], (s8)pc[0x13]);
+        Sound_PlayBankAt(gSound, be32(pc + 1), pc[5] & 0x3F, at, (s8)pc[0x12], (s8)pc[0x13]);
     } else if (k == 0x80) {
         VCALL(gSound, 0x14, void (*)(VObject *, u32, u32))(gSound, be32(pc + 1), pc[5] & 0x3F);
     } else {
         VCALL(gCamera, 0x20, void (*)(VObject *, f32 *))(gCamera, cam);
         pc = PC(ev);
-        func_002FF650(gSound, be32(pc + 1), pc[5] & 0x3F, cam, (s8)pc[0x12], (s8)pc[0x13]);
+        Sound_PlayBankAt(gSound, be32(pc + 1), pc[5] & 0x3F, cam, (s8)pc[0x12], (s8)pc[0x13]);
     }
 }
 
@@ -620,7 +622,8 @@ static void fiona_model(Progress *p, s32 k) {
     AT(gCharacters[0], 0xF0, void *) = m;
 }
 
-void func_002029B0(VObject *ev) {
+/* 0x002029B0 */
+void EventCmd_Run(VObject *ev) {
     Progress *p;
     const u8 *pc;
 
@@ -712,7 +715,7 @@ void func_002029B0(VObject *ev) {
         VCALL(gRooms, 0x90, void (*)(VObject *))(gRooms);
         break;
     case 0x59:
-        func_002003C0(ev);
+        EventCmd_Flags(ev);
         break;
     case 0x29: {   /* camera setup (pc[2], pc[3]) for the characters in this room inside area pc[1] */
         s32 i;
@@ -773,7 +776,7 @@ void func_002029B0(VObject *ev) {
             if (gCharacters[i] != NULL) {
                 const u8 *q = PC(ev);
 
-                if ((s8)func_001FC390(ev, (u8 *)gCharacters[i], q[1]) == (s8)q[4]) {
+                if ((s8)EventCond_AreaCross(ev, (u8 *)gCharacters[i], q[1]) == (s8)q[4]) {
                     AT(gCharacters[i], 0xE8, s32) = (s8)q[2];
                     AT(gCharacters[i], 0xEC, s32) = (s8)PC(ev)[3];
                 }
@@ -782,7 +785,7 @@ void func_002029B0(VObject *ev) {
         break;
     }
     case 0x11:   /* bring in character pc[1] as the partner (slot 2) */
-        if ((u8)func_00171160(p, pc[1]) == 1) {
+        if ((u8)CharLoad_Partner(p, pc[1]) == 1) {
             func_00177350(p, 2);
             func_001772B0(p, 2);
             func_002ECB50((u8 *)p + 0x764);
@@ -817,7 +820,7 @@ void func_002029B0(VObject *ev) {
         break;
     }
     case 0xB9:   /* bring in character pc[1] in slot pc[2] (second kind) */
-        if ((u8)func_0016D6D0(p, pc[1], pc[2]) == 1) {
+        if ((u8)CharLoad_EventChar(p, pc[1], pc[2]) == 1) {
             func_00177350(p, PC(ev)[2]);
         }
         break;
@@ -828,7 +831,7 @@ void func_002029B0(VObject *ev) {
         break;
     }
     case 0x6A: case 0x6B: case 0x6C:
-        func_001FFC70(ev);
+        EventCmd_Music(ev);
         break;
     case 0x57:   /* the event's +0xF8 with pc[1] */
         VCALL(ev, 0xF8, void (*)(VObject *, s32))(ev, pc[1]);
@@ -838,8 +841,8 @@ void func_002029B0(VObject *ev) {
         if (pc[6] == 0xFF) {
             u8 *o = gAdx;
 
-            if (o != NULL && func_002D2120((Bgm *)o)) {
-                func_002D20A0((Bgm *)o);
+            if (o != NULL && Bgm_CanStart((Bgm *)o)) {
+                Bgm_Resume((Bgm *)o);
             }
         } else {
             VCALL(gMusic, 0x8, void (*)(VObject *, s32, s32, s32, f32))(gMusic, pc[1], pc[6] != 0, 0,
@@ -852,12 +855,12 @@ void func_002029B0(VObject *ev) {
         VObject *snd;
         u8 kind;
 
-        func_002CF6F0(fade);
+        EventCmd_ClearMark(fade);
         AT(ev, 0x11F0, u8) = PC(ev)[1];
         AT(ev, 0x11F1, u8) = PC(ev)[2] & 0xF;
         AT(ev, 0x11F2, u8) = 1;
         AT(fade, 0x18, f32) = (f32)(0x80 / AT(ev, 0x11F0, u8));
-        func_001FBE00(ev, 0xFA, D_003D6A40[AT(ev, 0x11F1, u8)]);
+        Event_StartStep(ev, 0xFA, D_003D6A40[AT(ev, 0x11F1, u8)]);
         kind = AT(ev, 0x11F1, u8);
         snd = D_00456DF0;
         switch (PC(ev)[2] & 0xC0) {
@@ -1022,7 +1025,7 @@ void func_002029B0(VObject *ev) {
         AT((u8 *)ev + pc[1] * 4, 0x810, s32) = be32(pc + 2);
         break;
     case 0x50:
-        func_001FFB70(ev);
+        EventCmd_PlacedObject(ev);
         break;
     case 0x66: {   /* a lit doorway for the lights (+0x38): four corners (be32 / 1000), its facing
                     * from the first three, its middle */
@@ -1131,7 +1134,7 @@ void func_002029B0(VObject *ev) {
         if (!(v <= 100.0f)) {
             v = 100.0f;
         }
-        func_002EF9E0((u8 *)p + 0x7B8, v);
+        Threat_Raise((u8 *)p + 0x7B8, v);
         break;
     }
     case 0x44:
@@ -1323,7 +1326,7 @@ void func_002029B0(VObject *ev) {
         VCALL(gDoors, 0x88, void (*)(VObject *, s32, s32))(gDoors, pc[1], pc[2] != 0);
         break;
     case 0xA3:   /* the panic's stage */
-        func_002F0260((u8 *)p + 0x7B8, pc[1]);
+        Panic_SetStage((u8 *)p + 0x7B8, pc[1]);
         break;
     case 0xA5:   /* (unless flag 0x12, or Fiona is busy +0xE0) the progress' +0x1134 request 5 with be16 pc[1..2] */
         if ((u8)Progress_TestFlag(p, 0x12) == 0 && gCharPlayer != NULL && AT(gCharPlayer, 0xE0, u8) == 0) {
@@ -1407,9 +1410,9 @@ void func_002029B0(VObject *ev) {
         }
         break;
     }
-    case 0xC9:   /* the panic's level reached pc[1]: func_002EF4D0 */
+    case 0xC9:   /* the panic's level reached pc[1]: Panic_SetLevel */
         if (AT(p, 0x7BC, f32) <= (f32)(u32)pc[1]) {
-            func_002EF4D0((u8 *)p + 0x7B8, pc[1]);
+            Panic_SetLevel((u8 *)p + 0x7B8, pc[1]);
         }
         break;
     case 0xCA:
@@ -1876,7 +1879,7 @@ void func_002029B0(VObject *ev) {
         break;
     }
     case 0x40:   /* character slot pc[1]'s step context cleared; func_001773A0 (pc[1], pc[2]) */
-        func_001FBAE0(ev, (u8 *)ev + 0x564 + (pc[1] + 1) * 0x18, 0);
+        Event_StepReset(ev, (u8 *)ev + 0x564 + (pc[1] + 1) * 0x18, 0);
         func_001773A0(p, PC(ev)[1], PC(ev)[2]);
         break;
     case 0x80:   /* room effect pc[1] gone */
@@ -1884,17 +1887,17 @@ void func_002029B0(VObject *ev) {
         break;
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
-        func_002013F0(ev);
+        EventCmd_Character(ev);
         break;
     case 0x39: case 0x3F: case 0x63: case 0x77: case 0x78: case 0x7A: case 0x85: case 0xAF:
     case 0xB0: case 0xBB: case 0xBD: case 0xC3: case 0xC4: case 0xC5: case 0xC6: case 0xD0:
-        func_00200B00(ev);
+        EventCmd_Hewie(ev);
         break;
     case 0x2A: case 0x2E: case 0x2F: case 0x30: case 0x31: case 0x3E:
-        func_00200870(ev);
+        EventCmd_Pursuer(ev);
         break;
     case 0x60: case 0x61: case 0x62: case 0x6E: case 0x89:
-        func_001FFE00(ev);
+        EventCmd_Movie(ev);
         break;
     case 0x06: case 0x07: case 0x08: case 0x0C: case 0x0D: case 0x0E: case 0x0F: case 0x10:
     case 0x19: case 0x1A: case 0x1B: case 0x1C: case 0x1E: case 0x20: case 0x21: case 0x2B:
@@ -1916,7 +1919,8 @@ void func_002029B0(VObject *ev) {
     }
 }
 
-void func_002CF6F0(u8 *p) {
+/* 0x002CF6F0 */
+void EventCmd_ClearMark(u8 *p) {
     F(p, 0x18, u32) = 0;
     F(p, 0x1C, u32) = 0;
     p[0x20] = 0;
@@ -1941,7 +1945,8 @@ static const u8 sCmdLength[0xDB] = {
 };
 
 /* the event's +0xC: step the pc over the current command */
-void func_001FF9E0(VObject *ev) {
+/* 0x001FF9E0 */
+void EventCmd_Skip(VObject *ev) {
     u8 *pc = PC(ev);
 
     if (pc[0] >= 0xDB) {
@@ -1990,7 +1995,8 @@ static void char_place(VObject *ev, u8 *c, s32 tri, f32 *angle, f32 *pos) {
 }
 
 /* commands on a character (operand 1: its id, 0xFF: the script's own) */
-void func_002013F0(VObject *ev) {
+/* 0x002013F0 */
+void EventCmd_Character(VObject *ev) {
     const u8 *pc = PC(ev);
     u8 *c;
     f32 angle;
@@ -2124,7 +2130,8 @@ static inline void flag_clear(u8 *words, s32 n) {
 }
 
 /* 0x59: flag and counter commands (sub-op pc[1], operand pc[2..3]) */
-void func_002003C0(VObject *ev) {
+/* 0x002003C0 */
+void EventCmd_Flags(VObject *ev) {
     Progress *p = gProgress;
     const u8 *pc = PC(ev);
     u32 n;
@@ -2213,7 +2220,8 @@ static inline u32 opt16(u32 v) {
     return v == 0xFFFF ? (u32)-1 : v;
 }
 
-void func_00201B90(VObject *ev) {
+/* 0x00201B90 */
+void Event_RunScript(VObject *ev) {
     Progress *p = gProgress;
     u8 *ctx = AT(ev, 0x6FC, u8 *);
     u8 *c = AT(ctx, 0x0, u8 *);
@@ -2476,7 +2484,7 @@ void func_00201B90(VObject *ev) {
         CHAR_ACT(c, 0x10);
         break;
     default:
-        func_002029B0(ev);
+        EventCmd_Run(ev);
         EV_JUMPED(ev) = 1;
         break;
     }
@@ -2487,7 +2495,8 @@ void func_00201B90(VObject *ev) {
 
 /* a script's character id to a character slot: below 0xF0 (and 0xFB..) one-based (id + 1),
  * 0xF0 the player (0), 0xF1..0xFA slots 7..0x10 */
-s32 func_001FBF70(VObject *ev, s32 id) {
+/* 0x001FBF70 */
+s32 Event_CharSlot(VObject *ev, s32 id) {
     u8 x = id;
 
     if (x < 0xF0 || x >= 0xFB) {
@@ -2500,7 +2509,8 @@ s32 func_001FBF70(VObject *ev, s32 id) {
 }
 
 /* a step context reset: its character `c`, no script, counters and marks cleared, id 0xFF */
-void func_001FBAE0(VObject *ev, u8 *s, s32 c) {
+/* 0x001FBAE0 */
+void Event_StepReset(VObject *ev, u8 *s, s32 c) {
     AT(s, 0x0, s32) = c;
     AT(s, 0x4, u8 *) = NULL;
     AT(s, 0x10, u8) = 0;
@@ -2514,7 +2524,8 @@ void func_001FBAE0(VObject *ev, u8 *s, s32 c) {
 
 /* start action script `script` (0x80..: built in, else the room's, vtable +0x24) for
  * character id `id`: its slot gets a fresh context (character -1: none needed) */
-void func_001FBE90(VObject *ev, s32 id, s32 script) {
+/* 0x001FBE90 */
+void Event_StartAction(VObject *ev, s32 id, s32 script) {
     u8 *e = (u8 *)ev;
     u8 *pc;
     u8 *s;
@@ -2530,7 +2541,7 @@ void func_001FBE90(VObject *ev, s32 id, s32 script) {
     if (pc == NULL) {
         return;
     }
-    s = e + 0x564 + (u8)func_001FBF70(ev, id) * 0x18;
+    s = e + 0x564 + (u8)Event_CharSlot(ev, id) * 0x18;
     AT(s, 0x0, s32) = -1;
     AT(s, 0x4, u8 *) = NULL;
     AT(s, 0x10, u8) = 0;
@@ -2547,7 +2558,8 @@ void func_001FBE90(VObject *ev, s32 id, s32 script) {
 /* music commands: 0x6A sub-op pc[1] on the music (D_00456DF0): 0 +0x38 fade (pc[2], pc[3]),
  * 1 +0x40, 2 +0xC then +0x1C, 3 wait while +0x10 says it isn't ready, 4 +0x18, 5 +0x4C; 0x6B
  * the progress' +0x48 with pc[1]; 0x6C its +0x4C */
-void func_001FFC70(VObject *ev) {
+/* 0x001FFC70 */
+void EventCmd_Music(VObject *ev) {
     VObject *mus = D_00456DF0;
     const u8 *pc = PC(ev);
 
@@ -2621,7 +2633,8 @@ static void zone_point(VObject *ev, u32 id, f32 *v) {
  *   0xC5 / 0xC6 a point to go to (+0xF3630, once: +0xF3620) - zone pc[1]'s / character pc[1]'s
  *     position, raised by be32 pc+2 thousandths
  *   0xD0 his side of the room be16 pc+1 (0..2, else -1) */
-void func_00200B00(VObject *ev) {
+/* 0x00200B00 */
+void EventCmd_Hewie(VObject *ev) {
     u8 *h = (u8 *)gCharPartner;
     const u8 *pc;
     f32 v[4] __attribute__((aligned(16))) = {0};   /* (a zone not set leaves it as it was) */
@@ -2635,7 +2648,7 @@ void func_00200B00(VObject *ev) {
     }
     switch (pc[0]) {
     case 0x39:
-        func_00130AF0((Hewie *)h, be32(pc + 1), be32(pc + 5));
+        Hewie_SetAction((Hewie *)h, be32(pc + 1), be32(pc + 5));
         break;
     case 0x3F:
         VCALL((VObject *)h, 0x64, void (*)(void *, u32, s32, s8))(h, be16(pc + 1), (s16)be16(pc + 4), pc[3]);
@@ -2644,7 +2657,7 @@ void func_00200B00(VObject *ev) {
         static const union { u32 u; f32 f; } kPi = {0x40490FDB};
 
         AT(h, 0x10C, f32) = func_002E2D00(kPi.f * (f32)(s16)be16(pc + 1) / 180.0f);
-        func_00130AF0((Hewie *)h, 0x72, 0);
+        Hewie_SetAction((Hewie *)h, 0x72, 0);
         break;
     }
     case 0x77:
@@ -2761,7 +2774,8 @@ static const char *room_string(VObject *ev, u32 i) {
  *   7 next cue from the movie, to the director (+0x30); its button 11 toggles flag 0x29
  *   8 camera director +0x10, director +0x48, flag 0x29 off    9 / 10 pause / resume the movie
  *   11 a half-black screen    12 show the prepared message as often as the director says */
-void func_001FFE00(VObject *ev) {
+/* 0x001FFE00 */
+void EventCmd_Movie(VObject *ev) {
     const u8 *pc = PC(ev);
     VObject *d = gCutscene;
     VObject *mv = gMovie;
@@ -2871,15 +2885,16 @@ void func_001FFE00(VObject *ev) {
     }
 }
 
-/* start a step `step` (with `prio`) in the event's step slot for `prio` (func_001FBF70) (+0x564, 0x18 each:
+/* start a step `step` (with `prio`) in the event's step slot for `prio` (Event_CharSlot) (+0x564, 0x18 each:
  * +0 -1, +4 the step, +0x13 its priority, the rest cleared); nothing for NULL */
-void func_001FBE00(VObject *ev, s32 prio, void *step) {
+/* 0x001FBE00 */
+void Event_StartStep(VObject *ev, s32 prio, void *step) {
     u8 *t;
 
     if (step == NULL) {
         return;
     }
-    t = (u8 *)ev + 0x564 + (u8)func_001FBF70(ev, prio) * 0x18;
+    t = (u8 *)ev + 0x564 + (u8)Event_CharSlot(ev, prio) * 0x18;
     AT(t, 0x0, s32) = -1;
     AT(t, 0x4, s32) = 0;
     AT(t, 0x10, u8) = 0;

@@ -56,7 +56,7 @@ static inline void mud_puff(u8 *mgr, Character *c, f32 *foot, s32 k) {
     if (k == 1) {
         foot[2] -= 4.0f;
     }
-    func_002E2CA0(t, foot, AT(c, 0x54, f32));
+    Vec_TurnY(t, foot, AT(c, 0x54, f32));
     prm.pos[0] = AT(c, 0x10, f32) + t[0];
     prm.pos[1] = AT(c, 0x14, f32) + t[1];
     prm.pos[3] = 1.0f;

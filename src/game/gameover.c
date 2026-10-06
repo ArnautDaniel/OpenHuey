@@ -28,14 +28,14 @@
 
 _Static_assert(__builtin_offsetof(GameOver, state) == 0x50, "GameOver.state");
 
-extern const PTMF D_0041A150;   /* func_002F3710 */
-extern const PTMF D_0041A160;   /* func_002F3710 */
-extern const PTMF D_0041A170;   /* func_002F2D30 */
-extern const PTMF D_0041A180;   /* func_002F2180 */
-extern const PTMF D_0041A190;   /* func_002F16F0 */
-extern const PTMF D_0041A1A0;   /* func_002F1700 */
-extern const PTMF D_0041A1B0;   /* func_002F2180 */
-extern const PTMF D_0041A1C0;   /* func_002F0BB0 */
+extern const PTMF D_0041A150;   /* GameOver_StateStart */
+extern const PTMF D_0041A160;   /* GameOver_StateStart */
+extern const PTMF D_0041A170;   /* GameOver_StateMovie */
+extern const PTMF D_0041A180;   /* GameOver_StateOthers */
+extern const PTMF D_0041A190;   /* GameOver_StateDone */
+extern const PTMF D_0041A1A0;   /* GameOver_StateMode3 */
+extern const PTMF D_0041A1B0;   /* GameOver_StateOthers */
+extern const PTMF D_0041A1C0;   /* GameOver_StateSpecial */
 extern const char D_0045E2E0[];  /* the movie */
 
 extern VObject *D_00456DF0;
@@ -46,12 +46,13 @@ typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s
 #define PANIC(p) ((u8 *)(p) + 0x7B8)
 
 extern void *D_0046D730[];
-void *func_00267310(u8 *o, s32 flags);
+void *GameOverBase_dtor(u8 *o, s32 flags);
 
-void func_002D6000(u8 *p, u32 v);
+void SceneGame_SetByte19034(u8 *p, u32 v);
 
 /* destructor (vtable D_0046D750) */
-void *func_00267310(u8 *o, s32 flags) {
+/* 0x00267310 */
+void *GameOverBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046D750;
         AT(o, 0x0, void **) = D_0046D730;
@@ -62,9 +63,11 @@ void *func_00267310(u8 *o, s32 flags) {
     return o;
 }
 
-void func_002D6000(u8 *p, u32 v) { p[0x19034] = (u8)v; }
+/* 0x002D6000 */
+void SceneGame_SetByte19034(u8 *p, u32 v) { p[0x19034] = (u8)v; }
 /* (SceneGame +0x73EB40) its state at +0x50 back to D_0041A150 */
-void func_002F39B0(u8 *o) {
+/* 0x002F39B0 */
+void GameOver_Reset(u8 *o) {
     AT(o, 0x50, PTMF) = D_0041A150;
 }
 
@@ -72,7 +75,8 @@ void func_002F39B0(u8 *o) {
 
 /* the movie's frame, full screen: the renderer takes it (layer 0x2B, or 6 when plain) and,
  * unless plain, it is drawn again over the screen by its alpha (layer 0x2C) */
-void func_002F0940(GameOver *o, s16 *shot) {
+/* 0x002F0940 */
+void GameOver_DrawMovieFrame(GameOver *o, s16 *shot) {
     u8 *f = AT(shot, 0x4, u8 *) + shot[1] * ((AT(shot, 0x8, u8) ^ 1) * shot[0]) * 4;
 
     if (AT(shot, 0x9, u8) != 0) {
@@ -87,13 +91,13 @@ void func_002F0940(GameOver *o, s16 *shot) {
     }
 }
 #else
-void func_002F0940(GameOver *o, s16 *shot);
+void GameOver_DrawMovieFrame(GameOver *o, s16 *shot);
 #endif
 
 /* the music player at full volume and started */
 static void bgm_full(void) {
     AT(gAdx, 0x118, f32) = 1.0f;
-    func_002D1FD0(gAdx);
+    Bgm_ApplyVolume(gAdx);
 }
 
 static void play_music(s32 track) {
@@ -239,7 +243,7 @@ static void to_black(GameOver *o) {
         a = 0x7F;
     }
     VCALL(gRenderer, 0x7C, RectFn)(gRenderer, 0, 0, 0x200, 0x200, 0, 0, 0, 0, (a << 24) & 0xFF000000, -1, 0, 0x30, -1);
-    if (o->timer == 30 && func_002D20D0(gAdx) != 0) {
+    if (o->timer == 30 && Bgm_IsPlaying(gAdx) != 0) {
         Progress_SetFlag(gProgress, 8);
         movie_stop();
         o->step++;
@@ -270,14 +274,14 @@ static void game_over(GameOver *o, s32 kind) {
         o->step++;
         return;
     case 1:
-        func_002F02F0(PANIC(gProgress));
+        Panic_Pause(PANIC(gProgress));
         VCALL(gCamDirector, 0x3C, void (*)(VObject *))(gCamDirector);
         for (i = 0; i < 6; i++) {
             if (gCharacters[i] != NULL && AT(gCharacters[i], 0x28, u8) != 0) {
                 AT(gCharacters[i], 0x29, u8) = 1;
             }
         }
-        func_002D6000(gEffects, 1);
+        SceneGame_SetByte19034(gEffects, 1);
         o->step++;
         /* fallthrough */
     case 2:
@@ -354,29 +358,34 @@ static void game_over(GameOver *o, s32 kind) {
 }
 
 /* state: the special scene's sequence */
-void func_002F0BB0(GameOver *o) {
+/* 0x002F0BB0 */
+void GameOver_StateSpecial(GameOver *o) {
     game_over(o, 0);
 }
 
 /* state: none - done */
-void func_002F16F0(GameOver *o) {
+/* 0x002F16F0 */
+void GameOver_StateDone(GameOver *o) {
     Progress_SetFlag(gProgress, 0xC);
 }
 
 /* state: mode 3's sequence */
-void func_002F1700(GameOver *o) {
+/* 0x002F1700 */
+void GameOver_StateMode3(GameOver *o) {
     game_over(o, 1);
 }
 
 /* state: the others' sequence */
-void func_002F2180(GameOver *o) {
+/* 0x002F2180 */
+void GameOver_StateOthers(GameOver *o) {
     game_over(o, 2);
 }
 
 /* state: the movie sequence - as the others without the freeze and the wipe, the music (track
  * 6) at once; when the movie gave its frame (+0x3 at the start) it draws that over everything
  * and the panic's fade stays */
-void func_002F2D30(GameOver *o) {
+/* 0x002F2D30 */
+void GameOver_StateMovie(GameOver *o) {
     switch (o->step) {
     case 0:
         bgm_full();
@@ -430,13 +439,14 @@ void func_002F2D30(GameOver *o) {
         break;
     }
     if (o->drawMovie != 0) {
-        func_002F0940(o, &o->frameW);
+        GameOver_DrawMovieFrame(o, &o->frameW);
     }
 }
 
 /* state: start - unless the file loader is busy (2), pick the sequence (the world drawn behind
  * all but mode 2's), take the movie's last frame (+0x8) and, with one, the panic's fade off */
-void func_002F3710(GameOver *o) {
+/* 0x002F3710 */
+void GameOver_StateStart(GameOver *o) {
     Progress *p;
 
     if (VCALL(gFileLoader, 0x24, s32 (*)(VObject *))(gFileLoader) == 2) {
@@ -482,7 +492,8 @@ void func_002F3710(GameOver *o) {
 }
 
 /* each frame: the state, and when done (flag 0xC) the music stopped and back to the start */
-void func_002F3910(GameOver *o) {
+/* 0x002F3910 */
+void GameOver_Update(GameOver *o) {
     ptmf_scall(o, &o->state);
     if (Progress_TestFlag(gProgress, 0xC) != 0) {
         play_music(0xFF);

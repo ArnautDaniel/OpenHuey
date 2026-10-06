@@ -25,7 +25,8 @@ _Static_assert(__builtin_offsetof(TexCache, layers) == 0x304, "TexCache.layers")
 
 /* +0x8 the renderer layer to draw texture `sel` of group `group` with; bit 31: the layer was just
  * (re)assigned and needs the texture uploaded. -1 if there is no such texture. */
-s32 func_001F41A0(TexCache *c, s32 sel, s32 group) {
+/* 0x001F41A0 */
+s32 TexCache_Layer(TexCache *c, s32 sel, s32 group) {
     u32 idx = sel + group, i;
     TexEntry *e;
     s32 r = 0;
@@ -94,7 +95,8 @@ s32 func_001F41A0(TexCache *c, s32 sel, s32 group) {
 }
 
 /* +0xC the .TEX entry of texture `sel` of group `group` */
-u8 *func_001F4160(TexCache *c, s32 sel, s32 group) {
+/* 0x001F4160 */
+u8 *TexCache_Entry(TexCache *c, s32 sel, s32 group) {
     u32 idx = sel + group;
 
     if (idx >= 64) {
@@ -104,7 +106,8 @@ u8 *func_001F4160(TexCache *c, s32 sel, s32 group) {
 }
 
 /* +0x10 register the textures of .TEX file `tex` as group `group` (entries group.. group+n-1) */
-void func_001F4420(TexCache *c, u32 *tex, s32 group) {
+/* 0x001F4420 */
+void TexCache_AddGroup(TexCache *c, u32 *tex, s32 group) {
     TexEntry *e;
     u8 k;
 
@@ -124,7 +127,8 @@ void func_001F4420(TexCache *c, u32 *tex, s32 group) {
 }
 
 /* +0x14 unregister group `group` */
-void func_001F43C0(TexCache *c, s32 group) {
+/* 0x001F43C0 */
+void TexCache_RemoveGroup(TexCache *c, s32 group) {
     u32 i;
 
     for (i = 0; i < 64; i++) {
@@ -139,7 +143,8 @@ void func_001F43C0(TexCache *c, s32 group) {
 }
 
 /* +0x18 forget all layer assignments */
-void func_001F44A0(TexCache *c) {
+/* 0x001F44A0 */
+void TexCache_ForgetLayers(TexCache *c) {
     u32 i;
 
     for (i = 0; i < 64; i++) {
@@ -150,7 +155,8 @@ void func_001F44A0(TexCache *c) {
 
 /* TEX0 to draw cached texture `sel` (group 0) with, uploading it first when its VRAM slot was
  * just (re)assigned. 0 if there's no such texture. */
-u64 func_002B71D0(s32 sel) {
+/* 0x002B71D0 */
+u64 TexCache_Tex0(s32 sel) {
     TexCache *c = (TexCache *)gTexCache;
     s32 slot;
     u8 *tex;

@@ -44,8 +44,8 @@ enum {
 };
 
 /* memcard.c */
-extern MemCard *func_001BF550(MemCard *mc, s32 flags);
-extern void func_00226510(MemCard *mc);   /* memory card tick */
-extern s32 func_00226560(MemCard *mc);   /* memory card: sceMcEnd */
+extern MemCard *MemCard_dtor(MemCard *mc, s32 flags);
+extern void MemCard_Tick(MemCard *mc);   /* memory card tick */
+extern s32 MemCard_Shutdown(MemCard *mc);   /* memory card: sceMcEnd */
 
 #endif /* MEMCARD_H */

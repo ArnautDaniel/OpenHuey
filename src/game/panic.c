@@ -10,8 +10,8 @@
 #include "panic.h"
 #include "stalker_progress.h"
 
-extern void func_002EF580(u8 *o);
-extern void func_002EFBE0(u8 *o);
+extern void Panic_Stage(u8 *o);
+extern void Panic_FearInputs(u8 *o);
 
 typedef union {
     u32 u;
@@ -21,7 +21,8 @@ typedef union {
 #define PANIC_MAX 100.0f
 
 /* the per-frame update */
-void func_002F0500(u8 *o) {
+/* 0x002F0500 */
+void Panic_Update(u8 *o) {
     static const F32Bits k06 = {0x3F19999A}, k08 = {0x3F4CCCCD}, k16 = {0x3FCCCCCD},
                          k09 = {0x3F666666};
     Progress *p = gProgress;
@@ -30,12 +31,12 @@ void func_002F0500(u8 *o) {
     if (Progress_TestFlag(p, 8)) {
         AT(o, 0x34, s32) = 0;
     }
-    func_002EF580(o);
+    Panic_Stage(o);
     if (AT(o, 0x8, s16) != 0) {
         AT(o, 0x8, s16)--;
     }
     if (AT(o, 0x4, f32) < PANIC_MAX) {
-        func_002EFBE0(o);
+        Panic_FearInputs(o);
         scale = AT(p, 0x9EC, s32) != 0 ? AT(p, 0x9E8, f32) : 1.0f;
         a = AT(o, 0x10, f32);
         b = AT(o, 0x28, f32);
@@ -117,11 +118,12 @@ void func_002F0500(u8 *o) {
     AT(o, 0x18, f32) = 0.0f;
 }
 
-extern void func_002EF2B0(u8 *o);
+extern void Panic_Breath(u8 *o);
 
 /* the panic stage (+0x0: 0 calm, 1..3 by level 60 / 75 / 90, 4 panicking, 5 calming down),
  * heartbeat timer (+0x30), its loudness (+0x38) and the camera shake (+0x40) */
-void func_002EF580(u8 *o) {
+/* 0x002EF580 */
+void Panic_Stage(u8 *o) {
     static const F32Bits kShake = {0x3E4CCCCD};   /* 0.2f */
     VObject *cam;
 
@@ -181,7 +183,7 @@ void func_002EF580(u8 *o) {
         if (AT(o, 0x0, u8) > 0 && AT(o, 0x30, s32) == 0) {
             AT(o, 0x30, s32) = (4 - AT(o, 0x0, u8)) * 30;
             AT(o, 0x38, s32) = 0;
-            func_002EF2B0(o);
+            Panic_Breath(o);
         }
         if (AT(o, 0x4, f32) < 60.0f) {
             return;
@@ -237,7 +239,7 @@ void func_002EF580(u8 *o) {
         }
         AT(o, 0x30, s32) = (6 - AT(o, 0x0, u8)) * 7;
         AT(o, 0x38, s32) = 0;
-        func_002EF2B0(o);
+        Panic_Breath(o);
         return;
     }
 }
@@ -275,7 +277,8 @@ static void fear_add(u8 *o, f32 f) {
 
 /* this frame's fear inputs: calming with time, and the pursuer: by its kind and how near it is
  * (distance + 3 * height difference; on stairs by height alone) */
-void func_002EFBE0(u8 *o) {
+/* 0x002EFBE0 */
+void Panic_FearInputs(u8 *o) {
     static const F32Bits kCalm0 = {0x3DCCCC46}, kCalm = {0x3D08882F}, kRecover = {0x3E2AAA3B},
                          kAway = {0x3D88882F};
     Progress *p = gProgress;
@@ -344,7 +347,7 @@ void func_002EFBE0(u8 *o) {
         AT(gCharPursuer, 0xF8, s32) != 3 || AT(gCharPursuer, 0xFC, s32) != 7) {
         return;
     }
-    if (!((u8)func_00177A20(p, AT(gCharPlayer, 0x100, u8), AT(gCharPursuer, 0x20, u8)) & 1)) {
+    if (!((u8)RoomSlots_Bytes(p, AT(gCharPlayer, 0x100, u8), AT(gCharPursuer, 0x20, u8)) & 1)) {
         return;
     }
     if (!(dy < 100.0f)) {
@@ -369,7 +372,8 @@ void func_002EFBE0(u8 *o) {
 
 /* the level set to `n` (0..100): its stage +0x0 (0 below 60, then 1 / 2 / 3 at 60 / 75 / 90;
    at 100 the panic's length +0x2 = 450 frames), the fear inputs cleared */
-void func_002EF4D0(u8 *o, s16 n) {
+/* 0x002EF4D0 */
+void Panic_SetLevel(u8 *o, s16 n) {
     AT(o, 0x4, f32) = (f32)n;
     AT(o, 0x1C, f32) = (f32)n;
     if (n >= 100) {
@@ -395,17 +399,19 @@ void func_002EF4D0(u8 *o, s16 n) {
 }
 
 /* the level for stage `stage` (0..5) */
-void func_002F0260(u8 *o, u32 stage) {
+/* 0x002F0260 */
+void Panic_SetStage(u8 *o, u32 stage) {
     static const s16 sLevel[6] = { 0, 60, 75, 90, 100, 100 };
 
     stage &= 0xFF;
     if (stage < 6) {
-        func_002EF4D0(o, sLevel[stage]);
+        Panic_SetLevel(o, sLevel[stage]);
     }
 }
 
 /* on pausing: the camera's shake off, +0x38 = 0x80 */
-void func_002F02F0(u8 *o) {
+/* 0x002F02F0 */
+void Panic_Pause(u8 *o) {
     VCALL(gCamera, 0x6C, void (*)(VObject *, f32))(gCamera, 0.0f);
     AT(o, 0x38, s32) = 0x80;
 }
@@ -428,7 +434,8 @@ static inline void fright(u8 *o, f32 amount) {
 }
 
 /* a fright, less with a charm on (item manager +0x10 slot 1: 0x87 three quarters, 0x88 half) */
-void func_002EFA50(u8 *o, f32 amount) {
+/* 0x002EFA50 */
+void Panic_Fright(u8 *o, f32 amount) {
     if (amount < 0.0f) {
         return;
     }
@@ -445,7 +452,8 @@ void func_002EFA50(u8 *o, f32 amount) {
     fright(o, amount);
 }
 
-void func_002EFB70(u8 *o, f32 amount) {
+/* 0x002EFB70 */
+void Panic_FrightRaw(u8 *o, f32 amount) {
     fright(o, amount);
 }
 
@@ -453,7 +461,8 @@ extern const u8 D_0041A040[], D_0041A050[], D_0041A060[], D_0041A070[], D_0041A0
 
 /* while the screen's effect is full (+0x34 1): Fiona's breath (sound 0x29, pitched by the
    stage) and the screen's tint for the stage (stage 5 also a second one) */
-void func_002EF2B0(u8 *o) {
+/* 0x002EF2B0 */
+void Panic_Breath(u8 *o) {
     static const s32 sPitch[5] = { -0x38, -0x28, -0x10, 0, 0 };
     static const u8 *const sTint[5] = { D_0041A040, D_0041A050, D_0041A060, D_0041A070, D_0041A080 };
     u8 stage;

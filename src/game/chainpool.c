@@ -5,7 +5,8 @@
 #include "chainpool.h"
 
 /* free everything */
-void func_00179EA0(u8 *pool) {
+/* 0x00179EA0 */
+void ChainPool_FreeAll(u8 *pool) {
     s32 i;
 
     for (i = 0; i < 17; i++) {
@@ -16,7 +17,8 @@ void func_00179EA0(u8 *pool) {
 /* Entries: +0x4..+0xC data, +0x10 next. */
 
 /* the chain's entry `n` (NULL past the end) */
-u8 *func_00179F10(u8 *chain, s32 n) {
+/* 0x00179F10 */
+u8 *Chain_Entry(u8 *chain, s32 n) {
     u8 *e = AT(chain, 4, u8 *);
     s32 i = 0;
 
@@ -31,7 +33,8 @@ u8 *func_00179F10(u8 *chain, s32 n) {
 }
 
 /* free a chain and its entries (NULL: nothing) */
-void func_00179BC0(u8 *pool, u8 *chain) {
+/* 0x00179BC0 */
+void ChainPool_Free(u8 *pool, u8 *chain) {
     s32 i;
     u32 n;
 
@@ -40,7 +43,7 @@ void func_00179BC0(u8 *pool, u8 *chain) {
     }
     if (AT(chain, 4, u8 *) != NULL) {
         for (i = AT(chain, 8, s32) - 1; i >= 0; i--) {
-            u8 *e = func_00179F10(chain, i);
+            u8 *e = Chain_Entry(chain, i);
 
             AT(e, 0x10, s32) = 0;
             AT(e, 0xC, s32) = 0;
@@ -58,7 +61,8 @@ void func_00179BC0(u8 *pool, u8 *chain) {
 }
 
 /* link entry `e` after `prev` (0: prev already has a next) */
-s32 func_00179EE0(u8 *prev, u8 *e) {
+/* 0x00179EE0 */
+s32 Chain_Link(u8 *prev, u8 *e) {
     if (AT(prev, 0x10, u8 *) != NULL) {
         return 0;
     }
@@ -68,7 +72,8 @@ s32 func_00179EE0(u8 *prev, u8 *e) {
 
 /* allocate a chain of `n` linked entries (NULL: no chain free; a short chain if the entries run
  * out) */
-u8 *func_00179CD0(u8 *pool, u32 n) {
+/* 0x00179CD0 */
+u8 *ChainPool_Alloc(u8 *pool, u32 n) {
     u8 *chain = NULL;
     u8 *first = NULL;   /* (left unset by the original for 0 entries) */
     u8 *e = NULL;
@@ -110,7 +115,7 @@ u8 *func_00179CD0(u8 *pool, u32 n) {
         if (i == 0) {
             first = e;
         } else {
-            func_00179EE0(prev, e);
+            Chain_Link(prev, e);
         }
     }
     AT(chain, 4, u8 *) = first;

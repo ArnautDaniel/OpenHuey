@@ -584,7 +584,7 @@ void func_00377B70(void) {
     }
 #endif
     rec[0] = rec[1] = rec[2] = rec[3] = 0x80;
-    sceVu0CopyVector((f32 *)&rec[4], func_0017CE80(AT(AT(ch, 0xF0, u8 *), 0x810, u8 *), 6) + 12);
+    sceVu0CopyVector((f32 *)&rec[4], Skel_Bone(AT(AT(ch, 0xF0, u8 *), 0x810, u8 *), 6) + 12);
     AT(&rec[8], 0, f32) = 1.0f;
     AT(&rec[9], 0, f32) = 1.0f;
     q.a = -1;

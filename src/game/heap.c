@@ -9,7 +9,8 @@
 extern void *D_0046A1C0[], *D_004699E0[];
 
 /* +0x8 destructor */
-Heap *func_00168C20(Heap *h, s32 flags) {
+/* 0x00168C20 */
+Heap *Heap_dtor(Heap *h, s32 flags) {
     if (h != NULL) {
         h->vtbl = D_0046A1C0;
         h->vtbl = D_004699E0;
@@ -21,7 +22,8 @@ Heap *func_00168C20(Heap *h, s32 flags) {
 }
 
 /* +0xC init: one free block covering everything, the rest empty at the end */
-void func_001691C0(Heap *h) {
+/* 0x001691C0 */
+void Heap_Init(Heap *h) {
     u32 i;
 
     h->blocks[0].used = 0;
@@ -38,7 +40,8 @@ void func_001691C0(Heap *h) {
 
 /* +0x10 allocate `size` bytes (64-byte multiples): an exact fit, else split the first larger
  * free block (the rest goes to a free next block or a new one). NULL if nothing fits. */
-u8 *func_00168FC0(Heap *h, u32 size) {
+/* 0x00168FC0 */
+u8 *Heap_Alloc(Heap *h, u32 size) {
     u32 n = (size & ~0x3F) + ((size & 0x3F) ? 0x40 : 0);
     u32 i, j, rest;
     s32 carryUsed;
@@ -96,7 +99,8 @@ static inline void Heap_Close(Heap *h, u32 from, u32 by) {
 }
 
 /* +0x14 free the block at `addr`, merging it with free neighbours */
-void func_00168C80(Heap *h, u8 *addr) {
+/* 0x00168C80 */
+void Heap_Free(Heap *h, u8 *addr) {
     HeapBlock *b;
     s32 prev, next, mode;
     u32 i;
@@ -161,7 +165,8 @@ void func_00168C80(Heap *h, u8 *addr) {
 }
 
 /* operator delete for objects placed in the scene heap: nothing (the heap is freed as a whole) */
-void func_0011F9A0(void *p) {
+/* 0x0011F9A0 */
+void SceneHeap_delete(void *p) {
 }
 
 /* ---- fixed-size block pool (vtable D_004699C0; base D_004699E0): n blocks of one size,
@@ -171,7 +176,8 @@ extern void *D_004699C0[];
 extern void *D_004699E0[];
 
 /* +0x8 */
-BlockPool *func_00120D00(BlockPool *p, s32 flags) {
+/* 0x00120D00 */
+BlockPool *BlockPool_dtor(BlockPool *p, s32 flags) {
     if (p != NULL) {
         p->vtbl = D_004699C0;
         if (p != NULL) {
@@ -185,7 +191,8 @@ BlockPool *func_00120D00(BlockPool *p, s32 flags) {
 }
 
 /* +0xC free everything */
-void func_00120E80(BlockPool *p) {
+/* 0x00120E80 */
+void BlockPool_FreeAll(BlockPool *p) {
     u8 *used = p->used;
     u32 i;
 
@@ -195,7 +202,8 @@ void func_00120E80(BlockPool *p) {
 }
 
 /* +0x10 a block of `size` bytes (the pool's size only), NULL if none is free */
-void *func_00120E10(BlockPool *p, u32 size) {
+/* 0x00120E10 */
+void *BlockPool_Alloc(BlockPool *p, u32 size) {
     u8 *used;
     u32 i;
 
@@ -213,7 +221,8 @@ void *func_00120E10(BlockPool *p, u32 size) {
 }
 
 /* +0x14 free block `b` */
-void func_00120DB0(BlockPool *p, u8 *b) {
+/* 0x00120DB0 */
+void BlockPool_Free(BlockPool *p, u8 *b) {
     u8 *a = p->base, *used = p->used;
     u32 i;
 
@@ -230,7 +239,8 @@ void func_00120DB0(BlockPool *p, u8 *b) {
 }
 
 /* set up over `n` blocks of `size` bytes at `base`, flags at `used`; all free */
-void func_00120EC0(BlockPool *p, u8 *base, u32 size, u32 n, u8 *used) {
+/* 0x00120EC0 */
+void BlockPool_Init(BlockPool *p, u8 *base, u32 size, u32 n, u8 *used) {
     p->size = size;
     p->n = n;
     p->used = used;
