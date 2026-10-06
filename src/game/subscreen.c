@@ -1865,3 +1865,30 @@ void func_00395460(SubScreen *s) {
         ptmf_set(&s->state, &D_0044B338);
     }
 }
+
+extern void func_00182FC0(void *fiona);   /* her costume put on */
+extern void *gCharPlayer;
+extern const PTMF D_0044B368;
+
+/* state: "equip it?" - its list's panels, the grid and the question; once answered yes (+0x48
+ * clear) the item under the cursor is equipped (a costume, list 1: put on Fiona), D_0044B368 */
+void func_00395000(SubScreen *s) {
+    if (SUB_LIST(s) == 0) {
+        s->kind = 0;
+    } else {
+        s->kind = SUB_LIST(s) == 1 ? 8 : 9;
+    }
+    sub_panels(s);
+    func_003949B0(s, 1);
+    if (AT(&s->ask, 0x10, u8) != 0) {
+        Task_Run(&s->ask);
+        return;
+    }
+    if (AT(&s->ask, 0x48, u8) == 0) {
+        func_00260840(s->pool, SUB_LIST(s), SUB_CURSOR(s));
+        if (SUB_LIST(s) == 1) {
+            func_00182FC0(gCharPlayer);
+        }
+    }
+    ptmf_set(&s->state, &D_0044B368);
+}

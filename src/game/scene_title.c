@@ -1187,3 +1187,33 @@ void *Scene5_ctor(u8 *s) {
     func_002E34D0(s + 0x1174E4);
     return s;
 }
+
+extern void func_0012DA20(SceneTitle *t, f32 alpha);   /* the menu, at `alpha` */
+extern const PTMF D_003B0250;
+
+/* back from the menu to the title over 16 frames: the menu fading out (func_0012DA20) and a
+ * black screen lifting while the picture, logo and PRESS START come back; then D_003B0250 */
+void func_0012E270(SceneTitle *t) {
+    f32 f = (f32)t->timer++ / 15.0f;
+    s32 done = 0;
+    u32 a;
+
+    if (t->timer >= 0x10) {
+        f = 1.0f;
+        done = 1;
+    }
+    func_0012DA20(t, 1.0f - f);
+    a = (u32)(127.0f * f);
+    if (a >= 0x80) {
+        a = 0x7F;
+    }
+    VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0, 0x200, 0x200, 0, 0, 0, 0, (a << 24) & 0xFF000000, -1, 0, 0x30, -1);
+    SceneTitle_DrawPicture(t, f);
+    SceneTitle_DrawLogo(t, f, 1.0f);
+    SceneTitle_DrawPressStart(t, f);
+    if (done) {
+        t->timer = 0;
+        t->anim = 0;
+        ptmf_set(&t->seq, &D_003B0250);
+    }
+}
