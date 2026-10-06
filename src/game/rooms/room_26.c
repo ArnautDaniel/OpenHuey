@@ -5,7 +5,7 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
-#include "snd_place.h"
+#include "sound.h"
 #include "msl.h"
 #include "sce/libvu0.h"
 

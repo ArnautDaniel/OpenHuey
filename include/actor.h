@@ -202,6 +202,9 @@ extern void Character_Deactivate(Character *c);
 extern void *ActorPool_new(u32 size, void *place);   /* placement new */
 extern void ActorPool_delete(void *p);   /* delete (the pool's: nothing) */
 
+/* actor.c */
+extern void Actor_PointAhead(u8 *a, f32 dist, f32 *out);   /* a point ahead */
+
 /* Set an actor's behaviour state (pointer to member function), if it is a valid one. */
 static inline void Actor_SetState(Actor *a, const PTMF *state) {
     PTMF s = *state;

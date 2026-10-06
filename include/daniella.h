@@ -32,4 +32,15 @@ extern void *Pair44_dtor(u8 *o, s32 flags);
 extern void *Triple_dtor(u8 *o, s32 flags);
 extern void *Quad4_dtor(u8 *o, s32 flags);
 
+/* daniella.c */
+extern void *DaniellaModel_ctor(u8 *m);
+extern void DaniellaModel_BackCapsules(u8 *m, s32 pose);
+extern u8 *Kind34_ModelFileTable(Pursuer *p);
+extern u8 *Kind35_ModelFileTable(Pursuer *p);
+extern u8 *Kind36_ModelFileTable(Pursuer *p);
+extern void *Kind36_ctor(void *p, s32 arg);
+extern void *Kind35_ctor(void *p, s32 arg);
+extern void *Kind34_ctor(void *p, s32 arg);
+extern void *Daniella_ctor(void *p, s32 arg);
+
 #endif /* DANIELLA_H */

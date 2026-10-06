@@ -9,29 +9,60 @@
 #include "ptmf.h"
 #include "hewie.h"
 #include "model.h"
-#include "scene_game_members.h"
-#include "snd_place.h"
-#include "stalker_progress.h"
+#include "scene_game.h"
+#include "sound.h"
 #include "msl.h"
-
-#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
-
-static void b4_clear_dca70(u8 *p) {
-    s32 i;
-
-    F(p, 0x38, u32) = 0;
-    F(p, 0x3C, u32) = 0;
-    F(p, 0x40, u32) = 0;
-    F(p, 0x48, u32) = 0;
-    F(p, 0x4C, u32) = 0;
-    F(p, 0x50, u32) = 0;
-    for (i = 0; i < 16; i++) {
-        F(p, 0x58 + i * 4, u32) = 0;
-    }
-    F(p, 0x870, u32) = 0;
-}
+#include "fiona.h"
+#include "memcard.h"
+#include "pursuer.h"
+#include "heap.h"
+#include "vecmath.h"
+#include "game.h"
+#include "charaction.h"
+#include "input.h"
+#include "gl2d.h"
+#include "effects.h"
+#include "renderer.h"
+#include "creature.h"
+#include "item.h"
+#include "items.h"
+#include "placed.h"
+#include "daniella.h"
+#include "loader.h"
+#include "pad.h"
+#include "scene.h"
+#include "scene_boot.h"
+#include "scene_title.h"
+#include "system.h"
+#include "text.h"
+#include "libc.h"
+#include "sce/iop.h"
+#include "debilitas2.h"
+#include "lorenzo.h"
+#include "char_load.h"
+#include "effectmgr.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
 
 void Motion_Disable(u8 *p);
+
+#define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+u32 Character_ActionTarget(void *p);
+
+void *Actor_dtor(void *p);
+
+#define U32(p, off) (*(u32 *)((u8 *)(p) + (off)))
+
+static inline s32 b5_prog_flag8000(void);
+
+/* gProgress+0x30 bit 0x8000 selects between two data sets (difficulty/mode flag?) */
+static inline s32 b5_prog_flag8000(void) {
+    return U32(gProgress, 0x30) & 0x8000;
+}
+
+s32 Character_TimerDown(void *p, s32 n);
 
 /* Position relative to the current room: pos + origin(own room) - origin(current room).
  * False if either room is unknown. */
@@ -855,6 +886,20 @@ s32 Character_LoadMessage(Actor *a) {
     return 0;
 }
 
+/* Count down the timer at +0x14C8 by |n|; 1 (and clamp to 0) when it runs out. */
+/* 0x00124ED0 */
+s32 Character_TimerDown(void *p, s32 n) {
+    if (n <= 0) {
+        n = -n;
+    }
+    FLD(p, 0x14C8, s32) -= n;
+    if (FLD(p, 0x14C8, s32) > 0) {
+        return 0;
+    }
+    FLD(p, 0x14C8, s32) = 0;
+    return 1;
+}
+
 /* 0x00124F10 */
 s32 Character_IsBusy(Actor *a) {
     return 0;
@@ -1203,7 +1248,6 @@ s32 Character_Held(Character *c) {
 
 extern void *QuadDrawer_vtable[];
 extern void *Helper469D00_vtable[];
-extern void *EffectBase_vtable[];
 
 /* Destructors of small helper objects (vtables 0x46FC30 -> 0x469D00, 0x469D00, 0x46F580). */
 /* 0x00126170 */
@@ -1224,17 +1268,6 @@ void **Helper469D00_dtor(void **obj, s32 flags) {
         *obj = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(obj);
-        }
-    }
-    return obj;
-}
-
-/* 0x00126220 */
-void **EffectBase_dtor(void **obj, s32 flags) {
-    if (obj != NULL) {
-        *obj = EffectBase_vtable;
-        if ((s16)flags > 0) {
-            EffectMgr_free(obj);
         }
     }
     return obj;
@@ -1387,6 +1420,25 @@ static inline f32 Character_PathRemaining(Character *c) {
 /* 0x00126E40 */
 f32 Character_PathRemaining2(Character *c) {
     return Character_PathRemaining(c);
+}
+
+/* 0x00126EC0 */
+u32 Character_ActionTarget(void *p) {
+    if (FLD(p, 0xF8, s32) == 6) {
+        s32 k = FLD(p, 0xFC, s32);
+
+        if (k == 0x16) {
+            return FLD(p, 0x14C0, u16);
+        }
+        if (k == 0x17) {
+            s32 i = FLD(p, 0x1388, s32);
+
+            if (i < FLD(p, 0x1384, s32)) {
+                return FLD(p, 0x138C + i * 2, u16);
+            }
+        }
+    }
+    return 0xFFFF;
 }
 
 /* Forward to gRoutePlanner +0xC (the route planner) with the character's buffers at +0x148C and
@@ -1582,13 +1634,16 @@ void Character_Reset(Character *c) {
     c->heardSlot = 0xFF;
 }
 
-/* 0x002DCAE0 */
-void Motion_Disable(u8 *p) {
-    b4_clear_dca70(p);
-    p[0x30] = 1;
+/* `dist` ahead of the actor (its position +0x10, heading +0x54) */
+/* 0x00211A90 */
+void Actor_PointAhead(u8 *a, f32 dist, f32 *out) {
+    f32 d[4] __attribute__((aligned(16)));
+
+    Heading_Vector(d, AT(a, 0x54, f32));
+    sceVu0ScaleVector(d, d, dist);
+    sceVu0AddVector(out, (f32 *)(a + 0x10), d);
 }
 
-#include "effectmgr.h"
 
 extern void *SplashRing_vtable[];   /* ripple effect vtable */
 extern void *DropletSpray_vtable[];   /* splash particle effect vtable */
@@ -1898,6 +1953,18 @@ void Character_Deactivate(Character *c) {
 /* 0x00121370 */
 void *ActorPool_new(u32 size, void *place) {
     return place;
+}
+
+/* Count 32-byte records up to a -1 terminator. */
+/* Move the point at +0x50 and translate +0x40 by the same delta. */
+/* Move the point at +0x40 and translate +0x50 by the same delta. */
+/* Tail call of virtual function 0xC (arguments passed through). */
+/* 0x00122B30 */
+void *Actor_dtor(void *p) {
+    if (p != NULL) {
+        *(void **)p = Actor_vtable;
+    }
+    return p;
 }
 
 /* 0x00121360 */

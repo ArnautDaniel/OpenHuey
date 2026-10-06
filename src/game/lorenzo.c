@@ -13,10 +13,35 @@
 #include "game.h"
 #include "lorenzo.h"
 #include "model.h"
-#include "pursuer_ai.h"
-#include "scene_game_members.h"
-#include "skeleton.h"
-#include "stalker_progress.h"
+#include "scene_game.h"
+#include "heap.h"
+#include "charaction.h"
+#include "input.h"
+#include "gl2d.h"
+#include "effects.h"
+#include "fiona.h"
+#include "hewie.h"
+#include "renderer.h"
+#include "sound.h"
+#include "msl.h"
+#include "creature.h"
+#include "vecmath.h"
+#include "effectmgr.h"
+#include "event.h"
+#include "lights.h"
+#include "debilitas.h"
+#include "libc.h"
+#include "effectmgr.h"   /* HitEffect_Spawn */
+#include "item.h"
+#include "daniella.h"
+#include "debilitas2.h"
+#include "system.h"
+#include "char_load.h"
+#ifdef HG_NATIVE
+#include <stdio.h>
+#include <stdlib.h>
+#include "glr.h"
+#endif
 
 extern void *Lorenzo_vtable[];
 
@@ -64,6 +89,186 @@ void Kind39_Activate(Pursuer *p);
 s32 Kind39_AttackAnimB(void);
 s32 Kind39_AttackAnimA(void);
 
+extern u8 D_00444B10[];
+extern void *Kind39_vtable[];
+extern void *BonePoint_vtable[];
+void *HangPoint_ctor(u8 *p);
+void *IK2_ctor(u8 *p);
+void *SwayPointB_ctor(u8 *p);
+extern u8 D_00424490[];
+extern u8 D_004246C0[];
+extern void *Kind12Model_vtable[], *Lorenzo2Model_vtable[], *LorenzoModel_vtable[];
+extern u8 D_00443FB0[];
+extern void *HangPoint_ctor(u8 *p);
+extern void *IK2_ctor(u8 *p);
+extern void *SwayPointB_ctor(u8 *p);
+void Lorenzo2Model_SecondaryMotion(u8 *self);
+void LorenzoModel_SecondaryMotion(u8 *self);
+void Kind12Model_SecondaryMotion(u8 *m);
+s32 Kind12Model_Part0(void);
+s32 Kind12Model_Part1(void);
+s32 Kind12Model_Part2(void);
+s32 Kind12Model_Part3(void);
+void Kind12Model_Loaded(u8 *m);
+void *Kind12Model_dtor(void *p, s32 flags);
+
+extern void *Kind12_vtable[];
+extern void *Lorenzo2_vtable[];
+extern u8 pstr_O_LRY_LRY_200_PCK[];
+extern u8 pstr_O_LRY_LRY_200_PCK_2[];
+#define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+static inline s32 b5_prog_flag8000(void);
+
+extern u8 D_00424680[], D_00424690[], D_004246A0[], D_004246B0[];
+extern u8 D_00424450[], D_00424460[], D_00424470[], D_00424480[];
+static inline void Set_AddLink(u8 *set, u8 *node) {
+    if (AT(set, 0x30, u8 *) != NULL && AT(set, 0x34, u8 *) != NULL) {
+        AT(AT(set, 0x34, u8 *), 0x28, u8 *) = node;
+        AT(node, 0x28, u8 *) = NULL;
+        AT(node, 0x2C, u8 *) = AT(set, 0x34, u8 *);
+        AT(set, 0x34, u8 *) = node;
+    } else {
+        AT(set, 0x34, u8 *) = node;
+        AT(set, 0x30, u8 *) = node;
+        AT(node, 0x2C, u8 *) = NULL;
+        AT(node, 0x28, u8 *) = NULL;
+    }
+}
+
+static inline void Set_AddCollider(u8 *set, u8 *col) {
+    AT(col, 0x2C, u8 *) = NULL;
+    if (AT(set, 0x18, u8 *) == NULL) {
+        AT(set, 0x18, u8 *) = col;
+    } else {
+        u8 *c = AT(set, 0x18, u8 *);
+
+        while (AT(c, 0x2C, u8 *) != NULL) {
+            c = AT(c, 0x2C, u8 *);
+        }
+        AT(c, 0x2C, u8 *) = col;
+    }
+}
+
+/* a set's settings: force (x, y, z), damping, its model */
+static inline void Set_Init(u8 *set, u8 *m, f32 fx, f32 fy, f32 fz, f32 damp) {
+    AT(set, 0x0, f32) = fx;
+    AT(set, 0x4, f32) = fy;
+    AT(set, 0x8, f32) = fz;
+    AT(set, 0x10, f32) = damp;
+    AT(set, 0x14, u8 *) = m;
+    AT(set, 0x20, u8) = 0;
+    AT(set, 0x1C, s32) = 0;
+}
+
+/* is the actor on the floor (its height within 1e-4 of the mesh under it, or below) */
+static inline s32 Chair_OnFloor(u8 *a, const f32 *floor) {
+    f32 dy = AT(a, 0x14, f32) - floor[1];
+
+    if (dy <= 0.0f) {
+        dy = -dy;
+    }
+    return dy <= 0x1.a36e2ep-14f || AT(a, 0x14, f32) <= floor[1];
+}
+
+/* the floor frame from the line `d` (normalized): X across it, Z along it, Y up from them */
+static inline void Chair_Frame(f32 (*f)[4], const f32 *d) {
+    f32 x[4];
+
+    sceVu0UnitMatrix(f);
+    x[0] = d[2];
+    x[1] = 0.0f;
+    x[2] = -d[0];
+    sceVu0Normalize(f[0], x);
+    func_0010E5F0(f[2], d);
+    sceVu0OuterProduct(f[1], (f32 *)d, f[0]);
+}
+
+/* node into the spring set's list (+0x30 head / +0x34 tail of the set at `set`) */
+static inline __attribute__((always_inline)) void spring_link(u8 *set, u8 *node) {
+    if (AT(set, 0x30, u8 *) != NULL && AT(set, 0x34, u8 *) != NULL) {
+        AT(AT(set, 0x34, u8 *), 0x28, u8 *) = node;
+        AT(node, 0x28, u8 *) = NULL;
+        AT(node, 0x2C, u8 *) = AT(set, 0x34, u8 *);
+        AT(set, 0x34, u8 *) = node;
+    } else {
+        AT(set, 0x34, u8 *) = node;
+        AT(set, 0x30, u8 *) = node;
+        AT(node, 0x2C, u8 *) = NULL;
+        AT(node, 0x28, u8 *) = NULL;
+    }
+}
+
+void *Lorenzo2Model_dtor(u8 *m, s32 flags);
+s32 Lorenzo2Model_Part0(u8 *m);
+s32 Lorenzo2Model_Part1(u8 *m);
+s32 Lorenzo2Model_Part2(u8 *m);
+s32 Lorenzo2Model_Part3(u8 *m);
+void Lorenzo2Model_SwayPoints(u8 *m);
+void Lorenzo2Model_Vt3C(u8 *m);
+void Lorenzo2Model_Frame(u8 *m);
+void Lorenzo2Model_Loaded(u8 *m);
+void *LorenzoModel_dtor(u8 *m, s32 flags);
+void LorenzoModel_SetMatrix(u8 *m, f32 (*mtx)[4]);
+s32 LorenzoModel_HeadBone(u8 *m);
+s32 LorenzoModel_Part0(u8 *m);
+s32 LorenzoModel_Part1(u8 *m);
+s32 LorenzoModel_Part2(u8 *m);
+s32 LorenzoModel_Part3(u8 *m);
+f32 LorenzoModel_Vt58(u8 *m);
+void LorenzoModel_HeadPos(u8 *m, f32 *out);
+f32 LorenzoModel_SlopeKeep(u8 *m, u8 *a);
+void LorenzoModel_AdjustBone(u8 *m, s32 kind, f32 (*out)[4], f32 (*ref)[4]);
+void LorenzoModel_BodyFrames(u8 *m, u8 *a, f32 front, f32 back);
+void Lorenzo2Model_Points(u8 *m);
+void LorenzoModel_Vt3C(u8 *m);
+void LorenzoModel_Frame(u8 *m);
+void LorenzoModel_Loaded(u8 *m);
+void Lorenzo2Model_Strands(u8 *m);
+void Lorenzo2Model_Hanging(u8 *m);
+
+static inline void *b0_RoomCtor(void *p, u32 id, s32 arg, void **vtbl) {
+    FLD(p, 0x0, void **) = Actor_vtable;
+    FLD(p, 0x20, s32) = arg;
+    FLD(p, 0x24, s32) = 0x2000000;
+    FLD(p, 0x0, void **) = Character_vtable;
+    FLD(p, 0x1380, s32) = 0;
+    FLD(p, 0x153C, u8) = (u8)id;
+    FLD(p, 0x0, void **) = vtbl;
+    return p;
+}
+
+static inline s32 b5_prog_flag8000(void);
+
+/* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
+ * slots 3..5 */
+static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
+    if (c != NULL) {
+        c->a.vtbl = vt;
+        c->a.vtbl = Pursuer_vtable;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
+            void **m = c->motion;
+
+            if (m != NULL) {
+                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
+                c->motion = NULL;
+            }
+        }
+        c->a.vtbl = NPC_vtable;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        c->a.vtbl = Character_vtable;
+        c->a.vtbl = Actor_vtable;
+        if ((s16)flags > 0) {
+            Actor_Destroy(&c->a);
+        }
+    }
+    return c;
+}
+
+Character *Kind39_dtor(Character *c, s32 flags);
+void *Kind39_MotionFiles(void);
+
 /* gProgress+0x30 bit 0x8000 selects between two data sets (difficulty/mode flag?) */
 static inline s32 b5_prog_flag8000(void) {
     return U32(gProgress, 0x30) & 0x8000;
@@ -86,6 +291,25 @@ f32 Kind39_ThreatAmount(void);
 f32 Kind39_FrightAttack(void);
 f32 Kind39_FrightSeen(void);
 
+/* 0x001731F0 */
+void *Kind12_ctor(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0xC, arg, Kind12_vtable);
+}
+
+/* 0x00173240 */
+void *Lorenzo_ctor(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0xB, arg, Lorenzo_vtable);
+}
+
+/* 0x00173290 */
+void *Kind39_ctor(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x27, arg, Kind39_vtable);
+}
+
+/* 0x001732E0 */
+void *Lorenzo2_ctor(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0xA, arg, Lorenzo2_vtable);
+}
 /* vtable +0x8: destructor */
 /* 0x002F8820 */
 Pursuer *Lorenzo_dtor(Pursuer *p, s32 flags) {
@@ -513,6 +737,11 @@ void Lorenzo2_Update(Pursuer *p) {
         Pursuer_FootstepsThroughWalls(p);
     }
     Stalker_ThinkEnd(p);
+}
+
+/* 0x0030C1B0 */
+u8 *Lorenzo2_ModelFileTable(Pursuer *p) {
+    return b5_prog_flag8000() ? pstr_O_LRY_LRY_200_PCK_2 : pstr_O_LRY_LRY_200_PCK;
 }
 
 /* 0x0030C1F0 */
@@ -1452,6 +1681,569 @@ void Kind12_Setup(Pursuer *p) {
     Character_Set152C(&p->c, 0x14);
 }
 
+/* his six strands of four (bones from 6 / 0x16 / 0xA / 0x1A / 0xE / 0x1E on), each node 20
+ * degrees freer than the one above, on the spring set +0x14C0 */
+/* 0x0030D2F0 */
+void Lorenzo2Model_Strands(u8 *m) {
+    static const s32 kBone[6] = {6, 0x16, 0xA, 0x1A, 0xE, 0x1E};
+    static u8 *const kTable[6] = {D_00424450, D_00424450, D_00424460, D_00424460, D_00424470, D_00424480};
+    static const u32 kAngle[4] = {0x3EB2B8C3, 0x3F32B8C3, 0x3F860A92, 0x3FB2B8C3};   /* 20 .. 80 deg */
+    s32 i, s, j;
+
+    SpringSet_Clear(m + 0x14C0);
+    for (i = 0; i < 0x18; i++) {
+        spring_link(m + 0x14C0, m + 0xD40 + i * 0x50);
+    }
+    AT(m, 0x14C0, f32) = 0.0f;
+    AT(m, 0x14C4, u32) = 0x3E4CCCCD;   /* 0.2 */
+    AT(m, 0x14C8, f32) = 0.0f;
+    AT(m, 0x14D0, u32) = 0x3F666666;   /* 0.9 */
+    AT(m, 0x14D4, u8 *) = m;
+    AT(m, 0x14E0, u8) = 0;
+    AT(m, 0x14DC, s32) = 0;
+    for (s = 0; s < 6; s++) {
+        for (j = 0; j < 4; j++) {
+            u8 *n = m + 0xD40 + (s * 4 + j) * 0x50;
+
+            AT(n, 0x40, f32) = 2.125f;
+            AT(n, 0x24, s32) = kBone[s] + j;
+            AT(n, 0x44, s32) = (s & 1 ? 0x12 : 2) + (j >= 2);
+            AT(n, 0x48, u8 *) = kTable[s];
+            AT(n, 0x20, u8) = j == 0;
+            AT(n, 0x4C, u32) = kAngle[j];
+        }
+    }
+}
+
+/* his six hanging points (bones 0x2F..0x34, the first and fourth fixed) on the spring set +0xD00,
+ * with its six collision spheres (+0xB80: bones 0x24, 0x35, 0x25, 0x36 and two on 0x2B) */
+/* 0x0030D6E0 */
+void Lorenzo2Model_Hanging(u8 *m) {
+    s32 i;
+
+    SpringSet_Clear(m + 0xD00);
+    for (i = 0; i < 6; i++) {
+        spring_link(m + 0xD00, m + 0x9A0 + i * 0x50);
+    }
+    for (i = 0; i < 6; i++) {
+        u8 *col = m + 0xB80 + i * 0x40;
+
+        AT(col, 0x2C, u8 *) = NULL;
+        if (AT(m, 0xD18, u8 *) == NULL) {
+            AT(m, 0xD18, u8 *) = col;
+        } else {
+            u8 *c = AT(m, 0xD18, u8 *);
+
+            while (AT(c, 0x2C, u8 *) != NULL) {
+                c = AT(c, 0x2C, u8 *);
+            }
+            AT(c, 0x2C, u8 *) = col;
+        }
+    }
+    AT(m, 0xD00, f32) = 0.0f;
+    AT(m, 0xD04, u32) = 0x3DCCCCCD;   /* 0.1 */
+    AT(m, 0xD08, f32) = 0.0f;
+    AT(m, 0xD10, u32) = 0x3F4CCCCD;   /* 0.8 */
+    AT(m, 0xD14, u8 *) = m;
+    AT(m, 0xD20, u8) = 0;
+    AT(m, 0xD1C, s32) = 0;
+    for (i = 0; i < 6; i++) {
+        u8 *n = m + 0x9A0 + i * 0x50;
+
+        AT(n, 0x40, u32) = 0x3F0DE00D;
+        AT(n, 0x24, s32) = 0x2F + i;
+        AT(n, 0x20, u8) = i == 0 || i == 3;
+    }
+    Sphere_Set(m + 0xB80, 0x24, 0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xBC0, 0x35, 0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xC00, 0x25, 0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xC40, 0x36, 0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xC80, 0x2B, 0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xCC0, 0x2B, 0.0f, 1.0f, 0.0f, 1.0f);
+}
+
+/* +0x8: destructor */
+/* 0x0030DAF0 */
+void *Lorenzo2Model_dtor(u8 *m, s32 flags) {
+    if (m != NULL) {
+        AT(m, 0x0, void **) = Lorenzo2Model_vtable;
+        func_001002C0(m + 0x9A0, SwayPointB_dtor, 0x50, 0x18);
+        HumanModel_Destroy(m, flags);
+    }
+    return m;
+}
+
+/* 0x0030DC20 */
+void Lorenzo2Model_SecondaryMotion(u8 *self) {
+    PTR(self, 0x874) = D_00424490;
+}
+
+/* +0x84 .. +0x90: his mesh parts */
+/* 0x0030DC30 */
+s32 Lorenzo2Model_Part0(u8 *m) {
+    return 3;
+}
+
+/* 0x0030DC40 */
+s32 Lorenzo2Model_Part1(u8 *m) {
+    return 0x13;
+}
+
+/* 0x0030DC50 */
+s32 Lorenzo2Model_Part2(u8 *m) {
+    return 0x26;
+}
+
+/* 0x0030DC60 */
+s32 Lorenzo2Model_Part3(u8 *m) {
+    return 0x30;
+}
+
+/* his 24 swaying points: each group of four from its first (+0x20), its bone (+0x24), weight
+   (+0x40), kind (+0x44), table (+0x48) and phase (+0x4C: 5, 10, 15, 20 degrees down the group) */
+/* 0x0030DC70 */
+void Lorenzo2Model_SwayPoints(u8 *m) {
+    static const u8 sBones[6] = {6, 0x16, 0xA, 0x1A, 0xE, 0x1E};
+    static const s32 sKinds[2][2] = {{2, 3}, {0x12, 0x13}};
+    static u8 *const sTables[6] = {D_00424680, D_00424680, D_00424690, D_00424690, D_004246A0, D_004246B0};
+    static const u32 sPhases[4] = {0x3DB2B8C3, 0x3E32B8C3, 0x3E860A92, 0x3EB2B8C3};
+    s32 i;
+
+    SpringSet_Clear(m + 0x1120);
+    for (i = 0; i < 24; i++) {
+        Set_AddLink(m + 0x1120, m + 0x9A0 + i * 0x50);
+    }
+    Set_Init(m + 0x1120, m, 0.0f, 0x1.99999ap-3f /* 0.2 */, 0.0f, 0x1.cccccc0p-1f /* 0.9 */);
+    for (i = 0; i < 24; i++) {
+        u8 *n = m + 0x9A0 + i * 0x50;
+        s32 g = i / 4, k = i % 4;
+
+        AT(n, 0x40, f32) = 2.125f;
+        AT(n, 0x24, s32) = sBones[g] + k;
+        AT(n, 0x44, s32) = sKinds[g % 2][k / 2];
+        AT(n, 0x48, u8 *) = sTables[g];
+        AT(n, 0x20, u8) = k == 0;
+        AT(n, 0x4C, u32) = sPhases[k];
+    }
+}
+
+/* +0x3C: his points a frame: one step, or 30 to settle after a reset (+0x850) */
+/* 0x0030E060 */
+void Lorenzo2Model_Vt3C(u8 *m) {
+    s32 n = AT(m, 0x850, u8) != 0 ? 30 : 1;
+    s32 i;
+
+    SpringSet_Begin(m + 0x1120);
+    for (i = 0; i < n; i++) {
+        SpringSet_Step(m + 0x1120);
+    }
+    SpringSet_Finish(m + 0x1120);
+    AT(m, 0x850, u8) = 0;
+}
+
+/* +0x10 */
+/* 0x0030E0E0 */
+void Lorenzo2Model_Frame(u8 *m) {
+    Model_Release(m);
+}
+
+/* +0xC: once loaded: the base setup, the part roles, his points, per-part draw settings */
+/* 0x0030E0F0 */
+void Lorenzo2Model_Loaded(u8 *m) {
+    HumanModel_Loaded(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x28;
+    AT(m, 0x8A0, s32) = 0x12;
+    AT(m, 0x8A4, s32) = 0x13;
+    AT(m, 0x8A8, s32) = 0x14;
+    AT(m, 0x8AC, s32) = 0x15;
+    AT(m, 0x8BC, s32) = 0x32;
+    AT(m, 0x8B0, s32) = 0x2B;
+    AT(m, 0x8B4, s32) = 0x22;
+    AT(m, 0x860, f32) = 0.0f;
+    AT(m, 0x864, f32) = 16.0f;
+    AT(m, 0x868, f32) = 0.0f;
+    AT(m, 0x854, s32) = 0;
+    AT(m, 0x858, s32) = 0;
+    Lorenzo2Model_SwayPoints(m);
+    AT(m, 0x850, u8) = 1;
+    {
+        static const u8 sParts[][2] = {
+            {0x98, 0x40}, {0x9A, 0x40}, {0x9C, 0x40}, {0xC2, 0x40}, {0xC4, 0x40}, {0xC6, 0x40},
+            {0xA6, 0xC0}, {0xBC, 0xC0},
+        };
+        u32 i;
+
+        for (i = 0; i < sizeof(sParts) / sizeof(sParts[0]); i++) {
+            AT(m, sParts[i][0], u8) = 4;
+            AT(m, sParts[i][0] + 1, u8) = sParts[i][1];
+        }
+    }
+}
+
+/* +0x8: destructor */
+/* 0x0030E1F0 */
+void *LorenzoModel_dtor(u8 *m, s32 flags) {
+    if (m != NULL) {
+        AT(m, 0x0, void **) = LorenzoModel_vtable;
+        func_001002C0(m + 0x890, HangPoint_dtor, 0x50, 6);
+        AT(m, 0x0, void **) = Model_vtable;
+        AT(m, 0x0, void **) = ModelBase_vtable;
+        AT(m, 0x1D0, void **) = D_0046B1C0;
+        AT(m, 0x1D0, void **) = Helper469D00_vtable;
+        AT(m, 0x10, void **) = D_0046ADA0;
+        AT(m, 0x10, void **) = Helper469D00_vtable;
+        if ((s16)flags > 0) {
+            StalkerModel_delete(m);
+        }
+    }
+    return m;
+}
+
+/* 0x0030E2E0 */
+void LorenzoModel_SecondaryMotion(u8 *self) {
+    PTR(self, 0x874) = D_004246C0;
+}
+
+/* +0x28: the model matrix (and the front frame) = `mtx` */
+/* 0x0030E2F0 */
+void LorenzoModel_SetMatrix(u8 *m, f32 (*mtx)[4]) {
+    sceVu0CopyMatrix((f32 (*)[4])(m + 0x7D0), mtx);
+    sceVu0CopyMatrix((f32 (*)[4])(m + 0xC70), mtx);
+}
+
+/* +0x80 / +0x84 .. +0x90: his mesh parts */
+/* 0x0030E330 */
+s32 LorenzoModel_HeadBone(u8 *m) {
+    return 0x13;
+}
+
+/* +0x60: bone 0x13's position */
+/* 0x0030E340 */
+void LorenzoModel_HeadPos(u8 *m, f32 *out) {
+    sceVu0CopyVector(out, Skel_Bone(AT(m, 0x810, u8 *), 0x13) + 12);
+}
+
+/* 0x0030E380 */
+s32 LorenzoModel_Part0(u8 *m) {
+    return 3;
+}
+
+/* 0x0030E390 */
+s32 LorenzoModel_Part1(u8 *m) {
+    return 7;
+}
+
+/* 0x0030E3A0 */
+s32 LorenzoModel_Part2(u8 *m) {
+    return 0xE;
+}
+
+/* 0x0030E3B0 */
+s32 LorenzoModel_Part3(u8 *m) {
+    return 0x1F;
+}
+
+/* +0x58: the scale +0x804 */
+/* 0x0030E3C0 */
+f32 LorenzoModel_Vt58(u8 *m) {
+    return AT(m, 0x804, f32);
+}
+
+/* +0x44: how much of the feet's height to keep on a slope: on the floor with axles set
+   (+0xCB0 / +0xCB4), the level part of the line between the floor 8 ahead and 8 behind;
+   else 1 */
+/* 0x0030E3D0 */
+f32 LorenzoModel_SlopeKeep(u8 *m, u8 *a) {
+    f32 floor[4] __attribute__((aligned(16)));
+    f32 rot[4][4] __attribute__((aligned(16)));
+    f32 fr[4] __attribute__((aligned(16)));
+    f32 bk[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    s32 level;
+
+    sceVu0CopyVector(floor, (f32 *)(a + 0x10));
+    VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, AT(a, 0x34, u32), floor);
+    sceVu0CopyMatrix(rot, (f32 (*)[4])(a + 0x60));
+    sceVu0CopyVector(rot[3], (f32 *)(a + 0x10));
+    AT(m, 0x80C, f32) = 1.0f;
+    if (AT(m, 0xCB0, f32) == 0.0f && AT(m, 0xCB4, f32) == 0.0f) {
+        level = 0;
+    } else {
+        level = Chair_OnFloor(a, floor);
+    }
+    if (!level) {
+        return 1.0f;
+    }
+    fr[2] = 8.0f;
+    fr[3] = 1.0f;
+    fr[0] = 0.0f;
+    fr[1] = 0.0f;
+    sceVu0ApplyMatrix(fr, rot, fr);
+    Motion_OntoFloor(m, fr, a);
+    bk[2] = -8.0f;
+    bk[3] = 1.0f;
+    bk[0] = 0.0f;
+    bk[1] = 0.0f;
+    sceVu0ApplyMatrix(bk, rot, bk);
+    Motion_OntoFloor(m, bk, a);
+    sceVu0SubVector(d, fr, bk);
+    sceVu0Normalize(d, d);
+    return __builtin_sqrtf(d[2] * d[2] + d[0] * d[0]);
+}
+
+/* +0x14: the attach frame of part `kind` into `out` (from `ref`): 0 the body (the model's
+   rotation applied to `ref`, at `out`'s position), 0xA the front frame (+0xC70) relative to the
+   body, 0xB / 0x12 / 0x13 parts turned by the tilt (+0x854 / +0x858) */
+/* 0x0030E580 */
+void LorenzoModel_AdjustBone(u8 *m, s32 kind, f32 (*out)[4], f32 (*ref)[4]) {
+    f32 r[4][4] __attribute__((aligned(16)));
+    f32 u[4][4] __attribute__((aligned(16)));
+    f32 frame[4][4] __attribute__((aligned(16)));
+    f32 zero[4] __attribute__((aligned(16)));
+
+    zero[3] = 0.0f;
+    zero[2] = 0.0f;
+    zero[1] = 0.0f;
+    zero[0] = 0.0f;
+    switch (kind) {
+    case 0:
+        sceVu0CopyMatrix(r, (f32 (*)[4])(m + 0x7D0));
+        r[3][0] = 0.0f;
+        r[3][1] = 0.0f;
+        r[3][2] = 0.0f;
+        sceVu0MulMatrix(r, r, ref);
+        r[3][0] = 0.0f;
+        r[3][1] = 0.0f;
+        r[3][2] = 0.0f;
+        sceVu0UnitMatrix(u);
+        sceVu0CopyVector(u[3], out[3]);
+        u[3][3] = 1.0f;
+        sceVu0MulMatrix(out, u, r);
+        break;
+    case 0xB:
+        Mtx_TurnTwo(out, (f32 (*)[4])(m + 0xC70), 0.0f, 0x1.333334p-2f * -AT(m, 0x858, f32));
+        break;
+    case 0x12:
+        Mtx_FrameKeepZ(frame, (f32 (*)[4])Skel_Bone(AT(m, 0x810, u8 *), 0xB), (f32 *)(m + 0xC80));
+        Mtx_TurnTwo(out, frame, 0x1.99999ap-2f * AT(m, 0x854, f32), 0x1.333334p-2f * -AT(m, 0x858, f32));
+        break;
+    case 0x13:
+        Mtx_FrameKeepZ(frame, (f32 (*)[4])Skel_Bone(AT(m, 0x810, u8 *), 0x12), (f32 *)(m + 0xC80));
+        Mtx_TurnTwo(out, frame, 0x1.99999ap-3f * AT(m, 0x854, f32), 0x1.99999ap-2f * -AT(m, 0x858, f32));
+        break;
+    case 0xA: {
+        f32 inv[4][4] __attribute__((aligned(16)));
+        f32 o[4][4] __attribute__((aligned(16)));
+        f32 at[4] __attribute__((aligned(16)));
+
+        sceVu0CopyMatrix(inv, (f32 (*)[4])(m + 0x7D0));
+        inv[3][0] = 0.0f;
+        inv[3][1] = 0.0f;
+        inv[3][2] = 0.0f;
+        sceVu0InversMatrix(inv, inv);
+        sceVu0CopyMatrix(o, out);
+        sceVu0CopyVector(at, o[3]);
+        o[3][0] = 0.0f;
+        o[3][1] = 0.0f;
+        o[3][2] = 0.0f;
+        sceVu0MulMatrix(r, inv, o);
+        sceVu0MulMatrix(out, (f32 (*)[4])(m + 0xC70), r);
+        sceVu0CopyVector(out[3], at);
+        break;
+    }
+    }
+    (void)zero;
+}
+
+/* +0x40: fit the model to the floor: off it (or with no axles) the actor's rotation; on it the
+   front frame (+0xC70) along him to the floor `front` ahead, the model's (+0x7D0) along the
+   floor `back` behind to him, at his position */
+/* 0x0030E7F0 */
+void LorenzoModel_BodyFrames(u8 *m, u8 *a, f32 front, f32 back) {
+    f32 floor[4] __attribute__((aligned(16)));
+    f32 rot[4][4] __attribute__((aligned(16)));
+    f32 p[4] __attribute__((aligned(16)));
+    s32 level;
+
+    sceVu0CopyVector(floor, (f32 *)(a + 0x10));
+    VCALL(gNavMesh, 0x14, void (*)(void *, u32, f32 *))(gNavMesh, AT(a, 0x34, u32), floor);
+    sceVu0CopyMatrix(rot, (f32 (*)[4])(a + 0x60));
+    sceVu0CopyVector(rot[3], (f32 *)(a + 0x10));
+    AT(m, 0x80C, f32) = 1.0f;
+    if (front == 0.0f && back == 0.0f) {
+        level = 0;
+    } else {
+        level = Chair_OnFloor(a, floor);
+    }
+    if (!level) {
+        sceVu0CopyMatrix((f32 (*)[4])(m + 0x7D0), rot);
+        func_0010E5F0((f32 *)(m + 0x800), (f32 *)(a + 0x10));
+        AT(m, 0x80C, f32) = 1.0f;
+        sceVu0CopyMatrix((f32 (*)[4])(m + 0xC70), rot);
+        return;
+    }
+    p[3] = 1.0f;
+    p[0] = 0.0f;
+    p[2] = front;
+    p[1] = 0.0f;
+    sceVu0ApplyMatrix(p, rot, p);
+    Motion_OntoFloor(m, p, a);
+    sceVu0SubVector(p, p, (f32 *)(a + 0x10));
+    sceVu0Normalize(p, p);
+    Chair_Frame((f32 (*)[4])(m + 0xC70), p);
+    p[3] = 1.0f;
+    p[1] = 0.0f;
+    p[2] = back;
+    p[0] = 0.0f;
+    sceVu0ApplyMatrix(p, rot, p);
+    Motion_OntoFloor(m, p, a);
+    sceVu0SubVector(p, (f32 *)(a + 0x10), p);
+    sceVu0Normalize(p, p);
+    Chair_Frame((f32 (*)[4])(m + 0x7D0), p);
+    func_0010E5F0((f32 *)(m + 0x800), (f32 *)(a + 0x10));
+}
+
+/* his six points (bones 0x17..0x1C, two of three) on +0xCC0, its eight spheres */
+/* 0x0030EAB0 */
+void Lorenzo2Model_Points(u8 *m) {
+    static const struct { u8 bone; f32 y, z; } sSpheres[8] = {
+        {0xC, 0.0f, 0.0f}, {0x1D, 0.0f, 0.0f}, {0xD, 0.0f, 0.0f}, {0x1E, 0.0f, 0.0f},
+        {0x13, 0.0f, 0.0f}, {0x13, 1.0f, 0.0f}, {0x13, 0.0f, 0x1.99999ap-2f}, {0x13, 1.0f, 0x1.99999ap-2f},
+    };
+    s32 i;
+
+    SpringSet_Clear(m + 0xCC0);
+    for (i = 0; i < 6; i++) {
+        Set_AddLink(m + 0xCC0, m + 0x890 + i * 0x50);
+    }
+    for (i = 0; i < 8; i++) {
+        Set_AddCollider(m + 0xCC0, m + 0xA70 + i * 0x40);
+    }
+    Set_Init(m + 0xCC0, m, 0.0f, 0x1.99999ap-4f /* 0.1 */, 0.0f, 0x1.99999ap-1f /* 0.8 */);
+    for (i = 0; i < 6; i++) {
+        u8 *n = m + 0x890 + i * 0x50;
+
+        AT(n, 0x40, f32) = 0x1.1bc01ap-1f;   /* 0.5542 */
+        AT(n, 0x24, s32) = 0x17 + i;
+        AT(n, 0x20, u8) = i % 3 == 0;
+    }
+    for (i = 0; i < 8; i++) {
+        Sphere_Set(m + 0xA70 + i * 0x40, sSpheres[i].bone, 0.0f, sSpheres[i].y, sSpheres[i].z, 1.0f);
+    }
+}
+
+/* +0x3C: his points a frame: one step, or 30 to settle after a reset (+0x850) */
+/* 0x0030ED60 */
+void LorenzoModel_Vt3C(u8 *m) {
+    s32 n = AT(m, 0x850, u8) != 0 ? 30 : 1;
+    s32 i;
+
+    SpringSet_Begin(m + 0xCC0);
+    for (i = 0; i < n; i++) {
+        SpringSet_Step(m + 0xCC0);
+    }
+    SpringSet_Finish(m + 0xCC0);
+    AT(m, 0x850, u8) = 0;
+}
+
+/* +0x10 */
+/* 0x0030EDE0 */
+void LorenzoModel_Frame(u8 *m) {
+    Model_Release(m);
+}
+
+/* +0xC: once loaded: the plain model's setup, his points, per-part draw settings */
+/* 0x0030EDF0 */
+void LorenzoModel_Loaded(u8 *m) {
+    Model_Loaded(m);
+    AT(m, 0x860, f32) = 0.0f;
+    AT(m, 0x864, f32) = 3.5f;
+    AT(m, 0x868, f32) = 0.0f;
+    AT(m, 0x854, s32) = 0;
+    AT(m, 0x858, s32) = 0;
+    Lorenzo2Model_Points(m);
+    AT(m, 0x850, u8) = 1;
+    {
+        static const u8 sParts[][2] = {
+            {0x98, 0x40}, {0x9A, 0x40}, {0x9C, 0x40}, {0xC8, 0x40}, {0xCA, 0x40}, {0xCC, 0x40},
+            {0x9E, 0xC0}, {0xC4, 0xC0},
+        };
+        u32 i;
+
+        for (i = 0; i < sizeof(sParts) / sizeof(sParts[0]); i++) {
+            AT(m, sParts[i][0], u8) = 4;
+            AT(m, sParts[i][0] + 1, u8) = sParts[i][1];
+        }
+    }
+}
+
+/* (as CharModel_dtor)  the human-with-kind model's destructor (vtable Kind12Model_vtable, then the human base) */
+/* 0x0035B1B0 */
+void *Kind12Model_dtor(void *p, s32 flags) {
+    u8 *m = p;
+
+    if (m != NULL) {
+        AT(m, 0x0, void **) = Kind12Model_vtable;
+        HumanModel_Destroy(m, flags);
+    }
+    return m;
+}
+
+/* the table at +0x874 */
+/* 0x0035B2C0 */
+void Kind12Model_SecondaryMotion(u8 *m) {
+    AT(m, 0x874, u8 *) = D_00443FB0;
+}
+
+/* +0x84..+0x90: part roles */
+/* 0x0035B2D0 */
+s32 Kind12Model_Part0(void) { return 3; }
+
+/* 0x0035B2E0 */
+s32 Kind12Model_Part1(void) { return 7; }
+
+/* 0x0035B2F0 */
+s32 Kind12Model_Part2(void) { return 0xE; }
+
+/* 0x0035B300 */
+s32 Kind12Model_Part3(void) { return 0x17; }
+
+/* +0xC loaded (vtable at 0x479740): the human base setup, the parts' roles, its look-at
+   point (0, 16, 0) */
+/* 0x0035B320 */
+void Kind12Model_Loaded(u8 *m) {
+    HumanModel_Loaded(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x10;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x19;
+    AT(m, 0x8B0, s32) = 0x13;
+    AT(m, 0x8B4, s32) = 0xB;
+    AT(m, 0x860, f32) = 0.0f;
+    AT(m, 0x864, f32) = 16.0f;
+    AT(m, 0x868, f32) = 0.0f;
+    AT(m, 0x854, s32) = 0;
+    AT(m, 0x858, s32) = 0;
+}
+
+/* 0x003634F0 */
+Character *Kind39_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind39_vtable); }
+
+/* 0x00363600 */
+void *Kind39_MotionFiles(void) {
+    return D_00444B10;
+}
+
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 extern const f32 D_00445AF0[7][4];
 extern u8 pstr_O_LRY_LRY_200_PCK_4[];
@@ -1937,6 +2729,48 @@ void Kind39_Setup(Pursuer *p) {
     PU(p, 0x169C, f32) = -8.0f;
     PU(p, 0x1698, f32) = 8.0f;
     PU(p, 0x16A0, f32) = -8.0f;
+}
+
+/* a model on the full base with its two parts (+0x8D0, +0x930), vtable Kind12Model_vtable */
+/* 0x0038C910 */
+void *Kind12Model_ctor(u8 *m) {
+    ModelBase_ctor(m);
+    AT(m, 0x0, void **) = HumanModel_vtable;
+    IK2_ctor(m + 0x8D0);
+    IK2_ctor(m + 0x930);
+    AT(m, 0x0, void **) = Kind12Model_vtable;
+    return m;
+}
+
+/* the same with 24 more parts (0x50 each, +0x9A0), vtable Lorenzo2Model_vtable */
+/* 0x0038C960 */
+void *Lorenzo2Model_ctor(u8 *m) {
+    ModelBase_ctor(m);
+    AT(m, 0x0, void **) = HumanModel_vtable;
+    IK2_ctor(m + 0x8D0);
+    IK2_ctor(m + 0x930);
+    AT(m, 0x0, void **) = Lorenzo2Model_vtable;
+    func_00100340(m + 0x9A0, SwayPointB_ctor, SwayPointB_dtor, 0x50, 0x18);
+    AT(m, 0x1154, s32) = 0;
+    AT(m, 0x1150, s32) = 0;
+    return m;
+}
+
+/* a model on the base HumanModel_BaseCtor with 6 parts (0x50, +0x890) and 8 members (0x40, +0xA70,
+ * their vtable at +0x30), vtable LorenzoModel_vtable */
+/* 0x0038CB60 */
+void *LorenzoModel_ctor(u8 *m) {
+    u8 *e;
+
+    HumanModel_BaseCtor(m);
+    AT(m, 0x0, void **) = LorenzoModel_vtable;
+    func_00100340(m + 0x890, HangPoint_ctor, HangPoint_dtor, 0x50, 6);
+    for (e = m + 0xA70; e < m + 0xC70; e += 0x40) {
+        AT(e, 0x30, void **) = BonePoint_vtable;
+    }
+    AT(m, 0xCF4, s32) = 0;
+    AT(m, 0xCF0, s32) = 0;
+    return m;
 }
 
 /* ---- the other class (vtable Kind39_vtable; code 0x363CE0..0x365AD0): its own tables, sweep and

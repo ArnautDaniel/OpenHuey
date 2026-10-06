@@ -6,7 +6,7 @@
 #include "gl2d.h"
 #include "ptmf.h"
 #include "progress.h"
-#include "snd_place.h"
+#include "sound.h"
 
 extern void *RoomBase_vtable[];
 extern void *Room15_vtable[];

@@ -19,7 +19,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SYM = ROOT / "config/symbol_addrs.txt"
 TEXT_GLOBS = ["src/**/*.c", "src/**/*.h", "src/**/*.inc", "include/**/*.h", "native/**/*.c", "native/**/*.h",
-              "native/**/*.S", "native/**/*.py", "tools/difftest_list.txt", "docs/**/*.md"]
+              "native/**/*.S", "native/**/*.py", "tools/difftest_list.txt", "docs/**/*.md",
+              "config/pointers.txt", "config/pointers_auto.txt"]
 AUTO = re.compile(r"^(func|D)_([0-9A-F]{8})$")
 
 

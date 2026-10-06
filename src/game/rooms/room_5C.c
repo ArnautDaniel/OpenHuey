@@ -6,7 +6,7 @@
 #include "gl2d.h"
 #include "ptmf.h"
 #include "actor.h"
-#include "scene_game_members.h"
+#include "scene_game.h"
 #include "sce/libvu0.h"
 
 extern void *RoomBase_vtable[];

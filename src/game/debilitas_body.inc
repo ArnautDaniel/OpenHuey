@@ -5,9 +5,7 @@
 #include "debilitas.h"
 #include "model.h"
 #include "pursuer.h"
-#include "pursuer_ai.h"
-#include "skeleton.h"
-#include "stalker_progress.h"
+#include "heap.h"
 #include "sce/libvu0.h"
 /* The code the two Debilitas classes share (see debilitas.c and debilitas2.c): written with the
  * first class's symbols; debilitas2.c renames them to its own before including this. Each class

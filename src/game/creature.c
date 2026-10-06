@@ -13,13 +13,52 @@
 #include "effects.h"
 #include "hewie.h"
 #include "model.h"
-#include "pursuer_ai.h"
-#include "scene_game_members.h"
-#include "skeleton.h"
-#include "stalker_math.h"
-#include "stalker_models.h"
-#include "stalker_progress.h"
+#include "scene_game.h"
+#include "heap.h"
+#include "vecmath.h"
 #include "msl.h"
+#include "input.h"
+#include "memcard.h"
+#include "daniella.h"
+#include "loader.h"
+#include "pad.h"
+#include "scene.h"
+#include "scene_boot.h"
+#include "scene_title.h"
+#include "sound.h"
+#include "system.h"
+#include "text.h"
+#include "libc.h"
+#include "sce/iop.h"
+#include "renderer.h"
+#include "charaction.h"
+#include "gl2d.h"
+#include "music.h"
+#include "camera.h"
+#include "char_load.h"
+#include "doors.h"
+#include "event.h"
+#include "gameover.h"
+#include "items.h"
+#include "movie.h"
+#include "fiona.h"
+#include "pause.h"
+#include "placed.h"
+#include "room_map.h"
+#include "draw_leaves.h"
+#include "sce/eekernel.h"
+#include "cri/adx.h"
+#include "subscreen.h"
+#include "director.h"
+#include "room.h"
+#include "lights.h"
+#include "sce/intc.h"
+#include "navmesh.h"
+#include "ptmf.h"
+#include "effectmgr.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
 
 extern void *CreatureA_vtable[], *CreatureBase_vtable[], *Character_vtable[], *Actor_vtable[];
 
@@ -28,14 +67,8 @@ extern void *CreatureA_vtable[], *CreatureBase_vtable[], *Character_vtable[], *A
 /* ---- the creature base (CreatureBase_vtable): defaults ---- */
 
 extern PTMF D_01990D40[];
-s32 Room4F_Command(void *self, u32 i, s32 a, s32 b);
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
-
-void CreatureA_SetSaveSlot(u8 *p, s32 a1, u32 v);
-s32 CreatureA_IsUp(u8 *p);
-void CreatureA_Save(u8 *p, s32 slot, u32 v);
-void *CreatureBase_dtor(u8 *p);
 
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))
@@ -44,106 +77,41 @@ void *CreatureBase_dtor(u8 *p);
 
 #define S64(p, off) (*(s64 *)((u8 *)(p) + (off)))
 
-void StrandSplash_Start(u8 *self);
-
 #define U32(p, off) (*(u32 *)((u8 *)(p) + (off)))
 
 #define F32(p, off) (*(f32 *)((u8 *)(p) + (off)))
 
-void Effect737D0_SetParams(u8 *self, u8 *src);
-void Effect737D0_Start(u8 *self);
-
-void Effect737D0_Draw(u8 *o);
-void CreatureB_Activate(Character *c);
-void CreatureB_Cleanup(Character *c);
-
-s32 Effect737D0_Update(void);
-void CreatureB_Vt88(void);
-void CreatureB_StateNone(void);
-
-extern u8 D_0042C6A0[];
-extern u8 D_0042C6E0[];
-void CreatureB_SetSaveSlot(u8 *self, s32 unused, u32 v);
-s32 CreatureB_IsUp(u8 *self);
-void CreatureB_Save(u8 *self, s32 slot, u32 b12);
-void *Kind25_ModelFiles(void);
-void *Kind25_MotionFiles(void);
-
 extern const char *const pstr_O_DNL_DNL_202_TEX;
-extern void *Kind25_vtable[];
-extern const PTMF Pursuer_StateRunThenNext_ptmf15;
-#define B7_W(p, off)  (*(s32 *)((u8 *)(p) + (off)))
 
-#define B7_H(p, off)  (*(s16 *)((u8 *)(p) + (off)))
+extern void *Creatures_vtable[], *BlockPool_vtable[], *D_004699E0[], *D_0046A980[];
+u32 Creatures_MessageSlot(u8 *p);
+void *Creatures_ModelSet(u8 *p);
+u32 Creatures_Get(u8 *p, u32 i);
+s32 Creatures_ModelCall(u8 *p, s32 a1, s32 a2, s32 a3);
+s32 Creatures_PoolCall(u8 *p, s32 a1, s32 a2, s32 a3);
 
-#define B7_B(p, off)  (*(u8 *)((u8 *)(p) + (off)))
+extern void *CreatureB_vtable[];
+static const char sHmbPck[] = "O_HMB\\HMB_000.PCK";
 
-#define B7_D(p, off)  (*(s64 *)((u8 *)(p) + (off)))
+static const char sHmbTex[] = "O_HMB\\HMB_000.TEX";
 
-void Cr19Bubbles_Start(u8 *p);
+void Creatures_ctorPools(u8 *p);
 
-/* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
- * slots 3..5 */
-static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
-    if (c != NULL) {
-        c->a.vtbl = vt;
-        c->a.vtbl = Pursuer_vtable;
-        VCALL(c, 0x10, void (*)(Character *))(c);
-        if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
-            void **m = c->motion;
-
-            if (m != NULL) {
-                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
-                c->motion = NULL;
-            }
-        }
-        c->a.vtbl = NPC_vtable;
-        VCALL(c, 0x10, void (*)(Character *))(c);
-        c->a.vtbl = Character_vtable;
-        c->a.vtbl = Actor_vtable;
-        if ((s16)flags > 0) {
-            Actor_Destroy(&c->a);
-        }
-    }
-    return c;
+/* the creatures' two classes (0x1600 bytes on the event character base) */
+static void *creature_init(u8 *o, void **vtbl) {
+    AT(o, 0x0, void **) = Actor_vtable;
+    AT(o, 0x20, s32) = 0x0FFFFFFF;
+    AT(o, 0x24, s32) = 0x02000000;
+    AT(o, 0x0, void **) = Character_vtable;
+    AT(o, 0x1380, s32) = 0;
+    AT(o, 0x153C, u8) = 0;
+    AT(o, 0x0, void **) = vtbl;
+    return o;
 }
 
-/* in play: Actor_TeleportRandom(-1) */
-static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p) {
-    if (Npc_InPlayedRoom(p) != 0) {
-        Actor_TeleportRandom(&p->c.a, -1);
-    }
-}
-
-/* the action 5 taken (+0x14E8): in play +0x8C, the state st, +0x114 1; the action cleared */
-static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, const PTMF *st) {
-    if (PU(p, 0x14E8, s32) != 5) {
-        return;
-    }
-    if ((u8)Npc_InPlayedRoom(p) != 0) {
-        VCALL(p, 0x8C, void (*)(Pursuer *))(p);
-        ptmf_set(&PU(p, 0x174C, PTMF), st);
-        PU(p, 0x1758, s32) = -1;
-        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
-    }
-    PU(p, 0x14E8, s32) = 0;
-    PU(p, 0x14EC, s32) = 0;
-}
-
-/* its slot's progress entry (Progress_HasRelationCmd) 1: SlotCmd_Cancel; -1 */
-static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) {
-    Progress *g = gProgress;
-
-    if ((u8)Progress_HasRelationCmd(g, *(u8 *)&p->c.a.slot) == 1) {
-        SlotCmd_Cancel(g, *(u8 *)&p->c.a.slot);
-    }
-    return -1;
-}
-
-Character *Kind25_dtor(Character *c, s32 flags);
-void Kind25_ShowUp(Pursuer *p);
-void Kind25_EventState(Pursuer *p);
-s32 Kind25_GrabOrder(Pursuer *p);
+void *CreatureB_ctor(void *o);
+void *CreatureA_ctor(void *o);
+void *Creatures_ctor(u8 *p);
 
 /* 0x002E2260 */
 void CreatureBase_SetSaveSlot(Character *c) {   /* +0xA8 */
@@ -208,6 +176,12 @@ void Creature_delete(void *p) {
 void *Creature_new(u32 size, void *place) {
     return place;
 }
+
+/* 0x002E2340 */
+u32 Creatures_MessageSlot(u8 *p) { return p[0x38680]; }
+
+/* 0x002E2350 */
+void *Creatures_ModelSet(u8 *p) { return p + 0xF680; }
 
 /* ---- the creature (CreatureA_vtable) ---- */
 
@@ -384,7 +358,6 @@ void CreatureA_ComeAfterFiona(Character *c, s32 a1, s32 a2) {
     }
 }
 
-#include "navmesh.h"
 
 extern VObject *gSceneGameF29740;   /* the path planner */
 
@@ -771,8 +744,6 @@ void CreatureA_Bob(Character *c) {
     AT(k, 0x18, f32) += AT(k, 0x1C, f32);
 }
 
-#include "ptmf.h"
-#include "effectmgr.h"
 
 extern void *CreatureVanish_vtable[];
 extern const PTMF CreatureA_StateVanish_ptmf4;   /* vanishing */
@@ -1756,6 +1727,37 @@ void Creatures_SendAfterFiona(u8 *m, s32 a1, s32 a2, s32 i, s32 a4) {
     }
 }
 
+/* 0x002E25F0 */
+u32 Creatures_Get(u8 *p, u32 i) { return ((u32 *)p)[(u8)i]; }
+
+/* tail call: member at +0xF630, virtual slot 0x10, with 0x890 */
+/* 0x002E2610 */
+s32 Creatures_ModelCall(u8 *p, s32 a1, s32 a2, s32 a3) {
+    u8 *m = p + 0xF630;
+    return VCALL(m, 0x10, s32 (*)(void *, s32, s32, s32))(m, 0x890, a2, a3);
+}
+
+/* tail call: member at +0xDC40, virtual slot 0x10 */
+/* 0x002E2630 */
+s32 Creatures_PoolCall(u8 *p, s32 a1, s32 a2, s32 a3) {
+    u8 *m = p + 0xDC40;
+    return VCALL(m, 0x10, s32 (*)(void *, s32, s32, s32))(m, a1, a2, a3);
+}
+
+/* SceneGame +0x706480: the active creatures (10 slots) enter the room (+0x38) */
+/* 0x002E2650 */
+void Creatures_EnterRoom(u8 *o) {
+    s32 i;
+
+    for (i = 0; i < 10; i++) {
+        VObject *c = AT(o, i * 4, VObject *);
+
+        if (c != NULL && AT(c, 0x28, u8) == 1) {
+            VCALL(c, 0x38, void (*)(VObject *))(c);
+        }
+    }
+}
+
 /* Fiona left by exit `exit`: every creature up hears it (+0x34) */
 /* 0x002E26C0 */
 void Creatures_FionaLeft(u8 *m, s32 exit) {
@@ -1794,6 +1796,25 @@ void Creatures_ShowMessage(u8 *m) {
     AT(m, 0x38681, u8) = 0;
 }
 
+/* SceneGame +0x706480: hook its message data (+0x27680) up to message slot 6 (result at
+ * +0x38681) */
+/* 0x002E2820 */
+void Creatures_HookMessages(u8 *o) {
+    AT(o, 0x38680, u8) = 6;
+    AT(o, 0x38681, u8) = VCALL(gBootMessage, 0x8, u32 (*)(VObject *, u32, void *))(
+        gBootMessage, AT(o, 0x38680, u8), o + 0x27680);
+}
+
+/* SceneGame +0x706480 (the creatures' resources, HMB): load the model and its textures (the
+ * second argument is unused) */
+/* 0x002E2890 */
+void Creatures_LoadModel(u8 *o, const void *unused) {
+    VObject *ld = gFileLoader;
+
+    VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sHmbPck, o + 0xF680, 0x10000000, 0);
+    VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sHmbTex, o + 0x27680, 0x10000000, 0);
+}
+
 /* all of them removed (each one's +0x10 first; the manager's +0x28) */
 /* 0x002E2920 */
 void Creatures_RemoveAll(u8 *m) {
@@ -1809,6 +1830,63 @@ void Creatures_RemoveAll(u8 *m) {
     }
 }
 
+/* the creatures, drawn each frame (texture cache +0x18 and gBootMessage +0x20 reset first):
+ * each active, visible one (+0x2C), unless the player is in a special state */
+/* 0x002E29A0 */
+void Creatures_Draw(u8 *o) {
+    s32 i;
+
+    VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
+    VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
+    for (i = 0; i < 10; i++) {
+        VObject *c = AT(o, i * 4, VObject *);
+
+        if (c == NULL || AT(gCharPlayer, 0xE2, u8) != 0) {
+            continue;
+        }
+        if (AT(c, 0x28, u8) == 1 && AT(c, 0x29, u8) == 0) {
+            VCALL(c, 0x2C, void (*)(VObject *))(c);
+        }
+    }
+}
+
+/* the creatures, each frame (10 slots): an active one moves (+0x30) unless the player is in a
+ * special state; an inactive one gets +0x10, then the manager's +0x28 (its vtable at +0x28)
+ * for its slot */
+/* 0x002E2A60 */
+void Creatures_Update(u8 *o) {
+    s32 i;
+
+    for (i = 0; i < 10; i++) {
+        VObject *c = AT(o, i * 4, VObject *);
+
+        if (c == NULL) {
+            continue;
+        }
+        if (AT(c, 0x28, u8) != 0) {
+            if (AT(gCharPlayer, 0xE2, u8) == 0) {
+                VCALL(c, 0x30, void (*)(VObject *))(c);
+            }
+        } else {
+            VCALL(c, 0x10, void (*)(VObject *))(c);
+            ((void (*)(u8 *, s32))AT(AT(o, 0x28, u8 *), 0x28, void *))(o, i & 0xFF);
+        }
+    }
+}
+
+/* two block pools (10 x 0x1600 and 3 x 0x890 bytes) and a table of 10 */
+/* 0x002E2B20 */
+void Creatures_ctorPools(u8 *p) {
+    s32 i;
+
+    BlockPool_Init((BlockPool *)(p + 0xDC40), p + 0x40, 0x1600, 0xA, p + 0xDC58);
+    for (i = 0; i < 10; i++) {
+        AT(p, i * 4, s32) = 0;
+    }
+    BlockPool_Init((BlockPool *)(p + 0xF630), p + 0xDC80, 0x890, 3, p + 0xF648);
+    AT(p, 0x38681, u8) = 0;
+}
+
 /* ---- CreatureVanish_vtable (0x4A0 bytes): a creature's vanishing - a glow (records +0x10 + buffer
  * +0x3A8 * 0x30, frames 0..15 of its animation) and 8 sparks (+0x70 + buffer * 0x180) that
  * burst out, then zig-zag (+0x3BC), slow (+0x430 their drag, doubling) and shrink (+0x450) and
@@ -1817,223 +1895,6 @@ void Creatures_RemoveAll(u8 *m) {
 
 extern void *EffectBase_vtable[];
 /* soft-float doubles as raw bit patterns */
-
-#define VANISH_GLOW(o) ((o) + AT(o, 0x3A8, s32) * 0x30 + 0x10)
-#define VANISH_SPARK(o, i) ((o) + AT(o, 0x3A8, s32) * 0x180 + (i) * 0x30 + 0x70)
-
-/* +0x8 destructor (the quad drawer at +0x370 inlined) */
-/* 0x00312040 */
-u8 *CreatureVanish_dtor(u8 *o, s32 flags) {
-    if (o == NULL) {
-        return o;
-    }
-    AT(o, 0x0, void **) = CreatureVanish_vtable;
-    AT(o, 0x370, void **) = QuadDrawer_vtable;
-    AT(o, 0x370, void **) = Helper469D00_vtable;
-    AT(o, 0x0, void **) = EffectBase_vtable;
-    if ((s16)flags > 0) {
-        EffectMgr_free(o);
-    }
-    return o;
-}
-
-/* +0xC set up: the drawer (texture group 0x10, additive), the glow 5 across, the sparks 4
- * across with their drag ((0.005 + 0.025 x random) / 2, in doubles), shrink and fade */
-/* 0x003128E0 */
-void CreatureVanish_Start(u8 *o) {
-    static const union { u32 u; f32 f; } k0005 = {0x3BA3D70A}, k002 = {0x3CA3D70A};
-    VObject *rng;
-    s32 i;
-
-    AT(o, 0x3A8, s32) = 0;
-    AT(o, 0x378, s64) = -1;
-    AT(o, 0x388, s32) = 0;
-    AT(o, 0x38C, s32) = 0;
-    AT(o, 0x390, s32) = 0x19;
-    AT(o, 0x394, s16) = 1;
-    AT(o, 0x396, s16) = 0;
-    AT(o, 0x398, s16) = 0x60;
-    AT(o, 0x39A, s16) = 0x20;
-    AT(o, 0x39C, s16) = 0x20;
-    AT(o, 0x39E, s16) = 0x200;
-    AT(o, 0x3A0, s16) = 0x100;
-    AT(o, 0x3A2, u8) = 0x40;
-    AT(o, 0x3A3, u8) = 1;
-    AT(o, 0x3A4, u8) = 1;
-    AT(o, 0x3A5, u8) = 0x10;
-    AT(o, 0x3A6, u8) = 0xFF;
-    rng = gRandom;
-    AT(VANISH_GLOW(o), 0x20, f32) = 5.0f;
-    AT(VANISH_GLOW(o), 0x24, f32) = AT(VANISH_GLOW(o), 0x20, f32);
-    AT(VANISH_GLOW(o), 0x28, s32) = 0;
-    AT(VANISH_GLOW(o), 0x2C, s32) = 0;
-    for (i = 0; i < 8; i++) {
-        u8 *p = VANISH_SPARK(o, i);
-
-        AT(p, 0x20, f32) = 4.0f;
-        AT(p, 0x24, f32) = AT(p, 0x20, f32);
-        AT(p, 0x28, s32) = 0;
-        AT(p, 0x2C, s32) = 0;
-        AT(o, 0x430 + i * 4, f32) = func_0011F878(func_0011F458(
-            func_0011F148(0x3F747AE140000000ULL /* 0.005f */,
-                          func_0011F208(0x3F9999999999999AULL /* 0.025 */,
-                                        func_0011ED78(VCALL(rng, 0x18, f32 (*)(VObject *))(rng)))),
-            0x4000000000000000ULL /* 2.0 */));
-        AT(o, 0x450 + i * 4, f32) = k0005.f + k002.f * (f32)(VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 7);
-        AT(o, 0x470 + i * 4, f32) = (f32)((VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3) + 1);
-    }
-    AT(o, 0x490, s32) = 0;
-    AT(o, 0x494, u8) = 0;
-}
-
-/* a random sign */
-static inline __attribute__((always_inline)) s8 vanish_sign(VObject *rng) {
-    return (VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 1) ? -1 : 1;
-}
-
-/* +0x18 start: at params' position (+0x0) in its colour (+0x10); each spark a little darker,
- * flung out at random (up to 0.5 a frame each way, upward only), its zig-zag 0.0125..0.05 */
-/* 0x003120D0 */
-void CreatureVanish_SetParams(u8 *o, const u8 *params) {
-    VObject *rng;
-    u8 *g = VANISH_GLOW(o);
-    s32 i;
-
-    AT(g, 0x0, s32) = params[0x10];
-    AT(g, 0x4, s32) = params[0x11];
-    AT(g, 0x8, s32) = params[0x12];
-    AT(g, 0xC, s32) = params[0x13];
-    sceVu0CopyVector((f32 *)(g + 0x10), (f32 *)params);
-    rng = gRandom;
-    for (i = 0; i < 8; i++) {
-        u8 *p = VANISH_SPARK(o, i);
-        u32 dark = VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 0x1F;
-        s8 sign;
-        f32 m;
-
-        AT(p, 0x0, s32) = params[0x10] - dark;
-        AT(p, 0x4, s32) = params[0x11] - dark;
-        AT(p, 0x8, s32) = params[0x12] - dark;
-        AT(p, 0xC, s32) = params[0x13];
-        sign = vanish_sign(rng);
-        m = 0.25f * (f32)((VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3) + 1);
-        AT(o, 0x3B0 + i * 0x10, f32) = (f32)sign * (VCALL(rng, 0x18, f32 (*)(VObject *))(rng) * m / 2.0f);
-        m = 0.25f * (f32)((VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3) + 1);
-        AT(o, 0x3B4 + i * 0x10, f32) = VCALL(rng, 0x18, f32 (*)(VObject *))(rng) * m / 2.0f;
-        sign = vanish_sign(rng);
-        m = 0.25f * (f32)((VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3) + 1);
-        AT(o, 0x3B8 + i * 0x10, f32) = (f32)sign * (VCALL(rng, 0x18, f32 (*)(VObject *))(rng) * m / 2.0f);
-        m = (f32)((VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3) + 1);
-        AT(o, 0x3BC + i * 0x10, f32) = 0x1.99999ap-7f /* 0.0125 */ * (f32)sign * m;
-        sceVu0CopyVector((f32 *)(p + 0x10), (f32 *)params);
-    }
-}
-
-/* +0x14 draw (unless the effects are paused): the glow (cell (0, 0x60), 15 frames), then the
- * sparks (cell (0x60, 0x40)) */
-/* 0x00312450 */
-void CreatureVanish_Draw(u8 *o) {
-    if (SceneGame_GetByte19034(gEffects) != 0) {
-        return;
-    }
-    AT(o, 0x394, s16) = 1;
-    AT(o, 0x396, s16) = 0;
-    AT(o, 0x398, s16) = 0x60;
-    AT(o, 0x3A3, u8) = 0xF;
-    AT(o, 0x380, u8 *) = VANISH_GLOW(o);
-    Drawer_Submit(o + 0x370);
-    AT(o, 0x394, s16) = 8;
-    AT(o, 0x396, s16) = 0x60;
-    AT(o, 0x398, s16) = 0x40;
-    AT(o, 0x3A3, u8) = 1;
-    AT(o, 0x380, u8 *) = VANISH_SPARK(o, 0);
-    Drawer_Submit(o + 0x370);
-}
-
-/* +0x10 update (0 once all of it is done) */
-/* 0x00312510 */
-s32 CreatureVanish_Update(u8 *o) {
-    VObject *rng;
-    u8 *g;
-    s32 i, k;
-
-    AT(o, 0x3A8, s32) ^= 1;
-    {
-        u32 buf = AT(o, 0x3A8, u32);
-        u32 *dst = &AT(o, 0x10 + buf * 0x30, u32);
-        u32 *src = &AT(o, 0x10 + (buf ^ 1) * 0x30, u32);
-
-        for (k = 0; k < 12; k++) {
-            dst[k] = src[k];
-        }
-    }
-    g = VANISH_GLOW(o);
-    AT(g, 0x2C, s32)++;
-    if (AT(g, 0x2C, s32) >= 0xF) {
-        AT(g, 0x2C, s32) = 0xF;
-        AT(g, 0xC, s32) = 0;
-        AT(o, 0x494, u8) |= 1;
-    }
-    rng = gRandom;
-    for (i = 0; i < 8; i++) {
-        u32 buf = AT(o, 0x3A8, u32);
-        u32 *dst = &AT(o, 0x70 + buf * 0x180 + i * 0x30, u32);
-        u32 *src = &AT(o, 0x70 + (buf ^ 1) * 0x180 + i * 0x30, u32);
-        f32 *v = &AT(o, 0x3B0 + i * 0x10, f32);
-        f32 *drag = &AT(o, 0x430 + i * 4, f32);
-        u8 *p;
-        f32 w;
-
-        for (k = 0; k < 12; k++) {
-            dst[k] = src[k];
-        }
-        p = VANISH_SPARK(o, i);
-        AT(p, 0x2C, s32) = 0;
-        if (AT(o, 0x490, s32) < 9) {
-            AT(p, 0x10, f32) = AT(p, 0x10, f32) + v[0];
-            AT(p, 0x18, f32) = AT(p, 0x18, f32) + v[2];
-        } else {
-            AT(p, 0x10, f32) = AT(p, 0x10, f32) + v[3];
-            AT(p, 0x18, f32) = AT(p, 0x18, f32) + v[3];
-            if (AT(o, 0x490, u32) % ((VCALL(rng, 0x10, u32 (*)(VObject *))(rng) & 3) + 7) == 0) {
-                v[3] = -v[3];
-            }
-        }
-        if (AT(o, 0x490, s32) < 5) {
-            AT(p, 0x14, f32) = AT(p, 0x14, f32) + (v[1] - *drag);
-            *drag = *drag + *drag;
-        } else {
-            if (!(v[1] <= *drag)) {
-                v[1] = *drag;
-                *drag = *drag + *drag;
-            }
-            if (AT(o, 0x490, s32) % 6 == 0) {
-                *drag = *drag + *drag / 12.0f;
-            }
-            AT(p, 0x14, f32) = AT(p, 0x14, f32) + (v[1] - *drag);
-        }
-        if (AT(o, 0x490, s32) % 2 == 0) {
-            w = AT(p, 0x20, f32) - AT(o, 0x450 + i * 4, f32);
-            AT(p, 0x20, f32) = w;
-            AT(p, 0x24, f32) = w;
-        }
-        if (AT(p, 0x20, f32) < 0.0f) {
-            AT(p, 0x20, f32) = 0.0f;
-            AT(p, 0x24, f32) = 0.0f;
-            AT(o, 0x494, u8) |= 2;
-        }
-        AT(p, 0xC, s32) = (s32)((f32)AT(p, 0xC, s32) - AT(o, 0x470 + i * 4, f32));
-        if (AT(p, 0xC, s32) < 0) {
-            AT(p, 0xC, s32) = 0;
-            AT(o, 0x494, u8) |= 4;
-        }
-    }
-    if (AT(o, 0x494, u8) == 7) {
-        return 0;
-    }
-    AT(o, 0x490, s32)++;
-    return 1;
-}
 
 /* room 0x4F (D_0040C130): the first of the creatures 0..6 within 4 of (-35.7, -7.5) vanishes
  * there (taken off, its glow - blue for kinds below 0x12, else red - and the sound 0x8B): 1;
@@ -2090,115 +1951,54 @@ s32 Room4F_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990D40[i & 0xFF], a, b);
 }
 
-/* ---- class LoopingSprite_vtable: a looping sprite (one quad, double-buffered at +0x10 + buffer +0xA8 *
- * 0x30, drawn by the quad drawer at +0x70; 4 frames of 32 x 32 at (0x40, 0) in 512 x 256,
- * layer 0x19), each loop at a new random turn; +0xAC frames per frame, +0xB0 stopped ---- */
-
-extern void *LoopingSprite_vtable[];
-
-#define LOOP_REC(o) ((o) + AT(o, 0xA8, s32) * 0x30 + 0x10)
-
-/* +0x8 destructor (the quad drawer's inlined) */
-/* 0x00312B50 */
-u8 *LoopingSprite_dtor(u8 *o, s32 flags) {
-    if (o == NULL) {
-        return o;
-    }
-    AT(o, 0x0, void **) = LoopingSprite_vtable;
-    AT(o, 0x70, void **) = QuadDrawer_vtable;
-    AT(o, 0x70, void **) = Helper469D00_vtable;
-    AT(o, 0x0, void **) = EffectBase_vtable;
-    if ((s16)flags > 0) {
-        EffectMgr_free(o);
+/* (possibly dead code: nothing in the game references it) */
+/* destructor (vtable at +0x28, Creatures_vtable): members at +0xF630 / +0xDC40, then the base
+ * (D_0046A980, clearing gCreatures) */
+/* (possibly dead code: nothing in the game references it) */
+/* 0x002D0DF0 */
+void *Creatures_dtor(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x28, void **) = Creatures_vtable;
+        AT(o, 0xF630, void **) = BlockPool_vtable;
+        AT(o, 0xF630, void **) = D_004699E0;
+        AT(o, 0xDC40, void **) = BlockPool_vtable;
+        AT(o, 0xDC40, void **) = D_004699E0;
+        AT(o, 0x28, void **) = D_0046A980;
+        gCreatures = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
     }
     return o;
 }
 
-/* +0x18 start: at the position given; NULL stops it */
-/* 0x00312BE0 */
-void LoopingSprite_SetParams(u8 *o, f32 *at) {
-    if (at == NULL) {
-        AT(o, 0xB0, u8) = 1;
-        return;
-    }
-    sceVu0CopyVector((f32 *)(LOOP_REC(o) + 0x10), at);
+/* 0x002D1490 */
+void *Creatures_ctor(u8 *p) {
+    u8 *a = p + 0xDC40;
+    u8 *b = p + 0xF630;
+
+    gCreatures = p;
+    F(p, 0x28, void *) = Creatures_vtable;
+    F(a, 0x0, void *) = D_004699E0;
+    F(a, 0x4, u32) = 0;
+    F(a, 0x8, u32) = 0;
+    F(a, 0x0, void *) = BlockPool_vtable;
+    F(a, 0xC, u32) = 0;
+    F(a, 0x10, u32) = 0;
+    F(a, 0x14, u32) = 0;
+    F(b, 0x0, void *) = D_004699E0;
+    F(b, 0x4, u32) = 0;
+    F(b, 0x8, u32) = 0;
+    F(b, 0x0, void *) = BlockPool_vtable;
+    F(b, 0xC, u32) = 0;
+    F(b, 0x10, u32) = 0;
+    F(b, 0x14, u32) = 0;
+    return p;
 }
 
-/* +0x14 draw */
-/* 0x00312C30 */
-void LoopingSprite_Draw(u8 *o) {
-    AT(o, 0x80, u8 *) = LOOP_REC(o);
-    Drawer_Submit(o + 0x70);
-}
-
-/* +0x10 update: the buffers swapped (the record copied over); every +0xAC frames the next
- * frame, after the last (+0xA3) the first again at a new turn. 0 once stopped */
-/* 0x00312C60 */
-s32 LoopingSprite_Update(u8 *o) {
-    static const union { u32 u; f32 f; } k2Pi = {0x40C90FDB};
-    u32 *dst, *src;
-    u32 i;
-
-    if (AT(o, 0xB0, u8) == 1) {
-        return 0;
-    }
-    AT(o, 0xA8, s32) ^= 1;
-    dst = (u32 *)LOOP_REC(o);
-    src = (u32 *)(o + (AT(o, 0xA8, s32) ^ 1) * 0x30 + 0x10);
-    for (i = 0; i < 12; i++) {
-        *dst++ = *src++;
-    }
-    *(volatile s32 *)(o + 0xAC) -= 1;   /* (stored, then read back) */
-    if (AT(o, 0xAC, s32) == 0) {
-        u8 *r;
-
-        AT(o, 0xAC, s32) = 1;
-        r = LOOP_REC(o);
-        AT(r, 0x2C, s32) += 1;
-        if (!(AT(r, 0x2C, s32) < AT(o, 0xA3, s8))) {
-            AT(r, 0x2C, s32) = 0;
-            AT(r, 0x28, f32) = k2Pi.f * (VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom) - 0.5f);
-        }
-    }
-    return 1;
-}
-
-/* +0xC set up: grey, half-transparent, 1.6 across, a random turn; the drawer's settings */
-/* 0x00312D90 */
-void LoopingSprite_Start(u8 *o) {
-    static const union { u32 u; f32 f; } k2Pi = {0x40C90FDB}, kSize = {0x3FCCCCCD};
-    u8 *r;
-
-    AT(o, 0xA8, s32) = 0;
-    AT(o, 0xAC, s32) = 1;
-    AT(o, 0xB0, u8) = 0;
-    AT(o, 0x78, s64) = -1;
-    AT(o, 0x84, s32) = 0;
-    AT(o, 0x88, s32) = 0;
-    AT(o, 0x8C, s32) = 0;
-    AT(o, 0x90, s32) = 0x19;
-    AT(o, 0x94, s16) = 1;
-    AT(o, 0x96, s16) = 0x40;
-    AT(o, 0x98, s16) = 0;
-    AT(o, 0x9A, s16) = 0x20;
-    AT(o, 0x9C, s16) = 0x20;
-    AT(o, 0x9E, s16) = 0x200;
-    AT(o, 0xA0, s16) = 0x100;
-    AT(o, 0xA2, s8) = 0;
-    AT(o, 0xA3, s8) = 4;
-    AT(o, 0xA4, s8) = 1;
-    AT(o, 0xA5, s8) = 0x10;
-    AT(o, 0xA6, s8) = -1;
-    r = LOOP_REC(o);
-    AT(r, 0x0, s32) = 0x80;
-    AT(r, 0x4, s32) = 0x80;
-    AT(r, 0x8, s32) = 0x80;
-    AT(r, 0xC, s32) = 0x40;
-    AT(r, 0x20, f32) = kSize.f;
-    AT(r, 0x24, f32) = AT(r, 0x20, f32);
-    AT(r, 0x28, f32) = k2Pi.f * (VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom) - 0.5f);
-    AT(r, 0x2C, s32) = 0;
-}
+/* ---- class LoopingSprite_vtable: a looping sprite (one quad, double-buffered at +0x10 + buffer +0xA8 *
+ * 0x30, drawn by the quad drawer at +0x70; 4 frames of 32 x 32 at (0x40, 0) in 512 x 256,
+ * layer 0x19), each loop at a new random turn; +0xAC frames per frame, +0xB0 stopped ---- */
 
 /* ---- class Effect726E0_vtable (0x220 bytes): a strand hanging from the stalker in slot 2 (drool /
  * blood): up to 4 segments (0x50 each from +0x80: a matrix, alpha +0xC0, cells +0xC4..+0xCA)
@@ -2548,204 +2348,6 @@ s32 Effect726E0_Update(u8 *o) {
  * against it (+0xDE0, 12 bytes each); the quad drawer at +0xC10, the splash point at +0xC50
  * (w 1.0 until a one-frame flash has been drawn there) ---- */
 
-#define DROP_REC(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0x600) + (i))
-#define DROP_VEL(o, i) ((f32 *)((o) + 0xC60 + (i) * 0xC))
-#define DROP_PULL(o, i) ((f32 *)((o) + 0xDE0 + (i) * 0xC))
-
-/* +0x8 destructor (the quad drawer's inlined) */
-/* 0x00314260 */
-u8 *StrandSplash_dtor(u8 *o, s32 flags) {
-    if (o == NULL) {
-        return o;
-    }
-    AT(o, 0x0, void **) = StrandSplash_vtable;
-    AT(o, 0xC10, void **) = QuadDrawer_vtable;
-    AT(o, 0xC10, void **) = Helper469D00_vtable;
-    AT(o, 0x0, void **) = EffectBase_vtable;
-    if ((s16)flags > 0) {
-        EffectMgr_free(o);
-    }
-    return o;
-}
-
-static s32 clamp_colour(s32 c) {
-    c <<= 1;
-    if (!(c < 0x100)) {
-        c = 0xFF;
-    }
-    return c;
-}
-
-/* +0x18 start (arg: colour 0..127 x3, position, size): every droplet at the point in the
- * colour, a random alpha and size, flung out at random (slower the bigger) and pulled back by
- * 10..30% of its speed */
-/* 0x003142F0 */
-void StrandSplash_SetParams(u8 *o, s32 *arg) {
-    static const union { u32 u; f32 f; } kTenth = {0x3DCCCCCD}, kFifth = {0x3E4CCCCD},
-                                         kThreeTenths = {0x3E99999A};
-    VObject *rnd;
-    s32 r, g, b, i;
-    f32 small, big;
-
-    if (arg == NULL) {
-        return;
-    }
-    r = clamp_colour(arg[0]);
-    g = clamp_colour(arg[1]);
-    b = clamp_colour(arg[2]);
-    rnd = gRandom;
-    AT(o, 0xC50, f32) = ((f32 *)arg)[3];
-    AT(o, 0xC54, f32) = ((f32 *)arg)[4];
-    AT(o, 0xC58, f32) = ((f32 *)arg)[5];
-    AT(o, 0xC5C, f32) = 1.0f;
-    small = kTenth.f * ((f32 *)arg)[6];
-    big = 4.0f * ((f32 *)arg)[6];
-    for (i = 0; i < 32; i++) {
-        QuadRec *q = DROP_REC(o, AT(o, 0xF60, s32), i);
-        f32 *v = DROP_VEL(o, i);
-        f32 *p = DROP_PULL(o, i);
-        f32 speed, k;
-
-        q->rgba[0] = r;
-        q->rgba[1] = g;
-        q->rgba[2] = b;
-        q->rgba[3] = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0x1F) + 0x60;
-        sceVu0CopyVector(q->pos, (f32 *)(o + 0xC50));
-        q->w = 0.0f + small + kThreeTenths.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
-        q->h = q->w;
-        q->turn = 0.0f;
-        q->frame = 0;
-        speed = 0.0f + big - 10.0f * q->w;
-        v[0] = speed * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        v[1] = speed * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        v[2] = speed * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        k = 0.0f + kTenth.f + kFifth.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
-        p[0] = -(v[0] * k);
-        p[1] = -(v[1] * k);
-        p[2] = -(v[2] * k);
-    }
-}
-
-/* the droplets drawn (unless the effects are paused), and on the first frame a flash (2 x 2) of
- * colour r, g, b at the point */
-static inline void drops_draw(u8 *o, s32 cr, s32 cg, s32 cb) {
-    if (SceneGame_GetByte19034(gEffects) != 0) {
-        return;
-    }
-    AT(o, 0xC20, QuadRec *) = DROP_REC(o, AT(o, 0xF60, s32), 0);
-    Drawer_Submit(o + 0xC10);
-    if (AT(o, 0xC5C, f32) == 1.0f) {
-        QuadDrawer q __attribute__((aligned(16)));
-        QuadRec r __attribute__((aligned(16)));
-
-        r.rgba[0] = cr;
-        r.rgba[1] = cg;
-        r.rgba[2] = cb;
-        r.rgba[3] = 0x80;
-        sceVu0CopyVector(r.pos, (f32 *)(o + 0xC50));
-        r.w = 2.0f;
-        r.h = 2.0f;
-        r.turn = 0.0f;
-        r.frame = 0;
-        q.vtbl = QuadDrawer_vtable;
-        q.a = -1;
-        q.tex = -1;
-        q.rec = &r;
-        q.corners = 0;
-        q.cx = 0.0f;
-        q.cy = 0.0f;
-        q.layer = 0x19;
-        q.count = 1;
-        q.cellX = 0x40;
-        q.cellY = 0x40;
-        q.cellW = 0x20;
-        q.cellH = 0x20;
-        q.texW = 0x200;
-        q.texH = 0x100;
-        q.flags = 0;
-        q.frames = 1;
-        q.texId = 1;
-        q.texGroup = 0x10;
-        q.palette = -1;
-        Drawer_Submit((u8 *)&q);
-        AT(o, 0xC5C, f32) = 0.0f;
-        q.vtbl = Helper469D00_vtable;
-    }
-}
-
-/* +0x14 draw: the droplets, a white flash on the first frame */
-/* 0x003145A0 */
-void StrandSplash_Draw(u8 *o) {
-    drops_draw(o, 0xC0, 0xC0, 0xC0);
-}
-
-/* +0x10 update: flip the buffers (the new one copied from the old); every droplet still seen
- * flickers, slows by its pull and moves on; it goes out once it has (nearly) stopped rising or
- * falling. 0 once none was left last time */
-/* 0x00314700 */
-s32 StrandSplash_Update(u8 *o) {
-    static const union { u32 u; f32 f; } kHundredth = {0x3C23D70A}, kMinusHundredth = {0xBC23D70A};
-    VObject *rnd;
-    s32 i;
-
-    if (AT(o, 0xF64, u8) == 1) {
-        return 0;
-    }
-    AT(o, 0xF64, u8) = 1;
-    rnd = gRandom;
-    AT(o, 0xF60, s32) ^= 1;
-    for (i = 0; i < 32; i++) {
-        QuadRec *q;
-        f32 *v = DROP_VEL(o, i);
-        f32 *p = DROP_PULL(o, i);
-
-        *DROP_REC(o, AT(o, 0xF60, s32), i) = *DROP_REC(o, AT(o, 0xF60, s32) ^ 1, i);
-        q = DROP_REC(o, AT(o, 0xF60, s32), i);
-        if (q->rgba[3] <= 0) {
-            continue;
-        }
-        AT(o, 0xF64, u8) = 0;
-        q->rgba[3] = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0x7F) + 1;
-        v[0] = v[0] + p[0];
-        v[1] = v[1] + p[1];
-        if (!(p[1] <= 0.0f)) {
-            if (!(v[1] <= kMinusHundredth.f)) {
-                q->rgba[3] = 0;
-            }
-        } else if (v[1] < kHundredth.f) {
-            q->rgba[3] = 0;
-        }
-        v[2] = v[2] + p[2];
-        q->pos[0] = q->pos[0] + v[0];
-        q->pos[1] = q->pos[1] + v[1];
-        q->pos[2] = q->pos[2] + v[2];
-    }
-    return 1;
-}
-
-/* 0x00314910 */
-void StrandSplash_Start(u8 *self) {
-    S32(self, 0xF60) = 0;
-    self[0xF64] = 0;
-    S64(self, 0xC18) = -1;
-    S32(self, 0xC24) = 0;
-    S32(self, 0xC28) = 0;
-    S32(self, 0xC2C) = 0;
-    S32(self, 0xC30) = 25;
-    S16(self, 0xC34) = 0x20;
-    S16(self, 0xC36) = 0x6C;
-    S16(self, 0xC38) = 0x4C;
-    S16(self, 0xC3A) = 8;
-    S16(self, 0xC3C) = 8;
-    S16(self, 0xC3E) = 0x200;
-    S16(self, 0xC40) = 0x100;
-    self[0xC42] = 0x40;
-    self[0xC43] = 1;
-    self[0xC44] = 1;
-    self[0xC45] = 0x10;
-    self[0xC46] = 0xFF;
-}
-
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 extern void *Effect737D0_vtable[];
 extern void *CreatureB_vtable[];
@@ -2812,104 +2414,6 @@ void Effect737D0_Start(u8 *self) {
     self[0x74] = 1;
     self[0x75] = 0x10;
     self[0x76] = 0xFF;
-}
-
-/* (class DropletFlash_vtable, as StrandSplash_SetParams)  +0x18 start (arg: colour 0..127 x3, position): every
- * droplet at the point in the colour, a random alpha and size (0.2..0.6), flung out at random
- * (slower the bigger, three times as fast upwards) and pulled back by 20..50% of its speed */
-/* 0x0037BF10 */
-void DropletFlash_SetParams(u8 *o, s32 *arg) {
-    static const union { u32 u; f32 f; } kFifth = {0x3E4CCCCD}, kTwoFifths = {0x3ECCCCCD},
-                                         kThreeTenths = {0x3E99999A};
-    VObject *rnd;
-    s32 r, g, b, i;
-
-    if (arg == NULL) {
-        return;
-    }
-    r = clamp_colour(arg[0]);
-    g = clamp_colour(arg[1]);
-    b = clamp_colour(arg[2]);
-    rnd = gRandom;
-    AT(o, 0xC50, f32) = ((f32 *)arg)[3];
-    AT(o, 0xC54, f32) = ((f32 *)arg)[4];
-    AT(o, 0xC58, f32) = ((f32 *)arg)[5];
-    AT(o, 0xC5C, f32) = 1.0f;
-    for (i = 0; i < 32; i++) {
-        QuadRec *q = DROP_REC(o, AT(o, 0xF60, s32), i);
-        f32 *v = DROP_VEL(o, i);
-        f32 *p = DROP_PULL(o, i);
-        f32 speed, k;
-
-        q->rgba[0] = r;
-        q->rgba[1] = g;
-        q->rgba[2] = b;
-        q->rgba[3] = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0x1F) + 0x60;
-        sceVu0CopyVector(q->pos, (f32 *)(o + 0xC50));
-        q->w = 0.0f + kFifth.f + kTwoFifths.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
-        q->h = q->w;
-        q->turn = 0.0f;
-        q->frame = 0;
-        speed = 0.0f + 8.0f - 10.0f * q->w;
-        v[0] = speed * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        v[1] = 3.0f * speed * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        v[2] = speed * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        k = 0.0f + kFifth.f + kThreeTenths.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
-        p[0] = -(v[0] * k);
-        p[1] = -(v[1] * k);
-        p[2] = -(v[2] * k);
-    }
-}
-
-/* (class DropletFlash_vtable)  +0x14 draw: the droplets, a reddish flash (0x80, 0x50, 0x40) on the first
- * frame */
-/* 0x0037C1B0 */
-void DropletFlash_Draw(u8 *o) {
-    drops_draw(o, 0x80, 0x50, 0x40);
-}
-
-/* (as StrandSplash_Update)  +0x10 update: flip the buffers (the new one copied from the old); every droplet still seen
- * flickers, slows by its pull and moves on; it goes out once it has (nearly) stopped rising or
- * falling. 0 once none was left last time */
-/* 0x0037C310 */
-s32 DropletFlash_Update(u8 *o) {
-    static const union { u32 u; f32 f; } kHundredth = {0x3C23D70A}, kMinusHundredth = {0xBC23D70A};
-    VObject *rnd;
-    s32 i;
-
-    if (AT(o, 0xF64, u8) == 1) {
-        return 0;
-    }
-    AT(o, 0xF64, u8) = 1;
-    rnd = gRandom;
-    AT(o, 0xF60, s32) ^= 1;
-    for (i = 0; i < 32; i++) {
-        QuadRec *q;
-        f32 *v = DROP_VEL(o, i);
-        f32 *p = DROP_PULL(o, i);
-
-        *DROP_REC(o, AT(o, 0xF60, s32), i) = *DROP_REC(o, AT(o, 0xF60, s32) ^ 1, i);
-        q = DROP_REC(o, AT(o, 0xF60, s32), i);
-        if (q->rgba[3] <= 0) {
-            continue;
-        }
-        AT(o, 0xF64, u8) = 0;
-        q->rgba[3] = (VCALL(rnd, 0x10, s32 (*)(VObject *))(rnd) & 0x7F) + 1;
-        v[0] = v[0] + p[0];
-        v[1] = v[1] + p[1];
-        if (!(p[1] <= 0.0f)) {
-            if (!(v[1] <= kMinusHundredth.f)) {
-                q->rgba[3] = 0;
-            }
-        } else if (v[1] < kHundredth.f) {
-            q->rgba[3] = 0;
-        }
-        v[2] = v[2] + p[2];
-        q->pos[0] = q->pos[0] + v[0];
-        q->pos[1] = q->pos[1] + v[1];
-        q->pos[2] = q->pos[2] + v[2];
-    }
-    return 1;
 }
 
 /* (as CreatureA_dtor)  +0x8 destructor */
@@ -4779,27 +4283,15 @@ void CreatureB_Setup(Character *c) {
     AT(k, 0x69, u8) = 0;
 }
 
-/* 0x0032C240 */
-Character *Kind25_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind25_vtable); }
-
-/* 0x0032C350 */
-void *Kind25_ModelFiles(void) {
-    return D_0042C6A0;
+/* 0x0039B230 */
+void *CreatureB_ctor(void *o) {
+    return creature_init(o, CreatureB_vtable);
 }
 
-/* 0x0032C360 */
-void *Kind25_MotionFiles(void) {
-    return D_0042C6E0;
+/* 0x0039B280 */
+void *CreatureA_ctor(void *o) {
+    return creature_init(o, CreatureA_vtable);
 }
-
-/* 0x0032C380 */
-void Kind25_ShowUp(Pursuer *p) { creature_inplay(p); }
-
-/* 0x0032C3D0 */
-void Kind25_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf15); }
-
-/* 0x0032C4A0 */
-s32 Kind25_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 extern const PTMF CreatureB_StateWatch0_ptmf, CreatureB_StateWatch1_ptmf, CreatureB_StateHit_ptmf, CreatureB_StateGrab_ptmf, CreatureB_StateLeaving_ptmf, CreatureB_StateAfterFiona_ptmf, CreatureB_StateToDoor_ptmf,
     CreatureB_StateApproach10_ptmf, CreatureB_StateFlag9_ptmf, CreatureB_StateFionaOffMesh_ptmf, CreatureB_StateKnockedDown_ptmf, CreatureB_StateFionaCaught_ptmf, CreatureB_StateTurnToFiona_ptmf, CreatureB_StateWalkSpot_ptmf, CreatureB_StateByProgress_ptmf,
@@ -5062,333 +4554,3 @@ void CreatureB_StateNone(void) {
  * 0xC00 x the current one +0x2910, drawer +0x2410, velocities +0x2490) and 32 drops thrown up
  * (records +0x1810 + 0x600 x the current one, drawer +0x2448, velocities +0x2790), +0x2914
  * its frames; at frame 100 a splat (FloorSplat_vtable) on the spot ---- */
-
-extern void *FloorSplat_vtable[];
-
-#define GONE_BUBBLE(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0xC00) + (i))
-#define GONE_DROP(o, buf, i) ((QuadRec *)((o) + 0x1810 + (buf) * 0x600) + (i))
-#define GONE_RND() VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)
-
-/* drop `i` thrown up from within 2 of the spot (lower the later, frame `t`), 2.5..3 big,
- * flying outward and up, faster the later */
-/* 0x003592E0 */
-void Cr19Bubbles_Drop(u8 *o, s32 i, s32 t) {
-    static const union { u32 u; f32 f; } k4 = {0x40800000}, k001 = {0x3C23D70A}, k360 = {0x43B40000},
-                                         kPi = {0x40490FDB};   /* multiplied first */
-    VObject *rnd = gRandom;
-    QuadRec *r = GONE_DROP(o, AT(o, 0x2910, s32), i);
-    f32 dx, dz, *v = (f32 *)(o + 0x2790 + i * 0xC);
-
-    dx = k4.f * (GONE_RND() - 0.5f);
-    dz = k4.f * (GONE_RND() - 0.5f);
-    r->rgba[0] = 0x40;
-    r->rgba[1] = 0x10;
-    r->rgba[2] = 8;
-    r->rgba[3] = 1;
-    r->pos[0] = AT(o, 0x2480, f32) + dx;
-    r->pos[1] = (1.0f + AT(o, 0x2484, f32)) - (k001.f * (f32)t) * GONE_RND();
-    r->pos[2] = AT(o, 0x2488, f32) + dz;
-    r->pos[3] = 1.0f;
-    r->w = 2.5f + 0.5f * GONE_RND();
-    r->h = r->w;
-    r->turn = kPi.f * (k360.f * (GONE_RND() - 0.5f)) / 180.0f;
-    r->frame = 0;
-    v[0] = (k001.f * -dx) * GONE_RND();
-    v[1] = 0x1.47ae14p-7f + 0x1.0624dep-11f * (f32)t;   /* 0.01 + 0.0005 t */
-    v[2] = (k001.f * -dz) * GONE_RND();
-}
-
-/* bubble `i` (re)started within 3 x its size of the spot, two sizes up, drifting out and
- * rising 0.03..0.06 */
-/* 0x00359570 */
-void Cr19Bubbles_Bubble(u8 *o, s32 i) {
-    static const union { u32 u; f32 f; } k6 = {0x40C00000}, k003 = {0x3CF5C28F}, k360 = {0x43B40000},
-                                         kPi = {0x40490FDB};   /* multiplied first */
-    VObject *rnd = gRandom;
-    QuadRec *r = GONE_BUBBLE(o, AT(o, 0x2910, s32), i);
-    f32 s = r->w, dx, dz, *v = (f32 *)(o + 0x2490 + i * 0xC);
-
-    dx = (k6.f * s) * (GONE_RND() - 0.5f);
-    dz = (k6.f * r->w) * (GONE_RND() - 0.5f);
-    r->rgba[0] = 0x60;
-    r->rgba[1] = 0x30;
-    r->rgba[2] = 0x28;
-    r->rgba[3] = 1;
-    r->pos[0] = AT(o, 0x2480, f32) + dx;
-    r->pos[1] = AT(o, 0x2484, f32) + 2.0f * s;
-    r->pos[2] = AT(o, 0x2488, f32) + dz;
-    r->pos[3] = 1.0f;
-    r->turn = kPi.f * (k360.f * (GONE_RND() - 0.5f)) / 180.0f;
-    r->frame = 0;
-    v[0] = (k003.f * dx) * GONE_RND();
-    v[1] = 0x1.eb851ep-6f + 0x1.eb851ep-6f * GONE_RND();   /* 0.03 + 0.03 x */
-    v[2] = (k003.f * dz) * GONE_RND();
-}
-
-/* +0x18 start: arg { the spot, +0x10 its triangle (-1: nothing) }; every bubble hidden, 0.1 ..
- * 0.4 big, every drop hidden at 0.5 */
-/* 0x003597B0 */
-void Cr19Bubbles_SetParams(u8 *o, u8 *arg) {
-    static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD};   /* multiplied first */
-    VObject *rnd;
-    s32 i;
-
-    if (arg == NULL) {
-        return;
-    }
-    sceVu0CopyVector((f32 *)(o + 0x2480), (f32 *)arg);
-    AT(o, 0x2918, s32) = AT(arg, 0x10, s32);
-    if (AT(o, 0x2918, s32) == -1) {
-        return;
-    }
-    rnd = gRandom;
-    for (i = 0; i < 64; i++) {
-        QuadRec *r = GONE_BUBBLE(o, AT(o, 0x2910, s32), i);
-        f32 *v = (f32 *)(o + 0x2490 + i * 0xC);
-
-        r->w = k01.f * (f32)((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 3) + 1);
-        r->h = r->w;
-        r->rgba[0] = 0;
-        r->rgba[1] = 0;
-        r->rgba[2] = 0;
-        r->rgba[3] = 0;
-        r->pos[0] = 0.0f;
-        r->pos[1] = 0.0f;
-        r->pos[2] = 0.0f;
-        r->pos[3] = 1.0f;
-        r->turn = 0.0f;
-        r->frame = 0;
-        v[0] = 0.0f;
-        v[1] = 0.0f;
-        v[2] = 0.0f;
-    }
-    for (i = 0; i < 32; i++) {
-        QuadRec *r = GONE_DROP(o, AT(o, 0x2910, s32), i);
-        f32 *v = (f32 *)(o + 0x2790 + i * 0xC);
-
-        r->rgba[0] = 0;
-        r->rgba[1] = 0;
-        r->rgba[2] = 0;
-        r->rgba[3] = 0;
-        r->pos[0] = 0.0f;
-        r->pos[1] = 0.0f;
-        r->pos[2] = 0.0f;
-        r->pos[3] = 1.0f;
-        r->w = 0.5f;
-        r->h = r->w;
-        r->turn = 0.0f;
-        r->frame = 0;
-        v[0] = 0.0f;
-        v[1] = 0.0f;
-        v[2] = 0.0f;
-    }
-}
-
-/* +0x14 draw (not while the effects are paused): the bubbles, then the drops */
-/* 0x00359980 */
-void Cr19Bubbles_Draw(u8 *o) {
-    if (SceneGame_GetByte19034(gEffects) == 0) {
-        AT(o, 0x2420, QuadRec *) = GONE_BUBBLE(o, AT(o, 0x2910, s32), 0);
-        Drawer_Submit(o + 0x2410);
-        AT(o, 0x2458, QuadRec *) = GONE_DROP(o, AT(o, 0x2910, s32), 0);
-        Drawer_Submit(o + 0x2448);
-    }
-}
-
-static void gone_splat_init(void **obj) {
-    obj[0] = FloorSplat_vtable;
-    obj[0x70 / 4] = Helper469D00_vtable;
-    ((s32 *)obj)[0x74 / 4] = -1;
-    obj[0x70 / 4] = QuadDrawer_vtable;
-}
-
-/* +0x10 update: flip the buffers, count the frame (at 100 the splat); each bubble showing
- * carried over, fading in (to over 0x20, then marked) or out by 1..4, slowing as it rises, kept
- * above the spot by its size; until frame 127 up to 4 hidden bubbles a frame restarted, growing
- * by 0.05..0.1 (to 0.7) for 90 frames, then shrinking (out under 0.3); each drop showing fading
- * in / out by 1..2, shrinking (out at 0), turning and flying; until frame 150 one hidden drop a
- * frame thrown. 0 once nothing shows */
-/* 0x00359A00 */
-s32 Cr19Bubbles_Update(u8 *o) {
-    static const union { u32 u; f32 f; } kPi = {0x40490FDB};   /* multiplied first */
-    VObject *rnd;
-    u8 done = 1;
-    s32 i, k, n;
-
-    if (AT(o, 0x2918, s32) == -1) {
-        return 0;
-    }
-    AT(o, 0x2910, s32) ^= 1;
-    AT(o, 0x2914, s32)++;
-    if (AT(o, 0x2914, s32) == 100) {
-        struct {
-            f32 pos[4];
-            s32 tri;
-            u8 one;
-        } sp __attribute__((aligned(16)));
-        u8 *mgr = gEffects;
-        s32 slot = Effect_New(mgr, 0x140, gone_splat_init);
-
-        sp.pos[0] = AT(o, 0x2480, f32);
-        sp.pos[1] = AT(o, 0x2484, f32);
-        sp.pos[2] = AT(o, 0x2488, f32);
-        sp.pos[3] = 1.0f;
-        sp.tri = AT(o, 0x2918, s32);
-        sp.one = 1;
-        EffectMgr_Start(mgr, slot, &sp);
-    }
-    rnd = gRandom;
-    for (i = 0; i < 64; i++) {
-        QuadRec *r;
-        f32 *v = (f32 *)(o + 0x2490 + i * 0xC);
-
-        for (k = 0; k < 12; k++) {
-            ((u32 *)GONE_BUBBLE(o, AT(o, 0x2910, s32), i))[k] = ((u32 *)GONE_BUBBLE(o, AT(o, 0x2910, s32) ^ 1, i))[k];
-        }
-        r = GONE_BUBBLE(o, AT(o, 0x2910, s32), i);
-        if (r->rgba[3] == 0) {
-            continue;
-        }
-        if (r->rgba[0] == 0x60) {
-            r->rgba[3] = r->rgba[3] + ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 3) + 1);
-            if (r->rgba[3] >= 0x21) {
-                r->rgba[0]--;
-            }
-        } else {
-            r->rgba[3] = r->rgba[3] - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 3) + 1);
-        }
-        if (r->rgba[3] <= 0) {
-            r->rgba[3] = 0;
-            continue;
-        }
-        v[1] = v[1] - 0x1.47ae14p-9f;   /* 0.0025 */
-        r->pos[0] = r->pos[0] + v[0];
-        r->pos[1] = r->pos[1] + v[1];
-        done = 0;
-        if (r->pos[1] < AT(o, 0x2484, f32) + r->w) {
-            r->pos[1] = AT(o, 0x2484, f32) + r->w;
-        }
-        r->pos[2] = r->pos[2] + v[2];
-    }
-    if (AT(o, 0x2914, s32) < 0x7F) {
-        n = 0;
-        for (i = 0; i < 64; i++) {
-            QuadRec *r = GONE_BUBBLE(o, AT(o, 0x2910, s32), i);
-
-            if (r->rgba[3] != 0) {
-                continue;
-            }
-            if ((u32)AT(o, 0x2914, s32) < 90) {
-                r->w = r->w + (0x1.99999ap-5f + 0x1.99999ap-5f * GONE_RND());   /* 0.05 + 0.05 x */
-                if (!(r->w <= 0x1.666666p-1f)) {
-                    r->w = 0x1.666666p-1f;   /* 0.7 */
-                }
-            } else {
-                r->w = r->w - (0x1.99999ap-5f + 0x1.99999ap-5f * GONE_RND());
-                if (r->w <= 0x1.333334p-2f) {   /* 0.3 */
-                    r->rgba[3] = 0;
-                    r->w = 0.0f;
-                    r->h = 0.0f;
-                    continue;
-                }
-            }
-            r->h = r->w;
-            Cr19Bubbles_Bubble(o, i);
-            n++;
-            done = 0;
-            if (n >= 4) {
-                break;
-            }
-        }
-    }
-    for (i = 0; i < 32; i++) {
-        QuadRec *r;
-        f32 *v = (f32 *)(o + 0x2790 + i * 0xC);
-
-        for (k = 0; k < 12; k++) {
-            ((u32 *)GONE_DROP(o, AT(o, 0x2910, s32), i))[k] = ((u32 *)GONE_DROP(o, AT(o, 0x2910, s32) ^ 1, i))[k];
-        }
-        r = GONE_DROP(o, AT(o, 0x2910, s32), i);
-        if (r->rgba[3] == 0) {
-            continue;
-        }
-        done = 0;
-        if (r->rgba[0] == 0x40) {
-            r->rgba[3] = r->rgba[3] + ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 1) + 1);
-            if (r->rgba[3] >= 0x21) {
-                r->rgba[0]--;
-            }
-        } else {
-            r->rgba[3] = r->rgba[3] - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 1) + 1);
-            if (r->rgba[3] < 0) {
-                r->rgba[3] = 0;
-            }
-        }
-        if (r->rgba[3] <= 0) {
-            r->rgba[3] = 0;
-            continue;
-        }
-        r->w = r->w - 0x1.47ae14p-7f * GONE_RND();   /* 0.01 */
-        if (r->w < 0.0f) {
-            r->rgba[3] = 0;
-            r->w = 0.0f;
-        }
-        r->h = r->w;
-        r->turn = r->turn + kPi.f * GONE_RND() / 180.0f;
-        if (!(r->turn <= kPi.f)) {
-            r->turn = r->turn - 0x1.921fb6p+2f;
-        }
-        r->pos[0] = r->pos[0] + v[0];
-        r->pos[1] = r->pos[1] + v[1];
-        r->pos[2] = r->pos[2] + v[2];
-    }
-    for (i = 0; i < 32; i++) {
-        if (GONE_DROP(o, AT(o, 0x2910, s32), i)->rgba[3] == 0 && (u32)AT(o, 0x2914, s32) < 150) {
-            Cr19Bubbles_Drop(o, i, AT(o, 0x2914, s32));
-            done = 0;
-            break;
-        }
-    }
-    return done == 1 ? 0 : 1;
-}
-
-/* Initialises two render setting blocks at +0x2418 and +0x2450. */
-/* 0x0035A170 */
-void Cr19Bubbles_Start(u8 *p) {
-    B7_W(p, 0x2910) = 0;
-    B7_W(p, 0x2914) = 0;
-    B7_D(p, 0x2418) = -1;
-    B7_W(p, 0x2424) = 0;
-    B7_W(p, 0x2428) = 0;
-    B7_W(p, 0x242C) = 0;
-    B7_W(p, 0x2430) = 0x19;
-    B7_H(p, 0x2434) = 0x40;
-    B7_H(p, 0x2436) = 0x1A0;
-    B7_H(p, 0x2438) = 0x40;
-    B7_H(p, 0x243A) = 0x20;
-    B7_H(p, 0x243C) = 0x20;
-    B7_H(p, 0x243E) = 0x200;
-    B7_H(p, 0x2440) = 0x100;
-    B7_B(p, 0x2442) = 0;
-    B7_B(p, 0x2443) = 1;
-    B7_B(p, 0x2444) = 1;
-    B7_B(p, 0x2445) = 0x10;
-    B7_B(p, 0x2446) = 2;
-    B7_D(p, 0x2450) = -1;
-    B7_W(p, 0x245C) = 0;
-    B7_W(p, 0x2460) = 0;
-    B7_W(p, 0x2464) = 0;
-    B7_W(p, 0x2468) = 0x19;
-    B7_H(p, 0x246C) = 0x20;
-    B7_H(p, 0x246E) = 0;
-    B7_H(p, 0x2470) = 0x40;
-    B7_H(p, 0x2472) = 0x20;
-    B7_H(p, 0x2474) = 0x20;
-    B7_H(p, 0x2476) = 0x200;
-    B7_H(p, 0x2478) = 0x100;
-    B7_B(p, 0x247A) = 0;
-    B7_B(p, 0x247B) = 1;
-    B7_B(p, 0x247C) = 1;
-    B7_B(p, 0x247D) = 0x10;
-    B7_B(p, 0x247E) = 0xFF;
-}

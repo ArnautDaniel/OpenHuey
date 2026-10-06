@@ -4,7 +4,7 @@
 #include "common.h"
 #include "game/rooms/rooms.h"
 #include "ptmf.h"
-#include "scene_game_members.h"
+#include "scene_game.h"
 
 extern void *RoomBase_vtable[];
 extern void *Room43_vtable[];

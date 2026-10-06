@@ -7,10 +7,11 @@
 #include "ptmf.h"
 #include "actor.h"
 #include "hewie.h"
-#include "scene_game_members.h"
-#include "snd_place.h"
+#include "scene_game.h"
+#include "sound.h"
 #include "msl.h"
 #include "sce/libvu0.h"
+#include "vecmath.h"
 
 extern void *RoomBase_vtable[];
 extern void *Room20_vtable[];

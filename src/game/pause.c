@@ -14,11 +14,11 @@
 #include "input.h"
 #include "progress.h"
 #include "ptmf.h"
-#include "task.h"
+#include "text.h"
 #include "globals.h"
-#include "bgm.h"
+#include "music.h"
 #include "movie.h"
-#include "overlay.h"
+#include "renderer.h"
 #include "pause.h"
 
 extern VObject *gStageMusic;   /* the music director */

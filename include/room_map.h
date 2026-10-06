@@ -15,4 +15,7 @@ extern void Obstacles_ModelsFollow(void *list);
 extern void *Obstacle_dtor(void *o, s32 flags);
 extern void *Obstacles_dtor(u8 *l, s32 flags);
 
+/* room_map.c */
+extern void *Obstacles_ctor(u8 *p);
+
 #endif /* ROOM_MAP_H */

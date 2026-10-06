@@ -9,8 +9,9 @@
 #include "actor.h"
 #include "progress.h"
 #include "pursuer.h"
-#include "scene_game_members.h"
+#include "scene_game.h"
 #include "sce/libvu0.h"
+#include "gl2d.h"
 
 extern void *RoomBase_vtable[];
 extern void *RoomC7_vtable[];
@@ -47,7 +48,6 @@ static void effect_798B0_init(void **obj) {
 
 #ifdef HG_NATIVE
 
-#include "gl2d.h"
 
 #endif
 

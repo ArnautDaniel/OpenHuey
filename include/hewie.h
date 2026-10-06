@@ -42,8 +42,6 @@ extern s32 Hewie_PlanAndGo(Hewie *h, u32 tri, const f32 *pos, s32 direct, s32 ke
 extern void Hewie_SetMode(Hewie *h, s32 mode, s32 time);
 extern void Hewie_ChangeFeeling(Hewie *h, Character *other, s32 delta);   /* tell Hewie */
 extern void Hewie_AddTrust(Hewie *h, s32 add);   /* his trust */
-extern f32 Angle_Wrap(f32 a);   /* angle wrapped to -pi..pi */
-extern void Mtx_ApplyPoint(f32 *out, f32 (*m)[4], const f32 *v);
 extern void Hewie_Restart(Hewie *h);   /* Hewie restarted (hewie.c) */
 extern void Hewie_MakeSound(Hewie *h, s32 snd);
 extern void Hewie_StandAnim(Hewie *h, s32 blend);
@@ -142,5 +140,21 @@ extern void Hewie_StateWaitForFiona(Hewie *h);
 extern void Hewie_StateFaceTarget(Hewie *h);
 extern void Hewie_StateFaceScent(Hewie *h);
 extern s32 Hewie_PlaceAtPlacement(Hewie *h, HewiePlacement *pl);
+
+/* ---- (was hewie_act.h) ---- */
+
+/* hewie_act.c: what other files call. */
+
+typedef struct Hewie Hewie;
+
+/* hewie_act.c */
+extern void Hewie_SetAction(Hewie *h, s32 act, s32 arg);   /* his action */
+
+/* hewie.c */
+extern void *DogModel_ctor(u8 *m, u8 kind);
+extern void *DogModelB_ctor(u8 *m, u8 kind);
+extern void *DogModelA_ctor(u8 *m, u8 kind);
+
+extern void *DogModelArray_ctor(void *p);
 
 #endif

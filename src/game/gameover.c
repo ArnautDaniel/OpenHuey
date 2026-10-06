@@ -17,11 +17,12 @@
 #include "globals.h"
 #include "memcard.h"
 #include "navmesh.h"
-#include "bgm.h"
+#include "music.h"
 #include "gameover.h"
 #include "movie.h"
-#include "panic.h"
-#include "scene_game_members.h"
+#include "fiona.h"
+#include "scene_game.h"
+#include "effects.h"
 #ifdef HG_NATIVE
 #include "glr.h"
 #endif
@@ -46,7 +47,6 @@ typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s
 #define PANIC(p) ((u8 *)(p) + 0x7B8)
 
 extern void *D_0046D730[];
-void *GameOverBase_dtor(u8 *o, s32 flags);
 
 void SceneGame_SetByte19034(u8 *p, u32 v);
 
@@ -63,8 +63,6 @@ void *GameOverBase_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* 0x002D6000 */
-void SceneGame_SetByte19034(u8 *p, u32 v) { p[0x19034] = (u8)v; }
 /* (SceneGame +0x73EB40) its state at +0x50 back to GameOver_StateStart_ptmf */
 /* 0x002F39B0 */
 void GameOver_Reset(u8 *o) {

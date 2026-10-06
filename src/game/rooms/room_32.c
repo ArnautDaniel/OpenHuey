@@ -4,7 +4,7 @@
 #include "common.h"
 #include "game/rooms/rooms.h"
 #include "progress.h"
-#include "scene_game_members.h"
+#include "scene_game.h"
 
 extern const char *const pstr_O_DNL_DNL_202_TEX;
 

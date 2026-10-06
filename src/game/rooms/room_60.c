@@ -7,7 +7,7 @@
 #include "ptmf.h"
 #include "memcard.h"
 #include "progress.h"
-#include "scene_game_members.h"
+#include "scene_game.h"
 #ifdef HG_NATIVE
 #include "glr.h"
 #endif

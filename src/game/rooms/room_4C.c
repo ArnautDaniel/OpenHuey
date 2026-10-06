@@ -7,7 +7,7 @@
 #include "ptmf.h"
 #include "fiona.h"
 #include "progress.h"
-#include "snd_place.h"
+#include "sound.h"
 #include "sce/libvu0.h"
 
 extern void *RoomBase_vtable[];

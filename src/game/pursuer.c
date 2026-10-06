@@ -1,4 +1,8 @@
-/* Pursuer: the stalkers' shared base class, code 0x278490..0x29FF10. See include/pursuer.h. */
+/* Pursuer: the stalkers' shared base class, code 0x278490..0x29FF10. See include/pursuer.h.
+ *
+ * (was pursuer_ai.c) Pursuer methods and helpers, code 0x211C80..0x219460, and the stalker
+ * vtables' defaults (0x179600..0x179970). See include/pursuer.h.
+ */
 #include "common.h"
 #include "pursuer.h"
 #include "progress.h"
@@ -10,7 +14,7 @@
 #include "memcard.h"
 #include "game.h"
 #include "item.h"
-#include "texcache.h"
+#include "renderer.h"
 #include "charaction.h"
 #include "input.h"
 #include "gl2d.h"
@@ -19,229 +23,336 @@
 #include "hewie.h"
 #include "lorenzo.h"
 #include "model.h"
-#include "panic.h"
-#include "pursuer_ai.h"
-#include "runtime.h"
-#include "scene_game_members.h"
-#include "skeleton.h"
-#include "stalker_math.h"
-#include "stalker_models.h"
-#include "stalker_progress.h"
+#include "fiona.h"
+#include "system.h"
+#include "scene_game.h"
+#include "heap.h"
+#include "vecmath.h"
 #include "msl.h"
+#include "char_load.h"
+#include "music.h"
+#include "director.h"
+#include "doors.h"
+#include "room.h"
+#include "text.h"
+#include "movie.h"
+#include "placed.h"
+#include "room_map.h"
+#include "lights.h"
+#include "draw_leaves.h"
+#include "libc.h"
+#include "sce/eekernel.h"
+#include "sce/intc.h"
+#include "effectmgr.h"
+#include "riccardo.h"
+#include "story_chars.h"
+#include "tintstalker.h"
 
 extern u8 kPursuerSteps[]; /* table of 28-byte entries */
 extern u8 pstr_O_DB0_DB0_200_PCK[];
 extern u8 pstr_O_DB0_DB0_200_PCK_2[];
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-s32 Character_TimerDown(void *p, s32 n);
-void Pursuer_StartActionNext(void *p, u32 id);
-void Pursuer_Caught(void *p);
-void Pursuer_NoGiveUp(void *p);
-f32 Pursuer_FrightSeen(void);
-f32 Pursuer_FrightAttack(void);
-f32 Pursuer_ThreatAmount(void);
-void Pursuer_SetRage(void *p, s32 on);
-s32 Pursuer_IsBusy(void *p);
-
-extern void *Kind33_vtable[];
-extern void *Kind32_vtable[];
-extern void *Kind31_vtable[];
-extern void *Kind30_vtable[];
-extern void *Kind29_vtable[];
-extern void *Kind28_vtable[];
-extern void *Kind26_vtable[];
-extern void *Kind25_vtable[];
-extern void *Kind24_vtable[];
-extern void *Kind37_vtable[];
-extern void *TintStalker_vtable[];
-extern void *Kind22_vtable[];
-extern void *Kind21_vtable[];
-extern void *Kind20_vtable[];
-extern void *Kind19_vtable[];
-extern void *Kind18_vtable[];
-extern void *Kind17_vtable[];
-extern void *Kind16_vtable[];
 extern void *Kind15_vtable[];
 extern void *Kind14_vtable[];
-extern void *Kind13_vtable[];
-extern void *Kind08_vtable[];
-extern void *Kind12_vtable[];
-extern void *Lorenzo_vtable[];
-extern void *Kind39_vtable[];
-extern void *Lorenzo2_vtable[];
-extern void *Kind09_vtable[];
-extern void *Riccardo_vtable[];
-extern void *Kind36_vtable[];
-extern void *Kind35_vtable[];
-extern void *Kind34_vtable[];
-extern void *Daniella_vtable[];
-extern void *Kind27_vtable[];
-extern void *Debilitas3_vtable[];
 extern void *Debilitas2_vtable[];
 extern void *Debilitas_vtable[];
-extern u8 D_00419DD0[];
-extern u8 D_00419E10[];
-extern u8 D_004297C0[];
-extern u8 D_00429800[];
-extern u8 D_0042C870[];
-extern u8 D_0042C8B0[];
-void *Kind14_ModelFiles(void);
-void *Kind14_MotionFiles(void);
-void *Kind21_ModelFiles(void);
-void *Kind21_MotionFiles(void);
-void *Kind08_Table6C(void);
-void *Kind08_Table70(void);
 
-extern u8 pstr_O_DB2_DB2_200_PCK_2[], pstr_O_DB2_DB2_200_PCK[], D_00413510[], D_004134D0[];
-#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
-
-void *Debilitas3_ModelFiles(void);
-
-extern u8 pstr_O_RCG_RCG_200_PCK_2[], pstr_O_RCG_RCG_200_PCK[];
-
-extern u8 pstr_O_LRM_LRM_200_PCK[];
-extern u8 pstr_O_LRM_LRM_200_PCK_2[];
 #define U32(p, off) (*(u32 *)((u8 *)(p) + (off)))
 
-extern u8 pstr_O_LRY_LRY_200_PCK[];
-extern u8 pstr_O_LRY_LRY_200_PCK_2[];
 static inline s32 b5_prog_flag8000(void);
 
-extern u8 D_00429C50[];
-void *Kind16_ModelFiles(void);
-
-extern u8 D_00429C90[];
-extern u8 D_00429CE0[];
-extern u8 D_00429D20[];
-extern u8 pstr_O_RCT_RCT_200_PCK[];
-extern u8 pstr_O_RCT_RCT_200_PCK_2[];
-void *Kind16_MotionFiles(void);
-void *Kind17_ModelFiles(void);
-void *Kind17_MotionFiles(void);
 static inline s32 b5_prog_flag8000(void);
 
 extern void *D_0046D730[];
 extern void *EffectBase_vtable[];
 extern void *Reflection_vtable[];
 extern void *Effect79FF0_vtable[];
-void *Obj472F60_dtor(u8 *o, s32 flags);
-void *Effect79FF0_dtor(u8 *o, s32 flags);
 
 extern const char *const pstr_O_DNL_DNL_202_TEX;
-extern const PTMF Pursuer_StateRunThenNext_ptmf16;
-extern u8 pstr_O_DB2_DB2_200_PCK_3[];
-extern u8 pstr_O_DB2_DB2_200_PCK_4[];
 static inline s32 b5_prog_flag8000(void);
 
-extern u8 pstr_O_DNL_DNL_200_PCK_4[], pstr_O_DNL_DNL_200_PCK_3[];
-extern u8 pstr_O_DNL_DNL_200_PCK_6[], pstr_O_DNL_DNL_200_PCK_5[];
-
-extern u8 pstr_O_DNL_DNL_200_PCK_8[], pstr_O_DNL_DNL_200_PCK_7[];
-
-extern u8 pstr_O_RCT_RCT_200_PCK_4[], pstr_O_RCT_RCT_200_PCK_3[];
-
-void Effect79FF0_Draw(void);
-
-extern const PTMF D_00422348;            /* a creature state */
 extern void *Effect726E0_vtable[];   /* the strand (creature.c) */
-extern u8 D_00422360[];
-extern u8 D_004223A0[];
-extern u8 D_004223E0[];
-void *Kind09_MotionFiles(void);
-void *Kind09_ModelFiles(void);
 static inline s32 b5_prog_flag8000(void);
 
-extern u8 pstr_O_FIN_FIN_200_PCK[];
-extern u8 D_00429770[];
-void *Kind13_ModelFiles(void);
-void *Kind13_MotionFiles(void);
-
-extern u8 D_0042A0F0[];
-extern u8 D_0042A130[];
-void *Kind19_ModelFiles(void);
-void *Kind19_MotionFiles(void);
-
-extern u8 D_0042C380[];
-extern u8 D_0042C3C0[];
-extern u8 D_0042C900[];
-extern u8 D_0042C940[];
-void *Kind24_ModelFiles(void);
-void *Kind24_MotionFiles(void);
-void *Kind20_ModelFiles(void);
-void *Kind20_MotionFiles(void);
-
-extern u8 D_00430820[];
-extern u8 D_00430860[];
-void *Kind29_ModelFiles(void);
-void *Kind29_MotionFiles(void);
-
-extern u32 D_0043B5B0[];
-extern u32 D_0043B5F0[];
-void *Kind33_ModelFiles(void);
-void *Kind33_MotionFiles(void);
-
-extern u32 D_00441850[];
-void *Kind37_MotionFiles(void);
-void Kind37_DoorOffset(void *self, s32 i, f32 *out);
-void Kind37_ActionOffsets(void *self, s32 i, f32 *out);
-
-extern const PTMF Pursuer_StateRunThenNext_ptmf13;
-extern const PTMF Pursuer_StateRunThenNext_ptmf14;
-extern const PTMF Pursuer_StateRunThenNext_ptmf17;
-extern const PTMF Pursuer_StateRunThenNext_ptmf20;
-extern const PTMF Pursuer_StateRunThenNext_ptmf24;
-/* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
- * slots 3..5 */
-static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
-    if (c != NULL) {
-        c->a.vtbl = vt;
-        c->a.vtbl = Pursuer_vtable;
-        VCALL(c, 0x10, void (*)(Character *))(c);
-        if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
-            void **m = c->motion;
-
-            if (m != NULL) {
-                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
-                c->motion = NULL;
-            }
-        }
-        c->a.vtbl = NPC_vtable;
-        VCALL(c, 0x10, void (*)(Character *))(c);
-        c->a.vtbl = Character_vtable;
-        c->a.vtbl = Actor_vtable;
-        if ((s16)flags > 0) {
-            Actor_Destroy(&c->a);
-        }
-    }
-    return c;
-}
-
-Character *Kind13_dtor(Character *c, s32 flags);
-Character *Kind19_dtor(Character *c, s32 flags);
-void Kind19_ShowUp(Pursuer *p);
-void Kind19_EventState(Pursuer *p);
-s32 Kind19_GrabOrder(Pursuer *p);
-Character *Kind24_dtor(Character *c, s32 flags);
-void Kind24_ShowUp(Pursuer *p);
-void Kind24_EventState(Pursuer *p);
-s32 Kind24_GrabOrder(Pursuer *p);
-Character *Kind20_dtor(Character *c, s32 flags);
-void Kind20_ShowUp(Pursuer *p);
-void Kind20_EventState(Pursuer *p);
-s32 Kind20_GrabOrder(Pursuer *p);
-Character *Kind29_dtor(Character *c, s32 flags);
-void Kind29_ShowUp(Pursuer *p);
-void Kind29_EventState(Pursuer *p);
-s32 Kind29_GrabOrder(Pursuer *p);
-Character *Kind33_dtor(Character *c, s32 flags);
-void Kind33_ShowUp(Pursuer *p);
-void Kind33_EventState(Pursuer *p);
-s32 Kind33_GrabOrder(Pursuer *p);
-Character *Kind37_dtor(Character *c, s32 flags);
 static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p);
 static inline __attribute__((always_inline)) void creature_act5(Pursuer *p, const PTMF *st);
 static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p);
+
+extern VObject *gSceneGameF29740; /* path planner */
+extern u8 D_0047A930[8];   /* 0..7 */
+extern s32 Summoner_Offstage(u8 *o);
+extern s32 Summoner_InPlay(u8 *o);
+extern u8 D_0047AC90[];        /* per noise level: summon chance, hunted chance (percent) */
+extern u32 D_00419DC0[];       /* the seconds before the pursuer can be summoned, by kind */
+/* the summoner `o` takes the pursuer as it is now (when active: its room +0x8, its state +0,
+   kind `kind`, waited 0); then progress slot refresh (Progress_CharDone) */
+static inline void summoner_take(u8 *o, u8 kind) {
+    u8 *pu = (u8 *)gCharPursuer;
+
+    if (pu == NULL) {
+        return;
+    }
+    if (AT(pu, 0x28, u8)) {
+        AT(o, 0x8, s32) = AT(pu, 0x30, s32);
+        AT(o, 0x0, u32) = Pursuer_RandomDelay((Pursuer *)pu) & 0x7FFFFFFF;
+        AT(o, 0xC, s32) = 0;
+        AT(o, 0x11, u8) = kind;
+    }
+    Progress_CharDone(gProgress, AT(pu, 0x20, u32));
+}
+
+/* bring the pursuer in for the summoner `o`: a random room out of the progress's list for the
+ * current one (+0x3C) - `near` 0: one not next to it; else one next to it (once per exit
+ * leading there) that the rooms allow (+0x88); either way not the current room and with its
+ * progress bit clear - then the first of its exits (rooms +0x74) with a route from Fiona's
+ * exit point to the exit's point (Character_RouteVia; next-door: route mode 1, the point not 0 / 1;
+ * else mode 2); it comes in there with plan `plan` (and +0's summoned bit). 1 if it came */
+static s32 summon_via(u8 *o, s32 near, s32 plan) {
+    Progress *p = gProgress;
+    VObject *rooms = gRooms;
+    s32 cur = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+    s32 *list = func_00114FA8(0x104);
+    u32 n, m = 0, i, e;
+    u8 *pu, *pl;
+    s32 from, to = -1, ok = 0;
+
+    if (list == NULL) {
+        return 0;
+    }
+    n = VCALL(p, 0x3C, u32 (*)(Progress *, s32 *, s32))(p, list, cur);
+    if (n == 0) {
+        func_00114FD0(list);
+        return 0;
+    }
+    for (i = 0; i < n; i++) {
+        s32 c = list[i];
+
+        if (c == -1 || c == cur) {
+            continue;
+        }
+        if (!near) {
+            for (e = 0; e < 8; e++) {
+                if (list[i] == VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms, cur, e & 0xFF)) {
+                    break;
+                }
+            }
+            if (e == 8 && (u8)Progress_IsBitClear(p, list[i])) {
+                list[m++] = list[i];
+            }
+        } else if ((u8)Progress_IsBitClear(p, c) && (u8)VCALL(rooms, 0x88, s32 (*)(VObject *, s32, s32))(rooms, list[i], cur)) {
+            for (e = 0; e < 8; e++) {
+                if (list[i] == VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms, cur, e & 0xFF)) {
+                    list[m++] = list[i];
+                }
+            }
+        }
+    }
+    if (m == 0) {
+        func_00114FD0(list);
+        return 0;
+    }
+    i = (u8)(u32)((f32)m * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom));
+    pu = (u8 *)gCharPursuer;
+    pl = (u8 *)gCharPlayer;
+    from = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, AT(pl, 0x30, s32), AT(pl, 0x14D4, u8), 1);
+    for (e = 0; e < 8; e++) {
+        if (VCALL(rooms, 0x74, s32 (*)(VObject *, s32, u32))(rooms, list[i], e & 0xFF) == 0) {
+            continue;
+        }
+        to = VCALL(rooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(rooms, list[i], e & 0xFF, 1);
+        if (Character_RouteVia((Character *)pu, AT(pl, 0x30, s32), list[i], AT(pu, 0x20, s32), 1, from, to, near ? 1 : 2) >= 0 &&
+            (!near || (to != 0 && to != 1))) {
+            ok = 1;
+            break;
+        }
+    }
+    if (ok) {
+        Pursuer_IntoRoomByEvent((Pursuer *)pu, list[i], (AT(o, 0x0, u32) & 0x80000000) != 0, plan, to);
+    }
+    func_00114FD0(list);
+    return ok;
+}
+
+s32 Summoner_Via0(u8 *o);
+s32 Summoner_Via1(u8 *o);
+s32 Summoner_Via1B(u8 *o);
+s32 Summoner_Offstage(u8 *o);
+s32 Summoner_InPlay(u8 *o);
+
+/* how far Fiona (+0x1588) and Hewie (+0x158C) are on foot, in the played room (-1 elsewhere) */
+static f32 Npc_DistanceTo(Pursuer *p, Character *c, f32 *v) {
+    void *nm;
+    u32 tri;
+
+    if (p->c.a.room != c->a.room) {
+        return -1.0f;
+    }
+    nm = gNavMesh;
+    tri = c->a.navTri;
+    if (VCALL(nm, 0x10, s32 (*)(void *, u32, f32 *))(nm, tri, c->a.pos) == 4) {
+        VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, tri, v);
+        if (tri == Actor_TriTo(&p->c.a, v, p->c.a.navMask)) {
+            return Actor_Distance(&p->c.a, c->a.pos);
+        }
+    }
+    return VCALL(p, 0xD4, f32 (*)(Pursuer *, u32, f32 *))(p, tri, c->a.pos);
+}
+
+/* the path length still to walk (along the waypoints +0x12C, up to +0x124) */
+static f32 Npc_PathLeft(Pursuer *p) {
+    return VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(gSceneGameF29740,
+        p->c.a.pos, p->c.unk128, p->c.unk124, (u8 *)p + 0x12C);
+}
+
+/* can the pursuer go `dist` further along its path: the point reached (unless it's the last
+   waypoint itself) is on a triangle its nav mask allows */
+static s32 Npc_PathClear(Pursuer *p, f32 dist) {
+    f32 v[4] __attribute__((aligned(16)));
+    u32 tri = p->c.a.navTri;
+    s32 n;
+    u32 flags;
+
+    sceVu0CopyVector(v, p->c.a.pos);
+    n = VCALL(gSceneGameF29740, 0x20, s32 (*)(VObject *, u32 *, f32 *, s32, s32, void *, f32))(gSceneGameF29740,
+            &tri, v, p->c.unk128, p->c.unk124, (u8 *)p + 0x12C, dist);
+    if (n == p->c.unk124) {
+        f32 dx, dz;
+
+        dx = v[0] - AT(p, 0x124 + n * 12, f32);
+        if (dx <= 0.0f) {
+            dx = -dx;
+        }
+        if (!(dx <= 0x1.99999ap-4f /* 0.1 */)) {
+            return 0;
+        }
+        dz = v[2] - AT(p, 0x128 + n * 12, f32);
+        if (dz <= 0.0f) {
+            dz = -dz;
+        }
+        if (!(dz <= 0x1.99999ap-4f)) {
+            return 0;
+        }
+    }
+    if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+        flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+    } else {
+        flags = NAV_BAD_TRI_FLAGS;
+    }
+    return !(flags & p->c.a.navMask);
+}
+
+/* the senses, a frame on Fiona and a frame on Hewie in turn (+0x15A0), by the sense mode +0x15C0:
+   0 watching Fiona (sight test vtable +0xE0; Hewie and the path left measured on the other
+   frame), 1 the same with Hewie, 2/3 on the move (path blocked: vtable +0xD8/+0xDC);
+   1 if the target is in view / reachable. `fionaRoom`: mode 0 only while Fiona is in the room */
+static s32 Npc_Senses(Pursuer *p, s32 fionaRoom) {
+    f32 v[4] __attribute__((aligned(16)));
+    s32 room = p->c.a.room;
+    s32 r = 0;
+
+    if (room != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        PU(p, 0x1590, f32) = -1.0f;
+        PU(p, 0x158C, f32) = -1.0f;
+        PU(p, 0x1588, f32) = -1.0f;
+        return 0;
+    }
+    switch (PU(p, 0x15C0, u8)) {
+    case 0:
+        if (PU(p, 0x15A0, u8) != 0) {
+            if (!fionaRoom || room == gCharPlayer->a.room) {
+                r = VCALL(p, 0xE0, s32 (*)(Pursuer *, Character *))(p, gCharPlayer) & 0xFF;
+            } else {
+                PU(p, 0x1590, f32) = -1.0f;
+                PU(p, 0x1588, f32) = -1.0f;
+            }
+        } else {
+            PU(p, 0x158C, f32) = room == gCharPartner->a.room ? Npc_DistanceTo(p, gCharPartner, v) : -1.0f;
+            if (!fionaRoom || p->c.a.room == gCharPlayer->a.room) {
+                f32 d = Npc_PathLeft(p);
+
+                PU(p, 0x1590, f32) = d;
+                PU(p, 0x1588, f32) = d;
+            } else {
+                PU(p, 0x1590, f32) = -1.0f;
+                PU(p, 0x1588, f32) = -1.0f;
+            }
+            r = !(PU(p, 0x158C, f32) <= 0.0f);
+        }
+        break;
+    case 1:
+        if (PU(p, 0x15A0, u8) != 0) {
+            if (room == gCharPartner->a.room) {
+                r = VCALL(p, 0xE0, s32 (*)(Pursuer *, Character *))(p, gCharPartner) & 0xFF;
+            } else {
+                PU(p, 0x1590, f32) = -1.0f;
+                PU(p, 0x158C, f32) = -1.0f;
+            }
+        } else {
+            PU(p, 0x1588, f32) = room == gCharPlayer->a.room ? Npc_DistanceTo(p, gCharPlayer, v) : -1.0f;
+            if (p->c.a.room == gCharPartner->a.room) {
+                f32 d = Npc_PathLeft(p);
+
+                PU(p, 0x1590, f32) = d;
+                PU(p, 0x158C, f32) = d;
+            } else {
+                PU(p, 0x1590, f32) = -1.0f;
+                PU(p, 0x158C, f32) = -1.0f;
+            }
+            r = !(PU(p, 0x1588, f32) <= 0.0f);
+        }
+        break;
+    case 2:
+    case 3: {
+        f32 vel[4] __attribute__((aligned(16)));
+        s32 ok;
+
+        if (PU(p, 0x15A0, u8) != 0) {
+            PU(p, 0x1588, f32) = room == gCharPlayer->a.room ? Npc_DistanceTo(p, gCharPlayer, v) : -1.0f;
+        } else {
+            PU(p, 0x158C, f32) = room == gCharPartner->a.room ? Npc_DistanceTo(p, gCharPartner, v) : -1.0f;
+        }
+        Motion_RootMovement(p->c.motion, vel, 0.0f);
+        vel[2] *= VCALL((VObject *)p->c.motion, 0x44, f32 (*)(void *, Pursuer *))(p->c.motion, p);
+        if ((p->c.unk128 < p->c.unk124) == 1) {
+            /* still walking: is the way ahead (30 units, then this frame's step) clear? */
+            ok = Npc_PathClear(p, 30.0f);
+            if (ok) {
+                f32 step = __builtin_sqrtf(sceVu0InnerProduct(vel, vel));
+
+                ok = step < 0.0f ? 0 : Npc_PathClear(p, step);
+            }
+            if (!ok) {
+                if (PU(p, 0x15C0, u8) == 3) {
+                    r = VCALL(p, 0xD8, s32 (*)(Pursuer *))(p) & 0xFF;
+                } else if (PU(p, 0x15C4, s32) != -1) {
+                    r = VCALL(p, 0xDC, s32 (*)(Pursuer *))(p) & 0xFF;
+                } else {
+                    r = 0;
+                }
+                break;
+            }
+        }
+        {
+            f32 d = Npc_PathLeft(p);
+
+            PU(p, 0x1590, f32) = d;
+            r = !(d < 0.0f);
+        }
+        break;
+    }
+    default:
+        if (PU(p, 0x15A0, u8) != 0) {
+            PU(p, 0x1588, f32) = room == gCharPlayer->a.room ? Npc_DistanceTo(p, gCharPlayer, v) : -1.0f;
+        } else {
+            PU(p, 0x158C, f32) = room == gCharPartner->a.room ? Npc_DistanceTo(p, gCharPartner, v) : -1.0f;
+        }
+        PU(p, 0x1590, f32) = p->target == gCharPlayer ? PU(p, 0x1588, f32) : PU(p, 0x158C, f32);
+        break;
+    }
+    PU(p, 0x15A0, u8) = !(PU(p, 0x15A0, u8) != 0);
+    return r;
+}
 
 static void strand_init(void **obj) {
     obj[0] = Effect726E0_vtable;
@@ -249,13 +360,6 @@ static void strand_init(void **obj) {
     ((s32 *)obj)[0x44 / 4] = -1;
     obj[0x40 / 4] = QuadDrawer_vtable;
 }
-
-Character *Kind09_dtor(Character *c, s32 flags);
-void Kind09_Behaviour25C(Character *c);
-void Kind09_BehaviourSearch(Character *c);
-void Effect79FF0_SetParams(u8 *o, s32 *m);
-void Effect79FF0_Start(u8 *o);
-s32 Effect79FF0_Update(u8 *o);
 
 /* in play: Actor_TeleportRandom(-1) */
 static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p) {
@@ -289,10 +393,6 @@ static inline __attribute__((always_inline)) s32 creature_slot_done(Pursuer *p) 
     return -1;
 }
 
-void Kind21_ShowUp(Pursuer *p);
-void Kind21_EventState(Pursuer *p);
-s32 Kind21_GrabOrder(Pursuer *p);
-
 /* gProgress+0x30 bit 0x8000 selects between two data sets (difficulty/mode flag?) */
 static inline s32 b5_prog_flag8000(void) {
     return U32(gProgress, 0x30) & 0x8000;
@@ -309,19 +409,6 @@ static inline void *b0_RoomCtor(void *p, u32 id, s32 arg, void **vtbl) {
     return p;
 }
 
-/* Count down the timer at +0x14C8 by |n|; 1 (and clamp to 0) when it runs out. */
-/* 0x00124ED0 */
-s32 Character_TimerDown(void *p, s32 n) {
-    if (n <= 0) {
-        n = -n;
-    }
-    FLD(p, 0x14C8, s32) -= n;
-    if (FLD(p, 0x14C8, s32) > 0) {
-        return 0;
-    }
-    FLD(p, 0x14C8, s32) = 0;
-    return 1;
-}
 /* nothing */
 /* 0x00283EE0 */
 void Pursuer_AttackTable(Pursuer *p) {
@@ -1232,60 +1319,6 @@ void Pursuer_Activate(Pursuer *p) {
     Character_Activate(&p->c);
 }
 
-/* the Debilitas3_vtable stalker's +0x5C reset: the base one, and its +0x16DC 0x10 while the countdown
- * runs (progress +0x1FBEC1) */
-/* 0x002CF0F0 */
-void Debilitas3_Activate(Pursuer *p) {
-    Pursuer_Activate(p);
-    if (AT(gProgress, 0x1FBEC1, u8) != 0) {
-        AT(p, 0x16DC, s32) = 0x10;
-    }
-}
-
-/* 0x002CF140 */
-u8 *Debilitas3_ModelFileTable(Pursuer *p) {
-    return (F(gProgress, 0x30, u32) & 0x8000) ? pstr_O_DB2_DB2_200_PCK_2 : pstr_O_DB2_DB2_200_PCK;
-}
-
-/* 0x002CF180 */
-void *Debilitas3_ModelFiles(void) {
-    return (F(gProgress, 0x30, u32) & 0x8000) ? D_00413510 : D_004134D0;
-}
-
-/* 0x002DC460 */
-u8 *Riccardo_ModelFileTable(Pursuer *p) {
-    return (F(gProgress, 0x30, u32) & 0x8000) ? pstr_O_RCG_RCG_200_PCK_2 : pstr_O_RCG_RCG_200_PCK;
-}
-
-/* Moves the floats at +0x854/+0x858 toward (tx, ty) by at most |sx|/|sy|. */
-/* 0x002DD310 */
-void Motion_EaseTilt(u8 *p, f32 tx, f32 ty, f32 sx, f32 sy) {
-    f32 v, d;
-
-    if (sx <= 0.0f) sx = -sx;
-    v = F(p, 0x854, f32);
-    d = tx - v;
-    if (d <= 0.0f) d = -d;
-    if (d <= sx) {
-        F(p, 0x854, f32) = tx;
-    } else if (tx <= v) {
-        F(p, 0x854, f32) -= sx;
-    } else {
-        F(p, 0x854, f32) += sx;
-    }
-    if (sy <= 0.0f) sy = -sy;
-    v = F(p, 0x858, f32);
-    d = ty - v;
-    if (d <= 0.0f) d = -d;
-    if (d <= sy) {
-        F(p, 0x858, f32) = ty;
-    } else if (ty <= v) {
-        F(p, 0x858, f32) -= sy;
-    } else {
-        F(p, 0x858, f32) += sy;
-    }
-}
-
 /* the chase towards the target: by path, or straight at it once on its triangle */
 /* 0x00290810 */
 void Pursuer_ChaseTarget(Pursuer *p) {
@@ -1864,56 +1897,6 @@ void Pursuer_PlaceModel(Pursuer *p) {
     }
 }
 
-/* destructor of the kind 0x15 class (vtables 0x474560 / 0x46A620 -> 0x46D810 -> 0x46C220 ->
- * Character) */
-/* 0x00179970 */
-Pursuer *Kind22_dtor(Pursuer *p, s32 flags) {
-    if (p != NULL) {
-        p->c.a.vtbl = Kind22_vtable;
-        if (p != NULL) {
-            p->c.a.vtbl = Kind21_vtable;
-            if (p != NULL) {
-                p->c.a.vtbl = Pursuer_vtable;
-                VCALL(p, 0x10, void (*)(Pursuer *))(p);
-                if ((u32)p->c.a.slot >= 3 && (u32)p->c.a.slot < 6) {
-                    void **m = p->c.motion;
-
-                    if (m != NULL) {
-                        if (m != NULL) {
-                            VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
-                        }
-                        p->c.motion = NULL;
-                    }
-                }
-                if (p != NULL) {
-                    p->c.a.vtbl = NPC_vtable;
-                    VCALL(p, 0x10, void (*)(Pursuer *))(p);
-                    if (p != NULL) {
-                        p->c.a.vtbl = Character_vtable;
-                        if (p != NULL) {
-                            p->c.a.vtbl = Actor_vtable;
-                        }
-                    }
-                }
-            }
-        }
-        if ((s16)flags > 0) {
-            Actor_Destroy(&p->c.a);
-        }
-    }
-    return p;
-}
-
-/* 0x00179A90 */
-void *Kind21_ModelFiles(void) {
-    return D_0042C870;
-}
-
-/* 0x00179AA0 */
-void *Kind21_MotionFiles(void) {
-    return D_0042C8B0;
-}
-
 /* ---- batch 5 ---- */
 
 extern const PTMF D_003ECF50, D_003ECFC0, D_003ECF10, D_003ECF90, D_003ECCD0, Pursuer_StateTauntHold_ptmf, Pursuer_StateTauntHold_ptmf2,
@@ -1931,66 +1914,6 @@ Pursuer *Pursuer_dtor(Pursuer *p, s32 flags) {
         }
     }
     return p;
-}
-
-/* 0x00172910 */
-void *Kind33_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x21, arg, Kind33_vtable);
-}
-
-/* 0x00172960 */
-void *Kind32_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x20, arg, Kind32_vtable);
-}
-
-/* 0x001729B0 */
-void *Kind31_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x1F, arg, Kind31_vtable);
-}
-
-/* 0x00172A00 */
-void *Kind30_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x1E, arg, Kind30_vtable);
-}
-
-/* 0x00172A50 */
-void *Kind29_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x1D, arg, Kind29_vtable);
-}
-
-/* 0x00172AA0 */
-void *Kind28_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x1C, arg, Kind28_vtable);
-}
-
-/* 0x00172AF0 */
-void *Kind26_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x1A, arg, Kind26_vtable);
-}
-
-/* 0x00172B40 */
-void *Kind25_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x19, arg, Kind25_vtable);
-}
-
-/* 0x00172B90 */
-void *Kind24_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x18, arg, Kind24_vtable);
-}
-
-/* 0x00172BE0 */
-void *Kind37_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x25, arg, Kind37_vtable);
-}
-
-/* 0x00172C30 */
-void *TintStalker_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x17, arg, TintStalker_vtable);
-}
-
-/* 0x00172C80 */
-void *Kind22_ctor(void *p, u32 id, u32 arg) {
-    return b0_RoomCtor(p, id, (u8)arg, Kind22_vtable);
 }
 
 /* vtable +0x1F8: open the door at exit +0x17B0 and step through */
@@ -4163,7 +4086,6 @@ void Pursuer_StateSidestepRoom(Pursuer *p) {
 
 /* ---- batch 10 ---- */
 
-#include "effectmgr.h"
 
 extern const PTMF Pursuer_StateRunThenNext_ptmf, D_003EC940, D_003ED350, D_003ED4B0, D_003ED4C0, D_003ED4D0, D_003ED4E0,
     D_003ED4F0, D_003ED500, D_003ECEE0, Pursuer_StateRunThenNext_ptmf5, D_003ECB70, Pursuer_StateCountKeys_ptmf;
@@ -5570,6 +5492,285 @@ void Pursuer_Reset(Pursuer *p) {
     PU(p, 0x168C, u8 *) = VCALL(p, 0xF8, u8 *(*)(Pursuer *))(p);
     PU(p, 0x1690, u8 *) = VCALL(p, 0xFC, u8 *(*)(Pursuer *))(p);
     VCALL(p, 0xF4, void (*)(Pursuer *))(p);
+}
+
+/* 0x002EB390 */
+s32 Summoner_Via0(u8 *o) {
+    return summon_via(o, 0, 0);
+}
+
+/* 0x002EB730 */
+s32 Summoner_Via1(u8 *o) {
+    return summon_via(o, 1, 0);
+}
+
+/* 0x002EBB00 */
+s32 Summoner_Via1B(u8 *o) {
+    return summon_via(o, 1, 1);
+}
+
+/* each frame with the pursuer in play: the cooldown runs down; its mode (+0x16C8) changed: the
+ * wait restarts; Fiona in its room, or next door where it isn't hunting her (progress +0x64
+ * not 4 or Pursuer_IsOwnRoom): likewise; else the wait counts up, and after 5 s hunting (+0xC4 2:
+ * kind 2) or in mode 4 (kind 1), or with the cooldown over 3 s in mode 3 (kind 0), the
+ * summoner takes it back. 1 if it did */
+/* 0x002EBED0 */
+s32 Summoner_InPlay(u8 *o) {
+    u8 *pu = (u8 *)gCharPursuer;
+    u8 *pl;
+    u8 mode;
+    s32 go = 0, kind = 0;
+
+    if (pu == NULL || AT(pu, 0x28, u8) == 0) {
+        return 0;
+    }
+    if (AT(o, 0x4, u32) != 0) {
+        AT(o, 0x4, u32)--;
+    }
+    mode = AT(pu, 0x16C8, u8);
+    if (mode != AT(o, 0x10, u8)) {
+        AT(o, 0x10, u8) = mode;
+        AT(o, 0xC, u32) = 0;
+        return 0;
+    }
+    pl = (u8 *)gCharPlayer;
+    if (pl != NULL && AT(pl, 0x28, u8) != 0 && AT(pl, 0x30, s32) != -1) {
+        s32 pr = AT(pl, 0x30, s32), ur = AT(pu, 0x30, s32);
+        u32 e;
+
+        if (pr == ur) {
+            AT(o, 0xC, u32) = 0;
+            return 0;
+        }
+        for (e = 0; e < 8; e++) {
+            if (ur == VCALL(gRooms, 0x18, s32 (*)(VObject *, s32, u32))(gRooms, pr, e & 0xFF) &&
+                ((u8)VCALL(gProgress, 0x64, s32 (*)(Progress *))(gProgress) != 4 || !Pursuer_IsOwnRoom((Pursuer *)pu, -1))) {
+                AT(o, 0xC, u32) = 0;
+                return 0;
+            }
+        }
+    }
+    if (AT(o, 0xC, u32) + 1 != 0) {
+        AT(o, 0xC, u32)++;
+    }
+    if (AT(pu, 0xC4, s32) == 2 && AT(o, 0xC, u32) >= 151) {
+        go = 1;
+        kind = 2;
+    }
+    if (!go && mode == 4 && AT(o, 0xC, u32) >= 151) {
+        go = 1;
+        kind = 1;
+    }
+    if (!go && AT(o, 0x4, u32) != 0) {
+        return 0;
+    }
+    if (!go && mode == 3 && AT(o, 0xC, u32) >= 91) {
+        go = 1;
+        kind = 0;
+    }
+    if (go) {
+        summoner_take(o, kind);
+    }
+    return go;
+}
+
+/* each frame with the pursuer offstage (Progress flag 0: this stage has one): the first time
+ * (flag 1) +0 its time away; while flag 2 is clear and that runs, counting down (+0xC counting
+ * up); then it tries to come in, by one of the three ways from a random first one onwards
+ * (Summoner_Via1B / Summoner_Via1 / Summoner_Via0); having come, the wait restarts, +0x10 its
+ * mode, flag 2 off and the cooldown +0x4 its +0x2D4 seconds. 1 if it came */
+/* 0x002EC170 */
+s32 Summoner_Offstage(u8 *o) {
+    u8 *pu = (u8 *)gCharPursuer;
+    Progress *p = gProgress;
+    u32 k;
+    s32 ok = 0;
+
+    if (!Progress_TestFlag(p, 0)) {
+        return 0;
+    }
+    if (!Progress_TestFlag(p, 1)) {
+        AT(o, 0x0, u32) = Pursuer_RandomDelay((Pursuer *)pu);
+        AT(o, 0xC, u32) = 0;
+        Progress_SetFlag(p, 1);
+    }
+    if (AT(pu, 0x28, u8) != 0) {
+        return 0;
+    }
+    if (!Progress_TestFlag(p, 2) && (AT(o, 0x0, u32) & 0x7FFFFFFF) != 0) {
+        AT(o, 0x0, u32)--;
+        if (AT(o, 0xC, u32) + 1 != 0) {
+            AT(o, 0xC, u32)++;
+        }
+        return 0;
+    }
+    k = (u8)(u32)(3.0f * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom));
+    do {
+        switch (k++) {
+        case 0:
+            ok = (u8)Summoner_Via1B(o);
+            break;
+        case 1:
+            ok = (u8)Summoner_Via1(o);
+            break;
+        case 2:
+            ok = (u8)Summoner_Via0(o);
+            break;
+        }
+    } while ((k & 0xFF) < 3 && !ok);
+    if (ok == 1) {
+        AT(o, 0xC, u32) = 0;
+        AT(o, 0x10, u8) = AT(pu, 0x16C8, u8);
+        Progress_ClearFlag(p, 2);
+        AT(o, 0x4, u32) = VCALL((VObject *)pu, 0x2D4, s32 (*)(void *))(pu) * 30;
+    }
+    return ok;
+}
+
+/* 0x002EC3C0 */
+void Summoner_LessCooldown(u8 *o, s32 sec) {
+    u32 d = sec * 30;
+
+    AT(o, 0x4, u32) = AT(o, 0x4, u32) >= AT(o, 0x4, u32) - d ? AT(o, 0x4, u32) - d : 0;
+}
+
+/* the summoner's cooldown (+0x4) to `sec` seconds / less by `sec` (not below 0) */
+/* 0x002EC450 */
+void Summoner_SetCooldown(u8 *o, s32 sec) {
+    AT(o, 0x4, u32) = sec * 30;
+}
+
+/* 0x002EC470 */
+void Summoner_Take(u8 *o, u8 kind) {
+    summoner_take(o, kind);
+}
+
+/* a frame's loudest noise `n` (Noise_Make) against the summoner `o` (+0xC frames waited,
+ * +0x11 its kind): in the current room only. Its level 0..3 by loudness (one less away from
+ * doors with every door of the room shut). With the pursuer waiting offstage (+0xD0 / +0xD1,
+ * not active), Progress flag 0 without flag 2, at least 3 s and its kind's wait gone, the
+ * level's chance (percent) summons it (o +0 = 0x80000000); otherwise the level's second
+ * chance - on the rest - sets condition 6 (hunted), as does mode 1 with any chance */
+/* 0x002EC4F0 */
+void Summoner_Noise(u8 *o, u8 *n) {
+    Progress *p;
+    VObject *rooms;
+    u8 *pu;
+    u8 *t;
+    u32 i, d;
+    s32 open = 0, lvl, call = 0, roll;
+
+    if (n == NULL) {
+        return;
+    }
+    p = gProgress;
+    if (AT(n, 0x4, s32) != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        return;
+    }
+    rooms = gRooms;
+    for (i = 0; i < 8; i++) {
+        d = (u16)VCALL(rooms, 0x10, s32 (*)(VObject *, s32, u32))(rooms, AT(n, 0x4, s32), i & 0xFF);
+        if (d < 0x190 && (u8)Progress_DoorOpen(p, d) == 1) {
+            open = 1;
+            break;
+        }
+    }
+    lvl = AT(n, 0x0, u8) >= 0x80 ? 4 : AT(n, 0x0, u8) >= 0x60 ? 3 : AT(n, 0x0, u8) >= 0x40 ? 2
+        : AT(n, 0x0, u8) >= 0x20 ? 1 : 0;
+    if (AT(n, 0xC, u16) == 0xFFFF && !open && (s8)lvl < 4) {
+        lvl = (s8)(lvl - 1);
+    }
+    if ((s8)lvl >= 4) {
+        lvl = 3;
+    }
+    if ((s8)lvl < 0) {
+        lvl = 0;
+    }
+    t = D_0047AC90 + (s8)lvl * 2;
+    pu = (u8 *)gCharPursuer;
+    if (pu != NULL && (AT(pu, 0xD0, u8) != 0 || AT(pu, 0xD1, u8) != 0)) {
+        if (AT(pu, 0x28, u8) != 0) {
+            return;
+        }
+        roll = 0;
+        if (t[0] != 0) {
+            if (t[0] == 100 || 100.0f * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom) <= (f32)t[0]) {
+                roll = 1;
+            }
+        }
+        call = roll && Progress_TestFlag(p, 0) && !Progress_TestFlag(p, 2);
+        if (call) {
+            u32 secs = (u16)(AT(o, 0xC, u32) / 30);
+
+            if (secs < 3 || secs < D_00419DC0[AT(o, 0x11, u8)]) {
+                call = 0;
+            }
+        }
+    }
+    if (call) {
+        AT(o, 0x0, u32) = 0x80000000;
+        return;
+    }
+    if (t[1] != 0 &&
+        (100.0f - (f32)t[0]) * VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom) <= (f32)t[1]) {
+        Progress_SetCondBit(p, 6);
+        return;
+    }
+    if ((u8)Progress_GameMode(p) == 1 && t[0] + t[1] != 0) {
+        Progress_SetCondBit(p, 6);
+    }
+}
+
+/* SceneGame +0x7A4 at the start of play in a room: whether the pursuer comes in (the progress
+ * +0x28 says the room allows it; then by the stage, +0x64 4) or is placed elsewhere */
+/* 0x002EC940 */
+void Summoner_RoomStart(u8 *o) {
+    u8 *pu = (u8 *)gCharPursuer;
+    Progress *p, *q;
+
+    if (pu == NULL || !(AT(pu, 0xD0, u8) != 0 || AT(pu, 0xD1, u8) != 0)) {
+        return;
+    }
+    p = gProgress;
+    if (Progress_TestFlag(p, 0x17)) {
+        return;
+    }
+    if (Progress_TestFlag(p, 0x18) && AT(pu, 0x30, s32) != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        return;
+    }
+    if (AT(p, 0x1FBEC1, u8) != 0) {
+        return;
+    }
+    q = gProgress;
+    if (VCALL(q, 0x28, s32 (*)(Progress *, s32, s32))(q, VCALL(q, 0xC, s32 (*)(Progress *))(q), 2)) {
+        if (AT(gCharPlayer, 0x30, s32) == AT(pu, 0x30, s32)) {
+            return;
+        }
+        if ((u8)VCALL(p, 0x64, s32 (*)(Progress *))(p) != 4) {
+            return;
+        }
+        if (!Pursuer_IsOwnRoom((Pursuer *)pu, -1)) {
+            return;
+        }
+        summoner_take(o, 1);
+        return;
+    }
+    if (VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector)) {
+        return;
+    }
+    if (!(u8)Summoner_Offstage(o)) {
+        Summoner_InPlay(o);
+    }
+}
+
+/* 0x002ECB50 */
+void Summoner_Reset(u8 *p) {
+    AT(p, 0xC, s32) = 0;
+    AT(p, 0x4, s32) = 0;
+    AT(p, 0x0, s32) = 0;
+    AT(p, 0x8, s32) = -1;
+    AT(p, 0x10, u8) = 0xFF;
+    AT(p, 0x11, u8) = 0;
 }
 
 /* off-screen travel: count down the way to the next exit (+0x14C4) at the stance's pace; at
@@ -11193,6 +11394,21 @@ s32 Pursuer_IsBusy(void *p) {
     return FLD(p, 0x20, s32) == 2;
 }
 
+/* vtable +0xEC: can the pursuer go through exit `exit`: 1 if Npc_ExitKind says 4, 5 or 6,
+   2 if it says 2 (passed on as is), else 0 */
+/* 0x00127C40 */
+s32 NPC_CanUseExit(Pursuer *p, s32 exit) {
+    switch (Npc_ExitKind(p, exit) & 0xFF) {
+    case 2:
+        return 2;
+    case 4:
+    case 5:
+    case 6:
+        return 1;
+    }
+    return 0;
+}
+
 /* 0x0012BFB0 */
 u8 *Debilitas_ModelFileTable(Pursuer *p) {
     if (FLD(gProgress, 0x30, u32) & 0x8000) {
@@ -11201,298 +11417,46 @@ u8 *Debilitas_ModelFileTable(Pursuer *p) {
     return pstr_O_DB0_DB0_200_PCK;
 }
 
+/* Room object constructor: base 0x469C20 -> 0x469C60 -> 0x46D810; id at +0x153C. */
+/* 0x00171090 */
+void *Pursuer_ctor(u8 *p, u32 id, s32 arg) {
+    FLD(p, 0x0, void **) = Actor_vtable;
+    FLD(p, 0x20, s32) = arg;
+    FLD(p, 0x24, s32) = 0x2000000;
+    FLD(p, 0x0, void **) = Character_vtable;
+    FLD(p, 0x1380, s32) = 0;
+    p[0x153C] = (u8)id;
+    FLD(p, 0x0, void **) = Pursuer_vtable;
+    return p;
+}
+
+/* vtable +0x8: NPC destructor (-> Character) */
+/* 0x001710D0 */
+Pursuer *NPC_dtor(Pursuer *p, s32 flags) {
+    if (p != NULL) {
+        p->c.a.vtbl = NPC_vtable;
+        VCALL(p, 0x10, void (*)(Pursuer *))(p);
+        if (p != NULL) {
+            p->c.a.vtbl = Character_vtable;
+            if (p != NULL) {
+                p->c.a.vtbl = Actor_vtable;
+            }
+        }
+        if ((s16)flags > 0) {
+            Actor_Destroy(&p->c.a);
+        }
+    }
+    return p;
+}
+
 /* ---- the room character of id 8 (vtable 0x46FF80; built by Kind08_ctor): a Pursuer that
  * mostly keeps the Pursuer's own behaviour ---- */
 
-extern void *Kind08_vtable[];
-extern const PTMF Pursuer_StateRunThenNext_ptmf6;   /* its behaviour after a reset */
-
-/* vtable +0x8: destructor */
-/* 0x002ECB80 */
-Pursuer *Kind08_dtor(Pursuer *p, s32 flags) {
-    if (p != NULL) {
-        p->c.a.vtbl = Kind08_vtable;
-        if (p != NULL) {
-            Pursuer_DestroyBase(p);
-        }
-        if ((s16)flags > 0) {
-            Actor_Destroy(&p->c.a);
-        }
-    }
-    return p;
-}
-
-/* 0x002ECC90 */
-void *Kind08_Table6C(void) {
-    return D_00419DD0;
-}
-
-/* 0x002ECCA0 */
-void *Kind08_Table70(void) {
-    return D_00419E10;
-}
-
-/* vtable +0xF4: setup (the Pursuer's) */
-/* 0x002ECCB0 */
-void Kind08_Setup(Pursuer *p) {
-    Pursuer_Setup(p);
-}
-
-/* vtable +0x38: on screen, Actor_TeleportRandom(-1) */
-/* 0x002ECCC0 */
-void Kind08_ShowUp(Pursuer *p) {
-    if (Npc_InPlayedRoom(p) != 0) {
-        Actor_TeleportRandom(&p->c.a, -1);
-    }
-}
-
-/* vtable +0x84: a pending reset (state 5): on screen, +0x8C, its behaviour Pursuer_StateRunThenNext_ptmf6 and the
- * next one cleared (+0x1758), then +0x114(1); the state is cleared either way */
-/* 0x002ECD10 */
-void Kind08_EventState(Pursuer *p) {
-    if (p->c.state[0] != 5) {
-        return;
-    }
-    if (Npc_InPlayedRoom(p) & 0xFF) {
-        VCALL(p, 0x8C, void (*)(Pursuer *))(p);
-        ptmf_set((PTMF *)((u8 *)p + 0x174C), &Pursuer_StateRunThenNext_ptmf6);
-        PU(p, 0x1758, s32) = -1;
-        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
-    }
-    p->c.state[0] = 0;
-    p->c.state[1] = 0;
-}
-
-/* vtable +0x110: a joint action pending for it is cancelled; -1 */
-/* 0x002ECDE0 */
-s32 Kind08_GrabOrder(Pursuer *p) {
-    Progress *pr = gProgress;
-
-    if ((Progress_HasRelationCmd(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
-        SlotCmd_Cancel(pr, *(u8 *)&p->c.a.slot);
-    }
-    return -1;
-}
-
-/* +0x8 destructor (0x471290 -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character); the model freed
- * for slots 3..5 */
-/* 0x00308EC0 */
-Character *Kind09_dtor(Character *c, s32 flags) {
-    if (c != NULL) {
-        c->a.vtbl = Kind09_vtable;
-        c->a.vtbl = Pursuer_vtable;
-        VCALL(c, 0x10, void (*)(Character *))(c);
-        if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
-            void **m = c->motion;
-
-            if (m != NULL) {
-                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
-                c->motion = NULL;
-            }
-        }
-        c->a.vtbl = NPC_vtable;
-        VCALL(c, 0x10, void (*)(Character *))(c);
-        c->a.vtbl = Character_vtable;
-        c->a.vtbl = Actor_vtable;
-        if ((s16)flags > 0) {
-            Actor_Destroy(&c->a);
-        }
-    }
-    return c;
-}
-
-/* 0x00308FD0 */
-void *Kind09_MotionFiles(void) {
-    return D_004223E0;
-}
-
-/* a state: +0x114 5, the state D_00422348 at +0x174C, +0x1758 -1, then +0x260 */
-/* 0x00308FF0 */
-void Kind09_Behaviour25C(Character *c) {
-    VCALL(c, 0x114, void (*)(Character *, s32))(c, 5);
-    ptmf_set(&AT(c, 0x174C, PTMF), &D_00422348);
-    AT(c, 0x1758, s32) = -1;
-    VCALL(c, 0x260, void (*)(Character *))(c);
-}
-
-/* each frame: its state (+0xA0), then back to +0x114 5 unless already (+0x175C) */
-/* 0x00309080 */
-void Kind09_BehaviourSearch(Character *c) {
-    if (ptmf_test(&AT(c, 0xA0, PTMF))) {
-        ptmf_scall(c, &AT(c, 0xA0, PTMF));
-    }
-    if (AT(c, 0x175C, s32) != 5) {
-        VCALL(c, 0x114, void (*)(Character *, s32))(c, 5);
-    }
-}
-
 /* ---- character kind 14 (vtable Kind14_vtable, the pursuer base with three of its own) ---- */
-
-extern const PTMF Pursuer_StateRunThenNext_ptmf9;
-
-/* +0x38 a frame: back on the mesh (Actor_TeleportRandom) when Npc_InPlayedRoom says so */
-/* 0x00312EA0 */
-void Kind14_ShowUp(Pursuer *p) {
-    if (Npc_InPlayedRoom(p) != 0) {
-        Actor_TeleportRandom(&p->c.a, -1);
-    }
-}
-
-/* +0x84 a request of kind 5 (+0x14E8): when Npc_InPlayedRoom allows it, +0x8C, its state
- * (+0x174C) Pursuer_StateRunThenNext_ptmf9 with no target (+0x1758 -1), +0x114(1); the request cleared either way */
-/* 0x00312EF0 */
-void Kind14_EventState(Pursuer *p) {
-    if (PU(p, 0x14E8, s32) != 5) {
-        return;
-    }
-    if ((Npc_InPlayedRoom(p) & 0xFF) != 0) {
-        VCALL(p, 0x8C, void (*)(Pursuer *))(p);
-        ptmf_set(&PU(p, 0x174C, PTMF), &Pursuer_StateRunThenNext_ptmf9);
-        PU(p, 0x1758, s32) = -1;
-        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
-    }
-    PU(p, 0x14E8, s32) = 0;
-    PU(p, 0x14EC, s32) = 0;
-}
-
-/* +0x110 let its progress slot go (SlotCmd_Cancel) if it holds one (Progress_HasRelationCmd); -1 */
-/* 0x00312FC0 */
-s32 Kind14_GrabOrder(Pursuer *p) {
-    Progress *pr = gProgress;
-
-    if ((Progress_HasRelationCmd(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
-        SlotCmd_Cancel(pr, *(u8 *)&p->c.a.slot);
-    }
-    return -1;
-}
 
 /* ---- character kind 0x10 (vtable Kind16_vtable, the pursuer base with four of its own) ---- */
 
-extern void *Kind16_vtable[];
-extern const PTMF Pursuer_StateRunThenNext_ptmf10;
-
-/* +0x8 destructor */
-/* 0x00315B30 */
-Pursuer *Kind16_dtor(Pursuer *p, s32 flags) {
-    if (p != NULL) {
-        p->c.a.vtbl = Kind16_vtable;
-        Pursuer_DestroyBase(p);
-        if ((s16)flags > 0) {
-            Actor_Destroy(&p->c.a);
-        }
-    }
-    return p;
-}
-
-/* 0x00315C40 */
-void *Kind16_ModelFiles(void) {
-    return D_00429C50;
-}
-
-/* 0x00315C50 */
-void *Kind16_MotionFiles(void) {
-    return D_00429C90;
-}
-
-/* +0x38 a frame: back on the mesh (Actor_TeleportRandom) when Npc_InPlayedRoom says so */
-/* 0x00315C70 */
-void Kind16_ShowUp(Pursuer *p) {
-    if (Npc_InPlayedRoom(p) != 0) {
-        Actor_TeleportRandom(&p->c.a, -1);
-    }
-}
-
-/* +0x84 a request of kind 5 (+0x14E8): when Npc_InPlayedRoom allows it, +0x8C, its state
- * (+0x174C) Pursuer_StateRunThenNext_ptmf10 with no target (+0x1758 -1), +0x114(1); the request cleared either way */
-/* 0x00315CC0 */
-void Kind16_EventState(Pursuer *p) {
-    if (PU(p, 0x14E8, s32) != 5) {
-        return;
-    }
-    if ((Npc_InPlayedRoom(p) & 0xFF) != 0) {
-        VCALL(p, 0x8C, void (*)(Pursuer *))(p);
-        ptmf_set(&PU(p, 0x174C, PTMF), &Pursuer_StateRunThenNext_ptmf10);
-        PU(p, 0x1758, s32) = -1;
-        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
-    }
-    PU(p, 0x14E8, s32) = 0;
-    PU(p, 0x14EC, s32) = 0;
-}
-
-/* +0x110 let its progress slot go (SlotCmd_Cancel) if it holds one (Progress_HasRelationCmd); -1 */
-/* 0x00315D90 */
-s32 Kind16_GrabOrder(Pursuer *p) {
-    Progress *pr = gProgress;
-
-    if ((Progress_HasRelationCmd(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
-        SlotCmd_Cancel(pr, *(u8 *)&p->c.a.slot);
-    }
-    return -1;
-}
-
 /* ---- character kind 0x11 (vtable Kind17_vtable, the pursuer base with four of its own) ---- */
-
-extern void *Kind17_vtable[];
-extern const PTMF Pursuer_StateRunThenNext_ptmf11;
-
-/* +0x8 destructor */
-/* 0x00316AB0 */
-Pursuer *Kind17_dtor(Pursuer *p, s32 flags) {
-    if (p != NULL) {
-        p->c.a.vtbl = Kind17_vtable;
-        Pursuer_DestroyBase(p);
-        if ((s16)flags > 0) {
-            Actor_Destroy(&p->c.a);
-        }
-    }
-    return p;
-}
-
-/* 0x00316BC0 */
-void *Kind17_ModelFiles(void) {
-    return D_00429CE0;
-}
-
-/* 0x00316BD0 */
-void *Kind17_MotionFiles(void) {
-    return D_00429D20;
-}
-
-/* +0x38 a frame: back on the mesh (Actor_TeleportRandom) when Npc_InPlayedRoom says so */
-/* 0x00316BF0 */
-void Kind17_ShowUp(Pursuer *p) {
-    if (Npc_InPlayedRoom(p) != 0) {
-        Actor_TeleportRandom(&p->c.a, -1);
-    }
-}
-
-/* +0x84 a request of kind 5 (+0x14E8): when Npc_InPlayedRoom allows it, +0x8C, its state
- * (+0x174C) Pursuer_StateRunThenNext_ptmf11 with no target (+0x1758 -1), +0x114(1); the request cleared either way */
-/* 0x00316C40 */
-void Kind17_EventState(Pursuer *p) {
-    if (PU(p, 0x14E8, s32) != 5) {
-        return;
-    }
-    if ((Npc_InPlayedRoom(p) & 0xFF) != 0) {
-        VCALL(p, 0x8C, void (*)(Pursuer *))(p);
-        ptmf_set(&PU(p, 0x174C, PTMF), &Pursuer_StateRunThenNext_ptmf11);
-        PU(p, 0x1758, s32) = -1;
-        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
-    }
-    PU(p, 0x14E8, s32) = 0;
-    PU(p, 0x14EC, s32) = 0;
-}
-
-/* +0x110 let its progress slot go (SlotCmd_Cancel) if it holds one (Progress_HasRelationCmd); -1 */
-/* 0x00316D10 */
-s32 Kind17_GrabOrder(Pursuer *p) {
-    Progress *pr = gProgress;
-
-    if ((Progress_HasRelationCmd(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {
-        SlotCmd_Cancel(pr, *(u8 *)&p->c.a.slot);
-    }
-    return -1;
-}
 
 /* destructor (vtable Reflection_vtable) */
 /* 0x00316D80 */
@@ -11505,183 +11469,6 @@ void *Obj472F60_dtor(u8 *o, s32 flags) {
         }
     }
     return o;
-}
-
-/* 0x0031E5C0 */
-Character *Kind19_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind19_vtable); }
-
-/* 0x0031E6D0 */
-void *Kind19_ModelFiles(void) {
-    return D_0042A0F0;
-}
-
-/* 0x0031E6E0 */
-void *Kind19_MotionFiles(void) {
-    return D_0042A130;
-}
-
-/* 0x0031E700 */
-void Kind19_ShowUp(Pursuer *p) { creature_inplay(p); }
-
-/* 0x0031E750 */
-void Kind19_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf13); }
-
-/* 0x0031E820 */
-s32 Kind19_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
-
-/* 0x00320150 */
-u8 *TintStalker_ModelFileTable(Pursuer *p) {
-    return b5_prog_flag8000() ? pstr_O_RCT_RCT_200_PCK_2 : pstr_O_RCT_RCT_200_PCK;
-}
-
-/* 0x00321640 */
-Character *Kind24_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind24_vtable); }
-
-/* 0x00321750 */
-void *Kind24_ModelFiles(void) {
-    return D_0042C380;
-}
-
-/* 0x00321760 */
-void *Kind24_MotionFiles(void) {
-    return D_0042C3C0;
-}
-
-/* 0x00321780 */
-void Kind24_ShowUp(Pursuer *p) { creature_inplay(p); }
-
-/* 0x003217D0 */
-void Kind24_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf14); }
-
-/* 0x003218A0 */
-s32 Kind24_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
-
-/* 0x0032C830 */
-void Kind21_ShowUp(Pursuer *p) { creature_inplay(p); }
-
-/* 0x0032C880 */
-void Kind21_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf16); }
-
-/* 0x0032C950 */
-s32 Kind21_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
-
-/* 0x0032C9C0 */
-Character *Kind20_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind20_vtable); }
-
-/* 0x0032CAD0 */
-void *Kind20_ModelFiles(void) {
-    return D_0042C900;
-}
-
-/* 0x0032CAE0 */
-void *Kind20_MotionFiles(void) {
-    return D_0042C940;
-}
-
-/* 0x0032CB00 */
-void Kind20_ShowUp(Pursuer *p) { creature_inplay(p); }
-
-/* 0x0032CB50 */
-void Kind20_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf17); }
-
-/* 0x0032CC20 */
-s32 Kind20_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
-
-/* 0x00331200 */
-u8 *Kind27_ModelFileTable(Pursuer *p) {
-    return b5_prog_flag8000() ? pstr_O_DB2_DB2_200_PCK_4 : pstr_O_DB2_DB2_200_PCK_3;
-}
-
-/* 0x0033ABA0 */
-Character *Kind29_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind29_vtable); }
-
-/* 0x0033ACB0 */
-void *Kind29_ModelFiles(void) {
-    return D_00430820;
-}
-
-/* 0x0033ACC0 */
-void *Kind29_MotionFiles(void) {
-    return D_00430860;
-}
-
-/* 0x0033ACE0 */
-void Kind29_ShowUp(Pursuer *p) { creature_inplay(p); }
-
-/* 0x0033AD30 */
-void Kind29_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf20); }
-
-/* 0x0033AE00 */
-s32 Kind29_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
-
-/* 0x00345100 */
-Character *Kind33_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind33_vtable); }
-
-/* 0x00345210 */
-void *Kind33_ModelFiles(void) {
-    return D_0043B5B0;
-}
-
-/* 0x00345220 */
-void *Kind33_MotionFiles(void) {
-    return D_0043B5F0;
-}
-
-/* 0x00345240 */
-void Kind33_ShowUp(Pursuer *p) { creature_inplay(p); }
-
-/* 0x00345290 */
-void Kind33_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf24); }
-
-/* 0x00345360 */
-s32 Kind33_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
-
-/* 0x00347290 */
-u8 *Kind34_ModelFileTable(Pursuer *p) {
-    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? pstr_O_DNL_DNL_200_PCK_4 : pstr_O_DNL_DNL_200_PCK_3;
-}
-
-/* 0x00348620 */
-u8 *Kind35_ModelFileTable(Pursuer *p) {
-    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? pstr_O_DNL_DNL_200_PCK_6 : pstr_O_DNL_DNL_200_PCK_5;
-}
-
-/* 0x003495B0 */
-u8 *Kind36_ModelFileTable(Pursuer *p) {
-    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? pstr_O_DNL_DNL_200_PCK_8 : pstr_O_DNL_DNL_200_PCK_7;
-}
-
-/* 0x0034B7B0 */
-Character *Kind37_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind37_vtable); }
-
-/* 0x0034B8C0 */
-void *Kind37_MotionFiles(void) {
-    return D_00441850;
-}
-
-/* 0x0034B8D0 */
-void Kind37_DoorOffset(void *self, s32 i, f32 *out) {
-    switch (i) {
-    case 1: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.e49ba6p+2f /* 7.572 */; break;
-    case 3: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.b8e21ap+2f /* -6.8888 */; break;
-    case 0: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.541206p+2f /* -5.3136 */; break;
-    case 2: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.fbfb16p+2f /* 7.9372 */; break;
-    }
-}
-
-/* 0x0034B970 */
-void Kind37_ActionOffsets(void *self, s32 i, f32 *out) {
-    switch (i) {
-    case 10: case 11: out[0] = -0x1.3eab36p-5f /* -0.0389 */; out[1] = 0.0f; out[2] = 0x1.4cf4fp+3f /* 10.4049 */; break;
-    case 12: case 13: out[0] = 0x1.7652bep-1f /* 0.7311 */; out[1] = 0.0f; out[2] = 0x1.a80832p+3f /* 13.251 */; break;
-    case 14: out[0] = -0x1.25a858p+0f /* -1.1471 */; out[1] = 0.0f; out[2] = -0x1.42a64cp+1f /* -2.5207 */; break;
-    case 15: out[0] = -0x1.4fdf3cp-2f /* -0.328 */; out[1] = 0.0f; out[2] = -0x1.324a8cp+1f /* -2.3929 */; break;
-    }
-}
-
-/* 0x0034D980 */
-u8 *Kind37_ModelFileTable(Pursuer *p) {
-    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? pstr_O_RCT_RCT_200_PCK_4 : pstr_O_RCT_RCT_200_PCK_3;
 }
 
 /* destructor (vtable Effect79FF0_vtable) */
@@ -11774,49 +11561,6 @@ void Effect79FF0_Start(u8 *o) {
 
 extern void *Kind21_vtable[], *Kind14_vtable[];
 
-/* vtable +0x8 of Kind21_vtable (kind 0x15's second class): its vtable, then the base's */
-/* 0x00172CD0 */
-Pursuer *Kind21_dtor(Pursuer *p, s32 flags) {
-    if (p != NULL) {
-        p->c.a.vtbl = Kind21_vtable;
-        Pursuer_DestroyBase(p);
-        if ((s16)flags > 0) {
-            Actor_Destroy(&p->c.a);
-        }
-    }
-    return p;
-}
-
-/* 0x00172DE0 */
-void *Kind21_ctor(void *p, s32 arg, u32 id) {
-    return b0_RoomCtor(p, id, arg, Kind21_vtable);
-}
-
-/* 0x00172E20 */
-void *Kind20_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x14, arg, Kind20_vtable);
-}
-
-/* 0x00172E70 */
-void *Kind19_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x13, arg, Kind19_vtable);
-}
-
-/* 0x00172EC0 */
-void *Kind18_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x12, arg, Kind18_vtable);
-}
-
-/* 0x00172F10 */
-void *Kind17_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x11, arg, Kind17_vtable);
-}
-
-/* 0x00172F60 */
-void *Kind16_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x10, arg, Kind16_vtable);
-}
-
 /* 0x00172FB0 */
 void *Kind15_ctor(void *p, u32 id, u32 arg) {
     return b0_RoomCtor(p, id, (u8)arg, Kind15_vtable);
@@ -11838,102 +11582,2411 @@ Pursuer *Kind15_dtor(Pursuer *p, s32 flags) {
     return p;
 }
 
-/* 0x001795E0 */
-void *Kind14_ModelFiles(void) {
-    return D_004297C0;
+/* vtable +0x11C */
+/* 0x00179610 */
+s32 Pursuer_GivesUp(Pursuer *p) {
+    return 0;
 }
 
-/* 0x001795F0 */
-void *Kind14_MotionFiles(void) {
-    return D_00429800;
+/* vtable +0x128 (Debilitas: own): the stand animation by +0x16C8 */
+/* 0x00179620 */
+void Pursuer_StandAnim(Pursuer *p) {
+    u8 k = PU(p, 0x16C8, u8);
+
+    switch (k) {
+    case 0:
+    case 1:
+    case 2:
+    case 4:
+        Pursuer_PlayAnimIf(p, VCALL(p, 0x328, s32 (*)(Pursuer *, u32))(p, k), 0);
+        break;
+    case 3: {
+        u8 j = PU(p, 0x16C9, u8);
+
+        if (j != 0 && j != 2) {
+            Pursuer_PlayAnimIf(p, VCALL(p, 0x328, s32 (*)(Pursuer *, u32))(p, k), 0);
+        } else {
+            Pursuer_PlayAnimIf(p, VCALL(p, 0x324, s32 (*)(Pursuer *, u32))(p, k), 0);
+        }
+        break;
+    }
+    }
 }
 
-/* vtable +0x8 of Kind14_vtable (kind 14) */
-/* 0x00173000 */
-Pursuer *Kind14_dtor(Pursuer *p, s32 flags) {
-    if (p != NULL) {
-        p->c.a.vtbl = Kind14_vtable;
-        Pursuer_DestroyBase(p);
-        if ((s16)flags > 0) {
-            Actor_Destroy(&p->c.a);
+/* vtable +0x2AC .. +0x2B8: nothing */
+/* 0x00179710 */
+void Pursuer_GoForFiona(Pursuer *p) {
+}
+
+/* 0x00179720 */
+void Pursuer_HeadingStep(Pursuer *p) {
+}
+
+/* 0x00179730 */
+void Pursuer_FreshStart(Pursuer *p) {
+}
+
+/* 0x00179740 */
+void Pursuer_CarryOn(Pursuer *p) {
+}
+
+/* vtable +0x2C0: timer +0x1660 to 600 frames (10 s) */
+/* 0x00179750 */
+void Pursuer_Timer10s(Pursuer *p) {
+    PU(p, 0x1660, s32) = 600;
+}
+
+/* vtable +0x2C8: timer +0x1660 to `frames`, 0 = 900 (15 s) */
+/* 0x00179760 */
+void Pursuer_SetTimer(Pursuer *p, s32 frames) {
+    PU(p, 0x1660, s32) = frames != 0 ? frames : 900;
+}
+
+/* ---- batch 3 ---- */
+
+/* vtable +0x9C: offset of the point beside a door, by side (Lorenzo's wheelchair etc. differ) */
+/* 0x00179780 */
+void Pursuer_DoorOffset(Pursuer *p, s32 side, f32 *out) {
+    switch (side) {
+    case 0:
+        AT(out, 0x0, u32) = 0;
+        AT(out, 0x4, u32) = 0;
+        AT(out, 0x8, u32) = 0xC0C00000;   /* -6.0 */
+        break;
+    case 1:
+        AT(out, 0x0, u32) = 0x3F23D70A;   /* 0.64 */
+        AT(out, 0x4, u32) = 0;
+        AT(out, 0x8, u32) = 0x41266666;   /* 10.4 */
+        break;
+    case 2:
+        AT(out, 0x0, u32) = 0xBED4AF4F;   /* -0.4154 */
+        AT(out, 0x4, u32) = 0;
+        AT(out, 0x8, u32) = 0x41202F1B;   /* 10.0115 */
+        break;
+    case 3:
+        AT(out, 0x0, u32) = 0x3F23D70A;   /* 0.64 */
+        AT(out, 0x4, u32) = 0;
+        AT(out, 0x8, u32) = 0xC0F23055;   /* -7.568 */
+        break;
+    }
+}
+
+/* vtable +0xA0 / +0xA4: turn rates, 4 and 8 degrees (in radians) */
+/* 0x00179830 */
+f32 Pursuer_TurnRate(Pursuer *p) {
+    return 0x1.1df46a0000000p-4f /* 0.06981317 */;
+}
+
+/* 0x00179850 */
+f32 Pursuer_TurnRateFast(Pursuer *p) {
+    return 0x1.1df46a0000000p-3f /* 0.13962634 */;
+}
+
+/* vtable +0x2DC .. +0x2FC: distances and factors */
+/* 0x00179870 */
+f32 Pursuer_LookFrames(Pursuer *p) {
+    return 60.0f;
+}
+
+/* 0x00179880 */
+f32 Pursuer_LookSwing(Pursuer *p) {
+    return 0x1.eb851e0000000p-4f /* 0.12 */;
+}
+
+/* 0x001798A0 */
+f32 Pursuer_ReachFiona(Pursuer *p) {
+    return 20.0f;
+}
+
+/* 0x001798B0 */
+f32 Pursuer_Dist2E8(Pursuer *p) {
+    return 20.0f;
+}
+
+/* 0x001798C0 */
+f32 Pursuer_AttackAngle(Pursuer *p) {
+    return 20.0f;
+}
+
+/* 0x001798D0 */
+f32 Pursuer_ReachHewie(Pursuer *p) {
+    return 16.0f;
+}
+
+/* 0x001798E0 */
+f32 Pursuer_AttackRange(Pursuer *p) {
+    return 24.0f;
+}
+
+/* 0x001798F0 */
+f32 Pursuer_SpeedTop(Pursuer *p) {
+    return 0x1.6666660000000p+0f /* 1.4 */;
+}
+
+/* 0x00179910 */
+f32 Pursuer_SpeedBase(Pursuer *p) {
+    return 0x1.3333340000000p-1f /* 0.6 */;
+}
+
+/* 0x00179930 */
+s32 Pursuer_AttackAnimA(Pursuer *p) {
+    return -1;
+}
+
+/* 0x00179940 */
+s32 Pursuer_AttackAnimB(Pursuer *p) {
+    return -1;
+}
+
+/* vtable +0x314 */
+/* 0x00179950 */
+s32 Pursuer_RoomSpots(Pursuer *p) {
+    return 0;
+}
+
+/* vtable +0xE8 */
+/* 0x00179960 */
+void NPC_PickDestination(Pursuer *p) {
+    Npc_HeadRandomRoom(p);
+}
+
+/* `tri` if the pursuer may stand on it (its blocking flags, vtable +0xA8, against the
+   triangle's +0x3C), else the nearest triangle it may (a planner query of kind 7; -1 if none) */
+/* 0x00211B00 */
+u32 Npc_TriIfStandable(Pursuer *p, u32 tri) {
+    VObject *nav = (VObject *)gNavMesh;
+    VObject *planner;
+    PathRequest q = { 0 };
+    u8 *t = NULL;
+    u32 found, mask;
+
+    if (tri < AT(nav, 0x8, u32) && AT(nav, 0x4, u8 *) != NULL) {
+        t = AT(nav, 0x4, u8 *) + tri * 0x50;
+    }
+    mask = VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
+    if (!((t != NULL ? AT(t, 0x3C, u32) : 0 /* (the original reads address 0x3C) */) & mask)) {
+        return tri;
+    }
+    q.unk0 = 0;
+    q.startTri = tri;
+    VCALL(nav, 0xC, void (*)(VObject *, u32, f32 *))(nav, tri, q.startPos);
+    q.goalTri = tri;
+    sceVu0CopyVector(q.goalPos, q.startPos);
+    q.unk4 = 7;
+    q.mask = VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
+    p->c.pathId = VCALL(gSceneGameF29740, 0xC, s32 (*)(VObject *, PathRequest *, s32))(gSceneGameF29740, &q, 0);
+    if (p->c.pathId == -1) {
+        return -1;
+    }
+    planner = gSceneGameF29740;
+    VCALL(planner, 0x14, s32 (*)(VObject *))(planner);
+    found = VCALL(planner, 0x38, u32 (*)(VObject *, s32))(planner, p->c.pathId);
+    VCALL(planner, 0x28, void (*)(VObject *, s32))(planner, p->c.pathId);
+    p->c.pathId = -1;
+    return found;
+}
+
+/* `a2` for the pursuer in its room (progress) */
+/* 0x00211C80 */
+void NPC_ExitArg(Pursuer *p, s32 a2) {
+    Progress *pr = gProgress;
+
+    DoorHold_Take(pr, p->c.a.room, a2, *(u8 *)&p->c.a.slot);
+    DoorHold_Open(pr, p->c.a.room, a2, *(u8 *)&p->c.a.slot);
+}
+
+/* ---- batch 4 ---- */
+
+/* door / exit `exit`: what to do with it (vtable +0xF0 to go through); 2 / 1 / 0 */
+/* 0x00211CF0 */
+s32 Npc_ExitWhatToDo(Pursuer *p, s32 exit) {
+    Progress *pr;
+
+    switch (Npc_ExitKind(p, exit) & 0xFF) {
+    case 2:
+        return 2;
+    case 6:
+        pr = gProgress;
+        DoorHold_Take(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot);
+        DoorHold_Release(pr, p->c.a.room, exit);
+        /* fallthrough */
+    case 4:
+        if (!(VCALL(gRooms, 0x78, s32 (*)(VObject *, s32, s32))(gRooms, p->c.a.room, exit) & 0xFF)) {
+            return 1;
+        }
+        /* fallthrough */
+    case 5:
+        VCALL(p, 0xF0, void (*)(Pursuer *, s32))(p, exit);
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+/* what is exit `exit` like for the pursuer: 2 its own way in, 3 closed to it, 4 open, 5 / 6
+ * it must open it (6: from the other side) */
+/* 0x00211E00 */
+u32 Npc_ExitKind(Pursuer *p, s32 exit) {
+    Progress *pr = gProgress;
+    VObject *rm;
+
+    if ((Progress_CurRoomFlag(pr, p->c.a.room, exit) & 0xFF) == 1) {
+        return 2;
+    }
+    if (!(Progress_ExitPassable(pr, p->c.a.room, exit, *(u8 *)&p->c.a.slot) & 0xFF)) {
+        return 3;
+    }
+    if ((Progress_ExitUnlocked(pr, p->c.a.room, exit) & 0xFF) == 1) {
+        return 3;
+    }
+    rm = gRooms;
+    if (!(VCALL(rm, 0x78, s32 (*)(VObject *, s32, s32))(rm, p->c.a.room, exit) & 0xFF)) {
+        return 4;
+    }
+    if ((Progress_ExitOpen(pr, p->c.a.room, exit) & 0xFF) == 1) {
+        return 4;
+    }
+    if ((DoorHold_Usable(pr, p->c.a.room, exit) & 0xFF) == 1) {
+        return (VCALL(rm, 0x4C, s32 (*)(VObject *, s32, s32))(rm, p->c.a.room, exit) & 0xFF) == 1 ? 6 : 3;
+    }
+    return 5;
+}
+
+/* path length from node `a` to node `b` of `room`, through the room's table (-1 none) */
+/* 0x00211F70 */
+f32 Npc_NodeDistance(Pursuer *p, s32 room, u32 a, u32 b) {
+    VObject *rm = gRooms;
+    s16 n = VCALL(rm, 0x38, s32 (*)(VObject *, u32, s32))(rm, b, room);
+    f32 d;
+
+    if (n == -1) {
+        return -1.0f;
+    }
+    d = n;
+    if ((a & 0xFFFF) != (b & 0xFFFF)) {
+        n = VCALL(rm, 0x38, s32 (*)(VObject *, u32, s32))(rm, a, room);
+        if (n == -1) {
+            return -1.0f;
+        }
+        d += n;
+    }
+    return d;
+}
+
+/* path length between the room nodes of `a` and `b` (rooms +0x10 / +0x38), -1 none */
+/* 0x00212060 */
+f32 Npc_RoomNodeDistance(Pursuer *p, s32 room, s32 a, s32 b) {
+    VObject *rm = gRooms;
+    u32 na = VCALL(rm, 0x10, u32 (*)(VObject *, s32, s32))(rm, room, a) & 0xFFFF;
+    u32 nb = VCALL(rm, 0x10, u32 (*)(VObject *, s32, s32))(rm, room, b) & 0xFFFF;
+    s16 n = VCALL(rm, 0x38, s32 (*)(VObject *, u32, s32))(rm, nb, room);
+    f32 d;
+
+    if (n == -1) {
+        return -1.0f;
+    }
+    d = n;
+    if ((na & 0xFFFF) != (nb & 0xFFFF)) {
+        n = VCALL(rm, 0x38, s32 (*)(VObject *, u32, s32))(rm, na, room);
+        if (n == -1) {
+            return -1.0f;
+        }
+        d += n;
+    }
+    return d;
+}
+
+/* is `pos` of room `room` where the room's spawn point is, and reachable? */
+/* 0x00212190 */
+s32 Npc_AtSpawn(Pursuer *p, s32 room) {
+    VObject *rm = gRooms;
+    f32 a[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+    u32 tri = VCALL(rm, 0x30, u32 (*)(VObject *, s32, f32 *))(rm, room, a);
+
+    VCALL(rm, 0x34, void (*)(VObject *, s32, f32 *))(rm, room, b);
+    if (tri != Actor_TriTo(&p->c.a, a, 0)) {
+        return 0;
+    }
+    return (Actor_NearerRoom(&p->c.a, room, b) & 0xFF) != 0;
+}
+
+/* coming into room `room`: is Fiona at the spawn point there (+0x1624)? */
+/* 0x00212240 */
+void Npc_FionaAtSpawn(Pursuer *p, s32 room) {
+    VObject *rm = gRooms;
+    f32 a[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+
+    PU(p, 0x1624, s32) = 0;
+    VCALL(rm, 0x30, u32 (*)(VObject *, s32, f32 *))(rm, room, a);
+    VCALL(rm, 0x34, void (*)(VObject *, s32, f32 *))(rm, room, b);
+    if ((Actor_NearerRoom(&p->c.a, room, b) & 0xFF) == 1) {
+        if (Actor_TriTo(&p->c.a, a, -1) != (u32)-1) {
+            p->c.unk124 = p->c.unk128;
+        }
+        if (!(Progress_ExitPassable(gProgress, p->c.a.room, room, *(u8 *)&p->c.a.slot) & 0xFF)) {
+            return;
+        }
+        if ((Actor_NearerRoom(&p->c.a, room, gCharPlayer->a.pos) & 0xFF) == 1) {
+            PU(p, 0x1624, s32) = 1;
         }
     }
-    return p;
 }
 
-/* 0x00173110 */
-void *Kind14_ctor(void *p, s32 arg, u32 id) {
-    return b0_RoomCtor(p, id, arg, Kind14_vtable);
+/* plan a path to triangle +0x15A4 / point +0x15B0; its length to +0x1590 (-1: none) */
+/* 0x00212360 */
+s32 Npc_PlanToGoal(Pursuer *p) {
+    if (Character_PlanPathKind(&p->c, 0, PU(p, 0x15A4, s32), (f32 *)((u8 *)p + 0x15B0)) <= 0) {
+        return 0;
+    }
+    if (Character_Waypoints(&p->c) > 0) {
+        PU(p, 0x1590, f32) = VCALL(gSceneGameF29740, 0x30, f32 (*)(VObject *, s32))(gSceneGameF29740, p->c.pathId);
+        Character_ReleasePath(&p->c);
+        return 1;
+    }
+    PU(p, 0x1590, f32) = -1.0f;
+    Character_ReleasePath(&p->c);
+    return 0;
 }
 
-/* 0x00173150 */
-void *Kind13_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0xD, arg, Kind13_vtable);
+/* vtable +0xE8: head for a random other room (10 tries to avoid the played one) */
+/* 0x00212400 */
+s32 Npc_HeadRandomRoom(Pursuer *p) {
+    Progress *pr = gProgress;
+    u32 tries = 0;
+
+    do {
+        PU(p, 0x1594, s32) = VCALL(pr, 0x38, s32 (*)(Progress *, s32))(pr, -1);
+        PU(p, 0x1598, s32) = -1;
+        if (PU(p, 0x1594, s32) == VCALL(pr, 0xC, s32 (*)(Progress *))(pr)) {
+            tries = (tries + 1) & 0xFF;
+            if (tries < 10) {
+                PU(p, 0x1594, s32) = p->c.a.room;
+            }
+        }
+    } while (PU(p, 0x1594, s32) == p->c.a.room);
+    if (PU(p, 0x1594, s32) != -1 && Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) != -1) {
+        return 1;
+    }
+    do {
+        PU(p, 0x1594, s32) = VCALL(pr, 0x38, s32 (*)(Progress *, s32))(pr, p->c.a.room);
+    } while (PU(p, 0x1594, s32) == p->c.a.room);
+    if (PU(p, 0x1594, s32) != -1) {
+        return Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) != -1;
+    }
+    return 0;
 }
 
-/* 0x001731A0 */
-void *Kind08_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x8, arg, Kind08_vtable);
+/* ---- 0x211C80..0x219460 ---- */
+
+/* vtable +0xE4: nothing */
+/* 0x00212540 */
+void NPC_DoorBreak(Pursuer *p) {
 }
 
-/* 0x001731F0 */
-void *Kind12_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0xC, arg, Kind12_vtable);
+/* the facing of door / exit `exit` seen from Fiona (10 if none): while Fiona hides, the first
+ * door she can be behind */
+/* 0x00212550 */
+f32 Npc_DoorFacingFromFiona(Pursuer *p, u32 exit) {
+    VObject *d;
+    s8 side;
+    f32 a;
+
+    if ((exit & 0xFF) >= 8) {
+        u32 i, found = 0xFF;
+
+        if (gCharPlayer->moveMode == 2) {
+            VObject *dd = gDoors;
+            Progress *pr = gProgress;
+
+            for (i = 0; i < 8; i++) {
+                if (VCALL(dd, 0x40, s32 (*)(VObject *, u32))(dd, i & 0xFF) != 0 &&
+                    Progress_CurRoomFlag(pr, p->c.a.room, i & 0xFF) != 0 && (PursuerGroup_Fields(pr, i & 0xFF, 0) & 0xFF & 4)) {
+                    found = i & 0xFF;
+                    break;
+                }
+            }
+        }
+        exit = found & 0xFF;
+        if (exit >= 8) {
+            return 10.0f;
+        }
+    }
+    if (!(VCALL(gRooms, 0x78, s32 (*)(VObject *, s32, u32))(gRooms, p->c.a.room, exit) & 0xFF)) {
+        return 10.0f;
+    }
+    d = gDoors;
+    side = VCALL(d, 0x18, s32 (*)(VObject *, u32, f32 *))(d, exit, gCharPlayer->a.pos);
+    if (side == -1) {
+        return 10.0f;
+    }
+    a = VCALL(d, 0x3C, f32 (*)(VObject *, u32))(d, exit);
+    if (side == 1) {
+        a = Angle_Wrap(0x1.921fb60000000p+1f /* 3.1415927 */ + a);
+    }
+    return a;
 }
 
-/* 0x00173240 */
-void *Lorenzo_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0xB, arg, Lorenzo_vtable);
+/* heading through exit `exit` (from its inner to its outer point) */
+/* 0x00212730 */
+f32 Npc_ExitHeading(Pursuer *p, s32 exit) {
+    f32 a[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+
+    if (!(VCALL(gRooms, 0x78, s32 (*)(VObject *, s32, s32))(gRooms, p->c.a.room, exit) & 0xFF)) {
+        VObject *rm = gRooms;
+        void *nm = gNavMesh;
+
+        VCALL(nm, 0xC, void (*)(void *, s32, f32 *))(nm, VCALL(rm, 0x24, s32 (*)(VObject *, s32))(rm, exit), a);
+        VCALL(nm, 0xC, void (*)(void *, s32, f32 *))(nm, VCALL(rm, 0x28, s32 (*)(VObject *, s32))(rm, exit), b);
+    } else {
+        VObject *rm = gRooms;
+
+        VCALL(rm, 0x30, u32 (*)(VObject *, s32, f32 *))(rm, exit, a);
+        VCALL(rm, 0x34, void (*)(VObject *, s32, f32 *))(rm, exit, b);
+    }
+    sceVu0SubVector(d, a, b);
+    return Vec_Heading(d);
 }
 
-/* 0x00173290 */
-void *Kind39_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x27, arg, Kind39_vtable);
+/* a door of the played room the pursuer must deal with on its way (0xFF none) */
+/* 0x00212850 */
+u32 Npc_DoorOnWay(Pursuer *p) {
+    VObject *rm = gRooms;
+    VObject *d = gDoors;
+    Progress *pr = gProgress;
+    u32 i;
+
+    for (i = 0; i < 8; i++) {
+        u32 st;
+
+        if ((VCALL(rm, 0x10, u32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i & 0xFF) & 0xFFFF) == 0xFFFF) {
+            continue;
+        }
+        if ((VCALL(d, 0x40, s32 (*)(VObject *, u32))(d, i & 0xFF) & 0xFF) != 1 ||
+            (Progress_CurRoomFlag(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), i & 0xFF) & 0xFF) != 1) {
+            continue;
+        }
+        st = PursuerGroup_Fields(pr, i & 0xFF, *(u8 *)&p->c.a.slot) & 0xFF;
+        if (VCALL(rm, 0x70, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i & 0xFF) != 0) {
+            st &= 0xFF;
+            if ((st & 4) && ((st ^ (PursuerGroup_Fields(pr, i & 0xFF, 0) & 0xFF)) & 0x10)) {
+                return i & 0xFF;
+            }
+            if (st & 8) {
+                u32 tri = p->c.a.navTri, flags;
+
+                if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+                    flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+                } else {
+                    flags = 0;
+                }
+                if (p->c.a.navMask & flags) {
+                    return i & 0xFF;
+                }
+            }
+            continue;
+        }
+        if ((st & 0xFF & 1) || VCALL(d, 0x10, s32 (*)(VObject *, u32, s32, s32))(d, i & 0xFF, 0, p->c.a.slot) != 0) {
+            return i & 0xFF;
+        }
+    }
+    return 0xFF;
 }
 
-/* 0x001732E0 */
-void *Lorenzo2_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0xA, arg, Lorenzo2_vtable);
+/* a random exit of the pursuer's side of the room it can use (not `skip`); `skip` if none */
+/* 0x00212A80 */
+u32 Npc_RandomExit(Pursuer *p, u32 skip) {
+    u8 list[8];
+    VObject *rm;
+    u32 n = 0, i;
+
+    for (i = 0; i < 8; i++) {
+        list[i] = D_0047A930[i];
+    }
+    rm = gRooms;
+    for (i = 0; i < 8; i = (i + 1) & 0xFF) {
+        if ((i & 0xFF) == (skip & 0xFF)) {
+            continue;
+        }
+        if (p->c.door < 8) {
+            s32 mine = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, p->c.a.room, p->c.door, 1);
+
+            if (VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, p->c.a.room, i, 1) != mine) {
+                continue;
+            }
+        }
+        if (VCALL(rm, 0x74, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i) != 0 &&
+            (s8)VCALL(p, 0xEC, s32 (*)(Pursuer *, u32))(p, i) != 0) {
+            list[n & 0xFF] = i;
+            n = (n + 1) & 0xFF;
+        }
+    }
+    if ((n & 0xFF) != 0) {
+        if ((n & 0xFF) == 1) {
+            return list[0];
+        }
+        return list[(u32)((f32)n * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom))];
+    }
+    return skip;
 }
 
-/* 0x00173330 */
-void *Kind09_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x9, arg, Kind09_vtable);
+/* door `door` shut, the other side ... (doors +0x20 / +0x1C, progress) */
+/* 0x00212CA0 */
+void Npc_DoorShutOther(Pursuer *p, u32 door) {
+    VObject *d = gDoors;
+    Progress *pr;
+
+    VCALL(d, 0x20, void (*)(VObject *, u32, s32, s32))(d, door, 1, 0x60000);
+    VCALL(d, 0x1C, void (*)(VObject *, u32, s32, s32))(d, door, 0, 0x60000);
+    pr = gProgress;
+    DoorHold_Shut(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), door, 0xFF);
 }
 
-/* 0x00173380 */
-void *Riccardo_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x4, arg, Riccardo_vtable);
+/* 0x00212D30 */
+void Npc_DoorRelease(Pursuer *p, u32 door) {
+    VObject *d = gDoors;
+    Progress *pr;
+
+    VCALL(d, 0x20, void (*)(VObject *, u32, s32, s32))(d, door, 0, 0x60000);
+    VCALL(d, 0x1C, void (*)(VObject *, u32, s32, s32))(d, door, 1, 0x60000);
+    pr = gProgress;
+    DoorHold_Open(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), door, 0xFF);
 }
 
-/* 0x001733D0 */
-void *Kind36_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x24, arg, Kind36_vtable);
+/* shut / open door `door` (doors vtable +0x1C) */
+/* 0x00212DC0 */
+s32 Npc_DoorShut(Pursuer *p, s32 door) {
+    return VCALL(gDoors, 0x1C, s32 (*)(VObject *, s32, s32, s32))(gDoors, door, 0, 0x60000);
 }
 
-/* 0x00173420 */
-void *Kind35_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x23, arg, Kind35_vtable);
+/* 0x00212DE0 */
+s32 Npc_DoorShut2(Pursuer *p, s32 door) {
+    return VCALL(gDoors, 0x1C, s32 (*)(VObject *, s32, s32, s32))(gDoors, door, 1, 0x60000);
 }
 
-/* 0x00173470 */
-void *Kind34_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x22, arg, Kind34_vtable);
+/* plan a path to `pos` / triangle `tri` from the point beside door `door` (side 1 first, then 0);
+ * the side that works, 0xFF none */
+/* 0x00212E00 */
+u32 Npc_PlanFromDoor(Pursuer *p, u32 tri, const f32 *pos, u32 door) {
+    VObject *pl;
+    u32 side = 1;
+
+    p->c.pathReq->unk0 = 0;
+    p->c.pathReq->goalTri = tri;
+    sceVu0CopyVector(p->c.pathReq->goalPos, pos);
+    pl = gSceneGameF29740;
+    for (;;) {
+        f32 ofs[4] __attribute__((aligned(16)));
+        f32 at[4] __attribute__((aligned(16)));
+        u32 t;
+
+        VCALL(p, 0x9C, void (*)(Pursuer *, u32, f32 *))(p, side & 0xFF, ofs);
+        t = Actor_DoorFront(p, door & 0xFF, side & 0xFF, ofs, at);
+        if (t != (u32)-1) {
+            p->c.pathReq->startTri = t;
+            sceVu0CopyVector(p->c.pathReq->startPos, at);
+            p->c.pathId = VCALL(pl, 0xC, s32 (*)(VObject *, PathRequest *, s32))(pl, p->c.pathReq, 0);
+            if (p->c.pathId != -1) {
+                if (VCALL(pl, 0x14, s32 (*)(VObject *))(pl) >= 0) {
+                    Character_ReleasePath(&p->c);
+                    return side;
+                }
+                Character_ReleasePath(&p->c);
+            }
+        }
+        side = (side == 0) & 0xFF;
+        if (side != 0) {
+            return 0xFF;
+        }
+    }
 }
 
-/* 0x001734C0 */
-void *Daniella_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x3, arg, Daniella_vtable);
+/* plan a path to the point beside door `door` (vtable +0x9C offset); 1 if +0xDC agrees */
+/* 0x00212F40 */
+s32 Npc_PlanBesideDoor(Pursuer *p, u32 door, u32 side) {
+    f32 ofs[4] __attribute__((aligned(16)));
+
+    VCALL(p, 0x9C, void (*)(Pursuer *, u32, f32 *))(p, side & 0xFF, ofs);
+    PU(p, 0x15C4, s32) = Actor_DoorFront(p, door & 0xFF, side & 0xFF, ofs, (f32 *)((u8 *)p + 0x15D0));
+    if (PU(p, 0x15C4, s32) == -1) {
+        return 0;
+    }
+    return (VCALL(p, 0xDC, s32 (*)(Pursuer *))(p) & 0xFF) == 1;
 }
 
-/* 0x00173510 */
-void *Kind27_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x1B, arg, Kind27_vtable);
+/* find a door (0..4) to go through, from side `side` (0 / 1, other values: either); door to
+ * +0x100, side to +0x104 */
+/* 0x00212FE0 */
+s32 Npc_FindDoor(Pursuer *p, s32 side) {
+    s8 s = side;
+    u32 either = (s != 1 && s != 0) ? 1 : 0;
+    u32 i;
+
+    if ((either & 0xFF) == 1) {
+        s = 0;
+    }
+    for (i = 0; i < 5; i++) {
+        u32 retry = either & 0xFF;
+        s32 valid = (s32)i >= 0 && i < AT(gNavMesh, 0x14, u32);
+
+        if ((valid & 0xFF) != 1) {
+            continue;
+        }
+        for (;;) {
+            f32 ofs[4] __attribute__((aligned(16)));
+            u32 sd = s != 0;
+            s32 ok;
+
+            VCALL(p, 0x9C, void (*)(Pursuer *, u32, f32 *))(p, sd, ofs);
+            PU(p, 0x15C4, s32) = Actor_DoorFront(p, i & 0xFF, sd & 0xFF, ofs, (f32 *)((u8 *)p + 0x15D0));
+            ok = PU(p, 0x15C4, s32) != -1 && (VCALL(p, 0xDC, s32 (*)(Pursuer *))(p) & 0xFF) == 1;
+            if ((ok & 0xFF) == 1) {
+                p->c.unk100 = i;
+                p->c.unk104[0] = s;
+                return 1;
+            }
+            if ((retry & 0xFF) != 1) {
+                break;
+            }
+            retry = 0;
+            s ^= 1;
+        }
+    }
+    return 0;
 }
 
-/* 0x00173560 */
-void *Debilitas3_ctor(void *p, s32 arg) {
-    return b0_RoomCtor(p, 0x7, arg, Debilitas3_vtable);
+/* the first open door (0..4) while Fiona is hiding (move mode 3), -1 none */
+/* 0x002131A0 */
+s32 Npc_OpenDoorFionaHides(void) {
+    if (gCharPlayer->moveMode == 3) {
+        Progress *pr = gProgress;
+        s32 i;
+
+        for (i = 0; (u32)i < 5; i++) {
+            s32 valid = i >= 0 && (u32)i < AT(gNavMesh, 0x14, u32);
+
+            if ((valid & 0xFF) == 1 && (RoomSlots_Bytes(pr, i & 0xFF, 0) & 0xFF & 1)) {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+/* leave door `door` (0xFF: +0x100): shut / open it behind, blocking flags back, and off its
+ * triangle if that blocks the pursuer */
+/* 0x00213270 */
+void Npc_LeaveDoor(Pursuer *p, u32 door) {
+    VObject *d;
+    u32 tri, flags;
+
+    if ((door & 0xFF) == 0xFF) {
+        door = (u8)p->c.unk100;
+    }
+    d = gDoors;
+    if (VCALL(d, 0x28, s32 (*)(VObject *, u32))(d, door) == 0) {
+        Progress *pr;
+
+        VCALL(d, 0x20, void (*)(VObject *, u32, s32, s32))(d, door, 0, 0x60000);
+        VCALL(d, 0x1C, void (*)(VObject *, u32, s32, s32))(d, door, 1, 0x60000);
+        pr = gProgress;
+        DoorHold_Open(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), door, 0xFF);
+    } else {
+        Progress *pr;
+
+        VCALL(d, 0x20, void (*)(VObject *, u32, s32, s32))(d, door, 1, 0x60000);
+        VCALL(d, 0x1C, void (*)(VObject *, u32, s32, s32))(d, door, 0, 0x60000);
+        pr = gProgress;
+        DoorHold_Shut(pr, VCALL(pr, 0xC, s32 (*)(Progress *))(pr), door, 0xFF);
+    }
+    p->c.a.unk2B = 0;
+    p->c.a.unk2D = 0;
+    p->c.a.navMask = VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
+    tri = p->c.a.navTri;
+    if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+        flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+    } else {
+        flags = 0;
+    }
+    if (p->c.a.navMask & flags) {
+        f32 dir[4] __attribute__((aligned(16)));
+        s8 side = VCALL(d, 0x18, s32 (*)(VObject *, u32, f32 *))(d, door, p->c.a.pos);
+
+        if (side != 0) {
+            if (side == 1) {
+                side = 2;
+            }
+        } else {
+            side = 0;
+        }
+        p->c.a.navTri = VCALL(d, 0x14, u32 (*)(VObject *, u32, s32, f32 *, f32 *, s32))(d, door, side, p->c.a.pos, dir, 1);
+        p->c.a.angle[1] = dir[1];
+        sceVu0UnitMatrix(p->c.a.rot);
+        sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, dir[1]);
+    }
+    p->c.moveMode = 0;
+}
+
+/* plan a path from triangle `tri` / `pos` (-1: where the pursuer is) to door `door`, side 0 then
+ * 2; the door's triangle (+0x104 side, +0x1568 heading, +0x110 point), -1 none */
+/* 0x002134E0 */
+s32 Npc_PlanToDoor(Pursuer *p, u32 door, s32 tri, const f32 *pos) {
+    f32 from[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 dir[4] __attribute__((aligned(16)));
+    VObject *d, *pl;
+    s8 side;
+
+    if (tri != -1) {
+        sceVu0CopyVector(from, pos);
+    } else {
+        tri = p->c.a.navTri;
+        sceVu0CopyVector(from, p->c.a.pos);
+    }
+    d = gDoors;
+    pl = gSceneGameF29740;
+    side = 0;
+    p->c.pathReq->unk0 = 0;
+    for (;;) {
+        s32 t = VCALL(d, 0x14, s32 (*)(VObject *, u32, s32, f32 *, f32 *, s32))(d, door, side, at, dir, 1);
+
+        p->c.pathReq->startTri = tri;
+        sceVu0CopyVector(p->c.pathReq->startPos, from);
+        p->c.pathReq->goalTri = t;
+        sceVu0CopyVector(p->c.pathReq->goalPos, at);
+        p->c.pathId = VCALL(pl, 0xC, s32 (*)(VObject *, PathRequest *, s32))(pl, p->c.pathReq, 0);
+        if (p->c.pathId != -1 && VCALL(pl, 0x14, s32 (*)(VObject *))(pl) > 0) {
+            p->c.unk104[0] = side;
+            PU(p, 0x1568, f32) = dir[1];
+            sceVu0CopyVector(p->c.unk110, at);
+            return t;
+        }
+        Character_ReleasePath(&p->c);
+        side = side != 2 ? 2 : 0;
+        if (side == 0) {
+            return -1;
+        }
+    }
+}
+
+/* ---- batch 9 ---- */
+
+/* the exits of the room the pursuer could go through to reach triangle `tri`: door
+ * +0x100, point beside it +0x15D0 (an exit it must open as a fallback) */
+/* 0x00213690 */
+s32 Npc_ExitsToTri(Pursuer *p, s32 tri) {
+    f32 v[4] __attribute__((aligned(16)));
+    VObject *rm;
+    Progress *pr;
+    u32 fallback = 0xFF;
+    u32 i;
+
+    VCALL(gNavMesh, 0xC, void (*)(void *, s32, f32 *))(gNavMesh, tri, v);
+    rm = gRooms;
+    pr = gProgress;
+    for (i = 0; i < 8; i++) {
+        s32 t;
+
+        if (!(VCALL(rm, 0x78, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i & 0xFF) & 0xFF)) {
+            continue;
+        }
+        if ((Progress_ExitOpen(pr, p->c.a.room, i & 0xFF) & 0xFF) == 1 && !(Progress_CurRoomFlag(pr, p->c.a.room, i & 0xFF) & 0xFF)) {
+            continue;
+        }
+        if ((Progress_ExitUnlocked(pr, p->c.a.room, i & 0xFF) & 0xFF) == 1) {
+            continue;
+        }
+        t = Npc_PlanToDoor(p, i & 0xFF, tri, v);
+        if (t == -1) {
+            if (VCALL(rm, 0x70, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i & 0xFF) != 0 || (fallback & 0xFF) == 0xFF) {
+                if (Npc_PlanToDoor(p, i & 0xFF, -1, NULL) != -1) {
+                    fallback = i & 0xFF;
+                }
+            }
+            continue;
+        }
+        PU(p, 0x15C4, s32) = Npc_PlanToDoor(p, i & 0xFF, -1, NULL);
+        if (PU(p, 0x15C4, s32) != -1 && t != PU(p, 0x15C4, s32)) {
+            p->c.unk100 = i;
+            sceVu0CopyVector((f32 *)((u8 *)p + 0x15D0), p->c.unk110);
+            return 1;
+        }
+        p->c.unk104[0] = -1;
+        PU(p, 0x1568, s32) = 0;
+        AT(p, 0x110, s32) = 0;
+        AT(p, 0x114, s32) = 0;
+        AT(p, 0x118, s32) = 0;
+        AT(p, 0x11C, s32) = 0;
+    }
+    if ((fallback & 0xFF) != 0xFF && VCALL(rm, 0x70, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, fallback) != 0) {
+        PU(p, 0x15C4, s32) = Npc_PlanToDoor(p, fallback, -1, NULL);
+        p->c.unk100 = fallback & 0xFF;
+        sceVu0CopyVector((f32 *)((u8 *)p + 0x15D0), p->c.unk110);
+        return 1;
+    }
+    return 0;
+}
+
+/* can the pursuer get round to triangle `tri` through one of the doors (0..4), from the side
+ * it is on? door +0x100, side +0x104, point +0x15D0 */
+/* 0x002138F0 */
+s32 Npc_RoundThroughDoor(Pursuer *p, s32 tri) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 ofs[4] __attribute__((aligned(16)));
+    f32 out[4] __attribute__((aligned(16)));
+    void *nm = gNavMesh;
+    VObject *pl;
+    s32 below, s, other;
+    u32 i;
+
+    VCALL(nm, 0xC, void (*)(void *, s32, f32 *))(nm, tri, at);
+    below = p->c.a.pos[1] < at[1];
+    s = (below & 0xFF) != 0;
+    pl = gSceneGameF29740;
+    other = (s == 0) & 0xFF;
+    for (i = 0; i < 5; i++) {
+        s32 valid = (s32)i >= 0 && i < AT(nm, 0x14, u32);
+        s32 t, t2;
+
+        if (!(valid & 0xFF)) {
+            continue;
+        }
+        VCALL(p, 0x9C, void (*)(Pursuer *, u32, f32 *))(p, other, ofs);
+        t = Actor_DoorFront(p, i, other, ofs, out);
+        if (t == -1) {
+            continue;
+        }
+        p->c.pathReq->unk0 = 0;
+        p->c.pathReq->startTri = tri;
+        sceVu0CopyVector(p->c.pathReq->startPos, at);
+        p->c.pathReq->goalTri = t;
+        sceVu0CopyVector(p->c.pathReq->goalPos, out);
+        p->c.pathId = VCALL(pl, 0xC, s32 (*)(VObject *, PathRequest *, s32))(pl, p->c.pathReq, 0);
+        if (p->c.pathId == -1) {
+            continue;
+        }
+        if (VCALL(pl, 0x14, s32 (*)(VObject *))(pl) <= 0) {
+            Character_ReleasePath(&p->c);
+            continue;
+        }
+        Character_ReleasePath(&p->c);
+        VCALL(p, 0x9C, void (*)(Pursuer *, u32, f32 *))(p, s, ofs);
+        t2 = Actor_DoorFront(p, i, s, ofs, out);
+        if (t2 == -1) {
+            continue;
+        }
+        if (Character_PlanPathKind(&p->c, 0, t2, out) < 0) {
+            Character_ReleasePath(&p->c);
+            continue;
+        }
+        Character_ReleasePath(&p->c);
+        PU(p, 0x15C4, s32) = t2;
+        sceVu0CopyVector((f32 *)((u8 *)p + 0x15D0), out);
+        p->c.unk100 = i;
+        p->c.unk104[0] = s;
+        return 1;
+    }
+    return 0;
+}
+
+/* turn to the root motion's direction (rotated to the walk mesh slope through triangle +0x34) */
+/* 0x00213B60 */
+void Npc_TurnToRootMotion(Pursuer *p, u32 mask) {
+    f32 a[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+    u8 *m;
+    u32 tri;
+    f32 h;
+
+    if (mask == (u32)-1) {
+        mask = p->c.a.navMask;
+    }
+    m = p->c.motion;
+    VCALL(m, 0x60, void (*)(void *, f32 *))(m, a);
+    tri = Actor_TriTo(&p->c.a, a, 0);
+    h = Actor_HeadingTo(&p->c.a, a);
+    if (tri != (u32)-1) {
+        f32 r;
+
+        VCALL(gNavMesh, 0x40, void (*)(void *, u32, f32 *, f32 *, f32 *, u32))(gNavMesh, p->c.a.navTri, b, p->c.a.pos, a, mask);
+        r = Angle_Wrap(p->c.a.angle[1] + Angle_Wrap(Actor_HeadingTo(&p->c.a, b) - h));
+        p->c.a.angle[1] = r;
+        sceVu0UnitMatrix(p->c.a.rot);
+        sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, r);
+    }
+}
+
+/* path length to triangle `tri` / point `pos`, from the nearest walkable triangle if blocked */
+/* 0x00213C60 */
+f32 NPC_PathLengthTo(Pursuer *p, u32 tri, const f32 *pos) {
+    f32 v[4] __attribute__((aligned(16)));
+    u32 flags;
+
+    if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+        flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+    } else {
+        flags = 0;
+    }
+    if (p->c.a.navMask & flags) {
+        tri = Npc_NearestWalkable(p, tri, pos, v);
+    } else {
+        sceVu0CopyVector(v, pos);
+    }
+    if (tri == (u32)-1) {
+        return -1.0f;
+    }
+    return Character_PathLength(&p->c, tri, v, VCALL(p, 0xA8, u32 (*)(Pursuer *))(p));
+}
+
+/* how far to character `c` on foot: straight if in sight on its triangle, else by path */
+/* 0x00213D40 */
+f32 Npc_FootDistance(Pursuer *p, Character *c) {
+    f32 v[4] __attribute__((aligned(16)));
+    void *nm;
+    u32 tri;
+
+    if (p->c.a.room != c->a.room) {
+        return -1.0f;
+    }
+    tri = c->a.navTri;
+    nm = gNavMesh;
+    if (VCALL(nm, 0x10, s32 (*)(void *, u32, const f32 *))(nm, tri, c->a.pos) == 4) {
+        VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, tri, v);
+        if (tri == Actor_TriTo(&p->c.a, v, p->c.a.navMask)) {
+            return Actor_Distance(&p->c.a, c->a.pos);
+        }
+    }
+    return VCALL(p, 0xD4, f32 (*)(Pursuer *, u32, const f32 *))(p, tri, c->a.pos);
+}
+
+/* height of the bone vtable +0x80 of the model above its base (+0x804), at least 3 */
+/* 0x00213E30 */
+void Npc_BoneHeight(Pursuer *p) {
+    f32 v[4] __attribute__((aligned(16)));
+    u8 *m = p->c.motion;
+    s32 bone = VCALL(m, 0x80, s32 (*)(void *))(m);
+    f32 h;
+
+    sceVu0CopyVector(v, Skel_Bone(MOTION_AT(p, 0x810, u8 *), bone) + 0xC);
+    h = v[1] - MOTION_AT(p, 0x804, f32);
+    if (h < 3.0f) {
+        h = 3.0f;
+    }
+    p->c.a.height = h;
+}
+
+/* which way to turn to face `heading`: 1 left beyond `a`, 0 right beyond -`a`, 0xFF within;
+ * bit 1 when more than `b` off (if `b` >= `a`) */
+/* 0x00213EC0 */
+u32 Npc_TurnWay(Pursuer *p, f32 heading, f32 a, f32 b) {
+    f32 d;
+    u32 r;
+
+    if (a <= 0.0f) {
+        a = -a;
+    }
+    if (b <= 0.0f) {
+        b = -b;
+    }
+    d = Angle_Wrap(heading - p->c.a.angle[1]);
+    if (d <= a) {
+        if (!(d < -a)) {
+            return 0xFF;
+        }
+        r = 0;
+    } else {
+        r = 1;
+    }
+    if (b < a) {
+        return r;
+    }
+    if (d <= 0.0f) {
+        d = -d;
+    }
+    if (d <= b) {
+        return r;
+    }
+    return (r | 2) & 0xFF;
+}
+
+/* which way to turn to face point `pos` (see Npc_TurnWay) */
+/* 0x00213FA0 */
+u32 Npc_TurnWayTo(Pursuer *p, const f32 *pos, f32 a, f32 b) {
+    f32 heading = Actor_HeadingTo(&p->c.a, pos);
+    f32 d;
+    u32 r;
+
+    if (a <= 0.0f) {
+        a = -a;
+    }
+    if (b <= 0.0f) {
+        b = -b;
+    }
+    d = Angle_Wrap(heading - p->c.a.angle[1]);
+    if (d <= a) {
+        if (!(d < -a)) {
+            return 0xFF;
+        }
+        r = 0;
+    } else {
+        r = 1;
+    }
+    if (!(b < a)) {
+        if (d <= 0.0f) {
+            d = -d;
+        }
+        if (!(d <= b)) {
+            r = (r | 2) & 0xFF;
+        }
+    }
+    return r & 0xFF;
+}
+
+/* turn towards `heading` by at most `step`; the angle left */
+/* 0x002140A0 */
+f32 Npc_TurnToward(Pursuer *p, f32 heading, f32 step) {
+    f32 cur = p->c.a.angle[1];
+    f32 d = Angle_Wrap(heading - cur);
+    f32 s = step <= 0.0f ? -step : step;
+    f32 ad = d <= 0.0f ? -d : d;
+    f32 h;
+
+    if (ad <= s) {
+        h = heading;
+    } else if (!(d < 0.0f)) {
+        h = Angle_Wrap(cur + step);
+    } else {
+        h = Angle_Wrap(cur - step);
+    }
+    p->c.a.angle[1] = h;
+    Mtx_TurnY(p->c.a.rot, h);
+    return Angle_Wrap(heading - h);
+}
+
+/* turn towards `pos` by `step` (the shorter way, or the animation's turn if past 120 degrees);
+ * the angle left */
+/* 0x00214190 */
+f32 Npc_TurnTowardPos(Pursuer *p, const f32 *pos, f32 step) {
+    f32 h = Actor_HeadingTo(&p->c.a, pos);
+    f32 d = h - p->c.a.angle[1];
+    f32 r;
+
+    if (d <= 0.0f) {
+        d = -d;
+    }
+    if (!(d < step)) {
+        f32 h2 = Actor_HeadingTo(&p->c.a, pos);
+        f32 a = Angle_Wrap(h2 - p->c.a.angle[1]) <= 0.0f ? -Angle_Wrap(h2 - p->c.a.angle[1])
+                                                            : Angle_Wrap(h2 - p->c.a.angle[1]);
+        f32 b = Angle_Wrap(h2 - (p->c.a.angle[1] + MOTION_AT(p, 0x858, f32))) <= 0.0f
+                    ? -Angle_Wrap(h2 - (p->c.a.angle[1] + MOTION_AT(p, 0x858, f32)))
+                    : Angle_Wrap(h2 - (p->c.a.angle[1] + MOTION_AT(p, 0x858, f32)));
+        s32 dir;
+
+        if (a <= 0x1.0c15240000000p+1f /* 2.0943952 */ || a <= b) {
+            dir = Angle_Wrap(h2 - p->c.a.angle[1]) <= 0.0f ? -1 : 1;
+        } else {
+            dir = MOTION_AT(p, 0x858, f32) <= 0.0f ? -1 : 1;
+        }
+        r = Angle_Wrap(p->c.a.angle[1] + (f32)dir * step);
+        p->c.a.angle[1] = r;
+        sceVu0UnitMatrix(p->c.a.rot);
+        sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, r);
+    } else {
+        p->c.a.angle[1] = h;
+        sceVu0UnitMatrix(p->c.a.rot);
+        sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, h);
+    }
+    return Angle_Wrap(h - p->c.a.angle[1]);
+}
+
+/* step towards `pos`: turn, then walk by the animation's stride (straight if within it) */
+/* 0x002143D0 */
+s32 Npc_StepToward(Pursuer *p, const f32 *pos) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+    u8 *mo;
+    f32 d, ad;
+
+    Motion_RootMovement(p->c.motion, v, 0.0f);
+    mo = p->c.motion;
+    v[2] *= VCALL(mo, 0x44, f32 (*)(void *, Pursuer *))(mo, p);
+    d = Angle_Wrap(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
+    ad = d <= 0.0f ? -d : d;
+    if (!(ad < 0x1.921fb60000000p-1f /* 0.7853982 */)) {
+        if (d <= 0.0f) {
+            d = -d;
+        }
+        if (d < 0x1.921fb60000000p+0f /* 1.5707964 */ && !(Actor_Distance(&p->c.a, pos) <= 10.0f)) {
+            Npc_TurnTowardPos(p, pos, 2.0f * VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+            return Actor_Distance(&p->c.a, pos) < 1.0f;
+        }
+        Npc_TurnTowardPos(p, pos, 2.0f * VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+        return 0;
+    }
+    Npc_TurnTowardPos(p, pos, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+    if (Actor_Distance(&p->c.a, pos) <= v[2] && Actor_TriTo(&p->c.a, pos, -1) != (u32)-1) {
+        sceVu0SubVector(v, pos, p->c.a.pos);
+    } else {
+        Mtx_TurnY(m, Actor_HeadingTo(&p->c.a, pos));
+        Mtx_ApplyVector(v, m, v);
+    }
+    Actor_Move(&p->c.a, v);
+    return Actor_Distance(&p->c.a, pos) < 1.0f;
+}
+
+/* walk the planned path one stride (the animation's); 1 at its end */
+/* 0x00214620 */
+s32 Npc_WalkPathStride(Pursuer *p, s32 unused) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 w[4] __attribute__((aligned(16)));
+    f32 pos[4] __attribute__((aligned(16)));
+    u8 *m;
+    f32 step, d;
+    s32 next = -1;
+    u32 tri;
+    s32 last;
+
+    Motion_RootMovement(p->c.motion, v, 0.0f);
+    m = p->c.motion;
+    step = v[2] * VCALL(m, 0x44, f32 (*)(void *, Pursuer *))(m, p);
+    if (!(step < 0.0f)) {
+        next = Character_WaypointAhead(&p->c, &tri, pos, step);
+    }
+    if (next < 0) {
+        return 0;
+    }
+    last = AT(p, 0x120 + p->c.unk124 * 0xC, s32);
+    w[0] = AT(p, 0x124 + p->c.unk124 * 0xC, f32);
+    w[2] = AT(p, 0x128 + p->c.unk124 * 0xC, f32);
+    VCALL(gNavMesh, 0x14, void (*)(void *, s32, f32 *))(gNavMesh, last, w);
+    if (sceVu0InnerProduct(p->c.a.pos, pos) == 0.0f && last == (s32)Actor_TriTo(&p->c.a, w, 0x20008)) {
+        d = Angle_Wrap(Actor_HeadingTo(&p->c.a, w) - p->c.a.angle[1]);
+    } else {
+        d = Angle_Wrap(Actor_HeadingTo(&p->c.a, pos) - p->c.a.angle[1]);
+    }
+    if (d <= 0.0f) {
+        d = -d;
+    }
+    if (!(d < 0x1.921fb60000000p-1f /* 0.7853982 */) &&
+        !(VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(gSceneGameF29740, p->c.a.pos, p->c.unk128, p->c.unk124, p->c.unk12C) < 4.0f)) {
+        Npc_TurnTowardPos(p, pos, 2.0f * VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+    } else {
+        Npc_TurnTowardPos(p, pos, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
+        p->c.a.navTri = tri;
+        sceVu0CopyVector(p->c.a.pos, pos);
+        p->c.unk128 = next;
+    }
+    return p->c.unk128 >= p->c.unk124;
+}
+
+/* step along the path; the stride from the animation's root motion if `step` <= 0 */
+/* 0x00214890 */
+s32 Npc_StepPath(Pursuer *p, u32 *triOut, f32 *posOut, f32 step) {
+    if (step <= 0.0f) {
+        f32 v[4] __attribute__((aligned(16)));
+        u8 *m;
+
+        Motion_RootMovement(p->c.motion, v, 0.0f);
+        m = p->c.motion;
+        step = v[2] * VCALL(m, 0x44, f32 (*)(void *, Pursuer *))(m, p);
+    }
+    if (step < 0.0f) {
+        return -1;
+    }
+    return Character_WaypointAhead(&p->c, triOut, posOut, step);
+}
+
+/* a random walkable triangle of the played room (not blocked, not flagged 0x100000 without
+ * 0x200000... ); -1 if the pursuer is elsewhere */
+/* 0x00214940 */
+u32 Npc_RandomTri(Pursuer *p) {
+    if (p->c.a.room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        VObject *rnd = gRandom;
+        s32 last = AT(gNavMesh, 0x8, s32) - 1;
+        s32 n = last + 1;
+
+        for (;;) {
+            u32 tri;
+            u32 flags;
+
+            tri = last > 0 ? (s32)((f32)n * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) : 0;
+            if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+                flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+            } else {
+                flags = 0;
+            }
+            if (flags & p->c.a.navMask) {
+                continue;
+            }
+            if (!(flags & 0x100000) || !(flags & 0x200000)) {
+                return tri;
+            }
+        }
+    }
+    return -1;
+}
+
+/* is nav triangle `tri` blocked for the pursuer? */
+/* 0x00214A90 */
+s32 Npc_TriBlocked(Pursuer *p, u32 tri) {
+    u32 flags;
+
+    if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+        flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+    } else {
+        flags = 0;
+    }
+    return (p->c.a.navMask & flags) != 0;
+}
+
+/* plan a path to the room object behind the exit the pursuer heads for */
+/* 0x00214AF0 */
+s32 Npc_PlanToRoomObject(Pursuer *p) {
+    VObject *o = VCALL(gEvents, 0x64, VObject *(*)(VObject *))(gEvents);
+    s32 *t = VCALL(o, 0x3C, s32 *(*)(VObject *))(o);
+
+    if (t != NULL) {
+        s32 r = t[p->c.door];
+
+        if (r != -1) {
+            PU(p, 0x1594, s32) = r;
+            PU(p, 0x1598, s32) = -1;
+            if (Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1) > 0) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+/* path length to triangle `tri` / point `pos` (null: the triangle's centre), -1 none */
+/* 0x00214B90 */
+f32 Npc_PathLength(Pursuer *p, u32 tri, const f32 *pos) {
+    f32 v[4] __attribute__((aligned(16)));
+
+    if (pos != NULL) {
+        sceVu0CopyVector(v, pos);
+    } else {
+        VCALL(gNavMesh, 0xC, void (*)(void *, u32, f32 *))(gNavMesh, tri, v);
+    }
+    if (Character_PlanPathKind(&p->c, 0, tri, v) <= 0) {
+        return -1.0f;
+    }
+    if (Character_WaypointsCurve(&p->c) > 0) {
+        f32 d = VCALL(gSceneGameF29740, 0x30, f32 (*)(VObject *, s32))(gSceneGameF29740, p->c.pathId);
+
+        Character_ReleasePath(&p->c);
+        return d;
+    }
+    Character_ReleasePath(&p->c);
+    return -1.0f;
+}
+
+/* 0x00214C70 */
+void Npc_Senses2(Pursuer *p) {
+    s32 room = p->c.a.room;
+
+    if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        f32 a[4] __attribute__((aligned(16)));
+        f32 b[4] __attribute__((aligned(16)));
+
+        PU(p, 0x1588, f32) = room == gCharPlayer->a.room ? Npc_DistanceTo(p, gCharPlayer, a) : -1.0f;
+        PU(p, 0x158C, f32) = p->c.a.room == gCharPartner->a.room ? Npc_DistanceTo(p, gCharPartner, b) : -1.0f;
+    } else {
+        PU(p, 0x158C, f32) = -1.0f;
+        PU(p, 0x1588, f32) = -1.0f;
+    }
+}
+
+/* the same, unless the progress byte +0x1FBEC1 is set (then Npc_Senses2) */
+/* 0x00214ED0 */
+void Npc_Senses2Ending(Pursuer *p) {
+    if (AT(gProgress, 0x1FBEC1, u8) == 0) {
+        s32 room = p->c.a.room;
+
+        if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+            f32 a[4] __attribute__((aligned(16)));
+            f32 b[4] __attribute__((aligned(16)));
+
+            PU(p, 0x1588, f32) = Npc_DistanceTo(p, gCharPlayer, a);
+            PU(p, 0x158C, f32) = p->c.a.room == gCharPartner->a.room ? Npc_DistanceTo(p, gCharPartner, b) : -1.0f;
+        } else {
+            PU(p, 0x158C, f32) = -1.0f;
+            PU(p, 0x1588, f32) = -1.0f;
+        }
+        return;
+    }
+    Npc_Senses2(p);
+}
+
+/* 0x00215130 */
+s32 Npc_SensesFiona(Pursuer *p) {
+    return Npc_Senses(p, 1);
+}
+
+/* the same, Fiona watched wherever she is; Npc_SensesFiona while the progress byte +0x1FBEC1 is set */
+/* 0x00215D80 */
+s32 Npc_SensesWatching(Pursuer *p) {
+    if (AT(gProgress, 0x1FBEC1, u8) != 0) {
+        return Npc_SensesFiona(p);
+    }
+    return Npc_Senses(p, 0);
+}
+
+/* ---- batch 7 ---- */
+
+/* path length to character `c` (null: the target): +0x1590, and +0x1588 (Fiona) / +0x158C
+ * (Hewie) */
+/* 0x00216960 */
+s32 NPC_PathLengthChar(Pursuer *p, Character *c) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 w[4] __attribute__((aligned(16)));
+    void *nm;
+    u32 tri;
+    f32 len;
+
+    if (c == NULL) {
+        c = p->target;
+    }
+    nm = gNavMesh;
+    if (VCALL(nm, 0x10, s32 (*)(void *, u32, f32 *))(nm, c->a.navTri, c->a.pos) == 4) {
+        VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, c->a.navTri, v);
+    } else {
+        sceVu0CopyVector(v, c->a.pos);
+    }
+    tri = Npc_NearestWalkable(p, c->a.navTri, v, v);
+    sceVu0CopyVector(w, v);
+    if (Character_PlanPathKind(&p->c, 0, tri, w) <= 0) {
+        len = -1.0f;
+    } else if (Character_WaypointsCurve(&p->c) > 0) {
+        len = VCALL(gSceneGameF29740, 0x30, f32 (*)(VObject *, s32))(gSceneGameF29740, p->c.pathId);
+        Character_ReleasePath(&p->c);
+    } else {
+        Character_ReleasePath(&p->c);
+        len = -1.0f;
+    }
+    PU(p, 0x1590, f32) = len;
+    if (c == gCharPlayer) {
+        PU(p, 0x1588, f32) = PU(p, 0x1590, f32);
+    } else if (c == gCharPartner) {
+        PU(p, 0x158C, f32) = PU(p, 0x1590, f32);
+    }
+    if (PU(p, 0x1590, f32) < 0.0f) {
+        return 0;
+    }
+    return 1;
+}
+
+/* ---- batch 6 ---- */
+
+/* path length to the nearest walkable point of triangle +0x15C4 / point +0x15D0 (+0x1590) */
+/* 0x00216B20 */
+s32 NPC_PathLengthSpot(Pursuer *p) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 w[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    u32 tri = Npc_NearestWalkable(p, PU(p, 0x15C4, u32), (f32 *)((u8 *)p + 0x15D0), v);
+    f32 len;
+
+    if (tri == (u32)-1) {
+        PU(p, 0x1590, f32) = -1.0f;
+        return 0;
+    }
+    sceVu0CopyVector(w, v);
+    if (Character_PlanPathKind(&p->c, 0, tri, w) <= 0) {
+        len = -1.0f;
+    } else if (Character_WaypointsCurve(&p->c) > 0) {
+        len = VCALL(gSceneGameF29740, 0x30, f32 (*)(VObject *, s32))(gSceneGameF29740, p->c.pathId);
+        Character_ReleasePath(&p->c);
+    } else {
+        Character_ReleasePath(&p->c);
+        len = -1.0f;
+    }
+    PU(p, 0x1590, f32) = len;
+    if (len < 0.0f) {
+        return 0;
+    }
+    sceVu0SubVector(d, v, (f32 *)((u8 *)p + 0x15D0));
+    d[3] = 0.0f;
+    PU(p, 0x1590, f32) += __builtin_sqrtf(sceVu0InnerProduct(d, d));
+    return 1;
+}
+
+/* the same for the goal triangle +0x15A4 / point +0x15B0 */
+/* 0x00216C90 */
+s32 NPC_PathLengthGoal(Pursuer *p) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 w[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    u32 tri = Npc_NearestWalkable(p, PU(p, 0x15A4, u32), (f32 *)((u8 *)p + 0x15B0), v);
+    f32 len;
+
+    if (tri == (u32)-1) {
+        PU(p, 0x1590, f32) = -1.0f;
+        return 0;
+    }
+    sceVu0CopyVector(w, v);
+    if (Character_PlanPathKind(&p->c, 0, tri, w) <= 0) {
+        len = -1.0f;
+    } else if (Character_WaypointsCurve(&p->c) > 0) {
+        len = VCALL(gSceneGameF29740, 0x30, f32 (*)(VObject *, s32))(gSceneGameF29740, p->c.pathId);
+        Character_ReleasePath(&p->c);
+    } else {
+        Character_ReleasePath(&p->c);
+        len = -1.0f;
+    }
+    PU(p, 0x1590, f32) = len;
+    if (len < 0.0f) {
+        return 0;
+    }
+    sceVu0SubVector(d, v, (f32 *)((u8 *)p + 0x15B0));
+    d[3] = 0.0f;
+    PU(p, 0x1590, f32) += __builtin_sqrtf(sceVu0InnerProduct(d, d));
+    return 1;
+}
+
+/* ---- batch 11 ---- */
+
+/* the walkable point nearest to triangle `tri` / `pos` for the pursuer: from a door it may
+ * block, through the walk mesh to the first free triangle (a bit inside it) */
+/* 0x00216E00 */
+u32 Npc_NearestWalkable(Pursuer *p, u32 tri, const f32 *pos, f32 *out) {
+    void *nm = gNavMesh;
+    u32 flags;
+
+    if (tri < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) {
+        flags = AT(AT(nm, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+    } else {
+        flags = 0;
+    }
+    if (p->c.a.navMask & flags) {
+        VObject *rm = gRooms;
+        VObject *d = gDoors;
+        u32 t = tri, i;
+
+        for (i = 0; i < 8; i = (i + 1) & 0xFF) {
+            if (VCALL(rm, 0x70, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i) & 0xFF) {
+                continue;
+            }
+            if (VCALL(d, 0x6C, s32 (*)(VObject *, s32, u32, const f32 *))(d, 0, i, pos) != 0) {
+                t = VCALL(rm, 0x28, u32 (*)(VObject *, u32))(rm, i);
+                break;
+            }
+        }
+        if (t == tri) {
+            t = Npc_TriIfStandable(p, t);
+        }
+        if (t != (u32)-1 && t < AT(nm, 0x8, u32)) {
+            f32 c[4] __attribute__((aligned(16)));
+            f32 e[4] __attribute__((aligned(16)));
+            f32 d2[4] __attribute__((aligned(16)));
+            f32 v[4] __attribute__((aligned(16)));
+
+            for (;;) {
+                s32 r;
+                u8 *te;
+                u32 next, nflags;
+
+                VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, t, c);
+                r = VCALL(nm, 0x24, s32 (*)(void *, u32, f32 *, f32 *, const f32 *))(nm, t, e, c, pos);
+                if (r == 4) {
+                    return -1;
+                }
+                if (r == 3) {
+                    sceVu0CopyVector(e, pos);
+                    break;
+                }
+                te = t < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL ? AT(nm, 0x4, u8 *) + t * 0x50 : NULL;
+                next = AT(te + r * 4, 0x30, u32);
+                if (next < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) {
+                    nflags = AT(AT(nm, 0x4, u8 *) + next * 0x50, 0x3C, u32);
+                } else {
+                    nflags = 0;
+                }
+                if (p->c.a.navMask & nflags) {
+                    break;
+                }
+                t = next;
+            }
+            sceVu0SubVector(d2, c, pos);
+            Heading_Vector(v, Vec_Heading(d2));
+            sceVu0ScaleVector(v, v, 0x1.99999a0000000p-4f /* 0.1 */);
+            sceVu0AddVector(out, e, v);
+            return t;
+        }
+    }
+    sceVu0CopyVector(out, pos);
+    return tri;
+}
+
+/* can the pursuer walk straight to `pos` (over triangles without flag 0x4000)? */
+/* 0x00217110 */
+s32 Npc_CanWalkStraight(Pursuer *p, const f32 *pos) {
+    u32 tri = Actor_TriTo(&p->c.a, pos, 0);
+
+    if (tri == (u32)-1) {
+        void *nm = gNavMesh;
+        u32 t = p->c.a.navTri;
+
+        for (;;) {
+            u8 *e = t < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL ? AT(nm, 0x4, u8 *) + t * 0x50 : NULL;
+            s32 r;
+
+            if (AT(e, 0x3C, u32) & 0x4000) {
+                return 0;
+            }
+            r = VCALL(nm, 0x20, s32 (*)(void *, u32, const f32 *, const f32 *))(nm, t, p->c.a.pos, pos);
+            if (r == 3 || r == 4) {
+                return 0;
+            }
+            t = AT(e + r * 4, 0x30, u32);
+            if (t == (u32)-1) {
+                return 1;
+            }
+        }
+    }
+    return (Actor_CanWalkBetween(&p->c.a, p->c.a.navTri, tri, p->c.a.pos, pos, 0) & 0xFF) == 0;
+}
+
+/* reached the room +0x1594 (and side +0x1598, -1 any)? */
+/* 0x00217260 */
+s32 Npc_ReachedRoom(Pursuer *p) {
+    s32 room = p->c.a.room;
+
+    if (PU(p, 0x1594, s32) == room) {
+        if (PU(p, 0x1598, s32) != -1) {
+            s32 side = VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, room, p->c.door, 1);
+
+            if (side != -1) {
+                return side == PU(p, 0x1598, s32);
+            }
+        }
+        return 1;
+    }
+    return 0;
+}
+
+/* the side of character `c`'s room behind its exit, -1 without one */
+/* 0x002172F0 */
+s32 Npc_CharSideBehind(Pursuer *p, Character *c) {
+    if (c != NULL) {
+        return VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, c->a.room, c->door, 1);
+    }
+    return -1;
+}
+
+/* the room's side behind the exit the pursuer heads for (rooms vtable +0x50) */
+/* 0x00217340 */
+s32 Npc_ExitSideBehind(Pursuer *p) {
+    return VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, p->c.a.room, p->c.door, 1);
+}
+
+/* are the pursuer and `c` in the same room but on different sides? */
+/* 0x00217370 */
+s32 Npc_SameRoomOtherSide(Pursuer *p, Character *c) {
+    s32 room = p->c.a.room;
+
+    if (room == c->a.room && p->c.door < 8 && (c->door & 0xFF) < 8) {
+        VObject *rm = gRooms;
+        s32 a = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, room, p->c.door, 1);
+        s32 b = -1;
+
+        if (a != -1) {
+            if (c != NULL) {
+                b = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, c->a.room, c->door, 1);
+            }
+            if (b != -1) {
+                return b != a;
+            }
+        }
+    }
+    return 0;
+}
+
+/* is character `slot` in the pursuer's room or a neighbouring one? */
+/* 0x00217460 */
+s32 Npc_NearRoom(Pursuer *p, s32 slot) {
+    s32 room = gCharacters[slot]->a.room;
+    VObject *rm;
+    u32 i;
+
+    if (room == p->c.a.room) {
+        return 1;
+    }
+    rm = gRooms;
+    for (i = 0; i < 8; i = (i + 1) & 0xFF) {
+        if (room == VCALL(rm, 0x18, s32 (*)(VObject *, s32, u32))(rm, p->c.a.room, i)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* in the room being played? */
+/* 0x00217510 */
+s32 Npc_InPlayedRoom(Pursuer *p) {
+    return p->c.a.room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
+}
+
+/* is Fiona panicking (fear over 90, or her state 0xE)? */
+/* 0x00217560 */
+s32 Npc_FionaPanicking(void) {
+    s32 r = 1;
+
+    if (AT(gCharPlayer, 0x1AD5F4, f32) <= 90.0f) {
+        r = 0;
+    }
+    if (r == 0) {
+        r = AT(gCharPlayer, 0x1AD580, s32) == 0xE;
+    }
+    return r;
+}
+
+/* is `b` on about the same floor as `a` (up to 15 above, 10 below)? */
+/* 0x002175B0 */
+s32 Npc_SameFloor(Actor *a, Actor *b) {
+    s32 r = 0;
+
+    if (b->pos[1] <= a->pos[1] + 15.0f && !(b->pos[1] + 10.0f < a->pos[1])) {
+        r = 1;
+    }
+    return r;
+}
+
+/* the walkable triangle one height ahead (along the heading); 0 if none */
+/* 0x00217600 */
+s32 Npc_WalkableAhead(Pursuer *p) {
+    f32 v[4] __attribute__((aligned(16)));
+    u32 tri;
+
+    Heading_Vector(v, p->c.a.angle[1]);
+    sceVu0ScaleVector(v, v, p->c.a.height);
+    sceVu0AddVector(v, v, p->c.a.pos);
+    tri = Actor_TriTo(&p->c.a, v, p->c.a.navMask);
+    if (tri == (u32)-1) {
+        return 0;
+    }
+    return Actor_TriFree(p, tri, (s32)v);
+}
+
+/* vtable +0x... : who's around (+0x1544 Fiona, +0x1545 Hewie, +0x1546 noise) */
+/* 0x00217680 */
+void Npc_WhoAround(Pursuer *p) {
+    Progress *pr = gProgress;
+    s32 room = p->c.a.room;
+
+    if (room != VCALL(pr, 0xC, s32 (*)(Progress *))(pr)) {
+        PU(p, 0x1544, u8) = 0;
+        PU(p, 0x1545, u8) = 0;
+    } else {
+        PU(p, 0x1574, f32) = Angle_Wrap(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
+        if (p->c.moveMode != 2 && (Npc_DoorOnWay(p) & 0xFF) != 0xFF) {
+            PU(p, 0x1544, u8) = 1;
+        } else if (p->c.a.room != gCharPlayer->a.room) {
+            PU(p, 0x1544, u8) = 0;
+        } else {
+            PU(p, 0x1544, u8) = VCALL(p, 0xC0, s32 (*)(Pursuer *))(p);
+        }
+        if (VCALL(pr, 0xC, s32 (*)(Progress *))(pr) != gCharPartner->a.room) {
+            PU(p, 0x1545, u8) = 0;
+        } else {
+            PU(p, 0x1545, u8) = VCALL(p, 0xC4, s32 (*)(Pursuer *))(p);
+        }
+    }
+    PU(p, 0x1546, u8) = VCALL(p, 0xC8, s32 (*)(Pursuer *))(p);
+    VCALL(p, 0xCC, void (*)(Pursuer *))(p);
+}
+
+/* the same, unless the progress byte +0x1FBEC1 is set (then Npc_WhoAround) */
+/* 0x002177D0 */
+void Npc_WhoAroundEnding(Pursuer *p) {
+    Progress *pr = gProgress;
+
+    if (AT(pr, 0x1FBEC1, u8) == 0) {
+        s32 room = p->c.a.room;
+
+        if (room != VCALL(pr, 0xC, s32 (*)(Progress *))(pr)) {
+            PU(p, 0x1544, u8) = 0;
+            PU(p, 0x1545, u8) = 0;
+        } else {
+            PU(p, 0x1574, f32) = Angle_Wrap(p->c.a.angle[1] + MOTION_AT(p, 0x858, f32));
+            if (p->c.moveMode != 2 && (Npc_DoorOnWay(p) & 0xFF) != 0xFF) {
+                PU(p, 0x1544, u8) = 1;
+            } else {
+                PU(p, 0x1544, u8) = VCALL(p, 0xC0, s32 (*)(Pursuer *))(p);
+            }
+            if (VCALL(pr, 0xC, s32 (*)(Progress *))(pr) != gCharPartner->a.room) {
+                PU(p, 0x1545, u8) = 0;
+            } else {
+                PU(p, 0x1545, u8) = VCALL(p, 0xC4, s32 (*)(Pursuer *))(p);
+            }
+        }
+        PU(p, 0x1546, u8) = VCALL(p, 0xC8, s32 (*)(Pursuer *))(p);
+        VCALL(p, 0xCC, void (*)(Pursuer *))(p);
+        return;
+    }
+    Npc_WhoAround(p);
+}
+
+/* who can the pursuer see (bit per character slot 0..2)? */
+/* 0x00217920 */
+s32 Npc_WhoSeen(Pursuer *p) {
+    s32 seen = 0;
+    u32 i;
+
+    for (i = 0; i < 3; i = (i + 1) & 0xFF) {
+        Character *c = gCharacters[i & 0xFF];
+
+        if (c != NULL && (i & 0xFF) != (u32)p->c.a.slot && c->a.active != 0 &&
+            (Actor_Touching(&p->c.a, &c->a, 1.0f, 0.0f) & 0xFF) == 1) {
+            seen = (seen | ((1 << (i & 0xFF)) & 0xFF)) & 0xFF;
+        }
+    }
+    return seen;
+}
+
+/* who of the characters can the pursuer reach / see by the progress tables (+0x30 / +0x2C) and is
+ * in front of it (within 90 degrees): a bit per slot */
+/* 0x002179F0 */
+s32 Npc_WhoReachable(Pursuer *p, s32 a1, f32 f) {
+    Progress *pr = gProgress;
+    s32 bits = 0;
+    u32 i;
+
+    for (i = 0; i < 3; i = (i + 1) & 0xFF) {
+        u32 s = i & 0xFF;
+        Character **c = &gCharacters[s];
+
+        if (*c != NULL && s != (u32)p->c.a.slot && (*c)->a.active != 0 &&
+            (VCALL(pr, 0x30, s32 (*)(Progress *, u32, s32, u32, f32))(pr, p->c.a.slot & 0xFF, a1, i, f) & 0xFF) == 1) {
+            f32 d = Angle_Wrap(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos)) <= 0.0f
+                        ? -Angle_Wrap(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos))
+                        : Angle_Wrap(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos));
+
+            if (d < 0x1.921fb60000000p+0f /* 1.5707964 */) {
+                bits = (bits | ((1 << s) & 0xFF)) & 0xFF;
+            }
+        }
+    }
+    return bits;
+}
+
+/* 0x00217B90 */
+s32 Npc_WhoReachableBits(Pursuer *p, s32 a1, f32 f) {
+    Progress *pr = gProgress;
+    s32 bits = 0;
+    u32 i;
+
+    for (i = 0; i < 3; i = (i + 1) & 0xFF) {
+        u32 s = i & 0xFF;
+        Character **c = &gCharacters[s];
+
+        if (*c != NULL && s != (u32)p->c.a.slot && (*c)->a.active != 0 &&
+            (VCALL(pr, 0x2C, s32 (*)(Progress *, u32, s32, u32, f32))(pr, p->c.a.slot & 0xFF, a1, i, f) & 0xFF) == 1) {
+            f32 d = Angle_Wrap(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos)) <= 0.0f
+                        ? -Angle_Wrap(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos))
+                        : Angle_Wrap(p->c.a.angle[1] - Actor_HeadingTo(&p->c.a, (*c)->a.pos));
+
+            if (d < 0x1.921fb60000000p+0f /* 1.5707964 */) {
+                bits = (bits | ((1 << s) & 0xFF)) & 0xFF;
+            }
+        }
+    }
+    return bits;
+}
+
+/* the triangle `dist` away in direction `heading`: -1 none, -2 blocked, -3 flag 1, -4 at a
+ * door, -5 at a room point */
+/* 0x00217D30 */
+u32 Npc_TriAtDirection(Pursuer *p, f32 heading, f32 dist) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 w[4] __attribute__((aligned(16)));
+    void *nm;
+    u32 tri, flags, i;
+
+    Heading_Vector(v, Angle_Wrap(heading));
+    sceVu0ScaleVector(v, v, dist);
+    sceVu0AddVector(w, p->c.a.pos, v);
+    tri = Actor_TriTo(&p->c.a, w, 0);
+    if (tri == (u32)-1) {
+        return -1;
+    }
+    nm = gNavMesh;
+    if (tri < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) {
+        flags = AT(AT(nm, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+    } else {
+        flags = 0;
+    }
+    if (flags & p->c.a.navMask) {
+        return -2;
+    }
+    if (flags & 1) {
+        return -3;
+    }
+    for (i = 0; i < 8; i++) {
+        if (((VCALL(gDoors, 0x2C, s32 (*)(VObject *, u32, f32 *))(gDoors, i & 0xFF, w) != 0) ^ 1) == 0) {
+            return -4;
+        }
+    }
+    for (i = 0; i < 5; i++) {
+        if (VCALL(nm, 0x50, s32 (*)(void *, u32, f32 *))(nm, i, w) != 0) {
+            return -5;
+        }
+    }
+    return tri;
+}
+
+/* is the point `dist` away in direction `angle` from the target's heading walkable? */
+/* 0x00217ED0 */
+s32 Npc_TargetSideWalkable(Pursuer *p, f32 angle, f32 dist) {
+    f32 v[4] __attribute__((aligned(16)));
+    f32 w[4] __attribute__((aligned(16)));
+    u32 tri;
+
+    Heading_Vector(v, Angle_Wrap(angle + Actor_HeadingTo(&p->c.a, p->target->a.pos)));
+    sceVu0ScaleVector(v, v, dist);
+    sceVu0AddVector(w, p->c.a.pos, v);
+    tri = Actor_TriTo(&p->c.a, w, p->c.a.navMask);
+    if (tri != (u32)-1) {
+        u32 flags;
+
+        if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+            flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+        } else {
+            flags = 0;
+        }
+        if (!(p->c.a.navMask & flags)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* is there room `dist` to the side of the target (90 degrees one way, then the other)? */
+/* 0x00217FC0 */
+s32 Npc_RoomToSide(Pursuer *p, f32 dist) {
+    f32 a = 0x1.921fb60000000p+0f /* 1.5707964 */;
+
+    for (;;) {
+        f32 v[4] __attribute__((aligned(16)));
+        f32 w[4] __attribute__((aligned(16)));
+        u32 tri;
+        s32 ok = 0;
+
+        Heading_Vector(v, Angle_Wrap(a + Actor_HeadingTo(&p->c.a, p->target->a.pos)));
+        sceVu0ScaleVector(v, v, dist);
+        sceVu0AddVector(w, p->c.a.pos, v);
+        tri = Actor_TriTo(&p->c.a, w, p->c.a.navMask);
+        if (tri != (u32)-1) {
+            u32 flags;
+
+            if (tri < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL) {
+                flags = AT(AT(gNavMesh, 0x4, u8 *) + tri * 0x50, 0x3C, u32);
+            } else {
+                flags = 0;
+            }
+            if (!(p->c.a.navMask & flags)) {
+                ok = 1;
+            }
+        }
+        if ((ok & 0xFF) == 1) {
+            return 1;
+        }
+        a = -a;
+        if (!(a < 0.0f)) {
+            return 0;
+        }
+    }
+}
+
+/* probe the 8 directions around Fiona, 20 units out (results to +0x1548) */
+/* 0x00218110 */
+void Npc_ProbeAroundFiona(Pursuer *p) {
+    s32 i;
+
+    for (i = 0; i < 8; i++) {
+        f32 h = Actor_HeadingTo(&p->c.a, gCharPlayer->a.pos);
+
+        PU(p, 0x1548 + i * 4, s32) = Npc_TriAtDirection(p, Angle_Wrap(0x1.921fb60000000p+2f /* 6.2831855 */ * (f32)i / 8.0f + h), 20.0f);
+    }
+}
+
+/* vtable +0xC8: reacting to a noise */
+/* 0x002181C0 */
+s32 NPC_HearNoise(Pursuer *p) {
+    return p->c.heardSlot != 0xFF;
+}
+
+/* can an eye at `from` facing `heading` see `to`: within `range` and `half` an angle either side */
+/* 0x002181D0 */
+s32 Eye_CanSee(Pursuer *p, const f32 *from, const f32 *to, f32 heading, f32 range, f32 half) {
+    f32 d[4] __attribute__((aligned(16)));
+    f32 dist, dx, dz, a;
+
+    sceVu0SubVector(d, from, to);
+    d[3] = 0.0f;
+    dist = __builtin_sqrtf(sceVu0InnerProduct(d, d));
+    dx = to[0] - from[0];
+    dz = to[2] - from[2];
+    if (dx == 0.0f && dz == 0.0f) {
+        return 0;
+    }
+    a = func_0031C5C0(dx, dz);
+    if (!(dist <= range)) {
+        return 0;
+    }
+    a = a - heading;
+    if (!((Angle_Wrap(a) <= 0.0f ? -Angle_Wrap(a) : Angle_Wrap(a)) <= half)) {
+        return 0;
+    }
+    return 1;
+}
+
+/* the same between two actors */
+/* 0x00218300 */
+s32 Eye_ActorSees(Pursuer *p, Actor *from, Actor *to, f32 heading, f32 range, f32 half) {
+    f32 d[4] __attribute__((aligned(16)));
+    f32 dist, dx, dz, a;
+
+    sceVu0SubVector(d, from->pos, to->pos);
+    d[3] = 0.0f;
+    dist = __builtin_sqrtf(sceVu0InnerProduct(d, d));
+    dx = to->pos[0] - from->pos[0];
+    dz = to->pos[2] - from->pos[2];
+    if (dx == 0.0f && dz == 0.0f) {
+        return 0;
+    }
+    a = func_0031C5C0(dx, dz);
+    if (!(dist <= range)) {
+        return 0;
+    }
+    a = a - heading;
+    if (!((Angle_Wrap(a) <= 0.0f ? -Angle_Wrap(a) : Angle_Wrap(a)) <= half)) {
+        return 0;
+    }
+    return 1;
+}
+
+/* ---- batch 13 ---- */
+
+/* can the pursuer see character `c`? in its view (+0x1580 range, +0x1584 angle, heading
+ * +0x1574) and in sight of her middle, or else of one of 9 points around the far side of her
+ * body (her radius out, 22.5 degrees apart); sight is blocked by triangle flags 0x40080
+ * (0x40088 with progress flag 9 or 0xA) */
+/* 0x00218430 */
+s32 Npc_SeesChar(Pursuer *p, Character *c) {
+    Progress *pr = gProgress;
+    u32 ctri = c->a.navTri;
+    u32 mask;
+    void *nm;
+    f32 at[4] __attribute__((aligned(16)));
+    f32 me[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 half, range, heading, dist, dx, dz, a;
+    s32 in = 0;
+
+    if ((Progress_TestFlag(pr, 9) & 0xFF) == 1 || (Progress_TestFlag(pr, 0xA) & 0xFF) == 1) {
+        mask = 0x40088;
+    } else {
+        mask = 0x40080;
+    }
+    nm = gNavMesh;
+    if (VCALL(nm, 0x10, s32 (*)(void *, u32, f32 *))(nm, ctri, c->a.pos) == 4) {
+        VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, ctri, at);
+    } else {
+        sceVu0CopyVector(at, c->a.pos);
+    }
+    if (VCALL(nm, 0x10, s32 (*)(void *, u32, f32 *))(nm, p->c.a.navTri, p->c.a.pos) == 4) {
+        VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, p->c.a.navTri, me);
+    } else {
+        sceVu0CopyVector(me, p->c.a.pos);
+    }
+    half = PU(p, 0x1584, f32);
+    range = PU(p, 0x1580, f32);
+    heading = PU(p, 0x1574, f32);
+    sceVu0SubVector(d, p->c.a.pos, c->a.pos);
+    d[3] = 0.0f;
+    dist = __builtin_sqrtf(sceVu0InnerProduct(d, d));
+    dx = c->a.pos[0] - p->c.a.pos[0];
+    dz = c->a.pos[2] - p->c.a.pos[2];
+    if (!(dx == 0.0f && dz == 0.0f)) {
+        a = func_0031C5C0(dx, dz);
+        if (dist <= range) {
+            a = a - heading;
+            if ((Angle_Wrap(a) <= 0.0f ? -Angle_Wrap(a) : Angle_Wrap(a)) <= half) {
+                in = 1;
+            }
+        }
+    }
+    if (!(in & 0xFF)) {
+        return 0;
+    }
+    if ((Actor_CanWalkBetween(&p->c.a, p->c.a.navTri, ctri, me, at, mask) & 0xFF) == 1) {
+        return 1;
+    }
+    {
+        f32 dir[4] __attribute__((aligned(16)));
+        f32 off[4] __attribute__((aligned(16)));
+        f32 pt[4] __attribute__((aligned(16)));
+        u32 i;
+
+        sceVu0SubVector(dir, at, p->c.a.pos);
+        sceVu0Normalize(dir, dir);
+        Vec_TurnY(off, dir, 0x1.921fb60000000p+0f /* 1.5707964 */);
+        sceVu0Normalize(off, off);
+        sceVu0ScaleVector(off, off, c->a.radius);
+        for (i = 0; i < 9; i = (i + 1) & 0xFF) {
+            u32 t;
+
+            sceVu0AddVector(pt, at, off);
+            t = Actor_TriTo(&p->c.a, pt, 0);
+            if (t != (u32)-1 && Actor_WalkMesh(&p->c.a, ctri, t, at, pt, mask) == -1 &&
+                (Actor_CanWalkBetween(&p->c.a, p->c.a.navTri, t, me, pt, mask) & 0xFF) == 1) {
+                return 1;
+            }
+            Vec_TurnY(off, off, 0x1.921fb60000000p-2f /* 0.3926991 */);
+        }
+    }
+    return 0;
+}
+
+/* can the pursuer see point `pos` (on triangle `tri`): in its view (+0x1580 range, +0x1584
+ * angle, heading +0x1574) and nothing in the way? */
+/* 0x002187D0 */
+s32 Npc_SeesPoint(Pursuer *p, u32 tri, const f32 *pos) {
+    f32 half = PU(p, 0x1584, f32);
+    f32 range = PU(p, 0x1580, f32);
+    f32 heading = PU(p, 0x1574, f32);
+    f32 d[4] __attribute__((aligned(16)));
+    f32 dist, dx, dz, a;
+    s32 in = 0;
+
+    sceVu0SubVector(d, p->c.a.pos, pos);
+    d[3] = 0.0f;
+    dist = __builtin_sqrtf(sceVu0InnerProduct(d, d));
+    dx = pos[0] - p->c.a.pos[0];
+    dz = pos[2] - p->c.a.pos[2];
+    if (!(dx == 0.0f && dz == 0.0f)) {
+        a = func_0031C5C0(dx, dz);
+        if (dist <= range) {
+            a = a - heading;
+            if ((Angle_Wrap(a) <= 0.0f ? -Angle_Wrap(a) : Angle_Wrap(a)) <= half) {
+                in = 1;
+            }
+        }
+    }
+    if (!(in & 0xFF)) {
+        return 0;
+    }
+    return Actor_CanWalkBetween(&p->c.a, p->c.a.navTri, tri, p->c.a.pos, pos, 0);
+}
+
+/* is Hewie close enough to be caught (in reach and on the same walkable triangle)? */
+/* 0x00218940 */
+s32 NPC_HewieInReach(Pursuer *p) {
+    Character *h = gCharPartner;
+
+    if (Npc_SeesChar(p, h) != 0) {
+        return 1;
+    }
+    if (!(Progress_TestFlag(gProgress, 0xB) & 0xFF)) {
+        f32 d = PU(p, 0x158C, f32);
+        s32 near = 0;
+
+        if (d < 20.0f && !(d <= 0.0f)) {
+            near = 1;
+        }
+        if ((p->c.a.unk2B == 0) & 0xFF & (near & 0xFF)) {
+            u32 tri = h->a.navTri;
+
+            if (Actor_TriTo(&p->c.a, h->a.pos, 0x40080) == tri) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+/* is Fiona within reach to be caught (seen, or 20 units on a walkable line; 10 with progress
+ * flag 0xA; never with flag 9 or while her +0x1AD630 is set)? */
+/* 0x00218A30 */
+s32 NPC_FionaInReach(Pursuer *p) {
+    Character *f = gCharPlayer;
+    Progress *pr;
+    f32 reach, d;
+    s32 near;
+
+    if (AT(f, 0x1AD630, u8) != 0) {
+        return 0;
+    }
+    if (Npc_SeesChar(p, f) != 0) {
+        return 1;
+    }
+    pr = gProgress;
+    if (Progress_TestFlag(pr, 9) != 0) {
+        return 0;
+    }
+    reach = Progress_TestFlag(pr, 0xA) != 0 ? 10.0f : 20.0f;
+    d = PU(p, 0x1588, f32);
+    near = 0;
+    if (d < reach && !(d <= 0.0f)) {
+        near = 1;
+    }
+    if ((p->c.a.unk2B == 0) & 0xFF & (near & 0xFF)) {
+        u32 tri = f->a.navTri;
+
+        if (Actor_TriTo(&p->c.a, f->a.pos, 0x40080) == tri) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* drop the first route entry; the new current one, -1 none */
+/* 0x00218B60 */
+s32 Npc_RouteDrop(Pursuer *p) {
+    u8 n = PU(p, 0x1621, u8);
+    u8 i;
+
+    if (n < PU(p, 0x1620, u8) || n == 0xFF) {
+        return -1;
+    }
+    {
+        u32 k;
+
+        for (k = 0; k < PU(p, 0x1621, u8); k++) {
+            PU(p, 0x15E0 + k * 8, s32) = PU(p, 0x15E8 + k * 8, s32);
+            PU(p, 0x15E4 + k * 8, u8) = PU(p, 0x15EC + k * 8, u8);
+        }
+    }
+    PU(p, 0x1621, u8)--;
+    if (PU(p, 0x1620, u8) > 0) {
+        PU(p, 0x1620, u8)--;
+    }
+    i = PU(p, 0x1620, u8);
+    n = PU(p, 0x1621, u8);
+    if (n >= i && n != 0xFF) {
+        return PU(p, 0x15E0 + i * 8, s32);
+    }
+    return -1;
+}
+
+/* add nav triangle `tri` to the route list (+0x15E0, 8 entries of 8 bytes) */
+/* 0x00218C20 */
+s32 Npc_RouteAdd(Pursuer *p, u32 tri) {
+    u8 n;
+
+    if (PU(p, 0x1621, u8) == 0xFF) {
+        PU(p, 0x1621, u8) = 0;
+        PU(p, 0x1620, u8) = 0;
+    }
+    n = PU(p, 0x1621, u8);
+    if (n < 8 && tri < AT(gNavMesh, 0x8, u32)) {
+        PU(p, 0x15E0 + n * 8, u32) = tri;
+        PU(p, 0x1621, u8)++;
+        return 1;
+    }
+    return 0;
+}
+
+/* head for the room / side next to Hewie's (exit `exit` of his room); else keep the goal */
+/* 0x00218C90 */
+void NPC_HeadNearHewie(Pursuer *p, u32 exit) {
+    Character *h = gCharPartner;
+    VObject *rm = gRooms;
+    s32 room = VCALL(rm, 0x18, s32 (*)(VObject *, s32, u32))(rm, h->a.room, exit);
+    s32 side = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, room, VCALL(rm, 0x14, u32 (*)(VObject *, s32, u32))(rm, h->a.room, exit) & 0xFF, 1);
+
+    if (Character_Route(&p->c, room, side, -1, -1) >= 0) {
+        PU(p, 0x1594, s32) = room;
+        PU(p, 0x1598, s32) = side;
+    } else {
+        Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
+    }
+}
+
+/* the same next to Fiona's room */
+/* 0x00218D80 */
+void NPC_HeadNearFiona(Pursuer *p, u32 exit) {
+    Character *f = gCharPlayer;
+    VObject *rm = gRooms;
+    s32 room = VCALL(rm, 0x18, s32 (*)(VObject *, s32, u32))(rm, f->a.room, exit);
+    s32 side = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, room, VCALL(rm, 0x14, u32 (*)(VObject *, s32, u32))(rm, f->a.room, exit) & 0xFF, 1);
+
+    if (Character_Route(&p->c, room, side, -1, -1) >= 0) {
+        PU(p, 0x1594, s32) = room;
+        PU(p, 0x1598, s32) = side;
+    } else {
+        Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
+    }
+}
+
+/* aim at the current entry of the route list: triangle +0x15A4, its centre to +0x15B0 */
+/* 0x00218E70 */
+void Npc_RouteAim(Pursuer *p) {
+    u8 i = PU(p, 0x1620, u8);
+
+    if (i < PU(p, 0x1621, u8)) {
+        PU(p, 0x15A4, s32) = PU(p, 0x15E0 + i * 8, s32);
+        VCALL(gNavMesh, 0xC, void (*)(void *, s32, f32 *, Pursuer *))(gNavMesh, PU(p, 0x15E0 + PU(p, 0x1620, u8) * 8, s32), (f32 *)((u8 *)p + 0x15B0), p);
+    }
+}
+
+/* vtable +0xB4: head for character `c` (null: the target) */
+/* 0x00218ED0 */
+void NPC_HeadFor(Pursuer *p, Character *c) {
+    s32 side = PU(p, 0x1598, s32);
+    s32 other = 0;
+
+    if (c == NULL) {
+        c = p->target;
+    }
+    if (p->c.a.room == c->a.room && p->c.door < 8 && (c->door & 0xFF) < 8) {
+        VObject *rm = gRooms;
+        s32 a = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, p->c.a.room, p->c.door, 1);
+
+        if (a != -1) {
+            s32 b = -1;
+
+            if (c != NULL) {
+                b = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, c->a.room, c->door, 1);
+            }
+            if (b != -1 && b != a) {
+                other = 1;
+            }
+        }
+    }
+    if (other != 0) {
+        side = c != NULL ? VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, c->a.room, c->door, 1) : -1;
+    } else {
+        s32 room = c->a.room;
+
+        if (p->c.a.room == room || PU(p, 0x1594, s32) != room) {
+            side = -1;
+        }
+        if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+            if (c->moveMode == 0) {
+                sceVu0CopyVector((f32 *)((u8 *)p + 0x15B0), c->a.pos);
+            } else {
+                VCALL(gNavMesh, 0xC, void (*)(void *, u32, f32 *))(gNavMesh, c->a.navTri, (f32 *)((u8 *)p + 0x15B0));
+            }
+            PU(p, 0x15A4, s32) = c->a.navTri;
+        }
+    }
+    if (Character_Route(&p->c, c->a.room, side, -1, -1) >= 0) {
+        PU(p, 0x1594, s32) = c->a.room;
+        PU(p, 0x1598, s32) = side;
+    } else {
+        Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
+    }
+}
+
+/* vtable +0xB0: head for Fiona (her room's side; her triangle if she's in a room the pursuer
+ * can reach) */
+/* 0x00219100 */
+void NPC_HeadForFiona(Pursuer *p) {
+    Character *f = gCharPlayer;
+    s32 side = PU(p, 0x1598, s32);
+    s32 other = 0;
+
+    if (p->c.a.room == f->a.room && p->c.door < 8 && (f->door & 0xFF) < 8) {
+        VObject *rm = gRooms;
+        s32 a = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, p->c.a.room, p->c.door, 1);
+
+        if (a != -1) {
+            s32 b = -1;
+
+            if (f != NULL) {
+                b = VCALL(rm, 0x50, s32 (*)(VObject *, s32, u32, s32))(rm, f->a.room, f->door, 1);
+            }
+            if (b != -1 && b != a) {
+                other = 1;
+            }
+        }
+    }
+    if (other != 0) {
+        side = f != NULL ? VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, f->a.room, f->door, 1) : -1;
+    } else {
+        if (p->c.a.room == f->a.room || PU(p, 0x1594, s32) != f->a.room) {
+            side = -1;
+        }
+        if (f->moveMode == 0) {
+            sceVu0CopyVector((f32 *)((u8 *)p + 0x15B0), f->a.pos);
+        } else {
+            VCALL(gNavMesh, 0xC, void (*)(void *, u32, f32 *))(gNavMesh, f->a.navTri, (f32 *)((u8 *)p + 0x15B0));
+        }
+        PU(p, 0x15A4, s32) = f->a.navTri;
+    }
+    if (Character_Route(&p->c, f->a.room, side, -1, -1) >= 0) {
+        PU(p, 0x1594, s32) = f->a.room;
+        PU(p, 0x1598, s32) = side;
+    } else {
+        Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
+    }
+}
+
+/* vtable +0xAC: go to triangle `tri` / point `pos` of room `room` (-1 the played one) */
+/* 0x00219310 */
+void NPC_GoTo(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
+    void *nm;
+
+    if (room == -1) {
+        room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
+    }
+    if (room == VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        PU(p, 0x15A4, u32) = tri;
+    }
+    nm = gNavMesh;
+    if (VCALL(nm, 0x10, s32 (*)(void *, u32, const f32 *))(nm, tri, pos) == 3) {
+        sceVu0CopyVector((f32 *)((u8 *)p + 0x15B0), pos);
+    } else {
+        VCALL(nm, 0xC, void (*)(void *, u32, f32 *))(nm, tri, (f32 *)((u8 *)p + 0x15B0));
+    }
+    if (Character_Route(&p->c, room, -1, -1, -1) >= 0) {
+        PU(p, 0x1594, s32) = room;
+        PU(p, 0x1598, s32) = -1;
+    } else {
+        Character_Route(&p->c, PU(p, 0x1594, s32), PU(p, 0x1598, s32), -1, -1);
+    }
+}
+
+/* vtable +0xA8: blocking nav triangle flags */
+/* 0x00219450 */
+u32 NPC_BlockFlags(Pursuer *p) {
+    return 0x2C020028;
+}
+
+/* vtable +0xC: NPC init */
+/* 0x00219460 */
+void NPC_Reset(Pursuer *p) {
+    u32 i;
+
+    p->c.a.unkC4 = 0;
+    Character_Reset(&p->c);
+    p->c.a.navMask = VCALL(p, 0xA8, u32 (*)(Pursuer *))(p);
+    for (i = 0; i < 13; i++) {
+        p->c.unk148C[i] = 0;
+    }
+    p->c.door = 0xFF;
+    p->c.unk14C0 = 0xFFFF;
+    p->c.unk14C4 = 0;
+    p->c.pathReq->unk4 = 6;
+    p->c.pathReq->mask = p->c.a.navMask;
+    PU(p, 0x15A4, s32) = -1;
+    PU(p, 0x15C4, s32) = -1;
+    PU(p, 0x1594, s32) = -1;
+    PU(p, 0x1598, s32) = -1;
+    PU(p, 0x159C, s32) = -1;
+    PU(p, 0x15C0, u8) = 0xFF;
+    sceVu0CopyVector((f32 *)((u8 *)p + 0x1570), p->c.a.angle);
+    PU(p, 0x1568, s32) = 0;
+    PU(p, 0x1544, u8) = 0;
+    PU(p, 0x1545, u8) = 0;
+    PU(p, 0x1546, u8) = 0;
 }
 
 /* 0x001735B0 */
@@ -11946,139 +13999,4 @@ void *Debilitas_ctor(void *p, s32 arg) {
     return b0_RoomCtor(p, 0x2, arg, Debilitas_vtable);
 }
 
-/* 0x00173650 */
-void Progress_Noop78(void) {
-}
-
-/* 0x00173660 */
-void Progress_Noop74(void) {
-}
-
 /* ---- methods of stalker subclasses D_004712xx / D_004714xx / D_004720xx (room creatures) ---- */
-
-extern const PTMF D_00422338, Pursuer_StateRunThenNext_ptmf7, D_00422430, Pursuer_StateRunThenNext_ptmf8;
-
-/* a state: D_00422338 at +0x174C, +0x1758 -1, then +0x294 */
-/* 0x003090F0 */
-void Kind09_BehaviourIdle(Pursuer *p) {
-    ptmf_set(&PU(p, 0x174C, PTMF), &D_00422338);
-    PU(p, 0x1758, s32) = -1;
-    VCALL(p, 0x294, void (*)(Pursuer *))(p);
-}
-
-/* 0x00309170 */
-void Kind09_OffscreenStep(Pursuer *p) {
-}
-
-/* in play: Actor_TeleportRandom(-1), the state D_00422430 (+0x1758 -1) */
-/* 0x00309180 */
-void Kind09_ShowUp(Pursuer *p) {
-    if (Npc_InPlayedRoom(p) == 0) {
-        return;
-    }
-    Actor_TeleportRandom(&p->c.a, -1);
-    ptmf_set(&PU(p, 0x174C, PTMF), &D_00422430);
-    PU(p, 0x1758, s32) = -1;
-}
-
-/* the action 5 taken (+0x14E8): in play +0x8C, the state `st`, +0x114 1; the action cleared */
-static inline __attribute__((always_inline)) void act5(Pursuer *p, const PTMF *st) {
-    if (PU(p, 0x14E8, s32) != 5) {
-        return;
-    }
-    if ((u8)Npc_InPlayedRoom(p) != 0) {
-        VCALL(p, 0x8C, void (*)(Pursuer *))(p);
-        ptmf_set(&PU(p, 0x174C, PTMF), st);
-        PU(p, 0x1758, s32) = -1;
-        VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
-    }
-    PU(p, 0x14E8, s32) = 0;
-    PU(p, 0x14EC, s32) = 0;
-}
-
-/* 0x00309210 */
-void Kind09_EventState(Pursuer *p) {
-    act5(p, &Pursuer_StateRunThenNext_ptmf7);
-}
-
-/* 0x00311B30 */
-void Kind13_EventState(Pursuer *p) {
-    act5(p, &Pursuer_StateRunThenNext_ptmf8);
-}
-
-/* its slot's progress entry (Progress_HasRelationCmd) 1: SlotCmd_Cancel; -1 */
-static inline __attribute__((always_inline)) s32 slot_done(Pursuer *p) {
-    Progress *g = gProgress;
-
-    if ((u8)Progress_HasRelationCmd(g, *(u8 *)&p->c.a.slot) == 1) {
-        SlotCmd_Cancel(g, *(u8 *)&p->c.a.slot);
-    }
-    return -1;
-}
-
-/* 0x003092E0 */
-s32 Kind09_GrabOrder(Pursuer *p) {
-    return slot_done(p);
-}
-
-/* 0x00311C00 */
-s32 Kind13_GrabOrder(Pursuer *p) {
-    return slot_done(p);
-}
-
-/* each frame: +0x84; the nav mask +0xC0 (8 when +0x2B is 1, else +0xA8) onto its model
- * (+0x1380 +0x40); in play Pursuer_MotionGroup, its state (+0x174C) and +0x110; then +0x40 */
-/* 0x00309350 */
-void Kind09_Update(Pursuer *p) {
-    VCALL(p, 0x84, void (*)(Pursuer *))(p);
-    if (AT(p, 0x2B, u8) == 1) {
-        AT(p, 0xC0, s32) = 8;
-    } else {
-        AT(p, 0xC0, s32) = VCALL(p, 0xA8, s32 (*)(Pursuer *))(p);
-    }
-    AT(PU(p, 0x1380, u8 *), 0x40, s32) = AT(p, 0xC0, s32);
-    if (Npc_InPlayedRoom(p) != 0) {
-        Pursuer_MotionGroup(p);
-        if (ptmf_test(&PU(p, 0x174C, PTMF))) {
-            ptmf_scall(p, &PU(p, 0x174C, PTMF));
-        }
-        VCALL(p, 0x110, void (*)(Pursuer *))(p);
-    }
-    VCALL(p, 0x40, void (*)(Pursuer *))(p);
-}
-
-/* 0x00309410 */
-u8 *Kind09_ModelFileTable(Pursuer *p) {
-    return b5_prog_flag8000() ? pstr_O_LRM_LRM_200_PCK_2 : pstr_O_LRM_LRM_200_PCK;
-}
-
-/* 0x00309450 */
-void *Kind09_ModelFiles(void) {
-    return b5_prog_flag8000() ? D_004223A0 : D_00422360;
-}
-
-/* 0x0030C1B0 */
-u8 *Lorenzo2_ModelFileTable(Pursuer *p) {
-    return b5_prog_flag8000() ? pstr_O_LRY_LRY_200_PCK_2 : pstr_O_LRY_LRY_200_PCK;
-}
-
-/* 0x003119A0 */
-Character *Kind13_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind13_vtable); }
-
-/* 0x00311AB0 */
-void *Kind13_ModelFiles(void) {
-    return pstr_O_FIN_FIN_200_PCK;
-}
-
-/* 0x00311AC0 */
-void *Kind13_MotionFiles(void) {
-    return D_00429770;
-}
-
-/* in play: Actor_TeleportRandom(-1) */
-/* 0x00311AE0 */
-void Kind13_ShowUp(Pursuer *p) {
-    if (Npc_InPlayedRoom(p) != 0) {
-        Actor_TeleportRandom(&p->c.a, -1);
-    }
-}

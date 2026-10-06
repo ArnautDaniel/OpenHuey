@@ -9,6 +9,7 @@
 #include "hewie.h"
 #include "progress.h"
 #include "sce/libvu0.h"
+#include "vecmath.h"
 
 extern void *RoomBase_vtable[];
 extern void *Room46_vtable[];

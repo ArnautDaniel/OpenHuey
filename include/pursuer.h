@@ -18,7 +18,7 @@
 #include "effectmgr.h"
 #include "debilitas.h"
 #include "model.h"
-#include "pursuer_ai.h"
+#include "common.h"
 
 /* Pursuer fields not understood yet, by offset. */
 #define PU(p, off, type) (*(type *)((u8 *)(p) + (off)))
@@ -131,9 +131,6 @@ extern void Pursuer_ExitGoTo(Pursuer *p);
 extern void Pursuer_SaveState(Pursuer *p);
 extern void Pursuer_BehaviourEnded(Pursuer *p);
 extern void Pursuer_Activate(Pursuer *p);
-extern u8 *Debilitas3_ModelFileTable(Pursuer *p);
-extern u8 *Riccardo_ModelFileTable(Pursuer *p);
-extern void Motion_EaseTilt(u8 *p, f32 tx, f32 ty, f32 sx, f32 sy);
 extern void Pursuer_ChaseTarget(Pursuer *p);
 extern void Pursuer_ResetBehaviour(Pursuer *p);
 extern void Pursuer_GiveMotionBanks(Pursuer *p, u32 slot);
@@ -159,20 +156,7 @@ extern void Pursuer_BehaviourIdle(Pursuer *p);
 extern void Pursuer_BackToStand(Pursuer *p);
 extern s32 Pursuer_ChanceRoll(Pursuer *p);
 extern void Pursuer_PlaceModel(Pursuer *p);
-extern Pursuer *Kind22_dtor(Pursuer *p, s32 flags);
 extern Pursuer *Pursuer_dtor(Pursuer *p, s32 flags);
-extern void *Kind33_ctor(void *p, s32 arg);
-extern void *Kind32_ctor(void *p, s32 arg);
-extern void *Kind31_ctor(void *p, s32 arg);
-extern void *Kind30_ctor(void *p, s32 arg);
-extern void *Kind29_ctor(void *p, s32 arg);
-extern void *Kind28_ctor(void *p, s32 arg);
-extern void *Kind26_ctor(void *p, s32 arg);
-extern void *Kind25_ctor(void *p, s32 arg);
-extern void *Kind24_ctor(void *p, s32 arg);
-extern void *Kind37_ctor(void *p, s32 arg);
-extern void *TintStalker_ctor(void *p, s32 arg);
-extern void *Kind22_ctor(void *p, u32 id, u32 arg);
 extern void Pursuer_ExitOpenStep(Pursuer *p);
 extern void Pursuer_StateArrive(Pursuer *p);
 extern s32 Pursuer_EventConcerns(Pursuer *p, u32 kind, s32 slot, u32 door);
@@ -326,38 +310,17 @@ extern s32 Pursuer_Get2D0(Pursuer *p);
 extern s32 Pursuer_Get2D4(Pursuer *p);
 extern s32 Pursuer_Get318(Pursuer *p);
 extern u8 *Debilitas_ModelFileTable(Pursuer *p);
-extern u8 *TintStalker_ModelFileTable(Pursuer *p);
-extern u8 *Kind27_ModelFileTable(Pursuer *p);
-extern u8 *Kind34_ModelFileTable(Pursuer *p);
-extern u8 *Kind35_ModelFileTable(Pursuer *p);
-extern u8 *Kind36_ModelFileTable(Pursuer *p);
-extern u8 *Kind37_ModelFileTable(Pursuer *p);
-extern void *Kind21_ctor(void *p, s32 arg, u32 id);
-extern void *Kind20_ctor(void *p, s32 arg);
-extern void *Kind19_ctor(void *p, s32 arg);
-extern void *Kind18_ctor(void *p, s32 arg);
-extern void *Kind17_ctor(void *p, s32 arg);
-extern void *Kind16_ctor(void *p, s32 arg);
 extern void *Kind15_ctor(void *p, u32 id, u32 arg);
-extern void *Kind14_ctor(void *p, s32 arg, u32 id);
-extern void *Kind13_ctor(void *p, s32 arg);
-extern void *Kind08_ctor(void *p, s32 arg);
-extern void *Kind12_ctor(void *p, s32 arg);
-extern void *Lorenzo_ctor(void *p, s32 arg);
-extern void *Kind39_ctor(void *p, s32 arg);
-extern void *Lorenzo2_ctor(void *p, s32 arg);
-extern void *Kind09_ctor(void *p, s32 arg);
-extern void *Riccardo_ctor(void *p, s32 arg);
-extern void *Kind36_ctor(void *p, s32 arg);
-extern void *Kind35_ctor(void *p, s32 arg);
-extern void *Kind34_ctor(void *p, s32 arg);
-extern void *Daniella_ctor(void *p, s32 arg);
-extern void *Kind27_ctor(void *p, s32 arg);
-extern void *Debilitas3_ctor(void *p, s32 arg);
 extern void *Debilitas2_ctor(void *p, s32 arg);
 extern void *Debilitas_ctor(void *p, s32 arg);
-extern u8 *Kind09_ModelFileTable(Pursuer *p);
-extern u8 *Lorenzo2_ModelFileTable(Pursuer *p);
+
+/* pursuer.c */
+extern void Summoner_Reset(u8 *p);
+extern void Summoner_Take(u8 *o, u8 kind);
+extern void Summoner_SetCooldown(u8 *o, s32 sec);
+extern void Summoner_LessCooldown(u8 *o, s32 sec);
+extern void Summoner_RoomStart(u8 *o);
+extern void Summoner_Noise(u8 *o, u8 *n);
 
 /* The Pursuer destructor's body down to the Actor (each stalker's destructor sets its own vtable
  * and runs this inline): vtable +0x10 cleanup at each level, the model freed for slots 3..5. */
@@ -388,6 +351,7 @@ static inline void Pursuer_DestroyBase(Pursuer *p) {
 
 /* ---- helpers shared by the pursuer files ---- */
 
+extern s32 Npc_WalkPathStride(Pursuer *p, s32 unused);
 /* keep walking until the animation (+0x550) is over; returns 1 while walking */
 static inline s32 Pursuer_WalkOn(Pursuer *p) {
     s32 over = MOTION_AT(p, 0x550, f32) <= 0.0f;
@@ -465,6 +429,8 @@ static inline void Pursuer_ClearRoute(Pursuer *p) {
 
 /* ---- the stalkers' frame update (vtable +0x30), shared by their own versions ---- */
 
+extern s32 Npc_SensesWatching(Pursuer *p);
+extern void Npc_WhoAroundEnding(Pursuer *p);
 /* the start: blocking flags, senses (Npc_SensesWatching; while the behaviour is fresh, +0x16F6, they
    are recomputed, else forgotten), vtable +0x120, the threat */
 static inline void Stalker_ThinkStart(Pursuer *p) {
@@ -530,5 +496,124 @@ static inline void Stalker_ThinkEnd(Pursuer *p) {
     VCALL(p, 0x40, void (*)(Pursuer *))(p);
     VCALL(p, 0x100, void (*)(Pursuer *))(p);
 }
+
+/* ---- (was pursuer_ai.h) ---- */
+
+/* pursuer_ai.c: what other files call. */
+
+typedef struct Actor Actor;
+typedef struct Character Character;
+typedef struct Pursuer Pursuer;
+
+/* pursuer_ai.c */
+extern s32 Pursuer_GivesUp(Pursuer *p);
+extern void Pursuer_GoForFiona(Pursuer *p);
+extern void Pursuer_HeadingStep(Pursuer *p);
+extern void Pursuer_FreshStart(Pursuer *p);
+extern void Pursuer_CarryOn(Pursuer *p);
+extern void Pursuer_Timer10s(Pursuer *p);
+extern void Pursuer_SetTimer(Pursuer *p, s32 frames);
+extern f32 Pursuer_TurnRate(Pursuer *p);
+extern f32 Pursuer_TurnRateFast(Pursuer *p);
+extern f32 Pursuer_LookFrames(Pursuer *p);
+extern f32 Pursuer_LookSwing(Pursuer *p);
+extern f32 Pursuer_ReachFiona(Pursuer *p);
+extern f32 Pursuer_Dist2E8(Pursuer *p);
+extern f32 Pursuer_AttackAngle(Pursuer *p);
+extern f32 Pursuer_ReachHewie(Pursuer *p);
+extern f32 Pursuer_AttackRange(Pursuer *p);
+extern f32 Pursuer_SpeedTop(Pursuer *p);
+extern f32 Pursuer_SpeedBase(Pursuer *p);
+extern s32 Pursuer_AttackAnimA(Pursuer *p);
+extern s32 Pursuer_AttackAnimB(Pursuer *p);
+extern s32 Pursuer_RoomSpots(Pursuer *p);
+extern void NPC_PickDestination(Pursuer *p);
+extern void NPC_DoorBreak(Pursuer *p);
+extern s32 Npc_DoorShut(Pursuer *p, s32 door);
+extern s32 Npc_DoorShut2(Pursuer *p, s32 door);
+extern s32 Npc_ExitSideBehind(Pursuer *p);
+extern s32 NPC_HearNoise(Pursuer *p);
+extern u32 NPC_BlockFlags(Pursuer *p);
+extern u32 Npc_TriIfStandable(Pursuer *p, u32 tri);
+extern void NPC_ExitArg(Pursuer *p, s32 a2);
+extern void Npc_DoorShutOther(Pursuer *p, u32 door);
+extern void Npc_DoorRelease(Pursuer *p, u32 door);
+extern s32 Npc_PlanBesideDoor(Pursuer *p, u32 door, u32 side);
+extern s32 Npc_PlanToGoal(Pursuer *p);
+extern void Npc_BoneHeight(Pursuer *p);
+extern s32 Npc_TriBlocked(Pursuer *p, u32 tri);
+extern s32 Npc_PlanToRoomObject(Pursuer *p);
+extern s32 Npc_ReachedRoom(Pursuer *p);
+extern s32 Npc_CharSideBehind(Pursuer *p, Character *c);
+extern s32 Npc_InPlayedRoom(Pursuer *p);
+extern s32 Npc_FionaPanicking(void);
+extern s32 Npc_SameFloor(Actor *a, Actor *b);
+extern s32 Npc_WalkableAhead(Pursuer *p);
+extern s32 Npc_RouteAdd(Pursuer *p, u32 tri);
+extern void Npc_RouteAim(Pursuer *p);
+extern void Pursuer_DoorOffset(Pursuer *p, s32 side, f32 *out);
+extern void Pursuer_StandAnim(Pursuer *p);
+extern f32 Npc_NodeDistance(Pursuer *p, s32 room, u32 a, u32 b);
+extern s32 Npc_AtSpawn(Pursuer *p, s32 room);
+extern s32 Npc_OpenDoorFionaHides(void);
+extern f32 NPC_PathLengthTo(Pursuer *p, u32 tri, const f32 *pos);
+extern f32 Npc_FootDistance(Pursuer *p, Character *c);
+extern u32 Npc_TurnWay(Pursuer *p, f32 heading, f32 a, f32 b);
+extern f32 Npc_TurnToward(Pursuer *p, f32 heading, f32 step);
+extern s32 Npc_StepPath(Pursuer *p, u32 *triOut, f32 *posOut, f32 step);
+extern f32 Npc_PathLength(Pursuer *p, u32 tri, const f32 *pos);
+extern s32 Npc_SameRoomOtherSide(Pursuer *p, Character *c);
+extern s32 Npc_NearRoom(Pursuer *p, s32 slot);
+extern s32 Npc_WhoSeen(Pursuer *p);
+extern s32 Npc_TargetSideWalkable(Pursuer *p, f32 angle, f32 dist);
+extern void Npc_ProbeAroundFiona(Pursuer *p);
+extern s32 NPC_HewieInReach(Pursuer *p);
+extern s32 Npc_RouteDrop(Pursuer *p);
+extern void NPC_HeadNearHewie(Pursuer *p, u32 exit);
+extern void NPC_HeadNearFiona(Pursuer *p, u32 exit);
+extern s32 Npc_ExitWhatToDo(Pursuer *p, s32 exit);
+extern f32 Npc_RoomNodeDistance(Pursuer *p, s32 room, s32 a, s32 b);
+extern void Npc_FionaAtSpawn(Pursuer *p, s32 room);
+extern f32 Npc_ExitHeading(Pursuer *p, s32 exit);
+extern void Npc_TurnToRootMotion(Pursuer *p, u32 mask);
+extern u32 Npc_TurnWayTo(Pursuer *p, const f32 *pos, f32 a, f32 b);
+extern s32 Eye_CanSee(Pursuer *p, const f32 *from, const f32 *to, f32 heading, f32 range, f32 half);
+extern s32 Eye_ActorSees(Pursuer *p, Actor *from, Actor *to, f32 heading, f32 range, f32 half);
+extern s32 NPC_FionaInReach(Pursuer *p);
+extern Pursuer *NPC_dtor(Pursuer *p, s32 flags);
+extern void NPC_Reset(Pursuer *p);
+extern s32 Npc_HeadRandomRoom(Pursuer *p);
+extern u32 Npc_PlanFromDoor(Pursuer *p, u32 tri, const f32 *pos, u32 door);
+extern void NPC_GoTo(Pursuer *p, u32 tri, const f32 *pos, s32 room);
+extern u32 Npc_RandomTri(Pursuer *p);
+extern s32 Npc_CanWalkStraight(Pursuer *p, const f32 *pos);
+extern void Npc_WhoAround(Pursuer *p);
+extern s32 Npc_RoomToSide(Pursuer *p, f32 dist);
+extern s32 NPC_PathLengthSpot(Pursuer *p);
+extern s32 NPC_PathLengthGoal(Pursuer *p);
+extern s32 Npc_SeesPoint(Pursuer *p, u32 tri, const f32 *pos);
+extern u32 Npc_ExitKind(Pursuer *p, s32 exit);
+extern u32 Npc_TriAtDirection(Pursuer *p, f32 heading, f32 dist);
+extern s32 Npc_WhoReachable(Pursuer *p, s32 a1, f32 f);
+extern s32 Npc_WhoReachableBits(Pursuer *p, s32 a1, f32 f);
+extern s32 Npc_PlanToDoor(Pursuer *p, u32 door, s32 tri, const f32 *pos);
+extern s32 Npc_FindDoor(Pursuer *p, s32 side);
+extern s32 NPC_PathLengthChar(Pursuer *p, Character *c);
+extern f32 Npc_DoorFacingFromFiona(Pursuer *p, u32 exit);
+extern void NPC_HeadForFiona(Pursuer *p);
+extern u32 Npc_RandomExit(Pursuer *p, u32 skip);
+extern u32 Npc_DoorOnWay(Pursuer *p);
+extern void NPC_HeadFor(Pursuer *p, Character *c);
+extern f32 Npc_TurnTowardPos(Pursuer *p, const f32 *pos, f32 step);
+extern s32 Npc_StepToward(Pursuer *p, const f32 *pos);
+extern void Npc_Senses2(Pursuer *p);
+extern void Npc_Senses2Ending(Pursuer *p);
+extern s32 Npc_ExitsToTri(Pursuer *p, s32 tri);
+extern void Npc_LeaveDoor(Pursuer *p, u32 door);
+extern s32 Npc_RoundThroughDoor(Pursuer *p, s32 tri);
+extern u32 Npc_NearestWalkable(Pursuer *p, u32 tri, const f32 *pos, f32 *out);
+extern s32 Npc_SeesChar(Pursuer *p, Character *c);
+extern s32 Npc_SensesFiona(Pursuer *p);
+extern s32 NPC_CanUseExit(Pursuer *p, s32 exit);
 
 #endif

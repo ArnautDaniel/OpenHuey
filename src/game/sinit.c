@@ -4,9 +4,11 @@
 #include <string.h>
 #include "common.h"
 #include "ptmf.h"
-#include "random.h"
+#include "vecmath.h"
 #include "system.h"
 #include "msl.h"
+#include "game.h"
+#include "camera.h"
 
 extern const PTMF Debilitas_StartWander_ptmf;
 extern const PTMF Debilitas_StartTurnToFiona_ptmf;
@@ -1799,7 +1801,6 @@ void Sinit_RoomE9(void) {
 
 /* ---- hand-written ---- */
 
-#include "game.h"
 
 /* MW guard flags for function-level statics (set once). */
 extern s8 D_0047B9A8, D_0047B9B0, D_0047BA10, D_0047BA18;

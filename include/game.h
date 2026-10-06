@@ -85,16 +85,5 @@ extern Game gGame;
 typedef struct PTMF PTMF;
 
 /* game.c */
-extern void Game_Init(Game *game);
-extern void Game_Run(Game *game);
-extern void Game_SetState(Game *game, const PTMF *state);
-extern void Game_StateMain(Game *game);
-extern void Game_StateShutdown(Game *game);
-extern void Game_StartNextScene(Game *game);
-extern void *AvoidPromptBase_dtor(u8 *o, s32 flags);
-extern void *QuadEntry_dtor(u8 *o, s32 flags);
-extern void *PlacedThings_dtor(u8 *o, s32 flags);
-extern void *Creatures_dtor(u8 *o, s32 flags);
-extern void *Game_dtor(u8 *g, s32 flags);
 
 #endif /* GAME_H */

@@ -6,7 +6,8 @@
 #include "common.h"
 #include "game.h"
 #include "globals.h"
-#include "scene_game_members.h"
+#include "scene_game.h"
+#include "effects.h"
 
 /* A heap at +0x10000 (vtable +0x10 alloc(size)) and 0x400
  * effect slots at +0x18034; EffectMgr_Start starts the effect in a slot with its parameters. */

@@ -3,7 +3,7 @@
 
 #include "common.h"
 #include "game.h"
-#include "task.h"
+#include "text.h"
 
 /* The system data kept on the memory card (0x50 bytes, the options). */
 typedef struct SysData {

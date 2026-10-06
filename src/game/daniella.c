@@ -15,10 +15,35 @@
 #include "daniella.h"
 #include "fiona.h"
 #include "model.h"
-#include "pursuer_ai.h"
-#include "skeleton.h"
-#include "stalker_progress.h"
+#include "heap.h"
 #include "msl.h"
+#include "input.h"
+#include "event.h"
+#include "vecmath.h"
+#include "scene_game.h"
+#include "lights.h"
+#include "hewie.h"
+#include "sound.h"
+#include "effectmgr.h"
+#include "debilitas.h"
+#include "libc.h"
+#include "effectmgr.h"   /* HitEffect_Spawn */
+#include "effects.h"
+#include "loader.h"
+#include <stdint.h>
+#include "item.h"
+#include "renderer.h"
+#include "charaction.h"
+#include "gl2d.h"
+#include "debilitas2.h"
+#include "lorenzo.h"
+#include "system.h"
+#include "char_load.h"
+#ifdef HG_NATIVE
+#include <stdio.h>
+#include <stdlib.h>
+#include "glr.h"
+#endif
 
 extern void *Daniella_vtable[];
 
@@ -62,6 +87,141 @@ f32 Kind36_FrightSeen(void);
 f32 Kind36_ReachHewie(void);
 void *Kind36_ModelFiles(void);
 
+extern void *D_00470390[];
+extern void *BonePoint_vtable[];
+extern void *SprungPoint_vtable[];
+void *BoneHangPoint_ctor(u8 *p);
+void *IK2_ctor(u8 *p);
+void *HairPoint_ctor(u8 *p);
+void *HangingPart_ctor(u8 *p);
+extern void *DaniellaModel_vtable[];
+extern void *BoneHangPoint_ctor(u8 *p);
+extern void *HairPoint_ctor(u8 *p);
+extern void *HangingPart_ctor(u8 *p);
+extern void *IK2_ctor(u8 *p);
+
+extern void *Kind34_vtable[];
+extern void *Kind35_vtable[];
+extern u32 D_0043B6E0[];
+extern u32 D_0043CDC0[];
+Character *Kind35_dtor(Character *c, s32 flags);
+s32 Kind35_Kind(void);
+void *Kind35_MotionFiles(void);
+Character *Kind34_dtor(Character *c, s32 flags);
+s32 Kind34_Kind(void);
+void *Kind34_MotionFiles(void);
+void Kind34_FilesLoaded(Pursuer *p);
+void Kind34_DoorOffset(void *self, s32 i, f32 *out);
+void Kind34_ActionOffsets(void *self, s32 i, f32 *out);
+static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt);
+
+extern u8 pstr_O_DNL_DNL_200_PCK_4[], pstr_O_DNL_DNL_200_PCK_3[];
+extern u8 pstr_O_DNL_DNL_200_PCK_6[], pstr_O_DNL_DNL_200_PCK_5[];
+extern u8 pstr_O_DNL_DNL_200_PCK_8[], pstr_O_DNL_DNL_200_PCK_7[];
+#define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+#define U32(p, off) (*(u32 *)((u8 *)(p) + (off)))
+
+static inline s32 b5_prog_flag8000(void);
+
+extern void *SpringPartBase_vtable[];
+extern u8 D_00419E60[];
+static inline void Set_AddLink(u8 *set, u8 *node) {
+    if (AT(set, 0x30, u8 *) != NULL && AT(set, 0x34, u8 *) != NULL) {
+        AT(AT(set, 0x34, u8 *), 0x28, u8 *) = node;
+        AT(node, 0x28, u8 *) = NULL;
+        AT(node, 0x2C, u8 *) = AT(set, 0x34, u8 *);
+        AT(set, 0x34, u8 *) = node;
+    } else {
+        AT(set, 0x34, u8 *) = node;
+        AT(set, 0x30, u8 *) = node;
+        AT(node, 0x2C, u8 *) = NULL;
+        AT(node, 0x28, u8 *) = NULL;
+    }
+}
+
+static inline void Set_AddCollider(u8 *set, u8 *col) {
+    AT(col, 0x2C, u8 *) = NULL;
+    if (AT(set, 0x18, u8 *) == NULL) {
+        AT(set, 0x18, u8 *) = col;
+    } else {
+        u8 *c = AT(set, 0x18, u8 *);
+
+        while (AT(c, 0x2C, u8 *) != NULL) {
+            c = AT(c, 0x2C, u8 *);
+        }
+        AT(c, 0x2C, u8 *) = col;
+    }
+}
+
+/* a set's settings: force (x, y, z), damping, its model */
+static inline void Set_Init(u8 *set, u8 *m, f32 fx, f32 fy, f32 fz, f32 damp) {
+    AT(set, 0x0, f32) = fx;
+    AT(set, 0x4, f32) = fy;
+    AT(set, 0x8, f32) = fz;
+    AT(set, 0x10, f32) = damp;
+    AT(set, 0x14, u8 *) = m;
+    AT(set, 0x20, u8) = 0;
+    AT(set, 0x1C, s32) = 0;
+}
+
+/* a set's hanging parts put back under their anchors (a bone when +0x20, else the point at
+   +0x2C), `len` along `dir`, at rest */
+static inline void Parts_Rest(u8 *p, s32 n, s32 size, const f32 *dir, u8 *owner) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    s32 i;
+
+    for (i = 0; i < n; i++, p += size) {
+        AT(p, 0x18, f32) = 0.0f;
+        AT(p, 0x14, f32) = 0.0f;
+        AT(p, 0x10, f32) = 0.0f;
+        if (AT(p, 0x20, u8) != 0) {
+            sceVu0CopyVector(at, Skel_Bone(AT(owner, 0x810, u8 *), AT(p, 0x24, s32)) + 12);
+        } else {
+            sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
+        }
+        sceVu0ScaleVector(d, (f32 *)dir, AT(p, 0x40, f32));
+        sceVu0AddVector((f32 *)p, at, d);
+        sceVu0CopyVector((f32 *)(p + 0x50), at);
+    }
+}
+
+void *DaniellaModel_dtor(u8 *m, s32 flags);
+void DaniellaModel_Vt2C(u8 *m);
+void DaniellaModel_Vt30(u8 *m);
+void DaniellaModel_SecondaryMotion(u8 *m);
+s32 DaniellaModel_Part0(u8 *m);
+s32 DaniellaModel_Part1(u8 *m);
+s32 DaniellaModel_Part2(u8 *m);
+s32 DaniellaModel_Part3(u8 *m);
+void DaniellaModel_Frame(u8 *m);
+void DaniellaModel_PartsA60(u8 *m);
+void DaniellaModel_HairRest(u8 *m);
+void DaniellaModel_Hair(u8 *m);
+void DaniellaModel_PartA20(u8 *m);
+void DaniellaModel_Hanging(u8 *m);
+void DaniellaModel_HangingRest(u8 *m);
+void DaniellaModel_Springs(u8 *m);
+void DaniellaModel_Vt3C(u8 *m);
+void DaniellaModel_Loaded(u8 *m);
+
+/* gProgress+0x30 bit 0x8000 selects between two data sets (difficulty/mode flag?) */
+static inline s32 b5_prog_flag8000(void) {
+    return U32(gProgress, 0x30) & 0x8000;
+}
+
+static inline void *b0_RoomCtor(void *p, u32 id, s32 arg, void **vtbl) {
+    FLD(p, 0x0, void **) = Actor_vtable;
+    FLD(p, 0x20, s32) = arg;
+    FLD(p, 0x24, s32) = 0x2000000;
+    FLD(p, 0x0, void **) = Character_vtable;
+    FLD(p, 0x1380, s32) = 0;
+    FLD(p, 0x153C, u8) = (u8)id;
+    FLD(p, 0x0, void **) = vtbl;
+    return p;
+}
+
 /* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
  * slots 3..5 */
 static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
@@ -90,6 +250,25 @@ static inline __attribute__((always_inline)) Character *creature_dtor(Character 
 
 Character *Kind36_dtor(Character *c, s32 flags);
 
+/* 0x001733D0 */
+void *Kind36_ctor(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x24, arg, Kind36_vtable);
+}
+
+/* 0x00173420 */
+void *Kind35_ctor(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x23, arg, Kind35_vtable);
+}
+
+/* 0x00173470 */
+void *Kind34_ctor(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x22, arg, Kind34_vtable);
+}
+
+/* 0x001734C0 */
+void *Daniella_ctor(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x3, arg, Daniella_vtable);
+}
 /* vtable +0x8: destructor */
 /* 0x0020C3A0 */
 Pursuer *Daniella_dtor(Pursuer *p, s32 flags) {
@@ -576,6 +755,375 @@ void *Quad4_dtor(u8 *o, s32 flags) {
     return o;
 }
 
+/* +0x8: destructor */
+/* 0x002ECFD0 */
+void *DaniellaModel_dtor(u8 *m, s32 flags) {
+    if (m != NULL) {
+        AT(m, 0x0, void **) = DaniellaModel_vtable;
+        func_001002C0(m + 0x14D0, BoneHangPoint_dtor, 0x50, 2);
+        AT(m, 0x14A0, void **) = SprungPoint_vtable;
+        AT(m, 0x14A0, void **) = SpringPartBase_vtable;
+        func_001002C0(m + 0xDE0, HairPoint_dtor, 0x70, 0xA);
+        func_001002C0(m + 0xAA0, HangingPart_dtor, 0x50, 6);
+        HumanModel_Destroy(m, flags);
+    }
+    return m;
+}
+
+/* +0x2C / +0x30: two of her parts' draw flags (+0xBA / +0xD6) and model flag 0x20000 on; off
+   again by +0x878 (1 or 2 in +0x880) after the base +0x2C */
+/* 0x002ED160 */
+void DaniellaModel_Vt2C(u8 *m) {
+    AT(m, 0xBA, u8) |= 2;
+    AT(m, 0xD6, u8) |= 2;
+    AT(m, 0x4B0, u32) |= 0x20000;
+}
+
+/* 0x002ED190 */
+void DaniellaModel_Vt30(u8 *m) {
+    VCALL(m, 0x2C, void (*)(u8 *))(m);
+    if (AT(m, 0x878, s32) == 0) {
+        AT(m, 0xBA, u8) &= 0xFD;
+        AT(m, 0x880, s32) = 1;
+    } else {
+        AT(m, 0xD6, u8) &= 0xFD;
+        AT(m, 0x880, s32) = 2;
+    }
+    AT(m, 0x4B0, u32) &= ~0x20000;
+}
+
+/* +0xB4: her secondary-motion table */
+/* 0x002ED210 */
+void DaniellaModel_SecondaryMotion(u8 *m) {
+    AT(m, 0x874, u8 *) = D_00419E60;
+}
+
+/* +0x84 .. +0x90: her mesh parts */
+/* 0x002ED220 */
+s32 DaniellaModel_Part0(u8 *m) {
+    return 3;
+}
+
+/* 0x002ED230 */
+s32 DaniellaModel_Part1(u8 *m) {
+    return 7;
+}
+
+/* 0x002ED240 */
+s32 DaniellaModel_Part2(u8 *m) {
+    return 0x1A;
+}
+
+/* 0x002ED250 */
+s32 DaniellaModel_Part3(u8 *m) {
+    return 0x2A;
+}
+
+/* her five back capsules (bone 2 to bone 6) by pose: 0 standing, 1 flat, 2 bent (crawling) */
+/* 0x002ED260 */
+void DaniellaModel_BackCapsules(u8 *m, s32 pose) {
+    static const f32 sCaps[3][5][7] = {
+        {
+            {0.0f, 1.0f, 1.0f, 0x1.99999ap+0f, 0.0f, 1.0f, -1.0f},
+            {1.0f, 1.0f, 1.0f, 0x1.b33334p+0f, 1.0f, 1.0f, -1.0f},
+            {2.0f, 1.0f, 1.0f, 0x1.ccccccp+0f, 2.0f, 1.0f, -1.0f},
+            {3.0f, 1.0f, 1.0f, 0x1.e66666p+0f, 3.0f, 1.0f, -1.0f},
+            {4.0f, 1.0f, 1.0f, 2.0f, 4.0f, 1.0f, -1.0f},
+        },
+        {
+            {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f},
+            {1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f},
+            {2.0f, 0.0f, 0.0f, 1.0f, 2.0f, 0.0f, 0.0f},
+            {3.0f, 0.0f, 0.0f, 1.0f, 3.0f, 0.0f, 0.0f},
+            {4.0f, 0.0f, 0.0f, 1.0f, 4.0f, 0.0f, 0.0f},
+        },
+        {
+            {0.0f, 1.0f, -1.0f, 2.0f, 0.0f, 1.0f, 1.0f},
+            {1.0f, 1.0f, -1.0f, 2.0f, 1.0f, 1.0f, 1.0f},
+            {2.0f, 1.0f, -1.0f, 2.0f, 2.0f, 1.0f, 1.0f},
+            {3.0f, 1.0f, -1.0f, 2.0f, 3.0f, 1.0f, 1.0f},
+            {4.0f, 1.0f, -1.0f, 2.0f, 4.0f, 1.0f, 1.0f},
+        },
+    };
+    const f32 (*c)[7] = sCaps[pose == 1 ? 1 : pose == 2 ? 2 : 0];
+    s32 k;
+
+    AT(m, 0x1578, s8) = pose;
+    for (k = 0; k < 5; k++) {
+        Capsule_Set(m + 0x1240 + k * 0x70, 2, 6, c[k][0], c[k][1], c[k][2], c[k][3], c[k][4], c[k][5], c[k][6]);
+    }
+}
+
+/* the two parts on the set +0xA60 (bones 0x2F, 0x30) */
+/* 0x002ED600 */
+void DaniellaModel_PartsA60(u8 *m) {
+    s32 i;
+
+    SpringSet_Clear(m + 0xA60);
+    for (i = 0; i < 2; i++) {
+        Set_AddLink(m + 0xA60, m + 0x14D0 + i * 0x50);
+    }
+    Set_Init(m + 0xA60, m, 0.0f, 0x1.99999ap-4f /* 0.1 */, 0.0f, 0x1.fae148p-1f /* 0.99 */);
+    AT(m, 0x1510, f32) = 1.0f;
+    AT(m, 0x14F4, s32) = 0x2F;
+    AT(m, 0x14F0, u8) = 1;
+    AT(m, 0x1560, f32) = 1.0f;
+    AT(m, 0x1544, s32) = 0x30;
+    AT(m, 0x1540, u8) = 1;
+}
+
+/* her hair at rest: each point its length (+0x40) along bone 0's Z axis from its anchor */
+/* 0x002ED6E0 */
+void DaniellaModel_HairRest(u8 *m) {
+    f32 down[4] __attribute__((aligned(16)));
+
+    sceVu0CopyVector(down, Skel_Bone(AT(AT(m, 0x9B4, u8 *), 0x810, u8 *), 0) + 8);
+    Parts_Rest(m + 0xDE0, 10, 0x70, down, AT(m, 0x9B4, u8 *));
+}
+
+/* her hair: the two strands (bones 0xB..0xF and 0x10..0x14), each point tied to the one beside
+   it in the other strand, stiffer at the root; the five capsules */
+/* 0x002ED7C0 */
+void DaniellaModel_Hair(u8 *m) {
+    static const f32 sStiff[5] = {
+        0x1.99999ap-1f, 0x1.333334p-1f, 0x1.99999ap-2f, 0x1.99999ap-3f, 0.0f,   /* 0.8 .. 0 */
+    };
+    s32 i;
+
+    SpringSet_Clear(m + 0x9A0);
+    for (i = 0; i < 10; i++) {
+        Set_AddLink(m + 0x9A0, m + 0xDE0 + i * 0x70);
+    }
+    for (i = 0; i < 5; i++) {
+        Set_AddCollider(m + 0x9A0, m + 0x1240 + i * 0x70);
+    }
+    Set_Init(m + 0x9A0, m, 0.0f, 0x1.99999ap-1f /* 0.8 */, 0.0f, 0.5f);
+    for (i = 0; i < 10; i++) {
+        u8 *n = m + 0xDE0 + i * 0x70;
+
+        AT(n, 0x20, u8) = i % 5 == 0;
+        AT(n, 0x24, s32) = 0xB + i;
+        AT(n, 0x40, f32) = 0x1.333334p+0f;   /* 1.2 */
+        AT(n, 0x44, u8 *) = m + 0xDE0 + (i < 5 ? i + 5 : i - 5) * 0x70;
+        AT(n, 0x48, f32) = i < 5 ? -1.0f : 1.0f;
+        AT(n, 0x60, f32) = sStiff[i % 5];
+    }
+    DaniellaModel_BackCapsules(m, 0);
+}
+
+/* the one part on the set +0xA20 (bone 0x17) */
+/* 0x002EDA90 */
+void DaniellaModel_PartA20(u8 *m) {
+    SpringSet_Clear(m + 0xA20);
+    Set_AddLink(m + 0xA20, m + 0x1470);
+    Set_Init(m + 0xA20, m, 0.0f, 0.0f, 0.0f, 0.75f);
+    AT(m, 0x14B0, f32) = 0x1.cccccc0p-1f;   /* 0.9 */
+    AT(m, 0x1494, s32) = 0x17;
+    AT(m, 0x1490, u8) = 1;
+    AT(m, 0x14C8, f32) = 1.0f;
+    AT(m, 0x14C4, f32) = 1.0f;
+    AT(m, 0x14C0, f32) = 1.0f;
+}
+
+/* the six hanging parts (bones 0x22..0x27, two strands of three) on the set +0x9E0, with two
+   capsules and two spheres */
+/* 0x002EDB50 */
+void DaniellaModel_Hanging(u8 *m) {
+    static const f32 sStiff[3] = {0x1.99999ap-3f, 0x1.99999ap-4f, 0.0f};   /* 0.2, 0.1, 0 */
+    s32 i;
+
+    SpringSet_Clear(m + 0x9E0);
+    for (i = 0; i < 6; i++) {
+        Set_AddLink(m + 0x9E0, m + 0xAA0 + i * 0x50);
+    }
+    for (i = 0; i < 2; i++) {
+        Set_AddCollider(m + 0x9E0, m + 0xC80 + i * 0x70);
+    }
+    for (i = 0; i < 2; i++) {
+        Set_AddCollider(m + 0x9E0, m + 0xD60 + i * 0x40);
+    }
+    Set_Init(m + 0x9E0, m, 0.0f, 0x1.333334p-2f /* 0.3 */, 0.0f, 0.5f);
+    for (i = 0; i < 6; i++) {
+        u8 *n = m + 0xAA0 + i * 0x50;
+
+        AT(n, 0x20, u8) = i % 3 == 0;
+        AT(n, 0x24, s32) = 0x22 + i;
+        AT(n, 0x40, f32) = 0x1.99999ap-1f;   /* 0.8 */
+        AT(n, 0x44, f32) = sStiff[i % 3];
+    }
+    Capsule_Set(m + 0xC80, 0x19, 0x29, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f);
+    Capsule_Set(m + 0xCF0, 0x17, 0x17, 1.5f, 0.0f, -0.5f, 1.0f, -1.5f, 0.0f, -0.5f);
+    Sphere_Set(m + 0xD60, 0x1F, 0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xDA0, 0x1F, 0.0f, 1.0f, 0.0f, 1.0f);
+}
+
+/* the six hanging parts at rest: each its length (+0x40) along bone 0x1F's Z axis bent by the
+   set's force (+0x44 of it), from its anchor */
+/* 0x002EDE30 */
+void DaniellaModel_HangingRest(u8 *m) {
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    u8 *p = m + 0xAA0;
+    s32 i;
+
+    for (i = 0; i < 6; i++, p += 0x50) {
+        AT(p, 0x18, f32) = 0.0f;
+        AT(p, 0x14, f32) = 0.0f;
+        AT(p, 0x10, f32) = 0.0f;
+        if (AT(p, 0x20, u8) != 0) {
+            sceVu0CopyVector(at, Skel_Bone(AT(AT(m, 0x9F4, u8 *), 0x810, u8 *), AT(p, 0x24, s32)) + 12);
+        } else {
+            sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
+        }
+        sceVu0CopyVector(d, Skel_Bone(AT(AT(m, 0x9F4, u8 *), 0x810, u8 *), 0x1F) + 8);
+        sceVu0ScaleVector(d, d, AT(p, 0x44, f32));
+        sceVu0AddVector(d, d, (f32 *)(m + 0x9E0));
+        sceVu0Normalize(d, d);
+        sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
+        sceVu0AddVector((f32 *)p, at, d);
+    }
+}
+
+/* all her springs */
+/* 0x002EDF30 */
+void DaniellaModel_Springs(u8 *m) {
+    DaniellaModel_Hanging(m);
+    DaniellaModel_PartA20(m);
+    DaniellaModel_Hair(m);
+    DaniellaModel_PartsA60(m);
+    AT(m, 0x850, u8) = 1;
+}
+
+/* +0x3C: her springs a frame. While she crawls (0x1800..0x1803) the capsules bend and her hair
+   falls forward (the force -0.4 along her facing); after a reset (+0x850) everything back at
+   rest and settled (+0x1570 / +0x1574 steps) */
+/* 0x002EDF80 */
+void DaniellaModel_Vt3C(u8 *m) {
+    s32 n = 1, nHair = 1;
+    s32 i;
+
+    if ((u32)(AT(m, 0x55C, s32) - 0x1800) < 4) {
+        if (AT(m, 0x1578, s8) != 2) {
+            DaniellaModel_BackCapsules(m, 2);
+            AT(m, 0x9A0, f32) = -0x1.99999ap-2f * AT(m, 0x7F0, f32);
+            AT(m, 0x9A8, f32) = -0x1.99999ap-2f * AT(m, 0x7F8, f32);
+        }
+    } else if (AT(m, 0x1578, s8) == 2) {
+        DaniellaModel_BackCapsules(m, 0);
+        AT(m, 0x9A0, s32) = 0;
+        AT(m, 0x9A8, s32) = 0;
+    }
+    if (AT(m, 0x850, u8) != 0) {
+        DaniellaModel_HairRest(m);
+        DaniellaModel_HangingRest(m);
+        nHair = AT(m, 0x1574, s32);
+        n = AT(m, 0x1570, s32);
+    }
+    SpringSet_Begin(m + 0x9E0);
+    SpringSet_Begin(m + 0xA20);
+    SpringSet_Begin(m + 0x9A0);
+    SpringSet_Begin(m + 0xA60);
+    for (i = 0; i < n; i++) {
+        SpringSet_Step(m + 0x9E0);
+        SpringSet_Step(m + 0xA20);
+        SpringSet_Step(m + 0xA60);
+    }
+    for (i = 0; i < nHair; i++) {
+        SpringSet_Step(m + 0x9A0);
+    }
+    SpringSet_Finish(m + 0x9E0);
+    SpringSet_Finish(m + 0xA20);
+    SpringSet_Finish(m + 0x9A0);
+    SpringSet_Finish(m + 0xA60);
+    AT(m, 0x850, u8) = 0;
+}
+
+/* +0x10 */
+/* 0x002EE110 */
+void DaniellaModel_Frame(u8 *m) {
+    Model_Release(m);
+}
+
+/* +0xC: once loaded: the base setup, the part roles, per-part draw settings, her springs */
+/* 0x002EE120 */
+void DaniellaModel_Loaded(u8 *m) {
+    HumanModel_Loaded(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x1C;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x2C;
+    AT(m, 0x8B0, s32) = 0x1F;
+    AT(m, 0x8B4, s32) = 0x15;
+    AT(m, 0x860, f32) = 0.0f;
+    AT(m, 0x864, f32) = 16.0f;
+    AT(m, 0x868, f32) = 0.0f;
+    AT(m, 0x854, s32) = 0;
+    AT(m, 0x858, s32) = 0;
+    {
+        static const u8 sParts[][2] = {
+            {0x98, 0x40}, {0xCC, 0x40}, {0xDA, 0x40}, {0xDC, 0x40}, {0xDE, 0x40},
+            {0xD2, 0xC0}, {0xBA, 0xFF}, {0xD6, 0xFF},
+        };
+        u32 i;
+
+        for (i = 0; i < sizeof(sParts) / sizeof(sParts[0]); i++) {
+            AT(m, sParts[i][0], u8) = 4;
+            AT(m, sParts[i][0] + 1, u8) = sParts[i][1];
+        }
+    }
+    AT(m, 0x1570, s32) = 50;
+    AT(m, 0x1574, s32) = 50;
+    DaniellaModel_Springs(m);
+}
+
+/* 0x00345EE0 */
+Character *Kind34_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind34_vtable); }
+
+/* 0x00345FF0 */
+s32 Kind34_Kind(void) {
+    return 0x22;
+}
+
+/* 0x00346000 */
+void *Kind34_MotionFiles(void) {
+    return D_0043B6E0;
+}
+
+/* (a pursuer class) Pursuer_FilesLoaded, then its model's +0x34 (1) */
+/* 0x00346010 */
+void Kind34_FilesLoaded(Pursuer *p) {
+    Pursuer_FilesLoaded(p);
+    VCALL(p->c.motion, 0x34, void (*)(void *, s32))(p->c.motion, 1);
+}
+
+/* Writes a position {0, 0, z} for index 0..3. */
+/* 0x00346050 */
+void Kind34_DoorOffset(void *self, s32 i, f32 *out) {
+    switch (i) {
+    case 1: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.be824p+2f /* 6.9767 */; break;
+    case 3: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.905f06p+2f /* -6.2558 */; break;
+    case 0: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.bdc432p+2f /* -6.9651 */; break;
+    case 2: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.ce0418p+2f /* 7.219 */; break;
+    }
+}
+
+/* Writes a position {x, 0, z} for index 10..15. */
+/* 0x003460F0 */
+void Kind34_ActionOffsets(void *self, s32 i, f32 *out) {
+    switch (i) {
+    case 10: case 11: out[0] = 0x1.07c84cp-2f /* 0.2576 */; out[1] = 0.0f; out[2] = 0x1.567fccp+3f /* 10.7031 */; break;
+    case 12: case 13: out[0] = 0x1.a4a8c2p+0f /* 1.6432 */; out[1] = 0.0f; out[2] = 0x1.5d182ap+3f /* 10.9092 */; break;
+    case 14: out[0] = -0x1.5f06f6p-3f /* -0.1714 */; out[1] = 0.0f; out[2] = -0x1.8f6fd2p+1f /* -3.1206 */; break;
+    case 15: out[0] = 0x1.9a0276p-2f /* 0.4004 */; out[1] = 0.0f; out[2] = -0x1.792d78p+1f /* -2.9467 */; break;
+    }
+}
+
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 extern void Kind34_BlowEffect(Pursuer *p);
 extern void Kind35_BlowEffect(Pursuer *p);
@@ -691,6 +1239,11 @@ void Kind35_Update(Pursuer *p) {
     Stalker_ThinkEnd(p);
 }
 
+/* 0x00348620 */
+u8 *Kind35_ModelFileTable(Pursuer *p) {
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? pstr_O_DNL_DNL_200_PCK_6 : pstr_O_DNL_DNL_200_PCK_5;
+}
+
 /* 0x00348660 */
 void *Kind35_ModelFiles(void) {
     return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043CD80 : D_0043CD40;
@@ -725,6 +1278,11 @@ void Kind36_Update(Pursuer *p) {
         Pursuer_FootstepsThroughWalls(p);
     }
     Stalker_ThinkEnd(p);
+}
+
+/* 0x003495B0 */
+u8 *Kind36_ModelFileTable(Pursuer *p) {
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? pstr_O_DNL_DNL_200_PCK_8 : pstr_O_DNL_DNL_200_PCK_7;
 }
 
 /* 0x003495F0 */
@@ -1102,6 +1660,11 @@ void Kind34_Activate(Pursuer *p) {
     }
 }
 
+/* 0x00347290 */
+u8 *Kind34_ModelFileTable(Pursuer *p) {
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? pstr_O_DNL_DNL_200_PCK_4 : pstr_O_DNL_DNL_200_PCK_3;
+}
+
 /* 0x003472D0 */
 void *Kind34_ModelFiles(void) {
     return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? pstr_O_DNL_DNL_001_PCK_2 : pstr_O_DNL_DNL_001_PCK;
@@ -1162,6 +1725,19 @@ void Kind34_Setup(Pursuer *p) {
     PU(p, 0x16A0, f32) = 1.5f;
     m = p->c.motion;
     VCALL(m, 0x34, void (*)(void *, s32))(m, 1);
+}
+
+/* 0x003478C0 */
+Character *Kind35_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind35_vtable); }
+
+/* 0x003479D0 */
+s32 Kind35_Kind(void) {
+    return 0x23;
+}
+
+/* 0x003479E0 */
+void *Kind35_MotionFiles(void) {
+    return D_0043CDC0;
 }
 
 extern u8 D_0043D180[], D_0043D200[], D_0043D270[], D_0043D2D0[], D_0043D310[], D_0043D370[],
@@ -1406,4 +1982,37 @@ void Kind36_Setup(Pursuer *p) {
     PU(p, 0x169C, f32) = 1.5f;
     PU(p, 0x1698, f32) = 12.0f;
     PU(p, 0x16A0, f32) = 1.5f;
+}
+
+/* a model on the full base with its two parts, vtable DaniellaModel_vtable: 4 members (0x40, +0x9A0,
+ * their +0x30 / +0x34 cleared), 6 parts (0x50, +0xAA0), 2 + 2 members (0x70 at +0xC80, 0x40 at
+ * +0xD60), 10 parts (0x70, +0xDE0), 5 members (0x70, +0x1240), one (+0x1470, vtable at +0x30)
+ * and 2 parts (0x50, +0x14D0) */
+/* 0x0038D160 */
+void *DaniellaModel_ctor(u8 *m) {
+    u8 *e;
+
+    ModelBase_ctor(m);
+    AT(m, 0x0, void **) = HumanModel_vtable;
+    IK2_ctor(m + 0x8D0);
+    IK2_ctor(m + 0x930);
+    AT(m, 0x0, void **) = DaniellaModel_vtable;
+    for (e = m + 0x9A0; e < m + 0xAA0; e += 0x40) {
+        AT(e, 0x34, s32) = 0;
+        AT(e, 0x30, s32) = 0;
+    }
+    func_00100340(m + 0xAA0, HangingPart_ctor, HangingPart_dtor, 0x50, 6);
+    for (e = m + 0xC80; e < m + 0xD60; e += 0x70) {
+        AT(e, 0x30, void **) = D_00470390;
+    }
+    for (e = m + 0xD60; e < m + 0xDE0; e += 0x40) {
+        AT(e, 0x30, void **) = BonePoint_vtable;
+    }
+    func_00100340(m + 0xDE0, HairPoint_ctor, HairPoint_dtor, 0x70, 0xA);
+    for (e = m + 0x1240; e < m + 0x1470; e += 0x70) {
+        AT(e, 0x30, void **) = D_00470390;
+    }
+    AT(m, 0x14A0, void **) = SprungPoint_vtable;
+    func_00100340(m + 0x14D0, BoneHangPoint_ctor, BoneHangPoint_dtor, 0x50, 2);
+    return m;
 }

@@ -8,8 +8,8 @@
 #include "actor.h"
 #include "model.h"
 #include "progress.h"
-#include "scene_game_members.h"
-#include "stalker_math.h"
+#include "scene_game.h"
+#include "vecmath.h"
 
 extern void *RoomBase_vtable[];
 extern void *Room66_vtable[];

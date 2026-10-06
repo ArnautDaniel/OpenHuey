@@ -12,12 +12,12 @@
 #include "progress.h"
 #include "sce/libvu0.h"
 #include "effectmgr.h"
-#include "texcache.h"
+#include "renderer.h"
 #include "charaction.h"
 #include "pursuer.h"
 #include "hewie.h"
 #include "lorenzo.h"
-#include "scene_game_members.h"
+#include "scene_game.h"
 #include "msl.h"
 
 extern VObject *gRoomObjects;   /* the room's objects: +0x18 (id) the object */

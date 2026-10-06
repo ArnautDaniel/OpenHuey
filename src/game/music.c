@@ -23,7 +23,11 @@
  *   +0x474  0x18 cues (0x28 each)
  *   +0x834  the cue running
  *   +0x838  log2(1..128)
- *   +0xA38 / +0xA39  flags */
+ *   +0xA38 / +0xA39  flags
+ *
+ * (was bgm.c) Streamed music (CRI ADX): methods of the ADX sound system (system +0x305280, global
+ * gAdx) for its music stream. ADXT_ are CRI's library (native: silent).
+ */
 #include "common.h"
 #include "game.h"
 #include "progress.h"
@@ -33,6 +37,20 @@
 #include "pursuer.h"
 #include "music.h"
 #include "msl.h"
+#include "cri/adx.h"
+#include "libc.h"
+#include "text.h"
+#include "scene_title.h"
+#include "input.h"
+#include "sound.h"
+#include "memcard.h"
+#include "heap.h"
+#include "items.h"
+#include "movie.h"
+#include "renderer.h"
+#include "scene_game.h"
+#include "subscreen.h"
+#include "gl2d.h"
 
 extern void *gStageMusic;      /* the director */
 extern const PTMF sGameStateNull;
@@ -47,50 +65,26 @@ extern void *MusicDir_vtable[], *D_0046EBE0[];
 #define CUE(d, i) ((u8 *)(d) + 0x474 + (i) * 0x28)
 #define CUR(d) AT(d, 0x834, u8 *)
 
-void MusicDir_Hold(u8 *self);
-void MusicDir_Seen(u8 *self);
-void MusicDir_Lost(u8 *self);
+typedef struct BgmTrack {
+    /* 0x0 */ const char *name;
+    /* 0x4 */ u8 loop;
+    /* 0x5 */ u8 pad5[3];
+} BgmTrack;
 
-extern void *Pursuer_vtable[], *NPC_vtable[], *Character_vtable[], *Actor_vtable[];
-extern void *TintStalker_vtable[];
-extern u8 D_0042A340[];
-/* writes {x, 0, z} */
-#define B5_SET3(out, x, z) ((out)[0] = (x), (out)[1] = 0.0f, (out)[2] = (z))
+extern BgmTrack pstr_ADX00_AD_01_ADX[];   /* the tracks */
+extern void *BgmCtl_vtable[];   /* BgmCtl */
+extern void *D_0046A100[];   /* its base */
+#define ADXT_STAT_PLAYEND 6
 
-void *TintStalker_MotionFiles(void);
-void TintStalker_DoorOffset(void *self, s32 id, f32 *out);
-void TintStalker_ActionOffsets(void *self, s32 id, f32 *out);
+void Bgm_ApplyVolume(Bgm *b);
+void Bgm_Stop(Bgm *b);
+s32 Bgm_IsPlaying(Bgm *b);
+s32 Bgm_CanStart(Bgm *b);
+void Bgm_Play(Bgm *b, const char *path, s32 loop, s32 pause);
 
-void TintStalker_Disable(Pursuer *p);
-void TintStalker_Enable(Pursuer *p);
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-/* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
- * slots 3..5 */
-static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
-    if (c != NULL) {
-        c->a.vtbl = vt;
-        c->a.vtbl = Pursuer_vtable;
-        VCALL(c, 0x10, void (*)(Character *))(c);
-        if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
-            void **m = c->motion;
-
-            if (m != NULL) {
-                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
-                c->motion = NULL;
-            }
-        }
-        c->a.vtbl = NPC_vtable;
-        VCALL(c, 0x10, void (*)(Character *))(c);
-        c->a.vtbl = Character_vtable;
-        c->a.vtbl = Actor_vtable;
-        if ((s16)flags > 0) {
-            Actor_Destroy(&c->a);
-        }
-    }
-    return c;
-}
-
-Character *TintStalker_dtor(Character *c, s32 flags);
+void BgmCtl_ctor(u8 *p);
 
 /* (the EE's float -> unsigned conversion) */
 static inline u32 f2u(f32 f) {
@@ -180,6 +174,36 @@ void MusicDir_SendTrack(u8 *d, u32 k);
 
 /* ---- cues ---- */
 
+/* +0xC */
+/* 0x001309D0 */
+BgmCtl *BgmCtl_dtor(BgmCtl *c, s32 flags) {
+    if (c != NULL) {
+        c->vtbl = BgmCtl_vtable;
+        if (c != NULL) {
+            c->vtbl = D_0046A100;
+            if (c != NULL) {
+                gMusic = NULL;
+            }
+        }
+        if ((s16)flags > 0) {
+            func_00100490(c);
+        }
+    }
+    return c;
+}
+/* +0x8 want track `track` (0xFF: none, fade out) at level `level`; `restart`: from the start
+ * even if it's the one playing; `pause`: start it paused */
+/* 0x00130A40 */
+void BgmCtl_Want(BgmCtl *c, s32 track, s32 pause, s32 restart, f32 level) {
+    c->req = track;
+    if ((u8)track != 0xFF) {
+        c->level = level;
+        if (restart) {
+            c->cur = 0xFF;
+        }
+    }
+    c->pause = pause;
+}
 /* a track volume fade (the cue's track, target +0x14, step +0x1C): done at the target (a
    target 0 mutes the track) */
 /* 0x002C25F0 */
@@ -253,11 +277,6 @@ void MusicDir_GlobalFade(u8 *d) {
     } else {
         AT(CUR(d), 0x25, u8) = 1;
     }
-}
-
-/* the sequence volume of track +0x104 (20..255, x the scale +0x108) */
-static inline u8 seqvol_out(f32 v) {
-    return f2u(v);
 }
 
 /* a sequence volume fade */
@@ -746,6 +765,174 @@ void *MusicDirBase_dtor(u8 *d, s32 flags) {
         }
     }
     return d;
+}
+
+/* stop */
+/* 0x002D1F90 */
+void Bgm_Stop(Bgm *b) {
+    if (b->adxt != NULL) {
+        b->name[0] = 0;
+        b->dir = 0;
+        ADXT_Stop(b->adxt);
+    }
+}
+
+/* apply the volume (0.1 dB, -99.9 dB for silence) while the stream is on */
+/* 0x002D1FD0 */
+void Bgm_ApplyVolume(Bgm *b) {
+    f32 v = b->volume[4] * (b->volume[2] * (b->volume[1] * (b->volume[0] * b->volume[3])));
+    s32 db;
+
+    if (v == 0.0f) {
+        db = -999;
+    } else {
+        db = (s32)(100.0f * func_0031C830(v));
+    }
+    if (db > 0) {
+        db = 0;
+    }
+    if (db < -999) {
+        db = -999;
+    }
+    if (b->name[0] != 0 && b->adxt != NULL) {
+        ADXT_SetOutVol(b->adxt, db);
+    }
+}
+
+/* resume */
+/* 0x002D20A0 */
+void Bgm_Resume(Bgm *b) {
+    if (b->adxt != NULL) {
+        ADXT_Pause(b->adxt, 0);
+    }
+}
+
+/* nonzero while the track plays (or with nothing to play) */
+/* 0x002D20D0 */
+s32 Bgm_IsPlaying(Bgm *b) {
+    if (b->adxt == NULL) {
+        return 1;
+    }
+    if (b->name[0] == 0) {
+        return 1;
+    }
+    return func_001D3E20(b->adxt) != 0;
+}
+
+/* nonzero once the track can start; a track that has ended starts again */
+/* 0x002D2120 */
+s32 Bgm_CanStart(Bgm *b) {
+    if (b->adxt == NULL) {
+        return 1;
+    }
+    if (b->name[0] == 0) {
+        return 1;
+    }
+    if (ADXT_GetStat(b->adxt) == ADXT_STAT_PLAYEND) {
+        if (b->dir != 0) {
+            func_001E7430(0, b->dir);
+        }
+        func_001D4A20(b->adxt, b->name);
+        return 0;
+    }
+    return ADXT_IsReadyPlayStart(b->adxt) != 0;
+}
+
+/* play track `path` (folder\name or a name in the current folder), looping or not, paused or
+ * not */
+/* 0x002D21B0 */
+void Bgm_Play(Bgm *b, const char *path, s32 loop, s32 pause) {
+    char dir[256];
+    s32 i;
+
+    if (b->adxt == NULL || path[0] == 0) {
+        return;
+    }
+    b->dir = 0;
+    dir[0] = 0;
+    for (i = 0; i < 256; i++) {
+        if (path[i] == 0) {
+            break;
+        }
+        if (path[i] == '\\') {
+            func_001183C0(b->name, path + i + 1);
+            func_00118978(dir, path, i);
+            dir[i] = 0;
+            break;
+        }
+    }
+    if (dir[0] != 0) {
+        b->dir = VCALL(gFileLoader, 0x3C, s32 (*)(VObject *, char *))(gFileLoader, dir);
+    } else {
+        b->dir = VCALL(gFileLoader, 0x3C, s32 (*)(VObject *, char *))(gFileLoader, NULL);
+        func_001183C0(b->name, path);
+    }
+    if (b->dir != 0) {
+        func_001E7430(0, b->dir);
+    }
+    ADXT_SetLpFlg(b->adxt, loop & 0xFF);
+    ADXT_SetWaitPlayStart(b->adxt, 0);
+    ADXT_Pause(b->adxt, pause & 0xFF);
+    func_001D4A20(b->adxt, b->name);
+}
+
+/* release the stream */
+/* 0x002D2330 */
+void Bgm_Release(Bgm *b) {
+    if (b->adxt != NULL) {
+        ADXT_Destroy(b->adxt);
+        b->adxt = NULL;
+    }
+    b->work = NULL;
+    b->dir = 0;
+}
+
+/* Set up the music stream on work buffer `work` (NULL: none): looping, stereo or mono as the
+ * sound settings say, full volume. */
+/* 0x002D2370 */
+void Bgm_Init(Bgm *b, void *work) {
+    if (b->work != NULL) {
+        if (b->adxt != NULL) {
+            ADXT_Destroy(b->adxt);
+            b->adxt = NULL;
+        }
+        b->work = NULL;
+        b->dir = 0;
+    }
+    b->work = work;
+    if (b->work != NULL) {
+        if (b->adxt != NULL) {
+            ADXT_Destroy(b->adxt);
+            b->adxt = NULL;
+        }
+        b->adxt = ADXT_Create(2, b->work, 0x231E4);
+        if (b->adxt != NULL) {
+            ADXT_SetReloadSct(b->adxt, 0x19);
+        }
+    }
+    ADXT_SetOutVol(b->adxt, 0);
+    ADXT_SetOutPan(b->adxt, 0, -0x80);
+    ADXT_SetOutPan(b->adxt, 1, -0x80);
+    if (gSound == NULL) {
+        func_001D4750(0);
+    } else {
+        s8 mode = VCALL(gSound, 0x6C, s32 (*)(VObject *))(gSound);
+
+        if (mode == 2 || mode == 1) {
+            func_001D4750(0);
+        } else if (mode == 0) {
+            func_001D4750(1);
+        } else {
+            func_001D4750(0);
+        }
+    }
+    ADXT_SetLpFlg(b->adxt, 1);
+    ADXT_SetWaitPlayStart(b->adxt, 0);
+    b->volume[3] = *(f32 *)(gGamePtr + 0x38);
+    b->volume[4] = 1.0f;
+    b->volume[2] = 1.0f;
+    b->volume[1] = 1.0f;
+    b->volume[0] = 1.0f;
 }
 
 /* the director's members and base destructor (notes off on all four tracks) */
@@ -1276,42 +1463,6 @@ s32 MusicDir_BanksIn(u8 *d) {
 /* ---- the stages ---- */
 
 extern void *MusicStage1_vtable[], *MusicStage2_vtable[], *MusicStage3_vtable[], *MusicStage4_vtable[];
-extern u8 D_00414650[], D_004146C0[], D_00414700[], D_00414740[], str_ddo[], D_00414780[];
-extern u8 D_0042A180[], D_0042A1F0[], D_0042A230[], D_0042A270[], str_ddx[], D_0042A2B0[];
-extern u8 D_00442C20[], D_00442C90[], D_00442CD0[], D_00442D10[], str_ddx_2[], D_00442D50[];
-extern u8 D_00444850[], D_004448C0[], D_00444900[], D_00444940[], str_ddZ[], D_01991AA0[];
-
-/* the music director for stage set `stage` (0..3) at scene +0x1064600 (scene +0x106503C) */
-/* 0x0039A8E0 */
-void SceneGame_MusicDirector(u8 *scene, u32 stage) {
-    static void **const sVtbl[4] = {MusicStage1_vtable, MusicStage2_vtable, MusicStage3_vtable, MusicStage4_vtable};
-    static u8 *const sTables[4][6] = {
-        {D_00414650, D_004146C0, D_00414700, D_00414740, str_ddo, D_00414780},
-        {D_0042A180, D_0042A1F0, D_0042A230, D_0042A270, str_ddx, D_0042A2B0},
-        {D_00442C20, D_00442C90, D_00442CD0, D_00442D10, str_ddx_2, D_00442D50},
-        {D_00444850, D_004448C0, D_00444900, D_00444940, str_ddZ, D_01991AA0},
-    };
-    u8 *d;
-    s32 i;
-
-    stage &= 0xFF;
-    if (stage >= 4) {
-        return;
-    }
-    d = MusicDir_new(0xA3C, scene + 0x1064600);
-    if (d != NULL) {
-        gStageMusic = d;
-        AT(d, 0x0, void **) = MusicDir_vtable;
-        func_00100340(d + 0x34, (void *(*)(void *))MusicTrack_ctor, (void *(*)(void *, s32))MusicTrack_dtor, 0x110, 4);
-        func_00100340(d + 0x474, (void *(*)(void *))MusicCue_ctor, MusicCue_dtor, 0x28, 0x18);
-        MusicDir_Setup(d);
-        AT(d, 0x0, void **) = sVtbl[stage];
-        for (i = 0; i < 6; i++) {
-            AT(d, 0x18 + i * 4, u8 *) = sTables[stage][i];
-        }
-    }
-    AT(scene, 0x106503C, u8 *) = d;
-}
 
 /* the stages' music (subclass +0xC): the bank's header, the four sequences (0 panic, 1 / 2 the
    calm music's two parts, 3 the chase) and the bank's samples into the progress's buffers */
@@ -1409,6 +1560,104 @@ void MusicStage1_Load(u8 *d) {
     stage_load(d, sFiles);
 }
 
+/* stop the music at once */
+/* 0x002E31D0 */
+void BgmCtl_StopNow(BgmCtl *c) {
+    if (gAdx != NULL) {
+        Bgm_Stop(gAdx);
+    }
+}
+
+/* every frame: follow the wanted track (fade out to stop, start a new one at full volume),
+ * step the fade and the level, set the stream's volume */
+/* 0x002E3200 */
+void BgmCtl_Update(BgmCtl *c) {
+    Bgm *b;
+    s32 start = 0;
+    f32 v;
+
+    if (c->cur != c->req) {
+        if (c->req == 0xFF) {
+            c->fadeSpeed = -0x1.111112p-5f;   /* -1/30 */
+        } else {
+            start = 1;
+            c->fade = 1.0f;
+        }
+    } else if (c->req != 0xFF && c->fadeSpeed < 0.0f) {
+        c->fadeSpeed = 0x1.111112p-5f;
+    }
+    if (c->cur != 0xFF) {
+        b = gAdx;
+        if (Bgm_CanStart(b) && Bgm_IsPlaying(b)) {
+            c->fade = 0.0f;
+            c->fadeSpeed = 0.0f;
+            c->cur = 0xFF;
+            c->req = 0xFF;
+            if (b != NULL) {
+                Bgm_Stop(b);
+            }
+        }
+        c->fade += c->fadeSpeed;
+        if (!(c->fade <= 1.0f)) {
+            c->fade = 1.0f;
+            c->fadeSpeed = 0.0f;
+        }
+        if (c->fade <= 0.0f) {
+            c->fade = 0.0f;
+            c->fadeSpeed = 0.0f;
+            if (c->cur != 0xFF) {
+                if (b != NULL) {
+                    Bgm_Stop(b);
+                }
+                c->cur = 0xFF;
+            }
+        }
+    }
+    if (c->levelSpeed != 0.0f) {
+        c->level += c->levelSpeed;
+        if (!(c->level <= 1.0f)) {
+            c->level = 1.0f;
+            c->levelSpeed = 0.0f;
+        }
+        if (c->level < 0.0f) {
+            c->level = 0.0f;
+            c->levelSpeed = 0.0f;
+        }
+    }
+    v = c->fade * c->level;
+    if (!(v <= 1.0f)) {
+        v = 1.0f;
+    }
+    if (v < 0.0f) {
+        v = 0.0f;
+    }
+    b = gAdx;
+    if (b != NULL) {
+        b->volume[0] = v;
+        if (v < 0.0f) {
+            b->volume[0] = 0.0f;
+        }
+        if (!(b->volume[0] <= 1.0f)) {
+            b->volume[0] = 1.0f;
+        }
+        Bgm_ApplyVolume(b);
+    }
+    if (start) {
+        c->cur = c->req;
+        Bgm_Play(b, pstr_ADX00_AD_01_ADX[c->cur].name, pstr_ADX00_AD_01_ADX[c->cur].loop, c->pause);
+    }
+}
+
+/* 0x002E34D0 */
+void BgmCtl_ctor(u8 *p) {
+    p[0x5] = 0xFF;
+    p[0x4] = 0xFF;
+    F(p, 0x8, u32) = 0;
+    F(p, 0x10, f32) = 1.0f;
+    F(p, 0xC, u32) = 0;
+    F(p, 0x14, u32) = 0;
+}
+
 /* 0x002D3B80 */
 void MusicStage1_Seen(u8 *d, s32 now) {
     static const u8 sChans[7] = {0, 1, 3, 4, 5, 6, 7};
@@ -1451,65 +1700,6 @@ void MusicStage2_Load(u8 *d) {
     static const char *const sFiles[6] = {str_BGM_STAGE2_BANK_HD, str_BGM_PANIC_SQ_2, D_0045FFF0, str_BGM_S2_NORMALB_SQ, str_BGM_S2_CHASE_SQ, str_BGM_STAGE2_BANK_BD};
 
     stage_load(d, sFiles);
-}
-
-/* 0x0031F110 */
-Character *TintStalker_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, TintStalker_vtable); }
-
-/* 0x0031F220 */
-void *TintStalker_MotionFiles(void) {
-    return D_0042A340;
-}
-
-/* (pursuer classes) their Pursuer_Disable / Pursuer_Enable with +0x17C8 on / off */
-/* 0x0031F230 */
-void TintStalker_Disable(Pursuer *p) {
-    Pursuer_Disable(p);
-    PU(p, 0x17C8, u8) = 1;
-}
-
-/* 0x0031F260 */
-void TintStalker_Enable(Pursuer *p) {
-    Pursuer_Enable(p);
-    PU(p, 0x17C8, u8) = 0;
-}
-
-/* 0x0031F290 */
-void TintStalker_DoorOffset(void *self, s32 id, f32 *out) {
-    switch (id) {
-    case 1:
-        B5_SET3(out, 0.0f, 0x1.e49ba60000000p+2f /* 7.572 */);
-        break;
-    case 3:
-        B5_SET3(out, 0.0f, -0x1.b8e21a0000000p+2f /* 6.8888 */);
-        break;
-    case 0:
-        B5_SET3(out, 0.0f, -0x1.5412060000000p+2f /* 5.3136 */);
-        break;
-    case 2:
-        B5_SET3(out, 0.0f, 0x1.fbfb160000000p+2f /* 7.9372 */);
-        break;
-    }
-}
-
-/* 0x0031F330 */
-void TintStalker_ActionOffsets(void *self, s32 id, f32 *out) {
-    switch (id) {
-    case 10:
-    case 11:
-        B5_SET3(out, -0x1.3eab360000000p-5f /* 0.0389 */, 0x1.4cf4f00000000p+3f /* 10.4049 */);
-        break;
-    case 12:
-    case 13:
-        B5_SET3(out, 0x1.7652be0000000p-1f /* 0.7311 */, 0x1.a808320000000p+3f /* 13.251 */);
-        break;
-    case 14:
-        B5_SET3(out, -0x1.25a8580000000p+0f /* 1.1471 */, -0x1.42a64c0000000p+1f /* 2.5207 */);
-        break;
-    case 15:
-        B5_SET3(out, -0x1.4fdf3c0000000p-2f /* 0.328 */, -0x1.324a8c0000000p+1f /* 2.3929 */);
-        break;
-    }
 }
 
 /* 0x0031EE70 */
@@ -1611,3 +1801,5 @@ void MusicStage4_StageChans(u8 *d) {
         stage_chans(d, sB, 3, 0);
     }
 }
+
+_Static_assert(__builtin_offsetof(Bgm, volume) == 0x110, "Bgm.volume");

@@ -11,11 +11,12 @@
 #include "model.h"
 #include "placed.h"
 #include "progress.h"
-#include "scene_game_members.h"
+#include "scene_game.h"
 #ifdef HG_NATIVE
 #include "glr.h"
 #endif
 #include "sce/libvu0.h"
+#include "vecmath.h"
 
 extern void *RoomBase_vtable[];
 extern void *Room92_vtable[];

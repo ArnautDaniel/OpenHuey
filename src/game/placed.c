@@ -17,12 +17,51 @@
 #include "effects.h"
 #include "items.h"
 #include "placed.h"
-#include "props.h"
-#include "pursuer_ai.h"
-#include "scene_game_members.h"
-#include "snd_place.h"
-#include "stalker_math.h"
+#include "scene_game.h"
+#include "sound.h"
+#include "vecmath.h"
 #include "msl.h"
+#include "input.h"
+#include "daniella.h"
+#include "loader.h"
+#include "pad.h"
+#include "scene.h"
+#include "scene_boot.h"
+#include "scene_title.h"
+#include "system.h"
+#include "text.h"
+#include "libc.h"
+#include "sce/iop.h"
+#include "renderer.h"
+#include "gl2d.h"
+#include "music.h"
+#include "camera.h"
+#include "heap.h"
+#include "char_load.h"
+#include "creature.h"
+#include "doors.h"
+#include "event.h"
+#include "gameover.h"
+#include "hewie.h"
+#include "model.h"
+#include "movie.h"
+#include "fiona.h"
+#include "pause.h"
+#include "room_map.h"
+#include "draw_leaves.h"
+#include "sce/eekernel.h"
+#include "cri/adx.h"
+#include "subscreen.h"
+#include "director.h"
+#include "room.h"
+#include "lights.h"
+#include "sce/intc.h"
+#include "effectmgr.h"
+#include "ptmf.h"
+#include "charaction.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
 
 extern void *Actor_vtable[];   /* Actor */
 extern void *PlacedThings_vtable[], *Thing_vtable[], *BlockPool_vtable[], *D_004699E0[], *D_0046A950[];
@@ -33,68 +72,18 @@ extern void *Ball_vtable[], *Thing01_vtable[], *Thing02_vtable[], *Thing03_vtabl
 #define SAVED(p) ((u8 *)(p) + 0xA14)
 #define NUM_SAVED 60
 
-void *Thing_dtor(void *p);
-void *Actor_dtor(void *p);
-
-s32 PlacedThings_PoolCall(u8 *p, s32 a1, s32 a2, s32 a3);
-
 extern void *D_00476B50[];
-void *FixModelDraw_dtor(u8 *o, s32 flags);
-
-extern void *Pursuer_vtable[], *NPC_vtable[], *Character_vtable[];
-extern void *Kind27_vtable[];
-/* writes {x, 0, z} */
-#define B5_SET3(out, x, z) ((out)[0] = (x), (out)[1] = 0.0f, (out)[2] = (z))
-
-void Kind27_DoorOffset(void *self, s32 id, f32 *out);
-void Kind27_ActionOffsets(void *self, s32 id, f32 *out);
-void Kind27_ExitDone(u8 *self);
-
-void Kind27_FollowPathExit(void);
-void Kind27_Arrived(void);
-void Kind27_WalkToExit(void);
-void Kind27_OnToNextExit(void);
-s32 Kind27_PickDestination(void);
-void ThingShared_Draw(void);
-void Thing10_Draw(void);
 
 void ThingShared_Frame(u8 *o);
 
-/* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
- * slots 3..5 */
-static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
-    if (c != NULL) {
-        c->a.vtbl = vt;
-        c->a.vtbl = Pursuer_vtable;
-        VCALL(c, 0x10, void (*)(Character *))(c);
-        if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
-            void **m = c->motion;
+extern void *PlacedObjects_vtable[], *D_0046F390[];
+extern VObject *gRoomObjects;          /* the room objects */
 
-            if (m != NULL) {
-                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
-                c->motion = NULL;
-            }
-        }
-        c->a.vtbl = NPC_vtable;
-        VCALL(c, 0x10, void (*)(Character *))(c);
-        c->a.vtbl = Character_vtable;
-        c->a.vtbl = Actor_vtable;
-        if ((s16)flags > 0) {
-            Actor_Destroy(&c->a);
-        }
-    }
-    return c;
-}
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-Character *Kind27_dtor(Character *c, s32 flags);
+void *PlacedThings_ctor(u8 *p);
 
-/* 0x00120D60 */
-void *BlockPool_ElemAt(B0_Pool *p, u32 i) {
-    if (i < p->count && p->used[i] != 0) {
-        return p->base + i * p->elemSize;
-    }
-    return NULL;
-}
+void PlacedThings_ctorPool(u8 *p);
 
 /* Free an element by address. */
 /* Allocate an element of the given size. */
@@ -141,6 +130,22 @@ void *PlacedThings_Destroy(u8 *m, s32 flags) {
         }
     }
     return m;
+}
+
+/* 0x002D1510 */
+void *PlacedThings_ctor(u8 *p) {
+    u8 *a = p + 0xA040;
+
+    gPlacedThings = (VObject *)p;
+    F(p, 0x0, void *) = PlacedThings_vtable;
+    F(a, 0x0, void *) = D_004699E0;
+    F(a, 0x4, u32) = 0;
+    F(a, 0x8, u32) = 0;
+    F(a, 0x0, void *) = BlockPool_vtable;
+    F(a, 0xC, u32) = 0;
+    F(a, 0x10, u32) = 0;
+    F(a, 0x14, u32) = 0;
+    return p;
 }
 
 /* +0x8 a new thing of `kind` (0..10) from the pool (NULL: none / full) */
@@ -225,6 +230,24 @@ void ThingSave_Clear(s32 *e) {
     e[3] = 0;
     e[4] = 0;
     e[5] = 0;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+/* destructor (PlacedObjects_vtable): its 64 entries (+0x20, 0xB0 each), then the base (D_0046F390,
+ * clearing gRoomObjects) */
+/* (possibly dead code: nothing in the game references it) */
+/* 0x002D0D60 */
+void *PlacedThings_dtor(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = PlacedObjects_vtable;
+        func_001002C0(o + 0x20, (void *(*)(void *, s32))QuadEntry_dtor, 0xB0, 0x40);
+        AT(o, 0x0, void **) = D_0046F390;
+        gRoomObjects = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
 }
 
 /* +0x1C back from the save */
@@ -330,6 +353,53 @@ void PlacedThings_Clear(u8 *m) {
     }
 }
 
+/* the dynamic actors, drawn each frame (texture cache and gBootMessage reset first): each
+ * active one in the current room (+0x2C) */
+/* 0x002D74E0 */
+void PlacedThings_Draw(u8 *o) {
+    s32 room, i;
+
+    VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
+    VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
+    room = VCALL(gProgress, 0xC, s32 (*)(void *))(gProgress);
+    for (i = 0; i < 0x80; i++) {
+        VObject *a = BlockPool_ElemAt((B0_Pool *)(o + 0xA040), i);
+
+        if (a != NULL && AT(a, 0x28, u8) == 1 && AT(a, 0x30, s32) == room) {
+            VCALL(a, 0x2C, void (*)(VObject *))(a);
+        }
+    }
+}
+
+/* the dynamic actors, each frame (128 slots in the pool +0xA040): an active one updates
+ * (+0x30), a finished one is given back to the pool (+0x14) and destroyed */
+/* 0x002D75C0 */
+void PlacedThings_Update(u8 *o) {
+    s32 i;
+
+    for (i = 0; i < 0x80; i++) {
+        VObject *a = BlockPool_ElemAt((B0_Pool *)(o + 0xA040), i);
+
+        if (a == NULL) {
+            continue;
+        }
+        if (AT(a, 0x28, u8) != 0) {
+            VCALL(a, 0x30, void (*)(VObject *))(a);
+        } else {
+            VCALL(o + 0xA040, 0x14, void (*)(void *, VObject *))(o + 0xA040, a);
+            if (a != NULL) {
+                VCALL(a, 0x8, void (*)(VObject *, s32))(a, 1);
+            }
+        }
+    }
+}
+
+/* a pool of 128 blocks of 0x140 bytes */
+/* 0x002D7680 */
+void PlacedThings_ctorPool(u8 *p) {
+    BlockPool_Init((BlockPool *)(p + 0xA040), p + 0x40, 0x140, 0x80, p + 0xA058);
+}
+
 /* +0x20: put the kept kinds lying in the current room onto their nav mesh triangle (+0x34;
  * position +0x10, copied to +0x40) */
 /* 0x002D69E0 */
@@ -356,7 +426,6 @@ void PlacedThings_PlaceKept(u8 *mgr) {
  * +0xE8 the frames of it), +0xE1 kicked this contact. It lasts 3 minutes (+0xE4); when it goes
  * and Fiona has no ball, she gets hers (item 0x90) back. ---- */
 
-#include "effectmgr.h"
 
 extern const PTMF sGameStateNull;
 extern const PTMF D_00414790, Ball_StateRolling_ptmf, Ball_StateDropping_ptmf;   /* +0x50 (virtual), Ball_StateRolling, Ball_StateDropping */
@@ -788,7 +857,6 @@ void Ball_Frame(u8 *b) {
  * +0x50 turn (angles), +0xB0 a point in front, +0xEC / +0xF0 its two sizes, +0xE4 its age
  * (frames; -1 kept) ---- */
 
-#include "ptmf.h"
 
 extern const PTMF D_003AF1B8;   /* a thing's resting state */
 
@@ -896,18 +964,6 @@ void Thing_Setup(u8 *o) {
     AT(o, 0xE0, u8) = 0;
     AT(o, 0xE4, s32) = 0;
     AT(o, 0xE1, u8) = 0;
-}
-
-/* Count 32-byte records up to a -1 terminator. */
-/* Move the point at +0x50 and translate +0x40 by the same delta. */
-/* Move the point at +0x40 and translate +0x50 by the same delta. */
-/* Tail call of virtual function 0xC (arguments passed through). */
-/* 0x00122B30 */
-void *Actor_dtor(void *p) {
-    if (p != NULL) {
-        *(void **)p = Actor_vtable;
-    }
-    return p;
 }
 
 /* ---- kind 1 (Thing01_vtable): like the ball (kind 0) it flies, falls and is kicked, but it can't
@@ -1220,19 +1276,6 @@ static inline void turned_model(u8 *o, s32 a, s32 b, s32 c) {
 /* 0x003155C0 */
 void Thing02_Draw(u8 *o) {
     turned_model(o, 1, 0, 1);
-}
-
-/* destructor (vtable D_00476B50) */
-/* 0x003156A0 */
-void *FixModelDraw_dtor(u8 *o, s32 flags) {
-    if (o != NULL) {
-        AT(o, 0x0, void **) = D_00476B50;
-        AT(o, 0x0, void **) = Helper469D00_vtable;
-        if ((s16)flags > 0) {
-            func_00100490(o);
-        }
-    }
-    return o;
 }
 
 static inline __attribute__((always_inline)) void kind2_burst(u8 *o, u32 size, void (*init)(void **)) {
@@ -2109,282 +2152,8 @@ static inline void Burst4_Init(void **obj, void **vtbl, u32 at) {
     }
 }
 
-/* their destructors: the four drawers back down to the drawer base (last first), then the
-   effect base, then (flags > 0) delete */
-extern void *EffectBase_vtable[];
-
-static inline u8 *Burst4_Destroy(u8 *o, void **vtbl, u32 at, s32 flags) {
-    s32 i;
-
-    if (o != NULL) {
-        AT(o, 0x0, void **) = vtbl;
-        for (i = 3; i >= 0; i--) {
-            u8 *e = o + at + i * 0x38;
-
-            if (e != NULL) {
-                AT(e, 0x0, void **) = QuadDrawer_vtable;
-                AT(e, 0x0, void **) = Helper469D00_vtable;
-            }
-        }
-        AT(o, 0x0, void **) = EffectBase_vtable;
-        if ((s16)flags > 0) {
-            EffectMgr_free(o);
-        }
-    }
-    return o;
-}
-
-/* 0x0036A860 */
-u8 *BurstA_dtor(u8 *o, s32 flags) {
-    return Burst4_Destroy(o, BurstA_vtable, 0xB50, flags);
-}
-
-/* 0x0036BCC0 */
-u8 *BurstB_dtor(u8 *o, s32 flags) {
-    return Burst4_Destroy(o, BurstB_vtable, 0x1A50, flags);
-}
-
 /* their draws (unless the effects are paused): each drawer's record (+0x10) the current frame's
    (+0xFAC / +0x22BC) in its block, then drawn */
-
-static inline void Burst4_Draw(u8 *o, u32 at, s32 cur, const u32 *base, const u32 *stride) {
-    s32 i;
-
-    for (i = 0; i < 4; i++) {
-        u8 *d = o + at + i * 0x38;
-
-        AT(d, 0x10, u8 *) = o + cur * stride[i] + base[i];
-        Drawer_Submit(d);
-    }
-}
-
-/* 0x0036B130 */
-void BurstA_Draw(u8 *o) {
-    static const u32 base[4] = {0x10, 0x610, 0x670, 0xAF0}, stride[4] = {0x300, 0x30, 0x240, 0x30};
-
-    if (SceneGame_GetByte19034(gEffects) != 0) {
-        return;
-    }
-    Burst4_Draw(o, 0xB50, AT(o, 0xFAC, s32), base, stride);
-}
-
-/* 0x0036C7B0 */
-void BurstB_Draw(u8 *o) {
-    static const u32 base[4] = {0x10, 0xC10, 0xD30, 0x1930}, stride[4] = {0x600, 0x90, 0x600, 0x90};
-
-    if (SceneGame_GetByte19034(gEffects) != 0) {
-        return;
-    }
-    Burst4_Draw(o, 0x1A50, AT(o, 0x22BC, s32), base, stride);
-}
-
-/* a drawer's fixed set up: no texture yet, layer 0x19, the sprite cells on the 512x256 sheet
-   (texture 1 / group 0x10, the first palette) */
-static inline void burst_quad(QuadDrawer *q, f32 cy, s16 count, s16 x, s16 y, s16 w, s16 h, s8 flags, s8 frames) {
-    q->tex = (u64)-1;
-    q->corners = 0;
-    q->cx = 0.0f;
-    q->cy = cy;
-    q->layer = 0x19;
-    q->count = count;
-    q->cellX = x;
-    q->cellY = y;
-    q->cellW = w;
-    q->cellH = h;
-    q->texW = 0x200;
-    q->texH = 0x100;
-    q->flags = flags;
-    q->frames = frames;
-    q->texId = 1;
-    q->texGroup = 0x10;
-    q->palette = -1;
-}
-
-/* the 0xFC0-byte burst's set up: frame 0, its four drawers (the last with its corners at +0xF60) */
-/* 0x0036BB00 */
-void BurstA_Start(u8 *o) {
-    AT(o, 0xFAC, s32) = 0;
-    AT(o, 0xFB0, u8) = 0;
-    AT(o, 0xFA0, s32) = 0;
-    AT(o, 0xFA4, s32) = 0;
-    burst_quad((QuadDrawer *)(o + 0xB50), 0.0f, 0x10, 0x20, 0x40, 0x20, 0x20, 0x40, 1);
-    burst_quad((QuadDrawer *)(o + 0xB88), -1.0f, 1, 0, 0xA0, 0x20, 0x40, 0x41, 0xA);
-    burst_quad((QuadDrawer *)(o + 0xBC0), 0.0f, 0xC, 0xE, 0x6E, 4, 4, 0x40, 1);
-    burst_quad((QuadDrawer *)(o + 0xBF8), 0.0f, 1, 0xC0, 0x60, 0x20, 0x20, 0x43, 0);
-    AT(o, 0xC0C, u8 *) = o + 0xF60;
-}
-
-/* a quad record (0x30 bytes): its cell 0x48 x 0x30 / 0x10 frames, alpha, position, size, turn */
-static inline void burst_rec(u8 *r, s32 alpha) {
-    AT(r, 0x0, s32) = 0x48;
-    AT(r, 0x4, s32) = 0x30;
-    AT(r, 0x8, s32) = 0x10;
-    if (alpha >= 0) {
-        AT(r, 0xC, s32) = alpha;
-    }
-}
-
-/* burst B's records: cell 0x7F x 0x41, `frames` frames */
-static inline void burst_rec7f(u8 *r, s32 frames, s32 alpha) {
-    AT(r, 0x0, s32) = 0x7F;
-    AT(r, 0x4, s32) = 0x41;
-    AT(r, 0x8, s32) = frames;
-    if (alpha >= 0) {
-        AT(r, 0xC, s32) = alpha;
-    }
-}
-
-/* +0x18 start (arg: the point): in the current frame (+0xFAC), 16 pieces thrown out (records
- * +0x10, velocities +0xC30, falls +0xCF0, drifts +0xEA0 / +0xEE0), the flash (+0x610), 12 puffs
- * rising (records +0x670, velocities +0xDB0, rates +0xE70, heights +0xE40) and the ring on the
- * ground (+0xAF0, corners +0xF60, size +0xFA8), turned to the floor under the player (+0xF20
- * .. +0xF40: across, its normal, along) */
-/* 0x0036A980 */
-void BurstA_SetParams(u8 *o, f32 *arg) {
-    static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD}, k005 = {0x3D4CCCCD}, kPi = {0x40490FDB},
-                                          k002 = {0x3CA3D70A};
-    VObject *rnd;
-    f32 p[4] __attribute__((aligned(16)));
-    f32 q[4] __attribute__((aligned(16)));
-    f32 v[4] __attribute__((aligned(16)));
-    u8 *r;
-    u32 tri;
-    s32 i;
-    f32 s;
-
-    if (arg == NULL) {
-        return;
-    }
-    p[0] = arg[0];
-    p[1] = arg[1];
-    p[2] = arg[2];
-    p[3] = 1.0f;
-    sceVu0CopyVector(q, p);
-    rnd = gRandom;
-    for (i = 0; i < 16; i++) {
-        r = o + 0x10 + AT(o, 0xFAC, s32) * 0x300 + i * 0x30;
-        burst_rec(r, -1);
-        AT(r, 0xC, s32) = (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0x3F) + 0x40;
-        AT(r, 0x10, f32) = p[0] + 4.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(r, 0x14, f32) = 1.0f + p[1];
-        AT(r, 0x18, f32) = p[2] + 4.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(r, 0x1C, f32) = 1.0f;
-        AT(r, 0x20, f32) = 4.0f + 4.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
-        AT(r, 0x24, f32) = AT(r, 0x20, f32);
-        AT(r, 0x28, f32) = kPi.f * (360.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f)) / 180.0f;
-        AT(r, 0x2C, s32) = 0;
-        AT(o, 0xC30 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(o, 0xC34 + i * 0xC, f32) = k01.f + k01.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
-        AT(o, 0xC38 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        s = k01.f + k005.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
-        AT(o, 0xCF0 + i * 0xC, f32) = -(AT(o, 0xC30 + i * 0xC, f32) * s);
-        AT(o, 0xCF4 + i * 0xC, f32) = -(0.5f * (AT(o, 0xC34 + i * 0xC, f32) * s));
-        AT(o, 0xCF8 + i * 0xC, f32) = -(AT(o, 0xC38 + i * 0xC, f32) * s);
-        AT(o, 0xEA0 + i * 4, f32) = AT(o, 0xC30 + i * 0xC, f32) / 8.0f;
-        AT(o, 0xEE0 + i * 4, f32) = AT(o, 0xC38 + i * 0xC, f32) / 8.0f;
-    }
-    r = o + 0x610 + AT(o, 0xFAC, s32) * 0x30;
-    burst_rec(r, 0x80);
-    AT(r, 0x10, f32) = p[0];
-    AT(r, 0x14, f32) = p[1];
-    AT(r, 0x18, f32) = p[2];
-    AT(r, 0x1C, f32) = 1.0f;
-    AT(r, 0x20, f32) = 9.0f;
-    AT(r, 0x24, f32) = 14.0f;
-    AT(r, 0x28, f32) = 0.0f;
-    AT(r, 0x2C, s32) = 0;
-    for (i = 0; i < 12; i++) {
-        r = o + 0x670 + AT(o, 0xFAC, s32) * 0x240 + i * 0x30;
-        burst_rec(r, i % 2 == 0 ? 0x40 : 0x80);
-        AT(r, 0x10, f32) = p[0] + 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(r, 0x14, f32) = 1.0f + p[1];
-        AT(r, 0x18, f32) = p[2] + 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(r, 0x1C, f32) = 1.0f;
-        AT(r, 0x20, f32) = k01.f + 0.5f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
-        AT(r, 0x24, f32) = AT(r, 0x20, f32);
-        AT(r, 0x2C, s32) = 0;
-        AT(r, 0x28, s32) = 0;
-        AT(o, 0xDB0 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(o, 0xDB4 + i * 0xC, f32) = 3.5f * (k01.f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)) - 0.5f;
-        AT(o, 0xDB8 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(o, 0xE70 + i * 4, f32) = k002.f + k01.f * AT(o, 0xDB4 + i * 0xC, f32);
-        AT(o, 0xE40 + i * 4, f32) = AT(r, 0x14, f32);
-    }
-    r = o + 0xAF0 + AT(o, 0xFAC, s32) * 0x30;
-    burst_rec(r, 0x80);
-    AT(r, 0x10, f32) = p[0];
-    AT(r, 0x14, f32) = p[1];
-    AT(r, 0x18, f32) = p[2];
-    AT(r, 0x1C, f32) = 1.0f;
-    AT(r, 0x20, f32) = 1.0f;
-    AT(r, 0x24, f32) = 1.0f;
-    AT(r, 0x28, f32) = 0.0f;
-    AT(r, 0x2C, s32) = 0;
-    AT(o, 0xFA8, f32) = 2.0f;
-    for (i = 0; i < 4; i++) {
-        AT(o, 0xF60 + i * 0x10, f32) = i & 1 ? 2.0f : -2.0f;
-        AT(o, 0xF64 + i * 0x10, f32) = 0.0f;
-        AT(o, 0xF68 + i * 0x10, f32) = i & 2 ? 2.0f : -2.0f;
-        AT(o, 0xF6C + i * 0x10, f32) = 1.0f;
-    }
-    tri = Actor_TriOf((Actor *)gCharPlayer, p);
-    if (tri == (u32)-1) {
-        return;
-    }
-    sceVu0UnitMatrix((f32 (*)[4])(o + 0xF20));
-    v[2] = 0.0f;
-    v[3] = 1.0f;
-    v[1] = 0.0f;
-    v[0] = 0.0f;
-    VCALL(gNavMesh, 0x2C, void (*)(VObject *, u32, f32 *))((VObject *)gNavMesh, tri, (f32 *)(o + 0xF30));
-    sceVu0CopyVector(v, (f32 *)(o + 0xF30));
-    sceVu0ScaleVector(v, v, k01.f);
-    sceVu0AddVector((f32 *)(r + 0x10), v, (f32 *)(r + 0x10));
-    sceVu0Normalize((f32 *)(o + 0xF30), (f32 *)(o + 0xF30));
-    if (AT(o, 0xF34, f32) == 1.0f) {
-        return;
-    }
-    AT(o, 0xF20, s32) = 0;
-    AT(o, 0xF24, u32) = 0xBF800000;   /* -1 */
-    AT(o, 0xF28, s32) = 0;
-    AT(o, 0xF2C, s32) = 0;
-    sceVu0OuterProduct((f32 *)(o + 0xF20), (f32 *)(o + 0xF30), (f32 *)(o + 0xF20));
-    sceVu0Normalize((f32 *)(o + 0xF20), (f32 *)(o + 0xF20));
-    sceVu0OuterProduct((f32 *)(o + 0xF40), (f32 *)(o + 0xF30), (f32 *)(o + 0xF20));
-    sceVu0Normalize((f32 *)(o + 0xF40), (f32 *)(o + 0xF40));
-}
-
-/* a nav triangle's flags (+0x3C of its 0x50 bytes; 0 past the count +0x8 or with no table +0x4) */
-static inline u32 nav_tri_flags(VObject *nav, u32 tri) {
-    u8 *tris = AT(nav, 0x4, u8 *);
-
-    return (tri < AT(nav, 0x8, u32) && tris != NULL) ? AT(tris + tri * 0x50, 0x3C, u32) : 0;
-}
-
-/* a quad record carried over from the other frame buffer (12 words) */
-static inline void rec_copy(u8 *dst, const u8 *src) {
-    s32 k;
-
-    for (k = 0; k < 12; k++) {
-        AT(dst, k * 4, u32) = AT(src, k * 4, u32);
-    }
-}
-
-/* the ring's corner (x * 1.5 size, 0, z size) turned to face the camera */
-static inline void ring_corner(u8 *o, u32 at, f32 x, f32 z) {
-    f32 c[4] __attribute__((aligned(16)));
-    f32 t[4] __attribute__((aligned(16)));
-
-    c[1] = 0.0f;
-    c[0] = 1.5f * x;
-    c[3] = 1.0f;
-    c[2] = z;
-    Vec_TurnY(t, c, VCALL(gCamera, 0x68, f32 (*)(VObject *))(gCamera));
-    AT(o, at, f32) = t[0];
-    AT(o, at + 4, f32) = t[1];
-    AT(o, at + 8, f32) = t[2];
-    AT(o, at + 0xC, f32) = 1.0f;
-}
 
 /* where a burst keeps its parts (A: 0xFC0 bytes, one flash and ring; B: 0x22D0, three) */
 typedef struct BurstShape {
@@ -2398,484 +2167,6 @@ typedef struct BurstShape {
     f32 liftEven, liftOdd;                                /* the even / odd pieces' rise x fall */
     f32 grow;                                             /* the pieces' growth a frame (0: none) */
 } BurstShape;
-
-/* +0x10 update (the frame buffers swapped, each record carried over): the pieces spin, drift
- * (their push growing by itself / driftDiv, over 4 frames), then shrink their cells, fade and
- * fall (for fallAge frames by their falls; rising liftEven / liftOdd x their fall); the flashes
- * fade and play their frames once; the puffs rise and fade, out when under the floor; the rings
- * fade and grow (the first by 1, the others 0.5), facing the camera. 0 once all of it was
- * gone. */
-static inline __attribute__((always_inline)) s32 burst_update(u8 *o, const BurstShape *b) {
-    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
-    VObject *rnd, *nav;
-    f32 g[4] __attribute__((aligned(16)));
-    u8 *r;
-    s32 i;
-
-#define CUR AT(o, b->cur, s32)
-    if (AT(o, b->done, u8) == 1) {
-        return 0;
-    }
-    AT(o, b->done, u8) = 1;
-    rnd = gRandom;
-    CUR ^= 1;
-    for (i = 0; i < b->nPiece; i++) {
-        f32 a;
-
-        rec_copy(o + b->piece + CUR * b->pieceBuf + i * 0x30, o + b->piece + (CUR ^ 1) * b->pieceBuf + i * 0x30);
-        r = o + b->piece + CUR * b->pieceBuf + i * 0x30;
-        if (AT(r, 0xC, s32) <= 0) {
-            continue;
-        }
-        AT(o, b->done, u8) = 0;
-        if (b->grow != 0.0f) {
-            AT(r, 0x20, f32) = AT(r, 0x20, f32) + b->grow;
-            AT(r, 0x24, f32) = AT(r, 0x20, f32);
-        }
-        a = AT(r, 0x28, f32) + kPi.f * (2.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)) / 180.0f;
-        AT(r, 0x28, f32) = a;
-        if (!(a < kPi.f)) {
-            AT(r, 0x28, f32) = a - k2Pi.f;
-        }
-        AT(r, 0x10, f32) = AT(r, 0x10, f32) + (AT(o, b->vel + i * 0xC, f32) + AT(o, b->driftX + i * 4, f32));
-        AT(r, 0x18, f32) = AT(r, 0x18, f32) + (AT(o, b->vel + 8 + i * 0xC, f32) + AT(o, b->driftZ + i * 4, f32));
-        if (AT(o, b->age, s32) < 4) {
-            AT(o, b->driftX + i * 4, f32) = AT(o, b->driftX + i * 4, f32) + AT(o, b->driftX + i * 4, f32) / b->driftDiv;
-            AT(o, b->driftZ + i * 4, f32) = AT(o, b->driftZ + i * 4, f32) + AT(o, b->driftZ + i * 4, f32) / b->driftDiv;
-            continue;
-        }
-        if (AT(r, 0x0, s32) != 0 && --AT(r, 0x0, s32) < 0) {
-            AT(r, 0x0, s32) = 0;
-        }
-        if (AT(r, 0x4, s32) != 0 && --AT(r, 0x4, s32) < 0) {
-            AT(r, 0x4, s32) = 0;
-        }
-        if (AT(r, 0x8, s32) != 0 && --AT(r, 0x8, s32) < 0) {
-            AT(r, 0x8, s32) = 0;
-        }
-        AT(r, 0xC, s32) = AT(r, 0xC, s32) - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 7) + 1);
-        if (AT(r, 0xC, s32) < 0) {
-            AT(r, 0xC, s32) = 0;
-        }
-        if (AT(o, b->age, s32) < b->fallAge) {
-            AT(o, b->vel + i * 0xC, f32) = AT(o, b->vel + i * 0xC, f32) + AT(o, b->fall + i * 0xC, f32);
-            AT(o, b->vel + 4 + i * 0xC, f32) = AT(o, b->vel + 4 + i * 0xC, f32) + AT(o, b->fall + 4 + i * 0xC, f32);
-            AT(o, b->vel + 8 + i * 0xC, f32) = AT(o, b->vel + 8 + i * 0xC, f32) + AT(o, b->fall + 8 + i * 0xC, f32);
-        }
-        if (i % 2 == 0) {
-            AT(r, 0x14, f32) = AT(r, 0x14, f32) + b->liftEven * AT(o, b->vel + 4 + i * 0xC, f32);
-        } else {
-            AT(r, 0x14, f32) = AT(r, 0x14, f32) + b->liftOdd * AT(o, b->vel + 4 + i * 0xC, f32);
-        }
-        AT(o, b->driftX + i * 4, s32) = 0;
-        AT(o, b->driftZ + i * 4, s32) = 0;
-    }
-    AT(o, b->age, s32)++;
-
-    for (i = 0; i < b->nFlash; i++) {
-        rec_copy(o + b->flash + CUR * b->flashBuf + i * 0x30, o + b->flash + (CUR ^ 1) * b->flashBuf + i * 0x30);
-        r = o + b->flash + CUR * b->flashBuf + i * 0x30;
-        if (AT(r, 0xC, s32) > 0) {
-            AT(o, b->done, u8) = 0;
-            if (--AT(r, 0xC, s32) < 0) {
-                AT(r, 0xC, s32) = 0;
-            }
-            if (!(++AT(r, 0x2C, s32) < AT(o, b->flashFrames, s8))) {
-                AT(r, 0xC, s32) = 0;
-                AT(r, 0x2C, s32) = 0;
-            }
-        }
-    }
-
-    nav = (VObject *)gNavMesh;
-    for (i = 0; i < b->nPuff; i++) {
-        u32 tri;
-
-        rec_copy(o + b->puff + CUR * b->puffBuf + i * 0x30, o + b->puff + (CUR ^ 1) * b->puffBuf + i * 0x30);
-        r = o + b->puff + CUR * b->puffBuf + i * 0x30;
-        AT(r, 0x10, f32) = AT(r, 0x10, f32) + AT(o, b->puffVel + i * 0xC, f32);
-        AT(r, 0x14, f32) = AT(r, 0x14, f32) + AT(o, b->puffVel + 4 + i * 0xC, f32);
-        AT(r, 0x18, f32) = AT(r, 0x18, f32) + AT(o, b->puffVel + 8 + i * 0xC, f32);
-        AT(o, b->puffVel + 4 + i * 0xC, f32) = AT(o, b->puffVel + 4 + i * 0xC, f32) - AT(o, b->puffRate + i * 4, f32);
-        tri = Actor_TriOf((Actor *)gCharPlayer, (f32 *)(r + 0x10));
-        sceVu0CopyVector(g, (f32 *)(r + 0x10));
-        VCALL(nav, 0x14, void (*)(VObject *, u32, f32 *))(nav, tri, g);
-        if (!(nav_tri_flags(nav, tri) & 0x10000000) && AT(r, 0x14, f32) < g[1]) {
-            AT(r, 0xC, s32) = 0;
-            continue;
-        }
-        AT(r, 0xC, s32) = AT(r, 0xC, s32) - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 7) + 1);
-        if (AT(r, 0xC, s32) < 0) {
-            AT(r, 0xC, s32) = 0;
-        }
-    }
-
-    for (i = 0; i < b->nRing; i++) {
-        u32 c = b->corners + i * 0x40;
-
-        rec_copy(o + b->ring + CUR * b->ringBuf + i * 0x30, o + b->ring + (CUR ^ 1) * b->ringBuf + i * 0x30);
-        r = o + b->ring + CUR * b->ringBuf + i * 0x30;
-        if (AT(r, 0xC, s32) <= 0) {
-            continue;
-        }
-        AT(o, b->done, u8) = 0;
-        AT(r, 0xC, s32) = AT(r, 0xC, s32) - 13;
-        if (AT(r, 0xC, s32) < 0) {
-            AT(r, 0xC, s32) = 0;
-        }
-        AT(o, b->size, f32) = AT(o, b->size, f32) + (i == 0 ? 1.0f : 0.5f);
-        ring_corner(o, c, -AT(o, b->size, f32), -AT(o, b->size, f32));
-        ring_corner(o, c + 0x10, AT(o, b->size, f32), -AT(o, b->size, f32));
-        ring_corner(o, c + 0x20, -AT(o, b->size, f32), AT(o, b->size, f32));
-        ring_corner(o, c + 0x30, AT(o, b->size, f32), AT(o, b->size, f32));
-        sceVu0ApplyMatrix((f32 *)(o + c), (f32 (*)[4])(o + b->frame), (f32 *)(o + c));
-        sceVu0ApplyMatrix((f32 *)(o + c + 0x10), (f32 (*)[4])(o + b->frame), (f32 *)(o + c + 0x10));
-        sceVu0ApplyMatrix((f32 *)(o + c + 0x20), (f32 (*)[4])(o + b->frame), (f32 *)(o + c + 0x20));
-        sceVu0ApplyMatrix((f32 *)(o + c + 0x30), (f32 (*)[4])(o + b->frame), (f32 *)(o + c + 0x30));
-    }
-#undef CUR
-    return 1;
-}
-
-/* 0x0036B200 */
-s32 BurstA_Update(u8 *o) {
-    static const BurstShape kA = {0xFAC, 0xFB0, 0xFA4, 16, 0x10, 0x300, 0xC30, 0xCF0, 0xEA0, 0xEE0,
-                                  1, 0x610, 0x30, 0xBBB, 12, 0x670, 0x240, 0xDB0, 0xE70,
-                                  1, 0xAF0, 0x30, 0xFA8, 0xF60, 0xF20, 2.0f, 8, 4.0f, 8.0f};
-
-    return burst_update(o, &kA);
-}
-
-/* 0x0036C880 */
-s32 BurstB_Update(u8 *o) {
-    static const BurstShape kB = {0x22BC, 0x22C0, 0x22B4, 32, 0x10, 0x600, 0x1B30, 0x1CB0, 0x20B0, 0x2130,
-                                  3, 0xC10, 0x90, 0x1ABB, 32, 0xD30, 0x600, 0x1E30, 0x2030,
-                                  3, 0x1930, 0x90, 0x22B8, 0x21F0, 0x21B0, 2.0f, 8, 4.0f, 8.0f};
-
-    return burst_update(o, &kB);
-}
-
-/* ---- the shove burst ThingBurst_vtable (0xFD0 bytes, ShoveBurst_Init): where a kind-2 thing breaks
- * or a character is shoved - 16 pieces (records +0x10 + 0x300 x the current one +0xFC8,
- * velocities +0xC80, falls +0xD40, drifts +0xF40 / +0xF80) and 16 puffs (records +0x610,
- * velocities +0xE00, rates +0xF00, heights +0xEC0), +0xFC4 its frames, +0xFCC all gone ---- */
-
-/* +0x18 start (arg: the point): the pieces thrown out round it (2..4 big, brown), the puffs
- * rising from it (every other one half alpha) */
-/* 0x0032E950 */
-void ThingBurst_SetParams(u8 *o, f32 *arg) {
-    static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD}, k005 = {0x3D4CCCCD}, kPi = {0x40490FDB},
-                                          k360 = {0x43B40000}, k15 = {0x3FC00000}, k25 = {0x40200000};   /* multiplied first */
-    VObject *rnd;
-    f32 x, y, z, sc;
-    s32 i;
-
-    if (arg == NULL) {
-        return;
-    }
-    rnd = gRandom;
-    x = arg[0];
-    y = 1.0f + arg[1];
-    z = arg[2];
-    for (i = 0; i < 16; i++) {
-        u8 *r = o + 0x10 + AT(o, 0xFC8, s32) * 0x300 + i * 0x30;
-
-        AT(r, 0x0, s32) = 0x5F;
-        AT(r, 0x4, s32) = 0x48;
-        AT(r, 0x8, s32) = 0x1C;
-        AT(r, 0xC, s32) = (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0x3F) + 0x40;
-        AT(r, 0x10, f32) = x + 4.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(r, 0x14, f32) = y;
-        AT(r, 0x18, f32) = z + 4.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(r, 0x1C, f32) = 1.0f;
-        AT(r, 0x20, f32) = 2.0f + 2.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
-        AT(r, 0x24, f32) = AT(r, 0x20, f32);
-        AT(r, 0x28, f32) = kPi.f * (k360.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f)) / 180.0f;
-        AT(r, 0x2C, s32) = 0;
-        AT(o, 0xC80 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(o, 0xC84 + i * 0xC, f32) = k01.f + k01.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
-        AT(o, 0xC88 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        sc = k01.f + k005.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
-        AT(o, 0xD40 + i * 0xC, f32) = -(AT(o, 0xC80 + i * 0xC, f32) * sc);
-        AT(o, 0xD44 + i * 0xC, f32) = -(0.5f * (AT(o, 0xC84 + i * 0xC, f32) * sc));
-        AT(o, 0xD48 + i * 0xC, f32) = -(AT(o, 0xC88 + i * 0xC, f32) * sc);
-        AT(o, 0xF40 + i * 4, f32) = AT(o, 0xC80 + i * 0xC, f32) / 8.0f;
-        AT(o, 0xF80 + i * 4, f32) = AT(o, 0xC88 + i * 0xC, f32) / 8.0f;
-    }
-    for (i = 0; i < 16; i++) {
-        u8 *r = o + 0x610 + AT(o, 0xFC8, s32) * 0x300 + i * 0x30;
-
-        AT(r, 0x0, s32) = 0x5F;
-        AT(r, 0x4, s32) = 0x48;
-        AT(r, 0x8, s32) = 0x1C;
-        AT(r, 0xC, s32) = i % 2 == 0 ? 0x40 : 0x80;
-        AT(r, 0x10, f32) = x + 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(r, 0x14, f32) = y;
-        AT(r, 0x18, f32) = z + 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(r, 0x1C, f32) = 1.0f;
-        AT(r, 0x20, f32) = k01.f + 0.5f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
-        AT(r, 0x24, f32) = AT(r, 0x20, f32);
-        AT(r, 0x2C, s32) = 0;
-        AT(r, 0x28, s32) = 0;
-        AT(o, 0xE00 + i * 0xC, f32) = k15.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(o, 0xE04 + i * 0xC, f32) = k25.f * (k01.f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)) - 0.5f;
-        AT(o, 0xE08 + i * 0xC, f32) = k15.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(o, 0xF00 + i * 4, f32) = 0x1.47ae14p-6f + k01.f * AT(o, 0xE04 + i * 0xC, f32);   /* 0.02 + 0.1 x */
-        AT(o, 0xEC0 + i * 4, f32) = AT(r, 0x14, f32);
-    }
-}
-
-/* +0x14 draw (not while the effects are paused): the pieces, then the puffs */
-/* 0x0032EEB0 */
-void ThingBurst_Draw(u8 *o) {
-    if (SceneGame_GetByte19034(gEffects) == 0) {
-        AT(o, 0xC20, u8 *) = o + AT(o, 0xFC8, s32) * 0x300 + 0x10;
-        Drawer_Submit(o + 0xC10);
-        AT(o, 0xC58, u8 *) = o + AT(o, 0xFC8, s32) * 0x300 + 0x610;
-        Drawer_Submit(o + 0xC48);
-    }
-}
-
-/* +0x10 update: as the bursts' (the pieces growing 0.05, their push by a sixth, falls for 10
- * frames, rising 2 / 4 x their fall), no flash or ring */
-/* 0x0032EF30 */
-s32 ThingBurst_Update(u8 *o) {
-    static const BurstShape kC = {0xFC8, 0xFCC, 0xFC4, 16, 0x10, 0x300, 0xC80, 0xD40, 0xF40, 0xF80,
-                                  0, 0, 0, 0, 16, 0x610, 0x300, 0xE00, 0xF00,
-                                  0, 0, 0, 0, 0, 0, 6.0f, 10, 2.0f, 4.0f, 0x1.99999ap-5f /* 0.05 */};
-
-    return burst_update(o, &kC);
-}
-
-/* 0x0032F5B0 */
-Character *Kind27_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind27_vtable); }
-
-/* 0x0032F6D0 */
-void Kind27_DoorOffset(void *self, s32 id, f32 *out) {
-    switch (id) {
-    case 1:
-        B5_SET3(out, 0.0f, 0x1.4ccccc0000000p+3f /* 10.4 */);
-        break;
-    case 3:
-        B5_SET3(out, 0.0f, -0x1.dc2f840000000p+2f /* 7.4404 */);
-        break;
-    case 0:
-        B5_SET3(out, 0.0f, -0x1.8d89380000000p+2f /* 6.2115 */);
-        break;
-    case 2:
-        B5_SET3(out, 0.0f, 0x1.9276c80000000p+2f /* 6.2885 */);
-        break;
-    }
-}
-
-/* 0x0032F770 */
-void Kind27_ActionOffsets(void *self, s32 id, f32 *out) {
-    switch (id) {
-    case 10:
-    case 11:
-        B5_SET3(out, 0x1.e2f8380000000p-1f /* 0.9433 */, 0x1.6807600000000p+3f /* 11.2509 */);
-        break;
-    case 12:
-    case 13:
-        B5_SET3(out, 0x1.1656040000000p+1f /* 2.1745 */, 0x1.e1573e0000000p+3f /* 15.0419 */);
-        break;
-    case 14:
-        B5_SET3(out, -0x1.9c98600000000p+0f /* 1.6117 */, -0x1.15e00e0000000p+2f /* 4.3418 */);
-        break;
-    case 15:
-        B5_SET3(out, 0x1.2a30560000000p-6f /* 0.0182 */, -0x1.00346e0000000p+0f /* 1.0008 */);
-        break;
-    }
-}
-
-/* 0x0032F820 */
-void Kind27_ExitDone(u8 *self) {
-    self[0x16EE] = 1;
-}
-
-/* 0x0032F830 */
-void Kind27_FollowPathExit(void) {
-}
-
-/* 0x0032F840 */
-void Kind27_Arrived(void) {
-}
-
-/* 0x0032F850 */
-void Kind27_WalkToExit(void) {
-}
-
-/* 0x0032F860 */
-void Kind27_OnToNextExit(void) {
-}
-
-/* 0x0032F870 */
-s32 Kind27_PickDestination(void) {
-    return 0;
-}
-
-extern f32 D_004469A8, D_004469AC, D_004469B0;   /* the three points' offsets across the view */
-
-/* +0x18 start (arg: the point): three points across the view from it (offsets D_004469A8..),
- * each with a flash (+0xC10; the first bigger) and a ring on the ground (+0x1930, corners
- * +0x21F0, the drawer +0x1AF8 showing three); 32 pieces (+0x10, velocities +0x1B30, falls
- * +0x1CB0, drifts +0x20B0 / +0x2130) and 32 puffs (+0xD30, velocities +0x1E30, rates +0x2030,
- * heights +0x1FB0) shared round them */
-/* 0x0036BDE0 */
-void BurstB_SetParams(u8 *o, f32 *arg) {
-    static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD}, k005 = {0x3D4CCCCD}, kPi = {0x40490FDB},
-                                          k002 = {0x3CA3D70A}, k13 = {0x3FA66666};
-    VObject *rnd, *cam, *nav;
-    f32 xs[3];
-    f32 q[4] __attribute__((aligned(16)));
-    f32 pts[3][4] __attribute__((aligned(16)));
-    f32 c[4] __attribute__((aligned(16)));
-    f32 t[4] __attribute__((aligned(16)));
-    f32 v[4] __attribute__((aligned(16)));
-    u8 *r;
-    u32 tri;
-    s32 i;
-    f32 sp;
-
-    if (arg == NULL) {
-        return;
-    }
-    q[0] = arg[0];
-    xs[0] = D_004469A8;
-    xs[1] = D_004469AC;
-    q[1] = arg[1];
-    xs[2] = D_004469B0;
-    cam = gCamera;
-    q[2] = arg[2];
-    q[3] = 1.0f;
-    for (i = 0; i < 3; i++) {
-        r = o + 0xC10 + AT(o, 0x22BC, s32) * 0x90 + i * 0x30;
-        burst_rec7f(r, 0x1E, 0x80);
-        c[2] = 0.0f;
-        c[3] = 1.0f;
-        c[0] = xs[i];
-        c[1] = 0.0f;
-        Vec_TurnY(t, c, VCALL(cam, 0x68, f32 (*)(VObject *))(cam));
-        AT(r, 0x10, f32) = q[0] + t[0];
-        AT(r, 0x14, f32) = q[1] + t[1];
-        AT(r, 0x18, f32) = q[2] + t[2];
-        AT(r, 0x1C, f32) = 1.0f;
-        sceVu0CopyVector(pts[i], (f32 *)(r + 0x10));
-        AT(r, 0x20, f32) = 9.0f;
-        AT(r, 0x24, f32) = 14.0f;
-        if (i == 0) {
-            AT(r, 0x20, f32) = 12.0f;
-            AT(r, 0x24, f32) = 17.0f;
-        }
-        AT(r, 0x28, s32) = 0;
-        AT(r, 0x2C, s32) = 0;
-    }
-    rnd = gRandom;
-    for (i = 0; i < 32; i++) {
-        r = o + 0x10 + AT(o, 0x22BC, s32) * 0x600 + i * 0x30;
-        burst_rec7f(r, 0x14, -1);
-        AT(r, 0xC, s32) = (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0x3F) + 0x40;
-        sceVu0CopyVector(q, pts[i % 3]);
-        AT(r, 0x10, f32) = q[0] + 4.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(r, 0x14, f32) = 1.0f + q[1];
-        AT(r, 0x18, f32) = q[2] + 4.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(r, 0x1C, f32) = 1.0f;
-        AT(r, 0x20, f32) = 4.0f + 4.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
-        AT(r, 0x24, f32) = AT(r, 0x20, f32);
-        AT(r, 0x28, f32) = kPi.f * (360.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f)) / 180.0f;
-        AT(r, 0x2C, s32) = 0;
-        AT(o, 0x1B30 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(o, 0x1B34 + i * 0xC, f32) = k01.f + k01.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
-        AT(o, 0x1B38 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        sp = k01.f + k005.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
-        AT(o, 0x1CB0 + i * 0xC, f32) = -(AT(o, 0x1B30 + i * 0xC, f32) * sp);
-        AT(o, 0x1CB4 + i * 0xC, f32) = -(0.5f * (AT(o, 0x1B34 + i * 0xC, f32) * sp));
-        AT(o, 0x1CB8 + i * 0xC, f32) = -(AT(o, 0x1B38 + i * 0xC, f32) * sp);
-        AT(o, 0x20B0 + i * 4, f32) = AT(o, 0x1B30 + i * 0xC, f32) / 8.0f;
-        AT(o, 0x2130 + i * 4, f32) = AT(o, 0x1B38 + i * 0xC, f32) / 8.0f;
-    }
-    for (i = 0; i < 32; i++) {
-        r = o + 0xD30 + AT(o, 0x22BC, s32) * 0x600 + i * 0x30;
-        burst_rec7f(r, 0x1E, i % 2 == 0 ? 0x40 : 0x80);
-        sceVu0CopyVector(q, pts[i % 3]);
-        AT(r, 0x10, f32) = q[0] + 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(r, 0x14, f32) = 1.0f + q[1];
-        AT(r, 0x18, f32) = q[2] + 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(r, 0x1C, f32) = 1.0f;
-        AT(r, 0x20, f32) = k01.f + k13.f * (0.5f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd));
-        AT(r, 0x24, f32) = AT(r, 0x20, f32);
-        AT(r, 0x2C, s32) = 0;
-        AT(r, 0x28, s32) = 0;
-        AT(o, 0x1E30 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(o, 0x1E34 + i * 0xC, f32) = 3.5f * (k01.f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)) - 0.5f;
-        AT(o, 0x1E38 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(o, 0x2030 + i * 4, f32) = k002.f + k01.f * AT(o, 0x1E34 + i * 0xC, f32);
-        AT(o, 0x1FB0 + i * 4, f32) = AT(r, 0x14, f32);
-    }
-    nav = (VObject *)gNavMesh;
-    for (i = 0; i < 3; i++) {
-        u8 *corners = o + 0x21F0 + i * 0x40;
-        s32 k;
-
-        burst_quad((QuadDrawer *)(o + 0x1AF8), 0.0f, 3, 0xC0, 0x60, 0x20, 0x20, 0x43, 0);
-        AT(o, 0x1B0C, u8 *) = corners;
-        r = o + 0x1930 + AT(o, 0x22BC, s32) * 0x90 + i * 0x30;
-        burst_rec7f(r, 0x1E, 0x80);
-        sceVu0CopyVector(q, pts[i]);
-        AT(r, 0x10, f32) = q[0];
-        AT(r, 0x14, f32) = q[1];
-        AT(r, 0x18, f32) = q[2];
-        AT(r, 0x1C, f32) = 1.0f;
-        AT(r, 0x20, f32) = 1.0f;
-        AT(r, 0x24, f32) = 1.0f;
-        AT(r, 0x28, s32) = 0;
-        AT(r, 0x2C, s32) = 0;
-        AT(o, 0x22B8, f32) = 1.0f;
-        for (k = 0; k < 4; k++) {
-            AT(corners, k * 0x10, f32) = k & 1 ? 2.0f : -2.0f;
-            AT(corners, k * 0x10 + 4, f32) = 0.0f;
-            AT(corners, k * 0x10 + 8, f32) = k & 2 ? 2.0f : -2.0f;
-            AT(corners, k * 0x10 + 0xC, f32) = 1.0f;
-        }
-        tri = Actor_TriOf((Actor *)gCharPlayer, q);
-        if (tri == (u32)-1) {
-            continue;
-        }
-        sceVu0UnitMatrix((f32 (*)[4])(o + 0x21B0));
-        v[2] = 0.0f;
-        v[0] = 0.0f;
-        v[1] = 0.0f;
-        v[3] = 1.0f;
-        VCALL(nav, 0x2C, void (*)(VObject *, u32, f32 *))(nav, tri, (f32 *)(o + 0x21C0));
-        sceVu0CopyVector(v, (f32 *)(o + 0x21C0));
-        sceVu0ScaleVector(v, v, k01.f);
-        sceVu0AddVector((f32 *)(r + 0x10), v, (f32 *)(r + 0x10));
-        sceVu0Normalize((f32 *)(o + 0x21C0), (f32 *)(o + 0x21C0));
-        if (AT(o, 0x21C4, f32) == 1.0f) {
-            continue;
-        }
-        AT(o, 0x21B0, s32) = 0;
-        AT(o, 0x21B4, u32) = 0xBF800000;   /* -1 */
-        AT(o, 0x21B8, s32) = 0;
-        AT(o, 0x21BC, s32) = 0;
-        sceVu0OuterProduct((f32 *)(o + 0x21B0), (f32 *)(o + 0x21C0), (f32 *)(o + 0x21B0));
-        sceVu0Normalize((f32 *)(o + 0x21B0), (f32 *)(o + 0x21B0));
-        sceVu0OuterProduct((f32 *)(o + 0x21D0), (f32 *)(o + 0x21C0), (f32 *)(o + 0x21B0));
-        sceVu0Normalize((f32 *)(o + 0x21D0), (f32 *)(o + 0x21D0));
-    }
-}
-
-/* the 0x22D0-byte burst's set up: frame 0, the first three drawers */
-/* 0x0036D210 */
-void BurstB_Start(u8 *o) {
-    AT(o, 0x22BC, s32) = 0;
-    AT(o, 0x22C0, u8) = 0;
-    AT(o, 0x22B0, s32) = 0;
-    AT(o, 0x22B4, s32) = 0;
-    burst_quad((QuadDrawer *)(o + 0x1A50), 0.0f, 0x20, 0x20, 0x40, 0x20, 0x20, 0x40, 1);
-    burst_quad((QuadDrawer *)(o + 0x1A88), -1.0f, 3, 0, 0xA0, 0x20, 0x40, 0x41, 0xA);
-    burst_quad((QuadDrawer *)(o + 0x1AC0), 0.0f, 0x20, 0xE, 0x6E, 4, 4, 0x40, 1);
-}
 
 static inline void Burst4A_Init(void **obj) {
     Burst4_Init(obj, BurstA_vtable, 0xB50);
@@ -2899,7 +2190,6 @@ void Thing07_Frame(u8 *o) {
    more of the 0x367000 kinds ---- */
 
 extern VObject *gSceneGameF29740;
-extern VObject *gRoomObjects;          /* the room objects */
 
 /* the second stalker (kinds 2, 6, 7, 0x1B) and the thing: when he comes into its room away
    from Fiona it makes a noise (once per room, +0x122) and goes unless he's alerted (+0x16C9 >=
@@ -3109,7 +2399,6 @@ void Thing10_StateFalling(u8 *o) {
 /* ---- the shared thing class (ThingShared_vtable, code 0x3544C0..0x355960): who it touches, when it
    goes off, Fiona's kick, its noise ---- */
 
-#include "charaction.h"
 
 /* actor c (feet cy, top ctop) and the span oy..otop overlap */
 static inline s32 thing_spans(f32 cy, f32 ctop, f32 oy, f32 otop) {
@@ -3633,110 +2922,3 @@ landed:
  * falling back, in two buffers of quad records (+0x10 + 0x300 x the current one +0x790),
  * velocities at +0x648 (12 each), falls at +0x748, start heights at +0x708, the quad drawer at
  * +0x610; +0x794 all gone ---- */
-
-#define PUFF1_REC(o, buf, i) ((o) + 0x10 + (buf) * 0x300 + (i) * 0x30)
-#define PUFF1_VEL(o, i) ((f32 *)((o) + 0x648 + (i) * 0xC))
-
-/* +0x18 start (arg: the point): each puff a 0x48 x 0x30 cell (16 frames), every other one half
- * alpha, within 1 across of the point and 1 up, 0.1..2.1 big, thrown out and up */
-/* 0x0036D3F0 */
-void ThingPuff_SetParams(u8 *o, f32 *arg) {
-    static const union { u32 u; f32 f; } k05 = {0x3F000000}, k15 = {0x3FC00000}, k25 = {0x40200000};   /* multiplied first */
-    VObject *rnd;
-    f32 x, y, z;
-    s32 i;
-
-    if (arg == NULL) {
-        return;
-    }
-    rnd = gRandom;
-    x = arg[0];
-    y = 1.0f + arg[1];
-    z = arg[2];
-    for (i = 0; i < 16; i++) {
-        u8 *r = PUFF1_REC(o, AT(o, 0x790, s32), i);
-        f32 *v = PUFF1_VEL(o, i);
-
-        AT(r, 0x0, s32) = 0x48;
-        AT(r, 0x4, s32) = 0x30;
-        AT(r, 0x8, s32) = 0x10;
-        AT(r, 0xC, s32) = i % 2 == 0 ? 0x40 : 0x80;
-        AT(r, 0x10, f32) = x + 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(r, 0x14, f32) = y;
-        AT(o, 0x708 + i * 4, f32) = y;
-        AT(r, 0x18, f32) = z + 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(r, 0x1C, f32) = 1.0f;
-        AT(r, 0x20, f32) = 0x1.99999ap-4f + 2.0f * (k05.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd));
-        AT(r, 0x24, f32) = AT(r, 0x20, f32);
-        AT(r, 0x2C, s32) = 0;
-        AT(r, 0x28, s32) = 0;
-        v[0] = k15.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        v[1] = k25.f * (0x1.99999ap-4f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)) - 0.5f;
-        v[2] = k15.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
-        AT(o, 0x748 + i * 4, f32) = 0x1.47ae14p-6f + 0x1.99999ap-4f * v[1];   /* 0.02 + 0.1 x */
-    }
-}
-
-/* +0x14 draw (not while the effects are paused) */
-/* 0x0036D6C0 */
-void ThingPuff_Draw(u8 *o) {
-    if (SceneGame_GetByte19034(gEffects) == 0) {
-        AT(o, 0x620, u8 *) = o + AT(o, 0x790, s32) * 0x300 + 0x10;
-        Drawer_Submit(o + 0x610);
-    }
-}
-
-/* +0x10 update: flip the buffers; each puff still showing carried over, moved and pulled down,
- * out once under the floor (where the floor counts), else fading by 1..8; 0 once all gone */
-/* 0x0036D720 */
-s32 ThingPuff_Update(u8 *o) {
-    VObject *nav, *rnd;
-    f32 g[4] __attribute__((aligned(16)));
-    s32 i;
-
-    if (AT(o, 0x794, u8) == 1) {
-        return 0;
-    }
-    AT(o, 0x794, u8) = 1;
-    nav = (VObject *)gNavMesh;
-    rnd = gRandom;
-    AT(o, 0x790, s32) ^= 1;
-    for (i = 0; i < 16; i++) {
-        u8 *r;
-        f32 *v = PUFF1_VEL(o, i);
-        u32 tri;
-
-        rec_copy(PUFF1_REC(o, AT(o, 0x790, s32), i), PUFF1_REC(o, AT(o, 0x790, s32) ^ 1, i));
-        r = PUFF1_REC(o, AT(o, 0x790, s32), i);
-        if (AT(r, 0xC, s32) <= 0) {
-            continue;
-        }
-        AT(o, 0x794, u8) = 0;
-        AT(r, 0x10, f32) = AT(r, 0x10, f32) + v[0];
-        AT(r, 0x14, f32) = AT(r, 0x14, f32) + v[1];
-        AT(r, 0x18, f32) = AT(r, 0x18, f32) + v[2];
-        v[1] = v[1] - AT(o, 0x748 + i * 4, f32);
-        tri = Actor_TriOf((Actor *)gCharPlayer, (f32 *)(r + 0x10));
-        sceVu0CopyVector(g, (f32 *)(r + 0x10));
-        VCALL(nav, 0x14, void (*)(VObject *, u32, f32 *))(nav, tri, g);
-        if (!(nav_tri_flags(nav, tri) & 0x10000000) && AT(r, 0x14, f32) < g[1]) {
-            AT(r, 0xC, s32) = 0;
-            continue;
-        }
-        AT(r, 0xC, s32) = AT(r, 0xC, s32) - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 7) + 1);
-        if (AT(r, 0xC, s32) < 0) {
-            AT(r, 0xC, s32) = 0;
-        }
-    }
-    return 1;
-}
-
-/* +0xC set up: frame 0, the drawer (16 quads of a 4 x 4 cell at (14, 110), blended) */
-/* 0x0036D9A0 */
-void ThingPuff_Start(u8 *o) {
-    AT(o, 0x790, s32) = 0;
-    AT(o, 0x794, u8) = 0;
-    AT(o, 0x788, s32) = 0;
-    AT(o, 0x78C, s32) = 0;
-    burst_quad((QuadDrawer *)(o + 0x610), 0.0f, 0x10, 0xE, 0x6E, 4, 4, 0x40, 1);
-}

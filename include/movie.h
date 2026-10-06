@@ -44,4 +44,8 @@ extern s32 Movie_Restart(Movie *m);   /* restarted: 2 / 0 / -1 as Movie_Status *
 extern void Movie_SetFile(Movie *m, const char *path, s32 mode, s32 keep);
 extern Movie *Movie_ctor(Movie *m);   /* Movie constructor */
 
+/* movie.c */
+extern void MovieLib_Shutdown(u8 *o);
+extern void *MovieSys_dtor(u8 *o, s32 flags);
+
 #endif /* MOVIE_H */

@@ -46,4 +46,19 @@ extern void Lorenzo2_StartSink(Pursuer *p);
 extern s32 Kind39_SlamImpact(Pursuer *p);   /* (lorenzo.c) his slam at its impact key, second form */
 extern u8 *Kind39_ModelFileTable(Pursuer *p);
 
+typedef struct Pursuer Pursuer;
+
+/* lorenzo.c */
+extern void *Kind12Model_ctor(u8 *m);
+extern void *Lorenzo2Model_ctor(u8 *m);
+extern void *LorenzoModel_ctor(u8 *m);
+extern void *Kind12_ctor(void *p, s32 arg);
+extern void *Lorenzo_ctor(void *p, s32 arg);
+extern void *Kind39_ctor(void *p, s32 arg);
+extern void *Lorenzo2_ctor(void *p, s32 arg);
+extern u8 *Lorenzo2_ModelFileTable(Pursuer *p);
+
+extern void Lorenzo2Model_Hanging(u8 *m);
+extern void Lorenzo2Model_Strands(u8 *m);
+
 #endif /* LORENZO_H */

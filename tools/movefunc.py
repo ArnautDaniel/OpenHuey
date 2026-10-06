@@ -279,6 +279,16 @@ def main():
         its = split_items(p.read_text())
         if "".join(it.full() for it in its) != p.read_text():
             sys.exit(f"parse round-trip failed: {rel}")
+        # a section comment standing alone right above a function moves with it
+        merged = []
+        for k, it in enumerate(its):
+            nxt = next((x for x in its[k + 1:] if x.kind != "blank"), None)
+            if (it.kind == "other" and nxt is not None and nxt.kind in ("func", "sfunc")
+                    and re.fullmatch(r"\s*/\*.*?\*/\s*", it.lead + it.text, re.S) and nxt.names[0] in plan):
+                nxt.lead = it.lead + it.text.rstrip("\n") + "\n\n" + nxt.lead
+                continue
+            merged.append(it)
+        its = merged
         files[rel] = its
         for it in its:
             if it.kind in ("func", "sfunc"):
@@ -350,7 +360,7 @@ def main():
             if it not in carried_local:
                 carried_local.append(it)
                 work.extend(it.uses())
-        carried_local.sort(key=s_items.index)
+        carried_local.sort(key=lambda it: s_items.index(it) if it in s_items else len(s_items))
         # extern declarations needed
         uses = set()
         for it in moving + carried_local:

@@ -8,6 +8,7 @@
 #include "ptmf.h"
 #include "hewie.h"
 #include "progress.h"
+#include "vecmath.h"
 
 extern void *RoomBase_vtable[];
 extern void *Room69_vtable[];

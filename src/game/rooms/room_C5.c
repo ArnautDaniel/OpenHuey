@@ -6,8 +6,8 @@
 #include "gl2d.h"
 #include "ptmf.h"
 #include "memcard.h"
-#include "scene_game_members.h"
-#include "snd_place.h"
+#include "scene_game.h"
+#include "sound.h"
 
 extern void *RoomBase_vtable[];
 extern void *RoomC5_vtable[];

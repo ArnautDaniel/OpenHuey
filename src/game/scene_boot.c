@@ -4,15 +4,15 @@
 #include "scene_boot.h"
 #include "input.h"
 #include "globals.h"
-#include "bootcard.h"
+#include "memcard.h"
 #include "heap.h"
 #include "items.h"
-#include "message.h"
+#include "text.h"
 #include "movie.h"
-#include "overlay.h"
-#include "synth.h"
-#include "task.h"
+#include "renderer.h"
 #include "msl.h"
+#include "gl2d.h"
+#include "sound.h"
 
 extern void *Scene_vtable[];
 extern void *SceneBoot_vtable[];
@@ -194,7 +194,6 @@ void SceneBoot_LoadSubtitles(SceneBoot *boot) {
 }
 
 #ifdef HG_NATIVE
-#include "gl2d.h"
 
 /* Message sprite `line` of message slot 6 (the boot screens' pictures): its image header, NULL
  * if there's none (or it can't be made resident) */
@@ -592,74 +591,3 @@ u32 SceneBoot_StepProgressive(SceneBoot *boot) {
 
 /* ---- the item found ---- */
 
-#include "sound.h"
-
-extern const u8 D_00460A00[22];
-extern const char str_xN_2[];                         /* its count's format */
-extern const PTMF SlotMachine_StateChoose_ptmf2, SlotMachine_StateNothing_ptmf2;
-
-/* state: an item found (+0x14A its place, -1 none; +0x14B how many; +0x14C its id, big endian):
- * the screen's rows and cells refreshed; once up, "obtained" with the item's name (and count)
- * in a box, its sound played once (+0x152) - or message 5 for none; when done and confirmed,
- * the item added, the places cleared (but +0x150), the task closed and the next state
- * (Synth_CountMaterials: SlotMachine_StateChoose_ptmf2, else SlotMachine_StateNothing_ptmf2) */
-/* 0x0037ED50 */
-void ItemFound_StateShow(u8 *o) {
-    Task *t = (Task *)(o + 0x14);
-    u8 flags = ItemFound_Step(o, (s8)o[0x14A] >= 0);
-    s32 id = -1, i;
-
-    for (i = 0; i < 10; i++) {
-        SlotMachine_DrawRow(o, i, o[0x120 + i], 0);
-    }
-    for (i = 0; i < 22; i++) {
-        u8 k = D_00460A00[i];
-        s8 c = o[0x12F + k];
-
-        if (c != -1 && c != 4) {
-            SlotMachine_DrawCell(o, k, c);
-        }
-    }
-    if (flags & 1) {
-        if ((s8)o[0x14A] < 0) {
-            Task_Open(t, 5);
-            Task_Run(t);
-        } else {
-            u16 w1, w2, cw;
-            s32 x;
-
-            if ((s8)o[0x152] == 0) {
-                Sound_Play(gSound, 3, 6);
-                o[0x152] = 1;
-            }
-            id = o[0x14C] << 24 | o[0x14D] << 16 | o[0x14E] << 8 | o[0x14F];
-            w1 = Task_MessageWidth(t, (id + 0x8100) & 0xFFFF, 0x10);
-            cw = (s8)o[0x14B] == 1 ? 0 : 0x1B;
-            w2 = Task_MessageWidth(t, 4, 0x10);
-            x = (u16)(0x100 - (s32)(w1 + cw + w2) / 2);
-            Task_DrawBox(t, 0x100, 0x172, 0x100, 5, 0x70, 0x30);
-            Task_ShowText(t, x, 0x164, 0, Task_MessageText(t, 4), 0x80, 0x30, 0x10, 0x15);
-            Task_ShowText(t, x + w2, 0x164, 7, Task_MessageText(t, (id + 0x8100) & 0xFFFF), 0x80, 0x30, 0x10, 0x15);
-            if (cw != 0) {
-                Task_Printf(t, w1 + (x + w2), 0x164, 0, str_xN_2, (s8)o[0x14B]);
-            }
-        }
-    }
-    if ((flags & 0x80) && (gMenuPressed & MENU_CONFIRM)) {
-        if (id != -1) {
-            Items_Give((u8 *)gSubScreen + 8, id, o[0x14B]);
-        }
-        for (i = 0; i < 0x40; i++) {
-            if (i != 0x38) {
-                o[0x118 + i] = 0xFF;
-            }
-        }
-        Task_Close(t);
-        AT(o, 0x10, s32) = 0;
-        if (Synth_CountMaterials(o)) {
-            ptmf_set((PTMF *)(o + 0x4), &SlotMachine_StateChoose_ptmf2);
-        } else {
-            ptmf_set((PTMF *)(o + 0x4), &SlotMachine_StateNothing_ptmf2);
-        }
-    }
-}

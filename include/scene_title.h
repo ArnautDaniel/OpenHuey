@@ -4,11 +4,11 @@
 /* Mode 2 scene: the title screen, its menu (new game, load, options, extras) and the opening
  * and attract movies (0x140CE0 bytes from the scene heap, vtable SceneTitle_vtable). */
 #include "common.h"
-#include "bgm.h"
+#include "music.h"
 #include "game.h"
 #include "ptmf.h"
 #include "subscreen.h"
-#include "task.h"
+#include "text.h"
 
 /* what the title leads to (SceneTitle.next) */
 enum {
@@ -61,7 +61,6 @@ typedef struct SubScreen SubScreen;
 extern void *SubScreenBase_ctor(SubScreen *w);
 extern void *TextObj_ctor(u8 *o);
 extern SceneTitle *SceneTitle_ctor(SceneTitle *t);   /* mode 2: opening movie, title screen, menus */
-extern void BgmCtl_ctor(u8 *p);
 extern void *TextObj_dtor(u8 *o, s32 flags);
 extern void *SubScreenBase_dtor(SubScreen *w, s32 flags);
 extern void *Scene5_ctor(u8 *s);   /* mode 5: the ending */

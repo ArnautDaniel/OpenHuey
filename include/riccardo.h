@@ -38,4 +38,13 @@ extern void Riccardo_StateBlowHewie(Pursuer *p);
 extern void Riccardo_StateBlowFiona(Pursuer *p);
 extern void Riccardo_StateChase(Pursuer *p);
 
+typedef struct Pursuer Pursuer;
+
+/* riccardo.c */
+extern void *RiccardoModel_ctor(u8 *m);
+extern u8 *Riccardo_ModelFileTable(Pursuer *p);
+extern void *Kind37_ctor(void *p, s32 arg);
+extern u8 *Kind37_ModelFileTable(Pursuer *p);
+extern void *Riccardo_ctor(void *p, s32 arg);
+
 #endif /* RICCARDO_H */

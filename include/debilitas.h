@@ -8,7 +8,6 @@ typedef struct Character Character;
 typedef struct Pursuer Pursuer;
 
 /* debilitas.c */
-extern void *Model_dtor(void **m, s32 flags);
 extern s32 RoomBase_Table3C(Pursuer *p);
 extern void Debilitas_StunDown(Pursuer *p);
 extern void Debilitas_StateLookWalk(Pursuer *p);
@@ -48,5 +47,14 @@ extern void Debilitas_ChaseTarget(Pursuer *p);
 extern void Debilitas_StateBlow(Pursuer *p);
 extern void Debilitas_Update(Pursuer *p);
 extern void Debilitas_HeadingStep(Pursuer *p);
+
+typedef struct Pursuer Pursuer;
+
+/* debilitas.c */
+extern void *DebilitasModel_ctor(u8 *m);
+extern u8 *Debilitas3_ModelFileTable(Pursuer *p);
+extern u8 *Kind27_ModelFileTable(Pursuer *p);
+extern void *Kind27_ctor(void *p, s32 arg);
+extern void *Debilitas3_ctor(void *p, s32 arg);
 
 #endif /* DEBILITAS_H */

@@ -3,7 +3,6 @@
 #define MODEL_H
 
 #include "common.h"
-#include "stalker_models.h"
 
 extern void *Helper469D00_vtable[], *D_0046ADA0[], *ModelBase_vtable[], *Model_vtable[], *HumanModel_vtable[],
     *IK2_vtable[], *D_0046B1C0[];
@@ -14,28 +13,9 @@ typedef struct Progress Progress;
 extern void *Model_new(u32 size, void *p);   /* placement new */
 extern void *ModelBase_ctor(u8 *m);
 extern void CharLoad_PartnerModel(Progress *p, u32 slot);
-extern void *DogModel_ctor(u8 *m, u8 kind);
-extern void **DustMoteSource_Init(void **o);
-extern void **SpriteBurst_InitDust(void **o);
 extern void **Effect71000_Init(void **o);
-extern void **Splash_InitEvent(void **o);
-extern void **SpeckSwarm_InitEvent(void **o);
-extern void **Fog_Init(void **o);
-extern void **ScreenBlend_Init(void **o);
-extern void *Costume8Model_ctor(u8 *m);
 extern void **Effect6FF60_Init(void **o);
-extern void **DepthRange_Init(void **o);
-extern void **Butterflies_Init(void **o, u32 n);
-extern void *DogModelB_ctor(u8 *m, u8 kind);
-extern void *DogModelA_ctor(u8 *m, u8 kind);
-extern void *Costume7Model_ctor(u8 *m, s32 kind);
-extern void *Costume6Model_ctor(u8 *m, s32 kind);
-extern void *Costume3Model_ctor(u8 *m);
-extern void *Costume2Model_ctor(u8 *m);
-extern void *FionaModel_ctor(u8 *m);
 extern void CharLoad_DogModelB(Progress *p, u32 slot);
-extern void *EvEffect7F_Init(void *p);   /* a EvEffect7F_vtable effect */
-extern void *EvEffect86_Init(void *p);   /* a EvEffect86_vtable effect */
 extern void CharLoad_FionaModel(Progress *p, u32 slot);
 extern void CharLoad_FionaClothes(Progress *p, u32 slot);
 extern void CharLoad_DogModelA(Progress *p, u32 slot);
@@ -74,7 +54,6 @@ extern void SpringSet_Begin(u8 *s);   /* begin a step */
 extern void SpringSet_Step(u8 *s);   /* one step */
 extern void SpringSet_Finish(u8 *s);   /* finish */
 extern void Model_Draw(u8 *m, s32 layer, s32 a, s32 b);
-extern void Mtx_TurnY(f32 (*m)[4], f32 a);   /* turn about y */
 extern void Motion_PlayTable(u8 *m, s32 anim, s32 variant);   /* play anim blended with another (-1 none) */
 extern void Motion_PlayDriven(u8 *m, s32 anim);
 extern void Motion_CutsceneTime(u8 *m, s32 frame);   /* its motion at the frame */
@@ -91,14 +70,7 @@ extern void *Part50_dtor(void *e, s32 flags);
 extern void *HairPoint_dtor(void *e, s32 flags);
 extern void *HangingPart_dtor(void *e, s32 flags);
 extern void *EventHumanModel_ctor(u8 *m, s32 kind);
-extern void *Kind12Model_ctor(u8 *m);
-extern void *Lorenzo2Model_ctor(u8 *m);
-extern void *LorenzoModel_ctor(u8 *m);
-extern void *DebilitasModel_ctor(u8 *m);
 extern void *Kind09Model_ctor(u8 *m);
-extern void *Kind23Model_ctor(u8 *m);
-extern void *RiccardoModel_ctor(u8 *m);
-extern void *DaniellaModel_ctor(u8 *m);
 extern void CharLoad_Kind33Model(Progress *p, u32 slot);
 extern void CharLoad_Kind23Model(Progress *p, u32 slot);
 extern void CharLoad_Kind18Model(Progress *p, u32 slot);
@@ -113,8 +85,13 @@ extern void CharLoad_RiccardoModel(Progress *p, u32 slot);
 extern void CharLoad_DaniellaModel(Progress *p, u32 slot);
 extern void CharLoad_DebilitasModel(Progress *p, u32 slot);
 extern void Motion_PlayTableNoCheck(u8 *m, s32 anim);
-extern f32 Vec_LineDistance(const f32 *a, const f32 *b, const f32 *c);   /* pt's distance from the line */
 
+/* model.c */
+extern void *Model_dtor(void **m, s32 flags);
+extern f32 *Skel_Bone(u8 *skel, s32 bone);   /* bone matrix */
+extern void Motion_EaseTilt(u8 *p, f32 tx, f32 ty, f32 sx, f32 sy);
+
+extern void StalkerModel_delete(void *p);   /* operator delete */
 /* the human model base's destruction: back down its vtables, then (flags > 0) delete */
 static inline void *HumanModel_Destroy(u8 *m, s32 flags) {
     if (m != NULL) {
@@ -133,5 +110,18 @@ static inline void *HumanModel_Destroy(u8 *m, s32 flags) {
     }
     return m;
 }
+
+/* ---- (was stalker_models.h) ---- */
+
+/* stalker_models.c: what other files call. */
+
+/* stalker_models.c */
+extern void Model_BodyFrames(u8 *m, void *actor, f32 a, f32 b);
+extern void Model_Frame(u8 *m);
+extern void HumanModel_Frame(u8 *m);
+extern void Model_Release(u8 *m);
+extern void Model_ClearDraw(u8 *m);
+
+extern void Capsule_Set(u8 *cap, s32 b1, s32 b2, f32 x1, f32 y1, f32 z1, f32 r, f32 x2, f32 y2, f32 z2);
 
 #endif

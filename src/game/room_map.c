@@ -9,11 +9,62 @@
 #include "actor.h"
 #include "hewie.h"
 #include "room_map.h"
-#include "scene_game_members.h"
-#include "snd_place.h"
-#include "stalker_math.h"
-#include "stalker_progress.h"
+#include "scene_game.h"
+#include "sound.h"
+#include "vecmath.h"
 #include "msl.h"
+#include "memcard.h"
+#include "ptmf.h"
+#include "pursuer.h"
+#include "effectmgr.h"
+#include "renderer.h"
+#include "charaction.h"
+#include "gl2d.h"
+#include "music.h"
+#include "camera.h"
+#include "heap.h"
+#include "char_load.h"
+#include "creature.h"
+#include "doors.h"
+#include "event.h"
+#include "gameover.h"
+#include "items.h"
+#include "loader.h"
+#include "model.h"
+#include "movie.h"
+#include "fiona.h"
+#include "pause.h"
+#include "placed.h"
+#include "system.h"
+#include "scene.h"
+#include "scene_title.h"
+#include "draw_leaves.h"
+#include "libc.h"
+#include "sce/eekernel.h"
+#include "effects.h"
+#include "daniella.h"
+#include "pad.h"
+#include "scene_boot.h"
+#include "sce/iop.h"
+#include "cri/adx.h"
+#include "subscreen.h"
+#include "text.h"
+#include "input.h"
+#include "director.h"
+#include "room.h"
+#include "lights.h"
+#include "sce/intc.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
+
+extern void *Rooms_vtable[];
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+void *Rooms_ctor(u8 *p);
+
+extern void *Obstacles_vtable[];
+void Obstacle_ElemCtor(void *p);
 
 /* +0xC set the rooms' state: the 13 saved words `saved` (NULL: none), then rebuild (+0x90) */
 /* 0x0021C760 */
@@ -94,6 +145,10 @@ extern char str_OBSTACLE_MTN[];   /* "OBSTACLE.MTN" */
 void Obstacles_LoadMotions(VObject *rooms) {
     VCALL(gFileLoader, 0xC, void (*)(VObject *, const void *, void *, u32, s32))(
         gFileLoader, str_OBSTACLE_MTN, (u8 *)rooms + 0x380, 0x10000000, 0);
+}
+
+/* 0x0021AFC0 */
+void Obstacle_ElemCtor(void *p) {
 }
 
 extern void Obstacle_Reset(u8 *o);
@@ -249,7 +304,7 @@ s32 Rooms_ExitDoorFlags(VObject *r, s32 room, s32 exit) {
 
 extern u8 D_003D8BC0[];
 extern f32 D_003DE8C0[];      /* the rooms' centres (x, y, z) */
-extern void *D_0046C480[], *Rooms_vtable[];
+extern void *D_0046C480[];
 
 #define DOOR_SIDE(def, s) ((const u8 *)(def) + (s) * 6)
 #define ROOM_EXIT(room, exit, off) AT(D_003D8BC0, (room) * 0x40 + ((exit) & 0xFF) * 8 + (off), s16)
@@ -711,6 +766,22 @@ s32 Room2A_HandlerStep(void *room, s32 n, const u8 *arg) {
     AT(c, 0x14, f32) = AT(c, 0x14, f32) + 0.5f;
     AT(c, 0x18, f32) = AT(c, 0x18, f32) + 2.0f;
     return 2;
+}
+
+/* a manager of 5 objects of 0xB0 bytes (vtable Obstacles_vtable, global gObstacles) */
+/* 0x002D10C0 */
+void *Obstacles_ctor(u8 *p) {
+    AT(p, 0x0, void **) = Obstacles_vtable;
+    gObstacles = (VObject *)p;
+    func_00100340(p + 0x10, Elem_ctorNoop, Obstacle_dtor, 0xB0, 5);
+    return p;
+}
+
+/* 0x002D12C0 */
+void *Rooms_ctor(u8 *p) {
+    gRooms = (VObject *)p;
+    F(p, 0x0, void *) = Rooms_vtable;
+    return p;
 }
 
 /* ---- an obstacle (0xB0 bytes, in the obstacles' list below): it covers pairs of nav
@@ -1480,20 +1551,4 @@ void Obstacles_Pos(u8 *l, s32 i, f32 *out) {
         out[0] = out[0] + AT(o, 0x4, f32);
         out[2] = out[2] + AT(o, 0x8, f32);
     }
-}
-
-extern void *Fiona_vtable[], *Character_vtable[], *Actor_vtable[];
-
-/* Fiona's class destructor (Fiona -> 0x469C60 -> Actor) */
-/* 0x0017FCD0 */
-void *Fiona_dtor(void **o, s32 flags) {
-    if (o != NULL) {
-        o[0] = Fiona_vtable;
-        o[0] = Character_vtable;
-        o[0] = Actor_vtable;
-        if ((s16)flags > 0) {
-            Actor_Destroy((Actor *)o);
-        }
-    }
-    return o;
 }

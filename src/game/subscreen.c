@@ -5,20 +5,19 @@
 #include "game.h"
 #include "ptmf.h"
 #include "progress.h"
-#include "task.h"
+#include "text.h"
 #include "subscreen.h"
 #include "input.h"
 #include "sound.h"
 #include "gs.h"
-#include "texcache.h"
+#include "renderer.h"
 #include "sce/libvu0.h"
 #include "globals.h"
 #include "actor.h"
 #include "pursuer.h"
 #include "memcard.h"
 #include "navmesh.h"
-#include "bgm.h"
-#include "bootcard.h"
+#include "music.h"
 #include "effects.h"
 #include "fiona.h"
 #include "heap.h"
@@ -26,13 +25,35 @@
 #include "items.h"
 #include "model.h"
 #include "movie.h"
-#include "overlay.h"
-#include "props.h"
-#include "renderer.h"
 #include "scene_game.h"
-#include "scene_game_members.h"
 #include "libc.h"
 #include "msl.h"
+#include "daniella.h"
+#include "loader.h"
+#include "vecmath.h"
+#include "pad.h"
+#include "scene.h"
+#include "scene_boot.h"
+#include "scene_title.h"
+#include "system.h"
+#include "sce/iop.h"
+#include "item.h"
+#include "director.h"
+#include "doors.h"
+#include "room.h"
+#include "placed.h"
+#include "room_map.h"
+#include "lights.h"
+#include "draw_leaves.h"
+#include "sce/eekernel.h"
+#include "sce/intc.h"
+#include "gl2d.h"
+#include "lorenzo.h"
+#include "riccardo.h"
+#include "tintstalker.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
 
 extern VObject *gStageMusic;
 extern void *PoolEntry_vtable[];      /* a pool entry */
@@ -44,7 +65,6 @@ void SubScreen_Open(SubScreen *s);
 static const char sSubBase[] = "SUBSCR\\SUBBASE.TEX";
 static const char sSubBack[] = "SUBSCR\\SUBBACK.TEX";
 
-extern void *Kind14Model_vtable[];
 extern const u8 D_0044BF10[];
 s32 SubScreen_LoaderIdle(void *pool);
 u32 Items_FirstFree(u8 *o, u8 row);
@@ -54,8 +74,126 @@ void *Kind14Model_ctor(u8 *m);
 u32 SubScreen_FileCount(u8 *o);
 
 extern void *D_0046EC80[];
-void *Obj46EC80_dtor(u8 *o, s32 flags);
 
+extern u8 *kMapRooms[];     /* per map: its rooms (0x18-byte entries, -1 terminated); NULL ends */
+extern void **kMapPages[];  /* per map: its pages (by the entry's +0x4) */
+extern u16 *D_0041F8B0[];      /* per map: each page's title message */
+extern u8 D_00420570[];        /* the alternative room entries (0x18 each) */
+#define MAP_CUR(m) AT(m, 0x10C, s8)
+
+#define MAP_PAGE(m) AT(m, 0x10E, s8)
+
+#define MAP_PICTURE_AREA 0x6000000   /* the file loader's area for the page's picture */
+
+extern void *SubScreen_vtable[];          /* the title work */
+extern void *D_0046A090[], *D_0046A078[], *D_004699E0[], *BlockPool_vtable[], *D_0046A068[];
+extern void *D_0046A058[];
+extern void TextObj_Release(u8 *o);
+/* the entry pool's destructor body: its list, its 192 entries, the global */
+static inline void Pool_Destroy(u8 *pool) {
+    AT(pool, 0x0, void **) = D_0046A078;
+    if (pool + 0x1208 != NULL) {
+        AT(pool, 0x1208, void **) = BlockPool_vtable;
+        if (pool + 0x1208 != NULL) {
+            AT(pool, 0x1208, void **) = D_004699E0;
+        }
+    }
+    func_001002C0(pool + 8, PoolEntry_dtor, 0x18, 0xC0);
+    if (pool != NULL) {
+        gSubPool = NULL;
+    }
+}
+
+static inline void task_end_child(Task *t) {
+    if (t != NULL && t->child != NULL) {
+        Task_dtor(t->child, 1);
+        t->child = NULL;
+    }
+}
+
+/* the maps the player has (progress +0x84 bits 22..26 as bits 0..4, as func_00303F00) */
+static inline u8 map_owned(void) {
+    u32 b = AT(gProgress, 0x84, u32);
+    u8 v = 0;
+
+    if (b & 0x400000) {
+        v |= 1;
+    }
+    if (b & 0x800000) {
+        v |= 2;
+    }
+    if (b & 0x1000000) {
+        v |= 4;
+    }
+    if (b & 0x2000000) {
+        v |= 8;
+    }
+    if (b & 0x4000000) {
+        v |= 0x10;
+    }
+    return v;
+}
+
+/* can map `map` be shown: one the player has, with pages */
+static inline s32 map_shown(s8 map) {
+    u8 owned;
+
+    if (map == -1) {
+        return 0;
+    }
+    owned = map_owned();
+    if (owned == 0) {
+        return 0;
+    }
+    if (kMapPages[map] == NULL) {
+        return 0;
+    }
+    return (owned & (1 << map)) ? 1 : 0;
+}
+
+/* the current map's last page */
+static inline void map_last_page(u8 *m) {
+    MAP_PAGE(m) = 0;
+    while (kMapPages[MAP_CUR(m)][MAP_PAGE(m) + 1] != NULL) {
+        MAP_PAGE(m)++;
+    }
+}
+
+/* the first map from 0 that can be shown; none: back to `map` / `page` */
+static inline void map_first(u8 *m, s8 map, s8 page) {
+    MAP_CUR(m) = 0;
+    for (;;) {
+        if (kMapPages[MAP_CUR(m)] == NULL) {
+            MAP_CUR(m) = map;
+            *(volatile s8 *)&MAP_PAGE(m) = page;   /* (stored again, unchanged, as the original) */
+            return;
+        }
+        if (map_shown(MAP_CUR(m))) {
+            return;
+        }
+        MAP_CUR(m)++;
+    }
+}
+
+s32 Map_LeftRight(u8 *m);
+void Map_HereArrow(u8 *m);
+s32 Map_PageLoading(u8 *m);
+
+/* the entry pool (gSubPool): destructor */
+/* 0x00130920 */
+void *SubPool_dtor(u8 *pool, s32 flags) {
+    if (pool != NULL) {
+        Pool_Destroy(pool);
+        if ((s16)flags > 0) {
+            func_00100490(pool);
+        }
+    }
+    return pool;
+}
+/* operator delete for pool entries: nothing (the pool is dropped at once) */
+/* 0x0025FEF0 */
+void SubPool_delete(void *p) {
+}
 /* placement new (pool entries) */
 /* 0x0025FF00 */
 void *SubPool_new(u32 size, void *p) {
@@ -66,30 +204,6 @@ void *SubPool_new(u32 size, void *p) {
 /* 0x00260130 */
 s32 SubScreen_LoaderIdle(void *pool) {
     return VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x4000000) == 2;
-}
-
-/* the first free (0) of the 64 words in row `row` (0x100 bytes from +0x12E0); 64 if none */
-/* 0x002605F0 */
-u32 Items_FirstFree(u8 *o, u8 row) {
-    u32 i;
-
-    for (i = 0; i < 0x40; i++) {
-        if (AT(o, 0x12E0 + row * 0x100 + i * 4, s32) == 0) {
-            break;
-        }
-    }
-    return i;
-}
-
-/* an item `id` (one, Items_Give) with its 8 bytes at +0x10 */
-/* 0x00261000 */
-void *Items_GiveWithData(u8 *items, u32 id, u64 *data) {
-    u8 *it = Items_Give(items, id, 1);
-
-    if (it != NULL) {
-        AT(it, 0x10, u64) = *data;
-    }
-    return it;
 }
 
 /* the entries' pool: the first 64 entries constructed again, the tables cleared, the block
@@ -118,6 +232,25 @@ void SubPool_Reset(u8 *pool) {
     BlockPool_Init((BlockPool *)(pool + 0x1208), pool + 8, 0x18, 0xC0, pool + 0x1220);
 }
 
+/* Options defaults: sound mode from the sound driver (+0x6C), the video mode and screen offset
+ * from the renderer, +4 on, +8 = 1.0. */
+/* 0x002A7AA0 */
+void Options_Defaults(u8 *o) {
+    VObject *r;
+    u8 *disp;
+
+    o[0] = VCALL(gSound, 0x6C, s32 (*)(VObject *))(gSound);
+    r = gRenderer;
+    o[1] = VCALL(r, 0x28, u8 (*)(VObject *))(r);
+    disp = VCALL(r, 0x2C, u8 *(*)(VObject *))(r);
+    o[2] = (s8)disp[0x1F];
+    o[3] = (s8)disp[0x20];
+    o[4] = 1;
+    o[5] = 0;
+    o[6] = 0;
+    *(u32 *)(o + 8) = 0x3F800000;   /* 1.0f */
+}
+
 /* destructor (vtable D_0046EC80) */
 /* 0x002C65C0 */
 void *Obj46EC80_dtor(u8 *o, s32 flags) {
@@ -129,6 +262,278 @@ void *Obj46EC80_dtor(u8 *o, s32 flags) {
         }
     }
     return o;
+}
+
+/* the sub screen (SubScreen_vtable): its load / save screens, text object and two text tasks, then
+ * the base (D_0046A090): the pool's entries, the globals gSubPool / gSubScreen cleared */
+/* 0x002D0110 */
+void *SubScreen_dtor(SubScreen *w, s32 flags) {
+    if (w != NULL) {
+        u8 *o = (u8 *)w;
+
+        w->vtbl = SubScreen_vtable;
+        AT(o, 0xA8AC0, void **) = D_0046A058;
+        Task_dtor((Task *)(o + 0xA8AD8), -1);
+        AT(o, 0x97980, void **) = D_0046A068;
+        TextObj_Release(o + 0x97980);
+        Task_dtor((Task *)(o + 0x97984), -1);
+        task_end_child(&w->text);
+        task_end_child(&w->ask);
+        w->vtbl = D_0046A090;
+        AT(o, 0x8, void **) = D_0046A078;
+        AT(o, 0x1210, void **) = BlockPool_vtable;
+        AT(o, 0x1210, void **) = D_004699E0;
+        func_001002C0(o + 0x10, PoolEntry_dtor, 0x18, 0xC0);
+        gSubPool = NULL;
+        gSubScreen = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return w;
+}
+
+/* the map turned to page `page` if its room (+0x108) is shown there too */
+/* 0x00303E60 */
+void Map_TurnTo(u8 *m, s8 page) {
+    u8 *e;
+
+    if (AT(m, 0x108, s32) == -1 || AT(m, 0x10D, s8) == -1 || AT(m, 0x10F, s8) == page) {
+        return;
+    }
+    e = kMapRooms[AT(m, 0x10C, s8)];
+    if (e == NULL) {
+        return;
+    }
+    for (; AT(e, 0, s32) != -1; e += 0x18) {
+        if (AT(e, 0, s32) == AT(m, 0x108, s32) && AT(e, 4, s8) == page) {
+            AT(m, 0x10E, s8) = page;
+            AT(m, 0x10F, s8) = page;
+            return;
+        }
+    }
+}
+
+/* Left / right on the map: the previous / next page, past the ends the previous / next map the
+ * player has (round), its last / first page. A new page has its picture loaded: 1. */
+/* 0x00303F90 */
+s32 Map_LeftRight(u8 *m) {
+    u32 pad = gMenuPressed;
+    s8 map = MAP_CUR(m), page = MAP_PAGE(m);
+
+    if (pad & MENU_LEFT) {
+        if (map_shown(map) && page != 0) {
+            MAP_PAGE(m)--;
+        } else if (map == -1) {
+            map_first(m, map, page);
+            if (MAP_CUR(m) == -1) {
+                return 0;
+            }
+            map_last_page(m);
+        } else {
+            for (;;) {
+                if (MAP_CUR(m) != 0) {
+                    MAP_CUR(m)--;
+                } else {
+                    do {
+                        MAP_CUR(m)++;
+                    } while (kMapPages[MAP_CUR(m) + 1] != NULL);
+                }
+                if (MAP_CUR(m) == map || map_shown(MAP_CUR(m))) {
+                    break;
+                }
+            }
+            map_last_page(m);
+        }
+    } else if (pad & MENU_RIGHT) {
+        if (map_shown(map) && kMapPages[map][page + 1] != NULL) {
+            MAP_PAGE(m)++;
+        } else if (map == -1) {
+            map_first(m, map, page);
+            if (MAP_CUR(m) == -1) {
+                return 0;
+            }
+            MAP_PAGE(m) = 0;
+        } else {
+            for (;;) {
+                MAP_CUR(m)++;
+                if (kMapPages[MAP_CUR(m)] == NULL) {
+                    MAP_CUR(m) = 0;
+                }
+                if (MAP_CUR(m) == map || map_shown(MAP_CUR(m))) {
+                    break;
+                }
+            }
+            MAP_PAGE(m) = 0;
+        }
+    }
+    if (map == MAP_CUR(m) && page == MAP_PAGE(m)) {
+        return 0;
+    }
+    VCALL(gFileLoader, 0xC, void (*)(VObject *, void *, void *, u32, s32))(
+        gFileLoader, kMapPages[MAP_CUR(m)][MAP_PAGE(m)], m + 0x140, MAP_PICTURE_AREA, 0);
+    return 1;
+}
+
+/* the "you are here" arrow: Fiona's spot on the page of the map she is on (the room's entry:
+ * +0x8 / +0xC x / z scale, +0x10 / +0x14 x / y offset; map 2's rooms 0x100..0x105 take theirs
+ * from D_00420570 by the events' +0x70), a 32 x 32 arrow (texture group 0x18 #0, 0x1C0, 0x60)
+ * turned to her heading, layer 0x30 */
+/* 0x003048C0 */
+void Map_HereArrow(u8 *m) {
+    s32 room = AT(m, 0x108, s32);
+    s8 map = MAP_CUR(m), page = MAP_PAGE(m);
+    u8 *e;
+    s32 found = 0;
+    f32 fx, fy, a, s, c;
+    s32 x0, y0, x1, y1, x2, y2, x3, y3;
+
+    if (room == -1 || map == -1 || page == -1 || gCharPlayer == NULL || AT(gCharPlayer, 0x28, u8) == 0) {
+        return;
+    }
+    for (e = kMapRooms[map]; AT(e, 0, s32) != -1; e += 0x18) {
+        if (AT(e, 0, s32) == room && AT(e, 4, s8) == page) {
+            found = 1;
+            break;
+        }
+    }
+    if (!found) {
+        return;
+    }
+    if (map == 2 && (u32)room >= 0x100 && (u32)room < 0x106) {
+        s32 n = VCALL(gEvents, 0x70, s32 (*)(VObject *))(gEvents);
+
+        if (n < 0) {
+            return;
+        }
+        e = D_00420570 + (n + 0xE) * 0x18;
+    }
+    fx = AT(e, 0x10, f32) + 512.0f * (AT(gCharPlayer, 0x10, f32) / AT(e, 0x8, f32)) / 640.0f;
+    fy = 128.0f + (AT(e, 0x14, f32) + AT(gCharPlayer, 0x18, f32) / AT(e, 0xC, f32));
+    a = -AT(gCharPlayer, 0x54, f32);
+    /* the corners (-16, 16) (16, 16) (-16, -16) (16, -16) turned by a, x squeezed 512 / 640 */
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    x0 = (s32)(fx + 512.0f * (-16.0f * c - 16.0f * s) / 640.0f);
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    y0 = (s32)(fy + (16.0f * c + -16.0f * s));
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    x1 = (s32)(fx + 512.0f * (16.0f * c - 16.0f * s) / 640.0f);
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    y1 = (s32)(fy + (16.0f * c + 16.0f * s));
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    x2 = (s32)(fx + 512.0f * (-16.0f * c - -16.0f * s) / 640.0f);
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    y2 = (s32)(fy + (-16.0f * c + -16.0f * s));
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    x3 = (s32)(fx + 512.0f * (16.0f * c - -16.0f * s) / 640.0f);
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    y3 = (s32)(fy + (-16.0f * c + 16.0f * s));
+    VCALL(gRenderer, 0x84, void (*)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, u32,
+                                     s32, s32, s32, s32))(
+        gRenderer, x0, y0, x1, y1, x2, y2, x3, y3, 0x1C0, 0x60, 0x20, 0x20, 0x20808080, 0, 0x18, 0x30, 6);
+}
+
+/* 1 while the page's picture is still loading; else, when the page can be shown, its
+ * picture's texture made resident (texture cache +0x10) */
+/* 0x00304D70 */
+s32 Map_PageLoading(u8 *m) {
+    if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, MAP_PICTURE_AREA) == 2) {
+        return 1;
+    }
+    if (map_shown(MAP_CUR(m))) {
+        VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, m + 0x140, 0x28);
+    }
+    return 0;
+}
+
+/* the map page each frame: with any map, left / right (Map_LeftRight) with a sound on a new
+ * page; the page's picture (texture group 0x28) with the arrow when it is Fiona's own page,
+ * and its title centred at the top (no map or page: message 0x85) */
+/* 0x00304F50 */
+void Map_PageFrame(u8 *m) {
+    u8 *text;
+
+    if (Map_PageLoading(m)) {
+        return;
+    }
+    if (map_owned() != 0 && Map_LeftRight(m)) {
+        VCALL(gSound, 0x14, void (*)(VObject *, s32, s32))(gSound, 0x2A, 5);
+        return;
+    }
+    if (MAP_CUR(m) == -1 || MAP_PAGE(m) == -1 || !map_shown(MAP_CUR(m))) {
+        text = Task_MessageText(m + 4, 0x85);
+    } else {
+        text = Task_MessageText(m + 4, D_0041F8B0[MAP_CUR(m)][MAP_PAGE(m)]);
+    }
+    if (map_shown(MAP_CUR(m))) {
+        if (MAP_CUR(m) != -1 && MAP_PAGE(m) != -1) {
+            VCALL(gRenderer, 0x7C, s32 (*)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s32, s32, s32,
+                                            s32))(gRenderer, 0, 0x80, 0x200, 0x100, 0, 0, 0x200, 0x100, 0x80808080,
+                                                  0, 0x28, 0x30, 0);
+        }
+        if (MAP_CUR(m) == AT(m, 0x10D, s8) && MAP_PAGE(m) == AT(m, 0x10F, s8)) {
+            Map_HereArrow(m);
+        }
+    }
+    if (text != NULL) {
+        u32 w = Text_LineWidth((Task *)(m + 4), text, 0x10) & 0xFFFF;
+
+        Task_ShowText((Task *)(m + 4), 0xA6 - (w >> 1), 0x48, 0x80, text, 0x80, 0x33, 0x10, 0x15);
+    }
+}
+
+/* back to the map / page the player is in (+0x10D / +0x10F) and, when it can be shown, its
+ * picture loaded */
+/* 0x00305380 */
+void Map_BackToPlayer(u8 *m) {
+    MAP_CUR(m) = AT(m, 0x10D, s8);
+    MAP_PAGE(m) = AT(m, 0x10F, s8);
+    if (AT(m, 0x108, s32) == -1 || AT(m, 0x10D, s8) == -1 || AT(m, 0x10F, s8) == -1) {
+        return;
+    }
+    if (!map_shown(MAP_CUR(m))) {
+        return;
+    }
+    VCALL(gFileLoader, 0xC, void (*)(VObject *, void *, void *, u32, s32))(
+        gFileLoader, kMapPages[MAP_CUR(m)][MAP_PAGE(m)], m + 0x140, MAP_PICTURE_AREA, 0);
+}
+
+/* SceneGame +0x101EBC0 (the map): find which map and page show room `room` (+0x108 the room,
+ * +0x10C/+0x10D the map, +0x10E/+0x10F the page; -1: none) */
+/* 0x00305520 */
+void Map_FindRoom(u8 *m, s32 room) {
+    s32 i;
+    u8 *e;
+
+    AT(m, 0x108, s32) = -1;
+    AT(m, 0x10D, s8) = -1;
+    AT(m, 0x10C, s8) = -1;
+    AT(m, 0x10F, s8) = -1;
+    AT(m, 0x10E, s8) = -1;
+    if (room == -1 || (u32)room >= 0x110) {
+        return;
+    }
+    for (i = 0; kMapRooms[i] != NULL; i++) {
+        for (e = kMapRooms[i]; AT(e, 0, s32) != -1; e += 0x18) {
+            if (AT(e, 0, s32) == room && kMapPages[i] != NULL &&
+                kMapPages[i][AT(e, 4, s8)] != NULL) {
+                AT(m, 0x108, s32) = room;
+                AT(m, 0x10D, s8) = i;
+                AT(m, 0x10C, s8) = i;
+                AT(m, 0x10F, s8) = AT(e, 4, s8);
+                AT(m, 0x10E, s8) = AT(e, 4, s8);
+                return;
+            }
+        }
+    }
 }
 
 /* start: load the textures, reset */
@@ -523,7 +928,6 @@ extern u16 D_0044C160[][7];
 extern u16 D_0044C280[][9];
 
 #ifdef HG_NATIVE
-#include "gl2d.h"
 
 /* draw panel `id` (D_0044C160: its w x h texels at u, v, at x, y) mixed over the screen by
  * fixed alpha `alpha`, in renderer layer `layer` */
@@ -669,6 +1073,28 @@ void SubScreen_DrawFadeFromBlack(SubScreen *s) {
 void SubScreen_TakeOver(SubScreen *s) {
     s->tab = 0;
     s->unkA8DDE = 1;
+}
+
+/* (the scene) its part +0x97980's Map_TurnTo */
+/* 0x00384C50 */
+s32 SubScreen_Part97980(u8 *g, s32 a1) {
+    return ((s32 (*)(u8 *, s32))Map_TurnTo)(g + 0x97980, a1);   /* (void: v0 as it was left) */
+}
+
+/* 0x00384C60 */
+s32 SubScreen_Byte97A8F(u8 *g) {
+    return AT(g, 0x97A8F, s8);
+}
+
+/* bit n of the scene's 0x97740 bitmap set / tested */
+/* 0x00384C70 */
+void SubScreen_SetBit(u8 *g, s32 n) {
+    AT(g, 0x97740 + (n >> 5) * 4, u32) |= 1u << (n & 0x1F);
+}
+
+/* 0x00384CB0 */
+s32 SubScreen_TestBit(u8 *g, s32 n) {
+    return (AT(g, 0x97740 + (n >> 5) * 4, u32) & (1u << (n & 0x1F))) != 0;
 }
 
 void Options_StateLayout(SubScreen *s);
@@ -3160,14 +3586,6 @@ u8 *Gallery_MakeModel(SubScreen *s, u8 k) {
     } else if (k == 0xC || k == 0xB) {
         VCALL(m, 0x34, void (*)(u8 *, s32))(m, 0);
     }
-    return m;
-}
-
-/* model classes Kind14Model_vtable / Kind33Model_vtable over the plain one (HumanModel_BaseCtor) */
-/* 0x0038C890 */
-void *Kind14Model_ctor(u8 *m) {
-    HumanModel_BaseCtor(m);
-    AT(m, 0x0, void **) = Kind14Model_vtable;
     return m;
 }
 

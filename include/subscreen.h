@@ -7,7 +7,7 @@
 #include "common.h"
 #include "ptmf.h"
 #include "scene_boot.h"
-#include "task.h"
+#include "text.h"
 
 /* what the screen opens as (SubScreen.mode, set by the owner before it opens) */
 enum {
@@ -101,5 +101,12 @@ extern void SubScreen_ApplyOptions(VObject *s);
 extern s32 SubScreen_Update(SubScreen *s);   /* per frame; returns showBehind */
 extern void SubScreen_FromSave(SubScreen *s, u8 *save);
 extern void SubScreen_ToSave(SubScreen *s, u8 *save);
+
+/* subscreen.c */
+extern void SubPool_delete(void *p);   /* operator delete (pool entries) */
+extern void Map_FindRoom(u8 *m, s32 room);
+extern void Map_TurnTo(u8 *m, s8 page);
+extern void Map_PageFrame(u8 *m);   /* the map, each frame */
+extern void Map_BackToPlayer(u8 *m);
 
 #endif /* SUBSCREEN_H */

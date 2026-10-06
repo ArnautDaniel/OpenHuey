@@ -5,8 +5,8 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
-#include "panic.h"
-#include "scene_game_members.h"
+#include "fiona.h"
+#include "scene_game.h"
 #include "msl.h"
 
 extern void *RoomBase_vtable[];

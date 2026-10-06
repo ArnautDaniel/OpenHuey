@@ -11,13 +11,22 @@
 #include "fiona.h"
 #include "hewie.h"
 #include "model.h"
-#include "overlay.h"
-#include "scene_game_members.h"
-#include "snd_place.h"
+#include "renderer.h"
+#include "scene_game.h"
+#include "sound.h"
 #ifdef HG_NATIVE
 #include "glr.h"
 #endif
 #include "msl.h"
+#include "game.h"
+#include "actor.h"
+#include "progress.h"
+#include "sce/libvu0.h"
+#include "effectmgr.h"
+#include "charaction.h"
+#include "input.h"
+#include "gl2d.h"
+#include "vecmath.h"
 
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -94,16 +103,11 @@ s32 RoomBase_ActionScript(void *o) {   /* +0x24 */
 
 /* ---- the rooms' script hooks (pointers to members the event commands call) ---- */
 
-#include "game.h"
-#include "actor.h"
-#include "progress.h"
-#include "sce/libvu0.h"
 
 extern VObject *gRoomObjects;   /* the room's objects: +0x18 (id) the object */
 
 /* ---- more hooks: effects spawned into the effect manager, Fiona nudged, a partner's line ---- */
 
-#include "effectmgr.h"
 
 extern void *OneDrip_vtable[], *Effect7A3D0_vtable[], *AshFlakes_vtable[];
 
@@ -141,8 +145,6 @@ void DriftingFlecks_SetParams(u8 *self, f32 *src) {
     }
 }
 
-#include "effectmgr.h"
-
 extern const char *const pstr_kibako, *const pstr_a_koushi;   /* "kibako" (the box), "a_koushi" (the grate) */
 
 extern const char *const pstr_left, *const pstr_right;   /* "left", "right" */
@@ -156,8 +158,6 @@ extern const char *const pstr_sara_l, *const pstr_sara_r, *const pstr_tenbin;   
  * +0x610), each with its rise (+0x660 + i * 4) and wobble angle (+0x6A0); +0x6E8 the
  * texture's scroll (0 .. 4096, 1/16 texels), +0x650 where the motes start, +0x6F0 stopped,
  * +0x6F1 the haze on: the whole screen wavers (phases +0x6E0 / +0x6E4) ---- */
-
-#include "texcache.h"
 
 /* ---- class Room49Effect_vtable (0x1A60 bytes), the haze of effect 0x1A60 (Room49_Cmd02): as the light
  * shaft's motes and haze without the beam - 64 motes (records +0x10 + 0xC00 x the current one
@@ -447,15 +447,12 @@ extern const char *const pstr_O_DNL_DNL_203_TEX;
 
 #endif
 
-#include "charaction.h"
 
 /* ---- three 0x1C30-byte effects Effect79B00_vtable (grey 0x303030) at once, each told its spot ---- */
 extern void *Effect79B00_vtable[];
 
-#include "input.h"
 
 #ifdef HG_NATIVE
-#include "gl2d.h"
 
 #endif
 

@@ -3,7 +3,7 @@
 #include "common.h"
 #include "game.h"
 #include "ptmf.h"
-#include "task.h"
+#include "text.h"
 #include "scene_title.h"
 #include "input.h"
 #include "sound.h"
@@ -11,17 +11,17 @@
 #include "progress.h"
 #include "actor.h"
 #include "pursuer.h"
-#include "bgm.h"
-#include "bootcard.h"
+#include "music.h"
+#include "memcard.h"
 #include "heap.h"
-#include "item_classes.h"
-#include "message.h"
+#include "items.h"
 #include "movie.h"
 #include "renderer.h"
-#include "scene_game_members.h"
+#include "scene_game.h"
 #include "subscreen.h"
 #include "libc.h"
 #include "msl.h"
+#include "gl2d.h"
 
 extern void *Scene_vtable[];
 extern void *SceneTitle_vtable[];          /* SceneTitle */
@@ -29,35 +29,8 @@ extern void *Message_vtable[];          /* the message object */
 extern void *SubScreen_vtable[];          /* the title work */
 extern void *BgmCtl_vtable[];
 extern void *D_0046A090[], *D_0046A078[], *D_004699E0[], *BlockPool_vtable[], *D_0046A068[];
-extern void *PoolEntry_vtable[];          /* a pool entry */
 extern const PTMF sSceneEntryState; /* virtual: vtable +0x10 */
 extern const PTMF sGameStateNull;
-
-#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
-
-s32 SubScreen_Part97980(u8 *g, s32 a1);
-s32 SubScreen_Byte97A8F(u8 *g);
-void SubScreen_SetBit(u8 *g, s32 n);
-s32 SubScreen_TestBit(u8 *g, s32 n);
-
-/* a pool entry: constructor / destructor */
-void *PoolEntry_ctor(void *e) {
-    AT(e, 0x0, void **) = PoolEntry_vtable;
-    AT(e, 0x4, s32) = -1;
-    AT(e, 0x8, u8) = 0;
-    AT(e, 0x10, s64) = 0;
-    return e;
-}
-
-void *PoolEntry_dtor(void *e, s32 flags) {
-    if (e != NULL) {
-        AT(e, 0x0, void **) = PoolEntry_vtable;
-        if ((s16)flags > 0) {
-            SubPool_delete(e);
-        }
-    }
-    return e;
-}
 
 /* the sub screen's base: a pool of 192 entries (global gSubPool) and its list */
 void *SubScreenBase_ctor(SubScreen *w) {
@@ -117,16 +90,6 @@ SceneTitle *SceneTitle_ctor(SceneTitle *t) {
     Bgm_Init(gAdx, t->bgmWork);
     BgmCtl_ctor((u8 *)&t->bgm);
     return t;
-}
-
-/* 0x002E34D0 */
-void BgmCtl_ctor(u8 *p) {
-    p[0x5] = 0xFF;
-    p[0x4] = 0xFF;
-    F(p, 0x8, u32) = 0;
-    F(p, 0x10, f32) = 1.0f;
-    F(p, 0xC, u32) = 0;
-    F(p, 0x14, u32) = 0;
 }
 
 extern u8 gLanguage;           /* the language */
@@ -520,7 +483,6 @@ void SceneTitle_PrepareBackground(SceneTitle *t) {
 }
 
 #ifdef HG_NATIVE
-#include "gl2d.h"
 
 /* a title sprite (layer 0x30, blended): x0, y0 .. x1, y1 showing texels u0, v0 .. u1, v1 of
  * `tex` (palette `csa`) at `alpha` 0..1 */
@@ -572,28 +534,6 @@ void SceneTitle_DrawPressStart(SceneTitle *t, f32 alpha) {
 /* the pulsing part of it */
 void SceneTitle_DrawPressStartGlow(SceneTitle *t, f32 alpha) {
     SceneTitle_DrawRect(t, 0, 0xA0, 0xC0, 0x20, 0xA0, 0x130, 3, 0, alpha);
-}
-
-/* (the scene) its part +0x97980's Map_TurnTo */
-/* 0x00384C50 */
-s32 SubScreen_Part97980(u8 *g, s32 a1) {
-    return ((s32 (*)(u8 *, s32))Map_TurnTo)(g + 0x97980, a1);   /* (void: v0 as it was left) */
-}
-
-/* 0x00384C60 */
-s32 SubScreen_Byte97A8F(u8 *g) {
-    return AT(g, 0x97A8F, s8);
-}
-
-/* bit n of the scene's 0x97740 bitmap set / tested */
-/* 0x00384C70 */
-void SubScreen_SetBit(u8 *g, s32 n) {
-    AT(g, 0x97740 + (n >> 5) * 4, u32) |= 1u << (n & 0x1F);
-}
-
-/* 0x00384CB0 */
-s32 SubScreen_TestBit(u8 *g, s32 n) {
-    return (AT(g, 0x97740 + (n >> 5) * 4, u32) & (1u << (n & 0x1F))) != 0;
 }
 
 void SceneTitle_SeqToMenu(SceneTitle *t);
@@ -990,18 +930,6 @@ static inline void Pool_Destroy(u8 *pool) {
     }
 }
 
-/* the entry pool (gSubPool): destructor */
-/* 0x00130920 */
-void *SubPool_dtor(u8 *pool, s32 flags) {
-    if (pool != NULL) {
-        Pool_Destroy(pool);
-        if ((s16)flags > 0) {
-            func_00100490(pool);
-        }
-    }
-    return pool;
-}
-
 /* the sub screen's base: destructor (the pool and its entries) */
 void *SubScreenBase_dtor(SubScreen *w, s32 flags) {
     if (w != NULL) {
@@ -1133,42 +1061,6 @@ void SceneTitle_SeqLoadGame(SceneTitle *t) {
 /* ---- the sub screen's destructor and scene mode 5 (2026-10-05) ---- */
 
 extern void *SceneEnding_vtable[], *D_0046A058[], *D_0046A078[], *D_0046A090[], *BlockPool_vtable[], *D_004699E0[];
-
-static inline void task_end_child(Task *t) {
-    if (t != NULL && t->child != NULL) {
-        Task_dtor(t->child, 1);
-        t->child = NULL;
-    }
-}
-
-/* the sub screen (SubScreen_vtable): its load / save screens, text object and two text tasks, then
- * the base (D_0046A090): the pool's entries, the globals gSubPool / gSubScreen cleared */
-/* 0x002D0110 */
-void *SubScreen_dtor(SubScreen *w, s32 flags) {
-    if (w != NULL) {
-        u8 *o = (u8 *)w;
-
-        w->vtbl = SubScreen_vtable;
-        AT(o, 0xA8AC0, void **) = D_0046A058;
-        Task_dtor((Task *)(o + 0xA8AD8), -1);
-        AT(o, 0x97980, void **) = D_0046A068;
-        TextObj_Release(o + 0x97980);
-        Task_dtor((Task *)(o + 0x97984), -1);
-        task_end_child(&w->text);
-        task_end_child(&w->ask);
-        w->vtbl = D_0046A090;
-        AT(o, 0x8, void **) = D_0046A078;
-        AT(o, 0x1210, void **) = BlockPool_vtable;
-        AT(o, 0x1210, void **) = D_004699E0;
-        func_001002C0(o + 0x10, PoolEntry_dtor, 0x18, 0xC0);
-        gSubPool = NULL;
-        gSubScreen = NULL;
-        if ((s16)flags > 0) {
-            func_00100490(o);
-        }
-    }
-    return w;
-}
 
 /* scene mode 5, the ending (0x117540 bytes; vtable SceneEnding_vtable, scene_ending.c): the sub screen
  * (+0x180) for the clear-data save, the message object (+0xA9180), the BGM (+0x1174E4) and a

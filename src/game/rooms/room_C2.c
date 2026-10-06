@@ -6,8 +6,8 @@
 #include "gl2d.h"
 #include "ptmf.h"
 #include "actor.h"
-#include "snd_place.h"
-#include "stalker_progress.h"
+#include "sound.h"
+#include "progress.h"
 #include "msl.h"
 
 extern void *RoomBase_vtable[];

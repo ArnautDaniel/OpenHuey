@@ -6,8 +6,8 @@
 #include "effects.h"
 #include "hewie.h"
 #include "progress.h"
-#include "scene_game_members.h"
-#include "skeleton.h"
+#include "scene_game.h"
+#include "heap.h"
 #ifdef HG_NATIVE
 #include "glr.h"
 #endif
@@ -18,6 +18,7 @@ f32 SwimPath_Step(u8 *st, f32 *at, f32 yaw);
 
 #include "gl2d.h"
 #include "ptmf.h"
+#include "vecmath.h"
 
 extern void *RoomBase_vtable[];
 extern void *Room61_vtable[];

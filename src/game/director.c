@@ -33,8 +33,54 @@
 #include "director.h"
 #include "hewie.h"
 #include "model.h"
-#include "scene_game_members.h"
+#include "scene_game.h"
 #include "libc.h"
+#include "navmesh.h"
+#include "item.h"
+#include "event.h"
+#include "renderer.h"
+#include "msl.h"
+#include "text.h"
+#include "memcard.h"
+#include "pursuer.h"
+#include "effectmgr.h"
+#include "charaction.h"
+#include "music.h"
+#include "camera.h"
+#include "heap.h"
+#include "char_load.h"
+#include "creature.h"
+#include "doors.h"
+#include "gameover.h"
+#include "items.h"
+#include "loader.h"
+#include "movie.h"
+#include "fiona.h"
+#include "pause.h"
+#include "placed.h"
+#include "room_map.h"
+#include "system.h"
+#include "scene.h"
+#include "scene_title.h"
+#include "draw_leaves.h"
+#include "sce/eekernel.h"
+#include "effects.h"
+#include "sound.h"
+#include "vecmath.h"
+#include "daniella.h"
+#include "pad.h"
+#include "scene_boot.h"
+#include "sce/iop.h"
+#include "cri/adx.h"
+#include "subscreen.h"
+#include "input.h"
+#include "room.h"
+#include "lights.h"
+#include "sce/intc.h"
+#include "gl2d.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
 
 extern VObject *gRoomObjects;   /* the room's placed objects */
 extern const char str_N_CUTN_DP[], str_N_N_DH[], str_N_MARK_BIN[], str_N_PARAMS_BIN[];   /* "%s\\CUT%03X.DP", "%s\\%s.DH", "%s\\MARK.BIN", "%s\\PARAMS.BIN" */
@@ -67,6 +113,32 @@ static const s8 b3_CC5A0_map[26] = {
 };
 
 void Cutscene_ResetSlots(u8 *self, s32 idx);
+
+extern f32 Cutscene_Start_ptmf;
+extern f32 D_00412904;
+extern f32 D_00412908;
+extern u8 Cutscene_ClearStatus_ptmf[], D_00412914[], D_00412918[];
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+void Cutscene_Set38(u8 *self, u32 a);
+s32 Cutscene_Get28(u8 *self);
+void Cutscene_PushC(u8 *self, u32 a);
+void Cutscene_SetNoEnd(u8 *self);
+s32 Cutscene_EntryDone(u8 *self);
+s32 Cutscene_Get206(u8 *self, s32 i);
+s32 Cutscene_Get216(u8 *self, s32 i);
+void Cutscene_Mark82(u8 *self, s32 i);
+void Cutscene_Mark83(u8 *self, s32 i);
+void Cutscene_SetScript(u8 *self, u32 a, u32 b);
+s32 Cutscene_Call8(void *self);
+void Cutscene_Destroy(u8 *p);
+
+extern void *D_0046BB20[];
+extern void *Cutscene_vtable[];
+void *Cutscene_dtor(u8 *o, s32 flags);
+void *Cutscene_ctor(u8 *p);
+
+s32 Cutscene_SlotGroup(u8 *o, s32 i);
 
 /* a shot part: base + offset, 0 none */
 static u8 *shot_part(u8 *base, u32 off) {
@@ -152,6 +224,14 @@ static void effect_need(u8 *fx, s32 n, void **vtbl) {
 
 /* ---- small methods ---- */
 
+/* 0x002C94E0 */
+void Cutscene_Set38(u8 *self, u32 a) {
+    *(u32 *)(self + 0x14) = a;
+    *(f32 *)(self + 0x2A0) = Cutscene_Start_ptmf;
+    *(f32 *)(self + 0x2A4) = D_00412904;
+    *(f32 *)(self + 0x2A8) = D_00412908;
+    self[0x204] = 0;
+}
 /* +0x34 status */
 /* 0x002C9510 */
 s32 Cutscene_Status(u8 *d) {
@@ -188,6 +268,22 @@ void Cutscene_SetLetterboxOff(u8 *d, u8 v) {
     AT(d, 0x4, u8) = v;
 }
 
+/* 0x002C95D0 */
+s32 Cutscene_Get28(u8 *self) {
+    u16 *p = *(u16 **)(self + 0x18);
+
+    if (p == NULL) {
+        return -1;
+    }
+    return *p;
+}
+
+/* 0x002C95F0 */
+void Cutscene_PushC(u8 *self, u32 a) {
+    *(u32 *)(self + 0x10) = *(u32 *)(self + 0xC);
+    *(u32 *)(self + 0xC) = a;
+}
+
 /* 0x002C9600 */
 s32 Cutscene_Frame(u8 *d) {
     return FRAME(d);
@@ -198,12 +294,78 @@ void Cutscene_SetHold(u8 *d, u8 v) {
     AT(d, 0x204, u8) = v;
 }
 
+/* 0x002C9620 */
+void Cutscene_SetNoEnd(u8 *self) {
+    self[0x205] = 1;
+}
+
+/* Entries of 12 bytes at +0x6C, current index at +0x64. */
+/* 0x002C9630 */
+s32 Cutscene_EntryDone(u8 *self) {
+    s32 i = *(s32 *)(self + 0x64);
+
+    return *(s32 *)(self + 0x6C + i * 12) == 3;
+}
+
+/* Returns an s8. */
+/* 0x002C9660 */
+s32 Cutscene_Get206(u8 *self, s32 i) {
+    return (s8)(((s8 *)self)[0x206 + i] - 1);
+}
+
+/* Returns an s16. */
+/* 0x002C9680 */
+s32 Cutscene_Get216(u8 *self, s32 i) {
+    return *(s16 *)(self + 0x216 + i * 2);
+}
+
 /* the frame passed 17 before the end */
 /* 0x002C9690 */
 s32 Cutscene_NearEnd(u8 *d) {
     s32 f = LENGTH(d) - 0x11;
 
     return LAST(d) < f && FRAME(d) >= f;
+}
+
+/* 0x002C96F0 */
+void Cutscene_Mark82(u8 *self, s32 i) {
+    self[0x82 + i * 12] = 1;
+}
+
+/* 0x002C9710 */
+void Cutscene_Mark83(u8 *self, s32 i) {
+    self[0x83 + i * 12] = 1;
+}
+
+/* +0x80 the group for slot `i`: groups 1 and 2 and those (3..31) any entry of the table +0x18
+ * ({u16 count at +2}, masks every 12 bytes from +0x24) uses, in order; looked up through
+ * Cutscene_MapId and Cutscene_KindSlot. Without the director's +0x38 or a table: i itself */
+/* 0x002C9730 */
+s32 Cutscene_SlotGroup(u8 *o, s32 i) {
+    s32 list[32];
+    s32 n = 0, b;
+
+    if (gCamDirector == NULL || !VCALL(gCamDirector, 0x38, s32 (*)(void *))(gCamDirector) ||
+        AT(o, 0x18, u8 *) == NULL) {
+        return i;
+    }
+    for (b = 1; b < 32; b++) {
+        u32 mask = 0;
+        s32 k, cnt;
+
+        if (b == 1 || b == 2) {
+            list[n++] = b;
+            continue;
+        }
+        cnt = AT(AT(o, 0x18, u8 *), 0x2, u16);
+        for (k = 0; k < cnt; k++) {
+            mask |= AT(AT(o, 0x18, u8 *), 0x24 + k * 12, u32);
+        }
+        if (mask & (1u << b)) {
+            list[n++] = b;
+        }
+    }
+    return (u8)Cutscene_KindSlot(o, (u8)Cutscene_MapId(o, list[i & 0xFF]));
 }
 
 /* +0x8 the state run */
@@ -316,7 +478,6 @@ u16 Cutscene_FrameSignals(u8 *d, s32 f) {
 /* ---- the shot's parts ---- */
 
 #ifdef HG_NATIVE
-#include "gl2d.h"
 
 /* the letterbox: two black bars (layer 0x30), 56 pixels at the top and bottom, unless +0x4 */
 /* 0x002C9EA0 */
@@ -921,6 +1082,64 @@ s32 Cutscene_ShotAt(u8 *d, s32 t) {
         }
     }
     return -1;
+}
+
+/* 0x002CC830 */
+void Cutscene_SetScript(u8 *self, u32 a, u32 b) {
+    *(u32 *)(self + 0x18) = a;
+    *(u32 *)(self + 0x1C) = b;
+}
+
+/* tail call to virtual slot 0x8 */
+/* 0x002CC840 */
+s32 Cutscene_Call8(void *self) {
+    return VCALL(self, 0x8, s32 (*)(void *))(self);
+}
+
+/* 0x002CC850 */
+void Cutscene_Destroy(u8 *p) {
+    s32 i;
+
+    F(p, 0x18, u32) = 0;
+    F(p, 0x20, u32) = 0;
+    F(p, 0x1C, u32) = 0;
+    for (i = 0; i < 32; i++) {
+        u8 *e = p + 0x80 + i * 12;
+        e[0] = 0;
+        e[1] = 0;
+        e[4] = 0;
+        F(e, 8, u32) = 0;
+    }
+    for (i = 0x44; i <= 0x60; i += 4) {
+        F(p, i, u32) = 0;
+    }
+    F(p, 0x2A0, f32) = *(f32 *)Cutscene_ClearStatus_ptmf;
+    F(p, 0x2A4, f32) = *(f32 *)D_00412914;
+    F(p, 0x2A8, f32) = *(f32 *)D_00412918;
+    p[0x204] = 0;
+    p[0x4] = 0;
+}
+
+/* destructor (vtable Cutscene_vtable) */
+/* (possibly dead code: nothing in the game references it) */
+/* 0x002D0C70 */
+void *Cutscene_dtor(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = Cutscene_vtable;
+        AT(o, 0x0, void **) = D_0046BB20;
+        gCutscene = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* 0x002D1000 */
+void *Cutscene_ctor(u8 *p) {
+    gCutscene = (VObject *)p;
+    F(p, 0x0, void *) = Cutscene_vtable;
+    return p;
 }
 
 /* +0x20 how far frame `t` is into its shot, -1 if in none */

@@ -12,7 +12,7 @@
 #include "effects.h"
 #include "heap.h"
 #include "movie.h"
-#include "scene_game_members.h"
+#include "scene_game.h"
 #include "cri/adx.h"
 #include "cri/sofdec.h"
 #ifdef HG_NATIVE
@@ -21,6 +21,23 @@
 #include "libc.h"
 #include "msl.h"
 #include "sce/eekernel.h"
+#include "sce/libvu0.h"
+#include "music.h"
+#include "director.h"
+#include "doors.h"
+#include "fiona.h"
+#include "room.h"
+#include "text.h"
+#include "model.h"
+#include "placed.h"
+#include "vecmath.h"
+#include "room_map.h"
+#include "lights.h"
+#include "system.h"
+#include "draw_leaves.h"
+#include "sce/intc.h"
+#include "input.h"
+#include "game.h"
 
 typedef struct MovieLib {
     /* 0x00 */ void **vtbl;
@@ -36,39 +53,11 @@ _Static_assert(__builtin_offsetof(MovieLib, create) == 0x28, "MovieLib.create");
 extern void *MovieLib_vtable[];
 extern void *D_0046AED0[];
 
-void *MovieLibBase_dtor(u8 *o, s32 flags);
-
 extern s32 pstr_This_CFT_function_doesn_t_support_the_fu, D_003E5264;
 extern void *D_01976F98;
 extern const u8 str_CRI_CFT_PS2EE_Ver_1_57_Build_Sep_17_2004[];
 extern s64 gTimerRate;   /* the timer's rate (ticks a second) */
-void Cft_SetValue0(s32 v);
-s32 Cft_GetValue0(void);
-void Cft_SetValue1(s32 v);
-s32 Cft_GetValue1(void);
 void Sofdec_SetValue(s32 v);
-s32 Sofdec_GetValue(void);
-void Cft_Init(void);
-s64 Ticks_Convert(s64 ticks);
-f32 Ticks_ToMicros(s32 ticks);
-f32 Ticks_ToMillis(s32 ticks);
-f32 Ticks_ToSeconds(s32 ticks);
-void Ticks_SetRate(s64 rate);
-void Measure_Clear(u8 *s);
-void Measure_Add(u8 *s, s64 v);
-
-void Cft_Noop(void);
-void Cft_Stub1(void);
-void Cft_Stub2(void);
-void Cft_Stub3(void);
-void Cft_Stub4(void);
-void Cft_Stub5(void);
-void Cft_Stub6(void);
-void Cft_Stub7(void);
-void Cft_Stub8(void);
-void Cft_Stub9(void);
-void Cft_Stub10(void);
-void Cft_Stub11(void);
 
 extern u8 D_003E5268[];
 extern u8 D_003E5270[];
@@ -83,26 +72,38 @@ extern u8 str_CRI_SFH_PS2EE_Ver_1_19_Build_Sep_17_2004[];
 extern u8 str_CRI_SFX_PS2EE_Ver_2_08_Build_Sep_17_2004[];
 extern u8 str_CRI_SUD_PS2EE_Ver_0_05_Build_Sep_17_2004[];
 void *Cft_ValuePtr(void);
-void *Sofdec_Data3E5270(void);
-void *Sofdec_Data4574B8(void);
-void *Sofdec_Data457558(void);
-void *Sofdec_Data4575C0(void);
-void *Sofdec_Data457ED0(void);
-void *Sofdec_Data3E88D0(void);
-void *Sofdec_Data3E9F18(void);
-void *Sofdec_Data459930(void);
-void *Sfh_Version(void);
-void *Sfx_Version(void);
-void *Sud_Version(void);
 
-void TvScreenA_SetParams(u8 *self, u8 *src);
+extern void *D_0046AEC0[];
+extern u8 str_VOL[];
+extern void *D_0046AF00[], *D_0046AF0C[], *D_0046AD88[];
+#ifdef HG_NATIVE
+#define CORE_SYNC_EI()
+#else
+#define CORE_SYNC_EI() __asm__ volatile("sync\n\tei")
+#endif
 
-extern u8 *gMovieFlag;
-#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+s32 MovieLib_Stop(void);
 
-void TvScreenB_SetParams(u8 *p, const u8 *src);
-void TvScreenB_Start(u8 *p);
+/* func_001CC5B0(0), then interrupts back on; 0 */
+/* 0x001AAC30 */
+s32 MovieLib_Stop(void) {
+    func_001CC5B0(0);
+    CORE_SYNC_EI();
+    return 0;
+}
 
+/* shut down: the member at +0x7C44 (+0x14), the sound side (func_001CA850, func_001C8478,
+ * func_001C8648(str_VOL)) and its interrupt handler (+0x12C, cause 3) */
+/* 0x001AAC60 */
+void MovieLib_Shutdown(u8 *o) {
+    VObject *m = (VObject *)(o + 0x7C44);
+
+    VCALL(m, 0x14, void (*)(VObject *))(m);
+    func_001CA850();
+    func_001C8478();
+    func_001C8648(str_VOL);
+    RemoveIntcHandler(3, AT(o, 0x12C, s32));
+}
 /* destructor (vtable D_0046AED0) */
 /* 0x001BF660 */
 void *MovieLibBase_dtor(u8 *o, s32 flags) {
@@ -110,6 +111,30 @@ void *MovieLibBase_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046AED0;
         AT(o, 0x4, u8) = 0;
         gMovieLib = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (D_0046AF00): its members at +0x7C44 (D_0046AED0, clearing gMovieLib) and +0x124
+ * (D_0046AD88), then the base (D_0046AEC0, clearing gAdx) */
+/* 0x001BF6C0 */
+void *MovieSys_dtor(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AF00;
+        AT(o, 0x124, void **) = D_0046AF0C;
+        AT(o, 0x7C44, void **) = MovieLib_vtable;
+        AT(o, 0x7C44, void **) = D_0046AED0;
+        AT(o, 0x7C48, u8) = 0;
+        gMovieLib = NULL;
+        AT(o, 0x124, void **) = D_0046AD88;
+        AT(o, 0x0, void **) = D_0046AEC0;
+        AT(o, 0x4, s32) = 0;
+        AT(o, 0x8, s32) = 0;
+        AT(o, 0xC, s32) = 0;
+        gAdx = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -428,7 +453,6 @@ s32 MovieLib_WorkSize(MovieLib *lib) {
 
 /* ---- the movie scene: plays a .SFD (CAPCOM.SFD at boot, the opening ...) ---- */
 
-#include "game.h"
 
 _Static_assert(__builtin_offsetof(Movie, name) == 0xA8, "Movie.name");
 _Static_assert(__builtin_offsetof(Movie, volume) == 0x1C8, "Movie.volume");
@@ -436,9 +460,7 @@ _Static_assert(__builtin_offsetof(Movie, volume) == 0x1C8, "Movie.volume");
 extern void *Scene_vtable[];
 extern void *Movie_vtable[];       /* Movie */
 extern void *MovieScene_vtable[];       /* SceneMovie (the boot logo) */
-extern u8 *gMovieFlag;
 
-void Movie_Finish(Movie *m);
 void Movie_StateOpening(Movie *m);
 
 static const PTMF sMovieEntry = {0, 0x10, {(void *)0}};   /* virtual +0x10 */
@@ -474,8 +496,6 @@ static inline s32 movie_level(Movie *m) {
  * a quad on the screen's corners textured with the movie's current frame (Movie_PageTex0) while
  * +0x10 (set by +0x18); its +0xC is TvScreenA_Start ---- */
 
-extern void *TvScreenA_vtable[], *D_0046D730[], *QuadDrawer_vtable[], *Helper469D00_vtable[];
-
 /* the movie's current frame copied into a texture page (`page` 2): its GS TEX0, or -1 when
  * there is none. (PC: no movie frames yet - CRI Sofdec is not available) */
 #ifdef HG_NATIVE
@@ -493,169 +513,9 @@ u64 Movie_PageTex0(u8 *mv, s32 page) {
     return (u64)-1;
 }
 #else
-u64 Movie_PageTex0(u8 *mv, s32 page);
 #endif
 
-/* +0x8 destructor */
-/* 0x002B60D0 */
-void *TvScreenA_dtor(void *o, s32 flags) {
-    if (o != NULL) {
-        AT(o, 0x0, void **) = TvScreenA_vtable;
-        if (o != NULL) {
-            AT(o, 0x0, void **) = D_0046D730;
-        }
-        if ((s16)flags > 0) {
-            RoomEffects_delete(o);
-        }
-    }
-    return o;
-}
-
-/* 0x002B6130 */
-void TvScreenA_SetParams(u8 *self, u8 *src) {
-    *(u32 *)(self + 0x10) = *src;
-}
-
-/* +0x10 update: the movie flag from the game mode (gProgress +0x54) */
-/* 0x002B62D0 */
-void TvScreenA_Update(void) {
-    *gMovieFlag = VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress);
-}
-
-/* a TV's +0x14 draw: its screen (corners (x0, top, z0) (x1, top, z1) (x0, bottom, z0) (x1,
- * bottom, z1)), 256 x 224 of the movie frame at half brightness, in layer 2 */
-static inline __attribute__((always_inline)) void tv_draw(u8 *o, u32 x0, u32 x1, u32 top, u32 bottom, u32 z0,
-                                                          u32 z1) {
-    if (AT(o, 0x10, s32) != 0) {
-        u64 tex = Movie_PageTex0(gMovieFlag, 2);
-        struct {
-            void **vtbl;
-            s32 a;
-            u64 tex;
-            void *rec;
-            s32 corners;
-            f32 cx, cy;
-            s32 layer;
-            s16 count, cellX, cellY, cellW, cellH, texW, texH;
-            s8 flags, frames, texId, texGroup, palette;
-        } q __attribute__((aligned(16)));
-        u32 c[16] __attribute__((aligned(16)));
-        struct {
-            s32 rgba[4];
-            f32 pos[4];
-            f32 w, h, turn;
-            s32 frame;
-        } r __attribute__((aligned(16)));
-
-        if (tex == (u64)-1) {
-            return;
-        }
-        r.rgba[3] = 0x80;
-        r.rgba[0] = 0x40;
-        r.rgba[1] = 0x40;
-        r.rgba[2] = 0x40;
-        c[0] = x0;
-        c[8] = x0;
-        c[1] = top;
-        c[5] = top;
-        c[2] = z0;
-        c[10] = z0;
-        r.pos[3] = 1.0f;
-        r.w = 1.0f;
-        q.vtbl = QuadDrawer_vtable;
-        r.h = 1.0f;
-        q.rec = &r;
-        c[3] = 0x3F800000;
-        q.corners = (s32)c;
-        q.cellH = 0xE0;
-        c[4] = x1;
-        c[12] = x1;
-        c[6] = z1;
-        c[14] = z1;
-        c[7] = 0x3F800000;
-        c[9] = bottom;
-        c[13] = bottom;
-        c[11] = 0x3F800000;
-        c[15] = 0x3F800000;
-        q.a = -1;
-        q.palette = -1;
-        q.tex = tex;
-        q.layer = 2;
-        q.flags = 2;
-        q.count = 1;
-        q.frames = 1;
-        q.cellW = 0x100;
-        q.texW = 0x100;
-        q.texH = 0x100;
-        r.pos[0] = 0.0f;
-        r.pos[1] = 0.0f;
-        r.pos[2] = 0.0f;
-        r.turn = 0.0f;
-        r.frame = 0;
-        q.cx = 0.0f;
-        q.cy = 0.0f;
-        q.cellX = 0;
-        q.cellY = 0;
-        q.texId = 0;
-        q.texGroup = 0;
-        Drawer_Submit((u8 *)&q);
-        q.vtbl = Helper469D00_vtable;
-    }
-    *gMovieFlag = 1;
-}
-
-/* +0x14 draw: the screen at x -2.61 .. -0.12, z 5.79 .. 7.53, y 2.06 .. 4.39 */
-/* 0x002B6140 */
-void TvScreenA_Draw(u8 *o) {
-    tv_draw(o, 0xC0274A23, 0xBDF93DD9, 0x408C872B, 0x400401A3, 0x40B93A93, 0x40F0D014);
-}
-
 /* ---- TvScreenB_vtable: another TV (as TvScreenA_vtable; its +0xC TvScreenB_Start, +0x18 TvScreenB_SetParams) ---- */
-
-extern void *TvScreenB_vtable[];
-
-/* +0x8 destructor */
-/* 0x002D76B0 */
-void *TvScreenB_dtor(void *o, s32 flags) {
-    if (o != NULL) {
-        AT(o, 0x0, void **) = TvScreenB_vtable;
-        if (o != NULL) {
-            AT(o, 0x0, void **) = D_0046D730;
-        }
-        if ((s16)flags > 0) {
-            RoomEffects_delete(o);
-        }
-    }
-    return o;
-}
-
-/* 0x002D7710 */
-void TvScreenB_SetParams(u8 *p, const u8 *src) { F(p, 0x10, u32) = *src; }
-
-/* +0x10 update */
-/* 0x002D78B0 */
-void TvScreenB_Update(void) {
-    *gMovieFlag = VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress);
-}
-
-/* 0x002D78F0 */
-void TvScreenB_Start(u8 *p) {
-    *gMovieFlag = 0;
-    F(p, 0x10, u32) = 0;
-}
-
-/* +0x14 draw: the screen at x 20.8 .. 22.96, z 7.73 .. 9.80, y 9.80 .. 12.05 */
-/* 0x002D7720 */
-void TvScreenB_Draw(u8 *o) {
-    tv_draw(o, 0x41A66AE8, 0x41B7AE14, 0x4140B924, 0x411CDB23, 0x40F7573F, 0x411CDD2F);
-}
-
-/* clear the flag */
-/* 0x002B6310 */
-void TvScreenA_Start(Movie *m) {
-    *gMovieFlag = 0;
-    AT(m, 0x10, s32) = 0;
-}
 
 /* +0x18 */
 /* 0x002B6330 */

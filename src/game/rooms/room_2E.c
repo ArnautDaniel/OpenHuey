@@ -6,7 +6,7 @@
 #include "gl2d.h"
 #include "ptmf.h"
 #include "progress.h"
-#include "scene_game_members.h"
+#include "scene_game.h"
 
 extern void *RoomBase_vtable[];
 extern void *Room2E_vtable[];

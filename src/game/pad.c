@@ -1,5 +1,11 @@
 /* Controller input (system +0x40, vtable 0x46ADB0, global gPad), on top of libpad2
- * (replaced on PC by native/platform/pad.c). */
+ * (replaced on PC by native/platform/pad.c).
+ *
+ * (was rumble.c) Controller rumble (system +0x300, vtable 0x46F4F0, global gRumble): five
+ * channels, each with a small-motor value A (on: 1.0 in 16.16) and a large-motor strength B
+ * (0..255 in 16.16) held for a number of frames; channel 4 can also follow two command lists.
+ * Each frame the strongest values go to the pad manager (system +0x40, +0xC).
+ */
 #include "common.h"
 #include "game.h"
 #include "globals.h"
@@ -7,9 +13,128 @@
 #include "sce/iop.h"
 #include "sce/libpad2.h"
 #include "sce/libvu0.h"
+#include "input.h"
+#include "progress.h"
+#include "ptmf.h"
+#include "memcard.h"
+#include "navmesh.h"
+#include "daniella.h"
+#include "loader.h"
+#include "vecmath.h"
+#include "scene.h"
+#include "scene_boot.h"
+#include "scene_game.h"
+#include "scene_title.h"
+#include "sound.h"
+#include "system.h"
+#include "text.h"
+#include "libc.h"
+#include "msl.h"
+#include "actor.h"
+#include "renderer.h"
+#include "cri/adx.h"
+#include "sce/eekernel.h"
+#include "sce/intc.h"
+#include "sce/libmc.h"
+#include "sce/sif.h"
+#include "ps2hw.h"
 
 extern const char str_DS2O_S1_IRX[];                     /* pad IOP module */
 
+extern void *Pads_vtable[], *D_0046ADC4[], *D_0046ADD0[], *D_0046AD88[];
+void *Pads_dtor(u8 *o, s32 flags);
+
+extern void *Rumble_vtable[], *D_0046AE30[];
+#define RUMBLE_VCALL(f, off, type) ((type)(f)->vtbl[(off) / 4])
+
+void Pads_Shutdown(u8 *pads);
+
+/* advance a channel's value: held while its frames last, then off */
+static inline void RumbleChannel_Step(s16 *time, s32 *step, s32 *value) {
+    if ((u16)(*time)-- > 0) {
+        *value += *step;
+        if (*value > 0) {
+            return;
+        }
+        *step = 0;
+        *value = 0;
+    } else {
+        *step = 0;
+        *value = 0;
+    }
+    *time = 0;
+}
+
+/* channel 4: same, but it only bottoms out at 0; when its frames are up, the next command of
+ * the list (if any) */
+static inline s32 Rumble_StepList(Rumble *f, s16 *time, s32 *step, s32 *value, const RumbleCmd **list, s32 *pos, s32 isB) {
+    const RumbleCmd *e;
+
+    if ((u16)(*time)-- > 0) {
+        *value += *step;
+        if (*value <= 0) {
+            *value = 0;
+        }
+        return *value;
+    }
+    *step = 0;
+    *value = 0;
+    *time = 0;
+    if (*list != NULL) {
+        (*pos)++;
+        for (;;) {
+            if (*list == NULL) {
+                *list = NULL;
+                *pos = 0;
+                break;
+            }
+            e = &(*list)[*pos];
+            if (!(e->cmd & 0xF000)) {
+                if (isB) {
+                    RUMBLE_VCALL(f, 0x1C, void (*)(Rumble *, s32, s32, s32, s32))(f, 4, e->b0, e->b1, e->cmd);
+                } else {
+                    RUMBLE_VCALL(f, 0x14, void (*)(Rumble *, s32, s32, s32))(f, 4, e->b0 != 0, e->cmd);
+                }
+                break;
+            }
+            if (!(e->cmd & 0x4000)) {
+                *list = NULL;
+                *pos = 0;
+                break;
+            }
+            *pos = e->cmd & 0xFFF;
+        }
+    }
+    return *value;
+}
+
+void *RumbleBase_dtor(u8 *o, s32 flags);
+void Rumble_Reset(Rumble *f);
+void Rumble_Clear(Rumble *f);
+void Rumble_SetA(Rumble *f, s32 c, s32 on, s32 time);
+void Rumble_SetB(Rumble *f, s32 c, s32 v, s32 time);
+void Rumble_MoveB(Rumble *f, s32 c, s32 from, s32 to, s32 time);
+void Rumble_StartLists(Rumble *f, const RumbleCmd *a, const RumbleCmd *b);
+s32 Rumble_ListRunning(Rumble *f);
+void Rumble_Enable(Rumble *f, s32 on);
+void Rumble_Set2C(Rumble *f, s32 v);
+
+/* Game +0x69B00's destructor: its vtables (and its +0x18 member's), gPad cleared */
+/* 0x001BE150 */
+void *Pads_dtor(u8 *o, s32 flags) {
+    if (o == NULL) {
+        return o;
+    }
+    AT(o, 0x0, void **) = Pads_vtable;
+    AT(o, 0x18, void **) = D_0046ADC4;
+    AT(o, 0x18, void **) = D_0046AD88;
+    AT(o, 0x0, void **) = D_0046ADD0;
+    gPad = NULL;
+    if ((s16)flags > 0) {
+        func_00100490(o);
+    }
+    return o;
+}
 /* init: libpad2, its IOP module, a socket for port 0 */
 /* 0x001BE6A0 */
 void Pads_Init(u8 *pads) {
@@ -25,6 +150,199 @@ void Pads_Init(u8 *pads) {
     AT(p, 0x24A, u8) = 0;
     AT(p, 0x249, u8) = 0;
     AT(p, 0x248, u8) = 0;
+}
+
+/* destructor (vtable D_0046AE30) */
+/* 0x001BF280 */
+void *RumbleBase_dtor(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AE30;
+        gRumble = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* +0x8 destructor */
+/* 0x0020DF90 */
+Rumble *Rumble_dtor(Rumble *f, s32 flags) {
+    if (f != NULL) {
+        f->vtbl = Rumble_vtable;
+        f->vtbl = D_0046AE30;
+        gRumble = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(f);
+        }
+    }
+    return f;
+}
+
+/* +0x24 a command list is running */
+/* 0x002D3FA0 */
+s32 Rumble_ListRunning(Rumble *f) {
+    return f->listB != NULL || f->listA != NULL;
+}
+
+/* +0x2C */
+/* 0x002D3FC0 */
+void Rumble_Set2C(Rumble *f, s32 v) {
+    f->unk5 = v;
+    if ((u8)v == 1) {
+        VCALL(gPad, 0xC, void (*)(VObject *, s32, s32, s32))(gPad, 0, 0, 0);
+    }
+}
+
+/* +0x28 enable / disable (disabling stops the motors) */
+/* 0x002D4020 */
+void Rumble_Enable(Rumble *f, s32 on) {
+    f->enabled = on;
+    if (!(u8)on) {
+        VCALL(gPad, 0xC, void (*)(VObject *, s32, s32, s32))(gPad, 0, 0, 0);
+    }
+}
+
+/* +0x20 start the command lists (A: channel 4 value A, B: channel 4 value B) */
+/* 0x002D4070 */
+void Rumble_StartLists(Rumble *f, const RumbleCmd *a, const RumbleCmd *b) {
+    const RumbleCmd *e;
+
+    f->posA = 0;
+    f->posB = 0;
+    f->listA = a;
+    f->listB = b;
+    for (;;) {
+        if (f->listA == NULL) {
+            f->listA = NULL;
+            f->posA = 0;
+            break;
+        }
+        e = &f->listA[f->posA];
+        if (!(e->cmd & 0xF000)) {
+            RUMBLE_VCALL(f, 0x14, void (*)(Rumble *, s32, s32, s32))(f, 4, e->b0 != 0, e->cmd);
+            break;
+        }
+        if (!(e->cmd & 0x4000)) {
+            f->listA = NULL;
+            f->posA = 0;
+            break;
+        }
+        f->posA = e->cmd & 0xFFF;
+    }
+    for (;;) {
+        if (f->listB == NULL) {
+            f->listB = NULL;
+            f->posB = 0;
+            break;
+        }
+        e = &f->listB[f->posB];
+        if (!(e->cmd & 0xF000)) {
+            RUMBLE_VCALL(f, 0x1C, void (*)(Rumble *, s32, s32, s32, s32))(f, 4, e->b0, e->b1, e->cmd);
+            break;
+        }
+        if (!(e->cmd & 0x4000)) {
+            f->listB = NULL;
+            f->posB = 0;
+            break;
+        }
+        f->posB = e->cmd & 0xFFF;
+    }
+}
+
+/* +0x1C move value B of channel `c` from `from` to `to` over `time` frames */
+/* 0x002D41B0 */
+void Rumble_MoveB(Rumble *f, s32 c, s32 from, s32 to, s32 time) {
+    RumbleChannel *ch = &f->ch[(u8)c];
+    s32 n = (u16)time & 0xFFF;
+
+    ch->timeB = n;
+    ch->valueB = (u8)from << 16;
+    ch->stepB = time != 0 ? (((u8)to << 16) - ch->valueB) / n : 0;
+}
+
+/* +0x18 set value B of channel `c` to `v` for `time` frames */
+/* 0x002D4220 */
+void Rumble_SetB(Rumble *f, s32 c, s32 v, s32 time) {
+    RumbleChannel *ch = &f->ch[(u8)c];
+
+    ch->timeB = (u16)time & 0xFFF;
+    ch->stepB = 0;
+    ch->valueB = (u8)v << 16;
+}
+
+/* +0x14 set value A of channel `c` (on: 1.0, off: 0) for `time` frames */
+/* 0x002D4260 */
+void Rumble_SetA(Rumble *f, s32 c, s32 on, s32 time) {
+    RumbleChannel *ch = &f->ch[(u8)c];
+
+    ch->timeA = (u16)time & 0xFFF;
+    ch->stepA = 0;
+    ch->valueA = on ? 0x10000 : 0;
+}
+
+/* per-frame tick: run the channels, send the strongest small / large motor values */
+/* 0x002D42A0 */
+void Rumble_Tick(Rumble *f) {
+    s32 maxA = 0, maxB = 0, i;
+
+    if (!f->enabled) {
+        return;
+    }
+    for (i = 0; i < 4; i++) {
+        RumbleChannel *c = &f->ch[i];
+
+        RumbleChannel_Step(&c->timeA, &c->stepA, &c->valueA);
+        maxA = maxA < c->valueA ? c->valueA : maxA;
+        RumbleChannel_Step(&c->timeB, &c->stepB, &c->valueB);
+        maxB = maxB < c->valueB ? c->valueB : maxB;
+    }
+    if (f->unk5 == 0) {
+        RumbleChannel *c = &f->ch[4];
+        s32 v;
+
+        v = Rumble_StepList(f, &c->timeA, &c->stepA, &c->valueA, &f->listA, &f->posA, 0);
+        maxA = maxA < v ? v : maxA;
+        v = Rumble_StepList(f, &c->timeB, &c->stepB, &c->valueB, &f->listB, &f->posB, 1);
+        maxB = maxB < v ? v : maxB;
+    }
+    VCALL(gPad, 0xC, void (*)(VObject *, s32, s32, s32))(gPad, 0, (maxA >> 16) & 0xFF, (maxB >> 16) & 0xFF);
+}
+
+/* +0x10 clear all channels and lists */
+/* 0x002D45A0 */
+void Rumble_Clear(Rumble *f) {
+    s32 i;
+
+    for (i = 0; i < 5; i++) {
+        f->ch[i].stepA = 0;
+        f->ch[i].valueA = 0;
+        f->ch[i].timeA = 0;
+        f->ch[i].stepB = 0;
+        f->ch[i].valueB = 0;
+        f->ch[i].timeB = 0;
+    }
+    f->listB = NULL;
+    f->listA = NULL;
+    f->posA = 0;
+    f->posB = 0;
+}
+
+/* +0xC reset: clear (vtable +0x10), enabled */
+/* 0x002D45F0 */
+void Rumble_Reset(Rumble *f) {
+    RUMBLE_VCALL(f, 0x10, void (*)(Rumble *))(f);
+    f->enabled = 1;
+    f->unk5 = 0;
+}
+
+/* constructor: register, reset (vtable +0xC) */
+/* 0x002D4630 */
+void *Rumble_ctor(Rumble *f) {
+    f->vtbl = Rumble_vtable;
+    gRumble = (VObject *)f;
+    RUMBLE_VCALL(f, 0xC, void (*)(Rumble *))(f);
+    return f;
 }
 
 /* port state (system +0x40 +0x40): socket, module, libpad2 state, read phase, data, profile,
@@ -139,6 +457,15 @@ s32 Pads_GetData(u8 *pads, s32 port, PadData *out) {
         }
     }
     return 0;
+}
+
+/* ---- the rest of the system object (2026-10-05) ---- */
+
+/* the pads (+0x40): close the socket, end the library */
+/* 0x001BE480 */
+void Pads_Shutdown(u8 *pads) {
+    func_001EFB40(AT(pads, 0x40, s32));
+    func_001EF9D0();
 }
 
 /* ---- the game's input state (gInput, one per port) ---- */
@@ -310,3 +637,5 @@ void Pads_BuildInput(u8 *pads) {
     Input_Stick(in->stickL, in->analog[2], in->analog[3]);
     Input_Stick(in->stickR, in->analog[0], in->analog[1]);
 }
+
+_Static_assert(__builtin_offsetof(Rumble, listB) == 0x80, "Rumble.listB");

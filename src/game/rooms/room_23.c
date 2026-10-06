@@ -6,7 +6,6 @@
 #include "gl2d.h"
 #include "ptmf.h"
 #include "progress.h"
-#include "stalker_progress.h"
 
 extern void *RoomBase_vtable[];
 extern void *Room23_vtable[];

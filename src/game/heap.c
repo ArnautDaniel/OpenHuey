@@ -1,12 +1,90 @@
 /* Block heap (vtable 0x46A1C0): the scene heap (Game.sceneHeap) and the scenes' sub-heaps. A
  * table of blocks in address order covers the heap's memory; allocations are rounded up to 64
- * bytes; freeing merges with free neighbours. */
+ * bytes; freeing merges with free neighbours.
+ *
+ * (was chainpool.c) The chain pool (gChainPool), the skeleton pool's sibling for motion data: 64
+ * chains (12 bytes: ?, first entry, entry count) and 0x14-byte entries (+0x300), each with a use
+ * bitmap (+0x2718 chains, +0x2720 entries).
+ *
+ * (was skeleton.c) The skeleton pool (gSkelPool): 32 skeletons (12 bytes: ?, first node, node
+ * count) and 632 0x50-byte bone nodes (+0x180), each with a use bitmap (+0xC700 skeletons,
+ * +0xC704 nodes).
+ */
 #include "common.h"
 #include "ptmf.h"
 #include "heap.h"
 #include "msl.h"
+#include "game.h"
+#include "progress.h"
+#include "sce/libvu0.h"
+#include "globals.h"
+#include "navmesh.h"
+#include "actor.h"
+#include "memcard.h"
+#include "pursuer.h"
+#include "item.h"
+#include "effects.h"
+#include "items.h"
+#include "placed.h"
+#include "scene_game.h"
+#include "sound.h"
+#include "vecmath.h"
+#include "input.h"
+#include "daniella.h"
+#include "loader.h"
+#include "pad.h"
+#include "scene.h"
+#include "scene_boot.h"
+#include "scene_title.h"
+#include "system.h"
+#include "text.h"
+#include "libc.h"
+#include "sce/iop.h"
+#include "effectmgr.h"
+#include "charaction.h"
+#include "renderer.h"
+#include "gl2d.h"
+#include "music.h"
+#include "camera.h"
+#include "char_load.h"
+#include "creature.h"
+#include "doors.h"
+#include "event.h"
+#include "gameover.h"
+#include "hewie.h"
+#include "model.h"
+#include "movie.h"
+#include "fiona.h"
+#include "pause.h"
+#include "room_map.h"
+#include "draw_leaves.h"
+#include "sce/eekernel.h"
+#include "cri/adx.h"
+#include "subscreen.h"
+#include "sce/intc.h"
+#include "sce/libmc.h"
+#include "sce/libpad2.h"
+#include "sce/sif.h"
+#include "ps2hw.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
 
 extern void *Heap_vtable[], *D_004699E0[];
+
+void ChainPool_FreeAll(u8 *pool);
+u8 *Chain_Entry(u8 *chain, s32 n);
+void ChainPool_Free(u8 *pool, u8 *chain);
+s32 Chain_Link(u8 *prev, u8 *e);
+u8 *ChainPool_Alloc(u8 *pool, u32 n);
+
+void *BlockPool_ElemAt(B0_Pool *p, u32 i);
+
+#define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+void *SceneHeap_ctor(u8 *p);
+
+s32 SkelNode_Link(u8 *prev, u8 *node);
 
 /* +0x8 destructor */
 /* 0x00168C20 */
@@ -36,6 +114,251 @@ void Heap_Init(Heap *h) {
         h->blocks[i].addr = h->base + h->size;
         h->blocks[i].size = 0;
     }
+}
+
+/* Heap (vtable 0x46A1C0) setup: memory, size, block table, block count; then its init (+0xC). */
+/* 0x00169260 */
+void Heap_Setup(VObject *h, void *base, u32 size, void *blocks, s32 count) {
+    AT(h, 0x4, void *) = base;
+    AT(h, 0x8, u32) = size;
+    AT(h, 0xC, void *) = blocks;
+    AT(h, 0x10, s32) = count;
+    VCALL(h, 0xC, void (*)(VObject *, void *, u32, void *, s32))(h, base, size, blocks, count);
+}
+
+/* free a chain and its entries (NULL: nothing) */
+/* 0x00179BC0 */
+void ChainPool_Free(u8 *pool, u8 *chain) {
+    s32 i;
+    u32 n;
+
+    if (chain == NULL) {
+        return;
+    }
+    if (AT(chain, 4, u8 *) != NULL) {
+        for (i = AT(chain, 8, s32) - 1; i >= 0; i--) {
+            u8 *e = Chain_Entry(chain, i);
+
+            AT(e, 0x10, s32) = 0;
+            AT(e, 0xC, s32) = 0;
+            AT(e, 0x4, s32) = 0;
+            AT(e, 0x8, s32) = 0;
+            n = (u32)(e - (pool + 0x300)) / 0x14;
+            AT(pool, 0x2720 + (n >> 5) * 4, u32) &= ~(1 << (n & 0x1F));
+        }
+    }
+    AT(chain, 0, s32) = 0;
+    AT(chain, 4, s32) = 0;
+    AT(chain, 8, s32) = 0;
+    n = (u32)(chain - pool) / 12;
+    AT(pool, 0x2718 + (n >> 5) * 4, u32) &= ~(1 << (n & 0x1F));
+}
+
+/* allocate a chain of `n` linked entries (NULL: no chain free; a short chain if the entries run
+ * out) */
+/* 0x00179CD0 */
+u8 *ChainPool_Alloc(u8 *pool, u32 n) {
+    u8 *chain = NULL;
+    u8 *first = NULL;   /* (left unset by the original for 0 entries) */
+    u8 *e = NULL;
+    u32 i;
+    s32 j;
+
+    for (j = 0; j < 0x40; j++) {
+        u32 *used = &AT(pool, 0x2718 + (j >> 5) * 4, u32);
+
+        if (!(*used & (1 << (j & 0x1F)))) {
+            *used |= 1 << (j & 0x1F);
+            chain = pool + j * 12;
+            AT(chain, 0, s32) = 0;
+            AT(chain, 4, s32) = 0;
+            AT(chain, 8, s32) = 0;
+            break;
+        }
+    }
+    for (i = 0; i < n; i++) {
+        u8 *prev = e;
+
+        e = NULL;
+        for (j = 0; j < 0x1CE; j++) {
+            u32 *used = &AT(pool, 0x2720 + (j >> 5) * 4, u32);
+
+            if (!(*used & (1 << (j & 0x1F)))) {
+                *used |= 1 << (j & 0x1F);
+                e = pool + 0x300 + j * 0x14;
+                AT(e, 0x10, s32) = 0;
+                AT(e, 0xC, s32) = 0;
+                AT(e, 0x4, s32) = 0;
+                AT(e, 0x8, s32) = 0;
+                break;
+            }
+        }
+        if (e == NULL) {
+            break;
+        }
+        if (i == 0) {
+            first = e;
+        } else {
+            Chain_Link(prev, e);
+        }
+    }
+    AT(chain, 4, u8 *) = first;
+    AT(chain, 8, u32) = n;
+    return chain;
+}
+
+/* free everything */
+/* 0x00179EA0 */
+void ChainPool_FreeAll(u8 *pool) {
+    s32 i;
+
+    for (i = 0; i < 17; i++) {
+        AT(pool, 0x2718 + i * 4, s32) = 0;
+    }
+}
+
+/* link entry `e` after `prev` (0: prev already has a next) */
+/* 0x00179EE0 */
+s32 Chain_Link(u8 *prev, u8 *e) {
+    if (AT(prev, 0x10, u8 *) != NULL) {
+        return 0;
+    }
+    AT(prev, 0x10, u8 *) = e;
+    return 1;
+}
+
+/* Entries: +0x4..+0xC data, +0x10 next. */
+
+/* the chain's entry `n` (NULL past the end) */
+/* 0x00179F10 */
+u8 *Chain_Entry(u8 *chain, s32 n) {
+    u8 *e = AT(chain, 4, u8 *);
+    s32 i = 0;
+
+    while (e != NULL) {
+        if (i == n) {
+            return e;
+        }
+        e = AT(e, 0x10, u8 *);
+        i++;
+    }
+    return NULL;
+}
+
+/* Bone nodes: a 4x4 matrix, then +0x40 index, +0x44 parent, +0x48 next. */
+
+/* link `node` after `prev` (0: prev already has a next) */
+/* 0x0017CE30 */
+s32 SkelNode_Link(u8 *prev, u8 *node) {
+    if (AT(prev, 0x48, u8 *) != NULL) {
+        return 0;
+    }
+    AT(prev, 0x48, u8 *) = node;
+    return 1;
+}
+
+/* set the node's parent (0: none given) */
+/* 0x0017CE60 */
+s32 SkelNode_SetParent(u8 *node, f32 *parent) {
+    if (parent == NULL) {
+        return 0;
+    }
+    AT(node, 0x44, f32 *) = parent;
+    return 1;
+}
+
+/* free a skeleton and its nodes (NULL: nothing) */
+/* 0x0017CED0 */
+void SkelPool_Free(u8 *pool, u8 *skel) {
+    s32 i;
+    u32 n;
+
+    if (skel == NULL) {
+        return;
+    }
+    if (AT(skel, 4, u8 *) != NULL) {
+        for (i = AT(skel, 8, s32) - 1; i >= 0; i--) {
+            u8 *node = (u8 *)Skel_Bone(skel, i);
+
+            AT(node, 0x44, s32) = 0;
+            AT(node, 0x48, s32) = 0;
+            n = (u32)(node - (pool + 0x180)) / 0x50;
+            AT(pool, 0xC704 + (n >> 5) * 4, u32) &= ~(1 << (n & 0x1F));
+        }
+    }
+    AT(skel, 0, s32) = 0;
+    AT(skel, 4, s32) = 0;
+    n = (u32)(skel - pool) / 12;
+    AT(pool, 0xC700 + (n >> 5) * 4, u32) &= ~(1 << (n & 0x1F));
+}
+
+/* allocate a skeleton of `nBones` linked nodes (NULL: none free; a short chain if the nodes
+ * run out) */
+/* 0x0017D000 */
+u8 *SkelPool_Alloc(u8 *pool, u32 nBones) {
+    u8 *skel = NULL;
+    u8 *first = NULL;   /* (left unset by the original for 0 bones) */
+    u8 *node = NULL;
+    u32 i;
+    s32 j;
+
+    for (j = 0; j < 32; j++) {
+        u32 *used = &AT(pool, 0xC700 + (j >> 5) * 4, u32);
+        if (!(*used & (1 << (j & 0x1F)))) {
+            *used |= 1 << (j & 0x1F);
+            skel = pool + j * 12;
+            AT(skel, 0, s32) = 0;
+            AT(skel, 4, s32) = 0;
+            break;
+        }
+    }
+    for (i = 0; i < nBones; i++) {
+        u8 *prev = node;
+
+        node = NULL;
+        for (j = 0; j < 0x278; j++) {
+            u32 *used = &AT(pool, 0xC704 + (j >> 5) * 4, u32);
+            if (!(*used & (1 << (j & 0x1F)))) {
+                *used |= 1 << (j & 0x1F);
+                node = pool + 0x180 + j * 0x50;
+                AT(node, 0x44, s32) = 0;
+                AT(node, 0x48, s32) = 0;
+                break;
+            }
+        }
+        if (node == NULL) {
+            break;
+        }
+        if (i == 0) {
+            first = node;
+        } else {
+            SkelNode_Link(prev, node);
+        }
+    }
+    AT(skel, 4, u8 *) = first;
+    AT(skel, 8, s32) = nBones;
+    return skel;
+}
+
+/* free everything */
+/* 0x0017D220 */
+void SkelPool_FreeAll(u8 *pool) {
+    s32 i;
+
+    for (i = 0; i < 21; i++) {
+        AT(pool, 0xC700 + i * 4, s32) = 0;
+    }
+}
+
+/* 0x002D1580 */
+void *SceneHeap_ctor(u8 *p) {
+    F(p, 0x0, void *) = D_004699E0;
+    F(p, 0x4, u32) = 0;
+    F(p, 0x8, u32) = 0;
+    F(p, 0x0, void *) = Heap_vtable;
+    F(p, 0xC, u32) = 0;
+    F(p, 0x10, u32) = 0;
+    return p;
 }
 
 /* +0x10 allocate `size` bytes (64-byte multiples): an exact fit, else split the first larger
@@ -188,6 +511,14 @@ BlockPool *BlockPool_dtor(BlockPool *p, s32 flags) {
         }
     }
     return p;
+}
+
+/* 0x00120D60 */
+void *BlockPool_ElemAt(B0_Pool *p, u32 i) {
+    if (i < p->count && p->used[i] != 0) {
+        return p->base + i * p->elemSize;
+    }
+    return NULL;
 }
 
 /* +0xC free everything */

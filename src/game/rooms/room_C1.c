@@ -4,7 +4,7 @@
 #include "common.h"
 #include "game/rooms/rooms.h"
 #include "ptmf.h"
-#include "stalker_progress.h"
+#include "progress.h"
 
 extern void *RoomBase_vtable[];
 extern void *RoomC1_vtable[];

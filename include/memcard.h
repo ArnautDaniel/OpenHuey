@@ -48,4 +48,19 @@ extern MemCard *MemCard_dtor(MemCard *mc, s32 flags);
 extern void MemCard_Tick(MemCard *mc);   /* memory card tick */
 extern s32 MemCard_Shutdown(MemCard *mc);   /* memory card: sceMcEnd */
 
+/* ---- (was bootcard.h) ---- */
+
+/* bootcard.c: what other files call. */
+
+typedef struct BootCard BootCard;
+
+/* bootcard.c */
+extern void BootCard_Check(BootCard *b);
+extern BootCard *BootCard_ctor(BootCard *b);   /* BootCard constructor */
+extern BootCard *BootCard_dtor(BootCard *b, s32 flags);   /* BootCard destructor */
+extern void SaveScreen_Init(BootCard *b, void *buf0, void *buf1);
+extern void SaveScreen_Draw(BootCard *b, s32 flags);
+extern void SaveScreen_Load(BootCard *b);
+extern void BootCard_StateSave(BootCard *b);   /* the card screens' step */
+
 #endif /* MEMCARD_H */

@@ -7,7 +7,7 @@
 #include "ptmf.h"
 #include "actor.h"
 #include "progress.h"
-#include "scene_game_members.h"
+#include "scene_game.h"
 #include "msl.h"
 #include "sce/libvu0.h"
 

@@ -40,9 +40,9 @@
 0x003EC388
 
 ## PTMF function words spimdisasm left raw (targets hidden after a tail call, now split)
-0x003E5248 = func_00224770
-0x00447B78 = func_0036F8D0
-0x00447E28 = func_0036FC90
+0x003E5248 = CamDirector_ModeNormal
+0x00447B78 = RoomD7_Cond00
+0x00447E28 = RoomD8_Cond00
 
 ## room handler file-name tables (+0x34): string pointers spimdisasm left raw
 0x0047A9C8
@@ -142,63 +142,63 @@
 0x0047B0A8
 
 # script bytes spimdisasm took for pointers (decoded as event scripts: commands/conditions)
-0x003EF06C raw   # func_00240300 in script D_003EEF70
-0x003F3F70 raw   # D_00409C00 in script D_003F3EF0
-0x003F3F7C raw   # D_00409C00 in script D_003F3EF0
-0x003F62D8 raw   # D_00406800 in script D_003F6120
-0x003F7B60 raw   # func_001E26E8 in script D_003F7AC0
-0x003FA18C raw   # D_003B8004 in script D_003FA110
-0x003FB63C raw   # D_003EA800 in script D_003FB520
-0x003FE494 raw   # D_003E6200 in script D_003FE460
-0x003FE670 raw   # D_003B8004 in script D_003FE540
-0x00401A80 raw   # D_00408800 in script D_004019D0
-0x00403064 raw   # D_00408800 in script D_00402FA0
-0x00404CFC raw   # D_00401F00 in script D_00404CE0
-0x004071A4 raw   # func_00103900 in script D_004070F0
-0x004071AC raw   # func_00100000 in script D_004070F0
-0x004072E4 raw   # func_00105A00 in script D_004070F0
-0x004072F4 raw   # func_00103B00 in script D_004070F0
-0x004086B4 raw   # D_003F7700 in script D_004086A0
-0x00408F18 raw   # func_00240400 in script D_00408E50
-0x0040B78C raw   # D_00400100 in script D_0040B680
-0x0040FC10 raw   # func_001E26E8 in script D_0040FAB0
-0x00412580 raw   # D_00441B00 in script D_00412510
-0x00415E94 raw   # D_0044F200 in script D_00415DB0
-0x00416C88 raw   # D_00405100 in script D_00416B90
-0x0041CBD8 raw   # D_003B8004 in script D_0041CB20
-0x00421C74 raw   # D_00461400 in script D_00421C60
-0x004271C8 raw   # D_00406800 in script D_00426FF0
-0x004271DC raw   # D_00406800 in script D_00426FF0
-0x0042720C raw   # D_00406800 in script D_00426FF0
-0x0042723C raw   # D_00406800 in script D_00426FF0
-0x0042726C raw   # D_00406800 in script D_00426FF0
-0x00428264 raw   # D_00406800 in script D_00428220
-0x0042829C raw   # D_00406800 in script D_00428220
-0x004282D4 raw   # D_00406800 in script D_00428220
-0x0042830C raw   # D_00406800 in script D_00428220
-0x004318C4 raw   # D_00408800 in script D_00431750
-0x00431E60 raw   # D_003B8004 in script D_00431E20
-0x00432480 raw   # D_003B8004 in script D_00432440
-0x00432EDC raw   # D_00406800 in script D_00432E90
-0x004338D0 raw   # func_001E26E8 in script D_00433700
-0x00435D0C raw   # D_00473000 in script D_00435CA0
-0x00436948 raw   # func_001E26E8 in script D_00436780
-0x00436978 raw   # D_00406800 in script D_00436780
-0x004388B0 raw   # D_003F5900 in script D_004387A0
-0x004395D8 raw   # func_001E26E8 in script D_00439320
-0x0043AC2C raw   # D_00406800 in script D_0043AB10
-0x0043B360 raw   # D_00408800 in script D_0043B2C0
-0x0043EE74 raw   # D_00406800 in script D_0043ED80
-0x00440290 raw   # D_00406800 in script D_00440250
-0x0044051C raw   # D_00450300 in script D_00440250
-0x00440558 raw   # D_00450700 in script D_00440250
-0x00440C10 raw   # D_00401F00 in script D_00440250
-0x00440C3C raw   # D_00401F00 in script D_00440250
-0x00441374 raw   # D_00406800 in script D_004412A0
-0x00442958 raw   # D_003B8004 in script D_00442950
-0x00442DA8 raw   # D_003B8004 in script D_00442DA0
-0x0044395C raw   # D_00406800 in script D_00443910
-0x00448234 raw   # D_00406800 in script D_00448200
-0x00448F48 raw   # D_00401F00 in script D_00448F30
-0x00448F54 raw   # D_00401F00 in script D_00448F30
-0x004493E4 raw   # D_00406800 in script D_00449380
+0x003EF06C raw   # func_00240300 in script Room02_CharEnterScript_data
+0x003F3F70 raw   # D_00409C00 in script Room0A_Phase3Script_data
+0x003F3F7C raw   # D_00409C00 in script Room0A_Phase3Script_data
+0x003F62D8 raw   # D_00406800 in script Room0F_Phase1Script_data
+0x003F7B60 raw   # func_001E26E8 in script Room11_Phase1Script_data
+0x003FA18C raw   # D_003B8004 in script Room15_CharEnterScript_data
+0x003FB63C raw   # D_003EA800 in script Room19_Phase1Script_data
+0x003FE494 raw   # D_003E6200 in script Room20_EnterScript_data
+0x003FE670 raw   # D_003B8004 in script Room20_CharEnterScript_data
+0x00401A80 raw   # D_00408800 in script Room24_Phase1Script_data
+0x00403064 raw   # D_00408800 in script Room26_Phase2Script_data
+0x00404CFC raw   # D_00401F00 in script Room2A_Phase2Script_data
+0x004071A4 raw   # func_00103900 in script Room42_EnterScript_data
+0x004071AC raw   # func_00100000 in script Room42_EnterScript_data
+0x004072E4 raw   # func_00105A00 in script Room42_EnterScript_data
+0x004072F4 raw   # func_00103B00 in script Room42_EnterScript_data
+0x004086B4 raw   # D_003F7700 in script Room4A_EnterScript_data
+0x00408F18 raw   # func_00240400 in script Room4B_Phase1Script_data
+0x0040B78C raw   # D_00400100 in script Room4F_Phase1Script_data
+0x0040FC10 raw   # func_001E26E8 in script Room58_Phase1Script_data
+0x00412580 raw   # D_00441B00 in script Room5E_Phase1Script_data
+0x00415E94 raw   # D_0044F200 in script Room44_Phase1Script_data
+0x00416C88 raw   # D_00405100 in script Room46_Phase1Script_data
+0x0041CBD8 raw   # D_003B8004 in script Room41_CharEnterScript_data
+0x00421C74 raw   # str_ITEM02_ITEM_03D_TEX in script Room62_EnterScript_data
+0x004271C8 raw   # D_00406800 in script Room54_Phase1Script_data
+0x004271DC raw   # D_00406800 in script Room54_Phase1Script_data
+0x0042720C raw   # D_00406800 in script Room54_Phase1Script_data
+0x0042723C raw   # D_00406800 in script Room54_Phase1Script_data
+0x0042726C raw   # D_00406800 in script Room54_Phase1Script_data
+0x00428264 raw   # D_00406800 in script Room60_Phase1Script_data
+0x0042829C raw   # D_00406800 in script Room60_Phase1Script_data
+0x004282D4 raw   # D_00406800 in script Room60_Phase1Script_data
+0x0042830C raw   # D_00406800 in script Room60_Phase1Script_data
+0x004318C4 raw   # D_00408800 in script Room82_Phase1Script_data
+0x00431E60 raw   # D_003B8004 in script Room83_CharEnterScript_data
+0x00432480 raw   # D_003B8004 in script Room84_CharEnterScript_data
+0x00432EDC raw   # D_00406800 in script Room88_Phase1Script_data
+0x004338D0 raw   # func_001E26E8 in script Room8A_Phase1Script_data
+0x00435D0C raw   # D_00473000 in script Room8F_Phase3Script_data
+0x00436948 raw   # func_001E26E8 in script Room91_Phase1Script_data
+0x00436978 raw   # D_00406800 in script Room91_Phase1Script_data
+0x004388B0 raw   # D_003F5900 in script Room6A_CharEnterScript_data
+0x004395D8 raw   # func_001E26E8 in script Room6C_Phase1Script_data
+0x0043AC2C raw   # D_00406800 in script Room6F_Phase1Script_data
+0x0043B360 raw   # D_00408800 in script Room70_Phase2Script_data
+0x0043EE74 raw   # D_00406800 in script RoomC1_Phase1Script_data
+0x00440290 raw   # D_00406800 in script RoomC5_Phase1Script_data
+0x0044051C raw   # D_00450300 in script RoomC5_Phase1Script_data
+0x00440558 raw   # D_00450700 in script RoomC5_Phase1Script_data
+0x00440C10 raw   # D_00401F00 in script RoomC5_Phase1Script_data
+0x00440C3C raw   # D_00401F00 in script RoomC5_Phase1Script_data
+0x00441374 raw   # D_00406800 in script RoomC6_Phase1Script_data
+0x00442958 raw   # D_003B8004 in script Room34_CharEnterScript_data
+0x00442DA8 raw   # D_003B8004 in script Room33_CharEnterScript_data
+0x0044395C raw   # D_00406800 in script Room9B_Phase1Script_data
+0x00448234 raw   # D_00406800 in script RoomE0_Phase1Script_data
+0x00448F48 raw   # D_00401F00 in script RoomE3_Phase3Script_data
+0x00448F54 raw   # D_00401F00 in script RoomE3_Phase3Script_data
+0x004493E4 raw   # D_00406800 in script RoomE4_Phase1Script_data

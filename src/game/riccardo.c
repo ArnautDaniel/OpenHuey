@@ -14,13 +14,34 @@
 #include "fiona.h"
 #include "hewie.h"
 #include "model.h"
-#include "pursuer_ai.h"
 #include "riccardo.h"
-#include "scene_game_members.h"
-#include "skeleton.h"
-#include "stalker_math.h"
-#include "stalker_progress.h"
+#include "scene_game.h"
+#include "heap.h"
+#include "vecmath.h"
 #include "msl.h"
+#include "input.h"
+#include "memcard.h"
+#include "event.h"
+#include "lights.h"
+#include "sound.h"
+#include "effectmgr.h"
+#include "debilitas.h"
+#include "libc.h"
+#include "effectmgr.h"   /* HitEffect_Spawn */
+#include "item.h"
+#include "renderer.h"
+#include "charaction.h"
+#include "gl2d.h"
+#include "daniella.h"
+#include "debilitas2.h"
+#include "lorenzo.h"
+#include "system.h"
+#include "char_load.h"
+#ifdef HG_NATIVE
+#include <stdio.h>
+#include <stdlib.h>
+#include "glr.h"
+#endif
 
 extern void *Riccardo_vtable[];
 
@@ -48,6 +69,175 @@ f32 Kind37_ReachHewie(void);
 s32 Kind37_SlowWalkAnim(u8 *p);
 void *Kind37_ModelFiles(void);
 
+extern void *D_00470390[];
+extern void *BonePoint_vtable[];
+void *Part60_ctor(u8 *p);
+void *HangPoint_ctor(u8 *p);
+void *IK2_ctor(u8 *p);
+void *Part50_ctor(u8 *p);
+extern void *RiccardoModel_vtable[];
+extern void *HangPoint_ctor(u8 *p);
+extern void *IK2_ctor(u8 *p);
+extern void *Part50_ctor(u8 *p);
+extern void *Part60_ctor(u8 *p);
+extern void *Kind37_vtable[];
+extern u8 pstr_O_RCG_RCG_200_PCK_2[], pstr_O_RCG_RCG_200_PCK[];
+extern u8 pstr_O_RCT_RCT_200_PCK_4[], pstr_O_RCT_RCT_200_PCK_3[];
+extern u32 D_00441850[];
+#define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
+
+#define U32(p, off) (*(u32 *)((u8 *)(p) + (off)))
+
+static inline s32 b5_prog_flag8000(void);
+
+extern u8 D_0041A2C0[];
+static inline void Set_AddLink(u8 *set, u8 *node) {
+    if (AT(set, 0x30, u8 *) != NULL && AT(set, 0x34, u8 *) != NULL) {
+        AT(AT(set, 0x34, u8 *), 0x28, u8 *) = node;
+        AT(node, 0x28, u8 *) = NULL;
+        AT(node, 0x2C, u8 *) = AT(set, 0x34, u8 *);
+        AT(set, 0x34, u8 *) = node;
+    } else {
+        AT(set, 0x34, u8 *) = node;
+        AT(set, 0x30, u8 *) = node;
+        AT(node, 0x2C, u8 *) = NULL;
+        AT(node, 0x28, u8 *) = NULL;
+    }
+}
+
+static inline void Set_AddCollider(u8 *set, u8 *col) {
+    AT(col, 0x2C, u8 *) = NULL;
+    if (AT(set, 0x18, u8 *) == NULL) {
+        AT(set, 0x18, u8 *) = col;
+    } else {
+        u8 *c = AT(set, 0x18, u8 *);
+
+        while (AT(c, 0x2C, u8 *) != NULL) {
+            c = AT(c, 0x2C, u8 *);
+        }
+        AT(c, 0x2C, u8 *) = col;
+    }
+}
+
+/* a set's settings: force (x, y, z), damping, its model */
+static inline void Set_Init(u8 *set, u8 *m, f32 fx, f32 fy, f32 fz, f32 damp) {
+    AT(set, 0x0, f32) = fx;
+    AT(set, 0x4, f32) = fy;
+    AT(set, 0x8, f32) = fz;
+    AT(set, 0x10, f32) = damp;
+    AT(set, 0x14, u8 *) = m;
+    AT(set, 0x20, u8) = 0;
+    AT(set, 0x1C, s32) = 0;
+}
+
+void *RiccardoModel_dtor(u8 *m, s32 flags);
+void RiccardoModel_Vt2C(u8 *m);
+void RiccardoModel_Vt30(u8 *m);
+void RiccardoModel_SecondaryMotion(u8 *m);
+s32 RiccardoModel_Vt98(u8 *m);
+s32 RiccardoModel_Vt9C(u8 *m);
+s32 RiccardoModel_Part0(u8 *m);
+s32 RiccardoModel_Part1(u8 *m);
+s32 RiccardoModel_Part2(u8 *m);
+s32 RiccardoModel_Part3(u8 *m);
+void RiccardoModel_Parts1450(u8 *m);
+void RiccardoModel_PartsRest(u8 *m);
+void RiccardoModel_Parts10A0(u8 *m);
+void RiccardoModel_PartsBE0(u8 *m);
+void RiccardoModel_Springs(u8 *m);
+void RiccardoModel_Vt3C(u8 *m);
+void RiccardoModel_Frame(u8 *m);
+void RiccardoModel_Loaded(u8 *m);
+
+/* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
+ * slots 3..5 */
+static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
+    if (c != NULL) {
+        c->a.vtbl = vt;
+        c->a.vtbl = Pursuer_vtable;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        if ((u32)c->a.slot >= 3 && (u32)c->a.slot < 6) {
+            void **m = c->motion;
+
+            if (m != NULL) {
+                VCALL(m, 0x8, void (*)(void *, s32))(m, 1);
+                c->motion = NULL;
+            }
+        }
+        c->a.vtbl = NPC_vtable;
+        VCALL(c, 0x10, void (*)(Character *))(c);
+        c->a.vtbl = Character_vtable;
+        c->a.vtbl = Actor_vtable;
+        if ((s16)flags > 0) {
+            Actor_Destroy(&c->a);
+        }
+    }
+    return c;
+}
+
+static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p);
+
+/* in play: Actor_TeleportRandom(-1) */
+static inline __attribute__((always_inline)) void creature_inplay(Pursuer *p) {
+    if (Npc_InPlayedRoom(p) != 0) {
+        Actor_TeleportRandom(&p->c.a, -1);
+    }
+}
+
+/* gProgress+0x30 bit 0x8000 selects between two data sets (difficulty/mode flag?) */
+static inline s32 b5_prog_flag8000(void) {
+    return U32(gProgress, 0x30) & 0x8000;
+}
+
+static inline void *b0_RoomCtor(void *p, u32 id, s32 arg, void **vtbl) {
+    FLD(p, 0x0, void **) = Actor_vtable;
+    FLD(p, 0x20, s32) = arg;
+    FLD(p, 0x24, s32) = 0x2000000;
+    FLD(p, 0x0, void **) = Character_vtable;
+    FLD(p, 0x1380, s32) = 0;
+    FLD(p, 0x153C, u8) = (u8)id;
+    FLD(p, 0x0, void **) = vtbl;
+    return p;
+}
+
+Character *Kind37_dtor(Character *c, s32 flags);
+void *Kind37_MotionFiles(void);
+void Kind37_DoorOffset(void *self, s32 i, f32 *out);
+void Kind37_ActionOffsets(void *self, s32 i, f32 *out);
+
+/* the full base with its two parts, then the shared layout of the 0x1310-byte models: 4 parts
+ * (0x50, +0x9A0), 4 members (0x40, +0xAE0), 12 parts (0x60, +0xC20), 5 members (0x70, +0x10E0) */
+static inline void model_1310(u8 *m, void **vtbl) {
+    u8 *e;
+
+    ModelBase_ctor(m);
+    AT(m, 0x0, void **) = HumanModel_vtable;
+    IK2_ctor(m + 0x8D0);
+    IK2_ctor(m + 0x930);
+    AT(m, 0x0, void **) = vtbl;
+    func_00100340(m + 0x9A0, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+    for (e = m + 0xAE0; e < m + 0xBE0; e += 0x40) {
+        AT(e, 0x30, void **) = BonePoint_vtable;
+    }
+    AT(m, 0xC14, s32) = 0;
+    AT(m, 0xC10, s32) = 0;
+    func_00100340(m + 0xC20, Part60_ctor, Part60_dtor, 0x60, 0xC);
+    AT(m, 0x10D4, s32) = 0;
+    AT(m, 0x10D0, s32) = 0;
+    for (e = m + 0x10E0; e < m + 0x1310; e += 0x70) {
+        AT(e, 0x30, void **) = D_00470390;
+    }
+}
+
+/* 0x00172BE0 */
+void *Kind37_ctor(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x25, arg, Kind37_vtable);
+}
+
+/* 0x00173380 */
+void *Riccardo_ctor(void *p, s32 arg) {
+    return b0_RoomCtor(p, 0x4, arg, Riccardo_vtable);
+}
 /* 0x46F69C: nothing (0) */
 /* 0x002D7A60 */
 s32 ItemA1_Use(void) {
@@ -320,6 +510,11 @@ void Riccardo_Update(Pursuer *p) {
     Stalker_ThinkEnd(p);
 }
 
+/* 0x002DC460 */
+u8 *Riccardo_ModelFileTable(Pursuer *p) {
+    return (F(gProgress, 0x30, u32) & 0x8000) ? pstr_O_RCG_RCG_200_PCK_2 : pstr_O_RCG_RCG_200_PCK;
+}
+
 /* 0x002DC4A0 */
 void *Riccardo_ModelFiles(void) {
     return (F(gProgress, 0x30, u32) & 0x8000) ? D_00414800 : D_004147C0;
@@ -383,6 +578,278 @@ void Riccardo_Setup(Pursuer *p) {
     PU(p, 0x16A0, f32) = 1.5f;
     m = p->c.motion;
     VCALL(m, 0x30, void (*)(void *))(m);
+}
+
+/* +0x8: destructor */
+/* 0x002F61E0 */
+void *RiccardoModel_dtor(u8 *m, s32 flags) {
+    if (m != NULL) {
+        AT(m, 0x0, void **) = RiccardoModel_vtable;
+        func_001002C0(m + 0x1310, Part50_dtor, 0x50, 4);
+        func_001002C0(m + 0xC20, Part60_dtor, 0x60, 0xC);
+        func_001002C0(m + 0x9A0, HangPoint_dtor, 0x50, 4);
+        HumanModel_Destroy(m, flags);
+    }
+    return m;
+}
+
+/* +0x2C / +0x30: part +0xBA's draw flag 2 on / off */
+/* 0x002F6340 */
+void RiccardoModel_Vt2C(u8 *m) {
+    AT(m, 0xBA, u8) |= 2;
+}
+
+/* 0x002F6350 */
+void RiccardoModel_Vt30(u8 *m) {
+    AT(m, 0xBA, u8) &= 0xFD;
+}
+
+/* +0xB4: his secondary-motion table */
+/* 0x002F6360 */
+void RiccardoModel_SecondaryMotion(u8 *m) {
+    AT(m, 0x874, u8 *) = D_0041A2C0;
+}
+
+/* +0x98 / +0x9C, +0x84 .. +0x90: his mesh parts */
+/* 0x002F6370 */
+s32 RiccardoModel_Vt98(u8 *m) {
+    return 0x31;
+}
+
+/* 0x002F6380 */
+s32 RiccardoModel_Vt9C(u8 *m) {
+    return 0x30;
+}
+
+/* 0x002F6390 */
+s32 RiccardoModel_Part0(u8 *m) {
+    return 3;
+}
+
+/* 0x002F63A0 */
+s32 RiccardoModel_Part1(u8 *m) {
+    return 7;
+}
+
+/* 0x002F63B0 */
+s32 RiccardoModel_Part2(u8 *m) {
+    return 0x1E;
+}
+
+/* 0x002F63C0 */
+s32 RiccardoModel_Part3(u8 *m) {
+    return 0x2C;
+}
+
+/* the four parts on +0x1450 (bones 0x26..0x29, two of two) */
+/* 0x002F63D0 */
+void RiccardoModel_Parts1450(u8 *m) {
+    s32 i;
+
+    SpringSet_Clear(m + 0x1450);
+    for (i = 0; i < 4; i++) {
+        Set_AddLink(m + 0x1450, m + 0x1310 + i * 0x50);
+    }
+    Set_Init(m + 0x1450, m, 0.0f, 0x1.99999ap-4f /* 0.1 */, 0.0f, 0x1.99999ap-1f /* 0.8 */);
+    for (i = 0; i < 4; i++) {
+        u8 *n = m + 0x1310 + i * 0x50;
+
+        AT(n, 0x40, f32) = 0x1.570a3ep-1f;   /* 0.67 */
+        AT(n, 0x24, s32) = 0x26 + i;
+        AT(n, 0x20, u8) = i % 2 == 0;
+        AT(n, 0x44, f32) = 0x1.99999ap-2f;   /* 0.4 */
+    }
+}
+
+/* the twelve 0x60 parts at rest: their length along bone 1's Z axis (the second six the other
+   way) from their anchors */
+/* 0x002F64F0 */
+void RiccardoModel_PartsRest(u8 *m) {
+    f32 down[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    u8 *p = m + 0xC20;
+    s32 i;
+
+    sceVu0CopyVector(down, Skel_Bone(AT(AT(m, 0x10B4, u8 *), 0x810, u8 *), 1) + 8);
+    for (i = 0; i < 12; i++, p += 0x60) {
+        AT(p, 0x18, f32) = 0.0f;
+        AT(p, 0x14, f32) = 0.0f;
+        AT(p, 0x10, f32) = 0.0f;
+        if (AT(p, 0x20, u8) != 0) {
+            sceVu0CopyVector(at, Skel_Bone(AT(AT(m, 0x10B4, u8 *), 0x810, u8 *), AT(p, 0x24, s32)) + 12);
+        } else {
+            sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
+        }
+        if (i < 6) {
+            sceVu0ScaleVector(d, down, AT(p, 0x40, f32));
+        } else {
+            sceVu0ScaleVector(d, down, -AT(p, 0x40, f32));
+        }
+        sceVu0AddVector((f32 *)p, at, d);
+        sceVu0CopyVector((f32 *)(p + 0x50), at);
+    }
+}
+
+/* the twelve 0x60 parts (bones 0xA..0x15) on +0x10A0 and its five capsules */
+/* 0x002F6600 */
+void RiccardoModel_Parts10A0(u8 *m) {
+    s32 i;
+
+    SpringSet_Clear(m + 0x10A0);
+    for (i = 0; i < 12; i++) {
+        Set_AddLink(m + 0x10A0, m + 0xC20 + i * 0x60);
+    }
+    for (i = 0; i < 5; i++) {
+        Set_AddCollider(m + 0x10A0, m + 0x10E0 + i * 0x70);
+    }
+    Set_Init(m + 0x10A0, m, 0.0f, 0x1.99999ap-4f /* 0.1 */, 0.0f, 0x1.99999ap-1f /* 0.8 */);
+    for (i = 0; i < 12; i++) {
+        u8 *n = m + 0xC20 + i * 0x60;
+        s32 j = i % 6;
+
+        AT(n, 0x20, u8) = i % 2 == 0;
+        AT(n, 0x24, s32) = 0xA + i;
+        AT(n, 0x40, f32) = 0x1.19999ap+0f;   /* 1.1 */
+        if (j < 2) {
+            AT(n, 0x44, f32) = 0.0f;
+            AT(n, 0x48, u8 *) = NULL;
+        } else {
+            AT(n, 0x44, f32) = 0.5f;
+            AT(n, 0x48, u8 *) = m + 0xC20 + (i - j + j % 2) * 0x60;
+        }
+    }
+    Capsule_Set(m + 0x10E0, 2, 6, -0.5f, 0.0f, -0x1.99999ap-4f, 1.0f, -0.5f, 0.0f, 0x1.99999ap-4f);
+    Capsule_Set(m + 0x1150, 2, 6, 0.0f, 0.0f, -0x1.99999ap-4f, 1.0f, 0.0f, 0.0f, 0x1.99999ap-4f);
+    Capsule_Set(m + 0x11C0, 2, 6, 0.5f, 0.0f, -0x1.99999ap-4f, 1.0f, 0.5f, 0.0f, 0x1.99999ap-4f);
+    Capsule_Set(m + 0x1230, 2, 6, 1.0f, 0.0f, -0x1.99999ap-4f, 1.0f, 1.0f, 0.0f, 0x1.99999ap-4f);
+    Capsule_Set(m + 0x12A0, 2, 6, 0.0f, -0x1.333334p-2f, -0x1.99999ap-4f, 1.0f, 0.0f, -0x1.333334p-2f, 0x1.99999ap-4f);
+}
+
+/* the four parts (bones 0x16..0x19, two of two) on +0xBE0 and its four spheres on bone 2 */
+/* 0x002F69C0 */
+void RiccardoModel_PartsBE0(u8 *m) {
+    s32 i;
+
+    SpringSet_Clear(m + 0xBE0);
+    for (i = 0; i < 4; i++) {
+        Set_AddLink(m + 0xBE0, m + 0x9A0 + i * 0x50);
+    }
+    for (i = 0; i < 4; i++) {
+        Set_AddCollider(m + 0xBE0, m + 0xAE0 + i * 0x40);
+    }
+    Set_Init(m + 0xBE0, m, 0.0f, 0.5f, 0.0f, 0x1.99999ap-2f /* 0.4 */);
+    for (i = 0; i < 4; i++) {
+        u8 *n = m + 0x9A0 + i * 0x50;
+
+        AT(n, 0x40, f32) = 0x1.028f5cp+0f;   /* 1.01 */
+        AT(n, 0x24, s32) = 0x16 + i;
+        AT(n, 0x20, u8) = i % 2 == 0;
+    }
+    Sphere_Set(m + 0xAE0, 2, -0x1.99999ap-1f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xB20, 2, 0.0f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xB60, 2, 0x1.99999ap-1f, 0.0f, 0.0f, 1.0f);
+    Sphere_Set(m + 0xBA0, 2, 0x1.99999ap+0f, 0.0f, 0.0f, 1.0f);
+}
+
+/* all his springs */
+/* 0x002F6BD0 */
+void RiccardoModel_Springs(u8 *m) {
+    AT(m, 0x850, u8) = 1;
+    RiccardoModel_PartsBE0(m);
+    RiccardoModel_Parts10A0(m);
+    RiccardoModel_Parts1450(m);
+}
+
+/* +0x3C: his springs a frame: one step, or after a reset (+0x850) at rest and 30 to settle */
+/* 0x002F6C10 */
+void RiccardoModel_Vt3C(u8 *m) {
+    s32 n = 1;
+    s32 i;
+
+    if (AT(m, 0x850, u8) != 0) {
+        RiccardoModel_PartsRest(m);
+        n = 30;
+    }
+    SpringSet_Begin(m + 0xBE0);
+    SpringSet_Begin(m + 0x10A0);
+    SpringSet_Begin(m + 0x1450);
+    for (i = 0; i < n; i++) {
+        SpringSet_Step(m + 0xBE0);
+        SpringSet_Step(m + 0x10A0);
+        SpringSet_Step(m + 0x1450);
+    }
+    SpringSet_Finish(m + 0xBE0);
+    SpringSet_Finish(m + 0x10A0);
+    SpringSet_Finish(m + 0x1450);
+    AT(m, 0x850, u8) = 0;
+}
+
+/* +0x10 */
+/* 0x002F6CD0 */
+void RiccardoModel_Frame(u8 *m) {
+    Model_Release(m);
+}
+
+/* +0xC: once loaded: the base setup, the part roles, his springs, per-part draw settings */
+/* 0x002F6CE0 */
+void RiccardoModel_Loaded(u8 *m) {
+    HumanModel_Loaded(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x20;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x2E;
+    AT(m, 0x8B0, s32) = 0x23;
+    AT(m, 0x8B4, s32) = 0x1A;
+    AT(m, 0x880, s32) = 8;
+    AT(m, 0x860, f32) = 0.0f;
+    AT(m, 0x864, f32) = 16.0f;
+    AT(m, 0x868, f32) = 0.0f;
+    AT(m, 0x854, s32) = 0;
+    AT(m, 0x858, s32) = 0;
+    RiccardoModel_Springs(m);
+    AT(m, 0xC8, u8) = 4;
+    AT(m, 0xC9, u8) = 0x40;
+    AT(m, 0xCA, u8) = 4;
+    AT(m, 0xCB, u8) = 0x40;
+    AT(m, 0xCC, u8) = 4;
+    AT(m, 0xCD, u8) = 0x40;
+    AT(m, 0xBA, u8) = 4;
+    AT(m, 0xBB, u8) = 0xC0;
+}
+
+/* 0x0034B7B0 */
+Character *Kind37_dtor(Character *c, s32 flags) { return creature_dtor(c, flags, Kind37_vtable); }
+
+/* 0x0034B8C0 */
+void *Kind37_MotionFiles(void) {
+    return D_00441850;
+}
+
+/* 0x0034B8D0 */
+void Kind37_DoorOffset(void *self, s32 i, f32 *out) {
+    switch (i) {
+    case 1: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.e49ba6p+2f /* 7.572 */; break;
+    case 3: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.b8e21ap+2f /* -6.8888 */; break;
+    case 0: out[0] = 0.0f; out[1] = 0.0f; out[2] = -0x1.541206p+2f /* -5.3136 */; break;
+    case 2: out[0] = 0.0f; out[1] = 0.0f; out[2] = 0x1.fbfb16p+2f /* 7.9372 */; break;
+    }
+}
+
+/* 0x0034B970 */
+void Kind37_ActionOffsets(void *self, s32 i, f32 *out) {
+    switch (i) {
+    case 10: case 11: out[0] = -0x1.3eab36p-5f /* -0.0389 */; out[1] = 0.0f; out[2] = 0x1.4cf4fp+3f /* 10.4049 */; break;
+    case 12: case 13: out[0] = 0x1.7652bep-1f /* 0.7311 */; out[1] = 0.0f; out[2] = 0x1.a80832p+3f /* 13.251 */; break;
+    case 14: out[0] = -0x1.25a858p+0f /* -1.1471 */; out[1] = 0.0f; out[2] = -0x1.42a64cp+1f /* -2.5207 */; break;
+    case 15: out[0] = -0x1.4fdf3cp-2f /* -0.328 */; out[1] = 0.0f; out[2] = -0x1.324a8cp+1f /* -2.3929 */; break;
+    }
 }
 
 extern const PTMF Pursuer_AttackNextStep_ptmf6;
@@ -1629,6 +2096,11 @@ void Kind37_LightChange(Pursuer *p) {
     }
 }
 
+/* 0x0034D980 */
+u8 *Kind37_ModelFileTable(Pursuer *p) {
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? pstr_O_RCT_RCT_200_PCK_4 : pstr_O_RCT_RCT_200_PCK_3;
+}
+
 /* 0x0034D9C0 */
 void *Kind37_ModelFiles(void) {
     return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_00441810 : D_004417D0;
@@ -1694,4 +2166,14 @@ void Kind37_Setup(Pursuer *p) {
     PU(p, 0x17C8, s32) = 0;
     PU(p, 0x17C4, s32) = 0;
     Character_Set152C(&p->c, 0x11);
+}
+
+/* the same with 4 more parts (0x50, +0x1310), vtable RiccardoModel_vtable */
+/* 0x0038CEE0 */
+void *RiccardoModel_ctor(u8 *m) {
+    model_1310(m, RiccardoModel_vtable);
+    func_00100340(m + 0x1310, Part50_ctor, Part50_dtor, 0x50, 4);
+    AT(m, 0x1484, s32) = 0;
+    AT(m, 0x1480, s32) = 0;
+    return m;
 }

@@ -1,4 +1,9 @@
-/* Fiona: the player character (vtable 0x46AAB0). */
+/* Fiona: the player character (vtable 0x46AAB0).
+ *
+ * (was panic.c) Fiona's panic (SceneGame +0x7F8): +0x4 the level (0..100; at 100 she panics),
+ * made of a lasting part (+0x1C) and a passing one (+0xC); each frame the fear inputs (+0x10..
+ * +0x2C, mode +0x1) are folded in and cleared.
+ */
 #include "common.h"
 #include "fiona.h"
 #include "progress.h"
@@ -9,14 +14,44 @@
 #include "memcard.h"
 #include "hewie.h"
 #include "model.h"
-#include "panic.h"
 #include "pursuer.h"
-#include "scene_game_members.h"
-#include "skeleton.h"
-#include "stalker_math.h"
-#include "stalker_models.h"
-#include "stalker_progress.h"
+#include "scene_game.h"
+#include "heap.h"
+#include "vecmath.h"
 #include "msl.h"
+#include "game.h"
+#include "charaction.h"
+#include "input.h"
+#include "gl2d.h"
+#include "effects.h"
+#include "renderer.h"
+#include "sound.h"
+#include "creature.h"
+#include "event.h"
+#include "lights.h"
+#include "debilitas.h"
+#include "libc.h"
+#include "effectmgr.h"   /* HitEffect_Spawn */
+#include "room_map.h"
+#include "music.h"
+#include "director.h"
+#include "doors.h"
+#include "room.h"
+#include "text.h"
+#include "movie.h"
+#include "placed.h"
+#include "system.h"
+#include "draw_leaves.h"
+#include "sce/eekernel.h"
+#include "sce/intc.h"
+#include "gs.h"
+#include "sce/libvu0.h"
+#include "effectmgr.h"
+#ifdef HG_NATIVE
+#include <stdio.h>
+#include <stdlib.h>
+#include "glr.h"
+#endif
 
 extern void Fiona_IdleAnim(Fiona *f, s32);
 
@@ -26,38 +61,515 @@ extern const PTMF Fiona_StateIdleStep_ptmf;      /* idle state (while unkE0 is s
 /* Motion player byte +0x4D8 (1 = paused?) */
 #define MOTION_U8(m, off) (*((u8 *)(m) + (off)))
 
-#define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
-
 u32 Character_ActionTarget(void *p);
 
-extern void *EffectBase_vtable[];
 extern void *StrikeMark_vtable[];
-void *StrikeMark_dtor(u8 *o, s32 flags);
 
-#define B7_W(p, off)  (*(s32 *)((u8 *)(p) + (off)))
+extern const char *const pstr_kibako, *const pstr_a_koushi;   /* "kibako" (the box), "a_koushi" (the grate) */
+extern void *BonePoint_vtable[];
+extern void *BoneHangPoint_vtable[];
+extern void *SprungPoint_vtable[];
+void *HangPoint_ctor(u8 *p);
+void *SwayPointA_ctor(u8 *p);
+void *BoneHangPoint_ctor(u8 *p);
+extern u8 D_00463320[];
+extern u8 str_O_FIF_FIF_200_TEX[];
+extern u8 D_0042F270[];
+extern u8 D_0042F380[];
+extern u8 D_00461140[];
+extern u8 str_O_FIH_FIH_001_PCK[];
+extern u8 str_O_FIH_FIH_002_PCK[];
+extern u8 str_O_FIH_FIH_003_PCK[];
+extern u8 str_O_FIH_FIH_004_PCK[];
+extern u8 str_O_FIH_FIH_005_PCK[];
+extern u8 str_O_FIH_FIH_006_PCK[];
+extern u8 D_00461240[];
+extern u8 str_O_FIH_FIH_200_TEX[];
+extern u8 D_00461280[];
+extern u8 str_O_FIO_FIO_001_PCK[];
+extern u8 str_O_FIO_FIO_002_PCK[];
+extern u8 str_O_FIO_FIO_003_PCK[];
+extern u8 str_O_FIO_FIO_004_PCK[];
+extern u8 str_O_FIO_FIO_005_PCK[];
+extern u8 str_O_FIO_FIO_006_PCK[];
+extern u8 D_00461380[];
+extern u8 str_O_FIO_FIO_200_TEX[];
+extern u32 D_00462870[];
+extern u32 str_O_FIB_FIB_200_TEX[];
+extern u8 D_0043EA80[];
+extern u8 D_00462670[], str_O_FIB_FIB_001_MRK[], str_O_FIB_FIB_002_MRK[], str_O_FIB_FIB_003_MRK[], str_O_FIB_FIB_004_MRK[], str_O_FIB_FIB_005_MRK[], str_O_FIB_FIB_006_MRK[];
+extern u8 D_00462770[], str_O_FIB_FIB_001_PCK[], str_O_FIB_FIB_002_PCK[], str_O_FIB_FIB_003_PCK[], str_O_FIB_FIB_004_PCK[], str_O_FIB_FIB_005_PCK[], str_O_FIB_FIB_006_PCK[];
+extern u8 D_004631C0[], str_O_FIC_FIC_200_TEX[];
+extern u8 D_00462FC0[], str_O_FIC_FIC_001_MRK[], str_O_FIC_FIC_002_MRK[], str_O_FIC_FIC_003_MRK[], str_O_FIC_FIC_004_MRK[], str_O_FIC_FIC_005_MRK[], str_O_FIC_FIC_006_MRK[];
+extern u8 D_004630C0[], str_O_FIC_FIC_001_PCK[], str_O_FIC_FIC_002_PCK[], str_O_FIC_FIC_003_PCK[], str_O_FIC_FIC_004_PCK[], str_O_FIC_FIC_005_PCK[], str_O_FIC_FIC_006_PCK[];
+extern u8 D_00443E20[];
+extern u8 D_00463220[], str_O_FIF_FIF_001_PCK[], str_O_FIF_FIF_002_PCK[], str_O_FIF_FIF_003_PCK[], str_O_FIF_FIF_004_PCK[], str_O_FIF_FIF_005_PCK[], str_O_FIF_FIF_006_PCK[];
+extern void *CharModel_vtable[], *Costume8Model_vtable[], *SpringPartBase_vtable[], *HairPoint2_vtable[];
+extern void *HumanModel_PartsCtor(u8 *m);
+extern void *Costume7Model_vtable[], *Costume6Model_vtable[], *Costume3Model_vtable[], *Costume2Model_vtable[], *FionaModel_vtable[];
+extern void *SwayPointA_dtor(void *, s32);
+void *FionaModelArray_ctor(void *p);
+extern void *HairPoint2_dtor(void *, s32);
+extern void *CostumeHangPoint_ctor(void *);
+extern void *CostumeHangPoint_dtor(void *, s32);
+extern void *WindHangPoint_ctor(void *);
+extern void *WindHangPoint_dtor(void *, s32);
+extern void CharModel_Loaded(u8 *m);
+void *HumanModel_dtor(u8 *m, s32 flags);
+extern const char D_0045E520[];   /* "O_FIS\FIS_000.PCK" */
+extern const char D_0045E500[];   /* "O_FIN\FIN_000.MRK" */
+extern const char D_0045E540[];   /* "O_FIS\FIS_000.TEX" */
+extern const char str_O_FIS_FIS_200_TEX[];   /* "O_FIS\FIS_200.TEX" (the names are returned as such) */
+extern void FionaModel_Setup(u8 *m);
+extern u8 D_0041A500[];
+extern void FionaModel_Nodes(u8 *m);
+extern void FionaModel_Set1740(u8 *m);
+extern void FionaModel_Set17E0(u8 *m);
+extern u8 D_0041A510[], D_0041A520[], D_0041A530[], D_0041A540[], D_0041A550[], D_0041A560[];
+/* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
+extern u8 D_00443FA0[];
+extern u8 D_0042F280[];
+extern u8 D_0042F290[];
+extern u8 D_0042F2A0[];
+extern u8 D_0042F2B0[];
+extern f32 D_0042F300[], D_0042F370[], D_0042F3F0[], D_0042F460[];
+extern s32 D_0042F2C0[], D_0042F360[], D_0042F3B0[], D_0042F450[];
+extern u8 D_0042F340[], D_0042F350[], D_0047ADC8[], D_0047B284[], D_0042F430[], D_0042F440[],
+    D_0047ADCC[], D_0047B288[], D_0042F390[], D_0042F3A0[];
+void Costume2Model_SetEA0(u8 *m);
+void Costume3Model_SetD60(u8 *m);
+extern void *BoneHangPoint_ctor(u8 *p);
+extern void CharModel_Loaded(u8 *m);
+extern void *CostumeHangPoint_ctor(void *o);
+extern void *CostumeHangPoint_dtor(void *o, s32 flags);
+extern void *HairPoint2_dtor(void *o, s32 flags);
+extern void *HangPoint_ctor(u8 *p);
+extern void *HumanModel_PartsCtor(u8 *m);
+extern void *HumanModel_dtor(u8 *m, s32 flags);
+extern void *SwayPointA_ctor(u8 *p);
+extern void *SwayPointA_dtor(void *e, s32 flags);
+extern void *WindHangPoint_ctor(void *o);
+extern void *WindHangPoint_dtor(void *o, s32 flags);
+#define PTR(p, off) (*(void * *)((u8 *)(p) + (off)))
+
+/* Field access by byte offset into objects whose layout is not yet known. */
+#define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))
+
+#define F32(p, off) (*(f32 *)((u8 *)(p) + (off)))
+
+#define B7_H(p, off)  (*(s16 *)((u8 *)(p) + (off)))
 
 #define B7_B(p, off)  (*(u8 *)((u8 *)(p) + (off)))
 
-void StrikeMark_Start(u8 *p);
+#define B7_F(p, off)  (*(f32 *)((u8 *)(p) + (off)))
 
-/* 0x00126EC0 */
-u32 Character_ActionTarget(void *p) {
-    if (FLD(p, 0xF8, s32) == 6) {
-        s32 k = FLD(p, 0xFC, s32);
+extern void Panic_Stage(u8 *o);
+extern void Panic_FearInputs(u8 *o);
+extern void Panic_Breath(u8 *o);
+extern f32 D_0041A0A0[];   /* fear per pursuer kind and distance band (5 per kind) */
+extern f32 D_0041A0F0[];   /* the same by height difference while both are on stairs (6) */
+extern const u8 D_0041A040[], D_0041A050[], D_0041A060[], D_0041A070[], D_0041A080[], D_0041A090[];
+typedef union {
+    u32 u;
+    f32 f;
+} F32Bits;
 
-        if (k == 0x16) {
-            return FLD(p, 0x14C0, u16);
-        }
-        if (k == 0x17) {
-            s32 i = FLD(p, 0x1388, s32);
+#define PANIC_MAX 100.0f
 
-            if (i < FLD(p, 0x1384, s32)) {
-                return FLD(p, 0x138C + i * 2, u16);
+extern void *Fiona_vtable[];
+void *Fiona_dtor(void **o, s32 flags);
+
+extern void *gMovieFlag;   /* the screen overlay (Scene +0x105344C) */
+void Panic_Reset(u8 *p);
+
+s32 Fiona_IsBusy(void *p);
+
+/* the pursuer kinds: 0 / 1 / 2 / 3 (-1: none that frightens) */
+static s32 pursuer_kind(u8 id) {
+    switch (id) {
+    case 0x05:
+        return 3;
+    case 0x04:
+        return 2;
+    case 0x24: case 0x23: case 0x22: case 0x03:
+        return 1;
+    case 0x1B: case 0x07: case 0x06: case 0x02:
+        return 0;
+    }
+    return -1;
+}
+
+/* a fear amount from a table: negative means a scare (+50 at once, 30 frames of hold) */
+static void fear_add(u8 *o, f32 f) {
+    static const F32Bits kRate = {0x3D08882F};
+
+    if (f < 0.0f) {
+        AT(o, 0x8, s16) = 30;
+        AT(o, 0x20, f32) = AT(o, 0x20, f32) + 50.0f;
+        AT(o, 0x10, f32) = AT(o, 0x10, f32) + 50.0f;
+    } else if (!(f < 0.0f)) {
+        AT(o, 0x24, f32) = AT(o, 0x24, f32) + kRate.f * f;
+    }
+}
+
+/* a fright of `amount`: lasting (+0x20); a big one (10 or more) also holds the level for 30
+   frames and counts half toward the passing part +0x10 */
+static inline void fright(u8 *o, f32 amount) {
+    if (amount < 0.0f) {
+        return;
+    }
+    if (amount < 10.0f) {
+        AT(o, 0x20, f32) += amount;
+    } else {
+        f32 h = 0.5f * amount;
+
+        AT(o, 0x8, s16) = 30;
+        AT(o, 0x20, f32) += h;
+        AT(o, 0x10, f32) += h;
+    }
+}
+
+void Panic_Stage(u8 *o);
+void Panic_FearInputs(u8 *o);
+void Panic_Breath(u8 *o);
+
+/* parts of 0x40 (vtable +0x30 BonePoint_vtable) from `from` to `to` */
+static inline void parts40(u8 *from, u8 *to) {
+    u8 *e;
+
+    for (e = from; e < to; e += 0x40) {
+        AT(e, 0x30, void **) = BonePoint_vtable;
+    }
+}
+
+/* Fiona's costumes 3 and 2: twelve / eight 0x50 nodes, single parts, sixteen 0x50 nodes, parts
+ * of 0x40, three 0x50 nodes and more parts */
+static inline void *costume_model(u8 *m, s32 kind, void **vtbl, s32 n, u32 at) {
+    HumanModel_PartsCtor(m);
+    AT(m, 0x0, void **) = CharModel_vtable;
+    AT(m, 0x9A0, u8) = kind;
+    AT(m, 0x0, void **) = vtbl;
+    func_00100340(m + 0x9B0, SwayPointA_ctor, SwayPointA_dtor, 0x50, n);
+    AT(m, at + 0x4, s32) = 0;
+    AT(m, at + 0x0, s32) = 0;
+    AT(m, at + 0x40, void **) = BoneHangPoint_vtable;
+    AT(m, at + 0x94, s32) = 0;
+    AT(m, at + 0x90, s32) = 0;
+    AT(m, at + 0xD0, void **) = SprungPoint_vtable;
+    AT(m, at + 0x134, s32) = 0;
+    AT(m, at + 0x130, s32) = 0;
+    AT(m, at + 0x170, void **) = BoneHangPoint_vtable;
+    AT(m, at + 0x1C4, s32) = 0;
+    AT(m, at + 0x1C0, s32) = 0;
+    func_00100340(m + at + 0x1D0, CostumeHangPoint_ctor, CostumeHangPoint_dtor, 0x50, 0x10);
+    AT(m, at + 0x704, s32) = 0;
+    AT(m, at + 0x700, s32) = 0;
+    parts40(m + at + 0x710, m + at + 0x890);
+    func_00100340(m + at + 0x890, WindHangPoint_ctor, WindHangPoint_dtor, 0x50, 3);
+    AT(m, at + 0x9B4, s32) = 0;
+    AT(m, at + 0x9B0, s32) = 0;
+    parts40(m + at + 0x9C0, m + at + 0xB40);
+    return m;
+}
+
+/* append a node to a spring set's node list (+0x30 head, +0x34 tail; the node's next +0x28,
+ * prev +0x2C) */
+static inline void spring_link(u8 *set, u8 *node) {
+    if (AT(set, 0x30, u8 *) != NULL && AT(set, 0x34, u8 *) != NULL) {
+        AT(AT(set, 0x34, u8 *), 0x28, u8 *) = node;
+        AT(node, 0x28, u8 *) = NULL;
+        AT(node, 0x2C, u8 *) = AT(set, 0x34, u8 *);
+        AT(set, 0x34, u8 *) = node;
+    } else {
+        AT(set, 0x34, u8 *) = node;
+        AT(set, 0x30, u8 *) = node;
+        AT(node, 0x2C, u8 *) = NULL;
+        AT(node, 0x28, u8 *) = NULL;
+    }
+}
+
+/* a spring set's gravity (0, g, 0), damping and owner */
+static inline void spring_set(u8 *set, u32 g, u32 damping, u8 *owner) {
+    AT(set, 0x0, f32) = 0.0f;
+    AT(set, 0x4, u32) = g;
+    AT(set, 0x8, f32) = 0.0f;
+    AT(set, 0x10, u32) = damping;
+    AT(set, 0x14, u8 *) = owner;
+    AT(set, 0x20, u8) = 0;
+    AT(set, 0x1C, s32) = 0;
+}
+
+/* a set's six collision spheres at `col` (bones b, b + 1, b - 5, b + 0x1A, b - 6, b + 0x19;
+   the first two smaller), chained by +0x2C from the set's +0x18 */
+static inline void costume_cols(u8 *set, u8 *col, s32 bd) {
+    static const s32 sBones[6] = {0x20, 0x21, 0x1B, 0x3A, 0x1A, 0x39};
+    s32 i;
+
+    for (i = 0; i < 6; i++) {
+        u8 *c = col + i * 0x40;
+
+        AT(c, 0x2C, u8 *) = NULL;
+        if (AT(set, 0x18, u8 *) == NULL) {
+            AT(set, 0x18, u8 *) = c;
+        } else {
+            u8 *last = AT(set, 0x18, u8 *);
+
+            while (AT(last, 0x2C, u8 *) != NULL) {
+                last = AT(last, 0x2C, u8 *);
             }
+            AT(last, 0x2C, u8 *) = c;
         }
     }
-    return 0xFFFF;
+    for (i = 0; i < 6; i++) {
+        Sphere_Set(col + i * 0x40, sBones[i] + bd, 0.0f, 0.0f, 0.0f, i < 2 ? 0x1.99999ap-1f /* 0.8 */ : 1.0f);
+    }
 }
+
+/* the 16 hanging nodes on the set at + 0x6D0: lengths, bones, anchored flags and kinds from
+   tables; the swing limit `anchored` for anchored nodes, 60 degrees for the others */
+static inline void costume_hang16(u8 *m, u32 at, s32 bd, const f32 *len, const s32 *bone,
+                                  const u8 *anch, const u8 *kind, u32 anchored) {
+    u8 *set = m + at + 0x6D0;
+    s32 i;
+
+    SpringSet_Clear(set);
+    for (i = 0; i < 16; i++) {
+        spring_link(set, m + at + 0x1D0 + i * 0x50);
+    }
+    spring_set(set, 0x3DCCCCCD /* 0.1f */, 0x3F4CCCCD /* 0.8f */, m);
+    for (i = 0; i < 16; i++) {
+        u8 *node = m + at + 0x1D0 + i * 0x50;
+
+        AT(node, 0x40, f32) = len[i];
+        AT(node, 0x24, s32) = bone[i];
+        AT(node, 0x20, u8) = anch[i];
+        AT(node, 0x44, u8) = kind[i];
+        AT(node, 0x48, u32) = anch[i] ? anchored : 0x3F860A92;   /* pi / 3 */
+    }
+    costume_cols(set, m + at + 0x710, bd);
+}
+
+/* the 3 hanging nodes on the set at + 0x980 (swing limit 120 degrees), then its gravity
+   (0, 1.5, -1.5) and +0xC `grav` */
+static inline void costume_hang3(u8 *m, u32 at, s32 bd, const f32 *len, const s32 *bone,
+                                 const u8 *anch, const u8 *kind, f32 grav) {
+    u8 *set = m + at + 0x980;
+    s32 i;
+
+    SpringSet_Clear(set);
+    for (i = 0; i < 3; i++) {
+        spring_link(set, m + at + 0x890 + i * 0x50);
+    }
+    spring_set(set, 0x3DCCCCCD /* 0.1f */, 0x3F4CCCCD /* 0.8f */, m);
+    for (i = 0; i < 3; i++) {
+        u8 *node = m + at + 0x890 + i * 0x50;
+
+        AT(node, 0x40, f32) = len[i];
+        AT(node, 0x24, s32) = bone[i];
+        AT(node, 0x20, u8) = anch[i];
+        AT(node, 0x44, u8) = kind[i];
+        AT(node, 0x48, u32) = 0x40060A92;   /* 2 pi / 3 */
+        AT(node, 0x4C, u8) = 0;
+    }
+    costume_cols(set, m + at + 0x9C0, bd);
+    AT(set, 0x0, f32) = 0.0f;
+    AT(set, 0x4, f32) = 1.5f;
+    AT(set, 0x8, f32) = -1.5f;
+    AT(set, 0xC, f32) = grav;
+}
+
+/* a one-node set (gravity 0.1, damping 0.99), its node anchored on `bone`, length 1 */
+static inline void costume_node(u8 *m, u8 *set, u8 *node, s32 bone) {
+    SpringSet_Clear(set);
+    spring_link(set, node);
+    spring_set(set, 0x3DCCCCCD /* 0.1f */, 0x3F7D70A4 /* 0.99f */, m);
+    AT(node, 0x40, f32) = 1.0f;
+    AT(node, 0x24, s32) = bone;
+    AT(node, 0x20, u8) = 1;
+}
+
+/* the six sets a frame: one step, or 30 to settle after a reset (+0x850) */
+static inline void costume_frame(u8 *m, u32 at) {
+    s32 n = AT(m, 0x850, u8) ? 30 : 1;
+    s32 i;
+
+    SpringSet_Begin(m + at - 0x30);
+    SpringSet_Begin(m + at + 0x60);
+    SpringSet_Begin(m + at + 0x100);
+    SpringSet_Begin(m + at + 0x190);
+    SpringSet_Begin(m + at + 0x6D0);
+    SpringSet_Begin(m + at + 0x980);
+    for (i = 0; i < n; i++) {
+        SpringSet_Step(m + at - 0x30);
+        SpringSet_Step(m + at + 0x60);
+        SpringSet_Step(m + at + 0x100);
+        SpringSet_Step(m + at + 0x190);
+        SpringSet_Step(m + at + 0x6D0);
+        SpringSet_Step(m + at + 0x980);
+    }
+    SpringSet_Finish(m + at - 0x30);
+    SpringSet_Finish(m + at + 0x60);
+    SpringSet_Finish(m + at + 0x100);
+    SpringSet_Finish(m + at + 0x190);
+    SpringSet_Finish(m + at + 0x6D0);
+    SpringSet_Finish(m + at + 0x980);
+    AT(m, 0x850, u8) = 0;
+}
+
+/* +0x8 destructor (undoes costume_model) */
+static inline void *costume_dtor(u8 *m, s32 flags, void **vtbl, s32 n, u32 at) {
+    if (m != NULL) {
+        AT(m, 0x0, void **) = vtbl;
+        func_001002C0(m + at + 0x890, WindHangPoint_dtor, 0x50, 3);
+        func_001002C0(m + at + 0x1D0, CostumeHangPoint_dtor, 0x50, 0x10);
+        AT(m, at + 0x170, void **) = BoneHangPoint_vtable;
+        AT(m, at + 0x170, void **) = SpringPartBase_vtable;
+        AT(m, at + 0xD0, void **) = SprungPoint_vtable;
+        AT(m, at + 0xD0, void **) = SpringPartBase_vtable;
+        AT(m, at + 0x40, void **) = BoneHangPoint_vtable;
+        AT(m, at + 0x40, void **) = SpringPartBase_vtable;
+        func_001002C0(m + 0x9B0, SwayPointA_dtor, 0x50, n);
+        AT(m, 0x0, void **) = CharModel_vtable;
+        HumanModel_dtor(m, 0);
+        if ((s16)flags > 0) {
+            StalkerModel_delete(m);
+        }
+    }
+    return m;
+}
+
+/* a one-node set (no gravity, damping 0.75), its node anchored on `bone` (0.9 long) */
+static inline void spring_one(u8 *m, u8 *set, u8 *node, s32 bone) {
+    SpringSet_Clear(set);
+    spring_link(set, node);
+    AT(set, 0x0, f32) = 0.0f;
+    AT(set, 0x4, f32) = 0.0f;
+    AT(set, 0x8, f32) = 0.0f;
+    AT(set, 0x10, f32) = 0.75f;
+    AT(set, 0x14, u8 *) = m;
+    AT(set, 0x20, u8) = 0;
+    AT(set, 0x1C, s32) = 0;
+    AT(node, 0x40, u32) = 0x3F666666;   /* 0.9f */
+    AT(node, 0x24, s32) = bone;
+    AT(node, 0x20, u8) = 1;
+    AT(node, 0x58, f32) = 1.0f;
+    AT(node, 0x54, f32) = 1.0f;
+    AT(node, 0x50, f32) = 1.0f;
+}
+
+void *FionaModelArray_ctor(void *p);
+void *Costume6Model_dtor(void *p, s32 flags);
+void *Costume6Model_Textures(void);
+void *Costume6Model_Textures2(void);
+s32 Costume6Model_BufferSize(void);
+void Costume6Model_SetFlag(u8 *p, u32 b, f32 f);
+void Costume6Model_SetPoint(u8 *p, f32 x, f32 y, f32 z);
+void Costume6Model_Vt2C(u8 *p);
+void Costume6Model_Vt30(u8 *p);
+s32 Costume6Model_Part0(void);
+s32 Costume6Model_Part1(void);
+s32 Costume6Model_Part2(void);
+s32 Costume6Model_Part3(void);
+s32 Costume6Model_Part4(void);
+void *Costume6Model_MarkerFile(void *self, u32 i);
+void *Costume6Model_ModelFile(void *self, u32 i);
+void Costume6Model_SetDA0(u8 *m);
+void Costume6Model_SetD00(u8 *m);
+void Costume6Model_Setup(u8 *m);
+void Costume6Model_Springs(u8 *o);
+void Costume6Model_Loaded(u8 *m);
+void Costume6Model_MotionTable(u8 *p);
+void FionaModel_Frame(u8 *m);
+void *FionaModel_dtor(void *p, s32 flags);
+const char *FionaModel_ModelFile(void);
+const char *FionaModel_MarkerFile(void);
+const char *FionaModel_Textures(void);
+const char *FionaModel_Textures2(void);
+u32 FionaModel_BufferSize(void);
+void FionaModel_SetVector(u8 *m, const f32 *v);
+void FionaModel_Loaded(u8 *m);
+void FionaModel_MotionTable(u8 *m, s32 slot);
+void FionaModel_Setup(u8 *m);
+void FionaModel_Nodes(u8 *m);
+void FionaModel_Set1740(u8 *m);
+void FionaModel_Set17E0(u8 *m);
+void FionaModel_Springs(u8 *o);
+void Costume8Model_MotionTable(u8 *m);
+void Costume8Model_Loaded(u8 *m);
+void Costume2Model_SetEA0(u8 *m);
+void Costume2Model_SetD70(u8 *m);
+void *Costume2Model_dtor(u8 *m, s32 flags);
+void *Costume2Model_Textures(void);
+void *Costume2Model_Textures2(void);
+u32 Costume2Model_BufferSize(void);
+void Costume2Model_VtCC(u8 *self, s32 on);
+void Costume2Model_VtD0(u8 *self, f32 x, f32 y, f32 z);
+s32 Costume2Model_Part0(void);
+s32 Costume2Model_Part1(void);
+s32 Costume2Model_Part2(void);
+s32 Costume2Model_Part3(void);
+s32 Costume2Model_Part4(void);
+void Costume2Model_SetPoint(u8 *self, f32 x, f32 y, f32 z);
+void Costume2Model_Hang3(u8 *m);
+void Costume2Model_ShowParts(u8 *m, s32 look);
+void Costume2Model_Hang16(u8 *m);
+void *Costume2Model_ModelFile(void *self, u32 i);
+void Costume2Model_SpringSetup(u8 *m);
+void Costume2Model_Springs(u8 *m);
+void Costume2Model_Loaded(u8 *m);
+void Costume2Model_MotionTable(u8 *self);
+void *Costume7Model_dtor(u8 *m, s32 flags);
+void *Costume7Model_Textures(void);
+void *Costume7Model_Textures2(void);
+s32 Costume7Model_BufferSize(void);
+void Costume7Model_SetPoint(u8 *p, f32 x, f32 y, f32 z);
+void Costume7Model_Vt2C(u8 *p);
+void Costume7Model_Vt30(u8 *p);
+s32 Costume7Model_Part0(void);
+s32 Costume7Model_Part1(void);
+s32 Costume7Model_Part2(void);
+s32 Costume7Model_Part3(void);
+s32 Costume7Model_Part4(void);
+void *Costume7Model_MarkerFile(void *self, u32 i);
+void *Costume7Model_ModelFile(void *self, u32 i);
+void Costume7Model_SpringC80(u8 *m);
+void Costume7Model_SpringBE0(u8 *m);
+void Costume7Model_AnchoredNodes(u8 *m);
+void Costume7Model_Setup(u8 *m);
+void Costume7Model_Springs(u8 *m);
+void Costume7Model_Loaded(u8 *m);
+void Costume7Model_MotionTable(u8 *p);
+void *Costume3Model_dtor(u8 *m, s32 flags);
+void *Costume3Model_Textures(void);
+void *Costume3Model_Textures2(void);
+u32 Costume3Model_BufferSize(void);
+void Costume3Model_VtCC(u8 *self, s32 on);
+s32 Costume3Model_Part0(void);
+s32 Costume3Model_Part1(void);
+s32 Costume3Model_Part2(void);
+s32 Costume3Model_Part3(void);
+s32 Costume3Model_Part4(void);
+void Costume3Model_SetPoint(u8 *self, f32 x, f32 y, f32 z);
+void Costume3Model_Hang3(u8 *m);
+void Costume3Model_Hang16(u8 *m);
+void *Costume3Model_ModelFile(void *self, u32 i);
+void Costume3Model_SetD60(u8 *m);
+void Costume3Model_SetC30(u8 *m);
+void Costume3Model_SpringSetup(u8 *m);
+void Costume3Model_Springs(u8 *m);
+void Costume3Model_Loaded(u8 *m);
+void Costume3Model_MotionTable(u8 *self);
+void *Costume8Model_dtor(void *p, s32 flags);
+void *Costume8Model_Textures(void);
+void *Costume8Model_Textures2(void);
+s32 Costume8Model_BufferSize(void);
+s32 Costume8Model_Part0(void);
+s32 Costume8Model_Part1(void);
+s32 Costume8Model_Part2(void);
+s32 Costume8Model_Part3(void);
+s32 Costume8Model_Part4(void);
+void *Costume8Model_ModelFile(void *self, u32 i);
+
 /* Back to the idle state (inlined in several places in the original). */
 static inline void Fiona_ToIdle(Fiona *f) {
     f->unk1AD580 = 0;
@@ -77,6 +589,24 @@ static inline void Fiona_ToIdle(Fiona *f) {
     Progress_ClearFlag(gProgress, 0x2B);
 }
 
+/* Fiona's class destructor (Fiona -> 0x469C60 -> Actor) */
+/* 0x0017FCD0 */
+void *Fiona_dtor(void **o, s32 flags) {
+    if (o != NULL) {
+        o[0] = Fiona_vtable;
+        o[0] = Character_vtable;
+        o[0] = Actor_vtable;
+        if ((s16)flags > 0) {
+            Actor_Destroy((Actor *)o);
+        }
+    }
+    return o;
+}
+
+/* 0x0017FD40 */
+s32 Fiona_IsBusy(void *p) {
+    return 1;
+}
 /* vtable +0x7C: back to the idle state. */
 /* 0x0019A300 */
 void Fiona_BackToIdle(Fiona *f) {
@@ -195,7 +725,6 @@ void Fiona_Activate(Fiona *f) {
     *(f32 *)&f->c.unk14C4 = -1.0f;
 }
 
-#include "sce/libvu0.h"
 
 #define MOTION_SKELETON(m) (*(void **)((u8 *)(m) + 0x810))
 
@@ -3245,37 +3774,1936 @@ void Lists_Clear(u8 *o) {
     }
 }
 
-/* out.xyz = m's 3x3 part x v. (VU0 macro code: its w is whatever the VU register last held;
-   0 here - the callers only use x, y, z) */
-/* 0x002E2DA0 */
-void Mtx_ApplyVector(f32 *out, f32 (*m)[4], const f32 *v) {
-    f32 x = v[0], y = v[1], z = v[2];
+/* Fiona's costume 8 model (event 0x97) */
+/* 0x002083D0 */
+void *Costume8Model_ctor(u8 *m) {
+    HumanModel_PartsCtor(m);
+    AT(m, 0x0, void **) = CharModel_vtable;
+    AT(m, 0x9A0, u8) = 8;
+    AT(m, 0x0, void **) = Costume8Model_vtable;
+    return m;
+}
+
+/* Fiona's costume 7 (0xD50 bytes) */
+/* 0x00208420 */
+void *Costume7Model_ctor(u8 *m, s32 kind) {
+    HumanModel_PartsCtor(m);
+    AT(m, 0x0, void **) = CharModel_vtable;
+    AT(m, 0x9A0, u8) = kind;
+    AT(m, 0x0, void **) = Costume7Model_vtable;
+    func_00100340(m + 0x9B0, BoneHangPoint_ctor, BoneHangPoint_dtor, 0x50, 5);
+    AT(m, 0xB74, s32) = 0;
+    AT(m, 0xB70, s32) = 0;
+    AT(m, 0xBB0, void **) = SprungPoint_vtable;
+    AT(m, 0xC14, s32) = 0;
+    AT(m, 0xC10, s32) = 0;
+    AT(m, 0xC50, void **) = SprungPoint_vtable;
+    AT(m, 0xCB4, s32) = 0;
+    AT(m, 0xCB0, s32) = 0;
+    AT(m, 0xCF0, void **) = BoneHangPoint_vtable;
+    AT(m, 0xD44, s32) = 0;
+    AT(m, 0xD40, s32) = 0;
+    return m;
+}
+
+/* Fiona's costume 6 (0xDE0 bytes) */
+/* 0x002084D0 */
+void *Costume6Model_ctor(u8 *m, s32 kind) {
+    HumanModel_PartsCtor(m);
+    AT(m, 0x0, void **) = CharModel_vtable;
+    AT(m, 0x9A0, u8) = kind;
+    AT(m, 0x0, void **) = Costume6Model_vtable;
+    AT(m, 0x9E0, void **) = BoneHangPoint_vtable;
+    AT(m, 0xA34, s32) = 0;
+    AT(m, 0xA30, s32) = 0;
+    func_00100340(m + 0xA40, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+    parts40(m + 0xB80, m + 0xD00);
+    AT(m, 0xD34, s32) = 0;
+    AT(m, 0xD30, s32) = 0;
+    AT(m, 0xD70, void **) = SprungPoint_vtable;
+    AT(m, 0xDD4, s32) = 0;
+    AT(m, 0xDD0, s32) = 0;
+    return m;
+}
+
+/* 0x00208650 */
+void *Costume3Model_ctor(u8 *m) {
+    return costume_model(m, 3, Costume3Model_vtable, 8, 0xC60);
+}
+
+/* 0x002089F0 */
+void *Costume2Model_ctor(u8 *m) {
+    return costume_model(m, 2, Costume2Model_vtable, 0xC, 0xDA0);
+}
+
+/* Fiona's costume 1 (her sheet model, FionaModel_vtable) */
+/* 0x00208C90 */
+void *FionaModel_ctor(u8 *m) {
+    HumanModel_PartsCtor(m);
+    AT(m, 0x0, void **) = CharModel_vtable;
+    AT(m, 0x9A0, u8) = 1;
+    AT(m, 0x0, void **) = FionaModel_vtable;
+    func_00100340(m + 0x9B0, FionaModelArray_ctor, HairPoint2_dtor, 0x50, 0x20);
+    AT(m, 0x13E4, s32) = 0;
+    AT(m, 0x13E0, s32) = 0;
+    AT(m, 0x1420, void **) = BoneHangPoint_vtable;
+    AT(m, 0x1474, s32) = 0;
+    AT(m, 0x1470, s32) = 0;
+    func_00100340(m + 0x1480, HangPoint_ctor, HangPoint_dtor, 0x50, 4);
+    parts40(m + 0x15C0, m + 0x1740);
+    AT(m, 0x1774, s32) = 0;
+    AT(m, 0x1770, s32) = 0;
+    AT(m, 0x17B0, void **) = SprungPoint_vtable;
+    AT(m, 0x1814, s32) = 0;
+    AT(m, 0x1810, s32) = 0;
+    return m;
+}
+
+/* an element of Fiona's model's first array (0x50 bytes) */
+/* 0x00208E90 */
+void *FionaModelArray_ctor(void *p) {
+    u8 *e = p;
+
+    AT(e, 0x30, void **) = HairPoint2_vtable;
+    return e;
+}
+
+/* a screen fade's frame (`kind`: 0 / 2 / 4 in, 1 / 3 / 5 out, 6 / 7 half way in / out): its
+ * alpha from the rate (+0x18) times the frames so far (+0x20) - up to 128 (64 for 6 / 7) -
+ * also setting the screen fade's level for 0..5; the colour (+0xF8) black with that alpha,
+ * white for 2 / 3; then a frame more */
+/* 0x002CF3A0 */
+void ScreenFade_Step(u8 *f, s32 kind) {
+    static const union { u32 u; f32 f; } k0005 = {0x3BA3D70A};
+    u8 k = kind;
+    f32 a = 0.0f;
+    u32 c = 0;
+
+    switch (k) {
+    case 0: case 2: case 4:
+        a = AT(f, 0x18, f32) * (f32)AT(f, 0x20, u8);
+        if (!(a < 128.0f)) {
+            a = 128.0f;
+        }
+        ScreenFade_Level((u8 *)gProgress + 0x7B8, 0.5f - k0005.f * (a - 16.0f));
+        break;
+    case 1: case 3: case 5:
+        a = 128.0f - AT(f, 0x18, f32) * (f32)AT(f, 0x20, u8);
+        if (a <= 0.0f) {
+            a = 0.0f;
+        }
+        ScreenFade_Level((u8 *)gProgress + 0x7B8, 1.0f - k0005.f * (a - 16.0f));
+        break;
+    case 6:
+        a = AT(f, 0x18, f32) * (f32)AT(f, 0x20, u8);
+        if (!(a < 64.0f)) {
+            a = 64.0f;
+        }
+        break;
+    case 7:
+        a = 64.0f - AT(f, 0x18, f32) * (f32)AT(f, 0x20, u8);
+        if (a <= 0.0f) {
+            a = 0.0f;
+        }
+        break;
+    }
+    switch (k) {
+    case 2: case 3:
+        c = (u32)(u8)(s32)a << 24 | 0xFFFFFF;
+        break;
+    case 0: case 1: case 4: case 5: case 6: case 7:
+        c = (u32)(u8)(s32)a << 24;
+        break;
+    }
+    AT(f, 0xF8, u32) = c;
+    AT(f, 0x20, u8)++;
+}
+
+/* while the screen's effect is full (+0x34 1): Fiona's breath (sound 0x29, pitched by the
+   stage) and the screen's tint for the stage (stage 5 also a second one) */
+/* 0x002EF2B0 */
+void Panic_Breath(u8 *o) {
+    static const s32 sPitch[5] = { -0x38, -0x28, -0x10, 0, 0 };
+    static const u8 *const sTint[5] = { D_0041A040, D_0041A050, D_0041A060, D_0041A070, D_0041A080 };
+    u8 stage;
+
+    if (AT(o, 0x34, f32) != 1.0f) {
+        return;
+    }
+    stage = AT(o, 0x0, u8);
+    if (stage < 1 || stage > 5) {
+        return;
+    }
+    Actor_PlaySound((Actor *)((u8 *)gCharPlayer), 0x29, 5, sPitch[stage - 1], 0, 0);
+    VCALL(gRumble, 0x20, void (*)(VObject *, const u8 *, const u8 *))(gRumble, stage == 5 ? D_0041A090 : NULL,
+                                                                          sTint[stage - 1]);
+}
+
+/* the screen fade's level (+0x34), clamped to 0..1 */
+/* 0x002EF480 */
+void ScreenFade_Level(u8 *fade, f32 t) {
+    if (t < 0.0f) {
+        t = 0.0f;
+    } else if (!(t <= 1.0f)) {
+        t = 1.0f;
+    }
+    AT(fade, 0x34, f32) = t;
+}
+
+/* the level set to `n` (0..100): its stage +0x0 (0 below 60, then 1 / 2 / 3 at 60 / 75 / 90;
+   at 100 the panic's length +0x2 = 450 frames), the fear inputs cleared */
+/* 0x002EF4D0 */
+void Panic_SetLevel(u8 *o, s16 n) {
+    AT(o, 0x4, f32) = (f32)n;
+    AT(o, 0x1C, f32) = (f32)n;
+    if (n >= 100) {
+        AT(o, 0x2, s16) = 450;
+    } else if (n >= 90) {
+        AT(o, 0x0, u8) = 3;
+    } else if (n >= 75) {
+        AT(o, 0x0, u8) = 2;
+    } else if (n >= 60) {
+        AT(o, 0x0, u8) = 1;
+    } else {
+        AT(o, 0x0, u8) = 0;
+    }
+    AT(o, 0x1, u8) = 0;
+    AT(o, 0xC, s32) = 0;
+    AT(o, 0x20, s32) = 0;
+    AT(o, 0x24, s32) = 0;
+    AT(o, 0x28, s32) = 0;
+    AT(o, 0x2C, s32) = 0;
+    AT(o, 0x10, s32) = 0;
+    AT(o, 0x14, s32) = 0;
+    AT(o, 0x18, s32) = 0;
+}
+
+/* the panic stage (+0x0: 0 calm, 1..3 by level 60 / 75 / 90, 4 panicking, 5 calming down),
+ * heartbeat timer (+0x30), its loudness (+0x38) and the camera shake (+0x40) */
+/* 0x002EF580 */
+void Panic_Stage(u8 *o) {
+    static const F32Bits kShake = {0x3E4CCCCD};   /* 0.2f */
+    VObject *cam;
+
+    if (AT(o, 0x38, s32) < 0x80) {
+        AT(o, 0x38, s32) += 4;
+        if (AT(o, 0x38, s32) > 0x80) {
+            AT(o, 0x38, s32) = 0x80;
+        }
+    }
+    if (AT(o, 0x30, s32) != 0) {
+        AT(o, 0x30, s32)--;
+    }
+    cam = gCamera;
+    VCALL(cam, 0x6C, void (*)(VObject *, f32))(cam, 0.0f);
+    switch (AT(o, 0x0, u8)) {
+    case 0:
+        if (AT(o, 0x40, s32) != 0) {
+            AT(o, 0x40, s32) -= 8;
+            if (AT(o, 0x40, s32) < 0) {
+                AT(o, 0x40, s32) = 0;
+            }
+        }
+        /* fallthrough */
+    case 1:
+    case 2:
+    case 3: {
+        f32 lvl = AT(o, 0x4, f32);
+        s32 t;
+
+        if (!(lvl < PANIC_MAX)) {   /* she panics */
+            AT(o, 0x4, f32) = PANIC_MAX;
+            AT(o, 0x1C, f32) = PANIC_MAX;
+            AT(o, 0xC, f32) = 0.0f;
+            if (AT(gCharPlayer, 0xF8, s32) == 0 || AT(gCharPlayer, 0xF8, s32) == 3) {
+                Progress *p;
+
+                Actor_PlaySound((Actor *)((u8 *)gCharPlayer), 0x42, 5, 0x40, 0, 0);
+                p = gProgress;
+                VCALL(p, 0x44, void (*)(Progress *, s32))(p, 1);
+                AT(o, 0x0, u8) = 4;
+                AT(o, 0x2, s16) = -30;
+                AT(o, 0x30, s32) = 0;
+                AT(p, 0xFC2, s16)++;   /* panic count */
+                if (AT(p, 0xFC2, s16) >= 10000) {
+                    AT(p, 0xFC2, s16) = 9999;
+                }
+            }
+        } else if (!(lvl < 90.0f)) {
+            AT(o, 0x0, u8) = 3;
+        } else if (!(lvl < 75.0f)) {
+            AT(o, 0x0, u8) = 2;
+        } else if (!(lvl < 60.0f)) {
+            AT(o, 0x0, u8) = 1;
+        } else {
+            AT(o, 0x0, u8) = 0;
+        }
+        if (AT(o, 0x0, u8) > 0 && AT(o, 0x30, s32) == 0) {
+            AT(o, 0x30, s32) = (4 - AT(o, 0x0, u8)) * 30;
+            AT(o, 0x38, s32) = 0;
+            Panic_Breath(o);
+        }
+        if (AT(o, 0x4, f32) < 60.0f) {
+            return;
+        }
+        t = (s32)(1.5f * (AT(o, 0x4, f32) - 60.0f));
+        if (AT(o, 0x40, s32) < t) {
+            AT(o, 0x40, s32)++;
+        } else if (t < AT(o, 0x40, s32)) {
+            AT(o, 0x40, s32)--;
+        }
+        return;
+    }
+    case 4:
+        if (AT(o, 0x2, s16) < 0) {   /* the panic's start */
+            AT(o, 0x2, s16)++;
+            if (AT(o, 0x2, s16) == 0) {
+                VCALL(gProgress, 0x44, void (*)(Progress *, s32))(gProgress, 0);
+                AT(o, 0x2, s16) = 450;
+                if (AT(gCharPlayer, 0xC4, s32) == 1) {
+                    AT(o, 0x2, s16) += 300;
+                } else if (AT(gCharPlayer, 0xC4, s32) == 3) {
+                    AT(o, 0x2, s16) += 150;
+                }
+            }
+            AT(o, 0x38, s32) = 0x80;
+            return;
+        }
+        if (!(AT(o, 0x20, f32) < 500.0f)) {   /* more fear: longer, then calm down */
+            AT(o, 0x2, s16) += 150;
+            if ((u32)(s32)AT(o, 0x2, s16) >= 451) {
+                AT(o, 0x2, s16) = 450;
+            }
+            AT(o, 0x0, u8) = 5;
+        }
+        /* fallthrough */
+    case 5:
+        AT(o, 0x2, s16)--;
+        if (AT(o, 0x2, s16) < 0) {   /* over */
+            AT(o, 0x0, u8) = 0;
+            AT(o, 0x4, f32) = 50.0f;
+            AT(o, 0x1C, f32) = 50.0f;
+            AT(o, 0xC, f32) = 0.0f;
+            return;
+        }
+        if (AT(o, 0x0, u8) != 4) {
+            AT(o, 0x40, s32) = 0x90;
+            VCALL(cam, 0x6C, void (*)(VObject *, f32))(cam, kShake.f);
+        } else {
+            AT(o, 0x40, s32) = 0x50;
+        }
+        if (AT(o, 0x30, s32) != 0) {
+            return;
+        }
+        AT(o, 0x30, s32) = (6 - AT(o, 0x0, u8)) * 7;
+        AT(o, 0x38, s32) = 0;
+        Panic_Breath(o);
+        return;
+    }
+}
+
+/* a fright, less with a charm on (item manager +0x10 slot 1: 0x87 three quarters, 0x88 half) */
+/* 0x002EFA50 */
+void Panic_Fright(u8 *o, f32 amount) {
+    if (amount < 0.0f) {
+        return;
+    }
+    if (gSubScreen != NULL) {
+        switch (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 1)) {
+        case 0x87:
+            amount *= 0.75f;
+            break;
+        case 0x88:
+            amount *= 0.5f;
+            break;
+        }
+    }
+    fright(o, amount);
+}
+
+/* 0x002EFB70 */
+void Panic_FrightRaw(u8 *o, f32 amount) {
+    fright(o, amount);
+}
+
+/* this frame's fear inputs: calming with time, and the pursuer: by its kind and how near it is
+ * (distance + 3 * height difference; on stairs by height alone) */
+/* 0x002EFBE0 */
+void Panic_FearInputs(u8 *o) {
+    static const F32Bits kCalm0 = {0x3DCCCC46}, kCalm = {0x3D08882F}, kRecover = {0x3E2AAA3B},
+                         kAway = {0x3D88882F};
+    Progress *p = gProgress;
+    u8 *pl, *pu;
+    f32 v[4] __attribute__((aligned(16)));
+    f32 dy, d;
+    s32 kind, band;
+
+    if ((u8)Progress_GameMode(p) == 0) {
+        AT(o, 0x2C, f32) = AT(o, 0x2C, f32) + kCalm0.f;
+    } else if (AT(gCharPlayer, 0xF8, s32) == 0 && AT(gCharPlayer, 0xFC, s32) == 0) {
+        AT(o, 0x2C, f32) = AT(o, 0x2C, f32) + kCalm.f;
+    }
+    if (AT(o, 0x8, s16) == 0) {
+        AT(o, 0x18, f32) = AT(o, 0x18, f32) + kRecover.f;
+    }
+    pu = (u8 *)gCharPursuer;
+    if (pu == NULL || !AT(pu, 0x28, u8) || AT(pu, 0xC4, s32) == 2 || gCharPlayer == NULL ||
+        !AT(gCharPlayer, 0x28, u8)) {
+        return;
+    }
+    if (AT(gCharPlayer, 0x30, s32) != VCALL(p, 0xC, s32 (*)(Progress *))(p) &&
+        AT(gCharPlayer, 0x30, s32) == AT(gCharPursuer, 0x30, s32)) {
+        /* (Hewie controlled) she is with the pursuer elsewhere */
+        if (AT(p, 0x1FBEC1, u8) == 1) {
+            AT(o, 0x24, f32) = AT(o, 0x24, f32) + kAway.f;
+        }
+        return;
+    }
+    if (AT(gCharPursuer, 0x30, s32) != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        return;
+    }
+    if ((u8)Progress_TestFlag(p, 0x21) == 1) {
+        return;
+    }
+    pl = (u8 *)gCharPlayer;
+    pu = (u8 *)gCharPursuer;
+    sceVu0SubVector(v, (f32 *)(pu + 0x10), (f32 *)(pl + 0x10));
+    dy = v[1];
+    d = __builtin_sqrtf(v[2] * v[2] + v[0] * v[0]);
+    if (dy <= 0.0f) {
+        dy = -dy;
+    }
+    d = d + 3.0f * dy;
+    kind = pursuer_kind(AT(gCharPursuer, 0x153C, u8));
+    if (kind < 0) {
+        return;
+    }
+    if (!(d < 100.0f)) {
+        band = -1;
+    } else if (d < 10.0f) {
+        band = 0;
+    } else if (d < 20.0f) {
+        band = 1;
+    } else if (d < 40.0f) {
+        band = 2;
+    } else if (d < 60.0f) {
+        band = 3;
+    } else {
+        band = 4;
+    }
+    if (band >= 0) {
+        fear_add(o, D_0041A0A0[kind * 5 + band]);
+    }
+    if (AT(gCharPlayer, 0xF8, s32) != 3 || AT(gCharPlayer, 0xFC, s32) != 7 ||
+        AT(gCharPursuer, 0xF8, s32) != 3 || AT(gCharPursuer, 0xFC, s32) != 7) {
+        return;
+    }
+    if (!((u8)RoomSlots_Bytes(p, AT(gCharPlayer, 0x100, u8), AT(gCharPursuer, 0x20, u8)) & 1)) {
+        return;
+    }
+    if (!(dy < 100.0f)) {
+        band = -1;
+    } else if (dy < 20.0f) {
+        band = 0;
+    } else if (dy < 30.0f) {
+        band = 1;
+    } else if (dy < 40.0f) {
+        band = 2;
+    } else if (dy < 50.0f) {
+        band = 3;
+    } else if (dy < 60.0f) {
+        band = 4;
+    } else {
+        band = 5;
+    }
+    if (band >= 0) {
+        fear_add(o, D_0041A0F0[kind * 6 + band]);
+    }
+}
+
+/* the level for stage `stage` (0..5) */
+/* 0x002F0260 */
+void Panic_SetStage(u8 *o, u32 stage) {
+    static const s16 sLevel[6] = { 0, 60, 75, 90, 100, 100 };
+
+    stage &= 0xFF;
+    if (stage < 6) {
+        Panic_SetLevel(o, sLevel[stage]);
+    }
+}
+
+/* on pausing: the camera's shake off, +0x38 = 0x80 */
+/* 0x002F02F0 */
+void Panic_Pause(u8 *o) {
+    VCALL(gCamera, 0x6C, void (*)(VObject *, f32))(gCamera, 0.0f);
+    AT(o, 0x38, s32) = 0x80;
+}
+
+/* the screen fade, each frame (`mode` 2: brighten): while not fully up (+0x34 < 1) the camera
+ * shake stops and the brightness (+0x38) is reset to 0x80; at full level the renderer takes
+ * the brightness (mode 2 raises it by 4 up to 0x80, mode 1 leaves it alone) and a dim one
+ * (<= 0x10) steps the overlay; states 4 / 5 stop the shake too (4 with +0x2 < 0 also ends the
+ * overlay); the overlay is tinted by +0x40 times the level */
+/* 0x002F0340 */
+void ScreenFade_Frame(u8 *fade, s32 mode) {
+    VObject *cam;
+
+    if (AT(fade, 0x0, u8) == 5 || AT(fade, 0x0, u8) == 4) {
+        if (AT(fade, 0x0, u8) == 4 && AT(fade, 0x2, s16) < 0 && AT(fade, 0x34, f32) == 1.0f) {
+            func_0021E1B0(gMovieFlag);
+        }
+        if (AT(fade, 0x34, f32) != 1.0f) {
+            cam = gCamera;
+            VCALL(cam, 0x6C, void (*)(VObject *, f32))(cam, 0.0f);
+        }
+    }
+    if (AT(fade, 0x38, s32) != 0x80) {
+        if (AT(fade, 0x34, f32) == 1.0f) {
+            if (mode != 1) {
+                if (mode == 2) {
+                    AT(fade, 0x38, s32) += 4;
+                    if (AT(fade, 0x38, s32) > 0x80) {
+                        AT(fade, 0x38, s32) = 0x80;
+                    }
+                }
+                VCALL(gRenderer, 0x60, void (*)(VObject *, u8))(gRenderer, AT(fade, 0x38, u8));
+            }
+            if (AT(fade, 0x38, s32) <= 0x10) {
+                func_0021D290(gMovieFlag);
+            }
+        } else {
+            cam = gCamera;
+            VCALL(cam, 0x6C, void (*)(VObject *, f32))(cam, 0.0f);
+            AT(fade, 0x38, s32) = 0x80;
+        }
+    }
+    if (AT(fade, 0x40, s32) != 0) {
+        func_0021D8F0(gMovieFlag, 0x30, (s32)((f32)AT(fade, 0x40, s32) * AT(fade, 0x34, f32)));
+    }
+}
+
+/* the per-frame update */
+/* 0x002F0500 */
+void Panic_Update(u8 *o) {
+    static const F32Bits k06 = {0x3F19999A}, k08 = {0x3F4CCCCD}, k16 = {0x3FCCCCCD},
+                         k09 = {0x3F666666};
+    Progress *p = gProgress;
+    f32 scale, a, b, c, d;
+
+    if (Progress_TestFlag(p, 8)) {
+        AT(o, 0x34, s32) = 0;
+    }
+    Panic_Stage(o);
+    if (AT(o, 0x8, s16) != 0) {
+        AT(o, 0x8, s16)--;
+    }
+    if (AT(o, 0x4, f32) < PANIC_MAX) {
+        Panic_FearInputs(o);
+        scale = AT(p, 0x9EC, s32) != 0 ? AT(p, 0x9E8, f32) : 1.0f;
+        a = AT(o, 0x10, f32);
+        b = AT(o, 0x28, f32);
+        c = AT(o, 0x18, f32);
+        d = AT(o, 0x20, f32);
+        switch (AT(o, 0x1, u8)) {
+        case 0:
+            d = d + AT(o, 0x24, f32);
+            a = a + AT(o, 0x14, f32);
+            b = b + AT(o, 0x2C, f32);
+            break;
+        case 1:
+            d = d + k06.f * AT(o, 0x24, f32);
+            a = a + k06.f * AT(o, 0x14, f32);
+            b = b + 2.0f * AT(o, 0x2C, f32);
+            break;
+        case 2:
+            d = d + k08.f * AT(o, 0x24, f32);
+            a = a + k08.f * AT(o, 0x14, f32);
+            b = b + k16.f * AT(o, 0x2C, f32);
+            break;
+        case 3:
+            d = d + k09.f * AT(o, 0x24, f32);
+            a = a + k09.f * AT(o, 0x14, f32);
+            b = b + 1.5f * AT(o, 0x2C, f32);
+            break;
+        }
+        d = d * scale;
+        a = a * scale;
+        switch (VCALL(gSubScreen, 0x10, s32 (*)(VObject *, s32))(gSubScreen, 1)) {
+        case 0x86:
+        case 0x87:
+            b = b * 1.25f;
+            break;
+        case 0x88:
+            b = b * 2.0f;
+            break;
+        }
+        AT(o, 0xC, f32) = AT(o, 0xC, f32) - c;
+        if (AT(o, 0xC, f32) < 0.0f) {
+            AT(o, 0xC, f32) = 0.0f;
+        }
+        AT(o, 0x1C, f32) = AT(o, 0x1C, f32) - b;
+        if (AT(o, 0x1C, f32) < 0.0f) {
+            AT(o, 0x1C, f32) = 0.0f;
+        }
+        AT(o, 0x1C, f32) = AT(o, 0x1C, f32) + d;
+        if (a <= 0.0f) {
+            AT(o, 0x4, f32) = AT(o, 0x1C, f32) + AT(o, 0xC, f32);
+            if (!(AT(o, 0x4, f32) < PANIC_MAX)) {
+                AT(o, 0x4, f32) = 99.0f;
+                AT(o, 0x1C, f32) = 99.0f;
+            }
+        } else {
+            AT(o, 0x1C, f32) = AT(o, 0x1C, f32) + AT(o, 0xC, f32);
+            AT(o, 0xC, f32) = a;
+            AT(o, 0x4, f32) = AT(o, 0x1C, f32) + AT(o, 0xC, f32);
+        }
+        /* she can only reach 100 under flag 0x15, or as Hewie's partner away from her room */
+        if ((u8)Progress_TestFlag(p, 0x15) == 1 ||
+            (AT(p, 0x1FBEC1, u8) == 1 &&
+             AT(gCharPlayer, 0x30, s32) != VCALL(p, 0xC, s32 (*)(Progress *))(p))) {
+            if (!(AT(o, 0x4, f32) < PANIC_MAX)) {
+                AT(o, 0x4, f32) = 99.0f;
+                AT(o, 0x1C, f32) = 99.0f;
+                AT(o, 0xC, f32) = 0.0f;
+            }
+        }
+    }
+    AT(o, 0x1, u8) = 0;
+    AT(o, 0x10, f32) = 0.0f;
+    AT(o, 0x14, f32) = 0.0f;
+    AT(o, 0x20, f32) = 0.0f;
+    AT(o, 0x24, f32) = 0.0f;
+    AT(o, 0x28, f32) = 0.0f;
+    AT(o, 0x2C, f32) = 0.0f;
+    AT(o, 0x20, f32) = 0.0f;
+    AT(o, 0x24, f32) = 0.0f;
+    AT(o, 0x18, f32) = 0.0f;
+}
+
+/* 0x002F08E0 */
+void Panic_Reset(u8 *p) {
+    AT(p, 0x0, u8) = 0;
+    AT(p, 0x1, u8) = 0;
+    AT(p, 0x2, u16) = 0;
+    AT(p, 0x4, s32) = 0;
+    AT(p, 0xC, s32) = 0;
+    AT(p, 0x10, s32) = 0;
+    AT(p, 0x14, s32) = 0;
+    AT(p, 0x18, s32) = 0;
+    AT(p, 0x8, u16) = 0;
+    AT(p, 0x1C, s32) = 0;
+    AT(p, 0x20, s32) = 0;
+    AT(p, 0x24, s32) = 0;
+    AT(p, 0x28, s32) = 0;
+    AT(p, 0x2C, s32) = 0;
+    AT(p, 0x30, s32) = 0;
+    AT(p, 0x38, s32) = 0x80;
+    AT(p, 0x40, s32) = 0;
+    AT(p, 0x3C, s32) = 0x40;
+    AT(p, 0x34, f32) = 1.0f;
+}
+
+/* Fiona's sheet model (FionaModel_vtable): +0x8 destructor */
+/* 0x002F7A30 */
+void *FionaModel_dtor(void *p, s32 flags) {
+    u8 *m = p;
+
+    if (m != NULL) {
+        AT(m, 0x0, void **) = FionaModel_vtable;
+        AT(m, 0x17B0, void **) = SprungPoint_vtable;
+        AT(m, 0x17B0, void **) = SpringPartBase_vtable;
+        func_001002C0(m + 0x1480, HangPoint_dtor, 0x50, 4);
+        AT(m, 0x1420, void **) = BoneHangPoint_vtable;
+        AT(m, 0x1420, void **) = SpringPartBase_vtable;
+        func_001002C0(m + 0x9B0, HairPoint2_dtor, 0x50, 0x20);
+        AT(m, 0x0, void **) = CharModel_vtable;
+        HumanModel_dtor(m, 0);
+        if ((s16)flags > 0) {
+            StalkerModel_delete(m);
+        }
+    }
+    return m;
+}
+
+/* +0xA8 the textures */
+/* 0x002F7B30 */
+const char *FionaModel_Textures(void) {
+    return D_0045E540;
+}
+
+/* +0xAC the second texture set */
+/* 0x002F7B40 */
+const char *FionaModel_Textures2(void) {
+    return str_O_FIS_FIS_200_TEX;
+}
+
+/* +0xB0 the model file's buffer size */
+/* 0x002F7B50 */
+u32 FionaModel_BufferSize(void) {
+    return 0x41000;
+}
+
+/* +0xC8 set the vector at +0x1740 */
+/* 0x002F7B60 */
+void FionaModel_SetVector(u8 *m, const f32 *v) {
+    sceVu0CopyVector((f32 *)(m + 0x1740), v);
+}
+
+/* +0xA4 the marker file */
+/* 0x002F7B70 */
+const char *FionaModel_MarkerFile(void) {
+    return D_0045E500;
+}
+
+/* +0xA0 the model file */
+/* 0x002F7B80 */
+const char *FionaModel_ModelFile(void) {
+    return D_0045E520;
+}
+
+/* Fiona's third secondary-motion set (+0x17E0): one node (+0x1780) on bone 0x2D */
+/* 0x002F7B90 */
+void FionaModel_Set17E0(u8 *m) {
+    u8 *node = m + 0x1780;
+
+    SpringSet_Clear(m + 0x17E0);
+    if (AT(m, 0x1810, u8 *) != NULL && AT(m, 0x1814, u8 *) != NULL) {
+        AT(AT(m, 0x1814, u8 *), 0x28, u8 *) = node;
+        AT(node, 0x28, u8 *) = NULL;
+        AT(node, 0x2C, u8 *) = AT(m, 0x1814, u8 *);
+        AT(m, 0x1814, u8 *) = node;
+    } else {
+        AT(m, 0x1814, u8 *) = node;
+        AT(m, 0x1810, u8 *) = node;
+        AT(node, 0x2C, u8 *) = NULL;
+        AT(node, 0x28, u8 *) = NULL;
+    }
+    AT(m, 0x17E0, f32) = 0.0f;
+    AT(m, 0x17E4, f32) = 0.0f;
+    AT(m, 0x17E8, f32) = 0.0f;
+    AT(m, 0x17F0, f32) = 0.75f;
+    AT(m, 0x17F4, u8 *) = m;
+    AT(m, 0x1800, u8) = 0;
+    AT(m, 0x17FC, s32) = 0;
+    AT(m, 0x17C0, u32) = 0x3F666666;   /* 0.9f */
+    AT(m, 0x17A4, s32) = 0x2D;
+    AT(m, 0x17A0, u8) = 1;
+    AT(m, 0x17D8, f32) = 1.0f;
+    AT(m, 0x17D4, f32) = 1.0f;
+    AT(m, 0x17D0, f32) = 1.0f;
+}
+
+/* Fiona's second secondary-motion set (+0x1740): 4 nodes (+0x1480) on bones 0x39..0x3C, and
+ * 6 collision spheres (+0x15C0, 0x40 each, chained by +0x2C from +0x1758) */
+/* 0x002F7C50 */
+void FionaModel_Set1740(u8 *m) {
+    static const s32 sColBones[6] = {0x2E, 0x3E, 0x35, 0x2F, 0x3F, 0x35};
+    s32 i;
+
+    SpringSet_Clear(m + 0x1740);
+    for (i = 0; i < 4; i++) {
+        u8 *node = m + 0x1480 + i * 0x50;
+
+        if (AT(m, 0x1770, u8 *) != NULL && AT(m, 0x1774, u8 *) != NULL) {
+            AT(AT(m, 0x1774, u8 *), 0x28, u8 *) = node;
+            AT(node, 0x28, u8 *) = NULL;
+            AT(node, 0x2C, u8 *) = AT(m, 0x1774, u8 *);
+            AT(m, 0x1774, u8 *) = node;
+        } else {
+            AT(m, 0x1774, u8 *) = node;
+            AT(m, 0x1770, u8 *) = node;
+            AT(node, 0x2C, u8 *) = NULL;
+            AT(node, 0x28, u8 *) = NULL;
+        }
+    }
+    for (i = 0; i < 6; i++) {
+        u8 *col = m + 0x15C0 + i * 0x40;
+
+        AT(col, 0x2C, u8 *) = NULL;
+        if (AT(m, 0x1758, u8 *) == NULL) {
+            AT(m, 0x1758, u8 *) = col;
+        } else {
+            u8 *last = AT(m, 0x1758, u8 *);
+
+            while (AT(last, 0x2C, u8 *) != NULL) {
+                last = AT(last, 0x2C, u8 *);
+            }
+            AT(last, 0x2C, u8 *) = col;
+        }
+    }
+    AT(m, 0x1740, f32) = 0.0f;
+    AT(m, 0x1744, u32) = 0x3DCCCCCD;   /* 0.1f */
+    AT(m, 0x1748, f32) = 0.0f;
+    AT(m, 0x1750, u32) = 0x3F4CCCCD;   /* 0.8f */
+    AT(m, 0x1754, u8 *) = m;
+    AT(m, 0x1760, u8) = 0;
+    AT(m, 0x175C, s32) = 0;
+    for (i = 0; i < 4; i++) {
+        u8 *node = m + 0x1480 + i * 0x50;
+
+        AT(node, 0x40, u32) = 0x3EE66666;   /* 0.45f */
+        AT(node, 0x24, s32) = 0x39 + i;
+        AT(node, 0x20, u8) = (i == 0);
+    }
+    for (i = 0; i < 5; i++) {
+        Sphere_Set(m + 0x15C0 + i * 0x40, sColBones[i], 0.0f, 0.0f, 0.0f, 1.0f);
+    }
+    Sphere_Set(m + 0x1700, sColBones[5], 0.0f, 1.0f, 0.0f, 1.0f);
+}
+
+/* Fiona's 32 secondary-motion nodes (+0x9B0, 0x50 each; on the list +0x13E0/+0x13E4): 8
+ * groups of 4 (the hair and clothes?), each node: +0x20 first of its group, +0x24 bone,
+ * +0x40 weight, +0x44 kind, +0x48 table, +0x4C phase */
+/* 0x002F7E90 */
+void FionaModel_Nodes(u8 *m) {
+    static u8 *const sTables[8] = {
+        D_0041A560, D_0041A510, D_0041A510, D_0041A540,
+        D_0041A550, D_0041A520, D_0041A520, D_0041A530,
+    };
+    static const s32 sKinds[8] = {2, 2, 6, 6, 2, 2, 6, 6};
+    union { u32 u; f32 f; } twoPi = {0x40C90FDB};
+    s32 i, g;
+
+    SpringSet_Clear(m + 0x13B0);
+    for (i = 0; i < 32; i++) {
+        u8 *node = m + 0x9B0 + i * 0x50;
+
+        if (AT(m, 0x13E0, u8 *) != NULL && AT(m, 0x13E4, u8 *) != NULL) {
+            AT(AT(m, 0x13E4, u8 *), 0x28, u8 *) = node;
+            AT(node, 0x28, u8 *) = NULL;
+            AT(node, 0x2C, u8 *) = AT(m, 0x13E4, u8 *);
+            AT(m, 0x13E4, u8 *) = node;
+        } else {
+            AT(m, 0x13E4, u8 *) = node;
+            AT(m, 0x13E0, u8 *) = node;
+            AT(node, 0x2C, u8 *) = NULL;
+            AT(node, 0x28, u8 *) = NULL;
+        }
+    }
+    AT(m, 0x13B0, f32) = 0.0f;
+    AT(m, 0x13B4, u32) = 0x3ECCCCCD;   /* 0.4f */
+    AT(m, 0x13B8, f32) = 0.0f;
+    AT(m, 0x13C0, u32) = 0x3F19999A;   /* 0.6f */
+    AT(m, 0x13C4, u8 *) = m;
+    AT(m, 0x13D0, u8) = 0;
+    AT(m, 0x13CC, s32) = 0;
+    for (i = 0; i < 4; i++) {
+        f32 phase = twoPi.f * (f32)(i + 1) / 18.0f;
+
+        for (g = 0; g < 8; g++) {
+            u8 *node = m + 0x9B0 + (g * 4 + i) * 0x50;
+
+            AT(node, 0x40, f32) = 1.0f;
+            AT(node, 0x24, s32) = i + 0xB + g * 4;
+            AT(node, 0x44, s32) = sKinds[g];
+            AT(node, 0x48, u8 *) = sTables[g];
+            AT(node, 0x20, u8) = (i == 0);
+            AT(node, 0x4C, f32) = phase;
+        }
+    }
+}
+
+/* Fiona's own setup: append her node (+0x13F0; next +0x28, prev +0x2C) to her list
+ * (+0x1470 head, +0x1474 tail) and set her defaults */
+/* 0x002F80D0 */
+void FionaModel_Setup(u8 *m) {
+    u8 *node = m + 0x13F0;
+
+    FionaModel_Nodes(m);
+    SpringSet_Clear(m + 0x1440);
+    if (AT(m, 0x1470, u8 *) != NULL && AT(m, 0x1474, u8 *) != NULL) {
+        AT(AT(m, 0x1474, u8 *), 0x28, u8 *) = node;
+        AT(node, 0x28, u8 *) = NULL;
+        AT(node, 0x2C, u8 *) = AT(m, 0x1474, u8 *);
+        AT(m, 0x1474, u8 *) = node;
+    } else {
+        AT(m, 0x1474, u8 *) = node;
+        AT(m, 0x1470, u8 *) = node;
+        AT(node, 0x2C, u8 *) = NULL;
+        AT(node, 0x28, u8 *) = NULL;
+    }
+    AT(m, 0x1440, f32) = 0.0f;
+    AT(m, 0x1444, u32) = 0x3DCCCCCD;   /* 0.1f (ee-gcc rounds the literal down) */
+    AT(m, 0x1448, f32) = 0.0f;
+    AT(m, 0x1450, u32) = 0x3F7D70A4;   /* 0.99f */
+    AT(m, 0x1454, u8 *) = m;
+    AT(m, 0x1460, u8) = 0;
+    AT(m, 0x145C, s32) = 0;
+    AT(m, 0x1430, f32) = 1.0f;
+    AT(m, 0x1414, s32) = 0x3D;
+    AT(m, 0x1410, u8) = 1;
+    FionaModel_Set1740(m);
+    FionaModel_Set17E0(m);
+    AT(m, 0x850, u8) = 1;
+}
+
+/* the four spring systems (+0x13B0, +0x1440, +0x1740, +0x17E0), a frame: one step, or after a
+ * reset (+0x850) - the 4 hanging points (+0x1480, 0x50 each) put back under their anchors (a
+ * bone +0x24 when +0x20, else the point +0x2C) by their length (+0x40) along bone 0x35's
+ * Z axis, at rest - 30 steps to settle */
+/* 0x002F81A0 */
+void FionaModel_Springs(u8 *o) {
+    f32 down[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    s32 n, i;
+    u8 *p;
+
+    if (AT(o, 0x850, u8) == 0) {
+        n = 1;
+    } else {
+        sceVu0CopyVector(down, Skel_Bone(AT(AT(o, 0x1754, u8 *), 0x810, void *), 0x35) + 8);
+        p = o + 0x1480;
+        for (i = 0; i < 4; i++) {
+            AT(p, 0x18, f32) = 0.0f;
+            AT(p, 0x14, f32) = 0.0f;
+            AT(p, 0x10, f32) = 0.0f;
+            if (AT(p, 0x20, u8) != 0) {
+                sceVu0CopyVector(at, Skel_Bone(AT(AT(o, 0x1754, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
+            } else {
+                sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
+            }
+            sceVu0ScaleVector(d, down, -AT(p, 0x40, f32));
+            sceVu0AddVector((f32 *)p, at, d);
+            p += 0x50;
+        }
+        n = 0x1E;
+    }
+    SpringSet_Begin(o + 0x13B0);
+    SpringSet_Begin(o + 0x1440);
+    SpringSet_Begin(o + 0x1740);
+    SpringSet_Begin(o + 0x17E0);
+    for (i = 0; i < n; i++) {
+        SpringSet_Step(o + 0x13B0);
+        SpringSet_Step(o + 0x1440);
+        SpringSet_Step(o + 0x1740);
+        SpringSet_Step(o + 0x17E0);
+    }
+    SpringSet_Finish(o + 0x13B0);
+    SpringSet_Finish(o + 0x1440);
+    SpringSet_Finish(o + 0x1740);
+    SpringSet_Finish(o + 0x17E0);
+    AT(o, 0x850, u8) = 0;
+}
+
+/* Fiona's sheet model (FionaModel_vtable): +0x10 */
+/* 0x002F8320 */
+void FionaModel_Frame(u8 *m) {
+    Model_Release(m);
+}
+
+/* Fiona's model, once loaded: the base setup, the parts' roles (+0x890..: which mesh part is
+ * which), her own setup, and per-part draw settings (4, 0x40) */
+/* 0x002F8330 */
+void FionaModel_Loaded(u8 *m) {
+    static const u8 sParts[] = {0x98, 0x9A, 0x9C, 0x9E, 0xA0, 0xA2, 0xA6, 0xA8, 0xAA, 0xC0, 0xC2, 0xC4};
+    s32 i;
+
+    CharModel_Loaded(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x32;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x42;
+    AT(m, 0x8B0, s32) = 0x35;
+    AT(m, 0x8B4, s32) = 0x2B;
+    FionaModel_Setup(m);
+    for (i = 0; i < 12; i++) {
+        AT(m, sParts[i], u8) = 4;
+        AT(m, sParts[i] + 1, u8) = 0x40;
+    }
+}
+
+/* Fiona's vt+0xC4: 16 entries of the table D_0041A500 (+0x840 count, +0x844 table) */
+/* 0x002F8430 */
+void FionaModel_MotionTable(u8 *m, s32 slot) {
+    AT(m, 0x840, s16) = 16;
+    AT(m, 0x844, u8 *) = D_0041A500;
+}
+
+/* costume 2 */
+/* 0x00336DB0 */
+void *Costume2Model_dtor(u8 *m, s32 flags) {
+    return costume_dtor(m, flags, Costume2Model_vtable, 0xC, 0xDA0);
+}
+
+/* 0x00336F00 */
+void *Costume2Model_Textures(void) {
+    return D_00461240;
+}
+
+/* 0x00336F10 */
+void *Costume2Model_Textures2(void) {
+    return str_O_FIH_FIH_200_TEX;
+}
+
+/* 0x00336F20 */
+u32 Costume2Model_BufferSize(void) {
+    return 0x41000;
+}
+
+/* 0x00336F30 */
+void Costume2Model_VtCC(u8 *self, s32 on) {
     s32 i;
 
     for (i = 0; i < 3; i++) {
-        out[i] = m[0][i] * x + m[1][i] * y + m[2][i] * z;
+        self[0x167C + i * 0x50] = on != 0;
     }
-    *(s32 *)&out[3] = 0;
 }
 
-/* destructor (vtable StrikeMark_vtable) */
-/* 0x0035A230 */
-void *StrikeMark_dtor(u8 *o, s32 flags) {
-    if (o != NULL) {
-        AT(o, 0x0, void **) = StrikeMark_vtable;
-        AT(o, 0x0, void **) = EffectBase_vtable;
-        if ((s16)flags > 0) {
-            EffectMgr_free(o);
+/* 0x00336F70 */
+void Costume2Model_VtD0(u8 *self, f32 x, f32 y, f32 z) {
+    F32(self, 0x1720) = x;
+    F32(self, 0x1724) = y;
+    F32(self, 0x1728) = z;
+}
+
+/* 0x00336F80 */
+s32 Costume2Model_Part0(void) {
+    return 0x3;
+}
+
+/* 0x00336F90 */
+s32 Costume2Model_Part1(void) {
+    return 0x7;
+}
+
+/* 0x00336FA0 */
+s32 Costume2Model_Part2(void) {
+    return 0x1C;
+}
+
+/* 0x00336FB0 */
+s32 Costume2Model_Part3(void) {
+    return 0x3B;
+}
+
+/* 0x00336FC0 */
+s32 Costume2Model_Part4(void) {
+    return 0x17;
+}
+
+/* 0x00336FD0 */
+void Costume2Model_SetPoint(u8 *self, f32 x, f32 y, f32 z) {
+    F32(self, 0xE90) = x;
+    F32(self, 0xE94) = y;
+    F32(self, 0xE98) = z;
+}
+
+/* 0x00336FE0 */
+void Costume2Model_Hang3(u8 *m) {
+    costume_hang3(m, 0xDA0, 0, D_0042F370, D_0042F360, D_0047ADC8, D_0047B284, 24.0f);
+}
+
+/* +0xC4 which of the swappable parts show (part flag 2 hides; as EventHumanModel_ShowParts): 0..4 one of
+   +0xEE / +0xF6 / +0xF8 / +0xF0, 5..9 one set of the eight at +0x9A.. */
+/* 0x00337260 */
+void Costume2Model_ShowParts(u8 *m, s32 look) {
+    u32 k = look & 0xFF;
+
+    if (k < 5) {
+        AT(m, 0xEE, u8) |= 2;
+        AT(m, 0xF6, u8) |= 2;
+        AT(m, 0xF8, u8) |= 2;
+        AT(m, 0xF0, u8) |= 2;
+        switch (k) {
+        case 1: AT(m, 0xEE, u8) &= ~2; break;
+        case 2: AT(m, 0xF6, u8) &= ~2; break;
+        case 3: AT(m, 0xF8, u8) &= ~2; break;
+        case 4: AT(m, 0xF0, u8) &= ~2; break;
+        }
+        return;
+    }
+    AT(m, 0x9A, u8) |= 2;
+    AT(m, 0x9C, u8) |= 2;
+    AT(m, 0x9E, u8) |= 2;
+    AT(m, 0xE8, u8) |= 2;
+    AT(m, 0xA0, u8) |= 2;
+    AT(m, 0xA2, u8) |= 2;
+    AT(m, 0xEA, u8) |= 2;
+    AT(m, 0xEC, u8) |= 2;
+    switch (k) {
+    case 5:
+        AT(m, 0x9A, u8) &= ~2;
+        AT(m, 0x9C, u8) &= ~2;
+        break;
+    case 6: AT(m, 0x9E, u8) &= ~2; break;
+    case 7: AT(m, 0xE8, u8) &= ~2; break;
+    case 8:
+        AT(m, 0xA0, u8) &= ~2;
+        AT(m, 0xA2, u8) &= ~2;
+        break;
+    case 9:
+        AT(m, 0xEA, u8) &= ~2;
+        AT(m, 0xEC, u8) &= ~2;
+        break;
+    }
+}
+
+/* 0x00337430 */
+void Costume2Model_Hang16(u8 *m) {
+    costume_hang16(m, 0xDA0, 0, D_0042F300, D_0042F2C0, D_0042F340, D_0042F350, 0x3F060A92 /* pi / 6 */);
+}
+
+/* 0x003376D0 */
+void *Costume2Model_ModelFile(void *self, u32 i) {
+    switch (i) {
+    case 0: return D_00461140;
+    case 1: return str_O_FIH_FIH_001_PCK;
+    case 2: return str_O_FIH_FIH_002_PCK;
+    case 3: return str_O_FIH_FIH_003_PCK;
+    case 4: return str_O_FIH_FIH_004_PCK;
+    case 5: return str_O_FIH_FIH_005_PCK;
+    case 6: return str_O_FIH_FIH_006_PCK;
+    }
+    return NULL;
+}
+
+/* Fiona's costume 2: the one-node set +0xEA0, node +0xE40 on bone 0x19 (as EventHumanModel_Set11A0) */
+/* 0x00337760 */
+void Costume2Model_SetEA0(u8 *m) {
+    u8 *node = m + 0xE40;
+
+    SpringSet_Clear(m + 0xEA0);
+    spring_link(m + 0xEA0, node);
+    AT(m, 0xEA0, f32) = 0.0f;
+    AT(m, 0xEA4, f32) = 0.0f;
+    AT(m, 0xEA8, f32) = 0.0f;
+    AT(m, 0xEB0, f32) = 0.75f;
+    AT(m, 0xEB4, u8 *) = m;
+    AT(m, 0xEC0, u8) = 0;
+    AT(m, 0xEBC, s32) = 0;
+    AT(node, 0x40, u32) = 0x3F666666;   /* 0.9f */
+    AT(node, 0x24, s32) = 0x19;
+    AT(node, 0x20, u8) = 1;
+    AT(node, 0x58, f32) = 1.0f;
+    AT(node, 0x54, f32) = 1.0f;
+    AT(node, 0x50, f32) = 1.0f;
+}
+
+/* (as EventHumanModel_SetD70)  the set +0xD70: 12 nodes (+0x9B0) in 6 pairs - bones, kinds and tables per pair, the first
+ * of each pair leading, the phases 1 / 2 x 2 pi / 18 */
+/* 0x00337820 */
+void Costume2Model_SetD70(u8 *m) {
+    static u8 *const sTables[6] = {D_0042F280, D_0042F280, D_0042F290, D_0042F290, D_0042F2A0, D_0042F2B0};
+    static const s32 sBones[6] = {0xB, 0x11, 0xD, 0x13, 0xF, 0x15};
+    static const u32 sPhase[2] = {0x3EB2B8C3, 0x3F32B8C3};
+    u8 *set = m + 0xD70;
+    s32 i, j;
+
+    SpringSet_Clear(set);
+    for (i = 0; i < 12; i++) {
+        spring_link(set, m + 0x9B0 + i * 0x50);
+    }
+    spring_set(set, 0x3E4CCCCD /* 0.2f */, 0x3F666666 /* 0.9f */, m);
+    for (i = 0; i < 6; i++) {
+        for (j = 0; j < 2; j++) {
+            u8 *node = m + 0x9B0 + (i * 2 + j) * 0x50;
+
+            AT(node, 0x40, u32) = 0x3ED182AA;
+            AT(node, 0x24, s32) = sBones[i] + j;
+            AT(node, 0x44, s32) = (i & 1) ? 6 : 2;
+            AT(node, 0x48, u8 *) = sTables[i];
+            AT(node, 0x20, u8) = (j == 0);
+            AT(node, 0x4C, u32) = sPhase[j];
         }
     }
-    return o;
 }
 
-/* 0x0035AE90 */
-void StrikeMark_Start(u8 *p) {
-    B7_B(p, 0x78) = 0;
-    B7_W(p, 0x74) = 0;
-    B7_W(p, 0x70) = 2;
+/* her springs, then a reset (+0x850) */
+/* 0x00337A80 */
+void Costume2Model_SpringSetup(u8 *m) {
+    Costume2Model_SetD70(m);
+    costume_node(m, m + 0xE00, m + 0xDB0, 0x28);
+    Costume2Model_SetEA0(m);
+    costume_node(m, m + 0xF30, m + 0xEE0, 0x3F);
+    Costume2Model_Hang16(m);
+    Costume2Model_Hang3(m);
+    AT(m, 0x850, u8) = 1;
+}
+
+/* +0x3C */
+/* 0x00337BE0 */
+void Costume2Model_Springs(u8 *m) {
+    costume_frame(m, 0xDA0);
+}
+
+/* +0xC loaded: the base setup, the parts' roles, her springs, per-part draw settings */
+/* 0x00337CF0 */
+void Costume2Model_Loaded(u8 *m) {
+    static const u8 sParts[] = {0xA4, 0xA6, 0xA8, 0xAA, 0xAC, 0xAE, 0xB4, 0xB6, 0xB8, 0xBA, 0xFA, 0xFC, 0xFE};
+    u32 i;
+
+    CharModel_Loaded(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x1E;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x3D;
+    AT(m, 0x8B0, s32) = 0x21;
+    AT(m, 0x8B4, s32) = 0x17;
+    Costume2Model_SpringSetup(m);
+    AT(m, 0x98, u8) = 4;
+    AT(m, 0x99, u8) = 0xC0;
+    for (i = 0; i < sizeof(sParts); i++) {
+        AT(m, sParts[i], u8) = 4;
+        AT(m, sParts[i] + 1, u8) = 0x40;
+    }
+}
+
+/* 0x00337E00 */
+void Costume2Model_MotionTable(u8 *self) {
+    S16(self, 0x840) = 16;
+    PTR(self, 0x844) = D_0042F270;
+}
+
+/* costume 3 */
+/* 0x00337E20 */
+void *Costume3Model_dtor(u8 *m, s32 flags) {
+    return costume_dtor(m, flags, Costume3Model_vtable, 8, 0xC60);
+}
+
+/* 0x00337F70 */
+void *Costume3Model_Textures(void) {
+    return D_00461380;
+}
+
+/* 0x00337F80 */
+void *Costume3Model_Textures2(void) {
+    return str_O_FIO_FIO_200_TEX;
+}
+
+/* 0x00337F90 */
+u32 Costume3Model_BufferSize(void) {
+    return 0x41000;
+}
+
+/* 0x00337FA0 */
+void Costume3Model_VtCC(u8 *self, s32 on) {
+    s32 i;
+
+    for (i = 0; i < 3; i++) {
+        self[0x153C + i * 0x50] = on != 0;
+    }
+}
+
+/* +0x84..+0x94: part roles */
+/* 0x00337FE0 */
+s32 Costume3Model_Part0(void) { return 3; }
+
+/* 0x00337FF0 */
+s32 Costume3Model_Part1(void) { return 7; }
+
+/* 0x00338000 */
+s32 Costume3Model_Part2(void) { return 0x18; }
+
+/* 0x00338010 */
+s32 Costume3Model_Part3(void) { return 0x37; }
+
+/* 0x00338020 */
+s32 Costume3Model_Part4(void) { return 0x13; }
+
+/* 0x00338030 */
+void Costume3Model_SetPoint(u8 *self, f32 x, f32 y, f32 z) {
+    F32(self, 0xD50) = x;
+    F32(self, 0xD54) = y;
+    F32(self, 0xD58) = z;
+}
+
+/* 0x00338040 */
+void Costume3Model_Hang3(u8 *m) {
+    costume_hang3(m, 0xC60, -4, D_0042F460, D_0042F450, D_0047ADCC, D_0047B288, 20.0f);
+}
+
+/* 0x003382C0 */
+void Costume3Model_Hang16(u8 *m) {
+    costume_hang16(m, 0xC60, -4, D_0042F3F0, D_0042F3B0, D_0042F430, D_0042F440, 0x3F1C61AB /* 35 degrees */);
+}
+
+/* 0x00338560 */
+void *Costume3Model_ModelFile(void *self, u32 i) {
+    switch (i) {
+    case 0: return D_00461280;
+    case 1: return str_O_FIO_FIO_001_PCK;
+    case 2: return str_O_FIO_FIO_002_PCK;
+    case 3: return str_O_FIO_FIO_003_PCK;
+    case 4: return str_O_FIO_FIO_004_PCK;
+    case 5: return str_O_FIO_FIO_005_PCK;
+    case 6: return str_O_FIO_FIO_006_PCK;
+    }
+    return NULL;
+}
+
+/* the one-node set +0xD60, node +0xD00 on bone 0x15 (as Costume2Model_SetEA0) */
+/* 0x003385F0 */
+void Costume3Model_SetD60(u8 *m) {
+    u8 *node = m + 0xD00;
+
+    SpringSet_Clear(m + 0xD60);
+    spring_link(m + 0xD60, node);
+    AT(m, 0xD60, f32) = 0.0f;
+    AT(m, 0xD64, f32) = 0.0f;
+    AT(m, 0xD68, f32) = 0.0f;
+    AT(m, 0xD70, f32) = 0.75f;
+    AT(m, 0xD74, u8 *) = m;
+    AT(m, 0xD80, u8) = 0;
+    AT(m, 0xD7C, s32) = 0;
+    AT(node, 0x40, u32) = 0x3F666666;   /* 0.9f */
+    AT(node, 0x24, s32) = 0x15;
+    AT(node, 0x20, u8) = 1;
+    AT(node, 0x58, f32) = 1.0f;
+    AT(node, 0x54, f32) = 1.0f;
+    AT(node, 0x50, f32) = 1.0f;
+}
+
+/* the set +0xC30: 8 hair nodes (+0x9B0) in 4 pairs on bones 0xB..0x12 (as Costume2Model_SetD70) */
+/* 0x003386B0 */
+void Costume3Model_SetC30(u8 *m) {
+    static u8 *const sTables[4] = {D_0042F390, D_0042F390, D_0042F3A0, D_0042F3A0};
+    static const u32 sPhase[2] = {0x3EB2B8C3, 0x3F32B8C3};
+    u8 *set = m + 0xC30;
+    s32 i, j;
+
+    SpringSet_Clear(set);
+    for (i = 0; i < 8; i++) {
+        spring_link(set, m + 0x9B0 + i * 0x50);
+    }
+    spring_set(set, 0x3E4CCCCD /* 0.2f */, 0x3F666666 /* 0.9f */, m);
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 2; j++) {
+            u8 *node = m + 0x9B0 + (i * 2 + j) * 0x50;
+
+            AT(node, 0x40, u32) = 0x3ED182AA;
+            AT(node, 0x24, s32) = 0xB + i * 2 + j;
+            AT(node, 0x44, s32) = (i & 1) ? 6 : 2;
+            AT(node, 0x48, u8 *) = sTables[i];
+            AT(node, 0x20, u8) = (j == 0);
+            AT(node, 0x4C, u32) = sPhase[j];
+        }
+    }
+}
+
+/* 0x00338880 */
+void Costume3Model_SpringSetup(u8 *m) {
+    Costume3Model_SetC30(m);
+    costume_node(m, m + 0xCC0, m + 0xC70, 0x24);
+    Costume3Model_SetD60(m);
+    costume_node(m, m + 0xDF0, m + 0xDA0, 0x3B);
+    Costume3Model_Hang16(m);
+    Costume3Model_Hang3(m);
+    AT(m, 0x850, u8) = 1;
+}
+
+/* 0x003389E0 */
+void Costume3Model_Springs(u8 *m) {
+    costume_frame(m, 0xC60);
+}
+
+/* 0x00338AF0 */
+void Costume3Model_Loaded(u8 *m) {
+    static const u8 sParts[] = {0x9C, 0x9E, 0xA0, 0xA2, 0xB2, 0xB4, 0xB6, 0xB8, 0xBA, 0xBC, 0xE4, 0xE6, 0xE8, 0xEA};
+    u32 i;
+
+    CharModel_Loaded(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x1A;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x39;
+    AT(m, 0x8B0, s32) = 0x1D;
+    AT(m, 0x8B4, s32) = 0x13;
+    Costume3Model_SpringSetup(m);
+    for (i = 0; i < sizeof(sParts); i++) {
+        AT(m, sParts[i], u8) = 4;
+        AT(m, sParts[i] + 1, u8) = 0x40;
+    }
+}
+
+/* 0x00338C00 */
+void Costume3Model_MotionTable(u8 *self) {
+    S16(self, 0x840) = 16;
+    PTR(self, 0x844) = D_0042F380;
+}
+
+/* +0x8 destructor */
+/* 0x003497E0 */
+void *Costume6Model_dtor(void *p, s32 flags) {
+    u8 *m = p;
+
+    if (m != NULL) {
+        AT(m, 0x0, void **) = Costume6Model_vtable;
+        AT(m, 0xD70, void **) = SprungPoint_vtable;
+        AT(m, 0xD70, void **) = SpringPartBase_vtable;
+        func_001002C0(m + 0xA40, HangPoint_dtor, 0x50, 4);
+        AT(m, 0x9E0, void **) = BoneHangPoint_vtable;
+        AT(m, 0x9E0, void **) = SpringPartBase_vtable;
+        AT(m, 0x0, void **) = CharModel_vtable;
+        HumanModel_dtor(m, 0);
+        if ((s16)flags > 0) {
+            StalkerModel_delete(m);
+        }
+    }
+    return m;
+}
+
+/* 0x003498D0 */
+void *Costume6Model_Textures(void) {
+    return D_00462870;
+}
+
+/* 0x003498E0 */
+void *Costume6Model_Textures2(void) {
+    return str_O_FIB_FIB_200_TEX;
+}
+
+/* 0x003498F0 */
+s32 Costume6Model_BufferSize(void) {
+    return 0x41000;
+}
+
+/* 0x00349900 */
+void Costume6Model_SetFlag(u8 *p, u32 b, f32 f) {
+    *(f32 *)(p + 0xD1C) = f;
+    p[0xD20] = (u8)b;
+}
+
+/* 0x00349910 */
+void Costume6Model_SetPoint(u8 *p, f32 x, f32 y, f32 z) {
+    *(f32 *)(p + 0xD90) = x;
+    *(f32 *)(p + 0xD94) = y;
+    *(f32 *)(p + 0xD98) = z;
+}
+
+/* 0x00349920 */
+void Costume6Model_Vt2C(u8 *p) {
+    p[0xCA] |= 2;
+}
+
+/* 0x00349930 */
+void Costume6Model_Vt30(u8 *p) {
+    p[0xCA] &= ~2;
+}
+
+/* 0x00349940 */
+s32 Costume6Model_Part0(void) {
+    return 0x3;
+}
+
+/* 0x00349950 */
+s32 Costume6Model_Part1(void) {
+    return 0x7;
+}
+
+/* 0x00349960 */
+s32 Costume6Model_Part2(void) {
+    return 0xF;
+}
+
+/* 0x00349970 */
+s32 Costume6Model_Part3(void) {
+    return 0x1F;
+}
+
+/* 0x00349980 */
+s32 Costume6Model_Part4(void) {
+    return 0xA;
+}
+
+/* 0x00349990 */
+void *Costume6Model_MarkerFile(void *self, u32 i) {
+    switch (i) {
+    case 0: return D_00462670;
+    case 1: return str_O_FIB_FIB_001_MRK;
+    case 2: return str_O_FIB_FIB_002_MRK;
+    case 3: return str_O_FIB_FIB_003_MRK;
+    case 4: return str_O_FIB_FIB_004_MRK;
+    case 5: return str_O_FIB_FIB_005_MRK;
+    case 6: return str_O_FIB_FIB_006_MRK;
+    }
+    return NULL;
+}
+
+/* 0x00349A20 */
+void *Costume6Model_ModelFile(void *self, u32 i) {
+    switch (i) {
+    case 0: return D_00462770;
+    case 1: return str_O_FIB_FIB_001_PCK;
+    case 2: return str_O_FIB_FIB_002_PCK;
+    case 3: return str_O_FIB_FIB_003_PCK;
+    case 4: return str_O_FIB_FIB_004_PCK;
+    case 5: return str_O_FIB_FIB_005_PCK;
+    case 6: return str_O_FIB_FIB_006_PCK;
+    }
+    return NULL;
+}
+
+/* the one-node set +0xDA0: node +0xD40 on bone 0xC */
+/* 0x00349AB0 */
+void Costume6Model_SetDA0(u8 *m) {
+    u8 *node = m + 0xD40;
+
+    SpringSet_Clear(m + 0xDA0);
+    spring_link(m + 0xDA0, node);
+    AT(m, 0xDA0, f32) = 0.0f;
+    AT(m, 0xDA4, f32) = 0.0f;
+    AT(m, 0xDA8, f32) = 0.0f;
+    AT(m, 0xDB0, f32) = 0.75f;
+    AT(m, 0xDB4, u8 *) = m;
+    AT(m, 0xDC0, u8) = 0;
+    AT(m, 0xDBC, s32) = 0;
+    AT(node, 0x40, u32) = 0x3F666666;   /* 0.9f */
+    AT(node, 0x24, s32) = 0xC;
+    AT(node, 0x20, u8) = 1;
+    AT(node, 0x58, f32) = 1.0f;
+    AT(node, 0x54, f32) = 1.0f;
+    AT(node, 0x50, f32) = 1.0f;
+}
+
+/* the set +0xD00: 4 nodes (+0xA40) on bones 0x18..0x1B and 6 collision spheres (+0xB80,
+ * chained by +0x2C from +0xD18) */
+/* 0x00349B70 */
+void Costume6Model_SetD00(u8 *m) {
+    static const s32 sColBones[6] = {0xD, 0x1D, 0x14, 0xE, 0x1E, 0x14};
+    u8 *set = m + 0xD00;
+    s32 i;
+
+    SpringSet_Clear(set);
+    for (i = 0; i < 4; i++) {
+        spring_link(set, m + 0xA40 + i * 0x50);
+    }
+    for (i = 0; i < 6; i++) {
+        u8 *col = m + 0xB80 + i * 0x40;
+
+        AT(col, 0x2C, u8 *) = NULL;
+        if (AT(m, 0xD18, u8 *) == NULL) {
+            AT(m, 0xD18, u8 *) = col;
+        } else {
+            u8 *last = AT(m, 0xD18, u8 *);
+
+            while (AT(last, 0x2C, u8 *) != NULL) {
+                last = AT(last, 0x2C, u8 *);
+            }
+            AT(last, 0x2C, u8 *) = col;
+        }
+    }
+    spring_set(set, 0x3DCCCCCD /* 0.1f */, 0x3F4CCCCD /* 0.8f */, m);
+    for (i = 0; i < 4; i++) {
+        u8 *node = m + 0xA40 + i * 0x50;
+
+        AT(node, 0x40, u32) = 0x3EE66666;   /* 0.45f */
+        AT(node, 0x24, s32) = 0x18 + i;
+        AT(node, 0x20, u8) = (i == 0);
+    }
+    for (i = 0; i < 5; i++) {
+        Sphere_Set(m + 0xB80 + i * 0x40, sColBones[i], 0.0f, 0.0f, 0.0f, 1.0f);
+    }
+    Sphere_Set(m + 0xCC0, sColBones[5], 0.0f, 1.0f, 0.0f, 1.0f);
+}
+
+/* her setup: the three spring sets (the +0xA00 node on bone 0x1C), then a reset (+0x850) */
+/* 0x00349DB0 */
+void Costume6Model_Setup(u8 *m) {
+    u8 *node = m + 0x9B0;
+
+    SpringSet_Clear(m + 0xA00);
+    spring_link(m + 0xA00, node);
+    spring_set(m + 0xA00, 0x3DCCCCCD /* 0.1f */, 0x3F7D70A4 /* 0.99f */, m);
+    AT(node, 0x40, f32) = 1.0f;
+    AT(node, 0x24, s32) = 0x1C;
+    AT(node, 0x20, u8) = 1;
+    Costume6Model_SetD00(m);
+    Costume6Model_SetDA0(m);
+    AT(m, 0x850, u8) = 1;
+}
+
+/* +0x3C: the three spring sets a frame: one step, or after a reset (+0x850) the 4 hanging
+ * nodes (+0xA40) put back under their anchors along bone 0x14's Z axis, 30 steps to settle
+ * (as EventHumanModel_Springs) */
+/* 0x00349E80 */
+void Costume6Model_Springs(u8 *o) {
+    f32 down[4] __attribute__((aligned(16)));
+    f32 at[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    s32 n, i;
+    u8 *p;
+
+    if (AT(o, 0x850, u8) == 0) {
+        n = 1;
+    } else {
+        sceVu0CopyVector(down, Skel_Bone(AT(AT(o, 0xD14, u8 *), 0x810, void *), 0x14) + 8);
+        p = o + 0xA40;
+        for (i = 0; i < 4; i++) {
+            AT(p, 0x18, f32) = 0.0f;
+            AT(p, 0x14, f32) = 0.0f;
+            AT(p, 0x10, f32) = 0.0f;
+            if (AT(p, 0x20, u8) != 0) {
+                sceVu0CopyVector(at, Skel_Bone(AT(AT(o, 0xD14, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
+            } else {
+                sceVu0CopyVector(at, AT(p, 0x2C, f32 *));
+            }
+            sceVu0ScaleVector(d, down, -AT(p, 0x40, f32));
+            sceVu0AddVector((f32 *)p, at, d);
+            p += 0x50;
+        }
+        n = 0x1E;
+    }
+    SpringSet_Begin(o + 0xA00);
+    SpringSet_Begin(o + 0xD00);
+    SpringSet_Begin(o + 0xDA0);
+    for (i = 0; i < n; i++) {
+        SpringSet_Step(o + 0xA00);
+        SpringSet_Step(o + 0xD00);
+        SpringSet_Step(o + 0xDA0);
+    }
+    SpringSet_Finish(o + 0xA00);
+    SpringSet_Finish(o + 0xD00);
+    SpringSet_Finish(o + 0xDA0);
+    AT(o, 0x850, u8) = 0;
+}
+
+/* +0xC loaded: the base setup, the parts' roles, her springs, per-part draw settings, then
+ * +0x2C */
+/* 0x00349FF0 */
+void Costume6Model_Loaded(u8 *m) {
+    static const u8 sLoose[] = {0x98, 0x9A, 0x9C, 0xAE, 0xB0, 0xCC};
+    static const u8 sStiff[] = {0x9E, 0xA0, 0xA2, 0xA4, 0xA6, 0xA8, 0xAA, 0xAC, 0xC8, 0xCE, 0xD0};
+    u32 i;
+
+    CharModel_Loaded(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x11;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x21;
+    AT(m, 0x8B0, s32) = 0x14;
+    AT(m, 0x8B4, s32) = 0xA;
+    Costume6Model_Setup(m);
+    for (i = 0; i < sizeof(sLoose); i++) {
+        AT(m, sLoose[i], u8) = 4;
+        AT(m, sLoose[i] + 1, u8) = 0x40;
+    }
+    for (i = 0; i < sizeof(sStiff); i++) {
+        AT(m, sStiff[i], u8) = 4;
+        AT(m, sStiff[i] + 1, u8) = 0x80;
+    }
+    VCALL(m, 0x2C, void (*)(u8 *))(m);
+}
+
+/* 0x0034A120 */
+void Costume6Model_MotionTable(u8 *p) {
+    *(u16 *)(p + 0x840) = 0x10;
+    *(void **)(p + 0x844) = D_0043EA80;
+}
+
+/* +0x8 destructor */
+/* 0x00353C90 */
+void *Costume7Model_dtor(u8 *m, s32 flags) {
+    if (m != NULL) {
+        AT(m, 0x0, void **) = Costume7Model_vtable;
+        AT(m, 0xCF0, void **) = BoneHangPoint_vtable;
+        AT(m, 0xCF0, void **) = SpringPartBase_vtable;
+        AT(m, 0xC50, void **) = SprungPoint_vtable;
+        AT(m, 0xC50, void **) = SpringPartBase_vtable;
+        AT(m, 0xBB0, void **) = SprungPoint_vtable;
+        AT(m, 0xBB0, void **) = SpringPartBase_vtable;
+        func_001002C0(m + 0x9B0, BoneHangPoint_dtor, 0x50, 5);
+        AT(m, 0x0, void **) = CharModel_vtable;
+        HumanModel_dtor(m, 0);
+        if ((s16)flags > 0) {
+            StalkerModel_delete(m);
+        }
+    }
+    return m;
+}
+
+/* 0x00353DB0 */
+void *Costume7Model_Textures(void) { return D_004631C0; }
+
+/* 0x00353DC0 */
+void *Costume7Model_Textures2(void) { return str_O_FIC_FIC_200_TEX; }
+
+/* 0x00353DD0 */
+s32 Costume7Model_BufferSize(void) { return 0x41000; }
+
+/* 0x00353DE0 */
+void Costume7Model_SetPoint(u8 *p, f32 x, f32 y, f32 z) {
+    B7_F(p, 0xBD0) = x;
+    B7_F(p, 0xBD4) = y;
+    B7_F(p, 0xBD8) = z;
+}
+
+/* 0x00353DF0 */
+void Costume7Model_Vt2C(u8 *p) { B7_B(p, 0xDE) |= 2; }
+
+/* 0x00353E00 */
+void Costume7Model_Vt30(u8 *p) { B7_B(p, 0xDE) &= ~2; }
+
+/* 0x00353E10 */
+s32 Costume7Model_Part0(void) {
+    return 0x3;
+}
+
+/* 0x00353E20 */
+s32 Costume7Model_Part1(void) {
+    return 0x7;
+}
+
+/* 0x00353E30 */
+s32 Costume7Model_Part2(void) {
+    return 0x11;
+}
+
+/* 0x00353E40 */
+s32 Costume7Model_Part3(void) {
+    return 0x21;
+}
+
+/* 0x00353E50 */
+s32 Costume7Model_Part4(void) {
+    return 0xA;
+}
+
+/* 0x00353E60 */
+void *Costume7Model_MarkerFile(void *self, u32 i) {
+    switch (i) {
+    case 0: return D_00462FC0;
+    case 1: return str_O_FIC_FIC_001_MRK;
+    case 2: return str_O_FIC_FIC_002_MRK;
+    case 3: return str_O_FIC_FIC_003_MRK;
+    case 4: return str_O_FIC_FIC_004_MRK;
+    case 5: return str_O_FIC_FIC_005_MRK;
+    case 6: return str_O_FIC_FIC_006_MRK;
+    }
+    return NULL;
+}
+
+/* 0x00353EF0 */
+void *Costume7Model_ModelFile(void *self, u32 i) {
+    switch (i) {
+    case 0: return D_004630C0;
+    case 1: return str_O_FIC_FIC_001_PCK;
+    case 2: return str_O_FIC_FIC_002_PCK;
+    case 3: return str_O_FIC_FIC_003_PCK;
+    case 4: return str_O_FIC_FIC_004_PCK;
+    case 5: return str_O_FIC_FIC_005_PCK;
+    case 6: return str_O_FIC_FIC_006_PCK;
+    }
+    return NULL;
+}
+
+/* 0x00353F80 */
+void Costume7Model_SpringC80(u8 *m) {
+    spring_one(m, m + 0xC80, m + 0xC20, 0xD);
+}
+
+/* 0x00354040 */
+void Costume7Model_SpringBE0(u8 *m) {
+    spring_one(m, m + 0xBE0, m + 0xB80, 0xC);
+}
+
+/* the five anchored nodes on +0xB40 */
+/* 0x00354100 */
+void Costume7Model_AnchoredNodes(u8 *m) {
+    u8 *set = m + 0xB40;
+    s32 i;
+
+    SpringSet_Clear(set);
+    for (i = 0; i < 5; i++) {
+        spring_link(set, m + 0x9B0 + i * 0x50);
+    }
+    spring_set(set, 0x3DCCCCCD /* 0.1f */, 0x3F7D70A4 /* 0.99f */, m);
+    for (i = 0; i < 5; i++) {
+        u8 *node = m + 0x9B0 + i * 0x50;
+
+        AT(node, 0x40, f32) = 1.0f;
+        AT(node, 0x24, s32) = 0x1A + i;
+        AT(node, 0x20, u8) = 1;
+    }
+}
+
+/* her springs, then a reset (+0x850) */
+/* 0x00354210 */
+void Costume7Model_Setup(u8 *m) {
+    Costume7Model_AnchoredNodes(m);
+    Costume7Model_SpringBE0(m);
+    Costume7Model_SpringC80(m);
+    costume_node(m, m + 0xD10, m + 0xCC0, 0xE);
+    AT(m, 0x850, u8) = 1;
+}
+
+/* +0x3C: the four sets a frame: one step, or 30 to settle after a reset */
+/* 0x003542E0 */
+void Costume7Model_Springs(u8 *m) {
+    s32 n = AT(m, 0x850, u8) ? 30 : 1;
+    s32 i;
+
+    SpringSet_Begin(m + 0xB40);
+    SpringSet_Begin(m + 0xBE0);
+    SpringSet_Begin(m + 0xC80);
+    SpringSet_Begin(m + 0xD10);
+    for (i = 0; i < n; i++) {
+        SpringSet_Step(m + 0xB40);
+        SpringSet_Step(m + 0xBE0);
+        SpringSet_Step(m + 0xC80);
+        SpringSet_Step(m + 0xD10);
+    }
+    SpringSet_Finish(m + 0xB40);
+    SpringSet_Finish(m + 0xBE0);
+    SpringSet_Finish(m + 0xC80);
+    SpringSet_Finish(m + 0xD10);
+    AT(m, 0x850, u8) = 0;
+}
+
+/* +0xC loaded: the base setup, the parts' roles, her springs, per-part draw settings, +0x2C */
+/* 0x003543C0 */
+void Costume7Model_Loaded(u8 *m) {
+    static const u8 sParts[] = {0xA8, 0xAA, 0xAC, 0xAE, 0xB0, 0xB2, 0xE0};
+    u32 i;
+
+    CharModel_Loaded(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x13;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x23;
+    AT(m, 0x8B0, s32) = 0x16;
+    AT(m, 0x8B4, s32) = 0xA;
+    Costume7Model_Setup(m);
+    for (i = 0; i < sizeof(sParts); i++) {
+        AT(m, sParts[i], u8) = 4;
+        AT(m, sParts[i] + 1, u8) = 0x40;
+    }
+    VCALL(m, 0x2C, void (*)(u8 *))(m);
+}
+
+/* 0x003544A0 */
+void Costume7Model_MotionTable(u8 *p) {
+    B7_H(p, 0x840) = 0x10;
+    *(void **)(p + 0x844) = D_00443E20;
+}
+
+/* Fiona's costume 8 model's destructor (vtable Costume8Model_vtable, then the kind base, then delete) */
+/* 0x0035AF70 */
+void *Costume8Model_dtor(void *p, s32 flags) {
+    u8 *m = p;
+
+    if (m != NULL) {
+        AT(m, 0x0, void **) = Costume8Model_vtable;
+        AT(m, 0x0, void **) = CharModel_vtable;
+        HumanModel_dtor(m, 0);
+        if ((s16)flags > 0) {
+            StalkerModel_delete(m);
+        }
+    }
+    return m;
+}
+
+/* 0x0035AFE0 */
+void *Costume8Model_Textures(void) {
+    return D_00463320;
+}
+
+/* 0x0035AFF0 */
+void *Costume8Model_Textures2(void) {
+    return str_O_FIF_FIF_200_TEX;
+}
+
+/* 0x0035B000 */
+s32 Costume8Model_BufferSize(void) {
+    return 0x41000;
+}
+
+/* 0x0035B010 */
+s32 Costume8Model_Part0(void) {
+    return 0x3;
+}
+
+/* 0x0035B020 */
+s32 Costume8Model_Part1(void) {
+    return 0x7;
+}
+
+/* 0x0035B030 */
+s32 Costume8Model_Part2(void) {
+    return 0xE;
+}
+
+/* 0x0035B040 */
+s32 Costume8Model_Part3(void) {
+    return 0x18;
+}
+
+/* 0x0035B050 */
+s32 Costume8Model_Part4(void) {
+    return 0xB;
+}
+
+/* (as Costume7Model_ModelFile) */
+/* 0x0035B060 */
+void *Costume8Model_ModelFile(void *self, u32 i) {
+    switch (i) {
+    case 0: return D_00463220;
+    case 1: return str_O_FIF_FIF_001_PCK;
+    case 2: return str_O_FIF_FIF_002_PCK;
+    case 3: return str_O_FIF_FIF_003_PCK;
+    case 4: return str_O_FIF_FIF_004_PCK;
+    case 5: return str_O_FIF_FIF_005_PCK;
+    case 6: return str_O_FIF_FIF_006_PCK;
+    }
+    return NULL;
+}
+
+/* (as EventHumanModel_MotionTable)  +0xB8: 16 entries of the table D_00443FA0 (+0x840 count, +0x844 table) */
+/* 0x0035B0F0 */
+void Costume8Model_MotionTable(u8 *m) {
+    AT(m, 0x840, s16) = 16;
+    AT(m, 0x844, u8 *) = D_00443FA0;
+}
+
+/* +0xC loaded (vtable at 0x479660): the base setup and the parts' roles; part 0xBE drawn
+   with 0x40 */
+/* 0x0035B120 */
+void Costume8Model_Loaded(u8 *m) {
+    CharModel_Loaded(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x10;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x1A;
+    AT(m, 0x8B0, s32) = 0x13;
+    AT(m, 0x8B4, s32) = 0xB;
+    AT(m, 0xBE, u8) = 4;
+    AT(m, 0xBF, u8) = 0x40;
 }
 
 /* idle animation `anim` with weight variant `variant`: blended over `blend` frames (-1: at
@@ -7164,7 +9592,6 @@ void Fiona_StatePanicAttack(Fiona *f) {
     Character_RootMoveMasked(&f->c);
 }
 
-#include "effectmgr.h"
 
 /* the effect on a character her shove met: 0 a burst at it, 1 a hit spark at one of four of its
  * bones (motion +0x84 / +0x88 / +0x8C / +0x90, at random) */

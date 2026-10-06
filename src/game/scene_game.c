@@ -8,41 +8,55 @@
 #include "ptmf.h"
 #include "pursuer.h"
 #include "effectmgr.h"
-#include "texcache.h"
+#include "renderer.h"
 #include "charaction.h"
 #include "gl2d.h"
-#include "bgm.h"
-#include "bootcard.h"
-#include "camctl.h"
-#include "chainpool.h"
+#include "music.h"
+#include "camera.h"
+#include "heap.h"
 #include "char_load.h"
 #include "creature.h"
 #include "doors.h"
 #include "event.h"
 #include "gameover.h"
-#include "heap.h"
 #include "hewie.h"
 #include "items.h"
-#include "loading.h"
+#include "loader.h"
 #include "model.h"
 #include "movie.h"
-#include "music.h"
-#include "panic.h"
+#include "fiona.h"
 #include "pause.h"
 #include "placed.h"
 #include "room_map.h"
-#include "runtime.h"
+#include "system.h"
 #include "scene.h"
 #include "scene_game.h"
-#include "scene_game_members.h"
 #include "scene_title.h"
-#include "skeleton.h"
-#include "system.h"
-#include "unsorted.h"
 #include "draw_leaves.h"
 #include "libc.h"
 #include "msl.h"
 #include "sce/eekernel.h"
+#include "effects.h"
+#include "sound.h"
+#include "vecmath.h"
+#include "daniella.h"
+#include "pad.h"
+#include "scene_boot.h"
+#include "sce/iop.h"
+#include "cri/adx.h"
+#include "director.h"
+#include "room.h"
+#include "text.h"
+#include "lights.h"
+#include "sce/intc.h"
+#include "gs.h"
+#include "actor.h"
+#include "subscreen.h"
+#include "input.h"
+#include "sce/libvu0.h"
+#ifdef HG_NATIVE
+#include "glr.h"
+#endif
 
 /* Field at a byte offset, for SceneGame members whose types aren't known yet. */
 
@@ -67,30 +81,18 @@ extern void *gSkelPool;
 
 extern void *D_004699E0[];
 extern void *Helper469D00_vtable[];
-extern void *D_0046A0D0[];
 extern void *D_0046B350[];
-extern void *D_0046BB20[];
 extern void *D_0046C6F0[];
-extern void *D_0046C770[];
 extern void *D_0046D780[];
-extern void *Message_vtable[];
-extern void *Cutscene_vtable[];
 extern void *D_00476F40[];
-void *SceneTableBase_dtor(u8 *o, s32 flags);
-void *Obj46B350_dtor(u8 *o, s32 flags);
-void *Obj46C6F0_dtor(u8 *o, s32 flags);
 void *RoomMeshes_dtor(u8 *o, s32 flags);
 void *Obj46D780_dtor(u8 *o, s32 flags);
 void *Message_dtor(u8 *o, s32 flags);
 void *Cutscene_dtor(u8 *o, s32 flags);
-void *LoadingEmblem_dtor(u8 *o, s32 flags);
 
 extern void *D_0046BA68[], *RoomBase_vtable[];
 extern void *Overlay_vtable[];
 extern u8 D_0046BAA0[], D_0046BA80[], NavGroups_vtable[];
-extern u8 Rooms_vtable[];
-extern void *NavMesh_vtable[];
-extern void *gRoomEventObj;
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
 void *Obj46BA68_ctor(u8 *p);
@@ -105,8 +107,6 @@ void *NavMesh_ctor(u8 *p);
 void *Obj46D780_ctor(u8 *p);
 
 extern void *D_0046A9B0[];
-extern u8 Creatures_vtable[];
-extern u8 PlacedThings_vtable[];
 extern void *BlockPool_vtable[];
 extern void *Heap_vtable[];
 void *RoomMeshes_ctor(u8 *p);
@@ -119,15 +119,45 @@ void *Progress_ctor(u8 *p);
 
 #define S32(p, off) (*(s32 *)((u8 *)(p) + (off)))
 
-void AvoidPrompt_Show(u8 *self, u32 id);
 s32 AvoidPrompt_Unload(void *self);
 void AvoidPrompt_Tick(u8 *self);
 s32 AvoidPrompt_Upload(u8 *self);
 
-extern void *Kind33Model_vtable[];
+extern void *gAvoidPrompt;
+extern void *D_0046F3D0[];
+extern void *D_00473440[];
+extern VObject *gStageMusic;      /* the director */
+extern void *MusicDir_vtable[];
+extern void *MusicStage1_vtable[], *MusicStage2_vtable[], *MusicStage3_vtable[], *MusicStage4_vtable[];
+extern u8 D_00414650[], D_004146C0[], D_00414700[], D_00414740[], str_ddo[], D_00414780[];
+extern u8 D_0042A180[], D_0042A1F0[], D_0042A230[], D_0042A270[], str_ddx[], D_0042A2B0[];
+extern u8 D_00442C20[], D_00442C90[], D_00442CD0[], D_00442D10[], str_ddx_2[], D_00442D50[];
+extern u8 D_00444850[], D_004448C0[], D_00444900[], D_00444940[], str_ddZ[], D_01991AA0[];
+extern u8 *MusicCue_ctor(u8 *c);
+extern void *MusicCue_dtor(void *c, s32 flags);
+extern void MusicDir_Setup(u8 *d);
+extern void *MusicDir_new(u32 size, void *p);
+extern u8 *MusicTrack_ctor(u8 *t);
+extern void *MusicTrack_dtor(u8 *t, s32 flags);
+extern void *D_0046AEC0[];
+extern PTMF D_01990700[];
+extern void *D_0046BF08[];
+void *Elem_ctorNoop(void *p);
+void Pair_Clear(u8 *p);
+s32 Room00_HookNone(void);
+s32 Room00_Command(void *self, u32 i, s32 a, s32 b);
+void Obj469A00_Noop50(void);
+void *Obj46AEC0_dtor(u8 *o, s32 flags);
+void *SceneTable_dtor(u8 *t, s32 flags);
+static void clamp01(f32 *v);
 
-s32 RoomBase_CharEnterScript(void *o);
-s32 RoomBase_EnterScript(void *o);
+/* AVOID.TEX's parts: u, v, w, h, palette, blending (0 normal, 1 subtracted / 2 mixed / 3 added
+ * by the fixed alpha) */
+extern u16 D_00429E00[][6];
+static const char sAvoidTex[] = "SYSTEM\\AVOID.TEX";
+
+void BitMask_Clear(u8 *p, s32 bit);
+void AvoidPrompt_DrawPart(u8 *o, s32 x, s32 y, s32 part, s32 alpha);
 
 /* destructor (vtable D_004699E0) */
 /* 0x00120EF0 */
@@ -139,6 +169,11 @@ void *SceneTableBase_dtor(u8 *o, s32 flags) {
         }
     }
     return o;
+}
+
+/* an empty method */
+/* 0x00120F70 */
+void Obj469A00_Noop50(void) {
 }
 static inline void Scene_SetState(Scene *scene, const PTMF *state) {
     ptmf_set(&scene->state, state);
@@ -283,9 +318,6 @@ void SceneGame_StateEntry(Scene *game) {
 
 /* ---- construction ---- */
 
-#include "actor.h"
-#include "subscreen.h"
-#include "task.h"
 
 extern void *Scene_vtable[], *SceneGame_vtable[], *Progress_vtable[], *Fiona_vtable[];
 extern void *D_0047A7E8[];          /* SceneGame's second base (Progress) */
@@ -440,14 +472,31 @@ Scene *SceneGame_ctor(Scene *g) {
     return g;
 }
 
-/* destructor (vtable Cutscene_vtable) */
-/* (possibly dead code: nothing in the game references it) */
-/* 0x002D0C70 */
-void *Cutscene_dtor(u8 *o, s32 flags) {
+/* destructor (D_00473440): its task (+0x110C4) ended, then the base (D_0046F3D0, clearing
+ * gAvoidPrompt) */
+/* 0x002D0B60 */
+void *AvoidPrompt_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = Cutscene_vtable;
-        AT(o, 0x0, void **) = D_0046BB20;
-        gCutscene = NULL;
+        AT(o, 0x0, void **) = D_00473440;
+        if (AT(o, 0x110C4, void *) != NULL) {
+            Task_dtor(AT(o, 0x110C4, void *), 1);
+            AT(o, 0x110C4, void *) = NULL;
+        }
+        AT(o, 0x0, void **) = D_0046F3D0;
+        gAvoidPrompt = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* destructor (vtable D_0046F3D0) */
+/* 0x002D0C10 */
+void *AvoidPromptBase_dtor(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046F3D0;
+        gAvoidPrompt = NULL;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -461,7 +510,6 @@ void SceneGame_Update(Scene *g, s32 arg) {
     Scene_Update(g, arg);
 }
 
-#include "input.h"
 
 extern void *D_00476F40[], *Helper469D00_vtable[];
 extern void SceneGame_RoomIn(Scene *g);
@@ -890,7 +938,6 @@ void SceneGame_StatePlay(Scene *g) {
 extern const PTMF D_0044C598;   /* the scenes' callback while saving the game */
 extern const PTMF SceneGame_SubTransition_ptmf, SceneGame_SubMoviePaused_ptmf, SceneGame_SubPaused_ptmf2, SceneGame_SubSubScreen_ptmf;   /* sub-states: menus */
 extern s8 gInput;           /* the pad: 0 = not connected */
-extern VObject *gStageMusic;
 extern void SceneGame_ActionPrompt(Scene *g);
 extern void SceneGame_Danger(Scene *g);
 
@@ -1560,7 +1607,6 @@ u8 SceneGame_LeaveRoom(Scene *g, u8 exit) {
 
 /* ---- doors, nearby rooms, the creatures, the save snapshot ---- */
 
-#include "sce/libvu0.h"
 
 extern void *Actor_vtable[], *Character_vtable[], *CreatureB_vtable[], *CreatureA_vtable[];
 
@@ -1700,28 +1746,6 @@ s32 SceneGame_RandomRoomNear(Scene *g, s32 room) {
     r = list[pick(n)];
     func_00114FD0(list);
     return r;
-}
-
-/* the creatures' two classes (0x1600 bytes on the event character base) */
-static void *creature_init(u8 *o, void **vtbl) {
-    AT(o, 0x0, void **) = Actor_vtable;
-    AT(o, 0x20, s32) = 0x0FFFFFFF;
-    AT(o, 0x24, s32) = 0x02000000;
-    AT(o, 0x0, void **) = Character_vtable;
-    AT(o, 0x1380, s32) = 0;
-    AT(o, 0x153C, u8) = 0;
-    AT(o, 0x0, void **) = vtbl;
-    return o;
-}
-
-/* 0x0039B230 */
-void *CreatureB_ctor(void *o) {
-    return creature_init(o, CreatureB_vtable);
-}
-
-/* 0x0039B280 */
-void *CreatureA_ctor(void *o) {
-    return creature_init(o, CreatureA_vtable);
 }
 
 /* a placed character (gCreatures) of the creature class in slot `k`, its model too for
@@ -2291,6 +2315,38 @@ void SceneGame_EndMusic(u8 *g) {
     }
 }
 
+/* the music director for stage set `stage` (0..3) at scene +0x1064600 (scene +0x106503C) */
+/* 0x0039A8E0 */
+void SceneGame_MusicDirector(u8 *scene, u32 stage) {
+    static void **const sVtbl[4] = {MusicStage1_vtable, MusicStage2_vtable, MusicStage3_vtable, MusicStage4_vtable};
+    static u8 *const sTables[4][6] = {
+        {D_00414650, D_004146C0, D_00414700, D_00414740, str_ddo, D_00414780},
+        {D_0042A180, D_0042A1F0, D_0042A230, D_0042A270, str_ddx, D_0042A2B0},
+        {D_00442C20, D_00442C90, D_00442CD0, D_00442D10, str_ddx_2, D_00442D50},
+        {D_00444850, D_004448C0, D_00444900, D_00444940, str_ddZ, D_01991AA0},
+    };
+    u8 *d;
+    s32 i;
+
+    stage &= 0xFF;
+    if (stage >= 4) {
+        return;
+    }
+    d = MusicDir_new(0xA3C, scene + 0x1064600);
+    if (d != NULL) {
+        gStageMusic = (VObject *)d;
+        AT(d, 0x0, void **) = MusicDir_vtable;
+        func_00100340(d + 0x34, (void *(*)(void *))MusicTrack_ctor, (void *(*)(void *, s32))MusicTrack_dtor, 0x110, 4);
+        func_00100340(d + 0x474, (void *(*)(void *))MusicCue_ctor, MusicCue_dtor, 0x28, 0x18);
+        MusicDir_Setup(d);
+        AT(d, 0x0, void **) = sVtbl[stage];
+        for (i = 0; i < 6; i++) {
+            AT(d, 0x18 + i * 4, u8 *) = sTables[stage][i];
+        }
+    }
+    AT(scene, 0x106503C, u8 *) = d;
+}
+
 /* clear the 17 words at +0x2718 */
 /* 0x00179E60 */
 void SceneGame_Clear2718(u8 *o) {
@@ -2300,6 +2356,76 @@ void SceneGame_Clear2718(u8 *o) {
     AT(o, 0x271C, s32) = 0;
     for (i = 0; i < 15; i++) {
         AT(o, 0x2720 + i * 4, s32) = 0;
+    }
+}
+
+/* (possibly dead code: nothing in the game references it) */
+/* clear +0xC700 and the 20 words after it */
+/* (possibly dead code: nothing in the game references it) */
+/* 0x0017D1B0 */
+void Clear_C700(u8 *o) {
+    s32 i;
+
+    AT(o, 0xC700, s32) = 0;
+    for (i = 0; i < 20; i++) {
+        AT(o, 0xC704 + i * 4, s32) = 0;
+    }
+}
+
+/* clear bit `bit` of the mask at +4 (-1: none) */
+/* 0x001AAB80 */
+void BitMask_Clear(u8 *p, s32 bit) {
+    if (bit != -1) {
+        AT(p, 0x4, u32) &= ~(1u << bit);
+    }
+}
+
+/* SceneGame +0xF29740 (gSceneGameF29740): reset for a new room */
+/* 0x001AABC0 */
+void PathPlanHolder_NewRoom(u8 *o) {
+    AT(o, 0x4, s32) = 0;
+}
+
+/* destructor (vtable D_0046AEC0) */
+/* 0x001BF5F0 */
+void *Obj46AEC0_dtor(u8 *o, s32 flags) {
+    if (o != NULL) {
+        AT(o, 0x0, void **) = D_0046AEC0;
+        AT(o, 0x4, s32) = 0;
+        AT(o, 0x8, s32) = 0;
+        AT(o, 0xC, s32) = 0;
+        gAdx = NULL;
+        if ((s16)flags > 0) {
+            func_00100490(o);
+        }
+    }
+    return o;
+}
+
+/* set a 3-word value: +0 = b, +4 = a, +8 = c */
+/* 0x001F40F0 */
+void Triple_Set(u8 *p, s32 a, s32 b, s32 c) {
+    AT(p, 0x4, s32) = a;
+    AT(p, 0x0, s32) = b;
+    AT(p, 0x8, s32) = c;
+}
+
+/* reset 64 entries of 12 (+0x4 0, +0x8 / +0xA -1, +0xC / +0xD 0xFF) and ten words at +0x304
+ * to -1 */
+/* 0x001F4100 */
+void Slots_Reset2(u8 *o) {
+    u8 *e = o;
+    u32 i;
+
+    for (i = 0; i < 0x40; i++, e += 0xC) {
+        AT(e, 0x4, s32) = 0;
+        AT(e, 0x8, s16) = -1;
+        AT(e, 0xA, s16) = -1;
+        AT(e, 0xD, s8) = -1;
+        AT(e, 0xC, s8) = -1;
+    }
+    for (i = 0; i < 10; i++) {
+        AT(o, 0x304 + i * 4, s32) = -1;
     }
 }
 
@@ -2351,26 +2477,54 @@ s32 RoomBase_EnterScript(void *o) {   /* +0xC */
     return 0;
 }
 
+/* the scene table's destructor (D_0046BF08): its four scenes handed back to the scene heap
+ * (+0x10D9040, +0x14) and destroyed, the heap's vtables, gSceneTable cleared */
+/* 0x0020DA10 */
+void *SceneTable_dtor(u8 *t, s32 flags) {
+    s32 i;
+
+    if (t == NULL) {
+        return t;
+    }
+    AT(t, 0x0, void **) = D_0046BF08;
+    for (i = 0; i < 4; i++) {
+        void **slot = (void **)(t + 4) + i;
+
+        if (*slot != NULL) {
+            VObject *heap = (VObject *)(t + 0x10D9040);
+
+            VCALL(heap, 0x14, void (*)(VObject *, void *))(heap, *slot);
+            if (*slot != NULL) {
+                VCALL(*slot, 0x8, void (*)(void *, s32))(*slot, 1);
+            }
+            *slot = NULL;
+        }
+    }
+    AT(t, 0x10D9040, void **) = Heap_vtable;
+    AT(t, 0x10D9040, void **) = D_004699E0;
+    gSceneTable = NULL;
+    if ((s16)flags > 0) {
+        func_00100490(t);
+    }
+    return t;
+}
+
+/* destructor of a class with no vtable of its own */
+/* (possibly dead code: nothing in the game references it) */
+/* 0x0020E820 */
+void *NoVtable_dtor(void *o, s32 flags) {
+    if (o != NULL && (s16)flags > 0) {
+        func_00100490(o);
+    }
+    return o;
+}
+
 /* destructor (vtable D_0046C6F0) */
 /* 0x00225620 */
 void *Obj46C6F0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046C6F0;
         gCamDirector = NULL;
-        if ((s16)flags > 0) {
-            func_00100490(o);
-        }
-    }
-    return o;
-}
-
-/* destructor (vtable D_0046C770) */
-/* 0x0025C850 */
-void *RoomMeshes_dtor(u8 *o, s32 flags) {
-    if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046C770;
-        AT(o, 0x8, s32) = 0;
-        AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             func_00100490(o);
         }
@@ -2392,19 +2546,182 @@ void *Obj46D780_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* destructor (vtable Message_vtable) */
-/* (possibly dead code: nothing in the game references it) */
-/* 0x002D00A0 */
-void *Message_dtor(u8 *o, s32 flags) {
-    if (o != NULL) {
-        AT(o, 0x0, void **) = Message_vtable;
-        AT(o, 0x0, void **) = D_0046A0D0;
-        gBootMessage = NULL;
-        if ((s16)flags > 0) {
-            func_00100490(o);
+/* four bytes cleared */
+/* 0x002A76E0 */
+void Bytes4_Clear(u8 *p) {
+    p[0] = 0;
+    p[1] = 0;
+    p[2] = 0;
+    p[3] = 0;
+}
+
+static f32 clamp01_value(f32 v) {
+    if (v < 0.0f) {
+        v = 0.0f;
+    }
+    return v <= 1.0f ? v : 1.0f;
+}
+
+/* SceneGame +0xA20 per frame: a timed heal (+0x0 for +0x4 frames), a timed reset of +0x8, the
+ * volume fade (+0x10: in / out over 30 frames of +0x18, +0x14 left) passed to the sound, the
+ * menus and the movie player, a timed heart-rate setting (+0x1C for +0x20 frames) and two more
+ * timers */
+/* 0x002A7720 */
+void StatusTimers_Frame(u8 *o) {
+    f32 old;
+
+    if (AT(o, 0x4, s32) > 0) {
+        AT(o, 0x4, s32)--;
+        if (!(AT(o, 0x0, f32) < 0.0f)) {
+            ((void (*)(void *))Threat_Raise)((u8 *)gProgress + 0x7B8);
+        } else {
+            f32 x = AT(o, 0x0, f32);
+
+            if (x <= 0.0f) {
+                x = -x;
+            }
+            if (!(x < 0.0f)) {
+                AT(gProgress, 0x7E4, f32) = AT(gProgress, 0x7E4, f32) + x;
+            }
         }
     }
-    return o;
+    if (AT(o, 0xC, s32) > 0) {
+        AT(o, 0xC, s32)--;
+        if (AT(o, 0xC, s32) <= 0) {
+            AT(o, 0x8, f32) = 1.0f;
+        }
+    }
+    old = AT(o, 0x10, f32);
+    if (AT(o, 0x14, s32) != 0) {
+        s32 left = AT(o, 0x14, s32);
+        s32 total = AT(o, 0x18, s32);
+
+        AT(o, 0x10, f32) = 0.0f;
+        if (!(left < total - 30)) {
+            AT(o, 0x10, f32) = 1.0f - (f32)(total - left) / 30.0f;
+        } else if (left < 31) {
+            AT(o, 0x10, f32) = 1.0f - (f32)left / 30.0f;
+        }
+        AT(o, 0x10, f32) = clamp01_value(AT(o, 0x10, f32));
+        AT(o, 0x14, s32)--;
+    } else {
+        AT(o, 0x10, f32) = 1.0f;   /* no fade: full volume */
+    }
+    if (old != AT(o, 0x10, f32)) {
+        VCALL(gSound, 0xAC, void (*)(VObject *, f32))(gSound, AT(o, 0x10, f32));
+        AT(gAdx, 0x120, f32) = clamp01_value(AT(o, 0x10, f32));
+        Bgm_ApplyVolume(gAdx);   /* the music player, passed through a0 */
+        if (gStageMusic != NULL) {
+            VCALL(gStageMusic, 0x24, void (*)(VObject *, f32))(gStageMusic, AT(o, 0x10, f32));
+        }
+        if (gMovie != NULL) {
+            AT(gMovie, 0x1D4, f32) = clamp01_value(AT(o, 0x10, f32));
+            Movie_ApplyVolume(gMovie);   /* the movie, passed through a0 */
+        }
+    }
+    if (AT(o, 0x20, s32) != 0) {
+        AT(o, 0x20, s32)--;
+        if (gCharPlayer != NULL) {
+            f32 v = AT(o, 0x1C, f32);   /* her heart rate */
+
+            if (v < 0.0f) {
+                v = 0.0f;
+            } else if (!(v <= 100.0f)) {
+                v = 100.0f;
+            }
+            AT(gCharPlayer, 0x1AD5F4, f32) = v;
+        }
+    }
+    if (AT(o, 0x28, s32) != 0) {
+        AT(o, 0x28, s32)--;
+    } else {
+        AT(o, 0x24, f32) = 1.0f;
+    }
+    if (AT(o, 0x2C, s32) != 0) {
+        AT(o, 0x2C, s32)--;
+    }
+    if (AT(o, 0x30, s32) != 0) {
+        AT(o, 0x30, s32)--;
+    }
+}
+
+/* 0x002A7B40 */
+void RoomSlotBytes_Clear(u8 *p) {
+    s32 i;
+
+    for (i = 0; i < 8; i++) {
+        AT(p, i * 6 + 5, u8) = 0;
+        AT(p, i * 6 + 4, u8) = 0;
+        AT(p, i * 6 + 3, u8) = 0;
+        AT(p, i * 6 + 2, u8) = 0;
+        AT(p, i * 6 + 1, u8) = 0;
+        AT(p, i * 6 + 0, u8) = 0;
+    }
+    for (i = 0; i < 5; i++) {
+        AT(p, 0x30 + i * 4 + 3, u8) = 0;
+        AT(p, 0x30 + i * 4 + 2, u8) = 0;
+        AT(p, 0x30 + i * 4 + 1, u8) = 0;
+        AT(p, 0x30 + i * 4 + 0, u8) = 0;
+    }
+    for (i = 0; i < 3; i++) {
+        AT(p, 0x44 + i * 0x10, u8) = 0;
+        AT(p, 0x45 + i * 0x10, u8) = 0;
+        AT(p, 0x46 + i * 0x10, u16) = 0;
+        AT(p, 0x48 + i * 0x10, u16) = 0;
+        AT(p, 0x4C + i * 0x10, s32) = 0;
+        AT(p, 0x50 + i * 0x10, u8) = 0;
+        AT(p, 0x80 + i * 0x20, u8) = 0;
+        AT(p, 0x82 + i * 0x20, u16) = 0;
+        AT(p, 0x84 + i * 0x20, u16) = 0;
+        AT(p, 0x88 + i * 0x20, s32) = 0;
+        AT(p, 0xE0 + i * 0xC, u8) = 0;
+        AT(p, 0xE1 + i * 0xC, u8) = 0;
+        AT(p, 0xE2 + i * 0xC, u8) = 0xFF;
+        AT(p, 0xE3 + i * 0xC, u8) = 0xFF;
+        AT(p, 0xE4 + i * 0xC, s32) = 0;
+        AT(p, 0xE8 + i * 0xC, s32) = 0;
+    }
+    AT(p, 0x144, u8) = 0;
+    AT(p, 0x148, f32) = 1.0f;
+    AT(p, 0x14C, f32) = 1.0f;
+    AT(p, 0x150, f32) = 0.0f;
+    for (i = 0; i < 4; i++) {
+        AT(p, 0x104 + i * 0x10, u8) = 0;
+        AT(p, 0x108 + i * 0x10, s32) = -1;
+        AT(p, 0x10C + i * 0x10, s32) = -1;
+        AT(p, 0x110 + i * 0x10, u16) = 0xFFFF;
+    }
+}
+
+/* 0x002A8410 */
+void Record20_Clear(u8 *p) {
+    AT(p, 0x0, s32) = 0;
+    AT(p, 0x1C, u8) = 0;
+    AT(p, 0x18, s32) = 0;
+    AT(p, 0x10, s32) = 0;
+    AT(p, 0xC, s32) = 0;
+    AT(p, 0x8, s32) = 0;
+    AT(p, 0x4, s32) = 0;
+    AT(p, 0x14, s32) = 0;
+    AT(p, 0x1D, u8) = 0xFF;
+}
+
+/* 0x002A8890 */
+void Pair_Clear(u8 *p) {
+    AT(p, 0x8, s32) = 0;
+    AT(p, 0x4, s32) = 0;
+}
+
+/* (possibly dead code: nothing in the game references it) */
+/* 0x002A8AB0 */
+s32 Room00_HookNone(void) {
+    return 0;
+}
+
+/* (self->*D_01990700[i])(a, b) */
+/* 0x002A8AC0 */
+s32 Room00_Command(void *self, u32 i, s32 a, s32 b) {
+    return ptmf_scall_r2(self, &D_01990700[i & 0xFF], a, b);
 }
 
 /* (vtable) a soft reset: once the other room file is in and the loader is idle (3), the sounds
@@ -2510,29 +2827,10 @@ void *Obj46A9B0_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* the progress object: gProgress cleared */
-/* 0x002D0F90 */
-void *Progress_dtorGlobal(void *o, s32 flags) {
-    if (o != NULL) {
-        gProgress = NULL;
-        if ((s16)flags > 0) {
-            func_00100490(o);
-        }
-    }
-    return o;
-}
-
 /* 0x002D0FE0 */
 void *Obj46BA68_ctor(u8 *p) {
     F(p, 0x0, void *) = D_0046BA68;
     p[0x4] = 0;
-    return p;
-}
-
-/* 0x002D1000 */
-void *Cutscene_ctor(u8 *p) {
-    gCutscene = (VObject *)p;
-    F(p, 0x0, void *) = Cutscene_vtable;
     return p;
 }
 
@@ -2553,13 +2851,6 @@ void *DimOverlay_ctor(u8 *p) {
     return p;
 }
 
-/* 0x002D1080 */
-void *Events_ctor(u8 *p) {
-    gEvents = (VObject *)p;
-    F(p, 0x0, void *) = D_0046BAA0;
-    return p;
-}
-
 /* 0x002D10A0 */
 void *Obj46BA80_ctor(u8 *p) {
     F(p, 0x0, void *) = D_0046BA80;
@@ -2568,31 +2859,9 @@ void *Obj46BA80_ctor(u8 *p) {
     return p;
 }
 
-/* 0x002D1130 */
-void *NavGroups_ctor(u8 *p) {
-    gRoomEventObj = p;
-    F(p, 0x0, void *) = NavGroups_vtable;
-    F(p, 0x4, u32) = 0;
-    F(p, 0x8, u32) = 0;
-    return p;
-}
-
-/* 0x002D12C0 */
-void *Rooms_ctor(u8 *p) {
-    gRooms = (VObject *)p;
-    F(p, 0x0, void *) = Rooms_vtable;
-    return p;
-}
-
-/* 0x002D12E0 */
-void *NavMesh_ctor(u8 *p) {
-    s32 i;
-
-    gNavMesh = (NavMesh *)p;
-    F(p, 0x0, void *) = NavMesh_vtable;
-    for (i = 0x4; i <= 0x18; i += 4) {
-        F(p, i, u32) = 0;
-    }
+/* an array element's constructor (nothing to do) */
+/* 0x002D1120 */
+void *Elem_ctorNoop(void *p) {
     return p;
 }
 
@@ -2607,97 +2876,70 @@ void *Obj46D780_ctor(u8 *p) {
     return p;
 }
 
-/* 0x002D1360 */
-void *RoomMeshes_ctor(u8 *p) {
-    F(p, 0x0, void *) = Helper469D00_vtable;
-    F(p, 0x4, s32) = -1;
-    F(p, 0x0, void *) = D_0046C770;
-    F(p, 0x7C, u32) = 0;
-    F(p, 0x80, u32) = 0;
-    F(p, 0x64, s32) = -1;
-    p[0x84] = 0;
-    p[0x60] = 0;
-    F(p, 0x68, u32) = 0;
-    p[0x85] = 0;
-    return p;
-}
-
 /* 0x002D1470 */
 void *Obj46A9B0_ctor(u8 *p) {
     F(p, 0x4C, void *) = D_0046A9B0;
     return p;
 }
 
-/* 0x002D1490 */
-void *Creatures_ctor(u8 *p) {
-    u8 *a = p + 0xDC40;
-    u8 *b = p + 0xF630;
-
-    gCreatures = p;
-    F(p, 0x28, void *) = Creatures_vtable;
-    F(a, 0x0, void *) = D_004699E0;
-    F(a, 0x4, u32) = 0;
-    F(a, 0x8, u32) = 0;
-    F(a, 0x0, void *) = BlockPool_vtable;
-    F(a, 0xC, u32) = 0;
-    F(a, 0x10, u32) = 0;
-    F(a, 0x14, u32) = 0;
-    F(b, 0x0, void *) = D_004699E0;
-    F(b, 0x4, u32) = 0;
-    F(b, 0x8, u32) = 0;
-    F(b, 0x0, void *) = BlockPool_vtable;
-    F(b, 0xC, u32) = 0;
-    F(b, 0x10, u32) = 0;
-    F(b, 0x14, u32) = 0;
+/* (a base-class constructor that does nothing) */
+/* 0x002D15B0 */
+void *Base_ctorNoop(void *p) {
     return p;
 }
 
-/* 0x002D1510 */
-void *PlacedThings_ctor(u8 *p) {
-    u8 *a = p + 0xA040;
+/* 0x002D6000 */
+void SceneGame_SetByte19034(u8 *p, u32 v) { p[0x19034] = (u8)v; }
 
-    gPlacedThings = (VObject *)p;
-    F(p, 0x0, void *) = PlacedThings_vtable;
-    F(a, 0x0, void *) = D_004699E0;
-    F(a, 0x4, u32) = 0;
-    F(a, 0x8, u32) = 0;
-    F(a, 0x0, void *) = BlockPool_vtable;
-    F(a, 0xC, u32) = 0;
-    F(a, 0x10, u32) = 0;
-    F(a, 0x14, u32) = 0;
-    return p;
-}
+/* 0x002D6010 */
+u32 SceneGame_GetByte19034(u8 *p) { return p[0x19034]; }
 
-/* 0x002D1560 */
-void *Message_ctor(u8 *p) {
-    gBootMessage = (VObject *)p;
-    F(p, 0x0, void *) = Message_vtable;
-    return p;
-}
+#ifdef HG_NATIVE
+/* +0xC draw part `part` of AVOID.TEX (texture 0 of group 0x2D) at x, y, its own size, with
+ * fixed alpha `alpha`, layer 0x33 */
+/* 0x0031D9C0 */
+void AvoidPrompt_DrawPart(u8 *o, s32 x, s32 y, s32 part, s32 alpha) {
+    static const u8 kAlpha[4] = {0x44, 0x62, 0x64, 0x68};
+    u16 *e = D_00429E00[(u8)part];
+    u8 *tex;
+    s16 sx = x, sy = y;
 
-/* 0x002D1580 */
-void *SceneHeap_ctor(u8 *p) {
-    F(p, 0x0, void *) = D_004699E0;
-    F(p, 0x4, u32) = 0;
-    F(p, 0x8, u32) = 0;
-    F(p, 0x0, void *) = Heap_vtable;
-    F(p, 0xC, u32) = 0;
-    F(p, 0x10, u32) = 0;
-    return p;
+    if (TexCache_Resident(0, 0x2D, 0x33, &tex) == -1) {
+        return;
+    }
+    VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
+    gl2d_sprite(0x33, sx, sy, sx + e[2], sy + e[3], tex, e[0], e[1], e[0] + e[2], e[1] + e[3], 0x80808080, e[4],
+                gl2d_blend(((u64)(u8)alpha << 32) | kAlpha[e[5] & 3]));
 }
-
-/* Progress constructor: registers the global instance. */
-/* 0x002D15C0 */
-void *Progress_ctor(u8 *p) {
-    gProgress = (Progress *)p;
-    return p;
-}
+#endif
 
 /* 0x0031DDF0 */
 void AvoidPrompt_Show(u8 *self, u32 id) {
     self[0x11040] = (u8)id;
     S32(self, 0x11044) = 30;
 }
+
+#ifdef HG_NATIVE
+/* the avoid prompt, each gameplay frame: unless hidden (+0x11040 0xFF), its frame (+0x11040, a
+ * 160 x 32 row of AVOID.TEX, texture 0 of group 0x2D) as a 240 x 48 sprite near the bottom
+ * right, opaque, in layer 0x30 */
+/* 0x0031DE10 */
+void AvoidPrompt_Update(u8 *o) {
+    VObject *tc;
+    u8 *tex;
+    s32 f = AT(o, 0x11040, u8);
+
+    if (f == 0xFF) {
+        return;
+    }
+    tc = gTexCache;
+    if (TexCache_Resident(0, 0x2D, 0x30, &tex) == -1) {
+        return;
+    }
+    VCALL(tc, 0x18, void (*)(VObject *))(tc);
+    gl2d_sprite(0x30, 0x88, 0xC8, 0x178, 0xF8, tex, 0, f * 32, 0xA0, (f + 1) * 32, 0x80808080, 0, 0);
+}
+#endif
 
 /* (possibly dead code: nothing in the game references it) */
 /* 0x0031E0B0 */
@@ -2721,24 +2963,12 @@ s32 AvoidPrompt_Upload(u8 *self) {
     return VCALL(gTexCache, 0x10, s32 (*)(void *, void *, s32))(gTexCache, self + 0x40, 0x2D);
 }
 
-/* destructor (vtable D_00476F40) */
-/* 0x0033D990 */
-void *LoadingEmblem_dtor(u8 *o, s32 flags) {
-    if (o != NULL) {
-        AT(o, 0x0, void **) = D_00476F40;
-        AT(o, 0x0, void **) = Helper469D00_vtable;
-        if ((s16)flags > 0) {
-            func_00100490(o);
-        }
-    }
-    return o;
-}
-
-/* 0x0038C8D0 */
-void *Kind33Model_ctor(u8 *m) {
-    HumanModel_BaseCtor(m);
-    AT(m, 0x0, void **) = Kind33Model_vtable;
-    return m;
+/* (SceneGame +0x1053480, global gAvoidPrompt) for a new room: load SYSTEM\AVOID.TEX, reset */
+/* 0x0031E150 */
+void AvoidPrompt_Load(u8 *o) {
+    VCALL(gFileLoader, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(gFileLoader, sAvoidTex, o + 0x40, 0x10000000, 0);
+    AT(o, 0x11040, u8) = 0xFF;
+    AT(o, 0x11044, s32) = 0;
 }
 
 /* destructor: the members torn down in reverse (task manager +0x1053480, BGM +0x1053424, the sub

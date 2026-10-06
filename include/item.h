@@ -9,7 +9,6 @@
 #include "progress.h"
 #include "globals.h"
 #include "actor.h"
-#include "stalker_progress.h"
 
 /* character `c` plays event `ev` (who: 0 Fiona, 1 Hewie): its state 5 (0, ev) */
 static inline void item_event(VObject *ev_mgr, s32 who, s32 ev, Character *c) {

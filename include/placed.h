@@ -16,8 +16,12 @@ typedef struct B0_Pool {
 } B0_Pool;
 
 /* placed.c */
-extern void *BlockPool_ElemAt(B0_Pool *p, u32 i);   /* the pool's object i (NULL if free) */
 extern void *PlacedThings_Destroy(u8 *m, s32 flags);
 extern void Thing_Place(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 *front);
+
+/* placed.c */
+extern void *PlacedThings_dtor(u8 *o, s32 flags);
+extern void PlacedThings_Update(u8 *o);
+extern void PlacedThings_Draw(u8 *o);
 
 #endif /* PLACED_H */

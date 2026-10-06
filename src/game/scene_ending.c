@@ -6,20 +6,20 @@
 #include "common.h"
 #include "game.h"
 #include "ptmf.h"
-#include "task.h"
+#include "text.h"
 #include "subscreen.h"
-#include "texcache.h"
+#include "renderer.h"
 #include "input.h"
 #include "sound.h"
 #include "globals.h"
-#include "bgm.h"
-#include "bootcard.h"
+#include "music.h"
+#include "memcard.h"
 #include "heap.h"
-#include "message.h"
 #include "movie.h"
 #include "scene_title.h"
 #include "libc.h"
 #include "msl.h"
+#include "gl2d.h"
 
 typedef struct SceneEnding {
     /* 0x00 */ Scene base;
@@ -155,7 +155,6 @@ void SceneEnding_Format(SceneEnding *s, char *buf, const char *fmt, ...) {
 }
 
 #ifdef HG_NATIVE
-#include "gl2d.h"
 
 /* the ending's picture over the whole screen (512 x 448 texels), at `alpha` 0..0x80 */
 /* 0x00372050 */

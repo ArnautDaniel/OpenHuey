@@ -5,9 +5,9 @@
 #include "game/rooms/rooms.h"
 #include "gl2d.h"
 #include "ptmf.h"
-#include "scene_game_members.h"
-#include "snd_place.h"
-#include "stalker_progress.h"
+#include "scene_game.h"
+#include "sound.h"
+#include "progress.h"
 #include "msl.h"
 
 extern void *RoomBase_vtable[];
