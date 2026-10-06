@@ -1892,3 +1892,89 @@ void func_00395000(SubScreen *s) {
     }
     ptmf_set(&s->state, &D_0044B368);
 }
+
+/* ---- the galleries ---- */
+
+extern void func_002DDED0(u8 *m, s32 anim, s32 variant);                     /* play a motion */
+extern void func_002DE030(u8 *m, s32 anim, u32 flags, s32 variant, f32 blend);   /* blended in */
+extern s32 *D_0044BE90[];   /* per entry: its motion */
+
+#define SUB_GALLERY_MODEL(s) AT(s, 0xA8DE8, u8 *)
+#define MOTION_END(m) (AT(AT(m, 0x6A4, u8 *), 0x18, u32) & 0x20)
+
+/* the model gallery's motions: entries 3 / 4 switch the model's state (+0x2C, or +0x30 at
+ * motion 0xE00); entry 5 runs on 0x800 -> 0x801 -> 0x802 as each ends; otherwise, when the
+ * motion ends (unless it loops), the entry's own again (D_0044BE90; past 0x19 blended in) */
+void func_0038A740(SubScreen *s) {
+    u8 *m = SUB_GALLERY_MODEL(s);
+    u8 k;
+
+    if (m == NULL) {
+        return;
+    }
+    k = SUB_PAGE(s, 0x0, u8);
+    if ((u32)(k - 3) < 2) {
+        if (AT(m, 0x55C, s32) == 0xE00) {
+            VCALL(m, 0x30, void (*)(u8 *))(m);
+        } else {
+            VCALL(m, 0x2C, void (*)(u8 *))(m);
+        }
+    }
+    k = SUB_PAGE(s, 0x0, u8);
+    m = SUB_GALLERY_MODEL(s);
+    if (!MOTION_END(m)) {
+        return;
+    }
+    if (k == 5) {
+        s32 next = AT(m, 0x55C, s32) == 0x801 ? 0x802 : AT(m, 0x55C, s32) == 0x800 ? 0x801 : -1;
+
+        if (next != -1) {
+            func_002DDED0(m, next, -1);
+            return;
+        }
+    }
+    if (AT(AT(m, 0x6A4, u8 *), 0x18, u32) & 1) {
+        return;
+    }
+    if (k < 0x18 || k == 0x19) {
+        func_002DDED0(m, D_0044BE90[k][0], -1);
+    } else {
+        func_002DE030(m, D_0044BE90[k][0], 1, -1, 5.0f);
+    }
+}
+
+extern void func_00260B00(u8 *items, u8 l, u8 i);   /* one of it used */
+extern const PTMF D_0044B348, D_0044B358;
+
+/* state: "throw one away?" for an item with a word - its list's panels, the grid, the word and
+ * the question; answered yes, one of it goes (a costume, list 1: Fiona changes back) and
+ * message 0x57 (D_0044B348); no: D_0044B358 */
+void func_003951E0(SubScreen *s) {
+    char word[9];
+    s32 i;
+
+    if (SUB_LIST(s) == 0) {
+        s->kind = 0;
+    } else {
+        s->kind = SUB_LIST(s) == 1 ? 8 : 9;
+    }
+    sub_panels(s);
+    func_003949B0(s, 1);
+    for (i = 0; i < 8; i++) {
+        word[i] = s->unkA8C58[i];
+    }
+    word[8] = 0;
+    Msg_PrintfParam(&s->text, 3, D_00464218, word);
+    if (AT(&s->ask, 0x10, u8) != 0) {
+        Task_Run(&s->ask);
+    } else if (AT(&s->ask, 0x48, u8) == 0) {
+        func_00260B00(s->pool, SUB_LIST(s), SUB_CURSOR(s));
+        if (SUB_LIST(s) == 1) {
+            func_00182FC0(gCharPlayer);
+        }
+        Task_Open(&s->ask, 0x57);
+        ptmf_set(&s->state, &D_0044B348);
+    } else {
+        ptmf_set(&s->state, &D_0044B358);
+    }
+}

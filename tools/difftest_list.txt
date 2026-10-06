@@ -7051,3 +7051,6 @@ src/game/subscreen.c func_00384E60 --pre=a0=0x0A000000..0x0A000000 --pre=@0x0A00
 src/game/subscreen.c func_00395460 --pre=a0=0x0A000000..0x0A000000 --pre=a0+0xA8C50:u8=0..2 --pre=a0+0x97774:u8=0..1 --runs=100
 src/game/scene_title.c func_0012E270 --pre=a0=0x0A000000..0x0A000000 --pre=a0+0x18=0..17 --pre=@0x44E4F0=0x0A100000..0x0A100000 --pre=@0x0A100000=0x0046AC50..0x0046AC50 --runs=100
 src/game/subscreen.c func_00395000 --pre=a0=0x0A000000..0x0A000000 --pre=a0+0xA8C50:u8=0..2 --pre=a0+0x97774:u8=0..1 --pre=a0+0x977AC:u8=0..1 --runs=150
+src/game/subscreen.c func_0038A740 --pre=a0=0x0A000000..0x0A000000 --pre=a0+0xA8DE8=0..0x0B000000 --pre=a0+0xA8C80:u8=2..0x1B --pre=@0x0B000000=0x0B200000..0x0B200000 --pre=@0x0B0006A4=0x0B100000..0x0B100000 --pre=@0x0B100018=0x1E..0x21 --pre=@0x0B00055C=0x7FF..0x802 --runs=300
+src/game/subscreen.c func_003951E0 --pre=a0=0x0A000000..0x0A000000 --pre=a0+0xA8C50:u8=0..2 --pre=a0+0x97774:u8=0..1 --pre=a0+0x977AC:u8=0..1 --runs=150
+src/game/subscreen.c func_0038A740 --pre=a0=0x0A000000..0x0A000000 --pre=a0+0xA8DE8=0..0x0B000000 --pre=a0+0xA8C80:u8=3..4 --pre=@0x0B000000=0x0B200000..0x0B200000 --pre=@0x0B0006A4=0x0B100000..0x0B100000 --pre=@0x0B100018=0x1E..0x21 --pre=@0x0B00055C=0xDFF..0xE00 --runs=300
