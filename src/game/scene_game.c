@@ -525,7 +525,7 @@ s32 SceneGame_SubStartRoom(Scene *g) {
     Progress_ActivateChar(prog, 0);
     Progress_CharsEnterRoom(prog);
     VCALL(gObstacles, 0xC, void (*)(VObject *))(gObstacles);
-    func_00209850((u8 *)g + 0xF6AFB0);
+    Events_InstallRooms((u8 *)g + 0xF6AFB0);
     SceneGame_LoadedStart(g);
     func_00120720((u8 *)g + 0x73EE80, AT(g, SG_ENTRY, s32), AT(g, 0xF6C1B0, s32));
     func_001AABC0((u8 *)g + 0xF29740);
@@ -784,7 +784,7 @@ void SceneGame_EnterRoom(Scene *g) {
             VCALL(prog, 0x34, void (*)(Progress *, u8))(prog, i);
         }
     }
-    func_00209390((u8 *)g + 0xF6AFB0, 0);
+    Events_RunPhase((u8 *)g + 0xF6AFB0, 0);
     AT(g, SG_ROOMFLAG, u8) = 0;
     room = VCALL(g, 0xA4, s32 (*)(Scene *))(g);
     for (t = D_0044C6E0; *t != -1; t++) {
@@ -992,12 +992,12 @@ void SceneGame_SubPlay(Scene *g) {
         Progress_PursuerRequest(prog);
         CamDirector_Ease(cam);
         VCALL(g, 0xDC, void (*)(Scene *))(g);
-        func_00209390((u8 *)ev, 1);
+        Events_RunPhase((u8 *)ev, 1);
         Progress_RelationChanges(prog);
         Progress_ResolveRelations(prog);
         Progress_OwnRequests(prog);
         Progress_CharRequests(prog);
-        func_00209390((u8 *)ev, 2);
+        Events_RunPhase((u8 *)ev, 2);
         if (!(u8)Progress_TestFlag(prog, 0x12)) {
             if (AT(g, SG_CONTROL, u8) == 0) {
                 Progress_PlayerButtons(prog);
@@ -1006,7 +1006,7 @@ void SceneGame_SubPlay(Scene *g) {
             }
         }
         if (!((*flags >> 3) & 1)) {
-            func_00209210(ev);
+            Events_RunCharScripts(ev);
         }
         AT(g, 0x1170, u8) = Progress_CameraFollow(prog, AT(g, 0x1170, u8));
         if (AT(g, 0x1170, u8) != 0xFF) {
@@ -1016,7 +1016,7 @@ void SceneGame_SubPlay(Scene *g) {
                 cam, AT(c, 0xE8, s32), AT(c, 0xEC, s32));
         }
         CamDirector_Track(cam);
-        func_00209390((u8 *)ev, 3);
+        Events_RunPhase((u8 *)ev, 3);
         if (camdir_busy(g) && !(u8)VCALL(ev, 0xC0, s32 (*)(VObject *))(ev)) {
             *flags = (*flags & ~0x3F0) | 0x3F0;
         } else {
@@ -1031,17 +1031,17 @@ void SceneGame_SubPlay(Scene *g) {
         }
     } else {
         if (AT(g, 0x44, s32) == 1) {
-            func_00209390((u8 *)ev, 4);
+            Events_RunPhase((u8 *)ev, 4);
             AT(g, 0x44, s32) = 2;
         }
         if (func_00120660(rooms, AT(g, 0xF6C1B0, s32) == 0) ||
             (u8)VCALL(gFileLoader, 0x38, s32 (*)(VObject *))(gFileLoader) ||
             VCALL(gFileLoader, 0x24, s32 (*)(VObject *))(gFileLoader) == 2) {
-            func_00209390((u8 *)ev, 3);
+            Events_RunPhase((u8 *)ev, 3);
             *flags |= 1;
         } else {
             AT(g, 0x44, s32) = 0;
-            func_00209390((u8 *)ev, 5);
+            Events_RunPhase((u8 *)ev, 5);
             for (i = 0; i < 6; i++) {
                 if (gCharacters[i] != NULL && AT(gCharacters[i], 0x28, u8) != 0) {
                     VCALL(gCharacters[i], 0x34, void (*)(void *, s32))(gCharacters[i],
@@ -1073,7 +1073,7 @@ void SceneGame_SubPlay(Scene *g) {
                 }
             }
             func_002E2740((u8 *)g + 0x706480);
-            func_00209390((u8 *)ev, 3);
+            Events_RunPhase((u8 *)ev, 3);
             CamDirector_Update(cam);
             *flags |= 1;
         }
@@ -2001,7 +2001,7 @@ static inline void to_play(Scene *g, const PTMF *back) {
 void SceneGame_SubPaused(Scene *g) {
     Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
 
-    func_00209390((u8 *)g + SG_EVENT, 3);
+    Events_RunPhase((u8 *)g + SG_EVENT, 3);
     if (!(u8)Progress_TestFlag(prog, 8)) {
         frozen_draw(g, 1, 1);
         AvoidPrompt_Update((u8 *)g + 0x1053480);
@@ -2040,13 +2040,13 @@ void SceneGame_SubMoviePaused(Scene *g) {
     Progress_PursuerRequest(prog);
     CamDirector_Ease(cam);
     VCALL(g, 0xDC, void (*)(Scene *))(g);
-    func_00209390((u8 *)ev, 1);
+    Events_RunPhase((u8 *)ev, 1);
     Progress_RelationChanges(prog);
     Progress_ResolveRelations(prog);
     Progress_OwnRequests(prog);
     Progress_CharRequests(prog);
-    func_00209390((u8 *)ev, 2);
-    func_00209210(ev);
+    Events_RunPhase((u8 *)ev, 2);
+    Events_RunCharScripts(ev);
     AT(g, 0x1170, u8) = Progress_CameraFollow(prog, AT(g, 0x1170, u8));
     if (AT(g, 0x1170, u8) != 0xFF) {
         u8 *c = (u8 *)gCharacters[AT(g, 0x1170, u8)];
@@ -2054,7 +2054,7 @@ void SceneGame_SubMoviePaused(Scene *g) {
         ((void (*)(u8 *, s32, s32))AT(AT(cam, 0x64, u8 *), 0x64, void *))(cam, AT(c, 0xE8, s32), AT(c, 0xEC, s32));
     }
     CamDirector_Track(cam);
-    func_00209390((u8 *)ev, 3);
+    Events_RunPhase((u8 *)ev, 3);
     if (camdir_busy(g) && !(u8)VCALL(ev, 0xC0, s32 (*)(VObject *))(ev)) {
         *flags = (*flags & ~0x3F0) | 0x3F0;
     } else {
@@ -2106,7 +2106,7 @@ void SceneGame_SubSubScreen(Scene *g) {
     CamDirector_Ease(cam);
     CamDirector_Track(cam);
     CamDirector_Update(cam);
-    func_00209390((u8 *)g + SG_EVENT, 3);
+    Events_RunPhase((u8 *)g + SG_EVENT, 3);
     if (AT(g, 0xF88938, u8) != 0 && !(u8)Progress_TestFlag(prog, 8)) {
         frozen_draw(g, 2, 1);
     } else {
@@ -2138,7 +2138,7 @@ void SceneGame_SubTransition(Scene *g) {
         CamDirector_Ease(cam);
         CamDirector_Track(cam);
         CamDirector_Update(cam);
-        func_00209390((u8 *)g + SG_EVENT, 3);
+        Events_RunPhase((u8 *)g + SG_EVENT, 3);
         func_0011FB20((u8 *)g + 0x73EE80, AT(g, 0xF6C1B0, s32));
         func_00267160((u8 *)g + 0xF6CD30);
         func_002D61E0((u8 *)g + 0xF6E200);
@@ -2784,8 +2784,8 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     Task_dtor((Task *)(g + 0xF6B6B8), -1);
     func_001002C0(g + 0xF6B0D0, RoomBase_dtor, 4, 0x110);
     Progress73EC80_dtor(g + 0xF6AFD0, -1);
-    func_0020C170((void **)(g + 0xF6AFBC), 0);
-    func_0020C120((void **)(g + 0xF6AFB0), 0);
+    EventsBase_dtor((void **)(g + 0xF6AFBC), 0);
+    Obj46BA80_dtor((void **)(g + 0xF6AFB0), 0);
     AT(g, 0xF6A940, void **) = D_0046C520;
     AT(g, 0xF6A940, void **) = D_0046C530;
     gRoutePlanner = NULL;

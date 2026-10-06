@@ -16,13 +16,15 @@
 #include "sce/eekernel.h"
 
 /* +0x1C */
-void func_001BBB20(u8 *r) {
+/* 0x001BBB20 */
+void Renderer_Set304DE0(u8 *r) {
     AT(r, 0x304DE0, u8) = 1;
 }
 
 /* +0x18 allocate `n` quadwords from the current buffer of arena 2 (+0x2806D0 + buffer * 0x80000);
  * NULL when full */
-void *func_001BBB40(u8 *r, s32 n) {
+/* 0x001BBB40 */
+void *Renderer_AllocArena2(u8 *r, s32 n) {
     u8 *cur = AT(r, 0x304BAC, u8 *);
     u8 *next = cur + n * 16;
 
@@ -35,7 +37,8 @@ void *func_001BBB40(u8 *r, s32 n) {
 
 /* +0x14 allocate `n` quadwords from the current buffer of arena 1 (+0x1006C0 + buffer * 0x100000),
  * keeping one quadword spare; NULL when full */
-void *func_001BBBB0(u8 *r, s32 n) {
+/* 0x001BBBB0 */
+void *Renderer_AllocArena1(u8 *r, s32 n) {
     u8 *cur = AT(r, 0x304BA8, u8 *);
     u8 *next = cur + n * 16;
 
@@ -47,32 +50,34 @@ void *func_001BBBB0(u8 *r, s32 n) {
 }
 
 /* +0x3C id of render layer `i` (0..10), -1 if out of range */
-s32 func_001BB950(u8 *r, u32 i) {
+/* 0x001BB950 */
+s32 Renderer_LayerId(u8 *r, u32 i) {
     if (i < 11) {
         return AT(r, 0x304BB8 + i * 4, s32);
     }
     return -1;
 }
 
-extern void func_001B7ED0(u8 *r);
-extern void func_001B79F0(u8 *r);
-extern void func_001B7370(u8 *r);
-extern void func_001B71E0(u8 *r);
+extern void Renderer_ClearVram(u8 *r);
+extern void Renderer_GsEnvironments(u8 *r);
+extern void Renderer_Flip(u8 *r);
+extern void Renderer_DefaultGsState(u8 *r);
 
 #define RNG_REAL1() VCALL(gRandom, 0x18, f32 (*)(VObject *))(gRandom)
 
 /* Set up the graphics for video mode `mode` (2: 448 lines), then a table of 16 random
  * (x, y, ..., angle) entries (renderer +0x304C0C). */
-void func_001B83D0(u8 *r, s32 mode) {
+/* 0x001B83D0 */
+void Renderer_SetupVideo(u8 *r, s32 mode) {
     f32 *e;
 
     func_0010BFB0();
     func_0010BE10(0, 1, (u8)mode, 0);
-    func_001B7ED0(r);
+    Renderer_ClearVram(r);
     AT(r, 0x304BFE, s16) = (u8)mode == 2 ? 448 : 512;
     AT(r, 0x304C09, u8) = mode;
-    func_001B79F0(r);
-    func_001B7370(r);
+    Renderer_GsEnvironments(r);
+    Renderer_Flip(r);
     for (e = (f32 *)(r + 0x304C0C); e <= (f32 *)(r + 0x304D38); e += 5) {
         e[0] = -16.0f + 80.0f * (RNG_REAL1() - 0.5f);
         e[1] = -150.0f * RNG_REAL1();
@@ -85,7 +90,8 @@ void func_001B83D0(u8 *r, s32 mode) {
 /* Allocate the renderer's VRAM (allocator +0x18: address, pixel format 0x13 = 8-bit indexed,
  * width, height): one 0xFF area (+0x304BE4) and 11 layers (+0x304BB8: 10 of 256x256 below
  * 0xFC000, one of 512x512 at 0xC0000), each kept resident (+0x24). */
-void func_001B8250(u8 *r) {
+/* 0x001B8250 */
+void Renderer_AllocVram(u8 *r) {
     VObject *v;
     u32 i;
 
@@ -115,7 +121,8 @@ extern u32 *_fbss;   /* GIF DMA channel registers (sceDmaGetChan(2)) */
 
 #ifdef HG_NATIVE
 /* Clear all of VRAM (the original: 16 uploads of 256 KB of zeros): PC has no VRAM. */
-void func_001B7ED0(u8 *r) {
+/* 0x001B7ED0 */
+void Renderer_ClearVram(u8 *r) {
     (void)r;
 }
 #endif
@@ -126,7 +133,8 @@ void func_001B7ED0(u8 *r) {
 #ifdef HG_NATIVE
 /* The GS display and drawing environments (two setups, from the VRAM layout): nothing on PC,
  * where the GL renderer owns the frame. */
-void func_001B79F0(u8 *r) {
+/* 0x001B79F0 */
+void Renderer_GsEnvironments(u8 *r) {
     (void)r;
 }
 #endif
@@ -134,7 +142,8 @@ void func_001B79F0(u8 *r) {
 #ifdef HG_NATIVE
 /* The default GS state at each frame's start (blending, alpha / Z test, the frame and Z
  * buffers): the GL renderer sets its own per draw. */
-void func_001B71E0(u8 *r) {
+/* 0x001B71E0 */
+void Renderer_DefaultGsState(u8 *r) {
     (void)r;
 }
 #endif
@@ -147,7 +156,8 @@ void func_001B71E0(u8 *r) {
  * the following slot; layers append their packets after their slot), reset its packet arena;
  * the second arena flips too when requested (+0x304DE0); then the frame-start state. The DMA
  * address field is 28 bits: on PC the build is 32-bit and its data lies below 0x10000000. */
-void func_001B7370(u8 *r) {
+/* 0x001B7370 */
+void Renderer_Flip(u8 *r) {
     s32 i;
 
 #ifdef HG_NATIVE
@@ -174,7 +184,7 @@ void func_001B7370(u8 *r) {
         func_00115D20(r + 0x300A00, 0, 0x4000);
         AT(r, 0x304DE0, u8) = 0;
     }
-    func_001B71E0(r);
+    Renderer_DefaultGsState(r);
     AT(r, 0x304BB6, u8) = 0;
     AT(r, 0x304C05, u8) = 0;
     for (i = 0; i < 16; i++) {
@@ -183,14 +193,15 @@ void func_001B7370(u8 *r) {
     }
 }
 
-extern s32 func_001B1E50(u8 *r);   /* layer 38 setup (u8) */
+extern s32 Renderer_3DBegin(u8 *r);   /* layer 38 setup (u8) */
 
 #define REND_LAYER_TAIL(r, l) AT(r, 0x304A00 + REND_BUF(r) * 0xD4 + (l) * 4, u64 *)
 
 /* +0x10 add a packet of `n` quadwords to layer `layer` (0..52) of this frame: allocated from
  * arena 1, linked after the layer's last packet, followed by a tag back to the next layer.
  * The first packet of layer 6 / 38 runs that layer's setup first. NULL if it can't be added. */
-u64 *func_001BBC20(u8 *r, s32 n, s32 layer) {
+/* 0x001BBC20 */
+u64 *Renderer_AddPacket(u8 *r, s32 n, s32 layer) {
     u64 *p, *back;
 
     if (n <= 0 || layer >= 53) {
@@ -201,7 +212,7 @@ u64 *func_001BBC20(u8 *r, s32 n, s32 layer) {
             return NULL;
         }
     } else if (layer == 38) {
-        if (REND_LAYER_TAIL(r, 38) == (u64 *)(REND_CHAIN(r, REND_BUF(r)) + 38 * 16) && !(u8)func_001B1E50(r)) {
+        if (REND_LAYER_TAIL(r, 38) == (u64 *)(REND_CHAIN(r, REND_BUF(r)) + 38 * 16) && !(u8)Renderer_3DBegin(r)) {
             return NULL;
         }
     }
@@ -242,7 +253,8 @@ static s32 layer_begin(u8 *r, s32 layer, s32 (*setup)(u8 *r), u8 *saved) {
     return 0;
 }
 
-s32 func_001B5EC0(u8 *r, s32 layer) {
+/* 0x001B5EC0 */
+s32 Renderer_LayerBegin(u8 *r, s32 layer) {
     u8 *saved = AT(r, 0x304BA8, u8 *);
 
     switch (layer) {
@@ -252,7 +264,7 @@ s32 func_001B5EC0(u8 *r, s32 layer) {
     case 0x14: return layer_begin(r, layer, func_001AF3B0, saved);
     case 0x17: return layer_begin(r, layer, func_001B0D40, saved);
     case 0x0F: return (u8)func_001B18E0(r) ? 1 : 0;
-    case 0x26: return layer_begin(r, layer, func_001B1E50, saved);
+    case 0x26: return layer_begin(r, layer, Renderer_3DBegin, saved);
     case 0x11: return layer_begin(r, layer, func_001B2160, saved);
     case 0x0D: return layer_begin(r, layer, func_001B4330, saved);
     case 0x06: return layer_begin(r, layer, func_001B4F30, saved);
@@ -266,10 +278,11 @@ extern void func_001B6CD0(u8 *r, u64 *packet, void *arg);
  * cursor, which are then linked into the layer (layer 10 with `arg` goes through
  * func_001B6CD0 instead). 0 if the layer can't be drawn or the object drew nothing; layers 15
  * and 26 finish with their own step. */
-s32 func_001BBE60(u8 *r, void *obj, s32 layer, void *arg) {
+/* 0x001BBE60 */
+s32 Renderer_Draw(u8 *r, void *obj, s32 layer, void *arg) {
     u64 *start;
 
-    if (obj == NULL || layer >= 53 || !(u8)func_001B5EC0(r, layer)) {
+    if (obj == NULL || layer >= 53 || !(u8)Renderer_LayerBegin(r, layer)) {
         return 0;
     }
     start = AT(r, 0x304BA8, u64 *);
@@ -407,36 +420,43 @@ static void image_put(u32 block, const u8 *img, s32 w, s32 h, s32 bits) {
 
 /* +0x4C a 4-bit image (w x h, its 16-colour CLUT right after the pixels) for VRAM block
  * 0x3400 */
-s32 func_001BB010(u8 *r, u8 *img, s32 w, s32 h, s32 layer) {
+/* 0x001BB010 */
+s32 Renderer_PutImage4(u8 *r, u8 *img, s32 w, s32 h, s32 layer) {
     image_put(0x3400, img, w, h, 4);
     return 1;
 }
 
 /* +0x48 an 8-bit image (w x h, its 256-colour CLUT right after the pixels) for VRAM at byte
  * address `addr` */
-s32 func_001BB230(u8 *r, u8 *img, s32 w, s32 h, s32 addr, s32 layer) {
+/* 0x001BB230 */
+s32 Renderer_PutImage8(u8 *r, u8 *img, s32 w, s32 h, s32 addr, s32 layer) {
     image_put((u32)addr >> 6, img, w, h, 8);
     return 1;
 }
 #endif
 
 /* +0x28 video mode (2: NTSC 448 lines) */
-u8 func_001BB9D0(u8 *r) { return AT(r, 0x304C09, u8); }
+/* 0x001BB9D0 */
+u8 Renderer_VideoMode(u8 *r) { return AT(r, 0x304C09, u8); }
 
 /* +0x2C display settings (+0x1F / +0x20: screen offset) */
-u8 *func_001BB9C0(u8 *r) { return r + 0x304BE8; }
+/* 0x001BB9C0 */
+u8 *Renderer_Display(u8 *r) { return r + 0x304BE8; }
 
 /* +0x30 set the screen offset */
-void func_001BB9A0(u8 *r, s32 x, s32 y) {
+/* 0x001BB9A0 */
+void Renderer_SetScreenOffset(u8 *r, s32 x, s32 y) {
     AT(r, 0x304C07, u8) = x;
     AT(r, 0x304C08, u8) = y;
 }
 
 /* +0x34 */
-void func_001BB990(u8 *r, s32 v) { AT(r, 0x304BF8, s32) = v; }
+/* 0x001BB990 */
+void Renderer_Set304BF8(u8 *r, s32 v) { AT(r, 0x304BF8, s32) = v; }
 
 /* +0x38 the renderer's own VRAM entry */
-s32 func_001BB980(u8 *r) { return AT(r, 0x304BE4, s32); }
+/* 0x001BB980 */
+s32 Renderer_VramEntry(u8 *r) { return AT(r, 0x304BE4, s32); }
 
 extern u64 D_0047D300[];   /* the frame's final packet: draw buffer -> display buffer */
 
@@ -444,39 +464,44 @@ extern u64 D_0047D300[];   /* the frame's final packet: draw buffer -> display b
 
 #ifdef HG_NATIVE
 /* wait for the previous frame's chain - nothing on PC */
-void func_001B87D0(u8 *r) {
+/* 0x001B87D0 */
+void Renderer_WaitChain(u8 *r) {
     (void)r;
 }
 #endif
 
 #ifdef HG_NATIVE
 /* buffer 1's environment and the final copy packet sent - nothing on PC */
-void func_001B8750(u8 *r) {
+/* 0x001B8750 */
+void Renderer_SendFinal(u8 *r) {
     (void)r;
 }
 #endif
 
 #ifdef HG_NATIVE
 /* after the GIF finished: the next frame's clear and buffer 0's environment - nothing on PC */
-void func_001B86A0(u8 *r) {
+/* 0x001B86A0 */
+void Renderer_NextClear(u8 *r) {
     (void)r;
 }
 #endif
 
-extern void func_001B75E0(u8 *r);
+extern void Renderer_FinalPacket(u8 *r);
 
 #ifdef HG_NATIVE
 /* end of frame: flip to the other draw buffer (the original also sends the layer chain over
  * VIF1 and sets up the final packet first) */
-void func_001B85B0(u8 *r) {
-    func_001B7370(r);
+/* 0x001B85B0 */
+void Renderer_EndFrame(u8 *r) {
+    Renderer_Flip(r);
 }
 #endif
 
 #ifdef HG_NATIVE
 /* The frame's final packet (the draw buffer copied onto the display buffer, blended with the
  * last frame by +0x304C06 when +0x304C05 is set): glr_present shows the GL frame instead. */
-void func_001B75E0(u8 *r) {
+/* 0x001B75E0 */
+void Renderer_FinalPacket(u8 *r) {
     (void)r;
 }
 #endif
@@ -499,7 +524,8 @@ typedef struct TexHeader {
 #ifdef HG_NATIVE
 /* +0x44 upload texture `t` to its VRAM entry `id`: nothing to do on PC (the GL renderer reads
  * .TEX entries where they are loaded) */
-s32 func_001BB470(u8 *r, s32 id, TexHeader *t, s32 layer) {
+/* 0x001BB470 */
+s32 Renderer_UploadTexture(u8 *r, s32 id, TexHeader *t, s32 layer) {
     return 1;
 }
 #endif
@@ -512,7 +538,8 @@ extern PTMF D_0047E300[];     /* palette generators by mode: (this, index, arg) 
 /* +0x94: build a 256-colour palette with generator `mode` (D_0047E300) for VRAM slot `slot`'s
  * CLUT, in renderer layer `layer` - the palette of layer 0x11's effect, which glr doesn't draw
  * yet (func_001B2160) */
-s32 func_001B8D30(VObject *r, s32 slot, s32 mode, s32 layer, s32 arg) {
+/* 0x001B8D30 */
+s32 Renderer_BuildPalette(VObject *r, s32 slot, s32 mode, s32 layer, s32 arg) {
     (void)r;
     (void)slot;
     (void)mode;
@@ -524,7 +551,8 @@ s32 func_001B8D30(VObject *r, s32 slot, s32 mode, s32 layer, s32 arg) {
 
 /* palette generator 0: grey levels squeezed to 0x7E..0x81 around the middle (a nearly flat
  * ramp, the index clamped to 0x7E..0x80, plus one), in all four channels */
-u32 func_001B8CE0(VObject *r, u32 i) {
+/* 0x001B8CE0 */
+u32 Palette_FlatLow(VObject *r, u32 i) {
     u32 v;
 
     if (i > 0x80) {
@@ -538,7 +566,8 @@ u32 func_001B8CE0(VObject *r, u32 i) {
 }
 
 /* palette generator 1: the same, the index clamped to 0x7F..0x81, minus one */
-u32 func_001B8C90(VObject *r, u32 i) {
+/* 0x001B8C90 */
+u32 Palette_FlatHigh(VObject *r, u32 i) {
     u32 v;
 
     if (i < 0x7F) {
@@ -554,14 +583,16 @@ u32 func_001B8C90(VObject *r, u32 i) {
 #ifdef HG_NATIVE
 /* the 3D layers' start (layer 0x25; the original clears the frame's alpha and turns FBA on, put
  * back at 0x27): glr keeps the frame alpha marks itself (the bloom mask) */
-s32 func_001B1E50(u8 *rp) {
+/* 0x001B1E50 */
+s32 Renderer_3DBegin(u8 *rp) {
     (void)rp;
     return 1;
 }
 #endif
 
 /* +0x80 draw a box described by 13 words (+0x7C with them as arguments) */
-void func_001B9810(VObject *r, const s32 *b) {
+/* 0x001B9810 */
+void Renderer_DrawBox(VObject *r, const s32 *b) {
     VCALL(r, 0x7C, void (*)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32))(
         r, b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12]);
 }
@@ -593,7 +624,8 @@ static inline u32 sprite_prim(u32 *rgba) {
  * opaque), textured with the tw x th texels at u, v of texture `tex` of group `group` (-1:
  * untextured; `clut` -1: its own palette, else palette `clut` of its CLUT), in renderer layer
  * `layer`. 0 when the texture isn't loaded. */
-s32 func_001B9880(VObject *r, s32 x, s32 y, s32 w, s32 h, s32 u, s32 v, s32 tw, s32 th, u32 rgba,
+/* 0x001B9880 */
+s32 Renderer_Sprite(VObject *r, s32 x, s32 y, s32 w, s32 h, s32 u, s32 v, s32 tw, s32 th, u32 rgba,
                   s32 tex, s32 group, s32 layer, s32 clut) {
     TexHeader *t = NULL;
     u32 prim = sprite_prim(&rgba);
@@ -607,7 +639,8 @@ s32 func_001B9880(VObject *r, s32 x, s32 y, s32 w, s32 h, s32 u, s32 v, s32 tw, 
 
 /* +0x84 a quad with free corners (x0, y0) .. (x3, y3) (strip order: the texels' top left, top
  * right, bottom left, bottom right), otherwise as +0x7C */
-s32 func_001B92F0(VObject *r, s32 x0, s32 y0, s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, s32 u, s32 v,
+/* 0x001B92F0 */
+s32 Renderer_Quad(VObject *r, s32 x0, s32 y0, s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, s32 u, s32 v,
                   s32 tw, s32 th, u32 rgba, s32 tex, s32 group, s32 layer, s32 clut) {
     TexHeader *t = NULL;
     u32 prim = sprite_prim(&rgba);
@@ -634,7 +667,8 @@ s32 func_001B92F0(VObject *r, s32 x0, s32 y0, s32 x1, s32 y1, s32 x2, s32 y2, s3
 #ifdef HG_NATIVE
 /* +0x5C clear the 128 x 112 glow work buffer to black (the original: a sprite in layer 0x29 at
  * page 0x1F0); not when progress flag 0x28 is set */
-s32 func_001BA090(u8 *r) {
+/* 0x001BA090 */
+s32 Renderer_GlowClear(u8 *r) {
     extern void glr_glow_clear(void);   /* native/platform/glr.c */
 
     if ((u8)Progress_TestFlag(gProgress, 0x28) == 1) {
@@ -653,7 +687,8 @@ s32 func_001BA090(u8 *r) {
  * stretched over the 512 x 448 frame and added at half strength. The buffer is not cleared
  * between frames, so moving glows leave trails. On PC glr does the passes (the original's
  * packet, 0x96 qwords from +0x10, isn't made: 0 when there was no room for it) */
-s32 func_001BA260(u8 *r) {
+/* 0x001BA260 */
+s32 Renderer_Glow(u8 *r) {
     extern void glr_glow(void);   /* native/platform/glr.c */
 
     if (AT(r, 0x304BB6, u8) != 0) {
@@ -668,7 +703,8 @@ s32 func_001BA260(u8 *r) {
 /* +0x20 the packet for vertex data `key` this frame: open addressing over 2048 slots
  * (+0x300A00, {key, packet}); found: *built = 0 and its packet; new: the slot takes the arena 2
  * cursor (+0x304BAC) and *built = 1 (the caller writes the packet there) */
-void *func_001BBAA0(u8 *r, void *key, u8 *built) {
+/* 0x001BBAA0 */
+void *Renderer_PacketFor(u8 *r, void *key, u8 *built) {
     u32 i = ((u32)key >> 4) & 0x7FF;
     u8 *slot;
 
@@ -689,7 +725,8 @@ void *func_001BBAA0(u8 *r, void *key, u8 *built) {
 }
 
 /* +0x8C the floor effect's value (+0x304DDC) */
-void func_001B9250(u8 *r, s32 v) {
+/* 0x001B9250 */
+void Renderer_SetFloorEffect(u8 *r, s32 v) {
     AT(r, 0x304DDC, s32) = v;
 #ifdef HG_NATIVE
     {
@@ -708,7 +745,8 @@ static inline u32 grey_rgba(u32 c, u32 a) {
 
 /* palette entry i of the layer-0x11 alpha table: 0x80 - clamp(((255-a)>>7) x ((255-a)&127) +
  * 256 - i - a, 0, 128), a = *alpha; the same in all four channels */
-u32 func_001B87F0(void *r, s32 i, s32 *alpha) {
+/* 0x001B87F0 */
+u32 Palette_Alpha11(void *r, s32 i, s32 *alpha) {
     s32 t = 0xFF - *alpha;
     s32 v = (t >> 7) * (t & 0x7F) + 0x100 - (i + *alpha);
 
@@ -722,7 +760,8 @@ u32 func_001B87F0(void *r, s32 i, s32 *alpha) {
 }
 
 /* palette entry i: black below *limit, else grey 0xC0 (alpha 0x80) */
-u32 func_001B8860(void *r, u32 i, u32 *limit) {
+/* 0x001B8860 */
+u32 Palette_Threshold(void *r, u32 i, u32 *limit) {
     if (i < *limit) {
         return 0x80000000;
     }
@@ -735,7 +774,8 @@ static inline u32 ramp_ch(f32 t, f32 u, u32 a, u32 b) {
     return (u32)(0.5f + (u * (f32)b + t * (f32)a));
 }
 
-u32 func_001B8910(void *r, u32 i, const u32 *c) {
+/* 0x001B8910 */
+u32 Palette_Colour(void *r, u32 i, const u32 *c) {
     f32 t = (f32)i / 255.0f;
     f32 u = 1.0f - t;
     u32 g, rb;
@@ -747,35 +787,42 @@ u32 func_001B8910(void *r, u32 i, const u32 *c) {
 }
 
 /* palette entry i: the grey ((2i + 5)(i + 1)) & 0xFF */
-u32 func_001B8890(void *r, s32 i) {
+/* 0x001B8890 */
+u32 Palette_Grey(void *r, s32 i) {
     return grey_rgba(((i * 2 + 5) * (i + 1)) & 0xFF, 0x80000000);
 }
 
 /* palette entry: a random grey */
-u32 func_001B88C0(void) {
+/* 0x001B88C0 */
+u32 Palette_RandomGrey(void) {
     return grey_rgba(VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 0xFF, 0x80000000);
 }
 
 /* +0x64 (and others): the layer-0x11 / special colours */
-void func_001B9D20(u8 *r, u32 c) {
+/* 0x001B9D20 */
+void Renderer_SetSpecialColour(u8 *r, u32 c) {
     AT(r, 0x304D58, u32) = c;
 }
 
-u32 func_001B9D30(u8 *r) {
+/* 0x001B9D30 */
+u32 Renderer_GetColour54(u8 *r) {
     return AT(r, 0x304D54, u32);
 }
 
-void func_001B9D40(u8 *r, u32 c) {
+/* 0x001B9D40 */
+void Renderer_SetColour54(u8 *r, u32 c) {
     AT(r, 0x304D54, u32) = c;
 }
 
-u32 func_001BA000(u8 *r) {
+/* 0x001BA000 */
+u32 Renderer_GetTint11(u8 *r) {
     return AT(r, 0x304D4C, u32);
 }
 
 /* the layer-0x11 tint (+0x304D4C) and its model (+0x304D50; none given: the slot-2 character's,
  * once the game runs) */
-void func_001BA010(u8 *r, u32 c, void *model) {
+/* 0x001BA010 */
+void Renderer_SetTint11(u8 *r, u32 c, void *model) {
     AT(r, 0x304D4C, u32) = c;
     if (model == NULL && gProgress != NULL) {
         AT(r, 0x304D50, void *) = AT(gCharSlot2, 0xF0, void *);
@@ -785,21 +832,24 @@ void func_001BA010(u8 *r, u32 c, void *model) {
 }
 
 /* sprites additive (+0x304C05) with the given mode (+0x304C06) */
-void func_001BA070(u8 *r, u8 mode) {
+/* 0x001BA070 */
+void Renderer_Additive(u8 *r, u8 mode) {
     AT(r, 0x304C05, u8) = 1;
     AT(r, 0x304C06, u8) = mode;
 }
 
 #ifdef HG_NATIVE
 /* +0x90 the whole screen in colour `rgba` (blended by its alpha), layer 0x31; 1 if drawn */
-s32 func_001B9000(VObject *r, u32 rgba) {
+/* 0x001B9000 */
+s32 Renderer_FillScreen(VObject *r, u32 rgba) {
     gl2d_sprite(0x31, 0, 0, 512, 448, NULL, 0, 0, 0, 0, rgba, 0, 0x40);
     return 1;
 }
 #endif
 
 /* the 17-word argument block handed on to +0x84 */
-void func_001B9260(VObject *r, s32 *a) {
+/* 0x001B9260 */
+void Renderer_QuadArgs(VObject *r, s32 *a) {
     VCALL(r, 0x84, void (*)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32,
                             s32, s32, s32))(r, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10],
                                             a[11], a[12], a[13], a[14], a[15], a[16]);
@@ -808,7 +858,8 @@ void func_001B9260(VObject *r, s32 *a) {
 /* +0x6C: the layer-0x11 flares (16 x { x0, y0, x1, y1, phase } at +0x304C0C) drift - each
  * phase turns by up to 2 degrees at random, its sine and cosine (halved) nudge the corners,
  * kept to x0 -56..24, y0 -150..0, x1 / y1 32..64 */
-void func_001B9D50(u8 *r) {
+/* 0x001B9D50 */
+void Renderer_Flares(u8 *r) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
     VObject *rnd = gRandom;
     f32 *e = (f32 *)(r + 0x304C0C);
@@ -868,7 +919,8 @@ void func_001B9D50(u8 *r) {
 
 /* +0x14: the video mode (2 NTSC, 3 PAL; 0x50 progressive 480p): the GS reset for it, the
  * frame height (+0x304BFE: 448 / 512), the mode kept (+0x304C09), the display set up again */
-void func_001BB9E0(u8 *r, u8 mode) {
+/* 0x001BB9E0 */
+void Renderer_SetVideoMode(u8 *r, u8 mode) {
     if (mode == 0x50) {
         func_0010BE10(0, 0, 0x50, 0);
         AT(r, 0x304BFE, s16) = 0x1C0;
@@ -881,5 +933,5 @@ void func_001BB9E0(u8 *r, u8 mode) {
         }
     }
     AT(r, 0x304C09, u8) = mode;
-    func_001B79F0(r);
+    Renderer_GsEnvironments(r);
 }

@@ -539,7 +539,7 @@ void *Game_dtor(u8 *g, s32 flags) {
     Random_dtor((VObject *)(g + 0x400000), -1);
 
     AT(g, 0x69AC0, void **) = D_0046ADF0;
-    func_0020E000(g + 0x3FF800, -1);
+    SndDriver_dtor(g + 0x3FF800, -1);
     Loader_dtor((VObject *)(g + 0x3833C0), -1);
     func_001BF880(g + 0x376A00, -1);
     func_001BF6C0(g + 0x36ED40, -1);

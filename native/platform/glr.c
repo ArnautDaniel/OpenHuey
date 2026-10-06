@@ -2166,7 +2166,7 @@ void glr_present(int outW, int outH) {
             }
             {
                 /* layers 0x25 / 0x26 once layer 0x26 is used: the bloom's mask - only the frame's
-                 * alpha is written, with bit 7 set (func_001B1E50 clears it first) */
+                 * alpha is written, with bit 7 set (Renderer_3DBegin clears it first) */
                 int mask = bloomMask && (d->layer == 0x25 || d->layer == 0x26);
 
                 if (mask && !maskCleared) {

@@ -46,7 +46,7 @@ extern void *D_0047A1B0[], *D_0047A1F0[], *D_0047A230[], *D_0047A270[], *D_0047A
 extern void *D_0047A490[], *D_0047A4D0[], *D_0047A510[], *D_0047A550[], *D_0047A590[], *D_0047A5D0[];
 extern void *D_0047A610[], *D_0047A650[], *D_0047A690[];
 
-extern void *func_002A8970(u32 size, void *place);   /* placement new */
+extern void *RoomHandler_new(u32 size, void *place);   /* placement new */
 
 /* the rooms' handler classes (the other rooms keep the base handler) */
 static const struct {
@@ -101,31 +101,32 @@ static const struct {
 extern f32 D_00412900;
 extern f32 D_00412904;
 extern f32 D_00412908;
-void func_002C94E0(u8 *self, u32 a);
-s32 func_002C95D0(u8 *self);
-void func_002C95F0(u8 *self, u32 a);
+void Cutscene_Set38(u8 *self, u32 a);
+s32 Cutscene_Get28(u8 *self);
+void Cutscene_PushC(u8 *self, u32 a);
 
-void func_002C9620(u8 *self);
-s32 func_002C9630(u8 *self);
-s32 func_002C9660(u8 *self, s32 i);
-s32 func_002C9680(u8 *self, s32 i);
-void func_002C96F0(u8 *self, s32 i);
-void func_002C9710(u8 *self, s32 i);
-void func_002CC830(u8 *self, u32 a, u32 b);
+void Cutscene_SetNoEnd(u8 *self);
+s32 Cutscene_EntryDone(u8 *self);
+s32 Cutscene_Get206(u8 *self, s32 i);
+s32 Cutscene_Get216(u8 *self, s32 i);
+void Cutscene_Mark82(u8 *self, s32 i);
+void Cutscene_Mark83(u8 *self, s32 i);
+void Cutscene_SetScript(u8 *self, u32 a, u32 b);
 
 extern u8 D_00412910[], D_00412914[], D_00412918[];
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-s32 func_002CC840(void *self);
-void func_002CC850(u8 *p);
+s32 Cutscene_Call8(void *self);
+void Cutscene_Destroy(u8 *p);
 
 /* install the room handlers (+0x120: 0x110 4-byte handler objects; each gets its room's
  * vtable) */
-void func_00209850(u8 *ev) {
+/* 0x00209850 */
+void Events_InstallRooms(u8 *ev) {
     s32 i;
 
     for (i = 0; i < (s32)(sizeof(sRooms) / sizeof(sRooms[0])); i++) {
-        void ***h = func_002A8970(4, ev + 0x120 + sRooms[i].room * 4);
+        void ***h = RoomHandler_new(4, ev + 0x120 + sRooms[i].room * 4);
 
         if (h != NULL) {
             *h = sRooms[i].vtbl;
@@ -136,11 +137,13 @@ void func_00209850(u8 *ev) {
 }
 
 /* placement new */
-void *func_002A8970(u32 size, void *place) {
+/* 0x002A8970 */
+void *RoomHandler_new(u32 size, void *place) {
     return place;
 }
 
-void func_002C94E0(u8 *self, u32 a) {
+/* 0x002C94E0 */
+void Cutscene_Set38(u8 *self, u32 a) {
     *(u32 *)(self + 0x14) = a;
     *(f32 *)(self + 0x2A0) = D_00412900;
     *(f32 *)(self + 0x2A4) = D_00412904;
@@ -148,7 +151,8 @@ void func_002C94E0(u8 *self, u32 a) {
     self[0x204] = 0;
 }
 
-s32 func_002C95D0(u8 *self) {
+/* 0x002C95D0 */
+s32 Cutscene_Get28(u8 *self) {
     u16 *p = *(u16 **)(self + 0x18);
 
     if (p == NULL) {
@@ -157,51 +161,61 @@ s32 func_002C95D0(u8 *self) {
     return *p;
 }
 
-void func_002C95F0(u8 *self, u32 a) {
+/* 0x002C95F0 */
+void Cutscene_PushC(u8 *self, u32 a) {
     *(u32 *)(self + 0x10) = *(u32 *)(self + 0xC);
     *(u32 *)(self + 0xC) = a;
 }
 
-void func_002C9620(u8 *self) {
+/* 0x002C9620 */
+void Cutscene_SetNoEnd(u8 *self) {
     self[0x205] = 1;
 }
 
 /* Entries of 12 bytes at +0x6C, current index at +0x64. */
-s32 func_002C9630(u8 *self) {
+/* 0x002C9630 */
+s32 Cutscene_EntryDone(u8 *self) {
     s32 i = *(s32 *)(self + 0x64);
 
     return *(s32 *)(self + 0x6C + i * 12) == 3;
 }
 
 /* Returns an s8. */
-s32 func_002C9660(u8 *self, s32 i) {
+/* 0x002C9660 */
+s32 Cutscene_Get206(u8 *self, s32 i) {
     return (s8)(((s8 *)self)[0x206 + i] - 1);
 }
 
 /* Returns an s16. */
-s32 func_002C9680(u8 *self, s32 i) {
+/* 0x002C9680 */
+s32 Cutscene_Get216(u8 *self, s32 i) {
     return *(s16 *)(self + 0x216 + i * 2);
 }
 
-void func_002C96F0(u8 *self, s32 i) {
+/* 0x002C96F0 */
+void Cutscene_Mark82(u8 *self, s32 i) {
     self[0x82 + i * 12] = 1;
 }
 
-void func_002C9710(u8 *self, s32 i) {
+/* 0x002C9710 */
+void Cutscene_Mark83(u8 *self, s32 i) {
     self[0x83 + i * 12] = 1;
 }
 
-void func_002CC830(u8 *self, u32 a, u32 b) {
+/* 0x002CC830 */
+void Cutscene_SetScript(u8 *self, u32 a, u32 b) {
     *(u32 *)(self + 0x18) = a;
     *(u32 *)(self + 0x1C) = b;
 }
 
 /* tail call to virtual slot 0x8 */
-s32 func_002CC840(void *self) {
+/* 0x002CC840 */
+s32 Cutscene_Call8(void *self) {
     return VCALL(self, 0x8, s32 (*)(void *))(self);
 }
 
-void func_002CC850(u8 *p) {
+/* 0x002CC850 */
+void Cutscene_Destroy(u8 *p) {
     s32 i;
 
     F(p, 0x18, u32) = 0;
@@ -225,7 +239,8 @@ void func_002CC850(u8 *p) {
 }
 
 /* (gEvents) +0xC the room's event script (PAC section 2) */
-void func_00209840(u8 *ev, void *script) {
+/* 0x00209840 */
+void Events_SetScript(u8 *ev, void *script) {
     AT(ev, 0x10, void *) = script;
 }
 
@@ -251,7 +266,8 @@ static void run_script(u8 *ev, u8 *script) {
 /* run the current room's script for `phase` (0: entering the room: note it as visited and
  * reset the event state), then the built-in script of phases 1 and 2. Progress flag 0x26
  * suppresses all room scripts but phase 3's. */
-void func_00209390(u8 *ev, u8 phase) {
+/* 0x00209390 */
+void Events_RunPhase(u8 *ev, u8 phase) {
     struct {
         s32 a, b, c, d;
         u8 e, f, g, h;
@@ -344,7 +360,8 @@ extern u8 *D_003D6760[];   /* the shared action scripts (actions 0x80..) */
 
 /* +0xE0 start character slot `slot`'s action `act`: a shared script (0x80..) or the room's
  * (its handler +0x24), through +0xE4 */
-void func_001FBD70(VObject *ev, s32 slot, s32 act) {
+/* 0x001FBD70 */
+void Events_StartAction(VObject *ev, s32 slot, s32 act) {
     u8 *script;
 
     act &= 0xFF;
@@ -361,7 +378,8 @@ void func_001FBD70(VObject *ev, s32 slot, s32 act) {
 /* +0xE8 the middle of the event area room entry `k` leads to (the room table +0x48 of the
  * current room; its line +0x10 -> +0x30 halved, the height +0x14), w 1, into `out`. 0: no
  * areas, or the entry has none */
-s32 func_001FBC00(u8 *ev, s32 k, f32 *out) {
+/* 0x001FBC00 */
+s32 Events_AreaMiddle(u8 *ev, s32 k, f32 *out) {
     u32 *tbl = AT(ev, 0x10, u32 *);
     u32 area;
     u8 *e;
@@ -384,7 +402,8 @@ s32 func_001FBC00(u8 *ev, s32 k, f32 *out) {
 
 /* +0xE4 give character slot `slot` the script `script` (its context at +0x564 + (slot + 1) *
  * 0x18: the character, the pc, its id at +0x13); NULL: nothing */
-void func_001FBCF0(VObject *ev, u8 slot, u8 *script) {
+/* 0x001FBCF0 */
+void Events_GiveScript(VObject *ev, u8 slot, u8 *script) {
     u8 *c;
     u8 *ctx;
 
@@ -410,7 +429,8 @@ extern u8 D_003D6C10[];   /* the script run instead while progress flag 0x26 is 
 
 /* run the room's script for character `c` entering it (the room handler's +0x30; nothing if it
  * has none or c isn't in this room), in its own context, then resume the current script */
-void func_00209060(VObject *ev, u8 *c) {
+/* 0x00209060 */
+void Events_CharEnter(VObject *ev, u8 *c) {
     Progress *p;
     u8 *pc;
     u8 depth;
@@ -472,7 +492,8 @@ void func_00209060(VObject *ev, u8 *c) {
 /* +0xD8 whether `pos` (on nav triangle `tri`) is inside area `area` of the room's event data
  * (+0x10: area offsets; a type 1 area is 4 corners (x, z at +0x10.., 0x10 apart) and a
  * height range +0x24..+0x8) */
-s32 func_001FC210(VObject *ev, const f32 *pos, s32 area, s32 tri) {
+/* 0x001FC210 */
+s32 Events_InArea(VObject *ev, const f32 *pos, s32 area, s32 tri) {
     f32 at[4] __attribute__((aligned(16)));
     u8 *data = AT(ev, 0x10, u8 *);
     u8 *a;
@@ -511,7 +532,8 @@ s32 func_001FC210(VObject *ev, const f32 *pos, s32 area, s32 tri) {
 
 /* +0x14 whether character c is inside area `area` by at least its radius (+0xC8; none: the
  * plain position test +0xD8) */
-s32 func_001FC030(VObject *ev, u8 *c, s32 area) {
+/* 0x001FC030 */
+s32 Events_CharInArea(VObject *ev, u8 *c, s32 area) {
     f32 at[4] __attribute__((aligned(16)));
     f32 r = AT(c, 0xC8, f32);
     const f32 *pos = (f32 *)(c + 0x10);
@@ -570,7 +592,8 @@ s32 func_001FC030(VObject *ev, u8 *c, s32 area) {
  * runs with: the character (-1: none needed), pc, depth +0x10, frame count +0x14), until one
  * waits (+0x700). A character that is no longer in a special state (+0xE0 clear, action not 5)
  * loses its script, and the message it owns (+0x80C) is closed. Then the message window. */
-void func_00209210(VObject *ev) {
+/* 0x00209210 */
+void Events_RunCharScripts(VObject *ev) {
     u8 *e = (u8 *)ev;
     s32 i;
 
@@ -625,12 +648,14 @@ u8 *RoomBase_Phase3Script(VObject *room) {
 
 /* vtable +0x50 (second base): a scene is playing (+0x11F3, cleared each frame by the
  * character script runner) */
-s32 func_001FBA10(u8 *ev) {
+/* 0x001FBA10 */
+s32 Events_ScenePlaying(u8 *ev) {
     return AT(ev, 0x11F3, u8);
 }
 
 /* +0x40 (second base): close the message window if it shows message `id` (0xFFFF: any) */
-void func_001FB1F0(u8 *ev, u32 id) {
+/* 0x001FB1F0 */
+void Events_CloseMessage(u8 *ev, u32 id) {
     id &= 0xFFFF;
     if (id == 0xFFFF || id == AT(ev, 0x71A, u16)) {
         Task_Close((Task *)(ev + 0x708));
@@ -638,32 +663,38 @@ void func_001FB1F0(u8 *ev, u32 id) {
 }
 
 /* +0x34 script variable n (+0x810) */
-s32 func_00209020(u8 *ev, s32 n) {
+/* 0x00209020 */
+s32 Events_GetVar(u8 *ev, s32 n) {
     return AT(ev, 0x810 + (n & 0xFF) * 4, s32);
 }
 
 /* +0x30 set script variable n (+0x810) */
-void func_00209040(u8 *ev, s32 n, s32 v) {
+/* 0x00209040 */
+void Events_SetVar(u8 *ev, s32 n, s32 v) {
     AT(ev, 0x810 + (n & 0xFF) * 4, s32) = v;
 }
 
 /* clear event bit n (+0x890) */
-void func_001FB170(u8 *ev, s32 n) {
+/* 0x001FB170 */
+void Events_ClearBit(u8 *ev, s32 n) {
     AT(ev, 0x890, u32) &= ~(1u << (n & 0x1F));   /* (sllv: the low 5 bits) */
 }
 
 /* set event bit `n` (+0x890) */
-void func_001FB190(u8 *ev, s32 n) {
+/* 0x001FB190 */
+void Events_SetBit(u8 *ev, s32 n) {
     AT(ev, 0x890, u32) |= 1u << (n & 0xFF);
 }
 
 /* event bit `n` (+0x890) set */
-s32 func_001FB1B0(u8 *ev, s32 n) {
+/* 0x001FB1B0 */
+s32 Events_TestBit(u8 *ev, s32 n) {
     return (AT(ev, 0x890, u32) & (1u << (n & 0xFF))) != 0;
 }
 
 /* draw the event's screen fade (+0x20) in renderer layer `layer` */
-void func_001FBA20(u8 *ev, s32 layer) {
+/* 0x001FBA20 */
+void Events_DrawFade(u8 *ev, s32 layer) {
 #ifdef HG_NATIVE
     extern void glr_overlay(u32 rgba);
 
@@ -674,13 +705,15 @@ void func_001FBA20(u8 *ev, s32 layer) {
 #endif
 }
 
-/* set the event's screen fade (+0x20) colour (a second entry point inside func_001FBA20's block) */
-void func_001FBA50(u8 *ev, u32 r, u32 g, u32 b, u32 a) {
+/* set the event's screen fade (+0x20) colour (a second entry point inside Events_DrawFade's block) */
+/* 0x001FBA50 */
+void Events_SetFadeColour(u8 *ev, u32 r, u32 g, u32 b, u32 a) {
     Overlay_SetColor(ev + 0x20, (u32)(u8)r << 24 | (u32)(u8)g << 16 | (u32)(u8)b << 8 | (u8)a);
 }
 
 /* the screen fade: colour `rgba`, drawn in renderer layer `layer` */
-void func_001FBA80(u8 *ev, u32 rgba, s32 layer) {
+/* 0x001FBA80 */
+void Events_Fade(u8 *ev, u32 rgba, s32 layer) {
     Overlay_SetColor(ev + 0x20, rgba);
 #ifdef HG_NATIVE
     {
@@ -695,23 +728,27 @@ void func_001FBA80(u8 *ev, u32 rgba, s32 layer) {
 }
 
 /* the cutscene director's cue moved on this frame (+0xBE4 against the one before, +0xBE8) */
-s32 func_001FB1D0(u8 *ev) {
+/* 0x001FB1D0 */
+s32 Events_CueMoved(u8 *ev) {
     return AT(ev, 0xBE8, s32) != AT(ev, 0xBE4, s32);
 }
 
 /* open message `id` in the message window */
-void func_001FB230(u8 *ev, s32 id) {
+/* 0x001FB230 */
+void Events_OpenMessage(u8 *ev, s32 id) {
     Task_Open((Task *)(ev + 0x708), id);
 }
 
 /* +0x703 */
-u8 func_001FB240(u8 *ev) {
+/* 0x001FB240 */
+u8 Events_Get703(u8 *ev) {
     return AT(ev, 0x703, u8);
 }
 
 /* text on screen for one frame (not while progress flag 8): the message window shows it and
  * closes */
-void func_001FB450(u8 *ev, s32 x, s32 y, s32 color, u8 *text, s32 alpha, s32 layer, s32 glyphW, s32 glyphH) {
+/* 0x001FB450 */
+void Events_ShowText(u8 *ev, s32 x, s32 y, s32 color, u8 *text, s32 alpha, s32 layer, s32 glyphW, s32 glyphH) {
     if ((Progress_TestFlag((Progress *)gProgress, 8) & 0xFF) != 0) {
         return;
     }
@@ -722,7 +759,8 @@ void func_001FB450(u8 *ev, s32 x, s32 y, s32 color, u8 *text, s32 alpha, s32 lay
 extern u8 D_003D6B20[][3];   /* per progress +0xBC: three ids (0x100 + n) */
 
 /* id 0x100..0x105's place (0..2) in the row progress +0xBC picks, while progress +0xBB; -1 */
-s32 func_001FB560(u8 *ev, u32 id) {
+/* 0x001FB560 */
+s32 Events_ThingPlace(u8 *ev, u32 id) {
     s32 i;
 
     if (id < 0x100 || id >= 0x106 || AT(gProgress, 0xBB, u8) == 0) {
@@ -738,7 +776,8 @@ s32 func_001FB560(u8 *ev, u32 id) {
 
 /* point `i` of the 32 at +0xBF4 (0x30 each: +0 on, +1 flags, +0xC position, w 1, +0x1C / +0x20
  * two values) set */
-void func_001FB800(u8 *ev, u8 i, const f32 *pos, f32 a, f32 b) {
+/* 0x001FB800 */
+void Events_SetPoint(u8 *ev, u8 i, const f32 *pos, f32 a, f32 b) {
     u8 *r = ev + i * 0x30;
 
     r[0xBF4] = 1;
@@ -750,7 +789,8 @@ void func_001FB800(u8 *ev, u8 i, const f32 *pos, f32 a, f32 b) {
 }
 
 /* the nearest point (of those on with flag bit 0) to `pos` into `out`; 0 if none */
-s32 func_001FB880(u8 *ev, const f32 *pos, f32 *out) {
+/* 0x001FB880 */
+s32 Events_NearestPoint(u8 *ev, const f32 *pos, f32 *out) {
     f32 p[4] __attribute__((aligned(16)));
     f32 best = 0.0f, d, dx, dy, dz;
     s32 i, k = -1;
@@ -785,7 +825,8 @@ s32 func_001FB880(u8 *ev, const f32 *pos, f32 *out) {
 
 /* the room's point `n` (the table +0x10, by the rooms' +0x48 index for the current room):
  * three vectors (+0x10 / +0x20 / +0x30); 0 if none */
-s32 func_001FBB10(u8 *ev, s32 n, f32 *a, f32 *b, f32 *c) {
+/* 0x001FBB10 */
+s32 Events_RoomPoint(u8 *ev, s32 n, f32 *a, f32 *b, f32 *c) {
     u32 *tab = AT(ev, 0x10, u32 *);
     u32 i;
     u8 *e;
@@ -812,7 +853,8 @@ s32 RoomBase_Phase2Script(void) {
 }
 
 /* a room id as the scripts see it: with progress flag 0xAF, rooms 0x40 / 0x41 are 0x70 */
-s32 func_001FB520(void *ev, s32 room) {
+/* 0x001FB520 */
+s32 Events_ScriptRoom(void *ev, s32 room) {
     if ((AT(gProgress, 0x30, u32) & 0x8000) && (u32)(room - 0x40) < 2) {
         return 0x70;
     }
@@ -822,7 +864,8 @@ s32 func_001FB520(void *ev, s32 room) {
 extern void *D_0046BA80[], *D_0046BAA0[];
 
 /* destructor of class D_0046BA80 */
-void *func_0020C120(void **o, s32 flags) {
+/* 0x0020C120 */
+void *Obj46BA80_dtor(void **o, s32 flags) {
     if (o != NULL) {
         o[0] = D_0046BA80;
         if ((s16)flags > 0) {
@@ -833,7 +876,8 @@ void *func_0020C120(void **o, s32 flags) {
 }
 
 /* the events' base destructor (D_0046BAA0): the global events pointer cleared */
-void *func_0020C170(void **o, s32 flags) {
+/* 0x0020C170 */
+void *EventsBase_dtor(void **o, s32 flags) {
     if (o != NULL) {
         o[0] = D_0046BAA0;
         gEvents = NULL;
@@ -848,7 +892,8 @@ extern void *D_0046B3A0[], *D_0046B3B8[], *D_0046ED30[], *D_0046BB20[], *D_0046F
 
 /* +0x8 the events' destructor: its 32 points, the cutscene director (+0x938), the message
  * window (+0x708), the rooms' handlers (+0x120), the fade (+0x20), then its bases */
-u8 *func_001FB250(u8 *o, s32 flags) {
+/* 0x001FB250 */
+u8 *Events_dtor(u8 *o, s32 flags) {
     if (o == NULL) {
         return o;
     }
@@ -879,7 +924,8 @@ u8 *func_001FB250(u8 *o, s32 flags) {
  * of those rooms is sent on (+0x64: room 0x10A from 0x109, else 0x109); then in rooms 0..5 the
  * twelve doors / objects 0x95 + 12 x room are shown (+0x68) where the row puts that room,
  * else hidden (+0x64), and the rooms' +0x90 */
-void func_001FB5F0(void) {
+/* 0x001FB5F0 */
+void Events_DealThings(void) {
     Progress *g = gProgress;
     u8 *p;
     u8 *c;

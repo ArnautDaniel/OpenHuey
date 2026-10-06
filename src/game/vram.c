@@ -45,7 +45,8 @@ void *func_001ED1D0(void);
 void *func_001EDFF0(void);
 
 /* +0xC init: 8 free regions, 64 empty entries */
-void func_001C2970(u8 *v) {
+/* 0x001C2970 */
+void Vram_Init(u8 *v) {
     VramEntry *e = (VramEntry *)(v + 0x98);
     s32 i;
 
@@ -140,16 +141,17 @@ typedef struct VramClutRegion {
 #define PSMT4HL 0x24
 #define PSMT4HH 0x2C
 
-extern s32 func_001C0AD0(u8 *v, s32 psm, s32 w, s32 h);        /* allocate pages (s16, -1) */
-extern s32 func_001C08B0(u8 *v, u16 *psm, s32 w, s32 h);       /* ... in 24-bit pages' upper bits */
-extern s32 func_001BF8F0(u8 *v, u32 addr, u16 *psm, s32 w, s32 h);   /* ... at a given address */
-extern s32 func_001C0D40(u8 *v, s32 clutpsm);                  /* allocate a CLUT slot (s16, -1) */
-extern u32 func_001C04B0(u8 *v, s32 psm, u32 w, u32 h);        /* size in pages */
+extern s32 Vram_FitPages(u8 *v, s32 psm, s32 w, s32 h);        /* allocate pages (s16, -1) */
+extern s32 Vram_FitUpper(u8 *v, u16 *psm, s32 w, s32 h);       /* ... in 24-bit pages' upper bits */
+extern s32 Vram_PagesAt(u8 *v, u32 addr, u16 *psm, s32 w, s32 h);   /* ... at a given address */
+extern s32 Vram_AllocClut(u8 *v, s32 clutpsm);                  /* allocate a CLUT slot (s16, -1) */
+extern u32 Vram_PageCount(u8 *v, s32 psm, u32 w, u32 h);        /* size in pages */
 
 /* +0x18 allocate a w x h texture of format psm (0xFF: CLUT only) at `addr` (< 0: anywhere), with
  * a CLUT of format clutpsm (0xFF: none; 0 / 2 for indexed formats). Returns the entry, -1 if
  * it doesn't fit (whatever was taken is given back). */
-s32 func_001C1E00(u8 *v, s32 addr, s32 psm_, s32 w, s32 h, s32 clutpsm_) {
+/* 0x001C1E00 */
+s32 Vram_AllocAt(u8 *v, s32 addr, s32 psm_, s32 w, s32 h, s32 clutpsm_) {
     u16 psm = psm_;
     u16 clutpsm = clutpsm_;
     VramEntry *e;
@@ -177,20 +179,20 @@ s32 func_001C1E00(u8 *v, s32 addr, s32 psm_, s32 w, s32 h, s32 clutpsm_) {
         }
         pos = -1;   /* (the PS2 code leaves this unset for CLUT-only allocations) */
         if (addr >= 0) {
-            pos = (s16)func_001BF8F0(v, addr, &psm, w, h);
+            pos = (s16)Vram_PagesAt(v, addr, &psm, w, h);
         } else if (psm == PSMT4HL || psm == PSMT4HH || psm == PSMT8H) {
-            pos = (s16)func_001C08B0(v, &psm, w, h);
+            pos = (s16)Vram_FitUpper(v, &psm, w, h);
         } else if (psm != PSM_NONE) {
-            pos = (s16)func_001C0AD0(v, psm, w, h);
+            pos = (s16)Vram_FitPages(v, psm, w, h);
         }
-        clut = (s16)func_001C0D40(v, clutpsm);
+        clut = (s16)Vram_AllocClut(v, clutpsm);
         if ((psm == PSM_NONE || pos >= 0) && (clutpsm == PSM_NONE || clut >= 0)) {
             e->used = 1;
             e->psm = psm;
             e->page = pos;
             e->w = w;
             e->h = h;
-            e->npages = func_001C04B0(v, psm, w, h);
+            e->npages = Vram_PageCount(v, psm, w, h);
             e->cpsm = clutpsm_;
             e->cregion = clut >> 4;
             e->cslot = clut & 0xF;
@@ -239,17 +241,20 @@ s32 func_001C1E00(u8 *v, s32 addr, s32 psm_, s32 w, s32 h, s32 clutpsm_) {
 }
 
 /* +0x14 allocate anywhere */
-s32 func_001C2930(VObject *v, s32 psm, s32 w, s32 h, s32 clutpsm) {
+/* 0x001C2930 */
+s32 Vram_Alloc(VObject *v, s32 psm, s32 w, s32 h, s32 clutpsm) {
     return VCALL(v, 0x18, s32 (*)(VObject *, s32, s32, s32, s32, s32))(v, -1, psm, w, h, clutpsm);
 }
 
 /* +0x10 reset (init again) */
-void func_001C2960(VObject *v) {
+/* 0x001C2960 */
+void Vram_Reset(VObject *v) {
     VCALL(v, 0xC, void (*)(VObject *))(v);
 }
 
 /* +0x24 keep entry `id` resident (not freed by +0x20) */
-void func_001C1460(u8 *v, s32 id) {
+/* 0x001C1460 */
+void Vram_KeepResident(u8 *v, s32 id) {
     VramEntry *e = (VramEntry *)(v + 0x98) + id;
 
     if (e->used) {
@@ -259,7 +264,8 @@ void func_001C1460(u8 *v, s32 id) {
 
 /* +0x1C free entry `id`: its pages (8 / 4-bit H formats: their upper bits, both halves or one;
  * else the page bits), then its CLUT slot (the region emptied with its last) */
-void func_001C1520(u8 *v, s32 id) {
+/* 0x001C1520 */
+void Vram_Free(u8 *v, s32 id) {
     VramEntry *e;
     u32 p, end;
 
@@ -315,7 +321,8 @@ void func_001C1520(u8 *v, s32 id) {
 }
 
 /* +0x20 free every entry that isn't kept resident (+0x1C) */
-void func_001C14A0(VObject *v) {
+/* 0x001C14A0 */
+void Vram_FreeAll(VObject *v) {
     VramEntry *e = (VramEntry *)((u8 *)v + 0x98);
     u32 i;
 
@@ -327,7 +334,8 @@ void func_001C14A0(VObject *v) {
 }
 
 /* Allocate a CLUT slot of format clutpsm (0 / 2): region * 16 + slot, or -1. */
-s32 func_001C0D40(u8 *v, s32 clutpsm_) {
+/* 0x001C0D40 */
+s32 Vram_AllocClut(u8 *v, s32 clutpsm_) {
     u16 clutpsm = clutpsm_;
     VramClutRegion *rg;
     u32 i, j;
@@ -360,7 +368,8 @@ s32 func_001C0D40(u8 *v, s32 clutpsm_) {
 
 /* Size of a w x h texture of format psm in pages (a page is 8 KB: 64x32 at 32 bits, 64x64 at 16,
  * 128x64 at 8, 128x128 at 4); 0 for other formats. */
-u32 func_001C04B0(u8 *v, s32 psm, u32 w, u32 h) {
+/* 0x001C04B0 */
+u32 Vram_PageCount(u8 *v, s32 psm, u32 w, u32 h) {
     u32 pw, ph;
 
     switch ((u16)psm) {
@@ -392,8 +401,9 @@ u32 func_001C04B0(u8 *v, s32 psm, u32 w, u32 h) {
 #define HI_TAKE(v, p, m) (VRAM_PAGEMAP_HI(v)[(u32)(p) * 2 >> 5] |= (m) << ((u32)(p) * 2 & 0x1F))
 
 /* First fit of n texture pages; marks them. */
-s32 func_001C0AD0(u8 *v, s32 psm, s32 w, s32 h) {
-    s32 n = func_001C04B0(v, psm, w, h);
+/* 0x001C0AD0 */
+s32 Vram_FitPages(u8 *v, s32 psm, s32 w, s32 h) {
+    s32 n = Vram_PageCount(v, psm, w, h);
     s32 start = -1, left = 0;
     u32 p, end;
 
@@ -421,7 +431,8 @@ s32 func_001C0AD0(u8 *v, s32 psm, s32 w, s32 h) {
 }
 
 /* First fit of n upper-bit pages with bits `m` free (not marked). */
-s32 func_001C0570(u8 *v, s32 n, s32 m) {
+/* 0x001C0570 */
+s32 Vram_FitUpperHalf(u8 *v, s32 n, s32 m) {
     s32 start = -1, left = 0;
     u32 p;
 
@@ -445,7 +456,8 @@ s32 func_001C0570(u8 *v, s32 n, s32 m) {
 }
 
 /* First fit of n upper-bit pages with both halves free (8-bit); marks them. */
-s32 func_001C0610(u8 *v, s32 n) {
+/* 0x001C0610 */
+s32 Vram_FitUpperBoth(u8 *v, s32 n) {
     s32 start = -1, left = 0;
     u32 p, end;
 
@@ -474,8 +486,9 @@ s32 func_001C0610(u8 *v, s32 n) {
 
 /* Upper-bit pages for a 4 / 8-bit texture: 8-bit takes both halves (PSMT8H); 4-bit takes the
  * lower half (PSMT4HL) or the upper (PSMT4HH), whichever fits first. *psm is set to the choice. */
-s32 func_001C08B0(u8 *v, u16 *psm, s32 w, s32 h) {
-    u32 n = func_001C04B0(v, *psm, w, h) & 0xFFFF;
+/* 0x001C08B0 */
+s32 Vram_FitUpper(u8 *v, u16 *psm, s32 w, s32 h) {
+    u32 n = Vram_PageCount(v, *psm, w, h) & 0xFFFF;
     s32 lo, hi, p;
 
     if (n == 0) {
@@ -483,11 +496,11 @@ s32 func_001C08B0(u8 *v, u16 *psm, s32 w, s32 h) {
     }
     switch (*psm) {
     case PSMT8H:
-        return func_001C0610(v, n);
+        return Vram_FitUpperBoth(v, n);
     case PSMT4HL:
     case PSMT4HH:
-        lo = (s16)func_001C0570(v, n, 1);
-        hi = (s16)func_001C0570(v, n, 2);
+        lo = (s16)Vram_FitUpperHalf(v, n, 1);
+        hi = (s16)Vram_FitUpperHalf(v, n, 2);
         if (lo != -1 && (hi == -1 || hi >= lo)) {
             *psm = PSMT4HL;
             for (p = lo; (u32)p < lo + n; p++) {
@@ -509,7 +522,8 @@ s32 func_001C08B0(u8 *v, u16 *psm, s32 w, s32 h) {
 
 /* Pages at VRAM byte address `addr`: below 0x88000 upper-bit pages (4-bit: lower half if free,
  * else upper; 8-bit: both), 0xC0000..0xFC000 texture pages. -1 if taken or elsewhere. */
-s32 func_001BF8F0(u8 *v, u32 addr, u16 *psm, s32 w, s32 h) {
+/* 0x001BF8F0 */
+s32 Vram_PagesAt(u8 *v, u32 addr, u16 *psm, s32 w, s32 h) {
     s32 n, start, okLo, okHi;
     u32 p, end;
 
@@ -517,7 +531,7 @@ s32 func_001BF8F0(u8 *v, u32 addr, u16 *psm, s32 w, s32 h) {
         switch (*psm) {
         case PSMT4HL: case PSMT4HH: case 0x14:
             *psm = PSMT4HH;
-            n = func_001C04B0(v, *psm, w, h);
+            n = Vram_PageCount(v, *psm, w, h);
             start = (s16)(addr >> 11);
             end = start + n;
             okLo = 1;
@@ -555,7 +569,7 @@ s32 func_001BF8F0(u8 *v, u32 addr, u16 *psm, s32 w, s32 h) {
             return -1;
         case 0x13: case PSMT8H:
             *psm = PSMT8H;
-            n = func_001C04B0(v, *psm, w, h);
+            n = Vram_PageCount(v, *psm, w, h);
             start = (s16)(addr >> 11);
             end = start + n;
             for (p = start; p < end; p++) {
@@ -573,7 +587,7 @@ s32 func_001BF8F0(u8 *v, u32 addr, u16 *psm, s32 w, s32 h) {
         return -1;
     }
     if (addr >= 0xC0000 && addr < 0xFC000) {
-        n = func_001C04B0(v, *psm, w, h);
+        n = Vram_PageCount(v, *psm, w, h);
         start = (s16)((addr - 0xC0000) >> 11);
         end = start + n;
         for (p = start; p < end; p++) {
@@ -595,14 +609,16 @@ s32 func_001BF8F0(u8 *v, u32 addr, u16 *psm, s32 w, s32 h) {
 
 /* +0x6C CLUT address of entry `id` (64-word blocks): CLUT pages from 0xFC000, 16 slots per page
  * for 16-bit CLUTs, 8 for 32-bit */
-u32 func_001BFDB0(u8 *v, s32 id) {
+/* 0x001BFDB0 */
+u32 Vram_ClutAddr(u8 *v, s32 id) {
     VramEntry *e = VRAM_ENTRY(v, id);
 
     return ((e->cregion << 11) + 0xFC000 + (u32)((u16)e->cslot << 11) / ((u16)e->cpsm == 2 ? 16 : 8)) >> 6;
 }
 
 /* +0x68 texture address of entry `id` (64-word blocks) */
-u32 func_001BFE10(u8 *v, s32 id) {
+/* 0x001BFE10 */
+u32 Vram_TexAddr(u8 *v, s32 id) {
     VramEntry *e = VRAM_ENTRY(v, id);
     u16 psm = e->psm;
 
@@ -613,8 +629,10 @@ u32 func_001BFE10(u8 *v, s32 id) {
 }
 
 /* +0x64 / +0x60 height / width of entry `id` */
-u16 func_001BFE80(u8 *v, s32 id) { return VRAM_ENTRY(v, id)->h; }
-u16 func_001BFEA0(u8 *v, s32 id) { return VRAM_ENTRY(v, id)->w; }
+/* 0x001BFE80 */
+u16 Vram_Height(u8 *v, s32 id) { return VRAM_ENTRY(v, id)->h; }
+/* 0x001BFEA0 */
+u16 Vram_Width(u8 *v, s32 id) { return VRAM_ENTRY(v, id)->w; }
 
 /* a .TEX file's texture entry */
 typedef struct TexHeader {
@@ -625,7 +643,8 @@ typedef struct TexHeader {
 
 /* +0x5C allocate room for texture `t` and fill it (+0x48); `upper`: 8 / 4-bit textures go to the
  * frame buffers' upper bits. The entry, -1 if there's no room. */
-s32 func_001BFEC0(VObject *v, TexHeader *t, s32 upper) {
+/* 0x001BFEC0 */
+s32 Vram_AllocTexture(VObject *v, TexHeader *t, s32 upper) {
     u16 psm;
     s32 id;
     u8 *image, *clut;
@@ -654,14 +673,16 @@ s32 func_001BFEC0(VObject *v, TexHeader *t, s32 upper) {
 
 /* +0x58 / +0x54 texture `n` of a loaded .TEX file (a count, then 0x10-byte entries) through
  * +0x5C, upper bits or not; -1 if there's none */
-s32 func_001BFFC0(VObject *v, u8 *tex, u32 n) {
+/* 0x001BFFC0 */
+s32 Vram_TexUpper(VObject *v, u8 *tex, u32 n) {
     if (tex == NULL || n >= AT(tex, 0x0, u32)) {
         return -1;
     }
     return VCALL(v, 0x5C, s32 (*)(VObject *, TexHeader *, s32))(v, (TexHeader *)(tex + 0x10 + n * 0x10), 1);
 }
 
-s32 func_001C0020(VObject *v, u8 *tex, u32 n) {
+/* 0x001C0020 */
+s32 Vram_Tex(VObject *v, u8 *tex, u32 n) {
     if (tex == NULL || n >= AT(tex, 0x0, u32)) {
         return -1;
     }
@@ -691,11 +712,13 @@ static inline s32 vram_load_tex(VObject *v, const char *name, s32 upper) {
     return id;
 }
 
-s32 func_001C0080(VObject *v, const char *name) {
+/* 0x001C0080 */
+s32 Vram_LoadTexUpper(VObject *v, const char *name) {
     return vram_load_tex(v, name, 1);
 }
 
-s32 func_001C0190(VObject *v, const char *name) {
+/* 0x001C0190 */
+s32 Vram_LoadTex(VObject *v, const char *name) {
     return vram_load_tex(v, name, 0);
 }
 
@@ -734,22 +757,26 @@ static inline u64 Vram_Tex0(u8 *v, s32 id, u32 psm, u32 w, u32 h, u32 cpsm, u64 
 }
 
 /* +0x28 TEX0 for entry `id` as a psm w x h texture, loading its CLUT (CLD 1) */
-u64 func_001C12E0(u8 *v, s32 id, s32 psm, u32 w, u32 h, s32 cpsm) {
+/* 0x001C12E0 */
+u64 Vram_Tex0Load(u8 *v, s32 id, s32 psm, u32 w, u32 h, s32 cpsm) {
     return Vram_Tex0(v, id, psm, w, h, cpsm, (u64)0x20000000 << 32);
 }
 
 /* +0x2C ... as an 8-bit indexed texture */
-u64 func_001C1160(u8 *v, s32 id, u32 w, u32 h, s32 cpsm) {
+/* 0x001C1160 */
+u64 Vram_Tex0Indexed(u8 *v, s32 id, u32 w, u32 h, s32 cpsm) {
     return Vram_Tex0(v, id, 0x13, w, h, cpsm, (u64)0x20000000 << 32);
 }
 
 /* +0x30 ... with CLUT offset `csa` and no CLUT load */
-u64 func_001C0FE0(u8 *v, s32 id, u32 csa, s32 psm, u32 w, u32 h, s32 cpsm) {
+/* 0x001C0FE0 */
+u64 Vram_Tex0Csa(u8 *v, s32 id, u32 csa, s32 psm, u32 w, u32 h, s32 cpsm) {
     return Vram_Tex0(v, id, psm, w, h, cpsm, (u64)csa << 56);
 }
 
 /* +0x34 TEX2 for entry `id`: format psm, CLUT `csa` of the entry's CLUT region (format cpsm) */
-u64 func_001C0F40(u8 *v, s32 id, u32 csa, s32 psm, s32 cpsm) {
+/* 0x001C0F40 */
+u64 Vram_Tex2(u8 *v, s32 id, u32 csa, s32 psm, s32 cpsm) {
     VramEntry *e = VRAM_ENTRY(v, id);
     u32 slots = (u16)e->cpsm == 2 ? 16 : 8;
     u32 cbp = ((e->cregion << 11) + 0xFC000 + (u32)((u16)e->cslot << 11) / slots) >> 6;
@@ -758,25 +785,29 @@ u64 func_001C0F40(u8 *v, s32 id, u32 csa, s32 psm, s32 cpsm) {
 }
 
 /* +0x38 .. +0x44: the same, with the entry's own format and size */
-u64 func_001C0F10(u8 *v, s32 id) {
+/* 0x001C0F10 */
+u64 Vram_EntryTex0(u8 *v, s32 id) {
     VramEntry *e = VRAM_ENTRY(v, id);
 
     return VCALL(v, 0x28, u64 (*)(u8 *, s32, s32, u32, u32, s32))(v, id, (u16)e->psm, (u16)e->w, (u16)e->h, (u16)e->cpsm);
 }
 
-u64 func_001C0EE0(u8 *v, s32 id) {
+/* 0x001C0EE0 */
+u64 Vram_EntryTex0Indexed(u8 *v, s32 id) {
     VramEntry *e = VRAM_ENTRY(v, id);
 
     return VCALL(v, 0x2C, u64 (*)(u8 *, s32, u32, u32, s32))(v, id, (u16)e->w, (u16)e->h, (u16)e->cpsm);
 }
 
-u64 func_001C0EB0(u8 *v, s32 id, u32 csa) {
+/* 0x001C0EB0 */
+u64 Vram_EntryTex0Csa(u8 *v, s32 id, u32 csa) {
     VramEntry *e = VRAM_ENTRY(v, id);
 
     return VCALL(v, 0x30, u64 (*)(u8 *, s32, u32, s32, u32, u32, s32))(v, id, csa, (u16)e->psm, (u16)e->w, (u16)e->h, (u16)e->cpsm);
 }
 
-u64 func_001C0E80(u8 *v, s32 id, u32 csa) {
+/* 0x001C0E80 */
+u64 Vram_EntryTex2(u8 *v, s32 id, u32 csa) {
     VramEntry *e = VRAM_ENTRY(v, id);
 
     return VCALL(v, 0x34, u64 (*)(u8 *, s32, u32, s32, s32))(v, id, csa, (u16)e->psm, (u16)e->cpsm);
@@ -787,7 +818,8 @@ extern u8 D_003B3050[][2];   /* ... 256-colour (psm 2) */
 
 /* upload slot `slot`'s texture `pix` and its CLUT `clut` (either NULL: not sent) at once
  * (slots of 0x12 bytes at +0x98: used, w, h, psm, page, CLUT psm (0xFF none), CLUT page, index) */
-void func_001C02A0(u8 *v, s32 slot, const void *pix, const void *clut) {
+/* 0x001C02A0 */
+void Vram_Upload(u8 *v, s32 slot, const void *pix, const void *clut) {
     u8 li[0x60] __attribute__((aligned(16)));
     u8 *e;
     u16 cpsm;

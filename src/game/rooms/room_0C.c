@@ -109,7 +109,7 @@ s32 Room0C_Cmd02(void) {
     if (a > 0x80) {
         a = 0x80;
     }
-    func_001B9000(gRenderer, a << 24);
+    Renderer_FillScreen(gRenderer, a << 24);
     return 1;
 }
 

@@ -86,7 +86,7 @@ void func_0021D8F0(void *ov, int limit, int amount) {
     glr_panic(limit, amount);
 }
 
-/* ---- the renderer's special layers (func_001B5EC0): each one's setup, run on the layer's first
+/* ---- the renderer's special layers (Renderer_LayerBegin): each one's setup, run on the layer's first
  * draw of a frame, fills the layer before it (and after it) with GS state. On PC glr does what
  * they set up for the layers it knows; 1 = the layer can be drawn ---- */
 

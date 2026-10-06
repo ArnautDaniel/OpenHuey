@@ -7,11 +7,11 @@
 typedef struct VObject VObject;
 
 /* event.c */
-extern void func_00209850(u8 *ev);
-extern void func_00209390(u8 *ev, u8 phase);
-extern void func_00209210(VObject *ev);
-extern void *func_0020C120(void **o, s32 flags);
-extern void *func_0020C170(void **o, s32 flags);
-extern void func_001FB5F0(void);
+extern void Events_InstallRooms(u8 *ev);
+extern void Events_RunPhase(u8 *ev, u8 phase);
+extern void Events_RunCharScripts(VObject *ev);
+extern void *Obj46BA80_dtor(void **o, s32 flags);
+extern void *EventsBase_dtor(void **o, s32 flags);
+extern void Events_DealThings(void);
 
 #endif /* EVENT_H */

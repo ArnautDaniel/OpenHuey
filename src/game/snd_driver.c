@@ -45,10 +45,11 @@ extern u32 D_003D8930[8][3];   /* the banks' header / table sizes and sound memo
 #define BANK_TYPE(d, k) AT(BANK(d, k), 0xC, u8)
 
 extern void *D_0046AF90[];
-void *func_001BF800(u8 *o, s32 flags);
+void *SndDriverBase_dtor(u8 *o, s32 flags);
 
 /* destructor (vtable D_0046AF90) */
-void *func_001BF800(u8 *o, s32 flags) {
+/* 0x001BF800 */
+void *SndDriverBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AF90;
         gSound = NULL;
@@ -66,27 +67,32 @@ static inline u32 vol_byte(f32 v) {
 /* ---- the simple ones ---- */
 
 /* the 3D block */
-u8 *func_0020E870(u8 *d) {
+/* 0x0020E870 */
+u8 *SndDriver_Block3D(u8 *d) {
     return d + 0x10;
 }
 
 /* bank `k` loaded */
-u8 func_0020E880(u8 *d, u32 k) {
+/* 0x0020E880 */
+u8 SndDriver_BankLoaded(u8 *d, u32 k) {
     return LOADED(d, k & 0xFF);
 }
 
 /* sample transfer `k` running */
-u8 func_0020E8A0(u8 *d, u32 k) {
+/* 0x0020E8A0 */
+u8 SndDriver_TransferRunning(u8 *d, u32 k) {
     return AT(XFER(d, k & 0xFF), 0x10, u8);
 }
 
 /* the output mode */
-s8 func_0020E8C0(u8 *d) {
+/* 0x0020E8C0 */
+s8 SndDriver_OutputMode(u8 *d) {
     return AT(d, 0x104, s8);
 }
 
 /* send the master volume (sound x master, 0..255) */
-void func_0020E8D0(u8 *d) {
+/* 0x0020E8D0 */
+void SndDriver_SendMaster(u8 *d) {
     s32 v = (s32)(255.0f * (AT(d, 0x1CC, f32) * AT(d, 0x1D0, f32)));
 
     if (v < 0) {
@@ -100,7 +106,8 @@ void func_0020E8D0(u8 *d) {
 }
 
 /* set the master volume (0..1) */
-void func_0020E950(u8 *d, f32 v) {
+/* 0x0020E950 */
+void SndDriver_SetMaster(u8 *d, f32 v) {
     if (v < 0.0f) {
         v = 0.0f;
     }
@@ -112,7 +119,8 @@ void func_0020E950(u8 *d, f32 v) {
 }
 
 /* set the sound volume (0..1) */
-void func_0020E9A0(u8 *d, f32 v) {
+/* 0x0020E9A0 */
+void SndDriver_SetSound(u8 *d, f32 v) {
     if (v < 0.0f) {
         v = 0.0f;
     }
@@ -124,7 +132,8 @@ void func_0020E9A0(u8 *d, f32 v) {
 }
 
 /* play positioned sound `which` (D_003D8990: footsteps and the like) at the 3D block */
-void func_0020E9F0(u8 *d, u32 which) {
+/* 0x0020E9F0 */
+void SndDriver_PlayPositioned(u8 *d, u32 which) {
     u8 bank = D_003D8990[which & 0xFF][0];
     u8 sound = D_003D8990[which & 0xFF][1] + 0x18;
     u8 v;
@@ -152,7 +161,8 @@ void func_0020E9F0(u8 *d, u32 which) {
 }
 
 /* stop every voice (command 0x35, 2) */
-void func_0020EB30(u8 *d) {
+/* 0x0020EB30 */
+void SndDriver_StopVoices(u8 *d) {
     D_01970D40[2] = 0;
     D_01970D40[3] = 0xFFFFFF;
     D_01970D40[4] = 2;
@@ -161,7 +171,8 @@ void func_0020EB30(u8 *d) {
 }
 
 /* stop the positioned sounds but those of banks 3 and 4 */
-void func_0020EB70(u8 *d) {
+/* 0x0020EB70 */
+void SndDriver_StopPlacedButBanks(u8 *d) {
     u32 i;
 
     D_01970D40[2] = 0;
@@ -176,7 +187,8 @@ void func_0020EB70(u8 *d) {
 }
 
 /* stop all the positioned sounds */
-void func_0020EC00(u8 *d) {
+/* 0x0020EC00 */
+void SndDriver_StopPlaced(u8 *d) {
     u32 i;
 
     D_01970D40[2] = 0;
@@ -189,7 +201,8 @@ void func_0020EC00(u8 *d) {
 }
 
 /* the positioned sounds' state `s` (command 0x35, 2) */
-void func_0020EC70(u8 *d, u32 s) {
+/* 0x0020EC70 */
+void SndDriver_PlacedState(u8 *d, u32 s) {
     u32 i;
 
     D_01970D40[2] = 0;
@@ -203,12 +216,14 @@ void func_0020EC70(u8 *d, u32 s) {
 }
 
 /* bank `k`'s file loaded (the loader's state 2) */
-s32 func_0020ECF0(u8 *d, u32 k) {
+/* 0x0020ECF0 */
+s32 SndDriver_BankFileLoaded(u8 *d, u32 k) {
     return VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, (k & 0xFF) | 0x05000000) == 2;
 }
 
 /* drop all 8 banks' files */
-void func_0020ED30(u8 *d) {
+/* 0x0020ED30 */
+void SndDriver_DropFiles(u8 *d) {
     s32 i;
 
     for (i = 0; i < 8; i++) {
@@ -217,20 +232,23 @@ void func_0020ED30(u8 *d) {
 }
 
 /* drop bank `k`'s file (loader +0x18), its transfer off */
-void func_0020EDF0(u8 *d, u32 k) {
+/* 0x0020EDF0 */
+void SndDriver_DropFile(u8 *d, u32 k) {
     VCALL(gFileLoader, 0x18, void (*)(VObject *, u32))(gFileLoader, (k & 0xFF) | 0x05000000);
     AT(XFER(d, k & 0xFF), 0x10, u8) = 0;
 }
 
 /* (loader +0x14) */
-void func_0020EE60(u8 *d, u32 k) {
+/* 0x0020EE60 */
+void SndDriver_CancelFile(u8 *d, u32 k) {
     VCALL(gFileLoader, 0x14, void (*)(VObject *, u32))(gFileLoader, (k & 0xFF) | 0x05000000);
     AT(XFER(d, k & 0xFF), 0x10, u8) = 0;
 }
 
 /* load file `file` into `buf` as part `part` (0 header, 2 table, 3 samples; 1 a sequence) of
    bank `k`: the loader's request id, 0 if not queued */
-s32 func_0020EED0(u8 *d, const char *file, u32 k, u32 part, void *buf) {
+/* 0x0020EED0 */
+s32 SndDriver_LoadPart(u8 *d, const char *file, u32 k, u32 part, void *buf) {
     if ((part & 0xFF) >= 4 || buf == NULL) {
         return 0;
     }
@@ -239,7 +257,8 @@ s32 func_0020EED0(u8 *d, const char *file, u32 k, u32 part, void *buf) {
 }
 
 /* volume `ch` (0, 1) to `v` (14 bits) */
-void func_0020EF50(u8 *d, u32 ch, u32 v) {
+/* 0x0020EF50 */
+void SndDriver_SetVolume(u8 *d, u32 ch, u32 v) {
     ch &= 0xFF;
     if (ch < 2) {
         AT(d, 0x1C8 + ch * 2, u16) = v & 0x3FFF;
@@ -251,13 +270,15 @@ void func_0020EF50(u8 *d, u32 ch, u32 v) {
     }
 }
 
-u16 func_0020EFD0(u8 *d, u32 ch) {
+/* 0x0020EFD0 */
+u16 SndDriver_GetVolume(u8 *d, u32 ch) {
     ch &= 0xFF;
     return ch < 2 ? AT(d, 0x1C8 + ch * 2, u16) : 0;
 }
 
 /* bank `k` still loading (its file not done, or its samples going over) */
-s32 func_0020F000(u8 *d, u32 k) {
+/* 0x0020F000 */
+s32 SndDriver_BankLoading(u8 *d, u32 k) {
     u8 running = AT(XFER(d, k & 0xFF), 0x10, u8);
 
     if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, (k & 0xFF) | 0x05000000) == 3
@@ -268,7 +289,8 @@ s32 func_0020F000(u8 *d, u32 k) {
 }
 
 /* the output mode (0 mono) */
-void func_0020F070(u8 *d, s8 mode) {
+/* 0x0020F070 */
+void SndDriver_SetOutputMode(u8 *d, s8 mode) {
     AT(d, 0x104, s8) = mode;
     if (mode == 0) {
         D_01970D40[2] = 0;
@@ -281,7 +303,8 @@ void func_0020F070(u8 *d, s8 mode) {
 }
 
 /* unload bank `k` (a sequence stopped first) */
-void func_0020F0D0(u8 *d, u32 k) {
+/* 0x0020F0D0 */
+void SndDriver_Unload(u8 *d, u32 k) {
     if (k >= 8) {
         return;
     }
@@ -305,7 +328,8 @@ extern const char D_00457258[];   /* "DUMMY" */
 
 /* register bank `k` with the driver (reloaded if it was): its header, table / sequence and
    samples; a sequence bank is started on its channel set up */
-void func_0020F1B0(u8 *d, u32 k) {
+/* 0x0020F1B0 */
+void SndDriver_Register(u8 *d, u32 k) {
     u8 *b;
     u32 hd;
 
@@ -355,7 +379,8 @@ void func_0020F1B0(u8 *d, u32 k) {
 
 /* the next 0x4000 bytes of a sample transfer (`x`: +0x108..) into sound memory: 1 while it
    goes on (or the last chunk is still on its way), 0 once done */
-s32 func_0020F3D0(u8 *x) {
+/* 0x0020F3D0 */
+s32 SndDriver_TransferChunk(u8 *x) {
     u32 n;
 
     if (AT(x, 0x10, u8) == 0) {
@@ -386,8 +411,9 @@ s32 func_0020F3D0(u8 *x) {
     return 1;
 }
 
-/* queue bank `k`'s samples (`size` bytes at `src`) for transfer (func_00210230 does it) */
-void func_0020F4D0(u8 *d, u32 k, u32 src, u32 size) {
+/* queue bank `k`'s samples (`size` bytes at `src`) for transfer (SndDriver_Frame does it) */
+/* 0x0020F4D0 */
+void SndDriver_QueueSamples(u8 *d, u32 k, u32 src, u32 size) {
     u8 *x;
     u32 spu;
 
@@ -413,7 +439,8 @@ void func_0020F4D0(u8 *d, u32 k, u32 src, u32 size) {
 }
 
 /* bank `k`'s samples (`size` bytes at `src`) into sound memory now */
-void func_0020F570(u8 *d, u32 k, u32 src, u32 size) {
+/* 0x0020F570 */
+void SndDriver_SamplesNow(u8 *d, u32 k, u32 src, u32 size) {
     u32 spu, to, left, n;
 
     if (k >= 8 || src == 0 || size == 0 || AT(d, 0x80, u32) == 0) {
@@ -446,7 +473,8 @@ void func_0020F570(u8 *d, u32 k, u32 src, u32 size) {
 }
 
 /* bank `k`'s sequence (`size` bytes at `src`) into IOP memory */
-void func_0020F6C0(u8 *d, u32 k, u32 src, u32 size) {
+/* 0x0020F6C0 */
+void SndDriver_Sequence(u8 *d, u32 k, u32 src, u32 size) {
     u32 to;
 
     if (k >= 8 || src == 0 || size == 0) {
@@ -460,7 +488,8 @@ void func_0020F6C0(u8 *d, u32 k, u32 src, u32 size) {
 }
 
 /* bank `k`'s sound table (`size` bytes at `src`) into IOP memory, its 3D curves kept */
-void func_0020F740(u8 *d, u32 k, u32 src, u32 size) {
+/* 0x0020F740 */
+void SndDriver_Table(u8 *d, u32 k, u32 src, u32 size) {
     u32 to;
 
     if (k >= 8 || src == 0 || size == 0) {
@@ -476,7 +505,8 @@ void func_0020F740(u8 *d, u32 k, u32 src, u32 size) {
 }
 
 /* bank `k`'s header (`size` bytes at `src`) into IOP memory */
-void func_0020F810(u8 *d, u32 k, u32 src, u32 size) {
+/* 0x0020F810 */
+void SndDriver_Header(u8 *d, u32 k, u32 src, u32 size) {
     u32 to;
 
     if (k >= 8 || src == 0 || size == 0) {
@@ -491,7 +521,8 @@ void func_0020F810(u8 *d, u32 k, u32 src, u32 size) {
 /* ---- sequences (a bank of type 1) ---- */
 
 /* its tempo (0x21) */
-u16 func_0020F870(u8 *d, u32 k) {
+/* 0x0020F870 */
+u16 SndDriver_SeqTempo(u8 *d, u32 k) {
     k &= 0xFF;
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return 0;
@@ -500,7 +531,8 @@ u16 func_0020F870(u8 *d, u32 k) {
     return *(u16 *)SndLib_Call(0x210000, D_01970D40);
 }
 
-s32 func_0020F8E0(u8 *d, u32 k, u32 tempo) {
+/* 0x0020F8E0 */
+s32 SndDriver_SetSeqTempo(u8 *d, u32 k, u32 tempo) {
     k &= 0xFF;
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return -1;
@@ -511,7 +543,8 @@ s32 func_0020F8E0(u8 *d, u32 k, u32 tempo) {
 }
 
 /* its volume (0x1F) */
-u8 func_0020F950(u8 *d, u32 k) {
+/* 0x0020F950 */
+u8 SndDriver_SeqVolume(u8 *d, u32 k) {
     k &= 0xFF;
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return 0;
@@ -520,7 +553,8 @@ u8 func_0020F950(u8 *d, u32 k) {
     return *(u8 *)SndLib_Call(0x1F0000, D_01970D40);
 }
 
-s32 func_0020F9C0(u8 *d, u32 k, u32 v) {
+/* 0x0020F9C0 */
+s32 SndDriver_SetSeqVolume(u8 *d, u32 k, u32 v) {
     k &= 0xFF;
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return -1;
@@ -530,7 +564,8 @@ s32 func_0020F9C0(u8 *d, u32 k, u32 v) {
     return (s32)SndLib_Call(0x1E0000, D_01970D40);
 }
 
-s32 func_0020FA30(u8 *d, u32 k, u32 a, u32 b) {
+/* 0x0020FA30 */
+s32 SndDriver_SeqParam2(u8 *d, u32 k, u32 a, u32 b) {
     k &= 0xFF;
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return -1;
@@ -541,7 +576,8 @@ s32 func_0020FA30(u8 *d, u32 k, u32 a, u32 b) {
     return (s32)SndLib_Call(0x1C0000, D_01970D40);
 }
 
-s32 func_0020FAB0(u8 *d, u32 k, u32 a) {
+/* 0x0020FAB0 */
+s32 SndDriver_SeqParam1(u8 *d, u32 k, u32 a) {
     k &= 0xFF;
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return -1;
@@ -551,15 +587,17 @@ s32 func_0020FAB0(u8 *d, u32 k, u32 a) {
     return (s32)SndLib_Call(0x1B0000, D_01970D40);
 }
 
-/* func_0020FA30 with the second argument read from `p` */
-s32 func_0020FB20(u8 *d, u32 k, s32 *p) {
+/* SndDriver_SeqParam2 with the second argument read from `p` */
+/* 0x0020FB20 */
+s32 SndDriver_SeqParamPtr(u8 *d, u32 k, s32 *p) {
     if (p == NULL) {
         return -1;
     }
     return VCALL(d, 0xF0, s32 (*)(u8 *, u32, s32))(d, k, *p);
 }
 
-s32 func_0020FB50(u8 *d, u32 k, u32 a, u32 b) {
+/* 0x0020FB50 */
+s32 SndDriver_SeqParam2B(u8 *d, u32 k, u32 a, u32 b) {
     k &= 0xFF;
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return -1;
@@ -570,7 +608,8 @@ s32 func_0020FB50(u8 *d, u32 k, u32 a, u32 b) {
     return (s32)SndLib_Call(0x230000, D_01970D40);
 }
 
-s32 func_0020FBD0(u8 *d, u32 k, u32 a) {
+/* 0x0020FBD0 */
+s32 SndDriver_SeqParam1B(u8 *d, u32 k, u32 a) {
     k &= 0xFF;
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return -1;
@@ -581,7 +620,8 @@ s32 func_0020FBD0(u8 *d, u32 k, u32 a) {
 }
 
 /* restart from `pos`, keeping its volume and tempo */
-void func_0020FC40(u8 *d, u32 k, u32 pos) {
+/* 0x0020FC40 */
+void SndDriver_SeqRestart(u8 *d, u32 k, u32 pos) {
     u8 vol;
     u32 tempo;
 
@@ -601,7 +641,8 @@ void func_0020FC40(u8 *d, u32 k, u32 pos) {
 }
 
 /* stop */
-void func_0020FD20(u8 *d, u32 k) {
+/* 0x0020FD20 */
+void SndDriver_SeqStop(u8 *d, u32 k) {
     k &= 0xFF;
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return;
@@ -613,7 +654,8 @@ void func_0020FD20(u8 *d, u32 k) {
 }
 
 /* play (from `pos` unless negative) with `mode` */
-void func_0020FD90(u8 *d, u32 k, u32 pos, u32 mode) {
+/* 0x0020FD90 */
+void SndDriver_SeqPlay(u8 *d, u32 k, u32 pos, u32 mode) {
     k &= 0xFF;
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 0) {
         return;
@@ -630,7 +672,8 @@ void func_0020FD90(u8 *d, u32 k, u32 pos, u32 mode) {
 /* ---- sound effects ---- */
 
 /* stop sound `id` of bank `k` */
-void func_0020FE30(u8 *d, u32 id, u32 k) {
+/* 0x0020FE30 */
+void SndDriver_StopSound(u8 *d, u32 id, u32 k) {
     k &= 0xFF;
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 1) {
         return;
@@ -642,7 +685,8 @@ void func_0020FE30(u8 *d, u32 id, u32 k) {
 
 /* play sound `id` of bank `k` placed by the 3D block (`vol`, `pitch`: offsets; id bit 30:
    also by the progress's +0x1118 volume) */
-void func_0020FEA0(u8 *d, u32 id, u32 k, s8 vol, s8 pitch) {
+/* 0x0020FEA0 */
+void SndDriver_PlayPlaced(u8 *d, u32 id, u32 k, s8 vol, s8 pitch) {
     u8 v;
 
     k &= 0xFF;
@@ -672,7 +716,8 @@ void func_0020FEA0(u8 *d, u32 id, u32 k, s8 vol, s8 pitch) {
 }
 
 /* play sound `id` of bank `k` unplaced */
-void func_00210070(u8 *d, u32 id, u32 k) {
+/* 0x00210070 */
+void SndDriver_Play(u8 *d, u32 id, u32 k) {
     k &= 0xFF;
     if (!LOADED(d, k) || BANK_TYPE(d, k) == 1) {
         return;
@@ -688,7 +733,8 @@ void func_00210070(u8 *d, u32 id, u32 k) {
 }
 
 /* stop the voices in masks `a`, `b` */
-void func_00210120(u8 *d, u32 a, u32 b) {
+/* 0x00210120 */
+void SndDriver_StopMasks(u8 *d, u32 a, u32 b) {
     D_01970D40[2] = a & 0xFFFFFF;
     D_01970D40[3] = b & 0xFFFFFF;
     D_01970D40[4] = 0x80000000;
@@ -696,14 +742,16 @@ void func_00210120(u8 *d, u32 a, u32 b) {
 }
 
 /* stop all voices */
-void func_00210160(u8 *d) {
+/* 0x00210160 */
+void SndDriver_StopAll(u8 *d) {
     VCALL(d, 0xD0, void (*)(u8 *, u32, u32))(d, 0xFFFFFF, 0xFFFFFF);
 }
 
 /* ---- life ---- */
 
 /* free the IOP buffers */
-void func_00210180(u8 *d) {
+/* 0x00210180 */
+void SndDriver_FreeIop(u8 *d) {
     u32 i;
 
     if (AT(d, 0x80, u32) != 0) {
@@ -728,12 +776,13 @@ void func_00210180(u8 *d) {
 
 /* a frame: the first sample transfer in progress goes on; once it is done its bank (of sounds)
    is registered */
-void func_00210230(u8 *d) {
+/* 0x00210230 */
+void SndDriver_Frame(u8 *d) {
     u32 i;
 
     for (i = 0; i < 8; i++) {
         if (AT(XFER(d, i), 0x10, u8) != 0) {
-            if (!(func_0020F3D0(XFER(d, i)) & 0xFF) && BANK_TYPE(d, i) == 0) {
+            if (!(SndDriver_TransferChunk(XFER(d, i)) & 0xFF) && BANK_TYPE(d, i) == 0) {
                 VCALL(d, 0x128, void (*)(u8 *, u32))(d, i);
             }
             return;
@@ -746,7 +795,8 @@ extern char D_01970B10[0x100];   /* the driver's arguments */
 extern u8 D_01970C40[0x1C];      /* ... before formatting */
 
 /* start: load the sound modules and the driver, connect, set it up; IOP memory for the banks */
-void func_002102E0(u8 *d) {
+/* 0x002102E0 */
+void SndDriver_Start(u8 *d) {
     u32 i;
 
     AT(d, 0x70, s32) = func_001BC0F0(d, D_00457260, 0, 0, 0);
@@ -816,7 +866,8 @@ void func_002102E0(u8 *d) {
 extern void *D_0046BF20[], *D_0046BF2C[], *D_0046AF90[], *D_0046AD88[];
 
 /* destructor */
-u8 *func_0020E000(u8 *d, s32 flags) {
+/* 0x0020E000 */
+u8 *SndDriver_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
         AT(d, 0x0, void **) = D_0046BF20;
         AT(d, 0x4, void **) = D_0046BF2C;
@@ -845,49 +896,49 @@ u8 *func_0020E000(u8 *d, s32 flags) {
 #define THUNKV(name, target, params, args) \
     void name params { target args; }
 
-THUNK(func_002108E0, u8 *, func_0020E000, (u8 *s, s32 f), (s - 4, f))
-THUNKV(func_002108D0, func_00210160, (u8 *s), (s - 4))
-THUNKV(func_002108C0, func_00210120, (u8 *s, u32 a, u32 b), (s - 4, a, b))
-THUNKV(func_002108B0, func_00210070, (u8 *s, u32 id, u32 k), (s - 4, id, k))
-THUNKV(func_002108A0, func_0020FE30, (u8 *s, u32 id, u32 k), (s - 4, id, k))
-THUNKV(func_00210890, func_0020FD90, (u8 *s, u32 k, u32 pos, u32 m), (s - 4, k, pos, m))
-THUNKV(func_00210880, func_0020FD20, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_00210870, func_0020FC40, (u8 *s, u32 k, u32 pos), (s - 4, k, pos))
-THUNK(func_00210860, s32, func_0020FBD0, (u8 *s, u32 k, u32 a), (s - 4, k, a))
-THUNK(func_00210840, s32, func_0020FB50, (u8 *s, u32 k, u32 a, u32 b), (s - 4, k, a, b))
-THUNK(func_00210850, s32, func_0020FB20, (u8 *s, u32 k, s32 *p), (s - 4, k, p))
-THUNK(func_00210830, s32, func_0020FAB0, (u8 *s, u32 k, u32 a), (s - 4, k, a))
-THUNK(func_00210820, s32, func_0020FA30, (u8 *s, u32 k, u32 a, u32 b), (s - 4, k, a, b))
-THUNK(func_00210810, s32, func_0020F9C0, (u8 *s, u32 k, u32 v), (s - 4, k, v))
-THUNK(func_00210800, u8, func_0020F950, (u8 *s, u32 k), (s - 4, k))
-THUNK(func_002107F0, s32, func_0020F8E0, (u8 *s, u32 k, u32 t), (s - 4, k, t))
-THUNK(func_002107E0, u16, func_0020F870, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_002107D0, func_0020F810, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
-THUNKV(func_002107C0, func_0020F740, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
-THUNKV(func_002107B0, func_0020F6C0, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
-THUNKV(func_002107A0, func_0020F570, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
-THUNKV(func_00210790, func_0020F4D0, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
-THUNKV(func_00210780, func_0020F1B0, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_00210770, func_0020F0D0, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_00210760, func_0020F070, (u8 *s, s8 m), (s - 4, m))
-THUNK(func_00210750, s8, func_0020E8C0, (u8 *s), (s - 4))
-THUNK(func_00210740, u8, func_0020E8A0, (u8 *s, u32 k), (s - 4, k))
-THUNK(func_00210730, s32, func_0020F000, (u8 *s, u32 k), (s - 4, k))
-THUNK(func_00210720, u16, func_0020EFD0, (u8 *s, u32 ch), (s - 4, ch))
-THUNKV(func_00210710, func_0020EF50, (u8 *s, u32 ch, u32 v), (s - 4, ch, v))
-THUNK(func_00210700, s32, func_0020EED0, (u8 *s, const char *f, u32 k, u32 p, void *buf), (s - 4, f, k, p, buf))
-THUNKV(func_002106E0, func_0020EE60, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_002106D0, func_0020EDF0, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_002106F0, func_0020ED30, (u8 *s), (s - 4))
-THUNK(func_002106C0, s32, func_0020ECF0, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_002106B0, func_0020EC70, (u8 *s, u32 st), (s - 4, st))
-THUNKV(func_002106A0, func_0020EC00, (u8 *s), (s - 4))
-THUNKV(func_00210690, func_0020EB70, (u8 *s), (s - 4))
-THUNKV(func_00210680, func_0020EB30, (u8 *s), (s - 4))
-THUNK(func_00210670, u8, func_0020E880, (u8 *s, u32 k), (s - 4, k))
-THUNKV(func_00210650, func_0020E9A0, (u8 *s, f32 v), (s - 4, v))
-THUNKV(func_00210640, func_0020E950, (u8 *s, f32 v), (s - 4, v))
-THUNKV(func_00210630, func_0020E8D0, (u8 *s), (s - 4))
-THUNKV(func_00210620, func_0020FEA0, (u8 *s, u32 id, u32 k, s8 v, s8 p), (s - 4, id, k, v, p))
-THUNKV(func_00210660, func_0020E9F0, (u8 *s, u32 w), (s - 4, w))
-THUNK(func_00210610, u8 *, func_0020E870, (u8 *s), (s - 4))
+THUNK(func_002108E0, u8 *, SndDriver_dtor, (u8 *s, s32 f), (s - 4, f))
+THUNKV(func_002108D0, SndDriver_StopAll, (u8 *s), (s - 4))
+THUNKV(func_002108C0, SndDriver_StopMasks, (u8 *s, u32 a, u32 b), (s - 4, a, b))
+THUNKV(func_002108B0, SndDriver_Play, (u8 *s, u32 id, u32 k), (s - 4, id, k))
+THUNKV(func_002108A0, SndDriver_StopSound, (u8 *s, u32 id, u32 k), (s - 4, id, k))
+THUNKV(func_00210890, SndDriver_SeqPlay, (u8 *s, u32 k, u32 pos, u32 m), (s - 4, k, pos, m))
+THUNKV(func_00210880, SndDriver_SeqStop, (u8 *s, u32 k), (s - 4, k))
+THUNKV(func_00210870, SndDriver_SeqRestart, (u8 *s, u32 k, u32 pos), (s - 4, k, pos))
+THUNK(func_00210860, s32, SndDriver_SeqParam1B, (u8 *s, u32 k, u32 a), (s - 4, k, a))
+THUNK(func_00210840, s32, SndDriver_SeqParam2B, (u8 *s, u32 k, u32 a, u32 b), (s - 4, k, a, b))
+THUNK(func_00210850, s32, SndDriver_SeqParamPtr, (u8 *s, u32 k, s32 *p), (s - 4, k, p))
+THUNK(func_00210830, s32, SndDriver_SeqParam1, (u8 *s, u32 k, u32 a), (s - 4, k, a))
+THUNK(func_00210820, s32, SndDriver_SeqParam2, (u8 *s, u32 k, u32 a, u32 b), (s - 4, k, a, b))
+THUNK(func_00210810, s32, SndDriver_SetSeqVolume, (u8 *s, u32 k, u32 v), (s - 4, k, v))
+THUNK(func_00210800, u8, SndDriver_SeqVolume, (u8 *s, u32 k), (s - 4, k))
+THUNK(func_002107F0, s32, SndDriver_SetSeqTempo, (u8 *s, u32 k, u32 t), (s - 4, k, t))
+THUNK(func_002107E0, u16, SndDriver_SeqTempo, (u8 *s, u32 k), (s - 4, k))
+THUNKV(func_002107D0, SndDriver_Header, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
+THUNKV(func_002107C0, SndDriver_Table, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
+THUNKV(func_002107B0, SndDriver_Sequence, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
+THUNKV(func_002107A0, SndDriver_SamplesNow, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
+THUNKV(func_00210790, SndDriver_QueueSamples, (u8 *s, u32 k, u32 src, u32 n), (s - 4, k, src, n))
+THUNKV(func_00210780, SndDriver_Register, (u8 *s, u32 k), (s - 4, k))
+THUNKV(func_00210770, SndDriver_Unload, (u8 *s, u32 k), (s - 4, k))
+THUNKV(func_00210760, SndDriver_SetOutputMode, (u8 *s, s8 m), (s - 4, m))
+THUNK(func_00210750, s8, SndDriver_OutputMode, (u8 *s), (s - 4))
+THUNK(func_00210740, u8, SndDriver_TransferRunning, (u8 *s, u32 k), (s - 4, k))
+THUNK(func_00210730, s32, SndDriver_BankLoading, (u8 *s, u32 k), (s - 4, k))
+THUNK(func_00210720, u16, SndDriver_GetVolume, (u8 *s, u32 ch), (s - 4, ch))
+THUNKV(func_00210710, SndDriver_SetVolume, (u8 *s, u32 ch, u32 v), (s - 4, ch, v))
+THUNK(func_00210700, s32, SndDriver_LoadPart, (u8 *s, const char *f, u32 k, u32 p, void *buf), (s - 4, f, k, p, buf))
+THUNKV(func_002106E0, SndDriver_CancelFile, (u8 *s, u32 k), (s - 4, k))
+THUNKV(func_002106D0, SndDriver_DropFile, (u8 *s, u32 k), (s - 4, k))
+THUNKV(func_002106F0, SndDriver_DropFiles, (u8 *s), (s - 4))
+THUNK(func_002106C0, s32, SndDriver_BankFileLoaded, (u8 *s, u32 k), (s - 4, k))
+THUNKV(func_002106B0, SndDriver_PlacedState, (u8 *s, u32 st), (s - 4, st))
+THUNKV(func_002106A0, SndDriver_StopPlaced, (u8 *s), (s - 4))
+THUNKV(func_00210690, SndDriver_StopPlacedButBanks, (u8 *s), (s - 4))
+THUNKV(func_00210680, SndDriver_StopVoices, (u8 *s), (s - 4))
+THUNK(func_00210670, u8, SndDriver_BankLoaded, (u8 *s, u32 k), (s - 4, k))
+THUNKV(func_00210650, SndDriver_SetSound, (u8 *s, f32 v), (s - 4, v))
+THUNKV(func_00210640, SndDriver_SetMaster, (u8 *s, f32 v), (s - 4, v))
+THUNKV(func_00210630, SndDriver_SendMaster, (u8 *s), (s - 4))
+THUNKV(func_00210620, SndDriver_PlayPlaced, (u8 *s, u32 id, u32 k, s8 v, s8 p), (s - 4, id, k, v, p))
+THUNKV(func_00210660, SndDriver_PlayPositioned, (u8 *s, u32 w), (s - 4, w))
+THUNK(func_00210610, u8 *, SndDriver_Block3D, (u8 *s), (s - 4))

@@ -57,6 +57,7 @@ static inline void GsDrawEnv_Common(GsDrawEnv *d, s16 psm, s16 w, s16 h, s32 zte
 }
 
 /* sceGsSetDefDrawEnv(env, psm, w, h, ztest, zpsm): drawing context 1, frame buffer at 0. */
+/* (possibly dead code: nothing in the game references it) */
 s32 func_0010C5C8(GsDrawEnv *d, s32 psm, s32 w, s32 h, s32 ztest, s32 zpsm) {
     d->frameAddr = 0x4C;
     d->frame = (u64)((((s16)w + 63) >> 6) & 0x3F) << 16 | (u64)((s16)psm & 0xF) << 24;
@@ -70,6 +71,7 @@ s32 func_0010C5C8(GsDrawEnv *d, s32 psm, s32 w, s32 h, s32 ztest, s32 zpsm) {
 }
 
 /* sceGsSetDefDrawEnv2: the same for drawing context 2 (frame width rounded down). */
+/* (possibly dead code: nothing in the game references it) */
 s32 func_0010D020(GsDrawEnv *d, s32 psm, s32 w, s32 h, s32 ztest, s32 zpsm) {
     d->frameAddr = 0x4D;
     d->frame = (u64)(((s16)w >> 6) & 0x3F) << 16 | (u64)((s16)psm & 0xF) << 24;
@@ -84,6 +86,7 @@ s32 func_0010D020(GsDrawEnv *d, s32 psm, s32 w, s32 h, s32 ztest, s32 zpsm) {
 
 /* sceGsSetDefClear(clear, ztest, x, y, w, h, r, g, b, a, z): a sprite covering the area in the
  * given colour (Z test off while drawing it), then the Z test mode. */
+/* (possibly dead code: nothing in the game references it) */
 s32 func_0010C7B0(u64 *c, s32 ztest, s32 x, s32 y, s32 w, s32 h, s32 r, s32 g, s32 b, s32 a, u32 z) {
     c[2] = 6;   /* PRIM: sprite */
     c[5] = 1;
@@ -102,6 +105,7 @@ s32 func_0010C7B0(u64 *c, s32 ztest, s32 x, s32 y, s32 w, s32 h, s32 r, s32 g, s
 
 /* sceGsSwapDBuff(db, field): show display environment `field`, send that buffer's drawing
  * environment (the sceGsDBuff layout: two display environments, then two GIF packets). */
+/* (possibly dead code: nothing in the game references it) */
 void func_0010D200(u8 *db, s32 field) {
     s32 f = field & 1;
 

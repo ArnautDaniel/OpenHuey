@@ -435,12 +435,12 @@ void func_001BF080(u8 *s) {
     func_001EE798();
     AT(s, 0x10, s32) = func_001BC0F0(s + 0x20, D_0044FEE8, 0, 0, 0);
     func_001AACD0(s + 0x305280);
-    func_002102E0(s + 0x395D40);
+    SndDriver_Start(s + 0x395D40);
     Pads_Init(s + 0x40);
     func_00226570(s + 0x390);
-    func_001B83D0(s + 0x460, 2);
+    Renderer_SetupVideo(s + 0x460, 2);
     VCALL(s + 0x30CF40, 0xC, void (*)(void *))(s + 0x30CF40);
-    func_001B8250(s + 0x460);
+    Renderer_AllocVram(s + 0x460);
     /* timer 0 and 1: count on the horizontal blank */
     HW_WRITE32(0x10000010, 0x82);
     HW_WRITE32(0x10000000, 0);
@@ -502,7 +502,7 @@ extern void func_001AACC0(void *snd);     /* ADX sound system tick */
 void System_EndFrame(u8 *s) {
     s32 n;
 
-    func_001B87D0(s + 0x460);
+    Renderer_WaitChain(s + 0x460);
     VSYNC_WAIT(D_0047B204);
     n = D_0047B20C - AT(s, 0x1C, s32);
     if (n < 0) {
@@ -513,12 +513,12 @@ void System_EndFrame(u8 *s) {
     }
     AT(s, 0x1C, s32) = D_0047B20C;
     HW_WRITE32(0x10000800, 0);   /* timer 1 count */
-    func_001B8750(s + 0x460);
-    func_001B86A0(s + 0x460);
+    Renderer_SendFinal(s + 0x460);
+    Renderer_NextClear(s + 0x460);
     VSYNC_WAIT(D_0047B208);
     HW_WRITE32(0x10000000, 0);   /* timer 0 count */
-    func_001B85B0(s + 0x460);
-    func_00210230(s + 0x395D40);
+    Renderer_EndFrame(s + 0x460);
+    SndDriver_Frame(s + 0x395D40);
     func_001AACC0(s + 0x305280);
     Loader_Tick(s + 0x319900);
     Rumble_Tick((Rumble *)(s + 0x300));
@@ -669,7 +669,7 @@ void System_Shutdown(u8 *s) {
     MemCard_Shutdown((MemCard *)(s + 0x390));
     func_001EEA38();
     Loader_CloseAll(s + 0x319900);
-    func_00210180(s + 0x395D40);
+    SndDriver_FreeIop(s + 0x395D40);
     func_001AAC60(s + 0x305280);
     func_0010D3E0(0);
 }
@@ -677,10 +677,10 @@ void System_Shutdown(u8 *s) {
 /* +0x14 frame without the vblank wait: finish and send the renderer's frame, tick the parts */
 /* 0x001BEE70 */
 void System_FrameNoWait(u8 *s) {
-    func_001B87D0(s + 0x460);
+    Renderer_WaitChain(s + 0x460);
     func_0023C310();
-    func_001B85B0(s + 0x460);
-    func_00210230(s + 0x395D40);
+    Renderer_EndFrame(s + 0x460);
+    SndDriver_Frame(s + 0x395D40);
     func_001AACC0(s + 0x305280);
     Loader_Tick(s + 0x319900);
     Rumble_Tick((Rumble *)(s + 0x300));

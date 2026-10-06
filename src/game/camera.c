@@ -63,12 +63,13 @@ extern void *D_00469B40[];
 
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-s32 func_00121B40(void *p, f32 a, f32 b);
+s32 Camera_MtxTranslation(void *p, f32 a, f32 b);
 
-void *func_00122AD0(u8 *o, s32 flags);
+void *CameraBase_dtor(u8 *o, s32 flags);
 
 /* +0x8 */
-Camera *func_001218A0(Camera *c, s32 flags) {
+/* 0x001218A0 */
+Camera *Camera_dtor(Camera *c, s32 flags) {
     if (c != NULL) {
         c->vtbl = D_00469A60;
         if (c != NULL) {
@@ -85,7 +86,8 @@ Camera *func_001218A0(Camera *c, s32 flags) {
 }
 
 /* +0xC defaults: 60 degree view from the origin towards +z, no path */
-void func_00122A30(Camera *c) {
+/* 0x00122A30 */
+void Camera_Defaults(Camera *c) {
     c->nearZ = 1.0f;
     c->farZ = 2000.0f;
     c->fov = 0x1.0c1524p+0f;   /* 60 degrees */
@@ -115,7 +117,8 @@ void func_00122A30(Camera *c) {
 }
 
 /* destructor (vtable D_00469B40) */
-void *func_00122AD0(u8 *o, s32 flags) {
+/* 0x00122AD0 */
+void *CameraBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00469B40;
         gCamera = NULL;
@@ -127,33 +130,40 @@ void *func_00122AD0(u8 *o, s32 flags) {
 }
 
 /* +0x10 reset */
-void func_00122A20(Camera *c) {
+/* 0x00122A20 */
+void Camera_Reset(Camera *c) {
     VCALL(c, 0xC, void (*)(Camera *))(c);
 }
 
 /* +0x1C / +0x20 eye */
-void func_001225E0(Camera *c, f32 x, f32 y, f32 z) {
+/* 0x001225E0 */
+void Camera_SetEye(Camera *c, f32 x, f32 y, f32 z) {
     c->eye[0] = x;
     c->eye[1] = y;
     c->eye[2] = z;
 }
 
-void func_001225D0(Camera *c, f32 *out) { sceVu0CopyVector(out, c->eye); }
+/* 0x001225D0 */
+void Camera_GetEye(Camera *c, f32 *out) { sceVu0CopyVector(out, c->eye); }
 
 /* +0x24 */
-void func_001225C0(Camera *c, f32 *out) { sceVu0CopyVector(out, c->unk60); }
+/* 0x001225C0 */
+void Camera_Get60(Camera *c, f32 *out) { sceVu0CopyVector(out, c->unk60); }
 
 /* +0x28 / +0x2C target */
-void func_001225B0(Camera *c, f32 x, f32 y, f32 z) {
+/* 0x001225B0 */
+void Camera_SetTarget(Camera *c, f32 x, f32 y, f32 z) {
     c->target[0] = x;
     c->target[1] = y;
     c->target[2] = z;
 }
 
-void func_001225A0(Camera *c, f32 *out) { sceVu0CopyVector(out, c->target); }
+/* 0x001225A0 */
+void Camera_GetTarget(Camera *c, f32 *out) { sceVu0CopyVector(out, c->target); }
 
 /* +0x30 move the eye, the target following (same view direction) */
-void func_00122550(Camera *c, f32 x, f32 y, f32 z) {
+/* 0x00122550 */
+void Camera_MoveEye(Camera *c, f32 x, f32 y, f32 z) {
     f32 dx = x - c->eye[0], dy = y - c->eye[1], dz = z - c->eye[2];
 
     c->eye[0] = x;
@@ -165,7 +175,8 @@ void func_00122550(Camera *c, f32 x, f32 y, f32 z) {
 }
 
 /* +0x34 move the target, the eye following */
-void func_00122500(Camera *c, f32 x, f32 y, f32 z) {
+/* 0x00122500 */
+void Camera_MoveTarget(Camera *c, f32 x, f32 y, f32 z) {
     f32 dx = x - c->target[0], dy = y - c->target[1], dz = z - c->target[2];
 
     c->target[0] = x;
@@ -177,42 +188,58 @@ void func_00122500(Camera *c, f32 x, f32 y, f32 z) {
 }
 
 /* +0x44 .. +0x58 matrices */
-void func_00122090(Camera *c, f32 (*out)[4]) { sceVu0CopyMatrix(out, c->unk150); }
-void func_00122080(Camera *c, f32 (*out)[4]) { sceVu0CopyMatrix(out, c->unk190); }
-void func_00122050(Camera *c, f32 (*out)[4]) { sceVu0CopyMatrix(out, c->unk1D0); }
-void func_00122070(Camera *c, f32 (*m)[4]) { sceVu0CopyMatrix(c->unk150, m); }
-void func_00122060(Camera *c, f32 (*m)[4]) { sceVu0CopyMatrix(c->unk190, m); }
-void func_00122040(Camera *c, f32 (*out)[4]) { sceVu0CopyMatrix(out, c->unk210); }
+/* 0x00122090 */
+void Camera_GetMtx150(Camera *c, f32 (*out)[4]) { sceVu0CopyMatrix(out, c->unk150); }
+/* 0x00122080 */
+void Camera_GetMtx190(Camera *c, f32 (*out)[4]) { sceVu0CopyMatrix(out, c->unk190); }
+/* 0x00122050 */
+void Camera_GetMtx1D0(Camera *c, f32 (*out)[4]) { sceVu0CopyMatrix(out, c->unk1D0); }
+/* 0x00122070 */
+void Camera_SetMtx150(Camera *c, f32 (*m)[4]) { sceVu0CopyMatrix(c->unk150, m); }
+/* 0x00122060 */
+void Camera_SetMtx190(Camera *c, f32 (*m)[4]) { sceVu0CopyMatrix(c->unk190, m); }
+/* 0x00122040 */
+void Camera_GetMtx210(Camera *c, f32 (*out)[4]) { sceVu0CopyMatrix(out, c->unk210); }
 
 /* +0x5C / +0x64 field of view */
-void func_00122030(Camera *c, f32 fov) { c->fov = fov; }
-f32 func_00122010(Camera *c) { return c->fov; }
+/* 0x00122030 */
+void Camera_SetFov(Camera *c, f32 fov) { c->fov = fov; }
+/* 0x00122010 */
+f32 Camera_GetFov(Camera *c) { return c->fov; }
 
 /* +0x60 view matrix */
-void func_00122020(Camera *c, f32 (*out)[4]) { sceVu0CopyMatrix(out, c->view); }
+/* 0x00122020 */
+void Camera_GetView(Camera *c, f32 (*out)[4]) { sceVu0CopyMatrix(out, c->view); }
 
 /* +0x68 heading of the view direction */
-f32 func_00122000(Camera *c) { return func_0031C5C0(c->view[0][2], c->view[2][2]); }
+/* 0x00122000 */
+f32 Camera_ViewHeading(Camera *c) { return func_0031C5C0(c->view[0][2], c->view[2][2]); }
 
 /* +0x6C */
-void func_00121FF0(Camera *c, f32 v) { c->unk4 = v; }
+/* 0x00121FF0 */
+void Camera_Set4(Camera *c, f32 v) { c->unk4 = v; }
 
 /* +0x70 / +0x74 roll */
-void func_00121910(Camera *c, f32 v) { c->roll = v; }
-f32 func_00121920(Camera *c) { return c->roll; }
+/* 0x00121910 */
+void Camera_SetRoll(Camera *c, f32 v) { c->roll = v; }
+/* 0x00121920 */
+f32 Camera_GetRoll(Camera *c) { return c->roll; }
 
 /* +0x78 follow path `path` (NULL: none) from its start */
-void func_00121FD0(Camera *c, s32 *path) {
+/* 0x00121FD0 */
+void Camera_FollowPath(Camera *c, s32 *path) {
     c->path = path;
     c->unk294 = -1;
     c->unk298 = -1;
 }
 
 /* +0x7C */
-void func_00121FC0(Camera *c) { c->path = NULL; }
+/* 0x00121FC0 */
+void Camera_NoPath(Camera *c) { c->path = NULL; }
 
 /* +0x80 number of path entries */
-s32 func_00121F80(Camera *c) {
+/* 0x00121F80 */
+s32 Camera_PathCount(Camera *c) {
     s32 *e = c->path;
     s32 n = 0;
 
@@ -227,7 +254,8 @@ s32 func_00121F80(Camera *c) {
 }
 
 /* +0x88 apply a preset */
-void func_00121D00(Camera *c, CameraSet *s) {
+/* 0x00121D00 */
+void Camera_ApplyPreset(Camera *c, CameraSet *s) {
     VCALL(c, 0x1C, void (*)(Camera *, f32, f32, f32))(c, s->eye[0], s->eye[1], s->eye[2]);
     VCALL(c, 0x28, void (*)(Camera *, f32, f32, f32))(c, s->target[0], s->target[1], s->target[2]);
     VCALL(c, 0x5C, void (*)(Camera *, f32))(c, s->fov);
@@ -236,7 +264,8 @@ void func_00121D00(Camera *c, CameraSet *s) {
 }
 
 /* +0x8C the preset +0x84 makes from `arg`, applied */
-void func_00121CB0(Camera *c, s32 arg) {
+/* 0x00121CB0 */
+void Camera_ApplyPresetArg(Camera *c, s32 arg) {
     CameraSet s;
 
     VCALL(c, 0x84, void (*)(Camera *, s32, CameraSet *))(c, arg, &s);
@@ -244,16 +273,22 @@ void func_00121CB0(Camera *c, s32 arg) {
 }
 
 /* +0x90 .. +0x9C */
-s32 func_00121930(Camera *c) { return c->unk294; }
-s32 func_00121940(Camera *c) { return c->unk298; }
-s32 *func_00121950(Camera *c) { return c->path; }
-u8 *func_00121CA0(Camera *c) { return c->unk2A0; }
+/* 0x00121930 */
+s32 Camera_Get294(Camera *c) { return c->unk294; }
+/* 0x00121940 */
+s32 Camera_Get298(Camera *c) { return c->unk298; }
+/* 0x00121950 */
+s32 *Camera_GetPath(Camera *c) { return c->path; }
+/* 0x00121CA0 */
+u8 *Camera_CurrentPreset(Camera *c) { return c->unk2A0; }
 
 /* +0xA0 */
-void func_00121960(Camera *c, f32 *out) { sceVu0CopyVector(out, c->unk70); }
+/* 0x00121960 */
+void Camera_GetDir(Camera *c, f32 *out) { sceVu0CopyVector(out, c->unk70); }
 
 /* +0xA4 the view matrix's second column (an axis), w 0 */
-void func_00121970(Camera *c, f32 *out) {
+/* 0x00121970 */
+void Camera_ViewAxis(Camera *c, f32 *out) {
     out[0] = c->view[0][1];
     out[1] = c->view[1][1];
     out[2] = c->view[2][1];
@@ -261,26 +296,33 @@ void func_00121970(Camera *c, f32 *out) {
 }
 
 /* +0xA8 .. +0xB4 depth ranges */
-void func_00121990(Camera *c, f32 v) { c->zMax = v; }
-void func_001219A0(Camera *c, f32 v) { c->zMin = v; }
-void func_001219B0(Camera *c, f32 v) { c->nearZ = v; }
-void func_001219C0(Camera *c, f32 v) { c->farZ = v; }
+/* 0x00121990 */
+void Camera_SetZMax(Camera *c, f32 v) { c->zMax = v; }
+/* 0x001219A0 */
+void Camera_SetZMin(Camera *c, f32 v) { c->zMin = v; }
+/* 0x001219B0 */
+void Camera_SetNear(Camera *c, f32 v) { c->nearZ = v; }
+/* 0x001219C0 */
+void Camera_SetFar(Camera *c, f32 v) { c->farZ = v; }
 
 /* +0xB8 the Z buffer value of view depth `d` (zMin at nearZ, zMax at farZ, 1/d in between) */
-s32 func_00121C50(Camera *c, f32 d) {
+/* 0x00121C50 */
+s32 Camera_ZValue(Camera *c, f32 d) {
     f32 n = c->nearZ, f = c->farZ;
 
     return (s32)(n * f * (c->zMax - c->zMin) / (f - n) / d - (c->zMax * n - c->zMin * f) / (f - n));
 }
 
 /* +0xC0 / +0xC4 */
-void func_00121B30(Camera *c, f32 a, f32 b) {
+/* 0x00121B30 */
+void Camera_Set28(Camera *c, f32 a, f32 b) {
     c->unk28 = a;
     c->unk2C = b;
 }
 
 /* Copy the translation column of a matrix (rows at +0xC4) into a vec4 (w = 0). */
-s32 func_00121B40(void *p, f32 a, f32 b) {
+/* 0x00121B40 */
+s32 Camera_MtxTranslation(void *p, f32 a, f32 b) {
     f32 f10, fc, d, lo, hi;
     s32 n;
 
@@ -313,21 +355,26 @@ s32 func_00121B40(void *p, f32 a, f32 b) {
     return 1;
 }
 
-void func_001219D0(Camera *c, f32 x, f32 y) {
+/* 0x001219D0 */
+void Camera_SetCentre(Camera *c, f32 x, f32 y) {
     c->centerX = x;
     c->centerY = y;
 }
 
 /* +0xC8 */
-void func_00121B20(Camera *c, f32 (*out)[4]) { sceVu0CopyMatrix(out, c->viewScreen); }
+/* 0x00121B20 */
+void Camera_GetViewScreen(Camera *c, f32 (*out)[4]) { sceVu0CopyMatrix(out, c->viewScreen); }
 
 /* +0xCC / +0xD0 */
-f32 func_001219E0(Camera *c) { return c->nearZ; }
-f32 func_001219F0(Camera *c) { return c->farZ; }
+/* 0x001219E0 */
+f32 Camera_GetNear(Camera *c) { return c->nearZ; }
+/* 0x001219F0 */
+f32 Camera_GetFar(Camera *c) { return c->farZ; }
 
 /* +0x14 update the matrices: world to view (+0x18), then the view-to-screen matrices (the
  * screen's and a half-size one for offscreen work) and the clip matrices from them */
-void func_00122810(Camera *c) {
+/* 0x00122810 */
+void Camera_Update(Camera *c) {
     f32 half[4][4] __attribute__((aligned(16)));
     f32 clip2[4][4] __attribute__((aligned(16)));
 
@@ -369,7 +416,8 @@ void func_00122810(Camera *c) {
 /* +0x18 the world-to-view matrix `out`: the direction to the target (+0x70), the screen
  * distance for the field of view (+0x8 = 1.4 / tan(fov / 2)), the eye shaken by +0x4 at random
  * (+0x60), and the up vector rolled by +0x30 about the direction (+0x80) */
-void func_001225F0(Camera *c, f32 (*out)[4]) {
+/* 0x001225F0 */
+void Camera_ViewMatrix(Camera *c, f32 (*out)[4]) {
     f32 rot[4][4] __attribute__((aligned(16)));
     f32 q[4] __attribute__((aligned(16)));
     f32 s[4] __attribute__((aligned(16)));
@@ -421,7 +469,8 @@ static const union { u32 u; f32 f; } sFov60 = {0x3F860A92};   /* 60 degrees */
 
 /* +0x84 preset `n` into `out` and note it as the current one (+0x2A0); `out` keeps the
  * defaults if there is no such preset */
-void func_00121D90(Camera *c, u32 n, CameraSet *out) {
+/* 0x00121D90 */
+void Camera_Preset(Camera *c, u32 n, CameraSet *out) {
     static const union { u32 u; f32 f; } k2Pi = {0x40C90FDB};
     s32 *e;
     u32 i;
@@ -480,7 +529,8 @@ void func_00121D90(Camera *c, u32 n, CameraSet *out) {
 
 /* +0x3C turn the view: the point looked at (+0x50) goes round the eye (+0x40) by `yaw` about Y,
  * then by `pitch` about the axis square to the up (+0x80) and the view */
-void func_001221E0(Camera *c, f32 pitch, f32 yaw) {
+/* 0x001221E0 */
+void Camera_TurnView(Camera *c, f32 pitch, f32 yaw) {
     f32 r[4][4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
     f32 q[4] __attribute__((aligned(16)));
@@ -522,7 +572,8 @@ void func_001221E0(Camera *c, f32 pitch, f32 yaw) {
 
 /* is point p (its w set to 1) outside the view volume: through the world-to-clip matrix
  * (+0x250), any of |x|, |y|, |z| beyond |w| */
-s32 func_00121A00(Camera *c, f32 *p) {
+/* 0x00121A00 */
+s32 Camera_OutOfView(Camera *c, f32 *p) {
     f32 v[4] __attribute__((aligned(16)));
     f32 w;
 
@@ -546,7 +597,8 @@ s32 func_00121A00(Camera *c, f32 *p) {
 
 /* move the camera (eye and target) by d in its own frame: x to the right, y up the view, z
  * along the view on the level; nothing for a zero d */
-void func_001220A0(Camera *c, f32 *d) {
+/* 0x001220A0 */
+void Camera_MoveLocal(Camera *c, f32 *d) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
 
@@ -571,7 +623,8 @@ void func_001220A0(Camera *c, f32 *d) {
 
 /* turn the view the other way round: the eye (+0x40) goes round the point looked at (+0x50) by
  * `yaw` about Y, then by `pitch` about the axis square to the up and the view */
-void func_00122370(Camera *c, f32 pitch, f32 yaw) {
+/* 0x00122370 */
+void Camera_Orbit(Camera *c, f32 pitch, f32 yaw) {
     f32 r[4][4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
     f32 q[4] __attribute__((aligned(16)));

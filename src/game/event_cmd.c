@@ -1455,7 +1455,7 @@ void EventCmd_Run(VObject *ev) {
         VCALL(gRenderer, 0x60, void (*)(VObject *, s32))(gRenderer, pc[1]);
         break;
     case 0xCE:
-        ((void (*)(VObject *))func_001FB5F0)(ev);
+        ((void (*)(VObject *))Events_DealThings)(ev);
         break;
     case 0xD1:
         VCALL(gSubScreen, 0x2C, void (*)(VObject *, s32))(gSubScreen, (s8)pc[1]);
