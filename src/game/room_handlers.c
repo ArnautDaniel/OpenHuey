@@ -7216,3 +7216,112 @@ s32 func_00300BC0(void *self, Character *c, u8 *cmd) {
     }
     return 1;
 }
+
+/* ---- room 54 (D_00428030): the sliding blocks - group byte 3 of four room objects
+ * (D_00428050, four names a group) pushed to their stops (D_00428010: x, z a group) ---- */
+extern const char *D_00428050[];
+extern const f32 D_00428010[];
+extern VObject *D_00456E00;   /* the room's triangle groups */
+
+/* a grey puff (dust, 0x50 grey, alpha 0x10) at (x, y, z) */
+static inline void block_dust(u8 *mgr, s32 slot, f32 x, f32 y, f32 z) {
+    struct {
+        f32 pos[4];
+        s32 kind, a, b, c, d;
+    } prm __attribute__((aligned(16)));
+
+    prm.pos[0] = x;
+    prm.pos[1] = y;
+    prm.pos[3] = 1.0f;
+    prm.d = 0x10;
+    prm.kind = 1;
+    prm.c = 0x50;
+    prm.pos[2] = z;
+    prm.b = 0x50;
+    prm.a = 0x50;
+    func_002D6090(mgr, slot, &prm);
+}
+
+/* byte 4: 0 the group at its stop; 1 / 2 a step (0.25) along x / z toward it (event 0 cleared,
+ * +0x60, when one gets there) and half the time a puff by the third; 3 / 4 the grinding sound
+ * (0xC) on / off at the first; 5 the placed things on the group's triangles lifted (+0x28) */
+s32 func_0030FA90(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kQ = {0x3E800000};   /* 0.25 */
+    VObject *ev, *rnd;
+    u32 g = cmd[3];
+    u8 *o, *mgr;
+    s32 k, slot;
+    f32 v, a, b;
+
+    switch (cmd[4]) {
+    case 0:
+        for (k = 0; k < 4; k++) {
+            o = obj_named(D_00428050[g * 4 + k]);
+            AT(o, 0x20, f32) = D_00428010[g * 2];
+            AT(o, 0x28, f32) = D_00428010[g * 2 + 1];
+        }
+        break;
+    case 1:
+    case 2:
+        ev = D_0044E4D0;
+        for (k = 0; k < 4; k++) {
+            u32 at = cmd[4] == 1 ? 0x20 : 0x28;
+            f32 stop = D_00428010[g * 2 + (cmd[4] == 1 ? 0 : 1)];
+
+            o = obj_named(D_00428050[g * 4 + k]);
+            v = AT(o, at, f32) - kQ.f;
+            AT(o, at, f32) = v;
+            if (v < stop) {
+                AT(o, at, f32) = stop;
+                VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 0);
+            }
+        }
+        rnd = D_0044E550;
+        if (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 1) {
+            break;
+        }
+        o = obj_named(D_00428050[g * 4 + 2]);
+        if (cmd[4] == 1) {
+            mgr = D_0044E578;
+            slot = Effect_New(mgr, 0x720, dust_cloud_init);
+            v = 6.0f + AT(o, 0x20, f32);
+            block_dust(mgr, slot, v, AT(o, 0x24, f32), AT(o, 0x28, f32) + 25.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f));
+        } else {
+            if (g == 0) {
+                a = 30.0f;
+                b = 6.0f;
+            } else {
+                a = 12.0f;
+                b = 17.0f;
+            }
+            mgr = D_0044E578;
+            slot = Effect_New(mgr, 0x720, dust_cloud_init);
+            v = AT(o, 0x20, f32) + a * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+            block_dust(mgr, slot, v, AT(o, 0x24, f32), AT(o, 0x28, f32) + b);
+        }
+        break;
+    case 3:
+    case 4: {
+        f32 pos[4] __attribute__((aligned(16)));
+
+        o = obj_named(D_00428050[g * 4]);
+        sceVu0CopyVector(pos, (f32 *)(o + 0x20));
+        func_002FF650(D_0044E560, cmd[4] == 3 ? 0xC : 0x8000000C, 6, pos, 0, 0);
+        break;
+    }
+    case 5: {
+        VObject *list = D_0044F260, *rm = D_00456E00;
+
+        for (k = 0; k < 0x80; k++) {
+            u8 *t = VCALL(list, 0xC, u8 *(*)(VObject *, s32))(list, k);
+
+            if (t != NULL && AT(t, 0x28, u8) == 1
+                && VCALL(rm, 0x14, s32 (*)(VObject *, u32, s32))(rm, AT(t, 0x34, u32), g) != 0) {
+                AT(t, 0x28, u8) = 0;
+            }
+        }
+        break;
+    }
+    }
+    return 1;
+}
