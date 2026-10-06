@@ -1912,3 +1912,214 @@ void func_00335260(u8 *o) {
 void func_00335820(u8 *o) {
     thing_watch(o, 0x22D0, Burst4B_Init);
 }
+
+/* ---- the thing the second stalker (D_0044F808) is drawn to (code 0x3332B0..0x3344A0) and
+   more of the 0x367000 kinds ---- */
+
+extern VObject *D_0044F808;          /* the second stalker */
+extern VObject *gSceneGameF29740;
+extern VObject *D_00456DF8;          /* the room objects */
+extern VObject *D_0044E4E8, *D_0044E4F0;
+extern s32 func_002187D0(void *p, u32 tri, const f32 *pos);
+extern f32 func_001257B0(void *c, u32 goalTri, const f32 *goal, u32 mask);
+extern s32 func_0029A850(void *p);
+extern void func_0027E5A0(void *p, u32 tri);
+extern void func_002A8440(void *list, s32 kind, s32 room, u32 tri, s32 a4);
+extern f32 func_00124490(void *a, const f32 *pos);
+
+/* the second stalker (kinds 2, 6, 7, 0x1B) and the thing: when he comes into its room away
+   from Fiona it makes a noise (once per room, +0x122) and goes unless he's alerted (+0x16C9 >=
+   5). In Fiona's room, when he is searching (+0x16C8 1..3) and can reach it, he notices it
+   (a noise; at level 4 unless busy, func_0029A850, he goes for it and takes it when within 10
+   of it or of his path's end) */
+void func_003332B0(u8 *o) {
+    u8 *s = (u8 *)D_0044F808;
+
+    if (s == NULL || AT(s, 0x28, u8) == 0) {
+        return;
+    }
+    switch (AT(s, 0x153C, u8)) {
+    case 0x1B:
+    case 7:
+    case 6:
+    case 2:
+        break;
+    default:
+        return;
+    }
+    if (AT(s, 0x30, s32) != AT(o, 0x30, s32)) {
+        return;
+    }
+    if (AT(o, 0x30, s32) != AT(gCharPlayer, 0x30, s32)) {
+        if (AT(o, 0x122, u16) == (u16)AT(s, 0x30, s32)) {
+            return;
+        }
+        AT(o, 0x122, u16) = AT(s, 0x30, s32);
+        func_002A8440((u8 *)gProgress + 0x7A8, 0x1F, AT(o, 0x30, s32), AT(o, 0x34, u32), 0xFFFF);
+        if (AT(s, 0x16C9, u8) < 5) {
+            AT(o, 0x28, u8) = 0;
+        }
+        return;
+    }
+    switch (AT(s, 0x16C8, u8)) {
+    case 1:
+    case 3:
+    case 2:
+        break;
+    default:
+        return;
+    }
+    if (!(func_002187D0(s, AT(o, 0x34, u32), (f32 *)(o + 0x10)) & 0xFF)) {
+        return;
+    }
+    if (func_001257B0(s, AT(o, 0x34, u32), (f32 *)(o + 0x10), -1) <= 0.0f) {
+        return;
+    }
+    if (AT(s, 0x16C9, u8) != 4) {
+        func_002A8440((u8 *)gProgress + 0x7A8, 0x1F, AT(o, 0x30, s32), AT(o, 0x34, u32), 0xFFFF);
+        return;
+    }
+    if (func_0029A850(s) != 0) {
+        return;
+    }
+    VCALL(s, 0xAC, void (*)(void *, u32, f32 *, s32))(s, AT(o, 0x34, u32), (f32 *)(o + 0x10), -1);
+    func_0027E5A0(s, AT(o, 0x34, u32));
+    if (func_00124490(o, (f32 *)(s + 0x10)) < 10.0f) {
+        AT(o, 0x28, u8) = 0;
+        return;
+    }
+    if (VCALL(gSceneGameF29740, 0x3C, f32 (*)(VObject *, f32 *, s32, s32, void *))(gSceneGameF29740,
+            (f32 *)(s + 0x10), AT(s, 0x128, s32), AT(s, 0x124, s32), s + 0x12C) < 10.0f) {
+        AT(o, 0x28, u8) = 0;
+    }
+}
+
+/* +0x30 each frame (as func_002D5D10): gone after 2.5 minutes; the stalker's check; in Fiona's
+   room her kick */
+void func_003342D0(u8 *b) {
+    func_00121220(b);
+    if (AT(b, 0x28, u8) == 0) {
+        return;
+    }
+    if (AT(b, 0xE4, u32) >= 9000) {
+        AT(b, 0x28, u8) = 0;
+        return;
+    }
+    func_003332B0(b);
+    if (AT(b, 0x30, s32) != VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress)) {
+        return;
+    }
+    thing_kick(b);
+}
+
+/* +0x2C draw: its model lying flat (-90 degrees), 0.3 up, turned by +0x124 / 256; in its last
+   8 frames (age 8993..9000) faded out */
+void func_00333510(u8 *o) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kDown = {0xBFC90FDB};
+    struct {
+        void **vtbl;
+        s32 a;
+        u8 rest[0x38];
+    } d __attribute__((aligned(16)));
+    f32 pos[4] __attribute__((aligned(16)));
+    f32 rot[4] __attribute__((aligned(16)));
+    s32 late;
+
+    sceVu0CopyVector(pos, (f32 *)(o + 0x10));
+    pos[1] += 0x1.333334p-2f;   /* 0.3 */
+    rot[1] = 0.0f;
+    rot[0] = kDown.f;
+    rot[2] = kPi.f * (360.0f * ((f32)(u32)AT(o, 0x124, u16) / 256.0f) - 180.0f) / 180.0f;
+    d.vtbl = D_00476B50;
+    d.a = -1;
+    late = AT(o, 0xE4, s32) - 8992;
+    if (late > 0) {
+        VObject *tc = D_0044E4E8;
+
+        VCALL(tc, 0x18, void (*)(VObject *))(tc);
+        VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, (u32)(8 - late) << 28 | 0x808080);
+        func_0033BCB0(&d, pos, rot, 2, 0, 0xF);
+        VCALL(tc, 0x18, void (*)(VObject *))(tc);
+    } else {
+        func_0033BCB0(&d, pos, rot, 2, 0, 1);
+    }
+    d.vtbl = D_00469D00;
+}
+
+/* +0xC set up: the actor's, blocked by nav flags 0x20020008, in the current room, white, the
+   pursuer's room (0xFFFF none) and a random turn */
+void func_003344A0(u8 *o) {
+    func_00121300(o);
+    AT(o, 0xC4, s32) = 0;
+    AT(o, 0xC0, u32) = 0x20020008;
+    AT(o, 0xE0, u8) = 0;
+    AT(o, 0x30, s32) = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
+    AT(o, 0x11C, f32) = 1.0f;
+    AT(o, 0x118, f32) = 1.0f;
+    AT(o, 0x114, f32) = 1.0f;
+    AT(o, 0x110, f32) = 1.0f;
+    AT(o, 0x120, u16) = 0;
+    if (gCharPursuer != NULL) {
+        AT(o, 0x122, u16) = AT(gCharPursuer, 0x30, s32);
+    } else {
+        AT(o, 0x122, u16) = 0xFFFF;
+    }
+    AT(o, 0x124, u16) = VCALL(D_0044E550, 0x10, s32 (*)(VObject *))(D_0044E550) & 0xFF;
+}
+
+extern const s8 D_0047B018[6];
+
+/* its room object: the key D_0047B018 with +0x122 added to its fifth byte */
+static inline u8 *thing_room_obj(u8 *o) {
+    u8 key[6];
+    s32 i;
+
+    for (i = 0; i < 6; i += 2) {
+        key[i] = D_0047B018[i];
+        key[i + 1] = D_0047B018[i + 1];
+    }
+    key[4] += AT(o, 0x122, u8);
+    return VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, u8 *))(D_00456DF8, key);
+}
+
+/* its room object kept at its position */
+void func_00367220(u8 *o) {
+    sceVu0CopyVector((f32 *)(thing_room_obj(o) + 0x20), (f32 *)(o + 0x10));
+}
+
+/* +0xC set up: the actor's, blocked by nav flags 0x20020008, in the current room, white; its
+   room object's flag cleared */
+void func_00367D50(u8 *o) {
+    func_00121300(o);
+    AT(o, 0xC4, s32) = 0;
+    AT(o, 0xC0, u32) = 0x20020008;
+    AT(o, 0xE0, u8) = 0;
+    AT(o, 0x30, s32) = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
+    AT(o, 0x11C, f32) = 1.0f;
+    AT(o, 0x118, f32) = 1.0f;
+    AT(o, 0x114, f32) = 1.0f;
+    AT(o, 0x110, f32) = 1.0f;
+    AT(o, 0x120, u16) = 0;
+    *thing_room_obj(o) = 0;
+}
+
+/* falling: the velocity +0xB0 gains gravity (+0x100) and moves it */
+void func_00367470(u8 *o) {
+    if (AT(o, 0x28, u8) == 0) {
+        return;
+    }
+    sceVu0AddVector((f32 *)(o + 0xB0), (f32 *)(o + 0x100), (f32 *)(o + 0xB0));
+    sceVu0AddVector((f32 *)(o + 0x10), (f32 *)(o + 0xB0), (f32 *)(o + 0x10));
+}
+
+/* the same, gone once below -30 */
+void func_00368150(u8 *o) {
+    if (AT(o, 0x28, u8) == 0) {
+        return;
+    }
+    sceVu0AddVector((f32 *)(o + 0xB0), (f32 *)(o + 0x100), (f32 *)(o + 0xB0));
+    sceVu0AddVector((f32 *)(o + 0x10), (f32 *)(o + 0xB0), (f32 *)(o + 0x10));
+    if (AT(o, 0x14, f32) < -30.0f) {
+        AT(o, 0x28, u8) = 0;
+    }
+}
