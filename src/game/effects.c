@@ -5699,6 +5699,125 @@ u8 *func_00368BB0(u8 *o, s32 flags) {
     return o;
 }
 
+/* ---- D_00479F30 (0xE60 bytes): a trail of 32 smoke puffs rising from an object (+0xE50, its
+ * position at +0x10; done once its +0x28 clears), in two buffers of quad records (+0x10 +
+ * 0x600 x the current one +0xE58), velocities at +0xC50 (16 each), the quad drawer at +0xC10;
+ * +0xE54 off: no new puffs, gone once all have faded ---- */
+
+#define PUFF_REC(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0x600) + (i))
+#define PUFF_VEL(o, i) ((f32 *)((o) + 0xC50 + (i) * 0x10))
+
+/* (re)start puff `i` at the object, 3 x 3, at a random turn and drift; `stagger`: its alpha
+ * 0x20 less its index (the first round) */
+void func_00368C40(u8 *o, s32 i, s32 stagger) {
+    static const union { u32 u; f32 f; } k180 = {0x43340000}, kPi = {0x40490FDB};   /* multiplied first */
+    QuadRec *r = PUFF_REC(o, AT(o, 0xE58, s32), i);
+    VObject *rnd;
+    f32 *v;
+
+    r->rgba[0] = 0x80;
+    r->rgba[1] = 0x80;
+    r->rgba[2] = 0x80;
+    r->rgba[3] = 0x20;
+    if (stagger) {
+        r->rgba[3] -= i;
+    }
+    sceVu0CopyVector(r->pos, AT(o, 0xE50, f32 *) + 4);
+    r->pos[1] += 2.0f;
+    r->w = 3.0f;
+    r->h = 3.0f;
+    rnd = D_0044E550;
+    r->turn = kPi.f * (k180.f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) / 180.0f;
+    r->frame = 0;
+    v = PUFF_VEL(o, i);
+    v[0] = -0x1.99999ap-3f + 0x1.99999ap-2f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);   /* -0.2 + 0.4 x */
+    v[1] = 0x1.99999ap-3f + 0x1.99999ap-2f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
+    v[2] = -0x1.99999ap-3f + 0x1.99999ap-2f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
+}
+
+/* +0x18 start: from object `src` (all 32 puffs, staggered); none: off */
+void func_00368E10(u8 *o, u8 *src) {
+    s32 i;
+
+    if (src == NULL) {
+        AT(o, 0xE54, u8) = 1;
+        return;
+    }
+    AT(o, 0xE50, u8 *) = src;
+    AT(o, 0xE54, u8) = 0;
+    for (i = 0; i < 32; i++) {
+        func_00368C40(o, i, 1);
+    }
+}
+
+/* +0x10 update: flip the buffers; each puff carried over, fading (a faded one restarts while
+ * on), shrinking, turning a degree, drifting; 0 once off and all faded */
+s32 func_00368EB0(u8 *o) {
+    u8 done = 1;
+    s32 i, k;
+
+    if (!AT(o, 0xE54, u8) && AT(AT(o, 0xE50, u8 *), 0x28, u8) == 0) {
+        AT(o, 0xE54, u8) = 1;
+    }
+    AT(o, 0xE58, s32) ^= 1;
+    for (i = 0; i < 32; i++) {
+        u32 *src = (u32 *)PUFF_REC(o, AT(o, 0xE58, s32) ^ 1, i);
+        u32 *dst = (u32 *)PUFF_REC(o, AT(o, 0xE58, s32), i);
+        QuadRec *r;
+        f32 *v;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        r = PUFF_REC(o, AT(o, 0xE58, s32), i);
+        if (r->rgba[3] != 0) {
+            r->rgba[0] -= 2;
+            r->rgba[1] -= 2;
+            r->rgba[2] -= 2;
+            r->rgba[3] -= 1;
+            done = 0;
+            if (!AT(o, 0xE54, u8) && r->rgba[3] == 0) {
+                func_00368C40(o, i, 0);
+            }
+        }
+        r->w -= 0x1.99999ap-5f;   /* 0.05 */
+        r->turn += 0x1.1df46ap-6f;   /* a degree */
+        if (!(r->turn <= 0x1.921fb6p+1f)) {
+            r->turn -= 0x1.921fb6p+2f;
+        }
+        v = PUFF_VEL(o, i);
+        r->pos[0] += v[0];
+        r->pos[1] += v[1];
+        r->pos[2] += v[2];
+    }
+    if (AT(o, 0xE54, u8) == 1 && done == 1) {
+        return 0;
+    }
+    return 1;
+}
+
+/* +0xC set up: the drawer's settings (32 quads of a 32 x 32 cell at (384, 128), blended,
+ * palette 6, layer 0x19) */
+void func_003690F0(u8 *o) {
+    AT(o, 0xE58, s32) = 0;
+    AT(o, 0xC18, s64) = -1;
+    AT(o, 0xC28, s32) = 0;
+    AT(o, 0xC2C, s32) = 0;
+    AT(o, 0xC30, s32) = 0x19;
+    AT(o, 0xC34, s16) = 0x20;
+    AT(o, 0xC36, s16) = 0x180;
+    AT(o, 0xC38, s16) = 0x80;
+    AT(o, 0xC3A, s16) = 0x20;
+    AT(o, 0xC3C, s16) = 0x20;
+    AT(o, 0xC3E, s16) = 0x200;
+    AT(o, 0xC40, s16) = 0x100;
+    AT(o, 0xC42, s8) = 0;
+    AT(o, 0xC43, s8) = 1;
+    AT(o, 0xC44, s8) = 1;
+    AT(o, 0xC45, s8) = 0x10;
+    AT(o, 0xC46, s8) = 6;
+}
+
 /* (as func_002D63F0)  +0x8 destructor (the quad drawer's inlined) */
 u8 *func_00369170(u8 *o, s32 flags) {
     if (o == NULL) {
@@ -5714,6 +5833,132 @@ u8 *func_00369170(u8 *o, s32 flags) {
     return o;
 }
 
+/* ---- D_00479F50 (0x1C58 bytes): a column of 64 large (20 x 20) wisps rising 5 a frame from
+ * -20 to 60 and starting over, in two buffers of quad records (+0x10 + 0xC00 x the current one
+ * +0x1C54), velocities at +0x1850 (16 each), the quad drawer at +0x1810; +0x1C51 their alpha,
+ * +0x1C50 off: the alpha runs down to 0; gone at once in a cutscene unless the stalker is
+ * kind 0xC ---- */
+
+#define WISP_REC(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0xC00) + (i))
+#define WISP_VEL(o, i) ((f32 *)((o) + 0x1850 + (i) * 0x10))
+
+/* (re)start wisp `i` at the bottom, turned at random; `stagger`: 5 lower for every 4th */
+void func_00369200(u8 *o, s32 i, s32 stagger) {
+    static const union { u32 u; f32 f; } k180 = {0x43340000}, kPi = {0x40490FDB};   /* multiplied first */
+    QuadRec *r = WISP_REC(o, AT(o, 0x1C54, s32), i);
+    VObject *rnd;
+    f32 *v;
+
+    r->rgba[0] = 0x80;
+    r->rgba[1] = 0x80;
+    r->rgba[2] = 0x80;
+    r->rgba[3] = AT(o, 0x1C51, u8);
+    r->pos[0] = 0.0f;
+    r->pos[1] = -20.0f;
+    r->pos[2] = 0.0f;
+    if (stagger) {
+        r->pos[1] = r->pos[1] - 5.0f * (f32)(i >> 2);
+    }
+    r->pos[3] = 1.0f;
+    r->w = 20.0f;
+    r->h = 20.0f;
+    rnd = D_0044E550;
+    r->turn = kPi.f * (k180.f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) / 180.0f;
+    r->frame = 0;
+    v = WISP_VEL(o, i);
+    v[0] = 0.0f;
+    v[1] = 5.0f;
+    v[2] = 0.0f;
+}
+
+/* +0x18 start (alpha 0x10, all 64 staggered); none: off */
+void func_00369330(u8 *o, void *on) {
+    s32 i;
+
+    if (on == NULL) {
+        AT(o, 0x1C50, u8) = 1;
+        return;
+    }
+    for (i = 0; i < 64; i++) {
+        func_00369200(o, i, 1);
+    }
+    AT(o, 0x1C51, u8) = 0x10;
+    AT(o, 0x1C50, u8) = 0;
+}
+
+/* +0x14 draw (while the alpha is up) */
+void func_003693A0(u8 *o) {
+    if (AT(o, 0x1C51, u8)) {
+        AT(o, 0x1820, u8 *) = o + AT(o, 0x1C54, s32) * 0xC00 + 0x10;
+        func_002E56C0(o + 0x1810);
+    }
+}
+
+/* +0x10 update: flip the buffers; each wisp carried over at the current alpha, turning 10
+ * degrees, rising, restarted past 60; 0 once faded out */
+s32 func_003693F0(u8 *o) {
+    s32 i, k;
+
+    if (AT(gCharPursuer, 0x153C, u8) != 0xC && VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8)) {
+        AT(o, 0x1C50, u8) = 1;
+        AT(o, 0x1C51, u8) = 0;
+        return 0;
+    }
+    if (AT(o, 0x1C50, u8) == 1) {
+        AT(o, 0x1C51, u8)--;
+        if (AT(o, 0x1C51, u8) == 0) {
+            return 0;
+        }
+    }
+    AT(o, 0x1C54, s32) ^= 1;
+    for (i = 0; i < 64; i++) {
+        u32 *src = (u32 *)WISP_REC(o, AT(o, 0x1C54, s32) ^ 1, i);
+        u32 *dst = (u32 *)WISP_REC(o, AT(o, 0x1C54, s32), i);
+        QuadRec *r;
+        f32 *v;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        r = WISP_REC(o, AT(o, 0x1C54, s32), i);
+        r->rgba[3] = AT(o, 0x1C51, u8);
+        r->turn += 0x1.657186p-3f;   /* 10 degrees */
+        if (!(r->turn <= 0x1.921fb6p+1f)) {
+            r->turn -= 0x1.921fb6p+2f;
+        }
+        v = WISP_VEL(o, i);
+        r->pos[0] += v[0];
+        r->pos[1] += v[1];
+        r->pos[2] += v[2];
+        if (!(r->pos[1] < 60.0f)) {
+            func_00369200(o, i, 0);
+        }
+    }
+    return 1;
+}
+
+/* +0xC set up: the drawer's settings (64 quads of a 32 x 32 cell at (384, 128), blended 0x80,
+ * palette 6, layer 0x19) */
+void func_00369610(u8 *o) {
+    AT(o, 0x1C54, s32) = 0;
+    AT(o, 0x1818, s64) = -1;
+    AT(o, 0x1828, s32) = 0;
+    AT(o, 0x182C, s32) = 0;
+    AT(o, 0x1830, s32) = 0x19;
+    AT(o, 0x1834, s16) = 0x40;
+    AT(o, 0x1836, s16) = 0x180;
+    AT(o, 0x1838, s16) = 0x80;
+    AT(o, 0x183A, s16) = 0x20;
+    AT(o, 0x183C, s16) = 0x20;
+    AT(o, 0x183E, s16) = 0x200;
+    AT(o, 0x1840, s16) = 0x100;
+    AT(o, 0x1842, s8) = -0x80;
+    AT(o, 0x1843, s8) = 1;
+    AT(o, 0x1844, s8) = 1;
+    AT(o, 0x1845, s8) = 0x10;
+    AT(o, 0x1846, s8) = 6;
+}
+
 /* (as func_002D63F0)  +0x8 destructor (the quad drawer's inlined) */
 u8 *func_00369690(u8 *o, s32 flags) {
     if (o == NULL) {
@@ -5727,6 +5972,162 @@ u8 *func_00369690(u8 *o, s32 flags) {
         func_002D63B0(o);
     }
     return o;
+}
+
+/* ---- D_00479F70 (0x20E0 bytes): 64 sparks sprayed from one side (+0x20D4: 0 the left at
+ * x -75, else the right at x 75; y 14) across and down, in two buffers of quad records (+0x10
+ * + 0xC00 x the current one +0x20D8), velocities at +0x1850 and their pulls at +0x1C50 (16
+ * each), start delays at +0x2050 (s16), the quad drawer at +0x1810; +0x20D0 off: no new
+ * sparks, gone once all have faded ---- */
+
+#define SPRAY_REC(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0xC00) + (i))
+#define SPRAY_VEL(o, i) ((f32 *)((o) + 0x1850 + (i) * 0x10))
+#define SPRAY_PULL(o, i) ((f32 *)((o) + 0x1C50 + (i) * 0x10))
+#define SPRAY_DELAY(o, i) AT(o, 0x2050 + (i) * 2, s16)
+
+/* (re)start spark `i` on side `side`: up to 8 off the nozzle at a random angle about x, 5 x 5;
+ * `delayed`: held back `i` + 1 frames, hidden */
+void func_00369720(u8 *o, s32 i, s32 side, s32 delayed) {
+    static const union { u32 u; f32 f; } k180 = {0x43340000}, kPi = {0x40490FDB};   /* multiplied first */
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 off[4] __attribute__((aligned(16)));
+    VObject *rnd = D_0044E550;
+    QuadRec *r = SPRAY_REC(o, AT(o, 0x20D8, s32), i);
+    f32 *v, *a, ang;
+
+    r->rgba[0] = 0x80;
+    r->rgba[1] = 0x80;
+    r->rgba[2] = 0x80;
+    r->rgba[3] = 0x40;
+    off[0] = 0.0f;
+    off[1] = 2.0f + 6.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
+    off[2] = 0.0f;
+    off[3] = 0.0f;
+    ang = -0x1.921fb6p+1f + 2.0f * (kPi.f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd));
+    sceVu0UnitMatrix(m);
+    sceVu0RotMatrixX(m, m, ang);
+    sceVu0ApplyMatrix(off, m, off);
+    v = SPRAY_VEL(o, i);
+    a = SPRAY_PULL(o, i);
+    if (side == 0) {
+        r->pos[0] = -75.0f;
+        r->pos[1] = 14.0f;
+        r->pos[2] = 0.0f;
+        v[0] = 4.0f + VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        v[1] = -0.5f;
+        v[2] = -0x1.99999ap-4f + 0x1.99999ap-3f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        a[0] = -0x1.333334p-3f;   /* -0.15 */
+        a[1] = 0x1.99999ap-4f;    /* 0.1 */
+        a[2] = 0.0f;
+    } else {
+        r->pos[0] = 75.0f;
+        r->pos[1] = 14.0f;
+        r->pos[2] = 0.0f;
+        v[0] = -4.0f - VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        v[1] = -0.5f;
+        v[2] = -0x1.99999ap-4f + 0x1.99999ap-3f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        a[0] = 0x1.333334p-3f;
+        a[1] = 0x1.99999ap-4f;
+        a[2] = 0.0f;
+    }
+    sceVu0AddVector(r->pos, r->pos, off);
+    r->pos[3] = 1.0f;
+    r->w = 5.0f;
+    r->h = 5.0f;
+    r->turn = kPi.f * (k180.f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) / 180.0f;
+    r->frame = 0;
+    if (delayed) {
+        SPRAY_DELAY(o, i) = i + 1;
+        r->rgba[3] = 0;
+    } else {
+        SPRAY_DELAY(o, i) = 0;
+    }
+}
+
+/* +0x18 start: arg { side } (all 64, delayed in turn); none: off */
+void func_00369A60(u8 *o, u8 *arg) {
+    s32 side, i;
+
+    if (arg == NULL) {
+        AT(o, 0x20D0, u8) = 1;
+        return;
+    }
+    side = arg[0];
+    AT(o, 0x20D4, s32) = side;
+    for (i = 0; i < 64; i++) {
+        func_00369720(o, i, side, 1);
+    }
+    AT(o, 0x20D0, u8) = 0;
+}
+
+/* +0x10 update (gone at once in a cutscene): flip the buffers; each spark carried over, a
+ * held one counting down to its start, a shown one fading (restarted when out, while on),
+ * growing by 0.5, turning 10 degrees, pulled and moved; 0 once off and all faded */
+s32 func_00369B10(u8 *o) {
+    u8 done = 1;
+    s32 i, k;
+
+    if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8)) {
+        AT(o, 0x20D0, u8) = 1;
+        return 0;
+    }
+    AT(o, 0x20D8, s32) ^= 1;
+    for (i = 0; i < 64; i++) {
+        u32 *src = (u32 *)SPRAY_REC(o, AT(o, 0x20D8, s32) ^ 1, i);
+        u32 *dst = (u32 *)SPRAY_REC(o, AT(o, 0x20D8, s32), i);
+        QuadRec *r;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        r = SPRAY_REC(o, AT(o, 0x20D8, s32), i);
+        if (SPRAY_DELAY(o, i) != 0) {
+            SPRAY_DELAY(o, i)--;
+            if (SPRAY_DELAY(o, i) == 0) {
+                func_00369720(o, i, AT(o, 0x20D4, s32), 0);
+            }
+        } else if (r->rgba[3] != 0) {
+            r->rgba[3]--;
+            done = 0;
+            if (!AT(o, 0x20D0, u8) && r->rgba[3] == 0) {
+                func_00369720(o, i, AT(o, 0x20D4, s32), 0);
+            }
+        }
+        r->w += 0.5f;
+        r->h += 0.5f;
+        r->turn += 0x1.657186p-3f;   /* 10 degrees */
+        if (!(r->turn <= 0x1.921fb6p+1f)) {
+            r->turn -= 0x1.921fb6p+2f;
+        }
+        sceVu0AddVector(SPRAY_VEL(o, i), SPRAY_VEL(o, i), SPRAY_PULL(o, i));
+        sceVu0AddVector(r->pos, r->pos, SPRAY_VEL(o, i));
+    }
+    if (AT(o, 0x20D0, u8) == 1 && done == 1) {
+        return 0;
+    }
+    return 1;
+}
+
+/* +0xC set up: the drawer's settings (64 quads of a 32 x 32 cell at (0, 64), blended 0x40,
+ * the first palette, layer 0x19) */
+void func_00369D80(u8 *o) {
+    AT(o, 0x20D8, s32) = 0;
+    AT(o, 0x1818, s64) = -1;
+    AT(o, 0x1828, s32) = 0;
+    AT(o, 0x182C, s32) = 0;
+    AT(o, 0x1830, s32) = 0x19;
+    AT(o, 0x1834, s16) = 0x40;
+    AT(o, 0x1836, s16) = 0;
+    AT(o, 0x1838, s16) = 0x40;
+    AT(o, 0x183A, s16) = 0x20;
+    AT(o, 0x183C, s16) = 0x20;
+    AT(o, 0x183E, s16) = 0x200;
+    AT(o, 0x1840, s16) = 0x100;
+    AT(o, 0x1842, s8) = 0x40;
+    AT(o, 0x1843, s8) = 1;
+    AT(o, 0x1844, s8) = 1;
+    AT(o, 0x1845, s8) = 0x10;
+    AT(o, 0x1846, s8) = -1;
 }
 
 /* (as func_002D63F0)  +0x8 destructor (the quad drawer's inlined) */

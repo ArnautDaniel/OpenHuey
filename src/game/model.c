@@ -4313,6 +4313,121 @@ void func_00338C20(u8 *p, u8 *s) {
     sceVu0AddVector((f32 *)p, anchor, d);
 }
 
+/* +0x10 step of a hanging point of the class at 0x479F90: as func_00338C20, but also blown
+ * by the system's wind (+0x0, a point in the space of bone +0xC, a float): pushed 0.2 along
+ * the direction from the point's root bone (its own +0x24 if anchored to a bone, else its
+ * parent's, or the grandparent's) to the wind point */
+void func_00369DF0(u8 *p, u8 *s) {
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 axis[4] __attribute__((aligned(16)));
+    f32 anchor[4] __attribute__((aligned(16)));
+    f32 prev[4] __attribute__((aligned(16)));
+    f32 root[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 ang, sl, sr, inv;
+    s32 bone;
+    u8 *c;
+
+    if (AT(p, 0x44, u8) != 0) {
+        u8 *q = AT(p, 0x2C, u8 *);
+
+        if (AT(q, 0x20, u8) != 0) {
+            sceVu0CopyVector(anchor, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(q, 0x24, s32)) + 12);
+        } else {
+            sceVu0CopyVector(anchor, AT(q, 0x2C, f32 *));
+        }
+        sceVu0SubVector(d, (f32 *)q, anchor);
+        sceVu0Normalize(d, d);
+        sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
+        sceVu0AddVector((f32 *)p, (f32 *)q, d);
+        return;
+    }
+    sceVu0CopyVector(prev, (f32 *)p);
+    d[0] = AT(s, 0x0, f32);
+    d[1] = AT(s, 0x4, f32);
+    d[2] = AT(s, 0x8, f32);
+    d[3] = 1.0f;
+    if (AT(p, 0x20, u8) != 0) {
+        bone = AT(p, 0x24, s32);
+    } else if (AT(AT(p, 0x2C, u8 *), 0x20, u8) != 0) {
+        bone = AT(AT(p, 0x2C, u8 *), 0x24, s32);
+    } else {
+        bone = AT(AT(AT(p, 0x2C, u8 *), 0x2C, u8 *), 0x24, s32);
+    }
+    sceVu0CopyMatrix(m, (f32 (*)[4])func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), (s32)AT(s, 0xC, f32)));
+    sceVu0CopyVector(root, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), bone) + 12);
+    sceVu0ApplyMatrix(d, m, d);
+    sceVu0SubVector(d, d, root);
+    sceVu0Normalize(d, d);
+    sceVu0ScaleVector(d, d, -0x1.99999ap-3f);   /* -0.2 */
+    sceVu0SubVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), d);
+    for (c = AT(s, 0x18, u8 *); c != NULL; c = AT(c, 0x2C, u8 *)) {
+        VCALL(c + 0x30, 0x8, void (*)(u8 *, f32 *, u8 *, f32))(c, d, p, 1.0f);
+        sceVu0AddVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), d);
+    }
+    sceVu0ScaleVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), AT(s, 0x10, f32));
+    sceVu0AddVector((f32 *)p, (f32 *)p, (f32 *)(p + 0x10));
+    if (AT(p, 0x20, u8) != 0) {
+        sceVu0CopyVector(anchor, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
+    } else {
+        sceVu0CopyVector(anchor, AT(p, 0x2C, f32 *));
+    }
+    sceVu0SubVector(d, (f32 *)p, anchor);
+    sceVu0Normalize(d, d);
+    sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
+    sceVu0AddVector((f32 *)p, anchor, d);
+    sceVu0CopyVector(axis, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)));
+    ang = func_0031C3C0(sceVu0InnerProduct(d, axis));
+    if (!(ang <= AT(p, 0x48, f32))) {
+        f32 sa = func_0031C248(ang);
+
+        if (!(sa <= 0.0f)) {
+            sl = func_0031C248(AT(p, 0x48, f32));
+            sr = func_0031C248(ang - AT(p, 0x48, f32));
+            inv = 1.0f / sa;
+            d[0] = inv * (sr * axis[0] + sl * d[0]);
+            d[1] = inv * (sr * axis[1] + sl * d[1]);
+            d[2] = inv * (sr * axis[2] + sl * d[2]);
+        }
+    }
+    sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
+    sceVu0AddVector((f32 *)p, anchor, d);
+    sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
+}
+
+void func_002EE710(u8 *p, u8 *s);
+
+/* +0x14 of a hanging point of the class at 0x479F90: unless +0x4C, first as func_002EE710;
+ * then its bone (+0x24) aimed at it - X from the anchor to the point, keeping the Z axis of
+ * the anchor's bone, made square, at the anchor */
+void func_0036A1C0(u8 *p, u8 *s) {
+    f32 *a;
+    f32 anchor[4] __attribute__((aligned(16)));
+    f32 x[4] __attribute__((aligned(16)));
+    f32 z[4] __attribute__((aligned(16)));
+
+    if (AT(p, 0x4C, u8) == 0) {
+        func_002EE710(p, s);
+    }
+    a = func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32));
+    if (AT(p, 0x20, u8) != 0) {
+        sceVu0CopyVector(anchor, a + 12);
+        sceVu0SubVector(x, (f32 *)p, anchor);
+        sceVu0CopyVector(z, a + 8);
+    } else {
+        sceVu0CopyVector(anchor, AT(p, 0x2C, f32 *));
+        sceVu0SubVector(x, (f32 *)p, anchor);
+        sceVu0CopyVector(z, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(AT(p, 0x2C, u8 *), 0x24, s32)) + 8);
+    }
+    sceVu0CopyVector(a, x);
+    sceVu0OuterProduct(a + 4, z, a);
+    sceVu0OuterProduct(a + 8, a, a + 4);
+    sceVu0Normalize(a, a);
+    sceVu0Normalize(a + 4, a + 4);
+    sceVu0Normalize(a + 8, a + 8);
+    sceVu0CopyVector(a + 12, anchor);
+}
+
 /* +0x8 a sphere collider { +0x0 centre, +0x20 radius, +0x24 falloff }: the push `out` on the
  * point `at` (strength `k`): inside the sphere its offset from the centre x (1 - distance x
  * falloff) x k, else none */
