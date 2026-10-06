@@ -10,7 +10,7 @@
 /* ---- shaders ---- */
 
 static const char *kMeshVs =
-    "#version 330 core\n"
+    "#version 460 core\n"
     "layout(location = 0) in vec3 aPos;\n"
     "layout(location = 1) in vec2 aSt;\n"
     "layout(location = 2) in vec4 aCol;\n"
@@ -25,7 +25,7 @@ static const char *kMeshVs =
 
 /* the GS's modulate: texel times vertex colour; texels with no alpha are dropped */
 static const char *kMeshFs =
-    "#version 330 core\n"
+    "#version 460 core\n"
     "in vec2 vSt;\n"
     "in vec4 vCol;\n"
     "uniform sampler2D uTex;\n"
@@ -44,7 +44,7 @@ static const char *kMeshFs =
     "}\n";
 
 static const char *k2dVs =
-    "#version 330 core\n"
+    "#version 460 core\n"
     "layout(location = 0) in vec2 aPos;\n"
     "layout(location = 1) in vec2 aUv;\n"
     "layout(location = 2) in vec4 aCol;\n"
@@ -58,7 +58,7 @@ static const char *k2dVs =
     "}\n";
 
 static const char *k2dFs =   /* the font is a coverage mask */
-    "#version 330 core\n"
+    "#version 460 core\n"
     "in vec2 vUv;\n"
     "in vec4 vCol;\n"
     "uniform sampler2D uFont;\n"

@@ -8,7 +8,7 @@ It keeps the game's behaviour and data, and is free to restructure everything el
 
 - **No PS2.** No VU0/VU1, GS packets, IOP, fixed RAM addresses or 21 MB static game object.
   Data structures are plain C structs; the GPU is OpenGL; memory is malloc.
-- **C does the heavy lifting**: platform (SDL3), rendering (OpenGL 3.3), file formats, maths,
+- **C does the heavy lifting**: platform (SDL3), rendering (OpenGL 4.6), file formats, maths,
   collision, the data structures (all struct definitions live in C).
 - **Forth does the gameplay**: game logic, room scripts, events, AI decisions and tuning are
   Forth words. The Forth is our own small dialect, written in C, inspired by jonesforth, and
@@ -30,7 +30,7 @@ ctest --test-dir build/new-src      # the Forth test suite (and anything else un
 The data dir defaults to `../Haunting Ground (USA)/data` next to the repository, or `$HG_DATA`.
 The game's executable (`SLUS_210.75`, for the door and room tables) is looked for next to the data
 folder, in it, in `baserom/`, or at `$HG_EXE`.
-It builds as 64-bit (or 32-bit); it needs SDL3 and OpenGL 3.3.
+It builds as 64-bit (or 32-bit); it needs SDL3 and OpenGL 4.6.
 
 Keys (all defined in `scripts/`, not in C):
 

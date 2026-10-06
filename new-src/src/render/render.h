@@ -1,4 +1,4 @@
-/* The renderer: OpenGL 3.3. A frame is: render_begin, 3D draws (meshes), then 2D draws (text,
+/* The renderer: OpenGL 4.6. A frame is: render_begin, 3D draws (meshes), then 2D draws (text,
  * rectangles; queued and drawn together at render_end).
  *
  * Colours follow the PS2's convention where the game data does: vertex colours and texture

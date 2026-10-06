@@ -20,3 +20,18 @@ int gl_load(void) {
 #undef LOAD_FN
     return ok;
 }
+
+static void APIENTRY debug_message(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei len,
+                                   const GLchar *msg, const void *user) {
+    (void)source; (void)id; (void)len; (void)user;
+    if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
+        return;
+    }
+    fprintf(stderr, "gl: %s%s\n", type == GL_DEBUG_TYPE_ERROR ? "error: " : "", msg);
+}
+
+void gl_debug_output(void) {
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(debug_message, NULL);
+}

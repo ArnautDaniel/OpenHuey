@@ -33,7 +33,7 @@ ticks (`wait`, `dt`).
 
 - `core/`: `files` (the data folder: `ST_000/ST_003.PAC`; DOS paths work), `mathx.h` (Vec3, Mat4
   column-major).
-- `platform/`: SDL3 window + GL 3.3 core context (`platform.c`), the GL function loader (`gl.c`).
+- `platform/`: SDL3 window + GL 4.6 core context (`platform.c`), the GL function loader (`gl.c`).
 - `render/`: one mesh shader (the PS2's colour model: texel times vertex colour, 0x80 = 1.0), 2D
   text and rectangles, PNG screenshots. Draws are described by `MeshDraw` (texture, blending,
   depth writes, visibility group).

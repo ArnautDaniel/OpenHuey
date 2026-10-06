@@ -1,4 +1,4 @@
-/* The platform: one SDL3 window with an OpenGL 3.3 core context, and the input state for a frame. */
+/* The platform: one SDL3 window with an OpenGL 4.6 core context, and the input state for a frame. */
 #ifndef PLATFORM_H
 #define PLATFORM_H
 

@@ -1,4 +1,4 @@
-/* OpenGL 3.3 core: the functions past GL 1.1 are loaded at start-up (gl_load, after the context
+/* OpenGL 4.6 core: the functions past GL 1.1 are loaded at start-up (gl_load, after the context
  * exists) into pointers; the macros below let the code call them by their usual names. */
 #ifndef GL_H
 #define GL_H
@@ -35,7 +35,8 @@
     X(PFNGLVERTEXATTRIBPOINTERPROC, glVertexAttribPointer)           \
     X(PFNGLACTIVETEXTUREPROC, glActiveTexture)                       \
     X(PFNGLBLENDFUNCSEPARATEPROC, glBlendFuncSeparate)               \
-    X(PFNGLGENERATEMIPMAPPROC, glGenerateMipmap)
+    X(PFNGLGENERATEMIPMAPPROC, glGenerateMipmap)                     \
+    X(PFNGLDEBUGMESSAGECALLBACKPROC, glDebugMessageCallback)
 
 #define GL_DECLARE(type, name) extern type p_##name;
 GL_FUNCTIONS(GL_DECLARE)
@@ -70,8 +71,11 @@ GL_FUNCTIONS(GL_DECLARE)
 #define glActiveTexture p_glActiveTexture
 #define glBlendFuncSeparate p_glBlendFuncSeparate
 #define glGenerateMipmap p_glGenerateMipmap
+#define glDebugMessageCallback p_glDebugMessageCallback
 
 /* load the pointers (a GL context must be current); 0 if one is missing */
 int gl_load(void);
+/* print the driver's errors and warnings (GL debug output) to stderr */
+void gl_debug_output(void);
 
 #endif

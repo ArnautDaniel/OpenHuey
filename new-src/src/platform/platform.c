@@ -15,8 +15,9 @@ int platform_open(const char *title, int w, int h, int hidden) {
         fprintf(stderr, "platform: SDL_Init: %s\n", SDL_GetError());
         return 0;
     }
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -27,13 +28,15 @@ int platform_open(const char *title, int w, int h, int hidden) {
     }
     sContext = SDL_GL_CreateContext(sWindow);
     if (sContext == NULL) {
-        fprintf(stderr, "platform: no OpenGL 3.3 context: %s\n", SDL_GetError());
+        fprintf(stderr, "platform: no OpenGL 4.6 context: %s\n", SDL_GetError());
         return 0;
     }
     SDL_GL_SetSwapInterval(1);
     if (!gl_load()) {
         return 0;
     }
+    gl_debug_output();
+    fprintf(stderr, "platform: OpenGL %s (%s)\n", (const char *)glGetString(GL_VERSION), (const char *)glGetString(GL_RENDERER));
     return 1;
 }
 
