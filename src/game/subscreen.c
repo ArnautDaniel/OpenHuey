@@ -2522,3 +2522,111 @@ void func_0038F7D0(SubScreen *s) {
     SUB_PAGE(s, 0xF, u8) = SUB_PAGE(s, 0x7, u8);
     SUB_PAGE(s, 0x10, u8) = SUB_PAGE(s, 0xC, u8);
 }
+
+/* ---- the art gallery's list ---- */
+
+extern u16 D_0044BFE0[];   /* per picture: its unlock flag (system data +0x24 bits) */
+
+/* the art gallery's list (screen kind 0x8E): the language 1, the headings, the eight pictures
+ * of the current one's group (titles 0x190 + picture, "???" until unlocked), the current one
+ * highlighted; the help line, the group number of 6 and the arrows blinking */
+void func_00386550(SubScreen *s) {
+    u8 g;
+    s32 k, x, b;
+    u8 alpha;
+
+    s->kind = 0x8E;
+    sub_panels(s);
+    D_0047B350 = 1;
+    Task_ShowText(&s->text, 0x30, 0x3B, 0x80, Task_MessageText(&s->text, 0xF), 0x80, 0x30, 0x10, 0x15);
+    Task_ShowText(&s->text, 0x58, 0x3B, 0x80, Task_MessageText(&s->text, 0x10), 0x80, 0x30, 0x10, 0x15);
+    g = SUB_PAGE(s, 0x0, u8) >> 3;
+    for (k = g * 8; k < (g + 1) * 8 && k < 0x30; k++) {
+        u16 f = D_0044BFE0[k];
+        u8 color = k == SUB_PAGE(s, 0x0, u8) ? 0x82 : 0x80;
+        s32 y = (k % 8) * 35 + 0x5E;
+
+        Task_Printf(&s->text, 0x30, y, color, D_00463FD0, k + 1);
+        if (AT(D_0044E978, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) {
+            Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, (k + 0x190) & 0xFFFF), 0x80, 0x30, 0x10,
+                          0x15);
+        } else {
+            Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, 0x16E), 0x80, 0x30, 0x10, 0x15);
+        }
+    }
+    Task_ShowText(&s->text, 0x46, 0x186, 0x80, Task_MessageText(&s->text, 0x12), 0x80, 0x30, 0x10, 0x15);
+    x = Task_MessageWidth(&s->text, 0x12, 0x10) + 0x56;
+    Task_ShowText(&s->text, x, 0x186, 0x80, Task_MessageText(&s->text, 0x13), 0x80, 0x30, 0x10, 0x15);
+    Task_Printf(&s->text, 0x186, 0x176, 0x80, D_00463FD8, g + 1, 6);
+    b = 0x80 - ((s->frame << 2) & 0xFF);
+    alpha = b > 0 ? b : -b;
+    SubScreen_DrawPart(s, 0x168, 0x170, 0x1A, alpha, 0);
+    SubScreen_DrawPart(s, 0x1B3, 0x170, 0x1B, alpha, 0);
+}
+
+/* ---- the model gallery's camera ---- */
+
+extern f32 D_0047E3A0, D_0047E3A8, D_0047E3B8;   /* the sticks (-1..1) */
+extern f32 D_0044B9F0[][3], D_0044B9F8[][3];     /* per entry: the height's lowest / highest */
+
+#define GALLERY_DIST(s) AT(s, 0xA8E30, f32)
+#define GALLERY_TURN(s) AT(s, 0xA8E34, f32)
+#define GALLERY_HEIGHT(s) AT(s, 0xA8E38, f32)
+
+/* a stick past its dead zone (0.3), scaled to -1..1; 0 inside it */
+static inline s32 stick_out(f32 v, f32 *out) {
+    static const union { u32 u; f32 f; } kDead = {0x3E99999A}, kRange = {0x3F333333};
+    f32 a = v <= 0.0f ? -v : v;
+
+    if (a < kDead.f) {
+        return 0;
+    }
+    *out = (v <= 0.0f ? v + kDead.f : v - kDead.f) / kRange.f;
+    return 1;
+}
+
+/* the model gallery's camera by the sticks: the right one in (distance, entry's nearest .. 60)
+ * and round (the turn kept within -pi..pi), the left one up and down (within the entry's
+ * heights); L3 sets it back */
+void func_0038A2E0(SubScreen *s) {
+    static const union { u32 u; f32 f; } kStep = {0x3DB2B8C3};
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB}, kNegPi = {0xC0490FDB};
+    f32 d;
+
+    if (stick_out(D_0047E3A8, &d)) {
+        GALLERY_DIST(s) = GALLERY_DIST(s) + d;
+        if (GALLERY_DIST(s) < D_0044BB70[SUB_PAGE(s, 0x0, u8)]) {
+            GALLERY_DIST(s) = D_0044BB70[SUB_PAGE(s, 0x0, u8)];
+        }
+        if (!(GALLERY_DIST(s) <= 60.0f)) {
+            GALLERY_DIST(s) = 60.0f;
+        }
+    }
+    if (stick_out(D_0047E3A0, &d)) {
+        GALLERY_TURN(s) = GALLERY_TURN(s) + d * kStep.f;
+        while (GALLERY_TURN(s) < kNegPi.f) {
+            GALLERY_TURN(s) += kTwoPi.f;
+        }
+        while (!(GALLERY_TURN(s) <= kPi.f)) {
+            GALLERY_TURN(s) -= kTwoPi.f;
+        }
+    }
+    if (stick_out(D_0047E3B8, &d)) {
+        GALLERY_HEIGHT(s) = GALLERY_HEIGHT(s) - 0.5f * d;
+        if (!(GALLERY_HEIGHT(s) <= D_0044B9F8[SUB_PAGE(s, 0x0, u8)][0])) {
+            GALLERY_HEIGHT(s) = D_0044B9F8[SUB_PAGE(s, 0x0, u8)][0];
+        }
+        if (GALLERY_HEIGHT(s) < D_0044B9F0[SUB_PAGE(s, 0x0, u8)][0]) {
+            GALLERY_HEIGHT(s) = D_0044B9F0[SUB_PAGE(s, 0x0, u8)][0];
+        }
+    }
+    if (D_0047E37C & PAD_L3) {
+        AT(s, 0xA8E20, f32) = 26.0f;
+        AT(s, 0xA8E24, f32) = 0.0f;
+        AT(s, 0xA8E28, f32) = -27.0f;
+        AT(s, 0xA8E2C, f32) = 1.0f;
+        GALLERY_DIST(s) = 10.0f + D_0044BB70[SUB_PAGE(s, 0x0, u8)];
+        GALLERY_TURN(s) = 0.0f;
+        GALLERY_HEIGHT(s) = D_0044B9F4[SUB_PAGE(s, 0x0, u8)][0];
+    }
+}
