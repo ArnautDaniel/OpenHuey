@@ -6720,3 +6720,12 @@ src/game/model.c func_00337FF0 --runs=2
 src/game/model.c func_00338000 --runs=2
 src/game/model.c func_00338010 --runs=2
 src/game/model.c func_00338020 --runs=2
+src/game/model.c func_00338C20 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a1+0x10=0x3F000000..0x3F7F0000 --pre=a1+0x18=0x0B4FFFD0..0x0B4FFFD0 --pre=@0x0B4FFFFC=0..0 --pre=@0x0B500000=0x0B600000..0x0B600000 --pre=@0x0B600008=0x001F1ED0..0x001F1ED0 --pre=a0+0x20=bytes:??000000 --pre=a0+0x2C=0x0B200000..0x0B200000 --stub-ret=0x0B300000 --stub-ret-prob=1 --pre=a0+0x0=0x3E000000..0x3FC00000 --pre=a0+0x4=0x3E000000..0x3FC00000 --pre=a0+0x8=0x3E000000..0x3FC00000 --pre=a0+0x10=0x3E000000..0x3FC00000 --pre=a0+0x14=0x3E000000..0x3FC00000 --pre=a0+0x18=0x3E000000..0x3FC00000 --pre=a0+0x40=0x3E000000..0x3FC00000 --pre=a0+0x44:u8=0..0 --pre=a0+0x48=0x3E000000..0x3FC00000 --stub-fret=0.2 --stub-fret=1.5 --stub-fret=-0.5 --runs=200
+src/game/model.c func_00338C20 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a1+0x10=0x3F000000..0x3F7F0000 --pre=a1+0x18=0x0B4FFFD0..0x0B4FFFD0 --pre=@0x0B4FFFFC=0..0 --pre=@0x0B500000=0x0B600000..0x0B600000 --pre=@0x0B600008=0x001F1ED0..0x001F1ED0 --pre=a0+0x20=bytes:??000000 --pre=a0+0x2C=0x0B200000..0x0B200000 --stub-ret=0x0B300000 --stub-ret-prob=1 --pre=a0+0x0=0x3E000000..0x3FC00000 --pre=a0+0x4=0x3E000000..0x3FC00000 --pre=a0+0x8=0x3E000000..0x3FC00000 --pre=a0+0x10=0x3E000000..0x3FC00000 --pre=a0+0x14=0x3E000000..0x3FC00000 --pre=a0+0x18=0x3E000000..0x3FC00000 --pre=a0+0x40=0x3E000000..0x3FC00000 --pre=a0+0x44:u8=1..1 --pre=@0x0B200020=bytes:??000000 --pre=@0x0B20002C=0x0B200100..0x0B200100 --runs=60
+src/game/model.c func_0035B120 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/model.c func_0035B320 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/model.c func_0035B2C0 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/model.c func_0035B2D0 --runs=2
+src/game/model.c func_0035B2E0 --runs=2
+src/game/model.c func_0035B2F0 --runs=2
+src/game/model.c func_0035B300 --runs=2

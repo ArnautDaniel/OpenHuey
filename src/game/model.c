@@ -4249,6 +4249,70 @@ void func_002ECE50(u8 *p, u8 *s) {
 }
 
 
+/* +0x10 step of a costume hanging point (the class at 0x475CA0) { +0x0 position, +0x10
+ * velocity, +0x20 anchored to a bone (+0x24) else the point +0x2C, +0x40 length, +0x44 rigid,
+ * +0x48 swing limit }. A rigid one continues the line from its parent's anchor through its
+ * parent (+0x2C). Otherwise as func_002ECE50 (without the floor), then turned back within its
+ * swing limit of the bone's X axis. The limit is tested on the length-scaled offset, and the
+ * offset is scaled by the length again after (both as in the original; the lengths are short) */
+void func_00338C20(u8 *p, u8 *s) {
+    f32 axis[4] __attribute__((aligned(16)));
+    f32 anchor[4] __attribute__((aligned(16)));
+    f32 prev[4] __attribute__((aligned(16)));
+    f32 d[4] __attribute__((aligned(16)));
+    f32 ang, sl, sr, inv;
+    u8 *c;
+
+    if (AT(p, 0x44, u8) != 0) {
+        u8 *q = AT(p, 0x2C, u8 *);
+
+        if (AT(q, 0x20, u8) != 0) {
+            sceVu0CopyVector(anchor, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(q, 0x24, s32)) + 12);
+        } else {
+            sceVu0CopyVector(anchor, AT(q, 0x2C, f32 *));
+        }
+        sceVu0SubVector(d, (f32 *)q, anchor);
+        sceVu0Normalize(d, d);
+        sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
+        sceVu0AddVector((f32 *)p, (f32 *)q, d);
+        return;
+    }
+    sceVu0CopyVector(prev, (f32 *)p);
+    sceVu0SubVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), (f32 *)s);
+    for (c = AT(s, 0x18, u8 *); c != NULL; c = AT(c, 0x2C, u8 *)) {
+        VCALL(c + 0x30, 0x8, void (*)(u8 *, f32 *, u8 *, f32))(c, d, p, 1.0f);
+        sceVu0AddVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), d);
+    }
+    sceVu0ScaleVector((f32 *)(p + 0x10), (f32 *)(p + 0x10), AT(s, 0x10, f32));
+    sceVu0AddVector((f32 *)p, (f32 *)p, (f32 *)(p + 0x10));
+    if (AT(p, 0x20, u8) != 0) {
+        sceVu0CopyVector(anchor, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)) + 12);
+    } else {
+        sceVu0CopyVector(anchor, AT(p, 0x2C, f32 *));
+    }
+    sceVu0SubVector(d, (f32 *)p, anchor);
+    sceVu0Normalize(d, d);
+    sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
+    sceVu0AddVector((f32 *)p, anchor, d);
+    sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
+    sceVu0CopyVector(axis, func_0017CE80(AT(AT(s, 0x14, u8 *), 0x810, void *), AT(p, 0x24, s32)));
+    ang = func_0031C3C0(sceVu0InnerProduct(d, axis));
+    if (!(ang <= AT(p, 0x48, f32))) {
+        f32 sa = func_0031C248(ang);
+
+        if (!(sa <= 0.0f)) {
+            sl = func_0031C248(AT(p, 0x48, f32));
+            sr = func_0031C248(ang - AT(p, 0x48, f32));
+            inv = 1.0f / sa;
+            d[0] = inv * (sr * axis[0] + sl * d[0]);
+            d[1] = inv * (sr * axis[1] + sl * d[1]);
+            d[2] = inv * (sr * axis[2] + sl * d[2]);
+        }
+    }
+    sceVu0ScaleVector(d, d, AT(p, 0x40, f32));
+    sceVu0AddVector((f32 *)p, anchor, d);
+}
+
 /* +0x8 a sphere collider { +0x0 centre, +0x20 radius, +0x24 falloff }: the push `out` on the
  * point `at` (strength `k`): inside the sphere its offset from the centre x (1 - distance x
  * falloff) x k, else none */
@@ -5432,6 +5496,64 @@ extern u8 D_0042F2B0[];
 void func_0035B0F0(u8 *m) {
     AT(m, 0x840, s16) = 16;
     AT(m, 0x844, u8 *) = D_00443FA0;
+}
+
+/* ---- more of the models at 0x35B000: load setups, part roles, a table ---- */
+
+extern u8 D_00443FB0[];
+
+/* +0xC loaded (vtable at 0x479660): the base setup and the parts' roles; part 0xBE drawn
+   with 0x40 */
+void func_0035B120(u8 *m) {
+    func_001F1FE0(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x10;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x1A;
+    AT(m, 0x8B0, s32) = 0x13;
+    AT(m, 0x8B4, s32) = 0xB;
+    AT(m, 0xBE, u8) = 4;
+    AT(m, 0xBF, u8) = 0x40;
+}
+
+/* the table at +0x874 */
+void func_0035B2C0(u8 *m) {
+    AT(m, 0x874, u8 *) = D_00443FB0;
+}
+
+/* +0x84..+0x90: part roles */
+s32 func_0035B2D0(void) { return 3; }
+s32 func_0035B2E0(void) { return 7; }
+s32 func_0035B2F0(void) { return 0xE; }
+s32 func_0035B300(void) { return 0x17; }
+
+/* +0xC loaded (vtable at 0x479740): the human base setup, the parts' roles, its look-at
+   point (0, 16, 0) */
+void func_0035B320(u8 *m) {
+    func_002118D0(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x10;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x19;
+    AT(m, 0x8B0, s32) = 0x13;
+    AT(m, 0x8B4, s32) = 0xB;
+    AT(m, 0x860, f32) = 0.0f;
+    AT(m, 0x864, f32) = 16.0f;
+    AT(m, 0x868, f32) = 0.0f;
+    AT(m, 0x854, s32) = 0;
+    AT(m, 0x858, s32) = 0;
 }
 
 /* (as func_00170350)  the human-with-kind model's destructor (vtable D_00479740, then the human base) */
