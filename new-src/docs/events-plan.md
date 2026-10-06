@@ -48,6 +48,12 @@ game's event bytecode.
 4. After conversion the Forth files are the source of truth: edited by hand, with the
    converter kept only to check against the original.
 
+## Decisions (2026-10-06)
+
+- Vocabulary: a general scripting vocabulary that hides the game's quirks (`door-open`, not
+  setting a door's flag bit), rather than the decomp's own terms. The decomp's names belong in
+  comments, so each word can still be checked against the original.
+
 ## Questions for you
 
 - The vocabulary: should the words read like the game's terms (`flag-set`, `exit-in`) or a
