@@ -1,3 +1,4 @@
+#include "globals.h"
 /* Helpers for the items' "use" methods (vtable +0x3C; see src/game/item_classes.c). A use
  * returns what the menu does next: 0 nothing happens, 1 used up, 2 a flag set, 4 an event
  * started (Fiona's state 5), 5 she / Hewie play an action, 8 a sound only. */
@@ -8,7 +9,6 @@
 #include "game.h"
 #include "progress.h"
 
-extern VObject *gEvents;   /* the events */
 extern u32 func_00177BF0(Progress *p, u32 door, u32 slot);   /* the door's state (u8) */
 
 /* character `c` plays event `ev` (who: 0 Fiona, 1 Hewie): its state 5 (0, ev) */

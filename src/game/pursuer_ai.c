@@ -5,6 +5,7 @@
 #include "progress.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "navmesh.h"
 
 
 /* ---- defaults shared by the stalker vtables (0x179600..0x179970) ---- */
@@ -141,14 +142,13 @@ u32 func_00219450(Pursuer *p) {
 
 extern Progress *gProgress;
 extern Character *gCharPlayer;    /* Fiona */
-extern void *gNavMesh;          /* nav mesh */
 extern VObject *gSceneGameF29740; /* path planner */
 
 
 /* `tri` if the pursuer may stand on it (its blocking flags, vtable +0xA8, against the
    triangle's +0x3C), else the nearest triangle it may (a planner query of kind 7; -1 if none) */
 u32 func_00211B00(Pursuer *p, u32 tri) {
-    VObject *nav = gNavMesh;
+    VObject *nav = (VObject *)gNavMesh;
     VObject *planner;
     PathRequest q = { 0 };
     u8 *t = NULL;

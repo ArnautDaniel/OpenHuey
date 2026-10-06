@@ -40,12 +40,6 @@ _Static_assert(sizeof(Pursuer) == 0x1800, "Pursuer size");
 /* the game's characters and managers the pursuer code uses */
 extern Character *gCharPlayer;    /* Fiona */
 extern Character *gCharPartner;   /* Hewie */
-extern VObject *gRandom;       /* random numbers */
-extern VObject *gDoors;       /* doors */
-extern VObject *gRooms;       /* rooms */
-extern VObject *gEvents;       /* room objects */
-extern VObject *gRumble;       /* controller vibration */
-extern void *gNavMesh;          /* nav mesh */
 
 extern void *D_0046D810[], *D_0046C220[], *D_00469C60[], *D_00469C20[];
 

@@ -6,6 +6,7 @@
 #include "game.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "navmesh.h"
 
 
 static u32 rd32(const u8 *p) {
@@ -2577,7 +2578,6 @@ s32 func_0035EF70(u8 *e) {
  * floors that allow it and fade out on the ground, then start over. +0x1C14 .. +0x1C20 the
  * texture's cell and size, +0x1C24 the colour, +0x1C28 the texture ---- */
 
-extern VObject *gNavMesh;   /* the nav mesh */
 
 /* (re)start piece `s`: on a random nav triangle's centre (its floor kept), at the drop height,
  * a random box (0.6 / -0.4 by the corner's signs, less 0.2 x random), size 0.1..0.5, a random
@@ -2601,7 +2601,7 @@ void func_003619A0(u8 *e, Shard *s, s32 first) {
     s->vel[3] = 0.0f;
     VCALL(gCamera, 0x20, void (*)(VObject *, f32 *))(gCamera, eye);
     rnd = gRandom;
-    nav = gNavMesh;
+    nav = (VObject *)gNavMesh;
     tri = (u32)((f32)AT(nav, 0x8, s32) * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd));
     VCALL(nav, 0xC, void (*)(VObject *, u32, f32 *))(nav, tri, s->pos);
     s->floor = s->pos[1];
@@ -4481,7 +4481,6 @@ void func_002FEBD0(u8 *e) {
  * none - no floor) half of them leave a splat (D_00472BF0) ---- */
 
 extern void *D_00470F30[], *D_00472BF0[];
-extern VObject *gNavMesh;   /* the nav mesh: +0xC a triangle's centre */
 extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
 
 #define BLOOD_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x600) + (i))
@@ -4593,7 +4592,7 @@ s32 func_002FFCF0(u8 *e) {
         return 0;
     }
     AT(e, 0xE58, u8) = 1;
-    nm = gNavMesh;
+    nm = (VObject *)gNavMesh;
     rnd = gRandom;
     mgr = gEffects;
     AT(e, 0xE50, s32) ^= 1;
@@ -5218,14 +5217,14 @@ void func_0035F640(u8 *o, s32 i) {
     r->frame = 0;
     AT(o, 0x588 + i * 4, f32) = 1.5f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
     AT(o, 0x5C4 + i * 4, s32) = (s32)(k60.f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd));
-    AT(o, 0x5FC + i * 4, s32) = VCALL(gNavMesh, 0x3C, s32 (*)(VObject *, f32 *, s32))(gNavMesh, r->pos, 0);
+    AT(o, 0x5FC + i * 4, s32) = VCALL(gNavMesh, 0x3C, s32 (*)(VObject *, f32 *, s32))((VObject *)gNavMesh, r->pos, 0);
 }
 
 /* +0x10 update: flip the buffers; each drop carried over, waiting, or falling until under its
  * floor (none: below 0, restarted quietly): there a spray of 16 (and a drip sound, one of three
  * in turn, if the driver has room), and it starts over */
 s32 func_0035F9E0(u8 *o) {
-    VObject *nav = gNavMesh;
+    VObject *nav = (VObject *)gNavMesh;
     u8 *mgr = gEffects;
     VObject *snd = gSound;
     f32 g[4] __attribute__((aligned(16)));

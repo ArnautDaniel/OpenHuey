@@ -23,11 +23,11 @@
 #include "game.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "navmesh.h"
 
 extern f32 *func_0017CE80(void *skeleton, s32 bone);   /* bone node */
 extern void func_0010E640(f32 *out, const f32 *v, f32 s);   /* libvu0: scale x, y, z */
 extern void sceVu0FTOI4Vector(s32 *out, const f32 *in);
-extern VObject *gNavMesh;   /* the nav mesh: +0x14 the floor height at a point on a triangle */
 
 /* queue shadow `s` of its model's bone `bone` (on nav triangle `tri`, the light offset `light`,
  * the model's layer `layer`) for each light that casts it there, if the lights allow a shadow
@@ -41,7 +41,7 @@ void func_001F3530(u8 *s, s32 tri, s32 bone, f32 *light, s32 layer) {
     AT(s, 0x2D0, f32 *) = func_0017CE80(AT(s, 0xC, void *), bone);
     sceVu0CopyVector(p, AT(s, 0x2D0, f32 *) + 12);
     if (gNavMesh != NULL) {
-        VCALL(gNavMesh, 0x14, void (*)(VObject *, s32, f32 *))(gNavMesh, tri, p);
+        VCALL(gNavMesh, 0x14, void (*)(VObject *, s32, f32 *))((VObject *)gNavMesh, tri, p);
     } else {
         p[1] = 0.0f;
     }

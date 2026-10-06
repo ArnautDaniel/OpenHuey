@@ -6,6 +6,7 @@
 #include "model.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "navmesh.h"
 
 extern f32 *func_0017CE80(u8 *skel, s32 bone);   /* a bone's matrix */
 
@@ -1666,7 +1667,6 @@ void func_0030E340(u8 *m, f32 *out) {
 }
 
 extern void func_002DC710(u8 *m, f32 *p, u8 *a);   /* drop a point onto the floor */
-extern void *gNavMesh;
 
 /* is the actor on the floor (its height within 1e-4 of the mesh under it, or below) */
 static inline s32 Chair_OnFloor(u8 *a, const f32 *floor) {

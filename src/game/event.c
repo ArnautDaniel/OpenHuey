@@ -5,6 +5,7 @@
 #include "game.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "navmesh.h"
 
 extern void *D_0046B4B0[], *D_0046B4F0[], *D_0046B530[], *D_0046B570[], *D_0046B5B0[], *D_0046B5F0[];
 extern void *D_0046B630[], *D_0046B670[], *D_0046B6B0[], *D_0046B6F0[], *D_0046B730[], *D_0046B770[];
@@ -361,7 +362,6 @@ void func_00209060(VObject *ev, u8 *c) {
     AT(ev, 0x701, u8) = 0;
 }
 
-extern VObject *gNavMesh;   /* the nav mesh */
 
 /* +0xD8 whether `pos` (on nav triangle `tri`) is inside area `area` of the room's event data
  * (+0x10: area offsets; a type 1 area is 4 corners (x, z at +0x10.., 0x10 apart) and a
@@ -390,8 +390,8 @@ s32 func_001FC210(VObject *ev, const f32 *pos, s32 area, s32 tri) {
         }
     }
     sceVu0CopyVector(at, (f32 *)pos);
-    if (VCALL(gNavMesh, 0x10, s32 (*)(VObject *, s32, f32 *))(gNavMesh, tri, at) == 3) {
-        VCALL(gNavMesh, 0x14, void (*)(VObject *, s32, f32 *))(gNavMesh, tri, at);
+    if (VCALL(gNavMesh, 0x10, s32 (*)(VObject *, s32, f32 *))((VObject *)gNavMesh, tri, at) == 3) {
+        VCALL(gNavMesh, 0x14, void (*)(VObject *, s32, f32 *))((VObject *)gNavMesh, tri, at);
     }
     if (inside != 4) {
         return 0;
@@ -447,8 +447,8 @@ s32 func_001FC030(VObject *ev, u8 *c, s32 area) {
         }
     }
     sceVu0CopyVector(at, (f32 *)(c + 0x10));
-    if (VCALL(gNavMesh, 0x10, s32 (*)(VObject *, s32, f32 *))(gNavMesh, AT(c, 0x34, s32), at) == 3) {
-        VCALL(gNavMesh, 0x14, void (*)(VObject *, s32, f32 *))(gNavMesh, AT(c, 0x34, s32), at);
+    if (VCALL(gNavMesh, 0x10, s32 (*)(VObject *, s32, f32 *))((VObject *)gNavMesh, AT(c, 0x34, s32), at) == 3) {
+        VCALL(gNavMesh, 0x14, void (*)(VObject *, s32, f32 *))((VObject *)gNavMesh, AT(c, 0x34, s32), at);
     }
     if (inside != 4) {
         return 0;

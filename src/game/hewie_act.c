@@ -9,12 +9,12 @@
 #include "ptmf.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "navmesh.h"
 
 extern Character *gCharPlayer;
 extern Character *gCharPursuer;
 extern Character *gCharacters[6];
 extern Progress *gProgress;
-extern void *gNavMesh;      /* the walk mesh */
 
 #define RNG01() VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)
 

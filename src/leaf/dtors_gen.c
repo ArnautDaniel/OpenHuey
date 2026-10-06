@@ -4,8 +4,8 @@
 #include "common.h"
 #include "globals.h"
 #include "memcard.h"
+#include "navmesh.h"
 
-extern void *gNavMesh;
 extern void *D_00456DE8;
 extern void *D_004699E0[];
 extern void *D_00469B40[];

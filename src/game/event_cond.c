@@ -56,7 +56,6 @@ extern s32 func_00139060(u8 *h);
 extern u32 func_001F4770(void *motion, s32, s32, s32);   /* animation state flags (u8) */
 extern s32 func_001364F0(u8 *h);
 extern u32 func_00260CF0(void *list, s32 item);   /* how many */
-extern NavMesh *gNavMesh;   /* the nav mesh */
 extern s32 func_001235C0(u8 *a, u8 *c);
 extern s32 func_002D2120(void *o);
 extern s32 func_002D20D0(void *o);

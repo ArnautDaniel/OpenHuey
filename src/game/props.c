@@ -3,6 +3,7 @@
 #include "game.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "navmesh.h"
 
 
 extern void *D_00474000[], *D_0046FC30[], *D_00469D00[], *D_0046F580[];
@@ -681,7 +682,6 @@ s32 func_0034E9E0(u8 *d) {
 #include "effectmgr.h"
 
 extern void *D_00479400[], *D_00479AE0[], *D_00479AA0[];
-extern void *gNavMesh;      /* the nav mesh: +0x3C the triangle under a point, +0x14 the floor height in one */
 extern void func_002FF650(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 
 /* +0x8 destructor (the quad drawer at +0x610 inlined) */

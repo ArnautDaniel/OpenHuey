@@ -7,6 +7,7 @@
 #include "sce/libvu0.h"
 #include "task.h"
 #include "globals.h"
+#include "navmesh.h"
 
 
 s32 Progress_TestFlag(Progress *p, u32 id) {
@@ -436,7 +437,6 @@ s32 func_00178A30(Progress *p, u32 d) {
     return 1;
 }
 
-extern VObject *gNavMesh;   /* the nav mesh */
 
 /* whether character c counts for the room's occupancy tests */
 static s32 occupant(u8 *c, s32 room) {
@@ -486,7 +486,7 @@ void func_00175DE0(Progress *p) {
             }
         }
     }
-    nav = gNavMesh;
+    nav = (VObject *)gNavMesh;
     for (d = 0; d < 5; d++) {
         u8 *q = (u8 *)p + 0x1000 + d * 4;
 

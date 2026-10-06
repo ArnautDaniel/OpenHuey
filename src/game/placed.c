@@ -9,8 +9,8 @@
 #include "progress.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "navmesh.h"
 
-extern VObject *gNavMesh;   /* the nav mesh */
 extern void *func_00120D60(void *pool, u32 i);   /* BlockPool: block i if in use */
 extern void *func_00121370(u32 size, void *place);   /* placement new */
 extern void *D_00469C20[];   /* Actor */
@@ -234,7 +234,7 @@ void func_002D7450(u8 *m) {
  * position +0x10, copied to +0x40) */
 void func_002D69E0(u8 *mgr) {
     s32 room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
-    VObject *nav = gNavMesh;
+    VObject *nav = (VObject *)gNavMesh;
     s32 i;
 
     for (i = 0; i < 0x80; i++) {
@@ -428,7 +428,7 @@ void func_002D54D0(u8 *b) {
         return;
     }
     func_001247E0(b, v);
-    nm = gNavMesh;
+    nm = (VObject *)gNavMesh;
     if (ball_tri_flags(nm, AT(b, 0x34, u32)) & TRI_HOLE) {
         ball_drop(b);
         return;
@@ -474,7 +474,7 @@ static inline __attribute__((always_inline)) void ball_fly(u8 *b, s32 check, s32
         return;
     }
     sceVu0AddVector(v, (f32 *)(b + 0x100), v);
-    nm = gNavMesh;
+    nm = (VObject *)gNavMesh;
     for (;;) {
         sceVu0AddVector(to, v, BALL_POS(b));
         tri = AT(b, 0x34, u32);
@@ -607,7 +607,7 @@ static inline __attribute__((always_inline)) s32 thing_step_tri(u8 *b, u8 *a, f3
     sceVu0CopyVector(from, BALL_POS(a));
     from[1] = to[1];
     r = VCALL(gNavMesh, 0x44, u32 (*)(VObject *, u32, f32 *, f32 *, f32 *, f32 *, u32))(
-        gNavMesh, AT(a, 0x34, u32), out, from, to, n, AT(b, 0xC0, u32));
+        (VObject *)gNavMesh, AT(a, 0x34, u32), out, from, to, n, AT(b, 0xC0, u32));
     if (r & 0xF0000000) {
         return -1;
     }
@@ -905,7 +905,7 @@ void func_00314D40(u8 *o) {
     v[0] = v[0] * kDrag.f;
     v[2] = v[2] * kDrag.f;
     sceVu0AddVector(to, v, BALL_POS(o));
-    nm = gNavMesh;
+    nm = (VObject *)gNavMesh;
     tri = VCALL(nm, 0x44, u32 (*)(VObject *, u32, f32 *, f32 *, f32 *, f32 *, u32))(
         nm, AT(o, 0x34, u16), out, BALL_POS(o), to, n, AT(o, 0xC0, u32));
     if (tri == (u32)-1) {
@@ -1253,7 +1253,7 @@ void func_003674C0(u8 *b) {
         return;
     }
     func_001247E0(b, v);
-    nm = gNavMesh;
+    nm = (VObject *)gNavMesh;
     if (ball_tri_flags(nm, AT(b, 0x34, u32)) & TRI_HOLE) {
         ball_drop(b);
         return;
@@ -1307,7 +1307,7 @@ static inline __attribute__((always_inline)) void ball_roll(u8 *b, s32 check) {
         return;
     }
     func_001247E0(b, v);
-    nm = gNavMesh;
+    nm = (VObject *)gNavMesh;
     if (ball_tri_flags(nm, AT(b, 0x34, u32)) & TRI_HOLE) {
         ball_drop(b);
         return;
@@ -1425,7 +1425,7 @@ void func_00334900(u8 *o) {
     v[0] = v[0] * kDrag.f;
     v[2] = v[2] * kDrag.f;
     sceVu0AddVector(to, v, BALL_POS(o));
-    nm = gNavMesh;
+    nm = (VObject *)gNavMesh;
     tri = VCALL(nm, 0x44, u32 (*)(VObject *, u32, f32 *, f32 *, f32 *, f32 *, u32))(
         nm, AT(o, 0x34, u16), out, BALL_POS(o), to, n, AT(o, 0xC0, u32));
     if (tri == (u32)-1) {
@@ -1566,7 +1566,7 @@ void func_003365B0(u8 *o) {
     v[0] = v[0] * kDrag.f;
     v[2] = v[2] * kDrag.f;
     sceVu0AddVector(to, v, BALL_POS(o));
-    nm = gNavMesh;
+    nm = (VObject *)gNavMesh;
     tri = VCALL(nm, 0x44, u32 (*)(VObject *, u32, f32 *, f32 *, f32 *, f32 *, u32))(
         nm, AT(o, 0x34, u16), out, BALL_POS(o), to, n, AT(o, 0xC0, u32));
     if (tri == (u32)-1) {
@@ -2123,7 +2123,7 @@ void func_0036A980(u8 *o, f32 *arg) {
     v[3] = 1.0f;
     v[1] = 0.0f;
     v[0] = 0.0f;
-    VCALL(gNavMesh, 0x2C, void (*)(VObject *, u32, f32 *))(gNavMesh, tri, (f32 *)(o + 0xF30));
+    VCALL(gNavMesh, 0x2C, void (*)(VObject *, u32, f32 *))((VObject *)gNavMesh, tri, (f32 *)(o + 0xF30));
     sceVu0CopyVector(v, (f32 *)(o + 0xF30));
     sceVu0ScaleVector(v, v, k01.f);
     sceVu0AddVector((f32 *)(r + 0x10), v, (f32 *)(r + 0x10));
@@ -2276,7 +2276,7 @@ static inline __attribute__((always_inline)) s32 burst_update(u8 *o, const Burst
         }
     }
 
-    nav = gNavMesh;
+    nav = (VObject *)gNavMesh;
     for (i = 0; i < b->nPuff; i++) {
         u32 tri;
 
@@ -2528,7 +2528,7 @@ void func_0036BDE0(u8 *o, f32 *arg) {
         AT(o, 0x2030 + i * 4, f32) = k002.f + k01.f * AT(o, 0x1E34 + i * 0xC, f32);
         AT(o, 0x1FB0 + i * 4, f32) = AT(r, 0x14, f32);
     }
-    nav = gNavMesh;
+    nav = (VObject *)gNavMesh;
     for (i = 0; i < 3; i++) {
         u8 *corners = o + 0x21F0 + i * 0x40;
         s32 k;
@@ -2994,7 +2994,7 @@ u32 func_00354E70(u8 *o, u32 tri, f32 *pos, f32 *rot, f32 rr, f32 h) {
         return r;
     }
     sceVu0CopyVector(fl, (f32 *)(o + 0x10));
-    VCALL(gNavMesh, 0x14, void (*)(VObject *, u32, f32 *))(gNavMesh, AT(o, 0x34, u32), fl);
+    VCALL(gNavMesh, 0x14, void (*)(VObject *, u32, f32 *))((VObject *)gNavMesh, AT(o, 0x34, u32), fl);
     if (AT(o, 0x14, f32) < fl[1]) {
         AT(o, 0x14, f32) = fl[1];
     }
@@ -3016,7 +3016,7 @@ s32 func_00354F20(u8 *b, u8 *a, f32 *to) {
         sceVu0CopyVector(from, BALL_POS(a));
         from[1] = to[1];
         r = VCALL(gNavMesh, 0x44, u32 (*)(VObject *, u32, f32 *, f32 *, f32 *, f32 *, u32))(
-            gNavMesh, AT(a, 0x34, u32), out, from, to, n, AT(b, 0xC0, u32));
+            (VObject *)gNavMesh, AT(a, 0x34, u32), out, from, to, n, AT(b, 0xC0, u32));
     }
     if (r & 0xF0000000) {
         if (r & 0x40000000) {
@@ -3235,7 +3235,7 @@ void func_00333AD0(u8 *b) {
     u32 tri, prev, hit;
 
     sceVu0AddVector(v, (f32 *)(b + 0x100), v);
-    nm = gNavMesh;
+    nm = (VObject *)gNavMesh;
     mgr = gEffects;
     for (;;) {
         sceVu0AddVector(to, v, BALL_POS(b));
@@ -3399,7 +3399,7 @@ s32 func_0036D720(u8 *o) {
         return 0;
     }
     AT(o, 0x794, u8) = 1;
-    nav = gNavMesh;
+    nav = (VObject *)gNavMesh;
     rnd = gRandom;
     AT(o, 0x790, s32) ^= 1;
     for (i = 0; i < 16; i++) {

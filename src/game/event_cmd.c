@@ -13,6 +13,7 @@
 #include "effectmgr.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "navmesh.h"
 
 extern void *gCharacters[6];
 extern u8 *gCharPlayer;
@@ -33,7 +34,6 @@ extern s32 func_00178300(Progress *p, s32 room, s32 n, s32 partner);
 extern s32 func_00177620(Progress *p);
 extern s32 func_001FBF70(VObject *ev, s32 id);
 extern void func_001FBE90(VObject *ev, s32 a, s32 b);
-extern VObject *gNavMesh;   /* the nav mesh */
 extern u8 *func_00266C40(void *fx, s32 k);   /* effect slot k (NULL: none) */
 extern void *func_002672F0(u32 size, void *place);   /* placement new */
 extern u8 *func_00208ED0(u8 *e);                   /* a D_0046FF40 effect */
@@ -2112,13 +2112,13 @@ void func_002013F0(VObject *ev) {
         break;
     }
     case 0x67:   /* find its triangle */
-        AT(c, 0x34, s32) = VCALL(gNavMesh, 0x3C, s32 (*)(VObject *, f32 *, s32))(gNavMesh, (f32 *)(c + 0x10), 0);
+        AT(c, 0x34, s32) = VCALL(gNavMesh, 0x3C, s32 (*)(VObject *, f32 *, s32))((VObject *)gNavMesh, (f32 *)(c + 0x10), 0);
         break;
     case 0x79: {   /* to (x, z) on a triangle, facing */
         pos[0] = (f32)be32(pc + 4) / 1000.0f;
         pos[2] = (f32)be32(PC(ev) + 8) / 1000.0f;
         pos[3] = 1.0f;
-        VCALL(gNavMesh, 0x14, void (*)(VObject *, s32, f32 *))(gNavMesh, be16(PC(ev) + 2), pos);
+        VCALL(gNavMesh, 0x14, void (*)(VObject *, s32, f32 *))((VObject *)gNavMesh, be16(PC(ev) + 2), pos);
         angle = DEG(be16(PC(ev) + 0xC));
         char_place(ev, c, be16(PC(ev) + 2), &angle, pos);
         break;
@@ -2131,7 +2131,7 @@ void func_002013F0(VObject *ev) {
         at[2] = (f32)be32(PC(ev) + 0xA) / 1000.0f;
         at[3] = 1.0f;
         angle = DEG(be16(PC(ev) + 0xE));
-        AT(c, 0x34, s32) = VCALL(gNavMesh, 0x3C, s32 (*)(VObject *, f32 *, s32))(gNavMesh, at, 0);
+        AT(c, 0x34, s32) = VCALL(gNavMesh, 0x3C, s32 (*)(VObject *, f32 *, s32))((VObject *)gNavMesh, at, 0);
         tri = AT(c, 0x34, s32);
         {
             u8 keep = AT(c, 0x2D, u8);

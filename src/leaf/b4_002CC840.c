@@ -21,7 +21,7 @@ extern u8 D_00413530[], D_004134F0[], D_00413510[], D_004134D0[];
 extern u8 D_0046C790[], D_0046BA68[], D_0046ED30[], D_0046DB80[], D_00469D00[], D_0046F350[];
 extern u8 D_0046BAA0[], D_0046BA80[], D_0046DB40[], D_0046D770[], D_0046C780[], D_0046D800[];
 extern u8 D_0046C3E0[], D_0046A9D0[], D_0046D780[];
-extern void *D_00456E00, *gNavMesh;
+extern void *D_00456E00;
 
 /* tail call to virtual slot 0x8 */
 s32 func_002CC840(void *self) {

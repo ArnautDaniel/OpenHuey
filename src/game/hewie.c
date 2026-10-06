@@ -550,7 +550,6 @@ s32 func_0015FA20(Hewie *h, s32 damage) {
 }
 
 extern void func_001F6AF0(void *motion);
-extern NavMesh *gNavMesh;
 
 /* vtable +0x48: apply the animation to the model; while enabled, take his position from the
  * root bone (and find his room and nav-mesh triangle). */

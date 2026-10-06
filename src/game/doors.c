@@ -12,8 +12,8 @@
 #include "actor.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "navmesh.h"
 
-extern VObject *gNavMesh;   /* the nav mesh */
 extern Character *gCharacters[];
 extern void *D_0046C540[], *D_0046C5D0[], *D_0046C780[], *D_0046D800[], *D_00469D00[];
 extern const f32 D_003E51A0[][8];   /* door kinds' areas: 4 (x, z) corners */
@@ -188,7 +188,7 @@ s32 func_002231A0(VObject *d, u32 i, s32 anim, f32 *out, f32 *rot, s32 buf) {
         tri = AT(e, 0x18, u32);
         sceVu0CopyVector(from, (f32 *)(e + 0x30));
         if (nm == NULL) {
-            nm = gNavMesh;
+            nm = (VObject *)gNavMesh;
         }
         if (door_walk(nm, &tri, from, to)) {
             sceVu0CopyVector(out, to);
@@ -335,7 +335,7 @@ s32 func_00222A60(VObject *d, u32 i, const f32 *off, f32 *out) {
     func_002E2DD0(to, m, off);
     tri = AT(e, 0x18, u32);
     sceVu0CopyVector(from, (f32 *)(e + 0x30));
-    nm = gNavMesh;
+    nm = (VObject *)gNavMesh;
     if (!door_walk(nm, &tri, from, to)) {
         return -1;
     }

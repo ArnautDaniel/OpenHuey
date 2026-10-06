@@ -4,6 +4,7 @@
 #include "progress.h"
 #include "sce/libvu0.h"
 #include "globals.h"
+#include "navmesh.h"
 
 extern Character *gCharPartner;   /* Hewie */
 
@@ -65,7 +66,6 @@ void func_0028ED20(Pursuer *p) {
 
 extern Progress *gProgress;
 extern Character *gCharPlayer;    /* Fiona */
-extern void *gNavMesh;          /* nav mesh */
 
 
 /* nav triangle +0x179C, if valid */

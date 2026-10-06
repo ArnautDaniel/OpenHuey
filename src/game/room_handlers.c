@@ -3,6 +3,7 @@
  * Each room's class gives the event system the room's data tables (by slot, see the vtables). */
 #include "common.h"
 #include "globals.h"
+#include "navmesh.h"
 
 extern void func_00100490(void *p);   /* operator delete */
 
@@ -2938,7 +2939,6 @@ s32 func_002B53B0(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-extern void *gNavMesh;   /* nav mesh */
 /* room 54 step (D_00428040): find the nav mesh's door regions again */
 s32 func_0030FA60(void) {
     VObject *nav = (VObject *)gNavMesh;
