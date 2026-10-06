@@ -5250,6 +5250,31 @@ extern void *func_00170D10(void *);
 extern void *func_00170F90(void *);
 extern void *func_00170F10(void *);
 
+extern void *D_0046C160[];   /* the base with two parts at +0x8D0 / +0x930 */
+
+/* a model on the full base with its two parts (+0x8D0, +0x930), vtable D_00479740 */
+void *func_0038C910(u8 *m) {
+    func_0016F4B0(m);
+    AT(m, 0x0, void **) = D_0046C160;
+    func_001706F0(m + 0x8D0);
+    func_001706F0(m + 0x930);
+    AT(m, 0x0, void **) = D_00479740;
+    return m;
+}
+
+/* the same with 24 more parts (0x50 each, +0x9A0), vtable D_00471CE0 */
+void *func_0038C960(u8 *m) {
+    func_0016F4B0(m);
+    AT(m, 0x0, void **) = D_0046C160;
+    func_001706F0(m + 0x8D0);
+    func_001706F0(m + 0x930);
+    AT(m, 0x0, void **) = D_00471CE0;
+    func_00100340(m + 0x9A0, func_00170A30, func_001709D0, 0x50, 0x18);
+    AT(m, 0x1154, s32) = 0;
+    AT(m, 0x1150, s32) = 0;
+    return m;
+}
+
 /* kind 33 */
 void func_0016F420(Progress *p, u32 slot) {
     u8 *m = Model_New(p, 0x890);

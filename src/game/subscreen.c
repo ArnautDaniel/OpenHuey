@@ -1531,3 +1531,35 @@ void func_00394260(SubScreen *s) {
     }
     func_0037E580((u8 *)s);
 }
+
+/* ---- costumes ---- */
+
+extern s32 func_00260690(u8 *items, u8 slot);   /* the item in equipment slot `slot` */
+
+/* the costume worn (equipment slot 2, items 0x90..0x9B) as 0..8; -1 none */
+s32 func_00385370(SubScreen *s) {
+    static const s8 kIndex[12] = {0, 1, 2, 3, 4, 5, -1, 6, 7, -1, -1, 8};
+    u32 k = func_00260690(s->pool, 2) - 0x90;
+
+    return k < 12 ? kIndex[k] : -1;
+}
+
+/* the costume worn as its model variant 0x31..0x33; 0 none */
+s32 func_00385410(SubScreen *s) {
+    static const u8 kModel[12] = {0x31, 0x32, 0x33, 0x31, 0x32, 0x33, 0, 0x32, 0x33, 0, 0, 0x33};
+    u32 k = func_00260690(s->pool, 2) - 0x90;
+
+    return k < 12 ? kModel[k] : 0;
+}
+
+extern void func_00385C30(SubScreen *s);
+extern const PTMF D_0044C108;
+
+/* state: a question being asked (its page drawn, func_00385C30); once answered, D_0044C108 */
+void func_00385F60(SubScreen *s) {
+    func_00385C30(s);
+    Task_Run(&s->ask);
+    if (AT(&s->ask, 0x10, u8) == 0) {
+        ptmf_set(&s->state, &D_0044C108);
+    }
+}
