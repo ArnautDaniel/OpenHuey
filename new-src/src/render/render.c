@@ -20,6 +20,7 @@ RenderSettings gRender = {
     .light_dir = {0.35f, 0.85f, 0.4f}, .light_color = {0.55f, 0.52f, 0.48f}, .ambient = {0.16f, 0.17f, 0.2f},
     .rim = 0.35f,
     .room_fog = 1, .room_tint = 1, .room_bloom = 1,
+    .room_lights = 1, .character_light = 2.0f, .shadow_maps = 1, .shadow_strength = 0.7f,
 };
 
 RoomLook gRoomLook;
@@ -28,7 +29,9 @@ RoomLook gRoomLook;
  * Fixed locations: u_mvp 0, u_use_tex 1, u_solid_tex 2, u_lit 3, u_coverage 4, u_light_dir 5,
  * u_light_color 6, u_ambient 7, u_eye 8, u_rim 9; the texture on unit 0. */
 
-enum { U_MVP, U_USE_TEX, U_SOLID_TEX, U_LIT, U_COVERAGE, U_LIGHT_DIR, U_LIGHT_COLOR, U_AMBIENT, U_EYE, U_RIM, U_MASK };
+enum { U_MVP, U_USE_TEX, U_SOLID_TEX, U_LIT, U_COVERAGE, U_LIGHT_DIR, U_LIGHT_COLOR, U_AMBIENT, U_EYE, U_RIM, U_MASK,
+       U_ROOM_LIT, U_LPOS = 12, U_LCOL = 15, U_LRANGE = 18, U_AMBIENT128 = 21, U_NSHADOWS = 22, U_SHADOW_VP = 23,
+       U_SHADOW_INFO = 27, U_SHADOW_STRENGTH = 31, U_RECEIVE = 35, U_CHAR_LIGHT = 36 };
 
 static const char *kMeshVs =
     "#version 460 core\n"
@@ -68,6 +71,18 @@ static const char *kMeshFs =
     "layout(location = 8) uniform vec3 u_eye;\n"
     "layout(location = 9) uniform float u_rim;\n"
     "layout(location = 10) uniform float u_mask;\n"   /* the bloom mask: 1 for its own draws */
+    "layout(location = 11) uniform int u_room_lit;\n"   /* lit draws: by the room's lights */
+    "layout(location = 12) uniform vec3 u_lpos[3];\n"
+    "layout(location = 15) uniform vec3 u_lcol[3];\n"   /* 0..128, times intensity */
+    "layout(location = 18) uniform float u_lrange[3];\n"
+    "layout(location = 21) uniform vec3 u_ambient128;\n"
+    "layout(location = 22) uniform int u_nshadows;\n"
+    "layout(location = 23) uniform mat4 u_shadow_vp[4];\n"
+    "layout(location = 27) uniform vec4 u_shadow_info[4];\n"   /* the caster's middle, its size */
+    "layout(location = 31) uniform float u_shadow_strength[4];\n"
+    "layout(location = 35) uniform int u_receive;\n"
+    "layout(location = 36) uniform float u_char_light;\n"
+    "layout(binding = 1) uniform sampler2DArrayShadow u_shadow;\n"
     "layout(location = 0) out vec4 o_color;\n"
     "layout(location = 1) out float o_mask;\n"
     "void main() {\n"
@@ -78,11 +93,42 @@ static const char *kMeshFs =
     "        c *= t;\n"
     "    }\n"
     "    if (u_lit != 0) {\n"
-    "        vec3 n = normalize(v_normal), v = normalize(u_eye - v_pos);\n"
-    "        float key = max(dot(n, normalize(u_light_dir)), 0.0);\n"
+    "        vec3 n = normalize(v_normal), v = normalize(u_eye - v_pos), light;\n"
     "        float rim = pow(1.0 - max(dot(n, v), 0.0), 3.0) * u_rim;\n"
-    "        c.rgb *= u_ambient * 2.0 + u_light_color * key * 2.0;\n"
-    "        c.rgb += rim * (u_ambient + u_light_color) * c.a;\n"
+    "        if (u_room_lit != 0) {\n"   /* the game's: ambient + 3 point lights, 0x80 = 1.0 */
+    "            vec3 l = u_ambient128;\n"
+    "            for (int i = 0; i < 3; i++) {\n"
+    "                vec3 d = u_lpos[i] - v_pos;\n"
+    "                float dist = max(length(d), 1e-3);\n"
+    "                float fall = u_lrange[i] > 0.0 ? clamp(1.0 - dist / u_lrange[i], 0.0, 1.0) : 1.0;\n"
+    "                l += u_lcol[i] * max(dot(n, d / dist), 0.0) * fall;\n"
+    "            }\n"
+    "            light = pow(max(l / 128.0 * u_char_light, 0.0), vec3(2.2));\n"
+    "        } else {\n"
+    "            float key = max(dot(n, normalize(u_light_dir)), 0.0);\n"
+    "            light = u_ambient * 2.0 + u_light_color * key * 2.0;\n"
+    "        }\n"
+    "        c.rgb *= light;\n"
+    "        c.rgb += rim * max(light, u_ambient) * c.a;\n"
+    "    }\n"
+    "    if (u_receive != 0) {\n"   /* characters' shadows: PCF over 3 x 3, fading with distance */
+    "        vec2 texel = 1.0 / vec2(textureSize(u_shadow, 0).xy);\n"
+    "        for (int i = 0; i < 4; i++) {\n"
+    "            if (i >= u_nshadows) break;\n"
+    "            vec4 lp = u_shadow_vp[i] * vec4(v_pos, 1.0);\n"
+    "            if (lp.w <= 0.0) continue;\n"
+    "            vec3 q = lp.xyz / lp.w * 0.5 + 0.5;\n"
+    "            if (any(lessThan(q, vec3(0.0))) || any(greaterThan(q, vec3(1.0)))) continue;\n"
+    "            float lit = 0.0;\n"
+    "            for (int y = -1; y <= 1; y++)\n"
+    "                for (int x = -1; x <= 1; x++)\n"
+    "                    lit += texture(u_shadow, vec4(q.xy + vec2(x, y) * texel, float(i), q.z - 0.0005));\n"
+    "            lit /= 9.0;\n"
+    "            float far = length(v_pos - u_shadow_info[i].xyz) / u_shadow_info[i].w;\n"
+    "            float fade = 1.0 - smoothstep(1.0, 5.0, far);\n"
+    /* (darkening by the strength as it looks on screen, not in linear values) */
+    "            c.rgb *= pow(1.0 - u_shadow_strength[i] * (1.0 - lit) * fade, 2.2);\n"
+    "        }\n"
     "    }\n"
     "    if (u_use_tex != 0) {\n"
     "        if (u_coverage != 0) {\n"   /* a sharp edge where alpha crosses the cut-off */
@@ -95,6 +141,18 @@ static const char *kMeshFs =
     "    o_color = c;\n"
     "    o_mask = u_mask;\n"
     "}\n";
+
+/* the shadow pass: depth only, from the light */
+static const char *kShadowVs =
+    "#version 460 core\n"
+    "layout(location = 0) in vec3 a_pos;\n"
+    "layout(location = 0) uniform mat4 u_vp;\n"
+    "void main() { gl_Position = u_vp * vec4(a_pos, 1.0); }\n";
+static const char *kShadowFs =
+    "#version 460 core\n"
+    "void main() {}\n";
+
+#define SHADOW_SIZE 1024
 
 /* ---- state ---- */
 
@@ -113,6 +171,10 @@ static struct {
     int px, py, pw, ph;         /* the picture's rectangle in it (GL: from the bottom left) */
     Mat4 proj;
     float znear, zfar;
+    GLuint shadow_prog, shadow_tex, shadow_fbo[RENDER_MAX_SHADOWS];
+    int nshadows;
+    Mat4 shadow_vp[RENDER_MAX_SHADOWS];
+    float shadow_info[RENDER_MAX_SHADOWS][4], shadow_strength[RENDER_MAX_SHADOWS];
 } R;
 
 #define FONT_CELL_W 6
@@ -208,6 +270,26 @@ int render_init(void) {
     make_font();
     make_blob();
     post_init();
+
+    /* shadow maps: a depth texture array, compared in the lookup (hardware PCF) */
+    R.shadow_prog = gl_program(kShadowVs, kShadowFs, "shadow");
+    glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &R.shadow_tex);
+    glTextureStorage3D(R.shadow_tex, 1, GL_DEPTH_COMPONENT32F, SHADOW_SIZE, SHADOW_SIZE, RENDER_MAX_SHADOWS);
+    glTextureParameteri(R.shadow_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(R.shadow_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(R.shadow_tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(R.shadow_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(R.shadow_tex, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+    glTextureParameteri(R.shadow_tex, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+    {
+        int i;
+
+        for (i = 0; i < RENDER_MAX_SHADOWS; i++) {
+            glCreateFramebuffers(1, &R.shadow_fbo[i]);
+            glNamedFramebufferTextureLayer(R.shadow_fbo[i], GL_DEPTH_ATTACHMENT, R.shadow_tex, 0, i);
+            glNamedFramebufferDrawBuffer(R.shadow_fbo[i], GL_NONE);
+        }
+    }
     return 1;
 }
 
@@ -280,6 +362,91 @@ void render_camera(const Mat4 *proj, const Mat4 *view, Vec3 eye, float znear, fl
     glProgramUniform3f(R.mesh_prog, U_AMBIENT, gRender.ambient.x, gRender.ambient.y, gRender.ambient.z);
     glProgramUniform3f(R.mesh_prog, U_EYE, eye.x, eye.y, eye.z);
     glProgramUniform1f(R.mesh_prog, U_RIM, gRender.rim);
+}
+
+void render_draw_lights(Vec3 ambient, const DrawLight *lights, int n) {
+    float pos[9] = {0}, col[9] = {0}, range[3] = {0};
+    int i;
+
+    for (i = 0; i < n && i < 3; i++) {
+        pos[i * 3] = lights[i].pos.x;
+        pos[i * 3 + 1] = lights[i].pos.y;
+        pos[i * 3 + 2] = lights[i].pos.z;
+        col[i * 3] = lights[i].color.x;
+        col[i * 3 + 1] = lights[i].color.y;
+        col[i * 3 + 2] = lights[i].color.z;
+        range[i] = lights[i].range;
+    }
+    glProgramUniform1i(R.mesh_prog, U_ROOM_LIT, n >= 0 && gRender.room_lights);
+    glProgramUniform3fv(R.mesh_prog, U_LPOS, 3, pos);
+    glProgramUniform3fv(R.mesh_prog, U_LCOL, 3, col);
+    glProgramUniform1fv(R.mesh_prog, U_LRANGE, 3, range);
+    glProgramUniform3f(R.mesh_prog, U_AMBIENT128, ambient.x, ambient.y, ambient.z);
+    glProgramUniform1f(R.mesh_prog, U_CHAR_LIGHT, gRender.character_light);
+}
+
+void render_shadows_begin(void) {
+    R.nshadows = 0;
+}
+
+int render_shadow_add(const Mat4 *light_vp, Vec3 center, float radius, float strength) {
+    static const float kFar = 1.0f;
+    int i = R.nshadows;
+
+    if (i >= RENDER_MAX_SHADOWS || !gRender.shadow_maps) {
+        return -1;
+    }
+    R.nshadows++;
+    R.shadow_vp[i] = *light_vp;
+    R.shadow_info[i][0] = center.x;
+    R.shadow_info[i][1] = center.y;
+    R.shadow_info[i][2] = center.z;
+    R.shadow_info[i][3] = radius;
+    R.shadow_strength[i] = strength;
+    glBindFramebuffer(GL_FRAMEBUFFER, R.shadow_fbo[i]);
+    glViewport(0, 0, SHADOW_SIZE, SHADOW_SIZE);
+    glDepthMask(GL_TRUE);
+    glClearNamedFramebufferfv(R.shadow_fbo[i], GL_DEPTH, 0, &kFar);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glDisable(GL_BLEND);
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(2.0f, 4.0f);
+    glProgramUniformMatrix4fv(R.shadow_prog, 0, 1, GL_FALSE, light_vp->m);
+    glUseProgram(R.shadow_prog);
+    return i;
+}
+
+void render_shadow_mesh(const GpuMesh *g, const MeshDraw *d, int nd) {
+    int i;
+
+    if (g->vao == 0) {
+        return;
+    }
+    glBindVertexArray(g->vao);
+    for (i = 0; i < nd; i++) {
+        if (!d[i].blend) {   /* (the cut-outs - fringes, lashes - cast nothing) */
+            glDrawArrays(GL_TRIANGLES, d[i].first, d[i].count);
+        }
+    }
+    glBindVertexArray(0);
+}
+
+void render_shadows_end(void) {
+    float vp[RENDER_MAX_SHADOWS * 16];
+    int i;
+
+    glDisable(GL_POLYGON_OFFSET_FILL);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    for (i = 0; i < R.nshadows; i++) {
+        memcpy(vp + i * 16, R.shadow_vp[i].m, sizeof(R.shadow_vp[i].m));
+    }
+    glProgramUniform1i(R.mesh_prog, U_NSHADOWS, R.nshadows);
+    if (R.nshadows > 0) {
+        glProgramUniformMatrix4fv(R.mesh_prog, U_SHADOW_VP, R.nshadows, GL_FALSE, vp);
+        glProgramUniform4fv(R.mesh_prog, U_SHADOW_INFO, R.nshadows, &R.shadow_info[0][0]);
+        glProgramUniform1fv(R.mesh_prog, U_SHADOW_STRENGTH, R.nshadows, R.shadow_strength);
+    }
 }
 
 void render_post(void) {
@@ -392,6 +559,7 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
     glUseProgram(R.mesh_prog);
     glDisable(GL_BLEND);   /* (for both targets: only the colour one ever blends) */
     glBindSampler(0, R.sampler);
+    glBindTextureUnit(1, R.shadow_tex);
     glBindVertexArray(g->vao);
     for (i = 0; i < nd; i++) {
         const MeshDraw *x = &d[i];
@@ -421,6 +589,7 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
         glProgramUniform1i(R.mesh_prog, U_SOLID_TEX, x->solid_tex);
         glProgramUniform1i(R.mesh_prog, U_LIT, x->lit);
         glProgramUniform1i(R.mesh_prog, U_COVERAGE, coverage);
+        glProgramUniform1i(R.mesh_prog, U_RECEIVE, !x->lit && !x->mask);
         glBindTextureUnit(0, tex);
         glDrawArrays(GL_TRIANGLES, x->first, x->count);
         if (x->mask) {

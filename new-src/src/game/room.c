@@ -96,6 +96,76 @@ static void load_look(Room *r) {
     }
 }
 
+/* PAC section 4: a count, the ambient colour, then 0x30 bytes a light (src/game/lights.c
+ * Lights_TakeRoom) */
+static void load_lights(Room *r) {
+    size_t size;
+    const uint8_t *sec = pac_section(&r->pac, PAC_LIGHTS, &size);
+    int32_t n;
+    int i;
+
+    r->nlights = 0;
+    r->ambient = vec3(16, 16, 16);
+    if (sec == NULL || size < 16) {
+        return;
+    }
+    memcpy(&n, sec, 4);
+    memcpy(&r->ambient, sec + 4, 12);
+    for (i = 0; i < n && i < ROOM_MAX_LIGHTS && 16 + (size_t)(i + 1) * 48 <= size; i++) {
+        float v[12];
+
+        memcpy(v, sec + 16 + i * 48, sizeof(v));
+        r->lights[i].pos = vec3(v[0], v[1], v[2]);
+        r->lights[i].color = vec3(v[4], v[5], v[6]);
+        r->lights[i].intensity = v[7];
+        r->lights[i].range = v[8];
+    }
+    r->nlights = i;
+}
+
+int room_lights_at(const Room *r, Vec3 pos, int out[3]) {
+    float best[3] = {-1, -1, -1}, h;
+    int tri = navmesh_find(&r->nav, pos, 10.0f, &h), i, k, n = 0;
+    uint32_t mask = tri >= 0 ? r->nav.tris[tri].lights : (r->nlights > 0 ? 1u : 0u);
+
+    out[0] = out[1] = out[2] = -1;
+    for (i = 0; i < r->nlights; i++) {
+        const RoomLight *l = &r->lights[i];
+        float score = (0.3f * l->color.x + 0.6f * l->color.y + 0.1f * l->color.z) * l->intensity;
+        int idx = i;
+
+        if (!(mask >> i & 1)) {
+            continue;
+        }
+        if (l->range > 0.0f) {
+            float d = vec3_len(vec3_sub(pos, l->pos));
+
+            score = d < l->range ? score * (l->range - d) / l->range : 0.0f;
+        }
+        if (score <= 0.0f) {
+            continue;
+        }
+        for (k = 0; k < 3; k++) {   /* kept in order, brightest first */
+            if (score > best[k]) {
+                float ts = best[k];
+                int ti = out[k];
+
+                best[k] = score;
+                out[k] = idx;
+                score = ts;
+                idx = ti;
+                if (idx < 0) {
+                    break;
+                }
+            }
+        }
+    }
+    for (k = 0; k < 3; k++) {
+        n += out[k] >= 0;
+    }
+    return n;
+}
+
 int room_load(Room *r, int id) {
     char path[64];
     size_t size;
@@ -120,6 +190,7 @@ int room_load(Room *r, int id) {
     sec = pac_section(&r->pac, PAC_NAV, &size);
     navmesh_build(&r->nav, sec, size);
     load_look(r);
+    load_lights(r);
     if (r->mesh.ndyn > 0) {
         r->moving_v = malloc((size_t)r->mesh.ndv * 3 * sizeof(MeshVertex));
         r->moving_d = malloc((size_t)r->mesh.ndyn * sizeof(MeshDraw));

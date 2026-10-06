@@ -56,6 +56,10 @@ typedef struct RenderSettings {
     Vec3 light_color;        /* linear */
     Vec3 ambient;            /* linear */
     float rim;               /* rim light on characters' edges */
+    int32_t room_lights;     /* characters lit by the room's lights (as the game does) */
+    float character_light;   /* ... that light's strength */
+    int32_t shadow_maps;     /* characters cast shadows from the room's lights onto it */
+    float shadow_strength;   /* 0 .. 1 */
     int32_t room_fog;        /* the room's own fog, tint and bloom (part of the original look) */
     int32_t room_tint;
     int32_t room_bloom;
@@ -106,6 +110,25 @@ void render_mesh_free(GpuMesh *g);
 /* draw a mesh's draws; textures[i] for texture index i; groups: bit g shows group g (0 always) */
 void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, const GpuTexture *textures,
                  int ntextures, const uint32_t groups[8]);
+
+/* the lights for the next lit draws (characters): the room's ambient and up to 3 point lights,
+ * colours on the game's 0..128 scale (times intensity); n < 0: the fixed key light instead */
+typedef struct DrawLight {
+    Vec3 pos;
+    Vec3 color;
+    float range;    /* 0: no falloff */
+} DrawLight;
+void render_draw_lights(Vec3 ambient, const DrawLight *lights, int n);
+
+/* shadows: each frame, before render_begin, casters are drawn from their light into a shadow
+ * map; the room's draws then darken where a caster hides the light */
+#define RENDER_MAX_SHADOWS 4
+void render_shadows_begin(void);
+/* a new shadow: the light's view-projection, the caster's middle and size (shadows fade past a
+ * few sizes), the darkening; -1 if there is no room left. Then render_shadow_mesh draws into it */
+int render_shadow_add(const Mat4 *light_vp, Vec3 center, float radius, float strength);
+void render_shadow_mesh(const GpuMesh *g, const MeshDraw *d, int nd);
+void render_shadows_end(void);
 
 /* the contact-shadow texture (a soft round blob) */
 GpuTexture render_blob_texture(void);

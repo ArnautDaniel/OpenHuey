@@ -8,6 +8,16 @@
 #include "../render/render.h"
 
 #define ROOM_MAX_TEXTURES 256
+#define ROOM_MAX_LIGHTS 16
+
+/* a room light (PAC section 4: 12 floats each - position, colour 0..128, intensity, range;
+ * range 0 reaches everywhere: the moon) */
+typedef struct RoomLight {
+    Vec3 pos;
+    Vec3 color;
+    float intensity;
+    float range;
+} RoomLight;
 
 typedef struct Room {
     int id;                 /* -1: none loaded */
@@ -18,6 +28,9 @@ typedef struct Room {
     GpuTexture textures[ROOM_MAX_TEXTURES];
     int ntextures;
     uint32_t groups[8];     /* bit g: group g shown (group 0 always is) */
+    Vec3 ambient;           /* (0..128) */
+    RoomLight lights[ROOM_MAX_LIGHTS];
+    int nlights;
     GpuMesh moving;         /* the batches that move with the view or animate, rebuilt each frame */
     MeshVertex *moving_v;
     MeshDraw *moving_d;
@@ -33,6 +46,9 @@ void room_tick(Room *r);
  * the bloom mask */
 void room_draw(Room *r, const Mat4 *view_proj, Vec3 eye, Vec3 forward);
 /* the highest solid surface at (x, z) below height y: 1 and its height in *out, or 0 if none */
+/* the up to 3 lights brightest at a point (those reaching its nav triangle: the game's
+ * Lights_Brightest): their indices, -1 for none; how many */
+int room_lights_at(const Room *r, Vec3 pos, int out[3]);
 int room_floor_below(const Room *r, float x, float y, float z, float *out);
 
 #endif

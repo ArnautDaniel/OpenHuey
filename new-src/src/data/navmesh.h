@@ -14,6 +14,7 @@ typedef struct NavTri {
     Vec3 v[3];
     int32_t next[3];   /* the triangle across edge v[i] - v[(i + 1) % 3], or -1 */
     uint32_t flags;
+    uint32_t lights;   /* the room lights reaching it: bit i = light i (+0x4C) */
 } NavTri;
 
 typedef struct NavMesh {

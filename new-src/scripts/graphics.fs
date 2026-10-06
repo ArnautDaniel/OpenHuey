@@ -15,6 +15,7 @@ PRIVATE>
 \ as the PS2 showed it: no effects, a 4:3 picture
 : look-original
     1 ['] gfx.msaa int!  1 ['] gfx.aspect int!
+    ['] gfx.room-lights on  ['] gfx.shadow-maps on   \ (the game lit and shadowed its characters too)
     ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on
     ['] gfx.ssao off  ['] gfx.bloom off  ['] gfx.fog off  ['] gfx.shadows off
     0 ['] gfx.tonemap int!  0e ['] gfx.vignette float!  0e ['] gfx.grain float!
@@ -144,7 +145,11 @@ s"   strength"      ' gfx.bloom-strength number 0 1000 20 item
 s" Haze"            ' gfx.fog flag 0 1 0 item
 s"   density"       ' gfx.fog-density number 0 10 1 item
 s"   start"         ' gfx.fog-start number 0 1000000 25000 item
-s" Contact shadows" ' gfx.shadows flag 0 1 0 item
+s" Characters lit by the room" ' gfx.room-lights flag 0 1 0 item
+s"   strength"      ' gfx.character-light number 500 4000 100 item
+s" Shadows from room lights" ' gfx.shadow-maps flag 0 1 0 item
+s"   strength"      ' gfx.shadow-strength number 0 1000 50 item
+s" Contact blobs"   ' gfx.shadows flag 0 1 0 item
 s" Tone mapping"    ' gfx.tonemap choice 0 2   s" clip" s" soft" s" filmic" 3 names item
 s" Exposure"        ' gfx.exposure number 250 4000 50 item
 s" Saturation"      ' gfx.saturation number 0 2000 50 item

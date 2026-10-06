@@ -61,7 +61,13 @@ int actor_load(Actor *actors, const char *name) {
     a->loop = 1;
     a->visible = 1;
     a->shadow_size = 7.0f;
-    return i;
+    a->lo = vec3(1e30f, 1e30f, 1e30f);
+    a->hi = vec3(-1e30f, -1e30f, -1e30f);
+    for (i = 0; i < a->model.nv; i++) {
+        a->lo = vec3_min(a->lo, a->model.v[i].pos);
+        a->hi = vec3_max(a->hi, a->model.v[i].pos);
+    }
+    return (int)(a - actors);
 }
 
 void actor_free(Actor *a) {
@@ -174,6 +180,24 @@ static void draw_shadow(Actor *a, const Mat4 *view_proj) {
     render_mesh(&a->shadow, view_proj, &d, 1, &blob, 1, kAllGroups);
 }
 
+void actor_prepare(Actor *a) {
+    if (!a->used || !a->visible || a->model.nv == 0) {
+        return;
+    }
+    skin(a);
+    render_mesh_update(&a->gpu, a->posed, a->model.nv);
+}
+
+Vec3 actor_center(const Actor *a) {
+    return vec3(a->pos.x, a->pos.y + (a->lo.y + a->hi.y) * 0.5f * a->scale, a->pos.z);
+}
+
+float actor_radius(const Actor *a) {
+    Vec3 size = vec3_sub(a->hi, a->lo);
+
+    return 0.5f * a->scale * fmaxf(size.y, fmaxf(size.x, size.z));
+}
+
 void actor_draw(Actor *a, const Mat4 *view_proj) {
     static const uint32_t kAllGroups[8] = {~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u};
 
@@ -183,7 +207,5 @@ void actor_draw(Actor *a, const Mat4 *view_proj) {
     if (gRender.shadows && a->shadow_size > 0.0f) {
         draw_shadow(a, view_proj);
     }
-    skin(a);
-    render_mesh_update(&a->gpu, a->posed, a->model.nv);
     render_mesh(&a->gpu, view_proj, a->model.d, a->model.nd, a->textures, a->ntextures, kAllGroups);
 }

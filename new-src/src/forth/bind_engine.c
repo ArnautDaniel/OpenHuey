@@ -602,6 +602,10 @@ void bind_engine(Forth *f) {
     field(f, "gfx.rim", offsetof(RenderSettings, rim));
     field(f, "gfx.debug", offsetof(RenderSettings, debug));
     field(f, "gfx.room-fog", offsetof(RenderSettings, room_fog));
+    field(f, "gfx.room-lights", offsetof(RenderSettings, room_lights));
+    field(f, "gfx.character-light", offsetof(RenderSettings, character_light));
+    field(f, "gfx.shadow-maps", offsetof(RenderSettings, shadow_maps));
+    field(f, "gfx.shadow-strength", offsetof(RenderSettings, shadow_strength));
     field(f, "gfx.room-tint", offsetof(RenderSettings, room_tint));
     field(f, "gfx.room-bloom", offsetof(RenderSettings, room_bloom));
     f->m.current = saved;

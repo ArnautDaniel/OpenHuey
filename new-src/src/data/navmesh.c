@@ -30,6 +30,7 @@ int navmesh_build(NavMesh *n, const uint8_t *sec, size_t size) {
             memcpy(&t->next[k], r + 0x30 + k * 4, 4);
         }
         memcpy(&t->flags, r + 0x3C, 4);
+        memcpy(&t->lights, r + 0x4C, 4);
     }
     return 1;
 }

@@ -29,6 +29,8 @@ typedef struct Actor {
     int32_t loop;           /* the motion repeats (else it holds its last frame) */
     int32_t visible;
     float shadow_size;      /* the contact shadow's radius (room units; 0: none) */
+    Vec3 lo, hi;            /* the model's bounds (bind pose, model units) */
+    int lights[3];          /* this frame: the room lights on it */
 } Actor;
 
 /* load O_FIN/FIN_000 (.PCK + .TEX): the actor's number, or -1 */
@@ -36,7 +38,12 @@ int actor_load(Actor *actors, const char *name);
 void actor_free(Actor *a);
 /* a tick: the motion moves on */
 void actor_tick(Actor *a);
-/* skin and draw */
+/* pose and skin it for this frame (before shadows and drawing) */
+void actor_prepare(Actor *a);
+/* its middle and size in the room */
+Vec3 actor_center(const Actor *a);
+float actor_radius(const Actor *a);
+/* draw it (lit by the lights set with render_draw_lights) */
 void actor_draw(Actor *a, const Mat4 *view_proj);
 /* the motion has played to its end (non-looping) */
 int actor_motion_done(const Actor *a);

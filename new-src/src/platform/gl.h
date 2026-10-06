@@ -70,7 +70,12 @@
     X(PFNGLNAMEDFRAMEBUFFERREADBUFFERPROC, glNamedFramebufferReadBuffer) \
     X(PFNGLCOLORMASKIPROC, glColorMaski) \
     X(PFNGLENABLEIPROC, glEnablei) \
-    X(PFNGLDISABLEIPROC, glDisablei)
+    X(PFNGLDISABLEIPROC, glDisablei) \
+    X(PFNGLPROGRAMUNIFORM3FVPROC, glProgramUniform3fv) \
+    X(PFNGLPROGRAMUNIFORM4FVPROC, glProgramUniform4fv) \
+    X(PFNGLNAMEDFRAMEBUFFERTEXTURELAYERPROC, glNamedFramebufferTextureLayer) \
+    X(PFNGLTEXTURESTORAGE3DPROC, glTextureStorage3D) \
+    X(PFNGLPROGRAMUNIFORM1FVPROC, glProgramUniform1fv)
 
 #define GL_DECLARE(type, name) extern type p_##name;
 GL_FUNCTIONS(GL_DECLARE)
@@ -138,6 +143,11 @@ GL_FUNCTIONS(GL_DECLARE)
 #define glColorMaski p_glColorMaski
 #define glEnablei p_glEnablei
 #define glDisablei p_glDisablei
+#define glProgramUniform3fv p_glProgramUniform3fv
+#define glProgramUniform4fv p_glProgramUniform4fv
+#define glNamedFramebufferTextureLayer p_glNamedFramebufferTextureLayer
+#define glTextureStorage3D p_glTextureStorage3D
+#define glProgramUniform1fv p_glProgramUniform1fv
 
 /* load the pointers (a GL context must be current); 0 if one is missing */
 int gl_load(void);

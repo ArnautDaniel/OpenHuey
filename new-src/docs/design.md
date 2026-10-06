@@ -38,6 +38,17 @@ draw     room mesh, actors (skinned on the CPU, contact shadows) into the HDR sc
 - Widescreen: the camera's field of view is vertical, so a wider window shows more at the sides
   (the game's own fovs span the width of a 4:3 picture and are converted). `gfx.aspect` 1 gives
   the original 4:3 picture with bars.
+- The room's own look (PAC section 13, render.h `RoomLook`): its fog ramp, its two-colour tint
+  (a blurred copy of the screen added, then contrast against it) and its bloom over the areas the
+  mesh's bloom-mask part marks (a second colour target) - done on display values as the PS2 did,
+  before the modern passes.
+- Moving geometry (`roommesh.c` `DynBatch`): parallax layers, billboards and flip books are
+  rebuilt each frame; the room draws solid and see-through parts, moving batches, glows, then the
+  bloom mask.
+- Characters are lit like the game lights them: the room's ambient plus the three brightest of
+  its lights reaching their nav triangle (PAC section 4, `room_lights_at`), per pixel, with a rim.
+  The strongest casts a shadow map (one 1024 layer of a depth array per character, 3 x 3 PCF)
+  onto the room, fading a few sizes away. Shadow passes run before the scene each frame.
 - Every setting is a field of `RenderSettings` (render.h), reached from Forth as `gfx gfx.*`;
   `graphics.fs` has the presets, the F1 menu, and saving (the settings written out as a Forth
   script in the player's folder, read back at start-up).
@@ -86,10 +97,10 @@ ticks (`wait`, `dt`).
 
 ## Known gaps (the first pass)
 
-- Room meshes: the animated (flip-book) parts and placed/billboard batches are not drawn
-  specially; the bloom mask, fog and the game's lights are not done.
+- Rooms: the depth-of-field effect (PAC section 13's fourth entry) is not done; the room effects
+  that scripts change at run time (pulsing colours, events' fog) are not either.
 - Characters: no root motion, no blending between motions, the faces and hands in their rest
-  shape; lighting is one fixed light.
+  shape; characters don't shadow each other or themselves.
 - Collision is the nav mesh only (no other characters). Exits all lead through (no locked
   doors, no door animations, no transition effects); no events, items, sound.
 - The camera "director" is a stand-in (the nearest room setup); the game's real camera zones

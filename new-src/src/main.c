@@ -83,11 +83,78 @@ static int load_scripts(Forth *f) {
     return forth_include(f, path) == 0;
 }
 
+/* the room's lights for an actor; its shadow from the strongest (a view from the light, fitted
+ * round the actor and reaching the floor beyond) */
+static void light_actor(Engine *e, Actor *a) {
+    const Room *r = &e->room;
+    Vec3 center = actor_center(a);
+    float radius = actor_radius(a);
+    const RoomLight *l;
+    Vec3 dir, up;
+    float dist, lum, fall = 1.0f;
+    Mat4 proj, view, vp;
+    int slot;
+
+    room_lights_at(r, center, a->lights);
+    if (a->lights[0] < 0) {
+        return;
+    }
+    l = &r->lights[a->lights[0]];
+    dir = vec3_sub(center, l->pos);
+    dist = vec3_len(dir);
+    if (dist < radius * 1.5f) {
+        return;   /* the light is inside it */
+    }
+    if (l->range > 0.0f) {
+        fall = fmaxf(0.0f, 1.0f - dist / l->range);
+    }
+    lum = (0.3f * l->color.x + 0.6f * l->color.y + 0.1f * l->color.z) * l->intensity / 128.0f;
+    dir = vec3_scale(dir, 1.0f / dist);
+    up = fabsf(dir.y) > 0.95f ? vec3(1, 0, 0) : vec3(0, 1, 0);
+    proj = mat4_perspective(2.0f * atanf(radius * 1.25f / dist), 1.0f, fmaxf(1.0f, dist - radius * 2.0f),
+                            dist + radius * 6.0f + 200.0f);
+    view = mat4_look(l->pos, dir, up);
+    vp = mat4_mul(proj, view);
+    slot = render_shadow_add(&vp, center, radius, gRender.shadow_strength * fminf(1.0f, fmaxf(0.6f, lum * fall * 4.0f)));
+    if (slot >= 0) {
+        render_shadow_mesh(&a->gpu, a->model.d, a->model.nd);
+    }
+}
+
+/* the lights of the next lit draws: the actor's (or the fixed key light) */
+static void use_lights(Engine *e, const Actor *a) {
+    DrawLight lights[3];
+    int n = 0, k;
+
+    for (k = 0; k < 3; k++) {
+        if (a->lights[k] >= 0) {
+            const RoomLight *l = &e->room.lights[a->lights[k]];
+
+            lights[n].pos = l->pos;
+            lights[n].color = vec3_scale(l->color, l->intensity);
+            lights[n].range = l->range;
+            n++;
+        }
+    }
+    render_draw_lights(e->room.ambient, lights, e->room.nlights > 0 ? n : -1);
+}
+
 static void draw(Engine *e) {
     Mat4 proj, view, vp;
     int i;
 
     platform_size(&e->width, &e->height);
+    render_shadows_begin();
+    for (i = 0; i < MAX_ACTORS; i++) {
+        Actor *a = &e->actors[i];
+
+        a->lights[0] = a->lights[1] = a->lights[2] = -1;
+        if (a->used && a->visible) {
+            actor_prepare(a);
+            light_actor(e, a);
+        }
+    }
+    render_shadows_end();
     render_begin(e->width, e->height, e->clear);
     proj = camera_proj(&e->camera, render_aspect());
     view = camera_view(&e->camera);
@@ -95,7 +162,10 @@ static void draw(Engine *e) {
     render_camera(&proj, &view, e->camera.pos, e->camera.znear, e->camera.zfar);
     room_draw(&e->room, &vp, e->camera.pos, camera_forward(&e->camera));
     for (i = 0; i < MAX_ACTORS; i++) {
-        actor_draw(&e->actors[i], &vp);
+        if (e->actors[i].used) {
+            use_lights(e, &e->actors[i]);
+            actor_draw(&e->actors[i], &vp);
+        }
     }
     render_post();
     engine_draw_2d(e);   /* scripts' 2D (on-draw hooks) */
