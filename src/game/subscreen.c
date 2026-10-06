@@ -1254,3 +1254,110 @@ extern void func_00260A60(void *items, s32 k);
 void func_00384C20(u8 *o) {
     func_00260A60(o + 0x8, 2);
 }
+
+/* ---- the in-game menu's item page ---- */
+
+extern u32 func_002605F0(u8 *items, u8 l);                    /* how many items list `l` holds */
+extern s32 func_00260420(u8 *items, u8 l, u8 i);              /* an item's kind (-1 none) */
+extern s32 func_00260480(u8 *items, u8 l, u8 i);              /* an item's id (-1 none) */
+extern void func_00260250(u8 *items, u8 l, u8 i, void *arg);   /* start using it */
+extern void func_002600C0(void);
+extern void func_0025FF80(u8 *items, u8 l);                    /* sort the list */
+extern void func_003949B0(SubScreen *s, s32 a);               /* the item grid */
+extern const PTMF D_0044B200, D_0044B210, D_0044B220, D_0044B230, D_0044B240, D_0044B250;
+
+#define SUB_LIST(s) ((s)->unkA8C50)              /* the item list shown: 0 items, 1 / 2 the others */
+#define SUB_CURSOR(s) ((s)->unkA8C51[SUB_LIST(s)])   /* its cursor: 16 a page, rows of 8 */
+
+/* The item page: the cursor moves along its row of 8 (up / down, round) and between the rows
+ * and pages (left / right, round); confirm uses the item (kind 7: a question, D_0044B200; else
+ * started, D_0044B210); list 1 sorts with the default button; next / previous turn to the
+ * other lists and then the map page (D_0044B220 / D_0044B230) or the page before (D_0044B240 /
+ * D_0044B250); cancel closes. Then its panels, the grid and the help line. */
+void func_00396900(SubScreen *s) {
+    u8 *items = s->pool;
+
+    if (!s->fading) {
+        u32 n = func_002605F0(items, SUB_LIST(s));
+        s32 last = n != 0 ? (s32)(n - 1) / 16 : 0;
+        u32 pad = D_0047E36C;
+        u8 *cur = &SUB_CURSOR(s);
+        s32 c = *cur;
+        u8 old = c;
+
+        if (pad & MENU_CONFIRM) {
+            if (func_00260480(items, SUB_LIST(s), SUB_CURSOR(s)) != -1) {
+                if (func_00260420(items, SUB_LIST(s), SUB_CURSOR(s)) == 7) {
+                    Task_Open(&s->ask, func_00260480(items, SUB_LIST(s), SUB_CURSOR(s)) & 0xFFFF);
+                    ptmf_set(&s->state, &D_0044B200);
+                } else {
+                    s->padA8C54 = 0;
+                    s->page[0x15C] = 0;
+                    func_002600C0();
+                    func_00260250(items, SUB_LIST(s), SUB_CURSOR(s), (u8 *)s + 0x94F40);
+                    ptmf_set(&s->state, &D_0044B210);
+                }
+                Sound_PlaySE(SE_DECIDE);
+            }
+        } else if (pad & MENU_UP) {
+            *cur = c != 0 ? (c - 1) % 8 + (c >> 3) * 8 : 7;
+        } else if (pad & MENU_DOWN) {
+            *cur = (c + 1) % 8 + (c >> 3) * 8;
+        } else if (pad & MENU_LEFT) {
+            if (c < 8) {
+                *cur = c + ((last + 1) * 16 - 8);
+            } else {
+                *cur -= 8;
+            }
+        } else if (pad & MENU_RIGHT) {
+            if (last < (c + 8) / 16) {
+                *cur = c % 8;
+            } else {
+                *cur += 8;
+            }
+        } else if (SUB_LIST(s) == 1 && (pad & MENU_DEFAULT)) {
+            func_0025FF80(items, SUB_LIST(s));
+            Sound_PlaySE(SE_DECIDE);
+        } else if (D_0047E36C & MENU_NEXT) {
+            if (SUB_LIST(s) < 2) {
+                SUB_LIST(s)++;
+                old = SUB_CURSOR(s);
+            } else {
+                func_00305380(s->textObj);
+                ptmf_set(&s->state, &D_0044B220);
+                ptmf_set(&s->resume, &D_0044B230);
+            }
+            Sound_PlaySE(SE_PAGE);
+        } else if (D_0047E36C & MENU_PREV) {
+            if (SUB_LIST(s) != 0) {
+                SUB_LIST(s)--;
+                old = SUB_CURSOR(s);
+            } else {
+                ptmf_set(&s->state, &D_0044B240);
+                ptmf_set(&s->resume, &D_0044B250);
+            }
+            Sound_PlaySE(SE_PAGE);
+        } else if (D_0047E36C & MENU_CANCEL) {
+            s->close = 1;
+        }
+        if (old != SUB_CURSOR(s)) {
+            Sound_PlaySE(SE_CURSOR);
+        }
+    }
+    if (SUB_LIST(s) == 0) {
+        s->kind = 0;
+    } else {
+        s->kind = SUB_LIST(s) == 1 ? 8 : 9;
+    }
+    if (s->kind != 0xFF) {
+        s8 *panel = D_0044C120[s->kind & 0x7F];
+        s32 i;
+
+        for (i = 0; i < 4 && panel[i] >= 0; i++) {
+            SubScreen_DrawPanel(s, (u8)panel[i], 0x80, 0x30);
+        }
+    }
+    func_003949B0(s, 1);
+    Task_ShowText(&s->text, 0x46, 0x186, 0x80, Task_MessageText(&s->text, SUB_LIST(s) == 1 ? 0x5B : 0x5D), 0x80, 0x30,
+                  0x10, 0x15);
+}

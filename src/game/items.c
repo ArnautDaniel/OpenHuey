@@ -582,6 +582,35 @@ void func_0025FF80(u8 *items, u8 l) {
     }
 }
 
+/* item `i` of list `l` started being used (vtable +0x28, with `arg`) */
+void func_00260250(u8 *items, u8 l, u8 i, void *arg) {
+    VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
+
+    if (it != NULL) {
+        VCALL(it, 0x28, void (*)(VObject *, void *))(it, arg);
+    }
+}
+
+/* item `i` of list `l`: its kind (vtable +0x10); -1 for an empty place */
+s32 func_00260420(u8 *items, u8 l, u8 i) {
+    VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
+
+    if (it == NULL) {
+        return -1;
+    }
+    return VCALL(it, 0x10, s32 (*)(VObject *))(it);
+}
+
+/* item `i` of list `l`: its id (vtable +0xC); -1 for an empty place */
+s32 func_00260480(u8 *items, u8 l, u8 i) {
+    VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
+
+    if (it == NULL) {
+        return -1;
+    }
+    return VCALL(it, 0xC, s32 (*)(VObject *))(it);
+}
+
 /* how many items 0x3F the lists hold */
 s32 func_00260540(u8 *items) {
     u32 l, i;
