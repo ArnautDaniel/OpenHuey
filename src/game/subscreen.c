@@ -462,105 +462,43 @@ extern u16 D_0044C160[][7];
  * (0 normal, 1..3 fixed alpha variants) */
 extern u16 D_0044C280[][9];
 
-/* draw panel `id` (D_0044C160) with fixed alpha `alpha` in renderer layer `layer` */
+#ifdef HG_NATIVE
+#include "gl2d.h"
+
+/* draw panel `id` (D_0044C160: its w x h texels at u, v, at x, y) mixed over the screen by
+ * fixed alpha `alpha`, in renderer layer `layer` */
 void SubScreen_DrawPanel(void *s, s32 id, s32 alpha, s32 layer) {
     u16 *e = D_0044C160[(u8)id];
     u8 *tex;
     s32 slot = TexCache_Resident(e[0], 0x19, (u8)layer, &tex);
-    u64 *p;
 
     if (slot == -1) {
         return;
     }
-    p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 0xB, (u8)layer);
-    if (p == NULL) {
-        return;
-    }
-    p[0] = 0x1000000A;              /* DMA cnt 10 */
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x5000000A;   /* VIF DIRECT 10 */
-    p[2] = 4 | (1ULL << 60);        /* GIF tag: 4 A+D, EOP */
-    p[3] = 0xE;
-    p[4] = ((u64)(u8)alpha << 32) | 0x64;   /* ALPHA_1: (Cs - Cd) * FIX + Cd */
-    p[5] = 0x42;
-    p[6] = 0x60;                    /* TEX1_1: bilinear */
-    p[7] = 0x14;
-    p[8] = (0x80ULL << 32) | 0x8080; /* TEXA */
-    p[9] = 0x3B;
-    p[10] = 0x156;                  /* PRIM: sprite, textured, blended, UV */
-    p[11] = 0;
-    p[12] = 0x8001 | (0x84ULL << 56);   /* reglist: TEX0 CLAMP RGBAQ UV XYZ2 UV XYZ2 NOP */
-    p[13] = GIF_REGS_TEX_SPRITE;
-    p[14] = VCALL(D_0044E9A0, 0x28, u64 (*)(VObject *, s32, s32, s32, s32, s32))(
-        D_0044E9A0, slot, tex[0], AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);
-    p[15] = gs_clamp_region(e[1], e[2], e[3], e[4]);
-    p[16] = 0x80808080 | (1ULL << 32);
-    p[17] = gs_uv(e[1], e[2]);
-    p[18] = gs_xyz2(e[5] + 0x700, e[6] + 0x720);
-    p[19] = gs_uv(e[1] + e[3], e[2] + e[4]);
-    p[20] = gs_xyz2(e[5] + 0x700 + e[3], e[6] + 0x720 + e[4]);
-    p[21] = 0;
+    gl2d_sprite((u8)layer, e[5], e[6], e[5] + e[3], e[6] + e[4], tex, e[1], e[2], e[1] + e[3], e[2] + e[4],
+                0x80808080, 0, gl2d_blend(((u64)(u8)alpha << 32) | 0x64));
 }
 
-/* draw part `part` (D_0044C280) at x, y with alpha `alpha`, in layer 0x30 (0x33 with `top`) */
+/* draw part `part` (D_0044C280) at x, y with alpha `alpha`, in layer 0x30 (0x33 with `top`):
+ * its blending 0 normal, 1 subtracted / 2 mixed / 3 added by the fixed alpha */
 void SubScreen_DrawPart(void *s, s32 x, s32 y, s32 part, s32 alpha, s32 top) {
+    static const u8 kAlpha[4] = {0x44, 0x62, 0x64, 0x68};
     u16 *e = D_0044C280[(u8)part];
     s32 layer = top ? 0x33 : 0x30;
     u8 *tex;
     s32 slot = TexCache_Resident(e[7], 0x18, layer, &tex);
-    u64 *p;
-    u32 sx, sy;
+    s16 sx = x, sy = y;
 
     if (slot == -1) {
         return;
     }
-    p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 0xC, layer);
-    if (p == NULL) {
-        return;
-    }
-    p[0] = 0x1000000B;
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x5000000B;
-    p[2] = 5 | (1ULL << 60);        /* GIF tag: 5 A+D, EOP */
-    p[3] = 0xE;
-    switch (e[8]) {
-    case 0:
-        p[4] = 0x44;                /* (Cs - Cd) * As + Cd */
-        break;
-    case 1:
-        p[4] = ((u64)(u8)alpha << 32) | 0x62;
-        break;
-    case 2:
-        p[4] = ((u64)(u8)alpha << 32) | 0x64;
-        break;
-    case 3:
-        p[4] = ((u64)(u8)alpha << 32) | 0x68;
-        break;
-    }
-    p[5] = 0x42;
-    p[6] = VCALL(D_0044E9A0, 0x2C, u64 (*)(VObject *, s32, s32, s32, s32))(
-        D_0044E9A0, slot, AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);   /* TEX0_1: loads the CLUT */
-    p[7] = 0x6;
-    p[8] = 0x60;
-    p[9] = 0x14;
-    p[10] = (0x80ULL << 32) | 0x8080;
-    p[11] = 0x3B;
-    p[12] = 0x156;
-    p[13] = 0;
-    p[14] = 0x8001 | (0x84ULL << 56);
-    p[15] = GIF_REGS_TEX_SPRITE;
-    p[16] = VCALL(D_0044E9A0, 0x30, u64 (*)(VObject *, s32, s32, s32, s32, s32, s32))(
-        D_0044E9A0, slot, e[6], tex[0], AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);
-    sx = (u16)x + 0x700;
-    sy = (u16)y + 0x720;
-    p[17] = gs_clamp_region(e[0], e[1], e[2], e[3]);
-    p[18] = 0x80808080;
-    p[19] = gs_uv(e[0], e[1]);
-    p[20] = gs_xyz2(sx, sy);
-    p[21] = gs_uv(e[0] + e[2], e[1] + e[3]);
-    p[22] = gs_xyz2(sx + e[4], sy + e[5]);
-    p[23] = 0;
+    gl2d_sprite(layer, sx, sy, sx + e[4], sy + e[5], tex, e[0], e[1], e[0] + e[2], e[1] + e[3], 0x80808080, e[6],
+                gl2d_blend(((u64)(u8)alpha << 32) | kAlpha[e[8] & 3]));
 }
+#else
+void SubScreen_DrawPanel(void *s, s32 id, s32 alpha, s32 layer);
+void SubScreen_DrawPart(void *s, s32 x, s32 y, s32 part, s32 alpha, s32 top);
+#endif
 
 /* the fade: a black overlay over the menu for screens 0x80.., else the screen's panels
  * (D_0044C120) drawn at the fade's alpha */

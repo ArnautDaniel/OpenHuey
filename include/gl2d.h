@@ -8,13 +8,18 @@
 #include "../native/platform/glr.h"
 
 /* GS blend modes (ALPHA_1) as glr prim bits: 0x44 (Cs - Cd) * As + Cd, 0x48 Cs * As + Cd,
- * 0x68 Cs * FIX + Cd, 0x62 Cd - Cs * FIX; anything else drawn as 0x44 */
+ * 0x42 Cd - Cs * As, 0x64 (Cs - Cd) * FIX + Cd, 0x68 Cs * FIX + Cd, 0x62 Cd - Cs * FIX; anything
+ * else drawn as 0x44 */
 static inline u32 gl2d_blend(u64 alpha) {
     u32 fix = (u32)(alpha >> 32) & 0xFF;
 
     switch ((u32)alpha & 0xFF) {
     case 0x48:
         return 0x40 | GLR_PRIM_ADD;
+    case 0x42:
+        return 0x40 | GLR_PRIM_ADD | GLR_PRIM_SUB;
+    case 0x64:
+        return 0x40 | GLR_PRIM_FIX(fix) | GLR_PRIM_LERP;
     case 0x68:
         return 0x40 | GLR_PRIM_FIX(fix);
     case 0x62:

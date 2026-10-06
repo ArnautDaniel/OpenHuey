@@ -267,61 +267,23 @@ extern VObject *D_0044E9A0;   /* the VRAM manager */
  * channel as is), u, v, w, h, x, y, screen w, h */
 extern s16 D_00412770[][10];
 
-/* draw part `part` of the save screen (layer 0x30) */
+#ifdef HG_NATIVE
+#include "gl2d.h"
+
+/* draw part `part` of the save screen (layer 0x30): its w x h texels at u, v shown sw x sh at
+ * x, y, palette e[1] & 0x7F; bit 0x80 subtracts it by its alpha, else blended */
 void SaveScreen_DrawPart(BootCard *b, s32 part) {
     s16 *e = D_00412770[(u8)part];
     u8 *tex;
     s32 slot = TexCache_Resident(e[0], 0x19, 0x30, &tex);
-    s32 u, v, w, h, x, y, sw, sh;
-    u64 *p;
 
     if (slot == -1) {
         return;
     }
-    p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 0xC, 0x30);
-    if (p == NULL) {
-        return;
-    }
-    p[0] = 0x1000000B;              /* DMA cnt 11 */
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x5000000B;   /* VIF DIRECT 11 */
-    p[2] = 5 | (1ULL << 60);        /* GIF tag: 5 A+D, EOP */
-    p[3] = 0xE;
-    if (e[1] & 0x80) {
-        p[4] = (0x80ULL << 32) | 0x42;   /* ALPHA_1: (Cs - Cd) * As + Cd, ... */
-    } else {
-        p[4] = (0x80ULL << 32) | 0x44;
-    }
-    p[5] = 0x42;
-    p[6] = VCALL(D_0044E9A0, 0x2C, u64 (*)(VObject *, s32, s32, s32, s32))(
-        D_0044E9A0, slot, AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);   /* TEX0_1: loads the CLUT */
-    p[7] = 0x6;
-    p[8] = 0x60;
-    p[9] = 0x14;
-    p[10] = (0x80ULL << 32) | 0x8080;  /* TEXA */
-    p[11] = 0x3B;
-    p[12] = 0x156;                  /* PRIM: sprite, textured, blended, UV */
-    p[13] = 0;
-    u = e[2];
-    v = e[3];
-    w = e[4];
-    h = e[5];
-    x = e[6];
-    y = e[7];
-    sw = e[8];
-    sh = e[9];
-    p[14] = 0x8001 | (0x84ULL << 56);   /* reglist: TEX0 CLAMP RGBAQ UV XYZ2 UV XYZ2 NOP */
-    p[15] = GIF_REGS_TEX_SPRITE;
-    p[16] = VCALL(D_0044E9A0, 0x30, u64 (*)(VObject *, s32, s32, s32, s32, s32, s32))(
-        D_0044E9A0, slot, e[1] & 0x7F, tex[0], AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);
-    p[17] = gs_clamp_region(u, v, w, h);
-    p[18] = 0x80808080 | (1ULL << 32);
-    p[19] = gs_uv(u, v);
-    p[20] = gs_xyz2(x + 0x700, y + 0x720);
-    p[21] = gs_uv(u + w, v + h);
-    p[22] = gs_xyz2(x + sw + 0x700, y + sh + 0x720);
-    p[23] = 0;
+    gl2d_sprite(0x30, e[6], e[7], e[6] + e[8], e[7] + e[9], tex, e[2], e[3], e[2] + e[4], e[3] + e[5], 0x80808080,
+                e[1] & 0x7F, gl2d_blend((0x80ULL << 32) | (e[1] & 0x80 ? 0x42 : 0x44)));
 }
+#endif
 
 /* draw the screen: the frame, the slot tabs (the current one lit), the help line (`flags` 1:
  * choosing the card, else the saves) and, with `flags` 4, the save list */

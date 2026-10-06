@@ -193,31 +193,12 @@ void func_0037EC00(SceneBoot *boot) {
     D_01991EC8 = VCALL(res, 0x14, void *(*)(VObject *))(res);
 }
 
-/* GS packet head shared by the message sprites: GIF tags and drawing registers up to TEX0.
- * The vertex part (XYZ/UV) follows at p[15]. */
-static inline void BootSprite_Head(u64 *p, s32 id, const u8 *img) {
-    p[0] = 0x1000000A;
-    ((u32 *)p)[2] = 0;
-    ((u32 *)p)[3] = 0x5000000A;
-    p[2] = 0x1000000000008004ULL;
-    p[3] = 0xE;
-    p[4] = 0x44;
-    p[5] = 0x42;
-    p[6] = 0x60;
-    p[7] = 0x14;
-    p[8] = 0x0000008000008080ULL;
-    p[9] = 0x3B;
-    p[10] = 0x116;
-    p[11] = 0;
-    p[12] = 0x8400000000008001ULL;
-    p[13] = 0xFFFFFFFFF5353186ULL;
-    p[14] = VCALL(D_0044E9A0, 0x28, u64 (*)(VObject *, s32, u32, u32, u32, u32))(
-        D_0044E9A0, id, img[0], *(const u16 *)(img + 4), *(const u16 *)(img + 6), img[1]);
-}
+#ifdef HG_NATIVE
+#include "gl2d.h"
 
-/* Message sprite `line` of message slot 6: its image id (-1 = none) and image header.
- * Returns the GS packet to fill, or NULL if there is nothing to draw. */
-static inline u64 *BootSprite_Begin(s32 line, s32 prio, s32 *idOut, u8 **imgOut) {
+/* Message sprite `line` of message slot 6 (the boot screens' pictures): its image header, NULL
+ * if there's none (or it can't be made resident) */
+static u8 *BootSprite_Image(s32 line, s32 prio) {
     VObject *msg = gBootMessage;
     VObject *gs = D_0044E4F0;
     s32 id = VCALL(msg, 0x24, s32 (*)(VObject *, s32, s32))(msg, 6, line);
@@ -228,61 +209,40 @@ static inline u64 *BootSprite_Begin(s32 line, s32 prio, s32 *idOut, u8 **imgOut)
     }
     img = VCALL(msg, 0x28, u8 *(*)(VObject *, s32, s32))(msg, 6, line);
     if (id & 0x80000000) {
-        /* texture not resident yet: upload it first */
-        id &= 0x7FFFFFFF;
-        if ((VCALL(gs, 0x44, u32 (*)(VObject *, s32, void *, s32))(gs, id, img, prio) & 0xFF) == 0) {
+        if ((VCALL(gs, 0x44, u32 (*)(VObject *, s32, void *, s32))(gs, id & 0x7FFFFFFF, img, prio) & 0xFF) == 0) {
             return NULL;
         }
     }
-    *idOut = id;
-    *imgOut = img;
-    return VCALL(gs, 0x10, u64 *(*)(VObject *, s32, s32))(gs, 0xB, prio);
+    return img;
 }
 
-/* Draw the single large boot message sprite (slot 6, line 0). */
+/* Draw the single large boot message picture (slot 6, line 0): 512 x 512 from the top left,
+ * opaque, layer 1. */
 void func_0037F2E0(SceneBoot *boot) {
-    s32 id;
-    u8 *img;
-    u64 *p = BootSprite_Begin(0, 1, &id, &img);
+    u8 *img = BootSprite_Image(0, 1);
 
-    if (p == NULL) {
-        return;
+    if (img != NULL) {
+        gl2d_sprite(1, 0, 0, 512, 512, img, 0, 0, 512, 512, 0x80808080, 0, 0);
     }
-    BootSprite_Head(p, id, img);
-    p[15] = 0x000008000080000AULL;
-    p[16] = 0x0000000180808080ULL;
-    p[17] = 0;
-    p[18] = 0xFFFFFFFF72007000ULL;
-    p[19] = 0x20002000;
-    p[20] = 0xFFFFFFFF92009000ULL;
-    p[21] = 0;
 }
 
-/* Draw the two boot message lines (slot 6, lines 0 and 1). */
+/* Draw the two boot message lines (slot 6, lines 0 and 1): 512 x 256 each, one under the
+ * other, opaque, layer 0x30. */
 void func_0037F510(SceneBoot *boot) {
     s32 i;
 
     for (i = 0; i < 2; i++) {
-        s32 id;
-        u8 *img;
-        u64 *p = BootSprite_Begin(i, 0x30, &id, &img);
-        u64 y0, y1;
+        u8 *img = BootSprite_Image(i, 0x30);
 
-        if (p == NULL) {
-            continue;
+        if (img != NULL) {
+            gl2d_sprite(0x30, 0, i * 256, 512, (i + 1) * 256, img, 0, 0, 512, 256, 0x80808080, 0, 0);
         }
-        BootSprite_Head(p, id, img);
-        p[15] = 0x000004000080000AULL;
-        p[16] = 0x0000000180808080ULL;
-        p[17] = 0;
-        y0 = (u32)((i * 0x100 + 0x720) * 16);
-        y1 = (u32)(((i + 1) * 0x100 + 0x720) * 16);
-        p[18] = (y0 << 16) | 0xFFFFFFFF00007000ULL;
-        p[19] = 0x10002000;
-        p[20] = (y1 << 16) | 0xFFFFFFFF00009000ULL;
-        p[21] = 0;
     }
 }
+#else
+void func_0037F2E0(SceneBoot *boot);
+void func_0037F510(SceneBoot *boot);
+#endif
 
 /* Shared start of the boot steps: without (a controller?), show the message and wait
  * until button bit 14 is pressed. Returns nonzero while still waiting. */

@@ -2176,13 +2176,14 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
                 p_glEnable(GL_BLEND);
                 p_glDisablei(GL_BLEND, 1);
                 /* the frame keeps the source alpha, as the GS writes it */
-                if (d->prim & GLR_PRIM_FIXB) {   /* Cs * FIX / 128 + Cd (SUB: Cd - Cs * FIX / 128) */
+                /* SUB: the source subtracted (Cd - Cs * FIX / 128, Cd - Cs * As) */
+                p_glBlendEquation(d->prim & GLR_PRIM_SUB ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_ADD);
+                if (d->prim & GLR_PRIM_FIXB) {   /* Cs * FIX / 128 + Cd (LERP: (Cs - Cd) * FIX / 128 + Cd) */
                     float fix = (float)(d->prim >> 24) / 128.0f;
 
-                    p_glBlendEquation(d->prim & GLR_PRIM_SUB ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_ADD);
-
                     p_glBlendColor(fix, fix, fix, fix);
-                    p_glBlendFuncSeparate(GL_CONSTANT_COLOR, GL_ONE, GL_ONE, GL_ZERO);
+                    p_glBlendFuncSeparate(GL_CONSTANT_COLOR, d->prim & GLR_PRIM_LERP ? GL_ONE_MINUS_CONSTANT_COLOR : GL_ONE,
+                                          GL_ONE, GL_ZERO);
                 } else {
                     p_glBlendFuncSeparate(GL_SRC_ALPHA, d->prim & GLR_PRIM_ADD ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA,
                                           GL_ONE, GL_ZERO);

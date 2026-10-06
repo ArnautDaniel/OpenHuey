@@ -31,8 +31,11 @@ void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, c
 #define GLR_PRIM_STENCIL_INC 0x400000u
 /* PC-only bit: no depth test (2D: drawn over whatever is there, in layer order) */
 #define GLR_PRIM_NOZT 0x800000u
-/* PC-only bit: with GLR_PRIM_FIX, subtracted instead: Cd - Cs * FIX / 128 (GS ALPHA (0 - Cs) * FIX + Cd) */
+/* PC-only bit: with GLR_PRIM_FIX or _ADD, subtracted instead: Cd - Cs * FIX / 128 or Cd - Cs * As
+ * (GS ALPHA (0 - Cs) * FIX + Cd, (0 - Cs) * As + Cd) */
 #define GLR_PRIM_SUB 0x8000u
+/* PC-only bit: with GLR_PRIM_FIX, a mix instead: (Cs - Cd) * FIX / 128 + Cd (GS ALPHA 0x64) */
+#define GLR_PRIM_LERP 0x4000u
 
 /* 2D primitives in renderer layer `layer`, in the game's 512 x 448 screen pixels at the GS's
  * pixel centres (as its XYZ2 / 16): `n` vertices `xy` as a triangle strip (GLR_2D_STRIP) or fan

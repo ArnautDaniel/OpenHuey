@@ -1243,8 +1243,6 @@ src/leaf/b7_00351D50.c func_0035AF30
 
 # boot scene steps (PS2 platform code: to be shimmed on PC)
 src/game/scene_boot.c func_0037EC00
-src/game/scene_boot.c func_0037F2E0
-src/game/scene_boot.c func_0037F510
 src/game/scene_boot.c func_0037FEF0
 src/game/scene_boot.c func_00380410
 src/game/scene_boot.c func_0037FC60 --pre=a0+0x1C=0..0x3F --stub-ret=3 --runs=60
@@ -2140,11 +2138,8 @@ src/game/subscreen.c Options_StateList --pre=a0=0x0B000000..0x0B000000 --pre=@0x
 src/game/subscreen.c Options_StateList --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E4D8=0x0B400000..0x0B400000 --pre=@0x0047E36C=0x40..0xFF --pre=a0+0xA8C56=0..5 --pre=a0+0xA8C61=0..0 --pre=a0+4=0..1 --pre=@0x0B5FBEC1=bytes:00 --runs=60
 src/game/subscreen.c Options_Draw --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E4D8=0..0 --pre=a0+4=0..1 --pre=a0+0xA8C56=0..4 --pre=a0+0xA8C4A=0..3 --pre=a0+0xA8C4C=0x3C000000..0x3F800000 --runs=60 --stub-ret=0x40 --stub-ret=0x1F0 --stub-ret=0 --stub-ret-prob=1
 src/game/subscreen.c Options_Draw --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E4D8=0x0B400000..0x0B400000 --pre=a0+4=0..0 --pre=a0+0xA8C56=0..4 --pre=a0+0xA8C4A=0..3 --pre=a0+0xA8C4C=0x3C000000..0x3F800000 --pre=@0x0B5FBEC1=bytes:01 --runs=40 --stub-ret=0x40 --stub-ret=0x1F0 --stub-ret=0 --stub-ret-prob=1
-src/game/subscreen.c SubScreen_DrawPanel --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..20 --stub-ret=0x0B200000 --stub-ret=-1 --stub-ret=0x8B200000 --stub-ret=0 --runs=60
-src/game/subscreen.c SubScreen_DrawPart --pre=a0=0x0B000000..0x0B000000 --pre=a3=0..0x1C --stub-ret=0x0B200000 --stub-ret=-1 --stub-ret=0x8B200000 --stub-ret=0 --runs=60
 src/game/bootcard.c SaveScreen_Init --pre=a0=0x0B000000..0x0B000000
 src/game/bootcard.c SaveScreen_Draw --pre=a0=0x0B000000..0x0B000000 --pre=a0+8=0..2 --pre=a0+0xC=0..1
-src/game/bootcard.c SaveScreen_DrawPart --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..6 --stub-ret=0x0B200000 --stub-ret=-1 --stub-ret=0x8B200000 --stub-ret=0 --runs=60
 src/game/bootcard.c SaveScreen_MergeSystem --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B110000..0x0B110000 --pre=a0+0x11C=0x0B120000..0x0B120000
 src/game/bootcard.c SaveScreen_DrawDate --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000
 src/game/bootcard.c SaveScreen_DrawList --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x11C=0x0B100000..0x0B100000 --pre=a0+0x10=0..11 --pre=a0+0x128=bytes:000102000102000102000102 --runs=60
