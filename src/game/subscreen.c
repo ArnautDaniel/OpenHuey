@@ -1709,3 +1709,85 @@ void func_00385030(SubScreen *s, u8 *save) {
         }
     }
 }
+
+extern u64 *func_002602A0(u8 *items, u8 l, u8 i);   /* an item's data */
+extern s32 func_00260630(u8 *items, u8 l, u8 i);    /* its equipment slot */
+
+/* the menu's state into a save `save` (as func_00385030 reads it back) */
+void func_003851B0(SubScreen *s, u8 *save) {
+    u32 l, i;
+
+    for (i = 0; i < 4; i++) {
+        AT(save, 0x17E8 + i * 2, u16) = 0xFFFF;
+    }
+    for (l = 0; l < 3; l++) {
+        for (i = 0; i < 0x40; i++) {
+            AT(save, 0x1068 + l * 0x80 + i * 2, u16) = func_00260480(s->pool, l, i);
+            if (AT(save, 0x1068 + l * 0x80 + i * 2, u16) != 0xFFFF) {
+                AT(save, 0x11E8 + l * 0x200 + i * 8, u64) = *func_002602A0(s->pool, l, i);
+                if ((s8)func_002606E0(s->pool, l, i) == 1) {
+                    AT(save, 0x17E8 + func_00260630(s->pool, l, i) * 2, u16) = (u8)l << 8 | (u8)i;
+                }
+            }
+        }
+    }
+    for (i = 0; i < 9; i++) {
+        AT(save, 0x1044 + i * 4, s32) = s->unk97740[i];
+    }
+    for (i = 0; i < 0x80; i++) {
+        AT(save, 0x17F0 + i * 2, u16) = s->unk15F8[i];
+    }
+}
+
+/* the galleries' files of entry `k`: the model (D_0044B7B0, ".PCK") and its texture
+ * (D_0044B830, ".TEX") to the buffers at +0xA8DEC / +0xA8DF0, then, when they have one, a
+ * marker file (D_0044B930, ".MRK") to +0xA8DF8 and a second texture (D_0044B8B0) to +0xA8DF4
+ * (else those are cleared) */
+extern const char *D_0044B7B0[], *D_0044B830[], *D_0044B8B0[], *D_0044B930[];
+extern const char D_00464170[], D_00464178[], D_00464180[];   /* "%s.PCK", "%s.TEX", "%s.MRK" */
+
+void func_0038D620(SubScreen *s, u8 k) {
+    VObject *ld = gFileLoader;
+    char name[0x20];
+
+    func_0026EDD0(name, 0x20, D_00464170, D_0044B7B0[k]);
+    VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, name, AT(s, 0xA8DEC, void *), 0x10000000, 0);
+    func_0026EDD0(name, 0x20, D_00464178, D_0044B830[k]);
+    VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, name, AT(s, 0xA8DF0, void *), 0x10000000, 0);
+    if (D_0044B930[k][0] != 0) {
+        func_0026EDD0(name, 0x20, D_00464180, D_0044B930[k]);
+        VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, name, AT(s, 0xA8DF8, void *), 0x10000000,
+                                                                           0);
+    } else {
+        AT(s, 0xA8DF8, void *) = NULL;
+    }
+    if (D_0044B8B0[k][0] != 0) {
+        func_0026EDD0(name, 0x20, D_00464178, D_0044B8B0[k]);
+        VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, name, AT(s, 0xA8DF4, void *), 0x10000000,
+                                                                           0);
+    } else {
+        AT(s, 0xA8DF4, void *) = NULL;
+    }
+}
+
+extern u32 func_00260DD0(u8 *items, u8 l, u8 i);   /* use the item */
+extern void Task_DrawBox(Task *t, s32 x, s32 y, s32 w, s32 h, s32 alpha, s32 layer);
+extern const PTMF D_0044B378;
+
+/* state: the item page with a question up: its panels, the grid, a box and the question; once
+ * answered, the item under the cursor is used (func_00260DD0), D_0044B378 */
+void func_00394E40(SubScreen *s) {
+    if (SUB_LIST(s) == 0) {
+        s->kind = 0;
+    } else {
+        s->kind = SUB_LIST(s) == 1 ? 8 : 9;
+    }
+    sub_panels(s);
+    func_003949B0(s, 1);
+    Task_DrawBox(&s->text, 0x100, 0xE0, 0x1A0, 0x160, 0x60, 0x30);
+    Task_Run(&s->ask);
+    if (AT(&s->ask, 0x10, u8) == 0) {
+        func_00260DD0(s->pool, SUB_LIST(s), SUB_CURSOR(s));
+        ptmf_set(&s->state, &D_0044B378);
+    }
+}

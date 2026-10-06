@@ -631,6 +631,16 @@ u8 func_00260360(u8 *items, u8 l, u8 i) {
     return VCALL(it, 0x18, s32 (*)(VObject *))(it);
 }
 
+/* item `i` of list `l`: its 8 bytes of data (vtable +0x24; NULL for an empty place) */
+u64 *func_002602A0(u8 *items, u8 l, u8 i) {
+    VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
+
+    if (it == NULL) {
+        return NULL;
+    }
+    return VCALL(it, 0x24, u64 *(*)(VObject *))(it);
+}
+
 /* how many items 0x3F the lists hold */
 s32 func_00260540(u8 *items) {
     u32 l, i;
