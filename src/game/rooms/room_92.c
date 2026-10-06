@@ -21,12 +21,12 @@ extern void *RoomBase_vtable[];
 extern void *Room92_vtable[];
 extern void *DepthRange_vtable[];
 extern void *WispColumn_vtable[];
-extern const char *D_00437D48[];   /* room objects 10..15 */
-extern const char *D_00437D40[];   /* room objects 8, 9 */
+extern const char *pstr_keri0[];   /* room objects 10..15 */
+extern const char *pstr_fumi0[];   /* room objects 8, 9 */
 extern void *Room92Effect_vtable[];
 extern void *Embers_vtable[];
 extern void *SparkSpray_vtable[];
-extern const char *D_00437D30[];   /* room objects 4, 5 */
+extern const char *pstr_fan0[];   /* room objects 4, 5 */
 extern void *SmokeTrail_vtable[];
 extern u32 Room92_EnterScript_data[];
 extern u32 Room92_CharEnterScript_data[];
@@ -246,7 +246,7 @@ s32 Room92_Cmd08(void) {
     s32 k;
 
     for (k = 8; k < 10; k++) {
-        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00437D40[k - 8]);
+        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_fumi0[k - 8]);
         u8 on = 0;
         f32 y;
 
@@ -345,7 +345,7 @@ s32 Room92_Cmd05(void) {
     }
     objs = gRoomObjects;
     for (i = 10; i < 16; i++) {
-        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00437D48[i - 10]);
+        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_keri0[i - 10]);
 
         if (AT(o, 0x24, f32) < -30.0f) {
             AT(o, 0x0, u8) = 1;
@@ -465,7 +465,7 @@ s32 Room92_Cmd02(void) {
         }
         n++;
         for (k = 10; k < 16; k++) {
-            u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00437D48[k - 10]);
+            u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_keri0[k - 10]);
 
             if (o[0] == 1) {
                 break;
@@ -517,7 +517,7 @@ s32 Room92_Cmd00(void *self, void *a1, u8 *cmd) {
 
     if (cmd[3] == 0) {
         for (k = 4; k < 6; k++) {
-            u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00437D30[k - 4]);
+            u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_fan0[k - 4]);
 
             if (o != NULL) {
                 AT(o, 0x30, u32) = 0x3D8EFA35;   /* 4 degrees */
@@ -532,7 +532,7 @@ s32 Room92_Cmd00(void *self, void *a1, u8 *cmd) {
     }
     ev = gEvents;
     for (k = 4; k < 6; k++) {
-        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00437D30[k - 4]);
+        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_fan0[k - 4]);
         s32 state = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, k == 4 ? 4 : 5);
         f32 v;
 

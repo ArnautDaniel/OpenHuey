@@ -324,7 +324,7 @@ void SndDriver_Unload(u8 *d, u32 k) {
     LOADED(d, k) = 0;
 }
 
-extern const char D_00457258[];   /* "DUMMY" */
+extern const char str_DUMMY[];   /* "DUMMY" */
 
 /* register bank `k` with the driver (reloaded if it was): its header, table / sequence and
    samples; a sequence bank is started on its channel set up */
@@ -343,7 +343,7 @@ void SndDriver_Register(u8 *d, u32 k) {
     if (LOADED(d, k)) {
         VCALL(d, 0x12C, void (*)(u8 *, u32))(d, k);
     }
-    func_0026EDD0((char *)D_01970C80, 0x80, D_00457258);
+    func_0026EDD0((char *)D_01970C80, 0x80, str_DUMMY);
     AT(D_01970C80, 0x84, u32) = AT(d, 0x80, u32);
     AT(D_01970C80, 0x98, u32) = 0x4000;
     AT(D_01970C80, 0x88, u32) = AT(b, 0x8, u32);
@@ -790,7 +790,7 @@ void SndDriver_Frame(u8 *d) {
     }
 }
 
-extern const char D_00457260[], D_00457270[], D_00457280[], D_00457290[];   /* the modules */
+extern const char str_MODHSYN_IRX[], str_MODMIDI_IRX[], str_MODMSIN_IRX[], str_SNDDRV_IRX[];   /* the modules */
 extern char D_01970B10[0x100];   /* the driver's arguments */
 extern u8 D_01970C40[0x1C];      /* ... before formatting */
 
@@ -799,9 +799,9 @@ extern u8 D_01970C40[0x1C];      /* ... before formatting */
 void SndDriver_Start(u8 *d) {
     u32 i;
 
-    AT(d, 0x70, s32) = func_001BC0F0(d, D_00457260, 0, 0, 0);
-    AT(d, 0x74, s32) = func_001BC0F0(d, D_00457270, 0, 0, 0);
-    AT(d, 0x78, s32) = func_001BC0F0(d, D_00457280, 0, 0, 0);
+    AT(d, 0x70, s32) = func_001BC0F0(d, str_MODHSYN_IRX, 0, 0, 0);
+    AT(d, 0x74, s32) = func_001BC0F0(d, str_MODMIDI_IRX, 0, 0, 0);
+    AT(d, 0x78, s32) = func_001BC0F0(d, str_MODMSIN_IRX, 0, 0, 0);
     SndLib_Clear();
     SndLib_StartServer(0xA, 0x2000);
     AT(D_01970C40, 0x0, s32) = -1;
@@ -814,7 +814,7 @@ void SndDriver_Start(u8 *d) {
     AT(D_01970C40, 0x16, s16) = 0x1B;
     AT(D_01970C40, 0x18, s16) = 0x17;
     AT(D_01970C40, 0x1A, s16) = 1;
-    AT(d, 0x7C, s32) = func_001BC0F0(d, D_00457290, SndLib_DriverArgs(D_01970B10, D_01970C40), (s32)D_01970B10, 0);
+    AT(d, 0x7C, s32) = func_001BC0F0(d, str_SNDDRV_IRX, SndLib_DriverArgs(D_01970B10, D_01970C40), (s32)D_01970B10, 0);
     SndLib_Bind();
     SndLib_SendState();
     D_01970D40[2] = 1;

@@ -120,7 +120,7 @@ s32 Room20_Cond01(void *self, u8 *chr, u8 *cmd) {
  * gets a push (0, 1, 1) turned by her facing, and its nav triangle */
 /* 0x002AE5E0 */
 s32 Room20_Cond00(void) {
-    u8 *o = room_obj(D_003FF124);
+    u8 *o = room_obj(pstr_dool);
     Character *p;
     f32 v[4] __attribute__((aligned(16)));
     f32 m[4][4] __attribute__((aligned(16)));
@@ -176,7 +176,7 @@ s32 Room20_Cmd05(void *self, u8 *chr, u8 *cmd) {
 /* room 0x20 (Room20_Cmd04_ptmf): a dust cloud where the falling object is */
 /* 0x002AE830 */
 s32 Room20_Cmd04(void) {
-    u8 *o = room_obj(D_003FF124);
+    u8 *o = room_obj(pstr_dool);
     s32 slot;
     struct {
         f32 pos[4];
@@ -205,7 +205,7 @@ s32 Room20_Cmd04(void) {
  * landing on floor that isn't 0x10000 raises dust */
 /* 0x002AE9C0 */
 s32 Room20_Cmd03(void *self) {
-    u8 *o = room_obj(D_003FF124);
+    u8 *o = room_obj(pstr_dool);
     u8 *nm, *t;
     s32 tri;
     f32 y;
@@ -309,7 +309,7 @@ s32 Room20_Cmd02(void *self, void *a1, u8 *cmd) {
 /* room 0x20 (Room20_Cmd01_ptmf): the falling object back up in place */
 /* 0x002AEEE0 */
 s32 Room20_Cmd01(void) {
-    u8 *o = room_obj(D_003FF124);
+    u8 *o = room_obj(pstr_dool);
 
 #ifdef HG_NATIVE
     if (o == NULL) {   /* (the PS2 writes through junk) */

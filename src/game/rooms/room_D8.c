@@ -11,7 +11,7 @@ extern void *RoomD8_vtable[];
 extern u8 RoomD8_Phase2Script_data[], RoomD8_Phase5Script_data[], RoomD8_ActionScripts[];
 extern s32 D_0047B2E8;
 extern char D_0047B2E0[];
-extern const char D_00463730[];
+extern const char str_59_59_9[];
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -67,7 +67,7 @@ s32 RoomD8_Command(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* 0x0036FA50 */
-s32 RoomD8_Cmd01(void) { return clock_draw(D_0047B2E0, D_00463730); }
+s32 RoomD8_Cmd01(void) { return clock_draw(D_0047B2E0, str_59_59_9); }
 
 /* as Room109_Cmd01 */
 /* 0x0036FBA0 */

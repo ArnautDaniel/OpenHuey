@@ -9,7 +9,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room8E_vtable[];
-extern const char *D_00435978;
+extern const char *pstr_tana;
 
 extern u32 Room8E_EnterScript_data[];
 extern u32 Room8E_CharEnterScript_data[];
@@ -59,13 +59,13 @@ s32 Room8E_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room8E_CmdTable[i & 0xFF], a, b);
 }
 
-/* the room object named D_00435978 falling over: byte 3 0 starts it (angle +0x30, speed +0x34
+/* the room object named pstr_tana falling over: byte 3 0 starts it (angle +0x30, speed +0x34
  * and acceleration +0x38 0, jerk +0x3C 0.005); 1 steps them, its tilt +0x10 = (1 - sin(90 -
  * angle)) * pi/2, waiting (2) until the angle reaches 90; 2 puts it down (sin(pi/2)) */
 /* 0x00340AD0 */
 s32 Room8E_Cmd01(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB};
-    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_00435978);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_tana);
     f32 a;
 
     switch (cmd[3]) {

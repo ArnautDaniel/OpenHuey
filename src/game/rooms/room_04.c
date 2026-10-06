@@ -9,7 +9,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room04_vtable[];
-extern const char *D_003F17B8, *D_003F17C8;
+extern const char *pstr_syuukouki2, *pstr_syuukouki1;
 extern void *MirrorFragment_vtable[];
 
 extern u8 Room04_EnterScript_data[];
@@ -72,10 +72,10 @@ s32 Room04_Cmd03(void *self, void *a1, u8 *cmd) {
     u32 f;
 
     if (cmd[3] == 0) {
-        o = room_obj(D_003F17B8);
+        o = room_obj(pstr_syuukouki2);
         f = 0x3FC90FDB;
     } else {
-        o = room_obj(D_003F17C8);
+        o = room_obj(pstr_syuukouki1);
         f = 0;
     }
     obj_effect(o, f);
@@ -87,7 +87,7 @@ s32 Room04_Cmd03(void *self, void *a1, u8 *cmd) {
 /* 0x002A9CE0 */
 s32 Room04_Cmd02(void *self, void *a1, u8 *cmd) {
     if (cmd[3] == 0) {
-        u8 *o = room_obj(D_003F17B4);
+        u8 *o = room_obj(pstr_lens);
 
         if (o != NULL) {
             struct {
@@ -114,25 +114,25 @@ s32 Room04_Cmd02(void *self, void *a1, u8 *cmd) {
 /* room 0x04 (Room04_Cmd01_ptmf): five objects turned -75 / 75 degrees in turn */
 /* 0x002A9E20 */
 s32 Room04_Cmd01(void) {
-    obj_angle(D_003F17CC, 0x14, 0xBFA78D37);
-    obj_angle(D_003F17D0, 0x14, 0x3FA78D37);
-    obj_angle(D_003F17D4, 0x14, 0xBFA78D37);
-    obj_angle(D_003F17D8, 0x14, 0x3FA78D37);
-    obj_angle(D_003F17DC, 0x14, 0xBFA78D37);
+    obj_angle(pstr_autodoor0, 0x14, 0xBFA78D37);
+    obj_angle(pstr_autodoor1, 0x14, 0x3FA78D37);
+    obj_angle(pstr_autodoor2, 0x14, 0xBFA78D37);
+    obj_angle(pstr_autodoor3, 0x14, 0x3FA78D37);
+    obj_angle(pstr_autodoor4, 0x14, 0xBFA78D37);
     return 1;
 }
 
-/* two dials (byte 3: D_003F17B8 on var 0, D_003F17C8 on var 1, from -90 degrees), byte 4 the step */
+/* two dials (byte 3: pstr_syuukouki2 on var 0, pstr_syuukouki1 on var 1, from -90 degrees), byte 4 the step */
 /* 0x002A9F30 */
 s32 Room04_Cmd00(void *self, void *a1, u8 *cmd) {
     u8 *o;
     u32 var;
 
     if (cmd[3] == 0) {
-        o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003F17B8);
+        o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_syuukouki2);
         var = 0;
     } else {
-        o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003F17C8);
+        o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_syuukouki1);
         var = 1;
     }
     if (o == NULL) {

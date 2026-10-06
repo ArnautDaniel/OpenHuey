@@ -12,7 +12,7 @@ extern u8 RoomD7_Phase2Script_data[];
 extern u8 RoomD7_Phase5Script_data[], RoomD7_ActionScripts[];
 extern s32 D_0047B2D8;
 extern char D_0047B2D0[];
-extern const char D_00463728[];
+extern const char str_59_59_8[];
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -75,7 +75,7 @@ s32 RoomD7_Cmd02(void) {
 }
 
 /* 0x0036F690 */
-s32 RoomD7_Cmd01(void) { return clock_draw(D_0047B2D0, D_00463728); }
+s32 RoomD7_Cmd01(void) { return clock_draw(D_0047B2D0, str_59_59_8); }
 
 /* as Room107_Cmd00 */
 /* 0x0036F7E0 */

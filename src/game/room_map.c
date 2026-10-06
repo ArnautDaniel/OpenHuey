@@ -87,13 +87,13 @@ s32 Rooms_DoorClosedOff(VObject *r, u16 d) {
     return (AT(r, 0x4 + (d >> 5) * 4, u32) & (1u << (d & 0x1F))) != 0;
 }
 
-extern char D_004572A0[];   /* "OBSTACLE.MTN" */
+extern char str_OBSTACLE_MTN[];   /* "OBSTACLE.MTN" */
 
 /* start loading the obstacles' motions (OBSTACLE.MTN) into +0x380 */
 /* 0x0021AF90 */
 void Obstacles_LoadMotions(VObject *rooms) {
     VCALL(gFileLoader, 0xC, void (*)(VObject *, const void *, void *, u32, s32))(
-        gFileLoader, D_004572A0, (u8 *)rooms + 0x380, 0x10000000, 0);
+        gFileLoader, str_OBSTACLE_MTN, (u8 *)rooms + 0x380, 0x10000000, 0);
 }
 
 extern void Obstacle_Reset(u8 *o);

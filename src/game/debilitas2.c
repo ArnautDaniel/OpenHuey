@@ -22,7 +22,7 @@
 #define D_003AF9D0 D_0041BD30
 #define D_003AF9E0 D_0041BD40
 #define D_003AFA10 D_0041BD70
-#define D_003AFA40 D_0041BDA0
+#define D_003AFA40 str_t_11
 #define D_003AFA70 D_0041BDD0
 #define D_003AFA80 D_0041BDE0
 #define D_003AFAE0 D_0041BE40
@@ -40,7 +40,7 @@
 #define D_003AFE00 D_0041C170
 #define D_003AFE10 D_0041C180
 #define D_003AFE50 D_0041C1C0
-#define D_003AFEA0 D_0041C210
+#define str_t_2 str_t_12
 #define D_003AFED0 D_0041C238
 #define D_003AFEE0 D_0041C248
 #define D_003AFF60 D_0041C2D0
@@ -232,12 +232,12 @@ void Debilitas2_Timer10s(Pursuer *p) {
     PU(p, 0x1660, s32) = 600;
 }
 
-extern u8 D_0041B570[], D_0041B590[], D_0041B5B0[], D_0041B5D0[];
+extern u8 D_0041B570[], pstr_O_DB0_DB0_200_PCK_3[], D_0041B5B0[], pstr_O_DB0_DB0_200_PCK_4[];
 
 /* his model files (Pursuer_ModelFiles for kind 6) */
 /* 0x002FC8F0 */
 u8 *Debilitas2_ModelFileTable(Pursuer *p) {
-    return (AT(gProgress, 0x30, u32) & 0x8000) ? D_0041B5D0 : D_0041B590;
+    return (AT(gProgress, 0x30, u32) & 0x8000) ? pstr_O_DB0_DB0_200_PCK_4 : pstr_O_DB0_DB0_200_PCK_3;
 }
 
 /* vtable +0xF8: his model files in slot 2 */
@@ -247,7 +247,7 @@ u8 *Debilitas2_ModelFiles(Pursuer *p) {
 }
 
 extern u8 D_0041B670[], D_0041B6E0[], D_0041B840[], D_0041B860[], D_0041BA80[], D_0041BAC0[],
-    D_0041BDF0[], D_0041BE60[], D_0041BE80[], D_0041BEC8[], D_0041C260[], D_0041C2B0[],
+    D_0041BDF0[], D_0041BE60[], D_0041BE80[], str_Z_7[], D_0041C260[], D_0041C2B0[],
     D_0047ACA8[];
 
 /* vtable +0xF4: his setup over the Pursuer's (Pursuer_Setup): his tables and stats (different
@@ -268,7 +268,7 @@ void Debilitas2_Setup(Pursuer *p) {
     }
     PU(p, 0x171C, u8 *) = D_0041B860;
     PU(p, 0x173C, u8 *) = D_0041BE80;
-    PU(p, 0x1748, u8 *) = D_0041BEC8;
+    PU(p, 0x1748, u8 *) = str_Z_7;
     PU(p, 0x16DC, s32) = 30;              /* Hewie bite tolerance */
     PU(p, 0x16D4, s32) = 300;
     PU(p, 0x16D8, s32) = 1800;

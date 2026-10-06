@@ -582,7 +582,7 @@ void SndLib_Clear(void) {
     func_00115D20(UNCACHED(D_01971640), 0, 0x10);
 }
 
-extern const char D_004572B0[];   /* "%x" (as the driver reads them) */
+extern const char str_0xN[];   /* "%x" (as the driver reads them) */
 extern const char D_004572B8[];   /* "%d" */
 
 /* the driver's start arguments into `out` ("a\0b\0..."; three addresses, then numbers - the
@@ -593,9 +593,9 @@ s8 SndLib_DriverArgs(char *out, u8 *p) {
     char *e = out;
     s32 i, n;
 
-    func_0026EDD0(s[0], 0x10, D_004572B0, AT(p, 0x0, u32));
-    func_0026EDD0(s[1], 0x10, D_004572B0, AT(p, 0x4, u32));
-    func_0026EDD0(s[2], 0x10, D_004572B0, AT(p, 0x8, u32));
+    func_0026EDD0(s[0], 0x10, str_0xN, AT(p, 0x0, u32));
+    func_0026EDD0(s[1], 0x10, str_0xN, AT(p, 0x4, u32));
+    func_0026EDD0(s[2], 0x10, str_0xN, AT(p, 0x8, u32));
     func_0026EDD0(s[3], 0x10, D_004572B8, AT(p, 0xC, u32));
     for (i = 0; i < 6; i++) {
         func_0026EDD0(s[4 + i], 0x10, D_004572B8, AT(p, 0x10 + i * 2, u16));

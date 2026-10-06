@@ -143,12 +143,12 @@ void DriftingFlecks_SetParams(u8 *self, f32 *src) {
 
 #include "effectmgr.h"
 
-extern const char *const D_00405618, *const D_0040561C;   /* "kibako" (the box), "a_koushi" (the grate) */
+extern const char *const pstr_kibako, *const pstr_a_koushi;   /* "kibako" (the box), "a_koushi" (the grate) */
 
-extern const char *const D_00403948, *const D_0040394C;   /* "left", "right" */
-extern const char *const D_0040395C, *const D_00403960;   /* "movechair_1", "movechair_2" */
+extern const char *const pstr_left, *const pstr_right;   /* "left", "right" */
+extern const char *const pstr_movechair_1, *const pstr_movechair_2;   /* "movechair_1", "movechair_2" */
 
-extern const char *const D_004070C0, *const D_004070C4, *const D_004070C8;   /* "sara_l", "sara_r", "tenbin" */
+extern const char *const pstr_sara_l, *const pstr_sara_r, *const pstr_tenbin;   /* "sara_l", "sara_r", "tenbin" */
 
 /* ---- room 0x61's light shaft, class LightShaft_vtable (0x700 bytes): a beam of light (a scrolling
  * texture on a strip between six points, drawn twice) with 16 dust motes rising through it
@@ -177,10 +177,10 @@ extern const char *const D_004070C0, *const D_004070C4, *const D_004070C8;   /* 
 
 /* ---- class Glint_vtable (4 bytes): a glint on character 0x14 (its bone 6) ---- */
 
-extern const char *const D_00403964;   /* "movechair_3" */
+extern const char *const pstr_movechair_3;   /* "movechair_3" */
 
 /* the lattice ("kousi"): swung open (-90 degrees) while the hook's flag byte is set, shut otherwise */
-extern const char *const D_003F99B8[];   /* { "kousi" } */
+extern const char *const pstr_kousi[];   /* { "kousi" } */
 
 extern void *RisingSmoke_vtable[], *Helper469D00_vtable[], *QuadDrawer_vtable[];
 
@@ -208,9 +208,9 @@ s32 Room54_DoorRegions(void) {
     return 1;
 }
 
-extern const char *const D_003FC680, *const D_0042A0E8, *const D_00400C38, *const D_0042C354;   /* "fan" (rooms 0x1A / 0x31 / 0x21 / 0x32) */
+extern const char *const pstr_fan, *const pstr_fan_3, *const pstr_fan_2, *const pstr_fan_4;   /* "fan" (rooms 0x1A / 0x31 / 0x21 / 0x32) */
 
-extern const char *const D_004022B0, *const D_004022B4, *const D_004022B8;   /* "jimen", "kama", "sumi" */
+extern const char *const pstr_jimen, *const pstr_kama, *const pstr_sumi;   /* "jimen", "kama", "sumi" */
 
 /* room 0x24 (D_004022C8): the kiln's ground, kiln and charcoal glow - byte 3 0 sets them up
  * (+0x74 0, +0x78 1, glow +0x7C 0, phase +0x30 -pi), else the glow pulses (0.5 + cos(phase) /
@@ -222,9 +222,9 @@ s32 Room24_KilnGlow(void *self, void *a1, u8 *cmd) {
     const char *names[3];
     s32 i;
 
-    names[0] = D_004022B0;
-    names[1] = D_004022B4;
-    names[2] = D_004022B8;
+    names[0] = pstr_jimen;
+    names[1] = pstr_kama;
+    names[2] = pstr_sumi;
     if (cmd[3] == 0) {
         VObject *objs = gRoomObjects;
 
@@ -259,30 +259,30 @@ s32 Room24_KilnGlow(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-extern const char *const D_003F03FC;   /* "doramukan" (the drum can) */
+extern const char *const pstr_doramukan;   /* "doramukan" (the drum can) */
 
-extern const char *const D_0042C328;   /* "a_fragment0" */
+extern const char *const pstr_a_fragment0;   /* "a_fragment0" */
 
-extern const char *const D_00438D00;   /* room 0x6A's object */
+extern const char *const pstr_Curtain_3;   /* room 0x6A's object */
 
-extern const char *const kDialNames[];   /* "dial0".."dial2", then (D_0043870C) "dial3".."dial5" lit */
+extern const char *const kDialNames[];   /* "dial0".."dial2", then (pstr_dial3) "dial3".."dial5" lit */
 
 extern void *Effect737D0_vtable[];
 
-extern const char *const D_0040C160;   /* an object's name */
+extern const char *const pstr_sikakebox;   /* an object's name */
 
 /* ---- rooms 0x20 / 0x21 / 0x23 ---- */
 
-extern const char *const D_003FF124;     /* room 0x20's falling object */
-extern const char *const D_0040187C;
+extern const char *const pstr_dool;     /* room 0x20's falling object */
+extern const char *const pstr_O_DNL_DNL_201_TEX;
 
 /* ---- rooms 0x02 .. 0x12 ---- */
 
-extern const char *const D_003F0DBC, *const D_003F0DC0;   /* room 0x03 (and D_003F0DC4) */
-extern const char *const D_003F17B4;   /* room 0x04 (and D_003F17B8 / D_003F17C8) */
-extern const char *const D_003F17CC, *const D_003F17D0, *const D_003F17D4, *const D_003F17D8, *const D_003F17DC;
+extern const char *const pstr_hanebasi1, *const pstr_hanebasi2;   /* room 0x03 (and pstr_kanagu) */
+extern const char *const pstr_lens;   /* room 0x04 (and pstr_syuukouki2 / pstr_syuukouki1) */
+extern const char *const pstr_autodoor0, *const pstr_autodoor1, *const pstr_autodoor2, *const pstr_autodoor3, *const pstr_autodoor4;
 extern const char *const Room0C_ObjectNames[];                  /* room 0x0C (+13: the three pairs) */
-extern const char *const D_003F6F48, *const D_003F6F4C, *const D_003F6F50;   /* room 0x0F */
+extern const char *const pstr_hook, *const pstr_a_Puppet, *const pstr_Puppetdoor;   /* room 0x0F */
 extern void *WindowFlash_vtable[], *DriftingFlecks_vtable[], *SmokePuffs_vtable[];
 
 /* the effect WindowFlash_vtable (0x10 bytes; +0x4 its frame 0..4, 5 done, +0x8 a turn, +0xC the object):
@@ -416,7 +416,7 @@ void *Effect7A3D0_dtor(u8 *o, s32 flags) {
 extern const char *const Room18_ObjectNames[];   /* room 0x18's objects */
 extern const char *const Room4F_ObjectNames[];   /* room 0x4F's objects */
 extern const char *const D_0047ABEC;     /* room 0x5C's dial */
-extern const char *const D_004123E8;     /* room 0x5D's lever */
+extern const char *const pstr_doll;     /* room 0x5D's lever */
 extern const char *const Room5D_ObjectNames[];   /* room 0x5D's (+2: four objects) */
 extern VObject *D_00456E00;
 
@@ -437,7 +437,7 @@ extern const char *const Room62_ObjectNames[];   /* room 0x62's objects */
 
 /* ---- two more room effects (as Room107_Cmd01 / Room106_Cmd00) ---- */
 
-extern const char *const D_00429130;
+extern const char *const pstr_O_DNL_DNL_203_TEX;
 
 #ifdef HG_NATIVE
 

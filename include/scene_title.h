@@ -45,7 +45,7 @@ typedef struct SceneTitle {
     /* 0x140CA4 */ BgmCtl bgm;
     /* 0x140CC0 */ PTMF seq;            /* the title's own sequence (SceneTitle_StateTitle runs it) */
     /* 0x140CCC */ f32 movieVolume;
-    /* 0x140CD0 */ u8 demo;             /* the next attract movie (D_003B0050) */
+    /* 0x140CD0 */ u8 demo;             /* the next attract movie (pstr_SYSTEM_PLAY_DEMO_0_SFD) */
     /* 0x140CD1 */ u8 pad140CD1[0xF];
 } SceneTitle;
 

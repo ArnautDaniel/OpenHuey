@@ -7,7 +7,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room14_vtable[];
-extern const char *D_003FA078;
+extern const char *pstr_Cartain;
 
 extern u8 Room14_EnterScript_data[];
 extern u8 Room14_CharEnterScript_data[];
@@ -64,5 +64,5 @@ s32 Room14_Command(void *self, u32 i, s32 a, s32 b) {
 
 /* 0x002AC790 */
 s32 Room14_Cmd00(void *self, void *a1, u8 *cmd) {
-    return var0_obj_anim(D_003FA078, cmd);
+    return var0_obj_anim(pstr_Cartain, cmd);
 }

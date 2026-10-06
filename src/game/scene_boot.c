@@ -595,7 +595,7 @@ u32 SceneBoot_StepProgressive(SceneBoot *boot) {
 #include "sound.h"
 
 extern const u8 D_00460A00[22];
-extern const char D_00463AB0[];                         /* its count's format */
+extern const char str_xN_2[];                         /* its count's format */
 extern const PTMF SlotMachine_StateChoose_ptmf2, SlotMachine_StateNothing_ptmf2;
 
 /* state: an item found (+0x14A its place, -1 none; +0x14B how many; +0x14C its id, big endian):
@@ -641,7 +641,7 @@ void ItemFound_StateShow(u8 *o) {
             Task_ShowText(t, x, 0x164, 0, Task_MessageText(t, 4), 0x80, 0x30, 0x10, 0x15);
             Task_ShowText(t, x + w2, 0x164, 7, Task_MessageText(t, (id + 0x8100) & 0xFFFF), 0x80, 0x30, 0x10, 0x15);
             if (cw != 0) {
-                Task_Printf(t, w1 + (x + w2), 0x164, 0, D_00463AB0, (s8)o[0x14B]);
+                Task_Printf(t, w1 + (x + w2), 0x164, 0, str_xN_2, (s8)o[0x14B]);
             }
         }
     }

@@ -27,12 +27,12 @@
 extern void *Room2AWisps_vtable[], *QuadDrawer_vtable[], *Helper469D00_vtable[], *EffectBase_vtable[];
 
 extern void *Pursuer_vtable[], *NPC_vtable[], *Character_vtable[], *Actor_vtable[];
-extern const char *const D_0042C358;
+extern const char *const pstr_O_DNL_DNL_202_TEX;
 extern void *Kind32_vtable[];
 extern const PTMF Pursuer_StateRunThenNext_ptmf23;
 extern void *Kind34_vtable[];
 extern void *Kind35_vtable[];
-extern u8 D_00430A10[];
+extern u8 pstr_O_FIM_FIM_200_PCK[];
 extern u8 D_00430A50[];
 void *Kind32_ModelFiles(void);
 void *Kind32_MotionFiles(void);
@@ -2431,7 +2431,7 @@ Character *Kind32_dtor(Character *c, s32 flags) { return creature_dtor(c, flags,
 
 /* 0x0033D7D0 */
 void *Kind32_ModelFiles(void) {
-    return D_00430A10;
+    return pstr_O_FIM_FIM_200_PCK;
 }
 
 /* 0x0033D7E0 */

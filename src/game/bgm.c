@@ -190,7 +190,7 @@ typedef struct BgmTrack {
     /* 0x5 */ u8 pad5[3];
 } BgmTrack;
 
-extern BgmTrack D_00416800[];   /* the tracks */
+extern BgmTrack pstr_ADX00_AD_01_ADX[];   /* the tracks */
 
 /* every frame: follow the wanted track (fade out to stop, start a new one at full volume),
  * step the fade and the level, set the stream's volume */
@@ -268,7 +268,7 @@ void BgmCtl_Update(BgmCtl *c) {
     }
     if (start) {
         c->cur = c->req;
-        Bgm_Play(b, D_00416800[c->cur].name, D_00416800[c->cur].loop, c->pause);
+        Bgm_Play(b, pstr_ADX00_AD_01_ADX[c->cur].name, pstr_ADX00_AD_01_ADX[c->cur].loop, c->pause);
     }
 }
 

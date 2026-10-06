@@ -1272,18 +1272,18 @@ void SubScreen_DrawTab(SubScreen *s) {
 
 /* ---- text helpers left (2026-10-05); the sub-screen's text task at +0x97868 ---- */
 
-extern const char D_00463A60[];
+extern const char str_N_N[];
 
 #define SUB_TEXT(s) ((Task *)((u8 *)(s) + 0x97868))
 
-/* the page counter at the top right: "<page + 1> / <count>" (D_00463A60) and its caption
+/* the page counter at the top right: "<page + 1> / <count>" (str_N_N) and its caption
  * (message 0x1C6), faded by +0xA8C62 */
 /* 0x0037E480 */
 void SubScreen_DrawPageCount(u8 *s) {
     char buf[16];
     u8 *msg;
 
-    func_0026EDD0(buf, 10, D_00463A60, s[0xA8C81] + 1, SubScreen_EntryMotions(s, s[0xA8C80]) & 0xFF);
+    func_0026EDD0(buf, 10, str_N_N, s[0xA8C81] + 1, SubScreen_EntryMotions(s, s[0xA8C80]) & 0xFF);
     Task_ShowText(SUB_TEXT(s), 0x1B8, 0x10, 0, (u8 *)buf, 0x80 - AT(s, 0xA8C62, s16), 0x33, 0x10, 0x15);
     msg = Task_MessageText(SUB_TEXT(s), 0x1C6);
     Task_ShowText(SUB_TEXT(s), 0x160, 0x10, 0, msg, 0x80 - AT(s, 0xA8C62, s16), 0x33, 0x10, 0x15);
@@ -1422,7 +1422,7 @@ void SubScreen_StateItems(SubScreen *s) {
 
 extern const char kFmtSlash[];   /* "%2d/%2d" */
 extern const char kFmtString[];   /* "%s" */
-extern const char D_00464230[];   /* "x%2d" */
+extern const char str_xN_3[];   /* "x%2d" */
 
 /* The item grid of the list shown: the page (16 places, two columns of 8 down the screen) the
  * cursor is on (past the last: the last item), its number of the pages and, with more than
@@ -1470,7 +1470,7 @@ void SubScreen_DrawItemGrid(SubScreen *s, s32 a) {
             Task_ShowText(&s->text, x + 0x46, y + 0x64, color, Task_MessageText(&s->text, (id + 0x8100) & 0xFFFF), 0x80,
                           0x30, 0x10, 0x15);
             if (Items_IsCounted(items, SUB_LIST(s), k) == 1) {
-                Task_Printf(&s->text, x + 0xDE, y + 0x64, color, D_00464230, Items_HowMany(items, SUB_LIST(s), k));
+                Task_Printf(&s->text, x + 0xDE, y + 0x64, color, str_xN_3, Items_HowMany(items, SUB_LIST(s), k));
             }
         }
         if (SUB_CURSOR(s) % 16 == i) {
@@ -1798,28 +1798,28 @@ void SubScreen_ToSave(SubScreen *s, u8 *save) {
 
 /* the galleries' files of entry `k`: the model (D_0044B7B0, ".PCK") and its texture
  * (D_0044B830, ".TEX") to the buffers at +0xA8DEC / +0xA8DF0, then, when they have one, a
- * marker file (D_0044B930, ".MRK") to +0xA8DF8 and a second texture (D_0044B8B0) to +0xA8DF4
+ * marker file (D_0044B930, ".MRK") to +0xA8DF8 and a second texture (pstr_O_FIN_FIN_200) to +0xA8DF4
  * (else those are cleared) */
-extern const char *D_0044B7B0[], *D_0044B830[], *D_0044B8B0[], *D_0044B930[];
-extern const char D_00464170[], D_00464178[], D_00464180[];   /* "%s.PCK", "%s.TEX", "%s.MRK" */
+extern const char *D_0044B7B0[], *D_0044B830[], *pstr_O_FIN_FIN_200[], *D_0044B930[];
+extern const char str_N_PCK[], str_N_TEX[], str_N_MRK[];   /* "%s.PCK", "%s.TEX", "%s.MRK" */
 
 void func_0038D620(SubScreen *s, u8 k) {
     VObject *ld = gFileLoader;
     char name[0x20];
 
-    func_0026EDD0(name, 0x20, D_00464170, D_0044B7B0[k]);
+    func_0026EDD0(name, 0x20, str_N_PCK, D_0044B7B0[k]);
     VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, name, AT(s, 0xA8DEC, void *), 0x10000000, 0);
-    func_0026EDD0(name, 0x20, D_00464178, D_0044B830[k]);
+    func_0026EDD0(name, 0x20, str_N_TEX, D_0044B830[k]);
     VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, name, AT(s, 0xA8DF0, void *), 0x10000000, 0);
     if (D_0044B930[k][0] != 0) {
-        func_0026EDD0(name, 0x20, D_00464180, D_0044B930[k]);
+        func_0026EDD0(name, 0x20, str_N_MRK, D_0044B930[k]);
         VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, name, AT(s, 0xA8DF8, void *), 0x10000000,
                                                                            0);
     } else {
         AT(s, 0xA8DF8, void *) = NULL;
     }
-    if (D_0044B8B0[k][0] != 0) {
-        func_0026EDD0(name, 0x20, D_00464178, D_0044B8B0[k]);
+    if (pstr_O_FIN_FIN_200[k][0] != 0) {
+        func_0026EDD0(name, 0x20, str_N_TEX, pstr_O_FIN_FIN_200[k]);
         VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, name, AT(s, 0xA8DF4, void *), 0x10000000,
                                                                            0);
     } else {
@@ -2156,7 +2156,7 @@ void Results_Setup(SubScreen *s) {
 
 extern u8 gLanguage;           /* the language */
 extern u8 D_0047B180[][2];      /* per group of 8: its first entry and the end */
-extern const char D_00463FD0[];
+extern const char str_N_7[];
 
 /* the entry list (screen kind 0x8F): the language set to 1, the two headings, the entries of
  * the current one's group (page[0] / 8) with their numbers and titles ("???" until unlocked,
@@ -2177,7 +2177,7 @@ void SubScreen_DrawEntries(SubScreen *s) {
         u8 color = k == SUB_PAGE(s, 0x0, u8) ? 0x82 : 0x80;
         s32 y = (k % 8) * 35 + 0x5E;
 
-        Task_Printf(&s->text, 0x30, y, color, D_00463FD0, k + 1);
+        Task_Printf(&s->text, 0x30, y, color, str_N_7, k + 1);
         if (AT(gSystemData, 0x24 + (e[0] >> 5) * 4, u32) & (1 << (e[0] & 0x1F))) {
             Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, e[1]), 0x80, 0x30, 0x10, 0x15);
         } else {
@@ -2269,7 +2269,7 @@ void SubScreen_DrawExtras(SubScreen *s) {
         }
         msg = SubScreen_ExtraUnlocked(s, k) ? (u16)(base + 0x70 + i) : 0x16E;
         color = SUB_PAGE(s, 0x0, u8) == k ? 0x82 : 0x80;
-        Task_Printf(&s->text, 0x30, 0x5E + i * 35, color, D_00463FD0, k + 1);
+        Task_Printf(&s->text, 0x30, 0x5E + i * 35, color, str_N_7, k + 1);
         Task_ShowText(&s->text, 0x58, 0x5E + i * 35, color, Task_MessageText(&s->text, msg), 0x80, 0x30, 0x10, 0x15);
     }
     Task_ShowText(&s->text, 0x46, 0x186, 0x80, Task_MessageText(&s->text, 0x12), 0x80, 0x30, 0x10, 0x15);
@@ -2284,7 +2284,7 @@ void SubScreen_DrawExtras(SubScreen *s) {
 
 /* ---- the screen fading out / in ---- */
 
-extern const char D_00464240[];   /* "SUBSCR\\SUBBACK.TEX" */
+extern const char str_SUBSCR_SUBBACK_TEX[];   /* "SUBSCR\\SUBBACK.TEX" */
 extern const PTMF SubScreen_Open_ptmf, SubScreen_StateRun_ptmf;
 
 /* the fade's background: a darkening overlay (pages, kind 0x80..) or the panels at the fade's
@@ -2342,7 +2342,7 @@ void SubScreen_DrawClosing(SubScreen *s) {
     }
     if (s->fade == 0x40) {
         VCALL(gTexCache, 0x14, void (*)(VObject *, s32))(gTexCache, 0x19);
-        VCALL(gFileLoader, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(gFileLoader, D_00464240, s->pageTex,
+        VCALL(gFileLoader, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(gFileLoader, str_SUBSCR_SUBBACK_TEX, s->pageTex,
                                                                                    0x6000000, 0);
     }
     s->fade += s->fadeStep;
@@ -2602,7 +2602,7 @@ void Gallery_DrawArtList(SubScreen *s) {
         u8 color = k == SUB_PAGE(s, 0x0, u8) ? 0x82 : 0x80;
         s32 y = (k % 8) * 35 + 0x5E;
 
-        Task_Printf(&s->text, 0x30, y, color, D_00463FD0, k + 1);
+        Task_Printf(&s->text, 0x30, y, color, str_N_7, k + 1);
         if (AT(gSystemData, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) {
             Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, (k + 0x190) & 0xFFFF), 0x80, 0x30, 0x10,
                           0x15);
@@ -2727,7 +2727,7 @@ void Gallery_DrawMusic(SubScreen *s) {
         } else {
             color = k == SUB_MUSIC_PLAYING(s) ? 0x81 : 0x80;
         }
-        Task_Printf(&s->text, 0x30, y, color, D_00463FD0, k + 1);
+        Task_Printf(&s->text, 0x30, y, color, str_N_7, k + 1);
         if (music_unlocked(k)) {
             Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, AT(D_0044BF30[k], 0x2, u16)), 0x80,
                           0x30, 0x10, 0x15);
@@ -2949,7 +2949,7 @@ void Gallery_StateModelChosen(SubScreen *s) {
     sub_fade_back(s);
 }
 
-extern const char D_00463FE0[];   /* the pictures' file of a group */
+extern const char str_SUBSCR_ARTN_LEN[];   /* the pictures' file of a group */
 extern const PTMF SubScreen_StatePageOpen_ptmf;
 
 /* load the art gallery's group `g` of pictures into the work buffer (any load in progress
@@ -2958,7 +2958,7 @@ static inline void art_group_load(SubScreen *s, VObject *ld, u8 g) {
     char name[0x20];
 
     SUB_PAGE(s, 0x3, u8) = 1;
-    func_0026EDD0(name, 0x20, D_00463FE0, g);
+    func_0026EDD0(name, 0x20, str_SUBSCR_ARTN_LEN, g);
     VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(
         ld, name, VCALL(gProgress, 0x88, void *(*)(Progress *))(gProgress), 0x6000000, 0);
 }
@@ -3026,8 +3026,8 @@ void Gallery_StateArtList(SubScreen *s) {
 /* ---- the clear results ---- */
 
 extern VObject *gAvoidPrompt;   /* the results' pictures (+0x10: x, y, part, alpha) */
-extern const char D_00464018[], D_00464020[], D_00464028[];   /* "1st" / "2nd" / "3rd" */
-extern const char D_00464030[], D_00464040[];                 /* "%02d:%02d", "-----" */
+extern const char str_1st[], str_2nd[], str_3rd[];   /* "1st" / "2nd" / "3rd" */
+extern const char str_N_N_2[], D_00464040[];                 /* "%02d:%02d", "-----" */
 
 #define RESULTS_PART(x, y, part, alpha) \
     VCALL(gAvoidPrompt, 0x10, void (*)(VObject *, s32, s32, s32, s32))(gAvoidPrompt, x, y, part, alpha)
@@ -3038,7 +3038,7 @@ extern const char D_00464030[], D_00464040[];                 /* "%02d:%02d", "-
  * best) and finally the new ending's note (page[2]); confirm or cancel ends (flag 4) */
 /* 0x00388FF0 */
 void Results_State(SubScreen *s) {
-    static const char *const kRank[3] = {D_00464018, D_00464020, D_00464028};
+    static const char *const kRank[3] = {str_1st, str_2nd, str_3rd};
     Progress *p;
     u8 diff;
     s32 i;
@@ -3088,7 +3088,7 @@ void Results_State(SubScreen *s) {
             m = 0x3B;
             sec = 0x3B;
         }
-        Task_PrintfEx(&s->text, 0x108, 0x110 + i * 0x20, lit, 0x80, 0x33, D_00464030, m, sec);
+        Task_PrintfEx(&s->text, 0x108, 0x110 + i * 0x20, lit, 0x80, 0x33, str_N_N_2, m, sec);
     }
     if (SUB_PAGE(s, 0x0, u8) < 2) {
         return;
@@ -3178,7 +3178,7 @@ typedef struct WordKey {
 } WordKey;
 
 extern WordKey D_0044B640[3][10];
-extern const char D_00464210[];                    /* the plates left */
+extern const char str_N_9[];                    /* the plates left */
 
 #define SUB_WORD_CURSOR(s) ((s)->unkA8C57)          /* row << 4 | column */
 #define SUB_WORD(s) ((s)->unkA8C58)                 /* the word, 8 letters */
@@ -3322,13 +3322,13 @@ void SubScreen_StateWordMake(SubScreen *s) {
     }
     SubScreen_DrawPart(s, WORD_KEY(SUB_WORD_CURSOR(s)).x, WORD_KEY(SUB_WORD_CURSOR(s)).y, 0xE, 0x40, 0);
     SubScreen_DrawPart(s, 0x180, 0x140, 0xD, 0x80, 0);
-    Task_Printf(&s->text, 0x198, 0x148, 0, D_00464210, 10 - Items_CountItem3F(s->pool));
+    Task_Printf(&s->text, 0x198, 0x148, 0, str_N_9, 10 - Items_CountItem3F(s->pool));
 }
 
 /* ---- the movie list ---- */
 
 extern const u8 D_0044B730[];     /* each movie's seen flag */
-extern const char D_00464208[];   /* "%3d" */
+extern const char str_N_8[];   /* "%3d" */
 
 #define MOVIE_COUNT 0x6E
 
@@ -3429,7 +3429,7 @@ void SubScreen_StateMovies(SubScreen *s) {
         }
         id = movie_seen(n) ? (u16)(base + 0x100 + i) : 0x16E;
         color = s->page[0] == n ? 0x82 : 0x80;
-        Task_Printf(t, 0x30, y, color, D_00464208, n + 1);
+        Task_Printf(t, 0x30, y, color, str_N_8, n + 1);
         Task_ShowText(t, 0x58, y, color, Task_MessageText(t, id), 0x80, 0x30, 0x10, 0x15);
     }
     Task_ShowText(t, 0x46, 0x186, 0x80, Task_MessageText(t, 0x12), 0x80, 0x30, 0x10, 0x15);
@@ -3815,9 +3815,9 @@ void SubScreen_StateExtrasMenu(SubScreen *s) {
         SubScreen_DrawPart(s, 0xC0, 0x140, 0x20, 0x80, 1);
         SubScreen_DrawPart(s, 0xC0, 0x170, 0x21, 0x80, 1);
         SubScreen_DrawPart(s, 0xC0, 0x190, 0x22, 0x80, 1);
-        Task_PrintfEx(t, 0xE0, 0x15A, 0, 0x80, 0x33, D_00464018);
-        Task_PrintfEx(t, 0xE0, 0x172, 0, 0x80, 0x33, D_00464020);
-        Task_PrintfEx(t, 0xE0, 0x18A, 0, 0x80, 0x33, D_00464028);
+        Task_PrintfEx(t, 0xE0, 0x15A, 0, 0x80, 0x33, str_1st);
+        Task_PrintfEx(t, 0xE0, 0x172, 0, 0x80, 0x33, str_2nd);
+        Task_PrintfEx(t, 0xE0, 0x18A, 0, 0x80, 0x33, str_3rd);
     }
     for (i = 0; i < EXTRA_COUNT(s); i++) {
         u8 k = SUB_PAGE(s, i, u8);
@@ -3843,7 +3843,7 @@ void SubScreen_StateExtrasMenu(SubScreen *s) {
             if (m == 99 && sec == 59 && f == 59) {
                 Task_PrintfEx(t, 0x121, 0x15A + i * 0x18, 0, 0x80, 0x33, D_00464040);
             } else {
-                Task_PrintfEx(t, 0x124, 0x15A + i * 0x18, 0, 0x80, 0x33, D_00464030, sec, f);
+                Task_PrintfEx(t, 0x124, 0x15A + i * 0x18, 0, 0x80, 0x33, str_N_N_2, sec, f);
             }
         }
     }
@@ -4526,7 +4526,7 @@ void SubScreen_StateItemActions(SubScreen *s) {
         Msg_PrintfParam(t, 3, kFmtString, word);
         Task_ShowText(t, 0x38, 0x49, 0x80, Task_MessageText(t, (u16)(id + 0x8100)), 0x80, 0x30, 0x10, 0x15);
         if (Items_IsCounted(items, SUB_LIST(s), SUB_CURSOR(s)) == 1) {
-            Task_Printf(t, 0xD2, 0x49, 0x80, D_00464230, Items_HowMany(items, SUB_LIST(s), SUB_CURSOR(s)));
+            Task_Printf(t, 0xD2, 0x49, 0x80, str_xN_3, Items_HowMany(items, SUB_LIST(s), SUB_CURSOR(s)));
         }
         Task_DrawBox(t, 0x100, 0x16E, 0x19C, 0x66, 0x60, 0x30);
         note = id + 0x100;

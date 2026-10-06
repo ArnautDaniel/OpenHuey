@@ -81,11 +81,11 @@ s32 Room4F_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room4F_CondTable[i & 0xFF], a, b);
 }
 
-/* lower the object (D_0040C160)'s +0x14 by 0.025 a frame down to -0.78, then event 6 (+0x5C) */
+/* lower the object (pstr_sikakebox)'s +0x14 by 0.025 a frame down to -0.78, then event 6 (+0x5C) */
 /* 0x002B4280 */
 s32 Room4F_Cmd03(void) {
     static const union { u32 u; f32 f; } kStep = {0x3CCCCCCD}, kLow = {0xBF47AE14};
-    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_0040C160);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_sikakebox);
     f32 y = AT(o, 0x14, f32) - kStep.f;
 
     AT(o, 0x14, f32) = y;

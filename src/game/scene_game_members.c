@@ -1015,7 +1015,7 @@ s32 Doors_SelectBuffer(u8 *d, s32 i) {
     return AT(d, 0x50C8 + i * 4, s32) != 0;
 }
 
-extern char D_0044E4A0[];   /* "ST_%03X\\ST_%03X.PAC" */
+extern char str_ST_N_ST_N_PAC[];   /* "ST_%03X\\ST_%03X.PAC" */
 
 #define ROOM_SLOT_DONE 0x80000000   /* +0x3C0[slot]: the slot's load has been handled */
 
@@ -1053,7 +1053,7 @@ void RoomMgr_LoadRoom(u8 *rm, u32 room, s32 slot) {
         AT(rm, 0x3C8 + slot * 12, PTMF) = sGameStateNull;
     }
     *cur = room;
-    func_0026EDD0(name, sizeof(name), D_0044E4A0, room & ~7, room);
+    func_0026EDD0(name, sizeof(name), str_ST_N_ST_N_PAC, room & ~7, room);
     func_001183C0(path, name);
     loader = gFileLoader;
     if (VCALL(loader, 0x30, s32 (*)(VObject *, char *))(loader, path) > 0) {
@@ -3839,7 +3839,7 @@ void Renderer_Call5C(void) {
     VCALL(gRenderer, 0x5C, void (*)(VObject *))(gRenderer);
 }
 
-extern u8 D_0044FE18[];
+extern u8 str_VOL[];
 extern void *D_0046AF00[], *D_0046AF0C[], *MovieLib_vtable[], *D_0046AED0[], *D_0046AD88[], *D_0046AEC0[];
 
 /* start loading file slot k (+0x3C0) unless it already is (bit 31): the loader +0x14, the slot
@@ -3870,7 +3870,7 @@ void Clear_C700(u8 *o) {
 }
 
 /* shut down: the member at +0x7C44 (+0x14), the sound side (func_001CA850, func_001C8478,
- * func_001C8648(D_0044FE18)) and its interrupt handler (+0x12C, cause 3) */
+ * func_001C8648(str_VOL)) and its interrupt handler (+0x12C, cause 3) */
 /* 0x001AAC60 */
 void MovieLib_Shutdown(u8 *o) {
     VObject *m = (VObject *)(o + 0x7C44);
@@ -3878,7 +3878,7 @@ void MovieLib_Shutdown(u8 *o) {
     VCALL(m, 0x14, void (*)(VObject *))(m);
     func_001CA850();
     func_001C8478();
-    func_001C8648(D_0044FE18);
+    func_001C8648(str_VOL);
     RemoveIntcHandler(3, AT(o, 0x12C, s32));
 }
 

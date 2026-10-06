@@ -74,7 +74,7 @@ s32 Room6A_Command(void *self, u32 i, s32 a, s32 b) {
  * start / end */
 /* 0x00344180 */
 s32 Room6A_Cmd01(void *self, void *a1, u8 *cmd) {
-    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_00438D00);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_Curtain_3);
     u32 n;
 
     if (o == NULL) {

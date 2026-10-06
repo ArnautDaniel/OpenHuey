@@ -10,7 +10,7 @@ extern void *RoomE4_vtable[];
 extern u8 RoomE4_Phase2Script_data[], RoomE4_ActionScripts[];
 extern const char *RoomE4_ObjectNames;   /* a room object's name */
 extern char D_0047B318[];
-extern const char D_004639B8[];
+extern const char str_59_59_15[];
 
 extern u8 RoomE4_EnterScript_data[];
 extern u8 RoomE4_CharEnterScript_data[];
@@ -78,7 +78,7 @@ s32 RoomE4_Command(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* 0x003799A0 */
-s32 RoomE4_Cmd01(void) { return clock_draw(D_0047B318, D_004639B8); }
+s32 RoomE4_Cmd01(void) { return clock_draw(D_0047B318, str_59_59_15); }
 
 /* (as Room0F_Cmd00) the room object RoomE4_ObjectNames by event variable 2 */
 /* 0x00379AF0 */

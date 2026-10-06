@@ -73,9 +73,9 @@ f32 Model_FloorLevel(void);
 f32 Model_Vt58(void);
 
 extern u8 D_0045E4C0[];
-extern u8 D_0045E4E0[];
+extern u8 str_O_FIN_FIN_200_TEX[];
 extern u8 D_00463320[];
-extern u8 D_00463340[];
+extern u8 str_O_FIF_FIF_200_TEX[];
 void *EventHumanModel_Textures(void);
 void *EventHumanModel_Textures2(void);
 void *Costume8Model_Textures(void);
@@ -137,23 +137,23 @@ void Kind33Model_SecondaryMotion(u8 *self);
 extern u8 D_0042F270[];
 extern u8 D_0042F380[];
 extern u8 D_00461140[];
-extern u8 D_00461160[];
-extern u8 D_00461180[];
-extern u8 D_004611A0[];
-extern u8 D_004611C0[];
-extern u8 D_004611E0[];
-extern u8 D_00461200[];
+extern u8 str_O_FIH_FIH_001_PCK[];
+extern u8 str_O_FIH_FIH_002_PCK[];
+extern u8 str_O_FIH_FIH_003_PCK[];
+extern u8 str_O_FIH_FIH_004_PCK[];
+extern u8 str_O_FIH_FIH_005_PCK[];
+extern u8 str_O_FIH_FIH_006_PCK[];
 extern u8 D_00461240[];
-extern u8 D_00461260[];
+extern u8 str_O_FIH_FIH_200_TEX[];
 extern u8 D_00461280[];
-extern u8 D_004612A0[];
-extern u8 D_004612C0[];
-extern u8 D_004612E0[];
-extern u8 D_00461300[];
-extern u8 D_00461320[];
-extern u8 D_00461340[];
+extern u8 str_O_FIO_FIO_001_PCK[];
+extern u8 str_O_FIO_FIO_002_PCK[];
+extern u8 str_O_FIO_FIO_003_PCK[];
+extern u8 str_O_FIO_FIO_004_PCK[];
+extern u8 str_O_FIO_FIO_005_PCK[];
+extern u8 str_O_FIO_FIO_006_PCK[];
 extern u8 D_00461380[];
-extern u8 D_004613A0[];
+extern u8 str_O_FIO_FIO_200_TEX[];
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))
 
@@ -176,10 +176,10 @@ void *Costume3Model_ModelFile(void *self, u32 i);
 void Costume3Model_MotionTable(u8 *self);
 
 extern u32 D_00462870[];
-extern u32 D_00462890[];
+extern u32 str_O_FIB_FIB_200_TEX[];
 extern u8 D_0043EA80[];
-extern u8 D_00462670[], D_00462690[], D_004626B0[], D_004626D0[], D_004626F0[], D_00462710[], D_00462730[];
-extern u8 D_00462770[], D_00462790[], D_004627B0[], D_004627D0[], D_004627F0[], D_00462810[], D_00462830[];
+extern u8 D_00462670[], str_O_FIB_FIB_001_MRK[], str_O_FIB_FIB_002_MRK[], str_O_FIB_FIB_003_MRK[], str_O_FIB_FIB_004_MRK[], str_O_FIB_FIB_005_MRK[], str_O_FIB_FIB_006_MRK[];
+extern u8 D_00462770[], str_O_FIB_FIB_001_PCK[], str_O_FIB_FIB_002_PCK[], str_O_FIB_FIB_003_PCK[], str_O_FIB_FIB_004_PCK[], str_O_FIB_FIB_005_PCK[], str_O_FIB_FIB_006_PCK[];
 void *Costume6Model_Textures(void);
 void *Costume6Model_Textures2(void);
 s32 Costume6Model_BufferSize(void);
@@ -191,11 +191,11 @@ void *Costume6Model_MarkerFile(void *self, u32 i);
 void *Costume6Model_ModelFile(void *self, u32 i);
 void Costume6Model_MotionTable(u8 *p);
 
-extern u8 D_004631C0[], D_004631E0[];
-extern u8 D_00462FC0[], D_00462FE0[], D_00463000[], D_00463020[], D_00463040[], D_00463060[], D_00463080[];
-extern u8 D_004630C0[], D_004630E0[], D_00463100[], D_00463120[], D_00463140[], D_00463160[], D_00463180[];
+extern u8 D_004631C0[], str_O_FIC_FIC_200_TEX[];
+extern u8 D_00462FC0[], str_O_FIC_FIC_001_MRK[], str_O_FIC_FIC_002_MRK[], str_O_FIC_FIC_003_MRK[], str_O_FIC_FIC_004_MRK[], str_O_FIC_FIC_005_MRK[], str_O_FIC_FIC_006_MRK[];
+extern u8 D_004630C0[], str_O_FIC_FIC_001_PCK[], str_O_FIC_FIC_002_PCK[], str_O_FIC_FIC_003_PCK[], str_O_FIC_FIC_004_PCK[], str_O_FIC_FIC_005_PCK[], str_O_FIC_FIC_006_PCK[];
 extern u8 D_00443E20[];
-extern u8 D_00463220[], D_00463240[], D_00463260[], D_00463280[], D_004632A0[], D_004632C0[], D_004632E0[];
+extern u8 D_00463220[], str_O_FIF_FIF_001_PCK[], str_O_FIF_FIF_002_PCK[], str_O_FIF_FIF_003_PCK[], str_O_FIF_FIF_004_PCK[], str_O_FIF_FIF_005_PCK[], str_O_FIF_FIF_006_PCK[];
 #define B7_H(p, off)  (*(s16 *)((u8 *)(p) + (off)))
 
 #define B7_B(p, off)  (*(u8 *)((u8 *)(p) + (off)))
@@ -891,8 +891,8 @@ void CharLoad_Costume2(Progress *p, u32 slot) {
  * spheres (+0xF80), +0x11A0 one node (+0x1140), +0x1230 one node (+0x11E0) ---- */
 
 extern void CharModel_Loaded(u8 *m);
-extern const char D_0045E3C0[], D_0045E3E0[], D_0045E400[], D_0045E420[], D_0045E440[],
-    D_0045E460[], D_0045E480[];   /* "O_FIN\FIN_00n.PCK" */
+extern const char D_0045E3C0[], str_O_FIN_FIN_001_PCK[], str_O_FIN_FIN_002_PCK[], str_O_FIN_FIN_003_PCK[], str_O_FIN_FIN_004_PCK[],
+    str_O_FIN_FIN_005_PCK[], str_O_FIN_FIN_006_PCK[];   /* "O_FIN\FIN_00n.PCK" */
 extern u8 D_0041A4B0[], D_0041A4C0[], D_0041A4D0[], D_0041A4E0[], D_0041A4F0[];
 extern void CharModel_Frame(u8 *m);
 extern void *SprungPoint_vtable[], *SpringPartBase_vtable[], *BoneHangPoint_vtable[];
@@ -1015,12 +1015,12 @@ void EventHumanModel_ShowParts(u8 *m, s32 look) {
 const char *EventHumanModel_ModelFile(void *m, u32 n) {
     switch (n) {
     case 0: return D_0045E3C0;
-    case 1: return D_0045E3E0;
-    case 2: return D_0045E400;
-    case 3: return D_0045E420;
-    case 4: return D_0045E440;
-    case 5: return D_0045E460;
-    case 6: return D_0045E480;
+    case 1: return str_O_FIN_FIN_001_PCK;
+    case 2: return str_O_FIN_FIN_002_PCK;
+    case 3: return str_O_FIN_FIN_003_PCK;
+    case 4: return str_O_FIN_FIN_004_PCK;
+    case 5: return str_O_FIN_FIN_005_PCK;
+    case 6: return str_O_FIN_FIN_006_PCK;
     }
     return NULL;
 }
@@ -1257,7 +1257,7 @@ void *Costume6Model_Textures(void) {
 
 /* 0x003498E0 */
 void *Costume6Model_Textures2(void) {
-    return D_00462890;
+    return str_O_FIB_FIB_200_TEX;
 }
 
 /* 0x003498F0 */
@@ -1317,12 +1317,12 @@ s32 Costume6Model_Part4(void) {
 void *Costume6Model_MarkerFile(void *self, u32 i) {
     switch (i) {
     case 0: return D_00462670;
-    case 1: return D_00462690;
-    case 2: return D_004626B0;
-    case 3: return D_004626D0;
-    case 4: return D_004626F0;
-    case 5: return D_00462710;
-    case 6: return D_00462730;
+    case 1: return str_O_FIB_FIB_001_MRK;
+    case 2: return str_O_FIB_FIB_002_MRK;
+    case 3: return str_O_FIB_FIB_003_MRK;
+    case 4: return str_O_FIB_FIB_004_MRK;
+    case 5: return str_O_FIB_FIB_005_MRK;
+    case 6: return str_O_FIB_FIB_006_MRK;
     }
     return NULL;
 }
@@ -1331,12 +1331,12 @@ void *Costume6Model_MarkerFile(void *self, u32 i) {
 void *Costume6Model_ModelFile(void *self, u32 i) {
     switch (i) {
     case 0: return D_00462770;
-    case 1: return D_00462790;
-    case 2: return D_004627B0;
-    case 3: return D_004627D0;
-    case 4: return D_004627F0;
-    case 5: return D_00462810;
-    case 6: return D_00462830;
+    case 1: return str_O_FIB_FIB_001_PCK;
+    case 2: return str_O_FIB_FIB_002_PCK;
+    case 3: return str_O_FIB_FIB_003_PCK;
+    case 4: return str_O_FIB_FIB_004_PCK;
+    case 5: return str_O_FIB_FIB_005_PCK;
+    case 6: return str_O_FIB_FIB_006_PCK;
     }
     return NULL;
 }
@@ -1538,7 +1538,7 @@ void *FionaModel_dtor(void *p, s32 flags) {
 extern const char D_0045E520[];   /* "O_FIS\FIS_000.PCK" */
 extern const char D_0045E500[];   /* "O_FIN\FIN_000.MRK" */
 extern const char D_0045E540[];   /* "O_FIS\FIS_000.TEX" */
-extern const char D_0045E560[];   /* "O_FIS\FIS_200.TEX" (the names are returned as such) */
+extern const char str_O_FIS_FIS_200_TEX[];   /* "O_FIS\FIS_200.TEX" (the names are returned as such) */
 
 /* +0xA0 the model file */
 /* 0x002F7B80 */
@@ -1561,7 +1561,7 @@ const char *FionaModel_Textures(void) {
 /* +0xAC the second texture set */
 /* 0x002F7B40 */
 const char *FionaModel_Textures2(void) {
-    return D_0045E560;
+    return str_O_FIS_FIS_200_TEX;
 }
 
 /* +0xB0 the model file's buffer size */
@@ -1578,8 +1578,8 @@ void FionaModel_SetVector(u8 *m, const f32 *v) {
 
 /* ---- Hewie's model (vtable DogModel_vtable): his files by costume 0..4 ---- */
 
-extern const char D_00456360[], D_00456380[], D_004563A0[], D_004563C0[], D_004563E0[];   /* HEW_00n.PCK */
-extern const char D_004562C0[], D_004562E0[], D_00456300[], D_00456320[], D_00456340[];   /* HEW_00n.MRK */
+extern const char D_00456360[], str_O_HEW_HEW_001_PCK[], str_O_HEW_HEW_002_PCK[], str_O_HEW_HEW_003_PCK[], str_O_HEW_HEW_004_PCK[];   /* HEW_00n.PCK */
+extern const char D_004562C0[], str_O_HEW_HEW_001_MRK[], str_O_HEW_HEW_002_MRK[], str_O_HEW_HEW_003_MRK[], str_O_HEW_HEW_004_MRK[];   /* HEW_00n.MRK */
 extern const char D_00456400[];   /* O_HEW\HEW_000.TEX */
 
 /* +0xA0 the model file of costume `n` */
@@ -1587,10 +1587,10 @@ extern const char D_00456400[];   /* O_HEW\HEW_000.TEX */
 const char *DogModel_ModelFile(void *m, s32 n) {
     switch (n) {
     case 0: return D_00456360;
-    case 1: return D_00456380;
-    case 2: return D_004563A0;
-    case 3: return D_004563C0;
-    case 4: return D_004563E0;
+    case 1: return str_O_HEW_HEW_001_PCK;
+    case 2: return str_O_HEW_HEW_002_PCK;
+    case 3: return str_O_HEW_HEW_003_PCK;
+    case 4: return str_O_HEW_HEW_004_PCK;
     }
     return NULL;
 }
@@ -1600,10 +1600,10 @@ const char *DogModel_ModelFile(void *m, s32 n) {
 const char *DogModel_MarkerFile(void *m, s32 n) {
     switch (n) {
     case 0: return D_004562C0;
-    case 1: return D_004562E0;
-    case 2: return D_00456300;
-    case 3: return D_00456320;
-    case 4: return D_00456340;
+    case 1: return str_O_HEW_HEW_001_MRK;
+    case 2: return str_O_HEW_HEW_002_MRK;
+    case 3: return str_O_HEW_HEW_003_MRK;
+    case 4: return str_O_HEW_HEW_004_MRK;
     }
     return NULL;
 }
@@ -1830,8 +1830,8 @@ void CharModel_ShowParts(u8 *m, s32 slot) {
 
 /* ---- the human characters' model base (vtable CharModel_vtable): its own methods ---- */
 
-extern const char D_00456150[], D_00456170[], D_00456190[], D_004561B0[], D_004561D0[],
-    D_004561F0[], D_00456210[];   /* "O_FIN\FIN_00n.MRK" */
+extern const char D_00456150[], str_O_FIN_FIN_001_MRK[], str_O_FIN_FIN_002_MRK[], str_O_FIN_FIN_003_MRK[], str_O_FIN_FIN_004_MRK[],
+    str_O_FIN_FIN_005_MRK[], str_O_FIN_FIN_006_MRK[];   /* "O_FIN\FIN_00n.MRK" */
 
 /* +0x10 */
 /* 0x001F1FD0 */
@@ -1851,12 +1851,12 @@ void CharModel_ClearDraw(u8 *m) {
 const char *CharModel_MarkerFile(void *m, s32 n) {
     switch (n) {
     case 0: return D_00456150;
-    case 1: return D_00456170;
-    case 2: return D_00456190;
-    case 3: return D_004561B0;
-    case 4: return D_004561D0;
-    case 5: return D_004561F0;
-    case 6: return D_00456210;
+    case 1: return str_O_FIN_FIN_001_MRK;
+    case 2: return str_O_FIN_FIN_002_MRK;
+    case 3: return str_O_FIN_FIN_003_MRK;
+    case 4: return str_O_FIN_FIN_004_MRK;
+    case 5: return str_O_FIN_FIN_005_MRK;
+    case 6: return str_O_FIN_FIN_006_MRK;
     }
     return NULL;
 }
@@ -5017,7 +5017,7 @@ void *EventHumanModel_Textures(void) {
 
 /* 0x002F6DD0 */
 void *EventHumanModel_Textures2(void) {
-    return D_0045E4E0;
+    return str_O_FIN_FIN_200_TEX;
 }
 
 /* +0x14 of a hanging point: its anchor bone (+0x24) is aimed at it - X from the anchor to the
@@ -6756,7 +6756,7 @@ void *Costume2Model_Textures(void) {
 
 /* 0x00336F10 */
 void *Costume2Model_Textures2(void) {
-    return D_00461260;
+    return str_O_FIH_FIH_200_TEX;
 }
 
 /* 0x00336F20 */
@@ -6871,12 +6871,12 @@ void Costume2Model_Hang16(u8 *m) {
 void *Costume2Model_ModelFile(void *self, u32 i) {
     switch (i) {
     case 0: return D_00461140;
-    case 1: return D_00461160;
-    case 2: return D_00461180;
-    case 3: return D_004611A0;
-    case 4: return D_004611C0;
-    case 5: return D_004611E0;
-    case 6: return D_00461200;
+    case 1: return str_O_FIH_FIH_001_PCK;
+    case 2: return str_O_FIH_FIH_002_PCK;
+    case 3: return str_O_FIH_FIH_003_PCK;
+    case 4: return str_O_FIH_FIH_004_PCK;
+    case 5: return str_O_FIH_FIH_005_PCK;
+    case 6: return str_O_FIH_FIH_006_PCK;
     }
     return NULL;
 }
@@ -6981,7 +6981,7 @@ void *Costume7Model_dtor(u8 *m, s32 flags) {
 void *Costume7Model_Textures(void) { return D_004631C0; }
 
 /* 0x00353DC0 */
-void *Costume7Model_Textures2(void) { return D_004631E0; }
+void *Costume7Model_Textures2(void) { return str_O_FIC_FIC_200_TEX; }
 
 /* 0x00353DD0 */
 s32 Costume7Model_BufferSize(void) { return 0x41000; }
@@ -7028,12 +7028,12 @@ s32 Costume7Model_Part4(void) {
 void *Costume7Model_MarkerFile(void *self, u32 i) {
     switch (i) {
     case 0: return D_00462FC0;
-    case 1: return D_00462FE0;
-    case 2: return D_00463000;
-    case 3: return D_00463020;
-    case 4: return D_00463040;
-    case 5: return D_00463060;
-    case 6: return D_00463080;
+    case 1: return str_O_FIC_FIC_001_MRK;
+    case 2: return str_O_FIC_FIC_002_MRK;
+    case 3: return str_O_FIC_FIC_003_MRK;
+    case 4: return str_O_FIC_FIC_004_MRK;
+    case 5: return str_O_FIC_FIC_005_MRK;
+    case 6: return str_O_FIC_FIC_006_MRK;
     }
     return NULL;
 }
@@ -7042,12 +7042,12 @@ void *Costume7Model_MarkerFile(void *self, u32 i) {
 void *Costume7Model_ModelFile(void *self, u32 i) {
     switch (i) {
     case 0: return D_004630C0;
-    case 1: return D_004630E0;
-    case 2: return D_00463100;
-    case 3: return D_00463120;
-    case 4: return D_00463140;
-    case 5: return D_00463160;
-    case 6: return D_00463180;
+    case 1: return str_O_FIC_FIC_001_PCK;
+    case 2: return str_O_FIC_FIC_002_PCK;
+    case 3: return str_O_FIC_FIC_003_PCK;
+    case 4: return str_O_FIC_FIC_004_PCK;
+    case 5: return str_O_FIC_FIC_005_PCK;
+    case 6: return str_O_FIC_FIC_006_PCK;
     }
     return NULL;
 }
@@ -7161,7 +7161,7 @@ void *Costume3Model_Textures(void) {
 
 /* 0x00337F80 */
 void *Costume3Model_Textures2(void) {
-    return D_004613A0;
+    return str_O_FIO_FIO_200_TEX;
 }
 
 /* 0x00337F90 */
@@ -7211,12 +7211,12 @@ void Costume3Model_Hang16(u8 *m) {
 void *Costume3Model_ModelFile(void *self, u32 i) {
     switch (i) {
     case 0: return D_00461280;
-    case 1: return D_004612A0;
-    case 2: return D_004612C0;
-    case 3: return D_004612E0;
-    case 4: return D_00461300;
-    case 5: return D_00461320;
-    case 6: return D_00461340;
+    case 1: return str_O_FIO_FIO_001_PCK;
+    case 2: return str_O_FIO_FIO_002_PCK;
+    case 3: return str_O_FIO_FIO_003_PCK;
+    case 4: return str_O_FIO_FIO_004_PCK;
+    case 5: return str_O_FIO_FIO_005_PCK;
+    case 6: return str_O_FIO_FIO_006_PCK;
     }
     return NULL;
 }
@@ -7340,7 +7340,7 @@ void *Costume8Model_Textures(void) {
 
 /* 0x0035AFF0 */
 void *Costume8Model_Textures2(void) {
-    return D_00463340;
+    return str_O_FIF_FIF_200_TEX;
 }
 
 /* 0x0035B000 */
@@ -7378,12 +7378,12 @@ s32 Costume8Model_Part4(void) {
 void *Costume8Model_ModelFile(void *self, u32 i) {
     switch (i) {
     case 0: return D_00463220;
-    case 1: return D_00463240;
-    case 2: return D_00463260;
-    case 3: return D_00463280;
-    case 4: return D_004632A0;
-    case 5: return D_004632C0;
-    case 6: return D_004632E0;
+    case 1: return str_O_FIF_FIF_001_PCK;
+    case 2: return str_O_FIF_FIF_002_PCK;
+    case 3: return str_O_FIF_FIF_003_PCK;
+    case 4: return str_O_FIF_FIF_004_PCK;
+    case 5: return str_O_FIF_FIF_005_PCK;
+    case 6: return str_O_FIF_FIF_006_PCK;
     }
     return NULL;
 }

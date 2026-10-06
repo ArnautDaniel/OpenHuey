@@ -8,7 +8,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room0A_vtable[];
-extern const char *D_003F43A0;
+extern const char *pstr_syuukouki;
 
 extern u8 Room0A_EnterScript_data[];
 extern u8 Room0A_CharEnterScript_data[];
@@ -72,14 +72,14 @@ s32 Room0A_Command(void *self, u32 i, s32 a, s32 b) {
 /* room 0x0A (Room0A_Cmd01_ptmf): an effect on its object at -2.88 */
 /* 0x002AAC30 */
 s32 Room0A_Cmd01(void) {
-    obj_effect(room_obj(D_003F43A0), 0xC0384E89);
+    obj_effect(room_obj(pstr_syuukouki), 0xC0384E89);
     return 1;
 }
 
-/* the dial D_003F43A0 on progress var 3 */
+/* the dial pstr_syuukouki on progress var 3 */
 /* 0x002AAD60 */
 s32 Room0A_Cmd00(void *self, void *a1, u8 *cmd) {
-    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003F43A0);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_syuukouki);
 
     if (o == NULL) {
         return 1;

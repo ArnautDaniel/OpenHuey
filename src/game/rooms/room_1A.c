@@ -77,6 +77,6 @@ s32 Room1A_Cmd01(void) {   /* room effect 0 (TvScreenB_vtable) */
 /* room 0x1A (D_003FC660): the fan turns */
 /* 0x002AD600 */
 s32 Room1A_Cmd00(void) {
-    fan_turn(D_003FC680);
+    fan_turn(pstr_fan);
     return 1;
 }

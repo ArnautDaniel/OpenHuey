@@ -64,7 +64,7 @@ s32 Room31_Fan(void) {
     if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
         return 1;
     }
-    fan_turn(D_0042A0E8);
+    fan_turn(pstr_fan_3);
     return 1;
 }
 

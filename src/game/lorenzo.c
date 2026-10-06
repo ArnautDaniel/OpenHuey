@@ -152,19 +152,19 @@ void Lorenzo_ExitDone(Pursuer *p) {
 
 extern u8 D_0041A870[], D_0041A8D0[], D_0041A930[], D_0041A980[], D_0041A9A0[], D_0041A9F0[],
     D_0041AA20[], D_0041AA70[], D_0041AAC0[], D_0041AAF0[], D_0041AB08[], D_0041AB20[],
-    D_0041AB40[], D_0041AB60[], D_0041AB80[], D_0041ABA8[], D_0041ABB8[];
+    D_0041AB40[], D_0041AB60[], str_t_9[], D_0041ABA8[], D_0041ABB8[];
 extern u8 D_0041AC50[], D_0041ACB0[], D_0041AD10[], D_0041AD60[], D_0041AD80[], D_0041ADD0[],
     D_0041AE00[], D_0041AE50[], D_0041AEA0[], D_0041AED0[], D_0041AEF0[], D_0041AF10[],
-    D_0041AF30[], D_0041AF50[], D_0041AF70[], D_0041AF98[], D_0041AFA8[];
+    D_0041AF30[], D_0041AF50[], str_t_10[], D_0041AF98[], D_0041AFA8[];
 
 /* his attack tables for situations 0..16; the second set when gProgress+0x30 bit 0x8000 */
 static u8 *const sAttackTables[2][17] = {
     { D_0041A870, D_0041A930, D_0041A8D0, D_0041A980, D_0041A9A0, D_0041A9F0, D_0041AA20,
       D_0041AA70, D_0041AAC0, D_0041AAF0, D_0041AB08, D_0041AB20, D_0041AB40, D_0041AB60,
-      D_0041ABA8, D_0041ABB8, D_0041AB80 },
+      D_0041ABA8, D_0041ABB8, str_t_9 },
     { D_0041AC50, D_0041AD10, D_0041ACB0, D_0041AD60, D_0041AD80, D_0041ADD0, D_0041AE00,
       D_0041AE50, D_0041AEA0, D_0041AED0, D_0041AEF0, D_0041AF10, D_0041AF30, D_0041AF50,
-      D_0041AF98, D_0041AFA8, D_0041AF70 },
+      D_0041AF98, D_0041AFA8, str_t_10 },
 };
 
 /* vtable +0x130: the attack table for a situation */
@@ -226,12 +226,12 @@ void Lorenzo_Update(Pursuer *p) {
     Stalker_ThinkEnd(p);
 }
 
-extern u8 D_0041A570[], D_0041A590[], D_0041A5B0[], D_0041A5D0[];
+extern u8 D_0041A570[], pstr_O_LRO_LRO_200_PCK[], D_0041A5B0[], pstr_O_LRO_LRO_200_PCK_2[];
 
 /* his model files (Pursuer_ModelFiles for kind 11) */
 /* 0x002F9000 */
 u8 *Lorenzo_ModelFileTable(Pursuer *p) {
-    return (AT(gProgress, 0x30, u32) & 0x8000) ? D_0041A5D0 : D_0041A590;
+    return (AT(gProgress, 0x30, u32) & 0x8000) ? pstr_O_LRO_LRO_200_PCK_2 : pstr_O_LRO_LRO_200_PCK;
 }
 
 /* vtable +0xF8: his model files in slot 2 */
@@ -521,7 +521,7 @@ void *Lorenzo2_ModelFiles(void) {
 }
 
 extern u8 D_00422500[], D_00422650[], D_00422690[], D_004226F0[], D_00422880[], D_00422A10[],
-    D_00422A40[], D_00423020[], D_004230C0[], D_004230E0[], D_00423128[], D_004238B0[],
+    D_00422A40[], D_00423020[], D_004230C0[], D_004230E0[], str_Z_8[], D_004238B0[],
     D_00423950[], D_00423990[], D_019910C8[], D_0047AD10[];
 
 /* vtable +0xF4: his setup over the Pursuer's (Pursuer_Setup): his tables and stats (different
@@ -545,7 +545,7 @@ void Lorenzo2_Setup(Pursuer *p) {
         PU(p, 0x1730, u8 *) = D_00423020;
         PU(p, 0x1740, u8 *) = D_004230C0;
         PU(p, 0x173C, u8 *) = D_004230E0;
-        PU(p, 0x1748, u8 *) = D_00423128;
+        PU(p, 0x1748, u8 *) = str_Z_8;
         PU(p, 0x16DC, s32) = 100;
         PU(p, 0x16E8, f32) = 50.0f;
         PU(p, 0x16D4, s32) = 900;
@@ -1454,8 +1454,8 @@ void Kind12_Setup(Pursuer *p) {
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 extern const f32 D_00445AF0[7][4];
-extern u8 D_00444AF0[];
-extern u8 D_00444AB0[];
+extern u8 pstr_O_LRY_LRY_200_PCK_4[];
+extern u8 pstr_O_LRY_LRY_200_PCK_3[];
 extern u8 D_00444AD0[];
 extern u8 D_00444A90[];
 
@@ -1680,7 +1680,7 @@ f32 Kind39_ReachHewie(void) {
 /* (as Lorenzo_ModelFileTable)  his model files (Pursuer_ModelFiles for kind 11) */
 /* 0x00365D10 */
 u8 *Kind39_ModelFileTable(Pursuer *p) {
-    return (AT(gProgress, 0x30, u32) & 0x8000) ? D_00444AF0 : D_00444AB0;
+    return (AT(gProgress, 0x30, u32) & 0x8000) ? pstr_O_LRY_LRY_200_PCK_4 : pstr_O_LRY_LRY_200_PCK_3;
 }
 
 /* (as Lorenzo_ModelFileTable)  his model files (Pursuer_ModelFiles for kind 11) */
@@ -1890,7 +1890,7 @@ void Kind39_StartGrab(Pursuer *p) {
 }
 
 extern u8 D_00444ED0[], D_00445990[], D_004459E0[], D_00445A00[], D_00445A48[], D_00444D40[], D_004454E0[],
-    D_00445530[], D_00445550[], D_00445598[], D_00444CE0[], D_00445060[], D_00445090[], D_00444B50[],
+    D_00445530[], D_00445550[], str_Z_13[], D_00444CE0[], D_00445060[], D_00445090[], D_00444B50[],
     D_00444CA0[], D_0047B010[];
 
 /* (as Lorenzo2_Setup) the other class's setup: its tables, and its own stats */
@@ -1914,7 +1914,7 @@ void Kind39_Setup(Pursuer *p) {
         PU(p, 0x1730, u8 *) = D_004454E0;
         PU(p, 0x1740, u8 *) = D_00445530;
         PU(p, 0x173C, u8 *) = D_00445550;
-        PU(p, 0x1748, u8 *) = D_00445598;
+        PU(p, 0x1748, u8 *) = str_Z_13;
         PU(p, 0x16DC, s32) = 40;
         PU(p, 0x16E8, f32) = 30.0f;
         PU(p, 0x16D4, s32) = 900;

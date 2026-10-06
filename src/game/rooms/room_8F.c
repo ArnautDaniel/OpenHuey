@@ -11,7 +11,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room8F_vtable[];
-extern const char *D_004365E4, *D_004365E8;
+extern const char *pstr_O_FIO_FIO_201_TEX, *pstr_O_FIH_FIH_201_TEX;
 
 extern u32 Room8F_EnterScript_data[];
 extern u32 Room8F_CharEnterScript_data[];
@@ -113,10 +113,10 @@ s32 Room8F_Cmd02(void) {
 s32 Room8F_Cmd01(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
-        Progress_LoadSpeech(gProgress, D_004365E4);
+        Progress_LoadSpeech(gProgress, pstr_O_FIO_FIO_201_TEX);
         return 1;
     case 1:
-        Progress_LoadSpeech(gProgress, D_004365E8);
+        Progress_LoadSpeech(gProgress, pstr_O_FIH_FIH_201_TEX);
         return 1;
     case 2:
         return Progress_Speak(gProgress, 0, 0) == 0 ? 2 : 1;

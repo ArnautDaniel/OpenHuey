@@ -6,7 +6,7 @@
 #include "progress.h"
 #include "scene_game_members.h"
 
-extern const char *const D_0042C358;
+extern const char *const pstr_O_DNL_DNL_202_TEX;
 
 #include "gl2d.h"
 #include "ptmf.h"
@@ -94,7 +94,7 @@ s32 Room32_Cmd04(void *self, void *a1, u8 *cmd) {
     if (cmd[3] < 4) {
         return lit_quad_in(0x1A, cmd, sQuadDoor, 0x20000040);
     }
-    o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_0042C328);
+    o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_a_fragment0);
     if (o != NULL) {
         u8 *fx;
         struct {
@@ -121,7 +121,7 @@ s32 Room32_Cmd04(void *self, void *a1, u8 *cmd) {
 s32 Room32_Cmd03(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
-        Progress_LoadSpeech(gProgress, D_0042C358);
+        Progress_LoadSpeech(gProgress, pstr_O_DNL_DNL_202_TEX);
         return 1;
     case 1:
         return Progress_Speak(gProgress, 3, 0) == 0 ? 2 : 1;
@@ -142,7 +142,7 @@ s32 Room32_Cmd01(void) {
     if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
         return 1;
     }
-    fan_turn(D_0042C354);
+    fan_turn(pstr_fan_4);
     return 1;
 }
 

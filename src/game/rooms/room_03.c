@@ -9,7 +9,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room03_vtable[];
-extern const char *D_003F0DC4;
+extern const char *pstr_kanagu;
 extern void *SpriteBurst_vtable[];
 extern u8 Room03_EnterScript_data[];
 extern u8 Room03_CharEnterScript_data[];
@@ -83,13 +83,13 @@ s32 Room03_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room03_CmdTable[i & 0xFF], a, b);
 }
 
-/* a lever (D_003F0DC4, tilt +0x18 between -10 and 0 degrees): byte 3 0 back 2 degrees, 1 pulled
+/* a lever (pstr_kanagu, tilt +0x18 between -10 and 0 degrees): byte 3 0 back 2 degrees, 1 pulled
  * (-10) with a puff of grey dust at it */
 /* 0x002A9740 */
 s32 Room03_Cmd01(void *self, void *a1, u8 *cmd) {
     /* (volatile: a compile-time fold of the pulled case would round as IEEE, not as the EE) */
     static const volatile union { u32 u; f32 f; } kPi = {0x40490FDB};
-    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003F0DC4);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_kanagu);
     s32 dust = 0;
     f32 deg;
 
@@ -137,8 +137,8 @@ s32 Room03_Cmd01(void *self, void *a1, u8 *cmd) {
 /* room 0x03 (Room03_Cmd00_ptmf): three objects turned (-60, -60 degrees about x; -90 about z) */
 /* 0x002A99A0 */
 s32 Room03_Cmd00(void) {
-    obj_angle(D_003F0DBC, 0x10, 0xBF860A92);
-    obj_angle(D_003F0DC0, 0x10, 0xBF860A92);
-    obj_angle(D_003F0DC4, 0x18, 0xBFC90FDB);
+    obj_angle(pstr_hanebasi1, 0x10, 0xBF860A92);
+    obj_angle(pstr_hanebasi2, 0x10, 0xBF860A92);
+    obj_angle(pstr_kanagu, 0x18, 0xBFC90FDB);
     return 1;
 }

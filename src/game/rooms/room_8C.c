@@ -11,8 +11,8 @@
 extern void *RoomBase_vtable[];
 extern void *Room8C_vtable[];
 extern u8 Room8C_Phase5Script_data[];
-extern const char *D_00434888;
-extern const char *D_00434890, *D_00434894;
+extern const char *pstr_dynamo;
+extern const char *pstr_roller, *pstr_belt;
 
 extern u32 Room8C_EnterScript_data[];
 extern u32 Room8C_CharEnterScript_data[];
@@ -121,8 +121,8 @@ s32 Room8C_Cmd03(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* a turning machine: the wheel D_00434890 (angle +0x18, height +0x24 5.1) driven by the belt
- * D_00434894 (offset +0x20 wrapping at 10, height +0x24 -3, speed +0x30). Byte 3 0 sets it up
+/* a turning machine: the wheel pstr_roller (angle +0x18, height +0x24 5.1) driven by the belt
+ * pstr_belt (offset +0x20 wrapping at 10, height +0x24 -3, speed +0x30). Byte 3 0 sets it up
  * (speed 0.4); 1 runs it a frame (both shaking by up to 0.05); 2 also slows it by 0.01, waiting
  * (2) until it stops. (The wheel's wrap steps +0x10, not the angle.) */
 /* 0x0033FC10 */
@@ -130,8 +130,8 @@ s32 Room8C_Cmd02(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } k51 = {0x40A33333}, k16Pi = {0x42490FDB}, k2Pi = {0x40C90FDB},
                                           kPi = {0x40490FDB}, k01 = {0x3DCCCCCD}, k001 = {0x3C23D70A};
     VObject *objs = gRoomObjects, *rnd;
-    u8 *w = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00434890);
-    u8 *b = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00434894);
+    u8 *w = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_roller);
+    u8 *b = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_belt);
     f32 v;
 
     switch (cmd[3]) {
@@ -175,13 +175,13 @@ s32 Room8C_Cmd02(void *self, void *a1, u8 *cmd) {
     return 2;
 }
 
-/* the room object named D_00434888 swung: byte 3 0 starts it (rest +0x30 from +0x20, phase
+/* the room object named pstr_dynamo swung: byte 3 0 starts it (rest +0x30 from +0x20, phase
  * +0x34 0, amplitude +0x3C 1); 1 steps the phase back 60 degrees and the amplitude down 0.25,
  * height +0x28 = +0x38 + amplitude * sin, waiting (2) until it has died out */
 /* 0x0033FE90 */
 s32 Room8C_Cmd01(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kStep = {0x3F860A92}, kNegPi = {0xC0490FDB}, k2Pi = {0x40C90FDB};
-    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_00434888);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_dynamo);
     f32 a;
 
     switch (cmd[3]) {

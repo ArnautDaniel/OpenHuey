@@ -10,7 +10,7 @@ extern void *RoomD3_vtable[];
 extern u8 RoomD3_EnterScript_data[];
 extern u8 RoomD3_Phase2Script_data[], RoomD3_ActionScripts[];
 extern char D_0047B2A8[];
-extern const char D_004636F0[];
+extern const char str_59_59_4[];
 
 extern u8 RoomD3_CharEnterScript_data[];
 extern u8 RoomD3_Phase1Script_data[];
@@ -70,4 +70,4 @@ s32 RoomD3_Command(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* 0x0036E6B0 */
-s32 RoomD3_Cmd00(void) { return clock_draw(D_0047B2A8, D_004636F0); }
+s32 RoomD3_Cmd00(void) { return clock_draw(D_0047B2A8, str_59_59_4); }

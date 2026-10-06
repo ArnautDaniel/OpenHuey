@@ -431,7 +431,7 @@ void Slots_Init(u8 *o) {
 
 #include "ps2hw.h"
 
-extern const char D_0044FEB8[], D_0044FEC8[], D_0044FED8[], D_0044FEE8[];   /* SIO2MAN, SIO2D, DBCMAN, LIBSD .IRX */
+extern const char str_SIO2MAN_IRX[], str_SIO2D_IRX[], str_DBCMAN_IRX[], str_LIBSD_IRX[];   /* SIO2MAN, SIO2D, DBCMAN, LIBSD .IRX */
 extern void func_001AACD0(void *obj);
 extern s32 func_001BEDA0(s32 cause), func_001BED80(s32 cause);         /* vblank start / end handlers */
 extern u8 D_0047B204, D_0047B208;   /* vblank start / end seen */
@@ -441,11 +441,11 @@ extern u32 D_0047B20C;              /* vblank count */
 void System_Init(u8 *s) {
     func_001BC220(s + 0x20);
     func_0010D3E0(1);
-    AT(s, 0x4, s32) = func_001BC0F0(s + 0x20, D_0044FEB8, 0, 0, 0);
-    AT(s, 0x8, s32) = func_001BC0F0(s + 0x20, D_0044FEC8, 0, 0, 0);
-    AT(s, 0xC, s32) = func_001BC0F0(s + 0x20, D_0044FED8, 0, 0, 0);
+    AT(s, 0x4, s32) = func_001BC0F0(s + 0x20, str_SIO2MAN_IRX, 0, 0, 0);
+    AT(s, 0x8, s32) = func_001BC0F0(s + 0x20, str_SIO2D_IRX, 0, 0, 0);
+    AT(s, 0xC, s32) = func_001BC0F0(s + 0x20, str_DBCMAN_IRX, 0, 0, 0);
     func_001EE798();
-    AT(s, 0x10, s32) = func_001BC0F0(s + 0x20, D_0044FEE8, 0, 0, 0);
+    AT(s, 0x10, s32) = func_001BC0F0(s + 0x20, str_LIBSD_IRX, 0, 0, 0);
     func_001AACD0(s + 0x305280);
     SndDriver_Start(s + 0x395D40);
     Pads_Init(s + 0x40);

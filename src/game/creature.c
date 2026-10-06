@@ -69,7 +69,7 @@ void CreatureB_Save(u8 *self, s32 slot, u32 b12);
 void *Kind25_ModelFiles(void);
 void *Kind25_MotionFiles(void);
 
-extern const char *const D_0042C358;
+extern const char *const pstr_O_DNL_DNL_202_TEX;
 extern void *Kind25_vtable[];
 extern const PTMF Pursuer_StateRunThenNext_ptmf15;
 #define B7_W(p, off)  (*(s32 *)((u8 *)(p) + (off)))
@@ -2207,7 +2207,7 @@ void LoopingSprite_Start(u8 *o) {
  * +0x10: the colour); +0x218 the kind of strand, +0x21C stopped ---- */
 
 extern void *Effect726E0_vtable[];
-extern u32 D_00429850[], D_004298F0[], D_00429990[], D_00429A30[], D_00429AD0[], D_00429B70[];
+extern u32 D_00429850[], D_004298F0[], D_00429990[], D_00429A30[], str_r_7[], D_00429B70[];
 
 #define STRAND_SEG(o, k) ((o) + (k) * 0x50)
 #define STRAND_BONE(o, i) (Skel_Bone(AT(AT(gCharSlot2, 0xF0, u8 *), 0x810, void *), (i)) + 12)
@@ -2272,7 +2272,7 @@ void Effect726E0_SetParams(u8 *o, s32 *arg) {
         AT(o, 0x214, u32 *) = D_00429A30;
         break;
     case 0xB:
-        AT(o, 0x214, u32 *) = D_00429AD0;
+        AT(o, 0x214, u32 *) = str_r_7;
         break;
     case 0xA: case 0x27:
         AT(o, 0x214, u32 *) = D_00429B70;

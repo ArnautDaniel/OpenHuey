@@ -87,67 +87,67 @@ s32 Loader_RegisterDir(u8 *l, const char *dir) {
     return 0;
 }
 
-extern const char D_0044F270[], D_0044F278[], D_0044F280[], D_0044F288[], D_0044F290[], D_0044F298[], D_0044F2A0[], D_0044F2A8[], D_0044F2B0[], D_0044F2B8[], D_0044F2C0[], D_0044F2C8[], D_0044F2D0[], D_0044F2D8[], D_0044F2E0[], D_0044F2E8[], D_0044F2F0[], D_0044F2F8[], D_0044F300[], D_0044F308[], D_0044F310[], D_0044F318[], D_0044F320[], D_0044F328[], D_0044F330[], D_0044F338[], D_0044F340[], D_0044F348[], D_0044F350[], D_0044F358[], D_0044F360[], D_0044F368[], D_0044F370[], D_0044F378[], D_0044F380[], D_0044F388[], D_0044F390[], D_0044F398[], D_0044F3A0[], D_0044F3A8[], D_0044F3B0[], D_0044F3B8[], D_0044F3C0[], D_0044F3C8[], D_0044F3D0[], D_0044F3D8[], D_0044F3E0[], D_0044F3E8[], D_0044F3F0[], D_0044F3F8[], D_0044F400[], D_0044F408[], D_0044F410[], D_0044F418[], D_0044F420[], D_0044F428[], D_0044F430[], D_0044F438[], D_0044F440[], D_0044F448[], D_0044F450[], D_0044F458[], D_0044F460[], D_0044F468[], D_0044F470[], D_0044F478[], D_0044F480[], D_0044F488[], D_0044F490[], D_0044F498[], D_0044F4A0[], D_0044F4A8[], D_0044F4B0[], D_0044F4B8[], D_0044F4C0[], D_0044F4C8[], D_0044F4D0[], D_0044F4D8[], D_0044F4E0[], D_0044F4E8[], D_0044F4F0[], D_0044F4F8[], D_0044F500[], D_0044F508[], D_0044F510[], D_0044F518[], D_0044F520[], D_0044F528[], D_0044F530[], D_0044F538[], D_0044F540[], D_0044F548[], D_0044F550[], D_0044F558[], D_0044F560[], D_0044F568[], D_0044F570[], D_0044F578[], D_0044F580[], D_0044F588[], D_0044F590[], D_0044F598[], D_0044F5A0[], D_0044F5A8[], D_0044F5B0[], D_0044F5B8[], D_0044F5C0[], D_0044F5C8[], D_0044F5D0[], D_0044F5D8[], D_0044F5E0[], D_0044F5E8[], D_0044F5F0[], D_0044F5F8[], D_0044F600[], D_0044F608[], D_0044F610[], D_0044F618[], D_0044F620[], D_0044F628[], D_0044F630[], D_0044F638[], D_0044F640[], D_0044F648[], D_0044F650[], D_0044F658[], D_0044F660[], D_0044F668[], D_0044F670[], D_0044F678[], D_0044F680[], D_0044F688[], D_0044F690[], D_0044F698[], D_0044F6A0[], D_0044F6A8[], D_0044F6B0[], D_0044F6B8[], D_0044F6C0[], D_0044F6C8[], D_0044F6D0[], D_0044F6D8[], D_0044F6E0[], D_0044F6E8[], D_0044F6F0[], D_0044F6F8[], D_0044F700[], D_0044F708[], D_0044F710[], D_0044F718[], D_0044F720[], D_0044F728[], D_0044F730[], D_0044F738[], D_0044F740[], D_0044F748[], D_0044F750[], D_0044F758[], D_0044F760[], D_0044F768[], D_0044F770[], D_0044F778[], D_0044F780[], D_0044F788[], D_0044F790[], D_0044F798[], D_0044F7A0[], D_0044F7A8[], D_0044F7B0[], D_0044F7B8[], D_0044F7C0[], D_0044F7C8[];
+extern const char str_BGM[], str_MAP[], D_0044F280[], D_0044F288[], D_0044F290[], D_0044F298[], D_0044F2A0[], D_0044F2A8[], D_0044F2B0[], D_0044F2B8[], D_0044F2C0[], D_0044F2C8[], D_0044F2D0[], D_0044F2D8[], D_0044F2E0[], D_0044F2E8[], D_0044F2F0[], D_0044F2F8[], str_DE0010[], str_DE0011[], str_DE0012[], str_DE0013[], str_DE0014[], str_DE0015[], str_DE0016[], str_DE0017[], str_DE0018[], str_DE0019[], str_DE001A[], str_DE001B[], str_DE001C[], str_DE001D[], str_DE001E[], str_DE001F[], str_DE0020[], str_DE0021[], str_DE0022[], str_DE0023[], str_DE0024[], str_DE0025[], str_DE0026[], str_DE0027[], str_DE0028[], str_DE0029[], str_DE002A[], str_DE002B[], str_DE002C[], str_DE002D[], str_DE002E[], str_DE002F[], str_DE0030[], str_DE0031[], str_DE0032[], str_DE0033[], str_DE0034[], str_DE0035[], str_DE0036[], str_DE0039[], str_DE003B[], str_DE003C[], str_DE003D[], str_DE003F[], str_DE0040[], str_DE0041[], str_DE0042[], str_DE0043[], str_DE0044[], str_DE0045[], str_DE0046[], str_DE0047[], str_DE0048[], str_DE0049[], D_0044F4B0[], str_DE100B[], str_DE1018[], str_DE101F[], str_DE1025[], str_DE102E[], str_DE1033[], str_DE1034[], str_DE1035[], str_DE2018[], str_DE201F[], str_DE2025[], str_DE2035[], str_DE3035[], str_DE4035[], D_0044F528[], D_0044F530[], D_0044F538[], D_0044F540[], D_0044F548[], D_0044F550[], D_0044F558[], D_0044F560[], str_EV0010[], str_EV0011[], str_EV0012[], str_EV0013[], str_EV0014[], str_EV0015[], str_EV0016[], str_EV0017[], str_EV0018[], str_EV0019[], str_EV0020[], str_EV0021[], str_EV0022[], str_EV0023[], str_EV0024[], str_EV0025[], str_EV0026[], str_EV0027[], str_EV0028[], str_EV0029[], str_EV0030[], str_EV0031[], str_EV1031[], str_EV0032[], str_EV0033[], str_EV1033[], str_EV0034[], str_EV1034[], str_ITEM00[], str_ITEM01[], str_ITEM02[], str_ITEM03[], str_ITEM04[], str_O_CRW[], str_O_DB0[], str_O_DB1[], str_O_DB2[], str_O_DNL[], str_O_DNT[], str_O_FIB[], str_O_FIC[], str_O_FIF[], str_O_FIH[], str_O_FIM[], str_O_FIN[], str_O_FIN_M[], str_O_FIO[], str_O_FIS[], str_O_FIW[], str_O_FS0[], str_O_FS1[], str_O_FS2[], str_O_GLM[], str_O_HED[], str_O_HEG[], str_O_HEW[], str_O_HMA[], str_O_HMB[], str_O_HND[], str_O_LRC[], str_O_LRF[], str_O_LRH[], str_O_LRM[], str_O_LRO[], str_O_LRY[], str_O_RBT[], str_O_RCG[], str_O_RCT[], str_O_SGM[], str_O_SHT[], str_O_WHC[], str_O_WIR[], str_ADX00[], str_ADX01[], str_ADX02[], str_SYSTEM[], str_SUBSCR[];
 
 /* the data folders registered at startup after ST_000..ST_108, in the original order */
 static const char *const sLoaderDirs[] = {
-    D_0044F270 /* BGM */, D_0044F278 /* MAP */, D_0044F280 /* DE0000 */, D_0044F288 /* DE0001 */,
+    str_BGM /* BGM */, str_MAP /* MAP */, D_0044F280 /* DE0000 */, D_0044F288 /* DE0001 */,
     D_0044F290 /* DE0002 */, D_0044F298 /* DE0003 */, D_0044F2A0 /* DE0004 */,
     D_0044F2A8 /* DE0005 */, D_0044F2B0 /* DE0006 */, D_0044F2B8 /* DE0007 */,
     D_0044F2C0 /* DE0008 */, D_0044F2C8 /* DE0009 */, D_0044F2D0 /* DE000A */,
     D_0044F2D8 /* DE000B */, D_0044F2E0 /* DE000C */, D_0044F2E8 /* DE000D */,
-    D_0044F2F0 /* DE000E */, D_0044F2F8 /* DE000F */, D_0044F300 /* DE0010 */,
-    D_0044F308 /* DE0011 */, D_0044F310 /* DE0012 */, D_0044F318 /* DE0013 */,
-    D_0044F320 /* DE0014 */, D_0044F328 /* DE0015 */, D_0044F330 /* DE0016 */,
-    D_0044F338 /* DE0017 */, D_0044F340 /* DE0018 */, D_0044F348 /* DE0019 */,
-    D_0044F350 /* DE001A */, D_0044F358 /* DE001B */, D_0044F360 /* DE001C */,
-    D_0044F368 /* DE001D */, D_0044F370 /* DE001E */, D_0044F378 /* DE001F */,
-    D_0044F380 /* DE0020 */, D_0044F388 /* DE0021 */, D_0044F390 /* DE0022 */,
-    D_0044F398 /* DE0023 */, D_0044F3A0 /* DE0024 */, D_0044F3A8 /* DE0025 */,
-    D_0044F3B0 /* DE0026 */, D_0044F3B8 /* DE0027 */, D_0044F3C0 /* DE0028 */,
-    D_0044F3C8 /* DE0029 */, D_0044F3D0 /* DE002A */, D_0044F3D8 /* DE002B */,
-    D_0044F3E0 /* DE002C */, D_0044F3E8 /* DE002D */, D_0044F3F0 /* DE002E */,
-    D_0044F3F8 /* DE002F */, D_0044F400 /* DE0030 */, D_0044F408 /* DE0031 */,
-    D_0044F410 /* DE0032 */, D_0044F418 /* DE0033 */, D_0044F420 /* DE0034 */,
-    D_0044F428 /* DE0035 */, D_0044F430 /* DE0036 */, D_0044F438 /* DE0039 */,
-    D_0044F440 /* DE003B */, D_0044F448 /* DE003C */, D_0044F450 /* DE003D */,
-    D_0044F458 /* DE003F */, D_0044F460 /* DE0040 */, D_0044F468 /* DE0041 */,
-    D_0044F470 /* DE0042 */, D_0044F478 /* DE0043 */, D_0044F480 /* DE0044 */,
-    D_0044F488 /* DE0045 */, D_0044F490 /* DE0046 */, D_0044F498 /* DE0047 */,
-    D_0044F4A0 /* DE0048 */, D_0044F4A8 /* DE0049 */, D_0044F4B0 /* DE1000 */,
-    D_0044F4B8 /* DE100B */, D_0044F4C0 /* DE1018 */, D_0044F4C8 /* DE101F */,
-    D_0044F4D0 /* DE1025 */, D_0044F4D8 /* DE102E */, D_0044F4E0 /* DE1033 */,
-    D_0044F4E8 /* DE1034 */, D_0044F4F0 /* DE1035 */, D_0044F4F8 /* DE2018 */,
-    D_0044F500 /* DE201F */, D_0044F508 /* DE2025 */, D_0044F510 /* DE2035 */,
-    D_0044F518 /* DE3035 */, D_0044F520 /* DE4035 */, D_0044F528 /* EV0002 */,
+    D_0044F2F0 /* DE000E */, D_0044F2F8 /* DE000F */, str_DE0010 /* DE0010 */,
+    str_DE0011 /* DE0011 */, str_DE0012 /* DE0012 */, str_DE0013 /* DE0013 */,
+    str_DE0014 /* DE0014 */, str_DE0015 /* DE0015 */, str_DE0016 /* DE0016 */,
+    str_DE0017 /* DE0017 */, str_DE0018 /* DE0018 */, str_DE0019 /* DE0019 */,
+    str_DE001A /* DE001A */, str_DE001B /* DE001B */, str_DE001C /* DE001C */,
+    str_DE001D /* DE001D */, str_DE001E /* DE001E */, str_DE001F /* DE001F */,
+    str_DE0020 /* DE0020 */, str_DE0021 /* DE0021 */, str_DE0022 /* DE0022 */,
+    str_DE0023 /* DE0023 */, str_DE0024 /* DE0024 */, str_DE0025 /* DE0025 */,
+    str_DE0026 /* DE0026 */, str_DE0027 /* DE0027 */, str_DE0028 /* DE0028 */,
+    str_DE0029 /* DE0029 */, str_DE002A /* DE002A */, str_DE002B /* DE002B */,
+    str_DE002C /* DE002C */, str_DE002D /* DE002D */, str_DE002E /* DE002E */,
+    str_DE002F /* DE002F */, str_DE0030 /* DE0030 */, str_DE0031 /* DE0031 */,
+    str_DE0032 /* DE0032 */, str_DE0033 /* DE0033 */, str_DE0034 /* DE0034 */,
+    str_DE0035 /* DE0035 */, str_DE0036 /* DE0036 */, str_DE0039 /* DE0039 */,
+    str_DE003B /* DE003B */, str_DE003C /* DE003C */, str_DE003D /* DE003D */,
+    str_DE003F /* DE003F */, str_DE0040 /* DE0040 */, str_DE0041 /* DE0041 */,
+    str_DE0042 /* DE0042 */, str_DE0043 /* DE0043 */, str_DE0044 /* DE0044 */,
+    str_DE0045 /* DE0045 */, str_DE0046 /* DE0046 */, str_DE0047 /* DE0047 */,
+    str_DE0048 /* DE0048 */, str_DE0049 /* DE0049 */, D_0044F4B0 /* DE1000 */,
+    str_DE100B /* DE100B */, str_DE1018 /* DE1018 */, str_DE101F /* DE101F */,
+    str_DE1025 /* DE1025 */, str_DE102E /* DE102E */, str_DE1033 /* DE1033 */,
+    str_DE1034 /* DE1034 */, str_DE1035 /* DE1035 */, str_DE2018 /* DE2018 */,
+    str_DE201F /* DE201F */, str_DE2025 /* DE2025 */, str_DE2035 /* DE2035 */,
+    str_DE3035 /* DE3035 */, str_DE4035 /* DE4035 */, D_0044F528 /* EV0002 */,
     D_0044F530 /* EV0003 */, D_0044F538 /* EV0004 */, D_0044F540 /* EV0005 */,
     D_0044F548 /* EV0006 */, D_0044F550 /* EV0007 */, D_0044F558 /* EV0008 */,
-    D_0044F560 /* EV0009 */, D_0044F568 /* EV0010 */, D_0044F570 /* EV0011 */,
-    D_0044F578 /* EV0012 */, D_0044F580 /* EV0013 */, D_0044F588 /* EV0014 */,
-    D_0044F590 /* EV0015 */, D_0044F598 /* EV0016 */, D_0044F5A0 /* EV0017 */,
-    D_0044F5A8 /* EV0018 */, D_0044F5B0 /* EV0019 */, D_0044F5B8 /* EV0020 */,
-    D_0044F5C0 /* EV0021 */, D_0044F5C8 /* EV0022 */, D_0044F5D0 /* EV0023 */,
-    D_0044F5D8 /* EV0024 */, D_0044F5E0 /* EV0025 */, D_0044F5E8 /* EV0026 */,
-    D_0044F5F0 /* EV0027 */, D_0044F5F8 /* EV0028 */, D_0044F600 /* EV0029 */,
-    D_0044F608 /* EV0030 */, D_0044F610 /* EV0031 */, D_0044F618 /* EV1031 */,
-    D_0044F620 /* EV0032 */, D_0044F628 /* EV0033 */, D_0044F630 /* EV1033 */,
-    D_0044F638 /* EV0034 */, D_0044F640 /* EV1034 */, D_0044F648 /* ITEM00 */,
-    D_0044F650 /* ITEM01 */, D_0044F658 /* ITEM02 */, D_0044F660 /* ITEM03 */,
-    D_0044F668 /* ITEM04 */, D_0044F670 /* O_CRW */, D_0044F678 /* O_DB0 */,
-    D_0044F680 /* O_DB1 */, D_0044F688 /* O_DB2 */, D_0044F690 /* O_DNL */, D_0044F698 /* O_DNT */,
-    D_0044F6A0 /* O_FIB */, D_0044F6A8 /* O_FIC */, D_0044F6B0 /* O_FIF */, D_0044F6B8 /* O_FIH */,
-    D_0044F6C0 /* O_FIM */, D_0044F6C8 /* O_FIN */, D_0044F6D0 /* O_FIN_M */,
-    D_0044F6D8 /* O_FIO */, D_0044F6E0 /* O_FIS */, D_0044F6E8 /* O_FIW */, D_0044F6F0 /* O_FS0 */,
-    D_0044F6F8 /* O_FS1 */, D_0044F700 /* O_FS2 */, D_0044F708 /* O_GLM */, D_0044F710 /* O_HED */,
-    D_0044F718 /* O_HEG */, D_0044F720 /* O_HEW */, D_0044F728 /* O_HMA */, D_0044F730 /* O_HMB */,
-    D_0044F738 /* O_HND */, D_0044F740 /* O_LRC */, D_0044F748 /* O_LRF */, D_0044F750 /* O_LRH */,
-    D_0044F758 /* O_LRM */, D_0044F760 /* O_LRO */, D_0044F768 /* O_LRY */, D_0044F770 /* O_RBT */,
-    D_0044F778 /* O_RCG */, D_0044F780 /* O_RCT */, D_0044F788 /* O_SGM */, D_0044F790 /* O_SHT */,
-    D_0044F798 /* O_WHC */, D_0044F7A0 /* O_WIR */, D_0044F7A8 /* ADX00 */, D_0044F7B0 /* ADX01 */,
-    D_0044F7B8 /* ADX02 */, D_0044F7C0 /* SYSTEM */, D_0044F7C8 /* SUBSCR */,
+    D_0044F560 /* EV0009 */, str_EV0010 /* EV0010 */, str_EV0011 /* EV0011 */,
+    str_EV0012 /* EV0012 */, str_EV0013 /* EV0013 */, str_EV0014 /* EV0014 */,
+    str_EV0015 /* EV0015 */, str_EV0016 /* EV0016 */, str_EV0017 /* EV0017 */,
+    str_EV0018 /* EV0018 */, str_EV0019 /* EV0019 */, str_EV0020 /* EV0020 */,
+    str_EV0021 /* EV0021 */, str_EV0022 /* EV0022 */, str_EV0023 /* EV0023 */,
+    str_EV0024 /* EV0024 */, str_EV0025 /* EV0025 */, str_EV0026 /* EV0026 */,
+    str_EV0027 /* EV0027 */, str_EV0028 /* EV0028 */, str_EV0029 /* EV0029 */,
+    str_EV0030 /* EV0030 */, str_EV0031 /* EV0031 */, str_EV1031 /* EV1031 */,
+    str_EV0032 /* EV0032 */, str_EV0033 /* EV0033 */, str_EV1033 /* EV1033 */,
+    str_EV0034 /* EV0034 */, str_EV1034 /* EV1034 */, str_ITEM00 /* ITEM00 */,
+    str_ITEM01 /* ITEM01 */, str_ITEM02 /* ITEM02 */, str_ITEM03 /* ITEM03 */,
+    str_ITEM04 /* ITEM04 */, str_O_CRW /* O_CRW */, str_O_DB0 /* O_DB0 */,
+    str_O_DB1 /* O_DB1 */, str_O_DB2 /* O_DB2 */, str_O_DNL /* O_DNL */, str_O_DNT /* O_DNT */,
+    str_O_FIB /* O_FIB */, str_O_FIC /* O_FIC */, str_O_FIF /* O_FIF */, str_O_FIH /* O_FIH */,
+    str_O_FIM /* O_FIM */, str_O_FIN /* O_FIN */, str_O_FIN_M /* O_FIN_M */,
+    str_O_FIO /* O_FIO */, str_O_FIS /* O_FIS */, str_O_FIW /* O_FIW */, str_O_FS0 /* O_FS0 */,
+    str_O_FS1 /* O_FS1 */, str_O_FS2 /* O_FS2 */, str_O_GLM /* O_GLM */, str_O_HED /* O_HED */,
+    str_O_HEG /* O_HEG */, str_O_HEW /* O_HEW */, str_O_HMA /* O_HMA */, str_O_HMB /* O_HMB */,
+    str_O_HND /* O_HND */, str_O_LRC /* O_LRC */, str_O_LRF /* O_LRF */, str_O_LRH /* O_LRH */,
+    str_O_LRM /* O_LRM */, str_O_LRO /* O_LRO */, str_O_LRY /* O_LRY */, str_O_RBT /* O_RBT */,
+    str_O_RCG /* O_RCG */, str_O_RCT /* O_RCT */, str_O_SGM /* O_SGM */, str_O_SHT /* O_SHT */,
+    str_O_WHC /* O_WHC */, str_O_WIR /* O_WIR */, str_ADX00 /* ADX00 */, str_ADX01 /* ADX01 */,
+    str_ADX02 /* ADX02 */, str_SYSTEM /* SYSTEM */, str_SUBSCR /* SUBSCR */,
 };
 
-extern const char D_0044F268[];   /* "ST_%03X" */
+extern const char str_ST_N[];   /* "ST_%03X" */
 
 /* register a folder, idling the system (+0x1C) until there is room */
 static inline void Loader_AddDir(u8 *l, VObject *sys, const char *dir) {
@@ -164,7 +164,7 @@ void Loader_RegisterAll(u8 *l) {
     u32 i;
 
     for (i = 0; i < 0x110; i += 8) {
-        func_0026EDD0(name, sizeof(name), D_0044F268, i);
+        func_0026EDD0(name, sizeof(name), str_ST_N, i);
         Loader_AddDir(l, sys, name);
     }
     for (i = 0; i < sizeof(sLoaderDirs) / sizeof(sLoaderDirs[0]); i++) {

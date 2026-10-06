@@ -13,7 +13,7 @@
 extern void *RoomBase_vtable[];
 extern void *RoomC3_vtable[];
 extern u8 RoomC3_Table38_data[];
-extern const char *D_004400F0[];
+extern const char *pstr_doramukan_2[];
 extern const char *RoomC3_ObjectNames;
 extern u32 RoomC3_EnterScript_data[];
 extern u32 RoomC3_CharEnterScript_data[];
@@ -97,10 +97,10 @@ s32 RoomC3_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &RoomC3_CmdTable[i & 0xFF], a, b);
 }
 
-/* sound 3 (bank 6) at the room object named D_004400F0[0] */
+/* sound 3 (bank 6) at the room object named pstr_doramukan_2[0] */
 /* 0x0034AB40 */
 s32 RoomC3_Cmd02(void) {
-    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_004400F0[0]);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_doramukan_2[0]);
 
     if (o != NULL) {
         Sound_PlayBankAt(gSound, 3, 6, (f32 *)(o + 0x20), 0, 0);

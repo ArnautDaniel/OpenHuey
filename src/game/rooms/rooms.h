@@ -22,38 +22,38 @@
 
 extern VObject *gRoomObjects;   /* the room's objects: +0x18 (id) the object */
 extern void *Reflection_vtable[];
-extern const char *const D_00405618, *const D_0040561C;   /* "kibako" (the box), "a_koushi" (the grate) */
-extern const char *const D_00403948, *const D_0040394C;   /* "left", "right" */
-extern const char *const D_0040395C, *const D_00403960;   /* "movechair_1", "movechair_2" */
-extern const char *const D_004070C0, *const D_004070C4, *const D_004070C8;   /* "sara_l", "sara_r", "tenbin" */
-extern const char *const D_00403964;   /* "movechair_3" */
+extern const char *const pstr_kibako, *const pstr_a_koushi;   /* "kibako" (the box), "a_koushi" (the grate) */
+extern const char *const pstr_left, *const pstr_right;   /* "left", "right" */
+extern const char *const pstr_movechair_1, *const pstr_movechair_2;   /* "movechair_1", "movechair_2" */
+extern const char *const pstr_sara_l, *const pstr_sara_r, *const pstr_tenbin;   /* "sara_l", "sara_r", "tenbin" */
+extern const char *const pstr_movechair_3;   /* "movechair_3" */
 /* the lattice ("kousi"): swung open (-90 degrees) while the hook's flag byte is set, shut otherwise */
-extern const char *const D_003F99B8[];   /* { "kousi" } */
+extern const char *const pstr_kousi[];   /* { "kousi" } */
 extern u32 gMenuPressed;   /* menu buttons pressed this frame (MENU_*) */
 extern u32 gMenuRepeat;   /* menu buttons, repeating */
-extern const char *const D_003FC680, *const D_0042A0E8, *const D_00400C38, *const D_0042C354;   /* "fan" (rooms 0x1A / 0x31 / 0x21 / 0x32) */
-extern const char *const D_004022B0, *const D_004022B4, *const D_004022B8;   /* "jimen", "kama", "sumi" */
-extern const char *const D_003F03FC;   /* "doramukan" (the drum can) */
-extern const char *const D_0042C328;   /* "a_fragment0" */
-extern const char *const D_00438D00;   /* room 0x6A's object */
-extern const char *const kDialNames[];   /* "dial0".."dial2", then (D_0043870C) "dial3".."dial5" lit */
+extern const char *const pstr_fan, *const pstr_fan_3, *const pstr_fan_2, *const pstr_fan_4;   /* "fan" (rooms 0x1A / 0x31 / 0x21 / 0x32) */
+extern const char *const pstr_jimen, *const pstr_kama, *const pstr_sumi;   /* "jimen", "kama", "sumi" */
+extern const char *const pstr_doramukan;   /* "doramukan" (the drum can) */
+extern const char *const pstr_a_fragment0;   /* "a_fragment0" */
+extern const char *const pstr_Curtain_3;   /* room 0x6A's object */
+extern const char *const kDialNames[];   /* "dial0".."dial2", then (pstr_dial3) "dial3".."dial5" lit */
 extern u32 gMenuPressed;                   /* menu buttons pressed (MENU_*) */
 extern u32 gMenuRepeat;                   /* menu buttons repeating */
-extern const char *const D_0040C160;   /* an object's name */
-extern const char *const D_003FF124;     /* room 0x20's falling object */
-extern const char *const D_0040187C;
-extern const char *const D_003F0DBC, *const D_003F0DC0;   /* room 0x03 (and D_003F0DC4) */
-extern const char *const D_003F17B4;   /* room 0x04 (and D_003F17B8 / D_003F17C8) */
-extern const char *const D_003F17CC, *const D_003F17D0, *const D_003F17D4, *const D_003F17D8, *const D_003F17DC;
+extern const char *const pstr_sikakebox;   /* an object's name */
+extern const char *const pstr_dool;     /* room 0x20's falling object */
+extern const char *const pstr_O_DNL_DNL_201_TEX;
+extern const char *const pstr_hanebasi1, *const pstr_hanebasi2;   /* room 0x03 (and pstr_kanagu) */
+extern const char *const pstr_lens;   /* room 0x04 (and pstr_syuukouki2 / pstr_syuukouki1) */
+extern const char *const pstr_autodoor0, *const pstr_autodoor1, *const pstr_autodoor2, *const pstr_autodoor3, *const pstr_autodoor4;
 extern const char *const Room0C_ObjectNames[];                  /* room 0x0C (+13: the three pairs) */
-extern const char *const D_003F6F48, *const D_003F6F4C, *const D_003F6F50;   /* room 0x0F */
+extern const char *const pstr_hook, *const pstr_a_Puppet, *const pstr_Puppetdoor;   /* room 0x0F */
 extern const char *const Room18_ObjectNames[];   /* room 0x18's objects */
 extern const char *const Room4F_ObjectNames[];   /* room 0x4F's objects */
 extern const char *const D_0047ABEC;     /* room 0x5C's dial */
-extern const char *const D_004123E8;     /* room 0x5D's lever */
+extern const char *const pstr_doll;     /* room 0x5D's lever */
 extern const char *const Room5D_ObjectNames[];   /* room 0x5D's (+2: four objects) */
 extern const char *const Room62_ObjectNames[];   /* room 0x62's objects */
-extern const char *const D_00429130;
+extern const char *const pstr_O_DNL_DNL_203_TEX;
 /* ---- the slam shake: frame hooks of Lorenzo's (kind 0xA) rooms shake the camera (+0x6C, 0.5)
  * when his slam lands ---- */
 /* ---- the countdown's start / stop hooks ---- */
@@ -292,7 +292,7 @@ static inline s32 item238_sound(u32 bit) {
     return 1;
 }
 
-/* the room object D_003F6F64's +0x24 toward 1 (event variable 0 unset) or 0 (set): byte 3 0 at
+/* the room object pstr_fumi_yuka's +0x24 toward 1 (event variable 0 unset) or 0 (set): byte 3 0 at
  * once, else by 0.2 a step */
 static inline s32 var_fade(const char *name, s32 var, u8 *cmd) {
     static const union { u32 u; f32 f; } kStep = {0x3E4CCCCD};   /* 0.2 */
@@ -438,7 +438,7 @@ static inline __attribute__((always_inline)) void var0_frame(u8 *o, u32 v, u32 l
     AT(o, 0x7C, f32) = (f32)(v - lo) / div;
 }
 
-/* the room object D_003FA078's animation by event var 0 (byte 3 picks the range: 0 back over
+/* the room object pstr_Cartain's animation by event var 0 (byte 3 picks the range: 0 back over
  * 43..54, 1 / 2 / 5 forward over 12..21, 16..28, 11..18; 3 / 4 back at 0 / 1), +0x7C kept 0..1 */
 static inline s32 var0_obj_anim(const char *name, u8 *cmd) {
     u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, name);

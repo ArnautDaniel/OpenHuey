@@ -191,7 +191,7 @@ void SceneTitle_StateTitle(SceneTitle *t) {
 }
 
 extern void *MovieScene_vtable[];        /* SceneMovie */
-extern const char D_0044E940[];   /* "SYSTEM\\LOOP_DEMO.SFD" */
+extern const char str_SYSTEM_LOOP_DEMO_SFD[];   /* "SYSTEM\\LOOP_DEMO.SFD" */
 void SceneTitle_StateAttract(SceneTitle *t);
 
 #define SCENE_TABLE_SCENE(i) (*(Scene **)((u8 *)gSceneTable + 4 + (i) * 4))
@@ -252,15 +252,15 @@ static inline void title_movie(SceneTitle *t, const char *name, void (*next)(Sce
 
 /* state: start the attract movie */
 void SceneTitle_StateAttractStart(SceneTitle *t) {
-    title_movie(t, D_0044E940, SceneTitle_StateAttract);
+    title_movie(t, str_SYSTEM_LOOP_DEMO_SFD, SceneTitle_StateAttract);
 }
 
-extern const char D_0044E888[];   /* "OPENING.SFD" */
+extern const char str_OPENING_SFD[];   /* "OPENING.SFD" */
 void SceneTitle_StateOpening(SceneTitle *t);
 
 /* state: a new game: the opening movie first */
 void SceneTitle_StateNewGame(SceneTitle *t) {
-    title_movie(t, D_0044E888, SceneTitle_StateOpening);
+    title_movie(t, str_OPENING_SFD, SceneTitle_StateOpening);
 }
 
 void SceneTitle_StateAttractFade(SceneTitle *t);
@@ -359,11 +359,11 @@ void SceneTitle_StateOpeningFade(SceneTitle *t) {
     }
 }
 
-extern const char D_0044E8C0[];   /* "SYSTEM\\TITLE.TEX" */
-extern const char D_0044E8E0[];   /* "SYSTEM\\TITLE_BACK.BIN" */
-extern const char D_0044E900[];   /* "SYSTEM\\TITLE.HD" */
-extern const char D_0044E910[];   /* "SYSTEM\\TITLE.SDT" */
-extern const char D_0044E930[];   /* "SYSTEM\\TITLE.BD" */
+extern const char str_SYSTEM_TITLE_TEX[];   /* "SYSTEM\\TITLE.TEX" */
+extern const char str_SYSTEM_TITLE_BACK_BIN[];   /* "SYSTEM\\TITLE_BACK.BIN" */
+extern const char str_SYSTEM_TITLE_HD[];   /* "SYSTEM\\TITLE.HD" */
+extern const char str_SYSTEM_TITLE_SDT[];   /* "SYSTEM\\TITLE.SDT" */
+extern const char str_SYSTEM_TITLE_BD[];   /* "SYSTEM\\TITLE.BD" */
 void SceneTitle_SeqPressStart(SceneTitle *t);
 void SceneTitle_SeqFadeIn(SceneTitle *t);
 
@@ -394,11 +394,11 @@ void SceneTitle_SeqLoad(SceneTitle *t) {
     VObject *snd;
 
     t->timer = 0;
-    LOADER_LOAD(D_0044E8C0, t->titleTex);
+    LOADER_LOAD(str_SYSTEM_TITLE_TEX, t->titleTex);
     msg = gBootMessage;
     VCALL(msg, 0x8, void (*)(VObject *, s32, void *))(msg, 6, t->titleTex);
     VCALL(msg, 0x10, void (*)(VObject *, s32, void *, s32))(msg, 6, t->titleTex, 0);
-    LOADER_LOAD(D_0044E8E0, t->backImage);
+    LOADER_LOAD(str_SYSTEM_TITLE_BACK_BIN, t->backImage);
     snd = gSound;
     t->loaded = 1;
     VCALL(snd, 0xA0, void (*)(VObject *))(snd);
@@ -415,9 +415,9 @@ void SceneTitle_SeqLoad(SceneTitle *t) {
         }
         Bgm_ApplyVolume(gAdx);
     }
-    load_bank_part(snd, D_0044E900, 0x4C);
-    load_bank_part(snd, D_0044E910, 0x50);
-    load_bank_part(snd, D_0044E930, 0x58);
+    load_bank_part(snd, str_SYSTEM_TITLE_HD, 0x4C);
+    load_bank_part(snd, str_SYSTEM_TITLE_SDT, 0x50);
+    load_bank_part(snd, str_SYSTEM_TITLE_BD, 0x58);
     {
         VObject *s = gSound;
 
@@ -1075,13 +1075,13 @@ SceneTitle *SceneTitle_dtor(SceneTitle *t, s32 flags) {
     return t;
 }
 
-extern const char *D_003B0050[7];   /* "SYSTEM\\PLAY_DEMO_1.SFD" .. _7 */
+extern const char *pstr_SYSTEM_PLAY_DEMO_0_SFD[7];   /* "SYSTEM\\PLAY_DEMO_1.SFD" .. _7 */
 void SceneTitle_StateDemo(SceneTitle *t);
 void SceneTitle_StateDemoFade(SceneTitle *t);
 
 /* state: the next of the seven gameplay demos */
 void SceneTitle_StateDemoStart(SceneTitle *t) {
-    title_movie_start(t, D_003B0050[t->demo]);
+    title_movie_start(t, pstr_SYSTEM_PLAY_DEMO_0_SFD[t->demo]);
     t->demo = (u8)(t->demo + 1) % 7;
     ptmf_set_fn(&t->base.state, SceneTitle_StateDemo);
 }

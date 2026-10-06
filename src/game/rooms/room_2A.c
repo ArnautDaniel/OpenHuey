@@ -115,25 +115,25 @@ s32 Room2A_Cmd00(void *self, void *a1, u8 *cmd) {
 
     switch (cmd[3]) {
     case 0:
-        o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00405618);
+        o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_kibako);
         if (o != NULL) {
             AT(o, 0x28, f32) = AT(o, 0x28, f32) + 0x1.99999ap-2f /* 0.4 */;
         }
         break;
     case 1:
-        o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_0040561C);
+        o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_a_koushi);
         if (o != NULL) {
             AT(o, 0x14, f32) = AT(o, 0x14, f32) - 0x1.aceeap-6f /* 1.5 degrees */;
         }
         break;
     case 2:
-        o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_0040561C);
+        o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_a_koushi);
         if (o != NULL) {
             AT(o, 0x14, f32) = AT(o, 0x14, f32) + 0x1.1df46ap-7f /* 0.5 degrees */;
         }
         break;
     case 3:
-        o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_0040561C);
+        o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_a_koushi);
         if (o != NULL) {
             AT(o, 0x14, f32) = AT(o, 0x14, f32) - 0x1.1df46ap-7f;
         }

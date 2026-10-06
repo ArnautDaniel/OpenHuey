@@ -8,7 +8,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room4E_vtable[];
-extern const char *D_0040B508;
+extern const char *pstr_Curtain_2;
 extern void *Room4EEffect_vtable[];
 extern u8 Room4E_EnterScript_data[];
 extern u8 Room4E_CharEnterScript_data[];
@@ -83,7 +83,7 @@ s32 Room4E_Cmd02(void) {
 
 /* 0x002B3B70 */
 s32 Room4E_Cmd01(void *self, void *a1, u8 *cmd) {
-    return var0_anim(cmd, D_0040B508);
+    return var0_anim(cmd, pstr_Curtain_2);
 }
 
 /* room 0x4E (D_0040B4D8): a lit quad at x -44 .. -36, z 60, from 54 to 71 */

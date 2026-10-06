@@ -35,7 +35,7 @@ static const char sSlots12[] = "1,2";
 #define MSG_NO_DATA 0x16
 #define MSG_LOADED 0x17
 
-extern u8 D_00463A50[];
+extern u8 str_BASLUS_21075HG[];
 void *SaveIcon_Data(void);
 
 static inline void sys_copy(SysData *d, const SysData *s) {
@@ -233,7 +233,7 @@ BootCard *BootCard_ctor(BootCard *b) {
 
 /* 0x0037E3F0 */
 void *SaveIcon_Data(void) {
-    return D_00463A50;
+    return str_BASLUS_21075HG;
 }
 
 /* destructor */
@@ -667,9 +667,9 @@ void SaveScreen_Load(BootCard *b) {
 extern u32 D_0047ABF8;                    /* written over a header's sum while its save is written */
 extern s32 D_0047B264;                    /* the last check's status */
 extern s32 D_0047B268;                    /* the empty saves written so far */
-extern const char D_0045D210[];           /* "%d" */
-extern const char D_0045D220[], D_0045D230[];   /* "SUBSCR\\ICON.SYS", "SUBSCR\\ICON00.ICO" */
-extern const char D_0045D248[], D_0045D258[];   /* the card's "icon.sys", "icon00.ico" */
+extern const char str_N_2[];           /* "%d" */
+extern const char str_SUBSCR_ICON_SYS[], str_SUBSCR_ICON00_ICO[];   /* "SUBSCR\\ICON.SYS", "SUBSCR\\ICON00.ICO" */
+extern const char str_icon_sys[], str_icon00_ico[];   /* the card's "icon.sys", "icon00.ico" */
 
 #define MEMCARD_CREATE(mc, port, name, buf, size) \
     VCALL(mc, 0x10, void (*)(MemCard *, s32, const char *, void *, s32))(mc, port, name, buf, size)
@@ -794,15 +794,15 @@ void BootCard_StateSave(BootCard *b) {
 
         AT(gSystemData, 0xC, u8) = 0;
         b->port = 0;
-        VCALL(ld, 0x34, void (*)(VObject *, const char *, void *))(ld, D_0045D220, b->buf0);
-        VCALL(ld, 0x34, void (*)(VObject *, const char *, void *))(ld, D_0045D230, b->buf1);
+        VCALL(ld, 0x34, void (*)(VObject *, const char *, void *))(ld, str_SUBSCR_ICON_SYS, b->buf0);
+        VCALL(ld, 0x34, void (*)(VObject *, const char *, void *))(ld, str_SUBSCR_ICON00_ICO, b->buf1);
         b->state++;
     }
         /* fall through */
     case 1:
         b->cursor = 0;
         D_0047B268 = 0;
-        Msg_PrintfParam(&b->task, 1, D_0045D210, 0xC5);
+        Msg_PrintfParam(&b->task, 1, str_N_2, 0xC5);
         if (b->hidden != 0) {
             Task_OpenAt(&b->task, 0x3E, (u8)b->hidden);
             b->state = 50;
@@ -814,7 +814,7 @@ void BootCard_StateSave(BootCard *b) {
     case 2:
         if (gMenuPressed & MENU_CONFIRM) {
             MEMCARD_CHECK(mc, b->port);
-            Msg_PrintfParam(&b->task, 0, D_0045D210, b->port + 1);
+            Msg_PrintfParam(&b->task, 0, str_N_2, b->port + 1);
             Task_OpenAt(&b->task, 0x13, (u8)b->hidden);
             b->state++;
             Sound_PlaySE(SE_DECIDE);
@@ -962,7 +962,7 @@ void BootCard_StateSave(BootCard *b) {
                           SAVE_SIZE);
             D_0047B268++;
         } else {
-            MEMCARD_CREATE(mc, b->port, D_0045D258, b->buf1, 0x1CF58);
+            MEMCARD_CREATE(mc, b->port, str_icon00_ico, b->buf1, 0x1CF58);
             b->state++;
         }
         break;
@@ -972,7 +972,7 @@ void BootCard_StateSave(BootCard *b) {
             break;
         }
         if (st == 0) {
-            MEMCARD_CREATE(mc, b->port, D_0045D248, b->buf0, 0x3C4);
+            MEMCARD_CREATE(mc, b->port, str_icon_sys, b->buf0, 0x3C4);
             b->state++;
         } else {
             Task_OpenAt(&b->task, 0x34, (u8)b->hidden);
@@ -1148,7 +1148,7 @@ void BootCard_StateSave(BootCard *b) {
             break;
         }
         MEMCARD_CHECK(mc, b->port);
-        Msg_PrintfParam(&b->task, 0, D_0045D210, b->port + 1);
+        Msg_PrintfParam(&b->task, 0, str_N_2, b->port + 1);
         Task_OpenAt(&b->task, 0x13, (u8)b->hidden);
         b->state = 3;
         break;

@@ -10,7 +10,7 @@ extern void *RoomBase_vtable[];
 extern void *RoomE6_vtable[];
 extern u8 RoomE6_Phase2Script_data[], RoomE6_ActionScripts[], RoomE6_ObjectNames[];
 extern char D_0047B328[];
-extern const char D_00463A18[];
+extern const char str_59_59_17[];
 
 extern u8 RoomE6_EnterScript_data[];
 extern u8 RoomE6_CharEnterScript_data[];
@@ -76,7 +76,7 @@ s32 RoomE6_Command(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* 0x0037A450 */
-s32 RoomE6_Cmd01(void) { return clock_draw(D_0047B328, D_00463A18); }
+s32 RoomE6_Cmd01(void) { return clock_draw(D_0047B328, str_59_59_17); }
 
 /* the room object named by RoomE6_ObjectNames[0]: +0x24 -25.3, +0x34 0 */
 /* 0x0037A5A0 */

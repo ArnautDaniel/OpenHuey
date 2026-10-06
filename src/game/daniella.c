@@ -26,9 +26,9 @@ extern u8 D_003D73B0[];
 void *Daniella_MotionFiles(void);
 
 extern u32 D_0043DC50[];
-extern u8 D_0043B6A0[], D_0043B660[];
-extern u8 D_0043C260[], D_0043C348[], D_0043C2D0[], D_0043C210[], D_0043C338[], D_0043C2B0[];
-extern u8 D_0043CC20[], D_0043CD08[], D_0043CC90[], D_0043CBD0[], D_0043CCF8[], D_0043CC70[];
+extern u8 pstr_O_DNL_DNL_001_PCK_2[], pstr_O_DNL_DNL_001_PCK[];
+extern u8 D_0043C260[], str_Z_11[], D_0043C2D0[], D_0043C210[], str_Z_10[], D_0043C2B0[];
+extern u8 D_0043CC20[], D_0043CD08[], D_0043CC90[], D_0043CBD0[], str_Z_12[], D_0043CC70[];
 extern u8 D_0043CD80[], D_0043CD40[];
 void Kind34_SetRage(u8 *p, s32 alt);
 f32 Kind34_ThreatAmount(void);
@@ -57,7 +57,7 @@ s32 Kind36_AttackAnimA(void);
 extern void *Kind36_vtable[];
 void Kind36_FilesLoaded(Pursuer *p);
 
-extern u8 D_0043DC10[], D_0043DBD0[];
+extern u8 pstr_O_DNL_DNL_001_PCK_4[], pstr_O_DNL_DNL_001_PCK_3[];
 f32 Kind36_FrightSeen(void);
 f32 Kind36_ReachHewie(void);
 void *Kind36_ModelFiles(void);
@@ -321,13 +321,13 @@ void Daniella_BonePositions(Pursuer *p, s32 *e, f32 *a, f32 *b) {
 
 extern u8 D_003D77B0[], D_003D7810[], D_003D7880[], D_003D78B0[], D_003D78E0[], D_003D7940[],
     D_003D7970[], D_003D79C0[], D_003D7A20[], D_003D7A50[], D_003D7A70[], D_003D7AA0[],
-    D_003D7AC0[], D_003D7AF0[], D_003D7B10[], D_003D7B40[], D_003D7B50[];
+    D_003D7AC0[], D_003D7AF0[], str_t_3[], D_003D7B40[], str_r_2[];
 extern u8 D_003D7B60[], D_003D7BA0[], D_003D7BE0[], D_003D7C10[], D_003D7C40[], D_003D7C80[],
     D_003D7CC0[], D_003D7D00[], D_003D7D40[], D_003D7D60[], D_003D7D80[], D_003D7DA8[],
     D_003D7DC0[], D_003D7DF0[], D_003D7E10[], D_003D7E40[], D_003D7E50[];
 extern u8 D_003D7FB0[], D_003D8020[], D_003D8080[], D_003D80D0[], D_003D8100[], D_003D8160[],
     D_003D8190[], D_003D81F0[], D_003D8250[], D_003D8280[], D_003D82A0[], D_003D82D0[],
-    D_003D8300[], D_003D8330[], D_003D8360[], D_003D8390[], D_003D83A0[];
+    D_003D8300[], D_003D8330[], str_t_4[], str_r_3[], str_r_4[];
 extern u8 D_003D83B0[], D_003D8410[], D_003D8470[], D_003D84D0[], D_003D8500[], D_003D8560[],
     D_003D85B0[], D_003D8610[], D_003D8670[], D_003D86A0[], D_003D86C0[], D_003D86F0[],
     D_003D8720[], D_003D8748[], D_003D8760[], D_003D8790[], D_003D87A0[];
@@ -337,7 +337,7 @@ static u8 *const sAttackTables[2][2][17] = {
     {
         { D_003D77B0, D_003D7880, D_003D7810, D_003D78B0, D_003D78E0, D_003D7940, D_003D7970,
           D_003D79C0, D_003D7A20, D_003D7A50, D_003D7A70, D_003D7AA0, D_003D7AC0, D_003D7AF0,
-          D_003D7B40, D_003D7B50, D_003D7B10 },
+          D_003D7B40, str_r_2, str_t_3 },
         { D_003D7B60, D_003D7BE0, D_003D7BA0, D_003D7C10, D_003D7C40, D_003D7C80, D_003D7CC0,
           D_003D7D00, D_003D7D40, D_003D7D60, D_003D7D80, D_003D7DA8, D_003D7DC0, D_003D7DF0,
           D_003D7E40, D_003D7E50, D_003D7E10 },
@@ -345,7 +345,7 @@ static u8 *const sAttackTables[2][2][17] = {
     {
         { D_003D7FB0, D_003D8080, D_003D8020, D_003D80D0, D_003D8100, D_003D8160, D_003D8190,
           D_003D81F0, D_003D8250, D_003D8280, D_003D82A0, D_003D82D0, D_003D8300, D_003D8330,
-          D_003D8390, D_003D83A0, D_003D8360 },
+          str_r_3, str_r_4, str_t_4 },
         { D_003D83B0, D_003D8470, D_003D8410, D_003D84D0, D_003D8500, D_003D8560, D_003D85B0,
           D_003D8610, D_003D8670, D_003D86A0, D_003D86C0, D_003D86F0, D_003D8720, D_003D8748,
           D_003D8790, D_003D87A0, D_003D8760 },
@@ -361,7 +361,7 @@ void Daniella_AttackTable(Pursuer *p, s8 situation) {
     PU(p, 0x1718, u8 *) = sAttackTables[alt][mode2][(u32)situation < 17 ? situation : 0];
 }
 
-extern u8 D_003D7E60[], D_003D7EB0[], D_003D7F00[], D_003D7F20[], D_003D7F88[], D_003D7F98[];
+extern u8 D_003D7E60[], D_003D7EB0[], D_003D7F00[], D_003D7F20[], str_Z_3[], str_Z_4[];
 extern u8 D_003D87B0[], D_003D8800[], D_003D8850[], D_003D8870[], D_003D88D8[], D_003D88E8[];
 
 /* vtable +0x31C: mode 2 (+0x16B8) on or off, with its hold-off (+0x1730), +0x1740 and cry
@@ -383,12 +383,12 @@ void Daniella_SetRage(Pursuer *p, s32 on) {
     } else if (on) {
         PU(p, 0x16B8, s32) = 2;
         PU(p, 0x1730, u8 *) = D_003D7EB0;
-        PU(p, 0x1748, u8 *) = D_003D7F98;
+        PU(p, 0x1748, u8 *) = str_Z_4;
         PU(p, 0x1740, u8 *) = D_003D7F20;
     } else {
         PU(p, 0x16B8, s32) = 0;
         PU(p, 0x1730, u8 *) = D_003D7E60;
-        PU(p, 0x1748, u8 *) = D_003D7F88;
+        PU(p, 0x1748, u8 *) = str_Z_3;
         PU(p, 0x1740, u8 *) = D_003D7F00;
     }
 }
@@ -451,12 +451,12 @@ void Daniella_Update(Pursuer *p) {
     Stalker_ThinkEnd(p);
 }
 
-extern u8 D_003D7330[], D_003D7350[], D_003D7370[], D_003D7390[];
+extern u8 D_003D7330[], pstr_O_DNL_DNL_200_PCK[], D_003D7370[], pstr_O_DNL_DNL_200_PCK_2[];
 
 /* her model files (Pursuer_ModelFiles for kind 3) */
 /* 0x0020D620 */
 u8 *Daniella_ModelFileTable(Pursuer *p) {
-    return (AT(gProgress, 0x30, u32) & 0x8000) ? D_003D7390 : D_003D7350;
+    return (AT(gProgress, 0x30, u32) & 0x8000) ? pstr_O_DNL_DNL_200_PCK_2 : pstr_O_DNL_DNL_200_PCK;
 }
 
 /* vtable +0xF8: her model files in slot 2 */
@@ -495,7 +495,7 @@ void Daniella_Setup(Pursuer *p) {
         PU(p, 0x1730, u8 *) = D_003D7E60;
         PU(p, 0x1740, u8 *) = D_003D7F00;
         PU(p, 0x173C, u8 *) = D_003D7F40;
-        PU(p, 0x1748, u8 *) = D_003D7F88;
+        PU(p, 0x1748, u8 *) = str_Z_3;
         PU(p, 0x16DC, s32) = 200;
         PU(p, 0x16E8, f32) = 10.0f;
         PU(p, 0x16D4, s32) = 450;
@@ -725,7 +725,7 @@ void Kind36_Update(Pursuer *p) {
 
 /* 0x003495F0 */
 void *Kind36_ModelFiles(void) {
-    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043DC10 : D_0043DBD0;
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? pstr_O_DNL_DNL_001_PCK_4 : pstr_O_DNL_DNL_001_PCK_3;
 }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
@@ -969,13 +969,13 @@ void Kind36_BonePositions(Pursuer *p, s32 *e, f32 *a, f32 *b) {
 
 extern u8 D_0043BAC0[], D_0043BB30[], D_0043BBA0[], D_0043BC00[], D_0043BC30[], D_0043BC90[],
     D_0043BCD0[], D_0043BD30[], D_0043BD90[], D_0043BDC0[], D_0043BDF0[], D_0043BE40[],
-    D_0043BE60[], D_0043BE90[], D_0043BEC0[], D_0043BEF0[], D_0043BF00[], D_0043BF10[],
+    D_0043BE60[], D_0043BE90[], str_t_17[], str_r_10[], str_r_11[], D_0043BF10[],
     D_0043BF50[], D_0043BF90[], D_0043BFC0[], D_0043BFF0[], D_0043C030[], D_0043C070[],
     D_0043C0B0[], D_0043C0F0[], D_0043C110[], D_0043C130[], D_0043C158[], D_0043C170[],
     D_0043C1A0[], D_0043C1C0[], D_0043C1F0[], D_0043C200[], D_0043C360[], D_0043C3D0[],
     D_0043C440[], D_0043C4A0[], D_0043C4D0[], D_0043C530[], D_0043C560[], D_0043C5D0[],
     D_0043C630[], D_0043C660[], D_0043C690[], D_0043C6E0[], D_0043C710[], D_0043C740[],
-    D_0043C770[], D_0043C7A0[], D_0043C7B0[], D_0043C7D0[], D_0043C830[], D_0043C890[],
+    str_t_18[], D_0043C7A0[], D_0043C7B0[], D_0043C7D0[], D_0043C830[], D_0043C890[],
     D_0043C8F0[], D_0043C920[], D_0043C980[], D_0043C9D0[], D_0043CA30[], D_0043CA90[],
     D_0043CAC0[], D_0043CAE0[], D_0043CB10[], D_0043CB40[], D_0043CB68[], D_0043CB80[],
     D_0043CBB0[], D_0043CBC0[];
@@ -985,7 +985,7 @@ static u8 *const sAttackTables1[2][2][17] = {
     {
         { D_0043BAC0, D_0043BBA0, D_0043BB30, D_0043BC00, D_0043BC30, D_0043BC90, D_0043BCD0,
           D_0043BD30, D_0043BD90, D_0043BDC0, D_0043BDF0, D_0043BE40, D_0043BE60, D_0043BE90,
-          D_0043BEF0, D_0043BF00, D_0043BEC0 },
+          str_r_10, str_r_11, str_t_17 },
         { D_0043BF10, D_0043BF90, D_0043BF50, D_0043BFC0, D_0043BFF0, D_0043C030, D_0043C070,
           D_0043C0B0, D_0043C0F0, D_0043C110, D_0043C130, D_0043C158, D_0043C170, D_0043C1A0,
           D_0043C1F0, D_0043C200, D_0043C1C0 },
@@ -993,7 +993,7 @@ static u8 *const sAttackTables1[2][2][17] = {
     {
         { D_0043C360, D_0043C440, D_0043C3D0, D_0043C4A0, D_0043C4D0, D_0043C530, D_0043C560,
           D_0043C5D0, D_0043C630, D_0043C660, D_0043C690, D_0043C6E0, D_0043C710, D_0043C740,
-          D_0043C7A0, D_0043C7B0, D_0043C770 },
+          D_0043C7A0, D_0043C7B0, str_t_18 },
         { D_0043C7D0, D_0043C890, D_0043C830, D_0043C8F0, D_0043C920, D_0043C980, D_0043C9D0,
           D_0043CA30, D_0043CA90, D_0043CAC0, D_0043CAE0, D_0043CB10, D_0043CB40, D_0043CB68,
           D_0043CBB0, D_0043CBC0, D_0043CB80 },
@@ -1046,19 +1046,19 @@ void Kind34_SetRage(u8 *p, s32 alt) {
         } else {
             *(s32 *)(p + 0x16B8) = 0;
             *(void **)(p + 0x1730) = D_0043CBD0;
-            *(void **)(p + 0x1748) = D_0043CCF8;
+            *(void **)(p + 0x1748) = str_Z_12;
             *(void **)(p + 0x1740) = D_0043CC70;
         }
     } else {
         if (alt) {
             *(s32 *)(p + 0x16B8) = 2;
             *(void **)(p + 0x1730) = D_0043C260;
-            *(void **)(p + 0x1748) = D_0043C348;
+            *(void **)(p + 0x1748) = str_Z_11;
             *(void **)(p + 0x1740) = D_0043C2D0;
         } else {
             *(s32 *)(p + 0x16B8) = 0;
             *(void **)(p + 0x1730) = D_0043C210;
-            *(void **)(p + 0x1748) = D_0043C338;
+            *(void **)(p + 0x1748) = str_Z_10;
             *(void **)(p + 0x1740) = D_0043C2B0;
         }
     }
@@ -1100,12 +1100,12 @@ void Kind34_Activate(Pursuer *p) {
 
 /* 0x003472D0 */
 void *Kind34_ModelFiles(void) {
-    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043B6A0 : D_0043B660;
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? pstr_O_DNL_DNL_001_PCK_2 : pstr_O_DNL_DNL_001_PCK;
 }
 
 extern u8 D_0043B700[], D_0043B840[], D_0043B860[], D_0043BA40[], D_0043BA70[], D_0043C210[],
-    D_0043C2B0[], D_0043C2F0[], D_0043C338[], D_0043CBD0[], D_0043CC70[], D_0043CCB0[],
-    D_0043CCF8[], D_0047AED8[];
+    D_0043C2B0[], D_0043C2F0[], str_Z_10[], D_0043CBD0[], D_0043CC70[], D_0043CCB0[],
+    str_Z_12[], D_0047AED8[];
 
 /* the first: vtable +0xF4: setup over the Pursuer's (Pursuer_Setup) */
 /* 0x00347310 */
@@ -1119,7 +1119,7 @@ void Kind34_Setup(Pursuer *p) {
         PU(p, 0x1730, u8 *) = D_0043CBD0;
         PU(p, 0x1740, u8 *) = D_0043CC70;
         PU(p, 0x173C, u8 *) = D_0043CCB0;
-        PU(p, 0x1748, u8 *) = D_0043CCF8;
+        PU(p, 0x1748, u8 *) = str_Z_12;
         PU(p, 0x16DC, s32) = 65;              /* Hewie bite tolerance */
         PU(p, 0x16E8, f32) = 50.0f;
         PU(p, 0x16D4, s32) = 360;
@@ -1133,7 +1133,7 @@ void Kind34_Setup(Pursuer *p) {
         PU(p, 0x1730, u8 *) = D_0043C210;
         PU(p, 0x1740, u8 *) = D_0043C2B0;
         PU(p, 0x173C, u8 *) = D_0043C2F0;
-        PU(p, 0x1748, u8 *) = D_0043C338;
+        PU(p, 0x1748, u8 *) = str_Z_10;
         PU(p, 0x16DC, s32) = 200;
         PU(p, 0x16E8, f32) = 25.0f;
         PU(p, 0x16D4, s32) = 300;
@@ -1162,19 +1162,19 @@ void Kind34_Setup(Pursuer *p) {
 
 extern u8 D_0043D180[], D_0043D200[], D_0043D270[], D_0043D2D0[], D_0043D310[], D_0043D370[],
     D_0043D3C0[], D_0043D420[], D_0043D480[], D_0043D4B0[], D_0043D4D0[], D_0043D510[],
-    D_0043D530[], D_0043D560[], D_0043D590[], D_0043D5C0[], D_0043D5D0[], D_0043D6B0[],
+    D_0043D530[], D_0043D560[], str_t_19[], str_r_12[], str_r_13[], D_0043D6B0[],
     D_0043D710[], D_0043D770[], D_0043D7E0[], D_0043D820[], D_0043D880[], D_0043D8D0[],
     D_0043D930[], D_0043D990[], D_0043D9C0[], D_0043D9E0[], D_0043DA10[], D_0043DA30[],
-    D_0043DA60[], D_0043DA90[], D_0043DAC0[], D_0043DAD0[];
+    D_0043DA60[], str_t_20[], str_r_14[], str_r_15[];
 
 /* the second's attack tables; the second set when gProgress+0x30 bit 0x8000 */
 static u8 *const sAttackTables2[2][17] = {
     { D_0043D180, D_0043D270, D_0043D200, D_0043D2D0, D_0043D310, D_0043D370, D_0043D3C0,
       D_0043D420, D_0043D480, D_0043D4B0, D_0043D4D0, D_0043D510, D_0043D530, D_0043D560,
-      D_0043D5C0, D_0043D5D0, D_0043D590 },
+      str_r_12, str_r_13, str_t_19 },
     { D_0043D6B0, D_0043D770, D_0043D710, D_0043D7E0, D_0043D820, D_0043D880, D_0043D8D0,
       D_0043D930, D_0043D990, D_0043D9C0, D_0043D9E0, D_0043DA10, D_0043DA30, D_0043DA60,
-      D_0043DAC0, D_0043DAD0, D_0043DA90 },
+      str_r_14, str_r_15, str_t_20 },
 };
 
 /* the second: vtable +0x130 */
@@ -1304,19 +1304,19 @@ void Kind36_ActionOffsets(void *self, s32 i, f32 *out) {
 
 extern u8 D_0043E010[], D_0043E090[], D_0043E100[], D_0043E160[], D_0043E1A0[], D_0043E200[],
     D_0043E250[], D_0043E2B0[], D_0043E310[], D_0043E340[], D_0043E360[], D_0043E3A0[],
-    D_0043E3C0[], D_0043E3F0[], D_0043E420[], D_0043E450[], D_0043E460[], D_0043E540[],
+    D_0043E3C0[], D_0043E3F0[], str_t_21[], str_r_16[], str_r_17[], D_0043E540[],
     D_0043E5C0[], D_0043E630[], D_0043E690[], D_0043E6D0[], D_0043E730[], D_0043E770[],
     D_0043E7D0[], D_0043E830[], D_0043E860[], D_0043E880[], D_0043E8B0[], D_0043E8E0[],
-    D_0043E910[], D_0043E940[], D_0043E970[], D_0043E980[];
+    D_0043E910[], str_t_22[], str_r_18[], str_r_19[];
 
 /* the third's attack tables */
 static u8 *const sAttackTables3[2][17] = {
     { D_0043E010, D_0043E100, D_0043E090, D_0043E160, D_0043E1A0, D_0043E200, D_0043E250,
       D_0043E2B0, D_0043E310, D_0043E340, D_0043E360, D_0043E3A0, D_0043E3C0, D_0043E3F0,
-      D_0043E450, D_0043E460, D_0043E420 },
+      str_r_16, str_r_17, str_t_21 },
     { D_0043E540, D_0043E630, D_0043E5C0, D_0043E690, D_0043E6D0, D_0043E730, D_0043E770,
       D_0043E7D0, D_0043E830, D_0043E860, D_0043E880, D_0043E8B0, D_0043E8E0, D_0043E910,
-      D_0043E970, D_0043E980, D_0043E940 },
+      str_r_18, str_r_19, str_t_22 },
 };
 
 /* the third: vtable +0x130 */
@@ -1353,7 +1353,7 @@ f32 Kind36_ReachHewie(void) {
 }
 
 extern u8 D_0043DC70[], D_0043DDB0[], D_0043DF90[], D_0043DFC0[], D_0043E470[], D_0043E4C0[],
-    D_0043E4E0[], D_0043E528[], D_0043E990[], D_0043E9E0[], D_0043EA00[], D_0043EA48[],
+    D_0043E4E0[], str_x_2[], D_0043E990[], D_0043E9E0[], D_0043EA00[], str_x_3[],
     D_0047AEE8[];
 
 /* the third: vtable +0xF4: setup over the Pursuer's */
@@ -1366,7 +1366,7 @@ void Kind36_Setup(Pursuer *p) {
         PU(p, 0x1730, u8 *) = D_0043E990;
         PU(p, 0x1740, u8 *) = D_0043E9E0;
         PU(p, 0x173C, u8 *) = D_0043EA00;
-        PU(p, 0x1748, u8 *) = D_0043EA48;
+        PU(p, 0x1748, u8 *) = str_x_3;
         PU(p, 0x16DC, s32) = 65;              /* Hewie bite tolerance */
         PU(p, 0x16E8, f32) = 10.0f;
         PU(p, 0x16D4, s32) = 600;
@@ -1380,7 +1380,7 @@ void Kind36_Setup(Pursuer *p) {
         PU(p, 0x1730, u8 *) = D_0043E470;
         PU(p, 0x1740, u8 *) = D_0043E4C0;
         PU(p, 0x173C, u8 *) = D_0043E4E0;
-        PU(p, 0x1748, u8 *) = D_0043E528;
+        PU(p, 0x1748, u8 *) = str_x_2;
         PU(p, 0x16DC, s32) = 120;
         PU(p, 0x16E8, f32) = 25.0f;
         PU(p, 0x16D4, s32) = 300;

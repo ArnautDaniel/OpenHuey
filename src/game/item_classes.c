@@ -30,26 +30,26 @@ s32 PoolEntry_PartnerCheck(void *o);
 extern void *PoolEntry_vtable[];            /* a pool entry */
 extern void *Item12_vtable[], *Item13_vtable[], *Item3E_vtable[], *PlainItem_vtable[], *ItemClassC920_vtable[], *Item70_vtable[], *Item71_vtable[], *Item72_vtable[], *Item73_vtable[], *Item74_vtable[], *Item75_vtable[], *ItemClassCB50_vtable[], *Item80_vtable[], *Item81_vtable[], *Item82_vtable[], *Item83_vtable[], *ItemClassCCE0_vtable[], *Item86_vtable[], *Item87_vtable[], *Item88_vtable[], *Item89_vtable[], *ItemClassCE70_vtable[], *Item8A_vtable[], *Item8B_vtable[], *Item8C_vtable[], *Item8D_vtable[], *ItemClassD000_vtable[], *Item90_vtable[], *Item91_vtable[], *Item92_vtable[], *Item93_vtable[], *Item94_vtable[], *Item95_vtable[], *Item97_vtable[], *Item98_vtable[], *Item9B_vtable[], *ItemClassD320_vtable[], *ItemA4_vtable[], *ItemA5_vtable[], *ItemA6_vtable[], *ItemA7_vtable[], *ItemA8_vtable[], *ItemA9_vtable[], *ItemAA_vtable[], *ItemAB_vtable[], *ItemAC_vtable[], *ItemClassD640_vtable[], *Item40_vtable[], *Item41_vtable[], *Item00_vtable[], *Item01_vtable[], *Item02_vtable[], *Item03_vtable[], *Item04_vtable[], *Item05_vtable[], *ItemClassF430_vtable[], *ItemA0_vtable[], *ItemA1_vtable[], *Item06_vtable[], *Item07_vtable[], *Item08_vtable[], *Item09_vtable[], *Item0A_vtable[], *Item0B_vtable[], *Item0C_vtable[], *Item0D_vtable[], *Item0E_vtable[], *Item0F_vtable[], *Item10_vtable[], *Item11_vtable[], *Item14_vtable[], *Item42_vtable[], *Item43_vtable[], *Item44_vtable[], *Item45_vtable[], *Item46_vtable[], *Item47_vtable[], *Item48_vtable[], *Item49_vtable[], *Item4A_vtable[], *Item4B_vtable[], *Item4C_vtable[], *Item60_vtable[], *Item61_vtable[], *Item62_vtable[], *Item63_vtable[], *Item64_vtable[], *Item65_vtable[], *Item66_vtable[], *Item15_vtable[], *Item16_vtable[], *Item17_vtable[], *ItemA2_vtable[], *ItemClass6B00_vtable[], *ItemA3_vtable[], *Item18_vtable[], *Item19_vtable[], *Item1A_vtable[], *Item1B_vtable[], *Item1C_vtable[], *Item1D_vtable[], *Item1E_vtable[], *Item1F_vtable[], *Item20_vtable[], *Item21_vtable[], *Item22_vtable[], *Item23_vtable[], *Item24_vtable[], *Item25_vtable[], *Item26_vtable[], *Item27_vtable[], *Item28_vtable[], *Item29_vtable[];
 
-extern char D_0045A7E0[]; /* file name */
-extern char D_0045A800[]; /* file name */
-extern char D_0045A820[]; /* file name */
-extern char D_0045A840[]; /* file name */
-extern char D_0045A860[]; /* file name */
-extern char D_0045A880[]; /* file name */
-extern char D_0045A9C0[]; /* file name */
-extern char D_0045A9E0[]; /* file name */
-extern char D_0045AA00[]; /* file name */
-extern char D_0045AA20[]; /* file name */
-extern char D_0045AB60[]; /* file name */
-extern char D_0045AB80[]; /* file name */
-extern char D_0045ABA0[]; /* file name */
-extern char D_0045ABC0[]; /* file name */
-extern char D_0045ABE0[]; /* file name */
-extern char D_0045AC00[]; /* file name */
-extern char D_0045AC20[]; /* file name */
-extern char D_0045AC40[]; /* file name */
-extern char D_0045AC60[]; /* file name */
-extern char D_0045AC80[]; /* file name */
+extern char str_ITEM01_ITEM_022_TEX[]; /* file name */
+extern char str_ITEM01_ITEM_021_TEX[]; /* file name */
+extern char str_ITEM01_ITEM_020_TEX[]; /* file name */
+extern char str_ITEM01_ITEM_01F_TEX[]; /* file name */
+extern char str_ITEM01_ITEM_01E_TEX[]; /* file name */
+extern char str_ITEM01_ITEM_01D_TEX[]; /* file name */
+extern char str_ITEM04_ITEM_061_TEX[]; /* file name */
+extern char str_ITEM04_ITEM_060_TEX[]; /* file name */
+extern char str_ITEM03_ITEM_05F_TEX[]; /* file name */
+extern char str_ITEM03_ITEM_05E_TEX[]; /* file name */
+extern char str_ITEM03_ITEM_05D_TEX[]; /* file name */
+extern char str_ITEM03_ITEM_05C_TEX[]; /* file name */
+extern char str_ITEM03_ITEM_05B_TEX[]; /* file name */
+extern char str_ITEM03_ITEM_05A_TEX[]; /* file name */
+extern char str_ITEM03_ITEM_059_TEX[]; /* file name */
+extern char str_ITEM03_ITEM_058_TEX[]; /* file name */
+extern char str_ITEM03_ITEM_057_TEX[]; /* file name */
+extern char str_ITEM03_ITEM_056_TEX[]; /* file name */
+extern char str_ITEM01_ITEM_02E_TEX[]; /* file name */
+extern char str_ITEM01_ITEM_02D_TEX[]; /* file name */
 typedef s32 (*LoaderLoadFn)(void *loader, const char *name, void *dest, s32 flags, s32 arg);
 
 s32 func_00264C10(void *self, void *dest);
@@ -73,7 +73,7 @@ s32 Item8B_LoadPicture(void *self, void *dest);
 s32 Item8C_LoadPicture(void *self, void *dest);
 s32 Item8D_LoadPicture(void *self, void *dest);
 
-extern u8 D_0045D4A0[], D_0045D4C0[], D_0045D4E0[], D_0045D500[], D_0045D520[], D_0045D540[];
+extern u8 D_0045D4A0[], str_ITEM00_ITEM_001_TEX[], str_ITEM00_ITEM_002_TEX[], str_ITEM00_ITEM_003_TEX[], str_ITEM00_ITEM_004_TEX[], str_ITEM00_ITEM_005_TEX[];
 extern u8 D_00413550[];
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -99,7 +99,7 @@ void Debilitas3_ActionOffsets(void *self, s32 id, u32 *out);
 void Debilitas3_ExitDone(u8 *p);
 
 extern void *Pursuer_vtable[], *NPC_vtable[], *Character_vtable[], *Actor_vtable[];
-extern const char *const D_0042C358;
+extern const char *const pstr_O_DNL_DNL_202_TEX;
 extern void *Debilitas3_vtable[];
 extern void *Kind18_vtable[];
 extern const PTMF Pursuer_StateRunThenNext_ptmf12;
@@ -119,9 +119,9 @@ void Debilitas3_WalkToExit(void);
 void Debilitas3_OnToNextExit(void);
 s32 Debilitas3_PickDestination(void);
 
-extern char D_0045D890[];
-extern char D_0045D9E0[];
-extern char D_0045DA00[];
+extern char str_ITEM00_ITEM_008_TEX[];
+extern char str_ITEM01_ITEM_02F_TEX[];
+extern char str_ITEM01_ITEM_030_TEX[];
 /* gFileLoader->vfunc_0xC(name, dest, 0x4000000, 0): start loading a file */
 #define LOAD_002D1360(name, dest) \
     VCALL(gFileLoader, 0xC, s32 (*)(void *, const char *, void *, s32, s32))(gFileLoader, name, dest, 0x4000000, 0)
@@ -130,11 +130,11 @@ s32 func_002D3A20(void *self, void *dest);
 s32 ItemA0_LoadPicture(void *self, void *dest);
 s32 ItemA1_LoadPicture(void *self, void *dest);
 
-extern u8 D_0045EC50[];
-extern u8 D_0045EC70[];
-extern u8 D_0045EC90[];
-extern u8 D_0045ECB0[];
-extern u8 D_0045ECD0[];
+extern u8 str_ITEM02_ITEM_03F_TEX[];
+extern u8 str_ITEM02_ITEM_040_TEX[];
+extern u8 str_ITEM02_ITEM_041_TEX[];
+extern u8 str_ITEM02_ITEM_042_TEX[];
+extern u8 str_ITEM02_ITEM_043_TEX[];
 /* gFileLoader vtable +0xC: start loading file `name` into `dest` (flags 0x4000000) */
 #define FILE_LOAD_ASYNC(name, dest) \
     VCALL(gFileLoader, 0xC, s32 (*)(void *, void *, void *, u32, s32))(gFileLoader, name, dest, 0x4000000, 0)
@@ -145,13 +145,13 @@ s32 Item0A_LoadPicture(void *self, void *dest);
 s32 Item0B_LoadPicture(void *self, void *dest);
 s32 Item0C_LoadPicture(void *self, void *dest);
 
-extern u8 D_00429D70[];
+extern u8 pstr_O_FIW_FIW_200_PCK[];
 extern u8 D_00429DB0[];
-extern u8 D_0045FE20[];
-extern u8 D_0045FE40[];
-extern u8 D_0045FE60[];
-extern u8 D_0045FE80[];
-extern u8 D_0045FEA0[];
+extern u8 str_ITEM02_ITEM_039_TEX[];
+extern u8 str_ITEM02_ITEM_031_TEX[];
+extern u8 str_ITEM02_ITEM_03A_TEX[];
+extern u8 str_ITEM02_ITEM_046_TEX[];
+extern u8 str_ITEM02_ITEM_03B_TEX[];
 s32 Item0D_LoadPicture(void *self, void *dest);
 s32 Item0E_LoadPicture(void *self, void *dest);
 s32 Item0F_LoadPicture(void *self, void *dest);
@@ -167,10 +167,10 @@ extern u8 D_0042CB60[];
 extern u8 D_0042CC00[];
 extern u8 D_0042D0C0[];
 extern void *D_0042E310[];
-extern void *D_0042E3F0[];
+extern void *pstr_EV0023[];
 extern u8 D_0042E410[];
 extern u8 D_0042E4C0[];
-extern u8 D_00460BE0[];
+extern u8 str_ITEM01_ITEM_02C_TEX[];
 extern u8 D_01991600[];
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))
@@ -191,40 +191,40 @@ extern u8 D_01991600[];
 
 #define CUR_ROOM() VCALL(gProgress, 0xC, s32 (*)(void *))(gProgress)
 
-extern u8 D_00460F00[];
-extern u8 D_00460F20[];
-extern u8 D_00460F40[];
-extern u8 D_00460F60[];
-extern u8 D_00460F80[];
-extern u8 D_00460FA0[];
-extern u8 D_00460FC0[];
-extern u8 D_00460FE0[];
-extern u8 D_00461000[];
+extern u8 str_ITEM00_ITEM_00B_TEX[];
+extern u8 str_ITEM00_ITEM_00C_TEX[];
+extern u8 str_ITEM00_ITEM_00D_TEX[];
+extern u8 str_ITEM00_ITEM_00E_TEX[];
+extern u8 str_ITEM00_ITEM_00F_TEX[];
+extern u8 str_ITEM00_ITEM_010_TEX[];
+extern u8 str_ITEM00_ITEM_011_TEX[];
+extern u8 str_ITEM00_ITEM_012_TEX[];
+extern u8 str_ITEM00_ITEM_013_TEX[];
 extern u8 D_00461020[];
-extern u8 D_00461040[];
-extern u8 D_00461060[];
-extern u8 D_00461080[];
-extern u8 D_004610A0[];
-extern u8 D_004610C0[];
-extern u8 D_004610E0[];
-extern u8 D_00461100[];
-extern u8 D_00461120[];
-extern u8 D_004613C0[];
+extern u8 str_ITEM00_ITEM_015_TEX[];
+extern u8 str_ITEM00_ITEM_016_TEX[];
+extern u8 str_ITEM00_ITEM_017_TEX[];
+extern u8 str_ITEM01_ITEM_018_TEX[];
+extern u8 str_ITEM01_ITEM_019_TEX[];
+extern u8 str_ITEM01_ITEM_01A_TEX[];
+extern u8 str_ITEM01_ITEM_01B_TEX[];
+extern u8 str_ITEM01_ITEM_01C_TEX[];
+extern u8 str_ITEM02_ITEM_03C_TEX[];
 extern u8 D_0042F470[];
 extern u8 D_0042F4B0[];
 extern u8 D_004308B0[];
 extern u8 D_004308F0[];
 extern u8 D_00430940[];
 extern u8 D_00430980[];
-extern u8 D_004613E0[];
-extern u8 D_00461400[];
-extern u8 D_00461580[];
-extern u8 D_00461660[];
-extern u8 D_004616C0[];
-extern u8 D_004616E0[];
-extern u8 D_00461700[];
-extern u8 D_00461720[];
-extern u8 D_00461740[];
+extern u8 str_ITEM02_ITEM_03E_TEX[];
+extern u8 str_ITEM02_ITEM_03D_TEX[];
+extern u8 str_ITEM02_ITEM_044_TEX[];
+extern u8 str_ITEM02_ITEM_045_TEX[];
+extern u8 str_ITEM02_ITEM_033_TEX[];
+extern u8 str_ITEM02_ITEM_034_TEX[];
+extern u8 str_ITEM02_ITEM_035_TEX[];
+extern u8 str_ITEM02_ITEM_036_TEX[];
+extern u8 str_ITEM02_ITEM_037_TEX[];
 s32 Item16_LoadPicture(void *self, void *dest);
 s32 Item17_LoadPicture(void *self, void *dest);
 void *func_00339B20(void);
@@ -242,19 +242,19 @@ s32 Item1A_LoadPicture(void *self, void *dest);
 s32 Item1B_LoadPicture(void *self, void *dest);
 s32 Item1C_LoadPicture(void *self, void *dest);
 
-extern u8 D_00461CC0[];
+extern u8 str_ITEM02_ITEM_038_TEX[];
 s32 Item1D_LoadPicture(void *self, void *dest);
 
-extern u8 D_00462DF0[];
-extern u8 D_00462E10[];
-extern u8 D_00462E30[];
-extern u8 D_00462E50[];
-extern u8 D_00462E70[];
-extern u8 D_00462E90[];
-extern u8 D_00462EB0[];
-extern u8 D_00462ED0[];
-extern u8 D_00462EF0[];
-extern u8 D_00462F10[];
+extern u8 str_ITEM02_ITEM_047_TEX[];
+extern u8 str_ITEM03_ITEM_048_TEX[];
+extern u8 str_ITEM03_ITEM_049_TEX[];
+extern u8 str_ITEM03_ITEM_04B_TEX[];
+extern u8 str_ITEM03_ITEM_04C_TEX[];
+extern u8 str_ITEM03_ITEM_04D_TEX[];
+extern u8 str_ITEM03_ITEM_04E_TEX[];
+extern u8 str_ITEM03_ITEM_04F_TEX[];
+extern u8 str_ITEM03_ITEM_050_TEX[];
+extern u8 str_ITEM03_ITEM_051_TEX[];
 s32 Item1E_LoadPicture(void *self, void *dest);
 s32 Item1E_Use(void);
 s32 Item1F_LoadPicture(void *self, void *dest);
@@ -270,7 +270,7 @@ s32 Item26_LoadPicture(void *self, void *dest);
 s32 Item27_LoadPicture(void *self, void *dest);
 s32 Item27_Use(void);
 
-extern char D_00462F30[];
+extern char str_ITEM03_ITEM_052_TEX[];
 extern u8 D_004434D0[], D_00443510[];
 s32 Item28_LoadPicture(void *self, void *dest);
 void *func_00352030(void);
@@ -1542,126 +1542,126 @@ void *Item70_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item70_vtabl
 
 /* 0x00264FE0 */
 s32 Item70_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A880, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM01_ITEM_01D_TEX, dest, 0x4000000, 0);
 }
 /* 0x00265060 */
 void *Item71_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item71_vtable, ItemClassCB50_vtable); }
 
 /* 0x002650D0 */
 s32 Item71_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A860, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM01_ITEM_01E_TEX, dest, 0x4000000, 0);
 }
 /* 0x00265110 */
 void *Item72_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item72_vtable, ItemClassCB50_vtable); }
 
 /* 0x00265180 */
 s32 Item72_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A840, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM01_ITEM_01F_TEX, dest, 0x4000000, 0);
 }
 /* 0x002651C0 */
 void *Item73_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item73_vtable, ItemClassCB50_vtable); }
 
 /* 0x00265230 */
 s32 Item73_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A820, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM01_ITEM_020_TEX, dest, 0x4000000, 0);
 }
 /* 0x00265270 */
 void *Item74_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item74_vtable, ItemClassCB50_vtable); }
 
 /* 0x002652E0 */
 s32 Item74_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A800, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM01_ITEM_021_TEX, dest, 0x4000000, 0);
 }
 /* 0x00265320 */
 void *Item75_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item75_vtable, ItemClassCB50_vtable); }
 
 /* 0x00265390 */
 s32 Item75_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A7E0, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM01_ITEM_022_TEX, dest, 0x4000000, 0);
 }
 /* 0x002653D0 */
 void *Item80_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item80_vtable, ItemClassCCE0_vtable); }
 
 /* 0x00265440 */
 s32 Item80_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AC40, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM03_ITEM_056_TEX, dest, 0x4000000, 0);
 }
 /* 0x002654B0 */
 void *Item81_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item81_vtable, ItemClassCCE0_vtable); }
 
 /* 0x00265520 */
 s32 Item81_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AC20, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM03_ITEM_057_TEX, dest, 0x4000000, 0);
 }
 /* 0x00265560 */
 void *Item82_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item82_vtable, ItemClassCCE0_vtable); }
 
 /* 0x002655D0 */
 s32 Item82_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AC00, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM03_ITEM_058_TEX, dest, 0x4000000, 0);
 }
 /* 0x00265610 */
 void *Item83_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item83_vtable, ItemClassCCE0_vtable); }
 
 /* 0x00265680 */
 s32 Item83_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045ABE0, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM03_ITEM_059_TEX, dest, 0x4000000, 0);
 }
 /* 0x002656C0 */
 void *Item86_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item86_vtable, ItemClassCE70_vtable); }
 
 /* 0x00265730 */
 s32 Item86_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045ABC0, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM03_ITEM_05A_TEX, dest, 0x4000000, 0);
 }
 /* 0x002657A0 */
 void *Item87_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item87_vtable, ItemClassCE70_vtable); }
 
 /* 0x00265810 */
 s32 Item87_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045ABA0, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM03_ITEM_05B_TEX, dest, 0x4000000, 0);
 }
 /* 0x00265850 */
 void *Item88_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item88_vtable, ItemClassCE70_vtable); }
 
 /* 0x002658C0 */
 s32 Item88_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AB80, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM03_ITEM_05C_TEX, dest, 0x4000000, 0);
 }
 /* 0x00265900 */
 void *Item89_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item89_vtable, ItemClassCE70_vtable); }
 
 /* 0x00265970 */
 s32 Item89_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AB60, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM03_ITEM_05D_TEX, dest, 0x4000000, 0);
 }
 /* 0x002659B0 */
 void *Item8A_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item8A_vtable, ItemClassD000_vtable); }
 
 /* 0x00265A20 */
 s32 Item8A_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AA20, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM03_ITEM_05E_TEX, dest, 0x4000000, 0);
 }
 /* 0x00265A90 */
 void *Item8B_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item8B_vtable, ItemClassD000_vtable); }
 
 /* 0x00265B00 */
 s32 Item8B_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AA00, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM03_ITEM_05F_TEX, dest, 0x4000000, 0);
 }
 /* 0x00265B40 */
 void *Item8C_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item8C_vtable, ItemClassD000_vtable); }
 
 /* 0x00265BB0 */
 s32 Item8C_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A9E0, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM04_ITEM_060_TEX, dest, 0x4000000, 0);
 }
 /* 0x00265BF0 */
 void *Item8D_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item8D_vtable, ItemClassD000_vtable); }
 
 /* 0x00265C60 */
 s32 Item8D_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A9C0, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM04_ITEM_061_TEX, dest, 0x4000000, 0);
 }
 /* 0x00265CA0 */
 void *Item90_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item90_vtable, ItemClassD320_vtable); }
@@ -1714,7 +1714,7 @@ void *Item01_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item01_vtabl
 void *Item02_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item02_vtable, PlainItem_vtable); }
 
 /* 0x002CD000 */
-s32 Item02_LoadPicture(void *self, s32 a) { return LOAD(D_0045D4E0, a); }
+s32 Item02_LoadPicture(void *self, s32 a) { return LOAD(str_ITEM00_ITEM_002_TEX, a); }
 
 /* use: on the altar */
 /* 0x002CD030 */
@@ -1725,7 +1725,7 @@ s32 Item02_Use(void *o) {
 void *Item03_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item03_vtable, PlainItem_vtable); }
 
 /* 0x002CD1A0 */
-s32 Item03_LoadPicture(void *self, s32 a) { return LOAD(D_0045D500, a); }
+s32 Item03_LoadPicture(void *self, s32 a) { return LOAD(str_ITEM00_ITEM_003_TEX, a); }
 
 /* use: at spot 5 of room 0x22: flag 0x18, event 5 */
 /* 0x002CD1D0 */
@@ -1743,7 +1743,7 @@ s32 Item03_Use(void) {
 void *Item04_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item04_vtable, PlainItem_vtable); }
 
 /* 0x002CD310 */
-s32 Item04_LoadPicture(void *self, s32 a) { return LOAD(D_0045D520, a); }
+s32 Item04_LoadPicture(void *self, s32 a) { return LOAD(str_ITEM00_ITEM_004_TEX, a); }
 
 /* use: at spot 0xC of room 4: event 4, flag 0x18 */
 /* 0x002CD340 */
@@ -1761,7 +1761,7 @@ s32 Item04_Use(void) {
 void *Item05_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item05_vtable, PlainItem_vtable); }
 
 /* 0x002CD490 */
-s32 Item05_LoadPicture(void *self, s32 a) { return LOAD(D_0045D540, a); }
+s32 Item05_LoadPicture(void *self, s32 a) { return LOAD(str_ITEM00_ITEM_005_TEX, a); }
 
 /* 0x002CD4C0 */
 s32 Item05_Use(void) {
@@ -1834,12 +1834,12 @@ s32 Debilitas3_PickDestination(void) {
 void *ItemA0_dtor(void *o, s32 flags) { return item_dtor3(o, flags, ItemA0_vtable, ItemClassD640_vtable); }
 
 /* 0x002D7980 */
-s32 ItemA0_LoadPicture(void *self, void *dest) { return LOAD_002D1360(D_0045D9E0, dest); }
+s32 ItemA0_LoadPicture(void *self, void *dest) { return LOAD_002D1360(str_ITEM01_ITEM_02F_TEX, dest); }
 /* 0x002D79C0 */
 void *ItemA1_dtor(void *o, s32 flags) { return item_dtor3(o, flags, ItemA1_vtable, ItemClassD640_vtable); }
 
 /* 0x002D7A30 */
-s32 ItemA1_LoadPicture(void *self, void *dest) { return LOAD_002D1360(D_0045DA00, dest); }
+s32 ItemA1_LoadPicture(void *self, void *dest) { return LOAD_002D1360(str_ITEM01_ITEM_030_TEX, dest); }
 /* 0x002EEB60 */
 void *Item06_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item06_vtable, PlainItem_vtable); }
 /* 0x00303C30 */
@@ -1849,77 +1849,77 @@ void *Item08_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item08_vtabl
 
 /* 0x00306B90 */
 s32 Item08_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_0045EC50, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_03F_TEX, dest);
 }
 /* 0x00307130 */
 void *Item09_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item09_vtable, PlainItem_vtable); }
 
 /* 0x003071A0 */
 s32 Item09_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_0045EC70, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_040_TEX, dest);
 }
 /* 0x00307740 */
 void *Item0A_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item0A_vtable, PlainItem_vtable); }
 
 /* 0x003077B0 */
 s32 Item0A_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_0045EC90, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_041_TEX, dest);
 }
 /* 0x00307D50 */
 void *Item0B_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item0B_vtable, PlainItem_vtable); }
 
 /* 0x00307DC0 */
 s32 Item0B_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_0045ECB0, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_042_TEX, dest);
 }
 /* 0x00308360 */
 void *Item0C_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item0C_vtable, PlainItem_vtable); }
 
 /* 0x003083D0 */
 s32 Item0C_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_0045ECD0, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_043_TEX, dest);
 }
 /* 0x0031CAA0 */
 void *Item0D_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item0D_vtable, PlainItem_vtable); }
 
 /* 0x0031CB10 */
 s32 Item0D_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_0045FE20, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_039_TEX, dest);
 }
 /* 0x0031CD70 */
 void *Item0E_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item0E_vtable, PlainItem_vtable); }
 
 /* 0x0031CDE0 */
 s32 Item0E_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_0045FE40, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_031_TEX, dest);
 }
 /* 0x0031CFB0 */
 void *Item0F_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item0F_vtable, PlainItem_vtable); }
 
 /* 0x0031D020 */
 s32 Item0F_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_0045FE60, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_03A_TEX, dest);
 }
 /* 0x0031D110 */
 void *Item10_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item10_vtable, PlainItem_vtable); }
 
 /* 0x0031D180 */
 s32 Item10_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_0045FE80, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_046_TEX, dest);
 }
 /* 0x0031D590 */
 void *Item11_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item11_vtable, PlainItem_vtable); }
 
 /* 0x0031D600 */
 s32 Item11_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_0045FEA0, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_03B_TEX, dest);
 }
 /* 0x0032CC90 */
 void *Item14_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item14_vtable, PlainItem_vtable); }
 
 /* 0x0032CD00 */
 s32 Item14_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00460BE0, dest);
+    return FILE_LOAD_ASYNC(str_ITEM01_ITEM_02C_TEX, dest);
 }
 /* 0x00331450 */
 void *Item42_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item42_vtable, ItemClassC920_vtable); }
@@ -2037,35 +2037,35 @@ void *Item15_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item15_vtabl
 
 /* 0x00338F70 */
 s32 Item15_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_004613C0, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_03C_TEX, dest);
 }
 /* 0x003392B0 */
 void *Item16_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item16_vtable, PlainItem_vtable); }
 
 /* 0x00339320 */
 s32 Item16_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_004613E0, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_03E_TEX, dest);
 }
 /* 0x00339660 */
 void *Item17_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item17_vtable, PlainItem_vtable); }
 
 /* 0x003396D0 */
 s32 Item17_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00461400, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_03D_TEX, dest);
 }
 /* 0x0033AE70 */
 void *ItemA2_dtor(void *o, s32 flags) { return item_dtor3(o, flags, ItemA2_vtable, ItemClassD640_vtable); }
 
 /* 0x0033AEE0 */
 s32 ItemA2_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00461580, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_044_TEX, dest);
 }
 /* 0x0033BD50 */
 void *ItemA3_dtor(void *o, s32 flags) { return item_dtor3(o, flags, ItemA3_vtable, ItemClassD640_vtable); }
 
 /* 0x0033BDC0 */
 s32 ItemA3_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00461660, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_045_TEX, dest);
 }
 /* 0x0033E850 */
 void *Item18_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item18_vtable, PlainItem_vtable); }
@@ -2084,7 +2084,7 @@ void *Item1E_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item1E_vtabl
 
 /* 0x00351120 */
 s32 Item1E_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462DF0, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, str_ITEM02_ITEM_047_TEX, dest, 0x4000000, 0);
 }
 
 /* 0x00351150 */
@@ -2097,7 +2097,7 @@ void *Item1F_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item1F_vtabl
 
 /* 0x003511E0 */
 s32 Item1F_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462E10, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, str_ITEM03_ITEM_048_TEX, dest, 0x4000000, 0);
 }
 
 /* 0x00351210 */
@@ -2110,7 +2110,7 @@ void *Item20_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item20_vtabl
 
 /* 0x003512A0 */
 s32 Item20_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462E30, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, str_ITEM03_ITEM_049_TEX, dest, 0x4000000, 0);
 }
 
 /* 0x003512D0 */
@@ -2123,49 +2123,49 @@ void *Item21_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item21_vtabl
 
 /* 0x00351360 */
 s32 Item21_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462E50, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, str_ITEM03_ITEM_04B_TEX, dest, 0x4000000, 0);
 }
 /* 0x003514B0 */
 void *Item22_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item22_vtable, PlainItem_vtable); }
 
 /* 0x00351520 */
 s32 Item22_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462E70, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, str_ITEM03_ITEM_04C_TEX, dest, 0x4000000, 0);
 }
 /* 0x00351670 */
 void *Item23_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item23_vtable, PlainItem_vtable); }
 
 /* 0x003516E0 */
 s32 Item23_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462E90, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, str_ITEM03_ITEM_04D_TEX, dest, 0x4000000, 0);
 }
 /* 0x003517D0 */
 void *Item24_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item24_vtable, PlainItem_vtable); }
 
 /* 0x00351840 */
 s32 Item24_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462EB0, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, str_ITEM03_ITEM_04E_TEX, dest, 0x4000000, 0);
 }
 /* 0x00351880 */
 void *Item25_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item25_vtable, PlainItem_vtable); }
 
 /* 0x003518F0 */
 s32 Item25_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462ED0, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, str_ITEM03_ITEM_04F_TEX, dest, 0x4000000, 0);
 }
 /* 0x00351AA0 */
 void *Item26_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item26_vtable, PlainItem_vtable); }
 
 /* 0x00351B10 */
 s32 Item26_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462EF0, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, str_ITEM03_ITEM_050_TEX, dest, 0x4000000, 0);
 }
 /* 0x00351C20 */
 void *Item27_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item27_vtable, PlainItem_vtable); }
 
 /* 0x00351C90 */
 s32 Item27_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462F10, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, str_ITEM03_ITEM_051_TEX, dest, 0x4000000, 0);
 }
 
 /* 0x00351CC0 */
@@ -2176,12 +2176,12 @@ s32 Item27_Use(void) {
 /* 0x00351CE0 */
 void *Item28_dtor(void *o, s32 flags) { return item_dtor3(o, flags, Item28_vtable, PlainItem_vtable); }
 
-/* Starts loading a file named D_00462F30 into dest. */
+/* Starts loading a file named str_ITEM03_ITEM_052_TEX into dest. */
 /* 0x00351D50 */
 s32 Item28_LoadPicture(void *self, void *dest) {
     void *loader = gFileLoader;
 
-    return VCALL(loader, 0xC, s32 (*)(void *, const char *, void *, s32, s32))(loader, D_00462F30, dest,
+    return VCALL(loader, 0xC, s32 (*)(void *, const char *, void *, s32, s32))(loader, str_ITEM03_ITEM_052_TEX, dest,
                                                                               0x4000000, 0);
 }
 /* 0x0035BB20 */
@@ -2629,7 +2629,7 @@ s32 Item01_IsCounted(void *o) {
 }
 
 /* 0x002CCDB0 */
-s32 Item01_LoadPicture(void *self, s32 a) { return LOAD(D_0045D4C0, a); }
+s32 Item01_LoadPicture(void *self, s32 a) { return LOAD(str_ITEM00_ITEM_001_TEX, a); }
 
 /* use: unless Progress +0x1C bit 0x80, at spot 9 of room 0x1C: event 0, flag 0x18 */
 /* 0x002CCDE0 */
@@ -2702,7 +2702,7 @@ s32 Item42_SortKey(void *o) {
 
 /* 0x003314E0 */
 s32 Item42_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00460F00, dest);
+    return FILE_LOAD_ASYNC(str_ITEM00_ITEM_00B_TEX, dest);
 }
 
 /* 0x00331510 */
@@ -2719,7 +2719,7 @@ s32 Item43_SortKey(void *o) {
 
 /* 0x00331680 */
 s32 Item43_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00460F20, dest);
+    return FILE_LOAD_ASYNC(str_ITEM00_ITEM_00C_TEX, dest);
 }
 
 /* 0x003316B0 */
@@ -2736,7 +2736,7 @@ s32 Item44_SortKey(void *o) {
 
 /* 0x00331820 */
 s32 Item44_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00460F40, dest);
+    return FILE_LOAD_ASYNC(str_ITEM00_ITEM_00D_TEX, dest);
 }
 
 /* 0x00331850 */
@@ -2753,7 +2753,7 @@ s32 Item45_SortKey(void *o) {
 
 /* 0x00331940 */
 s32 Item45_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00460F60, dest);
+    return FILE_LOAD_ASYNC(str_ITEM00_ITEM_00E_TEX, dest);
 }
 
 /* 0x00331970 */
@@ -2770,7 +2770,7 @@ s32 Item46_SortKey(void *o) {
 
 /* 0x00331A60 */
 s32 Item46_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00460F80, dest);
+    return FILE_LOAD_ASYNC(str_ITEM00_ITEM_00F_TEX, dest);
 }
 
 /* use: composure +25, she drinks (event 0x8D) */
@@ -2789,7 +2789,7 @@ s32 Item47_SortKey(void *o) {
 
 /* 0x00331BF0 */
 s32 Item47_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00460FA0, dest);
+    return FILE_LOAD_ASYNC(str_ITEM00_ITEM_010_TEX, dest);
 }
 
 /* use: composure +100 */
@@ -2808,7 +2808,7 @@ s32 Item48_SortKey(void *o) {
 
 /* 0x00331D70 */
 s32 Item48_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00460FC0, dest);
+    return FILE_LOAD_ASYNC(str_ITEM00_ITEM_011_TEX, dest);
 }
 
 /* use: Progress +0x9E8 2.0 for 1800 frames (+0x9EC) */
@@ -2828,7 +2828,7 @@ s32 Item49_SortKey(void *o) {
 
 /* 0x00331EB0 */
 s32 Item49_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00460FE0, dest);
+    return FILE_LOAD_ASYNC(str_ITEM00_ITEM_012_TEX, dest);
 }
 
 /* use: unless it still runs, Progress +0x9F4 / +0x9F8 1800 frames */
@@ -2851,7 +2851,7 @@ s32 Item4A_SortKey(void *o) {
 
 /* 0x00332000 */
 s32 Item4A_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00461000, dest);
+    return FILE_LOAD_ASYNC(str_ITEM00_ITEM_013_TEX, dest);
 }
 
 /* use: composure -50, Progress +0x7D8 +50 */
@@ -2895,7 +2895,7 @@ s32 Item4C_SortKey(void *o) {
 
 /* 0x00332370 */
 s32 Item4C_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00461040, dest);
+    return FILE_LOAD_ASYNC(str_ITEM00_ITEM_015_TEX, dest);
 }
 
 /* 0x003323A0 */
@@ -2930,7 +2930,7 @@ s32 ItemClass6B00_IsCounted(void *o) {
 
 /* 0x00332470 */
 s32 Item60_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00461060, dest);
+    return FILE_LOAD_ASYNC(str_ITEM00_ITEM_016_TEX, dest);
 }
 
 /* use: Hewie heals 20; already full, he trusts her a little less */
@@ -2953,7 +2953,7 @@ s32 Item61_SortKey(void *o) {
 
 /* 0x003326A0 */
 s32 Item61_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00461080, dest);
+    return FILE_LOAD_ASYNC(str_ITEM00_ITEM_017_TEX, dest);
 }
 
 /* use: Hewie heals 100; trust -1 */
@@ -2975,7 +2975,7 @@ s32 Item62_SortKey(void *o) {
 
 /* 0x003328B0 */
 s32 Item62_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_004610A0, dest);
+    return FILE_LOAD_ASYNC(str_ITEM01_ITEM_018_TEX, dest);
 }
 
 /* use: Hewie's +0x94 (50); trust +3 */
@@ -2997,7 +2997,7 @@ s32 Item63_SortKey(void *o) {
 
 /* 0x00332AA0 */
 s32 Item63_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_004610C0, dest);
+    return FILE_LOAD_ASYNC(str_ITEM01_ITEM_019_TEX, dest);
 }
 
 /* use: as Item60_Use */
@@ -3020,7 +3020,7 @@ s32 Item64_SortKey(void *o) {
 
 /* 0x00332CE0 */
 s32 Item64_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_004610E0, dest);
+    return FILE_LOAD_ASYNC(str_ITEM01_ITEM_01A_TEX, dest);
 }
 
 /* use: as Item61_Use */
@@ -3042,7 +3042,7 @@ s32 Item65_SortKey(void *o) {
 
 /* 0x00332F00 */
 s32 Item65_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00461100, dest);
+    return FILE_LOAD_ASYNC(str_ITEM01_ITEM_01B_TEX, dest);
 }
 
 /* use: Hewie waits (Hewie_SetMode mode 3, 450 frames; Progress +0xA10 too); trust +20 */
@@ -3065,7 +3065,7 @@ s32 Item66_SortKey(void *o) {
 
 /* 0x003330F0 */
 s32 Item66_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00461120, dest);
+    return FILE_LOAD_ASYNC(str_ITEM01_ITEM_01C_TEX, dest);
 }
 
 /* use: Hewie's health 1 (back on his feet); trust +3 */
@@ -3159,7 +3159,7 @@ s32 Item18_Actions(void *o) {
 
 /* 0x0033E8D0 */
 s32 Item18_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_004616C0, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_033_TEX, dest);
 }
 
 /* +0x14 (Item19_vtable) */
@@ -3170,7 +3170,7 @@ s32 Item19_Actions(void *o) {
 
 /* 0x0033EA40 */
 s32 Item19_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_004616E0, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_034_TEX, dest);
 }
 
 /* +0x14 (Item1A_vtable) */
@@ -3181,7 +3181,7 @@ s32 Item1A_Actions(void *o) {
 
 /* 0x0033EBB0 */
 s32 Item1A_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00461700, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_035_TEX, dest);
 }
 
 /* +0x14 (Item1B_vtable) */
@@ -3192,7 +3192,7 @@ s32 Item1B_Actions(void *o) {
 
 /* 0x0033ED20 */
 s32 Item1B_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00461720, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_036_TEX, dest);
 }
 
 /* +0x14 (Item1C_vtable) */
@@ -3203,7 +3203,7 @@ s32 Item1C_Actions(void *o) {
 
 /* 0x0033EE90 */
 s32 Item1C_LoadPicture(void *self, void *dest) {
-    return FILE_LOAD_ASYNC(D_00461740, dest);
+    return FILE_LOAD_ASYNC(str_ITEM02_ITEM_037_TEX, dest);
 }
 
 /* +0x14 (Item1D_vtable) */
@@ -3214,7 +3214,7 @@ s32 Item1D_Actions(void *o) {
 
 /* 0x003445A0 */
 s32 Item1D_LoadPicture(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00461CC0, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, str_ITEM02_ITEM_038_TEX, dest, 0x4000000, 0);
 }
 
 /* +0x3C (Item24_vtable) */
@@ -3234,7 +3234,7 @@ s32 Item29_Use(void *o) {
 #define ITEM_LOAD(name, dst) \
     VCALL(gFileLoader, 0xC, s32 (*)(VObject *, const char *, s32, s32, s32))(gFileLoader, name, dst, 0x4000000, 0)
 
-extern const char D_0045A7C0[], D_0045A8A0[], D_0045A8C0[], D_0045A8E0[], D_0045A900[], D_0045A920[], D_0045A940[], D_0045A960[], D_0045A980[], D_0045A9A0[], D_0045AA40[], D_0045AA60[], D_0045AA80[], D_0045AAA0[], D_0045AAC0[], D_0045AAE0[], D_0045AB00[], D_0045AB20[], D_0045AB40[], D_0045ACA0[], D_0045ACC0[], D_0045E280[], D_0045EA80[], D_00463360[];
+extern const char D_0045A7C0[], D_0045A8A0[], D_0045A8C0[], D_0045A8E0[], D_0045A900[], D_0045A920[], str_ITEM03_ITEM_055_TEX[], str_ITEM03_ITEM_054_TEX[], str_ITEM03_ITEM_053_TEX[], str_ITEM03_ITEM_04A_TEX[], str_ITEM01_ITEM_02A_TEX[], str_ITEM01_ITEM_029_TEX[], str_ITEM01_ITEM_026_TEX[], str_ITEM01_ITEM_028_TEX[], str_ITEM01_ITEM_025_TEX[], str_ITEM01_ITEM_02B_TEX[], str_ITEM01_ITEM_027_TEX[], str_ITEM01_ITEM_024_TEX[], str_ITEM01_ITEM_023_TEX[], str_ITEM00_ITEM_00A_TEX[], str_ITEM00_ITEM_009_TEX[], str_ITEM00_ITEM_006_TEX[], str_ITEM00_ITEM_007_TEX[], str_ITEM04_ITEM_062_TEX[];
 
 /* "ITEM00\ITEM_FFF.TEX" */
 /* 0x0025FF50 */
@@ -3245,79 +3245,79 @@ s32 PoolEntry_LoadPicture(void *o, s32 dst) {
 /* "ITEM01\ITEM_023.TEX" */
 /* 0x00265D10 */
 s32 Item90_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045AB40, dst);
+    return ITEM_LOAD(str_ITEM01_ITEM_023_TEX, dst);
 }
 
 /* "ITEM01\ITEM_024.TEX" */
 /* 0x00265DF0 */
 s32 Item91_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045AB20, dst);
+    return ITEM_LOAD(str_ITEM01_ITEM_024_TEX, dst);
 }
 
 /* "ITEM01\ITEM_027.TEX" */
 /* 0x00265EA0 */
 s32 Item92_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045AB00, dst);
+    return ITEM_LOAD(str_ITEM01_ITEM_027_TEX, dst);
 }
 
 /* "ITEM01\ITEM_02B.TEX" */
 /* 0x00265F50 */
 s32 Item93_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045AAE0, dst);
+    return ITEM_LOAD(str_ITEM01_ITEM_02B_TEX, dst);
 }
 
 /* "ITEM01\ITEM_025.TEX" */
 /* 0x00266000 */
 s32 Item94_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045AAC0, dst);
+    return ITEM_LOAD(str_ITEM01_ITEM_025_TEX, dst);
 }
 
 /* "ITEM01\ITEM_028.TEX" */
 /* 0x002660B0 */
 s32 Item95_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045AAA0, dst);
+    return ITEM_LOAD(str_ITEM01_ITEM_028_TEX, dst);
 }
 
 /* "ITEM01\ITEM_026.TEX" */
 /* 0x00266160 */
 s32 Item97_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045AA80, dst);
+    return ITEM_LOAD(str_ITEM01_ITEM_026_TEX, dst);
 }
 
 /* "ITEM01\ITEM_029.TEX" */
 /* 0x00266210 */
 s32 Item98_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045AA60, dst);
+    return ITEM_LOAD(str_ITEM01_ITEM_029_TEX, dst);
 }
 
 /* "ITEM01\ITEM_02A.TEX" */
 /* 0x002662C0 */
 s32 Item9B_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045AA40, dst);
+    return ITEM_LOAD(str_ITEM01_ITEM_02A_TEX, dst);
 }
 
 /* "ITEM03\ITEM_04A.TEX" */
 /* 0x002663F0 */
 s32 ItemA4_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045A9A0, dst);
+    return ITEM_LOAD(str_ITEM03_ITEM_04A_TEX, dst);
 }
 
 /* "ITEM03\ITEM_053.TEX" */
 /* 0x002664D0 */
 s32 ItemA5_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045A980, dst);
+    return ITEM_LOAD(str_ITEM03_ITEM_053_TEX, dst);
 }
 
 /* "ITEM03\ITEM_054.TEX" */
 /* 0x00266580 */
 s32 ItemA6_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045A960, dst);
+    return ITEM_LOAD(str_ITEM03_ITEM_054_TEX, dst);
 }
 
 /* "ITEM03\ITEM_055.TEX" */
 /* 0x00266630 */
 s32 ItemA7_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045A940, dst);
+    return ITEM_LOAD(str_ITEM03_ITEM_055_TEX, dst);
 }
 
 /* "ITEM00\ITEM_FFF.TEX" */
@@ -3353,31 +3353,31 @@ s32 ItemAC_LoadPicture(void *o, s32 dst) {
 /* "ITEM00\ITEM_00A.TEX" */
 /* 0x00266A50 */
 s32 Item40_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045ACA0, dst);
+    return ITEM_LOAD(str_ITEM00_ITEM_00A_TEX, dst);
 }
 
 /* "ITEM00\ITEM_009.TEX" */
 /* 0x00266BE0 */
 s32 Item41_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045ACC0, dst);
+    return ITEM_LOAD(str_ITEM00_ITEM_009_TEX, dst);
 }
 
 /* "ITEM00\ITEM_006.TEX" */
 /* 0x002EEBD0 */
 s32 Item06_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045E280, dst);
+    return ITEM_LOAD(str_ITEM00_ITEM_006_TEX, dst);
 }
 
 /* "ITEM00\ITEM_007.TEX" */
 /* 0x00303CA0 */
 s32 Item07_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_0045EA80, dst);
+    return ITEM_LOAD(str_ITEM00_ITEM_007_TEX, dst);
 }
 
 /* "ITEM04\ITEM_062.TEX" */
 /* 0x0035BB90 */
 s32 Item29_LoadPicture(void *o, s32 dst) {
-    return ITEM_LOAD(D_00463360, dst);
+    return ITEM_LOAD(str_ITEM04_ITEM_062_TEX, dst);
 }
 
 /* ---- the base pool entry's (an item's) stack ---- */
@@ -3539,7 +3539,7 @@ Character *Kind18_dtor(Character *c, s32 flags) { return creature_dtor(c, flags,
 
 /* 0x0031D800 */
 void *Kind18_ModelFiles(void) {
-    return D_00429D70;
+    return pstr_O_FIW_FIW_200_PCK;
 }
 
 /* 0x0031D810 */
@@ -3807,7 +3807,7 @@ void *func_0032DCB0(void) {
 }
 
 void *func_0032DCC0(void *self, s32 i) {
-    return D_0042E3F0[i];
+    return pstr_EV0023[i];
 }
 
 void func_0032F4E0(u8 *self) {
@@ -3924,7 +3924,7 @@ s32 func_00264A60(void *o) {
 }
 
 s32 func_00264C10(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AC80, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM01_ITEM_02D_TEX, dest, 0x4000000, 0);
 }
 
 /* Item13_vtable */
@@ -3933,7 +3933,7 @@ s32 func_00264CE0(void *o) {
 }
 
 s32 func_00264E90(void *self, void *dest) {
-    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AC60, dest, 0x4000000, 0);
+    return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, str_ITEM01_ITEM_02E_TEX, dest, 0x4000000, 0);
 }
 
 /* Item07_vtable: at open door 1 of room 0x14: event 4, flag 0x18; else on the altar */
@@ -4468,7 +4468,7 @@ s32 func_002D27E0(VObject *it) {
     return 0;
 }
 
-s32 func_002D3A20(void *self, void *dest) { return LOAD_002D1360(D_0045D890, dest); }
+s32 func_002D3A20(void *self, void *dest) { return LOAD_002D1360(str_ITEM00_ITEM_008_TEX, dest); }
 
 #ifdef HG_NATIVE
 #include "gl2d.h"

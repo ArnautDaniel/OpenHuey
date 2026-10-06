@@ -9,7 +9,7 @@ extern void *RoomBase_vtable[];
 extern void *RoomD0_vtable[];
 extern u8 RoomD0_Phase2Script_data[], RoomD0_ActionScripts[];
 extern char D_0047B290[];
-extern const char D_004636D8[];
+extern const char str_59_59[];
 
 extern u8 RoomD0_EnterScript_data[];
 extern u8 RoomD0_CharEnterScript_data[];
@@ -72,7 +72,7 @@ s32 RoomD0_Command(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* 0x0036DB90 */
-s32 RoomD0_ClockDrawSaved(void) { return clock_draw_saved(D_0047B290, D_004636D8); }
+s32 RoomD0_ClockDrawSaved(void) { return clock_draw_saved(D_0047B290, str_59_59); }
 
 /* 0x0036DE60 */
 s32 RoomD0_ClockSave(void) { return clock_save(); }

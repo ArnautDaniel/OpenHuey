@@ -11,7 +11,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room02_vtable[];
-extern const char *D_003F0404;
+extern const char *pstr_ori;
 extern void *OrangeSparks_vtable[];
 extern u8 Room02_EnterScript_data[];
 extern u8 Room02_CharEnterScript_data[];
@@ -127,7 +127,7 @@ s32 Room02_Command(void *self, u32 i, s32 a, s32 b) {
  * 0.2 x strength x sin(phase +0x30, on by 90 degrees) about the rest height */
 /* 0x002A9080 */
 s32 Room02_Cmd03(void *self, void *a1, u8 *cmd) {
-    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003F03FC);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_doramukan);
     f32 t;
 
 #ifdef HG_NATIVE
@@ -203,12 +203,12 @@ s32 Room02_Cmd01(void) {
     return 1;
 }
 
-/* the room object D_003F0404's +0x24 by byte 3: 0 set (37.978 with progress flag 0x12, else
+/* the room object pstr_ori's +0x24 by byte 3: 0 set (37.978 with progress flag 0x12, else
  * 11), 1 up 0.25 to 37.978 (then event +0x5C (2)), 2 up 0.25, else down 0.25 */
 /* 0x002A94C0 */
 s32 Room02_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kTop = {0x4217E979};   /* 37.978 */
-    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003F0404);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_ori);
 
     if (o == NULL) {
         return 1;

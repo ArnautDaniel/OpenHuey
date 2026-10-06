@@ -448,7 +448,7 @@ extern u8 D_003AF780[], D_003AF7C0[], D_003AF800[], D_003AF840[], D_003AF880[], 
     D_003AF9E0[], D_003AFA10[], D_003AFA40[], D_003AFA70[], D_003AFA80[];
 extern u8 D_003AFBA0[], D_003AFBF0[], D_003AFC40[], D_003AFC80[], D_003AFCB0[], D_003AFCF0[],
     D_003AFD10[], D_003AFD50[], D_003AFD80[], D_003AFDC0[], D_003AFDD0[], D_003AFE00[],
-    D_003AFE10[], D_003AFE50[], D_003AFEA0[], D_003AFED0[], D_003AFEE0[];
+    D_003AFE10[], D_003AFE50[], str_t_2[], D_003AFED0[], D_003AFEE0[];
 
 /* his attack tables ({kind, value, chance}, see Pursuer_PickFromTable) for each situation 0..16; the
    second set when gProgress+0x30 bit 0x8000 is set */
@@ -458,7 +458,7 @@ static u8 *const sAttackTables[2][17] = {
       D_003AFA70, D_003AFA80, D_003AFA40 },
     { D_003AFBA0, D_003AFC40, D_003AFBF0, D_003AFC80, D_003AFCB0, D_003AFCF0, D_003AFD10,
       D_003AFD50, D_003AFD80, D_003AFDC0, D_003AFDD0, D_003AFE00, D_003AFE10, D_003AFE50,
-      D_003AFED0, D_003AFEE0, D_003AFEA0 },
+      D_003AFED0, D_003AFEE0, str_t_2 },
 };
 
 /* vtable +0x130: the attack table for a situation (the Pursuer has none) */

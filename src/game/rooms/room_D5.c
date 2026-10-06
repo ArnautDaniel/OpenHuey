@@ -13,7 +13,7 @@ extern s32 Kind26_MoveDone(Character *c);
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 extern s32 D_0047B2C0;
 extern char D_0047B2B8[];
-extern const char D_00463700[];
+extern const char str_59_59_6[];
 
 extern u8 RoomD5_EnterScript_data[];
 extern u8 RoomD5_CharEnterScript_data[];
@@ -82,7 +82,7 @@ s32 RoomD5_Command(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* 0x0036EBE0 */
-s32 RoomD5_Cmd02(void) { return clock_draw(D_0047B2B8, D_00463700); }
+s32 RoomD5_Cmd02(void) { return clock_draw(D_0047B2B8, str_59_59_6); }
 
 /* as Room109_Cmd01 */
 /* 0x0036ED30 */

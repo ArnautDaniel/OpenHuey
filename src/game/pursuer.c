@@ -30,8 +30,8 @@
 #include "msl.h"
 
 extern u8 D_003EC3E0[]; /* table of 28-byte entries */
-extern u8 D_003AF1F0[];
-extern u8 D_003AF230[];
+extern u8 pstr_O_DB0_DB0_200_PCK[];
+extern u8 pstr_O_DB0_DB0_200_PCK_2[];
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
 s32 Character_TimerDown(void *p, s32 n);
@@ -93,19 +93,19 @@ void *Kind21_MotionFiles(void);
 void *func_002ECC90(void);
 void *func_002ECCA0(void);
 
-extern u8 D_00413530[], D_004134F0[], D_00413510[], D_004134D0[];
+extern u8 pstr_O_DB2_DB2_200_PCK_2[], pstr_O_DB2_DB2_200_PCK[], D_00413510[], D_004134D0[];
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
 void *Debilitas3_ModelFiles(void);
 
-extern u8 D_00414820[], D_004147E0[];
+extern u8 pstr_O_RCG_RCG_200_PCK_2[], pstr_O_RCG_RCG_200_PCK[];
 
-extern u8 D_00422380[];
-extern u8 D_004223C0[];
+extern u8 pstr_O_LRM_LRM_200_PCK[];
+extern u8 pstr_O_LRM_LRM_200_PCK_2[];
 #define U32(p, off) (*(u32 *)((u8 *)(p) + (off)))
 
-extern u8 D_00422460[];
-extern u8 D_004224A0[];
+extern u8 pstr_O_LRY_LRY_200_PCK[];
+extern u8 pstr_O_LRY_LRY_200_PCK_2[];
 static inline s32 b5_prog_flag8000(void);
 
 extern u8 D_00429C50[];
@@ -114,8 +114,8 @@ void *Kind16_ModelFiles(void);
 extern u8 D_00429C90[];
 extern u8 D_00429CE0[];
 extern u8 D_00429D20[];
-extern u8 D_0042A2E0[];
-extern u8 D_0042A320[];
+extern u8 pstr_O_RCT_RCT_200_PCK[];
+extern u8 pstr_O_RCT_RCT_200_PCK_2[];
 void *Kind16_MotionFiles(void);
 void *Kind17_ModelFiles(void);
 void *Kind17_MotionFiles(void);
@@ -128,18 +128,18 @@ extern void *Effect79FF0_vtable[];
 void *Obj472F60_dtor(u8 *o, s32 flags);
 void *Effect79FF0_dtor(u8 *o, s32 flags);
 
-extern const char *const D_0042C358;
+extern const char *const pstr_O_DNL_DNL_202_TEX;
 extern const PTMF Pursuer_StateRunThenNext_ptmf16;
-extern u8 D_0042E460[];
-extern u8 D_0042E4A0[];
+extern u8 pstr_O_DB2_DB2_200_PCK_3[];
+extern u8 pstr_O_DB2_DB2_200_PCK_4[];
 static inline s32 b5_prog_flag8000(void);
 
-extern u8 D_0043B6C0[], D_0043B680[];
-extern u8 D_0043CDA0[], D_0043CD60[];
+extern u8 pstr_O_DNL_DNL_200_PCK_4[], pstr_O_DNL_DNL_200_PCK_3[];
+extern u8 pstr_O_DNL_DNL_200_PCK_6[], pstr_O_DNL_DNL_200_PCK_5[];
 
-extern u8 D_0043DC30[], D_0043DBF0[];
+extern u8 pstr_O_DNL_DNL_200_PCK_8[], pstr_O_DNL_DNL_200_PCK_7[];
 
-extern u8 D_00441830[], D_004417F0[];
+extern u8 pstr_O_RCT_RCT_200_PCK_4[], pstr_O_RCT_RCT_200_PCK_3[];
 
 void Effect79FF0_Draw(void);
 
@@ -152,7 +152,7 @@ void *Kind09_MotionFiles(void);
 void *Kind09_ModelFiles(void);
 static inline s32 b5_prog_flag8000(void);
 
-extern u8 D_00429730[];
+extern u8 pstr_O_FIN_FIN_200_PCK[];
 extern u8 D_00429770[];
 void *Kind13_ModelFiles(void);
 void *Kind13_MotionFiles(void);
@@ -1244,7 +1244,7 @@ void Debilitas3_Activate(Pursuer *p) {
 
 /* 0x002CF140 */
 u8 *Debilitas3_ModelFileTable(Pursuer *p) {
-    return (F(gProgress, 0x30, u32) & 0x8000) ? D_00413530 : D_004134F0;
+    return (F(gProgress, 0x30, u32) & 0x8000) ? pstr_O_DB2_DB2_200_PCK_2 : pstr_O_DB2_DB2_200_PCK;
 }
 
 /* 0x002CF180 */
@@ -1254,7 +1254,7 @@ void *Debilitas3_ModelFiles(void) {
 
 /* 0x002DC460 */
 u8 *Riccardo_ModelFileTable(Pursuer *p) {
-    return (F(gProgress, 0x30, u32) & 0x8000) ? D_00414820 : D_004147E0;
+    return (F(gProgress, 0x30, u32) & 0x8000) ? pstr_O_RCG_RCG_200_PCK_2 : pstr_O_RCG_RCG_200_PCK;
 }
 
 /* Moves the floats at +0x854/+0x858 toward (tx, ty) by at most |sx|/|sy|. */
@@ -3823,9 +3823,9 @@ s32 Pursuer_PlaceInRoom(Pursuer *p, s32 room, s32 tri, u32 side) {
     return 0;
 }
 
-extern u8 D_00419DF0[], D_00423B50[], D_00429750[], D_004297E0[], D_00429C70[], D_00429D00[],
-    D_00429D90[], D_0042A110[], D_0042C920[], D_0042C890[], D_0042C3A0[], D_0042C6C0[], D_0042C9B0[],
-    D_0042F490[], D_00430840[], D_004308D0[], D_00430960[], D_00430A30[], D_0043B5D0[], D_004434F0[];
+extern u8 pstr_O_GLM_GLM_200_PCK[], pstr_O_LRF_LRF_200_PCK[], pstr_O_FIN_FIN_200_PCK_2[], pstr_O_CRW_CRW_200_PCK[], D_00429C70[], pstr_O_SGM_SGM_200_PCK[],
+    pstr_O_FIW_FIW_200_PCK_2[], pstr_O_FS0_FS0_200_PCK[], pstr_O_FS1_FS1_200_PCK[], pstr_O_FS2_FS2_200_PCK[], pstr_O_SHT_SHT_200_PCK[], pstr_O_WIR_WIR_200_PCK[], pstr_O_RBT_RBT_200_PCK[],
+    pstr_O_HMA_HMA_200_PCK[], pstr_O_DNT_DNT_200_PCK[], pstr_O_LRC_LRC_200_PCK[], pstr_O_LRH_LRH_200_PCK[], pstr_O_FIM_FIM_200_PCK_2[], pstr_O_HMB_HMB_200_PCK[], pstr_O_HND_HND_200_PCK[];
 
 /* vtable +0xF8: the model files of character id +0x153C (slot 2: vtable +0xF8) */
 /* 0x0029F8C0 */
@@ -3837,35 +3837,35 @@ u8 *Pursuer_ModelFiles(Pursuer *p) {
         case 4: return Riccardo_ModelFileTable(p);
         case 6: return Debilitas2_ModelFileTable(p);
         case 7: return Debilitas3_ModelFileTable(p);
-        case 8: return D_00419DF0;
+        case 8: return pstr_O_GLM_GLM_200_PCK;
         case 9: return Kind09_ModelFileTable(p);
         case 10: return Lorenzo2_ModelFileTable(p);
         case 11: return Lorenzo_ModelFileTable(p);
-        case 12: return D_00423B50;
-        case 13: return D_00429750;
-        case 14: case 15: return D_004297E0;
+        case 12: return pstr_O_LRF_LRF_200_PCK;
+        case 13: return pstr_O_FIN_FIN_200_PCK_2;
+        case 14: case 15: return pstr_O_CRW_CRW_200_PCK;
         case 16: return D_00429C70;
-        case 17: return D_00429D00;
-        case 18: return D_00429D90;
-        case 19: return D_0042A110;
-        case 20: return D_0042C920;
-        case 21: case 22: return D_0042C890;
+        case 17: return pstr_O_SGM_SGM_200_PCK;
+        case 18: return pstr_O_FIW_FIW_200_PCK_2;
+        case 19: return pstr_O_FS0_FS0_200_PCK;
+        case 20: return pstr_O_FS1_FS1_200_PCK;
+        case 21: case 22: return pstr_O_FS2_FS2_200_PCK;
         case 23: return TintStalker_ModelFileTable(p);
-        case 24: return D_0042C3A0;
-        case 25: return D_0042C6C0;
-        case 26: return D_0042C9B0;
+        case 24: return pstr_O_SHT_SHT_200_PCK;
+        case 25: return pstr_O_WIR_WIR_200_PCK;
+        case 26: return pstr_O_RBT_RBT_200_PCK;
         case 27: return Kind27_ModelFileTable(p);
-        case 28: return D_0042F490;
-        case 29: return D_00430840;
-        case 30: return D_004308D0;
-        case 31: return D_00430960;
-        case 32: return D_00430A30;
-        case 33: return D_0043B5D0;
+        case 28: return pstr_O_HMA_HMA_200_PCK;
+        case 29: return pstr_O_DNT_DNT_200_PCK;
+        case 30: return pstr_O_LRC_LRC_200_PCK;
+        case 31: return pstr_O_LRH_LRH_200_PCK;
+        case 32: return pstr_O_FIM_FIM_200_PCK_2;
+        case 33: return pstr_O_HMB_HMB_200_PCK;
         case 34: return Kind34_ModelFileTable(p);
         case 35: return Kind35_ModelFileTable(p);
         case 36: return Kind36_ModelFileTable(p);
         case 37: return Kind37_ModelFileTable(p);
-        case 38: return D_004434F0;
+        case 38: return pstr_O_HND_HND_200_PCK;
         case 39: return Kind39_ModelFileTable(p);
         default: return NULL;
         }
@@ -11196,9 +11196,9 @@ s32 Pursuer_IsBusy(void *p) {
 /* 0x0012BFB0 */
 u8 *Debilitas_ModelFileTable(Pursuer *p) {
     if (FLD(gProgress, 0x30, u32) & 0x8000) {
-        return D_003AF230;
+        return pstr_O_DB0_DB0_200_PCK_2;
     }
-    return D_003AF1F0;
+    return pstr_O_DB0_DB0_200_PCK;
 }
 
 /* ---- the room character of id 8 (vtable 0x46FF80; built by Kind08_ctor): a Pursuer that
@@ -11529,7 +11529,7 @@ s32 Kind19_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 /* 0x00320150 */
 u8 *TintStalker_ModelFileTable(Pursuer *p) {
-    return b5_prog_flag8000() ? D_0042A320 : D_0042A2E0;
+    return b5_prog_flag8000() ? pstr_O_RCT_RCT_200_PCK_2 : pstr_O_RCT_RCT_200_PCK;
 }
 
 /* 0x00321640 */
@@ -11587,7 +11587,7 @@ s32 Kind20_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 /* 0x00331200 */
 u8 *Kind27_ModelFileTable(Pursuer *p) {
-    return b5_prog_flag8000() ? D_0042E4A0 : D_0042E460;
+    return b5_prog_flag8000() ? pstr_O_DB2_DB2_200_PCK_4 : pstr_O_DB2_DB2_200_PCK_3;
 }
 
 /* 0x0033ABA0 */
@@ -11636,17 +11636,17 @@ s32 Kind33_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 /* 0x00347290 */
 u8 *Kind34_ModelFileTable(Pursuer *p) {
-    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043B6C0 : D_0043B680;
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? pstr_O_DNL_DNL_200_PCK_4 : pstr_O_DNL_DNL_200_PCK_3;
 }
 
 /* 0x00348620 */
 u8 *Kind35_ModelFileTable(Pursuer *p) {
-    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043CDA0 : D_0043CD60;
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? pstr_O_DNL_DNL_200_PCK_6 : pstr_O_DNL_DNL_200_PCK_5;
 }
 
 /* 0x003495B0 */
 u8 *Kind36_ModelFileTable(Pursuer *p) {
-    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043DC30 : D_0043DBF0;
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? pstr_O_DNL_DNL_200_PCK_8 : pstr_O_DNL_DNL_200_PCK_7;
 }
 
 /* 0x0034B7B0 */
@@ -11679,7 +11679,7 @@ void Kind37_ActionOffsets(void *self, s32 i, f32 *out) {
 
 /* 0x0034D980 */
 u8 *Kind37_ModelFileTable(Pursuer *p) {
-    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_00441830 : D_004417F0;
+    return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? pstr_O_RCT_RCT_200_PCK_4 : pstr_O_RCT_RCT_200_PCK_3;
 }
 
 /* destructor (vtable Effect79FF0_vtable) */
@@ -12047,7 +12047,7 @@ void Kind09_Update(Pursuer *p) {
 
 /* 0x00309410 */
 u8 *Kind09_ModelFileTable(Pursuer *p) {
-    return b5_prog_flag8000() ? D_004223C0 : D_00422380;
+    return b5_prog_flag8000() ? pstr_O_LRM_LRM_200_PCK_2 : pstr_O_LRM_LRM_200_PCK;
 }
 
 /* 0x00309450 */
@@ -12057,7 +12057,7 @@ void *Kind09_ModelFiles(void) {
 
 /* 0x0030C1B0 */
 u8 *Lorenzo2_ModelFileTable(Pursuer *p) {
-    return b5_prog_flag8000() ? D_004224A0 : D_00422460;
+    return b5_prog_flag8000() ? pstr_O_LRY_LRY_200_PCK_2 : pstr_O_LRY_LRY_200_PCK;
 }
 
 /* 0x003119A0 */
@@ -12065,7 +12065,7 @@ Character *Kind13_dtor(Character *c, s32 flags) { return creature_dtor(c, flags,
 
 /* 0x00311AB0 */
 void *Kind13_ModelFiles(void) {
-    return D_00429730;
+    return pstr_O_FIN_FIN_200_PCK;
 }
 
 /* 0x00311AC0 */

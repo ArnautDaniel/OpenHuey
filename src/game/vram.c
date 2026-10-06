@@ -25,12 +25,12 @@ extern u8 D_003C5D90[];
 extern u8 D_003C6348[];
 extern u8 D_003C6450[];
 extern u8 D_003D5B80[];
-extern u8 D_00451318[];
+extern u8 str_ADXENC_DLL_Ver_1_09_Nov_12_2004[];
 extern u8 D_004555C8[];
-extern u8 D_00455870[];
+extern u8 str_ROFS_Ver_1_76_Build_Sep_3_2004_17_20_10[];
 extern u8 D_00455C38[];
-extern u8 D_00455DD8[];
-extern u8 D_00455E18[];
+extern u8 str_ROCI_Ver_1_15_Build_Sep_3_2004_17_20_13[];
+extern u8 str_RSU_Ver_1_10_Build_Sep_3_2004_17_20_13[];
 extern u8 D_0047E878[];
 void *func_001CEC50(void);
 void *func_001D6E40(void);
@@ -77,7 +77,7 @@ void Vram_Init(u8 *v) {
 
 /* (possibly dead code: nothing in the game references it) */
 void *func_001CEC50(void) {
-    return D_00451318;
+    return str_ADXENC_DLL_Ver_1_09_Nov_12_2004;
 }
 
 void *func_001D6E40(void) {
@@ -104,7 +104,7 @@ void *func_001E61D0(void) {
 }
 
 void *func_001E8138(void) {
-    return D_00455870;
+    return str_ROFS_Ver_1_76_Build_Sep_3_2004_17_20_10;
 }
 
 void *func_001EB650(void) {
@@ -112,7 +112,7 @@ void *func_001EB650(void) {
 }
 
 void *func_001ED190(void) {
-    return D_00455DD8;
+    return str_ROCI_Ver_1_15_Build_Sep_3_2004_17_20_13;
 }
 
 void *func_001ED1D0(void) {
@@ -120,7 +120,7 @@ void *func_001ED1D0(void) {
 }
 
 void *func_001EDFF0(void) {
-    return D_00455E18;
+    return str_RSU_Ver_1_10_Build_Sep_3_2004_17_20_13;
 }
 
 /* CLUT region (8 at +4): CLUT format (0xFF: free), which slots are taken, how many, of how many

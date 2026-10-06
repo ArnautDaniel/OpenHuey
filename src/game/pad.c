@@ -8,7 +8,7 @@
 #include "sce/libpad2.h"
 #include "sce/libvu0.h"
 
-extern const char D_0044FEA0[];                     /* pad IOP module */
+extern const char str_DS2O_S1_IRX[];                     /* pad IOP module */
 
 /* init: libpad2, its IOP module, a socket for port 0 */
 /* 0x001BE6A0 */
@@ -16,7 +16,7 @@ void Pads_Init(u8 *pads) {
     u8 *p = pads + 0x40;
 
     func_001EF990(0);
-    AT(p, 0x4, s32) = func_001BC0F0(pads + 0x18, D_0044FEA0, 0, 0, 0);
+    AT(p, 0x4, s32) = func_001BC0F0(pads + 0x18, str_DS2O_S1_IRX, 0, 0, 0);
     AT(p, 0x0, s32) = func_001EFA38(0, p + 0x140);
     AT(p, 0x8, s32) = 0;
     AT(p, 0xC, s32) = 0;

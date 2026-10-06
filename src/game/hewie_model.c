@@ -86,18 +86,18 @@ void *DogModelB_dtor(u8 *m, s32 flags) {
     return m;
 }
 
-extern u8 D_00456ED0[], D_00456EF0[], D_00456F10[], D_00456F30[], D_00456F50[];
-extern u8 D_00456E10[], D_00456E30[], D_00456E50[], D_00456E70[], D_00456E90[];
+extern u8 str_O_HEG_HEG_004_PCK[], str_O_HEG_HEG_003_PCK[], str_O_HEG_HEG_002_PCK[], str_O_HEG_HEG_001_PCK[], D_00456F50[];
+extern u8 str_O_HED_HED_004_PCK[], str_O_HED_HED_003_PCK[], str_O_HED_HED_002_PCK[], str_O_HED_HED_001_PCK[], D_00456E90[];
 
 /* (vtable DogModelA_vtable +0xA0) its table for kind k (0..4), NULL for others */
 /* 0x0020BEF0 */
 u8 *DogModelA_KindTable(u8 *m, s32 k) {
     switch (k) {
     case 0: return D_00456F50;
-    case 1: return D_00456F30;
-    case 2: return D_00456F10;
-    case 3: return D_00456EF0;
-    case 4: return D_00456ED0;
+    case 1: return str_O_HEG_HEG_001_PCK;
+    case 2: return str_O_HEG_HEG_002_PCK;
+    case 3: return str_O_HEG_HEG_003_PCK;
+    case 4: return str_O_HEG_HEG_004_PCK;
     }
     return NULL;
 }
@@ -112,10 +112,10 @@ void *DogModelA_Table(void) {
 u8 *DogModelB_KindTable(u8 *m, s32 k) {
     switch (k) {
     case 0: return D_00456E90;
-    case 1: return D_00456E70;
-    case 2: return D_00456E50;
-    case 3: return D_00456E30;
-    case 4: return D_00456E10;
+    case 1: return str_O_HED_HED_001_PCK;
+    case 2: return str_O_HED_HED_002_PCK;
+    case 3: return str_O_HED_HED_003_PCK;
+    case 4: return str_O_HED_HED_004_PCK;
     }
     return NULL;
 }

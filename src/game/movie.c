@@ -38,9 +38,9 @@ extern void *D_0046AED0[];
 
 void *MovieLibBase_dtor(u8 *o, s32 flags);
 
-extern s32 D_003E5260, D_003E5264;
+extern s32 pstr_This_CFT_function_doesn_t_support_the_fu, D_003E5264;
 extern void *D_01976F98;
-extern const u8 D_004573C0[];
+extern const u8 str_CRI_CFT_PS2EE_Ver_1_57_Build_Sep_17_2004[];
 extern s64 gTimerRate;   /* the timer's rate (ticks a second) */
 void func_00226790(s32 v);
 s32 func_002267A0(void);
@@ -79,9 +79,9 @@ extern u8 D_00457558[];
 extern u8 D_004575C0[];
 extern u8 D_00457ED0[];
 extern u8 D_00459930[];
-extern u8 D_00459F60[];
-extern u8 D_0045A4D8[];
-extern u8 D_0045A6E0[];
+extern u8 str_CRI_SFH_PS2EE_Ver_1_19_Build_Sep_17_2004[];
+extern u8 str_CRI_SFX_PS2EE_Ver_2_08_Build_Sep_17_2004[];
+extern u8 str_CRI_SUD_PS2EE_Ver_0_05_Build_Sep_17_2004[];
 void *func_00226810(void);
 void *func_0022A6F8(void);
 void *func_00230B48(void);
@@ -159,12 +159,12 @@ void MovieLib_Setup(MovieLib *lib) {
 
 /* (possibly dead code: nothing in the game references it) */
 void func_00226790(s32 v) {
-    D_003E5260 = v;
+    pstr_This_CFT_function_doesn_t_support_the_fu = v;
 }
 
 /* (possibly dead code: nothing in the game references it) */
 s32 func_002267A0(void) {
-    return D_003E5260;
+    return pstr_This_CFT_function_doesn_t_support_the_fu;
 }
 
 /* (possibly dead code: nothing in the game references it) */
@@ -177,10 +177,10 @@ s32 func_002267C0(void) {
     return D_003E5264;
 }
 
-/* D_01976F98 = D_004573C0, func_00226810's value 0, then 0x80 */
+/* D_01976F98 = str_CRI_CFT_PS2EE_Ver_1_57_Build_Sep_17_2004, func_00226810's value 0, then 0x80 */
 /* (possibly dead code: nothing in the game references it) */
 void func_002267D0(void) {
-    D_01976F98 = (void *)D_004573C0;
+    D_01976F98 = (void *)str_CRI_CFT_PS2EE_Ver_1_57_Build_Sep_17_2004;
     AT(func_00226810(), 0x0, s32) = 0;
     Sofdec_SetValue(0x80);
 }
@@ -285,17 +285,17 @@ void *func_00246A80(void) {
 
 /* (possibly dead code: nothing in the game references it) */
 void *func_002577D8(void) {
-    return D_00459F60;
+    return str_CRI_SFH_PS2EE_Ver_1_19_Build_Sep_17_2004;
 }
 
 /* (possibly dead code: nothing in the game references it) */
 void *func_00259EE8(void) {
-    return D_0045A4D8;
+    return str_CRI_SFX_PS2EE_Ver_2_08_Build_Sep_17_2004;
 }
 
 /* (possibly dead code: nothing in the game references it) */
 void *func_0025B828(void) {
-    return D_0045A6E0;
+    return str_CRI_SUD_PS2EE_Ver_0_05_Build_Sep_17_2004;
 }
 
 /* (possibly dead code: nothing in the game references it) */

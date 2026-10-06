@@ -57,15 +57,15 @@ extern void *BgmCtl_vtable[], *D_0046A100[];   /* the BGM controller, its base *
 extern void *MovieScene_vtable[];          /* SceneMovie */
 extern u8 gLanguage;               /* the message language set */
 extern u8 *D_01991EC4;              /* the message text */
-extern const char D_004638F8[];     /* "STAFF_ROLL.SFD" */
-extern const char D_00463840[], D_00463860[], D_00463880[], D_004638A0[];   /* "SYSTEM\\ENDING_A..D.TEX" */
-extern const char D_004638C0[];     /* "SUBSCR\\MSG_END.BIN" */
-extern const char D_004638E0[];     /* "SUBSCR\\MSG_END.TEX" */
-extern const char D_00463760[];     /* "%02d:%02d:%02d" */
-extern const char D_00463770[];     /* "%s" */
-extern const char D_00463778[];     /* "%c" */
-extern const char D_00463780[];     /* "%d" */
-extern const char D_00463788[];     /* "%s%%" */
+extern const char str_STAFF_ROLL_SFD[];     /* "STAFF_ROLL.SFD" */
+extern const char str_SYSTEM_ENDING_A_TEX[], str_SYSTEM_ENDING_B_TEX[], str_SYSTEM_ENDING_C_TEX[], str_SYSTEM_ENDING_D_TEX[];   /* "SYSTEM\\ENDING_A..D.TEX" */
+extern const char str_SUBSCR_MSG_END_BIN[];     /* "SUBSCR\\MSG_END.BIN" */
+extern const char str_SUBSCR_MSG_END_TEX[];     /* "SUBSCR\\MSG_END.TEX" */
+extern const char str_N_N_N[];     /* "%02d:%02d:%02d" */
+extern const char str_N_3[];     /* "%s" */
+extern const char str_N_4[];     /* "%c" */
+extern const char str_N_5[];     /* "%d" */
+extern const char str_N_6[];     /* "%s%%" */
 
 static const PTMF sSceneFinish = {0, 0x14, {(void *)0}};   /* virtual +0x14 */
 
@@ -355,7 +355,7 @@ void SceneEnding_SeqUnlocks(SceneEnding *s) {
 static inline void ending_value(SceneEnding *s, char *buf, s32 y, s32 color) {
     s32 x = 0x1E0 - (Text_LineWidth(&s->task, (u8 *)buf, 0x10) & 0xFFFF);
 
-    Task_PrintfEx(&s->task, x, y, color, s->textAlpha, 0x33, D_00463770, buf);
+    Task_PrintfEx(&s->task, x, y, color, s->textAlpha, 0x33, str_N_3, buf);
 }
 
 /* one message of MSG_END, right-aligned at x 480 */
@@ -416,7 +416,7 @@ void SceneEnding_SeqResults(SceneEnding *s) {
         ending_label(s, id, 0x60, color);
 
         /* the play time */
-        SceneEnding_Format(s, buf, D_00463760, AT(st, 0x100C, u8), AT(st, 0x100D, u8), AT(st, 0x100E, u8));
+        SceneEnding_Format(s, buf, str_N_N_N, AT(st, 0x100C, u8), AT(st, 0x100D, u8), AT(st, 0x100E, u8));
         switch (s->title) {
         case 6:
         case 9:
@@ -464,12 +464,12 @@ void SceneEnding_SeqResults(SceneEnding *s) {
                 color = 0;
                 break;
             }
-            SceneEnding_Format(s, buf, D_00463778, c);
+            SceneEnding_Format(s, buf, str_N_4, c);
             ending_value(s, buf, 0xA0, color);
         }
 
         /* panic, items, critical Hewie injuries, enemies defeated */
-        SceneEnding_Format(s, buf, D_00463780, AT(st, 0x100A, s16));
+        SceneEnding_Format(s, buf, str_N_5, AT(st, 0x100A, s16));
         ending_value(s, buf, 0xC0, s->title == 8);
 
         /* the percentage */
@@ -478,16 +478,16 @@ void SceneEnding_SeqResults(SceneEnding *s) {
             char pct[2] = "%";
             s32 x;
 
-            SceneEnding_Format(s, buf, D_00463780,
+            SceneEnding_Format(s, buf, str_N_5,
                           (s32)(k100.f * (f32)AT(st, 0x1006, s16) / (f32)AT(st, 0x1008, s16)));
             x = (Text_LineWidth(&s->task, (u8 *)buf, 0x10) & 0xFFFF) +
                 (Text_LineWidth(&s->task, (u8 *)pct, 0x10) & 0xFFFF);
-            Task_PrintfEx(&s->task, 0x1E0 - x, 0xE0, s->title == 4 ? 2 : 0, s->textAlpha, 0x33, D_00463788, buf);
+            Task_PrintfEx(&s->task, 0x1E0 - x, 0xE0, s->title == 4 ? 2 : 0, s->textAlpha, 0x33, str_N_6, buf);
         }
 
-        SceneEnding_Format(s, buf, D_00463780, AT(st, 0x1002, s16));
+        SceneEnding_Format(s, buf, str_N_5, AT(st, 0x1002, s16));
         ending_value(s, buf, 0x100, s->title == 3 ? 2 : 0);
-        SceneEnding_Format(s, buf, D_00463780, AT(st, 0x1004, s16));
+        SceneEnding_Format(s, buf, str_N_5, AT(st, 0x1004, s16));
         ending_value(s, buf, 0x120, s->title == 5 ? 2 : 0);
 
         /* the type */
@@ -735,24 +735,24 @@ void SceneEnding_SeqSetup(SceneEnding *s) {
     Message_Init(END_MSG(s));
     switch (AT(st, 0x111, u8)) {
     case 0:
-        LOADER_LOAD(D_00463840, END_PIC_FILE(s));
+        LOADER_LOAD(str_SYSTEM_ENDING_A_TEX, END_PIC_FILE(s));
         break;
     case 1:
-        LOADER_LOAD(D_00463860, END_PIC_FILE(s));
+        LOADER_LOAD(str_SYSTEM_ENDING_B_TEX, END_PIC_FILE(s));
         break;
     case 2:
-        LOADER_LOAD(D_00463880, END_PIC_FILE(s));
+        LOADER_LOAD(str_SYSTEM_ENDING_C_TEX, END_PIC_FILE(s));
         break;
     case 3:
-        LOADER_LOAD(D_004638A0, END_PIC_FILE(s));
+        LOADER_LOAD(str_SYSTEM_ENDING_D_TEX, END_PIC_FILE(s));
         break;
     }
     msg = gBootMessage;
     VCALL(msg, 0x8, void (*)(VObject *, s32, void *))(msg, 6, END_PIC_FILE(s));
     VCALL(msg, 0x10, void (*)(VObject *, s32, void *, s32))(msg, 6, END_PIC_FILE(s), 0);
-    LOADER_LOAD(D_004638C0, END_TEXT(s));
+    LOADER_LOAD(str_SUBSCR_MSG_END_BIN, END_TEXT(s));
     D_01991EC4 = END_TEXT(s);
-    LOADER_LOAD(D_004638E0, END_FONT(s));
+    LOADER_LOAD(str_SUBSCR_MSG_END_TEX, END_FONT(s));
     VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, END_FONT(s), 0x15);
     gLanguage = 1;
     s->dogLevel = ending_dog_level(st);
@@ -888,7 +888,7 @@ void SceneEnding_StateStart(SceneEnding *s) {
         ok = 0;
     }
     if (ok) {
-        Movie_SetFile(gMovie, D_004638F8, 1, 0);
+        Movie_SetFile(gMovie, str_STAFF_ROLL_SFD, 1, 0);
     }
     ptmf_set_fn(&s->base.state, SceneEnding_StateStaffRoll);
 }

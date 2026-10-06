@@ -10,7 +10,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room15_vtable[];
-extern const char *D_003FA760;
+extern const char *pstr_kousi_2;
 
 extern u8 Room15_EnterScript_data[];
 extern u8 Room15_CharEnterScript_data[];
@@ -91,14 +91,14 @@ s32 Room15_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room15_CmdTable[i & 0xFF], a, b);
 }
 
-/* a lid (D_003FA760, +0x24 its height, +0x34 its speed): byte 3 0 up, 1 shut; 2 falling and
+/* a lid (pstr_kousi_2, +0x24 its height, +0x34 its speed): byte 3 0 up, 1 shut; 2 falling and
  * bouncing shut (the first landing clears progress flag 0x50 and, unless the director says no,
  * thuds), 2 while moving; 3 a random rattle up, 2 while it stays below */
 /* 0x002ACD50 */
 s32 Room15_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kShut = {0xC1CA6666}, k01 = {0x3DCCCCCD}, kBounce = {0xBE4CCCCD},
         kStill = {0x3CA3D70A}, k04 = {0x3ECCCCCD};
-    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_003FA760);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_kousi_2);
     f32 v;
 
     if (o == NULL) {

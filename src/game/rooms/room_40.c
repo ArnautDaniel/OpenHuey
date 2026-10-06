@@ -69,7 +69,7 @@ s32 Room40_Cmd00(void *self, void *a1, u8 *cmd) {
     VObject *objs = gRoomObjects;
     u8 *o;
 
-    o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_004070C0);
+    o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_sara_l);
     if (o != NULL) {
         AT(o, 0x10, u32) = 0;
         AT(o, 0x14, u32) = 0;
@@ -83,7 +83,7 @@ s32 Room40_Cmd00(void *self, void *a1, u8 *cmd) {
         }
         AT(o, 0x28, u32) = 0x4188CCCD;
     }
-    o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_004070C4);
+    o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_sara_r);
     if (o != NULL) {
         AT(o, 0x10, u32) = 0;
         AT(o, 0x14, u32) = 0;
@@ -97,7 +97,7 @@ s32 Room40_Cmd00(void *self, void *a1, u8 *cmd) {
         }
         AT(o, 0x28, u32) = 0x4188CCCD;
     }
-    o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_004070C8);
+    o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_tenbin);
     if (o != NULL) {
         AT(o, 0x10, u32) = 0;
         AT(o, 0x14, u32) = 0;

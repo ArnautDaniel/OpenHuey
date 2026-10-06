@@ -37,7 +37,7 @@
 #include "libc.h"
 
 extern VObject *gRoomObjects;   /* the room's placed objects */
-extern const char D_0045D2A8[], D_0045D2B8[], D_0045D2C8[], D_0045D2D8[];   /* "%s\\CUT%03X.DP", "%s\\%s.DH", "%s\\MARK.BIN", "%s\\PARAMS.BIN" */
+extern const char str_N_CUTN_DP[], str_N_N_DH[], str_N_MARK_BIN[], str_N_PARAMS_BIN[];   /* "%s\\CUT%03X.DP", "%s\\%s.DH", "%s\\MARK.BIN", "%s\\PARAMS.BIN" */
 extern const PTMF Cutscene_StateScript_ptmf, Cutscene_StateFirstShot_ptmf, Cutscene_StatePlaying_ptmf;   /* states: loading, first shot, playing */
 extern void *Fog_vtable[], *DepthRange_vtable[];   /* effect classes for slots 0x1D / 0x1C */
 
@@ -121,7 +121,7 @@ static void load(const char *file, void *dest, s32 handle) {
 static void shot_load(u8 *d, s32 b) {
     char file[0x20];
 
-    func_0026EDD0(file, 0x20, D_0045D2A8, NAME(d), AT(BUF(d, b), 0x0, u32));
+    func_0026EDD0(file, 0x20, str_N_CUTN_DP, NAME(d), AT(BUF(d, b), 0x0, u32));
     load(file, SHOT(b), AT(BUF(d, b), 0x8, s32));
 }
 
@@ -731,11 +731,11 @@ void Cutscene_Start(u8 *d) {
         AT(d, 0x206 + i, s8) = 0;
         AT(d, 0x216 + i * 2, s16) = -1;
     }
-    func_0026EDD0(file, 0x20, D_0045D2B8, NAME(d), NAME(d));
+    func_0026EDD0(file, 0x20, str_N_N_DH, NAME(d), NAME(d));
     load(file, p + 0x16C0, 0x10000000);
-    func_0026EDD0(file, 0x20, D_0045D2C8, NAME(d));
+    func_0026EDD0(file, 0x20, str_N_MARK_BIN, NAME(d));
     load(file, p + 0x26C0, 0x10000000);
-    func_0026EDD0(file, 0x20, D_0045D2D8, NAME(d));
+    func_0026EDD0(file, 0x20, str_N_PARAMS_BIN, NAME(d));
     load(file, p + 0x66C0, 0x10000000);
     VCALL(gCutscene, 0x18, void (*)(VObject *, void *, void *))(gCutscene, p + 0x16C0, p + 0x26C0);
     for (i = 0; i < 0x20; i++) {

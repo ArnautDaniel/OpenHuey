@@ -170,7 +170,7 @@ s32 Room60_Cmd02(void *self, void *a1, u8 *cmd) {
 s32 Room60_Cmd01(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
-        Progress_LoadSpeech(gProgress, D_00429130);
+        Progress_LoadSpeech(gProgress, pstr_O_DNL_DNL_203_TEX);
         return 1;
     case 1:
         return Progress_Speak(gProgress, 0xFE, 0) == 0 ? 2 : 1;

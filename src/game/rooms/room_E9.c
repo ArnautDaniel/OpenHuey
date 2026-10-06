@@ -9,7 +9,7 @@ extern void *RoomBase_vtable[];
 extern void *RoomE9_vtable[];
 extern u8 RoomE9_Phase2Script_data[];
 extern char D_0047B340[];
-extern const char D_00463A48[];
+extern const char str_59_59_20[];
 
 extern u8 RoomE9_EnterScript_data[];
 extern u8 RoomE9_CharEnterScript_data[];
@@ -75,7 +75,7 @@ s32 RoomE9_Command(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* 0x0037ACE0 */
-s32 RoomE9_Cmd03(void) { return clock_draw_saved(D_0047B340, D_00463A48); }
+s32 RoomE9_Cmd03(void) { return clock_draw_saved(D_0047B340, str_59_59_20); }
 
 /* (as Room00_Cmd00) the same four spots for bytes 3..6 */
 /* 0x0037AFB0 */

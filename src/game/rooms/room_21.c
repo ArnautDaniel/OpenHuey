@@ -162,7 +162,7 @@ s32 Room21_Cmd01(void) {
     if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
         return 1;
     }
-    fan_turn(D_00400C38);
+    fan_turn(pstr_fan_2);
     return 1;
 }
 

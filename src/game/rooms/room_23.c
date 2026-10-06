@@ -72,7 +72,7 @@ s32 Room23_Command(void *self, u32 i, s32 a, s32 b) {
 s32 Room23_Cmd01(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
-        Progress_LoadSpeech(gProgress, D_0040187C);
+        Progress_LoadSpeech(gProgress, pstr_O_DNL_DNL_201_TEX);
         return 1;
     case 1:
         return Progress_Speak(gProgress, 3, 0) == 0 ? 2 : 1;

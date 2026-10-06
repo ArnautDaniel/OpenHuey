@@ -79,7 +79,7 @@ s32 Room26_Command(void *self, u32 i, s32 a, s32 b) {
  * seat 6 ahead, tipped by its rock (90 x +0x34 x sin +0x30 degrees) and turned with it */
 /* 0x002B04E0 */
 s32 Room26_Cmd02(void) {
-    u8 *chair = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_00403960);
+    u8 *chair = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_movechair_2);
     f32 m[4][4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
     f32 at[4] __attribute__((aligned(16)));
@@ -111,9 +111,9 @@ s32 Room26_Cmd01(void *self, void *a1, u8 *cmd) {
     VObject *snd;
     s32 i;
 
-    chairs[0] = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_0040395C);
-    chairs[1] = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00403960);
-    chairs[2] = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00403964);
+    chairs[0] = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_movechair_1);
+    chairs[1] = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_movechair_2);
+    chairs[2] = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_movechair_3);
     switch (cmd[3]) {
     case 0:
         for (i = 0; i < 3; i++) {
@@ -176,12 +176,12 @@ s32 Room26_Cmd01(void *self, void *a1, u8 *cmd) {
 /* 0x002B0B60 */
 s32 Room26_Cmd00(void *self, void *a1, u8 *cmd) {
     VObject *objs = gRoomObjects;
-    u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00403948);
+    u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_left);
 
     if (o != NULL) {
         AT(o, 0x14, f32) = AT(o, 0x14, f32) - (cmd[3] == 0 ? 2.25f : 0x1.333334p-4f /* 0.075 */);
     }
-    o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_0040394C);
+    o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, pstr_right);
     if (o != NULL) {
         AT(o, 0x14, f32) = AT(o, 0x14, f32) + (cmd[3] == 0 ? 2.25f : 0x1.333334p-4f);
     }
@@ -197,7 +197,7 @@ s32 Room26_Condition(void *self, u32 i, s32 a, s32 b) {
 /* the first rocking chair still rocking (+0x34 over 0.3) */
 /* 0x002B0C90 */
 s32 Room26_Cond00(void) {
-    u8 *chair = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_0040395C);
+    u8 *chair = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_movechair_1);
 
     return !(AT(chair, 0x34, f32) <= 0x1.333334p-2f /* 0.3 */);
 }

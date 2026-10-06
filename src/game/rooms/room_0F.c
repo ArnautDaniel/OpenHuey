@@ -9,7 +9,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room0F_vtable[];
-extern const char *D_003F6F64;
+extern const char *pstr_fumi_yuka;
 extern u8 Room0F_EnterScript_data[];
 extern u8 Room0F_CharEnterScript_data[];
 extern u8 Room0F_Phase1Script_data[];
@@ -125,13 +125,13 @@ s32 Room0F_Cmd02(void) {
 /* room 0x0F (Room0F_Cmd01_ptmf): three objects' +0x14 back to 0 */
 /* 0x002ABD50 */
 s32 Room0F_Cmd01(void) {
-    obj_unturn(D_003F6F48);
-    obj_unturn(D_003F6F4C);
-    obj_unturn(D_003F6F50);
+    obj_unturn(pstr_hook);
+    obj_unturn(pstr_a_Puppet);
+    obj_unturn(pstr_Puppetdoor);
     return 1;
 }
 
 /* 0x002ABDD0 */
 s32 Room0F_Cmd00(void *self, void *a1, u8 *cmd) {
-    return var_fade(D_003F6F64, 0, cmd);
+    return var_fade(pstr_fumi_yuka, 0, cmd);
 }

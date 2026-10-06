@@ -14,7 +14,7 @@
 extern void *RoomBase_vtable[];
 extern void *RoomC0_vtable[];
 extern void *CeilingDrips_vtable[];
-extern const char *D_0042E408;
+extern const char *pstr_ori_2;
 extern PTMF RoomC0_CmdTable[];
 extern PTMF RoomC0_CondTable[];
 
@@ -135,7 +135,7 @@ s32 RoomC0_Cmd01(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* the room object named D_0042E408 swung about its rest (+0x30 from +0x20): byte 3 0 starts it
+/* the room object named pstr_ori_2 swung about its rest (+0x30 from +0x20): byte 3 0 starts it
  * (phase +0x34 0, amplitude +0x3C 0.25); 1 steps the phase on 60 degrees and the amplitude down
  * 0.05, x +0x20 / z +0x28 = rest + amplitude * sin, waiting (2) until it has died out; 2 puts it
  * at (-16.5, -5.6) */
@@ -143,7 +143,7 @@ s32 RoomC0_Cmd01(void *self, void *a1, u8 *cmd) {
 s32 RoomC0_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kStep = {0x3F860A92}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB},
                                           kDecay = {0x3D4CCCCD};
-    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, D_0042E408);
+    u8 *o = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_ori_2);
     f32 a;
 
     switch (cmd[3]) {

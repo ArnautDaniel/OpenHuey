@@ -9,7 +9,7 @@
 
 extern void *RoomBase_vtable[];
 extern void *Room108_vtable[];
-extern const char *D_004193A8, *D_004193AC;
+extern const char *pstr_O_HEW_HEW_201_TEX, *pstr_O_HEW_HEW_202_TEX;
 
 extern u8 Room108_EnterScript_data[];
 extern u8 Room108_CharEnterScript_data[];
@@ -64,10 +64,10 @@ s32 Room108_Cmd00(void *self, void *a1, u8 *cmd) {
 
     switch (cmd[3]) {
     case 0:
-        Progress_LoadSpeech(gProgress, D_004193A8);
+        Progress_LoadSpeech(gProgress, pstr_O_HEW_HEW_201_TEX);
         break;
     case 1:
-        Progress_LoadSpeech(gProgress, D_004193AC);
+        Progress_LoadSpeech(gProgress, pstr_O_HEW_HEW_202_TEX);
         break;
     case 2:
         p = gProgress;

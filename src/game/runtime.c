@@ -3,9 +3,9 @@
 #include "ptmf.h"
 #include "runtime.h"
 
-extern u8 D_0044C898[];
-extern u8 D_0044C900[];
-extern u8 D_0044CAC0[];
+extern u8 str_exception[];
+extern u8 str_bad_alloc[];
+extern u8 str_bad_exception[];
 extern u8 D_0044DAB0[];
 void *func_00100540(void);
 void *func_00100650(void);
@@ -13,11 +13,11 @@ void *func_00102310(void);
 void *func_00114B90(void);
 
 void *func_00100540(void) {
-    return D_0044C898;
+    return str_exception;
 }
 
 void *func_00100650(void) {
-    return D_0044C900;
+    return str_bad_alloc;
 }
 /* __ptmf_cmpr: whether two member function pointers differ */
 /* 0x00100B80 */
@@ -27,7 +27,7 @@ s32 __ptmf_cmpr(const PTMF *a, const PTMF *b) {
 }
 
 void *func_00102310(void) {
-    return D_0044CAC0;
+    return str_bad_exception;
 }
 
 void *func_00114B90(void) {

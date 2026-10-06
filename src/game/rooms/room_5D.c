@@ -65,7 +65,7 @@ s32 Room5D_Command(void *self, u32 i, s32 a, s32 b) {
 /* room 0x5D (Room5D_Cmd01_ptmf): the lever at -60 / 0 / 60 degrees by byte 3 */
 /* 0x002B5FA0 */
 s32 Room5D_Cmd01(void *self, void *a1, u8 *cmd) {
-    u8 *o = room_obj(D_004123E8);
+    u8 *o = room_obj(pstr_doll);
 
     if (o != NULL) {
         switch (cmd[3]) {

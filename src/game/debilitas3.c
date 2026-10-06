@@ -16,7 +16,7 @@
 #include "skeleton.h"
 #include "stalker_progress.h"
 
-extern u8 D_004137B0[], D_00414220[], D_00414270[], D_00413E10[], D_00413E60[], D_00413E80[], D_00413EC8[];
+extern u8 D_004137B0[], D_00414220[], D_00414270[], D_00413E10[], D_00413E60[], D_00413E80[], str_Z_5[];
 extern u8 D_004139D0[], D_00413A10[], D_00413640[], D_004137A0[], D_0047AC08[];
 extern const PTMF D_004135D0;
 
@@ -86,7 +86,7 @@ void Debilitas3_Setup(Pursuer *p) {
         PU(p, 0x1730, u8 *) = D_00414220;
         PU(p, 0x1740, u8 *) = D_00414270;
         PU(p, 0x173C, u8 *) = D_00413E80;
-        PU(p, 0x1748, u8 *) = D_00413EC8;
+        PU(p, 0x1748, u8 *) = str_Z_5;
         PU(p, 0x16DC, s32) = 40;              /* Hewie bite tolerance */
         PU(p, 0x16E8, f32) = 18.0f;
     } else {
@@ -95,7 +95,7 @@ void Debilitas3_Setup(Pursuer *p) {
         PU(p, 0x1730, u8 *) = D_00413E10;
         PU(p, 0x1740, u8 *) = D_00413E60;
         PU(p, 0x173C, u8 *) = D_00413E80;
-        PU(p, 0x1748, u8 *) = D_00413EC8;
+        PU(p, 0x1748, u8 *) = str_Z_5;
         PU(p, 0x16DC, s32) = 40;
         PU(p, 0x16E8, f32) = 12.0f;
     }
@@ -316,19 +316,19 @@ void Debilitas3_StartLunge(Pursuer *p) {
 
 extern u8 D_00413A60[], D_00413AB0[], D_00413AF0[], D_00413B50[], D_00413B90[], D_00413BD0[],
     D_00413BF0[], D_00413C30[], D_00413C70[], D_00413CB0[], D_00413CC0[], D_00413D10[],
-    D_00413D30[], D_00413D70[], D_00413DC0[], D_00413DE8[], D_00413DF8[];
+    D_00413D30[], D_00413D70[], str_t_5[], D_00413DE8[], D_00413DF8[];
 extern u8 D_00413EE0[], D_00413F40[], D_00413F90[], D_00413FE0[], D_00414010[], D_00414040[],
     D_00414050[], D_00414090[], D_004140B0[], D_004140F0[], D_00414100[], D_00414140[],
-    D_00414160[], D_004141A0[], D_004141E0[], D_004141F8[], D_00414208[];
+    D_00414160[], D_004141A0[], str_t_6[], D_004141F8[], D_00414208[];
 
 /* his attack tables for each situation 0..16; the second set when gProgress+0x30 bit 0x8000 */
 static u8 *const sAttackTables3[2][17] = {
     { D_00413A60, D_00413AF0, D_00413AB0, D_00413B50, D_00413B90, D_00413BD0, D_00413BF0,
       D_00413C30, D_00413C70, D_00413CB0, D_00413CC0, D_00413D10, D_00413D30, D_00413D70,
-      D_00413DE8, D_00413DF8, D_00413DC0 },
+      D_00413DE8, D_00413DF8, str_t_5 },
     { D_00413EE0, D_00413F90, D_00413F40, D_00413FE0, D_00414010, D_00414040, D_00414050,
       D_00414090, D_004140B0, D_004140F0, D_00414100, D_00414140, D_00414160, D_004141A0,
-      D_004141F8, D_00414208, D_004141E0 },
+      D_004141F8, D_00414208, str_t_6 },
 };
 
 /* vtable +0x130: the attack table for a situation */
@@ -575,18 +575,18 @@ extern const f32 D_0042F1F0[4];
 
 extern u8 D_0042E9D0[], D_0042EA00[], D_0042EA30[], D_0042EA70[], D_0042EAA0[], D_0042EAE0[], D_0042EB10[],
     D_0042EB40[], D_0042EB70[], D_0042EBB0[], D_0042EBC0[], D_0042EC00[], D_0042EC20[], D_0042EC50[],
-    D_0042ECA0[], D_0042ECC8[], D_0042ECD8[], D_0042EDC0[], D_0042EE10[], D_0042EE60[], D_0042EEB0[],
+    str_t_15[], D_0042ECC8[], D_0042ECD8[], D_0042EDC0[], D_0042EE10[], D_0042EE60[], D_0042EEB0[],
     D_0042EEE0[], D_0042EF10[], D_0042EF20[], D_0042EF60[], D_0042EF80[], D_0042EFC8[], D_0042EFE0[],
-    D_0042F020[], D_0042F040[], D_0042F080[], D_0042F0C0[], D_0042F0E8[], D_0042F0F8[], Kind27_vtable[];
+    D_0042F020[], D_0042F040[], D_0042F080[], str_t_16[], D_0042F0E8[], D_0042F0F8[], Kind27_vtable[];
 
 /* the Kind27_vtable Debilitas's attack tables for each situation 0..16; the second set when gProgress+0x30 bit 0x8000 */
 static u8 *const sAttackTablesD[2][17] = {
     { D_0042E9D0, D_0042EA30, D_0042EA00, D_0042EA70, D_0042EAA0, D_0042EAE0, D_0042EB10,
       D_0042EB40, D_0042EB70, D_0042EBB0, D_0042EBC0, D_0042EC00, D_0042EC20, D_0042EC50,
-      D_0042ECC8, D_0042ECD8, D_0042ECA0 },
+      D_0042ECC8, D_0042ECD8, str_t_15 },
     { D_0042EDC0, D_0042EE60, D_0042EE10, D_0042EEB0, D_0042EEE0, D_0042EF10, D_0042EF20,
       D_0042EF60, D_0042EF80, D_0042EFC8, D_0042EFE0, D_0042F020, D_0042F040, D_0042F080,
-      D_0042F0E8, D_0042F0F8, D_0042F0C0 },
+      D_0042F0E8, D_0042F0F8, str_t_16 },
 };
 
 /* vtable +0x130: the attack table for a situation (as Debilitas3_AttackTable) */
@@ -977,7 +977,7 @@ void *Kind27_ModelFiles(void) {
     return b5_prog_flag8000() ? D_0042E480 : D_0042E440;
 }
 
-extern u8 D_0042E720[], D_0042F110[], D_0042F160[], D_0042ED60[], D_0042EDA8[], D_0042ECF0[], D_0042ED40[];
+extern u8 D_0042E720[], D_0042F110[], D_0042F160[], D_0042ED60[], str_Z_9[], D_0042ECF0[], D_0042ED40[];
 extern u8 D_0042E940[], D_0042E980[], D_0042E5B0[], D_0042E710[], D_0047ADC0[];
 extern const PTMF D_0042E540;
 
@@ -993,7 +993,7 @@ void Kind27_Setup(Pursuer *p) {
         PU(p, 0x1730, u8 *) = D_0042F110;
         PU(p, 0x1740, u8 *) = D_0042F160;
         PU(p, 0x173C, u8 *) = D_0042ED60;
-        PU(p, 0x1748, u8 *) = D_0042EDA8;
+        PU(p, 0x1748, u8 *) = str_Z_9;
         PU(p, 0x16DC, s32) = 30;
         PU(p, 0x16E8, f32) = 18.0f;
     } else {
@@ -1002,7 +1002,7 @@ void Kind27_Setup(Pursuer *p) {
         PU(p, 0x1730, u8 *) = D_0042ECF0;
         PU(p, 0x1740, u8 *) = D_0042ED40;
         PU(p, 0x173C, u8 *) = D_0042ED60;
-        PU(p, 0x1748, u8 *) = D_0042EDA8;
+        PU(p, 0x1748, u8 *) = str_Z_9;
         PU(p, 0x16DC, s32) = 30;
         PU(p, 0x16E8, f32) = 12.0f;
     }

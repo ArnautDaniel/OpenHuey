@@ -7315,7 +7315,7 @@ void Hewie_StateLeapTakeOff(Hewie *h) {
 
 /* ---- launching the leap at the pursuer ---- */
 
-extern const char D_0044F180[];                   /* "Dog New Hide Attack -> No Route" */
+extern const char str_Dog_New_Hide_Attack_No_Route[];                   /* "Dog New Hide Attack -> No Route" */
 extern const PTMF Hewie_StateLeapTakeOff_ptmf;
 
 /* launch the leap at the pursuer (in his room; else, or when his state block holds 7, the
@@ -7339,7 +7339,7 @@ void Hewie_StateLeapLaunch(Hewie *h) {
     }
     a = HW(h, 0x10C, f32);
     if (Hewie_PlanAndGo(h, h->c.unk104[1], h->c.unk110, 0, 1) != 0) {
-        func_0026EE88(D_0044F180);
+        func_0026EE88(str_Dog_New_Hide_Attack_No_Route);
         hewie_want(h, 0, 0);
         return;
     }
@@ -8868,7 +8868,7 @@ void Hewie_StateLeapLands(Hewie *h) {
 
 /* ---- leaping to bite ---- */
 
-extern const char D_0044F1A0[];   /* "Dog Bite Enemy -> No Route" */
+extern const char str_Dog_Bite_Enemy_No_Route[];   /* "Dog Bite Enemy -> No Route" */
 extern const s16 D_003B1310[8], D_003B1320[8], D_003B1330[8], D_003B1340[8];   /* bites, by trust */
 extern const PTMF Hewie_StateLeapLands_ptmf;
 
@@ -8894,7 +8894,7 @@ void Hewie_StateLeapGrip(Hewie *h) {
         return;
     }
     if (Hewie_PlanAndGo(h, h->c.unk104[1], h->c.unk110, 0, 1) != 0) {
-        func_0026EE88(D_0044F1A0);
+        func_0026EE88(str_Dog_Bite_Enemy_No_Route);
         hewie_want(h, 0, 0);
         return;
     }

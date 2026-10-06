@@ -6,7 +6,7 @@
  * game freezes (the panic's shake off, the camera director stopped, every character held, the
  * effects paused), the screen wipes over 64 frames, the music starts, the room's two screen
  * tints (effects 0x1F / 0x1D) go over a second to purple / clear with the panic's fade, then
- * the movie D_0045E2E0 plays; after it the first tint drifts to blue for a minute (any of the
+ * the movie str_SYSTEM_GAMEOVER_SFD plays; after it the first tint drifts to blue for a minute (any of the
  * face buttons skips), the music stops and the screen goes black. */
 #include "common.h"
 #include "game.h"
@@ -36,7 +36,7 @@ extern const PTMF GameOver_StateDone_ptmf;   /* GameOver_StateDone */
 extern const PTMF GameOver_StateMode3_ptmf;   /* GameOver_StateMode3 */
 extern const PTMF GameOver_StateOthers_ptmf2;   /* GameOver_StateOthers */
 extern const PTMF GameOver_StateSpecial_ptmf;   /* GameOver_StateSpecial */
-extern const char D_0045E2E0[];  /* the movie */
+extern const char str_SYSTEM_GAMEOVER_SFD[];  /* the movie */
 
 extern VObject *gStageMusic;
 extern void *Tint_vtable[];      /* a screen tint */
@@ -187,7 +187,7 @@ static void tints_step(GameOver *o, s32 fade) {
     was = o->timer;
     o->timer = was - 1;
     if (was == 0) {
-        Progress_PlayMovie(gProgress, D_0045E2E0, 6);
+        Progress_PlayMovie(gProgress, str_SYSTEM_GAMEOVER_SFD, 6);
         AT(gMovie, 0x1C4, u8) = 1;
         o->step++;
     }

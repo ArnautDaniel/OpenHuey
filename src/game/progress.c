@@ -260,7 +260,7 @@ void Progress_CameraOn(Progress *p, u8 idx) {
     VCALL(dir, 0x28, void (*)(VObject *, s32, s32))(dir, AT(c, 0xE8, s32), AT(c, 0xEC, s32));
 }
 
-extern char D_0044F860[], D_0044F880[], D_0044F8A0[];   /* ST_%03X\ST1_%03X.HD / .SDT / .BD */
+extern char str_ST_N_ST1_N_HD[], str_ST_N_ST1_N_SDT[], str_ST_N_ST1_N_BD[];   /* ST_%03X\ST1_%03X.HD / .SDT / .BD */
 
 /* the room's sound bank (ST_xxx\ST1_xxx.HD / .SDT / .BD) into sound bank 6 */
 /* 0x0016D480 */
@@ -272,12 +272,12 @@ void Progress_LoadRoomSounds(Progress *p, s32 room) {
     VCALL(snd, 0x10, void (*)(VObject *, s32, s32))(snd, 0, 0x1B0C00);
     VCALL(snd, 0x84, void (*)(VObject *, s32))(snd, 6);
     VCALL(snd, 0x64, void (*)(VObject *, s32))(snd, 6);
-    func_0026EDD0(name, sizeof(name), D_0044F860, room & ~7, room);
+    func_0026EDD0(name, sizeof(name), str_ST_N_ST1_N_HD, room & ~7, room);
     prog = (u8 *)gProgress;
     VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 6, 0, prog + 0x1CA6C0);
-    func_0026EDD0(name, sizeof(name), D_0044F880, room & ~7, room);
+    func_0026EDD0(name, sizeof(name), str_ST_N_ST1_N_SDT, room & ~7, room);
     VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 6, 2, prog + 0x1CAEC0);
-    func_0026EDD0(name, sizeof(name), D_0044F8A0, room & ~7, room);
+    func_0026EDD0(name, sizeof(name), str_ST_N_ST1_N_BD, room & ~7, room);
     VCALL(snd, 0x80, void (*)(VObject *, const char *, s32, s32, void *))(snd, name, 6, 3, prog + 0x1CCEC0);
 }
 

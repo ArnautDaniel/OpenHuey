@@ -1276,20 +1276,20 @@ s32 MusicDir_BanksIn(u8 *d) {
 /* ---- the stages ---- */
 
 extern void *MusicStage1_vtable[], *MusicStage2_vtable[], *MusicStage3_vtable[], *MusicStage4_vtable[];
-extern u8 D_00414650[], D_004146C0[], D_00414700[], D_00414740[], D_0047AC28[], D_00414780[];
-extern u8 D_0042A180[], D_0042A1F0[], D_0042A230[], D_0042A270[], D_0047AD68[], D_0042A2B0[];
-extern u8 D_00442C20[], D_00442C90[], D_00442CD0[], D_00442D10[], D_0047AF68[], D_00442D50[];
-extern u8 D_00444850[], D_004448C0[], D_00444900[], D_00444940[], D_0047AFF8[], D_01991AA0[];
+extern u8 D_00414650[], D_004146C0[], D_00414700[], D_00414740[], str_ddo[], D_00414780[];
+extern u8 D_0042A180[], D_0042A1F0[], D_0042A230[], D_0042A270[], str_ddx[], D_0042A2B0[];
+extern u8 D_00442C20[], D_00442C90[], D_00442CD0[], D_00442D10[], str_ddx_2[], D_00442D50[];
+extern u8 D_00444850[], D_004448C0[], D_00444900[], D_00444940[], str_ddZ[], D_01991AA0[];
 
 /* the music director for stage set `stage` (0..3) at scene +0x1064600 (scene +0x106503C) */
 /* 0x0039A8E0 */
 void SceneGame_MusicDirector(u8 *scene, u32 stage) {
     static void **const sVtbl[4] = {MusicStage1_vtable, MusicStage2_vtable, MusicStage3_vtable, MusicStage4_vtable};
     static u8 *const sTables[4][6] = {
-        {D_00414650, D_004146C0, D_00414700, D_00414740, D_0047AC28, D_00414780},
-        {D_0042A180, D_0042A1F0, D_0042A230, D_0042A270, D_0047AD68, D_0042A2B0},
-        {D_00442C20, D_00442C90, D_00442CD0, D_00442D10, D_0047AF68, D_00442D50},
-        {D_00444850, D_004448C0, D_00444900, D_00444940, D_0047AFF8, D_01991AA0},
+        {D_00414650, D_004146C0, D_00414700, D_00414740, str_ddo, D_00414780},
+        {D_0042A180, D_0042A1F0, D_0042A230, D_0042A270, str_ddx, D_0042A2B0},
+        {D_00442C20, D_00442C90, D_00442CD0, D_00442D10, str_ddx_2, D_00442D50},
+        {D_00444850, D_004448C0, D_00444900, D_00444940, str_ddZ, D_01991AA0},
     };
     u8 *d;
     s32 i;
@@ -1395,7 +1395,7 @@ static inline void *stage_dtor(u8 *d, s32 flags, void **vt) {
 
 /* stage 1 (MusicStage1_vtable) */
 
-extern const char D_0045D8B0[], D_0045D8C8[], D_0045D8E0[], D_0045D900[], D_0045D920[], D_0045D930[];
+extern const char str_BGM_STAGE1_BANK_HD[], str_BGM_PANIC_SQ[], str_BGM_S1_NORMALA_SQ[], str_BGM_S1_NORMALB_SQ[], str_BGM_S1_CHASE_SQ[], str_BGM_STAGE1_BANK_BD[];
 
 /* 0x002D3A90 */
 void *MusicStage1_dtor(u8 *d, s32 flags) {
@@ -1404,7 +1404,7 @@ void *MusicStage1_dtor(u8 *d, s32 flags) {
 
 /* 0x002D3E80 */
 void MusicStage1_Load(u8 *d) {
-    static const char *const sFiles[6] = {D_0045D8B0, D_0045D8C8, D_0045D8E0, D_0045D900, D_0045D920, D_0045D930};
+    static const char *const sFiles[6] = {str_BGM_STAGE1_BANK_HD, str_BGM_PANIC_SQ, str_BGM_S1_NORMALA_SQ, str_BGM_S1_NORMALB_SQ, str_BGM_S1_CHASE_SQ, str_BGM_STAGE1_BANK_BD};
 
     stage_load(d, sFiles);
 }
@@ -1439,7 +1439,7 @@ void MusicStage1_StageChans(u8 *d) {
 
 /* stage 2 (MusicStage2_vtable) */
 
-extern const char D_0045FFC0[], D_0045FFD8[], D_0045FFF0[], D_00460010[], D_00460030[], D_00460040[];
+extern const char str_BGM_STAGE2_BANK_HD[], str_BGM_PANIC_SQ_2[], D_0045FFF0[], str_BGM_S2_NORMALB_SQ[], str_BGM_S2_CHASE_SQ[], str_BGM_STAGE2_BANK_BD[];
 
 /* 0x0031ED70 */
 void *MusicStage2_dtor(u8 *d, s32 flags) {
@@ -1448,7 +1448,7 @@ void *MusicStage2_dtor(u8 *d, s32 flags) {
 
 /* 0x0031EFF0 */
 void MusicStage2_Load(u8 *d) {
-    static const char *const sFiles[6] = {D_0045FFC0, D_0045FFD8, D_0045FFF0, D_00460010, D_00460030, D_00460040};
+    static const char *const sFiles[6] = {str_BGM_STAGE2_BANK_HD, str_BGM_PANIC_SQ_2, D_0045FFF0, str_BGM_S2_NORMALB_SQ, str_BGM_S2_CHASE_SQ, str_BGM_STAGE2_BANK_BD};
 
     stage_load(d, sFiles);
 }
@@ -1532,7 +1532,7 @@ void MusicStage2_StageChans(u8 *d) {
 
 /* stage 3 (MusicStage3_vtable) */
 
-extern const char D_00462CD0[], D_00462CE8[], D_00462D00[], D_00462D20[], D_00462D40[], D_00462D50[];
+extern const char str_BGM_STAGE3_BANK_HD[], str_BGM_PANIC_SQ_3[], str_BGM_S3_NORMALA_SQ[], str_BGM_S3_NORMALB_SQ[], str_BGM_S3_CHASE_SQ[], str_BGM_STAGE3_BANK_BD[];
 
 /* 0x0034DCC0 */
 void *MusicStage3_dtor(u8 *d, s32 flags) {
@@ -1541,7 +1541,7 @@ void *MusicStage3_dtor(u8 *d, s32 flags) {
 
 /* 0x0034DFC0 */
 void MusicStage3_Load(u8 *d) {
-    static const char *const sFiles[6] = {D_00462CD0, D_00462CE8, D_00462D00, D_00462D20, D_00462D40, D_00462D50};
+    static const char *const sFiles[6] = {str_BGM_STAGE3_BANK_HD, str_BGM_PANIC_SQ_3, str_BGM_S3_NORMALA_SQ, str_BGM_S3_NORMALB_SQ, str_BGM_S3_CHASE_SQ, str_BGM_STAGE3_BANK_BD};
 
     stage_load(d, sFiles);
 }
@@ -1570,7 +1570,7 @@ void MusicStage3_StageChans(u8 *d) {
 
 /* stage 4 (MusicStage4_vtable) */
 
-extern const char D_004633C0[], D_004633D8[], D_004633F0[], D_00463410[], D_00463430[], D_00463440[];
+extern const char str_BGM_STAGE4_BANK_HD[], str_BGM_PANIC_SQ_4[], str_BGM_S4_NORMALA_SQ[], str_BGM_S4_NORMALB_SQ[], str_BGM_S4_CHASE_SQ[], str_BGM_STAGE4_BANK_BD[];
 
 /* 0x0035F100 */
 void *MusicStage4_dtor(u8 *d, s32 flags) {
@@ -1579,7 +1579,7 @@ void *MusicStage4_dtor(u8 *d, s32 flags) {
 
 /* 0x0035F490 */
 void MusicStage4_Load(u8 *d) {
-    static const char *const sFiles[6] = {D_004633C0, D_004633D8, D_004633F0, D_00463410, D_00463430, D_00463440};
+    static const char *const sFiles[6] = {str_BGM_STAGE4_BANK_HD, str_BGM_PANIC_SQ_4, str_BGM_S4_NORMALA_SQ, str_BGM_S4_NORMALB_SQ, str_BGM_S4_CHASE_SQ, str_BGM_STAGE4_BANK_BD};
 
     stage_load(d, sFiles);
 }

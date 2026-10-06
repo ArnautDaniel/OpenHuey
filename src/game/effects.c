@@ -75,7 +75,7 @@ extern void *Kind39_vtable[];
 
 void DropletFlash_Start(u8 *self);
 
-extern const char *const D_00405618, *const D_0040561C;   /* "kibako" (the box), "a_koushi" (the grate) */
+extern const char *const pstr_kibako, *const pstr_a_koushi;   /* "kibako" (the box), "a_koushi" (the grate) */
 
 static f32 shaft_rnd(VObject *rnd) {
     return VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);

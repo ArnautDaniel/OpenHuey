@@ -29,7 +29,7 @@
 extern void *SynthBase_vtable[];
 extern u8 gLanguage;
 extern const char D_00460408[];                     /* the count's format */
-extern const char D_00460410[];                     /* "ITEM SYNTHESIZER(POT)" */
+extern const char str_ITEM_SYNTHESIZER_POT[];                     /* "ITEM SYNTHESIZER(POT)" */
 extern const PTMF SynthPot_StateDebug_ptmf, SlotMachine_StateChoose_ptmf, SlotMachine_StateNothing_ptmf, SlotMachine_StateRoll_ptmf, ItemFound_StateShow_ptmf;
 
 typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s32, s32, s32, s32);
@@ -165,7 +165,7 @@ void SynthPot_Start(u8 *o) {
 /* the pot +0x10: its title (a debug line), then as the base */
 /* 0x00322B80 */
 void SynthPot_Update(u8 *o) {
-    Task_Printf(SY_TASK(o), 0x32, 0x32, 0x80, D_00460410);
+    Task_Printf(SY_TASK(o), 0x32, 0x32, 0x80, str_ITEM_SYNTHESIZER_POT);
     SynthBase_Update(o);
 }
 

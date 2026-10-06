@@ -367,7 +367,7 @@ void Debilitas_StandAnim(Pursuer *p) {
 
 extern PTMF D_003AF2D0;
 extern u8 D_003AF340[], D_003AF4A0[], D_003AF4D0[], D_003AF6F0[], D_003AF730[], D_003AFA90[],
-    D_003AFAF0[], D_003AFB10[], D_003AFB58[], D_003AFB70[], D_0047A900[];
+    D_003AFAF0[], D_003AFB10[], D_003AFB58[], str_Z_2[], D_0047A900[];
 
 /* vtable +0xF4: his setup over the Pursuer's (Pursuer_Setup): his tables, and his stats, which
    are different when gProgress+0x30 bit 0x8000 is set */
@@ -383,7 +383,7 @@ void Debilitas_Setup(Pursuer *p) {
     PU(p, 0x1740, u8 *) = D_003AFAF0;
     PU(p, 0x173C, u8 *) = D_003AFB10;
     PU(p, 0x1748, u8 *) = D_003AFB58;
-    PU(p, 0x17F0, u8 *) = D_003AFB70;
+    PU(p, 0x17F0, u8 *) = str_Z_2;
     PU(p, 0x16DC, s32) = 20;              /* Hewie bite tolerance */
     PU(p, 0x16E8, f32) = 10.0f;
     PU(p, 0x16D4, s32) = alt ? 540 : 300; /* frames */
