@@ -5559,3 +5559,34 @@ s32 func_00379DB0(void) { return clock_draw(D_0047B320, D_004639E0); }
 s32 func_0037A450(void) { return clock_draw(D_0047B328, D_00463A18); }
 s32 func_0037A780(void) { return clock_draw(D_0047B330, D_00463A38); }
 s32 func_0037AA30(void) { return clock_draw(D_0047B338, D_00463A40); }
+
+/* ---- the slam shake: frame hooks of Lorenzo's (kind 0xA) rooms shake the camera (+0x6C, 0.5)
+ * when his slam lands ---- */
+extern s32 func_0030BB70(void *p);   /* is his slam at its impact key (lorenzo.c) */
+
+static inline s32 slam_shake(void) {
+    if (gCharPursuer == NULL || AT(gCharPursuer, 0x153C, u8) != 0xA) {
+        return 1;
+    }
+    if (func_0030BB70(D_0044F808) != 0) {
+        VCALL(D_0044E4B8, 0x6C, void (*)(VObject *, f32))(D_0044E4B8, 0.5f);
+    }
+    return 1;
+}
+
+s32 func_0032C7A0(void) { return slam_shake(); }
+s32 func_0033F2B0(void) { return slam_shake(); }
+s32 func_0033F460(void) { return slam_shake(); }
+s32 func_0033F5F0(void) { return slam_shake(); }
+s32 func_0033F7B0(void) { return slam_shake(); }
+s32 func_003401A0(void) { return slam_shake(); }
+s32 func_00340F50(void) { return slam_shake(); }
+s32 func_00341690(void) { return slam_shake(); }
+s32 func_00343830(void) { return slam_shake(); }
+s32 func_00350F60(void) { return slam_shake(); }
+s32 func_00352C00(void) { return slam_shake(); }
+s32 func_00352D90(void) { return slam_shake(); }
+s32 func_0035D2A0(void) { return slam_shake(); }
+s32 func_0035D430(void) { return slam_shake(); }
+s32 func_0035D5C0(void) { return slam_shake(); }
+s32 func_0035D750(void) { return slam_shake(); }
