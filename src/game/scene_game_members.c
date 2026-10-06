@@ -1669,6 +1669,275 @@ void func_00303E60(u8 *m, s8 page) {
     }
 }
 
+/* ---- the map screen (the sub screen's map page): map +0x10C (+0x10D the one the player is
+ * in), page +0x10E (+0x10F), room +0x108; the page's picture loaded to +0x140 ---- */
+
+#include "input.h"
+#include "progress.h"
+
+extern u16 *D_0041F8B0[];      /* per map: each page's title message */
+extern u8 D_00420570[];        /* the alternative room entries (0x18 each) */
+extern VObject *D_0044E4E8;    /* the texture cache */
+extern VObject *D_0044E560;    /* the sound driver */
+extern f32 func_0031C058(f32 x);   /* cosf */
+extern f32 func_0031C248(f32 x);   /* sinf */
+extern u32 Text_LineWidth(Task *t, u8 *text, s32 glyphW);   /* (a u16, masked here as the original does) */
+
+#define MAP_CUR(m) AT(m, 0x10C, s8)
+#define MAP_PAGE(m) AT(m, 0x10E, s8)
+#define MAP_PICTURE_AREA 0x6000000   /* the file loader's area for the page's picture */
+
+/* the maps the player has (progress +0x84 bits 22..26 as bits 0..4, as func_00303F00) */
+static inline u8 map_owned(void) {
+    u32 b = AT(gProgress, 0x84, u32);
+    u8 v = 0;
+
+    if (b & 0x400000) {
+        v |= 1;
+    }
+    if (b & 0x800000) {
+        v |= 2;
+    }
+    if (b & 0x1000000) {
+        v |= 4;
+    }
+    if (b & 0x2000000) {
+        v |= 8;
+    }
+    if (b & 0x4000000) {
+        v |= 0x10;
+    }
+    return v;
+}
+
+/* can map `map` be shown: one the player has, with pages */
+static inline s32 map_shown(s8 map) {
+    u8 owned;
+
+    if (map == -1) {
+        return 0;
+    }
+    owned = map_owned();
+    if (owned == 0) {
+        return 0;
+    }
+    if (D_0041F950[map] == NULL) {
+        return 0;
+    }
+    return (owned & (1 << map)) ? 1 : 0;
+}
+
+/* the current map's last page */
+static inline void map_last_page(u8 *m) {
+    MAP_PAGE(m) = 0;
+    while (D_0041F950[MAP_CUR(m)][MAP_PAGE(m) + 1] != NULL) {
+        MAP_PAGE(m)++;
+    }
+}
+
+/* the first map from 0 that can be shown; none: back to `map` / `page` */
+static inline void map_first(u8 *m, s8 map, s8 page) {
+    MAP_CUR(m) = 0;
+    for (;;) {
+        if (D_0041F950[MAP_CUR(m)] == NULL) {
+            MAP_CUR(m) = map;
+            *(volatile s8 *)&MAP_PAGE(m) = page;   /* (stored again, unchanged, as the original) */
+            return;
+        }
+        if (map_shown(MAP_CUR(m))) {
+            return;
+        }
+        MAP_CUR(m)++;
+    }
+}
+
+/* Left / right on the map: the previous / next page, past the ends the previous / next map the
+ * player has (round), its last / first page. A new page has its picture loaded: 1. */
+s32 func_00303F90(u8 *m) {
+    u32 pad = D_0047E36C;
+    s8 map = MAP_CUR(m), page = MAP_PAGE(m);
+
+    if (pad & MENU_LEFT) {
+        if (map_shown(map) && page != 0) {
+            MAP_PAGE(m)--;
+        } else if (map == -1) {
+            map_first(m, map, page);
+            if (MAP_CUR(m) == -1) {
+                return 0;
+            }
+            map_last_page(m);
+        } else {
+            for (;;) {
+                if (MAP_CUR(m) != 0) {
+                    MAP_CUR(m)--;
+                } else {
+                    do {
+                        MAP_CUR(m)++;
+                    } while (D_0041F950[MAP_CUR(m) + 1] != NULL);
+                }
+                if (MAP_CUR(m) == map || map_shown(MAP_CUR(m))) {
+                    break;
+                }
+            }
+            map_last_page(m);
+        }
+    } else if (pad & MENU_RIGHT) {
+        if (map_shown(map) && D_0041F950[map][page + 1] != NULL) {
+            MAP_PAGE(m)++;
+        } else if (map == -1) {
+            map_first(m, map, page);
+            if (MAP_CUR(m) == -1) {
+                return 0;
+            }
+            MAP_PAGE(m) = 0;
+        } else {
+            for (;;) {
+                MAP_CUR(m)++;
+                if (D_0041F950[MAP_CUR(m)] == NULL) {
+                    MAP_CUR(m) = 0;
+                }
+                if (MAP_CUR(m) == map || map_shown(MAP_CUR(m))) {
+                    break;
+                }
+            }
+            MAP_PAGE(m) = 0;
+        }
+    }
+    if (map == MAP_CUR(m) && page == MAP_PAGE(m)) {
+        return 0;
+    }
+    VCALL(gFileLoader, 0xC, void (*)(VObject *, void *, void *, u32, s32))(
+        gFileLoader, D_0041F950[MAP_CUR(m)][MAP_PAGE(m)], m + 0x140, MAP_PICTURE_AREA, 0);
+    return 1;
+}
+
+/* the "you are here" arrow: Fiona's spot on the page of the map she is on (the room's entry:
+ * +0x8 / +0xC x / z scale, +0x10 / +0x14 x / y offset; map 2's rooms 0x100..0x105 take theirs
+ * from D_00420570 by the events' +0x70), a 32 x 32 arrow (texture group 0x18 #0, 0x1C0, 0x60)
+ * turned to her heading, layer 0x30 */
+void func_003048C0(u8 *m) {
+    s32 room = AT(m, 0x108, s32);
+    s8 map = MAP_CUR(m), page = MAP_PAGE(m);
+    u8 *e;
+    s32 found = 0;
+    f32 fx, fy, a, s, c;
+    s32 x0, y0, x1, y1, x2, y2, x3, y3;
+
+    if (room == -1 || map == -1 || page == -1 || gCharPlayer == NULL || AT(gCharPlayer, 0x28, u8) == 0) {
+        return;
+    }
+    for (e = D_00420B20[map]; AT(e, 0, s32) != -1; e += 0x18) {
+        if (AT(e, 0, s32) == room && AT(e, 4, s8) == page) {
+            found = 1;
+            break;
+        }
+    }
+    if (!found) {
+        return;
+    }
+    if (map == 2 && (u32)room >= 0x100 && (u32)room < 0x106) {
+        s32 n = VCALL(D_0044E4D0, 0x70, s32 (*)(VObject *))(D_0044E4D0);
+
+        if (n < 0) {
+            return;
+        }
+        e = D_00420570 + (n + 0xE) * 0x18;
+    }
+    fx = AT(e, 0x10, f32) + 512.0f * (AT(gCharPlayer, 0x10, f32) / AT(e, 0x8, f32)) / 640.0f;
+    fy = 128.0f + (AT(e, 0x14, f32) + AT(gCharPlayer, 0x18, f32) / AT(e, 0xC, f32));
+    a = -AT(gCharPlayer, 0x54, f32);
+    /* the corners (-16, 16) (16, 16) (-16, -16) (16, -16) turned by a, x squeezed 512 / 640 */
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    x0 = (s32)(fx + 512.0f * (-16.0f * c - 16.0f * s) / 640.0f);
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    y0 = (s32)(fy + (16.0f * c + -16.0f * s));
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    x1 = (s32)(fx + 512.0f * (16.0f * c - 16.0f * s) / 640.0f);
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    y1 = (s32)(fy + (16.0f * c + 16.0f * s));
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    x2 = (s32)(fx + 512.0f * (-16.0f * c - -16.0f * s) / 640.0f);
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    y2 = (s32)(fy + (-16.0f * c + -16.0f * s));
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    x3 = (s32)(fx + 512.0f * (16.0f * c - -16.0f * s) / 640.0f);
+    s = func_0031C248(a);
+    c = func_0031C058(a);
+    y3 = (s32)(fy + (-16.0f * c + 16.0f * s));
+    VCALL(D_0044E4F0, 0x84, void (*)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, s32, u32,
+                                     s32, s32, s32, s32))(
+        D_0044E4F0, x0, y0, x1, y1, x2, y2, x3, y3, 0x1C0, 0x60, 0x20, 0x20, 0x20808080, 0, 0x18, 0x30, 6);
+}
+
+/* 1 while the page's picture is still loading; else, when the page can be shown, its
+ * picture's texture made resident (texture cache +0x10) */
+s32 func_00304D70(u8 *m) {
+    if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, MAP_PICTURE_AREA) == 2) {
+        return 1;
+    }
+    if (map_shown(MAP_CUR(m))) {
+        VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, m + 0x140, 0x28);
+    }
+    return 0;
+}
+
+/* the map page each frame: with any map, left / right (func_00303F90) with a sound on a new
+ * page; the page's picture (texture group 0x28) with the arrow when it is Fiona's own page,
+ * and its title centred at the top (no map or page: message 0x85) */
+void func_00304F50(u8 *m) {
+    u8 *text;
+
+    if (func_00304D70(m)) {
+        return;
+    }
+    if (map_owned() != 0 && func_00303F90(m)) {
+        VCALL(D_0044E560, 0x14, void (*)(VObject *, s32, s32))(D_0044E560, 0x2A, 5);
+        return;
+    }
+    if (MAP_CUR(m) == -1 || MAP_PAGE(m) == -1 || !map_shown(MAP_CUR(m))) {
+        text = Task_MessageText(m + 4, 0x85);
+    } else {
+        text = Task_MessageText(m + 4, D_0041F8B0[MAP_CUR(m)][MAP_PAGE(m)]);
+    }
+    if (map_shown(MAP_CUR(m))) {
+        if (MAP_CUR(m) != -1 && MAP_PAGE(m) != -1) {
+            VCALL(D_0044E4F0, 0x7C, s32 (*)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s32, s32, s32,
+                                            s32))(D_0044E4F0, 0, 0x80, 0x200, 0x100, 0, 0, 0x200, 0x100, 0x80808080,
+                                                  0, 0x28, 0x30, 0);
+        }
+        if (MAP_CUR(m) == AT(m, 0x10D, s8) && MAP_PAGE(m) == AT(m, 0x10F, s8)) {
+            func_003048C0(m);
+        }
+    }
+    if (text != NULL) {
+        u32 w = Text_LineWidth((Task *)(m + 4), text, 0x10) & 0xFFFF;
+
+        Task_ShowText((Task *)(m + 4), 0xA6 - (w >> 1), 0x48, 0x80, text, 0x80, 0x33, 0x10, 0x15);
+    }
+}
+
+/* back to the map / page the player is in (+0x10D / +0x10F) and, when it can be shown, its
+ * picture loaded */
+void func_00305380(u8 *m) {
+    MAP_CUR(m) = AT(m, 0x10D, s8);
+    MAP_PAGE(m) = AT(m, 0x10F, s8);
+    if (AT(m, 0x108, s32) == -1 || AT(m, 0x10D, s8) == -1 || AT(m, 0x10F, s8) == -1) {
+        return;
+    }
+    if (!map_shown(MAP_CUR(m))) {
+        return;
+    }
+    VCALL(gFileLoader, 0xC, void (*)(VObject *, void *, void *, u32, s32))(
+        gFileLoader, D_0041F950[MAP_CUR(m)][MAP_PAGE(m)], m + 0x140, MAP_PICTURE_AREA, 0);
+}
+
 /* ---- the saved game state (0xFC0 bytes, kept at SceneGame +0x48 and in the save): its
  * assignment, as the compiler made it - field by field, the padding left alone ---- */
 
