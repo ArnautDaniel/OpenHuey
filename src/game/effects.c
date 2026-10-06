@@ -4648,6 +4648,262 @@ void func_003608A0(u8 *o) {
     func_002E56C0(o + 0x610);
 }
 
+/* ---- the drips that make those: D_00479A60 (0x640 bytes) 14 drops falling from fixed spots
+ * of room 0xC0's ceiling (y 40) to the floor under them, D_00479A80 (0xC0 bytes) one drop at
+ * (-226, -100) from y 30 into water at 0. Each lands as a spray (and the single one with a
+ * ring) and starts over after a random wait ---- */
+
+extern VObject *D_0044E560;   /* the sound driver */
+extern void func_002FF650(VObject *snd, s32 id, s32 arg2, const f32 *pos, s32 arg4, s32 arg5);
+
+/* the ring's start parameters (D_00479AE0) */
+typedef struct RingParams {
+    f32 pos[4];
+    u8 rgba[4];
+    f32 size;
+} RingParams;
+
+static inline void ring_init(void **obj) {
+    obj[0] = D_00479AE0;
+}
+
+static inline void spray_init(void **obj) {
+    obj[0] = D_00479AA0;
+    obj[0x610 / 4] = D_00469D00;
+    ((s32 *)obj)[0x614 / 4] = -1;
+    obj[0x610 / 4] = D_0046FC30;
+}
+
+#define DRIPS_REC(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0x2A0) + (i))
+
+/* (re)start drop `i` within 20 of its spot (x, z) at y 40, falling 1.5..2.5 a frame after up to
+ * a second; the floor triangle under it kept (+0x5FC) */
+void func_0035F640(u8 *o, s32 i) {
+    static const f32 kSpots[14][2] = {
+        {85.0f, -146.0f}, {92.0f, -194.0f}, {83.0f, -237.0f}, {65.0f, -272.0f}, {39.0f, -284.0f},
+        {-7.0f, -291.0f}, {-47.0f, -284.0f}, {-78.0f, -256.0f}, {-96.0f, -221.0f}, {-101.0f, -187.0f},
+        {-82.0f, -166.0f}, {-39.0f, -172.0f}, {3.0f, -175.0f}, {39.0f, -166.0f},
+    };
+    static const union { u32 u; f32 f; } k360 = {0x43B40000}, kPi = {0x40490FDB}, k60 = {0x42700000};   /* multiplied first */
+    VObject *rnd;
+    QuadRec *r;
+    f32 x = kSpots[i][0], z = kSpots[i][1];
+
+    r = DRIPS_REC(o, AT(o, 0x5C0, s32), i);
+    r->rgba[0] = 0x20;
+    r->rgba[1] = 0x20;
+    r->rgba[2] = 0x20;
+    r->rgba[3] = 0x70;
+    rnd = D_0044E550;
+    r->pos[0] = (20.0f + x) - 40.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
+    r->pos[1] = 40.0f;
+    r->pos[2] = (20.0f + z) - 40.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
+    r->pos[3] = 1.0f;
+    r->w = 0.5f;
+    r->h = 0.5f;
+    r->turn = kPi.f * (k360.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f)) / 180.0f;
+    r->frame = 0;
+    AT(o, 0x588 + i * 4, f32) = 1.5f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    AT(o, 0x5C4 + i * 4, s32) = (s32)(k60.f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd));
+    AT(o, 0x5FC + i * 4, s32) = VCALL(D_0044E570, 0x3C, s32 (*)(VObject *, f32 *, s32))(D_0044E570, r->pos, 0);
+}
+
+/* +0x10 update: flip the buffers; each drop carried over, waiting, or falling until under its
+ * floor (none: below 0, restarted quietly): there a spray of 16 (and a drip sound, one of three
+ * in turn, if the driver has room), and it starts over */
+s32 func_0035F9E0(u8 *o) {
+    VObject *nav = D_0044E570;
+    u8 *mgr = D_0044E578;
+    VObject *snd = D_0044E560;
+    f32 g[4] __attribute__((aligned(16)));
+    s32 i, k;
+
+    AT(o, 0x5C0, s32) ^= 1;
+    for (i = 0; i < 14; i++) {
+        QuadRec *r;
+
+        for (k = 0; k < 12; k++) {
+            ((u32 *)DRIPS_REC(o, AT(o, 0x5C0, s32), i))[k] = ((u32 *)DRIPS_REC(o, AT(o, 0x5C0, s32) ^ 1, i))[k];
+        }
+        if (AT(o, 0x5C4 + i * 4, s32) != 0) {
+            AT(o, 0x5C4 + i * 4, s32)--;
+            continue;
+        }
+        r = DRIPS_REC(o, AT(o, 0x5C0, s32), i);
+        r->pos[1] = r->pos[1] - AT(o, 0x588 + i * 4, f32);
+        if (AT(o, 0x5FC + i * 4, s32) == -1) {
+            if (r->pos[1] < 0.0f) {
+                func_0035F640(o, i);
+            }
+            continue;
+        }
+        sceVu0CopyVector(g, r->pos);
+        VCALL(nav, 0x14, void (*)(VObject *, s32, f32 *))(nav, AT(o, 0x5FC + i * 4, s32), g);
+        if (r->pos[1] < g[1]) {
+            SprayParams sp __attribute__((aligned(16)));
+
+            sceVu0CopyVector(sp.pos, g);
+            sp.rgba[0] = 0x20;
+            sp.rgba[1] = 0x20;
+            sp.rgba[2] = 0x20;
+            sp.rgba[3] = 0x10;
+            sp.n = 0x10;
+            sp.size = 0x1.99999ap-2f;      /* 0.4 */
+            sp.sizeRnd = 0x1.99999ap-2f;
+            sp.dist = 0x1.99999ap-4f;      /* 0.1 */
+            sp.distRnd = 0x1.99999ap-3f;   /* 0.2 */
+            sp.rise = 0x1.99999ap-4f;
+            sp.riseRnd = 0x1.99999ap-3f;
+            sp.speed = 0x1.99999ap-4f;
+            sp.speedRnd = 0x1.99999ap-3f;
+            sp.lift = 0.5f;
+            sp.gravity = 0x1.99999ap-4f;
+            func_002D6090(mgr, Effect_New(mgr, 0x720, spray_init), &sp);
+            func_0035F640(o, i);
+            if ((VCALL(snd, 0xA4, s32 (*)(VObject *, s32))(snd, 6) & 0xFF) == 1) {
+                func_002FF650(snd, AT(o, 0x634, s32) | 0x40000000, 6, sp.pos, 0, 0);
+                AT(o, 0x634, s32)++;
+                if (AT(o, 0x634, s32) >= 3) {
+                    AT(o, 0x634, s32) = 0;
+                }
+            }
+        }
+    }
+    return 1;
+}
+
+/* +0xC set up: the drawer (14 quads of an 8 x 8 cell at (108, 76), additive with glow), every
+ * drop started */
+void func_0035FDD0(u8 *o) {
+    s32 i;
+
+    AT(o, 0x5C0, s32) = 0;
+    AT(o, 0x558, s64) = -1;
+    AT(o, 0x564, s32) = 0;
+    AT(o, 0x568, s32) = 0;
+    AT(o, 0x56C, s32) = 0;
+    AT(o, 0x570, s32) = 0x19;
+    AT(o, 0x574, s16) = 0xE;
+    AT(o, 0x576, s16) = 0x6C;
+    AT(o, 0x578, s16) = 0x4C;
+    AT(o, 0x57A, s16) = 8;
+    AT(o, 0x57C, s16) = 8;
+    AT(o, 0x57E, s16) = 0x200;
+    AT(o, 0x580, s16) = 0x100;
+    AT(o, 0x582, s8) = -0x40;
+    AT(o, 0x583, s8) = 1;
+    AT(o, 0x584, s8) = 1;
+    AT(o, 0x585, s8) = 0x10;
+    AT(o, 0x586, s8) = -1;
+    for (i = 0; i < 14; i++) {
+        func_0035F640(o, i);
+    }
+    AT(o, 0x634, s32) = 0;
+}
+
+#define DRIP_REC(o, buf) ((QuadRec *)((o) + 0x10 + (buf) * 0x30))
+
+/* (re)start the single drop within 8 of (-226, -100) at y 30, falling 1.5..2.5 a frame after
+ * 30..120 frames */
+void func_0035FF30(u8 *o) {
+    static const union { u32 u; f32 f; } k360 = {0x43B40000}, kPi = {0x40490FDB}, k90 = {0x42B40000};   /* multiplied first */
+    VObject *rnd = D_0044E550;
+    QuadRec *r = DRIP_REC(o, AT(o, 0xAC, s32));
+
+    r->rgba[0] = 0x20;
+    r->rgba[1] = 0x20;
+    r->rgba[2] = 0x20;
+    r->rgba[3] = 0x70;
+    r->pos[0] = -226.0f - 8.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
+    r->pos[1] = 30.0f;
+    r->pos[2] = -100.0f - 8.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
+    r->pos[3] = 1.0f;
+    r->w = 0.5f;
+    r->h = 0.5f;
+    r->turn = kPi.f * (k360.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f)) / 180.0f;
+    r->frame = 0;
+    AT(o, 0xA8, f32) = 1.5f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    AT(o, 0xB0, s32) = (s32)(k90.f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) + 30;
+}
+
+/* +0x10 update: flip the buffers; the drop waiting or falling; once below 0 a ring and a
+ * single droplet where it hit (at 0.1), and it starts over */
+s32 func_00360100(u8 *o) {
+    QuadRec *r;
+    s32 k;
+
+    AT(o, 0xAC, s32) ^= 1;
+    for (k = 0; k < 12; k++) {
+        ((u32 *)DRIP_REC(o, AT(o, 0xAC, s32)))[k] = ((u32 *)DRIP_REC(o, AT(o, 0xAC, s32) ^ 1))[k];
+    }
+    if (AT(o, 0xB0, s32) != 0) {
+        AT(o, 0xB0, s32)--;
+        return 1;
+    }
+    r = DRIP_REC(o, AT(o, 0xAC, s32));
+    r->pos[1] = r->pos[1] - AT(o, 0xA8, f32);
+    if (r->pos[1] < 0.0f) {
+        RingParams rp __attribute__((aligned(16)));
+        SprayParams sp __attribute__((aligned(16)));
+        u8 *mgr;
+
+        sceVu0CopyVector(rp.pos, r->pos);
+        rp.pos[1] = 0x1.99999ap-4f;   /* 0.1 */
+        rp.rgba[0] = 0x40;
+        rp.rgba[1] = 0x40;
+        rp.rgba[2] = 0x40;
+        rp.rgba[3] = 0x30;
+        rp.size = 0x1.333334p-3f;     /* 0.15 */
+        mgr = D_0044E578;
+        func_002D6090(mgr, Effect_New(mgr, 0x40, ring_init), &rp);
+        sceVu0CopyVector(sp.pos, r->pos);
+        sp.pos[1] = 0x1.99999ap-4f;
+        sp.rgba[0] = 0x20;
+        sp.rgba[1] = 0x20;
+        sp.rgba[2] = 0x20;
+        sp.rgba[3] = 0x30;
+        sp.n = 1;
+        sp.size = 0x1.99999ap-2f;     /* 0.4 */
+        sp.sizeRnd = 0x1.99999ap-3f;  /* 0.2 */
+        sp.dist = 0.0f;
+        sp.distRnd = 0.0f;
+        sp.rise = 0x1.333334p-2f;     /* 0.3 */
+        sp.riseRnd = 0x1.99999ap-3f;
+        sp.speed = 0.0f;
+        sp.speedRnd = 0.0f;
+        sp.lift = 0.5f;
+        sp.gravity = 0x1.99999ap-4f;
+        func_002D6090(mgr, Effect_New(mgr, 0x720, spray_init), &sp);
+        func_0035FF30(o);
+    }
+    return 1;
+}
+
+/* +0xC set up: the drawer (one quad of an 8 x 8 cell at (108, 76), additive with glow), the
+ * drop started */
+void func_00360460(u8 *o) {
+    AT(o, 0xAC, s32) = 0;
+    AT(o, 0x78, s64) = -1;
+    AT(o, 0x84, s32) = 0;
+    AT(o, 0x88, s32) = 0;
+    AT(o, 0x8C, s32) = 0;
+    AT(o, 0x90, s32) = 0x19;
+    AT(o, 0x94, s16) = 1;
+    AT(o, 0x96, s16) = 0x6C;
+    AT(o, 0x98, s16) = 0x4C;
+    AT(o, 0x9A, s16) = 8;
+    AT(o, 0x9C, s16) = 8;
+    AT(o, 0x9E, s16) = 0x200;
+    AT(o, 0xA0, s16) = 0x100;
+    AT(o, 0xA2, s8) = -0x40;
+    AT(o, 0xA3, s8) = 1;
+    AT(o, 0xA4, s8) = 1;
+    AT(o, 0xA5, s8) = 0x10;
+    AT(o, 0xA6, s8) = -1;
+    func_0035FF30(o);
+}
+
+
 /* ---- D_00479560 (room effect 0x1A of room 0x32): the mirror fragment's reflection - the
  * placed object +0x10 ("a_fragment0"), its kind +0x14 and alpha +0x18, size / drop / strength
  * +0x50.. ---- */
