@@ -3965,3 +3965,123 @@ void func_0032B080(Character *c, f32 *at) {
     sceVu0UnitMatrix(c->a.rot);
     sceVu0RotMatrixY(c->a.rot, c->a.rot, h);
 }
+
+/* 1 when it notices someone: Fiona reachable on her triangle within `fiona` of its sight
+   (+0x48); Hewie up in its room, reachable on his, within 30 at `hewie` (>= 0); an action 4 on
+   it (not in move 4); or no sight at all */
+s32 func_0032A0E0(Character *c, f32 fiona, f32 hewie) {
+    u8 *k = CR(c);
+    Character *h;
+
+    if (func_00124480(&c->a, gCharPlayer->a.pos, NAV_NONE) == gCharPlayer->a.navTri && fiona <= (f32)AT(k, 0x48, s16)) {
+        return 1;
+    }
+    h = gCharPartner;
+    if (h != NULL && h->a.active == 1 && c->a.room == h->a.room && !(hewie < 0.0f) &&
+        func_00124480(&c->a, gCharPartner->a.pos, NAV_NONE) == gCharPartner->a.navTri && hewie <= 30.0f) {
+        return 1;
+    }
+    if (AT(c, 0xF8, s32) != 4 && AT(c, 0x14E8, s32) == 4) {
+        return 1;
+    }
+    return AT(k, 0x48, s16) == 0;
+}
+
+extern u32 func_002DD420(void *motion, f32 *out, s32 left, f32 dt, f32 zscale);   /* foot on the ground (u8) */
+extern f32 func_001F6140(void *motion, f32 t);   /* root rotation (yaw delta) */
+
+/* its footsteps while walking (animation 0x200), in play: sounds 6 / 7 as each foot comes
+   down (+0x73 / +0x72 last frame's) */
+void func_0032AF00(Character *c) {
+    u8 *k = CR(c);
+    f32 l[4] __attribute__((aligned(16)));
+    f32 r[4] __attribute__((aligned(16)));
+    u8 left, right;
+
+    if (c->a.disabled == 1 || c->a.navTri == NAV_NONE) {
+        return;
+    }
+    if ((VCALL(D_0044E4D0, 0x50, s32 (*)(VObject *))(D_0044E4D0) & 0xFF) == 1) {
+        return;
+    }
+    if ((Progress_TestFlag(gProgress, 8) & 0xFF) == 1) {
+        return;
+    }
+    left = func_002DD420(c->motion, l, 1, 0.0f, 1.0f);
+    right = func_002DD420(c->motion, r, 0, 0.0f, 1.0f);
+    if (AT(c->motion, 0x55C, s32) == 0x200) {
+        if (right == 1 && AT(k, 0x73, u8) == 0) {
+            func_00122C20(&c->a, 6, 5, 0, 0, NULL);
+        }
+        if (left == 1 && AT(k, 0x72, u8) == 0) {
+            func_00122C20(&c->a, 7, 5, 0, 0, NULL);
+        }
+    }
+    AT(k, 0x72, u8) = left;
+    AT(k, 0x73, u8) = right;
+}
+
+extern VObject *D_0044E4E8;   /* the texture cache */
+
+/* +0x2C draw, once out (+0x6E: and its trip begun, +0x6F) or not resting (+0x4A): lit
+   (+0xE4: its light +0x80 unless layer 0x17), else on layer 0xF faded by +0x71 (0x80 at most;
+   other layers become 0xA); the texture cache's +0x18, its model */
+void func_0032BD90(Character *c) {
+    u8 *k = CR(c);
+
+    if (AT(k, 0x6E, u8) == 0) {
+        if (AT(k, 0x4A, s16) != 0) {
+            return;
+        }
+    } else if (AT(k, 0x6F, u8) == 0) {
+        return;
+    }
+    if (c->unkE4 == 1) {
+        if (c->unk152C != 0x17) {
+            VCALL(c, 0x80, void (*)(Character *))(c);
+        }
+    } else if (c->unk152C == 0xF) {
+        u32 a = AT(k, 0x71, u8);
+
+        if (a > 0x80) {
+            a = 0x80;
+        }
+        VCALL(D_0044E4F0, 0x70, void (*)(VObject *, u32))(D_0044E4F0, a << 24 | 0x808080);
+    } else {
+        c->unk152C = 0xA;
+    }
+    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    VCALL(c->motion, 0x38, void (*)(void *, s32, u32, s32))(c->motion, c->unk152C, c->a.navTri, 0);
+}
+
+void func_0032A550(Character *c);
+void func_0032B210(Character *c, u8 st);
+
+/* +0x30 its frame: doors noted (+0x50), func_0032A550; out on a trip (+0x6F): out of contact
+   it travels (unless held, +0x6B bit 0x80, and when the room entry allows), in play turned by
+   its animation with +0x84, footsteps and its state's choice (func_0032B210 with +0x62); then
+   its state (+0xA0) and the model (+0x40) */
+void func_0032BB50(Character *c) {
+    u8 *k = CR(c);
+
+    creature_at_doors(c, 0x50);
+    func_0032A550(c);
+    if (AT(k, 0x6F, u8) != 0) {
+        if (c->a.disabled != 0) {
+            if (!(AT(k, 0x6B, u8) & 0x80) && func_00325B60(c) != 0) {
+                func_003257B0(c);
+            }
+        } else {
+            f32 h = func_002E2D00(c->a.angle[1] + func_001F6140(c->motion, 0.0f));
+
+            c->a.angle[1] = h;
+            sceVu0UnitMatrix(c->a.rot);
+            sceVu0RotMatrixY(c->a.rot, c->a.rot, h);
+            VCALL(c, 0x84, void (*)(Character *))(c);
+            func_0032AF00(c);
+            func_0032B210(c, AT(k, 0x62, u8));
+        }
+    }
+    ptmf_scall(c, &c->a.state);
+    VCALL(c, 0x40, void (*)(Character *))(c);
+}
