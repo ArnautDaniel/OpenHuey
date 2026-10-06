@@ -2100,3 +2100,92 @@ void func_00388D30(SubScreen *s) {
         }
     }
 }
+
+/* ---- the entry list (the file's index) ---- */
+
+extern u8 D_0047B350;           /* the language */
+extern u8 D_0047B180[][2];      /* per group of 8: its first entry and the end */
+extern const char D_00463FD0[];
+
+/* the entry list (screen kind 0x8F): the language set to 1, the two headings, the entries of
+ * the current one's group (page[0] / 8) with their numbers and titles ("???" until unlocked,
+ * D_0044C080's flag), the current one highlighted; the group number of 2 */
+void func_00385C30(SubScreen *s) {
+    u8 g;
+    s32 k;
+
+    s->kind = 0x8F;
+    sub_panels(s);
+    D_0047B350 = 1;
+    Task_ShowText(&s->text, 0x30, 0x3B, 0x80, Task_MessageText(&s->text, 0xF), 0x80, 0x30, 0x10, 0x15);
+    Task_ShowText(&s->text, 0x58, 0x3B, 0x80, Task_MessageText(&s->text, 0x2B), 0x80, 0x30, 0x10, 0x15);
+    g = SUB_PAGE(s, 0x0, u8) >> 3;
+    for (k = D_0047B180[g][0]; k < D_0047B180[g][1]; k++) {
+        u16 *e = D_0044C080[k];
+        u8 color = k == SUB_PAGE(s, 0x0, u8) ? 0x82 : 0x80;
+        s32 y = (k % 8) * 35 + 0x5E;
+
+        Task_Printf(&s->text, 0x30, y, color, D_00463FD0, k + 1);
+        if (AT(D_0044E978, 0x24 + (e[0] >> 5) * 4, u32) & (1 << (e[0] & 0x1F))) {
+            Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, e[1]), 0x80, 0x30, 0x10, 0x15);
+        } else {
+            Task_ShowText(&s->text, 0x58, y, color, Task_MessageText(&s->text, 0x16E), 0x80, 0x30, 0x10, 0x15);
+        }
+    }
+    Task_Printf(&s->text, 0x186, 0x176, 0x80, D_00463FD8, g + 1, 2);
+}
+
+/* ---- the model gallery's model ---- */
+
+extern u8 *func_0038C160(SubScreen *s, u8 k);   /* the gallery model made */
+extern VObject *D_0044E4F8;   /* the camera director */
+extern VObject *D_0044E4B8;   /* the camera */
+extern f32 D_0044BB70[];      /* per entry: the camera's extra distance */
+extern f32 D_0044B9F4[][3];   /* per entry: the camera's height */
+extern const PTMF D_0044B9C0;
+
+/* state: the model gallery's files loading; then shown (state D_0044B9C0): the model made
+ * (+0x4D8 / +0x4D9 set), the camera taken (+0xA8E00 / +0xA8E10) and aimed (26, 0, -27,
+ * distance 10 + D_0044BB70, height D_0044B9F4), entries 6..8 idling (motions 0x1F00 / 0x2000 /
+ * 0x2102) and the entry's first motion (D_0044BE90; past 0x19 blended in) */
+void func_0038B900(SubScreen *s) {
+    VObject *cam;
+    u8 *m;
+    u8 k;
+
+    if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x10000000) == 2) {
+        return;
+    }
+    s->fade = 0x80;
+    ptmf_set(&s->state, &D_0044B9C0);
+    SUB_PAGE(s, 0x1, u8) = 0;
+    SUB_GALLERY_MODEL(s) = func_0038C160(s, SUB_PAGE(s, 0x0, u8));
+    AT(SUB_GALLERY_MODEL(s), 0x4D8, u8) = 1;
+    AT(SUB_GALLERY_MODEL(s), 0x4D9, u8) = 1;
+    VCALL(D_0044E4F8, 0x14, void (*)(VObject *))(D_0044E4F8);
+    cam = D_0044E4B8;
+    VCALL(cam, 0x20, void (*)(VObject *, f32 *))(cam, (f32 *)((u8 *)s + 0xA8E00));
+    VCALL(cam, 0x2C, void (*)(VObject *, f32 *))(cam, (f32 *)((u8 *)s + 0xA8E10));
+    AT(s, 0xA8E20, f32) = 26.0f;
+    AT(s, 0xA8E24, f32) = 0.0f;
+    AT(s, 0xA8E28, f32) = -27.0f;
+    AT(s, 0xA8E2C, f32) = 1.0f;
+    AT(s, 0xA8E30, f32) = 10.0f + D_0044BB70[SUB_PAGE(s, 0x0, u8)];
+    AT(s, 0xA8E34, f32) = 0.0f;
+    AT(s, 0xA8E38, f32) = D_0044B9F4[SUB_PAGE(s, 0x0, u8)][0];
+    AT(s, 0xA8E3C, u8) = 1;
+    k = SUB_PAGE(s, 0x0, u8);
+    if (k >= 6 && k < 9) {
+        func_002DE030(SUB_GALLERY_MODEL(s), 0x1F00, 1, -1, 5.0f);
+        func_002DE030(SUB_GALLERY_MODEL(s), 0x2000, 1, -1, 5.0f);
+        func_002DE030(SUB_GALLERY_MODEL(s), 0x2102, 1, -1, 5.0f);
+    }
+    k = SUB_PAGE(s, 0x0, u8);
+    m = SUB_GALLERY_MODEL(s);
+    if (k < 0x18 || k == 0x19) {
+        func_002DDED0(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], -1);
+    } else {
+        func_002DE030(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], 1, -1, 5.0f);
+    }
+    SUB_PAGE(s, 0x2, u8) = 0;
+}
