@@ -2229,3 +2229,125 @@ void func_0038DBE0(SubScreen *s) {
     SubScreen_DrawPart(s, 0x168, 0x170, 0x1A, alpha, 0);
     SubScreen_DrawPart(s, 0x1B3, 0x170, 0x1B, alpha, 0);
 }
+
+/* ---- the screen fading out / in ---- */
+
+extern const char D_00464240[];   /* "SUBSCR\\SUBBACK.TEX" */
+extern const PTMF D_0044B1F0, D_0044B190;
+
+/* the fade's background: a darkening overlay (pages, kind 0x80..) or the panels at the fade's
+ * alpha, layer 0x31 */
+static void sub_fade_back(SubScreen *s) {
+    if (s->kind & 0x80) {
+        u8 ov[0x100] __attribute__((aligned(16)));
+
+        AT(ov, 0x0, void **) = D_0046F350;
+        AT(ov, 0x4, s32) = -1;
+        AT(ov, 0x10, s32) = -1;
+        AT(ov, 0x14, u8) = 0;
+        AT(ov, 0x24, s32) = 0;
+        func_002CF390(ov, (u32)s->fade << 24);
+        VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, ov, 0x31, 0);
+        AT(ov, 0x0, void **) = D_00469D00;
+    } else {
+        u8 alpha = s->fade;
+
+        if (alpha != 0 && s->kind != 0xFF) {
+            s8 *panel = D_0044C120[s->kind & 0x7F];
+            s32 i;
+
+            for (i = 0; i < 4 && panel[i] >= 0; i++) {
+                SubScreen_DrawPanel(s, (u8)panel[i], alpha, 0x31);
+            }
+        }
+    }
+}
+
+/* the music's (+0x94) and the voices' (D_00456DF0 +0x44) level `f` 0..1 */
+static void sub_fade_sound(f32 f) {
+    VCALL(D_0044E560, 0x94, void (*)(VObject *, u32))(D_0044E560, (u8)(u32)(255.0f * f));
+    if (D_00456DF0 != NULL) {
+        VCALL(D_00456DF0, 0x44, void (*)(VObject *, f32))(D_00456DF0, f);
+    }
+}
+
+/* draw: closing - the page's textures given back and SUBBACK.TEX reloaded at the start, the fade
+ * from 0x40 to 0x80 (sound coming back up); once loaded, the screen's own textures made resident,
+ * draw D_0044B1F0 and progress flags 8 and 4 */
+void func_003970D0(SubScreen *s) {
+    Progress *p = gProgress;
+    struct {
+        void **vtbl;
+        s32 a;
+        f32 v[4];
+    } dof;
+    f32 f;
+
+    if (p != NULL) {
+        Progress_ClearFlag(p, 4);
+    }
+    if (s->fade == 0x40) {
+        VCALL(D_0044E4E8, 0x14, void (*)(VObject *, s32))(D_0044E4E8, 0x19);
+        VCALL(gFileLoader, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(gFileLoader, D_00464240, s->pageTex,
+                                                                                   0x6000000, 0);
+    }
+    s->fade += s->fadeStep;
+    if (s->fade < 0x80) {
+        f = 100.0f * (f32)(s->fade - 0x40) / 64.0f / 100.0f;
+    } else {
+        s->fade = 0x80;
+        if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x6000000) != 2) {
+            VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, s->pageTex, 0x19);
+            if (p != NULL) {
+                ptmf_set(&s->draw, &D_0044B1F0);
+                Progress_SetFlag(gProgress, 8);
+                Progress_SetFlag(gProgress, 4);
+            }
+        }
+        f = 1.0f;
+    }
+    sub_fade_back(s);
+    dof.a = -1;
+    dof.vtbl = D_0046EC80;
+    func_002C86F0((u8 *)&dof, 1.0f, 151.0f, 2000.0f, 2000.0f);
+    sub_fade_sound(f);
+    dof.vtbl = D_00469D00;
+}
+
+/* draw: opening - once the textures are loaded the fade runs up to 0x40 (sound going down);
+ * there the screen starts (flags cleared; modes 7 / 10 make their page resident) with draw
+ * D_0044B190. Depth of field drawing in from far to near with it. */
+void func_00398100(SubScreen *s) {
+    static const union { u32 u; f32 f; } kTenth = {0x3DCCCCCD};
+    struct {
+        void **vtbl;
+        s32 a;
+        f32 v[4];
+    } dof;
+    f32 f;
+
+    if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x6000000) != 2) {
+        s->fade += s->fadeStep;
+    }
+    if (s->fade >= 0x40) {
+        s->fading = 0;
+        s->fade = 0x40;
+        s->quietClose = 0;
+        s->close = 0;
+        if (s->mode == 7 || s->mode == 10) {
+            VCALL(D_0044E4E8, 0x10, void (*)(VObject *, void *, s32))(D_0044E4E8, s->pageTex, 0x19);
+        }
+        ptmf_set(&s->draw, &D_0044B190);
+    }
+    f = 100.0f * (f32)(0x40 - s->fade) / 64.0f / 100.0f;
+    sub_fade_sound(f);
+    sub_fade_back(s);
+    dof.a = -1;
+    dof.vtbl = D_0046EC80;
+    func_002C86F0((u8 *)&dof, 1.0f, 10.0f * (kTenth.f + 15.0f * (100.0f * (f32)s->fade / 64.0f / 100.0f)), 2000.0f,
+                  2000.0f);
+    if (gProgress != NULL) {
+        Progress_ClearFlag(gProgress, 4);
+    }
+    dof.vtbl = D_00469D00;
+}
