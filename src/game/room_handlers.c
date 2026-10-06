@@ -5905,3 +5905,84 @@ s32 func_00340C50(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+/* its update (func_00371030's): done (+0x11) stops it (0); else the angle (+0x4) turns on by
+ * 50..70 degrees, and +0x8 eases toward +0xC by 0.1 */
+s32 func_00370F00(u8 *o) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTenth = {0x3DCCCCCD};
+    f32 r;
+
+    if (AT(o, 0x11, u8) == 1) {
+        return 0;
+    }
+    r = VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550);
+    AT(o, 0x4, f32) = AT(o, 0x4, f32) + kPi.f * (50.0f + 20.0f * r) / 180.0f;
+    AT(o, 0x4, f32) = func_002E2D00(AT(o, 0x4, f32));
+    if (AT(o, 0x8, f32) != AT(o, 0xC, f32)) {
+        if (AT(o, 0x8, f32) <= AT(o, 0xC, f32)) {
+            AT(o, 0x8, f32) = AT(o, 0x8, f32) + kTenth.f;
+            if (!(AT(o, 0x8, f32) <= AT(o, 0xC, f32))) {
+                AT(o, 0x8, f32) = AT(o, 0xC, f32);
+            }
+        } else {
+            AT(o, 0x8, f32) = AT(o, 0x8, f32) - kTenth.f;
+            if (AT(o, 0x8, f32) < AT(o, 0xC, f32)) {
+                AT(o, 0x8, f32) = AT(o, 0xC, f32);
+            }
+        }
+    }
+    return 1;
+}
+
+extern const char *D_00434888;
+
+/* the room object named D_00434888 swung: byte 3 0 starts it (rest +0x30 from +0x20, phase
+ * +0x34 0, amplitude +0x3C 1); 1 steps the phase back 60 degrees and the amplitude down 0.25,
+ * height +0x28 = +0x38 + amplitude * sin, waiting (2) until it has died out */
+s32 func_0033FE90(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kStep = {0x3F860A92}, kNegPi = {0xC0490FDB}, k2Pi = {0x40C90FDB};
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_00434888);
+    f32 a;
+
+    switch (cmd[3]) {
+    case 0:
+        sceVu0CopyVector((f32 *)(o + 0x30), (f32 *)(o + 0x20));
+        AT(o, 0x34, s32) = 0;
+        AT(o, 0x3C, u32) = 0x3F800000;   /* 1 */
+        return 1;
+    case 1:
+        a = AT(o, 0x34, f32) - kStep.f;
+        AT(o, 0x34, f32) = a;
+        if (a < kNegPi.f) {
+            AT(o, 0x34, f32) = a + k2Pi.f;
+        }
+        AT(o, 0x3C, f32) = AT(o, 0x3C, f32) - 0.25f;
+        AT(o, 0x28, f32) = AT(o, 0x38, f32) + AT(o, 0x3C, f32) * func_0031C248(AT(o, 0x34, f32));
+        return AT(o, 0x3C, f32) <= 0.0f ? 1 : 2;
+    }
+    return 1;
+}
+
+#include "charaction.h"
+
+extern void func_002A8410(void *o);         /* an action block reset */
+extern void func_002EF9E0(void *o, f32 v);
+
+/* the player (active, +0xE0 clear) put in action 0xB / 0x21 / 0xFF unless held (7); then
+ * progress +0x7B8 gets 50 */
+s32 func_0034ABB0(void) {
+    CharAction act;
+
+    if (gCharPlayer == NULL || AT(gCharPlayer, 0x28, u8) == 0 || AT(gCharPlayer, 0xE0, u8) != 0) {
+        return 1;
+    }
+    func_002A8410(&act);
+    act.state = 0xB;
+    act.a = 0x21;
+    act.b = 0xFF;
+    if (AT(gCharPlayer, 0x14E8, s32) != 7) {
+        char_set_action((u8 *)gCharPlayer, &act);
+    }
+    func_002EF9E0((u8 *)gProgress + 0x7B8, 50.0f);
+    return 1;
+}
