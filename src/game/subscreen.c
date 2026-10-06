@@ -11,6 +11,7 @@
 #include "sound.h"
 #include "gs.h"
 #include "texcache.h"
+#include "sce/libvu0.h"
 
 
 extern VObject *gFileLoader;
@@ -2241,6 +2242,7 @@ static void sub_fade_back(SubScreen *s) {
     if (s->kind & 0x80) {
         u8 ov[0x100] __attribute__((aligned(16)));
 
+        AT(ov, 0x8, s32) = 0;   /* not set by the original either (its stack there was clear) */
         AT(ov, 0x0, void **) = D_0046F350;
         AT(ov, 0x4, s32) = -1;
         AT(ov, 0x10, s32) = -1;
@@ -3809,4 +3811,232 @@ void func_003894F0(SubScreen *s) {
             }
         }
     }
+}
+
+/* ---- the model gallery ---- */
+
+extern VObject *gBootMessage;
+extern u8 D_0044BF10[];   /* per entry: its motions */
+extern void *D_0046EB40[], *D_0046D7B0[];
+extern void func_00267160(void *fx);
+extern void func_002DCB40(u8 *m);
+extern void func_002DC960(u8 *m);
+extern void func_001F6AF0(u8 *m);
+extern const PTMF D_0044B9D0, D_0044B9E0;
+
+#define GALLERY_STEP(s) SUB_PAGE(s, 0x2, u8)   /* 0 fading in, 1 shown, 2..4 the help, 5 leaving */
+#define GALLERY_BARS(s) AT(s, 0xA8E3C, u8)    /* the name and help bars shown */
+
+/* the entry's motion page[1] played (past 0x19 blended in) */
+static void gallery_motion(SubScreen *s, u8 *m) {
+    u8 k = SUB_PAGE(s, 0x0, u8);
+
+    if (k < 0x18 || k == 0x19) {
+        func_002DDED0(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], -1);
+    } else {
+        func_002DE030(m, D_0044BE90[k][SUB_PAGE(s, 0x1, u8)], 1, -1, 5.0f);
+    }
+}
+
+/* room effect `k`'s slot made anew (class `vtbl`) */
+static void gallery_effect_new(u8 *fx, VObject **slot, void **vtbl) {
+    VObject *pool = (VObject *)(fx + 0x1400);
+    void *mem;
+
+    if (*slot != NULL) {
+        VCALL(pool, 0x14, void (*)(VObject *, void *))(pool, *slot);
+        *slot = NULL;
+    }
+    mem = VCALL(pool, 0x10, void *(*)(VObject *, u32))(pool, 0xA0);
+    if (mem != NULL) {
+        VObject *e = func_002672F0(0xA0, mem);
+
+        if (e != NULL) {
+            e->vtbl = vtbl;
+        }
+        *slot = e;
+        VCALL(*slot, 0xC, void (*)(VObject *))(*slot);
+    }
+}
+
+/* room effect `k` given back its 0x90 bytes kept in `save` */
+static void gallery_effect_back(u8 *fx, s32 k, const u8 *save) {
+    u64 *dst = (u64 *)(func_00266C40(fx, k) + 0x10);
+    s32 i;
+
+    for (i = 0; i < 18; i++) {
+        dst[i] = AT(save, i * 8, u64);
+    }
+}
+
+/* the model gallery left: the message and model gone, the work buffers cleared, the camera
+ * and lights given back, the room effects 0x1F, 0x1D and 0x1E restored (made anew as they
+ * were), fading back to the list (D_0044B9D0 / D_0044B9E0) */
+static void gallery_leave(SubScreen *s) {
+    VObject *msg = gBootMessage;
+    VObject *m = (VObject *)SUB_GALLERY_MODEL(s);
+    VObject *cam;
+    u8 *fx;
+
+    ptmf_set(&s->state, &D_0044B9D0);
+    VCALL(msg, 0x14, void (*)(VObject *, s32))(msg, 2);
+    VCALL(msg, 0xC, void (*)(VObject *, s32))(msg, 2);
+    VCALL(m, 0x10, void (*)(VObject *))(m);
+    AT(s, 0xA8DF0, u8 *) = NULL;
+    AT(s, 0xA8DEC, u8 *) = NULL;
+    AT(s, 0xA8DFC, u8 *) = NULL;
+    AT(s, 0xA8DF8, u8 *) = NULL;
+    AT(s, 0xA8DF4, u8 *) = NULL;
+    if (m != NULL) {
+        VCALL(m, 0x8, void (*)(VObject *, s32))(m, 1);
+    }
+    cam = D_0044E4B8;
+    SUB_GALLERY_MODEL(s) = NULL;
+    VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, AT(s, 0xA8E00, f32), AT(s, 0xA8E04, f32),
+                                                         AT(s, 0xA8E08, f32));
+    VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, AT(s, 0xA8E10, f32), AT(s, 0xA8E14, f32),
+                                                         AT(s, 0xA8E18, f32));
+    VCALL(cam, 0x14, void (*)(VObject *))(cam);
+    VCALL(D_0044E4F8, 0x10, void (*)(VObject *))(D_0044E4F8);
+    VCALL(D_0044E4C8, 0x48, void (*)(VObject *, s32, f32 *, f32))(D_0044E4C8, 0, NULL, 0.0f);
+    fx = D_0044E4C0;
+    func_002670F0(fx, 0x1F);
+    gallery_effect_new(D_0044E4C0, &AT(fx, 0x14B4, VObject *), D_0046D750);
+    gallery_effect_back(D_0044E4C0, 0x1F, (u8 *)s + 0xA8E40);
+    gallery_effect_new(D_0044E4C0, &AT(D_0044E4C0, 0x14AC, VObject *), D_0046EB40);
+    gallery_effect_back(D_0044E4C0, 0x1D, (u8 *)s + 0xA8ED0);
+    gallery_effect_new(D_0044E4C0, &AT(D_0044E4C0, 0x14B0, VObject *), D_0046D7B0);
+    gallery_effect_back(fx, 0x1E, (u8 *)s + 0xA8F60);
+    s->fading = 1;
+    s->fade = 0x80;
+    s->fadeStep = -0x20;
+    ptmf_set(&s->draw, &D_0044B9E0);
+}
+
+/* state: the model gallery. Fading in; then cancel leaves (fading out, gallery_leave) and
+ * start shows the help (fading a shade in, start again, back out). Confirm replays the
+ * motion, next / previous step through the entry's motions (D_0044BF10, round), select the bars,
+ * else the stick turns and moves the camera (func_0038A2E0); the camera placed round the
+ * model, the room effects run, the model drawn on a backdrop. The help's text, the bars (the
+ * entry's name, the controls, func_0037E480) and the fade */
+void func_0038A990(SubScreen *s) {
+    Task *t = &s->text;
+    u8 *m;
+
+    func_0038A740(s);
+    switch (GALLERY_STEP(s)) {
+    case 0:
+        if (s->fade > 0) {
+            s->fade -= 0x20;
+        } else {
+            GALLERY_STEP(s) = 1;
+        }
+        break;
+    case 2:
+        if (s->fade < 0x60) {
+            s->fade += 0x10;
+        } else {
+            GALLERY_STEP(s) = 3;
+        }
+        break;
+    case 3:
+        if (D_0047E37C & PAD_START) {
+            GALLERY_STEP(s) = 4;
+            Sound_PlaySE(SE_DECIDE);
+        }
+        break;
+    case 4:
+        if (s->fade > 0) {
+            s->fade -= 0x10;
+        } else {
+            GALLERY_STEP(s) = 1;
+        }
+        break;
+    case 5:
+        if (s->fade < 0x80) {
+            s->fade += 0x20;
+        } else {
+            gallery_leave(s);
+        }
+        break;
+    default:
+        if (D_0047E36C & MENU_CANCEL) {
+            GALLERY_STEP(s) = 5;
+            Sound_PlaySE(SE_CANCEL);
+        } else if (D_0047E37C & PAD_START) {
+            GALLERY_STEP(s) = 2;
+            Sound_PlaySE(SE_DECIDE);
+        }
+        break;
+    }
+    m = SUB_GALLERY_MODEL(s);
+    if (m != NULL) {
+        f32 mat[4][4] __attribute__((aligned(16)));
+        f32 v[4] __attribute__((aligned(16)));
+        f32 at[4] __attribute__((aligned(16)));
+        VObject *cam;
+
+        if (D_0047E36C & MENU_CONFIRM) {
+            gallery_motion(s, m);
+        } else if (D_0047E36C & MENU_NEXT) {
+            SUB_PAGE(s, 0x1, u8)++;
+            if (D_0044BF10[SUB_PAGE(s, 0x0, u8)] - 1 < SUB_PAGE(s, 0x1, u8)) {
+                SUB_PAGE(s, 0x1, u8) = 0;
+            }
+            gallery_motion(s, SUB_GALLERY_MODEL(s));
+        } else if (D_0047E36C & MENU_PREV) {
+            SUB_PAGE(s, 0x1, u8)--;
+            if ((s8)SUB_PAGE(s, 0x1, u8) < 0) {
+                SUB_PAGE(s, 0x1, u8) = D_0044BF10[SUB_PAGE(s, 0x0, u8)] - 1;
+            }
+            gallery_motion(s, SUB_GALLERY_MODEL(s));
+        } else if (D_0047E37C & PAD_SELECT) {
+            GALLERY_BARS(s) ^= 1;
+            Sound_PlaySE(SE_DECIDE);
+        } else {
+            func_0038A2E0(s);
+        }
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[2] = GALLERY_DIST(s);
+        v[3] = 1.0f;
+        sceVu0UnitMatrix(mat);
+        sceVu0RotMatrixY(mat, mat, GALLERY_TURN(s));
+        sceVu0TransMatrix(mat, mat, (f32 *)((u8 *)s + 0xA8E20));
+        mat[3][1] = GALLERY_HEIGHT(s);
+        sceVu0ApplyMatrix(v, mat, v);
+        cam = D_0044E4B8;
+        VCALL(cam, 0x1C, void (*)(VObject *, f32, f32, f32))(cam, v[0], v[1], v[2]);
+        sceVu0CopyVector(at, (f32 *)((u8 *)s + 0xA8E20));
+        at[1] = at[1] + GALLERY_HEIGHT(s);
+        VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, at[0], at[1], at[2]);
+        VCALL(cam, 0x14, void (*)(VObject *))(cam);
+        func_00267160(D_0044E4C0);
+        if (SUB_GALLERY_MODEL(s) != NULL) {
+            sceVu0UnitMatrix(mat);
+            sceVu0TransMatrix(mat, mat, (f32 *)((u8 *)s + 0xA8E20));
+            m = SUB_GALLERY_MODEL(s);
+            VCALL(m, 0x28, void (*)(u8 *, f32 (*)[4]))(m, mat);
+            func_002DCB40(SUB_GALLERY_MODEL(s));
+            func_002DC960(SUB_GALLERY_MODEL(s));
+            func_001F6AF0(SUB_GALLERY_MODEL(s));
+            m = SUB_GALLERY_MODEL(s);
+            VCALL(m, 0x3C, void (*)(u8 *))(m);
+            m = SUB_GALLERY_MODEL(s);
+            VCALL(m, 0x38, void (*)(u8 *, s32, s32, s32))(m, 0xA, 0x2E, 0);
+        }
+        VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0, 0x200, 0x1C0, 0, 0, 0, 0, 0x805C503C, -1, 0, 1, -1);
+    }
+    if (GALLERY_STEP(s) == 3) {
+        Task_ShowText(t, 0x20, 0x20, 0, Task_MessageText(t, 0x1C4), 0x80, 0x33, 0x10, 0x15);
+    }
+    if (GALLERY_BARS(s)) {
+        VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0, 0x200, 0x38, 0, 0, 0, 0, 0x40000000, -1, 0, 0x31, -1);
+        VCALL(D_0044E4F0, 0x7C, RectFn)(D_0044E4F0, 0, 0x188, 0x200, 0x38, 0, 0, 0, 0, 0x40000000, -1, 0, 0x31, -1);
+        Task_ShowText(t, 0x20, 0x10, 1, Task_MessageText(t, (u16)(SUB_PAGE(s, 0x0, u8) + 0x70)), 0x80 - s->fade, 0x33,
+                      0x10, 0x15);
+        Task_ShowText(t, 0x20, 0x198, 0, Task_MessageText(t, 0x9E), 0x80 - s->fade, 0x33, 0x10, 0x15);
+        func_0037E480((u8 *)s);
+    }
+    sub_fade_back(s);
 }
