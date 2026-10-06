@@ -125,7 +125,7 @@ void Debilitas3_Setup(Pursuer *p) {
 void func_002CF380(void) {
 }
 
-/* vtable +0xB4: head for character `c` (NULL: the target) - Debilitas's func_0012BAA0 without
+/* vtable +0xB4: head for character `c` (NULL: the target) - Debilitas's Debilitas_HeadFor without
  * the resting check */
 /* 0x002CEC40 */
 void Debilitas3_HeadFor(Pursuer *p, Character *c) {
@@ -155,7 +155,7 @@ void Debilitas3_HeadFor(Pursuer *p, Character *c) {
     }
 }
 
-/* vtable +0xB0: head for Fiona - Debilitas's func_0012BBF0 without the resting check */
+/* vtable +0xB0: head for Fiona - Debilitas's Debilitas_HeadForFiona without the resting check */
 /* 0x002CED60 */
 void Debilitas3_HeadForFiona(Pursuer *p) {
     Character *f = gCharPlayer;
@@ -178,7 +178,7 @@ void Debilitas3_HeadForFiona(Pursuer *p) {
 }
 
 /* vtable +0xAC: head for triangle `tri` at `pos` in `room` (-1 the current one) - as Debilitas's
- * func_0012BD10 */
+ * Debilitas_GoTo */
 /* 0x002CEE50 */
 void Debilitas3_GoTo(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
     void *nm;
@@ -469,7 +469,7 @@ void func_002CE100(Pursuer *p) {
 
 extern const f32 D_00414300[4];
 
-/* vtable +0x1A8: the chase towards the target - as Debilitas's func_00129570: on the path he cuts
+/* vtable +0x1A8: the chase towards the target - as Debilitas's Debilitas_ChaseTarget: on the path he cuts
  * straight for the target once he's no more than 10 units further from it than the path's end */
 /* 0x002CE6C0 */
 void Debilitas3_ChaseTarget(Pursuer *p) {
@@ -521,7 +521,7 @@ void Debilitas3_ChaseTarget(Pursuer *p) {
     func_00214620(p, p->c.unk128);
 }
 
-/* vtable +0x30: his frame update - as Debilitas's func_001297C0 (full think on screen, with a
+/* vtable +0x30: his frame update - as Debilitas's Debilitas_Update (full think on screen, with a
  * growl every 90 idle frames; off screen the behaviour step and the off-screen move) */
 /* 0x002CE910 */
 void Debilitas3_Update(Pursuer *p) {
@@ -702,7 +702,7 @@ void func_003301D0(Pursuer *p) {
     Actor_SetState(&p->c.a, &D_0042F1B0);
 }
 
-/* (as Debilitas3_ChaseTarget)  vtable +0x1A8: the chase towards the target - as Debilitas's func_00129570: on the path he cuts
+/* (as Debilitas3_ChaseTarget)  vtable +0x1A8: the chase towards the target - as Debilitas's Debilitas_ChaseTarget: on the path he cuts
  * straight for the target once he's no more than 10 units further from it than the path's end */
 /* 0x00330790 */
 void Kind27_ChaseTarget(Pursuer *p) {
@@ -754,7 +754,7 @@ void Kind27_ChaseTarget(Pursuer *p) {
     func_00214620(p, p->c.unk128);
 }
 
-/* (as Debilitas3_Update)  vtable +0x30: his frame update - as Debilitas's func_001297C0 (full think on screen, with a
+/* (as Debilitas3_Update)  vtable +0x30: his frame update - as Debilitas's Debilitas_Update (full think on screen, with a
  * growl every 90 idle frames; off screen the behaviour step and the off-screen move) */
 /* 0x003309E0 */
 void Kind27_Update(Pursuer *p) {
@@ -799,7 +799,7 @@ u32 Kind27_PathNodeSound(Pursuer *p) {
     return Pursuer_PathNodeSound(p);
 }
 
-/* (as Debilitas3_HeadFor)  vtable +0xB4: head for character `c` (NULL: the target) - Debilitas's func_0012BAA0 without
+/* (as Debilitas3_HeadFor)  vtable +0xB4: head for character `c` (NULL: the target) - Debilitas's Debilitas_HeadFor without
  * the resting check */
 /* 0x00330D50 */
 void Kind27_HeadFor(Pursuer *p, Character *c) {
@@ -829,7 +829,7 @@ void Kind27_HeadFor(Pursuer *p, Character *c) {
     }
 }
 
-/* (as Debilitas3_HeadForFiona)  vtable +0xB0: head for Fiona - Debilitas's func_0012BBF0 without the resting check */
+/* (as Debilitas3_HeadForFiona)  vtable +0xB0: head for Fiona - Debilitas's Debilitas_HeadForFiona without the resting check */
 /* 0x00330E70 */
 void Kind27_HeadForFiona(Pursuer *p) {
     Character *f = gCharPlayer;
@@ -852,7 +852,7 @@ void Kind27_HeadForFiona(Pursuer *p) {
 }
 
 /* (as Debilitas3_GoTo)  vtable +0xAC: head for triangle `tri` at `pos` in `room` (-1 the current one) - as Debilitas's
- * func_0012BD10 */
+ * Debilitas_GoTo */
 /* 0x00330F60 */
 void Kind27_GoTo(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
     void *nm;

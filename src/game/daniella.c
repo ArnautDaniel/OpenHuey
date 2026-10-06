@@ -418,7 +418,7 @@ f32 Daniella_ReachHewie(Pursuer *p) {
     return 12.0f;
 }
 
-/* vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
+/* vtable +0x30: her frame update: as Debilitas's (Debilitas_Update), but without his growl and
    senses step; on screen the hit effect (func_0020C7C0) when a cry is heard or her animation
    reaches its effect key (0x20) */
 /* 0x0020D330 */
@@ -592,7 +592,7 @@ void Kind34_DoorBreak(Pursuer *p, s32 exit) {
     }
 }
 
-/* (as Daniella_Update)  vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
+/* (as Daniella_Update)  vtable +0x30: her frame update: as Debilitas's (Debilitas_Update), but without his growl and
    senses step; on screen the hit effect (func_00346330) when a cry is heard or her animation
    reaches its effect key (0x20) */
 /* 0x00346F50 */
@@ -653,7 +653,7 @@ void Kind35_ActionOffsets(void *self, s32 i, f32 *out) {
     }
 }
 
-/* (as Daniella_Update)  vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
+/* (as Daniella_Update)  vtable +0x30: her frame update: as Debilitas's (Debilitas_Update), but without his growl and
    senses step; on screen the hit effect (func_00347B80) when a cry is heard or her animation
    reaches its effect key (0x20) */
 /* 0x00348330 */
@@ -689,7 +689,7 @@ void *Kind35_ModelFiles(void) {
     return (*(u32 *)((u8 *)gProgress + 0x30) & 0x8000) ? D_0043CD80 : D_0043CD40;
 }
 
-/* (as Daniella_Update)  vtable +0x30: her frame update: as Debilitas's (func_001297C0), but without his growl and
+/* (as Daniella_Update)  vtable +0x30: her frame update: as Debilitas's (Debilitas_Update), but without his growl and
    senses step; on screen the hit effect (func_00348B10) when a cry is heard or her animation
    reaches its effect key (0x20) */
 /* 0x003492C0 */

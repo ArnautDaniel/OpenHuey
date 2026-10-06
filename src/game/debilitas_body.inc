@@ -17,7 +17,8 @@ extern void *D_00469D10[];
 void func_00128A20(Pursuer *p);
 
 /* vtable +0x8: destructor */
-Pursuer *func_001276F0(Pursuer *p, s32 flags) {
+/* 0x001276F0 */
+Pursuer *Debilitas_dtor(Pursuer *p, s32 flags) {
     if (p != NULL) {
         p->c.a.vtbl = D_00469D10;
         if (p != NULL) {
@@ -31,7 +32,8 @@ Pursuer *func_001276F0(Pursuer *p, s32 flags) {
 }
 
 /* vtable +0x328: his walk animation (0x203 while resting) */
-s32 func_00127CC0(Pursuer *p) {
+/* 0x00127CC0 */
+s32 Debilitas_SlowWalkAnim(Pursuer *p) {
     if (PU(p, 0x16C8, u8) == 4) {
         return 0x203;
     }
@@ -40,7 +42,8 @@ s32 func_00127CC0(Pursuer *p) {
 
 /* vtable +0x11C: does he give up and go elsewhere? Never with fewer than DEBILITAS_GIVE_UP_HITS hits taken (+0x16C4),
  * nor while resting or held by the story flag */
-s32 func_00127FC0(Pursuer *p) {
+/* 0x00127FC0 */
+s32 Debilitas_GivesUp(Pursuer *p) {
     if (PU(p, 0x16C4, s32) < DEBILITAS_GIVE_UP_HITS) {
         return 0;
     }
@@ -58,20 +61,24 @@ s32 func_00127FC0(Pursuer *p) {
 }
 
 /* vtable +0x228 / +0x224: the Pursuer's */
-void func_00129550(Pursuer *p) {
+/* 0x00129550 */
+void Debilitas_DoorAnim(Pursuer *p) {
     Pursuer_DoorAnim(p);
 }
 
-void func_00129560(Pursuer *p) {
+/* 0x00129560 */
+void Debilitas_Stairs(Pursuer *p) {
     Pursuer_Stairs(p);
 }
 
 /* vtable +0x310 / +0x30C */
-s32 func_0012BE60(Pursuer *p) {
+/* 0x0012BE60 */
+s32 Debilitas_AttackAnimB(Pursuer *p) {
     return 0xE;
 }
 
-s32 func_0012BE70(Pursuer *p) {
+/* 0x0012BE70 */
+s32 Debilitas_AttackAnimA(Pursuer *p) {
     return 0xD;
 }
 
@@ -95,7 +102,8 @@ void func_00128970(Pursuer *p) {
 extern const PTMF D_003AFF80, D_003B0010;
 
 /* vtable +0x2B4: a fresh start of his behaviour (vtable +0x2B8 picks it) */
-void func_00129D10(Pursuer *p) {
+/* 0x00129D10 */
+void Debilitas_FreshStart(Pursuer *p) {
     PU(p, 0x16F6, u8) = 0;
     PU(p, 0x16ED, u8) = 0;
     PURSUER_STEP_DONE(p) = 0;
@@ -188,7 +196,8 @@ void func_00128DB0(Pursuer *p) {
 
 /* vtable +0xB0: head for Fiona (the Pursuer's NPC_HeadForFiona without the door test); resting,
    func_0029B190 instead */
-void func_0012BBF0(Pursuer *p) {
+/* 0x0012BBF0 */
+void Debilitas_HeadForFiona(Pursuer *p) {
     Character *f;
     s32 side;
 
@@ -215,7 +224,8 @@ void func_0012BBF0(Pursuer *p) {
 }
 
 /* vtable +0xAC: head for triangle `tri` at `pos` in `room` (-1 the current one) */
-void func_0012BD10(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
+/* 0x0012BD10 */
+void Debilitas_GoTo(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
     void *nm;
 
     if (room == -1) {
@@ -237,7 +247,8 @@ void func_0012BD10(Pursuer *p, u32 tri, const f32 *pos, s32 room) {
 }
 
 /* vtable +0xB4: head for character `c` (NULL: the target); resting, func_0029AF20 instead */
-void func_0012BAA0(Pursuer *p, Character *c) {
+/* 0x0012BAA0 */
+void Debilitas_HeadFor(Pursuer *p, Character *c) {
     s32 side;
 
     if (p->c.unkE0 == 0 && PU(p, 0x16C8, u8) == 4) {
@@ -312,7 +323,8 @@ extern const PTMF D_003AFF60;
 
 /* vtable +0x2AC: go for Fiona: the pending action (+0x1758; -1 action 4), then rest mode with her
    as the target, and pick the behaviour (vtable +0x2B0) */
-void func_0012A390(Pursuer *p) {
+/* 0x0012A390 */
+void Debilitas_GoForFiona(Pursuer *p) {
     s32 next = PU(p, 0x1758, s32);
 
     if (next == -1) {
@@ -345,7 +357,8 @@ extern DebilitasRoomSpot D_003AFAE0[];
 
 /* vtable +0xE8: pick where to go. Already in one of his rooms: go to its spot (when on screen).
    Otherwise route to the nearest of them. Returns 0 when none can be reached. */
-s32 func_00128090(Pursuer *p) {
+/* 0x00128090 */
+s32 Debilitas_PickDestination(Pursuer *p) {
     u8 i;
     u32 best = -1;
     s32 bestRoom = -1;
@@ -385,7 +398,8 @@ extern PTMF D_0045B340;
    func_0029A8C0): head for one of his rooms (vtable +0xE8), forgetting the searched rooms once if
    none is left; then the move step, and when chasing, back to his first behaviour with the idle
    move */
-void func_00129B30(Pursuer *p) {
+/* 0x00129B30 */
+void Debilitas_CarryOn(Pursuer *p) {
     PTMF *st;
 
     if (!(func_0029A8C0(p, -1) & 0xFF) && !(p->c.unk1388 < p->c.unk1384)) {
@@ -441,7 +455,8 @@ static u8 *const sAttackTables[2][17] = {
 };
 
 /* vtable +0x130: the attack table for a situation (the Pursuer has none) */
-void func_00127D00(Pursuer *p, s8 situation) {
+/* 0x00127D00 */
+void Debilitas_AttackTable(Pursuer *p, s8 situation) {
     s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
 
     PU(p, 0x1718, u8 *) = (u32)situation < 17 ? sAttackTables[alt][situation] : sAttackTables[alt][0];
@@ -451,7 +466,8 @@ extern const f32 D_003B0030[4];
 
 /* vtable +0x1A8: the chase towards the target (Pursuer_ChaseTarget), but on the path he cuts straight
    for the target once he's no more than 10 units further from it than the path's end is */
-void func_00129570(Pursuer *p) {
+/* 0x00129570 */
+void Debilitas_ChaseTarget(Pursuer *p) {
     Character *t;
 
     if (PU(p, 0x1590, f32) < 0.0f && p->c.a.room == p->target->a.room) {
@@ -543,7 +559,8 @@ void func_00128A20(Pursuer *p) {
    the full think: hits, reactions to cries, the behaviour step, a growl (sound 0x2A) every 90
    frames while idle, the stance logic (+0x110) and his voice; off screen the behaviour step and
    the off-screen move */
-void func_001297C0(Pursuer *p) {
+/* 0x001297C0 */
+void Debilitas_Update(Pursuer *p) {
     PTMF *st = (PTMF *)((u8 *)p + 0x174C);
 
     Stalker_ThinkStart(p);
@@ -582,7 +599,8 @@ extern const PTMF D_003AFF70;
    door +0x17B0, open it (0xA / 0xE), go through, or plan round it; the attacks 0x28 / 0x29 pick
    their table (vtable +0x130) and strike; 0xB / 0x10 / 0x12 end in a walk (4). When the step is
    over: through the door (+0x16ED), or back to his first behaviour when chasing */
-void func_00129DB0(Pursuer *p) {
+/* 0x00129DB0 */
+void Debilitas_HeadingStep(Pursuer *p) {
     u32 ds = 0xFF;
 
     PU(p, 0x1544, u8) = 1;
