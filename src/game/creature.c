@@ -1,7 +1,7 @@
 /* The creatures (character slots 7..9, 0x1600 bytes; their manager is gCreatures): Character
  * with their own block at +0x1540. Two classes: D_0046FAA0 (here) and D_00474080, both on the
  * creature base D_0046FB50. Their state is kept across rooms in Progress +0x878 (36 bytes per
- * slot, func_002DE840). */
+ * slot, CreatureA_Save). */
 #include "common.h"
 #include "game.h"
 #include "actor.h"
@@ -32,10 +32,10 @@ s32 Room4F_Command(void *self, u32 i, s32 a, s32 b);
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-void func_002DE510(u8 *p, s32 a1, u32 v);
-s32 func_002DE830(u8 *p);
-void func_002DE840(u8 *p, s32 slot, u32 v);
-void *func_002E2220(u8 *p);
+void CreatureA_SetSaveSlot(u8 *p, s32 a1, u32 v);
+s32 CreatureA_IsUp(u8 *p);
+void CreatureA_Save(u8 *p, s32 slot, u32 v);
+void *CreatureBase_dtor(u8 *p);
 
 /* Field access by byte offset into objects whose layout is not yet known. */
 #define S16(p, off) (*(s16 *)((u8 *)(p) + (off)))
@@ -54,18 +54,18 @@ void Effect737D0_SetParams(u8 *self, u8 *src);
 void Effect737D0_Start(u8 *self);
 
 void Effect737D0_Draw(u8 *o);
-void func_0032A890(Character *c);
-void func_0032C000(Character *c);
+void CreatureB_Activate(Character *c);
+void CreatureB_Cleanup(Character *c);
 
 s32 Effect737D0_Update(void);
-void func_00325D60(void);
+void CreatureB_Vt88(void);
 void func_0032A0D0(void);
 
 extern u8 D_0042C6A0[];
 extern u8 D_0042C6E0[];
-void func_00324790(u8 *self, s32 unused, u32 v);
-s32 func_003247C0(u8 *self);
-void func_00324C00(u8 *self, s32 slot, u32 b12);
+void CreatureB_SetSaveSlot(u8 *self, s32 unused, u32 v);
+s32 CreatureB_IsUp(u8 *self);
+void CreatureB_Save(u8 *self, s32 slot, u32 b12);
 void *Kind25_ModelFiles(void);
 void *Kind25_MotionFiles(void);
 
@@ -145,44 +145,56 @@ void Kind25_ShowUp(Pursuer *p);
 void Kind25_EventState(Pursuer *p);
 s32 Kind25_GrabOrder(Pursuer *p);
 
-void func_002E2260(Character *c) {   /* +0xA8 */
+/* 0x002E2260 */
+void CreatureBase_SetSaveSlot(Character *c) {   /* +0xA8 */
 }
 
-s32 func_002E2270(Character *c) {    /* +0x3C */
+/* 0x002E2270 */
+s32 CreatureBase_IsUp(Character *c) {    /* +0x3C */
     return 1;
 }
 
-void func_002E2280(Character *c) {   /* +0xA4 */
+/* 0x002E2280 */
+void CreatureBase_Save(Character *c) {   /* +0xA4 */
 }
 
-void func_002E2290(Character *c) {   /* +0xA0 */
+/* 0x002E2290 */
+void CreatureBase_SetupKind(Character *c) {   /* +0xA0 */
 }
 
-void func_002E22A0(Character *c) {   /* +0x9C */
+/* 0x002E22A0 */
+void CreatureBase_ComeAfterFiona(Character *c) {   /* +0x9C */
 }
 
-void func_002E22B0(Character *c) {   /* +0x38 */
+/* 0x002E22B0 */
+void CreatureBase_EnterRoom(Character *c) {   /* +0x38 */
 }
 
-void func_002E22C0(Character *c) {   /* +0x34 */
+/* 0x002E22C0 */
+void CreatureBase_FionaLeft(Character *c) {   /* +0x34 */
 }
 
-void func_002E22D0(Character *c) {   /* +0x40 */
+/* 0x002E22D0 */
+void CreatureBase_ModelMatrix(Character *c) {   /* +0x40 */
 }
 
-void func_002E22E0(Character *c) {   /* +0x30 */
+/* 0x002E22E0 */
+void CreatureBase_Frame(Character *c) {   /* +0x30 */
 }
 
-void func_002E22F0(Character *c) {   /* +0x2C */
+/* 0x002E22F0 */
+void CreatureBase_Draw(Character *c) {   /* +0x2C */
 }
 
 /* +0x10 */
-void func_002E2300(Character *c) {
+/* 0x002E2300 */
+void CreatureBase_Cleanup(Character *c) {
     Actor_Cleanup(&c->a);
 }
 
 /* +0xC */
-void func_002E2310(Character *c) {
+/* 0x002E2310 */
+void CreatureBase_Setup(Character *c) {
     Character_Reset(c);
 }
 
@@ -198,7 +210,8 @@ void *func_002E2330(u32 size, void *place) {
 /* ---- the creature (D_0046FAA0) ---- */
 
 /* +0x8 destructor */
-Character *func_002DE490(Character *c, s32 flags) {
+/* 0x002DE490 */
+Character *CreatureA_dtor(Character *c, s32 flags) {
     if (c != NULL) {
         AT(c, 0x0, void **) = D_0046FAA0;
         if (c != NULL) {
@@ -217,23 +230,29 @@ Character *func_002DE490(Character *c, s32 flags) {
     return c;
 }
 
-void func_002DE510(u8 *p, s32 a1, u32 v) {
+/* 0x002DE510 */
+void CreatureA_SetSaveSlot(u8 *p, s32 a1, u32 v) {
     F(p, 0x154C, s32) = v < 3 ? (s32)v : -1;
 }
 
-void func_002E2020(Character *c) {   /* +0x10 */
+/* 0x002E2020 */
+void CreatureA_Cleanup(Character *c) {   /* +0x10 */
 }
 
-void func_002E2010(Character *c) {   /* +0x1C */
+/* 0x002E2010 */
+void CreatureA_FilesLoaded(Character *c) {   /* +0x1C */
 }
 
-void func_002E2000(Character *c) {   /* +0x20 */
+/* 0x002E2000 */
+void CreatureA_Unload(Character *c) {   /* +0x20 */
 }
 
-void func_002DFE00(Character *c) {   /* +0x84 */
+/* 0x002DFE00 */
+void CreatureA_ActionState(Character *c) {   /* +0x84 */
 }
 
-void func_002DFDF0(Character *c) {   /* +0x88 */
+/* 0x002DFDF0 */
+void CreatureA_Vt88(Character *c) {   /* +0x88 */
 }
 
 void func_002E0510(Character *c) {   /* a state with nothing to do */
@@ -241,7 +260,8 @@ void func_002E0510(Character *c) {   /* a state with nothing to do */
 
 /* +0x28 put on triangle `tri` (Character_Place), remembering it as the previous one and the
    position (+0x38 / +0x40) */
-s32 func_002E19A0(Character *c, u32 tri, const f32 *heading, f32 *pos) {
+/* 0x002E19A0 */
+s32 CreatureA_Place(Character *c, u32 tri, const f32 *heading, f32 *pos) {
     s32 r = Character_Place(c, tri, heading, pos);
 
     c->a.prevNavTri = tri;
@@ -250,7 +270,8 @@ s32 func_002E19A0(Character *c, u32 tri, const f32 *heading, f32 *pos) {
 }
 
 /* +0x5C reset (Character_Activate): not hit (+0xB), no target (+0x9 0xFF), mode 2 (+0xC) */
-void func_002E0BF0(Character *c) {
+/* 0x002E0BF0 */
+void CreatureA_Activate(Character *c) {
     u8 *k = CR(c);
 
     Character_Activate(c);
@@ -260,7 +281,8 @@ void func_002E0BF0(Character *c) {
 }
 
 /* +0x40: copies of its orientation and position into locals (left unused) */
-void func_002E1340(Character *c) {
+/* 0x002E1340 */
+void CreatureA_ModelMatrix(Character *c) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
 
@@ -288,7 +310,8 @@ static inline void creature_rest(u8 *k) {
  * `str` x10 (+0x4); from save slot `slot` (-1: none) when that one is in use (+0x88A): its
  * state (+0x20), strength, out (+0x82, then a rest time), +0x2E, +0x87, +0x9A. Kind 0x24:
  * +0x14 -9. (+0x64 first: the Character's reset, a1..a3 passed on) */
-void func_002DE8E0(Character *c, s32 a1, s32 a2, s32 mode, s32 kind, s32 str, s32 slot) {
+/* 0x002DE8E0 */
+void CreatureA_SetupKind(Character *c, s32 a1, s32 a2, s32 mode, s32 kind, s32 str, s32 slot) {
     u8 *k = CR(c);
     const CreatureKind *t;
 
@@ -328,7 +351,8 @@ void func_002DE8E0(Character *c, s32 a1, s32 a2, s32 mode, s32 kind, s32 str, s3
 /* +0x9C set up to come after Fiona: (+0x64 with mode 2) +0x2A whether someone (slots 2..5) is
  * up in her room; out, with a rest time; a path to her room (Character_Route) and its length
  * through the doors on it (rooms +0x38 by `a1`) into +0x14C4, the last door +0x14C0 */
-void func_002DEA80(Character *c, s32 a1, s32 a2) {
+/* 0x002DEA80 */
+void CreatureA_ComeAfterFiona(Character *c, s32 a1, s32 a2) {
     u8 *k = CR(c);
     u32 i;
     s32 n;
@@ -578,10 +602,12 @@ void func_002DE540(Character *c, s32 level) {
     VCALL(c, 0x28, void (*)(Character *, u32, s32, s32))(c, tri, 0, 0);
 }
 
-s32 func_002DE830(u8 *p) { return p[0x156E] != 0; }
+/* 0x002DE830 */
+s32 CreatureA_IsUp(u8 *p) { return p[0x156E] != 0; }
 
 /* Saves this object's state into a 36-byte slot of the progress block (+0x878). */
-void func_002DE840(u8 *p, s32 slot, u32 v) {
+/* 0x002DE840 */
+void CreatureA_Save(u8 *p, s32 slot, u32 v) {
     u8 *e = (u8 *)gProgress + slot * 36;
 
     F(e, 0x878, u32) = F(p, 0x30, u32);
@@ -1029,7 +1055,8 @@ static inline __attribute__((always_inline)) s32 creature_place(Character *c, s3
     return r;
 }
 
-s32 func_002E0C30(Character *c, s32 room, u32 tri, s32 mode) {
+/* 0x002E0C30 */
+s32 CreatureA_PlaceInRoom(Character *c, s32 room, u32 tri, s32 mode) {
     return creature_place(c, room, tri, mode, 0xC, 0x8A);
 }
 
@@ -1050,7 +1077,8 @@ static void creature_back_on_mesh(Character *c) {
 /* +0x38 the room is entered: if it was out (+0x10) and is in the room being played, back on
  * its triangle (or, on one it may not stand on, a random place on its level) with its doors
  * noted; in the room being played it is in play (somewhere random if off the mesh), else not */
-void func_002E0DB0(Character *c) {
+/* 0x002E0DB0 */
+void CreatureA_EnterRoom(Character *c) {
     u8 *k = CR(c);
     Progress *p = gProgress;
     s32 room;
@@ -1076,7 +1104,8 @@ void func_002E0DB0(Character *c) {
  * path kind 6 blocking 0x40080; no model; a random kind 0..15 (its table entry), strength 0;
  * all its own state cleared (bobbing 0.5 / 0.05, fade 0x80, turns every 20, gives up after
  * 60 or with +0x8 30 tries), then +0x5C */
-void func_002E2030(Character *c) {
+/* 0x002E2030 */
+void CreatureA_Setup(Character *c) {
     u8 *k = CR(c);
     const CreatureKind *t;
     s32 i;
@@ -1143,7 +1172,8 @@ void func_002E2030(Character *c) {
 }
 
 /* Inlined destructor chain: resets the vtable to each base class in turn. */
-void *func_002E2220(u8 *p) {
+/* 0x002E2220 */
+void *CreatureBase_dtor(u8 *p) {
     if (p != NULL) {
         *(void *volatile *)p = D_0046FB50;
         *(void *volatile *)p = D_00469C60;
@@ -1167,7 +1197,8 @@ static s32 creature_exit_reachable(Character *c, VObject *rooms, u32 e, f32 *at)
  * that exit if it can (+0xB), else by another (+0x87 0 once one is found) - and, when going by
  * hers and she isn't just beyond it (Actor_NearerRoom), skips its path to the door if already
  * nearer the door than the exit's spot; if she is, it stays out (+0x10 0) */
-void func_002E0FE0(Character *c, u32 exit) {
+/* 0x002E0FE0 */
+void CreatureA_FionaLeft(Character *c, u32 exit) {
     u8 *k = CR(c);
     VObject *rooms = gRooms;
     f32 at[4] __attribute__((aligned(16)));
@@ -1398,7 +1429,8 @@ extern const PTMF D_004166B0, D_004166C0, D_004166D0, D_004166E0, D_004166F0;
  * place); in play - once its time is up gone with a sound (0x8C, +0x29), else waiting; out of
  * play - when its time is up gone, travelling (out, +0x10 0) or, back in the room being
  * played, back on the mesh. Its behaviour, then +0x40. */
-void func_002E1380(Character *c) {
+/* 0x002E1380 */
+void CreatureA_Frame(Character *c) {
     u8 *k = CR(c);
     Progress *p;
     s32 trail = (AT(k, 0x20, s16) + AT(k, 0x28, s8)) % 3;
@@ -1475,7 +1507,8 @@ void func_002E1380(Character *c) {
  * fading ones along its trail (+0x50 / +0x60 / +0x70, smaller each), and its body (cell 0x60,
  * palette 3; vanishing: in its colour like the rest); all additive and see-through when it
  * is vanishing (+0x29). The trail starts at it (+0x83). */
-void func_002E19F0(Character *c) {
+/* 0x002E19F0 */
+void CreatureA_Draw(Character *c) {
     u8 *k = CR(c);
     u8 red;
     s32 i;
@@ -1617,7 +1650,8 @@ void func_002E19F0(Character *c) {
 #define CREATURES(m) ((Character **)(m))
 
 /* +0x2C creature `i` (if up): its +0xA8 (a2, with 1) */
-void func_002E2360(u8 *m, s32 i, s32 a2) {
+/* 0x002E2360 */
+void Creatures_Call2C(u8 *m, s32 i, s32 a2) {
     Character *c = CREATURES(m)[i & 0xFF];
 
     if (c->a.active == 1) {
@@ -1627,7 +1661,8 @@ void func_002E2360(u8 *m, s32 i, s32 a2) {
 
 /* +0x28 remove creature `i`: its model back (slots 7..9; +0xF630 +0x14, then deleted), it
  * back to the heap (+0xDC40 +0x14) and deleted */
-void func_002E23B0(u8 *m, s32 i) {
+/* 0x002E23B0 */
+void Creatures_Remove(u8 *m, s32 i) {
     u32 n = i & 0xFF;
     Character *c = CREATURES(m)[n];
 
@@ -1653,7 +1688,8 @@ void func_002E23B0(u8 *m, s32 i) {
 
 /* +0x1C keep them: each one saves itself in its Progress slot (+0xA4: slot, up); an empty slot
  * is cleared */
-void func_002E2480(u8 *m) {
+/* 0x002E2480 */
+void Creatures_Keep(u8 *m) {
     u8 *e = (u8 *)gProgress;
     s32 i;
 
@@ -1682,7 +1718,8 @@ void func_002E2480(u8 *m) {
 }
 
 /* +0x18 set up creature `i` (if up): its +0xA0 (a1, a2, mode, kind, strength, save slot, x) */
-void func_002E2540(u8 *m, s32 a1, s32 a2, s32 mode, s32 i, s32 kind, s32 str, s32 slot, u16 x) {
+/* 0x002E2540 */
+void Creatures_SetUpOne(u8 *m, s32 a1, s32 a2, s32 mode, s32 i, s32 kind, s32 str, s32 slot, u16 x) {
     Character *c = CREATURES(m)[i & 0xFF];
 
     if (c != NULL && c->a.active == 1) {
@@ -1691,7 +1728,8 @@ void func_002E2540(u8 *m, s32 a1, s32 a2, s32 mode, s32 i, s32 kind, s32 str, s3
 }
 
 /* +0x14 send creature `i` (if up) after Fiona: its +0x9C (a1, a2, a4) */
-void func_002E25A0(u8 *m, s32 a1, s32 a2, s32 i, s32 a4) {
+/* 0x002E25A0 */
+void Creatures_SendAfterFiona(u8 *m, s32 a1, s32 a2, s32 i, s32 a4) {
     Character *c = CREATURES(m)[i & 0xFF];
 
     if (c != NULL && c->a.active == 1) {
@@ -2850,8 +2888,9 @@ s32 DropletFlash_Update(u8 *o) {
     return 1;
 }
 
-/* (as func_002DE490)  +0x8 destructor */
-Character *func_00324710(Character *c, s32 flags) {
+/* (as CreatureA_dtor)  +0x8 destructor */
+/* 0x00324710 */
+Character *CreatureB_dtor(Character *c, s32 flags) {
     if (c != NULL) {
         AT(c, 0x0, void **) = D_00474080;
         if (c != NULL) {
@@ -2870,17 +2909,20 @@ Character *func_00324710(Character *c, s32 flags) {
     return c;
 }
 
-void func_00324790(u8 *self, s32 unused, u32 v) {
+/* 0x00324790 */
+void CreatureB_SetSaveSlot(u8 *self, s32 unused, u32 v) {
     S32(self, 0x1540) = v < 3 ? (s32)v : -1;
 }
 
-s32 func_003247C0(u8 *self) {
+/* 0x003247C0 */
+s32 CreatureB_IsUp(u8 *self) {
     return self[0x15AF] != 0;
 }
 
-/* (as func_002E19A0)  +0x28 put on triangle `tri` (Character_Place), remembering it as the previous one and the
+/* (as CreatureA_Place)  +0x28 put on triangle `tri` (Character_Place), remembering it as the previous one and the
    position (+0x38 / +0x40) */
-s32 func_0032BD40(Character *c, u32 tri, const f32 *heading, f32 *pos) {
+/* 0x0032BD40 */
+s32 CreatureB_Place(Character *c, u32 tri, const f32 *heading, f32 *pos) {
     s32 r = Character_Place(c, tri, heading, pos);
 
     c->a.prevNavTri = tri;
@@ -2900,8 +2942,9 @@ void func_00329360(Character *c) {
     creature_route(c, 0x61, 0x0);
 }
 
-/* (as func_002E0C30; the mode at +0x0, the doors at +0x50) */
-s32 func_0032A8D0(Character *c, s32 room, u32 tri, s32 mode) {
+/* (as CreatureA_PlaceInRoom; the mode at +0x0, the doors at +0x50) */
+/* 0x0032A8D0 */
+s32 CreatureB_PlaceInRoom(Character *c, s32 room, u32 tri, s32 mode) {
     return creature_place(c, room, tri, mode, 0x0, 0x50);
 }
 
@@ -3077,9 +3120,10 @@ s32 func_00325410(Character *c, s32 exit) {
     return 0;
 }
 
-/* (as func_002DEA80) +0x9C set up to come after Fiona: out (+0x6E, +0x6F cleared) with a rest
+/* (as CreatureA_ComeAfterFiona) +0x9C set up to come after Fiona: out (+0x6E, +0x6F cleared) with a rest
    time (+0x4A, 1800 .. 7200), a path to her room and its length through its doors */
-void func_00324FA0(Character *c, s32 a1, s32 a2) {
+/* 0x00324FA0 */
+void CreatureB_ComeAfterFiona(Character *c, s32 a1, s32 a2) {
     u8 *k = CR(c);
     s32 n;
 
@@ -3099,7 +3143,7 @@ void func_00324FA0(Character *c, s32 a1, s32 a2) {
     }
 }
 
-/* (as func_002E0DB0) the room entered, by its state +0x8: 2 - reset to 0; 1 - in the room
+/* (as CreatureA_EnterRoom) the room entered, by its state +0x8: 2 - reset to 0; 1 - in the room
    being played, back on its triangle (or somewhere on its level) with its doors noted (+0x50).
    1 unless state 1 */
 s32 func_00325B60(Character *c) {
@@ -3130,14 +3174,16 @@ s32 func_00325B60(Character *c) {
     return 0;
 }
 
-void func_00325D60(void) {
+/* 0x00325D60 */
+void CreatureB_Vt88(void) {
 }
 
 /* +0x2C its draw light: the first door it may use (+0x1590 by slot; none: layer 0xA). Its
    alpha grows as it stands further inside from the door's event plane (the plane's normal
    along the door's facing, the further of its two sides): 0 at the plane, 0x80 half the
    plane's width in; layer 0xF */
-void func_003247D0(Character *c) {
+/* 0x003247D0 */
+void CreatureB_DrawLight(Character *c) {
     VObject *rooms, *ev;
     f32 a[4] __attribute__((aligned(16)));
     f32 b[4] __attribute__((aligned(16)));
@@ -3229,7 +3275,8 @@ void func_00324AE0(Character *c, s32 slot) {
 }
 
 /* Saves this enemy's state into gProgress slot `slot` (36-byte records at +0x878). */
-void func_00324C00(u8 *self, s32 slot, u32 b12) {
+/* 0x00324C00 */
+void CreatureB_Save(u8 *self, s32 slot, u32 b12) {
     u8 *rec = (u8 *)gProgress + 0x878 + slot * 36;
 
     U32(rec, 0x0) = U32(self, 0x30);
@@ -3254,7 +3301,8 @@ extern const u8 D_0042C460[];   /* per kind (^ 0x80): s32, s16 */
    strength x10 (+0x48); from save slot `slot` when given (a reset if its state was 2). Not out:
    +0x28 = `f` without a slot, state 0xB when +0x28 > 0; kinds 8 / 9 (^ 0x80) block nothing and
    plan as kind 6. Then the Character's reset (+0x64) */
-void func_00324CD0(Character *c, s32 a1, s32 a2, s32 mode, u8 kind, s32 str, s32 slot, u32 deg, f32 f) {
+/* 0x00324CD0 */
+void CreatureB_SetupKind(Character *c, s32 a1, s32 a2, s32 mode, u8 kind, s32 str, s32 slot, u32 deg, f32 f) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
     u8 *k = CR(c);
     const u8 *e;
@@ -3377,7 +3425,8 @@ void func_003257B0(Character *c) {
 
 /* +0x84 its action (+0x14E8): action 4 with sub 4 / 2 / 1 (unless already in move 4) settles it
    in state 2 (+0x69 / +0x62), move 4; the action is then cleared */
-void func_00325D70(Character *c) {
+/* 0x00325D70 */
+void CreatureB_ActionState(Character *c) {
     u8 *k = CR(c);
 
     if (AT(c, 0xF8, s32) != 4 && AT(c, 0x14E8, s32) == 4) {
@@ -4132,7 +4181,8 @@ void func_00328E00(Character *c) {
 
 /* +0x38 the room is entered (func_00325B60); in the room being played it is in play (off the
    mesh: somewhere on its level, state 0), else not */
-void func_0032AA50(Character *c) {
+/* 0x0032AA50 */
+void CreatureB_EnterRoom(Character *c) {
     u8 *k = CR(c);
     s32 room;
 
@@ -4152,7 +4202,8 @@ void func_0032AA50(Character *c) {
 
 /* +0x40 its model matrix (raised by +0x28 in state 0xB) unless out of contact, then the
    model's update */
-void func_0032AE80(Character *c) {
+/* 0x0032AE80 */
+void CreatureB_ModelMatrix(Character *c) {
     u8 *k = CR(c);
 
     if (c->a.disabled == 0) {
@@ -4166,7 +4217,8 @@ void func_0032AE80(Character *c) {
 }
 
 /* its model released (+0xD1 loaded: the model's +0x10) */
-void func_0032BEB0(Character *c) {
+/* 0x0032BEB0 */
+void CreatureB_Unload(Character *c) {
     AT(c, 0xD0, u8) = 0;
     if (AT(c, 0xD1, u8) != 0) {
         VCALL(c->motion, 0x10, void (*)(void *))(c->motion);
@@ -4176,7 +4228,8 @@ void func_0032BEB0(Character *c) {
 
 /* its model's data from the creature manager's file (+0x24: offsets at +0x4.. to its parts),
    its kind (+0x20) into +0x1528 and the model; the model set up (+0xC) */
-void func_0032BF00(Character *c) {
+/* 0x0032BF00 */
+void CreatureB_FilesLoaded(Character *c) {
     VObject *mgr = (VObject *)gCreatures;
     u8 *d = VCALL_AT(mgr, 0x28, 0x24, u8 *(*)(VObject *))(mgr);
     u8 *m = c->motion;
@@ -4192,10 +4245,11 @@ void func_0032BF00(Character *c) {
     AT(c->motion, 0x24, u8) = AT(c, 0x1528, u8);
 }
 
-/* +0x20, then func_002E2300 */
-void func_0032C000(Character *c) {
+/* +0x20, then CreatureBase_Cleanup */
+/* 0x0032C000 */
+void CreatureB_Cleanup(Character *c) {
     VCALL(c, 0x20, void (*)(Character *))(c);
-    func_002E2300(c);
+    CreatureBase_Cleanup(c);
 }
 
 /* turn toward `at` (+0x10C) unless its model is busy (+0x550 > 0): the turn's phase +0x10
@@ -4291,7 +4345,8 @@ void func_0032AF00(Character *c) {
 /* +0x2C draw, once out (+0x6E: and its trip begun, +0x6F) or not resting (+0x4A): lit
    (+0xE4: its light +0x80 unless layer 0x17), else on layer 0xF faded by +0x71 (0x80 at most;
    other layers become 0xA); the texture cache's +0x18, its model */
-void func_0032BD90(Character *c) {
+/* 0x0032BD90 */
+void CreatureB_Draw(Character *c) {
     u8 *k = CR(c);
 
     if (AT(k, 0x6E, u8) == 0) {
@@ -4326,7 +4381,8 @@ void func_0032B210(Character *c, u8 st);
    it travels (unless held, +0x6B bit 0x80, and when the room entry allows), in play turned by
    its animation with +0x84, footsteps and its state's choice (func_0032B210 with +0x62); then
    its state (+0xA0) and the model (+0x40) */
-void func_0032BB50(Character *c) {
+/* 0x0032BB50 */
+void CreatureB_Frame(Character *c) {
     u8 *k = CR(c);
 
     creature_at_doors(c, 0x50);
@@ -4489,7 +4545,8 @@ void func_0032A550(Character *c) {
 }
 
 /* (a creature class) Character_Activate, its own block +0x61 0, +0x63 0xFF, mode 2 */
-void func_0032A890(Character *c) {
+/* 0x0032A890 */
+void CreatureB_Activate(Character *c) {
     u8 *k = (u8 *)c + 0x1540;
 
     Character_Activate(c);
@@ -4498,7 +4555,7 @@ void func_0032A890(Character *c) {
     AT(k, 0x0, s32) = 2;
 }
 
-extern void func_002E2310(Character *c);
+extern void CreatureBase_Setup(Character *c);
 
 /* head for exit `exit` (+0x67 its door): in the room being played, its closed ways forgotten;
    a path to the exit's spot (+0x34; 0xFF: none) or else the first open door's (+0x70 0 once
@@ -4506,7 +4563,8 @@ extern void func_002E2310(Character *c);
    (Actor_NearerRoom) the door is noted and its state 0. Without a plan, straight to the exit's
    spot when that works. On its way (+0x61) it keeps the next door (+0x14C0) and drops back
    onto its plan when that is no further from the door than it is */
-void func_0032AAF0(Character *c, u32 exit) {
+/* 0x0032AAF0 */
+void CreatureB_FionaLeft(Character *c, u32 exit) {
     u8 *k = CR(c);
     VObject *rooms = gRooms;
     Progress *p;
@@ -4596,16 +4654,17 @@ void func_0032AAF0(Character *c, u32 exit) {
     c->unk124 = c->unk128;
 }
 
-/* +0xC set up: the creature base's (func_002E2310); size 3 x 6, company, in contact, blocking
+/* +0xC set up: the creature base's (CreatureBase_Setup); size 3 x 6, company, in contact, blocking
    0x4020028 (path kind 6); a random kind 0x80..0x82 with its table entry; all its own state
    cleared (speed 0.7, a wait of 150 / 300 / 450); then +0x1C, +0x5C, idle 0 */
-void func_0032C040(Character *c) {
+/* 0x0032C040 */
+void CreatureB_Setup(Character *c) {
     u8 *k = CR(c);
     VObject *rnd;
     const u8 *e;
     s32 i;
 
-    func_002E2310(c);
+    CreatureBase_Setup(c);
     c->a.radius = 3.0f;
     c->a.height = 6.0f;
     c->a.unk2A = 1;
