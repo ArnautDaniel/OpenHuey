@@ -6960,3 +6960,4 @@ src/game/model.c func_0033E620 --pre=a0=0..0 --runs=5
 src/game/model.c func_0033E750 --pre=a0=0x0B000000..0x0B000000 --runs=10
 src/game/model.c func_0033E740 --pre=a0=0x0B000000..0x0B000000 --runs=5
 src/game/room_handlers.c func_0034A6A0 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003:u8=0..4 --pre=@0x456DF8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046B3B8..0x0046B3B8 --pre=@0x44E4D0=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046B3B8..0x0046B3B8 --pre=@0x44E560=0x0B900000..0x0B900000 --stub-ret=0 --stub-ret=60 --stub-ret=120 --stub-ret=0x0B600000 --runs=100
+src/game/room_handlers.c func_0034AD00 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003:u8=0..4 --pre=@0x456DF8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046B3B8..0x0046B3B8 --pre=@0x44E4D0=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046B3B8..0x0046B3B8 --pre=@0x44E560=0x0B900000..0x0B900000 --stub-ret=0 --stub-ret=60 --stub-ret=120 --stub-ret=0x0B600000 --runs=100

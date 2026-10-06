@@ -6912,3 +6912,47 @@ s32 func_0034A6A0(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern const char *D_004400E0;
+
+/* (the other door: turned the other way, its creak at (45 sin, 142, 45 cos)) */
+static inline void swing_to2(u8 *o, f32 a) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    f32 pos[4] __attribute__((aligned(16)));
+
+    AT(o, 0x14, f32) = kPi.f * a / 180.0f;
+    pos[1] = 142.0f;
+    pos[0] = 45.0f * func_0031C248(AT(o, 0x14, f32));
+    pos[3] = 1.0f;
+    pos[2] = 45.0f * func_0031C058(AT(o, 0x14, f32));
+    func_002FF650(D_0044E560, 0x80000002, 6, pos, 0, 0);
+}
+
+/* (as func_0034A6A0, the room object named D_004400E0, opening to -pi/2) */
+s32 func_0034AD00(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_004400E0);
+    f32 t, e;
+
+    if (o == NULL) {
+        return 1;
+    }
+    t = (f32)(u32)VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0) / 120.0f;
+    switch (cmd[3]) {
+    case 0:
+        AT(o, 0x14, s32) = 0;
+        break;
+    case 1:
+        AT(o, 0x14, u32) = 0xBFC90FDB;   /* -pi/2 */
+        break;
+    case 2:
+        e = func_0031C248(kPi.f * (-90.0f + 180.0f * t) / 180.0f);
+        swing_to2(o, -45.0f * (1.0f + e));
+        break;
+    case 3:
+        e = func_0031C248(kPi.f * (-90.0f + 180.0f * t) / 180.0f);
+        swing_to2(o, -90.0f - -45.0f * (1.0f + e));
+        break;
+    }
+    return 1;
+}
