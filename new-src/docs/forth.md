@@ -97,7 +97,7 @@ Comments: `( ... )` and `\ to the end of the line`.
 | `clear-color` | `F: r g b --` | |
 | `screenshot` | `addr len --` | save the next frame as a PNG |
 | `console!` | `flag --` | open or close the console |
-| `gfx` | `-- addr` | the picture's settings: `gfx.msaa gfx.aspect gfx.ssao gfx.bloom gfx.fog gfx.shadows gfx.tonemap gfx.debug` (l@ l!), `gfx.scale gfx.anisotropy gfx.ssao-radius gfx.ssao-strength gfx.bloom-threshold gfx.bloom-strength gfx.fog-density gfx.fog-start gfx.fog-r/g/b gfx.exposure gfx.saturation gfx.contrast gfx.vignette gfx.grain gfx.light-x/y/z gfx.light-r/g/b gfx.ambient-r/g/b gfx.rim` (sf@ sf!) |
+| `gfx` | `-- addr` | the picture's settings: `gfx.msaa gfx.aspect gfx.ssao gfx.bloom gfx.fog gfx.shadows gfx.tonemap gfx.debug gfx.room-fog gfx.room-tint gfx.room-bloom gfx.room-lights gfx.shadow-maps` (l@ l!), `gfx.scale gfx.anisotropy gfx.ssao-radius gfx.ssao-strength gfx.bloom-threshold gfx.bloom-strength gfx.fog-density gfx.fog-start gfx.fog-r/g/b gfx.exposure gfx.saturation gfx.contrast gfx.vignette gfx.grain gfx.light-x/y/z gfx.light-r/g/b gfx.ambient-r/g/b gfx.rim gfx.character-light gfx.shadow-strength` (sf@ sf!) |
 | `on-draw`, `off-draw` | `xt --` | run a word every frame to draw 2D |
 | `pen-color`, `pen-scale` | `rgba --`, `n --` | colour (0xRRGGBBAA) and text size for the drawing words |
 | `draw-text`, `draw-rect` | `addr len x y --`, `x y w h --` | in window pixels from the top left |
