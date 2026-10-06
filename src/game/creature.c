@@ -2703,11 +2703,16 @@ static inline void cr19_settle(Character *c) {
     AT(k, 0x30, s32) = 0;
 }
 
-static inline void cr19_reset(Character *c) {
-    AT(CR(c), 0x69, u8) = 0;
+/* into state `st` (+0x69): move 0, stopped and settled */
+static inline void cr19_enter(Character *c, u8 st) {
+    AT(CR(c), 0x69, u8) = st;
     AT(c, 0xF8, s32) = 0;
     func_00127060(c);
     cr19_settle(c);
+}
+
+static inline void cr19_reset(Character *c) {
+    cr19_enter(c, 0);
 }
 
 /* (as func_002DF470) on the way to `tri`: while not there the path ahead is looked at (one
@@ -3253,6 +3258,74 @@ void func_00326130(Character *c, f32 dist) {
             func_00127060(c);
             cr19_settle(c);
         }
+        return;
+    }
+}
+
+extern void func_002DDED0(void *motion, s32 anim, s32 variant);
+extern u32 func_00177BF0(Progress *p, u32 door, u32 slot);
+
+/* state: held off - it moves by its animation, facing Fiona; when she is no longer across the
+   room's divider from it, back to state 0. Otherwise it alternates idles 0 and 0x1C00 (+0x6C)
+   every 90 frames (+0x40, +0x60 started) */
+void func_00326680(Character *c) {
+    u8 *k = CR(c);
+    f32 v[4] __attribute__((aligned(16)));
+
+    func_001F6370(c->motion, v, 0.0f);
+    *(s32 *)&v[1] = 0;
+    sceVu0ApplyMatrix(v, c->a.rot, v);
+    func_001247E0(&c->a, v);
+    func_0032B080(c, gCharPlayer->a.pos);
+    AT(k, 0x40, s16)++;
+    if (!NavMesh_AcrossDivider(D_0044E570, gCharPlayer->a.navTri, c->a.navTri)) {
+        cr19_reset(c);
+        return;
+    }
+    switch (AT(k, 0x6C, u8)) {
+    case 0:
+        if (AT(k, 0x60, u8) == 0) {
+            func_002DDED0(c->motion, 0, -1);
+            AT(k, 0x60, u8)++;
+        }
+        if ((u32)AT(k, 0x40, s16) % 90 == 0) {
+            AT(k, 0x40, s16) = 0;
+            AT(k, 0x60, u8) = 0;
+            AT(k, 0x6C, u8)++;
+        }
+        break;
+    case 1:
+        if (AT(k, 0x60, u8) == 0) {
+            func_002DDED0(c->motion, 0x1C00, -1);
+            AT(k, 0x60, u8)++;
+        }
+        if ((u32)AT(k, 0x40, s16) % 90 == 0) {
+            AT(k, 0x40, s16) = 0;
+            AT(k, 0x60, u8) = 0;
+            AT(k, 0x6C, u8) = 0;
+        }
+        break;
+    }
+}
+
+/* a door of the room it may use (+0x1590 by slot) whose way isn't shut for kind 2 (state bit
+   4): state 5 */
+void func_00326950(Character *c) {
+    VObject *doors = D_0044E558;
+    Progress *p = gProgress;
+    u32 d;
+
+    for (d = 0; d < 8; d = (d + 1) & 0xFF) {
+        if ((VCALL(doors, 0x40, u32 (*)(VObject *, u32))(doors, d) & 0xFF) != 1) {
+            continue;
+        }
+        if (!((AT(c, 0x1590 + (d & 0xFF) * 2, u16) & ((1 << *(u8 *)&c->a.slot) & 0xFFFF)) != 0)) {
+            continue;
+        }
+        if (func_00177BF0(p, d, 2) & 0xFF & 4) {
+            continue;
+        }
+        cr19_enter(c, 5);
         return;
     }
 }
