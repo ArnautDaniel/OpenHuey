@@ -35,7 +35,7 @@ extern void *D_0046EC60[];
 void *func_00267480(u8 *o, s32 flags);
 void *func_00269970(u8 *o, s32 flags);
 void *func_002BB220(u8 *o, s32 flags);
-void *func_002C64E0(u8 *o, s32 flags);
+void *DepthRange_dtor(u8 *o, s32 flags);
 
 extern u8 D_0041B5F0[];
 extern u8 D_00444B10[];
@@ -134,14 +134,16 @@ static u32 rd32(const u8 *p) {
 }
 
 /* tint +0xC */
-void func_002674F0(u8 *e) {
+/* 0x002674F0 */
+void Tint_Start(u8 *e) {
     AT(e, 0x10, s32) = 0;
     AT(e, 0x14, s32) = 0;
     AT(e, 0x18, s32) = 0;
 }
 
 /* tint +0x18: two colours and a mode byte */
-void func_00267370(u8 *e, const u8 *d) {
+/* 0x00267370 */
+void Tint_SetParams(u8 *e, const u8 *d) {
     if (d == NULL) {
         return;
     }
@@ -151,14 +153,16 @@ void func_00267370(u8 *e, const u8 *d) {
 }
 
 /* blend +0xC */
-void func_0026B480(u8 *e) {
+/* 0x0026B480 */
+void ScreenBlend_Start(u8 *e) {
     AT(e, 0x10, u32) = 0x80004080;
     AT(e, 0x14, s32) = 1;
     AT(e, 0x30, s32) = 0;
 }
 
 /* blend +0x18: colour and mode (mode 2 and 3/4 use fixed colours) */
-void func_0026B240(u8 *e, const u8 *d) {
+/* 0x0026B240 */
+void ScreenBlend_SetParams(u8 *e, const u8 *d) {
     if (d == NULL) {
         return;
     }
@@ -172,7 +176,8 @@ void func_0026B240(u8 *e, const u8 *d) {
 }
 
 /* fog +0xC */
-void func_002BB390(u8 *e) {
+/* 0x002BB390 */
+void Fog_Start(u8 *e) {
     s32 i;
 
     AT(e, 0x10, u32) = 0x808080;
@@ -185,7 +190,8 @@ void func_002BB390(u8 *e) {
 }
 
 /* fog +0x18: two colours, the depth range (also the camera's), a colour and 6 bytes */
-void func_002BB030(u8 *e, const u8 *d) {
+/* 0x002BB030 */
+void Fog_SetParams(u8 *e, const u8 *d) {
     VObject *cam;
     s32 i;
 
@@ -207,7 +213,8 @@ void func_002BB030(u8 *e, const u8 *d) {
 }
 
 /* depth range +0xC */
-void func_002C6630(u8 *e) {
+/* 0x002C6630 */
+void DepthRange_Start(u8 *e) {
     AT(e, 0x50, f32) = 1.0f;
     AT(e, 0x54, f32) = 1.0f;
     AT(e, 0x58, f32) = 2000.0f;
@@ -215,7 +222,8 @@ void func_002C6630(u8 *e) {
 }
 
 /* depth range +0x18 */
-void func_002C6540(u8 *e, const f32 *d) {
+/* 0x002C6540 */
+void DepthRange_SetParams(u8 *e, const f32 *d) {
     if (d == NULL) {
         return;
     }
@@ -227,7 +235,8 @@ void func_002C6540(u8 *e, const f32 *d) {
 
 /* +0x10 each frame: the characters this light is on (+0x20 per slot) get its light group
  * (slot << 16 | 0xB); the others it had go back to the default (0xA) */
-void func_002BB280(u8 *o) {
+/* 0x002BB280 */
+void Fog_Update(u8 *o) {
     s32 i;
 
     for (i = 0; i < 6; i++) {
@@ -247,7 +256,8 @@ void func_002BB280(u8 *o) {
 
 /* +0x10 each frame: a pulsing colour (+0x10 RGBA, direction +0x30): modes 3 / 4 a grey
  * breathing between 0x20 and 0x80, mode 2 red and alpha between 0x80 and 0xC0 */
-void func_0026B350(u8 *o) {
+/* 0x0026B350 */
+void ScreenBlend_Update(u8 *o) {
     s32 mode = AT(o, 0x14, s32);
 
     if (mode == 2) {
@@ -282,7 +292,8 @@ void func_0026B350(u8 *o) {
 }
 
 /* +0x10 for effects that don't change */
-void func_002674E0(u8 *o) {
+/* 0x002674E0 */
+void Tint_Update(u8 *o) {
 }
 
 extern void *D_0046EB60[], *D_00469D00[];
@@ -290,7 +301,8 @@ extern void func_002BC000(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b)
 
 /* +0x14 draw (the fog): a temporary drawer object paints its colours (+0x10, +0x14) over the
  * range +0x50..+0x54 in layer 0x21 (9 while +0x1C) */
-void func_002BB1A0(u8 *o) {
+/* 0x002BB1A0 */
+void Fog_Draw(u8 *o) {
     u8 drawer[0x20] __attribute__((aligned(16)));
 
     AT(drawer, 0x0, void **) = D_0046EB60;
@@ -324,7 +336,8 @@ void func_002BC000(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b) {
 }
 
 /* destructor (vtable D_0046EC60) */
-void *func_002C64E0(u8 *o, s32 flags) {
+/* 0x002C64E0 */
+void *DepthRange_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046EC60;
         AT(o, 0x0, void **) = D_0046D730;
@@ -339,7 +352,8 @@ extern void *D_0046D7A0[];
 
 /* +0x14 draw (a screen bloom): when its colour (+0x10) has alpha, a temporary bloom drawer
  * (Bloom_Start) in layer 0x28, subtracting for modes 1 and 4 (+0x14) */
-void func_0026B2C0(u8 *o) {
+/* 0x0026B2C0 */
+void ScreenBlend_Draw(u8 *o) {
     u8 drawer[0x20] __attribute__((aligned(16)));
 
     AT(drawer, 0x0, void **) = D_0046D7A0;
@@ -355,7 +369,8 @@ extern void func_00269940(void *drawer, u32 rgba, s32 which, s32 arg);
 
 /* +0x14 draw of a two-colour screen effect: a temporary drawer paints each colour (+0x10 first,
  * then +0x14) that has alpha, both with +0x18 */
-void func_002673E0(u8 *o) {
+/* 0x002673E0 */
+void Tint_Draw(u8 *o) {
     u8 drawer[0x20] __attribute__((aligned(16)));
 
     AT(drawer, 0x0, void **) = D_0046D790;
@@ -558,7 +573,8 @@ extern s32 func_002E4760(u8 *d);
 
 /* +0xC draw of the quad drawer: flagged ones (+0x32 bit 7) outside layer 0x17 by
  * func_002E3500, the rest by func_002E4760 */
-s32 func_002E5660(u8 *d) {
+/* 0x002E5660 */
+s32 QuadDrawer_Start(u8 *d) {
     if ((AT(d, 0x32, u8) & 0x80) && AT(d, 0x20, s32) != 0x17) {
         return (u8)func_002E3500(d);
     }
@@ -673,7 +689,8 @@ u32 func_002D6010(u8 *p) { return p[0x19034]; }
 extern void *D_0046FF00[], *D_0046D730[], *D_0046FC30[];
 
 /* +0x8 destructor */
-u8 *func_002E7BB0(u8 *e, s32 flags) {
+/* 0x002E7BB0 */
+u8 *EvEffect7F_dtor(u8 *e, s32 flags) {
     if (e != NULL) {
         AT(e, 0x0, void **) = D_0046FF00;
         AT(e, 0x0, void **) = D_0046D730;
@@ -693,7 +710,8 @@ static s32 sprite_rest(u8 *e, VObject *rnd) {
 }
 
 /* +0x18 start at arg's position (its +0x10: slow); NULL: just keep going */
-void func_002E7C10(u8 *e, f32 *arg) {
+/* 0x002E7C10 */
+void EvEffect7F_SetParams(u8 *e, f32 *arg) {
     if (arg == NULL) {
         return;
     }
@@ -742,7 +760,8 @@ static void fx_quad_submit(u8 *e) {
 }
 
 /* +0x14 draw, unless resting */
-void func_002E7D10(u8 *e) {
+/* 0x002E7D10 */
+void EvEffect7F_Draw(u8 *e) {
     if (AT(e, 0x74, s32) == 0) {
         fx_quad_submit(e);
     }
@@ -750,7 +769,8 @@ void func_002E7D10(u8 *e) {
 
 /* +0x10 update: rest, else step the frame each frame; after the last one start over at a new
  * random rotation and rest */
-void func_002E7DF0(u8 *e) {
+/* 0x002E7DF0 */
+void EvEffect7F_Update(u8 *e) {
     static const union { u32 u; f32 f; } kTwoPi = {0x40C90FDB};
     VObject *rnd;
 
@@ -775,7 +795,8 @@ void func_002E7DF0(u8 *e) {
 
 /* +0xC set up: grey half-transparent, size 1.6, a random first frame, the 16-frame strip of
  * 32 x 32 cells in layer 0x19 */
-void func_002E7F60(u8 *e) {
+/* 0x002E7F60 */
+void EvEffect7F_Start(u8 *e) {
     AT(e, 0x10, s32) = 0x80;
     AT(e, 0x14, s32) = 0x80;
     AT(e, 0x18, s32) = 0x80;
@@ -1165,7 +1186,8 @@ extern void *D_0046FF40[], *D_00479320[];
 #include "effectmgr.h"
 
 /* +0x8 destructor */
-u8 *func_002E90F0(u8 *e, s32 flags) {
+/* 0x002E90F0 */
+u8 *EvEffect86_dtor(u8 *e, s32 flags) {
     if (e != NULL) {
         AT(e, 0x0, void **) = D_0046FF40;
         AT(e, 0x0, void **) = D_0046D730;
@@ -1185,7 +1207,8 @@ static void spark_init(void **obj) {
 }
 
 /* +0x18 start (arg { position, +0x10 the command, +0x14 the kind }) */
-void func_002E9150(u8 *e, u8 *arg) {
+/* 0x002E9150 */
+void EvEffect86_SetParams(u8 *e, u8 *arg) {
     u8 *mgr;
     s32 slot;
 
@@ -1309,14 +1332,16 @@ void func_002E9150(u8 *e, u8 *arg) {
 }
 
 /* +0x14 draw */
-void func_002E98E0(u8 *e) {
+/* 0x002E98E0 */
+void EvEffect86_Draw(u8 *e) {
     fx_quad_submit(e);
 }
 
 /* +0x10 update: kinds other than 0 loop their 16 frames; kind 0 (a candle) loops the first
  * half of its 32 frames, and once started (+0x74 1 / 2) plays the second half at half speed
  * and goes back to looping, +0x74 2 shrinking it as it goes (height 1/8 per 4 frames past 12) */
-void func_002E99B0(u8 *e) {
+/* 0x002E99B0 */
+void EvEffect86_Update(u8 *e) {
     if (AT(e, 0x78, s32) != 0) {
         AT(e, 0x70, s8) -= 1;
         if (AT(e, 0x70, s8) != 0) {
@@ -1354,13 +1379,15 @@ void func_002E99B0(u8 *e) {
 }
 
 /* +0xC set up: frame timer 1, no slot (+0x7C) */
-void func_002E9AE0(u8 *e) {
+/* 0x002E9AE0 */
+void EvEffect86_Start(u8 *e) {
     AT(e, 0x70, s8) = 1;
     AT(e, 0x7C, s32) = -1;
 }
 
 /* D_0046EC60 +0x10: nothing */
-void func_002C6620(void) {
+/* 0x002C6620 */
+void DepthRange_Update(void) {
 }
 
 extern void *D_0046EC80[];
@@ -1381,7 +1408,8 @@ void func_002C86F0(u8 *d, f32 a, f32 from, f32 to, f32 b) {
 }
 
 /* D_0046EC60 +0x14 draw: its band (+0x50 .. +0x5C) through a D_0046EC80 drawer */
-void func_002C6570(u8 *e) {
+/* 0x002C6570 */
+void DepthRange_Draw(u8 *e) {
     struct {
         void **vtbl;
         s32 a;
@@ -1395,13 +1423,14 @@ void func_002C6570(u8 *e) {
 }
 
 /* D_00472F60 +0xC set up: nothing */
-void func_00319B10(void) {
+/* 0x00319B10 */
+void Reflection_Start(void) {
 }
 
 /* ---- room effect D_00472F60 (room 0x60's floor effect 0x1B): a reflecting floor quad
  * (corners +0x50..+0x8C) of strength +0x14 (0 off); +0x10 the reflection covers the screen
  * rather than the quad, +0x18 it mirrors top to bottom rather than left to right. Its draw
- * (+0x14, func_00317D40) renders the characters and creatures above it again from the
+ * (+0x14, Reflection_Draw) renders the characters and creatures above it again from the
  * camera reflected in its plane ---- */
 
 /* `pos` is in view (clip space) and, unless the reflection covers the screen (+0x10), its
@@ -1573,7 +1602,8 @@ static void refl_mid(f32 *out, const f32 *a, const f32 *b) {
  * cleared). With the camera back, if anything was drawn the reflection is blended over the
  * quad (or the screen, +0x10) at strength +0x14, mirrored per +0x18 (layer 0x18); kinds with
  * +0x1C add side panels (func_00316DE0) */
-void func_00317D40(u8 *e) {
+/* 0x00317D40 */
+void Reflection_Draw(u8 *e) {
     VObject *cam = gCamera, *tc = gTexCache;
     f32 *q = (f32 *)(e + 0x50);
     f32 scr[4][4] __attribute__((aligned(16)));
@@ -1713,13 +1743,15 @@ void func_00317D40(u8 *e) {
 #endif
 
 /* +0x10 update: nothing */
-void func_00319B00(void) {
+/* 0x00319B00 */
+void Reflection_Update(void) {
 }
 
 /* +0x18 start: the quad's four corners (+0x50), then from the argument: +0x40 (a float, as a
  * whole number) -> +0x10, the strength byte +0x44 -> +0x14 (its top bits -> +0x1C), +0x48 ->
  * +0x18, which the renderer is told (+0x8C) */
-void func_00317C70(u8 *e, u8 *arg) {
+/* 0x00317C70 */
+void Reflection_SetParams(u8 *e, u8 *arg) {
     s32 k;
 
     if (arg == NULL) {
@@ -5715,7 +5747,8 @@ void OneDrip_Start(u8 *o) {
 extern void *D_00479560[];
 
 /* +0x8 destructor */
-void *func_003559D0(void *o, s32 flags) {
+/* 0x003559D0 */
+void *MirrorFragment_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_00479560;
         if (o != NULL) {
@@ -5729,14 +5762,17 @@ void *func_003559D0(void *o, s32 flags) {
 }
 
 /* +0xC set up, +0x10 update: nothing */
-void func_003570B0(void) {
+/* 0x003570B0 */
+void MirrorFragment_Start(void) {
 }
 
-void func_003570A0(void) {
+/* 0x003570A0 */
+void MirrorFragment_Update(void) {
 }
 
 /* +0x18 start: the parameters; the renderer's reflection pass on (+0x8C (0)) */
-void func_00355A30(u8 *o, const u8 *params) {
+/* 0x00355A30 */
+void MirrorFragment_SetParams(u8 *o, const u8 *params) {
     if (params == NULL) {
         return;
     }
@@ -5753,9 +5789,10 @@ void func_00355A30(u8 *o, const u8 *params) {
 #ifdef HG_NATIVE
 
 /* +0x14 draw: the fragment's reflection pass (renderer +0x20.. / camera; not ported yet) */
-void func_00355AA0(u8 *o) {
+/* 0x00355AA0 */
+void MirrorFragment_Draw(u8 *o) {
     (void)o;
-    glr_todo("mirror fragment reflection (func_00355AA0)");
+    glr_todo("mirror fragment reflection (MirrorFragment_Draw)");
 }
 #endif
 
@@ -6484,7 +6521,8 @@ s32 func_00301D30(u8 *o) {
 /* +0x18 set: NULL done; else { state, ... } - 5 / 6 on (the first / second kind), 1 on with
  * { 1, what it follows (0: the stalker's model, in the game), size, from slot } and twenty
  * rounds of sparks, 4 resized { 4, size } */
-void func_00301D40(u8 *o, s32 *prm) {
+/* 0x00301D40 */
+void Marker_SetParams(u8 *o, s32 *prm) {
     s32 k;
 
     if (prm == NULL) {
@@ -6523,7 +6561,8 @@ void func_00301D40(u8 *o, s32 *prm) {
  * glow flickers (renderer +0x78: 0.4 x (1 + sin a) x size, a turning by up to 10 degrees at
  * random; size 1.5 and over a fixed colour), b turns by up to 45 degrees, sparks while on; an
  * ending marker is done. 0 when not run */
-s32 func_003039A0(u8 *o) {
+/* 0x003039A0 */
+s32 Marker_Update(u8 *o) {
     VObject *rnd;
     f32 r, v;
     u32 a, c;
@@ -6562,7 +6601,8 @@ s32 func_003039A0(u8 *o) {
 }
 
 /* +0xC init */
-void func_00303C10(u8 *o) {
+/* 0x00303C10 */
+void Marker_Start(u8 *o) {
     AT(o, 0x18, s32) = 0;
     AT(o, 0x14, s32) = 0;
     AT(o, 0x1C, u8) = 0;
@@ -6579,7 +6619,8 @@ void func_00303C10(u8 *o) {
  * more) counted at half size where they show in front of the scene, blurred (the four diagonal
  * neighbours at 0x40 / 0x30 / 0x20 / 0x10), and added over the screen in orange (0x80, 0x60,
  * 0x30) at 64 x min(+0x8, 1) / 128 - layer 0xB */
-void func_00301E70(u8 *o) {
+/* 0x00301E70 */
+void Marker_Draw(u8 *o) {
     VObject *cam;
     f32 c[4] __attribute__((aligned(16)));
     f32 m[4][4] __attribute__((aligned(16)));

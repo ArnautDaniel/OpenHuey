@@ -391,7 +391,7 @@ void glr_panic(int limit, int amount) {
     put_post(POST_PANIC, 0x2A, (uint32_t)limit, (uint32_t)amount);
 }
 
-/* the marker glow (func_00301E70, layer 0xB): 32 spheres about a point (radius 10 + 0.3 k, the
+/* the marker glow (Marker_Draw, layer 0xB): 32 spheres about a point (radius 10 + 0.3 k, the
  * later ones + `jitter`) counted where they show in front of the scene, blurred, and added over
  * the screen in orange at `fix` / 128. The point: game pixels (x, y), view depth z, `scale`
  * game pixels per unit there */
@@ -650,7 +650,7 @@ static const char *kQuadVs =
  *      0x20 .. 0x80 over to .. b (view depth, from the depth image; last band passed wins)
  *   17 over the screen by its alpha, stretched
  *      (the depth of field, func_002C6650: 2, eight 15s ping-ponging, 16, 17)
- * The reflecting floor (func_00317D40 / func_00316DE0), R the reflection's middle at half size:
+ * The reflecting floor (Reflection_Draw / func_00316DE0), R the reflection's middle at half size:
  *   18 R blurred: 4 diagonal neighbours lerped in at 1/4 each, then where R's alpha isn't 0
  *      R lerped back in at 3/4 with its alpha (else alpha 0)
  *   21 that stretched over the screen, mirrored left / right (uOff.x 0; moved by uRange.x
@@ -1833,7 +1833,7 @@ static void run_post(const GlrDraw *d) {
         p_glClearNamedFramebufferfv(sMaskFbo, GL_COLOR, 0, kNone);
         break;
     }
-    case POST_REFL: {   /* func_00317D40 / func_00316DE0 */
+    case POST_REFL: {   /* Reflection_Draw / func_00316DE0 */
         float fix = (float)(int32_t)rgba / 128.0f;
 
         if (d->prim & 1) {
@@ -1856,7 +1856,7 @@ static void run_post(const GlrDraw *d) {
         p_glProgramUniform4f(sPostProg, sPostBandLoc, d->mvp[2], d->mvp[3], 0.0f, 0.0f);
         post(32, sFbo, GLR_WIDTH, GLR_HEIGHT, sCopy, 0);
         break;
-    case POST_MARKER:   /* func_00301E70 (see glr_marker) */
+    case POST_MARKER:   /* Marker_Draw (see glr_marker) */
         p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,
                                  GL_COLOR_BUFFER_BIT, GL_NEAREST);
         p_glProgramUniform1f(sPostProg, sPostFixLoc, (float)(int32_t)rgba);

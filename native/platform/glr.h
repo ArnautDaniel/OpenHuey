@@ -97,7 +97,7 @@ void glr_caustic_glow(int aref);
  * from .. to, fully beyond a / b, in steps of a quarter between */
 void glr_dof(float a, float from, float to, float b);
 
-/* the reflecting floor (func_00317D40): layer 0x17's draws go into the reflection (from the
+/* the reflecting floor (Reflection_Draw): layer 0x17's draws go into the reflection (from the
  * mirrored camera's half-size matrices; its background the screen mirrored, renderer +0x8C
  * `flip`); glr_mask_clear and GLR_PRIM_MASK quads mark where it shows; glr_refl blends it over
  * the screen at fix / 128 - `prep` prepares it first (blurred, sharp where drawn), `flip`

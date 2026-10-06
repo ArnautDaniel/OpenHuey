@@ -95,13 +95,13 @@ void *func_002577D8(void);
 void *func_00259EE8(void);
 void *func_0025B828(void);
 
-void func_002B6130(u8 *self, u8 *src);
+void TvScreenA_SetParams(u8 *self, u8 *src);
 
 extern u8 *D_0045D1F0;
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-void func_002D7710(u8 *p, const u8 *src);
-void func_002D78F0(u8 *p);
+void TvScreenB_SetParams(u8 *p, const u8 *src);
+void TvScreenB_Start(u8 *p);
 
 /* destructor (vtable D_0046AED0) */
 void *func_001BF660(u8 *o, s32 flags) {
@@ -116,7 +116,8 @@ void *func_001BF660(u8 *o, s32 flags) {
     return o;
 }
 /* +0x8 */
-MovieLib *func_0020E740(MovieLib *lib, s32 flags) {
+/* 0x0020E740 */
+MovieLib *MovieLib_dtor(MovieLib *lib, s32 flags) {
     if (lib != NULL) {
         lib->vtbl = D_0046C740;
         if (lib != NULL) {
@@ -135,7 +136,8 @@ MovieLib *func_0020E740(MovieLib *lib, s32 flags) {
 
 /* +0xC set up the library: 59.94 fields a second; default creation parameters (512 x 512 at
  * most, 6 Mbit/s) */
-void func_002266F0(MovieLib *lib) {
+/* 0x002266F0 */
+void MovieLib_Setup(MovieLib *lib) {
     func_00115D20(lib->init, 0, 0x20);
     *(f32 *)(lib->init + 0x0) = 0x1.df851ep+5f;   /* 59.94 */
     *(s32 *)(lib->init + 0x4) = 1;
@@ -344,21 +346,24 @@ void func_0025C400(u8 *s, s64 v) {
 }
 
 /* +0x10 the work buffer (NULL: keep) */
-void func_002266D0(MovieLib *lib, void *work) {
+/* 0x002266D0 */
+void MovieLib_SetWork(MovieLib *lib, void *work) {
     if (work != NULL) {
         CPRM(lib, 0x40, void *) = work;
     }
 }
 
 /* +0x14 shut the library down */
-void func_00226680(MovieLib *lib) {
+/* 0x00226680 */
+void MovieLib_Shutdown_14(MovieLib *lib) {
     func_0023AE40();
     func_00115D20(lib->init, 0, 0x20);
     func_00115D20(lib->create, 0, 0x30);
 }
 
 /* +0x18 create a player (NULL without a work buffer or on failure) */
-void *func_00226640(MovieLib *lib) {
+/* 0x00226640 */
+void *MovieLib_CreatePlayer(MovieLib *lib) {
     if (CPRM(lib, 0x40, void *) == NULL) {
         return NULL;
     }
@@ -366,7 +371,8 @@ void *func_00226640(MovieLib *lib) {
 }
 
 /* +0x1C the movie's size and kind */
-void func_00226620(MovieLib *lib, s32 w, s32 h, s32 a, s32 b) {
+/* 0x00226620 */
+void MovieLib_MovieSize(MovieLib *lib, s32 w, s32 h, s32 a, s32 b) {
     CPRM(lib, 0x30, s32) = w;
     CPRM(lib, 0x34, s32) = h;
     CPRM(lib, 0x48, s32) = a;
@@ -374,7 +380,8 @@ void func_00226620(MovieLib *lib, s32 w, s32 h, s32 a, s32 b) {
 }
 
 /* +0x20 the work buffer size, rounded up to 64 bytes */
-s32 func_002265D0(MovieLib *lib) {
+/* 0x002265D0 */
+s32 MovieLib_WorkSize(MovieLib *lib) {
     CPRM(lib, 0x44, s32) = mwPlyCalcWorkCprmSfd(lib->create);
     CPRM(lib, 0x44, s32) = (CPRM(lib, 0x44, s32) & ~0x3F) + ((CPRM(lib, 0x44, s32) & 0x3F) ? 0x40 : 0);
     return CPRM(lib, 0x44, s32);
@@ -392,7 +399,7 @@ extern void *D_0046EA60[];       /* Movie */
 extern void *D_0046ECC0[];       /* SceneMovie (the boot logo) */
 extern u8 *D_0045D1F0;
 
-void func_002B6E50(Movie *m);
+void Movie_Finish(Movie *m);
 void func_002B69B0(Movie *m);
 
 static const PTMF sMovieEntry = {0, 0x10, {(void *)0}};   /* virtual +0x10 */
@@ -426,7 +433,7 @@ static inline s32 movie_level(Movie *m) {
 
 /* ---- D_0046EA40 (room effect 1 of rooms 0x31 / 0x32): the TV showing the movie playing -
  * a quad on the screen's corners textured with the movie's current frame (func_0021E410) while
- * +0x10 (set by +0x18); its +0xC is func_002B6310 ---- */
+ * +0x10 (set by +0x18); its +0xC is TvScreenA_Start ---- */
 
 extern void *D_0046EA40[], *D_0046D730[], *D_0046FC30[], *D_00469D00[];
 
@@ -450,7 +457,8 @@ u64 func_0021E410(u8 *mv, s32 page);
 #endif
 
 /* +0x8 destructor */
-void *func_002B60D0(void *o, s32 flags) {
+/* 0x002B60D0 */
+void *TvScreenA_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046EA40;
         if (o != NULL) {
@@ -463,12 +471,14 @@ void *func_002B60D0(void *o, s32 flags) {
     return o;
 }
 
-void func_002B6130(u8 *self, u8 *src) {
+/* 0x002B6130 */
+void TvScreenA_SetParams(u8 *self, u8 *src) {
     *(u32 *)(self + 0x10) = *src;
 }
 
 /* +0x10 update: the movie flag from the game mode (gProgress +0x54) */
-void func_002B62D0(void) {
+/* 0x002B62D0 */
+void TvScreenA_Update(void) {
     *D_0045D1F0 = VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress);
 }
 
@@ -555,16 +565,18 @@ static inline __attribute__((always_inline)) void tv_draw(u8 *o, u32 x0, u32 x1,
 }
 
 /* +0x14 draw: the screen at x -2.61 .. -0.12, z 5.79 .. 7.53, y 2.06 .. 4.39 */
-void func_002B6140(u8 *o) {
+/* 0x002B6140 */
+void TvScreenA_Draw(u8 *o) {
     tv_draw(o, 0xC0274A23, 0xBDF93DD9, 0x408C872B, 0x400401A3, 0x40B93A93, 0x40F0D014);
 }
 
-/* ---- D_0046F5F0: another TV (as D_0046EA40; its +0xC func_002D78F0, +0x18 func_002D7710) ---- */
+/* ---- D_0046F5F0: another TV (as D_0046EA40; its +0xC TvScreenB_Start, +0x18 TvScreenB_SetParams) ---- */
 
 extern void *D_0046F5F0[];
 
 /* +0x8 destructor */
-void *func_002D76B0(void *o, s32 flags) {
+/* 0x002D76B0 */
+void *TvScreenB_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046F5F0;
         if (o != NULL) {
@@ -577,31 +589,37 @@ void *func_002D76B0(void *o, s32 flags) {
     return o;
 }
 
-void func_002D7710(u8 *p, const u8 *src) { F(p, 0x10, u32) = *src; }
+/* 0x002D7710 */
+void TvScreenB_SetParams(u8 *p, const u8 *src) { F(p, 0x10, u32) = *src; }
 
 /* +0x10 update */
-void func_002D78B0(void) {
+/* 0x002D78B0 */
+void TvScreenB_Update(void) {
     *D_0045D1F0 = VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress);
 }
 
-void func_002D78F0(u8 *p) {
+/* 0x002D78F0 */
+void TvScreenB_Start(u8 *p) {
     *D_0045D1F0 = 0;
     F(p, 0x10, u32) = 0;
 }
 
 /* +0x14 draw: the screen at x 20.8 .. 22.96, z 7.73 .. 9.80, y 9.80 .. 12.05 */
-void func_002D7720(u8 *o) {
+/* 0x002D7720 */
+void TvScreenB_Draw(u8 *o) {
     tv_draw(o, 0x41A66AE8, 0x41B7AE14, 0x4140B924, 0x411CDB23, 0x40F7573F, 0x411CDD2F);
 }
 
 /* clear the flag */
-void func_002B6310(Movie *m) {
+/* 0x002B6310 */
+void TvScreenA_Start(Movie *m) {
     *D_0045D1F0 = 0;
     AT(m, 0x10, s32) = 0;
 }
 
 /* +0x18 */
-s32 func_002B6330(Movie *m) {
+/* 0x002B6330 */
+s32 Movie_Shot(Movie *m) {
     return 0;
 }
 
@@ -631,11 +649,13 @@ s32 func_002B6410(Movie *m) {
 }
 
 /* +0x24 */
-void func_002B64A0(Movie *m) {
+/* 0x002B64A0 */
+void Movie_Draw(Movie *m) {
 }
 
 /* +0x20 draw the frame (full screen, layer 3) */
-void func_002B64B0(Movie *m) {
+/* 0x002B64B0 */
+void Movie_TakeFrame(Movie *m) {
     VCALL(gRenderer, 0x40, void (*)(VObject *, u8 *, s32, s32, s32, s32))(
         gRenderer, m->frame, 0x88000, m->frameW, m->frameH, 3);
 }
@@ -649,7 +669,8 @@ s32 func_002B64F0(Movie *m) {
 }
 
 /* +0x1C per frame: take the decoded frame and draw it; at the end, finish (or loop) */
-void func_002B6510(Movie *m) {
+/* 0x002B6510 */
+void Movie_Frame(Movie *m) {
     s32 t = func_0023C480(m->ply);
 
     if (t != m->time) {
@@ -837,7 +858,8 @@ void func_002B6D10(Movie *m, const char *path, s32 mode, s32 keep) {
 }
 
 /* +0x14 finish */
-void func_002B6E50(Movie *m) {
+/* 0x002B6E50 */
+void Movie_Finish(Movie *m) {
     m->dir = 0;
     m->name[0] = 0;
     m->shownFrame = -1;
@@ -845,7 +867,8 @@ void func_002B6E50(Movie *m) {
 }
 
 /* +0x10 entry: a player with its own work buffer, then start */
-void func_002B6E70(Movie *m) {
+/* 0x002B6E70 */
+void Movie_Entry(Movie *m) {
     MovieLib *lib = gMovieLib;
     s32 size;
 
@@ -871,7 +894,8 @@ void func_002B6E70(Movie *m) {
 }
 
 /* +0x8 */
-Movie *func_002B6FC0(Movie *m, s32 flags) {
+/* 0x002B6FC0 */
+Movie *Movie_dtor(Movie *m, s32 flags) {
     if (m != NULL) {
         m->base.vtbl = D_0046EA60;
         if (!m->keepRenderer) {
@@ -932,10 +956,11 @@ Movie *func_002B70D0(Movie *m) {
 /* ---- SceneMovie (the boot logo): its work buffer is part of the object (+0x200) ---- */
 
 /* +0x8 */
-Movie *func_002C8C10(Movie *m, s32 flags) {
+/* 0x002C8C10 */
+Movie *MovieScene_dtor(Movie *m, s32 flags) {
     if (m != NULL) {
         m->base.vtbl = D_0046ECC0;
-        func_002B6FC0(m, 0);
+        Movie_dtor(m, 0);
         if ((s16)flags > 0) {
             SceneHeap_delete(m);
         }
@@ -944,7 +969,8 @@ Movie *func_002C8C10(Movie *m, s32 flags) {
 }
 
 /* +0x10 entry */
-void func_002C8C70(Movie *m) {
+/* 0x002C8C70 */
+void MovieScene_Entry(Movie *m) {
     MovieLib *lib = gMovieLib;
 
     VCALL(lib, 0x1C, void (*)(MovieLib *, s32, s32, s32, s32))(lib, 0x200, 0x1C0, 0x11, 0);
@@ -969,11 +995,12 @@ extern void *D_00470E80[];
 extern const PTMF D_0041CA80;   /* func_002B6BB0 */
 
 /* +0x8 (the frames aren't its own) */
-Movie *func_002FEC50(Movie *m, s32 flags) {
+/* 0x002FEC50 */
+Movie *MovieOwnBuf_dtor(Movie *m, s32 flags) {
     if (m != NULL) {
         m->base.vtbl = D_00470E80;
         m->frames = NULL;
-        func_002B6FC0(m, 0);
+        Movie_dtor(m, 0);
         if ((s16)flags > 0) {
             SceneHeap_delete(m);
         }
@@ -982,18 +1009,21 @@ Movie *func_002FEC50(Movie *m, s32 flags) {
 }
 
 /* +0x24 */
-void func_002FECC0(Movie *m) {
+/* 0x002FECC0 */
+void MovieOwnBuf_Draw(Movie *m) {
 }
 
 /* +0x20 the frame into the next of the two */
-void func_002FECD0(Movie *m) {
+/* 0x002FECD0 */
+void MovieOwnBuf_TakeFrame(Movie *m) {
     func_002410B0(m->ply, &m->frame, (u8 *)m->frames + m->frameBuf * 0x38000);
     FlushCache(0);
     m->frameBuf ^= 1;
 }
 
 /* +0x10 entry: a 256 x 224 player with its own work buffer, then start */
-void func_002FED30(Movie *m) {
+/* 0x002FED30 */
+void MovieOwnBuf_Entry(Movie *m) {
     MovieLib *lib = gMovieLib;
     s32 size;
 
@@ -1037,7 +1067,7 @@ static inline __attribute__((always_inline)) Movie *movie_dtor(Movie *m, s32 fla
     if (m != NULL) {
         m->base.vtbl = vtbl;
         m->frames = NULL;
-        func_002B6FC0(m, 0);
+        Movie_dtor(m, 0);
         if ((s16)flags > 0) {
             SceneHeap_delete(m);
         }
@@ -1130,28 +1160,33 @@ static inline void texcache_done(void) {
 /* ---- class 1 (D_0046EAB0): 256 x 224, over the screen by its alpha ---- */
 
 /* +0x8 */
-Movie *func_002BA1B0(Movie *m, s32 flags) {
+/* 0x002BA1B0 */
+Movie *MovieBlended_dtor(Movie *m, s32 flags) {
     return movie_dtor(m, flags, D_0046EAB0);
 }
 
 /* +0x10 */
-void func_002BA4F0(Movie *m) {
+/* 0x002BA4F0 */
+void MovieBlended_Entry(Movie *m) {
     movie_entry(m, 0x100, 0xE0, 0x31, 1, 0xCA6C0, 1, &D_00412730);
 }
 
 /* +0x18 */
-u8 func_002BA220(Movie *m, u8 *shot) {
+/* 0x002BA220 */
+u8 MovieBlended_Shot(Movie *m, u8 *shot) {
     return movie_shot(m, shot, 0);
 }
 
 /* +0x20 */
-void func_002BA490(Movie *m) {
+/* 0x002BA490 */
+void MovieBlended_TakeFrame(Movie *m) {
     movie_take(m, 0x38000, 1, 0);
 }
 
 #ifdef HG_NATIVE
 /* +0x24 draw: the frame over the screen, blended (layer 0x2C) */
-void func_002BA270(Movie *m) {
+/* 0x002BA270 */
+void MovieBlended_Draw(Movie *m) {
     movie_send(m, 0x38000, m->frameH, 0x2B);
     movie_sprite(0x2C, 0x156, 0x72007000);
     texcache_done();
@@ -1162,28 +1197,33 @@ void func_002BA270(Movie *m) {
  * progress flag 0x29 ---- */
 
 /* +0x8 */
-Movie *func_002BA670(Movie *m, s32 flags) {
+/* 0x002BA670 */
+Movie *MovieOpaque_dtor(Movie *m, s32 flags) {
     return movie_dtor(m, flags, D_0046EAE0);
 }
 
 /* +0x10 */
-void func_002BA9F0(Movie *m) {
+/* 0x002BA9F0 */
+void MovieOpaque_Entry(Movie *m) {
     movie_entry(m, 0x200, 0xE0, 0x11, 1, 0xCA6C0, 0, &D_00412740);
 }
 
 /* +0x18 */
-u8 func_002BA6E0(Movie *m, u8 *shot) {
+/* 0x002BA6E0 */
+u8 MovieOpaque_Shot(Movie *m, u8 *shot) {
     return movie_shot(m, shot, 0);
 }
 
 /* +0x20 */
-void func_002BA980(Movie *m) {
+/* 0x002BA980 */
+void MovieOpaque_TakeFrame(Movie *m) {
     movie_take(m, 0x70000, 0, 1);
 }
 
 #ifdef HG_NATIVE
 /* +0x24 draw: the frame over the screen, opaque, only while progress flag 0x29 is set */
-void func_002BA730(Movie *m) {
+/* 0x002BA730 */
+void MovieOpaque_Draw(Movie *m) {
     movie_send(m, 0x70000, m->frameH, 0x2B);
     if ((Progress_TestFlag(gProgress, 0x29) & 0xFF) == 0) {
         return;
@@ -1197,23 +1237,27 @@ void func_002BA730(Movie *m) {
  * by its alpha (layer 4) ---- */
 
 /* +0x8 */
-Movie *func_002BAB50(Movie *m, s32 flags) {
+/* 0x002BAB50 */
+Movie *MovieHalf_dtor(Movie *m, s32 flags) {
     return movie_dtor(m, flags, D_0046EB10);
 }
 
 /* +0x10 */
-void func_002BAE70(Movie *m) {
+/* 0x002BAE70 */
+void MovieHalf_Entry(Movie *m) {
     movie_entry(m, 0x100, 0x1C0, 0x21, 1, 0xCA6C0, 0, &D_00412750);
 }
 
 /* +0x20 */
-void func_002BAE10(Movie *m) {
+/* 0x002BAE10 */
+void MovieHalf_TakeFrame(Movie *m) {
     movie_take(m, 0x38000, 1, 0);
 }
 
 #ifdef HG_NATIVE
 /* +0x24 draw: half the frame over the screen, blended (layer 4) */
-void func_002BABC0(Movie *m) {
+/* 0x002BABC0 */
+void MovieHalf_Draw(Movie *m) {
     movie_send(m, 0x38000, m->frameH / 2, 3);
     movie_sprite(4, 0x156, 0x72007000);
     texcache_done();
@@ -1223,28 +1267,33 @@ void func_002BABC0(Movie *m) {
 /* ---- class 4 (D_0046EC30): 256 x 224, plain (layer 6) ---- */
 
 /* +0x8 */
-Movie *func_002C61E0(Movie *m, s32 flags) {
+/* 0x002C61E0 */
+Movie *MovieCopied_dtor(Movie *m, s32 flags) {
     return movie_dtor(m, flags, D_0046EC30);
 }
 
 /* +0x10 */
-void func_002C6380(Movie *m) {
+/* 0x002C6380 */
+void MovieCopied_Entry(Movie *m) {
     movie_entry(m, 0x100, 0xE0, 0x11, 0, 0xCA6C0, 0, &D_004128D0);
 }
 
 /* +0x18 */
-u8 func_002C6250(Movie *m, u8 *shot) {
+/* 0x002C6250 */
+u8 MovieCopied_Shot(Movie *m, u8 *shot) {
     return movie_shot(m, shot, 1);
 }
 
 /* +0x20 the frame copied */
-void func_002C6320(Movie *m) {
+/* 0x002C6320 */
+void MovieCopied_TakeFrame(Movie *m) {
     func_00115B68(MOVIE_UNCACHED((u8 *)m->frames + m->frameBuf * 0x38000), m->frame, 0x38000);
     m->frameBuf ^= 1;
 }
 
 /* +0x24 */
-void func_002C62A0(Movie *m) {
+/* 0x002C62A0 */
+void MovieCopied_Draw(Movie *m) {
     movie_send(m, 0x38000, m->frameH, 6);
     texcache_done();
 }
@@ -1252,17 +1301,20 @@ void func_002C62A0(Movie *m) {
 /* ---- class 5 (D_0046EC90): as class 4 but over the screen with ALPHA 0x2A ---- */
 
 /* +0x8 */
-Movie *func_002C87C0(Movie *m, s32 flags) {
+/* 0x002C87C0 */
+Movie *MovieAdded_dtor(Movie *m, s32 flags) {
     return movie_dtor(m, flags, D_0046EC90);
 }
 
 /* +0x10 */
-void func_002C8AB0(Movie *m) {
+/* 0x002C8AB0 */
+void MovieAdded_Entry(Movie *m) {
     movie_entry(m, 0x100, 0xE0, 0x11, 0, 0x16C0, 0, &D_004128E0);
 }
 
 /* +0x20 the frame copied */
-void func_002C8A50(Movie *m) {
+/* 0x002C8A50 */
+void MovieAdded_TakeFrame(Movie *m) {
     func_00115B68(MOVIE_UNCACHED((u8 *)m->frames + m->frameBuf * 0x38000), m->frame, 0x38000);
     m->frameBuf ^= 1;
 }
@@ -1270,7 +1322,8 @@ void func_002C8A50(Movie *m) {
 #ifdef HG_NATIVE
 /* +0x24 draw: the frame over the screen; its blend (GS ALPHA 0x2A: (0 - 0) * FIX + Cs) leaves
  * it as it is, so straight */
-void func_002C8830(Movie *m) {
+/* 0x002C8830 */
+void MovieAdded_Draw(Movie *m) {
     movie_send(m, 0x38000, m->frameH, 0x2B);
     movie_sprite(0x2C, 0x116, 0x72007000);
     texcache_done();
@@ -1281,24 +1334,28 @@ void func_002C8830(Movie *m) {
  * 0x2E) ---- */
 
 /* +0x8 */
-Movie *func_0032E430(Movie *m, s32 flags) {
+/* 0x0032E430 */
+Movie *MovieSmall_dtor(Movie *m, s32 flags) {
     return movie_dtor(m, flags, D_00474F80);
 }
 
 /* +0x10 */
-void func_0032E730(Movie *m) {
+/* 0x0032E730 */
+void MovieSmall_Entry(Movie *m) {
     movie_entry(m, 0x100, 0x40, 0x41, 1, 0x1AA6C0, 0, &D_0042E428);
 }
 
 /* +0x20 */
-void func_0032E6C0(Movie *m) {
+/* 0x0032E6C0 */
+void MovieSmall_TakeFrame(Movie *m) {
     movie_take(m, 0x10000, 1, 1);
 }
 
 #ifdef HG_NATIVE
 /* +0x24 draw: the frame in a small rectangle (screen 0x740..0x8C0 x 0x7D0..0x830 in GS units:
  * not drawn yet, glr_todo), blended (layer 0x2E) */
-void func_0032E4A0(Movie *m) {
+/* 0x0032E4A0 */
+void MovieSmall_Draw(Movie *m) {
     movie_send(m, 0x10000, m->frameH, 0x2D);
     movie_sprite(0x2E, 0x156, 0x7D007400);
     texcache_done();
