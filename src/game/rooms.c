@@ -803,12 +803,12 @@ s32 func_0017F660(u8 *o, u32 *a, u32 *b, const f32 *dir) {
     }
 }
 
-enum { SQ_BLOCK, SQ_UNBLOCK, SQ_TEST, SQ_FLAG, SQ_CHARS, SQ_UNFLAG };
+enum { SQ_BLOCK, SQ_UNBLOCK, SQ_TEST, SQ_FLAG, SQ_CHARS, SQ_UNFLAG, SQ_FIND };
 
 struct sq_ctx {
     u32 any, all;   /* SQ_TEST: the flags of any / all triangles */
     s32 n;          /* SQ_CHARS: the characters' triangles */
-    u32 tri[5];
+    u32 tri[5];     /* SQ_FIND: tri[0] the one looked for (on the sides, not the corners) */
 };
 
 /* one square (a, b) of a walk; nonzero to stop */
@@ -839,6 +839,11 @@ static inline __attribute__((always_inline)) s32 sq_visit(s32 mode, struct sq_ct
     case SQ_UNFLAG:
         NavMesh_Tri(D_0044E570, a)->flags &= 0xDF7FFFFF;
         NavMesh_Tri(D_0044E570, b)->flags &= 0xDF7FFFFF;
+        break;
+    case SQ_FIND:
+        if (!corner && (a == c->tri[0] || b == c->tri[0])) {
+            return 1;
+        }
         break;
     case SQ_CHARS:
         for (k = 0; k < c->n; k++) {
@@ -907,12 +912,37 @@ static inline __attribute__((always_inline)) s32 part_ring(u8 *o, const u8 *part
                 return 1;
             }
         }
+        if (mode == SQ_FIND && side == 3) {   /* (the search leaves out the last corner) */
+            break;
+        }
         func_0017F660(o, &a, &b, d);
         if (sq_visit(mode, c, a, b, 1)) {
             return 1;
         }
     }
     return 0;
+}
+
+/* triangle `tri` is on the ring around one of the parts (moved two squares along `dir`, if
+ * any): 0; else -1 */
+s32 func_0017DD60(u8 *o, u32 tri, const f32 *dir) {
+    struct sq_ctx c;
+    u8 *part = o + 0x68;
+    s32 i;
+
+    c.tri[0] = tri;
+    for (i = 0; i < AT(o, 0x64, s32); i++, part += 0x18) {
+        u32 a = AT(part, 0x0, u32), b = AT(part, 0x4, u32);
+
+        if (dir != NULL) {
+            func_0017F660(o, &a, &b, dir);
+            func_0017F660(o, &a, &b, dir);
+        }
+        if (part_ring(o, part, a, b, SQ_FIND, &c)) {
+            return 0;
+        }
+    }
+    return -1;
 }
 
 /* block the triangles under each part (flags |= 0x20400000), moved two squares along `dir` */
@@ -1121,7 +1151,6 @@ extern VObject *D_0044FE08;
 extern VObject *D_00456DF8;   /* the room's objects: +0x18 (name) the object */
 extern u8 *D_0047A938[];      /* obstacle kinds: offset (x, z), n parts, then n x 0x10 */
 extern const char D_0047A940[], D_0047A948[], D_0047A950[];   /* "oshi00" */
-extern s32 func_0017DD60(u8 *o, s32 a, s32 b);
 extern void func_0017E260(u8 *o, const f32 *dir);
 extern void func_001002C0(void *array, void *(*dtor)(void *, s32), u32 size, u32 n);   /* __destroy_arr */
 
@@ -1258,13 +1287,13 @@ void func_0021A9D0(u8 *l, s32 i, const f32 *a) {
     }
 }
 
-/* +0x24 which active obstacles func_0017DD60(a, 0) finds clear (bit per obstacle) */
+/* +0x24 which active obstacles have triangle `a` on the ring round them (bit per obstacle) */
 u32 func_0021A930(u8 *l, s32 a) {
     u32 mask = 0;
     s32 k;
 
     for (k = 0; k < 5; k++) {
-        if (AT(OBST(l, k), 0x0, u8) == 1 && func_0017DD60(OBST(l, k), a, 0) == 0) {
+        if (AT(OBST(l, k), 0x0, u8) == 1 && func_0017DD60(OBST(l, k), a, NULL) == 0) {
             mask |= 1 << k;
         }
     }
