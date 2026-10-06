@@ -2435,3 +2435,89 @@ void func_003688D0(u8 *o) {
         AT(o, 0x28, u8) = 0;
     }
 }
+
+extern u32 func_001788F0(Progress *p, u32 door);    /* u8 */
+extern u32 func_00122B50(u8 *o, f32 *out);          /* u8: where its sound is heard from */
+extern void *D_0047A050[];
+extern VObject *D_0044E568;
+
+/* its burst (0x7A0 bytes, D_0047A050, a quad drawer at +0x610) */
+static inline void Burst1_Init(void **obj) {
+    obj[0] = D_0047A050;
+    obj[0x610 / 4] = D_00469D00;
+    ((s32 *)obj)[0x614 / 4] = -1;
+    obj[0x610 / 4] = D_0046FC30;
+}
+
+/* +0x30 each frame, while the game runs: the shared checks (func_00354910) set it off - in the
+   current room a sound and a level-0x4F noise (at the door whose event spot it is on, else its
+   triangle) and its burst; in a neighbouring room, through the door to the current room when
+   that is open, its sound heard from there, and the noise; it is gone. Otherwise Fiona's kick */
+void func_00335DE0(u8 *o) {
+    VObject *ev, *rooms;
+    Progress *p;
+    s32 r, cur;
+    u32 d, tri;
+
+    func_00355940(o);
+    if (AT(o, 0x28, u8) == 0) {
+        return;
+    }
+    if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) != 0) {
+        return;
+    }
+    ev = D_0044E4D0;
+    if ((VCALL(ev, 0x50, s32 (*)(VObject *))(ev) & 0xFF) == 1) {
+        return;
+    }
+    p = gProgress;
+    if ((Progress_TestFlag(p, 8) & 0xFF) == 1) {
+        return;
+    }
+    r = func_00354910(o);
+    if (r != 1 && r != 2) {
+        func_00354AF0(o);
+        return;
+    }
+    if (AT(o, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        u8 *mgr;
+
+        func_00122C20(o, 0, 5, 0, 0, NULL);
+        tri = AT(o, 0x34, u32);
+        rooms = D_0044E568;
+        for (d = 0; d < 8; d = (d + 1) & 0xFF) {
+            u32 door = VCALL(rooms, 0x48, u32 (*)(VObject *, s32, u32))(rooms, AT(o, 0x30, s32), d) & 0xFFFF;
+
+            if (door != 0xFFFF &&
+                VCALL(ev, 0x10, s32 (*)(VObject *, f32 *, u32, u32))(ev, (f32 *)(o + 0x10), door, AT(o, 0x34, u32)) != 0) {
+                tri = VCALL(rooms, 0x28, u32 (*)(VObject *, u32))(rooms, d);
+                break;
+            }
+        }
+        func_002A8440((u8 *)p + 0x7A8, 0x4F, AT(o, 0x30, s32), tri, 0xFFFF);
+        mgr = D_0044E578;
+        func_002D6090(mgr, Effect_New(mgr, 0x7A0, Burst1_Init), o + 0x10);
+        AT(o, 0x28, u8) = 0;
+        return;
+    }
+    cur = VCALL(p, 0xC, s32 (*)(Progress *))(p);
+    rooms = D_0044E568;
+    for (d = 0; d < 8; d = (d + 1) & 0xFF) {
+        if (cur == VCALL(rooms, 0x18, s32 (*)(VObject *, s32, u32))(rooms, AT(o, 0x30, s32), d)) {
+            break;
+        }
+    }
+    if ((d & 0xFF) != 8) {
+        u32 door = VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(rooms, AT(o, 0x30, s32), d) & 0xFFFF;
+
+        if ((func_001788F0(p, door) & 0xFF) == 1) {
+            f32 at[4] __attribute__((aligned(16)));
+
+            if ((func_00122B50(o, at) & 0xFF) == 1) {
+                func_00122C20(o, 0, 5, 0, 0, at);
+            }
+        }
+    }
+    func_002A8440((u8 *)p + 0x7A8, 0x4F, AT(o, 0x30, s32), AT(o, 0x34, u32), 0xFFFF);
+    AT(o, 0x28, u8) = 0;
+}
