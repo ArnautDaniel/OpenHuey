@@ -33,6 +33,26 @@ extern VObject *D_0044E9A0;   /* the VRAM manager */
 #ifdef HG_NATIVE
 #include "gl2d.h"
 
+/* AVOID.TEX's parts: u, v, w, h, palette, blending (0 normal, 1 subtracted / 2 mixed / 3 added
+ * by the fixed alpha) */
+extern u16 D_00429E00[][6];
+
+/* +0xC draw part `part` of AVOID.TEX (texture 0 of group 0x2D) at x, y, its own size, with
+ * fixed alpha `alpha`, layer 0x33 */
+void func_0031D9C0(u8 *o, s32 x, s32 y, s32 part, s32 alpha) {
+    static const u8 kAlpha[4] = {0x44, 0x62, 0x64, 0x68};
+    u16 *e = D_00429E00[(u8)part];
+    u8 *tex;
+    s16 sx = x, sy = y;
+
+    if (TexCache_Resident(0, 0x2D, 0x33, &tex) == -1) {
+        return;
+    }
+    VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+    gl2d_sprite(0x33, sx, sy, sx + e[2], sy + e[3], tex, e[0], e[1], e[0] + e[2], e[1] + e[3], 0x80808080, e[4],
+                gl2d_blend(((u64)(u8)alpha << 32) | kAlpha[e[5] & 3]));
+}
+
 /* the avoid prompt, each gameplay frame: unless hidden (+0x11040 0xFF), its frame (+0x11040, a
  * 160 x 32 row of AVOID.TEX, texture 0 of group 0x2D) as a 240 x 48 sprite near the bottom
  * right, opaque, in layer 0x30 */

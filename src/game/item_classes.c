@@ -1370,6 +1370,330 @@ s32 func_0035C8C0(u8 *o) {
     return 1;
 }
 
+extern const char D_0045D818[], D_0045D820[], D_0045D828[], D_0045D838[], D_0045D840[], D_0045D848[],
+    D_0045D850[], D_0045D858[], D_0045D860[], D_0045D870[], D_0045D878[], D_0045D880[];
+extern f32 func_00124490(void *a, const f32 *pos);   /* distance */
+
+/* the word item `it` carries (vtable +0x20) is `w` (the first 8 letters) */
+static inline s32 item_named(VObject *it, const char *w) {
+    const char *n = VCALL(it, 0x20, const char *(*)(VObject *))(it);
+    const char *q = w;
+    u32 i;
+
+    for (i = 0; i < 8; i++, q++) {
+        if (n[i] != *q) {
+            return 0;
+        }
+        if (n[i] == 0) {
+            break;
+        }
+    }
+    return 1;
+}
+
+/* the elements' flag `bit` (Progress +0x1C bits) set */
+static inline void item_progress_bit(Progress *p, s32 bit) {
+    AT(p, 0x1C + (bit >> 5) * 4, u32) |= 1 << (bit & 0x1F);
+}
+
+/* +0x3C use (the word plate, vtable D_0046F430): what Fiona does with the word it carries, room
+ * by room (6: an event started) -
+ *  0x23, spot 3: event 5
+ *  0x24, spot 6, until progress +0x1C bit 27: "EMETH" (bit 26, event 0xA) / "METH" (bit 25,
+ *        event 0xB) / "SALTATIO" (event 0xE), each with flag 0x18; anything else event 5
+ *  0x26, spot 0xA, until +0x7C bit 12: "MAGNUS" event 0xB (flag 0x18), else 0xC
+ *  0x0F, route 8 taken, spot 0x11: "REST" event 0x14 (flag 0x18), else 0x17
+ *  0x49, spot 2: event 1
+ *  0x66: spot 0x14 event 9; spot 0x16 "SALTATIO" event 0x11, else the word to the events (+0x30
+ *        0 / 1) and event 0xA
+ *  0x4F, until +0x24 bit 16: the elements "MERCURY" / "SULFUR" / "SALT" (flags 0x4D..0x4F, done:
+ *        +0x24 bits 13..15). With two done and Hewie with her (or at spot 0xA): event 5, flag
+ *        0x18; else spot 0xA event 0xA (4); spots 8 / 9 (until +0x24 bits 17 / 18) events 6 / 7.
+ *        The word given: its flag and the events' +0x5C, else +0x60
+ *  0x27 with +0x30 bit 14, spot 3: "ALCHYMIA" / "ADAMAS" / "POWDER" / "MORGAN" (not yet used:
+ *        +0x88 bits 8..11) to the events (+0x30 1: 0x88 / 0x8C / 0x83 / 0x89) and event 8, else 9
+ * elsewhere 0 */
+s32 func_002D27E0(VObject *it) {
+    Progress *p = gProgress;
+    VObject *ev = D_0044E4D0;
+
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x23 && item_at_spot(ev, gCharPlayer, 3)) {
+        item_event(ev, 0, 5, gCharPlayer);
+        return 6;
+    }
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x24 && !(AT(p, 0x1C, u32) & 0x8000000) &&
+        item_at_spot(ev, gCharPlayer, 6)) {
+        if (item_named(it, D_0045D818)) {
+            AT(p, 0x1C, u32) |= 0x4000000;
+            item_event(ev, 0, 0xA, gCharPlayer);
+            Progress_SetFlag(p, 0x18);
+        } else if (item_named(it, D_0045D820)) {
+            AT(p, 0x1C, u32) |= 0x2000000;
+            item_event(ev, 0, 0xB, gCharPlayer);
+            Progress_SetFlag(p, 0x18);
+        } else if (item_named(it, D_0045D828)) {
+            item_event(ev, 0, 0xE, gCharPlayer);
+            Progress_SetFlag(p, 0x18);
+        } else {
+            item_event(ev, 0, 5, gCharPlayer);
+        }
+        return 6;
+    }
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x26 && !(AT(p, 0x7C, u32) & 0x1000) &&
+        item_at_spot(ev, gCharPlayer, 0xA)) {
+        if (item_named(it, D_0045D838)) {
+            item_event(ev, 0, 0xB, gCharPlayer);
+            Progress_SetFlag(p, 0x18);
+        } else {
+            item_event(ev, 0, 0xC, gCharPlayer);
+        }
+        return 6;
+    }
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0xF && func_00178610(p, 8) != 0 &&
+        item_at_spot(ev, gCharPlayer, 0x11)) {
+        if (item_named(it, D_0045D840)) {
+            item_event(ev, 0, 0x14, gCharPlayer);
+            Progress_SetFlag(p, 0x18);
+        } else {
+            item_event(ev, 0, 0x17, gCharPlayer);
+        }
+        return 6;
+    }
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x49 && item_at_spot(ev, gCharPlayer, 2)) {
+        item_event(ev, 0, 1, gCharPlayer);
+        return 6;
+    }
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x66) {
+        if (item_at_spot(ev, gCharPlayer, 0x14)) {
+            item_event(ev, 0, 9, gCharPlayer);
+            return 6;
+        }
+        if (item_at_spot(ev, gCharPlayer, 0x16)) {
+            if (item_named(it, D_0045D828)) {
+                item_event(ev, 0, 0x11, gCharPlayer);
+            } else {
+                const s32 *w = VCALL(it, 0x20, const s32 *(*)(VObject *))(it);
+
+                VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 0, w[0]);
+                VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 1, w[1]);
+                item_event(ev, 0, 0xA, gCharPlayer);
+            }
+            return 6;
+        }
+    }
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x4F && !(AT(p, 0x24, u32) & 0x10000)) {
+        s32 given = 0, done = 0, bit = -1;
+
+        if (AT(p, 0x24, u32) & 0x2000) {
+            done = 1;
+        } else if (item_named(it, D_0045D848)) {
+            given = 1;
+            bit = 0x4D;
+        }
+        if (AT(p, 0x24, u32) & 0x4000) {
+            done++;
+        } else if (item_named(it, D_0045D850)) {
+            given = 1;
+            bit = 0x4E;
+        }
+        if (AT(p, 0x24, u32) & 0x8000) {
+            done++;
+        } else if (item_named(it, D_0045D858)) {
+            given = 1;
+            bit = 0x4F;
+        }
+        if (done == 2) {
+            u8 *h = gCharPartner;
+
+            if (h != NULL && AT(h, 0x28, u8) == 1 && AT(h, 0x30, s32) == VCALL(p, 0xC, s32 (*)(Progress *))(p) &&
+                AT(h, 0xC4, s32) != 2 &&
+                (item_at_spot(ev, gCharPlayer, 0xA) || func_00124490(gCharPlayer, (f32 *)(h + 0x10)) < 20.0f)) {
+                item_event(ev, 0, 5, gCharPlayer);
+                Progress_SetFlag(p, 0x18);
+                if (!given) {
+                    VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 0);
+                } else {
+                    item_progress_bit(p, bit);
+                    VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 0);
+                }
+                return 6;
+            }
+            if (item_at_spot(ev, gCharPlayer, 0xA)) {
+                item_event(ev, 0, 0xA, gCharPlayer);
+                return 4;
+            }
+        } else if (item_at_spot(ev, gCharPlayer, 8) && !(AT(p, 0x24, u32) & 0x20000)) {
+            item_event(ev, 0, 6, gCharPlayer);
+            if (!given) {
+                VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 0);
+            } else {
+                item_progress_bit(p, bit);
+                Progress_SetFlag(p, 0x18);
+                VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 0);
+            }
+            return 6;
+        } else if (item_at_spot(ev, gCharPlayer, 9) && !(AT(p, 0x24, u32) & 0x40000)) {
+            item_event(ev, 0, 7, gCharPlayer);
+            if (!given) {
+                VCALL(ev, 0x60, void (*)(VObject *, s32))(ev, 0);
+            } else {
+                item_progress_bit(p, bit);
+                Progress_SetFlag(p, 0x18);
+                VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 0);
+            }
+            return 6;
+        }
+    }
+    if (VCALL(p, 0xC, s32 (*)(Progress *))(p) == 0x27 && (AT(p, 0x30, u32) & 0x4000) &&
+        item_at_spot(ev, gCharPlayer, 3)) {
+        if (item_named(it, D_0045D860) && !(AT(p, 0x88, u32) & 0x100)) {
+            VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 1, 0x88);
+            item_event(ev, 0, 8, gCharPlayer);
+        } else if (item_named(it, D_0045D870) && !(AT(p, 0x88, u32) & 0x200)) {
+            VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 1, 0x8C);
+            item_event(ev, 0, 8, gCharPlayer);
+        } else if (item_named(it, D_0045D878) && !(AT(p, 0x88, u32) & 0x400)) {
+            VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 1, 0x83);
+            item_event(ev, 0, 8, gCharPlayer);
+        } else if (item_named(it, D_0045D880) && !(AT(p, 0x88, u32) & 0x800)) {
+            VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 1, 0x89);
+            item_event(ev, 0, 8, gCharPlayer);
+        } else {
+            item_event(ev, 0, 9, gCharPlayer);
+        }
+        return 6;
+    }
+    return 0;
+}
+
+#ifdef HG_NATIVE
+#include "gl2d.h"
+#include "sce/libvu0.h"
+
+extern VObject *D_0044E4B8;   /* the camera */
+extern void *D_0046D7A0[], *D_00469D00[];
+extern void func_0026B180(void *drawer, u32 rgba, s32 layer, s32 sub);
+extern f32 func_0031C058(f32 x);   /* cosf */
+extern f32 func_0031C248(f32 x);   /* sinf */
+
+/* is clip-space point `p` (camera +0x48) inside the view */
+static s32 glow_in_view(f32 (*clip)[4], const f32 *pt) {
+    f32 v[4] __attribute__((aligned(16)));
+
+    sceVu0ApplyMatrix(v, clip, (f32 *)pt);
+    return v[0] <= v[3] && !(v[0] < -v[3]) && v[1] <= v[3] && !(v[1] < -v[3]) && v[2] <= v[3] && !(v[2] < -v[3]);
+}
+
+/* the glow +0x14 draw (while set): around its room object (+0xC, at floor height -1)
+ * - a disc of radius r (by its kind +0x5) fading out from the middle (alpha +0x4), added into
+ *   layer 0x26 (the bloom's mask); only when all of it is in view (kind 0: the disc left out
+ *   then, and the screen also brightened, func_0026B180 0x40808080 in layer 0x28)
+ * - eight faint cyan strips standing 40 high at radius r + 5, turning with its phase (+0x8),
+ *   added in layer 2, when all in view */
+void func_0035BCA0(u8 *o) {
+    static const union { u32 u; f32 f; } kRadius[8] = {
+        {0x409A3D71}, {0x40800000}, {0x407F5C29}, {0x409D70A4}, {0x408D1EB8}, {0x407C28F6}, {0x405E147B}, {0x411A3D71},
+    };
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    f32 clip[4][4] __attribute__((aligned(16)));
+    f32 pt[18][4] __attribute__((aligned(16)));
+    u8 *obj = AT(o, 0xC, u8 *);
+    f32 c[4], r, r2;
+    s32 i, clipped = 0;
+
+    if (o[5] == 0xFF) {
+        return;
+    }
+    c[0] = AT(obj, 0x20, f32);
+    c[1] = -1.0f;
+    c[2] = AT(obj, 0x28, f32);
+    c[3] = 1.0f;
+    r = o[5] < 8 ? kRadius[o[5]].f : 0.0f;
+    VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+
+    /* the disc: the middle, then 16 points round it */
+    sceVu0CopyVector(pt[0], c);
+    for (i = 0; i < 16; i++) {
+        f32 a = kPi.f * (22.5f * (f32)i) / 180.0f;
+
+        pt[i + 1][0] = c[0] + r * func_0031C248(a);
+        pt[i + 1][1] = c[1];
+        pt[i + 1][2] = c[2] - r * func_0031C058(a);
+        pt[i + 1][3] = 1.0f;
+    }
+    for (i = 0; i < 17; i++) {
+        if (!glow_in_view(clip, pt[i])) {
+            if (o[5] != 0) {
+                return;
+            }
+            clipped = 1;
+        }
+    }
+    if (o[5] == 0) {
+        u8 drawer[0x20] __attribute__((aligned(16)));
+
+        AT(drawer, 0x0, void **) = D_0046D7A0;
+        AT(drawer, 0x4, s32) = -1;
+        func_0026B180(drawer, 0x40808080, 0x28, 0);
+        AT(drawer, 0x0, void **) = D_00469D00;
+    }
+    if (!clipped) {
+        f32 tri[3][4];
+        f32 st[3][2] = {{0}};
+        u8 col[3][4] = {{0x80, 0x80, 0x80, 0}, {0}, {0}};
+
+        col[0][3] = o[4];
+        glr_layer(0x26);
+        for (i = 0; i < 16; i++) {   /* the fan, closing on its first rim point */
+            sceVu0CopyVector(tri[0], pt[0]);
+            sceVu0CopyVector(tri[1], pt[i + 1]);
+            sceVu0CopyVector(tri[2], pt[(i + 1) % 16 + 1]);
+            AT(&tri[0][3], 0, u32) = AT(&tri[1][3], 0, u32) = AT(&tri[2][3], 0, u32) = 0;
+            glr_strip((const f32 *)clip, 3, &tri[0][0], &st[0][0], &col[0][0], NULL, 0,
+                      0x40 | GLR_PRIM_ADD | GLR_PRIM_NOZW);
+        }
+        glr_layer(-1);
+    }
+
+    /* the strips: the middle at the bottom and 40 up, then 8 pairs round it */
+    r2 = 5.0f + r;
+    sceVu0CopyVector(pt[0], c);
+    sceVu0CopyVector(pt[1], c);
+    pt[1][1] += 40.0f;
+    for (i = 0; i < 8; i++) {
+        f32 a = kPi.f * (45.0f * (f32)i + AT(o, 0x8, f32)) / 180.0f;
+
+        sceVu0CopyVector(pt[2 + i * 2], c);
+        pt[2 + i * 2][0] = c[0] + r2 * func_0031C248(a);
+        pt[2 + i * 2][2] = c[2] - r2 * func_0031C058(a);
+        sceVu0CopyVector(pt[3 + i * 2], pt[2 + i * 2]);
+        pt[3 + i * 2][1] += 40.0f;
+    }
+    for (i = 0; i < 18; i++) {
+        if (!glow_in_view(clip, pt[i])) {
+            return;
+        }
+    }
+    glr_layer(2);
+    for (i = 0; i < 8; i++) {
+        static const u8 kCol[4][4] = {{0x00, 0x20, 0x20, 0x10}, {0, 0, 0x40, 0}, {0, 0, 0x20, 0}, {0, 0, 0x10, 0}};
+        f32 q[4][4];
+        f32 st[4][2] = {{0}};
+        s32 k;
+
+        sceVu0CopyVector(q[0], pt[0]);
+        sceVu0CopyVector(q[1], pt[2 + i * 2]);
+        sceVu0CopyVector(q[2], pt[1]);
+        sceVu0CopyVector(q[3], pt[3 + i * 2]);
+        for (k = 0; k < 4; k++) {
+            AT(&q[k][3], 0, u32) = 0;
+        }
+        glr_strip((const f32 *)clip, 4, &q[0][0], &st[0][0], &kCol[0][0], NULL, 0, 0x40 | GLR_PRIM_ADD | GLR_PRIM_NOZW);
+    }
+    glr_layer(-1);
+}
+#endif
+
 /* progress +0x84 bits 22..26 as bits 0..4 */
 u8 func_00303F00(void) {
     u32 b = AT(gProgress, 0x84, u32);
