@@ -579,18 +579,21 @@ void func_002DA6B0(Pursuer *p);
    Otherwise the pending action (0x1C rumbles the pad), or: further than 100 hold off (6);
    closer, seen by her and within +0x17C0 (60) come on (1); else back off (5) or hold off (6) by a
    roll against his table +0x1824 (+0x14 chance, +0 / +4 waits). Then his chase (func_002DA6B0) */
-void func_002DB480(Pursuer *p) {
+static inline void Riccardo_Behaviour(Pursuer *p, const PTMF *away, const PTMF *chase,
+                                      void (*chaseFn)(Pursuer *), s32 setReach) {
     s32 next;
 
     p->target = gCharPlayer;
     PU(p, 0x16F6, u8) = 1;
     if (PU(p, 0x1544, u8) == 0) {
         VCALL(p, 0xB0, void (*)(Pursuer *))(p);
-        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_00415680);
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), away);
         PU(p, 0x1758, s32) = -1;
         return;
     }
-    PU(p, 0x17C0, f32) = 60.0f;
+    if (setReach) {
+        PU(p, 0x17C0, f32) = 60.0f;
+    }
     next = PU(p, 0x1758, s32);
     if (next == -1) {
         f32 roll = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
@@ -623,9 +626,13 @@ void func_002DB480(Pursuer *p) {
     PU(p, 0x1758, s32) = -1;
     PU(p, 0x1780, s32) = 0;
     PU(p, 0x1630, s32) = AT(PU(p, 0x1824, u8 *), 0x10, s32);
-    ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_00415690);
+    ptmf_set((PTMF *)((u8 *)p + 0x174C), chase);
     PU(p, 0x1758, s32) = -1;
-    func_002DA6B0(p);
+    chaseFn(p);
+}
+
+void func_002DB480(Pursuer *p) {
+    Riccardo_Behaviour(p, &D_00415680, &D_00415690, func_002DA6B0, 1);
 }
 
 extern void func_00211A90(Actor *a, f32 dist, f32 *out);                       /* a point ahead */
@@ -1289,4 +1296,227 @@ void func_0034D120(Pursuer *p) {
         VCALL(p, 0x118, void (*)(Pursuer *, s32))(p, next);
     }
     func_0034CDC0(p);
+}
+
+/* ---- his other class (code 0x34BA20..0x34DBF0): his behaviour with its own tables, a
+   breathing tint while on screen (+0x17C4 phase, +0x17C8 hold), layer 0x11, and seen-by-Fiona
+   alerts (+0x16C4) ---- */
+
+extern u8 D_00441CF0[], D_00441D20[], D_00441D60[], D_00441DA0[], D_00441DC0[], D_00441E00[],
+    D_00441E30[], D_00441E60[], D_00441E80[], D_00441EB0[], D_00441EC0[], D_00441EE0[],
+    D_00441F00[], D_00441F20[], D_00441F38[], D_00441F48[], D_00441F58[], D_00441F70[],
+    D_00441FC0[], D_00441FF0[], D_00442020[], D_00442030[], D_00442060[], D_00442080[],
+    D_004420B0[], D_004420E0[], D_00442110[], D_00442120[], D_00442130[], D_00442160[],
+    D_00442178[], D_00442188[], D_004422D0[], D_00442310[], D_00442350[], D_004423A0[],
+    D_004423D0[], D_00442410[], D_00442430[], D_00442480[], D_004424C0[], D_00442500[],
+    D_00442510[], D_00442530[], D_00442550[], D_00442580[], D_004425C0[], D_004425D0[],
+    D_004425E0[], D_004425F0[], D_00442630[], D_00442670[], D_004426B8[], D_004426D0[],
+    D_00442700[], D_00442720[], D_00442760[], D_00442790[], D_004427D0[], D_004427E0[],
+    D_004427F0[], D_00442810[], D_00442830[], D_00442860[];
+
+/* its attack tables: [gProgress+0x30 bit 0x8000][alerted (+0xC4 == 1)] */
+static u8 *const sAttackTables2[2][2][17] = {
+    {
+        { D_00441CF0, D_00441D60, D_00441D20, D_00441DA0, D_00441DC0, D_00441E00, D_00441E30,
+          D_00441E60, D_00441E80, D_00441EB0, D_00441EC0, D_00441EE0, D_00441F00, D_00441F20,
+          D_00441F48, D_00441F58, D_00441F38 },
+        { D_00441F70, D_00441FF0, D_00441FC0, D_00442020, D_00442030, D_00442060, D_00442080,
+          D_004420B0, D_004420E0, D_00442110, D_00442120, D_00442130, D_00442160, D_00442178,
+          D_00441F48, D_00441F58, D_00442188 },
+    },
+    {
+        { D_004422D0, D_00442350, D_00442310, D_004423A0, D_004423D0, D_00442410, D_00442430,
+          D_00442480, D_004424C0, D_00442500, D_00442510, D_00442530, D_00442550, D_00442580,
+          D_004425D0, D_004425E0, D_004425C0 },
+        { D_004425F0, D_00442670, D_00442630, D_004426B8, D_004426D0, D_00442700, D_00442720,
+          D_00442760, D_00442790, D_004427D0, D_004427E0, D_004427F0, D_00442810, D_00442830,
+          D_004425D0, D_004425E0, D_00442860 },
+    },
+};
+
+/* vtable +0x130 (as Lorenzo's func_00309C90, alerted for mode 2) */
+void func_0034BA60(Pursuer *p, s8 situation) {
+    s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
+    s32 alert = p->c.a.unkC4 == 1;
+
+    PU(p, 0x1718, u8 *) = (u32)situation < 17 ? sAttackTables2[alt][alert][situation] : sAttackTables2[alt][0][0];
+}
+
+extern const PTMF D_00442908, D_00442918;
+
+/* its behaviour: his (Riccardo_Behaviour) with its chase; the reach +0x17C0 is set up once */
+void func_0034CDC0(Pursuer *p) {
+    Riccardo_Behaviour(p, &D_00442908, &D_00442918, func_0034BFF0, 0);
+}
+
+extern VObject *D_0044E4F0;   /* the renderer */
+extern f32 func_0031C058(f32 x);   /* cosf */
+extern f32 func_0031C248(f32 x);   /* sinf */
+extern u8 D_00442210[], D_004422B0[], D_00442890[], D_004428B0[], D_004428E0[];
+
+/* vtable +0x30: its frame update: the stalkers' think; seen by Fiona enough (+0x16C4 >= 100) it
+   is alerted (+0xC4 = 1, its alert tables, a stand-down of 600) and calms again below. The
+   tint breathes with the phase +0x17C4 (alpha 80 +- 80), wandering by a random step while not
+   held (+0x17C8 counts the hold down while it is free) */
+void func_0034D320(Pursuer *p) {
+    PTMF *st = (PTMF *)((u8 *)p + 0x174C);
+    VObject *r;
+    u32 alpha;
+
+    Stalker_ThinkStart(p);
+    if (func_00217510(p) != 0) {
+        func_00296FC0(p);
+        func_0029B4B0(p);
+        if (ptmf_test(st)) {
+            ptmf_scall(p, st);
+        }
+        VCALL(p, 0x110, void (*)(Pursuer *))(p);
+        if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
+            func_0029D4C0(p, -1);
+        }
+        func_00213E30(p);
+        func_0029E210(p);
+    } else {
+        if (ptmf_test(st)) {
+            ptmf_scall(p, st);
+        }
+        func_0029D7F0(p);
+    }
+    if (PU(p, 0x16C4, s32) < 100) {
+        if (p->c.a.unkC4 == 1) {
+            p->c.a.unkC4 = 0;
+            PU(p, 0x16F5, u8) = 0;
+            PU(p, 0x1790, s32) = 0;
+        }
+    } else {
+        PU(p, 0x1790, s32) = 600;
+        if (p->c.a.unkC4 == 1 || p->c.a.unkC4 == 2) {
+            PU(p, 0x16F5, u8) = 0;
+        } else {
+            p->c.a.unkC4 = 1;
+            if (AT(gProgress, 0x30, u32) & 0x8000) {
+                PU(p, 0x1824, u8 *) = D_004428E0;
+                PU(p, 0x1748, u8 *) = D_004428B0;
+                PU(p, 0x1740, u8 *) = D_00442890;
+            } else {
+                PU(p, 0x1824, u8 *) = D_004422B0;
+                PU(p, 0x1740, u8 *) = D_00442210;
+            }
+            if (PU(p, 0x175C, s32) != 0x1F) {
+                PU(p, 0x16F5, u8) = 1;
+            }
+        }
+    }
+    Stalker_ThinkTimers(p);
+    alpha = (u8)(u32)(80.0f + 80.0f * func_0031C248(PU(p, 0x17C4, f32)));
+    if ((s32)alpha < 80) {
+        VCALL(D_0044E4F0, 0x6C, void (*)(VObject *))(D_0044E4F0);
+    }
+    r = D_0044E4F0;
+    VCALL(r, 0x64, void (*)(VObject *, u32, s32))(r, alpha << 24 | 0x808080, 0);
+    if (PU(p, 0x17C8, s32) != 0) {
+        PU(p, 0x17C4, f32) = 0x1.921fb6p+0f;   /* pi / 2 */
+        if (p->c.a.unkC4 != 1 && p->c.a.unkC4 != 2 && p->c.moveSub != 0x11 && p->c.moveSub != 9) {
+            PU(p, 0x17C8, s32)--;
+        }
+    } else {
+        f32 rnd = VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550);
+        f32 step = 4.0f * func_0031C058(PU(p, 0x17C4, f32)) + 10.0f * rnd;
+
+        PU(p, 0x17C4, f32) = func_002E2D00(PU(p, 0x17C4, f32) + 0x1.921fb6p+1f * step / 180.0f);
+    }
+    VCALL(p, 0x40, void (*)(Pursuer *))(p);
+    VCALL(p, 0x100, void (*)(Pursuer *))(p);
+}
+
+extern VObject *D_0044E4B8;   /* the camera */
+extern VObject *D_0044E4E8;   /* the texture cache */
+
+/* vtable +0x2C: the draw (as func_00320000, always shown) */
+void func_0034D840(Pursuer *p) {
+    f32 mtx[4][4] __attribute__((aligned(16)));
+    VObject *cam;
+    u8 *m;
+
+    if (p->c.a.disabled != 0) {
+        return;
+    }
+    if (p->c.unkE4 == 1 && p->c.unk152C != 0x11) {
+        VCALL(p, 0x80, void (*)(Pursuer *))(p);
+    }
+    if (p->c.unk152C == 0x11) {
+        VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
+        cam = D_0044E4B8;
+        VCALL(cam, 0x4C, void (*)(VObject *, f32 (*)[4]))(cam, mtx);
+        VCALL(cam, 0x50, void (*)(VObject *, f32 (*)[4]))(cam, mtx);
+        VCALL(cam, 0x58, void (*)(VObject *, f32 (*)[4]))(cam, mtx);
+        VCALL(cam, 0x54, void (*)(VObject *, f32 (*)[4]))(cam, mtx);
+    }
+    m = p->c.motion;
+    VCALL(m, 0x38, void (*)(void *, s32, u32, s32))(m, p->c.unk152C, p->c.a.navTri, 0);
+    if (p->c.unk152C == 0x11) {
+        VCALL(D_0044E4B8, 0x14, void (*)(VObject *))(D_0044E4B8);
+    }
+}
+
+extern u8 D_00441890[], D_004419E0[], D_00441C70[], D_00441CA0[], D_004421A0[], D_004421F0[],
+    D_00442230[], D_00442278[], D_00442290[], D_00442870[], D_004428C0[], D_0047AF48[];
+extern void func_001267F0(Character *c, s32 v);
+
+/* vtable +0xF4: its setup over the Pursuer's (func_0029FB20); its reach +0x17C0 is 30, the
+   tint off, layer 0x11 */
+void func_0034DA00(Pursuer *p) {
+    void *m;
+
+    func_0029FB20(p);
+    if (AT(gProgress, 0x30, u32) & 0x8000) {
+        p->c.hpMax = 125;
+        PU(p, 0x171C, u8 *) = D_004419E0;
+        PU(p, 0x1730, u8 *) = D_004421A0;
+        PU(p, 0x1740, u8 *) = D_00442870;
+        PU(p, 0x173C, u8 *) = D_00442230;
+        PU(p, 0x1748, u8 *) = D_00442278;
+        PU(p, 0x1824, u8 *) = D_004428C0;
+        PU(p, 0x16DC, s32) = 50;              /* Hewie bite tolerance */
+        PU(p, 0x16E8, f32) = 10.0f;
+        PU(p, 0x16D4, s32) = 360;
+        PU(p, 0x16D8, s32) = 900;
+        PU(p, 0x16D0, s32) = 150;
+        PU(p, 0x16E0, s32) = 5400;
+        PU(p, 0x16E4, s32) = 45;
+        PU(p, 0x17C0, f32) = 30.0f;
+    } else {
+        p->c.hpMax = 100;
+        PU(p, 0x171C, u8 *) = D_004419E0;
+        PU(p, 0x1730, u8 *) = D_004421A0;
+        PU(p, 0x1740, u8 *) = D_004421F0;
+        PU(p, 0x173C, u8 *) = D_00442230;
+        PU(p, 0x1748, u8 *) = D_00442278;
+        PU(p, 0x1824, u8 *) = D_00442290;
+        PU(p, 0x16DC, s32) = 50;
+        PU(p, 0x16E8, f32) = 10.0f;
+        PU(p, 0x16D4, s32) = 300;
+        PU(p, 0x16D8, s32) = 900;
+        PU(p, 0x16D0, s32) = 150;
+        PU(p, 0x16E0, s32) = 5400;
+        PU(p, 0x16E4, s32) = 45;
+        PU(p, 0x17C0, f32) = 30.0f;
+    }
+    p->c.a.radius = 3.0f;
+    p->c.a.height = 17.0f;
+    p->c.hp = p->c.hpMax;
+    p->c.hearThreshold = 12;
+    PU(p, 0x1720, u8 *) = D_00441C70;
+    PU(p, 0x1724, u8 *) = D_00441CA0;
+    PU(p, 0x16AC, u8 *) = D_00441890;
+    PU(p, 0x1734, u8 *) = D_0047AF48;
+    PU(p, 0x1694, f32) = 8.0f;
+    PU(p, 0x169C, f32) = 1.5f;
+    PU(p, 0x1698, f32) = 12.0f;
+    PU(p, 0x16A0, f32) = 1.5f;
+    m = p->c.motion;
+    VCALL(m, 0x2C, void (*)(void *))(m);
+    PU(p, 0x17C8, s32) = 0;
+    PU(p, 0x17C4, s32) = 0;
+    func_001267F0(&p->c, 0x11);
 }

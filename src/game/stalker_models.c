@@ -2298,3 +2298,68 @@ void *func_003203B0(u8 *m, s32 flags) {
     }
     return m;
 }
+
+/* ---- the rest of the model class at 0x320590 (copies of func_002F6xxx) and the one with
+   vtable D_00474460 ---- */
+
+/* +0x3C: the springs a frame (as func_002F6C10, two sets) */
+void func_00320CB0(u8 *m) {
+    s32 n = 1;
+    s32 i;
+
+    if (AT(m, 0x850, u8) != 0) {
+        func_00320590(m);
+        n = 30;
+    }
+    func_002EE8A0(m + 0xBE0);
+    func_002EE8A0(m + 0x10A0);
+    for (i = 0; i < n; i++) {
+        func_002EE900(m + 0xBE0);
+        func_002EE900(m + 0x10A0);
+    }
+    func_002EE840(m + 0xBE0);
+    func_002EE840(m + 0x10A0);
+    AT(m, 0x850, u8) = 0;
+}
+
+extern void func_00320C70(u8 *m);
+
+/* +0xC: once loaded (as func_002F6CE0) */
+void func_00320D70(u8 *m) {
+    static const u8 sParts[] = {0x98, 0x9A, 0xC4, 0xC6, 0xC8};
+    u32 i;
+
+    func_002118D0(m);
+    AT(m, 0x890, s32) = 2;
+    AT(m, 0x894, s32) = 3;
+    AT(m, 0x898, s32) = 4;
+    AT(m, 0x89C, s32) = 5;
+    AT(m, 0x8B8, s32) = 0x20;
+    AT(m, 0x8A0, s32) = 6;
+    AT(m, 0x8A4, s32) = 7;
+    AT(m, 0x8A8, s32) = 8;
+    AT(m, 0x8AC, s32) = 9;
+    AT(m, 0x8BC, s32) = 0x2A;
+    AT(m, 0x8B0, s32) = 0x23;
+    AT(m, 0x8B4, s32) = 0x1A;
+    AT(m, 0x860, f32) = 0.0f;
+    AT(m, 0x864, f32) = 16.0f;
+    AT(m, 0x868, f32) = 0.0f;
+    AT(m, 0x854, s32) = 0;
+    AT(m, 0x858, s32) = 0;
+    func_00320C70(m);
+    for (i = 0; i < sizeof(sParts); i++) {
+        AT(m, sParts[i], u8) = 4;
+        AT(m, sParts[i] + 1, u8) = 0x40;
+    }
+}
+
+/* D_00474460 +0x40: the model matrix from the actor's position raised by `lift`, and heading
+   (as func_002DCDD0) */
+void func_0032C630(u8 *m, u8 *actor, f32 lift) {
+    f32 pos[4] __attribute__((aligned(16)));
+
+    sceVu0CopyVector(pos, (f32 *)(actor + 0x10));
+    pos[1] += lift;
+    func_002E3040((f32 (*)[4])(m + 0x7D0), pos, AT(actor, 0x54, f32));
+}

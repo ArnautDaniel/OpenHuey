@@ -755,7 +755,30 @@ static inline s32 Lorenzo2_Underground(Pursuer *p) {
     return 1;
 }
 
-void func_0030A850(Pursuer *p) {
+/* the sweep of the other class (func_003643E0): at its key (2) whoever it touches
+   (func_00217920) is hit (func_00178070 with attack entry 2, stunning by its +0x18 chance),
+   once each (+0x1760); its end ends the step */
+static inline void Lorenzo2b_Sweep(Pursuer *p) {
+    func_00125A10(&p->c);
+    if (func_001F4770(p->c.motion, 0, 0, 1) & 0xFF & 2) {
+        u32 hit = func_00217920(p) & 0xFF;
+
+        if (func_00283870(p) != 0 && (hit & ~PU(p, 0x1760, u8))) {
+            u8 *e = PU(p, 0x171C, u8 *) + 0x48;
+            s16 stun = 100.0f * VCALL(D_0044E550, 0x1C, f32 (*)(VObject *))(D_0044E550) <= AT(e, 0x18, f32) ? 0x8000 : 0;
+
+            func_00178070(gProgress, *(u8 *)&p->c.a.slot, hit, AT(e, 0x10, u8), AT(e, 0x12, u16), stun, AT(e, 0x14, f32));
+            PU(p, 0x1764, s32) = 12;
+        }
+    }
+    if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
+        PURSUER_STEP_DONE(p) = 1;
+        PURSUER_STEP_NEXT(p) = 1;
+    }
+}
+
+/* the rise into state `state` with its sweep: his (func_0030A650) or the other class's */
+static inline void Lorenzo2_Rise(Pursuer *p, const PTMF *state, s32 other) {
     if (Lorenzo2_Underground(p)) {
         return;
     }
@@ -797,9 +820,17 @@ void func_0030A850(Pursuer *p) {
         sceVu0CopyVector(sk.pos, p->c.a.pos);
         sk.kind = 1;
         func_002D6090(mgr, slot, &sk);
-        Actor_SetState(&p->c.a, &D_00423A98);
-        func_0030A650(p);
+        Actor_SetState(&p->c.a, state);
+        if (other) {
+            Lorenzo2b_Sweep(p);
+        } else {
+            func_0030A650(p);
+        }
     }
+}
+
+void func_0030A850(Pursuer *p) {
+    Lorenzo2_Rise(p, &D_00423A98, 0);
 }
 
 extern const PTMF D_00423A68;
@@ -1562,4 +1593,76 @@ void func_00365D90(Pursuer *p) {
     PU(p, 0x169C, f32) = -8.0f;
     PU(p, 0x1698, f32) = 8.0f;
     PU(p, 0x16A0, f32) = -8.0f;
+}
+
+/* ---- the other class (vtable D_00479B20; code 0x363CE0..0x365AD0): its own tables, sweep and
+   frame update ---- */
+
+extern u8 D_004450C0[], D_00445140[], D_004451A0[], D_00445200[], D_00445230[], D_00445290[],
+    D_004452C0[], D_00445330[], D_00445390[], D_004453C0[], D_004453E0[], D_00445430[],
+    D_00445450[], D_00445470[], D_004454A0[], D_004454B8[], D_004454C8[], D_004455B0[],
+    D_00445630[], D_00445690[], D_004456F0[], D_00445720[], D_00445780[], D_004457B0[],
+    D_00445820[], D_00445870[], D_004458A0[], D_004458C0[], D_00445900[], D_00445918[],
+    D_00445930[], D_00445950[], D_00445968[], D_00445978[];
+
+/* its attack tables; the second set when gProgress+0x30 bit 0x8000 */
+static u8 *const sAttackTables3[2][17] = {
+    { D_004450C0, D_004451A0, D_00445140, D_00445200, D_00445230, D_00445290, D_004452C0,
+      D_00445330, D_00445390, D_004453C0, D_004453E0, D_00445430, D_00445450, D_00445470,
+      D_004454B8, D_004454C8, D_004454A0 },
+    { D_004455B0, D_00445690, D_00445630, D_004456F0, D_00445720, D_00445780, D_004457B0,
+      D_00445820, D_00445870, D_004458A0, D_004458C0, D_00445900, D_00445918, D_00445930,
+      D_00445968, D_00445978, D_00445950 },
+};
+
+/* vtable +0x130 (as func_0030C7C0) */
+void func_00363CE0(Pursuer *p, s8 situation) {
+    s32 alt = (AT(gProgress, 0x30, u32) & 0x8000) != 0;
+
+    PU(p, 0x1718, u8 *) = sAttackTables3[alt][(u32)situation < 17 ? situation : 0];
+}
+
+/* its sweep state */
+void func_003643E0(Pursuer *p) {
+    Lorenzo2b_Sweep(p);
+}
+
+extern const PTMF D_00445AC8;
+
+/* its rise from under the floor (as func_0030A850) into the sweep */
+void func_00364510(Pursuer *p) {
+    Lorenzo2_Rise(p, &D_00445AC8, 1);
+}
+
+/* vtable +0x30: its frame update (as func_0030BE20, without his mode 2), with its dust
+   (func_003638E0 / func_003636D0) */
+void func_003659D0(Pursuer *p) {
+    PTMF *st = (PTMF *)((u8 *)p + 0x174C);
+
+    Stalker_ThinkStart(p);
+    if (func_00217510(p) != 0) {
+        func_00296FC0(p);
+        if (p->c.a.disabled != 0 && (PU(p, 0x175C, s32) == 0x10 || PU(p, 0x175C, s32) == 0x21)) {
+            p->c.a.disabled = 0;
+            p->c.a.unk2D = 0;
+        }
+        func_0029B4B0(p);
+        if (ptmf_test(st)) {
+            ptmf_scall(p, st);
+        }
+        func_003638E0(p);
+        func_003636D0(p);
+        VCALL(p, 0x110, void (*)(Pursuer *))(p);
+        if (p->c.unk14D0 <= 0 || p->c.unk14D0 == 5) {
+            func_0029D4C0(p, -1);
+        }
+        func_00213E30(p);
+        func_0029E210(p);
+    } else {
+        if (ptmf_test(st)) {
+            ptmf_scall(p, st);
+        }
+        func_0029D7F0(p);
+    }
+    Stalker_ThinkEnd(p);
 }
