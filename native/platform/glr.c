@@ -104,7 +104,7 @@ typedef struct GlrDraw {
     int post;    /* not a strip but a pass over the frame (POST_*; colour tex0, arguments prim) */
 } GlrDraw;
 
-enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_ALPHA_CLEAR, POST_CAUSTIC, POST_DOF, POST_MASK_CLEAR, POST_REFL, POST_SHADOW_BEGIN, POST_SHADOW_FILL, POST_IMAGE, POST_HAZE };
+enum { POST_BLOOM = 1, POST_GLOW, POST_SCREEN2, POST_FOG, POST_VIGNETTE, POST_ALPHA_CLEAR, POST_CAUSTIC, POST_DOF, POST_MASK_CLEAR, POST_REFL, POST_SHADOW_BEGIN, POST_SHADOW_FILL, POST_IMAGE, POST_HAZE, POST_NEGATIVE, POST_ZOOM_BLUR, POST_PANIC };
 
 typedef struct GlrFrame {
     uint32_t overlay;   /* a full-screen tint over the frame (RGBA, alpha 0x80 = 1.0; 0: none) */
@@ -303,6 +303,21 @@ void glr_haze(float phase, float sway) {
 
     d->mvp[0] = phase;
     d->mvp[1] = sway;
+}
+
+/* the panic screens (func_0021E1B0 / func_0021D290 / func_0021D8F0, their packets' layer 0x2A):
+ * the negative, the zoom blur, and the threshold overlay (index below `limit` black, else
+ * grey 0xC0, over the screen at amount / 2 of 128) */
+void glr_negative(void) {
+    put_post(POST_NEGATIVE, 0x2A, 0, 0);
+}
+
+void glr_zoom_blur(void) {
+    put_post(POST_ZOOM_BLUR, 0x2A, 0, 0);
+}
+
+void glr_panic(int limit, int amount) {
+    put_post(POST_PANIC, 0x2A, (uint32_t)limit, (uint32_t)amount);
 }
 
 void glr_dof(float a, float from, float to, float b) {
@@ -791,6 +806,21 @@ static const char *kPostFs =
     "            if (v >= 0.0 && v < 224.0) b = hc + floor((haze_at(vec2(u, v)) - hc) * 0.5);\n"
     "        }\n"
     "        c = d + floor((b - d) * uFix / 128.0);\n"
+    "    } else if (uMode == 33) {\n"   /* the negative: (0x80 - Cd) * 0x80 >> 7, clamped */
+    "        c = max(vec4(0.0), 128.0 - at(uTex, p));\n"
+    "    } else if (uMode == 34) {\n"   /* the screen copy 16 pixels bigger each way, bilinear, over it at 0x40 */
+    "        vec2 g = vec2(gl_FragCoord.x * (512.0 / 640.0), 448.0 * uS - gl_FragCoord.y) / uS;\n"
+    "        vec2 uv = vec2((g.x + 16.0) * 512.0 / 544.0, (g.y + 16.0) * 448.0 / 480.0);\n"
+    "        vec2 sz = vec2(textureSize(uTex, 0));\n"
+    "        vec4 z = round(texture(uTex, vec2(uv.x * 1.25 * uS, (448.0 - uv.y) * uS) / sz) * 255.0);\n"
+    "        vec4 d = at(uTex, p);\n"
+    "        c = d + floor((z - d) * 64.0 / 128.0);\n"
+    "    } else if (uMode == 35) {\n"   /* panic: index = green bits 6-7 | GS alpha bits 0-5 */
+    "        vec4 d = at(uTex, p);\n"
+    "        float ga = round(d.a * 128.0 / 255.0);\n"
+    "        float idx = floor(d.g / 64.0) * 64.0 + mod(ga, 64.0);\n"
+    "        vec4 cs = idx < uFix ? vec4(0.0) : vec4(192.0);\n"
+    "        c = d + floor((cs - d) * uRange.x / 128.0);\n"
     "    } else if (uMode == 7) {\n"
     "        c = at(uTex, p);\n"
     "        c += floor(at(uTex, p + ivec2(-1, -1)) * 0.25); c += floor(at(uTex, p + ivec2(1, -1)) * 0.25);\n"
@@ -1744,6 +1774,26 @@ static void run_post(const GlrDraw *d) {
         p_glProgramUniform1f(sPostProg, sPostFixLoc, 72.0f);
         p_glProgramUniform2f(sPostProg, sPostRangeLoc, d->mvp[0], d->mvp[1]);
         post(32, sFbo, GLR_WIDTH, GLR_HEIGHT, sCopy, 0);
+        break;
+    case POST_NEGATIVE:   /* func_0021E1B0: the screen's negative, 0x80 - each channel */
+        p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,
+                                 GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        post(33, sFbo, GLR_WIDTH, GLR_HEIGHT, sCopy, 0);
+        break;
+    case POST_ZOOM_BLUR:   /* func_0021D290: the screen copied, drawn 16 pixels bigger each way
+                            * over itself at half */
+        p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,
+                                 GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        post(34, sFbo, GLR_WIDTH, GLR_HEIGHT, sCopy, 0);
+        break;
+    case POST_PANIC:   /* func_0021D8F0: the screen's index (green's top bits in the alpha byte)
+                        * through palette 5 (below `limit` black, else grey 0xC0), over the
+                        * screen at amount / 2 */
+        p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,
+                                 GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        p_glProgramUniform1f(sPostProg, sPostFixLoc, (float)(int32_t)rgba);
+        p_glProgramUniform2f(sPostProg, sPostRangeLoc, (float)((int32_t)d->prim >> 1), 0.0f);
+        post(35, sFbo, GLR_WIDTH, GLR_HEIGHT, sCopy, 0);
         break;
     case POST_VIGNETTE:
         p_glBlitNamedFramebuffer(sFbo, sCopyFbo, 0, 0, GLR_WIDTH, GLR_HEIGHT, 0, 0, GLR_WIDTH, GLR_HEIGHT,

@@ -65,6 +65,9 @@ void glr_screen2(uint32_t rgba, int contrast, int blur);
 void glr_vignette(int strength, int offset);
 /* room 0x61's haze over the screen (func_00374E50) */
 void glr_haze(float phase, float sway);
+void glr_negative(void);
+void glr_zoom_blur(void);
+void glr_panic(int limit, int amount);
 
 /* func_0034E9E0 (the light caustic): the frame's alpha cleared before its grids, then the
  * halved screen where they left alpha >= `aref` blurred and added back at 1/2 */

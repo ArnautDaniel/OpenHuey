@@ -58,6 +58,34 @@ void func_0021C840(void *ov, int strength, int offset) {
     glr_vignette(strength, offset);
 }
 
+/* ---- the panic screens (func_002F0340, the screen overlay D_0045D1F0; all in layer 0x2A) ---- */
+
+/* func_0021E1B0: when the panic fails (game over): the screen's negative. The original draws
+ * eight 64-wide untextured sprites, RGBA 0x80, ALPHA (Cs - Cd) * As: each channel 0x80 - itself,
+ * clamped at 0 */
+void func_0021E1B0(void *ov) {
+    (void)ov;
+    glr_negative();
+}
+
+/* func_0021D290: while the panic darkens the screen: the screen copied to page 0x180 and drawn
+ * back 16 pixels bigger on each side (UV 0.5 .. 512.5 x 0.5 .. 448.5 over -16 .. 528 x -16 ..
+ * 464), bilinear, at ALPHA (Cs - Cd) * 0x40 + Cd */
+void func_0021D290(void *ov) {
+    (void)ov;
+    glr_zoom_blur();
+}
+
+/* func_0021D8F0(ov, limit, amount): the panic's tint. The original copies the screen to page
+ * 0x180, moves green's top two bits into each pixel's alpha byte (a CT16S copy shifted 8
+ * pixels with FBMSK 0x3FFF), builds palette 5 (renderer +0x94: entries below `limit` 0x80000000,
+ * the rest 0x80C0C0C0) and draws the copy as PSMT8H through it over the screen at ALPHA
+ * (Cs - Cd) * (amount / 2) + Cd */
+void func_0021D8F0(void *ov, int limit, int amount) {
+    (void)ov;
+    glr_panic(limit, amount);
+}
+
 /* ---- the renderer's special layers (func_001B5EC0): each one's setup, run on the layer's first
  * draw of a frame, fills the layer before it (and after it) with GS state. On PC glr does what
  * they set up for the layers it knows; 1 = the layer can be drawn ---- */

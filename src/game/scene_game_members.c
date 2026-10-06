@@ -2917,7 +2917,7 @@ void func_002EF480(u8 *fade, f32 t) {
 extern void *D_0045D1F0;   /* the screen overlay (Scene +0x105344C) */
 extern void func_0021E1B0(void *ov);
 extern void func_0021D290(void *ov);
-extern void func_0021D8F0(void *ov, s32 layer, s32 alpha);
+extern void func_0021D8F0(void *ov, s32 limit, s32 amount);   /* the panic tint (palette 5 below `limit`) */
 
 /* the screen fade, each frame (`mode` 2: brighten): while not fully up (+0x34 < 1) the camera
  * shake stops and the brightness (+0x38) is reset to 0x80; at full level the renderer takes
