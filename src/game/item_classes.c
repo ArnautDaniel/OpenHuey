@@ -1105,6 +1105,16 @@ s32 func_00351920(void *o) {
     return 0;
 }
 
+/* (as func_00351D80) at spot 3 of room 0x53: event 0; else on the altar */
+s32 func_0031CE10(void *o) {
+    Progress *p = gProgress;
+
+    if (item_room_spot(p, 0x53, 3)) {
+        return item_event_flag(p, 0);
+    }
+    return item_offer(p, o);
+}
+
 /* D_00478FA0: at spot 5 of room 0: event 0xF; else on the altar */
 s32 func_00351D80(void *o) {
     Progress *p = gProgress;

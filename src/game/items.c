@@ -352,3 +352,45 @@ void *func_00261090(u8 *items, u32 id, s32 n) {
     VCALL(o, 0x2C, s32 (*)(void *, s32))(o, (u8)((n & 0xFF) - 1));
     return o;
 }
+
+/* item `i` of list `l`'s +0x20 (0 for an empty place) */
+s32 func_002604E0(u8 *items, u8 l, u8 i) {
+    VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
+
+    if (it == NULL) {
+        return 0;
+    }
+    return VCALL(it, 0x20, s32 (*)(VObject *))(it);
+}
+
+extern const s8 D_003EA918[];   /* by item kind (+0x10) */
+
+/* item `i` of list `l`: D_003EA918 of its kind (+0x10); -1 for an empty place */
+s32 func_00260630(u8 *items, u8 l, u8 i) {
+    VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
+
+    if (it == NULL) {
+        return -1;
+    }
+    return D_003EA918[VCALL(it, 0x10, s32 (*)(VObject *))(it)];
+}
+
+/* item `id` (+0xC) in the lists: its +0x28 with `arg` */
+void func_00260170(u8 *o, s32 id, s32 arg) {
+    u32 l, i;
+
+    for (l = 0; l < 3; l++) {
+        for (i = 0; i < 64; i++) {
+            VObject *it = AT(o, 0x12E0 + l * 0x100 + i * 4, VObject *);
+
+            if (it == NULL) {
+                break;
+            }
+            if (id == VCALL(it, 0xC, s32 (*)(VObject *))(it)) {
+                it = AT(o, 0x12E0 + l * 0x100 + i * 4, VObject *);
+                VCALL(it, 0x28, void (*)(VObject *, s32))(it, arg);
+                return;
+            }
+        }
+    }
+}
