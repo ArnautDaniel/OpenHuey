@@ -9,6 +9,8 @@
 : 2*  1 lshift ;
 : 2/  1 arshift ;
 : not 0= ;
+: 2! ( x1 x2 addr -- ) swap over ! cell+ ! ;
+: 2@ ( addr -- x1 x2 ) dup cell+ @ swap @ ;
 
 \ ---- conditionals and loops ----
 \ if ... else ... then           ( flag -- )

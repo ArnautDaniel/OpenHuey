@@ -2,52 +2,116 @@
 
 #include "../platform/gl.h"
 #include "font.h"
+#include "post.h"
 
+#include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* ---- shaders ----
- * Uniforms and samplers have fixed locations and bindings in the GLSL, so nothing is looked up:
- * the mesh shader's u_mvp is location 0, u_use_tex 1, u_solid_tex 2, its texture unit 0; the
- * 2D shader's projection is location 0, the font unit 0. */
+RenderSettings gRender = {
+    .msaa = 4, .scale = 1.0f, .aspect = 0, .anisotropy = 16.0f,
+    .ssao = 1, .ssao_radius = 20.0f, .ssao_strength = 0.9f,
+    .bloom = 1, .bloom_threshold = 0.9f, .bloom_strength = 0.12f,
+    .fog = 1, .fog_density = 0.0012f, .fog_start = 150.0f, .fog_color = {0.05f, 0.055f, 0.07f},
+    .exposure = 1.0f, .tonemap = 1, .saturation = 1.0f, .contrast = 1.0f,
+    .vignette = 0.35f, .grain = 0.025f,
+    .shadows = 1,
+    .light_dir = {0.35f, 0.85f, 0.4f}, .light_color = {0.55f, 0.52f, 0.48f}, .ambient = {0.16f, 0.17f, 0.2f},
+    .rim = 0.35f,
+};
 
-enum { U_MVP = 0, U_USE_TEX = 1, U_SOLID_TEX = 2 };
-enum { U_PROJ = 0 };
+/* ---- the scene's shader ----
+ * Fixed locations: u_mvp 0, u_use_tex 1, u_solid_tex 2, u_lit 3, u_coverage 4, u_light_dir 5,
+ * u_light_color 6, u_ambient 7, u_eye 8, u_rim 9; the texture on unit 0. */
+
+enum { U_MVP, U_USE_TEX, U_SOLID_TEX, U_LIT, U_COVERAGE, U_LIGHT_DIR, U_LIGHT_COLOR, U_AMBIENT, U_EYE, U_RIM };
 
 static const char *kMeshVs =
     "#version 460 core\n"
     "layout(location = 0) in vec3 a_pos;\n"
     "layout(location = 1) in vec2 a_st;\n"
     "layout(location = 2) in vec4 a_col;\n"
+    "layout(location = 3) in vec3 a_normal;\n"
     "layout(location = 0) uniform mat4 u_mvp;\n"
     "out vec2 v_st;\n"
     "out vec4 v_col;\n"
+    "out vec3 v_normal;\n"
+    "out vec3 v_pos;\n"
     "void main() {\n"
     "    gl_Position = u_mvp * vec4(a_pos, 1.0);\n"
     "    v_st = a_st;\n"
     "    v_col = a_col * (255.0 / 128.0);\n"   /* 0x80 = 1.0 */
+    "    v_normal = a_normal;\n"
+    "    v_pos = a_pos;\n"
     "}\n";
 
-/* the GS's modulate: texel times vertex colour; texels with no alpha are dropped */
+/* the GS's modulate (texel times vertex colour), done on linear values; characters lit by a key
+ * light, the ambient and a rim; cut-out edges antialiased by alpha to coverage */
 static const char *kMeshFs =
     "#version 460 core\n"
     "in vec2 v_st;\n"
     "in vec4 v_col;\n"
+    "in vec3 v_normal;\n"
+    "in vec3 v_pos;\n"
     "layout(binding = 0) uniform sampler2D u_tex;\n"
     "layout(location = 1) uniform int u_use_tex;\n"
-    "layout(location = 2) uniform int u_solid_tex;\n"   /* the texture's alpha is not transparency */
+    "layout(location = 2) uniform int u_solid_tex;\n"
+    "layout(location = 3) uniform int u_lit;\n"
+    "layout(location = 4) uniform int u_coverage;\n"
+    "layout(location = 5) uniform vec3 u_light_dir;\n"
+    "layout(location = 6) uniform vec3 u_light_color;\n"
+    "layout(location = 7) uniform vec3 u_ambient;\n"
+    "layout(location = 8) uniform vec3 u_eye;\n"
+    "layout(location = 9) uniform float u_rim;\n"
     "out vec4 o_color;\n"
     "void main() {\n"
-    "    vec4 c = v_col;\n"
+    "    vec4 c = vec4(pow(max(v_col.rgb, 0.0), vec3(2.2)), v_col.a);\n"
     "    if (u_use_tex != 0) {\n"
-    "        vec4 t = texture(u_tex, v_st);\n"
+    "        vec4 t = texture(u_tex, v_st);\n"   /* sRGB texture: already linear */
     "        if (u_solid_tex != 0) t.a = 1.0;\n"
     "        c *= t;\n"
-    "        if (c.a < 1.0 / 255.0) discard;\n"
     "    }\n"
-    "    o_color = clamp(c, 0.0, 1.0);\n"
+    "    if (u_lit != 0) {\n"
+    "        vec3 n = normalize(v_normal), v = normalize(u_eye - v_pos);\n"
+    "        float key = max(dot(n, normalize(u_light_dir)), 0.0);\n"
+    "        float rim = pow(1.0 - max(dot(n, v), 0.0), 3.0) * u_rim;\n"
+    "        c.rgb *= u_ambient * 2.0 + u_light_color * key * 2.0;\n"
+    "        c.rgb += rim * (u_ambient + u_light_color) * c.a;\n"
+    "    }\n"
+    "    if (u_use_tex != 0) {\n"
+    "        if (u_coverage != 0) {\n"   /* a sharp edge where alpha crosses the cut-off */
+    "            c.a = clamp((c.a - 0.02) / max(fwidth(c.a), 1e-4) + 0.5, 0.0, 1.0);\n"
+    "            if (c.a <= 0.0) discard;\n"
+    "        } else if (c.a < 1.0 / 255.0) {\n"
+    "            discard;\n"
+    "        }\n"
+    "    }\n"
+    "    o_color = c;\n"
     "}\n";
+
+/* ---- state ---- */
+
+typedef struct Vertex2d {
+    float x, y, u, v;
+    uint8_t rgba[4];
+} Vertex2d;
+
+static struct {
+    GLuint mesh_prog, sampler;
+    float sampler_aniso;
+    GLuint prog2d, vao2d, vbo2d, font, blob;
+    Vertex2d *v2d;
+    int n2d, cap2d;
+    int w, h;                   /* the window */
+    int px, py, pw, ph;         /* the picture's rectangle in it (GL: from the bottom left) */
+    Mat4 proj;
+    float znear, zfar;
+} R;
+
+#define FONT_CELL_W 6
+#define FONT_CELL_H 8
+#define FONT_ATLAS_W (FONT_COUNT * FONT_CELL_W)   /* 576: rows stay 4-byte aligned */
 
 static const char *k2dVs =
     "#version 460 core\n"
@@ -73,87 +137,10 @@ static const char *k2dFs =   /* the font is a coverage mask */
     "    o_color = vec4(v_col.rgb, v_col.a * texture(u_font, v_uv).r);\n"
     "}\n";
 
-static GLuint shader(GLenum type, const char *src) {
-    GLuint s = glCreateShader(type);
-    GLint ok;
-
-    glShaderSource(s, 1, &src, NULL);
-    glCompileShader(s);
-    glGetShaderiv(s, GL_COMPILE_STATUS, &ok);
-    if (!ok) {
-        char log[1024];
-
-        glGetShaderInfoLog(s, sizeof(log), NULL, log);
-        fprintf(stderr, "render: shader: %s\n", log);
-    }
-    return s;
-}
-
-static GLuint program(const char *vs, const char *fs) {
-    GLuint p = glCreateProgram(), v = shader(GL_VERTEX_SHADER, vs), f = shader(GL_FRAGMENT_SHADER, fs);
-    GLint ok;
-
-    glAttachShader(p, v);
-    glAttachShader(p, f);
-    glLinkProgram(p);
-    glGetProgramiv(p, GL_LINK_STATUS, &ok);
-    if (!ok) {
-        char log[1024];
-
-        glGetProgramInfoLog(p, sizeof(log), NULL, log);
-        fprintf(stderr, "render: program: %s\n", log);
-    }
-    glDetachShader(p, v);
-    glDetachShader(p, f);
-    glDeleteShader(v);
-    glDeleteShader(f);
-    return p;
-}
-
-/* ---- state ---- */
-
-typedef struct Vertex2d {
-    float x, y, u, v;
-    uint8_t rgba[4];
-} Vertex2d;
-
-static struct {
-    GLuint mesh_prog;
-    GLuint prog2d, vao2d, vbo2d, font;
-    Vertex2d *v2d;
-    int n2d, cap2d;
-    int w, h;
-} R;
-
-#define FONT_CELL_W 6
-#define FONT_CELL_H 8
-#define FONT_ATLAS_W (FONT_COUNT * FONT_CELL_W)   /* 576: rows stay 4-byte aligned */
-
-/* a vertex array; its attributes read buffer binding 0 (attached with glVertexArrayVertexBuffer) */
-static GLuint vertex_array(void) {
-    GLuint vao;
-
-    glCreateVertexArrays(1, &vao);
-    return vao;
-}
-
 static void attribute(GLuint vao, GLuint index, GLint size, GLenum type, GLboolean normalized, GLuint offset) {
     glEnableVertexArrayAttrib(vao, index);
     glVertexArrayAttribFormat(vao, index, size, type, normalized, offset);
     glVertexArrayAttribBinding(vao, index, 0);
-}
-
-static GLuint texture(GLenum format, int w, int h, GLenum data_format, const void *data, GLint filter, GLint wrap) {
-    GLuint t;
-
-    glCreateTextures(GL_TEXTURE_2D, 1, &t);
-    glTextureStorage2D(t, 1, format, w, h);
-    glTextureSubImage2D(t, 0, 0, 0, w, h, data_format, GL_UNSIGNED_BYTE, data);
-    glTextureParameteri(t, GL_TEXTURE_MIN_FILTER, filter);
-    glTextureParameteri(t, GL_TEXTURE_MAG_FILTER, filter);
-    glTextureParameteri(t, GL_TEXTURE_WRAP_S, wrap);
-    glTextureParameteri(t, GL_TEXTURE_WRAP_T, wrap);
-    return t;
 }
 
 static void make_font(void) {
@@ -167,20 +154,54 @@ static void make_font(void) {
             }
         }
     }
-    R.font = texture(GL_R8, FONT_ATLAS_W, FONT_CELL_H, GL_RED, px, GL_NEAREST, GL_CLAMP_TO_EDGE);
+    glCreateTextures(GL_TEXTURE_2D, 1, &R.font);
+    glTextureStorage2D(R.font, 1, GL_R8, FONT_ATLAS_W, FONT_CELL_H);
+    glTextureSubImage2D(R.font, 0, 0, 0, FONT_ATLAS_W, FONT_CELL_H, GL_RED, GL_UNSIGNED_BYTE, px);
+    glTextureParameteri(R.font, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTextureParameteri(R.font, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTextureParameteri(R.font, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(R.font, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+}
+
+/* a soft round shadow: white, its alpha falling off from the middle */
+static void make_blob(void) {
+    static uint8_t px[64][64][4];
+    int x, y;
+
+    for (y = 0; y < 64; y++) {
+        for (x = 0; x < 64; x++) {
+            float dx = (x + 0.5f) / 32.0f - 1.0f, dy = (y + 0.5f) / 32.0f - 1.0f, r = sqrtf(dx * dx + dy * dy);
+            float a = r >= 1.0f ? 0.0f : (1.0f - r) * (1.0f - r) * (3.0f - 2.0f * (1.0f - r));
+
+            px[y][x][0] = px[y][x][1] = px[y][x][2] = 255;
+            px[y][x][3] = (uint8_t)(a * 128.0f);   /* (0x80 = opaque) */
+        }
+    }
+    R.blob = render_texture(&px[0][0][0], 64, 64);
 }
 
 int render_init(void) {
-    R.mesh_prog = program(kMeshVs, kMeshFs);
-    R.prog2d = program(k2dVs, k2dFs);
+    R.mesh_prog = gl_program(kMeshVs, kMeshFs, "mesh");
+    R.prog2d = gl_program(k2dVs, k2dFs, "2d");
+    if (R.mesh_prog == 0 || R.prog2d == 0) {
+        return 0;
+    }
+    /* the scene's textures: trilinear and anisotropic, repeating */
+    glCreateSamplers(1, &R.sampler);
+    glSamplerParameteri(R.sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glSamplerParameteri(R.sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glSamplerParameteri(R.sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glSamplerParameteri(R.sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     glCreateBuffers(1, &R.vbo2d);
-    R.vao2d = vertex_array();
+    glCreateVertexArrays(1, &R.vao2d);
     attribute(R.vao2d, 0, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex2d, x));
     attribute(R.vao2d, 1, 2, GL_FLOAT, GL_FALSE, offsetof(Vertex2d, u));
     attribute(R.vao2d, 2, 4, GL_UNSIGNED_BYTE, GL_TRUE, offsetof(Vertex2d, rgba));
     glVertexArrayVertexBuffer(R.vao2d, 0, R.vbo2d, 0, sizeof(Vertex2d));
     make_font();
+    make_blob();
+    post_init();
     return 1;
 }
 
@@ -191,17 +212,75 @@ void render_shutdown(void) {
 
 /* ---- frames ---- */
 
+static int clampi(int x, int lo, int hi) {
+    return x < lo ? lo : x > hi ? hi : x;
+}
+
+static float lin(float c) {
+    return powf(c, 2.2f);
+}
+
 void render_begin(int w, int h, Vec3 clear) {
-    const float colour[4] = {clear.x, clear.y, clear.z, 1.0f};
-    const float depth = 1.0f;
+    RenderSettings *s = &gRender;
+    int samples = s->msaa >= 8 ? 8 : s->msaa >= 4 ? 4 : s->msaa >= 2 ? 2 : 1;
+    float scale = s->scale < 0.25f ? 0.25f : s->scale > 2.0f ? 2.0f : s->scale;
+    const float black[4] = {0, 0, 0, 1};
 
     R.w = w;
     R.h = h;
     R.n2d = 0;
-    glViewport(0, 0, w, h);
-    glDepthMask(GL_TRUE);
-    glClearNamedFramebufferfv(0, GL_COLOR, 0, colour);
-    glClearNamedFramebufferfv(0, GL_DEPTH, 0, &depth);
+    /* the picture: the whole window, or the largest 4:3 rectangle in its middle */
+    R.pw = w;
+    R.ph = h;
+    if (s->aspect == 1) {
+        if (w * 3 > h * 4) {
+            R.pw = h * 4 / 3;
+        } else {
+            R.ph = w * 3 / 4;
+        }
+    }
+    R.px = (w - R.pw) / 2;
+    R.py = (h - R.ph) / 2;
+    glClearNamedFramebufferfv(0, GL_COLOR, 0, black);   /* (the bars, when there are any) */
+    if (s->anisotropy != R.sampler_aniso) {
+        R.sampler_aniso = s->anisotropy;
+        glSamplerParameterf(R.sampler, GL_TEXTURE_MAX_ANISOTROPY, s->anisotropy < 1.0f ? 1.0f : s->anisotropy);
+    }
+    post_begin(clampi((int)(R.pw * scale), 16, 8192), clampi((int)(R.ph * scale), 16, 8192), samples,
+               vec3(lin(clear.x), lin(clear.y), lin(clear.z)));
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glDisable(GL_CULL_FACE);
+}
+
+float render_aspect(void) {
+    int w = R.w, h = R.h;
+
+    if (gRender.aspect == 1) {
+        return 4.0f / 3.0f;
+    }
+    return h > 0 ? (float)w / (float)h : 1.0f;
+}
+
+void render_camera(const Mat4 *proj, const Mat4 *view, Vec3 eye, float znear, float zfar) {
+    Vec3 l = vec3_norm(gRender.light_dir);
+
+    (void)view;
+    R.proj = *proj;
+    R.znear = znear;
+    R.zfar = zfar;
+    glProgramUniform3f(R.mesh_prog, U_LIGHT_DIR, l.x, l.y, l.z);
+    glProgramUniform3f(R.mesh_prog, U_LIGHT_COLOR, gRender.light_color.x, gRender.light_color.y, gRender.light_color.z);
+    glProgramUniform3f(R.mesh_prog, U_AMBIENT, gRender.ambient.x, gRender.ambient.y, gRender.ambient.z);
+    glProgramUniform3f(R.mesh_prog, U_EYE, eye.x, eye.y, eye.z);
+    glProgramUniform1f(R.mesh_prog, U_RIM, gRender.rim);
+}
+
+void render_post(void) {
+    PostCamera cam = {R.proj, R.znear, R.zfar};
+
+    post_finish(&cam, &gRender, R.px, R.py, R.pw, R.ph, (float)(SDL_GetTicks() % 100000) / 1000.0f);
+    glViewport(0, 0, R.w, R.h);
 }
 
 static void flush_2d(void) {
@@ -210,17 +289,21 @@ static void flush_2d(void) {
     if (R.n2d == 0) {
         return;
     }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, R.w, R.h);
     glNamedBufferData(R.vbo2d, (GLsizeiptr)(R.n2d * sizeof(Vertex2d)), R.v2d, GL_STREAM_DRAW);
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glProgramUniformMatrix4fv(R.prog2d, U_PROJ, 1, GL_FALSE, proj.m);
+    glProgramUniformMatrix4fv(R.prog2d, 0, 1, GL_FALSE, proj.m);
     glUseProgram(R.prog2d);
     glBindTextureUnit(0, R.font);
+    glBindSampler(0, 0);
     glBindVertexArray(R.vao2d);
     glDrawArrays(GL_TRIANGLES, 0, R.n2d);
     glBindVertexArray(0);
+    glDisable(GL_BLEND);
     R.n2d = 0;
 }
 
@@ -228,10 +311,21 @@ void render_end(void) {
     flush_2d();
 }
 
-/* ---- textures ---- */
+/* ---- textures: sRGB (the game's colours are display values), with mipmaps ---- */
 
 GpuTexture render_texture(const uint8_t *rgba, int w, int h) {
-    return texture(GL_RGBA8, w, h, GL_RGBA, rgba, GL_LINEAR, GL_REPEAT);
+    GLuint t;
+    int levels = 1, m = w > h ? w : h;
+
+    while (m > 1) {
+        m >>= 1;
+        levels++;
+    }
+    glCreateTextures(GL_TEXTURE_2D, 1, &t);
+    glTextureStorage2D(t, levels, GL_SRGB8_ALPHA8, w, h);
+    glTextureSubImage2D(t, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+    glGenerateTextureMipmap(t);
+    return t;
 }
 
 void render_texture_free(GpuTexture t) {
@@ -240,13 +334,18 @@ void render_texture_free(GpuTexture t) {
     }
 }
 
+GpuTexture render_blob_texture(void) {
+    return R.blob;
+}
+
 /* ---- meshes ---- */
 
 static void mesh_arrays(GpuMesh *g) {
-    g->vao = vertex_array();
+    glCreateVertexArrays(1, &g->vao);
     attribute(g->vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(MeshVertex, x));
     attribute(g->vao, 1, 2, GL_FLOAT, GL_FALSE, offsetof(MeshVertex, s));
     attribute(g->vao, 2, 4, GL_UNSIGNED_BYTE, GL_TRUE, offsetof(MeshVertex, rgba));
+    attribute(g->vao, 3, 3, GL_FLOAT, GL_FALSE, offsetof(MeshVertex, nx));
     glVertexArrayVertexBuffer(g->vao, 0, g->vbo, 0, sizeof(MeshVertex));
 }
 
@@ -278,20 +377,19 @@ void render_mesh_free(GpuMesh *g) {
 
 void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, const GpuTexture *textures,
                  int ntextures, const uint32_t groups[8]) {
-    int i;
+    int i, multisampled = gRender.msaa > 1;
 
     if (g->vao == 0) {
         return;
     }
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glDisable(GL_CULL_FACE);
     glProgramUniformMatrix4fv(R.mesh_prog, U_MVP, 1, GL_FALSE, mvp->m);
     glUseProgram(R.mesh_prog);
+    glBindSampler(0, R.sampler);
     glBindVertexArray(g->vao);
     for (i = 0; i < nd; i++) {
         const MeshDraw *x = &d[i];
         GLuint tex = x->texture >= 0 && x->texture < ntextures ? textures[x->texture] : 0;
+        int coverage = multisampled && tex != 0 && !x->blend && !x->additive;
 
         if (x->group != 0 && !(groups[x->group >> 5] >> (x->group & 31) & 1)) {
             continue;
@@ -302,15 +400,23 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
         } else {
             glDisable(GL_BLEND);
         }
+        if (coverage) {
+            glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+        } else {
+            glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+        }
         glDepthMask(x->no_zwrite ? GL_FALSE : GL_TRUE);
         glProgramUniform1i(R.mesh_prog, U_USE_TEX, tex != 0);
         glProgramUniform1i(R.mesh_prog, U_SOLID_TEX, x->solid_tex);
+        glProgramUniform1i(R.mesh_prog, U_LIT, x->lit);
+        glProgramUniform1i(R.mesh_prog, U_COVERAGE, coverage);
         glBindTextureUnit(0, tex);
         glDrawArrays(GL_TRIANGLES, x->first, x->count);
     }
     glBindVertexArray(0);
     glDepthMask(GL_TRUE);
     glDisable(GL_BLEND);
+    glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 }
 
 /* ---- 2D ---- */
@@ -432,6 +538,7 @@ int render_screenshot(const char *path) {
         }
         return 0;
     }
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
     glReadnPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, (GLsizei)((size_t)w * h * 4), px);
     for (y = 0; y < h; y++) {   /* GL's rows go up; PNG's go down */
         const uint8_t *src = px + (size_t)(h - 1 - y) * w * 4;

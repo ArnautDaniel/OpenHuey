@@ -18,6 +18,7 @@ typedef struct Actor {
     int ntextures;
     GpuMesh gpu;
     MeshVertex *posed;      /* this frame's skinned vertices */
+    GpuMesh shadow;         /* the contact shadow: a soft blob on the floor under it */
     /* what scripts set (fields in Forth) */
     Vec3 pos;
     float yaw;              /* radians about y */
@@ -27,6 +28,7 @@ typedef struct Actor {
     int32_t motion;         /* index in the motion bank, -1 the rest pose */
     int32_t loop;           /* the motion repeats (else it holds its last frame) */
     int32_t visible;
+    float shadow_size;      /* the contact shadow's radius (room units; 0: none) */
 } Actor;
 
 /* load O_FIN/FIN_000 (.PCK + .TEX): the actor's number, or -1 */

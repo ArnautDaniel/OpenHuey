@@ -100,6 +100,7 @@ static void strip_flush(Builder *b, int texture, int second_pass) {
     d->texture = texture;
     d->blend = (uint8_t)second_pass;      /* cut-outs: fur, lashes, torn cloth */
     d->solid_tex = (uint8_t)!second_pass;
+    d->lit = 1;
     for (k = 2; k < b->nstrip; k++) {
         int j;
 

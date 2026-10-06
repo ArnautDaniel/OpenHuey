@@ -121,6 +121,10 @@ T{ hi nip -> 5 }T
 T{ hi s" hello" s= hi s" help!" s= -> true false }T
 T{ hi drop c@ -> 'h' }T
 
+testing 2! 2@
+create pair 2 cells allot
+T{ 1 2 pair 2! pair 2@ -> 1 2 }T
+
 testing memory
 create buf 8 allot
 T{ buf 8 0 fill  $1234 buf w!  buf w@ buf c@ -> $1234 $34 }T

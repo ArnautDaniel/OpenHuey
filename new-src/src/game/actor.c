@@ -60,6 +60,7 @@ int actor_load(Actor *actors, const char *name) {
     a->motion = -1;
     a->loop = 1;
     a->visible = 1;
+    a->shadow_size = 7.0f;
     return i;
 }
 
@@ -70,6 +71,7 @@ void actor_free(Actor *a) {
         render_texture_free(a->textures[i]);
     }
     render_mesh_free(&a->gpu);
+    render_mesh_free(&a->shadow);
     model_free(&a->model);
     free(a->posed);
     memset(a, 0, sizeof(*a));
@@ -96,21 +98,18 @@ void actor_tick(Actor *a) {
     }
 }
 
-/* the posed vertices, in room space, lit by one light from above and in front */
+/* the posed vertices and normals, in room space (the shader lights them) */
 static void skin(Actor *a) {
     static Mat4 skin_m[MODEL_MAX_BONES];
     const Model *m = &a->model;
-    Mat4 place = mat4_identity(), rot = mat4_identity();
-    Vec3 light = vec3_norm(vec3(0.3f, 1.0f, 0.5f));
+    Mat4 place = mat4_identity();
     float c = cosf(a->yaw), s = sinf(a->yaw);
     int i, j;
 
     model_pose(m, a->motion, a->frame, skin_m);
-    rot.m[0] = c;  rot.m[2] = -s;  rot.m[8] = s;  rot.m[10] = c;
-    place = rot;
-    for (i = 0; i < 12; i++) {
-        place.m[i] *= a->scale;
-    }
+    place.m[0] = c * a->scale;  place.m[2] = -s * a->scale;
+    place.m[5] = a->scale;
+    place.m[8] = s * a->scale;  place.m[10] = c * a->scale;
     place.m[12] = a->pos.x;
     place.m[13] = a->pos.y;
     place.m[14] = a->pos.z;
@@ -118,7 +117,6 @@ static void skin(Actor *a) {
         const SkinVertex *v = &m->v[i];
         MeshVertex *o = &a->posed[i];
         Vec3 p = vec3(0, 0, 0), n = vec3(0, 0, 0);
-        float lit;
 
         for (j = 0; j < 4; j++) {
             const Mat4 *b = &skin_m[v->bones[j] < m->nbones ? v->bones[j] : 0];
@@ -135,15 +133,45 @@ static void skin(Actor *a) {
         }
         p = mat4_point(&place, p);
         n = vec3_norm(vec3(c * n.x + s * n.z, n.y, -s * n.x + c * n.z));
-        lit = 0.55f + 0.45f * fmaxf(0.0f, vec3_dot(n, light));
         o->x = p.x;
         o->y = p.y;
         o->z = p.z;
         o->s = v->s;
         o->t = v->t;
-        o->rgba[0] = o->rgba[1] = o->rgba[2] = (uint8_t)(0x80 * lit);
-        o->rgba[3] = 0x80;
+        o->rgba[0] = o->rgba[1] = o->rgba[2] = o->rgba[3] = 0x80;
+        o->nx = n.x;
+        o->ny = n.y;
+        o->nz = n.z;
     }
+}
+
+/* a soft dark disc on the floor under the actor, a little above it to stay in front */
+static void draw_shadow(Actor *a, const Mat4 *view_proj) {
+    static const float kCorner[6][2] = {{-1, -1}, {1, -1}, {1, 1}, {-1, -1}, {1, 1}, {-1, 1}};
+    static const uint32_t kAllGroups[8] = {~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u};
+    MeshVertex q[6];
+    MeshDraw d;
+    GpuTexture blob = render_blob_texture();
+    float r = a->shadow_size * a->scale;
+    int i;
+
+    memset(q, 0, sizeof(q));
+    for (i = 0; i < 6; i++) {
+        q[i].x = a->pos.x + kCorner[i][0] * r;
+        q[i].y = a->pos.y + 0.3f;
+        q[i].z = a->pos.z + kCorner[i][1] * r;
+        q[i].s = kCorner[i][0] * 0.5f + 0.5f;
+        q[i].t = kCorner[i][1] * 0.5f + 0.5f;
+        q[i].rgba[3] = 0x50;   /* black, at about 60% */
+    }
+    memset(&d, 0, sizeof(d));
+    d.first = 0;
+    d.count = 6;
+    d.texture = 0;
+    d.blend = 1;
+    d.no_zwrite = 1;
+    render_mesh_update(&a->shadow, q, 6);
+    render_mesh(&a->shadow, view_proj, &d, 1, &blob, 1, kAllGroups);
 }
 
 void actor_draw(Actor *a, const Mat4 *view_proj) {
@@ -151,6 +179,9 @@ void actor_draw(Actor *a, const Mat4 *view_proj) {
 
     if (!a->used || !a->visible || a->model.nv == 0) {
         return;
+    }
+    if (gRender.shadows && a->shadow_size > 0.0f) {
+        draw_shadow(a, view_proj);
     }
     skin(a);
     render_mesh_update(&a->gpu, a->posed, a->model.nv);

@@ -1,8 +1,18 @@
-/* The renderer: OpenGL 4.6. A frame is: render_begin, 3D draws (meshes), then 2D draws (text,
- * rectangles; queued and drawn together at render_end).
+/* The renderer: OpenGL 4.6, written 4.5+ style (direct state access).
  *
- * Colours follow the PS2's convention where the game data does: vertex colours and texture
- * alpha use 0x80 for 1.0, and a texel is multiplied by the vertex colour. */
+ * A frame:
+ *   render_begin       the window's size; picks the picture's rectangle (all of the window, or
+ *                      a 4:3 one in the middle) and readies the scene targets
+ *   render_camera      the camera for the 3D pass
+ *   render_mesh ...    the scene: into an HDR (16-bit float) target, multisampled
+ *   render_post        resolve, then ambient occlusion, bloom, fog, exposure, tone mapping,
+ *                      grading, vignette and grain - onto the window
+ *   render_rect/text   2D on top (the console, menus, hints)
+ *   render_end
+ *
+ * Colours: the game's textures and vertex colours are display (gamma) values. They are turned
+ * linear for lighting and blending, so with every effect off the picture matches the original;
+ * vertex colours and texture alpha keep the PS2's 0x80 = 1.0. */
 #ifndef RENDER_H
 #define RENDER_H
 
@@ -18,10 +28,50 @@ typedef struct GpuMesh {
     int nv;
 } GpuMesh;
 
+/* what the picture looks like: changed freely (from Forth: the `gfx` fields); takes effect on
+ * the next frame */
+typedef struct RenderSettings {
+    int32_t msaa;            /* samples: 1 (off), 2, 4, 8 */
+    float scale;             /* render resolution relative to the window: 0.5 .. 2 */
+    int32_t aspect;          /* 0: fill the window (wider screens see more), 1: the original 4:3 */
+    float anisotropy;        /* texture filtering: 1 .. 16 */
+    int32_t ssao;            /* ambient occlusion */
+    float ssao_radius;       /* room units */
+    float ssao_strength;     /* 0 .. 1 */
+    int32_t bloom;
+    float bloom_threshold;   /* brightness where glow starts (linear) */
+    float bloom_strength;
+    int32_t fog;
+    float fog_density;       /* per room unit */
+    float fog_start;         /* room units from the eye */
+    Vec3 fog_color;          /* display colour */
+    float exposure;
+    int32_t tonemap;         /* 0 clip, 1 soft shoulder (keeps the original look), 2 filmic (ACES) */
+    float saturation;
+    float contrast;
+    float vignette;          /* 0 .. 1 */
+    float grain;             /* 0 .. 0.1 */
+    int32_t shadows;         /* soft contact shadows under characters */
+    Vec3 light_dir;          /* characters' key light: the direction it comes from (world) */
+    Vec3 light_color;        /* linear */
+    Vec3 ambient;            /* linear */
+    float rim;               /* rim light on characters' edges */
+    int32_t debug;           /* show a buffer instead: 1 occlusion, 2 bloom, 3 depth (bands of 100 units) */
+} RenderSettings;
+
+extern RenderSettings gRender;
+
 int render_init(void);
 void render_shutdown(void);
 
-void render_begin(int w, int h, Vec3 clear);
+/* the frame: the window's size in pixels; `clear` the background (display colour) */
+void render_begin(int window_w, int window_h, Vec3 clear);
+/* the picture's aspect (width / height) - for the camera's projection */
+float render_aspect(void);
+/* the camera (for lighting, ambient occlusion and fog): projection, view, eye, depth range */
+void render_camera(const Mat4 *proj, const Mat4 *view, Vec3 eye, float znear, float zfar);
+/* finish the 3D scene: post effects onto the window */
+void render_post(void);
 void render_end(void);
 
 GpuTexture render_texture(const uint8_t *rgba, int w, int h);
@@ -35,7 +85,10 @@ void render_mesh_free(GpuMesh *g);
 void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, const GpuTexture *textures,
                  int ntextures, const uint32_t groups[8]);
 
-/* 2D, in pixels from the top left; colours 0xRRGGBBAA */
+/* the contact-shadow texture (a soft round blob) */
+GpuTexture render_blob_texture(void);
+
+/* 2D, in window pixels from the top left; colours 0xRRGGBBAA */
 void render_rect(float x, float y, float w, float h, uint32_t rgba);
 void render_text(float x, float y, float scale, uint32_t rgba, const char *s, int n);
 float render_text_width(float scale, int chars);

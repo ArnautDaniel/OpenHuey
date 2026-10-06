@@ -35,3 +35,41 @@ void gl_debug_output(void) {
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(debug_message, NULL);
 }
+
+static GLuint shader(GLenum type, const char *src, const char *name) {
+    GLuint s = glCreateShader(type);
+    GLint ok;
+
+    glShaderSource(s, 1, &src, NULL);
+    glCompileShader(s);
+    glGetShaderiv(s, GL_COMPILE_STATUS, &ok);
+    if (!ok) {
+        char log[2048];
+
+        glGetShaderInfoLog(s, sizeof(log), NULL, log);
+        fprintf(stderr, "gl: shader %s (%s): %s\n", name, type == GL_VERTEX_SHADER ? "vertex" : "fragment", log);
+    }
+    return s;
+}
+
+unsigned int gl_program(const char *vs, const char *fs, const char *name) {
+    GLuint p = glCreateProgram(), v = shader(GL_VERTEX_SHADER, vs, name), f = shader(GL_FRAGMENT_SHADER, fs, name);
+    GLint ok;
+
+    glAttachShader(p, v);
+    glAttachShader(p, f);
+    glLinkProgram(p);
+    glGetProgramiv(p, GL_LINK_STATUS, &ok);
+    glDetachShader(p, v);
+    glDetachShader(p, f);
+    glDeleteShader(v);
+    glDeleteShader(f);
+    if (!ok) {
+        char log[2048];
+
+        glGetProgramInfoLog(p, sizeof(log), NULL, log);
+        fprintf(stderr, "gl: program %s: %s\n", name, log);
+        return 0;
+    }
+    return p;
+}

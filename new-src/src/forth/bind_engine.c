@@ -6,6 +6,7 @@
 
 #include "../core/files.h"
 
+#include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
@@ -181,7 +182,9 @@ PRIM(p_room_camera) {   /* ( i -- ) ( F: -- ex ey ez fov-radians tx ty tz ) */
     }
     memcpy(v, e + i * 8, sizeof(v));   /* (the file's floats may not be aligned for us) */
     FPUSH(v[0]); FPUSH(v[1]); FPUSH(v[2]);
-    FPUSH((v[3] == 0.0f ? 60.0f : v[3]) * 3.14159265358979 / 180.0);
+    /* the game's field of view spans the width of a 4:3 picture (src/game/camera.c
+     * Camera_ViewMatrix and the view-screen scales); ours is vertical */
+    FPUSH(2.0 * atan(0.75 * tan((v[3] == 0.0f ? 60.0f : v[3]) * 3.14159265358979 / 360.0)));
     FPUSH(v[4]); FPUSH(v[5]); FPUSH(v[6]);
 }
 
@@ -328,6 +331,72 @@ PRIM(p_off_tick) {   /* ( xt -- ) */
         }
     }
 }
+PRIM(p_on_draw) {   /* ( xt -- ) run xt every frame, to draw 2D (draw-text, draw-rect) */
+    Word *x = (Word *)POP();
+
+    if (gEngine.ndraw_hooks >= ENGINE_HOOKS) {
+        forth_error(f, "on-draw: too many");
+    }
+    gEngine.draw_hooks[gEngine.ndraw_hooks++] = x;
+}
+PRIM(p_off_draw) {   /* ( xt -- ) */
+    Word *x = (Word *)POP();
+    int i;
+
+    for (i = 0; i < gEngine.ndraw_hooks; i++) {
+        if (gEngine.draw_hooks[i] == x) {
+            memmove(&gEngine.draw_hooks[i], &gEngine.draw_hooks[i + 1],
+                    (size_t)(gEngine.ndraw_hooks - i - 1) * sizeof(Word *));
+            gEngine.ndraw_hooks--;
+            i--;
+        }
+    }
+}
+
+/* ---- 2D drawing (from on-draw hooks): a pen with a colour and a text size ---- */
+
+static uint32_t sPenColor = 0xFFFFFFFF;
+static Cell sPenScale = 2;
+
+PRIM(p_pen_color) { sPenColor = (uint32_t)POP(); }   /* ( rgba -- ) 0xRRGGBBAA */
+PRIM(p_pen_scale) { Cell s = POP(); sPenScale = s < 1 ? 1 : s > 8 ? 8 : s; }   /* ( n -- ) */
+PRIM(p_draw_text) {   /* ( addr len x y -- ) */
+    Cell y = POP(), x = POP(), n = POP(), a = POP();
+
+    render_text((float)x, (float)y, (float)sPenScale, sPenColor, (const char *)a, (int)n);
+}
+PRIM(p_draw_rect) {   /* ( x y w h -- ) */
+    Cell height = POP(), width = POP(), y = POP(), x = POP();
+
+    render_rect((float)x, (float)y, (float)width, (float)height, sPenColor);
+}
+PRIM(p_screen_size) { PUSH(gEngine.width); PUSH(gEngine.height); }   /* ( -- w h ) */
+PRIM(p_char_size) {   /* ( -- w h ) a character cell at the pen's size */
+    PUSH((Cell)render_text_width((float)sPenScale, 1));
+    PUSH((Cell)render_line_height((float)sPenScale));
+}
+
+/* numbers as text (a few rotating buffers, like s") */
+static char sNumText[4][48];
+static int sNumNext;
+PRIM(p_n_to_s) {   /* ( n -- addr len ) */
+    char *b = sNumText[sNumNext++ % 4];
+
+    snprintf(b, sizeof(sNumText[0]), "%ld", (long)POP());
+    PUSH(b);
+    PUSH(strlen(b));
+}
+PRIM(p_f_to_s) {   /* ( places -- addr len ) ( F: x -- ) */
+    char *b = sNumText[sNumNext++ % 4];
+    Cell places = POP();
+
+    snprintf(b, sizeof(sNumText[0]), "%.*f", (int)(places < 0 ? 0 : places > 6 ? 6 : places), FPOP());
+    PUSH(b);
+    PUSH(strlen(b));
+}
+
+PRIM(p_gfx) { PUSH(&gRender); }
+
 PRIM(p_ticks) { PUSH(gEngine.ticks); }
 PRIM(p_dt) { FPUSH(1.0 / TICKS_PER_SECOND); }
 PRIM(p_clear_color) {   /* ( F: r g b -- ) the background */
@@ -361,6 +430,19 @@ void engine_tick(Engine *e) {
     }
 }
 
+void engine_draw_2d(Engine *e) {
+    int i;
+
+    for (i = 0; i < e->ndraw_hooks; i++) {
+        if (forth_call(e->forth, e->draw_hooks[i]) != 0) {
+            forth_printf(e->forth, "on-draw: %s removed after an error\n", e->draw_hooks[i]->name);
+            memmove(&e->draw_hooks[i], &e->draw_hooks[i + 1], (size_t)(e->ndraw_hooks - i - 1) * sizeof(Word *));
+            e->ndraw_hooks--;
+            i--;
+        }
+    }
+}
+
 void bind_engine(Forth *f) {
     static const struct {
         const char *name;
@@ -377,6 +459,10 @@ void bind_engine(Forth *f) {
         {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"mouse-down?", p_mouse_down},
         {"on-tick", p_on_tick}, {"off-tick", p_off_tick}, {"ticks", p_ticks}, {"dt", p_dt},
+        {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},
+        {"pen-scale", p_pen_scale}, {"draw-text", p_draw_text}, {"draw-rect", p_draw_rect},
+        {"screen-size", p_screen_size}, {"char-size", p_char_size}, {"n>s", p_n_to_s}, {"f>s$", p_f_to_s},
+        {"gfx", p_gfx},
         {"clear-color", p_clear_color}, {"screenshot", p_screenshot}, {"console!", p_console},
         {"data-dir", p_data_dir},
     };
@@ -405,4 +491,41 @@ void bind_engine(Forth *f) {
     field(f, "act.rate", offsetof(Actor, rate));
     field(f, "act.loop", offsetof(Actor, loop));        /* 32-bit: l@ l! */
     field(f, "act.visible", offsetof(Actor, visible));  /* 32-bit: l@ l! */
+    field(f, "act.shadow", offsetof(Actor, shadow_size));
+    /* the picture's settings (render.h RenderSettings): flags and counts are 32-bit (l@ l!),
+     * the rest floats (sf@ sf!) */
+    field(f, "gfx.msaa", offsetof(RenderSettings, msaa));
+    field(f, "gfx.scale", offsetof(RenderSettings, scale));
+    field(f, "gfx.aspect", offsetof(RenderSettings, aspect));
+    field(f, "gfx.anisotropy", offsetof(RenderSettings, anisotropy));
+    field(f, "gfx.ssao", offsetof(RenderSettings, ssao));
+    field(f, "gfx.ssao-radius", offsetof(RenderSettings, ssao_radius));
+    field(f, "gfx.ssao-strength", offsetof(RenderSettings, ssao_strength));
+    field(f, "gfx.bloom", offsetof(RenderSettings, bloom));
+    field(f, "gfx.bloom-threshold", offsetof(RenderSettings, bloom_threshold));
+    field(f, "gfx.bloom-strength", offsetof(RenderSettings, bloom_strength));
+    field(f, "gfx.fog", offsetof(RenderSettings, fog));
+    field(f, "gfx.fog-density", offsetof(RenderSettings, fog_density));
+    field(f, "gfx.fog-start", offsetof(RenderSettings, fog_start));
+    field(f, "gfx.fog-r", offsetof(RenderSettings, fog_color.x));
+    field(f, "gfx.fog-g", offsetof(RenderSettings, fog_color.y));
+    field(f, "gfx.fog-b", offsetof(RenderSettings, fog_color.z));
+    field(f, "gfx.exposure", offsetof(RenderSettings, exposure));
+    field(f, "gfx.tonemap", offsetof(RenderSettings, tonemap));
+    field(f, "gfx.saturation", offsetof(RenderSettings, saturation));
+    field(f, "gfx.contrast", offsetof(RenderSettings, contrast));
+    field(f, "gfx.vignette", offsetof(RenderSettings, vignette));
+    field(f, "gfx.grain", offsetof(RenderSettings, grain));
+    field(f, "gfx.shadows", offsetof(RenderSettings, shadows));
+    field(f, "gfx.light-x", offsetof(RenderSettings, light_dir.x));
+    field(f, "gfx.light-y", offsetof(RenderSettings, light_dir.y));
+    field(f, "gfx.light-z", offsetof(RenderSettings, light_dir.z));
+    field(f, "gfx.light-r", offsetof(RenderSettings, light_color.x));
+    field(f, "gfx.light-g", offsetof(RenderSettings, light_color.y));
+    field(f, "gfx.light-b", offsetof(RenderSettings, light_color.z));
+    field(f, "gfx.ambient-r", offsetof(RenderSettings, ambient.x));
+    field(f, "gfx.ambient-g", offsetof(RenderSettings, ambient.y));
+    field(f, "gfx.ambient-b", offsetof(RenderSettings, ambient.z));
+    field(f, "gfx.rim", offsetof(RenderSettings, rim));
+    field(f, "gfx.debug", offsetof(RenderSettings, debug));
 }

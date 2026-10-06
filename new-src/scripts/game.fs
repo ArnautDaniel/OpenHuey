@@ -13,6 +13,7 @@ create path 512 allot  variable path-len
 \ shared by the scripts below: are we playing (or flying the free camera)? and what puts
 \ the player in a room (set by player.fs)
 variable playing  0 playing !
+variable menu-open  0 menu-open !
 defer place-player
 
 script vectors.fs
@@ -22,6 +23,7 @@ script rooms.fs
 script player.fs
 script doors.fs
 script hewie.fs
+script graphics.fs
 
 0.06e 0.06e 0.08e clear-color
 first-room

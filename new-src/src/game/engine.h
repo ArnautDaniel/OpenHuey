@@ -25,6 +25,8 @@ typedef struct Engine {
     Console console;
     Word *hooks[ENGINE_HOOKS];   /* run every tick (`on-tick`) */
     int nhooks;
+    Word *draw_hooks[ENGINE_HOOKS];   /* run every frame to draw 2D (`on-draw`) */
+    int ndraw_hooks;
     Vec3 clear;            /* the background colour */
     long ticks;
     char hud[128];         /* a line of text at the bottom of the screen ("" none) */
@@ -38,5 +40,7 @@ extern Engine gEngine;
 void bind_engine(Forth *f);
 /* one game tick: tasks, then the per-tick hooks */
 void engine_tick(Engine *e);
+/* the scripts' 2D drawing for this frame (the on-draw hooks) */
+void engine_draw_2d(Engine *e);
 
 #endif

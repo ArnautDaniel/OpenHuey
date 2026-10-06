@@ -24,6 +24,7 @@ typedef struct MeshVertex {
     float x, y, z;
     float s, t;
     uint8_t rgba[4];   /* 0x80 = 1.0, as the PS2 had it */
+    float nx, ny, nz;  /* the normal, for lit draws (characters); rooms carry their lighting in rgba */
 } MeshVertex;
 
 enum { MESH_SOLID, MESH_SEE_THROUGH, MESH_BLOOM_MASK, MESH_PART3, MESH_ANIMATED, MESH_GLOW, MESH_PARTS };
@@ -37,6 +38,7 @@ typedef struct MeshDraw {
     uint8_t no_zwrite;
     uint8_t group;         /* visibility group: 0 always shown, others switched by the room */
     uint8_t solid_tex;     /* the texture's alpha is not transparency (characters' normal parts) */
+    uint8_t lit;           /* lit by the scene's light (characters), not by its vertex colours alone */
 } MeshDraw;
 
 typedef struct RoomMesh {

@@ -86,18 +86,21 @@ static int load_scripts(Forth *f) {
 }
 
 static void draw(Engine *e) {
+    Mat4 proj, view, vp;
     int i;
-    float aspect;
-    Mat4 vp;
 
     platform_size(&e->width, &e->height);
-    aspect = e->height > 0 ? (float)e->width / (float)e->height : 1.0f;
-    vp = camera_view_proj(&e->camera, aspect);
     render_begin(e->width, e->height, e->clear);
+    proj = camera_proj(&e->camera, render_aspect());
+    view = camera_view(&e->camera);
+    vp = mat4_mul(proj, view);
+    render_camera(&proj, &view, e->camera.pos, e->camera.znear, e->camera.zfar);
     room_draw(&e->room, &vp);
     for (i = 0; i < MAX_ACTORS; i++) {
         actor_draw(&e->actors[i], &vp);
     }
+    render_post();
+    engine_draw_2d(e);   /* scripts' 2D (on-draw hooks) */
     if (e->hud[0] != 0) {
         float scale = e->height >= 900 ? 3.0f : 2.0f;
 
@@ -133,7 +136,7 @@ int main(int argc, char **argv) {
         fprintf(stderr, "hg2: no game data in \"%s\" (the extracted DATA.CVM folder). Pass it as an argument "
                         "or set HG_DATA.\n", opt.data);
     }
-    if (!platform_open("Haunting Ground (new-src)", 1280, 896, opt.hidden) || !render_init()) {
+    if (!platform_open("Haunting Ground (new-src)", 1280, 720, opt.hidden) || !render_init()) {
         return 1;
     }
 

@@ -109,7 +109,7 @@ struct Forth {
 
     /* words the compiler uses */
     Word *w_lit, *w_flit, *w_litstring, *w_exit, *w_halt, *w_comma, *w_does;
-    char sbuf[4][256];      /* s" in interpret mode: a few rotating buffers */
+    char sbuf[16][256];     /* s" in interpret mode: rotating buffers (copy what must last) */
     int nsbuf;
 };
 

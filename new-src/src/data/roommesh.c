@@ -87,7 +87,7 @@ static const uint8_t *batch(Builder *b, int part, const uint8_t *p, const uint8_
                 continue;
             }
             for (k = i - 2; k <= i; k++) {
-                MeshVertex v;
+                MeshVertex v = {0};
                 Vec3 pos = mat4_point(&local, vec3(f32(xyz + k * 16), f32(xyz + k * 16 + 4), f32(xyz + k * 16 + 8)));
 
                 v.x = pos.x;

@@ -1063,7 +1063,7 @@ PRIM(p_squote) {   /* s" text" ( -- addr len ) */
     if (f->compiling) {
         compile_string(f, s, len);
     } else {
-        char *buf = f->sbuf[f->nsbuf++ % 4];
+        char *buf = f->sbuf[f->nsbuf++ % 16];
 
         if (len >= sizeof(f->sbuf[0])) {
             len = sizeof(f->sbuf[0]) - 1;
