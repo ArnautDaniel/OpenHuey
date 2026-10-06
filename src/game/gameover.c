@@ -83,69 +83,28 @@ void func_002F39B0(u8 *o) {
     AT(o, 0x50, PTMF) = D_0041A150;
 }
 
-/* the movie's frame, full screen: the renderer draws it (layer 0x2B, or 6 when plain) and,
- * unless plain, it is drawn again from VRAM as a sprite (Z writes off) */
+#ifdef HG_NATIVE
+extern void glr_vram_draw(u32 addr, s32 layer);   /* native/platform/glr.c */
+
+/* the movie's frame, full screen: the renderer takes it (layer 0x2B, or 6 when plain) and,
+ * unless plain, it is drawn again over the screen by its alpha (layer 0x2C) */
 void func_002F0940(GameOver *o, s16 *shot) {
     u8 *f = AT(shot, 0x4, u8 *) + shot[1] * ((AT(shot, 0x8, u8) ^ 1) * shot[0]) * 4;
 
     if (AT(shot, 0x9, u8) != 0) {
         VCALL(D_0044E4F0, 0x40, void (*)(VObject *, u8 *, s32, s32, s32, s32))(D_0044E4F0, f, 0xC0000, shot[0], shot[1], 6);
     } else {
-        VObject *r = D_0044E4F0;
-        u64 *p;
-
-        VCALL(r, 0x40, void (*)(VObject *, u8 *, s32, s32, s32, s32))(r, f, 0xC0000, shot[0], shot[1], 0x2B);
-        p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 0x10, 0x2C);
-        if (p != NULL) {
-#ifdef HG_NATIVE
-            extern void glr_vram_draw(u32 addr, s32 layer);   /* native/platform/glr.c */
-
-            glr_vram_draw(0xC0000, 0x2C);   /* the frame just sent, over the screen by its alpha */
-            p[0] = 0x1000000F;
-            AT(p, 0x8, u32) = 0;
-            AT(p, 0xC, u32) = 0x50000000;
-#else
-            p[0] = 0x1000000F;
-            AT(p, 0x8, u32) = 0;
-            AT(p, 0xC, u32) = 0x5000000F;
-            p[2] = 0x800E | (0x10000000ULL << 32);
-            p[3] = 0xE;
-            p[4] = 0x310000A0 | (1ULL << 32);   /* ZBUF_1: no Z writes */
-            p[5] = 0x4E;
-            p[6] = 0x30000;                     /* TEST_1: Z always */
-            p[7] = 0x47;
-            p[8] = 0;                           /* TEXFLUSH */
-            p[9] = 0x3F;
-            p[10] = ((s64)((shot[0] + 0x3F) / 64) << 14) | 0x64003000 | (6ULL << 32);   /* TEX0_1 */
-            p[11] = 6;
-            p[12] = 0x44;                       /* ALPHA_1 */
-            p[13] = 0x42;
-            AT(p, 0x70, u32) = 0x80808080;      /* RGBAQ */
-            AT(p, 0x74, u32) = 0x3F800000;
-            p[15] = 1;
-            p[16] = 0x156;                      /* PRIM: sprite, textured, blended, UV */
-            p[17] = 0;
-            p[18] = 0;                          /* UV */
-            p[19] = 3;
-            p[20] = 0x72007000;                 /* XYZ2 */
-            p[21] = 5;
-            p[22] = (s64)((shot[0] << 4) | ((shot[1] << 4) << 16));
-            p[23] = 3;
-            p[24] = (s64)0x8E009000;
-            p[25] = 5;
-            p[26] = 0x310000A0;
-            p[27] = 0x4E;
-            p[28] = 0x5000F;
-            p[29] = 0x47;
-            p[30] = 0x44;
-            p[31] = 0x42;
-#endif
-        }
+        VCALL(D_0044E4F0, 0x40, void (*)(VObject *, u8 *, s32, s32, s32, s32))(D_0044E4F0, f, 0xC0000, shot[0], shot[1],
+                                                                                0x2B);
+        glr_vram_draw(0xC0000, 0x2C);
     }
     if (D_0044E4E8 != NULL) {
         VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
     }
 }
+#else
+void func_002F0940(GameOver *o, s16 *shot);
+#endif
 
 /* the music player at full volume and started */
 static void bgm_full(void) {

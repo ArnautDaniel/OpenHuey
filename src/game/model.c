@@ -4804,14 +4804,13 @@ static void gl_draw_model(u8 *m) {
 }
 #endif
 
-/* queue the model for drawing in `layer` (a, b: the character's draw parameters, kept at
- * +0x28 / +0x2C; layer 0x14 none): the model drawer (+0x10) at its root bone; layer 0xB draws
- * it twice (masks in layers 10 / 11 around it, mode +0x34 4 then 8); then its shadow (+0x1D0)
- * unless +0x4D9 or in layers 0x14 / 0x17 / 0x1C */
-void func_001F6870(u8 *m, s32 layer, s32 a, s32 b, f32 *light) {
-    VObject *r;
-    u64 *p;
+#ifdef HG_NATIVE
+extern void glr_layer(s32 layer);   /* native/platform/glr.c */
 
+/* draw the model in `layer` (a, b: the character's draw parameters, kept at +0x28 / +0x2C;
+ * layer 0x14 none), then its shadow volumes (+0x1D0, layer 6) unless +0x4D9 or in layers
+ * 0x14 / 0x17 / 0x1C. (The original queues the model drawer, layer 0xB twice around masks.) */
+void func_001F6870(u8 *m, s32 layer, s32 a, s32 b, f32 *light) {
     if (layer == 0x14) {
         AT(m, 0x28, s32) = -1;
         AT(m, 0x2C, s32) = -1;
@@ -4819,56 +4818,14 @@ void func_001F6870(u8 *m, s32 layer, s32 a, s32 b, f32 *light) {
         AT(m, 0x28, s32) = a;
         AT(m, 0x2C, s32) = b;
     }
-#ifdef HG_NATIVE
-    {
-        extern void glr_layer(s32 layer);   /* native/platform/glr.c */
-
-        glr_layer((u16)layer);
-        gl_draw_model(m);
-        glr_layer(-1);
-        if (AT(m, 0x4D9, u8) == 0 && layer != 0x17 && layer != 0x14 && layer != 0x1C) {
-            func_001F3530(m + 0x1D0, a, b, light, layer);   /* its shadow volumes, layer 6 */
-        }
-    }
-    return;
-#endif
-    if ((u16)layer == 0xB) {
-        r = D_0044E4F0;
-        AT(m, 0x34, u32) = (layer & 0xFFFF0000) | 4;
-        VCALL(r, 0xC, void (*)(VObject *, void *, s32, f32 *))(r, m + 0x10, 0xA,
-                                                              func_0017CE80(AT(m, 0x810, void *), 0) + 12);
-        p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 3, 0xB);
-        p[0] = 0x10000002;
-        AT(p, 0x8, u32) = 0;
-        AT(p, 0xC, u32) = 0x50000002;
-        p[2] = 0x8001 | (0x10000000ULL << 32);
-        p[3] = 0xE;
-        p[4] = 0x310000A0 | (1ULL << 32);
-        p[5] = 0x4E;
-        VCALL(D_0044E4E8, 0x18, void (*)(VObject *))(D_0044E4E8);
-        VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
-        AT(m, 0x34, u32) = 8;
-        VCALL(r, 0xC, void (*)(VObject *, void *, s32, f32 *))(r, m + 0x10, 0xB, NULL);
-        p = VCALL(r, 0x10, u64 *(*)(VObject *, s32, s32))(r, 4, 0xB);
-        p[0] = 0x10000003;
-        AT(p, 0x8, u32) = 0;
-        AT(p, 0xC, u32) = 0x50000003;
-        p[2] = 0x8002 | (0x10000000ULL << 32);
-        p[3] = 0xE;
-        p[4] = 0x310000A0;
-        p[5] = 0x4E;
-        p[6] = 0x5000F;
-        p[7] = 0x47;
-        AT(m, 0x34, u32) = 0;
-    } else {
-        r = D_0044E4F0;
-        VCALL(r, 0xC, void (*)(VObject *, void *, s32, f32 *))(r, m + 0x10, layer,
-                                                              func_0017CE80(AT(m, 0x810, void *), 0) + 12);
-    }
+    glr_layer((u16)layer);
+    gl_draw_model(m);
+    glr_layer(-1);
     if (AT(m, 0x4D9, u8) == 0 && layer != 0x17 && layer != 0x14 && layer != 0x1C) {
         func_001F3530(m + 0x1D0, a, b, light, layer);
     }
 }
+#endif
 
 
 /* `m` = a turn of `a` about Y */

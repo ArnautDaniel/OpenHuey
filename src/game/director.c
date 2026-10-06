@@ -280,33 +280,20 @@ u16 func_002C9C10(u8 *d, s32 f) {
 
 /* ---- the shot's parts ---- */
 
-/* the letterbox: two black bars (layer 0x30) unless +0x4 */
-void func_002C9EA0(u8 *d) {
-    u64 *p;
+#ifdef HG_NATIVE
+#include "gl2d.h"
 
+/* the letterbox: two black bars (layer 0x30), 56 pixels at the top and bottom, unless +0x4 */
+void func_002C9EA0(u8 *d) {
     if (AT(d, 0x4, u8)) {
         return;
     }
-    p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 7, 0x30);
-    if (p == NULL) {
-        return;
-    }
-    p[0] = 0x10000006;              /* DMA cnt 6 */
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x50000006;   /* VIF DIRECT 6 */
-    p[2] = 1 | (0x10000000ULL << 32);   /* GIF tag: 1 A+D, EOP */
-    p[3] = 0xE;
-    p[4] = 6;                       /* PRIM: sprite */
-    p[5] = 0;
-    p[6] = 0x8001 | (0x64000000ULL << 32);   /* reglist x2: RGBAQ XYZ2 XYZ2 RGBAQ? */
-    p[7] = 0xF55551;
-    p[8] = 0x80000000ULL;           /* RGBAQ: black */
-    p[9] = 0xFFFFFFFF72007000ULL;   /* top bar */
-    p[10] = 0xFFFFFFFF75809000ULL;
-    p[11] = 0xFFFFFFFF8A807000ULL;  /* bottom bar */
-    p[12] = 0xFFFFFFFF8E009000ULL;
-    p[13] = 0;
+    gl2d_sprite(0x30, 0, 0, 512, 56, NULL, 0, 0, 0, 0, 0x80000000, 0, 0);
+    gl2d_sprite(0x30, 0, 392, 512, 448, NULL, 0, 0, 0, 0, 0x80000000, 0, 0);
 }
+#else
+void func_002C9EA0(u8 *d);
+#endif
 
 /* the object groups the script animates put back as they were defined */
 void func_002C9C80(u8 *d) {

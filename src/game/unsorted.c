@@ -30,50 +30,25 @@ void func_0031E150(u8 *o) {
 
 extern VObject *D_0044E9A0;   /* the VRAM manager */
 
+#ifdef HG_NATIVE
+#include "gl2d.h"
+
 /* the avoid prompt, each gameplay frame: unless hidden (+0x11040 0xFF), its frame (+0x11040, a
  * 160 x 32 row of AVOID.TEX, texture 0 of group 0x2D) as a 240 x 48 sprite near the bottom
- * right, in layer 0x30 */
+ * right, opaque, in layer 0x30 */
 void func_0031DE10(u8 *o) {
     VObject *tc;
     u8 *tex;
-    s32 slot;
-    u64 *p;
+    s32 f = AT(o, 0x11040, u8);
 
-    if (AT(o, 0x11040, u8) == 0xFF) {
+    if (f == 0xFF) {
         return;
     }
     tc = D_0044E4E8;
-    slot = TexCache_Resident(0, 0x2D, 0x30, &tex);
-    if (slot == -1) {
-        return;
-    }
-    p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 0xB, 0x30);
-    if (p == NULL) {
+    if (TexCache_Resident(0, 0x2D, 0x30, &tex) == -1) {
         return;
     }
     VCALL(tc, 0x18, void (*)(VObject *))(tc);
-    p[0] = 0x1000000A;              /* DMA cnt 10 */
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x5000000A;   /* VIF DIRECT 10 */
-    p[2] = 4 | 0x8000 | (1ULL << 60);   /* GIF tag: 4 A+D, EOP */
-    p[3] = 0xE;
-    p[4] = (0x80ULL << 32) | 0x44;  /* ALPHA_1: (Cs - Cd) * As + Cd */
-    p[5] = 0x42;
-    p[6] = 0x60;                    /* TEX1_1: bilinear */
-    p[7] = 0x14;
-    p[8] = (0x80ULL << 32) | 0x8080; /* TEXA */
-    p[9] = 0x3B;
-    p[10] = 0x116;                  /* PRIM: sprite, textured, UV */
-    p[11] = 0;
-    p[12] = 0x8001 | (0x84ULL << 56);   /* reglist: TEX0 CLAMP RGBAQ UV XYZ2 UV XYZ2 NOP */
-    p[13] = GIF_REGS_TEX_SPRITE;
-    p[14] = VCALL(D_0044E9A0, 0x28, u64 (*)(VObject *, s32, s32, s32, s32, s32))(
-        D_0044E9A0, slot, tex[0], AT(tex, 4, u16), AT(tex, 6, u16), tex[1]);
-    p[15] = gs_clamp_region(0, AT(o, 0x11040, u8) * 32, 0xA0, 32);
-    p[16] = 0x80808080;
-    p[17] = gs_uv(0, AT(o, 0x11040, u8) * 32);
-    p[18] = gs_xyz2(0x700 + 0x88, 0x720 + 0xC8);
-    p[19] = gs_uv(0xA0, (AT(o, 0x11040, u8) + 1) * 32);
-    p[20] = gs_xyz2(0x700 + 0x178, 0x720 + 0xF8);
-    p[21] = 0;
+    gl2d_sprite(0x30, 0x88, 0xC8, 0x178, 0xF8, tex, 0, f * 32, 0xA0, (f + 1) * 32, 0x80808080, 0, 0);
 }
+#endif
