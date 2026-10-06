@@ -6672,3 +6672,133 @@ s32 func_0033FC10(void *self, void *a1, u8 *cmd) {
     }
     return 2;
 }
+
+extern const char *D_00437D30[];   /* room objects 4, 5 */
+
+/* room objects 4 / 5 spinning (+0x10) at a speed (+0x30) eased by script variable 4 / 5: byte 3 0
+ * sets them up (speed and base 4 degrees, top 20); else each frame (unless the progress' +0x54
+ * says no): state 0 slows by 5% of the base to 0, 1 speeds by 2% up to the base, 2 by 10% up to
+ * the top, 3 jumps to the base */
+s32 func_003434A0(void *self, void *a1, u8 *cmd) {
+    static const union { u32 u; f32 f; } k005 = {0x3D4CCCCD}, k002 = {0x3CA3D70A}, k01 = {0x3DCCCCCD},
+                                          kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
+    VObject *objs = D_00456DF8, *ev;
+    s32 k;
+
+    if (cmd[3] == 0) {
+        for (k = 4; k < 6; k++) {
+            u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00437D30[k - 4]);
+
+            if (o != NULL) {
+                AT(o, 0x30, u32) = 0x3D8EFA35;   /* 4 degrees */
+                AT(o, 0x34, u32) = 0x3D8EFA35;
+                AT(o, 0x38, u32) = 0x3EB2B8C2;   /* 20 degrees */
+            }
+        }
+        return 1;
+    }
+    if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
+        return 1;
+    }
+    ev = D_0044E4D0;
+    for (k = 4; k < 6; k++) {
+        u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00437D30[k - 4]);
+        s32 state = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, k == 4 ? 4 : 5);
+        f32 v;
+
+        if (o == NULL) {
+            continue;
+        }
+        switch (state) {
+        case 0:
+            v = AT(o, 0x30, f32) - k005.f * AT(o, 0x34, f32);
+            AT(o, 0x30, f32) = v;
+            if (v < 0.0f) {
+                AT(o, 0x30, f32) = 0.0f;
+            }
+            break;
+        case 1:
+            AT(o, 0x30, f32) = AT(o, 0x30, f32) + k002.f * AT(o, 0x34, f32);
+            if (!(AT(o, 0x30, f32) <= AT(o, 0x34, f32))) {
+                AT(o, 0x30, f32) = AT(o, 0x34, f32);
+            }
+            break;
+        case 2:
+            AT(o, 0x30, f32) = AT(o, 0x30, f32) + k01.f * AT(o, 0x34, f32);
+            if (!(AT(o, 0x30, f32) <= AT(o, 0x38, f32))) {
+                AT(o, 0x30, f32) = AT(o, 0x38, f32);
+            }
+            break;
+        case 3:
+            AT(o, 0x30, f32) = AT(o, 0x34, f32);
+            break;
+        }
+        v = AT(o, 0x10, f32) + AT(o, 0x30, f32);
+        AT(o, 0x10, f32) = v;
+        if (!(v <= kPi.f)) {
+            AT(o, 0x10, f32) = v - k2Pi.f;
+        }
+    }
+    return 1;
+}
+
+extern void *D_00479F30[];
+extern void func_002E3190(f32 (*m)[4], f32 angle);   /* turn about y */
+extern void func_00120F90(void *o, u32 tri, f32 *pos, f32 *rot, f32 *front);
+
+static void effect_79F30_init(void **obj) {
+    obj[0] = D_00479F30;
+    obj[0xC10 / 4] = D_00469D00;
+    ((s32 *)obj)[0xC14 / 4] = -1;
+    obj[0xC10 / 4] = D_0046FC30;
+}
+
+/* the placed thing 10 brought back (list +0x14 / +0x8, its +0xC, +0x28 on) and put on one of five
+ * spots round a circle (script variable 1, then on by 2 of 5): turned to the spot's angle (with a
+ * little random), 2.1 up and 1.5..2 out on triangle 0x3B; then effect D_00479F30 on it */
+s32 func_00342BC0(void) {
+    static const union { u32 u; f32 f; } kStep = {0x3FA0D97C}, kJit = {0x3F80ADFD}, kHalf = {0x3F00ADFD};
+    VObject *list = D_0044F260, *ev, *rnd;
+    u8 *t;
+    s32 n, k;
+    f32 a;
+    f32 one[4] __attribute__((aligned(16)));
+    f32 rot[4] __attribute__((aligned(16)));
+    f32 front[4] __attribute__((aligned(16)));
+    f32 off[4] __attribute__((aligned(16)));
+    f32 m[4][4] __attribute__((aligned(16)));
+
+    VCALL(list, 0x14, void (*)(VObject *, s32))(list, 10);
+    t = VCALL(list, 0x8, u8 *(*)(VObject *, s32))(list, 10);
+    if (t == NULL) {
+        return 1;
+    }
+    VCALL((VObject *)t, 0xC, void (*)(VObject *))((VObject *)t);
+    AT(t, 0x28, u8) = 1;
+    ev = D_0044E4D0;
+    n = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 1);
+    one[0] = 1.0f;
+    one[1] = 1.0f;
+    one[2] = 1.0f;
+    one[3] = 1.0f;
+    rnd = D_0044E550;
+    a = kJit.f * VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd) + kStep.f * (f32)n;
+    a = func_002E2D00(a - kHalf.f);
+    rot[0] = 0.0f;
+    rot[1] = 0.0f;
+    rot[2] = a;
+    func_002E3190(m, a);
+    off[0] = 0.0f;
+    off[1] = 0x1.0ccccc0000000p+1f /* 2.1 */;
+    off[2] = 1.5f + 0.5f * VCALL(rnd, 0x20, f32 (*)(VObject *))(rnd);
+    off[3] = 1.0f;
+    sceVu0ApplyMatrix(front, m, off);
+    func_00120F90(t, 0x3B, one, rot, front);
+    k = n + 2;
+    if (k >= 5) {
+        k -= 5;
+    }
+    VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 1, k);
+    func_002D6090(D_0044E578, Effect_New(D_0044E578, 0xE60, effect_79F30_init), t);
+    return 1;
+}
