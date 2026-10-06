@@ -6989,3 +6989,9 @@ src/game/items.c func_00260840 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --p
 src/game/item_classes.c func_002600C0 --pre=@0x44E4E0=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046A1E0..0x0046A1E0 --stub-ret=2 --stub-ret=1 --runs=20
 src/game/item_classes.c func_0035BC30 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x0B100000 --pre=a0+0x5:u8=0xFE..0xFF --pre=@0x0B100000:u8=0xFE..0xFF --runs=60
 src/game/item_classes.c func_00303F00 --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600084=0..0xFFFFFFFF --runs=60
+src/game/scene_game_members.c func_00303E60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..3 --pre=a0+0x108=0xFFFFFFFF..5 --pre=a0+0x10C:u8=0..2 --pre=a0+0x10D:u8=0..1 --pre=a0+0x10F:u8=0..3 --runs=150
+src/game/items.c func_002607A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --pre=a2=0..3 --pre=a0+0x12E0=0..0x0B100000 --pre=a0+0x12E4=0..0x0B100000 --pre=a0+0x13E0=0..0x0B100000 --pre=a0+0x15E0=0..0x0B100000 --pre=a0+0x15E4=0..0x0B100000 --pre=@0x0B100000=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=1 --runs=100
+src/game/items.c func_00260A60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --pre=a0+0x15E0=0..0x0B100000 --pre=a0+0x15E4=0..0x0B100000 --pre=@0x0B100000=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=1 --stub-ret=2 --runs=100
+src/game/items.c func_00260B00 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --pre=a2=0..3 --pre=a0+0x12E0=0..0x0B100000 --pre=a0+0x12E4=0..0x0B100000 --pre=a0+0x13E0=0..0x0B100000 --pre=@0x0B100000=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=1 --stub-ret=2 --runs=100
+src/game/items.c func_00260540 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x3F --stub-ret=1 --stub-ret-prob=0.9 --runs=60
+src/game/props.c func_0033BCB0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B200000..0x0B200000 --pre=a3=0..9 --pre=@0x44E4F0=0x0B300000..0x0B300000 --pre=@0x0B300000=0x0046AC50..0x0046AC50 --runs=20

@@ -416,3 +416,70 @@ void func_00260840(u8 *items, u8 l, u8 i) {
         AT(items, 0x15E0 + k * 4, VObject *) = *e;
     }
 }
+
+/* item `i` of list `l` unequipped: its kind's slot (+0x15E0) cleared if it holds it */
+void func_002607A0(u8 *items, u8 l, u8 i) {
+    VObject **e = &AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
+    s32 k = *e == NULL ? -1 : D_003EA918[VCALL(*e, 0x10, s32 (*)(VObject *))(*e)];
+
+    if (k >= 0 && AT(items, 0x15E0 + k * 4, VObject *) == *e) {
+        AT(items, 0x15E0 + k * 4, VObject *) = NULL;
+    }
+}
+
+extern void func_002608D0(u8 *items, VObject *it);   /* an item taken out of the lists */
+
+/* one of item `it` used: a counted one (+0x18 1) with 2 or more (+0x34) loses one (+0x30), else
+ * it goes (func_002608D0) */
+static inline void item_use_one(u8 *items, VObject *it) {
+    if ((u8)VCALL(it, 0x18, s32 (*)(VObject *))(it) == 1 && VCALL(it, 0x34, u32 (*)(VObject *))(it) >= 2) {
+        VCALL(it, 0x30, void (*)(VObject *))(it);
+    } else {
+        func_002608D0(items, it);
+    }
+}
+
+/* the item in equipment slot `slot` used once */
+void func_00260A60(u8 *items, u8 slot) {
+    VObject *it = AT(items, 0x15E0 + slot * 4, VObject *);
+
+    if (it != NULL) {
+        item_use_one(items, it);
+    }
+}
+
+/* (out of line, `l` / `i` kept in their registers as the original leaves them for difftest) */
+static __attribute__((noinline)) void item_use_one_at(u8 *items, u32 l, u32 i, VObject *it) {
+    (void)l;
+    (void)i;
+    item_use_one(items, it);
+}
+
+/* item `i` of list `l` used once */
+void func_00260B00(u8 *items, u8 l, u8 i) {
+    VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
+
+    if (it != NULL) {
+        item_use_one_at(items, l, i, it);
+    }
+}
+
+/* how many items 0x3F the lists hold */
+s32 func_00260540(u8 *items) {
+    u32 l, i;
+    s32 n = 0;
+
+    for (l = 0; l < 3; l++) {
+        for (i = 0; i < 64; i++) {
+            VObject *it = AT(items, 0x12E0 + l * 0x100 + i * 4, VObject *);
+
+            if (it == NULL) {
+                break;
+            }
+            if (VCALL(it, 0xC, s32 (*)(VObject *))(it) == 0x3F) {
+                n++;
+            }
+        }
+    }
+    return n;
+}

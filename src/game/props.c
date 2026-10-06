@@ -2220,3 +2220,14 @@ s32 func_003780F0(u8 *o) {
 s32 func_00378650(u8 *o) {
     return spin_step(o, 0x3AE4C389, 0x3A64C389);
 }
+
+/* a model draw `d` filled (+0x10 position, w 1; +0x20 angles; +0x30 / +0x34) and queued in
+ * renderer layer `layer` */
+void func_0033BCB0(u8 *d, const f32 *pos, const f32 *rot, s32 a, s32 b, s32 layer) {
+    sceVu0CopyVector((f32 *)(d + 0x10), pos);
+    AT(d, 0x1C, u32) = 0x3F800000;
+    sceVu0CopyVector((f32 *)(d + 0x20), rot);
+    AT(d, 0x30, s32) = a;
+    AT(d, 0x34, s32) = b;
+    VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, d, layer, 0);
+}

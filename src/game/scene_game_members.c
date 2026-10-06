@@ -1649,6 +1649,26 @@ void func_00305520(u8 *m, s32 room) {
     }
 }
 
+/* the map turned to page `page` if its room (+0x108) is shown there too */
+void func_00303E60(u8 *m, s8 page) {
+    u8 *e;
+
+    if (AT(m, 0x108, s32) == -1 || AT(m, 0x10D, s8) == -1 || AT(m, 0x10F, s8) == page) {
+        return;
+    }
+    e = D_00420B20[AT(m, 0x10C, s8)];
+    if (e == NULL) {
+        return;
+    }
+    for (; AT(e, 0, s32) != -1; e += 0x18) {
+        if (AT(e, 0, s32) == AT(m, 0x108, s32) && AT(e, 4, s8) == page) {
+            AT(m, 0x10E, s8) = page;
+            AT(m, 0x10F, s8) = page;
+            return;
+        }
+    }
+}
+
 /* ---- the saved game state (0xFC0 bytes, kept at SceneGame +0x48 and in the save): its
  * assignment, as the compiler made it - field by field, the padding left alone ---- */
 
