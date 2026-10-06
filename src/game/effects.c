@@ -3090,6 +3090,223 @@ s32 func_0037BCA0(u8 *e) {
     return 1;
 }
 
+/* ---- D_0047A750 (0x6F8 bytes): a ring of light spreading over the ground from a point (+0x650),
+ * its radius (+0x660) growing at a slowing speed (+0x664) and its alpha (+0x668) fading, its
+ * width (+0x66C) following the alpha; with 16 sparks (quad records +0x10 + 0x300 x the current
+ * one +0x6F0, the quad drawer at +0x610) spiralling (+0x6B0) up or down (+0x670); stopped (+0x6F4)
+ * once nothing is left ---- */
+
+#define RING_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x300) + (i))
+
+/* +0xC set up: the drawer's settings (4 frames of 32 x 32 from (0x80, 0) of texture 0x10, layer
+ * 0x19, blended 0x40) */
+void func_0037E170(u8 *e) {
+    AT(e, 0x6F0, s32) = 0;
+    AT(e, 0x6F4, u8) = 0;
+    AT(e, 0x618, s64) = -1;
+    AT(e, 0x624, s32) = 0;
+    AT(e, 0x628, s32) = 0;
+    AT(e, 0x62C, s32) = 0;
+    AT(e, 0x630, s32) = 0x19;
+    AT(e, 0x634, s16) = 0x10;
+    AT(e, 0x636, s16) = 0x80;
+    AT(e, 0x638, s16) = 0;
+    AT(e, 0x63A, s16) = 0x20;
+    AT(e, 0x63C, s16) = 0x20;
+    AT(e, 0x63E, s16) = 0x200;
+    AT(e, 0x640, s16) = 0x100;
+    AT(e, 0x642, s8) = 0x40;
+    AT(e, 0x643, s8) = 4;
+    AT(e, 0x644, s8) = 1;
+    AT(e, 0x645, s8) = 0x10;
+    AT(e, 0x646, s8) = -1;
+}
+
+/* +0x18 start: arg { position, falling (+0x10) } (none: stopped). The ring at the point, radius
+ * 3, alpha 0x80, speed 4 (falling: -1, else raised 5 first); the sparks around the point, 0.2..0.6
+ * big, turned at random, spinning, 10..20 up and moving 0.1..0.35 a frame (down when falling) */
+void func_0037D130(u8 *e, f32 *arg) {
+    static const union { u32 u; f32 f; } kFifth = {0x3E4CCCCD}, kTwoFifths = {0x3ECCCCCD}, kTenth = {0x3DCCCCCD},
+        kQuarter = {0x3E800000};
+    VObject *rnd;
+    s32 i;
+
+    if (arg == NULL) {
+        AT(e, 0x6F4, u8) = 1;
+        return;
+    }
+    sceVu0CopyVector((f32 *)(e + 0x650), arg);
+    AT(e, 0x660, f32) = 3.0f;
+    AT(e, 0x668, s32) = 0x80;
+    AT(e, 0x66C, s32) = 0;
+    if (AT(arg, 0x10, s32) != 0) {
+        AT(e, 0x664, f32) = -1.0f;
+    } else {
+        AT(e, 0x654, f32) = AT(e, 0x654, f32) + 5.0f;
+        AT(e, 0x664, f32) = 4.0f;
+    }
+    rnd = D_0044E550;
+    for (i = 0; i < 16; i++) {
+        QuadRec *r = RING_REC(e, AT(e, 0x6F0, s32), i);
+
+        r->rgba[0] = 0x80;
+        r->rgba[1] = 0x80;
+        r->rgba[2] = 0x80;
+        r->rgba[3] = burst_int(rnd) & 0x7F;
+        sceVu0CopyVector(r->pos, arg);
+        r->pos[0] = r->pos[0] + 2.0f * (burst_rnd(rnd) - 0.5f);
+        r->pos[2] = r->pos[2] + 2.0f * (burst_rnd(rnd) - 0.5f);
+        r->w = 0.0f + kFifth.f + kTwoFifths.f * burst_rnd(rnd);
+        r->h = r->w;
+        r->turn = 0x1.921fb6p+1f * (360.0f * (burst_rnd(rnd) - 0.5f)) / 180.0f;
+        r->frame = burst_int(rnd) & 3;
+        AT(e, 0x6B0 + i * 4, f32) = 0x1.921fb6p+1f * (360.0f * (burst_rnd(rnd) - 0.5f)) / 180.0f;
+        r->pos[1] = r->pos[1] + (0.0f + 20.0f - 10.0f * burst_rnd(rnd));
+        if (AT(arg, 0x10, s32) != 0) {
+            AT(e, 0x670 + i * 4, f32) = -(0.0f + kTenth.f + kQuarter.f * burst_rnd(rnd));
+        } else {
+            AT(e, 0x670 + i * 4, f32) = 0.0f + kTenth.f + kQuarter.f * burst_rnd(rnd);
+        }
+    }
+}
+
+/* +0x10 update (0 once stopped): the ring spreads, slowing (by 2 to 0.2, then by 0.01 to 0.1) and
+ * fading by 7; its width 7 / 4.5 / 3 x its alpha's share; each spark still seen carried over,
+ * resized and turned at random, spiralling and moving up or down, fading by 1..4 */
+s32 func_0037DD20(u8 *e) {
+    static const union { u32 u; f32 f; } kFifth = {0x3E4CCCCD}, kTwoFifths = {0x3ECCCCCD}, kTenth = {0x3DCCCCCD},
+        kHundredth = {0x3C23D70A}, kTwentieth = {0x3D4CCCCD}, kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
+    VObject *rnd;
+    s32 i, k;
+
+    if (AT(e, 0x6F4, u8) == 1) {
+        return 0;
+    }
+    AT(e, 0x6F4, u8) = 1;
+    AT(e, 0x6F0, s32) ^= 1;
+    if (AT(e, 0x664, f32) <= 0.0f) {
+        AT(e, 0x668, s32) = 0;
+    } else {
+        s32 a = AT(e, 0x668, s32);
+        f32 sp;
+
+        if (a == 0x80) {
+            AT(e, 0x66C, f32) = 7.0f * ((f32)a / 128.0f);
+        } else if (a >= 0x79) {
+            AT(e, 0x66C, f32) = 4.5f * ((f32)a / 128.0f);
+        } else {
+            AT(e, 0x66C, f32) = 3.0f * ((f32)a / 128.0f);
+        }
+        AT(e, 0x660, f32) = AT(e, 0x660, f32) + AT(e, 0x664, f32);
+        if (AT(e, 0x664, f32) <= kFifth.f) {
+            sp = AT(e, 0x664, f32) - kHundredth.f;
+            AT(e, 0x664, f32) = sp;
+            if (sp < kTenth.f) {
+                AT(e, 0x664, f32) = kTenth.f;
+            }
+        } else {
+            sp = AT(e, 0x664, f32) - 2.0f;
+            AT(e, 0x664, f32) = sp;
+            if (sp < kFifth.f) {
+                AT(e, 0x664, f32) = kFifth.f;
+            }
+        }
+        AT(e, 0x668, s32) -= 7;
+    }
+    if (AT(e, 0x668, s32) < 0) {
+        AT(e, 0x668, s32) = 0;
+    }
+    rnd = D_0044E550;
+    for (i = 0; i < 16; i++) {
+        u32 *src = (u32 *)RING_REC(e, AT(e, 0x6F0, s32) ^ 1, i);
+        u32 *dst = (u32 *)RING_REC(e, AT(e, 0x6F0, s32), i);
+        QuadRec *r;
+        f32 *spin = &AT(e, 0x6B0 + i * 4, f32);
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        r = RING_REC(e, AT(e, 0x6F0, s32), i);
+        if (r->rgba[3] <= 0) {
+            continue;
+        }
+        AT(e, 0x6F4, u8) = 0;
+        r->w = 0.0f + kFifth.f + kTwoFifths.f * burst_rnd(rnd);
+        r->h = r->w;
+        r->turn = kPi.f * (360.0f * (burst_rnd(rnd) - 0.5f)) / 180.0f;
+        *spin = *spin + kPi.f * (90.0f * burst_rnd(rnd)) / 180.0f;
+        if (!(*spin <= kPi.f)) {
+            *spin = *spin - kTwoPi.f;
+        }
+        r->pos[0] = r->pos[0] + kTwentieth.f * func_0031C248(*spin);
+        r->pos[1] = r->pos[1] - AT(e, 0x670 + i * 4, f32);
+        r->pos[2] = r->pos[2] + kTwentieth.f * func_0031C058(*spin);
+        r->rgba[3] -= (burst_int(rnd) & 3) + 1;
+        if (r->rgba[3] < 0) {
+            r->rgba[3] = 0;
+        }
+        r->frame = burst_int(rnd) & 3;
+    }
+    return 1;
+}
+
+#ifdef HG_NATIVE
+#include "texcache.h"
+
+/* +0x14 draw (not while the effects are paused), with OpenGL: the ring - a strip of 16 sides
+ * round the point between radius - width and radius, its inner edge at the ring's alpha and the
+ * outer one clear, showing the 16 x 16 texels at (200, 70) of texture 1 (group 0x10), added
+ * without depth writes - then the sparks */
+void func_0037D4E0(u8 *e) {
+    extern void glr_strip(const f32 *mvp, s32 n, const f32 *xyzw, const f32 *st, const u8 *rgba, const void *tex,
+                          u64 tex0, u32 prim);
+    extern u32 func_002D6010(u8 *mgr);   /* the effects are paused */
+
+    if (func_002D6010(D_0044E578) != 0) {
+        return;
+    }
+    if (AT(e, 0x668, s32) != 0) {
+        f32 clip[4][4] __attribute__((aligned(16)));
+        f32 xyzw[34][4] __attribute__((aligned(16)));
+        f32 st[34][2];
+        u8 rgba[34][4];
+        u8 *tex = NULL;
+        u64 tex0 = 0;
+        s32 i, slot = TexCache_Resident(1, 0x10, 0x19, &tex);
+        f32 outer = AT(e, 0x660, f32), inner = outer - AT(e, 0x66C, f32);
+        u32 lit = ((u32)AT(e, 0x668, s32) << 24) | 0x808080;
+        f32 tw = 1.0f, th = 1.0f;
+
+        if (slot != -1) {
+            tex0 = VCALL(D_0044E9A0, 0x28, u64 (*)(VObject *, u32, u32, u32, u32, u32))(D_0044E9A0, slot, tex[0],
+                                                                                      AT(tex, 4, u16), AT(tex, 6, u16),
+                                                                                      tex[1]);
+            tw = AT(tex, 4, u16);
+            th = AT(tex, 6, u16);
+        } else {
+            tex = NULL;
+        }
+        for (i = 0; i < 34; i++) {
+            s32 k = i / 2 % 16, out = i & 1;
+            f32 a = 0x1.921fb6p+1f * (22.5f * (f32)k) / 180.0f, r = out ? outer : inner;
+
+            xyzw[i][0] = AT(e, 0x650, f32) + r * func_0031C248(a);
+            xyzw[i][1] = AT(e, 0x654, f32);
+            xyzw[i][2] = AT(e, 0x658, f32) + r * func_0031C058(a);
+            AT(&xyzw[i][3], 0, u32) = i < 2 ? 0x8000 : 0;
+            st[i][0] = (k & 1 ? 216.5f : 200.5f) / tw;
+            st[i][1] = (out ? 86.5f : 70.5f) / th;
+            AT(rgba[i], 0, u32) = out ? 0 : lit;
+        }
+        VCALL(D_0044E4B8, 0x48, void (*)(VObject *, f32 (*)[4]))(D_0044E4B8, clip);
+        glr_strip(&clip[0][0], 34, &xyzw[0][0], &st[0][0], &rgba[0][0], tex, tex0,
+                  0xC | (tex != NULL ? 0x10 : 0) | 0x40 | 0x10000 | 0x20000);
+    }
+    AT(e, 0x620, QuadRec *) = RING_REC(e, AT(e, 0x6F0, s32), 0);
+    func_002E56C0(e + 0x610);
+}
+#endif
+
 /* ---- D_00470E20 (0x1C58 bytes): 64 smoke puffs rising from around (15.5, 11, 22.5), in two
  * buffers of quad records (+0x10 + 0xC00 x the current one +0x1C50), velocities at +0x1850 (16
  * each), the quad drawer at +0x1810; a puff fades from height 20 (every other frame) and is
