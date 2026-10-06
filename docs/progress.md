@@ -34,7 +34,7 @@ Screenshots: `docs/img/native_*.png`.
   entries' CLUT 1 background colour); the Dolby logo sits left of centre.
 - Untranscribed but known: the base-class destructor of the block pool (`D_004699E0` +8 points
   at 0x00120EF0, inside `BlockPool_Init`'s label: needs a symbol before it can be called natively);
-  the movie states `func_002B6710`, `func_002B68B0`, `func_002B69B0`.
+  the movie states `Movie_StatePausedFirst`, `Movie_StateWaitFirst`, `Movie_StateOpening`.
 - New this round (all difftested): the message / dialog system (`task.c`), the boot memory card
   check (`bootcard.c`), the memory card manager (`memcard.c`), movies (`movie.c`), music
   (`bgm.c`), the camera's small methods (`camera.c`), the title scene (`scene_title.c`), the sub

@@ -1877,7 +1877,7 @@ void func_00464A70(void) {
     Camera_ctor((VObject *)(g + 0x14D9B00));
     SmallPool_ctor(g + 0x14D9DD0);
     BigPool_ctor(g + 0x14DC530);
-    func_001F4600(gGame.unk14E8C90);
+    Slots_ctor(gGame.unk14E8C90);
     Game_SetState(&gGame, &D_003D8920);
     func_00100AB0(&gGame, (void (*)(void *, s32))Game_dtor, D_004879E8);
 }

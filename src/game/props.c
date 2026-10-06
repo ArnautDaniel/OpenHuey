@@ -60,7 +60,7 @@ s32 Room4EEffect_Update(f32 *a);
  * +0x10, the index at `idx`), and drawn */
 static inline __attribute__((always_inline)) void quad_step(u8 *o, u32 drawer, u32 idx, u32 size) {
     AT(o, drawer + 0x10, u8 *) = o + AT(o, idx, s32) * size + 0x10;
-    func_002E56C0(o + drawer);
+    Drawer_Submit(o + drawer);
 }
 
 void DustShaft_Draw(u8 *o);
@@ -796,7 +796,7 @@ void Room2AWisps_Draw(u8 *o) {
         c[3][0] = -0.5f; c[3][1] = 0.0f; c[3][2] = 0.5f;  c[3][3] = 1.0f;
         sceVu0ApplyMatrix(c[3], m, c[3]);
         AT(o, 0x620, u8 *) = o + 0x10 + AT(o, 0x8F4, s32) * 0x300 + i * 0x30;
-        func_002E56C0(o + 0x610);
+        Drawer_Submit(o + 0x610);
     }
 }
 
@@ -929,7 +929,7 @@ void FallingDrops_Drop(u8 *o, s32 i) {
 /* 0x003534F0 */
 void FallingDrops_Draw(u8 *o) {
     AT(o, 0x620, u8 *) = DROP(o, 0);
-    func_002E56C0(o + 0x610);
+    Drawer_Submit(o + 0x610);
 }
 
 /* a splash's parameters (D_00479AE0: pos, colour, size) and a spray's (D_00479AA0) */
@@ -1182,9 +1182,9 @@ void Room66Effect_Puff(u8 *o, s32 i, s32 again) {
 /* 0x00345A00 */
 void Room66Effect_Draw(u8 *o) {
     AT(o, 0x1850, u8 *) = SMOKE_PUFF(o, 0);
-    func_002E56C0(o + 0x1840);
+    Drawer_Submit(o + 0x1840);
     AT(o, 0x1888, u8 *) = o + 0x1810;
-    func_002E56C0(o + 0x1878);
+    Drawer_Submit(o + 0x1878);
 }
 
 /* +0x10 update (0 once it has died down and no puff shows): swap buffers; each puff grows,
@@ -1611,12 +1611,12 @@ s32 BigFire_Update(u8 *o) {
 void BigFire_Draw(u8 *o) {
     if (AT(o, 0x6CEC, s32) == 0) {
         AT(o, 0x6050, u8 *) = FIRE_REC(o, 0x10, 0);
-        func_002E56C0(o + 0x6040);
+        Drawer_Submit(o + 0x6040);
         AT(o, 0x60C0, u8 *) = o + 0x6010;
-        func_002E56C0(o + 0x60B0);
+        Drawer_Submit(o + 0x60B0);
     }
     AT(o, 0x6088, u8 *) = FIRE_REC(o, 0x3010, 0);
-    func_002E56C0(o + 0x6078);
+    Drawer_Submit(o + 0x6078);
 }
 
 /* +0x18 start: params[0] is the out flag; lit, the three drawers (texture group 0x10: smoke
@@ -1909,7 +1909,7 @@ void Butterflies_DrawOne(u8 *o, f32 (*m)[4], u32 rgba, f32 flap, f32 size) {
     q.texH = 0x100;
     q.flags = 2;
     q.texGroup = 0x10;
-    func_002E56C0((u8 *)&q);
+    Drawer_Submit((u8 *)&q);
     c[1][2] = 1.0f;
     c[1][3] = 1.0f;
     c[1][1] = y;
@@ -1922,7 +1922,7 @@ void Butterflies_DrawOne(u8 *o, f32 (*m)[4], u32 rgba, f32 flap, f32 size) {
     sceVu0ApplyMatrix(c[3], m, c[3]);
     sceVu0ScaleVector(c[1], c[1], size);
     sceVu0ScaleVector(c[3], c[3], size);
-    func_002E56C0((u8 *)&q);
+    Drawer_Submit((u8 *)&q);
     q.vtbl = D_00469D00;
 }
 
@@ -2089,9 +2089,9 @@ void SpiralSmoke_Puff(u8 *o, s32 i, s32 again) {
 /* 0x0033C7D0 */
 void SpiralSmoke_Draw(u8 *o) {
     AT(o, 0x3050, u8 *) = SMOKE2_PUFF(o, 0);
-    func_002E56C0(o + 0x3040);
+    Drawer_Submit(o + 0x3040);
     AT(o, 0x3088, u8 *) = o + 0x3010;
-    func_002E56C0(o + 0x3078);
+    Drawer_Submit(o + 0x3078);
 }
 
 /* +0x10 update: swap buffers; each puff grows, turns, spirals out (by up to 10 degrees a frame,
@@ -2350,7 +2350,7 @@ void Drips_Draw(u8 *o) {
             c[3][3] = 1.0f;
             sceVu0ApplyMatrix(c[3], m, c[3]);
             r.rgba[3] = DRIP_LIFE(o, k, j);
-            func_002E56C0((u8 *)&q);
+            Drawer_Submit((u8 *)&q);
         }
     }
     q.vtbl = D_00469D00;
@@ -2869,10 +2869,10 @@ void Embers_Draw(u8 *o) {
     }
     if (AT(o, 0x10C5, u8) == 1) {
         AT(o, 0xF20, u8 *) = o + AT(o, 0x10C0, s32) * 0x480 + 0x10;
-        func_002E56C0(o + 0xF10);
+        Drawer_Submit(o + 0xF10);
     }
     AT(o, 0xF58, u8 *) = o + AT(o, 0x10C0, s32) * 0x300 + 0x910;
-    func_002E56C0(o + 0xF48);
+    Drawer_Submit(o + 0xF48);
 }
 
 /* one sway step: the angle on by up to 10 degrees (wrapped), returned */
@@ -3031,9 +3031,9 @@ void BoneSmoke_SetParams(u8 *o, u8 *c) {
 /* +0x14 draw (not while the effects are paused) */
 /* 0x0035B6A0 */
 void BoneSmoke_Draw(u8 *o) {
-    if (func_002D6010(gEffects) == 0) {
+    if (SceneGame_GetByte19034(gEffects) == 0) {
         AT(o, 0x620, QuadRec *) = WISPS_REC(o, AT(o, 0x6CC, s32), 0);
-        func_002E56C0(o + 0x610);
+        Drawer_Submit(o + 0x610);
     }
 }
 

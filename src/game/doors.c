@@ -29,7 +29,7 @@ extern const f32 D_003E51A0[][8];   /* door kinds' areas: 4 (x, z) corners */
 #define PI_F 0x1.921fb6p+1f
 #define TWO_PI_F 0x1.921fb6p+2f
 
-void *func_0025E950(u8 *o, s32 flags);
+void *PlacedMesh_dtor(u8 *o, s32 flags);
 
 /* door i is defined (section 7 has its entry) */
 static s32 door_present(VObject *d, u32 i) {
@@ -717,7 +717,8 @@ void *RoutePlannerBase_dtor(void *o, s32 flags) {
 }
 
 /* (D_0046C668) +0x50 = v, 6 if below 0 */
-void func_00223DE0(u8 *o, f32 v) {
+/* 0x00223DE0 */
+void CamDirector_Set50(u8 *o, f32 v) {
     if (v < 0.0f) {
         AT(o, 0x50, f32) = 6.0f;
         return;
@@ -726,7 +727,8 @@ void func_00223DE0(u8 *o, f32 v) {
 }
 
 /* destructor (vtable D_0046C780) */
-void *func_0025E950(u8 *o, s32 flags) {
+/* 0x0025E950 */
+void *PlacedMesh_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046C780;
         AT(o, 0x8, s32) = 0;

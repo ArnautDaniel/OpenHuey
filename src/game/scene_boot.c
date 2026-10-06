@@ -420,7 +420,7 @@ u32 SceneBoot_StepCapcom(SceneBoot *boot) {
     if (mem != NULL) {
         movie = __nw__FUiPv(0x600200, mem);
         if (movie != NULL) {
-            func_002B70D0((Movie *)movie);
+            Movie_ctor((Movie *)movie);
             movie->vtbl = D_0046ECC0;
         }
         SCENE_TABLE_SCENE(1) = movie;
@@ -438,7 +438,7 @@ u32 SceneBoot_StepCapcom(SceneBoot *boot) {
         ok = 0;
     }
     if (ok) {
-        func_002B6D10(gMovie, sCapcomSfd, 1, 0);
+        Movie_SetFile(gMovie, sCapcomSfd, 1, 0);
     }
     boot->stepTimer++;
     return 1;

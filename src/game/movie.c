@@ -36,7 +36,7 @@ _Static_assert(__builtin_offsetof(MovieLib, create) == 0x28, "MovieLib.create");
 extern void *D_0046C740[];
 extern void *D_0046AED0[];
 
-void *func_001BF660(u8 *o, s32 flags);
+void *MovieLibBase_dtor(u8 *o, s32 flags);
 
 extern s32 D_003E5260, D_003E5264;
 extern void *D_01976F98;
@@ -46,14 +46,14 @@ void func_00226790(s32 v);
 s32 func_002267A0(void);
 void func_002267B0(s32 v);
 s32 func_002267C0(void);
-void func_00226820(s32 v);
-s32 func_00226848(void);
+void Sofdec_SetValue(s32 v);
+s32 Sofdec_GetValue(void);
 void func_002267D0(void);
 s64 func_0025C2F8(s64 ticks);
 f32 func_0025C320(s32 ticks);
 f32 func_0025C360(s32 ticks);
 f32 func_0025C3A0(s32 ticks);
-void func_0025C3D0(s64 rate);
+void Ticks_SetRate(s64 rate);
 void func_0025C3E0(u8 *s);
 void func_0025C400(u8 *s, s64 v);
 
@@ -104,7 +104,8 @@ void TvScreenB_SetParams(u8 *p, const u8 *src);
 void TvScreenB_Start(u8 *p);
 
 /* destructor (vtable D_0046AED0) */
-void *func_001BF660(u8 *o, s32 flags) {
+/* 0x001BF660 */
+void *MovieLibBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AED0;
         AT(o, 0x4, u8) = 0;
@@ -181,7 +182,7 @@ s32 func_002267C0(void) {
 void func_002267D0(void) {
     D_01976F98 = (void *)D_004573C0;
     AT(func_00226810(), 0x0, s32) = 0;
-    func_00226820(0x80);
+    Sofdec_SetValue(0x80);
 }
 
 void func_00226808(void) {
@@ -192,11 +193,13 @@ void *func_00226810(void) {
 }
 
 /* the value behind func_00226810 set / read */
-void func_00226820(s32 v) {
+/* 0x00226820 */
+void Sofdec_SetValue(s32 v) {
     AT(func_00226810(), 0x0, s32) = v;
 }
 
-s32 func_00226848(void) {
+/* 0x00226848 */
+s32 Sofdec_GetValue(void) {
     return AT(func_00226810(), 0x0, s32);
 }
 
@@ -316,7 +319,8 @@ f32 func_0025C3A0(s32 ticks) {
     return (f32)ticks / (f32)(s32)D_003EA900;
 }
 
-void func_0025C3D0(s64 rate) {
+/* 0x0025C3D0 */
+void Ticks_SetRate(s64 rate) {
     D_003EA900 = rate;
 }
 
@@ -400,7 +404,7 @@ extern void *D_0046ECC0[];       /* SceneMovie (the boot logo) */
 extern u8 *D_0045D1F0;
 
 void Movie_Finish(Movie *m);
-void func_002B69B0(Movie *m);
+void Movie_StateOpening(Movie *m);
 
 static const PTMF sMovieEntry = {0, 0x10, {(void *)0}};   /* virtual +0x10 */
 
@@ -558,7 +562,7 @@ static inline __attribute__((always_inline)) void tv_draw(u8 *o, u32 x0, u32 x1,
         q.cellY = 0;
         q.texId = 0;
         q.texGroup = 0;
-        func_002E56C0((u8 *)&q);
+        Drawer_Submit((u8 *)&q);
         q.vtbl = D_00469D00;
     }
     *D_0045D1F0 = 1;
@@ -624,7 +628,8 @@ s32 Movie_Shot(Movie *m) {
 }
 
 /* apply the volume */
-void func_002B6340(Movie *m) {
+/* 0x002B6340 */
+void Movie_ApplyVolume(Movie *m) {
     s32 db = movie_level(m);
 
     if (m->ply != NULL) {
@@ -633,7 +638,8 @@ void func_002B6340(Movie *m) {
 }
 
 /* the player's status: 2 playing, 1 other, -1 ended or none */
-s32 func_002B6410(Movie *m) {
+/* 0x002B6410 */
+s32 Movie_Status(Movie *m) {
     if (m->ply == NULL) {
         return -1;
     }
@@ -661,7 +667,8 @@ void Movie_TakeFrame(Movie *m) {
 }
 
 /* the frame shown, -1 none */
-s32 func_002B64F0(Movie *m) {
+/* 0x002B64F0 */
+s32 Movie_FrameShown(Movie *m) {
     if (m->hasFrame) {
         return m->shownFrame;
     }
@@ -696,8 +703,9 @@ void Movie_Frame(Movie *m) {
     }
 }
 
-/* restart the file; 2 / 0 / -1 as func_002B6410 */
-s32 func_002B6640(Movie *m) {
+/* restart the file; 2 / 0 / -1 as Movie_Status */
+/* 0x002B6640 */
+s32 Movie_Restart(Movie *m) {
     if (m->ply == NULL || m->work == NULL) {
         VCALL(m, 0x14, void (*)(Movie *))(m);
         return -1;
@@ -745,13 +753,14 @@ static inline void movie_sound_on(Movie *m) {
 }
 
 extern const PTMF D_004126C8;   /* virtual +0x1C: playing */
-extern const PTMF D_004126D8;   /* func_002B68B0 */
-extern const PTMF D_004126E8;   /* func_002B6710 */
+extern const PTMF D_004126D8;   /* Movie_StateWaitFirst */
+extern const PTMF D_004126E8;   /* Movie_StatePausedFirst */
 extern const PTMF D_004126F8;   /* virtual +0x1C */
 
 /* state: paused on the first frame until the event says go (mode 1, event command 0xCF) - then
  * it is shown, the movie resumed with its sound, and played */
-void func_002B6710(Movie *m) {
+/* 0x002B6710 */
+void Movie_StatePausedFirst(Movie *m) {
     if (m->mode != 1) {
         return;
     }
@@ -766,7 +775,8 @@ void func_002B6710(Movie *m) {
 }
 
 /* state: wait for the first frame, then pause on it */
-void func_002B68B0(Movie *m) {
+/* 0x002B68B0 */
+void Movie_StateWaitFirst(Movie *m) {
     m->stat = VCALL(m->ply, 0x20, s32 (*)(VObject *))(m->ply);
     if (m->stat == 4) {
         movie_retry(m);
@@ -782,7 +792,8 @@ void func_002B68B0(Movie *m) {
 }
 
 /* state: the file opening; then played at once (mode 1) or held on its first frame */
-void func_002B69B0(Movie *m) {
+/* 0x002B69B0 */
+void Movie_StateOpening(Movie *m) {
     m->stat = VCALL(m->ply, 0x20, s32 (*)(VObject *))(m->ply);
     if (m->stat == 4) {
         movie_retry(m);
@@ -801,7 +812,8 @@ void func_002B69B0(Movie *m) {
 }
 
 /* state: start the file */
-void func_002B6BB0(Movie *m) {
+/* 0x002B6BB0 */
+void Movie_StateStart(Movie *m) {
     if (m->name[0] == 0) {
         return;
     }
@@ -820,11 +832,12 @@ void func_002B6BB0(Movie *m) {
             VCALL(m->ply, 0x2C, void (*)(VObject *, s32))(m->ply, db);
         }
     }
-    Movie_SetStateFn(m, func_002B69B0);
+    Movie_SetStateFn(m, Movie_StateOpening);
 }
 
 /* set the file to play (folder\name, or just a name in the current folder) */
-void func_002B6D10(Movie *m, const char *path, s32 mode, s32 keep) {
+/* 0x002B6D10 */
+void Movie_SetFile(Movie *m, const char *path, s32 mode, s32 keep) {
     char dir[256];
     s32 i;
 
@@ -890,7 +903,7 @@ void Movie_Entry(Movie *m) {
         VCALL(m, 0x14, void (*)(Movie *))(m);
         return;
     }
-    Movie_SetStateFn(m, func_002B6BB0);
+    Movie_SetStateFn(m, Movie_StateStart);
 }
 
 /* +0x8 */
@@ -929,7 +942,8 @@ Movie *Movie_dtor(Movie *m, s32 flags) {
 }
 
 /* constructor */
-Movie *func_002B70D0(Movie *m) {
+/* 0x002B70D0 */
+Movie *Movie_ctor(Movie *m) {
     m->base.vtbl = Scene_vtable;
     Movie_SetState(m, &sMovieEntry);
     gMovie = m;
@@ -985,14 +999,14 @@ void MovieScene_Entry(Movie *m) {
         VCALL(m, 0x14, void (*)(Movie *))(m);
         return;
     }
-    Movie_SetStateFn(m, func_002B6BB0);
+    Movie_SetStateFn(m, Movie_StateStart);
 }
 
 /* ---- movie class 0 (D_00470E80): a movie shown on something in the game - decoded at 256 x
  * 224 into two frames in progress memory (+0xCA6C0, 0x38000 each), drawn by the game itself ---- */
 
 extern void *D_00470E80[];
-extern const PTMF D_0041CA80;   /* func_002B6BB0 */
+extern const PTMF D_0041CA80;   /* Movie_StateStart */
 
 /* +0x8 (the frames aren't its own) */
 /* 0x002FEC50 */
@@ -1056,7 +1070,7 @@ void MovieOwnBuf_Entry(Movie *m) {
  * written next, plain - and returns `loop`. ---- */
 
 extern void *D_0046EAB0[], *D_0046EAE0[], *D_0046EB10[], *D_0046EC30[], *D_0046EC90[], *D_00474F80[];
-extern const PTMF D_00412730, D_00412740, D_00412750, D_004128D0, D_004128E0, D_0042E428;   /* func_002B6BB0 */
+extern const PTMF D_00412730, D_00412740, D_00412750, D_004128D0, D_004128E0, D_0042E428;   /* Movie_StateStart */
 #ifdef HG_NATIVE
 #define MOVIE_UNCACHED(p) ((void *)(p))
 #else

@@ -908,7 +908,7 @@ void EventCmd_Run(VObject *ev) {
     }
     case 0x5D:   /* finish the fade now (if one runs) */
         if (AT(ev, 0x11F2, u8) != 0) {
-            func_002CF3A0((u8 *)ev + 0x20, AT(ev, 0x11F1, u8));
+            ScreenFade_Step((u8 *)ev + 0x20, AT(ev, 0x11F1, u8));
         }
         AT(ev, 0x11F3, u8) = 1;
         break;
@@ -1564,7 +1564,7 @@ void EventCmd_Run(VObject *ev) {
         }
         break;
     }
-    case 0xCF: {   /* the movie's +0x1C8 = be32 pc[1..4] / 1000 (0..1); its func_002B6340, +0x1BC set */
+    case 0xCF: {   /* the movie's +0x1C8 = be32 pc[1..4] / 1000 (0..1); its Movie_ApplyVolume, +0x1BC set */
         u8 *mv = gMovie;
 
         if (mv != NULL) {
@@ -1578,7 +1578,7 @@ void EventCmd_Run(VObject *ev) {
                 AT(mv, 0x1C8, f32) = 1.0f;
             }
             mv = gMovie;
-            func_002B6340((Movie *)mv);
+            Movie_ApplyVolume((Movie *)mv);
             AT(mv, 0x1BC, u8) = 1;
         }
         break;
@@ -2805,7 +2805,7 @@ void EventCmd_Movie(VObject *ev) {
     }
     switch (pc[1]) {
     case 0:
-        EV_RESULT(ev) = mv != NULL ? func_002B6410((Movie *)mv) : -1;
+        EV_RESULT(ev) = mv != NULL ? Movie_Status((Movie *)mv) : -1;
         break;
     case 1:
         if (mv != NULL) {
@@ -2814,7 +2814,7 @@ void EventCmd_Movie(VObject *ev) {
         EV_RESULT(ev) = 0;
         break;
     case 2:
-        r = mv != NULL ? func_002B6640((Movie *)mv) : -1;
+        r = mv != NULL ? Movie_Restart((Movie *)mv) : -1;
         if (r == 0) {
             EV_WAIT(ev) = 1;
         } else if (r > 0) {
@@ -2846,7 +2846,7 @@ void EventCmd_Movie(VObject *ev) {
     case 7:
         EV_CUE_PREV(ev) = EV_CUE(ev);
         if (mv != NULL) {
-            EV_CUE(ev) = func_002B64F0((Movie *)mv);
+            EV_CUE(ev) = Movie_FrameShown((Movie *)mv);
         }
         VCALL(d, 0x30, void (*)(VObject *, s32))(d, EV_CUE(ev));
         if (VCALL(d, 0x54, s32 (*)(VObject *, s32, s32))(d, 0xB, 0) & 1) {
@@ -2864,7 +2864,7 @@ void EventCmd_Movie(VObject *ev) {
         break;
     case 9:
     case 10:
-        if (mv != NULL && (func_002B6410((Movie *)mv) == 2) == (pc[1] == 10)) {
+        if (mv != NULL && (Movie_Status((Movie *)mv) == 2) == (pc[1] == 10)) {
             VObject *sfd = AT(mv, 0x14, VObject *);
 
             VCALL(sfd, 0x28, void (*)(VObject *, s32))(sfd, pc[1] == 9);

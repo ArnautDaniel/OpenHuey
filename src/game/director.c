@@ -949,6 +949,7 @@ s32 Cutscene_NextShot(VObject *d, s32 t) {
 }
 
 /* +0x84 */
-s32 func_0037E690(void) {
+/* 0x0037E690 */
+s32 Cutscene_Slot84(void) {
     return 8;
 }

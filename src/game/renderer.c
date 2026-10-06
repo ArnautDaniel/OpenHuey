@@ -682,7 +682,7 @@ s32 Renderer_GlowClear(u8 *r) {
 
 #ifdef HG_NATIVE
 /* +0x58 the glow, once a frame (not after +0x5C's clear; layer 0x29): the 128 x 112 work
- * buffer (page 0x1F0, which glow sprites - func_002E3500 - also draw into) goes through the
+ * buffer (page 0x1F0, which glow sprites - GlSprites_Glow - also draw into) goes through the
  * one at page 0x180 at half colour and is blended back 50 / 50, so fades to 3/4, then is
  * stretched over the 512 x 448 frame and added at half strength. The buffer is not cleared
  * between frames, so moving glows leave trails. On PC glr does the passes (the original's

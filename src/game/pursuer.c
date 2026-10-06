@@ -11231,7 +11231,8 @@ void *func_002ECCA0(void) {
 }
 
 /* vtable +0xF4: setup (the Pursuer's) */
-void func_002ECCB0(Pursuer *p) {
+/* 0x002ECCB0 */
+void Kind08_Setup(Pursuer *p) {
     Pursuer_Setup(p);
 }
 
@@ -11261,7 +11262,8 @@ void Kind08_EventState(Pursuer *p) {
 }
 
 /* vtable +0x110: a joint action pending for it is cancelled; -1 */
-s32 func_002ECDE0(Pursuer *p) {
+/* 0x002ECDE0 */
+s32 Kind08_GrabOrder(Pursuer *p) {
     Progress *pr = gProgress;
 
     if ((Progress_HasRelationCmd(pr, *(u8 *)&p->c.a.slot) & 0xFF) == 1) {

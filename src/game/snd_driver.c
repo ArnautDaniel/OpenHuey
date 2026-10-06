@@ -872,7 +872,7 @@ u8 *SndDriver_dtor(u8 *d, s32 flags) {
         AT(d, 0x0, void **) = D_0046BF20;
         AT(d, 0x4, void **) = D_0046BF2C;
         func_001002C0(d + 0x108, (void * (*)(void *, s32))func_001BECA0, 0x18, 8);
-        func_001002C0(d + 0x84, (void * (*)(void *, s32))func_001BEC10, 0x10, 8);
+        func_001002C0(d + 0x84, (void * (*)(void *, s32))IopBuffers_dtor, 0x10, 8);
         if (d + 4 != NULL) {
             AT(d, 0x4, void **) = D_0046AF90;
             if (d + 4 != NULL) {

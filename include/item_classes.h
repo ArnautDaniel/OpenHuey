@@ -122,6 +122,6 @@ extern ItemObj *Item62_ctor(ItemObj *self);
 extern ItemObj *Item61_ctor(ItemObj *self);
 extern ItemObj *Item60_ctor(ItemObj *self);
 extern ItemObj *Item4C_ctor(ItemObj *self);
-extern void func_0025FEF0(void *p);   /* operator delete (pool entries) */
+extern void SubPool_delete(void *p);   /* operator delete (pool entries) */
 
 #endif /* ITEM_CLASSES_H */

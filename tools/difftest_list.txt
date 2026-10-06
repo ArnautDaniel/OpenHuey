@@ -29,7 +29,7 @@ src/game/scene_game.c SceneGame_StateEntry --pre=a0+0x6FC254=0x29..0x38
 src/game/collision.c NavMesh_PointInTri
 
 # leaf functions (round 1, 2026-10-01)
-src/game/game.c func_00120530
+src/game/game.c PlacedObjects_SetPair
 src/game/placed.c BlockPool_ElemAt
 src/game/placed.c Thing_dtor
 src/game/camera.c Camera_MtxTranslation
@@ -66,9 +66,9 @@ src/game/debilitas.c Debilitas_Timer10s
 src/game/pursuer.c Debilitas_ModelFileTable
 src/game/debilitas.c Debilitas_ModelFiles
 src/game/loader.c Lzss_Start
-src/game/system.c func_0016B420
-src/game/system.c func_0016B470
-src/game/system.c func_0016B510
+src/game/system.c Loader_CurrentDone
+src/game/system.c Loader_Slot28
+src/game/system.c Loader_Slot24
 src/game/rooms/common.c Progress_SpeechCall
 src/game/char_load.c Characters_Register
 src/game/model.c Part_ctor
@@ -425,8 +425,8 @@ src/game/music.c MusicDir_Hold
 src/game/music.c MusicDir_Seen
 src/game/music.c MusicDir_Lost
 src/leaf/b3_002B5330.c MovieCopied_Shot
-src/game/game.c func_002C8D90
-src/game/game.c func_002C9470
+src/game/game.c PlacedObjects_Sum
+src/game/game.c PlacedObjects_CallDtor
 src/game/event.c Cutscene_Set38
 src/game/event.c Cutscene_Get28
 src/game/event.c Cutscene_PushC
@@ -515,7 +515,7 @@ src/game/item_classes.c func_002D3A20
 src/game/items.c Item3F_Set
 src/game/system.c Fades_Start
 src/game/gameover.c SceneGame_SetByte19034
-src/game/effects.c func_002D6010
+src/game/effects.c SceneGame_GetByte19034
 src/game/placed.c PlacedThings_PoolCall
 src/game/movie.c TvScreenB_SetParams
 src/game/movie.c TvScreenB_Start
@@ -539,11 +539,11 @@ src/game/creature.c CreatureA_SetSaveSlot
 src/game/creature.c CreatureA_IsUp
 src/game/creature.c CreatureA_Save
 src/game/creature.c CreatureBase_dtor
-src/game/game.c func_002E2340
-src/game/game.c func_002E2350
-src/game/game.c func_002E25F0
-src/game/game.c func_002E2610 --seed=2
-src/game/game.c func_002E2630
+src/game/game.c Creatures_MessageSlot
+src/game/game.c Creatures_ModelSet
+src/game/game.c Creatures_Get
+src/game/game.c Creatures_ModelCall --seed=2
+src/game/game.c Creatures_PoolCall
 src/game/hewie.c Angle_Wrap
 src/game/scene_title.c BgmCtl_ctor
 src/game/rooms/room_46.c Room46_EnterScript
@@ -1755,13 +1755,13 @@ src/game/renderer.c Renderer_LayerId --pre=a1=0..12
 src/game/system.c Heap_Setup
 src/game/system.c SceneTable_ctor
 src/game/system.c Camera_ctor
-src/game/system.c func_0020E240
-src/game/system.c func_0020E210
-src/game/system.c func_0020E190
-src/game/system.c func_0020E180
+src/game/system.c SmallPool_ElemA
+src/game/system.c SmallPool_ElemB
+src/game/system.c BigPool_ElemA
+src/game/system.c BigPool_ElemB
 src/game/system.c SmallPool_ctor
 src/game/system.c BigPool_ctor
-src/game/system.c func_001F4600
+src/game/system.c Slots_ctor
 src/game/random.c Random_Seed --runs=5
 src/game/random.c Random_Refill --runs=10 --pre=a0+0x9C8=1..2
 src/game/random.c Random_Int32 --runs=10 --pre=a0+0x9C8=1..3
@@ -1770,15 +1770,15 @@ src/game/random.c Random_Real1
 src/game/random.c Random_Real2
 src/game/random.c Random_Real3
 src/game/random.c Random_dtor --pre=a1=-1..2
-src/game/system.c func_001BF080
+src/game/system.c System_Init
 src/game/pad.c Pads_Init
 src/game/renderer.c Renderer_SetupVideo --pre=a1=1..2 --stub-fret=0.25 --stub-fret=0.75
 src/game/renderer.c Renderer_AllocVram --pre=a0+0x304BE4=0xFFFFFFFF..0xFFFFFFFF --pre=a0+0x304BB8=0xFFFFFFFE..0xFFFFFFFF --pre=a0+0x304BDC=0xFFFFFFFE..0xFFFFFFFF
-src/sdk/libgraph.c func_0010BFA0
-src/sdk/libgraph.c func_0010C500 --runs=100 --pre=a0=0..3 --pre=a1=1..1024 --pre=a2=1..512 --pre=@0x003ACD40=0..1 --pre=@0x003ACD44=0..1
-src/sdk/libgraph.c func_0010C5C8 --runs=100 --pre=a1=0..3 --pre=a2=1..1024 --pre=a3=1..512 --pre=a4=0..3 --pre=a5=0..3
-src/sdk/libgraph.c func_0010D020 --runs=100 --pre=a1=0..3 --pre=a2=1..1024 --pre=a3=1..512 --pre=a4=0..3 --pre=a5=0..3
-src/sdk/libgraph.c func_0010C7B0 --runs=100 --pre=a1=0..3 --pre=a2=0..640 --pre=a3=0..512 --pre=a4=0..640 --pre=a5=0..512
+src/sdk/libgraph.c sceGsGetGParam
+src/sdk/libgraph.c sceGsZbufBase --runs=100 --pre=a0=0..3 --pre=a1=1..1024 --pre=a2=1..512 --pre=@0x003ACD40=0..1 --pre=@0x003ACD44=0..1
+src/sdk/libgraph.c sceGsSetDefDrawEnv --runs=100 --pre=a1=0..3 --pre=a2=1..1024 --pre=a3=1..512 --pre=a4=0..3 --pre=a5=0..3
+src/sdk/libgraph.c sceGsSetDefDrawEnv2 --runs=100 --pre=a1=0..3 --pre=a2=1..1024 --pre=a3=1..512 --pre=a4=0..3 --pre=a5=0..3
+src/sdk/libgraph.c sceGsSetDefClear --runs=100 --pre=a1=0..3 --pre=a2=0..640 --pre=a3=0..512 --pre=a4=0..640 --pre=a5=0..512
 src/game/renderer.c Renderer_Flip --runs=30 --pre=a0+0x304DE0=0..1
 src/game/renderer.c Renderer_AddPacket --runs=100 --pre=a1=-1..4 --pre=a2=0..54 --stub-ret=0 --stub-ret=1
 src/game/vram.c Vram_PagesAt --runs=300 --pre=a1=0..0x88000 --pre=a2=0x0A000000..0x0A000000 --pre=@0x0A000000=0x13..0x2C --pre=a3=1..256 --pre=a4=1..256 --pre=a0+0x54=0..0xFFFF --pre=a0+0x58=0..0xF0F0F0F0
@@ -1828,7 +1828,7 @@ src/game/heap.c Heap_Free --runs=200 --pre=a0+0xC=0x0A000000..0x0A000000 --pre=a
 src/game/heap.c Heap_Free --runs=200 --pre=a0+0xC=0x0A000000..0x0A000000 --pre=a0+0x10=1..6 --pre=@0x0A000000=0..1 --pre=@0x0A000010=0..1 --pre=@0x0A000020=0..1 --pre=@0x0A000030=0..1 --pre=@0x0A000040=0..1 --pre=@0x0A000050=0..1 --pre=@0x0A000008=0x100..0x100 --pre=@0x0A000018=0x200..0x200 --pre=@0x0A000028=0x300..0x300 --pre=@0x0A000038=0x400..0x400 --pre=@0x0A000048=0x500..0x500 --pre=@0x0A000058=0x600..0x600 --pre=@0x0A00000C=0x40..0x100 --pre=@0x0A00001C=0x40..0x100 --pre=@0x0A00002C=0x40..0x100 --pre=@0x0A00003C=0x40..0x100 --pre=@0x0A00004C=0x40..0x100 --pre=@0x0A00005C=0x40..0x100 --pre=a1=0x400..0x400
 src/game/heap.c Heap_Free --runs=200 --pre=a0+0xC=0x0A000000..0x0A000000 --pre=a0+0x10=1..6 --pre=@0x0A000000=0..1 --pre=@0x0A000010=0..1 --pre=@0x0A000020=0..1 --pre=@0x0A000030=0..1 --pre=@0x0A000040=0..1 --pre=@0x0A000050=0..1 --pre=@0x0A000008=0x100..0x100 --pre=@0x0A000018=0x200..0x200 --pre=@0x0A000028=0x300..0x300 --pre=@0x0A000038=0x400..0x400 --pre=@0x0A000048=0x500..0x500 --pre=@0x0A000058=0x600..0x600 --pre=@0x0A00000C=0x40..0x100 --pre=@0x0A00001C=0x40..0x100 --pre=@0x0A00002C=0x40..0x100 --pre=@0x0A00003C=0x40..0x100 --pre=@0x0A00004C=0x40..0x100 --pre=@0x0A00005C=0x40..0x100 --pre=a1=0x500..0x500
 src/game/heap.c Heap_Free --runs=200 --pre=a0+0xC=0x0A000000..0x0A000000 --pre=a0+0x10=1..6 --pre=@0x0A000000=0..1 --pre=@0x0A000010=0..1 --pre=@0x0A000020=0..1 --pre=@0x0A000030=0..1 --pre=@0x0A000040=0..1 --pre=@0x0A000050=0..1 --pre=@0x0A000008=0x100..0x100 --pre=@0x0A000018=0x200..0x200 --pre=@0x0A000028=0x300..0x300 --pre=@0x0A000038=0x400..0x400 --pre=@0x0A000048=0x500..0x500 --pre=@0x0A000058=0x600..0x600 --pre=@0x0A00000C=0x40..0x100 --pre=@0x0A00001C=0x40..0x100 --pre=@0x0A00002C=0x40..0x100 --pre=@0x0A00003C=0x40..0x100 --pre=@0x0A00004C=0x40..0x100 --pre=@0x0A00005C=0x40..0x100 --pre=a1=0x600..0x600
-src/sdk/libgraph.c func_0010D200 --pre=a1=0..3
+src/sdk/libgraph.c sceGsSwapDBuff --pre=a1=0..3
 src/game/renderer.c Renderer_WaitChain
 src/game/renderer.c Renderer_SendFinal
 src/game/system.c System_EndFrame --runs=20 --irq=0x0047B204 --irq=0x0047B208
@@ -2005,22 +2005,22 @@ src/game/movie.c MovieLib_WorkSize --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c Movie_Finish --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c TvScreenA_Start --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c Movie_Shot --pre=a0=0x0B000000..0x0B000000
-src/game/movie.c func_002B6340 --pre=a0=0x0B000000..0x0B000000
-src/game/movie.c func_002B6410 --pre=a0=0x0B000000..0x0B000000
+src/game/movie.c Movie_ApplyVolume --pre=a0=0x0B000000..0x0B000000
+src/game/movie.c Movie_Status --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c Movie_Draw --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c Movie_TakeFrame --pre=a0=0x0B000000..0x0B000000
-src/game/movie.c func_002B64F0 --pre=a0=0x0B000000..0x0B000000
+src/game/movie.c Movie_FrameShown --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c Movie_Frame --pre=a0=0x0B000000..0x0B000000
-src/game/movie.c func_002B6640 --pre=a0=0x0B000000..0x0B000000
-src/game/movie.c func_002B6BB0 --pre=a0=0x0B000000..0x0B000000
-src/game/movie.c func_002B6D10 --pre=a0=0x0B000000..0x0B000000
+src/game/movie.c Movie_Restart --pre=a0=0x0B000000..0x0B000000
+src/game/movie.c Movie_StateStart --pre=a0=0x0B000000..0x0B000000
+src/game/movie.c Movie_SetFile --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c Movie_Entry --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c MovieScene_Entry --pre=a0=0x0B000000..0x0B000000
-src/game/movie.c func_002B6D10 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a1+0x0=bytes:4d4f5649455c4f502e53464400
-src/game/movie.c func_002B6D10 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a1+0x0=bytes:434150434f4d2e53464400
+src/game/movie.c Movie_SetFile --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a1+0x0=bytes:4d4f5649455c4f502e53464400
+src/game/movie.c Movie_SetFile --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a1+0x0=bytes:434150434f4d2e53464400
 src/game/movie.c MovieLib_dtor --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c Movie_dtor --pre=a0=0x0B000000..0x0B000000
-src/game/movie.c func_002B70D0 --pre=a0=0x0B000000..0x0B000000
+src/game/movie.c Movie_ctor --pre=a0=0x0B000000..0x0B000000
 src/game/movie.c MovieScene_dtor --pre=a0=0x0B000000..0x0B000000
 src/game/scene_boot.c SceneBoot_StepCapcom --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --pre=a0+0x1C=0..0 --stub-ret=0 --stub-ret=0x0B300000
 src/game/scene_boot.c SceneBoot_StepCapcom --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E960=0x0B200000..0x0B200000 --pre=a0+0x1C=1..2 --pre=@0x0047E37C=0..15
@@ -2653,13 +2653,13 @@ src/game/scene_game_members.c PlacedThings_Draw --pre=a0=0x0B000000..0x0B000000 
 src/game/event.c Events_CloseMessage --pre=a0=0x0B000000..0x0B000000 --pre=a1=0xFFFE..0x1FFFF --pre=a0+0x718=0xFFFE0000..0xFFFFFFFF
 src/game/scene_game_members.c RoomEffects_Draw --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1438=0..0x0B300000 --pre=@0x0B300000=0x0046AAB0..0x0046AAB0 --pre=@0x44E4E8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046BF20..0x0046BF20
 src/game/effects.c Fog_Draw --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C=0..1
-src/game/effects.c func_002BC000 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4F0=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046AC50..0x0046AC50
+src/game/effects.c FogDrawer_Queue --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4F0=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046AC50..0x0046AC50
 src/game/effects.c ScreenBlend_Draw --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x14=0..5 --pre=a0+0x10=0..0x02000000
 src/game/effects.c Tint_Draw --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x10=0..0x02000000 --pre=a0+0x14=0..0x02000000
-src/game/effects.c func_00269940 --pre=a0=0x0B000000..0x0B000000
+src/game/effects.c ColourDrawer_Queue --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c EffectMgr_Draw --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000
 src/game/props.c Room2AWisps_Draw --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x8F4=0..1
-src/game/effects.c func_002E56C0 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000
+src/game/effects.c Drawer_Submit --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000
 src/game/effects.c QuadDrawer_Start --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x20=0x16..0x18
 src/game/scene_game_members.c ScreenFade_Level --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000
 src/game/scene_game_members.c ScreenFade_Frame --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x0=3..5 --pre=a0+0x34=0x3F7FFFFF..0x3F800001 --pre=a0+0x38=0x0..0x90 --pre=a1=0..2
@@ -2700,7 +2700,7 @@ src/game/model.c HairPoint2_AdjustBone --pre=a0=0x0B000000..0x0B000000 --pre=a0=
 src/game/model.c SpringPartBase_AdjustBone --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a0+0x20=bytes:??000000 --pre=a0+0x2C=0x0B200000..0x0B200000 --stub-ret=0x0B300000 --stub-ret-prob=1
 src/game/model.c SprungPoint_AdjustBone --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --stub-ret=0x0B300000 --stub-ret-prob=1
 src/game/model.c Model_Draw --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x0=0x0046F9E0..0x0046F9E0 --stub-ret=0
-src/game/effects.c func_002241C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..1 --pre=a0+0x164=bytes:??000000 --pre=@0x44E4C0=0x0B100000..0x0B100000 --pre=@0x0B101400=0x0046BF20..0x0046BF20 --pre=@0x0B1014A8=0..1 --stub-ret=0 --stub-ret=0x0B200000 --stub-ret-prob=1
+src/game/effects.c CamDirector_HoldEffect1C --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..1 --pre=a0+0x164=bytes:??000000 --pre=@0x44E4C0=0x0B100000..0x0B100000 --pre=@0x0B101400=0x0046BF20..0x0046BF20 --pre=@0x0B1014A8=0..1 --stub-ret=0 --stub-ret=0x0B200000 --stub-ret-prob=1
 src/game/model.c Mtx_TurnY --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000
 src/game/fiona.c Fiona_HeadLook --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xF0=0x0B100000..0x0B100000 --pre=a0+0x1AD5FC=0..1 --pre=a0+0x1AD600=0x0B200000..0x0B200000 --pre=@0x0B200028=0..0x101 --pre=@0x0B2000F0=0x0B300000..0x0B300000 --pre=@0x0B300000=0x0046F9E0..0x0046F9E0 --pre=@0x0B100854=0x3E000000..0x3F800000 --pre=@0x0B100858=0x3E000000..0x3F800000 --outparam=4 --runs=60
 src/game/fiona.c Fiona_KeepApart --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1AD5D4=0..0x01010101 --pre=@0x44F828=0x0B100000..0x0B100000 --pre=@0x44F820=0x0B200000..0x0B200000 --pre=@0x0B10002A=0..0 --pre=@0x0B20002A=0..0 --pre=@0x0B1000F0=0x0B300000..0x0B300000 --pre=a0+0x10=0x3F000000..0x40800000 --pre=a0+0x18=0x3F000000..0x40800000 --pre=a0+0xC8=0x3F000000..0x40000000 --stub-ret=1 --stub-ret=0 --stub-ret=-1 --stub-ret-prob=1 --outparam=4 --runs=100
@@ -2753,7 +2753,7 @@ src/game/event_cond.c EventCond_Eval --pre=a0=0x0B000000..0x0B000000 --pre=a0+0=
 src/game/event_cmd.c EventCmd_Run --pre=a0=0x0B000000..0x0B000000 --pre=a0+0=0x0046B3A0..0x0046B3A0 --pre=a0+4=0x0B100000..0x0B100000 --pre=@0x0B100000=bytes:5D???????????????????????????????? --pre=@0x44E4D8=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046BF20..0x0046BF20 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x44F820=0x0B400000..0x0B400000 --pre=@0x44E4B8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=0xFF --runs=30 --pre=@0x456E00=0x0B900000..0x0B900000 --pre=@0x44E568=0x0B900000..0x0B900000 --pre=a0+0x11F0=0..0x00010100
 src/game/event_cmd.c EventCmd_Run --pre=a0=0x0B000000..0x0B000000 --pre=a0+0=0x0046B3A0..0x0046B3A0 --pre=a0+4=0x0B100000..0x0B100000 --pre=@0x0B100000=bytes:5E???????????????????????????????? --pre=@0x44E4D8=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046BF20..0x0046BF20 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x44F820=0x0B400000..0x0B400000 --pre=@0x44E4B8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046BF20..0x0046BF20 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=0xFF --runs=30 --pre=@0x456E00=0x0B900000..0x0B900000 --pre=@0x44E568=0x0B900000..0x0B900000 
 src/game/event_cond.c Zone_HasAnyChar --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..1 --pre=@0x44F800=0x0B300000..0x0B300000 --pre=@0x0B300000=0x0046AAB0..0x0046AAB0 --pre=@0x0B300028=0..1 --stub-ret=0 --stub-ret=1 --stub-ret=3 --stub-ret-prob=1 --runs=60
-src/game/effects.c func_002CF3A0 --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..7 --pre=a0+0x18=0x3F000000..0x41000000 --pre=a0+0x20=0..40 --runs=60
+src/game/effects.c ScreenFade_Step --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..7 --pre=a0+0x18=0x3F000000..0x41000000 --pre=a0+0x20=0..40 --runs=60
 src/game/event.c Events_DrawFade --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x30
 src/game/fiona.c Fiona_WalkLook --pre=a0=0x0B000000..0x0B000000 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xF0=0x0B100000..0x0B100000 --pre=@0x0B10055C=0x200..0x201 --pre=@0x0B100560=0x201..0x204 --pre=@0x0B1006A4=0x0B200000..0x0B200000 --pre=a0+0x1AD5F4=0x41000000..0x42C80000 --pre=a0+0x1AD5F8=0..0x708 --pre=a0+0x1AD628=0x3E000000..0x3F800000 --stub-ret=0 --stub-ret=2 --stub-ret-prob=1 --runs=100
 src/game/model.c Motion_PlayTable --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x874=0x0B100000..0x0B100000 --stub-ret=-1 --stub-ret=0 --stub-ret=2 --stub-ret-prob=1 --runs=60
@@ -2840,7 +2840,7 @@ src/game/rooms/room_20.c Room20_Cmd02 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0
 src/game/rooms/room_60.c Room60_Cmd00 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100000=0x00000000..0x03000000 --pre=@0x44E4D0=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0B300000..0x0B300000 --pre=@0x0B300030=0x00100000..0x00100000 --pre=@0x0B300034=0x00100000..0x00100000 --pre=@0x44E4C0=0x0BA00000..0x0BA00000 --pre=@0x0BA01400=0x0B300000..0x0B300000 --pre=@0x0B300010=0x00100000..0x00100000 --pre=@0x0B300014=0x00100000..0x00100000 --pre=@0x44E578=0x0BB00000..0x0BB00000 --pre=@0x0BB10000=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=4 --stub-ret=7 --runs=40
 src/game/effects.c DepthRange_Draw --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x54=0x3F000000..0x42F00000 --pre=a0+0x58=0x3F000000..0x42F00000 --pre=@0x44E4B8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0B910000..0x0B910000 --pre=@0x0B9100CC=0x00100000..0x00100000 --pre=@0x0B9100D0=0x00100000..0x00100000 --pre=@0x44E4F0=0x0BA00000..0x0BA00000 --pre=@0x0BA00000=0x0B910000..0x0B910000 --pre=@0x0B91000C=0x00100000..0x00100000 --stub-fret=1.0 --stub-fret=100.0 --stub-ret-prob=1
 src/game/effects.c Reflection_Start 
-src/game/effects.c func_002C86F0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4B8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0B910000..0x0B910000 --pre=@0x0B9100CC=0x00100000..0x00100000 --pre=@0x0B9100D0=0x00100000..0x00100000 --pre=@0x44E4F0=0x0BA00000..0x0BA00000 --pre=@0x0BA00000=0x0B910000..0x0B910000 --pre=@0x0B91000C=0x00100000..0x00100000 --stub-fret=1.0 --stub-fret=100.0 --stub-ret-prob=1 --runs=40
+src/game/effects.c DepthBand_Queue --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4B8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0B910000..0x0B910000 --pre=@0x0B9100CC=0x00100000..0x00100000 --pre=@0x0B9100D0=0x00100000..0x00100000 --pre=@0x44E4F0=0x0BA00000..0x0BA00000 --pre=@0x0BA00000=0x0B910000..0x0B910000 --pre=@0x0B91000C=0x00100000..0x00100000 --stub-fret=1.0 --stub-fret=100.0 --stub-ret-prob=1 --runs=40
 src/game/event.c Events_SetVar --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x1FF
 src/game/event.c Events_GetVar --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x1FF
 src/game/meshdraw.c RoomMesh_FlipBook --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xD4=0..0 --pre=a0+0x88=0..0 --pre=a1=0x0B100000..0x0B100000 --pre=@0x0B100000=0x3E000000..0x3F800000 --pre=@0x0B100004=0x3E000000..0x3F800000 --pre=@0x0B100008=0x3E000000..0x3F800000 --pre=@0x0B10000C=0x3E000000..0x3F800000 --pre=@0x0B100010=0x3E000000..0x3F800000 --pre=@0x0B100014=0x3E000000..0x3F800000 --pre=@0x0B100018=0x3E000000..0x3F800000 --pre=@0x0B10001C=0x3E000000..0x3F800000 --pre=a0+0xD8=bytes:04020003014080
@@ -2885,7 +2885,7 @@ src/game/event.c RoomBase_Phase2Script
 src/game/model.c Motion_PlayBlend --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x874=0x0B300000..0x0B300000 --pre=a2=0..20 --stub-ret=-1 --stub-ret=0 --stub-ret=2 --stub-ret-prob=1
 src/game/rooms/room_21.c Room21_Cmd02 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100000=0..0x03000000 --pre=@0x44E4C0=0x0BA00000..0x0BA00000 --pre=@0x0BA01400=0x0B300000..0x0B300000 --pre=@0x0B300010=0x00100000..0x00100000 --pre=@0x0B300014=0x00100000..0x00100000 --stub-ret=0x0BC00000 --stub-ret=0 --runs=40
 src/game/effects.c RisingSmoke_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1 --pre=a1=0..1
-src/game/effects.c func_002D6480 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1 --pre=a1=0..63 --pre=a2=0..1 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0B910000..0x0B910000 --pre=@0x0B910018=0x00100000..0x00100000 --stub-fret=0.25 --stub-fret=0.9 --stub-ret-prob=1
+src/game/effects.c RisingSmoke_Particle --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1 --pre=a1=0..63 --pre=a2=0..1 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0B910000..0x0B910000 --pre=@0x0B910018=0x00100000..0x00100000 --stub-fret=0.25 --stub-fret=0.9 --stub-ret-prob=1
 src/game/effects.c RisingSmoke_Draw --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1
 src/game/effects.c RisingSmoke_Update --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0B910000..0x0B910000 --pre=@0x0B910018=0x00100000..0x00100000 --stub-fret=0.25 --stub-fret=0.9 --stub-ret-prob=1 --pre=a0+0x14=0x41500000..0x41F00000 --pre=a0+0x1C=0..2
 src/game/effects.c RisingSmoke_Start --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1
@@ -3806,10 +3806,10 @@ src/game/progress.c Progress_UseDoor --pre=a0=0x0B000000..0x0B000000 --pre=@0x44
 src/game/progress.c Progress_FionaFlag --pre=a0=0x0B000000..0x0B000000 --pre=@0x44F818=0..0x0B100000 --runs=30
 src/game/progress.c Progress_ResetParts --pre=a0=0x0B000000..0x0B000000 --runs=10
 src/game/progress.c Progress_PlayMovie --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B400000..0x0B400000 --pre=a2=0..8 --pre=@0x44E960=0x0A000000..0x0A000000 --pre=@0x0B0D9040=0x0B500000..0x0B500000 --stub-ret=0 --stub-ret=0x0B600000 --stub-ret-prob=1 --runs=100
-src/game/progress.c func_00176880 --pre=a0=0x0B000000..0x0B000000 --runs=4
-src/game/progress.c func_00177990 --pre=a0=0x0B000000..0x0B000000 --runs=4
-src/game/progress.c func_001779A0 --pre=a0=0x0B000000..0x0B000000 --runs=4
-src/game/progress.c func_001780A0 --pre=a0=0x0B000000..0x0B000000 --runs=4
+src/game/progress.c ProgressBase_Slot70 --pre=a0=0x0B000000..0x0B000000 --runs=4
+src/game/progress.c ProgressBase_Slot3C --pre=a0=0x0B000000..0x0B000000 --runs=4
+src/game/progress.c ProgressBase_Slot38 --pre=a0=0x0B000000..0x0B000000 --runs=4
+src/game/progress.c ProgressBase_Slot28 --pre=a0=0x0B000000..0x0B000000 --runs=4
 src/game/items.c Items_UseId --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x12E0=0x0B100000..0x0B100000 --pre=a0+0x12E4=0..0x0B100100 --pre=a0+0x13E0=0x0B100200..0x0B100200 --pre=a0+0x14E0=0..0x0B100300 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=3 --stub-ret-prob=1 --pre=a1=0..3 --runs=200
 src/game/items.c Items_Update --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x12E0=0x0B100000..0x0B100000 --pre=a0+0x12E4=0..0x0B100100 --pre=a0+0x13E0=0x0B100200..0x0B100200 --pre=a0+0x14E0=0..0x0B100300 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=3 --stub-ret-prob=1 --runs=100
 src/game/model.c Motion_PlayWith --pre=a0=0x0B000000..0x0B000000 --runs=20
@@ -4173,15 +4173,15 @@ src/game/loader.c LoaderBase_dtor --pre=a0=0..0 --pre=a1=-1..1 --runs=50
 src/game/progress.c Progress_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --pre=@0x44F800=0x0B900000..0x0B900000 --pre=@0x44F804=0..0 --pre=@0x44F808=0x0B910000..0x0B910000 --pre=@0x44F80C=0..0 --pre=@0x44F810=0x0B920000..0x0B920000 --pre=@0x44F814=0x0B930000..0x0B930000 --pre=@0x44FBFC=0x0B940000..0x0B940000 --pre=@0x0B90153C:u8=0..1 --pre=@0x0B91153C:u8=1..2 --pre=@0x0B92153C:u8=2..3 --pre=@0x0B93153C:u8=3..4 --runs=200
 src/game/progress.c Progress_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --pre=@0x44F808=0..0 --pre=@0x44F80C=0..0 --pre=@0x44F810=0..0 --pre=@0x44F814=0..0 --runs=100
 src/game/progress.c Progress_dtor --pre=a0=0..0 --runs=20
-src/game/progress.c func_0016CCA0 --runs=20
-src/game/progress.c func_0016CCB0 --runs=20
-src/game/progress.c func_0016CD00 --runs=20
-src/game/progress.c func_0016CCF0 --runs=20
-src/game/progress.c func_0016CCE0 --runs=20
-src/game/progress.c func_0016CCD0 --runs=20
-src/game/progress.c func_0016CCC0 --runs=20
-src/game/progress.c func_0016CD20 --runs=20
-src/game/progress.c func_0016CD10 --runs=20
+src/game/progress.c ProgressBase_Slot40 --runs=20
+src/game/progress.c ProgressBase_Slot4C --runs=20
+src/game/progress.c ProgressBase_Slot50 --runs=20
+src/game/progress.c ProgressBase_Slot58 --runs=20
+src/game/progress.c ProgressBase_Slot5C --runs=20
+src/game/progress.c ProgressBase_Slot60 --runs=20
+src/game/progress.c ProgressBase_Slot7C --runs=20
+src/game/progress.c ProgressBase_Slot84 --runs=20
+src/game/progress.c ProgressBase_Slot88 --runs=20
 src/game/progress.c Progress73EC80_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=100
 src/game/progress.c Progress73EC80_dtor --pre=a0=0..0 --pre=a1=-1..1 --runs=30
 src/game/progress.c Progress_LoadSpeech --pre=a0=0x0B000000..0x0B000000 --runs=100
@@ -4213,16 +4213,16 @@ src/game/model.c CharModel_VtCC --runs=20
 src/game/model.c CharModel_VtD0 --runs=20
 src/game/pursuer.c Kind08_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x20=2..6 --pre=a0+0xF0=0..1 --pre=a1=-1..1 --runs=200
 src/game/pursuer.c Kind08_dtor --pre=a0=0..0 --runs=20
-src/game/pursuer.c func_002ECCB0 --pre=a0=0x0B000000..0x0B000000 --runs=30
+src/game/pursuer.c Kind08_Setup --pre=a0=0x0B000000..0x0B000000 --runs=30
 src/game/pursuer.c Kind08_ShowUp --pre=a0=0x0B000000..0x0B000000 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=100
 src/game/pursuer.c Kind08_EventState --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x14E8=4..6 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/game/pursuer.c func_002ECDE0 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --stub-ret-prob=1 --runs=100
+src/game/pursuer.c Kind08_GrabOrder --pre=a0=0x0B000000..0x0B000000 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --stub-ret-prob=1 --runs=100
 src/game/effects.c Effect6FF60_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=100
 src/game/effects.c Effect6FF60_dtor --pre=a0=0..0 --runs=20
 src/game/effects.c Effect6FF60_Start --runs=20
-src/game/effects.c func_002E9B60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..15 --pre=a0+0xE38:u16=0..1 --stub-fret=0.0 --stub-fret=0.25 --stub-fret=0.5 --stub-fret=0.99 --runs=300
-src/game/effects.c func_002E9B60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..15 --pre=a0+0xE38:u16=2..3 --stub-fret=0.0 --stub-fret=0.25 --stub-fret=0.5 --stub-fret=0.99 --runs=300
-src/game/effects.c func_002E9B60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..15 --pre=a0+0xE38:u16=4..5 --stub-fret=0.0 --stub-fret=0.25 --stub-fret=0.5 --stub-fret=0.99 --runs=300
+src/game/effects.c Effect6FF60_Shard --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..15 --pre=a0+0xE38:u16=0..1 --stub-fret=0.0 --stub-fret=0.25 --stub-fret=0.5 --stub-fret=0.99 --runs=300
+src/game/effects.c Effect6FF60_Shard --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..15 --pre=a0+0xE38:u16=2..3 --stub-fret=0.0 --stub-fret=0.25 --stub-fret=0.5 --stub-fret=0.99 --runs=300
+src/game/effects.c Effect6FF60_Shard --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..15 --pre=a0+0xE38:u16=4..5 --stub-fret=0.0 --stub-fret=0.25 --stub-fret=0.5 --stub-fret=0.99 --runs=300
 src/game/effects.c Effect6FF60_SetParams --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --runs=100
 src/game/effects.c Effect6FF60_SetParams --pre=a1=0..0 --runs=20
 src/game/effects.c Effect6FF60_Update --pre=a0=0x0B000000..0x0B000000  --pre=a0+0xE0=0..1 --pre=a0+0x1C0=0..1 --pre=a0+0x2A0=0..1 --pre=a0+0x380=0..1 --pre=a0+0xE00=0..1 --runs=500
@@ -4961,12 +4961,12 @@ src/game/gameover.c GameOver_Reset --pre=a0=0x0B000000..0x0B000000 --runs=50
 src/game/gameover.c GameOver_Update --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x50=0..0 --pre=a0+0x54=0xFFFFFFFF..0xFFFFFFFF --pre=a0+0x58=0x00100490..0x00100490 --pre=@0x44E4D8=0x0B700000..0x0B700000 --stub-ret=0 --stub-ret=1 --runs=100
 src/game/effects.c RisingMotes_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --runs=100
 src/game/effects.c RisingMotes_Draw --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x3850=0..1 --runs=100
-src/game/effects.c func_002F92A0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x3850=0..1 --pre=a1=0..127 --pre=a2=0..1 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-fret=0.75 --stub-fret=0.5 --stub-fret=0.99 --runs=300
+src/game/effects.c RisingMotes_Mote --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x3850=0..1 --pre=a1=0..127 --pre=a2=0..1 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-fret=0.75 --stub-fret=0.5 --stub-fret=0.99 --runs=300
 src/game/effects.c RisingMotes_Start --pre=a0=0x0B000000..0x0B000000 --runs=50 --stub-ret=0 --stub-ret=7
 src/game/effects.c RisingMotes_Update --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x3850=0..1  --pre=@0xB00001C=0..2 --pre=@0xB000024=0x42F00000..0x43100000 --pre=@0xB000038=0x40400000..0x40500000 --pre=@0xB00181C=0..2 --pre=@0xB001824=0x42F00000..0x43100000 --pre=@0xB001838=0x40400000..0x40500000 --pre=@0xB00004C=0..2 --pre=@0xB000054=0x42F00000..0x43100000 --pre=@0xB000068=0x40400000..0x40500000 --pre=@0xB00184C=0..2 --pre=@0xB001854=0x42F00000..0x43100000 --pre=@0xB001868=0x40400000..0x40500000 --stub-ret=0 --runs=200
 src/game/effects.c OrangeSparks_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --runs=100
 src/game/effects.c OrangeSparks_Draw --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xE50=0..1 --runs=100
-src/game/effects.c func_002F98A0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xE50=0..1 --pre=a1=0..31 --pre=a2=0..1 --pre=a0+0xE5C=0..0x100 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-fret=0.75 --stub-fret=0.5 --stub-fret=0.99 --stub-fret=0.01 --runs=300
+src/game/effects.c OrangeSparks_Spark --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xE50=0..1 --pre=a1=0..31 --pre=a2=0..1 --pre=a0+0xE5C=0..0x100 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-fret=0.75 --stub-fret=0.5 --stub-fret=0.99 --stub-fret=0.01 --runs=300
 src/game/effects.c OrangeSparks_Start --pre=a0=0x0B000000..0x0B000000 --runs=50
 src/game/effects.c OrangeSparks_SetParams --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=@0x0B100000=0..1 --pre=a0+0xC50=0xBE800000..0xBE000000 --pre=a0+0xC54=0x3D000000..0x3E000000 --pre=a0+0xC58=0xBE800000..0xBE800000 --runs=200
 src/game/effects.c OrangeSparks_Update --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xE50=0..1 --pre=a0+0xE54=0..0 --pre=a0+0xC54=0xBC000000..0x3C000000 --pre=a0+0xC64=0xBC000000..0x3C000000  --pre=@0xB00001C=0..6 --pre=@0xB000024=0x423C0000..0x42500000 --pre=@0xB00061C=0..6 --pre=@0xB000624=0x423C0000..0x42500000 --pre=@0xB00004C=0..6 --pre=@0xB000054=0x423C0000..0x42500000 --pre=@0xB00064C=0..6 --pre=@0xB000654=0x423C0000..0x42500000 --stub-ret=0 --runs=200
@@ -4981,7 +4981,7 @@ src/game/rooms/room_27.c Room27_Cmd00 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0
 src/game/effects.c SmokePuffs_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --runs=100
 src/game/effects.c SmokePuffs_Draw --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1 --runs=100
 src/game/effects.c SmokePuffs_SetParams --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/effects.c func_002FD260 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1 --pre=a1=0..63 --pre=a2=0..1 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-fret=0.75 --stub-fret=0.5 --stub-fret=0.99 --runs=300
+src/game/effects.c SmokePuffs_Puff --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1 --pre=a1=0..63 --pre=a2=0..1 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-fret=0.75 --stub-fret=0.5 --stub-fret=0.99 --runs=300
 src/game/effects.c SmokePuffs_Start --pre=a0=0x0B000000..0x0B000000 --runs=50
 src/game/effects.c SmokePuffs_Update --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C50=0..1 --pre=a0+0x1C54:u8=0..1  --pre=@0xB00001C=0..6 --pre=@0xB000024=0x419C0000..0x41B40000 --pre=@0xB000038=0x40400000..0x40500000 --pre=@0xB000C1C=0..6 --pre=@0xB000C24=0x419C0000..0x41B40000 --pre=@0xB000C38=0x40400000..0x40500000 --pre=@0xB00004C=0..6 --pre=@0xB000054=0x419C0000..0x41B40000 --pre=@0xB000068=0x40400000..0x40500000 --pre=@0xB000C4C=0..6 --pre=@0xB000C54=0x419C0000..0x41B40000 --pre=@0xB000C68=0x40400000..0x40500000 --stub-ret=0 --runs=300
 src/game/effects.c SpeckSwarm_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..2 --runs=100
@@ -5139,9 +5139,9 @@ src/game/scene_game_members.c Lights_Brightest --pre=a0=0x0B000000..0x0B000000 -
 src/game/scene_game_members.c Lights_Scripted --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x950:u8=0..1 --pre=a0+0x980:u8=0..1 --pre=a0+0x9B0:u8=0..1 --pre=a0+0x970=0x3F000000..0x40000000 --pre=a0+0x9A0=0x3E000000..0x3F800000 --pre=a0+0x9A4=0x3E000000..0x3F800000 --pre=a0+0x9D0=0x3E000000..0x3F800000 --pre=a0+0x9D4=0x3E000000..0x3F800000 --pre=a1=0x0B300000..0x0B300000 --pre=a2=0x0B300100..0x0B300100 --pre=a3=0x0B300200..0x0B300200 --pre=a4=0..0x0B300300 --pre=@0x44E4B8=0x0B800000..0x0B800000 --pre=@0x0B800000=0x00469A60..0x00469A60 --outparam-at=0x001225D0:1:16 --outparam-at=0x001225A0:1:16 --runs=300
 src/game/scene_game_members.c Lights_ForModel --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x0046B300..0x0046B300 --outparam-at=0x001FA680:0:48 --pre=a0+0x10=0..2 --pre=a1=0..0x0B100000 --pre=@0x0B100000=0x40000000..0x41000000 --pre=@0x0B100004=0x40000000..0x41000000 --pre=@0x0B100008=0x40000000..0x41000000 --pre=@0x0B10000C=0x3F800000..0x3F800000 --pre=a2=0..0 --pre=a3=0x0B300000..0x0B300000 --pre=a4=0x0B300100..0x0B300100 --pre=a5=0x0B300200..0x0B300200 --pre=a6=0..0x0B300300 --pre=a0+0x950:u8=0..0 --pre=@0x44E4C8=0x0B000000..0x0B000000 --pre=@0x44E570=0x0B900000..0x0B900000 --pre=@0x0B900004=0x0BA00000..0x0BA00000 --pre=@0x0B900008=0..40 --pre=@0x0BA0004C=0..0xFFFF --pre=@0x0BA0009C=0..0xFFFF --runs=300
 src/game/scene_game_members.c Lights_ForModel --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x0046B300..0x0046B300 --outparam-at=0x001FA680:0:48 --pre=a0+0x10=0..2 --pre=a1=0..0x0B100000 --pre=@0x0B100000=0x40000000..0x41000000 --pre=@0x0B100004=0x40000000..0x41000000 --pre=@0x0B100008=0x40000000..0x41000000 --pre=@0x0B10000C=0x3F800000..0x3F800000 --pre=a2=0xFFFFFFFF..0xFFFFFFFF --pre=a3=0x0B300000..0x0B300000 --pre=a4=0x0B300100..0x0B300100 --pre=a5=0x0B300200..0x0B300200 --pre=a6=0..0x0B300300 --pre=a0+0x950:u8=0..0 --pre=@0x44E4C8=0x0B000000..0x0B000000 --pre=@0x44E570=0x0B900000..0x0B900000 --pre=@0x0B900004=0x0BA00000..0x0BA00000 --pre=@0x0B900008=0..40 --pre=@0x0BA0004C=0..0xFFFF --pre=@0x0BA0009C=0..0xFFFF --runs=300
-src/game/effects.c func_00317920 --pre=a1=0..2 --pre=a0+0x10:u32=0..1 --pre=a0+0x18:u32=0..1 --pre=@0x44E4B8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x00469A60..0x00469A60 --outparam-at=0x00122090:1:64 --outparam-at=0x00122080:1:64 --pre=@0x0044F800=0x0B600000..0x0B600000 --pre=@0x0044F804=0x0B600000..0x0B600000 --pre=@0x0044F808=0x0B600000..0x0B600000 --pre=@0x0B600028=bytes:0100 --pre=@0x0044F818=0x0B600000..0x0B600000 --runs=60
-src/game/effects.c func_003175B0 --pre=a1=0..0 --pre=a0+0x10:u32=0..1 --pre=a0+0x18:u32=0..1 --pre=@0x44E4B8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x00469A60..0x00469A60 --outparam-at=0x00122090:1:64 --outparam-at=0x00122080:1:64 --pre=@0x0044F258=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0B600000..0x0B600000 --pre=@0x0B70001C=0x0B600000..0x0B600000 --pre=@0x0B6000E2=bytes:00 --runs=40
-src/game/effects.c func_003175B0 --pre=a1=7..7 --pre=a0+0x10:u32=0..1 --pre=a0+0x18:u32=0..1 --pre=@0x44E4B8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x00469A60..0x00469A60 --outparam-at=0x00122090:1:64 --outparam-at=0x00122080:1:64 --pre=@0x0044F258=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0B600000..0x0B600000 --pre=@0x0B70001C=0x0B600000..0x0B600000 --pre=@0x0B6000E2=bytes:00 --runs=40
+src/game/effects.c Reflection_CharSlot --pre=a1=0..2 --pre=a0+0x10:u32=0..1 --pre=a0+0x18:u32=0..1 --pre=@0x44E4B8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x00469A60..0x00469A60 --outparam-at=0x00122090:1:64 --outparam-at=0x00122080:1:64 --pre=@0x0044F800=0x0B600000..0x0B600000 --pre=@0x0044F804=0x0B600000..0x0B600000 --pre=@0x0044F808=0x0B600000..0x0B600000 --pre=@0x0B600028=bytes:0100 --pre=@0x0044F818=0x0B600000..0x0B600000 --runs=60
+src/game/effects.c Reflection_Creature --pre=a1=0..0 --pre=a0+0x10:u32=0..1 --pre=a0+0x18:u32=0..1 --pre=@0x44E4B8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x00469A60..0x00469A60 --outparam-at=0x00122090:1:64 --outparam-at=0x00122080:1:64 --pre=@0x0044F258=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0B600000..0x0B600000 --pre=@0x0B70001C=0x0B600000..0x0B600000 --pre=@0x0B6000E2=bytes:00 --runs=40
+src/game/effects.c Reflection_Creature --pre=a1=7..7 --pre=a0+0x10:u32=0..1 --pre=a0+0x18:u32=0..1 --pre=@0x44E4B8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x00469A60..0x00469A60 --outparam-at=0x00122090:1:64 --outparam-at=0x00122080:1:64 --pre=@0x0044F258=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0B600000..0x0B600000 --pre=@0x0B70001C=0x0B600000..0x0B600000 --pre=@0x0B6000E2=bytes:00 --runs=40
 src/game/camctl.c CamDirector_Setup --pre=a0+0xF4:u8=0..2
 src/game/shadow.c Shadow_Queue --pre=@0x44E4C8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046B300..0x0046B300 --pre=@0x44E570=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046A9D0..0x0046A9D0 --pre=@0x44E4F0=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0046AC50..0x0046AC50 --stub-ret=1 --outparam=16
 src/game/shadow.c Shadow_Outline --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B200000..0x0B200000 --pre=@0x0B200004=6..6 --pre=@0x0B200008=0x100..0x100 --pre=@0x0B20000C=0x300..0x300 --pre=@0x0B200010=0x400..0x400 --pre=@0x0B100100=bytes:000000000100000002000000030000000000000001000000020000000300000000000000000000000000000000000000 --runs=40
@@ -5151,7 +5151,7 @@ src/game/scene_game_members.c Lights_ShadowMayFall --pre=@0x44E570=0x0B500000..0
 src/game/scene_game_members.c Lights_ShadowLights --pre=a2=0xFFFFFFFF..1 --pre=a0+0x10:u32=0..1
 src/game/scene_game_members.c Lights_Blockers
 src/game/scene_game_members.c Lights_BlockerCount --pre=a0+0x940:u32=0x5F..0x63
-src/game/effects.c func_00352280 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046AB50..0x0046AB50 --pre=a0+0x210=0..1 --pre=a1=0..3 --pre=a2=0..1 --pre=a0+0x214=0..0x1FFF --stub-fret=0.5 --stub-fret=1.5
+src/game/effects.c Wisps_Wisp --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046AB50..0x0046AB50 --pre=a0+0x210=0..1 --pre=a1=0..3 --pre=a2=0..1 --pre=a0+0x214=0..0x1FFF --stub-fret=0.5 --stub-fret=1.5
 src/game/effects.c Wisps_Update --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046AB50..0x0046AB50 --pre=a0+0x210=0..1 --pre=a0+0x214=0..0x8FFF --pre=a0+0x1C:u32=0..8 --pre=a0+0x4C:u32=0..8 --pre=a0+0xDC:u32=0..8 --pre=a0+0xAC:u32=0..8 --pre=a0+0x7C:u32=0..8 --pre=a0+0x10C:u32=0..8 --pre=a0+0x13C:u32=0..8 --pre=a0+0x16C:u32=0..8 --stub-fret=0.5
 src/game/effects.c Wisps_SetParams --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046AB50..0x0046AB50 --pre=a1=0x0B200000..0x0B200000 --pre=@0x0B200010=0..0x1FFF
 src/game/effects.c Wisps_Draw --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x210=0..1
@@ -5663,12 +5663,12 @@ src/game/rooms/room_61.c Glint_Update --runs=5
 src/game/rooms/room_61.c Glint_Start --runs=5
 src/game/fiona.c Fiona_StateDoorStart --pre=a0=0x09000000..0x09000000 --pre=a0+0xF0=0x0B000000..0x0B000000 --pre=@0x0B0004C4=0..1 --pre=a0+0xE0:u8=0..1 --pre=a0+0x104=0..1 --pre=a0+0x1AD584=0..3 --pre=@0x44E558=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046C540..0x0046C540 --pre=@0x44E570=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0046A9D0..0x0046A9D0 --pre=@0x44E4D8=0x0A000000..0x0A000000 --outparam-at=0x002231A0:4:16 --stub-ret=-1 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=0x10 --stub-ret-prob=1 --runs=300 --pre=a0+0xFC=0x14..0x15
 src/game/fiona.c Fiona_HeadFor --pre=a0=0x09000000..0x09000000 --pre=@0x44E570=0x0B200000..0x0B200000 --pre=@0x0B200008=4..4 --pre=@0x0B200004=0x0B300000..0x0B300000 --pre=a1=0..5 --pre=a0+0x34=0..5 --pre=@0x0B30003C=0x0..0x300000 --pre=@0x0B30008C=0x0..0x300000 --pre=@0x0B3000DC=0x0..0x300000 --pre=@0x0B30012C=0x0..0x300000 --pre=@0x3C=0..0 --pre=a3=0..1 --stub-ret=-1 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=300
-src/game/item_classes.c func_0032CF40 --pre=a0=0x09000000..0x09000000 --pre=a1=0x0B300000..0x0B300000 --pre=@0x44F818=0x0B400000..0x0B400000 --pre=@0x44F820=0x0B410000..0x0B410000 --pre=@0x44F828=0..0x0B420000 --pre=@0x0B400010=0..0 --pre=@0x0B400018=0..0 --pre=@0x0B410028:u8=0..1 --pre=@0x0B420028:u8=0..1 --pre=@0x0B410010=0x40000000..0x41F00000 --pre=@0x0B420010=0x40000000..0x41F00000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=300
+src/game/item_classes.c Kind26_NearestDistSq --pre=a0=0x09000000..0x09000000 --pre=a1=0x0B300000..0x0B300000 --pre=@0x44F818=0x0B400000..0x0B400000 --pre=@0x44F820=0x0B410000..0x0B410000 --pre=@0x44F828=0..0x0B420000 --pre=@0x0B400010=0..0 --pre=@0x0B400018=0..0 --pre=@0x0B410028:u8=0..1 --pre=@0x0B420028:u8=0..1 --pre=@0x0B410010=0x40000000..0x41F00000 --pre=@0x0B420010=0x40000000..0x41F00000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=300
 src/leaf/b5_00320ED0.c func_0032D430 --pre=a0=0x09000000..0x09000000 --pre=a0+0x10=0x40000000..0x42000000 --pre=a0+0x18=0x40000000..0x42000000 --pre=a0+0xF0=0x0B000000..0x0B000000 --pre=@0x0B0006A4=0x0B010000..0x0B010000 --pre=a0+0x1624=0..6 --pre=a0+0x1628=0..1 --pre=a0+0x162C=-1..3 --pre=a0+0x163C=0x40000000..0x42000000 --pre=a0+0x1640=0x40000000..0x42000000 --pre=@0x44F818=0x0B400000..0x0B400000 --pre=@0x44F820=0x0B410000..0x0B410000 --pre=@0x44F828=0..0x0B420000 --pre=@0x0B400010=0..0 --pre=@0x0B400018=0..0 --pre=@0x0B410028:u8=0..1 --pre=@0x0B420028:u8=0..1 --pre=@0x0B410010=0x40000000..0x41F00000 --pre=@0x0B420010=0x40000000..0x41F00000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-fret=0.9 --stub-fret=1.0 --stub-fret=600.0 --stub-fret=1200.0 --stub-fret=3000.0 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=800
 src/leaf/b5_00320ED0.c Kind26_MoveDoneB --pre=a0=0x09000000..0x09000000 --pre=a0+0x10=0x40000000..0x42000000 --pre=a0+0x18=0x40000000..0x42000000 --pre=a0+0xF0=0x0B000000..0x0B000000 --pre=@0x0B0006A4=0x0B010000..0x0B010000 --pre=a0+0x1624=0..6 --pre=a0+0x16A8:u8=0..1 --pre=a0+0x16A9:u8=0..1 --pre=a0+0x1630=-1..1 --pre=@0x44F818=0x0B400000..0x0B400000 --pre=@0x44F820=0x0B410000..0x0B410000 --pre=@0x44F828=0..0x0B420000 --pre=@0x0B400010=0..0 --pre=@0x0B400018=0..0 --pre=@0x0B410028:u8=0..1 --pre=@0x0B420028:u8=0..1 --pre=@0x0B410010=0x40000000..0x41F00000 --pre=@0x0B420010=0x40000000..0x41F00000 --pre=@0x44E4D8=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-fret=0.9 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=300
 src/game/scene_game_members.c EffectMgr_free --runs=5
 src/game/scene_game_members.c RoomEffects_delete --runs=5
-src/game/item_classes.c func_0025FEF0 --runs=5
+src/game/item_classes.c SubPool_delete --runs=5
 src/game/props.c SynthBase_new --runs=20
 src/game/scene_game_members.c EffectMgr_Remove --pre=a0=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=a1=-2..0x401 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..1 --runs=200
 src/leaf/b5_00320ED0.c Kind26_MoveDone --pre=a0=0x09000000..0x09000000 --pre=a0+0xF0=0x0B000000..0x0B000000 --pre=a0+0x16A8:u8=0..1 --pre=a0+0x16A9:u8=0..1 --pre=a0+0x1630=-1..1 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=200
@@ -5770,19 +5770,19 @@ src/game/scene_game.c SceneTableBase_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 
 src/game/camera.c CameraBase_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/navmesh.c NavMeshBase_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/pathplan.c PathPlanBase_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/system.c func_001AAE10 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/system.c func_001BC090 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/system.c func_001BC320 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/system.c func_001BE730 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c Renderer_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c Obj46ACF0_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c Obj46AD88_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c Obj46ADD0_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/system.c func_001BECA0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/system.c func_001BF220 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c Obj46AE10_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/rumble.c RumbleBase_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/memcard.c MemCardBase_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/scene_game_members.c Obj46AEC0_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/movie.c func_001BF660 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/system.c func_001BF7A0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/movie.c MovieLibBase_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c Obj46AF20_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/snd_driver.c SndDriverBase_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/system.c func_001BF880 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/system.c Vram_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/game.c TexCache_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/scene_game.c Obj46B350_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/scene_game.c Obj46BA68_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
@@ -5790,18 +5790,18 @@ src/game/daniella.c func_0020D8D0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=4
 src/game/daniella.c func_0020D920 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/daniella.c func_0020D970 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/daniella.c func_0020D9C0 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/game.c func_0020DB40 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/game.c Obj46BEE0_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/scene_game.c Obj46C6F0_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/scene_game.c RoomMeshes_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/doors.c func_0025E950 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/doors.c PlacedMesh_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/gameover.c GameOverBase_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/effects.c func_00267480 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/game.c func_00267500 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/effects.c TintDrawer_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/game.c PlacedModelBase_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/scene_game.c Obj46D780_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/effects.c func_00269970 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/effects.c Bloom_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/model.c ScreenBlend_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/model.c Fog_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
-src/game/effects.c func_002BB220 --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
+src/game/effects.c FogDrawer_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/effects.c DepthRange_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/subscreen.c Obj46EC80_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
 src/game/scene_game.c Message_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..2 --runs=40
@@ -5948,8 +5948,8 @@ src/game/game.c Pads_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=
 src/game/game.c Pads_dtor --pre=a0=0..0 --runs=3
 src/game/game.c Game_dtor --pre=a0=0x00800000..0x00800000 --pre=@0x00C00A04=0..1 --pre=@0x00C00A0C=0..1 --pre=@0x01CD9A40=0x0046A1C0..0x0046A1C0 --pre=a1=-1..1 --runs=40
 src/game/system.c Pads_Shutdown --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x40=0..3 --runs=10
-src/game/system.c func_001BEC10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0=0..1 --pre=a0+4=0..1 --pre=a0+8=0..0xFFFF --pre=a1=-1..1 --runs=40
-src/game/system.c func_001BEC10 --pre=a0=0..0 --runs=3
+src/game/system.c IopBuffers_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a0+0=0..1 --pre=a0+4=0..1 --pre=a0+8=0..0xFFFF --pre=a1=-1..1 --runs=40
+src/game/system.c IopBuffers_dtor --pre=a0=0..0 --runs=3
 src/game/system.c System_dtor --pre=a0=0x00800000..0x00800000 --pre=a1=-1..1 --runs=20
 src/game/system.c System_dtor --pre=a0=0..0 --runs=3
 src/game/system.c System_Shutdown --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x14=0..9 --pre=a0+0x18=0..9 --runs=10
@@ -6103,9 +6103,9 @@ src/game/movie.c MovieCopied_TakeFrame --pre=a0=0x0B000000..0x0B000000 --pre=a0+
 src/game/movie.c MovieAdded_TakeFrame --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1B5:u8=0..1 --runs=50
 src/game/movie.c MovieSmall_TakeFrame --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1B5:u8=0..1 --pre=a0+0x1B4:u8=0..1 --runs=50
 src/game/movie.c MovieCopied_Draw --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4F0=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AC50..0x0046AC50 --pre=@0x44E4E8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046B1D0..0x0046B1D0 --pre=a0+0x20=0x100..0x200 --pre=a0+0x24=0xE0..0x1C0 --pre=a0+0x1B5:u8=0..1 --pre=a0+0x1B8=0x0B000400..0x0B000400 --stub-ret=0 --stub-ret=0x0B600000 --runs=100
-src/game/movie.c func_002B69B0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x14=0x0B300000..0x0B300000 --pre=@0x0B300000=0x0046C740..0x0046C740 --pre=@0x44E4F0=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AC50..0x0046AC50 --pre=a0+0x1BC:u8=0..2 --pre=a0+0x1AC:u8=0..1 --pre=a0+0x1A8=0..1 --pre=a0+0x18=0..1 --pre=a0+0x1C8=0x3F000000..0x3F800000 --pre=a0+0x1CC=0x3F000000..0x3F800000 --pre=a0+0x1D0=0x3F000000..0x3F800000 --pre=a0+0x1D4=0..0x3F800000 --stub-ret=0 --stub-ret=1 --stub-ret=4 --stub-ret=0x0B400000 --runs=300
-src/game/movie.c func_002B68B0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x14=0x0B300000..0x0B300000 --pre=@0x0B300000=0x0046C740..0x0046C740 --pre=@0x44E4F0=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AC50..0x0046AC50 --pre=a0+0x1BC:u8=0..2 --pre=a0+0x1AC:u8=0..1 --pre=a0+0x1A8=0..1 --pre=a0+0x18=0..1 --pre=a0+0x1C8=0x3F000000..0x3F800000 --pre=a0+0x1CC=0x3F000000..0x3F800000 --pre=a0+0x1D0=0x3F000000..0x3F800000 --pre=a0+0x1D4=0..0x3F800000 --stub-ret=0 --stub-ret=1 --stub-ret=4 --stub-ret=0x0B400000 --runs=300
-src/game/movie.c func_002B6710 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x14=0x0B300000..0x0B300000 --pre=@0x0B300000=0x0046C740..0x0046C740 --pre=@0x44E4F0=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AC50..0x0046AC50 --pre=a0+0x1BC:u8=0..2 --pre=a0+0x1AC:u8=0..1 --pre=a0+0x1A8=0..1 --pre=a0+0x18=0..1 --pre=a0+0x1C8=0x3F000000..0x3F800000 --pre=a0+0x1CC=0x3F000000..0x3F800000 --pre=a0+0x1D0=0x3F000000..0x3F800000 --pre=a0+0x1D4=0..0x3F800000 --stub-ret=0 --stub-ret=1 --stub-ret=4 --stub-ret=0x0B400000 --runs=300
+src/game/movie.c Movie_StateOpening --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x14=0x0B300000..0x0B300000 --pre=@0x0B300000=0x0046C740..0x0046C740 --pre=@0x44E4F0=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AC50..0x0046AC50 --pre=a0+0x1BC:u8=0..2 --pre=a0+0x1AC:u8=0..1 --pre=a0+0x1A8=0..1 --pre=a0+0x18=0..1 --pre=a0+0x1C8=0x3F000000..0x3F800000 --pre=a0+0x1CC=0x3F000000..0x3F800000 --pre=a0+0x1D0=0x3F000000..0x3F800000 --pre=a0+0x1D4=0..0x3F800000 --stub-ret=0 --stub-ret=1 --stub-ret=4 --stub-ret=0x0B400000 --runs=300
+src/game/movie.c Movie_StateWaitFirst --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x14=0x0B300000..0x0B300000 --pre=@0x0B300000=0x0046C740..0x0046C740 --pre=@0x44E4F0=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AC50..0x0046AC50 --pre=a0+0x1BC:u8=0..2 --pre=a0+0x1AC:u8=0..1 --pre=a0+0x1A8=0..1 --pre=a0+0x18=0..1 --pre=a0+0x1C8=0x3F000000..0x3F800000 --pre=a0+0x1CC=0x3F000000..0x3F800000 --pre=a0+0x1D0=0x3F000000..0x3F800000 --pre=a0+0x1D4=0..0x3F800000 --stub-ret=0 --stub-ret=1 --stub-ret=4 --stub-ret=0x0B400000 --runs=300
+src/game/movie.c Movie_StatePausedFirst --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x14=0x0B300000..0x0B300000 --pre=@0x0B300000=0x0046C740..0x0046C740 --pre=@0x44E4F0=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AC50..0x0046AC50 --pre=a0+0x1BC:u8=0..2 --pre=a0+0x1AC:u8=0..1 --pre=a0+0x1A8=0..1 --pre=a0+0x18=0..1 --pre=a0+0x1C8=0x3F000000..0x3F800000 --pre=a0+0x1CC=0x3F000000..0x3F800000 --pre=a0+0x1D0=0x3F000000..0x3F800000 --pre=a0+0x1D4=0..0x3F800000 --stub-ret=0 --stub-ret=1 --stub-ret=4 --stub-ret=0x0B400000 --runs=300
 src/game/model.c CharLoad_DogModelA --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x6FBF00=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046AB50..0x0046AB50 --pre=a1=0..1 --stub-ret=0 --stub-ret=0x0B600000 --runs=60
 src/game/model.c CharLoad_Costume8 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x6FBF00=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046AB50..0x0046AB50 --pre=a1=0..1 --stub-ret=0 --stub-ret=0x0B600000 --runs=60
 src/game/model.c CharLoad_Costume7 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x6FBF00=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046AB50..0x0046AB50 --pre=a1=0..1 --stub-ret=0 --stub-ret=0x0B600000 --runs=60
@@ -6131,7 +6131,7 @@ src/game/event.c Events_RoomPoint --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D
 src/game/director.c Cutscene_ShotAt --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x0046ED30..0x0046ED30 --pre=a0+0x18=0x0B100000..0x0B100000 --pre=@0x0B100000:u16=50..100 --pre=@0x0B100002:u16=0..3 --pre=@0x0B10002C:u16=0..30 --pre=@0x0B10002E:u16=20..60 --pre=@0x0B100038:u16=30..60 --pre=@0x0B10003A:u16=50..100 --pre=@0x0B100044:u16=0..90 --pre=@0x0B100046:u16=60..100 --pre=a1=-150..200 --runs=300
 src/game/director.c Cutscene_IntoShot --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x0046ED30..0x0046ED30 --pre=a0+0x18=0x0B100000..0x0B100000 --pre=@0x0B100000:u16=50..100 --pre=@0x0B100002:u16=0..3 --pre=@0x0B10002C:u16=0..30 --pre=@0x0B10002E:u16=20..60 --pre=@0x0B100038:u16=30..60 --pre=@0x0B10003A:u16=50..100 --pre=@0x0B100044:u16=0..90 --pre=@0x0B100046:u16=60..100 --pre=a1=-150..200 --stub-ret=-1 --stub-ret=0 --stub-ret=1 --stub-ret=2 --runs=60
 src/game/director.c Cutscene_NextShot --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x0046ED30..0x0046ED30 --pre=a0+0x18=0x0B100000..0x0B100000 --pre=@0x0B100000:u16=50..100 --pre=@0x0B100002:u16=0..3 --pre=@0x0B10002C:u16=0..30 --pre=@0x0B10002E:u16=20..60 --pre=@0x0B100038:u16=30..60 --pre=@0x0B10003A:u16=50..100 --pre=@0x0B100044:u16=0..90 --pre=@0x0B100046:u16=60..100 --pre=a1=-150..200 --stub-ret=-1 --stub-ret=0 --stub-ret=1 --stub-ret=2 --runs=60
-src/game/director.c func_0037E690 --runs=3
+src/game/director.c Cutscene_Slot84 --runs=3
 src/game/rooms/room_20.c Room20_Cond02 --pre=@0x456DF8=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046ECF0..0x0046ECF0 --pre=@0x44E4D0=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046B3B8..0x0046B3B8 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003:u8=0..3 --pre=@0x0B100004:u8=0..3 --stub-ret=0 --stub-ret=0x0B400000 --runs=30
 src/game/rooms/room_20.c Room20_Cond01 --pre=@0x44E4D0=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046B3B8..0x0046B3B8 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003:u8=0..3 --pre=@0x0B100004:u8=0..3 --pre=a1=0x0B000000..0x0B000000 --pre=@0x0B100005:u8=0..3 --pre=@0x0B100006:u8=0..255 --stub-ret=0 --stub-ret=0x100 --stub-ret=0x10000 --stub-ret=0x2FF --runs=60
 src/game/rooms/room_20.c Room20_Cond00 --pre=@0x456DF8=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046ECF0..0x0046ECF0 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B300000=0x0046D730..0x0046D730 --pre=@0x0B300028:u8=0..1 --pre=@0x0B300029:u8=0..1 --pre=@0x0B3000F0=0x0B500000..0x0B500000 --pre=@0x0B500000=0x00470620..0x00470620 --pre=@0x44E570=0x0B200000..0x0B200000 --pre=@0x0B200000=0x0046A9D0..0x0046A9D0 --pre=@0x0B200004=0x0BA00000..0x0BA00000 --pre=@0x0B200008=40..40 --pre=@0x0BA0003C=0..0x30000000 --pre=@0x0BA0008C=0..0x30000000 --stub-ret=0 --stub-ret=0x0B400000 --stub-ret=1 --pre=@0x0B400020=0xC1000000..0x41000000 --pre=@0x0B400024=0xC1000000..0x41000000 --pre=@0x0B400028=0xC1000000..0x41000000 --pre=@0x0B400030=0xC0000000..0x40000000 --pre=@0x0B400034=0xC0000000..0x40000000 --pre=@0x0B40003C=0xFFFFFFFF..0x80000002 --pre=@0x0B400014=0xC0000000..0x40800000 --pre=@0x0B300050=0xC0000000..0x40000000 --pre=@0x0B300054=0xC0000000..0x40000000 --runs=200
@@ -6197,23 +6197,23 @@ src/game/rooms/room_62.c Room62_Cmd00 --pre=@0x456DF8=0x0B800000..0x0B800000 --p
 src/game/pursuer.c Kind09_dtor --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=60
 src/game/pursuer.c Kind09_Behaviour25C --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=10
 src/game/pursuer.c Kind09_BehaviourSearch --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --pre=a0+0xA0=0..1 --pre=a0+0xA4=-1..0 --pre=a0+0xA8=0..0x00300000 --pre=a0+0x175C=4..5 --runs=60
-src/game/effects.c func_003012B0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..1 --pre=@0x0B51803C=0..0 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --pre=a0+0xC=-1..1 --pre=a0+0x1E:u8=0..1 --pre=a1=0..1 --pre=@0x44F810=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=0x0B400000 --stub-ret=1 --stub-ret=2 --stub-ret=7 --stub-ret=13 --stub-ret=27 --stub-ret=-3 --runs=400
-src/game/effects.c func_00301D30 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/effects.c Marker_Sparks --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..1 --pre=@0x0B51803C=0..0 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --pre=a0+0xC=-1..1 --pre=a0+0x1E:u8=0..1 --pre=a1=0..1 --pre=@0x44F810=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=0x0B400000 --stub-ret=1 --stub-ret=2 --stub-ret=7 --stub-ret=13 --stub-ret=27 --stub-ret=-3 --runs=400
+src/game/effects.c Marker_State --pre=a0=0x0B000000..0x0B000000 --runs=5
 src/game/effects.c Marker_SetParams --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..1 --pre=@0x0B51803C=0..0 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --pre=a1=0..0x0B100000 --pre=@0x0B100000=0..6 --pre=@0x0B100004=0..1 --pre=@0x44E4D8=0..1 --pre=@0x44F808=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=0x0B400000 --runs=60
 src/game/effects.c Marker_Update --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --pre=@0x44F808=0..1 --pre=@0x44E4F8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046AB50..0x0046AB50 --pre=@0x44E4F0=0x0BC00000..0x0BC00000 --pre=@0x0BC00000=0x0046AC50..0x0046AC50 --pre=a0+0x1C:u8=0..1 --pre=a0+0x8=0..0x40000000 --pre=a0+0x10=1..3 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..1 --pre=@0x0B51803C=0..0 --stub-ret=0 --stub-ret=1 --stub-fret=0.5 --stub-fret=0.1 --runs=200
 src/game/effects.c Marker_Start --pre=a0=0x0B000000..0x0B000000 --runs=5
 src/game/effects.c DriftingFlecks_Start --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --stub-fret=0.25 --stub-fret=0.75 --runs=10
 src/game/effects.c DriftingFlecks_Update --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --pre=a0+0x30=0x40000000..0x40000000 --pre=a0+0x34=0x41000000..0x41000000 --pre=a0+0x38=0xC0400000..0x40400000 --pre=a0+0x138=0xBF000000..0x41100000 --pre=a0+0x238=0xBF000000..0x3F000000 --pre=a0+0x338=0xBF000000..0x3F000000 --pre=a0+0x4F8:u8=0..0x80 --pre=a0+0x738=0..2 --stub-ret=0 --stub-ret=1 --stub-ret=4 --stub-fret=0.25 --stub-fret=0.75 --runs=200
 src/game/effects.c DriftingFlecks_Draw --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x238=0xBF000000..0x3F000000 --pre=a0+0x338=0xBF000000..0x3F000000 --pre=a0+0x38=0xC0000000..0x40000000 --pre=a0+0x538=0x3F000000..0x3F400000 --runs=60
-src/game/progress.c func_00179140 --pre=a0=0x0B000000..0x0B000000 --runs=3
-src/game/progress.c func_00179150 --pre=a0=0x0B000000..0x0B000000 --runs=3
-src/game/progress.c func_00179160 --pre=a0=0x0B000000..0x0B000000 --runs=3
-src/game/progress.c func_001794B0 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/progress.c ProgressBase_Slot18 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/progress.c ProgressBase_Slot14 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/progress.c ProgressBase_Slot10 --pre=a0=0x0B000000..0x0B000000 --runs=3
+src/game/progress.c ProgressBase_SlotC --pre=a0=0x0B000000..0x0B000000 --runs=3
 src/game/pursuer.c Kind15_dtor --pre=a0=0..0x0B000000 --pre=@0x0B000000=0x0046A2F0..0x0046A2F0 --pre=a1=-1..1 --pre=a0+0x20=0..7 --pre=a0+0xF0=0..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --runs=60
 src/game/room_map.c Fiona_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..1 --runs=20
 src/game/event.c Events_dtor --pre=a0=0..0x0B000000 --pre=a1=-1..1 --pre=a0+0x784=0..0x0B400000 --runs=40
 src/game/event.c Events_DealThings --pre=@0x44E4D8=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0047A7E8..0x0047A7E8 --pre=@0x44E550=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AB50..0x0046AB50 --pre=@0x44F808=0..0x0B200000 --pre=@0x0B200000=0x0046D730..0x0046D730 --pre=@0x0B200028:u8=0..1 --pre=@0x0B200030=0xFF..0x106 --pre=@0x44E568=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046C3E0..0x0046C3E0 --stub-ret=0 --stub-ret=3 --stub-ret=0x109 --stub-ret=0x150 --runs=200
-src/game/doors.c func_00223DE0 --pre=a0=0x0B000000..0x0B000000 --pre=f12=-2..2 --runs=20
+src/game/doors.c CamDirector_Set50 --pre=a0=0x0B000000..0x0B000000 --pre=f12=-2..2 --runs=20
 src/game/pursuer.c Kind09_BehaviourIdle --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=5
 src/game/pursuer.c Kind09_OffscreenStep --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
 src/game/pursuer.c Kind09_ShowUp --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --stub-ret=0 --stub-ret=1 --runs=20
@@ -6567,14 +6567,14 @@ src/game/movie.c func_00226790 --pre=a0=-5..5 --runs=5
 src/game/movie.c func_002267A0 --runs=3
 src/game/movie.c func_002267B0 --pre=a0=-5..5 --runs=5
 src/game/movie.c func_002267C0 --runs=3
-src/game/movie.c func_00226820 --pre=a0=-5..5 --stub-ret=0x0B400000 --runs=5
-src/game/movie.c func_00226848 --stub-ret=0x0B400000 --runs=5
+src/game/movie.c Sofdec_SetValue --pre=a0=-5..5 --stub-ret=0x0B400000 --runs=5
+src/game/movie.c Sofdec_GetValue --stub-ret=0x0B400000 --runs=5
 src/game/movie.c func_002267D0 --stub-ret=0x0B400000 --runs=5
 src/game/movie.c func_0025C2F8 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
 src/game/movie.c func_0025C320 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
 src/game/movie.c func_0025C360 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
 src/game/movie.c func_0025C3A0 --pre=a0=-100000..100000000 --pre=@0x3EA900=1000..2000000 --runs=30
-src/game/movie.c func_0025C3D0 --pre=a0=0..2000000 --runs=5
+src/game/movie.c Ticks_SetRate --pre=a0=0..2000000 --runs=5
 src/game/movie.c func_0025C3E0 --pre=a0=0x0B000000..0x0B000000 --runs=3
 src/game/movie.c func_0025C400 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1000..1000 --pre=a0+0x8=-500..500 --pre=a0+0x10=-500..500 --runs=40
 src/game/music.c TintStalker_Disable --pre=a0=0x0B000000..0x0B000000 --pre=@0x0B000000=0x00471290..0x00471290 --runs=3
@@ -6890,7 +6890,7 @@ src/game/rooms/room_8F.c Room8F_Cmd00 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0
 src/game/placed.c BurstA_Start --pre=a0=0x0B000000..0x0B000000 --runs=5
 src/game/rooms/room_C7.c RoomC7_Cmd00 --pre=a2=0x0B100000..0x0B100000 --pre=@0x0B100003:u8=0..4 --pre=@0x44E4D0=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046B3B8..0x0046B3B8 --pre=@0x44E4F0=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0046AC50..0x0046AC50 --pre=@0x44F820=0x0B300000..0x0B300000 --stub-ret=0x808080 --stub-ret=0x80808080 --stub-ret=0x40808080 --runs=80
 src/game/pursuer.c Effect79FF0_Update --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x34:u8=0..1 --pre=a0+0x30=0xFFFFFFFF..3 --pre=a0+0x4=0..2 --pre=a0+0x8=0..2 --pre=a0+0xC=0..2 --pre=a0+0x10=0..2 --pre=a0+0x14=0..2 --pre=@0x44F828=0x0B300000..0x0B300000 --pre=@0x0B3000F8=3..4 --pre=@0x0B3000FC=0x10..0x11 --pre=@0x44E550=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046AB50..0x0046AB50 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..0 --stub-ret=0 --stub-ret=0x0B600000 --runs=150
-src/game/effects.c func_0035D840 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..15 --pre=a0+0xD3C:u8=0..1 --pre=a0+0xD38=0x3F000000..0x40000000 --pre=@0x44E550=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046AB50..0x0046AB50 --stub-fret=0.0 --stub-fret=0.25 --stub-fret=0.5 --stub-fret=0.99 --runs=200
+src/game/effects.c Debris_Piece --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..15 --pre=a0+0xD3C:u8=0..1 --pre=a0+0xD38=0x3F000000..0x40000000 --pre=@0x44E550=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046AB50..0x0046AB50 --stub-fret=0.0 --stub-fret=0.25 --stub-fret=0.5 --stub-fret=0.99 --runs=200
 src/game/effects.c Debris_SetParams --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=@0x0B100000:u8=0..7 --runs=60
 src/game/effects.c Debris_SetParams --pre=a1=0..0 --runs=10
 src/game/effects.c Debris_Update --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xC24=0x43F00000..0x44000000 --runs=200
@@ -7113,7 +7113,7 @@ src/game/debilitas3.c Kind27_StartTurnToFiona --pre=a0+0xF0=0x0A000000..0x0A0000
 src/game/debilitas3.c Kind27_AttackTable --pre=a1=-2..18 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A200030=0x7F00..0x8100 --runs=100
 src/game/lorenzo.c Kind39_ActionOffsets --pre=a1=8..17 --pre=a2=0x0B000000..0x0B000000 --runs=60
 src/game/debilitas3.c Kind27_StartLunge --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --pre=@0x0A100018=0x1F..0x20 --pre=@0x0A000550=0..0x3F800000 --pre=a0+0x15C0:u8=0xFE..0xFF --pre=a0+0x124=0..3 --pre=a0+0x128=0..3 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A2007B8:u8=4..5 --runs=80
-src/game/effects.c func_0037C630 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0..127 --pre=a2=0..40 --pre=a0+0x4470=0..1 --pre=a0+0x3050=0x3F000000..0x42C80000 --pre=a0+0x3054=0x3F000000..0x42C80000 --pre=a0+0x3058=0x3F000000..0x42C80000 --pre=@0x44E550=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046AB50..0x0046AB50 --stub-fret=0.05 --stub-fret=0.4 --stub-fret=0.97 --stub-ret=3 --stub-ret=0x2F --runs=200
+src/game/effects.c AshFlakes_Flake --pre=a0=0x0A000000..0x0A000000 --pre=a1=0..127 --pre=a2=0..40 --pre=a0+0x4470=0..1 --pre=a0+0x3050=0x3F000000..0x42C80000 --pre=a0+0x3054=0x3F000000..0x42C80000 --pre=a0+0x3058=0x3F000000..0x42C80000 --pre=@0x44E550=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046AB50..0x0046AB50 --stub-fret=0.05 --stub-fret=0.4 --stub-fret=0.97 --stub-ret=3 --stub-ret=0x2F --runs=200
 src/game/effects.c AshFlakes_Start --pre=a0=0x0A000000..0x0A000000 --runs=10
 src/game/effects.c AshFlakes_Draw --pre=a0=0x0A000000..0x0A000000 --pre=a0+0x4470=0..1 --runs=10
 src/game/effects.c AshFlakes_Update --pre=a0=0x0A000000..0x0A000000 --pre=a0+0x4474:u8=0..1 --pre=a0+0x4470=0..1 --pre=a0+0x446C=0x3F800000..0x42000000 --pre=a0+0x3043:u8=1..16 --pre=@0x44E550=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046AB50..0x0046AB50 --stub-fret=0.05 --stub-fret=0.4 --stub-fret=0.97 --stub-ret=3 --stub-ret=0x2F --runs=40
@@ -7139,7 +7139,7 @@ src/game/props.c TurningModel_Start --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E
 src/game/props.c TurningModel_Update --pre=a0=0x0A000000..0x0A000000 --pre=a0+0x4=0x40000000..0x40500000 --runs=60
 src/game/props.c TurningModel_Draw --pre=a0=0x0A000000..0x0A000000 --runs=10
 src/game/props.c BackdropModel2_Draw --pre=a0=0x0A000000..0x0A000000 --pre=a0+0x10=0..1 --runs=30
-src/game/effects.c func_003767C0 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0..63 --pre=a0+0x1A58:u8=0..1 --pre=a0+0x1A54=0..1 --pre=a0+0x1A50=0..500 --pre=@0x44E550=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046AB50..0x0046AB50 --stub-fret=0.05 --stub-fret=0.4 --stub-fret=0.97 --stub-ret=0 --stub-ret=1 --stub-ret=0x10 --stub-ret=0x3F --runs=200
+src/game/effects.c LightShaft_Mote2 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0..63 --pre=a0+0x1A58:u8=0..1 --pre=a0+0x1A54=0..1 --pre=a0+0x1A50=0..500 --pre=@0x44E550=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046AB50..0x0046AB50 --stub-fret=0.05 --stub-fret=0.4 --stub-fret=0.97 --stub-ret=0 --stub-ret=1 --stub-ret=0x10 --stub-ret=0x3F --runs=200
 src/game/effects.c Room49Effect_Start --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046AB50..0x0046AB50 --stub-fret=0.05 --stub-fret=0.4 --stub-fret=0.97 --stub-ret=0 --stub-ret=1 --stub-ret=0x10 --stub-ret=0x3F --runs=10
 src/game/effects.c Room49Effect_Update --pre=a0=0x0A000000..0x0A000000 --pre=a0+0x1A58:u8=0..1 --pre=a0+0x1A54=0..1 --pre=a0+0x1A50=0..500 --pre=a0+0x1A48=0x3F000000..0x40400000 --pre=a0+0x1A4C=0x3F000000..0x40400000 --pre=@0x44E550=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046AB50..0x0046AB50 --stub-fret=0.05 --stub-fret=0.4 --stub-fret=0.97 --stub-ret=0 --stub-ret=1 --stub-ret=0x10 --stub-ret=0x3F --runs=60
 src/game/scene_ending.c SceneEnding_StateEntry --pre=a0=0x0A000000..0x0A000000 --pre=@0x0A000000=0x0047A330..0x0047A330 --pre=@0x44E4E8=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046B1D0..0x0046B1D0 --pre=@0x44E998=0x0B500000..0x0B500000 --pre=@0x0B500000=0x0046D7D0..0x0046D7D0 --pre=@0x44E4F0=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046AC50..0x0046AC50 --pre=@0x44E970=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046A110..0x0046A110 --pre=@0x44E560=0x0BA00000..0x0BA00000 --pre=@0x0BA00000=0x0046BF2C..0x0046BF2C --pre=@0x44E4E0=0x0BB00000..0x0BB00000 --pre=@0x0BB00000=0x0046A1E0..0x0046A1E0 --pre=@0x44E980=0x0BC00000..0x0BC00000 --pre=@0x44E978=0x0BD00000..0x0BD00000 
@@ -7163,14 +7163,14 @@ src/game/scene_ending.c SceneEnding_SeqResults --pre=a0=0x0A000000..0x0A000000 -
 src/game/effects.c SmokeTrail_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..1
 src/game/effects.c SmokeTrail_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0x0B800000..0x0B800000
 src/game/effects.c SmokeTrail_Start --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 
-src/game/effects.c func_00368C40 --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..31 --pre=a2=0..1 --pre=a0+0xE58=0..1 --pre=a0+0xE50=0x0B800000..0x0B800000
+src/game/effects.c SmokeTrail_Puff --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..31 --pre=a2=0..1 --pre=a0+0xE58=0..1 --pre=a0+0xE50=0x0B800000..0x0B800000
 src/game/effects.c SmokeTrail_Update --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a0+0xE58=0..1 --pre=a0+0xE54:u8=0..1 --pre=a0+0xE50=0x0B800000..0x0B800000 --pre=@0x0B800028:u8=0..1 --runs=100
-src/game/effects.c func_00369200 --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..63 --pre=a2=0..1 --pre=a0+0x1C54=0..1 --pre=a0+0x1C51:u8=0..255
+src/game/effects.c WispColumn_Wisp --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..63 --pre=a2=0..1 --pre=a0+0x1C54=0..1 --pre=a0+0x1C51:u8=0..255
 src/game/effects.c WispColumn_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..1
 src/game/effects.c WispColumn_Draw --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a0+0x1C51:u8=0..1 --pre=a0+0x1C54=0..1
 src/game/effects.c WispColumn_Start --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 
 src/game/effects.c WispColumn_Update --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=@0x44F828=0x0B800000..0x0B800000 --pre=@0x0B80153C:u8=0x0B..0x0C --pre=@0x44E4F8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046C668..0x0046C668 --pre=a0+0x1C50:u8=0..1 --pre=a0+0x1C51:u8=0..2 --pre=a0+0x1C54=0..1 --stub-ret=0 --stub-ret=1 --runs=100
-src/game/effects.c func_00369720 --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..63 --pre=a2=0..1 --pre=a3=0..1 --pre=a0+0x20D8=0..1
+src/game/effects.c SparkSpray_Spark --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..63 --pre=a2=0..1 --pre=a3=0..1 --pre=a0+0x20D8=0..1
 src/game/effects.c SparkSpray_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..1
 src/game/effects.c SparkSpray_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0x0B800000..0x0B800000 --pre=@0x0B800000:u8=0..1
 src/game/effects.c SparkSpray_Update --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=@0x44E4F8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046C668..0x0046C668 --pre=a0+0x20D0:u8=0..1 --pre=a0+0x20D4=0..1 --pre=a0+0x20D8=0..1 --pre=a0+0x2050:u16=0..2 --pre=a0+0x2052:u16=0..2 --stub-ret=0 --stub-ret=0 --stub-ret=1 --runs=100
@@ -7189,22 +7189,22 @@ src/game/props.c Embers_Draw --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0
 src/game/props.c Embers_Update --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a0+0x10C0=0..1 --pre=a0+0x10C4:u8=0..1 --pre=a0+0x10C5:u8=0..1 --runs=100
 src/game/props.c Embers_Ember --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..15 --pre=a2=0..1 --pre=a0+0x10C0=0..1 --pre=a0+0x10C4:u8=0..1
 src/game/props.c Embers_Flame --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..23 --pre=a2=0..1 --pre=a0+0x10C0=0..1 --pre=a0+0x10C4:u8=0..1
-src/game/effects.c func_00366000 --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a0+0x168=0..1 --pre=a0+0x16E:u8=0..1 --stub-ret=0x0B300000 --stub-ret-prob=1
+src/game/effects.c Spark_ToBone --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a0+0x168=0..1 --pre=a0+0x16E:u8=0..1 --stub-ret=0x0B300000 --stub-ret-prob=1
 src/game/effects.c Spark_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..1
 src/game/effects.c Spark_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0x0B800000..0x0B800000 --pre=@0x0B800000=0x3E000000..0x3FC00000 --pre=@0x0B80000C=0x3D000000..0x3FC00000 --pre=@0x0B800014=0..1 --pre=@0x0B800018=0..0x3F800000 --pre=a0+0x168=0..1 --runs=200
 src/game/effects.c Spark_Draw --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=@0x44F808=0..1 --pre=@0x44E4F8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046C668..0x0046C668 --pre=@0x44E578=0x0BA00000..0x0BA00000 --stub-ret=0 --stub-ret=1 --stub-ret=3 --pre=a0+0x16C:u8=0..1 --pre=a0+0x16D:u8=0..1 --pre=a0+0x168=0..1 --runs=100
 src/game/effects.c Spark_Update --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=@0x44F808=0..1 --pre=@0x44E4F8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x0046C668..0x0046C668 --pre=@0x44E578=0x0BA00000..0x0BA00000 --stub-ret=0 --stub-ret=1 --stub-ret=3 --pre=a0+0x16C:u8=0..1 --pre=a0+0x16D:u8=0..1 --pre=a0+0x168=0..1 --pre=a0+0x148=0x3E000000..0x3FC00000 --pre=a0+0x150=0xBF000000..0x3F000000 --pre=a0+0x1C=0..2 --pre=a0+0x4C=0..2 --pre=a0+0x7C=0..2 --pre=a0+0xAC=0..2 --runs=200
 src/game/effects.c Spark_Start --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 
-src/game/effects.c func_0035FF30 --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a0+0xAC=0..1
+src/game/effects.c OneDrip_Drop --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a0+0xAC=0..1
 src/game/effects.c OneDrip_Update --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=@0x44E578=0x0BA00000..0x0BA00000 --pre=@0x0BA10000=0x0046AB50..0x0046AB50 --pre=@0x44E560=0x0BC00000..0x0BC00000 --pre=@0x0BC00000=0x0046BF2C..0x0046BF2C --pre=a0+0xAC=0..1 --pre=a0+0xB0=0..1 --pre=a0+0x14=0x3E000000..0x40000000 --pre=a0+0x44=0x3E000000..0x40000000 --pre=a0+0xA8=0x3F000000..0x40400000 --stub-ret=0 --stub-ret=0x0B300000 --runs=100
 src/game/effects.c OneDrip_Start --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 
-src/game/effects.c func_0035F640 --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..13 --pre=a0+0x5C0=0..1 --pre=@0x44E570=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046A9D0..0x0046A9D0 --stub-ret=-1 --stub-ret=3
+src/game/effects.c CeilingDrips_Drop --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..13 --pre=a0+0x5C0=0..1 --pre=@0x44E570=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046A9D0..0x0046A9D0 --stub-ret=-1 --stub-ret=3
 src/game/effects.c CeilingDrips_Update --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=@0x44E570=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046A9D0..0x0046A9D0 --pre=@0x44E578=0x0BA00000..0x0BA00000 --pre=@0x0BA10000=0x0046AB50..0x0046AB50 --pre=@0x44E560=0x0BC00000..0x0BC00000 --pre=@0x0BC00000=0x0046BF2C..0x0046BF2C --pre=a0+0x5C0=0..1 --pre=a0+0x5C4=0..1 --pre=a0+0x5FC=0..1 --pre=a0+0x600=0xFFFFFFFF..0xFFFFFFFF --pre=a0+0x634=0..2 --outparam=16 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B300000 --runs=150
 src/game/effects.c CeilingDrips_Start --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=@0x44E570=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046A9D0..0x0046A9D0
 src/game/effects.c Effect79B00_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..1 --pre=@0x44E570=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046A9D0..0x0046A9D0 --pre=@0x0B800008=1..100 --pre=@0x0B800004=0..1 --pre=@0x44E4B8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x00469A60..0x00469A60
 src/game/effects.c Effect79B00_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0x0B700000..0x0B700000 --pre=@0x44E570=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046A9D0..0x0046A9D0 --pre=@0x0B800008=1..100 --pre=@0x0B800004=0..1 --pre=@0x44E4B8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x00469A60..0x00469A60
 src/game/effects.c Effect79B00_Update --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a0+0xE8=0..1 --pre=a0+0xEC:u8=0..1 --pre=a0+0xEA:u8=0..16 --pre=a0+0xEB:u8=0..1 --pre=a0+0xB4=0x3F000000..0x42000000 --pre=a0+0xE4=0x3F000000..0x42000000 --pre=a0+0xC4=0xBF800000..0xC0000000 --pre=@0x44E570=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046A9D0..0x0046A9D0 --pre=@0x0B800008=1..100 --pre=@0x0B800004=0..1 --pre=@0x44E4B8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x00469A60..0x00469A60 --runs=150
-src/game/effects.c func_003619A0 --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0x0A000010..0x0A000010 --pre=a2=0..1 --pre=a0+0x1C10=0x41000000..0x42000000 --pre=@0x44E570=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046A9D0..0x0046A9D0 --pre=@0x0B800008=1..4 --pre=@0x0B800004=0x0B600000..0x0B600000 --pre=@0x0B60003C=0x0FFFFFFF..0x10000000 --pre=@0x0B60008C=0x0FFFFFFF..0x10000000 --pre=@0x0B6000DC=0x0FFFFFFF..0x10000000 --pre=@0x0B60012C=0x0FFFFFFF..0x10000000 --pre=@0x44E4B8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x00469A60..0x00469A60 --stub-fret=0.3 --stub-fret=0.7 --stub-fret=0.95 --stub-ret-prob=1 --runs=100
+src/game/effects.c Effect79B00_Piece --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0x0A000010..0x0A000010 --pre=a2=0..1 --pre=a0+0x1C10=0x41000000..0x42000000 --pre=@0x44E570=0x0B800000..0x0B800000 --pre=@0x0B800000=0x0046A9D0..0x0046A9D0 --pre=@0x0B800008=1..4 --pre=@0x0B800004=0x0B600000..0x0B600000 --pre=@0x0B60003C=0x0FFFFFFF..0x10000000 --pre=@0x0B60008C=0x0FFFFFFF..0x10000000 --pre=@0x0B6000DC=0x0FFFFFFF..0x10000000 --pre=@0x0B60012C=0x0FFFFFFF..0x10000000 --pre=@0x44E4B8=0x0B900000..0x0B900000 --pre=@0x0B900000=0x00469A60..0x00469A60 --stub-fret=0.3 --stub-fret=0.7 --stub-fret=0.95 --stub-ret-prob=1 --runs=100
 src/game/props.c BoneSmoke_Wisp --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..15 --pre=a2=0x0B700000..0x0B700000 --pre=a0+0x6CC=0..1
 src/game/props.c BoneSmoke_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..0 --pre=@0x44F818=0x0B800000..0x0B800000 --pre=@0x0B8000F0=0x0B900000..0x0B900000 --stub-ret=0x0B300000 --stub-ret=5
 src/game/props.c BoneSmoke_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0046AB50..0x0046AB50 --pre=@0x44F818=0x0B800000..0x0B800000 --pre=@0x0B8000F0=0x0B900000..0x0B900000 --stub-ret=0x0B300000 --stub-ret=5
@@ -7223,10 +7223,10 @@ src/game/effects.c StrikeMark_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0
 src/game/effects.c StrikeMark_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0x0B700000..0x0B700000 --pre=@0x0B700000=0xFF..0xFF --pre=@0x0B700004=0x0B600000..0x0B600000 --pre=@0x0B600000=0x0046AB50..0x0046AB50 --pre=@0x44E4D8=0x0B200000..0x0B200000 --pre=@0x44F818=0x0B800000..0x0B800000 --pre=@0x0B8000F0=0x0B900000..0x0B900000 --pre=@0x44F808=0x0BA00000..0x0BA00000 --stub-ret=0x0B300000 --stub-ret=5 --runs=40
 src/game/effects.c StrikeMark_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0x0B700000..0x0B700000 --pre=@0x0B700000=0xFF..0xFF --pre=@0x0B700004=0..0 --pre=@0x44E4D8=0x0B200000..0x0B200000 --pre=@0x44F818=0x0B800000..0x0B800000 --pre=@0x0B8000F0=0x0B900000..0x0B900000 --pre=@0x44F808=0x0BA00000..0x0BA00000 --stub-ret=0x0B300000 --stub-ret=5 --runs=10
 src/game/effects.c StrikeMark_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0x0B700000..0x0B700000 --pre=@0x0B700000=0..1 --pre=@0x44E4D8=0..0 --runs=10
-src/game/effects.c func_0033BE90 --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..255 --pre=a2=0..1 --pre=a0+0x7450=0..1
+src/game/effects.c DustShaft_Mote --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..255 --pre=a2=0..1 --pre=a0+0x7450=0..1
 src/game/effects.c DustShaft_Start --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 
 src/game/effects.c DustShaft_Update --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a0+0x7450=0..1 --pre=a0+0x24=0xC0800000..0x40E00000 --pre=a0+0x1C=0..1 --pre=a0+0x7050=0x7FFFFFFF..0x80000000 --pre=a0+0x6054=0xBF000000..0x3F000000 --max-steps=2000000 --runs=60
-src/game/effects.c func_0034E170 --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..63 --pre=a2=0..1 --pre=a0+0x1C50=0..1 --pre=a0+0x1C54=0..1 --pre=a0+0x1C58=0..6
+src/game/effects.c Fire_Flame --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..63 --pre=a2=0..1 --pre=a0+0x1C50=0..1 --pre=a0+0x1C54=0..1 --pre=a0+0x1C58=0..6
 src/game/effects.c Fire_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0..1
 src/game/effects.c Fire_SetParams --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a1=0x0B700000..0x0B700000 --pre=@0x0B700000=0xFFFFFFFF..3 --pre=@0x0B700004=0..1 --max-steps=2000000
 src/game/effects.c Fire_Update --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B400000..0x0B400000 --pre=@0x0B400000=0x0046AB50..0x0046AB50 --pre=a0+0x1C50=0..1 --pre=a0+0x1C54=0..1 --pre=a0+0x1C5C:u8=0..1 --pre=a0+0x1C=0..0x62 --pre=a0+0x10=0x45..0x46 --pre=a0+0xC1C=0..0x62 --pre=a0+0xC10=0x45..0x46 --pre=a0+0x1C58=0..6 --runs=100

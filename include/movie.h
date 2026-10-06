@@ -37,11 +37,11 @@ typedef struct Movie {
 } Movie;
 
 /* movie.c */
-extern void func_002B6340(Movie *m);   /* apply the movie volume */
-extern s32 func_002B6410(Movie *m);   /* 2 playing, 0 done, -1 none */
-extern s32 func_002B64F0(Movie *m);
-extern s32 func_002B6640(Movie *m);   /* restarted: 2 / 0 / -1 as func_002B6410 */
-extern void func_002B6D10(Movie *m, const char *path, s32 mode, s32 keep);
-extern Movie *func_002B70D0(Movie *m);   /* Movie constructor */
+extern void Movie_ApplyVolume(Movie *m);   /* apply the movie volume */
+extern s32 Movie_Status(Movie *m);   /* 2 playing, 0 done, -1 none */
+extern s32 Movie_FrameShown(Movie *m);
+extern s32 Movie_Restart(Movie *m);   /* restarted: 2 / 0 / -1 as Movie_Status */
+extern void Movie_SetFile(Movie *m, const char *path, s32 mode, s32 keep);
+extern Movie *Movie_ctor(Movie *m);   /* Movie constructor */
 
 #endif /* MOVIE_H */

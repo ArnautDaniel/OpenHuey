@@ -650,7 +650,7 @@ static const char *kQuadVs =
  *      0x20 .. 0x80 over to .. b (view depth, from the depth image; last band passed wins)
  *   17 over the screen by its alpha, stretched
  *      (the depth of field, func_002C6650: 2, eight 15s ping-ponging, 16, 17)
- * The reflecting floor (Reflection_Draw / func_00316DE0), R the reflection's middle at half size:
+ * The reflecting floor (Reflection_Draw / Reflection_SidePanels), R the reflection's middle at half size:
  *   18 R blurred: 4 diagonal neighbours lerped in at 1/4 each, then where R's alpha isn't 0
  *      R lerped back in at 3/4 with its alpha (else alpha 0)
  *   21 that stretched over the screen, mirrored left / right (uOff.x 0; moved by uRange.x
@@ -1833,7 +1833,7 @@ static void run_post(const GlrDraw *d) {
         p_glClearNamedFramebufferfv(sMaskFbo, GL_COLOR, 0, kNone);
         break;
     }
-    case POST_REFL: {   /* Reflection_Draw / func_00316DE0 */
+    case POST_REFL: {   /* Reflection_Draw / Reflection_SidePanels */
         float fix = (float)(int32_t)rgba / 128.0f;
 
         if (d->prim & 1) {

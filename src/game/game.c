@@ -33,7 +33,7 @@ extern const PTMF sSceneResetState;   /* virtual: scene vtable +0x14 */
 
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-void func_00120530(void *p, s32 a, s32 b);
+void PlacedObjects_SetPair(void *p, s32 a, s32 b);
 
 extern void *D_00456DE8;
 extern void *D_00469D00[];
@@ -43,19 +43,20 @@ extern void *D_0046BEE0[];
 extern void *D_0046D770[];
 extern void *D_0046F3D0[];
 void *TexCache_dtor(u8 *o, s32 flags);
-void *func_0020DB40(u8 *o, s32 flags);
-void *func_00267500(u8 *o, s32 flags);
+void *Obj46BEE0_dtor(u8 *o, s32 flags);
+void *PlacedModelBase_dtor(u8 *o, s32 flags);
 
-s32 func_002C8D90(u8 *self);
-s32 func_002C9470(void *self);
+s32 PlacedObjects_Sum(u8 *self);
+s32 PlacedObjects_CallDtor(void *self);
 
-u32 func_002E2340(u8 *p);
-void *func_002E2350(u8 *p);
-u32 func_002E25F0(u8 *p, u32 i);
-s32 func_002E2610(u8 *p, s32 a1, s32 a2, s32 a3);
-s32 func_002E2630(u8 *p, s32 a1, s32 a2, s32 a3);
+u32 Creatures_MessageSlot(u8 *p);
+void *Creatures_ModelSet(u8 *p);
+u32 Creatures_Get(u8 *p, u32 i);
+s32 Creatures_ModelCall(u8 *p, s32 a1, s32 a2, s32 a3);
+s32 Creatures_PoolCall(u8 *p, s32 a1, s32 a2, s32 a3);
 
-void func_00120530(void *p, s32 a, s32 b) {
+/* 0x00120530 */
+void PlacedObjects_SetPair(void *p, s32 a, s32 b) {
     FLD(p, 0x4, s32) = a;
     FLD(p, 0x8, s32) = b;
 }
@@ -83,20 +84,25 @@ void Game_Run(Game *game) {
     }
 }
 
-u32 func_002E2340(u8 *p) { return p[0x38680]; }
+/* 0x002E2340 */
+u32 Creatures_MessageSlot(u8 *p) { return p[0x38680]; }
 
-void *func_002E2350(u8 *p) { return p + 0xF680; }
+/* 0x002E2350 */
+void *Creatures_ModelSet(u8 *p) { return p + 0xF680; }
 
-u32 func_002E25F0(u8 *p, u32 i) { return ((u32 *)p)[(u8)i]; }
+/* 0x002E25F0 */
+u32 Creatures_Get(u8 *p, u32 i) { return ((u32 *)p)[(u8)i]; }
 
 /* tail call: member at +0xF630, virtual slot 0x10, with 0x890 */
-s32 func_002E2610(u8 *p, s32 a1, s32 a2, s32 a3) {
+/* 0x002E2610 */
+s32 Creatures_ModelCall(u8 *p, s32 a1, s32 a2, s32 a3) {
     u8 *m = p + 0xF630;
     return VCALL(m, 0x10, s32 (*)(void *, s32, s32, s32))(m, 0x890, a2, a3);
 }
 
 /* tail call: member at +0xDC40, virtual slot 0x10 */
-s32 func_002E2630(u8 *p, s32 a1, s32 a2, s32 a3) {
+/* 0x002E2630 */
+s32 Creatures_PoolCall(u8 *p, s32 a1, s32 a2, s32 a3) {
     u8 *m = p + 0xDC40;
     return VCALL(m, 0x10, s32 (*)(void *, s32, s32, s32))(m, a1, a2, a3);
 }
@@ -106,7 +112,8 @@ void Game_SetState(Game *game, const PTMF *state) {
 }
 
 /* destructor (vtable D_0046D770) */
-void *func_00267500(u8 *o, s32 flags) {
+/* 0x00267500 */
+void *PlacedModelBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046D770;
         AT(o, 0x0, void **) = D_00469D00;
@@ -308,14 +315,16 @@ void Records_Reset(void *obj) {
     *(s32 *)(d + 0x4C) = 0;
 }
 
-s32 func_002C8D90(u8 *self) {
+/* 0x002C8D90 */
+s32 PlacedObjects_Sum(u8 *self) {
     s32 *v = *(s32 **)(self + 0x4);
 
     return v[0] + v[1] + v[2] + v[3];
 }
 
 /* Tail call to this->vfunc_0x8() */
-s32 func_002C9470(void *self) {
+/* 0x002C9470 */
+s32 PlacedObjects_CallDtor(void *self) {
     return VCALL(self, 0x8, s32 (*)(void *))(self);
 }
 
@@ -479,7 +488,8 @@ void *TexCache_dtor(u8 *o, s32 flags) {
 }
 
 /* destructor (vtable D_0046BEE0) */
-void *func_0020DB40(u8 *o, s32 flags) {
+/* 0x0020DB40 */
+void *Obj46BEE0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046BEE0;
         gSystemData = NULL;
@@ -541,14 +551,14 @@ void *Game_dtor(u8 *g, s32 flags) {
     AT(g, 0x69AC0, void **) = D_0046ADF0;
     SndDriver_dtor(g + 0x3FF800, -1);
     Loader_dtor((VObject *)(g + 0x3833C0), -1);
-    func_001BF880(g + 0x376A00, -1);
+    Vram_dtor(g + 0x376A00, -1);
     MovieSys_dtor(g + 0x36ED40, -1);
-    func_001AAE10(g + 0x69F20, -1);
+    Renderer_dtor(g + 0x69F20, -1);
     MemCard_dtor((MemCard *)(g + 0x69E50), -1);
     Rumble_dtor((Rumble *)(g + 0x69DC0), -1);
     Pads_dtor(g + 0x69B00, -1);
-    func_001BC320(g + 0x69AE0, -1);
-    func_001BF220(g + 0x69AC0, 0);
+    Obj46AD88_dtor(g + 0x69AE0, -1);
+    Obj46AE10_dtor(g + 0x69AC0, 0);
 
     AT(g, 0x0, void **) = D_0046BEE0;
     gSystemData = NULL;

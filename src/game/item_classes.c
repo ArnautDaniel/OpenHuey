@@ -370,7 +370,7 @@ static f32 animal_rnd(void) {
 s32 Item14_LoadPicture(void *self, void *dest);
 void *Kind26_ModelFiles(void);
 void *Kind26_MotionFiles(void);
-f32 func_0032CF40(u8 *self, f32 *out);
+f32 Kind26_NearestDistSq(u8 *self, f32 *out);
 
 /* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
  * slots 3..5 */
@@ -464,7 +464,7 @@ static inline void *item_dtor2(void *o, s32 flags, void **own) {
             AT(o, 0x0, void **) = D_0046C790;
         }
         if ((s16)flags > 0) {
-            func_0025FEF0(o);
+            SubPool_delete(o);
         }
     }
     return o;
@@ -481,7 +481,7 @@ static inline void *item_dtor3(void *o, s32 flags, void **own, void **mid) {
             }
         }
         if ((s16)flags > 0) {
-            func_0025FEF0(o);
+            SubPool_delete(o);
         }
     }
     return o;
@@ -2240,7 +2240,8 @@ s32 PoolEntry_Use(void *o) {
 }
 
 /* operator delete for pool entries: nothing (the pool is dropped at once) */
-void func_0025FEF0(void *p) {
+/* 0x0025FEF0 */
+void SubPool_delete(void *p) {
 }
 
 /* +0x10 (D_0046C7E0, D_0046C830, D_0046C880, ...) */
@@ -3583,7 +3584,8 @@ void *Kind26_MotionFiles(void) {
 
 /* the squared distance to the nearest of Fiona, Hewie and the pursuer (those two when active
  * and in the room), whose position goes into out */
-f32 func_0032CF40(u8 *self, f32 *out) {
+/* 0x0032CF40 */
+f32 Kind26_NearestDistSq(u8 *self, f32 *out) {
     f32 d[4] __attribute__((aligned(16)));
     f32 pf[4] __attribute__((aligned(16)));
     f32 ph[4] __attribute__((aligned(16)));
@@ -3653,7 +3655,7 @@ static inline void animal_go(u8 *self, s32 state) {
 s32 func_0032D430(u8 *self) {
     static const union { u32 u; f32 f; } k08 = {0x3F4CCCCD};
     f32 who[4] __attribute__((aligned(16)));
-    f32 d = func_0032CF40(self, who);
+    f32 d = Kind26_NearestDistSq(self, who);
 
     if (S32(self, 0x1624) != 3 && d < 400.0f) {
         animal_go(self, 3);
@@ -3714,7 +3716,7 @@ s32 func_0032D430(u8 *self) {
         if (S32(self, 0x1628) != 0) {
             Motion_PlayWith(PTR(self, 0xF0), 0x9002, 1, -1, 5.0f);
             S32(self, 0x1628) = 0;
-            func_0032CF40(self, (f32 *)D_01991600);
+            Kind26_NearestDistSq(self, (f32 *)D_01991600);
         }
         sceVu0SubVector(away, CHAR_POS(self), (f32 *)D_01991600);
         sceVu0ScaleVector(away, away, 100.0f);

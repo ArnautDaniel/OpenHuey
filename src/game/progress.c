@@ -1588,7 +1588,7 @@ s32 Progress_PlayMovie(Progress *p, const char *path, u32 kind) {
     }
     movie = __nw__FUiPv(size, mem);
     if (movie != NULL) {
-        func_002B70D0((Movie *)movie);
+        Movie_ctor((Movie *)movie);
         movie->vtbl = sClass[kind <= 6 ? kind : 0];
     }
     AT(table, 0x4, Scene *) = movie;
@@ -1600,61 +1600,76 @@ s32 Progress_PlayMovie(Progress *p, const char *path, u32 kind) {
     movie->request = SCENE_REQ_RUN;
     movie->status = 0;
     movie->waitFrames = 0;
-    func_002B6D10(gMovie, path, 0, 1);
+    Movie_SetFile(gMovie, path, 0, 1);
     return 1;
 }
 
 /* ---- vtable methods that do nothing ---- */
 
 /* the Progress base (Progress_vtable +0x14 / +0x18) */
-void func_00179150(Progress *p) {
+/* 0x00179150 */
+void ProgressBase_Slot14(Progress *p) {
 }
 
-void func_00179140(Progress *p) {
+/* 0x00179140 */
+void ProgressBase_Slot18(Progress *p) {
 }
 
 /* the Progress base (+0xC / +0x10): 0 */
-s32 func_001794B0(Progress *p) {
+/* 0x001794B0 */
+s32 ProgressBase_SlotC(Progress *p) {
     return 0;
 }
 
-s32 func_00179160(Progress *p) {
+/* 0x00179160 */
+s32 ProgressBase_Slot10(Progress *p) {
     return 0;
 }
 
-void func_00176880(Progress *p) {
+/* 0x00176880 */
+void ProgressBase_Slot70(Progress *p) {
 }
 
-void func_00176890(Progress *p) {
+/* 0x00176890 */
+void ProgressBase_Slot6C(Progress *p) {
 }
 
-void func_001768A0(Progress *p) {
+/* 0x001768A0 */
+void ProgressBase_Slot68(Progress *p) {
 }
 
-void func_00177600(Progress *p) {
+/* 0x00177600 */
+void ProgressBase_Slot48(Progress *p) {
 }
 
-void func_00177610(Progress *p) {
+/* 0x00177610 */
+void ProgressBase_Slot44(Progress *p) {
 }
 
-void func_001780B0(Progress *p) {
+/* 0x001780B0 */
+void ProgressBase_Slot24(Progress *p) {
 }
 
-void func_00178430(Progress *p) {
+/* 0x00178430 */
+void ProgressBase_Slot20(Progress *p) {
 }
 
-void func_00178440(Progress *p) {
+/* 0x00178440 */
+void ProgressBase_Slot1C(Progress *p) {
 }
 
-s32 func_00177990(Progress *p) {
+/* 0x00177990 */
+s32 ProgressBase_Slot3C(Progress *p) {
     return 0;
 }
 
-s32 func_001779A0(Progress *p) {
+/* 0x001779A0 */
+s32 ProgressBase_Slot38(Progress *p) {
     return -1;
 }
 
-s32 func_001780A0(Progress *p) {
+/* 0x001780A0 */
+s32 ProgressBase_Slot28(Progress *p) {
     return 0;
 }
 
@@ -1793,15 +1808,24 @@ void *Progress_dtor(Progress *p, s32 flags) {
 }
 
 /* the base class's defaults (vtable +0x40 .. +0x88; the game overrides them) */
-s32 func_0016CCA0(Progress *p) { return 0; }   /* +0x40 */
-void func_0016CCB0(Progress *p) {}            /* +0x4C */
-s32 func_0016CD00(Progress *p) { return 0; }   /* +0x50 */
-s32 func_0016CCF0(Progress *p) { return 4; }   /* +0x58 */
-s32 func_0016CCE0(Progress *p) { return 0; }   /* +0x5C */
-s32 func_0016CCD0(Progress *p) { return 0; }   /* +0x60 */
-s32 func_0016CCC0(Progress *p) { return 1; }   /* +0x7C */
-void func_0016CD20(Progress *p) {}            /* +0x84 */
-s32 func_0016CD10(Progress *p) { return 0; }   /* +0x88 */
+/* 0x0016CCA0 */
+s32 ProgressBase_Slot40(Progress *p) { return 0; }   /* +0x40 */
+/* 0x0016CCB0 */
+void ProgressBase_Slot4C(Progress *p) {}            /* +0x4C */
+/* 0x0016CD00 */
+s32 ProgressBase_Slot50(Progress *p) { return 0; }   /* +0x50 */
+/* 0x0016CCF0 */
+s32 ProgressBase_Slot58(Progress *p) { return 4; }   /* +0x58 */
+/* 0x0016CCE0 */
+s32 ProgressBase_Slot5C(Progress *p) { return 0; }   /* +0x5C */
+/* 0x0016CCD0 */
+s32 ProgressBase_Slot60(Progress *p) { return 0; }   /* +0x60 */
+/* 0x0016CCC0 */
+s32 ProgressBase_Slot7C(Progress *p) { return 1; }   /* +0x7C */
+/* 0x0016CD20 */
+void ProgressBase_Slot84(Progress *p) {}            /* +0x84 */
+/* 0x0016CD10 */
+s32 ProgressBase_Slot88(Progress *p) { return 0; }   /* +0x88 */
 
 /* the object at +0x73EC80: destructor (its base, vtable D_00469D00) */
 /* 0x0016CC40 */

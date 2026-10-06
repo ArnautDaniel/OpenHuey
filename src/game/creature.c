@@ -1658,7 +1658,7 @@ void CreatureA_Draw(Character *c) {
         } else {
             q.palette = -1;
         }
-        func_002E56C0((u8 *)&q);
+        Drawer_Submit((u8 *)&q);
         q.vtbl = D_00469D00;
     }
 }
@@ -1933,7 +1933,7 @@ void CreatureVanish_SetParams(u8 *o, const u8 *params) {
  * sparks (cell (0x60, 0x40)) */
 /* 0x00312450 */
 void CreatureVanish_Draw(u8 *o) {
-    if (func_002D6010(gEffects) != 0) {
+    if (SceneGame_GetByte19034(gEffects) != 0) {
         return;
     }
     AT(o, 0x394, s16) = 1;
@@ -1941,13 +1941,13 @@ void CreatureVanish_Draw(u8 *o) {
     AT(o, 0x398, s16) = 0x60;
     AT(o, 0x3A3, u8) = 0xF;
     AT(o, 0x380, u8 *) = VANISH_GLOW(o);
-    func_002E56C0(o + 0x370);
+    Drawer_Submit(o + 0x370);
     AT(o, 0x394, s16) = 8;
     AT(o, 0x396, s16) = 0x60;
     AT(o, 0x398, s16) = 0x40;
     AT(o, 0x3A3, u8) = 1;
     AT(o, 0x380, u8 *) = VANISH_SPARK(o, 0);
-    func_002E56C0(o + 0x370);
+    Drawer_Submit(o + 0x370);
 }
 
 /* +0x10 update (0 once all of it is done) */
@@ -2128,7 +2128,7 @@ void LoopingSprite_SetParams(u8 *o, f32 *at) {
 /* 0x00312C30 */
 void LoopingSprite_Draw(u8 *o) {
     AT(o, 0x80, u8 *) = LOOP_REC(o);
-    func_002E56C0(o + 0x70);
+    Drawer_Submit(o + 0x70);
 }
 
 /* +0x10 update: the buffers swapped (the record copied over); every +0xAC frames the next
@@ -2370,7 +2370,7 @@ void Effect726E0_Draw(u8 *o) {
     f32 h, len;
     s32 k;
 
-    if (func_002D6010(gEffects) != 0 || AT(o, 0x21C, u8) == 1) {
+    if (SceneGame_GetByte19034(gEffects) != 0 || AT(o, 0x21C, u8) == 1) {
         return;
     }
     len = AT(o, 0x20C, f32);
@@ -2406,7 +2406,7 @@ void Effect726E0_Draw(u8 *o) {
         c[3][1] = 0.0f;
         c[3][2] = -h;
         sceVu0ApplyMatrix(c[3], m, c[3]);
-        func_002E56C0(o + 0x40);
+        Drawer_Submit(o + 0x40);
         AT(o, 0x66, s16) = AT(s, 0xC8, s16);
         AT(o, 0x68, s16) = AT(s, 0xCA, s16);
         c[0][0] = 0.0f;
@@ -2429,7 +2429,7 @@ void Effect726E0_Draw(u8 *o) {
         c[3][1] = -h;
         c[3][2] = 0.0f;
         sceVu0ApplyMatrix(c[3], m, c[3]);
-        func_002E56C0(o + 0x40);
+        Drawer_Submit(o + 0x40);
     }
 }
 
@@ -2629,11 +2629,11 @@ void StrandSplash_SetParams(u8 *o, s32 *arg) {
 /* the droplets drawn (unless the effects are paused), and on the first frame a flash (2 x 2) of
  * colour r, g, b at the point */
 static inline void drops_draw(u8 *o, s32 cr, s32 cg, s32 cb) {
-    if (func_002D6010(gEffects) != 0) {
+    if (SceneGame_GetByte19034(gEffects) != 0) {
         return;
     }
     AT(o, 0xC20, QuadRec *) = DROP_REC(o, AT(o, 0xF60, s32), 0);
-    func_002E56C0(o + 0xC10);
+    Drawer_Submit(o + 0xC10);
     if (AT(o, 0xC5C, f32) == 1.0f) {
         QuadDrawer q __attribute__((aligned(16)));
         QuadRec r __attribute__((aligned(16)));
@@ -2667,7 +2667,7 @@ static inline void drops_draw(u8 *o, s32 cr, s32 cg, s32 cb) {
         q.texId = 1;
         q.texGroup = 0x10;
         q.palette = -1;
-        func_002E56C0((u8 *)&q);
+        Drawer_Submit((u8 *)&q);
         AT(o, 0xC5C, f32) = 0.0f;
         q.vtbl = D_00469D00;
     }
@@ -2786,7 +2786,7 @@ void Effect737D0_SetParams(u8 *self, u8 *src) {
 /* 0x0031E980 */
 void Effect737D0_Draw(u8 *o) {
     AT(o, 0x50, u8 *) = o + 0x10;
-    func_002E56C0(o + 0x40);
+    Drawer_Submit(o + 0x40);
 }
 
 /* 0x0031E990 */
@@ -5187,11 +5187,11 @@ void Cr19Bubbles_SetParams(u8 *o, u8 *arg) {
 /* +0x14 draw (not while the effects are paused): the bubbles, then the drops */
 /* 0x00359980 */
 void Cr19Bubbles_Draw(u8 *o) {
-    if (func_002D6010(gEffects) == 0) {
+    if (SceneGame_GetByte19034(gEffects) == 0) {
         AT(o, 0x2420, QuadRec *) = GONE_BUBBLE(o, AT(o, 0x2910, s32), 0);
-        func_002E56C0(o + 0x2410);
+        Drawer_Submit(o + 0x2410);
         AT(o, 0x2458, QuadRec *) = GONE_DROP(o, AT(o, 0x2910, s32), 0);
-        func_002E56C0(o + 0x2448);
+        Drawer_Submit(o + 0x2448);
     }
 }
 

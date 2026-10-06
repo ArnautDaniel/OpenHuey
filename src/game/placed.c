@@ -460,7 +460,7 @@ void Ball_Draw(u8 *b) {
     q.texGroup = 0x10;
     q.flags = 0;
     q.palette = 2;
-    func_002E56C0((u8 *)&q);
+    Drawer_Submit((u8 *)&q);
     q.vtbl = D_00469D00;
 }
 
@@ -992,7 +992,7 @@ static inline void half_sprite(u8 *o, f32 kr, f32 kg, f32 kb) {
     q.texId = 1;
     q.texGroup = 0x10;
     q.palette = -1;
-    func_002E56C0((u8 *)&q);
+    Drawer_Submit((u8 *)&q);
     q.vtbl = D_00469D00;
 }
 
@@ -2154,7 +2154,7 @@ static inline void Burst4_Draw(u8 *o, u32 at, s32 cur, const u32 *base, const u3
         u8 *d = o + at + i * 0x38;
 
         AT(d, 0x10, u8 *) = o + cur * stride[i] + base[i];
-        func_002E56C0(d);
+        Drawer_Submit(d);
     }
 }
 
@@ -2162,7 +2162,7 @@ static inline void Burst4_Draw(u8 *o, u32 at, s32 cur, const u32 *base, const u3
 void BurstA_Draw(u8 *o) {
     static const u32 base[4] = {0x10, 0x610, 0x670, 0xAF0}, stride[4] = {0x300, 0x30, 0x240, 0x30};
 
-    if (func_002D6010(gEffects) != 0) {
+    if (SceneGame_GetByte19034(gEffects) != 0) {
         return;
     }
     Burst4_Draw(o, 0xB50, AT(o, 0xFAC, s32), base, stride);
@@ -2172,7 +2172,7 @@ void BurstA_Draw(u8 *o) {
 void BurstB_Draw(u8 *o) {
     static const u32 base[4] = {0x10, 0xC10, 0xD30, 0x1930}, stride[4] = {0x600, 0x90, 0x600, 0x90};
 
-    if (func_002D6010(gEffects) != 0) {
+    if (SceneGame_GetByte19034(gEffects) != 0) {
         return;
     }
     Burst4_Draw(o, 0x1A50, AT(o, 0x22BC, s32), base, stride);
@@ -2628,11 +2628,11 @@ void ThingBurst_SetParams(u8 *o, f32 *arg) {
 /* +0x14 draw (not while the effects are paused): the pieces, then the puffs */
 /* 0x0032EEB0 */
 void ThingBurst_Draw(u8 *o) {
-    if (func_002D6010(gEffects) == 0) {
+    if (SceneGame_GetByte19034(gEffects) == 0) {
         AT(o, 0xC20, u8 *) = o + AT(o, 0xFC8, s32) * 0x300 + 0x10;
-        func_002E56C0(o + 0xC10);
+        Drawer_Submit(o + 0xC10);
         AT(o, 0xC58, u8 *) = o + AT(o, 0xFC8, s32) * 0x300 + 0x610;
-        func_002E56C0(o + 0xC48);
+        Drawer_Submit(o + 0xC48);
     }
 }
 
@@ -3680,9 +3680,9 @@ void ThingPuff_SetParams(u8 *o, f32 *arg) {
 /* +0x14 draw (not while the effects are paused) */
 /* 0x0036D6C0 */
 void ThingPuff_Draw(u8 *o) {
-    if (func_002D6010(gEffects) == 0) {
+    if (SceneGame_GetByte19034(gEffects) == 0) {
         AT(o, 0x620, u8 *) = o + AT(o, 0x790, s32) * 0x300 + 0x10;
-        func_002E56C0(o + 0x610);
+        Drawer_Submit(o + 0x610);
     }
 }
 

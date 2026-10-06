@@ -30,9 +30,9 @@ extern void *D_0046BEE0[];
 
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-s32 func_0016B420(u8 *p);
-s32 func_0016B470(u8 *p, s32 kind);
-s32 func_0016B510(u8 *p);
+s32 Loader_CurrentDone(u8 *p);
+s32 Loader_Slot28(u8 *p, s32 kind);
+s32 Loader_Slot24(u8 *p);
 
 extern void *D_0046AC50[];
 extern void *D_0046ACF0[];
@@ -41,9 +41,9 @@ extern void *D_0046ADD0[];
 extern void *D_0046AE10[];
 extern void *D_0046AF20[];
 extern void *D_0046B050[];
-void *func_001BC090(u8 *o, s32 flags);
-void *func_001BE730(u8 *o, s32 flags);
-void *func_001BF7A0(u8 *o, s32 flags);
+void *Obj46ACF0_dtor(u8 *o, s32 flags);
+void *Obj46ADD0_dtor(u8 *o, s32 flags);
+void *Obj46AF20_dtor(u8 *o, s32 flags);
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -173,7 +173,7 @@ void *System_ctor(u8 *s) {
     gSound = (VObject *)(p + 4);
     AT(p, 0x0, void **) = D_0046BF20;
     AT(p, 0x4, void **) = D_0046BF2C;
-    func_00100340(p + 0x84, func_0020E7D0, (void (*)(void *, s32))func_001BEC10, 0x10, 8);
+    func_00100340(p + 0x84, func_0020E7D0, (void (*)(void *, s32))IopBuffers_dtor, 0x10, 8);
     func_00100340(p + 0x108, func_0020E7B0, func_001BECA0, 0x18, 8);
     AT(p, 0x80, s32) = 0;
     AT(p, 0x104, s8) = -1;
@@ -224,7 +224,8 @@ void RenderState_Defaults(u8 *r) {
 }
 
 /* destructor (vtable D_0046ACF0) */
-void *func_001BC090(u8 *o, s32 flags) {
+/* 0x001BC090 */
+void *Obj46ACF0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046ACF0;
         gRenderer = NULL;
@@ -236,7 +237,8 @@ void *func_001BC090(u8 *o, s32 flags) {
 }
 
 /* destructor (vtable D_0046AD88) */
-void *func_001BC320(u8 *o, s32 flags) {
+/* 0x001BC320 */
+void *Obj46AD88_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AD88;
         if ((s16)flags > 0) {
@@ -257,13 +259,15 @@ void Heap_Setup(VObject *h, void *base, u32 size, void *blocks, s32 count) {
 }
 
 /* Entries of 0x128 bytes; +0x12804 current index, +0x12805 end index. */
-s32 func_0016B420(u8 *p) {
+/* 0x0016B420 */
+s32 Loader_CurrentDone(u8 *p) {
     s32 v = FLD(p + p[0x12804] * 0x128, 0x8, s32);
 
     return v == 6 || v == 7;
 }
 
-s32 func_0016B470(u8 *p, s32 kind) {
+/* 0x0016B470 */
+s32 Loader_Slot28(u8 *p, s32 kind) {
     u8 end = p[0x12805];
     u8 i = p[0x12804];
 
@@ -278,7 +282,8 @@ s32 func_0016B470(u8 *p, s32 kind) {
     return 3;
 }
 
-s32 func_0016B510(u8 *p) {
+/* 0x0016B510 */
+s32 Loader_Slot24(u8 *p) {
     if (p[0x12804] == p[0x12805]) {
         return 3;
     }
@@ -286,7 +291,8 @@ s32 func_0016B510(u8 *p) {
 }
 
 /* destructor (vtable D_0046AC50) */
-void *func_001AAE10(u8 *o, s32 flags) {
+/* 0x001AAE10 */
+void *Renderer_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AC50;
         AT(o, 0x0, void **) = D_0046ACF0;
@@ -332,14 +338,16 @@ void *Camera_ctor(VObject *o) {
 }
 
 /* Object pool element constructors. */
-void *func_0020E240(void *e) {
+/* 0x0020E240 */
+void *SmallPool_ElemA(void *e) {
     AT(e, 0x0, s32) = 0;
     AT(e, 0x4, s32) = 0;
     AT(e, 0x8, s32) = 0;
     return e;
 }
 
-void *func_0020E210(void *e) {
+/* 0x0020E210 */
+void *SmallPool_ElemB(void *e) {
     AT(e, 0xC, s32) = 0;
     AT(e, 0x4, s32) = 0;
     AT(e, 0x8, s32) = 0;
@@ -347,13 +355,15 @@ void *func_0020E210(void *e) {
     return e;
 }
 
-void *func_0020E190(void *e) {
+/* 0x0020E190 */
+void *BigPool_ElemA(void *e) {
     AT(e, 0x0, s32) = 0;
     AT(e, 0x4, s32) = 0;
     return e;
 }
 
-void *func_0020E180(void *e) {
+/* 0x0020E180 */
+void *BigPool_ElemB(void *e) {
     AT(e, 0x44, s32) = 0;
     AT(e, 0x48, s32) = 0;
     return e;
@@ -365,8 +375,8 @@ extern void *D_004562B0, *D_004562A8;   /* the two pools */
 /* 0x0020E1A0 */
 void *SmallPool_ctor(u8 *p) {
     D_004562B0 = p;
-    func_00100340(p, func_0020E240, func_0020D970, 0xC, 0x40);
-    func_00100340(p + 0x300, func_0020E210, func_0020D9C0, 0x14, 0x1CE);
+    func_00100340(p, SmallPool_ElemA, func_0020D970, 0xC, 0x40);
+    func_00100340(p + 0x300, SmallPool_ElemB, func_0020D9C0, 0x14, 0x1CE);
     return p;
 }
 
@@ -374,8 +384,8 @@ void *SmallPool_ctor(u8 *p) {
 /* 0x0020E110 */
 void *BigPool_ctor(u8 *p) {
     D_004562A8 = p;
-    func_00100340(p, func_0020E190, func_0020D8D0, 0xC, 0x20);
-    func_00100340(p + 0x180, func_0020E180, func_0020D920, 0x50, 0x278);
+    func_00100340(p, BigPool_ElemA, func_0020D8D0, 0xC, 0x20);
+    func_00100340(p + 0x180, BigPool_ElemB, func_0020D920, 0x50, 0x278);
     return p;
 }
 
@@ -403,7 +413,8 @@ static inline void Slots_Reset(u8 *o) {
 }
 
 /* Game +0x14E8C90 (shut down by Slots_Reset2): constructor */
-void *func_001F4600(u8 *o) {
+/* 0x001F4600 */
+void *Slots_ctor(u8 *o) {
     AT(o, 0x0, void **) = D_0046B1D0;
     gTexCache = (VObject *)o;
     Slots_Reset(o);
@@ -426,7 +437,8 @@ extern s32 func_001BEDA0(s32 cause), func_001BED80(s32 cause);         /* vblank
 extern u8 D_0047B204, D_0047B208;   /* vblank start / end seen */
 extern u32 D_0047B20C;              /* vblank count */
 
-void func_001BF080(u8 *s) {
+/* 0x001BF080 */
+void System_Init(u8 *s) {
     func_001BC220(s + 0x20);
     func_0010D3E0(1);
     AT(s, 0x4, s32) = func_001BC0F0(s + 0x20, D_0044FEB8, 0, 0, 0);
@@ -458,7 +470,8 @@ void func_001BF080(u8 *s) {
 }
 
 /* destructor (vtable D_0046AE10) */
-void *func_001BF220(u8 *o, s32 flags) {
+/* 0x001BF220 */
+void *Obj46AE10_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AE10;
         gSystem = NULL;
@@ -470,7 +483,8 @@ void *func_001BF220(u8 *o, s32 flags) {
 }
 
 /* destructor (vtable D_0046AF20) */
-void *func_001BF7A0(u8 *o, s32 flags) {
+/* 0x001BF7A0 */
+void *Obj46AF20_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AF20;
         gVram = NULL;
@@ -482,7 +496,8 @@ void *func_001BF7A0(u8 *o, s32 flags) {
 }
 
 /* destructor (vtable D_0046B050) */
-void *func_001BF880(u8 *o, s32 flags) {
+/* 0x001BF880 */
+void *Vram_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046B050;
         AT(o, 0x0, void **) = D_0046AF20;
@@ -536,7 +551,8 @@ void Pads_Shutdown(u8 *pads) {
 }
 
 /* destructor (vtable D_0046ADD0) */
-void *func_001BE730(u8 *o, s32 flags) {
+/* 0x001BE730 */
+void *Obj46ADD0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046ADD0;
         gPad = NULL;
@@ -548,7 +564,8 @@ void *func_001BE730(u8 *o, s32 flags) {
 }
 
 /* +0x395D40 +0x84 element (8 x 0x10): two IOP buffers */
-void *func_001BEC10(u8 *e, s32 flags) {
+/* 0x001BEC10 */
+void *IopBuffers_dtor(u8 *e, s32 flags) {
     if (e == NULL) {
         return e;
     }
@@ -602,7 +619,7 @@ void *System_dtor(u8 *s, s32 flags) {
     AT(p, 0x0, void **) = D_0046BF20;
     AT(p, 0x4, void **) = D_0046BF2C;
     func_001002C0(p + 0x108, (void *(*)(void *, s32))func_001BECA0, 0x18, 8);
-    func_001002C0(p + 0x84, (void *(*)(void *, s32))func_001BEC10, 0x10, 8);
+    func_001002C0(p + 0x84, (void *(*)(void *, s32))IopBuffers_dtor, 0x10, 8);
     AT(p, 0x4, void **) = D_0046AF90;
     gSound = NULL;
     AT(p, 0x0, void **) = D_0046AD88;

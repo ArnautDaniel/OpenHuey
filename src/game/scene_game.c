@@ -1183,7 +1183,7 @@ void SceneGame_SubPlay(Scene *g) {
         if (gMovie != NULL) {
             AT(gMovie, 0x1D4, f32) = 1.0f;
             clamp01(&AT(gMovie, 0x1D4, f32));
-            func_002B6340(gMovie);
+            Movie_ApplyVolume(gMovie);
         }
         VCALL(snd, 0x9C, void (*)(VObject *))(snd);
         VCALL(gMusic, 0x8, void (*)(void *, f32, s32, s32, s32))(gMusic, 1.0f, 0xFF, 0, 0);

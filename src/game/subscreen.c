@@ -177,7 +177,7 @@ static void opt_apply_volume(VObject *snd, f32 vol) {
         if (!(*v <= 1.0f)) {
             *v = 1.0f;
         }
-        func_002B6340(gMovie);
+        Movie_ApplyVolume(gMovie);
     }
     if (gAdx != NULL) {
         f32 *v = &AT(gAdx, 0x11C, f32);
@@ -2078,7 +2078,7 @@ void SubScreen_StateRun(SubScreen *s) {
     }
     dof.a = -1;
     dof.vtbl = D_0046EC80;
-    func_002C86F0((u8 *)&dof, 1.0f, 151.0f, 2000.0f, 2000.0f);
+    DepthBand_Queue((u8 *)&dof, 1.0f, 151.0f, 2000.0f, 2000.0f);
     if (s->close == 1 || (p != NULL && Progress_TestFlag(p, 4))) {
         s->fading = 1;
         s->fade = 0x40;
@@ -2363,7 +2363,7 @@ void SubScreen_DrawClosing(SubScreen *s) {
     sub_fade_back(s);
     dof.a = -1;
     dof.vtbl = D_0046EC80;
-    func_002C86F0((u8 *)&dof, 1.0f, 151.0f, 2000.0f, 2000.0f);
+    DepthBand_Queue((u8 *)&dof, 1.0f, 151.0f, 2000.0f, 2000.0f);
     sub_fade_sound(f);
     dof.vtbl = D_00469D00;
 }
@@ -2399,7 +2399,7 @@ void SubScreen_DrawOpening(SubScreen *s) {
     sub_fade_back(s);
     dof.a = -1;
     dof.vtbl = D_0046EC80;
-    func_002C86F0((u8 *)&dof, 1.0f, 10.0f * (kTenth.f + 15.0f * (100.0f * (f32)s->fade / 64.0f / 100.0f)), 2000.0f,
+    DepthBand_Queue((u8 *)&dof, 1.0f, 10.0f * (kTenth.f + 15.0f * (100.0f * (f32)s->fade / 64.0f / 100.0f)), 2000.0f,
                   2000.0f);
     if (gProgress != NULL) {
         Progress_ClearFlag(gProgress, 4);

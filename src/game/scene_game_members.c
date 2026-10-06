@@ -2497,7 +2497,7 @@ void StatusTimers_Frame(u8 *o) {
         }
         if (gMovie != NULL) {
             AT(gMovie, 0x1D4, f32) = clamp01(AT(o, 0x10, f32));
-            func_002B6340(gMovie);   /* the movie, passed through a0 */
+            Movie_ApplyVolume(gMovie);   /* the movie, passed through a0 */
         }
     }
     if (AT(o, 0x20, s32) != 0) {

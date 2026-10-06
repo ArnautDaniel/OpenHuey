@@ -829,7 +829,7 @@ void SceneEnding_StateStaffFade(SceneEnding *s) {
         }
     }
     m = gMovie;
-    func_002B6340((Movie *)m);
+    Movie_ApplyVolume((Movie *)m);
     if (AT(m, 0x1B4, u8)) {
         u32 a = (u32)(127.0f * (1.0f - END_VOLUME(s)));
 
@@ -870,7 +870,7 @@ void SceneEnding_StateStart(SceneEnding *s) {
     if (mem != NULL) {
         movie = __nw__FUiPv(0x600200, mem);
         if (movie != NULL) {
-            func_002B70D0((Movie *)movie);
+            Movie_ctor((Movie *)movie);
             movie->vtbl = D_0046ECC0;
         }
         SCENE_TABLE_SCENE(1) = movie;
@@ -888,7 +888,7 @@ void SceneEnding_StateStart(SceneEnding *s) {
         ok = 0;
     }
     if (ok) {
-        func_002B6D10(gMovie, D_004638F8, 1, 0);
+        Movie_SetFile(gMovie, D_004638F8, 1, 0);
     }
     ptmf_set_fn(&s->base.state, SceneEnding_StateStaffRoll);
 }

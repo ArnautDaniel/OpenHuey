@@ -195,7 +195,7 @@ static void tints_step(GameOver *o, s32 fade) {
 
 /* the movie's end: tint 0x1F to drift to blue over a minute */
 static void tint_drift_start(GameOver *o) {
-    if (func_002B64F0(gMovie) < 0) {
+    if (Movie_FrameShown(gMovie) < 0) {
         u8 *fx = gRoomEffects;
 
         o->timer = 1800;
@@ -225,7 +225,7 @@ static void tint_drift(GameOver *o) {
 static void movie_wait(GameOver *o) {
     void *m = gMovie;
 
-    if (func_002B6640(m) > 0) {
+    if (Movie_Restart(m) > 0) {
         AT(m, 0x1BC, u8) = 1;
         o->step++;
     }

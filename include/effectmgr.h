@@ -88,7 +88,7 @@ static inline void ShoveBurst_Init(void **obj) {
 }
 
 /* a quad (sprite) drawer (vtable D_0046FC30) handed to the renderer for one frame by
-   func_002E56C0; see gl_sprites in effects.c for its fields */
+   Drawer_Submit; see gl_sprites in effects.c for its fields */
 typedef struct QuadDrawer {
     /* 0x00 */ void **vtbl;
     /* 0x04 */ s32 a;

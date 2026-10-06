@@ -53,7 +53,7 @@ void *PoolEntry_dtor(void *e, s32 flags) {
     if (e != NULL) {
         AT(e, 0x0, void **) = D_0046C790;
         if ((s16)flags > 0) {
-            func_0025FEF0(e);
+            SubPool_delete(e);
         }
     }
     return e;
@@ -211,7 +211,7 @@ static inline void title_movie_start(SceneTitle *t, const char *name) {
     if (mem != NULL) {
         movie = __nw__FUiPv(0x600200, mem);
         if (movie != NULL) {
-            func_002B70D0((Movie *)movie);
+            Movie_ctor((Movie *)movie);
             movie->vtbl = D_0046ECC0;
         }
         SCENE_TABLE_SCENE(1) = movie;
@@ -232,7 +232,7 @@ static inline void title_movie_start(SceneTitle *t, const char *name) {
         u8 *m = gMovie;
         f32 *v = &AT(m, 0x1D4, f32);
 
-        func_002B6D10((Movie *)m, name, 1, 0);
+        Movie_SetFile((Movie *)m, name, 1, 0);
         *v = t->movieVolume;
         if (*v < 0.0f) {
             *v = 0.0f;
@@ -240,7 +240,7 @@ static inline void title_movie_start(SceneTitle *t, const char *name) {
         if (!(*v <= 1.0f)) {
             *v = 1.0f;
         }
-        func_002B6340((Movie *)m);
+        Movie_ApplyVolume((Movie *)m);
     }
 }
 
@@ -329,7 +329,7 @@ static inline s32 title_movie_fade(SceneTitle *t) {
         }
     }
     m = gMovie;
-    func_002B6340((Movie *)m);
+    Movie_ApplyVolume((Movie *)m);
     if (AT(m, 0x1B4, u8)) {
         u32 a = (u32)(127.0f * (1.0f - *level));
 

@@ -77,7 +77,7 @@ static void duck(f32 down, s32 normal) {
     if (gMovie != NULL) {
         AT(gMovie, 0x1CC, f32) = v;
         clamp01(&AT(gMovie, 0x1CC, f32));
-        func_002B6340(gMovie);
+        Movie_ApplyVolume(gMovie);
     }
 }
 

@@ -466,7 +466,7 @@ void LightShaft_Draw(u8 *o) {
         glr_layer(-1);
     }
     AT(o, 0x620, u8 *) = o + AT(o, 0x6EC, s32) * 0x300 + 0x10;
-    func_002E56C0(o + 0x610);
+    Drawer_Submit(o + 0x610);
     if (AT(o, 0x6F1, u8) == 1) {
         VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
         VCALL(gBootMessage, 0x20, void (*)(VObject *))(gBootMessage);
@@ -597,7 +597,7 @@ void Glint_Draw(void) {
     s32 rec[12] __attribute__((aligned(16)));
     u8 *ch;
 
-    if (func_002D6010(gEffects) != 0) {
+    if (SceneGame_GetByte19034(gEffects) != 0) {
         return;
     }
     ch = (u8 *)gCharacters[Progress_SlotOfId(gProgress, 0x14) & 0xFF];
@@ -632,7 +632,7 @@ void Glint_Draw(void) {
     q.k[2] = 1;
     rec[10] = 0;
     rec[11] = 0;
-    func_002E56C0((u8 *)&q);
+    Drawer_Submit((u8 *)&q);
     q.vtbl = D_00469D00;
 }
 
