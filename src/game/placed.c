@@ -2179,42 +2179,53 @@ static inline void ring_corner(u8 *o, u32 at, f32 x, f32 z) {
     AT(o, at + 0xC, f32) = 1.0f;
 }
 
+/* where a burst keeps its parts (A: 0xFC0 bytes, one flash and ring; B: 0x22D0, three) */
+typedef struct BurstShape {
+    u32 cur, done, age;                                   /* frame buffer, all gone, frames */
+    s32 nPiece; u32 piece, pieceBuf, vel, fall, driftX, driftZ;
+    s32 nFlash; u32 flash, flashBuf, flashFrames;
+    s32 nPuff; u32 puff, puffBuf, puffVel, puffRate;
+    s32 nRing; u32 ring, ringBuf, size, corners, frame;
+} BurstShape;
+
 /* +0x10 update (the frame buffers swapped, each record carried over): the pieces spin, drift
  * (their push halving in, over 4 frames), then shrink their cells, fade and fall (after 8 frames,
- * by their falls); the flash fades and plays its frames once; the puffs rise and fade, out when
- * under the floor; the ring fades and grows, facing the camera. 0 once all of it was gone. */
-s32 func_0036B200(u8 *o) {
+ * by their falls); the flashes fade and play their frames once; the puffs rise and fade, out when
+ * under the floor; the rings fade and grow (the first by 1, the others 0.5), facing the camera.
+ * 0 once all of it was gone. */
+static inline __attribute__((always_inline)) s32 burst_update(u8 *o, const BurstShape *b) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
     VObject *rnd, *nav;
     f32 g[4] __attribute__((aligned(16)));
     u8 *r;
     s32 i;
 
-    if (AT(o, 0xFB0, u8) == 1) {
+#define CUR AT(o, b->cur, s32)
+    if (AT(o, b->done, u8) == 1) {
         return 0;
     }
-    AT(o, 0xFB0, u8) = 1;
+    AT(o, b->done, u8) = 1;
     rnd = D_0044E550;
-    AT(o, 0xFAC, s32) ^= 1;
-    for (i = 0; i < 16; i++) {
+    CUR ^= 1;
+    for (i = 0; i < b->nPiece; i++) {
         f32 a;
 
-        rec_copy(o + 0x10 + AT(o, 0xFAC, s32) * 0x300 + i * 0x30, o + 0x10 + (AT(o, 0xFAC, s32) ^ 1) * 0x300 + i * 0x30);
-        r = o + 0x10 + AT(o, 0xFAC, s32) * 0x300 + i * 0x30;
+        rec_copy(o + b->piece + CUR * b->pieceBuf + i * 0x30, o + b->piece + (CUR ^ 1) * b->pieceBuf + i * 0x30);
+        r = o + b->piece + CUR * b->pieceBuf + i * 0x30;
         if (AT(r, 0xC, s32) <= 0) {
             continue;
         }
-        AT(o, 0xFB0, u8) = 0;
+        AT(o, b->done, u8) = 0;
         a = AT(r, 0x28, f32) + kPi.f * (2.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)) / 180.0f;
         AT(r, 0x28, f32) = a;
         if (!(a < kPi.f)) {
             AT(r, 0x28, f32) = a - k2Pi.f;
         }
-        AT(r, 0x10, f32) = AT(r, 0x10, f32) + (AT(o, 0xC30 + i * 0xC, f32) + AT(o, 0xEA0 + i * 4, f32));
-        AT(r, 0x18, f32) = AT(r, 0x18, f32) + (AT(o, 0xC38 + i * 0xC, f32) + AT(o, 0xEE0 + i * 4, f32));
-        if (AT(o, 0xFA4, s32) < 4) {
-            AT(o, 0xEA0 + i * 4, f32) = AT(o, 0xEA0 + i * 4, f32) + AT(o, 0xEA0 + i * 4, f32) / 2.0f;
-            AT(o, 0xEE0 + i * 4, f32) = AT(o, 0xEE0 + i * 4, f32) + AT(o, 0xEE0 + i * 4, f32) / 2.0f;
+        AT(r, 0x10, f32) = AT(r, 0x10, f32) + (AT(o, b->vel + i * 0xC, f32) + AT(o, b->driftX + i * 4, f32));
+        AT(r, 0x18, f32) = AT(r, 0x18, f32) + (AT(o, b->vel + 8 + i * 0xC, f32) + AT(o, b->driftZ + i * 4, f32));
+        if (AT(o, b->age, s32) < 4) {
+            AT(o, b->driftX + i * 4, f32) = AT(o, b->driftX + i * 4, f32) + AT(o, b->driftX + i * 4, f32) / 2.0f;
+            AT(o, b->driftZ + i * 4, f32) = AT(o, b->driftZ + i * 4, f32) + AT(o, b->driftZ + i * 4, f32) / 2.0f;
             continue;
         }
         if (AT(r, 0x0, s32) != 0 && --AT(r, 0x0, s32) < 0) {
@@ -2230,44 +2241,46 @@ s32 func_0036B200(u8 *o) {
         if (AT(r, 0xC, s32) < 0) {
             AT(r, 0xC, s32) = 0;
         }
-        if (AT(o, 0xFA4, s32) < 8) {
-            AT(o, 0xC30 + i * 0xC, f32) = AT(o, 0xC30 + i * 0xC, f32) + AT(o, 0xCF0 + i * 0xC, f32);
-            AT(o, 0xC34 + i * 0xC, f32) = AT(o, 0xC34 + i * 0xC, f32) + AT(o, 0xCF4 + i * 0xC, f32);
-            AT(o, 0xC38 + i * 0xC, f32) = AT(o, 0xC38 + i * 0xC, f32) + AT(o, 0xCF8 + i * 0xC, f32);
+        if (AT(o, b->age, s32) < 8) {
+            AT(o, b->vel + i * 0xC, f32) = AT(o, b->vel + i * 0xC, f32) + AT(o, b->fall + i * 0xC, f32);
+            AT(o, b->vel + 4 + i * 0xC, f32) = AT(o, b->vel + 4 + i * 0xC, f32) + AT(o, b->fall + 4 + i * 0xC, f32);
+            AT(o, b->vel + 8 + i * 0xC, f32) = AT(o, b->vel + 8 + i * 0xC, f32) + AT(o, b->fall + 8 + i * 0xC, f32);
         }
         if (i % 2 == 0) {
-            AT(r, 0x14, f32) = AT(r, 0x14, f32) + 4.0f * AT(o, 0xC34 + i * 0xC, f32);
+            AT(r, 0x14, f32) = AT(r, 0x14, f32) + 4.0f * AT(o, b->vel + 4 + i * 0xC, f32);
         } else {
-            AT(r, 0x14, f32) = AT(r, 0x14, f32) + 8.0f * AT(o, 0xC34 + i * 0xC, f32);
+            AT(r, 0x14, f32) = AT(r, 0x14, f32) + 8.0f * AT(o, b->vel + 4 + i * 0xC, f32);
         }
-        AT(o, 0xEA0 + i * 4, s32) = 0;
-        AT(o, 0xEE0 + i * 4, s32) = 0;
+        AT(o, b->driftX + i * 4, s32) = 0;
+        AT(o, b->driftZ + i * 4, s32) = 0;
     }
-    AT(o, 0xFA4, s32)++;
+    AT(o, b->age, s32)++;
 
-    rec_copy(o + 0x610 + AT(o, 0xFAC, s32) * 0x30, o + 0x610 + (AT(o, 0xFAC, s32) ^ 1) * 0x30);
-    r = o + 0x610 + AT(o, 0xFAC, s32) * 0x30;
-    if (AT(r, 0xC, s32) > 0) {
-        AT(o, 0xFB0, u8) = 0;
-        if (--AT(r, 0xC, s32) < 0) {
-            AT(r, 0xC, s32) = 0;
-        }
-        if (!(++AT(r, 0x2C, s32) < AT(o, 0xBBB, s8))) {
-            AT(r, 0xC, s32) = 0;
-            AT(r, 0x2C, s32) = 0;
+    for (i = 0; i < b->nFlash; i++) {
+        rec_copy(o + b->flash + CUR * b->flashBuf + i * 0x30, o + b->flash + (CUR ^ 1) * b->flashBuf + i * 0x30);
+        r = o + b->flash + CUR * b->flashBuf + i * 0x30;
+        if (AT(r, 0xC, s32) > 0) {
+            AT(o, b->done, u8) = 0;
+            if (--AT(r, 0xC, s32) < 0) {
+                AT(r, 0xC, s32) = 0;
+            }
+            if (!(++AT(r, 0x2C, s32) < AT(o, b->flashFrames, s8))) {
+                AT(r, 0xC, s32) = 0;
+                AT(r, 0x2C, s32) = 0;
+            }
         }
     }
 
     nav = D_0044E570;
-    for (i = 0; i < 12; i++) {
+    for (i = 0; i < b->nPuff; i++) {
         u32 tri;
 
-        rec_copy(o + 0x670 + AT(o, 0xFAC, s32) * 0x240 + i * 0x30, o + 0x670 + (AT(o, 0xFAC, s32) ^ 1) * 0x240 + i * 0x30);
-        r = o + 0x670 + AT(o, 0xFAC, s32) * 0x240 + i * 0x30;
-        AT(r, 0x10, f32) = AT(r, 0x10, f32) + AT(o, 0xDB0 + i * 0xC, f32);
-        AT(r, 0x14, f32) = AT(r, 0x14, f32) + AT(o, 0xDB4 + i * 0xC, f32);
-        AT(r, 0x18, f32) = AT(r, 0x18, f32) + AT(o, 0xDB8 + i * 0xC, f32);
-        AT(o, 0xDB4 + i * 0xC, f32) = AT(o, 0xDB4 + i * 0xC, f32) - AT(o, 0xE70 + i * 4, f32);
+        rec_copy(o + b->puff + CUR * b->puffBuf + i * 0x30, o + b->puff + (CUR ^ 1) * b->puffBuf + i * 0x30);
+        r = o + b->puff + CUR * b->puffBuf + i * 0x30;
+        AT(r, 0x10, f32) = AT(r, 0x10, f32) + AT(o, b->puffVel + i * 0xC, f32);
+        AT(r, 0x14, f32) = AT(r, 0x14, f32) + AT(o, b->puffVel + 4 + i * 0xC, f32);
+        AT(r, 0x18, f32) = AT(r, 0x18, f32) + AT(o, b->puffVel + 8 + i * 0xC, f32);
+        AT(o, b->puffVel + 4 + i * 0xC, f32) = AT(o, b->puffVel + 4 + i * 0xC, f32) - AT(o, b->puffRate + i * 4, f32);
         tri = func_00123D20(gCharPlayer, (f32 *)(r + 0x10));
         sceVu0CopyVector(g, (f32 *)(r + 0x10));
         VCALL(nav, 0x14, void (*)(VObject *, u32, f32 *))(nav, tri, g);
@@ -2281,26 +2294,47 @@ s32 func_0036B200(u8 *o) {
         }
     }
 
-    rec_copy(o + 0xAF0 + AT(o, 0xFAC, s32) * 0x30, o + 0xAF0 + (AT(o, 0xFAC, s32) ^ 1) * 0x30);
-    r = o + 0xAF0 + AT(o, 0xFAC, s32) * 0x30;
-    if (AT(r, 0xC, s32) <= 0) {
-        return 1;
+    for (i = 0; i < b->nRing; i++) {
+        u32 c = b->corners + i * 0x40;
+
+        rec_copy(o + b->ring + CUR * b->ringBuf + i * 0x30, o + b->ring + (CUR ^ 1) * b->ringBuf + i * 0x30);
+        r = o + b->ring + CUR * b->ringBuf + i * 0x30;
+        if (AT(r, 0xC, s32) <= 0) {
+            continue;
+        }
+        AT(o, b->done, u8) = 0;
+        AT(r, 0xC, s32) = AT(r, 0xC, s32) - 13;
+        if (AT(r, 0xC, s32) < 0) {
+            AT(r, 0xC, s32) = 0;
+        }
+        AT(o, b->size, f32) = AT(o, b->size, f32) + (i == 0 ? 1.0f : 0.5f);
+        ring_corner(o, c, -AT(o, b->size, f32), -AT(o, b->size, f32));
+        ring_corner(o, c + 0x10, AT(o, b->size, f32), -AT(o, b->size, f32));
+        ring_corner(o, c + 0x20, -AT(o, b->size, f32), AT(o, b->size, f32));
+        ring_corner(o, c + 0x30, AT(o, b->size, f32), AT(o, b->size, f32));
+        sceVu0ApplyMatrix((f32 *)(o + c), (f32 (*)[4])(o + b->frame), (f32 *)(o + c));
+        sceVu0ApplyMatrix((f32 *)(o + c + 0x10), (f32 (*)[4])(o + b->frame), (f32 *)(o + c + 0x10));
+        sceVu0ApplyMatrix((f32 *)(o + c + 0x20), (f32 (*)[4])(o + b->frame), (f32 *)(o + c + 0x20));
+        sceVu0ApplyMatrix((f32 *)(o + c + 0x30), (f32 (*)[4])(o + b->frame), (f32 *)(o + c + 0x30));
     }
-    AT(o, 0xFB0, u8) = 0;
-    AT(r, 0xC, s32) = AT(r, 0xC, s32) - 13;
-    if (AT(r, 0xC, s32) < 0) {
-        AT(r, 0xC, s32) = 0;
-    }
-    AT(o, 0xFA8, f32) = AT(o, 0xFA8, f32) + 1.0f;
-    ring_corner(o, 0xF60, -AT(o, 0xFA8, f32), -AT(o, 0xFA8, f32));
-    ring_corner(o, 0xF70, AT(o, 0xFA8, f32), -AT(o, 0xFA8, f32));
-    ring_corner(o, 0xF80, -AT(o, 0xFA8, f32), AT(o, 0xFA8, f32));
-    ring_corner(o, 0xF90, AT(o, 0xFA8, f32), AT(o, 0xFA8, f32));
-    sceVu0ApplyMatrix((f32 *)(o + 0xF60), (f32 (*)[4])(o + 0xF20), (f32 *)(o + 0xF60));
-    sceVu0ApplyMatrix((f32 *)(o + 0xF70), (f32 (*)[4])(o + 0xF20), (f32 *)(o + 0xF70));
-    sceVu0ApplyMatrix((f32 *)(o + 0xF80), (f32 (*)[4])(o + 0xF20), (f32 *)(o + 0xF80));
-    sceVu0ApplyMatrix((f32 *)(o + 0xF90), (f32 (*)[4])(o + 0xF20), (f32 *)(o + 0xF90));
+#undef CUR
     return 1;
+}
+
+s32 func_0036B200(u8 *o) {
+    static const BurstShape kA = {0xFAC, 0xFB0, 0xFA4, 16, 0x10, 0x300, 0xC30, 0xCF0, 0xEA0, 0xEE0,
+                                  1, 0x610, 0x30, 0xBBB, 12, 0x670, 0x240, 0xDB0, 0xE70,
+                                  1, 0xAF0, 0x30, 0xFA8, 0xF60, 0xF20};
+
+    return burst_update(o, &kA);
+}
+
+s32 func_0036C880(u8 *o) {
+    static const BurstShape kB = {0x22BC, 0x22C0, 0x22B4, 32, 0x10, 0x600, 0x1B30, 0x1CB0, 0x20B0, 0x2130,
+                                  3, 0xC10, 0x90, 0x1ABB, 32, 0xD30, 0x600, 0x1E30, 0x2030,
+                                  3, 0x1930, 0x90, 0x22B8, 0x21F0, 0x21B0};
+
+    return burst_update(o, &kB);
 }
 
 extern f32 D_004469A8, D_004469AC, D_004469B0;   /* the three points' offsets across the view */
