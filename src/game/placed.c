@@ -1990,6 +1990,19 @@ static inline void burst_quad(QuadDrawer *q, f32 cy, s16 count, s16 x, s16 y, s1
     q->palette = -1;
 }
 
+/* the 0xFC0-byte burst's set up: frame 0, its four drawers (the last with its corners at +0xF60) */
+void func_0036BB00(u8 *o) {
+    AT(o, 0xFAC, s32) = 0;
+    AT(o, 0xFB0, u8) = 0;
+    AT(o, 0xFA0, s32) = 0;
+    AT(o, 0xFA4, s32) = 0;
+    burst_quad((QuadDrawer *)(o + 0xB50), 0.0f, 0x10, 0x20, 0x40, 0x20, 0x20, 0x40, 1);
+    burst_quad((QuadDrawer *)(o + 0xB88), -1.0f, 1, 0, 0xA0, 0x20, 0x40, 0x41, 0xA);
+    burst_quad((QuadDrawer *)(o + 0xBC0), 0.0f, 0xC, 0xE, 0x6E, 4, 4, 0x40, 1);
+    burst_quad((QuadDrawer *)(o + 0xBF8), 0.0f, 1, 0xC0, 0x60, 0x20, 0x20, 0x43, 0);
+    AT(o, 0xC0C, u8 *) = o + 0xF60;
+}
+
 /* the 0x22D0-byte burst's set up: frame 0, the first three drawers */
 void func_0036D210(u8 *o) {
     AT(o, 0x22BC, s32) = 0;
