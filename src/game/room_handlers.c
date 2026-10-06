@@ -6533,3 +6533,87 @@ s32 func_00341C30(void *self, void *a1, u8 *cmd) {
     }
     return 1;
 }
+
+extern void *D_00479F70[];
+
+static void effect_79F70_init(void **obj) {
+    obj[0] = D_00479F70;
+    obj[0x1810 / 4] = D_00469D00;
+    ((s32 *)obj)[0x1814 / 4] = -1;
+    obj[0x1810 / 4] = D_0046FC30;
+}
+
+/* the 0x20E0-byte effect D_00479F70 (sent byte 3): byte 3 0 / 1 one made, its slot in script
+ * variable 2 / 3; 2 / 3 the one in variable 2 / 3 (if any) sent nothing */
+s32 func_003425D0(void *self, void *a1, u8 *cmd) {
+    u8 *mgr;
+    u8 arg = cmd[3];
+    s32 slot;
+
+    switch (cmd[3]) {
+    case 0:
+    case 1:
+        mgr = D_0044E578;
+        slot = Effect_New(mgr, 0x20E0, effect_79F70_init);
+        func_002D6090(mgr, slot, &arg);
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, cmd[3] + 2, slot);
+        break;
+    case 2:
+    case 3:
+        slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, cmd[3]);
+        if (slot != -1) {
+            func_002D6090(D_0044E578, slot, NULL);
+        }
+        break;
+    }
+    return 1;
+}
+
+extern void *D_00479870[];
+extern const char *D_00441140[];   /* room objects 0..9 */
+
+/* the room object by name, out of line (keeps a2 untouched for difftest) */
+static __attribute__((noinline)) u8 *obj_named(const char *name) {
+    return VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
+}
+
+static void effect_79870_init(void **obj) {
+    obj[0] = D_00479870;
+}
+
+/* the 0x10-byte effect D_00479870 on room object k + 1 (byte 4 = k, 1..8; script variable 11 - k
+ * keeps its slot): made on first use when byte 3 is set, then sent (on byte 3, index 8 - k, the
+ * variable, the object), with sound 1 at the object when on and the camera director's +0x38 is
+ * clear */
+s32 func_0034B210(void *self, void *a1, u8 *cmd) {
+    u32 k = cmd[4];
+    u8 var = 11 - k, idx = 8 - k;   /* (k 0 / past 8: unset on the PS2) */
+    u32 name = k + 1;
+    u8 on = cmd[3];
+    VObject *ev = D_0044E4D0;
+    s32 slot = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, var);
+    u8 *o;
+    struct {
+        u8 on, idx, var, pad;
+        u8 *obj;
+    } msg;
+
+    if (slot == -1) {
+        if (on == 0) {
+            return 1;
+        }
+        slot = Effect_New(D_0044E578, 0x10, effect_79870_init);
+        VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, var, slot);
+    }
+    o = obj_named(D_00441140[name]);
+    msg.idx = idx;
+    msg.var = var;
+    msg.on = on;
+    msg.pad = 0;
+    msg.obj = o;
+    func_002D6090(D_0044E578, slot, &msg);
+    if (VCALL(D_0044E4F8, 0x38, s32 (*)(VObject *))(D_0044E4F8) == 0 && on != 0) {
+        func_002FF650(D_0044E560, 1, 6, (f32 *)(o + 0x20), 0, 0);
+    }
+    return 1;
+}
