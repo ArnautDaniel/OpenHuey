@@ -3242,3 +3242,111 @@ landed:
         func_00122C20(b, 0x7C, 5, 0, 0, NULL);
     }
 }
+
+/* ---- the burst D_0047A050 (0x7A0 bytes, Burst1_Init): 16 puffs thrown up from a point and
+ * falling back, in two buffers of quad records (+0x10 + 0x300 x the current one +0x790),
+ * velocities at +0x648 (12 each), falls at +0x748, start heights at +0x708, the quad drawer at
+ * +0x610; +0x794 all gone ---- */
+
+#define PUFF1_REC(o, buf, i) ((o) + 0x10 + (buf) * 0x300 + (i) * 0x30)
+#define PUFF1_VEL(o, i) ((f32 *)((o) + 0x648 + (i) * 0xC))
+
+/* +0x18 start (arg: the point): each puff a 0x48 x 0x30 cell (16 frames), every other one half
+ * alpha, within 1 across of the point and 1 up, 0.1..2.1 big, thrown out and up */
+void func_0036D3F0(u8 *o, f32 *arg) {
+    static const union { u32 u; f32 f; } k05 = {0x3F000000}, k15 = {0x3FC00000}, k25 = {0x40200000};   /* multiplied first */
+    VObject *rnd;
+    f32 x, y, z;
+    s32 i;
+
+    if (arg == NULL) {
+        return;
+    }
+    rnd = D_0044E550;
+    x = arg[0];
+    y = 1.0f + arg[1];
+    z = arg[2];
+    for (i = 0; i < 16; i++) {
+        u8 *r = PUFF1_REC(o, AT(o, 0x790, s32), i);
+        f32 *v = PUFF1_VEL(o, i);
+
+        AT(r, 0x0, s32) = 0x48;
+        AT(r, 0x4, s32) = 0x30;
+        AT(r, 0x8, s32) = 0x10;
+        AT(r, 0xC, s32) = i % 2 == 0 ? 0x40 : 0x80;
+        AT(r, 0x10, f32) = x + 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(r, 0x14, f32) = y;
+        AT(o, 0x708 + i * 4, f32) = y;
+        AT(r, 0x18, f32) = z + 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(r, 0x1C, f32) = 1.0f;
+        AT(r, 0x20, f32) = 0x1.99999ap-4f + 2.0f * (k05.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd));
+        AT(r, 0x24, f32) = AT(r, 0x20, f32);
+        AT(r, 0x2C, s32) = 0;
+        AT(r, 0x28, s32) = 0;
+        v[0] = k15.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        v[1] = k25.f * (0x1.99999ap-4f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)) - 0.5f;
+        v[2] = k15.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(o, 0x748 + i * 4, f32) = 0x1.47ae14p-6f + 0x1.99999ap-4f * v[1];   /* 0.02 + 0.1 x */
+    }
+}
+
+/* +0x14 draw (not while the effects are paused) */
+void func_0036D6C0(u8 *o) {
+    if (func_002D6010(D_0044E578) == 0) {
+        AT(o, 0x620, u8 *) = o + AT(o, 0x790, s32) * 0x300 + 0x10;
+        func_002E56C0(o + 0x610);
+    }
+}
+
+/* +0x10 update: flip the buffers; each puff still showing carried over, moved and pulled down,
+ * out once under the floor (where the floor counts), else fading by 1..8; 0 once all gone */
+s32 func_0036D720(u8 *o) {
+    VObject *nav, *rnd;
+    f32 g[4] __attribute__((aligned(16)));
+    s32 i;
+
+    if (AT(o, 0x794, u8) == 1) {
+        return 0;
+    }
+    AT(o, 0x794, u8) = 1;
+    nav = D_0044E570;
+    rnd = D_0044E550;
+    AT(o, 0x790, s32) ^= 1;
+    for (i = 0; i < 16; i++) {
+        u8 *r;
+        f32 *v = PUFF1_VEL(o, i);
+        u32 tri;
+
+        rec_copy(PUFF1_REC(o, AT(o, 0x790, s32), i), PUFF1_REC(o, AT(o, 0x790, s32) ^ 1, i));
+        r = PUFF1_REC(o, AT(o, 0x790, s32), i);
+        if (AT(r, 0xC, s32) <= 0) {
+            continue;
+        }
+        AT(o, 0x794, u8) = 0;
+        AT(r, 0x10, f32) = AT(r, 0x10, f32) + v[0];
+        AT(r, 0x14, f32) = AT(r, 0x14, f32) + v[1];
+        AT(r, 0x18, f32) = AT(r, 0x18, f32) + v[2];
+        v[1] = v[1] - AT(o, 0x748 + i * 4, f32);
+        tri = func_00123D20(gCharPlayer, (f32 *)(r + 0x10));
+        sceVu0CopyVector(g, (f32 *)(r + 0x10));
+        VCALL(nav, 0x14, void (*)(VObject *, u32, f32 *))(nav, tri, g);
+        if (!(nav_tri_flags(nav, tri) & 0x10000000) && AT(r, 0x14, f32) < g[1]) {
+            AT(r, 0xC, s32) = 0;
+            continue;
+        }
+        AT(r, 0xC, s32) = AT(r, 0xC, s32) - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 7) + 1);
+        if (AT(r, 0xC, s32) < 0) {
+            AT(r, 0xC, s32) = 0;
+        }
+    }
+    return 1;
+}
+
+/* +0xC set up: frame 0, the drawer (16 quads of a 4 x 4 cell at (14, 110), blended) */
+void func_0036D9A0(u8 *o) {
+    AT(o, 0x790, s32) = 0;
+    AT(o, 0x794, u8) = 0;
+    AT(o, 0x788, s32) = 0;
+    AT(o, 0x78C, s32) = 0;
+    burst_quad((QuadDrawer *)(o + 0x610), 0.0f, 0x10, 0xE, 0x6E, 4, 4, 0x40, 1);
+}

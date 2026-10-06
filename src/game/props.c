@@ -2383,3 +2383,239 @@ void func_0033BCB0(u8 *d, const f32 *pos, const f32 *rot, s32 a, s32 b, s32 laye
     AT(d, 0x34, s32) = b;
     VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, d, layer, 0);
 }
+
+/* ---- D_0047A310 (0x10C8 bytes): rising embers over a fire - 16 small ones (records +0x910 +
+ * 0x300 x the current one +0x10C0, drawer +0xF48, rise speeds +0x1040, sway angles +0x1080)
+ * and, when started with a non-zero word (+0x10C5), 24 large flames (records +0x10 + 0x480 x
+ * the current one, drawer +0xF10, rise speeds +0xF80, sway angles +0xFE0); +0x10C4 off ---- */
+
+#define EMBER_REC(o, buf, i) ((QuadRec *)((o) + 0x910 + (buf) * 0x300) + (i))
+#define FLAME_REC(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0x480) + (i))
+
+static inline f32 rnd18(VObject *rnd) {
+    return VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+}
+
+static inline f32 rnd1C(VObject *rnd) {
+    return VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd);
+}
+
+/* (re)start ember `i` within 10 of the centre at -4, 0.2..0.4 big, turned at random, rising
+ * 0.2..0.6 a frame; not `fresh` (the first round): somewhere up its first 5, dimmer the
+ * higher */
+void func_00371180(u8 *o, s32 i, s32 fresh) {
+    static const union { u32 u; f32 f; } k5 = {0x40A00000}, k02 = {0x3E4CCCCD}, k20 = {0x41A00000},
+                                         k360 = {0x43B40000}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};   /* multiplied first */
+    QuadRec *r;
+    VObject *rnd;
+    f32 y = 0.0f;
+
+    if (AT(o, 0x10C4, u8) == 1) {
+        return;
+    }
+    r = EMBER_REC(o, AT(o, 0x10C0, s32), i);
+    r->rgba[0] = 0x80;
+    r->rgba[1] = 0x80;
+    r->rgba[2] = 0x80;
+    r->rgba[3] = 0x80;
+    if (!fresh) {
+        y = k5.f * rnd18(D_0044E550);
+        r->rgba[3] = (s32)(k02.f * ((f32)r->rgba[3] * (5.0f - y)));
+    }
+    rnd = D_0044E550;
+    r->pos[0] = k20.f * (rnd18(rnd) - 0.5f);
+    r->pos[1] = y - 4.0f;
+    r->pos[2] = k20.f * (rnd18(rnd) - 0.5f);
+    r->pos[3] = 1.0f;
+    r->w = 0x1.99999ap-3f + 0x1.99999ap-3f * rnd18(rnd);   /* 0.2 + 0.2 x */
+    r->h = r->w;
+    r->turn = kPi.f * (k360.f * (rnd1C(rnd) - 0.5f)) / 180.0f;
+    r->frame = 0;
+    AT(o, 0x1040 + i * 4, f32) = 0x1.99999ap-3f + 0x1.99999ap-2f * rnd18(rnd);   /* 0.2 + 0.4 x */
+    AT(o, 0x1080 + i * 4, f32) = k2Pi.f * (rnd18(rnd) - 0.5f);
+}
+
+/* (re)start flame `i` within 5 of the centre at -16, 10..13 big, turned at random, rising
+ * 0.6..0.65 a frame; not `fresh` (the first round): somewhere up its first 25, smaller and
+ * dimmer the higher */
+void func_00371400(u8 *o, s32 i, s32 fresh) {
+    static const union { u32 u; f32 f; } k25 = {0x41C80000}, k004 = {0x3D23D70A}, k10 = {0x41200000},
+                                         k360 = {0x43B40000}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};   /* multiplied first */
+    QuadRec *r;
+    VObject *rnd;
+    f32 y = 0.0f;
+
+    if (AT(o, 0x10C4, u8) == 1) {
+        return;
+    }
+    r = FLAME_REC(o, AT(o, 0x10C0, s32), i);
+    r->rgba[0] = 0x80;
+    r->rgba[1] = 0x80;
+    r->rgba[2] = 0x80;
+    r->rgba[3] = 0x40;
+    rnd = D_0044E550;
+    r->w = 10.0f + 3.0f * rnd18(rnd);
+    if (!fresh) {
+        y = k25.f * rnd18(rnd);
+        r->rgba[3] = (s32)(k004.f * ((f32)r->rgba[3] * (25.0f - y)));
+        r->w = r->w - 0.5f * y;
+    }
+    rnd = D_0044E550;
+    r->pos[0] = k10.f * (rnd18(rnd) - 0.5f);
+    r->pos[1] = y - 16.0f;
+    r->pos[2] = k10.f * (rnd18(rnd) - 0.5f);
+    r->pos[3] = 1.0f;
+    r->h = r->w;
+    r->turn = kPi.f * (k360.f * (rnd1C(rnd) - 0.5f)) / 180.0f;
+    r->frame = 0;
+    AT(o, 0xF80 + i * 4, f32) = 0x1.333334p-1f + 0x1.99999ap-5f * rnd18(rnd);   /* 0.6 + 0.05 x */
+    AT(o, 0xFE0 + i * 4, f32) = k2Pi.f * (rnd18(rnd) - 0.5f);
+}
+
+/* +0x18 start: arg { flames too }: the drawers set up (flames 24 of a 32 x 32 cell at (384,
+ * 128); embers 16 of 8 x 8 at (108, 76); blended, palette 6) and every one started; none: off */
+void func_003716C0(u8 *o, s32 *arg) {
+    s32 i;
+
+    if (arg == NULL) {
+        AT(o, 0x10C4, u8) = 1;
+        return;
+    }
+    AT(o, 0x10C5, u8) = arg[0] != 0;
+    if (AT(o, 0x10C5, u8) == 1) {
+        AT(o, 0xF18, s64) = -1;
+        AT(o, 0xF24, s32) = 0;
+        AT(o, 0xF28, s32) = 0;
+        AT(o, 0xF2C, s32) = 0;
+        AT(o, 0xF30, s32) = 0x19;
+        AT(o, 0xF34, s16) = 0x18;
+        AT(o, 0xF36, s16) = 0x180;
+        AT(o, 0xF38, s16) = 0x80;
+        AT(o, 0xF3A, s16) = 0x20;
+        AT(o, 0xF3C, s16) = 0x20;
+        AT(o, 0xF3E, s16) = 0x200;
+        AT(o, 0xF40, s16) = 0x100;
+        AT(o, 0xF42, s8) = 0x40;
+        AT(o, 0xF43, s8) = 1;
+        AT(o, 0xF44, s8) = 1;
+        AT(o, 0xF45, s8) = 0x10;
+        AT(o, 0xF46, s8) = 6;
+        for (i = 0; i < 24; i++) {
+            func_00371400(o, i, 0);
+        }
+    }
+    AT(o, 0xF50, s64) = -1;
+    AT(o, 0xF5C, s32) = 0;
+    AT(o, 0xF60, s32) = 0;
+    AT(o, 0xF64, s32) = 0;
+    AT(o, 0xF68, s32) = 0x19;
+    AT(o, 0xF6C, s16) = 0x10;
+    AT(o, 0xF6E, s16) = 0x6C;
+    AT(o, 0xF70, s16) = 0x4C;
+    AT(o, 0xF72, s16) = 8;
+    AT(o, 0xF74, s16) = 8;
+    AT(o, 0xF76, s16) = 0x200;
+    AT(o, 0xF78, s16) = 0x100;
+    AT(o, 0xF7A, s8) = 0x40;
+    AT(o, 0xF7B, s8) = 1;
+    AT(o, 0xF7C, s8) = 1;
+    AT(o, 0xF7D, s8) = 0x10;
+    AT(o, 0xF7E, s8) = 6;
+    for (i = 0; i < 16; i++) {
+        func_00371180(o, i, 0);
+    }
+}
+
+/* +0x14 draw: the flames (if any), then the embers */
+void func_00371860(u8 *o) {
+    if (AT(o, 0x10C4, u8) == 1) {
+        return;
+    }
+    if (AT(o, 0x10C5, u8) == 1) {
+        AT(o, 0xF20, u8 *) = o + AT(o, 0x10C0, s32) * 0x480 + 0x10;
+        func_002E56C0(o + 0xF10);
+    }
+    AT(o, 0xF58, u8 *) = o + AT(o, 0x10C0, s32) * 0x300 + 0x910;
+    func_002E56C0(o + 0xF48);
+}
+
+/* one sway step: the angle on by up to 10 degrees (wrapped), returned */
+static inline f32 ember_sway(f32 *a, VObject *rnd) {
+    static const union { u32 u; f32 f; } k10 = {0x41200000}, kPi = {0x40490FDB};   /* multiplied first */
+    f32 v = *a + kPi.f * (k10.f * rnd18(rnd)) / 180.0f;
+
+    *a = v;
+    if (!(v <= 0x1.921fb6p+1f)) {
+        *a = v - 0x1.921fb6p+2f;
+    }
+    return *a;
+}
+
+/* +0x10 update: flip the buffers; the flames shrink (out at 0), turn, sway (0.1) and rise,
+ * fading 2..3 every other frame and restarted once faded; the embers turn, sway (0.2) and rise,
+ * fading 7..10 every other frame and restarted once faded. 0 once off */
+s32 func_00371900(u8 *o) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};   /* multiplied first */
+    VObject *rnd;
+    s32 i, k;
+
+    if (AT(o, 0x10C4, u8) == 1) {
+        return 0;
+    }
+    AT(o, 0x10C0, s32) ^= 1;
+    if (AT(o, 0x10C5, u8) == 1) {
+        rnd = D_0044E550;
+        for (i = 0; i < 24; i++) {
+            u32 *src = (u32 *)FLAME_REC(o, AT(o, 0x10C0, s32) ^ 1, i);
+            u32 *dst = (u32 *)FLAME_REC(o, AT(o, 0x10C0, s32), i);
+            QuadRec *r;
+            f32 a;
+
+            for (k = 0; k < 12; k++) {
+                dst[k] = src[k];
+            }
+            r = FLAME_REC(o, AT(o, 0x10C0, s32), i);
+            r->w = r->w - (0x1.99999ap-3f + 0x1.99999ap-4f * rnd18(rnd));   /* 0.2 + 0.1 x */
+            if (r->w < 0.0f) {
+                r->w = 0.0f;
+                r->rgba[3] = 0;
+            }
+            r->h = r->w;
+            r->turn = r->turn + kPi.f * rnd1C(rnd) / 180.0f;
+            a = ember_sway(&AT(o, 0xFE0 + i * 4, f32), rnd);
+            r->pos[0] = r->pos[0] + 0x1.99999ap-4f * func_0031C248(a);
+            r->pos[1] = r->pos[1] + AT(o, 0xF80 + i * 4, f32);
+            r->pos[2] = r->pos[2] + 0x1.99999ap-4f * func_0031C058(AT(o, 0xFE0 + i * 4, f32));
+            if (AT(o, 0x10C0, s32) == 0) {
+                r->rgba[3] = r->rgba[3] - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 1) + 2);
+                if (r->rgba[3] < 0) {
+                    func_00371400(o, i, 1);
+                }
+            }
+        }
+    }
+    rnd = D_0044E550;
+    for (i = 0; i < 16; i++) {
+        u32 *src = (u32 *)EMBER_REC(o, AT(o, 0x10C0, s32) ^ 1, i);
+        u32 *dst = (u32 *)EMBER_REC(o, AT(o, 0x10C0, s32), i);
+        QuadRec *r;
+        f32 a;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        r = EMBER_REC(o, AT(o, 0x10C0, s32), i);
+        r->turn = r->turn + 0.5f * (kPi.f * rnd1C(rnd) / 180.0f);
+        a = ember_sway(&AT(o, 0x1080 + i * 4, f32), rnd);
+        r->pos[0] = r->pos[0] + 0x1.99999ap-3f * func_0031C248(a);
+        r->pos[1] = r->pos[1] + AT(o, 0x1040 + i * 4, f32);
+        r->pos[2] = r->pos[2] + 0x1.99999ap-3f * func_0031C058(AT(o, 0x1080 + i * 4, f32));
+        if (AT(o, 0x10C0, s32) == 0) {
+            r->rgba[3] = r->rgba[3] - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 3) + 7);
+            if (r->rgba[3] < 0) {
+                func_00371180(o, i, 1);
+            }
+        }
+    }
+    return 1;
+}
