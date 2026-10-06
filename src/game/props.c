@@ -384,6 +384,106 @@ void func_00377D20(u8 *o) {
     d.vtbl = D_00469D00;
 }
 
+/* (class D_0047A3F0)  +0x14 draw: model 0x2A at (0, 30.1, 0), 3750 across, its turns +0x4..,
+ * dimmed to 0x40 */
+void func_00378050(u8 *o) {
+    static const F32Bits kY = {0x41F0CCCD};
+    ModelDraw d __attribute__((aligned(16)));
+    ModelDrawParams p __attribute__((aligned(16)));
+
+    p.pos[0] = 0.0f;
+    p.pos[1] = kY.f;
+    p.pos[2] = 0.0f;
+    p.pos[3] = 1.0f;
+    p.n = 0;
+    p.radius = 3750.0f;
+    p.angle[0] = AT(o, 0x4, f32);
+    p.angle[1] = AT(o, 0x8, f32);
+    p.angle[2] = AT(o, 0xC, f32);
+    p.model = 0x2A;
+    p.rgba = 0x40404040;
+    d.slot = -1;
+    d.vtbl = D_00478B70;
+    func_00350660(&d, &p);
+    d.vtbl = D_00469D00;
+}
+
+/* ---- class D_0047A410: model 0x2C turning slowly about y at (400, 27.1, -125) ---- */
+
+/* +0xC reset: a random turn */
+void func_00378470(u8 *o) {
+    f32 r = VCALL(D_0044E550, 0x18, f32 (*)(VObject *))(D_0044E550);
+
+    AT(o, 0x4, f32) = 0x1.921fb6p+1f * (360.0f * (r - 0.5f)) / 180.0f;
+}
+
+/* +0x10 update: half a degree on */
+s32 func_00378410(u8 *o) {
+    static const F32Bits kHalfDeg = {0x3C0EFA35}, kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
+
+    AT(o, 0x4, f32) = AT(o, 0x4, f32) + kHalfDeg.f;
+    if (!(AT(o, 0x4, f32) <= kPi.f)) {
+        AT(o, 0x4, f32) = AT(o, 0x4, f32) - kTwoPi.f;
+    }
+    return 1;
+}
+
+/* +0x14 draw: 1000 across, dimmed to 0x40 */
+void func_00378370(u8 *o) {
+    static const F32Bits kY = {0x41D8CCCD};
+    ModelDraw d __attribute__((aligned(16)));
+    ModelDrawParams p __attribute__((aligned(16)));
+
+    p.pos[0] = 400.0f;
+    p.pos[1] = kY.f;
+    p.pos[2] = -125.0f;
+    p.pos[3] = 1.0f;
+    p.n = 0;
+    p.radius = 1000.0f;
+    p.angle[0] = AT(o, 0x4, f32);
+    p.angle[1] = 0.0f;
+    p.angle[2] = 0.0f;
+    p.model = 0x2C;
+    p.rgba = 0x40404040;
+    d.slot = -1;
+    d.vtbl = D_00478B70;
+    func_00350660(&d, &p);
+    d.vtbl = D_00469D00;
+}
+
+/* (class D_0047A430)  +0x14 draw, dimmed to 0x40 at height 27.1: with +0x10 model 0x2A at (0, 50),
+ * 500 across, all three turns; else model 0x2C at (775, -420), 1500 across, turned about y only */
+void func_00378570(u8 *o) {
+    static const F32Bits kY = {0x41D8CCCD};
+    ModelDraw d __attribute__((aligned(16)));
+    ModelDrawParams p __attribute__((aligned(16)));
+
+    p.pos[3] = 1.0f;
+    p.n = 0;
+    p.pos[1] = kY.f;
+    p.angle[0] = AT(o, 0x4, f32);
+    p.rgba = 0x40404040;
+    if (AT(o, 0x10, s32) != 0) {
+        p.pos[0] = 0.0f;
+        p.pos[2] = 50.0f;
+        p.radius = 500.0f;
+        p.angle[1] = AT(o, 0x8, f32);
+        p.angle[2] = AT(o, 0xC, f32);
+        p.model = 0x2A;
+    } else {
+        p.angle[1] = 0.0f;
+        p.angle[2] = 0.0f;
+        p.pos[0] = 775.0f;
+        p.pos[2] = -420.0f;
+        p.radius = 1500.0f;
+        p.model = 0x2C;
+    }
+    d.slot = -1;
+    d.vtbl = D_00478B70;
+    func_00350660(&d, &p);
+    d.vtbl = D_00469D00;
+}
+
 /* +0x18 start: params[0] 0 at height 45.1 (threshold 0x60), else -5.9 (0x58); then a first
  * update */
 void func_00347540(VObject *o, const s32 *params) {

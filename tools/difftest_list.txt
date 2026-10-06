@@ -7134,3 +7134,8 @@ src/game/effects.c func_00374AA0 --pre=a0=0x0A000000..0x0A000000 --runs=5
 src/game/effects.c func_003744B0 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0..0x0A100000 --pre=@0x0A100010=0x3F000000..0x40800000 --pre=@0x0A100014=0x3F000000..0x40800000 --pre=@0x0A100018=0x3F000000..0x40800000 --pre=@0x0A10001C=0..0x90 --pre=a0+0x128=0..1 --pre=@0x44E550=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046AB50..0x0046AB50 --stub-fret=0.05 --stub-fret=0.4 --stub-fret=0.97 --runs=200
 src/game/effects.c func_003747D0 --pre=a0=0x0A000000..0x0A000000 --pre=a0+0x12C:u8=0..1 --pre=a0+0x128=0..1 --pre=a0+0x10=0..2 --pre=a0+0x14=0..2 --pre=a0+0x18=0..2 --pre=a0+0x1C=0..0x80 --pre=a0+0x40=0..2 --pre=a0+0x44=0..2 --pre=a0+0x48=0..2 --pre=a0+0x4C=0..0x80 --pre=a0+0x124=1..20 --pre=@0x44E550=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046AB50..0x0046AB50 --stub-fret=0.05 --stub-fret=0.4 --stub-fret=0.97 --runs=300
 src/game/effects.c func_00374750 --pre=a0=0x0A000000..0x0A000000 --pre=a0+0x12C:u8=0..1 --pre=a0+0x128=0..1 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=40
+src/game/props.c func_00378050 --pre=a0=0x0A000000..0x0A000000 --runs=10
+src/game/props.c func_00378470 --pre=a0=0x0A000000..0x0A000000 --pre=@0x44E550=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046AB50..0x0046AB50 --stub-fret=0.05 --stub-fret=0.4 --stub-fret=0.97 --runs=20
+src/game/props.c func_00378410 --pre=a0=0x0A000000..0x0A000000 --pre=a0+0x4=0x40000000..0x40500000 --runs=60
+src/game/props.c func_00378370 --pre=a0=0x0A000000..0x0A000000 --runs=10
+src/game/props.c func_00378570 --pre=a0=0x0A000000..0x0A000000 --pre=a0+0x10=0..1 --runs=30
