@@ -19,44 +19,55 @@ extern u32 D_00436CE0[];
 
 extern PTMF D_019917F0[];
 
-void *func_00341580(void *o, s32 flags) { return room_dtor(o, flags, D_00477480, D_0046DB80); }
+/* 0x00341580 */
+void *Room91_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00477480, D_0046DB80); }
 
-void *func_003415E0(void) {
+/* 0x003415E0 */
+void *Room91_EnterScript(void) {
     return D_00436600;
 }
 
-void *func_003415F0(void) {
+/* 0x003415F0 */
+void *Room91_CharEnterScript(void) {
     return D_00436690;
 }
 
-void *func_00341600(void) {
+/* 0x00341600 */
+void *Room91_Phase1Script(void) {
     return D_00436780;
 }
 
-void *func_00341610(void) {
+/* 0x00341610 */
+void *Room91_Phase2Script(void) {
     return D_00436A00;
 }
 
-void *func_00341620(void) {
+/* 0x00341620 */
+void *Room91_Phase3Script(void) {
     return D_00436A40;
 }
 
-u32 func_00341630(void *self, s32 i) {
+/* 0x00341630 */
+u32 Room91_ActionScript(void *self, s32 i) {
     return D_00436C80[i];
 }
 
-void *func_00341650(void) {
+/* 0x00341650 */
+void *Room91_Table38(void) {
     return D_00436CE0;
 }
 
 /* (self->*D_019917F0[i])(a, b) */
-s32 func_00341660(void *self, u32 i, s32 a, s32 b) {
+/* 0x00341660 */
+s32 Room91_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019917F0[i & 0xFF], a, b);
 }
 
-s32 func_00341690(void) { return slam_shake(); }
+/* 0x00341690 */
+s32 Room91_Cmd03(void) { return slam_shake(); }
 
-s32 func_00341720(void) {
+/* 0x00341720 */
+s32 Room91_Cmd02(void) {
     static const s16 spot[3] = {1, 3, 0xB};
     static const f32 b[3] = {0.0f, 0.0f, 0.0f}, c[3] = {0.0f, 0.0f, 0.5f}, d[3] = {0.5f, 0.5f, 0.5f};
 
@@ -64,7 +75,8 @@ s32 func_00341720(void) {
 }
 
 /* script variable 0 down by the player's hit (1 from the weak blow 0x1A, else 5), not below 0 */
-s32 func_00341A40(void) {
+/* 0x00341A40 */
+s32 Room91_Cmd01(void) {
     VObject *ev = gEvents;
     s32 v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0);
 
@@ -77,7 +89,8 @@ s32 func_00341A40(void) {
 }
 
 /* room 0x91 (D_00436CA0): door 0's +0x68 (0) */
-s32 func_00341AD0(void) {
+/* 0x00341AD0 */
+s32 Room91_Cmd00(void) {
     VCALL(gDoors, 0x68, void (*)(VObject *, s32, s32))(gDoors, 0, 0);
     return 1;
 }

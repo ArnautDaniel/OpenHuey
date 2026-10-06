@@ -155,7 +155,8 @@ void Debilitas_ExitDone(void *p) {
 }
 
 /* vtable +0xE8 */
-s32 func_00128080(Pursuer *p) {
+/* 0x00128080 */
+s32 RoomBase_Table3C(Pursuer *p) {
     return 0;
 }
 

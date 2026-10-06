@@ -21,48 +21,59 @@ extern void *D_003FC020[];
 extern u8 D_003FC040[];
 extern PTMF D_01990950[];
 
-void *func_002AD1C0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E0C0, D_0046DB80); }
+/* 0x002AD1C0 */
+void *Room19_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E0C0, D_0046DB80); }
 
-void *func_002AD220(void) {
+/* 0x002AD220 */
+void *Room19_EnterScript(void) {
     return D_003FB3B0;
 }
 
-void *func_002AD230(void) {
+/* 0x002AD230 */
+void *Room19_CharEnterScript(void) {
     return D_003FB420;
 }
 
-void *func_002AD240(void) {
+/* 0x002AD240 */
+void *Room19_Phase1Script(void) {
     return D_003FB520;
 }
 
-void *func_002AD250(void) {
+/* 0x002AD250 */
+void *Room19_Phase2Script(void) {
     return D_003FB720;
 }
 
-void *func_002AD260(void) {
+/* 0x002AD260 */
+void *Room19_Phase3Script(void) {
     return D_003FB840;
 }
 
-void *func_002AD270(void *self, s32 i) {
+/* 0x002AD270 */
+void *Room19_ActionScript(void *self, s32 i) {
     return D_003FBFD0[i];
 }
 
-void *func_002AD290(void) {
+/* 0x002AD290 */
+void *Room19_Table38(void) {
     return D_003FC040;
 }
 
-void *func_002AD2A0(void *self, s32 i) {
+/* 0x002AD2A0 */
+void *Room19_ObjectName(void *self, s32 i) {
     return D_003FC020[i];
 }
 
 /* (self->*D_01990950[i])(a, b) */
-s32 func_002AD2C0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AD2C0 */
+s32 Room19_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990950[i & 0xFF], a, b);
 }
 
 /* room 0x19 (D_003FC010): the pursuer (about, not in state 2, in mode 2, 6 or 7) while Hewie is
  * controlled: in another room, or 30 or more from the player */
-s32 func_002AD2F0(void) {
+/* 0x002AD2F0 */
+s32 Room19_Cond00(void) {
     Character *s = gCharPursuer, *p = gCharPlayer;
     Progress *g;
     u8 k;

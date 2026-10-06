@@ -4236,7 +4236,7 @@ void func_0035BC30(u8 *o, const u8 *m) {
 
 extern void Sound_PlayBankAt(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pitch);
 
-/* the room-object glow (vtable D_00479870, made by func_0034B210) +0x10 update: 0 while unset
+/* the room-object glow (vtable D_00479870, made by RoomC5_Cmd00) +0x10 update: 0 while unset
  * (+0x5 0xFF). On (+0x7) it fades in (+0x4 up to 0x40 by 2), off it fades out; at 0 it is unset,
  * frees its script variable (+0x6, events +0x30) and plays sound 6 at the object (+0xC, +0x20)
  * unless the camera director's +0x38 is set - all 0. Its phase +0x8 runs 0..45 by 2 a frame */

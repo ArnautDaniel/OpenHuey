@@ -16,30 +16,38 @@ extern u8 D_003F7E00[];
 extern void *D_003F81D0[];
 extern u8 D_003F81F0[];
 
-void *func_002AC0A0(void *o, s32 flags) { return room_dtor(o, flags, D_0046DF40, D_0046DB80); }
+/* 0x002AC0A0 */
+void *Room11_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DF40, D_0046DB80); }
 
-void *func_002AC100(void) {
+/* 0x002AC100 */
+void *Room11_EnterScript(void) {
     return D_003F7920;
 }
 
-void *func_002AC110(void) {
+/* 0x002AC110 */
+void *Room11_CharEnterScript(void) {
     return D_003F7A20;
 }
 
-void *func_002AC120(void) {
+/* 0x002AC120 */
+void *Room11_Phase1Script(void) {
     return D_003F7AC0;
 }
 
-void *func_002AC130(void) {
+/* 0x002AC130 */
+void *Room11_Phase2Script(void) {
     return D_003F7E00;
 }
 
-void *func_002AC140(void *self, s32 i) {
+/* 0x002AC140 */
+void *Room11_ActionScript(void *self, s32 i) {
     return D_003F81D0[i];
 }
 
-void *func_002AC160(void) {
+/* 0x002AC160 */
+void *Room11_Table38(void) {
     return D_003F81F0;
 }
 
-u32 func_002AC170(void *o, s32 i) { return ((u32 *)D_0047A9F8)[i]; }   /* D_0046DF40 +0x34 */
+/* 0x002AC170 */
+u32 Room11_ObjectName(void *o, s32 i) { return ((u32 *)D_0047A9F8)[i]; }   /* D_0046DF40 +0x34 */

@@ -22,43 +22,53 @@ extern u8 D_003FCC40[];
 extern u8 D_003FCD70[];
 extern PTMF D_01990990[];
 
-void *func_002AD9F0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E180, D_0046DB80); }
+/* 0x002AD9F0 */
+void *Room1C_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E180, D_0046DB80); }
 
-void *func_002ADA50(void) {
+/* 0x002ADA50 */
+void *Room1C_EnterScript(void) {
     return D_003FCB30;
 }
 
-void *func_002ADA60(void) {
+/* 0x002ADA60 */
+void *Room1C_CharEnterScript(void) {
     return D_003FCBC0;
 }
 
-void *func_002ADA70(void) {
+/* 0x002ADA70 */
+void *Room1C_Phase1Script(void) {
     return D_003FCC40;
 }
 
-void *func_002ADA80(void) {
+/* 0x002ADA80 */
+void *Room1C_Phase2Script(void) {
     return D_003FCD70;
 }
 
-u32 func_002ADA90(void *self, s32 i) {
+/* 0x002ADA90 */
+u32 Room1C_ActionScript(void *self, s32 i) {
     return D_003FD310[i];
 }
 
-void *func_002ADAB0(void) {
+/* 0x002ADAB0 */
+void *Room1C_Table38(void) {
     return D_003FD360;
 }
 
-u32 func_002ADAC0(void *self, s32 i) {
+/* 0x002ADAC0 */
+u32 Room1C_ObjectName(void *self, s32 i) {
     return D_0047AA78[i];
 }
 
 /* (self->*D_01990990[i])(a, b) */
-s32 func_002ADAE0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002ADAE0 */
+s32 Room1C_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990990[i & 0xFF], a, b);
 }
 
 /* room 0x1C (D_003FD350): a sound (0xC0000000, bank 6) at the room's effect 1 */
-s32 func_002ADB10(void) {
+/* 0x002ADB10 */
+s32 Room1C_Cmd01(void) {
     u8 *e = func_00266C40(gRoomEffects, 1);
     f32 at[4] __attribute__((aligned(16)));
 
@@ -71,7 +81,8 @@ s32 func_002ADB10(void) {
 
 /* room 0x1C (D_003FD338): room effect 0x1C (a depth range) with the cutscene from frame 0x14A:
  * near 1 .. 1 + 1.4 t (at most 67.6), far 48.6 + 4 t (at most 230) */
-s32 func_002ADB70(void) {
+/* 0x002ADB70 */
+s32 Room1C_Cmd00(void) {
     f32 t = (f32)(VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene) - 0x14A);
     f32 r[4];
     f32 v;

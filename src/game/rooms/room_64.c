@@ -13,20 +13,25 @@ extern u8 D_00429620[];
 extern u8 D_0047AD44[];
 extern u8 D_0047AD48[];
 
-void *func_0020B420(void *o, s32 flags) { return room_dtor(o, flags, D_0046B5F0, D_0046DB80); }
+/* 0x0020B420 */
+void *Room64_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046B5F0, D_0046DB80); }
 
-void *func_0020B480(void) {
+/* 0x0020B480 */
+void *Room64_EnterScript(void) {
     return D_0047AD44;
 }
 
-void *func_0020B490(void) {
+/* 0x0020B490 */
+void *Room64_CharEnterScript(void) {
     return D_004295A0;
 }
 
-void *func_0020B4A0(void) {
+/* 0x0020B4A0 */
+void *Room64_Phase1Script(void) {
     return D_00429620;
 }
 
-void *func_0020B4B0(void) {
+/* 0x0020B4B0 */
+void *Room64_Table38(void) {
     return D_0047AD48;
 }

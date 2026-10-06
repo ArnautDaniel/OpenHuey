@@ -9,7 +9,7 @@ typedef struct Pursuer Pursuer;
 
 /* debilitas.c */
 extern void *Model_dtor(void **m, s32 flags);
-extern s32 func_00128080(Pursuer *p);
+extern s32 RoomBase_Table3C(Pursuer *p);
 extern void func_00129AF0(Pursuer *p);
 extern void func_00128FC0(Pursuer *p);
 extern void Debilitas_ChaseDecision(Pursuer *p);

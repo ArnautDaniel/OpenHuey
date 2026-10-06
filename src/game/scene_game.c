@@ -126,8 +126,8 @@ s32 func_0031E130(u8 *self);
 
 extern void *D_00474460[];
 
-s32 func_00209200(void *o);
-s32 func_00209830(void *o);
+s32 RoomBase_CharEnterScript(void *o);
+s32 RoomBase_EnterScript(void *o);
 
 /* destructor (vtable D_004699E0) */
 void *func_00120EF0(u8 *o, s32 flags) {
@@ -368,7 +368,7 @@ Scene *SceneGame_ctor(Scene *g) {
     AT(o, 0x0, void **) = D_0046B3A0;
     AT(o, 0xC, void **) = D_0046B3B8;
     func_002D1040(o + 0x20);
-    func_00100340(o + 0x120, func_002D1020, func_001FB3B0, 4, 0x110);
+    func_00100340(o + 0x120, func_002D1020, RoomBase_dtor, 4, 0x110);
     Task_ctor((Task *)(o + 0x708));
     func_002D1000(o + 0x938);
     func_00100340(o + 0xBF0, func_002D0FE0, func_001FB400, 0x30, 0x20);
@@ -2269,7 +2269,8 @@ void *func_001FB0F0(u8 *o, s32 flags) {
 }
 
 /* the base (D_0046DB80): destructor */
-void *func_001FB3B0(void *o, s32 flags) {
+/* 0x001FB3B0 */
+void *RoomBase_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046DB80;
         if ((s16)flags > 0) {
@@ -2291,11 +2292,13 @@ void *func_001FB400(u8 *o, s32 flags) {
 }
 
 /* the base's defaults: nothing (0) */
-s32 func_00209200(void *o) {   /* +0x30 */
+/* 0x00209200 */
+s32 RoomBase_CharEnterScript(void *o) {   /* +0x30 */
     return 0;
 }
 
-s32 func_00209830(void *o) {   /* +0xC */
+/* 0x00209830 */
+s32 RoomBase_EnterScript(void *o) {   /* +0xC */
     return 0;
 }
 
@@ -2709,7 +2712,7 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     func_001002C0(g + 0xF6BBA0, (void * (*)(void *, s32))func_001FB400, 0x30, 0x20);
     func_002D0C70(g + 0xF6B8E8, -1);
     Task_dtor((Task *)(g + 0xF6B6B8), -1);
-    func_001002C0(g + 0xF6B0D0, func_001FB3B0, 4, 0x110);
+    func_001002C0(g + 0xF6B0D0, RoomBase_dtor, 4, 0x110);
     func_0016CC40(g + 0xF6AFD0, -1);
     func_0020C170((void **)(g + 0xF6AFBC), 0);
     func_0020C120((void **)(g + 0xF6AFB0), 0);

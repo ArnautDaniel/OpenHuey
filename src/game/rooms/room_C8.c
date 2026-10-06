@@ -27,41 +27,51 @@ static void effect_47a410_init(void **obj) {
     obj[0] = D_0047A410;
 }
 
-void *func_0034B5C0(void *o, s32 flags) { return room_dtor(o, flags, D_00478730, D_0046DB80); }
+/* 0x0034B5C0 */
+void *RoomC8_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00478730, D_0046DB80); }
 
-void *func_0034B620(void) {
+/* 0x0034B620 */
+void *RoomC8_EnterScript(void) {
     return D_00441520;
 }
 
-void *func_0034B630(void) {
+/* 0x0034B630 */
+void *RoomC8_CharEnterScript(void) {
     return D_00441560;
 }
 
-void *func_0034B640(void) {
+/* 0x0034B640 */
+void *RoomC8_Phase1Script(void) {
     return D_00441620;
 }
 
-void *func_0034B650(void) {
+/* 0x0034B650 */
+void *RoomC8_Phase2Script(void) {
     return D_004416A0;
 }
 
-u32 func_0034B660(void *self, s32 i) {
+/* 0x0034B660 */
+u32 RoomC8_ActionScript(void *self, s32 i) {
     return D_004417A8[i];
 }
 
-void *func_0034B680(void *o) { return D_0047AF40; }   /* D_00478730 +0x38 */
+/* 0x0034B680 */
+void *RoomC8_Table38(void *o) { return D_0047AF40; }   /* D_00478730 +0x38 */
 
-u32 func_0034B690(void *self, s32 i) {
+/* 0x0034B690 */
+u32 RoomC8_ObjectName(void *self, s32 i) {
     return D_0047AF3C[i];
 }
 
 /* (self->*D_01991A08[i])(a, b) */
-s32 func_0034B6B0(void *self, u32 i, s32 a, s32 b) {
+/* 0x0034B6B0 */
+s32 RoomC8_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991A08[i & 0xFF], a, b);
 }
 
 /* an effect D_0047A410 (8 bytes), not started */
-s32 func_0034B6E0(void) {
+/* 0x0034B6E0 */
+s32 RoomC8_Cmd00(void) {
     Effect_New(gEffects, 0x8, effect_47a410_init);
     return 1;
 }

@@ -20,45 +20,56 @@ extern u32 D_0047AEA8[];
 
 extern PTMF D_01991910[];
 
-void *func_00344970(void *o, s32 flags) { return room_dtor(o, flags, D_00477650, D_0046DB80); }
+/* 0x00344970 */
+void *Room6C_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00477650, D_0046DB80); }
 
-void *func_003449D0(void) {
+/* 0x003449D0 */
+void *Room6C_EnterScript(void) {
     return D_00439160;
 }
 
-void *func_003449E0(void) {
+/* 0x003449E0 */
+void *Room6C_CharEnterScript(void) {
     return D_00439220;
 }
 
-void *func_003449F0(void) {
+/* 0x003449F0 */
+void *Room6C_Phase1Script(void) {
     return D_00439320;
 }
 
-void *func_00344A00(void) {
+/* 0x00344A00 */
+void *Room6C_Phase2Script(void) {
     return D_004396D0;
 }
 
-void *func_00344A10(void *o) { return D_0047AE98; }   /* D_00477650 +0x20 */
+/* 0x00344A10 */
+void *Room6C_Phase5Script(void *o) { return D_0047AE98; }   /* D_00477650 +0x20 */
 
-u32 func_00344A20(void *self, s32 i) {
+/* 0x00344A20 */
+u32 Room6C_ActionScript(void *self, s32 i) {
     return D_00439AA0[i];
 }
 
-void *func_00344A40(void) {
+/* 0x00344A40 */
+void *Room6C_Table38(void) {
     return D_00439AF0;
 }
 
-u32 func_00344A50(void *self, s32 i) {
+/* 0x00344A50 */
+u32 Room6C_ObjectName(void *self, s32 i) {
     return D_0047AEA8[i];
 }
 
 /* (self->*D_01991910[i])(a, b) */
-s32 func_00344A70(void *self, u32 i, s32 a, s32 b) {
+/* 0x00344A70 */
+s32 Room6C_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991910[i & 0xFF], a, b);
 }
 
 /* 1 if the object at gCharPursuer exists, is active (+0x28) and is in mode 4 or 5 (+0xE8). */
-s32 func_00344AA0(void) {
+/* 0x00344AA0 */
+s32 Room6C_Cond01(void) {
     u8 *p = (u8 *)gCharPursuer;
     s32 mode;
 
@@ -69,7 +80,8 @@ s32 func_00344AA0(void) {
     return mode == 4 || mode == 5;
 }
 
-s32 func_00344B10(void) {
+/* 0x00344B10 */
+s32 Room6C_Cond00(void) {
     u8 *p = (u8 *)gCharPursuer;
     s32 mode;
 

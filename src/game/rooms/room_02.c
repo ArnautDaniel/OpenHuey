@@ -33,56 +33,69 @@ static void effect_70A70_init(void **obj) {
     obj[0xC10 / 4] = D_0046FC30;
 }
 
-void *func_002A8E00(void *o, s32 flags) { return room_dtor(o, flags, D_0046DC00, D_0046DB80); }
+/* 0x002A8E00 */
+void *Room02_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DC00, D_0046DB80); }
 
-void *func_002A8E60(void) {
+/* 0x002A8E60 */
+void *Room02_EnterScript(void) {
     return D_003EEDF0;
 }
 
-void *func_002A8E70(void) {
+/* 0x002A8E70 */
+void *Room02_CharEnterScript(void) {
     return D_003EEF70;
 }
 
-void *func_002A8E80(void) {
+/* 0x002A8E80 */
+void *Room02_Phase1Script(void) {
     return D_003EF0D0;
 }
 
-void *func_002A8E90(void) {
+/* 0x002A8E90 */
+void *Room02_Phase2Script(void) {
     return D_003EF5B0;
 }
 
-void *func_002A8EA0(void) {
+/* 0x002A8EA0 */
+void *Room02_Phase3Script(void) {
     return D_003EF780;
 }
 
-void *func_002A8EB0(void) {
+/* 0x002A8EB0 */
+void *Room02_Phase5Script(void) {
     return D_003EF8E0;
 }
 
-void *func_002A8EC0(void *self, s32 i) {
+/* 0x002A8EC0 */
+void *Room02_ActionScript(void *self, s32 i) {
     return D_003F0310[i];
 }
 
-void *func_002A8EE0(void) {
+/* 0x002A8EE0 */
+void *Room02_Table38(void) {
     return D_003F0410;
 }
 
-void *func_002A8EF0(void) {
+/* 0x002A8EF0 */
+void *Room02_Table3C(void) {
     return D_003F0430;
 }
 
-void *func_002A8F00(void *self, s32 i) {
+/* 0x002A8F00 */
+void *Room02_ObjectName(void *self, s32 i) {
     return D_003F03E0[i];
 }
 
 /* (self->*D_01990760[i])(a, b) */
-s32 func_002A8F20(void *self, u32 i, s32 a, s32 b) {
+/* 0x002A8F20 */
+s32 Room02_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990760[i & 0xFF], a, b);
 }
 
 /* room 0x02 (D_003F03C8): the pursuer is about, in a mode other than 0, 1 or 5, and progress
  * +0x1130 isn't 0xFE */
-s32 func_002A8F50(void) {
+/* 0x002A8F50 */
+s32 Room02_Cond01(void) {
     Character *s = gCharPursuer;
 
     if (s == NULL || s->a.active == 0 || AT(s, 0xE8, s32) == 0 || AT(s, 0xE8, s32) == 1 || AT(s, 0xE8, s32) == 5) {
@@ -95,7 +108,8 @@ s32 func_002A8F50(void) {
 }
 
 /* room 0x02 (D_003F03C0): the player is about and down at floor level (y <= 0) */
-s32 func_002A8FF0(void) {
+/* 0x002A8FF0 */
+s32 Room02_Cond00(void) {
     if (gCharPlayer != NULL && gCharPlayer->a.active != 0 && gCharPlayer->a.pos[1] <= 0.0f) {
         return 1;
     }
@@ -103,14 +117,16 @@ s32 func_002A8FF0(void) {
 }
 
 /* (self->*D_01990730[i])(a, b) */
-s32 func_002A9050(void *self, u32 i, s32 a, s32 b) {
+/* 0x002A9050 */
+s32 Room02_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990730[i & 0xFF], a, b);
 }
 
 /* room 0x02 (D_003F03B0): the drum can's wobble by byte 3 - 0 still (rest height +0x38 = its
  * height), 2 struck (+0x34 strength 1), 1 each frame: the strength fades by 0.2 while it bobs
  * 0.2 x strength x sin(phase +0x30, on by 90 degrees) about the rest height */
-s32 func_002A9080(void *self, void *a1, u8 *cmd) {
+/* 0x002A9080 */
+s32 Room02_Cmd03(void *self, void *a1, u8 *cmd) {
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F03FC);
     f32 t;
 
@@ -154,7 +170,8 @@ s32 func_002A9080(void *self, void *a1, u8 *cmd) {
 
 /* room 0x02 (D_003F03A0): the 0xE60-byte effect D_00470A70 by byte 3 - 0 made (its slot kept
  * in event variable 0), 1 that one sent 0 (stop), else one more made and sent 1 */
-s32 func_002A91F0(void *self, void *a1, u8 *cmd) {
+/* 0x002A91F0 */
+s32 Room02_Cmd02(void *self, void *a1, u8 *cmd) {
     if (cmd[3] == 0) {
         s32 slot = Effect_New(gEffects, 0xE60, effect_70A70_init);
 
@@ -175,7 +192,8 @@ s32 func_002A91F0(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x02 (D_003F0388): the panic (progress +0x7B8) raised to 80 */
-s32 func_002A9460(void) {
+/* 0x002A9460 */
+s32 Room02_Cmd01(void) {
     u8 *p = (u8 *)gProgress;
     f32 t = 80.0f - AT(p, 0x7BC, f32);
 
@@ -187,7 +205,8 @@ s32 func_002A9460(void) {
 
 /* the room object D_003F0404's +0x24 by byte 3: 0 set (37.978 with progress flag 0x12, else
  * 11), 1 up 0.25 to 37.978 (then event +0x5C (2)), 2 up 0.25, else down 0.25 */
-s32 func_002A94C0(void *self, void *a1, u8 *cmd) {
+/* 0x002A94C0 */
+s32 Room02_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kTop = {0x4217E979};   /* 37.978 */
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F0404);
 

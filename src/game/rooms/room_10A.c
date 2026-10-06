@@ -23,35 +23,47 @@ extern u8 D_00419A60[];
 extern PTMF D_01990F48[];
 extern PTMF D_01990F58[];
 
-void *func_002E76A0(void *o, s32 flags) { return room_dtor(o, flags, D_0046FE80, D_0046DB80); }
+/* 0x002E76A0 */
+void *Room10A_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046FE80, D_0046DB80); }
 
-void *func_002E7700(void) { return D_00419730; }
+/* 0x002E7700 */
+void *Room10A_EnterScript(void) { return D_00419730; }
 
-void *func_002E7710(void) { return D_00419770; }
+/* 0x002E7710 */
+void *Room10A_CharEnterScript(void) { return D_00419770; }
 
-void *func_002E7720(void) { return D_00419870; }
+/* 0x002E7720 */
+void *Room10A_Phase1Script(void) { return D_00419870; }
 
-void *func_002E7730(void) { return D_00419950; }
+/* 0x002E7730 */
+void *Room10A_Phase2Script(void) { return D_00419950; }
 
-void *func_002E7740(void *o) { return D_0047AC80; }   /* D_0046FE80 +0x20 */
+/* 0x002E7740 */
+void *Room10A_Phase5Script(void *o) { return D_0047AC80; }   /* D_0046FE80 +0x20 */
 
-void *func_002E7750(void *self, s32 i) { return D_00419A30[i]; }
+/* 0x002E7750 */
+void *Room10A_ActionScript(void *self, s32 i) { return D_00419A30[i]; }
 
-void *func_002E7770(void) { return D_00419A60; }
+/* 0x002E7770 */
+void *Room10A_Table38(void) { return D_00419A60; }
 
 /* (self->*D_01990F58[i])(a, b) */
-s32 func_002E7780(void *self, u32 i, s32 a, s32 b) {
+/* 0x002E7780 */
+s32 Room10A_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990F58[i & 0xFF], a, b);
 }
 
-s32 func_002E77B0(void *self, void *a1, u8 *cmd) { return room_nudge(&D_0047B27C, cmd, 1.0f); }
+/* 0x002E77B0 */
+s32 Room10A_Cmd00(void *self, void *a1, u8 *cmd) { return room_nudge(&D_0047B27C, cmd, 1.0f); }
 
 /* (self->*D_01990F48[i])(a, b) */
-s32 func_002E7850(void *self, u32 i, s32 a, s32 b) {
+/* 0x002E7850 */
+s32 Room10A_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990F48[i & 0xFF], a, b);
 }
 
-s32 func_002E7880(void) {
+/* 0x002E7880 */
+s32 Room10A_Cond00(void) {
     u8 *e = (u8 *)gProgress + 0x10D4;
     s32 i;
 

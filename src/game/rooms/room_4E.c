@@ -25,57 +25,70 @@ static void effect_78BE0_init(void **obj) {
     obj[0] = D_00478BE0;
 }
 
-void *func_002B3970(void *o, s32 flags) { return room_dtor(o, flags, D_0046E740, D_0046DB80); }
+/* 0x002B3970 */
+void *Room4E_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E740, D_0046DB80); }
 
-void *func_002B39D0(void) {
+/* 0x002B39D0 */
+void *Room4E_EnterScript(void) {
     return D_0040AE90;
 }
 
-void *func_002B39E0(void) {
+/* 0x002B39E0 */
+void *Room4E_CharEnterScript(void) {
     return D_0040AF40;
 }
 
-void *func_002B39F0(void) {
+/* 0x002B39F0 */
+void *Room4E_Phase1Script(void) {
     return D_0040B040;
 }
 
-void *func_002B3A00(void) {
+/* 0x002B3A00 */
+void *Room4E_Phase2Script(void) {
     return D_0040B160;
 }
 
-void *func_002B3A10(void) {
+/* 0x002B3A10 */
+void *Room4E_Phase5Script(void) {
     return D_0040B200;
 }
 
-u32 func_002B3A20(void *self, s32 i) {
+/* 0x002B3A20 */
+u32 Room4E_ActionScript(void *self, s32 i) {
     return D_0040B4B0[i];
 }
 
-void *func_002B3A40(void) {
+/* 0x002B3A40 */
+void *Room4E_Table38(void) {
     return D_0040B510;
 }
 
-u32 func_002B3A50(void *self, s32 i) {
+/* 0x002B3A50 */
+u32 Room4E_ObjectName(void *self, s32 i) {
     return D_0040B500[i];
 }
 
 /* (self->*D_01990D10[i])(a, b) */
-s32 func_002B3A70(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B3A70 */
+s32 Room4E_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990D10[i & 0xFF], a, b);
 }
 
 /* room 0x4E (D_0040B4F8): the 0x10-byte effect D_00478BE0 made */
-s32 func_002B3AA0(void) {
+/* 0x002B3AA0 */
+s32 Room4E_Cmd02(void) {
     Effect_New(gEffects, 0x10, effect_78BE0_init);
     return 1;
 }
 
-s32 func_002B3B70(void *self, void *a1, u8 *cmd) {
+/* 0x002B3B70 */
+s32 Room4E_Cmd01(void *self, void *a1, u8 *cmd) {
     return var0_anim(cmd, D_0040B508);
 }
 
 /* room 0x4E (D_0040B4D8): a lit quad at x -44 .. -36, z 60, from 54 to 71 */
-s32 func_002B3D80(void *self, void *a1, u8 *cmd) {
+/* 0x002B3D80 */
+s32 Room4E_Cmd00(void *self, void *a1, u8 *cmd) {
     static const u32 sQuad[16] = {
         0xC2300000, 0x428E0000, 0x42700000, 0x3F800000, 0xC2100000, 0x428E0000, 0x42700000, 0x3F800000,
         0xC2300000, 0x42580000, 0x42700000, 0x3F800000, 0xC2100000, 0x42580000, 0x42700000, 0x3F800000,

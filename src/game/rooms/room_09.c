@@ -20,52 +20,64 @@ extern void *D_003F3C60[];
 extern u8 D_003F3C80[];
 extern PTMF D_01990818[];
 
-void *func_002AA920(void *o, s32 flags) { return room_dtor(o, flags, D_0046DD40, D_0046DB80); }
+/* 0x002AA920 */
+void *Room09_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DD40, D_0046DB80); }
 
-void *func_002AA980(void) {
+/* 0x002AA980 */
+void *Room09_EnterScript(void) {
     return D_003F3240;
 }
 
-void *func_002AA990(void) {
+/* 0x002AA990 */
+void *Room09_CharEnterScript(void) {
     return D_003F32D0;
 }
 
-void *func_002AA9A0(void) {
+/* 0x002AA9A0 */
+void *Room09_Phase1Script(void) {
     return D_003F3330;
 }
 
-void *func_002AA9B0(void) {
+/* 0x002AA9B0 */
+void *Room09_Phase2Script(void) {
     return D_003F3400;
 }
 
-void *func_002AA9C0(void) {
+/* 0x002AA9C0 */
+void *Room09_Phase3Script(void) {
     return D_003F34A0;
 }
 
-void *func_002AA9D0(void) {
+/* 0x002AA9D0 */
+void *Room09_Phase5Script(void) {
     return D_003F34D8;
 }
 
-void *func_002AA9E0(void *self, s32 i) {
+/* 0x002AA9E0 */
+void *Room09_ActionScript(void *self, s32 i) {
     return D_003F3C00[i];
 }
 
-void *func_002AAA00(void) {
+/* 0x002AAA00 */
+void *Room09_Table38(void) {
     return D_003F3C80;
 }
 
-void *func_002AAA10(void *self, s32 i) {
+/* 0x002AAA10 */
+void *Room09_ObjectName(void *self, s32 i) {
     return D_003F3C60[i];
 }
 
 /* (self->*D_01990818[i])(a, b) */
-s32 func_002AAA30(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AAA30 */
+s32 Room09_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990818[i & 0xFF], a, b);
 }
 
 /* room 0x09 (D_003F3C50): the pursuer (about, not in state 2, in mode 2, 6 or 7) is in another
  * room than 9 (the player about too) */
-s32 func_002AAA60(void) {
+/* 0x002AAA60 */
+s32 Room09_Cond00(void) {
     Character *s = gCharPursuer, *p = gCharPlayer;
     u8 k;
 

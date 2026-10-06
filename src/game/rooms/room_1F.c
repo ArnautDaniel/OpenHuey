@@ -21,44 +21,54 @@ extern u8 D_003FE450[];
 
 extern PTMF D_019909D8[];
 
-void *func_002AE090(void *o, s32 flags) { return room_dtor(o, flags, D_0046E240, D_0046DB80); }
+/* 0x002AE090 */
+void *Room1F_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E240, D_0046DB80); }
 
-void *func_002AE0F0(void) {
+/* 0x002AE0F0 */
+void *Room1F_EnterScript(void) {
     return D_003FE300;
 }
 
-void *func_002AE100(void) {
+/* 0x002AE100 */
+void *Room1F_CharEnterScript(void) {
     return D_003FE350;
 }
 
-void *func_002AE110(void) {
+/* 0x002AE110 */
+void *Room1F_Phase1Script(void) {
     return D_003FE3D0;
 }
 
-void *func_002AE120(void) {
+/* 0x002AE120 */
+void *Room1F_Phase2Script(void) {
     return D_003FE420;
 }
 
-u32 func_002AE130(void *self, s32 i) {
+/* 0x002AE130 */
+u32 Room1F_ActionScript(void *self, s32 i) {
     return D_0047AAB0[i];
 }
 
-void *func_002AE150(void) {
+/* 0x002AE150 */
+void *Room1F_Table38(void) {
     return D_003FE450;
 }
 
-u32 func_002AE160(void *self, s32 i) {
+/* 0x002AE160 */
+u32 Room1F_ObjectName(void *self, s32 i) {
     return (u32)D_0047AAB8[i];
 }
 
 /* (self->*D_019909D8[i])(a, b) */
-s32 func_002AE180(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AE180 */
+s32 Room1F_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019909D8[i & 0xFF], a, b);
 }
 
 /* two wheels (D_0047AAB8) rocking 4 degrees (+0x18) through their phase +0x30, 6 degrees a step
  * (byte 3 1; 0 reset), the first one's creak (-366, 30, -25) at each turn */
-s32 func_002AE1B0(void *self, void *a1, u8 *cmd) {
+/* 0x002AE1B0 */
+s32 Room1F_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
     VObject *objs = D_00456DF8, *snd = gSound;
     f32 at[4] __attribute__((aligned(16)));

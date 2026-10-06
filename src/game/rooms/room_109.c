@@ -21,30 +21,40 @@ extern u8 D_00419710[];
 
 extern PTMF D_01990F30[];
 
-void *func_002E7460(void *o, s32 flags) { return room_dtor(o, flags, D_0046FE40, D_0046DB80); }
+/* 0x002E7460 */
+void *Room109_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046FE40, D_0046DB80); }
 
-void *func_002E74C0(void) { return D_004193D0; }
+/* 0x002E74C0 */
+void *Room109_EnterScript(void) { return D_004193D0; }
 
-void *func_002E74D0(void) { return D_00419400; }
+/* 0x002E74D0 */
+void *Room109_CharEnterScript(void) { return D_00419400; }
 
-void *func_002E74E0(void) { return D_00419530; }
+/* 0x002E74E0 */
+void *Room109_Phase1Script(void) { return D_00419530; }
 
-void *func_002E74F0(void) { return D_00419638; }
+/* 0x002E74F0 */
+void *Room109_Phase5Script(void) { return D_00419638; }
 
-void *func_002E7500(void *self, s32 i) { return D_004196E0[i]; }
+/* 0x002E7500 */
+void *Room109_ActionScript(void *self, s32 i) { return D_004196E0[i]; }
 
-void *func_002E7520(void) { return D_00419710; }
+/* 0x002E7520 */
+void *Room109_Table38(void) { return D_00419710; }
 
 /* (self->*D_01990F30[i])(a, b) */
-s32 func_002E7530(void *self, u32 i, s32 a, s32 b) {
+/* 0x002E7530 */
+s32 Room109_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990F30[i & 0xFF], a, b);
 }
 
-s32 func_002E7560(void *self, void *a1, u8 *cmd) { return room_nudge(&D_0047B278, cmd, 1.0f); }
+/* 0x002E7560 */
+s32 Room109_Cmd01(void *self, void *a1, u8 *cmd) { return room_nudge(&D_0047B278, cmd, 1.0f); }
 
 /* character kind 0x1A: byte 3 0 starts func_0032D270(2, -6, 257); else waits (2) until
  * func_0032D150 says done */
-s32 func_002E7600(void *self, void *a1, u8 *cmd) {
+/* 0x002E7600 */
+s32 Room109_Cmd00(void *self, void *a1, u8 *cmd) {
     Character *c = gCharacters[func_001770D0(gProgress, 0x1A) & 0xFF];
 
     if (cmd[3] == 0) {

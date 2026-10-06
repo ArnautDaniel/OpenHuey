@@ -18,41 +18,51 @@ extern void *D_003FA070[];
 extern u8 D_003FA080[];
 extern PTMF D_01990910[];
 
-void *func_002AC670(void *o, s32 flags) { return room_dtor(o, flags, D_0046E000, D_0046DB80); }
+/* 0x002AC670 */
+void *Room14_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E000, D_0046DB80); }
 
-void *func_002AC6D0(void) {
+/* 0x002AC6D0 */
+void *Room14_EnterScript(void) {
     return D_003F99E0;
 }
 
-void *func_002AC6E0(void) {
+/* 0x002AC6E0 */
+void *Room14_CharEnterScript(void) {
     return D_003F9A30;
 }
 
-void *func_002AC6F0(void) {
+/* 0x002AC6F0 */
+void *Room14_Phase1Script(void) {
     return D_003F9AC0;
 }
 
-void *func_002AC700(void) {
+/* 0x002AC700 */
+void *Room14_Phase2Script(void) {
     return D_003F9B60;
 }
 
-void *func_002AC710(void *self, s32 i) {
+/* 0x002AC710 */
+void *Room14_ActionScript(void *self, s32 i) {
     return D_003FA030[i];
 }
 
-void *func_002AC730(void) {
+/* 0x002AC730 */
+void *Room14_Table38(void) {
     return D_003FA080;
 }
 
-void *func_002AC740(void *self, s32 i) {
+/* 0x002AC740 */
+void *Room14_ObjectName(void *self, s32 i) {
     return D_003FA070[i];
 }
 
 /* (self->*D_01990910[i])(a, b) */
-s32 func_002AC760(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AC760 */
+s32 Room14_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990910[i & 0xFF], a, b);
 }
 
-s32 func_002AC790(void *self, void *a1, u8 *cmd) {
+/* 0x002AC790 */
+s32 Room14_Cmd00(void *self, void *a1, u8 *cmd) {
     return var0_obj_anim(D_003FA078, cmd);
 }

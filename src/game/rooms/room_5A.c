@@ -25,40 +25,50 @@ extern u8 D_00410F50[];
 
 extern PTMF D_01990DE8[];
 
-void *func_002B5280(void *o, s32 flags) { return room_dtor(o, flags, D_0046E980, D_0046DB80); }
+/* 0x002B5280 */
+void *Room5A_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E980, D_0046DB80); }
 
-void *func_002B52E0(void *o) { return D_0047ABE0; }   /* D_0046E980 +0xC */
+/* 0x002B52E0 */
+void *Room5A_EnterScript(void *o) { return D_0047ABE0; }   /* D_0046E980 +0xC */
 
-void *func_002B52F0(void) {
+/* 0x002B52F0 */
+void *Room5A_CharEnterScript(void) {
     return D_00410BE0;
 }
 
-void *func_002B5300(void) {
+/* 0x002B5300 */
+void *Room5A_Phase1Script(void) {
     return D_00410D00;
 }
 
-void *func_002B5310(void) {
+/* 0x002B5310 */
+void *Room5A_Phase2Script(void) {
     return D_00410D90;
 }
 
-void *func_002B5320(void) {
+/* 0x002B5320 */
+void *Room5A_Phase5Script(void) {
     return D_00410DC0;
 }
 
-u32 func_002B5330(void *self, s32 i) {
+/* 0x002B5330 */
+u32 Room5A_ActionScript(void *self, s32 i) {
     return D_00410F10[i];
 }
 
-void *func_002B5350(void) {
+/* 0x002B5350 */
+void *Room5A_Table38(void) {
     return D_00410F50;
 }
 
-u32 func_002B5360(void *self, s32 i) {
+/* 0x002B5360 */
+u32 Room5A_ObjectName(void *self, s32 i) {
     return (u32)D_00410F38[i];
 }
 
 /* (self->*D_01990DE8[i])(a, b) */
-s32 func_002B5380(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B5380 */
+s32 Room5A_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990DE8[i & 0xFF], a, b);
 }
 
@@ -67,7 +77,8 @@ s32 func_002B5380(void *self, u32 i, s32 a, s32 b) {
  * one (event var 0), left / right turns it (event +0x5C 3), cancel leaves (+0x60 2); 2 turning
  * to it 4 degrees a step, and there: solved at 1 / 0 / 2 (+0x60 2, +0x5C 4), else +0x60 3; 3
  * wait */
-s32 func_002B53B0(void *self, void *a1, u8 *cmd) {
+/* 0x002B53B0 */
+s32 Room5A_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kStep = {0x3D8EFA35};
     VObject *ev = gEvents;
     u32 sel = (u8)VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 0);

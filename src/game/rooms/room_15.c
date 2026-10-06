@@ -23,47 +23,58 @@ extern u8 D_003FA770[];
 extern PTMF D_01990920[];
 extern PTMF D_01990930[];
 
-void *func_002ACB60(void *o, s32 flags) { return room_dtor(o, flags, D_0046E040, D_0046DB80); }
+/* 0x002ACB60 */
+void *Room15_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E040, D_0046DB80); }
 
-void *func_002ACBC0(void) {
+/* 0x002ACBC0 */
+void *Room15_EnterScript(void) {
     return D_003FA090;
 }
 
-void *func_002ACBD0(void) {
+/* 0x002ACBD0 */
+void *Room15_CharEnterScript(void) {
     return D_003FA110;
 }
 
-void *func_002ACBE0(void) {
+/* 0x002ACBE0 */
+void *Room15_Phase1Script(void) {
     return D_003FA1C0;
 }
 
-void *func_002ACBF0(void) {
+/* 0x002ACBF0 */
+void *Room15_Phase3Script(void) {
     return D_003FA330;
 }
 
-void *func_002ACC00(void *self, s32 i) {
+/* 0x002ACC00 */
+void *Room15_ActionScript(void *self, s32 i) {
     return D_003FA700[i];
 }
 
-void *func_002ACC20(void) {
+/* 0x002ACC20 */
+void *Room15_Phase2Script(void) {
     return D_003FA2C0;
 }
 
-void *func_002ACC30(void) {
+/* 0x002ACC30 */
+void *Room15_Table38(void) {
     return D_003FA770;
 }
 
-void *func_002ACC40(void *self, s32 i) {
+/* 0x002ACC40 */
+void *Room15_ObjectName(void *self, s32 i) {
     return D_003FA750[i];
 }
 
 /* (self->*D_01990930[i])(a, b) */
-s32 func_002ACC60(void *self, u32 i, s32 a, s32 b) {
+/* 0x002ACC60 */
+s32 Room15_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990930[i & 0xFF], a, b);
 }
 
 /* room 0x15 (D_003FA738): Hewie is about in room 0xF in state 0x2F or 0x52 */
-s32 func_002ACC90(void) {
+/* 0x002ACC90 */
+s32 Room15_Cond00(void) {
     Character *c = gCharacters[(u8)func_001770D0(gProgress, 1)];
     s32 s;
 
@@ -75,14 +86,16 @@ s32 func_002ACC90(void) {
 }
 
 /* (self->*D_01990920[i])(a, b) */
-s32 func_002ACD20(void *self, u32 i, s32 a, s32 b) {
+/* 0x002ACD20 */
+s32 Room15_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990920[i & 0xFF], a, b);
 }
 
 /* a lid (D_003FA760, +0x24 its height, +0x34 its speed): byte 3 0 up, 1 shut; 2 falling and
  * bouncing shut (the first landing clears progress flag 0x50 and, unless the director says no,
  * thuds), 2 while moving; 3 a random rattle up, 2 while it stays below */
-s32 func_002ACD50(void *self, void *a1, u8 *cmd) {
+/* 0x002ACD50 */
+s32 Room15_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kShut = {0xC1CA6666}, k01 = {0x3DCCCCCD}, kBounce = {0xBE4CCCCD},
         kStill = {0x3CA3D70A}, k04 = {0x3ECCCCCD};
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003FA760);

@@ -21,41 +21,51 @@ extern void *D_0041D7A0[];
 extern void *D_0041D808[];
 extern PTMF D_01990FF0[];
 
-void *func_002FEF80(void *o, s32 flags) { return room_dtor(o, flags, D_00470EF0, D_0046DB80); }
+/* 0x002FEF80 */
+void *Room2E_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00470EF0, D_0046DB80); }
 
-void *func_002FEFE0(void) {
+/* 0x002FEFE0 */
+void *Room2E_EnterScript(void) {
     return D_0041D2E0;
 }
 
-void *func_002FEFF0(void) {
+/* 0x002FEFF0 */
+void *Room2E_CharEnterScript(void) {
     return D_0041D330;
 }
 
-void *func_002FF000(void) {
+/* 0x002FF000 */
+void *Room2E_Phase1Script(void) {
     return D_0041D3C0;
 }
 
-void *func_002FF010(void *o) { return D_0047ACC4; }   /* D_00470EF0 +0x14 */
+/* 0x002FF010 */
+void *Room2E_Phase2Script(void *o) { return D_0047ACC4; }   /* D_00470EF0 +0x14 */
 
-void *func_002FF020(void) {
+/* 0x002FF020 */
+void *Room2E_Phase5Script(void) {
     return D_0041D4E0;
 }
 
-void *func_002FF030(void *self, s32 i) {
+/* 0x002FF030 */
+void *Room2E_ActionScript(void *self, s32 i) {
     return D_0041D7A0[i];
 }
 
-void *func_002FF050(void *self, s32 i) {
+/* 0x002FF050 */
+void *Room2E_ObjectName(void *self, s32 i) {
     return D_0041D808[i];
 }
 
 /* (self->*D_01990FF0[i])(a, b) */
-s32 func_002FF070(void *self, u32 i, s32 a, s32 b) {
+/* 0x002FF070 */
+s32 Room2E_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990FF0[i & 0xFF], a, b);
 }
 
 /* the pursuer's model's +0x9E8 by byte 3: 0 0.15, 1 0, else 0.05 */
-s32 func_002FF0A0(void *self, void *a1, u8 *cmd) {
+/* 0x002FF0A0 */
+s32 Room2E_Cmd04(void *self, void *a1, u8 *cmd) {
     u8 *m = AT(gCharacters[func_001770D0(gProgress, 0xFE) & 0xFF], 0xF0, u8 *);
 
     switch (cmd[3]) {
@@ -74,7 +84,8 @@ s32 func_002FF0A0(void *self, void *a1, u8 *cmd) {
 
 /* the depth range (effect 0x1C) opening out with the cutscene from its frame 1260: 1 / 21 / 40
  * / 80 on by 0.4 a frame, up to 41 / 61 / 80 / 120 */
-s32 func_002FF130(void) {
+/* 0x002FF130 */
+s32 Room2E_Cmd03(void) {
     u8 *fx = gRoomEffects;
     f32 t = (f32)(VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene) - 1260);
     f32 r[4] __attribute__((aligned(16)));
@@ -102,16 +113,19 @@ s32 func_002FF130(void) {
     return 1;
 }
 
-s32 func_002FF300(void) {
+/* 0x002FF300 */
+s32 Room2E_Cmd02(void) {
     return 1;
 }
 
-s32 func_002FF310(void) {
+/* 0x002FF310 */
+s32 Room2E_Cmd01(void) {
     return 1;
 }
 
 /* a lit quad at x -15.96, z -2 .. 6, height 111 / 91 */
-s32 func_002FF320(void *self, void *a1, u8 *cmd) {
+/* 0x002FF320 */
+s32 Room2E_Cmd00(void *self, void *a1, u8 *cmd) {
     static const u32 sQuad[16] = {
         0xC17F5810, 0x42DE0000, 0xC00001A3, 0x3F800000, 0xC17F5810, 0x42DE0000, 0x40BFFF2E, 0x3F800000,
         0xC17F5810, 0x42B60000, 0xC00001A3, 0x3F800000, 0xC17F5810, 0x42B60000, 0x40BFFF2E, 0x3F800000,

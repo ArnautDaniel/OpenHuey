@@ -30,27 +30,32 @@ static inline s32 ee_ftoi(f32 v) {
     return v >= 2147483648.0f ? 0x7FFFFFFF : (s32)v;
 }
 
-void *func_0032DBF0(void *o, s32 flags) { return room_dtor(o, flags, D_00474F40, D_0046DB80); }
+/* 0x0032DBF0 */
+void *RoomC0_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00474F40, D_0046DB80); }
 
 /* (self->*D_01991650[i])(a, b) */
-s32 func_0032DCE0(void *self, u32 i, s32 a, s32 b) {
+/* 0x0032DCE0 */
+s32 RoomC0_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991650[i & 0xFF], a, b);
 }
 
 /* rooms 0xC0 / 0xC1 / 0xC2 / 0xC3 (D_0042E3E0, D_0043F098, D_0043F8B8, D_004400C8): the timer at
  * progress +0x764 has run out */
-s32 func_0032DD10(void) {
+/* 0x0032DD10 */
+s32 RoomC0_Cond00(void) {
     return Countdown_Seconds((u8 *)gProgress + 0x764) == 0;
 }
 
 /* (self->*D_01991610[i])(a, b) */
-s32 func_0032DD40(void *self, u32 i, s32 a, s32 b) {
+/* 0x0032DD40 */
+s32 RoomC0_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991610[i & 0xFF], a, b);
 }
 
 /* the screen fade (renderer +0x90): byte 3 0 full 0x80; else clearing from cutscene frame 120
  * (16 a frame) */
-s32 func_0032DD70(void *self, void *a1, u8 *cmd) {
+/* 0x0032DD70 */
+s32 RoomC0_Cmd04(void *self, void *a1, u8 *cmd) {
     s32 a = 0x80;
 
     if (cmd[3] != 0) {
@@ -63,8 +68,9 @@ s32 func_0032DD70(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* (as func_002ABC20) an effect D_00471060 with its box */
-s32 func_0032DDF0(void) {
+/* (as Room0F_Cmd02) an effect D_00471060 with its box */
+/* 0x0032DDF0 */
+s32 RoomC0_Cmd03(void) {
     s32 slot = Effect_New(gEffects, 0x840, effect_471060_init);
     f32 prm[9];
 
@@ -82,7 +88,8 @@ s32 func_0032DDF0(void) {
 }
 
 /* an effect D_00479A60 (0x640 bytes, its quad drawer at +0x550), not started */
-s32 func_0032DF20(void) {
+/* 0x0032DF20 */
+s32 RoomC0_Cmd02(void) {
     Effect_New(gEffects, 0x640, effect_479a60_init);
     return 1;
 }
@@ -91,7 +98,8 @@ s32 func_0032DF20(void) {
  * frame: byte 3 0 up from frame 361 (2.04 a frame), 1 down to frame 605 (2.51), 2 up from 1140
  * and 3 down to 1203 (5.57); full (0x80) leaves it to light 0xA, else light 0x23 (its +0xE4
  * cleared); other bytes light 0x11 and the fade off (+0x64) */
-s32 func_0032E010(void *self, void *a1, u8 *cmd) {
+/* 0x0032E010 */
+s32 RoomC0_Cmd01(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } k0 = {0x40028F5C}, k1 = {0x4020A3D7}, k2 = {0x40B23D71};
     u32 t = VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene);
     s32 a;
@@ -131,7 +139,8 @@ s32 func_0032E010(void *self, void *a1, u8 *cmd) {
  * (phase +0x34 0, amplitude +0x3C 0.25); 1 steps the phase on 60 degrees and the amplitude down
  * 0.05, x +0x20 / z +0x28 = rest + amplitude * sin, waiting (2) until it has died out; 2 puts it
  * at (-16.5, -5.6) */
-s32 func_0032E2A0(void *self, void *a1, u8 *cmd) {
+/* 0x0032E2A0 */
+s32 RoomC0_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kStep = {0x3F860A92}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB},
                                           kDecay = {0x3D4CCCCD};
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_0042E408);

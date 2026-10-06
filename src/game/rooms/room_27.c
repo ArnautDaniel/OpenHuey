@@ -17,35 +17,43 @@ extern u8 D_0041C420[];
 extern void *D_0041CA40[];
 extern PTMF D_01990FD8[];
 
-void *func_002FCB40(void *o, s32 flags) { return room_dtor(o, flags, D_00470DC0, D_0046DB80); }
+/* 0x002FCB40 */
+void *Room27_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00470DC0, D_0046DB80); }
 
-void *func_002FCBA0(void) {
+/* 0x002FCBA0 */
+void *Room27_EnterScript(void) {
     return D_0041C390;
 }
 
-void *func_002FCBB0(void *o) { return D_0047ACB0; }   /* D_00470DC0 +0x30 */
+/* 0x002FCBB0 */
+void *Room27_CharEnterScript(void *o) { return D_0047ACB0; }   /* D_00470DC0 +0x30 */
 
-void *func_002FCBC0(void) {
+/* 0x002FCBC0 */
+void *Room27_Phase1Script(void) {
     return D_0041C3E0;
 }
 
-void *func_002FCBD0(void) {
+/* 0x002FCBD0 */
+void *Room27_Phase2Script(void) {
     return D_0041C420;
 }
 
-void *func_002FCBE0(void *self, s32 i) {
+/* 0x002FCBE0 */
+void *Room27_ActionScript(void *self, s32 i) {
     return D_0041CA40[i];
 }
 
 /* (self->*D_01990FD8[i])(a, b) */
-s32 func_002FCC00(void *self, u32 i, s32 a, s32 b) {
+/* 0x002FCC00 */
+s32 Room27_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990FD8[i & 0xFF], a, b);
 }
 
 /* the items 0x91 / 0x92, by byte 3: 0 which of them Fiona lacks (one each) kept in event var 0
  * (0x91 low byte, 0x92 the next), and event +0x5C(3) when any; 1 they are given back, event
  * +0x5C(0) / (1) */
-s32 func_002FCC30(void *self, void *a1, u8 *cmd) {
+/* 0x002FCC30 */
+s32 Room27_Cmd00(void *self, void *a1, u8 *cmd) {
     VObject *ev;
     u32 got;
 

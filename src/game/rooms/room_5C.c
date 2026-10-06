@@ -31,48 +31,59 @@ static void effect_472370_init(void **obj) {
     obj[0x370 / 4] = D_0046FC30;
 }
 
-void *func_002B58B0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E9C0, D_0046DB80); }
+/* 0x002B58B0 */
+void *Room5C_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E9C0, D_0046DB80); }
 
-void *func_002B5910(void) {
+/* 0x002B5910 */
+void *Room5C_EnterScript(void) {
     return D_00410F70;
 }
 
-void *func_002B5920(void) {
+/* 0x002B5920 */
+void *Room5C_CharEnterScript(void) {
     return D_00410FB0;
 }
 
-void *func_002B5930(void) {
+/* 0x002B5930 */
+void *Room5C_Phase1Script(void) {
     return D_00411180;
 }
 
-void *func_002B5940(void) {
+/* 0x002B5940 */
+void *Room5C_Phase2Script(void) {
     return D_00411430;
 }
 
-void *func_002B5950(void) {
+/* 0x002B5950 */
+void *Room5C_Phase3Script(void) {
     return D_004114E0;
 }
 
-u32 func_002B5960(void *self, s32 i) {
+/* 0x002B5960 */
+u32 Room5C_ActionScript(void *self, s32 i) {
     return D_00411B00[i];
 }
 
-void *func_002B5980(void) {
+/* 0x002B5980 */
+void *Room5C_Table38(void) {
     return D_00411B60;
 }
 
-u32 func_002B5990(void *self, s32 i) {
+/* 0x002B5990 */
+u32 Room5C_ObjectName(void *self, s32 i) {
     return D_0047ABE8[i];
 }
 
 /* (self->*D_01990E08[i])(a, b) */
-s32 func_002B59B0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B59B0 */
+s32 Room5C_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990E08[i & 0xFF], a, b);
 }
 
 /* room 0x5C (D_00411B50): the first creature within 3 of (59.1, 1.43) is put away with an
  * effect (D_00472370) above it - blue (+0x1571 below 0x12) or red - and its action 0x8B */
-s32 func_002B59E0(void) {
+/* 0x002B59E0 */
+s32 Room5C_Cond00(void) {
     s32 i;
 
     for (i = 0; i < 7; i++) {
@@ -138,13 +149,15 @@ s32 func_002B59E0(void) {
 }
 
 /* (self->*D_01990DF8[i])(a, b) */
-s32 func_002B5C00(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B5C00 */
+s32 Room5C_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990DF8[i & 0xFF], a, b);
 }
 
 /* room 0x5C (D_00411B40): the dial (+0x7C, 0..1) from script variable 0 by byte 3: 0 0x2B..0x38
  * (/ 13, +0x74 0 / +0x78 1), 1 0xC..0x20 (/ 20), 2 7..0x12 (/ 11) (+0x74 1 / +0x78 0) */
-s32 func_002B5C30(void *self, void *a1, u8 *cmd) {
+/* 0x002B5C30 */
+s32 Room5C_Cmd00(void *self, void *a1, u8 *cmd) {
     u8 *o = room_obj(D_0047ABEC);
     u32 v;
 

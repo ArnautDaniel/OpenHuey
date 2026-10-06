@@ -18,43 +18,53 @@ extern u8 D_004123F0[];
 
 extern PTMF D_01990E20[];
 
-void *func_002B5E80(void *o, s32 flags) { return room_dtor(o, flags, D_0046EA00, D_0046DB80); }
+/* 0x002B5E80 */
+void *Room5D_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046EA00, D_0046DB80); }
 
-void *func_002B5EE0(void) {
+/* 0x002B5EE0 */
+void *Room5D_EnterScript(void) {
     return D_00411B80;
 }
 
-void *func_002B5EF0(void) {
+/* 0x002B5EF0 */
+void *Room5D_CharEnterScript(void) {
     return D_00411C60;
 }
 
-void *func_002B5F00(void) {
+/* 0x002B5F00 */
+void *Room5D_Phase1Script(void) {
     return D_00411D60;
 }
 
-void *func_002B5F10(void) {
+/* 0x002B5F10 */
+void *Room5D_Phase2Script(void) {
     return D_00411FB0;
 }
 
-u32 func_002B5F20(void *self, s32 i) {
+/* 0x002B5F20 */
+u32 Room5D_ActionScript(void *self, s32 i) {
     return D_00412390[i];
 }
 
-void *func_002B5F40(void) {
+/* 0x002B5F40 */
+void *Room5D_Table38(void) {
     return D_004123F0;
 }
 
-u32 func_002B5F50(void *self, s32 i) {
+/* 0x002B5F50 */
+u32 Room5D_ObjectName(void *self, s32 i) {
     return (u32)D_004123D0[i];
 }
 
 /* (self->*D_01990E20[i])(a, b) */
-s32 func_002B5F70(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B5F70 */
+s32 Room5D_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990E20[i & 0xFF], a, b);
 }
 
 /* room 0x5D (D_004123C0): the lever at -60 / 0 / 60 degrees by byte 3 */
-s32 func_002B5FA0(void *self, void *a1, u8 *cmd) {
+/* 0x002B5FA0 */
+s32 Room5D_Cmd01(void *self, void *a1, u8 *cmd) {
     u8 *o = room_obj(D_004123E8);
 
     if (o != NULL) {
@@ -74,7 +84,8 @@ s32 func_002B5FA0(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x5D (D_004123B0): four objects 60 to the left */
-s32 func_002B6040(void) {
+/* 0x002B6040 */
+s32 Room5D_Cmd00(void) {
     s32 i;
 
     for (i = 0; i < 4; i++) {

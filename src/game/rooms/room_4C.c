@@ -24,44 +24,54 @@ extern u8 D_0040AC60[];
 
 extern PTMF D_01990CE0[];
 
-void *func_002B3540(void *o, s32 flags) { return room_dtor(o, flags, D_0046E700, D_0046DB80); }
+/* 0x002B3540 */
+void *Room4C_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E700, D_0046DB80); }
 
-void *func_002B35A0(void) {
+/* 0x002B35A0 */
+void *Room4C_EnterScript(void) {
     return D_00409980;
 }
 
-void *func_002B35B0(void) {
+/* 0x002B35B0 */
+void *Room4C_CharEnterScript(void) {
     return D_00409A80;
 }
 
-void *func_002B35C0(void) {
+/* 0x002B35C0 */
+void *Room4C_Phase1Script(void) {
     return D_00409AD0;
 }
 
-void *func_002B35D0(void) {
+/* 0x002B35D0 */
+void *Room4C_Phase2Script(void) {
     return D_0040A020;
 }
 
-u32 func_002B35E0(void *self, s32 i) {
+/* 0x002B35E0 */
+u32 Room4C_ActionScript(void *self, s32 i) {
     return D_0040AB80[i];
 }
 
-void *func_002B3600(void) {
+/* 0x002B3600 */
+void *Room4C_Table38(void) {
     return D_0040AC60;
 }
 
-u32 func_002B3610(void *self, s32 i) {
+/* 0x002B3610 */
+u32 Room4C_ObjectName(void *self, s32 i) {
     return (u32)D_0040AC10[i];
 }
 
 /* (self->*D_01990CE0[i])(a, b) */
-s32 func_002B3630(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B3630 */
+s32 Room4C_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990CE0[i & 0xFF], a, b);
 }
 
 /* room 0x4C (D_0040AC08): character 0x11's model parts 0xA2 / 0xA4 / 0xAC get bit 2 when byte
  * 3 is 0, else lose it */
-s32 func_002B3660(void *self, void *a1, u8 *cmd) {
+/* 0x002B3660 */
+s32 Room4C_Cmd02(void *self, void *a1, u8 *cmd) {
     u8 *c = (u8 *)gCharacters[func_001770D0(gProgress, 0x11) & 0xFF];
 
 #ifdef HG_NATIVE
@@ -83,7 +93,8 @@ s32 func_002B3660(void *self, void *a1, u8 *cmd) {
 
 /* room 0x4C (D_0040ABF0): byte 3 0 starts counting what the player does (her +0x1AD710 on), 1
  * adds this frame's (func_00183190); at 35 events bit 0x13 */
-s32 func_002B3720(void *self, void *a1, u8 *cmd) {
+/* 0x002B3720 */
+s32 Room4C_Cmd01(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
         D_0047B250 = 0;
@@ -102,7 +113,8 @@ s32 func_002B3720(void *self, void *a1, u8 *cmd) {
 
 /* four room objects (D_0040AC10) pressed in (+0x24 down 0.2 to -0.7, a sound as each starts) while
  * event flag i is set, else back up 0.2 to 0; byte 3 0 all reset */
-s32 func_002B37D0(void *self, void *a1, u8 *cmd) {
+/* 0x002B37D0 */
+s32 Room4C_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kStep = {0x3E4CCCCD}, kLow = {0xBF333333};
     VObject *objs = D_00456DF8, *ev = gEvents, *snd = gSound;
     s32 i;

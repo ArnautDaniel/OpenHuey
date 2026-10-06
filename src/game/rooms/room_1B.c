@@ -19,44 +19,54 @@ extern void *D_003FCAD0[];
 extern u8 D_003FCB18[];
 extern PTMF D_01990978[];
 
-void *func_002AD690(void *o, s32 flags) { return room_dtor(o, flags, D_0046E140, D_0046DB80); }
+/* 0x002AD690 */
+void *Room1B_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E140, D_0046DB80); }
 
-void *func_002AD6F0(void) {
+/* 0x002AD6F0 */
+void *Room1B_EnterScript(void) {
     return D_003FC6A0;
 }
 
-void *func_002AD700(void) {
+/* 0x002AD700 */
+void *Room1B_CharEnterScript(void) {
     return D_003FC6F0;
 }
 
-void *func_002AD710(void) {
+/* 0x002AD710 */
+void *Room1B_Phase1Script(void) {
     return D_003FC770;
 }
 
-void *func_002AD720(void) {
+/* 0x002AD720 */
+void *Room1B_Phase2Script(void) {
     return D_003FC8F0;
 }
 
-void *func_002AD730(void *self, s32 i) {
+/* 0x002AD730 */
+void *Room1B_ActionScript(void *self, s32 i) {
     return D_003FCAD0[i];
 }
 
-void *func_002AD750(void) {
+/* 0x002AD750 */
+void *Room1B_Table38(void) {
     return D_003FCB18;
 }
 
-void *func_002AD760(void *self, s32 i) {
+/* 0x002AD760 */
+void *Room1B_ObjectName(void *self, s32 i) {
     return (void *)D_003FCB00[i];
 }
 
 /* (self->*D_01990978[i])(a, b) */
-s32 func_002AD780(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AD780 */
+s32 Room1B_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990978[i & 0xFF], a, b);
 }
 
 /* five pendulums (D_003FCB00[byte 3]) of their own periods and swings: byte 4 0 still at a phase
  * offset (+0x34) 60 x the index, 1 swinging on (+0x30, +0x14) */
-s32 func_002AD7B0(void *self, void *a1, u8 *cmd) {
+/* 0x002AD7B0 */
+s32 Room1B_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003FCB00[cmd[3]]);
     f32 period = 360.0f, swing = 15.0f;

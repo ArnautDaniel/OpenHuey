@@ -20,44 +20,54 @@ extern u8 D_0040F478[];
 
 extern PTMF D_01990DC8[];
 
-void *func_002B4CD0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E880, D_0046DB80); }
+/* 0x002B4CD0 */
+void *Room56_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E880, D_0046DB80); }
 
-void *func_002B4D30(void) {
+/* 0x002B4D30 */
+void *Room56_EnterScript(void) {
     return D_0040ED10;
 }
 
-void *func_002B4D40(void) {
+/* 0x002B4D40 */
+void *Room56_CharEnterScript(void) {
     return D_0040ED80;
 }
 
-void *func_002B4D50(void) {
+/* 0x002B4D50 */
+void *Room56_Phase1Script(void) {
     return D_0040EDC0;
 }
 
-void *func_002B4D60(void) {
+/* 0x002B4D60 */
+void *Room56_Phase2Script(void) {
     return D_0040EF30;
 }
 
-void *func_002B4D70(void) {
+/* 0x002B4D70 */
+void *Room56_Phase3Script(void) {
     return D_0040EFB0;
 }
 
-u32 func_002B4D80(void *self, s32 i) {
+/* 0x002B4D80 */
+u32 Room56_ActionScript(void *self, s32 i) {
     return D_0040F430[i];
 }
 
-void *func_002B4DA0(void) {
+/* 0x002B4DA0 */
+void *Room56_Table38(void) {
     return D_0040F478;
 }
 
 /* (self->*D_01990DC8[i])(a, b) */
-s32 func_002B4DB0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B4DB0 */
+s32 Room56_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990DC8[i & 0xFF], a, b);
 }
 
 /* room 0x56 (D_0040F468): creatures 7..9 in the current room on a live triangle D_00456E00
  * says yes to: +0x10, then the creature list's +0x28 */
-s32 func_002B4DE0(void) {
+/* 0x002B4DE0 */
+s32 Room56_Cmd00(void) {
     u8 *list = gCreatures;
     Progress *g = gProgress;
     VObject *chk = D_00456E00;

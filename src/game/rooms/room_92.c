@@ -78,44 +78,54 @@ static void effect_79F30_init(void **obj) {
 #ifdef HG_NATIVE
 #endif
 
-void *func_00341B10(void *o, s32 flags) { return room_dtor(o, flags, D_004774C0, D_0046DB80); }
+/* 0x00341B10 */
+void *Room92_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_004774C0, D_0046DB80); }
 
-void *func_00341B70(void) {
+/* 0x00341B70 */
+void *Room92_EnterScript(void) {
     return D_00436CF0;
 }
 
-void *func_00341B80(void) {
+/* 0x00341B80 */
+void *Room92_CharEnterScript(void) {
     return D_00436D70;
 }
 
-void *func_00341B90(void) {
+/* 0x00341B90 */
+void *Room92_Phase1Script(void) {
     return D_00436DE0;
 }
 
-void *func_00341BA0(void) {
+/* 0x00341BA0 */
+void *Room92_Phase2Script(void) {
     return D_004370F0;
 }
 
-void *func_00341BB0(void) {
+/* 0x00341BB0 */
+void *Room92_Phase3Script(void) {
     return D_00437140;
 }
 
-u32 func_00341BC0(void *self, s32 i) {
+/* 0x00341BC0 */
+u32 Room92_ActionScript(void *self, s32 i) {
     return D_00437BF0[i];
 }
 
-u32 func_00341BE0(void *self, s32 i) {
+/* 0x00341BE0 */
+u32 Room92_ObjectName(void *self, s32 i) {
     return D_00437D20[i];
 }
 
 /* (self->*D_01991820[i])(a, b) */
-s32 func_00341C00(void *self, u32 i, s32 a, s32 b) {
+/* 0x00341C00 */
+s32 Room92_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991820[i & 0xFF], a, b);
 }
 
-/* (as func_002A91F0)  the 0x10D0-byte effect D_0047A310: byte 3 0 / 1 one made and sent 1 / 0,
+/* (as Room02_Cmd02)  the 0x10D0-byte effect D_0047A310: byte 3 0 / 1 one made and sent 1 / 0,
  * its slot kept in script variable 11; 2 that one sent nothing */
-s32 func_00341C30(void *self, void *a1, u8 *cmd) {
+/* 0x00341C30 */
+s32 Room92_Cmd13(void *self, void *a1, u8 *cmd) {
     u8 *mgr;
     s32 slot, arg;
 
@@ -136,9 +146,10 @@ s32 func_00341C30(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* (as func_002B2A80)  byte 3 0: the 0x14-byte effect D_0047A2F0 spawned, its slot in script
+/* (as Room49_Cmd02)  byte 3 0: the 0x14-byte effect D_0047A2F0 spawned, its slot in script
  * variable 10; 1 / 2: it is sent (byte 4, byte 3 - 1) */
-s32 func_00341EF0(void *self, void *a1, u8 *cmd) {
+/* 0x00341EF0 */
+s32 Room92_Cmd12(void *self, void *a1, u8 *cmd) {
     f32 msg[2];
     s32 slot;
 
@@ -158,9 +169,10 @@ s32 func_00341EF0(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* (as func_002B2BF0)  the depth range (effect 0x1C) from cutscene frame 825: 1 / 1 + 0.3 a frame
+/* (as Room49_Cmd01)  the depth range (effect 0x1C) from cutscene frame 825: 1 / 1 + 0.3 a frame
  * up to 21 / 80 + 0.7 a frame up to 120 / 160 */
-s32 func_003420A0(void) {
+/* 0x003420A0 */
+s32 Room92_Cmd11(void) {
     static const union { u32 u; f32 f; } kNear = {0x3E999999}, kFar = {0x3F333333};
     u8 *fx = gRoomEffects;
     f32 t = (f32)(VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene) - 825);
@@ -182,7 +194,8 @@ s32 func_003420A0(void) {
 }
 
 /* the placed things of kind 9 / 10 (+0x20) all reset (+0x28) */
-s32 func_00342230(void) {
+/* 0x00342230 */
+s32 Room92_Cmd10(void) {
     VObject *list = gPlacedThings;
     s32 i;
 
@@ -197,7 +210,8 @@ s32 func_00342230(void) {
 }
 
 /* a noise at (-70 or 70 by byte 3, 14, 0): byte 4 0 / 1 / 2 kind 1 / 2 / 4 */
-s32 func_003422B0(void *self, void *a1, u8 *cmd) {
+/* 0x003422B0 */
+s32 Room92_Cmd09(void *self, void *a1, u8 *cmd) {
     f32 pos[4] __attribute__((aligned(16)));
     u32 which;
 
@@ -225,7 +239,8 @@ s32 func_003422B0(void *self, void *a1, u8 *cmd) {
 
 /* room objects 8 / 9 raised (+0x24 down 0.2 a call to 0) while the event manager's +0x58 test 4 /
  * 5 holds, else lowered back (up 0.4 a call to 0.7) */
-s32 func_00342370(void) {
+/* 0x00342370 */
+s32 Room92_Cmd08(void) {
     static const union { u32 u; f32 f; } kDown = {0x3E4CCCCD}, kTop = {0x3F333333}, kUp = {0x3ECCCCCD};
     VObject *objs = D_00456DF8, *ev = gEvents;
     s32 k;
@@ -266,7 +281,8 @@ s32 func_00342370(void) {
 }
 
 /* (as slam_shake, both of Lorenzo's forms: 0xA and 0x27) */
-s32 func_00342500(void) {
+/* 0x00342500 */
+s32 Room92_Cmd07(void) {
     if (gCharPursuer == NULL) {
         return 1;
     }
@@ -284,7 +300,8 @@ s32 func_00342500(void) {
 
 /* the 0x20E0-byte effect D_00479F70 (sent byte 3): byte 3 0 / 1 one made, its slot in script
  * variable 2 / 3; 2 / 3 the one in variable 2 / 3 (if any) sent nothing */
-s32 func_003425D0(void *self, void *a1, u8 *cmd) {
+/* 0x003425D0 */
+s32 Room92_Cmd06(void *self, void *a1, u8 *cmd) {
     u8 *mgr;
     u8 arg = cmd[3];
     s32 slot;
@@ -310,7 +327,8 @@ s32 func_003425D0(void *self, void *a1, u8 *cmd) {
 
 /* the things that fell below -30: placed things of kind 9 are reset (+0x28) and each counts down
  * script variable 6 (and the event manager's +0x5C); room objects 10..15 that did get +0 set */
-s32 func_003428D0(void) {
+/* 0x003428D0 */
+s32 Room92_Cmd05(void) {
     VObject *ev = gEvents, *list, *objs;
     s32 n = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 6);
     s32 i;
@@ -337,9 +355,10 @@ s32 func_003428D0(void) {
     return 1;
 }
 
-/* (as func_002B2A80) byte 3 0: the effect D_00479F50 spawned (told 1), its slot in event var
+/* (as Room49_Cmd02) byte 3 0: the effect D_00479F50 spawned (told 1), its slot in event var
    0; 1: it is told 0 */
-s32 func_00342A30(void *self, void *a1, u8 *cmd) {
+/* 0x00342A30 */
+s32 Room92_Cmd04(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0: {
         u8 *mgr = gEffects;
@@ -364,7 +383,8 @@ s32 func_00342A30(void *self, void *a1, u8 *cmd) {
 /* the placed thing 10 brought back (list +0x14 / +0x8, its +0xC, +0x28 on) and put on one of five
  * spots round a circle (script variable 1, then on by 2 of 5): turned to the spot's angle (with a
  * little random), 2.1 up and 1.5..2 out on triangle 0x3B; then effect D_00479F30 on it */
-s32 func_00342BC0(void) {
+/* 0x00342BC0 */
+s32 Room92_Cmd03(void) {
     static const union { u32 u; f32 f; } kStep = {0x3FA0D97C}, kJit = {0x3F80ADFD}, kHalf = {0x3F00ADFD};
     VObject *list = gPlacedThings, *ev, *rnd;
     u8 *t;
@@ -415,7 +435,8 @@ s32 func_00342BC0(void) {
  * each tied to the first room object 10..15 flagged (+0 = 1) (+0x122 its index), set up (+0xC,
  * +0x28 on) and dropped at a random spot 40..50 out and 25..40 up in any direction that lands on
  * the nav mesh (+0x3C) */
-s32 func_00342E80(void) {
+/* 0x00342E80 */
+s32 Room92_Cmd02(void) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
     VObject *ev = gEvents, *rnd, *list, *objs, *nav;
     s32 n = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 6);
@@ -475,7 +496,8 @@ s32 func_00342E80(void) {
     return 1;
 }
 
-s32 func_00343180(void) {
+/* 0x00343180 */
+s32 Room92_Cmd01(void) {
     static const s16 spot[3] = {2, 7, 5};
     static const f32 b[3] = {0.0f, 0.0f, 0.5f}, c[3] = {0.0f, 0.0f, 0.0f}, d[3] = {0.5f, 0.5f, 0.5f};
 
@@ -486,7 +508,8 @@ s32 func_00343180(void) {
  * sets them up (speed and base 4 degrees, top 20); else each frame (unless the progress' +0x54
  * says no): state 0 slows by 5% of the base to 0, 1 speeds by 2% up to the base, 2 by 10% up to
  * the top, 3 jumps to the base */
-s32 func_003434A0(void *self, void *a1, u8 *cmd) {
+/* 0x003434A0 */
+s32 Room92_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } k005 = {0x3D4CCCCD}, k002 = {0x3CA3D70A}, k01 = {0x3DCCCCCD},
                                           kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
     VObject *objs = D_00456DF8, *ev;

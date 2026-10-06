@@ -14,28 +14,35 @@ extern u8 D_003F1A30[];
 extern u8 D_003F1A50[];
 extern void *D_003F1B40[];
 
-void *func_0020BC10(void *o, s32 flags) { return room_dtor(o, flags, D_0046B870, D_0046DB80); }
+/* 0x0020BC10 */
+void *Room05_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046B870, D_0046DB80); }
 
-void *func_0020BC70(void) {
+/* 0x0020BC70 */
+void *Room05_EnterScript(void) {
     return D_003F1800;
 }
 
-void *func_0020BC80(void) {
+/* 0x0020BC80 */
+void *Room05_CharEnterScript(void) {
     return D_003F1840;
 }
 
-void *func_0020BC90(void) {
+/* 0x0020BC90 */
+void *Room05_Phase1Script(void) {
     return D_003F1930;
 }
 
-void *func_0020BCA0(void) {
+/* 0x0020BCA0 */
+void *Room05_Phase2Script(void) {
     return D_003F1A30;
 }
 
-void *func_0020BCB0(void) {
+/* 0x0020BCB0 */
+void *Room05_Phase5Script(void) {
     return D_003F1A50;
 }
 
-void *func_0020BCC0(void *self, s32 i) {
+/* 0x0020BCC0 */
+void *Room05_ActionScript(void *self, s32 i) {
     return D_003F1B40[i];
 }

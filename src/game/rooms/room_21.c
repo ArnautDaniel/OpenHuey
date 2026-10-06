@@ -24,48 +24,59 @@ extern u32 D_00400C00[];
 extern PTMF D_01990A70[];
 extern PTMF D_01990AC8[];
 
-void *func_002AEFC0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E2C0, D_0046DB80); }
+/* 0x002AEFC0 */
+void *Room21_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E2C0, D_0046DB80); }
 
-void *func_002AF020(void) {
+/* 0x002AF020 */
+void *Room21_EnterScript(void) {
     return D_003FF170;
 }
 
-void *func_002AF030(void) {
+/* 0x002AF030 */
+void *Room21_CharEnterScript(void) {
     return D_003FF200;
 }
 
-void *func_002AF040(void) {
+/* 0x002AF040 */
+void *Room21_Phase1Script(void) {
     return D_003FF340;
 }
 
-void *func_002AF050(void) {
+/* 0x002AF050 */
+void *Room21_Phase2Script(void) {
     return D_003FF650;
 }
 
-void *func_002AF060(void) {
+/* 0x002AF060 */
+void *Room21_Phase3Script(void) {
     return D_003FF810;
 }
 
-u32 func_002AF070(void *self, s32 i) {
+/* 0x002AF070 */
+u32 Room21_ActionScript(void *self, s32 i) {
     return D_00400AD0[i];
 }
 
-void *func_002AF090(void) {
+/* 0x002AF090 */
+void *Room21_Table38(void) {
     return D_00400C40;
 }
 
-u32 func_002AF0A0(void *self, s32 i) {
+/* 0x002AF0A0 */
+u32 Room21_ObjectName(void *self, s32 i) {
     return D_00400C00[i];
 }
 
 /* (self->*D_01990AC8[i])(a, b) */
-s32 func_002AF0C0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AF0C0 */
+s32 Room21_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990AC8[i & 0xFF], a, b);
 }
 
 /* room 0x21 (D_00400BF0): the pursuer, about and not in state 2, is in its mode 2 but in
  * another room than the current one (the player about too) */
-s32 func_002AF0F0(void) {
+/* 0x002AF0F0 */
+s32 Room21_Cond00(void) {
     Character *s = gCharPursuer, *p = gCharPlayer;
 
     if (s == NULL || s->a.active == 0 || p == NULL || p->a.active == 0) {
@@ -78,12 +89,14 @@ s32 func_002AF0F0(void) {
 }
 
 /* (self->*D_01990A70[i])(a, b) */
-s32 func_002AF1A0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AF1A0 */
+s32 Room21_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990A70[i & 0xFF], a, b);
 }
 
 /* room 0x21 (D_00400BE0): Fiona's model +0x1570 (byte 3 0) / +0x1574 (1) = byte 4 */
-s32 func_002AF1D0(void *self, void *a1, u8 *cmd) {
+/* 0x002AF1D0 */
+s32 Room21_Cmd06(void *self, void *a1, u8 *cmd) {
     u8 *m = gCharacters[(u8)func_001770D0(gProgress, 3)]->motion;
 
     switch (cmd[3]) {
@@ -98,7 +111,8 @@ s32 func_002AF1D0(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x21 (D_00400BD0): the player's model +0xC8 vector by byte 3 */
-s32 func_002AF250(void *self, void *a1, u8 *cmd) {
+/* 0x002AF250 */
+s32 Room21_Cmd05(void *self, void *a1, u8 *cmd) {
     VObject *m = gCharPlayer->motion;
     f32 v[4] __attribute__((aligned(16)));
 
@@ -120,12 +134,14 @@ s32 func_002AF250(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x21 (D_00400BC8) */
-s32 func_002AF300(void *self, void *a1, u8 *cmd) {
+/* 0x002AF300 */
+s32 Room21_Cmd04(void *self, void *a1, u8 *cmd) {
     return lit_quad_in(0x1A, cmd, sQuadDoor, 0x20000040);
 }
 
 /* Sets bit 1 of the flag byte three times (inlined setter calls); returns 1. */
-s32 func_002AF4A0(void) {
+/* 0x002AF4A0 */
+s32 Room21_Cmd03(void) {
     u8 *obj = (u8 *)gCharPlayer;
 
     (*(u8 **)(obj + 0xF0))[0xAC] |= 2;
@@ -135,12 +151,14 @@ s32 func_002AF4A0(void) {
 }
 
 /* room 0x21 (D_00400BA8) */
-s32 func_002AF4E0(void *self, void *a1, u8 *cmd) {
+/* 0x002AF4E0 */
+s32 Room21_Cmd02(void *self, void *a1, u8 *cmd) {
     return lit_quad(cmd, sQuadWindow, 0x10000040);
 }
 
 /* room 0x21 (D_00400B98): the fan turns, except while a movie plays */
-s32 func_002AF680(void) {
+/* 0x002AF680 */
+s32 Room21_Cmd01(void) {
     if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
         return 1;
     }
@@ -148,7 +166,8 @@ s32 func_002AF680(void) {
     return 1;
 }
 
-s32 func_002AF730(void) {   /* room effect 1 (D_0046EA40) */
+/* 0x002AF730 */
+s32 Room21_Cmd00(void) {   /* room effect 1 (D_0046EA40) */
     room_effect_slot_new(gRoomEffects, 1, D_0046EA40);
     return 1;
 }

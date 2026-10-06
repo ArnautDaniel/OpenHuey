@@ -31,38 +31,47 @@ static void effect_79400_init(void **obj) {
     obj[0x610 / 4] = D_0046FC30;
 }
 
-void *func_00305E90(void *o, s32 flags) { return room_dtor(o, flags, D_00471020, D_0046DB80); }
+/* 0x00305E90 */
+void *Room55_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00471020, D_0046DB80); }
 
-void *func_00305EF0(void) {
+/* 0x00305EF0 */
+void *Room55_EnterScript(void) {
     return D_00420B40;
 }
 
-void *func_00305F00(void) {
+/* 0x00305F00 */
+void *Room55_CharEnterScript(void) {
     return D_00420B80;
 }
 
-void *func_00305F10(void) {
+/* 0x00305F10 */
+void *Room55_Phase1Script(void) {
     return D_00420CD0;
 }
 
-void *func_00305F20(void) {
+/* 0x00305F20 */
+void *Room55_Phase2Script(void) {
     return D_00420D80;
 }
 
-void *func_00305F30(void *self, s32 i) {
+/* 0x00305F30 */
+void *Room55_ActionScript(void *self, s32 i) {
     return D_004210D0[i];
 }
 
-void *func_00305F50(void) {
+/* 0x00305F50 */
+void *Room55_Table38(void) {
     return D_00421110;
 }
 
-void *func_00305F60(void *self, s32 i) {
+/* 0x00305F60 */
+void *Room55_ObjectName(void *self, s32 i) {
     return D_00421100[i];
 }
 
 /* (self->*D_01991088[i])(a, b) */
-s32 func_00305F80(void *self, u32 i, s32 a, s32 b) {
+/* 0x00305F80 */
+s32 Room55_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991088[i & 0xFF], a, b);
 }
 

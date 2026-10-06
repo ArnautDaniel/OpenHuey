@@ -15,23 +15,32 @@ extern u8 D_00443860[];
 
 extern PTMF D_01991A38[];
 
-void *func_00352C90(void *o, s32 flags) { return room_dtor(o, flags, D_00479380, D_0046DB80); }
+/* 0x00352C90 */
+void *Room9A_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00479380, D_0046DB80); }
 
-void *func_00352CF0(void *o) { return D_0047AFB0; }   /* D_00479380 +0xC */
+/* 0x00352CF0 */
+void *Room9A_EnterScript(void *o) { return D_0047AFB0; }   /* D_00479380 +0xC */
 
-void *func_00352D00(void) { return D_00443740; }
+/* 0x00352D00 */
+void *Room9A_CharEnterScript(void) { return D_00443740; }
 
-void *func_00352D10(void) { return D_004437C0; }
+/* 0x00352D10 */
+void *Room9A_Phase1Script(void) { return D_004437C0; }
 
-void *func_00352D20(void *o) { return D_0047AFB8; }   /* D_00479380 +0x14 */
+/* 0x00352D20 */
+void *Room9A_Phase2Script(void *o) { return D_0047AFB8; }   /* D_00479380 +0x14 */
 
-void *func_00352D30(void *self, s32 i) { return D_0047AFBC[i]; }
+/* 0x00352D30 */
+void *Room9A_ActionScript(void *self, s32 i) { return D_0047AFBC[i]; }
 
-void *func_00352D50(void) { return D_00443860; }
+/* 0x00352D50 */
+void *Room9A_Table38(void) { return D_00443860; }
 
 /* (self->*D_01991A38[i])(a, b) */
-s32 func_00352D60(void *self, u32 i, s32 a, s32 b) {
+/* 0x00352D60 */
+s32 Room9A_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991A38[i & 0xFF], a, b);
 }
 
-s32 func_00352D90(void) { return slam_shake(); }
+/* 0x00352D90 */
+s32 Room9A_Cmd00(void) { return slam_shake(); }

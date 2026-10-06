@@ -31,44 +31,54 @@ static void effect_c0b_init(void **obj) {
     obj[0x70 / 4] = D_0046FC30;
 }
 
-void *func_002B1790(void *o, s32 flags) { return room_dtor(o, flags, D_0046E540, D_0046DB80); }
+/* 0x002B1790 */
+void *Room2D_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E540, D_0046DB80); }
 
-void *func_002B17F0(void) {
+/* 0x002B17F0 */
+void *Room2D_EnterScript(void) {
     return D_00405AC0;
 }
 
-void *func_002B1800(void) {
+/* 0x002B1800 */
+void *Room2D_CharEnterScript(void) {
     return D_00405B80;
 }
 
-void *func_002B1810(void) {
+/* 0x002B1810 */
+void *Room2D_Phase1Script(void) {
     return D_00405BD0;
 }
 
-void *func_002B1820(void) {
+/* 0x002B1820 */
+void *Room2D_Phase2Script(void) {
     return D_00405E30;
 }
 
-u32 func_002B1830(void *self, s32 i) {
+/* 0x002B1830 */
+u32 Room2D_ActionScript(void *self, s32 i) {
     return D_00406470[i];
 }
 
-void *func_002B1850(void) {
+/* 0x002B1850 */
+void *Room2D_Table38(void) {
     return D_00406530;
 }
 
-u32 func_002B1860(void *self, s32 i) {
+/* 0x002B1860 */
+u32 Room2D_ObjectName(void *self, s32 i) {
     return D_00406510[i];
 }
 
 /* (self->*D_01990C38[i])(a, b) */
-s32 func_002B1880(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B1880 */
+s32 Room2D_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990C38[i & 0xFF], a, b);
 }
 
 /* Hewie (in state 0x7F, +0xF3564) within 5 of the spot by byte 3: 0 (-259.5, 190), 1 (-276,
  * 160) (others: what the caller left) */
-s32 func_002B18B0(void *self, void *a1, u8 *cmd) {
+/* 0x002B18B0 */
+s32 Room2D_Cond00(void *self, void *a1, u8 *cmd) {
     Character *h = gCharacters[func_001770D0(gProgress, 1) & 0xFF];
     f32 dx = 0.0f, dz = 0.0f;
 
@@ -89,18 +99,21 @@ s32 func_002B18B0(void *self, void *a1, u8 *cmd) {
 }
 
 /* (self->*D_01990C10[i])(a, b) */
-s32 func_002B19D0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B19D0 */
+s32 Room2D_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990C10[i & 0xFF], a, b);
 }
 
-s32 func_002B1A00(VObject *self, void *a1, u8 *cmd) {
+/* 0x002B1A00 */
+s32 Room2D_Cmd02(VObject *self, void *a1, u8 *cmd) {
     return hangers_swing(self, cmd, 4, 2, 5.0f, 1, 3, 1, 2);
 }
 
 /* something dropped (effect D_00472390, its slot in event var 1) from (-276.5, 3, 160), by
  * byte 3: 0 started (event var 0 the frame count); 1 a frame (2 while falling): it drifts 0.5
  * a frame in x and falls 0.05 x n(n+1)/2, gone below -10 */
-s32 func_002B1D50(void *self, void *a1, u8 *cmd) {
+/* 0x002B1D50 */
+s32 Room2D_Cmd01(void *self, void *a1, u8 *cmd) {
     VObject *ev = gEvents;
     f32 p[4] __attribute__((aligned(16)));
 
@@ -143,7 +156,8 @@ s32 func_002B1D50(void *self, void *a1, u8 *cmd) {
 /* a hanging thing (the room's +0x34 (byte 3 + 2) object) swinging, by byte 4: 0 / 2 set
  * going (12 degrees) away from the partner / Fiona; 1 a step (22.5 degrees of its swing,
  * shrinking to 0.4 at each end; under half a degree it stops) - 2 while it swings */
-s32 func_002B2050(VObject *self, void *a1, u8 *cmd) {
+/* 0x002B2050 */
+s32 Room2D_Cmd00(VObject *self, void *a1, u8 *cmd) {
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, s32))(
         D_00456DF8, VCALL(self, 0x34, s32 (*)(VObject *, s32))(self, cmd[3] + 2));
     f32 d[4] __attribute__((aligned(16)));

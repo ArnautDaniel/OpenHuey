@@ -37,55 +37,68 @@ static inline s32 marker_send(s32 *msg) {
     return 1;
 }
 
-void *func_00340060(void *o, s32 flags) { return room_dtor(o, flags, D_004773C0, D_0046DB80); }
+/* 0x00340060 */
+void *Room8D_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_004773C0, D_0046DB80); }
 
-void *func_003400C0(void) {
+/* 0x003400C0 */
+void *Room8D_EnterScript(void) {
     return D_004348E0;
 }
 
-void *func_003400D0(void) {
+/* 0x003400D0 */
+void *Room8D_CharEnterScript(void) {
     return D_00434940;
 }
 
-void *func_003400E0(void) {
+/* 0x003400E0 */
+void *Room8D_Phase1Script(void) {
     return D_00434A00;
 }
 
-void *func_003400F0(void) {
+/* 0x003400F0 */
+void *Room8D_Phase2Script(void) {
     return D_00434B50;
 }
 
-void *func_00340100(void) {
+/* 0x00340100 */
+void *Room8D_Phase3Script(void) {
     return D_00434BE0;
 }
 
-void *func_00340110(void) {
+/* 0x00340110 */
+void *Room8D_Phase5Script(void) {
     return D_00434C00;
 }
 
-u32 func_00340120(void *self, s32 i) {
+/* 0x00340120 */
+u32 Room8D_ActionScript(void *self, s32 i) {
     return D_00434FE0[i];
 }
 
-void *func_00340140(void) {
+/* 0x00340140 */
+void *Room8D_Table38(void) {
     return D_00435040;
 }
 
-u32 func_00340150(void *self, s32 i) {
+/* 0x00340150 */
+u32 Room8D_ObjectName(void *self, s32 i) {
     return D_0047AE58[i];
 }
 
 /* (self->*D_01991760[i])(a, b) */
-s32 func_00340170(void *self, u32 i, s32 a, s32 b) {
+/* 0x00340170 */
+s32 Room8D_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991760[i & 0xFF], a, b);
 }
 
-s32 func_003401A0(void) { return slam_shake(); }
+/* 0x003401A0 */
+s32 Room8D_Cmd02(void) { return slam_shake(); }
 
 /* byte 3: 0 made (lights 0x14 on characters 3 and 0) and 1 lit on character 3 (second kind, size
  * 1, sparks from its own slot); 2 ending, 3 ended; 4 / 6 sized 1 / 0.5; 5 / 7 shrinking with
  * variable 1 (a step a call, to 0.5 + v / 200 or v / 334) */
-s32 func_00340230(void *self, void *a1, u8 *cmd) {
+/* 0x00340230 */
+s32 Room8D_Cmd01(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } k334 = {0x43A70000};
     VObject *ev;
     s32 msg[4];
@@ -141,7 +154,8 @@ s32 func_00340230(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-s32 func_003406A0(void) {
+/* 0x003406A0 */
+s32 Room8D_Cmd00(void) {
     static const s16 spot[3] = {7, 4, 3};
     static const f32 b[3] = {0.0f, 0.0f, 0.0f}, c[3] = {0.5f, 0.0f, 0.0f}, d[3] = {0.5f, 0.5f, 1.0f};
 

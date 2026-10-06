@@ -37,43 +37,53 @@ static void effect_476bb0_init(void **obj) {
     obj[0x6010 / 4] = D_0046FC30;
 }
 
-void *func_002B3F10(void *o, s32 flags) { return room_dtor(o, flags, D_0046E780, D_0046DB80); }
+/* 0x002B3F10 */
+void *Room4F_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E780, D_0046DB80); }
 
-void *func_002B3F70(void) {
+/* 0x002B3F70 */
+void *Room4F_EnterScript(void) {
     return D_0040B520;
 }
 
-void *func_002B3F80(void) {
+/* 0x002B3F80 */
+void *Room4F_CharEnterScript(void) {
     return D_0040B5C0;
 }
 
-void *func_002B3F90(void) {
+/* 0x002B3F90 */
+void *Room4F_Phase1Script(void) {
     return D_0040B680;
 }
 
-void *func_002B3FA0(void) {
+/* 0x002B3FA0 */
+void *Room4F_Phase2Script(void) {
     return D_0040B8A0;
 }
 
-u32 func_002B3FB0(void *self, s32 i) {
+/* 0x002B3FB0 */
+u32 Room4F_ActionScript(void *self, s32 i) {
     return D_0040C0A0[i];
 }
 
-void *func_002B3FD0(void) {
+/* 0x002B3FD0 */
+void *Room4F_Table38(void) {
     return D_0040C170;
 }
 
-u32 func_002B3FE0(void *self, s32 i) {
+/* 0x002B3FE0 */
+u32 Room4F_ObjectName(void *self, s32 i) {
     return (u32)D_0040C140[i];
 }
 
 /* (self->*D_01990D70[i])(a, b) */
-s32 func_002B4000(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B4000 */
+s32 Room4F_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990D70[i & 0xFF], a, b);
 }
 
 /* lower the object (D_0040C160)'s +0x14 by 0.025 a frame down to -0.78, then event 6 (+0x5C) */
-s32 func_002B4280(void) {
+/* 0x002B4280 */
+s32 Room4F_Cmd03(void) {
     static const union { u32 u; f32 f; } kStep = {0x3CCCCCCD}, kLow = {0xBF47AE14};
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_0040C160);
     f32 y = AT(o, 0x14, f32) - kStep.f;
@@ -88,7 +98,8 @@ s32 func_002B4280(void) {
 
 /* byte 3 0: a D_00476BD0 effect (0x36C0 bytes) spawned, its slot kept in event var 0; else that
  * slot's effect removed */
-s32 func_002B4310(void *self, void *a1, u8 *cmd) {
+/* 0x002B4310 */
+s32 Room4F_Cmd02(void *self, void *a1, u8 *cmd) {
     if (cmd[3] == 0) {
         s32 slot = Effect_New(gEffects, 0x36C0, effect476bd0_init);
 
@@ -100,14 +111,16 @@ s32 func_002B4310(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x4F (D_0040C0F8): an effect (D_00476BB0, 0x7460 bytes), not started */
-s32 func_002B4480(void) {
+/* 0x002B4480 */
+s32 Room4F_Cmd01(void) {
     Effect_New(gEffects, 0x7460, effect_476bb0_init);
     return 1;
 }
 
 /* room 0x4F (D_0040C0E8): object byte 3 by byte 4: 0 up (+0x10 0), 1 down (-0.65), 2 lowered a
  * step (0.02, not during a movie); once down, events bit 3 */
-s32 func_002B4570(void *self, void *a1, u8 *cmd) {
+/* 0x002B4570 */
+s32 Room4F_Cmd00(void *self, void *a1, u8 *cmd) {
     u8 *o = room_obj(D_0040C140[cmd[3]]);
     f32 a;
 

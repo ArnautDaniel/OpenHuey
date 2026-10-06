@@ -15,28 +15,35 @@ extern u8 D_004125E0[];
 extern u8 D_00412688[];
 extern void *D_0047ABF0[];
 
-void *func_0020B5A0(void *o, s32 flags) { return room_dtor(o, flags, D_0046B670, D_0046DB80); }
+/* 0x0020B5A0 */
+void *Room5E_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046B670, D_0046DB80); }
 
-void *func_0020B600(void) {
+/* 0x0020B600 */
+void *Room5E_EnterScript(void) {
     return D_00412410;
 }
 
-void *func_0020B610(void) {
+/* 0x0020B610 */
+void *Room5E_CharEnterScript(void) {
     return D_00412430;
 }
 
-void *func_0020B620(void) {
+/* 0x0020B620 */
+void *Room5E_Phase1Script(void) {
     return D_00412510;
 }
 
-void *func_0020B630(void) {
+/* 0x0020B630 */
+void *Room5E_Phase2Script(void) {
     return D_004125E0;
 }
 
-void *func_0020B640(void *self, s32 i) {
+/* 0x0020B640 */
+void *Room5E_ActionScript(void *self, s32 i) {
     return D_0047ABF0[i];
 }
 
-void *func_0020B660(void) {
+/* 0x0020B660 */
+void *Room5E_Table38(void) {
     return D_00412688;
 }

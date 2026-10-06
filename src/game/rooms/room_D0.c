@@ -19,34 +19,43 @@ extern u8 D_00446BE0[];
 extern PTMF D_01991AC0[];
 extern PTMF D_01991AE8[];
 
-void *func_0036DA30(void *o, s32 flags) { return room_dtor(o, flags, D_0047A070, D_0046DB80); }
+/* 0x0036DA30 */
+void *RoomD0_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0047A070, D_0046DB80); }
 
-void *func_0036DA90(void) {
+/* 0x0036DA90 */
+void *RoomD0_EnterScript(void) {
     return D_004469C0;
 }
 
-void *func_0036DAA0(void) {
+/* 0x0036DAA0 */
+void *RoomD0_CharEnterScript(void) {
     return D_00446A00;
 }
 
-void *func_0036DAB0(void) {
+/* 0x0036DAB0 */
+void *RoomD0_Phase1Script(void) {
     return D_00446A80;
 }
 
-void *func_0036DAC0(void *o) { return D_0047B030; }   /* D_0047A070 +0x14 */
+/* 0x0036DAC0 */
+void *RoomD0_Phase2Script(void *o) { return D_0047B030; }   /* D_0047A070 +0x14 */
 
-void *func_0036DAD0(void) {
+/* 0x0036DAD0 */
+void *RoomD0_Phase3Script(void) {
     return D_00446B00;
 }
 
-u32 func_0036DAE0(void *o, s32 i) { return ((u32 *)D_0047B040)[i]; }   /* D_0047A070 +0x24 */
+/* 0x0036DAE0 */
+u32 RoomD0_ActionScript(void *o, s32 i) { return ((u32 *)D_0047B040)[i]; }   /* D_0047A070 +0x24 */
 
-void *func_0036DB00(void) {
+/* 0x0036DB00 */
+void *RoomD0_Table38(void) {
     return D_00446BE0;
 }
 
 /* (self->*D_01991AE8[i])(a, b) */
-s32 func_0036DB10(void *self, u32 i, s32 a, s32 b) {
+/* 0x0036DB10 */
+s32 RoomD0_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991AE8[i & 0xFF], a, b);
 }
 
@@ -56,7 +65,8 @@ s32 func_0036DB40(void *self, s32 a1, s32 a2, s32 a3) {
 }
 
 /* (self->*D_01991AC0[i])(a, b) */
-s32 func_0036DB60(void *self, u32 i, s32 a, s32 b) {
+/* 0x0036DB60 */
+s32 RoomD0_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991AC0[i & 0xFF], a, b);
 }
 

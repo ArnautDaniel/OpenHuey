@@ -18,30 +18,37 @@ extern void *D_0042A0E0[];
 
 extern PTMF D_01991570[];
 
-void *func_0031E1C0(void *o, s32 flags) { return room_dtor(o, flags, D_00473460, D_0046DB80); }
+/* 0x0031E1C0 */
+void *Room31_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00473460, D_0046DB80); }
 
-void *func_0031E220(void) {
+/* 0x0031E220 */
+void *Room31_EnterScript(void) {
     return D_00429E40;
 }
 
-void *func_0031E230(void) {
+/* 0x0031E230 */
+void *Room31_CharEnterScript(void) {
     return D_00429E60;
 }
 
-void *func_0031E240(void) {
+/* 0x0031E240 */
+void *Room31_Phase1Script(void) {
     return D_00429F10;
 }
 
-void *func_0031E250(void *self, s32 i) {
+/* 0x0031E250 */
+void *Room31_ActionScript(void *self, s32 i) {
     return D_0042A0A0[i];
 }
 
-void *func_0031E270(void *self, s32 i) {
+/* 0x0031E270 */
+void *Room31_ObjectName(void *self, s32 i) {
     return D_0042A0E0[i];
 }
 
 /* (self->*D_01991570[i])(a, b) */
-s32 func_0031E290(void *self, u32 i, s32 a, s32 b) {
+/* 0x0031E290 */
+s32 Room31_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991570[i & 0xFF], a, b);
 }
 

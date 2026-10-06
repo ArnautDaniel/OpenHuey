@@ -19,48 +19,59 @@ extern void *D_003EE740[];
 extern u8 D_003EE760[];
 extern PTMF D_01990718[];
 
-void *func_002A8980(void *o, s32 flags) { return room_dtor(o, flags, D_0046DBC0, D_0046DB80); }
+/* 0x002A8980 */
+void *Room00_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DBC0, D_0046DB80); }
 
-void *func_002A89E0(void) {
+/* 0x002A89E0 */
+void *Room00_EnterScript(void) {
     return D_003ED800;
 }
 
-void *func_002A89F0(void) {
+/* 0x002A89F0 */
+void *Room00_CharEnterScript(void) {
     return D_003ED960;
 }
 
-void *func_002A8A00(void) {
+/* 0x002A8A00 */
+void *Room00_Phase1Script(void) {
     return D_003ED9E0;
 }
 
-void *func_002A8A10(void) {
+/* 0x002A8A10 */
+void *Room00_Phase2Script(void) {
     return D_003EDBC0;
 }
 
-void *func_002A8A20(void) {
+/* 0x002A8A20 */
+void *Room00_Phase3Script(void) {
     return D_003EDC40;
 }
 
-void *func_002A8A30(void *self, s32 i) {
+/* 0x002A8A30 */
+void *Room00_ActionScript(void *self, s32 i) {
     return D_003EE6C0[i];
 }
 
-void *func_002A8A50(void) {
+/* 0x002A8A50 */
+void *Room00_Table38(void) {
     return D_003EE760;
 }
 
-void *func_002A8A60(void *self, s32 i) {
+/* 0x002A8A60 */
+void *Room00_ObjectName(void *self, s32 i) {
     return D_003EE740[i];
 }
 
 /* (self->*D_01990718[i])(a, b) */
-s32 func_002A8A80(void *self, u32 i, s32 a, s32 b) {
+/* 0x002A8A80 */
+s32 Room00_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990718[i & 0xFF], a, b);
 }
 
 /* Fiona's model +0xD0 (0, 1.5, -2.5) and +0xCC(1) when byte 3 is 0, else (0, 1.5, -1.5) and
  * +0xCC(0) */
-s32 func_002A8AF0(void *self, void *a1, u8 *cmd) {
+/* 0x002A8AF0 */
+s32 Room00_Cmd01(void *self, void *a1, u8 *cmd) {
     void *m = gCharPlayer->motion;
 
     if (cmd[3] == 0) {
@@ -73,6 +84,7 @@ s32 func_002A8AF0(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-s32 func_002A8BA0(void *self, void *a1, u8 *cmd) {
+/* 0x002A8BA0 */
+s32 Room00_Cmd00(void *self, void *a1, u8 *cmd) {
     return glow4_spot(cmd, 0);
 }

@@ -24,49 +24,60 @@ extern u8 D_00422320[];
 
 extern PTMF D_019910B0[];
 
-void *func_00308AF0(void *o, s32 flags) { return room_dtor(o, flags, D_00471250, D_0046DB80); }
+/* 0x00308AF0 */
+void *Room62_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00471250, D_0046DB80); }
 
-void *func_00308B50(void) {
+/* 0x00308B50 */
+void *Room62_EnterScript(void) {
     return D_00421C60;
 }
 
-void *func_00308B60(void) {
+/* 0x00308B60 */
+void *Room62_CharEnterScript(void) {
     return D_00421CD0;
 }
 
-void *func_00308B70(void) {
+/* 0x00308B70 */
+void *Room62_Phase1Script(void) {
     return D_00421D50;
 }
 
-void *func_00308B80(void) {
+/* 0x00308B80 */
+void *Room62_Phase2Script(void) {
     return D_00421EF0;
 }
 
-void *func_00308B90(void) {
+/* 0x00308B90 */
+void *Room62_Phase3Script(void) {
     return D_00421FC0;
 }
 
-void *func_00308BA0(void *self, s32 i) {
+/* 0x00308BA0 */
+void *Room62_ActionScript(void *self, s32 i) {
     return D_004222D0[i];
 }
 
-void *func_00308BC0(void) {
+/* 0x00308BC0 */
+void *Room62_Table38(void) {
     return D_00422320;
 }
 
-void *func_00308BD0(void *self, s32 i) {
+/* 0x00308BD0 */
+void *Room62_ObjectName(void *self, s32 i) {
     return (void *)D_0047AD08[i];
 }
 
 /* (self->*D_019910B0[i])(a, b) */
-s32 func_00308BF0(void *self, u32 i, s32 a, s32 b) {
+/* 0x00308BF0 */
+s32 Room62_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019910B0[i & 0xFF], a, b);
 }
 
 /* room 0x62 (D_00422318): the room's effect 0 dropped by byte 3 - 0 at rest (speed 0), 1 raised
  * by 0.5; else it falls (gravity 0.5 a frame, turning 0.16) and bounces off 0.7 losing 70%
  * (a sound each bounce) until slower than 0.2 (+0x74 set: landed; 1), else still going (2) */
-s32 func_00308C20(void *self, void *a1, u8 *cmd) {
+/* 0x00308C20 */
+s32 Room62_Cmd01(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kBounce = {0xBE99999A};   /* -0.3 */
     u8 *e = func_00266C40(gRoomEffects, 0);
     f32 v, y;
@@ -108,7 +119,8 @@ s32 func_00308C20(void *self, void *a1, u8 *cmd) {
 /* room 0x62 (D_00422300): object byte 4 swings: byte 3 0 starts it (phase +0x30 0, size +0x34
  * 0.01; object 0 with sound 7), else a step (+0x10 = size x sin(phase), phase on 60 degrees,
  * the size down 0.001); 2 until it is still */
-s32 func_00308D70(void *self, void *a1, u8 *cmd) {
+/* 0x00308D70 */
+s32 Room62_Cmd00(void *self, void *a1, u8 *cmd) {
     u8 *o = room_obj(D_0047AD08[cmd[4]]);
 
     if (cmd[3] == 0) {

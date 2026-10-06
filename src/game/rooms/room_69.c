@@ -28,44 +28,55 @@ static inline __attribute__((always_inline)) f32 dial_angle(Progress *p, s32 k) 
     return 0x1.921fb6p+1f * (f32)(s32)((u8)Progress_GetVar(p, D_0047AE80[k]) * 90) / 180.0f;
 }
 
-void *func_003438C0(void *o, s32 flags) { return room_dtor(o, flags, D_00477540, D_0046DB80); }
+/* 0x003438C0 */
+void *Room69_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00477540, D_0046DB80); }
 
-void *func_00343920(void) {
+/* 0x00343920 */
+void *Room69_EnterScript(void) {
     return D_00437E50;
 }
 
-void *func_00343930(void) {
+/* 0x00343930 */
+void *Room69_CharEnterScript(void) {
     return D_00437F50;
 }
 
-void *func_00343940(void) {
+/* 0x00343940 */
+void *Room69_Phase1Script(void) {
     return D_00437FD0;
 }
 
-void *func_00343950(void) {
+/* 0x00343950 */
+void *Room69_Phase2Script(void) {
     return D_00438230;
 }
 
-void *func_00343960(void *o) { return D_0047AE7C; }   /* D_00477540 +0x20 */
+/* 0x00343960 */
+void *Room69_Phase5Script(void *o) { return D_0047AE7C; }   /* D_00477540 +0x20 */
 
-void *func_00343970(void) {
+/* 0x00343970 */
+void *Room69_Phase3Script(void) {
     return D_00438290;
 }
 
-u32 func_00343980(void *self, s32 i) {
+/* 0x00343980 */
+u32 Room69_ActionScript(void *self, s32 i) {
     return D_004386D0[i];
 }
 
-void *func_003439A0(void) {
+/* 0x003439A0 */
+void *Room69_Table38(void) {
     return D_00438720;
 }
 
-u32 func_003439B0(void *self, s32 i) {
+/* 0x003439B0 */
+u32 Room69_ObjectName(void *self, s32 i) {
     return (u32)D_00438700[i];
 }
 
 /* (self->*D_019918D8[i])(a, b) */
-s32 func_003439D0(void *self, u32 i, s32 a, s32 b) {
+/* 0x003439D0 */
+s32 Room69_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019918D8[i & 0xFF], a, b);
 }
 
@@ -74,7 +85,8 @@ s32 func_003439D0(void *self, u32 i, s32 a, s32 b) {
  * shown), left / right turn it (its setting, sound bit 3), cancel leaves (event bit 2); 2 the
  * picked dial turns 4 degrees a frame to its setting, then - 1, 0, 2 - the lock opens (event
  * bits 2 off, 4) */
-s32 func_00343A00(void *self, void *a1, u8 *cmd) {
+/* 0x00343A00 */
+s32 Room69_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } k4 = {0x3D8EFA35}, kM4 = {0xBD8EFA35};
 
     switch (cmd[3]) {

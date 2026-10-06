@@ -39,54 +39,67 @@ static inline void swing_to2(u8 *o, f32 a) {
     Sound_PlayBankAt(gSound, 0x80000002, 6, pos, 0, 0);
 }
 
-void *func_0034A9B0(void *o, s32 flags) { return room_dtor(o, flags, D_00478630, D_0046DB80); }
+/* 0x0034A9B0 */
+void *RoomC3_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00478630, D_0046DB80); }
 
-void *func_0034AA10(void) {
+/* 0x0034AA10 */
+void *RoomC3_EnterScript(void) {
     return D_0043F8F0;
 }
 
-void *func_0034AA20(void) {
+/* 0x0034AA20 */
+void *RoomC3_CharEnterScript(void) {
     return D_0043F9F0;
 }
 
-void *func_0034AA30(void) {
+/* 0x0034AA30 */
+void *RoomC3_Phase1Script(void) {
     return D_0043FA80;
 }
 
-void *func_0034AA40(void) {
+/* 0x0034AA40 */
+void *RoomC3_Phase2Script(void) {
     return D_0043FC10;
 }
 
-void *func_0034AA50(void) {
+/* 0x0034AA50 */
+void *RoomC3_Phase5Script(void) {
     return D_0043FCC0;
 }
 
-u32 func_0034AA60(void *self, s32 i) {
+/* 0x0034AA60 */
+u32 RoomC3_ActionScript(void *self, s32 i) {
     return D_00440080[i];
 }
 
-void *func_0034AA80(void *o) { return D_0047AF08; }   /* D_00478630 +0x38 */
+/* 0x0034AA80 */
+void *RoomC3_Table38(void *o) { return D_0047AF08; }   /* D_00478630 +0x38 */
 
-u32 func_0034AA90(void *self, s32 i) {
+/* 0x0034AA90 */
+u32 RoomC3_ObjectName(void *self, s32 i) {
     return ((u32 *)&D_004400E0)[i];   /* its table of names (one is reached by name too) */
 }
 
 /* (self->*D_019919E8[i])(a, b) */
-s32 func_0034AAB0(void *self, u32 i, s32 a, s32 b) {
+/* 0x0034AAB0 */
+s32 RoomC3_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019919E8[i & 0xFF], a, b);
 }
 
-s32 func_0034AAE0(void) {
+/* 0x0034AAE0 */
+s32 RoomC3_Cond00(void) {
     return Countdown_Seconds((u8 *)gProgress + 0x764) == 0;
 }
 
 /* (self->*D_019919C0[i])(a, b) */
-s32 func_0034AB10(void *self, u32 i, s32 a, s32 b) {
+/* 0x0034AB10 */
+s32 RoomC3_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019919C0[i & 0xFF], a, b);
 }
 
 /* sound 3 (bank 6) at the room object named D_004400F0[0] */
-s32 func_0034AB40(void) {
+/* 0x0034AB40 */
+s32 RoomC3_Cmd02(void) {
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_004400F0[0]);
 
     if (o != NULL) {
@@ -97,7 +110,8 @@ s32 func_0034AB40(void) {
 
 /* the player (active, +0xE0 clear) put in action 0xB / 0x21 / 0xFF unless held (7); then
  * progress +0x7B8 gets 50 */
-s32 func_0034ABB0(void) {
+/* 0x0034ABB0 */
+s32 RoomC3_Cmd01(void) {
     CharAction act;
 
     if (gCharPlayer == NULL || AT(gCharPlayer, 0x28, u8) == 0 || AT(gCharPlayer, 0xE0, u8) != 0) {
@@ -114,8 +128,9 @@ s32 func_0034ABB0(void) {
     return 1;
 }
 
-/* (as func_0034A6A0, the room object named D_004400E0, opening to -pi/2) */
-s32 func_0034AD00(void *self, void *a1, u8 *cmd) {
+/* (as RoomC2_Cmd00, the room object named D_004400E0, opening to -pi/2) */
+/* 0x0034AD00 */
+s32 RoomC3_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_004400E0);
     f32 t, e;

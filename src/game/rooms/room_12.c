@@ -29,64 +29,78 @@ static void smoke_puffs_init(void **obj) {
     obj[0x1810 / 4] = D_0046FC30;
 }
 
-void *func_002AC190(void *o, s32 flags) { return room_dtor(o, flags, D_0046DF80, D_0046DB80); }
+/* 0x002AC190 */
+void *Room12_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DF80, D_0046DB80); }
 
-void *func_002AC1F0(void) {
+/* 0x002AC1F0 */
+void *Room12_EnterScript(void) {
     return D_003F8200;
 }
 
-void *func_002AC200(void) {
+/* 0x002AC200 */
+void *Room12_CharEnterScript(void) {
     return D_003F8350;
 }
 
-void *func_002AC210(void) {
+/* 0x002AC210 */
+void *Room12_Phase1Script(void) {
     return D_003F83F0;
 }
 
-void *func_002AC220(void) {
+/* 0x002AC220 */
+void *Room12_Phase2Script(void) {
     return D_003F8750;
 }
 
-void *func_002AC230(void) {
+/* 0x002AC230 */
+void *Room12_Phase3Script(void) {
     return D_003F8900;
 }
 
-void *func_002AC240(void) {
+/* 0x002AC240 */
+void *Room12_Phase5Script(void) {
     return D_003F89D0;
 }
 
-void *func_002AC250(void *self, s32 i) {
+/* 0x002AC250 */
+void *Room12_ActionScript(void *self, s32 i) {
     return D_003F90F0[i];
 }
 
-void *func_002AC270(void) {
+/* 0x002AC270 */
+void *Room12_Table38(void) {
     return D_003F9190;
 }
 
-void *func_002AC280(void *self, s32 i) {
+/* 0x002AC280 */
+void *Room12_ObjectName(void *self, s32 i) {
     return D_003F9170[i];
 }
 
 /* (self->*D_019908F0[i])(a, b) */
-s32 func_002AC2A0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AC2A0 */
+s32 Room12_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019908F0[i & 0xFF], a, b);
 }
 
 /* room 0x12 (D_003F9160): the pursuer is about, in a mode other than 0 and 3 */
-s32 func_002AC2D0(void) {
+/* 0x002AC2D0 */
+s32 Room12_Cond00(void) {
     Character *s = gCharPursuer;
 
     return s != NULL && s->a.active != 0 && AT(s, 0xE8, s32) != 3 && AT(s, 0xE8, s32) != 0;
 }
 
 /* (self->*D_019908E0[i])(a, b) */
-s32 func_002AC340(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AC340 */
+s32 Room12_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019908E0[i & 0xFF], a, b);
 }
 
 /* room 0x12 (D_003F9150): byte 3 0: the smoke puffs (D_00470E20), their slot in script
  * variable 0; else that slot started */
-s32 func_002AC370(void *self, void *a1, u8 *cmd) {
+/* 0x002AC370 */
+s32 Room12_Cmd00(void *self, void *a1, u8 *cmd) {
     if (cmd[3] == 0) {
         s32 slot = Effect_New(gEffects, 0x1C60, smoke_puffs_init);
 

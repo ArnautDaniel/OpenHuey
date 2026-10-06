@@ -19,39 +19,49 @@ extern u32 D_004022F0[];
 
 extern PTMF D_01990B10[];
 
-void *func_002AFC30(void *o, s32 flags) { return room_dtor(o, flags, D_0046E380, D_0046DB80); }
+/* 0x002AFC30 */
+void *Room24_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E380, D_0046DB80); }
 
-void *func_002AFC90(void) {
+/* 0x002AFC90 */
+void *Room24_EnterScript(void) {
     return D_00401890;
 }
 
-void *func_002AFCA0(void) {
+/* 0x002AFCA0 */
+void *Room24_CharEnterScript(void) {
     return D_00401950;
 }
 
-void *func_002AFCB0(void) {
+/* 0x002AFCB0 */
+void *Room24_Phase1Script(void) {
     return D_004019D0;
 }
 
-void *func_002AFCC0(void) {
+/* 0x002AFCC0 */
+void *Room24_Phase2Script(void) {
     return D_00401B50;
 }
 
-void *func_002AFCD0(void *o) { return D_0047AB10; }   /* D_0046E380 +0x20 */
+/* 0x002AFCD0 */
+void *Room24_Phase5Script(void *o) { return D_0047AB10; }   /* D_0046E380 +0x20 */
 
-u32 func_002AFCE0(void *self, s32 i) {
+/* 0x002AFCE0 */
+u32 Room24_ActionScript(void *self, s32 i) {
     return D_00402270[i];
 }
 
-void *func_002AFD00(void) {
+/* 0x002AFD00 */
+void *Room24_Table38(void) {
     return D_00402320;
 }
 
-u32 func_002AFD10(void *self, s32 i) {
+/* 0x002AFD10 */
+u32 Room24_ObjectName(void *self, s32 i) {
     return D_004022F0[i];
 }
 
 /* (self->*D_01990B10[i])(a, b) */
-s32 func_002AFD30(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AFD30 */
+s32 Room24_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990B10[i & 0xFF], a, b);
 }

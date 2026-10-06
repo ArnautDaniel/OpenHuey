@@ -26,28 +26,39 @@ extern void *D_0047AC48[];
 extern PTMF D_01990E78[];
 extern PTMF D_01990E88[];
 
-void *func_002E5740(void *o, s32 flags) { return room_dtor(o, flags, D_0046FC40, D_0046DB80); }
+/* 0x002E5740 */
+void *Room46_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046FC40, D_0046DB80); }
 
-void *func_002E57A0(void) { return D_00416A50; }
+/* 0x002E57A0 */
+void *Room46_EnterScript(void) { return D_00416A50; }
 
-void *func_002E57B0(void) { return D_00416AF0; }
+/* 0x002E57B0 */
+void *Room46_CharEnterScript(void) { return D_00416AF0; }
 
-void *func_002E57C0(void) { return D_00416B90; }
+/* 0x002E57C0 */
+void *Room46_Phase1Script(void) { return D_00416B90; }
 
-void *func_002E57D0(void) { return D_00416D60; }
+/* 0x002E57D0 */
+void *Room46_Phase2Script(void) { return D_00416D60; }
 
-void *func_002E57E0(void) { return D_00416DB0; }
+/* 0x002E57E0 */
+void *Room46_Phase3Script(void) { return D_00416DB0; }
 
-void *func_002E57F0(void *o) { return D_0047AC40; }   /* D_0046FC40 +0x20 */
+/* 0x002E57F0 */
+void *Room46_Phase5Script(void *o) { return D_0047AC40; }   /* D_0046FC40 +0x20 */
 
-void *func_002E5800(void *self, s32 i) { return D_00417120[i]; }
+/* 0x002E5800 */
+void *Room46_ActionScript(void *self, s32 i) { return D_00417120[i]; }
 
-void *func_002E5820(void) { return D_00417170; }
+/* 0x002E5820 */
+void *Room46_Table38(void) { return D_00417170; }
 
-void *func_002E5830(void *self, s32 i) { return D_0047AC48[i]; }
+/* 0x002E5830 */
+void *Room46_ObjectName(void *self, s32 i) { return D_0047AC48[i]; }
 
 /* (self->*D_01990E88[i])(a, b) */
-s32 func_002E5850(void *self, u32 i, s32 a, s32 b) {
+/* 0x002E5850 */
+s32 Room46_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990E88[i & 0xFF], a, b);
 }
 
@@ -63,7 +74,8 @@ s32 func_002E5880(void) {
 }
 
 /* (self->*D_01990E78[i])(a, b) */
-s32 func_002E5920(void *self, u32 i, s32 a, s32 b) {
+/* 0x002E5920 */
+s32 Room46_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990E78[i & 0xFF], a, b);
 }
 

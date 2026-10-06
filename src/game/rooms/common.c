@@ -51,35 +51,43 @@ void func_0016CD30(u8 *p, s32 a1, s32 a2, s32 a3) {
 
     VCALL(obj, 0x14, void (*)(void *, s32, s32, s32))(obj, FLD(p, 0x73EDC0, s32), a2, a3);
 }
-s32 func_002097E0(void *o) {   /* +0x20 */
+/* 0x002097E0 */
+s32 RoomBase_Phase5Script(void *o) {   /* +0x20 */
     return 0;
 }
 
-s32 func_002097F0(void *o) {   /* +0x1C */
+/* 0x002097F0 */
+s32 RoomBase_Phase4Script(void *o) {   /* +0x1C */
     return 0;
 }
 
-s32 func_00209820(void *o) {   /* +0x10 */
+/* 0x00209820 */
+s32 RoomBase_Phase1Script(void *o) {   /* +0x10 */
     return 0;
 }
 
-s32 func_0020BCE0(void *o) {   /* +0x38 */
+/* 0x0020BCE0 */
+s32 RoomBase_Table38(void *o) {   /* +0x38 */
     return 0;
 }
 
-s32 func_002A8930(void *o) {   /* +0x34 */
+/* 0x002A8930 */
+s32 RoomBase_ObjectName(void *o) {   /* +0x34 */
     return 0;
 }
 
-s32 func_002A8940(void *o) {   /* +0x2C */
+/* 0x002A8940 */
+s32 RoomBase_Condition(void *o) {   /* +0x2C */
     return 0;
 }
 
-s32 func_002A8950(void *o) {   /* +0x28 */
+/* 0x002A8950 */
+s32 RoomBase_Command(void *o) {   /* +0x28 */
     return 0;
 }
 
-s32 func_002A8960(void *o) {   /* +0x24 */
+/* 0x002A8960 */
+s32 RoomBase_ActionScript(void *o) {   /* +0x24 */
     return 0;
 }
 
@@ -149,7 +157,7 @@ extern const char *const D_004070C0, *const D_004070C4, *const D_004070C8;   /* 
 
 #include "texcache.h"
 
-/* ---- class D_0047A390 (0x1A60 bytes), the haze of effect 0x1A60 (func_002B2A80): as the light
+/* ---- class D_0047A390 (0x1A60 bytes), the haze of effect 0x1A60 (Room49_Cmd02): as the light
  * shaft's motes and haze without the beam - 64 motes (records +0x10 + 0xC00 x the current one
  * +0x1A54, the quad drawer at +0x1810) from (-60, 0, -60 + 0.4 x the frames counted at
  * +0x1A50), rising (+0x1848) and wobbling (+0x1948); the haze always on (phases +0x1A48 /
@@ -421,7 +429,7 @@ extern const char *const D_0047AD08[];   /* room 0x62's objects */
 
 /* ---- rooms 0x48 / 0x60 ---- */
 
-/* ---- two more room effects (as func_002E7020 / func_002E6E20) ---- */
+/* ---- two more room effects (as Room107_Cmd01 / Room106_Cmd00) ---- */
 
 extern const char *const D_00429130;
 

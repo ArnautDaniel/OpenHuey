@@ -26,40 +26,49 @@ void func_0032D3E0(u8 *self, s32 a, f32 x, f32 y);
 
 extern PTMF D_01990C00[];
 
-void *func_002B1600(void *o, s32 flags) { return room_dtor(o, flags, D_0046E500, D_0046DB80); }
+/* 0x002B1600 */
+void *Room2B_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E500, D_0046DB80); }
 
-void *func_002B1660(void) {
+/* 0x002B1660 */
+void *Room2B_EnterScript(void) {
     return D_00405640;
 }
 
-void *func_002B1670(void) {
+/* 0x002B1670 */
+void *Room2B_CharEnterScript(void) {
     return D_004056D0;
 }
 
-void *func_002B1680(void) {
+/* 0x002B1680 */
+void *Room2B_Phase1Script(void) {
     return D_00405730;
 }
 
-void *func_002B1690(void) {
+/* 0x002B1690 */
+void *Room2B_Phase2Script(void) {
     return D_00405850;
 }
 
-u32 func_002B16A0(void *self, s32 i) {
+/* 0x002B16A0 */
+u32 Room2B_ActionScript(void *self, s32 i) {
     return D_00405A70[i];
 }
 
-void *func_002B16C0(void) {
+/* 0x002B16C0 */
+void *Room2B_Table38(void) {
     return D_00405AA0;
 }
 
 /* (self->*D_01990C00[i])(a, b) */
-s32 func_002B16D0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B16D0 */
+s32 Room2B_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990C00[i & 0xFF], a, b);
 }
 
 /* character kind 0x1A: byte 3 0 starts func_0032D3E0(2, -290, 42); else waits (2) until
  * func_0032D2C0 says done */
-s32 func_002B1700(void *self, void *a1, u8 *cmd) {
+/* 0x002B1700 */
+s32 Room2B_Cmd00(void *self, void *a1, u8 *cmd) {
     Character *c = gCharacters[func_001770D0(gProgress, 0x1A) & 0xFF];
 
 #ifdef HG_NATIVE

@@ -31,44 +31,54 @@ static void chair_creak(VObject *snd, u32 id, f32 *pos, s32 vol) {
     Sound_PlayBankAt(snd, id, 6, pos, vol, 0);
 }
 
-void *func_002B03C0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E400, D_0046DB80); }
+/* 0x002B03C0 */
+void *Room26_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E400, D_0046DB80); }
 
-void *func_002B0420(void) {
+/* 0x002B0420 */
+void *Room26_EnterScript(void) {
     return D_00402D50;
 }
 
-void *func_002B0430(void) {
+/* 0x002B0430 */
+void *Room26_CharEnterScript(void) {
     return D_00402E10;
 }
 
-void *func_002B0440(void) {
+/* 0x002B0440 */
+void *Room26_Phase1Script(void) {
     return D_00402EC0;
 }
 
-void *func_002B0450(void) {
+/* 0x002B0450 */
+void *Room26_Phase2Script(void) {
     return D_00402FA0;
 }
 
-u32 func_002B0460(void *self, s32 i) {
+/* 0x002B0460 */
+u32 Room26_ActionScript(void *self, s32 i) {
     return D_004038B0[i];
 }
 
-void *func_002B0480(void) {
+/* 0x002B0480 */
+void *Room26_Table38(void) {
     return D_00403970;
 }
 
-u32 func_002B0490(void *self, s32 i) {
+/* 0x002B0490 */
+u32 Room26_ObjectName(void *self, s32 i) {
     return D_00403940[i];
 }
 
 /* (self->*D_01990B70[i])(a, b) */
-s32 func_002B04B0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B04B0 */
+s32 Room26_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990B70[i & 0xFF], a, b);
 }
 
 /* the partner's target (+0xF35E0 on, +0xF35F0) 3 above the rocking chair (movechair_2): its
  * seat 6 ahead, tipped by its rock (90 x +0x34 x sin +0x30 degrees) and turned with it */
-s32 func_002B04E0(void) {
+/* 0x002B04E0 */
+s32 Room26_Cmd02(void) {
     u8 *chair = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_00403960);
     f32 m[4][4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
@@ -93,7 +103,8 @@ s32 func_002B04E0(void) {
  * size, +0x38 how fast it dies down; +0x10 the tilt), by byte 3: 0 all still; 1 a rocking
  * step (6 degrees; each swing smaller, the first chair creaking at a volume by its size);
  * 2 / 3 set rocking at full size from their tilt now (swinging forward / back), with a creak */
-s32 func_002B0640(void *self, void *a1, u8 *cmd) {
+/* 0x002B0640 */
+s32 Room26_Cmd01(void *self, void *a1, u8 *cmd) {
     VObject *objs = D_00456DF8;
     u8 *chairs[3];
     f32 pos[4] __attribute__((aligned(16)));
@@ -162,7 +173,8 @@ s32 func_002B0640(void *self, void *a1, u8 *cmd) {
 }
 
 /* the two doors ("left", "right") opening: byte 3 0 at once (2.25), else a step (0.075) */
-s32 func_002B0B60(void *self, void *a1, u8 *cmd) {
+/* 0x002B0B60 */
+s32 Room26_Cmd00(void *self, void *a1, u8 *cmd) {
     VObject *objs = D_00456DF8;
     u8 *o = VCALL(objs, 0x18, u8 *(*)(VObject *, const char *))(objs, D_00403948);
 
@@ -177,12 +189,14 @@ s32 func_002B0B60(void *self, void *a1, u8 *cmd) {
 }
 
 /* (self->*D_01990B58[i])(a, b) */
-s32 func_002B0C60(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B0C60 */
+s32 Room26_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990B58[i & 0xFF], a, b);
 }
 
 /* the first rocking chair still rocking (+0x34 over 0.3) */
-s32 func_002B0C90(void) {
+/* 0x002B0C90 */
+s32 Room26_Cond00(void) {
     u8 *chair = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_0040395C);
 
     return !(AT(chair, 0x34, f32) <= 0x1.333334p-2f /* 0.3 */);

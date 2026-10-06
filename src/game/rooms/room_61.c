@@ -91,37 +91,46 @@ static void glint_init(void **obj) {
 #ifdef HG_NATIVE
 #endif
 
-void *func_00310A30(void *o, s32 flags) { return room_dtor(o, flags, D_00471FE0, D_0046DB80); }
+/* 0x00310A30 */
+void *Room61_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00471FE0, D_0046DB80); }
 
-void *func_00310A90(void) {
+/* 0x00310A90 */
+void *Room61_EnterScript(void) {
     return D_004291C0;
 }
 
-void *func_00310AA0(void) {
+/* 0x00310AA0 */
+void *Room61_CharEnterScript(void) {
     return D_00429210;
 }
 
-void *func_00310AB0(void) {
+/* 0x00310AB0 */
+void *Room61_Phase1Script(void) {
     return D_004292A0;
 }
 
-void *func_00310AC0(void) {
+/* 0x00310AC0 */
+void *Room61_Phase2Script(void) {
     return D_004293E0;
 }
 
-void *func_00310AD0(void *self, s32 i) {
+/* 0x00310AD0 */
+void *Room61_ActionScript(void *self, s32 i) {
     return D_00429540[i];
 }
 
-void *func_00310AF0(void) {
+/* 0x00310AF0 */
+void *Room61_Phase3Script(void) {
     return D_00429408;
 }
 
-void *func_00310B00(void) {
+/* 0x00310B00 */
+void *Room61_Phase5Script(void) {
     return D_00429418;
 }
 
-void *func_00310B10(void) {
+/* 0x00310B10 */
+void *Room61_Table38(void) {
     return D_00429580;
 }
 
@@ -255,11 +264,13 @@ void func_00311140(u8 *st, s32 nx, s32 ny, s32 nz, s32 frames, s16 *pts, f32 ox,
 }
 
 /* (self->*D_01991550[i])(a, b) */
-s32 func_00311490(void *self, u32 i, s32 a, s32 b) {
+/* 0x00311490 */
+s32 Room61_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991550[i & 0xFF], a, b);
 }
 
-s32 func_003114C0(void *self, void *a1, u8 *cmd) {
+/* 0x003114C0 */
+s32 Room61_Cmd01(void *self, void *a1, u8 *cmd) {
     s32 arg[5] __attribute__((aligned(16)));
     s32 slot;
 
@@ -291,7 +302,8 @@ s32 func_003114C0(void *self, void *a1, u8 *cmd) {
 /* room 0x61 (byte 3): 0 / 2 / 4 set up the paths of characters 0x14 (2 x 3 x 7 cells from (25,
  * 0, 40), 480 frames a stretch; with the glint D_0047A3B0) / 0x15 (2 x 3 x 5 from (30, 0, 50),
  * 240) / 0x16 (the same box, 280); 1 / 3 / 5 move them a frame (returning 2: again next frame) */
-s32 func_003116B0(void *self, void *a1, u8 *cmd) {
+/* 0x003116B0 */
+s32 Room61_Cmd00(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
         func_00311140(D_01991210, 2, 3, 7, 0x1E0, D_019912D0, 25.0f, 0.0f, 40.0f);

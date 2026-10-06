@@ -44,43 +44,53 @@ static void effect_795C0_init(void **obj) {
 #ifdef HG_NATIVE
 #endif
 
-void *func_00310170(void *o, s32 flags) { return room_dtor(o, flags, D_00471FA0, D_0046DB80); }
+/* 0x00310170 */
+void *Room60_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00471FA0, D_0046DB80); }
 
-void *func_003101D0(void) {
+/* 0x003101D0 */
+void *Room60_EnterScript(void) {
     return D_004280A0;
 }
 
-void *func_003101E0(void) {
+/* 0x003101E0 */
+void *Room60_CharEnterScript(void) {
     return D_004281E0;
 }
 
-void *func_003101F0(void) {
+/* 0x003101F0 */
+void *Room60_Phase1Script(void) {
     return D_00428220;
 }
 
-void *func_00310200(void) {
+/* 0x00310200 */
+void *Room60_Phase2Script(void) {
     return D_00428460;
 }
 
-void *func_00310210(void) {
+/* 0x00310210 */
+void *Room60_Phase3Script(void) {
     return D_004284A0;
 }
 
-void *func_00310220(void *self, s32 i) {
+/* 0x00310220 */
+void *Room60_ActionScript(void *self, s32 i) {
     return D_00429090[i];
 }
 
-void *func_00310240(void) {
+/* 0x00310240 */
+void *Room60_Table38(void) {
     return D_004291A0;
 }
 
 /* (self->*D_019911C0[i])(a, b) */
-s32 func_00310250(void *self, u32 i, s32 a, s32 b) {
+/* 0x00310250 */
+s32 Room60_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019911C0[i & 0xFF], a, b);
 }
 
 /* room 0x60 (D_00429190): the player's model +0xCC 0 (byte 3 0) or 1 */
-s32 func_00310280(void *self, void *a1, u8 *cmd) {
+/* 0x00310280 */
+s32 Room60_Cmd05(void *self, void *a1, u8 *cmd) {
     VObject *m = gCharPlayer->motion;
 
     VCALL(m, 0xCC, void (*)(VObject *, s32))(m, cmd[3] == 0 ? 0 : 1);
@@ -89,7 +99,8 @@ s32 func_00310280(void *self, void *a1, u8 *cmd) {
 
 /* character 0xFE's model +0x9E0 / +0x9E4 / +0x9E8: byte 3 0 -0.2 / 0.2 / -0.2; 1 eases them by
  * script variable 6 (a step a call, waiting (2) for 60) to 0 / 0.3 / 0; else 0 / 0.3 / 0 */
-s32 func_003102E0(void *self, void *a1, u8 *cmd) {
+/* 0x003102E0 */
+s32 Room60_Cmd04(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } k02 = {0x3E4CCCCD}, kN02 = {0xBE4CCCCD}, k01 = {0x3DCCCCCE},
                                           k03 = {0x3E99999A};
     u8 *m = gCharacters[(u8)func_001770D0(gProgress, 0xFE)]->motion;
@@ -121,7 +132,8 @@ s32 func_003102E0(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x60 (D_00429170): character 0xFE's model +0x9FC 0.4 / +0xA00 1 (byte 3 0), or 0 */
-s32 func_00310450(void *self, void *a1, u8 *cmd) {
+/* 0x00310450 */
+s32 Room60_Cmd03(void *self, void *a1, u8 *cmd) {
     u8 *m = gCharacters[(u8)func_001770D0(gProgress, 0xFE)]->motion;
 
     if (cmd[3] == 0) {
@@ -136,7 +148,8 @@ s32 func_00310450(void *self, void *a1, u8 *cmd) {
 
 /* (as func_00300A20)  byte 4 0 starts the 8-byte effect D_004795C0 (parameters from byte 3), its
  * slot kept in event variable byte 3 + 2; else that effect is ended */
-s32 func_003104D0(void *self, void *a1, u8 *cmd) {
+/* 0x003104D0 */
+s32 Room60_Cmd02(void *self, void *a1, u8 *cmd) {
     if (cmd[4] == 0) {
         u8 *mgr = gEffects;
         s32 slot = Effect_New(mgr, 8, effect_795C0_init);
@@ -151,9 +164,10 @@ s32 func_003104D0(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x60 (as func_002AFA00, for character 0xFE): byte 3 0 a progress name, 1 wait for
+/* room 0x60 (as Room23_Cmd01, for character 0xFE): byte 3 0 a progress name, 1 wait for
  * character 0xFE (2 while not), else done */
-s32 func_00310640(void *self, void *a1, u8 *cmd) {
+/* 0x00310640 */
+s32 Room60_Cmd01(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
         func_0016CEC0(gProgress, D_00429130);
@@ -169,7 +183,8 @@ s32 func_00310640(void *self, void *a1, u8 *cmd) {
  * removed with its glow effect (event variable 1); 0 made, with the glow (D_004795A0); then (and
  * for other values) its strength from event variable 0 (0..4: 0, 30, 60, 90, 128), also sent to
  * the glow */
-s32 func_003106E0(void *self, void *a1, u8 *cmd) {
+/* 0x003106E0 */
+s32 Room60_Cmd00(void *self, void *a1, u8 *cmd) {
     u32 q[20] __attribute__((aligned(16)));
     VObject *ev;
 
@@ -230,7 +245,8 @@ s32 func_003106E0(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-void *func_00310A10(void *self, s32 i) {
+/* 0x00310A10 */
+void *Room60_ObjectName(void *self, s32 i) {
     return D_004290C0[i];
 }
 

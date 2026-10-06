@@ -14,20 +14,25 @@ extern u8 D_004174A0[];
 extern u8 D_0047AC58[];
 
 /* destructors */
-void *func_0020B090(void *o, s32 flags) { return room_dtor(o, flags, D_0046B4B0, D_0046DB80); }
+/* 0x0020B090 */
+void *Room101_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046B4B0, D_0046DB80); }
 
-void *func_0020B0F0(void) {
+/* 0x0020B0F0 */
+void *Room101_EnterScript(void) {
     return D_0047AC58;
 }
 
-void *func_0020B100(void) {
+/* 0x0020B100 */
+void *Room101_CharEnterScript(void) {
     return D_00417320;
 }
 
-void *func_0020B110(void) {
+/* 0x0020B110 */
+void *Room101_Phase1Script(void) {
     return D_00417420;
 }
 
-void *func_0020B120(void) {
+/* 0x0020B120 */
+void *Room101_Table38(void) {
     return D_004174A0;
 }

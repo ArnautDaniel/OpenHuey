@@ -20,43 +20,53 @@ extern u32 D_00410B90[];
 
 extern PTMF D_01990DD8[];
 
-void *func_002B50F0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E940, D_0046DB80); }
+/* 0x002B50F0 */
+void *Room59_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E940, D_0046DB80); }
 
-void *func_002B5150(void) {
+/* 0x002B5150 */
+void *Room59_EnterScript(void) {
     return D_00410070;
 }
 
-void *func_002B5160(void) {
+/* 0x002B5160 */
+void *Room59_CharEnterScript(void) {
     return D_004100B0;
 }
 
-void *func_002B5170(void) {
+/* 0x002B5170 */
+void *Room59_Phase1Script(void) {
     return D_00410110;
 }
 
-void *func_002B5180(void) {
+/* 0x002B5180 */
+void *Room59_Phase2Script(void) {
     return D_00410140;
 }
 
-u32 func_002B5190(void *self, s32 i) {
+/* 0x002B5190 */
+u32 Room59_ActionScript(void *self, s32 i) {
     return D_00410B30[i];
 }
 
-void *func_002B51B0(void) {
+/* 0x002B51B0 */
+void *Room59_Table38(void) {
     return D_00410BD0;
 }
 
-u32 func_002B51C0(void *self, s32 i) {
+/* 0x002B51C0 */
+u32 Room59_ObjectName(void *self, s32 i) {
     return D_00410B90[i];
 }
 
 /* (self->*D_01990DD8[i])(a, b) */
-s32 func_002B51E0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B51E0 */
+s32 Room59_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990DD8[i & 0xFF], a, b);
 }
 
 /* room 0x59 (D_00410B80): character 0xFE's model +0x9E0 = 0.1 (byte 3 0) or 0 */
-s32 func_002B5210(void *self, void *a1, u8 *cmd) {
+/* 0x002B5210 */
+s32 Room59_Cmd00(void *self, void *a1, u8 *cmd) {
     u8 *m = gCharacters[(u8)func_001770D0(gProgress, 0xFE)]->motion;
 
     if (cmd[3] == 0) {

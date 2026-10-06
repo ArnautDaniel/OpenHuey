@@ -31,43 +31,53 @@ static inline void obj_unturn(const char *name) {
     AT(o, 0x14, s32) = 0;
 }
 
-void *func_002AB9F0(void *o, s32 flags) { return room_dtor(o, flags, D_0046DEC0, D_0046DB80); }
+/* 0x002AB9F0 */
+void *Room0F_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DEC0, D_0046DB80); }
 
-void *func_002ABA50(void) {
+/* 0x002ABA50 */
+void *Room0F_EnterScript(void) {
     return D_003F5EC0;
 }
 
-void *func_002ABA60(void) {
+/* 0x002ABA60 */
+void *Room0F_CharEnterScript(void) {
     return D_003F5FC0;
 }
 
-void *func_002ABA70(void) {
+/* 0x002ABA70 */
+void *Room0F_Phase1Script(void) {
     return D_003F6120;
 }
 
-void *func_002ABA80(void) {
+/* 0x002ABA80 */
+void *Room0F_Phase2Script(void) {
     return D_003F6420;
 }
 
-void *func_002ABA90(void *self, s32 i) {
+/* 0x002ABA90 */
+void *Room0F_ActionScript(void *self, s32 i) {
     return D_003F6E70[i];
 }
 
-void *func_002ABAB0(void) {
+/* 0x002ABAB0 */
+void *Room0F_Table38(void) {
     return D_003F6F68;
 }
 
-void *func_002ABAC0(void *self, s32 i) {
+/* 0x002ABAC0 */
+void *Room0F_ObjectName(void *self, s32 i) {
     return D_003F6F40[i];
 }
 
 /* (self->*D_01990890[i])(a, b) */
-s32 func_002ABAE0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002ABAE0 */
+s32 Room0F_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990890[i & 0xFF], a, b);
 }
 
 /* room 0x0F (D_003F6F28): the player's model +0xD0 (0, 1.5, -2 / -1.5 by byte 3) and +0xCC */
-s32 func_002ABB10(void *self, void *a1, u8 *cmd) {
+/* 0x002ABB10 */
+s32 Room0F_Cmd04(void *self, void *a1, u8 *cmd) {
     VObject *m = gCharPlayer->motion;
 
     if (cmd[3] == 0) {
@@ -81,7 +91,8 @@ s32 func_002ABB10(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x0F (D_003F6F18): the player's model +0xBC (1, 0.25) or (0, 0) by byte 3 */
-s32 func_002ABBC0(void *self, void *a1, u8 *cmd) {
+/* 0x002ABBC0 */
+s32 Room0F_Cmd03(void *self, void *a1, u8 *cmd) {
     VObject *m = gCharPlayer->motion;
 
     if (cmd[3] == 0) {
@@ -93,7 +104,8 @@ s32 func_002ABBC0(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x0F (D_003F6F08): an effect (D_00471060, 0x840 bytes) with its box */
-s32 func_002ABC20(void) {
+/* 0x002ABC20 */
+s32 Room0F_Cmd02(void) {
     s32 slot = Effect_New(gEffects, 0x840, effect_471060_init);
     f32 prm[9];
 
@@ -111,13 +123,15 @@ s32 func_002ABC20(void) {
 }
 
 /* room 0x0F (D_003F6EF8): three objects' +0x14 back to 0 */
-s32 func_002ABD50(void) {
+/* 0x002ABD50 */
+s32 Room0F_Cmd01(void) {
     obj_unturn(D_003F6F48);
     obj_unturn(D_003F6F4C);
     obj_unturn(D_003F6F50);
     return 1;
 }
 
-s32 func_002ABDD0(void *self, void *a1, u8 *cmd) {
+/* 0x002ABDD0 */
+s32 Room0F_Cmd00(void *self, void *a1, u8 *cmd) {
     return var_fade(D_003F6F64, 0, cmd);
 }

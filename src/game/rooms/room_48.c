@@ -31,57 +31,70 @@ static void effect_79890_init(void **obj) {
     obj[0] = D_00479890;
 }
 
-void *func_0030F070(void *o, s32 flags) { return room_dtor(o, flags, D_00471EE0, D_0046DB80); }
+/* 0x0030F070 */
+void *Room48_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00471EE0, D_0046DB80); }
 
-void *func_0030F0D0(void) {
+/* 0x0030F0D0 */
+void *Room48_EnterScript(void) {
     return D_004252D0;
 }
 
-void *func_0030F0E0(void) {
+/* 0x0030F0E0 */
+void *Room48_CharEnterScript(void) {
     return D_00425460;
 }
 
-void *func_0030F0F0(void) {
+/* 0x0030F0F0 */
+void *Room48_Phase1Script(void) {
     return D_00425520;
 }
 
-void *func_0030F100(void) {
+/* 0x0030F100 */
+void *Room48_Phase2Script(void) {
     return D_004258D0;
 }
 
-void *func_0030F110(void) {
+/* 0x0030F110 */
+void *Room48_Phase5Script(void) {
     return D_004259B0;
 }
 
-void *func_0030F120(void *self, s32 i) {
+/* 0x0030F120 */
+void *Room48_ActionScript(void *self, s32 i) {
     return D_00426760[i];
 }
 
-void *func_0030F140(void) {
+/* 0x0030F140 */
+void *Room48_Table38(void) {
     return D_00426890;
 }
 
-void *func_0030F150(void *self, s32 i) {
+/* 0x0030F150 */
+void *Room48_ObjectName(void *self, s32 i) {
     return D_00426860[i];
 }
 
 /* (self->*D_01991188[i])(a, b) */
-s32 func_0030F170(void *self, u32 i, s32 a, s32 b) {
+/* 0x0030F170 */
+s32 Room48_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991188[i & 0xFF], a, b);
 }
 
 /* room 0x48 (D_00426850): door 0 of room 0x48 (Progress_CurRoomFlag) */
-s32 func_0030F1A0(void) {
+/* 0x0030F1A0 */
+s32 Room48_Cond00(void) {
     return Progress_CurRoomFlag(gProgress, 0x48, 0);
 }
 
 /* (self->*D_01991140[i])(a, b) */
-s32 func_0030F1C0(void *self, u32 i, s32 a, s32 b) {
+/* 0x0030F1C0 */
+s32 Room48_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991140[i & 0xFF], a, b);
 }
 
 /* room 0x48 (D_00426840): the creatures (10) in play in the current room: the list's +0x2C */
-s32 func_0030F1F0(void) {
+/* 0x0030F1F0 */
+s32 Room48_Cmd05(void) {
     u8 *list = gCreatures;
     Progress *g = gProgress;
     s32 i;
@@ -98,13 +111,15 @@ s32 func_0030F1F0(void) {
 }
 
 /* room 0x48 (D_00426830): the player's func_00124F20(0) */
-s32 func_0030F2B0(void) {
+/* 0x0030F2B0 */
+s32 Room48_Cmd04(void) {
     func_00124F20(gCharPlayer, 0);
     return 1;
 }
 
 /* room 0x48 (D_00426820): character 0xFE's model +0x9E8 = -0.15 (byte 3 0) or 0 */
-s32 func_0030F2E0(void *self, void *a1, u8 *cmd) {
+/* 0x0030F2E0 */
+s32 Room48_Cmd03(void *self, void *a1, u8 *cmd) {
     u8 *m = gCharacters[(u8)func_001770D0(gProgress, 0xFE)]->motion;
 
     if (cmd[3] == 0) {
@@ -117,7 +132,8 @@ s32 func_0030F2E0(void *self, void *a1, u8 *cmd) {
 
 /* room 0x48 (D_00426818): byte 3 0 starts the wall shadow (D_00479890, its slot in event
  * variable 2); else that one is ended */
-s32 func_0030F350(void *self, void *a1, u8 *cmd) {
+/* 0x0030F350 */
+s32 Room48_Cmd02(void *self, void *a1, u8 *cmd) {
     if (cmd[3] == 0) {
         s32 slot = Effect_New(gEffects, 8, effect_79890_init);
 
@@ -129,7 +145,8 @@ s32 func_0030F350(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x48 (D_00426800): character 0x26's +0xE4 cleared */
-s32 func_0030F490(void) {
+/* 0x0030F490 */
+s32 Room48_Cmd01(void) {
     AT(gCharacters[(u8)func_001770D0(gProgress, 0x26)], 0xE4, u8) = 0;
     return 1;
 }
@@ -138,7 +155,8 @@ s32 func_0030F490(void) {
  * 0 sets them still; 1: while slower than 5, Hewie's movement (the squared length of his last
  * step, +0x3C) past 1 makes them swing for 20 frames (the first also creaks: sounds 4 / 5 by
  * turns, event bit 0x11); the tilt (+0x10) 1 + sin(phase) degrees, the phase (+0x30) on by 36 */
-s32 func_0030F4E0(VObject *self, void *a1, u8 *cmd) {
+/* 0x0030F4E0 */
+s32 Room48_Cmd00(VObject *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
     VObject *objs = D_00456DF8;
     VObject *ev = gEvents;

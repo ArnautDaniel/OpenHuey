@@ -32,41 +32,51 @@ static void effect_6cf0_init(void **obj) {
     obj[0x60B0 / 4] = D_0046FC30;
 }
 
-void *func_002B25E0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E5C0, D_0046DB80); }
+/* 0x002B25E0 */
+void *Room43_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E5C0, D_0046DB80); }
 
-void *func_002B2640(void) {
+/* 0x002B2640 */
+void *Room43_EnterScript(void) {
     return D_00407AE0;
 }
 
-void *func_002B2650(void) {
+/* 0x002B2650 */
+void *Room43_CharEnterScript(void) {
     return D_00407B70;
 }
 
-void *func_002B2660(void) {
+/* 0x002B2660 */
+void *Room43_Phase1Script(void) {
     return D_00407C00;
 }
 
-void *func_002B2670(void) {
+/* 0x002B2670 */
+void *Room43_Phase2Script(void) {
     return D_00407CB0;
 }
 
-void *func_002B2680(void *o) { return D_0047AB3C; }   /* D_0046E5C0 +0x20 */
+/* 0x002B2680 */
+void *Room43_Phase5Script(void *o) { return D_0047AB3C; }   /* D_0046E5C0 +0x20 */
 
-u32 func_002B2690(void *self, s32 i) {
+/* 0x002B2690 */
+u32 Room43_ActionScript(void *self, s32 i) {
     return D_00407E20[i];
 }
 
-void *func_002B26B0(void) {
+/* 0x002B26B0 */
+void *Room43_Table38(void) {
     return D_00407E50;
 }
 
 /* (self->*D_01990C58[i])(a, b) */
-s32 func_002B26C0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B26C0 */
+s32 Room43_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990C58[i & 0xFF], a, b);
 }
 
 /* the effect D_00479580 (three quad drawers) started with parameter 0 */
-s32 func_002B26F0(void) {
+/* 0x002B26F0 */
+s32 Room43_Cmd00(void) {
     u8 *mgr = gEffects;
     s32 slot = Effect_New(mgr, 0x6CF0, effect_6cf0_init);
     s32 arg = 0;

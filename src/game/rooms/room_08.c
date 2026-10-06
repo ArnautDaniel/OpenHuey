@@ -25,63 +25,77 @@ extern u8 D_003F3230[];
 extern PTMF D_019907E0[];
 extern PTMF D_01990800[];
 
-void *func_002AA440(void *o, s32 flags) { return room_dtor(o, flags, D_0046DD00, D_0046DB80); }
+/* 0x002AA440 */
+void *Room08_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DD00, D_0046DB80); }
 
-void *func_002AA4A0(void) {
+/* 0x002AA4A0 */
+void *Room08_EnterScript(void) {
     return D_003F2500;
 }
 
-void *func_002AA4B0(void) {
+/* 0x002AA4B0 */
+void *Room08_CharEnterScript(void) {
     return D_003F2640;
 }
 
-void *func_002AA4C0(void) {
+/* 0x002AA4C0 */
+void *Room08_Phase1Script(void) {
     return D_003F2780;
 }
 
-void *func_002AA4D0(void) {
+/* 0x002AA4D0 */
+void *Room08_Phase2Script(void) {
     return D_003F28A0;
 }
 
-void *func_002AA4E0(void) {
+/* 0x002AA4E0 */
+void *Room08_Phase3Script(void) {
     return D_003F2910;
 }
 
-void *func_002AA4F0(void) {
+/* 0x002AA4F0 */
+void *Room08_Phase5Script(void) {
     return D_003F2980;
 }
 
-void *func_002AA500(void *self, s32 i) {
+/* 0x002AA500 */
+void *Room08_ActionScript(void *self, s32 i) {
     return D_003F3180[i];
 }
 
-void *func_002AA520(void) {
+/* 0x002AA520 */
+void *Room08_Table38(void) {
     return D_003F3230;
 }
 
-void *func_002AA530(void *self, s32 i) {
+/* 0x002AA530 */
+void *Room08_ObjectName(void *self, s32 i) {
     return D_003F3200[i];
 }
 
 /* (self->*D_01990800[i])(a, b) */
-s32 func_002AA550(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AA550 */
+s32 Room08_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990800[i & 0xFF], a, b);
 }
 
 /* room 0x08 (D_003F31F0): the stalker is there but not about */
-s32 func_002AA580(void) {
+/* 0x002AA580 */
+s32 Room08_Cond01(void) {
     u8 *c = (u8 *)gCharSlot2;
 
     return c != NULL && AT(c, 0x28, u8) == 0;
 }
 
 /* door be16 cmd[3..4]: func_001788F0 */
-s32 func_002AA5B0(void *self, void *a1, u8 *cmd) {
+/* 0x002AA5B0 */
+s32 Room08_Cond00(void *self, void *a1, u8 *cmd) {
     return func_001788F0(gProgress, (cmd[3] << 8 | cmd[4]) & 0xFFFF);
 }
 
 /* (self->*D_019907E0[i])(a, b) */
-s32 func_002AA5D0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AA5D0 */
+s32 Room08_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019907E0[i & 0xFF], a, b);
 }
 
@@ -89,7 +103,8 @@ s32 func_002AA5D0(void *self, u32 i, s32 a, s32 b) {
  * it still (+0x30 / +0x38 0, travel +0x3C 0.9); 1: the player's travel (+0x3C, its last move's
  * length) past 5 makes it creak (sounds 4 / 5 by turns, event bit 7) and swing for 20 frames:
  * its tilt (+0x10) 1 + sin(phase) degrees, the phase (+0x30) on by 36 a frame */
-s32 func_002AA600(VObject *self, void *a1, u8 *cmd) {
+/* 0x002AA600 */
+s32 Room08_Cmd01(VObject *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } k09 = {0x3F666666}, kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
     const char *name = VCALL(self, 0x34, const char *(*)(VObject *, s32))(self, 0xA);
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, name);
@@ -150,7 +165,8 @@ s32 func_002AA600(VObject *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x08 (D_003F31C0): the cutscene director's +0x6C 3 (byte 3 0) or 2 */
-s32 func_002AA8C0(void *self, void *a1, u8 *cmd) {
+/* 0x002AA8C0 */
+s32 Room08_Cmd00(void *self, void *a1, u8 *cmd) {
     VCALL(gCutscene, 0x6C, void (*)(VObject *, s32))(gCutscene, cmd[3] == 0 ? 3 : 2);
     return 1;
 }

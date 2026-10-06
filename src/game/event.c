@@ -618,7 +618,8 @@ void func_00209210(VObject *ev) {
 }
 
 /* room handler default: no script */
-u8 *func_00209800(VObject *room) {
+/* 0x00209800 */
+u8 *RoomBase_Phase3Script(VObject *room) {
     return NULL;
 }
 
@@ -805,7 +806,8 @@ s32 func_001FBB10(u8 *ev, s32 n, f32 *a, f32 *b, f32 *c) {
 }
 
 /* a room handler's +0x14 phase script (rooms 0x100 / 0x101): none */
-s32 func_00209810(void) {
+/* 0x00209810 */
+s32 RoomBase_Phase2Script(void) {
     return 0;
 }
 
@@ -860,7 +862,7 @@ u8 *func_001FB250(u8 *o, s32 flags) {
         Task_dtor(AT(o, 0x784, void *), 1);
         AT(o, 0x784, void *) = NULL;
     }
-    func_001002C0(o + 0x120, func_001FB3B0, 4, 0x110);
+    func_001002C0(o + 0x120, RoomBase_dtor, 4, 0x110);
     AT(o, 0x20, void **) = D_0046F350;
     AT(o, 0x20, void **) = D_00469D00;
     AT(o, 0xC, void **) = D_0046BAA0;

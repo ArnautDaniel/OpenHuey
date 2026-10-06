@@ -21,41 +21,50 @@ extern u8 D_003F4850[];
 extern void *D_003F53B0[];
 extern PTMF D_01990860[];
 
-void *func_002AB1F0(void *o, s32 flags) { return room_dtor(o, flags, D_0046DE00, D_0046DB80); }
+/* 0x002AB1F0 */
+void *Room0C_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DE00, D_0046DB80); }
 
-void *func_002AB250(void) {
+/* 0x002AB250 */
+void *Room0C_EnterScript(void) {
     return D_003F4650;
 }
 
-void *func_002AB260(void) {
+/* 0x002AB260 */
+void *Room0C_CharEnterScript(void) {
     return D_003F46E0;
 }
 
-void *func_002AB270(void) {
+/* 0x002AB270 */
+void *Room0C_Phase1Script(void) {
     return D_003F4720;
 }
 
-void *func_002AB280(void) {
+/* 0x002AB280 */
+void *Room0C_Phase2Script(void) {
     return D_003F4850;
 }
 
-void *func_002AB290(void *self, s32 i) {
+/* 0x002AB290 */
+void *Room0C_ActionScript(void *self, s32 i) {
     return D_003F53B0[i];
 }
 
-void *func_002AB2B0(void *self, s32 i) {
+/* 0x002AB2B0 */
+void *Room0C_ObjectName(void *self, s32 i) {
     return (void *)D_003F5440[i];
 }
 
 /* (self->*D_01990860[i])(a, b) */
-s32 func_002AB2D0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AB2D0 */
+s32 Room0C_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990860[i & 0xFF], a, b);
 }
 
 /* room 0x0C (D_003F5428): three objects (pair byte 4) swing: byte 3 0 set up (rest +0x30, phase
  * +0x34 half a turn apart, swing +0x3C 0.75 / 0.5), 1 a step (phase on 60 degrees, the swing
  * down 0.1, x = rest + swing x sin(phase); 2 once still), 2 all to x 10. 2 while any swings */
-s32 func_002AB300(void *self, void *a1, u8 *cmd) {
+/* 0x002AB300 */
+s32 Room0C_Cmd03(void *self, void *a1, u8 *cmd) {
     s32 moving = 0;
     s32 i;
 
@@ -93,7 +102,8 @@ s32 func_002AB300(void *self, void *a1, u8 *cmd) {
 
 /* room 0x0C (D_003F5418): the screen darkened as the cutscene runs past frame 0x4AE (32 a
  * frame, up to 0x80) */
-s32 func_002AB510(void) {
+/* 0x002AB510 */
+s32 Room0C_Cmd02(void) {
     u32 a = (u32)(VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene) - 0x4AE) << 5;
 
     if (a > 0x80) {
@@ -105,7 +115,8 @@ s32 func_002AB510(void) {
 
 /* room 0x0C (D_003F5408): script variable byte 3 down by the player's hit (byte 4: 1 from the
  * weak blow 0x1A, else 5) or the pursuer's (+0x108), not below 0 */
-s32 func_002AB580(void *self, void *a1, u8 *cmd) {
+/* 0x002AB580 */
+s32 Room0C_Cmd01(void *self, void *a1, u8 *cmd) {
     VObject *ev = gEvents;
     s32 v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[3]);
     s32 k;
@@ -127,7 +138,8 @@ s32 func_002AB580(void *self, void *a1, u8 *cmd) {
 
 /* room 0x0C (D_003F53F8): room effect 0x1C (a depth range) widening with the cutscene from frame
  * 0x2D0: near 1 + 1.5 t (at most 46), far 64.4 + 1.7 t (at most 116.5) */
-s32 func_002AB660(void) {
+/* 0x002AB660 */
+s32 Room0C_Cmd00(void) {
     f32 t = (f32)(VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene) - 0x2D0);
     f32 r[4];
     f32 v;

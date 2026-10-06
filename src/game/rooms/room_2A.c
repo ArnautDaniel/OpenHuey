@@ -33,47 +33,58 @@ static void effect_14_init(void **obj) {
     obj[0] = D_00478BC0;
 }
 
-void *func_002B10A0(void *o, s32 flags) { return room_dtor(o, flags, D_0046E4C0, D_0046DB80); }
+/* 0x002B10A0 */
+void *Room2A_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E4C0, D_0046DB80); }
 
-void *func_002B1100(void) {
+/* 0x002B1100 */
+void *Room2A_EnterScript(void) {
     return D_00404740;
 }
 
-void *func_002B1110(void) {
+/* 0x002B1110 */
+void *Room2A_CharEnterScript(void) {
     return D_004048E0;
 }
 
-void *func_002B1120(void) {
+/* 0x002B1120 */
+void *Room2A_Phase1Script(void) {
     return D_00404A20;
 }
 
-void *func_002B1130(void) {
+/* 0x002B1130 */
+void *Room2A_Phase2Script(void) {
     return D_00404CE0;
 }
 
-void *func_002B1140(void) {
+/* 0x002B1140 */
+void *Room2A_Phase5Script(void) {
     return D_00404E00;
 }
 
-u32 func_002B1150(void *self, s32 i) {
+/* 0x002B1150 */
+u32 Room2A_ActionScript(void *self, s32 i) {
     return D_00405570[i];
 }
 
-void *func_002B1170(void) {
+/* 0x002B1170 */
+void *Room2A_Table38(void) {
     return D_00405620;
 }
 
-u32 func_002B1180(void *self, s32 i) {
+/* 0x002B1180 */
+u32 Room2A_ObjectName(void *self, s32 i) {
     return D_00405610[i];
 }
 
 /* (self->*D_01990BD0[i])(a, b) */
-s32 func_002B11A0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B11A0 */
+s32 Room2A_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990BD0[i & 0xFF], a, b);
 }
 
 /* the 0x14-byte effect (D_00478BC0) started with the command's parameters (from byte 3) */
-s32 func_002B11D0(void *self, void *a1, u8 *cmd) {
+/* 0x002B11D0 */
+s32 Room2A_Cmd03(void *self, void *a1, u8 *cmd) {
     u8 *mgr = gEffects;
 
     func_002D6090(mgr, Effect_New(mgr, 0x14, effect_14_init), cmd + 3);
@@ -81,7 +92,8 @@ s32 func_002B11D0(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x2A: its effect (D_00474000) started at (220, 0, -100) */
-s32 func_002B12D0(void) {
+/* 0x002B12D0 */
+s32 Room2A_Cmd02(void) {
     u8 *mgr = gEffects;
     s32 slot = Effect_New(mgr, 0x900, room2a_effect_init);
     f32 at[4] __attribute__((aligned(16)));
@@ -96,7 +108,8 @@ s32 func_002B12D0(void) {
 
 /* the box and the grate, by byte 3: 0 the box's +0x28 on by 0.4; the grate's +0x14 (an angle)
  * 1 back 1.5 degrees, 2 on 0.5, 3 back 0.5 */
-s32 func_002B14A0(void *self, void *a1, u8 *cmd) {
+/* 0x002B14A0 */
+s32 Room2A_Cmd00(void *self, void *a1, u8 *cmd) {
     VObject *objs = D_00456DF8;
     u8 *o;
 

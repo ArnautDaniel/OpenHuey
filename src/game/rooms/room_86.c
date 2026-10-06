@@ -17,35 +17,44 @@ extern void *D_0047ADB8[];
 
 extern PTMF D_019915E8[];
 
-void *func_0032C690(void *o, s32 flags) { return room_dtor(o, flags, D_00474520, D_0046DB80); }
+/* 0x0032C690 */
+void *Room86_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00474520, D_0046DB80); }
 
-void *func_0032C6F0(void) {
+/* 0x0032C6F0 */
+void *Room86_EnterScript(void) {
     return D_0042C770;
 }
 
-void *func_0032C700(void) {
+/* 0x0032C700 */
+void *Room86_CharEnterScript(void) {
     return D_0042C790;
 }
 
-void *func_0032C710(void) {
+/* 0x0032C710 */
+void *Room86_Phase1Script(void) {
     return D_0042C810;
 }
 
-void *func_0032C720(void *self, s32 i) {
+/* 0x0032C720 */
+void *Room86_ActionScript(void *self, s32 i) {
     return D_0047ADB4[i];
 }
 
-void *func_0032C740(void) {
+/* 0x0032C740 */
+void *Room86_Table38(void) {
     return D_0042C860;
 }
 
-void *func_0032C750(void *self, s32 i) {
+/* 0x0032C750 */
+void *Room86_ObjectName(void *self, s32 i) {
     return D_0047ADB8[i];
 }
 
 /* (self->*D_019915E8[i])(a, b) */
-s32 func_0032C770(void *self, u32 i, s32 a, s32 b) {
+/* 0x0032C770 */
+s32 Room86_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019915E8[i & 0xFF], a, b);
 }
 
-s32 func_0032C7A0(void) { return slam_shake(); }
+/* 0x0032C7A0 */
+s32 Room86_Cmd00(void) { return slam_shake(); }

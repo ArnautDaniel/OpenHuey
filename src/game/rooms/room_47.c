@@ -16,32 +16,40 @@ extern void *D_00425290[];
 extern u8 D_004252C0[];
 extern void *D_0047AD28[];
 
-void *func_0030EF80(void *o, s32 flags) { return room_dtor(o, flags, D_00471EA0, D_0046DB80); }
+/* 0x0030EF80 */
+void *Room47_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00471EA0, D_0046DB80); }
 
-void *func_0030EFE0(void) {
+/* 0x0030EFE0 */
+void *Room47_EnterScript(void) {
     return D_00424B50;
 }
 
-void *func_0030EFF0(void) {
+/* 0x0030EFF0 */
+void *Room47_CharEnterScript(void) {
     return D_00424B70;
 }
 
-void *func_0030F000(void) {
+/* 0x0030F000 */
+void *Room47_Phase1Script(void) {
     return D_00424C10;
 }
 
-void *func_0030F010(void) {
+/* 0x0030F010 */
+void *Room47_Phase2Script(void) {
     return D_00424D70;
 }
 
-void *func_0030F020(void *self, s32 i) {
+/* 0x0030F020 */
+void *Room47_ActionScript(void *self, s32 i) {
     return D_00425290[i];
 }
 
-void *func_0030F040(void) {
+/* 0x0030F040 */
+void *Room47_Table38(void) {
     return D_004252C0;
 }
 
-void *func_0030F050(void *self, s32 i) {
+/* 0x0030F050 */
+void *Room47_ObjectName(void *self, s32 i) {
     return D_0047AD28[i];
 }

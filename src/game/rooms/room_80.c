@@ -26,39 +26,48 @@ static void effect_7a430_init(void **obj) {
     obj[0] = D_0047A430;
 }
 
-void *func_0034A140(void *o, s32 flags) { return room_dtor(o, flags, D_00478570, D_0046DB80); }
+/* 0x0034A140 */
+void *Room80_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00478570, D_0046DB80); }
 
-void *func_0034A1A0(void) {
+/* 0x0034A1A0 */
+void *Room80_EnterScript(void) {
     return D_0043EA90;
 }
 
-void *func_0034A1B0(void) {
+/* 0x0034A1B0 */
+void *Room80_CharEnterScript(void) {
     return D_0043EAE0;
 }
 
-void *func_0034A1C0(void) {
+/* 0x0034A1C0 */
+void *Room80_Phase1Script(void) {
     return D_0043EBA0;
 }
 
-void *func_0034A1D0(void) {
+/* 0x0034A1D0 */
+void *Room80_Phase2Script(void) {
     return D_0043EC20;
 }
 
-u32 func_0034A1E0(void *self, s32 i) {
+/* 0x0034A1E0 */
+u32 Room80_ActionScript(void *self, s32 i) {
     return D_0047AEF0[i];
 }
 
-u32 func_0034A200(void *self, s32 i) {
+/* 0x0034A200 */
+u32 Room80_ObjectName(void *self, s32 i) {
     return D_0047AEF4[i];
 }
 
 /* (self->*D_01991968[i])(a, b) */
-s32 func_0034A220(void *self, u32 i, s32 a, s32 b) {
+/* 0x0034A220 */
+s32 Room80_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991968[i & 0xFF], a, b);
 }
 
-/* (as func_002B11D0) the 0x14-byte effect D_0047A430 started with byte 3 as a word */
-s32 func_0034A250(void *self, void *a1, u8 *cmd) {
+/* (as Room2A_Cmd03) the 0x14-byte effect D_0047A430 started with byte 3 as a word */
+/* 0x0034A250 */
+s32 Room80_Cmd00(void *self, void *a1, u8 *cmd) {
     u8 *mgr = gEffects;
     s32 w = cmd[3];
 

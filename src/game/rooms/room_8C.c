@@ -24,46 +24,57 @@ extern u32 D_004348D0[];
 
 extern PTMF D_01991720[];
 
-void *func_0033F930(void *o, s32 flags) { return room_dtor(o, flags, D_00477380, D_0046DB80); }
+/* 0x0033F930 */
+void *Room8C_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00477380, D_0046DB80); }
 
-void *func_0033F990(void) {
+/* 0x0033F990 */
+void *Room8C_EnterScript(void) {
     return D_00433CC0;
 }
 
-void *func_0033F9A0(void) {
+/* 0x0033F9A0 */
+void *Room8C_CharEnterScript(void) {
     return D_00433D80;
 }
 
-void *func_0033F9B0(void) {
+/* 0x0033F9B0 */
+void *Room8C_Phase1Script(void) {
     return D_00433E00;
 }
 
-void *func_0033F9C0(void) {
+/* 0x0033F9C0 */
+void *Room8C_Phase2Script(void) {
     return D_00433F50;
 }
 
-void *func_0033F9D0(void *o) { return D_0047AE50; }   /* D_00477380 +0x20 */
+/* 0x0033F9D0 */
+void *Room8C_Phase5Script(void *o) { return D_0047AE50; }   /* D_00477380 +0x20 */
 
-u32 func_0033F9E0(void *self, s32 i) {
+/* 0x0033F9E0 */
+u32 Room8C_ActionScript(void *self, s32 i) {
     return D_004347E0[i];
 }
 
-void *func_0033FA00(void) {
+/* 0x0033FA00 */
+void *Room8C_Table38(void) {
     return D_004348D0;
 }
 
-u32 func_0033FA10(void *self, s32 i) {
+/* 0x0033FA10 */
+u32 Room8C_ObjectName(void *self, s32 i) {
     return D_00434870[i];
 }
 
 /* (self->*D_01991720[i])(a, b) */
-s32 func_0033FA30(void *self, u32 i, s32 a, s32 b) {
+/* 0x0033FA30 */
+s32 Room8C_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991720[i & 0xFF], a, b);
 }
 
 /* the placed things of kinds 0, 2, 3, 5, 7 and 8 the event manager finds in area 0xB (+0x10):
  * their timer (+0xE4) to 300000 */
-s32 func_0033FA60(void) {
+/* 0x0033FA60 */
+s32 Room8C_Cmd04(void) {
     VObject *list = gPlacedThings, *ev = gEvents;
     s32 i;
 
@@ -90,7 +101,8 @@ s32 func_0033FA60(void) {
 }
 
 /* Hewie's +0x14C8 to script variable 2 (byte 3 0), or back from it (1; 0 there gives 10) */
-s32 func_0033FB40(void *self, void *a1, u8 *cmd) {
+/* 0x0033FB40 */
+s32 Room8C_Cmd03(void *self, void *a1, u8 *cmd) {
     VObject *ev;
 
     switch (cmd[3]) {
@@ -113,7 +125,8 @@ s32 func_0033FB40(void *self, void *a1, u8 *cmd) {
  * D_00434894 (offset +0x20 wrapping at 10, height +0x24 -3, speed +0x30). Byte 3 0 sets it up
  * (speed 0.4); 1 runs it a frame (both shaking by up to 0.05); 2 also slows it by 0.01, waiting
  * (2) until it stops. (The wheel's wrap steps +0x10, not the angle.) */
-s32 func_0033FC10(void *self, void *a1, u8 *cmd) {
+/* 0x0033FC10 */
+s32 Room8C_Cmd02(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } k51 = {0x40A33333}, k16Pi = {0x42490FDB}, k2Pi = {0x40C90FDB},
                                           kPi = {0x40490FDB}, k01 = {0x3DCCCCCD}, k001 = {0x3C23D70A};
     VObject *objs = D_00456DF8, *rnd;
@@ -165,7 +178,8 @@ s32 func_0033FC10(void *self, void *a1, u8 *cmd) {
 /* the room object named D_00434888 swung: byte 3 0 starts it (rest +0x30 from +0x20, phase
  * +0x34 0, amplitude +0x3C 1); 1 steps the phase back 60 degrees and the amplitude down 0.25,
  * height +0x28 = +0x38 + amplitude * sin, waiting (2) until it has died out */
-s32 func_0033FE90(void *self, void *a1, u8 *cmd) {
+/* 0x0033FE90 */
+s32 Room8C_Cmd01(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kStep = {0x3F860A92}, kNegPi = {0xC0490FDB}, k2Pi = {0x40C90FDB};
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_00434888);
     f32 a;
@@ -189,7 +203,8 @@ s32 func_0033FE90(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* (as func_0033A8E0) */
-s32 func_0033FFC0(void *self, void *a1, u8 *cmd) {
+/* (as RoomC7_Cmd01) */
+/* 0x0033FFC0 */
+s32 Room8C_Cmd00(void *self, void *a1, u8 *cmd) {
     return var_down_by_hit(cmd);
 }

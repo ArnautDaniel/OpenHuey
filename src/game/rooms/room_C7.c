@@ -51,52 +51,65 @@ static void effect_798B0_init(void **obj) {
 
 #endif
 
-void *func_00339CE0(void *o, s32 flags) { return room_dtor(o, flags, D_004760E0, D_0046DB80); }
+/* 0x00339CE0 */
+void *RoomC7_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_004760E0, D_0046DB80); }
 
-void *func_00339D40(void) {
+/* 0x00339D40 */
+void *RoomC7_EnterScript(void) {
     return D_0042F500;
 }
 
-void *func_00339D50(void) {
+/* 0x00339D50 */
+void *RoomC7_CharEnterScript(void) {
     return D_0042F590;
 }
 
-void *func_00339D60(void) {
+/* 0x00339D60 */
+void *RoomC7_Phase1Script(void) {
     return D_0042F5D0;
 }
 
-void *func_00339D70(void) {
+/* 0x00339D70 */
+void *RoomC7_Phase2Script(void) {
     return D_0042F7B0;
 }
 
-void *func_00339D80(void) {
+/* 0x00339D80 */
+void *RoomC7_Phase3Script(void) {
     return D_0042F860;
 }
 
-void *func_00339D90(void) {
+/* 0x00339D90 */
+void *RoomC7_Phase5Script(void) {
     return D_0042F9C0;
 }
 
-void *func_00339DA0(void *self, s32 i) {
+/* 0x00339DA0 */
+void *RoomC7_ActionScript(void *self, s32 i) {
     return D_00430700[i];
 }
 
-void *func_00339DC0(void *o) { return D_0047ADF8; }   /* D_004760E0 +0x38 */
+/* 0x00339DC0 */
+void *RoomC7_Table38(void *o) { return D_0047ADF8; }   /* D_004760E0 +0x38 */
 
-void *func_00339DD0(void *self, s32 i) {
+/* 0x00339DD0 */
+void *RoomC7_ObjectName(void *self, s32 i) {
     return D_004307F0[i];
 }
 
 /* (self->*D_019916C0[i])(a, b) */
-s32 func_00339DF0(void *self, u32 i, s32 a, s32 b) {
+/* 0x00339DF0 */
+s32 RoomC7_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019916C0[i & 0xFF], a, b);
 }
 
 /* a room callback: the pursuer's func_0029A710 */
-s32 func_00339E20(void) { return func_0029A710((Pursuer *)gCharPursuer); }
+/* 0x00339E20 */
+s32 RoomC7_Cond01(void) { return func_0029A710((Pursuer *)gCharPursuer); }
 
 /* script variables 7 / 8 (the player's spot) in 151..269 / 171..219 */
-s32 func_00339E30(void) {
+/* 0x00339E30 */
+s32 RoomC7_Cond00(void) {
     VObject *ev = gEvents;
     u16 x = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 7);
     u16 z = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 8);
@@ -105,13 +118,15 @@ s32 func_00339E30(void) {
 }
 
 /* (self->*D_01991660[i])(a, b) */
-s32 func_00339ED0(void *self, u32 i, s32 a, s32 b) {
+/* 0x00339ED0 */
+s32 RoomC7_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991660[i & 0xFF], a, b);
 }
 
-/* (as func_0030F350) byte 3 0 starts the effect D_0047A3F0 (its slot in event variable 9);
+/* (as Room48_Cmd02) byte 3 0 starts the effect D_0047A3F0 (its slot in event variable 9);
    else that one is ended (func_002D6170) */
-s32 func_00339F00(void *self, void *a1, u8 *cmd) {
+/* 0x00339F00 */
+s32 RoomC7_Cmd06(void *self, void *a1, u8 *cmd) {
     if (cmd[3] == 0) {
         s32 slot = Effect_New(gEffects, 0x10, effect_7A3F0_init);
 
@@ -122,8 +137,9 @@ s32 func_00339F00(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* (as func_002AFAA0)  the kind-0xB character's model +0xCC8: 0 (byte 3 1) or -0.02 */
-s32 func_0033A040(void *self, void *a1, u8 *cmd) {
+/* (as Room23_Cmd00)  the kind-0xB character's model +0xCC8: 0 (byte 3 1) or -0.02 */
+/* 0x0033A040 */
+s32 RoomC7_Cmd05(void *self, void *a1, u8 *cmd) {
     u8 *m = gCharacters[(u8)func_001770D0(gProgress, 0xB)]->motion;
 
     if (cmd[3] == 1) {
@@ -134,8 +150,9 @@ s32 func_0033A040(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* (as func_002B11D0) the 0xD40-byte effect D_004799D0 started with byte 3 */
-s32 func_0033A0B0(void *self, void *a1, u8 *cmd) {
+/* (as Room2A_Cmd03) the 0xD40-byte effect D_004799D0 started with byte 3 */
+/* 0x0033A0B0 */
+s32 RoomC7_Cmd04(void *self, void *a1, u8 *cmd) {
     u8 *mgr = gEffects;
     u8 b = cmd[3];
 
@@ -143,10 +160,11 @@ s32 func_0033A0B0(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* (as func_0032E010)  byte 3 2 up from frame 1268 (2.79 a frame, light 0x23) and 3 from frame 25
+/* (as RoomC0_Cmd01)  byte 3 2 up from frame 1268 (2.79 a frame, light 0x23) and 3 from frame 25
  * (4.27, light 0xF), held at 0x80; 1 the fade fully on with light 0xA, else off with light 0x11
  * (+0x64) */
-s32 func_0033A1C0(void *self, void *a1, u8 *cmd) {
+/* 0x0033A1C0 */
+s32 RoomC7_Cmd03(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } k2 = {0x40328F5C}, k3 = {0x4088A3D7};
     u32 t = VCALL(gCutscene, 0x34, s32 (*)(VObject *))(gCutscene);
     u32 a, s = 0;
@@ -179,7 +197,8 @@ s32 func_0033A1C0(void *self, void *a1, u8 *cmd) {
 /* a cursor effect (D_004798B0) at (x, y) kept in script variables 7 / 8, its slot in 6: byte 3 0
  * puts it at (246, 242); 1 moves it 4 a frame by the stick or the d-pad (x 0..492, y 0..420),
  * waiting (2) until confirm (event 4 +0x5C) or cancel (+0x60); 2 ends it */
-s32 func_0033A470(void *self, void *a1, u8 *cmd) {
+/* 0x0033A470 */
+s32 RoomC7_Cmd02(void *self, void *a1, u8 *cmd) {
     VObject *ev;
     s32 slot;
     f32 v[4] __attribute__((aligned(16)));
@@ -255,15 +274,17 @@ s32 func_0033A470(void *self, void *a1, u8 *cmd) {
     return 2;
 }
 
-/* (as func_002AB580, the player only) */
-s32 func_0033A8E0(void *self, void *a1, u8 *cmd) {
+/* (as Room0C_Cmd01, the player only) */
+/* 0x0033A8E0 */
+s32 RoomC7_Cmd01(void *self, void *a1, u8 *cmd) {
     return var_down_by_hit(cmd);
 }
 
 /* the screen fade (renderer +0x70) by script variable 1 with Hewie's light 0xF: byte 3 0 clear
  * (0x808080), 2 full (0x80808080); 1 fades in by 0x10 a call and 3 back out, waiting (2), Hewie's
  * +0xE4 set once there */
-s32 func_0033A980(void *self, void *a1, u8 *cmd) {
+/* 0x0033A980 */
+s32 RoomC7_Cmd00(void *self, void *a1, u8 *cmd) {
     VObject *ev;
     u32 c;
 

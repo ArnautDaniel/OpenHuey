@@ -29,52 +29,64 @@ static inline void dust_init(void **o) {
     o[0x610 / 4] = D_0046FC30;
 }
 
-void *func_002A9600(void *o, s32 flags) { return room_dtor(o, flags, D_0046DC40, D_0046DB80); }
+/* 0x002A9600 */
+void *Room03_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DC40, D_0046DB80); }
 
-void *func_002A9660(void) {
+/* 0x002A9660 */
+void *Room03_EnterScript(void) {
     return D_003F0450;
 }
 
-void *func_002A9670(void) {
+/* 0x002A9670 */
+void *Room03_CharEnterScript(void) {
     return D_003F0540;
 }
 
-void *func_002A9680(void) {
+/* 0x002A9680 */
+void *Room03_Phase1Script(void) {
     return D_003F0580;
 }
 
-void *func_002A9690(void) {
+/* 0x002A9690 */
+void *Room03_Phase2Script(void) {
     return D_003F06A0;
 }
 
-void *func_002A96A0(void) {
+/* 0x002A96A0 */
+void *Room03_Phase3Script(void) {
     return D_003F0820;
 }
 
-void *func_002A96B0(void) {
+/* 0x002A96B0 */
+void *Room03_Phase5Script(void) {
     return D_003F0860;
 }
 
-void *func_002A96C0(void *self, s32 i) {
+/* 0x002A96C0 */
+void *Room03_ActionScript(void *self, s32 i) {
     return D_003F0D60[i];
 }
 
-void *func_002A96E0(void) {
+/* 0x002A96E0 */
+void *Room03_Table38(void) {
     return D_003F0DD0;
 }
 
-void *func_002A96F0(void *self, s32 i) {
+/* 0x002A96F0 */
+void *Room03_ObjectName(void *self, s32 i) {
     return D_003F0DB0[i];
 }
 
 /* (self->*D_01990780[i])(a, b) */
-s32 func_002A9710(void *self, u32 i, s32 a, s32 b) {
+/* 0x002A9710 */
+s32 Room03_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990780[i & 0xFF], a, b);
 }
 
 /* a lever (D_003F0DC4, tilt +0x18 between -10 and 0 degrees): byte 3 0 back 2 degrees, 1 pulled
  * (-10) with a puff of grey dust at it */
-s32 func_002A9740(void *self, void *a1, u8 *cmd) {
+/* 0x002A9740 */
+s32 Room03_Cmd01(void *self, void *a1, u8 *cmd) {
     /* (volatile: a compile-time fold of the pulled case would round as IEEE, not as the EE) */
     static const volatile union { u32 u; f32 f; } kPi = {0x40490FDB};
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F0DC4);
@@ -123,7 +135,8 @@ s32 func_002A9740(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x03 (D_003F0D90): three objects turned (-60, -60 degrees about x; -90 about z) */
-s32 func_002A99A0(void) {
+/* 0x002A99A0 */
+s32 Room03_Cmd00(void) {
     obj_angle(D_003F0DBC, 0x10, 0xBF860A92);
     obj_angle(D_003F0DC0, 0x10, 0xBF860A92);
     obj_angle(D_003F0DC4, 0x18, 0xBFC90FDB);

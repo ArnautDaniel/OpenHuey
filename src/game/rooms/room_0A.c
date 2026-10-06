@@ -20,53 +20,65 @@ extern void *D_003F4398[];
 extern u8 D_003F43B0[];
 extern PTMF D_01990830[];
 
-void *func_002AAB00(void *o, s32 flags) { return room_dtor(o, flags, D_0046DD80, D_0046DB80); }
+/* 0x002AAB00 */
+void *Room0A_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DD80, D_0046DB80); }
 
-void *func_002AAB60(void) {
+/* 0x002AAB60 */
+void *Room0A_EnterScript(void) {
     return D_003F3C90;
 }
 
-void *func_002AAB70(void) {
+/* 0x002AAB70 */
+void *Room0A_CharEnterScript(void) {
     return D_003F3CF0;
 }
 
-void *func_002AAB80(void) {
+/* 0x002AAB80 */
+void *Room0A_Phase1Script(void) {
     return D_003F3DA0;
 }
 
-void *func_002AAB90(void) {
+/* 0x002AAB90 */
+void *Room0A_Phase2Script(void) {
     return D_003F3E90;
 }
 
-void *func_002AABA0(void) {
+/* 0x002AABA0 */
+void *Room0A_Phase3Script(void) {
     return D_003F3EF0;
 }
 
-void *func_002AABB0(void *self, s32 i) {
+/* 0x002AABB0 */
+void *Room0A_ActionScript(void *self, s32 i) {
     return D_003F4350[i];
 }
 
-void *func_002AABD0(void) {
+/* 0x002AABD0 */
+void *Room0A_Table38(void) {
     return D_003F43B0;
 }
 
-void *func_002AABE0(void *self, s32 i) {
+/* 0x002AABE0 */
+void *Room0A_ObjectName(void *self, s32 i) {
     return D_003F4398[i];
 }
 
 /* (self->*D_01990830[i])(a, b) */
-s32 func_002AAC00(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AAC00 */
+s32 Room0A_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990830[i & 0xFF], a, b);
 }
 
 /* room 0x0A (D_003F4388): an effect on its object at -2.88 */
-s32 func_002AAC30(void) {
+/* 0x002AAC30 */
+s32 Room0A_Cmd01(void) {
     obj_effect(room_obj(D_003F43A0), 0xC0384E89);
     return 1;
 }
 
 /* the dial D_003F43A0 on progress var 3 */
-s32 func_002AAD60(void *self, void *a1, u8 *cmd) {
+/* 0x002AAD60 */
+s32 Room0A_Cmd00(void *self, void *a1, u8 *cmd) {
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003F43A0);
 
     if (o == NULL) {

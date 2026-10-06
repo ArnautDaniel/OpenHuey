@@ -22,47 +22,58 @@ extern void *D_003F2170[];
 extern void *D_003F21D0[];
 extern PTMF D_019907D0[];
 
-void *func_002AA250(void *o, s32 flags) { return room_dtor(o, flags, D_0046DCC0, D_0046DB80); }
+/* 0x002AA250 */
+void *Room06_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DCC0, D_0046DB80); }
 
-void *func_002AA2B0(void) {
+/* 0x002AA2B0 */
+void *Room06_EnterScript(void) {
     return D_003F1B60;
 }
 
-void *func_002AA2C0(void) {
+/* 0x002AA2C0 */
+void *Room06_CharEnterScript(void) {
     return D_003F1BD0;
 }
 
-void *func_002AA2D0(void) {
+/* 0x002AA2D0 */
+void *Room06_Phase1Script(void) {
     return D_003F1CD0;
 }
 
-void *func_002AA2E0(void) {
+/* 0x002AA2E0 */
+void *Room06_Phase2Script(void) {
     return D_003F1D58;
 }
 
-void *func_002AA2F0(void) {
+/* 0x002AA2F0 */
+void *Room06_Phase3Script(void) {
     return D_003F1D70;
 }
 
-void *func_002AA300(void) {
+/* 0x002AA300 */
+void *Room06_Phase5Script(void) {
     return D_003F1F00;
 }
 
-void *func_002AA310(void *self, s32 i) {
+/* 0x002AA310 */
+void *Room06_ActionScript(void *self, s32 i) {
     return D_003F2170[i];
 }
 
-void *func_002AA330(void *self, s32 i) {
+/* 0x002AA330 */
+void *Room06_ObjectName(void *self, s32 i) {
     return D_003F21D0[i];
 }
 
 /* (self->*D_019907D0[i])(a, b) */
-s32 func_002AA350(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AA350 */
+s32 Room06_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019907D0[i & 0xFF], a, b);
 }
 
 /* room 0x06 (D_003F21C0): its four objects (the name's 6th letter counting) to their places */
-s32 func_002AA380(void) {
+/* 0x002AA380 */
+s32 Room06_Cmd00(void) {
     char name[7];
     s32 i;
 

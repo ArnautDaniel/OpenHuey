@@ -27,43 +27,53 @@ extern u8 D_0042C360[];
 
 extern PTMF D_019915A0[];
 
-void *func_00320E50(void *o, s32 flags) { return room_dtor(o, flags, D_00473C90, D_0046DB80); }
+/* 0x00320E50 */
+void *Room32_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00473C90, D_0046DB80); }
 
-void *func_00320EB0(void) {
+/* 0x00320EB0 */
+void *Room32_EnterScript(void) {
     return D_0042B0B0;
 }
 
-void *func_00320EC0(void) {
+/* 0x00320EC0 */
+void *Room32_CharEnterScript(void) {
     return D_0042B160;
 }
 
-void *func_00320ED0(void) {
+/* 0x00320ED0 */
+void *Room32_Phase1Script(void) {
     return D_0042B200;
 }
 
-void *func_00320EE0(void) {
+/* 0x00320EE0 */
+void *Room32_Phase2Script(void) {
     return D_0042B520;
 }
 
-void *func_00320EF0(void *self, s32 i) {
+/* 0x00320EF0 */
+void *Room32_ActionScript(void *self, s32 i) {
     return D_0042C200[i];
 }
 
-void *func_00320F10(void) {
+/* 0x00320F10 */
+void *Room32_Table38(void) {
     return D_0042C360;
 }
 
-void *func_00320F20(void *self, s32 i) {
+/* 0x00320F20 */
+void *Room32_ObjectName(void *self, s32 i) {
     return D_0042C2F0[i];
 }
 
 /* (self->*D_019915A0[i])(a, b) */
-s32 func_00320F40(void *self, u32 i, s32 a, s32 b) {
+/* 0x00320F40 */
+s32 Room32_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019915A0[i & 0xFF], a, b);
 }
 
 /* the player's model tint: white (byte 3 0) or blue halved */
-s32 func_00320F70(void *self, void *a1, u8 *cmd) {
+/* 0x00320F70 */
+s32 Room32_Cmd05(void *self, void *a1, u8 *cmd) {
     VObject *m = gCharPlayer->motion;
 
     if (cmd[3] == 0) {
@@ -77,7 +87,8 @@ s32 func_00320F70(void *self, void *a1, u8 *cmd) {
 /* room 0x32 (D_0042C2D8): byte 3 0..3 the lit quad (room effect 0x1A) as room 0x21's; 4 and up
  * the mirror fragment's reflection (room effect 0x1A, D_00479560) on the object "a_fragment0":
  * 1.8 across, -0.1 down, strength 1, kind 2, alpha 0xFF */
-s32 func_00320FF0(void *self, void *a1, u8 *cmd) {
+/* 0x00320FF0 */
+s32 Room32_Cmd04(void *self, void *a1, u8 *cmd) {
     u8 *o;
 
     if (cmd[3] < 4) {
@@ -106,7 +117,8 @@ s32 func_00320FF0(void *self, void *a1, u8 *cmd) {
 }
 
 /* a room callback: byte 3 0 a progress name, 1 wait for character 3 (2 while not), else done */
-s32 func_003212A0(void *self, void *a1, u8 *cmd) {
+/* 0x003212A0 */
+s32 Room32_Cmd03(void *self, void *a1, u8 *cmd) {
     switch (cmd[3]) {
     case 0:
         func_0016CEC0(gProgress, D_0042C358);
@@ -119,12 +131,14 @@ s32 func_003212A0(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x32 (D_0042C2B8) */
-s32 func_00321340(void *self, void *a1, u8 *cmd) {
+/* 0x00321340 */
+s32 Room32_Cmd02(void *self, void *a1, u8 *cmd) {
     return lit_quad(cmd, sQuadWindow, 0x10000040);
 }
 
 /* room 0x32 (D_0042C2A8): the fan turns, except while a movie plays */
-s32 func_003214E0(void) {
+/* 0x003214E0 */
+s32 Room32_Cmd01(void) {
     if (VCALL((VObject *)gProgress, 0x54, s32 (*)(VObject *))((VObject *)gProgress) != 0) {
         return 1;
     }
@@ -132,7 +146,8 @@ s32 func_003214E0(void) {
     return 1;
 }
 
-s32 func_00321590(void) {
+/* 0x00321590 */
+s32 Room32_Cmd00(void) {
     room_effect_slot_new(gRoomEffects, 1, D_0046EA40);
     return 1;
 }

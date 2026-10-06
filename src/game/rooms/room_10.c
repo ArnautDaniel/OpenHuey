@@ -20,49 +20,61 @@ extern void *D_003F78D0[];
 extern u8 D_003F7910[];
 extern PTMF D_019908D0[];
 
-void *func_002ABF00(void *o, s32 flags) { return room_dtor(o, flags, D_0046DF00, D_0046DB80); }
+/* 0x002ABF00 */
+void *Room10_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046DF00, D_0046DB80); }
 
-void *func_002ABF60(void) {
+/* 0x002ABF60 */
+void *Room10_EnterScript(void) {
     return D_003F6F80;
 }
 
-void *func_002ABF70(void) {
+/* 0x002ABF70 */
+void *Room10_CharEnterScript(void) {
     return D_003F7060;
 }
 
-void *func_002ABF80(void) {
+/* 0x002ABF80 */
+void *Room10_Phase1Script(void) {
     return D_003F7150;
 }
 
-void *func_002ABF90(void) {
+/* 0x002ABF90 */
+void *Room10_Phase2Script(void) {
     return D_003F72D0;
 }
 
-void *func_002ABFA0(void) {
+/* 0x002ABFA0 */
+void *Room10_Phase3Script(void) {
     return D_003F73B0;
 }
 
-void *func_002ABFB0(void) {
+/* 0x002ABFB0 */
+void *Room10_Phase5Script(void) {
     return D_003F74E0;
 }
 
-void *func_002ABFC0(void *self, s32 i) {
+/* 0x002ABFC0 */
+void *Room10_ActionScript(void *self, s32 i) {
     return D_003F78D0[i];
 }
 
-void *func_002ABFE0(void) {
+/* 0x002ABFE0 */
+void *Room10_Table38(void) {
     return D_003F7910;
 }
 
-u32 func_002ABFF0(void *o, s32 i) { return ((u32 *)D_0047A9F0)[i]; }   /* D_0046DF00 +0x34 */
+/* 0x002ABFF0 */
+u32 Room10_ObjectName(void *o, s32 i) { return ((u32 *)D_0047A9F0)[i]; }   /* D_0046DF00 +0x34 */
 
 /* (self->*D_019908D0[i])(a, b) */
-s32 func_002AC010(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AC010 */
+s32 Room10_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019908D0[i & 0xFF], a, b);
 }
 
 /* room 0x10 (D_003F78F8): the stalker is there, not about, in mode 2, 6 or 7 */
-s32 func_002AC040(void) {
+/* 0x002AC040 */
+s32 Room10_Cond00(void) {
     u8 *c = (u8 *)gCharSlot2;
     u8 k;
 

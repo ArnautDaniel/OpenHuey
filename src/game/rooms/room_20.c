@@ -36,55 +36,68 @@ static inline u8 *nav_tri(u32 i) {
     return (i < AT(nm, 0x8, u32) && AT(nm, 0x4, u8 *) != NULL) ? AT(nm, 0x4, u8 *) + i * 0x50 : NULL;
 }
 
-void *func_002AE390(void *o, s32 flags) { return room_dtor(o, flags, D_0046E280, D_0046DB80); }
+/* 0x002AE390 */
+void *Room20_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E280, D_0046DB80); }
 
-void *func_002AE3F0(void) {
+/* 0x002AE3F0 */
+void *Room20_EnterScript(void) {
     return D_003FE460;
 }
 
-void *func_002AE400(void) {
+/* 0x002AE400 */
+void *Room20_CharEnterScript(void) {
     return D_003FE540;
 }
 
-void *func_002AE410(void) {
+/* 0x002AE410 */
+void *Room20_Phase1Script(void) {
     return D_003FE680;
 }
 
-void *func_002AE420(void) {
+/* 0x002AE420 */
+void *Room20_Phase2Script(void) {
     return D_003FE9C0;
 }
 
-void *func_002AE430(void) {
+/* 0x002AE430 */
+void *Room20_Phase3Script(void) {
     return D_003FEA60;
 }
 
-void *func_002AE440(void) {
+/* 0x002AE440 */
+void *Room20_Phase5Script(void) {
     return D_003FEAD0;
 }
 
-u32 func_002AE450(void *self, s32 i) {
+/* 0x002AE450 */
+u32 Room20_ActionScript(void *self, s32 i) {
     return D_003FF030[i];
 }
 
-void *func_002AE470(void) {
+/* 0x002AE470 */
+void *Room20_Table38(void) {
     return D_003FF130;
 }
 
-void *func_002AE480(void) {
+/* 0x002AE480 */
+void *Room20_Table3C(void) {
     return D_003FF150;
 }
 
-u32 func_002AE490(void *self, s32 i) {
+/* 0x002AE490 */
+u32 Room20_ObjectName(void *self, s32 i) {
     return (u32)D_003FF110[i];
 }
 
 /* (self->*D_01990A40[i])(a, b) */
-s32 func_002AE4B0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AE4B0 */
+s32 Room20_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990A40[i & 0xFF], a, b);
 }
 
 /* room 0x20 (D_003FF0F8): object byte 3 becomes event point byte 4 (radii 5) */
-s32 func_002AE4E0(void *self, void *a1, u8 *cmd) {
+/* 0x002AE4E0 */
+s32 Room20_Cond02(void *self, void *a1, u8 *cmd) {
     u8 *o = room_obj(D_003FF110[cmd[3]]);
 
     if (o == NULL) {
@@ -96,7 +109,8 @@ s32 func_002AE4E0(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x20 (D_003FF0E8): the character's script value is at least be32 bytes 3..6 */
-s32 func_002AE570(void *self, u8 *chr, u8 *cmd) {
+/* 0x002AE570 */
+s32 Room20_Cond01(void *self, u8 *chr, u8 *cmd) {
     u32 v = VCALL(gEvents, 0x38, u32 (*)(VObject *, s32))(gEvents, chr[0x153C]) & 0xFFFF;
 
     return !(v < ((u32)cmd[3] << 24 | (u32)cmd[4] << 16 | (u32)cmd[5] << 8 | cmd[6]));
@@ -104,7 +118,8 @@ s32 func_002AE570(void *self, u8 *chr, u8 *cmd) {
 
 /* room 0x20 (D_003FF0D8): the player, free and within 5 of the falling object, knocks it - it
  * gets a push (0, 1, 1) turned by her facing, and its nav triangle */
-s32 func_002AE5E0(void) {
+/* 0x002AE5E0 */
+s32 Room20_Cond00(void) {
     u8 *o = room_obj(D_003FF124);
     Character *p;
     f32 v[4] __attribute__((aligned(16)));
@@ -139,12 +154,14 @@ s32 func_002AE5E0(void) {
 }
 
 /* (self->*D_019909F0[i])(a, b) */
-s32 func_002AE760(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AE760 */
+s32 Room20_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019909F0[i & 0xFF], a, b);
 }
 
 /* room 0x20 (D_003FF0C8): the character turns to face object byte 3 */
-s32 func_002AE790(void *self, u8 *chr, u8 *cmd) {
+/* 0x002AE790 */
+s32 Room20_Cmd05(void *self, u8 *chr, u8 *cmd) {
     u8 *o = room_obj(D_003FF110[cmd[3]]);
 
     if (o != NULL) {
@@ -157,7 +174,8 @@ s32 func_002AE790(void *self, u8 *chr, u8 *cmd) {
 }
 
 /* room 0x20 (D_003FF0B8): a dust cloud where the falling object is */
-s32 func_002AE830(void) {
+/* 0x002AE830 */
+s32 Room20_Cmd04(void) {
     u8 *o = room_obj(D_003FF124);
     s32 slot;
     struct {
@@ -185,7 +203,8 @@ s32 func_002AE830(void) {
 /* room 0x20 (D_003FF0A8): the falling object falls (gravity 0.2 a frame on its velocity +0x30,
  * spinning 1 degree a frame) along the nav mesh, events bit 1 set while it lies on open floor;
  * landing on floor that isn't 0x10000 raises dust */
-s32 func_002AE9C0(void *self) {
+/* 0x002AE9C0 */
+s32 Room20_Cmd03(void *self) {
     u8 *o = room_obj(D_003FF124);
     u8 *nm, *t;
     s32 tri;
@@ -249,7 +268,7 @@ s32 func_002AE9C0(void *self) {
             VCALL(gEvents, 0x60, void (*)(VObject *, s32))(gEvents, 1);
         }
         if (t != NULL && (AT(t, 0x3C, u32) & 0x2018000) != 0x10000) {
-            func_002AE830();
+            Room20_Cmd04();
         }
         AT(o, 0x3C, u32) |= 0x80000000;
         VCALL(gEvents, 0x5C, void (*)(VObject *, s32))(gEvents, 1);
@@ -260,7 +279,8 @@ s32 func_002AE9C0(void *self) {
 
 /* a pendulum (room object D_003FF110[byte 3]): byte 4 0 still; 1 its phase +0x30 on by 2
  * degrees (a tick sound at (-85, 30, 90) each turn), swinging 15 degrees (+0x14) */
-s32 func_002AED60(void *self, void *a1, u8 *cmd) {
+/* 0x002AED60 */
+s32 Room20_Cmd02(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
     u32 mode = cmd[4];
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_003FF110[cmd[3]]);
@@ -287,7 +307,8 @@ s32 func_002AED60(void *self, void *a1, u8 *cmd) {
 }
 
 /* room 0x20 (D_003FF088): the falling object back up in place */
-s32 func_002AEEE0(void) {
+/* 0x002AEEE0 */
+s32 Room20_Cmd01(void) {
     u8 *o = room_obj(D_003FF124);
 
 #ifdef HG_NATIVE
@@ -306,7 +327,8 @@ s32 func_002AEEE0(void) {
 }
 
 /* room 0x20 (D_003FF078): the player's action byte 3 (7) at (-30, 0, 90) */
-s32 func_002AEF60(void *self, void *a1, u8 *cmd) {
+/* 0x002AEF60 */
+s32 Room20_Cmd00(void *self, void *a1, u8 *cmd) {
     f32 at[4] __attribute__((aligned(16)));
 
     at[0] = -30.0f;

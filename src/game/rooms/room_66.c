@@ -69,38 +69,48 @@ static inline void mud_puff(u8 *mgr, Character *c, f32 *foot, s32 k) {
     func_002D6090(mgr, slot, &prm);
 }
 
-void *func_003001B0(void *o, s32 flags) { return room_dtor(o, flags, D_00470F50, D_0046DB80); }
+/* 0x003001B0 */
+void *Room66_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00470F50, D_0046DB80); }
 
-void *func_00300210(void) {
+/* 0x00300210 */
+void *Room66_EnterScript(void) {
     return D_0041E110;
 }
 
-void *func_00300220(void) {
+/* 0x00300220 */
+void *Room66_CharEnterScript(void) {
     return D_0041E260;
 }
 
-void *func_00300230(void) {
+/* 0x00300230 */
+void *Room66_Phase1Script(void) {
     return D_0041E360;
 }
 
-void *func_00300240(void) {
+/* 0x00300240 */
+void *Room66_Phase2Script(void) {
     return D_0041E700;
 }
 
-void *func_00300250(void *o) { return D_0047ACC8; }   /* D_00470F50 +0x20 */
+/* 0x00300250 */
+void *Room66_Phase5Script(void *o) { return D_0047ACC8; }   /* D_00470F50 +0x20 */
 
-void *func_00300260(void *self, s32 i) {
+/* 0x00300260 */
+void *Room66_ActionScript(void *self, s32 i) {
     return D_0041F4E0[i];
 }
 
-void *func_00300280(void) {
+/* 0x00300280 */
+void *Room66_Table38(void) {
     return D_0041F5C0;
 }
 
-u32 func_00300290(void *o, s32 i) { return ((u32 *)D_0047ACE0)[i]; }   /* D_00470F50 +0x34 */
+/* 0x00300290 */
+u32 Room66_ObjectName(void *o, s32 i) { return ((u32 *)D_0047ACE0)[i]; }   /* D_00470F50 +0x34 */
 
 /* (self->*D_01991070[i])(a, b) */
-s32 func_003002B0(void *self, u32 i, s32 a, s32 b) {
+/* 0x003002B0 */
+s32 Room66_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991070[i & 0xFF], a, b);
 }
 
@@ -147,7 +157,8 @@ s32 func_003003C0(void *self, void *a1, u8 *cmd) {
 }
 
 /* (self->*D_01991030[i])(a, b) */
-s32 func_003004F0(void *self, u32 i, s32 a, s32 b) {
+/* 0x003004F0 */
+s32 Room66_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991030[i & 0xFF], a, b);
 }
 

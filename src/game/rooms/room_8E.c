@@ -20,41 +20,50 @@ extern u32 D_00435970[];
 
 extern PTMF D_01991790[];
 
-void *func_003409C0(void *o, s32 flags) { return room_dtor(o, flags, D_00477400, D_0046DB80); }
+/* 0x003409C0 */
+void *Room8E_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00477400, D_0046DB80); }
 
-void *func_00340A20(void) {
+/* 0x00340A20 */
+void *Room8E_EnterScript(void) {
     return D_00435050;
 }
 
-void *func_00340A30(void) {
+/* 0x00340A30 */
+void *Room8E_CharEnterScript(void) {
     return D_00435080;
 }
 
-void *func_00340A40(void) {
+/* 0x00340A40 */
+void *Room8E_Phase1Script(void) {
     return D_004350E0;
 }
 
-void *func_00340A50(void) {
+/* 0x00340A50 */
+void *Room8E_Phase2Script(void) {
     return D_00435200;
 }
 
-u32 func_00340A60(void *self, s32 i) {
+/* 0x00340A60 */
+u32 Room8E_ActionScript(void *self, s32 i) {
     return D_00435920[i];
 }
 
-u32 func_00340A80(void *self, s32 i) {
+/* 0x00340A80 */
+u32 Room8E_ObjectName(void *self, s32 i) {
     return D_00435970[i];
 }
 
 /* (self->*D_01991790[i])(a, b) */
-s32 func_00340AA0(void *self, u32 i, s32 a, s32 b) {
+/* 0x00340AA0 */
+s32 Room8E_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991790[i & 0xFF], a, b);
 }
 
 /* the room object named D_00435978 falling over: byte 3 0 starts it (angle +0x30, speed +0x34
  * and acceleration +0x38 0, jerk +0x3C 0.005); 1 steps them, its tilt +0x10 = (1 - sin(90 -
  * angle)) * pi/2, waiting (2) until the angle reaches 90; 2 puts it down (sin(pi/2)) */
-s32 func_00340AD0(void *self, void *a1, u8 *cmd) {
+/* 0x00340AD0 */
+s32 Room8E_Cmd01(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kHalfPi = {0x3FC90FDB};
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_00435978);
     f32 a;
@@ -82,7 +91,8 @@ s32 func_00340AD0(void *self, void *a1, u8 *cmd) {
 
 /* door 0 swung by script variable 0: byte 3 0 sets it to -90; 1 opens it 10 degrees a step to 0
  * (doors +0x74), waiting (2) until there */
-s32 func_00340C50(void *self, void *a1, u8 *cmd) {
+/* 0x00340C50 */
+s32 Room8E_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
     VObject *ev;
     s32 a;

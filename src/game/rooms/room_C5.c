@@ -28,38 +28,48 @@ static void effect_79870_init(void **obj) {
     obj[0] = D_00479870;
 }
 
-void *func_0034B0E0(void *o, s32 flags) { return room_dtor(o, flags, D_004786B0, D_0046DB80); }
+/* 0x0034B0E0 */
+void *RoomC5_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_004786B0, D_0046DB80); }
 
-void *func_0034B140(void) {
+/* 0x0034B140 */
+void *RoomC5_EnterScript(void) {
     return D_004401B0;
 }
 
-void *func_0034B150(void) {
+/* 0x0034B150 */
+void *RoomC5_CharEnterScript(void) {
     return D_00440210;
 }
 
-void *func_0034B160(void) {
+/* 0x0034B160 */
+void *RoomC5_Phase1Script(void) {
     return D_00440250;
 }
 
-void *func_0034B170(void) {
+/* 0x0034B170 */
+void *RoomC5_Phase2Script(void) {
     return D_00440E00;
 }
 
-void *func_0034B180(void *o) { return D_0047AF20; }   /* D_004786B0 +0x20 */
+/* 0x0034B180 */
+void *RoomC5_Phase5Script(void *o) { return D_0047AF20; }   /* D_004786B0 +0x20 */
 
-u32 func_0034B190(void *self, s32 i) {
+/* 0x0034B190 */
+u32 RoomC5_ActionScript(void *self, s32 i) {
     return D_00441110[i];
 }
 
-void *func_0034B1B0(void *o) { return D_0047AF28; }   /* D_004786B0 +0x38 */
+/* 0x0034B1B0 */
+void *RoomC5_Table38(void *o) { return D_0047AF28; }   /* D_004786B0 +0x38 */
 
-u32 func_0034B1C0(void *self, s32 i) {
+/* 0x0034B1C0 */
+u32 RoomC5_ObjectName(void *self, s32 i) {
     return (u32)D_00441140[i];
 }
 
 /* (self->*D_019919F8[i])(a, b) */
-s32 func_0034B1E0(void *self, u32 i, s32 a, s32 b) {
+/* 0x0034B1E0 */
+s32 RoomC5_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019919F8[i & 0xFF], a, b);
 }
 
@@ -67,7 +77,8 @@ s32 func_0034B1E0(void *self, u32 i, s32 a, s32 b) {
  * keeps its slot): made on first use when byte 3 is set, then sent (on byte 3, index 8 - k, the
  * variable, the object), with sound 1 at the object when on and the camera director's +0x38 is
  * clear */
-s32 func_0034B210(void *self, void *a1, u8 *cmd) {
+/* 0x0034B210 */
+s32 RoomC5_Cmd00(void *self, void *a1, u8 *cmd) {
     u32 k = cmd[4];
     u8 var = 11 - k, idx = 8 - k;   /* (k 0 / past 8: unset on the PS2) */
     u32 name = k + 1;

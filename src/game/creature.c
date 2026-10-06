@@ -28,7 +28,7 @@ extern void *D_0046FAA0[], *D_0046FB50[], *D_00469C60[], *D_00469C20[];
 /* ---- the creature base (D_0046FB50): defaults ---- */
 
 extern PTMF D_01990D40[];
-s32 func_002B4250(void *self, u32 i, s32 a, s32 b);
+s32 Room4F_Command(void *self, u32 i, s32 a, s32 b);
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -2023,7 +2023,8 @@ s32 func_002B4030(void) {
 }
 
 /* (self->*D_01990D40[i])(a, b) */
-s32 func_002B4250(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B4250 */
+s32 Room4F_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990D40[i & 0xFF], a, b);
 }
 

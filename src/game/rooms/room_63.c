@@ -24,46 +24,57 @@ extern u8 D_00421C50[];
 
 extern PTMF D_01991098[];
 
-void *func_00308990(void *o, s32 flags) { return room_dtor(o, flags, D_00471210, D_0046DB80); }
+/* 0x00308990 */
+void *Room63_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_00471210, D_0046DB80); }
 
-void *func_003089F0(void) {
+/* 0x003089F0 */
+void *Room63_EnterScript(void) {
     return D_00421130;
 }
 
-void *func_00308A00(void) {
+/* 0x00308A00 */
+void *Room63_CharEnterScript(void) {
     return D_004211D0;
 }
 
-void *func_00308A10(void) {
+/* 0x00308A10 */
+void *Room63_Phase1Script(void) {
     return D_00421250;
 }
 
-void *func_00308A20(void) {
+/* 0x00308A20 */
+void *Room63_Phase2Script(void) {
     return D_00421400;
 }
 
-void *func_00308A30(void) {
+/* 0x00308A30 */
+void *Room63_Phase5Script(void) {
     return D_00421420;
 }
 
-void *func_00308A40(void *self, s32 i) {
+/* 0x00308A40 */
+void *Room63_ActionScript(void *self, s32 i) {
     return D_00421BB0[i];
 }
 
-void *func_00308A60(void) {
+/* 0x00308A60 */
+void *Room63_Table38(void) {
     return D_00421C50;
 }
 
-void *func_00308A70(void *self, s32 i) {
+/* 0x00308A70 */
+void *Room63_ObjectName(void *self, s32 i) {
     return D_00421BF0[i];
 }
 
 /* (self->*D_01991098[i])(a, b) */
-s32 func_00308A90(void *self, u32 i, s32 a, s32 b) {
+/* 0x00308A90 */
+s32 Room63_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991098[i & 0xFF], a, b);
 }
 
-s32 func_00308AC0(void *self, u8 *obj) {
+/* 0x00308AC0 */
+s32 Room63_Cmd00(void *self, u8 *obj) {
     U32(obj, 0x104) = U32(gCharPlayer, 0x34);
     S32(obj, 0x108) = 0x204;
     obj[0xE1] = 0;

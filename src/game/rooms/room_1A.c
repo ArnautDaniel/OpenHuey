@@ -19,52 +19,64 @@ extern void *D_003FC678[];
 extern u8 D_003FC690[];
 extern PTMF D_01990960[];
 
-void *func_002AD420(void *o, s32 flags) { return room_dtor(o, flags, D_0046E100, D_0046DB80); }
+/* 0x002AD420 */
+void *Room1A_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E100, D_0046DB80); }
 
-void *func_002AD480(void) {
+/* 0x002AD480 */
+void *Room1A_EnterScript(void) {
     return D_003FC060;
 }
 
-void *func_002AD490(void) {
+/* 0x002AD490 */
+void *Room1A_CharEnterScript(void) {
     return D_003FC0A0;
 }
 
-void *func_002AD4A0(void) {
+/* 0x002AD4A0 */
+void *Room1A_Phase1Script(void) {
     return D_003FC110;
 }
 
-void *func_002AD4B0(void) {
+/* 0x002AD4B0 */
+void *Room1A_Phase2Script(void) {
     return D_003FC220;
 }
 
-void *func_002AD4C0(void) {
+/* 0x002AD4C0 */
+void *Room1A_Phase3Script(void) {
     return D_003FC290;
 }
 
-void *func_002AD4D0(void *self, s32 i) {
+/* 0x002AD4D0 */
+void *Room1A_ActionScript(void *self, s32 i) {
     return D_003FC630[i];
 }
 
-void *func_002AD4F0(void) {
+/* 0x002AD4F0 */
+void *Room1A_Table38(void) {
     return D_003FC690;
 }
 
-void *func_002AD500(void *self, s32 i) {
+/* 0x002AD500 */
+void *Room1A_ObjectName(void *self, s32 i) {
     return D_003FC678[i];
 }
 
 /* (self->*D_01990960[i])(a, b) */
-s32 func_002AD520(void *self, u32 i, s32 a, s32 b) {
+/* 0x002AD520 */
+s32 Room1A_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990960[i & 0xFF], a, b);
 }
 
-s32 func_002AD550(void) {   /* room effect 0 (D_0046F5F0) */
+/* 0x002AD550 */
+s32 Room1A_Cmd01(void) {   /* room effect 0 (D_0046F5F0) */
     room_effect_slot_new(gRoomEffects, 0, D_0046F5F0);
     return 1;
 }
 
 /* room 0x1A (D_003FC660): the fan turns */
-s32 func_002AD600(void) {
+/* 0x002AD600 */
+s32 Room1A_Cmd00(void) {
     fan_turn(D_003FC680);
     return 1;
 }

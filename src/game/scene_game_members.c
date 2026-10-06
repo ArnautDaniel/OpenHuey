@@ -38,7 +38,7 @@ extern void *D_0046AEC0[];
 void *func_001BF5F0(u8 *o, s32 flags);
 
 extern PTMF D_01990700[];
-s32 func_002A8AC0(void *self, u32 i, s32 a, s32 b);
+s32 Room00_Command(void *self, u32 i, s32 a, s32 b);
 
 extern void *D_00469D00[];
 extern u8 D_0046D770[], D_0046C780[], D_0046D800[];
@@ -2023,7 +2023,8 @@ s32 func_002A8AB0(void) {
 }
 
 /* (self->*D_01990700[i])(a, b) */
-s32 func_002A8AC0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002A8AC0 */
+s32 Room00_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990700[i & 0xFF], a, b);
 }
 

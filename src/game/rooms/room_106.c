@@ -18,28 +18,38 @@ extern void *D_0047AC70[];
 
 extern PTMF D_01990ED8[];
 
-void *func_002E6D00(void *o, s32 flags) { return room_dtor(o, flags, D_0046FD80, D_0046DB80); }
+/* 0x002E6D00 */
+void *Room106_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046FD80, D_0046DB80); }
 
-void *func_002E6D60(void) { return D_004182D0; }
+/* 0x002E6D60 */
+void *Room106_EnterScript(void) { return D_004182D0; }
 
-void *func_002E6D70(void) { return D_00418430; }
+/* 0x002E6D70 */
+void *Room106_CharEnterScript(void) { return D_00418430; }
 
-void *func_002E6D80(void) { return D_004184C0; }
+/* 0x002E6D80 */
+void *Room106_Phase1Script(void) { return D_004184C0; }
 
-void *func_002E6D90(void) { return D_00418730; }
+/* 0x002E6D90 */
+void *Room106_Phase2Script(void) { return D_00418730; }
 
-void *func_002E6DA0(void *self, s32 i) { return D_00418AA0[i]; }
+/* 0x002E6DA0 */
+void *Room106_ActionScript(void *self, s32 i) { return D_00418AA0[i]; }
 
-void *func_002E6DC0(void) { return D_00418AD0; }
+/* 0x002E6DC0 */
+void *Room106_Table38(void) { return D_00418AD0; }
 
-void *func_002E6DD0(void *self, s32 i) { return D_0047AC70[i]; }
+/* 0x002E6DD0 */
+void *Room106_ObjectName(void *self, s32 i) { return D_0047AC70[i]; }
 
 /* (self->*D_01990ED8[i])(a, b) */
-s32 func_002E6DF0(void *self, u32 i, s32 a, s32 b) {
+/* 0x002E6DF0 */
+s32 Room106_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990ED8[i & 0xFF], a, b);
 }
 
-s32 func_002E6E20(void) {
+/* 0x002E6E20 */
+s32 Room106_Cmd00(void) {
     Effect_New(gEffects, 0xC0, effect_C0_init);
     return 1;
 }

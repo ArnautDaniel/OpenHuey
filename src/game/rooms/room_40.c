@@ -19,43 +19,53 @@ extern u32 D_00407090[];
 
 extern PTMF D_01990C48[];
 
-void *func_002B2330(void *o, s32 flags) { return room_dtor(o, flags, D_0046E580, D_0046DB80); }
+/* 0x002B2330 */
+void *Room40_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0046E580, D_0046DB80); }
 
-void *func_002B2390(void) {
+/* 0x002B2390 */
+void *Room40_EnterScript(void) {
     return D_00406550;
 }
 
-void *func_002B23A0(void) {
+/* 0x002B23A0 */
+void *Room40_CharEnterScript(void) {
     return D_00406630;
 }
 
-void *func_002B23B0(void) {
+/* 0x002B23B0 */
+void *Room40_Phase1Script(void) {
     return D_00406770;
 }
 
-void *func_002B23C0(void) {
+/* 0x002B23C0 */
+void *Room40_Phase2Script(void) {
     return D_00406930;
 }
 
-u32 func_002B23D0(void *self, s32 i) {
+/* 0x002B23D0 */
+u32 Room40_ActionScript(void *self, s32 i) {
     return D_00407050[i];
 }
 
-void *func_002B23F0(void) {
+/* 0x002B23F0 */
+void *Room40_Table38(void) {
     return D_004070D0;
 }
 
-u32 func_002B2400(void *self, s32 i) {
+/* 0x002B2400 */
+u32 Room40_ObjectName(void *self, s32 i) {
     return D_00407090[i];
 }
 
 /* (self->*D_01990C48[i])(a, b) */
-s32 func_002B2420(void *self, u32 i, s32 a, s32 b) {
+/* 0x002B2420 */
+s32 Room40_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990C48[i & 0xFF], a, b);
 }
 
 /* the scales ("tenbin") and their pans ("sara_l", "sara_r"): level (byte 3 0) or tipped */
-s32 func_002B2450(void *self, void *a1, u8 *cmd) {
+/* 0x002B2450 */
+s32 Room40_Cmd00(void *self, void *a1, u8 *cmd) {
     VObject *objs = D_00456DF8;
     u8 *o;
 

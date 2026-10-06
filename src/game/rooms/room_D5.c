@@ -25,59 +25,73 @@ extern u8 D_00447660[];
 extern PTMF D_01991B90[];
 extern PTMF D_01991BB8[];
 
-void *func_0036EA80(void *o, s32 flags) { return room_dtor(o, flags, D_0047A1B0, D_0046DB80); }
+/* 0x0036EA80 */
+void *RoomD5_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_0047A1B0, D_0046DB80); }
 
-void *func_0036EAE0(void) {
+/* 0x0036EAE0 */
+void *RoomD5_EnterScript(void) {
     return D_00447300;
 }
 
-void *func_0036EAF0(void) {
+/* 0x0036EAF0 */
+void *RoomD5_CharEnterScript(void) {
     return D_00447330;
 }
 
-void *func_0036EB00(void) {
+/* 0x0036EB00 */
+void *RoomD5_Phase1Script(void) {
     return D_00447460;
 }
 
-void *func_0036EB10(void) {
+/* 0x0036EB10 */
+void *RoomD5_Phase3Script(void) {
     return D_00447560;
 }
 
-void *func_0036EB20(void) {
+/* 0x0036EB20 */
+void *RoomD5_Phase5Script(void) {
     return D_00447550;
 }
 
-void *func_0036EB30(void *self, s32 i) {
+/* 0x0036EB30 */
+void *RoomD5_ActionScript(void *self, s32 i) {
     return D_00447608[i];
 }
 
-void *func_0036EB50(void) {
+/* 0x0036EB50 */
+void *RoomD5_Table38(void) {
     return D_00447660;
 }
 
 /* (self->*D_01991BB8[i])(a, b) */
-s32 func_0036EB60(void *self, u32 i, s32 a, s32 b) {
+/* 0x0036EB60 */
+s32 RoomD5_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991BB8[i & 0xFF], a, b);
 }
 
 /* the progress object's +0x7C with the caller's arguments */
-s32 func_0036EB90(void *self, s32 a1, s32 a2, s32 a3) {
+/* 0x0036EB90 */
+s32 RoomD5_Cond00(void *self, s32 a1, s32 a2, s32 a3) {
     return VCALL((VObject *)gProgress, 0x7C, s32 (*)(VObject *, s32, s32, s32))((VObject *)gProgress, a1, a2, a3);
 }
 
 /* (self->*D_01991B90[i])(a, b) */
-s32 func_0036EBB0(void *self, u32 i, s32 a, s32 b) {
+/* 0x0036EBB0 */
+s32 RoomD5_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991B90[i & 0xFF], a, b);
 }
 
-s32 func_0036EBE0(void) { return clock_draw(D_0047B2B8, D_00463700); }
+/* 0x0036EBE0 */
+s32 RoomD5_Cmd02(void) { return clock_draw(D_0047B2B8, D_00463700); }
 
-/* as func_002E7560 */
-s32 func_0036ED30(void *self, void *a1, u8 *cmd) { return room_nudge(&D_0047B2C0, cmd, 1.0f); }
+/* as Room109_Cmd01 */
+/* 0x0036ED30 */
+s32 RoomD5_Cmd01(void *self, void *a1, u8 *cmd) { return room_nudge(&D_0047B2C0, cmd, 1.0f); }
 
-/* (as func_002E7600)  character kind 0x1A: byte 3 0 starts func_0032D270(2, -6, 257); else waits (2) until
+/* (as Room109_Cmd00)  character kind 0x1A: byte 3 0 starts func_0032D270(2, -6, 257); else waits (2) until
  * func_0032D150 says done */
-s32 func_0036EDD0(void *self, void *a1, u8 *cmd) {
+/* 0x0036EDD0 */
+s32 RoomD5_Cmd00(void *self, void *a1, u8 *cmd) {
     Character *c = gCharacters[func_001770D0(gProgress, 0x1A) & 0xFF];
 
     if (cmd[3] == 0) {

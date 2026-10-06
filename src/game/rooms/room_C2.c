@@ -38,54 +38,67 @@ static inline void swing_to(u8 *o, f32 a) {
     Sound_PlayBankAt(gSound, 0x80000002, 6, pos, 0, 0);
 }
 
-void *func_0034A4C0(void *o, s32 flags) { return room_dtor(o, flags, D_004785F0, D_0046DB80); }
+/* 0x0034A4C0 */
+void *RoomC2_dtor(void *o, s32 flags) { return room_dtor(o, flags, D_004785F0, D_0046DB80); }
 
-void *func_0034A520(void) {
+/* 0x0034A520 */
+void *RoomC2_EnterScript(void) {
     return D_0043F0C0;
 }
 
-void *func_0034A530(void) {
+/* 0x0034A530 */
+void *RoomC2_CharEnterScript(void) {
     return D_0043F1A0;
 }
 
-void *func_0034A540(void) {
+/* 0x0034A540 */
+void *RoomC2_Phase1Script(void) {
     return D_0043F230;
 }
 
-void *func_0034A550(void) {
+/* 0x0034A550 */
+void *RoomC2_Phase2Script(void) {
     return D_0043F480;
 }
 
-void *func_0034A560(void) {
+/* 0x0034A560 */
+void *RoomC2_Phase5Script(void) {
     return D_0043F4D0;
 }
 
-u32 func_0034A570(void *self, s32 i) {
+/* 0x0034A570 */
+u32 RoomC2_ActionScript(void *self, s32 i) {
     return D_0043F880[i];
 }
 
-void *func_0034A590(void *o) { return D_0047AF04; }   /* D_004785F0 +0x38 */
+/* 0x0034A590 */
+void *RoomC2_Table38(void *o) { return D_0047AF04; }   /* D_004785F0 +0x38 */
 
-u32 func_0034A5A0(void *self, s32 i) {
+/* 0x0034A5A0 */
+u32 RoomC2_ObjectName(void *self, s32 i) {
     return ((u32 *)&D_0043F8D0)[i];   /* its table of names (one is reached by name too) */
 }
 
 /* (self->*D_019919A8[i])(a, b) */
-s32 func_0034A5C0(void *self, u32 i, s32 a, s32 b) {
+/* 0x0034A5C0 */
+s32 RoomC2_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019919A8[i & 0xFF], a, b);
 }
 
-s32 func_0034A5F0(void) {
+/* 0x0034A5F0 */
+s32 RoomC2_Cond00(void) {
     return Countdown_Seconds((u8 *)gProgress + 0x764) == 0;
 }
 
 /* (self->*D_01991990[i])(a, b) */
-s32 func_0034A620(void *self, u32 i, s32 a, s32 b) {
+/* 0x0034A620 */
+s32 RoomC2_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991990[i & 0xFF], a, b);
 }
 
 /* byte 3 to the player's func_00124F20 while she's active */
-s32 func_0034A650(void *self, void *a1, u8 *cmd) {
+/* 0x0034A650 */
+s32 RoomC2_Cmd01(void *self, void *a1, u8 *cmd) {
     if (gCharPlayer != NULL && AT(gCharPlayer, 0x28, u8) != 0) {
         func_00124F20(gCharPlayer, cmd[3]);
     }
@@ -94,7 +107,8 @@ s32 func_0034A650(void *self, void *a1, u8 *cmd) {
 
 /* byte 3 0 / 1: shut / open (pi/2); 2 / 3 opening / shutting by script variable 0 (0..120 frames,
  * eased by a sine) */
-s32 func_0034A6A0(void *self, void *a1, u8 *cmd) {
+/* 0x0034A6A0 */
+s32 RoomC2_Cmd00(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
     u8 *o = VCALL(D_00456DF8, 0x18, u8 *(*)(VObject *, const char *))(D_00456DF8, D_0043F8D0);
     f32 t, e;
