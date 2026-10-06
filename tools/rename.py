@@ -8,6 +8,9 @@ difftest list and the docs. Then run `configure.py --split` (the asm takes the n
 `old` is a func_XXXXXXXX / D_XXXXXXXX name or a name already in symbol_addrs.txt (its
 address is kept); a name that isn't a symbol (a static helper, a macro) is only replaced in
 the sources. Whole words only. Files are rewritten once for the whole list.
+
+A renamed function's C definition gets its original address on the line above it,
+`/* 0x00220D10 */` (under its comment), so the asm stays one search away.
 """
 import re
 import sys
@@ -86,6 +89,30 @@ def main() -> None:
             if n != t:
                 p.write_text(n, errors="surrogateescape")
                 changed += 1
+    # the address above each renamed function's definition
+    addr = {}
+    for old, new in mapping.items():
+        m = AUTO.match(old)
+        if m and m.group(1) == "func":
+            addr[new] = int(m.group(2), 16)
+        elif old in by_name:
+            m2 = re.search(r"= 0x([0-9A-Fa-f]+);.*type:func", sym_lines[by_name[old]])
+            if m2:
+                addr[new] = int(m2.group(1), 16)
+    if addr:
+        defn = re.compile(r"^(?!static\b)(?:[A-Za-z_][\w \*]*?[\s\*])(" + "|".join(map(re.escape, addr)) + r")\s*\([^;{]*\)\s*\{", re.M)
+        for g in ("src/**/*.c", "src/**/*.inc"):
+            for p in ROOT.glob(g):
+                t = p.read_text(errors="surrogateescape")
+                out, pos = [], 0
+                for m in defn.finditer(t):
+                    tag = f"/* 0x{addr[m.group(1)]:08X} */\n"
+                    if t[max(0, m.start() - len(tag)):m.start()] == tag:
+                        continue
+                    out.append(t[pos:m.start()] + tag)
+                    pos = m.start()
+                if out:
+                    p.write_text("".join(out) + t[pos:], errors="surrogateescape")
     print(f"{len(mapping)} renamed, {changed} files rewritten; now run configure.py --split")
 
 

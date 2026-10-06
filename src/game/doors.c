@@ -70,7 +70,8 @@ static s32 door_walk(VObject *nm, u32 *tri, f32 *from, f32 *to) {
 }
 
 /* a door's own destructor (its two draw objects) */
-void *func_00221920(u8 *e, s32 flags) {
+/* 0x00221920 */
+void *Door_dtor(u8 *e, s32 flags) {
     if (e != NULL) {
         AT(e, 0x190, void **) = D_0046D800;
         AT(e, 0x190, void **) = D_00469D00;
@@ -85,10 +86,11 @@ void *func_00221920(u8 *e, s32 flags) {
 }
 
 /* +0x8 destructor */
-void *func_00221890(u8 *d, s32 flags) {
+/* 0x00221890 */
+void *Doors_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
         AT(d, 0x0, void **) = D_0046C540;
-        func_001002C0(d + 0x10, (void *(*)(void *, s32))func_00221920, 0x210, 8);
+        func_001002C0(d + 0x10, (void *(*)(void *, s32))Door_dtor, 0x210, 8);
         AT(d, 0x0, void **) = D_0046C5D0;
         gDoors = NULL;
         if ((s16)flags > 0) {
@@ -99,7 +101,8 @@ void *func_00221890(u8 *d, s32 flags) {
 }
 
 /* the base's destructor */
-void *func_00223D80(u8 *d, s32 flags) {
+/* 0x00223D80 */
+void *DoorsBase_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
         AT(d, 0x0, void **) = D_0046C5D0;
         gDoors = NULL;
@@ -111,7 +114,8 @@ void *func_00223D80(u8 *d, s32 flags) {
 }
 
 /* +0xC start door i's animation `anim` from buffer `buf` (opened by character `who`) */
-s32 func_002237E0(VObject *d, u32 i, s32 anim, u32 who, s32 buf) {
+/* 0x002237E0 */
+s32 Doors_StartAnim(VObject *d, u32 i, s32 anim, u32 who, s32 buf) {
     u8 *e, *tbl, *rec;
 
     if (!door_present(d, i) || anim < 0 || anim >= AT(d, 0x50C8 + buf * 4, s32) || who >= 6) {
@@ -133,7 +137,8 @@ s32 func_002237E0(VObject *d, u32 i, s32 anim, u32 who, s32 buf) {
 
 /* +0x10 whether character `who` stands on side `side` (0 / 1) of door i (its triangle lists in
  * the definition, +0x28: n, then n triangles, per side); -1 for no such door / side */
-s32 func_00223520(VObject *d, u32 i, s32 side, u32 who) {
+/* 0x00223520 */
+s32 Doors_OnSide(VObject *d, u32 i, s32 side, u32 who) {
     u8 *tbl;
     s32 *list, n, k;
 
@@ -159,7 +164,8 @@ s32 func_00223520(VObject *d, u32 i, s32 side, u32 who) {
  * z) turned with the door, on the nav mesh from the door's triangle (failing that, without
  * its x), w 1, into `out`, its turn (the record's + the door's) into rot[1]; the triangle, or
  * -1 */
-s32 func_002231A0(VObject *d, u32 i, s32 anim, f32 *out, f32 *rot, s32 buf) {
+/* 0x002231A0 */
+s32 Doors_AnimUserSpot(VObject *d, u32 i, s32 anim, f32 *out, f32 *rot, s32 buf) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 p[4] __attribute__((aligned(16)));
     f32 to[4] __attribute__((aligned(16)));
@@ -204,7 +210,8 @@ s32 func_002231A0(VObject *d, u32 i, s32 anim, f32 *out, f32 *rot, s32 buf) {
 
 /* +0x28 door i, as it is opened from the near side (its angle past -40: open) - animating: on to
  * the next half (+0x78: 1 past -80), else whether it is shut; -1 for no door */
-s32 func_00222E40(VObject *d, u32 i) {
+/* 0x00222E40 */
+s32 Doors_OpenFromNear(VObject *d, u32 i) {
     u8 *e;
 
     if (!door_present(d, i)) {
@@ -232,7 +239,8 @@ s32 func_00222E40(VObject *d, u32 i) {
 }
 
 /* +0x30 door i is idle (or there is none) */
-s32 func_00221B80(VObject *d, u32 i) {
+/* 0x00221B80 */
+s32 Doors_IsIdle(VObject *d, u32 i) {
     if (!door_present(d, i)) {
         return 1;
     }
@@ -240,7 +248,8 @@ s32 func_00221B80(VObject *d, u32 i) {
 }
 
 /* +0x34 where door i stands (+0x30) */
-s32 func_00221C00(VObject *d, u32 i, f32 *out) {
+/* 0x00221C00 */
+s32 Doors_GetPos(VObject *d, u32 i, f32 *out) {
     if (!door_present(d, i)) {
         return -1;
     }
@@ -249,7 +258,8 @@ s32 func_00221C00(VObject *d, u32 i, f32 *out) {
 }
 
 /* +0x38 door i's point +0x20 */
-s32 func_00221C90(VObject *d, u32 i, f32 *out) {
+/* 0x00221C90 */
+s32 Doors_GetPoint20(VObject *d, u32 i, f32 *out) {
     if (!door_present(d, i)) {
         return -1;
     }
@@ -258,27 +268,32 @@ s32 func_00221C90(VObject *d, u32 i, f32 *out) {
 }
 
 /* +0x3C door i's turn at rest */
-f32 func_00221D20(VObject *d, u32 i) {
+/* 0x00221D20 */
+f32 Doors_GetRestTurn(VObject *d, u32 i) {
     return door_present(d, i) ? AT(DOOR(d, i), 0x54, f32) : 0.0f;
 }
 
 /* +0x44 door i's nav triangle (-1: none) */
-s32 func_00221DF0(VObject *d, u32 i) {
+/* 0x00221DF0 */
+s32 Doors_GetNavTri(VObject *d, u32 i) {
     return door_present(d, i) ? AT(DOOR(d, i), 0x18, s32) : -1;
 }
 
 /* +0x64 door i's opening angle */
-f32 func_00221EB0(VObject *d, u32 i) {
+/* 0x00221EB0 */
+f32 Doors_GetOpenAngle(VObject *d, u32 i) {
     return door_present(d, i) ? AT(DOOR(d, i), 0x74, f32) : 0.0f;
 }
 
 /* +0x70 door i is opened */
-s32 func_00221F30(VObject *d, u32 i) {
+/* 0x00221F30 */
+s32 Doors_IsOpened(VObject *d, u32 i) {
     return door_present(d, i) && AT(DOOR(d, i), 0x70, s32) == 3;
 }
 
 /* +0x88 */
-void func_00221FB0(VObject *d, u32 i, u8 v) {
+/* 0x00221FB0 */
+void Doors_SetFlag82(VObject *d, u32 i, u8 v) {
     AT(DOOR(d, i), 0x82, u8) = v;
 }
 
@@ -292,7 +307,8 @@ static void door_turn_wrap(u8 *e) {
 }
 
 /* +0x74 door i turned `a` from rest */
-void func_002219D0(VObject *d, u32 i, f32 a) {
+/* 0x002219D0 */
+void Doors_TurnBy(VObject *d, u32 i, f32 a) {
     u8 *e = DOOR(d, i);
 
     AT(e, 0x44, f32) = AT(e, 0x54, f32) + a;
@@ -300,7 +316,8 @@ void func_002219D0(VObject *d, u32 i, f32 a) {
 }
 
 /* +0x78 door i turned to `a` */
-void func_00221A90(VObject *d, u32 i, f32 a) {
+/* 0x00221A90 */
+void Doors_TurnTo(VObject *d, u32 i, f32 a) {
     u8 *e = DOOR(d, i);
 
     AT(e, 0x44, f32) = a;
@@ -309,7 +326,8 @@ void func_00221A90(VObject *d, u32 i, f32 a) {
 
 /* where `off` (in the door's frame, turned about to the far side when the events say so) from
  * door i lands on the nav mesh (`out`, on its plane): the triangle, or -1 */
-s32 func_00222A60(VObject *d, u32 i, const f32 *off, f32 *out) {
+/* 0x00222A60 */
+s32 Doors_NavSpot(VObject *d, u32 i, const f32 *off, f32 *out) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 to[4] __attribute__((aligned(16)));
     f32 from[4] __attribute__((aligned(16)));
@@ -344,36 +362,40 @@ s32 func_00222A60(VObject *d, u32 i, const f32 *off, f32 *out) {
 }
 
 /* +0x58 / +0x54 / +0x50 the spot 12 behind / 12 ahead / 4 behind door i */
-s32 func_00222CA0(VObject *d, u32 i, f32 *out) {
+/* 0x00222CA0 */
+s32 Doors_SpotBehind(VObject *d, u32 i, f32 *out) {
     f32 off[4] __attribute__((aligned(16)));
 
     off[2] = -12.0f;
     off[0] = 0.0f;
     off[1] = 0.0f;
-    return func_00222A60(d, i, off, out);
+    return Doors_NavSpot(d, i, off, out);
 }
 
-s32 func_00222CD0(VObject *d, u32 i, f32 *out) {
+/* 0x00222CD0 */
+s32 Doors_SpotAhead(VObject *d, u32 i, f32 *out) {
     f32 off[4] __attribute__((aligned(16)));
 
     off[2] = 12.0f;
     off[0] = 0.0f;
     off[1] = 0.0f;
-    return func_00222A60(d, i, off, out);
+    return Doors_NavSpot(d, i, off, out);
 }
 
-s32 func_00222D00(VObject *d, u32 i, f32 *out) {
+/* 0x00222D00 */
+s32 Doors_SpotJustBehind(VObject *d, u32 i, f32 *out) {
     f32 off[4] __attribute__((aligned(16)));
 
     off[2] = -4.0f;
     off[0] = 0.0f;
     off[1] = 0.0f;
-    return func_00222A60(d, i, off, out);
+    return Doors_NavSpot(d, i, off, out);
 }
 
 /* +0x5C each door of the room the rooms know (id under 400) has its state put into the
  * progress (+0x60) */
-void func_00222960(VObject *d) {
+/* 0x00222960 */
+void Doors_SaveAll(VObject *d) {
     s32 room = VCALL(gProgress, 0xC, s32 (*)(Progress *))(gProgress);
     VObject *doors = gDoors, *rooms = gRooms;
     u32 i;
@@ -390,7 +412,8 @@ void func_00222960(VObject *d) {
 
 /* +0x60 door i of `room` into the progress (when the current room's doors count): open or
  * shut (+0x78), with its opener (+0x7C; 0xFF while animating) */
-void func_00222850(VObject *d, s32 room, u32 i) {
+/* 0x00222850 */
+void Doors_SaveDoor(VObject *d, s32 room, u32 i) {
     Progress *p = gProgress;
     u8 *e;
     s32 who;
@@ -409,7 +432,8 @@ void func_00222850(VObject *d, s32 room, u32 i) {
 
 /* +0x68 door i (not animating) set opened: 0 from the near side (with a creak), 1 the far;
  * its passage flags 0x60000 moved to the other side; -1 otherwise */
-s32 func_002226E0(VObject *d, u32 i, s32 how) {
+/* 0x002226E0 */
+s32 Doors_SetOpened(VObject *d, u32 i, s32 how) {
     u8 *e;
 
     if (!door_present(d, i)) {
@@ -422,7 +446,7 @@ s32 func_002226E0(VObject *d, u32 i, s32 how) {
     }
     if (how == 0) {
         AT(e, 0x81, u8) = 1;
-        func_00220D10(e + 0x10, 0x91, 3);
+        Door_PlaySound(e + 0x10, 0x91, 3);
         AT(e, 0x70, s32) = 3;
         AT(e, 0x78, s32) = 0;
         VCALL(d, 0x20, void (*)(VObject *, u32, s32, u32))(d, i, 0, 0x60000);
@@ -441,7 +465,8 @@ s32 func_002226E0(VObject *d, u32 i, s32 how) {
 
 /* +0x6C `pos` is within door i's area of `kind` (D_003E51A0: a quad in the door's frame, within
  * 5 of its height) */
-s32 func_00222480(VObject *d, s32 kind, u32 i, const f32 *pos) {
+/* 0x00222480 */
+s32 Doors_InArea(VObject *d, s32 kind, u32 i, const f32 *pos) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 c[4][4] __attribute__((aligned(16)));
     f32 v[4] __attribute__((aligned(16)));
@@ -480,7 +505,8 @@ s32 func_00222480(VObject *d, s32 kind, u32 i, const f32 *pos) {
 }
 
 /* the doors released (each present one's request) and the definition dropped */
-void func_002238F0(VObject *d) {
+/* 0x002238F0 */
+void Doors_Release(VObject *d) {
     u32 i;
 
     if (AT(d, 0x4, u8 *) == NULL) {
@@ -488,7 +514,7 @@ void func_002238F0(VObject *d) {
     }
     for (i = 0; i < 8; i = (i + 1) & 0xFF) {
         if (door_present(d, i)) {
-            func_002212D0(DOOR(d, i) + 0x10);
+            Door_ReleaseRequest(DOOR(d, i) + 0x10);
         }
     }
     AT(d, 0x4, u8 *) = NULL;
@@ -498,7 +524,8 @@ void func_002238F0(VObject *d) {
 
 /* door `e` (its own +0x0) plays sound `id` and is heard as a noise by its opener's slot (+0x6C:
  * 0..2, else 3): `how` 1 / 2 quiet (15), 3 / 4 loud (95), else silent */
-void func_00220D10(u8 *e, s32 id, s32 how) {
+/* 0x00220D10 */
+void Door_PlaySound(u8 *e, s32 id, s32 how) {
     Progress *p;
     s32 slot, loud = 0, room;
     u32 door;
@@ -545,7 +572,8 @@ typedef struct RouteStep {
 /* the doors out of `room` queued as steps (those not yet seen, not to avoid, unlocked and
  * openable from the right side; with +0x24 0 / 1, only through the door matching it); -1 when
  * the queue is full */
-s32 func_002206F0(u8 *rp, s32 room) {
+/* 0x002206F0 */
+s32 RoutePlanner_QueueDoors(u8 *rp, s32 room) {
     VObject *rooms = gRooms;
     Progress *p = gProgress;
     u32 i;
@@ -588,7 +616,8 @@ s32 func_002206F0(u8 *rp, s32 room) {
 /* search on: the steps in turn until one reaches the goal room (through the wanted door) - its
  * route written backwards from +0x18 (which ends before its start) - and the number of doors;
  * -1 when none is left or the limit is reached */
-s32 func_00220930(u8 *rp) {
+/* 0x00220930 */
+s32 RoutePlanner_Search(u8 *rp) {
     for (;;) {
         RouteStep *s;
         s16 lim;
@@ -622,7 +651,7 @@ s32 func_00220930(u8 *rp) {
             }
             return n;
         }
-        if (func_002206F0(rp, s->room) == -1) {
+        if (RoutePlanner_QueueDoors(rp, s->room) == -1) {
             return -1;
         }
     }
@@ -631,7 +660,8 @@ s32 func_00220930(u8 *rp) {
 /* +0xC a route from room `from` to room `to` (doors openable from `side`, avoiding `avoid`,
  * into `out`) for a walker of `kind`, starting from door `door`, ending at door `want` (-1:
  * any), in at most `max` doors: its length, 0 already there, -1 none */
-s32 func_00220BC0(u8 *rp, u32 from, u32 to, s32 side, u32 *avoid, u16 *out, s32 kind, s32 door, s32 want, s16 max) {
+/* 0x00220BC0 */
+s32 RoutePlanner_FindRoute(u8 *rp, u32 from, u32 to, s32 side, u32 *avoid, u16 *out, s32 kind, s32 door, s32 want, s16 max) {
     s32 i;
 
     if (from >= 0x110 || to >= 0x110) {
@@ -655,12 +685,13 @@ s32 func_00220BC0(u8 *rp, u32 from, u32 to, s32 side, u32 *avoid, u16 *out, s32 
     for (i = 0; i < 13; i++) {
         AT(rp, 0x630 + i * 4, u32) = 0;
     }
-    func_002206F0(rp, from);
-    return func_00220930(rp);
+    RoutePlanner_QueueDoors(rp, from);
+    return RoutePlanner_Search(rp);
 }
 
 /* +0x8 destructor */
-void *func_00220680(void *o, s32 flags) {
+/* 0x00220680 */
+void *RoutePlanner_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046C520;
         AT(o, 0x0, void **) = D_0046C530;
@@ -673,7 +704,8 @@ void *func_00220680(void *o, s32 flags) {
 }
 
 /* the base's destructor */
-void *func_00220CB0(void *o, s32 flags) {
+/* 0x00220CB0 */
+void *RoutePlannerBase_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046C530;
         gRoutePlanner = NULL;

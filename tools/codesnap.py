@@ -168,6 +168,8 @@ def normalize(body: list, labels: dict, canon: dict) -> str:
         w = m.group(0)
         if w.startswith(".L"):
             return w
+        if w.startswith("$") and len(w) > 1:   # an x86 immediate: $symbol
+            return "$" + canon_name(w[1:], canon)
         return canon_name(w, canon)
 
     def fix(t: str, depth: int = 0) -> str:

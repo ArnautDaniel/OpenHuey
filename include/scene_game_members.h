@@ -6,7 +6,7 @@
 
 /* scene_game_members.c */
 extern void *func_002D15B0(void *p);
-extern void func_002212D0(u8 *p);
+extern void Door_ReleaseRequest(u8 *p);
 extern void func_002A8410(u8 *p);   /* reset a state block */
 extern void func_002ECB50(u8 *p);
 extern void *func_002D10C0(u8 *p);

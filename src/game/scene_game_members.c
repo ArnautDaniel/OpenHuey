@@ -66,7 +66,8 @@ void func_002A8890(u8 *p) {
 }
 
 /* release a door's (?) pending request: only while it is active (+0x70 == 1) */
-void func_002212D0(u8 *p) {
+/* 0x002212D0 */
+void Door_ReleaseRequest(u8 *p) {
     if (AT(p, 0x70, u8) == 1 && AT(p, 0x0, s32) != 0) {
         AT(p, 0x0, s32) = 0;
     }
@@ -148,7 +149,7 @@ void *func_002D11C0(u8 *p) {
 void *func_002D1200(u8 *p) {
     AT(p, 0x0, void **) = D_0046C540;
     gDoors = (VObject *)p;
-    func_00100340(p + 0x10, func_002D1260, func_00221920, 0x210, 8);
+    func_00100340(p + 0x10, func_002D1260, Door_dtor, 0x210, 8);
     AT(p, 0x4, s32) = 0;
     return p;
 }
@@ -215,7 +216,7 @@ void func_00223C90(u8 *p) {
         s32 used = tbl != NULL && i < 8 ? AT(tbl, i * 4, s32) : 0;
 
         if (used) {
-            func_002212D0(p + 0x10 + i * 0x210);
+            Door_ReleaseRequest(p + 0x10 + i * 0x210);
         }
     }
     AT(p, 0x4, void *) = NULL;
@@ -2816,7 +2817,7 @@ extern void func_00267080(u8 *fx);           /* all the room's effects back to t
 void func_0011FF30(u8 *rm) {
     VObject *tc;
 
-    func_002238F0((VObject *)(rm + 0x1640));
+    Doors_Release((VObject *)(rm + 0x1640));
     func_0021ABC0(rm + 0x9380);
     VCALL((VObject *)(rm + 0x6740), 0x20, void (*)(VObject *))((VObject *)(rm + 0x6740));
     func_00267080((u8 *)gRoomEffects);
@@ -2836,7 +2837,7 @@ void func_0011FEB0(u8 *rm) {
     AT(rm, 0x8B, u8) = VCALL(gProgress, 0x54, s32 (*)(void *))(gProgress);
 }
 
-extern void func_00221300(u8 *door);
+extern void Door_Swing(u8 *door);
 
 /* the doors, each frame: each of the 8 with a definition (+0x4 table) updates */
 void func_00223A90(void *d) {
@@ -2850,7 +2851,7 @@ void func_00223A90(void *d) {
         void **tbl = AT(doors, 0x4, void **);
 
         if (tbl != NULL && tbl[k] != NULL) {
-            func_00221300(doors + 0x10 + k * 0x210);
+            Door_Swing(doors + 0x10 + k * 0x210);
         }
     }
 }
@@ -3393,7 +3394,8 @@ static void door_settle(u8 *door, s32 open) {
 /* a door's swing, each frame (+0x60: 1 along a list of angles +0x5C (+0x54 of +0x58 done),
  * 2 by 5 degrees a frame, 3 slammed by 15; +0x68 0 opening to -90 degrees (+0x64), else
  * closing to 0), while it is shown (+0x70); the creak / latch sounds once (+0x71) */
-void func_00221300(u8 *door) {
+/* 0x00221300 */
+void Door_Swing(u8 *door) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kMinusPi = {0xC0490FDB}, kTwoPi = {0x40C90FDB};
     f32 step;
 
@@ -3422,11 +3424,11 @@ void func_00221300(u8 *door) {
         if (AT(door, 0x68, s32) == 1) {
             if (!(AT(door, 0x64, f32) <= -6.0f)) {
                 AT(door, 0x71, u8) = 1;
-                func_00220D10(door, 0x28, 2);
+                Door_PlaySound(door, 0x28, 2);
             }
         } else if (AT(door, 0x64, f32) < 0.0f) {
             AT(door, 0x71, u8) = 1;
-            func_00220D10(door, 0x27, 1);
+            Door_PlaySound(door, 0x27, 1);
         }
         return;
     }
@@ -3444,7 +3446,7 @@ void func_00221300(u8 *door) {
             AT(door, 0x64, f32) = AT(door, 0x64, f32) + 5.0f;
             if (AT(door, 0x71, u8) == 0 && !(AT(door, 0x64, f32) <= -6.0f)) {
                 AT(door, 0x71, u8) = 1;
-                func_00220D10(door, 0x28, 0);
+                Door_PlaySound(door, 0x28, 0);
             }
             if (!(AT(door, 0x64, f32) <= 0.0f)) {
                 AT(door, 0x64, f32) = 0.0f;
@@ -3468,7 +3470,7 @@ void func_00221300(u8 *door) {
             AT(door, 0x64, f32) = AT(door, 0x64, f32) + step;
             if (!(AT(door, 0x64, f32) <= 0.0f)) {
                 AT(door, 0x71, u8) = 1;
-                func_00220D10(door, 0x28, 4);
+                Door_PlaySound(door, 0x28, 4);
                 AT(door, 0x64, f32) = 0.0f;
                 door_settle(door, 0);
             }

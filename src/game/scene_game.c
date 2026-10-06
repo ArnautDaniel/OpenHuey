@@ -2729,7 +2729,7 @@ void *SceneGame_dtor(u8 *g, s32 flags) {
     func_0021A2E0(g + 0x748200, -1);
     func_002A8520(g + 0x7481E0, -1);
     func_002D0D60(g + 0x7455C0, -1);
-    func_00221890(g + 0x7404C0, -1);
+    Doors_dtor(g + 0x7404C0, -1);
     func_0021B0F0((VObject *)(g + 0x73F370), -1);
     func_00179F60(g + 0x73F260, -1);
     func_00268110(g + 0x73F1C0, -1);
