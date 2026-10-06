@@ -4222,3 +4222,168 @@ void func_0032A550(Character *c) {
         break;
     }
 }
+
+extern void func_002E2310(Character *c);
+
+/* head for exit `exit` (+0x67 its door): in the room being played, its closed ways forgotten;
+   a path to the exit's spot (+0x34; 0xFF: none) or else the first open door's (+0x70 0 once
+   one is planned, +0x61 1 for the exit's own). With the exit seen from Fiona's spot
+   (func_00123C60) the door is noted and its state 0. Without a plan, straight to the exit's
+   spot when that works. On its way (+0x61) it keeps the next door (+0x14C0) and drops back
+   onto its plan when that is no further from the door than it is */
+void func_0032AAF0(Character *c, u32 exit) {
+    u8 *k = CR(c);
+    VObject *rooms = D_0044E568;
+    Progress *p;
+    f32 at[4] __attribute__((aligned(16)));
+    f32 b[4] __attribute__((aligned(16)));
+    f32 door[4] __attribute__((aligned(16)));
+    u32 e, d;
+    s32 i;
+
+    AT(k, 0x67, u8) = VCALL(rooms, 0x14, u32 (*)(VObject *, s32, u32))(rooms, c->a.room, exit);
+    p = gProgress;
+    if (c->a.room != VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
+        return;
+    }
+    for (i = 0; i < 13; i++) {
+        c->unk148C[i] = 0;
+    }
+    AT(k, 0x61, u8) = 0;
+    AT(k, 0x70, u8) = 1;
+    e = exit & 0xFF;
+    if (e != 0xFF) {
+        u32 tri = VCALL(rooms, 0x34, u32 (*)(VObject *, u32, f32 *))(rooms, exit, at);
+
+        if (func_003255C0(c, tri, at, 1) == 0) {
+            AT(k, 0x70, u8) = 0;
+            AT(k, 0x61, u8) = 1;
+        }
+    }
+    if (AT(k, 0x70, u8) == 1) {
+        for (d = 0; d < 8; d = (d + 1) & 0xFF) {
+            u32 tri;
+
+            if ((VCALL(rooms, 0x74, u32 (*)(VObject *, s32, u32))(rooms, c->a.room, d) & 0xFF) != 1) {
+                continue;
+            }
+            if ((func_00178980(p, c->a.room, d) & 0xFF) != 1) {
+                continue;
+            }
+            tri = VCALL(rooms, 0x34, u32 (*)(VObject *, u32, f32 *))(rooms, d, at);
+            if (func_003255C0(c, tri, at, 1) == 0) {
+                AT(k, 0x70, u8) = 0;
+                break;
+            }
+        }
+    }
+    if (AT(k, 0x70, u8) == 1) {
+        return;
+    }
+    if (e != 0xFF && (func_00123C60(&c->a, exit, gCharPlayer->a.pos) & 0xFF) == 1) {
+        VCALL(rooms, 0x14, u32 (*)(VObject *, s32, u32))(rooms, c->a.room, exit);
+        AT(k, 0x8, s32) = 0;
+        return;
+    }
+    if (AT(k, 0x61, u8) == 0) {
+        u32 tri = VCALL(rooms, 0x34, u32 (*)(VObject *, u32, f32 *))(rooms, exit, b);
+
+        if (func_00127140(c, 0, tri, b) > 0) {
+            sceVu0CopyVector(at, b);
+            if (func_001270A0(c) > 0) {
+                AT(k, 0x61, u8) = 1;
+            }
+        }
+        func_00127060(c);
+    }
+    if (AT(k, 0x61, u8) != 1) {
+        return;
+    }
+    rooms = D_0044E568;
+    c->unk14C0 = VCALL(rooms, 0x10, u32 (*)(VObject *, s32, u32))(rooms, c->a.room, exit);
+    VCALL(rooms, 0x30, u32 (*)(VObject *, u32, f32 *))(rooms, exit, door);
+    {
+        f32 d1[4] __attribute__((aligned(16)));
+        f32 d2[4] __attribute__((aligned(16)));
+        f32 n1, n2;
+
+        sceVu0SubVector(d1, c->a.pos, door);
+        sceVu0SubVector(d2, at, door);
+        n1 = sceVu0InnerProduct(d1, d1);
+        n2 = sceVu0InnerProduct(d2, d2);
+        if (!(n1 <= n2)) {
+            return;
+        }
+    }
+    if (func_00124480(&c->a, door, c->pathReq->mask) == NAV_NONE) {
+        return;
+    }
+    c->unk124 = c->unk128;
+}
+
+/* +0xC set up: the creature base's (func_002E2310); size 3 x 6, company, in contact, blocking
+   0x4020028 (path kind 6); a random kind 0x80..0x82 with its table entry; all its own state
+   cleared (speed 0.7, a wait of 150 / 300 / 450); then +0x1C, +0x5C, idle 0 */
+void func_0032C040(Character *c) {
+    u8 *k = CR(c);
+    VObject *rnd;
+    const u8 *e;
+    s32 i;
+
+    func_002E2310(c);
+    c->a.radius = 3.0f;
+    c->a.height = 6.0f;
+    c->a.unk2A = 1;
+    c->a.unk2D = 0;
+    c->a.navMask = 0x4020028;
+    rnd = D_0044E550;
+    c->pathReq->unk4 = 6;
+    c->pathReq->mask = c->a.navMask;
+    AT(k, 0x6D, u8) = (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0xF) % 3 | 0x80;
+    e = D_0042C460 + (AT(k, 0x6D, u8) ^ 0x80) * 8;
+    AT(c, 0x14C8, s32) = AT(e, 0x0, s32);
+    AT(k, 0x46, s16) = AT(e, 0x4, s16);
+    AT(k, 0x0, s32) = 0;
+    AT(k, 0x4, u32) = 0x3F333333;   /* 0.7f */
+    AT(k, 0x8, s32) = 0;
+    AT(k, 0xC, s32) = 0;
+    AT(k, 0x10, s32) = 0;
+    AT(k, 0x14, s32) = 0;
+    AT(k, 0x18, s32) = 0;
+    AT(k, 0x1C, s32) = 0;
+    AT(k, 0x20, s32) = 0;
+    AT(k, 0x24, s32) = 0;
+    AT(k, 0x30, s32) = 0;
+    AT(k, 0x34, s32) = 0;
+    AT(k, 0x38, s32) = 0;
+    AT(k, 0x3C, s32) = 0;
+    AT(k, 0x40, s16) = 0;
+    AT(k, 0x42, s16) = (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0xF) % 3 * 150 + 150;
+    AT(k, 0x44, s16) = 0;
+    AT(k, 0x48, s16) = 0;
+    AT(k, 0x61, u8) = 0;
+    AT(k, 0x62, u8) = 0;
+    AT(k, 0x63, u8) = 0;
+    AT(k, 0x64, u8) = 0;
+    AT(k, 0x65, u8) = 0;
+    AT(k, 0x66, u8) = 0;
+    AT(k, 0x4C, u16) = 0;
+    AT(k, 0x67, u8) = 0;
+    AT(k, 0x68, u8) = 0;
+    AT(k, 0x69, u8) = 0;
+    AT(k, 0x60, u8) = 0;
+    AT(k, 0x6A, u8) = 0;
+    AT(k, 0x6B, u8) = 0;
+    AT(k, 0x6C, u8) = 0;
+    AT(k, 0x70, u8) = 0;
+    AT(k, 0x71, u8) = 0;
+    AT(k, 0x28, s32) = 0;
+    AT(k, 0x2C, s32) = 0;
+    for (i = 0; i < 8; i++) {
+        AT(k, 0x50 + i * 2, s16) = 0;
+    }
+    VCALL(c, 0x1C, void (*)(Character *))(c);
+    VCALL(c, 0x5C, void (*)(Character *))(c);
+    func_002DDED0(c->motion, 0, -1);
+    AT(k, 0x69, u8) = 0;
+}
