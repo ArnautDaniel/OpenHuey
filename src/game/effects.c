@@ -3307,6 +3307,153 @@ void func_0037D4E0(u8 *e) {
 }
 #endif
 
+/* ---- D_0047A350 (0x130 bytes): Lorenzo's spark (func_00309890) - two quad records (+0x10 +
+ * 0x60 x the current one +0x128) growing (+0x120 a frame), turning and drifting (+0x108, 12
+ * each) as their alpha fades (+0x124 a frame) and their colour dims; the quad drawer at +0xD0;
+ * stopped (+0x12C) once both are gone ---- */
+
+#define SPARK2_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x60) + (i))
+
+extern u32 func_002D6010(u8 *mgr);   /* the effects paused */
+
+/* +0xC set up: the drawer's settings (a 32 x 32 cell at (0x180, 0x80), blended 0x40, layer
+ * 0x19, palette 9) */
+void func_00374AA0(u8 *e) {
+    AT(e, 0x128, s32) = 0;
+    AT(e, 0x12C, u8) = 0;
+    AT(e, 0xD8, s64) = -1;
+    AT(e, 0xE4, s32) = 0;
+    AT(e, 0xE8, s32) = 0;
+    AT(e, 0xEC, s32) = 0;
+    AT(e, 0xF0, s32) = 0x19;
+    AT(e, 0xF4, s16) = 2;
+    AT(e, 0xF6, s16) = 0x180;
+    AT(e, 0xF8, s16) = 0x80;
+    AT(e, 0xFA, s16) = 0x20;
+    AT(e, 0xFC, s16) = 0x20;
+    AT(e, 0xFE, s16) = 0x200;
+    AT(e, 0x100, s16) = 0x100;
+    AT(e, 0x102, s8) = 0x40;
+    AT(e, 0x103, s8) = 1;
+    AT(e, 0x104, s8) = 1;
+    AT(e, 0x105, s8) = 0x10;
+    AT(e, 0x106, s8) = 9;
+}
+
+/* +0x18 start: arg { position, rise (+0x10), size (+0x14), growth (+0x18), life (+0x1C) } (none:
+ * stopped). Both records at the point, white, the size, turned at random, rising 0.1 x rise and
+ * drifting sideways (0.1 / 0.05 at most); growing (growth - 1) x size a frame and fading 0x80 /
+ * life a frame (at least 1) */
+void func_003744B0(u8 *e, f32 *arg) {
+    static const union { u32 u; f32 f; } kTenth = {0x3DCCCCCD}, kFifth = {0x3E4CCCCD};
+    f32 at[4] __attribute__((aligned(16)));
+    VObject *rnd;
+    f32 size, up;
+    s32 i;
+
+    if (arg == NULL) {
+        AT(e, 0x12C, u8) = 1;
+        return;
+    }
+    sceVu0CopyVector(at, arg);
+    size = arg[5];
+    AT(e, 0x120, f32) = (arg[6] - 1.0f) * size;
+    AT(e, 0x124, s32) = AT(arg, 0x1C, s32);
+    if (AT(e, 0x124, s32) != 0) {
+        AT(e, 0x124, s32) = 0x80 / AT(e, 0x124, s32);
+    }
+    if (AT(e, 0x124, s32) == 0) {
+        AT(e, 0x124, s32) = 1;
+    }
+    rnd = D_0044E550;
+    up = kTenth.f * arg[4];
+    for (i = 0; i < 2; i++) {
+        QuadRec *r = SPARK2_REC(e, AT(e, 0x128, s32), i);
+        f32 *v = &AT(e, 0x108 + i * 12, f32);
+
+        sceVu0CopyVector(r->pos, at);
+        r->rgba[0] = 0x80;
+        r->rgba[1] = 0x80;
+        r->rgba[2] = 0x80;
+        r->rgba[3] = 0x80;
+        r->w = size;
+        r->h = size;
+        r->turn = 0x1.921fb6p+1f * (360.0f * (burst_rnd(rnd) - 0.5f)) / 180.0f;
+        r->frame = 0;
+        if (i == 0) {
+            v[0] = kFifth.f * (burst_rnd(rnd) - 0.5f);
+            v[1] = up;
+            v[2] = kFifth.f * (burst_rnd(rnd) - 0.5f);
+        } else {
+            v[0] = kTenth.f * (burst_rnd(rnd) - 0.5f);
+            v[1] = up;
+            v[2] = kTenth.f * (burst_rnd(rnd) - 0.5f);
+        }
+    }
+}
+
+/* +0x10 update (0 once both are gone): each record still seen grows, turns (up to 3 degrees,
+ * the way it drifts), moves, fades and dims - out once black */
+s32 func_003747D0(u8 *e) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB};
+    VObject *rnd;
+    s32 i, k;
+
+    if (AT(e, 0x12C, u8) == 1) {
+        return 0;
+    }
+    rnd = D_0044E550;
+    AT(e, 0x128, s32) ^= 1;
+    AT(e, 0x12C, u8) = 1;
+    for (i = 0; i < 2; i++) {
+        u32 *src = (u32 *)SPARK2_REC(e, AT(e, 0x128, s32) ^ 1, i);
+        u32 *dst = (u32 *)SPARK2_REC(e, AT(e, 0x128, s32), i);
+        QuadRec *r;
+        f32 *v = &AT(e, 0x108 + i * 12, f32);
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        r = SPARK2_REC(e, AT(e, 0x128, s32), i);
+        if (r->rgba[3] <= 0) {
+            continue;
+        }
+        AT(e, 0x12C, u8) = 0;
+        r->w = r->w + AT(e, 0x120, f32);
+        r->h = r->w;
+        if (v[0] <= 0.0f) {
+            r->turn = r->turn - kPi.f * (3.0f * burst_rnd(rnd)) / 180.0f;
+        } else {
+            r->turn = r->turn + kPi.f * (3.0f * burst_rnd(rnd)) / 180.0f;
+        }
+        r->pos[0] = r->pos[0] + v[0];
+        r->pos[1] = r->pos[1] + v[1];
+        r->pos[2] = r->pos[2] + v[2];
+        r->rgba[3] -= AT(e, 0x124, s32);
+        if (r->rgba[3] < 0) {
+            r->rgba[3] = 0;
+        }
+        for (k = 0; k < 3; k++) {
+            r->rgba[k]--;
+            if (r->rgba[k] < 0) {
+                r->rgba[k] = 0;
+            }
+        }
+        if (r->rgba[0] + r->rgba[1] + r->rgba[2] == 0) {
+            r->rgba[3] = 0;
+        }
+    }
+    return 1;
+}
+
+/* +0x14 draw the current buffer, unless the effects are paused or both are gone */
+void func_00374750(u8 *e) {
+    if (func_002D6010(D_0044E578) == 0 && AT(e, 0x12C, u8) == 0) {
+        AT(e, 0xE0, QuadRec *) = SPARK2_REC(e, AT(e, 0x128, s32), 0);
+        func_002E56C0(e + 0xD0);
+    }
+}
+
 /* ---- D_00470E20 (0x1C58 bytes): 64 smoke puffs rising from around (15.5, 11, 22.5), in two
  * buffers of quad records (+0x10 + 0xC00 x the current one +0x1C50), velocities at +0x1850 (16
  * each), the quad drawer at +0x1810; a puff fades from height 20 (every other frame) and is
