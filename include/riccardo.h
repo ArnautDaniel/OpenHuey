@@ -8,7 +8,7 @@ typedef struct Character Character;
 typedef struct Pursuer Pursuer;
 
 /* riccardo.c */
-extern s32 func_002D7A60(void);
+extern s32 ItemA1_Use(void);
 extern Pursuer *Riccardo_dtor(Pursuer *p, s32 flags);
 extern void Riccardo_ExitDone(Pursuer *p);
 extern void Riccardo_DoorBreak(Pursuer *p, s32 exit);

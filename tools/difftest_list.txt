@@ -123,43 +123,43 @@ src/game/pursuer.c Kind27_ctor
 src/game/pursuer.c Debilitas3_ctor
 src/game/pursuer.c Debilitas2_ctor
 src/game/pursuer.c Debilitas_ctor
-src/game/item_classes.c func_002645D0
-src/game/item_classes.c func_00264600
-src/game/item_classes.c func_00264630
-src/game/item_classes.c func_00264660
-src/game/item_classes.c func_00264690
-src/game/item_classes.c func_002646C0
-src/game/item_classes.c func_002646F0
-src/game/item_classes.c func_00264720
-src/game/item_classes.c func_00264750
-src/game/item_classes.c func_00264780
-src/game/item_classes.c func_002647B0
-src/game/item_classes.c func_002647E0
-src/game/item_classes.c func_00264810
-src/game/item_classes.c func_00264840
-src/game/item_classes.c func_00264870
-src/game/item_classes.c func_002648A0
-src/game/item_classes.c func_002648D0
+src/game/item_classes.c Item10_ctor
+src/game/item_classes.c Item0F_ctor
+src/game/item_classes.c Item0E_ctor
+src/game/item_classes.c Item0D_ctor
+src/game/item_classes.c Item0C_ctor
+src/game/item_classes.c Item0B_ctor
+src/game/item_classes.c Item0A_ctor
+src/game/item_classes.c Item09_ctor
+src/game/item_classes.c Item08_ctor
+src/game/item_classes.c Item07_ctor
+src/game/item_classes.c Item06_ctor
+src/game/item_classes.c Item05_ctor
+src/game/item_classes.c Item04_ctor
+src/game/item_classes.c Item03_ctor
+src/game/item_classes.c Item02_ctor
+src/game/item_classes.c Item01_ctor
+src/game/item_classes.c Item00_ctor
 src/game/item_classes.c func_00264C10
 src/game/item_classes.c func_00264E90
-src/game/item_classes.c func_00264FE0
-src/game/item_classes.c func_002650D0
-src/game/item_classes.c func_00265180
-src/game/item_classes.c func_00265230
-src/game/item_classes.c func_002652E0
-src/game/item_classes.c func_00265390
-src/game/item_classes.c func_00265440
-src/game/item_classes.c func_00265520
-src/game/item_classes.c func_002655D0
-src/game/item_classes.c func_00265680
-src/game/item_classes.c func_00265730
-src/game/item_classes.c func_00265810
-src/game/item_classes.c func_002658C0
-src/game/item_classes.c func_00265970
-src/game/item_classes.c func_00265A20
-src/game/item_classes.c func_00265B00
-src/game/item_classes.c func_00265BB0
-src/game/item_classes.c func_00265C60
+src/game/item_classes.c Item70_LoadPicture
+src/game/item_classes.c Item71_LoadPicture
+src/game/item_classes.c Item72_LoadPicture
+src/game/item_classes.c Item73_LoadPicture
+src/game/item_classes.c Item74_LoadPicture
+src/game/item_classes.c Item75_LoadPicture
+src/game/item_classes.c Item80_LoadPicture
+src/game/item_classes.c Item81_LoadPicture
+src/game/item_classes.c Item82_LoadPicture
+src/game/item_classes.c Item83_LoadPicture
+src/game/item_classes.c Item86_LoadPicture
+src/game/item_classes.c Item87_LoadPicture
+src/game/item_classes.c Item88_LoadPicture
+src/game/item_classes.c Item89_LoadPicture
+src/game/item_classes.c Item8A_LoadPicture
+src/game/item_classes.c Item8B_LoadPicture
+src/game/item_classes.c Item8C_LoadPicture
+src/game/item_classes.c Item8D_LoadPicture
 src/game/rooms/room_1C.c func_002ADA90
 src/game/rooms/room_1C.c func_002ADAB0
 src/game/rooms/room_1C.c func_002ADAC0
@@ -457,13 +457,13 @@ src/game/rooms/room_30.c func_002CCB30
 src/game/rooms/room_30.c func_002CCB40
 src/game/rooms/room_30.c func_002CCB60
 src/game/rooms/room_30.c func_002CCB70
-src/game/item_classes.c func_002CCC40
-src/game/item_classes.c func_002CCDB0
-src/game/item_classes.c func_002CD000
-src/game/item_classes.c func_002CD1A0
-src/game/item_classes.c func_002CD310
-src/game/item_classes.c func_002CD490
-src/game/item_classes.c func_002CD4C0
+src/game/item_classes.c Item00_LoadPicture
+src/game/item_classes.c Item01_LoadPicture
+src/game/item_classes.c Item02_LoadPicture
+src/game/item_classes.c Item03_LoadPicture
+src/game/item_classes.c Item04_LoadPicture
+src/game/item_classes.c Item05_LoadPicture
+src/game/item_classes.c Item05_Use
 src/game/item_classes.c Debilitas3_MotionFiles
 src/game/item_classes.c Debilitas3_DoorOffset
 src/game/item_classes.c Debilitas3_ActionOffsets
@@ -519,8 +519,8 @@ src/game/effects.c func_002D6010
 src/game/placed.c func_002D7430
 src/game/movie.c func_002D7710
 src/game/movie.c func_002D78F0
-src/game/item_classes.c func_002D7980
-src/game/item_classes.c func_002D7A30
+src/game/item_classes.c ItemA0_LoadPicture
+src/game/item_classes.c ItemA1_LoadPicture
 src/game/riccardo.c Riccardo_MotionFiles
 src/game/riccardo.c Riccardo_DoorOffset
 src/game/riccardo.c Riccardo_ActionOffsets
@@ -631,11 +631,11 @@ src/game/rooms/room_55.c func_00305F30
 src/game/rooms/room_55.c func_00305F50
 src/game/rooms/room_55.c func_00305F60
 src/game/rooms/common.c func_003062F0
-src/game/item_classes.c func_00306B90
-src/game/item_classes.c func_003071A0
-src/game/item_classes.c func_003077B0
-src/game/item_classes.c func_00307DC0
-src/game/item_classes.c func_003083D0
+src/game/item_classes.c Item08_LoadPicture
+src/game/item_classes.c Item09_LoadPicture
+src/game/item_classes.c Item0A_LoadPicture
+src/game/item_classes.c Item0B_LoadPicture
+src/game/item_classes.c Item0C_LoadPicture
 src/game/rooms/room_63.c func_003089F0
 src/game/rooms/room_63.c func_00308A00
 src/game/rooms/room_63.c func_00308A10
@@ -737,11 +737,11 @@ src/game/pursuer.c Kind16_MotionFiles
 src/game/effects.c func_003168E0
 src/game/pursuer.c Kind17_ModelFiles
 src/game/pursuer.c Kind17_MotionFiles
-src/game/item_classes.c func_0031CB10
-src/game/item_classes.c func_0031CDE0
-src/game/item_classes.c func_0031D020
-src/game/item_classes.c func_0031D180
-src/game/item_classes.c func_0031D600
+src/game/item_classes.c Item0D_LoadPicture
+src/game/item_classes.c Item0E_LoadPicture
+src/game/item_classes.c Item0F_LoadPicture
+src/game/item_classes.c Item10_LoadPicture
+src/game/item_classes.c Item11_LoadPicture
 src/game/item_classes.c Kind18_ModelFiles
 src/game/item_classes.c Kind18_MotionFiles
 src/game/scene_game.c func_0031DDF0
@@ -793,7 +793,7 @@ src/game/rooms/room_86.c func_0032C740
 src/game/rooms/room_86.c func_0032C750
 src/game/pursuer.c Kind20_ModelFiles
 src/game/pursuer.c Kind20_MotionFiles
-src/game/item_classes.c func_0032CD00
+src/game/item_classes.c Item14_LoadPicture
 src/game/item_classes.c Kind26_ModelFiles
 src/game/item_classes.c Kind26_MotionFiles
 src/game/rooms/common.c func_0032D270
@@ -826,45 +826,45 @@ src/game/debilitas3.c Kind27_SetTimer
 src/game/debilitas3.c Kind27_Timer10s
 src/game/pursuer.c func_00331200
 src/game/debilitas3.c Kind27_ModelFiles
-src/game/item_classes.c func_003314C0
-src/game/item_classes.c func_003314E0
-src/game/item_classes.c func_00331510
-src/game/item_classes.c func_00331660
-src/game/item_classes.c func_00331680
-src/game/item_classes.c func_003316B0
-src/game/item_classes.c func_00331800
-src/game/item_classes.c func_00331820
-src/game/item_classes.c func_00331850
-src/game/item_classes.c func_00331920
-src/game/item_classes.c func_00331940
-src/game/item_classes.c func_00331970
-src/game/item_classes.c func_00331A40
-src/game/item_classes.c func_00331A60
-src/game/item_classes.c func_00331BD0
-src/game/item_classes.c func_00331BF0
-src/game/item_classes.c func_00331D50
-src/game/item_classes.c func_00331D70
-src/game/item_classes.c func_00331E90
-src/game/item_classes.c func_00331EB0
-src/game/item_classes.c func_00331FE0
-src/game/item_classes.c func_00332000
-src/game/item_classes.c func_00332190
-src/game/item_classes.c func_003321B0
-src/game/item_classes.c func_003321E0
-src/game/item_classes.c func_00332350
-src/game/item_classes.c func_00332370
-src/game/item_classes.c func_003323A0
-src/game/item_classes.c func_00332470
-src/game/item_classes.c func_003326A0
-src/game/item_classes.c func_003328B0
-src/game/item_classes.c func_00332A80
-src/game/item_classes.c func_00332AA0
-src/game/item_classes.c func_00332CC0
-src/game/item_classes.c func_00332CE0
-src/game/item_classes.c func_00332EE0
-src/game/item_classes.c func_00332F00
-src/game/item_classes.c func_003330D0
-src/game/item_classes.c func_003330F0
+src/game/item_classes.c Item42_Actions
+src/game/item_classes.c Item42_LoadPicture
+src/game/item_classes.c Item42_Use
+src/game/item_classes.c Item43_Actions
+src/game/item_classes.c Item43_LoadPicture
+src/game/item_classes.c Item43_Use
+src/game/item_classes.c Item44_Actions
+src/game/item_classes.c Item44_LoadPicture
+src/game/item_classes.c Item44_Use
+src/game/item_classes.c Item45_Actions
+src/game/item_classes.c Item45_LoadPicture
+src/game/item_classes.c Item45_Use
+src/game/item_classes.c Item46_Actions
+src/game/item_classes.c Item46_LoadPicture
+src/game/item_classes.c Item47_Actions
+src/game/item_classes.c Item47_LoadPicture
+src/game/item_classes.c Item48_Actions
+src/game/item_classes.c Item48_LoadPicture
+src/game/item_classes.c Item49_Actions
+src/game/item_classes.c Item49_LoadPicture
+src/game/item_classes.c Item4A_Actions
+src/game/item_classes.c Item4A_LoadPicture
+src/game/item_classes.c Item4B_Actions
+src/game/item_classes.c Item4B_LoadPicture
+src/game/item_classes.c Item4B_Use
+src/game/item_classes.c Item4C_Actions
+src/game/item_classes.c Item4C_LoadPicture
+src/game/item_classes.c Item4C_Use
+src/game/item_classes.c Item60_LoadPicture
+src/game/item_classes.c Item61_LoadPicture
+src/game/item_classes.c Item62_LoadPicture
+src/game/item_classes.c Item63_Actions
+src/game/item_classes.c Item63_LoadPicture
+src/game/item_classes.c Item64_Actions
+src/game/item_classes.c Item64_LoadPicture
+src/game/item_classes.c Item65_Actions
+src/game/item_classes.c Item65_LoadPicture
+src/game/item_classes.c Item66_Actions
+src/game/item_classes.c Item66_LoadPicture
 src/game/model.c func_00336F00
 src/game/model.c func_00336F10
 src/game/model.c func_00336F20
@@ -880,9 +880,9 @@ src/game/model.c func_00337FA0
 src/game/model.c func_00338030
 src/game/model.c func_00338560
 src/game/model.c func_00338C00
-src/game/item_classes.c func_00338F70
-src/game/item_classes.c func_00339320
-src/game/item_classes.c func_003396D0
+src/game/item_classes.c Item15_LoadPicture
+src/game/item_classes.c Item16_LoadPicture
+src/game/item_classes.c Item17_LoadPicture
 src/game/item_classes.c func_00339B20
 src/game/item_classes.c func_00339B30
 src/game/rooms/room_C7.c func_00339D40
@@ -895,19 +895,19 @@ src/game/rooms/room_C7.c func_00339DA0
 src/game/rooms/room_C7.c func_00339DD0
 src/game/pursuer.c Kind29_ModelFiles
 src/game/pursuer.c Kind29_MotionFiles
-src/game/item_classes.c func_0033AEE0
+src/game/item_classes.c ItemA2_LoadPicture
 src/game/item_classes.c Kind30_ModelFiles
 src/game/item_classes.c Kind30_MotionFiles
 src/game/item_classes.c Kind31_ModelFiles
 src/game/item_classes.c Kind31_MotionFiles
-src/game/item_classes.c func_0033BDC0
+src/game/item_classes.c ItemA3_LoadPicture
 src/game/props.c Kind32_ModelFiles
 src/game/props.c Kind32_MotionFiles
-src/game/item_classes.c func_0033E8D0
-src/game/item_classes.c func_0033EA40
-src/game/item_classes.c func_0033EBB0
-src/game/item_classes.c func_0033ED20
-src/game/item_classes.c func_0033EE90
+src/game/item_classes.c Item18_LoadPicture
+src/game/item_classes.c Item19_LoadPicture
+src/game/item_classes.c Item1A_LoadPicture
+src/game/item_classes.c Item1B_LoadPicture
+src/game/item_classes.c Item1C_LoadPicture
 src/game/rooms/room_81.c func_0033EFE0
 src/game/rooms/room_81.c func_0033EFF0
 src/game/rooms/room_81.c func_0033F000
@@ -1022,7 +1022,7 @@ src/game/rooms/room_6A.c func_003440F0
 src/game/rooms/room_6A.c func_00344100
 src/game/rooms/room_6A.c func_00344120
 src/game/rooms/room_6A.c func_00344130
-src/game/item_classes.c func_003445A0
+src/game/item_classes.c Item1D_LoadPicture
 src/game/rooms/room_6B.c func_003448D0
 src/game/rooms/room_6B.c func_003448E0
 src/game/rooms/room_6B.c func_003448F0
@@ -1186,21 +1186,21 @@ src/game/rooms/room_98.c func_00350F20
 src/game/rooms/room_35.c func_00351060
 src/game/rooms/room_35.c func_00351070
 src/game/rooms/room_35.c func_00351090
-src/game/item_classes.c func_00351120
-src/game/item_classes.c func_00351150
-src/game/item_classes.c func_003511E0
-src/game/item_classes.c func_00351210
-src/game/item_classes.c func_003512A0
-src/game/item_classes.c func_003512D0
-src/game/item_classes.c func_00351360
-src/game/item_classes.c func_00351520
-src/game/item_classes.c func_003516E0
-src/game/item_classes.c func_00351840
-src/game/item_classes.c func_003518F0
-src/game/item_classes.c func_00351B10
-src/game/item_classes.c func_00351C90
-src/game/item_classes.c func_00351CC0
-src/game/item_classes.c func_00351D50
+src/game/item_classes.c Item1E_LoadPicture
+src/game/item_classes.c Item1E_Use
+src/game/item_classes.c Item1F_LoadPicture
+src/game/item_classes.c Item1F_Use
+src/game/item_classes.c Item20_LoadPicture
+src/game/item_classes.c Item20_Use
+src/game/item_classes.c Item21_LoadPicture
+src/game/item_classes.c Item22_LoadPicture
+src/game/item_classes.c Item23_LoadPicture
+src/game/item_classes.c Item24_LoadPicture
+src/game/item_classes.c Item25_LoadPicture
+src/game/item_classes.c Item26_LoadPicture
+src/game/item_classes.c Item27_LoadPicture
+src/game/item_classes.c Item27_Use
+src/game/item_classes.c Item28_LoadPicture
 src/game/item_classes.c func_00352030
 src/game/item_classes.c func_00352040
 src/game/effects.c func_00352A70
@@ -3318,7 +3318,7 @@ src/game/daniella.c Daniella_Update --pre=a0+0x1380=0x0A400000..0x0A400000 --pre
 src/game/daniella.c func_0020D620 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A200030=0x7F00..0x8100 --runs=20
 src/game/daniella.c Daniella_ModelFiles --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A200030=0x7F00..0x8100 --runs=20
 src/game/daniella.c Daniella_Setup --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A200030=0x7F00..0x8100 --runs=30
-src/game/riccardo.c func_002D7A60
+src/game/riccardo.c ItemA1_Use
 src/game/riccardo.c Riccardo_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..1 --pre=a0+0x20=0..6
 src/game/riccardo.c Riccardo_ExitDone --pre=a0+0x104=0..1 --runs=30
 src/game/riccardo.c Riccardo_DoorBreak --pre=a0+0x175C=0xB..0x2A --stub-ret=0 --stub-ret=1 --runs=150
@@ -4226,289 +4226,289 @@ src/game/effects.c func_002E9B60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..15 
 src/game/effects.c func_002EA5B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --runs=100
 src/game/effects.c func_002EA5B0 --pre=a1=0..0 --runs=20
 src/game/effects.c func_002EB1C0 --pre=a0=0x0B000000..0x0B000000  --pre=a0+0xE0=0..1 --pre=a0+0x1C0=0..1 --pre=a0+0x2A0=0..1 --pre=a0+0x380=0..1 --pre=a0+0xE00=0..1 --runs=500
-src/game/item_classes.c func_002640C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00263DC0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00263A90 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00263970 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00263850 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00263730 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00263520 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00263250 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002D2750 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00263C10 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002649F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00264C70 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00264EC0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00264F70 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265060 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265110 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002651C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265270 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265320 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002653D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002654B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265560 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265610 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002656C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002657A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265850 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265900 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002659B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265A90 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265B40 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265BF0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265CA0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265D80 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265E30 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265EE0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00265F90 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00266040 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002660F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002661A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00266250 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00266300 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00266450 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00266500 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002665B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00266660 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00266710 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002667C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00266870 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00266920 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002669D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00266B60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002CCBD0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002CCD30 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002CCF90 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002CD130 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002CD2A0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002CD420 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002D7910 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002D79C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_002EEB60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00303C30 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00306B20 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00307130 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00307740 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00307D50 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00308360 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_0031CAA0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_0031CD70 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_0031CFB0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_0031D110 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_0031D590 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_0032CC90 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00331450 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_003315F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00331790 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_003318B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_003319D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00331B60 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00331CE0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00331E20 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00331F70 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00332120 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_003322E0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_003323C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00332620 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00332830 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00332A10 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00332C50 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00332E70 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00333060 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00338F00 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_003392B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00339660 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_0033AE70 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_0033BD50 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_0033E850 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_0033E9C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_0033EB30 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_0033ECA0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_0033EE10 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00344520 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_003510B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00351170 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00351230 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_003512F0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_003514B0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00351670 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_003517D0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00351880 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00351AA0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00351C20 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_00351CE0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_0035BB20 --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
-src/game/item_classes.c func_0025FC90 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0025FCA0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0025FCB0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0025FCC0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0025FCD0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0025FCE0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0025FCF0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0025FEE0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00264C40 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00264C50 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00264C60 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00264F30 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00264F40 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00264F50 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00264F60 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265010 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265020 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265030 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265040 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265050 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265100 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002651B0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265260 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265310 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002653C0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265470 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265480 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265490 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002654A0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265550 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265600 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002656B0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265760 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265770 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265780 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265790 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265840 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002658F0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002659A0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265A50 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265A60 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265A70 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265A80 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265B30 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265BE0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265C90 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265D40 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265D50 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265D60 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265D70 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265E20 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265ED0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00265F80 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00266030 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002660E0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00266190 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00266240 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002662F0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00266420 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00266430 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00266440 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002664C0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00266570 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00266620 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002666D0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00266780 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00266830 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002668E0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00266990 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00266A40 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00266BD0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002CCDA0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002D27B0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002D27C0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002D27D0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002D3A50 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_002D79B0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_003314D0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00331670 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00331810 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00331930 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00331A50 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00331BE0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00331D60 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00331EA0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00331FF0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_003321A0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00332360 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00332430 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00332440 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00332450 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00332460 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00332690 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_003328A0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00332A90 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00332CD0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00332EF0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_003330E0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0033AF10 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0033BDF0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0033E8C0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0033EA30 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0033EBA0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0033ED10 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0033EE80 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00344590 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_00351870 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0035BBC0 --pre=a0=0x0B000000..0x0B000000 --runs=10
-src/game/item_classes.c func_0025FF50 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_00265D10 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_00265DF0 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_00265EA0 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_00265F50 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_00266000 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_002660B0 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_00266160 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_00266210 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_002662C0 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_002663F0 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_002664D0 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_00266580 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_00266630 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_002666E0 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_00266790 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_00266840 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_002668F0 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_002669A0 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_00266A50 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_00266BE0 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_002EEBD0 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_00303CA0 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_0035BB90 --pre=a0=0x0B000000..0x0B000000 --runs=20
-src/game/item_classes.c func_0025FD00 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=-1..0 --pre=a0+0x10=0..100 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=0x101 --stub-ret-prob=1 --runs=300 --pre=a1=0..300
-src/game/item_classes.c func_0025FDA0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=-1..0 --pre=a0+0x10=0..100 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=0x101 --stub-ret-prob=1 --runs=300
-src/game/item_classes.c func_0025FE10 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=-1..0 --pre=a0+0x10=0..100 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=0x101 --stub-ret-prob=1 --runs=300
-src/game/item_classes.c func_0025FE70 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=-1..0 --pre=a0+0x10=0..100 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=0x101 --stub-ret-prob=1 --runs=300
-src/game/item_classes.c func_0025FE70 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=0..0 --pre=a0+0x10=-1..0 --stub-ret=2 --stub-ret-prob=1 --runs=50
-src/game/item_classes.c func_0025FF10 --pre=@0x44F820=0..1 --runs=50
-src/game/item_classes.c func_002CCC70 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0xF --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
-src/game/item_classes.c func_0033E900 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0x48 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
-src/game/item_classes.c func_0033EA70 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0x48 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
-src/game/item_classes.c func_0033EBE0 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0x48 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
-src/game/item_classes.c func_0033ED50 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0x48 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
-src/game/item_classes.c func_0033EEC0 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0x48 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
-src/game/item_classes.c func_00351710 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0xC7 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
-src/game/item_classes.c func_00331A90 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/game/item_classes.c func_00331C20 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/game/item_classes.c func_00331DA0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/game/item_classes.c func_00331EE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/game/item_classes.c func_00332030 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/game/item_classes.c func_003324A0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/game/item_classes.c func_003326D0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/game/item_classes.c func_003328E0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/game/item_classes.c func_00332AD0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/game/item_classes.c func_00332D10 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/game/item_classes.c func_00332F30 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/game/item_classes.c func_00333120 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/game/item_classes.c func_003324A0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=9990..10000 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/game/item_classes.c func_00332F30 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=9980..10000 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
-src/game/item_classes.c func_0033B4C0 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B500034=0..1 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --stub-fret=10.0 --stub-fret=30.0 --runs=200
-src/game/item_classes.c func_002CCDE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=0x1C
-src/game/item_classes.c func_002CD030 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=0xC0
-src/game/item_classes.c func_002CD1D0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=0x22
-src/game/item_classes.c func_002CD340 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=4
-src/game/item_classes.c func_002CCED0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=-1..0 --pre=a0+0x10=8998..9003 --pre=@0x44E4D8=0x0B700000..0x0B700000 --stub-ret=2 --stub-ret=1 --stub-ret-prob=1 --runs=200
-src/game/item_classes.c func_00266A80 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300
-src/game/item_classes.c func_00266C10 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300
-src/game/item_classes.c func_0031D050 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300 --stub-ret=0x4F --pre=@0x0B700020=0x7FFFFF..0x800000 --pre=@0x0B700024=3..4
-src/game/item_classes.c func_0031D630 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300 --stub-ret=0x55 --pre=@0x0B700020=0x7FFFFF..0x800000 --pre=@0x0B700024=3..4
-src/game/item_classes.c func_0032CD30 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300 --stub-ret=0x25 --pre=@0x0B700020=0x7FFFFF..0x800000 --pre=@0x0B700024=3..4
+src/game/item_classes.c PlainItem_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemClassC920_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemClassCB50_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemClassCCE0_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemClassCE70_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemClassD000_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemClassD320_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemClassD640_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemClassF430_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemClass6B00_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item12_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item13_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item3E_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item70_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item71_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item72_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item73_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item74_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item75_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item80_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item81_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item82_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item83_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item86_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item87_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item88_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item89_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item8A_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item8B_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item8C_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item8D_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item90_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item91_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item92_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item93_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item94_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item95_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item97_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item98_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item9B_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemA4_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemA5_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemA6_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemA7_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemA8_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemA9_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemAA_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemAB_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemAC_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item40_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item41_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item00_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item01_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item02_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item03_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item04_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item05_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemA0_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemA1_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item06_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item07_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item08_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item09_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item0A_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item0B_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item0C_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item0D_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item0E_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item0F_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item10_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item11_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item14_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item42_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item43_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item44_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item45_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item46_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item47_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item48_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item49_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item4A_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item4B_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item4C_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item60_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item61_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item62_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item63_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item64_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item65_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item66_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item15_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item16_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item17_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemA2_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c ItemA3_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item18_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item19_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item1A_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item1B_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item1C_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item1D_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item1E_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item1F_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item20_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item21_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item22_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item23_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item24_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item25_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item26_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item27_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item28_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c Item29_dtor --pre=a0=0x0B000000..0x0B000000 --pre=a1=-1..1 --runs=40
+src/game/item_classes.c PoolEntry_Id --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c PoolEntry_Kind --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c PoolEntry_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c PoolEntry_IsCounted --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c PoolEntry_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c PoolEntry_Get20 --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c PoolEntry_Data --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c PoolEntry_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c PlainItem_Kind --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c PlainItem_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c PlainItem_IsCounted --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item3E_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassC920_Kind --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassC920_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassC920_IsCounted --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item70_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassCB50_Kind --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassCB50_IsCounted --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassCB50_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassCB50_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item71_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item72_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item73_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item74_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item75_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item80_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassCCE0_Kind --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassCCE0_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassCCE0_IsCounted --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item81_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item82_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item83_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item86_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassCE70_Kind --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassCE70_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassCE70_IsCounted --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item87_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item88_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item89_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item8A_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassD000_Kind --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassD000_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassD000_IsCounted --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item8B_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item8C_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item8D_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item90_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassD320_Kind --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassD320_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassD320_IsCounted --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item91_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item92_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item93_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item94_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item95_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item97_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item98_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item9B_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassD640_Kind --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassD640_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassD640_IsCounted --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemA5_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemA6_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemA7_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemA8_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemA9_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemAA_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemAB_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemAC_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item40_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item41_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item01_IsCounted --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassF430_Kind --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassF430_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassF430_IsCounted --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClassF430_Get20 --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemA0_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item42_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item43_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item44_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item45_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item46_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item47_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item48_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item49_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item4A_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item4B_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item4C_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item60_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClass6B00_Kind --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClass6B00_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemClass6B00_IsCounted --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item61_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item62_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item63_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item64_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item65_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item66_SortKey --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemA2_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c ItemA3_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item18_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item19_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item1A_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item1B_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item1C_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item1D_Actions --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item24_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c Item29_Use --pre=a0=0x0B000000..0x0B000000 --runs=10
+src/game/item_classes.c PoolEntry_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c Item90_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c Item91_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c Item92_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c Item93_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c Item94_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c Item95_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c Item97_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c Item98_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c Item9B_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c ItemA4_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c ItemA5_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c ItemA6_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c ItemA7_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c ItemA8_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c ItemA9_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c ItemAA_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c ItemAB_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c ItemAC_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c Item40_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c Item41_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c Item06_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c Item07_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c Item29_LoadPicture --pre=a0=0x0B000000..0x0B000000 --runs=20
+src/game/item_classes.c PoolEntry_AddStack --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=-1..0 --pre=a0+0x10=0..100 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=0x101 --stub-ret-prob=1 --runs=300 --pre=a1=0..300
+src/game/item_classes.c PoolEntry_TakeOne --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=-1..0 --pre=a0+0x10=0..100 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=0x101 --stub-ret-prob=1 --runs=300
+src/game/item_classes.c PoolEntry_Count --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=-1..0 --pre=a0+0x10=0..100 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=0x101 --stub-ret-prob=1 --runs=300
+src/game/item_classes.c PoolEntry_CountUp --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=-1..0 --pre=a0+0x10=0..100 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=0x101 --stub-ret-prob=1 --runs=300
+src/game/item_classes.c PoolEntry_CountUp --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=0..0 --pre=a0+0x10=-1..0 --stub-ret=2 --stub-ret-prob=1 --runs=50
+src/game/item_classes.c PoolEntry_PartnerCheck --pre=@0x44F820=0..1 --runs=50
+src/game/item_classes.c Item00_Use --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0xF --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
+src/game/item_classes.c Item18_Use --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0x48 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
+src/game/item_classes.c Item19_Use --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0x48 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
+src/game/item_classes.c Item1A_Use --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0x48 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
+src/game/item_classes.c Item1B_Use --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0x48 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
+src/game/item_classes.c Item1C_Use --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0x48 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
+src/game/item_classes.c Item23_Use --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0xC7 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=100
+src/game/item_classes.c Item46_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c Item47_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c Item48_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c Item49_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c Item4A_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c Item60_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c Item61_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c Item62_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c Item63_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c Item64_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c Item65_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c Item66_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=0..3 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c Item60_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=9990..10000 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c Item65_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700FB6:u16=9980..10000 --pre=@0x0B7009F4=0..1 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0xC2C80000..0x42F00000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B5014C8=0..120 --pre=@0x0B5014CC=60..100 --stub-ret=0 --stub-ret=1 --stub-ret=0x100 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c ItemClass6B00_PartnerCheck --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x44F820=0x0B500000..0x0B500000 --pre=@0x0B500034=0..1 --stub-ret=0 --stub-ret=1 --stub-ret=0x101 --stub-fret=10.0 --stub-fret=30.0 --runs=200
+src/game/item_classes.c Item01_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=0x1C
+src/game/item_classes.c Item02_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=0xC0
+src/game/item_classes.c Item03_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=0x22
+src/game/item_classes.c Item04_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x0B70001C=0x7F..0x80 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret-prob=0.6 --runs=200 --stub-ret=4
+src/game/item_classes.c Item01_CountUp --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x4=-1..0 --pre=a0+0x10=8998..9003 --pre=@0x44E4D8=0x0B700000..0x0B700000 --stub-ret=2 --stub-ret=1 --stub-ret-prob=1 --runs=200
+src/game/item_classes.c Item40_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300
+src/game/item_classes.c Item41_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300
+src/game/item_classes.c Item0F_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300 --stub-ret=0x4F --pre=@0x0B700020=0x7FFFFF..0x800000 --pre=@0x0B700024=3..4
+src/game/item_classes.c Item11_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300 --stub-ret=0x55 --pre=@0x0B700020=0x7FFFFF..0x800000 --pre=@0x0B700024=3..4
+src/game/item_classes.c Item14_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300 --stub-ret=0x25 --pre=@0x0B700020=0x7FFFFF..0x800000 --pre=@0x0B700024=3..4
 src/game/item_classes.c func_00351B40 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300 --stub-ret=0x92 --pre=@0x0B700020=0x7FFFFF..0x800000 --pre=@0x0B700024=3..4
 src/game/item_classes.c func_002EEC00 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300 --stub-ret=6 --pre=@0x0B700020=0x7FFFFF..0x800000 --pre=@0x0B700024=3..4
 src/game/item_classes.c func_00266370 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B4AD5F4=0x42000000..0x42F00000 --pre=@0x0B4AD5F8=0..2000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret-prob=0.7 --runs=300 --pre=@0x0B700030=0x7FFF..0x8000
@@ -4518,7 +4518,7 @@ src/game/item_classes.c func_00264CE0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x4
 src/game/item_classes.c func_00303CD0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B70002C=0x3FFF..0x4000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400 --stub-ret=0x14
 src/game/item_classes.c func_00351390 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B70002C=0x3FFF..0x4000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400 --stub-ret=0xC7
 src/game/item_classes.c func_00351550 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B70002C=0x3FFF..0x4000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400 --stub-ret=0xC7
-src/game/item_classes.c func_002CD030 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B70002C=0x3FFF..0x4000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400
+src/game/item_classes.c Item02_Use --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --pre=@0x0B70002C=0x3FFF..0x4000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400
 src/game/item_classes.c func_00351920 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400 --stub-ret=0x82 --stub-ret=0x8C
 src/game/item_classes.c func_00351D80 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400
 src/game/item_classes.c func_0031CB40 --pre=a0=0x0B000000..0x0B000000 --pre=@0x44E4D8=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046A260..0x0046A260 --pre=@0x44F818=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=4 --stub-ret=1 --stub-ret=0xC0 --stub-ret-prob=0.8 --runs=400 --stub-ret=0x4B
@@ -5673,92 +5673,92 @@ src/game/props.c func_00322570 --runs=20
 src/game/scene_game_members.c func_002D6170 --pre=a0=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=a1=-2..0x401 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..1 --runs=200
 src/leaf/b5_00320ED0.c func_0032D150 --pre=a0=0x09000000..0x09000000 --pre=a0+0xF0=0x0B000000..0x0B000000 --pre=a0+0x16A8:u8=0..1 --pre=a0+0x16A9:u8=0..1 --pre=a0+0x1630=-1..1 --stub-ret=0 --stub-ret=1 --stub-ret-prob=1 --runs=200
 src/game/model.c func_002DD110 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=a2=0x0B200000..0x0B200000 --pre=a3=0x0B200010..0x0B200010 --pre=a0+0x860=0x3F000000..0x41000000 --pre=a0+0x864=0x3F000000..0x41000000 --pre=a0+0x868=0x3F000000..0x41000000 --pre=a0+0x7E0=0x3E000000..0x3F800000 --pre=a0+0x7E4=0x3E000000..0x3F800000 --pre=a0+0x7F0=0xBF000000..0x3F800000 --pre=a0+0x7F8=0x3E000000..0x3F800000 --stub-fret=0.5 --stub-fret=-0.5 --stub-ret-prob=1 --runs=300
-src/game/items.c func_00263220 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002632B0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002632E0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263310 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263340 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263370 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002633A0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002633D0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263400 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263430 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263460 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263490 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002634C0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002634F0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263580 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002635B0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002635E0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263610 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263640 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263670 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002636A0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002636D0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263700 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263790 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002637C0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002637F0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263820 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002638B0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002638E0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263910 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263940 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002639D0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263A00 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263A30 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263A60 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263AF0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263B20 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263B50 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263B80 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263BB0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263BE0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263C70 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263CA0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263CD0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263D00 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263D30 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263D60 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263D90 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263E20 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263E50 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263E80 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263EB0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263EE0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263F10 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263F40 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263F70 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263FA0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00263FD0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264000 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264030 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264090 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264120 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264150 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264180 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002641B0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002641E0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264210 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264240 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264270 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002642A0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002642D0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264300 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264330 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264360 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264390 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002643C0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002643F0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264420 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264450 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264480 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002644B0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002644E0 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264510 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264540 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_00264570 --pre=a0=0x0B000000..0x0B000000 --runs=5
-src/game/item_classes.c func_002645A0 --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/items.c ItemAC_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c ItemAB_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c ItemAA_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c ItemA9_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c ItemA8_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c ItemA7_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c ItemA6_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c ItemA5_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c ItemA4_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c ItemA3_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c ItemA2_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c ItemA1_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c ItemA0_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item9B_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item98_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item97_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item95_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item94_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item93_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item92_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item91_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item90_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item8D_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item8C_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item8B_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item8A_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item89_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item88_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item87_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item86_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item83_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item82_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item81_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item80_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item75_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item74_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item73_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item72_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item71_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item70_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item66_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item65_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item64_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item63_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item62_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item61_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item60_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item4C_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item4B_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item4A_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item49_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item48_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item47_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item46_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item45_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item44_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item43_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item42_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item41_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item40_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item3E_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item29_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item28_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item27_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item26_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item25_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item24_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item23_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item22_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item21_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item20_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item1F_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item1E_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item1D_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item1C_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item1B_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item1A_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item19_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item18_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item17_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item16_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item15_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item14_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item13_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item12_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
+src/game/item_classes.c Item11_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
 src/game/items.c Item3F_ctor --pre=a0=0x0B000000..0x0B000000 --runs=5
 src/game/items.c Items_Give --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x3E --pre=a2=1..3 --pre=a0+0x1208=0x0B100000..0x0B100000 --pre=@0x0B100010=0x00211890..0x00211890 --pre=a0+0x12E0=0..0x0B200000 --pre=a0+0x13E0=0..0x0B200000 --pre=a0+0x14E0=0..0x0B200000 --pre=a0+0x12E4=0..0 --pre=a0+0x13E4=0..0 --pre=a0+0x14E4=0..0 --pre=@0x0B200000=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B400000 --stub-ret-prob=1 --runs=600
 src/game/items.c Items_Give --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x40..0xB0 --pre=a2=1..3 --pre=a0+0x1208=0x0B100000..0x0B100000 --pre=@0x0B100010=0x00211890..0x00211890 --pre=a0+0x12E0=0..0x0B200000 --pre=a0+0x13E0=0..0x0B200000 --pre=a0+0x14E0=0..0x0B200000 --pre=a0+0x12E4=0..0 --pre=a0+0x13E4=0..0 --pre=a0+0x14E4=0..0 --pre=@0x0B200000=0x0B300000..0x0B300000 --stub-ret=0 --stub-ret=1 --stub-ret=0x0B400000 --stub-ret-prob=1 --runs=600

@@ -25,7 +25,7 @@
 #include "msl.h"
 #include "sce/libvu0.h"
 
-s32 func_0025FF10(void *o);
+s32 PoolEntry_PartnerCheck(void *o);
 
 extern void *D_0046C790[];            /* a pool entry */
 extern void *D_0046C7E0[], *D_0046C830[], *D_0046C880[], *D_0046C8D0[], *D_0046C920[], *D_0046C970[], *D_0046C9C0[], *D_0046CA10[], *D_0046CA60[], *D_0046CAB0[], *D_0046CB00[], *D_0046CB50[], *D_0046CBA0[], *D_0046CBF0[], *D_0046CC40[], *D_0046CC90[], *D_0046CCE0[], *D_0046CD30[], *D_0046CD80[], *D_0046CDD0[], *D_0046CE20[], *D_0046CE70[], *D_0046CEC0[], *D_0046CF10[], *D_0046CF60[], *D_0046CFB0[], *D_0046D000[], *D_0046D050[], *D_0046D0A0[], *D_0046D0F0[], *D_0046D140[], *D_0046D190[], *D_0046D1E0[], *D_0046D230[], *D_0046D280[], *D_0046D2D0[], *D_0046D320[], *D_0046D370[], *D_0046D3C0[], *D_0046D410[], *D_0046D460[], *D_0046D4B0[], *D_0046D500[], *D_0046D550[], *D_0046D5A0[], *D_0046D5F0[], *D_0046D640[], *D_0046D690[], *D_0046D6E0[], *D_0046EE40[], *D_0046EE90[], *D_0046EEE0[], *D_0046EF30[], *D_0046EF80[], *D_0046EFD0[], *D_0046F430[], *D_0046F610[], *D_0046F660[], *D_004703F0[], *D_00470FB0[], *D_00471080[], *D_004710D0[], *D_00471120[], *D_00471170[], *D_004711C0[], *D_00472F80[], *D_00472FD0[], *D_00473020[], *D_00473070[], *D_004730C0[], *D_00474BC0[], *D_00475300[], *D_00475350[], *D_004753A0[], *D_004753F0[], *D_00475440[], *D_00475490[], *D_004754E0[], *D_00475530[], *D_00475580[], *D_004755D0[], *D_00475620[], *D_00475670[], *D_004756C0[], *D_00475710[], *D_00475760[], *D_004757B0[], *D_00475800[], *D_00475850[], *D_00475CC0[], *D_00475D10[], *D_00475D60[], *D_00476450[], *D_00476B00[], *D_00476B60[], *D_00477030[], *D_00477080[], *D_004770D0[], *D_00477120[], *D_00477170[], *D_004775C0[], *D_00478C80[], *D_00478CD0[], *D_00478D20[], *D_00478D70[], *D_00478DC0[], *D_00478E10[], *D_00478E60[], *D_00478EB0[], *D_00478F00[], *D_00478F50[], *D_00478FA0[], *D_00479820[];
@@ -54,24 +54,24 @@ typedef s32 (*LoaderLoadFn)(void *loader, const char *name, void *dest, s32 flag
 
 s32 func_00264C10(void *self, void *dest);
 s32 func_00264E90(void *self, void *dest);
-s32 func_00264FE0(void *self, void *dest);
-s32 func_002650D0(void *self, void *dest);
-s32 func_00265180(void *self, void *dest);
-s32 func_00265230(void *self, void *dest);
-s32 func_002652E0(void *self, void *dest);
-s32 func_00265390(void *self, void *dest);
-s32 func_00265440(void *self, void *dest);
-s32 func_00265520(void *self, void *dest);
-s32 func_002655D0(void *self, void *dest);
-s32 func_00265680(void *self, void *dest);
-s32 func_00265730(void *self, void *dest);
-s32 func_00265810(void *self, void *dest);
-s32 func_002658C0(void *self, void *dest);
-s32 func_00265970(void *self, void *dest);
-s32 func_00265A20(void *self, void *dest);
-s32 func_00265B00(void *self, void *dest);
-s32 func_00265BB0(void *self, void *dest);
-s32 func_00265C60(void *self, void *dest);
+s32 Item70_LoadPicture(void *self, void *dest);
+s32 Item71_LoadPicture(void *self, void *dest);
+s32 Item72_LoadPicture(void *self, void *dest);
+s32 Item73_LoadPicture(void *self, void *dest);
+s32 Item74_LoadPicture(void *self, void *dest);
+s32 Item75_LoadPicture(void *self, void *dest);
+s32 Item80_LoadPicture(void *self, void *dest);
+s32 Item81_LoadPicture(void *self, void *dest);
+s32 Item82_LoadPicture(void *self, void *dest);
+s32 Item83_LoadPicture(void *self, void *dest);
+s32 Item86_LoadPicture(void *self, void *dest);
+s32 Item87_LoadPicture(void *self, void *dest);
+s32 Item88_LoadPicture(void *self, void *dest);
+s32 Item89_LoadPicture(void *self, void *dest);
+s32 Item8A_LoadPicture(void *self, void *dest);
+s32 Item8B_LoadPicture(void *self, void *dest);
+s32 Item8C_LoadPicture(void *self, void *dest);
+s32 Item8D_LoadPicture(void *self, void *dest);
 
 extern u8 D_0045D4A0[], D_0045D4C0[], D_0045D4E0[], D_0045D500[], D_0045D520[], D_0045D540[];
 extern u8 D_00413550[];
@@ -81,18 +81,18 @@ extern u8 D_00413550[];
 #define LOAD(name, arg) \
     VCALL(gFileLoader, 0xC, s32 (*)(void *, void *, s32, s32, s32))(gFileLoader, name, arg, 0x4000000, 0)
 
-s32 func_002CCC40(void *self, s32 a);
-s32 func_002CCDB0(void *self, s32 a);
-s32 func_002CCDE0(void);
-s32 func_002CCED0(void *o);
-s32 func_002CD000(void *self, s32 a);
-s32 func_002CD030(void *o);
-s32 func_002CD1A0(void *self, s32 a);
-s32 func_002CD1D0(void);
-s32 func_002CD310(void *self, s32 a);
-s32 func_002CD340(void);
-s32 func_002CD490(void *self, s32 a);
-s32 func_002CD4C0(void);
+s32 Item00_LoadPicture(void *self, s32 a);
+s32 Item01_LoadPicture(void *self, s32 a);
+s32 Item01_Use(void);
+s32 Item01_CountUp(void *o);
+s32 Item02_LoadPicture(void *self, s32 a);
+s32 Item02_Use(void *o);
+s32 Item03_LoadPicture(void *self, s32 a);
+s32 Item03_Use(void);
+s32 Item04_LoadPicture(void *self, s32 a);
+s32 Item04_Use(void);
+s32 Item05_LoadPicture(void *self, s32 a);
+s32 Item05_Use(void);
 void *Debilitas3_MotionFiles(void);
 void Debilitas3_DoorOffset(void *self, s32 id, u32 *out);
 void Debilitas3_ActionOffsets(void *self, s32 id, u32 *out);
@@ -127,8 +127,8 @@ extern char D_0045DA00[];
     VCALL(gFileLoader, 0xC, s32 (*)(void *, const char *, void *, s32, s32))(gFileLoader, name, dest, 0x4000000, 0)
 
 s32 func_002D3A20(void *self, void *dest);
-s32 func_002D7980(void *self, void *dest);
-s32 func_002D7A30(void *self, void *dest);
+s32 ItemA0_LoadPicture(void *self, void *dest);
+s32 ItemA1_LoadPicture(void *self, void *dest);
 
 extern u8 D_0045EC50[];
 extern u8 D_0045EC70[];
@@ -139,11 +139,11 @@ extern u8 D_0045ECD0[];
 #define FILE_LOAD_ASYNC(name, dest) \
     VCALL(gFileLoader, 0xC, s32 (*)(void *, void *, void *, u32, s32))(gFileLoader, name, dest, 0x4000000, 0)
 
-s32 func_00306B90(void *self, void *dest);
-s32 func_003071A0(void *self, void *dest);
-s32 func_003077B0(void *self, void *dest);
-s32 func_00307DC0(void *self, void *dest);
-s32 func_003083D0(void *self, void *dest);
+s32 Item08_LoadPicture(void *self, void *dest);
+s32 Item09_LoadPicture(void *self, void *dest);
+s32 Item0A_LoadPicture(void *self, void *dest);
+s32 Item0B_LoadPicture(void *self, void *dest);
+s32 Item0C_LoadPicture(void *self, void *dest);
 
 extern u8 D_00429D70[];
 extern u8 D_00429DB0[];
@@ -152,11 +152,11 @@ extern u8 D_0045FE40[];
 extern u8 D_0045FE60[];
 extern u8 D_0045FE80[];
 extern u8 D_0045FEA0[];
-s32 func_0031CB10(void *self, void *dest);
-s32 func_0031CDE0(void *self, void *dest);
-s32 func_0031D020(void *self, void *dest);
-s32 func_0031D180(void *self, void *dest);
-s32 func_0031D600(void *self, void *dest);
+s32 Item0D_LoadPicture(void *self, void *dest);
+s32 Item0E_LoadPicture(void *self, void *dest);
+s32 Item0F_LoadPicture(void *self, void *dest);
+s32 Item10_LoadPicture(void *self, void *dest);
+s32 Item11_LoadPicture(void *self, void *dest);
 void *Kind18_ModelFiles(void);
 void *Kind18_MotionFiles(void);
 
@@ -225,25 +225,25 @@ extern u8 D_004616E0[];
 extern u8 D_00461700[];
 extern u8 D_00461720[];
 extern u8 D_00461740[];
-s32 func_00339320(void *self, void *dest);
-s32 func_003396D0(void *self, void *dest);
+s32 Item16_LoadPicture(void *self, void *dest);
+s32 Item17_LoadPicture(void *self, void *dest);
 void *func_00339B20(void);
 void *func_00339B30(void);
-s32 func_0033AEE0(void *self, void *dest);
+s32 ItemA2_LoadPicture(void *self, void *dest);
 void *Kind30_ModelFiles(void);
 void *Kind30_MotionFiles(void);
 void *Kind31_ModelFiles(void);
 void *Kind31_MotionFiles(void);
-s32 func_0033B4C0(void *o);
-s32 func_0033BDC0(void *self, void *dest);
-s32 func_0033E8D0(void *self, void *dest);
-s32 func_0033EA40(void *self, void *dest);
-s32 func_0033EBB0(void *self, void *dest);
-s32 func_0033ED20(void *self, void *dest);
-s32 func_0033EE90(void *self, void *dest);
+s32 ItemClass6B00_PartnerCheck(void *o);
+s32 ItemA3_LoadPicture(void *self, void *dest);
+s32 Item18_LoadPicture(void *self, void *dest);
+s32 Item19_LoadPicture(void *self, void *dest);
+s32 Item1A_LoadPicture(void *self, void *dest);
+s32 Item1B_LoadPicture(void *self, void *dest);
+s32 Item1C_LoadPicture(void *self, void *dest);
 
 extern u8 D_00461CC0[];
-s32 func_003445A0(void *self, void *dest);
+s32 Item1D_LoadPicture(void *self, void *dest);
 
 extern u8 D_00462DF0[];
 extern u8 D_00462E10[];
@@ -255,24 +255,24 @@ extern u8 D_00462EB0[];
 extern u8 D_00462ED0[];
 extern u8 D_00462EF0[];
 extern u8 D_00462F10[];
-s32 func_00351120(void *self, void *dest);
-s32 func_00351150(void);
-s32 func_003511E0(void *self, void *dest);
-s32 func_00351210(void);
-s32 func_003512A0(void *self, void *dest);
-s32 func_003512D0(void);
-s32 func_00351360(void *self, void *dest);
-s32 func_00351520(void *self, void *dest);
-s32 func_003516E0(void *self, void *dest);
-s32 func_00351840(void *self, void *dest);
-s32 func_003518F0(void *self, void *dest);
-s32 func_00351B10(void *self, void *dest);
-s32 func_00351C90(void *self, void *dest);
-s32 func_00351CC0(void);
+s32 Item1E_LoadPicture(void *self, void *dest);
+s32 Item1E_Use(void);
+s32 Item1F_LoadPicture(void *self, void *dest);
+s32 Item1F_Use(void);
+s32 Item20_LoadPicture(void *self, void *dest);
+s32 Item20_Use(void);
+s32 Item21_LoadPicture(void *self, void *dest);
+s32 Item22_LoadPicture(void *self, void *dest);
+s32 Item23_LoadPicture(void *self, void *dest);
+s32 Item24_LoadPicture(void *self, void *dest);
+s32 Item25_LoadPicture(void *self, void *dest);
+s32 Item26_LoadPicture(void *self, void *dest);
+s32 Item27_LoadPicture(void *self, void *dest);
+s32 Item27_Use(void);
 
 extern char D_00462F30[];
 extern u8 D_004434D0[], D_00443510[];
-s32 func_00351D50(void *self, void *dest);
+s32 Item28_LoadPicture(void *self, void *dest);
 void *func_00352030(void);
 void *func_00352040(void);
 
@@ -295,28 +295,28 @@ static inline void b5_adjust_meters(f32 df, s32 di) {
     }
 }
 
-u32 func_00331E90(void);
-s32 func_00331EB0(void *self, void *dest);
-u32 func_00331FE0(void);
-s32 func_00332000(void *self, void *dest);
-u32 func_00332190(void);
-s32 func_003321B0(void *self, void *dest);
-s32 func_003321E0(void);
-u32 func_00332350(void);
-s32 func_00332370(void *self, void *dest);
-s32 func_003323A0(void);
-s32 func_00332470(void *self, void *dest);
-s32 func_003326A0(void *self, void *dest);
-s32 func_003328B0(void *self, void *dest);
-u32 func_00332A80(void);
-s32 func_00332AA0(void *self, void *dest);
-u32 func_00332CC0(void);
-s32 func_00332CE0(void *self, void *dest);
-u32 func_00332EE0(void);
-s32 func_00332F00(void *self, void *dest);
-u32 func_003330D0(void);
-s32 func_003330F0(void *self, void *dest);
-s32 func_00338F70(void *self, void *dest);
+u32 Item49_Actions(void);
+s32 Item49_LoadPicture(void *self, void *dest);
+u32 Item4A_Actions(void);
+s32 Item4A_LoadPicture(void *self, void *dest);
+u32 Item4B_Actions(void);
+s32 Item4B_LoadPicture(void *self, void *dest);
+s32 Item4B_Use(void);
+u32 Item4C_Actions(void);
+s32 Item4C_LoadPicture(void *self, void *dest);
+s32 Item4C_Use(void);
+s32 Item60_LoadPicture(void *self, void *dest);
+s32 Item61_LoadPicture(void *self, void *dest);
+s32 Item62_LoadPicture(void *self, void *dest);
+u32 Item63_Actions(void);
+s32 Item63_LoadPicture(void *self, void *dest);
+u32 Item64_Actions(void);
+s32 Item64_LoadPicture(void *self, void *dest);
+u32 Item65_Actions(void);
+s32 Item65_LoadPicture(void *self, void *dest);
+u32 Item66_Actions(void);
+s32 Item66_LoadPicture(void *self, void *dest);
+s32 Item15_LoadPicture(void *self, void *dest);
 
 /* gProgress +0x7E0 += d; +0x7D0 += d - (+0x7D4) unless that is negative */
 static inline void b5_add_7E0(f32 d) {
@@ -332,42 +332,42 @@ static inline void b5_add_7E0(f32 d) {
 
 #define B5_HANDY(o) (VCALL(o, 0x40, s32 (*)(void *))(o) & 0xFF)
 
-u32 func_003314C0(void);
-s32 func_003314E0(void *self, void *dest);
-s32 func_00331510(void);
-u32 func_00331660(void);
-s32 func_00331680(void *self, void *dest);
-s32 func_003316B0(void);
-u32 func_00331800(void);
-s32 func_00331820(void *self, void *dest);
-s32 func_00331850(void);
-u32 func_00331920(void);
-s32 func_00331940(void *self, void *dest);
-s32 func_00331970(void);
-u32 func_00331A40(void);
-s32 func_00331A60(void *self, void *dest);
-s32 func_00331A90(void);
-u32 func_00331BD0(void);
-s32 func_00331BF0(void *self, void *dest);
-s32 func_00331C20(void);
-u32 func_00331D50(void);
-s32 func_00331D70(void *self, void *dest);
-s32 func_00331DA0(void);
-s32 func_00331EE0(void);
-s32 func_00332030(void);
-s32 func_003324A0(void *o);
-s32 func_003326D0(void *o);
-s32 func_003328E0(void *o);
-s32 func_00332AD0(void *o);
-s32 func_00332D10(void *o);
-s32 func_00332F30(void *o);
-s32 func_00333120(void *o);
+u32 Item42_Actions(void);
+s32 Item42_LoadPicture(void *self, void *dest);
+s32 Item42_Use(void);
+u32 Item43_Actions(void);
+s32 Item43_LoadPicture(void *self, void *dest);
+s32 Item43_Use(void);
+u32 Item44_Actions(void);
+s32 Item44_LoadPicture(void *self, void *dest);
+s32 Item44_Use(void);
+u32 Item45_Actions(void);
+s32 Item45_LoadPicture(void *self, void *dest);
+s32 Item45_Use(void);
+u32 Item46_Actions(void);
+s32 Item46_LoadPicture(void *self, void *dest);
+s32 Item46_Use(void);
+u32 Item47_Actions(void);
+s32 Item47_LoadPicture(void *self, void *dest);
+s32 Item47_Use(void);
+u32 Item48_Actions(void);
+s32 Item48_LoadPicture(void *self, void *dest);
+s32 Item48_Use(void);
+s32 Item49_Use(void);
+s32 Item4A_Use(void);
+s32 Item60_Use(void *o);
+s32 Item61_Use(void *o);
+s32 Item62_Use(void *o);
+s32 Item63_Use(void *o);
+s32 Item64_Use(void *o);
+s32 Item65_Use(void *o);
+s32 Item66_Use(void *o);
 
 static f32 animal_rnd(void) {
     return VCALL(gRandom, 0x20, f32 (*)(void *))(gRandom);
 }
 
-s32 func_0032CD00(void *self, void *dest);
+s32 Item14_LoadPicture(void *self, void *dest);
 void *Kind26_ModelFiles(void);
 void *Kind26_MotionFiles(void);
 f32 func_0032CF40(u8 *self, f32 *out);
@@ -489,9 +489,11 @@ static inline void *item_dtor3(void *o, s32 flags, void **own, void **mid) {
 
 /* the middle classes */
 
-void *func_002640C0(void *o, s32 flags) { return item_dtor2(o, flags, D_0046C8D0); }
+/* 0x002640C0 */
+void *PlainItem_dtor(void *o, s32 flags) { return item_dtor2(o, flags, D_0046C8D0); }
 
-ItemObj *func_00264120(ItemObj *self) {
+/* 0x00264120 */
+ItemObj *Item29_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x29;
     self->flag = 0;
@@ -500,7 +502,8 @@ ItemObj *func_00264120(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264150(ItemObj *self) {
+/* 0x00264150 */
+ItemObj *Item28_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x28;
     self->flag = 0;
@@ -509,7 +512,8 @@ ItemObj *func_00264150(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264180(ItemObj *self) {
+/* 0x00264180 */
+ItemObj *Item27_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x27;
     self->flag = 0;
@@ -518,7 +522,8 @@ ItemObj *func_00264180(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002641B0(ItemObj *self) {
+/* 0x002641B0 */
+ItemObj *Item26_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x26;
     self->flag = 0;
@@ -527,7 +532,8 @@ ItemObj *func_002641B0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002641E0(ItemObj *self) {
+/* 0x002641E0 */
+ItemObj *Item25_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x25;
     self->flag = 0;
@@ -536,7 +542,8 @@ ItemObj *func_002641E0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264210(ItemObj *self) {
+/* 0x00264210 */
+ItemObj *Item24_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x24;
     self->flag = 0;
@@ -545,7 +552,8 @@ ItemObj *func_00264210(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264240(ItemObj *self) {
+/* 0x00264240 */
+ItemObj *Item23_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x23;
     self->flag = 0;
@@ -554,7 +562,8 @@ ItemObj *func_00264240(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264270(ItemObj *self) {
+/* 0x00264270 */
+ItemObj *Item22_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x22;
     self->flag = 0;
@@ -563,7 +572,8 @@ ItemObj *func_00264270(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002642A0(ItemObj *self) {
+/* 0x002642A0 */
+ItemObj *Item21_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x21;
     self->flag = 0;
@@ -572,7 +582,8 @@ ItemObj *func_002642A0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002642D0(ItemObj *self) {
+/* 0x002642D0 */
+ItemObj *Item20_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x20;
     self->flag = 0;
@@ -581,7 +592,8 @@ ItemObj *func_002642D0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264300(ItemObj *self) {
+/* 0x00264300 */
+ItemObj *Item1F_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x1F;
     self->flag = 0;
@@ -590,7 +602,8 @@ ItemObj *func_00264300(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264330(ItemObj *self) {
+/* 0x00264330 */
+ItemObj *Item1E_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x1E;
     self->flag = 0;
@@ -599,7 +612,8 @@ ItemObj *func_00264330(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264360(ItemObj *self) {
+/* 0x00264360 */
+ItemObj *Item1D_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x1D;
     self->flag = 0;
@@ -608,7 +622,8 @@ ItemObj *func_00264360(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264390(ItemObj *self) {
+/* 0x00264390 */
+ItemObj *Item1C_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x1C;
     self->flag = 0;
@@ -617,7 +632,8 @@ ItemObj *func_00264390(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002643C0(ItemObj *self) {
+/* 0x002643C0 */
+ItemObj *Item1B_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x1B;
     self->flag = 0;
@@ -626,7 +642,8 @@ ItemObj *func_002643C0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002643F0(ItemObj *self) {
+/* 0x002643F0 */
+ItemObj *Item1A_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x1A;
     self->flag = 0;
@@ -635,7 +652,8 @@ ItemObj *func_002643F0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264420(ItemObj *self) {
+/* 0x00264420 */
+ItemObj *Item19_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x19;
     self->flag = 0;
@@ -644,7 +662,8 @@ ItemObj *func_00264420(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264450(ItemObj *self) {
+/* 0x00264450 */
+ItemObj *Item18_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x18;
     self->flag = 0;
@@ -653,7 +672,8 @@ ItemObj *func_00264450(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264480(ItemObj *self) {
+/* 0x00264480 */
+ItemObj *Item17_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x17;
     self->flag = 0;
@@ -662,7 +682,8 @@ ItemObj *func_00264480(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002644B0(ItemObj *self) {
+/* 0x002644B0 */
+ItemObj *Item16_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x16;
     self->flag = 0;
@@ -671,7 +692,8 @@ ItemObj *func_002644B0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002644E0(ItemObj *self) {
+/* 0x002644E0 */
+ItemObj *Item15_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x15;
     self->flag = 0;
@@ -680,7 +702,8 @@ ItemObj *func_002644E0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264510(ItemObj *self) {
+/* 0x00264510 */
+ItemObj *Item14_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x14;
     self->flag = 0;
@@ -689,7 +712,8 @@ ItemObj *func_00264510(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264540(ItemObj *self) {
+/* 0x00264540 */
+ItemObj *Item13_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x13;
     self->flag = 0;
@@ -698,7 +722,8 @@ ItemObj *func_00264540(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264570(ItemObj *self) {
+/* 0x00264570 */
+ItemObj *Item12_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x12;
     self->flag = 0;
@@ -707,7 +732,8 @@ ItemObj *func_00264570(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002645A0(ItemObj *self) {
+/* 0x002645A0 */
+ItemObj *Item11_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x11;
     self->flag = 0;
@@ -716,7 +742,8 @@ ItemObj *func_002645A0(ItemObj *self) {
     return self;
 }
 
-B2_Obj *func_002645D0(B2_Obj *self) {
+/* 0x002645D0 */
+B2_Obj *Item10_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x10;
     self->flag = 0;
@@ -725,7 +752,8 @@ B2_Obj *func_002645D0(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_00264600(B2_Obj *self) {
+/* 0x00264600 */
+B2_Obj *Item0F_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xF;
     self->flag = 0;
@@ -734,7 +762,8 @@ B2_Obj *func_00264600(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_00264630(B2_Obj *self) {
+/* 0x00264630 */
+B2_Obj *Item0E_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xE;
     self->flag = 0;
@@ -743,7 +772,8 @@ B2_Obj *func_00264630(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_00264660(B2_Obj *self) {
+/* 0x00264660 */
+B2_Obj *Item0D_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xD;
     self->flag = 0;
@@ -752,7 +782,8 @@ B2_Obj *func_00264660(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_00264690(B2_Obj *self) {
+/* 0x00264690 */
+B2_Obj *Item0C_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xC;
     self->flag = 0;
@@ -761,7 +792,8 @@ B2_Obj *func_00264690(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_002646C0(B2_Obj *self) {
+/* 0x002646C0 */
+B2_Obj *Item0B_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xB;
     self->flag = 0;
@@ -770,7 +802,8 @@ B2_Obj *func_002646C0(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_002646F0(B2_Obj *self) {
+/* 0x002646F0 */
+B2_Obj *Item0A_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xA;
     self->flag = 0;
@@ -779,7 +812,8 @@ B2_Obj *func_002646F0(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_00264720(B2_Obj *self) {
+/* 0x00264720 */
+B2_Obj *Item09_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x9;
     self->flag = 0;
@@ -788,7 +822,8 @@ B2_Obj *func_00264720(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_00264750(B2_Obj *self) {
+/* 0x00264750 */
+B2_Obj *Item08_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x8;
     self->flag = 0;
@@ -797,7 +832,8 @@ B2_Obj *func_00264750(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_00264780(B2_Obj *self) {
+/* 0x00264780 */
+B2_Obj *Item07_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x7;
     self->flag = 0;
@@ -806,7 +842,8 @@ B2_Obj *func_00264780(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_002647B0(B2_Obj *self) {
+/* 0x002647B0 */
+B2_Obj *Item06_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x6;
     self->flag = 0;
@@ -815,7 +852,8 @@ B2_Obj *func_002647B0(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_002647E0(B2_Obj *self) {
+/* 0x002647E0 */
+B2_Obj *Item05_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x5;
     self->flag = 0;
@@ -824,7 +862,8 @@ B2_Obj *func_002647E0(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_00264810(B2_Obj *self) {
+/* 0x00264810 */
+B2_Obj *Item04_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x4;
     self->flag = 0;
@@ -833,7 +872,8 @@ B2_Obj *func_00264810(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_00264840(B2_Obj *self) {
+/* 0x00264840 */
+B2_Obj *Item03_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x3;
     self->flag = 0;
@@ -842,7 +882,8 @@ B2_Obj *func_00264840(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_00264870(B2_Obj *self) {
+/* 0x00264870 */
+B2_Obj *Item02_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x2;
     self->flag = 0;
@@ -851,7 +892,8 @@ B2_Obj *func_00264870(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_002648A0(B2_Obj *self) {
+/* 0x002648A0 */
+B2_Obj *Item01_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x1;
     self->flag = 0;
@@ -860,7 +902,8 @@ B2_Obj *func_002648A0(B2_Obj *self) {
     return self;
 }
 
-B2_Obj *func_002648D0(B2_Obj *self) {
+/* 0x002648D0 */
+B2_Obj *Item00_ctor(B2_Obj *self) {
     self->vtbl = D_0046C790;
     self->id = 0;
     self->flag = 0;
@@ -868,9 +911,11 @@ B2_Obj *func_002648D0(B2_Obj *self) {
     self->vtbl = D_0046EE40;
     return self;
 }
-void *func_00263DC0(void *o, s32 flags) { return item_dtor2(o, flags, D_0046C920); }
+/* 0x00263DC0 */
+void *ItemClassC920_dtor(void *o, s32 flags) { return item_dtor2(o, flags, D_0046C920); }
 
-ItemObj *func_00263E20(ItemObj *self) {
+/* 0x00263E20 */
+ItemObj *Item4B_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x4B;
     self->flag = 0;
@@ -879,7 +924,8 @@ ItemObj *func_00263E20(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263E50(ItemObj *self) {
+/* 0x00263E50 */
+ItemObj *Item4A_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x4A;
     self->flag = 0;
@@ -888,7 +934,8 @@ ItemObj *func_00263E50(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263E80(ItemObj *self) {
+/* 0x00263E80 */
+ItemObj *Item49_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x49;
     self->flag = 0;
@@ -897,7 +944,8 @@ ItemObj *func_00263E80(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263EB0(ItemObj *self) {
+/* 0x00263EB0 */
+ItemObj *Item48_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x48;
     self->flag = 0;
@@ -906,7 +954,8 @@ ItemObj *func_00263EB0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263EE0(ItemObj *self) {
+/* 0x00263EE0 */
+ItemObj *Item47_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x47;
     self->flag = 0;
@@ -915,7 +964,8 @@ ItemObj *func_00263EE0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263F10(ItemObj *self) {
+/* 0x00263F10 */
+ItemObj *Item46_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x46;
     self->flag = 0;
@@ -924,7 +974,8 @@ ItemObj *func_00263F10(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263F40(ItemObj *self) {
+/* 0x00263F40 */
+ItemObj *Item45_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x45;
     self->flag = 0;
@@ -933,7 +984,8 @@ ItemObj *func_00263F40(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263F70(ItemObj *self) {
+/* 0x00263F70 */
+ItemObj *Item44_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x44;
     self->flag = 0;
@@ -942,7 +994,8 @@ ItemObj *func_00263F70(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263FA0(ItemObj *self) {
+/* 0x00263FA0 */
+ItemObj *Item43_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x43;
     self->flag = 0;
@@ -951,7 +1004,8 @@ ItemObj *func_00263FA0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263FD0(ItemObj *self) {
+/* 0x00263FD0 */
+ItemObj *Item42_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x42;
     self->flag = 0;
@@ -960,7 +1014,8 @@ ItemObj *func_00263FD0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264000(ItemObj *self) {
+/* 0x00264000 */
+ItemObj *Item41_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x41;
     self->flag = 0;
@@ -969,7 +1024,8 @@ ItemObj *func_00264000(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264030(ItemObj *self) {
+/* 0x00264030 */
+ItemObj *Item40_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x40;
     self->flag = 0;
@@ -978,7 +1034,8 @@ ItemObj *func_00264030(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00264090(ItemObj *self) {
+/* 0x00264090 */
+ItemObj *Item3E_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x3E;
     self->flag = 0;
@@ -986,9 +1043,11 @@ ItemObj *func_00264090(ItemObj *self) {
     self->vtbl = D_0046C880;
     return self;
 }
-void *func_00263A90(void *o, s32 flags) { return item_dtor2(o, flags, D_0046CB50); }
+/* 0x00263A90 */
+void *ItemClassCB50_dtor(void *o, s32 flags) { return item_dtor2(o, flags, D_0046CB50); }
 
-ItemObj *func_00263AF0(ItemObj *self) {
+/* 0x00263AF0 */
+ItemObj *Item74_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x74;
     self->flag = 0;
@@ -997,7 +1056,8 @@ ItemObj *func_00263AF0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263B20(ItemObj *self) {
+/* 0x00263B20 */
+ItemObj *Item73_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x73;
     self->flag = 0;
@@ -1006,7 +1066,8 @@ ItemObj *func_00263B20(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263B50(ItemObj *self) {
+/* 0x00263B50 */
+ItemObj *Item72_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x72;
     self->flag = 0;
@@ -1015,7 +1076,8 @@ ItemObj *func_00263B50(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263B80(ItemObj *self) {
+/* 0x00263B80 */
+ItemObj *Item71_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x71;
     self->flag = 0;
@@ -1024,7 +1086,8 @@ ItemObj *func_00263B80(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263BB0(ItemObj *self) {
+/* 0x00263BB0 */
+ItemObj *Item70_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x70;
     self->flag = 0;
@@ -1033,7 +1096,8 @@ ItemObj *func_00263BB0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263BE0(ItemObj *self) {
+/* 0x00263BE0 */
+ItemObj *Item66_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x66;
     self->flag = 0;
@@ -1041,9 +1105,11 @@ ItemObj *func_00263BE0(ItemObj *self) {
     self->vtbl = D_00475850;
     return self;
 }
-void *func_00263970(void *o, s32 flags) { return item_dtor2(o, flags, D_0046CCE0); }
+/* 0x00263970 */
+void *ItemClassCCE0_dtor(void *o, s32 flags) { return item_dtor2(o, flags, D_0046CCE0); }
 
-ItemObj *func_002639D0(ItemObj *self) {
+/* 0x002639D0 */
+ItemObj *Item82_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x82;
     self->flag = 0;
@@ -1052,7 +1118,8 @@ ItemObj *func_002639D0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263A00(ItemObj *self) {
+/* 0x00263A00 */
+ItemObj *Item81_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x81;
     self->flag = 0;
@@ -1061,7 +1128,8 @@ ItemObj *func_00263A00(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263A30(ItemObj *self) {
+/* 0x00263A30 */
+ItemObj *Item80_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x80;
     self->flag = 0;
@@ -1070,7 +1138,8 @@ ItemObj *func_00263A30(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263A60(ItemObj *self) {
+/* 0x00263A60 */
+ItemObj *Item75_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x75;
     self->flag = 0;
@@ -1078,9 +1147,11 @@ ItemObj *func_00263A60(ItemObj *self) {
     self->vtbl = D_0046CB00;
     return self;
 }
-void *func_00263850(void *o, s32 flags) { return item_dtor2(o, flags, D_0046CE70); }
+/* 0x00263850 */
+void *ItemClassCE70_dtor(void *o, s32 flags) { return item_dtor2(o, flags, D_0046CE70); }
 
-ItemObj *func_002638B0(ItemObj *self) {
+/* 0x002638B0 */
+ItemObj *Item88_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x88;
     self->flag = 0;
@@ -1089,7 +1160,8 @@ ItemObj *func_002638B0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002638E0(ItemObj *self) {
+/* 0x002638E0 */
+ItemObj *Item87_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x87;
     self->flag = 0;
@@ -1098,7 +1170,8 @@ ItemObj *func_002638E0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263910(ItemObj *self) {
+/* 0x00263910 */
+ItemObj *Item86_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x86;
     self->flag = 0;
@@ -1107,7 +1180,8 @@ ItemObj *func_00263910(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263940(ItemObj *self) {
+/* 0x00263940 */
+ItemObj *Item83_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x83;
     self->flag = 0;
@@ -1115,9 +1189,11 @@ ItemObj *func_00263940(ItemObj *self) {
     self->vtbl = D_0046CC90;
     return self;
 }
-void *func_00263730(void *o, s32 flags) { return item_dtor2(o, flags, D_0046D000); }
+/* 0x00263730 */
+void *ItemClassD000_dtor(void *o, s32 flags) { return item_dtor2(o, flags, D_0046D000); }
 
-ItemObj *func_00263790(ItemObj *self) {
+/* 0x00263790 */
+ItemObj *Item8C_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x8C;
     self->flag = 0;
@@ -1126,7 +1202,8 @@ ItemObj *func_00263790(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002637C0(ItemObj *self) {
+/* 0x002637C0 */
+ItemObj *Item8B_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x8B;
     self->flag = 0;
@@ -1135,7 +1212,8 @@ ItemObj *func_002637C0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002637F0(ItemObj *self) {
+/* 0x002637F0 */
+ItemObj *Item8A_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x8A;
     self->flag = 0;
@@ -1144,7 +1222,8 @@ ItemObj *func_002637F0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263820(ItemObj *self) {
+/* 0x00263820 */
+ItemObj *Item89_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x89;
     self->flag = 0;
@@ -1152,9 +1231,11 @@ ItemObj *func_00263820(ItemObj *self) {
     self->vtbl = D_0046CE20;
     return self;
 }
-void *func_00263520(void *o, s32 flags) { return item_dtor2(o, flags, D_0046D320); }
+/* 0x00263520 */
+void *ItemClassD320_dtor(void *o, s32 flags) { return item_dtor2(o, flags, D_0046D320); }
 
-ItemObj *func_00263580(ItemObj *self) {
+/* 0x00263580 */
+ItemObj *Item98_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x98;
     self->flag = 0;
@@ -1163,7 +1244,8 @@ ItemObj *func_00263580(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002635B0(ItemObj *self) {
+/* 0x002635B0 */
+ItemObj *Item97_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x97;
     self->flag = 0;
@@ -1172,7 +1254,8 @@ ItemObj *func_002635B0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002635E0(ItemObj *self) {
+/* 0x002635E0 */
+ItemObj *Item95_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x95;
     self->flag = 0;
@@ -1181,7 +1264,8 @@ ItemObj *func_002635E0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263610(ItemObj *self) {
+/* 0x00263610 */
+ItemObj *Item94_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x94;
     self->flag = 0;
@@ -1190,7 +1274,8 @@ ItemObj *func_00263610(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263640(ItemObj *self) {
+/* 0x00263640 */
+ItemObj *Item93_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x93;
     self->flag = 0;
@@ -1199,7 +1284,8 @@ ItemObj *func_00263640(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263670(ItemObj *self) {
+/* 0x00263670 */
+ItemObj *Item92_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x92;
     self->flag = 0;
@@ -1208,7 +1294,8 @@ ItemObj *func_00263670(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002636A0(ItemObj *self) {
+/* 0x002636A0 */
+ItemObj *Item91_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x91;
     self->flag = 0;
@@ -1217,7 +1304,8 @@ ItemObj *func_002636A0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002636D0(ItemObj *self) {
+/* 0x002636D0 */
+ItemObj *Item90_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x90;
     self->flag = 0;
@@ -1226,7 +1314,8 @@ ItemObj *func_002636D0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263700(ItemObj *self) {
+/* 0x00263700 */
+ItemObj *Item8D_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x8D;
     self->flag = 0;
@@ -1234,9 +1323,11 @@ ItemObj *func_00263700(ItemObj *self) {
     self->vtbl = D_0046CFB0;
     return self;
 }
-void *func_00263250(void *o, s32 flags) { return item_dtor2(o, flags, D_0046D640); }
+/* 0x00263250 */
+void *ItemClassD640_dtor(void *o, s32 flags) { return item_dtor2(o, flags, D_0046D640); }
 
-ItemObj *func_002632B0(ItemObj *self) {
+/* 0x002632B0 */
+ItemObj *ItemAB_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xAB;
     self->flag = 0;
@@ -1245,7 +1336,8 @@ ItemObj *func_002632B0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002632E0(ItemObj *self) {
+/* 0x002632E0 */
+ItemObj *ItemAA_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xAA;
     self->flag = 0;
@@ -1254,7 +1346,8 @@ ItemObj *func_002632E0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263310(ItemObj *self) {
+/* 0x00263310 */
+ItemObj *ItemA9_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xA9;
     self->flag = 0;
@@ -1263,7 +1356,8 @@ ItemObj *func_00263310(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263340(ItemObj *self) {
+/* 0x00263340 */
+ItemObj *ItemA8_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xA8;
     self->flag = 0;
@@ -1272,7 +1366,8 @@ ItemObj *func_00263340(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263370(ItemObj *self) {
+/* 0x00263370 */
+ItemObj *ItemA7_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xA7;
     self->flag = 0;
@@ -1281,7 +1376,8 @@ ItemObj *func_00263370(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002633A0(ItemObj *self) {
+/* 0x002633A0 */
+ItemObj *ItemA6_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xA6;
     self->flag = 0;
@@ -1290,7 +1386,8 @@ ItemObj *func_002633A0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002633D0(ItemObj *self) {
+/* 0x002633D0 */
+ItemObj *ItemA5_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xA5;
     self->flag = 0;
@@ -1299,7 +1396,8 @@ ItemObj *func_002633D0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263400(ItemObj *self) {
+/* 0x00263400 */
+ItemObj *ItemA4_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xA4;
     self->flag = 0;
@@ -1308,7 +1406,8 @@ ItemObj *func_00263400(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263430(ItemObj *self) {
+/* 0x00263430 */
+ItemObj *ItemA3_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xA3;
     self->flag = 0;
@@ -1317,7 +1416,8 @@ ItemObj *func_00263430(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263460(ItemObj *self) {
+/* 0x00263460 */
+ItemObj *ItemA2_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xA2;
     self->flag = 0;
@@ -1326,7 +1426,8 @@ ItemObj *func_00263460(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263490(ItemObj *self) {
+/* 0x00263490 */
+ItemObj *ItemA1_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xA1;
     self->flag = 0;
@@ -1335,7 +1436,8 @@ ItemObj *func_00263490(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002634C0(ItemObj *self) {
+/* 0x002634C0 */
+ItemObj *ItemA0_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0xA0;
     self->flag = 0;
@@ -1344,7 +1446,8 @@ ItemObj *func_002634C0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_002634F0(ItemObj *self) {
+/* 0x002634F0 */
+ItemObj *Item9B_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x9B;
     self->flag = 0;
@@ -1352,10 +1455,13 @@ ItemObj *func_002634F0(ItemObj *self) {
     self->vtbl = D_0046D2D0;
     return self;
 }
-void *func_002D2750(void *o, s32 flags) { return item_dtor2(o, flags, D_0046F430); }
-void *func_00263C10(void *o, s32 flags) { return item_dtor2(o, flags, D_00476B00); }
+/* 0x002D2750 */
+void *ItemClassF430_dtor(void *o, s32 flags) { return item_dtor2(o, flags, D_0046F430); }
+/* 0x00263C10 */
+void *ItemClass6B00_dtor(void *o, s32 flags) { return item_dtor2(o, flags, D_00476B00); }
 
-ItemObj *func_00263C70(ItemObj *self) {
+/* 0x00263C70 */
+ItemObj *Item65_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x65;
     self->flag = 0;
@@ -1364,7 +1470,8 @@ ItemObj *func_00263C70(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263CA0(ItemObj *self) {
+/* 0x00263CA0 */
+ItemObj *Item64_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x64;
     self->flag = 0;
@@ -1373,7 +1480,8 @@ ItemObj *func_00263CA0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263CD0(ItemObj *self) {
+/* 0x00263CD0 */
+ItemObj *Item63_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x63;
     self->flag = 0;
@@ -1382,7 +1490,8 @@ ItemObj *func_00263CD0(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263D00(ItemObj *self) {
+/* 0x00263D00 */
+ItemObj *Item62_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x62;
     self->flag = 0;
@@ -1391,7 +1500,8 @@ ItemObj *func_00263D00(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263D30(ItemObj *self) {
+/* 0x00263D30 */
+ItemObj *Item61_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x61;
     self->flag = 0;
@@ -1400,7 +1510,8 @@ ItemObj *func_00263D30(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263D60(ItemObj *self) {
+/* 0x00263D60 */
+ItemObj *Item60_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x60;
     self->flag = 0;
@@ -1409,7 +1520,8 @@ ItemObj *func_00263D60(ItemObj *self) {
     return self;
 }
 
-ItemObj *func_00263D90(ItemObj *self) {
+/* 0x00263D90 */
+ItemObj *Item4C_ctor(ItemObj *self) {
     self->vtbl = D_0046C790;
     self->id = 0x4C;
     self->flag = 0;
@@ -1419,137 +1531,205 @@ ItemObj *func_00263D90(ItemObj *self) {
 }
 
 /* the items */
-void *func_002649F0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046C7E0, D_0046C8D0); }
-void *func_00264C70(void *o, s32 flags) { return item_dtor3(o, flags, D_0046C830, D_0046C8D0); }
-void *func_00264EC0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046C880, D_0046C8D0); }
-void *func_00264F70(void *o, s32 flags) { return item_dtor3(o, flags, D_0046C970, D_0046CB50); }
+/* 0x002649F0 */
+void *Item12_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046C7E0, D_0046C8D0); }
+/* 0x00264C70 */
+void *Item13_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046C830, D_0046C8D0); }
+/* 0x00264EC0 */
+void *Item3E_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046C880, D_0046C8D0); }
+/* 0x00264F70 */
+void *Item70_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046C970, D_0046CB50); }
 
-s32 func_00264FE0(void *self, void *dest) {
+/* 0x00264FE0 */
+s32 Item70_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A880, dest, 0x4000000, 0);
 }
-void *func_00265060(void *o, s32 flags) { return item_dtor3(o, flags, D_0046C9C0, D_0046CB50); }
+/* 0x00265060 */
+void *Item71_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046C9C0, D_0046CB50); }
 
-s32 func_002650D0(void *self, void *dest) {
+/* 0x002650D0 */
+s32 Item71_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A860, dest, 0x4000000, 0);
 }
-void *func_00265110(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CA10, D_0046CB50); }
+/* 0x00265110 */
+void *Item72_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CA10, D_0046CB50); }
 
-s32 func_00265180(void *self, void *dest) {
+/* 0x00265180 */
+s32 Item72_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A840, dest, 0x4000000, 0);
 }
-void *func_002651C0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CA60, D_0046CB50); }
+/* 0x002651C0 */
+void *Item73_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CA60, D_0046CB50); }
 
-s32 func_00265230(void *self, void *dest) {
+/* 0x00265230 */
+s32 Item73_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A820, dest, 0x4000000, 0);
 }
-void *func_00265270(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CAB0, D_0046CB50); }
+/* 0x00265270 */
+void *Item74_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CAB0, D_0046CB50); }
 
-s32 func_002652E0(void *self, void *dest) {
+/* 0x002652E0 */
+s32 Item74_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A800, dest, 0x4000000, 0);
 }
-void *func_00265320(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CB00, D_0046CB50); }
+/* 0x00265320 */
+void *Item75_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CB00, D_0046CB50); }
 
-s32 func_00265390(void *self, void *dest) {
+/* 0x00265390 */
+s32 Item75_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A7E0, dest, 0x4000000, 0);
 }
-void *func_002653D0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CBA0, D_0046CCE0); }
+/* 0x002653D0 */
+void *Item80_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CBA0, D_0046CCE0); }
 
-s32 func_00265440(void *self, void *dest) {
+/* 0x00265440 */
+s32 Item80_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AC40, dest, 0x4000000, 0);
 }
-void *func_002654B0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CBF0, D_0046CCE0); }
+/* 0x002654B0 */
+void *Item81_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CBF0, D_0046CCE0); }
 
-s32 func_00265520(void *self, void *dest) {
+/* 0x00265520 */
+s32 Item81_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AC20, dest, 0x4000000, 0);
 }
-void *func_00265560(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CC40, D_0046CCE0); }
+/* 0x00265560 */
+void *Item82_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CC40, D_0046CCE0); }
 
-s32 func_002655D0(void *self, void *dest) {
+/* 0x002655D0 */
+s32 Item82_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AC00, dest, 0x4000000, 0);
 }
-void *func_00265610(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CC90, D_0046CCE0); }
+/* 0x00265610 */
+void *Item83_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CC90, D_0046CCE0); }
 
-s32 func_00265680(void *self, void *dest) {
+/* 0x00265680 */
+s32 Item83_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045ABE0, dest, 0x4000000, 0);
 }
-void *func_002656C0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CD30, D_0046CE70); }
+/* 0x002656C0 */
+void *Item86_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CD30, D_0046CE70); }
 
-s32 func_00265730(void *self, void *dest) {
+/* 0x00265730 */
+s32 Item86_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045ABC0, dest, 0x4000000, 0);
 }
-void *func_002657A0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CD80, D_0046CE70); }
+/* 0x002657A0 */
+void *Item87_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CD80, D_0046CE70); }
 
-s32 func_00265810(void *self, void *dest) {
+/* 0x00265810 */
+s32 Item87_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045ABA0, dest, 0x4000000, 0);
 }
-void *func_00265850(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CDD0, D_0046CE70); }
+/* 0x00265850 */
+void *Item88_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CDD0, D_0046CE70); }
 
-s32 func_002658C0(void *self, void *dest) {
+/* 0x002658C0 */
+s32 Item88_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AB80, dest, 0x4000000, 0);
 }
-void *func_00265900(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CE20, D_0046CE70); }
+/* 0x00265900 */
+void *Item89_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CE20, D_0046CE70); }
 
-s32 func_00265970(void *self, void *dest) {
+/* 0x00265970 */
+s32 Item89_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AB60, dest, 0x4000000, 0);
 }
-void *func_002659B0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CEC0, D_0046D000); }
+/* 0x002659B0 */
+void *Item8A_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CEC0, D_0046D000); }
 
-s32 func_00265A20(void *self, void *dest) {
+/* 0x00265A20 */
+s32 Item8A_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AA20, dest, 0x4000000, 0);
 }
-void *func_00265A90(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CF10, D_0046D000); }
+/* 0x00265A90 */
+void *Item8B_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CF10, D_0046D000); }
 
-s32 func_00265B00(void *self, void *dest) {
+/* 0x00265B00 */
+s32 Item8B_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045AA00, dest, 0x4000000, 0);
 }
-void *func_00265B40(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CF60, D_0046D000); }
+/* 0x00265B40 */
+void *Item8C_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CF60, D_0046D000); }
 
-s32 func_00265BB0(void *self, void *dest) {
+/* 0x00265BB0 */
+s32 Item8C_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A9E0, dest, 0x4000000, 0);
 }
-void *func_00265BF0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CFB0, D_0046D000); }
+/* 0x00265BF0 */
+void *Item8D_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046CFB0, D_0046D000); }
 
-s32 func_00265C60(void *self, void *dest) {
+/* 0x00265C60 */
+s32 Item8D_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, LoaderLoadFn)(gFileLoader, D_0045A9C0, dest, 0x4000000, 0);
 }
-void *func_00265CA0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D050, D_0046D320); }
-void *func_00265D80(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D0A0, D_0046D320); }
-void *func_00265E30(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D0F0, D_0046D320); }
-void *func_00265EE0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D140, D_0046D320); }
-void *func_00265F90(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D190, D_0046D320); }
-void *func_00266040(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D1E0, D_0046D320); }
-void *func_002660F0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D230, D_0046D320); }
-void *func_002661A0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D280, D_0046D320); }
-void *func_00266250(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D2D0, D_0046D320); }
-void *func_00266300(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D370, D_0046D640); }
-void *func_00266450(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D3C0, D_0046D640); }
-void *func_00266500(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D410, D_0046D640); }
-void *func_002665B0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D460, D_0046D640); }
-void *func_00266660(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D4B0, D_0046D640); }
-void *func_00266710(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D500, D_0046D640); }
-void *func_002667C0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D550, D_0046D640); }
-void *func_00266870(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D5A0, D_0046D640); }
-void *func_00266920(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D5F0, D_0046D640); }
-void *func_002669D0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D690, D_0046C920); }
-void *func_00266B60(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D6E0, D_0046C920); }
-void *func_002CCBD0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EE40, D_0046C8D0); }
+/* 0x00265CA0 */
+void *Item90_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D050, D_0046D320); }
+/* 0x00265D80 */
+void *Item91_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D0A0, D_0046D320); }
+/* 0x00265E30 */
+void *Item92_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D0F0, D_0046D320); }
+/* 0x00265EE0 */
+void *Item93_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D140, D_0046D320); }
+/* 0x00265F90 */
+void *Item94_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D190, D_0046D320); }
+/* 0x00266040 */
+void *Item95_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D1E0, D_0046D320); }
+/* 0x002660F0 */
+void *Item97_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D230, D_0046D320); }
+/* 0x002661A0 */
+void *Item98_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D280, D_0046D320); }
+/* 0x00266250 */
+void *Item9B_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D2D0, D_0046D320); }
+/* 0x00266300 */
+void *ItemA4_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D370, D_0046D640); }
+/* 0x00266450 */
+void *ItemA5_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D3C0, D_0046D640); }
+/* 0x00266500 */
+void *ItemA6_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D410, D_0046D640); }
+/* 0x002665B0 */
+void *ItemA7_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D460, D_0046D640); }
+/* 0x00266660 */
+void *ItemA8_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D4B0, D_0046D640); }
+/* 0x00266710 */
+void *ItemA9_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D500, D_0046D640); }
+/* 0x002667C0 */
+void *ItemAA_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D550, D_0046D640); }
+/* 0x00266870 */
+void *ItemAB_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D5A0, D_0046D640); }
+/* 0x00266920 */
+void *ItemAC_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D5F0, D_0046D640); }
+/* 0x002669D0 */
+void *Item40_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D690, D_0046C920); }
+/* 0x00266B60 */
+void *Item41_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046D6E0, D_0046C920); }
+/* 0x002CCBD0 */
+void *Item00_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EE40, D_0046C8D0); }
 
-s32 func_002CCC40(void *self, s32 a) { return LOAD(D_0045D4A0, a); }
-void *func_002CCD30(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EE90, D_0046C8D0); }
-void *func_002CCF90(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EEE0, D_0046C8D0); }
+/* 0x002CCC40 */
+s32 Item00_LoadPicture(void *self, s32 a) { return LOAD(D_0045D4A0, a); }
+/* 0x002CCD30 */
+void *Item01_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EE90, D_0046C8D0); }
+/* 0x002CCF90 */
+void *Item02_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EEE0, D_0046C8D0); }
 
-s32 func_002CD000(void *self, s32 a) { return LOAD(D_0045D4E0, a); }
+/* 0x002CD000 */
+s32 Item02_LoadPicture(void *self, s32 a) { return LOAD(D_0045D4E0, a); }
 
 /* use: on the altar */
-s32 func_002CD030(void *o) {
+/* 0x002CD030 */
+s32 Item02_Use(void *o) {
     return item_offer(gProgress, o);
 }
-void *func_002CD130(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EF30, D_0046C8D0); }
+/* 0x002CD130 */
+void *Item03_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EF30, D_0046C8D0); }
 
-s32 func_002CD1A0(void *self, s32 a) { return LOAD(D_0045D500, a); }
+/* 0x002CD1A0 */
+s32 Item03_LoadPicture(void *self, s32 a) { return LOAD(D_0045D500, a); }
 
 /* use: at spot 5 of room 0x22: flag 0x18, event 5 */
-s32 func_002CD1D0(void) {
+/* 0x002CD1D0 */
+s32 Item03_Use(void) {
     Progress *p = gProgress;
 
     if (!item_room_spot(p, 0x22, 5)) {
@@ -1559,12 +1739,15 @@ s32 func_002CD1D0(void) {
     item_event(gEvents, 0, 5, gCharPlayer);
     return 4;
 }
-void *func_002CD2A0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EF80, D_0046C8D0); }
+/* 0x002CD2A0 */
+void *Item04_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EF80, D_0046C8D0); }
 
-s32 func_002CD310(void *self, s32 a) { return LOAD(D_0045D520, a); }
+/* 0x002CD310 */
+s32 Item04_LoadPicture(void *self, s32 a) { return LOAD(D_0045D520, a); }
 
 /* use: at spot 0xC of room 4: event 4, flag 0x18 */
-s32 func_002CD340(void) {
+/* 0x002CD340 */
+s32 Item04_Use(void) {
     Progress *p = gProgress;
 
     if (!item_room_spot(p, 4, 0xC)) {
@@ -1574,11 +1757,14 @@ s32 func_002CD340(void) {
     Progress_SetFlag(p, 0x18);
     return 4;
 }
-void *func_002CD420(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EFD0, D_0046C8D0); }
+/* 0x002CD420 */
+void *Item05_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046EFD0, D_0046C8D0); }
 
-s32 func_002CD490(void *self, s32 a) { return LOAD(D_0045D540, a); }
+/* 0x002CD490 */
+s32 Item05_LoadPicture(void *self, s32 a) { return LOAD(D_0045D540, a); }
 
-s32 func_002CD4C0(void) {
+/* 0x002CD4C0 */
+s32 Item05_Use(void) {
     F(gProgress, 0x84, u32) |= 0x400000;
     return 2;
 }
@@ -1644,300 +1830,412 @@ void Debilitas3_OnToNextExit(void) {
 s32 Debilitas3_PickDestination(void) {
     return 0;
 }
-void *func_002D7910(void *o, s32 flags) { return item_dtor3(o, flags, D_0046F610, D_0046D640); }
+/* 0x002D7910 */
+void *ItemA0_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046F610, D_0046D640); }
 
-s32 func_002D7980(void *self, void *dest) { return LOAD_002D1360(D_0045D9E0, dest); }
-void *func_002D79C0(void *o, s32 flags) { return item_dtor3(o, flags, D_0046F660, D_0046D640); }
+/* 0x002D7980 */
+s32 ItemA0_LoadPicture(void *self, void *dest) { return LOAD_002D1360(D_0045D9E0, dest); }
+/* 0x002D79C0 */
+void *ItemA1_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_0046F660, D_0046D640); }
 
-s32 func_002D7A30(void *self, void *dest) { return LOAD_002D1360(D_0045DA00, dest); }
-void *func_002EEB60(void *o, s32 flags) { return item_dtor3(o, flags, D_004703F0, D_0046C8D0); }
-void *func_00303C30(void *o, s32 flags) { return item_dtor3(o, flags, D_00470FB0, D_0046C8D0); }
-void *func_00306B20(void *o, s32 flags) { return item_dtor3(o, flags, D_00471080, D_0046C8D0); }
+/* 0x002D7A30 */
+s32 ItemA1_LoadPicture(void *self, void *dest) { return LOAD_002D1360(D_0045DA00, dest); }
+/* 0x002EEB60 */
+void *Item06_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_004703F0, D_0046C8D0); }
+/* 0x00303C30 */
+void *Item07_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00470FB0, D_0046C8D0); }
+/* 0x00306B20 */
+void *Item08_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00471080, D_0046C8D0); }
 
-s32 func_00306B90(void *self, void *dest) {
+/* 0x00306B90 */
+s32 Item08_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_0045EC50, dest);
 }
-void *func_00307130(void *o, s32 flags) { return item_dtor3(o, flags, D_004710D0, D_0046C8D0); }
+/* 0x00307130 */
+void *Item09_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_004710D0, D_0046C8D0); }
 
-s32 func_003071A0(void *self, void *dest) {
+/* 0x003071A0 */
+s32 Item09_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_0045EC70, dest);
 }
-void *func_00307740(void *o, s32 flags) { return item_dtor3(o, flags, D_00471120, D_0046C8D0); }
+/* 0x00307740 */
+void *Item0A_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00471120, D_0046C8D0); }
 
-s32 func_003077B0(void *self, void *dest) {
+/* 0x003077B0 */
+s32 Item0A_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_0045EC90, dest);
 }
-void *func_00307D50(void *o, s32 flags) { return item_dtor3(o, flags, D_00471170, D_0046C8D0); }
+/* 0x00307D50 */
+void *Item0B_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00471170, D_0046C8D0); }
 
-s32 func_00307DC0(void *self, void *dest) {
+/* 0x00307DC0 */
+s32 Item0B_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_0045ECB0, dest);
 }
-void *func_00308360(void *o, s32 flags) { return item_dtor3(o, flags, D_004711C0, D_0046C8D0); }
+/* 0x00308360 */
+void *Item0C_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_004711C0, D_0046C8D0); }
 
-s32 func_003083D0(void *self, void *dest) {
+/* 0x003083D0 */
+s32 Item0C_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_0045ECD0, dest);
 }
-void *func_0031CAA0(void *o, s32 flags) { return item_dtor3(o, flags, D_00472F80, D_0046C8D0); }
+/* 0x0031CAA0 */
+void *Item0D_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00472F80, D_0046C8D0); }
 
-s32 func_0031CB10(void *self, void *dest) {
+/* 0x0031CB10 */
+s32 Item0D_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_0045FE20, dest);
 }
-void *func_0031CD70(void *o, s32 flags) { return item_dtor3(o, flags, D_00472FD0, D_0046C8D0); }
+/* 0x0031CD70 */
+void *Item0E_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00472FD0, D_0046C8D0); }
 
-s32 func_0031CDE0(void *self, void *dest) {
+/* 0x0031CDE0 */
+s32 Item0E_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_0045FE40, dest);
 }
-void *func_0031CFB0(void *o, s32 flags) { return item_dtor3(o, flags, D_00473020, D_0046C8D0); }
+/* 0x0031CFB0 */
+void *Item0F_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00473020, D_0046C8D0); }
 
-s32 func_0031D020(void *self, void *dest) {
+/* 0x0031D020 */
+s32 Item0F_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_0045FE60, dest);
 }
-void *func_0031D110(void *o, s32 flags) { return item_dtor3(o, flags, D_00473070, D_0046C8D0); }
+/* 0x0031D110 */
+void *Item10_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00473070, D_0046C8D0); }
 
-s32 func_0031D180(void *self, void *dest) {
+/* 0x0031D180 */
+s32 Item10_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_0045FE80, dest);
 }
-void *func_0031D590(void *o, s32 flags) { return item_dtor3(o, flags, D_004730C0, D_0046C8D0); }
+/* 0x0031D590 */
+void *Item11_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_004730C0, D_0046C8D0); }
 
-s32 func_0031D600(void *self, void *dest) {
+/* 0x0031D600 */
+s32 Item11_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_0045FEA0, dest);
 }
-void *func_0032CC90(void *o, s32 flags) { return item_dtor3(o, flags, D_00474BC0, D_0046C8D0); }
+/* 0x0032CC90 */
+void *Item14_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00474BC0, D_0046C8D0); }
 
-s32 func_0032CD00(void *self, void *dest) {
+/* 0x0032CD00 */
+s32 Item14_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00460BE0, dest);
 }
-void *func_00331450(void *o, s32 flags) { return item_dtor3(o, flags, D_00475300, D_0046C920); }
+/* 0x00331450 */
+void *Item42_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00475300, D_0046C920); }
 
-u32 func_003314C0(void) {
+/* 0x003314C0 */
+u32 Item42_Actions(void) {
     return 0x80000005;
 }
-void *func_003315F0(void *o, s32 flags) { return item_dtor3(o, flags, D_00475350, D_0046C920); }
+/* 0x003315F0 */
+void *Item43_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00475350, D_0046C920); }
 
-u32 func_00331660(void) {
+/* 0x00331660 */
+u32 Item43_Actions(void) {
     return 0x80000005;
 }
-void *func_00331790(void *o, s32 flags) { return item_dtor3(o, flags, D_004753A0, D_0046C920); }
+/* 0x00331790 */
+void *Item44_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_004753A0, D_0046C920); }
 
-u32 func_00331800(void) {
+/* 0x00331800 */
+u32 Item44_Actions(void) {
     return 0x80000005;
 }
-void *func_003318B0(void *o, s32 flags) { return item_dtor3(o, flags, D_004753F0, D_0046C920); }
+/* 0x003318B0 */
+void *Item45_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_004753F0, D_0046C920); }
 
-u32 func_00331920(void) {
+/* 0x00331920 */
+u32 Item45_Actions(void) {
     return 0x80000005;
 }
-void *func_003319D0(void *o, s32 flags) { return item_dtor3(o, flags, D_00475440, D_0046C920); }
+/* 0x003319D0 */
+void *Item46_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00475440, D_0046C920); }
 
-u32 func_00331A40(void) {
+/* 0x00331A40 */
+u32 Item46_Actions(void) {
     return 0x80000005;
 }
-void *func_00331B60(void *o, s32 flags) { return item_dtor3(o, flags, D_00475490, D_0046C920); }
+/* 0x00331B60 */
+void *Item47_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00475490, D_0046C920); }
 
-u32 func_00331BD0(void) {
+/* 0x00331BD0 */
+u32 Item47_Actions(void) {
     return 0x80000005;
 }
-void *func_00331CE0(void *o, s32 flags) { return item_dtor3(o, flags, D_004754E0, D_0046C920); }
+/* 0x00331CE0 */
+void *Item48_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_004754E0, D_0046C920); }
 
-u32 func_00331D50(void) {
+/* 0x00331D50 */
+u32 Item48_Actions(void) {
     return 0x80000005;
 }
-void *func_00331E20(void *o, s32 flags) { return item_dtor3(o, flags, D_00475530, D_0046C920); }
+/* 0x00331E20 */
+void *Item49_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00475530, D_0046C920); }
 
-u32 func_00331E90(void) {
+/* 0x00331E90 */
+u32 Item49_Actions(void) {
     return 0x80000005;
 }
-void *func_00331F70(void *o, s32 flags) { return item_dtor3(o, flags, D_00475580, D_0046C920); }
+/* 0x00331F70 */
+void *Item4A_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00475580, D_0046C920); }
 
-u32 func_00331FE0(void) {
+/* 0x00331FE0 */
+u32 Item4A_Actions(void) {
     return 0x80000005;
 }
-void *func_00332120(void *o, s32 flags) { return item_dtor3(o, flags, D_004755D0, D_0046C920); }
+/* 0x00332120 */
+void *Item4B_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_004755D0, D_0046C920); }
 
-u32 func_00332190(void) {
+/* 0x00332190 */
+u32 Item4B_Actions(void) {
     return 0x80000005;
 }
-void *func_003322E0(void *o, s32 flags) { return item_dtor3(o, flags, D_00475620, D_0046C920); }
+/* 0x003322E0 */
+void *Item4C_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00475620, D_0046C920); }
 
-u32 func_00332350(void) {
+/* 0x00332350 */
+u32 Item4C_Actions(void) {
     return 0x80000005;
 }
-void *func_003323C0(void *o, s32 flags) { return item_dtor3(o, flags, D_00475670, D_00476B00); }
-void *func_00332620(void *o, s32 flags) { return item_dtor3(o, flags, D_004756C0, D_00476B00); }
-void *func_00332830(void *o, s32 flags) { return item_dtor3(o, flags, D_00475710, D_00476B00); }
-void *func_00332A10(void *o, s32 flags) { return item_dtor3(o, flags, D_00475760, D_00476B00); }
+/* 0x003323C0 */
+void *Item60_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00475670, D_00476B00); }
+/* 0x00332620 */
+void *Item61_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_004756C0, D_00476B00); }
+/* 0x00332830 */
+void *Item62_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00475710, D_00476B00); }
+/* 0x00332A10 */
+void *Item63_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00475760, D_00476B00); }
 
-u32 func_00332A80(void) {
+/* 0x00332A80 */
+u32 Item63_Actions(void) {
     return 0x80000005;
 }
-void *func_00332C50(void *o, s32 flags) { return item_dtor3(o, flags, D_004757B0, D_00476B00); }
+/* 0x00332C50 */
+void *Item64_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_004757B0, D_00476B00); }
 
-u32 func_00332CC0(void) {
+/* 0x00332CC0 */
+u32 Item64_Actions(void) {
     return 0x80000005;
 }
-void *func_00332E70(void *o, s32 flags) { return item_dtor3(o, flags, D_00475800, D_00476B00); }
+/* 0x00332E70 */
+void *Item65_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00475800, D_00476B00); }
 
-u32 func_00332EE0(void) {
+/* 0x00332EE0 */
+u32 Item65_Actions(void) {
     return 0x80000005;
 }
-void *func_00333060(void *o, s32 flags) { return item_dtor3(o, flags, D_00475850, D_00476B00); }
+/* 0x00333060 */
+void *Item66_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00475850, D_00476B00); }
 
-u32 func_003330D0(void) {
+/* 0x003330D0 */
+u32 Item66_Actions(void) {
     return 0x80000005;
 }
-void *func_00338F00(void *o, s32 flags) { return item_dtor3(o, flags, D_00475CC0, D_0046C8D0); }
+/* 0x00338F00 */
+void *Item15_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00475CC0, D_0046C8D0); }
 
-s32 func_00338F70(void *self, void *dest) {
+/* 0x00338F70 */
+s32 Item15_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_004613C0, dest);
 }
-void *func_003392B0(void *o, s32 flags) { return item_dtor3(o, flags, D_00475D10, D_0046C8D0); }
+/* 0x003392B0 */
+void *Item16_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00475D10, D_0046C8D0); }
 
-s32 func_00339320(void *self, void *dest) {
+/* 0x00339320 */
+s32 Item16_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_004613E0, dest);
 }
-void *func_00339660(void *o, s32 flags) { return item_dtor3(o, flags, D_00475D60, D_0046C8D0); }
+/* 0x00339660 */
+void *Item17_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00475D60, D_0046C8D0); }
 
-s32 func_003396D0(void *self, void *dest) {
+/* 0x003396D0 */
+s32 Item17_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00461400, dest);
 }
-void *func_0033AE70(void *o, s32 flags) { return item_dtor3(o, flags, D_00476450, D_0046D640); }
+/* 0x0033AE70 */
+void *ItemA2_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00476450, D_0046D640); }
 
-s32 func_0033AEE0(void *self, void *dest) {
+/* 0x0033AEE0 */
+s32 ItemA2_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00461580, dest);
 }
-void *func_0033BD50(void *o, s32 flags) { return item_dtor3(o, flags, D_00476B60, D_0046D640); }
+/* 0x0033BD50 */
+void *ItemA3_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00476B60, D_0046D640); }
 
-s32 func_0033BDC0(void *self, void *dest) {
+/* 0x0033BDC0 */
+s32 ItemA3_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00461660, dest);
 }
-void *func_0033E850(void *o, s32 flags) { return item_dtor3(o, flags, D_00477030, D_0046C8D0); }
-void *func_0033E9C0(void *o, s32 flags) { return item_dtor3(o, flags, D_00477080, D_0046C8D0); }
-void *func_0033EB30(void *o, s32 flags) { return item_dtor3(o, flags, D_004770D0, D_0046C8D0); }
-void *func_0033ECA0(void *o, s32 flags) { return item_dtor3(o, flags, D_00477120, D_0046C8D0); }
-void *func_0033EE10(void *o, s32 flags) { return item_dtor3(o, flags, D_00477170, D_0046C8D0); }
-void *func_00344520(void *o, s32 flags) { return item_dtor3(o, flags, D_004775C0, D_0046C8D0); }
-void *func_003510B0(void *o, s32 flags) { return item_dtor3(o, flags, D_00478C80, D_0046C8D0); }
+/* 0x0033E850 */
+void *Item18_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00477030, D_0046C8D0); }
+/* 0x0033E9C0 */
+void *Item19_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00477080, D_0046C8D0); }
+/* 0x0033EB30 */
+void *Item1A_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_004770D0, D_0046C8D0); }
+/* 0x0033ECA0 */
+void *Item1B_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00477120, D_0046C8D0); }
+/* 0x0033EE10 */
+void *Item1C_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00477170, D_0046C8D0); }
+/* 0x00344520 */
+void *Item1D_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_004775C0, D_0046C8D0); }
+/* 0x003510B0 */
+void *Item1E_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00478C80, D_0046C8D0); }
 
-s32 func_00351120(void *self, void *dest) {
+/* 0x00351120 */
+s32 Item1E_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462DF0, dest, 0x4000000, 0);
 }
 
-s32 func_00351150(void) {
+/* 0x00351150 */
+s32 Item1E_Use(void) {
     *(u32 *)((u8 *)gProgress + 0x84) |= 0x800000;
     return 2;
 }
-void *func_00351170(void *o, s32 flags) { return item_dtor3(o, flags, D_00478CD0, D_0046C8D0); }
+/* 0x00351170 */
+void *Item1F_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00478CD0, D_0046C8D0); }
 
-s32 func_003511E0(void *self, void *dest) {
+/* 0x003511E0 */
+s32 Item1F_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462E10, dest, 0x4000000, 0);
 }
 
-s32 func_00351210(void) {
+/* 0x00351210 */
+s32 Item1F_Use(void) {
     *(u32 *)((u8 *)gProgress + 0x84) |= 0x1000000;
     return 2;
 }
-void *func_00351230(void *o, s32 flags) { return item_dtor3(o, flags, D_00478D20, D_0046C8D0); }
+/* 0x00351230 */
+void *Item20_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00478D20, D_0046C8D0); }
 
-s32 func_003512A0(void *self, void *dest) {
+/* 0x003512A0 */
+s32 Item20_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462E30, dest, 0x4000000, 0);
 }
 
-s32 func_003512D0(void) {
+/* 0x003512D0 */
+s32 Item20_Use(void) {
     *(u32 *)((u8 *)gProgress + 0x84) |= 0x2000000;
     return 2;
 }
-void *func_003512F0(void *o, s32 flags) { return item_dtor3(o, flags, D_00478D70, D_0046C8D0); }
+/* 0x003512F0 */
+void *Item21_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00478D70, D_0046C8D0); }
 
-s32 func_00351360(void *self, void *dest) {
+/* 0x00351360 */
+s32 Item21_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462E50, dest, 0x4000000, 0);
 }
-void *func_003514B0(void *o, s32 flags) { return item_dtor3(o, flags, D_00478DC0, D_0046C8D0); }
+/* 0x003514B0 */
+void *Item22_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00478DC0, D_0046C8D0); }
 
-s32 func_00351520(void *self, void *dest) {
+/* 0x00351520 */
+s32 Item22_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462E70, dest, 0x4000000, 0);
 }
-void *func_00351670(void *o, s32 flags) { return item_dtor3(o, flags, D_00478E10, D_0046C8D0); }
+/* 0x00351670 */
+void *Item23_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00478E10, D_0046C8D0); }
 
-s32 func_003516E0(void *self, void *dest) {
+/* 0x003516E0 */
+s32 Item23_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462E90, dest, 0x4000000, 0);
 }
-void *func_003517D0(void *o, s32 flags) { return item_dtor3(o, flags, D_00478E60, D_0046C8D0); }
+/* 0x003517D0 */
+void *Item24_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00478E60, D_0046C8D0); }
 
-s32 func_00351840(void *self, void *dest) {
+/* 0x00351840 */
+s32 Item24_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462EB0, dest, 0x4000000, 0);
 }
-void *func_00351880(void *o, s32 flags) { return item_dtor3(o, flags, D_00478EB0, D_0046C8D0); }
+/* 0x00351880 */
+void *Item25_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00478EB0, D_0046C8D0); }
 
-s32 func_003518F0(void *self, void *dest) {
+/* 0x003518F0 */
+s32 Item25_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462ED0, dest, 0x4000000, 0);
 }
-void *func_00351AA0(void *o, s32 flags) { return item_dtor3(o, flags, D_00478F00, D_0046C8D0); }
+/* 0x00351AA0 */
+void *Item26_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00478F00, D_0046C8D0); }
 
-s32 func_00351B10(void *self, void *dest) {
+/* 0x00351B10 */
+s32 Item26_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462EF0, dest, 0x4000000, 0);
 }
-void *func_00351C20(void *o, s32 flags) { return item_dtor3(o, flags, D_00478F50, D_0046C8D0); }
+/* 0x00351C20 */
+void *Item27_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00478F50, D_0046C8D0); }
 
-s32 func_00351C90(void *self, void *dest) {
+/* 0x00351C90 */
+s32 Item27_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00462F10, dest, 0x4000000, 0);
 }
 
-s32 func_00351CC0(void) {
+/* 0x00351CC0 */
+s32 Item27_Use(void) {
     *(u32 *)((u8 *)gProgress + 0x84) |= 0x4000000;
     return 2;
 }
-void *func_00351CE0(void *o, s32 flags) { return item_dtor3(o, flags, D_00478FA0, D_0046C8D0); }
+/* 0x00351CE0 */
+void *Item28_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00478FA0, D_0046C8D0); }
 
 /* Starts loading a file named D_00462F30 into dest. */
-s32 func_00351D50(void *self, void *dest) {
+/* 0x00351D50 */
+s32 Item28_LoadPicture(void *self, void *dest) {
     void *loader = gFileLoader;
 
     return VCALL(loader, 0xC, s32 (*)(void *, const char *, void *, s32, s32))(loader, D_00462F30, dest,
                                                                               0x4000000, 0);
 }
-void *func_0035BB20(void *o, s32 flags) { return item_dtor3(o, flags, D_00479820, D_0046C8D0); }
+/* 0x0035BB20 */
+void *Item29_dtor(void *o, s32 flags) { return item_dtor3(o, flags, D_00479820, D_0046C8D0); }
 
 /* ---- the small methods (the base pool entry's and the items' own) ----
  * +0xC its id (+0x4), +0x10 / +0x14 / +0x20 class constants, +0x18 how it is held (1 a stack
  * counted at +0x10, 2 a counter), +0x1C its name / picture cell, +0x24 its data (+0x10) */
 
 /* +0xC (D_0046C790, D_0046C7E0, D_0046C830, ...) */
-s32 func_0025FC90(void *o) {
+/* 0x0025FC90 */
+s32 PoolEntry_Id(void *o) {
     return AT(o, 0x4, s32);
 }
 
 /* +0x10 (D_0046C790) */
-s32 func_0025FCA0(void *o) {
+/* 0x0025FCA0 */
+s32 PoolEntry_Kind(void *o) {
     return -1;
 }
 
 /* +0x14 (D_0046C790) */
-s32 func_0025FCB0(void *o) {
+/* 0x0025FCB0 */
+s32 PoolEntry_Actions(void *o) {
     return 0;
 }
 
 /* +0x18 (D_0046C790) */
-s32 func_0025FCC0(void *o) {
+/* 0x0025FCC0 */
+s32 PoolEntry_IsCounted(void *o) {
     return 0;
 }
 
 /* +0x1C (D_0046C790, D_0046C7E0, D_0046C830, ...) */
-s32 func_0025FCD0(void *o) {
+/* 0x0025FCD0 */
+s32 PoolEntry_SortKey(void *o) {
     return 0;
 }
 
 /* +0x20 (D_0046C790, D_0046C7E0, D_0046C830, ...) */
-s32 func_0025FCE0(void *o) {
+/* 0x0025FCE0 */
+s32 PoolEntry_Get20(void *o) {
     return 0;
 }
 
 /* +0x24 (D_0046C790, D_0046C7E0, D_0046C830, ...) */
-void *func_0025FCF0(void *o) {
+/* 0x0025FCF0 */
+void *PoolEntry_Data(void *o) {
     return (u8 *)o + 0x10;
 }
 
 /* +0x3C (D_0046C790, D_0046C8D0, D_0046C920, ...) */
-s32 func_0025FEE0(void *o) {
+/* 0x0025FEE0 */
+s32 PoolEntry_Use(void *o) {
     return 0;
 }
 
@@ -1946,329 +2244,395 @@ void func_0025FEF0(void *p) {
 }
 
 /* +0x10 (D_0046C7E0, D_0046C830, D_0046C880, ...) */
-s32 func_00264C40(void *o) {
+/* 0x00264C40 */
+s32 PlainItem_Kind(void *o) {
     return 0;
 }
 
 /* +0x14 (D_0046C7E0, D_0046C830, D_0046C880, ...) */
-s32 func_00264C50(void *o) {
+/* 0x00264C50 */
+s32 PlainItem_Actions(void *o) {
     return 0x1;
 }
 
 /* +0x18 (D_0046C7E0, D_0046C830, D_0046C880, ...) */
-s32 func_00264C60(void *o) {
+/* 0x00264C60 */
+s32 PlainItem_IsCounted(void *o) {
     return 0;
 }
 
 /* +0x3C (D_0046C880) */
-s32 func_00264F30(void *o) {
+/* 0x00264F30 */
+s32 Item3E_Use(void *o) {
     return 0;
 }
 
 /* +0x10 (D_0046C920, D_0046D690, D_0046D6E0, ...) */
-s32 func_00264F40(void *o) {
+/* 0x00264F40 */
+s32 ItemClassC920_Kind(void *o) {
     return 0x2;
 }
 
 /* +0x14 (D_0046C920, D_0046D690, D_0046D6E0) */
-s32 func_00264F50(void *o) {
+/* 0x00264F50 */
+s32 ItemClassC920_Actions(void *o) {
     return 0x5;
 }
 
 /* +0x18 (D_0046C920, D_0046D690, D_0046D6E0, ...) */
-s32 func_00264F60(void *o) {
+/* 0x00264F60 */
+s32 ItemClassC920_IsCounted(void *o) {
     return 0x1;
 }
 
 /* +0x1C (D_0046C970) */
-s32 func_00265010(void *o) {
+/* 0x00265010 */
+s32 Item70_SortKey(void *o) {
     return 0xA10;
 }
 
 /* +0x10 (D_0046C970, D_0046C9C0, D_0046CA10, ...) */
-s32 func_00265020(void *o) {
+/* 0x00265020 */
+s32 ItemClassCB50_Kind(void *o) {
     return 0x8;
 }
 
 /* +0x18 (D_0046C970, D_0046C9C0, D_0046CA10, ...) */
-s32 func_00265030(void *o) {
+/* 0x00265030 */
+s32 ItemClassCB50_IsCounted(void *o) {
     return 0x1;
 }
 
 /* +0x14 (D_0046C970, D_0046C9C0, D_0046CA10, ...) */
-s32 func_00265040(void *o) {
+/* 0x00265040 */
+s32 ItemClassCB50_Actions(void *o) {
     return 0x5;
 }
 
 /* +0x3C (D_0046C970, D_0046C9C0, D_0046CA10, ...) */
-s32 func_00265050(void *o) {
+/* 0x00265050 */
+s32 ItemClassCB50_Use(void *o) {
     return 0;
 }
 
 /* +0x1C (D_0046C9C0) */
-s32 func_00265100(void *o) {
+/* 0x00265100 */
+s32 Item71_SortKey(void *o) {
     return 0xA20;
 }
 
 /* +0x1C (D_0046CA10) */
-s32 func_002651B0(void *o) {
+/* 0x002651B0 */
+s32 Item72_SortKey(void *o) {
     return 0xA30;
 }
 
 /* +0x1C (D_0046CA60) */
-s32 func_00265260(void *o) {
+/* 0x00265260 */
+s32 Item73_SortKey(void *o) {
     return 0xA40;
 }
 
 /* +0x1C (D_0046CAB0) */
-s32 func_00265310(void *o) {
+/* 0x00265310 */
+s32 Item74_SortKey(void *o) {
     return 0xA50;
 }
 
 /* +0x1C (D_0046CB00) */
-s32 func_002653C0(void *o) {
+/* 0x002653C0 */
+s32 Item75_SortKey(void *o) {
     return 0xA60;
 }
 
 /* +0x1C (D_0046CBA0) */
-s32 func_00265470(void *o) {
+/* 0x00265470 */
+s32 Item80_SortKey(void *o) {
     return 0x310;
 }
 
 /* +0x10 (D_0046CBA0, D_0046CBF0, D_0046CC40, ...) */
-s32 func_00265480(void *o) {
+/* 0x00265480 */
+s32 ItemClassCCE0_Kind(void *o) {
     return 0x4;
 }
 
 /* +0x14 (D_0046CBA0, D_0046CBF0, D_0046CC40, ...) */
-s32 func_00265490(void *o) {
+/* 0x00265490 */
+s32 ItemClassCCE0_Actions(void *o) {
     return 0x6;
 }
 
 /* +0x18 (D_0046CBA0, D_0046CBF0, D_0046CC40, ...) */
-s32 func_002654A0(void *o) {
+/* 0x002654A0 */
+s32 ItemClassCCE0_IsCounted(void *o) {
     return 0;
 }
 
 /* +0x1C (D_0046CBF0) */
-s32 func_00265550(void *o) {
+/* 0x00265550 */
+s32 Item81_SortKey(void *o) {
     return 0x320;
 }
 
 /* +0x1C (D_0046CC40) */
-s32 func_00265600(void *o) {
+/* 0x00265600 */
+s32 Item82_SortKey(void *o) {
     return 0x330;
 }
 
 /* +0x1C (D_0046CC90) */
-s32 func_002656B0(void *o) {
+/* 0x002656B0 */
+s32 Item83_SortKey(void *o) {
     return 0x340;
 }
 
 /* +0x1C (D_0046CD30) */
-s32 func_00265760(void *o) {
+/* 0x00265760 */
+s32 Item86_SortKey(void *o) {
     return 0x410;
 }
 
 /* +0x10 (D_0046CD30, D_0046CD80, D_0046CDD0, ...) */
-s32 func_00265770(void *o) {
+/* 0x00265770 */
+s32 ItemClassCE70_Kind(void *o) {
     return 0x5;
 }
 
 /* +0x14 (D_0046CD30, D_0046CD80, D_0046CDD0, ...) */
-s32 func_00265780(void *o) {
+/* 0x00265780 */
+s32 ItemClassCE70_Actions(void *o) {
     return 0x6;
 }
 
 /* +0x18 (D_0046CD30, D_0046CD80, D_0046CDD0, ...) */
-s32 func_00265790(void *o) {
+/* 0x00265790 */
+s32 ItemClassCE70_IsCounted(void *o) {
     return 0;
 }
 
 /* +0x1C (D_0046CD80) */
-s32 func_00265840(void *o) {
+/* 0x00265840 */
+s32 Item87_SortKey(void *o) {
     return 0x420;
 }
 
 /* +0x1C (D_0046CDD0) */
-s32 func_002658F0(void *o) {
+/* 0x002658F0 */
+s32 Item88_SortKey(void *o) {
     return 0x430;
 }
 
 /* +0x1C (D_0046CE20) */
-s32 func_002659A0(void *o) {
+/* 0x002659A0 */
+s32 Item89_SortKey(void *o) {
     return 0x440;
 }
 
 /* +0x1C (D_0046CEC0) */
-s32 func_00265A50(void *o) {
+/* 0x00265A50 */
+s32 Item8A_SortKey(void *o) {
     return 0x510;
 }
 
 /* +0x10 (D_0046CEC0, D_0046CF10, D_0046CF60, ...) */
-s32 func_00265A60(void *o) {
+/* 0x00265A60 */
+s32 ItemClassD000_Kind(void *o) {
     return 0x9;
 }
 
 /* +0x14 (D_0046CEC0, D_0046CF10, D_0046CF60, ...) */
-s32 func_00265A70(void *o) {
+/* 0x00265A70 */
+s32 ItemClassD000_Actions(void *o) {
     return 0x6;
 }
 
 /* +0x18 (D_0046CEC0, D_0046CF10, D_0046CF60, ...) */
-s32 func_00265A80(void *o) {
+/* 0x00265A80 */
+s32 ItemClassD000_IsCounted(void *o) {
     return 0;
 }
 
 /* +0x1C (D_0046CF10) */
-s32 func_00265B30(void *o) {
+/* 0x00265B30 */
+s32 Item8B_SortKey(void *o) {
     return 0x520;
 }
 
 /* +0x1C (D_0046CF60) */
-s32 func_00265BE0(void *o) {
+/* 0x00265BE0 */
+s32 Item8C_SortKey(void *o) {
     return 0x530;
 }
 
 /* +0x1C (D_0046CFB0) */
-s32 func_00265C90(void *o) {
+/* 0x00265C90 */
+s32 Item8D_SortKey(void *o) {
     return 0x540;
 }
 
 /* +0x1C (D_0046D050) */
-s32 func_00265D40(void *o) {
+/* 0x00265D40 */
+s32 Item90_SortKey(void *o) {
     return 0x820;
 }
 
 /* +0x10 (D_0046D050, D_0046D0A0, D_0046D0F0, ...) */
-s32 func_00265D50(void *o) {
+/* 0x00265D50 */
+s32 ItemClassD320_Kind(void *o) {
     return 0x6;
 }
 
 /* +0x14 (D_0046D050, D_0046D0A0, D_0046D0F0, ...) */
-s32 func_00265D60(void *o) {
+/* 0x00265D60 */
+s32 ItemClassD320_Actions(void *o) {
     return 0x6;
 }
 
 /* +0x18 (D_0046D050, D_0046D0A0, D_0046D0F0, ...) */
-s32 func_00265D70(void *o) {
+/* 0x00265D70 */
+s32 ItemClassD320_IsCounted(void *o) {
     return 0x1;
 }
 
 /* +0x1C (D_0046D0A0) */
-s32 func_00265E20(void *o) {
+/* 0x00265E20 */
+s32 Item91_SortKey(void *o) {
     return 0x610;
 }
 
 /* +0x1C (D_0046D0F0) */
-s32 func_00265ED0(void *o) {
+/* 0x00265ED0 */
+s32 Item92_SortKey(void *o) {
     return 0x710;
 }
 
 /* +0x1C (D_0046D140) */
-s32 func_00265F80(void *o) {
+/* 0x00265F80 */
+s32 Item93_SortKey(void *o) {
     return 0x830;
 }
 
 /* +0x1C (D_0046D190) */
-s32 func_00266030(void *o) {
+/* 0x00266030 */
+s32 Item94_SortKey(void *o) {
     return 0x620;
 }
 
 /* +0x1C (D_0046D1E0) */
-s32 func_002660E0(void *o) {
+/* 0x002660E0 */
+s32 Item95_SortKey(void *o) {
     return 0x720;
 }
 
 /* +0x1C (D_0046D230) */
-s32 func_00266190(void *o) {
+/* 0x00266190 */
+s32 Item97_SortKey(void *o) {
     return 0x630;
 }
 
 /* +0x1C (D_0046D280) */
-s32 func_00266240(void *o) {
+/* 0x00266240 */
+s32 Item98_SortKey(void *o) {
     return 0x730;
 }
 
 /* +0x1C (D_0046D2D0) */
-s32 func_002662F0(void *o) {
+/* 0x002662F0 */
+s32 Item9B_SortKey(void *o) {
     return 0x810;
 }
 
 /* +0x10 (D_0046D370, D_0046D3C0, D_0046D410, ...) */
-s32 func_00266420(void *o) {
+/* 0x00266420 */
+s32 ItemClassD640_Kind(void *o) {
     return 0x7;
 }
 
 /* +0x14 (D_0046D370, D_0046D3C0, D_0046D410, ...) */
-s32 func_00266430(void *o) {
+/* 0x00266430 */
+s32 ItemClassD640_Actions(void *o) {
     return 0x1;
 }
 
 /* +0x18 (D_0046D370, D_0046D3C0, D_0046D410, ...) */
-s32 func_00266440(void *o) {
+/* 0x00266440 */
+s32 ItemClassD640_IsCounted(void *o) {
     return 0;
 }
 
 /* +0x3C (D_0046D3C0) */
-s32 func_002664C0(void *o) {
+/* 0x002664C0 */
+s32 ItemA5_Use(void *o) {
     return 0;
 }
 
 /* +0x3C (D_0046D410) */
-s32 func_00266570(void *o) {
+/* 0x00266570 */
+s32 ItemA6_Use(void *o) {
     return 0;
 }
 
 /* +0x3C (D_0046D460) */
-s32 func_00266620(void *o) {
+/* 0x00266620 */
+s32 ItemA7_Use(void *o) {
     return 0;
 }
 
 /* +0x3C (D_0046D4B0) */
-s32 func_002666D0(void *o) {
+/* 0x002666D0 */
+s32 ItemA8_Use(void *o) {
     return 0;
 }
 
 /* +0x3C (D_0046D500) */
-s32 func_00266780(void *o) {
+/* 0x00266780 */
+s32 ItemA9_Use(void *o) {
     return 0;
 }
 
 /* +0x3C (D_0046D550) */
-s32 func_00266830(void *o) {
+/* 0x00266830 */
+s32 ItemAA_Use(void *o) {
     return 0;
 }
 
 /* +0x3C (D_0046D5A0) */
-s32 func_002668E0(void *o) {
+/* 0x002668E0 */
+s32 ItemAB_Use(void *o) {
     return 0;
 }
 
 /* +0x3C (D_0046D5F0) */
-s32 func_00266990(void *o) {
+/* 0x00266990 */
+s32 ItemAC_Use(void *o) {
     return 0;
 }
 
 /* +0x1C (D_0046D690) */
-s32 func_00266A40(void *o) {
+/* 0x00266A40 */
+s32 Item40_SortKey(void *o) {
     return 0x110;
 }
 
 /* +0x1C (D_0046D6E0) */
-s32 func_00266BD0(void *o) {
+/* 0x00266BD0 */
+s32 Item41_SortKey(void *o) {
     return 0x120;
 }
 
 /* +0x18 (D_0046EE90) */
-s32 func_002CCDA0(void *o) {
+/* 0x002CCDA0 */
+s32 Item01_IsCounted(void *o) {
     return 0x2;
 }
 
-s32 func_002CCDB0(void *self, s32 a) { return LOAD(D_0045D4C0, a); }
+/* 0x002CCDB0 */
+s32 Item01_LoadPicture(void *self, s32 a) { return LOAD(D_0045D4C0, a); }
 
 /* use: unless Progress +0x1C bit 0x80, at spot 9 of room 0x1C: event 0, flag 0x18 */
-s32 func_002CCDE0(void) {
+/* 0x002CCDE0 */
+s32 Item01_Use(void) {
     Progress *p = gProgress;
     VObject *ev_mgr;
 
@@ -2286,7 +2650,8 @@ s32 func_002CCDE0(void) {
 
 /* +0x38: a counter (+0x10) that runs 9000 frames; then it goes (the items' +8 list, Items_Give
    (2, 1)) and Progress +0x84 bit 31 is set */
-s32 func_002CCED0(void *o) {
+/* 0x002CCED0 */
+s32 Item01_CountUp(void *o) {
     if (AT(o, 0x10, u32) < 9001) {
         if (AT(o, 0x4, s32) != -1 && (VCALL(o, 0x18, s32 (*)(void *))(o) & 0xFF) == 2 && AT(o, 0x10, u32) != (u32)-1) {
             AT(o, 0x10, u32) += 1;
@@ -2299,129 +2664,155 @@ s32 func_002CCED0(void *o) {
 }
 
 /* +0x10 (D_0046F430) */
-s32 func_002D27B0(void *o) {
+/* 0x002D27B0 */
+s32 ItemClassF430_Kind(void *o) {
     return 0x1;
 }
 
 /* +0x14 (D_0046F430) */
-s32 func_002D27C0(void *o) {
+/* 0x002D27C0 */
+s32 ItemClassF430_Actions(void *o) {
     return 0x5;
 }
 
 /* +0x18 (D_0046F430) */
-s32 func_002D27D0(void *o) {
+/* 0x002D27D0 */
+s32 ItemClassF430_IsCounted(void *o) {
     return 0;
 }
 
 /* +0x20 (D_0046F430) */
-void *func_002D3A50(void *o) {
+/* 0x002D3A50 */
+void *ItemClassF430_Get20(void *o) {
     return (u8 *)o + 0x10;
 }
 
 /* +0x3C (D_0046F610) */
-s32 func_002D79B0(void *o) {
+/* 0x002D79B0 */
+s32 ItemA0_Use(void *o) {
     return 0;
 }
 
 /* +0x1C (D_00475300) */
-s32 func_003314D0(void *o) {
+/* 0x003314D0 */
+s32 Item42_SortKey(void *o) {
     return 0x130;
 }
 
-s32 func_003314E0(void *self, void *dest) {
+/* 0x003314E0 */
+s32 Item42_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00460F00, dest);
 }
 
-s32 func_00331510(void) {
+/* 0x00331510 */
+s32 Item42_Use(void) {
     item_meters(-25.0f, -450);
     return 1;
 }
 
 /* +0x1C (D_00475350) */
-s32 func_00331670(void *o) {
+/* 0x00331670 */
+s32 Item43_SortKey(void *o) {
     return 0x140;
 }
 
-s32 func_00331680(void *self, void *dest) {
+/* 0x00331680 */
+s32 Item43_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00460F20, dest);
 }
 
-s32 func_003316B0(void) {
+/* 0x003316B0 */
+s32 Item43_Use(void) {
     item_meters(-100.0f, -1800);
     return 1;
 }
 
 /* +0x1C (D_004753A0) */
-s32 func_00331810(void *o) {
+/* 0x00331810 */
+s32 Item44_SortKey(void *o) {
     return 0x150;
 }
 
-s32 func_00331820(void *self, void *dest) {
+/* 0x00331820 */
+s32 Item44_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00460F40, dest);
 }
 
-s32 func_00331850(void) {
+/* 0x00331850 */
+s32 Item44_Use(void) {
     b5_add_7E0(25.0f);
     return 1;
 }
 
 /* +0x1C (D_004753F0) */
-s32 func_00331930(void *o) {
+/* 0x00331930 */
+s32 Item45_SortKey(void *o) {
     return 0x160;
 }
 
-s32 func_00331940(void *self, void *dest) {
+/* 0x00331940 */
+s32 Item45_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00460F60, dest);
 }
 
-s32 func_00331970(void) {
+/* 0x00331970 */
+s32 Item45_Use(void) {
     b5_add_7E0(100.0f);
     return 1;
 }
 
 /* +0x1C (D_00475440) */
-s32 func_00331A50(void *o) {
+/* 0x00331A50 */
+s32 Item46_SortKey(void *o) {
     return 0x170;
 }
 
-s32 func_00331A60(void *self, void *dest) {
+/* 0x00331A60 */
+s32 Item46_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00460F80, dest);
 }
 
 /* use: composure +25, she drinks (event 0x8D) */
-s32 func_00331A90(void) {
+/* 0x00331A90 */
+s32 Item46_Use(void) {
     item_composure(25.0f);
     item_event(gEvents, 0, 0x8D, gCharPlayer);
     return 5;
 }
 
 /* +0x1C (D_00475490) */
-s32 func_00331BE0(void *o) {
+/* 0x00331BE0 */
+s32 Item47_SortKey(void *o) {
     return 0x180;
 }
 
-s32 func_00331BF0(void *self, void *dest) {
+/* 0x00331BF0 */
+s32 Item47_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00460FA0, dest);
 }
 
 /* use: composure +100 */
-s32 func_00331C20(void) {
+/* 0x00331C20 */
+s32 Item47_Use(void) {
     item_composure(100.0f);
     item_event(gEvents, 0, 0x8D, gCharPlayer);
     return 5;
 }
 
 /* +0x1C (D_004754E0) */
-s32 func_00331D60(void *o) {
+/* 0x00331D60 */
+s32 Item48_SortKey(void *o) {
     return 0x190;
 }
 
-s32 func_00331D70(void *self, void *dest) {
+/* 0x00331D70 */
+s32 Item48_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00460FC0, dest);
 }
 
 /* use: Progress +0x9E8 2.0 for 1800 frames (+0x9EC) */
-s32 func_00331DA0(void) {
+/* 0x00331DA0 */
+s32 Item48_Use(void) {
     F32(gProgress, 0x9E8) = 2.0f;
     S32(gProgress, 0x9EC) = 1800;
     item_event(gEvents, 0, 0x8D, gCharPlayer);
@@ -2429,16 +2820,19 @@ s32 func_00331DA0(void) {
 }
 
 /* +0x1C (D_00475530) */
-s32 func_00331EA0(void *o) {
+/* 0x00331EA0 */
+s32 Item49_SortKey(void *o) {
     return 0x1A0;
 }
 
-s32 func_00331EB0(void *self, void *dest) {
+/* 0x00331EB0 */
+s32 Item49_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00460FE0, dest);
 }
 
 /* use: unless it still runs, Progress +0x9F4 / +0x9F8 1800 frames */
-s32 func_00331EE0(void) {
+/* 0x00331EE0 */
+s32 Item49_Use(void) {
     if (S32(gProgress, 0x9F4) != 0) {
         return 0;
     }
@@ -2449,16 +2843,19 @@ s32 func_00331EE0(void) {
 }
 
 /* +0x1C (D_00475580) */
-s32 func_00331FF0(void *o) {
+/* 0x00331FF0 */
+s32 Item4A_SortKey(void *o) {
     return 0x1B0;
 }
 
-s32 func_00332000(void *self, void *dest) {
+/* 0x00332000 */
+s32 Item4A_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00461000, dest);
 }
 
 /* use: composure -50, Progress +0x7D8 +50 */
-s32 func_00332030(void) {
+/* 0x00332030 */
+s32 Item4A_Use(void) {
     item_composure(-50.0f);
     F32(gProgress, 0x7D8) += 50.0f;
     item_event(gEvents, 0, 0x8D, gCharPlayer);
@@ -2466,15 +2863,18 @@ s32 func_00332030(void) {
 }
 
 /* +0x1C (D_004755D0) */
-s32 func_003321A0(void *o) {
+/* 0x003321A0 */
+s32 Item4B_SortKey(void *o) {
     return 0x1C0;
 }
 
-s32 func_003321B0(void *self, void *dest) {
+/* 0x003321B0 */
+s32 Item4B_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00461020, dest);
 }
 
-s32 func_003321E0(void) {
+/* 0x003321E0 */
+s32 Item4B_Use(void) {
     u8 *p;
 
     b5_adjust_meters(-100.0f, -1800);
@@ -2487,45 +2887,54 @@ s32 func_003321E0(void) {
 }
 
 /* +0x1C (D_00475620) */
-s32 func_00332360(void *o) {
+/* 0x00332360 */
+s32 Item4C_SortKey(void *o) {
     return 0x1E0;
 }
 
-s32 func_00332370(void *self, void *dest) {
+/* 0x00332370 */
+s32 Item4C_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00461040, dest);
 }
 
-s32 func_003323A0(void) {
+/* 0x003323A0 */
+s32 Item4C_Use(void) {
     S32((u8 *)gProgress, 0xA0C) = 1800;
     return 1;
 }
 
 /* +0x1C (D_00475670) */
-s32 func_00332430(void *o) {
+/* 0x00332430 */
+s32 Item60_SortKey(void *o) {
     return 0x210;
 }
 
 /* +0x10 (D_00475670, D_004756C0, D_00475710, ...) */
-s32 func_00332440(void *o) {
+/* 0x00332440 */
+s32 ItemClass6B00_Kind(void *o) {
     return 0x3;
 }
 
 /* +0x14 (D_00475670, D_004756C0, D_00475710, ...) */
-s32 func_00332450(void *o) {
+/* 0x00332450 */
+s32 ItemClass6B00_Actions(void *o) {
     return 0x5;
 }
 
 /* +0x18 (D_00475670, D_004756C0, D_00475710, ...) */
-s32 func_00332460(void *o) {
+/* 0x00332460 */
+s32 ItemClass6B00_IsCounted(void *o) {
     return 0x1;
 }
 
-s32 func_00332470(void *self, void *dest) {
+/* 0x00332470 */
+s32 Item60_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00461060, dest);
 }
 
 /* use: Hewie heals 20; already full, he trusts her a little less */
-s32 func_003324A0(void *o) {
+/* 0x003324A0 */
+s32 Item60_Use(void *o) {
     if (!B5_HANDY(o)) {
         return 0;
     }
@@ -2536,16 +2945,19 @@ s32 func_003324A0(void *o) {
 }
 
 /* +0x1C (D_004756C0) */
-s32 func_00332690(void *o) {
+/* 0x00332690 */
+s32 Item61_SortKey(void *o) {
     return 0x220;
 }
 
-s32 func_003326A0(void *self, void *dest) {
+/* 0x003326A0 */
+s32 Item61_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00461080, dest);
 }
 
 /* use: Hewie heals 100; trust -1 */
-s32 func_003326D0(void *o) {
+/* 0x003326D0 */
+s32 Item61_Use(void *o) {
     if (!B5_HANDY(o)) {
         return 0;
     }
@@ -2555,16 +2967,19 @@ s32 func_003326D0(void *o) {
 }
 
 /* +0x1C (D_00475710) */
-s32 func_003328A0(void *o) {
+/* 0x003328A0 */
+s32 Item62_SortKey(void *o) {
     return 0x230;
 }
 
-s32 func_003328B0(void *self, void *dest) {
+/* 0x003328B0 */
+s32 Item62_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_004610A0, dest);
 }
 
 /* use: Hewie's +0x94 (50); trust +3 */
-s32 func_003328E0(void *o) {
+/* 0x003328E0 */
+s32 Item62_Use(void *o) {
     if (!B5_HANDY(o)) {
         return 0;
     }
@@ -2574,16 +2989,19 @@ s32 func_003328E0(void *o) {
 }
 
 /* +0x1C (D_00475760) */
-s32 func_00332A90(void *o) {
+/* 0x00332A90 */
+s32 Item63_SortKey(void *o) {
     return 0x240;
 }
 
-s32 func_00332AA0(void *self, void *dest) {
+/* 0x00332AA0 */
+s32 Item63_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_004610C0, dest);
 }
 
-/* use: as func_003324A0 */
-s32 func_00332AD0(void *o) {
+/* use: as Item60_Use */
+/* 0x00332AD0 */
+s32 Item63_Use(void *o) {
     if (!B5_HANDY(o)) {
         return 0;
     }
@@ -2594,16 +3012,19 @@ s32 func_00332AD0(void *o) {
 }
 
 /* +0x1C (D_004757B0) */
-s32 func_00332CD0(void *o) {
+/* 0x00332CD0 */
+s32 Item64_SortKey(void *o) {
     return 0x250;
 }
 
-s32 func_00332CE0(void *self, void *dest) {
+/* 0x00332CE0 */
+s32 Item64_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_004610E0, dest);
 }
 
-/* use: as func_003326D0 */
-s32 func_00332D10(void *o) {
+/* use: as Item61_Use */
+/* 0x00332D10 */
+s32 Item64_Use(void *o) {
     if (!B5_HANDY(o)) {
         return 0;
     }
@@ -2613,16 +3034,19 @@ s32 func_00332D10(void *o) {
 }
 
 /* +0x1C (D_00475800) */
-s32 func_00332EF0(void *o) {
+/* 0x00332EF0 */
+s32 Item65_SortKey(void *o) {
     return 0x260;
 }
 
-s32 func_00332F00(void *self, void *dest) {
+/* 0x00332F00 */
+s32 Item65_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00461100, dest);
 }
 
 /* use: Hewie waits (func_00138AD0 mode 3, 450 frames; Progress +0xA10 too); trust +20 */
-s32 func_00332F30(void *o) {
+/* 0x00332F30 */
+s32 Item65_Use(void *o) {
     if (!B5_HANDY(o)) {
         return 0;
     }
@@ -2633,16 +3057,19 @@ s32 func_00332F30(void *o) {
 }
 
 /* +0x1C (D_00475850) */
-s32 func_003330E0(void *o) {
+/* 0x003330E0 */
+s32 Item66_SortKey(void *o) {
     return 0x270;
 }
 
-s32 func_003330F0(void *self, void *dest) {
+/* 0x003330F0 */
+s32 Item66_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00461120, dest);
 }
 
 /* use: Hewie's health 1 (back on his feet); trust +3 */
-s32 func_00333120(void *o) {
+/* 0x00333120 */
+s32 Item66_Use(void *o) {
     if (!B5_HANDY(o)) {
         return 0;
     }
@@ -2652,7 +3079,8 @@ s32 func_00333120(void *o) {
 }
 
 /* +0x3C (D_00476450) */
-s32 func_0033AF10(void *o) {
+/* 0x0033AF10 */
+s32 ItemA2_Use(void *o) {
     return 0;
 }
 
@@ -2700,12 +3128,13 @@ void Kind31_EventState(Pursuer *p) { creature_act5(p, &D_004309C0); }
 /* 0x0033B450 */
 s32 Kind31_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
-/* +0x40: Hewie is at hand - he can be reached (func_0025FF10), within 20 and his triangle is
+/* +0x40: Hewie is at hand - he can be reached (PoolEntry_PartnerCheck), within 20 and his triangle is
    the one Fiona finds his position on */
-s32 func_0033B4C0(void *o) {
+/* 0x0033B4C0 */
+s32 ItemClass6B00_PartnerCheck(void *o) {
     u32 tri;
 
-    if ((func_0025FF10(o) & 0xFF) != 1) {
+    if ((PoolEntry_PartnerCheck(o) & 0xFF) != 1) {
         return 0;
     }
     if (!(func_00124490((Actor *)gCharPlayer, (f32 *)((u8 *)gCharPartner + 0x10)) < 20.0f)) {
@@ -2716,71 +3145,86 @@ s32 func_0033B4C0(void *o) {
 }
 
 /* +0x3C (D_00476B60) */
-s32 func_0033BDF0(void *o) {
+/* 0x0033BDF0 */
+s32 ItemA3_Use(void *o) {
     return 0;
 }
 
 /* +0x14 (D_00477030) */
-s32 func_0033E8C0(void *o) {
+/* 0x0033E8C0 */
+s32 Item18_Actions(void *o) {
     return 0x5;
 }
 
-s32 func_0033E8D0(void *self, void *dest) {
+/* 0x0033E8D0 */
+s32 Item18_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_004616C0, dest);
 }
 
 /* +0x14 (D_00477080) */
-s32 func_0033EA30(void *o) {
+/* 0x0033EA30 */
+s32 Item19_Actions(void *o) {
     return 0x5;
 }
 
-s32 func_0033EA40(void *self, void *dest) {
+/* 0x0033EA40 */
+s32 Item19_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_004616E0, dest);
 }
 
 /* +0x14 (D_004770D0) */
-s32 func_0033EBA0(void *o) {
+/* 0x0033EBA0 */
+s32 Item1A_Actions(void *o) {
     return 0x5;
 }
 
-s32 func_0033EBB0(void *self, void *dest) {
+/* 0x0033EBB0 */
+s32 Item1A_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00461700, dest);
 }
 
 /* +0x14 (D_00477120) */
-s32 func_0033ED10(void *o) {
+/* 0x0033ED10 */
+s32 Item1B_Actions(void *o) {
     return 0x5;
 }
 
-s32 func_0033ED20(void *self, void *dest) {
+/* 0x0033ED20 */
+s32 Item1B_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00461720, dest);
 }
 
 /* +0x14 (D_00477170) */
-s32 func_0033EE80(void *o) {
+/* 0x0033EE80 */
+s32 Item1C_Actions(void *o) {
     return 0x5;
 }
 
-s32 func_0033EE90(void *self, void *dest) {
+/* 0x0033EE90 */
+s32 Item1C_LoadPicture(void *self, void *dest) {
     return FILE_LOAD_ASYNC(D_00461740, dest);
 }
 
 /* +0x14 (D_004775C0) */
-s32 func_00344590(void *o) {
+/* 0x00344590 */
+s32 Item1D_Actions(void *o) {
     return 0x5;
 }
 
-s32 func_003445A0(void *self, void *dest) {
+/* 0x003445A0 */
+s32 Item1D_LoadPicture(void *self, void *dest) {
     return VCALL(gFileLoader, 0xC, s32 (*)(void *, const void *, void *, u32, s32))(gFileLoader, D_00461CC0, dest, 0x4000000, 0);
 }
 
 /* +0x3C (D_00478E60) */
-s32 func_00351870(void *o) {
+/* 0x00351870 */
+s32 Item24_Use(void *o) {
     return 0;
 }
 
 /* +0x3C (D_00479820) */
-s32 func_0035BBC0(void *o) {
+/* 0x0035BBC0 */
+s32 Item29_Use(void *o) {
     return 0;
 }
 
@@ -2792,122 +3236,146 @@ s32 func_0035BBC0(void *o) {
 extern const char D_0045A7C0[], D_0045A8A0[], D_0045A8C0[], D_0045A8E0[], D_0045A900[], D_0045A920[], D_0045A940[], D_0045A960[], D_0045A980[], D_0045A9A0[], D_0045AA40[], D_0045AA60[], D_0045AA80[], D_0045AAA0[], D_0045AAC0[], D_0045AAE0[], D_0045AB00[], D_0045AB20[], D_0045AB40[], D_0045ACA0[], D_0045ACC0[], D_0045E280[], D_0045EA80[], D_00463360[];
 
 /* "ITEM00\ITEM_FFF.TEX" */
-s32 func_0025FF50(void *o, s32 dst) {
+/* 0x0025FF50 */
+s32 PoolEntry_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045A7C0, dst);
 }
 
 /* "ITEM01\ITEM_023.TEX" */
-s32 func_00265D10(void *o, s32 dst) {
+/* 0x00265D10 */
+s32 Item90_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045AB40, dst);
 }
 
 /* "ITEM01\ITEM_024.TEX" */
-s32 func_00265DF0(void *o, s32 dst) {
+/* 0x00265DF0 */
+s32 Item91_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045AB20, dst);
 }
 
 /* "ITEM01\ITEM_027.TEX" */
-s32 func_00265EA0(void *o, s32 dst) {
+/* 0x00265EA0 */
+s32 Item92_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045AB00, dst);
 }
 
 /* "ITEM01\ITEM_02B.TEX" */
-s32 func_00265F50(void *o, s32 dst) {
+/* 0x00265F50 */
+s32 Item93_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045AAE0, dst);
 }
 
 /* "ITEM01\ITEM_025.TEX" */
-s32 func_00266000(void *o, s32 dst) {
+/* 0x00266000 */
+s32 Item94_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045AAC0, dst);
 }
 
 /* "ITEM01\ITEM_028.TEX" */
-s32 func_002660B0(void *o, s32 dst) {
+/* 0x002660B0 */
+s32 Item95_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045AAA0, dst);
 }
 
 /* "ITEM01\ITEM_026.TEX" */
-s32 func_00266160(void *o, s32 dst) {
+/* 0x00266160 */
+s32 Item97_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045AA80, dst);
 }
 
 /* "ITEM01\ITEM_029.TEX" */
-s32 func_00266210(void *o, s32 dst) {
+/* 0x00266210 */
+s32 Item98_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045AA60, dst);
 }
 
 /* "ITEM01\ITEM_02A.TEX" */
-s32 func_002662C0(void *o, s32 dst) {
+/* 0x002662C0 */
+s32 Item9B_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045AA40, dst);
 }
 
 /* "ITEM03\ITEM_04A.TEX" */
-s32 func_002663F0(void *o, s32 dst) {
+/* 0x002663F0 */
+s32 ItemA4_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045A9A0, dst);
 }
 
 /* "ITEM03\ITEM_053.TEX" */
-s32 func_002664D0(void *o, s32 dst) {
+/* 0x002664D0 */
+s32 ItemA5_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045A980, dst);
 }
 
 /* "ITEM03\ITEM_054.TEX" */
-s32 func_00266580(void *o, s32 dst) {
+/* 0x00266580 */
+s32 ItemA6_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045A960, dst);
 }
 
 /* "ITEM03\ITEM_055.TEX" */
-s32 func_00266630(void *o, s32 dst) {
+/* 0x00266630 */
+s32 ItemA7_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045A940, dst);
 }
 
 /* "ITEM00\ITEM_FFF.TEX" */
-s32 func_002666E0(void *o, s32 dst) {
+/* 0x002666E0 */
+s32 ItemA8_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045A920, dst);
 }
 
 /* "ITEM00\ITEM_FFF.TEX" */
-s32 func_00266790(void *o, s32 dst) {
+/* 0x00266790 */
+s32 ItemA9_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045A900, dst);
 }
 
 /* "ITEM00\ITEM_FFF.TEX" */
-s32 func_00266840(void *o, s32 dst) {
+/* 0x00266840 */
+s32 ItemAA_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045A8E0, dst);
 }
 
 /* "ITEM00\ITEM_FFF.TEX" */
-s32 func_002668F0(void *o, s32 dst) {
+/* 0x002668F0 */
+s32 ItemAB_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045A8C0, dst);
 }
 
 /* "ITEM00\ITEM_FFF.TEX" */
-s32 func_002669A0(void *o, s32 dst) {
+/* 0x002669A0 */
+s32 ItemAC_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045A8A0, dst);
 }
 
 /* "ITEM00\ITEM_00A.TEX" */
-s32 func_00266A50(void *o, s32 dst) {
+/* 0x00266A50 */
+s32 Item40_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045ACA0, dst);
 }
 
 /* "ITEM00\ITEM_009.TEX" */
-s32 func_00266BE0(void *o, s32 dst) {
+/* 0x00266BE0 */
+s32 Item41_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045ACC0, dst);
 }
 
 /* "ITEM00\ITEM_006.TEX" */
-s32 func_002EEBD0(void *o, s32 dst) {
+/* 0x002EEBD0 */
+s32 Item06_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045E280, dst);
 }
 
 /* "ITEM00\ITEM_007.TEX" */
-s32 func_00303CA0(void *o, s32 dst) {
+/* 0x00303CA0 */
+s32 Item07_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_0045EA80, dst);
 }
 
 /* "ITEM04\ITEM_062.TEX" */
-s32 func_0035BB90(void *o, s32 dst) {
+/* 0x0035BB90 */
+s32 Item29_LoadPicture(void *o, s32 dst) {
     return ITEM_LOAD(D_00463360, dst);
 }
 
@@ -2916,7 +3384,8 @@ s32 func_0035BB90(void *o, s32 dst) {
 #define ITEM_HELD(o) (VCALL(o, 0x18, s32 (*)(void *))(o) & 0xFF)
 
 /* +0x2C add `n` to a stack (+0x10, at most 98 more than the first): 1 if it took them */
-s32 func_0025FD00(void *o, s32 n) {
+/* 0x0025FD00 */
+s32 PoolEntry_AddStack(void *o, s32 n) {
     if (AT(o, 0x4, s32) != -1 && ITEM_HELD(o) == 1 && AT(o, 0x10, u32) < 98) {
         AT(o, 0x10, u32) += n & 0xFF;
         if (AT(o, 0x10, u32) >= 99) {
@@ -2928,7 +3397,8 @@ s32 func_0025FD00(void *o, s32 n) {
 }
 
 /* +0x30 take one off a stack: 1 if there was more than one */
-s32 func_0025FDA0(void *o) {
+/* 0x0025FDA0 */
+s32 PoolEntry_TakeOne(void *o) {
     if (AT(o, 0x4, s32) != -1 && ITEM_HELD(o) == 1 && AT(o, 0x10, s32) != 0) {
         AT(o, 0x10, s32) -= 1;
         return 1;
@@ -2937,7 +3407,8 @@ s32 func_0025FDA0(void *o) {
 }
 
 /* +0x34 how many there are (0: none) */
-s32 func_0025FE10(void *o) {
+/* 0x0025FE10 */
+s32 PoolEntry_Count(void *o) {
     if (AT(o, 0x4, s32) == -1) {
         return 0;
     }
@@ -2945,7 +3416,8 @@ s32 func_0025FE10(void *o) {
 }
 
 /* +0x38 a counter (held 2) counts one more, unless it is -1 */
-s32 func_0025FE70(void *o) {
+/* 0x0025FE70 */
+s32 PoolEntry_CountUp(void *o) {
     if (AT(o, 0x4, s32) != -1 && ITEM_HELD(o) == 2 && AT(o, 0x10, s32) != -1) {
         AT(o, 0x10, s32) += 1;
     }
@@ -2953,7 +3425,8 @@ s32 func_0025FE70(void *o) {
 }
 
 /* +0x40 the partner's func_00138EC0 (0 without one) */
-s32 func_0025FF10(void *o) {
+/* 0x0025FF10 */
+s32 PoolEntry_PartnerCheck(void *o) {
     if (gCharPartner != NULL) {
         return func_00138EC0((Hewie *)gCharPartner);
     }
@@ -2980,48 +3453,57 @@ static s32 use_at_spot(s32 room, s32 spot, s32 ev) {
 }
 
 /* D_0046EE40: at spot 0xA of room 0xF, event 0x1 */
-s32 func_002CCC70(void *o) {
+/* 0x002CCC70 */
+s32 Item00_Use(void *o) {
     return use_at_spot(0xF, 0xA, 0x1);
 }
 
 /* D_00477030: at spot 0x17 of room 0x48, event 0x0 */
-s32 func_0033E900(void *o) {
+/* 0x0033E900 */
+s32 Item18_Use(void *o) {
     return use_at_spot(0x48, 0x17, 0x0);
 }
 
 /* D_00477080: at spot 0x17 of room 0x48, event 0x17 */
-s32 func_0033EA70(void *o) {
+/* 0x0033EA70 */
+s32 Item19_Use(void *o) {
     return use_at_spot(0x48, 0x17, 0x17);
 }
 
 /* D_004770D0: at spot 0x17 of room 0x48, event 0x18 */
-s32 func_0033EBE0(void *o) {
+/* 0x0033EBE0 */
+s32 Item1A_Use(void *o) {
     return use_at_spot(0x48, 0x17, 0x18);
 }
 
 /* D_00477120: at spot 0x17 of room 0x48, event 0x19 */
-s32 func_0033ED50(void *o) {
+/* 0x0033ED50 */
+s32 Item1B_Use(void *o) {
     return use_at_spot(0x48, 0x17, 0x19);
 }
 
 /* D_00477170: at spot 0x17 of room 0x48, event 0x1A */
-s32 func_0033EEC0(void *o) {
+/* 0x0033EEC0 */
+s32 Item1C_Use(void *o) {
     return use_at_spot(0x48, 0x17, 0x1A);
 }
 
 /* D_00478E10: at spot 0xB of room 0xC7, event 0x4 */
-s32 func_00351710(void *o) {
+/* 0x00351710 */
+s32 Item23_Use(void *o) {
     return use_at_spot(0xC7, 0xB, 0x4);
 }
 
 /* use: composure -100, stamina -1800 */
-s32 func_00266A80(void *o) {
+/* 0x00266A80 */
+s32 Item40_Use(void *o) {
     item_meters(-100.0f, -1800);
     return 1;
 }
 
 /* use: Progress +0x9E0 -0.2666 for 300 frames (+0x9E4) */
-s32 func_00266C10(void *o) {
+/* 0x00266C10 */
+s32 Item41_Use(void *o) {
     AT(gProgress, 0x9E0, u32) = 0xBE888889;   /* -0.26666668 */
     AT(gProgress, 0x9E4, s32) = 300;
     return 1;
@@ -3040,12 +3522,14 @@ static s32 use_at_door(s32 room, u32 door, s32 ev) {
 }
 
 /* D_00473020: at door 0 of room 0x4F, event 1 */
-s32 func_0031D050(void *o) {
+/* 0x0031D050 */
+s32 Item0F_Use(void *o) {
     return use_at_door(0x4F, 0, 1);
 }
 
 /* D_004730C0: at door 4 of room 0x55, event 2 */
-s32 func_0031D630(void *o) {
+/* 0x0031D630 */
+s32 Item11_Use(void *o) {
     return use_at_door(0x55, 4, 2);
 }
 
@@ -3072,7 +3556,8 @@ void Kind18_EventState(Pursuer *p) { creature_act5(p, &D_00429DF0); }
 s32 Kind18_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
 /* D_00474BC0: at door 1 of room 0x25 unless Progress +0x20 bit 0x800000, event 4 */
-s32 func_0032CD30(void *o) {
+/* 0x0032CD30 */
+s32 Item14_Use(void *o) {
     Progress *p = gProgress;
 
     if (VCALL(p, 0xC, s32 (*)(Progress *))(p) != 0x25 || (AT(p, 0x20, u32) & 0x800000) || !item_door_open(p, 1)) {

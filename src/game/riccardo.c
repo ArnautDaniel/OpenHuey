@@ -49,7 +49,8 @@ s32 Kind37_SlowWalkAnim(u8 *p);
 void *Kind37_ModelFiles(void);
 
 /* 0x46F69C: nothing (0) */
-s32 func_002D7A60(void) {
+/* 0x002D7A60 */
+s32 ItemA1_Use(void) {
     return 0;
 }
 
