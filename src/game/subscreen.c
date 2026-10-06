@@ -1423,3 +1423,111 @@ void func_003949B0(SubScreen *s, s32 a) {
         }
     }
 }
+
+/* ---- the in-game menu's map page ---- */
+
+extern void func_00304F50(u8 *m);   /* the map, each frame */
+extern u8 func_00303F00(void);      /* the maps the player has (bits) */
+extern const PTMF D_0044B388, D_0044B398, D_0044B3A8, D_0044B3B8;
+
+/* draw the screen kind `kind`'s panels */
+static inline void sub_panels(SubScreen *s) {
+    if (s->kind != 0xFF) {
+        s8 *panel = D_0044C120[s->kind & 0x7F];
+        s32 i;
+
+        for (i = 0; i < 4 && panel[i] >= 0; i++) {
+            SubScreen_DrawPanel(s, (u8)panel[i], 0x80, 0x30);
+        }
+    }
+}
+
+/* The map page: next / previous turn to the page after (D_0044B388 / D_0044B398) or back to
+ * the item lists' last (D_0044B3A8 / D_0044B3B8); cancel closes. Its panels, the map and,
+ * when there are other maps to turn to, the two arrows blinking. */
+void func_00394670(SubScreen *s) {
+    if (!s->fading) {
+        if (D_0047E36C & MENU_NEXT) {
+            ptmf_set(&s->state, &D_0044B388);
+            ptmf_set(&s->resume, &D_0044B398);
+            Sound_PlaySE(SE_PAGE);
+        } else if (D_0047E36C & MENU_PREV) {
+            SUB_LIST(s) = 2;
+            ptmf_set(&s->state, &D_0044B3A8);
+            ptmf_set(&s->resume, &D_0044B3B8);
+            Sound_PlaySE(SE_PAGE);
+        } else if (D_0047E36C & MENU_CANCEL) {
+            s->close = 1;
+        }
+    }
+    s->kind = 1;
+    sub_panels(s);
+    func_00304F50(s->textObj);
+    {
+        u8 maps = func_00303F00();
+
+        if (maps != 0 && !(maps == 4 && AT(s->textObj, 0x10C, s8) == 2)) {
+            s32 b = 0x80 - ((s->frame << 2) & 0xFF);
+            u8 alpha = b > 0 ? b : -b;
+
+            SubScreen_DrawPart(s, 0xA, 0xF0, 0x1A, alpha, 0);
+            SubScreen_DrawPart(s, 0x1D6, 0xF0, 0x1B, alpha, 0);
+        }
+    }
+}
+
+/* ---- the in-game menu's file page ---- */
+
+extern const PTMF D_0044B3C8, D_0044B3D8, D_0044B3E8, D_0044B3F8;
+
+#define SUB_FILE_PAGE(s) ((s)->unkA8C55)
+
+/* The file page: left / right turn its pages (round), next / previous turn to the page after
+ * (D_0044B3C8 / D_0044B3D8) or back to the map (D_0044B3E8 / D_0044B3F8); cancel closes. Its
+ * panels, the page number and, with more than one, the arrows blinking; the file. */
+void func_00394260(SubScreen *s) {
+    u8 last = func_0037E650();
+
+    if (!s->fading) {
+        u8 old = SUB_FILE_PAGE(s);
+
+        if (D_0047E36C & MENU_LEFT) {
+            if (old != 0) {
+                SUB_FILE_PAGE(s)--;
+            } else {
+                SUB_FILE_PAGE(s) = last;
+            }
+        } else if (D_0047E36C & MENU_RIGHT) {
+            if (old < last) {
+                SUB_FILE_PAGE(s)++;
+            } else {
+                SUB_FILE_PAGE(s) = 0;
+            }
+        } else if (D_0047E36C & MENU_NEXT) {
+            ptmf_set(&s->state, &D_0044B3C8);
+            ptmf_set(&s->resume, &D_0044B3D8);
+            Sound_PlaySE(SE_PAGE);
+        } else if (D_0047E36C & MENU_PREV) {
+            func_00305380(s->textObj);
+            ptmf_set(&s->state, &D_0044B3E8);
+            ptmf_set(&s->resume, &D_0044B3F8);
+            Sound_PlaySE(SE_PAGE);
+        } else if (D_0047E36C & MENU_CANCEL) {
+            s->close = 1;
+        }
+        if (old != SUB_FILE_PAGE(s)) {
+            Sound_PlaySE(SE_CURSOR);
+        }
+    }
+    s->kind = 2;
+    sub_panels(s);
+    Task_Printf(&s->text, 0x186, 0x186, 0x80, D_00463FD8, SUB_FILE_PAGE(s) + 1, last + 1);
+    if (last != 0) {
+        s32 b = 0x80 - ((s->frame << 2) & 0xFF);
+        u8 alpha = b > 0 ? b : -b;
+
+        SubScreen_DrawPart(s, 0x168, 0x180, 0x1A, alpha, 0);
+        SubScreen_DrawPart(s, 0x1B3, 0x180, 0x1B, alpha, 0);
+    }
+    func_0037E580((u8 *)s);
+}
