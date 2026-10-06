@@ -6161,3 +6161,68 @@ s32 func_00342370(void) {
     }
     return 1;
 }
+
+extern void *D_0047A2F0[];
+
+static void effect_7A2F0_init(void **obj) {
+    obj[0] = D_0047A2F0;
+}
+
+/* (as func_002B2A80)  byte 3 0: the 0x14-byte effect D_0047A2F0 spawned, its slot in script
+ * variable 10; 1 / 2: it is sent (byte 4, byte 3 - 1) */
+s32 func_00341EF0(void *self, void *a1, u8 *cmd) {
+    f32 msg[2];
+    s32 slot;
+
+    switch (cmd[3]) {
+    case 0:
+        slot = Effect_New(D_0044E578, 0x14, effect_7A2F0_init);
+        VCALL(D_0044E4D0, 0x30, void (*)(VObject *, s32, s32))(D_0044E4D0, 10, slot);
+        break;
+    case 1:
+    case 2:
+        slot = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 10);
+        msg[0] = (f32)cmd[4];
+        msg[1] = (f32)(cmd[3] - 1);
+        func_002D6090(D_0044E578, slot, msg);
+        break;
+    }
+    return 1;
+}
+
+extern s32 func_00183190(void *f);   /* Fiona's struggle shakes this frame (fiona.c) */
+
+/* a struggle: byte 3 0 resets Fiona's shake tracking (+0x1AD710 / +0x1AD714); 1 adds her shakes
+ * to script variable byte 4, with a grunt (voice 0x3D or 0x45 at random) when the cool-down
+ * variable byte 6 is out (it then runs 45 / 60), and at 100 the event byte 5 (+0x5C) */
+s32 func_003413C0(void *self, void *a1, u8 *cmd) {
+    VObject *ev;
+    s32 v, n;
+
+    switch (cmd[3]) {
+    case 0:
+        AT(gCharPlayer, 0x1AD710, u8) = 1;
+        AT(gCharPlayer, 0x1AD714, s32) = 0;
+        break;
+    case 1:
+        ev = D_0044E4D0;
+        v = VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[4]);
+        n = func_00183190(gCharPlayer);
+        if (n != 0 && VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, cmd[6]) == 0) {
+            if (VCALL(D_0044E550, 0x10, u32 (*)(VObject *))(D_0044E550) & 1) {
+                func_00122C20(&gCharPlayer->a, 0x3D, 5, 0, 0, NULL);
+                VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, cmd[6], 45);
+            } else {
+                func_00122C20(&gCharPlayer->a, 0x45, 5, 0, 0, NULL);
+                VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, cmd[6], 60);
+            }
+        }
+        n += v;
+        VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, cmd[4], n);
+        if ((u32)n >= 100) {
+            VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, cmd[5]);
+        }
+        break;
+    }
+    return 1;
+}
