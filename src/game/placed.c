@@ -2134,6 +2134,165 @@ void func_0036A980(u8 *o, f32 *arg) {
     sceVu0Normalize((f32 *)(o + 0xF40), (f32 *)(o + 0xF40));
 }
 
+extern VObject *D_0044E4B8;   /* the camera */
+
+/* a nav triangle's flags (+0x3C of its 0x50 bytes; 0 past the count +0x8 or with no table +0x4) */
+static inline u32 nav_tri_flags(VObject *nav, u32 tri) {
+    u8 *tris = AT(nav, 0x4, u8 *);
+
+    return (tri < AT(nav, 0x8, u32) && tris != NULL) ? AT(tris + tri * 0x50, 0x3C, u32) : 0;
+}
+extern void func_002E2CA0(f32 *out, f32 *v, f32 angle);   /* v turned about y */
+
+/* a quad record carried over from the other frame buffer (12 words) */
+static inline void rec_copy(u8 *dst, const u8 *src) {
+    s32 k;
+
+    for (k = 0; k < 12; k++) {
+        AT(dst, k * 4, u32) = AT(src, k * 4, u32);
+    }
+}
+
+/* the ring's corner (x * 1.5 size, 0, z size) turned to face the camera */
+static inline void ring_corner(u8 *o, u32 at, f32 x, f32 z) {
+    f32 c[4] __attribute__((aligned(16)));
+    f32 t[4] __attribute__((aligned(16)));
+
+    c[1] = 0.0f;
+    c[0] = 1.5f * x;
+    c[3] = 1.0f;
+    c[2] = z;
+    func_002E2CA0(t, c, VCALL(D_0044E4B8, 0x68, f32 (*)(VObject *))(D_0044E4B8));
+    AT(o, at, f32) = t[0];
+    AT(o, at + 4, f32) = t[1];
+    AT(o, at + 8, f32) = t[2];
+    AT(o, at + 0xC, f32) = 1.0f;
+}
+
+/* +0x10 update (the frame buffers swapped, each record carried over): the pieces spin, drift
+ * (their push halving in, over 4 frames), then shrink their cells, fade and fall (after 8 frames,
+ * by their falls); the flash fades and plays its frames once; the puffs rise and fade, out when
+ * under the floor; the ring fades and grows, facing the camera. 0 once all of it was gone. */
+s32 func_0036B200(u8 *o) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, k2Pi = {0x40C90FDB};
+    VObject *rnd, *nav;
+    f32 g[4] __attribute__((aligned(16)));
+    u8 *r;
+    s32 i;
+
+    if (AT(o, 0xFB0, u8) == 1) {
+        return 0;
+    }
+    AT(o, 0xFB0, u8) = 1;
+    rnd = D_0044E550;
+    AT(o, 0xFAC, s32) ^= 1;
+    for (i = 0; i < 16; i++) {
+        f32 a;
+
+        rec_copy(o + 0x10 + AT(o, 0xFAC, s32) * 0x300 + i * 0x30, o + 0x10 + (AT(o, 0xFAC, s32) ^ 1) * 0x300 + i * 0x30);
+        r = o + 0x10 + AT(o, 0xFAC, s32) * 0x300 + i * 0x30;
+        if (AT(r, 0xC, s32) <= 0) {
+            continue;
+        }
+        AT(o, 0xFB0, u8) = 0;
+        a = AT(r, 0x28, f32) + kPi.f * (2.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)) / 180.0f;
+        AT(r, 0x28, f32) = a;
+        if (!(a < kPi.f)) {
+            AT(r, 0x28, f32) = a - k2Pi.f;
+        }
+        AT(r, 0x10, f32) = AT(r, 0x10, f32) + (AT(o, 0xC30 + i * 0xC, f32) + AT(o, 0xEA0 + i * 4, f32));
+        AT(r, 0x18, f32) = AT(r, 0x18, f32) + (AT(o, 0xC38 + i * 0xC, f32) + AT(o, 0xEE0 + i * 4, f32));
+        if (AT(o, 0xFA4, s32) < 4) {
+            AT(o, 0xEA0 + i * 4, f32) = AT(o, 0xEA0 + i * 4, f32) + AT(o, 0xEA0 + i * 4, f32) / 2.0f;
+            AT(o, 0xEE0 + i * 4, f32) = AT(o, 0xEE0 + i * 4, f32) + AT(o, 0xEE0 + i * 4, f32) / 2.0f;
+            continue;
+        }
+        if (AT(r, 0x0, s32) != 0 && --AT(r, 0x0, s32) < 0) {
+            AT(r, 0x0, s32) = 0;
+        }
+        if (AT(r, 0x4, s32) != 0 && --AT(r, 0x4, s32) < 0) {
+            AT(r, 0x4, s32) = 0;
+        }
+        if (AT(r, 0x8, s32) != 0 && --AT(r, 0x8, s32) < 0) {
+            AT(r, 0x8, s32) = 0;
+        }
+        AT(r, 0xC, s32) = AT(r, 0xC, s32) - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 7) + 1);
+        if (AT(r, 0xC, s32) < 0) {
+            AT(r, 0xC, s32) = 0;
+        }
+        if (AT(o, 0xFA4, s32) < 8) {
+            AT(o, 0xC30 + i * 0xC, f32) = AT(o, 0xC30 + i * 0xC, f32) + AT(o, 0xCF0 + i * 0xC, f32);
+            AT(o, 0xC34 + i * 0xC, f32) = AT(o, 0xC34 + i * 0xC, f32) + AT(o, 0xCF4 + i * 0xC, f32);
+            AT(o, 0xC38 + i * 0xC, f32) = AT(o, 0xC38 + i * 0xC, f32) + AT(o, 0xCF8 + i * 0xC, f32);
+        }
+        if (i % 2 == 0) {
+            AT(r, 0x14, f32) = AT(r, 0x14, f32) + 4.0f * AT(o, 0xC34 + i * 0xC, f32);
+        } else {
+            AT(r, 0x14, f32) = AT(r, 0x14, f32) + 8.0f * AT(o, 0xC34 + i * 0xC, f32);
+        }
+        AT(o, 0xEA0 + i * 4, s32) = 0;
+        AT(o, 0xEE0 + i * 4, s32) = 0;
+    }
+    AT(o, 0xFA4, s32)++;
+
+    rec_copy(o + 0x610 + AT(o, 0xFAC, s32) * 0x30, o + 0x610 + (AT(o, 0xFAC, s32) ^ 1) * 0x30);
+    r = o + 0x610 + AT(o, 0xFAC, s32) * 0x30;
+    if (AT(r, 0xC, s32) > 0) {
+        AT(o, 0xFB0, u8) = 0;
+        if (--AT(r, 0xC, s32) < 0) {
+            AT(r, 0xC, s32) = 0;
+        }
+        if (!(++AT(r, 0x2C, s32) < AT(o, 0xBBB, s8))) {
+            AT(r, 0xC, s32) = 0;
+            AT(r, 0x2C, s32) = 0;
+        }
+    }
+
+    nav = D_0044E570;
+    for (i = 0; i < 12; i++) {
+        u32 tri;
+
+        rec_copy(o + 0x670 + AT(o, 0xFAC, s32) * 0x240 + i * 0x30, o + 0x670 + (AT(o, 0xFAC, s32) ^ 1) * 0x240 + i * 0x30);
+        r = o + 0x670 + AT(o, 0xFAC, s32) * 0x240 + i * 0x30;
+        AT(r, 0x10, f32) = AT(r, 0x10, f32) + AT(o, 0xDB0 + i * 0xC, f32);
+        AT(r, 0x14, f32) = AT(r, 0x14, f32) + AT(o, 0xDB4 + i * 0xC, f32);
+        AT(r, 0x18, f32) = AT(r, 0x18, f32) + AT(o, 0xDB8 + i * 0xC, f32);
+        AT(o, 0xDB4 + i * 0xC, f32) = AT(o, 0xDB4 + i * 0xC, f32) - AT(o, 0xE70 + i * 4, f32);
+        tri = func_00123D20(gCharPlayer, (f32 *)(r + 0x10));
+        sceVu0CopyVector(g, (f32 *)(r + 0x10));
+        VCALL(nav, 0x14, void (*)(VObject *, u32, f32 *))(nav, tri, g);
+        if (!(nav_tri_flags(nav, tri) & 0x10000000) && AT(r, 0x14, f32) < g[1]) {
+            AT(r, 0xC, s32) = 0;
+            continue;
+        }
+        AT(r, 0xC, s32) = AT(r, 0xC, s32) - ((VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 7) + 1);
+        if (AT(r, 0xC, s32) < 0) {
+            AT(r, 0xC, s32) = 0;
+        }
+    }
+
+    rec_copy(o + 0xAF0 + AT(o, 0xFAC, s32) * 0x30, o + 0xAF0 + (AT(o, 0xFAC, s32) ^ 1) * 0x30);
+    r = o + 0xAF0 + AT(o, 0xFAC, s32) * 0x30;
+    if (AT(r, 0xC, s32) <= 0) {
+        return 1;
+    }
+    AT(o, 0xFB0, u8) = 0;
+    AT(r, 0xC, s32) = AT(r, 0xC, s32) - 13;
+    if (AT(r, 0xC, s32) < 0) {
+        AT(r, 0xC, s32) = 0;
+    }
+    AT(o, 0xFA8, f32) = AT(o, 0xFA8, f32) + 1.0f;
+    ring_corner(o, 0xF60, -AT(o, 0xFA8, f32), -AT(o, 0xFA8, f32));
+    ring_corner(o, 0xF70, AT(o, 0xFA8, f32), -AT(o, 0xFA8, f32));
+    ring_corner(o, 0xF80, -AT(o, 0xFA8, f32), AT(o, 0xFA8, f32));
+    ring_corner(o, 0xF90, AT(o, 0xFA8, f32), AT(o, 0xFA8, f32));
+    sceVu0ApplyMatrix((f32 *)(o + 0xF60), (f32 (*)[4])(o + 0xF20), (f32 *)(o + 0xF60));
+    sceVu0ApplyMatrix((f32 *)(o + 0xF70), (f32 (*)[4])(o + 0xF20), (f32 *)(o + 0xF70));
+    sceVu0ApplyMatrix((f32 *)(o + 0xF80), (f32 (*)[4])(o + 0xF20), (f32 *)(o + 0xF80));
+    sceVu0ApplyMatrix((f32 *)(o + 0xF90), (f32 (*)[4])(o + 0xF20), (f32 *)(o + 0xF90));
+    return 1;
+}
+
 /* the 0x22D0-byte burst's set up: frame 0, the first three drawers */
 void func_0036D210(u8 *o) {
     AT(o, 0x22BC, s32) = 0;
