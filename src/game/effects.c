@@ -1991,6 +1991,123 @@ void func_002D6920(u8 *o) {
     }
 }
 
+/* ---- D_00476BB0 (0x7460 bytes; room 0x4F): 256 motes of dust drifting down through a shaft
+ * (around x 38, z -11, from up to 50 high), in two buffers of quad records (+0x10 + 0x3000 x the
+ * current one +0x7450), velocities at +0x6050 (16 each), the quad drawer at +0x6010, each one's
+ * fade direction at +0x7050 (bit 31: fading out) ---- */
+
+#define DUST_REC(o, buf, i) ((QuadRec *)((o) + 0x10 + (buf) * 0x3000) + (i))
+#define DUST_VEL(o, i) ((f32 *)((o) + 0x6050 + (i) * 0x10))
+#define DUST_FADE(o, i) AT(o, 0x7050 + (i) * 4, u32)
+
+/* mote `i` (re)started somewhere up the shaft (narrower the higher), 2 x 2, drifting a little
+ * and sinking 0.01..0.11 a frame; not `again` (the first round): at a random alpha and fade */
+void func_0033BE90(u8 *o, s32 i, s32 again) {
+    static const union { u32 u; f32 f; } k16 = {0x41800000}, k50 = {0x42480000}, k005 = {0x3D4CCCCD};   /* multiplied first */
+    VObject *rnd = D_0044E550;
+    QuadRec *r = DUST_REC(o, AT(o, 0x7450, s32), i);
+    f32 *v = DUST_VEL(o, i);
+    f32 h, x;
+
+    r->rgba[0] = 0x80;
+    r->rgba[1] = 0x80;
+    r->rgba[2] = 0x80;
+    r->rgba[3] = 0;
+    h = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    x = VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+    r->pos[0] = 38.0f + (k16.f * (1.0f - h)) * (x - 0.5f);
+    r->pos[1] = k50.f * h;
+    r->pos[2] = -11.0f + 4.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    r->pos[3] = 1.0f;
+    r->w = 2.0f;
+    r->h = 2.0f;
+    r->turn = 0.0f;
+    r->frame = 0;
+    v[0] = k005.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    v[1] = -0x1.47ae14p-7f - 0x1.99999ap-4f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);   /* -0.01 - 0.1 x */
+    v[2] = k005.f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+    DUST_FADE(o, i) = 0;
+    if (!again) {
+        rnd = D_0044E550;
+        r->rgba[3] = VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0x1F;
+        DUST_FADE(o, i) = VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0x80000000;
+    }
+}
+
+/* +0x10 update: flip the buffers; each mote carried over, growing 0.02, turning half a degree,
+ * moving, slowing its fall under 6 and restarted under -3; on the even frames fading in to
+ * 0x21 then out to 0 (and restarted) */
+s32 func_0033C140(u8 *o) {
+    s32 i, k;
+
+    AT(o, 0x7450, s32) ^= 1;
+    for (i = 0; i < 256; i++) {
+        QuadRec *r;
+        f32 *v = DUST_VEL(o, i);
+
+        for (k = 0; k < 12; k++) {
+            ((u32 *)DUST_REC(o, AT(o, 0x7450, s32), i))[k] = ((u32 *)DUST_REC(o, AT(o, 0x7450, s32) ^ 1, i))[k];
+        }
+        r = DUST_REC(o, AT(o, 0x7450, s32), i);
+        r->w = r->w + 0x1.47ae14p-6f;   /* 0.02 */
+        r->h = r->h + 0x1.47ae14p-6f;
+        r->turn = r->turn + 0x1.1df46ap-7f;   /* half a degree */
+        if (!(r->turn <= 0x1.921fb6p+1f)) {
+            r->turn = r->turn - 0x1.921fb6p+2f;
+        }
+        r->pos[0] = r->pos[0] + v[0];
+        r->pos[1] = r->pos[1] + v[1];
+        r->pos[2] = r->pos[2] + v[2];
+        if (r->pos[1] < -3.0f) {
+            func_0033BE90(o, i, 1);
+        } else if (r->pos[1] < 6.0f) {
+            v[1] = v[1] * 0x1.cccccc0000000p-1f;   /* 0.9 */
+        }
+        if (AT(o, 0x7450, s32) != 0) {
+            continue;
+        }
+        if (!(DUST_FADE(o, i) & 0x80000000)) {
+            r->rgba[3]++;
+            if (r->rgba[3] >= 0x21) {
+                DUST_FADE(o, i) = 0x80000000;
+            }
+        } else if (r->rgba[3] > 0) {
+            r->rgba[3]--;
+        } else {
+            func_0033BE90(o, i, 1);
+        }
+    }
+    return 1;
+}
+
+/* +0xC set up: buffer 0, the drawer (256 quads of a 32 x 32 cell at (32, 64), blended, the
+ * first palette, layer 0x19), every mote started */
+void func_0033C3C0(u8 *o) {
+    s32 i;
+
+    AT(o, 0x7450, s32) = 0;
+    AT(o, 0x6018, s64) = -1;
+    AT(o, 0x6024, s32) = 0;
+    AT(o, 0x6028, s32) = 0;
+    AT(o, 0x602C, s32) = 0;
+    AT(o, 0x6030, s32) = 0x19;
+    AT(o, 0x6034, s16) = 0x100;
+    AT(o, 0x6036, s16) = 0x20;
+    AT(o, 0x6038, s16) = 0x40;
+    AT(o, 0x603A, s16) = 0x20;
+    AT(o, 0x603C, s16) = 0x20;
+    AT(o, 0x603E, s16) = 0x200;
+    AT(o, 0x6040, s16) = 0x100;
+    AT(o, 0x6042, s8) = 0x40;
+    AT(o, 0x6043, s8) = 1;
+    AT(o, 0x6044, s8) = 1;
+    AT(o, 0x6045, s8) = 0x10;
+    AT(o, 0x6046, s8) = -1;
+    for (i = 0; i < 256; i++) {
+        func_0033BE90(o, i, 0);
+    }
+}
+
 /* the effect manager's objects' +0x18 for those that take nothing */
 void func_002D63E0(void) {
 }
