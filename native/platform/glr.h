@@ -29,6 +29,20 @@ void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, c
 /* PC-only bits: a shadow volume quad counting in layer 6's stencil, +1 with _INC else -1 */
 #define GLR_PRIM_STENCIL 0x200000u
 #define GLR_PRIM_STENCIL_INC 0x400000u
+/* PC-only bit: no depth test (2D: drawn over whatever is there, in layer order) */
+#define GLR_PRIM_NOZT 0x800000u
+/* PC-only bit: with GLR_PRIM_FIX, subtracted instead: Cd - Cs * FIX / 128 (GS ALPHA (0 - Cs) * FIX + Cd) */
+#define GLR_PRIM_SUB 0x8000u
+
+/* 2D primitives in renderer layer `layer`, in the game's 512 x 448 screen pixels at the GS's
+ * pixel centres (as its XYZ2 / 16): `n` vertices `xy` as a triangle strip (GLR_2D_STRIP) or fan
+ * (GLR_2D_FAN), texture coordinates `st` (0..1 over the texture; ignored untextured), colours
+ * `rgba` (n x RGBA, 0x80 = 1.0); `tex` a .TEX entry (NULL: untextured) with palette `csa`,
+ * modulated, its alpha used. `prim`: 0x40 blended ((Cs - Cd) * As + Cd) plus GLR_PRIM_ bits
+ * (ADD, FIX, SUB). No depth test or writes. */
+enum { GLR_2D_STRIP, GLR_2D_FAN };
+void glr_prim2d(int layer, int kind, int n, const float *xy, const float *st, const uint8_t *rgba, const void *tex,
+                int csa, uint32_t prim);
 
 /* the renderer layer (0..52, drawn in order) what follows is sent in; -1: none */
 void glr_layer(int layer);

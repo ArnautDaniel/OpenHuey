@@ -2,6 +2,7 @@
  * packets in double-buffered arenas inside itself; the PC build interprets those packets where
  * the PS2 would send them (libdma / libgraph), so this code stays as the game had it. */
 #include "common.h"
+#include "gl2d.h"
 #include "game.h"
 
 extern void *func_00115D20(void *p, s32 c, u32 n);   /* memset */
@@ -414,122 +415,111 @@ s32 func_001BBE60(u8 *r, void *obj, s32 layer, void *arg) {
     return 1;
 }
 
-/* +0x4C upload a 4-bit image (w x h, its 16-colour CLUT right after the pixels) to VRAM block
- * 0x3400 (CLUT to 0x3F00), in layer `layer`. The transfer is w * h / 16 quadwords (twice the
- * pixels: the rest is ignored by the GS once the area is full). 0 if there's no room. */
+#ifdef HG_NATIVE
+#include <stdlib.h>
+
+/* Raw images sent to VRAM (+0x48 / +0x4C) that sprites then show: kept decoded to RGBA behind a
+ * .TEX-style header (PSMCT32, w x h) so the GL renderer takes them like any texture; by their
+ * VRAM block. The header's spare bytes count the uploads (the renderer re-reads it on change). */
+typedef struct Gl2dImage {
+    u32 block;
+    const u8 *src;
+    u32 sum;
+    u8 *buf;
+} Gl2dImage;
+
+static Gl2dImage sImages[4];
+
+static u32 image_sum(const u8 *p, s32 n) {
+    u32 c = 2166136261u;
+    s32 i;
+
+    for (i = 0; i < n; i += 61) {
+        c = (c ^ p[i]) * 16777619u;
+    }
+    return c;
+}
+
+/* the image at VRAM block `block` (NULL: none sent) */
+const u8 *gl2d_image(u32 block) {
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        if (sImages[i].buf != NULL && sImages[i].block == block) {
+            return sImages[i].buf;
+        }
+    }
+    return NULL;
+}
+
+/* keep `img` (w x h indexed pixels, `bits` 4 or 8, its CLUT of 32-bit colours right after them
+ * in the GS's upload order) as the image at `block` */
+static void image_put(u32 block, const u8 *img, s32 w, s32 h, s32 bits) {
+    s32 n = w * h, ncol = bits == 4 ? 16 : 256, i, slot = -1;
+    const u8 *clut = img + (bits == 4 ? n >> 1 : n);
+    u32 sum = image_sum(img, n * bits / 8 + ncol * 4), pal[256];
+    Gl2dImage *e;
+    u32 *px;
+
+    for (i = 0; i < 4 && slot < 0; i++) {
+        if (sImages[i].block == block && sImages[i].buf != NULL) {
+            slot = i;
+        }
+    }
+    for (i = 0; i < 4 && slot < 0; i++) {
+        if (sImages[i].buf == NULL) {
+            slot = i;
+        }
+    }
+    if (slot < 0) {
+        slot = 0;
+    }
+    e = &sImages[slot];
+    if (e->buf != NULL && e->block == block && e->src == img && e->sum == sum &&
+        AT(e->buf, 4, u16) == w && AT(e->buf, 6, u16) == h) {
+        return;   /* (sent again unchanged, as the title does every frame) */
+    }
+    if (e->buf == NULL || AT(e->buf, 4, u16) * AT(e->buf, 6, u16) < n) {
+        free(e->buf);
+        e->buf = malloc(16 + (u32)n * 4);
+        AT(e->buf, 2, u16) = 0;
+    }
+    for (i = 0; i < ncol; i++) {   /* 256 colours: the CLUT's CSM1 layout (8..15 / 16..23 swapped) */
+        s32 k = bits == 4 ? i : (i % 8 + ((i / 16) % 2) * 8) + ((i / 32) * 2 + (i / 8) % 2) * 16;
+
+        pal[i] = AT(clut, k * 4, u32);
+    }
+    e->block = block;
+    e->src = img;
+    e->sum = sum;
+    e->buf[0] = 0;   /* PSMCT32 */
+    e->buf[1] = 0;
+    AT(e->buf, 2, u16) += 1;
+    AT(e->buf, 4, u16) = w;
+    AT(e->buf, 6, u16) = h;
+    AT(e->buf, 8, u16) = (u16)((u32)n * 4 / 16);
+    AT(e->buf, 10, u16) = 0;
+    AT(e->buf, 12, s32) = 16;
+    px = (u32 *)(e->buf + 16);
+    for (i = 0; i < n; i++) {
+        px[i] = bits == 4 ? pal[(img[i >> 1] >> ((i & 1) * 4)) & 0xF] : pal[img[i]];
+    }
+}
+
+/* +0x4C a 4-bit image (w x h, its 16-colour CLUT right after the pixels) for VRAM block
+ * 0x3400 */
 s32 func_001BB010(u8 *r, u8 *img, s32 w, s32 h, s32 layer) {
-    s32 n = w * h;
-    s32 qwc = n >> 4;
-    u64 *p = VCALL(r, 0x10, u64 *(*)(u8 *, s32, s32))(r, 0x13, layer);
-
-    if (p == NULL) {
-        return 0;
-    }
-    p[0] = DMA_TAG(DMA_CNT, 6, 0);
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x50000006;
-    p[2] = 0x8004 | (1ULL << 60);
-    p[3] = 0xE;
-    p[4] = ((u64)(s64)(w >> 6) << 48) | (0x14003400ULL << 32);   /* PSMT4 at 0x3400 */
-    p[5] = GS_BITBLTBUF;
-    p[6] = 0;
-    p[7] = GS_TRXPOS;
-    p[8] = (u64)(s64)w | ((u64)(s64)h << 32);
-    p[9] = GS_TRXREG;
-    p[10] = 0;
-    p[11] = GS_TRXDIR;
-    p[12] = (u64)(s64)qwc | 0x8000 | (0x08ULL << 56);
-    p[13] = 0;
-    p[14] = (u64)(u32)(qwc | 0x30000000) | ((u64)((u32)img & 0x0FFFFFFF) << 32);
-    AT(p, 0x78, u32) = 0;
-    AT(p, 0x7C, u32) = qwc | 0x50000000;
-    /* the CLUT: 8 x 2 PSMCT32 */
-    p[16] = DMA_TAG(DMA_CNT, 6, 0);
-    AT(p, 0x88, u32) = 0;
-    AT(p, 0x8C, u32) = 0x50000006;
-    p[18] = 0x8004 | (1ULL << 60);
-    p[19] = 0xE;
-    p[20] = 0x13F00ULL << 32;
-    p[21] = GS_BITBLTBUF;
-    p[22] = 0;
-    p[23] = GS_TRXPOS;
-    p[24] = 8 | (2ULL << 32);
-    p[25] = GS_TRXREG;
-    p[26] = 0;
-    p[27] = GS_TRXDIR;
-    p[28] = 0x8004 | (0x08ULL << 56);
-    p[29] = 0;
-    p[30] = 0x30000004 | ((u64)((u32)(img + (n >> 1)) & 0x0FFFFFFF) << 32);
-    AT(p, 0xF8, u32) = 0;
-    AT(p, 0xFC, u32) = 0x50000004;
-    p[32] = DMA_TAG(DMA_CNT, 2, 0);
-    AT(p, 0x108, u32) = 0;
-    AT(p, 0x10C, u32) = 0x50000002;
-    p[34] = 0x8001 | (1ULL << 60);
-    p[35] = 0xE;
-    p[36] = 0;
-    p[37] = GS_TEXFLUSH;
+    image_put(0x3400, img, w, h, 4);
     return 1;
 }
 
-/* +0x48 upload an 8-bit image (w x h, its 256-colour CLUT right after the pixels) to VRAM at
- * byte address `addr` (CLUT to block 0x3F00), in layer `layer`. 0 if there's no room. */
+/* +0x48 an 8-bit image (w x h, its 256-colour CLUT right after the pixels) for VRAM at byte
+ * address `addr` */
 s32 func_001BB230(u8 *r, u8 *img, s32 w, s32 h, s32 addr, s32 layer) {
-    s32 n = w * h;
-    s32 qwc = n >> 4;
-    u64 *p = VCALL(r, 0x10, u64 *(*)(u8 *, s32, s32))(r, 0x13, layer);
-
-    if (p == NULL) {
-        return 0;
-    }
-    /* the pixels */
-    p[0] = DMA_TAG(DMA_CNT, 6, 0);
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x50000006;   /* VIF DIRECT 6 */
-    p[2] = 0x8004 | (1ULL << 60);   /* GIF tag: 4 A+D, EOP */
-    p[3] = 0xE;
-    p[4] = ((u64)(s64)(addr >> 6) << 32) | ((u64)(s64)(w >> 6) << 48) | (0x13ULL << 56);   /* PSMT8 */
-    p[5] = GS_BITBLTBUF;
-    p[6] = 0;
-    p[7] = GS_TRXPOS;
-    p[8] = (u64)(s64)w | ((u64)(s64)h << 32);
-    p[9] = GS_TRXREG;
-    p[10] = 0;
-    p[11] = GS_TRXDIR;
-    p[12] = (u64)(s64)qwc | 0x8000 | (0x08ULL << 56);   /* GIF tag: image, EOP */
-    p[13] = 0;
-    p[14] = (u64)(u32)(qwc | 0x30000000) | ((u64)((u32)img & 0x0FFFFFFF) << 32);   /* DMA ref */
-    AT(p, 0x78, u32) = 0;
-    AT(p, 0x7C, u32) = qwc | 0x50000000;
-    /* the CLUT: 16 x 16 PSMCT32 */
-    p[16] = DMA_TAG(DMA_CNT, 6, 0);
-    AT(p, 0x88, u32) = 0;
-    AT(p, 0x8C, u32) = 0x50000006;
-    p[18] = 0x8004 | (1ULL << 60);
-    p[19] = 0xE;
-    p[20] = 0x13F00ULL << 32;
-    p[21] = GS_BITBLTBUF;
-    p[22] = 0;
-    p[23] = GS_TRXPOS;
-    p[24] = 0x10 | (0x10ULL << 32);
-    p[25] = GS_TRXREG;
-    p[26] = 0;
-    p[27] = GS_TRXDIR;
-    p[28] = 0x8040 | (0x08ULL << 56);
-    p[29] = 0;
-    p[30] = 0x30000040 | ((u64)((u32)(img + n) & 0x0FFFFFFF) << 32);
-    AT(p, 0xF8, u32) = 0;
-    AT(p, 0xFC, u32) = 0x50000040;
-    /* then flush the texture cache */
-    p[32] = DMA_TAG(DMA_CNT, 2, 0);
-    AT(p, 0x108, u32) = 0;
-    AT(p, 0x10C, u32) = 0x50000002;
-    p[34] = 0x8001 | (1ULL << 60);
-    p[35] = 0xE;
-    p[36] = 0;
-    p[37] = GS_TEXFLUSH;
+    image_put((u32)addr >> 6, img, w, h, 8);
     return 1;
 }
+#endif
 
 /* +0x28 video mode (2: NTSC 448 lines) */
 u8 func_001BB9D0(u8 *r) { return AT(r, 0x304C09, u8); }
@@ -686,40 +676,13 @@ static inline void Rend_UploadRegs(u64 *p, u64 bitblt, u32 w, u32 h, u32 qwc, u8
     ((u32 *)p)[31] = VIF_DIRECT(qwc);
 }
 
-/* +0x44 upload texture `t` (CLUT, image) to its VRAM entry `id` (bit 31 ignored), on layer
- * `layer` (-1: right away, unlinked). 0 if there's no room. */
+#ifdef HG_NATIVE
+/* +0x44 upload texture `t` to its VRAM entry `id`: nothing to do on PC (the GL renderer reads
+ * .TEX entries where they are loaded) */
 s32 func_001BB470(u8 *r, s32 id, TexHeader *t, s32 layer) {
-    u64 *p;
-    VObject *v;
-    u8 *image, *clut;
-    u32 vid;
-
-    if (layer == -1) {
-        p = VCALL(r, 0x14, u64 *(*)(u8 *, s32))(r, 0x13);
-    } else {
-        p = VCALL(r, 0x10, u64 *(*)(u8 *, s32, s32))(r, 0x13, layer);
-    }
-    if (p == NULL) {
-        return 0;
-    }
-    v = D_0044E9A0;
-    vid = (u32)id & 0x7FFFFFFF;
-    image = (u8 *)t + t->data;
-    clut = image + t->imageQwc * 16;
-    Rend_UploadTags(p);
-    Rend_UploadRegs(p, (u64)t->cpsm << 56 | (u64)VRAM_CLUT_ADDR(v, vid) << 32 | (u64)1 << 48, 16, 16, t->clutQwc, clut);
-    Rend_UploadTags(p + 16);
-    Rend_UploadRegs(p + 16, (u64)t->psm << 56 | (u64)(s64)((t->w + 63) >> 6) << 48 | (u64)VRAM_TEX_ADDR(v, vid) << 32,
-                    t->w, t->h, t->imageQwc, image);
-    p[32] = DMA_TAG(DMA_CNT, 2, 0);
-    ((u32 *)p)[66] = VIF_NOP;
-    ((u32 *)p)[67] = VIF_DIRECT(2);
-    p[34] = GIF_TAG(1, 1, GIF_PACKED, 1);
-    p[35] = GIF_REG_AD;
-    p[36] = 0;
-    p[37] = GS_TEXFLUSH;
     return 1;
 }
+#endif
 
 #include "ptmf.h"
 
@@ -883,84 +846,66 @@ extern VObject *D_0044E4F0;   /* the renderer (this one) */
 
 #define SX32(x) ((s64)(s32)(u32)(x))
 
-/* +0x7C a sprite: the w x h rectangle at x, y (screen pixels), coloured `rgba` (alpha over 0x80:
- * opaque), textured with the tw x th texels at u, v of texture `tex` of group `group` (-1:
- * untextured; `clut` -1: its own palette, else CLUT `clut`), in renderer layer `layer` */
-s32 func_001B9880(VObject *r, s32 x, s32 y, s32 w, s32 h, s32 u, s32 v, s32 tw, s32 th, u32 rgba,
-                  s32 tex, s32 group, s32 layer, s32 clut) {
-    s32 textured = tex != -1, n, opaque;
-    u64 tex0 = 0, tex2 = 0;
-    u64 *p;
+#ifdef HG_NATIVE
+/* the texture-cache entry of texture `tex` of group `group` for a 2D draw (NULL: not loaded;
+ * the cache keeps it resident) */
+static TexHeader *tex2d_entry(s32 tex, s32 group) {
+    VObject *tc = D_0044E4E8;
 
-    if (textured) {
-        VObject *tc = D_0044E4E8, *vram;
-        s32 slot = VCALL(tc, 0x8, s32 (*)(VObject *, s32, s32))(tc, tex, group);
-        u8 *hdr;
-
-        if (slot == -1) {
-            return 0;
-        }
-        hdr = VCALL(tc, 0xC, u8 *(*)(VObject *, s32, s32))(tc, tex, group);
-        if (slot & 0x80000000) {
-            slot &= 0x7FFFFFFF;
-            if (!(u8)VCALL(D_0044E4F0, 0x44, s32 (*)(VObject *, s32, void *, s32))(D_0044E4F0, slot, hdr, layer)) {
-                return 0;
-            }
-        }
-        vram = D_0044E9A0;
-        if (clut == -1) {
-            tex0 = VCALL(vram, 0x28, u64 (*)(VObject *, s32, s32, s32, s32, s32))(
-                vram, slot, hdr[0], AT(hdr, 4, u16), AT(hdr, 6, u16), hdr[1]);
-        } else {
-            tex0 = VCALL(vram, 0x2C, u64 (*)(VObject *, s32, s32, s32, s32))(
-                vram, slot, AT(hdr, 4, u16), AT(hdr, 6, u16), hdr[1]);
-            tex2 = VCALL(vram, 0x34, u64 (*)(VObject *, s32, s32, s32, s32))(vram, slot, clut, hdr[0], hdr[1]);
-        }
+    if (VCALL(tc, 0x8, s32 (*)(VObject *, s32, s32))(tc, tex, group) == -1) {
+        return NULL;
     }
-    n = clut != -1 ? 5 : 4;
-    p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, n + 9, layer);
-    if (p == NULL) {
+    return VCALL(tc, 0xC, TexHeader *(*)(VObject *, s32, s32))(tc, tex, group);
+}
+
+/* a sprite colour: an alpha over 0x80 is opaque (drawn at 0x80, unblended), else blended */
+static inline u32 sprite_prim(u32 *rgba) {
+    if (*rgba >= 0x81000000) {
+        *rgba = (*rgba & 0xFFFFFF) | 0x80000000;
         return 0;
     }
-    p[0] = (u32)((n + 8) | 0x10000000);
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = (n + 8) | 0x50000000;   /* DIRECT */
-    p[2] = (u64)(s64)n | 0x8000 | (0x10000000ULL << 32);
-    p[3] = 0xE;
-    p[4] = 0x310000A0 | (1ULL << 32);          /* ZBUF_1: no Z writes */
-    p[5] = GS_ZBUF_1;
-    p[6] = tex0;
-    p[7] = GS_TEX0_1;
-    p += 8;
-    if (clut != -1) {
-        p[0] = tex2;
-        p[1] = 0x16;                           /* TEX2_1 */
-        p += 2;
+    return 0x40;
+}
+
+/* +0x7C a sprite: the w x h rectangle at x, y (screen pixels), coloured `rgba` (alpha over 0x80:
+ * opaque), textured with the tw x th texels at u, v of texture `tex` of group `group` (-1:
+ * untextured; `clut` -1: its own palette, else palette `clut` of its CLUT), in renderer layer
+ * `layer`. 0 when the texture isn't loaded. */
+s32 func_001B9880(VObject *r, s32 x, s32 y, s32 w, s32 h, s32 u, s32 v, s32 tw, s32 th, u32 rgba,
+                  s32 tex, s32 group, s32 layer, s32 clut) {
+    TexHeader *t = NULL;
+    u32 prim = sprite_prim(&rgba);
+
+    if (tex != -1 && (t = tex2d_entry(tex, group)) == NULL) {
+        return 0;
     }
-    p[0] = 0x44;                               /* ALPHA_1: (Cs - Cd) * As + Cd */
-    p[1] = GS_ALPHA_1;
-    /* PRIM: sprite, UV (textured), blended; an alpha over 0x80 means opaque (alpha 0x80) */
-    opaque = rgba >= 0x81000000;
-    p[2] = ((u64)(s64)textured << 4) | (opaque ? 0x106 : 0x146);
-    p[7] = opaque ? (rgba & 0xFFFFFF) | 0x80000000 : rgba;
-    p[3] = GS_PRIM;
-    p[4] = 0x8001 | (0x84ULL << 56);          /* reglist: CLAMP RGBAQ UV XYZ3 UV XYZ2 CLAMP NOP */
-    p[5] = 0xFFFFFFFFF853D318ULL;
-    /* (32-bit arithmetic, sign-extended, as the original) */
-    p[6] = 0xA | ((u64)SX32(u) << 4) | ((u64)SX32((u32)u + tw - 1) << 14) | ((u64)SX32(v) << 24)
-           | ((u64)SX32((u32)v + th - 1) << 34);
-    p[8] = (u64)SX32((u32)u * 16 + 8) | ((u64)SX32((u32)v * 16 + 8) << 16);
-    p[9] = gs_xyz2(x + 0x700, y + 0x720);
-    p[10] = (u64)SX32(((u32)u + tw) * 16 + 8) | ((u64)SX32(((u32)v + th) * 16 + 8) << 16);
-    p[11] = gs_xyz2(x + 0x700 + w, y + 0x720 + h);
-    p[12] = 5;                                 /* CLAMP_1: clamp */
-    p[13] = 0;
-    p[14] = 0x8001 | (0x10000000ULL << 32);
-    p[15] = 0xE;
-    p[16] = 0x310000A0;                        /* ZBUF_1: Z writes on */
-    p[17] = GS_ZBUF_1;
+    gl2d_sprite(layer, x, y, x + w, y + h, (u8 *)t, u, v, u + tw, v + th, rgba, clut == -1 ? 0 : clut, prim);
     return 1;
 }
+
+/* +0x84 a quad with free corners (x0, y0) .. (x3, y3) (strip order: the texels' top left, top
+ * right, bottom left, bottom right), otherwise as +0x7C */
+s32 func_001B92F0(VObject *r, s32 x0, s32 y0, s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, s32 u, s32 v,
+                  s32 tw, s32 th, u32 rgba, s32 tex, s32 group, s32 layer, s32 clut) {
+    TexHeader *t = NULL;
+    u32 prim = sprite_prim(&rgba);
+    f32 xy[8] = {x0, y0, x1, y1, x2, y2, x3, y3}, st[8];
+    u8 c[16];
+
+    if (tex != -1 && (t = tex2d_entry(tex, group)) == NULL) {
+        return 0;
+    }
+    if (t != NULL) {
+        st[0] = (f32)u / t->w;        st[1] = (f32)v / t->h;
+        st[2] = (f32)(u + tw) / t->w; st[3] = (f32)v / t->h;
+        st[4] = (f32)u / t->w;        st[5] = (f32)(v + th) / t->h;
+        st[6] = (f32)(u + tw) / t->w; st[7] = (f32)(v + th) / t->h;
+    }
+    gl2d_colors(c, rgba, 4);
+    glr_prim2d(layer, GLR_2D_STRIP, 4, xy, st, c, t, clut == -1 ? 0 : clut, prim);
+    return 1;
+}
+#endif
 
 #include "progress.h"
 extern Progress *gProgress;
@@ -1161,50 +1106,13 @@ void func_001BA070(u8 *r, u8 mode) {
     AT(r, 0x304C06, u8) = mode;
 }
 
-/* +0x90 the whole screen in colour `rgba` (blended by its alpha) in layer 0x22, drawn as eight
- * 64-pixel columns (each scissored), Z writes off around it; 1 if drawn */
+#ifdef HG_NATIVE
+/* +0x90 the whole screen in colour `rgba` (blended by its alpha), layer 0x31; 1 if drawn */
 s32 func_001B9000(VObject *r, u32 rgba) {
-    u64 *p = VCALL(D_0044E4F0, 0x10, u64 *(*)(VObject *, s32, s32))(D_0044E4F0, 0x22, 0x31);
-    u64 ys = (u64)0x01BF0000 << 32;   /* SCISSOR_1 rows 0..447 */
-    s32 i;
-
-    if (p == NULL) {
-        return 0;
-    }
-    p[0] = 0x10000021;
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x50000021;   /* DIRECT */
-    p[2] = 0x8020 | (0x10000000ULL << 32);
-    p[3] = 0xE;
-    p[4] = 0x310000A0 | (1ULL << 32);   /* ZBUF_1: no Z writes */
-    p[5] = 0x4E;
-    p[6] = 0x30000;                     /* TEST_1: Z always */
-    p[7] = 0x47;
-    p[8] = 0x44;                        /* ALPHA_1: (Cs - Cd) * As + Cd */
-    p[9] = 0x42;
-    AT(p, 0x50, u32) = rgba;            /* RGBAQ */
-    AT(p, 0x54, u32) = 0x3F800000;
-    p[11] = 1;
-    p[12] = 0x46;                       /* PRIM: sprite, blended */
-    p[13] = 0;
-    for (i = 0; i < 8; i++) {
-        u64 *q = p + 14 + i * 6;
-
-        q[0] = ((u64)(i * 64) | (u64)(i * 64 + 63) << 16) | ys;   /* SCISSOR_1: a 64-pixel column */
-        q[1] = 0x40;
-        q[2] = 0x72007000;              /* XYZ3 */
-        q[3] = 0xD;
-        q[4] = 0x8E009000;              /* XYZ2 */
-        q[5] = 5;
-    }
-    p[62] = 0x310000A0;                 /* ZBUF_1: Z writes on */
-    p[63] = 0x4E;
-    p[64] = 0x5000F;                    /* TEST_1 */
-    p[65] = 0x47;
-    p[66] = 0x01FF0000 | ys;            /* SCISSOR_1: the whole screen */
-    p[67] = 0x40;
+    gl2d_sprite(0x31, 0, 0, 512, 448, NULL, 0, 0, 0, 0, rgba, 0, 0x40);
     return 1;
 }
+#endif
 
 /* the 17-word argument block handed on to +0x84 */
 void func_001B9260(VObject *r, s32 *a) {

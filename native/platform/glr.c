@@ -188,6 +188,51 @@ void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, c
     f->nd++;
 }
 
+void glr_prim2d(int layer, int kind, int n, const float *xy, const float *st, const uint8_t *rgba, const void *tex,
+                int csa, uint32_t prim) {
+    /* identity: the vertex shader takes PS2 clip space (GS units around 2048 / 2047), z 1 the
+     * nearest; GL samples pixels at their centres (+0.5), the GS at whole coordinates */
+    static const float kIdentity[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+    static const float kNoSt[8] = {0};
+    float xyzw[64][4], tst[64][2];
+    uint8_t trgba[64][4];
+    uint64_t tex0 = 1ull << 34 | (uint64_t)(csa & 0x1F) << 56;
+    int k, keep = sLayer;
+
+    prim = (tex != NULL ? 0x10 : 0) | (prim & ~0x10u) | GLR_PRIM_NOZW | GLR_PRIM_NOZT;
+    if (n < 3 || n > 64) {
+        return;
+    }
+    for (k = 0; k < n; k++) {
+        xyzw[k][0] = (xy[k * 2] + 0.5f - 256.0f) / 2047.0f;
+        xyzw[k][1] = (xy[k * 2 + 1] + 0.5f - 224.0f) / 2047.0f;
+        xyzw[k][2] = 1.0f;
+        xyzw[k][3] = 0.0f;   /* (flags: drawn) */
+        tst[k][0] = tex != NULL ? st[k * 2] : 0.0f;
+        tst[k][1] = tex != NULL ? st[k * 2 + 1] : 0.0f;
+        memcpy(trgba[k], rgba + k * 4, 4);
+    }
+    sLayer = layer;
+    if (kind == GLR_2D_FAN) {   /* each triangle (0, k - 1, k) as its own strip */
+        for (k = 2; k < n; k++) {
+            float fx[3][4];
+            float fs[3][2];
+            uint8_t fc[3][4];
+            int j, idx[3] = {0, k - 1, k};
+
+            for (j = 0; j < 3; j++) {
+                memcpy(fx[j], xyzw[idx[j]], sizeof(fx[j]));
+                memcpy(fs[j], tst[idx[j]], sizeof(fs[j]));
+                memcpy(fc[j], trgba[idx[j]], sizeof(fc[j]));
+            }
+            glr_strip(kIdentity, 3, &fx[0][0], &fs[0][0], &fc[0][0], tex, tex0, prim);
+        }
+    } else {
+        glr_strip(kIdentity, n, &xyzw[0][0], tex != NULL ? &tst[0][0] : kNoSt, &trgba[0][0], tex, tex0, prim);
+    }
+    sLayer = keep;
+}
+
 /* a draw path that still builds PS2 packets only: reported once, drawn as nothing */
 void glr_todo(const char *what) {
     static const char *seen[64];
@@ -513,9 +558,10 @@ static const char *kMeshVs =
     "    vec4 p = uMvp * vec4(aPos.xyz, 1.0);\n"
     "    vDepth = p.w;\n"
     /* PS2 clip space spans the GS's whole 4096 x 4096 drawing space (-1..1 = 2048 -+ 2047),
-     * of which the 640 x 448 around the centre is the screen; y grows downwards, larger z is
-     * nearer */
-    "    gl_Position = vec4(p.x * (2047.0 / 320.0), -p.y * (2047.0 / 224.0), -p.z, p.w);\n"
+     * of which the 512 x 448 around the centre is the screen (the game draws 512 wide and the
+     * display stretches it to 640; the camera's aspect allows for that); y grows downwards,
+     * larger z is nearer */
+    "    gl_Position = vec4(p.x * (2047.0 / 256.0), -p.y * (2047.0 / 224.0), -p.z, p.w);\n"
     "    vCol = aCol * (255.0 / 128.0);\n"
     "    vSt = aSt;\n"
     "}\n";
@@ -2130,8 +2176,10 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
                 p_glEnable(GL_BLEND);
                 p_glDisablei(GL_BLEND, 1);
                 /* the frame keeps the source alpha, as the GS writes it */
-                if (d->prim & GLR_PRIM_FIXB) {   /* Cs * FIX / 128 + Cd */
+                if (d->prim & GLR_PRIM_FIXB) {   /* Cs * FIX / 128 + Cd (SUB: Cd - Cs * FIX / 128) */
                     float fix = (float)(d->prim >> 24) / 128.0f;
+
+                    p_glBlendEquation(d->prim & GLR_PRIM_SUB ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_ADD);
 
                     p_glBlendColor(fix, fix, fix, fix);
                     p_glBlendFuncSeparate(GL_CONSTANT_COLOR, GL_ONE, GL_ONE, GL_ZERO);
@@ -2156,6 +2204,11 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
                 }
                 p_glColorMaski(0, !mask, !mask, !mask, GL_TRUE);
                 p_glProgramUniform1i(sMeshProg, sFbaLoc, mask || d->layer == tintLayer);
+            }
+            if (d->prim & GLR_PRIM_NOZT) {
+                p_glDisable(GL_DEPTH_TEST);
+            } else {
+                p_glEnable(GL_DEPTH_TEST);
             }
             p_glDepthMask(d->prim & GLR_PRIM_NOZW ? GL_FALSE : GL_TRUE);
             p_glColorMaski(1, d->prim & GLR_PRIM_NOZW ? GL_FALSE : GL_TRUE, GL_FALSE, GL_FALSE, GL_FALSE);
@@ -2218,6 +2271,9 @@ void glr_present(const uint32_t *gsPixels, int pitch, int w, int h, int outW, in
                 continue;
             }
             p_glDrawArrays(GL_TRIANGLES, d->first, d->n);
+            if (d->prim & GLR_PRIM_SUB) {
+                p_glBlendEquation(GL_FUNC_ADD);
+            }
             if (d->prim & GLR_PRIM_GLOW) {
                 /* again into the glow buffer, against the scene's depth at its size (the game
                  * copies its Z buffer down to 128 x 112 for these) */

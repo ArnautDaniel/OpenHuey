@@ -10,6 +10,7 @@
 #include "task.h"
 #include "input.h"
 #include "sound.h"
+#include "gl2d.h"
 
 
 extern u8 *D_01991EC0[];        /* message tables, by language */
@@ -231,119 +232,67 @@ void Msg_PrintfParam(void *self, s32 slot, const char *fmt, ...) {
     va_end(ap);
 }
 
+#ifdef HG_NATIVE
 /* The box: a dark rectangle (centre x, y; w x h) whose edges and rounded corners fade out over
- * 32 pixels: a sprite, four gradient strips and four triangle fans in one packet. */
+ * 32 pixels: a rectangle, four gradient strips and four quarter-circle fans, blended. */
 void Task_DrawBox(Task *t, s32 x, s32 y, s32 w, s32 h, s32 alpha, s32 layer) {
     static const f32 angles[5] = {0.0f, 0x1.921fb6p-2f, 0x1.921fb6p-1f, 0x1.2d97c8p+0f, 0x1.921fb6p+0f};
-    u64 *p = RENDERER_ALLOC(0x47, layer);
-    u64 rgba, *f;
-    s32 top, bottom, left, right, k, i;
+    u32 rgba = (u32)alpha << 24;
+    s32 top = y - h / 2, bottom = y + h / 2, left = x - w / 2, right = x + w / 2, k, i;
+    u8 c[6 * 4];
 
-    if (p == NULL) {
-        return;
+    gl2d_sprite(layer, left, top, right, bottom, NULL, 0, 0, 0, 0, rgba, 0, 0x40);
+    {   /* the edges: opaque inside, transparent 32 pixels out (top, right, left, bottom) */
+        const s32 e[4][8] = {
+            {left, top - 32, left, top, right, top - 32, right, top},
+            {right + 32, top, right, top, right + 32, bottom, right, bottom},
+            {left - 32, top, left, top, left - 32, bottom, left, bottom},
+            {left, bottom + 32, left, bottom, right, bottom + 32, right, bottom},
+        };
+
+        gl2d_colors(c, 0, 4);
+        gl2d_colors(c + 4, rgba, 1);
+        gl2d_colors(c + 12, rgba, 1);
+        for (k = 0; k < 4; k++) {
+            f32 xy[8];
+
+            for (i = 0; i < 8; i++) {
+                xy[i] = e[k][i];
+            }
+            glr_prim2d(layer, GLR_2D_STRIP, 4, xy, NULL, c, NULL, 0, 0x40);
+        }
     }
-    rgba = (u64)((s64)alpha << 24);
-    top = y + 0x720 - h / 2;
-    bottom = y + 0x720 + h / 2;
-    left = x + 0x700 - w / 2;
-    right = x + 0x700 + w / 2;
-
-    p[0] = DMA_TAG(DMA_CNT, 0x46, 0);
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x50000046;   /* VIF DIRECT */
-    p[2] = 2 | (1ULL << 60);        /* GIF tag: 2 A+D */
-    p[3] = 0xE;
-    p[4] = 0x44;                    /* ALPHA_1: (Cs - Cd) * As + Cd */
-    p[5] = GS_ALPHA_1;
-    p[6] = 0x46;                    /* PRIM: sprite, blended */
-    p[7] = GS_PRIM;
-    p[8] = 1 | (0x44ULL << 56);     /* GIF tag: reglist RGBAQ XYZ2 XYZ2 NOP */
-    p[9] = 0xF551;
-    p[10] = rgba;
-    p[11] = XYZ(left, top);
-    p[12] = XYZ(right, bottom);
-    p[13] = 0;
-
-    /* the edges: blended strips (PRIM 0x4C), opaque inside, transparent 32 pixels out */
-    for (k = 0; k < 4; k++) {
-        f = p + 14 + k * 14;
-        f[0] = 1 | (1ULL << 60);
-        f[1] = 0xE;
-        f[2] = 0x4C;
-        f[3] = GS_PRIM;
-        f[4] = 1 | (0x84ULL << 56);   /* reglist (RGBAQ XYZ2) x 4 */
-        f[5] = 0x51515151;
-    }
-    f = p + 14;   /* top */
-    f[6] = 0;
-    f[7] = XYZ(left, top - 32);
-    f[8] = rgba;
-    f[9] = XYZ(left, top);
-    f[10] = 0;
-    f[11] = XYZ(right, top - 32);
-    f[12] = rgba;
-    f[13] = XYZ(right, top);
-    f = p + 28;   /* right */
-    f[6] = rgba;
-    f[7] = XYZ(right, top);
-    f[8] = 0;
-    f[9] = XYZ(right + 32, top);
-    f[10] = rgba;
-    f[11] = XYZ(right, bottom);
-    f[12] = 0;
-    f[13] = XYZ(right + 32, bottom);
-    f = p + 42;   /* left */
-    f[6] = 0;
-    f[7] = XYZ(left - 32, top);
-    f[8] = rgba;
-    f[9] = XYZ(left, top);
-    f[10] = 0;
-    f[11] = XYZ(left - 32, bottom);
-    f[12] = rgba;
-    f[13] = XYZ(left, bottom);
-    f = p + 56;   /* bottom */
-    f[6] = rgba;
-    f[7] = XYZ(left, bottom);
-    f[8] = 0;
-    f[9] = XYZ(left, bottom + 32);
-    f[10] = rgba;
-    f[11] = XYZ(right, bottom);
-    f[12] = 0;
-    f[13] = XYZ(right, bottom + 32);
-
-    /* the corners: fans (PRIM 0x4D) from the inner corner to a quarter circle, top left, top
-     * right, bottom left, bottom right */
+    /* the corners: fans from the inner corner out to a quarter circle (top left, top right,
+     * bottom left, bottom right) */
+    gl2d_colors(c, rgba, 1);
+    gl2d_colors(c + 4, 0, 5);
     for (k = 0; k < 4; k++) {
         s32 cx = (k & 1) ? right : left;
         s32 cy = (k & 2) ? bottom : top;
+        f32 xy[12];
 
-        f = p + 70 + k * 18;
-        f[0] = 1 | (1ULL << 60);
-        f[1] = 0xE;
-        f[2] = 0x4D;
-        f[3] = GS_PRIM;
-        f[4] = (k == 3 ? 0x8001 : 1) | (0xC4ULL << 56);   /* reglist (RGBAQ XYZ2) x 6; EOP last */
-        f[5] = 0x515151515151ULL;
-        f[6] = rgba;
-        f[7] = XYZ(cx, cy);
+        xy[0] = cx;
+        xy[1] = cy;
         for (i = 0; i < 5; i++) {
-            s32 dx, dy;
+            s32 dx = (s32)(32.0f * func_0031C058(angles[i]));
+            s32 dy = (s32)(32.0f * func_0031C248(angles[i]));
 
-            f[8 + i * 2] = 0;
-            dx = (s32)(32.0f * func_0031C058(angles[i]));
-            dy = (s32)(32.0f * func_0031C248(angles[i]));
-            f[9 + i * 2] = XYZ((k & 1) ? cx + dx : cx - dx, (k & 2) ? cy + dy : cy - dy);
+            xy[2 + i * 2] = (k & 1) ? cx + dx : cx - dx;
+            xy[3 + i * 2] = (k & 2) ? cy + dy : cy - dy;
         }
+        glr_prim2d(layer, GLR_2D_FAN, 6, xy, NULL, c, NULL, 0, 0x40);
     }
 }
+#endif
 
+#ifdef HG_NATIVE
 /* Draw glyph `g` as a w x h sprite at x, y. color: low 6 bits the CLUT, 0x40 / 0x80 blend
  * modes. Big-font glyphs (0x1A..0x1C) come from the language's font texture, uploaded when its
  * VRAM slot was reassigned. */
 void Task_DrawGlyph(Task *t, s32 x, s32 y, s32 w, s32 h, s32 color, u8 *g) {
     u8 *font, *tex;
     s32 slot, u, v;
-    u64 *p;
+    u32 prim;
 
     if (t->fontSlot == -1) {
         return;
@@ -365,12 +314,6 @@ void Task_DrawGlyph(Task *t, s32 x, s32 y, s32 w, s32 h, s32 color, u8 *g) {
             return;
         }
         tex = TEXCACHE_TEX(0, group);
-        if (slot & 0x80000000) {
-            slot &= 0x7FFFFFFF;
-            if (!(u8)RENDERER_UPLOAD(slot, tex, t->layer)) {
-                return;
-            }
-        }
         idx = g[1];
         if (g[0] == 0x1B) {
             idx += 0x100;
@@ -391,80 +334,34 @@ void Task_DrawGlyph(Task *t, s32 x, s32 y, s32 w, s32 h, s32 color, u8 *g) {
         v = idx & 0xFFF0;
     }
 
-    p = RENDERER_ALLOC(8, t->layer);
-    if (p == NULL) {
-        return;
-    }
-    p[0] = DMA_TAG(DMA_CNT, 7, 0);
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x50000007;
-    p[2] = 1 | (1ULL << 60);
-    p[3] = 0xE;
+    /* blending: normal, or by the task's alpha added (0x68) / subtracted (0x62) */
     if (color & 0x80) {
         s32 c = color & 0x7F;
 
-        p[4] = ((u64)t->alpha << 32) | (c >= 4 && c < 7 ? 0x44 : 0x62);
+        prim = gl2d_blend(((u64)t->alpha << 32) | (c >= 4 && c < 7 ? 0x44 : 0x62));
     } else if (color & 0x40) {
-        p[4] = ((u64)t->alpha << 32) | 0x44;
+        prim = 0x40;
     } else {
-        p[4] = ((u64)t->alpha << 32) | 0x68;
+        prim = gl2d_blend(((u64)t->alpha << 32) | 0x68);
     }
-    p[5] = GS_ALPHA_1;
-    p[6] = 0x8001 | (0x74ULL << 56);   /* reglist: TEX0 CLAMP RGBAQ UV XYZ2 UV XYZ2 */
-    p[7] = 0x05353186;
-    p[8] = VCALL(D_0044E9A0, 0x30, u64 (*)(void *, s32, s32, s32, s32, s32, s32))(
-        D_0044E9A0, slot, color & 0x3F, tex[0], AT(tex, 4, u16), AT(tex, 6, u16), font[1]);
-    p[9] = 0xA | ((u64)(s64)u << 4) | ((u64)(s64)(u + 15) << 14) | ((u64)(s64)v << 24)
-           | ((u64)(s64)(v + 15) << 34);   /* CLAMP: region u..u+15, v..v+15 */
-    p[10] = 0x80606060;
-    p[11] = (u64)(u32)(u << 4) | ((u64)(u32)(v << 4) << 16);
-    p[12] = (u64)(u32)(((x + 0x700) << 4) + 8) | ((u64)(u32)(((y + 0x720) << 4) + 8) << 16)
-            | 0xFFFFFFFF00000000ULL;
-    p[13] = (u64)(u32)((u + 16) << 4) | ((u64)(u32)((v + 16) << 4) << 16);
-    p[14] = (u64)(u32)(((x + 0x700 + w) << 4) + 8) | ((u64)(u32)(((y + 0x720 + h) << 4) + 8) << 16)
-            | 0xFFFFFFFF00000000ULL;
+    /* (the GS's +8: a half pixel in) */
+    gl2d_sprite(t->layer, x + 0.5f, y + 0.5f, x + w + 0.5f, y + h + 0.5f, tex, u, v, u + 16, v + 16, 0x80606060,
+                color & 0x3F, prim);
 }
+#endif
 
-/* Start drawing: make sure the small font is in VRAM (else nothing is drawn: fontSlot -1),
- * draw the frame, then the text state (blending, font TEX0, bilinear, sprites). */
+#ifdef HG_NATIVE
+/* Start drawing: the small font must be loaded (else nothing is drawn: fontSlot -1); then the
+ * box size */
 void Task_BeginDraw(Task *t) {
-    u8 *font;
-    u64 *p;
-
     t->fontSlot = TEXCACHE_SLOT(0, 0x14);
     if (t->fontSlot == -1) {
         return;
     }
-    font = TEXCACHE_TEX(0, 0x14);
-    if (t->fontSlot & 0x80000000) {
-        t->fontSlot &= 0x7FFFFFFF;
-        if (!(u8)RENDERER_UPLOAD(t->fontSlot, font, t->layer)) {
-            t->fontSlot = -1;
-            return;
-        }
-    }
+    t->fontSlot &= 0x7FFFFFFF;
     Task_BoxSize(t);
-    p = RENDERER_ALLOC(7, t->layer);
-    if (p == NULL) {
-        return;
-    }
-    p[0] = DMA_TAG(DMA_CNT, 6, 0);
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x50000006;
-    p[2] = 0x8005 | (1ULL << 60);   /* GIF tag: 5 A+D, EOP */
-    p[3] = 0xE;
-    p[4] = ((u64)t->alpha << 32) | ((t->baseColor & 0x80) ? 0x62 : 0x68);
-    p[5] = GS_ALPHA_1;
-    p[6] = VCALL(D_0044E9A0, 0x2C, u64 (*)(void *, s32, s32, s32, s32))(
-        D_0044E9A0, t->fontSlot, AT(font, 4, u16), AT(font, 6, u16), font[1]);
-    p[7] = 0x06;                    /* TEX0_1 */
-    p[8] = 0x60;                    /* TEX1_1: bilinear */
-    p[9] = GS_TEX1_1;
-    p[10] = (0x80ULL << 32) | 0x8080;
-    p[11] = GS_TEXA;
-    p[12] = 0x156;                  /* PRIM: sprite, textured, blended, UV */
-    p[13] = GS_PRIM;
 }
+#endif
 
 /* Step over control code / nested string handling at c->p: 0 handled (moved on), 1 a glyph,
  * 2 a big-font glyph (2 bytes); the caller moves past glyphs. */

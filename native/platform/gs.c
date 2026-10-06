@@ -1106,9 +1106,12 @@ void gs_display(uint32_t *out, int maxw, int maxh, int *w, int *h) {
     int dw = (int)(BITS(disp, 32, 12) + 1) / (int)(BITS(disp, 23, 4) + 1), dh = (int)BITS(disp, 44, 11) + 1, x, y;
 
     if (getenv("HG_GSDEBUG")) {
-        static int n;
+        static uint64_t last[3];
 
-        if (n++ < 3) {
+        if (last[0] != gs.pmode || last[1] != fb || last[2] != disp) {   /* when the mode changes */
+            last[0] = gs.pmode;
+            last[1] = fb;
+            last[2] = disp;
             fprintf(stderr, "gs_display: pmode %llx dispfb %llx display %llx -> %dx%d\n",
                     (unsigned long long)gs.pmode, (unsigned long long)fb, (unsigned long long)disp, dw, dh);
         }

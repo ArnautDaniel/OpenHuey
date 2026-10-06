@@ -1953,8 +1953,6 @@ src/game/task.c Task_LineHeight --pre=a0=0x0B000000..0x0B000000
 src/game/task.c Task_BoxSize --pre=a0=0x0B000000..0x0B000000
 src/game/task.c Msg_SetParamSystem --pre=a0=0x0B000000..0x0B000000
 src/game/task.c Msg_PrintfParam --pre=a0=0x0B000000..0x0B000000
-src/game/task.c Task_DrawGlyph --pre=a0=0x0B000000..0x0B000000
-src/game/task.c Task_BeginDraw --pre=a0=0x0B000000..0x0B000000
 src/game/task.c TextCursor_Step --pre=a0=0x0B000000..0x0B000000
 src/game/task.c Task_CollectChoices --pre=a0=0x0B000000..0x0B000000
 src/game/task.c Text_LineWidth --pre=a0=0x0B000000..0x0B000000
@@ -1979,7 +1977,6 @@ src/game/task.c Task_Open --pre=a0=0x0B000000..0x0B000000
 src/game/task.c Task_Draw --pre=a0=0x0B000000..0x0B000000
 src/game/task.c Task_Update --pre=a0=0x0B000000..0x0B000000
 src/game/task.c Task_Run --pre=a0=0x0B000000..0x0B000000
-src/game/task.c Task_DrawBox --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x0B100000 --stub-ret-prob=1 --pre=a5=0..0xFF --pre=a1=-0x100..0x300 --pre=a2=-0x100..0x300 --pre=a3=-0x100..0x300 --pre=a4=-0x100..0x300
 src/game/task.c Task_LineWidth --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B000040..0x0B000040 --pre=a1+0x0=a1+0x200 --pre=a1+0x4=0..0 --pre=a1+0x200=bytes:4118421700170A1A301D05430100
 src/game/task.c Task_LineWidth --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B000040..0x0B000040 --pre=a1+0x0=a1+0x200 --pre=a1+0x4=0..0 --pre=a1+0x200=bytes:41424302
 src/game/task.c Task_Layout --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x30=a0+0x200 --pre=a0+0x34=0..0 --pre=a0+0x200=bytes:414201430102440A034518461702
@@ -1998,7 +1995,6 @@ src/game/task.c Task_OpenDefault --pre=a0=0x0B000000..0x0B000000 --ret=none
 src/game/task.c Task_StateChoice --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E560=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046BF20..0x0046BF20 --pre=@0x0047E36C=0..0x3F --pre=a0+0x48=0x0800..0x0807 --pre=a0+0x5A=bytes:0A000A00140014001400 --pre=a0+0x64=bytes:1E001E001E00
 src/game/task.c Task_StateChoice --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E560=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046BF20..0x0046BF20 --pre=@0x0047E36C=0..0x3F --pre=a0+0x48=0x0100..0x0302 --pre=a0+0x5A=bytes:0A000A000A00
 src/game/task.c TextCursor_Step --pre=a0=0x0B000000..0x0B000000 --runs=200 --pre=a1=0x0B000040..0x0B000040 --pre=a1+0x0=a1+0x200 --pre=a1+0x4=0..2 --pre=a1+0x200=0..0x20
-src/game/task.c Task_DrawGlyph --pre=a0=0x0B000000..0x0B000000 --runs=100 --pre=a6=0x0B000300..0x0B000300 --pre=a6+0x0=0x1A..0x1E --pre=@0x0047B350=0..2 --stub-ret=-1 --stub-ret=0x80000003 --stub-ret=2 --stub-ret=1 --stub-ret=0x0B100000
 src/game/bootcard.c BootCard_Check --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x11C=a0+0x400 --pre=@0x0044FF00=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046AE90..0x0046AE90 --pre=@0x0B100004=-1..4 --pre=@0x0B100008=4..6 --pre=@0x0047B260=0..9 --pre=a0+0x0C=0..1 --runs=60 --pre=a0+0x4=0..2
 src/game/bootcard.c BootCard_Check --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x11C=a0+0x400 --pre=@0x0044FF00=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046AE90..0x0046AE90 --pre=@0x0B100004=-1..4 --pre=@0x0B100008=4..6 --pre=@0x0047B260=0..9 --pre=a0+0x0C=0..1 --runs=60 --pre=a0+0x4=0..2 --pre=a0+0x400=bytes:0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 --pre=a0+0x28=0..1
 src/game/bootcard.c BootCard_Check --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x11C=a0+0x400 --pre=@0x0044FF00=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046AE90..0x0046AE90 --pre=@0x0B100004=-1..4 --pre=@0x0B100008=4..6 --pre=@0x0047B260=0..9 --pre=a0+0x0C=0..1 --runs=60 --pre=a0+0x4=100..101
@@ -2250,8 +2246,6 @@ src/game/loading.c func_0033D9F0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x70=0
 src/game/renderer.c func_001B1E50 --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x0B400000 --stub-ret=0 --runs=30
 src/game/overlay.c func_0026B180 --pre=a0=0x0B000000..0x0B000000
 src/game/renderer.c func_001B9810 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000
-src/game/renderer.c func_001B9880 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x280 --pre=a2=0..0x1C0 --pre=a3=1..0x200 --pre=a4=1..0x200 --pre=a5=0..0x100 --pre=a6=0..0x100 --pre=a7=1..0x100 --stub-ret=0x0B400000 --stub-ret=0x8B400000 --stub-ret=0 --stub-ret-prob=1 --runs=120
-src/game/renderer.c func_001B9880 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..0x280 --pre=a2=0..0x1C0 --pre=a3=1..0x200 --pre=a4=1..0x200 --pre=a5=0..0x100 --pre=a6=0..0x100 --pre=a7=1..0x100 --stub-ret=-1 --stub-ret-prob=1
 src/game/scene_game.c func_003A04A0 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xF6CD28=0..1 --pre=@0x0044F800=0..0 --stub-ret=0 --stub-ret-prob=1 --runs=40
 src/game/progress.c func_001764C0 --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044F800=0..0
 src/game/unsorted.c func_002F39B0 --pre=a0=0x0B000000..0x0B000000 
