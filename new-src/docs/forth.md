@@ -48,7 +48,11 @@ Comments: `( ... )` and `\ to the end of the line`.
 | `room-id`, `room-exists?` | `-- id`, `id -- flag` | |
 | `room-bounds` | `F: -- lx ly lz hx hy hz` | the solid part's box |
 | `room-cameras`, `room-camera` | `-- n`, `i -- F: ex ey ez fov tx ty tz` | the room's camera setups |
-| `floor-below` | `F: x y z -- y'` `-- flag` | the solid surface under a point |
+| `floor-below` | `F: x y z -- y'` `-- flag` | the solid surface under a point (the drawn mesh) |
+| `nav-tris` | `-- n` | the nav mesh's size (0: the room has none) |
+| `nav-move` | `F: x y z dx dz climb radius -- x' y' z'` | a step on the nav mesh, sliding along walls |
+| `nav-at` | `F: x y z climb -- [y']` `-- flag` | on the nav mesh? (and its height) |
+| `nav-nearest` | `F: x y z -- x' y' z'` | the middle of the nearest nav triangle |
 | `room-group!` | `group flag --` | show or hide a group of the room mesh |
 | `.room` | | a summary |
 | `camera` | `-- addr` | with `cam.x cam.y cam.z cam.yaw cam.pitch cam.fov cam.near cam.far cam.up` (sf@ / sf!) |

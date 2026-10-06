@@ -40,7 +40,7 @@ static void load_textures(Room *r) {
 int room_load(Room *r, int id) {
     char path[64];
     size_t size;
-    const uint8_t *mesh;
+    const uint8_t *sec;
 
     room_free(r);
     pac_room_path(id, path, sizeof(path));
@@ -50,14 +50,16 @@ int room_load(Room *r, int id) {
         return 0;
     }
     r->id = id;
-    mesh = pac_section(&r->pac, PAC_MESH, &size);
-    if (mesh != NULL && !roommesh_build(&r->mesh, mesh, size)) {
+    sec = pac_section(&r->pac, PAC_MESH, &size);
+    if (sec != NULL && !roommesh_build(&r->mesh, sec, size)) {
         fprintf(stderr, "room %03X: the mesh section is malformed\n", id);
     }
     if (r->mesh.nv > 0) {
         render_mesh_upload(&r->gpu, r->mesh.v, r->mesh.nv);
     }
     load_textures(r);
+    sec = pac_section(&r->pac, PAC_NAV, &size);
+    navmesh_build(&r->nav, sec, size);
     return 1;
 }
 
@@ -69,6 +71,7 @@ void room_free(Room *r) {
     }
     render_mesh_free(&r->gpu);
     roommesh_free(&r->mesh);
+    navmesh_free(&r->nav);
     free(r->pac.data);
     memset(r, 0, sizeof(*r));
     r->id = -1;

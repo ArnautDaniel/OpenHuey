@@ -2,6 +2,7 @@
 #ifndef ROOM_H
 #define ROOM_H
 
+#include "../data/navmesh.h"
 #include "../data/pac.h"
 #include "../data/roommesh.h"
 #include "../render/render.h"
@@ -12,6 +13,7 @@ typedef struct Room {
     int id;                 /* -1: none loaded */
     Pac pac;
     RoomMesh mesh;
+    NavMesh nav;            /* where characters can stand (empty in some rooms) */
     GpuMesh gpu;
     GpuTexture textures[ROOM_MAX_TEXTURES];
     int ntextures;

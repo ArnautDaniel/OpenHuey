@@ -69,6 +69,30 @@ PRIM(p_floor_below) {   /* ( F: x y z -- y' ) ( -- flag ) the solid surface unde
         PUSH(0);
     }
 }
+PRIM(p_nav_tris) { PUSH(gEngine.room.nav.ntris); }   /* ( -- n ) */
+PRIM(p_nav_move) {   /* ( F: x y z dx dz climb radius -- x' y' z' ) a step on the nav mesh */
+    float radius = (float)FPOP(), climb = (float)FPOP(), dz = (float)FPOP(), dx = (float)FPOP();
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+    Vec3 p = navmesh_move(&gEngine.room.nav, vec3(x, y, z), dx, dz, climb, radius);
+
+    FPUSH(p.x); FPUSH(p.y); FPUSH(p.z);
+}
+PRIM(p_nav_nearest) {   /* ( F: x y z -- x' y' z' ) the middle of the nearest nav triangle */
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+    Vec3 p = navmesh_nearest(&gEngine.room.nav, vec3(x, y, z));
+
+    FPUSH(p.x); FPUSH(p.y); FPUSH(p.z);
+}
+PRIM(p_nav_at) {   /* ( F: x y z climb -- [y'] ) ( -- flag ) on the nav mesh? and its height */
+    float climb = (float)FPOP(), z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP(), h;
+
+    if (navmesh_find(&gEngine.room.nav, vec3(x, y, z), climb, &h) >= 0) {
+        FPUSH(h);
+        PUSH(-1);
+    } else {
+        PUSH(0);
+    }
+}
 PRIM(p_room_info) {   /* ( -- ) a summary of the loaded room */
     const Room *r = &gEngine.room;
     int i, parts[MESH_PARTS] = {0};
@@ -80,9 +104,10 @@ PRIM(p_room_info) {   /* ( -- ) a summary of the loaded room */
     for (i = 0; i < r->mesh.nd; i++) {
         parts[r->mesh.d[i].part]++;
     }
-    forth_printf(f, "room %03X: %zu bytes, %d triangles in %d draws (solid %d, see-through %d, glow %d), %d textures\n",
+    forth_printf(f, "room %03X: %zu bytes, %d triangles in %d draws (solid %d, see-through %d, glow %d), %d textures, "
+                    "%d nav triangles\n",
                  r->id, r->pac.size, r->mesh.nv / 3, r->mesh.nd, parts[MESH_SOLID], parts[MESH_SEE_THROUGH],
-                 parts[MESH_GLOW], r->ntextures);
+                 parts[MESH_GLOW], r->ntextures, r->nav.ntris);
 }
 
 /* the room's camera setups (PAC section 5): 32-byte entries - eye x, y, z, field of view in
@@ -307,7 +332,8 @@ void bind_engine(Forth *f) {
         Code code;
     } prims[] = {
         {"room", p_room}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
-        {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"room-group!", p_room_group}, {"floor-below", p_floor_below}, {".room", p_room_info},
+        {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
+        {"nav-tris", p_nav_tris}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},

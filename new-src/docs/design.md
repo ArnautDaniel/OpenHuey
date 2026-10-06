@@ -42,6 +42,7 @@ ticks (`wait`, `dt`).
   - `tex` - texture banks (indexed 4/8-bit with CLUTs, direct colour);
   - `roommesh` - section 3, batches of triangle strips in batch-local space, flattened into room
     space triangle lists at load;
+  - `navmesh` - section 0, where characters may stand (moves slide along its edges);
   - `model` - character .PCK files (skeleton, skinned/rigid/morph parts, motion banks) and the
     pose (motion sampling, bone matrices).
 - `game/`: `room` (a loaded room: file, GPU mesh, textures, groups, floor query), `actor`
@@ -67,6 +68,7 @@ ticks (`wait`, `dt`).
   specially; the bloom mask, fog and the game's lights are not done.
 - Characters: no root motion, no blending between motions, the faces and hands in their rest
   shape; lighting is one fixed light.
-- No collision except the floor; no doors, events, items, sound.
+- Collision is the nav mesh only (no other characters, no door states); no doors, events,
+  items, sound.
 - The camera "director" is a stand-in (the nearest room setup); the game's real camera zones
   are in the room data and the decomp (`CamDirector_*`).

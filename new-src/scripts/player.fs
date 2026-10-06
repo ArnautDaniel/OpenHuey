@@ -13,6 +13,7 @@ fvariable walk-speed   0.25e walk-speed f!     \ units a tick (60 ticks a second
 fvariable run-speed    0.7e run-speed f!
 fvariable turn-speed   0.18e turn-speed f!     \ radians a tick
 8e fconstant step-up                           \ the highest step she climbs
+3e fconstant body                              \ how far she keeps from walls
 
 : her ( -- addr ) fiona @ actor ;
 : her-pos ( F: -- x y z )  her act.x sf@  her act.y sf@  her act.z sf@ ;
@@ -35,7 +36,7 @@ fvariable px  fvariable py  fvariable pz
     fiona @ 0< if  s" O_FIN/FIN_000" actor-load fiona !  then
     room-cameras if
         0 room-camera  tz f! ty f! tx f!  fdrop fdrop fdrop fdrop
-        tx f@ ty f@ tz f@ place-fiona
+        tx f@ ty f@ tz f@  nav-tris if  nav-nearest  then  place-fiona
     else
         cam-pos place-fiona
     then
@@ -59,13 +60,21 @@ fvariable mx  fvariable mz      \ the wanted direction this tick (on the ground)
     turn-speed f@ fnegate turn-speed f@ fclamp
     her act.yaw sf@ f+ fwrap her act.yaw sf! ;
 
-\ a step along the direction she faces, if there is ground there (and not a drop)
-: step ( F: distance -- )
+\ a step along the direction she faces: on the nav mesh (sliding along walls), or - in a room
+\ without one - anywhere there is floor that isn't a drop
+: step-floor ( F: distance -- )
     fdup her act.yaw sf@ fsin f* her act.x sf@ f+ px f!
     her act.yaw sf@ fcos f* her act.z sf@ f+ pz f!
     px f@ her act.y sf@ pz f@ ground 0= if  exit  then     ( F: y' )
     fdup her act.y sf@ 30e f- f< if  fdrop exit  then
     her act.y sf!  px f@ her act.x sf!  pz f@ her act.z sf! ;
+
+: step-nav ( F: distance -- )
+    fdup her act.yaw sf@ fsin f* px f!  her act.yaw sf@ fcos f* pz f!
+    her-pos px f@ pz f@ step-up body nav-move
+    her act.z sf!  her act.y sf!  her act.x sf! ;
+
+: step ( F: distance -- )  nav-tris if  step-nav  else  step-floor  then ;
 
 : walk
     wanted
