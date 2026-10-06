@@ -90,14 +90,14 @@ s32 Room1D_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019909B0[i & 0xFF], a, b);
 }
 
-/* room 0x1D (D_003FD990): door 0's +0x74 (0, or -0.08 by byte 3) */
+/* room 0x1D (Room1D_Cmd01_ptmf): door 0's +0x74 (0, or -0.08 by byte 3) */
 /* 0x002ADEE0 */
 s32 Room1D_Cmd01(void *self, void *a1, u8 *cmd) {
     VCALL(gDoors, 0x74, void (*)(VObject *, s32, f32))(gDoors, 0, cmd[3] == 0 ? 0.0f : -0x1.47ae140000000p-4f /* 0.08 */);
     return 1;
 }
 
-/* room 0x1D (D_003FD980): script variable 0 = 2 .. 5 at random */
+/* room 0x1D (Room1D_Cmd00_ptmf): script variable 0 = 2 .. 5 at random */
 /* 0x002ADF40 */
 s32 Room1D_Cmd00(void) {
     s32 r = VCALL(gRandom, 0x10, s32 (*)(VObject *))(gRandom) & 3;

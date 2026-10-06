@@ -65,7 +65,7 @@ s32 Room04_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019907A0[i & 0xFF], a, b);
 }
 
-/* room 0x04 (D_003F17A0): an effect on one object (byte 3 0: at 90 degrees) or the other (0) */
+/* room 0x04 (Room04_Cmd03_ptmf): an effect on one object (byte 3 0: at 90 degrees) or the other (0) */
 /* 0x002A9B70 */
 s32 Room04_Cmd03(void *self, void *a1, u8 *cmd) {
     u8 *o;
@@ -82,7 +82,7 @@ s32 Room04_Cmd03(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x04 (D_003F1790): byte 3 0: room effect 0x1B (MirrorFragment_vtable) on its object, a box (640,
+/* room 0x04 (Room04_Cmd02_ptmf): byte 3 0: room effect 0x1B (MirrorFragment_vtable) on its object, a box (640,
  * -560, 1000, 0, 0x60); else the effect gone */
 /* 0x002A9CE0 */
 s32 Room04_Cmd02(void *self, void *a1, u8 *cmd) {
@@ -111,7 +111,7 @@ s32 Room04_Cmd02(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x04 (D_003F1780): five objects turned -75 / 75 degrees in turn */
+/* room 0x04 (Room04_Cmd01_ptmf): five objects turned -75 / 75 degrees in turn */
 /* 0x002A9E20 */
 s32 Room04_Cmd01(void) {
     obj_angle(D_003F17CC, 0x14, 0xBFA78D37);

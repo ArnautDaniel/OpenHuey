@@ -60,7 +60,7 @@ s32 Room0C_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990860[i & 0xFF], a, b);
 }
 
-/* room 0x0C (D_003F5428): three objects (pair byte 4) swing: byte 3 0 set up (rest +0x30, phase
+/* room 0x0C (Room0C_Cmd03_ptmf): three objects (pair byte 4) swing: byte 3 0 set up (rest +0x30, phase
  * +0x34 half a turn apart, swing +0x3C 0.75 / 0.5), 1 a step (phase on 60 degrees, the swing
  * down 0.1, x = rest + swing x sin(phase); 2 once still), 2 all to x 10. 2 while any swings */
 /* 0x002AB300 */
@@ -100,7 +100,7 @@ s32 Room0C_Cmd03(void *self, void *a1, u8 *cmd) {
     return moving ? 2 : 1;
 }
 
-/* room 0x0C (D_003F5418): the screen darkened as the cutscene runs past frame 0x4AE (32 a
+/* room 0x0C (Room0C_Cmd02_ptmf): the screen darkened as the cutscene runs past frame 0x4AE (32 a
  * frame, up to 0x80) */
 /* 0x002AB510 */
 s32 Room0C_Cmd02(void) {
@@ -113,7 +113,7 @@ s32 Room0C_Cmd02(void) {
     return 1;
 }
 
-/* room 0x0C (D_003F5408): script variable byte 3 down by the player's hit (byte 4: 1 from the
+/* room 0x0C (Room0C_Cmd01_ptmf): script variable byte 3 down by the player's hit (byte 4: 1 from the
  * weak blow 0x1A, else 5) or the pursuer's (+0x108), not below 0 */
 /* 0x002AB580 */
 s32 Room0C_Cmd01(void *self, void *a1, u8 *cmd) {
@@ -136,7 +136,7 @@ s32 Room0C_Cmd01(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x0C (D_003F53F8): room effect 0x1C (a depth range) widening with the cutscene from frame
+/* room 0x0C (Room0C_Cmd00_ptmf): room effect 0x1C (a depth range) widening with the cutscene from frame
  * 0x2D0: near 1 + 1.5 t (at most 46), far 64.4 + 1.7 t (at most 116.5) */
 /* 0x002AB660 */
 s32 Room0C_Cmd00(void) {

@@ -102,17 +102,17 @@ extern void *Pursuer_vtable[], *NPC_vtable[], *Character_vtable[], *Actor_vtable
 extern const char *const D_0042C358;
 extern void *Debilitas3_vtable[];
 extern void *Kind18_vtable[];
-extern const PTMF D_00429DF0;
+extern const PTMF Pursuer_StateRunThenNext_ptmf12;
 extern void *Kind26_vtable[];
-extern const PTMF D_0042CA10;
+extern const PTMF Pursuer_StateRunThenNext_ptmf18;
 extern void *Kind28_vtable[];
-extern const PTMF D_0042F4F0;
+extern const PTMF Pursuer_StateRunThenNext_ptmf19;
 extern void *Kind30_vtable[];
-extern const PTMF D_00430930;
+extern const PTMF Pursuer_StateRunThenNext_ptmf21;
 extern void *Kind31_vtable[];
-extern const PTMF D_004309C0;
+extern const PTMF Pursuer_StateRunThenNext_ptmf22;
 extern void *Kind38_vtable[];
-extern const PTMF D_00443550;
+extern const PTMF Pursuer_StateRunThenNext_ptmf25;
 void Debilitas3_FollowPathExit(void);
 void Debilitas3_Arrived(void);
 void Debilitas3_WalkToExit(void);
@@ -3102,7 +3102,7 @@ void *Kind30_MotionFiles(void) {
 void Kind30_ShowUp(Pursuer *p) { creature_inplay(p); }
 
 /* 0x0033B0B0 */
-void Kind30_EventState(Pursuer *p) { creature_act5(p, &D_00430930); }
+void Kind30_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf21); }
 
 /* 0x0033B180 */
 s32 Kind30_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
@@ -3124,7 +3124,7 @@ void *Kind31_MotionFiles(void) {
 void Kind31_ShowUp(Pursuer *p) { creature_inplay(p); }
 
 /* 0x0033B380 */
-void Kind31_EventState(Pursuer *p) { creature_act5(p, &D_004309C0); }
+void Kind31_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf22); }
 
 /* 0x0033B450 */
 s32 Kind31_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
@@ -3551,7 +3551,7 @@ void *Kind18_MotionFiles(void) {
 void Kind18_ShowUp(Pursuer *p) { creature_inplay(p); }
 
 /* 0x0031D880 */
-void Kind18_EventState(Pursuer *p) { creature_act5(p, &D_00429DF0); }
+void Kind18_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf12); }
 
 /* 0x0031D950 */
 s32 Kind18_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
@@ -3859,7 +3859,7 @@ void *func_0032F6C0(void) {
 
 void func_0032DA60(Pursuer *p) { creature_inplay(p); }
 
-void func_0032DAB0(Pursuer *p) { creature_act5(p, &D_0042CA10); }
+void func_0032DAB0(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf18); }
 
 s32 func_0032DB80(Pursuer *p) { return creature_slot_done(p); }
 
@@ -4011,7 +4011,7 @@ void *func_00352040(void) { return D_00443510; }
 
 void func_00352060(Pursuer *p) { creature_inplay(p); }
 
-void func_003520B0(Pursuer *p) { creature_act5(p, &D_00443550); }
+void func_003520B0(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf25); }
 
 s32 func_00352180(Pursuer *p) { return creature_slot_done(p); }
 
@@ -4160,7 +4160,7 @@ void *func_00339B30(void) {
 
 void func_00339B50(Pursuer *p) { creature_inplay(p); }
 
-void func_00339BA0(Pursuer *p) { creature_act5(p, &D_0042F4F0); }
+void func_00339BA0(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf19); }
 
 s32 func_00339C70(Pursuer *p) { return creature_slot_done(p); }
 

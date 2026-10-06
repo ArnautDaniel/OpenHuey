@@ -2103,6 +2103,7 @@ void Bytes4_Clear(u8 *p) {
     p[3] = 0;
 }
 
+/* (possibly dead code: nothing in the game references it) */
 s32 func_002A8AB0(void) {
     return 0;
 }

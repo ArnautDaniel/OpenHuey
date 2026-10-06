@@ -62,7 +62,7 @@ s32 Room5D_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990E20[i & 0xFF], a, b);
 }
 
-/* room 0x5D (D_004123C0): the lever at -60 / 0 / 60 degrees by byte 3 */
+/* room 0x5D (Room5D_Cmd01_ptmf): the lever at -60 / 0 / 60 degrees by byte 3 */
 /* 0x002B5FA0 */
 s32 Room5D_Cmd01(void *self, void *a1, u8 *cmd) {
     u8 *o = room_obj(D_004123E8);
@@ -83,7 +83,7 @@ s32 Room5D_Cmd01(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x5D (D_004123B0): four objects 60 to the left */
+/* room 0x5D (Room5D_Cmd00_ptmf): four objects 60 to the left */
 /* 0x002B6040 */
 s32 Room5D_Cmd00(void) {
     s32 i;

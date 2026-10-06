@@ -194,7 +194,7 @@ void Debilitas_StateLookWalk(Pursuer *p) {
     PURSUER_STEP_DONE(p) = 1;
 }
 
-extern const PTMF D_003AFEF0;
+extern const PTMF Debilitas_Behaviour_ptmf;
 
 /* vtable +0x264: the next behaviour; his own (Debilitas_Behaviour) unless +0x16B4 is set or at threat
    level 5, then the Pursuer's */
@@ -207,7 +207,7 @@ void Debilitas_ChaseDecision(Pursuer *p) {
         return;
     }
     next = PU(p, 0x1758, s32);
-    ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003AFEF0);
+    ptmf_set((PTMF *)((u8 *)p + 0x174C), &Debilitas_Behaviour_ptmf);
     PU(p, 0x1758, s32) = -1;
     if (next == -2) {
         PU(p, 0x16F3, u8) = 0;
@@ -299,7 +299,7 @@ void *Debilitas_ModelFiles(void) {
     return D_003AF1D0;
 }
 
-extern const PTMF D_003AFFB0;
+extern const PTMF Debilitas_StateLookWalk_ptmf;
 
 /* state: start the walk of Debilitas_StateLookWalk (for 60 frames) once the current animation is over */
 /* 0x00129090 */
@@ -309,7 +309,7 @@ void Debilitas_StateStartWalk(Pursuer *p) {
     }
     Pursuer_PlayAnimIf(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
     PU(p, 0x1624, s32) = 60;
-    Actor_SetState(&p->c.a, &D_003AFFB0);
+    Actor_SetState(&p->c.a, &Debilitas_StateLookWalk_ptmf);
     Debilitas_StateLookWalk(p);
 }
 
@@ -418,7 +418,7 @@ static inline u32 Debilitas_TriFlags(u32 tri) {
     return tri < AT(gNavMesh, 0x8, u32) && tris != NULL ? AT(tris + tri * 0x50, 0x3C, u32) : 0;
 }
 
-extern const PTMF D_003AFFA0;
+extern const PTMF Debilitas_StateStartWalk_ptmf;
 
 /* start of a wander: try as many random nav triangles as there are for one he may walk on, on
    the same floor level as his (flags 0x300000; not both), at least 20 units away; then walk
@@ -465,17 +465,17 @@ void Debilitas_StartWander(Pursuer *p) {
         return;
     }
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003AFFA0);
+    Actor_SetState(&p->c.a, &Debilitas_StateStartWalk_ptmf);
     if (Pursuer_WalkOn(p)) {
         return;
     }
     Pursuer_PlayAnimIf(p, VCALL(p, 0x328, s32 (*)(Pursuer *))(p), 0);
     PU(p, 0x1624, s32) = 60;
-    Actor_SetState(&p->c.a, &D_003AFFB0);
+    Actor_SetState(&p->c.a, &Debilitas_StateLookWalk_ptmf);
     Debilitas_StateLookWalk(p);
 }
 
-extern const PTMF D_003AFF00, D_003AFF10, D_003AFF20;
+extern const PTMF D_003AFF00, D_003AFF10, Debilitas_Chase_ptmf;
 
 /* his behaviour: Fiona as the target. Out of sight of her, head for her (vtable +0xB0). Otherwise
    the pending action (0x1C rumbles the pad), or by a 0..100 roll against his table +0x17F0:
@@ -547,7 +547,7 @@ void Debilitas_Behaviour(Pursuer *p) {
     PU(p, 0x1758, s32) = -1;
     PU(p, 0x1780, s32) = 0;
     PU(p, 0x1630, s32) = AT(PU(p, 0x17F0, u8 *), 0x20, s32);
-    ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003AFF20);
+    ptmf_set((PTMF *)((u8 *)p + 0x174C), &Debilitas_Chase_ptmf);
     PU(p, 0x1758, s32) = -1;
     Debilitas_Chase(p);
 }

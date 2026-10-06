@@ -30,7 +30,7 @@ extern void *SynthBase_vtable[];
 extern u8 D_0047B350;
 extern const char D_00460408[];                     /* the count's format */
 extern const char D_00460410[];                     /* "ITEM SYNTHESIZER(POT)" */
-extern const PTMF D_0042C410, D_0042C420, D_0042C430, D_0042C440, D_0042C450;
+extern const PTMF SynthPot_StateDebug_ptmf, SlotMachine_StateChoose_ptmf, SlotMachine_StateNothing_ptmf, SlotMachine_StateRoll_ptmf, ItemFound_StateShow_ptmf;
 
 typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s32, s32, s32, s32);
 
@@ -154,12 +154,12 @@ s32 Synth_CountMaterials(u8 *o) {
 void func_00322A00(void) {
 }
 
-/* the pot +0xC: started - the counts taken, its state D_0042C410 */
+/* the pot +0xC: started - the counts taken, its state SynthPot_StateDebug_ptmf */
 /* 0x00322BD0 */
 void SynthPot_Start(u8 *o) {
     SY_STEP(o) = 0;
     Synth_CountMaterials(o);
-    ptmf_set(SY_STATE(o), &D_0042C410);
+    ptmf_set(SY_STATE(o), &SynthPot_StateDebug_ptmf);
 }
 
 /* the pot +0x10: its title (a debug line), then as the base */
@@ -169,16 +169,16 @@ void SynthPot_Update(u8 *o) {
     SynthBase_Update(o);
 }
 
-/* the slot machine +0xC: started - the counts taken; the material list (D_0042C420) or, with
- * none, "nothing to use" (D_0042C430) */
+/* the slot machine +0xC: started - the counts taken; the material list (SlotMachine_StateChoose_ptmf) or, with
+ * none, "nothing to use" (SlotMachine_StateNothing_ptmf) */
 /* 0x00324650 */
 void SlotMachine_Start(u8 *o) {
     SY_STEP(o) = 0;
     o[0x150] = 0;
     if (Synth_CountMaterials(o)) {
-        ptmf_set(SY_STATE(o), &D_0042C420);
+        ptmf_set(SY_STATE(o), &SlotMachine_StateChoose_ptmf);
     } else {
-        ptmf_set(SY_STATE(o), &D_0042C430);
+        ptmf_set(SY_STATE(o), &SlotMachine_StateNothing_ptmf);
     }
 }
 
@@ -285,7 +285,7 @@ s8 SlotMachine_MaterialList(u8 *o) {
     return chosen;
 }
 
-/* state: choosing the material; once chosen, one of it used, the rolling begins (D_0042C440) */
+/* state: choosing the material; once chosen, one of it used, the rolling begins (SlotMachine_StateRoll_ptmf) */
 /* 0x00324410 */
 void SlotMachine_StateChoose(u8 *o) {
     s8 m = SlotMachine_MaterialList(o);
@@ -295,7 +295,7 @@ void SlotMachine_StateChoose(u8 *o) {
         o[0x11E] = m;
         o[0x11F] = 0;
         SY_STEP(o) = -1;
-        ptmf_set(SY_STATE(o), &D_0042C440);
+        ptmf_set(SY_STATE(o), &SlotMachine_StateRoll_ptmf);
     }
 }
 
@@ -437,7 +437,7 @@ static inline void sy_reel_step(u8 *o) {
 /* all rows rolled: the cells matched (two rows alike, or one the wild 5), the symbols counted,
  * the result's item picked at random among those still to get (the medallions 0x80..0x8F only
  * once; none left: item 0x75) with its amount by how many matched; then the found item's state
- * (D_0042C450) */
+ * (ItemFound_StateShow_ptmf) */
 static void sy_finish(u8 *o) {
     s32 c, res, total, size, n;
 
@@ -515,7 +515,7 @@ static void sy_finish(u8 *o) {
     }
     o[0x151] = 0;
     o[0x152] = 0;
-    ptmf_set(SY_STATE(o), &D_0042C450);
+    ptmf_set(SY_STATE(o), &ItemFound_StateShow_ptmf);
 }
 
 /* state: the rolling. First the top row's symbol drawn by the material's chances

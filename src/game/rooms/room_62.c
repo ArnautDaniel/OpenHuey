@@ -116,7 +116,7 @@ s32 Room62_Cmd01(void *self, void *a1, u8 *cmd) {
     return 2;
 }
 
-/* room 0x62 (D_00422300): object byte 4 swings: byte 3 0 starts it (phase +0x30 0, size +0x34
+/* room 0x62 (Room62_Cmd00_ptmf): object byte 4 swings: byte 3 0 starts it (phase +0x30 0, size +0x34
  * 0.01; object 0 with sound 7), else a step (+0x10 = size x sin(phase), phase on 60 degrees,
  * the size down 0.001); 2 until it is still */
 /* 0x00308D70 */

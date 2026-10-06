@@ -69,7 +69,7 @@ s32 Room0A_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990830[i & 0xFF], a, b);
 }
 
-/* room 0x0A (D_003F4388): an effect on its object at -2.88 */
+/* room 0x0A (Room0A_Cmd01_ptmf): an effect on its object at -2.88 */
 /* 0x002AAC30 */
 s32 Room0A_Cmd01(void) {
     obj_effect(room_obj(D_003F43A0), 0xC0384E89);

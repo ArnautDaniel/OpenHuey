@@ -134,7 +134,7 @@ s32 Room03_Cmd01(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x03 (D_003F0D90): three objects turned (-60, -60 degrees about x; -90 about z) */
+/* room 0x03 (Room03_Cmd00_ptmf): three objects turned (-60, -60 degrees about x; -90 about z) */
 /* 0x002A99A0 */
 s32 Room03_Cmd00(void) {
     obj_angle(D_003F0DBC, 0x10, 0xBF860A92);

@@ -1321,16 +1321,16 @@ void SubScreen_UseEquipped(u8 *o) {
 
 extern void func_002600C0(void);
 extern void SubScreen_DrawItemGrid(SubScreen *s, s32 a);               /* the item grid */
-extern const PTMF D_0044B200, D_0044B210, D_0044B220, D_0044B230, D_0044B240, D_0044B250;
+extern const PTMF SubScreen_StateItemQuestion_ptmf, SubScreen_StateItemActions_ptmf, SubScreen_StateMap_ptmf, SubScreen_StateMap_ptmf2, Options_StateList_ptmf, Options_StateList_ptmf2;
 
 #define SUB_LIST(s) ((s)->unkA8C50)              /* the item list shown: 0 items, 1 / 2 the others */
 #define SUB_CURSOR(s) ((s)->unkA8C51[SUB_LIST(s)])   /* its cursor: 16 a page, rows of 8 */
 
 /* The item page: the cursor moves along its row of 8 (up / down, round) and between the rows
- * and pages (left / right, round); confirm uses the item (kind 7: a question, D_0044B200; else
- * started, D_0044B210); list 1 sorts with the default button; next / previous turn to the
- * other lists and then the map page (D_0044B220 / D_0044B230) or the page before (D_0044B240 /
- * D_0044B250); cancel closes. Then its panels, the grid and the help line. */
+ * and pages (left / right, round); confirm uses the item (kind 7: a question, SubScreen_StateItemQuestion_ptmf; else
+ * started, SubScreen_StateItemActions_ptmf); list 1 sorts with the default button; next / previous turn to the
+ * other lists and then the map page (SubScreen_StateMap_ptmf / SubScreen_StateMap_ptmf2) or the page before (Options_StateList_ptmf /
+ * Options_StateList_ptmf2); cancel closes. Then its panels, the grid and the help line. */
 /* 0x00396900 */
 void SubScreen_StateItems(SubScreen *s) {
     u8 *items = s->pool;
@@ -1347,13 +1347,13 @@ void SubScreen_StateItems(SubScreen *s) {
             if (Items_Id(items, SUB_LIST(s), SUB_CURSOR(s)) != -1) {
                 if (Items_Kind(items, SUB_LIST(s), SUB_CURSOR(s)) == 7) {
                     Task_Open(&s->ask, Items_Id(items, SUB_LIST(s), SUB_CURSOR(s)) & 0xFFFF);
-                    ptmf_set(&s->state, &D_0044B200);
+                    ptmf_set(&s->state, &SubScreen_StateItemQuestion_ptmf);
                 } else {
                     s->padA8C54 = 0;
                     s->page[0x15C] = 0;
                     func_002600C0();
                     Items_StartUse(items, SUB_LIST(s), SUB_CURSOR(s), (u8 *)s + 0x94F40);
-                    ptmf_set(&s->state, &D_0044B210);
+                    ptmf_set(&s->state, &SubScreen_StateItemActions_ptmf);
                 }
                 Sound_PlaySE(SE_DECIDE);
             }
@@ -1382,8 +1382,8 @@ void SubScreen_StateItems(SubScreen *s) {
                 old = SUB_CURSOR(s);
             } else {
                 Map_BackToPlayer(s->textObj);
-                ptmf_set(&s->state, &D_0044B220);
-                ptmf_set(&s->resume, &D_0044B230);
+                ptmf_set(&s->state, &SubScreen_StateMap_ptmf);
+                ptmf_set(&s->resume, &SubScreen_StateMap_ptmf2);
             }
             Sound_PlaySE(SE_PAGE);
         } else if (D_0047E36C & MENU_PREV) {
@@ -1391,8 +1391,8 @@ void SubScreen_StateItems(SubScreen *s) {
                 SUB_LIST(s)--;
                 old = SUB_CURSOR(s);
             } else {
-                ptmf_set(&s->state, &D_0044B240);
-                ptmf_set(&s->resume, &D_0044B250);
+                ptmf_set(&s->state, &Options_StateList_ptmf);
+                ptmf_set(&s->resume, &Options_StateList_ptmf2);
             }
             Sound_PlaySE(SE_PAGE);
         } else if (D_0047E36C & MENU_CANCEL) {
@@ -1482,7 +1482,7 @@ void SubScreen_DrawItemGrid(SubScreen *s, s32 a) {
 /* ---- the in-game menu's map page ---- */
 
 extern u8 func_00303F00(void);      /* the maps the player has (bits) */
-extern const PTMF D_0044B388, D_0044B398, D_0044B3A8, D_0044B3B8;
+extern const PTMF SubScreen_StateFiles_ptmf, SubScreen_StateFiles_ptmf2, SubScreen_StateItems_ptmf11, SubScreen_StateItems_ptmf12;
 
 /* draw the screen kind `kind`'s panels */
 static inline void sub_panels(SubScreen *s) {
@@ -1496,20 +1496,20 @@ static inline void sub_panels(SubScreen *s) {
     }
 }
 
-/* The map page: next / previous turn to the page after (D_0044B388 / D_0044B398) or back to
- * the item lists' last (D_0044B3A8 / D_0044B3B8); cancel closes. Its panels, the map and,
+/* The map page: next / previous turn to the page after (SubScreen_StateFiles_ptmf / SubScreen_StateFiles_ptmf2) or back to
+ * the item lists' last (SubScreen_StateItems_ptmf11 / SubScreen_StateItems_ptmf12); cancel closes. Its panels, the map and,
  * when there are other maps to turn to, the two arrows blinking. */
 /* 0x00394670 */
 void SubScreen_StateMap(SubScreen *s) {
     if (!s->fading) {
         if (D_0047E36C & MENU_NEXT) {
-            ptmf_set(&s->state, &D_0044B388);
-            ptmf_set(&s->resume, &D_0044B398);
+            ptmf_set(&s->state, &SubScreen_StateFiles_ptmf);
+            ptmf_set(&s->resume, &SubScreen_StateFiles_ptmf2);
             Sound_PlaySE(SE_PAGE);
         } else if (D_0047E36C & MENU_PREV) {
             SUB_LIST(s) = 2;
-            ptmf_set(&s->state, &D_0044B3A8);
-            ptmf_set(&s->resume, &D_0044B3B8);
+            ptmf_set(&s->state, &SubScreen_StateItems_ptmf11);
+            ptmf_set(&s->resume, &SubScreen_StateItems_ptmf12);
             Sound_PlaySE(SE_PAGE);
         } else if (D_0047E36C & MENU_CANCEL) {
             s->close = 1;
@@ -1533,12 +1533,12 @@ void SubScreen_StateMap(SubScreen *s) {
 
 /* ---- the in-game menu's file page ---- */
 
-extern const PTMF D_0044B3C8, D_0044B3D8, D_0044B3E8, D_0044B3F8;
+extern const PTMF Options_StateList_ptmf3, Options_StateList_ptmf4, SubScreen_StateMap_ptmf3, SubScreen_StateMap_ptmf4;
 
 #define SUB_FILE_PAGE(s) ((s)->unkA8C55)
 
 /* The file page: left / right turn its pages (round), next / previous turn to the page after
- * (D_0044B3C8 / D_0044B3D8) or back to the map (D_0044B3E8 / D_0044B3F8); cancel closes. Its
+ * (Options_StateList_ptmf3 / Options_StateList_ptmf4) or back to the map (SubScreen_StateMap_ptmf3 / SubScreen_StateMap_ptmf4); cancel closes. Its
  * panels, the page number and, with more than one, the arrows blinking; the file. */
 /* 0x00394260 */
 void SubScreen_StateFiles(SubScreen *s) {
@@ -1560,13 +1560,13 @@ void SubScreen_StateFiles(SubScreen *s) {
                 SUB_FILE_PAGE(s) = 0;
             }
         } else if (D_0047E36C & MENU_NEXT) {
-            ptmf_set(&s->state, &D_0044B3C8);
-            ptmf_set(&s->resume, &D_0044B3D8);
+            ptmf_set(&s->state, &Options_StateList_ptmf3);
+            ptmf_set(&s->resume, &Options_StateList_ptmf4);
             Sound_PlaySE(SE_PAGE);
         } else if (D_0047E36C & MENU_PREV) {
             Map_BackToPlayer(s->textObj);
-            ptmf_set(&s->state, &D_0044B3E8);
-            ptmf_set(&s->resume, &D_0044B3F8);
+            ptmf_set(&s->state, &SubScreen_StateMap_ptmf3);
+            ptmf_set(&s->resume, &SubScreen_StateMap_ptmf4);
             Sound_PlaySE(SE_PAGE);
         } else if (D_0047E36C & MENU_CANCEL) {
             s->close = 1;
@@ -1609,25 +1609,25 @@ s32 SubScreen_CostumeModel(SubScreen *s) {
 }
 
 extern void SubScreen_DrawEntries(SubScreen *s);
-extern const PTMF D_0044C108;
+extern const PTMF SubScreen_StateEntries_ptmf2;
 
-/* state: a question being asked (its page drawn, SubScreen_DrawEntries); once answered, D_0044C108 */
+/* state: a question being asked (its page drawn, SubScreen_DrawEntries); once answered, SubScreen_StateEntries_ptmf2 */
 /* 0x00385F60 */
 void SubScreen_StateQuestion(SubScreen *s) {
     SubScreen_DrawEntries(s);
     Task_Run(&s->ask);
     if (AT(&s->ask, 0x10, u8) == 0) {
-        ptmf_set(&s->state, &D_0044C108);
+        ptmf_set(&s->state, &SubScreen_StateEntries_ptmf2);
     }
 }
 
 /* ---- page openings and states ---- */
 
 extern void Gallery_DrawArtList(SubScreen *s);
-extern const PTMF D_0044C050;
+extern const PTMF Gallery_StatePicture_ptmf;
 
 /* open the page: its start values (+4 / +6 0x100 / 0xE0, +9 set), fading in (step 0x10), set
- * up (Gallery_DrawArtList), then state D_0044C050 */
+ * up (Gallery_DrawArtList), then state Gallery_StatePicture_ptmf */
 /* 0x00387E00 */
 void SubScreen_StatePageOpen(SubScreen *s) {
     SUB_PAGE(s, 0x4, s16) = 0x100;
@@ -1641,7 +1641,7 @@ void SubScreen_StatePageOpen(SubScreen *s) {
     s->fade = 0;
     s->fadeStep = 0x10;
     Gallery_DrawArtList(s);
-    ptmf_set(&s->state, &D_0044C050);
+    ptmf_set(&s->state, &Gallery_StatePicture_ptmf);
 }
 
 /* state: the page's own object (+0xA8C80, screen kind 0x86) runs (+0x10); when it is done
@@ -1714,10 +1714,10 @@ s32 SubScreen_ExtraUnlocked(SubScreen *s, u8 k) {
 
 extern u16 D_0044C080[][4];   /* per entry: its unlock flag (system data +0x24 bits), .., .., the
                                  message to follow (0xFFFF none) */
-extern const PTMF D_0044C0E8, D_0044C0F8;
+extern const PTMF SubScreen_StateQuestion_ptmf, SubScreen_StateEntries_ptmf;
 
 /* state: a question being asked; once answered, with the page's entry (page[0]) unlocked and a
- * message to follow, that message (D_0044C0E8), else D_0044C0F8 */
+ * message to follow, that message (SubScreen_StateQuestion_ptmf), else SubScreen_StateEntries_ptmf */
 /* 0x00386000 */
 void SubScreen_StateEntryQuestion(SubScreen *s) {
     SubScreen_DrawEntries(s);
@@ -1727,9 +1727,9 @@ void SubScreen_StateEntryQuestion(SubScreen *s) {
 
         if ((AT(gSystemData, 0x24 + (e[0] >> 5) * 4, u32) & (1 << (e[0] & 0x1F))) && e[3] != 0xFFFF) {
             Task_Open(&s->ask, e[3]);
-            ptmf_set(&s->state, &D_0044C0E8);
+            ptmf_set(&s->state, &SubScreen_StateQuestion_ptmf);
         } else {
-            ptmf_set(&s->state, &D_0044C0F8);
+            ptmf_set(&s->state, &SubScreen_StateEntries_ptmf);
         }
     }
 }
@@ -1827,10 +1827,10 @@ void func_0038D620(SubScreen *s, u8 k) {
     }
 }
 
-extern const PTMF D_0044B378;
+extern const PTMF SubScreen_StateItems_ptmf10;
 
 /* state: the item page with a question up: its panels, the grid, a box and the question; once
- * answered, the item under the cursor is used (Items_Use), D_0044B378 */
+ * answered, the item under the cursor is used (Items_Use), SubScreen_StateItems_ptmf10 */
 /* 0x00394E40 */
 void SubScreen_StateItemQuestion(SubScreen *s) {
     if (SUB_LIST(s) == 0) {
@@ -1844,7 +1844,7 @@ void SubScreen_StateItemQuestion(SubScreen *s) {
     Task_Run(&s->ask);
     if (AT(&s->ask, 0x10, u8) == 0) {
         Items_Use(s->pool, SUB_LIST(s), SUB_CURSOR(s));
-        ptmf_set(&s->state, &D_0044B378);
+        ptmf_set(&s->state, &SubScreen_StateItems_ptmf10);
     }
 }
 
@@ -1893,10 +1893,10 @@ s32 SubScreen_TabCommand(SubScreen *s, u8 cmd, s32 id) {
     return 0;
 }
 
-extern const PTMF D_0044B338;
+extern const PTMF SubScreen_StateItems_ptmf7;
 
 /* state: the word plate's question - its list's panels, the grid, the word being made
- * (+0xA8C58, as parameter 3) and the question; once answered, D_0044B338 */
+ * (+0xA8C58, as parameter 3) and the question; once answered, SubScreen_StateItems_ptmf7 */
 /* 0x00395460 */
 void SubScreen_StateWordPlate(SubScreen *s) {
     char word[9];
@@ -1917,14 +1917,14 @@ void SubScreen_StateWordPlate(SubScreen *s) {
     if (AT(&s->ask, 0x10, u8) != 0) {
         Task_Run(&s->ask);
     } else {
-        ptmf_set(&s->state, &D_0044B338);
+        ptmf_set(&s->state, &SubScreen_StateItems_ptmf7);
     }
 }
 
-extern const PTMF D_0044B368;
+extern const PTMF SubScreen_StateItems_ptmf9;
 
 /* state: "equip it?" - its list's panels, the grid and the question; once answered yes (+0x48
- * clear) the item under the cursor is equipped (a costume, list 1: put on Fiona), D_0044B368 */
+ * clear) the item under the cursor is equipped (a costume, list 1: put on Fiona), SubScreen_StateItems_ptmf9 */
 /* 0x00395000 */
 void SubScreen_StateEquipAsk(SubScreen *s) {
     if (SUB_LIST(s) == 0) {
@@ -1944,7 +1944,7 @@ void SubScreen_StateEquipAsk(SubScreen *s) {
             Fiona_ShowEquipment((Fiona *)gCharPlayer);
         }
     }
-    ptmf_set(&s->state, &D_0044B368);
+    ptmf_set(&s->state, &SubScreen_StateItems_ptmf9);
 }
 
 /* ---- the galleries ---- */
@@ -1996,11 +1996,11 @@ void Gallery_ModelMotions(SubScreen *s) {
     }
 }
 
-extern const PTMF D_0044B348, D_0044B358;
+extern const PTMF SubScreen_StateWordPlate_ptmf4, SubScreen_StateItems_ptmf8;
 
 /* state: "throw one away?" for an item with a word - its list's panels, the grid, the word and
  * the question; answered yes, one of it goes (a costume, list 1: Fiona changes back) and
- * message 0x57 (D_0044B348); no: D_0044B358 */
+ * message 0x57 (SubScreen_StateWordPlate_ptmf4); no: SubScreen_StateItems_ptmf8 */
 /* 0x003951E0 */
 void SubScreen_StateThrowAsk(SubScreen *s) {
     char word[9];
@@ -2026,20 +2026,20 @@ void SubScreen_StateThrowAsk(SubScreen *s) {
             Fiona_ShowEquipment((Fiona *)gCharPlayer);
         }
         Task_Open(&s->ask, 0x57);
-        ptmf_set(&s->state, &D_0044B348);
+        ptmf_set(&s->state, &SubScreen_StateWordPlate_ptmf4);
     } else {
-        ptmf_set(&s->state, &D_0044B358);
+        ptmf_set(&s->state, &SubScreen_StateItems_ptmf8);
     }
 }
 
 /* ---- the screen's frame ---- */
 
 extern void *Overlay_vtable[], *D_0046EC80[], *Helper469D00_vtable[];
-extern const PTMF D_0044B1C0;
+extern const PTMF SubScreen_DrawClosing_ptmf;
 
 /* the running screen each frame: its state; behind it a darkening overlay (pages, kind 0x80..)
  * or its panels at the fade's alpha (layer 0x31); depth of field set from 151; asked to close
- * (or progress flag 4): fading back (draw D_0044B1C0), with sound 0x95 unless quiet */
+ * (or progress flag 4): fading back (draw SubScreen_DrawClosing_ptmf), with sound 0x95 unless quiet */
 /* 0x00397AB0 */
 void SubScreen_StateRun(SubScreen *s) {
     Progress *p = gProgress;
@@ -2083,7 +2083,7 @@ void SubScreen_StateRun(SubScreen *s) {
         s->fading = 1;
         s->fade = 0x40;
         s->fadeStep = 8;
-        ptmf_set(&s->draw, &D_0044B1C0);
+        ptmf_set(&s->draw, &SubScreen_DrawClosing_ptmf);
         if (p != NULL) {
             Progress_ClearFlag(p, 4);
         }
@@ -2192,9 +2192,9 @@ void SubScreen_DrawEntries(SubScreen *s) {
 extern u8 *Gallery_MakeModel(SubScreen *s, u8 k);   /* the gallery model made */
 extern f32 D_0044BB70[];      /* per entry: the camera's extra distance */
 extern f32 D_0044B9F4[][3];   /* per entry: the camera's height */
-extern const PTMF D_0044B9C0;
+extern const PTMF Gallery_StateModel_ptmf;
 
-/* state: the model gallery's files loading; then shown (state D_0044B9C0): the model made
+/* state: the model gallery's files loading; then shown (state Gallery_StateModel_ptmf): the model made
  * (+0x4D8 / +0x4D9 set), the camera taken (+0xA8E00 / +0xA8E10) and aimed (26, 0, -27,
  * distance 10 + D_0044BB70, height D_0044B9F4), entries 6..8 idling (motions 0x1F00 / 0x2000 /
  * 0x2102) and the entry's first motion (D_0044BE90; past 0x19 blended in) */
@@ -2208,7 +2208,7 @@ void Gallery_StateModelLoad(SubScreen *s) {
         return;
     }
     s->fade = 0x80;
-    ptmf_set(&s->state, &D_0044B9C0);
+    ptmf_set(&s->state, &Gallery_StateModel_ptmf);
     SUB_PAGE(s, 0x1, u8) = 0;
     SUB_GALLERY_MODEL(s) = Gallery_MakeModel(s, SUB_PAGE(s, 0x0, u8));
     AT(SUB_GALLERY_MODEL(s), 0x4D8, u8) = 1;
@@ -2285,7 +2285,7 @@ void SubScreen_DrawExtras(SubScreen *s) {
 /* ---- the screen fading out / in ---- */
 
 extern const char D_00464240[];   /* "SUBSCR\\SUBBACK.TEX" */
-extern const PTMF D_0044B1F0, D_0044B190;
+extern const PTMF SubScreen_Open_ptmf, SubScreen_StateRun_ptmf;
 
 /* the fade's background: a darkening overlay (pages, kind 0x80..) or the panels at the fade's
  * alpha, layer 0x31 */
@@ -2326,7 +2326,7 @@ static void sub_fade_sound(f32 f) {
 
 /* draw: closing - the page's textures given back and SUBBACK.TEX reloaded at the start, the fade
  * from 0x40 to 0x80 (sound coming back up); once loaded, the screen's own textures made resident,
- * draw D_0044B1F0 and progress flags 8 and 4 */
+ * draw SubScreen_Open_ptmf and progress flags 8 and 4 */
 /* 0x003970D0 */
 void SubScreen_DrawClosing(SubScreen *s) {
     Progress *p = gProgress;
@@ -2353,7 +2353,7 @@ void SubScreen_DrawClosing(SubScreen *s) {
         if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, 0x6000000) != 2) {
             VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, s->pageTex, 0x19);
             if (p != NULL) {
-                ptmf_set(&s->draw, &D_0044B1F0);
+                ptmf_set(&s->draw, &SubScreen_Open_ptmf);
                 Progress_SetFlag(gProgress, 8);
                 Progress_SetFlag(gProgress, 4);
             }
@@ -2370,7 +2370,7 @@ void SubScreen_DrawClosing(SubScreen *s) {
 
 /* draw: opening - once the textures are loaded the fade runs up to 0x40 (sound going down);
  * there the screen starts (flags cleared; modes 7 / 10 make their page resident) with draw
- * D_0044B190. Depth of field drawing in from far to near with it. */
+ * SubScreen_StateRun_ptmf. Depth of field drawing in from far to near with it. */
 /* 0x00398100 */
 void SubScreen_DrawOpening(SubScreen *s) {
     static const union { u32 u; f32 f; } kTenth = {0x3DCCCCCD};
@@ -2392,7 +2392,7 @@ void SubScreen_DrawOpening(SubScreen *s) {
         if (s->mode == 7 || s->mode == 10) {
             VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, s->pageTex, 0x19);
         }
-        ptmf_set(&s->draw, &D_0044B190);
+        ptmf_set(&s->draw, &SubScreen_StateRun_ptmf);
     }
     f = 100.0f * (f32)(0x40 - s->fade) / 64.0f / 100.0f;
     sub_fade_sound(f);
@@ -2407,11 +2407,11 @@ void SubScreen_DrawOpening(SubScreen *s) {
     dof.vtbl = Helper469D00_vtable;
 }
 
-extern const PTMF D_0044C0D8;
+extern const PTMF SubScreen_StateEntryQuestion_ptmf;
 
 /* state: the entry list - up / down through the group (0..7, 8..10, round), left / right /
  * next / previous to the other group, confirm opens the entry (D_0044C080's message, state
- * D_0044C0D8), cancel closes; then the list, the help line and the arrows */
+ * SubScreen_StateEntryQuestion_ptmf), cancel closes; then the list, the help line and the arrows */
 /* 0x00386150 */
 void SubScreen_StateEntries(SubScreen *s) {
     s32 b, x;
@@ -2423,7 +2423,7 @@ void SubScreen_StateEntries(SubScreen *s) {
 
         if (pad & MENU_CONFIRM) {
             Task_Open(&s->ask, D_0044C080[*k][2]);
-            ptmf_set(&s->state, &D_0044C0D8);
+            ptmf_set(&s->state, &SubScreen_StateEntryQuestion_ptmf);
             Sound_PlaySE(SE_DECIDE);
         } else if (pad & MENU_UP) {
             *k = *k == 0 ? 7 : *k == 8 ? 10 : *k - 1;
@@ -2448,11 +2448,11 @@ void SubScreen_StateEntries(SubScreen *s) {
     SubScreen_DrawPart(s, 0x1B3, 0x170, 0x1B, alpha, 0);
 }
 
-extern const PTMF D_0044B7A0;
+extern const PTMF Gallery_StateModelChosen_ptmf;
 
 /* state: the extras list - up / down within the group of 8 (round; 31 at most), left /
  * previous and right / next to the group before / after (round), confirm an unlocked extra
- * (a fade from 0, progress +0x84, state D_0044B7A0; a buzzer if locked), cancel (progress
+ * (a fade from 0, progress +0x84, state Gallery_StateModelChosen_ptmf; a buzzer if locked), cancel (progress
  * flag 4); then the list */
 /* 0x0038D7E0 */
 void SubScreen_StateExtras(SubScreen *s) {
@@ -2500,7 +2500,7 @@ void SubScreen_StateExtras(SubScreen *s) {
                 s->fade = 0;
                 s->fadeStep = 0x10;
                 VCALL(gProgress, 0x84, void (*)(Progress *))(gProgress);
-                ptmf_set(&s->state, &D_0044B7A0);
+                ptmf_set(&s->state, &Gallery_StateModelChosen_ptmf);
                 Sound_PlaySE(SE_DECIDE);
             } else {
                 Sound_PlaySE(SE_BUZZER);
@@ -2807,13 +2807,13 @@ void Gallery_StateMusic(SubScreen *s) {
 
 /* ---- the art gallery's picture ---- */
 
-extern const PTMF D_0044C060;
+extern const PTMF Gallery_StateArtView_ptmf;
 
 /* state: a picture chosen - fading out (to 0x80); then (the file loaded) the picture unpacked
  * from the work buffer (progress +0x88; offsets by picture % 8) to +0x200000: runs of bytes
  * (bit 7 set: the next byte repeated n & 0x7F times; else n bytes as they are) for 0x70000
  * bytes (pictures 21..: 0x38000), then its 0x400-byte palette; fading in from 0x80 (state
- * D_0044C060). The list under a darkening overlay or the panels */
+ * Gallery_StateArtView_ptmf). The list under a darkening overlay or the panels */
 /* 0x00387920 */
 void Gallery_StatePicture(SubScreen *s) {
     s->fade += s->fadeStep;
@@ -2852,7 +2852,7 @@ void Gallery_StatePicture(SubScreen *s) {
         s->fading = 1;
         s->fade = 0x80;
         s->fadeStep = 0;
-        ptmf_set(&s->state, &D_0044C060);
+        ptmf_set(&s->state, &Gallery_StateArtView_ptmf);
     }
     Gallery_DrawArtList(s);
     sub_fade_back(s);
@@ -2861,7 +2861,7 @@ void Gallery_StatePicture(SubScreen *s) {
 /* ---- the model gallery's start ---- */
 
 extern void *Tint_vtable[];
-extern const PTMF D_0044B9B0;
+extern const PTMF Gallery_StateModelLoad_ptmf;
 
 /* keep room effect `k` (its 0x90 bytes from +0x10) in `save` and remove it */
 static inline void gallery_effect_keep(u8 *fx, s32 k, u8 *save) {
@@ -2877,7 +2877,7 @@ static inline void gallery_effect_keep(u8 *fx, s32 k, u8 *save) {
 /* state: a model chosen in the extras - fading out (to 0x80); then the work buffer (progress
  * +0x88) split for the gallery's files (+0xA8DEC.. : +0, +0x200000, +0x242000, +0x244000 and
  * progress +0x16C0) and they loaded (func_0038D620), the renderer reset (+0x1C), state
- * D_0044B9B0; two lights (55, 55, 50 / 65, 60, 60 at 15 and 30 degrees), the director's
+ * Gallery_StateModelLoad_ptmf; two lights (55, 55, 50 / 65, 60, 60 at 15 and 30 degrees), the director's
  * +0x7C, the room effects 0x1D..0x1F kept (+0xA8E40..) and removed, effect 0x1F made anew (a
  * Tint_vtable) and started. The extras list under a darkening overlay or the panels */
 /* 0x0038BC70 */
@@ -2907,7 +2907,7 @@ void Gallery_StateModelChosen(SubScreen *s) {
             AT(s, 0xA8DF4, u8 *) = (u8 *)p + 0x16C0;
             func_0038D620(s, SUB_PAGE(s, 0x0, u8));
             VCALL(gRenderer, 0x1C, void (*)(VObject *))(gRenderer);
-            ptmf_set(&s->state, &D_0044B9B0);
+            ptmf_set(&s->state, &Gallery_StateModelLoad_ptmf);
             v[0] = 55.0f;
             v[1] = 55.0f;
             v[3] = 0.0f;
@@ -2950,7 +2950,7 @@ void Gallery_StateModelChosen(SubScreen *s) {
 }
 
 extern const char D_00463FE0[];   /* the pictures' file of a group */
-extern const PTMF D_0044C040;
+extern const PTMF SubScreen_StatePageOpen_ptmf;
 
 /* load the art gallery's group `g` of pictures into the work buffer (any load in progress
  * cancelled first) */
@@ -2965,7 +2965,7 @@ static inline void art_group_load(SubScreen *s, VObject *ld, u8 g) {
 
 /* state: the art gallery's list - up / down round the group of 8 (48 pictures), left /
  * previous and right / next to the group before / after (its pictures loaded), confirm an
- * unlocked picture (state D_0044C040; a buzzer if locked), cancel closes; then the list */
+ * unlocked picture (state SubScreen_StatePageOpen_ptmf; a buzzer if locked), cancel closes; then the list */
 /* 0x00387F00 */
 void Gallery_StateArtList(SubScreen *s) {
     if (!s->fading) {
@@ -2982,7 +2982,7 @@ void Gallery_StateArtList(SubScreen *s) {
             u16 f = D_0044BFE0[*k];
 
             if (AT(gSystemData, 0x24 + (f >> 5) * 4, u32) & (1 << (f & 0x1F))) {
-                ptmf_set(&s->state, &D_0044C040);
+                ptmf_set(&s->state, &SubScreen_StatePageOpen_ptmf);
                 Sound_PlaySE(SE_DECIDE);
             } else {
                 Sound_PlaySE(SE_BUZZER);
@@ -3874,7 +3874,7 @@ s32 SubScreen_EntryMotions(void *o, u32 i) {
 /* ---- the model gallery ---- */
 
 extern void *Fog_vtable[], *ScreenBlend_vtable[];
-extern const PTMF D_0044B9D0, D_0044B9E0;
+extern const PTMF SubScreen_StateExtras_ptmf, SubScreen_DrawFadeFromBlack_ptmf;
 
 #define GALLERY_STEP(s) SUB_PAGE(s, 0x2, u8)   /* 0 fading in, 1 shown, 2..4 the help, 5 leaving */
 #define GALLERY_BARS(s) AT(s, 0xA8E3C, u8)    /* the name and help bars shown */
@@ -3923,14 +3923,14 @@ static void gallery_effect_back(u8 *fx, s32 k, const u8 *save) {
 
 /* the model gallery left: the message and model gone, the work buffers cleared, the camera
  * and lights given back, the room effects 0x1F, 0x1D and 0x1E restored (made anew as they
- * were), fading back to the list (D_0044B9D0 / D_0044B9E0) */
+ * were), fading back to the list (SubScreen_StateExtras_ptmf / SubScreen_DrawFadeFromBlack_ptmf) */
 static void gallery_leave(SubScreen *s) {
     VObject *msg = gBootMessage;
     VObject *m = (VObject *)SUB_GALLERY_MODEL(s);
     VObject *cam;
     u8 *fx;
 
-    ptmf_set(&s->state, &D_0044B9D0);
+    ptmf_set(&s->state, &SubScreen_StateExtras_ptmf);
     VCALL(msg, 0x14, void (*)(VObject *, s32))(msg, 2);
     VCALL(msg, 0xC, void (*)(VObject *, s32))(msg, 2);
     VCALL(m, 0x10, void (*)(VObject *))(m);
@@ -3962,7 +3962,7 @@ static void gallery_leave(SubScreen *s) {
     s->fading = 1;
     s->fade = 0x80;
     s->fadeStep = -0x20;
-    ptmf_set(&s->draw, &D_0044B9E0);
+    ptmf_set(&s->draw, &SubScreen_DrawFadeFromBlack_ptmf);
 }
 
 /* state: the model gallery. Fading in; then cancel leaves (fading out, gallery_leave) and
@@ -4096,7 +4096,7 @@ void Gallery_StateModel(SubScreen *s) {
 
 /* ---- the art gallery's picture ---- */
 
-extern const PTMF D_0044C070;
+extern const PTMF Gallery_StateArtList_ptmf;
 
 #define ART_X(s) SUB_PAGE(s, 0x4, s16)       /* the picture's centre on screen */
 #define ART_Y(s) SUB_PAGE(s, 0x6, s16)
@@ -4114,7 +4114,7 @@ extern const PTMF D_0044C070;
  * 0x15, else 448) at half or full size. Fades in; select the bars, start the help (a shade
  * over it, start again back), confirm turns the moves round, the d-pad / left stick pan, L3
  * centres, R3 zooms about the centre, kept on screen; cancel fades out back to the list
- * (D_0044C070). Then the fade's background, the picture (a GL sprite of the image sent to VRAM)
+ * (Gallery_StateArtList_ptmf). Then the fade's background, the picture (a GL sprite of the image sent to VRAM)
  * and the bars (its name, the help) */
 /* 0x00386990 */
 void Gallery_StateArtView(SubScreen *s) {
@@ -4157,7 +4157,7 @@ void Gallery_StateArtView(SubScreen *s) {
             s->fading = 0;
             s->fade = 0;
             s->fadeStep = 0;
-            ptmf_set(&s->state, &D_0044C070);
+            ptmf_set(&s->state, &Gallery_StateArtList_ptmf);
         }
         break;
     default:
@@ -4299,8 +4299,8 @@ void Gallery_StateArtView(SubScreen *s) {
 /* its actions (1 use, 2 equip, 4 examine;
                                                       0x80000000 its note can change) */
 extern const char D_00464238[];                    /* the cursor */
-extern const PTMF D_0044B278, D_0044B288, D_0044B298, D_0044B2A8, D_0044B2B8, D_0044B2C8, D_0044B2D8,
-    D_0044B2E8, D_0044B2F8, D_0044B308, D_0044B318, D_0044B328;
+extern const PTMF SubScreen_StateWordPlate_ptmf, SubScreen_StateItemQuestion_ptmf2, SubScreen_StateWordPlate_ptmf2, SubScreen_StateItems_ptmf, SubScreen_StateWordPlate_ptmf3, SubScreen_StateItems_ptmf2, SubScreen_StateItems_ptmf3,
+    SubScreen_StateItems_ptmf4, SubScreen_StateEquipAsk_ptmf, SubScreen_StateThrowAsk_ptmf, SubScreen_StateItems_ptmf5, SubScreen_StateItems_ptmf6;
 
 typedef struct {
     u16 act;   /* the action's bit (0 back) */
@@ -4364,12 +4364,12 @@ static void item_use(SubScreen *s, s32 id, s32 kind) {
     if ((u32)kind < 2 && !item_usable()) {
         Task_Open(&s->ask, 0x54);
         Sound_PlaySE(SE_BUZZER);
-        ptmf_set(&s->state, &D_0044B278);
+        ptmf_set(&s->state, &SubScreen_StateWordPlate_ptmf);
         return;
     }
     if (kind == 7) {
         Task_Open(&s->ask, id & 0xFFFF);
-        ptmf_set(&s->state, &D_0044B288);
+        ptmf_set(&s->state, &SubScreen_StateItemQuestion_ptmf2);
         return;
     }
     r = Items_Use(s->pool, SUB_LIST(s), SUB_CURSOR(s));
@@ -4378,10 +4378,10 @@ static void item_use(SubScreen *s, s32 id, s32 kind) {
         if (!(r & 8)) {
             Sound_PlaySE(SE_BUZZER);
         }
-        ptmf_set(&s->state, &D_0044B298);
+        ptmf_set(&s->state, &SubScreen_StateWordPlate_ptmf2);
     } else if (r & 4) {
         VCALL(s, 0x38, void (*)(SubScreen *, s32))(s, id);
-        ptmf_set(&s->state, &D_0044B2A8);
+        ptmf_set(&s->state, &SubScreen_StateItems_ptmf);
         if (!(r & 8)) {
             Sound_PlaySE(SE_DECIDE);
         }
@@ -4393,16 +4393,16 @@ static void item_use(SubScreen *s, s32 id, s32 kind) {
         if (!(r & 8)) {
             Sound_PlaySE(0x84);
         }
-        ptmf_set(&s->state, &D_0044B2B8);
+        ptmf_set(&s->state, &SubScreen_StateWordPlate_ptmf3);
     } else {
-        ptmf_set(&s->state, &D_0044B2C8);
+        ptmf_set(&s->state, &SubScreen_StateItems_ptmf2);
     }
 }
 
-/* state: the item's actions. Up / down round them; confirm: back (D_0044B318), examine (a
- * question, D_0044B308), equip / take off (Fiona's costume changing; equipping where another
- * is: a question naming it, D_0044B2F8) or use (item_use); next / previous step to the list's
- * next / previous item (its picture loaded); cancel puts the cursor on back (D_0044B328).
+/* state: the item's actions. Up / down round them; confirm: back (SubScreen_StateItems_ptmf5), examine (a
+ * question, SubScreen_StateThrowAsk_ptmf), equip / take off (Fiona's costume changing; equipping where another
+ * is: a question naming it, SubScreen_StateEquipAsk_ptmf) or use (item_use); next / previous step to the list's
+ * next / previous item (its picture loaded); cancel puts the cursor on back (SubScreen_StateItems_ptmf6).
  * Then the list's panels and grid and, staying here: the picture (sliding in), the name,
  * count and note, and the actions' box with the cursor */
 /* 0x00395630 */
@@ -4422,13 +4422,13 @@ void SubScreen_StateItemActions(SubScreen *s) {
         if (pad & MENU_CONFIRM) {
             switch (list[SUB_ACTION(s)]) {
             case 0:
-                ptmf_set(&s->state, &D_0044B318);
+                ptmf_set(&s->state, &SubScreen_StateItems_ptmf5);
                 Sound_PlaySE(SE_DECIDE);
                 break;
             case 4:
                 Task_Open(&s->ask, 0x56);
                 Sound_PlaySE(SE_DECIDE);
-                ptmf_set(&s->state, &D_0044B308);
+                ptmf_set(&s->state, &SubScreen_StateThrowAsk_ptmf);
                 break;
             case 2:
                 if (equip == 2) {
@@ -4437,21 +4437,21 @@ void SubScreen_StateItemActions(SubScreen *s) {
                     Msg_SetParamSystem(&s->ask, 1, on & 0xFFFF);
                     Task_Open(&s->ask, 0x5C);
                     Sound_PlaySE(SE_DECIDE);
-                    ptmf_set(&s->state, &D_0044B2F8);
+                    ptmf_set(&s->state, &SubScreen_StateEquipAsk_ptmf);
                 } else if (equip == 1) {
                     Items_Unequip(items, SUB_LIST(s), SUB_CURSOR(s));
                     if (SUB_LIST(s) == 1) {
                         Fiona_ShowEquipment((Fiona *)gCharPlayer);
                     }
                     Sound_PlaySE(SE_DECIDE);
-                    ptmf_set(&s->state, &D_0044B2E8);
+                    ptmf_set(&s->state, &SubScreen_StateItems_ptmf4);
                 } else if (equip == 0) {
                     Items_Equip(items, SUB_LIST(s), SUB_CURSOR(s));
                     if (SUB_LIST(s) == 1) {
                         Fiona_ShowEquipment((Fiona *)gCharPlayer);
                     }
                     Sound_PlaySE(SE_DECIDE);
-                    ptmf_set(&s->state, &D_0044B2D8);
+                    ptmf_set(&s->state, &SubScreen_StateItems_ptmf3);
                 }
                 break;
             case 1:
@@ -4493,7 +4493,7 @@ void SubScreen_StateItemActions(SubScreen *s) {
             }
         } else if (D_0047E36C & MENU_CANCEL) {
             SUB_ACTION(s) = n - 1;
-            ptmf_set(&s->state, &D_0044B328);
+            ptmf_set(&s->state, &SubScreen_StateItems_ptmf6);
             Sound_PlaySE(SE_CANCEL);
         }
     }

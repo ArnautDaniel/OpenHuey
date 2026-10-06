@@ -182,7 +182,7 @@ void Riccardo_AttackTable(Pursuer *p, s8 situation) {
     PU(p, 0x1718, u8 *) = sAttackTables[alt][(u32)situation < 17 ? situation : 0];
 }
 
-extern const PTMF D_00415670;
+extern const PTMF Riccardo_StateBehaviour_ptmf;
 
 /* vtable +0x264: the next behaviour; his own (Riccardo_StateBehaviour) unless at threat level 5, then the
    Pursuer's */
@@ -195,7 +195,7 @@ void Riccardo_ChaseDecision(Pursuer *p) {
         return;
     }
     next = PU(p, 0x1758, s32);
-    ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_00415670);
+    ptmf_set((PTMF *)((u8 *)p + 0x174C), &Riccardo_StateBehaviour_ptmf);
     PU(p, 0x1758, s32) = -1;
     if (next == -2) {
         PU(p, 0x16F3, u8) = 0;
@@ -385,7 +385,7 @@ void Riccardo_Setup(Pursuer *p) {
     VCALL(m, 0x30, void (*)(void *))(m);
 }
 
-extern const PTMF D_00415788;
+extern const PTMF Pursuer_AttackNextStep_ptmf6;
 
 /* the end of his lunge animation: at threat level 5 it leads straight into attack 5;
    otherwise it ends the step */
@@ -398,7 +398,7 @@ static inline void Riccardo_LungeEnd(Pursuer *p) {
             return;
         }
         PU(p, 0x1728, s32) = 5;
-        Actor_SetState(&p->c.a, &D_00415788);
+        Actor_SetState(&p->c.a, &Pursuer_AttackNextStep_ptmf6);
         p->c.moveMode = 8;
         Pursuer_AttackNextStep(p);
     }
@@ -410,7 +410,7 @@ void Riccardo_StateLunge(Pursuer *p) {
     Riccardo_LungeEnd(p);
 }
 
-extern const PTMF D_00415778;
+extern const PTMF Riccardo_StateLunge_ptmf;
 
 /* start of the lunge: finish the current walk, then animation 0x1300 in state Riccardo_StateLunge */
 /* 0x002D8690 */
@@ -422,11 +422,11 @@ void Riccardo_StartLunge(Pursuer *p) {
     }
     Pursuer_PlayAnimIf(p, 0x1300, 0);
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_00415778);
+    Actor_SetState(&p->c.a, &Riccardo_StateLunge_ptmf);
     Riccardo_LungeEnd(p);
 }
 
-extern const PTMF D_00415768;
+extern const PTMF Riccardo_FlurryBlow_ptmf2;
 
 /* state: after a blow: his blows left (+0x1624) count down; another while he may go for his
    target and it's in reach and in front (within 90 degrees): Fiona seen within 100 (not at
@@ -465,10 +465,10 @@ void Riccardo_StateAfterBlow(Pursuer *p) {
         return;
     }
     PU(p, 0x1760, u8) = 0;
-    Actor_SetState(&p->c.a, &D_00415768);
+    Actor_SetState(&p->c.a, &Riccardo_FlurryBlow_ptmf2);
 }
 
-extern const PTMF D_00415758;
+extern const PTMF Riccardo_StateAfterBlow_ptmf3;
 
 /* a blow: at its hit key, if he may go for his target and it's within the reach of the blow
    (+0x171C entry +0x104, 0x24 bytes: +0xC reach), it lands (Relation_Request kind 1 with the
@@ -484,7 +484,7 @@ static inline void Riccardo_Blow(Pursuer *p) {
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
         PU(p, 0x178C, s32) = 0;
         p->c.unk100 = 0;
-        Actor_SetState(&p->c.a, &D_00415758);
+        Actor_SetState(&p->c.a, &Riccardo_StateAfterBlow_ptmf3);
         Riccardo_StateAfterBlow(p);
     }
     Character_RootMoveMasked(&p->c);
@@ -497,7 +497,7 @@ void Riccardo_StateBlow(Pursuer *p) {
 }
 
 extern const f32 D_004156C0[6], D_004156E0[6];
-extern const PTMF D_004156F8;
+extern const PTMF Riccardo_FlurryBlow_ptmf;
 
 /* start of a flurry: how many blows (+0x1624, 1..7) by a roll against his cumulative chances
    (D_004156C0, or D_004156E0 when gProgress+0x30 bit 0x8000); then Riccardo_FlurryBlow. When he may
@@ -527,7 +527,7 @@ void Riccardo_StartFlurry(Pursuer *p) {
     }
     PU(p, 0x1624, s32)++;
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_004156F8);
+    Actor_SetState(&p->c.a, &Riccardo_FlurryBlow_ptmf);
     Riccardo_FlurryBlow(p);
 }
 
@@ -647,7 +647,7 @@ s32 Riccardo_AttackForDistance(Pursuer *p, Character *who) {
     return 0xFF;
 }
 
-extern const PTMF D_00415708, D_00415718, D_00415728;
+extern const PTMF Riccardo_StateBlow_ptmf, Riccardo_StateBlowHewie_ptmf, Riccardo_StateBlowFiona_ptmf;
 
 /* a blow of the flurry: on Fiona, in front of her (Npc_SameFloor) entry 0 or 3, else from behind
    8 or 9 (one blow only); on Hewie entry 1 if he's in front, else give up (action 0x13). A blow
@@ -678,18 +678,18 @@ void Riccardo_FlurryBlow(Pursuer *p) {
     Pursuer_PlayAnimIf(p, AT(e, 0x0, s32), 0);
     p->c.unk100 = -1;
     if (AT(e, 0x10, u8) == 6) {
-        Actor_SetState(&p->c.a, &D_00415708);
+        Actor_SetState(&p->c.a, &Riccardo_StateBlow_ptmf);
         Riccardo_Blow(p);
     } else if (p->target == gCharPartner) {
-        Actor_SetState(&p->c.a, &D_00415718);
+        Actor_SetState(&p->c.a, &Riccardo_StateBlowHewie_ptmf);
         Riccardo_StateBlowHewie(p);
     } else {
-        Actor_SetState(&p->c.a, &D_00415728);
+        Actor_SetState(&p->c.a, &Riccardo_StateBlowFiona_ptmf);
         Riccardo_StateBlowFiona(p);
     }
 }
 
-extern const PTMF D_00415680, D_00415690;
+extern const PTMF D_00415680, Riccardo_StateChase_ptmf;
 
 /* his behaviour: Fiona as the target. Out of sight of her, head for her (vtable +0xB0).
    Otherwise the pending action (0x1C rumbles the pad), or: further than 100 hold off (6);
@@ -749,7 +749,7 @@ static inline void Riccardo_Behaviour(Pursuer *p, const PTMF *away, const PTMF *
 
 /* 0x002DB480 */
 void Riccardo_StateBehaviour(Pursuer *p) {
-    Riccardo_Behaviour(p, &D_00415680, &D_00415690, Riccardo_StateChase, 1);
+    Riccardo_Behaviour(p, &D_00415680, &Riccardo_StateChase_ptmf, Riccardo_StateChase, 1);
 }
 
 extern const f32 D_00415660[4];
@@ -901,7 +901,7 @@ void Riccardo_Impact(Pursuer *p) {
     }
 }
 
-extern const PTMF D_00415748;
+extern const PTMF Riccardo_StateAfterBlow_ptmf2;
 
 /* state: his blow at Hewie. At the hit key, if he may go for him, hears him within 30, and Hewie
    is in front within 30 degrees: unless Fiona stands in the way (within 4 of the line to Hewie,
@@ -983,7 +983,7 @@ void Riccardo_StateBlowHewie(Pursuer *p) {
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
         PU(p, 0x178C, s32) = 0;
         p->c.unk100 = 0;
-        Actor_SetState(&p->c.a, &D_00415748);
+        Actor_SetState(&p->c.a, &Riccardo_StateAfterBlow_ptmf2);
         Riccardo_StateAfterBlow(p);
     }
     if ((Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 1) &&
@@ -993,7 +993,7 @@ void Riccardo_StateBlowHewie(Pursuer *p) {
     Character_RootMoveMasked(&p->c);
 }
 
-extern const PTMF D_00415738;
+extern const PTMF Riccardo_StateAfterBlow_ptmf;
 
 /* is `pt` clear of the swing at `at` (not within 4 of the line to it, or no nearer than it) */
 static inline s32 Riccardo_OutOfLine(Pursuer *p, const f32 *at, const f32 *pt) {
@@ -1131,7 +1131,7 @@ end:
         PU(p, 0x178C, s32) = 0;
         p->c.unk100 = 0;
         p->c.unk104[0] = 0;
-        Actor_SetState(&p->c.a, &D_00415738);
+        Actor_SetState(&p->c.a, &Riccardo_StateAfterBlow_ptmf);
         Riccardo_StateAfterBlow(p);
     }
     if ((Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 1) &&
@@ -1392,7 +1392,7 @@ void Kind37_ExitDone(Pursuer *p) {
 }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
-extern const PTMF D_004428F8;
+extern const PTMF Kind37_StateBehaviour_ptmf;
 extern void Kind37_StateBehaviour(Pursuer *p);
 
 /* (as Riccardo_ChaseDecision)  vtable +0x264: the next behaviour; his own (Kind37_StateBehaviour) unless at threat level 5, then the
@@ -1406,7 +1406,7 @@ void Kind37_ChaseDecision(Pursuer *p) {
         return;
     }
     next = PU(p, 0x1758, s32);
-    ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_004428F8);
+    ptmf_set((PTMF *)((u8 *)p + 0x174C), &Kind37_StateBehaviour_ptmf);
     PU(p, 0x1758, s32) = -1;
     if (next == -2) {
         PU(p, 0x16F3, u8) = 0;
@@ -1515,12 +1515,12 @@ void Kind37_BehaviourEnded(Pursuer *p) {
     Pursuer_BehaviourEnded(p);
 }
 
-extern const PTMF D_00442908, D_00442918;
+extern const PTMF D_00442908, Kind37_StateChase_ptmf;
 
 /* its behaviour: his (Riccardo_Behaviour) with its chase; the reach +0x17C0 is set up once */
 /* 0x0034CDC0 */
 void Kind37_StateBehaviour(Pursuer *p) {
-    Riccardo_Behaviour(p, &D_00442908, &D_00442918, Kind37_StateChase, 0);
+    Riccardo_Behaviour(p, &D_00442908, &Kind37_StateChase_ptmf, Kind37_StateChase, 0);
 }
 
 extern u8 D_00442210[], D_004422B0[], D_00442890[], D_004428B0[], D_004428E0[];

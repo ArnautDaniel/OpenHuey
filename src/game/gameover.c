@@ -28,14 +28,14 @@
 
 _Static_assert(__builtin_offsetof(GameOver, state) == 0x50, "GameOver.state");
 
-extern const PTMF D_0041A150;   /* GameOver_StateStart */
-extern const PTMF D_0041A160;   /* GameOver_StateStart */
-extern const PTMF D_0041A170;   /* GameOver_StateMovie */
-extern const PTMF D_0041A180;   /* GameOver_StateOthers */
-extern const PTMF D_0041A190;   /* GameOver_StateDone */
-extern const PTMF D_0041A1A0;   /* GameOver_StateMode3 */
-extern const PTMF D_0041A1B0;   /* GameOver_StateOthers */
-extern const PTMF D_0041A1C0;   /* GameOver_StateSpecial */
+extern const PTMF GameOver_StateStart_ptmf;   /* GameOver_StateStart */
+extern const PTMF GameOver_StateStart_ptmf2;   /* GameOver_StateStart */
+extern const PTMF GameOver_StateMovie_ptmf;   /* GameOver_StateMovie */
+extern const PTMF GameOver_StateOthers_ptmf;   /* GameOver_StateOthers */
+extern const PTMF GameOver_StateDone_ptmf;   /* GameOver_StateDone */
+extern const PTMF GameOver_StateMode3_ptmf;   /* GameOver_StateMode3 */
+extern const PTMF GameOver_StateOthers_ptmf2;   /* GameOver_StateOthers */
+extern const PTMF GameOver_StateSpecial_ptmf;   /* GameOver_StateSpecial */
 extern const char D_0045E2E0[];  /* the movie */
 
 extern VObject *D_00456DF0;
@@ -65,10 +65,10 @@ void *GameOverBase_dtor(u8 *o, s32 flags) {
 
 /* 0x002D6000 */
 void SceneGame_SetByte19034(u8 *p, u32 v) { p[0x19034] = (u8)v; }
-/* (SceneGame +0x73EB40) its state at +0x50 back to D_0041A150 */
+/* (SceneGame +0x73EB40) its state at +0x50 back to GameOver_StateStart_ptmf */
 /* 0x002F39B0 */
 void GameOver_Reset(u8 *o) {
-    AT(o, 0x50, PTMF) = D_0041A150;
+    AT(o, 0x50, PTMF) = GameOver_StateStart_ptmf;
 }
 
 #ifdef HG_NATIVE
@@ -456,28 +456,28 @@ void GameOver_StateStart(GameOver *o) {
     if (AT(p, 0x1FBEC1, u8) == 0) {
         switch (o->mode) {
         case 0:
-            o->state = D_0041A170;
+            o->state = GameOver_StateMovie_ptmf;
             o->world = 1;
             break;
         case 1:
-            o->state = D_0041A180;
+            o->state = GameOver_StateOthers_ptmf;
             o->world = 1;
             break;
         case 2:
-            o->state = D_0041A190;
+            o->state = GameOver_StateDone_ptmf;
             o->world = 0;
             break;
         case 3:
-            o->state = D_0041A1A0;
+            o->state = GameOver_StateMode3_ptmf;
             o->world = 1;
             break;
         default:
-            o->state = D_0041A1B0;
+            o->state = GameOver_StateOthers_ptmf2;
             o->world = 1;
             break;
         }
     } else {
-        o->state = D_0041A1C0;
+        o->state = GameOver_StateSpecial_ptmf;
         o->world = 1;
     }
     o->step = 0;
@@ -497,6 +497,6 @@ void GameOver_Update(GameOver *o) {
     ptmf_scall(o, &o->state);
     if (Progress_TestFlag(gProgress, 0xC) != 0) {
         play_music(0xFF);
-        o->state = D_0041A160;
+        o->state = GameOver_StateStart_ptmf2;
     }
 }

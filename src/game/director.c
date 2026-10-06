@@ -38,7 +38,7 @@
 
 extern VObject *D_00456DF8;   /* the room's placed objects */
 extern const char D_0045D2A8[], D_0045D2B8[], D_0045D2C8[], D_0045D2D8[];   /* "%s\\CUT%03X.DP", "%s\\%s.DH", "%s\\MARK.BIN", "%s\\PARAMS.BIN" */
-extern const PTMF D_00412920, D_00412930, D_00412940;   /* states: loading, first shot, playing */
+extern const PTMF Cutscene_StateScript_ptmf, Cutscene_StateFirstShot_ptmf, Cutscene_StatePlaying_ptmf;   /* states: loading, first shot, playing */
 extern void *Fog_vtable[], *DepthRange_vtable[];   /* effect classes for slots 0x1D / 0x1C */
 
 void Cutscene_ReleaseActors(u8 *d);
@@ -639,7 +639,7 @@ void Cutscene_StateFirstShot(u8 *d) {
         return;
     }
     AT(BUF(d, AT(d, 0x64, s32)), 0x4, s32) = 2;
-    AT(d, 0x2A0, PTMF) = D_00412940;
+    AT(d, 0x2A0, PTMF) = Cutscene_StatePlaying_ptmf;
     Cutscene_Cast(d);
     if (gCamDirector != NULL) {
         VCALL(gCamDirector, 0x14, void (*)(VObject *))(gCamDirector);
@@ -702,7 +702,7 @@ void Cutscene_StateScript(u8 *d) {
         AT(BUF(d, AT(d, 0x64, s32)), 0x4, s32) = 1;
         i = AT(d, 0x64, s32);
         shot_load(d, i);
-        AT(d, 0x2A0, PTMF) = D_00412930;
+        AT(d, 0x2A0, PTMF) = Cutscene_StateFirstShot_ptmf;
     }
     AT(d, 0x200, s32) = 1;
 }
@@ -743,7 +743,7 @@ void Cutscene_Start(u8 *d) {
         SLOT(d, i)[3] = 0;
     }
     AT(d, 0x200, s32) = 1;
-    AT(d, 0x2A0, PTMF) = D_00412920;
+    AT(d, 0x2A0, PTMF) = Cutscene_StateScript_ptmf;
 }
 
 /* the actors released: each back to how it was (shown +0xE0 from +4's 0x80, active +0x29 from

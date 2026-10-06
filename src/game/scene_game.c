@@ -56,8 +56,8 @@
 #define ENTRY_NEW -1            /* -1: start from the resident save buffer */
 
 extern const PTMF sGameStateNull;
-extern const PTMF D_0044C7A0;   /* stored at +0x1053450 */
-extern const PTMF D_0044C7B0;   /* next state */
+extern const PTMF SceneGame_SubStartRoom_ptmf;   /* stored at +0x1053450 */
+extern const PTMF SceneGame_StateMain_ptmf;   /* next state */
 
 extern void *D_004562B0;
 extern void *D_004562A8;
@@ -277,8 +277,8 @@ void SceneGame_StateEntry(Scene *game) {
     AT(game, 0x1065040, s32) = VCALL(obj550, 0x10, u32 (*)(VObject *))(obj550) & 0xFF;
     Progress_ClearFlag(prog, 0x2B);
     Progress_ClearFlag(prog, 0x2C);
-    AT(game, 0x1053450, PTMF) = D_0044C7A0;
-    Scene_SetState(game, &D_0044C7B0);
+    AT(game, 0x1053450, PTMF) = SceneGame_SubStartRoom_ptmf;
+    Scene_SetState(game, &SceneGame_StateMain_ptmf);
 }
 
 /* ---- construction ---- */
@@ -494,7 +494,7 @@ void SceneGame_StateMain(Scene *g) {
 }
 
 extern void SceneGame_LoadedStart(Scene *g);
-extern const PTMF D_0044C7C0; /* { 0, -1, SceneGame_SubWaitRoom } */
+extern const PTMF SceneGame_SubWaitRoom_ptmf; /* { 0, -1, SceneGame_SubWaitRoom } */
 
 /* sub-state: start the room. Once the progress data is ready: reset the sub screen, the
  * members, the characters; when continuing from a save (+0xF6CD28), its entry room and the
@@ -538,7 +538,7 @@ s32 SceneGame_SubStartRoom(Scene *g) {
     AT(g, 0xF6CD24, s32) = 0;
     RoomEffects_Reset((u8 *)g + 0xF6CD30);
     EffectMgr_Reset((u8 *)g + 0xF6E200);
-    AT(g, 0x1053450, PTMF) = D_0044C7C0;
+    AT(g, 0x1053450, PTMF) = SceneGame_SubWaitRoom_ptmf;
     return 0;
 }
 
@@ -590,8 +590,8 @@ s32 SceneGame_SubWaitRoom(Scene *g) {
     return 0;
 }
 
-extern const PTMF D_0044C7D0;   /* the scene's gameplay state */
-extern const PTMF D_0044C7E0;   /* its gameplay sub-state (+0x1053440) */
+extern const PTMF SceneGame_StatePlay_ptmf;   /* the scene's gameplay state */
+extern const PTMF SceneGame_SubPlay_ptmf2;   /* its gameplay sub-state (+0x1053440) */
 extern void SceneGame_EnterRoom(Scene *g);
 
 /* the room is in: the characters in it enter (+0x38), the room's resources are set up, the
@@ -626,8 +626,8 @@ void SceneGame_RoomIn(Scene *g) {
     }
     func_002A8410((u8 *)g + 0x16B4);
     func_002A8410((u8 *)g + 0x16D4);
-    ptmf_set(&g->state, &D_0044C7D0);
-    ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C7E0);
+    ptmf_set(&g->state, &SceneGame_StatePlay_ptmf);
+    ptmf_set(&AT(g, 0x1053440, PTMF), &SceneGame_SubPlay_ptmf2);
 }
 
 extern const s32 D_0044C6E0[]; /* rooms flagged at +0x1FBF00 (-1 terminated) */
@@ -865,7 +865,7 @@ void SceneGame_PlayStart(Scene *g) {
     }
 }
 
-extern const PTMF D_0044C7F0;
+extern const PTMF SceneGame_SubPaused_ptmf;
 extern void *D_0045D1F0;
 
 /* the gameplay state (each frame): the sub-state +0x1053440 */
@@ -874,7 +874,7 @@ void SceneGame_StatePlay(Scene *g) {
     Progress *prog = (Progress *)((u8 *)g + SG_PROGRESS);
     PTMF *sub = &AT(g, 0x1053440, PTMF);
 
-    if (__ptmf_cmpr(sub, &D_0044C7F0) && AT(g, 0x106503C, void *) != NULL) {
+    if (__ptmf_cmpr(sub, &SceneGame_SubPaused_ptmf) && AT(g, 0x106503C, void *) != NULL) {
         MusicDir_Update(AT(g, 0x106503C, void *));
     }
     BgmCtl_Update((BgmCtl *)((u8 *)g + 0x1053424));
@@ -888,7 +888,7 @@ void SceneGame_StatePlay(Scene *g) {
 }
 
 extern const PTMF D_0044C598;   /* the scenes' callback while saving the game */
-extern const PTMF D_0044C800, D_0044C810, D_0044C820, D_0044C830;   /* sub-states: menus */
+extern const PTMF SceneGame_SubTransition_ptmf, SceneGame_SubMoviePaused_ptmf, SceneGame_SubPaused_ptmf2, SceneGame_SubSubScreen_ptmf;   /* sub-states: menus */
 extern s8 D_0047E360;           /* the pad: 0 = not connected */
 extern VObject *D_00456DF0;
 extern void SceneGame_ActionPrompt(Scene *g);
@@ -930,12 +930,12 @@ static inline void scenes_to_save(void) {
     }
 }
 
-extern const PTMF D_0044C588;   /* the gameplay sub-state "in play" (SceneGame_SubPlay) */
+extern const PTMF SceneGame_SubPlay_ptmf;   /* the gameplay sub-state "in play" (SceneGame_SubPlay) */
 
 /* the gameplay sub-state is "in play" */
 /* 0x00399BF0 */
 s32 SceneGame_InPlay(Scene *g) {
-    return __ptmf_cmpr(&AT(g, 0x1053440, PTMF), &D_0044C588) == 0;
+    return __ptmf_cmpr(&AT(g, 0x1053440, PTMF), &SceneGame_SubPlay_ptmf) == 0;
 }
 
 /* 0x00399C30 */
@@ -1170,7 +1170,7 @@ void SceneGame_SubPlay(Scene *g) {
 
         VCALL(gRumble, 0x10, void (*)(VObject *))(gRumble);
         VCALL(gFileLoader, 0x1C, void (*)(VObject *))(gFileLoader);
-        ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C800);
+        ptmf_set(&AT(g, 0x1053440, PTMF), &SceneGame_SubTransition_ptmf);
         menu = 1;
         snd = gSound;
         VCALL(snd, 0xAC, void (*)(VObject *, f32))(snd, 1.0f);
@@ -1196,7 +1196,7 @@ void SceneGame_SubPlay(Scene *g) {
                 Pause_Open((u8 *)g + 0x73EBA0, (D_0047E360 == 0 ? 0x80 : 0) | 1);
                 Panic_Pause((u8 *)g + 0x7F8);
                 menu = 1;
-                ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C810);
+                ptmf_set(&AT(g, 0x1053440, PTMF), &SceneGame_SubMoviePaused_ptmf);
             }
         } else if (!VCALL(ev, 0xBC, s32 (*)(VObject *))(ev) && gMovie == NULL &&
                    !(u8)Progress_TestFlag(prog, 0x19)) {
@@ -1204,12 +1204,12 @@ void SceneGame_SubPlay(Scene *g) {
             Pause_Open((u8 *)g + 0x73EBA0, D_0047E360 == 0 ? 0x80 : 0);
             Panic_Pause((u8 *)g + 0x7F8);
             menu = 1;
-            ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C820);
+            ptmf_set(&AT(g, 0x1053440, PTMF), &SceneGame_SubPaused_ptmf2);
         }
     }
     if (Progress_TestFlag(prog, 4) && !menu) {
         VCALL(gRumble, 0x2C, void (*)(VObject *, s32))(gRumble, 1);
-        ptmf_set(&AT(g, 0x1053440, PTMF), &D_0044C830);
+        ptmf_set(&AT(g, 0x1053440, PTMF), &SceneGame_SubSubScreen_ptmf);
     }
     Progress_ClearFlag(prog, 0xC);
     Progress_ClearFlag(prog, 6);
@@ -1958,7 +1958,7 @@ void SceneGame_Save(Scene *g, u32 slot) {
 /* ---- the menu sub-states (+0x1053440): each draws the world as it stands (frozen) under its
  * screen and goes back to play (SceneGame_SubPlay) when done ---- */
 
-extern const PTMF D_0044C840, D_0044C850, D_0044C860, D_0044C870;   /* back to play */
+extern const PTMF SceneGame_SubPlay_ptmf3, SceneGame_SubPlay_ptmf4, SceneGame_SubPlay_ptmf5, SceneGame_SubPlay_ptmf6;   /* back to play */
 
 /* the frozen world drawn (rooms, progress - `chars`: 0 unless flag 0x17, 1 with the placed
  * things unless 0x17 without 0x24, 2 both always - effects, panic, the event's message, the
@@ -2022,7 +2022,7 @@ void SceneGame_SubPaused(Scene *g) {
             return;
         }
         VCALL(gRumble, 0x2C, void (*)(VObject *, s32))(gRumble, 0);
-        to_play(g, &D_0044C860);
+        to_play(g, &SceneGame_SubPlay_ptmf5);
     }
     Progress_ClearFlag(prog, 6);
 }
@@ -2088,7 +2088,7 @@ void SceneGame_SubMoviePaused(Scene *g) {
     if (Progress_TestFlag(prog, 6)) {
         VCALL(gRumble, 0x2C, void (*)(VObject *, s32))(gRumble, 0);
         SceneGame_Danger(g);
-        to_play(g, &D_0044C870);
+        to_play(g, &SceneGame_SubPlay_ptmf6);
     }
     Progress_ClearFlag(prog, 6);
 }
@@ -2117,7 +2117,7 @@ void SceneGame_SubSubScreen(Scene *g) {
     PlayTime_Tick((u8 *)g + 0x1004);
     if (Progress_TestFlag(prog, 4)) {
         VCALL(gRumble, 0x2C, void (*)(VObject *, s32))(gRumble, 0);
-        to_play(g, &D_0044C840);
+        to_play(g, &SceneGame_SubPlay_ptmf3);
     }
     Progress_ClearFlag(prog, 4);
 }
@@ -2175,7 +2175,7 @@ void SceneGame_SubTransition(Scene *g) {
     VCALL(g, 0xB0, void (*)(Scene *, s32))(g, 0x37);
     AT(g, 0x44, s32) = 1;
     AT(g, 0xF6B6B2, u8) = 0x81;
-    to_play(g, &D_0044C850);
+    to_play(g, &SceneGame_SubPlay_ptmf4);
 }
 
 /* room `room` (>= 0) loaded into the spare room slot unless it is already there */

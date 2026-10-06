@@ -48,7 +48,7 @@ s32 Room0B_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990848[i & 0xFF], a, b);
 }
 
-/* room 0x0B (D_003F4640): the player is 20 .. 120 from (x, z) = s16 bytes 3..4, 5..6 */
+/* room 0x0B (Room0B_Cond00_ptmf): the player is 20 .. 120 from (x, z) = s16 bytes 3..4, 5..6 */
 /* 0x002AB130 */
 s32 Room0B_Cond00(void *self, void *a1, u8 *cmd) {
     f32 dx = (f32)(s16)(cmd[3] << 8 | cmd[4]) - gCharPlayer->a.pos[0];

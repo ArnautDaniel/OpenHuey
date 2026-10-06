@@ -72,7 +72,7 @@ s32 Room15_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990930[i & 0xFF], a, b);
 }
 
-/* room 0x15 (D_003FA738): Hewie is about in room 0xF in state 0x2F or 0x52 */
+/* room 0x15 (Room15_Cond00_ptmf): Hewie is about in room 0xF in state 0x2F or 0x52 */
 /* 0x002ACC90 */
 s32 Room15_Cond00(void) {
     Character *c = gCharacters[(u8)Progress_SlotOfId(gProgress, 1)];

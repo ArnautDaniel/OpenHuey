@@ -129,7 +129,7 @@ void *Obj472F60_dtor(u8 *o, s32 flags);
 void *Effect79FF0_dtor(u8 *o, s32 flags);
 
 extern const char *const D_0042C358;
-extern const PTMF D_0042C8F0;
+extern const PTMF Pursuer_StateRunThenNext_ptmf16;
 extern u8 D_0042E460[];
 extern u8 D_0042E4A0[];
 static inline s32 b5_prog_flag8000(void);
@@ -186,11 +186,11 @@ void *Kind37_MotionFiles(void);
 void Kind37_DoorOffset(void *self, s32 i, f32 *out);
 void Kind37_ActionOffsets(void *self, s32 i, f32 *out);
 
-extern const PTMF D_0042A170;
-extern const PTMF D_0042C400;
-extern const PTMF D_0042C980;
-extern const PTMF D_004308A0;
-extern const PTMF D_0043B630;
+extern const PTMF Pursuer_StateRunThenNext_ptmf13;
+extern const PTMF Pursuer_StateRunThenNext_ptmf14;
+extern const PTMF Pursuer_StateRunThenNext_ptmf17;
+extern const PTMF Pursuer_StateRunThenNext_ptmf20;
+extern const PTMF Pursuer_StateRunThenNext_ptmf24;
 /* destructor: own vtable -> Pursuer 0x46D810 -> NPC 0x46C220 -> Character; the model freed for
  * slots 3..5 */
 static inline __attribute__((always_inline)) Character *creature_dtor(Character *c, s32 flags, void **vt) {
@@ -789,27 +789,27 @@ void Pursuer_FilesLoading(Pursuer *p) {
     VCALL(gFileLoader, 0x14, void (*)(VObject *, u32))(gFileLoader, p->c.a.flags24 | p->c.a.slot);
 }
 
-extern const PTMF D_003ED0D0, D_003ED050, D_003ED0E0, D_003ED060, D_003ED530, D_003ED5A0, D_003ECF20,
-    D_003ED070, D_003ED0F0, D_003ECF80, D_003ECE80, D_003ED590, D_003ED080, D_003ECF30, D_003ECD30,
-    D_003ED210, D_003ECF40, D_003ECCB0, D_003ECC70, D_003ECB90;
+extern const PTMF Pursuer_StateCloseA_ptmf, Pursuer_StateCloseB_ptmf, Pursuer_StateGrabStart_ptmf, Pursuer_StateTauntStart_ptmf, D_003ED530, D_003ED5A0, D_003ECF20,
+    Pursuer_StateTaunt_ptmf, Pursuer_StateStepToEnd_ptmf, D_003ECF80, D_003ECE80, D_003ED590, Pursuer_StateTauntRepeat_ptmf, D_003ECF30, D_003ECD30,
+    Pursuer_StateHewieHolds_ptmf, D_003ECF40, D_003ECCB0, D_003ECC70, D_003ECB90;
 
 /* 0x0028A100 */
 void Pursuer_StateRelation1(Pursuer *p) {
     Relation_Request(gProgress, *(u8 *)&p->c.a.slot, 1, 9, 0, 8, 0.0f);
-    Actor_SetState(&p->c.a, &D_003ED0D0);
+    Actor_SetState(&p->c.a, &Pursuer_StateCloseA_ptmf);
 }
 
 /* 0x0028AA80 */
 void Pursuer_StateRelation2(Pursuer *p) {
     Relation_Request(gProgress, *(u8 *)&p->c.a.slot, 1, 9, 0, 6, 0.0f);
-    Actor_SetState(&p->c.a, &D_003ED050);
+    Actor_SetState(&p->c.a, &Pursuer_StateCloseB_ptmf);
 }
 
 /* 0x0028A060 */
 void Pursuer_StateCloseA(Pursuer *p) {
     if (p->c.state[0] != 7) {
         p->c.state[0] = 0;
-        Actor_SetState(&p->c.a, &D_003ED0E0);
+        Actor_SetState(&p->c.a, &Pursuer_StateGrabStart_ptmf);
         return;
     }
     p->c.state[0] = 0;
@@ -820,7 +820,7 @@ void Pursuer_StateCloseA(Pursuer *p) {
 void Pursuer_StateCloseB(Pursuer *p) {
     if (p->c.state[0] != 7) {
         p->c.state[0] = 0;
-        Actor_SetState(&p->c.a, &D_003ED060);
+        Actor_SetState(&p->c.a, &Pursuer_StateTauntStart_ptmf);
         return;
     }
     p->c.state[0] = 0;
@@ -1052,7 +1052,7 @@ void Pursuer_StateTauntStart(Pursuer *p) {
         p->c.state[0] = 0;
         Motion_PlayOwnBlend(p->c.motion, 0x1900, -1);
         p->c.moveSub = 0x19;
-        Actor_SetState(&p->c.a, &D_003ED070);
+        Actor_SetState(&p->c.a, &Pursuer_StateTaunt_ptmf);
         return;
     }
     p->c.state[0] = 0;
@@ -1065,7 +1065,7 @@ void Pursuer_StateGrabStart(Pursuer *p) {
         Motion_PlayOwnBlend(p->c.motion, 0x1A01, -1);
         p->c.a.unk2D = 1;
         p->c.moveSub = 0x19;
-        Actor_SetState(&p->c.a, &D_003ED0F0);
+        Actor_SetState(&p->c.a, &Pursuer_StateStepToEnd_ptmf);
         return;
     }
     p->c.state[0] = 0;
@@ -1135,7 +1135,7 @@ void Pursuer_StateTaunt(Pursuer *p) {
 
     if (MOTION_KEYS(p) & MOTION_KEY_END) {
         Motion_Play(m, 0x1901, -1);
-        Actor_SetState(&p->c.a, &D_003ED080);
+        Actor_SetState(&p->c.a, &Pursuer_StateTauntRepeat_ptmf);
         Panic_Fright((u8 *)gProgress + 0x7B8, VCALL(p, 0x300, f32 (*)(Pursuer *))(p));
         return;
     }
@@ -1378,7 +1378,7 @@ void Pursuer_StateTurnAnim(Pursuer *p) {
         sceVu0RotMatrixY(p->c.a.rot, p->c.a.rot, h);
         PU(p, 0x1634, f32) = 1.0f;
         PU(p, 0x1638, s32) = 0;
-        Actor_SetState(&p->c.a, &D_003ED210);
+        Actor_SetState(&p->c.a, &Pursuer_StateHewieHolds_ptmf);
     } else {
         Actor_TurnToward(&p->c.a, PU(p, 0x1634, f32), PU(p, 0x1638, f32));
     }
@@ -1470,7 +1470,7 @@ void Pursuer_Behaviour25C(Pursuer *p) {
 /* ---- batch 4 ---- */
 
 extern void *Kind22_vtable[], *Kind21_vtable[], *Pursuer_vtable[], *NPC_vtable[], *Character_vtable[], *Actor_vtable[];
-extern const PTMF D_003ED190, D_003ED1A0, D_003ED0B0, D_003ECE20, D_003ED510, D_003ED520, D_003ECDA0,
+extern const PTMF Pursuer_StateHitOver_ptmf, Pursuer_StateHitReaction_ptmf, Pursuer_StateCloseOnFionaA_ptmf, D_003ECE20, D_003ED510, D_003ED520, D_003ECDA0,
     D_003ECF00;
 
 /* vtable +0x40 (via +0x84 first): blocking flags (8 = held at a door), then +0x110 / +0x40 */
@@ -1653,10 +1653,10 @@ static void Pursuer_HitReact(Pursuer *p) {
     PU(p, 0x1628, s32) = 0;
     PURSUER_STEP_NEXT(p) = 0;
     if (PU(p, 0x1624, s32) != 0x1807 && PU(p, 0x1624, s32) != 0x1803) {
-        Actor_SetState(&p->c.a, &D_003ED1A0);
+        Actor_SetState(&p->c.a, &Pursuer_StateHitReaction_ptmf);
         Pursuer_StateHitReaction(p);
     } else {
-        Actor_SetState(&p->c.a, &D_003ED190);
+        Actor_SetState(&p->c.a, &Pursuer_StateHitOver_ptmf);
         Pursuer_StateHitOver(p);
     }
 }
@@ -1675,7 +1675,7 @@ void Pursuer_StateWalkOn(Pursuer *p) {
     }
     p->target = gCharPlayer;
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003ED0B0);
+    Actor_SetState(&p->c.a, &Pursuer_StateCloseOnFionaA_ptmf);
     Pursuer_StateCloseOnFionaA(p);
 }
 
@@ -1916,7 +1916,7 @@ void *Kind21_MotionFiles(void) {
 
 /* ---- batch 5 ---- */
 
-extern const PTMF D_003ECF50, D_003ECFC0, D_003ECF10, D_003ECF90, D_003ECCD0, D_003ED090, D_003ED0A0,
+extern const PTMF D_003ECF50, D_003ECFC0, D_003ECF10, D_003ECF90, D_003ECCD0, Pursuer_StateTauntHold_ptmf, Pursuer_StateTauntHold_ptmf2,
     D_003ECDB0;
 extern void *Pursuer_vtable[];
 
@@ -2306,14 +2306,14 @@ void Pursuer_StateTauntRepeat(Pursuer *p) {
         if (p->c.state[0] != 7) {
             if (p->c.unk104[0] >= 6) {
                 Motion_Play(p->c.motion, 0x1904, -1);
-                Actor_SetState(&p->c.a, &D_003ED0A0);
+                Actor_SetState(&p->c.a, &Pursuer_StateTauntHold_ptmf2);
                 return;
             }
             Motion_Play(p->c.motion, 0x1901, -1);
         } else {
             p->c.state[0] = 0;
             Motion_Play(p->c.motion, 0x1903, -1);
-            Actor_SetState(&p->c.a, &D_003ED090);
+            Actor_SetState(&p->c.a, &Pursuer_StateTauntHold_ptmf);
         }
     }
 }
@@ -2347,7 +2347,7 @@ void Pursuer_WalkToGoal(Pursuer *p) {
 
 /* ---- batch 6 ---- */
 
-extern const PTMF D_003ED360, D_003ED100, D_003ED2A0, D_003ED1F0, D_003ECF70, D_003ECD60, D_003ECB80,
+extern const PTMF D_003ED360, Pursuer_StateEndStep_ptmf3, D_003ED2A0, Pursuer_StateKnockedThrough_ptmf, D_003ECF70, Pursuer_StateStopAtEnd_ptmf, D_003ECB80,
     D_003ECE40;
 
 /* the attack: pick one from the table +0x1718 ({kind, value, chance} by a 0..100 roll) */
@@ -2464,7 +2464,7 @@ void Pursuer_StateLookAround(Pursuer *p) {
     }
     VCALL(p, 0x12C, void (*)(Pursuer *, f32))(p, VCALL(p, 0x308, f32 (*)(Pursuer *))(p));
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003ED100);
+    Actor_SetState(&p->c.a, &Pursuer_StateEndStep_ptmf3);
     if (((MOTION_KEYS(p) & MOTION_KEY_END) != 0) == 1) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
@@ -2618,7 +2618,7 @@ void Pursuer_StateDoorAhead(Pursuer *p) {
         p->c.unk100 = 0xFF;
     }
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003ED1F0);
+    Actor_SetState(&p->c.a, &Pursuer_StateKnockedThrough_ptmf);
     Pursuer_StateKnockedThrough(p);
 }
 
@@ -2655,7 +2655,7 @@ void Pursuer_StateStand(Pursuer *p) {
     PURSUER_STEP_NEXT(p) = 0;
     Pursuer_PlayAnim(p, VCALL(p, 0x320, s32 (*)(Pursuer *))(p));
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003ECD60);
+    Actor_SetState(&p->c.a, &Pursuer_StateStopAtEnd_ptmf);
     if (p->c.unkE0 != 0) {
         s32 over = MOTION_AT(p, 0x550, f32) <= 0.0f;
 
@@ -2887,7 +2887,7 @@ fail:
 /* ---- batch 7 ---- */
 
 extern const PTMF D_003ECEF0, D_003ED540, D_003ED550, D_003ECE50, D_003ECDF0, D_003ED270, D_003ED250,
-    D_003ED1C0, D_003ED1D0, D_003ECEC0, D_003ECE10, D_003ECD90, D_003ED030, D_003ED280, D_003ED290,
+    Pursuer_StateDownAndUp_ptmf2, Pursuer_StateHitReact_ptmf4, D_003ECEC0, D_003ECE10, D_003ECD90, Pursuer_StateCloseOnFionaB_ptmf, D_003ED280, D_003ED290,
     D_003ECED0;
 
 /* add `n` stops to the search route: 60% the room's next point of interest (+0x1738 counts them
@@ -3160,10 +3160,10 @@ void Pursuer_StateHurt(Pursuer *p) {
     PU(p, 0x1784, s32) = 0;
     a = MOTION_ANIM(p);
     if (a != 0x1804 && a != 0x1800 && a != 0x1709) {
-        Actor_SetState(&p->c.a, &D_003ED1D0);
+        Actor_SetState(&p->c.a, &Pursuer_StateHitReact_ptmf4);
         Pursuer_HitReact(p);
     } else {
-        Actor_SetState(&p->c.a, &D_003ED1C0);
+        Actor_SetState(&p->c.a, &Pursuer_StateDownAndUp_ptmf2);
         Pursuer_StateDownAndUp(p);
     }
 }
@@ -3257,7 +3257,7 @@ void Pursuer_StateFaceFiona(Pursuer *p) {
     p->target = gCharPlayer;
     p->c.unk104[0] = 0;
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003ED030);
+    Actor_SetState(&p->c.a, &Pursuer_StateCloseOnFionaB_ptmf);
     Pursuer_StateCloseOnFionaB(p);
 }
 
@@ -3315,7 +3315,7 @@ void Pursuer_Door1E4(Pursuer *p) {
 
 /* ---- batch 8 ---- */
 
-extern const PTMF D_003ED260, D_003ECE30, D_003ED5B0, D_003ECD70, D_003ED130, D_003ED580, D_003ECD80;
+extern const PTMF D_003ED260, D_003ECE30, D_003ED5B0, Pursuer_StateEndStep_ptmf, Pursuer_StateStepFacing_ptmf, D_003ED580, Pursuer_StateEndStep_ptmf2;
 extern PTMF D_0045B3A0;   /* followed by the idle move: +0xC kind, +0x10 move mode, +0x14 sub */
 
 /* vtable +0x254: on to the next exit (of the path, or a random one) */
@@ -3582,7 +3582,7 @@ void Pursuer_StateWalkThenAnim(Pursuer *p) {
     p->c.unk104[0] = -1;
     PURSUER_STEP_NEXT(p) = 1;
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003ECD70);
+    Actor_SetState(&p->c.a, &Pursuer_StateEndStep_ptmf);
     if (((MOTION_KEYS(p) & MOTION_KEY_END) != 0) == 1) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
@@ -3654,7 +3654,7 @@ void Pursuer_StateWalkThen404(Pursuer *p) {
     }
     Pursuer_PlayAnim(p, 0x404);
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003ED130);
+    Actor_SetState(&p->c.a, &Pursuer_StateStepFacing_ptmf);
     h = Actor_HeadingTo(&p->c.a, p->target->a.pos);
     d = Npc_TurnToward(p, h, VCALL(p, 0xA0, f32 (*)(Pursuer *))(p));
     if (d <= 0.0f) {
@@ -3743,7 +3743,7 @@ void Pursuer_StateWalkGesture(Pursuer *p) {
         PURSUER_STEP_NEXT(p) = 1;
     }
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003ECD80);
+    Actor_SetState(&p->c.a, &Pursuer_StateEndStep_ptmf2);
     if (((MOTION_KEYS(p) & MOTION_KEY_END) != 0) == 1) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
@@ -3754,8 +3754,8 @@ void Pursuer_StateWalkGesture(Pursuer *p) {
 
 /* ---- batch 9 ---- */
 
-extern const PTMF D_003ED020, D_003ECE90, D_003ECA00, D_003ECA10, D_003ECA20, D_003ED560, D_003ED570,
-    D_003ECC30, D_003ECDE0, D_003ECDD0, D_003ED140;
+extern const PTMF Pursuer_AttackNextStep_ptmf4, D_003ECE90, D_003ECA00, D_003ECA10, D_003ECA20, D_003ED560, D_003ED570,
+    D_003ECC30, D_003ECDE0, D_003ECDD0, Pursuer_StateSidestep_ptmf;
 extern PTMF D_0045B358;   /* followed by the wait move: +0xC kind, +0x10 move mode, +0x14 sub */
 
 /* vtable +0x70: placed into room `room` (triangle `tri`, -1: by its exit / way in), on side
@@ -3906,7 +3906,7 @@ void Pursuer_StateAttackActive(Pursuer *p) {
             PU(p, 0x178C, s32) = t != NULL ? t[2] : 30;
         }
         PU(p, 0x172C, s8)++;
-        Actor_SetState(&p->c.a, &D_003ED020);
+        Actor_SetState(&p->c.a, &Pursuer_AttackNextStep_ptmf4);
         return;
     }
     if (AT(e, 0x1C, u8) != 0) {
@@ -4154,7 +4154,7 @@ void Pursuer_StateSidestepRoom(Pursuer *p) {
             Pursuer_PlayAnim(p, VCALL(p, 0x324, s32 (*)(Pursuer *))(p));
         }
         PU(p, 0x1784, s32) = 0;
-        Actor_SetState(&p->c.a, &D_003ED140);
+        Actor_SetState(&p->c.a, &Pursuer_StateSidestep_ptmf);
         Pursuer_StateSidestep(p);
         return;
     }
@@ -4165,8 +4165,8 @@ void Pursuer_StateSidestepRoom(Pursuer *p) {
 
 #include "effectmgr.h"
 
-extern const PTMF D_003EC930, D_003EC940, D_003ED350, D_003ED4B0, D_003ED4C0, D_003ED4D0, D_003ED4E0,
-    D_003ED4F0, D_003ED500, D_003ECEE0, D_003ECB60, D_003ECB70, D_003ED240;
+extern const PTMF Pursuer_StateRunThenNext_ptmf, D_003EC940, D_003ED350, D_003ED4B0, D_003ED4C0, D_003ED4D0, D_003ED4E0,
+    D_003ED4F0, D_003ED500, D_003ECEE0, Pursuer_StateRunThenNext_ptmf5, D_003ECB70, Pursuer_StateCountKeys_ptmf;
 extern PTMF D_0045B340;   /* followed by a move: +0xC kind, +0x10 move mode, +0x14 sub */
 extern void *D_00479FF0[];
 
@@ -4227,7 +4227,7 @@ void Pursuer_EventState(Pursuer *p) {
                 PU(p, 0x1628, s32) = b;
                 Character_BackToNormal(&p->c);
             }
-            ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003EC930);
+            ptmf_set((PTMF *)((u8 *)p + 0x174C), &Pursuer_StateRunThenNext_ptmf);
             PU(p, 0x1758, s32) = -1;
             p->c.state[0] = 0;
         } else {
@@ -4783,7 +4783,7 @@ void Pursuer_BackToStance(Pursuer *p) {
         }
         PURSUER_STEP_NEXT(p) = 1;
     } else {
-        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003ECB60);
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), &Pursuer_StateRunThenNext_ptmf5);
         PU(p, 0x1758, s32) = -1;
     }
 }
@@ -4814,7 +4814,7 @@ void Pursuer_StateSpecialAnim(Pursuer *p) {
     args[1] = PU(p, 0x1624, s32);
     EffectMgr_Start(mgr, PU(p, 0x1628, s32), args);
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003ED240);
+    Actor_SetState(&p->c.a, &Pursuer_StateCountKeys_ptmf);
     if (MOTION_KEYS(p) & 0x400) {
         PU(p, 0x1624, s32)--;
         if (PU(p, 0x1624, s32) <= 0) {
@@ -4830,7 +4830,7 @@ void Pursuer_StateSpecialAnim(Pursuer *p) {
 
 /* ---- batch 11 ---- */
 
-extern const PTMF D_003ECA30, D_003ECA40, D_003ECA50, D_003ECF60, D_003EC9B0, D_003ECA60, D_003ECA70,
+extern const PTMF D_003ECA30, D_003ECA40, D_003ECA50, D_003ECF60, D_003EC9B0, D_003ECA60, Pursuer_StateHitReact_ptmf,
     D_003ECA80;
 
 /* vtable +0x2C4: start searching (in the played room: the route cleared to one stop) */
@@ -5214,7 +5214,7 @@ void Pursuer_KnockedDown(Pursuer *p) {
         ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003ECA60);
         PU(p, 0x1758, s32) = -1;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x1F);
-        Actor_SetState(&p->c.a, &D_003ECA70);
+        Actor_SetState(&p->c.a, &Pursuer_StateHitReact_ptmf);
     } else {
         ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_003ECA80);
         PU(p, 0x1758, s32) = -1;
@@ -5233,7 +5233,7 @@ void Pursuer_KnockedDown(Pursuer *p) {
 
 /* ---- batch 12 ---- */
 
-extern const PTMF D_003EC9C0, D_003EC9D0, D_003EC9E0, D_003EC9F0, D_003ED1E0, D_003ECE00, D_003EC900;
+extern const PTMF D_003EC9C0, D_003EC9D0, D_003EC9E0, D_003EC9F0, Pursuer_StateBargedThrough_ptmf, D_003ECE00, D_003EC900;
 
 /* vtable +0x2BC: go for Fiona (stance 0): the route forgotten, behaviour by sight */
 /* 0x0029B190 */
@@ -5365,7 +5365,7 @@ void Pursuer_StateHitAtDoor(Pursuer *p) {
         p->c.unk100 = 0xFF;
     }
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003ED1E0);
+    Actor_SetState(&p->c.a, &Pursuer_StateBargedThrough_ptmf);
     Pursuer_StateBargedThrough(p);
 }
 
@@ -5710,7 +5710,7 @@ s32 Pursuer_PickTarget(Pursuer *p) {
 
 /* ---- batch 13 ---- */
 
-extern const PTMF D_003ED1B0, D_003ED200, D_003ECFA0;
+extern const PTMF Pursuer_StateHitOver_ptmf2, Pursuer_StateTurnAnim_ptmf, D_003ECFA0;
 
 /* vtable +0x110: a grab ordered by the progress (Hewie, kinds 10..15): take position, or
  * refuse (-1) */
@@ -5873,7 +5873,7 @@ void Pursuer_StateHitReaction(Pursuer *p) {
         Pursuer_PlayAnim(p, a + 1);
         PU(p, 0x1628, s32) = 0;
         PU(p, 0x1784, s32) = 0;
-        Actor_SetState(&p->c.a, &D_003ED1B0);
+        Actor_SetState(&p->c.a, &Pursuer_StateHitOver_ptmf2);
         return;
     }
     PU(p, 0x1624, s32) = MOTION_ANIM(p);
@@ -5935,7 +5935,7 @@ void Pursuer_StateHewieBites(Pursuer *p) {
     }
     PU(p, 0x1638, f32) = (p->c.unk104[0] != 0xF ? 0.125f : 0x1.5551d60000000p-4f /* 0.08333 */) * d;
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003ED200);
+    Actor_SetState(&p->c.a, &Pursuer_StateTurnAnim_ptmf);
 }
 
 /* vtable +0x218: walk to the door +0x100 (side +0x104, -1: either), then line up */
@@ -6091,7 +6091,7 @@ s32 Pursuer_GrabHewieBehind(Pursuer *p) {
 
 /* ---- batch 14 ---- */
 
-extern const PTMF D_003ED0C0, D_003ED040, D_003ECC00, D_003ECC10, D_003EC910, D_003EC920;
+extern const PTMF Pursuer_StateRelation1_ptmf, Pursuer_StateRelation2_ptmf, D_003ECC00, D_003ECC10, D_003EC910, D_003EC920;
 
 /* look around: the head swept by a sine over vtable +0x2DC frames (full swing +0x2E0, half
  * at the ends), then back to straight ahead */
@@ -6233,12 +6233,12 @@ static void Pursuer_CloseOnFiona(Pursuer *p, const PTMF *hit, const PTMF *after,
 
 /* 0x0028A190 */
 void Pursuer_StateCloseOnFionaA(Pursuer *p) {
-    Pursuer_CloseOnFiona(p, &D_003ED0C0, &D_003ED0D0, 8);
+    Pursuer_CloseOnFiona(p, &Pursuer_StateRelation1_ptmf, &Pursuer_StateCloseA_ptmf, 8);
 }
 
 /* 0x0028AB10 */
 void Pursuer_StateCloseOnFionaB(Pursuer *p) {
-    Pursuer_CloseOnFiona(p, &D_003ED040, &D_003ED050, 6);
+    Pursuer_CloseOnFiona(p, &Pursuer_StateRelation2_ptmf, &Pursuer_StateCloseB_ptmf, 6);
 }
 
 /* vtable +0x264: the chase decision: in reach (the ground gained in 5 frames), on the same
@@ -6360,7 +6360,7 @@ void Pursuer_LoadState(Pursuer *p) {
 
 /* ---- batch 15 ---- */
 
-extern const PTMF D_003ED160, D_003ECFF0, D_003ED000, D_003ECEB0, D_003ECEA0;
+extern const PTMF Pursuer_StateDownAndUp_ptmf, Pursuer_StateAttackActive_ptmf, Pursuer_StateAttackStep_ptmf, D_003ECEB0, D_003ECEA0;
 extern PTMF D_0045B370, D_0045B3B8;   /* more moves (see Pursuer_SetMove) */
 
 /* vtable +0x...: knocked down (0x1709 / 0x1804 falling forward if there's room / 0x1800);
@@ -6409,7 +6409,7 @@ void Pursuer_StateKnockedDown(Pursuer *p) {
     PU(p, 0x1545, u8) = 0;
     VCALL(p, 0x104, void (*)(Pursuer *))(p);
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003ED160);
+    Actor_SetState(&p->c.a, &Pursuer_StateDownAndUp_ptmf);
     Pursuer_StateDownAndUp(p);
 }
 
@@ -6453,7 +6453,7 @@ void Pursuer_AttackNextStep(Pursuer *p) {
                 PU(p, 0x1784, s32) = 0;
                 switch (AT(e, 0x10, u8)) {
                 case 6:
-                    Actor_SetState(&p->c.a, &D_003ECFF0);
+                    Actor_SetState(&p->c.a, &Pursuer_StateAttackActive_ptmf);
                     Pursuer_StateAttackActive(p);
                     return;
                 case 1:
@@ -6467,7 +6467,7 @@ void Pursuer_AttackNextStep(Pursuer *p) {
                     break;
                 }
                 p->c.unk104[0] = 0;
-                Actor_SetState(&p->c.a, &D_003ED000);
+                Actor_SetState(&p->c.a, &Pursuer_StateAttackStep_ptmf);
                 Pursuer_StateAttackStep(p);
                 return;
             }
@@ -6690,7 +6690,7 @@ void Pursuer_DoorWalkTo(Pursuer *p) {
     VCALL(p, 0x1D0, void (*)(Pursuer *))(p);
 }
 
-extern const PTMF D_003ED170, D_003ED180, D_003ED2B0, D_003ED2C0, D_003ED2D0, D_003ED2E0, D_003ED2F0,
+extern const PTMF Pursuer_StateHitReact_ptmf2, Pursuer_StateHitReact_ptmf3, D_003ED2B0, D_003ED2C0, D_003ED2D0, D_003ED2E0, D_003ED2F0,
     D_003ED300, D_003ED310, D_003ED320, D_003ED330, D_003ED340, D_003ECDC0;
 
 /* state: knocked down (anim 0x1709) and getting up again (0x1806/0x1802) */
@@ -6728,7 +6728,7 @@ void Pursuer_StateDownAndUp(Pursuer *p) {
     }
     if (p->c.a.unkC4 != 2 && AT(m, 0x55C, s32) == 0x1709) {
         PU(p, 0x1784, s32) = 0;
-        Actor_SetState(&p->c.a, &D_003ED170);
+        Actor_SetState(&p->c.a, &Pursuer_StateHitReact_ptmf2);
         if (p->c.a.unkC4 != 2 && MOTION_ANIM(p) == 0x1709) {
             PU(p, 0x1624, s32) = 0x1806;
         } else {
@@ -6738,10 +6738,10 @@ void Pursuer_StateDownAndUp(Pursuer *p) {
         PURSUER_STEP_NEXT(p) = 0;
         anim = PU(p, 0x1624, s32);
         if (anim == 0x1807 || anim == 0x1803) {
-            Actor_SetState(&p->c.a, &D_003ED190);
+            Actor_SetState(&p->c.a, &Pursuer_StateHitOver_ptmf);
             Pursuer_StateHitOver(p);
         } else {
-            Actor_SetState(&p->c.a, &D_003ED1A0);
+            Actor_SetState(&p->c.a, &Pursuer_StateHitReaction_ptmf);
             Pursuer_StateHitReaction(p);
         }
         return;
@@ -6756,7 +6756,7 @@ void Pursuer_StateDownAndUp(Pursuer *p) {
         break;
     }
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003ED180);
+    Actor_SetState(&p->c.a, &Pursuer_StateHitReact_ptmf3);
 }
 
 /* pick the behaviour step (+0x174C) for the current mode +0x16C8 */
@@ -7349,7 +7349,7 @@ void Pursuer_Stairs(Pursuer *p) {
     }
 }
 
-extern const PTMF D_003ED110, D_003ED120;
+extern const PTMF D_003ED110, Pursuer_StateEndStep_ptmf4;
 
 /* react to the event +0x16CA once the current animation is over: 7 and 4 play a short reaction
    (0x1601, 0x1602; 4 also clears the event state and switches to searching), 1, 5 and 6 turn
@@ -7412,7 +7412,7 @@ void Pursuer_ReactToEvent(Pursuer *p) {
         PURSUER_STEP_DONE(p) = 1;
         return;
     }
-    Actor_SetState(&p->c.a, &D_003ED120);
+    Actor_SetState(&p->c.a, &Pursuer_StateEndStep_ptmf4);
     if (((AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) != 0) == 1) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
@@ -7827,7 +7827,7 @@ void Pursuer_CarryOnLying(Pursuer *p) {
     }
 }
 
-extern const PTMF D_003ED150;
+extern const PTMF Pursuer_StateEndStep_ptmf5;
 
 /* state: hit, flinching from direction +0x104 (0..3; bit 1 when the hit only staggers it) */
 /* 0x00288970 */
@@ -7872,7 +7872,7 @@ void Pursuer_StateFlinch(Pursuer *p) {
     p->c.moveSub = sub;
     VCALL(p, 0x104, void (*)(Pursuer *))(p);
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003ED150);
+    Actor_SetState(&p->c.a, &Pursuer_StateEndStep_ptmf5);
     if (((AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) != 0) == 1) {
         PURSUER_STEP_DONE(p) = 1;
         PURSUER_STEP_NEXT(p) = 1;
@@ -8032,7 +8032,7 @@ void Pursuer_Modes(Pursuer *p) {
     }
 }
 
-extern const PTMF D_003ED010;
+extern const PTMF Pursuer_AttackNextStep_ptmf3;
 
 /* state: an attack step in progress (entry e of Pursuer_AttackNextStep). At the animation's hit key the
    strike lands where the entry's bone (+0x4) is, unless a wall is in the way; once over, either
@@ -8128,7 +8128,7 @@ void Pursuer_StateAttackStep(Pursuer *p) {
         PU(p, 0x1770, s32) = 0;
         PU(p, 0x1774, s32) = 0;
         PU(p, 0x1778, s32) = 0;
-        Actor_SetState(&p->c.a, &D_003ED010);
+        Actor_SetState(&p->c.a, &Pursuer_AttackNextStep_ptmf3);
         return;
     }
     p->c.unk104[0] = 2;
@@ -8481,8 +8481,8 @@ void Pursuer_ModesSearching(Pursuer *p) {
     }
 }
 
-extern const PTMF D_003ECA90, D_003ECAA0, D_003ECAB0, D_003ECAC0, D_003ECAD0, D_003ECAE0, D_003ECAF0,
-    D_003ECB00, D_003ECB10, D_003ECB20, D_003ECB30, D_003ECB40, D_003ECB50;
+extern const PTMF Pursuer_StateRunThenNext_ptmf2, Pursuer_StateRunThenNext_ptmf3, Pursuer_StateRunThenNext_ptmf4, Pursuer_StateArrive_ptmf, Pursuer_StateArrive_ptmf2, Pursuer_StateRunToTri_ptmf, Pursuer_StateRunToTri_ptmf2,
+    Pursuer_StateRootStep_ptmf, Pursuer_StateRootStep_ptmf2, Pursuer_StateRootStep_ptmf3, Pursuer_StateRootStep_ptmf4, Pursuer_StateTurnThenWait_ptmf, Pursuer_StateTurnThenWait_ptmf2;
 
 /* walk (0x200) or run (0x201) to wherever the script asked */
 static void Pursuer_ScriptMove(Pursuer *p, s32 group, const PTMF *step) {
@@ -8533,17 +8533,17 @@ void Pursuer_EventCommand(Pursuer *p) {
         }
         break;
     case 2:
-        ptmf_set(step, &D_003ECA90);
+        ptmf_set(step, &Pursuer_StateRunThenNext_ptmf2);
         PU(p, 0x1758, s32) = -1;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
         break;
     case 3:
-        ptmf_set(step, &D_003ECAA0);
+        ptmf_set(step, &Pursuer_StateRunThenNext_ptmf3);
         PU(p, 0x1758, s32) = -1;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0xA);
         break;
     case 4:
-        ptmf_set(step, &D_003ECAB0);
+        ptmf_set(step, &Pursuer_StateRunThenNext_ptmf4);
         PU(p, 0x1758, s32) = -1;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0xA);
         break;
@@ -8551,9 +8551,9 @@ void Pursuer_EventCommand(Pursuer *p) {
     case 10:
         VCALL(p, 0xAC, void (*)(Pursuer *, s32, f32 *, s32))(p, p->c.unk104[0], p->c.unk110, -1);
         if (p->c.unkF4 == 5) {
-            Pursuer_ScriptMove(p, 0x200, &D_003ECAC0);
+            Pursuer_ScriptMove(p, 0x200, &Pursuer_StateArrive_ptmf);
         } else {
-            Pursuer_ScriptMove(p, 0x201, &D_003ECAD0);
+            Pursuer_ScriptMove(p, 0x201, &Pursuer_StateArrive_ptmf2);
         }
         break;
     case 6:
@@ -8561,33 +8561,33 @@ void Pursuer_EventCommand(Pursuer *p) {
         PU(p, 0x15A4, s32) = p->c.unk104[0];
         VCALL(gNavMesh, 0xC, void (*)(void *, s32, f32 *))(gNavMesh, PU(p, 0x15A4, s32), (f32 *)((u8 *)p + 0x15B0));
         if (p->c.unkF4 == 6) {
-            Pursuer_ScriptMove(p, 0x200, &D_003ECAE0);
+            Pursuer_ScriptMove(p, 0x200, &Pursuer_StateRunToTri_ptmf);
         } else {
-            Pursuer_ScriptMove(p, 0x201, &D_003ECAF0);
+            Pursuer_ScriptMove(p, 0x201, &Pursuer_StateRunToTri_ptmf2);
         }
         break;
     case 7:
         Motion_PlayTable(p->c.motion, p->c.unk104[0], -1);
         p->c.unkE1 = 1;
-        ptmf_set(step, &D_003ECB00);
+        ptmf_set(step, &Pursuer_StateRootStep_ptmf);
         PU(p, 0x1758, s32) = -1;
         break;
     case 8:
         Motion_PlayBlend(p->c.motion, p->c.unk104[0], p->c.unk104[1], -1);
         p->c.unkE1 = 1;
-        ptmf_set(step, &D_003ECB10);
+        ptmf_set(step, &Pursuer_StateRootStep_ptmf2);
         PU(p, 0x1758, s32) = -1;
         break;
     case 9:
         Motion_PlayBlend8(p->c.motion, p->c.unk104[0], p->c.unk104[1]);
         p->c.unkE1 = 1;
-        ptmf_set(step, &D_003ECB20);
+        ptmf_set(step, &Pursuer_StateRootStep_ptmf3);
         PU(p, 0x1758, s32) = -1;
         break;
     case 16:
         Motion_PlayBlend(p->c.motion, 0, p->c.unk104[1], -1);
         p->c.unkE1 = 1;
-        ptmf_set(step, &D_003ECB30);
+        ptmf_set(step, &Pursuer_StateRootStep_ptmf4);
         PU(p, 0x1758, s32) = -1;
         break;
     case 12:
@@ -8610,12 +8610,12 @@ void Pursuer_EventCommand(Pursuer *p) {
         }
         Pursuer_PlayAnim(p, 0x200);
         *(f32 *)&p->c.unk104[2] = Actor_HeadingTo(&p->c.a, gCharacters[p->c.unk100]->a.pos);
-        ptmf_set(step, &D_003ECB40);
+        ptmf_set(step, &Pursuer_StateTurnThenWait_ptmf);
         PU(p, 0x1758, s32) = -1;
         break;
     case 15:
         Pursuer_PlayAnim(p, 0x200);
-        ptmf_set(step, &D_003ECB50);
+        ptmf_set(step, &Pursuer_StateTurnThenWait_ptmf2);
         PU(p, 0x1758, s32) = -1;
         break;
     }
@@ -8655,7 +8655,7 @@ static s32 Pursuer_ShakeOffEntry(Pursuer *p) {
     return k;
 }
 
-extern const PTMF D_003ED220, D_003ED230;
+extern const PTMF Pursuer_StateBackOnFeet_ptmf, Pursuer_StateBackOnFeet_ptmf2;
 
 /* state: Hewie has it by the arm or leg (+0x104 10..15 where, 15 knocked down). Each bite adds the
    part's damage (+0x173C table) to +0x16BC, at most 1000; every hit key it may throw him off,
@@ -8682,7 +8682,7 @@ void Pursuer_StateHewieHolds(Pursuer *p) {
 
             anim = PU(p, 0x1624, s32) + 2;
             if (anim == AT(m, 0x55C, s32)) {
-                Actor_SetState(&p->c.a, &D_003ED220);
+                Actor_SetState(&p->c.a, &Pursuer_StateBackOnFeet_ptmf);
             } else {
                 Motion_Play(m, anim, -1);
                 k = Pursuer_ShakeOffEntry(p);
@@ -8699,7 +8699,7 @@ void Pursuer_StateHewieHolds(Pursuer *p) {
             } else {
                 anim = PU(p, 0x1624, s32) + 1;
                 if (anim == AT(m, 0x55C, s32)) {
-                    Actor_SetState(&p->c.a, &D_003ED230);
+                    Actor_SetState(&p->c.a, &Pursuer_StateBackOnFeet_ptmf2);
                 } else if (p->c.hp == 0) {
                     VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x1F);
                     Pursuer_StateKnockedDown(p);
@@ -10018,7 +10018,7 @@ void Pursuer_BehaviourDoors(Pursuer *p) {
     }
 }
 
-extern const PTMF D_003ED3B0, D_003ED3C0, D_003ED3D0, D_003ED3E0, D_003ED3F0, D_003ED400, D_003ED410,
+extern const PTMF D_003ED3B0, D_003ED3C0, D_003ED3D0, D_003ED3E0, D_003ED3F0, D_003ED400, Pursuer_StateHitReact_ptmf5,
     D_003ED420, D_003ED430, D_003ED440;
 
 /* place the pursuer on triangle tri facing its heading (vtable +0x28), or nowhere */
@@ -10112,7 +10112,7 @@ void Pursuer_ShowUp(Pursuer *p) {
                     PU(p, 0x17B4, s32) = 0;
                 } else {
                     VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 0x1F);
-                    Actor_SetState(&p->c.a, &D_003ED410);
+                    Actor_SetState(&p->c.a, &Pursuer_StateHitReact_ptmf5);
                     Pursuer_PlayAnimBlend(p, ((s32 (*)(Pursuer *, Character *, u32))Actor_TriFreeFor)(p, (Character *)p, 0) != 0 ? 0x1806 : 0x1802);
                 }
                 PU(p, 0x1761, u8) = 1;
@@ -11205,7 +11205,7 @@ u8 *Debilitas_ModelFileTable(Pursuer *p) {
  * mostly keeps the Pursuer's own behaviour ---- */
 
 extern void *Kind08_vtable[];
-extern const PTMF D_00419E50;   /* its behaviour after a reset */
+extern const PTMF Pursuer_StateRunThenNext_ptmf6;   /* its behaviour after a reset */
 
 /* vtable +0x8: destructor */
 /* 0x002ECB80 */
@@ -11244,7 +11244,7 @@ void Kind08_ShowUp(Pursuer *p) {
     }
 }
 
-/* vtable +0x84: a pending reset (state 5): on screen, +0x8C, its behaviour D_00419E50 and the
+/* vtable +0x84: a pending reset (state 5): on screen, +0x8C, its behaviour Pursuer_StateRunThenNext_ptmf6 and the
  * next one cleared (+0x1758), then +0x114(1); the state is cleared either way */
 /* 0x002ECD10 */
 void Kind08_EventState(Pursuer *p) {
@@ -11253,7 +11253,7 @@ void Kind08_EventState(Pursuer *p) {
     }
     if (Npc_InPlayedRoom(p) & 0xFF) {
         VCALL(p, 0x8C, void (*)(Pursuer *))(p);
-        ptmf_set((PTMF *)((u8 *)p + 0x174C), &D_00419E50);
+        ptmf_set((PTMF *)((u8 *)p + 0x174C), &Pursuer_StateRunThenNext_ptmf6);
         PU(p, 0x1758, s32) = -1;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
     }
@@ -11326,7 +11326,7 @@ void Kind09_BehaviourSearch(Character *c) {
 
 /* ---- character kind 14 (vtable Kind14_vtable, the pursuer base with three of its own) ---- */
 
-extern const PTMF D_00429840;
+extern const PTMF Pursuer_StateRunThenNext_ptmf9;
 
 /* +0x38 a frame: back on the mesh (Actor_TeleportRandom) when Npc_InPlayedRoom says so */
 /* 0x00312EA0 */
@@ -11337,7 +11337,7 @@ void Kind14_ShowUp(Pursuer *p) {
 }
 
 /* +0x84 a request of kind 5 (+0x14E8): when Npc_InPlayedRoom allows it, +0x8C, its state
- * (+0x174C) D_00429840 with no target (+0x1758 -1), +0x114(1); the request cleared either way */
+ * (+0x174C) Pursuer_StateRunThenNext_ptmf9 with no target (+0x1758 -1), +0x114(1); the request cleared either way */
 /* 0x00312EF0 */
 void Kind14_EventState(Pursuer *p) {
     if (PU(p, 0x14E8, s32) != 5) {
@@ -11345,7 +11345,7 @@ void Kind14_EventState(Pursuer *p) {
     }
     if ((Npc_InPlayedRoom(p) & 0xFF) != 0) {
         VCALL(p, 0x8C, void (*)(Pursuer *))(p);
-        ptmf_set(&PU(p, 0x174C, PTMF), &D_00429840);
+        ptmf_set(&PU(p, 0x174C, PTMF), &Pursuer_StateRunThenNext_ptmf9);
         PU(p, 0x1758, s32) = -1;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
     }
@@ -11367,7 +11367,7 @@ s32 Kind14_GrabOrder(Pursuer *p) {
 /* ---- character kind 0x10 (vtable Kind16_vtable, the pursuer base with four of its own) ---- */
 
 extern void *Kind16_vtable[];
-extern const PTMF D_00429CD0;
+extern const PTMF Pursuer_StateRunThenNext_ptmf10;
 
 /* +0x8 destructor */
 /* 0x00315B30 */
@@ -11401,7 +11401,7 @@ void Kind16_ShowUp(Pursuer *p) {
 }
 
 /* +0x84 a request of kind 5 (+0x14E8): when Npc_InPlayedRoom allows it, +0x8C, its state
- * (+0x174C) D_00429CD0 with no target (+0x1758 -1), +0x114(1); the request cleared either way */
+ * (+0x174C) Pursuer_StateRunThenNext_ptmf10 with no target (+0x1758 -1), +0x114(1); the request cleared either way */
 /* 0x00315CC0 */
 void Kind16_EventState(Pursuer *p) {
     if (PU(p, 0x14E8, s32) != 5) {
@@ -11409,7 +11409,7 @@ void Kind16_EventState(Pursuer *p) {
     }
     if ((Npc_InPlayedRoom(p) & 0xFF) != 0) {
         VCALL(p, 0x8C, void (*)(Pursuer *))(p);
-        ptmf_set(&PU(p, 0x174C, PTMF), &D_00429CD0);
+        ptmf_set(&PU(p, 0x174C, PTMF), &Pursuer_StateRunThenNext_ptmf10);
         PU(p, 0x1758, s32) = -1;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
     }
@@ -11431,7 +11431,7 @@ s32 Kind16_GrabOrder(Pursuer *p) {
 /* ---- character kind 0x11 (vtable Kind17_vtable, the pursuer base with four of its own) ---- */
 
 extern void *Kind17_vtable[];
-extern const PTMF D_00429D60;
+extern const PTMF Pursuer_StateRunThenNext_ptmf11;
 
 /* +0x8 destructor */
 /* 0x00316AB0 */
@@ -11465,7 +11465,7 @@ void Kind17_ShowUp(Pursuer *p) {
 }
 
 /* +0x84 a request of kind 5 (+0x14E8): when Npc_InPlayedRoom allows it, +0x8C, its state
- * (+0x174C) D_00429D60 with no target (+0x1758 -1), +0x114(1); the request cleared either way */
+ * (+0x174C) Pursuer_StateRunThenNext_ptmf11 with no target (+0x1758 -1), +0x114(1); the request cleared either way */
 /* 0x00316C40 */
 void Kind17_EventState(Pursuer *p) {
     if (PU(p, 0x14E8, s32) != 5) {
@@ -11473,7 +11473,7 @@ void Kind17_EventState(Pursuer *p) {
     }
     if ((Npc_InPlayedRoom(p) & 0xFF) != 0) {
         VCALL(p, 0x8C, void (*)(Pursuer *))(p);
-        ptmf_set(&PU(p, 0x174C, PTMF), &D_00429D60);
+        ptmf_set(&PU(p, 0x174C, PTMF), &Pursuer_StateRunThenNext_ptmf11);
         PU(p, 0x1758, s32) = -1;
         VCALL(p, 0x114, void (*)(Pursuer *, s32))(p, 1);
     }
@@ -11522,7 +11522,7 @@ void *Kind19_MotionFiles(void) {
 void Kind19_ShowUp(Pursuer *p) { creature_inplay(p); }
 
 /* 0x0031E750 */
-void Kind19_EventState(Pursuer *p) { creature_act5(p, &D_0042A170); }
+void Kind19_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf13); }
 
 /* 0x0031E820 */
 s32 Kind19_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
@@ -11549,7 +11549,7 @@ void *Kind24_MotionFiles(void) {
 void Kind24_ShowUp(Pursuer *p) { creature_inplay(p); }
 
 /* 0x003217D0 */
-void Kind24_EventState(Pursuer *p) { creature_act5(p, &D_0042C400); }
+void Kind24_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf14); }
 
 /* 0x003218A0 */
 s32 Kind24_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
@@ -11558,7 +11558,7 @@ s32 Kind24_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 void Kind21_ShowUp(Pursuer *p) { creature_inplay(p); }
 
 /* 0x0032C880 */
-void Kind21_EventState(Pursuer *p) { creature_act5(p, &D_0042C8F0); }
+void Kind21_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf16); }
 
 /* 0x0032C950 */
 s32 Kind21_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
@@ -11580,7 +11580,7 @@ void *Kind20_MotionFiles(void) {
 void Kind20_ShowUp(Pursuer *p) { creature_inplay(p); }
 
 /* 0x0032CB50 */
-void Kind20_EventState(Pursuer *p) { creature_act5(p, &D_0042C980); }
+void Kind20_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf17); }
 
 /* 0x0032CC20 */
 s32 Kind20_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
@@ -11607,7 +11607,7 @@ void *Kind29_MotionFiles(void) {
 void Kind29_ShowUp(Pursuer *p) { creature_inplay(p); }
 
 /* 0x0033AD30 */
-void Kind29_EventState(Pursuer *p) { creature_act5(p, &D_004308A0); }
+void Kind29_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf20); }
 
 /* 0x0033AE00 */
 s32 Kind29_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
@@ -11629,7 +11629,7 @@ void *Kind33_MotionFiles(void) {
 void Kind33_ShowUp(Pursuer *p) { creature_inplay(p); }
 
 /* 0x00345290 */
-void Kind33_EventState(Pursuer *p) { creature_act5(p, &D_0043B630); }
+void Kind33_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf24); }
 
 /* 0x00345360 */
 s32 Kind33_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
@@ -11954,7 +11954,7 @@ void Progress_Noop74(void) {
 
 /* ---- methods of stalker subclasses D_004712xx / D_004714xx / D_004720xx (room creatures) ---- */
 
-extern const PTMF D_00422338, D_00422420, D_00422430, D_004297B0;
+extern const PTMF D_00422338, Pursuer_StateRunThenNext_ptmf7, D_00422430, Pursuer_StateRunThenNext_ptmf8;
 
 /* a state: D_00422338 at +0x174C, +0x1758 -1, then +0x294 */
 /* 0x003090F0 */
@@ -11996,12 +11996,12 @@ static inline __attribute__((always_inline)) void act5(Pursuer *p, const PTMF *s
 
 /* 0x00309210 */
 void Kind09_EventState(Pursuer *p) {
-    act5(p, &D_00422420);
+    act5(p, &Pursuer_StateRunThenNext_ptmf7);
 }
 
 /* 0x00311B30 */
 void Kind13_EventState(Pursuer *p) {
-    act5(p, &D_004297B0);
+    act5(p, &Pursuer_StateRunThenNext_ptmf8);
 }
 
 /* its slot's progress entry (Progress_HasRelationCmd) 1: SlotCmd_Cancel; -1 */

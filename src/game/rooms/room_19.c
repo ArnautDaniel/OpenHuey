@@ -70,7 +70,7 @@ s32 Room19_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990950[i & 0xFF], a, b);
 }
 
-/* room 0x19 (D_003FC010): the pursuer (about, not in state 2, in mode 2, 6 or 7) while Hewie is
+/* room 0x19 (Room19_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) while Hewie is
  * controlled: in another room, or 30 or more from the player */
 /* 0x002AD2F0 */
 s32 Room19_Cond00(void) {

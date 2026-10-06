@@ -72,7 +72,7 @@ s32 Room51_Cmd01(void) {   /* progress flag 0x650 */
     return item238_sound(0x10000);
 }
 
-/* room 0x51 (D_0040E340): byte 3 0 door 0 set going (+0xC); else wait (2) while it moves */
+/* room 0x51 (Room51_Cmd00_ptmf): byte 3 0 door 0 set going (+0xC); else wait (2) while it moves */
 /* 0x002B49F0 */
 s32 Room51_Cmd00(void *self, void *a1, u8 *cmd) {
     if (cmd[3] != 0) {

@@ -75,7 +75,7 @@ s32 Room0F_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990890[i & 0xFF], a, b);
 }
 
-/* room 0x0F (D_003F6F28): the player's model +0xD0 (0, 1.5, -2 / -1.5 by byte 3) and +0xCC */
+/* room 0x0F (Room0F_Cmd04_ptmf): the player's model +0xD0 (0, 1.5, -2 / -1.5 by byte 3) and +0xCC */
 /* 0x002ABB10 */
 s32 Room0F_Cmd04(void *self, void *a1, u8 *cmd) {
     VObject *m = gCharPlayer->motion;
@@ -90,7 +90,7 @@ s32 Room0F_Cmd04(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x0F (D_003F6F18): the player's model +0xBC (1, 0.25) or (0, 0) by byte 3 */
+/* room 0x0F (Room0F_Cmd03_ptmf): the player's model +0xBC (1, 0.25) or (0, 0) by byte 3 */
 /* 0x002ABBC0 */
 s32 Room0F_Cmd03(void *self, void *a1, u8 *cmd) {
     VObject *m = gCharPlayer->motion;
@@ -103,7 +103,7 @@ s32 Room0F_Cmd03(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x0F (D_003F6F08): an effect (D_00471060, 0x840 bytes) with its box */
+/* room 0x0F (Room0F_Cmd02_ptmf): an effect (D_00471060, 0x840 bytes) with its box */
 /* 0x002ABC20 */
 s32 Room0F_Cmd02(void) {
     s32 slot = Effect_New(gEffects, 0x840, effect_471060_init);
@@ -122,7 +122,7 @@ s32 Room0F_Cmd02(void) {
     return 1;
 }
 
-/* room 0x0F (D_003F6EF8): three objects' +0x14 back to 0 */
+/* room 0x0F (Room0F_Cmd01_ptmf): three objects' +0x14 back to 0 */
 /* 0x002ABD50 */
 s32 Room0F_Cmd01(void) {
     obj_unturn(D_003F6F48);

@@ -72,7 +72,7 @@ s32 Room10_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019908D0[i & 0xFF], a, b);
 }
 
-/* room 0x10 (D_003F78F8): the stalker is there, not about, in mode 2, 6 or 7 */
+/* room 0x10 (Room10_Cond00_ptmf): the stalker is there, not about, in mode 2, 6 or 7 */
 /* 0x002AC040 */
 s32 Room10_Cond00(void) {
     u8 *c = (u8 *)gCharSlot2;

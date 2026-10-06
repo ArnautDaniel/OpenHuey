@@ -114,7 +114,7 @@ s32 Room66_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991070[i & 0xFF], a, b);
 }
 
-/* room 0x66 (D_0041F5B0): the character's x (byte 3 0) or z is at least be32 bytes 4..7 / 1000 */
+/* room 0x66 (Room66_CharPast_ptmf): the character's x (byte 3 0) or z is at least be32 bytes 4..7 / 1000 */
 /* 0x003002E0 */
 s32 Room66_CharPast(void *self, u8 *chr, u8 *cmd) {
     f32 v = (f32)(s32)((u32)cmd[4] << 24 | (u32)cmd[5] << 16 | (u32)cmd[6] << 8 | cmd[7]) / 1000.0f;
@@ -125,7 +125,7 @@ s32 Room66_CharPast(void *self, u8 *chr, u8 *cmd) {
     return !(AT(chr, 0x18, f32) < v);
 }
 
-/* room 0x66 (D_0041F5A0): in the eight letters of script variables 0 and 1, from the place in
+/* room 0x66 (Room66_Letters_ptmf): in the eight letters of script variables 0 and 1, from the place in
  * variable 2: the next 'L' / 'R' - matched by byte 3 (0 'L', else 'R') is stepped over (1) */
 /* 0x003003C0 */
 s32 Room66_Letters(void *self, void *a1, u8 *cmd) {
@@ -164,14 +164,14 @@ s32 Room66_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991030[i & 0xFF], a, b);
 }
 
-/* room 0x66 (D_0041F590): room effect 0x1F's colour pulsing by script variable 9 */
+/* room 0x66 (Room66_ColourPulse_ptmf): room effect 0x1F's colour pulsing by script variable 9 */
 /* 0x00300520 */
 s32 Room66_ColourPulse(void) {
     colour_pulse(9, 0x5A, 0x44, 0x46, 0x52, 0x4B);
     return 1;
 }
 
-/* room 0x66 (D_0041F580): byte 4 0 lights a fire (D_00478B50, kind byte 3), its slot in script
+/* room 0x66 (Room66_Fire_ptmf): byte 4 0 lights a fire (D_00478B50, kind byte 3), its slot in script
  * variable 8; else that fire put out (-1) */
 /* 0x00300650 */
 s32 Room66_Fire(void *self, void *a1, u8 *cmd) {
@@ -191,7 +191,7 @@ s32 Room66_Fire(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x66 (D_0041F570): character 8 sinks 0.1 a frame: a fire (kind byte 3) as it starts
+/* room 0x66 (Room66_Sink_ptmf): character 8 sinks 0.1 a frame: a fire (kind byte 3) as it starts
  * (slot in variable 7), put out below -24; done (1) below -25, else wait (2) */
 /* 0x003007E0 */
 s32 Room66_Sink(void *self, void *a1, u8 *cmd) {

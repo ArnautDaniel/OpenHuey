@@ -66,7 +66,7 @@ s32 Room23_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990AF0[i & 0xFF], a, b);
 }
 
-/* room 0x23 (D_00401848): byte 3 0 a progress name, 1 wait for character 3 (2 while not), else
+/* room 0x23 (Room23_Cmd01_ptmf): byte 3 0 a progress name, 1 wait for character 3 (2 while not), else
  * done */
 /* 0x002AFA00 */
 s32 Room23_Cmd01(void *self, void *a1, u8 *cmd) {
@@ -81,7 +81,7 @@ s32 Room23_Cmd01(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x23 (D_00401838): Fiona's model +0x9A0 / +0x9A8: 0 (byte 3 1) or 0.12 / 0.2 */
+/* room 0x23 (Room23_Cmd00_ptmf): Fiona's model +0x9A0 / +0x9A8: 0 (byte 3 1) or 0.12 / 0.2 */
 /* 0x002AFAA0 */
 s32 Room23_Cmd00(void *self, void *a1, u8 *cmd) {
     u8 *m = gCharacters[(u8)Progress_SlotOfId(gProgress, 3)]->motion;
@@ -102,7 +102,7 @@ s32 Room23_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990AD8[i & 0xFF], a, b);
 }
 
-/* room 0x23 (D_00401828): none of the six slots' PursuerGroup_Fields bits 0..3, and the stalker is
+/* room 0x23 (Room23_Cond00_ptmf): none of the six slots' PursuerGroup_Fields bits 0..3, and the stalker is
  * about but not active, in mode 2, 6 or 7 */
 /* 0x002AFB50 */
 s32 Room23_Cond00(void) {

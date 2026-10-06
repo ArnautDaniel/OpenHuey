@@ -753,8 +753,8 @@ static inline void movie_sound_on(Movie *m) {
 }
 
 extern const PTMF D_004126C8;   /* virtual +0x1C: playing */
-extern const PTMF D_004126D8;   /* Movie_StateWaitFirst */
-extern const PTMF D_004126E8;   /* Movie_StatePausedFirst */
+extern const PTMF Movie_StateWaitFirst_ptmf;   /* Movie_StateWaitFirst */
+extern const PTMF Movie_StatePausedFirst_ptmf;   /* Movie_StatePausedFirst */
 extern const PTMF D_004126F8;   /* virtual +0x1C */
 
 /* state: paused on the first frame until the event says go (mode 1, event command 0xCF) - then
@@ -788,7 +788,7 @@ void Movie_StateWaitFirst(Movie *m) {
     }
     m->shownFrame = m->frameNo;
     VCALL(m->ply, 0x28, void (*)(VObject *, s32))(m->ply, 1);
-    Movie_SetState(m, &D_004126E8);
+    Movie_SetState(m, &Movie_StatePausedFirst_ptmf);
 }
 
 /* state: the file opening; then played at once (mode 1) or held on its first frame */
@@ -803,7 +803,7 @@ void Movie_StateOpening(Movie *m) {
         return;
     }
     if (m->mode != 1) {
-        Movie_SetState(m, &D_004126D8);
+        Movie_SetState(m, &Movie_StateWaitFirst_ptmf);
         return;
     }
     movie_take_screen(m);
@@ -1006,7 +1006,7 @@ void MovieScene_Entry(Movie *m) {
  * 224 into two frames in progress memory (+0xCA6C0, 0x38000 each), drawn by the game itself ---- */
 
 extern void *MovieOwnBuf_vtable[];
-extern const PTMF D_0041CA80;   /* Movie_StateStart */
+extern const PTMF Movie_StateStart_ptmf6;   /* Movie_StateStart */
 
 /* +0x8 (the frames aren't its own) */
 /* 0x002FEC50 */
@@ -1060,7 +1060,7 @@ void MovieOwnBuf_Entry(Movie *m) {
     }
     m->frames = (u8 *)gProgress + 0xCA6C0;
     func_0023E878(m->ply, 0x10, 0x20, 0);
-    Movie_SetState(m, &D_0041CA80);
+    Movie_SetState(m, &Movie_StateStart_ptmf6);
 }
 
 /* ---- movie classes 1..6 (Progress_PlayMovie's `kind`): movies the game draws itself, decoded into
@@ -1070,7 +1070,7 @@ void MovieOwnBuf_Entry(Movie *m) {
  * written next, plain - and returns `loop`. ---- */
 
 extern void *MovieBlended_vtable[], *MovieOpaque_vtable[], *MovieHalf_vtable[], *MovieCopied_vtable[], *MovieAdded_vtable[], *MovieSmall_vtable[];
-extern const PTMF D_00412730, D_00412740, D_00412750, D_004128D0, D_004128E0, D_0042E428;   /* Movie_StateStart */
+extern const PTMF Movie_StateStart_ptmf, Movie_StateStart_ptmf2, Movie_StateStart_ptmf3, Movie_StateStart_ptmf4, Movie_StateStart_ptmf5, Movie_StateStart_ptmf7;   /* Movie_StateStart */
 #ifdef HG_NATIVE
 #define MOVIE_UNCACHED(p) ((void *)(p))
 #else
@@ -1182,7 +1182,7 @@ Movie *MovieBlended_dtor(Movie *m, s32 flags) {
 /* +0x10 */
 /* 0x002BA4F0 */
 void MovieBlended_Entry(Movie *m) {
-    movie_entry(m, 0x100, 0xE0, 0x31, 1, 0xCA6C0, 1, &D_00412730);
+    movie_entry(m, 0x100, 0xE0, 0x31, 1, 0xCA6C0, 1, &Movie_StateStart_ptmf);
 }
 
 /* +0x18 */
@@ -1219,7 +1219,7 @@ Movie *MovieOpaque_dtor(Movie *m, s32 flags) {
 /* +0x10 */
 /* 0x002BA9F0 */
 void MovieOpaque_Entry(Movie *m) {
-    movie_entry(m, 0x200, 0xE0, 0x11, 1, 0xCA6C0, 0, &D_00412740);
+    movie_entry(m, 0x200, 0xE0, 0x11, 1, 0xCA6C0, 0, &Movie_StateStart_ptmf2);
 }
 
 /* +0x18 */
@@ -1259,7 +1259,7 @@ Movie *MovieHalf_dtor(Movie *m, s32 flags) {
 /* +0x10 */
 /* 0x002BAE70 */
 void MovieHalf_Entry(Movie *m) {
-    movie_entry(m, 0x100, 0x1C0, 0x21, 1, 0xCA6C0, 0, &D_00412750);
+    movie_entry(m, 0x100, 0x1C0, 0x21, 1, 0xCA6C0, 0, &Movie_StateStart_ptmf3);
 }
 
 /* +0x20 */
@@ -1289,7 +1289,7 @@ Movie *MovieCopied_dtor(Movie *m, s32 flags) {
 /* +0x10 */
 /* 0x002C6380 */
 void MovieCopied_Entry(Movie *m) {
-    movie_entry(m, 0x100, 0xE0, 0x11, 0, 0xCA6C0, 0, &D_004128D0);
+    movie_entry(m, 0x100, 0xE0, 0x11, 0, 0xCA6C0, 0, &Movie_StateStart_ptmf4);
 }
 
 /* +0x18 */
@@ -1323,7 +1323,7 @@ Movie *MovieAdded_dtor(Movie *m, s32 flags) {
 /* +0x10 */
 /* 0x002C8AB0 */
 void MovieAdded_Entry(Movie *m) {
-    movie_entry(m, 0x100, 0xE0, 0x11, 0, 0x16C0, 0, &D_004128E0);
+    movie_entry(m, 0x100, 0xE0, 0x11, 0, 0x16C0, 0, &Movie_StateStart_ptmf5);
 }
 
 /* +0x20 the frame copied */
@@ -1356,7 +1356,7 @@ Movie *MovieSmall_dtor(Movie *m, s32 flags) {
 /* +0x10 */
 /* 0x0032E730 */
 void MovieSmall_Entry(Movie *m) {
-    movie_entry(m, 0x100, 0x40, 0x41, 1, 0x1AA6C0, 0, &D_0042E428);
+    movie_entry(m, 0x100, 0x40, 0x41, 1, 0x1AA6C0, 0, &Movie_StateStart_ptmf7);
 }
 
 /* +0x20 */

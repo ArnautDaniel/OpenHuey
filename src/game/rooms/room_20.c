@@ -95,7 +95,7 @@ s32 Room20_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990A40[i & 0xFF], a, b);
 }
 
-/* room 0x20 (D_003FF0F8): object byte 3 becomes event point byte 4 (radii 5) */
+/* room 0x20 (Room20_Cond02_ptmf): object byte 3 becomes event point byte 4 (radii 5) */
 /* 0x002AE4E0 */
 s32 Room20_Cond02(void *self, void *a1, u8 *cmd) {
     u8 *o = room_obj(D_003FF110[cmd[3]]);
@@ -108,7 +108,7 @@ s32 Room20_Cond02(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x20 (D_003FF0E8): the character's script value is at least be32 bytes 3..6 */
+/* room 0x20 (Room20_Cond01_ptmf): the character's script value is at least be32 bytes 3..6 */
 /* 0x002AE570 */
 s32 Room20_Cond01(void *self, u8 *chr, u8 *cmd) {
     u32 v = VCALL(gEvents, 0x38, u32 (*)(VObject *, s32))(gEvents, chr[0x153C]) & 0xFFFF;
@@ -116,7 +116,7 @@ s32 Room20_Cond01(void *self, u8 *chr, u8 *cmd) {
     return !(v < ((u32)cmd[3] << 24 | (u32)cmd[4] << 16 | (u32)cmd[5] << 8 | cmd[6]));
 }
 
-/* room 0x20 (D_003FF0D8): the player, free and within 5 of the falling object, knocks it - it
+/* room 0x20 (Room20_Cond00_ptmf): the player, free and within 5 of the falling object, knocks it - it
  * gets a push (0, 1, 1) turned by her facing, and its nav triangle */
 /* 0x002AE5E0 */
 s32 Room20_Cond00(void) {
@@ -159,7 +159,7 @@ s32 Room20_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019909F0[i & 0xFF], a, b);
 }
 
-/* room 0x20 (D_003FF0C8): the character turns to face object byte 3 */
+/* room 0x20 (Room20_Cmd05_ptmf): the character turns to face object byte 3 */
 /* 0x002AE790 */
 s32 Room20_Cmd05(void *self, u8 *chr, u8 *cmd) {
     u8 *o = room_obj(D_003FF110[cmd[3]]);
@@ -173,7 +173,7 @@ s32 Room20_Cmd05(void *self, u8 *chr, u8 *cmd) {
     return 1;
 }
 
-/* room 0x20 (D_003FF0B8): a dust cloud where the falling object is */
+/* room 0x20 (Room20_Cmd04_ptmf): a dust cloud where the falling object is */
 /* 0x002AE830 */
 s32 Room20_Cmd04(void) {
     u8 *o = room_obj(D_003FF124);
@@ -200,7 +200,7 @@ s32 Room20_Cmd04(void) {
     return 1;
 }
 
-/* room 0x20 (D_003FF0A8): the falling object falls (gravity 0.2 a frame on its velocity +0x30,
+/* room 0x20 (Room20_Cmd03_ptmf): the falling object falls (gravity 0.2 a frame on its velocity +0x30,
  * spinning 1 degree a frame) along the nav mesh, events bit 1 set while it lies on open floor;
  * landing on floor that isn't 0x10000 raises dust */
 /* 0x002AE9C0 */
@@ -306,7 +306,7 @@ s32 Room20_Cmd02(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x20 (D_003FF088): the falling object back up in place */
+/* room 0x20 (Room20_Cmd01_ptmf): the falling object back up in place */
 /* 0x002AEEE0 */
 s32 Room20_Cmd01(void) {
     u8 *o = room_obj(D_003FF124);
@@ -326,7 +326,7 @@ s32 Room20_Cmd01(void) {
     return 1;
 }
 
-/* room 0x20 (D_003FF078): the player's action byte 3 (7) at (-30, 0, 90) */
+/* room 0x20 (Room20_Cmd00_ptmf): the player's action byte 3 (7) at (-30, 0, 90) */
 /* 0x002AEF60 */
 s32 Room20_Cmd00(void *self, void *a1, u8 *cmd) {
     f32 at[4] __attribute__((aligned(16)));

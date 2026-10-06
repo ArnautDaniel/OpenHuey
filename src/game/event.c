@@ -98,7 +98,7 @@ static const struct {
     {0x109, Room109_vtable}, {0x10A, Room10A_vtable}, {0x10B, Room10B_vtable},
 };
 
-extern f32 D_00412900;
+extern f32 Cutscene_Start_ptmf;
 extern f32 D_00412904;
 extern f32 D_00412908;
 void Cutscene_Set38(u8 *self, u32 a);
@@ -113,7 +113,7 @@ void Cutscene_Mark82(u8 *self, s32 i);
 void Cutscene_Mark83(u8 *self, s32 i);
 void Cutscene_SetScript(u8 *self, u32 a, u32 b);
 
-extern u8 D_00412910[], D_00412914[], D_00412918[];
+extern u8 Cutscene_ClearStatus_ptmf[], D_00412914[], D_00412918[];
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
 s32 Cutscene_Call8(void *self);
@@ -145,7 +145,7 @@ void *RoomHandler_new(u32 size, void *place) {
 /* 0x002C94E0 */
 void Cutscene_Set38(u8 *self, u32 a) {
     *(u32 *)(self + 0x14) = a;
-    *(f32 *)(self + 0x2A0) = D_00412900;
+    *(f32 *)(self + 0x2A0) = Cutscene_Start_ptmf;
     *(f32 *)(self + 0x2A4) = D_00412904;
     *(f32 *)(self + 0x2A8) = D_00412908;
     self[0x204] = 0;
@@ -231,7 +231,7 @@ void Cutscene_Destroy(u8 *p) {
     for (i = 0x44; i <= 0x60; i += 4) {
         F(p, i, u32) = 0;
     }
-    F(p, 0x2A0, f32) = *(f32 *)D_00412910;
+    F(p, 0x2A0, f32) = *(f32 *)Cutscene_ClearStatus_ptmf;
     F(p, 0x2A4, f32) = *(f32 *)D_00412914;
     F(p, 0x2A8, f32) = *(f32 *)D_00412918;
     p[0x204] = 0;

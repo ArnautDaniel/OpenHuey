@@ -110,14 +110,14 @@ s32 Room4F_Cmd02(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x4F (D_0040C0F8): an effect (D_00476BB0, 0x7460 bytes), not started */
+/* room 0x4F (Room4F_Cmd01_ptmf): an effect (D_00476BB0, 0x7460 bytes), not started */
 /* 0x002B4480 */
 s32 Room4F_Cmd01(void) {
     Effect_New(gEffects, 0x7460, effect_476bb0_init);
     return 1;
 }
 
-/* room 0x4F (D_0040C0E8): object byte 3 by byte 4: 0 up (+0x10 0), 1 down (-0.65), 2 lowered a
+/* room 0x4F (Room4F_Cmd00_ptmf): object byte 3 by byte 4: 0 up (+0x10 0), 1 down (-0.65), 2 lowered a
  * step (0.02, not during a movie); once down, events bit 3 */
 /* 0x002B4570 */
 s32 Room4F_Cmd00(void *self, void *a1, u8 *cmd) {

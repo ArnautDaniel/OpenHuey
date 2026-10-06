@@ -1197,10 +1197,10 @@ void *Scene5_ctor(u8 *s) {
 }
 
 extern void SceneTitle_DrawMenuAt(SceneTitle *t, f32 alpha);   /* the menu, at `alpha` */
-extern const PTMF D_003B0250;
+extern const PTMF SceneTitle_SeqPressStart_ptmf;
 
 /* back from the menu to the title over 16 frames: the menu fading out (SceneTitle_DrawMenuAt) and a
- * black screen lifting while the picture, logo and PRESS START come back; then D_003B0250 */
+ * black screen lifting while the picture, logo and PRESS START come back; then SceneTitle_SeqPressStart_ptmf */
 /* 0x0012E270 */
 void SceneTitle_SeqMenuToTitle(SceneTitle *t) {
     f32 f = (f32)t->timer++ / 15.0f;
@@ -1223,7 +1223,7 @@ void SceneTitle_SeqMenuToTitle(SceneTitle *t) {
     if (done) {
         t->timer = 0;
         t->anim = 0;
-        ptmf_set(&t->seq, &D_003B0250);
+        ptmf_set(&t->seq, &SceneTitle_SeqPressStart_ptmf);
     }
 }
 

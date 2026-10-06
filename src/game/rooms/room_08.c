@@ -79,7 +79,7 @@ s32 Room08_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990800[i & 0xFF], a, b);
 }
 
-/* room 0x08 (D_003F31F0): the stalker is there but not about */
+/* room 0x08 (Room08_Cond01_ptmf): the stalker is there but not about */
 /* 0x002AA580 */
 s32 Room08_Cond01(void) {
     u8 *c = (u8 *)gCharSlot2;
@@ -164,7 +164,7 @@ s32 Room08_Cmd01(VObject *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x08 (D_003F31C0): the cutscene director's +0x6C 3 (byte 3 0) or 2 */
+/* room 0x08 (Room08_Cmd00_ptmf): the cutscene director's +0x6C 3 (byte 3 0) or 2 */
 /* 0x002AA8C0 */
 s32 Room08_Cmd00(void *self, void *a1, u8 *cmd) {
     VCALL(gCutscene, 0x6C, void (*)(VObject *, s32))(gCutscene, cmd[3] == 0 ? 3 : 2);

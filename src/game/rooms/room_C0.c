@@ -39,7 +39,7 @@ s32 RoomC0_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991650[i & 0xFF], a, b);
 }
 
-/* rooms 0xC0 / 0xC1 / 0xC2 / 0xC3 (D_0042E3E0, D_0043F098, D_0043F8B8, D_004400C8): the timer at
+/* rooms 0xC0 / 0xC1 / 0xC2 / 0xC3 (RoomC0_Cond00_ptmf, RoomC1_Cond00_ptmf, RoomC2_Cond00_ptmf, RoomC3_Cond00_ptmf): the timer at
  * progress +0x764 has run out */
 /* 0x0032DD10 */
 s32 RoomC0_Cond00(void) {

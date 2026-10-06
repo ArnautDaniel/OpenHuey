@@ -83,7 +83,7 @@ s32 Room12_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019908F0[i & 0xFF], a, b);
 }
 
-/* room 0x12 (D_003F9160): the pursuer is about, in a mode other than 0 and 3 */
+/* room 0x12 (Room12_Cond00_ptmf): the pursuer is about, in a mode other than 0 and 3 */
 /* 0x002AC2D0 */
 s32 Room12_Cond00(void) {
     Character *s = gCharPursuer;
@@ -97,7 +97,7 @@ s32 Room12_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019908E0[i & 0xFF], a, b);
 }
 
-/* room 0x12 (D_003F9150): byte 3 0: the smoke puffs (D_00470E20), their slot in script
+/* room 0x12 (Room12_Cmd00_ptmf): byte 3 0: the smoke puffs (D_00470E20), their slot in script
  * variable 0; else that slot started */
 /* 0x002AC370 */
 s32 Room12_Cmd00(void *self, void *a1, u8 *cmd) {

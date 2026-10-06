@@ -100,7 +100,7 @@ void Debilitas_StateStun(Pursuer *p) {
     }
 }
 
-extern const PTMF D_003AFF80, D_003B0010;
+extern const PTMF D_003AFF80, Pursuer_AttackNextStep_ptmf;
 
 /* vtable +0x2B4: a fresh start of his behaviour (vtable +0x2B8 picks it) */
 /* 0x00129D10 */
@@ -127,7 +127,7 @@ static inline void Debilitas_LungeEnd(Pursuer *p) {
             return;
         }
         PU(p, 0x1728, s32) = 8;
-        Actor_SetState(&p->c.a, &D_003B0010);
+        Actor_SetState(&p->c.a, &Pursuer_AttackNextStep_ptmf);
         p->c.moveMode = 8;
         Pursuer_AttackNextStep(p);
     }
@@ -139,7 +139,7 @@ void Debilitas_StateLunge(Pursuer *p) {
     Debilitas_LungeEnd(p);
 }
 
-extern const PTMF D_003B0000;
+extern const PTMF Debilitas_StateLunge_ptmf;
 
 /* start of the lunge: finish the current walk, then animation 0x1306 in state Debilitas_StateLunge */
 /* 0x001287B0 */
@@ -151,18 +151,18 @@ void Debilitas_StartLunge(Pursuer *p) {
     }
     Pursuer_PlayAnimIf(p, 0x1306, 0);
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003B0000);
+    Actor_SetState(&p->c.a, &Debilitas_StateLunge_ptmf);
     Debilitas_LungeEnd(p);
 }
 
-extern const PTMF D_003AFFD0;
+extern const PTMF Debilitas_StateBlow_ptmf;
 
 /* turning to Fiona; when the animation ends, the next part (Debilitas_StateBlow) */
 static inline void Debilitas_TurnToFiona(Pursuer *p) {
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
         Pursuer_PlayAnimIf(p, 0x205, 0);
         p->c.moveSub = 0x1C;
-        Actor_SetState(&p->c.a, &D_003AFFD0);
+        Actor_SetState(&p->c.a, &Debilitas_StateBlow_ptmf);
         Debilitas_StateBlow(p);
         return;
     }
@@ -181,7 +181,7 @@ void Debilitas_StateTurnToFiona(Pursuer *p) {
     Debilitas_TurnToFiona(p);
 }
 
-extern const PTMF D_003AFFC0;
+extern const PTMF Debilitas_StateTurnToFiona_ptmf;
 
 /* start of the turn to Fiona: finish the current walk, then animation 0x1304 in state
    Debilitas_StateTurnToFiona */
@@ -195,7 +195,7 @@ void Debilitas_StartTurnToFiona(Pursuer *p) {
     Pursuer_PlayAnimIf(p, 0x1304, 0);
     PU(p, 0x16F7, u8) = 1;
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003AFFC0);
+    Actor_SetState(&p->c.a, &Debilitas_StateTurnToFiona_ptmf);
     Debilitas_TurnToFiona(p);
 }
 
@@ -310,7 +310,7 @@ void Debilitas_StateGrab(Pursuer *p) {
     Debilitas_Grab(p);
 }
 
-extern const PTMF D_003B0020;
+extern const PTMF Debilitas_StateGrab_ptmf;
 
 /* start of the grab: finish the current walk, then animation 0xE06 in state Debilitas_StateGrab */
 /* 0x001284C0 */
@@ -322,7 +322,7 @@ void Debilitas_StartGrab(Pursuer *p) {
     }
     Pursuer_PlayAnimIf(p, 0xE06, 0);
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_003B0020);
+    Actor_SetState(&p->c.a, &Debilitas_StateGrab_ptmf);
     Debilitas_Grab(p);
 }
 
@@ -523,12 +523,12 @@ void Debilitas_ChaseTarget(Pursuer *p) {
     Npc_WalkPathStride(p, p->c.unk128);
 }
 
-extern const PTMF D_003AFFE0, D_003AFFF0;
+extern const PTMF Debilitas_StateStun_ptmf, Debilitas_StateStun_ptmf2;
 
 /* state: his blow, after the turn to Fiona. The hit point is the bone of the attack entry
-   (+0x171C, +0x94); off the nav mesh it misses (flinch, state D_003AFFE0). Otherwise when it
+   (+0x171C, +0x94); off the nav mesh it misses (flinch, state Debilitas_StateStun_ptmf). Otherwise when it
    reaches Fiona or Hewie it lands: Relation_Request with the entry's kind and damage, stunning
-   (0x8000) when a 0..100 roll is under its stun chance; then the flinch and state D_003AFFF0 */
+   (0x8000) when a 0..100 roll is under its stun chance; then the flinch and state Debilitas_StateStun_ptmf2 */
 /* 0x00128A20 */
 void Debilitas_StateBlow(Pursuer *p) {
     u8 *e = PU(p, 0x171C, u8 *) + 0x90;
@@ -539,7 +539,7 @@ void Debilitas_StateBlow(Pursuer *p) {
     if (Actor_TriTo(&p->c.a, pos, p->c.a.navMask & ~0x40) == (u32)-1) {
         Pursuer_PlayAnimIf(p, 0x1004, (((MOTION_AT(p, 0x550, f32) <= 0.0f) ^ 1) & 0xFF) != 0);
         p->c.moveSub = 0;
-        Actor_SetState(&p->c.a, &D_003AFFE0);
+        Actor_SetState(&p->c.a, &Debilitas_StateStun_ptmf);
         return;
     }
     sceVu0CopyVector((f32 *)((u8 *)p + 0x1770), pos);
@@ -560,7 +560,7 @@ void Debilitas_StateBlow(Pursuer *p) {
         Pursuer_PlayAnimIf(p, 0x1004, 0);
     }
     p->c.moveSub = 0;
-    Actor_SetState(&p->c.a, &D_003AFFF0);
+    Actor_SetState(&p->c.a, &Debilitas_StateStun_ptmf2);
 }
 
 /* vtable +0x30: his frame update (Stalker_ThinkStart / Stalker_ThinkEnd around it): on screen

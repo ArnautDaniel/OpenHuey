@@ -74,7 +74,7 @@ s32 Room09_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990818[i & 0xFF], a, b);
 }
 
-/* room 0x09 (D_003F3C50): the pursuer (about, not in state 2, in mode 2, 6 or 7) is in another
+/* room 0x09 (Room09_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) is in another
  * room than 9 (the player about too) */
 /* 0x002AAA60 */
 s32 Room09_Cond00(void) {

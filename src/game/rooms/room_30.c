@@ -50,7 +50,7 @@ s32 Room30_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990E48[i & 0xFF], a, b);
 }
 
-/* room 0x30 (D_004134B0): the pursuer's Pursuer_GrabHewieBehind */
+/* room 0x30 (Room30_Cond00_ptmf): the pursuer's Pursuer_GrabHewieBehind */
 /* 0x002CCBC0 */
 s32 Room30_Cond00(void) {
     return Pursuer_GrabHewieBehind((Pursuer *)gCharPursuer);

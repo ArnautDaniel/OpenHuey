@@ -91,7 +91,7 @@ s32 Room4C_Cmd02(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x4C (D_0040ABF0): byte 3 0 starts counting what the player does (her +0x1AD710 on), 1
+/* room 0x4C (Room4C_Cmd01_ptmf): byte 3 0 starts counting what the player does (her +0x1AD710 on), 1
  * adds this frame's (Fiona_Shakes); at 35 events bit 0x13 */
 /* 0x002B3720 */
 s32 Room4C_Cmd01(void *self, void *a1, u8 *cmd) {

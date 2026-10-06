@@ -24,8 +24,8 @@
 extern VObject *D_00456DF0;   /* the music director */
 
 /* the states */
-extern const PTMF D_0041A1D0, D_0041A1E0, D_0041A1F0, D_0041A200, D_0041A210, D_0041A220, D_0041A230,
-    D_0041A240, D_0041A250, D_0041A260, D_0041A270, D_0041A280, D_0041A290, D_0041A2A0, D_0041A2B0;
+extern const PTMF Pause_StateOpening_ptmf, MoviePause_StateOpening_ptmf, Pause_StateOpen_ptmf, Pause_StateClosing_ptmf, Pause_StateMenu_ptmf, Pause_StateClosing_ptmf2, Pause_StateMenuClosing_ptmf,
+    Pause_StateQuitAsk_ptmf, Pause_StateQuit_ptmf, Pause_StateOpen_ptmf2, Pause_StateOpen_ptmf3, MoviePause_StateOpen_ptmf, MoviePause_StateSkip_ptmf, MoviePause_StateClosing_ptmf, MoviePause_StateClosing_ptmf2;
 
 #define T(o) AT(o, 0x4, f32)
 #define CHOICE(o) AT(o, 0x8, u8)
@@ -177,7 +177,7 @@ void MoviePause_StateOpening(u8 *o) {
     if (!(T(o) <= 1.0f)) {
         T(o) = 1.0f;
         if (gMovie == NULL || VCALL(gEvents, 0x54, s32 (*)(VObject *))(gEvents) == 0) {
-            STATE(o) = D_0041A280;
+            STATE(o) = MoviePause_StateOpen_ptmf;
         }
     }
     duck(T(o), 0);
@@ -194,16 +194,16 @@ void MoviePause_StateOpen(u8 *o) {
     if (!MESSAGE_ONLY(o)) {
         if (D_0047E36C & MENU_CANCEL) {
             T(o) = 0.0f;
-            STATE(o) = D_0041A290;
+            STATE(o) = MoviePause_StateSkip_ptmf;
             sound(0x97);
         } else if (D_0047E37C & PAD_START) {
             movie_pause(0);
-            STATE(o) = D_0041A2A0;
+            STATE(o) = MoviePause_StateClosing_ptmf;
             sound(0x97);
         }
     } else if (D_0047E36C & MENU_CONFIRM) {
         movie_pause(0);
-        STATE(o) = D_0041A2B0;
+        STATE(o) = MoviePause_StateClosing_ptmf2;
         sound(0x97);
     }
 }
@@ -247,7 +247,7 @@ void Pause_StateOpening(u8 *o) {
     T(o) += 0x1.99999a0000000p-3f /* 0.2 */;
     if (!(T(o) <= 1.0f)) {
         T(o) = 1.0f;
-        STATE(o) = D_0041A1F0;
+        STATE(o) = Pause_StateOpen_ptmf;
     }
     duck(T(o), 0);
     dim(o, 63.0f * T(o));
@@ -260,15 +260,15 @@ void Pause_StateOpening(u8 *o) {
 void Pause_StateOpen(u8 *o) {
     if (!MESSAGE_ONLY(o)) {
         if (D_0047E37C & PAD_START) {
-            STATE(o) = D_0041A200;
+            STATE(o) = Pause_StateClosing_ptmf;
             sound(0x97);
         } else if (D_0047E37C & PAD_SELECT) {
             CHOICE(o) = 0;
-            STATE(o) = D_0041A210;
+            STATE(o) = Pause_StateMenu_ptmf;
             sound(0x96);
         }
     } else if (D_0047E36C & MENU_CONFIRM) {
-        STATE(o) = D_0041A220;
+        STATE(o) = Pause_StateClosing_ptmf2;
         sound(0x97);
     }
     dim_draw(o);
@@ -297,11 +297,11 @@ void Pause_StateMenu(u8 *o) {
     menu_texts(o);
     if (D_0047E36C & MENU_CONFIRM) {
         if (CHOICE(o) == 0) {
-            STATE(o) = D_0041A230;
+            STATE(o) = Pause_StateMenuClosing_ptmf;
             sound(0x97);
         } else {
             CHOICE(o) = 1;
-            STATE(o) = D_0041A240;
+            STATE(o) = Pause_StateQuitAsk_ptmf;
             sound(0x96);
         }
     }
@@ -330,14 +330,14 @@ void Pause_StateQuitAsk(u8 *o) {
     if (D_0047E36C & MENU_CONFIRM) {
         if (CHOICE(o) == 0) {
             T(o) = 0.0f;
-            STATE(o) = D_0041A250;
+            STATE(o) = Pause_StateQuit_ptmf;
             sound(0x97);
         } else {
-            STATE(o) = D_0041A260;
+            STATE(o) = Pause_StateOpen_ptmf2;
             sound(0x96);
         }
     } else if (D_0047E36C & MENU_CANCEL) {
-        STATE(o) = D_0041A270;
+        STATE(o) = Pause_StateOpen_ptmf3;
         sound(0x97);
     }
 }
@@ -363,11 +363,11 @@ void Pause_Open(u8 *o, u8 mode) {
     MODE(o) = mode;
     switch (MODE(o) & 0x0F) {
     case 0:
-        STATE(o) = D_0041A1D0;
+        STATE(o) = Pause_StateOpening_ptmf;
         break;
     case 1:
         movie_pause(1);
-        STATE(o) = D_0041A1E0;
+        STATE(o) = MoviePause_StateOpening_ptmf;
         break;
     }
     sound(0x96);

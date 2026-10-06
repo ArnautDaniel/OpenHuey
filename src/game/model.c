@@ -2630,7 +2630,7 @@ s32 Gesture_Left(u8 *g, f32 len, f32 ang) {
                         !(ang <= -0x1.15dca8p+1f /* -pi/2 - 0.6 */) && ang < -0x1.f10c38p-1f /* -pi/2 + 0.6 */, 4);
 }
 
-extern const PTMF16 D_003D5C68[5];   /* the gesture recognizers (Gesture_Back, Gesture_Forward, ..) */
+extern const PTMF16 Gesture_Back_ptmf[5];   /* the gesture recognizers (Gesture_Back, Gesture_Forward, ..) */
 
 /* a stick gesture, each frame: the recognizers (5, state +0x14/+0x28 each) are fed the
  * stick's length and direction in turn until one reports a gesture (not -1); the rest are
@@ -2652,7 +2652,7 @@ s32 Gesture_Update(u8 *g, f32 *stick) {
     ang = func_0031C5C0(stick[0], stick[2]);
     for (i = 0; i < 5; i++) {
         if (r == -1) {
-            r = ptmf_scall_rff(g, &D_003D5C68[i].p, len, ang);
+            r = ptmf_scall_rff(g, &Gesture_Back_ptmf[i].p, len, ang);
         } else {
             AT(g, 0x28 + i * 4, s32) = 0;
         }

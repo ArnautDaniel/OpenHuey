@@ -36,10 +36,10 @@
 
 extern void *D_00456DF0;      /* the director */
 extern const PTMF sGameStateNull;
-extern const PTMF D_004128A0;   /* MusicDir_TrackFade: a track volume fade */
-extern const PTMF D_00412890;   /* MusicDir_GlobalFade: the global volume fade */
-extern const PTMF D_004128B0;   /* MusicDir_SeqFade: a sequence volume fade */
-extern const PTMF D_004128C0;   /* MusicDir_BendFade: a channel bend fade */
+extern const PTMF MusicDir_TrackFade_ptmf;   /* MusicDir_TrackFade: a track volume fade */
+extern const PTMF MusicDir_GlobalFade_ptmf;   /* MusicDir_GlobalFade: the global volume fade */
+extern const PTMF MusicDir_SeqFade_ptmf;   /* MusicDir_SeqFade: a sequence volume fade */
+extern const PTMF MusicDir_BendFade_ptmf;   /* MusicDir_BendFade: a channel bend fade */
 extern void *MusicDir_vtable[], *D_0046EBE0[];
 
 #define TRACK(d, k) ((u8 *)(d) + 0x34 + ((k) & 0xFF) * 0x110)
@@ -354,7 +354,7 @@ s32 MusicDir_TrackVolumeTo(u8 *d, u8 k, s32 frames, s32 to) {
     to = (to < 0x100 ? to : 0xFF) < 0 ? 0 : (to < 0x100 ? to : 0xFF);
     AT(c, 0x14, s32) = to;
     AT(c, 0x24, s8) = 0;
-    *(PTMF *)(c + 4) = D_004128A0;
+    *(PTMF *)(c + 4) = MusicDir_TrackFade_ptmf;
     AT(c, 0x1C, f32) = ((f32)AT(c, 0x14, s32) - AT(t, 0x100, f32)) / (f32)frames;
     return 1;
 }
@@ -375,7 +375,7 @@ s32 MusicDir_SeqVolumeTo(u8 *d, u8 k, s32 frames, s32 to) {
     to = (to < 0x100 ? to : 0xFF) < 0x14 ? 0x14 : (to < 0x100 ? to : 0xFF);
     AT(c, 0x14, s32) = to;
     AT(c, 0x24, s8) = 4;
-    *(PTMF *)(c + 4) = D_004128B0;
+    *(PTMF *)(c + 4) = MusicDir_SeqFade_ptmf;
     AT(c, 0x1C, f32) = ((f32)AT(c, 0x14, s32) - AT(t, 0x104, f32)) / (f32)frames;
     return 1;
 }
@@ -407,7 +407,7 @@ s32 MusicDir_BendTo(u8 *d, u8 k, u8 ch, s32 frames, u32 to) {
     if (AT(c, 0x14, s32) < (s32)(f2u(AT(CHAN(d, k, ch), 0x4, f32)) & 0xFF)) {
         AT(c, 0x1C, f32) = AT(c, 0x1C, f32) * -1.0f;
     }
-    *(PTMF *)(c + 4) = D_004128C0;
+    *(PTMF *)(c + 4) = MusicDir_BendFade_ptmf;
     return 1;
 }
 
@@ -427,7 +427,7 @@ s32 MusicDir_TrackVolumeRate(u8 *d, u8 k, s32 to, f32 rate) {
     to = (to < 0x100 ? to : 0xFF) < 0 ? 0 : (to < 0x100 ? to : 0xFF);
     AT(c, 0x14, s32) = to;
     AT(c, 0x24, s8) = 0;
-    *(PTMF *)(c + 4) = D_004128A0;
+    *(PTMF *)(c + 4) = MusicDir_TrackFade_ptmf;
     if (rate * (f32)(AT(c, 0x14, s32) - (s32)(f2u(AT(t, 0x100, f32)) & 0xFF)) < 0.0f) {
         AT(c, 0x1C, f32) = -rate;
     } else {
@@ -466,7 +466,7 @@ s32 MusicDir_GlobalVolumeTo(u8 *d, s32 frames, u8 to) {
     AT(c, 0x0, u8) = 0xFF;
     AT(c, 0x14, s32) = to;
     AT(c, 0x24, s8) = 6;
-    *(PTMF *)(c + 4) = D_00412890;
+    *(PTMF *)(c + 4) = MusicDir_GlobalFade_ptmf;
     x.w = 0;
     x.h.i = to;
     x.w -= AT(d, 0x10, s32);

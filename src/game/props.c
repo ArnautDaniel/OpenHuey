@@ -29,7 +29,7 @@ extern void *D_00474000[], *QuadDrawer_vtable[], *Helper469D00_vtable[], *Effect
 extern void *Pursuer_vtable[], *NPC_vtable[], *Character_vtable[], *Actor_vtable[];
 extern const char *const D_0042C358;
 extern void *Kind32_vtable[];
-extern const PTMF D_00430A90;
+extern const PTMF Pursuer_StateRunThenNext_ptmf23;
 extern void *Kind34_vtable[];
 extern void *Kind35_vtable[];
 extern u8 D_00430A10[];
@@ -2443,7 +2443,7 @@ void *Kind32_MotionFiles(void) {
 void Kind32_ShowUp(Pursuer *p) { creature_inplay(p); }
 
 /* 0x0033D850 */
-void Kind32_EventState(Pursuer *p) { creature_act5(p, &D_00430A90); }
+void Kind32_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf23); }
 
 /* 0x0033D920 */
 s32 Kind32_GrabOrder(Pursuer *p) { return creature_slot_done(p); }

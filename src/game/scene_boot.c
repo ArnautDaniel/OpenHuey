@@ -596,13 +596,13 @@ u32 SceneBoot_StepProgressive(SceneBoot *boot) {
 
 extern const u8 D_00460A00[22];
 extern const char D_00463AB0[];                         /* its count's format */
-extern const PTMF D_0044AE10, D_0044AE20;
+extern const PTMF SlotMachine_StateChoose_ptmf2, SlotMachine_StateNothing_ptmf2;
 
 /* state: an item found (+0x14A its place, -1 none; +0x14B how many; +0x14C its id, big endian):
  * the screen's rows and cells refreshed; once up, "obtained" with the item's name (and count)
  * in a box, its sound played once (+0x152) - or message 5 for none; when done and confirmed,
  * the item added, the places cleared (but +0x150), the task closed and the next state
- * (Synth_CountMaterials: D_0044AE10, else D_0044AE20) */
+ * (Synth_CountMaterials: SlotMachine_StateChoose_ptmf2, else SlotMachine_StateNothing_ptmf2) */
 /* 0x0037ED50 */
 void ItemFound_StateShow(u8 *o) {
     Task *t = (Task *)(o + 0x14);
@@ -657,9 +657,9 @@ void ItemFound_StateShow(u8 *o) {
         Task_Close(t);
         AT(o, 0x10, s32) = 0;
         if (Synth_CountMaterials(o)) {
-            ptmf_set((PTMF *)(o + 0x4), &D_0044AE10);
+            ptmf_set((PTMF *)(o + 0x4), &SlotMachine_StateChoose_ptmf2);
         } else {
-            ptmf_set((PTMF *)(o + 0x4), &D_0044AE20);
+            ptmf_set((PTMF *)(o + 0x4), &SlotMachine_StateNothing_ptmf2);
         }
     }
 }

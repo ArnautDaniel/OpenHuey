@@ -71,7 +71,7 @@ void *Kind25_MotionFiles(void);
 
 extern const char *const D_0042C358;
 extern void *Kind25_vtable[];
-extern const PTMF D_0042C720;
+extern const PTMF Pursuer_StateRunThenNext_ptmf15;
 #define B7_W(p, off)  (*(s32 *)((u8 *)(p) + (off)))
 
 #define B7_H(p, off)  (*(s16 *)((u8 *)(p) + (off)))
@@ -775,7 +775,7 @@ void CreatureA_Bob(Character *c) {
 #include "effectmgr.h"
 
 extern void *D_00472370[];
-extern const PTMF D_00416790;   /* vanishing */
+extern const PTMF CreatureA_StateVanish_ptmf4;   /* vanishing */
 
 /* its vanishing effect (0x4A0 bytes, vtable D_00472370; its quad drawer at +0x370) */
 static void vanish_init(void **o) {
@@ -827,7 +827,7 @@ void CreatureA_Seen(Character *c) {
     AT(k, 0x29, u8) = 1;
     AT(k, 0x18, s32) = 0;
     AT(k, 0x1C, s32) = 0;
-    ptmf_set(&c->a.state, &D_00416790);
+    ptmf_set(&c->a.state, &CreatureA_StateVanish_ptmf4);
 }
 
 /* in the room being played: note the doors (by exit, +0x8A) whose event spot it stands on */
@@ -930,7 +930,7 @@ void CreatureA_Travel(Character *c) {
     }
 }
 
-/* state: vanishing (D_00416790). Not seen (+0x37 0): once its time (+0x20) reaches the kind's
+/* state: vanishing (CreatureA_StateVanish_ptmf4). Not seen (+0x37 0): once its time (+0x20) reaches the kind's
  * (+0x6) a fade (+0x2C, 8 a frame) and it is gone. Seen: it sinks (+0x1C, 0.1 faster each
  * frame) to 12 below, fades, then leaves a noise (red ones: noise 3 here; others a level
  * 0x80 noise at its place) and is gone (inactive, its path dropped) */
@@ -1272,7 +1272,7 @@ void CreatureA_FionaLeft(Character *c, u32 exit) {
 
 extern const f32 D_004167A0[17];   /* turns: 0, then +-0.39 .. +-3.14 */
 
-/* state: hanging about Fiona while she can't be reached (D_00416700). First its path is
+/* state: hanging about Fiona while she can't be reached (CreatureA_StateHangAbout_ptmf). First its path is
  * dropped (+0x9B 1). Then (on arriving) a spot by her: 10..25 to her front or back, turned by
  * a random step of the last try, on a triangle of the mesh other than its own that isn't
  * blocked (0x04020028) - up to 17 tries (a blocked one sets +0x9B back to 1) - and it walks
@@ -1347,8 +1347,8 @@ void CreatureA_StateHangAbout(Character *c) {
     }
 }
 
-extern const PTMF D_00416700, D_00416710, D_00416720, D_00416730, D_00416740, D_00416750, D_00416760,
-    D_00416770, D_00416780;   /* its states: about Fiona, idle, after her, idle, at the door, to the
+extern const PTMF CreatureA_StateHangAbout_ptmf, CreatureA_StateNone_ptmf3, CreatureA_StateAfterFiona_ptmf, CreatureA_StateNone_ptmf4, CreatureA_StateNone_ptmf5, CreatureA_StateToDoor_ptmf, CreatureA_StateNone_ptmf6,
+    CreatureA_StateRoute_ptmf, CreatureA_StateNone_ptmf7;   /* its states: about Fiona, idle, after her, idle, at the door, to the
                                  door, idle, travelling, idle */
 
 /* +0x30's thinking: in the room being played (in play) - not come yet: idle (on its triangle's
@@ -1377,9 +1377,9 @@ void CreatureA_Think(Character *c) {
         AT(k, 0x2F, u8) = 0;
         if (AT(k, 0x2E, u8) != 0) {
             AT(k, 0x20, s16) += 1;
-            ptmf_set(&c->a.state, &D_00416770);
+            ptmf_set(&c->a.state, &CreatureA_StateRoute_ptmf);
         } else {
-            ptmf_set(&c->a.state, &D_00416780);
+            ptmf_set(&c->a.state, &CreatureA_StateNone_ptmf7);
         }
         return;
     }
@@ -1389,7 +1389,7 @@ void CreatureA_Think(Character *c) {
             AT(k, 0x9B, s8) += 1;
             VCALL(gNavMesh, 0xC, void (*)(NavMesh *, u32, f32 *))(gNavMesh, c->a.navTri, c->a.pos);
         }
-        ptmf_set(&c->a.state, &D_00416760);
+        ptmf_set(&c->a.state, &CreatureA_StateNone_ptmf6);
         return;
     }
     AT(k, 0x20, s16) += 1;
@@ -1398,12 +1398,12 @@ void CreatureA_Think(Character *c) {
     }
     if ((Progress_TestFlag(p, 9) != 0 || gCharPlayer->moveMode == 3) && AT(k, 0x9C, s8) == 0) {
         c->moveMode = 2;
-        ptmf_set(&c->a.state, &D_00416700);
+        ptmf_set(&c->a.state, &CreatureA_StateHangAbout_ptmf);
         return;
     }
     if (gCharPlayer->a.unk2D != 0 && gCharPlayer->unkE0 != 0) {
         c->moveMode = 0;
-        ptmf_set(&c->a.state, &D_00416710);
+        ptmf_set(&c->a.state, &CreatureA_StateNone_ptmf3);
         return;
     }
     c->moveMode = 0;
@@ -1422,24 +1422,24 @@ void CreatureA_Think(Character *c) {
     switch (AT(k, 0x84, u8)) {
     case 0:
         if (AT(k, 0x9C, s8) == 0 || AT(k, 0x24, f32) <= 40.0f) {
-            ptmf_set(&c->a.state, &D_00416720);
+            ptmf_set(&c->a.state, &CreatureA_StateAfterFiona_ptmf);
         } else {
             Character_ReleasePath(c);
             AT(k, 0x2B, u8) = 0;
             c->unk124 = c->unk128;
-            ptmf_set(&c->a.state, &D_00416730);
+            ptmf_set(&c->a.state, &CreatureA_StateNone_ptmf4);
         }
         break;
     case 1:
-        ptmf_set(&c->a.state, &D_00416740);
+        ptmf_set(&c->a.state, &CreatureA_StateNone_ptmf5);
         break;
     case 2:
-        ptmf_set(&c->a.state, &D_00416750);
+        ptmf_set(&c->a.state, &CreatureA_StateToDoor_ptmf);
         break;
     }
 }
 
-extern const PTMF D_004166B0, D_004166C0, D_004166D0, D_004166E0, D_004166F0;
+extern const PTMF CreatureA_StateVanish_ptmf, CreatureA_StateVanish_ptmf2, CreatureA_StateVanish_ptmf3, CreatureA_StateNone_ptmf, CreatureA_StateNone_ptmf2;
 
 /* +0x30 per frame: its trail (+0x50 / +0x60 / +0x70 in turn: its position 12 above its bob),
  * its doors noted, +0x9C whether Fiona holds item 0x8D (equipment slot 3); thinking
@@ -1486,17 +1486,17 @@ void CreatureA_Frame(Character *c) {
     }
     if (AT(k, 0x2E, u8) == 0) {
         if (AT(k, 0x9C, s8) != 0) {
-            ptmf_set(&c->a.state, AT(k, 0x29, u8) != 0 ? &D_004166D0 : &D_004166E0);
+            ptmf_set(&c->a.state, AT(k, 0x29, u8) != 0 ? &CreatureA_StateVanish_ptmf3 : &CreatureA_StateNone_ptmf);
         } else {
-            ptmf_set(&c->a.state, &D_004166F0);
+            ptmf_set(&c->a.state, &CreatureA_StateNone_ptmf2);
         }
     } else if (c->a.disabled == 0) {
         if (AT(k, 0x29, u8) != 0) {
-            ptmf_set(&c->a.state, &D_004166C0);
+            ptmf_set(&c->a.state, &CreatureA_StateVanish_ptmf2);
         } else if (AT(k, 0x20, s16) >= AT(k, 0x6, s16)) {
             AT(k, 0x29, u8) = 1;
             Actor_PlaySound(&c->a, 0x8C, 5, 0, 0, NULL);
-            ptmf_set(&c->a.state, &D_004166B0);
+            ptmf_set(&c->a.state, &CreatureA_StateVanish_ptmf);
         }
     } else {
         u8 travel = 1;
@@ -4527,15 +4527,15 @@ void CreatureB_Distances(Character *c) {
     }
 }
 
-extern const PTMF D_0042C5E0, D_0042C5F0, D_0042C600;
+extern const PTMF CreatureB_StateRoute_ptmf, CreatureB_StateLeaving_ptmf2, CreatureB_StateNone_ptmf2;
 
 /* its states by the frame: on its trip (+0x6F) its time out +0x44 grows to +0x46; in the room
    being played in contact, a door chosen when not done (+0x68); a chosen door (+0x65 1) that
    isn't open (state 2, +0x2B cleared) or is now passed (+0x4C) cleared; a different height
    from Fiona keeps +0x6A; then by the door: none - its state +0x69 into +0x62, chosen - 8,
    shut - 6. Elsewhere out of contact, timed out it is held (+0x6B bit 0x80): its state
-   D_0042C5E0, held D_0042C5F0. Not on its trip: placed on its triangle once in the room being
-   played, state D_0042C600 */
+   CreatureB_StateRoute_ptmf, held CreatureB_StateLeaving_ptmf2. Not on its trip: placed on its triangle once in the room being
+   played, state CreatureB_StateNone_ptmf2 */
 /* 0x0032A550 */
 void CreatureB_States(Character *c) {
     u8 *k = CR(c);
@@ -4548,7 +4548,7 @@ void CreatureB_States(Character *c) {
             AT(k, 0x6C, u8)++;
             VCALL(gNavMesh, 0xC, void (*)(NavMesh *, u32, f32 *))(gNavMesh, c->a.navTri, c->a.pos);
         }
-        Actor_SetState(&c->a, &D_0042C600);
+        Actor_SetState(&c->a, &CreatureB_StateNone_ptmf2);
         return;
     }
     AT(k, 0x44, s16)++;
@@ -4562,9 +4562,9 @@ void CreatureB_States(Character *c) {
             AT(k, 0x6B, u8) |= 0x80;
         }
         if (!(AT(k, 0x6B, u8) & 0x80)) {
-            Actor_SetState(&c->a, &D_0042C5E0);
+            Actor_SetState(&c->a, &CreatureB_StateRoute_ptmf);
         } else {
-            Actor_SetState(&c->a, &D_0042C5F0);
+            Actor_SetState(&c->a, &CreatureB_StateLeaving_ptmf2);
         }
         return;
     }
@@ -4796,14 +4796,14 @@ void *Kind25_MotionFiles(void) {
 void Kind25_ShowUp(Pursuer *p) { creature_inplay(p); }
 
 /* 0x0032C3D0 */
-void Kind25_EventState(Pursuer *p) { creature_act5(p, &D_0042C720); }
+void Kind25_EventState(Pursuer *p) { creature_act5(p, &Pursuer_StateRunThenNext_ptmf15); }
 
 /* 0x0032C4A0 */
 s32 Kind25_GrabOrder(Pursuer *p) { return creature_slot_done(p); }
 
-extern const PTMF D_0042C4B0, D_0042C4C0, D_0042C4D0, D_0042C4E0, D_0042C4F0, D_0042C500, D_0042C510,
-    D_0042C520, D_0042C530, D_0042C540, D_0042C550, D_0042C560, D_0042C570, D_0042C580, D_0042C590,
-    D_0042C5A0, D_0042C5B0, D_0042C5C0, D_0042C5D0;
+extern const PTMF CreatureB_StateWatch0_ptmf, CreatureB_StateWatch1_ptmf, CreatureB_StateHit_ptmf, CreatureB_StateGrab_ptmf, CreatureB_StateLeaving_ptmf, CreatureB_StateAfterFiona_ptmf, CreatureB_StateToDoor_ptmf,
+    CreatureB_StateApproach10_ptmf, CreatureB_StateFlag9_ptmf, CreatureB_StateFionaOffMesh_ptmf, CreatureB_StateKnockedDown_ptmf, CreatureB_StateFionaCaught_ptmf, CreatureB_StateTurnToFiona_ptmf, CreatureB_StateWalkSpot_ptmf, CreatureB_StateByProgress_ptmf,
+    CreatureB_StateFionaInSight_ptmf, CreatureB_StateDoor_ptmf, CreatureB_StateHeldOff_ptmf, CreatureB_StateNone_ptmf;
 extern void *D_004795E0[];
 
 /* the effect it leaves when it goes (0x2920 bytes, D_004795E0, two quad drawers at +0x2410) */
@@ -4837,17 +4837,17 @@ void CreatureB_SetState(Character *c, u8 st) {
     switch (st) {
     case 0:
         cr19_first(c, 0);
-        Actor_SetState(&c->a, &D_0042C4B0);
+        Actor_SetState(&c->a, &CreatureB_StateWatch0_ptmf);
         break;
     case 1:
         cr19_first(c, 0x1C00);
-        Actor_SetState(&c->a, &D_0042C4C0);
+        Actor_SetState(&c->a, &CreatureB_StateWatch1_ptmf);
         break;
     case 2:
-        Actor_SetState(&c->a, &D_0042C4D0);
+        Actor_SetState(&c->a, &CreatureB_StateHit_ptmf);
         break;
     case 3:
-        Actor_SetState(&c->a, &D_0042C4E0);
+        Actor_SetState(&c->a, &CreatureB_StateGrab_ptmf);
         break;
     case 4:
         c->a.unk2D = 1;
@@ -4876,60 +4876,60 @@ void CreatureB_SetState(Character *c, u8 st) {
             sp.tri = c->a.navTri;
             EffectMgr_Start(mgr, slot, &sp);
         }
-        Actor_SetState(&c->a, &D_0042C4F0);
+        Actor_SetState(&c->a, &CreatureB_StateLeaving_ptmf);
         break;
     case 5:
         cr19_first(c, 0x200);
-        Actor_SetState(&c->a, &D_0042C500);
+        Actor_SetState(&c->a, &CreatureB_StateAfterFiona_ptmf);
         break;
     case 6:
         cr19_first(c, 0x200);
-        Actor_SetState(&c->a, &D_0042C510);
+        Actor_SetState(&c->a, &CreatureB_StateToDoor_ptmf);
         break;
     case 7:
         cr19_first(c, 0x200);
-        Actor_SetState(&c->a, &D_0042C520);
+        Actor_SetState(&c->a, &CreatureB_StateApproach10_ptmf);
         break;
     case 9:
         cr19_first(c, 0x200);
-        Actor_SetState(&c->a, &D_0042C530);
+        Actor_SetState(&c->a, &CreatureB_StateFlag9_ptmf);
         break;
     case 10:
         cr19_first(c, 0x200);
-        Actor_SetState(&c->a, &D_0042C540);
+        Actor_SetState(&c->a, &CreatureB_StateFionaOffMesh_ptmf);
         break;
     case 11:
-        Actor_SetState(&c->a, &D_0042C550);
+        Actor_SetState(&c->a, &CreatureB_StateKnockedDown_ptmf);
         break;
     case 12:
         cr19_first(c, 0x200);
-        Actor_SetState(&c->a, &D_0042C560);
+        Actor_SetState(&c->a, &CreatureB_StateFionaCaught_ptmf);
         break;
     case 13:
         cr19_first(c, 0x200);
-        Actor_SetState(&c->a, &D_0042C570);
+        Actor_SetState(&c->a, &CreatureB_StateTurnToFiona_ptmf);
         break;
     case 14:
         cr19_first(c, 0x200);
-        Actor_SetState(&c->a, &D_0042C580);
+        Actor_SetState(&c->a, &CreatureB_StateWalkSpot_ptmf);
         break;
     case 15:
         cr19_first(c, 0);
-        Actor_SetState(&c->a, &D_0042C590);
+        Actor_SetState(&c->a, &CreatureB_StateByProgress_ptmf);
         break;
     case 16:
         cr19_first(c, 0x200);
-        Actor_SetState(&c->a, &D_0042C5A0);
+        Actor_SetState(&c->a, &CreatureB_StateFionaInSight_ptmf);
         break;
     case 17:
         cr19_first(c, 0);
-        Actor_SetState(&c->a, &D_0042C5B0);
+        Actor_SetState(&c->a, &CreatureB_StateDoor_ptmf);
         break;
     case 18:
-        Actor_SetState(&c->a, &D_0042C5C0);
+        Actor_SetState(&c->a, &CreatureB_StateHeldOff_ptmf);
         break;
     default:
-        Actor_SetState(&c->a, &D_0042C5D0);
+        Actor_SetState(&c->a, &CreatureB_StateNone_ptmf);
         break;
     }
 }

@@ -88,7 +88,7 @@ s32 Room91_Cmd01(void) {
     return 1;
 }
 
-/* room 0x91 (D_00436CA0): door 0's +0x68 (0) */
+/* room 0x91 (Room91_Cmd00_ptmf): door 0's +0x68 (0) */
 /* 0x00341AD0 */
 s32 Room91_Cmd00(void) {
     VCALL(gDoors, 0x68, void (*)(VObject *, s32, s32))(gDoors, 0, 0);

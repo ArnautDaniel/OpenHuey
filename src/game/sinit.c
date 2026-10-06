@@ -8,24 +8,24 @@
 #include "system.h"
 #include "msl.h"
 
-extern const PTMF D_003AF290;
-extern const PTMF D_003AF2A0;
-extern const PTMF D_003AF2B0;
-extern const PTMF D_003AF2C0;
+extern const PTMF Debilitas_StartWander_ptmf;
+extern const PTMF Debilitas_StartTurnToFiona_ptmf;
+extern const PTMF Debilitas_StartLunge_ptmf;
+extern const PTMF Debilitas_StartGrab_ptmf;
 extern PTMF D_003AF2D0;
 extern PTMF D_003AF2EC;
 extern PTMF D_003AF308;
 extern PTMF D_003AF324;
-extern const PTMF D_003B2F68;
-extern const PTMF D_003B2F78;
-extern const PTMF D_003B2F88;
-extern const PTMF D_003B2F98;
-extern const PTMF D_003B2FA8;
-extern const PTMF D_003B2FB8;
-extern const PTMF D_003B2FC8;
-extern const PTMF D_003EC140;
+extern const PTMF Palette_FlatLow_ptmf;
+extern const PTMF Palette_FlatHigh_ptmf;
+extern const PTMF Palette_Colour_ptmf;
+extern const PTMF Palette_RandomGrey_ptmf;
+extern const PTMF Palette_Grey_ptmf;
+extern const PTMF Palette_Threshold_ptmf;
+extern const PTMF Palette_Alpha11_ptmf;
+extern const PTMF Pursuer_StateStand_ptmf;
 extern const PTMF D_003EC150;
-extern const PTMF D_003EC160;
+extern const PTMF Pursuer_StateWalkThenAnim_ptmf;
 extern const PTMF D_003EC170;
 extern const PTMF D_003EC180;
 extern const PTMF D_003EC190;
@@ -42,24 +42,24 @@ extern const PTMF D_003EC230;
 extern const PTMF D_003EC240;
 extern const PTMF D_003EC250;
 extern const PTMF D_003EC260;
-extern const PTMF D_003EC270;
-extern const PTMF D_003EC280;
-extern const PTMF D_003EC290;
-extern const PTMF D_003EC2A0;
-extern const PTMF D_003EC2B0;
-extern const PTMF D_003EC2C0;
-extern const PTMF D_003EC2D0;
-extern const PTMF D_003EC2E0;
-extern const PTMF D_003EC2F0;
+extern const PTMF Pursuer_AttackNextStep_ptmf2;
+extern const PTMF Pursuer_StateFaceFiona_ptmf;
+extern const PTMF Pursuer_StateWalkOn_ptmf;
+extern const PTMF Pursuer_StateLookAround_ptmf;
+extern const PTMF Pursuer_StateWalkGesture_ptmf;
+extern const PTMF Pursuer_StateWalkGesture_ptmf2;
+extern const PTMF Pursuer_StateWalkGesture_ptmf3;
+extern const PTMF Pursuer_StateSidestepRoom_ptmf;
+extern const PTMF Pursuer_StateSidestepRoom_ptmf2;
 extern const PTMF D_003EC300;
-extern const PTMF D_003EC310;
-extern const PTMF D_003EC320;
-extern const PTMF D_003EC330;
-extern const PTMF D_003EC340;
-extern const PTMF D_003EC350;
-extern const PTMF D_003EC360;
-extern const PTMF D_003EC370;
-extern const PTMF D_003EC380;
+extern const PTMF Pursuer_StateWalkThen404_ptmf;
+extern const PTMF Pursuer_StateFlinch_ptmf;
+extern const PTMF Pursuer_StateKnockedDown_ptmf;
+extern const PTMF Pursuer_StateHurt_ptmf;
+extern const PTMF Pursuer_StateHitAtDoor_ptmf;
+extern const PTMF Pursuer_StateDoorAhead_ptmf;
+extern const PTMF Pursuer_StateHewieBites_ptmf;
+extern const PTMF Pursuer_StateSpecialAnim_ptmf;
 extern const PTMF D_003EC390;
 extern const PTMF D_003EC3A0;
 extern const PTMF D_003EC3B0;
@@ -113,162 +113,162 @@ extern const PTMF D_003EC898;
 extern const PTMF D_003EC8A8;
 extern const PTMF D_003EC8B8;
 extern const PTMF D_003EC8C8;
-extern const PTMF D_003EE710;
-extern const PTMF D_003EE720;
+extern const PTMF Room00_Cmd00_ptmf;
+extern const PTMF Room00_Cmd01_ptmf;
 extern const PTMF D_003EE730;
-extern const PTMF D_003F0378;
-extern const PTMF D_003F0388;
-extern const PTMF D_003F0398;
-extern const PTMF D_003F03A8;
-extern const PTMF D_003F03B8;
-extern const PTMF D_003F03C8;
-extern const PTMF D_003F0D90;
-extern const PTMF D_003F0DA0;
-extern const PTMF D_003F1770;
-extern const PTMF D_003F1780;
-extern const PTMF D_003F1790;
-extern const PTMF D_003F17A0;
-extern const PTMF D_003F21C0;
-extern const PTMF D_003F31C0;
-extern const PTMF D_003F31D0;
-extern const PTMF D_003F31E0;
-extern const PTMF D_003F31F0;
-extern const PTMF D_003F3C50;
-extern const PTMF D_003F4378;
-extern const PTMF D_003F4388;
-extern const PTMF D_003F4640;
-extern const PTMF D_003F53F8;
-extern const PTMF D_003F5408;
-extern const PTMF D_003F5418;
-extern const PTMF D_003F5428;
-extern const PTMF D_003F6EE8;
-extern const PTMF D_003F6EF8;
-extern const PTMF D_003F6F08;
-extern const PTMF D_003F6F18;
-extern const PTMF D_003F6F28;
-extern const PTMF D_003F78F8;
-extern const PTMF D_003F9150;
-extern const PTMF D_003F9160;
-extern const PTMF D_003F99A0;
-extern const PTMF D_003FA060;
-extern const PTMF D_003FA728;
-extern const PTMF D_003FA738;
-extern const PTMF D_003FB358;
-extern const PTMF D_003FC010;
-extern const PTMF D_003FC658;
-extern const PTMF D_003FC668;
-extern const PTMF D_003FCAF0;
-extern const PTMF D_003FD338;
-extern const PTMF D_003FD348;
-extern const PTMF D_003FD980;
-extern const PTMF D_003FD990;
-extern const PTMF D_003FD9A0;
-extern const PTMF D_003FE440;
-extern const PTMF D_003FF078;
-extern const PTMF D_003FF088;
-extern const PTMF D_003FF098;
-extern const PTMF D_003FF0A8;
-extern const PTMF D_003FF0B8;
-extern const PTMF D_003FF0C8;
-extern const PTMF D_003FF0D8;
-extern const PTMF D_003FF0E8;
-extern const PTMF D_003FF0F8;
-extern const PTMF D_00400B80;
-extern const PTMF D_00400B90;
-extern const PTMF D_00400BA0;
-extern const PTMF D_00400BB0;
-extern const PTMF D_00400BC0;
-extern const PTMF D_00400BD0;
-extern const PTMF D_00400BE0;
-extern const PTMF D_00400BF0;
-extern const PTMF D_00401828;
-extern const PTMF D_00401838;
-extern const PTMF D_00401848;
-extern const PTMF D_004022C0;
-extern const PTMF D_004022D0;
-extern const PTMF D_004022E0;
-extern const PTMF D_00402D08;
-extern const PTMF D_00402D18;
-extern const PTMF D_00403900;
-extern const PTMF D_00403910;
-extern const PTMF D_00403920;
-extern const PTMF D_00403930;
-extern const PTMF D_00403F68;
-extern const PTMF D_004046E8;
-extern const PTMF D_004046F8;
-extern const PTMF D_004055D0;
-extern const PTMF D_004055E0;
-extern const PTMF D_004055F0;
-extern const PTMF D_00405600;
-extern const PTMF D_00405A90;
-extern const PTMF D_004064C8;
-extern const PTMF D_004064D8;
-extern const PTMF D_004064E8;
-extern const PTMF D_004064F8;
-extern const PTMF D_00407078;
-extern const PTMF D_00407E38;
-extern const PTMF D_00407F18;
-extern const PTMF D_00408638;
-extern const PTMF D_00408648;
-extern const PTMF D_00408658;
-extern const PTMF D_00409908;
-extern const PTMF D_00409918;
-extern const PTMF D_00409928;
-extern const PTMF D_0040ABE0;
-extern const PTMF D_0040ABF0;
-extern const PTMF D_0040AC00;
-extern const PTMF D_0040B4D0;
-extern const PTMF D_0040B4E0;
-extern const PTMF D_0040B4F0;
-extern const PTMF D_0040C0E8;
-extern const PTMF D_0040C0F8;
-extern const PTMF D_0040C108;
-extern const PTMF D_0040C118;
-extern const PTMF D_0040C128;
-extern const PTMF D_0040CF00;
-extern const PTMF D_0040E340;
-extern const PTMF D_0040E350;
-extern const PTMF D_0040ECC8;
-extern const PTMF D_0040ECD8;
-extern const PTMF D_0040F468;
-extern const PTMF D_00410B80;
-extern const PTMF D_00410F28;
-extern const PTMF D_00411B40;
-extern const PTMF D_00411B50;
-extern const PTMF D_004123B0;
-extern const PTMF D_004123C0;
-extern const PTMF D_00412E80;
-extern const PTMF D_004134B0;
-extern const PTMF D_00413590;
-extern const PTMF D_004135A0;
-extern const PTMF D_004135B0;
-extern const PTMF D_004135C0;
+extern const PTMF Room02_Cmd00_ptmf;
+extern const PTMF Room02_Cmd01_ptmf;
+extern const PTMF Room02_Cmd02_ptmf;
+extern const PTMF Room02_Cmd03_ptmf;
+extern const PTMF Room02_Cond00_ptmf;
+extern const PTMF Room02_Cond01_ptmf;
+extern const PTMF Room03_Cmd00_ptmf;
+extern const PTMF Room03_Cmd01_ptmf;
+extern const PTMF Room04_Cmd00_ptmf;
+extern const PTMF Room04_Cmd01_ptmf;
+extern const PTMF Room04_Cmd02_ptmf;
+extern const PTMF Room04_Cmd03_ptmf;
+extern const PTMF Room06_Cmd00_ptmf;
+extern const PTMF Room08_Cmd00_ptmf;
+extern const PTMF Room08_Cmd01_ptmf;
+extern const PTMF Room08_Cond00_ptmf;
+extern const PTMF Room08_Cond01_ptmf;
+extern const PTMF Room09_Cond00_ptmf;
+extern const PTMF Room0A_Cmd00_ptmf;
+extern const PTMF Room0A_Cmd01_ptmf;
+extern const PTMF Room0B_Cond00_ptmf;
+extern const PTMF Room0C_Cmd00_ptmf;
+extern const PTMF Room0C_Cmd01_ptmf;
+extern const PTMF Room0C_Cmd02_ptmf;
+extern const PTMF Room0C_Cmd03_ptmf;
+extern const PTMF Room0F_Cmd00_ptmf;
+extern const PTMF Room0F_Cmd01_ptmf;
+extern const PTMF Room0F_Cmd02_ptmf;
+extern const PTMF Room0F_Cmd03_ptmf;
+extern const PTMF Room0F_Cmd04_ptmf;
+extern const PTMF Room10_Cond00_ptmf;
+extern const PTMF Room12_Cmd00_ptmf;
+extern const PTMF Room12_Cond00_ptmf;
+extern const PTMF Room13_Cmd00_ptmf;
+extern const PTMF Room14_Cmd00_ptmf;
+extern const PTMF Room15_Cmd00_ptmf;
+extern const PTMF Room15_Cond00_ptmf;
+extern const PTMF Room18_Cmd00_ptmf;
+extern const PTMF Room19_Cond00_ptmf;
+extern const PTMF Room1A_Cmd00_ptmf;
+extern const PTMF Room1A_Cmd01_ptmf;
+extern const PTMF Room1B_Cmd00_ptmf;
+extern const PTMF Room1C_Cmd00_ptmf;
+extern const PTMF Room1C_Cmd01_ptmf;
+extern const PTMF Room1D_Cmd00_ptmf;
+extern const PTMF Room1D_Cmd01_ptmf;
+extern const PTMF Room1D_Cond00_ptmf;
+extern const PTMF Room1F_Cmd00_ptmf;
+extern const PTMF Room20_Cmd00_ptmf;
+extern const PTMF Room20_Cmd01_ptmf;
+extern const PTMF Room20_Cmd02_ptmf;
+extern const PTMF Room20_Cmd03_ptmf;
+extern const PTMF Room20_Cmd04_ptmf;
+extern const PTMF Room20_Cmd05_ptmf;
+extern const PTMF Room20_Cond00_ptmf;
+extern const PTMF Room20_Cond01_ptmf;
+extern const PTMF Room20_Cond02_ptmf;
+extern const PTMF Room21_Cmd00_ptmf;
+extern const PTMF Room21_Cmd01_ptmf;
+extern const PTMF Room21_Cmd02_ptmf;
+extern const PTMF Room21_Cmd03_ptmf;
+extern const PTMF Room21_Cmd04_ptmf;
+extern const PTMF Room21_Cmd05_ptmf;
+extern const PTMF Room21_Cmd06_ptmf;
+extern const PTMF Room21_Cond00_ptmf;
+extern const PTMF Room23_Cond00_ptmf;
+extern const PTMF Room23_Cmd00_ptmf;
+extern const PTMF Room23_Cmd01_ptmf;
+extern const PTMF Room24_KilnGlow_ptmf;
+extern const PTMF Room24_Smoke_ptmf;
+extern const PTMF Room24_ColourPulse_ptmf;
+extern const PTMF Room25_Cmd00_ptmf;
+extern const PTMF Room25_Cond00_ptmf;
+extern const PTMF Room26_Cond00_ptmf;
+extern const PTMF Room26_Cmd00_ptmf;
+extern const PTMF Room26_Cmd01_ptmf;
+extern const PTMF Room26_Cmd02_ptmf;
+extern const PTMF Room28_Cond00_ptmf;
+extern const PTMF Room29_Cond00_ptmf;
+extern const PTMF Room29_Cond01_ptmf;
+extern const PTMF Room2A_Cmd00_ptmf;
+extern const PTMF Room2A_HandlerStep_ptmf;
+extern const PTMF Room2A_Cmd02_ptmf;
+extern const PTMF Room2A_Cmd03_ptmf;
+extern const PTMF Room2B_Cmd00_ptmf;
+extern const PTMF Room2D_Cmd00_ptmf;
+extern const PTMF Room2D_Cmd01_ptmf;
+extern const PTMF Room2D_Cmd02_ptmf;
+extern const PTMF Room2D_Cond00_ptmf;
+extern const PTMF Room40_Cmd00_ptmf;
+extern const PTMF Room43_Cmd00_ptmf;
+extern const PTMF Room45_Cmd00_ptmf;
+extern const PTMF Room49_Cmd00_ptmf;
+extern const PTMF Room49_Cmd01_ptmf;
+extern const PTMF Room49_Cmd02_ptmf;
+extern const PTMF Room4B_Cmd00_ptmf;
+extern const PTMF Room4B_Cmd01_ptmf;
+extern const PTMF Room4B_Cond00_ptmf;
+extern const PTMF Room4C_Cmd00_ptmf;
+extern const PTMF Room4C_Cmd01_ptmf;
+extern const PTMF Room4C_Cmd02_ptmf;
+extern const PTMF Room4E_Cmd00_ptmf;
+extern const PTMF Room4E_Cmd01_ptmf;
+extern const PTMF Room4E_Cmd02_ptmf;
+extern const PTMF Room4F_Cmd00_ptmf;
+extern const PTMF Room4F_Cmd01_ptmf;
+extern const PTMF Room4F_Cmd02_ptmf;
+extern const PTMF Room4F_Cmd03_ptmf;
+extern const PTMF Room4F_CreatureVanish_ptmf;
+extern const PTMF Room50_Cmd00_ptmf;
+extern const PTMF Room51_Cmd00_ptmf;
+extern const PTMF Room51_Cmd01_ptmf;
+extern const PTMF Room52_Cmd00_ptmf;
+extern const PTMF Room52_Cond00_ptmf;
+extern const PTMF Room56_Cmd00_ptmf;
+extern const PTMF Room59_Cmd00_ptmf;
+extern const PTMF Room5A_Cmd00_ptmf;
+extern const PTMF Room5C_Cmd00_ptmf;
+extern const PTMF Room5C_Cond00_ptmf;
+extern const PTMF Room5D_Cmd00_ptmf;
+extern const PTMF Room5D_Cmd01_ptmf;
+extern const PTMF Room2F_Cond00_ptmf;
+extern const PTMF Room30_Cond00_ptmf;
+extern const PTMF Debilitas3_StateNone_ptmf;
+extern const PTMF Debilitas3_StartTurnToFiona_ptmf;
+extern const PTMF Debilitas3_StartLunge_ptmf;
+extern const PTMF Debilitas3_StartGrab_ptmf;
 extern PTMF D_004135D0;
 extern PTMF D_004135EC;
 extern PTMF D_00413608;
 extern PTMF D_00413624;
-extern const PTMF D_00414880;
-extern const PTMF D_00414890;
+extern const PTMF Riccardo_StartFlurry_ptmf;
+extern const PTMF Riccardo_StartLunge_ptmf;
 extern PTMF D_004148A0;
 extern PTMF D_004148BC;
-extern const PTMF D_00417148;
-extern const PTMF D_00417158;
-extern const PTMF D_00417810;
-extern const PTMF D_00417BA0;
-extern const PTMF D_00417F20;
-extern const PTMF D_004182A0;
-extern const PTMF D_00418AB8;
-extern const PTMF D_00418D80;
-extern const PTMF D_00418D90;
-extern const PTMF D_00418DA0;
-extern const PTMF D_00419388;
-extern const PTMF D_004196F0;
-extern const PTMF D_00419700;
-extern const PTMF D_00419A40;
-extern const PTMF D_00419A50;
-extern const PTMF D_00419D88;
-extern const PTMF D_00419D98;
-extern const PTMF D_0041B630;
+extern const PTMF Room46_CharHook_ptmf;
+extern const PTMF Room46_PursuerBusy_ptmf;
+extern const PTMF Room102_Cmd00_ptmf;
+extern const PTMF Room103_Cmd00_ptmf;
+extern const PTMF Room104_Cmd00_ptmf;
+extern const PTMF Room105_Cmd00_ptmf;
+extern const PTMF Room106_Cmd00_ptmf;
+extern const PTMF Room107_Cond00_ptmf;
+extern const PTMF Room107_Cmd00_ptmf;
+extern const PTMF Room107_Cmd01_ptmf;
+extern const PTMF Room108_Cmd00_ptmf;
+extern const PTMF Room109_Cmd00_ptmf;
+extern const PTMF Room109_Cmd01_ptmf;
+extern const PTMF Room10A_Cond00_ptmf;
+extern const PTMF Room10A_Cmd00_ptmf;
+extern const PTMF Room10B_Cmd00_ptmf;
+extern const PTMF Room10B_Cond00_ptmf;
+extern const PTMF Room_EmptyHook_ptmf;
 extern const PTMF D_0041B640;
 extern const PTMF D_0041B650;
 extern const PTMF D_0041B660;
@@ -276,216 +276,216 @@ extern PTMF D_0041B670;
 extern PTMF D_0041B68C;
 extern PTMF D_0041B6A8;
 extern PTMF D_0041B6C4;
-extern const PTMF D_0041CA70;
-extern const PTMF D_0041D7B8;
-extern const PTMF D_0041D7C8;
-extern const PTMF D_0041D7D8;
-extern const PTMF D_0041D7E8;
-extern const PTMF D_0041D7F8;
-extern const PTMF D_0041F550;
-extern const PTMF D_0041F560;
-extern const PTMF D_0041F570;
-extern const PTMF D_0041F580;
-extern const PTMF D_0041F590;
-extern const PTMF D_0041F5A0;
-extern const PTMF D_0041F5B0;
-extern const PTMF D_004210F0;
-extern const PTMF D_00421BE0;
-extern const PTMF D_00422300;
-extern const PTMF D_00422310;
-extern const PTMF D_00422660;
-extern const PTMF D_00422670;
-extern const PTMF D_00422680;
+extern const PTMF Room27_Cmd00_ptmf;
+extern const PTMF Room2E_Cmd00_ptmf;
+extern const PTMF Room2E_Cmd01_ptmf;
+extern const PTMF Room2E_Cmd02_ptmf;
+extern const PTMF Room2E_Cmd03_ptmf;
+extern const PTMF Room2E_Cmd04_ptmf;
+extern const PTMF Room66_CharHook_ptmf;
+extern const PTMF Room66_Effect_ptmf;
+extern const PTMF Room66_Sink_ptmf;
+extern const PTMF Room66_Fire_ptmf;
+extern const PTMF Room66_ColourPulse_ptmf;
+extern const PTMF Room66_Letters_ptmf;
+extern const PTMF Room66_CharPast_ptmf;
+extern const PTMF Room55_Effect_ptmf;
+extern const PTMF Room63_Cmd00_ptmf;
+extern const PTMF Room62_Cmd00_ptmf;
+extern const PTMF Room62_Cmd01_ptmf;
+extern const PTMF Lorenzo2_StartSink_ptmf;
+extern const PTMF Lorenzo2_StartStalkBelow_ptmf;
+extern const PTMF Lorenzo2_StartGrab_ptmf;
 extern PTMF D_00422690;
 extern PTMF D_004226AC;
 extern PTMF D_004226C8;
-extern const PTMF D_004267F0;
-extern const PTMF D_00426800;
-extern const PTMF D_00426810;
-extern const PTMF D_00426820;
-extern const PTMF D_00426830;
-extern const PTMF D_00426840;
-extern const PTMF D_00426850;
-extern const PTMF D_00428028;
-extern const PTMF D_00428038;
-extern const PTMF D_00429140;
-extern const PTMF D_00429150;
-extern const PTMF D_00429160;
-extern const PTMF D_00429170;
-extern const PTMF D_00429180;
-extern const PTMF D_00429190;
-extern const PTMF D_00429558;
-extern const PTMF D_00429568;
-extern const PTMF D_0042A0B0;
-extern const PTMF D_0042A0C0;
-extern const PTMF D_0042A0D0;
-extern const PTMF D_0042C290;
-extern const PTMF D_0042C2A0;
-extern const PTMF D_0042C2B0;
-extern const PTMF D_0042C2C0;
-extern const PTMF D_0042C2D0;
-extern const PTMF D_0042C2E0;
-extern const PTMF D_0042C850;
-extern const PTMF D_0042E390;
-extern const PTMF D_0042E3A0;
-extern const PTMF D_0042E3B0;
-extern const PTMF D_0042E3C0;
-extern const PTMF D_0042E3D0;
-extern const PTMF D_0042E3E0;
-extern const PTMF D_0042E500;
-extern const PTMF D_0042E510;
-extern const PTMF D_0042E520;
-extern const PTMF D_0042E530;
+extern const PTMF Room48_Cmd00_ptmf;
+extern const PTMF Room48_Cmd01_ptmf;
+extern const PTMF Room48_Cmd02_ptmf;
+extern const PTMF Room48_Cmd03_ptmf;
+extern const PTMF Room48_Cmd04_ptmf;
+extern const PTMF Room48_Cmd05_ptmf;
+extern const PTMF Room48_Cond00_ptmf;
+extern const PTMF Room54_GroupStep_ptmf;
+extern const PTMF Room54_DoorRegions_ptmf;
+extern const PTMF Room60_Cmd00_ptmf;
+extern const PTMF Room60_Cmd01_ptmf;
+extern const PTMF Room60_Cmd02_ptmf;
+extern const PTMF Room60_Cmd03_ptmf;
+extern const PTMF Room60_Cmd04_ptmf;
+extern const PTMF Room60_Cmd05_ptmf;
+extern const PTMF Room61_Cmd00_ptmf;
+extern const PTMF Room61_Cmd01_ptmf;
+extern const PTMF Room31_RoomEffect_ptmf;
+extern const PTMF Room31_Fan_ptmf;
+extern const PTMF Room31_WindowLight_ptmf;
+extern const PTMF Room32_Cmd00_ptmf;
+extern const PTMF Room32_Cmd01_ptmf;
+extern const PTMF Room32_Cmd02_ptmf;
+extern const PTMF Room32_Cmd03_ptmf;
+extern const PTMF Room32_Cmd04_ptmf;
+extern const PTMF Room32_Cmd05_ptmf;
+extern const PTMF Room86_Cmd00_ptmf;
+extern const PTMF RoomC0_Cmd00_ptmf;
+extern const PTMF RoomC0_Cmd01_ptmf;
+extern const PTMF RoomC0_Cmd02_ptmf;
+extern const PTMF RoomC0_Cmd03_ptmf;
+extern const PTMF RoomC0_Cmd04_ptmf;
+extern const PTMF RoomC0_Cond00_ptmf;
+extern const PTMF Kind27_StateNone_ptmf;
+extern const PTMF Kind27_StartTurnToFiona_ptmf;
+extern const PTMF Kind27_StartLunge_ptmf;
+extern const PTMF Kind27_StartGrab_ptmf;
 extern PTMF D_0042E540;
 extern PTMF D_0042E55C;
 extern PTMF D_0042E578;
 extern PTMF D_0042E594;
-extern const PTMF D_00430760;
-extern const PTMF D_00430770;
-extern const PTMF D_00430780;
-extern const PTMF D_00430790;
-extern const PTMF D_004307A0;
-extern const PTMF D_004307B0;
-extern const PTMF D_004307C0;
-extern const PTMF D_004307D0;
-extern const PTMF D_004307E0;
-extern const PTMF D_004326B8;
-extern const PTMF D_00432AF8;
-extern const PTMF D_00432C90;
-extern const PTMF D_00433550;
-extern const PTMF D_00434818;
-extern const PTMF D_00434828;
-extern const PTMF D_00434838;
-extern const PTMF D_00434848;
-extern const PTMF D_00434858;
-extern const PTMF D_00435008;
-extern const PTMF D_00435018;
-extern const PTMF D_00435028;
-extern const PTMF D_00435950;
-extern const PTMF D_00435960;
-extern const PTMF D_00436568;
-extern const PTMF D_00436578;
-extern const PTMF D_00436588;
-extern const PTMF D_00436598;
-extern const PTMF D_004365A8;
-extern const PTMF D_00436CA0;
-extern const PTMF D_00436CB0;
-extern const PTMF D_00436CC0;
-extern const PTMF D_00436CD0;
-extern const PTMF D_00437C40;
-extern const PTMF D_00437C50;
-extern const PTMF D_00437C60;
-extern const PTMF D_00437C70;
-extern const PTMF D_00437C80;
-extern const PTMF D_00437C90;
-extern const PTMF D_00437CA0;
-extern const PTMF D_00437CB0;
-extern const PTMF D_00437CC0;
-extern const PTMF D_00437CD0;
-extern const PTMF D_00437CE0;
-extern const PTMF D_00437CF0;
-extern const PTMF D_00437D00;
-extern const PTMF D_00437D10;
-extern const PTMF D_00437E30;
-extern const PTMF D_004386F0;
-extern const PTMF D_00438CD8;
-extern const PTMF D_00438CE8;
-extern const PTMF D_00439AD0;
-extern const PTMF D_00439AE0;
-extern const PTMF D_0043A0B8;
-extern const PTMF D_0043A0C8;
-extern const PTMF D_0043AFF0;
-extern const PTMF D_0043B000;
-extern const PTMF D_0043EC68;
-extern const PTMF D_0043F098;
-extern const PTMF D_0043F898;
-extern const PTMF D_0043F8A8;
-extern const PTMF D_0043F8B8;
-extern const PTMF D_00440098;
-extern const PTMF D_004400A8;
-extern const PTMF D_004400B8;
-extern const PTMF D_004400C8;
-extern const PTMF D_00441128;
-extern const PTMF D_004417B8;
-extern const PTMF D_00443060;
-extern const PTMF D_00443718;
-extern const PTMF D_00443850;
-extern const PTMF D_00443DF0;
-extern const PTMF D_00444378;
-extern const PTMF D_004444D0;
-extern const PTMF D_004446C8;
-extern const PTMF D_00444840;
-extern const PTMF D_00444CB0;
-extern const PTMF D_00444CC0;
-extern const PTMF D_00444CD0;
+extern const PTMF RoomC7_Cmd00_ptmf;
+extern const PTMF RoomC7_Cmd01_ptmf;
+extern const PTMF RoomC7_Cmd02_ptmf;
+extern const PTMF RoomC7_Cmd03_ptmf;
+extern const PTMF RoomC7_Cmd04_ptmf;
+extern const PTMF RoomC7_Cmd05_ptmf;
+extern const PTMF RoomC7_Cmd06_ptmf;
+extern const PTMF RoomC7_Cond00_ptmf;
+extern const PTMF RoomC7_Cond01_ptmf;
+extern const PTMF Room84_Cmd00_ptmf;
+extern const PTMF Room85_Cmd00_ptmf;
+extern const PTMF Room87_Cmd00_ptmf;
+extern const PTMF Room88_Cmd00_ptmf;
+extern const PTMF Room8C_Cmd00_ptmf;
+extern const PTMF Room8C_Cmd01_ptmf;
+extern const PTMF Room8C_Cmd02_ptmf;
+extern const PTMF Room8C_Cmd03_ptmf;
+extern const PTMF Room8C_Cmd04_ptmf;
+extern const PTMF Room8D_Cmd00_ptmf;
+extern const PTMF Room8D_Cmd01_ptmf;
+extern const PTMF Room8D_Cmd02_ptmf;
+extern const PTMF Room8E_Cmd00_ptmf;
+extern const PTMF Room8E_Cmd01_ptmf;
+extern const PTMF Room8F_Cmd00_ptmf;
+extern const PTMF Room8F_Cmd01_ptmf;
+extern const PTMF Room8F_Cmd02_ptmf;
+extern const PTMF Room8F_Cmd03_ptmf;
+extern const PTMF Room8F_Cond00_ptmf;
+extern const PTMF Room91_Cmd00_ptmf;
+extern const PTMF Room91_Cmd01_ptmf;
+extern const PTMF Room91_Cmd02_ptmf;
+extern const PTMF Room91_Cmd03_ptmf;
+extern const PTMF Room92_Cmd00_ptmf;
+extern const PTMF Room92_Cmd01_ptmf;
+extern const PTMF Room92_Cmd02_ptmf;
+extern const PTMF Room92_Cmd03_ptmf;
+extern const PTMF Room92_Cmd04_ptmf;
+extern const PTMF Room92_Cmd05_ptmf;
+extern const PTMF Room92_Cmd06_ptmf;
+extern const PTMF Room92_Cmd07_ptmf;
+extern const PTMF Room92_Cmd08_ptmf;
+extern const PTMF Room92_Cmd09_ptmf;
+extern const PTMF Room92_Cmd10_ptmf;
+extern const PTMF Room92_Cmd11_ptmf;
+extern const PTMF Room92_Cmd12_ptmf;
+extern const PTMF Room92_Cmd13_ptmf;
+extern const PTMF Room97_Cmd00_ptmf;
+extern const PTMF Room69_Cmd00_ptmf;
+extern const PTMF Room6A_Cmd00_ptmf;
+extern const PTMF Room6A_Cmd01_ptmf;
+extern const PTMF Room6C_Cond00_ptmf;
+extern const PTMF Room6C_Cond01_ptmf;
+extern const PTMF Room6D_Cond00_ptmf;
+extern const PTMF Room6D_Cond01_ptmf;
+extern const PTMF Room6F_Cmd00_ptmf;
+extern const PTMF Room6F_Cond00_ptmf;
+extern const PTMF Room80_Cmd00_ptmf;
+extern const PTMF RoomC1_Cond00_ptmf;
+extern const PTMF RoomC2_Cmd00_ptmf;
+extern const PTMF RoomC2_Cmd01_ptmf;
+extern const PTMF RoomC2_Cond00_ptmf;
+extern const PTMF RoomC3_Cmd00_ptmf;
+extern const PTMF RoomC3_Cmd01_ptmf;
+extern const PTMF RoomC3_Cmd02_ptmf;
+extern const PTMF RoomC3_Cond00_ptmf;
+extern const PTMF RoomC5_Cmd00_ptmf;
+extern const PTMF RoomC8_Cmd00_ptmf;
+extern const PTMF Room98_SlamShake_ptmf;
+extern const PTMF Room99_SlamShake_ptmf;
+extern const PTMF Room9A_Cmd00_ptmf;
+extern const PTMF Room9B_Cmd00_ptmf;
+extern const PTMF Room93_SlamShake_ptmf;
+extern const PTMF Room94_Cmd00_ptmf;
+extern const PTMF Room95_Cmd00_ptmf;
+extern const PTMF Room96_Cmd00_ptmf;
+extern const PTMF Kind39_StartSink_ptmf;
+extern const PTMF Kind39_StartStalkBelow_ptmf;
+extern const PTMF Kind39_StartGrab_ptmf;
 extern PTMF D_00444CE0;
 extern PTMF D_00444CFC;
 extern PTMF D_00444D18;
-extern const PTMF D_00446998;
-extern const PTMF D_00446BA0;
-extern const PTMF D_00446BB0;
-extern const PTMF D_00446BC0;
-extern const PTMF D_00446BD0;
-extern const PTMF D_00446D08;
-extern const PTMF D_00446D18;
-extern const PTMF D_00446D28;
-extern const PTMF D_00446EF8;
-extern const PTMF D_00446F08;
-extern const PTMF D_004470E8;
-extern const PTMF D_004470F8;
-extern const PTMF D_004472C8;
-extern const PTMF D_004472D8;
-extern const PTMF D_00447618;
-extern const PTMF D_00447628;
-extern const PTMF D_00447638;
-extern const PTMF D_00447648;
-extern const PTMF D_00447A20;
-extern const PTMF D_00447A30;
-extern const PTMF D_00447A40;
+extern const PTMF Room37_Fan_ptmf;
+extern const PTMF RoomD0_ClockStop_ptmf;
+extern const PTMF RoomD0_ClockSave_ptmf;
+extern const PTMF RoomD0_ClockDrawSaved_ptmf;
+extern const PTMF RoomD0_ProgressCall_ptmf;
+extern const PTMF RoomD1_Cmd00_ptmf;
+extern const PTMF RoomD1_Cmd01_ptmf;
+extern const PTMF RoomD1_Cond00_ptmf;
+extern const PTMF RoomD2_Cmd00_ptmf;
+extern const PTMF RoomD2_Cond00_ptmf;
+extern const PTMF RoomD3_Cmd00_ptmf;
+extern const PTMF RoomD3_Cond00_ptmf;
+extern const PTMF RoomD4_Cmd00_ptmf;
+extern const PTMF RoomD4_Cond00_ptmf;
+extern const PTMF RoomD5_Cmd00_ptmf;
+extern const PTMF RoomD5_Cmd01_ptmf;
+extern const PTMF RoomD5_Cmd02_ptmf;
+extern const PTMF RoomD5_Cond00_ptmf;
+extern const PTMF RoomD6_Cmd00_ptmf;
+extern const PTMF RoomD6_Cmd01_ptmf;
+extern const PTMF RoomD6_Cond00_ptmf;
 extern const PTMF D_00447B70;
-extern const PTMF D_00447B80;
-extern const PTMF D_00447B90;
-extern const PTMF D_00447BA0;
-extern const PTMF D_00447BB0;
+extern const PTMF RoomD7_Cond01_ptmf;
+extern const PTMF RoomD7_Cmd00_ptmf;
+extern const PTMF RoomD7_Cmd01_ptmf;
+extern const PTMF RoomD7_Cmd02_ptmf;
 extern const PTMF D_00447E20;
-extern const PTMF D_00447E30;
-extern const PTMF D_00447E40;
-extern const PTMF D_00447E50;
-extern const PTMF D_00447F88;
-extern const PTMF D_00447F98;
-extern const PTMF D_00447FA8;
-extern const PTMF D_00447FB8;
-extern const PTMF D_004484F8;
-extern const PTMF D_00448508;
-extern const PTMF D_00448518;
-extern const PTMF D_00448528;
-extern const PTMF D_00448538;
-extern const PTMF D_00448548;
-extern const PTMF D_00448558;
-extern const PTMF D_00448880;
-extern const PTMF D_00448890;
-extern const PTMF D_00448CE8;
-extern const PTMF D_00448CF8;
-extern const PTMF D_00449220;
-extern const PTMF D_00449230;
-extern const PTMF D_00449508;
-extern const PTMF D_00449518;
-extern const PTMF D_00449528;
-extern const PTMF D_004498A8;
-extern const PTMF D_004498B8;
-extern const PTMF D_004498C8;
-extern const PTMF D_00449A88;
-extern const PTMF D_00449A98;
-extern const PTMF D_00449AA8;
-extern const PTMF D_00449EA0;
-extern const PTMF D_00449EB0;
-extern const PTMF D_0044A278;
-extern const PTMF D_0044A288;
-extern const PTMF D_0044A938;
-extern const PTMF D_0044A948;
-extern const PTMF D_0044A958;
-extern const PTMF D_0044A968;
-extern const PTMF D_0044A978;
+extern const PTMF RoomD8_Cond01_ptmf;
+extern const PTMF RoomD8_Cmd00_ptmf;
+extern const PTMF RoomD8_Cmd01_ptmf;
+extern const PTMF RoomD9_Cmd00_ptmf;
+extern const PTMF RoomD9_Cmd01_ptmf;
+extern const PTMF RoomD9_Cmd02_ptmf;
+extern const PTMF RoomD9_Cond00_ptmf;
+extern const PTMF RoomE0_ClockStart_ptmf;
+extern const PTMF RoomE0_Fan_ptmf;
+extern const PTMF RoomE0_WindowLight_ptmf;
+extern const PTMF RoomE0_DoorLight_ptmf;
+extern const PTMF RoomE0_ClockDraw_ptmf;
+extern const PTMF RoomE0_ChooseExit_ptmf;
+extern const PTMF RoomE0_ProgressCall_ptmf;
+extern const PTMF RoomE1_Cmd00_ptmf;
+extern const PTMF RoomE1_Cond00_ptmf;
+extern const PTMF RoomE2_Cmd00_ptmf;
+extern const PTMF RoomE2_Cond00_ptmf;
+extern const PTMF RoomE3_Cmd00_ptmf;
+extern const PTMF RoomE3_Cond00_ptmf;
+extern const PTMF RoomE4_Cmd00_ptmf;
+extern const PTMF RoomE4_Cmd01_ptmf;
+extern const PTMF RoomE4_Cond00_ptmf;
+extern const PTMF RoomE5_Cmd00_ptmf;
+extern const PTMF RoomE5_Cmd01_ptmf;
+extern const PTMF RoomE5_Cond00_ptmf;
+extern const PTMF RoomE6_Cmd00_ptmf;
+extern const PTMF RoomE6_Cmd01_ptmf;
+extern const PTMF RoomE6_Cond00_ptmf;
+extern const PTMF RoomE7_Cmd00_ptmf;
+extern const PTMF RoomE7_Cond00_ptmf;
+extern const PTMF RoomE8_Cmd00_ptmf;
+extern const PTMF RoomE8_Cond00_ptmf;
+extern const PTMF RoomE9_Cmd00_ptmf;
+extern const PTMF RoomE9_Cmd01_ptmf;
+extern const PTMF RoomE9_Cmd02_ptmf;
+extern const PTMF RoomE9_Cmd03_ptmf;
+extern const PTMF RoomE9_Cond00_ptmf;
 extern PTMF D_0045B340;
 extern PTMF D_0045B358;
 extern PTMF D_0045B370;
@@ -835,28 +835,28 @@ extern PTMF D_01991E90;
 
 /* 0x00464860 */
 void Sinit_Debilitas(void) {
-    D_003AF2D0 = D_003AF290;
-    D_003AF2EC = D_003AF2A0;
-    D_003AF308 = D_003AF2B0;
-    D_003AF324 = D_003AF2C0;
+    D_003AF2D0 = Debilitas_StartWander_ptmf;
+    D_003AF2EC = Debilitas_StartTurnToFiona_ptmf;
+    D_003AF308 = Debilitas_StartLunge_ptmf;
+    D_003AF324 = Debilitas_StartGrab_ptmf;
 }
 
 /* 0x00464920 */
 void Sinit_Renderer(void) {
-    D_0047E300 = D_003B2F68;
-    D_0047E30C = D_003B2F78;
-    D_0047E318 = D_003B2F88;
-    D_0047E324 = D_003B2F98;
-    D_0047E330 = D_003B2FA8;
-    D_0047E33C = D_003B2FB8;
-    D_0047E348 = D_003B2FC8;
+    D_0047E300 = Palette_FlatLow_ptmf;
+    D_0047E30C = Palette_FlatHigh_ptmf;
+    D_0047E318 = Palette_Colour_ptmf;
+    D_0047E324 = Palette_RandomGrey_ptmf;
+    D_0047E330 = Palette_Grey_ptmf;
+    D_0047E33C = Palette_Threshold_ptmf;
+    D_0047E348 = Palette_Alpha11_ptmf;
 }
 
 /* 0x00464B80 */
 void Sinit_Pursuer(void) {
-    D_003EC3E0 = D_003EC140;
+    D_003EC3E0 = Pursuer_StateStand_ptmf;
     D_003EC3FC = D_003EC150;
-    D_003EC418 = D_003EC160;
+    D_003EC418 = Pursuer_StateWalkThenAnim_ptmf;
     D_003EC434 = D_003EC170;
     D_003EC450 = D_003EC180;
     D_003EC46C = D_003EC190;
@@ -873,24 +873,24 @@ void Sinit_Pursuer(void) {
     D_003EC5A0 = D_003EC240;
     D_003EC5BC = D_003EC250;
     D_003EC5D8 = D_003EC260;
-    D_003EC5F4 = D_003EC270;
-    D_003EC610 = D_003EC280;
-    D_003EC62C = D_003EC290;
-    D_003EC648 = D_003EC2A0;
-    D_003EC664 = D_003EC2B0;
-    D_003EC680 = D_003EC2C0;
-    D_003EC69C = D_003EC2D0;
-    D_003EC6B8 = D_003EC2E0;
-    D_003EC6D4 = D_003EC2F0;
+    D_003EC5F4 = Pursuer_AttackNextStep_ptmf2;
+    D_003EC610 = Pursuer_StateFaceFiona_ptmf;
+    D_003EC62C = Pursuer_StateWalkOn_ptmf;
+    D_003EC648 = Pursuer_StateLookAround_ptmf;
+    D_003EC664 = Pursuer_StateWalkGesture_ptmf;
+    D_003EC680 = Pursuer_StateWalkGesture_ptmf2;
+    D_003EC69C = Pursuer_StateWalkGesture_ptmf3;
+    D_003EC6B8 = Pursuer_StateSidestepRoom_ptmf;
+    D_003EC6D4 = Pursuer_StateSidestepRoom_ptmf2;
     D_003EC6F0 = D_003EC300;
-    D_003EC70C = D_003EC310;
-    D_003EC728 = D_003EC320;
-    D_003EC744 = D_003EC330;
-    D_003EC760 = D_003EC340;
-    D_003EC77C = D_003EC350;
-    D_003EC798 = D_003EC360;
-    D_003EC7B4 = D_003EC370;
-    D_003EC7D0 = D_003EC380;
+    D_003EC70C = Pursuer_StateWalkThen404_ptmf;
+    D_003EC728 = Pursuer_StateFlinch_ptmf;
+    D_003EC744 = Pursuer_StateKnockedDown_ptmf;
+    D_003EC760 = Pursuer_StateHurt_ptmf;
+    D_003EC77C = Pursuer_StateHitAtDoor_ptmf;
+    D_003EC798 = Pursuer_StateDoorAhead_ptmf;
+    D_003EC7B4 = Pursuer_StateHewieBites_ptmf;
+    D_003EC7D0 = Pursuer_StateSpecialAnim_ptmf;
     D_003EC7EC = D_003EC390;
     D_003EC808 = D_003EC3A0;
     D_003EC824 = D_003EC3B0;
@@ -906,416 +906,416 @@ void Sinit_Pursuer(void) {
 
 /* 0x00465470 */
 void Sinit_SceneGameMembers(void) {
-    D_01990700 = D_003EE710;
-    D_0199070C = D_003EE720;
+    D_01990700 = Room00_Cmd00_ptmf;
+    D_0199070C = Room00_Cmd01_ptmf;
     D_01990718 = D_003EE730;
 }
 
 /* 0x004654F0 */
 void Sinit_Room02(void) {
-    D_01990730 = D_003F0378;
-    D_0199073C = D_003F0388;
-    D_01990748 = D_003F0398;
-    D_01990754 = D_003F03A8;
-    D_01990760 = D_003F03B8;
-    D_0199076C = D_003F03C8;
+    D_01990730 = Room02_Cmd00_ptmf;
+    D_0199073C = Room02_Cmd01_ptmf;
+    D_01990748 = Room02_Cmd02_ptmf;
+    D_01990754 = Room02_Cmd03_ptmf;
+    D_01990760 = Room02_Cond00_ptmf;
+    D_0199076C = Room02_Cond01_ptmf;
 }
 
 /* 0x00465600 */
 void Sinit_Room03(void) {
-    D_01990780 = D_003F0D90;
-    D_0199078C = D_003F0DA0;
+    D_01990780 = Room03_Cmd00_ptmf;
+    D_0199078C = Room03_Cmd01_ptmf;
 }
 
 /* 0x00465660 */
 void Sinit_Room04(void) {
-    D_019907A0 = D_003F1770;
-    D_019907AC = D_003F1780;
-    D_019907B8 = D_003F1790;
-    D_019907C4 = D_003F17A0;
+    D_019907A0 = Room04_Cmd00_ptmf;
+    D_019907AC = Room04_Cmd01_ptmf;
+    D_019907B8 = Room04_Cmd02_ptmf;
+    D_019907C4 = Room04_Cmd03_ptmf;
 }
 
 /* 0x00465720 */
 void Sinit_Room06(void) {
-    D_019907D0 = D_003F21C0;
+    D_019907D0 = Room06_Cmd00_ptmf;
 }
 
 /* 0x00465750 */
 void Sinit_Room08(void) {
-    D_019907E0 = D_003F31C0;
-    D_019907EC = D_003F31D0;
-    D_01990800 = D_003F31E0;
-    D_0199080C = D_003F31F0;
+    D_019907E0 = Room08_Cmd00_ptmf;
+    D_019907EC = Room08_Cmd01_ptmf;
+    D_01990800 = Room08_Cond00_ptmf;
+    D_0199080C = Room08_Cond01_ptmf;
 }
 
 /* 0x00465800 */
 void Sinit_Room09(void) {
-    D_01990818 = D_003F3C50;
+    D_01990818 = Room09_Cond00_ptmf;
 }
 
 /* 0x00465830 */
 void Sinit_Room0A(void) {
-    D_01990830 = D_003F4378;
-    D_0199083C = D_003F4388;
+    D_01990830 = Room0A_Cmd00_ptmf;
+    D_0199083C = Room0A_Cmd01_ptmf;
 }
 
 /* 0x00465890 */
 void Sinit_Room0B(void) {
-    D_01990848 = D_003F4640;
+    D_01990848 = Room0B_Cond00_ptmf;
 }
 
 /* 0x004658C0 */
 void Sinit_Room0C(void) {
-    D_01990860 = D_003F53F8;
-    D_0199086C = D_003F5408;
-    D_01990878 = D_003F5418;
-    D_01990884 = D_003F5428;
+    D_01990860 = Room0C_Cmd00_ptmf;
+    D_0199086C = Room0C_Cmd01_ptmf;
+    D_01990878 = Room0C_Cmd02_ptmf;
+    D_01990884 = Room0C_Cmd03_ptmf;
 }
 
 /* 0x00465980 */
 void Sinit_Room0F(void) {
-    D_01990890 = D_003F6EE8;
-    D_0199089C = D_003F6EF8;
-    D_019908A8 = D_003F6F08;
-    D_019908B4 = D_003F6F18;
-    D_019908C0 = D_003F6F28;
+    D_01990890 = Room0F_Cmd00_ptmf;
+    D_0199089C = Room0F_Cmd01_ptmf;
+    D_019908A8 = Room0F_Cmd02_ptmf;
+    D_019908B4 = Room0F_Cmd03_ptmf;
+    D_019908C0 = Room0F_Cmd04_ptmf;
 }
 
 /* 0x00465A70 */
 void Sinit_Room10(void) {
-    D_019908D0 = D_003F78F8;
+    D_019908D0 = Room10_Cond00_ptmf;
 }
 
 /* 0x00465AA0 */
 void Sinit_Room12(void) {
-    D_019908E0 = D_003F9150;
-    D_019908F0 = D_003F9160;
+    D_019908E0 = Room12_Cmd00_ptmf;
+    D_019908F0 = Room12_Cond00_ptmf;
 }
 
 /* 0x00465AF0 */
 void Sinit_Room13(void) {
-    D_01990900 = D_003F99A0;
+    D_01990900 = Room13_Cmd00_ptmf;
 }
 
 /* 0x00465B20 */
 void Sinit_Room14(void) {
-    D_01990910 = D_003FA060;
+    D_01990910 = Room14_Cmd00_ptmf;
 }
 
 /* 0x00465B50 */
 void Sinit_Room15(void) {
-    D_01990920 = D_003FA728;
-    D_01990930 = D_003FA738;
+    D_01990920 = Room15_Cmd00_ptmf;
+    D_01990930 = Room15_Cond00_ptmf;
 }
 
 /* 0x00465BA0 */
 void Sinit_Room18(void) {
-    D_01990940 = D_003FB358;
+    D_01990940 = Room18_Cmd00_ptmf;
 }
 
 /* 0x00465BD0 */
 void Sinit_Room19(void) {
-    D_01990950 = D_003FC010;
+    D_01990950 = Room19_Cond00_ptmf;
 }
 
 /* 0x00465C00 */
 void Sinit_Room1A(void) {
-    D_01990960 = D_003FC658;
-    D_0199096C = D_003FC668;
+    D_01990960 = Room1A_Cmd00_ptmf;
+    D_0199096C = Room1A_Cmd01_ptmf;
 }
 
 /* 0x00465C60 */
 void Sinit_Room1B(void) {
-    D_01990978 = D_003FCAF0;
+    D_01990978 = Room1B_Cmd00_ptmf;
 }
 
 /* 0x00465C90 */
 void Sinit_Room1C(void) {
-    D_01990990 = D_003FD338;
-    D_0199099C = D_003FD348;
+    D_01990990 = Room1C_Cmd00_ptmf;
+    D_0199099C = Room1C_Cmd01_ptmf;
 }
 
 /* 0x00465CF0 */
 void Sinit_Room1D(void) {
-    D_019909B0 = D_003FD980;
-    D_019909BC = D_003FD990;
-    D_019909C8 = D_003FD9A0;
+    D_019909B0 = Room1D_Cmd00_ptmf;
+    D_019909BC = Room1D_Cmd01_ptmf;
+    D_019909C8 = Room1D_Cond00_ptmf;
 }
 
 /* 0x00465D70 */
 void Sinit_Room1F(void) {
-    D_019909D8 = D_003FE440;
+    D_019909D8 = Room1F_Cmd00_ptmf;
 }
 
 /* 0x00465DA0 */
 void Sinit_Room20(void) {
-    D_019909F0 = D_003FF078;
-    D_019909FC = D_003FF088;
-    D_01990A08 = D_003FF098;
-    D_01990A14 = D_003FF0A8;
-    D_01990A20 = D_003FF0B8;
-    D_01990A2C = D_003FF0C8;
-    D_01990A40 = D_003FF0D8;
-    D_01990A4C = D_003FF0E8;
-    D_01990A58 = D_003FF0F8;
+    D_019909F0 = Room20_Cmd00_ptmf;
+    D_019909FC = Room20_Cmd01_ptmf;
+    D_01990A08 = Room20_Cmd02_ptmf;
+    D_01990A14 = Room20_Cmd03_ptmf;
+    D_01990A20 = Room20_Cmd04_ptmf;
+    D_01990A2C = Room20_Cmd05_ptmf;
+    D_01990A40 = Room20_Cond00_ptmf;
+    D_01990A4C = Room20_Cond01_ptmf;
+    D_01990A58 = Room20_Cond02_ptmf;
 }
 
 /* 0x00465F40 */
 void Sinit_Room21(void) {
-    D_01990A70 = D_00400B80;
-    D_01990A7C = D_00400B90;
-    D_01990A88 = D_00400BA0;
-    D_01990A94 = D_00400BB0;
-    D_01990AA0 = D_00400BC0;
-    D_01990AAC = D_00400BD0;
-    D_01990AB8 = D_00400BE0;
-    D_01990AC8 = D_00400BF0;
+    D_01990A70 = Room21_Cmd00_ptmf;
+    D_01990A7C = Room21_Cmd01_ptmf;
+    D_01990A88 = Room21_Cmd02_ptmf;
+    D_01990A94 = Room21_Cmd03_ptmf;
+    D_01990AA0 = Room21_Cmd04_ptmf;
+    D_01990AAC = Room21_Cmd05_ptmf;
+    D_01990AB8 = Room21_Cmd06_ptmf;
+    D_01990AC8 = Room21_Cond00_ptmf;
 }
 
 /* 0x004660B0 */
 void Sinit_Room23(void) {
-    D_01990AD8 = D_00401828;
-    D_01990AF0 = D_00401838;
-    D_01990AFC = D_00401848;
+    D_01990AD8 = Room23_Cond00_ptmf;
+    D_01990AF0 = Room23_Cmd00_ptmf;
+    D_01990AFC = Room23_Cmd01_ptmf;
 }
 
 /* 0x00466130 */
 void Sinit_Room24(void) {
-    D_01990B10 = D_004022C0;
-    D_01990B1C = D_004022D0;
-    D_01990B28 = D_004022E0;
+    D_01990B10 = Room24_KilnGlow_ptmf;
+    D_01990B1C = Room24_Smoke_ptmf;
+    D_01990B28 = Room24_ColourPulse_ptmf;
 }
 
 /* 0x004661C0 */
 void Sinit_Room25(void) {
-    D_01990B38 = D_00402D08;
-    D_01990B48 = D_00402D18;
+    D_01990B38 = Room25_Cmd00_ptmf;
+    D_01990B48 = Room25_Cond00_ptmf;
 }
 
 /* 0x00466210 */
 void Sinit_Room26(void) {
-    D_01990B58 = D_00403900;
-    D_01990B70 = D_00403910;
-    D_01990B7C = D_00403920;
-    D_01990B88 = D_00403930;
+    D_01990B58 = Room26_Cond00_ptmf;
+    D_01990B70 = Room26_Cmd00_ptmf;
+    D_01990B7C = Room26_Cmd01_ptmf;
+    D_01990B88 = Room26_Cmd02_ptmf;
 }
 
 /* 0x004662C0 */
 void Sinit_Room28(void) {
-    D_01990B98 = D_00403F68;
+    D_01990B98 = Room28_Cond00_ptmf;
 }
 
 /* 0x004662F0 */
 void Sinit_Room29(void) {
-    D_01990BB0 = D_004046E8;
-    D_01990BBC = D_004046F8;
+    D_01990BB0 = Room29_Cond00_ptmf;
+    D_01990BBC = Room29_Cond01_ptmf;
 }
 
 /* 0x00466350 */
 void Sinit_Room2A(void) {
-    D_01990BD0 = D_004055D0;
-    D_01990BDC = D_004055E0;
-    D_01990BE8 = D_004055F0;
-    D_01990BF4 = D_00405600;
+    D_01990BD0 = Room2A_Cmd00_ptmf;
+    D_01990BDC = Room2A_HandlerStep_ptmf;
+    D_01990BE8 = Room2A_Cmd02_ptmf;
+    D_01990BF4 = Room2A_Cmd03_ptmf;
 }
 
 /* 0x00466410 */
 void Sinit_Room2B(void) {
-    D_01990C00 = D_00405A90;
+    D_01990C00 = Room2B_Cmd00_ptmf;
 }
 
 /* 0x00466440 */
 void Sinit_Room2D(void) {
-    D_01990C10 = D_004064C8;
-    D_01990C1C = D_004064D8;
-    D_01990C28 = D_004064E8;
-    D_01990C38 = D_004064F8;
+    D_01990C10 = Room2D_Cmd00_ptmf;
+    D_01990C1C = Room2D_Cmd01_ptmf;
+    D_01990C28 = Room2D_Cmd02_ptmf;
+    D_01990C38 = Room2D_Cond00_ptmf;
 }
 
 /* 0x004664F0 */
 void Sinit_Room40(void) {
-    D_01990C48 = D_00407078;
+    D_01990C48 = Room40_Cmd00_ptmf;
 }
 
 /* 0x00466520 */
 void Sinit_Room43(void) {
-    D_01990C58 = D_00407E38;
+    D_01990C58 = Room43_Cmd00_ptmf;
 }
 
 /* 0x00466550 */
 void Sinit_Room45(void) {
-    D_01990C68 = D_00407F18;
+    D_01990C68 = Room45_Cmd00_ptmf;
 }
 
 /* 0x00466580 */
 void Sinit_Room49(void) {
-    D_01990C80 = D_00408638;
-    D_01990C8C = D_00408648;
-    D_01990C98 = D_00408658;
+    D_01990C80 = Room49_Cmd00_ptmf;
+    D_01990C8C = Room49_Cmd01_ptmf;
+    D_01990C98 = Room49_Cmd02_ptmf;
 }
 
 /* 0x00466610 */
 void Sinit_Room4B(void) {
-    D_01990CB0 = D_00409908;
-    D_01990CBC = D_00409918;
-    D_01990CC8 = D_00409928;
+    D_01990CB0 = Room4B_Cmd00_ptmf;
+    D_01990CBC = Room4B_Cmd01_ptmf;
+    D_01990CC8 = Room4B_Cond00_ptmf;
 }
 
 /* 0x00466690 */
 void Sinit_Room4C(void) {
-    D_01990CE0 = D_0040ABE0;
-    D_01990CEC = D_0040ABF0;
-    D_01990CF8 = D_0040AC00;
+    D_01990CE0 = Room4C_Cmd00_ptmf;
+    D_01990CEC = Room4C_Cmd01_ptmf;
+    D_01990CF8 = Room4C_Cmd02_ptmf;
 }
 
 /* 0x00466720 */
 void Sinit_Room4E(void) {
-    D_01990D10 = D_0040B4D0;
-    D_01990D1C = D_0040B4E0;
-    D_01990D28 = D_0040B4F0;
+    D_01990D10 = Room4E_Cmd00_ptmf;
+    D_01990D1C = Room4E_Cmd01_ptmf;
+    D_01990D28 = Room4E_Cmd02_ptmf;
 }
 
 /* 0x004667B0 */
 void Sinit_Creature(void) {
-    D_01990D40 = D_0040C0E8;
-    D_01990D4C = D_0040C0F8;
-    D_01990D58 = D_0040C108;
-    D_01990D64 = D_0040C118;
-    D_01990D70 = D_0040C128;
+    D_01990D40 = Room4F_Cmd00_ptmf;
+    D_01990D4C = Room4F_Cmd01_ptmf;
+    D_01990D58 = Room4F_Cmd02_ptmf;
+    D_01990D64 = Room4F_Cmd03_ptmf;
+    D_01990D70 = Room4F_CreatureVanish_ptmf;
 }
 
 /* 0x00466890 */
 void Sinit_Room50(void) {
-    D_01990D80 = D_0040CF00;
+    D_01990D80 = Room50_Cmd00_ptmf;
 }
 
 /* 0x004668C0 */
 void Sinit_Room51(void) {
-    D_01990D90 = D_0040E340;
-    D_01990D9C = D_0040E350;
+    D_01990D90 = Room51_Cmd00_ptmf;
+    D_01990D9C = Room51_Cmd01_ptmf;
 }
 
 /* 0x00466920 */
 void Sinit_Room52(void) {
-    D_01990DA8 = D_0040ECC8;
-    D_01990DB8 = D_0040ECD8;
+    D_01990DA8 = Room52_Cmd00_ptmf;
+    D_01990DB8 = Room52_Cond00_ptmf;
 }
 
 /* 0x00466970 */
 void Sinit_Room56(void) {
-    D_01990DC8 = D_0040F468;
+    D_01990DC8 = Room56_Cmd00_ptmf;
 }
 
 /* 0x004669A0 */
 void Sinit_Room59(void) {
-    D_01990DD8 = D_00410B80;
+    D_01990DD8 = Room59_Cmd00_ptmf;
 }
 
 /* 0x004669D0 */
 void Sinit_Room5A(void) {
-    D_01990DE8 = D_00410F28;
+    D_01990DE8 = Room5A_Cmd00_ptmf;
 }
 
 /* 0x00466A00 */
 void Sinit_Room5C(void) {
-    D_01990DF8 = D_00411B40;
-    D_01990E08 = D_00411B50;
+    D_01990DF8 = Room5C_Cmd00_ptmf;
+    D_01990E08 = Room5C_Cond00_ptmf;
 }
 
 /* 0x00466A50 */
 void Sinit_Room5D(void) {
-    D_01990E20 = D_004123B0;
-    D_01990E2C = D_004123C0;
+    D_01990E20 = Room5D_Cmd00_ptmf;
+    D_01990E2C = Room5D_Cmd01_ptmf;
 }
 
 /* 0x00466AB0 */
 void Sinit_Room2F(void) {
-    D_01990E38 = D_00412E80;
+    D_01990E38 = Room2F_Cond00_ptmf;
 }
 
 /* 0x00466AE0 */
 void Sinit_Room30(void) {
-    D_01990E48 = D_004134B0;
+    D_01990E48 = Room30_Cond00_ptmf;
 }
 
 /* 0x00466B10 */
 void Sinit_Debilitas3(void) {
-    D_004135D0 = D_00413590;
-    D_004135EC = D_004135A0;
-    D_00413608 = D_004135B0;
-    D_00413624 = D_004135C0;
+    D_004135D0 = Debilitas3_StateNone_ptmf;
+    D_004135EC = Debilitas3_StartTurnToFiona_ptmf;
+    D_00413608 = Debilitas3_StartLunge_ptmf;
+    D_00413624 = Debilitas3_StartGrab_ptmf;
 }
 
 /* 0x00466C30 */
 void Sinit_Riccardo(void) {
-    D_004148A0 = D_00414880;
-    D_004148BC = D_00414890;
+    D_004148A0 = Riccardo_StartFlurry_ptmf;
+    D_004148BC = Riccardo_StartLunge_ptmf;
 }
 
 /* 0x00466C90 */
 void Sinit_Room46(void) {
-    D_01990E78 = D_00417148;
-    D_01990E88 = D_00417158;
+    D_01990E78 = Room46_CharHook_ptmf;
+    D_01990E88 = Room46_PursuerBusy_ptmf;
 }
 
 /* 0x00466CE0 */
 void Sinit_Room102(void) {
-    D_01990E98 = D_00417810;
+    D_01990E98 = Room102_Cmd00_ptmf;
 }
 
 /* 0x00466D10 */
 void Sinit_Room103(void) {
-    D_01990EA8 = D_00417BA0;
+    D_01990EA8 = Room103_Cmd00_ptmf;
 }
 
 /* 0x00466D40 */
 void Sinit_Room104(void) {
-    D_01990EB8 = D_00417F20;
+    D_01990EB8 = Room104_Cmd00_ptmf;
 }
 
 /* 0x00466D70 */
 void Sinit_Room105(void) {
-    D_01990EC8 = D_004182A0;
+    D_01990EC8 = Room105_Cmd00_ptmf;
 }
 
 /* 0x00466DA0 */
 void Sinit_Room106(void) {
-    D_01990ED8 = D_00418AB8;
+    D_01990ED8 = Room106_Cmd00_ptmf;
 }
 
 /* 0x00466DD0 */
 void Sinit_Room107(void) {
-    D_01990EE8 = D_00418D80;
-    D_01990F00 = D_00418D90;
-    D_01990F0C = D_00418DA0;
+    D_01990EE8 = Room107_Cond00_ptmf;
+    D_01990F00 = Room107_Cmd00_ptmf;
+    D_01990F0C = Room107_Cmd01_ptmf;
 }
 
 /* 0x00466E50 */
 void Sinit_Room108(void) {
-    D_01990F18 = D_00419388;
+    D_01990F18 = Room108_Cmd00_ptmf;
 }
 
 /* 0x00466E80 */
 void Sinit_Room109(void) {
-    D_01990F30 = D_004196F0;
-    D_01990F3C = D_00419700;
+    D_01990F30 = Room109_Cmd00_ptmf;
+    D_01990F3C = Room109_Cmd01_ptmf;
 }
 
 /* 0x00466EE0 */
 void Sinit_Room10A(void) {
-    D_01990F48 = D_00419A40;
-    D_01990F58 = D_00419A50;
+    D_01990F48 = Room10A_Cond00_ptmf;
+    D_01990F58 = Room10A_Cmd00_ptmf;
 }
 
 /* 0x00466F30 */
 void Sinit_Room10B(void) {
-    D_01990F68 = D_00419D88;
-    D_01990F78 = D_00419D98;
+    D_01990F68 = Room10B_Cmd00_ptmf;
+    D_01990F78 = Room10B_Cond00_ptmf;
 }
 
 /* 0x00466F80 */
 void Sinit_Debilitas2(void) {
-    D_0041B670 = D_0041B630;
+    D_0041B670 = Room_EmptyHook_ptmf;
     D_0041B68C = D_0041B640;
     D_0041B6A8 = D_0041B650;
     D_0041B6C4 = D_0041B660;
@@ -1323,478 +1323,478 @@ void Sinit_Debilitas2(void) {
 
 /* 0x00467040 */
 void Sinit_Room27(void) {
-    D_01990FD8 = D_0041CA70;
+    D_01990FD8 = Room27_Cmd00_ptmf;
 }
 
 /* 0x00467070 */
 void Sinit_Room2E(void) {
-    D_01990FF0 = D_0041D7B8;
-    D_01990FFC = D_0041D7C8;
-    D_01991008 = D_0041D7D8;
-    D_01991014 = D_0041D7E8;
-    D_01991020 = D_0041D7F8;
+    D_01990FF0 = Room2E_Cmd00_ptmf;
+    D_01990FFC = Room2E_Cmd01_ptmf;
+    D_01991008 = Room2E_Cmd02_ptmf;
+    D_01991014 = Room2E_Cmd03_ptmf;
+    D_01991020 = Room2E_Cmd04_ptmf;
 }
 
 /* 0x00467160 */
 void Sinit_Room66(void) {
-    D_01991030 = D_0041F550;
-    D_0199103C = D_0041F560;
-    D_01991048 = D_0041F570;
-    D_01991054 = D_0041F580;
-    D_01991060 = D_0041F590;
-    D_01991070 = D_0041F5A0;
-    D_0199107C = D_0041F5B0;
+    D_01991030 = Room66_CharHook_ptmf;
+    D_0199103C = Room66_Effect_ptmf;
+    D_01991048 = Room66_Sink_ptmf;
+    D_01991054 = Room66_Fire_ptmf;
+    D_01991060 = Room66_ColourPulse_ptmf;
+    D_01991070 = Room66_Letters_ptmf;
+    D_0199107C = Room66_CharPast_ptmf;
 }
 
 /* 0x004672A0 */
 void Sinit_Room55(void) {
-    D_01991088 = D_004210F0;
+    D_01991088 = Room55_Effect_ptmf;
 }
 
 /* 0x004672D0 */
 void Sinit_Room63(void) {
-    D_01991098 = D_00421BE0;
+    D_01991098 = Room63_Cmd00_ptmf;
 }
 
 /* 0x00467300 */
 void Sinit_Room62(void) {
-    D_019910B0 = D_00422300;
-    D_019910BC = D_00422310;
+    D_019910B0 = Room62_Cmd00_ptmf;
+    D_019910BC = Room62_Cmd01_ptmf;
 }
 
 /* 0x00467360 */
 void Sinit_Lorenzo(void) {
-    D_00422690 = D_00422660;
-    D_004226AC = D_00422670;
-    D_004226C8 = D_00422680;
+    D_00422690 = Lorenzo2_StartSink_ptmf;
+    D_004226AC = Lorenzo2_StartStalkBelow_ptmf;
+    D_004226C8 = Lorenzo2_StartGrab_ptmf;
 }
 
 /* 0x004673F0 */
 void Sinit_Room48(void) {
-    D_01991140 = D_004267F0;
-    D_0199114C = D_00426800;
-    D_01991158 = D_00426810;
-    D_01991164 = D_00426820;
-    D_01991170 = D_00426830;
-    D_0199117C = D_00426840;
-    D_01991188 = D_00426850;
+    D_01991140 = Room48_Cmd00_ptmf;
+    D_0199114C = Room48_Cmd01_ptmf;
+    D_01991158 = Room48_Cmd02_ptmf;
+    D_01991164 = Room48_Cmd03_ptmf;
+    D_01991170 = Room48_Cmd04_ptmf;
+    D_0199117C = Room48_Cmd05_ptmf;
+    D_01991188 = Room48_Cond00_ptmf;
 }
 
 /* 0x00467530 */
 void Sinit_Room54(void) {
-    D_019911A0 = D_00428028;
-    D_019911AC = D_00428038;
+    D_019911A0 = Room54_GroupStep_ptmf;
+    D_019911AC = Room54_DoorRegions_ptmf;
 }
 
 /* 0x00467590 */
 void Sinit_Room60(void) {
-    D_019911C0 = D_00429140;
-    D_019911CC = D_00429150;
-    D_019911D8 = D_00429160;
-    D_019911E4 = D_00429170;
-    D_019911F0 = D_00429180;
-    D_019911FC = D_00429190;
+    D_019911C0 = Room60_Cmd00_ptmf;
+    D_019911CC = Room60_Cmd01_ptmf;
+    D_019911D8 = Room60_Cmd02_ptmf;
+    D_019911E4 = Room60_Cmd03_ptmf;
+    D_019911F0 = Room60_Cmd04_ptmf;
+    D_019911FC = Room60_Cmd05_ptmf;
 }
 
 /* 0x004676B0 */
 void Sinit_Room61(void) {
-    D_01991550 = D_00429558;
-    D_0199155C = D_00429568;
+    D_01991550 = Room61_Cmd00_ptmf;
+    D_0199155C = Room61_Cmd01_ptmf;
 }
 
 /* 0x00467710 */
 void Sinit_Room31(void) {
-    D_01991570 = D_0042A0B0;
-    D_0199157C = D_0042A0C0;
-    D_01991588 = D_0042A0D0;
+    D_01991570 = Room31_RoomEffect_ptmf;
+    D_0199157C = Room31_Fan_ptmf;
+    D_01991588 = Room31_WindowLight_ptmf;
 }
 
 /* 0x004677A0 */
 void Sinit_Room32(void) {
-    D_019915A0 = D_0042C290;
-    D_019915AC = D_0042C2A0;
-    D_019915B8 = D_0042C2B0;
-    D_019915C4 = D_0042C2C0;
-    D_019915D0 = D_0042C2D0;
-    D_019915DC = D_0042C2E0;
+    D_019915A0 = Room32_Cmd00_ptmf;
+    D_019915AC = Room32_Cmd01_ptmf;
+    D_019915B8 = Room32_Cmd02_ptmf;
+    D_019915C4 = Room32_Cmd03_ptmf;
+    D_019915D0 = Room32_Cmd04_ptmf;
+    D_019915DC = Room32_Cmd05_ptmf;
 }
 
 /* 0x004678C0 */
 void Sinit_Room86(void) {
-    D_019915E8 = D_0042C850;
+    D_019915E8 = Room86_Cmd00_ptmf;
 }
 
 /* 0x004678F0 */
 void Sinit_RoomC0(void) {
-    D_01991610 = D_0042E390;
-    D_0199161C = D_0042E3A0;
-    D_01991628 = D_0042E3B0;
-    D_01991634 = D_0042E3C0;
-    D_01991640 = D_0042E3D0;
-    D_01991650 = D_0042E3E0;
+    D_01991610 = RoomC0_Cmd00_ptmf;
+    D_0199161C = RoomC0_Cmd01_ptmf;
+    D_01991628 = RoomC0_Cmd02_ptmf;
+    D_01991634 = RoomC0_Cmd03_ptmf;
+    D_01991640 = RoomC0_Cmd04_ptmf;
+    D_01991650 = RoomC0_Cond00_ptmf;
 }
 
 /* 0x00467A00 */
 void Sinit_Debilitas3_2(void) {
-    D_0042E540 = D_0042E500;
-    D_0042E55C = D_0042E510;
-    D_0042E578 = D_0042E520;
-    D_0042E594 = D_0042E530;
+    D_0042E540 = Kind27_StateNone_ptmf;
+    D_0042E55C = Kind27_StartTurnToFiona_ptmf;
+    D_0042E578 = Kind27_StartLunge_ptmf;
+    D_0042E594 = Kind27_StartGrab_ptmf;
 }
 
 /* 0x00467AC0 */
 void Sinit_RoomC7(void) {
-    D_01991660 = D_00430760;
-    D_0199166C = D_00430770;
-    D_01991678 = D_00430780;
-    D_01991684 = D_00430790;
-    D_01991690 = D_004307A0;
-    D_0199169C = D_004307B0;
-    D_019916A8 = D_004307C0;
-    D_019916C0 = D_004307D0;
-    D_019916CC = D_004307E0;
+    D_01991660 = RoomC7_Cmd00_ptmf;
+    D_0199166C = RoomC7_Cmd01_ptmf;
+    D_01991678 = RoomC7_Cmd02_ptmf;
+    D_01991684 = RoomC7_Cmd03_ptmf;
+    D_01991690 = RoomC7_Cmd04_ptmf;
+    D_0199169C = RoomC7_Cmd05_ptmf;
+    D_019916A8 = RoomC7_Cmd06_ptmf;
+    D_019916C0 = RoomC7_Cond00_ptmf;
+    D_019916CC = RoomC7_Cond01_ptmf;
 }
 
 /* 0x00467C60 */
 void Sinit_Room84(void) {
-    D_019916D8 = D_004326B8;
+    D_019916D8 = Room84_Cmd00_ptmf;
 }
 
 /* 0x00467C90 */
 void Sinit_Room85(void) {
-    D_019916E8 = D_00432AF8;
+    D_019916E8 = Room85_Cmd00_ptmf;
 }
 
 /* 0x00467CC0 */
 void Sinit_Room87(void) {
-    D_019916F8 = D_00432C90;
+    D_019916F8 = Room87_Cmd00_ptmf;
 }
 
 /* 0x00467CF0 */
 void Sinit_Room88(void) {
-    D_01991708 = D_00433550;
+    D_01991708 = Room88_Cmd00_ptmf;
 }
 
 /* 0x00467D20 */
 void Sinit_Room8C(void) {
-    D_01991720 = D_00434818;
-    D_0199172C = D_00434828;
-    D_01991738 = D_00434838;
-    D_01991744 = D_00434848;
-    D_01991750 = D_00434858;
+    D_01991720 = Room8C_Cmd00_ptmf;
+    D_0199172C = Room8C_Cmd01_ptmf;
+    D_01991738 = Room8C_Cmd02_ptmf;
+    D_01991744 = Room8C_Cmd03_ptmf;
+    D_01991750 = Room8C_Cmd04_ptmf;
 }
 
 /* 0x00467E10 */
 void Sinit_Room8D(void) {
-    D_01991760 = D_00435008;
-    D_0199176C = D_00435018;
-    D_01991778 = D_00435028;
+    D_01991760 = Room8D_Cmd00_ptmf;
+    D_0199176C = Room8D_Cmd01_ptmf;
+    D_01991778 = Room8D_Cmd02_ptmf;
 }
 
 /* 0x00467EA0 */
 void Sinit_Room8E(void) {
-    D_01991790 = D_00435950;
-    D_0199179C = D_00435960;
+    D_01991790 = Room8E_Cmd00_ptmf;
+    D_0199179C = Room8E_Cmd01_ptmf;
 }
 
 /* 0x00467F00 */
 void Sinit_Room8F(void) {
-    D_019917B0 = D_00436568;
-    D_019917BC = D_00436578;
-    D_019917C8 = D_00436588;
-    D_019917D4 = D_00436598;
-    D_019917E0 = D_004365A8;
+    D_019917B0 = Room8F_Cmd00_ptmf;
+    D_019917BC = Room8F_Cmd01_ptmf;
+    D_019917C8 = Room8F_Cmd02_ptmf;
+    D_019917D4 = Room8F_Cmd03_ptmf;
+    D_019917E0 = Room8F_Cond00_ptmf;
 }
 
 /* 0x00467FE0 */
 void Sinit_Room91(void) {
-    D_019917F0 = D_00436CA0;
-    D_019917FC = D_00436CB0;
-    D_01991808 = D_00436CC0;
-    D_01991814 = D_00436CD0;
+    D_019917F0 = Room91_Cmd00_ptmf;
+    D_019917FC = Room91_Cmd01_ptmf;
+    D_01991808 = Room91_Cmd02_ptmf;
+    D_01991814 = Room91_Cmd03_ptmf;
 }
 
 /* 0x004680A0 */
 void Sinit_Room92(void) {
-    D_01991820 = D_00437C40;
-    D_0199182C = D_00437C50;
-    D_01991838 = D_00437C60;
-    D_01991844 = D_00437C70;
-    D_01991850 = D_00437C80;
-    D_0199185C = D_00437C90;
-    D_01991868 = D_00437CA0;
-    D_01991874 = D_00437CB0;
-    D_01991880 = D_00437CC0;
-    D_0199188C = D_00437CD0;
-    D_01991898 = D_00437CE0;
-    D_019918A4 = D_00437CF0;
-    D_019918B0 = D_00437D00;
-    D_019918BC = D_00437D10;
+    D_01991820 = Room92_Cmd00_ptmf;
+    D_0199182C = Room92_Cmd01_ptmf;
+    D_01991838 = Room92_Cmd02_ptmf;
+    D_01991844 = Room92_Cmd03_ptmf;
+    D_01991850 = Room92_Cmd04_ptmf;
+    D_0199185C = Room92_Cmd05_ptmf;
+    D_01991868 = Room92_Cmd06_ptmf;
+    D_01991874 = Room92_Cmd07_ptmf;
+    D_01991880 = Room92_Cmd08_ptmf;
+    D_0199188C = Room92_Cmd09_ptmf;
+    D_01991898 = Room92_Cmd10_ptmf;
+    D_019918A4 = Room92_Cmd11_ptmf;
+    D_019918B0 = Room92_Cmd12_ptmf;
+    D_019918BC = Room92_Cmd13_ptmf;
 }
 
 /* 0x00468340 */
 void Sinit_Room97(void) {
-    D_019918C8 = D_00437E30;
+    D_019918C8 = Room97_Cmd00_ptmf;
 }
 
 /* 0x00468370 */
 void Sinit_Room69(void) {
-    D_019918D8 = D_004386F0;
+    D_019918D8 = Room69_Cmd00_ptmf;
 }
 
 /* 0x004683A0 */
 void Sinit_Room6A(void) {
-    D_019918F0 = D_00438CD8;
-    D_019918FC = D_00438CE8;
+    D_019918F0 = Room6A_Cmd00_ptmf;
+    D_019918FC = Room6A_Cmd01_ptmf;
 }
 
 /* 0x00468400 */
 void Sinit_Room6C(void) {
-    D_01991910 = D_00439AD0;
-    D_0199191C = D_00439AE0;
+    D_01991910 = Room6C_Cond00_ptmf;
+    D_0199191C = Room6C_Cond01_ptmf;
 }
 
 /* 0x00468460 */
 void Sinit_Room6D(void) {
-    D_01991930 = D_0043A0B8;
-    D_0199193C = D_0043A0C8;
+    D_01991930 = Room6D_Cond00_ptmf;
+    D_0199193C = Room6D_Cond01_ptmf;
 }
 
 /* 0x004684C0 */
 void Sinit_Room6F(void) {
-    D_01991948 = D_0043AFF0;
-    D_01991958 = D_0043B000;
+    D_01991948 = Room6F_Cmd00_ptmf;
+    D_01991958 = Room6F_Cond00_ptmf;
 }
 
 /* 0x00468510 */
 void Sinit_Room80(void) {
-    D_01991968 = D_0043EC68;
+    D_01991968 = Room80_Cmd00_ptmf;
 }
 
 /* 0x00468540 */
 void Sinit_RoomC1(void) {
-    D_01991978 = D_0043F098;
+    D_01991978 = RoomC1_Cond00_ptmf;
 }
 
 /* 0x00468570 */
 void Sinit_RoomC2(void) {
-    D_01991990 = D_0043F898;
-    D_0199199C = D_0043F8A8;
-    D_019919A8 = D_0043F8B8;
+    D_01991990 = RoomC2_Cmd00_ptmf;
+    D_0199199C = RoomC2_Cmd01_ptmf;
+    D_019919A8 = RoomC2_Cond00_ptmf;
 }
 
 /* 0x004685F0 */
 void Sinit_RoomC3(void) {
-    D_019919C0 = D_00440098;
-    D_019919CC = D_004400A8;
-    D_019919D8 = D_004400B8;
-    D_019919E8 = D_004400C8;
+    D_019919C0 = RoomC3_Cmd00_ptmf;
+    D_019919CC = RoomC3_Cmd01_ptmf;
+    D_019919D8 = RoomC3_Cmd02_ptmf;
+    D_019919E8 = RoomC3_Cond00_ptmf;
 }
 
 /* 0x004686A0 */
 void Sinit_RoomC5(void) {
-    D_019919F8 = D_00441128;
+    D_019919F8 = RoomC5_Cmd00_ptmf;
 }
 
 /* 0x004686D0 */
 void Sinit_RoomC8(void) {
-    D_01991A08 = D_004417B8;
+    D_01991A08 = RoomC8_Cmd00_ptmf;
 }
 
 /* 0x00468700 */
 void Sinit_Room98(void) {
-    D_01991A18 = D_00443060;
+    D_01991A18 = Room98_SlamShake_ptmf;
 }
 
 /* 0x00468730 */
 void Sinit_Room99(void) {
-    D_01991A28 = D_00443718;
+    D_01991A28 = Room99_SlamShake_ptmf;
 }
 
 /* 0x00468760 */
 void Sinit_Room9A(void) {
-    D_01991A38 = D_00443850;
+    D_01991A38 = Room9A_Cmd00_ptmf;
 }
 
 /* 0x00468790 */
 void Sinit_Room9B(void) {
-    D_01991A48 = D_00443DF0;
+    D_01991A48 = Room9B_Cmd00_ptmf;
 }
 
 /* 0x004687C0 */
 void Sinit_Room93(void) {
-    D_01991A58 = D_00444378;
+    D_01991A58 = Room93_SlamShake_ptmf;
 }
 
 /* 0x004687F0 */
 void Sinit_Room94(void) {
-    D_01991A68 = D_004444D0;
+    D_01991A68 = Room94_Cmd00_ptmf;
 }
 
 /* 0x00468820 */
 void Sinit_Room95(void) {
-    D_01991A78 = D_004446C8;
+    D_01991A78 = Room95_Cmd00_ptmf;
 }
 
 /* 0x00468850 */
 void Sinit_Room96(void) {
-    D_01991A88 = D_00444840;
+    D_01991A88 = Room96_Cmd00_ptmf;
 }
 
 /* 0x00468880 */
 void Sinit_Lorenzo_2(void) {
-    D_00444CE0 = D_00444CB0;
-    D_00444CFC = D_00444CC0;
-    D_00444D18 = D_00444CD0;
+    D_00444CE0 = Kind39_StartSink_ptmf;
+    D_00444CFC = Kind39_StartStalkBelow_ptmf;
+    D_00444D18 = Kind39_StartGrab_ptmf;
 }
 
 /* 0x00468910 */
 void Sinit_Room37(void) {
-    D_01991AB0 = D_00446998;
+    D_01991AB0 = Room37_Fan_ptmf;
 }
 
 /* 0x00468940 */
 void Sinit_RoomD0(void) {
-    D_01991AC0 = D_00446BA0;
-    D_01991ACC = D_00446BB0;
-    D_01991AD8 = D_00446BC0;
-    D_01991AE8 = D_00446BD0;
+    D_01991AC0 = RoomD0_ClockStop_ptmf;
+    D_01991ACC = RoomD0_ClockSave_ptmf;
+    D_01991AD8 = RoomD0_ClockDrawSaved_ptmf;
+    D_01991AE8 = RoomD0_ProgressCall_ptmf;
 }
 
 /* 0x004689F0 */
 void Sinit_RoomD1(void) {
-    D_01991B00 = D_00446D08;
-    D_01991B0C = D_00446D18;
-    D_01991B18 = D_00446D28;
+    D_01991B00 = RoomD1_Cmd00_ptmf;
+    D_01991B0C = RoomD1_Cmd01_ptmf;
+    D_01991B18 = RoomD1_Cond00_ptmf;
 }
 
 /* 0x00468A70 */
 void Sinit_RoomD2(void) {
-    D_01991B28 = D_00446EF8;
-    D_01991B38 = D_00446F08;
+    D_01991B28 = RoomD2_Cmd00_ptmf;
+    D_01991B38 = RoomD2_Cond00_ptmf;
 }
 
 /* 0x00468AC0 */
 void Sinit_RoomD3(void) {
-    D_01991B48 = D_004470E8;
-    D_01991B58 = D_004470F8;
+    D_01991B48 = RoomD3_Cmd00_ptmf;
+    D_01991B58 = RoomD3_Cond00_ptmf;
 }
 
 /* 0x00468B10 */
 void Sinit_RoomD4(void) {
-    D_01991B68 = D_004472C8;
-    D_01991B78 = D_004472D8;
+    D_01991B68 = RoomD4_Cmd00_ptmf;
+    D_01991B78 = RoomD4_Cond00_ptmf;
 }
 
 /* 0x00468B60 */
 void Sinit_RoomD5(void) {
-    D_01991B90 = D_00447618;
-    D_01991B9C = D_00447628;
-    D_01991BA8 = D_00447638;
-    D_01991BB8 = D_00447648;
+    D_01991B90 = RoomD5_Cmd00_ptmf;
+    D_01991B9C = RoomD5_Cmd01_ptmf;
+    D_01991BA8 = RoomD5_Cmd02_ptmf;
+    D_01991BB8 = RoomD5_Cond00_ptmf;
 }
 
 /* 0x00468C10 */
 void Sinit_RoomD6(void) {
-    D_01991BD0 = D_00447A20;
-    D_01991BDC = D_00447A30;
-    D_01991BE8 = D_00447A40;
+    D_01991BD0 = RoomD6_Cmd00_ptmf;
+    D_01991BDC = RoomD6_Cmd01_ptmf;
+    D_01991BE8 = RoomD6_Cond00_ptmf;
 }
 
 /* 0x00468C90 */
 void Sinit_RoomD7(void) {
     D_01991C00 = D_00447B70;
-    D_01991C0C = D_00447B80;
-    D_01991C20 = D_00447B90;
-    D_01991C2C = D_00447BA0;
-    D_01991C38 = D_00447BB0;
+    D_01991C0C = RoomD7_Cond01_ptmf;
+    D_01991C20 = RoomD7_Cmd00_ptmf;
+    D_01991C2C = RoomD7_Cmd01_ptmf;
+    D_01991C38 = RoomD7_Cmd02_ptmf;
 }
 
 /* 0x00468D70 */
 void Sinit_RoomD8(void) {
     D_01991C50 = D_00447E20;
-    D_01991C5C = D_00447E30;
-    D_01991C70 = D_00447E40;
-    D_01991C7C = D_00447E50;
+    D_01991C5C = RoomD8_Cond01_ptmf;
+    D_01991C70 = RoomD8_Cmd00_ptmf;
+    D_01991C7C = RoomD8_Cmd01_ptmf;
 }
 
 /* 0x00468E20 */
 void Sinit_RoomD9(void) {
-    D_01991C90 = D_00447F88;
-    D_01991C9C = D_00447F98;
-    D_01991CA8 = D_00447FA8;
-    D_01991CB8 = D_00447FB8;
+    D_01991C90 = RoomD9_Cmd00_ptmf;
+    D_01991C9C = RoomD9_Cmd01_ptmf;
+    D_01991CA8 = RoomD9_Cmd02_ptmf;
+    D_01991CB8 = RoomD9_Cond00_ptmf;
 }
 
 /* 0x00468ED0 */
 void Sinit_RoomE0(void) {
-    D_01991CD0 = D_004484F8;
-    D_01991CDC = D_00448508;
-    D_01991CE8 = D_00448518;
-    D_01991CF4 = D_00448528;
-    D_01991D00 = D_00448538;
-    D_01991D0C = D_00448548;
-    D_01991D18 = D_00448558;
+    D_01991CD0 = RoomE0_ClockStart_ptmf;
+    D_01991CDC = RoomE0_Fan_ptmf;
+    D_01991CE8 = RoomE0_WindowLight_ptmf;
+    D_01991CF4 = RoomE0_DoorLight_ptmf;
+    D_01991D00 = RoomE0_ClockDraw_ptmf;
+    D_01991D0C = RoomE0_ChooseExit_ptmf;
+    D_01991D18 = RoomE0_ProgressCall_ptmf;
 }
 
 /* 0x00469010 */
 void Sinit_RoomE1(void) {
-    D_01991D28 = D_00448880;
-    D_01991D38 = D_00448890;
+    D_01991D28 = RoomE1_Cmd00_ptmf;
+    D_01991D38 = RoomE1_Cond00_ptmf;
 }
 
 /* 0x00469060 */
 void Sinit_RoomE2(void) {
-    D_01991D48 = D_00448CE8;
-    D_01991D58 = D_00448CF8;
+    D_01991D48 = RoomE2_Cmd00_ptmf;
+    D_01991D58 = RoomE2_Cond00_ptmf;
 }
 
 /* 0x004690B0 */
 void Sinit_RoomE3(void) {
-    D_01991D68 = D_00449220;
-    D_01991D78 = D_00449230;
+    D_01991D68 = RoomE3_Cmd00_ptmf;
+    D_01991D78 = RoomE3_Cond00_ptmf;
 }
 
 /* 0x00469100 */
 void Sinit_RoomE4(void) {
-    D_01991D90 = D_00449508;
-    D_01991D9C = D_00449518;
-    D_01991DA8 = D_00449528;
+    D_01991D90 = RoomE4_Cmd00_ptmf;
+    D_01991D9C = RoomE4_Cmd01_ptmf;
+    D_01991DA8 = RoomE4_Cond00_ptmf;
 }
 
 /* 0x00469180 */
 void Sinit_RoomE5(void) {
-    D_01991DC0 = D_004498A8;
-    D_01991DCC = D_004498B8;
-    D_01991DD8 = D_004498C8;
+    D_01991DC0 = RoomE5_Cmd00_ptmf;
+    D_01991DCC = RoomE5_Cmd01_ptmf;
+    D_01991DD8 = RoomE5_Cond00_ptmf;
 }
 
 /* 0x00469200 */
 void Sinit_RoomE6(void) {
-    D_01991DF0 = D_00449A88;
-    D_01991DFC = D_00449A98;
-    D_01991E08 = D_00449AA8;
+    D_01991DF0 = RoomE6_Cmd00_ptmf;
+    D_01991DFC = RoomE6_Cmd01_ptmf;
+    D_01991E08 = RoomE6_Cond00_ptmf;
 }
 
 /* 0x00469280 */
 void Sinit_RoomE7(void) {
-    D_01991E18 = D_00449EA0;
-    D_01991E28 = D_00449EB0;
+    D_01991E18 = RoomE7_Cmd00_ptmf;
+    D_01991E28 = RoomE7_Cond00_ptmf;
 }
 
 /* 0x004692D0 */
 void Sinit_RoomE8(void) {
-    D_01991E38 = D_0044A278;
-    D_01991E48 = D_0044A288;
+    D_01991E38 = RoomE8_Cmd00_ptmf;
+    D_01991E48 = RoomE8_Cond00_ptmf;
 }
 
 /* 0x00469320 */
 void Sinit_RoomE9(void) {
-    D_01991E60 = D_0044A938;
-    D_01991E6C = D_0044A948;
-    D_01991E78 = D_0044A958;
-    D_01991E84 = D_0044A968;
-    D_01991E90 = D_0044A978;
+    D_01991E60 = RoomE9_Cmd00_ptmf;
+    D_01991E6C = RoomE9_Cmd01_ptmf;
+    D_01991E78 = RoomE9_Cmd02_ptmf;
+    D_01991E84 = RoomE9_Cmd03_ptmf;
+    D_01991E90 = RoomE9_Cond00_ptmf;
 }
 
 /* ---- hand-written ---- */
@@ -1862,7 +1862,7 @@ extern u8 D_0047B348[], D_0047B34C[], D_01991EA0[], D_01991EB0[];
 
 extern Game gGame;
 extern void *Game_vtable[];
-extern const PTMF D_003D8920;    /* Game's first state */
+extern const PTMF Game_Init_ptmf;    /* Game's first state */
 
 /* gGame's constructor. */
 void func_00464A70(void) {
@@ -1878,7 +1878,7 @@ void func_00464A70(void) {
     SmallPool_ctor(g + 0x14D9DD0);
     BigPool_ctor(g + 0x14DC530);
     Slots_ctor(gGame.unk14E8C90);
-    Game_SetState(&gGame, &D_003D8920);
+    Game_SetState(&gGame, &Game_Init_ptmf);
     func_00100AB0(&gGame, (void (*)(void *, s32))Game_dtor, D_004879E8);
 }
 

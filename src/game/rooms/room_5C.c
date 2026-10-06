@@ -80,7 +80,7 @@ s32 Room5C_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990E08[i & 0xFF], a, b);
 }
 
-/* room 0x5C (D_00411B50): the first creature within 3 of (59.1, 1.43) is put away with an
+/* room 0x5C (Room5C_Cond00_ptmf): the first creature within 3 of (59.1, 1.43) is put away with an
  * effect (D_00472370) above it - blue (+0x1571 below 0x12) or red - and its action 0x8B */
 /* 0x002B59E0 */
 s32 Room5C_Cond00(void) {
@@ -154,7 +154,7 @@ s32 Room5C_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990DF8[i & 0xFF], a, b);
 }
 
-/* room 0x5C (D_00411B40): the dial (+0x7C, 0..1) from script variable 0 by byte 3: 0 0x2B..0x38
+/* room 0x5C (Room5C_Cmd00_ptmf): the dial (+0x7C, 0..1) from script variable 0 by byte 3: 0 0x2B..0x38
  * (/ 13, +0x74 0 / +0x78 1), 1 0xC..0x20 (/ 20), 2 7..0x12 (/ 11) (+0x74 1 / +0x78 0) */
 /* 0x002B5C30 */
 s32 Room5C_Cmd00(void *self, void *a1, u8 *cmd) {

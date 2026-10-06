@@ -29,7 +29,7 @@
 
 extern void *PathPlan_vtable[], *D_0046AC00[];
 extern VObject *gSceneGameF29740;
-extern const u32 D_003B2EA8[];   /* the step functions (PTMFs, 16-byte aligned) by request kind 0..7; 8: at the goal */
+extern const u32 PathPlan_StepBreadth_ptmf[];   /* the step functions (PTMFs, 16-byte aligned) by request kind 0..7; 8: at the goal */
 
 #define SEARCH(pl, i) ((u8 *)(pl) + 0x10 + (i) * 0x10060)
 #define NODE(s, t) ((s) + 0x44 + (t) * 0x18)
@@ -54,9 +54,9 @@ static inline s32 search_step(u8 *pl, u8 *s) {
 
 /* a search's step function = entry k of the table */
 static inline void set_step(u8 *s, s32 k) {
-    AT(s, 0x1004C, u32) = D_003B2EA8[k * 4 + 0];
-    AT(s, 0x10050, u32) = D_003B2EA8[k * 4 + 1];
-    AT(s, 0x10054, u32) = D_003B2EA8[k * 4 + 2];
+    AT(s, 0x1004C, u32) = PathPlan_StepBreadth_ptmf[k * 4 + 0];
+    AT(s, 0x10050, u32) = PathPlan_StepBreadth_ptmf[k * 4 + 1];
+    AT(s, 0x10054, u32) = PathPlan_StepBreadth_ptmf[k * 4 + 2];
 }
 
 /* the centre of triangle `t` (nav mesh +0xC) */

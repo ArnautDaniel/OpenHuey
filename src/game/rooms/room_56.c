@@ -64,7 +64,7 @@ s32 Room56_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990DC8[i & 0xFF], a, b);
 }
 
-/* room 0x56 (D_0040F468): creatures 7..9 in the current room on a live triangle D_00456E00
+/* room 0x56 (Room56_Cmd00_ptmf): creatures 7..9 in the current room on a live triangle D_00456E00
  * says yes to: +0x10, then the creature list's +0x28 */
 /* 0x002B4DE0 */
 s32 Room56_Cmd00(void) {

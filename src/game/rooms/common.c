@@ -420,7 +420,7 @@ extern const char *const D_004123E8;     /* room 0x5D's lever */
 extern const char *const D_004123D0[];   /* room 0x5D's (+2: four objects) */
 extern VObject *D_00456E00;
 
-/* (D_004022E0's table) room effect 0x1F's colour pulsing by script variable 0 */
+/* (Room24_ColourPulse_ptmf's table) room effect 0x1F's colour pulsing by script variable 0 */
 /* 0x002AFD60 */
 s32 Room24_ColourPulse(void) {
     colour_pulse(0, 0x50, 0x24, 0x2A, 0x2A, 0x46);

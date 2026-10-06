@@ -80,7 +80,7 @@ s32 Room48_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991188[i & 0xFF], a, b);
 }
 
-/* room 0x48 (D_00426850): door 0 of room 0x48 (Progress_CurRoomFlag) */
+/* room 0x48 (Room48_Cond00_ptmf): door 0 of room 0x48 (Progress_CurRoomFlag) */
 /* 0x0030F1A0 */
 s32 Room48_Cond00(void) {
     return Progress_CurRoomFlag(gProgress, 0x48, 0);
@@ -92,7 +92,7 @@ s32 Room48_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01991140[i & 0xFF], a, b);
 }
 
-/* room 0x48 (D_00426840): the creatures (10) in play in the current room: the list's +0x2C */
+/* room 0x48 (Room48_Cmd05_ptmf): the creatures (10) in play in the current room: the list's +0x2C */
 /* 0x0030F1F0 */
 s32 Room48_Cmd05(void) {
     u8 *list = gCreatures;
@@ -110,14 +110,14 @@ s32 Room48_Cmd05(void) {
     return 1;
 }
 
-/* room 0x48 (D_00426830): the player's Character_ChooseExit(0) */
+/* room 0x48 (Room48_Cmd04_ptmf): the player's Character_ChooseExit(0) */
 /* 0x0030F2B0 */
 s32 Room48_Cmd04(void) {
     Character_ChooseExit(gCharPlayer, 0);
     return 1;
 }
 
-/* room 0x48 (D_00426820): character 0xFE's model +0x9E8 = -0.15 (byte 3 0) or 0 */
+/* room 0x48 (Room48_Cmd03_ptmf): character 0xFE's model +0x9E8 = -0.15 (byte 3 0) or 0 */
 /* 0x0030F2E0 */
 s32 Room48_Cmd03(void *self, void *a1, u8 *cmd) {
     u8 *m = gCharacters[(u8)Progress_SlotOfId(gProgress, 0xFE)]->motion;
@@ -144,7 +144,7 @@ s32 Room48_Cmd02(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x48 (D_00426800): character 0x26's +0xE4 cleared */
+/* room 0x48 (Room48_Cmd01_ptmf): character 0x26's +0xE4 cleared */
 /* 0x0030F490 */
 s32 Room48_Cmd01(void) {
     AT(gCharacters[(u8)Progress_SlotOfId(gProgress, 0x26)], 0xE4, u8) = 0;

@@ -57,8 +57,8 @@ Members (from `SceneGame_ctor`):
 
 ### SceneGame per-frame flow
 
-`SceneGame_StateEntry` -> state `D_0044C7B0` = `SceneGame_StateMain` every frame: frame counter at
-+0x1065040, then the sub-state PTMF at +0x1053450 if set (`D_0044C7A0` = `SceneGame_SubStartRoom`: room
+`SceneGame_StateEntry` -> state `SceneGame_StateMain_ptmf` = `SceneGame_StateMain` every frame: frame counter at
++0x1065040, then the sub-state PTMF at +0x1053450 if set (`SceneGame_SubStartRoom_ptmf` = `SceneGame_SubStartRoom`: room
 load, returns 1 while busy), else the gameplay tick `SceneGame_RoomIn`:
 
 1. `CamDirector_NewRoom(+0xF6CBB0)`, `Progress_CameraOn(Progress, 0)`, `SceneGame_EnterRoom(game)` (416 insns:
@@ -103,7 +103,7 @@ Vtables (Metrowerks, +0x8 dtor): base `0x469C20` -> `0x469C60` (14 entries, code
 
 ### Fiona (`src/game/fiona.c`, `include/fiona.h`)
 
-All 46 functions of her class are in C. Behaviour states are PTMFs (`D_003B25A8`..) set
+All 46 functions of her class are in C. Behaviour states are PTMFs (`Fiona_StateIdleMove_ptmf`..) set
 into `Actor.state`; `+0x1AD580` names the current one, `Character.moveMode`/`moveSub` the move.
 
 - Requests: `+0x88` (0x19F8A0) handles the state block (grabbed/released) and scripted

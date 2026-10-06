@@ -92,7 +92,7 @@ s32 Room02_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990760[i & 0xFF], a, b);
 }
 
-/* room 0x02 (D_003F03C8): the pursuer is about, in a mode other than 0, 1 or 5, and progress
+/* room 0x02 (Room02_Cond01_ptmf): the pursuer is about, in a mode other than 0, 1 or 5, and progress
  * +0x1130 isn't 0xFE */
 /* 0x002A8F50 */
 s32 Room02_Cond01(void) {
@@ -191,7 +191,7 @@ s32 Room02_Cmd02(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x02 (D_003F0388): the panic (progress +0x7B8) raised to 80 */
+/* room 0x02 (Room02_Cmd01_ptmf): the panic (progress +0x7B8) raised to 80 */
 /* 0x002A9460 */
 s32 Room02_Cmd01(void) {
     u8 *p = (u8 *)gProgress;

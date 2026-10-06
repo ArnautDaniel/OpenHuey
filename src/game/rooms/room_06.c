@@ -71,7 +71,7 @@ s32 Room06_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019907D0[i & 0xFF], a, b);
 }
 
-/* room 0x06 (D_003F21C0): its four objects (the name's 6th letter counting) to their places */
+/* room 0x06 (Room06_Cmd00_ptmf): its four objects (the name's 6th letter counting) to their places */
 /* 0x002AA380 */
 s32 Room06_Cmd00(void) {
     char name[7];

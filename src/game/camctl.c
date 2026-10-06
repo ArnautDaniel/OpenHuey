@@ -38,7 +38,7 @@ void CamDirector_NewRoom(u8 *d) {
 }
 
 extern const PTMF D_003E5240;  /* { 0, -1, CamDirector_ModeNormal } */
-extern const PTMF D_003E5250;  /* { 0, -1, CamDirector_Remember } */
+extern const PTMF CamDirector_Remember_ptmf;  /* { 0, -1, CamDirector_Remember } */
 
 /* vt+0x24 the current camera setup (+0x6C); -1 in the free mode (+0xF4) */
 /* 0x00224300 */
@@ -53,7 +53,7 @@ s32 CamDirector_Setup(u8 *d) {
  * work area (+0x5C) */
 /* 0x00224330 */
 void CamDirector_ModeEvent(u8 *d) {
-    AT(d, 0xE8, PTMF) = D_003E5250;
+    AT(d, 0xE8, PTMF) = CamDirector_Remember_ptmf;
     AT(d, 0xF4, u8) = 1;
     AT(d, 0x7C, s32) = -1;
     AT(d, 0x78, s32) = -1;

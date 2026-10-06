@@ -685,15 +685,15 @@ void Lorenzo2_StatePlayOut(Pursuer *p) {
     Lorenzo2_PlayOut(p);
 }
 
-extern const PTMF D_00423A38;
+extern const PTMF Lorenzo2_StateSink_ptmf;
 
-/* animation 0x1303 in state `st` (D_00423A38: Lorenzo2_StateSink), run at once */
+/* animation 0x1303 in state `st` (Lorenzo2_StateSink_ptmf: Lorenzo2_StateSink), run at once */
 static inline __attribute__((always_inline)) void Lorenzo2_SinkBehindAs(Pursuer *p, const PTMF *st, void (*fn)(Pursuer *)) {
     Pursuer_PlayAnimIf(p, 0x1303, 0);
     Actor_SetState(&p->c.a, st);
     fn(p);
 }
-#define Lorenzo2_SinkBehind(p) Lorenzo2_SinkBehindAs(p, &D_00423A38, Lorenzo2_StateSink)
+#define Lorenzo2_SinkBehind(p) Lorenzo2_SinkBehindAs(p, &Lorenzo2_StateSink_ptmf, Lorenzo2_StateSink)
 
 /* 0x0030B7C0 */
 void Lorenzo2_StateSinkBehind(Pursuer *p) {
@@ -709,7 +709,7 @@ s32 Lorenzo2_SlamImpact(Pursuer *p) {
     return (Motion_EventFlags(p->c.motion, 0, 0, 1) & 0xFF & 0x20) ? 1 : 0;
 }
 
-extern const PTMF D_00423AA8;
+extern const PTMF Lorenzo2_StateGrab_ptmf;
 
 /* start of his grab: action 0x17 instead when he may not go for his target; finish the walk,
    then animation 0xE01 (with +0x16F7 when gProgress+0x30 bit 0x8000) and Lorenzo2_StateGrab */
@@ -731,7 +731,7 @@ void Lorenzo2_StartGrab(Pursuer *p) {
         PU(p, 0x16F7, u8) = 1;
     }
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_00423AA8);
+    Actor_SetState(&p->c.a, &Lorenzo2_StateGrab_ptmf);
     Lorenzo2_StateGrab(p);
 }
 
@@ -779,11 +779,11 @@ static inline void Sink_Init(void **obj) {
     obj[0x610 / 4] = QuadDrawer_vtable;
 }
 
-extern const PTMF D_00423A88;
+extern const PTMF Lorenzo2_StateRise_ptmf;
 
 /* state: sinking away (animation 0x1304). At its end (Lorenzo2_Sink) he heads under the floor
    toward his target: a point along the path (Npc_StepPath), or where he is when it's out of
-   reach; state D_00423A88 (Lorenzo2_StateRise) */
+   reach; state Lorenzo2_StateRise_ptmf (Lorenzo2_StateRise) */
 /* the end of a sinking: out of contact (+0x29 / +0x2D), the sink effect where he stood, moved
    to the exit of PursuerGroup_Find kind 9 if any, 15 frames underground (+0x1624); returns the
    distance (Npc_PathLength) to his target's point `t` on the mesh */
@@ -831,11 +831,11 @@ void Lorenzo2_StateAB80(Pursuer *p) {
         Npc_StepPath(p, &out, p->c.unk110, d);
         p->c.unk104[0] = out;
     }
-    Actor_SetState(&p->c.a, &D_00423A88);
+    Actor_SetState(&p->c.a, &Lorenzo2_StateRise_ptmf);
     Lorenzo2_StateRise(p);
 }
 
-extern const PTMF D_00423A78;
+extern const PTMF Lorenzo2_StateAB80_ptmf;
 
 /* closing on his target: when it's out of reach by the mesh (Character_PathLength < 0), back to the
    walk and the step ends; otherwise he sinks away (0x1304, Lorenzo2_StateAB80) */
@@ -857,7 +857,7 @@ static inline __attribute__((always_inline)) void Lorenzo2_ApproachAs(Pursuer *p
     Actor_SetState(&p->c.a, st);
     fn(p);
 }
-#define Lorenzo2_Approach(p) Lorenzo2_ApproachAs(p, &D_00423A78, Lorenzo2_StateAB80)
+#define Lorenzo2_Approach(p) Lorenzo2_ApproachAs(p, &Lorenzo2_StateAB80_ptmf, Lorenzo2_StateAB80)
 
 /* state: closing on his target (see Lorenzo2_Approach) */
 /* 0x0030AE00 */
@@ -917,7 +917,7 @@ void Lorenzo2_StateGrab(Pursuer *p) {
     }
 }
 
-extern const PTMF D_00423A98;
+extern const PTMF Lorenzo2_StateSweep_ptmf;
 
 /* state: under the floor after sinking (Lorenzo2_Underground). Then he rises at the goal (+0x104 /
    +0x110, 5 short of his target when that close), facing his target, in the sweep 0xE02
@@ -1018,14 +1018,14 @@ static inline void Lorenzo2_Rise(Pursuer *p, const PTMF *state, s32 other) {
 
 /* 0x0030A850 */
 void Lorenzo2_StateRise(Pursuer *p) {
-    Lorenzo2_Rise(p, &D_00423A98, 0);
+    Lorenzo2_Rise(p, &Lorenzo2_StateSweep_ptmf, 0);
 }
 
-extern const PTMF D_00423A68;
+extern const PTMF Lorenzo2_StateApproach_ptmf;
 
 /* start of his stalk from below: when he may go for his target, it's reachable by the mesh and
    there's no exit for him (PursuerGroup_Find kind 9): finish the walk, then close in (state
-   D_00423A68, Lorenzo2_Approach); otherwise action 0x17 */
+   Lorenzo2_StateApproach_ptmf, Lorenzo2_Approach); otherwise action 0x17 */
 /* 0x0030AF20 */
 void Lorenzo2_StartStalkBelow(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
@@ -1049,11 +1049,11 @@ void Lorenzo2_StartStalkBelow(Pursuer *p) {
         return;
     }
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_00423A68);
+    Actor_SetState(&p->c.a, &Lorenzo2_StateApproach_ptmf);
     Lorenzo2_Approach(p);
 }
 
-extern const PTMF D_00423A58;
+extern const PTMF Lorenzo2_StatePlayOut_ptmf;
 
 /* state: under the floor, then he rises (0x1305) at his goal (+0x104 / +0x110) facing his
    target, with the rising effect; its end ends the step (as Lorenzo2_StatePlayOut) */
@@ -1091,15 +1091,15 @@ void Lorenzo2_StateUnderFloor(Pursuer *p) {
     sceVu0CopyVector(sk.pos, p->c.a.pos);
     sk.kind = 1;
     EffectMgr_Start(mgr, slot, &sk);
-    Actor_SetState(&p->c.a, &D_00423A58);
+    Actor_SetState(&p->c.a, &Lorenzo2_StatePlayOut_ptmf);
     Lorenzo2_PlayOut(p);
 }
 
-extern const PTMF D_00423A48;
+extern const PTMF Lorenzo2_StateUnderFloor_ptmf;
 
 /* state: sinking to come up by his target (0x1303). At its end (Lorenzo2_Sink) he heads under
    the floor for a point 10 short of his target along the path, or where he is when it's nearer
-   than 20; state D_00423A48 (Lorenzo2_StateUnderFloor) */
+   than 20; state Lorenzo2_StateUnderFloor_ptmf (Lorenzo2_StateUnderFloor) */
 /* 0x0030B540 */
 void Lorenzo2_StateSink(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
@@ -1119,11 +1119,11 @@ void Lorenzo2_StateSink(Pursuer *p) {
         Npc_StepPath(p, &out, p->c.unk110, d - 10.0f);
         p->c.unk104[0] = out;
     }
-    Actor_SetState(&p->c.a, &D_00423A48);
+    Actor_SetState(&p->c.a, &Lorenzo2_StateUnderFloor_ptmf);
     Lorenzo2_StateUnderFloor(p);
 }
 
-extern const PTMF D_00423A28;
+extern const PTMF Lorenzo2_StateSinkBehind_ptmf;
 
 /* start of sinking to come up by his target: when it's 30 or more away by the mesh and there's
    no exit for him (PursuerGroup_Find kind 9), finish the walk and sink (Lorenzo2_SinkBehind).
@@ -1154,7 +1154,7 @@ void Lorenzo2_StartSink(Pursuer *p) {
         return;
     }
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_00423A28);
+    Actor_SetState(&p->c.a, &Lorenzo2_StateSinkBehind_ptmf);
     Lorenzo2_SinkBehind(p);
 }
 
@@ -1690,10 +1690,10 @@ u8 *Kind39_ModelFiles(Pursuer *p) {
 }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
-extern const PTMF D_00445AB8;
+extern const PTMF Kind39_StateRise_ptmf;
 extern void Kind39_StateRise(Pursuer *p);
-extern const PTMF D_00445A88;
-extern const PTMF D_00445A78;
+extern const PTMF Kind39_StatePlayOut_ptmf;
+extern const PTMF Kind39_StateUnderFloor_ptmf;
 extern void Kind39_StateUnderFloor(Pursuer *p);
 
 /* as Lorenzo2_StateAB80 */
@@ -1716,7 +1716,7 @@ void Kind39_State4930(Pursuer *p) {
         Npc_StepPath(p, &out, p->c.unk110, d);
         p->c.unk104[0] = out;
     }
-    Actor_SetState(&p->c.a, &D_00445AB8);
+    Actor_SetState(&p->c.a, &Kind39_StateRise_ptmf);
     Kind39_StateRise(p);
 }
 
@@ -1756,13 +1756,13 @@ void Kind39_StateUnderFloor(Pursuer *p) {
     sceVu0CopyVector(sk.pos, p->c.a.pos);
     sk.kind = 1;
     EffectMgr_Start(mgr, slot, &sk);
-    Actor_SetState(&p->c.a, &D_00445A88);
+    Actor_SetState(&p->c.a, &Kind39_StatePlayOut_ptmf);
     Lorenzo2_PlayOut(p);
 }
 
 /* (as Lorenzo2_StateSink)  state: sinking to come up by his target (0x1303). At its end (Lorenzo2_Sink) he heads under
    the floor for a point 10 short of his target along the path, or where he is when it's nearer
-   than 20; state D_00445A78 (Kind39_StateUnderFloor) */
+   than 20; state Kind39_StateUnderFloor_ptmf (Kind39_StateUnderFloor) */
 /* 0x003652F0 */
 void Kind39_StateSink(Pursuer *p) {
     f32 t[4] __attribute__((aligned(16)));
@@ -1782,26 +1782,26 @@ void Kind39_StateSink(Pursuer *p) {
         Npc_StepPath(p, &out, p->c.unk110, d - 10.0f);
         p->c.unk104[0] = out;
     }
-    Actor_SetState(&p->c.a, &D_00445A78);
+    Actor_SetState(&p->c.a, &Kind39_StateUnderFloor_ptmf);
     Kind39_StateUnderFloor(p);
 }
 
 /* ---- the same states in the other class (its states D_00445Axx), sharing Lorenzo's helpers ---- */
 
-extern const PTMF D_00445A58, D_00445A68, D_00445A98, D_00445AA8;
+extern const PTMF Kind39_StateSinkBehind_ptmf, Kind39_StateSink_ptmf, Kind39_StateApproach_ptmf, Kind39_State4930_ptmf;
 extern void Kind39_State4930(Pursuer *p);
 extern void Kind39_StateSink(Pursuer *p);
 
 /* (as Lorenzo2_StateApproach) */
 /* 0x00364BB0 */
 void Kind39_StateApproach(Pursuer *p) {
-    Lorenzo2_ApproachAs(p, &D_00445AA8, Kind39_State4930);
+    Lorenzo2_ApproachAs(p, &Kind39_State4930_ptmf, Kind39_State4930);
 }
 
 /* (as Lorenzo2_StateSinkBehind) */
 /* 0x00365570 */
 void Kind39_StateSinkBehind(Pursuer *p) {
-    Lorenzo2_SinkBehindAs(p, &D_00445A68, Kind39_StateSink);
+    Lorenzo2_SinkBehindAs(p, &Kind39_StateSink_ptmf, Kind39_StateSink);
 }
 
 /* (as Lorenzo2_StartStalkBelow) */
@@ -1828,8 +1828,8 @@ void Kind39_StartStalkBelow(Pursuer *p) {
         return;
     }
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_00445A98);
-    Lorenzo2_ApproachAs(p, &D_00445AA8, Kind39_State4930);
+    Actor_SetState(&p->c.a, &Kind39_StateApproach_ptmf);
+    Lorenzo2_ApproachAs(p, &Kind39_State4930_ptmf, Kind39_State4930);
 }
 
 /* (as Lorenzo2_StartSink) */
@@ -1859,11 +1859,11 @@ void Kind39_StartSink(Pursuer *p) {
         return;
     }
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_00445A58);
-    Lorenzo2_SinkBehindAs(p, &D_00445A68, Kind39_StateSink);
+    Actor_SetState(&p->c.a, &Kind39_StateSinkBehind_ptmf);
+    Lorenzo2_SinkBehindAs(p, &Kind39_StateSink_ptmf, Kind39_StateSink);
 }
 
-extern const PTMF D_00445AD8;
+extern const PTMF Kind39_StateGrab_ptmf;
 extern void Kind39_StateGrab(Pursuer *p);
 
 /* (as Lorenzo2_StartGrab) the other class's start of the grab */
@@ -1885,7 +1885,7 @@ void Kind39_StartGrab(Pursuer *p) {
         PU(p, 0x16F7, u8) = 1;
     }
     PU(p, 0x1784, s32) = 0;
-    Actor_SetState(&p->c.a, &D_00445AD8);
+    Actor_SetState(&p->c.a, &Kind39_StateGrab_ptmf);
     Kind39_StateGrab(p);
 }
 
@@ -1973,12 +1973,12 @@ void Kind39_StateSweep(Pursuer *p) {
     Lorenzo2b_Sweep(p);
 }
 
-extern const PTMF D_00445AC8;
+extern const PTMF Kind39_StateSweep_ptmf;
 
 /* its rise from under the floor (as Lorenzo2_StateRise) into the sweep */
 /* 0x00364510 */
 void Kind39_StateRise(Pursuer *p) {
-    Lorenzo2_Rise(p, &D_00445AC8, 1);
+    Lorenzo2_Rise(p, &Kind39_StateSweep_ptmf, 1);
 }
 
 /* vtable +0x30: its frame update (as Lorenzo2_Update, without his mode 2), with its dust

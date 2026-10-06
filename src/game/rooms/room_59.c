@@ -64,7 +64,7 @@ s32 Room59_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990DD8[i & 0xFF], a, b);
 }
 
-/* room 0x59 (D_00410B80): character 0xFE's model +0x9E0 = 0.1 (byte 3 0) or 0 */
+/* room 0x59 (Room59_Cmd00_ptmf): character 0xFE's model +0x9E0 = 0.1 (byte 3 0) or 0 */
 /* 0x002B5210 */
 s32 Room59_Cmd00(void *self, void *a1, u8 *cmd) {
     u8 *m = gCharacters[(u8)Progress_SlotOfId(gProgress, 0xFE)]->motion;

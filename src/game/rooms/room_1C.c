@@ -79,7 +79,7 @@ s32 Room1C_Cmd01(void) {
     return 1;
 }
 
-/* room 0x1C (D_003FD338): room effect 0x1C (a depth range) with the cutscene from frame 0x14A:
+/* room 0x1C (Room1C_Cmd00_ptmf): room effect 0x1C (a depth range) with the cutscene from frame 0x14A:
  * near 1 .. 1 + 1.4 t (at most 67.6), far 48.6 + 4 t (at most 230) */
 /* 0x002ADB70 */
 s32 Room1C_Cmd00(void) {

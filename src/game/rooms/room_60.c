@@ -88,7 +88,7 @@ s32 Room60_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_019911C0[i & 0xFF], a, b);
 }
 
-/* room 0x60 (D_00429190): the player's model +0xCC 0 (byte 3 0) or 1 */
+/* room 0x60 (Room60_Cmd05_ptmf): the player's model +0xCC 0 (byte 3 0) or 1 */
 /* 0x00310280 */
 s32 Room60_Cmd05(void *self, void *a1, u8 *cmd) {
     VObject *m = gCharPlayer->motion;
@@ -131,7 +131,7 @@ s32 Room60_Cmd04(void *self, void *a1, u8 *cmd) {
     return v + 1 < 61 ? 2 : 1;
 }
 
-/* room 0x60 (D_00429170): character 0xFE's model +0x9FC 0.4 / +0xA00 1 (byte 3 0), or 0 */
+/* room 0x60 (Room60_Cmd03_ptmf): character 0xFE's model +0x9FC 0.4 / +0xA00 1 (byte 3 0), or 0 */
 /* 0x00310450 */
 s32 Room60_Cmd03(void *self, void *a1, u8 *cmd) {
     u8 *m = gCharacters[(u8)Progress_SlotOfId(gProgress, 0xFE)]->motion;

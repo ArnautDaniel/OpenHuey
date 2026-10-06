@@ -359,7 +359,7 @@ void PlacedThings_PlaceKept(u8 *mgr) {
 #include "effectmgr.h"
 
 extern const PTMF sGameStateNull;
-extern const PTMF D_00414790, D_004147A0, D_004147B0;   /* +0x50 (virtual), Ball_StateRolling, Ball_StateDropping */
+extern const PTMF D_00414790, Ball_StateRolling_ptmf, Ball_StateDropping_ptmf;   /* +0x50 (virtual), Ball_StateRolling, Ball_StateDropping */
 extern void *QuadDrawer_vtable[], *Helper469D00_vtable[];
 extern void Thing_Setup(u8 *a);   /* Actor +0xC */
 extern void Thing_Frame(u8 *a);   /* Actor +0x30 */
@@ -668,10 +668,10 @@ void Ball_MotionState(u8 *b) {
         ptmf_set(&AT(b, 0xA0, PTMF), &D_00414790);
         break;
     case 1:
-        ptmf_set(&AT(b, 0xA0, PTMF), &D_004147A0);
+        ptmf_set(&AT(b, 0xA0, PTMF), &Ball_StateRolling_ptmf);
         break;
     default:
-        ptmf_set(&AT(b, 0xA0, PTMF), &D_004147B0);
+        ptmf_set(&AT(b, 0xA0, PTMF), &Ball_StateDropping_ptmf);
         break;
     }
     if (AT(b, 0x120, u16) != 0) {
@@ -914,7 +914,7 @@ void *Actor_dtor(void *p) {
  * bounce - whatever it hits, or a pursuer walking into it, bursts it in a purple splash ---- */
 
 extern void *Thing01_vtable[];
-extern const PTMF D_00429C28, D_00429C38;   /* +0x50 (virtual), Thing01_StateDropping */
+extern const PTMF D_00429C28, Thing01_StateDropping_ptmf;   /* +0x50 (virtual), Thing01_StateDropping */
 
 /* +0x8 destructor */
 /* 0x00314990 */
@@ -1002,7 +1002,7 @@ void Thing01_Draw(u8 *o) {
     half_sprite(o, 64.0f, 32.0f, 128.0f);
 }
 
-/* the dropping state (D_00429C38): falling through for 31 frames, then gone */
+/* the dropping state (Thing01_StateDropping_ptmf): falling through for 31 frames, then gone */
 /* 0x00314CE0 */
 void Thing01_StateDropping(u8 *o) {
     sceVu0AddVector(BALL_VEL(o), (f32 *)(o + 0x100), BALL_VEL(o));
@@ -1075,7 +1075,7 @@ void Thing01_MotionState(u8 *o) {
         ptmf_set(&AT(o, 0xA0, PTMF), &D_00429C28);
         break;
     default:
-        ptmf_set(&AT(o, 0xA0, PTMF), &D_00429C38);
+        ptmf_set(&AT(o, 0xA0, PTMF), &Thing01_StateDropping_ptmf);
         break;
     }
     if (AT(o, 0x120, u16) != 0) {
@@ -1363,7 +1363,7 @@ s32 Thing02_Bounce(u8 *b, f32 *to, f32 *at, f32 *n) {
     return 1;
 }
 
-/* (as Thing01_StateDropping)  the dropping state (D_00429C38): falling through for 31 frames, then gone */
+/* (as Thing01_StateDropping)  the dropping state (Thing01_StateDropping_ptmf): falling through for 31 frames, then gone */
 /* 0x003551C0 */
 void Thing02_StateDropping(u8 *o) {
     sceVu0AddVector(BALL_VEL(o), (f32 *)(o + 0x100), BALL_VEL(o));
@@ -1522,7 +1522,7 @@ void *Thing03_dtor(void *o, s32 flags) {
     return o;
 }
 
-/* (as Thing01_StateDropping)  the dropping state (D_00429C38): falling through for 31 frames, then gone */
+/* (as Thing01_StateDropping)  the dropping state (Thing01_StateDropping_ptmf): falling through for 31 frames, then gone */
 /* 0x00333880 */
 void Thing03_StateDropping(u8 *o) {
     sceVu0AddVector(BALL_VEL(o), (f32 *)(o + 0x100), BALL_VEL(o));
@@ -1559,7 +1559,7 @@ void *Thing06_dtor(void *o, s32 flags) {
     return o;
 }
 
-/* (as Thing01_StateDropping)  the dropping state (D_00429C38): falling through for 31 frames, then gone */
+/* (as Thing01_StateDropping)  the dropping state (Thing01_StateDropping_ptmf): falling through for 31 frames, then gone */
 /* 0x003348A0 */
 void Thing06_StateDropping(u8 *o) {
     sceVu0AddVector(BALL_VEL(o), (f32 *)(o + 0x100), BALL_VEL(o));
@@ -1709,7 +1709,7 @@ void *Thing04_dtor(void *o, s32 flags) {
     return o;
 }
 
-/* (as Thing01_StateDropping)  the dropping state (D_00429C38): falling through for 31 frames, then gone */
+/* (as Thing01_StateDropping)  the dropping state (Thing01_StateDropping_ptmf): falling through for 31 frames, then gone */
 /* 0x00336550 */
 void Thing04_StateDropping(u8 *o) {
     sceVu0AddVector(BALL_VEL(o), (f32 *)(o + 0x100), BALL_VEL(o));
@@ -1802,18 +1802,18 @@ void Thing04_Setup(u8 *o) {
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 extern const PTMF D_00443E30;
-extern const PTMF D_00443E40;
-extern const PTMF D_00443E50;
+extern const PTMF Thing02_StateRolling_ptmf;
+extern const PTMF Thing02_StateDropping_ptmf;
 extern const PTMF D_00445B60;
-extern const PTMF D_00445B70;
-extern const PTMF D_00445B80;
+extern const PTMF Thing09_StateRolling_ptmf;
+extern const PTMF Thing09_StateFalling_ptmf;
 extern const PTMF D_00445B90;
-extern const PTMF D_00445BA0;
-extern const PTMF D_00445BB0;
+extern const PTMF Thing10_StateRolling_ptmf;
+extern const PTMF Thing10_StateFalling_ptmf;
 extern const PTMF D_0042F230;
-extern const PTMF D_0042F240;
+extern const PTMF Thing06_StateDropping_ptmf;
 extern const PTMF D_0042F250;
-extern const PTMF D_0042F260;
+extern const PTMF Thing04_StateDropping_ptmf;
 
 /* (as Ball_MotionState)  +0x4C the motion state for this frame (none outside the current room), and the fade */
 /* 0x00355780 */
@@ -1829,10 +1829,10 @@ void ThingShared_MotionState(u8 *b) {
         ptmf_set(&AT(b, 0xA0, PTMF), &D_00443E30);
         break;
     case 1:
-        ptmf_set(&AT(b, 0xA0, PTMF), &D_00443E40);
+        ptmf_set(&AT(b, 0xA0, PTMF), &Thing02_StateRolling_ptmf);
         break;
     default:
-        ptmf_set(&AT(b, 0xA0, PTMF), &D_00443E50);
+        ptmf_set(&AT(b, 0xA0, PTMF), &Thing02_StateDropping_ptmf);
         break;
     }
     if (AT(b, 0x120, u16) != 0) {
@@ -1869,10 +1869,10 @@ void Thing09_MotionState(u8 *b) {
         ptmf_set(&AT(b, 0xA0, PTMF), &D_00445B60);
         break;
     case 1:
-        ptmf_set(&AT(b, 0xA0, PTMF), &D_00445B70);
+        ptmf_set(&AT(b, 0xA0, PTMF), &Thing09_StateRolling_ptmf);
         break;
     default:
-        ptmf_set(&AT(b, 0xA0, PTMF), &D_00445B80);
+        ptmf_set(&AT(b, 0xA0, PTMF), &Thing09_StateFalling_ptmf);
         break;
     }
     if (AT(b, 0x120, u16) != 0) {
@@ -1898,10 +1898,10 @@ void Thing10_MotionState(u8 *b) {
         ptmf_set(&AT(b, 0xA0, PTMF), &D_00445B90);
         break;
     case 1:
-        ptmf_set(&AT(b, 0xA0, PTMF), &D_00445BA0);
+        ptmf_set(&AT(b, 0xA0, PTMF), &Thing10_StateRolling_ptmf);
         break;
     default:
-        ptmf_set(&AT(b, 0xA0, PTMF), &D_00445BB0);
+        ptmf_set(&AT(b, 0xA0, PTMF), &Thing10_StateFalling_ptmf);
         break;
     }
     if (AT(b, 0x120, u16) != 0) {
@@ -1927,7 +1927,7 @@ void Thing06_MotionState(u8 *o) {
         ptmf_set(&AT(o, 0xA0, PTMF), &D_0042F230);
         break;
     default:
-        ptmf_set(&AT(o, 0xA0, PTMF), &D_0042F240);
+        ptmf_set(&AT(o, 0xA0, PTMF), &Thing06_StateDropping_ptmf);
         break;
     }
     if (AT(o, 0x120, u16) != 0) {
@@ -1953,7 +1953,7 @@ void Thing04_MotionState(u8 *o) {
         ptmf_set(&AT(o, 0xA0, PTMF), &D_0042F250);
         break;
     default:
-        ptmf_set(&AT(o, 0xA0, PTMF), &D_0042F260);
+        ptmf_set(&AT(o, 0xA0, PTMF), &Thing04_StateDropping_ptmf);
         break;
     }
     if (AT(o, 0x120, u16) != 0) {
@@ -3346,7 +3346,7 @@ s32 Thing10_PursuerOn(u8 *o) {
     return thing_near(p, o, AT(p, 0xC8, f32));
 }
 
-extern const PTMF D_0042F200, D_0042F210, D_0042F220;
+extern const PTMF D_0042F200, Thing03_StateRolling_ptmf, Thing03_StateDropping_ptmf;
 
 /* (as Thing10_MotionState) +0x4C the motion state for this frame (none outside the current room),
    +0x13E 0xFF when it hasn't moved since last frame, and the fade */
@@ -3373,10 +3373,10 @@ void Thing03_MotionState(u8 *b) {
         ptmf_set(&AT(b, 0xA0, PTMF), &D_0042F200);
         break;
     case 1:
-        ptmf_set(&AT(b, 0xA0, PTMF), &D_0042F210);
+        ptmf_set(&AT(b, 0xA0, PTMF), &Thing03_StateRolling_ptmf);
         break;
     default:
-        ptmf_set(&AT(b, 0xA0, PTMF), &D_0042F220);
+        ptmf_set(&AT(b, 0xA0, PTMF), &Thing03_StateDropping_ptmf);
         break;
     }
     if (AT(b, 0x120, u16) != 0) {

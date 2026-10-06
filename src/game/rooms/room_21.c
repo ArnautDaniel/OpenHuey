@@ -73,7 +73,7 @@ s32 Room21_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990AC8[i & 0xFF], a, b);
 }
 
-/* room 0x21 (D_00400BF0): the pursuer, about and not in state 2, is in its mode 2 but in
+/* room 0x21 (Room21_Cond00_ptmf): the pursuer, about and not in state 2, is in its mode 2 but in
  * another room than the current one (the player about too) */
 /* 0x002AF0F0 */
 s32 Room21_Cond00(void) {
@@ -94,7 +94,7 @@ s32 Room21_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990A70[i & 0xFF], a, b);
 }
 
-/* room 0x21 (D_00400BE0): Fiona's model +0x1570 (byte 3 0) / +0x1574 (1) = byte 4 */
+/* room 0x21 (Room21_Cmd06_ptmf): Fiona's model +0x1570 (byte 3 0) / +0x1574 (1) = byte 4 */
 /* 0x002AF1D0 */
 s32 Room21_Cmd06(void *self, void *a1, u8 *cmd) {
     u8 *m = gCharacters[(u8)Progress_SlotOfId(gProgress, 3)]->motion;
@@ -110,7 +110,7 @@ s32 Room21_Cmd06(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
-/* room 0x21 (D_00400BD0): the player's model +0xC8 vector by byte 3 */
+/* room 0x21 (Room21_Cmd05_ptmf): the player's model +0xC8 vector by byte 3 */
 /* 0x002AF250 */
 s32 Room21_Cmd05(void *self, void *a1, u8 *cmd) {
     VObject *m = gCharPlayer->motion;
