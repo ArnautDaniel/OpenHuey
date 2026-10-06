@@ -30,9 +30,16 @@ ctest --test-dir build/new-src      # the Forth test suite (and anything else un
 The data dir defaults to `../Haunting Ground (USA)/data` next to the repository, or `$HG_DATA`.
 It builds as 64-bit (or 32-bit); it needs SDL3 and OpenGL 3.3.
 
-Keys: <kbd>`</kbd> opens the Forth console. The free camera uses WASD + QE (down/up), the arrow
-keys or the right mouse button to look around, and Shift to go faster. PageUp/PageDown step through
-the rooms. All of this is defined in `scripts/`, not in C.
+Keys (all defined in `scripts/`, not in C):
+
+| Key | |
+|---|---|
+| <kbd>`</kbd> | the Forth console |
+| Tab | play as Fiona / free camera |
+| W A S D, Shift | walk (relative to the view), run - or fly the free camera |
+| Q E, arrows, right mouse | free camera: down / up, look around |
+| [ ] | the room's own camera setups |
+| PageUp / PageDown | the next / previous room |
 
 ## Layout
 
