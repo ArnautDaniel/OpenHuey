@@ -3265,17 +3265,23 @@ void func_00326130(Character *c, f32 dist) {
 extern void func_002DDED0(void *motion, s32 anim, s32 variant);
 extern u32 func_00177BF0(Progress *p, u32 door, u32 slot);
 
-/* state: held off - it moves by its animation, facing Fiona; when she is no longer across the
-   room's divider from it, back to state 0. Otherwise it alternates idles 0 and 0x1C00 (+0x6C)
-   every 90 frames (+0x40, +0x60 started) */
-void func_00326680(Character *c) {
-    u8 *k = CR(c);
+/* moved this frame by its animation's root motion (turned with it) */
+static inline void cr19_root_move(Character *c) {
     f32 v[4] __attribute__((aligned(16)));
 
     func_001F6370(c->motion, v, 0.0f);
     *(s32 *)&v[1] = 0;
     sceVu0ApplyMatrix(v, c->a.rot, v);
     func_001247E0(&c->a, v);
+}
+
+/* state: held off - it moves by its animation, facing Fiona; when she is no longer across the
+   room's divider from it, back to state 0. Otherwise it alternates idles 0 and 0x1C00 (+0x6C)
+   every 90 frames (+0x40, +0x60 started) */
+void func_00326680(Character *c) {
+    u8 *k = CR(c);
+
+    cr19_root_move(c);
     func_0032B080(c, gCharPlayer->a.pos);
     AT(k, 0x40, s16)++;
     if (!NavMesh_AcrossDivider(D_0044E570, gCharPlayer->a.navTri, c->a.navTri)) {
@@ -3432,4 +3438,105 @@ void func_00327450(Character *c) {
         return;
     }
     func_00326130(c, 20.0f);
+}
+
+
+/* state: knocked down, by step +0x60: 0 animation 0x1001 while its fall +0x28 runs down
+   (+0x2C, 0.085 faster each frame), then a thud (sound 5); 1 after its animation and 32
+   frames; 2 animation 0x1800; 3 getting up (a sound at frame 34, moved by its animation), at
+   its end back in contact in state 5 */
+void func_00327540(Character *c) {
+    u8 *k = CR(c);
+
+    switch (AT(k, 0x60, u8)) {
+    case 0:
+        func_002DDED0(c->motion, 0x1001, -1);
+        AT(k, 0x28, f32) = AT(k, 0x28, f32) - AT(k, 0x2C, f32);
+        AT(k, 0x2C, f32) = AT(k, 0x2C, f32) + 0x1.5c28f6p-4f;   /* 0.085 */
+        if (AT(k, 0x28, f32) <= 0.0f) {
+            func_00122C20(&c->a, 5, 5, 0, 0, NULL);
+            AT(k, 0x28, s32) = 0;
+            AT(k, 0x2C, s32) = 0;
+            AT(k, 0x60, u8)++;
+        }
+        break;
+    case 1:
+        if ((AT(AT(c->motion, 0x6A4, u8 *), 0x18, u32) & 0x20) != 0) {
+            if (++AT(k, 0x40, s16) >= 32) {
+                AT(k, 0x60, u8)++;
+            }
+        }
+        break;
+    case 2:
+        AT(k, 0x40, s16) = 0;
+        func_002DDED0(c->motion, 0x1800, -1);
+        AT(k, 0x60, u8)++;
+        break;
+    case 3:
+        if (++AT(k, 0x40, s16) == 0x22) {
+            func_00122C20(&c->a, 5, 5, 0, 0, NULL);
+        }
+        cr19_root_move(c);
+        if ((AT(AT(c->motion, 0x6A4, u8 *), 0x18, u32) & 0x20) != 0) {
+            c->a.unk2D = 0;
+            cr19_enter(c, 5);
+        }
+        break;
+    }
+}
+
+/* state: Fiona on a triangle it may not stand on - its approach at 5; else back to state 0 */
+void func_003277C0(Character *c) {
+    if (NavMesh_TriFlags(D_0044E570, gCharPlayer->a.navTri) & 0x4020028) {
+        func_00326130(c, 5.0f);
+        return;
+    }
+    cr19_reset(c);
+}
+
+/* state: with progress flag 9 its approach at 20, else back to state 0 */
+void func_003278F0(Character *c) {
+    if (Progress_TestFlag(gProgress, 9) != 0) {
+        func_00326130(c, 20.0f);
+        return;
+    }
+    cr19_reset(c);
+}
+
+/* (as func_002DFF70) when it can walk straight at `goal` on Fiona's triangle, it drops its
+   path and does (by its root motion) unless within 2 (+0x24); on another level it gives up
+   (+0x6A) after 30 tries close by (+0xC) unless on her triangle. Her triangle, -1 if not */
+s32 func_003279F0(Character *c, f32 *goal) {
+    u8 *k = CR(c);
+    u32 t = func_00124480(&c->a, goal, c->pathReq->mask);
+
+    if (t != gCharPlayer->a.navTri) {
+        return -1;
+    }
+    func_00127060(c);
+    AT(k, 0x64, u8) = 0;
+    c->unk124 = c->unk128;
+    if (goal[1] != c->a.pos[1]) {
+        if (AT(k, 0x24, f32) < 2.0f) {
+            AT(k, 0xC, u32)++;
+        }
+        if (AT(k, 0xC, u32) >= 30 && c->a.navTri != gCharPlayer->a.navTri) {
+            AT(k, 0xC, u32) = 0;
+            AT(k, 0x6A, u8) = 1;
+            return -1;
+        }
+    }
+    if (!(AT(k, 0x24, f32) <= 2.0f)) {
+        f32 d[4] __attribute__((aligned(16)));
+        f32 v[4] __attribute__((aligned(16)));
+
+        sceVu0SubVector(d, goal, c->a.pos);
+        *(s32 *)&d[1] = 0;
+        sceVu0Normalize(d, d);
+        func_001F6370(c->motion, v, 0.0f);
+        *(s32 *)&v[1] = 0;
+        func_0010E640(d, d, v[2]);
+        func_001247E0(&c->a, d);
+    }
+    return t;
 }
