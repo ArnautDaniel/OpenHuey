@@ -164,7 +164,7 @@ extern void *func_00322570(u32 size, void *p);   /* placement new */
 extern void func_00305380(void *p);
 extern void SaveScreen_Init(void *card, void *buf, void *buf2);
 extern void func_0038F7D0(void *s);
-extern void func_00388D30(void *s);
+void func_00388D30(SubScreen *s);
 extern void *D_00474020[];       /* the 0x15C helper's base vtable */
 extern void *D_00474040[];
 extern void *D_00474060[];
@@ -1976,5 +1976,127 @@ void func_003951E0(SubScreen *s) {
         ptmf_set(&s->state, &D_0044B348);
     } else {
         ptmf_set(&s->state, &D_0044B358);
+    }
+}
+
+/* ---- the screen's frame ---- */
+
+extern void *D_0046F350[], *D_0046EC80[], *D_00469D00[];
+extern void func_002CF390(void *ov, u32 rgba);   /* an overlay's colour */
+extern void func_002C86F0(u8 *d, f32 a, f32 from, f32 to, f32 b);   /* depth of field */
+extern const PTMF D_0044B1C0;
+
+/* the running screen each frame: its state; behind it a darkening overlay (pages, kind 0x80..)
+ * or its panels at the fade's alpha (layer 0x31); depth of field set from 151; asked to close
+ * (or progress flag 4): fading back (draw D_0044B1C0), with sound 0x95 unless quiet */
+void func_00397AB0(SubScreen *s) {
+    Progress *p = gProgress;
+    struct {
+        void **vtbl;
+        s32 a;
+        f32 v[4];
+    } dof;
+
+    if (p != NULL && s->mode != 0) {
+        Progress_ClearFlag(p, 4);
+    }
+    ptmf_scall(s, &s->state);
+    if (s->kind & 0x80) {
+        u8 ov[0x100] __attribute__((aligned(16)));
+
+        AT(ov, 0x0, void **) = D_0046F350;
+        AT(ov, 0x4, s32) = -1;
+        AT(ov, 0x10, s32) = -1;
+        AT(ov, 0x14, u8) = 0;
+        AT(ov, 0x24, s32) = 0;
+        func_002CF390(ov, (u32)s->fade << 24);
+        VCALL(D_0044E4F0, 0xC, void (*)(VObject *, void *, s32, s32))(D_0044E4F0, ov, 0x31, 0);
+        AT(ov, 0x0, void **) = D_00469D00;
+    } else {
+        u8 alpha = s->fade;
+
+        if (alpha != 0 && s->kind != 0xFF) {
+            s8 *panel = D_0044C120[s->kind & 0x7F];
+            s32 i;
+
+            for (i = 0; i < 4 && panel[i] >= 0; i++) {
+                SubScreen_DrawPanel(s, (u8)panel[i], alpha, 0x31);
+            }
+        }
+    }
+    dof.a = -1;
+    dof.vtbl = D_0046EC80;
+    func_002C86F0((u8 *)&dof, 1.0f, 151.0f, 2000.0f, 2000.0f);
+    if (s->close == 1 || (p != NULL && Progress_TestFlag(p, 4))) {
+        s->fading = 1;
+        s->fade = 0x40;
+        s->fadeStep = 8;
+        ptmf_set(&s->draw, &D_0044B1C0);
+        if (p != NULL) {
+            Progress_ClearFlag(p, 4);
+        }
+        if (!s->quietClose) {
+            Sound_PlaySE(SE_CLOSE);
+        }
+    }
+    dof.vtbl = D_00469D00;
+}
+
+/* ---- the clear results ---- */
+
+extern VObject *D_0044E4D0;   /* the events (+0x34: the play time's hours / minutes / seconds) */
+
+/* the results page set up: the ending's flag noted (system data +0x2C bit 18 / 19 by the
+ * difficulty, progress var 0x2E 0 / 1; page[2] set when new), the play time (59:59 at most)
+ * placed among that difficulty's three best (system data +0x3C + difficulty * 12: hours,
+ * minutes, seconds; page[3] its rank, 0xFF none) */
+void func_00388D30(SubScreen *s) {
+    u8 *sys;
+    u8 diff, h, m, sec;
+    s32 t, i, k;
+
+    SUB_PAGE(s, 0x0, u8) = 0;
+    SUB_PAGE(s, 0x1, u8) = 0x1E;
+    SUB_PAGE(s, 0x2, u8) = 0;
+    SUB_PAGE(s, 0x3, u8) = 0xFF;
+    SUB_PAGE(s, 0x4, u8) = 0;
+    SUB_PAGE(s, 0x5, u8) = 0x40;
+    diff = Progress_GetVar(gProgress, 0x2E);
+    if (diff == 0) {
+        if (!(AT(D_0044E978, 0x2C, u32) & 0x40000)) {
+            AT(D_0044E978, 0x2C, u32) |= 0x40000;
+            SUB_PAGE(s, 0x2, u8) = 1;
+        }
+    } else if (diff == 1) {
+        if (!(AT(D_0044E978, 0x2C, u32) & 0x80000)) {
+            AT(D_0044E978, 0x2C, u32) |= 0x80000;
+            SUB_PAGE(s, 0x2, u8) = 1;
+        }
+    }
+    h = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 0);
+    m = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 1);
+    sec = VCALL(D_0044E4D0, 0x34, s32 (*)(VObject *, s32))(D_0044E4D0, 2);
+    if (h != 0) {
+        m = 0x3B;
+        h = 0;
+        sec = 0x3B;
+    }
+    t = (h * 60 + m) * 60 + sec;
+    sys = D_0044E978 + diff * 12;
+    for (i = 0; i < 3; i++) {
+        u8 *e = sys + 0x3C + i * 4;
+
+        if (t < (e[0] * 60 + e[1]) * 60 + e[2]) {
+            SUB_PAGE(s, 0x3, u8) = i;
+            for (k = 2; i < k; k--) {
+                sys[0x3C + k * 4] = sys[0x38 + k * 4];
+                sys[0x3D + k * 4] = sys[0x39 + k * 4];
+                sys[0x3E + k * 4] = sys[0x3A + k * 4];
+            }
+            e[0] = h;
+            e[1] = m;
+            e[2] = sec;
+            return;
+        }
     }
 }

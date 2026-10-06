@@ -212,7 +212,9 @@ void glr_prim2d(int layer, int kind, int n, const float *xy, const float *st, co
         tst[k][1] = tex != NULL ? st[k * 2 + 1] : 0.0f;
         memcpy(trgba[k], rgba + k * 4, 4);
     }
-    sLayer = layer;
+    if (layer >= 0) {   /* (-1: the layer being drawn, for drawers run by the renderer) */
+        sLayer = layer;
+    }
     if (kind == GLR_2D_FAN) {   /* each triangle (0, k - 1, k) as its own strip */
         for (k = 2; k < n; k++) {
             float fx[3][4];

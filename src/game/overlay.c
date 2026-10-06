@@ -28,39 +28,34 @@ void func_002CF390(void *ov, u32 rgba) {
     AT(ov, 0xF8, u32) = rgba;
 }
 
-/* write the packet: a blended triangle strip over the corners in the overlay colour */
+#ifdef HG_NATIVE
+#include "gl2d.h"
+
+/* the rectangle: a blended strip over the corners (0 / 1: 512 game pixels, from y -32) in the
+ * overlay colour, in the layer being drawn; the camera vectors placed per corner as the
+ * original does */
 void func_002CF700(void *ov) {
-    u64 *p = VCALL(D_0044E4F0, 0x14, u64 *(*)(void *, s32))(D_0044E4F0, 12);
-    u8 *v = (u8 *)(p + 8);
-    f32 rel[4], tmp[4];
+    f32 rel[4], tmp[4], xy[8];
+    u8 c[16];
     s32 i;
 
-    p[0] = DMA_TAG(DMA_CNT, 11, 0);
-    AT(p, 0x8, u32) = 0;
-    AT(p, 0xC, u32) = 0x5000000B;   /* VIF DIRECT 11 */
-    p[2] = 0x800A | (1ULL << 60);   /* GIF tag: 10 A+D, EOP */
-    p[3] = 0xE;
-    p[4] = 0x4C;                    /* PRIM: triangle strip, Gouraud, blended */
-    p[5] = GS_PRIM;
-    p[6] = 0x44;                    /* ALPHA_1: (Cs - Cd) * As + Cd */
-    p[7] = GS_ALPHA_1;
     for (i = 0; i < 4; i++) {
-        s32 x = D_00414310[i][0], y = D_00414310[i][1], kick = D_00414310[i][2];
+        s32 x = D_00414310[i][0], y = D_00414310[i][1];
 
         sceVu0ScaleVector(V(ov, 0xC0), V(ov, 0xA0), 0.0f + (f32)x);
         sceVu0ScaleVector(V(ov, 0xD0), V(ov, 0x80), 0.0f + (f32)y);
         sceVu0AddVector(V(ov, 0xB0), V(ov, 0xC0), V(ov, 0xD0));
         sceVu0SubVector(tmp, V(ov, 0xE0), V(ov, 0xB0));
         sceVu0SubVector(rel, V(ov, 0x70), tmp);
-        AT(v, 0x0, u32) = AT(ov, 0xF8, u32);
-        AT(v, 0x4, u32) = 0x3F800000;   /* Q = 1.0 */
-        AT(v, 0x8, u64) = GS_RGBAQ;
-        AT(v, 0x10, u64) = (u64)(u32)(((x << 9) + 0x700) << 4) | ((u64)(u32)(((y << 9) + 0x700) << 4) << 16)
-                           | 0xFFFFFFFF00000000ULL;
-        AT(v, 0x18, u64) = kick ? GS_XYZ3 : GS_XYZ2;
-        v += 0x20;
+        xy[i * 2] = x << 9;
+        xy[i * 2 + 1] = (y << 9) - 0x20;
     }
+    gl2d_colors(c, AT(ov, 0xF8, u32), 4);
+    glr_prim2d(-1, GLR_2D_STRIP, 4, xy, NULL, c, NULL, 0, 0x40);
 }
+#else
+void func_002CF700(void *ov);
+#endif
 
 /* +0xC draw: place the camera vectors (when +0x24 changed, refresh the stamp first), then the
  * packet. Always draws. */

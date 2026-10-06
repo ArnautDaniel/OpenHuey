@@ -37,7 +37,7 @@ void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, c
 /* PC-only bit: with GLR_PRIM_FIX, a mix instead: (Cs - Cd) * FIX / 128 + Cd (GS ALPHA 0x64) */
 #define GLR_PRIM_LERP 0x4000u
 
-/* 2D primitives in renderer layer `layer`, in the game's 512 x 448 screen pixels at the GS's
+/* 2D primitives in renderer layer `layer` (-1: the one being drawn), in the game's 512 x 448 screen pixels at the GS's
  * pixel centres (as its XYZ2 / 16): `n` vertices `xy` as a triangle strip (GLR_2D_STRIP) or fan
  * (GLR_2D_FAN), texture coordinates `st` (0..1 over the texture; ignored untextured), colours
  * `rgba` (n x RGBA, 0x80 = 1.0); `tex` a .TEX entry (NULL: untextured) with palette `csa`,
