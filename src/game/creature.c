@@ -4387,3 +4387,135 @@ void func_0032C040(Character *c) {
     func_002DDED0(c->motion, 0, -1);
     AT(k, 0x69, u8) = 0;
 }
+
+extern const PTMF D_0042C4B0, D_0042C4C0, D_0042C4D0, D_0042C4E0, D_0042C4F0, D_0042C500, D_0042C510,
+    D_0042C520, D_0042C530, D_0042C540, D_0042C550, D_0042C560, D_0042C570, D_0042C580, D_0042C590,
+    D_0042C5A0, D_0042C5B0, D_0042C5C0, D_0042C5D0;
+extern void *D_004795E0[];
+
+/* the effect it leaves when it goes (0x2920 bytes, D_004795E0, two quad drawers at +0x2410) */
+static inline void Cr19Gone_Init(void **obj) {
+    obj[0] = D_004795E0;
+    obj[0x2410 / 4] = D_00469D00;
+    ((s32 *)obj)[0x2414 / 4] = -1;
+    obj[0x2410 / 4] = D_0046FC30;
+    obj[0x2448 / 4] = D_00469D00;
+    ((s32 *)obj)[0x244C / 4] = -1;
+    obj[0x2448 / 4] = D_0046FC30;
+}
+
+/* on the first frame of a state (+0x60 0): animation `anim` */
+static inline void cr19_first(Character *c, s32 anim) {
+    u8 *k = CR(c);
+
+    if (AT(k, 0x60, u8) == 0) {
+        func_002DDED0(c->motion, anim, -1);
+        AT(k, 0x60, u8)++;
+    }
+}
+
+/* its state for the choice `st` (+0x62): the state function (+0xA0), with the state's first
+   animation. State 4 (leaving): out of contact; on its first frame animation 0x1801, faded
+   from 0xFF on layer 0xF unless already lit there, and its going effect at it */
+void func_0032B210(Character *c, u8 st) {
+    u8 *k = CR(c);
+
+    switch (st) {
+    case 0:
+        cr19_first(c, 0);
+        Actor_SetState(&c->a, &D_0042C4B0);
+        break;
+    case 1:
+        cr19_first(c, 0x1C00);
+        Actor_SetState(&c->a, &D_0042C4C0);
+        break;
+    case 2:
+        Actor_SetState(&c->a, &D_0042C4D0);
+        break;
+    case 3:
+        Actor_SetState(&c->a, &D_0042C4E0);
+        break;
+    case 4:
+        c->a.unk2D = 1;
+        if (AT(k, 0x60, u8) == 0) {
+            u8 *mgr;
+            struct {
+                f32 pos[3];
+                f32 size;
+                u32 tri;
+            } sp;
+            s32 slot;
+
+            func_002DDED0(c->motion, 0x1801, -1);
+            AT(k, 0x60, u8)++;
+            if (c->unkE4 != 1 || c->unk152C != 0xF) {
+                c->unkE4 = 0;
+                c->unk152C = 0xF;
+                AT(k, 0x71, u8) = 0xFF;
+            }
+            mgr = D_0044E578;
+            slot = Effect_New(mgr, 0x2920, Cr19Gone_Init);
+            sp.pos[0] = c->a.pos[0];
+            sp.pos[1] = c->a.pos[1];
+            sp.pos[2] = c->a.pos[2];
+            sp.size = 1.0f;
+            sp.tri = c->a.navTri;
+            func_002D6090(mgr, slot, &sp);
+        }
+        Actor_SetState(&c->a, &D_0042C4F0);
+        break;
+    case 5:
+        cr19_first(c, 0x200);
+        Actor_SetState(&c->a, &D_0042C500);
+        break;
+    case 6:
+        cr19_first(c, 0x200);
+        Actor_SetState(&c->a, &D_0042C510);
+        break;
+    case 7:
+        cr19_first(c, 0x200);
+        Actor_SetState(&c->a, &D_0042C520);
+        break;
+    case 9:
+        cr19_first(c, 0x200);
+        Actor_SetState(&c->a, &D_0042C530);
+        break;
+    case 10:
+        cr19_first(c, 0x200);
+        Actor_SetState(&c->a, &D_0042C540);
+        break;
+    case 11:
+        Actor_SetState(&c->a, &D_0042C550);
+        break;
+    case 12:
+        cr19_first(c, 0x200);
+        Actor_SetState(&c->a, &D_0042C560);
+        break;
+    case 13:
+        cr19_first(c, 0x200);
+        Actor_SetState(&c->a, &D_0042C570);
+        break;
+    case 14:
+        cr19_first(c, 0x200);
+        Actor_SetState(&c->a, &D_0042C580);
+        break;
+    case 15:
+        cr19_first(c, 0);
+        Actor_SetState(&c->a, &D_0042C590);
+        break;
+    case 16:
+        cr19_first(c, 0x200);
+        Actor_SetState(&c->a, &D_0042C5A0);
+        break;
+    case 17:
+        cr19_first(c, 0);
+        Actor_SetState(&c->a, &D_0042C5B0);
+        break;
+    case 18:
+        Actor_SetState(&c->a, &D_0042C5C0);
+        break;
+    default:
+        Actor_SetState(&c->a, &D_0042C5D0);
+        break;
+    }
+}
