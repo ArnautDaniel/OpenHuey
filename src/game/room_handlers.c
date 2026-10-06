@@ -6323,3 +6323,66 @@ s32 func_0036A590(u8 *o) {
     }
     return 1;
 }
+
+/* ---- three 0x1C30-byte effects D_00479B00 (grey 0x303030) at once, each told its spot ---- */
+extern void *D_00479B00[];
+
+typedef struct GreyMsg {
+    f32 a, b, c, d, e;
+    u32 rgb;
+    s16 spot;
+} GreyMsg;
+
+static void effect_79B00_init(void **obj) {
+    obj[0] = D_00479B00;
+}
+
+static inline void grey_send(u8 *mgr, GreyMsg *m, s16 spot, f32 b, f32 c, f32 d) {
+    m->b = b;
+    m->spot = spot;
+    m->c = c;
+    m->d = d;
+    m->e = d;
+    func_002D6090(mgr, Effect_New(mgr, 0x1C30, effect_79B00_init), m);
+}
+
+static inline s32 grey_three(f32 a, const s16 *spot, const f32 *b, const f32 *c, const f32 *d) {
+    u8 *mgr = D_0044E578;
+    GreyMsg m;
+    s32 i;
+
+    m.a = a;
+    m.rgb = 0x303030;
+    for (i = 0; i < 3; i++) {
+        grey_send(mgr, &m, spot[i], b[i], c[i], d[i]);
+    }
+    return 1;
+}
+
+s32 func_00340FE0(void) {
+    static const s16 spot[3] = {0, 1, 6};
+    static const f32 b[3] = {0.0f, 0.0f, 0.0f}, c[3] = {0.0f, 0.0f, 0.0f}, d[3] = {1.0f, 1.0f, 1.0f};
+
+    return grey_three(50.0f, spot, b, c, d);
+}
+
+s32 func_003406A0(void) {
+    static const s16 spot[3] = {7, 4, 3};
+    static const f32 b[3] = {0.0f, 0.0f, 0.0f}, c[3] = {0.5f, 0.0f, 0.0f}, d[3] = {0.5f, 0.5f, 1.0f};
+
+    return grey_three(60.0f, spot, b, c, d);
+}
+
+s32 func_00341720(void) {
+    static const s16 spot[3] = {1, 3, 0xB};
+    static const f32 b[3] = {0.0f, 0.0f, 0.0f}, c[3] = {0.0f, 0.0f, 0.5f}, d[3] = {0.5f, 0.5f, 0.5f};
+
+    return grey_three(70.0f, spot, b, c, d);
+}
+
+s32 func_00343180(void) {
+    static const s16 spot[3] = {2, 7, 5};
+    static const f32 b[3] = {0.0f, 0.0f, 0.5f}, c[3] = {0.0f, 0.0f, 0.0f}, d[3] = {0.5f, 0.5f, 0.5f};
+
+    return grey_three(50.0f, spot, b, c, d);
+}

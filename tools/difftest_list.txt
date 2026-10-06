@@ -6940,3 +6940,7 @@ src/game/effects.c func_0035D840 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0..15 
 src/game/effects.c func_0035E2C0 --pre=a0=0x0B000000..0x0B000000 --pre=a1=0x0B100000..0x0B100000 --pre=@0x0B100000:u8=0..7 --runs=60
 src/game/effects.c func_0035E2C0 --pre=a1=0..0 --runs=10
 src/game/effects.c func_0035EF70 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0xC24=0x43F00000..0x44000000 --runs=200
+src/game/room_handlers.c func_00340FE0 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..0 --stub-ret=0 --stub-ret=0x0B600000 --runs=60
+src/game/room_handlers.c func_003406A0 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..0 --stub-ret=0 --stub-ret=0x0B600000 --runs=60
+src/game/room_handlers.c func_00341720 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..0 --stub-ret=0 --stub-ret=0x0B600000 --runs=60
+src/game/room_handlers.c func_00343180 --pre=@0x44E578=0x0B500000..0x0B500000 --pre=@0x0B510000=0x0046BF20..0x0046BF20 --pre=@0x0B518034=0..1 --pre=@0x0B518038=0..0 --stub-ret=0 --stub-ret=0x0B600000 --runs=60
