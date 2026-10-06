@@ -56,10 +56,32 @@ typedef struct RenderSettings {
     Vec3 light_color;        /* linear */
     Vec3 ambient;            /* linear */
     float rim;               /* rim light on characters' edges */
-    int32_t debug;           /* show a buffer instead: 1 occlusion, 2 bloom, 3 depth (bands of 100 units) */
+    int32_t room_fog;        /* the room's own fog, tint and bloom (part of the original look) */
+    int32_t room_tint;
+    int32_t room_bloom;
+    int32_t debug;           /* show a buffer instead: 1 occlusion, 2 bloom, 3 depth (bands of 100 units),
+                              * 4 the bloom mask */
 } RenderSettings;
 
 extern RenderSettings gRender;
+
+/* the room's own look (PAC section 13, src/game/effects.c RoomEffects_TakeRoom): fog, the
+ * two-colour tint and the bloom, all worked on display values as the PS2 did. Colours: r g b
+ * with 1.0 = 0x80 (fog: 1.0 = 0xFF), a = the strength */
+typedef struct RoomLook {
+    int32_t has_fog;
+    float fog_near_color[4], fog_far_color[4];   /* the ramp's ends; a: how opaque (0x80 = 1) */
+    float fog_near, fog_far;                     /* view distance where it starts / ends */
+    int32_t has_tint;
+    float tint_glow[4];                          /* added: the screen blurred, times this */
+    float tint_contrast[4];                      /* pushed away from: its blurred copy, times this */
+    int32_t tint_sharp;                          /* not blurred first */
+    int32_t has_bloom;
+    float bloom[4];                              /* the masked areas' glow */
+    int32_t bloom_subtract;
+} RoomLook;
+
+extern RoomLook gRoomLook;
 
 int render_init(void);
 void render_shutdown(void);

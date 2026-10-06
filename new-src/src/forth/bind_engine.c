@@ -596,5 +596,8 @@ void bind_engine(Forth *f) {
     field(f, "gfx.ambient-b", offsetof(RenderSettings, ambient.z));
     field(f, "gfx.rim", offsetof(RenderSettings, rim));
     field(f, "gfx.debug", offsetof(RenderSettings, debug));
+    field(f, "gfx.room-fog", offsetof(RenderSettings, room_fog));
+    field(f, "gfx.room-tint", offsetof(RenderSettings, room_tint));
+    field(f, "gfx.room-bloom", offsetof(RenderSettings, room_bloom));
     f->m.current = saved;
 }

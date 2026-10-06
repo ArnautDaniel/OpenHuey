@@ -37,6 +37,65 @@ static void load_textures(Room *r) {
     r->ntextures = n < ROOM_MAX_TEXTURES ? n : ROOM_MAX_TEXTURES;
 }
 
+/* a PS2 colour word (little-endian R, G, B, A) */
+static void colour(uint32_t c, float scale, float alpha_scale, float *out) {
+    out[0] = (float)(c & 0xFF) / scale;
+    out[1] = (float)((c >> 8) & 0xFF) / scale;
+    out[2] = (float)((c >> 16) & 0xFF) / scale;
+    out[3] = (float)(c >> 24) / alpha_scale;
+}
+
+static uint32_t word(const uint8_t *p) {
+    uint32_t x;
+
+    memcpy(&x, p, 4);
+    return x;
+}
+
+/* the room's look: PAC section 13 - offsets (from the section) at +0x8 the tint (two colours,
+ * a mode byte: not 0 = not blurred), +0xC the screen blend (a colour, a mode byte: 1 / 4
+ * subtract, 2 / 3 / 4 fixed colours), +0x10 the fog (near and far colours, near and far
+ * distances) (src/game/effects.c Tint_SetParams, ScreenBlend_SetParams, Fog_SetParams) */
+static void load_look(Room *r) {
+    size_t size;
+    const uint8_t *sec = pac_section(&r->pac, PAC_EFFECTS, &size);
+    RoomLook *l = &gRoomLook;
+
+    memset(l, 0, sizeof(*l));
+    if (sec == NULL || size < 0x18) {
+        return;
+    }
+    if (word(sec + 0x8) != 0 && word(sec + 0x8) + 9 <= size) {
+        const uint8_t *d = sec + word(sec + 0x8);
+
+        l->has_tint = 1;
+        colour(word(d), 128.0f, 256.0f, l->tint_glow);   /* (strength: alpha / 2, of 0x80) */
+        colour(word(d + 4), 128.0f, 256.0f, l->tint_contrast);
+        l->tint_sharp = d[8] != 0;
+    }
+    if (word(sec + 0xC) != 0 && word(sec + 0xC) + 5 <= size) {
+        const uint8_t *d = sec + word(sec + 0xC);
+        uint32_t c = word(d);
+        int mode = d[4];
+
+        c = mode == 2 ? 0x80004080u : (mode == 3 || mode == 4) ? 0x40404040u : c;
+        l->has_bloom = 1;
+        colour(c, 128.0f, 256.0f, l->bloom);
+        l->bloom_subtract = mode == 1 || mode == 4;
+    }
+    if (word(sec + 0x10) != 0 && word(sec + 0x10) + 16 <= size) {
+        const uint8_t *d = sec + word(sec + 0x10);
+        float range[2];
+
+        l->has_fog = 1;
+        colour(word(d), 255.0f, 128.0f, l->fog_near_color);
+        colour(word(d + 4), 255.0f, 128.0f, l->fog_far_color);
+        memcpy(range, d + 8, 8);
+        l->fog_near = range[0];
+        l->fog_far = range[1];
+    }
+}
+
 int room_load(Room *r, int id) {
     char path[64];
     size_t size;
@@ -60,6 +119,7 @@ int room_load(Room *r, int id) {
     load_textures(r);
     sec = pac_section(&r->pac, PAC_NAV, &size);
     navmesh_build(&r->nav, sec, size);
+    load_look(r);
     return 1;
 }
 

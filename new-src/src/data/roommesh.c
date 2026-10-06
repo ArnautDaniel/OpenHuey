@@ -67,7 +67,7 @@ static const uint8_t *batch(Builder *b, int part, const uint8_t *p, const uint8_
     if (next > end) {
         return NULL;
     }
-    if (part == MESH_ANIMATED || part == MESH_BLOOM_MASK) {   /* not drawn (yet) */
+    if (part == MESH_ANIMATED) {   /* (drawn by room.c's animated batches) */
         return next;
     }
     {
@@ -80,6 +80,7 @@ static const uint8_t *batch(Builder *b, int part, const uint8_t *p, const uint8_
         d->additive = part == MESH_GLOW && (extra >> 8 & 1);
         d->no_zwrite = part == MESH_GLOW;
         d->group = (uint8_t)(flags >> 24);
+        d->mask = part == MESH_BLOOM_MASK;
         for (i = 2; i < n; i++) {
             int k;
 

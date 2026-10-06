@@ -19,13 +19,16 @@ RenderSettings gRender = {
     .shadows = 1,
     .light_dir = {0.35f, 0.85f, 0.4f}, .light_color = {0.55f, 0.52f, 0.48f}, .ambient = {0.16f, 0.17f, 0.2f},
     .rim = 0.35f,
+    .room_fog = 1, .room_tint = 1, .room_bloom = 1,
 };
+
+RoomLook gRoomLook;
 
 /* ---- the scene's shader ----
  * Fixed locations: u_mvp 0, u_use_tex 1, u_solid_tex 2, u_lit 3, u_coverage 4, u_light_dir 5,
  * u_light_color 6, u_ambient 7, u_eye 8, u_rim 9; the texture on unit 0. */
 
-enum { U_MVP, U_USE_TEX, U_SOLID_TEX, U_LIT, U_COVERAGE, U_LIGHT_DIR, U_LIGHT_COLOR, U_AMBIENT, U_EYE, U_RIM };
+enum { U_MVP, U_USE_TEX, U_SOLID_TEX, U_LIT, U_COVERAGE, U_LIGHT_DIR, U_LIGHT_COLOR, U_AMBIENT, U_EYE, U_RIM, U_MASK };
 
 static const char *kMeshVs =
     "#version 460 core\n"
@@ -64,7 +67,9 @@ static const char *kMeshFs =
     "layout(location = 7) uniform vec3 u_ambient;\n"
     "layout(location = 8) uniform vec3 u_eye;\n"
     "layout(location = 9) uniform float u_rim;\n"
-    "out vec4 o_color;\n"
+    "layout(location = 10) uniform float u_mask;\n"   /* the bloom mask: 1 for its own draws */
+    "layout(location = 0) out vec4 o_color;\n"
+    "layout(location = 1) out float o_mask;\n"
     "void main() {\n"
     "    vec4 c = vec4(pow(max(v_col.rgb, 0.0), vec3(2.2)), v_col.a);\n"
     "    if (u_use_tex != 0) {\n"
@@ -88,6 +93,7 @@ static const char *kMeshFs =
     "        }\n"
     "    }\n"
     "    o_color = c;\n"
+    "    o_mask = u_mask;\n"
     "}\n";
 
 /* ---- state ---- */
@@ -384,6 +390,7 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
     }
     glProgramUniformMatrix4fv(R.mesh_prog, U_MVP, 1, GL_FALSE, mvp->m);
     glUseProgram(R.mesh_prog);
+    glDisable(GL_BLEND);   /* (for both targets: only the colour one ever blends) */
     glBindSampler(0, R.sampler);
     glBindVertexArray(g->vao);
     for (i = 0; i < nd; i++) {
@@ -394,8 +401,11 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
         if (x->group != 0 && !(groups[x->group >> 5] >> (x->group & 31) & 1)) {
             continue;
         }
-        if (x->blend || x->additive) {
-            glEnable(GL_BLEND);
+        if (x->mask) {   /* the bloom mask: marks where it shows, draws no colour */
+            glDisable(GL_BLEND);
+            glColorMaski(0, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        } else if (x->blend || x->additive) {
+            glEnablei(GL_BLEND, 0);
             glBlendFunc(GL_SRC_ALPHA, x->additive ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
         } else {
             glDisable(GL_BLEND);
@@ -405,13 +415,17 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
         } else {
             glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
         }
-        glDepthMask(x->no_zwrite ? GL_FALSE : GL_TRUE);
+        glDepthMask(x->no_zwrite || x->mask ? GL_FALSE : GL_TRUE);
+        glProgramUniform1f(R.mesh_prog, U_MASK, x->mask ? 1.0f : 0.0f);
         glProgramUniform1i(R.mesh_prog, U_USE_TEX, tex != 0);
         glProgramUniform1i(R.mesh_prog, U_SOLID_TEX, x->solid_tex);
         glProgramUniform1i(R.mesh_prog, U_LIT, x->lit);
         glProgramUniform1i(R.mesh_prog, U_COVERAGE, coverage);
         glBindTextureUnit(0, tex);
         glDrawArrays(GL_TRIANGLES, x->first, x->count);
+        if (x->mask) {
+            glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        }
     }
     glBindVertexArray(0);
     glDepthMask(GL_TRUE);

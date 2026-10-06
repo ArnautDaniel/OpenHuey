@@ -125,4 +125,4 @@ or go through a `defer`).
 
 ## Tests
 
-`tests/test_*.fs` run under `tests/tester.fs` (`T{ 1 2 + -> 3 }T`), from `ctest`.
+`tests/test_*.fs` are vocabularies that say `USING: tester ;` (`T{ 1 2 + -> 3 }T`); `ctest` runs each.

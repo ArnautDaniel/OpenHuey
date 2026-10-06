@@ -65,7 +65,12 @@
     X(PFNGLCLEARNAMEDFRAMEBUFFERFVPROC, glClearNamedFramebufferfv)             \
     X(PFNGLREADNPIXELSPROC, glReadnPixels)                                     \
     X(PFNGLDEBUGMESSAGECALLBACKPROC, glDebugMessageCallback)                   \
-    X(PFNGLBLENDFUNCIPROC, glBlendFunci)
+    X(PFNGLBLENDFUNCIPROC, glBlendFunci) \
+    X(PFNGLNAMEDFRAMEBUFFERDRAWBUFFERSPROC, glNamedFramebufferDrawBuffers) \
+    X(PFNGLNAMEDFRAMEBUFFERREADBUFFERPROC, glNamedFramebufferReadBuffer) \
+    X(PFNGLCOLORMASKIPROC, glColorMaski) \
+    X(PFNGLENABLEIPROC, glEnablei) \
+    X(PFNGLDISABLEIPROC, glDisablei)
 
 #define GL_DECLARE(type, name) extern type p_##name;
 GL_FUNCTIONS(GL_DECLARE)
@@ -128,6 +133,11 @@ GL_FUNCTIONS(GL_DECLARE)
 #define glReadnPixels p_glReadnPixels
 #define glDebugMessageCallback p_glDebugMessageCallback
 #define glBlendFunci p_glBlendFunci
+#define glNamedFramebufferDrawBuffers p_glNamedFramebufferDrawBuffers
+#define glNamedFramebufferReadBuffer p_glNamedFramebufferReadBuffer
+#define glColorMaski p_glColorMaski
+#define glEnablei p_glEnablei
+#define glDisablei p_glDisablei
 
 /* load the pointers (a GL context must be current); 0 if one is missing */
 int gl_load(void);

@@ -3,6 +3,9 @@
  *
  *   ambient occlusion  (half resolution) from the depth alone: a hemisphere of samples around each
  *                      point, blurred - corners and contacts darken
+ *   the room's look    (the game's own, per room: render.h RoomLook) - a blurred half-size copy
+ *                      of the screen for the tint's glow and contrast, and the areas the room's
+ *                      bloom mask marks (the second colour target) blurred for its bloom
  *   bloom              bright parts downsampled into a chain of smaller targets and added back up
  *                      (each step a small blur): glows spread wider the brighter they are
  *   composite          occlusion, fog by distance, bloom, exposure, tone mapping, saturation and
@@ -20,8 +23,11 @@
 
 typedef struct Targets {
     int w, h, msaa;
-    GLuint ms_fbo, ms_color, ms_depth;   /* renderbuffers, when msaa > 1 */
-    GLuint fbo, color, depth;            /* the resolved scene: textures */
+    GLuint ms_fbo, ms_color, ms_mask, ms_depth;   /* renderbuffers, when msaa > 1 */
+    GLuint fbo, color, mask, depth;      /* the resolved scene: textures (mask: the bloom mask) */
+    int half_w, half_h;
+    GLuint soft_fbo[2], soft[2];         /* the screen at half size, then blurred */
+    GLuint glow_fbo[2], glow[2];         /* the bloom mask's areas at half size, then blurred */
     int ao_w, ao_h;
     GLuint ao_fbo[2], ao[2];             /* raw, blurred */
     int bloom_w[BLOOM_LEVELS], bloom_h[BLOOM_LEVELS];
@@ -107,11 +113,14 @@ static const char *kDownFs =
     "layout(binding = 0) uniform sampler2D u_src;\n"
     "layout(location = 0) uniform int u_prefilter;\n"
     "layout(location = 1) uniform float u_threshold;\n"
+    "layout(location = 2) uniform int u_masked;\n"   /* only where the bloom mask is set */
+    "layout(binding = 1) uniform sampler2D u_mask;\n"
     "out vec4 o_color;\n"
+    "vec3 at(vec2 uv) { vec3 c = texture(u_src, uv).rgb; return u_masked != 0 ? c * texture(u_mask, uv).r : c; }\n"
     "void main() {\n"
     "    vec2 t = 1.0 / vec2(textureSize(u_src, 0));\n"
-    "    vec3 c = 0.25 * (texture(u_src, v_uv + t * vec2(-1, -1)).rgb + texture(u_src, v_uv + t * vec2(1, -1)).rgb +\n"
-    "                     texture(u_src, v_uv + t * vec2(-1, 1)).rgb + texture(u_src, v_uv + t * vec2(1, 1)).rgb);\n"
+    "    vec3 c = 0.25 * (at(v_uv + t * vec2(-1, -1)) + at(v_uv + t * vec2(1, -1)) +\n"
+    "                     at(v_uv + t * vec2(-1, 1)) + at(v_uv + t * vec2(1, 1)));\n"
     "    if (u_prefilter != 0) {\n"   /* only what is brighter than the threshold, with a soft knee */
     "        c = min(c, vec3(64.0));\n"
     "        float br = max(c.r, max(c.g, c.b)), knee = u_threshold * 0.5;\n"
@@ -144,6 +153,9 @@ static const char *kCompositeFs =
     "layout(binding = 1) uniform sampler2D u_depth;\n"
     "layout(binding = 2) uniform sampler2D u_ao;\n"
     "layout(binding = 3) uniform sampler2D u_bloom;\n"
+    "layout(binding = 4) uniform sampler2D u_soft;\n"
+    "layout(binding = 5) uniform sampler2D u_glow;\n"
+    "layout(binding = 6) uniform sampler2D u_mask;\n"
     "layout(location = 0) uniform vec4 u_proj;\n"
     "layout(location = 1) uniform float u_ao_strength;\n"
     "layout(location = 2) uniform vec3 u_fog_color;\n"   /* linear */
@@ -157,7 +169,13 @@ static const char *kCompositeFs =
     "layout(location = 10) uniform float u_vignette;\n"
     "layout(location = 11) uniform float u_grain;\n"
     "layout(location = 12) uniform float u_time;\n"
-    "layout(location = 13) uniform int u_debug;\n"   /* 1 occlusion, 2 bloom, 3 depth */
+    "layout(location = 13) uniform int u_debug;\n"   /* 1 occlusion, 2 bloom, 3 depth, 4 mask */
+    "layout(location = 14) uniform vec4 u_fog_near_color;\n"   /* the room's fog (a: 0 off) */
+    "layout(location = 15) uniform vec4 u_fog_far_color;\n"
+    "layout(location = 16) uniform vec2 u_fog_range;\n"
+    "layout(location = 17) uniform vec4 u_tint_glow;\n"   /* the room's tint (a: its strength) */
+    "layout(location = 18) uniform vec4 u_tint_contrast;\n"
+    "layout(location = 19) uniform vec4 u_room_bloom;\n"   /* the room's bloom (a: signed strength) */
     "out vec4 o_color;\n"
     "vec3 soft_shoulder(vec3 x) {\n"   /* the identity up to 0.8, then easing into 1 */
     "    vec3 over = max(x - 0.8, 0.0);\n"
@@ -169,14 +187,28 @@ static const char *kCompositeFs =
     "void main() {\n"
     "    if (u_debug == 1) { o_color = vec4(vec3(texture(u_ao, v_uv).r), 1.0); return; }\n"
     "    if (u_debug == 2) { o_color = vec4(pow(texture(u_bloom, v_uv).rgb, vec3(1.0 / 2.2)), 1.0); return; }\n"
+    "    if (u_debug == 4) { o_color = vec4(vec3(texture(u_mask, v_uv).r), 1.0); return; }\n"
     "    if (u_debug == 3) { float z = u_proj.w / (texture(u_depth, v_uv).r * 2.0 - 1.0 + u_proj.z);\n"
     "                        o_color = vec4(vec3(fract(z / 100.0)), 1.0); return; }\n"
     "    vec3 c = texture(u_scene, v_uv).rgb;\n"
     "    float ao = texture(u_ao, v_uv).r;\n"
     "    c *= mix(1.0, ao * ao, u_ao_strength);\n"
     "    float d = texture(u_depth, v_uv).r;\n"
+    "    float z = u_proj.w / (d * 2.0 - 1.0 + u_proj.z);\n"   /* the distance along the view */
+    /* the room's own look, on display values as the PS2 had them: tint, fog, bloom */
+    "    vec3 s = pow(max(c, 0.0), vec3(1.0 / 2.2));\n"
+    "    vec3 soft = 3.0 * pow(max(texture(u_soft, v_uv).rgb, 0.0), vec3(1.0 / 2.2));\n"
+    "    s += soft * u_tint_glow.rgb * u_tint_glow.a;\n"
+    /* (the second colour sees the screen after the first: its blurred copy has the glow too) */
+    "    s += (s - soft * (1.0 + 3.0 * u_tint_glow.rgb * u_tint_glow.a) * u_tint_contrast.rgb) * u_tint_contrast.a;\n"
+    "    if (u_fog_near_color.a + u_fog_far_color.a > 0.0 && d < 1.0 && z > u_fog_range.x) {\n"
+    "        vec4 fc = mix(u_fog_near_color, u_fog_far_color, clamp((z - u_fog_range.x) / max(u_fog_range.y - u_fog_range.x, 1e-3), 0.0, 1.0));\n"
+    "        s = mix(s, fc.rgb, clamp(fc.a, 0.0, 1.0));\n"
+    "    }\n"
+    "    s += 5.0 * pow(max(texture(u_glow, v_uv).rgb, 0.0), vec3(1.0 / 2.2)) * u_room_bloom.rgb * u_room_bloom.a;\n"
+    "    c = pow(max(s, 0.0), vec3(2.2));\n"
+    /* the modern additions: haze, bloom, grading */
     "    if (u_fog_density > 0.0 && d < 1.0) {\n"
-    "        float z = u_proj.w / (d * 2.0 - 1.0 + u_proj.z);\n"   /* the distance along the view */
     "        float f = 1.0 - exp(-u_fog_density * max(z - u_fog_start, 0.0));\n"
     "        c = mix(c, u_fog_color, f);\n"
     "    }\n"
@@ -185,7 +217,7 @@ static const char *kCompositeFs =
     "    c = u_tonemap == 2 ? aces(c) : u_tonemap == 1 ? soft_shoulder(c) : clamp(c, 0.0, 1.0);\n"
     "    float l = dot(c, vec3(0.2126, 0.7152, 0.0722));\n"
     "    c = max(mix(vec3(l), c, u_saturation), 0.0);\n"
-    "    vec3 s = pow(c, vec3(1.0 / 2.2));\n"   /* to display values */
+    "    s = pow(c, vec3(1.0 / 2.2));\n"   /* to display values */
     "    s = clamp((s - 0.5) * u_contrast + 0.5, 0.0, 1.0);\n"
     "    s *= 1.0 - u_vignette * smoothstep(0.35, 0.95, length((v_uv - 0.5) * vec2(1.4, 1.0)));\n"
     "    float n = fract(sin(dot(gl_FragCoord.xy + fract(u_time) * 97.0, vec2(12.9898, 78.233))) * 43758.5453);\n"
@@ -207,11 +239,16 @@ static GLuint texture2d(GLenum format, int w, int h) {
     return t;
 }
 
-static GLuint framebuffer(GLuint color, GLuint depth) {
+static GLuint framebuffer2(GLuint color, GLuint color2, GLuint depth) {
+    static const GLenum kBoth[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
     GLuint f;
 
     glCreateFramebuffers(1, &f);
     glNamedFramebufferTexture(f, GL_COLOR_ATTACHMENT0, color, 0);
+    if (color2 != 0) {
+        glNamedFramebufferTexture(f, GL_COLOR_ATTACHMENT1, color2, 0);
+        glNamedFramebufferDrawBuffers(f, 2, kBoth);
+    }
     if (depth != 0) {
         glNamedFramebufferTexture(f, GL_DEPTH_ATTACHMENT, depth, 0);
     }
@@ -221,6 +258,10 @@ static GLuint framebuffer(GLuint color, GLuint depth) {
     return f;
 }
 
+static GLuint framebuffer(GLuint color, GLuint depth) {
+    return framebuffer2(color, 0, depth);
+}
+
 static void free_targets(void) {
     if (T.fbo == 0) {
         return;
@@ -228,10 +269,16 @@ static void free_targets(void) {
     if (T.ms_fbo != 0) {
         glDeleteFramebuffers(1, &T.ms_fbo);
         glDeleteRenderbuffers(1, &T.ms_color);
+        glDeleteRenderbuffers(1, &T.ms_mask);
         glDeleteRenderbuffers(1, &T.ms_depth);
     }
     glDeleteFramebuffers(1, &T.fbo);
     glDeleteTextures(1, &T.color);
+    glDeleteTextures(1, &T.mask);
+    glDeleteFramebuffers(2, T.soft_fbo);
+    glDeleteTextures(2, T.soft);
+    glDeleteFramebuffers(2, T.glow_fbo);
+    glDeleteTextures(2, T.glow);
     glDeleteTextures(1, &T.depth);
     glDeleteFramebuffers(2, T.ao_fbo);
     glDeleteTextures(2, T.ao);
@@ -248,18 +295,25 @@ static void make_targets(int w, int h, int msaa) {
     T.h = h;
     T.msaa = msaa;
     T.color = texture2d(GL_RGBA16F, w, h);
+    T.mask = texture2d(GL_R8, w, h);
     T.depth = texture2d(GL_DEPTH_COMPONENT32F, w, h);
     glTextureParameteri(T.depth, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTextureParameteri(T.depth, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    T.fbo = framebuffer(T.color, T.depth);
+    T.fbo = framebuffer2(T.color, T.mask, T.depth);
     if (msaa > 1) {
+        static const GLenum kBoth[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+
         glCreateRenderbuffers(1, &T.ms_color);
         glNamedRenderbufferStorageMultisample(T.ms_color, msaa, GL_RGBA16F, w, h);
+        glCreateRenderbuffers(1, &T.ms_mask);
+        glNamedRenderbufferStorageMultisample(T.ms_mask, msaa, GL_R8, w, h);
         glCreateRenderbuffers(1, &T.ms_depth);
         glNamedRenderbufferStorageMultisample(T.ms_depth, msaa, GL_DEPTH_COMPONENT32F, w, h);
         glCreateFramebuffers(1, &T.ms_fbo);
         glNamedFramebufferRenderbuffer(T.ms_fbo, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, T.ms_color);
+        glNamedFramebufferRenderbuffer(T.ms_fbo, GL_COLOR_ATTACHMENT1, GL_RENDERBUFFER, T.ms_mask);
         glNamedFramebufferRenderbuffer(T.ms_fbo, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, T.ms_depth);
+        glNamedFramebufferDrawBuffers(T.ms_fbo, 2, kBoth);
         if (glCheckNamedFramebufferStatus(T.ms_fbo, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             fprintf(stderr, "post: the multisampled framebuffer is incomplete\n");
         }
@@ -269,6 +323,14 @@ static void make_targets(int w, int h, int msaa) {
     for (i = 0; i < 2; i++) {
         T.ao[i] = texture2d(GL_R8, T.ao_w, T.ao_h);
         T.ao_fbo[i] = framebuffer(T.ao[i], 0);
+    }
+    T.half_w = T.ao_w;
+    T.half_h = T.ao_h;
+    for (i = 0; i < 2; i++) {
+        T.soft[i] = texture2d(GL_RGBA16F, T.half_w, T.half_h);
+        T.soft_fbo[i] = framebuffer(T.soft[i], 0);
+        T.glow[i] = texture2d(GL_RGBA16F, T.half_w, T.half_h);
+        T.glow_fbo[i] = framebuffer(T.glow[i], 0);
     }
     for (i = 0; i < BLOOM_LEVELS; i++) {
         T.bloom_w[i] = (w >> (i + 1)) > 1 ? w >> (i + 1) : 1;
@@ -295,6 +357,7 @@ void post_init(void) {
 }
 
 void post_begin(int w, int h, int msaa, Vec3 clear) {
+    static const float kNoMask[4] = {0, 0, 0, 0};
     const float colour[4] = {clear.x, clear.y, clear.z, 1.0f}, depth = 1.0f;
     GLuint target;
 
@@ -306,6 +369,7 @@ void post_begin(int w, int h, int msaa, Vec3 clear) {
     glViewport(0, 0, w, h);
     glDepthMask(GL_TRUE);
     glClearNamedFramebufferfv(target, GL_COLOR, 0, colour);
+    glClearNamedFramebufferfv(target, GL_COLOR, 1, kNoMask);
     glClearNamedFramebufferfv(target, GL_DEPTH, 0, &depth);
     if (T.ms_fbo != 0) {
         glEnable(GL_MULTISAMPLE);
@@ -328,9 +392,20 @@ void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, i
     const float *P = cam->proj.m;
     int i;
 
-    if (T.ms_fbo != 0) {   /* the samples averaged into the textures */
+    if (T.ms_fbo != 0) {   /* the samples averaged into the textures: colour, mask, depth */
+        glNamedFramebufferReadBuffer(T.ms_fbo, GL_COLOR_ATTACHMENT0);
+        glNamedFramebufferDrawBuffer(T.fbo, GL_COLOR_ATTACHMENT0);
+        glBlitNamedFramebuffer(T.ms_fbo, T.fbo, 0, 0, T.w, T.h, 0, 0, T.w, T.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glNamedFramebufferReadBuffer(T.ms_fbo, GL_COLOR_ATTACHMENT1);
+        glNamedFramebufferDrawBuffer(T.fbo, GL_COLOR_ATTACHMENT1);
         glBlitNamedFramebuffer(T.ms_fbo, T.fbo, 0, 0, T.w, T.h, 0, 0, T.w, T.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
         glBlitNamedFramebuffer(T.ms_fbo, T.fbo, 0, 0, T.w, T.h, 0, 0, T.w, T.h, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        glNamedFramebufferReadBuffer(T.ms_fbo, GL_COLOR_ATTACHMENT0);
+        {
+            static const GLenum kBoth[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+
+            glNamedFramebufferDrawBuffers(T.fbo, 2, kBoth);
+        }
     }
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
@@ -346,6 +421,23 @@ void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, i
         bind(0, T.ao[0], sLinear);
         fullscreen(T.ao_fbo[1], T.ao_w, T.ao_h, sBlurProg);
     }
+
+    /* the room's look: the screen at half size blurred (the tint), the masked areas (the bloom) */
+    glProgramUniform1i(sDownProg, 0, 0);
+    glProgramUniform1i(sDownProg, 2, 0);
+    bind(0, T.color, sLinear);
+    fullscreen(T.soft_fbo[0], T.half_w, T.half_h, sDownProg);
+    bind(0, T.soft[0], sLinear);
+    fullscreen(T.soft_fbo[1], T.half_w, T.half_h, sUpProg);
+    glProgramUniform1i(sDownProg, 2, 1);
+    bind(0, T.color, sLinear);
+    bind(1, T.mask, sLinear);
+    fullscreen(T.glow_fbo[0], T.half_w, T.half_h, sDownProg);
+    bind(0, T.glow[0], sLinear);
+    fullscreen(T.glow_fbo[1], T.half_w, T.half_h, sUpProg);
+    bind(0, T.glow[1], sLinear);
+    fullscreen(T.glow_fbo[0], T.half_w, T.half_h, sUpProg);
+    glProgramUniform1i(sDownProg, 2, 0);
 
     if (s->bloom) {
         glProgramUniform1f(sDownProg, 1, s->bloom_threshold);
@@ -384,9 +476,27 @@ void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, i
     bind(1, T.depth, 0);
     bind(2, T.ao[1], sLinear);
     bind(3, T.bloom[0], sLinear);
+    bind(4, T.soft[1], sLinear);
+    bind(5, T.glow[0], sLinear);
+    bind(6, T.mask, sLinear);
+    {
+        const RoomLook *l = &gRoomLook;
+        int fog = s->room_fog && l->has_fog, tint = s->room_tint && l->has_tint, bloom = s->room_bloom && l->has_bloom;
+
+        glProgramUniform4f(sCompositeProg, 14, l->fog_near_color[0], l->fog_near_color[1], l->fog_near_color[2],
+                           fog ? l->fog_near_color[3] : 0.0f);
+        glProgramUniform4f(sCompositeProg, 15, l->fog_far_color[0], l->fog_far_color[1], l->fog_far_color[2],
+                           fog ? l->fog_far_color[3] : 0.0f);
+        glProgramUniform2f(sCompositeProg, 16, l->fog_near, l->fog_far);
+        glProgramUniform4f(sCompositeProg, 17, l->tint_glow[0], l->tint_glow[1], l->tint_glow[2], tint ? l->tint_glow[3] : 0.0f);
+        glProgramUniform4f(sCompositeProg, 18, l->tint_contrast[0], l->tint_contrast[1], l->tint_contrast[2],
+                           tint ? l->tint_contrast[3] : 0.0f);
+        glProgramUniform4f(sCompositeProg, 19, l->bloom[0], l->bloom[1], l->bloom[2],
+                           bloom ? (l->bloom_subtract ? -l->bloom[3] : l->bloom[3]) : 0.0f);
+    }
     glUseProgram(sCompositeProg);
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < 7; i++) {
         bind((GLuint)i, 0, 0);
     }
     glBindVertexArray(0);

@@ -39,6 +39,7 @@ typedef struct MeshDraw {
     uint8_t group;         /* visibility group: 0 always shown, others switched by the room */
     uint8_t solid_tex;     /* the texture's alpha is not transparency (characters' normal parts) */
     uint8_t lit;           /* lit by the scene's light (characters), not by its vertex colours alone */
+    uint8_t mask;          /* marks the bloom mask (part 2) instead of drawing colour */
 } MeshDraw;
 
 typedef struct RoomMesh {
