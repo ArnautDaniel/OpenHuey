@@ -457,7 +457,7 @@ void *func_002B60D0(void *o, s32 flags) {
             AT(o, 0x0, void **) = D_0046D730;
         }
         if ((s16)flags > 0) {
-            func_002672E0(o);
+            RoomEffects_delete(o);
         }
     }
     return o;
@@ -571,7 +571,7 @@ void *func_002D76B0(void *o, s32 flags) {
             AT(o, 0x0, void **) = D_0046D730;
         }
         if ((s16)flags > 0) {
-            func_002672E0(o);
+            RoomEffects_delete(o);
         }
     }
     return o;

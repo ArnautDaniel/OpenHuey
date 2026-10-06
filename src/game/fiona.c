@@ -2021,7 +2021,7 @@ static inline void Fiona_FullPanic(Fiona *f, Progress *p) {
     FI(f, 0x1AD584, s32) |= 2;
     FI(f, 0x1AD5E8, s32) = (s32)(3.0f * RNG01()) * 30 + 120;
     FI(f, 0x1AD5EC, s32) = 30;
-    func_002A8440((u8 *)p + 0x778, 0x6F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+    Noise_Make((u8 *)p + 0x778, 0x6F, f->c.a.room, f->c.a.navTri, 0xFFFF);
 }
 
 /* Panic system: threat level -> panic state and duration, the fear meter, timers, and the
@@ -3264,7 +3264,7 @@ void *StrikeMark_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00479600;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -3903,7 +3903,7 @@ void Fiona_MotionSounds(Fiona *f) {
             if (v != 7 && v != 6) {
                 Actor_PlaySound(&f->c.a, 0x3C, 5, 0, 0, NULL);
             }
-            func_002A8440((u8 *)p + 0x778, 0x1F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+            Noise_Make((u8 *)p + 0x778, 0x1F, f->c.a.room, f->c.a.navTri, 0xFFFF);
             break;
         }
         }
@@ -4073,7 +4073,7 @@ void Fiona_Footsteps(Fiona *f) {
     }
     if (sound != -1) {
         Actor_PlaySound(&f->c.a, sound, 4, 0, 0, NULL);
-        func_002A8440((u8 *)p + 0x778, 4, f->c.a.room, f->c.a.navTri, 0xFFFF);
+        Noise_Make((u8 *)p + 0x778, 4, f->c.a.room, f->c.a.navTri, 0xFFFF);
         return;
     }
 
@@ -4121,7 +4121,7 @@ void Fiona_Footsteps(Fiona *f) {
         Actor_PlaySound(&f->c.a, base, bank, 0, (s8)vol, NULL);
         noise = f->c.moveMode == 0 && f->c.moveSub == 2 ? 0x14 : 4;
     }
-    func_002A8440((u8 *)p + 0x778, noise, f->c.a.room, f->c.a.navTri, 0xFFFF);
+    Noise_Make((u8 *)p + 0x778, noise, f->c.a.room, f->c.a.navTri, 0xFFFF);
 }
 
 /* a point `side` across and `reach` ahead of Fiona (in her frame, +0x60, from +0x40) */
@@ -5065,7 +5065,7 @@ void Fiona_StateFall13(Fiona *f) {
                 Motion_PlayTable(f->c.motion, 0x1006, -1);
             }
         }
-        func_002A8440((u8 *)p + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+        Noise_Make((u8 *)p + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
         Actor_SetState(&f->c.a, &D_003B2D48);
     }
     Character_RootMoveMasked(&f->c);
@@ -5369,10 +5369,10 @@ void Fiona_StateThrown(Fiona *f) {
 
             AT(p, 0x7D8, f32) = 1000.0f;
             Actor_PlaySound(&f->c.a, 0x42, 5, 0, 0, NULL);
-            func_002A8440((u8 *)p + 0x778, 0x6F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+            Noise_Make((u8 *)p + 0x778, 0x6F, f->c.a.room, f->c.a.navTri, 0xFFFF);
         } else {
             Actor_PlaySound(&f->c.a, 0x40, 5, 0, 0, NULL);
-            func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+            Noise_Make((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
         }
         FI(f, 0x1AD6C0, s32) = -1;
         Actor_SetState(&f->c.a, &D_003B2AB8);
@@ -5431,10 +5431,10 @@ void Fiona_StateHitByDoor(Fiona *f) {
 
         AT(q, 0x7D8, f32) = 1000.0f;
         Actor_PlaySound(&f->c.a, 0x42, 5, 0, 0, NULL);
-        func_002A8440((u8 *)q + 0x778, 0x6F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+        Noise_Make((u8 *)q + 0x778, 0x6F, f->c.a.room, f->c.a.navTri, 0xFFFF);
     } else {
         Actor_PlaySound(&f->c.a, 0x40, 5, 0, 0, NULL);
-        func_002A8440((u8 *)p + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+        Noise_Make((u8 *)p + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
     }
     Actor_SetState(&f->c.a, &D_003B2B08);
 }
@@ -5488,22 +5488,22 @@ void Fiona_StateKnockedDown(Fiona *f) {
         case 0xC:
             Actor_PlaySound(&f->c.a, 0x3E, 5, 0, 0, NULL);
             Motion_PlayTable(f->c.motion, 0x100E, -1);
-            func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+            Noise_Make((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
             break;
         case 0xE:
             Actor_PlaySound(&f->c.a, 0x3E, 5, 0, 0, NULL);
             fall_by_side(f, aa, a, 0x1000);
-            func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+            Noise_Make((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
             break;
         case 0xD:
             Actor_PlaySound(&f->c.a, 0x3F, 5, 0, 0, NULL);
             Motion_PlayTable(f->c.motion, 0x100F, -1);
-            func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+            Noise_Make((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
             break;
         case 0xF:
             Actor_PlaySound(&f->c.a, 0x3F, 5, 0, 0, NULL);
             fall_by_side(f, aa, a, 0x1004);
-            func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+            Noise_Make((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
             break;
         }
         Actor_SetState(&f->c.a, &D_003B2B18);
@@ -7200,7 +7200,7 @@ void Fiona_ShoveEffect(Fiona *f, s32 kind, Character *c) {
         HitEffect_Spawn(&hp);
     } else if (kind == 0) {
         mgr = gEffects;
-        func_002D6090(mgr, Effect_New(mgr, 0xFD0, ShoveBurst_Init), c->a.pos);
+        EffectMgr_Start(mgr, Effect_New(mgr, 0xFD0, ShoveBurst_Init), c->a.pos);
     }
 }
 
@@ -7840,7 +7840,7 @@ void Fiona_OrderLine(Fiona *f) {
             break;
         }
         if (FI(f, 0x1AD5D5, u8) == 0) {
-            func_002A8440((u8 *)p + 0x778, 0x20, f->c.a.room, f->c.a.navTri, 0xFFFF);
+            Noise_Make((u8 *)p + 0x778, 0x20, f->c.a.room, f->c.a.navTri, 0xFFFF);
         }
         break;
     case 0x2D:
@@ -7934,7 +7934,7 @@ void Fiona_CallHewie(Fiona *f) {
     case 0x2C:
         fiona_voice(f, 0x31);
         if (FI(f, 0x1AD5D5, u8) == 0) {
-            func_002A8440((u8 *)gProgress + 0x778, 0x20, f->c.a.room, f->c.a.navTri, 0xFFFF);
+            Noise_Make((u8 *)gProgress + 0x778, 0x20, f->c.a.room, f->c.a.navTri, 0xFFFF);
         }
         break;
     case 0x2D:
@@ -8652,7 +8652,7 @@ void Fiona_StatePanicFall(Fiona *f) {
         FI(f, 0x1AD6D0, f32) = f->c.a.angle[1];
         Motion_PlayTable(f->c.motion, 0xB00, -1);
         Actor_PlaySound(&f->c.a, 0x40, 5, 0, 0, NULL);
-        func_002A8440((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
+        Noise_Make((u8 *)gProgress + 0x778, 0x5F, f->c.a.room, f->c.a.navTri, 0xFFFF);
         Actor_SetState(&f->c.a, &D_003B2B28);
     }
     Character_RootMoveMasked(&f->c);
@@ -9340,7 +9340,7 @@ void Fiona_StateStrike(Fiona *f) {
         s32 none = 0;
 
         FI(f, 0x1AD6D4, f32) = -1.0f;
-        func_002D6090(mgr, Effect_New(mgr, 0x80, strike_mark_init), &none);
+        EffectMgr_Start(mgr, Effect_New(mgr, 0x80, strike_mark_init), &none);
     }
     {
         s32 bone;

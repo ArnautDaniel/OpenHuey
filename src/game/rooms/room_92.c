@@ -135,12 +135,12 @@ s32 Room92_Cmd13(void *self, void *a1, u8 *cmd) {
         mgr = gEffects;
         slot = Effect_New(mgr, 0x10D0, effect_7A310_init);
         arg = cmd[3] == 0;
-        func_002D6090(mgr, slot, &arg);
+        EffectMgr_Start(mgr, slot, &arg);
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 11, slot);
         break;
     case 2:
         slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 11);
-        func_002D6090(gEffects, slot, NULL);
+        EffectMgr_Start(gEffects, slot, NULL);
         break;
     }
     return 1;
@@ -163,7 +163,7 @@ s32 Room92_Cmd12(void *self, void *a1, u8 *cmd) {
         slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 10);
         msg[0] = (f32)cmd[4];
         msg[1] = (f32)(cmd[3] - 1);
-        func_002D6090(gEffects, slot, msg);
+        EffectMgr_Start(gEffects, slot, msg);
         break;
     }
     return 1;
@@ -189,7 +189,7 @@ s32 Room92_Cmd11(void) {
         r[2] = 120.0f;
     }
     r[3] = 160.0f;
-    func_00266C70(fx, 0x1C, r);
+    RoomEffects_Send(fx, 0x1C, r);
     return 1;
 }
 
@@ -311,14 +311,14 @@ s32 Room92_Cmd06(void *self, void *a1, u8 *cmd) {
     case 1:
         mgr = gEffects;
         slot = Effect_New(mgr, 0x20E0, effect_79F70_init);
-        func_002D6090(mgr, slot, &arg);
+        EffectMgr_Start(mgr, slot, &arg);
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, cmd[3] + 2, slot);
         break;
     case 2:
     case 3:
         slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, cmd[3]);
         if (slot != -1) {
-            func_002D6090(gEffects, slot, NULL);
+            EffectMgr_Start(gEffects, slot, NULL);
         }
         break;
     }
@@ -364,7 +364,7 @@ s32 Room92_Cmd04(void *self, void *a1, u8 *cmd) {
         u8 *mgr = gEffects;
         s32 slot = Effect_New(mgr, 0x1C60, effect_1c60_init);
 
-        func_002D6090(mgr, slot, (void *)1);
+        EffectMgr_Start(mgr, slot, (void *)1);
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 0, slot);
         break;
     }
@@ -372,7 +372,7 @@ s32 Room92_Cmd04(void *self, void *a1, u8 *cmd) {
         s32 slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0);
 
         if (slot != -1) {
-            func_002D6090(gEffects, slot, NULL);
+            EffectMgr_Start(gEffects, slot, NULL);
         }
         break;
     }
@@ -427,7 +427,7 @@ s32 Room92_Cmd03(void) {
         k -= 5;
     }
     VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 1, k);
-    func_002D6090(gEffects, Effect_New(gEffects, 0xE60, effect_79F30_init), t);
+    EffectMgr_Start(gEffects, Effect_New(gEffects, 0xE60, effect_79F30_init), t);
     return 1;
 }
 
@@ -579,7 +579,7 @@ void *Room92Effect_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0047A2F0;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;

@@ -72,13 +72,13 @@ s32 Room18_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &D_01990940[i & 0xFF], a, b);
 }
 
-/* room 0x18 (D_003FB358): object byte 3's func_0025F810 */
+/* room 0x18 (D_003FB358): object byte 3's PlacedObject_ToDef */
 /* 0x002AD160 */
 s32 Room18_Cmd00(void *self, void *a1, u8 *cmd) {
     u8 *o = room_obj(D_003FB370[cmd[3]]);
 
     if (o != NULL) {
-        func_0025F810(o);
+        PlacedObject_ToDef(o);
     }
     return 1;
 }

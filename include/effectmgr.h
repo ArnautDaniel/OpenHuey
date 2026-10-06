@@ -9,7 +9,7 @@
 #include "scene_game_members.h"
 
 /* A heap at +0x10000 (vtable +0x10 alloc(size)) and 0x400
- * effect slots at +0x18034; func_002D6090 starts the effect in a slot with its parameters. */
+ * effect slots at +0x18034; EffectMgr_Start starts the effect in a slot with its parameters. */
 
 #define EFFECT_HEAP(mgr) ((VObject *)((mgr) + 0x10000))
 #define EFFECT_SLOTS(mgr) ((void ***)((mgr) + 0x18034))
@@ -26,7 +26,7 @@ static inline s32 Effect_New(u8 *mgr, u32 size, void (*init)(void **obj)) {
     }
     for (i = 0; i < EFFECT_NUM_SLOTS; i++) {
         if (EFFECT_SLOTS(mgr)[i] == NULL) {
-            void **obj = func_002D63C0(size, mem);
+            void **obj = EffectMgr_new(size, mem);
 
             if (obj != NULL) {
                 init(obj);
@@ -59,7 +59,7 @@ static inline void HitEffect_Init(void **obj) {
 static inline void HitEffect_Spawn(HitEffectParams *hp) {
     u8 *mgr = gEffects;
 
-    func_002D6090(mgr, Effect_New(mgr, 0xE60, HitEffect_Init), hp);
+    EffectMgr_Start(mgr, Effect_New(mgr, 0xE60, HitEffect_Init), hp);
 }
 
 /* ---- the drop splash (0xF70 bytes, vtable D_004727C0; creature.c): spawned by the dripping

@@ -143,7 +143,7 @@ u8 *Room2AWisps_dtor(u8 *o, s32 flags) {
     AT(o, 0x610, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -278,7 +278,7 @@ u8 *Effect78BC0_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00478BC0;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -399,7 +399,7 @@ u8 *Room55Effect_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00477E10;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -499,7 +499,7 @@ u8 *Room4EEffect_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00478BE0;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -890,7 +890,7 @@ u8 *FallingDrops_dtor(u8 *o, s32 flags) {
     AT(o, 0x610, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -999,7 +999,7 @@ s32 FallingDrops_Update(u8 *o) {
                 s.rgba[1] = 0x40;
                 s.rgba[2] = 0x40;
                 s.size = k015.f + k01.f * VCALL(rng, 0x1C, f32 (*)(VObject *))(rng);
-                func_002D6090(mgr, Effect_New(mgr, 0x40, splash_init), &s);
+                EffectMgr_Start(mgr, Effect_New(mgr, 0x40, splash_init), &s);
                 sceVu0CopyVector(r.pos, at);
                 r.v[2] = 0.0f;
                 r.rgba[0] = 0x20;
@@ -1016,7 +1016,7 @@ s32 FallingDrops_Update(u8 *o) {
                 r.v[3] = 0.0f;
                 r.v[6] = 0.0f;
                 r.v[7] = 0.0f;
-                func_002D6090(mgr, Effect_New(mgr, 0x720, spray_init), &r);
+                EffectMgr_Start(mgr, Effect_New(mgr, 0x720, spray_init), &r);
             }
         } else {
             sceVu0CopyVector(at, (f32 *)(p + 0x10));
@@ -1042,7 +1042,7 @@ s32 FallingDrops_Update(u8 *o) {
                 r.v[7] = k02.f;
                 r.v[6] = k01.f;
                 r.v[9] = k01.f;
-                func_002D6090(mgr, Effect_New(mgr, 0x720, spray_init), &r);
+                EffectMgr_Start(mgr, Effect_New(mgr, 0x720, spray_init), &r);
             }
         }
         if (landed == 1) {
@@ -1115,7 +1115,7 @@ u8 *Room66Effect_dtor(u8 *o, s32 flags) {
     AT(o, 0x1840, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -1392,7 +1392,7 @@ u8 *BigFire_dtor(u8 *o, s32 flags) {
     AT(o, 0x6040, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -1722,7 +1722,7 @@ void *Butterflies_dtor(void *o, s32 flags) {
             AT(o, 0x0, void **) = D_0046D730;
         }
         if ((s16)flags > 0) {
-            func_002672E0(o);
+            RoomEffects_delete(o);
         }
     }
     return o;
@@ -2014,7 +2014,7 @@ void Butterflies_Draw(u8 *o) {
             AT(&p[7], 0, f32) = k0005.f * (at[0] - AT(o, 0x10, f32));
             AT(&p[8], 0, f32) = k005.f + k005.f * VCALL(rng, 0x18, f32 (*)(VObject *))(rng);
             AT(&p[9], 0, f32) = k0005.f * (at[2] - AT(o, 0x18, f32));
-            func_002D6090(mgr, slot, p);
+            EffectMgr_Start(mgr, slot, p);
         }
     }
 }
@@ -2042,7 +2042,7 @@ u8 *SpiralSmoke_dtor(u8 *o, s32 flags) {
     AT(o, 0x3040, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -2222,7 +2222,7 @@ u8 *Drips_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00476BF0;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -2464,7 +2464,7 @@ u8 *BoneSmoke_dtor(u8 *o, s32 flags) {
     AT(o, 0x610, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -2480,7 +2480,7 @@ u8 *ThingPuff_dtor(u8 *o, s32 flags) {
     AT(o, 0x610, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -2559,7 +2559,7 @@ u8 *LightRing_dtor(u8 *o, s32 flags) {
     AT(o, 0x610, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -2577,7 +2577,7 @@ static inline __attribute__((always_inline)) u8 *fx_dtor1(u8 *o, s32 flags, void
     AT(o, d0, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -2593,7 +2593,7 @@ static inline __attribute__((always_inline)) u8 *fx_dtor2(u8 *o, s32 flags, void
     AT(o, d0, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }

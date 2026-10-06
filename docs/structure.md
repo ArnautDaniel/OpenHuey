@@ -18,7 +18,7 @@ at the end. See `src/game/game.c`, `include/game.h`.
 | +0x400A00 | scene table object; `scenes[4]` at +0x400A04 |
 | +0x14D9A40 | scene heap (vtable 0x46A1C0: +0x10 alloc, +0x14 free) |
 | +0x14D9DD0, +0x14DC530 | object pools (462x0x14 + 64x0xC; 632x0x50 + 32x0xC) |
-| +0x14E8C90 | sub-object, init `Slots_Init`, shutdown `func_001F4100` |
+| +0x14E8C90 | sub-object, init `Slots_Init`, shutdown `Slots_Reset2` |
 
 ## Scenes (game modes) - `Game_StartNextScene`
 
@@ -64,7 +64,7 @@ load, returns 1 while busy), else the gameplay tick `SceneGame_RoomIn`:
 1. `CamDirector_NewRoom(+0xF6CBB0)`, `Progress_CameraOn(Progress, 0)`, `SceneGame_EnterRoom(game)` (416 insns:
    events, items, camera? - calls Progress flags, `Character_ChooseExit(gCharPlayer, ...)`)
 2. **characters**: vtable +0x38 (per-frame update) on `gCharacters[0..2]` whose byte +0x28 == 1
-3. `func_002E2650(+0x706480)`, game vtable +0xDC, `Progress_CharRequests(Progress)` (620 insns),
+3. `Creatures_EnterRoom(+0x706480)`, game vtable +0xDC, `Progress_CharRequests(Progress)` (620 insns),
    `CamDirector_RoomStart(+0xF6CBB0, ...)` (camera/collision?)
 
 ## Characters

@@ -124,7 +124,7 @@ s32 RoomC7_Command(void *self, u32 i, s32 a, s32 b) {
 }
 
 /* (as Room48_Cmd02) byte 3 0 starts the effect D_0047A3F0 (its slot in event variable 9);
-   else that one is ended (func_002D6170) */
+   else that one is ended (EffectMgr_Remove) */
 /* 0x00339F00 */
 s32 RoomC7_Cmd06(void *self, void *a1, u8 *cmd) {
     if (cmd[3] == 0) {
@@ -132,7 +132,7 @@ s32 RoomC7_Cmd06(void *self, void *a1, u8 *cmd) {
 
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 9, slot);
     } else {
-        func_002D6170(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 9));
+        EffectMgr_Remove(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 9));
     }
     return 1;
 }
@@ -156,7 +156,7 @@ s32 RoomC7_Cmd04(void *self, void *a1, u8 *cmd) {
     u8 *mgr = gEffects;
     u8 b = cmd[3];
 
-    func_002D6090(mgr, Effect_New(mgr, 0xD40, effect_799d0_init), &b);
+    EffectMgr_Start(mgr, Effect_New(mgr, 0xD40, effect_799d0_init), &b);
     return 1;
 }
 
@@ -214,13 +214,13 @@ s32 RoomC7_Cmd02(void *self, void *a1, u8 *cmd) {
         pos[1] = 0xF2;
         VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 7, pos[0]);
         VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 8, pos[1]);
-        func_002D6090(gEffects, slot, pos);
+        EffectMgr_Start(gEffects, slot, pos);
         return 1;
     case 1:
         break;
     case 2:
         slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 6);
-        func_002D6090(gEffects, slot, NULL);
+        EffectMgr_Start(gEffects, slot, NULL);
         return 1;
     default:
         return 1;
@@ -262,7 +262,7 @@ s32 RoomC7_Cmd02(void *self, void *a1, u8 *cmd) {
     }
     VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 7, pos[0]);
     VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 8, pos[1]);
-    func_002D6090(gEffects, slot, pos);
+    EffectMgr_Start(gEffects, slot, pos);
     if (D_0047E36C & MENU_CONFIRM) {
         VCALL(ev, 0x5C, void (*)(VObject *, s32))(ev, 4);
         return 1;
@@ -334,7 +334,7 @@ void *RoomC7Cursor_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_004798B0;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -392,7 +392,7 @@ void *Debris_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_004799D0;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -409,7 +409,7 @@ void *BackdropModel_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0047A3F0;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;

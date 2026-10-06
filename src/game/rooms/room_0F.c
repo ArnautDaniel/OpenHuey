@@ -118,7 +118,7 @@ s32 Room0F_Cmd02(void) {
     prm[8] = 0.0f;
     prm[5] = 110.0f;
     prm[7] = -90.0f;
-    func_002D6090(gEffects, slot, prm);
+    EffectMgr_Start(gEffects, slot, prm);
     return 1;
 }
 

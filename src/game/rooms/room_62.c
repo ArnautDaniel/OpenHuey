@@ -79,7 +79,7 @@ s32 Room62_Command(void *self, u32 i, s32 a, s32 b) {
 /* 0x00308C20 */
 s32 Room62_Cmd01(void *self, void *a1, u8 *cmd) {
     static const union { u32 u; f32 f; } kBounce = {0xBE99999A};   /* -0.3 */
-    u8 *e = func_00266C40(gRoomEffects, 0);
+    u8 *e = RoomEffects_Get(gRoomEffects, 0);
     f32 v, y;
 
     switch (cmd[3]) {

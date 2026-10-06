@@ -87,7 +87,7 @@ s32 Room2A_Command(void *self, u32 i, s32 a, s32 b) {
 s32 Room2A_Cmd03(void *self, void *a1, u8 *cmd) {
     u8 *mgr = gEffects;
 
-    func_002D6090(mgr, Effect_New(mgr, 0x14, effect_14_init), cmd + 3);
+    EffectMgr_Start(mgr, Effect_New(mgr, 0x14, effect_14_init), cmd + 3);
     return 1;
 }
 
@@ -102,7 +102,7 @@ s32 Room2A_Cmd02(void) {
     at[2] = -100.0f;
     at[1] = 0.0f;
     at[3] = 1.0f;
-    func_002D6090(mgr, slot, at);
+    EffectMgr_Start(mgr, slot, at);
     return 1;
 }
 

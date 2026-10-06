@@ -110,11 +110,11 @@ s32 Room55_Effect(void *self, void *a1, u8 *cmd) {
         q[16] = 0;
         q[17] = 0x80;
         q[18] = 0x3F800000;
-        func_00266C70(fx, 0x1B, q);
+        RoomEffects_Send(fx, 0x1B, q);
     } else {
         on = 1;
         Effect_New(mgr, 0x6D0, effect_79400_init);
     }
-    func_002D6090(mgr, slot, &on);
+    EffectMgr_Start(mgr, slot, &on);
     return 1;
 }

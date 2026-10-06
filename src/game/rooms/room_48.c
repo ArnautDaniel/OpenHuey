@@ -139,7 +139,7 @@ s32 Room48_Cmd02(void *self, void *a1, u8 *cmd) {
 
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 2, slot);
     } else {
-        func_002D6090(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 2), NULL);
+        EffectMgr_Start(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 2), NULL);
     }
     return 1;
 }

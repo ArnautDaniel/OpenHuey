@@ -329,7 +329,7 @@ void *func_002C64E0(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046EC60;
         AT(o, 0x0, void **) = D_0046D730;
         if ((s16)flags > 0) {
-            func_002672E0(o);
+            RoomEffects_delete(o);
         }
     }
     return o;
@@ -588,25 +588,25 @@ void func_002241C0(u8 *o, s32 on) {
         }
         mem = VCALL(fx + 0x1400, 0x10, void *(*)(void *, s32))(fx + 0x1400, 0xA0);
         if (mem != NULL) {
-            e = func_002672F0(0xA0, mem);
+            e = RoomEffects_new(0xA0, mem);
             if (e != NULL) {
                 AT(e, 0x0, void **) = D_0046EC60;
             }
             AT(fx, 0x14A8, u8 *) = e;
             VCALL(AT(fx, 0x14A8, u8 *), 0xC, void (*)(u8 *))(AT(fx, 0x14A8, u8 *));
         }
-        func_00266C70(fx, 0x1C, o + 0x154);
+        RoomEffects_Send(fx, 0x1C, o + 0x154);
         return;
     }
     fx = (u8 *)gRoomEffects;
-    e = func_00266C40(fx, 0x1C);
+    e = RoomEffects_Get(fx, 0x1C);
     if (e != NULL) {
         AT(o, 0x164, u8) = 1;
         AT(o, 0x154, f32) = AT(e, 0x50, f32);
         AT(o, 0x158, f32) = AT(e, 0x54, f32);
         AT(o, 0x15C, f32) = AT(e, 0x58, f32);
         AT(o, 0x160, f32) = AT(e, 0x5C, f32);
-        func_002670F0(fx, 0x1C);
+        RoomEffects_Release(fx, 0x1C);
     }
 }
 
@@ -628,14 +628,14 @@ void func_002CF3A0(u8 *f, s32 kind) {
         if (!(a < 128.0f)) {
             a = 128.0f;
         }
-        func_002EF480((u8 *)gProgress + 0x7B8, 0.5f - k0005.f * (a - 16.0f));
+        ScreenFade_Level((u8 *)gProgress + 0x7B8, 0.5f - k0005.f * (a - 16.0f));
         break;
     case 1: case 3: case 5:
         a = 128.0f - AT(f, 0x18, f32) * (f32)AT(f, 0x20, u8);
         if (a <= 0.0f) {
             a = 0.0f;
         }
-        func_002EF480((u8 *)gProgress + 0x7B8, 1.0f - k0005.f * (a - 16.0f));
+        ScreenFade_Level((u8 *)gProgress + 0x7B8, 1.0f - k0005.f * (a - 16.0f));
         break;
     case 6:
         a = AT(f, 0x18, f32) * (f32)AT(f, 0x20, u8);
@@ -678,7 +678,7 @@ u8 *func_002E7BB0(u8 *e, s32 flags) {
         AT(e, 0x0, void **) = D_0046FF00;
         AT(e, 0x0, void **) = D_0046D730;
         if ((s16)flags > 0) {
-            func_002672E0(e);
+            RoomEffects_delete(e);
         }
     }
     return e;
@@ -835,7 +835,7 @@ u8 *SpriteBurst_dtor(u8 *o, s32 flags) {
     AT(o, 0x610, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -1170,7 +1170,7 @@ u8 *func_002E90F0(u8 *e, s32 flags) {
         AT(e, 0x0, void **) = D_0046FF40;
         AT(e, 0x0, void **) = D_0046D730;
         if ((s16)flags > 0) {
-            func_002672E0(e);
+            RoomEffects_delete(e);
         }
     }
     return e;
@@ -1213,16 +1213,16 @@ void func_002E9150(u8 *e, u8 *arg) {
         p.kind = 1;
         mgr = gEffects;
         slot = Effect_New(mgr, 0x220, spark_init);
-        func_002D6090(mgr, slot, &p);
+        EffectMgr_Start(mgr, slot, &p);
         slot = Effect_New(mgr, 0x220, spark_init);
-        func_002D6090(mgr, slot, &p);
+        EffectMgr_Start(mgr, slot, &p);
         if (AT(e, 0x74, s32) != 2) {
             return;
         }
         slot = Effect_New(mgr, 0x220, spark_init);
-        func_002D6090(mgr, slot, &p);
+        EffectMgr_Start(mgr, slot, &p);
         slot = Effect_New(mgr, 0x220, spark_init);
-        func_002D6090(mgr, slot, &p);
+        EffectMgr_Start(mgr, slot, &p);
         return;
     }
     AT(e, 0x20, f32) = AT(arg, 0x0, f32);
@@ -1281,7 +1281,7 @@ void func_002E9150(u8 *e, u8 *arg) {
         p.pos[2] = AT(e, 0x28, f32);
         p.pos[3] = 1.0f;
         p.flags = 0x8000;
-        func_002D6090(mgr, slot, &p);
+        EffectMgr_Start(mgr, slot, &p);
         return;
     }
     AT(e, 0x30, f32) = 0.25f;
@@ -1749,7 +1749,7 @@ u8 *FloorGlow_dtor(u8 *e, s32 flags) {
         AT(e, 0x0, void **) = D_004795A0;
         AT(e, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(e);
+            EffectMgr_free(e);
         }
     }
     return e;
@@ -1895,7 +1895,7 @@ u8 *Wisps_dtor(u8 *o, s32 flags) {
     AT(o, 0x190, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -2026,7 +2026,7 @@ s32 Wisps_Update(u8 *o) {
         AT(r, 0x10, f32) = AT(o, 0x1D0, f32) + AT(o, 0x200 + i * 4, f32) * func_0031C058(*ang);
         AT(r, 0x18, f32) = AT(o, 0x1D8, f32) + AT(o, 0x200 + i * 4, f32) * func_0031C248(*ang);
     }
-    if ((AT(o, 0x214, s32) & 0x8000) && func_00266C40(gRoomEffects, 0) == NULL) {
+    if ((AT(o, 0x214, s32) & 0x8000) && RoomEffects_Get(gRoomEffects, 0) == NULL) {
         done = 1;
     }
     return done != 1;
@@ -2074,7 +2074,7 @@ u8 *RisingSmoke_dtor(u8 *o, s32 flags) {
     AT(o, 0x1810, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -2357,7 +2357,7 @@ u8 *Effect6FF60_dtor(u8 *e, s32 flags) {
             AT(e, 0x0, void **) = D_0046F580;
         }
         if ((s16)flags > 0) {
-            func_002D63B0(e);
+            EffectMgr_free(e);
         }
     }
     return e;
@@ -3061,7 +3061,7 @@ s32 StrikeMark_Update(u8 *o) {
         return 1;
     }
     mgr = gEffects;
-    func_002D6090(mgr, Effect_New(mgr, 0x6E0, mark_smoke_init), AT(o, 0x74, void *));
+    EffectMgr_Start(mgr, Effect_New(mgr, 0x6E0, mark_smoke_init), AT(o, 0x74, void *));
     return 0;
 }
 
@@ -3186,7 +3186,7 @@ u8 *RisingMotes_dtor(u8 *o, s32 flags) {
     AT(o, 0x3010, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -3323,7 +3323,7 @@ u8 *OrangeSparks_dtor(u8 *o, s32 flags) {
     AT(o, 0xC10, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -3511,7 +3511,7 @@ u8 *SinkingSprite_dtor(u8 *o, s32 flags) {
     AT(o, 0x70, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -3662,7 +3662,7 @@ void DustMote_SetParams(u8 *e, u8 *arg) {
         return;
     }
     r = ONE_REC(e, AT(e, 0xB8, s32));
-    fog = func_00266C40(gRoomEffects, 0x1D);
+    fog = RoomEffects_Get(gRoomEffects, 0x1D);
     if (fog != NULL) {
         u32 c = AT(fog, 0x14, u32);
 
@@ -3793,7 +3793,7 @@ static inline void mote_start(u8 *e, u8 *mgr, s32 going) {
     sceVu0CopyVector(a.pos, (f32 *)(e + 0x30));
     a.heading = AT(e, 0x40, f32);
     a.going = going;
-    func_002D6090(mgr, slot, &a);
+    EffectMgr_Start(mgr, slot, &a);
 }
 
 /* +0x18 start: arg { position, heading in degrees } (none: stopped); six motes at once (already
@@ -4235,7 +4235,7 @@ u8 *SmokePuffs_dtor(u8 *o, s32 flags) {
     AT(o, 0x1810, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -4385,7 +4385,7 @@ u8 *SpeckSwarm_dtor(u8 *o, s32 flags) {
     AT(o, 0x610, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -4573,7 +4573,7 @@ u8 *Splash_dtor(u8 *o, s32 flags) {
     AT(o, 0x3D0, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -4752,7 +4752,7 @@ u8 *BloodSpray_dtor(u8 *o, s32 flags) {
     AT(o, 0xC10, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -4903,7 +4903,7 @@ s32 BloodSpray_Update(u8 *e) {
             sp.pos[3] = r->pos[3];
             sp.tri = AT(e, 0xE54, s32);
             sp.zero = 0;
-            func_002D6090(mgr, slot, &sp);
+            EffectMgr_Start(mgr, slot, &sp);
         }
     }
     return 1;
@@ -4950,7 +4950,7 @@ void *Effect71000_dtor(void *o, s32 flags) {
             AT(o, 0x0, void **) = D_0046F580;
         }
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -5177,7 +5177,7 @@ void *SplashRing_dtor(void *o, s32 flags) {
             AT(o, 0x0, void **) = D_0046F580;
         }
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -5315,7 +5315,7 @@ u8 *DropletSpray_dtor(u8 *o, s32 flags) {
     AT(o, 0x610, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -5555,7 +5555,7 @@ s32 CeilingDrips_Update(u8 *o) {
             sp.speedRnd = 0x1.99999ap-3f;
             sp.lift = 0.5f;
             sp.gravity = 0x1.99999ap-4f;
-            func_002D6090(mgr, Effect_New(mgr, 0x720, spray_init), &sp);
+            EffectMgr_Start(mgr, Effect_New(mgr, 0x720, spray_init), &sp);
             func_0035F640(o, i);
             if ((VCALL(snd, 0xA4, s32 (*)(VObject *, s32))(snd, 6) & 0xFF) == 1) {
                 Sound_PlayBankAt(snd, AT(o, 0x634, s32) | 0x40000000, 6, sp.pos, 0, 0);
@@ -5659,7 +5659,7 @@ s32 OneDrip_Update(u8 *o) {
         rp.rgba[3] = 0x30;
         rp.size = 0x1.333334p-3f;     /* 0.15 */
         mgr = gEffects;
-        func_002D6090(mgr, Effect_New(mgr, 0x40, ring_init), &rp);
+        EffectMgr_Start(mgr, Effect_New(mgr, 0x40, ring_init), &rp);
         sceVu0CopyVector(sp.pos, r->pos);
         sp.pos[1] = 0x1.99999ap-4f;
         sp.rgba[0] = 0x20;
@@ -5677,7 +5677,7 @@ s32 OneDrip_Update(u8 *o) {
         sp.speedRnd = 0.0f;
         sp.lift = 0.5f;
         sp.gravity = 0x1.99999ap-4f;
-        func_002D6090(mgr, Effect_New(mgr, 0x720, spray_init), &sp);
+        EffectMgr_Start(mgr, Effect_New(mgr, 0x720, spray_init), &sp);
         func_0035FF30(o);
     }
     return 1;
@@ -5722,7 +5722,7 @@ void *func_003559D0(void *o, s32 flags) {
             AT(o, 0x0, void **) = D_0046D730;
         }
         if ((s16)flags > 0) {
-            func_002672E0(o);
+            RoomEffects_delete(o);
         }
     }
     return o;
@@ -5774,7 +5774,7 @@ void *WallShadow_dtor(void *o, s32 flags) {
             AT(o, 0x0, void **) = D_0046F580;
         }
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -5862,7 +5862,7 @@ u8 *FloorSplat_dtor(u8 *e, s32 flags) {
     AT(e, 0x70, void **) = D_00469D00;
     AT(e, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(e);
+        EffectMgr_free(e);
     }
     return e;
 }
@@ -6078,7 +6078,7 @@ static s32 spark_new(u8 *mgr, s32 from) {
     }
     for (i = from == -1 ? 0 : from; i < EFFECT_NUM_SLOTS; i++) {
         if (EFFECT_SLOTS(mgr)[i] == NULL) {
-            void **obj = func_002D63C0(0x170, mem);
+            void **obj = EffectMgr_new(0x170, mem);
 
             if (obj != NULL) {
                 marker_spark_init(obj);
@@ -6270,7 +6270,7 @@ static inline s32 spark_live(u8 *o) {
     if (gCharSlot2 == NULL && (u8)VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector) == 0) {
         return -1;
     }
-    if (func_002D6020(gEffects, AT(o, 0x14C, s32)) == 3) {
+    if (EffectMgr_Query(gEffects, AT(o, 0x14C, s32)) == 3) {
         AT(o, 0x16C, u8) = 1;
     }
     return 0;
@@ -6417,7 +6417,7 @@ void func_003012B0(u8 *o, s32 flag) {
         prm.size = AT(o, 0x8, f32);
         prm.scale = 1.0f;
         prm.kind = k;
-        func_002D6090(mgr, slot, &prm);
+        EffectMgr_Start(mgr, slot, &prm);
         if ((rnd_int() & 1) == 0) {
             slot = spark_new(mgr, AT(o, 0xC, s32));
             k = rnd_int() & 3;
@@ -6427,7 +6427,7 @@ void func_003012B0(u8 *o, s32 flag) {
             prm.scale = 1.5f;
             prm.size = AT(o, 0x8, f32);
             prm.kind = k;
-            func_002D6090(mgr, slot, &prm);
+            EffectMgr_Start(mgr, slot, &prm);
         } else {
             slot = spark_new(mgr, AT(o, 0xC, s32));
             k = (rnd_int() & 3) + 3;
@@ -6435,7 +6435,7 @@ void func_003012B0(u8 *o, s32 flag) {
             prm.size = AT(o, 0x8, f32);
             prm.kind = k;
             prm.scale = k < 11 ? 1.5f : 1.0f;
-            func_002D6090(mgr, slot, &prm);
+            EffectMgr_Start(mgr, slot, &prm);
         }
         return;
     }
@@ -6445,7 +6445,7 @@ void func_003012B0(u8 *o, s32 flag) {
     prm.size = AT(o, 0x8, f32);
     prm.scale = 1.0f;
     prm.kind = k;
-    func_002D6090(mgr, slot, &prm);
+    EffectMgr_Start(mgr, slot, &prm);
     slot = spark_new(mgr, AT(o, 0xC, s32));
     k = rnd_int() & 3;
     if (k < 2) {
@@ -6454,7 +6454,7 @@ void func_003012B0(u8 *o, s32 flag) {
     prm.size = AT(o, 0x8, f32);
     prm.scale = 1.0f;
     prm.kind = k;
-    func_002D6090(mgr, slot, &prm);
+    EffectMgr_Start(mgr, slot, &prm);
     if (rnd_int() & 1) {
         slot = spark_new(mgr, AT(o, 0xC, s32));
         k = (rnd_int() & 3) + 2;
@@ -6462,7 +6462,7 @@ void func_003012B0(u8 *o, s32 flag) {
         prm.follow = AT(gCharSlot4, 0xF0, u32);
         prm.scale = 1.0f;
         prm.kind = k;
-        func_002D6090(mgr, slot, &prm);
+        EffectMgr_Start(mgr, slot, &prm);
         return;
     }
     k = (u32)rnd_int() % 27;
@@ -6473,7 +6473,7 @@ void func_003012B0(u8 *o, s32 flag) {
     prm.scale = 1.0f;
     prm.size = AT(o, 0x8, f32);
     prm.kind = k;
-    func_002D6090(mgr, slot, &prm);
+    EffectMgr_Start(mgr, slot, &prm);
 }
 
 /* +0x1C its state */
@@ -6843,7 +6843,7 @@ u8 *Room49Effect_dtor(u8 *o, s32 flags) {
     AT(o, 0x1810, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -7000,7 +7000,7 @@ u8 *DustMote_dtor(u8 *o, s32 flags) {
     AT(o, 0x70, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -7016,7 +7016,7 @@ u8 *DropletFlash_dtor(u8 *o, s32 flags) {
     AT(o, 0xC10, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -7056,7 +7056,7 @@ u8 *AshFlakes_dtor(u8 *o, s32 flags) {
     AT(o, 0x3010, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -7228,7 +7228,7 @@ u8 *SmokeTrail_dtor(u8 *o, s32 flags) {
     AT(o, 0xC10, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -7371,7 +7371,7 @@ u8 *WispColumn_dtor(u8 *o, s32 flags) {
     AT(o, 0x1810, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -7517,7 +7517,7 @@ u8 *SparkSpray_dtor(u8 *o, s32 flags) {
     AT(o, 0x1810, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -7697,7 +7697,7 @@ u8 *Fire_dtor(u8 *o, s32 flags) {
     AT(o, 0x1810, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -7903,7 +7903,7 @@ u8 *OneDrip_dtor(u8 *o, s32 flags) {
     AT(o, 0x70, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }

@@ -129,7 +129,7 @@ s32 Room03_Cmd01(void *self, void *a1, u8 *cmd) {
         dp.g = 0x80;
         dp.r = 0x80;
         dp.kind = 0;
-        func_002D6090(mgr, slot, &dp);
+        EffectMgr_Start(mgr, slot, &dp);
     }
     return 1;
 }

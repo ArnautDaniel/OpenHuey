@@ -1166,7 +1166,7 @@ void Obstacle_MoveFrame(u8 *o) {
 
         Sound_PlayBankAt(gSound, 0, 6, (f32 *)(o + 0x40), 0, 0);
         p = gProgress;
-        func_002A8440((u8 *)p + 0x778, 0x1F, VCALL(p, 0xC, s32 (*)(Progress *))(p), AT(o, 0x54, s32), 0xFFFF);
+        Noise_Make((u8 *)p + 0x778, 0x1F, VCALL(p, 0xC, s32 (*)(Progress *))(p), AT(o, 0x54, s32), 0xFFFF);
     }
     AT(o, 0x10, s32)++;
     if (AT(o, 0x10, s32) == AT(o, 0x14, s32)) {

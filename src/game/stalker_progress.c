@@ -221,7 +221,7 @@ static inline void door_heard(Progress *p, s32 room, u16 d, u32 slot) {
         k = 3;
         break;
     }
-    func_002A8440((u8 *)p + 0x778 + k * 0x10, 0xF, room, -1, d);
+    Noise_Make((u8 *)p + 0x778 + k * 0x10, 0xF, room, -1, d);
 }
 
 /* shut the held door at exit `exit` of room `room` (slot `slot`): 1 if done */

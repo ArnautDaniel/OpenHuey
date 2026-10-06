@@ -35,7 +35,7 @@ extern void *D_0046C320[], *D_0046ECF0[], *D_0046C540[];
 extern void *D_00456DF8;
 
 extern void *D_0046AEC0[];
-void *func_001BF5F0(u8 *o, s32 flags);
+void *Obj46AEC0_dtor(u8 *o, s32 flags);
 
 extern PTMF D_01990700[];
 s32 Room00_Command(void *self, u32 i, s32 a, s32 b);
@@ -48,19 +48,23 @@ void *func_002D11C0(u8 *p);
 void *func_002D1260(u8 *p);
 
 /* (a base-class constructor that does nothing) */
-void *func_002D15B0(void *p) {
+/* 0x002D15B0 */
+void *Base_ctorNoop(void *p) {
     return p;
 }
 
-void func_0021AFC0(void *p) {
+/* 0x0021AFC0 */
+void Obstacle_ElemCtor(void *p) {
 }
 
 /* an array element's constructor (nothing to do) */
-void *func_002D1120(void *p) {
+/* 0x002D1120 */
+void *Elem_ctorNoop(void *p) {
     return p;
 }
 
-void func_002A8890(u8 *p) {
+/* 0x002A8890 */
+void Pair_Clear(u8 *p) {
     AT(p, 0x8, s32) = 0;
     AT(p, 0x4, s32) = 0;
 }
@@ -86,7 +90,8 @@ void func_002A8410(u8 *p) {
 }
 
 /* a pool of 128 blocks of 0x140 bytes */
-void func_002D7680(u8 *p) {
+/* 0x002D7680 */
+void PlacedThings_ctorPool(u8 *p) {
     BlockPool_Init((BlockPool *)(p + 0xA040), p + 0x40, 0x140, 0x80, p + 0xA058);
 }
 
@@ -100,7 +105,8 @@ void func_002ECB50(u8 *p) {
 }
 
 /* drop two pending pointers (each with its partner word) */
-void func_0017CD90(u8 *p) {
+/* 0x0017CD90 */
+void NavMesh_DropPending(u8 *p) {
     if (AT(p, 0x4, s32) != 0) {
         AT(p, 0x4, s32) = 0;
         AT(p, 0x8, s32) = 0;
@@ -111,7 +117,8 @@ void func_0017CD90(u8 *p) {
     }
 }
 
-void func_00223D60(u8 *p) {
+/* 0x00223D60 */
+void Doors_Reset(u8 *p) {
     AT(p, 0x4, s32) = 0;
     AT(p, 0x50C0, s32) = 0;
     AT(p, 0x50C8, s32) = 0;
@@ -120,15 +127,17 @@ void func_00223D60(u8 *p) {
 }
 
 /* a manager of 5 objects of 0xB0 bytes (vtable D_0046C320, global gObstacles) */
-void *func_002D10C0(u8 *p) {
+/* 0x002D10C0 */
+void *Obstacles_ctor(u8 *p) {
     AT(p, 0x0, void **) = D_0046C320;
     gObstacles = (VObject *)p;
-    func_00100340(p + 0x10, func_002D1120, Obstacle_dtor, 0xB0, 5);
+    func_00100340(p + 0x10, Elem_ctorNoop, Obstacle_dtor, 0xB0, 5);
     return p;
 }
 
 /* a manager of 64 objects of 0xB0 bytes (vtable D_0046ECF0, global D_00456DF8) */
-void *func_002D1160(u8 *p) {
+/* 0x002D1160 */
+void *PlacedObjects_ctor(u8 *p) {
     AT(p, 0x0, void **) = D_0046ECF0;
     D_00456DF8 = p;
     func_00100340(p + 0x20, func_002D11C0, QuadEntry_dtor, 0xB0, 0x40);
@@ -146,7 +155,8 @@ void *func_002D11C0(u8 *p) {
 }
 
 /* the doors: 8 of 0x210 bytes (vtable D_0046C540, global gDoors) */
-void *func_002D1200(u8 *p) {
+/* 0x002D1200 */
+void *Doors_ctor(u8 *p) {
     AT(p, 0x0, void **) = D_0046C540;
     gDoors = (VObject *)p;
     func_00100340(p + 0x10, func_002D1260, Door_dtor, 0x210, 8);
@@ -193,7 +203,8 @@ void func_002F08E0(u8 *p) {
 }
 
 /* two block pools (10 x 0x1600 and 3 x 0x890 bytes) and a table of 10 */
-void func_002E2B20(u8 *p) {
+/* 0x002E2B20 */
+void Creatures_ctorPools(u8 *p) {
     s32 i;
 
     BlockPool_Init((BlockPool *)(p + 0xDC40), p + 0x40, 0x1600, 0xA, p + 0xDC58);
@@ -205,7 +216,8 @@ void func_002E2B20(u8 *p) {
 }
 
 /* release the requests of the 8 doors that have one */
-void func_00223C90(u8 *p) {
+/* 0x00223C90 */
+void Doors_ReleaseRequests(u8 *p) {
     u8 i;
 
     if (AT(p, 0x4, void *) == NULL) {
@@ -272,7 +284,8 @@ void func_002A7B40(u8 *p) {
 extern void func_002F08E0(u8 *p);
 
 /* a progress sub-object's reset */
-void func_002A8060(u8 *p) {
+/* 0x002A8060 */
+void Progress_SubReset(u8 *p) {
     s32 i;
 
     AT(p, 0x0, s32) = 0;
@@ -334,10 +347,10 @@ void func_002A8060(u8 *p) {
     }
 }
 
-extern void func_0017CD90(u8 *p);
-extern void func_00223C90(u8 *p);
-extern void func_002A8890(u8 *p);
-extern void func_0021AFC0(void *p);
+extern void NavMesh_DropPending(u8 *p);
+extern void Doors_ReleaseRequests(u8 *p);
+extern void Pair_Clear(u8 *p);
+extern void Obstacle_ElemCtor(void *p);
 
 static inline void clear_if_set(u8 *p, u32 off) {
     if (AT(p, off, s32) != 0) {
@@ -346,7 +359,8 @@ static inline void clear_if_set(u8 *p, u32 off) {
 }
 
 /* the room manager (SceneGame +0x73EE80): drop everything for a new room */
-void func_00120980(u8 *m) {
+/* 0x00120980 */
+void RoomMgr_Clear(u8 *m) {
     static const u16 offs[16] = {
         0x9980, 0x9984, 0x9988, 0x9994, 0x9998, 0x999C, 0x99A0, 0x99A4,
         0x99A8, 0x99AC, 0x99B0, 0x99B4, 0x99B8, 0x99BC, 0x998C, 0x9990,
@@ -354,17 +368,17 @@ void func_00120980(u8 *m) {
     VObject *tc;
     s32 i;
 
-    func_0017CD90(m + 0x3E0);
+    NavMesh_DropPending(m + 0x3E0);
     for (i = 0; i < 16; i++) {
         clear_if_set(m, offs[i]);
     }
     for (i = 0; i < 2; i++) {
         AT(m, 0x3C0 + i * 4, s32) = -1;   /* the room buffers' rooms */
     }
-    func_00223C90(m + 0x1640);
+    Doors_ReleaseRequests(m + 0x1640);
     VCALL((VObject *)(m + 0x6740), 0xC, void (*)(VObject *))((VObject *)(m + 0x6740));
-    func_002A8890(m + 0x9360);
-    func_0021AFC0(m + 0x9380);
+    Pair_Clear(m + 0x9360);
+    Obstacle_ElemCtor(m + 0x9380);
     tc = gTexCache;
     VCALL(tc, 0x14, void (*)(VObject *, s32))(tc, 0);
     VCALL(tc, 0x14, void (*)(VObject *, s32))(tc, 0x15);
@@ -376,7 +390,8 @@ extern void *D_0046A9C0[], *D_00469D00[], *D_0046F350[];
 
 /* a message object with its own dimming overlay (vtable D_0046A9C0): a Task at +0xC, the
  * overlay (D_0046F350) at +0x120 */
-void *func_002D13B0(u8 *p) {
+/* 0x002D13B0 */
+void *DimMessage_ctor(u8 *p) {
     AT(p, 0x0, void **) = D_0046A9C0;
     Task_Construct((Task *)(p + 0xC));
     AT(p, 0x120, void **) = D_00469D00;
@@ -389,22 +404,24 @@ void *func_002D13B0(u8 *p) {
 }
 
 extern const PTMF sGameStateNull;
-extern void func_00223D60(u8 *p);
+extern void Doors_Reset(u8 *p);
 
 /* the room manager's constructor body (SceneGame +0x73EE80): no room-load state, then reset */
-void func_00120C80(u8 *m) {
-    func_00223D60(m + 0x1640);
+/* 0x00120C80 */
+void RoomMgr_ctor(u8 *m) {
+    Doors_Reset(m + 0x1640);
     VCALL((VObject *)(m + 0x6740), 0x8, void (*)(VObject *))((VObject *)(m + 0x6740));
     AT(m, 0x3D4, PTMF) = sGameStateNull;
     AT(m, 0x3C8, PTMF) = AT(m, 0x3D4, PTMF);
-    func_00120980(m);
+    RoomMgr_Clear(m);
 }
 
-extern void func_002D7680(u8 *p);
-extern void func_002E2B20(u8 *p);
+extern void PlacedThings_ctorPool(u8 *p);
+extern void Creatures_ctorPools(u8 *p);
 
 /* Progress: reset (no characters registered; its tables, the message object, the pools) */
-void func_00176780(u8 *prog) {
+/* 0x00176780 */
+void Progress_Reset(u8 *prog) {
     s32 i, j;
 
     gCharacters[0] = NULL;
@@ -416,7 +433,7 @@ void func_00176780(u8 *prog) {
     gCharacters[4] = NULL;
     gCharPursuer = NULL;
     gCharacters[5] = NULL;
-    func_002A8060(prog + 8);
+    Progress_SubReset(prog + 8);
     func_002A7B40(prog + 0xFD0);
     for (i = 0; i < 6; i++) {
         for (j = 0; j < 7; j++) {
@@ -424,19 +441,21 @@ void func_00176780(u8 *prog) {
         }
     }
     Message_Init(prog + 0x6FC218);
-    func_002D7680(prog + 0x6FC340);
-    func_002E2B20(prog + 0x706440);
+    PlacedThings_ctorPool(prog + 0x6FC340);
+    Creatures_ctorPools(prog + 0x706440);
 }
 
 /* set a 3-word value: +0 = b, +4 = a, +8 = c */
-void func_001F40F0(u8 *p, s32 a, s32 b, s32 c) {
+/* 0x001F40F0 */
+void Triple_Set(u8 *p, s32 a, s32 b, s32 c) {
     AT(p, 0x4, s32) = a;
     AT(p, 0x0, s32) = b;
     AT(p, 0x8, s32) = c;
 }
 
 /* one of the 64 (0xB0 bytes): cleared */
-void func_0025FC50(u8 *e) {
+/* 0x0025FC50 */
+void PlacedObject_Clear(u8 *e) {
     AT(e, 0x0, u8) = 0;
     AT(e, 0x1, u8) = 0;
     AT(e, 0x8, s32) = 0;
@@ -446,11 +465,12 @@ void func_0025FC50(u8 *e) {
     AT(e, 0x7C, s32) = 0;
     AT(e, 0x90, s32) = 0;
     AT(e, 0x94, s32) = 0;
-    func_001F40F0(e + 0x98, 0, 0, 0);
+    Triple_Set(e + 0x98, 0, 0, 0);
 }
 
 /* the manager of 64 (D_0046ECF0) +0x8: clear them all */
-void func_002C9480(u8 *p) {
+/* 0x002C9480 */
+void PlacedObjects_ClearAll(u8 *p) {
     s32 i;
 
     AT(p, 0x4, s32) = 0;
@@ -458,12 +478,13 @@ void func_002C9480(u8 *p) {
     AT(p, 0xC, s32) = 0;
     AT(p, 0x10, s32) = 0;
     for (i = 0; i < 0x40; i++) {
-        func_0025FC50(p + 0x20 + i * 0xB0);
+        PlacedObject_Clear(p + 0x20 + i * 0xB0);
     }
 }
 
 /* (the 12-byte entries of Progress +0x10B0: reset) */
-void func_002A84C0(u8 *e) {
+/* 0x002A84C0 */
+void SlotCmds_Reset(u8 *e) {
     AT(e, 0x0, u8) = 0;
     AT(e, 0x1, u8) = 0;
     AT(e, 0x2, u8) = 0xFF;
@@ -473,7 +494,8 @@ void func_002A84C0(u8 *e) {
 }
 
 /* (the 16-byte entries of Progress +0x1014: reset) */
-void func_002A8500(u8 *e) {
+/* 0x002A8500 */
+void Relations_Reset(u8 *e) {
     AT(e, 0x0, u8) = 0;
     AT(e, 0x1, u8) = 0;
     AT(e, 0x2, u16) = 0;
@@ -483,7 +505,8 @@ void func_002A8500(u8 *e) {
 }
 
 /* the doors (gDoors) +0x48: door `i`'s data buffer (0x2000 bytes each, from +0x10C0) */
-void *func_00221E70(u8 *d, s32 i) {
+/* 0x00221E70 */
+void *Doors_DataBuffer(u8 *d, s32 i) {
     return d + (i << 13) + 0x10C0;
 }
 
@@ -496,7 +519,8 @@ static s32 clip_inside(const f32 *c) {
 }
 
 /* a doorway quad (its first four points) is wholly on screen */
-s32 func_001F9790(u8 *o, f32 (*q)[4]) {
+/* 0x001F9790 */
+s32 Doorway_OnScreen(u8 *o, f32 (*q)[4]) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 c[4][4] __attribute__((aligned(16)));
     s32 out = 0;
@@ -515,10 +539,11 @@ s32 func_001F9790(u8 *o, f32 (*q)[4]) {
 /* +0x38 add a lit doorway for this frame (six vectors: four corners, its facing, its top
  * middle) when it is wholly on screen and there is room (+0x340, 16 of them, +0x940 vectors
  * used) */
-s32 func_001F9FC0(u8 *o, f32 (*q)[4]) {
+/* 0x001F9FC0 */
+s32 Lights_AddDoorway(u8 *o, f32 (*q)[4]) {
     s32 i;
 
-    if (!(u8)func_001F9790(o, q) || AT(o, 0x940, s32) >= 0x60) {
+    if (!(u8)Doorway_OnScreen(o, q) || AT(o, 0x940, s32) >= 0x60) {
         return 0;
     }
     for (i = 0; i < 6; i++) {
@@ -529,7 +554,8 @@ s32 func_001F9FC0(u8 *o, f32 (*q)[4]) {
 }
 
 /* reset: ambient (0, 128, 128, 128), the 16 lights to "none" */
-void func_001F9C80(u8 *o) {
+/* 0x001F9C80 */
+void Lights_Reset(u8 *o) {
     f32 light[12] __attribute__((aligned(16)));   /* (read with lq) */
     s32 i;
 
@@ -565,8 +591,9 @@ static void vram_area(u8 *o, u32 slotOff, u32 tex0Off, s32 which) {
 }
 
 /* start of a room: reset the lights, get the two VRAM areas if not yet held */
-void func_001F9D90(u8 *o) {
-    func_001F9C80(o);
+/* 0x001F9D90 */
+void Lights_RoomStart(u8 *o) {
+    Lights_Reset(o);
     if (AT(o, 0x320, s32) == -1) {
         vram_area(o, 0x320, 0x328, 0);
     }
@@ -593,7 +620,8 @@ void func_001F9D90(u8 *o) {
 
 /* +0x40 the extra light (+0x950) on or off: on, its vector (+0x960) and strength (+0x970);
    off also turns off the two below */
-void func_001F96B0(u8 *o, u8 on, const f32 *v, f32 k) {
+/* 0x001F96B0 */
+void Lights_ExtraLight(u8 *o, u8 on, const f32 *v, f32 k) {
     AT(o, 0x950, u8) = on;
     if (on == 0) {
         AT(o, 0x980, u8) = 0;
@@ -606,7 +634,8 @@ void func_001F96B0(u8 *o, u8 on, const f32 *v, f32 k) {
 
 /* +0x44 extra light `i` (of 2, 0x30 apart from +0x980) on or off: on, its position (+0x990)
    and two parameters (+0x9A0 / +0x9A4) */
-void func_001F9710(u8 *o, s32 i, u8 on, const f32 *pos, f32 a, f32 b) {
+/* 0x001F9710 */
+void Lights_ExtraLightI(u8 *o, s32 i, u8 on, const f32 *pos, f32 a, f32 b) {
     u8 *l = o + i * 0x30;
 
     AT(l, 0x980, u8) = on;
@@ -620,7 +649,8 @@ void func_001F9710(u8 *o, s32 i, u8 on, const f32 *pos, f32 a, f32 b) {
 extern void *D_0046B300[], *D_0046B350[];
 
 /* +0x8: destructor (the global goes) */
-void *func_001F9640(u8 *o, s32 flags) {
+/* 0x001F9640 */
+void *Lights_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046B300;
         AT(o, 0x0, void **) = D_0046B350;
@@ -633,7 +663,8 @@ void *func_001F9640(u8 *o, s32 flags) {
 }
 
 /* +0x20 set light `i` (3 vectors) */
-void func_001FA5E0(u8 *o, const f32 *light, s32 i) {
+/* 0x001FA5E0 */
+void Lights_SetLight(u8 *o, const f32 *light, s32 i) {
     f32 *d = (f32 *)(o + 0x20 + i * 0x30);
     s32 k;
 
@@ -644,7 +675,8 @@ void func_001FA5E0(u8 *o, const f32 *light, s32 i) {
 
 /* +0x1C light i (12 floats) into `out` (the light is returned by value: the caller's buffer
  * comes first) */
-void func_001FA680(f32 *out, u8 *o, s32 i) {
+/* 0x001FA680 */
+void Lights_GetLight(f32 *out, u8 *o, s32 i) {
     const f32 *l = (const f32 *)(o + 0x20 + i * 0x30);
     s32 k;
 
@@ -654,14 +686,16 @@ void func_001FA680(f32 *out, u8 *o, s32 i) {
 }
 
 /* +0x18 VRAM area i's TEX0 (+0x328) */
-u64 func_001FA6B0(u8 *o, s32 i) {
+/* 0x001FA6B0 */
+u64 Lights_AreaTex0(u8 *o, s32 i) {
     return AT(o, 0x328 + i * 8, u64);
 }
 
 /* +0x2C a shadow may fall at `pos` on nav triangle `tri`: none of the triangle's lights (+0x4C
  * bits) is switched off for shadows (+0x944), and `pos` lies in front of the nav mesh's plane
  * (+0x2C, by the triangle) as seen from the camera */
-s32 func_001FA430(u8 *o, u32 tri, f32 *pos) {
+/* 0x001FA430 */
+s32 Lights_ShadowMayFall(u8 *o, u32 tri, f32 *pos) {
     f32 n[4] __attribute__((aligned(16)));
     f32 eye[4] __attribute__((aligned(16)));
     f32 d[4] __attribute__((aligned(16)));
@@ -683,13 +717,14 @@ s32 func_001FA430(u8 *o, u32 tri, f32 *pos) {
     return !(sceVu0InnerProduct(n, d) < 0.0f) ^ 1;
 }
 
-void func_001F99B0(VObject *l, s32 *out, u32 tri, const f32 *pos);
+void Lights_Brightest(VObject *l, s32 *out, u32 tri, const f32 *pos);
 
 /* +0x14 the up to 3 lights casting shadows at `pos` on nav triangle `tri` into out[0..2]
  * (none: count 0, the rest -1) */
-void func_001FA6C0(u8 *o, const f32 *pos, s32 tri, s32 *out) {
+/* 0x001FA6C0 */
+void Lights_ShadowLights(u8 *o, const f32 *pos, s32 tri, s32 *out) {
     if (AT(o, 0x10, s32) > 0 && tri != -1) {
-        func_001F99B0((VObject *)o, out, tri, pos);
+        Lights_Brightest((VObject *)o, out, tri, pos);
     } else {
         out[0] = 0;
         out[1] = -1;
@@ -698,12 +733,14 @@ void func_001FA6C0(u8 *o, const f32 *pos, s32 tri, s32 *out) {
 }
 
 /* +0x3C the blocker quads (6 vectors each) */
-u8 *func_001F9FB0(u8 *o) {
+/* 0x001F9FB0 */
+u8 *Lights_Blockers(u8 *o) {
     return o + 0x340;
 }
 
 /* +0x40 the blocker quads' vector count (over 0x60: reset) */
-s32 func_001F9F80(u8 *o) {
+/* 0x001F9F80 */
+s32 Lights_BlockerCount(u8 *o) {
     if (AT(o, 0x940, s32) >= 0x61) {
         AT(o, 0x940, s32) = 0;
     }
@@ -730,7 +767,8 @@ static void light_get(VObject *l, f32 *out, s32 i) {
 /* the up to 3 lights brightest at `pos` of those reaching nav triangle `tri` (its +0x4C bits):
  * by their luminance (0.3 R + 0.6 G + 0.1 B) x intensity, within a range (v2.x, if any)
  * fading out linearly; their indices into out[0..2] (-1: none) */
-void func_001F99B0(VObject *l, s32 *out, u32 tri, const f32 *pos) {
+/* 0x001F99B0 */
+void Lights_Brightest(VObject *l, s32 *out, u32 tri, const f32 *pos) {
     f32 best[3][2];
     u32 mask = 0;
     s32 i, k;
@@ -790,7 +828,8 @@ void func_001F99B0(VObject *l, s32 *out, u32 tri, const f32 *pos) {
 /* the scripted lighting on top (+0x950): the lights' colours scaled (+0x970), the ambient
  * raised (+0x960), and up to two lights from the camera's side (+0x980, 0x30 apart: on, colour
  * +0x10, turned +0x20 up and +0x24 about) into slots 2 and 1 with no falloff */
-void func_001FA710(u8 *l, f32 (*dir)[4], f32 (*col)[4], f32 *fall, f32 (*lpos)[4]) {
+/* 0x001FA710 */
+void Lights_Scripted(u8 *l, f32 (*dir)[4], f32 (*col)[4], f32 *fall, f32 (*lpos)[4]) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 q[4] __attribute__((aligned(16)));
     f32 up[4] __attribute__((aligned(16)));
@@ -890,13 +929,14 @@ static void light_empty(f32 (*dir)[4], f32 (*col)[4], f32 *fall, s32 k) {
 /* +0x10 the light set for a model at `pos` on nav triangle `tri` (none: the room's light 0
  * alone; no position: just a default ambient) into dir / col / fall (and the lights'
  * positions into lpos, if given) */
-void func_001FAA00(u8 *l, const f32 *pos, s32 tri, f32 (*dir)[4], f32 (*col)[4], f32 *fall, f32 (*lpos)[4]) {
+/* 0x001FAA00 */
+void Lights_ForModel(u8 *l, const f32 *pos, s32 tri, f32 (*dir)[4], f32 (*col)[4], f32 *fall, f32 (*lpos)[4]) {
     f32 v[12] __attribute__((aligned(16)));
     s32 idx[4];
     s32 k = 0;
 
     if (AT(l, 0x10, s32) > 0 && tri != -1) {
-        func_001F99B0((VObject *)l, idx, tri, pos);
+        Lights_Brightest((VObject *)l, idx, tri, pos);
         sceVu0UnitMatrix(dir);
         for (k = 0; k < 3 && idx[k] != -1; k++) {
             VCALL((VObject *)l, 0x1C, void (*)(f32 *, VObject *, s32))(v, (VObject *)l, idx[k]);
@@ -933,11 +973,12 @@ void func_001FAA00(u8 *l, const f32 *pos, s32 tri, f32 (*dir)[4], f32 (*col)[4],
     col[3][2] = AT(l, 0x1C, f32);
     col[3][3] = 1.0f;
     fall[3] = 0.0f;
-    func_001FA710(l, dir, col, fall, lpos);
+    Lights_Scripted(l, dir, col, fall, lpos);
 }
 
 /* +0x24 light i back to the room's own (its table +0x9E0, if any) */
-void func_001FA530(u8 *o, s32 i) {
+/* 0x001FA530 */
+void Lights_RestoreLight(u8 *o, s32 i) {
     f32 l[12] __attribute__((aligned(16)));
     const f32 *src;
     s32 k;
@@ -957,7 +998,8 @@ static const char sHmbTex[] = "O_HMB\\HMB_000.TEX";
 
 /* SceneGame +0x706480 (the creatures' resources, HMB): load the model and its textures (the
  * second argument is unused) */
-void func_002E2890(u8 *o, const void *unused) {
+/* 0x002E2890 */
+void Creatures_LoadModel(u8 *o, const void *unused) {
     VObject *ld = gFileLoader;
 
     VCALL(ld, 0xC, void (*)(VObject *, const char *, void *, u32, s32))(ld, sHmbPck, o + 0xF680, 0x10000000, 0);
@@ -966,7 +1008,8 @@ void func_002E2890(u8 *o, const void *unused) {
 
 /* the doors +0x4C: select door buffer `i` (+0x50C0[i]; its first word to +0x50C8[i]); whether
  * it holds anything */
-s32 func_00221E80(u8 *d, s32 i) {
+/* 0x00221E80 */
+s32 Doors_SelectBuffer(u8 *d, s32 i) {
     AT(d, 0x50C0 + i * 4, u8 *) = d + (i << 13) + 0x10C0;
     AT(d, 0x50C8 + i * 4, s32) = AT(AT(d, 0x50C0 + i * 4, u8 *), 0, s32);
     return AT(d, 0x50C8 + i * 4, s32) != 0;
@@ -978,7 +1021,8 @@ extern char D_0044E4A0[];   /* "ST_%03X\\ST_%03X.PAC" */
 
 /* load room `room` (ST_xxx\ST_xxx.PAC) into slot `slot` (+0x99C0, 0x2A0000 each); a load
  * still in flight in that slot is first finished (its handler +0x3C8[slot]) or cancelled */
-void func_00120720(u8 *rm, u32 room, s32 slot) {
+/* 0x00120720 */
+void RoomMgr_LoadRoom(u8 *rm, u32 room, s32 slot) {
     char path[0x100];
     char name[0x100];
     u32 *cur;
@@ -1020,12 +1064,14 @@ void func_00120720(u8 *rm, u32 room, s32 slot) {
 }
 
 /* SceneGame +0xF29740 (gSceneGameF29740): reset for a new room */
-void func_001AABC0(u8 *o) {
+/* 0x001AABC0 */
+void PathPlanHolder_NewRoom(u8 *o) {
     AT(o, 0x4, s32) = 0;
 }
 
 /* SceneGame +0xF6CD30: reset its pool of 32 0xA0-byte entries and the 32 slots +0x1438 */
-void func_00267250(u8 *o) {
+/* 0x00267250 */
+void RoomEffects_Reset(u8 *o) {
     s32 i;
 
     BlockPool_Init((BlockPool *)(o + 0x1400), o, 0xA0, 0x20, o + 0x1418);
@@ -1035,12 +1081,14 @@ void func_00267250(u8 *o) {
 }
 
 /* operator delete for the room effects' pool: nothing (the pool is dropped at once) */
-void func_002672E0(void *p) {
+/* 0x002672E0 */
+void RoomEffects_delete(void *p) {
 }
 
 /* SceneGame +0xF6E200: reset its 64 KB heap (+0x10000, 0x802 blocks) and its 0x400 slots
  * (+0x18034) */
-void func_002D6330(u8 *o) {
+/* 0x002D6330 */
+void EffectMgr_Reset(u8 *o) {
     u32 i;
 
     Heap_Setup((VObject *)(o + 0x10000), o, 0x10000, o + 0x10014, 0x802);
@@ -1051,12 +1099,14 @@ void func_002D6330(u8 *o) {
 }
 
 /* the effect heap's free: nothing (effects sit in its arena, dropped all at once) */
-void func_002D63B0(void *p) {
+/* 0x002D63B0 */
+void EffectMgr_free(void *p) {
 }
 
 /* whether room slot `slot` is still loading (its handler +0x3C8[slot] runs once the file is
  * in) */
-s32 func_00120660(u8 *rm, s32 slot) {
+/* 0x00120660 */
+s32 RoomMgr_SlotLoading(u8 *rm, s32 slot) {
     u32 tag = AT(rm, 0x3C0 + slot * 4, u32);
     PTMF *done;
 
@@ -1076,7 +1126,8 @@ s32 func_00120660(u8 *rm, s32 slot) {
 
 /* SceneGame +0x706480: hook its message data (+0x27680) up to message slot 6 (result at
  * +0x38681) */
-void func_002E2820(u8 *o) {
+/* 0x002E2820 */
+void Creatures_HookMessages(u8 *o) {
     AT(o, 0x38680, u8) = 6;
     AT(o, 0x38681, u8) = VCALL(gBootMessage, 0x8, u32 (*)(VObject *, u32, void *))(
         gBootMessage, AT(o, 0x38680, u8), o + 0x27680);
@@ -1084,11 +1135,11 @@ void func_002E2820(u8 *o) {
 
 extern u8 D_0047B350;
 extern u8 *D_01991EC4;   /* the current room's section 10 */
-extern void func_00223B60(u8 *d, u8 *sec);
-extern s32 func_002A88A0(u8 *o, u8 *sec);
-extern void func_0025D370(u8 *rm, u8 *sec);
-extern void func_0025E0D0(u8 *rm);
-extern void func_00266CD0(u8 *o, u8 *sec);
+extern void Doors_TakeRoom(u8 *d, u8 *sec);
+extern s32 RoomMgr_TakeSection14(u8 *o, u8 *sec);
+extern void RoomMgr_TakeAreas(u8 *rm, u8 *sec);
+extern void RoomMgr_ResetAreas(u8 *rm);
+extern void RoomEffects_TakeRoom(u8 *o, u8 *sec);
 
 /* A room PAC starts with 17 section offsets (0: none); the room manager keeps pointers to
  * them at +0x9980.. */
@@ -1102,7 +1153,8 @@ static u8 *room_section(u8 *pac, s32 i) {
 
 /* make room slot `slot` the current room: find its sections and hand them to the model
  * set (+0x3E0), the camera, lights, collision (+0x1640), texture cache, ... */
-void func_0011FFB0(u8 *rm, s32 slot) {
+/* 0x0011FFB0 */
+void RoomMgr_MakeCurrent(u8 *rm, s32 slot) {
     u8 *pac = rm + slot * 0x2A0000 + 0x99C0;
     VObject *o;
 
@@ -1125,10 +1177,10 @@ void func_0011FFB0(u8 *rm, s32 slot) {
         }
         ROOM_SEC(rm, 0x9994) = room_section(pac, 4);
         ROOM_SEC(rm, 0x99A0) = room_section(pac, 7);
-        func_00223B60(rm + 0x1640, ROOM_SEC(rm, 0x99A0));
+        Doors_TakeRoom(rm + 0x1640, ROOM_SEC(rm, 0x99A0));
         ROOM_SEC(rm, 0x99A4) = room_section(pac, 8);
         ROOM_SEC(rm, 0x99B4) = room_section(pac, 14);
-        func_002A88A0(rm + 0x9360, ROOM_SEC(rm, 0x99B4));
+        RoomMgr_TakeSection14(rm + 0x9360, ROOM_SEC(rm, 0x99B4));
     }
     ROOM_SEC(rm, 0x9998) = room_section(pac, 5);
     ROOM_SEC(rm, 0x999C) = room_section(pac, 6);
@@ -1137,12 +1189,12 @@ void func_0011FFB0(u8 *rm, s32 slot) {
         ROOM_SEC(rm, 0x9990) = NULL;
     } else {
         ROOM_SEC(rm, 0x998C) = pac + AT(pac, 0xC, u32);
-        func_0025D370(rm, ROOM_SEC(rm, 0x998C));
+        RoomMgr_TakeAreas(rm, ROOM_SEC(rm, 0x998C));
         if (AT(pac, 0x24, u32) != 0) {
             ROOM_SEC(rm, 0x9990) = pac + AT(pac, 0x24, u32);
             VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, ROOM_SEC(rm, 0x9990), 0);
         }
-        func_0025E0D0(rm);
+        RoomMgr_ResetAreas(rm);
         AT(rm, 0x35C, u8) = 0;
     }
     VCALL(gLights, 0xC, void (*)(VObject *, void *))(gLights, ROOM_SEC(rm, 0x9994));
@@ -1168,7 +1220,7 @@ void func_0011FFB0(u8 *rm, s32 slot) {
     o = (VObject *)(rm + 0x6740);
     VCALL(o, 0x10, void (*)(VObject *, void *, void *))(o, ROOM_SEC(rm, 0x99B0), ROOM_SEC(rm, 0x99B8));
     VCALL(o, 0x14, void (*)(VObject *))(o);
-    func_00266CD0((u8 *)gRoomEffects, room_section(pac, 13));
+    RoomEffects_TakeRoom((u8 *)gRoomEffects, room_section(pac, 13));
     Obstacles_Reset(rm + 0x9380);
     VCALL(gRenderer, 0x1C, void (*)(VObject *))(gRenderer);
 }
@@ -1176,7 +1228,8 @@ void func_0011FFB0(u8 *rm, s32 slot) {
 /* the doors: take the room's doors (PAC section 7: 8 offsets, 0 = no door). Each door
  * (+0x10, 0x210 each): +0x4 index, +0x8 its id (-1: none, else +0x70 set), +0x10 / +0x20
  * two points, +0x30 / +0x40 a third (w 0), +0x72 present */
-void func_00223B60(u8 *d, u8 *sec) {
+/* 0x00223B60 */
+void Doors_TakeRoom(u8 *d, u8 *sec) {
     u8 i;
 
     AT(d, 0x4, u8 *) = sec;
@@ -1209,7 +1262,8 @@ void func_00223B60(u8 *d, u8 *sec) {
 }
 
 /* room manager +0x9360: take PAC section 14 (+0x4; its count at +0x8) */
-s32 func_002A88A0(u8 *o, u8 *sec) {
+/* 0x002A88A0 */
+s32 RoomMgr_TakeSection14(u8 *o, u8 *sec) {
     if (sec != NULL) {
         AT(o, 0x8, s32) = AT(sec, 0, s32);
         AT(o, 0x4, u8 *) = sec;
@@ -1224,7 +1278,8 @@ s32 func_002A88A0(u8 *o, u8 *sec) {
  * 0xC0-byte entries, -1 terminated). Per area: 7 bytes at +0xD8 (+0x8 bits 16..23, the low and
  * high nibble of +0xC, 0, the low nibble again, the size of its (x, z) quad in 1/256: width,
  * depth) and the quad (4 points in 0..1 from entry +0x50) at +0x140 and +0x240 (0x20 each) */
-void func_0025D370(u8 *rm, u8 *sec) {
+/* 0x0025D370 */
+void RoomMgr_TakeAreas(u8 *rm, u8 *sec) {
     u8 *e;
     s32 j;
     s32 k;
@@ -1282,7 +1337,8 @@ void func_0025D370(u8 *rm, u8 *sec) {
 }
 
 /* the room manager: reset the area state */
-void func_0025E0D0(u8 *rm) {
+/* 0x0025E0D0 */
+void RoomMgr_ResetAreas(u8 *rm) {
     AT(rm, 0x6C, s32) = 0;
     AT(rm, 0x70, s32) = 0;
     AT(rm, 0x74, s32) = 0;
@@ -1295,13 +1351,14 @@ void func_0025E0D0(u8 *rm) {
 
 /* the lights +0xC: take the room's lights (PAC section 4: count, ambient colour, then 0x30
  * bytes per light, set through +0x20); no section: reset */
-void func_001FAF70(VObject *l, u8 *sec) {
+/* 0x001FAF70 */
+void Lights_TakeRoom(VObject *l, u8 *sec) {
     f32 light[12];
     s32 i, k;
     u8 *p;
 
     if (sec == NULL) {
-        func_001F9C80((u8 *)l);
+        Lights_Reset((u8 *)l);
         return;
     }
     AT(l, 0x9E0, u8 *) = sec;
@@ -1319,11 +1376,12 @@ void func_001FAF70(VObject *l, u8 *sec) {
     }
 }
 
-extern void func_00221880(u8 *door);
+extern void Door_Reset(u8 *door);
 
 /* the doors +0x24: PAC section 8 (one offset per present door, in door order; entries
  * placed 0x10 apart): reset each present door and point it at its entry, then +0x7C */
-void func_00222F60(VObject *d, u8 *sec) {
+/* 0x00222F60 */
+void Doors_TakeSection8(VObject *d, u8 *sec) {
     u8 i;
     s32 n = 0;
 
@@ -1340,7 +1398,7 @@ void func_00222F60(VObject *d, u8 *sec) {
         e = (u8 *)d + i * 0x210;
         RoomMesh_Reset(e + 0x90);
         e += 0x10;
-        func_00221880(e);
+        Door_Reset(e);
         /* (the original then skips doors whose byte +0x70 equals -1, which a byte never is) */
         AT(e, 0x0, u8 *) = sec + AT(sec, n * 4, u32) + n * 0x10;
         n++;
@@ -1349,7 +1407,8 @@ void func_00222F60(VObject *d, u8 *sec) {
 }
 
 /* a placed object released: its state cleared and its animation key (+0x98) reset */
-void func_0025FC10(u8 *obj) {
+/* 0x0025FC10 */
+void PlacedObject_Release(u8 *obj) {
     AT(obj, 0x0, u8) = 0;
     AT(obj, 0x1, u8) = 0;
     AT(obj, 0x8, s32) = 0;
@@ -1359,11 +1418,12 @@ void func_0025FC10(u8 *obj) {
     AT(obj, 0x7C, s32) = 0;
     AT(obj, 0x90, s32) = 0;
     AT(obj, 0x94, s32) = 0;
-    func_001F40F0(obj + 0x98, 0, 0, 0);
+    Triple_Set(obj + 0x98, 0, 0, 0);
 }
 
 /* room manager +0x6740 +0x20: each placed object in use released and its bit cleared */
-void func_002C9010(u8 *o) {
+/* 0x002C9010 */
+void PlacedObjects_ReleaseAll(u8 *o) {
     s32 i;
 
     for (i = 0; i < 0x40; i++) {
@@ -1373,7 +1433,7 @@ void func_002C9010(u8 *o) {
         if (!(AT(o, 0xC + (i >> 5) * 4, u32) & (1u << (i & 0x1F)))) {
             continue;
         }
-        func_0025FC10(obj);
+        PlacedObject_Release(obj);
         k = (u32)(obj - (o + 0x20)) / 0xB0;
         AT(o, 0xC + (k >> 5) * 4, u32) &= ~(1u << (k & 0x1F));
     }
@@ -1381,7 +1441,8 @@ void func_002C9010(u8 *o) {
 
 /* room manager +0x6740 +0x1C: entry k of the named record in its table (+0x8: count, then
  * offsets; each record a name, +0x10 its count, +0x14 the offset of its 0x10-byte entries) */
-u8 *func_002C90F0(u8 *o, const char *name, u32 k) {
+/* 0x002C90F0 */
+u8 *PlacedObjects_RecordEntry(u8 *o, const char *name, u32 k) {
     u8 *tbl = AT(o, 0x8, u8 *);
     u32 j;
 
@@ -1402,11 +1463,13 @@ u8 *func_002C90F0(u8 *o, const char *name, u32 k) {
 }
 
 /* room manager +0x6740 +0x34 */
-void func_002C9460(u8 *o) {
+/* 0x002C9460 */
+void PlacedObjects_Noop34(u8 *o) {
 }
 
 /* room manager +0x6740 +0x18: the placed object named `name` (its +0x70), or NULL */
-u8 *func_002C91D0(u8 *o, const char *name) {
+/* 0x002C91D0 */
+u8 *PlacedObjects_Named(u8 *o, const char *name) {
     s32 i;
 
     for (i = 0; i < 0x40; i++) {
@@ -1425,16 +1488,17 @@ u8 *func_002C91D0(u8 *o, const char *name) {
     return NULL;
 }
 
-extern void func_0025FC50(u8 *o);
-extern void func_0025F970(u8 *o, u8 *def);
-extern void func_0025F910(u8 *o, u8 *def);
-extern void func_0025F8B0(u8 *o, u8 *def);
-extern void func_0025F850(u8 *o, u8 *def);
+extern void PlacedObject_Clear(u8 *o);
+extern void PlacedObject_Init0(u8 *o, u8 *def);
+extern void PlacedObject_Init1(u8 *o, u8 *def);
+extern void PlacedObject_Init2(u8 *o, u8 *def);
+extern void PlacedObject_Init3(u8 *o, u8 *def);
 
 /* room manager +0x6740 +0x14: create the room's placed objects from its table (+0x4: four
  * counts, one per kind, then offsets from +0x20), each in a free slot of 64 (0xB0 each from
  * +0x20, use bitmap +0xC) */
-void func_002C92A0(u8 *o) {
+/* 0x002C92A0 */
+void PlacedObjects_Create(u8 *o) {
     u8 *h = AT(o, 0x4, u8 *);
     s32 end0, end1, end2, total;
     s32 i, j;
@@ -1456,7 +1520,7 @@ void func_002C92A0(u8 *o) {
             if (!(*used & (1 << (j & 0x1F)))) {
                 *used |= 1 << (j & 0x1F);
                 slot = o + j * 0xB0 + 0x20;
-                func_0025FC50(slot);
+                PlacedObject_Clear(slot);
                 break;
             }
         }
@@ -1465,13 +1529,13 @@ void func_002C92A0(u8 *o) {
         }
         def = h + AT(h, 0x20 + i * 4, u32);
         if (i < end0) {
-            func_0025F970(slot, def);
+            PlacedObject_Init0(slot, def);
         } else if (i < end1) {
-            func_0025F910(slot, def);
+            PlacedObject_Init1(slot, def);
         } else if (i < end2) {
-            func_0025F8B0(slot, def);
+            PlacedObject_Init2(slot, def);
         } else {
-            func_0025F850(slot, def);
+            PlacedObject_Init3(slot, def);
         }
     }
 }
@@ -1487,24 +1551,29 @@ static void placed_init(u8 *o, s32 kind, u8 *def) {
     sceVu0CopyVector((f32 *)(o + 0x20), (f32 *)(def + 0x20));
 }
 
-void func_0025F970(u8 *o, u8 *def) {
+/* 0x0025F970 */
+void PlacedObject_Init0(u8 *o, u8 *def) {
     placed_init(o, 0, def);
 }
 
-void func_0025F910(u8 *o, u8 *def) {
+/* 0x0025F910 */
+void PlacedObject_Init1(u8 *o, u8 *def) {
     placed_init(o, 1, def);
 }
 
-void func_0025F8B0(u8 *o, u8 *def) {
+/* 0x0025F8B0 */
+void PlacedObject_Init2(u8 *o, u8 *def) {
     placed_init(o, 2, def);
 }
 
-void func_0025F850(u8 *o, u8 *def) {
+/* 0x0025F850 */
+void PlacedObject_Init3(u8 *o, u8 *def) {
     placed_init(o, 3, def);
 }
 
 /* back to the definition's two vectors */
-void func_0025F810(u8 *o) {
+/* 0x0025F810 */
+void PlacedObject_ToDef(u8 *o) {
     u8 *def = AT(o, 0x70, u8 *);
 
     AT(o, 0x10, f32) = AT(def, 0x10, f32);
@@ -1517,13 +1586,14 @@ void func_0025F810(u8 *o) {
 
 /* start animation `id` of the object (+0x94 its data from the placed objects' +0x1C, played
    by +0x98 from the start) */
-void func_0025F9D0(u8 *o, s32 id) {
+/* 0x0025F9D0 */
+void PlacedObject_StartAnim(u8 *o, s32 id) {
     u8 *a;
 
     AT(o, 0x94, u8 *) = VCALL((VObject *)D_00456DF8, 0x1C, u8 *(*)(void *, u8 *, s32))(D_00456DF8, AT(o, 0x70, u8 *), id);
     a = AT(o, 0x94, u8 *);
     if (a != NULL) {
-        func_001F40F0(o + 0x98, AT(a, 0x4, s32), (s32)(a + AT(a, 0x8, s32)), AT(a, 0x0, s32));
+        Triple_Set(o + 0x98, AT(a, 0x4, s32), (s32)(a + AT(a, 0x8, s32)), AT(a, 0x0, s32));
         AT(o, 0x90, s32) = 0;
     }
 }
@@ -1544,7 +1614,7 @@ static s32 effect_create(u8 *o, s32 slot, void **vtbl) {
     if (mem == NULL) {
         return 0;
     }
-    e = func_002672F0(0xA0, mem);
+    e = RoomEffects_new(0xA0, mem);
     if (e != NULL) {
         e->vtbl = vtbl;
     }
@@ -1557,7 +1627,8 @@ static s32 effect_create(u8 *o, s32 slot, void **vtbl) {
 /* SceneGame +0xF6CD30 (gRoomEffects): the room's effects from PAC section 13 (offsets at
  * +0x8.. +0x14 for the four effect slots +0x14B4.. +0x14A8; the third gets 4 words and 3
  * zeros); no section: the camera's default depth range */
-void func_00266CD0(u8 *o, u8 *sec) {
+/* 0x00266CD0 */
+void RoomEffects_TakeRoom(u8 *o, u8 *sec) {
     static const u16 sSlots[4] = {0x14B4, 0x14B0, 0x14AC, 0x14A8};
     void **classes[4];
     s32 k;
@@ -1602,12 +1673,14 @@ void func_00266CD0(u8 *o, u8 *sec) {
 }
 
 /* placement new (the effects' copy) */
-void *func_002672F0(u32 size, void *place) {
+/* 0x002672F0 */
+void *RoomEffects_new(u32 size, void *place) {
     return place;
 }
 
 /* SceneGame +0xF6E200: per-room reset (its heap +0x10000 via +0xC, the 0x400 slots +0x18034) */
-void func_002D6100(u8 *o) {
+/* 0x002D6100 */
+void EffectMgr_RoomReset(u8 *o) {
     VObject *heap = (VObject *)(o + 0x10000);
     u32 i;
 
@@ -1619,7 +1692,8 @@ void func_002D6100(u8 *o) {
 }
 
 /* remove effect `slot` (0..0x3FF): its heap +0x14 (destroy) and the slot emptied */
-void func_002D6170(u8 *o, s32 slot) {
+/* 0x002D6170 */
+void EffectMgr_Remove(u8 *o, s32 slot) {
     void **p;
 
     if (slot < 0 || (u32)slot >= 0x400) {
@@ -1639,7 +1713,8 @@ extern void **D_0041F950[];  /* per map: its pages (by the entry's +0x4) */
 
 /* SceneGame +0x101EBC0 (the map): find which map and page show room `room` (+0x108 the room,
  * +0x10C/+0x10D the map, +0x10E/+0x10F the page; -1: none) */
-void func_00305520(u8 *m, s32 room) {
+/* 0x00305520 */
+void Map_FindRoom(u8 *m, s32 room) {
     s32 i;
     u8 *e;
 
@@ -1667,7 +1742,8 @@ void func_00305520(u8 *m, s32 room) {
 }
 
 /* the map turned to page `page` if its room (+0x108) is shown there too */
-void func_00303E60(u8 *m, s8 page) {
+/* 0x00303E60 */
+void Map_TurnTo(u8 *m, s8 page) {
     u8 *e;
 
     if (AT(m, 0x108, s32) == -1 || AT(m, 0x10D, s8) == -1 || AT(m, 0x10F, s8) == page) {
@@ -1765,7 +1841,8 @@ static inline void map_first(u8 *m, s8 map, s8 page) {
 
 /* Left / right on the map: the previous / next page, past the ends the previous / next map the
  * player has (round), its last / first page. A new page has its picture loaded: 1. */
-s32 func_00303F90(u8 *m) {
+/* 0x00303F90 */
+s32 Map_LeftRight(u8 *m) {
     u32 pad = D_0047E36C;
     s8 map = MAP_CUR(m), page = MAP_PAGE(m);
 
@@ -1827,7 +1904,8 @@ s32 func_00303F90(u8 *m) {
  * +0x8 / +0xC x / z scale, +0x10 / +0x14 x / y offset; map 2's rooms 0x100..0x105 take theirs
  * from D_00420570 by the events' +0x70), a 32 x 32 arrow (texture group 0x18 #0, 0x1C0, 0x60)
  * turned to her heading, layer 0x30 */
-void func_003048C0(u8 *m) {
+/* 0x003048C0 */
+void Map_HereArrow(u8 *m) {
     s32 room = AT(m, 0x108, s32);
     s8 map = MAP_CUR(m), page = MAP_PAGE(m);
     u8 *e;
@@ -1890,7 +1968,8 @@ void func_003048C0(u8 *m) {
 
 /* 1 while the page's picture is still loading; else, when the page can be shown, its
  * picture's texture made resident (texture cache +0x10) */
-s32 func_00304D70(u8 *m) {
+/* 0x00304D70 */
+s32 Map_PageLoading(u8 *m) {
     if (VCALL(gFileLoader, 0x28, s32 (*)(VObject *, u32))(gFileLoader, MAP_PICTURE_AREA) == 2) {
         return 1;
     }
@@ -1900,16 +1979,17 @@ s32 func_00304D70(u8 *m) {
     return 0;
 }
 
-/* the map page each frame: with any map, left / right (func_00303F90) with a sound on a new
+/* the map page each frame: with any map, left / right (Map_LeftRight) with a sound on a new
  * page; the page's picture (texture group 0x28) with the arrow when it is Fiona's own page,
  * and its title centred at the top (no map or page: message 0x85) */
-void func_00304F50(u8 *m) {
+/* 0x00304F50 */
+void Map_PageFrame(u8 *m) {
     u8 *text;
 
-    if (func_00304D70(m)) {
+    if (Map_PageLoading(m)) {
         return;
     }
-    if (map_owned() != 0 && func_00303F90(m)) {
+    if (map_owned() != 0 && Map_LeftRight(m)) {
         VCALL(gSound, 0x14, void (*)(VObject *, s32, s32))(gSound, 0x2A, 5);
         return;
     }
@@ -1925,7 +2005,7 @@ void func_00304F50(u8 *m) {
                                                   0, 0x28, 0x30, 0);
         }
         if (MAP_CUR(m) == AT(m, 0x10D, s8) && MAP_PAGE(m) == AT(m, 0x10F, s8)) {
-            func_003048C0(m);
+            Map_HereArrow(m);
         }
     }
     if (text != NULL) {
@@ -1937,7 +2017,8 @@ void func_00304F50(u8 *m) {
 
 /* back to the map / page the player is in (+0x10D / +0x10F) and, when it can be shown, its
  * picture loaded */
-void func_00305380(u8 *m) {
+/* 0x00305380 */
+void Map_BackToPlayer(u8 *m) {
     MAP_CUR(m) = AT(m, 0x10D, s8);
     MAP_PAGE(m) = AT(m, 0x10F, s8);
     if (AT(m, 0x108, s32) == -1 || AT(m, 0x10D, s8) == -1 || AT(m, 0x10F, s8) == -1) {
@@ -1962,7 +2043,8 @@ static void copy_words(u8 *d, const u8 *s, u32 off, u32 n) {
 }
 
 /* a sub-record (+0x75C): four words and three bytes */
-u8 *func_002A8020(u8 *d, const u8 *s) {
+/* 0x002A8020 */
+u8 *Progress_Sub75C(u8 *d, const u8 *s) {
     AT(d, 0x0, s32) = AT(s, 0x0, s32);
     AT(d, 0x4, s32) = AT(s, 0x4, s32);
     AT(d, 0x8, s32) = AT(s, 0x8, s32);
@@ -1974,7 +2056,8 @@ u8 *func_002A8020(u8 *d, const u8 *s) {
 }
 
 /* a sub-record (+0x7B0) */
-u8 *func_002A7F70(u8 *d, const u8 *s) {
+/* 0x002A7F70 */
+u8 *Progress_Sub7B0(u8 *d, const u8 *s) {
     AT(d, 0x0, u8) = AT(s, 0x0, u8);
     AT(d, 0x1, u8) = AT(s, 0x1, u8);
     AT(d, 0x2, s16) = AT(s, 0x2, s16);
@@ -1987,7 +2070,8 @@ u8 *func_002A7F70(u8 *d, const u8 *s) {
 }
 
 /* the whole state; the copy's 400 words at +0x11C lose their bit 0 */
-void func_002A7C70(const u8 *s, u8 *d) {
+/* 0x002A7C70 */
+void Progress_CopyState(const u8 *s, u8 *d) {
     u32 i;
 
     copy_words(d, s, 0x0, 0x94 / 4);
@@ -1995,9 +2079,9 @@ void func_002A7C70(const u8 *s, u8 *d) {
         AT(d, 0x94 + i, u8) = AT(s, 0x94 + i, u8);
     }
     copy_words(d, s, 0xD4, (0x75C - 0xD4) / 4);
-    func_002A8020(d + 0x75C, s + 0x75C);
+    Progress_Sub75C(d + 0x75C, s + 0x75C);
     copy_words(d, s, 0x770, 0x10);
-    func_002A7F70(d + 0x7B0, s + 0x7B0);
+    Progress_Sub7B0(d + 0x7B0, s + 0x7B0);
     copy_words(d, s, 0x7F8, (0xFAC - 0x7F8) / 4);
     for (i = 0; i < 8; i++) {
         AT(d, 0xFAC + i * 2, s16) = AT(s, 0xFAC + i * 2, s16);
@@ -2011,7 +2095,8 @@ void func_002A7C70(const u8 *s, u8 *d) {
 }
 
 /* four bytes cleared */
-void func_002A76E0(u8 *p) {
+/* 0x002A76E0 */
+void Bytes4_Clear(u8 *p) {
     p[0] = 0;
     p[1] = 0;
     p[2] = 0;
@@ -2032,7 +2117,8 @@ s32 Room00_Command(void *self, u32 i, s32 a, s32 b) {
  * then offsets of {n, triangle indices}) whose nav mesh flags scripts switch ---- */
 
 /* set (`clear` 0) or clear (1) flag bits `bits` on the triangles of group `g` (-1: no group) */
-s32 func_002A8730(u8 *o, s32 clear, u32 g, u32 bits) {
+/* 0x002A8730 */
+s32 NavGroups_SetFlags(u8 *o, s32 clear, u32 g, u32 bits) {
     u8 *sec = AT(o, 0x4, u8 *);
     u8 *grp;
     u32 n, i;
@@ -2063,13 +2149,15 @@ s32 func_002A8730(u8 *o, s32 clear, u32 g, u32 bits) {
 }
 
 /* +0xC set flag bits on group g */
-s32 func_002A8590(u8 *o, u32 g, u32 bits) {
-    return func_002A8730(o, 0, g, bits);
+/* 0x002A8590 */
+s32 NavGroups_SetGroup(u8 *o, u32 g, u32 bits) {
+    return NavGroups_SetFlags(o, 0, g, bits);
 }
 
 /* +0x10 clear them */
-s32 func_002A85B0(u8 *o, u32 g, u32 bits) {
-    return func_002A8730(o, 1, g, bits);
+/* 0x002A85B0 */
+s32 NavGroups_ClearGroup(u8 *o, u32 g, u32 bits) {
+    return NavGroups_SetFlags(o, 1, g, bits);
 }
 
 extern void *D_0046DB40[], *D_0046DB60[];
@@ -2084,7 +2172,8 @@ static u32 *tri_flags_word(u32 t) {
 }
 
 /* +0x18 set flag bits on triangle t (-1: none, 0 done) */
-s32 func_002A85D0(u8 *o, u32 t, u32 bits) {
+/* 0x002A85D0 */
+s32 NavGroups_SetTri(u8 *o, u32 t, u32 bits) {
     if (t == (u32)-1 || t >= AT(gNavMesh, 0x8, u32)) {
         return -1;
     }
@@ -2093,7 +2182,8 @@ s32 func_002A85D0(u8 *o, u32 t, u32 bits) {
 }
 
 /* +0x1C clear them */
-s32 func_002A8640(u8 *o, u32 t, u32 bits) {
+/* 0x002A8640 */
+s32 NavGroups_ClearTri(u8 *o, u32 t, u32 bits) {
     if (t == (u32)-1 || t >= AT(gNavMesh, 0x8, u32)) {
         return -1;
     }
@@ -2102,7 +2192,8 @@ s32 func_002A8640(u8 *o, u32 t, u32 bits) {
 }
 
 /* +0x14 whether group g holds triangle t */
-s32 func_002A86B0(u8 *o, u32 t, u32 g) {
+/* 0x002A86B0 */
+s32 NavGroups_Holds(u8 *o, u32 t, u32 g) {
     u8 *sec, *grp;
     u32 n, i;
 
@@ -2121,7 +2212,8 @@ s32 func_002A86B0(u8 *o, u32 t, u32 g) {
 }
 
 /* +0x8 destructor */
-void *func_002A8520(void *o, s32 flags) {
+/* 0x002A8520 */
+void *NavGroups_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046DB40;
         AT(o, 0x0, void **) = D_0046DB60;
@@ -2134,7 +2226,8 @@ void *func_002A8520(void *o, s32 flags) {
 }
 
 /* the base's destructor */
-void *func_002A88D0(void *o, s32 flags) {
+/* 0x002A88D0 */
+void *NavGroupsBase_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046DB60;
         D_00456E00 = NULL;
@@ -2149,7 +2242,8 @@ void *func_002A88D0(void *o, s32 flags) {
 
 /* the doors +0x80: refresh exit `exit`'s door from its state in the progress: locked (+0x40
  * says it can be) -> flags 0x5000000, else 0x1000000 / 0x4000000 per side closed */
-void func_002220C0(VObject *doors, s32 exit) {
+/* 0x002220C0 */
+void Doors_Refresh(VObject *doors, s32 exit) {
     Progress *p = gProgress;
     s32 room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
     u32 d;
@@ -2179,7 +2273,8 @@ void func_002220C0(VObject *doors, s32 exit) {
 }
 
 /* the doors +0x40: whether the room has a door at exit `exit` (section 7's entry) */
-s32 func_00221DA0(VObject *doors, u8 exit) {
+/* 0x00221DA0 */
+s32 Doors_HasExit(VObject *doors, u8 exit) {
     u8 *tbl = AT(doors, 0x4, u8 *);
 
     if (tbl == NULL || exit >= 8) {
@@ -2189,7 +2284,8 @@ s32 func_00221DA0(VObject *doors, u8 exit) {
 }
 
 /* the doors +0x84: set or clear bit (a + 1 + b) in each present door's bits (+0x120) */
-void func_00221FD0(VObject *doors, s32 set, u8 a, s32 b) {
+/* 0x00221FD0 */
+void Doors_SetBits(VObject *doors, s32 set, u8 a, s32 b) {
     u32 bit = (u32)(a + 1) + b;
     u32 mask = 1 << (bit & 0x1F);
     u8 *base = (u8 *)doors + (bit >> 5) * 4;
@@ -2210,7 +2306,8 @@ void func_00221FD0(VObject *doors, s32 set, u8 a, s32 b) {
 }
 
 /* SceneGame +0xF6CD30: all 32 effect slots back to the pool (+0x1400) */
-void func_00267080(u8 *fx) {
+/* 0x00267080 */
+void RoomEffects_ReleaseAll(u8 *fx) {
     s32 n;
 
     for (n = 0; n < 0x20; n++) {
@@ -2224,7 +2321,8 @@ void func_00267080(u8 *fx) {
 }
 
 /* SceneGame +0xF6CD30: effect slot n (+0x1438[n]) back to the pool (+0x1400) */
-void func_002670F0(u8 *fx, s32 n) {
+/* 0x002670F0 */
+void RoomEffects_Release(u8 *fx, s32 n) {
     VObject **slot;
 
     if (n >= 0x20) {
@@ -2238,7 +2336,8 @@ void func_002670F0(u8 *fx, s32 n) {
 }
 
 /* SceneGame +0xF6CD30: pass `arg` to effect slot n (+0x1438[n], its +0x18); 0: none */
-s32 func_00266C70(u8 *o, s32 n, void *arg) {
+/* 0x00266C70 */
+s32 RoomEffects_Send(u8 *o, s32 n, void *arg) {
     VObject *e;
 
     if (n >= 0x20) {
@@ -2253,12 +2352,14 @@ s32 func_00266C70(u8 *o, s32 n, void *arg) {
 }
 
 /* placement new (the effect manager's copy) */
-void *func_002D63C0(u32 size, void *place) {
+/* 0x002D63C0 */
+void *EffectMgr_new(u32 size, void *place) {
     return place;
 }
 
 /* the effect manager: start the object in slot `slot` with `params` (its +0x18); 0: no object */
-s32 func_002D6090(u8 *mgr, s32 slot, void *params) {
+/* 0x002D6090 */
+s32 EffectMgr_Start(u8 *mgr, s32 slot, void *params) {
     VObject *o;
 
     if (slot < 0 || (u32)slot >= 0x400) {
@@ -2273,7 +2374,8 @@ s32 func_002D6090(u8 *mgr, s32 slot, void *params) {
 }
 
 /* SceneGame +0x706480: the active creatures (10 slots) enter the room (+0x38) */
-void func_002E2650(u8 *o) {
+/* 0x002E2650 */
+void Creatures_EnterRoom(u8 *o) {
     s32 i;
 
     for (i = 0; i < 10; i++) {
@@ -2287,7 +2389,8 @@ void func_002E2650(u8 *o) {
 
 /* the doors +0x2C: whether `pos` is at door k (within 5 vertically and 20 across of its point
  * +0x20) */
-s32 func_00222D30(VObject *doors, u32 k, const f32 *pos) {
+/* 0x00222D30 */
+s32 Doors_AtDoor(VObject *doors, u32 k, const f32 *pos) {
     f32 v[4] __attribute__((aligned(16)));
     u8 *tbl = AT(doors, 0x4, u8 *);
     f32 dy;
@@ -2309,7 +2412,8 @@ s32 func_00222D30(VObject *doors, u32 k, const f32 *pos) {
 
 /* the doors +0x18: which side of door k `pos` is on (1: in front, along its facing +0x44; 0:
  * behind; -1: no door) */
-s32 func_002230A0(VObject *doors, u32 k, const f32 *pos) {
+/* 0x002230A0 */
+s32 Doors_Side(VObject *doors, u32 k, const f32 *pos) {
     f32 m[4][4] __attribute__((aligned(16)));
     f32 diff[4] __attribute__((aligned(16)));
     f32 dir[4] __attribute__((aligned(16)));
@@ -2343,7 +2447,8 @@ static f32 clamp01(f32 v) {
  * volume fade (+0x10: in / out over 30 frames of +0x18, +0x14 left) passed to the sound, the
  * menus and the movie player, a timed heart-rate setting (+0x1C for +0x20 frames) and two more
  * timers */
-void func_002A7720(u8 *o) {
+/* 0x002A7720 */
+void StatusTimers_Frame(u8 *o) {
     f32 old;
 
     if (AT(o, 0x4, s32) > 0) {
@@ -2421,8 +2526,8 @@ void func_002A7720(u8 *o) {
     }
 }
 
-extern s32 func_002EC170(u8 *o);
-extern s32 func_002EBED0(u8 *o);
+extern s32 Summoner_Offstage(u8 *o);
+extern s32 Summoner_InPlay(u8 *o);
 
 /* the summoner `o` takes the pursuer as it is now (when active: its room +0x8, its state +0,
    kind `kind`, waited 0); then progress slot refresh (Progress_CharDone) */
@@ -2441,16 +2546,19 @@ static inline void summoner_take(u8 *o, u8 kind) {
     Progress_CharDone(gProgress, AT(pu, 0x20, u32));
 }
 
-void func_002EC470(u8 *o, u8 kind) {
+/* 0x002EC470 */
+void Summoner_Take(u8 *o, u8 kind) {
     summoner_take(o, kind);
 }
 
 /* the summoner's cooldown (+0x4) to `sec` seconds / less by `sec` (not below 0) */
-void func_002EC450(u8 *o, s32 sec) {
+/* 0x002EC450 */
+void Summoner_SetCooldown(u8 *o, s32 sec) {
     AT(o, 0x4, u32) = sec * 30;
 }
 
-void func_002EC3C0(u8 *o, s32 sec) {
+/* 0x002EC3C0 */
+void Summoner_LessCooldown(u8 *o, s32 sec) {
     u32 d = sec * 30;
 
     AT(o, 0x4, u32) = AT(o, 0x4, u32) >= AT(o, 0x4, u32) - d ? AT(o, 0x4, u32) - d : 0;
@@ -2528,24 +2636,28 @@ static s32 summon_via(u8 *o, s32 near, s32 plan) {
     return ok;
 }
 
-s32 func_002EB390(u8 *o) {
+/* 0x002EB390 */
+s32 Summoner_Via0(u8 *o) {
     return summon_via(o, 0, 0);
 }
 
-s32 func_002EB730(u8 *o) {
+/* 0x002EB730 */
+s32 Summoner_Via1(u8 *o) {
     return summon_via(o, 1, 0);
 }
 
-s32 func_002EBB00(u8 *o) {
+/* 0x002EBB00 */
+s32 Summoner_Via1B(u8 *o) {
     return summon_via(o, 1, 1);
 }
 
 /* each frame with the pursuer offstage (Progress flag 0: this stage has one): the first time
  * (flag 1) +0 its time away; while flag 2 is clear and that runs, counting down (+0xC counting
  * up); then it tries to come in, by one of the three ways from a random first one onwards
- * (func_002EBB00 / func_002EB730 / func_002EB390); having come, the wait restarts, +0x10 its
+ * (Summoner_Via1B / Summoner_Via1 / Summoner_Via0); having come, the wait restarts, +0x10 its
  * mode, flag 2 off and the cooldown +0x4 its +0x2D4 seconds. 1 if it came */
-s32 func_002EC170(u8 *o) {
+/* 0x002EC170 */
+s32 Summoner_Offstage(u8 *o) {
     u8 *pu = (u8 *)gCharPursuer;
     Progress *p = gProgress;
     u32 k;
@@ -2573,13 +2685,13 @@ s32 func_002EC170(u8 *o) {
     do {
         switch (k++) {
         case 0:
-            ok = (u8)func_002EBB00(o);
+            ok = (u8)Summoner_Via1B(o);
             break;
         case 1:
-            ok = (u8)func_002EB730(o);
+            ok = (u8)Summoner_Via1(o);
             break;
         case 2:
-            ok = (u8)func_002EB390(o);
+            ok = (u8)Summoner_Via0(o);
             break;
         }
     } while ((k & 0xFF) < 3 && !ok);
@@ -2597,7 +2709,8 @@ s32 func_002EC170(u8 *o) {
  * not 4 or func_0029A8C0): likewise; else the wait counts up, and after 5 s hunting (+0xC4 2:
  * kind 2) or in mode 4 (kind 1), or with the cooldown over 3 s in mode 3 (kind 0), the
  * summoner takes it back. 1 if it did */
-s32 func_002EBED0(u8 *o) {
+/* 0x002EBED0 */
+s32 Summoner_InPlay(u8 *o) {
     u8 *pu = (u8 *)gCharPursuer;
     u8 *pl;
     u8 mode;
@@ -2658,7 +2771,8 @@ s32 func_002EBED0(u8 *o) {
 
 /* SceneGame +0x7A4 at the start of play in a room: whether the pursuer comes in (the progress
  * +0x28 says the room allows it; then by the stage, +0x64 4) or is placed elsewhere */
-void func_002EC940(u8 *o) {
+/* 0x002EC940 */
+void Summoner_RoomStart(u8 *o) {
     u8 *pu = (u8 *)gCharPursuer;
     Progress *p, *q;
 
@@ -2692,18 +2806,20 @@ void func_002EC940(u8 *o) {
     if (VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector)) {
         return;
     }
-    if (!(u8)func_002EC170(o)) {
-        func_002EBED0(o);
+    if (!(u8)Summoner_Offstage(o)) {
+        Summoner_InPlay(o);
     }
 }
 
 /* the lights +0x34 (each frame): clear +0x940 */
-void func_001FA0D0(u8 *o) {
+/* 0x001FA0D0 */
+void Lights_Frame(u8 *o) {
     AT(o, 0x940, s32) = 0;
 }
 
 /* clear a character request: { u8 kind, s32 a = -1, s32 b = -1, u16 c = 0xFFFF } */
-void func_002A84A0(u8 *r) {
+/* 0x002A84A0 */
+void CharRequest_Clear(u8 *r) {
     AT(r, 0x0, u8) = 0;
     AT(r, 0x4, s32) = -1;
     AT(r, 0x8, s32) = -1;
@@ -2711,21 +2827,23 @@ void func_002A84A0(u8 *r) {
 }
 
 /* clear a character's own request: { u8 kind, u16, s16, f32 } */
-void func_002A84E0(u8 *r) {
+/* 0x002A84E0 */
+void OwnRequest_Clear(u8 *r) {
     AT(r, 0x0, u8) = 0;
     AT(r, 0x2, u16) = 0;
     AT(r, 0x4, u16) = 0;
     AT(r, 0x8, s32) = 0;
 }
 
-extern void func_002239C0(void *doors);
+extern void Doors_Draw(void *doors);
 
 /* draw the room, each frame: the room mesh's parts (PAC section header +0x998C: offsets of
  * the opaque part, two alpha parts drawn in layer 8 under the 0x1D effect (fog) else 0x19,
  * and the parts for layers 0x26 and 0x1F) are queued with the renderer (+0xC) as the room
  * object (+0x8 mesh, +0x18 part); the lights are reset (+0x18) before each pass. Then the
  * extra object +0x340 (flag 0x80), the doors, +0x9380 and +0x6740. */
-void func_0011FB20(u8 *rm, s32 slot) {
+/* 0x0011FB20 */
+void RoomMgr_Draw(u8 *rm, s32 slot) {
     VObject *lights;
     void *fx;
     s32 o0, o1, o2, o4, o5;
@@ -2749,7 +2867,7 @@ void func_0011FB20(u8 *rm, s32 slot) {
     }
     VCALL(lights, 0x18, void (*)(VObject *))(lights);
     AT(rm, 0x64, s32) = -1;
-    fx = gRoomEffects != NULL ? func_00266C40(gRoomEffects, 0x1D) : NULL;
+    fx = gRoomEffects != NULL ? RoomEffects_Get(gRoomEffects, 0x1D) : NULL;
     layer = (fx != NULL && AT(fx, 0x1C, s32) != 0) ? 8 : 0x19;
     if (o1 != 0) {
         AT(rm, 0x8, u8 *) = AT(rm, 0x998C, u8 *) + o1;
@@ -2781,7 +2899,7 @@ void func_0011FB20(u8 *rm, s32 slot) {
     if (AT(rm, 0x35C, u8) & 0x80) {
         VCALL(gRenderer, 0xC, void (*)(VObject *, void *, s32, s32))(gRenderer, rm + 0x340, 1, 0);
     }
-    func_002239C0(rm + 0x1640);
+    Doors_Draw(rm + 0x1640);
     Obstacles_ModelsFollow(rm + 0x9380);
     VCALL(rm + 0x6740, 0x24, void (*)(void *))(rm + 0x6740);
 }
@@ -2789,7 +2907,8 @@ void func_0011FB20(u8 *rm, s32 slot) {
 /* the creatures, each frame (10 slots): an active one moves (+0x30) unless the player is in a
  * special state; an inactive one gets +0x10, then the manager's +0x28 (its vtable at +0x28)
  * for its slot */
-void func_002E2A60(u8 *o) {
+/* 0x002E2A60 */
+void Creatures_Update(u8 *o) {
     s32 i;
 
     for (i = 0; i < 10; i++) {
@@ -2809,19 +2928,20 @@ void func_002E2A60(u8 *o) {
     }
 }
 
-extern void func_00223A90(void *doors);
+extern void Doors_Update(void *doors);
 
-extern void func_00267080(u8 *fx);           /* all the room's effects back to the pool */
+extern void RoomEffects_ReleaseAll(u8 *fx);           /* all the room's effects back to the pool */
 
 /* the room left: its doors, obstacles, placed objects (+0x6740 +0x20) and effects released,
  * and the texture cache's room groups (0, 0x15) dropped */
-void func_0011FF30(u8 *rm) {
+/* 0x0011FF30 */
+void RoomMgr_Leave(u8 *rm) {
     VObject *tc;
 
     Doors_Release((VObject *)(rm + 0x1640));
     Obstacles_Release(rm + 0x9380);
     VCALL((VObject *)(rm + 0x6740), 0x20, void (*)(VObject *))((VObject *)(rm + 0x6740));
-    func_00267080((u8 *)gRoomEffects);
+    RoomEffects_ReleaseAll((u8 *)gRoomEffects);
     tc = gTexCache;
     VCALL(tc, 0x14, void (*)(VObject *, s32))(tc, 0);
     VCALL(tc, 0x14, void (*)(VObject *, s32))(tc, 0x15);
@@ -2829,9 +2949,10 @@ void func_0011FF30(u8 *rm) {
 
 /* the room, each frame: the doors (with a room loaded), +0x9380, +0x6740 (+0x28), and
  * whether Progress +0x54 lets the alpha parts show (+0x8B) */
-void func_0011FEB0(u8 *rm) {
+/* 0x0011FEB0 */
+void RoomMgr_Update(u8 *rm) {
     if (AT(rm, 0x998C, u8 *) != NULL) {
-        func_00223A90(rm + 0x1640);
+        Doors_Update(rm + 0x1640);
     }
     Obstacles_Update(rm + 0x9380);
     VCALL(rm + 0x6740, 0x28, void (*)(void *))(rm + 0x6740);
@@ -2841,7 +2962,8 @@ void func_0011FEB0(u8 *rm) {
 extern void Door_Swing(u8 *door);
 
 /* the doors, each frame: each of the 8 with a definition (+0x4 table) updates */
-void func_00223A90(void *d) {
+/* 0x00223A90 */
+void Doors_Update(void *d) {
     u8 *doors = d;
     u32 k;
 
@@ -2857,16 +2979,17 @@ void func_00223A90(void *d) {
     }
 }
 
-extern void func_0025FA50(u8 *obj);
+extern void PlacedObject_Animate(u8 *obj);
 
 /* +0x28 the placed objects, each frame: every active one (bit set in +0xC, 64 slots of 0xB0
  * from +0x20) updates */
-void func_002C8DC0(u8 *o) {
+/* 0x002C8DC0 */
+void PlacedObjects_Update(u8 *o) {
     s32 i;
 
     for (i = 0; i < 64; i++) {
         if (AT(o, 0xC + (i >> 5) * 4, u32) & (1u << (i & 0x1F))) {
-            func_0025FA50(o + 0x20 + i * 0xB0);
+            PlacedObject_Animate(o + 0x20 + i * 0xB0);
         }
     }
 }
@@ -2874,7 +2997,8 @@ void func_002C8DC0(u8 *o) {
 /* a placed object's animation, each frame: its track (+0x98 { keys, format, count }) at the
  * frame +0x90 gives its position (+0x10; format 9: +0x20); at the end it loops (+0x1) or
  * stops */
-void func_0025FA50(u8 *obj) {
+/* 0x0025FA50 */
+void PlacedObject_Animate(u8 *obj) {
     if (AT(obj, 0x94, s32) == 0 || AT(obj, 0x98, void *) == NULL) {
         return;
     }
@@ -2899,7 +3023,8 @@ void func_0025FA50(u8 *obj) {
 
 /* the play time { hours, minutes, seconds, frames (30 a second) }, each frame; it stops at
  * 99:59:59 */
-void func_002A7630(u8 *t) {
+/* 0x002A7630 */
+void PlayTime_Tick(u8 *t) {
     if (t[0] == 99 && t[1] == 59 && t[2] == 59) {
         return;
     }
@@ -2920,7 +3045,8 @@ void func_002A7630(u8 *t) {
 
 /* the dynamic actors, each frame (128 slots in the pool +0xA040): an active one updates
  * (+0x30), a finished one is given back to the pool (+0x14) and destroyed */
-void func_002D75C0(u8 *o) {
+/* 0x002D75C0 */
+void PlacedThings_Update(u8 *o) {
     s32 i;
 
     for (i = 0; i < 0x80; i++) {
@@ -2941,7 +3067,8 @@ void func_002D75C0(u8 *o) {
 }
 
 /* the effects, each frame: each of the 32 at +0x1438 updates (+0x10) */
-void func_002671F0(u8 *o) {
+/* 0x002671F0 */
+void RoomEffects_Update(u8 *o) {
     s32 i;
 
     for (i = 0; i < 32; i++) {
@@ -2956,7 +3083,8 @@ void func_002671F0(u8 *o) {
 /* +0x80 the group for slot `i`: groups 1 and 2 and those (3..31) any entry of the table +0x18
  * ({u16 count at +2}, masks every 12 bytes from +0x24) uses, in order; looked up through
  * Cutscene_MapId and Cutscene_KindSlot. Without the director's +0x38 or a table: i itself */
-s32 func_002C9730(u8 *o, s32 i) {
+/* 0x002C9730 */
+s32 Cutscene_SlotGroup(u8 *o, s32 i) {
     s32 list[32];
     s32 n = 0, b;
 
@@ -2985,7 +3113,8 @@ s32 func_002C9730(u8 *o, s32 i) {
 
 /* the effects, each frame: each live one (0x400 slots at +0x18034) runs (+0x10); a finished
  * one goes back to the heap (+0x10000, +0x14) */
-void func_002D6280(u8 *mgr) {
+/* 0x002D6280 */
+void EffectMgr_Update(u8 *mgr) {
     u32 i;
 
     for (i = 0; i < 0x400; i++) {
@@ -3000,7 +3129,8 @@ void func_002D6280(u8 *mgr) {
 }
 
 /* the effect in slot k (of 32 at +0x1438), NULL past the end */
-void *func_00266C40(void *effects, s32 k) {
+/* 0x00266C40 */
+void *RoomEffects_Get(void *effects, s32 k) {
     u8 *o = effects;
 
     if (k >= 32) {
@@ -3009,10 +3139,11 @@ void *func_00266C40(void *effects, s32 k) {
     return AT(o, 0x1438 + k * 4, void *);
 }
 
-extern void func_00220E80(u8 *door);
+extern void Door_Draw(u8 *door);
 
 /* the doors, drawn each frame: each of the 8 with a definition (+0x4 table) */
-void func_002239C0(void *d) {
+/* 0x002239C0 */
+void Doors_Draw(void *d) {
     u8 *doors = d;
     u32 k;
 
@@ -3023,17 +3154,18 @@ void func_002239C0(void *d) {
         void **tbl = AT(doors, 0x4, void **);
 
         if (tbl != NULL && tbl[k] != NULL) {
-            func_00220E80(doors + 0x10 + k * 0x210);
+            Door_Draw(doors + 0x10 + k * 0x210);
         }
     }
 }
 
-extern void func_0025FB10(u8 *obj, s32 layer);
+extern void PlacedObject_Draw(u8 *obj, s32 layer);
 
 /* the placed objects, drawn each frame in three passes (layers 1, 0x19, 0x26; the texture
  * cache +0x18 and gBootMessage +0x20 reset before each): every active one (bit in +0xC) that
  * isn't hidden (+0x0) */
-void func_002C8E50(u8 *o) {
+/* 0x002C8E50 */
+void PlacedObjects_Draw(u8 *o) {
     static const s32 kLayers[3] = {1, 0x19, 0x26};
     VObject *tc = gTexCache;
     VObject *msg;
@@ -3052,7 +3184,7 @@ void func_002C8E50(u8 *o) {
             u8 *obj = o + 0x20 + i * 0xB0;
 
             if ((AT(o, 0xC + (i >> 5) * 4, u32) & (1u << (i & 0x1F))) && AT(obj, 0x0, u8) == 0) {
-                func_0025FB10(obj, kLayers[pass]);
+                PlacedObject_Draw(obj, kLayers[pass]);
             }
         }
     }
@@ -3060,7 +3192,8 @@ void func_002C8E50(u8 *o) {
 
 /* draw a placed object in pass `layer` (layer by its name +0x70: "g_..." 0x26, "a_..." 0x19
  * (alpha, +0x80 set), others 1): its model (+0x40) takes its position and rotation */
-void func_0025FB10(u8 *obj, s32 layer) {
+/* 0x0025FB10 */
+void PlacedObject_Draw(u8 *obj, s32 layer) {
     const u8 *name;
     s32 own;
 
@@ -3088,7 +3221,8 @@ void func_0025FB10(u8 *obj, s32 layer) {
 
 /* the creatures, drawn each frame (texture cache +0x18 and gBootMessage +0x20 reset first):
  * each active, visible one (+0x2C), unless the player is in a special state */
-void func_002E29A0(u8 *o) {
+/* 0x002E29A0 */
+void Creatures_Draw(u8 *o) {
     s32 i;
 
     VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
@@ -3107,7 +3241,8 @@ void func_002E29A0(u8 *o) {
 
 /* the dynamic actors, drawn each frame (texture cache and gBootMessage reset first): each
  * active one in the current room (+0x2C) */
-void func_002D74E0(u8 *o) {
+/* 0x002D74E0 */
+void PlacedThings_Draw(u8 *o) {
     s32 room, i;
 
     VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
@@ -3124,7 +3259,8 @@ void func_002D74E0(u8 *o) {
 
 /* the effects, drawn each frame (texture cache and gBootMessage reset first): each of the 32
  * (+0x14) */
-void func_00267160(u8 *o) {
+/* 0x00267160 */
+void RoomEffects_Draw(u8 *o) {
     s32 i;
 
     VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
@@ -3140,7 +3276,8 @@ void func_00267160(u8 *o) {
 
 /* the effects, drawn each frame (texture cache +0x18 and gBootMessage +0x20 reset first): each
  * live one of the 0x400 slots at +0x18034 draws (+0x14) */
-void func_002D61E0(u8 *mgr) {
+/* 0x002D61E0 */
+void EffectMgr_Draw(u8 *mgr) {
     u32 i;
 
     VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
@@ -3155,7 +3292,8 @@ void func_002D61E0(u8 *mgr) {
 }
 
 /* the screen fade's level (+0x34), clamped to 0..1 */
-void func_002EF480(u8 *fade, f32 t) {
+/* 0x002EF480 */
+void ScreenFade_Level(u8 *fade, f32 t) {
     if (t < 0.0f) {
         t = 0.0f;
     } else if (!(t <= 1.0f)) {
@@ -3171,7 +3309,8 @@ extern void *D_0045D1F0;   /* the screen overlay (Scene +0x105344C) */
  * the brightness (mode 2 raises it by 4 up to 0x80, mode 1 leaves it alone) and a dim one
  * (<= 0x10) steps the overlay; states 4 / 5 stop the shake too (4 with +0x2 < 0 also ends the
  * overlay); the overlay is tinted by +0x40 times the level */
-void func_002F0340(u8 *fade, s32 mode) {
+/* 0x002F0340 */
+void ScreenFade_Frame(u8 *fade, s32 mode) {
     VObject *cam;
 
     if (AT(fade, 0x0, u8) == 5 || AT(fade, 0x0, u8) == 4) {
@@ -3210,7 +3349,8 @@ void func_002F0340(u8 *fade, s32 mode) {
 
 /* a noise for the pursuer to hear (the loudest this frame wins): loudness `loud` (u8), in room
  * `room`, at triangle `tri` - or at door `door` (0xFFFF: none) */
-void func_002A8440(u8 *n, s32 loud, s32 room, s32 tri, s32 door) {
+/* 0x002A8440 */
+void Noise_Make(u8 *n, s32 loud, s32 room, s32 tri, s32 door) {
     if (loud == 0 || room == -1 || (u8)loud < AT(n, 0x0, u8)) {
         return;
     }
@@ -3228,13 +3368,14 @@ void func_002A8440(u8 *n, s32 loud, s32 room, s32 tri, s32 door) {
 extern u8 D_0047AC90[];        /* per noise level: summon chance, hunted chance (percent) */
 extern u32 D_00419DC0[];       /* the seconds before the pursuer can be summoned, by kind */
 
-/* a frame's loudest noise `n` (func_002A8440) against the summoner `o` (+0xC frames waited,
+/* a frame's loudest noise `n` (Noise_Make) against the summoner `o` (+0xC frames waited,
  * +0x11 its kind): in the current room only. Its level 0..3 by loudness (one less away from
  * doors with every door of the room shut). With the pursuer waiting offstage (+0xD0 / +0xD1,
  * not active), Progress flag 0 without flag 2, at least 3 s and its kind's wait gone, the
  * level's chance (percent) summons it (o +0 = 0x80000000); otherwise the level's second
  * chance - on the rest - sets condition 6 (hunted), as does mode 1 with any chance */
-void func_002EC4F0(u8 *o, u8 *n) {
+/* 0x002EC4F0 */
+void Summoner_Noise(u8 *o, u8 *n) {
     Progress *p;
     VObject *rooms;
     u8 *pu;
@@ -3328,7 +3469,8 @@ static void door_portal(sceVu0FMATRIX m, f32 x0, f32 x1, f32 z) {
 /* draw a shown door (+0x70) that has a model (+0x0): its draw object (+0x80) placed from the
  * door's position / rotation; when it is on screen and open, its effect (+0x190, when +0x72)
  * and, open past 78.75 degrees, the doorway on both sides for the lights */
-void func_00220E80(u8 *door) {
+/* 0x00220E80 */
+void Door_Draw(u8 *door) {
     u8 *obj = door + 0x80;
     sceVu0FMATRIX m;
 
@@ -3482,7 +3624,8 @@ void Door_Swing(u8 *door) {
 }
 
 /* reset a door: not opening (+0x5C), no frame (+0x60) */
-void func_00221880(u8 *door) {
+/* 0x00221880 */
+void Door_Reset(u8 *door) {
     AT(door, 0x5C, s32) = 0;
     AT(door, 0x60, s32) = 0;
 }
@@ -3491,7 +3634,8 @@ void func_00221880(u8 *door) {
  * (doors +0x40) that leads somewhere (rooms +0x10) stands open (-90 degrees, +0x64, its angle
  * +0x34 a quarter turn from +0x44) or shut, its two sides' passage set to match (+0x20 /
  * +0x1C); then each door's +0x80 */
-void func_00222230(VObject *o) {
+/* 0x00222230 */
+void Doors_RoomIn(VObject *o) {
     static const union { u32 u; f32 f; } kHalfPi = {0x3FC90FDB}, kPi = {0x40490FDB}, kTwoPi = {0x40C90FDB};
     Progress *p = gProgress;
     s32 room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
@@ -3529,7 +3673,8 @@ void func_00222230(VObject *o) {
 /* a door's side `side` (0 / 1) passage: its walk-mesh triangles (the door's section entry +0x28:
  * a count and the triangles for side 0, then side 1's) get `flags` set (mode 0, shut) or
  * cleared (mode 1, open); -1 for no such door or side */
-s32 func_00223630(VObject *o, s32 mode, u32 door, s32 side, u32 flags) {
+/* 0x00223630 */
+s32 Doors_Passage(VObject *o, s32 mode, u32 door, s32 side, u32 flags) {
     u8 *tbl = AT(o, 0x4, u8 *);
     s32 off = 0, n, k;
     u32 *tri;
@@ -3575,13 +3720,15 @@ s32 func_00223630(VObject *o, s32 mode, u32 door, s32 side, u32 flags) {
 }
 
 /* +0x1C shut door `door`'s side `side` (passage flags set) */
-s32 func_00221B40(VObject *o, u32 door, s32 side, u32 flags) {
-    return func_00223630(o, 0, door, side, flags);
+/* 0x00221B40 */
+s32 Doors_ShutSide(VObject *o, u32 door, s32 side, u32 flags) {
+    return Doors_Passage(o, 0, door, side, flags);
 }
 
 /* +0x20 open it (cleared) */
-s32 func_00221B60(VObject *o, u32 door, s32 side, u32 flags) {
-    return func_00223630(o, 1, door, side, flags);
+/* 0x00221B60 */
+s32 Doors_OpenSide(VObject *o, u32 door, s32 side, u32 flags) {
+    return Doors_Passage(o, 1, door, side, flags);
 }
 
 /* ---- small leftovers (2026-10-05) ---- */
@@ -3593,20 +3740,24 @@ s32 func_00221B60(VObject *o, u32 door, s32 side, u32 flags) {
 #endif
 
 /* an empty method returning 0 */
-s32 func_0011FF20(void) {
+/* 0x0011FF20 */
+s32 Progress_Noop54(void) {
     return 0;
 }
 
 /* an empty method */
-void func_00120F70(void) {
+/* 0x00120F70 */
+void Obj469A00_Noop50(void) {
 }
 
 /* an empty method */
-void func_00267300(void) {
+/* 0x00267300 */
+void RoomEffectBase_Noop18(void) {
 }
 
 /* is the loader's request for file slot k (+0x3C0, -1 none) done (its state 2)? */
-s32 func_00120540(u8 *o, s32 k) {
+/* 0x00120540 */
+s32 RoomMgr_SlotLoaded(u8 *o, s32 k) {
     s32 req = AT(o, 0x3C0 + k * 4, s32);
 
     if (req == -1) {
@@ -3616,7 +3767,8 @@ s32 func_00120540(u8 *o, s32 k) {
 }
 
 /* func_001CC5B0(0), then interrupts back on; 0 */
-s32 func_001AAC30(void) {
+/* 0x001AAC30 */
+s32 MovieLib_Stop(void) {
     func_001CC5B0(0);
     CORE_SYNC_EI();
     return 0;
@@ -3624,7 +3776,8 @@ s32 func_001AAC30(void) {
 
 /* reset 64 entries of 12 (+0x4 0, +0x8 / +0xA -1, +0xC / +0xD 0xFF) and ten words at +0x304
  * to -1 */
-void func_001F4100(u8 *o) {
+/* 0x001F4100 */
+void Slots_Reset2(u8 *o) {
     u8 *e = o;
     u32 i;
 
@@ -3642,7 +3795,8 @@ void func_001F4100(u8 *o) {
 
 /* release its two VRAM slots (+0x320 / +0x324, the VRAM manager +0x1C) and mark them -1 */
 /* (possibly dead code: nothing in the game references it) */
-void func_001F9D20(u8 *o) {
+/* 0x001F9D20 */
+void Lights_ReleaseVram(u8 *o) {
     VObject *vram = gVram;
 
     VCALL(vram, 0x1C, void (*)(VObject *, s32))(vram, AT(o, 0x320, s32));
@@ -3651,22 +3805,26 @@ void func_001F9D20(u8 *o) {
     AT(o, 0x324, s32) = -1;
 }
 
-void func_001F9F70(u8 *o, s32 v) {
+/* 0x001F9F70 */
+void Lights_Set944(u8 *o, s32 v) {
     AT(o, 0x944, s32) = v;
 }
 
-u8 *func_001FA520(u8 *o) {
+/* 0x001FA520 */
+u8 *Lights_Get14(u8 *o) {
     return o + 0x14;
 }
 
 /* the current entry's block (+0x120 + +0x560 * 4) */
-u8 *func_001FB150(u8 *o) {
+/* 0x001FB150 */
+u8 *Events_CurrentBlock(u8 *o) {
     return o + AT(o, 0x560, s32) * 4 + 0x120;
 }
 
 /* destructor of a class with no vtable of its own */
 /* (possibly dead code: nothing in the game references it) */
-void *func_0020E820(void *o, s32 flags) {
+/* 0x0020E820 */
+void *NoVtable_dtor(void *o, s32 flags) {
     if (o != NULL && (s16)flags > 0) {
         func_00100490(o);
     }
@@ -3675,7 +3833,8 @@ void *func_0020E820(void *o, s32 flags) {
 
 /* the renderer's +0x5C */
 /* (possibly dead code: nothing in the game references it) */
-void func_00267140(void) {
+/* 0x00267140 */
+void Renderer_Call5C(void) {
     VCALL(gRenderer, 0x5C, void (*)(VObject *))(gRenderer);
 }
 
@@ -3684,7 +3843,8 @@ extern void *D_0046AF00[], *D_0046AF0C[], *D_0046C740[], *D_0046AED0[], *D_0046A
 
 /* start loading file slot k (+0x3C0) unless it already is (bit 31): the loader +0x14, the slot
  * marked, its callback (+0x3C8, a PTMF each) back to none */
-void func_001205A0(u8 *o, s32 k) {
+/* 0x001205A0 */
+void RoomMgr_LoadSlot(u8 *o, s32 k) {
     u32 *slot = (u32 *)(o + 0x3C0) + k;
 
     if (*slot & 0x80000000) {
@@ -3698,7 +3858,8 @@ void func_001205A0(u8 *o, s32 k) {
 /* (possibly dead code: nothing in the game references it) */
 /* clear +0xC700 and the 20 words after it */
 /* (possibly dead code: nothing in the game references it) */
-void func_0017D1B0(u8 *o) {
+/* 0x0017D1B0 */
+void Clear_C700(u8 *o) {
     s32 i;
 
     AT(o, 0xC700, s32) = 0;
@@ -3709,7 +3870,8 @@ void func_0017D1B0(u8 *o) {
 
 /* shut down: the member at +0x7C44 (+0x14), the sound side (func_001CA850, func_001C8478,
  * func_001C8648(D_0044FE18)) and its interrupt handler (+0x12C, cause 3) */
-void func_001AAC60(u8 *o) {
+/* 0x001AAC60 */
+void MovieLib_Shutdown(u8 *o) {
     VObject *m = (VObject *)(o + 0x7C44);
 
     VCALL(m, 0x14, void (*)(VObject *))(m);
@@ -3720,7 +3882,8 @@ void func_001AAC60(u8 *o) {
 }
 
 /* destructor (vtable D_0046AEC0) */
-void *func_001BF5F0(u8 *o, s32 flags) {
+/* 0x001BF5F0 */
+void *Obj46AEC0_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AEC0;
         AT(o, 0x4, s32) = 0;
@@ -3736,7 +3899,8 @@ void *func_001BF5F0(u8 *o, s32 flags) {
 
 /* destructor (D_0046AF00): its members at +0x7C44 (D_0046AED0, clearing gMovieLib) and +0x124
  * (D_0046AD88), then the base (D_0046AEC0, clearing gAdx) */
-void *func_001BF6C0(u8 *o, s32 flags) {
+/* 0x001BF6C0 */
+void *MovieSys_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = D_0046AF00;
         AT(o, 0x124, void **) = D_0046AF0C;
@@ -3758,7 +3922,8 @@ void *func_001BF6C0(u8 *o, s32 flags) {
 }
 
 /* effect `slot`'s +0x1C (-1: no such effect) */
-s32 func_002D6020(u8 *o, s32 slot) {
+/* 0x002D6020 */
+s32 EffectMgr_Query(u8 *o, s32 slot) {
     void *e;
 
     if (slot < 0 || (u32)slot >= 0x400) {
@@ -3775,7 +3940,8 @@ extern void *D_0046BF08[], *D_0046A1C0[], *D_004699E0[];
 
 /* the scene table's destructor (D_0046BF08): its four scenes handed back to the scene heap
  * (+0x10D9040, +0x14) and destroyed, the heap's vtables, gSceneTable cleared */
-void *func_0020DA10(u8 *t, s32 flags) {
+/* 0x0020DA10 */
+void *SceneTable_dtor(u8 *t, s32 flags) {
     s32 i;
 
     if (t == NULL) {

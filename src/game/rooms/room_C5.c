@@ -104,7 +104,7 @@ s32 RoomC5_Cmd00(void *self, void *a1, u8 *cmd) {
     msg.on = on;
     msg.pad = 0;
     msg.obj = o;
-    func_002D6090(gEffects, slot, &msg);
+    EffectMgr_Start(gEffects, slot, &msg);
     if (VCALL(gCamDirector, 0x38, s32 (*)(VObject *))(gCamDirector) == 0 && on != 0) {
         Sound_PlayBankAt(gSound, 1, 6, (f32 *)(o + 0x20), 0, 0);
     }
@@ -118,7 +118,7 @@ void *ObjectGlow_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00479870;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;

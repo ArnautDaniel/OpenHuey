@@ -402,7 +402,7 @@ static inline void Slots_Reset(u8 *o) {
     }
 }
 
-/* Game +0x14E8C90 (shut down by func_001F4100): constructor */
+/* Game +0x14E8C90 (shut down by Slots_Reset2): constructor */
 void *func_001F4600(u8 *o) {
     AT(o, 0x0, void **) = D_0046B1D0;
     gTexCache = (VObject *)o;
@@ -670,7 +670,7 @@ void System_Shutdown(u8 *s) {
     func_001EEA38();
     Loader_CloseAll(s + 0x319900);
     SndDriver_FreeIop(s + 0x395D40);
-    func_001AAC60(s + 0x305280);
+    MovieLib_Shutdown(s + 0x305280);
     func_0010D3E0(0);
 }
 

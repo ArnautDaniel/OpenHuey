@@ -109,7 +109,7 @@ s32 Room2E_Cmd03(void) {
     if (!(r[3] <= 120.0f)) {
         r[3] = 120.0f;
     }
-    func_00266C70(fx, 0x1C, r);
+    RoomEffects_Send(fx, 0x1C, r);
     return 1;
 }
 

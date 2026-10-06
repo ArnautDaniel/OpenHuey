@@ -119,7 +119,7 @@ void *DriftingFlecks_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00471060;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -388,7 +388,7 @@ void *Effect79B00_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00479B00;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -405,7 +405,7 @@ void *Effect7A3D0_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0047A3D0;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -481,7 +481,7 @@ static inline void block_dust(u8 *mgr, s32 slot, f32 x, f32 y, f32 z) {
     prm.pos[2] = z;
     prm.b = 0x50;
     prm.a = 0x50;
-    func_002D6090(mgr, slot, &prm);
+    EffectMgr_Start(mgr, slot, &prm);
 }
 
 /* byte 4: 0 the group at its stop; 1 / 2 a step (0.25) along x / z toward it (event 0 cleared,
@@ -590,7 +590,7 @@ void *WindowFlash_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00479AC0;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;

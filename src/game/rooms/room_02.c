@@ -180,13 +180,13 @@ s32 Room02_Cmd02(void *self, void *a1, u8 *cmd) {
         s32 slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0);
         s32 arg = 0;
 
-        func_002D6090(gEffects, slot, &arg);
+        EffectMgr_Start(gEffects, slot, &arg);
     } else {
         u8 *mgr = gEffects;
         s32 slot = Effect_New(mgr, 0xE60, effect_70A70_init);
         s32 arg = 1;
 
-        func_002D6090(mgr, slot, &arg);
+        EffectMgr_Start(mgr, slot, &arg);
     }
     return 1;
 }

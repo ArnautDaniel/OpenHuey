@@ -130,13 +130,13 @@ void Progress_SlotAfresh(Progress *p, u8 k) {
         if (i == k) {
             AT(b, 0x10B1 + k * 0xC, u8) = 2;
         } else if (AT(b, 0x10B2 + i * 0xC, u8) == k) {
-            func_002A84C0(b + 0x10B0 + i * 0xC);
+            SlotCmds_Reset(b + 0x10B0 + i * 0xC);
         }
     }
     mask = 1u << k;
     for (i = 0; i < 3; i++) {
         if (i == k || (AT(b, 0x1014 + i * 0x10, u8) & mask)) {
-            func_002A8500(b + 0x1014 + i * 0x10);
+            Relations_Reset(b + 0x1014 + i * 0x10);
         }
     }
 }
@@ -724,14 +724,14 @@ void Progress_PursuerRequest(Progress *p) {
     s32 i;
 
     if (AT(t, 0x778, u8) != 0) {
-        func_002EC4F0(t + 0x764, t + 0x778);
+        Summoner_Noise(t + 0x764, t + 0x778);
     }
     for (i = 0; i < 4; i++, t += 0x10) {
         AT(t, 0x10D4, u8) = AT(t, 0x778, u8);
         AT(t, 0x10D8, s32) = AT(t, 0x77C, s32);
         AT(t, 0x10DC, s32) = AT(t, 0x780, s32);
         AT(t, 0x10E0, u16) = AT(t, 0x784, u16);
-        func_002A84A0(t + 0x778);
+        CharRequest_Clear(t + 0x778);
     }
 }
 
@@ -774,7 +774,7 @@ void Progress_RelationChanges(Progress *p) {
                 if (act.state != 0 && AT(gCharacters[i], 0x14E8, s32) != 7) {
                     char_set_action_ool((u8 *)gCharacters[i], &act);
                 }
-                func_002A84C0(e);
+                SlotCmds_Reset(e);
             }
         } else if (e[0] == 1) {
             if (e[1] == 2) {
@@ -784,7 +784,7 @@ void Progress_RelationChanges(Progress *p) {
                 if (AT(c, 0x14E8, s32) != 7) {
                     char_set_action_ool(c, &act);
                 }
-                func_002A84C0(e);
+                SlotCmds_Reset(e);
             } else if (e[1] == 1) {
                 u8 *r = b + e[2] * 0x10;
 
@@ -793,7 +793,7 @@ void Progress_RelationChanges(Progress *p) {
                 AT(r, 0x1016, u16) = AT(e, 0x4, s32);
                 AT(r, 0x1018, u16) = e[3];
                 AT(r, 0x101C, f32) = AT(e, 0x8, f32);
-                func_002A84C0(e);
+                SlotCmds_Reset(e);
             }
         }
     }
@@ -942,7 +942,7 @@ void Progress_ResolveRelations(Progress *p) {
             if (AT(c, 0x14E8, s32) != 7) {
                 char_set_action_ool(c, &act);
             }
-            func_002A84C0(b + 0x10B0 + i * 0xC);
+            SlotCmds_Reset(b + 0x10B0 + i * 0xC);
         }
     }
     for (j = 0; j < 3; j++) {
@@ -1009,7 +1009,7 @@ void Progress_OwnRequests(Progress *p) {
         }
     }
     for (i = 0; i < 3; i++) {
-        func_002A84E0(b + 0x1050 + i * 0x20);
+        OwnRequest_Clear(b + 0x1050 + i * 0x20);
     }
 }
 
@@ -1726,7 +1726,7 @@ void *Progress_dtor(Progress *p, s32 flags) {
         return p;
     }
     VT(b, 0) = Progress_vtable;
-    func_00176780((u8 *)p);
+    Progress_Reset((u8 *)p);
     for (i = 2; i < 6; i++) {
         if (gCharacters[i] != NULL) {
             VObject *c;

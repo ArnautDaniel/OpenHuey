@@ -131,7 +131,7 @@ static void effect_need(u8 *fx, s32 n, void **vtbl) {
     VObject **slot = &AT(fx, 0x1438 + n * 4, VObject *);
     void *mem;
 
-    if (func_00266C40(fx, n) != NULL) {
+    if (RoomEffects_Get(fx, n) != NULL) {
         return;
     }
     if (*slot != NULL) {
@@ -140,7 +140,7 @@ static void effect_need(u8 *fx, s32 n, void **vtbl) {
     }
     mem = VCALL(pool, 0x10, void *(*)(VObject *, u32))(pool, 0xA0);
     if (mem != NULL) {
-        VObject *e = func_002672F0(0xA0, mem);
+        VObject *e = RoomEffects_new(0xA0, mem);
 
         if (e != NULL) {
             e->vtbl = vtbl;
@@ -408,12 +408,12 @@ void Cutscene_Cues(u8 *d) {
 
     VCALL(lights, 0x48, void (*)(VObject *, s32, f32 *, f32))(lights, 0, amb, 0.0f);
     fx = gRoomEffects;
-    func_002670F0(fx, 0x1C);
+    RoomEffects_Release(fx, 0x1C);
     if (AT(d, 0x238, u8)) {
         effect_need(fx, 0x1D, D_0046EB40);
-        func_00266C70(fx, 0x1D, d + 0x248);
+        RoomEffects_Send(fx, 0x1D, d + 0x248);
     } else {
-        func_002670F0(fx, 0x1D);
+        RoomEffects_Release(fx, 0x1D);
     }
     for (i = 0; i < AT(cues, 0x0, s32); i++, c += 0x30) {
         if (AT(c, 0x2, u16) != REC_AT(d, FRAME(d))) {
@@ -440,11 +440,11 @@ void Cutscene_Cues(u8 *d) {
             break;
         case 1:
             effect_need(fx, 0x1C, D_0046EC60);
-            func_00266C70(fx, 0x1C, c + 0x10);
+            RoomEffects_Send(fx, 0x1C, c + 0x10);
             break;
         case 2:
             effect_need(fx, 0x1D, D_0046EB40);
-            func_00266C70(fx, 0x1D, c + 0x10);
+            RoomEffects_Send(fx, 0x1D, c + 0x10);
             break;
         }
     }
@@ -544,15 +544,15 @@ void Cutscene_End(u8 *d) {
     fx = gRoomEffects;
     if (AT(d, 0x238, u8)) {
         effect_need(fx, 0x1D, D_0046EB40);
-        func_00266C70(fx, 0x1D, d + 0x248);
+        RoomEffects_Send(fx, 0x1D, d + 0x248);
     } else {
-        func_002670F0(fx, 0x1D);
+        RoomEffects_Release(fx, 0x1D);
     }
     if (AT(d, 0x268, u8)) {
         effect_need(fx, 0x1C, D_0046EC60);
-        func_00266C70(fx, 0x1C, d + 0x278);
+        RoomEffects_Send(fx, 0x1C, d + 0x278);
     } else {
-        func_002670F0(fx, 0x1C);
+        RoomEffects_Release(fx, 0x1C);
     }
     zero[0] = zero[1] = zero[2] = 0.0f;
     VCALL(gLights, 0x48, void (*)(VObject *, s32, f32 *, f32))(gLights, 0, zero, 0.0f);
@@ -646,7 +646,7 @@ void Cutscene_StateFirstShot(u8 *d) {
     }
     fx = gRoomEffects;
     AT(d, 0x238, u8) = 0;
-    e = func_00266C40(fx, 0x1D);
+    e = RoomEffects_Get(fx, 0x1D);
     if (e != NULL) {
         AT(d, 0x238, u8) = 1;
         AT(d, 0x248, s32) = AT(e, 0x10, s32);
@@ -662,7 +662,7 @@ void Cutscene_StateFirstShot(u8 *d) {
         AT(d, 0x261, u8) = 0;
     }
     AT(d, 0x268, u8) = 0;
-    e = func_00266C40(fx, 0x1C);
+    e = RoomEffects_Get(fx, 0x1C);
     if (e != NULL) {
         AT(d, 0x268, u8) = 1;
         AT(d, 0x278, f32) = AT(e, 0x50, f32);

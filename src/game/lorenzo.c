@@ -299,7 +299,7 @@ void *Obj470F90_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00470F90;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -607,7 +607,7 @@ void Lorenzo2_SlamDust(Pursuer *p) {
         s32 slot = Effect_New(mgr, 0x720, Dust_Init);
 
         dp.size = (s32)(320.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) + 320;
-        func_002D6090(mgr, slot, &dp);
+        EffectMgr_Start(mgr, slot, &dp);
     }
 }
 
@@ -666,7 +666,7 @@ void Lorenzo2_BlowSparks(Pursuer *p) {
         sp.life = (s32)(6.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) + 12;
         slot = Effect_New(mgr, 0x130, Spark_Init);
         sceVu0AddVector(sp.pos, at, D_00423AC0[i]);
-        func_002D6090(mgr, slot, &sp);
+        EffectMgr_Start(mgr, slot, &sp);
     }
 }
 
@@ -801,7 +801,7 @@ static inline f32 Lorenzo2_Sink(Pursuer *p, f32 *t) {
     slot = Effect_New(mgr, 0x700, Sink_Init);
     sceVu0CopyVector(sk.pos, p->c.a.pos);
     sk.kind = 0;
-    func_002D6090(mgr, slot, &sk);
+    EffectMgr_Start(mgr, slot, &sk);
     k = PursuerGroup_Find(gProgress, 9, *(u8 *)&p->c.a.slot) & 0xFF;
     if (k != 0xFF) {
         p->c.a.navTri = VCALL(gRooms, 0x34, u32 (*)(VObject *, u32, f32 *))(gRooms, k, p->c.a.pos);
@@ -902,7 +902,7 @@ void Lorenzo2_StateGrab(Pursuer *p) {
         }
         sceVu0CopyVector((f32 *)((u8 *)p + 0x1770), p->c.unk110);
         mgr = gEffects;
-        func_002D6090(mgr, Effect_New(mgr, 0xFC0, Burst_Init), p->c.unk110);
+        EffectMgr_Start(mgr, Effect_New(mgr, 0xFC0, Burst_Init), p->c.unk110);
     }
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
         AT(p->c.unk110, 0x0, s32) = 0;
@@ -1006,7 +1006,7 @@ static inline void Lorenzo2_Rise(Pursuer *p, const PTMF *state, s32 other) {
         slot = Effect_New(mgr, 0x700, Sink_Init);
         sceVu0CopyVector(sk.pos, p->c.a.pos);
         sk.kind = 1;
-        func_002D6090(mgr, slot, &sk);
+        EffectMgr_Start(mgr, slot, &sk);
         Actor_SetState(&p->c.a, state);
         if (other) {
             Lorenzo2b_Sweep(p);
@@ -1090,7 +1090,7 @@ void Lorenzo2_StateUnderFloor(Pursuer *p) {
     slot = Effect_New(mgr, 0x700, Sink_Init);
     sceVu0CopyVector(sk.pos, p->c.a.pos);
     sk.kind = 1;
-    func_002D6090(mgr, slot, &sk);
+    EffectMgr_Start(mgr, slot, &sk);
     Actor_SetState(&p->c.a, &D_00423A58);
     Lorenzo2_PlayOut(p);
 }
@@ -1253,7 +1253,7 @@ static inline __attribute__((always_inline)) void k12_mark(Pursuer *p) {
     arg[1] = 0;
     AT(&arg[2], 0, f32) = 1.0f;
     arg[3] = slot;
-    func_002D6090(mgr, slot, arg);
+    EffectMgr_Start(mgr, slot, arg);
 }
 
 /* vtable +0x38: Pursuer_ShowUp, then (when func_00217510 allows) the marker */
@@ -1520,7 +1520,7 @@ void Kind39_SlamDust(Pursuer *p) {
         s32 slot = Effect_New(mgr, 0x720, Dust_Init);
 
         dp.size = (s32)(320.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) + 320;
-        func_002D6090(mgr, slot, &dp);
+        EffectMgr_Start(mgr, slot, &dp);
     }
 }
 
@@ -1567,7 +1567,7 @@ void Kind39_BlowSparks(Pursuer *p) {
         sp.life = (s32)(6.0f * VCALL(rnd, 0x1C, f32 (*)(VObject *))(rnd)) + 12;
         slot = Effect_New(mgr, 0x130, Spark_Init);
         sceVu0AddVector(sp.pos, at, D_00445AF0[i]);
-        func_002D6090(mgr, slot, &sp);
+        EffectMgr_Start(mgr, slot, &sp);
     }
 }
 
@@ -1609,7 +1609,7 @@ void Kind39_StateGrab(Pursuer *p) {
         }
         sceVu0CopyVector((f32 *)((u8 *)p + 0x1770), p->c.unk110);
         mgr = gEffects;
-        func_002D6090(mgr, Effect_New(mgr, 0xFC0, Burst_Init), p->c.unk110);
+        EffectMgr_Start(mgr, Effect_New(mgr, 0xFC0, Burst_Init), p->c.unk110);
     }
     if (AT(AT(p->c.motion, 0x6A4, u8 *), 0x18, u32) & MOTION_KEY_END) {
         AT(p->c.unk110, 0x0, s32) = 0;
@@ -1755,7 +1755,7 @@ void Kind39_StateUnderFloor(Pursuer *p) {
     slot = Effect_New(mgr, 0x700, Sink_Init);
     sceVu0CopyVector(sk.pos, p->c.a.pos);
     sk.kind = 1;
-    func_002D6090(mgr, slot, &sk);
+    EffectMgr_Start(mgr, slot, &sk);
     Actor_SetState(&p->c.a, &D_00445A88);
     Lorenzo2_PlayOut(p);
 }

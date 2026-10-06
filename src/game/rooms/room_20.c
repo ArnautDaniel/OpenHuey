@@ -196,7 +196,7 @@ s32 Room20_Cmd04(void) {
     prm.c = 0x50;
     prm.b = 0x50;
     prm.a = 0x50;
-    func_002D6090(gEffects, slot, &prm);
+    EffectMgr_Start(gEffects, slot, &prm);
     return 1;
 }
 

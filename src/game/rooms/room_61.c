@@ -285,16 +285,16 @@ s32 Room61_Cmd01(void *self, void *a1, u8 *cmd) {
         AT(&arg[2], 0, f32) = 70.0f;
         AT(&arg[3], 0, f32) = 1.0f;
         arg[4] = 0;
-        func_002D6090(gEffects, slot, arg);
+        EffectMgr_Start(gEffects, slot, arg);
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 3, slot);
         break;
     case 1:
         arg[4] = 1;
-        func_002D6090(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 3), arg);
+        EffectMgr_Start(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 3), arg);
         break;
     case 2:
         arg[4] = 2;
-        func_002D6090(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 3), arg);
+        EffectMgr_Start(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 3), arg);
         break;
     default:
         return 1;
@@ -342,7 +342,7 @@ u8 *LightShaft_dtor(u8 *o, s32 flags) {
     AT(o, 0x610, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -575,7 +575,7 @@ void **Glint_dtor(void **o, s32 flags) {
     o[0] = D_0047A3B0;
     o[0] = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }

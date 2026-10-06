@@ -751,7 +751,7 @@ void BootCard_FreshData(BootCard *b) {
         h[9] = 0xFF;
         h[0xA] = 0;
         h[0xB] = 0xFF;
-        func_002A76E0(h + 0x13);
+        Bytes4_Clear(h + 0x13);
         AT32(h, 0) = bytes_sum(h, 0x18);
     }
     d = (u8 *)b->sys + SAVE_DATA_OFF;
@@ -766,7 +766,7 @@ void BootCard_FreshData(BootCard *b) {
     for (i = 0; i < 8; i++) {
         AT32(d, 0x30 + i * 4) = 0;
     }
-    func_002A8060(d + 0x50);
+    Progress_SubReset(d + 0x50);
     AT32(d, 0) = -1;
 }
 

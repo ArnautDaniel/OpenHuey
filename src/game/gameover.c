@@ -57,7 +57,7 @@ void *GameOverBase_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046D750;
         AT(o, 0x0, void **) = D_0046D730;
         if ((s16)flags > 0) {
-            func_002672E0(o);
+            RoomEffects_delete(o);
         }
     }
     return o;
@@ -115,7 +115,7 @@ static void tint_get(u8 *fx, s32 n, u8 **dst) {
     VObject **slot = &AT(fx, 0x1438 + n * 4, VObject *);
     void *mem;
 
-    *dst = func_00266C40(fx, n);
+    *dst = RoomEffects_Get(fx, n);
     if (*dst != NULL) {
         return;
     }
@@ -127,7 +127,7 @@ static void tint_get(u8 *fx, s32 n, u8 **dst) {
     }
     mem = VCALL((VObject *)(fx + 0x1400), 0x10, void *(*)(VObject *, u32))((VObject *)(fx + 0x1400), 0xA0);
     if (mem != NULL) {
-        VObject *e = func_002672F0(0xA0, mem);
+        VObject *e = RoomEffects_new(0xA0, mem);
 
         if (e != NULL) {
             e->vtbl = D_0046D750;
@@ -135,7 +135,7 @@ static void tint_get(u8 *fx, s32 n, u8 **dst) {
         *slot = e;
         VCALL(*slot, 0xC, void (*)(VObject *))(*slot);
     }
-    *dst = func_00266C40(fx, n);
+    *dst = RoomEffects_Get(fx, n);
 }
 
 /* the two tints to fade from where they are: 0x1F to purple, 0x1D to clear */
@@ -182,7 +182,7 @@ static void tints_step(GameOver *o, s32 fade) {
     AT(o->tint2, 0x10, u32) = c;
     AT(o->tint2, 0x14, u32) = d;
     if (fade) {
-        func_002EF480(PANIC(gProgress), (f32)(s32)o->timer / 60.0f);
+        ScreenFade_Level(PANIC(gProgress), (f32)(s32)o->timer / 60.0f);
     }
     was = o->timer;
     o->timer = was - 1;
@@ -328,7 +328,7 @@ static void game_over(GameOver *o, s32 kind) {
                 VCALL(gSound, 0x14, void (*)(VObject *, s32, s32))(gSound, 0x39, 5);
             }
             tints_start(o);
-            func_002EF480(PANIC(gProgress), 1.0f);
+            ScreenFade_Level(PANIC(gProgress), 1.0f);
             o->timer = 60;
             o->step++;
         }
@@ -410,7 +410,7 @@ void GameOver_StateMovie(GameOver *o) {
         if (--o->timer == 0) {
             tints_start(o);
             if (o->drawMovie == 0) {
-                func_002EF480(PANIC(gProgress), 1.0f);
+                ScreenFade_Level(PANIC(gProgress), 1.0f);
             }
             o->timer = 60;
             o->step++;
@@ -487,7 +487,7 @@ void GameOver_StateStart(GameOver *o) {
     }
     o->drawMovie = 0;
     if (o->hasMovie != 0) {
-        func_002EF480(PANIC(p), 0.0f);
+        ScreenFade_Level(PANIC(p), 0.0f);
     }
 }
 

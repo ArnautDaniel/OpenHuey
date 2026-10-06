@@ -83,7 +83,7 @@ s32 Room49_Cmd02(void *self, void *a1, u8 *cmd) {
         break;
     }
     case 1:
-        func_002D6170(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0));
+        EffectMgr_Remove(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0));
         break;
     }
     return 1;
@@ -108,7 +108,7 @@ s32 Room49_Cmd01(void) {
     if (!(r[3] <= 140.0f)) {
         r[3] = 140.0f;
     }
-    func_00266C70(fx, 0x1C, r);
+    RoomEffects_Send(fx, 0x1C, r);
     return 1;
 }
 

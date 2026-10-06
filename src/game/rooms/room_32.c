@@ -111,7 +111,7 @@ s32 Room32_Cmd04(void *self, void *a1, u8 *cmd) {
         arg.kind = 2;
         arg.alpha = 0xFF;
         room_effect_slot_new(fx, 0x1A, D_00479560);
-        func_00266C70(fx, 0x1A, &arg);
+        RoomEffects_Send(fx, 0x1A, &arg);
     }
     return 1;
 }

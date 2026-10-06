@@ -114,7 +114,7 @@ s32 Room5C_Cond00(void) {
                 if (mem != NULL) {
                     for (j = 0; j < EFFECT_NUM_SLOTS; j++) {
                         if (EFFECT_SLOTS(mgr)[j] == NULL) {
-                            void **obj = func_002D63C0(0x4A0, mem);
+                            void **obj = EffectMgr_new(0x4A0, mem);
 
                             if (obj != NULL) {
                                 effect_472370_init(obj);
@@ -140,7 +140,7 @@ s32 Room5C_Cond00(void) {
                 prm.col[3] = 0x60;
                 prm.col[2] = 0x30;
             }
-            func_002D6090(gEffects, slot, &prm);
+            EffectMgr_Start(gEffects, slot, &prm);
             Actor_PlaySound(&c->a, 0x8B, 5, 0, 0, NULL);
             return 1;
         }

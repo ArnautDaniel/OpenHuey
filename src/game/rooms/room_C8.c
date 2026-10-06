@@ -83,7 +83,7 @@ void *TurningModel_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0047A410;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;

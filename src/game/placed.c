@@ -913,7 +913,7 @@ static inline void drop_splash(u8 *o, f32 *at, s32 r, s32 g, s32 b, f32 size) {
     sp.pos[1] = at[1];
     sp.pos[2] = at[2];
     sp.size = size;
-    func_002D6090(mgr, slot, &sp);
+    EffectMgr_Start(mgr, slot, &sp);
     Actor_PlaySound((Actor *)o, 0x8D, 5, 0, 0, NULL);
 }
 
@@ -1194,7 +1194,7 @@ static inline __attribute__((always_inline)) void kind2_burst(u8 *o, u32 size, v
 
     Actor_PlaySound((Actor *)o, 0x8E, 5, 0, 0, NULL);
     mgr = gEffects;
-    func_002D6090(mgr, Effect_New(mgr, size, init), o + 0x10);
+    EffectMgr_Start(mgr, Effect_New(mgr, size, init), o + 0x10);
 }
 
 /* +0x30 each frame, while the game runs: the shared checks (func_00354910: 1 / 2 set off -
@@ -1246,7 +1246,7 @@ static inline __attribute__((always_inline)) void thing_watch(u8 *o, u32 size, v
     {
         u8 *mgr = gEffects;
 
-        func_002D6090(mgr, Effect_New(mgr, size, init), o + 0x10);
+        EffectMgr_Start(mgr, Effect_New(mgr, size, init), o + 0x10);
     }
     AT(o, 0x28, u8) = 0;
 }
@@ -2025,7 +2025,7 @@ static inline u8 *Burst4_Destroy(u8 *o, void **vtbl, u32 at, s32 flags) {
         }
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -2824,7 +2824,7 @@ void func_003332B0(u8 *o) {
             return;
         }
         AT(o, 0x122, u16) = AT(s, 0x30, s32);
-        func_002A8440((u8 *)gProgress + 0x7A8, 0x1F, AT(o, 0x30, s32), AT(o, 0x34, u32), 0xFFFF);
+        Noise_Make((u8 *)gProgress + 0x7A8, 0x1F, AT(o, 0x30, s32), AT(o, 0x34, u32), 0xFFFF);
         if (AT(s, 0x16C9, u8) < 5) {
             AT(o, 0x28, u8) = 0;
         }
@@ -2845,7 +2845,7 @@ void func_003332B0(u8 *o) {
         return;
     }
     if (AT(s, 0x16C9, u8) != 4) {
-        func_002A8440((u8 *)gProgress + 0x7A8, 0x1F, AT(o, 0x30, s32), AT(o, 0x34, u32), 0xFFFF);
+        Noise_Make((u8 *)gProgress + 0x7A8, 0x1F, AT(o, 0x30, s32), AT(o, 0x34, u32), 0xFFFF);
         return;
     }
     if (func_0029A850((Pursuer *)s) != 0) {
@@ -3350,9 +3350,9 @@ void func_00335DE0(u8 *o) {
                 break;
             }
         }
-        func_002A8440((u8 *)p + 0x7A8, 0x4F, AT(o, 0x30, s32), tri, 0xFFFF);
+        Noise_Make((u8 *)p + 0x7A8, 0x4F, AT(o, 0x30, s32), tri, 0xFFFF);
         mgr = gEffects;
-        func_002D6090(mgr, Effect_New(mgr, 0x7A0, Burst1_Init), o + 0x10);
+        EffectMgr_Start(mgr, Effect_New(mgr, 0x7A0, Burst1_Init), o + 0x10);
         AT(o, 0x28, u8) = 0;
         return;
     }
@@ -3374,7 +3374,7 @@ void func_00335DE0(u8 *o) {
             }
         }
     }
-    func_002A8440((u8 *)p + 0x7A8, 0x4F, AT(o, 0x30, s32), AT(o, 0x34, u32), 0xFFFF);
+    Noise_Make((u8 *)p + 0x7A8, 0x4F, AT(o, 0x30, s32), AT(o, 0x34, u32), 0xFFFF);
     AT(o, 0x28, u8) = 0;
 }
 
@@ -3468,7 +3468,7 @@ void func_00333AD0(u8 *b) {
                     sp.rgb[2] = 0x50;
                     sp.rgb[1] = 0x50;
                     sp.rgb[0] = 0x50;
-                    func_002D6090(mgr, slot, &sp);
+                    EffectMgr_Start(mgr, slot, &sp);
                 }
             }
             bounced = 1;

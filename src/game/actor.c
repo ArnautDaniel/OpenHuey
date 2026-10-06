@@ -1234,7 +1234,7 @@ void **EffectBase_dtor(void **obj, s32 flags) {
     if (obj != NULL) {
         *obj = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(obj);
+            EffectMgr_free(obj);
         }
     }
     return obj;
@@ -1646,7 +1646,7 @@ void Character_WaterStep(Character *c, f32 *pos, s32 big) {
     rp.pos[1] = rp.pos[1] + 0x1.99999ap-4f /* 0.1 */;
     rp.size = big ? 0x1.99999ap-3f /* 0.2 */ : 0x1.333334p-3f /* 0.15 */;
     mgr = gEffects;
-    func_002D6090(mgr, Effect_New(mgr, 0x40, Ripple_Init), &rp);
+    EffectMgr_Start(mgr, Effect_New(mgr, 0x40, Ripple_Init), &rp);
 
     sceVu0CopyVector(sp.pos, pos);
     sp.rgba[3] = 0x40;
@@ -1673,7 +1673,7 @@ void Character_WaterStep(Character *c, f32 *pos, s32 big) {
         sp.v[5] = 0x1.333334p-3f;   /* 0.15 */
         sp.v[7] = 0x1.333334p-3f;
     }
-    func_002D6090(mgr, Effect_New(mgr, 0x720, Splash_Init), &sp);
+    EffectMgr_Start(mgr, Effect_New(mgr, 0x720, Splash_Init), &sp);
 }
 
 /* Room the current route move leads to (0xFFFF: none). */

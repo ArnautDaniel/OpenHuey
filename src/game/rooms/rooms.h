@@ -174,7 +174,7 @@ static __attribute__((unused)) void room_effect_slot_new(u8 *fx, s32 n, void **v
     }
     mem = VCALL(pool, 0x10, void *(*)(VObject *, u32))(pool, 0xA0);
     if (mem != NULL) {
-        VObject *e = func_002672F0(0xA0, mem);
+        VObject *e = RoomEffects_new(0xA0, mem);
 
         if (e != NULL) {
             e->vtbl = vtbl;
@@ -192,7 +192,7 @@ static inline __attribute__((always_inline)) s32 lit_quad_in(s32 n, u8 *cmd, con
     s32 i;
 
     if (cmd[3] == 1) {
-        func_002670F0(gRoomEffects, n);
+        RoomEffects_Release(gRoomEffects, n);
         return 1;
     }
     fx = gRoomEffects;
@@ -204,7 +204,7 @@ static inline __attribute__((always_inline)) s32 lit_quad_in(s32 n, u8 *cmd, con
     q[0x11] = c;
     q[0x12] = 0;
     q[0x13] = c;
-    func_00266C70(fx, n, q);
+    RoomEffects_Send(fx, n, q);
     return 1;
 }
 
@@ -537,10 +537,10 @@ static inline s32 glow4_spot(u8 *cmd, u32 first) {
             break;
         }
         AT(&p[7], 0, f32) = 30.0f;
-        func_002D6090(mgr, slot, p);
+        EffectMgr_Start(mgr, slot, p);
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, k, slot);
     } else {
-        func_002D6170(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, k));
+        EffectMgr_Remove(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, k));
     }
     return 1;
 }
@@ -572,7 +572,7 @@ static inline void obj_effect(u8 *o, u32 f) {
 
     prm.f = f;
     prm.o = o;
-    func_002D6090(gEffects, slot, &prm);
+    EffectMgr_Start(gEffects, slot, &prm);
 }
 
 /* room effect 0x1F's colour pulsing with script variable `var` (0..0x60 round): three channels
@@ -599,7 +599,7 @@ static inline __attribute__((always_inline)) void colour_pulse(s32 var, u8 c3, u
     c[5] = c5;
     c[6] = c6;
     c[8] = 0;
-    func_00266C70(gRoomEffects, 0x1F, c);
+    RoomEffects_Send(gRoomEffects, 0x1F, c);
     v++;
     if ((u32)v > 0x60) {
         v = 0;
@@ -667,7 +667,7 @@ static inline s32 clock_start(void) {
     p[0x1FBEC1] = 1;
     Hewie_Restart((Hewie *)gCharPartner);
     VCALL(gCamDirector, 0x40, void (*)(VObject *, f32))(gCamDirector, 14.0f);
-    func_002A76E0(p + 0xFC4);
+    Bytes4_Clear(p + 0xFC4);
     return 1;
 }
 
@@ -699,7 +699,7 @@ static inline void grey_send(u8 *mgr, GreyMsg *m, s16 spot, f32 b, f32 c, f32 d)
     m->c = c;
     m->d = d;
     m->e = d;
-    func_002D6090(mgr, Effect_New(mgr, 0x1C30, effect_79B00_init), m);
+    EffectMgr_Start(mgr, Effect_New(mgr, 0x1C30, effect_79B00_init), m);
 }
 
 static inline s32 grey_three(f32 a, const s16 *spot, const f32 *b, const f32 *c, const f32 *d) {

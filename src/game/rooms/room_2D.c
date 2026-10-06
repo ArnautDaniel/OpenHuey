@@ -130,7 +130,7 @@ s32 Room2D_Cmd01(void *self, void *a1, u8 *cmd) {
         p[0] = -276.5f;
         p[2] = 160.0f;
         p[3] = 1.0f;
-        func_002D6090(mgr, slot, p);
+        EffectMgr_Start(mgr, slot, p);
         break;
     }
     case 1: {
@@ -142,11 +142,11 @@ s32 Room2D_Cmd01(void *self, void *a1, u8 *cmd) {
         p[3] = 1.0f;
         p[1] = 3.0f - 0x1.99999ap-5f /* 0.05 */ * (f32)((n * (n + 1)) >> 1);
         if (!(p[1] <= -10.0f)) {
-            func_002D6090(gEffects, slot, p);
+            EffectMgr_Start(gEffects, slot, p);
             VCALL(ev, 0x30, void (*)(VObject *, s32, u32))(ev, 0, n);
             return 2;
         }
-        func_002D6090(gEffects, slot, NULL);
+        EffectMgr_Start(gEffects, slot, NULL);
         break;
     }
     }

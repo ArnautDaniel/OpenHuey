@@ -550,7 +550,7 @@ void Door_PlaySound(u8 *e, s32 id, s32 how) {
     p = gProgress;
     door = VCALL(gRooms, 0x10, u32 (*)(VObject *, s32, u32))(gRooms, VCALL(p, 0xC, s32 (*)(Progress *))(p), AT(e, 0x4, u8)) & 0xFFFF;
     room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
-    func_002A8440((u8 *)p + 0x778 + (slot & 0xFF) * 0x10, loud, room, -1, door);
+    Noise_Make((u8 *)p + 0x778 + (slot & 0xFF) * 0x10, loud, room, -1, door);
 }
 
 /* ---- the route planner (gRoutePlanner, SceneGame +0xF6A940, vtable D_0046C520): a breadth-first

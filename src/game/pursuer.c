@@ -4739,7 +4739,7 @@ void func_00285B10(Pursuer *p) {
     PU(p, 0x1628, s32) = Effect_New(mgr, 0x38, Pursuer_EffectInit);
     args[0] = (p->c.unk104[0] - 4) >> 1;
     args[1] = PU(p, 0x1624, s32);
-    func_002D6090(mgr, PU(p, 0x1628, s32), args);
+    EffectMgr_Start(mgr, PU(p, 0x1628, s32), args);
     PU(p, 0x1784, s32) = 0;
     Actor_SetState(&p->c.a, &D_003ED240);
     if (MOTION_KEYS(p) & 0x400) {
@@ -8195,7 +8195,7 @@ void Pursuer_Footsteps(Pursuer *p) {
         if (VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0 && Progress_TestFlag(gProgress, 8) == 0) {
             Actor_PlaySound(&p->c.a, snd, level, 0, (s8)vol, NULL);
         }
-        func_002A8440((u8 *)gProgress + 0x798, speed < 0.5f ? 0x1C : 0x1F, p->c.a.room, p->c.a.navTri, 0xFFFF);
+        Noise_Make((u8 *)gProgress + 0x798, speed < 0.5f ? 0x1C : 0x1F, p->c.a.room, p->c.a.navTri, 0xFFFF);
     }
 }
 
@@ -10271,11 +10271,11 @@ void func_0029B8B0(Pursuer *p) {
 
             p->c.unk104[0] = p->c.state[4] & 0x7FFF;
             PU(p, 0x1624, s32) = p->c.state[4] & 0x7FFF;
-            func_002D6090(mgr, PU(p, 0x1628, s32), NULL);
+            EffectMgr_Start(mgr, PU(p, 0x1628, s32), NULL);
             PU(p, 0x1628, s32) = Effect_New(mgr, 0x38, Pursuer_EffectInit);
             args[0] = (p->c.unk104[0] - 4) >> 1;
             args[1] = PU(p, 0x1624, s32);
-            func_002D6090(mgr, PU(p, 0x1628, s32), args);
+            EffectMgr_Start(mgr, PU(p, 0x1628, s32), args);
         }
     }
     if (p->c.moveMode == 4) {
@@ -11393,7 +11393,7 @@ void *func_00316D80(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00472F60;
         AT(o, 0x0, void **) = D_0046D730;
         if ((s16)flags > 0) {
-            func_002672E0(o);
+            RoomEffects_delete(o);
         }
     }
     return o;
@@ -11577,7 +11577,7 @@ void *Effect79FF0_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_00479FF0;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -11636,7 +11636,7 @@ s32 Effect79FF0_Update(u8 *o) {
             slot = Effect_New(mgr, 0x220, strand_init);
             msg[0] = AT(gCharPursuer, 0x153C, u8);
             msg[1] = AT(o, 0x2C, s32);
-            func_002D6090(mgr, slot, msg);
+            EffectMgr_Start(mgr, slot, msg);
         }
     }
     return 1;

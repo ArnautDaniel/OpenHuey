@@ -33,7 +33,7 @@ static void effect_70F90_init(void **obj) {
 static inline s32 marker_send(s32 *msg) {
     s32 slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0);
 
-    func_002D6090(gEffects, slot, msg);
+    EffectMgr_Start(gEffects, slot, msg);
     return 1;
 }
 
@@ -117,7 +117,7 @@ s32 Room8D_Cmd01(void *self, void *a1, u8 *cmd) {
         msg[1] = AT(gCharSlot3, 0xF0, s32);
         msg[2] = 0x3F800000;   /* 1 */
         msg[3] = slot;
-        func_002D6090(gEffects, slot, msg);
+        EffectMgr_Start(gEffects, slot, msg);
         return 1;
     case 2:
         msg[0] = 2;
@@ -144,7 +144,7 @@ s32 Room8D_Cmd01(void *self, void *a1, u8 *cmd) {
         } else {
             AT(&msg[1], 0, f32) = (f32)v / k334.f;
         }
-        func_002D6090(gEffects, slot, msg);
+        EffectMgr_Start(gEffects, slot, msg);
         return 1;
     case 6:
         msg[0] = 4;

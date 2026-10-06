@@ -326,7 +326,7 @@ void EventCmd_Pursuer(VObject *ev) {
 }
 
 /* room effect slot pc[1] (32, gRoomEffects +0x1438) made anew from the effects' pool (+0x1400)
- * with constructor `ctor`, then set going (func_00266C70) at (3 x be32 / 1000; with `kind`
+ * with constructor `ctor`, then set going (RoomEffects_Send) at (3 x be32 / 1000; with `kind`
  * pc[14]) */
 static void room_effect_new(VObject *ev, u8 *(*ctor)(u8 *), s32 kind) {
     u8 *fx = gRoomEffects;
@@ -346,7 +346,7 @@ static void room_effect_new(VObject *ev, u8 *(*ctor)(u8 *), s32 kind) {
         }
         mem = VCALL(fx + 0x1400, 0x10, void *(*)(void *, s32))(fx + 0x1400, 0xA0);
         if (mem != NULL) {
-            u8 *e = func_002672F0(0xA0, mem);
+            u8 *e = RoomEffects_new(0xA0, mem);
 
             if (e != NULL) {
                 e = ctor(e);
@@ -363,7 +363,7 @@ static void room_effect_new(VObject *ev, u8 *(*ctor)(u8 *), s32 kind) {
     if (kind) {
         arg.kind = PC(ev)[0xE];
     }
-    func_00266C70(gRoomEffects, PC(ev)[1], &arg);
+    RoomEffects_Send(gRoomEffects, PC(ev)[1], &arg);
 }
 
 extern VObject *D_00456DF8;   /* the room's placed objects (+0x18 by name) */
@@ -388,11 +388,11 @@ void EventCmd_PlacedObject(VObject *ev) {
         AT(o, 0x0, u8) = pc[3] != 0;
         break;
     case 1:
-        func_0025F9D0(o, pc[3]);
+        PlacedObject_StartAnim(o, pc[3]);
         AT(o, 0x1, u8) = 0;
         break;
     case 2:
-        func_0025F9D0(o, pc[3]);
+        PlacedObject_StartAnim(o, pc[3]);
         AT(o, 0x1, u8) = 1;
         break;
     case 3:
@@ -403,7 +403,7 @@ void EventCmd_PlacedObject(VObject *ev) {
         break;
     case 4:
         AT(o, 0x0, u8) = 0;
-        func_0025F810(o);
+        PlacedObject_ToDef(o);
         break;
     }
 }
@@ -432,7 +432,7 @@ static void room_effect_slot(s32 k, s32 which, s32 arg) {
     }
     mem = VCALL(fx + 0x1400, 0x10, void *(*)(void *, s32))(fx + 0x1400, 0xA0);
     if (mem != NULL) {
-        u8 *e = func_002672F0(0xA0, mem);
+        u8 *e = RoomEffects_new(0xA0, mem);
 
         if (e != NULL) {
             e = which == 4   ? Fog_Init((void **)e)
@@ -556,7 +556,7 @@ static s32 scene_effect_new(u8 *mgr, u32 size, void **(*ctor)(void **)) {
     }
     for (i = 0; i < EFFECT_NUM_SLOTS; i++) {
         if (EFFECT_SLOTS(mgr)[i] == NULL) {
-            void **obj = func_002D63C0(size, mem);
+            void **obj = EffectMgr_new(size, mem);
 
             if (obj != NULL) {
                 obj = ctor(obj);
@@ -703,7 +703,7 @@ void EventCmd_Run(VObject *ev) {
     }
     case 0x14:
         if ((u8)Progress_SlotOfId(p, pc[1]) == 2) {
-            func_002EC470((u8 *)p + 0x764, 0);
+            Summoner_Take((u8 *)p + 0x764, 0);
         } else {
             Progress_CharDone(p, (u8)Progress_SlotOfId(p, PC(ev)[1]));
         }
@@ -745,7 +745,7 @@ void EventCmd_Run(VObject *ev) {
     }
     case 0x33:   /* an effect with a string argument */
         if (pc[2] != 0) {
-            func_00266C70(gRoomEffects, pc[1], (void *)(pc + 3));
+            RoomEffects_Send(gRoomEffects, pc[1], (void *)(pc + 3));
         }
         break;
     case 0x22: {   /* the room handler's +0x28 with a string: bit 1 wait, bit 0 go on, else jumped */
@@ -1053,7 +1053,7 @@ void EventCmd_Run(VObject *ev) {
     }
     case 0x7D:   /* zone pc[1] (32) around room effect pc[2]: kind pc[7], radius, height */
         if (pc[1] < 0x20) {
-            u8 *e = func_00266C40(gRoomEffects, pc[2]);
+            u8 *e = RoomEffects_Get(gRoomEffects, pc[2]);
 
             if (e != NULL) {
                 u8 *z;
@@ -1174,18 +1174,18 @@ void EventCmd_Run(VObject *ev) {
         break;
     case 0x5A:   /* item be16 pc[1..2] in (pc[3]) / out */
         if (pc[3] != 0) {
-            func_002EC3C0((u8 *)p + 0x764, be16(pc + 1));
+            Summoner_LessCooldown((u8 *)p + 0x764, be16(pc + 1));
         } else {
-            func_002EC450((u8 *)p + 0x764, be16(pc + 1));
+            Summoner_SetCooldown((u8 *)p + 0x764, be16(pc + 1));
         }
         break;
     case 0x5B:   /* the stalker's item (+0x2D4) out */
         if (gCharPursuer != NULL) {
-            func_002EC450((u8 *)p + 0x764, VCALL(gCharSlot2, 0x2D4, u32 (*)(VObject *))((VObject *)gCharSlot2));
+            Summoner_SetCooldown((u8 *)p + 0x764, VCALL(gCharSlot2, 0x2D4, u32 (*)(VObject *))((VObject *)gCharSlot2));
         }
         break;
     case 0x64:   /* room effect 0x1C gone */
-        func_002670F0(gRoomEffects, 0x1C);
+        RoomEffects_Release(gRoomEffects, 0x1C);
         break;
     case 0x69:   /* sound driver +0x18 (be32 pc[1..4], pc[5]) */
         VCALL(gSound, 0x18, void (*)(VObject *, s32, s32))(gSound, be32(pc + 1), pc[5]);
@@ -1211,7 +1211,7 @@ void EventCmd_Run(VObject *ev) {
         VCALL(gObstacles, 0x4C, void (*)(VObject *, s32, s32))(gObstacles, pc[1], pc[2]);
         break;
     case 0x84:
-        func_002EC470((u8 *)p + 0x764, pc[1]);
+        Summoner_Take((u8 *)p + 0x764, pc[1]);
         break;
     case 0x8B:
         AT(p, 0x73EB00, u8) = pc[1];
@@ -1229,7 +1229,7 @@ void EventCmd_Run(VObject *ev) {
         if (pc[1] < 0x20) {
             room_effect_slot(pc[1], 0, 8);
         }
-        func_00266C70(gRoomEffects, PC(ev)[1], (void *)(PC(ev) + 2));
+        RoomEffects_Send(gRoomEffects, PC(ev)[1], (void *)(PC(ev) + 2));
         break;
     case 0x65: {   /* room effect 0x1C made anew, set going at (4 x be32 / 1000) */
         f32 at[4] __attribute__((aligned(16)));
@@ -1239,7 +1239,7 @@ void EventCmd_Run(VObject *ev) {
         at[1] = (f32)be32(PC(ev) + 5) / 1000.0f;
         at[2] = (f32)be32(PC(ev) + 9) / 1000.0f;
         at[3] = (f32)be32(PC(ev) + 0xD) / 1000.0f;
-        func_00266C70(gRoomEffects, 0x1C, at);
+        RoomEffects_Send(gRoomEffects, 0x1C, at);
         break;
     }
     case 0x68:
@@ -1265,7 +1265,7 @@ void EventCmd_Run(VObject *ev) {
     case 0x88: {   /* a noise of loudness pc[1] in this room at triangle be16 pc[2..3] */
         s32 room = VCALL(p, 0xC, s32 (*)(Progress *))(p);
 
-        func_002A8440((u8 *)p + 0x7A8, PC(ev)[1], room, be16(pc + 2), 0xFFFF);
+        Noise_Make((u8 *)p + 0x7A8, PC(ev)[1], room, be16(pc + 2), 0xFFFF);
         break;
     }
     case 0x8A:
@@ -1479,7 +1479,7 @@ void EventCmd_Run(VObject *ev) {
         break;
     case 0x9B:   /* room effect 0x1E: pc[6] 0 gone, else made anew and set going (le32 pc[1..4], pc[5]) */
         if (pc[6] == 0) {
-            func_002670F0(gRoomEffects, 0x1E);
+            RoomEffects_Release(gRoomEffects, 0x1E);
         } else {
             struct {
                 u32 a, b;
@@ -1489,7 +1489,7 @@ void EventCmd_Run(VObject *ev) {
             pc = PC(ev);
             arg.a = pc[1] | pc[2] << 8 | pc[3] << 16 | pc[4] << 24;
             arg.b = PC(ev)[5];
-            func_00266C70(gRoomEffects, 0x1E, &arg);
+            RoomEffects_Send(gRoomEffects, 0x1E, &arg);
         }
         break;
     case 0xA6: {   /* load the room's file pc[2] into character pc[1]'s model buffer */
@@ -1637,7 +1637,7 @@ void EventCmd_Run(VObject *ev) {
         arg.pos[3] = 1.0f;
         arg.a = 0;
         arg.pos[2] = (f32)AT(ev, 0x810 + PC(ev)[4] * 4, s32) / 1000.0f;
-        func_00266C70(gRoomEffects, AT(ev, 0x810 + PC(ev)[1] * 4, s32), &arg);
+        RoomEffects_Send(gRoomEffects, AT(ev, 0x810 + PC(ev)[1] * 4, s32), &arg);
         break;
     }
     case 0xB8: {   /* character pc[1] (in the scene) heals by |be32 pc[2..5]| up to its +0x14CC */
@@ -1708,7 +1708,7 @@ void EventCmd_Run(VObject *ev) {
     case 0x9C:   /* room effect 0x1D: pc[17] 0 gone, else made anew and set going (2 raw le32
                   * floats pc[1..8], 2 x be32 pc[9..16] / 1000) */
         if (pc[0x11] == 0) {
-            func_002670F0(gRoomEffects, 0x1D);
+            RoomEffects_Release(gRoomEffects, 0x1D);
         } else {
             struct {
                 f32 v[4];
@@ -1731,7 +1731,7 @@ void EventCmd_Run(VObject *ev) {
             arg.b = 0;
             arg.c = 0;
             arg.v[3] = (f32)be32(PC(ev) + 0xD) / 1000.0f;
-            func_00266C70(gRoomEffects, 0x1D, &arg);
+            RoomEffects_Send(gRoomEffects, 0x1D, &arg);
         }
         break;
     case 0xD9: {   /* a scene effect (DustMoteSource_Init, 0x50 bytes) at (3 x be32 / 1000), size be32 pc[13..] / 1000 */
@@ -1747,7 +1747,7 @@ void EventCmd_Run(VObject *ev) {
         arg.pos[3] = 1.0f;
         arg.pos[2] = (f32)be32(PC(ev) + 9) / 1000.0f;
         arg.size = (f32)be32(PC(ev) + 0xD) / 1000.0f;
-        func_002D6090(mgr, slot, &arg);
+        EffectMgr_Start(mgr, slot, &arg);
         break;
     }
     case 0xC8: {   /* dust (SpriteBurst_InitDust, 0x720 bytes) of kind pc[1] at (3 x be32 pc[2..] / 1000):
@@ -1778,7 +1778,7 @@ void EventCmd_Run(VObject *ev) {
             arg.r = 0x50;
         }
         arg.size = 0x10;
-        func_002D6090(mgr, slot, &arg);
+        EffectMgr_Start(mgr, slot, &arg);
         break;
     }
     case 0x8C: {   /* a scene effect (Effect6FF60_Init, 0xE40 bytes) at (3 x be32 / 1000) with this script's
@@ -1808,7 +1808,7 @@ void EventCmd_Run(VObject *ev) {
         arg.a = AT(ev, 0x894 + PC(ev)[0xD] * 0x14, s32);
         arg.b = PC(ev)[0x12];
         arg.t = (f32)be32(PC(ev) + 0x13) / 1000.0f;
-        func_002D6090(mgr, slot, &arg);
+        EffectMgr_Start(mgr, slot, &arg);
         break;
     }
     case 0x97:   /* Fiona out, her model swapped for costume pc[1], back in but not in the scene */
@@ -1836,7 +1836,7 @@ void EventCmd_Run(VObject *ev) {
         arg.c[1] = PC(ev)[0x10];
         arg.c[2] = PC(ev)[0x11];
         arg.c[3] = PC(ev)[0x12];
-        func_002D6090(mgr, slot, &arg);
+        EffectMgr_Start(mgr, slot, &arg);
         break;
     }
     case 0xA0: {   /* a scene effect (Splash_InitEvent, 0x4E0 bytes): pc[1], pc[2], at (3 x be32 pc[3..] /
@@ -1858,7 +1858,7 @@ void EventCmd_Run(VObject *ev) {
         arg.d[1] = PC(ev)[0x11];
         arg.d[2] = PC(ev)[0x12];
         arg.d[3] = PC(ev)[0x13];
-        func_002D6090(mgr, slot, &arg);
+        EffectMgr_Start(mgr, slot, &arg);
         break;
     }
     case 0xA9: {   /* a scene effect (Effect71000_Init, 0x60 bytes), its slot kept in variable pc[1]: pc[2],
@@ -1875,7 +1875,7 @@ void EventCmd_Run(VObject *ev) {
         for (i = 0; i < 8; i++) {
             arg.v[i] = (f32)be32(PC(ev) + 3 + i * 4) / 1000.0f;
         }
-        func_002D6090(mgr, AT(ev, 0x810 + PC(ev)[1] * 4, s32), &arg);
+        EffectMgr_Start(mgr, AT(ev, 0x810 + PC(ev)[1] * 4, s32), &arg);
         break;
     }
     case 0x40:   /* character slot pc[1]'s step context cleared; Progress_RemoveChar (pc[1], pc[2]) */
@@ -1883,7 +1883,7 @@ void EventCmd_Run(VObject *ev) {
         Progress_RemoveChar(p, PC(ev)[1], PC(ev)[2]);
         break;
     case 0x80:   /* room effect pc[1] gone */
-        func_002670F0(gRoomEffects, pc[1]);
+        RoomEffects_Release(gRoomEffects, pc[1]);
         break;
     case 0x02: case 0x04: case 0x1F: case 0x3B: case 0x3D: case 0x45: case 0x47: case 0x48:
     case 0x67: case 0x79: case 0x7B: case 0x87: case 0x8F: case 0xAE: case 0xB3: case 0xB5:
@@ -2115,7 +2115,7 @@ void EventCmd_Character(VObject *ev) {
         dx = a[0] - b[0];
         dz = a[2] - b[2];
         arg.moving = dy * dy + dx * dx + dz * dz < 0.5f ? 1 : 2;
-        func_00266C70(gRoomEffects, PC(ev)[2], &arg);
+        RoomEffects_Send(gRoomEffects, PC(ev)[2], &arg);
         break;
     }
     }

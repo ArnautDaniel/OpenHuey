@@ -396,7 +396,7 @@ void **RoomEffectBase_dtor(void **o, s32 flags) {
     if (o != NULL) {
         o[0] = D_0046D730;
         if ((s16)flags > 0) {
-            func_002672E0(o);
+            RoomEffects_delete(o);
         }
     }
     return o;
@@ -2496,7 +2496,7 @@ void Motion_SetupTrack(u8 *m, u8 **keys, u8 **skel, s32 anim, s32 part) {
         u8 *bones;
         s32 bone;
 
-        func_001F40F0(key + 4, AT(tracks, 0x4, s32), (s32)(tracks + AT(tracks, 0x8, u32)), AT(mot, 0x4, s32));
+        Triple_Set(key + 4, AT(tracks, 0x4, s32), (s32)(tracks + AT(tracks, 0x8, u32)), AT(mot, 0x4, s32));
         bones = AT(m, 0x4C0, u8 *);
         bone = AT(bones, 0xC, u32) != 0 ? AT(bones + AT(bones, 0xC, u32) + AT(tracks, 0, u32), 1, s8) : 0;
         AT(key, 0x0, s32) = bone;
@@ -2535,7 +2535,7 @@ void Motion_EventKeys(u8 *m, s32 anim, s32 variant) {
         key = AT(*chain, 0x4, u8 *);
         tracks = evp + AT(evp, 0x8, u32);
         for (i = 0; i < AT(*chain, 0x8, s32); i++) {
-            func_001F40F0(key + 4, AT(tracks, 0x4, s32), (s32)(tracks + AT(tracks, 0x8, u32)), AT(evp, 0x4, s32));
+            Triple_Set(key + 4, AT(tracks, 0x4, s32), (s32)(tracks + AT(tracks, 0x8, u32)), AT(evp, 0x4, s32));
             AT(key, 0x0, s32) = AT(tracks, 0, s32);
             key = AT(key, 0x10, u8 *);
             tracks += 0xC;
@@ -4931,7 +4931,7 @@ void *DustMoteSource_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0047A6F0;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
@@ -5114,7 +5114,7 @@ typedef struct {
 static ModelBuf sMb;
 
 /* Lighting, as the character microprograms do it (tools/vudis.py, e.g. the chain D_003A38C0):
- * the model's light set comes from the scene's lights (+0x10, func_001FAA00, as the drawer
+ * the model's light set comes from the scene's lights (+0x10, Lights_ForModel, as the drawer
  * func_001BDF80 asks for it: at its root bone +0x2C, on nav triangle +0x28) - per light a
  * direction (columns of the transposed matrix, the 4th row -dir.L), a colour, a falloff; the
  * 4th colour row is the ambient. A vertex at world P with normal N gets
@@ -6425,7 +6425,7 @@ void *ScreenBlend_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046D7B0;
         AT(o, 0x0, void **) = D_0046D730;
         if ((s16)flags > 0) {
-            func_002672E0(o);
+            RoomEffects_delete(o);
         }
     }
     return o;
@@ -6438,7 +6438,7 @@ void *Fog_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0046EB40;
         AT(o, 0x0, void **) = D_0046D730;
         if ((s16)flags > 0) {
-            func_002672E0(o);
+            RoomEffects_delete(o);
         }
     }
     return o;

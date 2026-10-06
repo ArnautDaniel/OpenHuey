@@ -66,7 +66,7 @@ static inline void mud_puff(u8 *mgr, Character *c, f32 *foot, s32 k) {
     prm.d = 0x20;
     prm.pos[2] = AT(c, 0x18, f32) + t[2];
     prm.kind = 2;
-    func_002D6090(mgr, slot, &prm);
+    EffectMgr_Start(mgr, slot, &prm);
 }
 
 /* 0x003001B0 */
@@ -181,12 +181,12 @@ s32 Room66_Fire(void *self, void *a1, u8 *cmd) {
 
         prm[0] = cmd[3];
         prm[1] = 1;
-        func_002D6090(gEffects, slot, prm);
+        EffectMgr_Start(gEffects, slot, prm);
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 8, slot);
     } else {
         s32 off[4] = {-1, 0, 0, 0};
 
-        func_002D6090(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 8), off);
+        EffectMgr_Start(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 8), off);
     }
     return 1;
 }
@@ -207,7 +207,7 @@ s32 Room66_Sink(void *self, void *a1, u8 *cmd) {
             if (s >= 0) {
                 s32 off[4] = {-1, 0, 0, 0};
 
-                func_002D6090(gEffects, s, off);
+                EffectMgr_Start(gEffects, s, off);
                 VCALL(ev, 0x30, void (*)(VObject *, s32, s32))(ev, 7, -1);
             }
         }
@@ -218,7 +218,7 @@ s32 Room66_Sink(void *self, void *a1, u8 *cmd) {
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 7, slot);
         prm[0] = cmd[3];
         prm[1] = 0;
-        func_002D6090(gEffects, slot, prm);
+        EffectMgr_Start(gEffects, slot, prm);
     }
     return c->a.pos[1] < -25.0f ? 1 : 2;
 }
@@ -231,13 +231,13 @@ s32 Room66_Effect(void *self, void *a1, u8 *cmd) {
         u8 *mgr = gEffects;
         s32 slot = Effect_New(mgr, 0x1BC0, effect_77AC0_init);
 
-        func_002D6090(mgr, slot, cmd + 3);
+        EffectMgr_Start(mgr, slot, cmd + 3);
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, (cmd[3] + 3) & 0xFF, slot);
     } else {
         s32 slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, (cmd[3] + 3) & 0xFF);
         u8 stop = 0xFF;
 
-        func_002D6090(gEffects, slot, &stop);
+        EffectMgr_Start(gEffects, slot, &stop);
     }
     return 1;
 }

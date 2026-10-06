@@ -71,7 +71,7 @@ s32 Room80_Cmd00(void *self, void *a1, u8 *cmd) {
     u8 *mgr = gEffects;
     s32 w = cmd[3];
 
-    func_002D6090(mgr, Effect_New(mgr, 0x14, effect_7a430_init), &w);
+    EffectMgr_Start(mgr, Effect_New(mgr, 0x14, effect_7a430_init), &w);
     return 1;
 }
 
@@ -82,7 +82,7 @@ void *BackdropModel2_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_0047A430;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;

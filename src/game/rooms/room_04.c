@@ -103,10 +103,10 @@ s32 Room04_Cmd02(void *self, void *a1, u8 *cmd) {
             prm.b = 0x60;
             prm.o = o;
             room_effect_slot_new(gRoomEffects, 0x1B, D_00479560);
-            func_00266C70(gRoomEffects, 0x1B, &prm);
+            RoomEffects_Send(gRoomEffects, 0x1B, &prm);
         }
     } else {
-        func_002670F0(gRoomEffects, 0x1B);
+        RoomEffects_Release(gRoomEffects, 0x1B);
     }
     return 1;
 }

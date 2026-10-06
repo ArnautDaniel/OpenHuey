@@ -574,10 +574,10 @@ void SceneTitle_DrawPressStartGlow(SceneTitle *t, f32 alpha) {
     SceneTitle_DrawRect(t, 0, 0xA0, 0xC0, 0x20, 0xA0, 0x130, 3, 0, alpha);
 }
 
-/* (the scene) its part +0x97980's func_00303E60 */
+/* (the scene) its part +0x97980's Map_TurnTo */
 /* 0x00384C50 */
 s32 SubScreen_Part97980(u8 *g, s32 a1) {
-    return ((s32 (*)(u8 *, s32))func_00303E60)(g + 0x97980, a1);   /* (void: v0 as it was left) */
+    return ((s32 (*)(u8 *, s32))Map_TurnTo)(g + 0x97980, a1);   /* (void: v0 as it was left) */
 }
 
 /* 0x00384C60 */

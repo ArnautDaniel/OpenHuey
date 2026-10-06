@@ -69,7 +69,7 @@ s32 Room1C_Command(void *self, u32 i, s32 a, s32 b) {
 /* room 0x1C (D_003FD350): a sound (0xC0000000, bank 6) at the room's effect 1 */
 /* 0x002ADB10 */
 s32 Room1C_Cmd01(void) {
-    u8 *e = func_00266C40(gRoomEffects, 1);
+    u8 *e = RoomEffects_Get(gRoomEffects, 1);
     f32 at[4] __attribute__((aligned(16)));
 
     at[0] = AT(e, 0x20, f32);
@@ -94,6 +94,6 @@ s32 Room1C_Cmd00(void) {
     r[2] = v <= 0x1.0e66660000000p+6f /* 67.6 */ ? v : 0x1.0e66660000000p+6f /* 67.6 */;
     v = 0x1.84cccc0000000p+5f /* 48.6 */ + 4.0f * t;
     r[3] = v <= 230.0f ? v : 230.0f;
-    func_00266C70(gRoomEffects, 0x1C, r);
+    RoomEffects_Send(gRoomEffects, 0x1C, r);
     return 1;
 }

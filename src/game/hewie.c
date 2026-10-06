@@ -1165,10 +1165,10 @@ void Hewie_MakeSound(Hewie *h, s32 snd) {
     }
     switch (snd) {
     case 0x65: case 0x66:
-        func_002A8440((u8 *)gProgress + 0x788, 0x80, h->c.a.room, h->c.a.navTri, 0xFFFF);
+        Noise_Make((u8 *)gProgress + 0x788, 0x80, h->c.a.room, h->c.a.navTri, 0xFFFF);
         break;
     case 0x5D: case 0x5E:
-        func_002A8440((u8 *)gProgress + 0x788, 0x1B, h->c.a.room, h->c.a.navTri, 0xFFFF);
+        Noise_Make((u8 *)gProgress + 0x788, 0x1B, h->c.a.room, h->c.a.navTri, 0xFFFF);
         break;
     case 0x59:
         if (prev == 0x59 && HEWIE_SOUND_T(h) < 40) {
@@ -1331,7 +1331,7 @@ s32 Model_Textures(Hewie *h) {
 /* A loud noise where he is (no triangle). */
 /* 0x00154E40 */
 void Hewie_StateLoudNoise(Hewie *h) {
-    func_002A8440((u8 *)gProgress + 0x788, 0x80, h->c.a.room, NAV_NONE, 0xFFFF);
+    Noise_Make((u8 *)gProgress + 0x788, 0x80, h->c.a.room, NAV_NONE, 0xFFFF);
 }
 
 /* Set the animation to play (+0xF35B8) and (if >= 0) +0xF35B4. */
@@ -3730,10 +3730,10 @@ void Hewie_AnimSounds(Hewie *h) {
             if (HEWIE_ACTION(h) == 0x7B || HEWIE_ACTION(h) == 0xB || HEWIE_ACTION(h) == 0xA) {
                 loud = 0x1B;
             }
-            func_002A8440((u8 *)gProgress + 0x788, loud, h->c.a.room, h->c.a.navTri, 0xFFFF);
+            Noise_Make((u8 *)gProgress + 0x788, loud, h->c.a.room, h->c.a.navTri, 0xFFFF);
             break;
         case 0x1000:
-            func_002A8440((u8 *)gProgress + 0x788, 0x80, h->c.a.room, h->c.a.navTri, 0xFFFF);
+            Noise_Make((u8 *)gProgress + 0x788, 0x80, h->c.a.room, h->c.a.navTri, 0xFFFF);
             break;
         }
     }

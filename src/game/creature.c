@@ -781,7 +781,7 @@ void func_002DF180(Character *c) {
         fx.rgba[3] = 0x60;
         fx.rgba[1] = 0x30;
     }
-    func_002D6090(mgr, slot, &fx);
+    EffectMgr_Start(mgr, slot, &fx);
     if (gCharPlayer->unkE2 == 0 && c->a.disabled == 0 && VCALL(gEvents, 0x50, s32 (*)(VObject *))(gEvents) == 0) {
         Actor_PlaySound(&c->a, 0x8B, 5, 0, 0, NULL);
     }
@@ -923,7 +923,7 @@ void func_002DFE10(Character *c) {
     if (AT(k, 0x31, u8) >= 0x12 && AT(k, 0x31, u8) != 0x24) {
         Progress_Noise(gProgress, c->a.pos, 1, 3, 0, 0, 0.0f);
     } else {
-        func_002A8440((u8 *)gProgress + 0x7A8, 0x80, c->a.room, c->a.navTri, 0xFFFF);
+        Noise_Make((u8 *)gProgress + 0x7A8, 0x80, c->a.room, c->a.navTri, 0xFFFF);
     }
     c->a.active = 0;
     Character_ReleasePath(c);
@@ -1771,7 +1771,7 @@ u8 *CreatureVanish_dtor(u8 *o, s32 flags) {
     AT(o, 0x370, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -2015,7 +2015,7 @@ s32 func_002B4030(void) {
             fx.rgba[3] = 0x60;
             fx.rgba[2] = 0x30;
         }
-        func_002D6090(mgr, slot, &fx);
+        EffectMgr_Start(mgr, slot, &fx);
         Actor_PlaySound(&c->a, 0x8B, 5, 0, 0, NULL);
         return 1;
     }
@@ -2047,7 +2047,7 @@ u8 *LoopingSprite_dtor(u8 *o, s32 flags) {
     AT(o, 0x70, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -2161,7 +2161,7 @@ u8 *Effect726E0_dtor(u8 *o, s32 flags) {
     AT(o, 0x40, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -2474,7 +2474,7 @@ s32 Effect726E0_Update(u8 *o) {
                 AT(&p[4], 0, f32) = AT(STRAND_SEG(o, AT(o, 0x200, s32)), 0xB4, f32);
                 AT(&p[5], 0, f32) = AT(STRAND_SEG(o, AT(o, 0x200, s32)), 0xB8, f32);
                 AT(&p[6], 0, f32) = AT(o, 0x218, s32) == 1 ? 1.0f : 2.0f;
-                func_002D6090(mgr, slot, p);
+                EffectMgr_Start(mgr, slot, p);
             }
         }
     }
@@ -2501,7 +2501,7 @@ u8 *StrandSplash_dtor(u8 *o, s32 flags) {
     AT(o, 0xC10, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -2699,7 +2699,7 @@ u8 *Effect737D0_dtor(u8 *o, s32 flags) {
     AT(o, 0x40, void **) = D_00469D00;
     AT(o, 0x0, void **) = D_0046F580;
     if ((s16)flags > 0) {
-        func_002D63B0(o);
+        EffectMgr_free(o);
     }
     return o;
 }
@@ -3969,7 +3969,7 @@ void func_00327DD0(Character *c) {
         AT(c, 0xF8, s32) = 4;
         Motion_PlayTable(c->motion, 0x1902, -1);
         Threat_Raise((u8 *)gProgress + 0x7B8, 75.0f);
-        func_002A8440((u8 *)gProgress + 0x7A8, 0x80, c->a.room, c->a.navTri, 0xFFFF);
+        Noise_Make((u8 *)gProgress + 0x7A8, 0x80, c->a.room, c->a.navTri, 0xFFFF);
         AT(k, 0x60, u8)++;
         return;
     case 3:
@@ -4757,7 +4757,7 @@ void func_0032B210(Character *c, u8 st) {
             sp.pos[2] = c->a.pos[2];
             sp.size = 1.0f;
             sp.tri = c->a.navTri;
-            func_002D6090(mgr, slot, &sp);
+            EffectMgr_Start(mgr, slot, &sp);
         }
         Actor_SetState(&c->a, &D_0042C4F0);
         break;
@@ -5114,7 +5114,7 @@ s32 Cr19Bubbles_Update(u8 *o) {
         sp.pos[3] = 1.0f;
         sp.tri = AT(o, 0x2918, s32);
         sp.one = 1;
-        func_002D6090(mgr, slot, &sp);
+        EffectMgr_Start(mgr, slot, &sp);
     }
     rnd = gRandom;
     for (i = 0; i < 64; i++) {

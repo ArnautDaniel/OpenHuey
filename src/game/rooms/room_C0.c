@@ -83,7 +83,7 @@ s32 RoomC0_Cmd03(void) {
     prm[8] = 0.0f;
     prm[5] = 100.0f;
     prm[7] = -180.0f;
-    func_002D6090(gEffects, slot, prm);
+    EffectMgr_Start(gEffects, slot, prm);
     return 1;
 }
 

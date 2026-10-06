@@ -105,7 +105,7 @@ s32 Room4F_Cmd02(void *self, void *a1, u8 *cmd) {
 
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, 0, slot);
     } else {
-        func_002D6170(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0));
+        EffectMgr_Remove(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 0));
     }
     return 1;
 }

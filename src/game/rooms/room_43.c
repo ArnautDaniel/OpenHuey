@@ -81,6 +81,6 @@ s32 Room43_Cmd00(void) {
     s32 slot = Effect_New(mgr, 0x6CF0, effect_6cf0_init);
     s32 arg = 0;
 
-    func_002D6090(mgr, slot, &arg);
+    EffectMgr_Start(mgr, slot, &arg);
     return 1;
 }

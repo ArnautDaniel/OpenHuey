@@ -200,7 +200,7 @@ void Game_StateMain(Game *game) {
 
 /* Final state: shut down and clear the state, which ends Game_Run. */
 void Game_StateShutdown(Game *game) {
-    func_001F4100(game->unk14E8C90);
+    Slots_Reset2(game->unk14E8C90);
     VCALL(&game->unk69AC0, 0x18, void (*)(VObject *))(&game->unk69AC0);
     game->state = sGameStateNull;
 }
@@ -542,7 +542,7 @@ void *Game_dtor(u8 *g, s32 flags) {
     SndDriver_dtor(g + 0x3FF800, -1);
     Loader_dtor((VObject *)(g + 0x3833C0), -1);
     func_001BF880(g + 0x376A00, -1);
-    func_001BF6C0(g + 0x36ED40, -1);
+    MovieSys_dtor(g + 0x36ED40, -1);
     func_001AAE10(g + 0x69F20, -1);
     MemCard_dtor((MemCard *)(g + 0x69E50), -1);
     Rumble_dtor((Rumble *)(g + 0x69DC0), -1);

@@ -867,7 +867,7 @@ static void Riccardo_Debris(const f32 *at) {
     dp.pos[0] = at[0];
     dp.pos[1] = at[1];
     dp.pos[2] = at[2];
-    func_002D6090(mgr, slot, &dp);
+    EffectMgr_Start(mgr, slot, &dp);
 }
 
 /* at the impact key of his animation (0x20): a jolt (the 0x80 effect, kind 2) and a noise of
@@ -882,8 +882,8 @@ void Riccardo_Impact(Pursuer *p) {
         return;
     }
     mgr = gEffects;
-    func_002D6090(mgr, Effect_New(mgr, 0x80, Impact_Init), jolt);
-    func_002A8440((u8 *)gProgress + 0x798, 0x40, p->c.a.room, p->c.a.navTri, 0xFFFF);
+    EffectMgr_Start(mgr, Effect_New(mgr, 0x80, Impact_Init), jolt);
+    Noise_Make((u8 *)gProgress + 0x798, 0x40, p->c.a.room, p->c.a.navTri, 0xFFFF);
     switch (MOTION_ANIM(p)) {
     case 0x2303:
     case 0x2301:

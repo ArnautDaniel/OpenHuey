@@ -314,7 +314,7 @@ void SubScreen_Open(SubScreen *s) {
             s->kind = 0xA;
             ptmf_set_fn(&s->state, Options_StateList);
         } else {
-            func_00305380(s->textObj);
+            Map_BackToPlayer(s->textObj);
             s->kind = s->resumeKind;
             s->state = s->resume;
         }
@@ -1381,7 +1381,7 @@ void SubScreen_StateItems(SubScreen *s) {
                 SUB_LIST(s)++;
                 old = SUB_CURSOR(s);
             } else {
-                func_00305380(s->textObj);
+                Map_BackToPlayer(s->textObj);
                 ptmf_set(&s->state, &D_0044B220);
                 ptmf_set(&s->resume, &D_0044B230);
             }
@@ -1517,7 +1517,7 @@ void SubScreen_StateMap(SubScreen *s) {
     }
     s->kind = 1;
     sub_panels(s);
-    func_00304F50(s->textObj);
+    Map_PageFrame(s->textObj);
     {
         u8 maps = func_00303F00();
 
@@ -1564,7 +1564,7 @@ void SubScreen_StateFiles(SubScreen *s) {
             ptmf_set(&s->resume, &D_0044B3D8);
             Sound_PlaySE(SE_PAGE);
         } else if (D_0047E36C & MENU_PREV) {
-            func_00305380(s->textObj);
+            Map_BackToPlayer(s->textObj);
             ptmf_set(&s->state, &D_0044B3E8);
             ptmf_set(&s->resume, &D_0044B3F8);
             Sound_PlaySE(SE_PAGE);
@@ -2865,13 +2865,13 @@ extern const PTMF D_0044B9B0;
 
 /* keep room effect `k` (its 0x90 bytes from +0x10) in `save` and remove it */
 static inline void gallery_effect_keep(u8 *fx, s32 k, u8 *save) {
-    u64 *src = (u64 *)(func_00266C40(fx, k) + 0x10);
+    u64 *src = (u64 *)(RoomEffects_Get(fx, k) + 0x10);
     s32 i;
 
     for (i = 0; i < 18; i++) {
         AT(save, i * 8, u64) = src[i];
     }
-    func_002670F0(fx, k);
+    RoomEffects_Release(fx, k);
 }
 
 /* state: a model chosen in the extras - fading out (to 0x80); then the work buffer (progress
@@ -2932,7 +2932,7 @@ void Gallery_StateModelChosen(SubScreen *s) {
             }
             mem = VCALL(fx + 0x1400, 0x10, void *(*)(void *, s32))(fx + 0x1400, 0xA0);
             if (mem != NULL) {
-                u8 *e = func_002672F0(0xA0, mem);
+                u8 *e = RoomEffects_new(0xA0, mem);
 
                 if (e != NULL) {
                     AT(e, 0x0, void **) = D_0046D750;
@@ -2941,8 +2941,8 @@ void Gallery_StateModelChosen(SubScreen *s) {
                 VCALL(*slot, 0xC, void (*)(void *))(*slot);
             }
             fx = gRoomEffects;
-            func_00266C40(fx, 0x1F);
-            func_00266C70(fx, 0x1F, msg);
+            RoomEffects_Get(fx, 0x1F);
+            RoomEffects_Send(fx, 0x1F, msg);
         }
     }
     SubScreen_DrawExtras(s);
@@ -3901,7 +3901,7 @@ static void gallery_effect_new(u8 *fx, VObject **slot, void **vtbl) {
     }
     mem = VCALL(pool, 0x10, void *(*)(VObject *, u32))(pool, 0xA0);
     if (mem != NULL) {
-        VObject *e = func_002672F0(0xA0, mem);
+        VObject *e = RoomEffects_new(0xA0, mem);
 
         if (e != NULL) {
             e->vtbl = vtbl;
@@ -3913,7 +3913,7 @@ static void gallery_effect_new(u8 *fx, VObject **slot, void **vtbl) {
 
 /* room effect `k` given back its 0x90 bytes kept in `save` */
 static void gallery_effect_back(u8 *fx, s32 k, const u8 *save) {
-    u64 *dst = (u64 *)(func_00266C40(fx, k) + 0x10);
+    u64 *dst = (u64 *)(RoomEffects_Get(fx, k) + 0x10);
     s32 i;
 
     for (i = 0; i < 18; i++) {
@@ -3952,7 +3952,7 @@ static void gallery_leave(SubScreen *s) {
     VCALL(gCamDirector, 0x10, void (*)(VObject *))(gCamDirector);
     VCALL(gLights, 0x48, void (*)(VObject *, s32, f32 *, f32))(gLights, 0, NULL, 0.0f);
     fx = gRoomEffects;
-    func_002670F0(fx, 0x1F);
+    RoomEffects_Release(fx, 0x1F);
     gallery_effect_new(gRoomEffects, &AT(fx, 0x14B4, VObject *), D_0046D750);
     gallery_effect_back(gRoomEffects, 0x1F, (u8 *)s + 0xA8E40);
     gallery_effect_new(gRoomEffects, &AT(gRoomEffects, 0x14AC, VObject *), D_0046EB40);
@@ -4064,7 +4064,7 @@ void Gallery_StateModel(SubScreen *s) {
         at[1] = at[1] + GALLERY_HEIGHT(s);
         VCALL(cam, 0x28, void (*)(VObject *, f32, f32, f32))(cam, at[0], at[1], at[2]);
         VCALL(cam, 0x14, void (*)(VObject *))(cam);
-        func_00267160(gRoomEffects);
+        RoomEffects_Draw(gRoomEffects);
         if (SUB_GALLERY_MODEL(s) != NULL) {
             sceVu0UnitMatrix(mat);
             sceVu0TransMatrix(mat, mat, (f32 *)((u8 *)s + 0xA8E20));

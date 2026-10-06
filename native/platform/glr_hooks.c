@@ -58,7 +58,7 @@ void func_0021C840(void *ov, int strength, int offset) {
     glr_vignette(strength, offset);
 }
 
-/* ---- the panic screens (func_002F0340, the screen overlay D_0045D1F0; all in layer 0x2A) ---- */
+/* ---- the panic screens (ScreenFade_Frame, the screen overlay D_0045D1F0; all in layer 0x2A) ---- */
 
 /* func_0021E1B0: when the panic fails (game over): the screen's negative. The original draws
  * eight 64-wide untextured sprites, RGBA 0x80, ALPHA (Cs - Cd) * As: each channel 0x80 - itself,
@@ -157,11 +157,11 @@ int func_001AB3F0(uint8_t *r) {
 }
 
 extern void *gRoomEffects;                               /* the room effects */
-extern void *func_00266C40(void *fx, int k);           /* effect slot k (NULL: none) */
+extern void *RoomEffects_Get(void *fx, int k);           /* effect slot k (NULL: none) */
 
 int func_001AC0D0(uint8_t *r) {
     uint32_t t = renderer_tint(r);
-    uint8_t *e = func_00266C40(gRoomEffects, 0x1F);   /* the two-colour effect */
+    uint8_t *e = RoomEffects_Get(gRoomEffects, 0x1F);   /* the two-colour effect */
 
     glr_tint_layer(0x23, t);
     if (e != NULL) {   /* its colours, their alphas scaled by the tint's */

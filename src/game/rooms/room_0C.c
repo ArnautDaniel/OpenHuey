@@ -151,6 +151,6 @@ s32 Room0C_Cmd00(void) {
     v = 0x1.019999ap+6f /* 64.4 */ + 0x1.b33334p+0f /* 1.7 */ * t;
     r[2] = v <= 116.5f ? v : 116.5f;
     r[3] = v <= 116.5f ? v : 116.5f;
-    func_00266C70(gRoomEffects, 0x1C, r);
+    RoomEffects_Send(gRoomEffects, 0x1C, r);
     return 1;
 }

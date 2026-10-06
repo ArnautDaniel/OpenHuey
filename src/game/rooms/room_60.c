@@ -154,12 +154,12 @@ s32 Room60_Cmd02(void *self, void *a1, u8 *cmd) {
         u8 *mgr = gEffects;
         s32 slot = Effect_New(mgr, 8, effect_795C0_init);
 
-        func_002D6090(mgr, slot, cmd + 3);
+        EffectMgr_Start(mgr, slot, cmd + 3);
         VCALL(gEvents, 0x30, void (*)(VObject *, s32, s32))(gEvents, (cmd[3] + 2) & 0xFF, slot);
     } else {
         s32 slot = VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, (cmd[3] + 2) & 0xFF);
 
-        func_002D6170(gEffects, slot);
+        EffectMgr_Remove(gEffects, slot);
     }
     return 1;
 }
@@ -189,8 +189,8 @@ s32 Room60_Cmd00(void *self, void *a1, u8 *cmd) {
     VObject *ev;
 
     if (cmd[3] == 1) {
-        func_002670F0(gRoomEffects, 0x1B);
-        func_002D6170(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 1));
+        RoomEffects_Release(gRoomEffects, 0x1B);
+        EffectMgr_Remove(gEffects, VCALL(gEvents, 0x34, s32 (*)(VObject *, s32))(gEvents, 1));
         return 1;
     }
     if (cmd[3] == 0) {
@@ -238,9 +238,9 @@ s32 Room60_Cmd00(void *self, void *a1, u8 *cmd) {
     }
     q[18] = 0x3F800000;
     q[17] = q[19];
-    func_00266C70(gRoomEffects, 0x1B, q);
+    RoomEffects_Send(gRoomEffects, 0x1B, q);
     if (q[19] != 0) {
-        func_002D6090(gEffects, VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 1), &q[19]);
+        EffectMgr_Start(gEffects, VCALL(ev, 0x34, s32 (*)(VObject *, s32))(ev, 1), &q[19]);
     }
     return 1;
 }
@@ -257,7 +257,7 @@ void *Room60Effect_dtor(u8 *o, s32 flags) {
         AT(o, 0x0, void **) = D_004795C0;
         AT(o, 0x0, void **) = D_0046F580;
         if ((s16)flags > 0) {
-            func_002D63B0(o);
+            EffectMgr_free(o);
         }
     }
     return o;
