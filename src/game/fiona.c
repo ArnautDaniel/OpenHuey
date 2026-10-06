@@ -712,7 +712,7 @@ void func_0019BE70(Fiona *f) {
 
     if (!f->c.a.disabled) {
         if (f->c.a.navTri == NAV_NONE) {
-            func_002DCDD0(f->c.motion, f, 0.0f, 0.0f);
+            Model_BodyFrames(f->c.motion, f, 0.0f, 0.0f);
         } else if (FI(f, 0x1AD5BC, u8) == 1) {
             void *m = f->c.motion;
             s32 g = Fiona_AnimGroup(*(s32 *)((u8 *)m + 0x55C));

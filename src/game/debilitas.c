@@ -54,7 +54,8 @@ void Debilitas_SetTimer(void *p, s32 t);
 void Debilitas_Timer10s(void *p);
 void *Debilitas_ModelFiles(void);
 
-void *func_00127800(void **m, s32 flags) {
+/* 0x00127800 */
+void *Model_dtor(void **m, s32 flags) {
     if (m != NULL) {
         m[0] = D_0046F9E0;
         if (m != NULL) {

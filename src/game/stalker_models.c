@@ -22,161 +22,200 @@ void func_00320C70(u8 *m);
 
 /* +0x1C / +0x20 / +0x24 / +0x2C / +0x30 / +0x14 / +0x3C / +0x4C / +0x50 / +0x54 / +0x60:
    nothing */
-void func_001F4700(u8 *m) {
+/* 0x001F4700 */
+void Model_Vt1C(u8 *m) {
 }
 
-void func_001F46F0(u8 *m) {
+/* 0x001F46F0 */
+void Model_Vt20(u8 *m) {
 }
 
-void func_001F46E0(u8 *m) {
+/* 0x001F46E0 */
+void Model_Vt24(u8 *m) {
 }
 
-void func_00194FB0(u8 *m) {
+/* 0x00194FB0 */
+void Model_Vt2C(u8 *m) {
 }
 
-void func_00195ED0(u8 *m) {
+/* 0x00195ED0 */
+void Model_Vt30(u8 *m) {
 }
 
-void func_001F6130(u8 *m) {
+/* 0x001F6130 */
+void Model_AdjustBone(u8 *m) {
 }
 
-void func_0019C200(u8 *m) {
+/* 0x0019C200 */
+void Model_Vt3C(u8 *m) {
 }
 
-void func_001F1E20(u8 *m) {
+/* 0x001F1E20 */
+void HumanModel_Vt3C(u8 *m) {
 }
 
-void func_002DD030(u8 *m) {
+/* 0x002DD030 */
+void Model_PlantFeet(u8 *m) {
 }
 
-void func_002DD020(u8 *m) {
+/* 0x002DD020 */
+void Model_FeetReplace(u8 *m) {
 }
 
-void func_002DD010(u8 *m) {
+/* 0x002DD010 */
+void Model_FeetUp(u8 *m) {
 }
 
-void func_002DCF00(u8 *m) {
+/* 0x002DCF00 */
+void Model_HeadPos(u8 *m) {
 }
 
 /* +0x74 .. +0xB0 (and the human models' +0x84 .. +0x90): none */
-s32 func_0016D040(u8 *m) {
+/* 0x0016D040 */
+s32 Model_VtAC(u8 *m) {
     return 0;
 }
 
-s32 func_0016D170(u8 *m) {
+/* 0x0016D170 */
+s32 Model_VtB0(u8 *m) {
     return 0;
 }
 
-s32 func_001800A0(u8 *m) {
+/* 0x001800A0 */
+s32 Model_Part3(u8 *m) {
     return 0;
 }
 
-s32 func_001800B0(u8 *m) {
+/* 0x001800B0 */
+s32 Model_Part2(u8 *m) {
     return 0;
 }
 
-s32 func_001800C0(u8 *m) {
+/* 0x001800C0 */
+s32 Model_Part1(u8 *m) {
     return 0;
 }
 
-s32 func_001800D0(u8 *m) {
+/* 0x001800D0 */
+s32 Model_Part0(u8 *m) {
     return 0;
 }
 
-s32 func_0018CC90(u8 *m) {
+/* 0x0018CC90 */
+s32 Model_Vt78(u8 *m) {
     return 0;
 }
 
-s32 func_00195C60(u8 *m) {
+/* 0x00195C60 */
+s32 Model_Vt74(u8 *m) {
     return 0;
 }
 
-s32 func_001F1E90(u8 *m) {
+/* 0x001F1E90 */
+s32 Model_Vt70(u8 *m) {
     return 0;
 }
 
-s32 func_001F1EA0(u8 *m) {
+/* 0x001F1EA0 */
+s32 Model_Vt94(u8 *m) {
     return 0;
 }
 
-s32 func_001F1EB0(u8 *m) {
+/* 0x001F1EB0 */
+s32 Model_Vt98(u8 *m) {
     return 0;
 }
 
-s32 func_001F1EC0(u8 *m) {
+/* 0x001F1EC0 */
+s32 Model_Vt9C(u8 *m) {
     return 0;
 }
 
-s32 func_001F7F90(u8 *m) {
+/* 0x001F7F90 */
+s32 Model_Vt7C(u8 *m) {
     return 0;
 }
 
-s32 func_0020CAD0(u8 *m) {
+/* 0x0020CAD0 */
+s32 Model_HeadBone(u8 *m) {
     return 0;
 }
 
-s32 func_002DC6F0(u8 *m) {
+/* 0x002DC6F0 */
+s32 Model_MarkerFile(u8 *m) {
     return 0;
 }
 
-s32 func_002DC700(u8 *m) {
+/* 0x002DC700 */
+s32 Model_ModelFile(u8 *m) {
     return 0;
 }
 
 /* +0x74 / +0x78 / +0x7C / +0x80: the part roles set up at load (+0x8AC, +0x8BC, +0x8B8, +0x8B0) */
-s32 func_001F1E30(u8 *m) {
+/* 0x001F1E30 */
+s32 HumanModel_Vt74(u8 *m) {
     return AT(m, 0x8AC, s32);
 }
 
-s32 func_001F1E40(u8 *m) {
+/* 0x001F1E40 */
+s32 HumanModel_Vt78(u8 *m) {
     return AT(m, 0x8BC, s32);
 }
 
-s32 func_001F1E50(u8 *m) {
+/* 0x001F1E50 */
+s32 HumanModel_Vt7C(u8 *m) {
     return AT(m, 0x8B8, s32);
 }
 
-s32 func_001F1E60(u8 *m) {
+/* 0x001F1E60 */
+s32 HumanModel_HeadBone(u8 *m) {
     return AT(m, 0x8B0, s32);
 }
 
 /* +0x58: the scale +0x8C0 */
-f32 func_00211180(u8 *m) {
+/* 0x00211180 */
+f32 HumanModel_Vt58(u8 *m) {
     return AT(m, 0x8C0, f32);
 }
 
 /* +0x34: +0x878 = `v`, then +0x30 */
-void func_001F1E70(u8 *m, s32 v) {
+/* 0x001F1E70 */
+void Model_Set878(u8 *m, s32 v) {
     AT(m, 0x878, s32) = v;
     VCALL(m, 0x30, void (*)(u8 *, s32))(m, v);
 }
 
 /* +0x28: the model matrix +0x7D0 = `mtx` */
-void func_001F6E00(u8 *m, f32 (*mtx)[4]) {
+/* 0x001F6E00 */
+void Model_SetMatrix(u8 *m, f32 (*mtx)[4]) {
     sceVu0CopyMatrix((f32 (*)[4])(m + 0x7D0), mtx);
 }
 
 /* +0xB4: no secondary-motion table */
-void func_00210DF0(u8 *m) {
+/* 0x00210DF0 */
+void Model_SecondaryMotion(u8 *m) {
     AT(m, 0x874, void *) = NULL;
 }
 
 extern void func_002E3040(f32 (*mtx)[4], const f32 *pos, f32 heading);
 
 /* +0x40: the model matrix from the actor's position and heading */
-void func_002DCDD0(u8 *m, void *actor, f32 a, f32 b) {
+/* 0x002DCDD0 */
+void Model_BodyFrames(u8 *m, void *actor, f32 a, f32 b) {
     func_002E3040((f32 (*)[4])(m + 0x7D0), (f32 *)((u8 *)actor + 0x10), AT(actor, 0x54, f32));
 }
 
 /* +0x10 of the base: func_001F7AC0, no secondary-motion table */
-void func_002DE070(u8 *m) {
+/* 0x002DE070 */
+void Model_Frame(u8 *m) {
     func_001F7AC0(m);
     AT(m, 0x874, void *) = NULL;
 }
 
 /* +0x10 of the human base */
-void func_002118C0(u8 *m) {
-    func_002DE070(m);
+/* 0x002118C0 */
+void HumanModel_Frame(u8 *m) {
+    Model_Frame(m);
 }
 
 /* ---- Debilitas's model (vtable D_0046C0A0, 0xBA0 bytes: kinds 2 / 6 / 7 / 27): four hanging
@@ -185,7 +224,8 @@ void func_002118C0(u8 *m) {
 extern void *D_0046C0A0[];
 
 /* +0x8: destructor */
-void *func_002108F0(u8 *m, s32 flags) {
+/* 0x002108F0 */
+void *DebilitasModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_0046C0A0;
         func_001002C0(m + 0x9A0, func_0016FBB0, 0x50, 4);
@@ -195,31 +235,37 @@ void *func_002108F0(u8 *m, s32 flags) {
 }
 
 /* +0x10 */
-void func_00210CD0(u8 *m) {
-    func_002118C0(m);
+/* 0x00210CD0 */
+void DebilitasModel_Frame(u8 *m) {
+    HumanModel_Frame(m);
 }
 
 extern u8 D_003D89A0[];
 
 /* +0xB4: his secondary-motion table */
-void func_00210A20(u8 *m) {
+/* 0x00210A20 */
+void DebilitasModel_SecondaryMotion(u8 *m) {
     AT(m, 0x874, u8 *) = D_003D89A0;
 }
 
 /* +0x84 .. +0x90: his mesh parts */
-s32 func_00210A30(u8 *m) {
+/* 0x00210A30 */
+s32 DebilitasModel_Part0(u8 *m) {
     return 3;
 }
 
-s32 func_00210A40(u8 *m) {
+/* 0x00210A40 */
+s32 DebilitasModel_Part1(u8 *m) {
     return 7;
 }
 
-s32 func_00210A50(u8 *m) {
+/* 0x00210A50 */
+s32 DebilitasModel_Part2(u8 *m) {
     return 0x12;
 }
 
-s32 func_00210A60(u8 *m) {
+/* 0x00210A60 */
+s32 DebilitasModel_Part3(u8 *m) {
     return 0x1C;
 }
 
@@ -286,8 +332,9 @@ void func_00210A70(u8 *m) {
 }
 
 /* +0xC: once loaded: the base setup, the part roles, the springs, per-part draw settings */
-void func_00210CE0(u8 *m) {
-    func_002118D0(m);
+/* 0x00210CE0 */
+void DebilitasModel_Loaded(u8 *m) {
+    HumanModel_Loaded(m);
     AT(m, 0x890, s32) = 2;
     AT(m, 0x894, s32) = 3;
     AT(m, 0x898, s32) = 4;
@@ -323,7 +370,8 @@ void func_00210CE0(u8 *m) {
 }
 
 /* +0x3C: the springs a frame: one step, or 30 to settle after a reset (+0x850) */
-void func_00210C50(u8 *m) {
+/* 0x00210C50 */
+void DebilitasModel_Vt3C(u8 *m) {
     s32 n = AT(m, 0x850, u8) != 0 ? 30 : 1;
     s32 i;
 
@@ -422,7 +470,8 @@ void func_002DC6D0(void *p) {
 }
 
 /* +0x68: the drawing state cleared (+0x38.., the 16 words at +0x58), then +0x30 */
-void func_002DCA70(u8 *m) {
+/* 0x002DCA70 */
+void Model_ClearDraw(u8 *m) {
     s32 i;
 
     AT(m, 0x38, s32) = 0;
@@ -528,7 +577,8 @@ extern void *D_004702D0[];
 extern void *D_00470440[], *D_004703B0[];
 
 /* +0x8: destructor */
-void *func_002ECFD0(u8 *m, s32 flags) {
+/* 0x002ECFD0 */
+void *DaniellaModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_004702D0;
         func_001002C0(m + 0x14D0, func_001702F0, 0x50, 2);
@@ -543,13 +593,15 @@ void *func_002ECFD0(u8 *m, s32 flags) {
 
 /* +0x2C / +0x30: two of her parts' draw flags (+0xBA / +0xD6) and model flag 0x20000 on; off
    again by +0x878 (1 or 2 in +0x880) after the base +0x2C */
-void func_002ED160(u8 *m) {
+/* 0x002ED160 */
+void DaniellaModel_Vt2C(u8 *m) {
     AT(m, 0xBA, u8) |= 2;
     AT(m, 0xD6, u8) |= 2;
     AT(m, 0x4B0, u32) |= 0x20000;
 }
 
-void func_002ED190(u8 *m) {
+/* 0x002ED190 */
+void DaniellaModel_Vt30(u8 *m) {
     VCALL(m, 0x2C, void (*)(u8 *))(m);
     if (AT(m, 0x878, s32) == 0) {
         AT(m, 0xBA, u8) &= 0xFD;
@@ -564,29 +616,35 @@ void func_002ED190(u8 *m) {
 extern u8 D_00419E60[];
 
 /* +0xB4: her secondary-motion table */
-void func_002ED210(u8 *m) {
+/* 0x002ED210 */
+void DaniellaModel_SecondaryMotion(u8 *m) {
     AT(m, 0x874, u8 *) = D_00419E60;
 }
 
 /* +0x84 .. +0x90: her mesh parts */
-s32 func_002ED220(u8 *m) {
+/* 0x002ED220 */
+s32 DaniellaModel_Part0(u8 *m) {
     return 3;
 }
 
-s32 func_002ED230(u8 *m) {
+/* 0x002ED230 */
+s32 DaniellaModel_Part1(u8 *m) {
     return 7;
 }
 
-s32 func_002ED240(u8 *m) {
+/* 0x002ED240 */
+s32 DaniellaModel_Part2(u8 *m) {
     return 0x1A;
 }
 
-s32 func_002ED250(u8 *m) {
+/* 0x002ED250 */
+s32 DaniellaModel_Part3(u8 *m) {
     return 0x2A;
 }
 
 /* +0x10 */
-void func_002EE110(u8 *m) {
+/* 0x002EE110 */
+void DaniellaModel_Frame(u8 *m) {
     func_001F7AC0(m);
 }
 
@@ -782,7 +840,8 @@ void func_002EDF30(u8 *m) {
 /* +0x3C: her springs a frame. While she crawls (0x1800..0x1803) the capsules bend and her hair
    falls forward (the force -0.4 along her facing); after a reset (+0x850) everything back at
    rest and settled (+0x1570 / +0x1574 steps) */
-void func_002EDF80(u8 *m) {
+/* 0x002EDF80 */
+void DaniellaModel_Vt3C(u8 *m) {
     s32 n = 1, nHair = 1;
     s32 i;
 
@@ -823,8 +882,9 @@ void func_002EDF80(u8 *m) {
 }
 
 /* +0xC: once loaded: the base setup, the part roles, per-part draw settings, her springs */
-void func_002EE120(u8 *m) {
-    func_002118D0(m);
+/* 0x002EE120 */
+void DaniellaModel_Loaded(u8 *m) {
+    HumanModel_Loaded(m);
     AT(m, 0x890, s32) = 2;
     AT(m, 0x894, s32) = 3;
     AT(m, 0x898, s32) = 4;
@@ -1036,7 +1096,8 @@ void func_002EE4B0(u8 *cap, u8 *m) {
 extern void *D_00470480[];
 
 /* +0x8: destructor */
-void *func_002F61E0(u8 *m, s32 flags) {
+/* 0x002F61E0 */
+void *RiccardoModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_00470480;
         func_001002C0(m + 0x1310, func_00170CB0, 0x50, 4);
@@ -1048,43 +1109,52 @@ void *func_002F61E0(u8 *m, s32 flags) {
 }
 
 /* +0x2C / +0x30: part +0xBA's draw flag 2 on / off */
-void func_002F6340(u8 *m) {
+/* 0x002F6340 */
+void RiccardoModel_Vt2C(u8 *m) {
     AT(m, 0xBA, u8) |= 2;
 }
 
-void func_002F6350(u8 *m) {
+/* 0x002F6350 */
+void RiccardoModel_Vt30(u8 *m) {
     AT(m, 0xBA, u8) &= 0xFD;
 }
 
 extern u8 D_0041A2C0[];
 
 /* +0xB4: his secondary-motion table */
-void func_002F6360(u8 *m) {
+/* 0x002F6360 */
+void RiccardoModel_SecondaryMotion(u8 *m) {
     AT(m, 0x874, u8 *) = D_0041A2C0;
 }
 
 /* +0x98 / +0x9C, +0x84 .. +0x90: his mesh parts */
-s32 func_002F6370(u8 *m) {
+/* 0x002F6370 */
+s32 RiccardoModel_Vt98(u8 *m) {
     return 0x31;
 }
 
-s32 func_002F6380(u8 *m) {
+/* 0x002F6380 */
+s32 RiccardoModel_Vt9C(u8 *m) {
     return 0x30;
 }
 
-s32 func_002F6390(u8 *m) {
+/* 0x002F6390 */
+s32 RiccardoModel_Part0(u8 *m) {
     return 3;
 }
 
-s32 func_002F63A0(u8 *m) {
+/* 0x002F63A0 */
+s32 RiccardoModel_Part1(u8 *m) {
     return 7;
 }
 
-s32 func_002F63B0(u8 *m) {
+/* 0x002F63B0 */
+s32 RiccardoModel_Part2(u8 *m) {
     return 0x1E;
 }
 
-s32 func_002F63C0(u8 *m) {
+/* 0x002F63C0 */
+s32 RiccardoModel_Part3(u8 *m) {
     return 0x2C;
 }
 
@@ -1204,7 +1274,8 @@ void func_002F6BD0(u8 *m) {
 }
 
 /* +0x3C: his springs a frame: one step, or after a reset (+0x850) at rest and 30 to settle */
-void func_002F6C10(u8 *m) {
+/* 0x002F6C10 */
+void RiccardoModel_Vt3C(u8 *m) {
     s32 n = 1;
     s32 i;
 
@@ -1227,13 +1298,15 @@ void func_002F6C10(u8 *m) {
 }
 
 /* +0x10 */
-void func_002F6CD0(u8 *m) {
+/* 0x002F6CD0 */
+void RiccardoModel_Frame(u8 *m) {
     func_001F7AC0(m);
 }
 
 /* +0xC: once loaded: the base setup, the part roles, his springs, per-part draw settings */
-void func_002F6CE0(u8 *m) {
-    func_002118D0(m);
+/* 0x002F6CE0 */
+void RiccardoModel_Loaded(u8 *m) {
+    HumanModel_Loaded(m);
     AT(m, 0x890, s32) = 2;
     AT(m, 0x894, s32) = 3;
     AT(m, 0x898, s32) = 4;
@@ -1332,7 +1405,8 @@ void func_0031EA10(u8 *p, u8 *set) {
 extern void *D_00471CE0[];
 
 /* +0x8: destructor */
-void *func_0030DAF0(u8 *m, s32 flags) {
+/* 0x0030DAF0 */
+void *Lorenzo2Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_00471CE0;
         func_001002C0(m + 0x9A0, func_001709D0, 0x50, 0x18);
@@ -1342,19 +1416,23 @@ void *func_0030DAF0(u8 *m, s32 flags) {
 }
 
 /* +0x84 .. +0x90: his mesh parts */
-s32 func_0030DC30(u8 *m) {
+/* 0x0030DC30 */
+s32 Lorenzo2Model_Part0(u8 *m) {
     return 3;
 }
 
-s32 func_0030DC40(u8 *m) {
+/* 0x0030DC40 */
+s32 Lorenzo2Model_Part1(u8 *m) {
     return 0x13;
 }
 
-s32 func_0030DC50(u8 *m) {
+/* 0x0030DC50 */
+s32 Lorenzo2Model_Part2(u8 *m) {
     return 0x26;
 }
 
-s32 func_0030DC60(u8 *m) {
+/* 0x0030DC60 */
+s32 Lorenzo2Model_Part3(u8 *m) {
     return 0x30;
 }
 
@@ -1388,7 +1466,8 @@ void func_0030DC70(u8 *m) {
 }
 
 /* +0x3C: his points a frame: one step, or 30 to settle after a reset (+0x850) */
-void func_0030E060(u8 *m) {
+/* 0x0030E060 */
+void Lorenzo2Model_Vt3C(u8 *m) {
     s32 n = AT(m, 0x850, u8) != 0 ? 30 : 1;
     s32 i;
 
@@ -1401,13 +1480,15 @@ void func_0030E060(u8 *m) {
 }
 
 /* +0x10 */
-void func_0030E0E0(u8 *m) {
+/* 0x0030E0E0 */
+void Lorenzo2Model_Frame(u8 *m) {
     func_001F7AC0(m);
 }
 
 /* +0xC: once loaded: the base setup, the part roles, his points, per-part draw settings */
-void func_0030E0F0(u8 *m) {
-    func_002118D0(m);
+/* 0x0030E0F0 */
+void Lorenzo2Model_Loaded(u8 *m) {
+    HumanModel_Loaded(m);
     AT(m, 0x890, s32) = 2;
     AT(m, 0x894, s32) = 3;
     AT(m, 0x898, s32) = 4;
@@ -1590,7 +1671,8 @@ void func_001F94B0(f32 (*out)[4], f32 (*axes)[4], f32 a, f32 b) {
 extern void *D_00471DA0[];
 
 /* +0x8: destructor */
-void *func_0030E1F0(u8 *m, s32 flags) {
+/* 0x0030E1F0 */
+void *LorenzoModel_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_00471DA0;
         func_001002C0(m + 0x890, func_0016FBB0, 0x50, 6);
@@ -1608,39 +1690,47 @@ void *func_0030E1F0(u8 *m, s32 flags) {
 }
 
 /* +0x28: the model matrix (and the front frame) = `mtx` */
-void func_0030E2F0(u8 *m, f32 (*mtx)[4]) {
+/* 0x0030E2F0 */
+void LorenzoModel_SetMatrix(u8 *m, f32 (*mtx)[4]) {
     sceVu0CopyMatrix((f32 (*)[4])(m + 0x7D0), mtx);
     sceVu0CopyMatrix((f32 (*)[4])(m + 0xC70), mtx);
 }
 
 /* +0x80 / +0x84 .. +0x90: his mesh parts */
-s32 func_0030E330(u8 *m) {
+/* 0x0030E330 */
+s32 LorenzoModel_HeadBone(u8 *m) {
     return 0x13;
 }
 
-s32 func_0030E380(u8 *m) {
+/* 0x0030E380 */
+s32 LorenzoModel_Part0(u8 *m) {
     return 3;
 }
 
-s32 func_0030E390(u8 *m) {
+/* 0x0030E390 */
+s32 LorenzoModel_Part1(u8 *m) {
     return 7;
 }
 
-s32 func_0030E3A0(u8 *m) {
+/* 0x0030E3A0 */
+s32 LorenzoModel_Part2(u8 *m) {
     return 0xE;
 }
 
-s32 func_0030E3B0(u8 *m) {
+/* 0x0030E3B0 */
+s32 LorenzoModel_Part3(u8 *m) {
     return 0x1F;
 }
 
 /* +0x58: the scale +0x804 */
-f32 func_0030E3C0(u8 *m) {
+/* 0x0030E3C0 */
+f32 LorenzoModel_Vt58(u8 *m) {
     return AT(m, 0x804, f32);
 }
 
 /* +0x60: bone 0x13's position */
-void func_0030E340(u8 *m, f32 *out) {
+/* 0x0030E340 */
+void LorenzoModel_HeadPos(u8 *m, f32 *out) {
     sceVu0CopyVector(out, Skel_Bone(AT(m, 0x810, u8 *), 0x13) + 12);
 }
 
@@ -1657,7 +1747,8 @@ static inline s32 Chair_OnFloor(u8 *a, const f32 *floor) {
 /* +0x44: how much of the feet's height to keep on a slope: on the floor with axles set
    (+0xCB0 / +0xCB4), the level part of the line between the floor 8 ahead and 8 behind;
    else 1 */
-f32 func_0030E3D0(u8 *m, u8 *a) {
+/* 0x0030E3D0 */
+f32 LorenzoModel_SlopeKeep(u8 *m, u8 *a) {
     f32 floor[4] __attribute__((aligned(16)));
     f32 rot[4][4] __attribute__((aligned(16)));
     f32 fr[4] __attribute__((aligned(16)));
@@ -1698,7 +1789,8 @@ f32 func_0030E3D0(u8 *m, u8 *a) {
 /* +0x14: the attach frame of part `kind` into `out` (from `ref`): 0 the body (the model's
    rotation applied to `ref`, at `out`'s position), 0xA the front frame (+0xC70) relative to the
    body, 0xB / 0x12 / 0x13 parts turned by the tilt (+0x854 / +0x858) */
-void func_0030E580(u8 *m, s32 kind, f32 (*out)[4], f32 (*ref)[4]) {
+/* 0x0030E580 */
+void LorenzoModel_AdjustBone(u8 *m, s32 kind, f32 (*out)[4], f32 (*ref)[4]) {
     f32 r[4][4] __attribute__((aligned(16)));
     f32 u[4][4] __attribute__((aligned(16)));
     f32 frame[4][4] __attribute__((aligned(16)));
@@ -1774,7 +1866,8 @@ static inline void Chair_Frame(f32 (*f)[4], const f32 *d) {
 /* +0x40: fit the model to the floor: off it (or with no axles) the actor's rotation; on it the
    front frame (+0xC70) along him to the floor `front` ahead, the model's (+0x7D0) along the
    floor `back` behind to him, at his position */
-void func_0030E7F0(u8 *m, u8 *a, f32 front, f32 back) {
+/* 0x0030E7F0 */
+void LorenzoModel_BodyFrames(u8 *m, u8 *a, f32 front, f32 back) {
     f32 floor[4] __attribute__((aligned(16)));
     f32 rot[4][4] __attribute__((aligned(16)));
     f32 p[4] __attribute__((aligned(16)));
@@ -1847,7 +1940,8 @@ void func_0030EAB0(u8 *m) {
 }
 
 /* +0x3C: his points a frame: one step, or 30 to settle after a reset (+0x850) */
-void func_0030ED60(u8 *m) {
+/* 0x0030ED60 */
+void LorenzoModel_Vt3C(u8 *m) {
     s32 n = AT(m, 0x850, u8) != 0 ? 30 : 1;
     s32 i;
 
@@ -1860,13 +1954,15 @@ void func_0030ED60(u8 *m) {
 }
 
 /* +0x10 */
-void func_0030EDE0(u8 *m) {
+/* 0x0030EDE0 */
+void LorenzoModel_Frame(u8 *m) {
     func_001F7AC0(m);
 }
 
 /* +0xC: once loaded: the plain model's setup, his points, per-part draw settings */
-void func_0030EDF0(u8 *m) {
-    func_002DE0A0(m);
+/* 0x0030EDF0 */
+void LorenzoModel_Loaded(u8 *m) {
+    Model_Loaded(m);
     AT(m, 0x860, f32) = 0.0f;
     AT(m, 0x864, f32) = 3.5f;
     AT(m, 0x868, f32) = 0.0f;
@@ -1896,7 +1992,8 @@ extern void *D_00472700[];
 extern void *D_0046F9E0[], *D_0046B210[], *D_0046B1C0[], *D_00469D00[], *D_0046ADA0[];
 
 /* +0x8: destructor */
-void *func_00313FD0(u8 *m, s32 flags) {
+/* 0x00313FD0 */
+void *Kind14Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_00472700;
         AT(m, 0x0, void **) = D_0046F9E0;
@@ -1913,16 +2010,19 @@ void *func_00313FD0(u8 *m, s32 flags) {
 }
 
 /* +0xC / +0x10: the base's */
-void func_00314250(u8 *m) {
-    func_002DE0A0(m);
+/* 0x00314250 */
+void Kind14Model_Loaded(u8 *m) {
+    Model_Loaded(m);
 }
 
-void func_00314240(u8 *m) {
+/* 0x00314240 */
+void Kind14Model_Frame(u8 *m) {
     func_001F7AC0(m);
 }
 
 /* +0x38 draw: the form by the animation, the texture cache's layers forgotten */
-void func_003140B0(u8 *m, s32 layer, s32 a, s32 b) {
+/* 0x003140B0 */
+void Kind14Model_Draw(u8 *m, s32 layer, s32 a, s32 b) {
     static const u32 kForm = 4 | 0x40 | 0x200 | 0x400 | 0x10000 | 0x80000;
 
     if (AT(m, 0x4DC, s32) == 0x9001 || AT(m, 0x4DC, s32) == 0x9000) {
@@ -1937,7 +2037,7 @@ void func_003140B0(u8 *m, s32 layer, s32 a, s32 b) {
         AT(m, 0x4B0, u32) &= ~kForm;
     }
     VCALL(gTexCache, 0x18, void (*)(VObject *))(gTexCache);
-    func_002DDAC0(m, layer, a, b);
+    Model_Draw(m, layer, a, b);
 }
 
 /* ---- character kind 9's model (vtable D_00471C20): six hanging points (+0x9A0, bones
@@ -1948,7 +2048,8 @@ extern void *D_00471C20[], *D_0046C160[], *D_0046B0D0[];
 extern u8 D_00424450[], D_00424460[], D_00424470[], D_00424480[];
 
 /* +0x8 destructor */
-void *func_0030D150(u8 *m, s32 flags) {
+/* 0x0030D150 */
+void *Kind09Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_00471C20;
         func_001002C0(m + 0xD40, func_001709D0, 0x50, 0x18);
@@ -1970,19 +2071,23 @@ void *func_0030D150(u8 *m, s32 flags) {
 }
 
 /* +0x84 .. +0x90: his mesh parts */
-s32 func_0030D2B0(u8 *m) {
+/* 0x0030D2B0 */
+s32 Kind09Model_Part0(u8 *m) {
     return 3;
 }
 
-s32 func_0030D2C0(u8 *m) {
+/* 0x0030D2C0 */
+s32 Kind09Model_Part1(u8 *m) {
     return 0x13;
 }
 
-s32 func_0030D2D0(u8 *m) {
+/* 0x0030D2D0 */
+s32 Kind09Model_Part2(u8 *m) {
     return 0x26;
 }
 
-s32 func_0030D2E0(u8 *m) {
+/* 0x0030D2E0 */
+s32 Kind09Model_Part3(u8 *m) {
     return 0x37;
 }
 
@@ -2081,7 +2186,8 @@ void func_0030D6E0(u8 *m) {
 }
 
 /* +0x3C settle his springs: 30 steps the first time (+0x850), else one */
-void func_0030D940(u8 *m) {
+/* 0x0030D940 */
+void Kind09Model_Vt3C(u8 *m) {
     s32 n = AT(m, 0x850, u8) ? 30 : 1, i;
 
     func_002EE8A0(m + 0xD00);
@@ -2096,8 +2202,9 @@ void func_0030D940(u8 *m) {
 }
 
 /* +0xC: once loaded: the base setup, the part roles, the springs, per-part draw settings */
-void func_0030D9F0(u8 *m) {
-    func_002118D0(m);
+/* 0x0030D9F0 */
+void Kind09Model_Loaded(u8 *m) {
+    HumanModel_Loaded(m);
     AT(m, 0x890, s32) = 2;
     AT(m, 0x894, s32) = 3;
     AT(m, 0x898, s32) = 4;
@@ -2139,8 +2246,9 @@ void func_0030D9F0(u8 *m) {
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */
 extern void *D_00474460[];
 
-/* (as func_00313FD0)  +0x8: destructor */
-void *func_0032C510(u8 *m, s32 flags) {
+/* (as Kind14Model_dtor)  +0x8: destructor */
+/* 0x0032C510 */
+void *Kind33Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_00474460;
         AT(m, 0x0, void **) = D_0046F9E0;
@@ -2253,9 +2361,10 @@ void func_00320C70(u8 *m) {
 
 extern void *D_00473BD0[];
 
-/* (as func_0030D150) another model's destructor: twelve 0x60 nodes at +0xC20, four 0x50 at
+/* (as Kind09Model_dtor) another model's destructor: twelve 0x60 nodes at +0xC20, four 0x50 at
  * +0x9A0 */
-void *func_003203B0(u8 *m, s32 flags) {
+/* 0x003203B0 */
+void *Kind23Model_dtor(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = D_00473BD0;
         func_001002C0(m + 0xC20, func_0016FB00, 0x60, 0xC);
@@ -2279,8 +2388,9 @@ void *func_003203B0(u8 *m, s32 flags) {
 /* ---- the rest of the model class at 0x320590 (copies of func_002F6xxx) and the one with
    vtable D_00474460 ---- */
 
-/* +0x3C: the springs a frame (as func_002F6C10, two sets) */
-void func_00320CB0(u8 *m) {
+/* +0x3C: the springs a frame (as RiccardoModel_Vt3C, two sets) */
+/* 0x00320CB0 */
+void Kind23Model_Vt3C(u8 *m) {
     s32 n = 1;
     s32 i;
 
@@ -2299,12 +2409,13 @@ void func_00320CB0(u8 *m) {
     AT(m, 0x850, u8) = 0;
 }
 
-/* +0xC: once loaded (as func_002F6CE0) */
-void func_00320D70(u8 *m) {
+/* +0xC: once loaded (as RiccardoModel_Loaded) */
+/* 0x00320D70 */
+void Kind23Model_Loaded(u8 *m) {
     static const u8 sParts[] = {0x98, 0x9A, 0xC4, 0xC6, 0xC8};
     u32 i;
 
-    func_002118D0(m);
+    HumanModel_Loaded(m);
     AT(m, 0x890, s32) = 2;
     AT(m, 0x894, s32) = 3;
     AT(m, 0x898, s32) = 4;
@@ -2330,8 +2441,9 @@ void func_00320D70(u8 *m) {
 }
 
 /* D_00474460 +0x40: the model matrix from the actor's position raised by `lift`, and heading
-   (as func_002DCDD0) */
-void func_0032C630(u8 *m, u8 *actor, f32 lift) {
+   (as Model_BodyFrames) */
+/* 0x0032C630 */
+void Kind33Model_BodyFrames(u8 *m, u8 *actor, f32 lift) {
     f32 pos[4] __attribute__((aligned(16)));
 
     sceVu0CopyVector(pos, (f32 *)(actor + 0x10));

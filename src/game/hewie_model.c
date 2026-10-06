@@ -132,7 +132,7 @@ void *DogModelB_Table(void) {
 void DogModel_Loaded(u8 *m) {
     s32 i;
 
-    func_002DE0A0(m);
+    Model_Loaded(m);
     AT(m, 0x950, u8) = 0;
     AT(m, 0xB88, f32) = 0.0f;
     AT(m, 0x854, f32) = 0.0f;
@@ -155,7 +155,7 @@ void DogModel_Loaded(u8 *m) {
 /* +0x10 */
 /* 0x001F9560 */
 void DogModel_Frame(u8 *m) {
-    func_002DE070(m);
+    Model_Frame(m);
 }
 
 /* +0xB4: his secondary-motion table */

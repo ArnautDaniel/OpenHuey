@@ -44,8 +44,8 @@ extern void func_003A1220(Progress *p, u32 slot);
 extern void func_003A1310(Progress *p, u32 slot);
 extern void func_003A1420(Progress *p, u32 slot);
 extern void func_003A15A0(Progress *p, u32 slot);
-extern void func_002118D0(u8 *m);
-extern void func_002DE0A0(u8 *m);
+extern void HumanModel_Loaded(u8 *m);
+extern void Model_Loaded(u8 *m);
 extern void func_001F4910(u8 *m);   /* a model's motion reset */
 extern void func_002EE960(u8 *set);
 extern void func_002EE690(u8 *col, s32 bone, f32 x, f32 y, f32 z, f32 r);
@@ -73,7 +73,7 @@ extern void func_001F04B0(u8 *ik, void *skel, s32 root, s32 knee, s32 hock, s32 
 extern void func_002EE8A0(u8 *s);   /* begin a step */
 extern void func_002EE900(u8 *s);   /* one step */
 extern void func_002EE840(u8 *s);   /* finish */
-extern void func_002DDAC0(u8 *m, s32 layer, s32 a, s32 b);
+extern void Model_Draw(u8 *m, s32 layer, s32 a, s32 b);
 extern void func_002E3190(f32 (*m)[4], f32 a);   /* turn about y */
 extern void func_002DDED0(u8 *m, s32 anim, s32 variant);   /* play anim blended with another (-1 none) */
 extern void func_002DD040(u8 *m, s32 anim);
@@ -99,19 +99,19 @@ extern void *func_0038C9E0(u8 *m);
 extern void *func_0038CC90(u8 *m);
 extern void *func_0038CEE0(u8 *m);
 extern void *func_0038D160(u8 *m);
-extern void func_0016F420(Progress *p, u32 slot);
-extern void func_0016F860(Progress *p, u32 slot);
-extern void func_0016FEC0(Progress *p, u32 slot);
-extern void func_00170480(Progress *p, u32 slot);
-extern void func_00170510(Progress *p, u32 slot);
-extern void func_00170710(Progress *p, u32 slot);
-extern void func_001707A0(Progress *p, u32 slot);
-extern void func_00170830(Progress *p, u32 slot);
-extern void func_00170910(Progress *p, u32 slot);
-extern void func_00170A50(Progress *p, u32 slot);
-extern void func_00170B60(Progress *p, u32 slot);
-extern void func_00170D30(Progress *p, u32 slot);
-extern void func_00170FB0(Progress *p, u32 slot);
+extern void CharLoad_Kind33Model(Progress *p, u32 slot);
+extern void CharLoad_Kind23Model(Progress *p, u32 slot);
+extern void CharLoad_Kind18Model(Progress *p, u32 slot);
+extern void CharLoad_Kind14Model(Progress *p, u32 slot);
+extern void CharLoad_Kind13Model(Progress *p, u32 slot);
+extern void CharLoad_PlainModel(Progress *p, u32 slot);
+extern void CharLoad_Kind12Model(Progress *p, u32 slot);
+extern void CharLoad_LorenzoModel(Progress *p, u32 slot);
+extern void CharLoad_Lorenzo2Model(Progress *p, u32 slot);
+extern void CharLoad_Kind09Model(Progress *p, u32 slot);
+extern void CharLoad_RiccardoModel(Progress *p, u32 slot);
+extern void CharLoad_DaniellaModel(Progress *p, u32 slot);
+extern void CharLoad_DebilitasModel(Progress *p, u32 slot);
 extern void func_002DDB30(u8 *m, s32 anim);
 extern f32 func_00211910(const f32 *a, const f32 *b, const f32 *c);   /* pt's distance from the line */
 

@@ -2683,7 +2683,7 @@ void Pursuer_ModelUpdate(Pursuer *p) {
                 VCALL(m, 0x40, void (*)(void *, Pursuer *, f32, f32))(m, p, 0.0f, 0.0f);
             }
         } else {
-            func_002DCDD0(p->c.motion, p, 0.0f, 0.0f);
+            Model_BodyFrames(p->c.motion, p, 0.0f, 0.0f);
         }
     }
     func_00284040(p);

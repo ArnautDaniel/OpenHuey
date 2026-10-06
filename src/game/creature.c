@@ -4130,7 +4130,7 @@ void func_0032AE80(Character *c) {
         if (AT(k, 0x62, u8) == 0xB) {
             VCALL(c->motion, 0x40, void (*)(void *, Character *, f32, f32))(c->motion, c, AT(k, 0x28, f32), 0.0f);
         } else {
-            func_002DCDD0(c->motion, c, 0.0f, 0.0f);
+            Model_BodyFrames(c->motion, c, 0.0f, 0.0f);
         }
     }
     func_001F6AF0(c->motion);

@@ -645,7 +645,7 @@ void func_00167620(Hewie *h) {
 
     if (room == VCALL(p, 0xC, s32 (*)(Progress *))(p)) {
         if (h->c.a.navTri == NAV_NONE) {
-            func_002DCDD0(h->c.motion, h, 0.0f, 0.0f);
+            Model_BodyFrames(h->c.motion, h, 0.0f, 0.0f);
         } else if (HW(h, 0xF3582, u8) == 1) {
             VCALL(h->c.motion, 0x40, void (*)(void *, Hewie *, f32, f32))(h->c.motion, h, 5.0f, -5.0f);
         } else {
@@ -1271,7 +1271,8 @@ void func_00154DB0(Hewie *h) {
 void func_00154E60(Hewie *h) {
 }
 
-s32 func_001689F0(Hewie *h) {
+/* 0x001689F0 */
+s32 Model_Textures(Hewie *h) {
     return 0;
 }
 
