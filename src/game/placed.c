@@ -2015,6 +2015,16 @@ static inline void burst_rec(u8 *r, s32 alpha) {
     }
 }
 
+/* burst B's records: cell 0x7F x 0x41, `frames` frames */
+static inline void burst_rec7f(u8 *r, s32 frames, s32 alpha) {
+    AT(r, 0x0, s32) = 0x7F;
+    AT(r, 0x4, s32) = 0x41;
+    AT(r, 0x8, s32) = frames;
+    if (alpha >= 0) {
+        AT(r, 0xC, s32) = alpha;
+    }
+}
+
 /* +0x18 start (arg: the point): in the current frame (+0xFAC), 16 pieces thrown out (records
  * +0x10, velocities +0xC30, falls +0xCF0, drifts +0xEA0 / +0xEE0), the flash (+0x610), 12 puffs
  * rising (records +0x670, velocities +0xDB0, rates +0xE70, heights +0xE40) and the ring on the
@@ -2291,6 +2301,156 @@ s32 func_0036B200(u8 *o) {
     sceVu0ApplyMatrix((f32 *)(o + 0xF80), (f32 (*)[4])(o + 0xF20), (f32 *)(o + 0xF80));
     sceVu0ApplyMatrix((f32 *)(o + 0xF90), (f32 (*)[4])(o + 0xF20), (f32 *)(o + 0xF90));
     return 1;
+}
+
+extern f32 D_004469A8, D_004469AC, D_004469B0;   /* the three points' offsets across the view */
+
+/* +0x18 start (arg: the point): three points across the view from it (offsets D_004469A8..),
+ * each with a flash (+0xC10; the first bigger) and a ring on the ground (+0x1930, corners
+ * +0x21F0, the drawer +0x1AF8 showing three); 32 pieces (+0x10, velocities +0x1B30, falls
+ * +0x1CB0, drifts +0x20B0 / +0x2130) and 32 puffs (+0xD30, velocities +0x1E30, rates +0x2030,
+ * heights +0x1FB0) shared round them */
+void func_0036BDE0(u8 *o, f32 *arg) {
+    static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD}, k005 = {0x3D4CCCCD}, kPi = {0x40490FDB},
+                                          k002 = {0x3CA3D70A}, k13 = {0x3FA66666};
+    VObject *rnd, *cam, *nav;
+    f32 xs[3];
+    f32 q[4] __attribute__((aligned(16)));
+    f32 pts[3][4] __attribute__((aligned(16)));
+    f32 c[4] __attribute__((aligned(16)));
+    f32 t[4] __attribute__((aligned(16)));
+    f32 v[4] __attribute__((aligned(16)));
+    u8 *r;
+    u32 tri;
+    s32 i;
+    f32 sp;
+
+    if (arg == NULL) {
+        return;
+    }
+    q[0] = arg[0];
+    xs[0] = D_004469A8;
+    xs[1] = D_004469AC;
+    q[1] = arg[1];
+    xs[2] = D_004469B0;
+    cam = D_0044E4B8;
+    q[2] = arg[2];
+    q[3] = 1.0f;
+    for (i = 0; i < 3; i++) {
+        r = o + 0xC10 + AT(o, 0x22BC, s32) * 0x90 + i * 0x30;
+        burst_rec7f(r, 0x1E, 0x80);
+        c[2] = 0.0f;
+        c[3] = 1.0f;
+        c[0] = xs[i];
+        c[1] = 0.0f;
+        func_002E2CA0(t, c, VCALL(cam, 0x68, f32 (*)(VObject *))(cam));
+        AT(r, 0x10, f32) = q[0] + t[0];
+        AT(r, 0x14, f32) = q[1] + t[1];
+        AT(r, 0x18, f32) = q[2] + t[2];
+        AT(r, 0x1C, f32) = 1.0f;
+        sceVu0CopyVector(pts[i], (f32 *)(r + 0x10));
+        AT(r, 0x20, f32) = 9.0f;
+        AT(r, 0x24, f32) = 14.0f;
+        if (i == 0) {
+            AT(r, 0x20, f32) = 12.0f;
+            AT(r, 0x24, f32) = 17.0f;
+        }
+        AT(r, 0x28, s32) = 0;
+        AT(r, 0x2C, s32) = 0;
+    }
+    rnd = D_0044E550;
+    for (i = 0; i < 32; i++) {
+        r = o + 0x10 + AT(o, 0x22BC, s32) * 0x600 + i * 0x30;
+        burst_rec7f(r, 0x14, -1);
+        AT(r, 0xC, s32) = (VCALL(rnd, 0x10, u32 (*)(VObject *))(rnd) & 0x3F) + 0x40;
+        sceVu0CopyVector(q, pts[i % 3]);
+        AT(r, 0x10, f32) = q[0] + 4.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(r, 0x14, f32) = 1.0f + q[1];
+        AT(r, 0x18, f32) = q[2] + 4.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(r, 0x1C, f32) = 1.0f;
+        AT(r, 0x20, f32) = 4.0f + 4.0f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        AT(r, 0x24, f32) = AT(r, 0x20, f32);
+        AT(r, 0x28, f32) = kPi.f * (360.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f)) / 180.0f;
+        AT(r, 0x2C, s32) = 0;
+        AT(o, 0x1B30 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(o, 0x1B34 + i * 0xC, f32) = k01.f + k01.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        AT(o, 0x1B38 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        sp = k01.f + k005.f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd);
+        AT(o, 0x1CB0 + i * 0xC, f32) = -(AT(o, 0x1B30 + i * 0xC, f32) * sp);
+        AT(o, 0x1CB4 + i * 0xC, f32) = -(0.5f * (AT(o, 0x1B34 + i * 0xC, f32) * sp));
+        AT(o, 0x1CB8 + i * 0xC, f32) = -(AT(o, 0x1B38 + i * 0xC, f32) * sp);
+        AT(o, 0x20B0 + i * 4, f32) = AT(o, 0x1B30 + i * 0xC, f32) / 8.0f;
+        AT(o, 0x2130 + i * 4, f32) = AT(o, 0x1B38 + i * 0xC, f32) / 8.0f;
+    }
+    for (i = 0; i < 32; i++) {
+        r = o + 0xD30 + AT(o, 0x22BC, s32) * 0x600 + i * 0x30;
+        burst_rec7f(r, 0x1E, i % 2 == 0 ? 0x40 : 0x80);
+        sceVu0CopyVector(q, pts[i % 3]);
+        AT(r, 0x10, f32) = q[0] + 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(r, 0x14, f32) = 1.0f + q[1];
+        AT(r, 0x18, f32) = q[2] + 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(r, 0x1C, f32) = 1.0f;
+        AT(r, 0x20, f32) = k01.f + k13.f * (0.5f * VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd));
+        AT(r, 0x24, f32) = AT(r, 0x20, f32);
+        AT(r, 0x2C, s32) = 0;
+        AT(r, 0x28, s32) = 0;
+        AT(o, 0x1E30 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(o, 0x1E34 + i * 0xC, f32) = 3.5f * (k01.f + VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd)) - 0.5f;
+        AT(o, 0x1E38 + i * 0xC, f32) = 2.0f * (VCALL(rnd, 0x18, f32 (*)(VObject *))(rnd) - 0.5f);
+        AT(o, 0x2030 + i * 4, f32) = k002.f + k01.f * AT(o, 0x1E34 + i * 0xC, f32);
+        AT(o, 0x1FB0 + i * 4, f32) = AT(r, 0x14, f32);
+    }
+    nav = D_0044E570;
+    for (i = 0; i < 3; i++) {
+        u8 *corners = o + 0x21F0 + i * 0x40;
+        s32 k;
+
+        burst_quad((QuadDrawer *)(o + 0x1AF8), 0.0f, 3, 0xC0, 0x60, 0x20, 0x20, 0x43, 0);
+        AT(o, 0x1B0C, u8 *) = corners;
+        r = o + 0x1930 + AT(o, 0x22BC, s32) * 0x90 + i * 0x30;
+        burst_rec7f(r, 0x1E, 0x80);
+        sceVu0CopyVector(q, pts[i]);
+        AT(r, 0x10, f32) = q[0];
+        AT(r, 0x14, f32) = q[1];
+        AT(r, 0x18, f32) = q[2];
+        AT(r, 0x1C, f32) = 1.0f;
+        AT(r, 0x20, f32) = 1.0f;
+        AT(r, 0x24, f32) = 1.0f;
+        AT(r, 0x28, s32) = 0;
+        AT(r, 0x2C, s32) = 0;
+        AT(o, 0x22B8, f32) = 1.0f;
+        for (k = 0; k < 4; k++) {
+            AT(corners, k * 0x10, f32) = k & 1 ? 2.0f : -2.0f;
+            AT(corners, k * 0x10 + 4, f32) = 0.0f;
+            AT(corners, k * 0x10 + 8, f32) = k & 2 ? 2.0f : -2.0f;
+            AT(corners, k * 0x10 + 0xC, f32) = 1.0f;
+        }
+        tri = func_00123D20(gCharPlayer, q);
+        if (tri == (u32)-1) {
+            continue;
+        }
+        sceVu0UnitMatrix((f32 (*)[4])(o + 0x21B0));
+        v[2] = 0.0f;
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[3] = 1.0f;
+        VCALL(nav, 0x2C, void (*)(VObject *, u32, f32 *))(nav, tri, (f32 *)(o + 0x21C0));
+        sceVu0CopyVector(v, (f32 *)(o + 0x21C0));
+        sceVu0ScaleVector(v, v, k01.f);
+        sceVu0AddVector((f32 *)(r + 0x10), v, (f32 *)(r + 0x10));
+        sceVu0Normalize((f32 *)(o + 0x21C0), (f32 *)(o + 0x21C0));
+        if (AT(o, 0x21C4, f32) == 1.0f) {
+            continue;
+        }
+        AT(o, 0x21B0, s32) = 0;
+        AT(o, 0x21B4, u32) = 0xBF800000;   /* -1 */
+        AT(o, 0x21B8, s32) = 0;
+        AT(o, 0x21BC, s32) = 0;
+        sceVu0OuterProduct((f32 *)(o + 0x21B0), (f32 *)(o + 0x21C0), (f32 *)(o + 0x21B0));
+        sceVu0Normalize((f32 *)(o + 0x21B0), (f32 *)(o + 0x21B0));
+        sceVu0OuterProduct((f32 *)(o + 0x21D0), (f32 *)(o + 0x21C0), (f32 *)(o + 0x21B0));
+        sceVu0Normalize((f32 *)(o + 0x21D0), (f32 *)(o + 0x21D0));
+    }
 }
 
 /* the 0x22D0-byte burst's set up: frame 0, the first three drawers */
