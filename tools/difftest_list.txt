@@ -7113,3 +7113,7 @@ src/game/debilitas3.c func_00330560 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@
 src/game/debilitas3.c func_0032F880 --pre=a1=-2..18 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A200030=0x7F00..0x8100 --runs=100
 src/game/lorenzo.c func_00363610 --pre=a1=8..17 --pre=a2=0x0B000000..0x0B000000 --runs=60
 src/game/debilitas3.c func_0032FF60 --pre=a0+0xF0=0x0A000000..0x0A000000 --pre=@0x0A0006A4=0x0A100000..0x0A100000 --pre=@0x0A100018=0x1F..0x20 --pre=@0x0A000550=0..0x3F800000 --pre=a0+0x15C0:u8=0xFE..0xFF --pre=a0+0x124=0..3 --pre=a0+0x128=0..3 --pre=@0x44E4D8=0x0A200000..0x0A200000 --pre=@0x0A2007B8:u8=4..5 --runs=80
+src/game/effects.c func_0037C630 --pre=a0=0x0A000000..0x0A000000 --pre=a1=0..127 --pre=a2=0..40 --pre=a0+0x4470=0..1 --pre=a0+0x3050=0x3F000000..0x42C80000 --pre=a0+0x3054=0x3F000000..0x42C80000 --pre=a0+0x3058=0x3F000000..0x42C80000 --pre=@0x44E550=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046AB50..0x0046AB50 --stub-fret=0.05 --stub-fret=0.4 --stub-fret=0.97 --stub-ret=3 --stub-ret=0x2F --runs=200
+src/game/effects.c func_0037CFA0 --pre=a0=0x0A000000..0x0A000000 --runs=10
+src/game/effects.c func_0037C9E0 --pre=a0=0x0A000000..0x0A000000 --pre=a0+0x4470=0..1 --runs=10
+src/game/effects.c func_0037CB90 --pre=a0=0x0A000000..0x0A000000 --pre=a0+0x4474:u8=0..1 --pre=a0+0x4470=0..1 --pre=a0+0x446C=0x3F800000..0x42000000 --pre=a0+0x3043:u8=1..16 --pre=@0x44E550=0x0B700000..0x0B700000 --pre=@0x0B700000=0x0046AB50..0x0046AB50 --stub-fret=0.05 --stub-fret=0.4 --stub-fret=0.97 --stub-ret=3 --stub-ret=0x2F --runs=40

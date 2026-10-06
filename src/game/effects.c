@@ -4941,6 +4941,159 @@ u8 *func_0037C5A0(u8 *o, s32 flags) {
     return o;
 }
 
+/* ---- D_0047A730 (0x4478 bytes): 128 ash flakes about (-80, -20, -10), in two buffers of
+ * quad records (+0x10 + 0x1800 x the current one +0x4470), turned by angles (+0x3060, 16 each)
+ * at their spins (+0x3860, 12 each), moving by their velocities (+0x3E60, 12 each) and a wind
+ * (+0x4460); dead ones (alpha 0) come back three a frame, spread wider as the frames count up
+ * (+0x446C); the quad drawer at +0x3010 ---- */
+
+#define ASH_REC(e, buf, i) ((QuadRec *)((e) + 0x10 + (buf) * 0x1800) + (i))
+#define ASH_BUF(e) AT(e, 0x4470, s32)
+
+/* flake i anew in the current buffer: shown (alpha 0x80) unless `spread` is 0, its depth spread
+ * by 2 x `spread` */
+void func_0037C630(u8 *e, s32 i, s32 spread) {
+    static const union { u32 u; f32 f; } k01 = {0x3DCCCCCD};   /* 0.1: multiplied first, as the EE did */
+    VObject *rnd = D_0044E550;
+    QuadRec *r = ASH_REC(e, ASH_BUF(e), i);
+    s32 k;
+
+    r->rgba[0] = 0x80;
+    r->rgba[1] = 0x80;
+    r->rgba[2] = 0x80;
+    r->rgba[3] = spread != 0 ? 0x80 : 0;
+    r->pos[0] = AT(e, 0x3050, f32) + 20.0f * (burst_rnd(rnd) - 0.5f);
+    r->pos[1] = AT(e, 0x3054, f32) - 10.0f * burst_rnd(rnd);
+    r->pos[2] = AT(e, 0x3058, f32) + (2.0f * (f32)spread) * (burst_rnd(rnd) - 0.5f);
+    r->pos[3] = 1.0f;
+    r->w = 1.0f;
+    r->h = 1.0f;
+    r->turn = 0.0f;
+    r->frame = burst_int(rnd) & 0xF;
+    AT(e, 0x3E60 + i * 12, f32) = k01.f * (burst_rnd(rnd) - 0.5f);
+    AT(e, 0x3E64 + i * 12, f32) = k01.f * burst_rnd(rnd);
+    AT(e, 0x3E68 + i * 12, f32) = k01.f * (burst_rnd(rnd) - 0.5f);
+    for (k = 0; k < 3; k++) {
+        AT(e, 0x3060 + i * 16 + k * 4, f32) = 0x1.921fb6p+1f * (180.0f * burst_rnd(rnd)) / 180.0f;
+    }
+    for (k = 0; k < 3; k++) {
+        AT(e, 0x3860 + i * 12 + k * 4, f32) = 10.0f + 22.5f * (burst_rnd(rnd) - 0.5f);
+    }
+}
+
+/* +0x14 draw: each flake a 2 x 2 quad in the xz plane turned by its angles */
+void func_0037C9E0(u8 *e) {
+    f32 m[4][4] __attribute__((aligned(16)));
+    f32 c[4][4] __attribute__((aligned(16)));
+    s32 i;
+
+    AT(e, 0x3024, f32 *) = c[0];
+    for (i = 0; i < 128; i++) {
+        sceVu0UnitMatrix(m);
+        sceVu0RotMatrix(m, m, (f32 *)(e + 0x3060 + i * 0x10));
+        c[0][0] = 1.0f;  c[0][1] = 0.0f; c[0][2] = -1.0f; c[0][3] = 1.0f;
+        sceVu0ApplyMatrix(c[0], m, c[0]);
+        c[1][0] = 1.0f;  c[1][1] = 0.0f; c[1][2] = 1.0f;  c[1][3] = 1.0f;
+        sceVu0ApplyMatrix(c[1], m, c[1]);
+        c[2][0] = -1.0f; c[2][1] = 0.0f; c[2][2] = -1.0f; c[2][3] = 1.0f;
+        sceVu0ApplyMatrix(c[2], m, c[2]);
+        c[3][0] = -1.0f; c[3][1] = 0.0f; c[3][2] = 1.0f;  c[3][3] = 1.0f;
+        sceVu0ApplyMatrix(c[3], m, c[3]);
+        AT(e, 0x3020, QuadRec *) = ASH_REC(e, ASH_BUF(e), i);
+        func_002E56C0(e + 0x3010);
+    }
+}
+
+/* +0x10 update (0 once stopped, +0x4474): flip the buffers; each shown flake carried over,
+ * rising a little faster at random, moving with the wind, turning, its frame counting to
+ * +0x3043; then up to three dead ones back */
+s32 func_0037CB90(u8 *e) {
+    static const union { u32 u; f32 f; } kPi = {0x40490FDB}, kNegPi = {0xC0490FDB}, kTwoPi = {0x40C90FDB};
+    VObject *rnd = D_0044E550;
+    s32 i, k, n;
+
+    if (AT(e, 0x4474, u8) == 1) {
+        return 0;
+    }
+    ASH_BUF(e) ^= 1;
+    for (i = 0; i < 128; i++) {
+        u32 *src = (u32 *)ASH_REC(e, ASH_BUF(e) ^ 1, i);
+        u32 *dst = (u32 *)ASH_REC(e, ASH_BUF(e), i);
+        QuadRec *r;
+
+        for (k = 0; k < 12; k++) {
+            dst[k] = src[k];
+        }
+        r = ASH_REC(e, ASH_BUF(e), i);
+        if (r->rgba[3] == 0) {
+            continue;
+        }
+        AT(e, 0x3E64 + i * 12, f32) = AT(e, 0x3E64 + i * 12, f32) + 0.01f * burst_rnd(rnd);
+        r->pos[0] = r->pos[0] + (AT(e, 0x3E60 + i * 12, f32) + AT(e, 0x4460, f32));
+        r->pos[1] = r->pos[1] + (AT(e, 0x3E64 + i * 12, f32) + AT(e, 0x4464, f32));
+        r->pos[2] = r->pos[2] + (AT(e, 0x3E68 + i * 12, f32) + AT(e, 0x4468, f32));
+        for (k = 0; k < 3; k++) {
+            f32 *a = &AT(e, 0x3060 + i * 16 + k * 4, f32);
+
+            *a = *a + kPi.f * AT(e, 0x3860 + i * 12 + k * 4, f32) / 180.0f;
+            if (!(*a <= kPi.f)) {
+                *a = *a - kTwoPi.f;
+            } else if (*a < kNegPi.f) {
+                *a = *a + kTwoPi.f;
+            }
+        }
+        if (++r->frame >= AT(e, 0x3043, s8)) {
+            r->frame = 0;
+        }
+    }
+    AT(e, 0x446C, f32) = AT(e, 0x446C, f32) + 1.0f;
+    for (i = 0, n = 3; i < 128; i++) {
+        if (ASH_REC(e, ASH_BUF(e), i)->rgba[3] == 0) {
+            func_0037C630(e, i, (s32)AT(e, 0x446C, f32));
+            if (--n == 0) {
+                break;
+            }
+        }
+    }
+    return 1;
+}
+
+/* +0xC set up: the drawer's settings (16 frames of 32 x 32, row 0xE0, palette 11), the spot,
+ * the wind (0.2, 2, 0), every flake hidden */
+void func_0037CFA0(u8 *e) {
+    s32 i;
+
+    ASH_BUF(e) = 0;
+    AT(e, 0x4474, u8) = 0;
+    AT(e, 0x446C, s32) = 0;
+    AT(e, 0x3018, s64) = -1;
+    AT(e, 0x3028, s32) = 0;
+    AT(e, 0x302C, s32) = 0;
+    AT(e, 0x3030, s32) = 0x19;
+    AT(e, 0x3034, s16) = 1;
+    AT(e, 0x3036, s16) = 0;
+    AT(e, 0x3038, s16) = 0xE0;
+    AT(e, 0x303A, s16) = 0x20;
+    AT(e, 0x303C, s16) = 0x20;
+    AT(e, 0x303E, s16) = 0x200;
+    AT(e, 0x3040, s16) = 0x100;
+    AT(e, 0x3042, u8) = 2;
+    AT(e, 0x3043, u8) = 0x10;
+    AT(e, 0x3044, u8) = 1;
+    AT(e, 0x3045, u8) = 0x10;
+    AT(e, 0x3046, u8) = 0xB;
+    AT(e, 0x3050, f32) = -80.0f;
+    AT(e, 0x3054, f32) = -20.0f;
+    AT(e, 0x3058, f32) = -10.0f;
+    AT(e, 0x305C, f32) = 1.0f;
+    AT(e, 0x4460, u32) = 0x3E4CCCCD;   /* 0.2 */
+    AT(e, 0x4464, f32) = 2.0f;
+    AT(e, 0x4468, f32) = 0.0f;
+    for (i = 0; i < 128; i++) {
+        func_0037C630(e, i, 0);
+    }
+}
+
 /* (as func_002F9810)  +0x8 destructor (the quad drawer's inlined) */
 u8 *func_00368BB0(u8 *o, s32 flags) {
     if (o == NULL) {
