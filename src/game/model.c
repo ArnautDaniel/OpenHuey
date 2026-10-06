@@ -5275,6 +5275,24 @@ void *func_0038C960(u8 *m) {
     return m;
 }
 
+extern void *D_004703A0[];
+
+/* a model on the base func_0016FCD0 with 6 parts (0x50, +0x890) and 8 members (0x40, +0xA70,
+ * their vtable at +0x30), vtable D_00471DA0 */
+void *func_0038CB60(u8 *m) {
+    u8 *e;
+
+    func_0016FCD0(m);
+    AT(m, 0x0, void **) = D_00471DA0;
+    func_00100340(m + 0x890, func_0016FC10, func_0016FBB0, 0x50, 6);
+    for (e = m + 0xA70; e < m + 0xC70; e += 0x40) {
+        AT(e, 0x30, void **) = D_004703A0;
+    }
+    AT(m, 0xCF4, s32) = 0;
+    AT(m, 0xCF0, s32) = 0;
+    return m;
+}
+
 /* kind 33 */
 void func_0016F420(Progress *p, u32 slot) {
     u8 *m = Model_New(p, 0x890);

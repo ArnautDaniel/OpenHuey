@@ -1625,3 +1625,50 @@ void func_003912E0(SubScreen *s) {
         Progress_ClearFlag(gProgress, 4);
     }
 }
+
+/* is extra `k` unlocked (the system data's +0x24 / +0x2C flags) */
+s32 func_0038DF90(SubScreen *s, u8 k) {
+    u32 f24 = AT(D_0044E978, 0x24, u32), f2C;
+
+    switch (k) {
+    case 3:
+        return (f24 & 0x2) != 0;
+    case 5:
+        return (f24 & 0x8) != 0;
+    case 8:
+        f2C = AT(D_0044E978, 0x2C, u32);
+        if (!(f2C & 0x400000)) {
+            return 0;
+        }
+        return (f24 & 0x100) || (f24 & 0x1000);
+    case 10: case 12: case 14:
+    case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
+        return (AT(D_0044E978, 0x2C, u32) & 0x400000) != 0;
+    case 16: case 18: case 20: case 22:
+        return (AT(D_0044E978, 0x2C, u32) & 0x2000000) != 0;
+    case 15: case 17: case 19: case 21: case 23:
+        return (AT(D_0044E978, 0x2C, u32) & 0x200000) != 0;
+    }
+    return (f24 & 0x1) != 0;
+}
+
+extern u16 D_0044C080[][4];   /* per entry: its unlock flag (system data +0x24 bits), .., .., the
+                                 message to follow (0xFFFF none) */
+extern const PTMF D_0044C0E8, D_0044C0F8;
+
+/* state: a question being asked; once answered, with the page's entry (page[0]) unlocked and a
+ * message to follow, that message (D_0044C0E8), else D_0044C0F8 */
+void func_00386000(SubScreen *s) {
+    func_00385C30(s);
+    Task_Run(&s->ask);
+    if (AT(&s->ask, 0x10, u8) == 0) {
+        u16 *e = D_0044C080[SUB_PAGE(s, 0x0, u8)];
+
+        if ((AT(D_0044E978, 0x24 + (e[0] >> 5) * 4, u32) & (1 << (e[0] & 0x1F))) && e[3] != 0xFFFF) {
+            Task_Open(&s->ask, e[3]);
+            ptmf_set(&s->state, &D_0044C0E8);
+        } else {
+            ptmf_set(&s->state, &D_0044C0F8);
+        }
+    }
+}
