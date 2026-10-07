@@ -73,7 +73,7 @@ From `Noise_Make`, `Character_Hearing` (`src/game/actor.c`), `Progress_PursuerRe
 ## Status
 
 **Built** (`scripts/acoustics.fs`, the messages in `scripts/messages.fs`). **Rules checked** by
-`tests/acoustics/test_hearing.fs` (28 tests, room 0x13 and its neighbours: distance, order of
+`tests/acoustics/test_hearing.fs` (28 tests, in the front garden: distance, order of
 sources, own source, loudest per source, setting, threshold, one door shut / open / a doorway,
 beyond two doors, a door's noise, no body).
 

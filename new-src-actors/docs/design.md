@@ -89,5 +89,10 @@ For each subsystem:
   name is a verb or an event: `hit`, `heard`, `open`, `entered-room`.
 - Fields are declared with the actor's state (`state: ... end-state`) and named for what they
   mean.
+- **Names, not numbers.** Rooms are named (`scripts/room-names.fs`: `front-garden-2`, not
+  `$13`). The names are placeholders (the pause map's area and the room's place on its page)
+  until the rooms are walked and named for what they are. The same goes for doors, items,
+  motions and the rest as their subsystems are built: a raw id appears only in a table that
+  names it.
 - Units: positions in the game's units; angles in radians inside, degrees only at the edges
   (data, scripts); time in frames (`30 = 1 second`).
