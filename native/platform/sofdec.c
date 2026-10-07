@@ -116,6 +116,8 @@ typedef struct Ply {
     void **vtbl;
     int stat;
     int paused;
+    int compo, keyLo, keyHi;   /* the compo mode (creation parameter +0x20: 0x31 a luminance key) and
+                                * the keys (Sofdec_SetParam; kept by ply_start) */
     int vol;          /* 0.1 dB */
     FILE *f;
     int eof;          /* the file is read to its end (2: and the parser flushed) */
@@ -508,7 +510,7 @@ static int video_next(Ply *p) {
     return 1;
 }
 
-/* the ready frame into rgb (BT.601, TV range; alpha 0x80) */
+/* the ready frame into rgb (BT.601, TV range; alpha 0x80, or by the luminance key) */
 static void video_show(Ply *p) {
     const AvFramePrefix *f = p->frm;
     int x, y;
@@ -532,7 +534,13 @@ static void video_show(Ply *p) {
             o[0] = (uint8_t)(r < 0 ? 0 : r > 255 ? 255 : r);
             o[1] = (uint8_t)(g < 0 ? 0 : g > 255 ? 255 : g);
             o[2] = (uint8_t)(b < 0 ? 0 : b > 255 ? 255 : b);
-            o[3] = 0x80;
+            if (p->compo == 0x31) {   /* clear up to the low key, opaque from the high */
+                int k = py[x];
+
+                o[3] = (uint8_t)(k <= p->keyLo ? 0 : k >= p->keyHi ? 0x80 : (k - p->keyLo) * 0x80 / (p->keyHi - p->keyLo));
+            } else {
+                o[3] = 0x80;
+            }
             o += 4;
         }
     }
@@ -695,7 +703,6 @@ int mwPlyCalcWorkCprmSfd(void *cprm) { (void)cprm; return 0x40; }
 void *mwPly_CreateSofdec(void *cprm) {
     Ply *p;
 
-    (void)cprm;
     if (getenv("HG_NOMOVIES") != NULL || !av_load()) {
         return NULL;
     }
@@ -703,12 +710,24 @@ void *mwPly_CreateSofdec(void *cprm) {
     if (p != NULL) {
         p->vtbl = sVtbl;
         p->shownNo = -1;
+        p->compo = cprm != NULL ? *(int32_t *)((uint8_t *)cprm + 0x20) : 0;
+        p->keyLo = 0x10;
+        p->keyHi = 0x20;
     }
     return p;
 }
 
-/* (PS2 0x0023E878) a player setting (event command 0x6E / the movie scene) */
-void Sofdec_SetParam(void *ply, unsigned a, unsigned b, int c) { (void)ply; (void)a; (void)b; (void)c; }
+/* (PS2 0x0023E878) the luminance keys, as mwPlySetLumiKey (event command 0x6E / the movie
+ * classes made with compo mode 0x31): clear up to `a`, opaque from `b` */
+void Sofdec_SetParam(void *ply, unsigned a, unsigned b, int c) {
+    Ply *p = ply;
+
+    (void)c;
+    if (p != NULL) {
+        p->keyLo = (int)a;
+        p->keyHi = (int)b > (int)a ? (int)b : (int)a + 1;
+    }
+}
 
 /* (PS2 0x0023CA88) a player mode */
 void func_0023CA88(void *ply, int mode) { (void)ply; (void)mode; }

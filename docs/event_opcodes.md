@@ -157,7 +157,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 5F | 1 | `wait-fade` | - | Waits for the fade to finish. |
 | 60 | 3 | `movie-play` | `name:u8` `class:u8` | Plays the movie the room names as string `name` (room handler +0x34) with movie class `class` (0x62 0 / 2 to follow it). |
 | 61 | 2 | `cutscene-start` | `name:u8` | Every active character is told (+0x78); the cutscene director restarts on the room's scene script named by string `name`. |
-| 62 | 2 | `cutscene-control` | `op:u8` | Movie / cutscene director control by `op`: 0 the movie's state into the result (+0x934: 2 playing, 1 other, -1 none); 1 stop the movie; 2 restart it (waits until it runs); 3 director +0x10; 4 director +0x10 then +0x14 unless in mode 5; 5 / 6 / 7 the director's cues (before / after; off; the next one from the movie frame - its button 11 toggles state flag 0x29); 8 camera director back to its default mode (CamDirector_ModeDefault), director +0x48, flag 0x29 off; 9 / 10 pause / resume the movie; 11 a black screen over half; 12 shows the prepared message as often as the director says. |
+| 62 | 2 | `cutscene-control` | `op:u8` | Movie / cutscene director control by `op`: 0 the movie's state into the result (+0x934: 2 paused, 1 running, -1 none); 1 stop the movie; 2 restart it (waits until it runs); 3 director +0x10; 4 director +0x10 then +0x14 unless in mode 5; 5 / 6 / 7 the director's cues (before / after; off; the next one from the movie frame - its button 11 toggles state flag 0x29); 8 camera director back to its default mode (CamDirector_ModeDefault), director +0x48, flag 0x29 off; 9 / 10 pause / resume the movie; 11 a black screen over half; 12 shows the prepared message as often as the director says. |
 | 63 | 3 | `hewie-face` | `face:deg` | Hewie turns to heading `face` (Hewie action 0x72). |
 | 64 | 1 | `depth-range-off` | - | The depth-range effect (room effect slot 0x1C) removed. |
 | 65 | 17 | `depth-range` | `a:fx` `b:fx` `c:fx` `d:fx` | Room effect slot 0x1C made anew as a depth range (DepthRange_Init) with the four values. |
@@ -169,7 +169,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 6B | 2 | `nop-progress-48` | `a:u8` | Calls the progress' +0x48: empty in this game (no effect). |
 | 6C | 1 | `nop-progress-4C` | - | Calls the progress' +0x4C: empty in this game (no effect). |
 | 6D | 2 | `subscreen-open` | `mode:u8` | Opens the sub-screen in mode `mode` (0 the in-game menu, 1 save, 2 the word plates, ...; SubScreen.mode) and sets state flag 4. |
-| 6E | 3 | `movie-param` | `a:u8` `b:u8` | The playing movie's Sofdec setting (Sofdec_SetParam(a, b)). |
+| 6E | 3 | `movie-param` | `a:u8` `b:u8` | The playing movie's luminance keys: clear up to a, opaque from b (Sofdec_SetParam, as mwPlySetLumiKey; for the movie classes laid over by brightness). |
 | 6F | 2 | `self-through-exit` | `exit:u8` | self: walks through exit `exit` of this room (character move 5 to the door's far point). |
 | 70 | 2 | `self-through-exit-back` | `exit:u8` | self: as 0x6F, the other way through. |
 | 71 | 5 | `rumble` | `on:u8` `strength:u8` `frames:u16` | Pad rumble: on 0 the small motor (1, 1), else strength `strength`, for `frames` (gRumble). (Not a screen fade.) |

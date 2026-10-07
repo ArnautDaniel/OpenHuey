@@ -436,7 +436,7 @@ void *MovieLib_CreatePlayer(MovieLib *lib) {
     return mwPly_CreateSofdec(lib->create);
 }
 
-/* +0x1C the movie's size and kind */
+/* +0x1C the movie's size and compo mode (`a`: see movie_entry) */
 /* 0x00226620 */
 void MovieLib_MovieSize(MovieLib *lib, s32 w, s32 h, s32 a, s32 b) {
     CPRM(lib, 0x30, s32) = w;
@@ -537,7 +537,8 @@ void Movie_ApplyVolume(Movie *m) {
     }
 }
 
-/* the player's status: 2 playing, 1 other, -1 ended or none */
+/* the player's status: 2 playing but paused (func_0023B4B0 is mwPlyIsPause), 1 running,
+ * -1 ended or none */
 /* 0x002B6410 */
 s32 Movie_Status(Movie *m) {
     if (m->ply == NULL) {
@@ -989,8 +990,11 @@ static inline __attribute__((always_inline)) Movie *movie_dtor(Movie *m, s32 fla
     return m;
 }
 
-/* +0x10 entry: a w x h player of kind `k` with its own work buffer, the frames at gProgress
- * + `at`, then start */
+/* +0x10 entry: a w x h player of compo mode `k` (how the picture is laid over the screen, CRI
+ * Sofdec's MWSFD_COMPO_*: 0x11 opaque, 0x21 the alpha in the frame's lower half, 0x31 a
+ * luminance key, 0x41 three-level alpha) with its own work buffer, the frames at gProgress +
+ * `at`; with `setting`, the luminance keys 0x10 / 0x20 (clear up to 0x10, opaque from 0x20);
+ * then start */
 static inline __attribute__((always_inline)) void movie_entry(Movie *m, s32 w, s32 h, s32 k, s32 f, u32 at,
                                                               s32 setting, const PTMF *start) {
     MovieLib *lib = gMovieLib;

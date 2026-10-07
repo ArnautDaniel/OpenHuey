@@ -180,7 +180,7 @@ CMD = {
     0x61: ('cutscene-start', 'name:u8', 'Every active character is told (+0x78); the cutscene director restarts on the room\'s scene script named by string `name`.'),
     0x62: ('cutscene-control', 'op:u8',
            'Movie / cutscene director control by `op`: 0 the movie\'s state into the result '
-           '(+0x934: 2 playing, 1 other, -1 none); 1 stop the movie; 2 restart it (waits until it '
+           '(+0x934: 2 paused, 1 running, -1 none); 1 stop the movie; 2 restart it (waits until it '
            'runs); 3 director +0x10; 4 director +0x10 then +0x14 unless in mode 5; 5 / 6 / 7 the '
            'director\'s cues (before / after; off; the next one from the movie frame - its button '
            '11 toggles state flag 0x29); 8 camera director back to its default mode (CamDirector_ModeDefault), director +0x48, flag 0x29 off; '
@@ -203,7 +203,7 @@ CMD = {
     0x6B: ('nop-progress-48', 'a:u8', 'Calls the progress\' +0x48: empty in this game (no effect).'),
     0x6C: ('nop-progress-4C', '', 'Calls the progress\' +0x4C: empty in this game (no effect).'),
     0x6D: ('subscreen-open', 'mode:u8', 'Opens the sub-screen in mode `mode` (0 the in-game menu, 1 save, 2 the word plates, ...; SubScreen.mode) and sets state flag 4.'),
-    0x6E: ('movie-param', 'a:u8 b:u8', 'The playing movie\'s Sofdec setting (Sofdec_SetParam(a, b)).'),
+    0x6E: ('movie-param', 'a:u8 b:u8', 'The playing movie\'s luminance keys: clear up to a, opaque from b (Sofdec_SetParam, as mwPlySetLumiKey; for the movie classes laid over by brightness).'),
     0x6F: ('self-through-exit', 'exit:u8', 'self: walks through exit `exit` of this room (character move 5 to the door\'s far point).'),
     0x70: ('self-through-exit-back', 'exit:u8', 'self: as 0x6F, the other way through.'),
     0x71: ('rumble', 'on:u8 strength:u8 frames:u16', 'Pad rumble: on 0 the small motor (1, 1), else strength `strength`, for `frames` (gRumble). (Not a screen fade.)'),

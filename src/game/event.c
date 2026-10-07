@@ -2422,7 +2422,8 @@ void EventCmd_Music(VObject *ev) {
 
 /* 0x60 play the movie named by the room (pc[1]) as class pc[2]; 0x61 every active character
  * +0x78, then the cutscene director restarts (+0x8) on the room's script pc[1] (+0x38); 0x6E
- * the movie's Sofdec setting (pc[1], pc[2]); 0x89 prepare message pc[1..2]; 0x62 by pc[1]:
+ * the movie's luminance keys (pc[1], pc[2]: Sofdec_SetParam, as mwPlySetLumiKey); 0x89
+ * prepare message pc[1..2]; 0x62 by pc[1]:
  *   0 movie state -> +0x934     1 stop the movie (+0x14)    2 restart the movie: done waits
  *   3 director +0x10            4 director +0x10, then +0x14 unless mode 5 or +0x44 is 0
  *   5 the director's cue before and after +0x60 (+0xBE8 / +0xBE4)   6 cues off, +0x40, +0x10
