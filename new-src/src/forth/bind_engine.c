@@ -490,6 +490,55 @@ PRIM(p_door_swing) {   /* ( exit at-once -- ) ( F: degrees -- ) the room's door 
 
     room_door_swing(&gEngine.room, (int)exit, (float)FPOP(), now != 0);
 }
+PRIM(p_door_user_spot) {   /* ( exit anim -- tri ) ( F: -- x y z yaw ) where the door's animation puts its user
+                           * (Doors_AnimUserSpot; tri -1: none) */
+    Cell anim = POP(), exit = POP();
+    Vec3 at = vec3(0.0f, 0.0f, 0.0f);
+    float yaw = 0.0f;
+    int tri = room_door_user_spot(&gEngine.room, (int)exit, (int)anim, &at, &yaw);
+
+    FPUSH(at.x); FPUSH(at.y); FPUSH(at.z); FPUSH(yaw);
+    PUSH(tri);
+}
+PRIM(p_door_anim) {   /* ( exit anim -- flag ) the door swings along that animation (Doors_StartAnim) */
+    Cell anim = POP(), exit = POP();
+
+    PUSH(room_door_anim_start(&gEngine.room, (int)exit, (int)anim) ? -1 : 0);
+}
+PRIM(p_door_side) {   /* ( exit -- side ) ( F: x y z -- ) 1 in front of it, 0 behind, -1 no door (Doors_Side) */
+    Cell exit = POP();
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+
+    PUSH(room_door_side(&gEngine.room, (int)exit, vec3(x, y, z)));
+}
+PRIM(p_door_near) {   /* ( exit -- flag ) ( F: x y z -- ) within 20 of where it stands (Doors_AtDoor) */
+    Cell exit = POP();
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+
+    PUSH(room_door_near(&gEngine.room, (int)exit, vec3(x, y, z)) ? -1 : 0);
+}
+PRIM(p_door_in_area) {   /* ( exit kind -- flag ) ( F: x y z -- ) in its area `kind` (Doors_InArea) */
+    Cell kind = POP(), exit = POP();
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+
+    PUSH(room_door_in_area(&gEngine.room, (int)exit, (int)kind, vec3(x, y, z)) ? -1 : 0);
+}
+PRIM(p_door_side_flags) {   /* ( exit side flags set? -- ) the door's side triangles' flags set / cleared
+                            * (Doors_Passage: the doors' +0x1C shut a side, +0x20 open it) */
+    Cell set = POP(), flags = POP(), side = POP(), exit = POP();
+
+    room_door_side_flags(&gEngine.room, (int)exit, (int)side, (uint32_t)flags, set != 0);
+}
+PRIM(p_door_on_side) {   /* ( exit side tri -- flag ) the triangle is in that side's list (Doors_OnSide) */
+    Cell tri = POP(), side = POP(), exit = POP();
+
+    PUSH(room_door_on_side(&gEngine.room, (int)exit, (int)side, (int)tri) ? -1 : 0);
+}
+PRIM(p_door_animating) {   /* ( exit -- flag ) its animation is still going (not Doors_IsIdle) */
+    Cell exit = POP();
+
+    PUSH(exit >= 0 && exit < ROOM_DOORS && gEngine.room.doors[exit].keys != NULL ? -1 : 0);
+}
 PRIM(p_door_at) {   /* ( exit -- flag ) ( F: -- x y z ) where the room's door at that exit stands
                      * (Doors_GetPos); false: no door there */
     Cell exit = POP();
@@ -1481,7 +1530,9 @@ void bind_engine(Forth *f) {
         {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-free", p_v_free},
         {"v-path", p_v_path}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
-        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-passage", p_door_passage}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
+        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
+        {"door-anim", p_door_anim}, {"door-side", p_door_side}, {"door-near?", p_door_near}, {"door-in-area?", p_door_in_area},
+        {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
         {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},

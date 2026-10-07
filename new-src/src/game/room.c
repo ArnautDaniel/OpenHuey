@@ -232,6 +232,9 @@ static void load_doors(Room *r) {
             continue;
         }
         d->pos = vec3(rdf(s7 + o + 4), rdf(s7 + o + 8), rdf(s7 + o + 12));
+        d->stand = vec3(rdf(s7 + o + 0x10), rdf(s7 + o + 0x14), rdf(s7 + o + 0x18));
+        memcpy(&d->tri, s7 + o, 4);
+        d->keys = NULL;
         d->sides = s7 + o + 0x28;
         d->rot = vec3(rdf(s7 + o + 0x1C), rdf(s7 + o + 0x20), rdf(s7 + o + 0x24));
         if (s8 != NULL && (size_t)(n + 1) * 4 <= s8size) {
@@ -253,6 +256,183 @@ void room_door_swing(Room *r, int exit, float degrees, int at_once) {
             r->doors[exit].swing = degrees;
         }
     }
+}
+
+/* ---- the doors' animations for their users (FIN_D000.MTN) ---- */
+static uint8_t *sDoorMtn;
+static size_t sDoorMtnSize;
+
+int room_door_anims(void) {
+    if (sDoorMtn == NULL) {
+        sDoorMtn = files_read("O_FIN/FIN_D000.MTN", &sDoorMtnSize);
+    }
+    return sDoorMtn != NULL;
+}
+
+/* animation `anim`'s record (x, z, turn, frames, then the swing a frame), NULL none */
+static const uint8_t *door_anim(int anim, int *frames) {
+    uint32_t n, off;
+    int32_t k;
+
+    if (!room_door_anims() || sDoorMtnSize < 4) {
+        return NULL;
+    }
+    memcpy(&n, sDoorMtn, 4);
+    if (anim < 0 || (uint32_t)anim >= n || (size_t)(anim + 2) * 4 > sDoorMtnSize) {
+        return NULL;
+    }
+    memcpy(&off, sDoorMtn + 4 + anim * 4, 4);
+    if ((size_t)off + 16 > sDoorMtnSize) {
+        return NULL;
+    }
+    memcpy(&k, sDoorMtn + off + 12, 4);
+    if (k < 0 || (size_t)off + 16 + (size_t)k * 4 > sDoorMtnSize) {
+        return NULL;
+    }
+    *frames = k;
+    return sDoorMtn + off;
+}
+
+/* (Mtx_AtHeading: x' = x cos + z sin, z' = z cos - x sin, placed at `at`) */
+static Vec3 door_frame_point(Vec3 at, float yaw, float x, float z) {
+    float c = cosf(yaw), s = sinf(yaw);
+
+    return vec3(at.x + x * c + z * s, at.y, at.z + z * c - x * s);
+}
+
+int room_door_user_spot(const Room *r, int exit, int anim, Vec3 *at, float *yaw) {
+    const RoomDoor *d;
+    const uint8_t *rec;
+    int frames, pass;
+
+    if (exit < 0 || exit >= ROOM_DOORS || !r->doors[exit].present || (rec = door_anim(anim, &frames)) == NULL) {
+        return -1;
+    }
+    d = &r->doors[exit];
+    for (pass = 0; pass < 2; pass++) {
+        Vec3 to = door_frame_point(d->stand, d->rot.y, pass == 0 ? rdf(rec) : 0.0f, rdf(rec + 4));
+        int tri = navmesh_walk(&r->nav, d->tri, d->stand, to, NULL);
+
+        if (tri >= 0) {
+            float y;
+
+            *at = to;
+            if (navmesh_find(&r->nav, to, 8.0f, &y) == tri) {
+                at->y = y;
+            }
+            *yaw = atan2f(sinf(rdf(rec + 8) + d->rot.y), cosf(rdf(rec + 8) + d->rot.y));
+            return tri;
+        }
+    }
+    return -1;
+}
+
+int room_door_anim_start(Room *r, int exit, int anim) {
+    RoomDoor *d;
+    const uint8_t *rec;
+    int frames;
+
+    if (exit < 0 || exit >= ROOM_DOORS || !r->doors[exit].present || (rec = door_anim(anim, &frames)) == NULL ||
+        frames <= 0) {
+        return 0;
+    }
+    d = &r->doors[exit];
+    d->keys = rec + 16;
+    d->nkeys = frames;
+    d->key = 0;
+    d->closing = d->swing < -45.0f;
+    return 1;
+}
+
+int room_door_side(const Room *r, int exit, Vec3 p) {
+    const RoomDoor *d;
+
+    if (exit < 0 || exit >= ROOM_DOORS || !r->doors[exit].present) {
+        return -1;
+    }
+    d = &r->doors[exit];
+    return !(sinf(d->rot.y) * (p.x - d->stand.x) + cosf(d->rot.y) * (p.z - d->stand.z) < 0.0f);
+}
+
+static void door_side_flags(Room *r, const RoomDoor *d, int side, uint32_t flags, int set);
+
+void room_door_side_flags(Room *r, int exit, int side, uint32_t flags, int set) {
+    if (exit >= 0 && exit < ROOM_DOORS && r->doors[exit].present) {
+        door_side_flags(r, &r->doors[exit], side, flags, set);
+    }
+}
+
+int room_door_on_side(const Room *r, int exit, int side, int tri) {
+    const RoomDoor *d;
+    const uint8_t *t, *end;
+    uint32_t n, k, v;
+
+    if (exit < 0 || exit >= ROOM_DOORS || !r->doors[exit].present || side < 0 || side > 1 || r->doors[exit].sides == NULL) {
+        return 0;
+    }
+    d = &r->doors[exit];
+    end = r->pac.data + r->pac.size;
+    t = d->sides;
+    if (t + 4 > end) {
+        return 0;
+    }
+    memcpy(&n, t, 4);
+    t += 4;
+    if (side != 0) {
+        t += (size_t)n * 4;
+        if (t + 4 > end) {
+            return 0;
+        }
+        memcpy(&n, t, 4);
+        t += 4;
+    }
+    for (k = 0; k < n && t + 4 <= end; k++, t += 4) {
+        memcpy(&v, t, 4);
+        if ((int)v == tri) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int room_door_near(const Room *r, int exit, Vec3 p) {
+    const RoomDoor *d;
+
+    if (exit < 0 || exit >= ROOM_DOORS || !r->doors[exit].present) {
+        return 0;
+    }
+    d = &r->doors[exit];
+    return fabsf(d->stand.y - p.y) <= 5.0f &&
+           sqrtf((d->stand.x - p.x) * (d->stand.x - p.x) + (d->stand.z - p.z) * (d->stand.z - p.z)) <= 20.0f;
+}
+
+int room_door_in_area(const Room *r, int exit, int kind, Vec3 p) {
+    static const float kAreas[3][8] = {   /* (D_003E51A0) */
+        {-6.0f, -12.0f, 6.0f, -12.0f, 6.0f, 12.0f, -6.0f, 12.0f},
+        {-6.0f, 3.0f, -6.0f, 12.0f, -15.0f, 12.0f, -15.0f, 3.0f},
+        {-8.0f, 0.0f, 8.0f, 0.0f, 8.0f, 14.0f, -8.0f, 14.0f}};
+    const RoomDoor *d;
+    Vec3 c[4];
+    int k;
+
+    if (exit < 0 || exit >= ROOM_DOORS || !r->doors[exit].present || kind < 0 || kind > 2) {
+        return 0;
+    }
+    d = &r->doors[exit];
+    if (fabsf(d->stand.y - p.y) > 5.0f) {
+        return 0;
+    }
+    for (k = 0; k < 4; k++) {
+        c[k] = door_frame_point(d->stand, d->rot.y, kAreas[kind][k * 2], kAreas[kind][k * 2 + 1]);
+    }
+    for (k = 0; k < 4; k++) {
+        Vec3 a = c[k], b = c[(k + 1) & 3];
+
+        if ((b.x - a.x) * (p.z - a.z) - (b.z - a.z) * (p.x - a.x) < 0.0f) {
+            return 0;
+        }
+    }
+    return 1;
 }
 
 /* flags set (or cleared) on one side's triangles (Doors_Passage) */
@@ -381,7 +561,14 @@ void room_tick(Room *r) {
 
         float was = d->swing;
 
-        d->swing = fabsf(d->target - d->swing) <= step ? d->target : d->swing + (d->target > d->swing ? step : -step);
+        if (d->keys != NULL) {   /* (Door_Swing 1: along the animation's swing, a frame a key) */
+            d->swing = d->target = rdf(d->keys + (size_t)d->key * 4);
+            if (++d->key >= d->nkeys) {
+                d->keys = NULL;
+            }
+        } else {
+            d->swing = fabsf(d->target - d->swing) <= step ? d->target : d->swing + (d->target > d->swing ? step : -step);
+        }
         d->sound = 0;
         if (d->swing == was) {
             d->sounded = 0;

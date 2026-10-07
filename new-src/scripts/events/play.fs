@@ -174,12 +174,13 @@ variable started   \ (the camera director set up for play)
     dup event-exit-door dup 0< 0= if  door-open-clear  else  drop  then
     go-through ;
 
-\ her action button (Enter): a request the room's scripts made this frame (Progress_PlayerButtons:
-\ 5 starts her action script)
+\ her buttons (fiona.doors: Progress_PlayerButtons) - not while a message is open; request 5
+\ (the room's scripts' 0x0A) starts her action script
+:noname ( arg -- )  0 0 rot action ; is fiona.doors:start-action-script
 : action-button ( -- )
-    request @ 5 <>  0 scripted? or  event-state ev.message sl@ 0< 0= or if  exit  then
-    s" Enter: look" hud
-    key: Return key-pressed? if  0 0 request-arg @ action  0 0 hud  then ;
+    0 scripted?  event-state ev.message sl@ 0< 0= or if  0 0 hud  exit  then
+    request @ 5 = if  s" Space: look" hud  else  0 0 hud  then
+    event-player-buttons ;
 
 \ the doors' models: open (a quarter turn) or shut as their exits are (Doors_RoomIn), swinging
 \ when that changes; and the passage they block on the nav mesh (a shut door's doorway; locked
@@ -189,10 +190,10 @@ variable started   \ (the camera director set up for play)
     dup door-locked if  drop $5000000 exit  then
     door-word dup 0= if  drop 0 exit  then  l@ 4 rshift
     0 over 2 and if  $1000000 or  then  swap 4 and if  $4000000 or  then ;
-: doors-follow ( at-once -- )   \ (not while a scene keys them)
-    8 0 do  i dup exit-open over door-locks door-passage  loop
+: doors-follow ( at-once -- )   \ (not while a scene keys them, nor the door someone uses)
+    8 0 do  i door-in-use @ <> if  i dup exit-open over door-locks door-passage  then  loop
     cutscene-active? if  drop exit  then
-    8 0 do  i dup exit-open if  -90e  else  0e  then  over door-swing  loop  drop ;
+    8 0 do  i door-in-use @ <> if  i dup exit-open if  -90e  else  0e  then  over door-swing  then  loop  drop ;
 
 : events-tick
     playing @ 0= paused @ or if  exit  then

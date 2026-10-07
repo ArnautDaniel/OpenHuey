@@ -32,7 +32,13 @@ typedef struct RoomDoor {
     RoomMesh mesh;
     GpuMesh gpu;
     Vec3 pos, rot;
+    Vec3 stand;             /* where it stands (section 7 +0x10: the doors' +0x30) */
+    int tri;                /* its nav triangle (+0x0) */
     float swing, target;
+    /* an animation of a character using it (Doors_StartAnim: FIN_D000.MTN's record - the swing a
+     * frame), its frame and frames; closing (+0x78: it was open) */
+    const uint8_t *keys;
+    int key, nkeys, closing;
     int sounded;            /* this swing's creak / latch played (+0x71) */
     int sound;              /* the sound it makes this tick (Door_Swing: 0x27 the creak as it
                              * starts to open, 0x28 the latch as it shuts past 6 degrees), 0 none */
@@ -68,6 +74,26 @@ void room_look_set(int slot, const uint8_t *d, size_t n);
 void room_free(Room *r);
 /* door `exit`'s swing (degrees from shut; -90 open): eased there, or set at once */
 void room_door_swing(Room *r, int exit, float degrees, int at_once);
+/* the doors' animations for the one who uses them (O_FIN/FIN_D000.MTN: 8 records - the user's
+ * spot by the door x, z and turn, then the door's swing a frame); loaded once */
+int room_door_anims(void);
+/* Doors_AnimUserSpot: where animation `anim` puts its user at door `exit` (its point turned with
+ * the door, reached on the mesh from the door's triangle - failing that without its x) and the
+ * user's heading: the triangle, -1 none */
+int room_door_user_spot(const Room *r, int exit, int anim, Vec3 *at, float *yaw);
+/* Doors_StartAnim: the door swings along animation `anim` from this frame; 0 if it can't */
+int room_door_anim_start(Room *r, int exit, int anim);
+/* Doors_Side: 1 if p is in front of the door (along its turn at rest from where it stands), 0
+ * behind, -1 no door */
+int room_door_side(const Room *r, int exit, Vec3 p);
+/* Doors_Passage: `flags` set (or cleared) on side `side`'s triangles of the door */
+void room_door_side_flags(Room *r, int exit, int side, uint32_t flags, int set);
+/* Doors_OnSide: nav triangle `tri` is in the door's side `side` (0 / 1) list */
+int room_door_on_side(const Room *r, int exit, int side, int tri);
+/* Doors_AtDoor: within 20 of where it stands (5 up or down) */
+int room_door_near(const Room *r, int exit, Vec3 p);
+/* Doors_InArea: inside its area `kind` (D_003E51A0: quads in the door's frame), 5 up or down */
+int room_door_in_area(const Room *r, int exit, int kind, Vec3 p);
 /* the door at an exit lets characters through or not (Doors_RoomIn / Doors_Refresh): shut, its
  * near side's triangles take the passage flags 0x60000 (open: the far side's, where the door
  * now stands); `locks` (0x1000000 / 0x4000000: locked to the stalkers' / Hewie's sides) on the

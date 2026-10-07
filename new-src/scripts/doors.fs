@@ -36,7 +36,7 @@ fvariable ax  fvariable az
     dup exit-locked? if  drop s" locked" hud exit  then
     s" Space: go through" hud
     key: Space key-pressed? if  use-exit  0 0 hud  else  drop  then ;
-' doors on-tick
+\ (Space at an exit was the stand-in before Fiona's own doors: fiona.doors - kept for the console)
 ' go-through is use-exit
 
 \ where this room's exits lead (for the console)

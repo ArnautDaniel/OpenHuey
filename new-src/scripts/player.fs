@@ -3,7 +3,7 @@
 \ The camera takes the room's own setup nearest to her and keeps her in sight - roughly what
 \ the game's camera director does - or follows behind her in a room without setups.
 IN: player
-USING: engine keys vectors views state ;
+USING: engine keys vectors views state game-state events.core ;
 
 variable fiona        -1 fiona !
 
@@ -31,7 +31,10 @@ fvariable px  fvariable py  fvariable pz
 : place-fiona ( F: x y z -- )
     pz f! py f! px f!
     px f@ her act.x sf!  pz f@ her act.z sf!
-    px f@ py f@ pz f@ ground if  her act.y sf!  else  py f@ her act.y sf!  then ;
+    px f@ py f@ pz f@ ground if  her act.y sf!  else  py f@ her act.y sf!  then
+    \ (her character's place too: her own frame moves her from it)
+    her act.x sf@ 0 character char.pos sf!  her act.y sf@ 0 character char.pos 4 + sf!
+    her act.z sf@ 0 character char.pos 8 + sf! ;
 
 \ the first view's target: where the game expects someone to be
 : spawn-fiona

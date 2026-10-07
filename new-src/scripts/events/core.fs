@@ -318,7 +318,15 @@ defer event-hewie-look ( -- ) ( F: x y z -- )   :noname fdrop fdrop fdrop ; is e
 \ ---- the player's request (progress +0x1134: what her action button does, set again each frame by
 \ the room's scripts - 0x0A): 5 starts her action script `request-arg`; its kind (+0x1151) ----
 variable request  variable request-arg  variable request-kind
-: requests-off ( -- )  0 request !  0 request-arg !  0 request-kind ! ;
+variable request-b   \ (+0x113C: its word 2 - the exit for a door's)
+: requests-off ( -- )  0 request !  0 request-arg !  0 request-kind !  0 request-b ! ;
+\ who is where at the exits (Progress_WhoIsWhere), the player's request from where she stands
+\ (Progress_CharRequests), her buttons taking it (Progress_PlayerButtons): fiona.doors
+defer event-who-is-where   ' noop is event-who-is-where
+defer event-exit-request   ' noop is event-exit-request
+defer event-player-buttons   ' noop is event-player-buttons
+\ the door a character is using (its animation keys the door's swing and floor): -1 none
+variable door-in-use  -1 door-in-use !
 
 \ ---- zones (the original's 32 at +0xBF0, 0x30 each): cylinders the scripts set (0x7C) for the
 \ conditions; all off when phase 1 starts, every frame. Here 28 bytes each: on, kind, the
