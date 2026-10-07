@@ -1011,6 +1011,20 @@ PRIM(p_motion_play) {   /* ( id motion-id blend flags -- ) from its start, cross
         actor_motion_start(a, index, (int)flags, (float)blend);
     }
 }
+PRIM(p_motion_events) {   /* ( id layer dt loop -- bits ) Motion_EventFlags: the motion's (layer 0) or its
+                          * variant's (1) event keys at its time + dt (loop 1: a looping one wraps) */
+    Cell loop = POP(), dt = POP(), layer = POP();
+    Actor *a = actor_arg(f, POP());
+
+    PUSH(actor_event_flags(a, (int)layer, (int)dt, (int)loop));
+}
+PRIM(p_motion_variant) {   /* ( id motion-id -- ) the body motion just started blends with this one
+                           * (Motion_PlayTable's variant; act.vweight: 1 the motion alone .. 0 it) */
+    Cell mid = POP();
+    Actor *a = actor_arg(f, POP());
+
+    actor_body_variant(a, mid < 0 ? -1 : model_motion_find(&a->model, (int)mid));
+}
 PRIM(p_motion_entry) {   /* ( id motion-id -- blend pose flags ) its model's table entry (0s: none) */
     Cell mid = POP();
     Actor *a = actor_arg(f, POP());
@@ -1040,7 +1054,7 @@ PRIM(p_root_delta) {   /* ( id -- ) ( F: -- turn dx dy dz ) its motion's root mo
     float turn;
     Vec3 step;
 
-    model_root_delta(&a->model, a->motion, a->frame, &turn, &step);
+    actor_root_delta(a, &turn, &step);
     FPUSH(turn);
     FPUSH(step.x * a->scale);
     FPUSH(step.y * a->scale);
@@ -1090,6 +1104,22 @@ PRIM(p_foot_down) {   /* ( id foot -- flag ) foot 0..3 (front right, front left,
     } else {
         PUSH(has0 && c0[k] > 0.0f ? -1 : 0);
     }
+}
+PRIM(p_motion_track) {   /* ( id code prev? -- flag ) ( F: -- a b c ) a special track of its motion (prev?:
+                         * the one fading out) at its time, raw (model units): -2 / -3 the right /
+                         * left foot's place, -4 the feet's contact (0 right, 1 left; > 0 down), ...;
+                         * false: it has none */
+    Cell prev = POP(), code = POP();
+    Actor *a = actor_arg(f, POP());
+    float v[3] = {0.0f, 0.0f, 0.0f};
+    int has = prev ? a->fade > 0.0f && a->prev_motion >= 0 &&
+                         model_track_raw(&a->model, a->prev_motion, (int)code, a->prev_frame, v)
+                   : model_track_raw(&a->model, a->motion, (int)code, a->frame, v);
+
+    FPUSH(v[0]);
+    FPUSH(v[1]);
+    FPUSH(v[2]);
+    PUSH(has ? -1 : 0);
 }
 PRIM(p_dog_legs) {   /* ( id on -- ) its feet planted and its legs fitted (a dog's skeleton: Hewie) */
     Cell on = POP();
@@ -1470,8 +1500,8 @@ void bind_engine(Forth *f) {
         {"message-options", p_message_options}, {"message-option", p_message_option},
         {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor", p_actor},
-        {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry},
-        {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
+        {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
+        {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
         {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"mouse-down?", p_mouse_down},
@@ -1512,6 +1542,8 @@ void bind_engine(Forth *f) {
     field(f, "act.loop", offsetof(Actor, loop));        /* 32-bit: l@ l! */
     field(f, "act.mflags", offsetof(Actor, mflags));    /* 32-bit: the motion's flags (0x20 wrapped this tick) */
     field(f, "act.fade", offsetof(Actor, fade));        /* sf@: ticks of cross-fade left (0: settled) */
+    field(f, "act.vweight", offsetof(Actor, vweight));  /* sf@: the motion against its variant (1: alone) */
+    field(f, "act.variant", offsetof(Actor, variant));  /* 32-bit: the variant's index, -1 none */
     field(f, "act.visible", offsetof(Actor, visible));  /* 32-bit: l@ l! */
     field(f, "act.shadow", offsetof(Actor, shadow_size));
     /* the picture's settings (render.h RenderSettings): flags and counts are 32-bit (l@ l!),

@@ -116,3 +116,47 @@ create pr-at 12 allot
     dup path-n over path-i ?do
         dup i path-point  pr-at over vec-dist-xz f+  pr-at swap vec-copy
     loop  drop ;
+
+\ ---- bodies against each other (Actor_Touching / Actor_PushOut) ----
+: c-radius ( cs -- ) ( F: -- r )  character char.radius sf@ ;
+: c-height ( cs -- ) ( F: -- h )  character char.height sf@ ;
+: c-size! ( cs -- ) ( F: radius height -- )  dup character char.height sf!  character char.radius sf! ;
+: c-here? ( cs -- flag )   \ in the game and not hidden
+    dup c-ok? 0= if  drop false exit  then
+    dup character char.present sl@ 0= if  drop false exit  then  character char.disabled sl@ 0= ;
+\ Actor_Touching: within each other's height (the lower one's, and `vmargin`), their radii
+\ (and `margin`) apart
+fvariable tc-m  fvariable tc-v  fvariable tc-ya  fvariable tc-yb
+: c-touching? ( a b -- flag ) ( F: margin vmargin -- )
+    tc-v f!  tc-m f!
+    over c-here? over c-here? and 0= if  2drop false exit  then
+    over c-pos 4 + sf@ tc-ya f!  dup c-pos 4 + sf@ tc-yb f!
+    tc-ya f@ tc-yb f@ f< if
+        tc-yb f@ tc-ya f@ f-  over c-height tc-v f@ f+ f> if  2drop false exit  then
+    else
+        tc-ya f@ tc-yb f@ f-  dup c-height tc-v f@ f+ f> if  2drop false exit  then
+    then
+    over c-pos over c-pos vec-dist-xz  c-radius c-radius f+ tc-m f@ f+ f<= ;
+\ Actor_PushOut: `a` put just outside `b` - their radii apart, from b toward a; else the nearest
+\ free place round b, 2 degrees at a time either way; 0, or -1 when there is none
+create po-at 12 allot  fvariable po-x  fvariable po-z  fvariable po-ax  fvariable po-az
+variable po-a  variable po-b
+: po-turned ( F: ang -- )   \ po-at = b + the offset turned by ang
+    fdup fcos po-x f@ f* fover fsin po-z f@ f* f+  po-b @ c-pos sf@ f+  po-at sf!
+    fdup fcos po-z f@ f* fswap fsin po-x f@ f* f-  po-b @ c-pos 8 + sf@ f+  po-at 8 + sf! ;
+: po-try ( -- placed? ) ( F: ang -- )
+    po-turned  po-a @ po-at -1 c-tri-to dup 0< if  drop false exit  then
+    po-a @ c-pos po-at vec-copy  po-a @ c-tri!  po-a @ c-sync  true ;
+: c-push-out ( a b -- 0|-1 )
+    po-b !  po-a !
+    po-a @ c-pos sf@ po-b @ c-pos sf@ f- po-x f!
+    po-a @ c-pos 8 + sf@ po-b @ c-pos 8 + sf@ f- po-z f!
+    po-x f@ fsq po-z f@ fsq f+ fsqrt fdup f0= if  fdrop 0e po-x f!  1e po-z f!  else
+        po-x f@ fover f/ po-x f!  po-z f@ fswap f/ po-z f!  then
+    po-a @ c-radius po-b @ c-radius f+ 0.01e f+  fdup po-x f@ f* po-x f!  po-z f@ f* po-z f!
+    po-b @ c-pos 4 + sf@ po-at 4 + sf!
+    0e po-try if  0 exit  then
+    91 1 do
+        i 2* s>f deg>rad fnegate po-try if  0 unloop exit  then
+        i 2* s>f deg>rad po-try if  0 unloop exit  then
+    loop  -1 ;

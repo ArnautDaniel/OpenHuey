@@ -50,6 +50,8 @@ void model_free(Model *m);
 /* motions: by id (as the game numbers them, e.g. 0x0200), how many there are */
 int model_motion_count(const Model *m);
 int model_motion_id(const Model *m, int index);
+/* where motion `index` is in the bank's id list (Motion_AnimIndex: what the motion tables go by) */
+int model_motion_pos(const Model *m, int index);
 int model_motion_find(const Model *m, int id);   /* the index, -1 if none */
 int model_motion_frames(const Model *m, int index);
 
@@ -80,6 +82,12 @@ typedef struct ModelLayer {
     int prev;
     float prev_frame, w;
     int mask;        /* the parts it poses */
+    /* each one's variant (the original's second track in a motion slot): blended in by its share
+     * (1 - the slot's weight +0x1C; 0: none) */
+    int var;
+    float var_frame, var_w;
+    int prev_var;
+    float prev_var_frame, prev_var_w;
 } ModelLayer;
 void model_pose_layers(const Model *m, const ModelLayer *layers, int nlayers, Mat4 *skin, Vec3 *root);
 /* bones turned as the next pose is made (where a head looks: the original's DogModel_AdjustBone) */

@@ -74,6 +74,7 @@ IN: forth
 : f2*  2e f* ;
 : f2/  0.5e f* ;
 : fsq  fdup f* ;
+: f0> ( F: x -- ) ( -- flag )  0e f> ;
 : fclamp ( F: x lo hi -- x' ) frot fmin fmax ;
 : deg>rad  pi 180e f/ f* ;
 : rad>deg  180e pi f/ f* ;

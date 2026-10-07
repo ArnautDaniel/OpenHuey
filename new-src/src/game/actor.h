@@ -36,6 +36,15 @@ typedef struct Actor {
     int32_t prev_motion;
     float prev_frame;
     float fade, fade_len;
+    /* the body motion's variant (Motion_PlayTable's second animation, -1 none) at its own time,
+     * the weight of the motion itself against it (+0x1C: 1 the motion alone, 0 the variant);
+     * the same for the motion fading out */
+    int32_t variant;
+    float vframe, vweight;
+    int32_t prev_variant;
+    float prev_vframe, prev_vweight;
+    int32_t prev_old_flags, prev_old_frames;   /* the motion before's flags, length and time as */
+    float prev_old_frame;                      /* this one started (its variant's phase) */
     const uint8_t *table;   /* the model's motion table (6 bytes a motion, in bank order: its fade
                              * frames s16, its pose u8, -, its flags u16), NULL none */
     int ntable;
@@ -60,6 +69,10 @@ typedef struct Actor {
     ModelTurn turns[8];
     int nturns;
     DogLegs legs;           /* a dog's feet planted and its legs fitted to them (Hewie) */
+    /* its motions' event keys (NAME.MRK: a byte of flags a frame for each motion, by the bank's
+     * id list; the original's motion +0x4D4), NULL none */
+    uint8_t *events;
+    size_t events_size;
 } Actor;
 
 /* load O_FIN/FIN_000 (.PCK + .TEX): the actor's number, or -1 */
@@ -81,12 +94,21 @@ int actor_motion_done(const Actor *a);
 void actor_motion_start(Actor *a, int index, int flags, float blend);
 /* the body only */
 void actor_body_start(Actor *a, int index, int flags, float blend);
+/* the body motion just started gets variant `index` (-1 none), in step with the motion before
+ * when both have flag 2 */
+void actor_body_variant(Actor *a, int index);
+/* its root movement this frame (model space): the motion and its variant by their weight, the
+ * one fading out crossed in (Motion_RootMovement) */
+void actor_root_delta(const Actor *a, float *turn, Vec3 *step);
 /* the original's Motion_PlayWhenFree with the motion table's fade and flags: a body motion if it
  * isn't playing; a part's motion becomes the part's own, started unless the body motion has the
  * part too (then later) or the part is still fading (then once it is done) */
 void actor_motion_when_free(Actor *a, int index);
 /* its table entry: fade frames, pose, flags; 0 if it has none */
 int actor_motion_entry(const Actor *a, int index, int *blend, int *pose, int *flags);
+/* Motion_EventFlags: the event key byte of the body motion (layer 0) or its variant (1) at its
+ * time + dt frames; `loop` 1: a looping motion's time wraps (else outside it: 0) */
+int actor_event_flags(const Actor *a, int layer, int dt, int loop);
 /* where bone `b` is in the room (as last posed), its position if there is no such bone */
 Vec3 actor_bone(const Actor *a, int b);
 

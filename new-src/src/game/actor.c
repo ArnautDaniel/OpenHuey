@@ -61,12 +61,16 @@ int actor_load(Actor *actors, const char *name) {
     a->rate = 1.0f;   /* (a motion frame a tick: the game ran its motions at its own 30 fps) */
     a->motion = -1;
     a->prev_motion = -1;
+    a->variant = a->prev_variant = -1;
+    a->vweight = a->prev_vweight = 1.0f;
     for (i = 0; i < 3; i++) {
         a->parts[i].motion = a->parts[i].own = a->parts[i].prev = a->parts[i].pending = -1;
     }
     a->loop = 1;
     a->visible = 1;
     a->shadow_size = 7.0f;
+    snprintf(path, sizeof(path), "%s.MRK", name);
+    a->events = files_exist(path) ? files_read(path, &a->events_size) : NULL;
     a->lo = vec3(1e30f, 1e30f, 1e30f);
     a->hi = vec3(-1e30f, -1e30f, -1e30f);
     for (i = 0; i < a->model.nv; i++) {
@@ -86,6 +90,7 @@ void actor_free(Actor *a) {
     render_mesh_free(&a->shadow);
     model_free(&a->model);
     free(a->posed);
+    free(a->events);
     memset(a, 0, sizeof(*a));
 }
 
@@ -171,9 +176,15 @@ void actor_tick(Actor *a) {
             a->mflags &= ~0x400;
         }
     }
+    if (a->variant >= 0 && !(a->mflags & 0x10)) {
+        step_time(&a->vframe, a->rate, model_motion_frames(&a->model, a->variant), loop);
+    }
     if (a->fade > 0.0f) {   /* the motion before goes on while it fades out */
         if (a->prev_motion >= 0) {
             step_time(&a->prev_frame, a->rate, model_motion_frames(&a->model, a->prev_motion), 1);
+        }
+        if (a->prev_variant >= 0) {
+            step_time(&a->prev_vframe, a->rate, model_motion_frames(&a->model, a->prev_variant), 1);
         }
         a->fade -= 1.0f;
     }
@@ -263,10 +274,18 @@ void actor_body_start(Actor *a, int index, int flags, float blend) {
     if (a->motion >= 0 && blend > 0.0f) {
         a->prev_motion = a->motion;
         a->prev_frame = a->frame;
+        a->prev_variant = a->variant;
+        a->prev_vframe = a->vframe;
+        a->prev_vweight = a->vweight;
         a->fade = a->fade_len = blend;
     } else {
         a->fade = a->fade_len = 0.0f;
     }
+    a->variant = -1;
+    a->vweight = 1.0f;
+    a->prev_old_flags = a->mflags;
+    a->prev_old_frames = a->motion >= 0 ? model_motion_frames(&a->model, a->motion) : 0;
+    a->prev_old_frame = a->frame;
     if ((flags & a->mflags & 2) && a->motion >= 0) {   /* in step: the same phase */
         a->frame = (float)frames * (a->frame / (float)model_motion_frames(&a->model, a->motion));
     } else {
@@ -277,6 +296,80 @@ void actor_body_start(Actor *a, int index, int flags, float blend) {
     a->loop = flags & 1;
 }
 
+void actor_body_variant(Actor *a, int index) {
+    int frames;
+
+    a->variant = index;
+    a->vframe = 0.0f;
+    if (index < 0) {
+        return;
+    }
+    frames = model_motion_frames(&a->model, index);
+    if ((a->mflags & a->prev_old_flags & 2) && a->prev_old_frames > 0) {   /* (Motion_StartBody) */
+        a->vframe = (float)frames * (a->prev_old_frame / (float)a->prev_old_frames);
+    }
+}
+
+/* one slot's root step: the motion and its variant by the weight (motion_root, layer 1) */
+static void root_of(const Actor *a, int index, float frame, int var, float vframe, float w, float *turn, Vec3 *step) {
+    float t2;
+    Vec3 s2;
+
+    model_root_delta(&a->model, index, frame, turn, step);
+    if (var >= 0 && model_root_delta(&a->model, var, vframe, &t2, &s2)) {
+        *turn = *turn * w + t2 * (1.0f - w);
+        *step = vec3_add(vec3_scale(*step, w), vec3_scale(s2, 1.0f - w));
+    }
+}
+
+void actor_root_delta(const Actor *a, float *turn, Vec3 *step) {
+    root_of(a, a->motion, a->frame, a->variant, a->vframe, a->vweight, turn, step);
+    if (a->fade > 0.0f && a->fade_len > 0.0f && a->prev_motion >= 0) {   /* prev x w + this x (1 - w) */
+        float x = a->fade / a->fade_len, w = x * x * (3.0f - 2.0f * x), t2;
+        Vec3 s2;
+
+        root_of(a, a->prev_motion, a->prev_frame, a->prev_variant, a->prev_vframe, a->prev_vweight, &t2, &s2);
+        *turn = t2 * w + *turn * (1.0f - w);
+        *step = vec3_add(vec3_scale(s2, w), vec3_scale(*step, 1.0f - w));
+    }
+}
+
+static uint32_t rd32le(const uint8_t *p) { return p[0] | p[1] << 8 | p[2] << 16 | (uint32_t)p[3] << 24; }
+
+int actor_event_flags(const Actor *a, int layer, int dt, int loop) {
+    int index = layer == 0 ? a->motion : a->variant, idx, t, len;
+    uint32_t n, off;
+
+    if (a->events == NULL || a->events_size < 4 || index < 0) {
+        return 0;
+    }
+    idx = model_motion_pos(&a->model, index);
+    if (idx < 0) {
+        return 0;
+    }
+    t = (int)((float)dt + (layer == 0 ? a->frame : a->vframe));
+    len = model_motion_frames(&a->model, index);
+    n = rd32le(a->events);
+    if ((size_t)(1 + n + (uint32_t)idx + 1) * 4 > a->events_size) {
+        return 0;
+    }
+    off = rd32le(a->events + 4 + n * 4 + (uint32_t)idx * 4);
+    if (((a->mflags | (a->loop ? 1 : 0)) & (loop & 1)) && len > 0) {
+        float ft = (float)t;
+
+        while (ft < 0.0f) {
+            ft += (float)len;
+        }
+        while (!(ft < (float)len)) {
+            ft -= (float)len;
+        }
+        t = (int)ft;
+    } else if (t < 0 || len - 1 < t) {
+        return 0;
+    }
+    return off + (size_t)t < a->events_size ? a->events[off + (size_t)t] : 0;
+}
+
 Vec3 actor_bone(const Actor *a, int b) {
     return b >= 0 && b < a->model.nbones ? a->bones[b] : a->pos;
 }
@@ -284,6 +377,7 @@ Vec3 actor_bone(const Actor *a, int b) {
 int actor_motion_entry(const Actor *a, int index, int *blend, int *pose, int *flags) {
     const uint8_t *e;
 
+    index = model_motion_pos(&a->model, index);   /* (the table goes by the id list) */
     if (a->table == NULL || index < 0 || index >= a->ntable) {
         *blend = *pose = *flags = 0;
         return 0;
@@ -369,13 +463,15 @@ static void skin(Actor *a) {
                 body |= 4 << k;
             }
         }
-        l[nl++] = (ModelLayer){a->motion, a->frame, a->prev_motion, a->prev_frame, x * x * (3.0f - 2.0f * x), body};
+        l[nl++] = (ModelLayer){a->motion, a->frame, a->prev_motion, a->prev_frame, x * x * (3.0f - 2.0f * x), body,
+                               a->variant, a->vframe, 1.0f - a->vweight, a->prev_variant, a->prev_vframe,
+                               1.0f - a->prev_vweight};
         for (k = 0; k < 3; k++) {
             const struct ActorPart *p = &a->parts[k];
             float y = p->fade_len > 0.0f && p->fade > 0.0f ? p->fade / p->fade_len : 0.0f;
 
             if (p->motion >= 0) {
-                l[nl++] = (ModelLayer){p->motion, p->frame, p->prev, p->prev_frame, y * y * (3.0f - 2.0f * y), 4 << k};
+                l[nl++] = (ModelLayer){p->motion, p->frame, p->prev, p->prev_frame, y * y * (3.0f - 2.0f * y), 4 << k, -1, 0.0f, 0.0f, -1, 0.0f, 0.0f};
             }
         }
         place.m[0] = c * a->scale;  place.m[2] = -s * a->scale;

@@ -4,7 +4,7 @@
 \ For now the game is a room viewer with Fiona and Hewie: a free camera, PageUp / PageDown
 \ through the rooms, Tab to play, Space at exits, F1 for the graphics. `labels` (console): debug labels.
 IN: game
-USING: engine freecam views rooms player doors hewie graphics look events.play title debug ;
+USING: engine freecam views rooms player doors hewie fiona graphics look events.play title debug ;
 
 0.06e 0.06e 0.08e clear-color
 show-title

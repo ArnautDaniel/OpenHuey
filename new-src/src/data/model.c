@@ -358,6 +358,24 @@ int model_motion_id(const Model *m, int index) {
     return index;
 }
 
+int model_motion_pos(const Model *m, int index) {
+    Reader r = bank(m);
+    size_t map;
+    uint32_t n, i;
+
+    if (m->motions == NULL) {
+        return -1;
+    }
+    map = u32(&r, 12);
+    n = u32(&r, map);
+    for (i = 0; i < n && !r.bad; i++) {
+        if ((int)u32(&r, map + 0x10 + i * 8 + 4) == index) {
+            return (int)i;
+        }
+    }
+    return -1;
+}
+
 int model_motion_find(const Model *m, int id) {
     Reader r = bank(m);
     size_t map;
@@ -675,7 +693,7 @@ static void turn_bone(Mat4 *w, float pitch, float yaw) {
 
 void model_pose_blend(const Model *m, int index, float frame, int prev, float prev_frame, float w, Mat4 *skin,
                       Vec3 *root) {
-    ModelLayer l = {index, frame, prev, prev_frame, w, 0x1F};
+    ModelLayer l = {index, frame, prev, prev_frame, w, 0x1F, -1, 0.0f, 0.0f, -1, 0.0f, 0.0f};
 
     model_pose_layers(m, &l, 1, skin, root);
 }
@@ -683,6 +701,7 @@ void model_pose_blend(const Model *m, int index, float frame, int prev, float pr
 void model_pose_layers(const Model *m, const ModelLayer *layers, int nlayers, Mat4 *skin, Vec3 *root) {
     static float rot[MODEL_MAX_BONES][3], pos[MODEL_MAX_BONES][3], rot2[MODEL_MAX_BONES][3], pos2[MODEL_MAX_BONES][3];
     static float rot1[MODEL_MAX_BONES][3], pos1[MODEL_MAX_BONES][3];
+    static float rot3[MODEL_MAX_BONES][3], pos3[MODEL_MAX_BONES][3];
     Mat4 world[MODEL_MAX_BONES];
     int done[MODEL_MAX_BONES], i, pass, j, k;
 
@@ -699,10 +718,32 @@ void model_pose_layers(const Model *m, const ModelLayer *layers, int nlayers, Ma
         memcpy(rot1, rot, sizeof(float) * 3 * (size_t)m->nbones);
         memcpy(pos1, pos, sizeof(float) * 3 * (size_t)m->nbones);
         local_pose_parts(m, l->index, l->frame, rot1, pos1, l->mask, 0);
+        if (l->var_w > 0.0f && l->var >= 0) {   /* its variant: this x (1 - share) + variant x share */
+            memcpy(rot3, rot, sizeof(float) * 3 * (size_t)m->nbones);
+            memcpy(pos3, pos, sizeof(float) * 3 * (size_t)m->nbones);
+            local_pose_parts(m, l->var, l->var_frame, rot3, pos3, l->mask, 0);
+            for (i = 0; i < m->nbones; i++) {
+                for (j = 0; j < 3; j++) {
+                    rot1[i][j] = lerp_angle(rot1[i][j], rot3[i][j], l->var_w);
+                    pos1[i][j] += (pos3[i][j] - pos1[i][j]) * l->var_w;
+                }
+            }
+        }
         if (l->w > 0.0f && l->prev >= 0) {   /* fading from the motion before: prev x w + this x (1 - w) */
             memcpy(rot2, rot, sizeof(float) * 3 * (size_t)m->nbones);
             memcpy(pos2, pos, sizeof(float) * 3 * (size_t)m->nbones);
             local_pose_parts(m, l->prev, l->prev_frame, rot2, pos2, l->mask, 0);
+            if (l->prev_var_w > 0.0f && l->prev_var >= 0) {
+                memcpy(rot3, rot, sizeof(float) * 3 * (size_t)m->nbones);
+                memcpy(pos3, pos, sizeof(float) * 3 * (size_t)m->nbones);
+                local_pose_parts(m, l->prev_var, l->prev_var_frame, rot3, pos3, l->mask, 0);
+                for (i = 0; i < m->nbones; i++) {
+                    for (j = 0; j < 3; j++) {
+                        rot2[i][j] = lerp_angle(rot2[i][j], rot3[i][j], l->prev_var_w);
+                        pos2[i][j] += (pos3[i][j] - pos2[i][j]) * l->prev_var_w;
+                    }
+                }
+            }
             for (i = 0; i < m->nbones; i++) {
                 for (j = 0; j < 3; j++) {
                     rot1[i][j] = lerp_angle(rot1[i][j], rot2[i][j], l->w);
