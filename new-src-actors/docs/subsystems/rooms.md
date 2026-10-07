@@ -58,4 +58,11 @@ From `SceneGame_LeaveRoom`, the play sub-state (`scene_game.c` ~1033-1095), `Sce
 
 ## Status
 
-Spec.
+**Built** (`scripts/rooms.fs`). Checked by `tests/rooms/test_rooms.fs` (15 tests: a new game in
+the cage room; out by an exit - leaving / arrived / entered in order, with both exits; back
+again; an exit to nowhere; a jump). Listeners subscribe to `leaving-room`, `arrived` and
+`entered-room`.
+
+Walked so far by the debug walker (`scripts/walker.fs`: WASD, Shift, Space at an exit). Left:
+the sound bank swap (with the audio subsystem); the controlled character's rule (with Fiona
+and Hewie).

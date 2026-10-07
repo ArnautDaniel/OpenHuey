@@ -482,7 +482,12 @@ PRIM(p_cam_setup) {   /* ( set path -- ) */
 
     camdir_set_setup(&gCamDir, (int)set, (int)path);
 }
-PRIM(p_cam_follow) {   /* ( actor -- ) follow an actor (10 units up), -1 nobody */
+PRIM(p_cam_target) {   /* ( F: x y z -- ) where the one followed is now */
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+
+    gCamDir.target_at = vec3(x, y, z);
+}
+PRIM(p_cam_follow) {   /* ( id -- ) follow someone (10 units up; cam-target! says where), -1 nobody */
     Cell a = POP();
 
     camdir_follow(&gCamDir, (int)a, a < 0 ? vec3(0, 0, 0) : vec3(0, 10, 0));
@@ -1637,7 +1642,7 @@ void bind_engine(Forth *f) {
         {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
-        {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
+        {"cam-follow", p_cam_follow}, {"cam-target!", p_cam_target}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
         {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-wall", p_v_wall}, {"nav-links", p_nav_links}, {"nav-next", p_nav_next}, {"nav-link-tri", p_nav_link_tri}, {"nav-link-yaw", p_nav_link_yaw}, {"nav-link-spot", p_nav_link_spot}, {"nav-link-at?", p_nav_link_at}, {"nav-link-side", p_nav_link_side}, {"nav-link-front", p_nav_link_front}, {"v-free", p_v_free},
         {"v-path", p_v_path}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},

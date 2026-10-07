@@ -573,6 +573,19 @@ PRIM(p_actor_name) {   /* ( id -- addr len ) */
     PUSH(a->name);
     PUSH(strlen(a->name));
 }
+PRIM(p_actor_named) {   /* ( addr len -- id | -1 ) the first live actor with that name */
+    Cell len = POP(), addr = POP();
+    int id;
+
+    for (id = 0; id < HACTOR_MAX; id++) {
+        if (sActors[id].used && strlen(sActors[id].name) == (size_t)len &&
+            strncmp(sActors[id].name, (const char *)addr, (size_t)len) == 0) {
+            PUSH(id);
+            return;
+        }
+    }
+    PUSH(-1);
+}
 PRIM(p_behaviour_of) { PUSH(live(f, POP(), "behaviour-of")->beh); }
 /* ---- bodies: set by their own actor, read by anyone ---- */
 static HActor *me(Forth *f, const char *what) {
@@ -690,7 +703,7 @@ void bind_hactor(Forth *f) {
         {"end-behaviour", p_end_behaviour, 0}, {"become", p_become, 0},
         {"state:", p_state, 0}, {"field", p_field, 0}, {"end-state", p_end_state, 0},
         {"spawn", p_spawn, 0}, {"kill", p_kill, 0}, {"self", p_self, 0}, {"enter", p_enter, 0}, {"leave", p_leave, 0}, {"sender", p_sender, 0},
-        {"alive?", p_alive, 0}, {"actor-name", p_actor_name, 0}, {"behaviour-of", p_behaviour_of, 0},
+        {"alive?", p_alive, 0}, {"actor-name", p_actor_name, 0}, {"actor-named", p_actor_named, 0}, {"behaviour-of", p_behaviour_of, 0},
         {"actors-frame", p_frame, 0}, {"deliver", p_deliver, 0}, {"actors-reset", p_reset, 0},
         {"trace-on", p_trace_on, 0}, {"trace-off", p_trace_off, 0}, {"queued", p_queued, 0},
         {"actors-frames", p_actor_frame, 0}, {".actors", p_dot_actors, 0}, {".unhandled", p_dot_unhandled, 0},

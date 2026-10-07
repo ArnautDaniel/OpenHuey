@@ -194,10 +194,10 @@ static int out_of_view(const CamDirector *d, Vec3 p) {
 /* ---- the path (CamPath_*) ---- */
 
 static int target_point(const CamDirector *d, Vec3 *out) {
-    if (d->target < 0 || d->target >= MAX_ACTORS || !gEngine.actors[d->target].used) {
+    if (d->target < 0) {
         return 0;
     }
-    *out = vec3_add(gEngine.actors[d->target].pos, d->offset);
+    *out = vec3_add(d->target_at, d->offset);
     return 1;
 }
 
@@ -269,6 +269,9 @@ static float path_move(const CamDirector *d, float to, float from) {
 
     if (from < 1.0f) {
         from = s->t;
+    }
+    if (s->keys == NULL || !(d->step_look > 0.0f)) {   /* (no path loaded: nowhere to move - and no endless loop) */
+        return from;
     }
     res = from;
     if (!(from <= to)) {

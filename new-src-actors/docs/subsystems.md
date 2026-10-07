@@ -29,7 +29,7 @@ Original: `event.c` (commands, conditions), the converted room scripts.
 Note: the room scripts are data. They are converted once (as in new-src) into Forth that sends
 messages.
 
-### Rooms (`rooms`)  — **spec** (`subsystems/rooms.md`)
+### Rooms (`rooms`)  — **built** (`subsystems/rooms.md`)
 Owns: the room being played, and going from room to room.
 Takes: `go-to-room`. Broadcasts `room-loaded`, `entered-room`, `left-room`.
 Original: `scene_game.c` (room change), `room.c`.
@@ -40,7 +40,7 @@ Takes: `open`, `shut`, `slam`, `lock`, `unlock`, `hold`, `let-go`.
 Sends: `noise` (opened / shut / slammed), `hit` (slammed on someone), `door-state` broadcasts.
 Original: `doors.c`, `Progress_*Door*`.
 
-### Camera (`camera`)  — **spec** (`subsystems/camera.md`)
+### Camera (`camera`)  — **built** (`subsystems/camera.md`)
 Owns: the room's camera setups, who it follows, cuts and eases.
 Takes: `follow`, `use-setup`, `event-camera`, `release`.
 Original: `camera.c`, `camdirector.c`.

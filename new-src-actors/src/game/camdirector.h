@@ -38,7 +38,8 @@ typedef struct CamDirector {
     int npaths;
     int loaded;         /* the path loaded (+0x34) */
     /* the target */
-    int target;         /* the actor followed (-1: none) (+0xB0) */
+    int target;         /* who is followed (-1: none) (+0xB0): an HActor id, at target_at */
+    Vec3 target_at;     /* where it is: the camera actor sets it each frame from its body */
     int last_target;    /* (+0xB4) */
     Vec3 offset;        /* added to its position (+0xC0) */
     Vec3 point;         /* the point to look at without a target (+0xA0: the set's) */
@@ -66,7 +67,8 @@ void camdir_new_room(CamDirector *d);
 void camdir_room_start(CamDirector *d, const float *sets, int nsets, const int32_t *paths);
 /* the set and path to use (CamDirector_SetSetup) */
 void camdir_set_setup(CamDirector *d, int set, int path);
-/* follow actor `target` (-1: none) with an offset (CamDirector_Follow) */
+/* follow `target` (an HActor id; -1: none) with an offset (CamDirector_Follow); where it is:
+ * target_at, set each frame */
 void camdir_follow(CamDirector *d, int target, Vec3 offset);
 /* each frame: the view angle eases, the camera along its path (CamDirector_Ease) */
 void camdir_ease(CamDirector *d);

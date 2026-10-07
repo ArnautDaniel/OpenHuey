@@ -50,4 +50,12 @@ sub-state.
 
 ## Status
 
-Spec.
+**Built** (`scripts/camera.fs`). The C director now follows a point (`cam-target!`), set each
+frame from the followed actor's body, not a model.
+
+*Stand-in until the story:* nobody gives setups yet, so a character without one gets the
+room's camera set whose look-at point is nearest it (no path). It goes when the story sends
+`camera-setup`.
+
+Left: who may be followed (Fiona's rule), the event camera (with cutscenes), a debug free
+camera, a test with the room scripts' setups.
