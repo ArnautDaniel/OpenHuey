@@ -85,6 +85,9 @@ int roommesh_dynamic(const RoomMesh *m, Vec3 eye, Vec3 forward, MeshVertex *out,
 
 /* build from the mesh section; 0 if it is malformed (m is then empty) */
 int roommesh_build(RoomMesh *m, const uint8_t *sec, size_t size);
+/* build from one list of batches (ended by a count of -1) as part `part`: a door's model (PAC
+ * section 8); 0 if it is malformed */
+int roommesh_build_list(RoomMesh *m, const uint8_t *p, const uint8_t *end, int part);
 void roommesh_free(RoomMesh *m);
 
 #endif

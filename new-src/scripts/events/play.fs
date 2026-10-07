@@ -176,14 +176,19 @@ variable started   \ (the camera director set up for play)
     s" Enter: look" hud
     key: Return key-pressed? if  0 0 request-arg @ action  0 0 hud  then ;
 
+\ the doors' models: open (a quarter turn) or shut as their exits are (Doors_RoomIn), swinging
+\ when that changes
+: doors-follow ( at-once -- )
+    8 0 do  i dup exit-open if  -90e  else  0e  then  over door-swing  loop  drop ;
+
 : events-tick
     playing @ 0= if  exit  then
     cast  places
     event-state ev.room sl@ room-id <> if
         started @ 0= if  start-play  -1 started !  then
-        room-id came-in-by @ enter-room  -1 came-in-by !  remember-places  exit
+        room-id came-in-by @ enter-room  -1 came-in-by !  remember-places  true doors-follow  exit
     then
-    run-frame  action-button  moves  remember-places  take-exit ;
+    run-frame  action-button  moves  remember-places  false doors-follow  take-exit ;
 ' events-tick on-tick
 
 \ ---- movies ----

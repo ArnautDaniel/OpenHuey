@@ -211,6 +211,24 @@ int roommesh_build(RoomMesh *m, const uint8_t *sec, size_t size) {
     return 1;
 }
 
+int roommesh_build_list(RoomMesh *m, const uint8_t *p, const uint8_t *end, int part) {
+    Builder b;
+
+    memset(m, 0, sizeof(*m));
+    memset(&b, 0, sizeof(b));
+    b.m = m;
+    m->lo = vec3(1e30f, 1e30f, 1e30f);
+    m->hi = vec3(-1e30f, -1e30f, -1e30f);
+    while (p != NULL && p + 16 <= end && i32(p) != -1) {
+        p = batch(&b, part, p, end);
+    }
+    if (p == NULL) {
+        roommesh_free(m);
+        return 0;
+    }
+    return 1;
+}
+
 void roommesh_free(RoomMesh *m) {
     int i;
 

@@ -246,6 +246,11 @@ PRIM(p_area_in) {   /* ( area -- flag ) ( F: x y z -- ) */
 
     PUSH(area_inside(&gEngine.room, (int)area, vec3(x, y, z)) ? -1 : 0);
 }
+PRIM(p_door_swing) {   /* ( exit at-once -- ) ( F: degrees -- ) the room's door at that exit swung (-90 open) */
+    Cell now = POP(), exit = POP();
+
+    room_door_swing(&gEngine.room, (int)exit, (float)FPOP(), now != 0);
+}
 PRIM(p_area_middle) {   /* ( area -- flag ) ( F: -- x y z ) its first and third corners' middle */
     Vec3 m = vec3(0, 0, 0);
     int ok = area_middle(&gEngine.room, (int)POP(), &m);
@@ -956,7 +961,7 @@ void bind_engine(Forth *f) {
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
-        {".director", p_cam_info}, {"area-in?", p_area_in}, {"area-middle", p_area_middle}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
+        {".director", p_cam_info}, {"area-in?", p_area_in}, {"door-swing", p_door_swing}, {"area-middle", p_area_middle}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
         {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},

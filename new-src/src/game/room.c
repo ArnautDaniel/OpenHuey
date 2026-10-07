@@ -205,6 +205,55 @@ int room_lights_at(const Room *r, Vec3 pos, int out[3]) {
     return n;
 }
 
+/* the doors: section 7 (8 offsets by exit, 0 none: an entry is its id, a point +0x4, another
+ * +0x10, its turn +0x1C) and section 8 (8 offsets; the nth present door's model at its offset
+ * + n x 0x10 - Doors_TakeSection8) */
+static float rdf(const uint8_t *p) {
+    float f;
+
+    memcpy(&f, p, 4);
+    return f;
+}
+
+static void load_doors(Room *r) {
+    size_t s7size, s8size;
+    const uint8_t *s7 = pac_section(&r->pac, PAC_DOORS, &s7size), *s8 = pac_section(&r->pac, PAC_DOORS2, &s8size);
+    int i, n = 0;
+
+    if (s7 == NULL || s7size < 32) {
+        return;
+    }
+    for (i = 0; i < ROOM_DOORS; i++) {
+        RoomDoor *d = &r->doors[i];
+        uint32_t o, m;
+
+        memcpy(&o, s7 + i * 4, 4);
+        if (o == 0 || o + 0x28 > s7size) {
+            continue;
+        }
+        d->pos = vec3(rdf(s7 + o + 4), rdf(s7 + o + 8), rdf(s7 + o + 12));
+        d->rot = vec3(rdf(s7 + o + 0x1C), rdf(s7 + o + 0x20), rdf(s7 + o + 0x24));
+        if (s8 != NULL && (size_t)(n + 1) * 4 <= s8size) {
+            memcpy(&m, s8 + n * 4, 4);
+            if (m != 0xFFFFFFFFu && m + (uint32_t)n * 0x10 < s8size &&
+                roommesh_build_list(&d->mesh, s8 + m + n * 0x10, s8 + s8size, MESH_SOLID) && d->mesh.nv > 0) {
+                render_mesh_upload(&d->gpu, d->mesh.v, d->mesh.nv);
+                d->present = 1;
+            }
+        }
+        n++;
+    }
+}
+
+void room_door_swing(Room *r, int exit, float degrees, int at_once) {
+    if (exit >= 0 && exit < ROOM_DOORS) {
+        r->doors[exit].target = degrees;
+        if (at_once) {
+            r->doors[exit].swing = degrees;
+        }
+    }
+}
+
 int room_load(Room *r, int id) {
     char path[64];
     size_t size;
@@ -232,6 +281,7 @@ int room_load(Room *r, int id) {
     navmesh_take_flags(&r->nav, sec, sec != NULL ? size : 0);
     load_look(r);
     load_lights(r);
+    load_doors(r);
     if (r->mesh.ndyn > 0) {
         r->moving_v = malloc((size_t)r->mesh.ndv * 3 * sizeof(MeshVertex));
         r->moving_d = malloc((size_t)r->mesh.ndyn * sizeof(MeshDraw));
@@ -247,6 +297,10 @@ void room_free(Room *r) {
     }
     render_mesh_free(&r->gpu);
     render_mesh_free(&r->moving);
+    for (i = 0; i < ROOM_DOORS; i++) {
+        render_mesh_free(&r->doors[i].gpu);
+        roommesh_free(&r->doors[i].mesh);
+    }
     free(r->moving_v);
     free(r->moving_d);
     roommesh_free(&r->mesh);
@@ -257,7 +311,31 @@ void room_free(Room *r) {
 }
 
 void room_tick(Room *r) {
+    int i;
+
     roommesh_tick(&r->mesh);
+    for (i = 0; i < ROOM_DOORS; i++) {   /* (a quarter turn in about 20 frames) */
+        RoomDoor *d = &r->doors[i];
+        float step = 4.5f;
+
+        d->swing = fabsf(d->target - d->swing) <= step ? d->target : d->swing + (d->target > d->swing ? step : -step);
+    }
+}
+
+/* door i's model to room space: turned (its rest turn plus the swing about the vertical), then
+ * placed (sceVu0RotMatrix, sceVu0TransMatrix) */
+static Mat4 door_matrix(const RoomDoor *d) {
+    float y = d->rot.y + d->swing * 3.14159265f / 180.0f;
+    float cx = cosf(d->rot.x), sx = sinf(d->rot.x), cy = cosf(y), sy = sinf(y), cz = cosf(d->rot.z), sz = sinf(d->rot.z);
+    Mat4 rx = mat4_identity(), ry = mat4_identity(), rz = mat4_identity(), t = mat4_identity();
+
+    rx.m[5] = cx;  rx.m[6] = sx;  rx.m[9] = -sx;  rx.m[10] = cx;
+    ry.m[0] = cy;  ry.m[2] = -sy; ry.m[8] = sy;   ry.m[10] = cy;
+    rz.m[0] = cz;  rz.m[1] = sz;  rz.m[4] = -sz;  rz.m[5] = cz;
+    t.m[12] = d->pos.x;
+    t.m[13] = d->pos.y;
+    t.m[14] = d->pos.z;
+    return mat4_mul(t, mat4_mul(rz, mat4_mul(ry, rx)));
 }
 
 /* the draws [first, end) of parts lo..hi (the mesh keeps them in part order) */
@@ -275,10 +353,20 @@ static void draw_parts(Room *r, const Mat4 *vp, int lo, int hi) {
 }
 
 void room_draw(Room *r, const Mat4 *view_proj, Vec3 eye, Vec3 forward) {
+    static const uint32_t kAll[8] = {~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u};
+    int i;
+
     if (r->id < 0) {
         return;
     }
     draw_parts(r, view_proj, MESH_SOLID, MESH_SEE_THROUGH);
+    for (i = 0; i < ROOM_DOORS; i++) {
+        if (r->doors[i].present) {
+            Mat4 mvp = mat4_mul(*view_proj, door_matrix(&r->doors[i]));
+
+            render_mesh(&r->doors[i].gpu, &mvp, r->doors[i].mesh.d, r->doors[i].mesh.nd, r->textures, r->ntextures, kAll);
+        }
+    }
     if (r->mesh.ndyn > 0) {
         int n = roommesh_dynamic(&r->mesh, eye, forward, r->moving_v, r->moving_d), nv = 0, i;
 
