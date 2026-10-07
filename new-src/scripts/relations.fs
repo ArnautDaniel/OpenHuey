@@ -131,7 +131,7 @@ variable taken
             if  dup i owner!  i take  then
         then
     loop  drop ;
-variable rs-k  variable rs-r
+variable rs-k  variable rs-r  variable rs-c  variable rs-o
 : rs-word ( i -- n )  cells rs-r @ + @ ;
 PRIVATE>
 : resolve ( -- )
@@ -148,8 +148,9 @@ PRIVATE>
                 1 rs-word 9 = if
                     i owner@ cmd-busy? i cmd-busy? or if  $FF i owner!
                     else
-                        i cmd# >r  1 r@ !  0 r@ cell+ !  i owner@ r@ 2 cells + !
-                        3 rs-word r@ 3 cells + !  2 rs-word r@ 4 cells + !  4 rs-word r> 5 cells + !
+                        i cmd# rs-c !  i owner@ rs-o !   \ (no >r here: `i` reads the return stack)
+                        1 rs-c @ !  0 rs-c @ cell+ !  rs-o @ rs-c @ 2 cells + !
+                        3 rs-word rs-c @ 3 cells + !  2 rs-word rs-c @ 4 cells + !  4 rs-word rs-c @ 5 cells + !
                     then
                 else
                     i req-of 7 <> if

@@ -127,3 +127,13 @@ create ss-at 12 allot  create ss-prev 12 allot
     then
     -1 $1624 pu-l!  0 $1784 pu-l!  [: $198 vcall ;] behave  $198 vcall ;
 ' walk-to-goal $194 vt!
+
+\ ---- Pursuer_StateWalkThen404 (action 0x1D): backing off - 0x404, turned to his target (moving
+\ only within 45 degrees of it: Pursuer_StateStepFacing) ----
+: state-step-facing ( -- )
+    me p-target c-pos c-heading-to $A0 vcall turn-toward fabs 0.7853982e f< if  root-move-masked  then ;
+: state-walk-then-404 ( -- )
+    0 $16EC pu-c!  1 step-next!
+    walk-on? if  exit  then
+    $404 play-anim  0 $1784 pu-l!  ['] state-step-facing behave  state-step-facing ;
+' state-walk-then-404 is st.Pursuer_StateWalkThen404

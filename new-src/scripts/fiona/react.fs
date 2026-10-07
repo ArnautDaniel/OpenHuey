@@ -136,6 +136,39 @@ fvariable pn-hold-scr   \ (progress +0x7D8: the panic's screen hold - with the s
 : st-knock ( -- )   \ (0xC..0xF: knocked down; a stumble resets her recovery)
     me 4 relations:req-word-of $8000 and if  reset-recovery  then
     0 f-2a !  ['] st-knocked-down behave ;
+\ ---- caught (0x20: his hold - 1 an arm, 2 / 4, 3 from behind): a flinch (0xF02..0xF05)
+\ looking at him; 5: thrown, or (her floor not free) knocked down ----
+variable f-target   \ (her target: the stalker)
+: st-after-caught ( -- )
+    f-end? if  to-idle  else  f-104 @ dup 3 = swap 1 = or  f-target @ 0< 0= and if  1 f-look-on !  then  then
+    f-root-move ;
+: st-caught ( -- )
+    f-settled? if
+        $43 5 0 0 f-sound
+        f-104 @ case
+            4 of  $F05 -1 f-play-table  endof
+            1 of  1 f-look-on !  $F02 -1 f-play-table  endof
+            2 of  $F04 -1 f-play-table  endof
+            3 of  f-target @ 0< 0= if  1 f-look-on !  then  $F03 -1 f-play-table  endof
+        endcase
+        ['] st-after-caught behave
+    then
+    f-root-move ;
+: react-caught ( how -- )
+    dup 5 <> if
+        0 f-2d !  8 f-act !  $B f-mode!
+        case
+            3 of  3 f-104 !  pursuer-slot @ f-target !  endof
+            1 of  f-tri fl@ $80001 and if  3
+                  else  me pursuer-slot @ c-pos c-heading-to f-yaw f- angle-wrap fabs 1.5707964e f< if  1  else  3  then  then
+                  f-104 !  pursuer-slot @ f-target !  endof
+            2 of  2 f-104 !  endof
+            4 of  4 f-104 !  endof
+        endcase
+        ['] st-caught behave exit
+    then  drop
+    not-yet" Fiona_React 0x20 / 5: Actor_TriFreeFor"
+    $FF f-who !  1 f-2a !  ['] st-thrown behave ;
 defer react-led   ' noop is react-led   \ (9: led away - fiona.grab)
 variable charm-item   \ (the sub screen's slot 1: the charm that keeps her from being caught)
 : react-now ( -- done? )   \ (0: taken, the request used up)
@@ -149,9 +182,7 @@ variable charm-item   \ (the sub screen's slot 1: the charm that keeps her from 
         $C of  st-knock  endof  $D of  st-knock  endof  $E of  st-knock  endof  $F of  st-knock  endof
         $A of  me 4 relations:req-word-of $8000 and if  reset-recovery  then
                1 f-2a !  ['] st-thrown behave  endof
-        $20 of  me 4 relations:req-word-of 5 = if
-                    1 f-2a !  $FF f-who !  ['] st-thrown behave
-                else  not-yet" Fiona_React: caught (0x20)"  then  endof
+        $20 of  me 4 relations:req-word-of react-caught  endof
         $13 of  not-yet" Fiona_React: the fall (0x13)"  endof
         $12 of  not-yet" Fiona_React: held (0x12)"  endof
         $B of  not-yet" Fiona_React: a door (0xB)"  endof
