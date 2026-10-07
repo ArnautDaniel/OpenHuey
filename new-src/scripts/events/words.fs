@@ -406,9 +406,10 @@ fvariable at-x  fvariable at-z
 \ 82: The event camera (camera director): with on, set from the four values (EventCam_Set); then
 \ held on / off (CamDirector_HoldEffect1C).
 : event-camera ( on F: a b c d -- )  drop fdrop fdrop fdrop fdrop s" event-camera" stub-step ;
-\ 83: An item counted (progress +0xFBE) and given: id = the script's room id for `room`
+\ 83: An item counted (progress +0xFBE) and given: `item` as the script sees it
 \ (Events_ScriptRoom), n of it (Items_Give).
-: item-give-count ( room n -- )  drop drop s" item-give-count" stub-step ;
+: item-give-count ( item n -- )
+    1 progress pr.items-counted +l!  swap script-item swap items+ ;
 \ 84: The summoner takes the partner (Summoner_Take(a)).
 : summon-take ( a -- )  drop s" summon-take" stub-step ;
 \ 85: Hewie's trust in Fiona + n (Hewie_AddTrust).
@@ -652,12 +653,14 @@ fvariable turn-x  fvariable turn-z
 : message-param-room ( n -- )   \ (Events_ScriptRoom's $40 / $41 -> $70 isn't kept yet)
     0 swap message-parameter ;
 \ 59 0C: Item `item` is used up (Items_UseId).
-: item-use ( item -- )  drop s" item-use" stub-step ;
+: item-use ( item -- )  dup items-of 0> if  -1 items+  else  drop  then ;
 \ 59 0D: Item `item` added to the inventory, with the pickup sound; bit 0x8000 marks the
 \ hard-mode variant (only given in that mode, else only the plain one).
-: item-give ( item -- )  drop s" item-give" stub-step ;
+: item-give ( item -- )   \ (the hard-mode variants aren't given: that mode isn't kept yet)
+    dup $8000 and if  drop exit  then
+    file-add if  $C 5 event-sound  then ;   \ (the pickup sound: common sound $C)
 \ 59 0E: Item `item` added to the inventory, silently (SubScreen_AddFile).
-: item-add ( item -- )  drop s" item-add" stub-step ;
+: item-add ( item -- )  file-add drop ;
 \ 59 0F: Story flag (number in script variable `var`) set.
 : story-flag-set-var ( var -- )  4 * event-state ev.vars + sl@ progress pr.story bit-on ;
 \ 59 10: Story flag (number in script variable `var`) cleared.
@@ -667,15 +670,15 @@ fvariable turn-x  fvariable turn-z
 \ 59 12: Resident flag n set (kept across games: unlocks; the game's +0x24).
 : resident-flag-set ( n -- )  progress pr.resident bit-on ;
 \ 50 00: Placed object `obj` shown (on) or hidden.
-: object-show ( obj on -- )  drop drop s" object-show" stub-step ;
+: object-show ( obj on -- )  >r event-room-string 0 r> event-object ;
 \ 50 01: Placed object `obj` plays animation `anim` once.
-: object-anim ( obj anim -- )  drop drop s" object-anim" stub-step ;
+: object-anim ( obj anim -- )  >r event-room-string 1 r> event-object ;
 \ 50 02: Placed object `obj` plays animation `anim` looped.
-: object-anim-loop ( obj anim -- )  drop drop s" object-anim-loop" stub-step ;
+: object-anim-loop ( obj anim -- )  >r event-room-string 2 r> event-object ;
 \ 50 03: Placed object `obj`'s animation reset to its start.
-: object-anim-reset ( obj -- )  drop s" object-anim-reset" stub-step ;
+: object-anim-reset ( obj -- )  event-room-string 3 0 event-object ;
 \ 50 04: Placed object `obj` hidden and put back as defined (PlacedObject_ToDef).
-: object-hide-reset ( obj -- )  drop s" object-hide-reset" stub-step ;
+: object-hide-reset ( obj -- )  event-room-string 4 0 event-object ;
 
 \ ---- for the conditions: facing, touching, the characters' sizes ----
 \ radians to degrees (cond_deg); an angle into -pi .. pi (Angle_Wrap)
@@ -835,7 +838,7 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
     dup in-room? 0= if  2drop false exit  then
     char-pos event-nav-in-group? ;
 \ 2F: Fewer than 10 of item 0x3F are held (Items_CountItem3F).
-: item-3F-under-10? ( -- flag )  s" item-3F-under-10?" stub-flag ;
+: item-3F-under-10? ( -- flag )  $3F items-of 10 < ;
 \ 30: Character `who` (active, in the current room) is heading for exit `exit` (+0x14D4).
 : char-heading-for? ( who exit -- flag )  drop drop s" char-heading-for?" stub-flag ;
 \ 31: Hewie (in the scene) may not break off (Hewie_MayBreakOff is 0).
@@ -862,7 +865,7 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 \ 38: The cutscene director's cue (+0x34) has reached `cue`.
 : cutscene-cue-reached? ( cue -- flag )  event-scene-frame swap < 0= ;
 \ 39: At least n of the script's item `item` (Events_ScriptRoom) are held.
-: item-count? ( item n -- flag )  drop drop s" item-count?" stub-flag ;
+: item-count? ( item n -- flag )  swap script-item items-of swap < 0= ;
 \ 3A: The cutscene director reports event `k` this step (+0x54 above 0).
 : cutscene-event? ( k -- flag )  event-scene-signals 0> ;
 \ 3B: The cutscene director's counter for `k` (+0x58) passed `at` within this step.

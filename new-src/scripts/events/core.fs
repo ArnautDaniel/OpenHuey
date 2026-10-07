@@ -239,6 +239,9 @@ defer event-scene-near-end? ( -- flag )   ' false is event-scene-near-end?
 defer event-scene-shot-at ( frame -- shot )   :noname drop -1 ; is event-scene-shot-at
 defer event-scene-signals ( bit -- n )    :noname drop 0 ; is event-scene-signals
 defer event-scene-total ( bit -- n )      :noname drop -1 ; is event-scene-total
+\ the room's object named (addr len): 0 shown (arg), 1 / 2 animation arg once / looped, 3 its
+\ animation stopped, 4 hidden and back as defined
+defer event-object ( addr len op arg -- )   :noname 2drop 2drop ; is event-object
 \ the room's string `i` (scenes, movies, objects: events/strings.fs)
 defer event-room-string ( i -- addr len ) :noname drop s" " ; is event-room-string
 \ the message window's parameter `slot` shows system message $100 + id's first line
@@ -262,6 +265,23 @@ defer message-parameter ( slot id -- ) ' 2drop is message-parameter
     event-exit-door dup 0< if  drop false exit  then  $10 door-bit? 0= ;
 \ an exit asked for (exit-check): the game takes it after the frame
 variable exit-wanted  -1 exit-wanted !
+
+\ ---- the inventory (progress: items counted, files listed) ----
+: item# ( id -- addr | 0 )  dup 0 $100 within if  progress pr.items +  else  drop 0  then ;
+: items-of ( id -- n )  item# dup if  c@  then ;
+: items+ ( id n -- )   \ (up to 99)
+    swap item# dup 0= if  2drop exit  then  dup c@ rot + 0 max 99 min swap c! ;
+\ SubScreen_AddFile: true if added (false: already there, or the list is full)
+: file-add ( id -- flag )
+    $FFFF and  128 0 do
+        progress pr.files i 2* + dup w@                     ( id addr v )
+        dup 3 pick = if  2drop drop false unloop exit  then
+        0= if  w! true unloop exit  then  drop
+    loop  drop false ;
+: file? ( id -- flag )
+    $FFFF and  128 0 do  progress pr.files i 2* + w@ over = if  drop true unloop exit  then  loop  drop false ;
+\ Events_ScriptRoom for items: in the second game mode (not yet: never) 0x40 / 0x41 are 0x70
+: script-item ( id -- id' ) ;
 
 \ ---- the player's request (progress +0x1134: what her action button does, set again each frame by
 \ the room's scripts - 0x0A): 5 starts her action script `request-arg`; its kind (+0x1151) ----

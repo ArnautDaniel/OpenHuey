@@ -52,7 +52,7 @@ USING: engine state rooms player hewie doors game-state events.core events.words
 ' tri-center is event-tri-center
 ' bank-sound is event-sound   ' bank-sound-at is event-sound-at   ' sound-set! is event-sound-set
 ' area-middle is event-area-middle   ' area-in? is event-area-in?   ' area-cross is event-area-cross   ' exit-area is event-exit-area
-' room-string is event-room-string
+' room-string is event-room-string   ' placed-op is event-object
 \ movies and the cutscene director (as the original's, a movie's frames time a scene played in
 \ the room)
 :noname ( addr len -- )  movie-open drop ; is event-movie-open

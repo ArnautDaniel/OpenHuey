@@ -282,6 +282,13 @@ int room_load(Room *r, int id) {
     load_look(r);
     load_lights(r);
     load_doors(r);
+    {
+        size_t asize = 0;
+        const uint8_t *anims = pac_section(&r->pac, PAC_PLACED2, &asize);
+
+        sec = pac_section(&r->pac, PAC_PLACED, &size);
+        placed_load(&r->placed, sec, sec != NULL ? size : 0, anims, asize);
+    }
     if (r->mesh.ndyn > 0) {
         r->moving_v = malloc((size_t)r->mesh.ndv * 3 * sizeof(MeshVertex));
         r->moving_d = malloc((size_t)r->mesh.ndyn * sizeof(MeshDraw));
@@ -301,6 +308,7 @@ void room_free(Room *r) {
         render_mesh_free(&r->doors[i].gpu);
         roommesh_free(&r->doors[i].mesh);
     }
+    placed_free(&r->placed);
     free(r->moving_v);
     free(r->moving_d);
     roommesh_free(&r->mesh);
@@ -314,6 +322,7 @@ void room_tick(Room *r) {
     int i;
 
     roommesh_tick(&r->mesh);
+    placed_tick(&r->placed);
     for (i = 0; i < ROOM_DOORS; i++) {   /* (a quarter turn in about 20 frames) */
         RoomDoor *d = &r->doors[i];
         float step = 4.5f;
@@ -367,6 +376,7 @@ void room_draw(Room *r, const Mat4 *view_proj, Vec3 eye, Vec3 forward) {
             render_mesh(&r->doors[i].gpu, &mvp, r->doors[i].mesh.d, r->doors[i].mesh.nd, r->textures, r->ntextures, kAll);
         }
     }
+    placed_draw(&r->placed, view_proj, r->textures, r->ntextures);
     if (r->mesh.ndyn > 0) {
         int n = roommesh_dynamic(&r->mesh, eye, forward, r->moving_v, r->moving_d), nv = 0, i;
 

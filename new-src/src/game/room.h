@@ -6,6 +6,7 @@
 #include "../data/pac.h"
 #include "../data/roommesh.h"
 #include "../render/render.h"
+#include "placed.h"
 
 #define ROOM_MAX_TEXTURES 256
 #define ROOM_MAX_LIGHTS 16
@@ -42,6 +43,7 @@ typedef struct Room {
     int ntextures;
     uint32_t groups[8];     /* bit g: group g shown (group 0 always is) */
     RoomDoor doors[ROOM_DOORS];   /* by exit */
+    PlacedSet placed;       /* the objects the scripts show and move (sections 12, 15) */
     Vec3 ambient;           /* (0..128) */
     RoomLight lights[ROOM_MAX_LIGHTS];
     int nlights;

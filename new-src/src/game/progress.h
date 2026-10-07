@@ -32,6 +32,13 @@ typedef struct Progress {
      * the sides it is locked from */
     uint32_t doors[DOORS];
     uint32_t closed_off[(DOORS + 31) / 32];      /* doors closed off for good (the rooms' +0x4) */
+    /* the inventory (the item manager, gSubScreen +0x8): how many of each item (ids under 0xAD:
+     * Items_Give / Items_Count / Items_UseId) */
+    uint8_t items[0x100];
+    /* the files: key things and documents found (ids 0x2xx; SubScreen_AddFile, its list at
+     * +0x15F8: 128, 0-terminated, in the order found) */
+    uint16_t files[128];
+    int32_t items_counted;                  /* items given by the scripts' 0x83 (+0xFBE) */
 } Progress;
 
 /* a character as the scripts see it (the original's character object: +0x30 its room, +0xE0

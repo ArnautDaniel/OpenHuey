@@ -246,6 +246,46 @@ PRIM(p_area_in) {   /* ( area -- flag ) ( F: x y z -- ) */
 
     PUSH(area_inside(&gEngine.room, (int)area, vec3(x, y, z)) ? -1 : 0);
 }
+PRIM(p_placed_op) {   /* ( addr len op arg -- ) the room's object by name: 0 shown (arg), 1 / 2 animation
+                         * arg once / looped, 3 animation stopped, 4 hidden and back as defined */
+    Cell arg = POP(), op = POP(), n = POP(), a = POP();
+    char name[32];
+    Placed *p;
+
+    snprintf(name, sizeof(name), "%.*s", (int)n, (const char *)a);
+    p = placed_named(&gEngine.room.placed, name);
+    if (p == NULL) {
+        return;
+    }
+    switch (op) {
+    case 0:
+        p->shown = arg != 0;
+        break;
+    case 1:
+    case 2:
+        placed_anim(&gEngine.room.placed, p, (int)arg, op == 2);
+        break;
+    case 3:
+        p->keys = NULL;
+        p->frames = p->frame = 0;
+        break;
+    case 4:
+        p->shown = 0;
+        p->rot = p->def_rot;
+        p->pos = p->def_pos;
+        break;
+    }
+}
+PRIM(p_placed_list) {   /* ( -- ) the room's objects */
+    int i;
+
+    for (i = 0; i < gEngine.room.placed.n; i++) {
+        const Placed *p = &gEngine.room.placed.p[i];
+
+        forth_printf(f, "%-16s kind %d %s at %.1f %.1f %.1f, %d triangles\n", p->name, p->kind, p->shown ? "shown" : "hidden",
+                     p->pos.x, p->pos.y, p->pos.z, p->mesh.nv / 3);
+    }
+}
 PRIM(p_door_swing) {   /* ( exit at-once -- ) ( F: degrees -- ) the room's door at that exit swung (-90 open) */
     Cell now = POP(), exit = POP();
 
@@ -961,7 +1001,7 @@ void bind_engine(Forth *f) {
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
-        {".director", p_cam_info}, {"area-in?", p_area_in}, {"door-swing", p_door_swing}, {"area-middle", p_area_middle}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
+        {".director", p_cam_info}, {"area-in?", p_area_in}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"area-middle", p_area_middle}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
         {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},

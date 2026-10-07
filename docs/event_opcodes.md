@@ -190,7 +190,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 80 | 2 | `effect-remove` | `fx:u8` | Room effect slot `fx` removed. |
 | 81 | 5 | `self-anim-blend` | `anim:u16` `b:u16` | self: animation `anim` with b (character move 8). |
 | 82 | 18 | `event-camera` | `on:u8` `a:fx` `b:fx` `c:fx` `d:fx` | The event camera (camera director): with on, set from the four values (EventCam_Set); then held on / off (CamDirector_HoldEffect1C). |
-| 83 | 4 | `item-give-count` | `room:u16` `n:u8` | An item counted (progress +0xFBE) and given: id = the script's room id for `room` (Events_ScriptRoom), n of it (Items_Give). |
+| 83 | 4 | `item-give-count` | `item:u16` `n:u8` | An item counted (progress +0xFBE) and given: `item` as the script sees it (Events_ScriptRoom: in the mode of progress +0x30 bit 0x8000, 0x40 / 0x41 are 0x70), n of it (Items_Give). |
 | 84 | 2 | `summon-take` | `a:u8` | The summoner takes the partner (Summoner_Take(a)). |
 | 85 | 3 | `hewie-trust` | `n:s16` | Hewie's trust in Fiona + n (Hewie_AddTrust). |
 | 86 | 15 | `effect-86` | `fx:u8` `x:fx` `y:fx` `z:fx` `kind:u8` | Room effect slot `fx` made anew as an EvEffect86 at (x, y, z) with `kind`. |
