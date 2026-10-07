@@ -70,6 +70,14 @@ create nw-c 12 allot  fvariable nw-h  fvariable nw-d  variable nw-pos  variable 
     else  fdrop  nw-out @ nw-pos @ vec-copy  then
     nw-out @ nw-out @ nw-h f@ 3.1415927e f+ 0.1e vec-ahead      \ (0.1 back toward the middle)
     drop  nw-out @ p-mask v-tri-in ;
+\ Npc_PathLength's kind (Character_PlanPathKind + Character_WaypointsCurve): the way planned as
+\ his path, its length (-1 none)
+create pk-v 12 allot
+: plan-length ( tri v -- ) ( F: -- len )
+    >r >r me r> r> p-mask c-plan 0= if  -1e exit  then
+    0e pl-len f!  pl-a p-pos vec-copy
+    p-path-n 0 do  me i path-point pl-b swap vec-copy  pl-a pl-b vec-dist-xz pl-len f@ f+ pl-len f!  pl-a pl-b vec-copy  loop
+    pl-len f@ ;
 \ NPC_PathLengthTo (vtable +0xD4): to (tri, v) (a blocked one: its nearest walkable)
 create plt-v 12 allot
 : path-length-to ( tri v -- ) ( F: -- len )
@@ -103,7 +111,7 @@ create plc-v 12 allot
     dup 0< if  drop p-target  then
     dup c-tri over c-pos on-tri? 0= if  dup c-tri tri-center plc-v vec!
     else  plc-v over c-pos vec-copy  then
-    dup c-tri plc-v plc-v nearest-walkable  plc-v p-mask path-length  d-path!
+    dup c-tri plc-v plc-v nearest-walkable  plc-v plan-length  d-path!
     dup her = if  d-path d-fiona!  else  dog = if  d-path d-hewie!  then  then
     d-path f0< 0= ;
 ' path-length-char $E0 vt!
@@ -111,7 +119,7 @@ create plc-v 12 allot
 create pls-v 12 allot
 : path-length-place ( tri pos -- flag )
     >r r@ pls-v nearest-walkable  dup 0< if  r> 2drop  -1e d-path!  false exit  then
-    pls-v p-mask path-length  d-path!
+    pls-v plan-length  d-path!
     d-path f0< if  r> drop false exit  then
     pls-v r> vec-dist-xz  d-path f+ d-path!  true ;
 : path-length-spot ( -- flag )  $15C4 pu-l@ $15D0 pu path-length-place ;
@@ -250,4 +258,4 @@ fvariable head-yaw   \ (his motion's +0x858: the head's turn)
         else  $C0 vcall 1 and  then then  $1544 pu-c!
         played dog c-room <> if  0  else  $C4 vcall 1 and  then  $1545 pu-c!
     then
-    $C8 vcall 1 and $1546 pu-c!  $CC vcall ;
+    $C8 vcall 1 and $1546 pu-c!  $CC vcall drop ;

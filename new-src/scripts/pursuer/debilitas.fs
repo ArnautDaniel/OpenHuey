@@ -49,6 +49,17 @@ USING: engine game-state events.core events.words chars relations fiona.doors pu
     $16B8 pu-l@ 2 = if  $205 exit  then
     mode if  $201  else  $206  then ;
 ' stand-anim $320 vt!   ' walk-anim $324 vt!   ' slow-walk-anim $328 vt!
+\ Debilitas_StandAnim (vtable +0x128): his walk for his mode - slow after her (the way to her
+\ shorter than +0x17E8, she not hiding) or waiting with nothing drawing him; else the normal
+: debilitas-walk ( -- )
+    mode case
+        0 of  d-path $17E8 pu-f@ f<=  d-fiona f0< 0= and  her c-mode 3 <> and  endof
+        1 of  false  endof  2 of  false  endof  4 of  false  endof
+        3 of  $16C9 pu-c@ dup 0= swap 2 = or  endof
+        >r drop r> exit
+    endcase
+    if  $324  else  $328  then  vcall 0 play-anim-if drop ;
+' debilitas-walk $128 vt!
 
 \ ---- Pursuer_Setup + Debilitas_Setup (vtable +0xF4): his stats and tables ----
 : setup ( -- )
