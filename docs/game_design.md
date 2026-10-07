@@ -2,7 +2,8 @@
 
 Notes for people who love the game and want to know how it really ticks, collected while
 decompiling it. Function addresses (`0x...`) are in the US release (SLUS-210.75) for anyone who
-wants to look for themselves. The game runs at 60 frames per second, so "600 frames" is 10 seconds.
+wants to look for themselves. The game runs at 30 frames per second (`System_EndFrame` waits for two vblanks), so "600
+frames" is 20 seconds.
 
 ## The cast is three slots
 
@@ -71,7 +72,7 @@ rolls: 60% of the time it picks the room's next hand-placed "point of interest" 
 visited in order, wrapping around), otherwise a random walkable spot (`0x27E5D0`).
 
 The route doesn't pause when the stalker is off in another room. The game simply keeps time:
-every 150 frames (2.5 seconds) away counts as one stop walked. When the stalker comes back
+every 150 frames (5 seconds) away counts as one stop walked. When the stalker comes back
 into the room you're in, it skips ahead along its route by that many stops, or tops the
 route up with new ones (`0x27EEA0`). So hiding for longer really does let it wander further.
 
@@ -120,8 +121,8 @@ with its search for Fiona.
 
 The game over sequence (`src/game/gameover.c`) is not a single screen. The game freezes in
 place: the camera stops, every character is held mid-motion, and the effects pause. The frozen
-frame wipes away over about a second, and the music starts. The room's two screen tints then
-slide over one second, one to a deep purple and the other to clear, before the game over movie
+frame wipes away over about two seconds, and the music starts. The room's two screen tints then
+slide over two seconds, one to a deep purple and the other to clear, before the game over movie
 plays. Once the movie ends, the purple drifts slowly to blue over a full minute while the music
 plays on. Pressing any face button cuts this short, and the screen fades to black.
 
@@ -132,9 +133,9 @@ progress flags, plus one used only by a single special case.
 
 After the staff roll (Start skips it once it is showing), the results screen
 (`src/game/scene_ending.c`) shows the picture for the ending you got (A to D). The picture
-fades in, holds for a second and a half, then dims to half while the record fades in: ending,
+fades in, holds for three seconds, then dims to half while the record fades in: ending,
 time, dog level, panic, items, critical Hewie injuries, enemies defeated and type. The
-record waits two and a half seconds before a button moves it on.
+record waits five seconds before a button moves it on.
 
 The type is the first rule on this list that your record meets. The number that earned it is
 highlighted in the record.
@@ -157,3 +158,48 @@ lowest.
 Each type you earn is remembered in the system data. Clearing the game also sets the "cleared"
 bit and the bit for that ending. If a clear unlocks something new, its messages come before
 the type's own message; types 3 to 6 above each have one. After that comes the clear-data save.
+
+## Hewie obeys in spells
+
+Hewie isn't simply obedient or not. He goes through spells (`Hewie_Obedience`, `0x15FE30`): for
+a while he obeys, then for a while he waits and does as he likes, then he obeys again. How long
+each lasts depends on his trust in Fiona, a level from 0 to 7. At level 0 he obeys for 600
+frames (20 seconds) and then waits for 2700 frames (90 seconds). At level 7 he obeys for 2700
+frames and waits only 600. On the hard difficulty the obeying spells are shorter and the
+waiting ones longer.
+
+While he is waiting and Fiona is within 30 units, the spell runs out three times as fast, and
+every 91 frames Fiona reacts to him.
+
+What he does next is drawn from weighted lists (`Hewie_WhatNext`, `0x13C7D0`). The list depends
+on how far away Fiona is, the game's mood (calm, being followed or the chase) and whether he
+is obeying or waiting. The weights shift with his trust. At low trust a calm Hewie close to
+Fiona mostly idles or lies down near her. At high trust he comes to her side and sits by her
+much more often.
+
+## Praise and scolding change his mood
+
+Hewie has a mood besides his trust (`Hewie_SetMode`, `0x138AD0`):
+
+- **Pleased**, for 1800 frames (a minute): praised from a distance, he answers with a bark and
+  starts a new spell of obeying.
+- **Upset**, for 1800 frames: scolded three times with less than 600 frames (20 seconds)
+  between them. He lies down instead of coming or doing tricks, and keeps his distance.
+- **Angry**, for 450 frames (15 seconds): Fiona hit him. The more often she has hit him lately,
+  the likelier this is (one hit is forgiven every 300 frames). He takes no commands, and while
+  it lasts he goes for her.
+
+Praise or a scolding from a distance only works a quarter of the time, unless she petted him in
+the last 300 frames. Close up, Fiona's praise is petting: every few strokes heal him. A command
+he won't take while lying or sitting gets a refusal: he turns his head away.
+
+Being upset, being kicked by Fiona (3 each time) and being knocked down (10) add to a count the
+game keeps for the dog level at the end (`+0xFB6`).
+
+## Hewie's tail and ears have a life of their own
+
+Hewie's motions are split into parts: his body, his ears, his tail and his jaw. The ears, tail
+and mouth can play motions of their own on top of whatever the body does. Two tables in the
+game (`0x3B13F0` calm, `0x3B1580` tense) choose, for each body animation and each of his moods,
+what the ears, tail and mouth do. The tail can wag in short bursts of 10 to 35 frames, about 10
+seconds apart. His neck also bends toward whatever he is looking at.

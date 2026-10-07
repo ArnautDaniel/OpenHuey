@@ -47,7 +47,7 @@ variable h-pending                                \ +0xF3559: choose what to do 
 variable h-look-to  variable h-look-delay       \ +0xF3604 / +0xF3608: where he is to look, after a delay
 variable h-yelp   variable h-yelp-anim            \ +0xF35B4 / +0xF35B8
 \ how he feels and obeys
-variable h-mood   variable h-mood-time            \ +0xF35C0 (0 normal, 1..3), +0xF35BE
+variable h-mood   variable h-mood-time            \ +0xF35C0 (0 normal, 1 pleased, 2 upset, 3 angry), +0xF35BE
 variable h-waiting                                \ +0xF3598: waiting (1) or obeying (0)
 variable h-obey                                   \ +0xF359C: frames left of that
 variable h-obey-marked                            \ +0xF3587
@@ -71,7 +71,7 @@ variable h-held                                   \ +0xF3580: Fiona was held
 variable h-panic-seen                             \ +0xF3589
 variable h-scene-req                              \ +0xF3584
 variable h-call   $FF h-call !                    \ +0xF36B0: who called him (0 Fiona), $FF none
-variable h-whistle  variable h-whistle-2          \ +0xF35C4 / +0xF35C8
+variable h-hits  variable h-hit-t                  \ +0xF35C4 / +0xF35C8: how often Fiona hit him lately (one forgiven every 300 frames)
 variable h-hold-call                              \ +0xF35B0
 variable h-ready                                  \ +0xF3585
 variable h-no-root  variable h-root-ok            \ +0xF3558 / +0xF3582
@@ -107,7 +107,7 @@ variable h-hurt-t                                 \ +0xF35AC: frames to his next
     0 h-mood !  0 h-mood-time !  0 h-waiting !  0 h-obey !  0 h-obey-marked !  0 h-nudge !
     0 h-praise-due !  0 h-broke !  0 h-cooldown !  0 h-stay !  0 h-pet-time !
     0 h-did !  0 h-did-was !  0 h-follows !  0 h-alert !  0 h-alert-was !  0 h-held !
-    0 h-panic-seen !  0 h-scene-req !  $FF h-call !  0 h-whistle !  0 h-whistle-2 !
+    0 h-panic-seen !  0 h-scene-req !  $FF h-call !  0 h-hits !  0 h-hit-t !
     0 h-hold-call !  0 h-look !  0 h-snd !  0 h-snd-t !  0 h-2b !  0 h-2d !
     0 h-look-now !  0 h-look-t !  $FF h-look-char !  0 h-look-pt? !  0 h-last-idle !
     0e h-head-pitch f!  0e h-head-yaw f!  0e h-side f!  0 h-side-dir !  300 h-hurt-t ! ;

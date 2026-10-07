@@ -48,20 +48,20 @@ defer fiona-react ( n -- )   ' drop is fiona-react   \ Fiona_HewieReact (her sid
     then then
     h-cond 2 <> if
         h-cond 1 <> if
-            h-hp 30 < h-mood @ 3 <> and if  1 cond!  0 -1 set-mode  0 h-whistle !  0 h-whistle-2 !  then
+            h-hp 30 < h-mood @ 3 <> and if  1 cond!  0 -1 set-mode  0 h-hits !  0 h-hit-t !  then
         else
             h-hp 30 < 0=  h-mood @ 3 = or if  0 cond!  then
         then
     then
-    h-mood @ 3 <> h-whistle-2 @ 0<> and if
-        -1 h-whistle-2 +!
-        h-whistle-2 @ 0= h-whistle @ 0<> and if  -1 h-whistle +!  300 h-whistle-2 !  then
+    h-mood @ 3 <> h-hit-t @ 0<> and if
+        -1 h-hit-t +!
+        h-hit-t @ 0= h-hits @ 0<> and if  -1 h-hits +!  300 h-hit-t !  then
     then
     h-mode 8 <> h-action @ $7A <> and if  0 h-ready !  then
     h-yelp @ if  -1 h-yelp +!  then
     1 h-snd-t +!  h-snd-t @ 3000 > if  3000 h-snd-t !  then
     h-mood @ if
-        -1 h-mood-time +!  h-mood-time @ 0<= if  0 -1 set-mode  0 h-whistle !  0 h-whistle-2 !  then
+        -1 h-mood-time +!  h-mood-time @ 0<= if  0 -1 set-mode  0 h-hits !  0 h-hit-t !  then
     then
     h-praise-b @ if  -1 h-praise-b +!  h-praise-b @ 0= if  0 h-praise-a !  then  then
     h-pet-time @ if  -1 h-pet-time +!  then
@@ -216,7 +216,7 @@ variable pk-roll  variable pk-sum  variable pk-favoured
         -2 of  $1E 0 want  true  endof
         -3 of  $6F h-action @ want  true  endof
         -4 of  1 -1 set-mode  $1D 0 want  true  endof
-        -5 of  0 -1 set-mode  0 h-whistle !  0 h-whistle-2 !  $71 0 want  true  endof
+        -5 of  0 -1 set-mode  0 h-hits !  0 h-hit-t !  $71 0 want  true  endof
         dup h-cmd-act !  dup act-on-command swap
     endcase ;
 
@@ -267,12 +267,12 @@ variable pk-roll  variable pk-sum  variable pk-favoured
     her c-tri her c-pos plan-to if  $62 0 want  else  0 -1 set-mode  then ;
 : to-pursuer ( -- )
     pursuer @ dup c-tri swap c-pos plan-to if  $4F 0 want  else  0 h-call !  then ;
-: staying ( -- done? )   \ told to stay: a call, her whistle, or whoever is here
+: staying ( -- done? )   \ angry (mood 3): a call, her having hit him, or whoever is here
     0 h-hold-call !
     h-call @ $FF <> if
         h-call @ 0= her with? and if  to-fiona  else  $4F 0 want  then  true exit
     then
-    h-whistle @ 0> her with? and if  to-fiona true exit  then
+    h-hits @ 0> her with? and if  to-fiona true exit  then
     her with? pursuer @ with? and if
         h-pos her c-pos vec-dist  h-pos pursuer @ c-pos vec-dist f< if  to-fiona  else  to-pursuer  then
         true exit
@@ -347,13 +347,13 @@ create mood-states  3 cells allot
         then  exit
     then
     game-mode @ case
-        0 of  drop  0 h-whistle !  0 h-did-2 !  0 h-did !  0 h-alert !  endof
-        1 of  0 h-whistle !  0 h-did-2 !  0 h-did !
+        0 of  drop  0 h-hits !  0 h-did-2 !  0 h-did !  0 h-alert !  endof
+        1 of  0 h-hits !  0 h-did-2 !  0 h-did !
               0= h-disabled? 0= and if
                   h-cmd @ $80000200 and $200 = if  $14 0 want  then
                   1 cells mood-states + @ h-mood-state !  exit
               then  endof
-        2 of  drop  0 h-whistle !  0 h-did-2 !  0 h-did !
+        2 of  drop  0 h-hits !  0 h-did-2 !  0 h-did !
               h-disabled? 0= if  pursuer @ dup with? if  h-alert-what !  3 h-alert !  else  drop  then  then  endof
         >r 2drop r> drop exit
     endcase
@@ -480,7 +480,7 @@ create wag-b  $210D , $210E , $210F ,  $210D , $2110 , $2111 ,
 \ ---- under a script ----
 \ Hewie_FullStop: what the scripts' request 1 clears
 : full-stop ( -- )
-    0 h-broke !  0 h-whistle !  $FF h-look-char !  0 h-scene-req !  0 h-look-pt? !  $B state-flag-clear ;
+    0 h-broke !  0 h-hits !  $FF h-look-char !  0 h-scene-req !  0 h-look-pt? !  $B state-flag-clear ;
 \ fiona_reachable: under a script in the room being played, he can get to her
 : fiona-reachable? ( -- flag )
     h-busy? 0= if  true exit  then

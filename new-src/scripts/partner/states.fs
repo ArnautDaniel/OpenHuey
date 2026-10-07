@@ -18,14 +18,14 @@ USING: engine game-state events.core events.words chars partner.core partner.tab
 \ obeys: he heard her - no more waiting, obeying for a while
 : obeys ( -- )  0 h-waiting !  obey-time!  0 h-praise-due ! ;
 
-\ the progress's counters of how he has been treated (+0xFB6: spoiled, +0xFB8: told off;
-\ 0..10000)
-variable spoiled  variable told-off
+\ the progress's counters of how he has been treated, for the dog level at the end (+0xFB6:
+\ mistreated - Fiona's kicks, his being knocked down, upset; +0xFB8: pleased; 0..10000)
+variable mistreated  variable pleased-count
 : counter+ ( n addr -- )  tuck @ + 0 10000 clamp swap ! ;
 
-\ Hewie_SetMode: his mood (0 normal, 1 told off, 2 spoiled, 3 told to stay) for a time (-1: the
-\ mood's own: 1 and 2 1800 frames, 3 450). Down only 0; hurt only 0 or 3. Told off he obeys
-\ again, his trust's time
+\ Hewie_SetMode: his mood (0 normal, 1 pleased - praised from afar, 2 upset - scolded too often,
+\ 3 angry - hit by Fiona) for a time (-1: the mood's own: 1 and 2 1800 frames, 3 450). Down
+\ only 0; hurt only 0 or 3. Pleased, he obeys again for his trust's time
 : set-mode ( mode time -- )
     swap dup >r                                                   ( time m )
     h-hp 0= h-cond 2 = and if  drop 0  then
@@ -33,9 +33,9 @@ variable spoiled  variable told-off
     swap dup -1 <> if  h-mood-time !  else  drop
         dup case
             0 of  0 h-mood-time !  endof
-            1 of  h-mood @ 1 <> if  1 told-off counter+  -1 spoiled counter+  then  1800 h-mood-time !  endof
+            1 of  h-mood @ 1 <> if  1 pleased-count counter+  -1 mistreated counter+  then  1800 h-mood-time !  endof
             2 of  1800 h-mood-time !  endof
-            3 of  h-mood @ 3 <> if  20 spoiled counter+  then  450 h-mood-time !  endof
+            3 of  h-mood @ 3 <> if  20 mistreated counter+  then  450 h-mood-time !  endof
         endcase
     then  h-mood !
     r> 1 <> if  exit  then
@@ -87,7 +87,7 @@ create h-rolls 8 cells allot  create h-rolled 3 cells allot  h-rolled 3 cells 0 
 : turn-speed ( -- )
     h-t3 @ case  0 of  20e h-turn f!  endof  1 of  25e h-turn f!  endof  2 of  30e h-turn f!  endof  endcase ;
 
-\ the stance: once standing, animation 5 when spoiled, else 4
+\ the stance: once standing, animation 5 when mistreated, else 4
 : stance ( -- )
     0 step-to-pose 0= if  h-mood @ 2 = if  5  else  4  then  play-if-not  then ;
 
@@ -133,14 +133,15 @@ create tt-at 12 allot
     $60 5 h-pos vec@ event-sound-at
     0 look!  her h-target !  3 keep-pose  30 h-t1 !  ['] st-1990 behave ;
 
-\ ---- scolded (action 0x71): sitting, the ears down (0x1C04); three times running spoils him ----
+\ ---- scolded from afar (action 0x71): sitting, the ears down (0x1C04); three times within 600
+\ frames upsets him ----
 : st-19b0 ( -- )
     anim-done? 0= if  exit  then
     h-praise-b @ 0> 0= if  1 h-praise-a !  600 h-praise-b !
     else
         1 h-praise-a +!
         h-praise-a @ 3 <  h-mood @ 0<> or if  600 h-praise-b !
-        else  20 spoiled counter+  2 -1 set-mode  0 h-praise-a !  then
+        else  20 mistreated counter+  2 -1 set-mode  0 h-praise-a !  then
     then  to-default ;
 : st-22b8 ( -- )  1 step-to-pose 0= if  $1C04 play  ['] st-19b0 behave  then ;
 : st-1770 ( -- )  1 step-to-pose 0= if  $1C04 play  ['] st-anim-over behave  then ;
@@ -196,8 +197,8 @@ create tt-at 12 allot
 : st-after-27 ( -- )  0 $27 after-helper ;
 
 \ ---- praised, petted ----
-\ Hewie_StatePraised: at the end of each animation of 0x49 (praised), 0x4A (petted, strokes
-\ heal him), 0x4B
+\ Hewie_StatePraised: at the end of each animation of 0x49 (scolded close up: three times within
+\ 600 frames upsets him), 0x4A (petted: strokes heal him), 0x4B (patted)
 : st-praised ( -- )
     game-mode @ 0= h-action @ $4A = and fiona-cmd @ 3 = and anim@ $1D01 = and if  2 h-t2 !  then
     anim-done? 0= if  exit  then
@@ -206,10 +207,10 @@ create tt-at 12 allot
             false  h-praise-b @ 0> if
                 1 h-praise-a +!
                 h-praise-a @ 3 >= h-mood @ 0= and if
-                    20 spoiled counter+  2 -1 set-mode  drop true  0 h-praise-a !
+                    20 mistreated counter+  2 -1 set-mode  drop true  0 h-praise-a !
                 else  600 h-praise-b !  then
             else  1 h-praise-a !  600 h-praise-b !  then
-            0= h-t1 @ -6 = and if  0 -1 set-mode  0 h-whistle !  0 h-whistle-2 !  then
+            0= h-t1 @ -6 = and if  0 -1 set-mode  0 h-hits !  0 h-hit-t !  then
             0 0 want
         endof
         $4A of
@@ -218,7 +219,7 @@ create tt-at 12 allot
                 $1D01 of  -1 h-t2 +!  -1 h-pet +!
                           h-pet @ 0= if  4 h-pet !  h-hp 5 + 100 min him character char.hp l!  then
                           h-t2 @ 0= if  $1D02  else  $1D01  then  play-cut  endof
-                $1D02 of  h-hp 100 = if  -8 h-t1 !  h-t3 @ 0= if  -1 spoiled counter+  then  then
+                $1D02 of  h-hp 100 = if  -8 h-t1 !  h-t3 @ 0= if  -1 mistreated counter+  then  then
                           h-t1 @ -8 = if  1 -1 set-mode  $1D 0 want  else  0 0 want  then  endof
             endcase
         endof

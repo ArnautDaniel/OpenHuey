@@ -238,7 +238,7 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
         h-disabled? 0=  h-tri nav-flags him c-mask and 0<> and if
             drop 0  1 him character char.hp l!  1 him character char.cond l!
         else
-            h-action @ dup $52 <> swap $74 <> and  anim-group 13 <> and if  10 spoiled counter+  then
+            h-action @ dup $52 <> swap $74 <> and  anim-group 13 <> and if  10 mistreated counter+  then
         then
     then
     cutscene-active? if

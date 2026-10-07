@@ -5,7 +5,7 @@
  * (progress +0x1FBEC1) its own one. The faded-out sequences: the music and the movie stop, the
  * game freezes (the panic's shake off, the camera director stopped, every character held, the
  * effects paused), the screen wipes over 64 frames, the music starts, the room's two screen
- * tints (effects 0x1F / 0x1D) go over a second to purple / clear with the panic's fade, then
+ * tints (effects 0x1F / 0x1D) go over 60 frames to purple / clear with the panic's fade, then
  * the movie str_SYSTEM_GAMEOVER_SFD plays; after it the first tint drifts to blue for a minute (any of the
  * face buttons skips), the music stops and the screen goes black. */
 #include "common.h"

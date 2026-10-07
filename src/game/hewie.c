@@ -8182,8 +8182,9 @@ void Hewie_StateKnockedDown(Hewie *h) {
 
 /* ---- being petted, praised and scolded ---- */
 
-/* at the end of each animation of actions 0x49 / 0x4A / 0x4B. 0x49 (praised): praised again
- * within 600 frames, the third time in mood 0 spoils him (+20 to progress +0xFB6, mode 2);
+/* at the end of each animation of actions 0x49 / 0x4A / 0x4B. 0x49 (scolded close up, Fiona's
+ * 0x2B): scolded again within 600 frames, the third time in mood 0 upsets him (+20 to the
+ * mistreatment count +0xFB6, mode 2);
  * else after a scolding (+0xF36B4 -6) his mode and mood reset. 0x4A (petted, animations
  * 0x1D00..0x1D02, held a while longer when Fiona keeps commanding 3 while calm): every 4
  * strokes +5 health; at full health (-1 from +0xFB6 unless +0xF36BC) mode 1 and action 0x1D.
@@ -8191,7 +8192,7 @@ void Hewie_StateKnockedDown(Hewie *h) {
 /* 0x00148D00 */
 void Hewie_StatePraised(Hewie *h) {
     Progress *p = gProgress;
-    s32 spoiled;
+    s32 upset;
 
     if (!(u8)Progress_GameMode(p) && HEWIE_ACTION(h) == 0x4A && AT(gCharPlayer, 0x1AD6B8, s32) == 3 &&
         MOTION_ANIM(h->c.motion) == 0x1D01) {
@@ -8202,13 +8203,13 @@ void Hewie_StatePraised(Hewie *h) {
     }
     switch (HEWIE_ACTION(h)) {
     case 0x49:
-        spoiled = 0;
+        upset = 0;
         if (HW(h, 0xF3686, s16) > 0) {
             HW(h, 0xF3684, s16) += 1;
             if (HW(h, 0xF3684, s16) >= 3 && HW(h, 0xF35C0, s32) == 0) {
                 Progress_AddCounter(p, 0xFB6, 20);
                 Hewie_SetMode(h, 2, -1);
-                spoiled = 1;
+                upset = 1;
                 HW(h, 0xF3684, s16) = 0;
             } else {
                 HW(h, 0xF3686, s16) = 600;
@@ -8217,7 +8218,7 @@ void Hewie_StatePraised(Hewie *h) {
             HW(h, 0xF3684, s16) = 1;
             HW(h, 0xF3686, s16) = 600;
         }
-        if (!spoiled && HW(h, 0xF36B4, s32) != -7 && HW(h, 0xF36B4, s32) == -6) {
+        if (!upset && HW(h, 0xF36B4, s32) != -7 && HW(h, 0xF36B4, s32) == -6) {
             Hewie_SetMode(h, 0, -1);
             HW(h, 0xF35C4, s32) = 0;
             HW(h, 0xF35C8, s32) = 0;
@@ -12820,8 +12821,8 @@ static void to_pursuer(Hewie *h) {
     }
 }
 
-/* told to stay (+0xF35C0 3): a call (+0xF36B0, 0xFF none; 0 from Fiona) or her whistle
- * (+0xF35C4) brings him; else whichever of Fiona and the pursuer is here (the nearer when
+/* angry (+0xF35C0 3, after Fiona hit him): a call (+0xF36B0, 0xFF none; 0 from Fiona) or her having hit him
+ * lately (+0xF35C4) brings him; else whichever of Fiona and the pursuer is here (the nearer when
  * both). 0: nothing for him to do. */
 static s32 staying(Hewie *h) {
     HW(h, 0xF35B0, s16) = 0;
@@ -12873,7 +12874,7 @@ static s32 behind(Hewie *h, Character *c) {
 }
 
 /* His own decisions when nothing else drives him: down (0x52), hurt (+0xF35B4: 0x76), dragged
- * along (Hewie_FirstDoor), Fiona panicking or held (answers by trust), told to stay, scared
+ * along (Hewie_FirstDoor), Fiona panicking or held (answers by trust), angry with her, scared
  * (0x14), a scene request (+0xF3584: 0x79), a creature he follows (+0xF368C: 0x78), standing on
  * a slope (0x6E), the pursuer or a creature in reach from behind (0x7C, with +0xF356C 0x100),
  * a hole under his nose (0x6A) or Fiona right next to him (0x67, with 0x20), praise (0x7E). */
