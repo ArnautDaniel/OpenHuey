@@ -108,7 +108,7 @@ Testing:
 
 `tools/hg_export_all.py <extracted DATA.CVM folder>` converts all character models (skeleton,
 skin, faces, textures, motions) to glTF; `tools/viewer/hgview.c` (raylib) browses and plays them.
-See `docs/model_format.md`. Where the decompilation stands: `docs/progress.md`.
+See `docs/model_format.md`. Where the decompilation stands: `docs/progress.md`; known gaps and approximations: `docs/known_issues.md`.
 
 ## Notes
 
