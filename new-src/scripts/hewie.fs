@@ -205,3 +205,13 @@ variable room-side  -1 room-side !   \ +0xF3668: which side of a divided room he
     fiona-commands  meet-tick
     hewie-frame ;
 ' hewie-tick on-tick
+
+\ ---- from the console: bring him in (or send him off) when the story hasn't yet ----
+\   s" hewie" summon      s" hewie" dismiss
+: hewie-in ( -- )
+    -1 hewie-along !  -1 hewie-room !            \ (placed at her heel and started next frame)
+    hewie @ 0< 0= if  1 hewie @ actor act.visible l!  then ;
+: hewie-out ( -- )
+    0 hewie-along !  hewie @ 0< 0= if  0 hewie @ actor act.visible l!  then ;
+: summon ( addr len -- )   s" hewie" compare 0= if  hewie-in  else  ." summon: only hewie for now" cr  then ;
+: dismiss ( addr len -- )  s" hewie" compare 0= if  hewie-out  else  ." dismiss: only hewie for now" cr  then ;
