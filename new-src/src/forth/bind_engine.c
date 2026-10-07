@@ -122,6 +122,115 @@ PRIM(p_nav_path) {   /* ( from to -- n ) ( F: ax ay az bx by bz -- ) a way betwe
     sPathN = navmesh_path(&gEngine.room.nav, (int)from, vec3(ax, ay, az), (int)to, vec3(bx, by, bz), sPath, PATH_MAX_POINTS);
     PUSH(sPathN);
 }
+/* ---- vectors in memory (3 floats: x y z), e.g. a character's position ---- */
+
+static float *vec_arg(Forth *f) { return (float *)POP(); }
+PRIM(p_vec_store) { float *v = vec_arg(f); v[2] = (float)FPOP(); v[1] = (float)FPOP(); v[0] = (float)FPOP(); }   /* ( v -- ) ( F: x y z -- ) */
+PRIM(p_vec_fetch) { float *v = vec_arg(f); FPUSH(v[0]); FPUSH(v[1]); FPUSH(v[2]); }   /* ( v -- ) ( F: -- x y z ) */
+PRIM(p_vec_copy) { float *src = vec_arg(f), *dst = vec_arg(f); memmove(dst, src, 12); }   /* ( dst src -- ) */
+PRIM(p_vec_dist) {   /* ( a b -- ) ( F: -- d ) apart (Actor_Distance) */
+    float *b = vec_arg(f), *a = vec_arg(f), x = b[0] - a[0], y = b[1] - a[1], z = b[2] - a[2];
+
+    FPUSH(sqrtf(x * x + y * y + z * z));
+}
+PRIM(p_vec_dist_xz) {   /* ( a b -- ) ( F: -- d ) apart on the level */
+    float *b = vec_arg(f), *a = vec_arg(f), x = b[0] - a[0], z = b[2] - a[2];
+
+    FPUSH(sqrtf(x * x + z * z));
+}
+PRIM(p_vec_heading) {   /* ( a b -- ) ( F: -- yaw ) the heading from a to b (atan2 dx dz: 0 along +z) */
+    float *b = vec_arg(f), *a = vec_arg(f);
+
+    FPUSH(atan2f(b[0] - a[0], b[2] - a[2]));
+}
+PRIM(p_vec_ahead) {   /* ( dst src -- ) ( F: yaw d -- ) dst = src moved d along the heading */
+    float d = (float)FPOP(), yaw = (float)FPOP(), *src = vec_arg(f), *dst = vec_arg(f);
+
+    dst[0] = src[0] + sinf(yaw) * d;
+    dst[1] = src[1];
+    dst[2] = src[2] + cosf(yaw) * d;
+}
+PRIM(p_angle_wrap) {   /* ( F: a -- a' ) into -pi .. pi (Angle_Wrap) */
+    float a = (float)FPOP();
+
+    while (a > 3.14159265f) {
+        a -= 6.28318531f;
+    }
+    while (a < -3.14159265f) {
+        a += 6.28318531f;
+    }
+    FPUSH(a);
+}
+
+/* the nav mesh with positions in memory (vectors) and a blocked mask for this call */
+static NavMesh *nav_masked(uint32_t mask) {
+    gEngine.room.nav.block = mask;
+    return &gEngine.room.nav;
+}
+PRIM(p_v_nav_move) {   /* ( v mask -- tri ) ( F: dx dz -- ) v moved by (dx, dz) over the mesh within
+                        * the mask (sliding, following the floor): its triangle */
+    uint32_t mask = (uint32_t)POP();
+    float *v = vec_arg(f), dz = (float)FPOP(), dx = (float)FPOP(), h;
+    NavMesh *n = nav_masked(mask);
+    Vec3 p = navmesh_move(n, vec3(v[0], v[1], v[2]), dx, dz, 8.0f, 0.0f);
+
+    v[0] = p.x;
+    v[1] = p.y;
+    v[2] = p.z;
+    n->block = 0;
+    PUSH(navmesh_find(n, p, 4.0f, &h));
+}
+PRIM(p_v_walk) {   /* ( tri a b mask -- tri' ) straight from a (on tri) to b within the mask:
+                    * b's triangle, -1 if a wall comes first (Actor_TriFrom) */
+    uint32_t mask = (uint32_t)POP();
+    float *b = vec_arg(f), *a = vec_arg(f);
+    Cell tri = POP();
+    NavMesh *n = nav_masked(mask);
+
+    PUSH(navmesh_walk(n, (int)tri, vec3(a[0], a[1], a[2]), vec3(b[0], b[1], b[2]), NULL));
+    n->block = 0;
+}
+PRIM(p_v_free) {   /* ( tri v mask -- ) ( F: yaw dist -- free ) how far from v along the heading is
+                    * free, up to dist (Actor_FreeDistance) */
+    uint32_t mask = (uint32_t)POP();
+    float *v = vec_arg(f), dist = (float)FPOP(), yaw = (float)FPOP(), reach;
+    Cell tri = POP();
+    NavMesh *n = nav_masked(mask);
+    Vec3 a = vec3(v[0], v[1], v[2]), b = vec3(v[0] + sinf(yaw) * dist, v[1], v[2] + cosf(yaw) * dist);
+    int t = navmesh_walk(n, (int)tri, a, b, &reach);
+
+    n->block = 0;
+    FPUSH(t >= 0 ? dist : reach);
+}
+PRIM(p_v_path) {   /* ( from a to b mask -- n ) a way from a (on tri from) to b (on tri to) within the
+                    * mask: its turning points (nav-path-point) */
+    uint32_t mask = (uint32_t)POP();
+    float *b = vec_arg(f);
+    Cell to = POP();
+    float *a = vec_arg(f);
+    Cell from = POP();
+    NavMesh *n = nav_masked(mask);
+
+    sPathN = navmesh_path(n, (int)from, vec3(a[0], a[1], a[2]), (int)to, vec3(b[0], b[1], b[2]), sPath, PATH_MAX_POINTS);
+    n->block = 0;
+    PUSH(sPathN);
+}
+PRIM(p_v_tri) {   /* ( v -- tri ) the triangle under v (any) */
+    float *v = vec_arg(f), h;
+    NavMesh *n = nav_masked(0);
+
+    PUSH(navmesh_find(n, vec3(v[0], v[1], v[2]), 4.0f, &h));
+}
+PRIM(p_nav_walk) {   /* ( from -- tri ) ( F: ax ay az bx by bz -- reach ) straight from a toward b over the
+                      * mesh (kept off the nav-block! flags): the triangle b is on or -1, and how far
+                      * it got */
+    float bz = (float)FPOP(), by = (float)FPOP(), bx = (float)FPOP();
+    float az = (float)FPOP(), ay = (float)FPOP(), ax = (float)FPOP(), reach;
+    Cell from = POP();
+
+    PUSH(navmesh_walk(&gEngine.room.nav, (int)from, vec3(ax, ay, az), vec3(bx, by, bz), &reach));
+    FPUSH(reach);
+}
 PRIM(p_nav_path_point) {   /* ( i -- ) ( F: -- x y z ) the last way's point i */
     Cell i = POP();
     Vec3 p = i >= 0 && i < sPathN ? sPath[i] : vec3(0, 0, 0);
@@ -1111,7 +1220,10 @@ void bind_engine(Forth *f) {
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
-        {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"area-middle", p_area_middle}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
+        {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-free", p_v_free},
+        {"v-path", p_v_path}, {"v-tri", p_v_tri}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
+        {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
+        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"area-middle", p_area_middle}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
         {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},
@@ -1169,6 +1281,7 @@ void bind_engine(Forth *f) {
     field(f, "act.rate", offsetof(Actor, rate));
     field(f, "act.loop", offsetof(Actor, loop));        /* 32-bit: l@ l! */
     field(f, "act.mflags", offsetof(Actor, mflags));    /* 32-bit: the motion's flags (0x20 wrapped this tick) */
+    field(f, "act.fade", offsetof(Actor, fade));        /* sf@: ticks of cross-fade left (0: settled) */
     field(f, "act.visible", offsetof(Actor, visible));  /* 32-bit: l@ l! */
     field(f, "act.shadow", offsetof(Actor, shadow_size));
     /* the picture's settings (render.h RenderSettings): flags and counts are 32-bit (l@ l!),

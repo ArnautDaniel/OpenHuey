@@ -321,3 +321,66 @@ int navmesh_path(const NavMesh *n, int from, Vec3 a, int to, Vec3 b, Vec3 *out, 
     free(pr);
     return npts;
 }
+
+/* ---- walking straight ---- */
+
+/* where segment p-q (x, z) crosses segment a-b: its fraction along p-q, -1 if it doesn't */
+static float seg_cross(Vec3 p, Vec3 q, Vec3 a, Vec3 b) {
+    float rx = q.x - p.x, rz = q.z - p.z, sx = b.x - a.x, sz = b.z - a.z;
+    float den = rx * sz - rz * sx, t, u;
+
+    if (fabsf(den) < 1e-9f) {
+        return -1.0f;
+    }
+    t = ((a.x - p.x) * sz - (a.z - p.z) * sx) / den;
+    u = ((a.x - p.x) * rz - (a.z - p.z) * rx) / den;
+    return t >= 0.0f && u >= -1e-4f && u <= 1.0f + 1e-4f ? t : -1.0f;
+}
+
+int navmesh_walk(const NavMesh *n, int from, Vec3 a, Vec3 b, float *reach) {
+    float len = sqrtf((b.x - a.x) * (b.x - a.x) + (b.z - a.z) * (b.z - a.z)), w[3], done = 0.0f;
+    int t = from, came = -1, steps;
+
+    if (reach != NULL) {
+        *reach = 0.0f;
+    }
+    if (t < 0 || t >= n->ntris) {
+        return -1;
+    }
+    for (steps = 0; steps < n->ntris + 2; steps++) {
+        const NavTri *tr = &n->tris[t];
+        float best = -1.0f;
+        int e, cross = -1;
+
+        if (inside(tr, b.x, b.z, w)) {
+            if (reach != NULL) {
+                *reach = len;
+            }
+            return t;
+        }
+        for (e = 0; e < 3; e++) {   /* the edge it leaves by: the farthest crossing ahead */
+            float f = seg_cross(a, b, tr->v[e], tr->v[(e + 1) % 3]);
+
+            if (f < 0.0f || f > 1.0f || (came >= 0 && tr->next[e] == came)) {
+                continue;
+            }
+            if (cross < 0 || f > best) {
+                best = f;
+                cross = e;
+            }
+        }
+        if (cross < 0) {
+            return -1;
+        }
+        done = best * len;
+        if (tr->next[cross] < 0 || (n->tris[tr->next[cross]].flags & n->block)) {
+            if (reach != NULL) {
+                *reach = done;
+            }
+            return -1;
+        }
+        came = t;
+        t = tr->next[cross];
+    }
+    return -1;
+}

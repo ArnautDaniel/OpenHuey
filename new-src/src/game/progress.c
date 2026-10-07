@@ -82,6 +82,16 @@ void bind_state(Forth *f) {
     field(f, "char.cam-path", offsetof(ScriptChar, cam_path));
     field(f, "char.move", offsetof(ScriptChar, move));
     field(f, "char.move-done", offsetof(ScriptChar, move_done));
+    field(f, "char.tri", offsetof(ScriptChar, tri));
+    field(f, "char.cond", offsetof(ScriptChar, cond));
+    field(f, "char.hp", offsetof(ScriptChar, hp));
+    field(f, "char.mode", offsetof(ScriptChar, mode));
+    field(f, "char.sub", offsetof(ScriptChar, sub));
+    field(f, "char.disabled", offsetof(ScriptChar, disabled));
+    field(f, "char.req", offsetof(ScriptChar, req));
+    field(f, "char.req-arg", offsetof(ScriptChar, req_arg));
+    field(f, "char.radius", offsetof(ScriptChar, radius));
+    field(f, "char.height", offsetof(ScriptChar, height));
     field(f, "char.move-anim", offsetof(ScriptChar, move_anim));
     field(f, "char.target", offsetof(ScriptChar, target));   /* 3 floats */
     field(f, "char.face", offsetof(ScriptChar, face));

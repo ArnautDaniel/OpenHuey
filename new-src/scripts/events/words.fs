@@ -512,7 +512,7 @@ fvariable turn-x  fvariable turn-z
 \ A2: Door `door`'s second flag (+0x82; Doors_SetFlag82). Nothing in the C reads it yet.
 : door-flag-82 ( door on -- )  drop drop s" door-flag-82" stub-step ;
 \ A3: The panic's stage = `stage` (Panic_SetStage).
-: panic-stage ( stage -- )  drop s" panic-stage" stub-step ;
+: panic-stage ( stage -- )  panic ! ;   \ (Panic_SetStage: the panic's own effects come with Fiona's)
 \ A4: self: animation `anim` with b (character move 9).
 : self-anim-9 ( anim b -- )  drop drop s" self-anim-9" stub-step ;
 \ A5: Requests scene 5 (an ending / the results, id `id`) unless state flag 0x12 or Fiona is
@@ -772,7 +772,7 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 \ 0C: Door `door` isn't closed off (Rooms_DoorClosedOff).
 : door-not-closed-off? ( door -- flag )  closed-off? 0= ;
 \ 0D: The game mode is `mode` (Progress_GameMode).
-: game-mode? ( mode -- flag )  drop s" game-mode?" stub-flag ;
+: game-mode? ( mode -- flag )  game-mode @ = ;
 \ 0E: Script slots 0xF0..0xFA: that slot's script runs; else character `who` is in a scripted
 \ state (+0xE0).
 : char-busy? ( who -- flag )
@@ -811,7 +811,8 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
     dup 100 >= if  drop true exit  then  dup 1 < if  drop false exit  then
     100 random > ;
 \ 1D: The panic's stage (progress +0x7B8) is `stage` (0xFF: 4 or 5).
-: panic-stage? ( stage -- flag )  drop s" panic-stage?" stub-flag ;
+: panic-stage? ( stage -- flag )
+    dup $FF = if  drop panic @ 4 5 1+ within  else  panic @ =  then ;
 \ 1E: Character `who` (active) has no health left.
 : char-dead? ( who -- flag )  drop s" char-dead?" stub-flag ;
 \ 1F: Character `a` touches `b` (margins m0, m1) and faces it, within `within` degrees.
@@ -931,7 +932,7 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 \ Pursuer_InStance2Anim). Unused by the scripts.
 : stalker-stance-2? ( -- flag )  s" stalker-stance-2?" stub-flag ;
 \ 4C: Fiona can give Hewie a command (Hewie_FionaCanCommand).
-: hewie-can-command? ( -- flag )  s" hewie-can-command?" stub-flag ;
+: hewie-can-command? ( -- flag )  event-hewie-can-command? ;
 \ 4D: This script's character's move is done (+0xE1).
 : self-done? ( -- flag )  s" self-done?" stub-flag ;
 \ 4E: The message window is closed.
@@ -965,7 +966,7 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 \ 5C: The ADX stream: what 0 can start, else is playing (none: yes).
 : adx? ( what -- flag )  drop s" adx?" stub-flag ;
 \ 5D: Hewie is the one being controlled.
-: hewie-controlled? ( -- flag )  s" hewie-controlled?" stub-flag ;
+: hewie-controlled? ( -- flag )  hewie-control @ 0<> ;
 \ 5E: The sub-screen's bit n is set (SubScreen_TestBit; see 0x59 0x11).
 : subscreen-bit? ( n -- flag )  drop s" subscreen-bit?" stub-flag ;
 \ 5F: Progress variables a and b are equal.

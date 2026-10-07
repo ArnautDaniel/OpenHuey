@@ -41,6 +41,10 @@ Vec3 navmesh_move(const NavMesh *n, Vec3 p, float dx, float dz, float climb, flo
  * number, 0 if there is no way. (The original's planner, src/game/navmesh.c PathPlan_*, runs
  * several searches and curves its paths; this keeps to the shortest.) */
 int navmesh_path(const NavMesh *n, int from, Vec3 a, int to, Vec3 b, Vec3 *out, int max);
+/* walking straight from a (on triangle `from`) toward b over the mesh, kept off the `block`
+ * flags (the start excepted): the triangle b is on, or -1 if a wall comes first (the original's
+ * Actor_TriTo / NavMesh_Walk). *reach (if given): how far along it got */
+int navmesh_walk(const NavMesh *n, int from, Vec3 a, Vec3 b, float *reach);
 /* the middle of triangle i */
 Vec3 navmesh_center(const NavMesh *n, int i);
 /* the middle of the triangle nearest p */

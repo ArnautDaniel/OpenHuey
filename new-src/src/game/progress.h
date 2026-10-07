@@ -59,6 +59,16 @@ typedef struct ScriptChar {
     float face;         /* the heading it ends with (+0x10C), radians; > 9: keep */
     float pos[3];       /* where it is (+0x10) */
     float prev[3];      /* where it was the frame before (+0x40) */
+    /* what the characters' own behaviour (Fiona's, Hewie's, the stalkers') keeps */
+    int32_t tri;        /* its nav triangle (+0x34), -1 none */
+    int32_t cond;       /* its condition (+0xC4): 0 well, 1 hurt, 2 down */
+    int32_t hp;         /* its health */
+    int32_t mode, sub;  /* what it is doing: the move mode (+0xF8 on Hewie, moveMode) and its
+                         * sub-mode (moveSub); Fiona's 4 / 9 or 0x12: held */
+    int32_t disabled;   /* out of play: hidden away, not moving (+0x29) */
+    int32_t req, req_arg;   /* a pending request from outside (+0x14E8 / +0x14EC: 12 Fiona's
+                             * call, 13 her command, ...) */
+    float radius, height;   /* (+0xC8 / +0xCC) */
 } ScriptChar;
 
 /* an action script running (the original's 0x18-byte contexts at +0x564) */

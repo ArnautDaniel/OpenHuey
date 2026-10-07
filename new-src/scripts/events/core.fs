@@ -292,6 +292,14 @@ variable exit-wanted  -1 exit-wanted !
 \ Events_ScriptRoom for items: in the second game mode (not yet: never) 0x40 / 0x41 are 0x70
 : script-item ( id -- id' ) ;
 
+\ ---- the game's state the characters' behaviour reads (progress / scene fields) ----
+variable game-mode        \ Progress_GameMode: 0 calm, 1 being followed, 2 the chase
+variable panic            \ the panic's stage (progress +0x7B8: 4 / 5 panicking)
+variable fiona-near       \ how near Hewie Fiona is (+0x7B9: 1 within 20, 2 within 50, 3 further)
+variable hewie-control    \ the player controls Hewie (+0x1FBEC1)
+\ whether Fiona can give Hewie a command now (partner: Hewie_FionaCanCommand)
+defer event-hewie-can-command? ( -- flag )   ' false is event-hewie-can-command?
+
 \ ---- the player's request (progress +0x1134: what her action button does, set again each frame by
 \ the room's scripts - 0x0A): 5 starts her action script `request-arg`; its kind (+0x1151) ----
 variable request  variable request-arg  variable request-kind
