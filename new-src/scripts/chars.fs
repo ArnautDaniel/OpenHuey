@@ -167,3 +167,15 @@ variable po-a  variable po-b
 
 \ Doors_HasExit (gDoors +0x40): the room has a door at that exit
 : has-door? ( exit -- flag )  room-door-at >r fdrop fdrop fdrop r> ;
+
+\ ---- what isn't ported yet (the stalkers', Fiona's): says so once on the console ----
+create told 64 32 * allot  variable ntold   \ (the names told: 31 characters each)
+: told# ( i -- addr )  32 * told + ;
+: told$ ( i -- addr len )  told# dup 1+ swap c@ ;
+: (not-yet) ( addr len -- )
+    31 min
+    ntold @ 0 ?do  i told$ 2over compare 0= if  2drop unloop exit  then  loop
+    ntold @ 64 >= if  2drop exit  then
+    dup ntold @ told# c!  ntold @ told# 1+ swap move  1 ntold +!
+    ." not yet: " ntold @ 1- told$ type cr ;
+: not-yet" ( "text" -- )  postpone s" postpone (not-yet) ; immediate

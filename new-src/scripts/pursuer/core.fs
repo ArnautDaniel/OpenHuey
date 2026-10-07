@@ -136,17 +136,6 @@ variable own-steps   \ +0x1714: his own table (0x1000 + i)
 : step-done? ( -- flag )  $16EE pu-c@ 1 = ;   : step-done! ( n -- )  $16EE pu-c! ;   \ PURSUER_STEP_DONE
 : step-next? ( -- flag )  $16F0 pu-c@ 1 = ;   : step-next! ( n -- )  $16F0 pu-c! ;   \ PURSUER_STEP_NEXT
 
-\ ---- what isn't ported yet: says so once on the console ----
-create told 64 32 * allot  variable ntold   \ (the names told: 31 characters each)
-: told# ( i -- addr )  32 * told + ;
-: told$ ( i -- addr len )  told# dup 1+ swap c@ ;
-: (not-yet) ( addr len -- )
-    31 min
-    ntold @ 0 ?do  i told$ 2over compare 0= if  2drop unloop exit  then  loop
-    ntold @ 64 >= if  2drop exit  then
-    dup ntold @ told# c!  ntold @ told# 1+ swap move  1 ntold +!
-    ." pursuer: not yet " ntold @ 1- told$ type cr ;
-: not-yet" ( "text" -- )  postpone s" postpone (not-yet) ; immediate
 
 \ ---- the game's own tables (his pointer fields hold their addresses in the executable) ----
 : exe-l@ ( va -- n )  4 exe-bytes dup if  sl@  then ;

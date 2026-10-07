@@ -1,7 +1,7 @@
 \ pursuer/stubs.fs - generated (scratchpad tools/stubs.py): a stub for each of his vtable
 \ entries, taking its arguments and giving 0; the ported words replace them.
 IN: pursuer.stubs
-USING: engine pursuer.core ;
+USING: engine chars pursuer.core ;
 
 :noname  drop s" Debilitas_dtor" (not-yet) 0 ;  $8 vt!
 :noname   s" Pursuer_Reset" (not-yet) ;  $C vt!

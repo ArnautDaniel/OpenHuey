@@ -406,7 +406,7 @@ defer caught-request ( -- )  ' noop is caught-request     \ (0xB: 0x22 flee - fi
     f-req@ case
         5 of  0 f-act !  0 f-mode!  me 1 relations:req-word-of if  ['] st-cmd-done  else  ['] idle-step-state  then  behave
               0 me character char.req l!  exit  endof
-        4 of  react drop  0 me character char.req l!  exit  endof
+        4 of  react  0 me character char.req l!  if  exit  then  endof
         7 of  exit  endof
     endcase
     f-req@ $C = me 1 relations:req-word-of 6 = and if

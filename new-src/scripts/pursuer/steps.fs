@@ -2,7 +2,7 @@
 \ state, id, move mode and sub, sense mode +0x15C0, look +0x1710) and the off-screen moves.
 \ A state not ported yet is a defer saying so; a port fills it: `' w is st.Pursuer_X`.
 IN: pursuer.steps
-USING: engine pursuer.core pursuer.stubs ;
+USING: engine chars pursuer.core pursuer.stubs ;
 
 defer st.Pursuer_AttackNextStep  :noname  s" Pursuer_AttackNextStep" (not-yet) ; is st.Pursuer_AttackNextStep
 defer st.Pursuer_StateDoorAhead  :noname  s" Pursuer_StateDoorAhead" (not-yet) ; is st.Pursuer_StateDoorAhead
