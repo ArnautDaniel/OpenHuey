@@ -190,6 +190,18 @@ PRIM(p_v_walk) {   /* ( tri a b mask -- tri' ) straight from a (on tri) to b wit
     PUSH(navmesh_walk(n, (int)tri, vec3(a[0], a[1], a[2]), vec3(b[0], b[1], b[2]), NULL));
     n->block = 0;
 }
+PRIM(p_v_wall) {   /* ( tri a b mask -- flag ) ( F: -- yaw ) the wall a straight walk from a toward b
+                    * meets: its edge's heading (Fiona_AlongWall); false: none */
+    uint32_t mask = (uint32_t)POP();
+    float *b = vec_arg(f), *a = vec_arg(f), yaw = 0.0f;
+    Cell tri = POP();
+    NavMesh *n = nav_masked(mask);
+    int hit = navmesh_wall(n, (int)tri, vec3(a[0], a[1], a[2]), vec3(b[0], b[1], b[2]), &yaw);
+
+    n->block = 0;
+    FPUSH(yaw);
+    PUSH(hit ? -1 : 0);
+}
 PRIM(p_v_free) {   /* ( tri v mask -- ) ( F: yaw dist -- free ) how far from v along the heading is
                     * free, up to dist (Actor_FreeDistance) */
     uint32_t mask = (uint32_t)POP();
@@ -1527,7 +1539,7 @@ void bind_engine(Forth *f) {
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
-        {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-free", p_v_free},
+        {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-wall", p_v_wall}, {"v-free", p_v_free},
         {"v-path", p_v_path}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
         {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},

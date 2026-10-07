@@ -337,6 +337,47 @@ static float seg_cross(Vec3 p, Vec3 q, Vec3 a, Vec3 b) {
     return t >= 0.0f && u >= -1e-4f && u <= 1.0f + 1e-4f ? t : -1.0f;
 }
 
+int navmesh_wall(const NavMesh *n, int from, Vec3 a, Vec3 b, float *yaw) {
+    int t = from, came = -1, steps;
+    float w[3];
+
+    if (t < 0 || t >= n->ntris) {
+        return 0;
+    }
+    for (steps = 0; steps < n->ntris + 2; steps++) {
+        const NavTri *tr = &n->tris[t];
+        float best = -1.0f;
+        int e, cross = -1;
+
+        if (inside(tr, b.x, b.z, w)) {
+            return 0;
+        }
+        for (e = 0; e < 3; e++) {
+            float f = seg_cross(a, b, tr->v[e], tr->v[(e + 1) % 3]);
+
+            if (f < 0.0f || f > 1.0f || (came >= 0 && tr->next[e] == came)) {
+                continue;
+            }
+            if (cross < 0 || f > best) {
+                best = f;
+                cross = e;
+            }
+        }
+        if (cross < 0) {
+            return 0;
+        }
+        if (tr->next[cross] < 0 || (n->tris[tr->next[cross]].flags & n->block)) {
+            Vec3 p0 = tr->v[cross], p1 = tr->v[(cross + 1) % 3];
+
+            *yaw = atan2f(p1.x - p0.x, p1.z - p0.z);
+            return 1;
+        }
+        came = t;
+        t = tr->next[cross];
+    }
+    return 0;
+}
+
 int navmesh_walk(const NavMesh *n, int from, Vec3 a, Vec3 b, float *reach) {
     float len = sqrtf((b.x - a.x) * (b.x - a.x) + (b.z - a.z) * (b.z - a.z)), w[3], done = 0.0f;
     int t = from, came = -1, steps;

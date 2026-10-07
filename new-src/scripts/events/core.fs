@@ -305,6 +305,10 @@ variable exit-wanted  -1 exit-wanted !
 
 \ ---- the game's state the characters' behaviour reads (progress / scene fields) ----
 variable game-mode        \ Progress_GameMode: 0 calm, 1 being followed, 2 the chase
+\ the panic's and Fiona's fear's commands (by opcode: 43 / 93 / A3 / C0 / C9 the panic, 4E / 4F /
+\ 94 / 95 her fear and recovery; BF her fear set): fiona.panic
+defer event-panic ( op v -- )   :noname 2drop ; is event-panic
+defer event-fiona-fear ( F: v -- )  ' fdrop is event-fiona-fear
 variable panic            \ the panic's stage (progress +0x7B8: 4 / 5 panicking)
 variable fiona-near       \ how near Hewie Fiona is (+0x7B9: 1 within 20, 2 within 50, 3 further)
 variable hewie-control    \ the player controls Hewie (+0x1FBEC1)

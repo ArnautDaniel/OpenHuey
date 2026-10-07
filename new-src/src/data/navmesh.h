@@ -44,6 +44,9 @@ int navmesh_path(const NavMesh *n, int from, Vec3 a, int to, Vec3 b, Vec3 *out, 
 /* walking straight from a (on triangle `from`) toward b over the mesh, kept off the `block`
  * flags (the start excepted): the triangle b is on, or -1 if a wall comes first (the original's
  * Actor_TriTo / NavMesh_Walk). *reach (if given): how far along it got */
+/* the wall a straight walk from a (on `from`) toward b meets (an edge with nothing beyond, or a
+ * blocked triangle): its direction as a heading; 0 if b is reached first */
+int navmesh_wall(const NavMesh *n, int from, Vec3 a, Vec3 b, float *yaw);
 int navmesh_walk(const NavMesh *n, int from, Vec3 a, Vec3 b, float *reach);
 /* the middle of triangle i */
 Vec3 navmesh_center(const NavMesh *n, int i);

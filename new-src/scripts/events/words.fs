@@ -238,7 +238,7 @@ create effect-bytes 64 allot  variable #effect-bytes
     swap char-slot dup 6 u< 0= if  2drop exit  then
     over cells move-slot + !  14 move! ;
 \ 43: Raises the threat / panic meter (progress +0x7B8) by v (0..100).
-: threat-raise ( v -- )  drop s" threat-raise" stub-step ;
+: threat-raise ( v -- )  $43 swap event-panic ;
 \ 44: The sub-screen's start flag set (SceneGame_SubScreenStart).
 : subscreen-start ( -- )  s" subscreen-start" stub-step ;
 \ 45: Character `who` (0xFF: self) plays sound `id` of bank `bank` where it stands.
@@ -271,9 +271,9 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 : door-copy ( door from -- )  drop drop s" door-copy" stub-step ;
 \ 4E: Fiona's fear (+0x1AD5F4, 0..100; over 90 she panics) and her exhaustion count (+0x1AD5F8,
 \ up to 1800 frames) reset to 0.
-: fiona-calm-reset ( -- )  s" fiona-calm-reset" stub-step ;
+: fiona-calm-reset ( -- )  $4E 0 event-panic ;
 \ 4F: Fiona recovers (Fiona_ResetRecovery).
-: fiona-recover ( -- )  s" fiona-recover" stub-step ;
+: fiona-recover ( -- )  $4F 0 event-panic ;
 \ 51: Closes the message window if it shows `msg` (0xFFFF: any).
 : message-close ( msg -- )
     dup $FFFF = swap event-state ev.message sl@ = or if
@@ -505,11 +505,11 @@ fvariable turn-x  fvariable turn-z
 \ progress' +0x44 (empty).
 : action-force ( mode who act -- )  true start-for ;
 \ 93: A panic value grows: bit 0x80 set: progress +0x7E0 + 128; else +0x7E4 + v / 30.
-: panic-grow ( v -- )  drop s" panic-grow" stub-step ;
+: panic-grow ( v -- )  $93 swap event-panic ;
 \ 94: Fiona calms down by n (Fiona_CalmDown).
-: fiona-calm ( n -- )  drop s" fiona-calm" stub-step ;
+: fiona-calm ( n -- )  $94 swap event-panic ;
 \ 95: Fiona's recovery lowered by n (Fiona_LowerRecovery).
-: fiona-recovery-lower ( n -- )  drop s" fiona-recovery-lower" stub-step ;
+: fiona-recovery-lower ( n -- )  $95 swap event-panic ;
 \ 96: Fiona looks at / targets character `id` for `frames` (30 when not above 0)
 \ (Fiona_SetTarget).
 : fiona-target ( id frames -- )  drop drop s" fiona-target" stub-step ;
@@ -549,7 +549,7 @@ fvariable turn-x  fvariable turn-z
 \ A2: Door `door`'s second flag (+0x82; Doors_SetFlag82). Nothing in the C reads it yet.
 : door-flag-82 ( door on -- )  drop drop s" door-flag-82" stub-step ;
 \ A3: The panic's stage = `stage` (Panic_SetStage).
-: panic-stage ( stage -- )  panic ! ;   \ (Panic_SetStage: the panic's own effects come with Fiona's)
+: panic-stage ( stage -- )  $A3 swap event-panic ;
 \ A4: self: animation `anim` with b (character move 9).
 : self-anim-9 ( anim b -- )
     self-char dup own-moves? 0= if  drop 2drop s" self-anim-9" stub-step exit  then
@@ -629,10 +629,10 @@ fvariable turn-x  fvariable turn-z
 \ (Events_ScriptRoom), 1 waits for its files, 2 slides the tab in, 4 out; waits while it moves.
 : item-tab ( op item -- )  drop drop s" item-tab" stub-step ;
 \ BF: Fiona's fear (+0x1AD5F4) = v (0..100; over 90 she panics).
-: fiona-fear ( F: v -- )  fdrop s" fiona-fear" stub-step ;
+: fiona-fear ( F: v -- )  event-fiona-fear ;
 \ C0: The threat meter's accumulator (progress +0x7DC: the threat object +0x24) grows by v
 \ (0..100), as a small Threat_Raise.
-: threat-add ( v -- )  drop s" threat-add" stub-step ;
+: threat-add ( v -- )  $C0 swap event-panic ;
 \ C1: Loads sound set `set` (Progress_LoadSoundSet).
 : sound-set ( set -- )  event-sound-set ;
 \ C2: Door `door`'s lock for character `id` = state (Progress_LockDoorFor).
@@ -663,7 +663,7 @@ fvariable turn-x  fvariable turn-z
 \ (0x80 for kind 0, else 0x50); size 16.
 : dust ( kind r g b own F: x y z -- )  drop drop drop drop drop fdrop fdrop fdrop s" dust" stub-step ;
 \ C9: The panic level set to `level` if it has reached it (Panic_SetLevel).
-: panic-level ( level -- )  drop s" panic-level" stub-step ;
+: panic-level ( level -- )  $C9 swap event-panic ;
 \ CA: Every sound's volume scaled by v (progress +0x1118).
 : sound-volume-scale ( F: v -- )  event-sound-scale ;
 \ CB: The room's creatures (0 all, 1 slots 0..6, 2 slots 7..9) told (+0x10) and removed.

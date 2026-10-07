@@ -401,6 +401,7 @@ defer panic-control ( -- done? )   ' false is panic-control   \ (the panic's stu
 defer react ( -- done? )   ' false is react      \ (4: a blow, a grab - with the stalkers)
 defer door-request ( kind -- )  ' drop is door-request   \ (2 / 9 a door, 3 a ladder: fiona.doors)
 defer kick-request ( -- )  ' noop is kick-request         \ (8 0x1A: fiona.kick)
+defer caught-request ( -- )  ' noop is caught-request     \ (0xB: 0x22 flee - fiona.panic; 0x20 / 0x21 caught)
 : state-block ( -- )
     f-req@ case
         5 of  0 f-act !  0 f-mode!  me 1 relations:req-word-of if  ['] st-cmd-done  else  ['] idle-step-state  then  behave
@@ -417,6 +418,7 @@ defer kick-request ( -- )  ' noop is kick-request         \ (8 0x1A: fiona.kick)
             9 of  9 door-request  endof
             3 of  3 door-request  endof
             8 of  kick-request  endof
+            $B of  caught-request  endof
         endcase
     then
     0 me character char.req l! ;
