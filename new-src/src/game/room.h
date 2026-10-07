@@ -41,6 +41,9 @@ int room_exists(int id);
 int room_load(Room *r, int id);
 /* the room's own look again, as its file has it (after scripts changed it) */
 void room_reset_look(Room *r);
+/* one effect of the room's look from its parameters, as the scripts send them: slot 0x1C depth
+ * of field, 0x1D fog, 0x1E screen blend, 0x1F tint (NULL: that effect removed) */
+void room_look_set(int slot, const uint8_t *d, size_t n);
 void room_free(Room *r);
 /* a tick: the room's flip books step */
 void room_tick(Room *r);

@@ -65,48 +65,73 @@ void room_reset_look(Room *r) {
     }
 }
 
+/* one of the look's effects from its parameters (the original's room effect slots 0x1C depth of
+ * field, 0x1D fog, 0x1E screen blend, 0x1F tint: Tint_SetParams, ScreenBlend_SetParams,
+ * Fog_SetParams, DepthRange_SetParams); NULL: that effect removed */
+void room_look_set(int slot, const uint8_t *d, size_t n) {
+    RoomLook *l = &gRoomLook;
+
+    switch (slot) {
+    case 0x1F:
+        l->has_tint = d != NULL && n >= 9;
+        if (l->has_tint) {
+            colour(word(d), 128.0f, 256.0f, l->tint_glow);   /* (strength: alpha / 2, of 0x80) */
+            colour(word(d + 4), 128.0f, 256.0f, l->tint_contrast);
+            l->tint_sharp = d[8] != 0;
+        }
+        break;
+    case 0x1E:
+        l->has_bloom = d != NULL && n >= 5;
+        if (l->has_bloom) {
+            uint32_t c = word(d);
+            int mode = d[4];
+
+            c = mode == 2 ? 0x80004080u : (mode == 3 || mode == 4) ? 0x40404040u : c;
+            colour(c, 128.0f, 256.0f, l->bloom);
+            l->bloom_subtract = mode == 1 || mode == 4;
+            l->bloom_mode = mode;
+        }
+        break;
+    case 0x1D:
+        l->has_fog = d != NULL && n >= 16;
+        if (l->has_fog) {
+            float range[2];
+
+            colour(word(d), 255.0f, 128.0f, l->fog_near_color);
+            colour(word(d + 4), 255.0f, 128.0f, l->fog_far_color);
+            memcpy(range, d + 8, 8);
+            l->fog_near = range[0];
+            l->fog_far = range[1];
+        }
+        break;
+    case 0x1C:
+        l->has_dof = d != NULL && n >= 16;
+        if (l->has_dof) {
+            memcpy(l->dof, d, 16);
+        }
+        break;
+    }
+}
+
 static void load_look(Room *r) {
     size_t size;
     const uint8_t *sec = pac_section(&r->pac, PAC_EFFECTS, &size);
-    RoomLook *l = &gRoomLook;
 
-    memset(l, 0, sizeof(*l));
+    memset(&gRoomLook, 0, sizeof(gRoomLook));
     if (sec == NULL || size < 0x18) {
         return;
     }
     if (word(sec + 0x8) != 0 && word(sec + 0x8) + 9 <= size) {
-        const uint8_t *d = sec + word(sec + 0x8);
-
-        l->has_tint = 1;
-        colour(word(d), 128.0f, 256.0f, l->tint_glow);   /* (strength: alpha / 2, of 0x80) */
-        colour(word(d + 4), 128.0f, 256.0f, l->tint_contrast);
-        l->tint_sharp = d[8] != 0;
+        room_look_set(0x1F, sec + word(sec + 0x8), 9);
     }
     if (word(sec + 0xC) != 0 && word(sec + 0xC) + 5 <= size) {
-        const uint8_t *d = sec + word(sec + 0xC);
-        uint32_t c = word(d);
-        int mode = d[4];
-
-        c = mode == 2 ? 0x80004080u : (mode == 3 || mode == 4) ? 0x40404040u : c;
-        l->has_bloom = 1;
-        colour(c, 128.0f, 256.0f, l->bloom);
-        l->bloom_subtract = mode == 1 || mode == 4;
-        l->bloom_mode = mode;
+        room_look_set(0x1E, sec + word(sec + 0xC), 5);
     }
     if (word(sec + 0x10) != 0 && word(sec + 0x10) + 16 <= size) {
-        const uint8_t *d = sec + word(sec + 0x10);
-        float range[2];
-
-        l->has_fog = 1;
-        colour(word(d), 255.0f, 128.0f, l->fog_near_color);
-        colour(word(d + 4), 255.0f, 128.0f, l->fog_far_color);
-        memcpy(range, d + 8, 8);
-        l->fog_near = range[0];
-        l->fog_far = range[1];
+        room_look_set(0x1D, sec + word(sec + 0x10), 16);
     }
     if (word(sec + 0x14) != 0 && word(sec + 0x14) + 16 <= size) {   /* (DepthRange_SetParams) */
-        l->has_dof = 1;
-        memcpy(l->dof, sec + word(sec + 0x14), 16);
+        room_look_set(0x1C, sec + word(sec + 0x14), 16);
     }
 }
 

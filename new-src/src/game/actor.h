@@ -24,7 +24,7 @@ typedef struct Actor {
     float yaw;              /* radians about y */
     float scale;            /* model units to room units */
     float frame;            /* the time in the motion, in frames */
-    float rate;             /* frames a tick (the game's motions run at 30 a second: 0.5) */
+    float rate;             /* motion frames a tick (1: the game ran its motions at its 30 fps) */
     int32_t motion;         /* index in the motion bank, -1 the rest pose */
     int32_t loop;           /* the motion repeats (else it holds its last frame) */
     int32_t visible;

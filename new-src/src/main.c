@@ -7,7 +7,8 @@
  *
  * Start-up: the window, the renderer, the Forth system with the engine's words, then
  * scripts/prelude.fs and scripts/game.fs - which decide everything else. Each frame: input,
- * game ticks at a fixed 60 a second (Forth tasks and hooks), then drawing. */
+ * game ticks at a fixed 30 a second, the original's frame rate (Forth tasks and hooks), then drawing
+ * (only after a tick: the picture is 30 frames a second too). */
 #include "core/files.h"
 #include "forth/forth.h"
 #include "game/engine.h"
@@ -280,6 +281,10 @@ int main(int argc, char **argv) {
             lag = 0;   /* far behind (a stall): don't try to catch up */
         }
 
+        if (ticks == 0 && opt.frames == 0) {   /* (the picture changes only with a tick: 30 a second) */
+            SDL_DelayNS(tick_ns - lag > 2000000ull ? tick_ns - lag - 1000000ull : 0);
+            continue;
+        }
         draw(e);
         if (opt.frames > 0 && ++frame >= opt.frames) {
             break;

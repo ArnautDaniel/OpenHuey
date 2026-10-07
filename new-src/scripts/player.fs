@@ -11,9 +11,9 @@ $000 constant m-idle
 $200 constant m-walk
 $202 constant m-run
 
-fvariable walk-speed   0.25e walk-speed f!     \ units a tick (60 ticks a second)
-fvariable run-speed    0.7e run-speed f!
-fvariable turn-speed   0.18e turn-speed f!     \ radians a tick
+fvariable walk-speed   0.5e walk-speed f!      \ units a tick (30 ticks a second, as the game)
+fvariable run-speed    1.4e run-speed f!
+fvariable turn-speed   0.36e turn-speed f!     \ radians a tick
 8e fconstant step-up                           \ the highest step she climbs
 3e fconstant body                              \ how far she keeps from walls
 
@@ -35,7 +35,7 @@ fvariable px  fvariable py  fvariable pz
 
 \ the first view's target: where the game expects someone to be
 : spawn-fiona
-    fiona @ 0< if  s" O_FIN/FIN_000" actor-load fiona !  then
+    fiona @ 0< if  fiona-model actor-load fiona !  then
     room-cameras if
         0 room-camera  tz f! ty f! tx f!  fdrop fdrop fdrop fdrop
         tx f@ ty f@ tz f@  nav-tris if  nav-nearest  then  place-fiona

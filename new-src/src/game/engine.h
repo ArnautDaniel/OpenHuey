@@ -12,7 +12,7 @@
 #include "world.h"
 
 #define ENGINE_HOOKS 32
-#define TICKS_PER_SECOND 60
+#define TICKS_PER_SECOND 30   /* the game's frame rate (src/game/system.c: two vblanks a frame) */
 
 typedef struct Engine {
     Forth *forth;

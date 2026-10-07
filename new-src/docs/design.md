@@ -58,7 +58,8 @@ draw     room mesh, actors (skinned on the CPU, contact shadows) into the HDR sc
   `graphics.fs` has the presets, the F1 menu, and saving (the settings written out as a Forth
   script in the player's folder, read back at start-up).
 
-The game logic runs at a fixed 60 ticks a second whatever the display rate, so scripts can count
+The game logic runs at a fixed 30 ticks a second - the original's frame rate, which its motions,
+event scripts and camera count in - and the picture is drawn after each tick; scripts can count
 ticks (`wait`, `dt`).
 
 ## Modules

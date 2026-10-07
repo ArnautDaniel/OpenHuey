@@ -82,8 +82,8 @@ IN: forth
 
 \ ---- tasks ----
 \ `wait` ( frames -- ) and `yield` give way to the rest of the frame; `seconds` turns seconds
-\ into frames (60 a second).
-: seconds  60 * ;
+\ into frames (30 a second: the game's rate).
+: seconds  30 * ;
 
 \ ---- lists and higher-order words ----
 \ Lists hold cells: `{ 1 2 3 }` makes one (also inside definitions), `list` an empty one;

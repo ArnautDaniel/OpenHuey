@@ -48,6 +48,7 @@ USING: engine state rooms player hewie doors game-state events.core events.words
 :noname ( group -- flag ) ( F: x y z -- )  nav-tri swap nav-in-group? ; is event-nav-in-group?
 \ the room's event areas
 ' message-param! is message-parameter
+' look-set is event-look
 ' tri-center is event-tri-center
 ' bank-sound is event-sound   ' bank-sound-at is event-sound-at   ' sound-set! is event-sound-set
 ' area-in? is event-area-in?   ' area-cross is event-area-cross   ' exit-area is event-exit-area
@@ -97,7 +98,7 @@ fvariable go-x  fvariable go-z  fvariable go-dx  fvariable go-dz  fvariable go-d
     dup character char.target dup sf@ go-x f!  8 + sf@ go-z f!
     dup char-pos  go-z f@ fswap f- go-dz f!  fdrop  go-x f@ fswap f- go-dx f!
     go-dx f@ fsq go-dz f@ fsq f+ fsqrt go-d f!
-    dup character char.move sl@ $A = if  0.7e  else  0.25e  then  go-s f!
+    dup character char.move sl@ $A = if  1.4e  else  0.5e  then  go-s f!   \ (units a frame)
     go-d f@ go-s f@ f<= if                               \ there: on the point
         dup char-pos fdrop fswap fdrop  go-x f@ fswap go-z f@  dup place-char  arrive exit
     then
@@ -123,8 +124,12 @@ variable started   \ (the camera director set up for play)
     progress-reset  reset-characters  reset-events  -1 event-state ev.room l!  0 started !
     3 state-flag-set  8 state-flag-set  $28 state-flag-set
     $26 1 pvar-set  $27 0 pvar-set
+    fiona @ 0< 0= if  fiona @ actor-free  -1 fiona !  then   \ (her model for that costume)
     $2A go  -1 came-in-by !  start-playing ;
 ' start-new-game is new-game
+\ her model by costume (the original's CharLoad_*: 0 her clothes, 1 the slip she wakes in)
+:noname ( -- addr len )
+    progress pr.vars $26 + c@ 1 = if  s" O_FIS/FIS_000"  else  s" O_FIN/FIN_000"  then ; is fiona-model
 
 : leaving  playing @ event-state ev.room sl@ 0< 0= and if  leave-room  then ;
 ' leaving is leaving-room

@@ -10,9 +10,9 @@ $201 constant h-walk
 $202 constant h-run
 $1B03 constant h-stand
 
-fvariable h-walk-speed  0.35e h-walk-speed f!
-fvariable h-run-speed   1.0e h-run-speed f!
-fvariable h-turn        0.15e h-turn f!
+fvariable h-walk-speed  0.7e h-walk-speed f!    \ (a tick: 30 a second)
+fvariable h-run-speed   2.0e h-run-speed f!
+fvariable h-turn        0.3e h-turn f!
 22e fconstant close-enough      \ stop this near her
 45e fconstant far-away          \ run beyond this
 300e fconstant lost             \ further than this: he catches up at once

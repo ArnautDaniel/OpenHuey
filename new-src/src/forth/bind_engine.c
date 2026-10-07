@@ -736,6 +736,11 @@ PRIM(p_f_to_s) {   /* ( places -- addr len ) ( F: x -- ) */
 PRIM(p_gfx) { PUSH(&gRender); }
 PRIM(p_look) { PUSH(&gRoomLook); }   /* ( -- addr ) the room's look, as it is now */
 PRIM(p_look_reset) { room_reset_look(&gEngine.room); }   /* back to the room file's */
+PRIM(p_look_set) {   /* ( slot addr n -- ) a look effect's parameters (addr 0: removed) */
+    Cell n = POP(), a = POP(), slot = POP();
+
+    room_look_set((int)slot, a != 0 ? (const uint8_t *)a : NULL, (size_t)(n > 0 ? n : 0));
+}
 
 /* ---- files: the player's own folder, and writing Forth's output into a file ---- */
 
@@ -884,7 +889,7 @@ void bind_engine(Forth *f) {
         {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},
         {"pen-scale", p_pen_scale}, {"draw-text", p_draw_text}, {"draw-rect", p_draw_rect},
         {"screen-size", p_screen_size}, {"char-size", p_char_size}, {"n>s", p_n_to_s}, {"f>s$", p_f_to_s},
-        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"user-dir", p_user_dir}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
+        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"user-dir", p_user_dir}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
         {"end-file", p_end_file}, {"xt>name", p_xt_to_name},
         {"clear-color", p_clear_color}, {"screenshot", p_screenshot}, {"console!", p_console},
         {"data-dir", p_data_dir},

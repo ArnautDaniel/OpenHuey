@@ -56,7 +56,7 @@ int actor_load(Actor *actors, const char *name) {
     load_textures(a);
     a->posed = malloc((size_t)a->model.nv * sizeof(MeshVertex));
     a->scale = 1.0f;
-    a->rate = 0.5f;
+    a->rate = 1.0f;   /* (a motion frame a tick: the game ran its motions at its own 30 fps) */
     a->motion = -1;
     a->loop = 1;
     a->visible = 1;

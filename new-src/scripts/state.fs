@@ -20,3 +20,5 @@ defer scripted? ( n -- flag )  :noname drop false ; is scripted?
 variable hewie-along  -1 hewie-along !
 \ a new game from the title (events/play.fs: the game's own start)
 defer new-game  ' noop is new-game
+\ Fiona's model (her costume: the game's progress variable $26 picks it - events/play.fs)
+defer fiona-model ( -- addr len )  :noname s" O_FIN/FIN_000" ; is fiona-model

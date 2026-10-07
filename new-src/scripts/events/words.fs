@@ -164,7 +164,11 @@ USING: game-state events.core ;
 \ 32: Sound channel `ch`'s volume (sound +0x7C).
 : sound-volume ( ch vol -- )  drop drop s" sound-volume" stub-step ;
 \ 33: Sends room effect `fx` the string (if not empty).
-: effect-string ( fx text.. n -- )  0 ?do drop loop drop s" effect-string" stub-step ;
+create effect-bytes 64 allot  variable #effect-bytes
+: effect-string ( fx text.. n -- )   \ (RoomEffects_Send: the effect in slot `fx` takes the bytes)
+    dup 64 min #effect-bytes !
+    0 ?do  i #effect-bytes @ < if  effect-bytes #effect-bytes @ i - 1- + c!  else  drop  then  loop
+    effect-bytes #effect-bytes @ event-look ;
 \ 34: The renderer's display setting +0x304C04 on / off; nothing in the game reads it (unused by
 \ the scripts).
 : renderer-flag-304C04 ( on -- )  drop s" renderer-flag-304C04" stub-step ;
@@ -420,10 +424,15 @@ fvariable turn-x  fvariable turn-z
 : self-through-door ( door -- )  drop s" self-through-door" stub-step ;
 \ 9B: Room effect slot 0x1E: on 0 removed, else made anew as a screen blend (ScreenBlend_Init)
 \ with a (little-endian) and b.
-: screen-blend ( a b on -- )  drop drop drop s" screen-blend" stub-step ;
+: screen-blend ( a b on -- )   \ (slot $1E: on 0 removed, else made anew with colour a, mode b)
+    if  effect-bytes 4 + c!  effect-bytes l!  $1E effect-bytes 5 event-look
+    else  2drop $1E 0 0 event-look  then ;
 \ 9C: Room effect slot 0x1D: on 0 removed, else made anew as fog (Fog_Init): a, b raw floats
 \ (little-endian), near, far.
-: fog ( a b on F: near far -- )  drop drop drop fdrop fdrop s" fog" stub-step ;
+: fog ( a b on F: near far -- )   \ (slot $1D: on 0 removed, else fog with colours a, b)
+    if  effect-bytes 4 + l!  effect-bytes l!  effect-bytes 12 + sf!  effect-bytes 8 + sf!
+        $1D effect-bytes 16 event-look
+    else  2drop fdrop fdrop $1D 0 0 event-look  then ;
 \ 9D: Character `id` plays animation `anim` (blend, speed) and is held in a scripted state.
 : char-anim-hold ( id anim blend speed -- )  drop drop drop drop s" char-anim-hold" stub-step ;
 \ 9E: Waits until character `id`'s animation comes round (its end flag 0x20).

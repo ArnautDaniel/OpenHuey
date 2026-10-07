@@ -206,6 +206,9 @@ defer event-char-out ( cs -- )   ' drop is event-char-out
 defer event-char-in ( cs -- )    ' drop is event-char-in
 \ a nav triangle's middle (for placing on triangles)
 defer event-tri-center ( tri -- ) ( F: -- x y z )   :noname drop 0e 0e 0e ; is event-tri-center
+\ the room's look effects (slots $1C depth of field, $1D fog, $1E screen blend, $1F tint) from
+\ parameter bytes, as the original's effects take them (addr 0: the effect removed)
+defer event-look ( slot addr n -- )   :noname 2drop drop ; is event-look
 \ the message window's parameter `slot` shows system message $100 + id's first line
 defer message-parameter ( slot id -- ) ' 2drop is message-parameter
 
