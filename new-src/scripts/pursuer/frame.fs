@@ -52,13 +52,23 @@ defer door-behaviour   ' noop is door-behaviour   \ (D_003ECB80: with the doors)
     p-cond 2 <> if  0 mode!  $2BC vcall  6 $16C9 pu-c!  7 $16CA pu-c!  then
     dup exit-open? swap me group-fields 8 and 0<> and if  1 p-2b!  then ;
 
+\ ---- Actor_TeleportRandom (kind -1): onto a triangle at random he may stand on with both area
+\ bits 0x300000 (the room's event areas not checked: not kept yet; 1000 tries) ----
+: teleport-random ( -- )
+    in-played-room? 0= if  exit  then
+    1000 0 do
+        nav-tris s>f rnd01 f* f>s
+        dup tri-flags p-mask and 0=  over tri-flags $300000 and $300000 = and if
+            tri-center me c-place!  unloop exit
+        then  drop
+    loop ;
 \ ---- Pursuer_KeepOnWalkable: off his floor, back onto the nearest he may stand on (none: put
 \ anywhere, Actor_TeleportRandom); standing, onto his triangle's plane ----
 : keep-on-walkable ( -- )
     p-tri tri-blocked? p-2b 0= and in-played-room? and if
         p-tri tri-if-standable dup p-tri!
         dup 0< 0= if  dup tri-blocked? 0= if  tri-center me c-place!  else  drop  then  else  drop  then
-        p-tri 0< if  not-yet" Actor_TeleportRandom"  then
+        p-tri 0< if  teleport-random  then
     then ;
 
 \ ---- Pursuer_AnimSounds: his animations' sounds (his table +0x16AC: a pair a motion, by the

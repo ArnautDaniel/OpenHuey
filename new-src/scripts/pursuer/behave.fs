@@ -66,10 +66,11 @@ defer leave-door ( exit -- )   ' drop is leave-door
     else  ['] run-then-next behaviour!  then ;
 ' back-to-stance $7C vt!
 
+defer hit   ' noop is hit   \ Pursuer_Hit (pursuer.hit)
 \ Pursuer_EventState (vtable +0x84): his request block
 : event-state ( -- )
     0 p-req case
-        4 of  in-played-room? if  not-yet" Pursuer_Hit"  else  not-yet" Pursuer_HitOffscreen"  then  endof
+        4 of  in-played-room? if  hit  else  not-yet" Pursuer_HitOffscreen"  then  endof
         5 of
             in-played-room? if
                 p-sub 7 <> if  $8C vcall  $7C vcall
