@@ -32,8 +32,8 @@ The game's executable (`SLUS_210.75`, for the door and room tables) is looked fo
 folder, in it, in `baserom/`, or at `$HG_EXE`.
 It builds as 64-bit (or 32-bit); it needs SDL3 and OpenGL 4.6.
 
-The game starts at its title (`scripts/title.fs`): Hewie lying in the entrance hall, in real
-time; New Game (Enter) has him get up and bark (the game's own bark, sound 0x65 of the common
+The game starts at its title (`scripts/title.fs`): Hewie lying in the dark, close up, warmly lit
+by two lights of the scripts' own (`stage-light`; no room loaded), in real time; New Game (Enter) has him get up and bark (the game's own bark, sound 0x65 of the common
 bank), then Fiona takes over in the first room. Sound comes from the game's banks
 (`src/data/soundbank.c`: the .HD / .SDT / .BD as the IOP driver plays them) through SDL3.
 

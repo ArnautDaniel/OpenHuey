@@ -97,6 +97,12 @@ static void light_actor(Engine *e, Actor *a) {
     Mat4 proj, view, vp;
     int slot;
 
+    if (e->nstage > 0) {   /* (a stage: its lights, and no shadow map - there is nothing to fall on) */
+        a->lights[0] = 0;
+        a->lights[1] = e->nstage > 1 ? 1 : -1;
+        a->lights[2] = e->nstage > 2 ? 2 : -1;
+        return;
+    }
     room_lights_at(r, center, a->lights);
     if (a->lights[0] < 0) {
         return;
@@ -130,7 +136,7 @@ static void use_lights(Engine *e, const Actor *a) {
 
     for (k = 0; k < 3; k++) {
         if (a->lights[k] >= 0) {
-            const RoomLight *l = &e->room.lights[a->lights[k]];
+            const RoomLight *l = e->nstage > 0 ? &e->stage[a->lights[k]] : &e->room.lights[a->lights[k]];
 
             lights[n].pos = l->pos;
             lights[n].color = vec3_scale(l->color, l->intensity);
@@ -138,7 +144,11 @@ static void use_lights(Engine *e, const Actor *a) {
             n++;
         }
     }
-    render_draw_lights(e->room.ambient, lights, e->room.nlights > 0 ? n : -1);
+    if (e->nstage > 0) {
+        render_draw_lights(e->stage_ambient, lights, n);
+    } else {
+        render_draw_lights(e->room.ambient, lights, e->room.nlights > 0 ? n : -1);
+    }
 }
 
 static void draw(Engine *e) {

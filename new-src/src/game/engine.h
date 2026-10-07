@@ -30,6 +30,9 @@ typedef struct Engine {
     Word *draw_hooks[ENGINE_HOOKS];   /* run every frame to draw 2D (`on-draw`) */
     int ndraw_hooks;
     Vec3 clear;            /* the background colour */
+    RoomLight stage[3];    /* lights set by scripts (a scene of their own, e.g. the title): */
+    int nstage;            /* used in place of the room's when there are any */
+    Vec3 stage_ambient;    /* (0..128, as a room's) */
     long ticks;
     char hud[128];         /* a line of text at the bottom of the screen ("" none) */
     char screenshot[256];  /* a screenshot to save after this frame ("" none) */

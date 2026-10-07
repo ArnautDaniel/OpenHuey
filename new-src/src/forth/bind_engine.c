@@ -429,6 +429,25 @@ PRIM(p_sound_to_wav) {   /* ( id addr len -- ) the common bank's sound `id` into
     forth_printf(f, "wrote %s: %d samples\n", path, n);
 }
 
+/* ---- a stage: lights of the scripts' own (the title) ---- */
+
+PRIM(p_stage_light) {   /* ( i -- ) ( F: x y z r g b range -- ) light i (0..2) of the stage; colours 0..255 */
+    Cell i = POP();
+    float range = (float)FPOP(), b = (float)FPOP(), g = (float)FPOP(), r = (float)FPOP();
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+
+    if (i >= 0 && i < 3) {
+        gEngine.stage[i] = (RoomLight){vec3(x, y, z), vec3(r, g, b), 1.0f, range};
+    }
+}
+PRIM(p_stage_lights) { gEngine.nstage = (int)POP(); }   /* ( n -- ) how many (0: the room's again) */
+PRIM(p_stage_ambient) {   /* ( F: r g b -- ) */
+    float b = (float)FPOP(), g = (float)FPOP(), r = (float)FPOP();
+
+    gEngine.stage_ambient = vec3(r, g, b);
+}
+PRIM(p_room_clear) { room_free(&gEngine.room); }   /* ( -- ) no room: nothing drawn round the actors */
+
 PRIM(p_exit_area) {   /* ( exit -- area ) the event area of this room's exit (the room table) */
     Cell exit = POP();
     int room = gEngine.room.id;
@@ -785,7 +804,8 @@ void bind_engine(Forth *f) {
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
-        {".director", p_cam_info}, {"area-in?", p_area_in}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"common-sound", p_common_sound}, {"sound-to-wav", p_sound_to_wav}, {"exit-door", p_exit_door}, {"door-flags", p_door_flags},
+        {".director", p_cam_info}, {"area-in?", p_area_in}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"stage-light", p_stage_light}, {"stage-lights", p_stage_lights},
+        {"stage-ambient", p_stage_ambient}, {"room-clear", p_room_clear}, {"common-sound", p_common_sound}, {"sound-to-wav", p_sound_to_wav}, {"exit-door", p_exit_door}, {"door-flags", p_door_flags},
         {"nav-block!", p_nav_block}, {"nav-group!", p_nav_group}, {"nav-tri-flags!", p_nav_tri_flags},
         {"nav-in-group?", p_nav_in_group}, {"nav-flags", p_nav_flags},
         {"message-layout", p_message_layout}, {"message-lines", p_message_lines}, {"message-line", p_message_line},

@@ -1,13 +1,25 @@
-\ title.fs - where the game starts: Hewie lying in the dark of a room, close up, under the menu.
+\ title.fs - where the game starts: Hewie lying in the dark, close up and warmly lit, by the menu.
 \ New Game: he gets up, barks, and the game begins.
 \   Up / Down  pick      Enter  take it
 IN: title
 USING: engine state vectors rooms views player hewie ;
 
-$0E constant title-room
-\ where he lies and how we see him
-20e fconstant hx0   0e fconstant hy0   60e fconstant hz0   2.2e fconstant hyaw
+\ the scene: no room, just him in the dark, warm lights on him; the camera close, at an angle
+\ round him
+fvariable cam-angle  0.9e cam-angle f!    \ radians round him from his front
+fvariable cam-dist   20e cam-dist f!
+fvariable cam-high   7e cam-high f!
+fvariable cam-fov    0.55e cam-fov f!
+fvariable cam-off    -0.25e cam-off f!    \ (him a little right of centre: the menu is on the left)
+fvariable look-high  3e look-high f!
 fvariable cx  fvariable cy  fvariable cz
+
+: warm-lights ( -- )
+    \ the key: a warm lamp-light, high in front of him to the side; behind, a low orange glow
+    -10e 22e 26e   170e 115e 65e   160e  0 stage-light
+     24e 18e -20e   60e 35e 18e    120e  1 stage-light
+    2 stage-lights
+    10e 8e 6e stage-ambient ;
 
 $002 constant m-lie          \ lying, settled (Hewie_StepToPose's pose 2)
 $103 constant m-get-up       \ lying to standing (sPoseInto[0][2])
@@ -22,30 +34,24 @@ variable picked
 : dog ( -- addr )  hewie @ actor ;
 : play ( motion loop? -- )  dog act.loop l!  hewie @ swap motion! ;
 
-fvariable cam-dist   30e cam-dist f!     \ how far, how high, the view's angle, how far off centre
-fvariable cam-high   12e cam-high f!
-fvariable cam-fov    0.8e cam-fov f!
-fvariable cam-off    -0.35e cam-off f!
-fvariable his-yaw    3.0e his-yaw f!     \ which way he lies
-: frame-him ( -- )   \ the camera low at his side, looking at his middle, him right of centre
-    dog act.x sf@ cam-dist f@ hyaw fcos f* f+ cx f!
-    dog act.y sf@ cam-high f@ f+ cy f!
-    dog act.z sf@ cam-dist f@ hyaw fsin f* f- cz f!
-    cx f@ cy f@ cz f@ cam-at
-    dog act.x sf@  dog act.y sf@ 4e f+  dog act.z sf@  look-at
+: frame-him ( -- )   \ the camera round him at cam-angle, looking at his chest
+    dog act.yaw sf@ cam-angle f@ f+ fdup fsin cam-dist f@ f* cx f!  fcos cam-dist f@ f* cz f!
+    cx f@ dog act.x sf@ f+  dog act.y sf@ cam-high f@ f+  cz f@ dog act.z sf@ f+  cam-at
+    dog act.x sf@  dog act.y sf@ look-high f@ f+  dog act.z sf@  look-at
     camera cam.yaw sf@ cam-off f@ f+ camera cam.yaw sf!
     cam-fov f@ camera cam.fov sf! ;
 
 : show-title ( -- )
     -1 title !  0 playing !  0 stage !  0 picked !
-    title-room room  -1 view !
+    room-clear  -1 view !  0e 0e 0e clear-color  warm-lights
     hewie @ 0< if  s" O_HEW/HEW_000" actor-load hewie !  then
-    hx0 dog act.x sf!  hy0 dog act.y sf!  hz0 dog act.z sf!  his-yaw f@ dog act.yaw sf!
-    hx0 hy0 8e f+ hz0 floor-below if  dog act.y sf!  then
+    0e dog act.x sf!  0e dog act.y sf!  0e dog act.z sf!  0e dog act.yaw sf!
+    0e dog act.shadow sf!
     m-lie -1 play  frame-him ;
 
 : begin-game ( -- )
-    0 title !  3 stage !
+    0 title !  3 stage !  0 stage-lights  0.06e 0.06e 0.08e clear-color
+    7e dog act.shadow sf!   \ (his contact shadow back: the actor default)
     first-room  start-playing ;
 
 : title-tick ( -- )
