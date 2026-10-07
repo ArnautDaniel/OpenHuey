@@ -68,8 +68,10 @@ typedef struct ScriptChar {
     int32_t disabled;   /* out of play: hidden away, not moving (+0x29) */
     int32_t req, req_arg;   /* a pending request from outside (+0x14E8 / +0x14EC: 12 Fiona's
                              * call, 13 her command, ...) */
+    int32_t req_x[6];       /* the rest of that block (+0x14F0..: [2] .. [7]) */
     float radius, height;   /* (+0xC8 / +0xCC) */
     int32_t silent;     /* its own sounds (Actor_PlaySound) don't play (+0x2C) */
+    int32_t req2[8];    /* the request kept for when a joint action starts (+0x1508: state2) */
 } ScriptChar;
 
 /* an action script running (the original's 0x18-byte contexts at +0x564) */

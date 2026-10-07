@@ -6,7 +6,7 @@
 \ Not here yet: going for the stalkers (biting, leaping, tackles - phase 3), leaving and coming
 \ into rooms off screen (doors, exits, hiding - phase 4), fetching things (action 0x78).
 IN: partner.states
-USING: engine game-state events.core events.words chars partner.core partner.tables partner.moves ;
+USING: engine game-state events.core events.words chars relations partner.core partner.tables partner.moves ;
 
 \ ---- small pieces the behaviours share ----
 \ Hewie_Start: the action as his situation makes it, with no argument
@@ -746,7 +746,7 @@ create kb-at 12 allot  variable kb-tri  fvariable kb-step  fvariable kb-turn
     behind-spot
     h-pos kb-at vec-dist 10e f< if
         h-to-yaw f@ pi f+ h-yaw f- angle-wrap fabs pi f2/ f< if
-            4 look-now!  ['] st-back-to-normal behave  exit
+            4 look-now!  2 6 him her 0 relations:cmd-give if  ['] st-back-to-normal behave  then  exit
         then
     then
     path-done? if  kb-tri @ kb-at plan-and-go if  exit  then  then

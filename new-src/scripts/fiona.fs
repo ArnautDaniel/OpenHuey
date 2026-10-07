@@ -2,7 +2,7 @@
 \ (fiona.brain - the original's, src/game/fiona.c) in place of player.fs's walking.
 \   W A S D  the stick (camera relative)     Shift  run (the cross button)
 IN: fiona
-USING: engine state game-state events.core chars player fiona.core fiona.moves fiona.brain ;
+USING: engine state game-state events.core chars relations player fiona.core fiona.moves fiona.brain fiona.commands ;
 
 variable fiona-ready  -1 fiona-ready !   \ the model she was set up with
 : prepare ( -- )
@@ -12,7 +12,10 @@ variable fiona-ready  -1 fiona-ready !   \ the model she was set up with
     $3D5CC0 motion-table                  \ (CharModel_SecondaryMotion: her fades and flags)
     me 2e 15e c-size!                     \ (Fiona_Reset: radius 2, height 15)
     f-reset-fields  me c-find-tri me c-tri!  to-idle ;
-: fiona-control ( -- )  prepare  fiona-frame ;
+: fiona-control ( -- )
+    relation-changes resolve   \ (the progress' relations, each frame before the characters)
+    prepare  fiona-frame
+    f-cmd @ partner.core:fiona-cmd ! ;   \ (what Hewie sees of her controls)
 ' fiona-control is control-fiona
 \ (the camera-cut rule of her controls: the director's setup changed)
 ' cam-changed? is camera-cut?

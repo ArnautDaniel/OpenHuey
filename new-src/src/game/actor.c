@@ -179,14 +179,17 @@ void actor_tick(Actor *a) {
     if (a->variant >= 0 && !(a->mflags & 0x10)) {
         step_time(&a->vframe, a->rate, model_motion_frames(&a->model, a->variant), loop);
     }
-    if (a->fade > 0.0f) {   /* the motion before goes on while it fades out */
-        if (a->prev_motion >= 0) {
+    if (a->fade > 0.0f) {   /* the motion before goes on while it fades out (not with flag 8) */
+        if (a->prev_motion >= 0 && !a->prev_frozen) {
             step_time(&a->prev_frame, a->rate, model_motion_frames(&a->model, a->prev_motion), 1);
         }
-        if (a->prev_variant >= 0) {
+        if (a->prev_variant >= 0 && !a->prev_frozen) {
             step_time(&a->prev_vframe, a->rate, model_motion_frames(&a->model, a->prev_variant), 1);
         }
         a->fade -= 1.0f;
+    }
+    if (a->fade <= 0.0f && (a->mflags & 8)) {   /* (Motion_Update: flag 8 holds it only while it fades in) */
+        a->mflags &= ~0x10;
     }
 }
 
@@ -293,6 +296,7 @@ void actor_body_start(Actor *a, int index, int flags, float blend) {
     }
     a->motion = index;
     a->mflags = (flags & 0xFFFF) | (flags & 8 ? 0x10 : 0);
+    a->prev_frozen = (flags & 8) != 0;
     a->loop = flags & 1;
 }
 
@@ -323,12 +327,19 @@ static void root_of(const Actor *a, int index, float frame, int var, float vfram
 }
 
 void actor_root_delta(const Actor *a, float *turn, Vec3 *step) {
-    root_of(a, a->motion, a->frame, a->variant, a->vframe, a->vweight, turn, step);
+    if (a->mflags & 0x10) {   /* (no time of its own: no root movement - motion_root) */
+        *turn = 0.0f;
+        *step = vec3(0.0f, 0.0f, 0.0f);
+    } else {
+        root_of(a, a->motion, a->frame, a->variant, a->vframe, a->vweight, turn, step);
+    }
     if (a->fade > 0.0f && a->fade_len > 0.0f && a->prev_motion >= 0) {   /* prev x w + this x (1 - w) */
-        float x = a->fade / a->fade_len, w = x * x * (3.0f - 2.0f * x), t2;
-        Vec3 s2;
+        float x = a->fade / a->fade_len, w = x * x * (3.0f - 2.0f * x), t2 = 0.0f;
+        Vec3 s2 = vec3(0.0f, 0.0f, 0.0f);
 
-        root_of(a, a->prev_motion, a->prev_frame, a->prev_variant, a->prev_vframe, a->prev_vweight, &t2, &s2);
+        if (!a->prev_frozen) {   /* (held still: none of its own) */
+            root_of(a, a->prev_motion, a->prev_frame, a->prev_variant, a->prev_vframe, a->prev_vweight, &t2, &s2);
+        }
         *turn = t2 * w + *turn * (1.0f - w);
         *step = vec3_add(vec3_scale(s2, w), vec3_scale(*step, 1.0f - w));
     }

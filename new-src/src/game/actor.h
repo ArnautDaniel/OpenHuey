@@ -43,6 +43,7 @@ typedef struct Actor {
     float vframe, vweight;
     int32_t prev_variant;
     float prev_vframe, prev_vweight;
+    int32_t prev_frozen;    /* the motion fading out held still (the new one has flag 8) */
     int32_t prev_old_flags, prev_old_frames;   /* the motion before's flags, length and time as */
     float prev_old_frame;                      /* this one started (its variant's phase) */
     const uint8_t *table;   /* the model's motion table (6 bytes a motion, in bank order: its fade

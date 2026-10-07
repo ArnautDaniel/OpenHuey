@@ -93,6 +93,7 @@ void bind_state(Forth *f) {
     field(f, "char.radius", offsetof(ScriptChar, radius));
     field(f, "char.height", offsetof(ScriptChar, height));
     field(f, "char.silent", offsetof(ScriptChar, silent));
+    field(f, "char.req2", offsetof(ScriptChar, req2));
     field(f, "char.move-anim", offsetof(ScriptChar, move_anim));
     field(f, "char.target", offsetof(ScriptChar, target));   /* 3 floats */
     field(f, "char.face", offsetof(ScriptChar, face));

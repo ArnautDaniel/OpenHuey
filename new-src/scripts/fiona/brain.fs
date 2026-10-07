@@ -151,10 +151,13 @@ variable st-l  variable st-r  variable st-step  variable ft-base  variable ft-ba
 defer state-block   ' noop is state-block          \ Fiona_StateBlock (fiona.commands)
 defer control-command   ' noop is control-command  \ Fiona_ControlCommand (fiona.commands)
 defer read-command   ' noop is read-command        \ her commands to Hewie (Gesture_Update)
+defer joint-action   ' noop is joint-action        \ Fiona_JointAction (fiona.commands)
 : f-req@ ( -- n )  me character char.req sl@ ;
+create f-end-pos 12 allot   \ where her frame left her (moved since by the rooms or a script: her
+                            \ triangle found anew)
 : fiona-frame ( -- )
     f-actor 0< if  exit  then
-    f-tri 0< if  me c-find-tri me c-tri!  then
+    f-tri 0<  f-pos f-end-pos vec-dist 0.01e f> or if  me c-find-tri me c-tri!  then
     f-prev f-pos vec-copy  f-tri f-prev-tri !  f-yaw f-yaw-was f!
     f-2b @ if  0  else  $28020018  then  me c-mask!
     0 f-look-on !  1 f-cam-on !
@@ -164,7 +167,8 @@ defer read-command   ' noop is read-command        \ her commands to Hewie (Gest
     f-req@ if  state-block  else  control-command  then
     read-command
     f-state @ ?dup if  execute  then
-    keep-apart
+    keep-apart  joint-action
     motion-sounds  footsteps
     f-mode 0= f-act @ 1 <> and if  f-sub 2 > if  0 f-sub!  then  then
-    f-req@ 7 = if  0 me character char.req l!  then ;
+    f-req@ 7 = if  0 me character char.req l!  then
+    f-end-pos f-pos vec-copy ;

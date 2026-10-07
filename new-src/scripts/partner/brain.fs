@@ -2,11 +2,12 @@
 \ Fiona's commands and calls (his state block), his own decisions, what he does next by his
 \ trust (the weighted lists), and the frame (Hewie_Update).
 IN: partner.brain
-USING: engine game-state events.core events.words chars partner.core partner.tables partner.moves partner.route partner.states partner.offscreen partner.actions ;
+USING: engine game-state events.core events.words chars partner.core partner.tables partner.moves partner.route partner.states partner.offscreen partner.actions partner.joint relations ;
 
 : req@ ( -- n )  him character char.req sl@ ;
 : req-arg@ ( -- n )  him character char.req-arg sl@ ;
 : req! ( n -- )  him character char.req l! ;
+: req-w ( i -- n )  4 * him character char.req + sl@ ;
 : hp! ( n -- )  him character char.hp l! ;
 : cond! ( n -- )  him character char.cond l! ;
 : by-chance ( table -- flag )  trust-of 0 100 clamp  100 roll > ;   \ by_chance
@@ -184,7 +185,8 @@ variable pk-roll  variable pk-sum  variable pk-favoured
         $2C of  $1D game-mode @ 0= if  $D  else  $E  then  want  obeys  true  endof
         $2D of  $4E 0 want  obeys  true  endof
         $2A of  10 hp!  false  endof
-        $23 of  h-cmd-tri @ h-to-tri !  h-cmd-yaw f@ h-to-yaw f!  h-to h-cmd-pos vec-copy
+        $23 of  4 req-w h-to-tri !  5 req-w h-to-yaw l!   \ (her point: words 2 / 3, x z in 1e-5)
+                2 req-w s>f 1e-5 f* h-to sf!  0e h-to 4 + sf!  3 req-w s>f 1e-5 f* h-to 8 + sf!
                 game-mode @ 0= if  $1D $63 want  else  $63 0 want  then  obeys  true  endof
         $2E of  obeys  false  endof
         $30 of  panic @ 5 = if  panic5-chance
@@ -598,7 +600,8 @@ variable was-busy
     h-2b @ if  8  else  $29020008  then  him c-mask!
     h-root-ok @ fit-floor
     0 h-no-root !  1 h-root-ok !
-    cutscene-active? if  standing-frame  else  hewie-control @ 0= if  own-decisions  then  then
+    him relations:cmd? if  hewie-joint
+    else  cutscene-active? if  standing-frame  else  hewie-control @ 0= if  own-decisions  then  then  then
     h-mood-state @ ?dup if  execute  then
     h-state @ ?dup if  execute  then
     turn-by-anim
