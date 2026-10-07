@@ -384,10 +384,72 @@ PRIM(p_door_flags) {   /* ( door -- flags ) its fixed flags (the door table; bit
 }
 /* ---- sounds: the common bank (C_0000, the original's bank 5: Fiona's, Hewie's, the house's) ---- */
 
-static SoundBank sCommon;
+static SoundBank sCommon, sSet, sRoomBank;
+static int sSetNo = -1, sRoomBankNo = -1, sWantSet;
 static int common_bank(void) {
     return sCommon.hd != NULL || soundbank_load(&sCommon, "C_0000");
 }
+/* the game's banks by number: 4 the sound set (D_n000), 5 the common bank (C_0000), 6 the room's
+ * (ST_xxx/ST1_xxx); NULL if not there */
+static const SoundBank *bank_no(int bank) {
+    char name[64];
+
+    switch (bank) {
+    case 5:
+        return common_bank() ? &sCommon : NULL;
+    case 4:
+        if (sSetNo != sWantSet) {
+            soundbank_free(&sSet);
+            snprintf(name, sizeof(name), "D_%01X000", sWantSet & 0xF);
+            sSetNo = sWantSet;
+            soundbank_load(&sSet, name);
+        }
+        return sSet.hd != NULL ? &sSet : NULL;
+    case 6:
+        if (sRoomBankNo != gEngine.room.id) {
+            soundbank_free(&sRoomBank);
+            snprintf(name, sizeof(name), "ST_%03X/ST1_%03X", gEngine.room.id & ~7, gEngine.room.id);
+            sRoomBankNo = gEngine.room.id;
+            if (gEngine.room.id >= 0) {
+                soundbank_load(&sRoomBank, name);
+            }
+        }
+        return sRoomBank.hd != NULL ? &sRoomBank : NULL;
+    }
+    return NULL;
+}
+/* sound `id` (its low 16 bits) of bank `bank` at volume / pan */
+static void play_bank(int id, int bank, float vol, float pan) {
+    const SoundBank *b = bank_no(bank);
+    int n;
+    int16_t *pcm;
+
+    if (b == NULL) {
+        return;
+    }
+    pcm = soundbank_render(b, id & 0xFFFF, SOUND_RATE, &n);
+    sound_play(pcm, n, vol, pan);
+    free(pcm);
+}
+PRIM(p_bank_sound) {   /* ( id bank -- ) a sound heard plainly */
+    Cell bank = POP(), id = POP();
+
+    play_bank((int)id, (int)bank, 1.0f, 0.0f);
+}
+PRIM(p_bank_sound_at) {   /* ( id bank -- ) ( F: x y z -- ) a sound at a point: fainter further from the
+                           * camera (full within 50, none past 600: the original's curves are its
+                           * own data, not read yet), to the side it is on */
+    Cell bank = POP(), id = POP();
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+    Vec3 d = vec3_sub(vec3(x, y, z), gEngine.camera.pos);
+    float dist = vec3_len(d), vol = dist <= 50.0f ? 1.0f : fmaxf(0.0f, 1.0f - (dist - 50.0f) / 550.0f);
+    float side = sinf(atan2f(d.x, -d.z) - gEngine.camera.yaw);
+
+    if (vol > 0.0f) {
+        play_bank((int)id, (int)bank, vol, side * 0.8f);
+    }
+}
+PRIM(p_sound_set) { sWantSet = (int)POP(); }   /* ( set -- ) the sound set bank 4 holds */
 PRIM(p_common_sound) {   /* ( id -- ) play sound `id` of the common bank */
     Cell id = POP();
     int n;
@@ -400,11 +462,12 @@ PRIM(p_common_sound) {   /* ( id -- ) play sound `id` of the common bank */
     sound_play(pcm, n, 1.0f, 0.0f);
     free(pcm);
 }
-PRIM(p_sound_to_wav) {   /* ( id addr len -- ) the common bank's sound `id` into a .wav file (checking) */
-    Cell len = POP(), a = POP(), id = POP();
+PRIM(p_sound_to_wav) {   /* ( id bank addr len -- ) a bank's sound `id` into a .wav file (checking) */
+    Cell len = POP(), a = POP(), bank = POP(), id = POP();
     char path[512];
     int n = 0;
-    int16_t *pcm = common_bank() ? soundbank_render(&sCommon, (int)id, SOUND_RATE, &n) : NULL;
+    const SoundBank *sb = bank_no((int)bank);
+    int16_t *pcm = sb != NULL ? soundbank_render(sb, (int)id & 0xFFFF, SOUND_RATE, &n) : NULL;
     FILE *fp;
     uint32_t u;
     uint16_t s;
@@ -805,7 +868,8 @@ void bind_engine(Forth *f) {
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
         {".director", p_cam_info}, {"area-in?", p_area_in}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"stage-light", p_stage_light}, {"stage-lights", p_stage_lights},
-        {"stage-ambient", p_stage_ambient}, {"room-clear", p_room_clear}, {"common-sound", p_common_sound}, {"sound-to-wav", p_sound_to_wav}, {"exit-door", p_exit_door}, {"door-flags", p_door_flags},
+        {"stage-ambient", p_stage_ambient}, {"room-clear", p_room_clear}, {"common-sound", p_common_sound},
+        {"bank-sound", p_bank_sound}, {"bank-sound-at", p_bank_sound_at}, {"sound-set!", p_sound_set}, {"sound-to-wav", p_sound_to_wav}, {"exit-door", p_exit_door}, {"door-flags", p_door_flags},
         {"nav-block!", p_nav_block}, {"nav-group!", p_nav_group}, {"nav-tri-flags!", p_nav_tri_flags},
         {"nav-in-group?", p_nav_in_group}, {"nav-flags", p_nav_flags},
         {"message-layout", p_message_layout}, {"message-lines", p_message_lines}, {"message-line", p_message_line},

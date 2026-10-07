@@ -188,6 +188,12 @@ defer event-nav-group ( set? group bits -- )      :noname 2drop drop ; is event-
 defer event-nav-tri ( set? tri bits -- )          :noname 2drop drop ; is event-nav-tri
 defer event-nav-in-group? ( group -- flag ) ( F: x y z -- )
 :noname drop fdrop fdrop fdrop false ; is event-nav-in-group?
+\ sounds: of bank `bank` (4 the sound set, 5 common, 6 the room's) heard plainly, or at a point;
+\ which sound set bank 4 holds
+defer event-sound ( id bank -- )             ' 2drop is event-sound
+defer event-sound-at ( id bank -- ) ( F: x y z -- )
+:noname 2drop fdrop fdrop fdrop ; is event-sound-at
+defer event-sound-set ( set -- )             ' drop is event-sound-set
 \ the message window's parameter `slot` shows system message $100 + id's first line
 defer message-parameter ( slot id -- ) ' 2drop is message-parameter
 

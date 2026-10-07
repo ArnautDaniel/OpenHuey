@@ -181,8 +181,10 @@ USING: game-state events.core ;
 : self-turn-to ( id -- )  drop s" self-turn-to" stub-step ;
 \ 43: Raises the threat / panic meter (progress +0x7B8) by v (0..100).
 : threat-raise ( v -- )  drop s" threat-raise" stub-step ;
-\ 45: Character `who` (0xFF: self) plays sound `id` (Actor_PlaySound).
-: char-sound ( who id vol -- )  drop drop drop s" char-sound" stub-step ;
+\ 45: Character `who` (0xFF: self) plays sound `id` of bank `bank` where it stands.
+: char-sound ( who id bank -- )   \ (Actor_PlaySound: at the character)
+    rot dup $FF = if  drop self-char  else  char-slot  then
+    dup 0< if  drop 2drop exit  then  char-pos event-sound-at ;
 \ 46: The doors redo their setup for the current room (Doors_RoomIn).
 : doors-room-in ( -- )  s" doors-room-in" stub-step ;
 \ 47: Character `who`: +0xC4 = v (a stalker's presence state: 1 / 2 seen / near ...?).
@@ -270,7 +272,9 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 : char-find-tri ( who -- )  drop s" char-find-tri" stub-step ;
 \ 68: Sound `id` of bank `bank` & 0x3F; bank >> 6: 0 at (x, y, z) (only if the progress' +0x7C
 \ allows: always in this game), 2 plain, else at the camera; vol / pitch offsets.
-: sound ( id bank vol pitch F: x y z -- )  drop drop drop drop fdrop fdrop fdrop s" sound" stub-step ;
+: sound ( id bank vol pitch F: x y z -- )   \ (cmd_sound; the volume / pitch offsets aren't kept yet)
+    2drop dup 6 rshift swap $3F and swap            ( id bank where )
+    0= if  event-sound-at  else  fdrop fdrop fdrop event-sound  then ;
 \ 69: Stops sound `id` of bank `bank` (SndDriver_StopSound).
 : sound-stop ( id bank -- )  drop drop s" sound-stop" stub-step ;
 \ 6A: Stage music by `op`: 0 global volume fade to a over b frames (MusicDir_GlobalVolumeTo); 1
@@ -473,7 +477,7 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 \ (0..100), as a small Threat_Raise.
 : threat-add ( v -- )  drop s" threat-add" stub-step ;
 \ C1: Loads sound set `set` (Progress_LoadSoundSet).
-: sound-set ( set -- )  drop s" sound-set" stub-step ;
+: sound-set ( set -- )  event-sound-set ;
 \ C2: Door `door`'s lock for character `id` = state (Progress_LockDoorFor).
 : door-lock-for ( id door state -- )  drop drop drop s" door-lock-for" stub-step ;
 \ C3: Hewie plays animation `anim` (blend) with its root motion (character move 0x15 -> his

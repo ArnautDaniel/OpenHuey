@@ -139,7 +139,7 @@ CMD = {
     0x42: ('self-turn-to', 'id:u8', 'self: turns to character `id` (character move 14).'),
     0x43: ('threat-raise', 'v:u8', 'Raises the threat / panic meter (progress +0x7B8) by v (0..100).'),
     0x44: ('nop-progress-6C', '', 'Calls the progress\' +0x6C: empty in this game (no effect).'),
-    0x45: ('char-sound', 'who:chr id:u32 vol:u8', 'Character `who` (0xFF: self) plays sound `id` (Actor_PlaySound).'),
+    0x45: ('char-sound', 'who:chr id:u32 bank:u8', 'Character `who` (0xFF: self) plays sound `id` of bank `bank` where it stands (Actor_PlaySound; banks: 4 the sound set, 5 common, 6 the room\'s).'),
     0x46: ('doors-room-in', '', 'The doors redo their setup for the current room (Doors_RoomIn).'),
     0x47: ('char-set-C4', 'who:chr v:s32', 'Character `who`: +0xC4 = v (a stalker\'s presence state: 1 / 2 seen / near ...?).'),
     0x48: ('char-full-health', 'who:chr', 'Character `who`\'s health back to its maximum (+0x14C8 = +0x14CC).'),

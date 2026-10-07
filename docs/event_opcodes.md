@@ -128,7 +128,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 42 | 2 | `self-turn-to` | `id:u8` | self: turns to character `id` (character move 14). |
 | 43 | 2 | `threat-raise` | `v:u8` | Raises the threat / panic meter (progress +0x7B8) by v (0..100). |
 | 44 | 1 | `nop-progress-6C` | - | Calls the progress' +0x6C: empty in this game (no effect). |
-| 45 | 7 | `char-sound` | `who:chr` `id:u32` `vol:u8` | Character `who` (0xFF: self) plays sound `id` (Actor_PlaySound). |
+| 45 | 7 | `char-sound` | `who:chr` `id:u32` `bank:u8` | Character `who` (0xFF: self) plays sound `id` of bank `bank` where it stands (Actor_PlaySound; banks: 4 the sound set, 5 common, 6 the room's). |
 | 46 | 1 | `doors-room-in` | - | The doors redo their setup for the current room (Doors_RoomIn). |
 | 47 | 6 | `char-set-C4` | `who:chr` `v:s32` | Character `who`: +0xC4 = v (a stalker's presence state: 1 / 2 seen / near ...?). |
 | 48 | 2 | `char-full-health` | `who:chr` | Character `who`'s health back to its maximum (+0x14C8 = +0x14CC). |

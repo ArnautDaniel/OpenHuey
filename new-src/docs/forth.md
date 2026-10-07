@@ -138,7 +138,7 @@ old one; hooks are looked up by execution token, so re-register with `on-tick` a
 or go through a `defer`).
 
 Sound: `common-sound ( id -- )` plays sound `id` of the common bank (C_0000: Fiona's, Hewie's,
-the house's); `sound-to-wav ( id addr len -- )` writes one to a file.
+the house's); `sound-to-wav ( id bank addr len -- )` writes one to a file; `bank-sound ( id bank -- )`, `bank-sound-at` (at a point) play from bank 4 (the sound set), 5 (common) or 6 (the room's).
 
 `game-state` (C, `src/game/progress.c`; in the `forth` tool too) holds what the event scripts
 share: `progress` (`pr.story pr.state pr.vars pr.resident pr.visited`: flag words, l@ / c@) and

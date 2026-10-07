@@ -43,6 +43,7 @@ USING: engine state player hewie doors game-state events.core events.words event
 :noname ( group -- flag ) ( F: x y z -- )  nav-tri swap nav-in-group? ; is event-nav-in-group?
 \ the room's event areas
 ' message-param! is message-parameter
+' bank-sound is event-sound   ' bank-sound-at is event-sound-at   ' sound-set! is event-sound-set
 ' area-in? is event-area-in?   ' area-cross is event-area-cross   ' exit-area is event-exit-area
 
 \ the characters' places from their actors (now, and the frame before)
