@@ -62,7 +62,7 @@ variable lad-link  variable lad-side
     0 f-cam-on !
     f-end? if
         f-anim@ case
-            $707 of  0e -7.1132e 1 front  dup 0< if  drop fdrop fdrop fdrop  else  me c-tri!  f-pos vec!  me c-sync  then  endof
+            $707 of  0e 6.6709e 1 front  dup 0< if  drop fdrop fdrop fdrop  else  me c-tri!  f-pos vec!  me c-sync  then  endof
             $703 of  0e -7.1132e 0 front  dup 0< if  drop fdrop fdrop fdrop  else  me c-tri!  f-pos vec!  me c-sync  then  endof
         endcase
         let-go exit
@@ -70,7 +70,7 @@ variable lad-link  variable lad-side
     climb-move ;
 \ after a new move her triangle is the one at the end she's nearer
 : tri-at-end ( -- )
-    f-anim@ dup $703 = swap $704 = or if  0e -7.1132e 0 front  else  0e -7.1132e 1 front  then
+    f-anim@ dup $703 = swap $704 = or if  0e -7.1132e 0 front  else  0e 6.6709e 1 front  then
     fdrop fdrop fdrop  me c-tri! ;
 \ the pursuer at a side of the ladder (his bytes 2 / 1: bit 4 the foot's side, 2 the top's)
 : pu-at? ( bit -- flag )
@@ -139,7 +139,8 @@ defer fall-off ( -- )  ' noop is fall-off   \ (panicking on it: Fiona_StateCaugh
     lad-side @ if  $700  else  $704  then  fiona.doors:play-own  ['] st-on-ladder behave ;
 \ Fiona_StateLadder: its spot (side 1: 6.7 out) and facing walked to
 : st-ladder ( -- )
-    0e  lad-side @ if  6.7e  else  0e  then  lad-side @ front     ( tri ) ( F: x y z )
+    0e  lad-side @ if  6.7e  else  -7.1068e  then  lad-side @ front   ( tri ) ( F: x y z )
+    \ (kFionaMeetOffsets [0] / [1]: 12 bytes an entry - x, z, a turn)
     dup 0< if  drop fdrop fdrop fdrop let-go exit  then
     1 f-2b !   \ (+0x2B: through blocked floor - the ladder's foot and the hole's cover are flagged 8)
     lad-link @ lad-side @ nav-link-yaw  ['] st-ladder-walk walk-spot ;
