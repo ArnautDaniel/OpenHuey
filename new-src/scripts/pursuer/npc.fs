@@ -148,7 +148,7 @@ fvariable sc-ang
     \ (round it: points its radius off the line to it, every 22.5 degrees)
     sc-me sc-at vec-heading  1.5707964e f+ sc-ang f!
     9 0 do
-        sc-pt sc-at sc-ang f@ 3 pick c-radius vec-ahead
+        sc-pt sc-at sc-ang f@ 2 pick c-radius vec-ahead
         me sc-pt 0 c-tri-to dup 0< 0= if
             >r  over c-tri sc-at sc-pt sight-mask v-walk 0< r@ 0< 0= and
             p-tri sc-me sc-pt sight-mask v-walk r> = and if  drop true unloop exit  then

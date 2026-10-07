@@ -106,7 +106,7 @@ USING: engine game-state events.core events.words chars relations fiona.doors pu
     0 $16A4 pu-l!  0 $16BC pu-l!  0 $16C0 pu-l!  0 $16C4 pu-l!  -1 $1788 pu-l!
     2 mode!  $2C0 vcall
     her p-target!  0 $16B8 pu-l!  $FF $17B0 pu-c!
-    8 $114 vcall  move-wait set-move
+    8 $114 vcall  pmv-wait set-move
     [: $25C vcall ;] behaviour!
     0 $1718 pu-l!
     $F4 vcall ;

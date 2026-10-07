@@ -50,7 +50,7 @@ defer go-for-fiona-stance0 ( -- )   ' noop is go-for-fiona-stance0
 create re-list 8 cells allot
 : random-exit ( skip -- exit )
     0  8 0 do
-        i 3 pick <> if
+        i 2 pick <> if
             p-door 8 u< if  p-room i exit-side-flag side-behind <> if  0  else  1  then  else  1  then
             if  p-room i room-exit-leads drop 0< 0=  i $EC vcall 0<> and if  i over cells re-list + !  1+  then  then
         then
@@ -92,7 +92,7 @@ create re-list 8 cells allot
         then
         2 mode!  $2C0 vcall  p-room $1594 pu-l!  search-room
     else
-        $1384 pu-l@ $1388 pu-l!  move-wait set-move
+        $1384 pu-l@ $1388 pu-l!  pmv-wait set-move
         0 $1530 pu-l!  0 $1538 pu-l!  0 $1534 pu-l!
         [: $290 vcall ;] behaviour!  1 mode!  $B0 vcall  1 step-next!
         not-yet" Pursuer_ChaseFionaHere off screen: the move's id, mode and sub (+0x17AC)"
@@ -114,7 +114,7 @@ create re-list 8 cells allot
             else  [: $278 vcall ;] behaviour!  $C $118 vcall  then
         then
     else
-        $17AC pu-l@ if  [: $290 vcall ;] behaviour!  move-plan set-move  then
+        $17AC pu-l@ if  [: $290 vcall ;] behaviour!  pmv-plan set-move  then
         1 step-next!  0 $17B4 pu-l!
     then
     p-avoid 13 cells 0 fill  route-clear

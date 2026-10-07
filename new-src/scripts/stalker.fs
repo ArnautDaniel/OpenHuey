@@ -4,7 +4,7 @@
 \   debilitas-in      Debilitas in this room, 40 in front of Fiona
 \   debilitas-out     sends him off
 IN: stalker
-USING: engine state game-state events.core chars relations pursuer.core pursuer.stubs pursuer.npc pursuer.modes pursuer.steps pursuer.behave pursuer.search pursuer.moves pursuer.target pursuer.chase pursuer.debchase pursuer.react pursuer.debact pursuer.closein pursuer.attack pursuer.grab pursuer.hit pursuer.frame pursuer.debilitas ;
+USING: engine state game-state events.core chars relations pursuer.core pursuer.stubs pursuer.npc pursuer.modes pursuer.steps pursuer.behave pursuer.search pursuer.moves pursuer.target pursuer.chase pursuer.debchase pursuer.react pursuer.debact pursuer.closein pursuer.attack pursuer.grab pursuer.hit pursuer.travel pursuer.frame pursuer.debilitas ;
 
 variable stalker  -1 stalker !   \ his actor
 : load-debilitas ( -- )
@@ -44,5 +44,6 @@ create in-front 12 allot  create try-d 40 , 25 ,
     playing @ paused @ 0= and 0= if  exit  then
     stalker @ 0< if  exit  then
     p-char char.present sl@ 0= if  exit  then
-    p-scripted if  $44 vcall  else  $30 vcall  then ;
+    p-scripted if  $44 vcall  else  $30 vcall  then
+    in-played-room?  p-char char.disabled sl@ 0= and 1 and  stalker @ actor act.visible l! ;
 ' stalker-tick on-tick

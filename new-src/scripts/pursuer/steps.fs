@@ -66,10 +66,16 @@ defer st.Pursuer_StateWalkThenAnim  :noname  s" Pursuer_StateWalkThenAnim" (not-
 :noname $258 vcall ;  $28 $0 $2 $3 $3  $28 action!   \ Pursuer_GoToDoor
 :noname $258 vcall ;  $29 $0 $2 $3 $3  $29 action!   \ Pursuer_GoToDoor
 
-\ the off-screen moves (Pursuer_SetMove: kPursuerMove ... their virtual functions)
-: move-plan ( -- xt )  [: $158 vcall ;] ;   \ kPursuerMove: Pursuer_PlanWayOn
-: move-wait ( -- xt )  [: $15C vcall ;] ;   \ kPursuerWaitMove: Pursuer_PlanToGoal
-: move-a ( -- xt )  [: $164 vcall ;] ;   \ kPursuerMoveA: Pursuer_Pace
-: move-stairs ( -- xt )  [: $160 vcall ;] ;   \ kPursuerStairsMove: Pursuer_FollowPlan
-: move-idle ( -- xt )  [: $16C vcall ;] ;   \ kPursuerIdleMove: Pursuer_Plan16C
-: move-b ( -- xt )  [: $174 vcall ;] ;   \ kPursuerMoveB: Pursuer_KnockAtDoor
+\ the off-screen moves (kPursuerMove ..: a PTMF, an id +0x17AC, move mode 6, a sub)
+create moves 6 2 * cells allot
+:noname  $158 vcall ;  moves 0 2 * cells + !  $17 moves 0 2 * 1+ cells + !   \ kPursuerMove: Pursuer_PlanWayOn
+:noname  $15C vcall ;  moves 1 2 * cells + !  $17 moves 1 2 * 1+ cells + !   \ kPursuerWaitMove: Pursuer_PlanToGoal
+:noname  $164 vcall ;  moves 2 2 * cells + !  $16 moves 2 2 * 1+ cells + !   \ kPursuerMoveA: Pursuer_Pace
+:noname  $160 vcall ;  moves 3 2 * cells + !  $17 moves 3 2 * 1+ cells + !   \ kPursuerStairsMove: Pursuer_FollowPlan
+:noname  $16C vcall ;  moves 4 2 * cells + !  $17 moves 4 2 * 1+ cells + !   \ kPursuerIdleMove: Pursuer_Plan16C
+:noname  $174 vcall ;  moves 5 2 * cells + !  $17 moves 5 2 * 1+ cells + !   \ kPursuerMoveB: Pursuer_KnockAtDoor
+0 constant pmv-plan  1 constant pmv-wait  2 constant pmv-a  3 constant pmv-stairs  4 constant pmv-idle  5 constant pmv-b
+\ Pursuer_SetMove
+: set-move ( k -- )
+    dup 2 * cells moves + @ p-move !  dup $17AC pu-l!  6 p-mode!  2 * 1+ cells moves + @ p-sub!
+    0 $1530 pu-l!  0 $1538 pu-l!  0 $1534 pu-l! ;

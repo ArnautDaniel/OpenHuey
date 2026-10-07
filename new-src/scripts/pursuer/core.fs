@@ -39,7 +39,7 @@ variable p-state    variable p-behave   variable p-move
 : run ( slot -- )  @ ?dup if  execute  then ;   \ ptmf_test / ptmf_scall
 : behave ( xt -- )  p-state ! ;                 \ Actor_SetState
 : behaviour! ( xt -- )  p-behave !  -1 $1758 pu-l! ;   \ ptmf_set +0x174C, +0x1758 -1
-: set-move ( xt -- )  p-move ! ;                   \ Pursuer_SetMove (+0x17A0)
+
 
 \ ---- his Character fields ----
 : p-char ( -- addr )  me character ;

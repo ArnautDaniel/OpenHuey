@@ -56,9 +56,9 @@ defer leave-door ( exit -- )   ' drop is leave-door
 : back-to-stance ( -- )
     1 $114 vcall
     mode case
-        0 of  move-plan set-move  endof
-        2 of  move-idle set-move  endof
-        >r move-wait set-move r>
+        0 of  pmv-plan set-move  endof
+        2 of  pmv-idle set-move  endof
+        >r pmv-wait set-move r>
     endcase
     p-scripted 0= if
         in-played-room? if  $13C vcall  else  [: $290 vcall ;] behaviour!  then
