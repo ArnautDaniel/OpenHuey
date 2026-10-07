@@ -3428,8 +3428,8 @@ void EventCmd_Run(VObject *ev) {
     case 0x57:   /* the event's +0xF8 with pc[1] */
         VCALL(ev, 0xF8, void (*)(VObject *, s32))(ev, pc[1]);
         break;
-    case 0x7E:   /* a light / sound source pc[1] on (pc[6]) at be32 pc[2..5] / 1000; pc[6] 0xFF: stop the
-                  * running one (gAdx) */
+    case 0x7E:   /* music track pc[1] (0xFF none: fade out) wanted at level be32 pc[2..5] / 1000, started
+                  * paused if pc[6] (BgmCtl_Want); pc[6] 0xFF: the stream (gAdx) resumed */
         if (pc[6] == 0xFF) {
             u8 *o = gAdx;
 

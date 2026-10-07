@@ -185,7 +185,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 7B | 3 | `char-wait-motion` | `who:chr` `bits:u8` | Waits until character `who`'s motion event flags have any of `bits`. |
 | 7C | 19 | `zone` | `z:u8` `x:fx` `y:fx` `z:fx` `r:u16` `h:s16` `kind:u8` | Zone `z` (0..31, for conditions 0x07 / 0x08 ...) on: centre (x, y, z), radius r, height h, kind `kind`. |
 | 7D | 8 | `zone-at-effect` | `z:u8` `fx:u8` `r:u16` `h:s16` `kind:u8` | Zone `z` on around room effect `fx`'s position: radius r, height h, kind. |
-| 7E | 7 | `bgm` | `track:u8` `vol:fx` `on:u8` | Background music track `track` wanted on / off at volume `vol` (BgmCtl_Want); on 0xFF: resume the ADX stream instead. |
+| 7E | 7 | `bgm` | `track:u8` `vol:fx` `pause:u8` | Background music track `track` (0xFF: none - the playing one fades out) wanted at volume `vol` (BgmCtl_Want), started paused if `pause`; pause 0xFF: resume the ADX stream instead. |
 | 7F | 14 | `flicker-sprite` | `fx:u8` `x:fx` `y:fx` `z:fx` | Room effect slot `fx` made anew as a flickering animated sprite (EvEffect7F) at (x, y, z). |
 | 80 | 2 | `effect-remove` | `fx:u8` | Room effect slot `fx` removed. |
 | 81 | 5 | `self-anim-blend` | `anim:u16` `b:u16` | self: animation `anim` with b (character move 8). |

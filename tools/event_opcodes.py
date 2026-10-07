@@ -220,9 +220,9 @@ CMD = {
     0x7C: ('zone', 'z:u8 x:fx y:fx z:fx r:u16 h:s16 kind:u8',
            'Zone `z` (0..31, for conditions 0x07 / 0x08 ...) on: centre (x, y, z), radius r, height h, kind `kind`.'),
     0x7D: ('zone-at-effect', 'z:u8 fx:u8 r:u16 h:s16 kind:u8', 'Zone `z` on around room effect `fx`\'s position: radius r, height h, kind.'),
-    0x7E: ('bgm', 'track:u8 vol:fx on:u8',
-           'Background music track `track` wanted on / off at volume `vol` (BgmCtl_Want); on 0xFF: '
-           'resume the ADX stream instead.'),
+    0x7E: ('bgm', 'track:u8 vol:fx pause:u8',
+           'Background music track `track` (0xFF: none - the playing one fades out) wanted at volume `vol` '
+           '(BgmCtl_Want), started paused if `pause`; pause 0xFF: resume the ADX stream instead.'),
     0x7F: ('flicker-sprite', 'fx:u8 x:fx y:fx z:fx', 'Room effect slot `fx` made anew as a flickering animated sprite (EvEffect7F) at (x, y, z).'),
     0x80: ('effect-remove', 'fx:u8', 'Room effect slot `fx` removed.'),
     0x81: ('self-anim-blend', 'anim:u16 b:u16', 'self: animation `anim` with b (character move 8).'),
