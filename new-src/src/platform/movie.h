@@ -22,5 +22,11 @@ const uint8_t *movie_picture(int *w, int *h, int *fresh);
 void movie_pause(int on);
 int movie_paused(void);
 void movie_volume(float v);   /* 0..1 */
+/* how the picture is laid over the screen (CRI Sofdec's compo modes, which the game picks by its
+ * movie class): opaque; full alpha (the frame's lower half is the upper half's alpha); a
+ * luminance key (clear up to `lo`, opaque from `hi` - mwPlySetLumiKey, the game's
+ * Sofdec_SetParam); three-level alpha (not yet: opaque). compo -1: kept, the keys set */
+enum { MOVIE_OPAQUE = 0x11, MOVIE_ALPHA_FULL = 0x21, MOVIE_ALPHA_LUMI = 0x31, MOVIE_ALPHA_3 = 0x41 };
+void movie_compose(int compo, int lo, int hi);
 
 #endif

@@ -216,6 +216,7 @@ defer event-movie-open ( addr len -- )    ' 2drop is event-movie-open
 defer event-movie-stop ( -- )             ' noop is event-movie-stop
 defer event-movie-pause ( on -- )         ' drop is event-movie-pause
 defer event-movie-volume ( F: v -- )      ' fdrop is event-movie-volume
+defer event-movie-compose ( compo lo hi -- )  :noname 2drop drop ; is event-movie-compose
 defer event-movie-state ( -- n )          :noname -1 ; is event-movie-state
 defer event-movie-frame ( -- n )          :noname -1 ; is event-movie-frame
 \ the cutscene director (game/cutscene.c, the original's gCutscene): start the scene in a folder,
@@ -262,7 +263,9 @@ variable exit-wanted  -1 exit-wanted !
 \ ---- scenes: the cues (the scene frames 0x62 7 / 5 take; +0xBE4 / +0xBE8), the prepared message
 \ (0x89) and the page of it shown (0x62 12 turns them: the scene's subtitles) ----
 variable cue  -1 cue !  variable cue-prev  -1 cue-prev !   \ (+0xBE4 / +0xBE8)
-variable prepared  -1 prepared !  variable prepared-page  -1 prepared-page !
+variable prepared  -1 prepared !
+\ the movie's class (Progress_PlayMovie's kind: 0 not drawn - a scene's timing and sound; 1..6 drawn)
+variable movie-kind  variable prepared-page  -1 prepared-page !
 
 \ ---- the screen fade (the event's +0x20): 0 clear .. 1000 black ------------------------------
 variable fade-now  variable fade-from  variable fade-to  variable fade-frames  variable fade-t

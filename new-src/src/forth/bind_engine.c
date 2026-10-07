@@ -528,6 +528,11 @@ PRIM(p_movie_status) { PUSH(movie_status()); }   /* ( -- n ) 0 none, 1 playing, 
 PRIM(p_movie_frame) { PUSH(movie_frame()); }     /* ( -- n ) the frame shown, -1 none */
 PRIM(p_movie_close) { movie_close(); }
 PRIM(p_movie_pause) { movie_pause((int)POP()); }   /* ( on -- ) */
+PRIM(p_movie_compose) {   /* ( compo lo hi -- ) */
+    Cell hi = POP(), lo = POP();
+
+    movie_compose((int)POP(), (int)lo, (int)hi);
+}
 PRIM(p_movie_paused) { PUSH(movie_paused() ? -1 : 0); }
 PRIM(p_movie_volume) { movie_volume((float)FPOP()); }   /* ( F: v -- ) */
 PRIM(p_movie_draw) {   /* ( x y w h -- ) the movie's picture there (window pixels) */
@@ -946,7 +951,7 @@ void bind_engine(Forth *f) {
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
         {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},
-        {"cutscene-signals", p_cs_signals}, {"cutscene-signal-total", p_cs_total}, {"cutscene-letterbox-off", p_cs_letterbox_off}, {"movie-close", p_movie_close}, {"movie-pause", p_movie_pause}, {"movie-paused?", p_movie_paused},
+        {"cutscene-signals", p_cs_signals}, {"cutscene-signal-total", p_cs_total}, {"cutscene-letterbox-off", p_cs_letterbox_off}, {"movie-close", p_movie_close}, {"movie-pause", p_movie_pause}, {"movie-paused?", p_movie_paused}, {"movie-compose", p_movie_compose},
         {"movie-volume!", p_movie_volume}, {"movie-draw", p_movie_draw}, {"stage-light", p_stage_light}, {"stage-lights", p_stage_lights},
         {"stage-ambient", p_stage_ambient}, {"room-clear", p_room_clear}, {"common-sound", p_common_sound},
         {"bank-sound", p_bank_sound}, {"bank-sound-at", p_bank_sound_at}, {"sound-set!", p_sound_set}, {"sound-to-wav", p_sound_to_wav}, {"exit-door", p_exit_door}, {"door-flags", p_door_flags},

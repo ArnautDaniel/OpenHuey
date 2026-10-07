@@ -272,9 +272,14 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 : wait-fade ( -- )  [: fading 0= ;] wait-until ;
 \ 60: Plays the movie the room names as string `name` (room handler +0x34) with movie class
 \ `class` (0x62 0 / 2 to follow it).
-: movie-play ( name class -- )   \ (the class - how it is drawn - is the movie's own here)
-    drop  0 event-state ev.result l!
-    event-room-string event-movie-open  1 event-movie-pause ;
+\ (the class picks how the picture is laid over the screen: Sofdec's compo modes - 1 by a
+\ luminance key, 16 .. 32 (movie_entry); 3 by the frame's own alpha; 6 three-level; else opaque)
+: class>compo ( class -- compo )
+    case  1 of $31 endof  3 of $21 endof  6 of $41 endof  $11 swap  endcase ;
+: movie-play ( name class -- )
+    movie-kind !  0 event-state ev.result l!
+    event-room-string event-movie-open  1 event-movie-pause
+    movie-kind @ class>compo $10 $20 event-movie-compose ;
 \ 61: Every active character is told (+0x78); the cutscene director restarts on the room's scene
 \ script named by string `name`.
 : cutscene-start ( name -- )   \ (the characters' +0x78: nothing to tell yet)
@@ -337,7 +342,7 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 \ SubScreen.mode) and sets state flag 4.
 : subscreen-open ( mode -- )  drop s" subscreen-open" stub-step ;
 \ 6E: The playing movie's Sofdec setting (Sofdec_SetParam(a, b)).
-: movie-param ( a b -- )  drop drop s" movie-param" stub-step ;
+: movie-param ( a b -- )  -1 -rot event-movie-compose ;   \ (the luminance key: mwPlySetLumiKey)
 \ 6F: self: walks through exit `exit` of this room (character move 5 to the door's far point).
 : self-through-exit ( exit -- )  drop s" self-through-exit" stub-step ;
 \ 70: self: as 0x6F, the other way through.

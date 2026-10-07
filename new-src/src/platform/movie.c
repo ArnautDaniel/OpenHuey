@@ -128,6 +128,7 @@ typedef struct Ply {
     struct { uint8_t *data; int size; } *queue;   /* frames parsed, not yet taken by the decoder
                                                    * (one PES packet may hold several) */
     int queued, queueCap;
+    int compo, key_lo, key_hi;   /* how the picture is laid over (movie_compose) */
     double fps;
     int w, h;
     uint8_t *rgb;     /* the frame shown, w x h RGBA */
@@ -509,11 +510,11 @@ static int video_next(Ply *p) {
 /* the ready frame into rgb (BT.601, TV range; alpha 0x80) */
 static void video_show(Ply *p) {
     const AvFramePrefix *f = p->frm;
-    int x, y;
+    int full = p->compo == MOVIE_ALPHA_FULL, h = full ? f->height / 2 : f->height, x, y;
 
-    if (f->width != p->w || f->height != p->h || p->rgb == NULL) {
+    if (f->width != p->w || h != p->h || p->rgb == NULL) {
         p->w = f->width;
-        p->h = f->height;
+        p->h = h;
         free(p->rgb);
         p->rgb = malloc((size_t)p->w * p->h * 4);
     }
@@ -530,7 +531,17 @@ static void video_show(Ply *p) {
             o[0] = (uint8_t)(r < 0 ? 0 : r > 255 ? 255 : r);
             o[1] = (uint8_t)(g < 0 ? 0 : g > 255 ? 255 : g);
             o[2] = (uint8_t)(b < 0 ? 0 : b > 255 ? 255 : b);
-            o[3] = 0xFF;
+            if (p->compo == MOVIE_ALPHA_LUMI) {   /* dark is clear: up to the low key, opaque from the high */
+                int k = py[x];
+
+                o[3] = (uint8_t)(k <= p->key_lo ? 0 : k >= p->key_hi ? 255 : (k - p->key_lo) * 255 / (p->key_hi - p->key_lo));
+            } else if (full) {   /* the alpha: the lower half's brightness */
+                int a = (f->data[0][(y + h) * f->linesize[0] + x] - 16) * 255 / 219;
+
+                o[3] = (uint8_t)(a < 0 ? 0 : a > 255 ? 255 : a);
+            } else {
+                o[3] = 0xFF;
+            }
             o += 4;
         }
     }
@@ -725,6 +736,14 @@ void movie_pause(int on) {
     if (sPly != NULL) {
         ply_update(sPly);
         sPly->paused = on != 0;
+    }
+}
+
+void movie_compose(int compo, int lo, int hi) {
+    if (sPly != NULL) {
+        sPly->compo = compo < 0 ? sPly->compo : compo;
+        sPly->key_lo = lo;
+        sPly->key_hi = hi > lo ? hi : lo + 1;
     }
 }
 

@@ -57,6 +57,7 @@ USING: engine state rooms player hewie doors game-state events.core events.words
 \ the room)
 :noname ( addr len -- )  movie-open drop ; is event-movie-open
 :noname  movie-close ; is event-movie-stop
+' movie-compose is event-movie-compose
 ' movie-pause is event-movie-pause   ' movie-volume! is event-movie-volume   ' movie-frame is event-movie-frame
 :noname ( -- n )  movie-status 1 <> if  -1  else  movie-paused? if  2  else  1  then  then ; is event-movie-state
 :noname ( addr len -- )  cutscene-load drop ; is event-scene-start
@@ -176,6 +177,29 @@ variable started   \ (the camera director set up for play)
     then
     run-frame  moves  remember-places  take-exit ;
 ' events-tick on-tick
+
+\ ---- movies ----
+\ the movie, for the classes that show it (src/game/movie.c): 1 keyed by its brightness, 2 opaque
+\ but only while state flag $29 (a scene's signal 11 turns it), 3 by its own alpha, 5 opaque - all
+\ over the picture at 4:3; 6 a 256 x 64 strip at (64, 176) of 512 x 448
+variable mx  variable my  variable mw2  variable mh2
+: movie-area ( -- )   \ the 4:3 picture in the window
+    screen-size  over 3 * 4 / over min  dup mh2 !  4 * 3 / mw2 !
+    mh2 @ - 2/ my !  mw2 @ - 2/ mx ! ;
+: scene-movie ( -- )
+    playing @ 0= movie-status 1 <> or if  exit  then
+    movie-kind @ case
+        0 of  exit  endof
+        2 of  $29 progress pr.state bit? 0= if  exit  then  endof
+        4 of  exit  endof   \ (the game over screen's: drawn by it)
+    endcase
+    movie-area
+    movie-kind @ 6 = if
+        mx @ mw2 @ 64 * 512 / +  my @ mh2 @ 176 * 448 / +  mw2 @ 384 * 512 /  mh2 @ 96 * 448 /  movie-draw  exit
+    then
+    movie-kind @ dup 1 <> swap 3 <> and if  $000000FF pen-color  0 0 screen-size draw-rect  then   \ (the opaque ones)
+    mx @ my @ mw2 @ mh2 @ movie-draw ;
+' scene-movie on-draw
 
 \ ---- the screen fade (black over the picture, the message window above it) ----
 : fade-over-picture ( -- )
