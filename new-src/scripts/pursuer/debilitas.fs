@@ -5,7 +5,7 @@ IN: pursuer.debilitas
 USING: engine game-state events.core events.words chars relations fiona.doors pursuer.core pursuer.stubs pursuer.npc pursuer.modes pursuer.steps pursuer.behave pursuer.frame ;
 
 \ the hard setting (progress +0x30 bit 0x8000: his stats and files differ)
-variable hard-mode   \ (progress +0x30 bit 0x8000: not kept by new-src yet)
+
 : alt? ( -- flag )  hard-mode @ 0<> ;
 
 \ ---- his constants (vtable +0xA0 .. +0x2FC) ----

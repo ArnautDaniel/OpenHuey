@@ -72,6 +72,7 @@ variable p-state    variable p-behave   variable p-move
 \ chance (gRandom +0x1C: 0 <= r < 1)
 : rnd01 ( F: -- r )  32768 random s>f 32768e f/ ;
 : played ( -- room )  room-id ;
+variable hard-mode   \ (progress +0x30 bit 0x8000, the hard setting: not kept by new-src yet)
 : in-played-room? ( -- flag )  p-room played = ;
 \ progress +0x1FBEC1: the countdown, Hewie under control
 : countdown? ( -- flag )  hewie-control @ 0<> ;

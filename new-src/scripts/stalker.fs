@@ -4,7 +4,7 @@
 \   debilitas-in      Debilitas in this room, 40 in front of Fiona
 \   debilitas-out     sends him off
 IN: stalker
-USING: engine state game-state events.core chars relations pursuer.core pursuer.stubs pursuer.npc pursuer.modes pursuer.steps pursuer.behave pursuer.frame pursuer.debilitas ;
+USING: engine state game-state events.core chars relations pursuer.core pursuer.stubs pursuer.npc pursuer.modes pursuer.steps pursuer.behave pursuer.search pursuer.frame pursuer.debilitas ;
 
 variable stalker  -1 stalker !   \ his actor
 : load-debilitas ( -- )
