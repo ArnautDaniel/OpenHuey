@@ -24,7 +24,9 @@ $28020018 0 cells c-masks + !  $29020008 1 cells c-masks + !
     dup c-actor dup 0< if  2drop exit  then  actor >r
     c-pos vec@  r@ act.z sf!  r@ act.y sf!  r> act.x sf! ;
 \ put it at a point (its triangle found under it)
-: c-place! ( cs -- ) ( F: x y z -- )  dup c-pos vec!  dup c-pos v-tri over c-tri!  c-sync ;
+\ the triangle under it it may stand on (else any)
+: c-find-tri ( cs -- tri )  dup c-pos over c-mask v-tri-in  dup 0< if  drop c-pos v-tri  else  nip  then ;
+: c-place! ( cs -- ) ( F: x y z -- )  dup c-pos vec!  dup c-find-tri over c-tri!  c-sync ;
 
 \ Actor_Move: by (dx, dz) as far as its blocked flags allow, sliding along walls
 : c-move ( cs -- ) ( F: dx dz -- )
@@ -78,7 +80,7 @@ create c-path-i  characters cells allot  c-path-i characters cells 0 fill
 : path-left? ( cs -- flag )  dup path-i swap path-n < ;
 \ plan a way to v on triangle `tri`, kept off `mask` (-1: its own): the number of points (0: none)
 : c-plan ( cs tri v mask -- n )
-    dup -1 = if  drop 3 pick c-mask  then  >r >r >r
+    dup -1 = if  drop 2 pick c-mask  then  >r >r >r
     dup c-tri over c-pos r> r> r> v-path                        ( cs n )
     dup 0 ?do  over i path-point  i nav-path-point  vec!  loop
     over cells c-path-n + !  0 over path-i!  path-n ;
@@ -104,3 +106,13 @@ create pa-pos 12 allot  fvariable pa-left
     dup path-ahead                                                     ( cs i )
     over c-pos pa-pos vec-dist-xz f0= 0= if  over c-pos pa-pos vec-heading  over c-yaw!  then
     over path-i!  pa-pos vec@ dup c-place!  path-left? ;
+\ the way's end made where it is now (the original's +0x124 = +0x128: nothing left to follow)
+: c-path-end ( cs -- )  dup path-i swap cells c-path-n + ! ;
+\ how far along the rest of the way it still has (the planner's +0x3C: from where it is through
+\ the points left)
+create pr-at 12 allot
+: path-rest ( cs -- ) ( F: -- d )
+    0e  dup c-pos pr-at swap vec-copy
+    dup path-n over path-i ?do
+        dup i path-point  pr-at over vec-dist-xz f+  pr-at swap vec-copy
+    loop  drop ;

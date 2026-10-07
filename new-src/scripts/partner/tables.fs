@@ -90,3 +90,13 @@ create held-answer-chance  10 , 25 , 25 , 25 , 50 , 50 , 50 , 50 ,   \ D_003B122
 create panic4-chance  10 , 25 , 25 , 25 , 50 , 50 , 50 , 50 ,   \ D_003B1228: ... at panic 4
 create panic5-chance  30 , 50 , 50 , 50 , 50 , 50 , 50 , 80 ,   \ D_003B1230: ... at panic 5
 create go-for-holder-chance  30 , 35 , 40 , 45 , 50 , 60 , 70 , 80 ,   \ D_003B11E0: he goes for whoever holds her
+
+\ frame counts per trust level 0..7
+create obey-time  600 , 900 , 1200 , 1500 , 1800 , 2100 , 2400 , 2700 ,   \ kHewieLevelNormal: how long he obeys (+0xF359C)
+create obey-time-hard  300 , 600 , 900 , 1200 , 1500 , 1800 , 2100 , 2400 ,   \ kHewieLevelHard: ... on the hard difficulty
+create wait-time  2700 , 2400 , 2100 , 1800 , 1500 , 1200 , 900 , 600 ,   \ D_003B1390: how long he waits once disobedient
+create wait-time-hard  3600 , 3000 , 2700 , 2400 , 2100 , 1800 , 1500 , 1200 ,   \ D_003B13B0: ... on the hard difficulty
+create idle-wait  510 , 450 , 390 , 330 , 270 , 210 , 150 , 90 ,   \ D_003B13D0: the wait of action 0x2E
+
+\ kHewieMeetOffsets: where Fiona stands to meet him, by kind (x z, his frame; floats)
+create meet-offsets  2.0e f, 6.699999809265137e f, 0.0e f, 8.0e f, 0.0e f, 9.479999542236328e f, 0.0e f, 11.0e f,

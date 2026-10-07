@@ -15,6 +15,7 @@ variable cond-bits
 1 constant him
 0 constant her
 variable pursuer  -1 pursuer !        \ the stalker's slot, -1 none
+variable fiona-cmd  -1 fiona-cmd !    \ the command her controls give this frame (her +0x1AD6B8), -1 none
 
 : vector ( "name" -- )  create 12 allot ;
 
@@ -43,7 +44,7 @@ variable h-wait                                   \ +0xF355C: frames before he m
 variable h-target   variable h-target2            \ +0xF3544 / +0xF3548: whom (a slot, -1 none)
 variable h-cmd                                    \ +0xF356C: what may break in (bit 31: nothing)
 variable h-pending                                \ +0xF3559: choose what to do next
-variable h-group  variable h-group-blend          \ +0xF3604 / +0xF3608: his animation group
+variable h-look-to  variable h-look-delay       \ +0xF3604 / +0xF3608: where he is to look, after a delay
 variable h-yelp   variable h-yelp-anim            \ +0xF35B4 / +0xF35B8
 \ how he feels and obeys
 variable h-mood   variable h-mood-time            \ +0xF35C0 (0 normal, 1..3), +0xF35BE
@@ -81,23 +82,42 @@ variable h-2b   variable h-2d                     \ through blocked floor / left
 variable h-t1  variable h-t2  variable h-t3       \ +0xF36B4 / +0xF36B8 / +0xF36BC
 fvariable h-heading  fvariable h-turn  fvariable h-f36cc   \ +0xF36C4 / +0xF36C8 / +0xF36CC
 vector h-spot                                     \ +0xF36E0
-variable h-wanted                                 \ +0xF3560
+variable h-wanted                                 \ +0xF3560: how many times (attacks), or a wait
+\ where he looks (Hewie_TurnHead)
+variable h-look-now  variable h-look-t            \ +0xF3600 the look mode taken up, +0xF360C its timer
+fvariable h-look-pitch  fvariable h-look-yaw      \ +0xF3614 / +0xF3618: a look held (mode 8, glances)
+fvariable h-head-pitch  fvariable h-head-yaw      \ the motion's +0x854 / +0x858: his head turned
+fvariable h-yaw-was                               \ +0xF354C: his heading the frame before
+variable h-look-char  $FF h-look-char !           \ +0xF3610: a character he looks at ($FF none)
+variable h-look-pt?  vector h-look-pt             \ +0xF35E0 / +0xF35F0: a point he looks at
+vector h-scent                                    \ +0xF3630: what he smells (h-look: +0xF3620 set)
+\ where Fiona's commands put him
+fvariable h-side  variable h-side-dir             \ +0xF3550 / +0xF3554: his place beside her
+variable h-last-idle                              \ +0xF357C: the last idle trick
+variable h-cmd-was  variable h-cmd-act            \ +0xF3578 / +0xF3574: her command, its action
+variable h-cmd-tri  vector h-cmd-pos  fvariable h-cmd-yaw   \ the spot her 0x23 shows (state [2..5])
+\ a spot to go to (the character's +0x104 triangle, +0x108 animation, +0x10C heading, +0x110)
+variable h-to-tri  variable h-to-anim  fvariable h-to-yaw  vector h-to
+variable h-pet  variable h-1d                     \ +0xF36C0 strokes, +0xF36A2 rolls
+variable h-hurt-t                                 \ +0xF35AC: frames to his next health point
 
 : h-reset-fields ( -- )
     0 h-action !  0 h-last-action !  0 h-next !  0 h-wait !  -1 h-target !  -1 h-target2 !
-    0 h-cmd !  0 h-pending !  0 h-group !  0 h-group-blend !  0 h-yelp !
+    0 h-cmd !  0 h-pending !  0 h-look-to !  0 h-look-delay !  -1 h-yelp !
     0 h-mood !  0 h-mood-time !  0 h-waiting !  0 h-obey !  0 h-obey-marked !  0 h-nudge !
     0 h-praise-due !  0 h-broke !  0 h-cooldown !  0 h-stay !  0 h-pet-time !
     0 h-did !  0 h-did-was !  0 h-follows !  0 h-alert !  0 h-alert-was !  0 h-held !
     0 h-panic-seen !  0 h-scene-req !  $FF h-call !  0 h-whistle !  0 h-whistle-2 !
-    0 h-hold-call !  0 h-look !  0 h-snd !  0 h-snd-t !  0 h-2b !  0 h-2d ! ;
+    0 h-hold-call !  0 h-look !  0 h-snd !  0 h-snd-t !  0 h-2b !  0 h-2d !
+    0 h-look-now !  0 h-look-t !  $FF h-look-char !  0 h-look-pt? !  0 h-last-idle !
+    0e h-head-pitch f!  0e h-head-yaw f!  0e h-side f!  0 h-side-dir !  300 h-hurt-t ! ;
 h-reset-fields
 
 \ ---- what to call next (the actions are in partner.actions) ----
 defer set-action ( act arg -- )     ' 2drop is set-action      \ Hewie_SetAction
 defer adjust-action ( act -- act' ) ' noop is adjust-action    \ Hewie_AdjustAction
 \ hewie_want: the action his situation makes of `act` (with `arg` only if it stays itself)
-: want ( act arg -- )  over adjust-action rot over <> if  nip 0  then  set-action ;
+: want ( act arg -- )  over adjust-action rot over <> if  nip 0  else  swap  then  set-action ;
 \ Hewie_ToDefault
 : to-default ( -- )  0 0 want ;
 \ instead: the action picked instead of `act` (as want)
@@ -156,8 +176,10 @@ defer adjust-action ( act -- act' ) ' noop is adjust-action    \ Hewie_AdjustAct
         $203 of $B endof  $300 of $C endof  $1002 of $D endof  $1001 of $E endof  $2213 of $E endof
         >r $F r>
     endcase ;
-\ anim(): the group he is to be in (blended in over 10 frames when it changes)
-: group! ( g -- )  dup h-group @ <> if  h-group !  10 h-group-blend !  else  drop  then ;
+\ anim(): where he is to look (Hewie_TurnHead's modes; taken up 10 frames later when it changes)
+: look! ( mode -- )  dup h-look-to @ <> if  h-look-to !  10 h-look-delay !  else  drop  then ;
+\ the same at once
+: look-now! ( mode -- )  h-look-to !  0 h-look-delay ! ;
 : play-if-not ( anim -- )  dup anim@ <> if  play  else  drop  then ;   \ Hewie_PlayIfNot
 
 \ Hewie_StandAnim: his standing animation for the game's state (-1: the table's fade)
@@ -276,7 +298,7 @@ create pose-into  0 , $101 , $103 ,  $100 , 0 , $105 ,  $102 , $104 , 0 ,  $1001
 
 \ ---- his voice (Hewie_MakeSound): not within 10 frames of the last; some only after 40..60;
 \ the loud barks (0x65 / 0x66) and growls (0x5D / 0x5E) heard by the others ----
-defer noise ( loudness room tri -- )   :noname drop 2drop ; is noise   \ Noise_Make (the stalkers')
+defer noise-make ( loudness room tri -- )   :noname drop 2drop ; is noise-make   \ Noise_Make (the stalkers')
 : soon-after? ( snd t -- flag )  h-snd @ rot = h-snd-t @ rot < and ;
 : too-soon? ( snd -- flag )
     case
@@ -290,8 +312,8 @@ defer noise ( loudness room tri -- )   :noname drop 2drop ; is noise   \ Noise_M
     h-snd @ dup $59 <> over $58 <> and over $70 <> and swap $6F <> and h-snd-t @ 10 < and if
         drop exit
     then
-    dup $65 = over $66 = or if  $80 h-room h-tri noise  then
-    dup $5D = over $5E = or if  $1B h-room h-tri noise  then
+    dup $65 = over $66 = or if  $80 h-room h-tri noise-make  then
+    dup $5D = over $5E = or if  $1B h-room h-tri noise-make  then
     dup too-soon? if  drop exit  then
     dup 5 h-pos vec@ event-sound-at  h-snd !  0 h-snd-t ! ;
 

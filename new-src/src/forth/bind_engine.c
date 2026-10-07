@@ -221,6 +221,15 @@ PRIM(p_v_tri) {   /* ( v -- tri ) the triangle under v (any) */
 
     PUSH(navmesh_find(n, vec3(v[0], v[1], v[2]), 4.0f, &h));
 }
+PRIM(p_v_tri_in) {   /* ( v mask -- tri ) the triangle under v not of the mask's flags (-1 none) */
+    uint32_t mask = (uint32_t)POP();
+    float *v = vec_arg(f), h;
+    NavMesh *n = nav_masked(mask);
+    int t = navmesh_find(n, vec3(v[0], v[1], v[2]), 4.0f, &h);
+
+    n->block = 0;
+    PUSH(t);
+}
 PRIM(p_nav_walk) {   /* ( from -- tri ) ( F: ax ay az bx by bz -- reach ) straight from a toward b over the
                       * mesh (kept off the nav-block! flags): the triangle b is on or -1, and how far
                       * it got */
@@ -238,6 +247,25 @@ PRIM(p_nav_path_point) {   /* ( i -- ) ( F: -- x y z ) the last way's point i */
     FPUSH(p.x);
     FPUSH(p.y);
     FPUSH(p.z);
+}
+PRIM(p_tri_normal) {   /* ( tri -- ) ( F: -- x y z ) its surface's normal, upward (0 1 0: none) */
+    Cell i = POP();
+    Vec3 n = vec3(0.0f, 1.0f, 0.0f);
+
+    if (i >= 0 && i < gEngine.room.nav.ntris) {
+        const NavTri *t = &gEngine.room.nav.tris[i];
+        Vec3 a = vec3_sub(t->v[1], t->v[0]), b = vec3_sub(t->v[2], t->v[0]);
+        Vec3 c = vec3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
+        float l = sqrtf(c.x * c.x + c.y * c.y + c.z * c.z);
+
+        if (l > 0.0f) {
+            n = vec3(c.x / l, c.y / l, c.z / l);
+            if (n.y < 0.0f) {
+                n = vec3(-n.x, -n.y, -n.z);
+            }
+        }
+    }
+    FPUSH(n.x); FPUSH(n.y); FPUSH(n.z);
 }
 PRIM(p_tri_center) {   /* ( tri -- ) ( F: -- x y z ) */
     Cell i = POP();
@@ -890,6 +918,12 @@ PRIM(p_root_delta) {   /* ( id -- ) ( F: -- turn dx dy dz ) its motion's root mo
     FPUSH(step.y * a->scale);
     FPUSH(step.z * a->scale);
 }
+PRIM(p_bone_pos) {   /* ( id bone -- ) ( F: -- x y z ) where the bone is in the room (as last drawn) */
+    Cell b = POP();
+    Vec3 p = actor_bone(actor_arg(f, POP()), (int)b);
+
+    FPUSH(p.x); FPUSH(p.y); FPUSH(p.z);
+}
 PRIM(p_has_motion) {   /* ( id motion-id -- flag ) */
     Cell mid = POP();
     Actor *a = actor_arg(f, POP());
@@ -1214,14 +1248,14 @@ void bind_engine(Forth *f) {
     } prims[] = {
         {"room", p_room}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
         {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
-        {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center},
+        {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
         {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"hud", p_hud}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
         {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-free", p_v_free},
-        {"v-path", p_v_path}, {"v-tri", p_v_tri}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
+        {"v-path", p_v_path}, {"v-tri", p_v_tri}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
         {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"area-middle", p_area_middle}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
@@ -1241,7 +1275,7 @@ void bind_engine(Forth *f) {
         {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry},
-        {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
+        {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
         {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"mouse-down?", p_mouse_down},

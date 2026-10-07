@@ -71,6 +71,20 @@ lines.append('\\ chance tables: a signed percent per trust level 0..7')
 for name, va, what in chances:
     vals = struct.unpack('<8b', at(va, 8))
     lines.append('create %s  %s   \\ %s' % (name, ' '.join('%d ,' % v for v in vals), what))
+lines.append('')
+times = [('obey-time', 0x3B1350, 'kHewieLevelNormal: how long he obeys (+0xF359C)'),
+         ('obey-time-hard', 0x3B1370, 'kHewieLevelHard: ... on the hard difficulty'),
+         ('wait-time', 0x3B1390, 'D_003B1390: how long he waits once disobedient'),
+         ('wait-time-hard', 0x3B13B0, 'D_003B13B0: ... on the hard difficulty'),
+         ('idle-wait', 0x3B13D0, 'D_003B13D0: the wait of action 0x2E')]
+lines.append('\\ frame counts per trust level 0..7')
+for name, va, what in times:
+    vals = struct.unpack('<8i', at(va, 32))
+    lines.append('create %s  %s   \\ %s' % (name, ' '.join('%d ,' % v for v in vals), what))
+lines.append('')
+offs = struct.unpack('<8f', at(0x3B12A0, 32))
+lines.append("\\ kHewieMeetOffsets: where Fiona stands to meet him, by kind (x z, his frame; floats)")
+lines.append('create meet-offsets  %s' % ' '.join('%se f,' % repr(v) for v in offs))
 out = os.path.join(root, 'new-src', 'scripts', 'partner', 'tables.fs')
 open(out, 'w').write('\n'.join(lines) + '\n')
 print(out)

@@ -47,6 +47,7 @@ typedef struct Actor {
     const uint8_t *drive;
     size_t drive_size;
     float drive_frame;
+    Vec3 bones[MODEL_MAX_BONES];   /* where each bone is, in the room (as last drawn) */
 } Actor;
 
 /* load O_FIN/FIN_000 (.PCK + .TEX): the actor's number, or -1 */
@@ -67,5 +68,7 @@ int actor_motion_done(const Actor *a);
 void actor_motion_start(Actor *a, int index, int flags, float blend);
 /* its table entry: fade frames, pose, flags; 0 if it has none */
 int actor_motion_entry(const Actor *a, int index, int *blend, int *pose, int *flags);
+/* where bone `b` is in the room (as last posed), its position if there is no such bone */
+Vec3 actor_bone(const Actor *a, int b);
 
 #endif

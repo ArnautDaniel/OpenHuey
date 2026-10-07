@@ -553,6 +553,10 @@ void model_pose_root(const Model *m, int index, float frame, Mat4 *skin, Vec3 *r
     model_pose_blend(m, index, frame, -1, 0.0f, 0.0f, skin, root);
 }
 
+static Vec3 sOrigins[MODEL_MAX_BONES];   /* the last pose's bone origins (model space) */
+
+const Vec3 *model_pose_origins(void) { return sOrigins; }
+
 void model_pose_blend(const Model *m, int index, float frame, int prev, float prev_frame, float w, Mat4 *skin,
                       Vec3 *root) {
     static float rot[MODEL_MAX_BONES][3], pos[MODEL_MAX_BONES][3], rot2[MODEL_MAX_BONES][3], pos2[MODEL_MAX_BONES][3];
@@ -592,6 +596,7 @@ void model_pose_blend(const Model *m, int index, float frame, int prev, float pr
     }
     for (i = 0; i < m->nbones; i++) {
         skin[i] = done[i] ? mat4_mul(world[i], m->bones[i].inv_bind) : mat4_identity();
+        sOrigins[i] = done[i] ? vec3(world[i].m[12], world[i].m[13], world[i].m[14]) : vec3(0.0f, 0.0f, 0.0f);
         if (root != NULL && m->bones[i].parent < 0 && done[i]) {
             *root = vec3(world[i].m[12], world[i].m[13], world[i].m[14]);
             root = NULL;

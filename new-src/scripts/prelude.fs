@@ -66,6 +66,8 @@ IN: forth
 : decimal 10 base ! ;
 : ?  @ . ;
 : clamp ( x lo hi -- x' ) rot min max ;
+: 0<= ( n -- flag ) 0> 0= ;
+: 0>= ( n -- flag ) 0< 0= ;
 
 \ ---- floats ----
 3.14159265358979 fconstant pi

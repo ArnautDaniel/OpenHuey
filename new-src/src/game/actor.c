@@ -162,6 +162,10 @@ void actor_motion_start(Actor *a, int index, int flags, float blend) {
     a->loop = flags & 1;
 }
 
+Vec3 actor_bone(const Actor *a, int b) {
+    return b >= 0 && b < a->model.nbones ? a->bones[b] : a->pos;
+}
+
 int actor_motion_entry(const Actor *a, int index, int *blend, int *pose, int *flags) {
     const uint8_t *e;
 
@@ -212,6 +216,9 @@ static void skin(Actor *a) {
         place.m[12] = a->pos.x;
         place.m[13] = a->pos.y;
         place.m[14] = a->pos.z;
+    }
+    for (i = 0; i < m->nbones; i++) {   /* the bones' origins, placed */
+        a->bones[i] = mat4_point(&place, model_pose_origins()[i]);
     }
     for (i = 0; i < m->nv; i++) {
         const SkinVertex *v = &m->v[i];
