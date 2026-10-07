@@ -74,6 +74,11 @@ void bind_state(Forth *f) {
     field(f, "char.actor", offsetof(ScriptChar, actor));
     field(f, "char.cam-set", offsetof(ScriptChar, cam_set));
     field(f, "char.cam-path", offsetof(ScriptChar, cam_path));
+    field(f, "char.move", offsetof(ScriptChar, move));
+    field(f, "char.move-done", offsetof(ScriptChar, move_done));
+    field(f, "char.move-anim", offsetof(ScriptChar, move_anim));
+    field(f, "char.target", offsetof(ScriptChar, target));   /* 3 floats */
+    field(f, "char.face", offsetof(ScriptChar, face));
     field(f, "char.pos", offsetof(ScriptChar, pos));      /* 3 floats: sf@ */
     field(f, "char.prev", offsetof(ScriptChar, prev));
     forth_set_current(f, saved);

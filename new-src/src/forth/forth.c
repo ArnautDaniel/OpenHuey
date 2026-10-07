@@ -337,6 +337,9 @@ static void run(Forth *f) {
     while (IP != NULL && !f->yielded) {
         Word *w = (Word *)*IP++;
 
+        if (f->budget >= 0 && --f->budget < 0) {
+            forth_error(f, "task %s ran too long without yielding", f->t->name);
+        }
         w->code(f, w);
     }
 }
@@ -1652,10 +1655,13 @@ Task *forth_spawn(Forth *f, Word *w) {
     return t;
 }
 
+#define TASK_BUDGET 20000000L
+
 static void task_turn(Forth *f, Task *t) {
     jmp_buf jb, *prev = f->catch;
     Task *saved = f->t;
     int depth = f->depth, task_depth = f->task_depth;
+    long budget = f->budget;
 
     if (setjmp(jb) != 0) {
         forth_printf(f, "task %d (%s) stopped by the error\n", t->id, t->name);
@@ -1664,6 +1670,7 @@ static void task_turn(Forth *f, Task *t) {
         f->catch = &jb;
         f->t = t;
         f->yielded = 0;
+        f->budget = TASK_BUDGET;
         f->depth++;
         f->task_depth = f->depth;
         run(f);
@@ -1676,6 +1683,7 @@ static void task_turn(Forth *f, Task *t) {
     f->depth = depth;
     f->task_depth = task_depth;
     f->yielded = 0;
+    f->budget = budget;
 }
 
 void forth_run_tasks(Forth *f) {
@@ -1875,6 +1883,7 @@ static void define_core(Forth *f) {
 Forth *forth_new(size_t dict_bytes) {
     Forth *f = calloc(1, sizeof(Forth));
 
+    f->budget = -1;   /* (the interpreter has no limit; a task gets TASK_BUDGET each turn) */
     f->mem = malloc(dict_bytes);
     f->here = f->mem;
     f->end = f->mem + dict_bytes;

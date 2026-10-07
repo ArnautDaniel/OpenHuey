@@ -132,6 +132,8 @@ struct Forth {
     int depth;              /* nested forth_execute calls (yield may only leave the outermost) */
     int task_depth;         /* the depth a task runs at */
     int yielded;
+    long budget;            /* steps a task may take in one turn before it is stopped (a loop that
+                             * never yields would hang the game); < 0: no limit */
 
     Source src[SOURCE_DEPTH];
     int nsrc;

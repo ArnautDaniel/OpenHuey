@@ -14,3 +14,5 @@ defer leaving-room  ' noop is leaving-room
 \ the door and step her into the doorway, and the room's scripts take her through)
 defer exit-locked? ( exit -- flag )  :noname drop false ; is exit-locked?
 defer use-exit ( exit -- )  ' drop is use-exit
+\ is character slot n (0 Fiona, 1 Hewie) being moved by a script (then its own control waits)
+defer scripted? ( n -- flag )  :noname drop false ; is scripted?

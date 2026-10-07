@@ -17,7 +17,9 @@ USING: game-state events.core ;
     0 character char.scripted sl@ if  drop exit  then
     dup event-state ev.exit l!  exit-wanted ! ;
 \ 02: Places character `who` (0xFF: self) on nav triangle `tri` in the event's room.
-: char-to-tri ( who tri -- )  drop drop s" char-to-tri" stub-step ;
+: char-to-tri ( who tri -- )
+    swap dup $FF = if  drop self-char  else  char-slot  then
+    dup 0< if  2drop exit  then  swap event-tri-center event-char-place ;
 \ 03: Opens message window text `msg` (bit 0x4000: the second language table); the window
 \ belongs to the script's character (+0x80C). See 0x09 to wait for it.
 : message ( msg -- )
@@ -43,9 +45,11 @@ USING: game-state events.core ;
     else  drop  then
     event-state ev.slot sl@ free-slot ;
 \ 07: self: plays animation `anim` (character move 7). (Not "walk to triangle".)
-: self-anim ( anim -- )  drop s" self-anim" stub-step ;
+: self-anim ( anim -- )  self-char dup 0< if  2drop exit  then  swap 7 anim-move ;
 \ 08: self: waits until the move has finished (move state 0 and its motion's end flag 0x20).
-: self-wait-anim ( -- )  s" self-wait-anim" stub-step ;
+: self-wait-anim ( -- )   \ (the move's animation has come round)
+    in-slot? 0= if  exit  then  self-char dup 0< if  drop exit  then
+    begin  yield  dup event-char-anim-done?  until  move-done ;   \ (the character takes the move a frame on)
 \ 09: Waits while the message window is open.
 : wait-message ( -- )  [: event-state ev.message sl@ 0< ;] wait-until ;
 \ 0A: Requests a scene change (progress +0x1134 = scene, +0x113C = arg, +0x1151 = kind) when the
@@ -56,14 +60,21 @@ USING: game-state events.core ;
 : camera-value ( which F: v -- )  drop fdrop s" camera-value" stub-step ;
 \ 0C: self: goes to (x, z) on triangle `tri` (tri2 0xFFFF: none), then faces `face`; `move` the
 \ character move (5 / 10 walk / run to a point, ...).
-: self-move-to ( tri face tri2 move F: x z -- )  drop drop drop drop fdrop fdrop s" self-move-to" stub-step ;
+: self-move-to ( tri face tri2 move F: x z -- )   \ (walking / running in a straight line)
+    self-char dup 0< if  2drop 2drop drop fdrop fdrop exit  then
+    >r  r@ character char.target dup 8 + sf!  sf!
+    nip rot drop                                    ( face move )  ( R: cs )
+    r@ swap move!  s>f deg>rad r> character char.face sf! ;
 \ 0D: self: waits until the current move is done (+0xE1 == 1).
-: self-wait-done ( -- )  s" self-wait-done" stub-step ;
+: self-wait-done ( -- )
+    in-slot? 0= if  exit  then  self-char dup 0< if  drop exit  then
+    begin  dup character char.move-done sl@ 0=  dup if  over character char.move sl@ 0= 0= and  then
+    while  yield  repeat  drop ;
 \ 0E: self: move `move` with triangles `tri` / `tri2` (0xFFFF: none) (6 / 11 walk / run to a
 \ triangle, 17 ...).
 : self-move-tri ( tri tri2 move -- )  drop drop drop s" self-move-tri" stub-step ;
 \ 0F: self: back to idle (character move 2).
-: self-idle ( -- )  s" self-idle" stub-step ;
+: self-idle ( -- )  self-char dup 0< if  drop exit  then  dup 2 move!  move-done ;
 \ 10: self: move `move` toward character slot `slot` (14 turn to a character, ...).
 : self-move-slot ( slot move -- )  drop drop s" self-move-slot" stub-step ;
 \ 11: Brings in character `id` as the partner (slot 2: loads and starts it, resets the
@@ -103,7 +114,9 @@ USING: game-state events.core ;
 \ it.
 : self-to-exit-in ( exit -- )  drop s" self-to-exit-in" stub-step ;
 \ 1F: Character `who` shown or hidden (+0x29), if it is in the current room.
-: char-visible ( who on -- )  drop drop s" char-visible" stub-step ;
+: char-visible ( who on -- )
+    swap dup $FF = if  drop self-char  else  char-slot  then
+    dup 0< if  2drop exit  then  dup in-room? 0= if  2drop exit  then  swap event-char-show ;
 \ 20: self: the character's root motion ignores the nav blocking mask (+0x2B) - it walks through
 \ blocked triangles (stalkers use it at doors).
 : self-noclip ( on -- )  drop s" self-noclip" stub-step ;
@@ -164,7 +177,10 @@ USING: game-state events.core ;
 \ 39: Hewie: action a with argument b (Hewie_SetAction).
 : hewie-action ( a b -- )  drop drop s" hewie-action" stub-step ;
 \ 3B: Places character `who` (0xFF: self) on triangle `tri` facing `face`.
-: char-to-tri-facing ( who tri face -- )  drop drop drop s" char-to-tri-facing" stub-step ;
+: char-to-tri-facing ( who tri face -- )
+    rot dup $FF = if  drop self-char  else  char-slot  then
+    dup 0< if  2drop drop exit  then
+    rot event-tri-center dup event-char-place  swap s>f deg>rad event-char-yaw ;
 \ 3D: Character `who` silent (+0x2C): its own sounds (Actor_PlaySound) don't play.
 : char-silent ( who on -- )  drop drop s" char-silent" stub-step ;
 \ 3E: Stalker `id` leaves the scene and is put into room `room` (0xFFFF: its own) at `at`,
@@ -238,13 +254,13 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 \ 5C: A screen fade over `frames` frames; kind & 0xF: 1 in, 4 out; bits 0xC0 fade the music with
 \ it (0x80 at once, 0x40 over 90 frames); bits 0x30 ramp the volume (0x20 at once, 0x10 over the
 \ fade). See 0x5F to wait.
-: fade ( frames kind -- )  drop drop s" fade" stub-step ;
+: fade ( frames kind -- )  fade-start ;
 \ 5D: Finishes the running fade now; marks a scene as playing (+0x11F3).
-: fade-finish ( -- )  s" fade-finish" stub-step ;
+: fade-finish ( -- )  fade-done ;
 \ 5E: The fade counts as over.
-: fade-over ( -- )  s" fade-over" stub-step ;
+: fade-over ( -- )  fade-done ;
 \ 5F: Waits for the fade to finish.
-: wait-fade ( -- )  s" wait-fade" stub-step ;
+: wait-fade ( -- )  [: fading 0= ;] wait-until ;
 \ 60: Plays the movie the room names as string `name` (room handler +0x34) with movie class
 \ `class` (0x62 0 / 2 to follow it).
 : movie-play ( name class -- )  drop drop s" movie-play" stub-step ;
@@ -312,7 +328,14 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 : hewie-bark ( -- )  s" hewie-bark" stub-step ;
 \ 79: Places character `who` at (x, z) on triangle `tri` (height from the triangle), facing
 \ `face`.
-: char-to-xz ( who tri face F: x z -- )  drop drop drop fdrop fdrop s" char-to-xz" stub-step ;
+fvariable at-x  fvariable at-z
+: char-to-xz ( who tri face F: x z -- )   \ (at the triangle's height: its middle's)
+    at-z f! at-x f!
+    rot dup $FF = if  drop self-char  else  char-slot  then
+    dup 0< if  drop 2drop exit  then                     ( tri face cs )
+    rot event-tri-center fdrop fswap fdrop               ( F: y )
+    at-x f@ fswap at-z f@  dup event-char-place
+    swap s>f deg>rad event-char-yaw ;
 \ 7A: Hewie goes to the point on triangle `tri` (operands stored x, z, y) (character move 0x13).
 : hewie-go-to ( tri b F: x z y -- )  drop drop fdrop fdrop fdrop s" hewie-go-to" stub-step ;
 \ 7B: Waits until character `who`'s motion event flags have any of `bits`.
@@ -330,7 +353,8 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 \ 80: Room effect slot `fx` removed.
 : effect-remove ( fx -- )  drop s" effect-remove" stub-step ;
 \ 81: self: animation `anim` with b (character move 8).
-: self-anim-blend ( anim b -- )  drop drop s" self-anim-blend" stub-step ;
+: self-anim-blend ( anim b -- )   \ (move 8; the blend `b` isn't kept)
+    drop self-char dup 0< if  2drop exit  then  swap 8 anim-move ;
 \ 82: The event camera (camera director): with on, set from the four values (EventCam_Set); then
 \ held on / off (CamDirector_HoldEffect1C).
 : event-camera ( on F: a b c d -- )  drop fdrop fdrop fdrop fdrop s" event-camera" stub-step ;
@@ -357,7 +381,13 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 \ 8D: Zone rectangle `z` (+0x894): an id and x0, z0, x1, z1 (used by 0x8C and some conditions).
 : zone-rect ( z id F: x0 z0 x1 z1 -- )  drop drop fdrop fdrop fdrop fdrop s" zone-rect" stub-step ;
 \ 8E: self: turns to face (x, z) (character move 15).
-: self-turn-to-xz ( F: x z -- )  fdrop fdrop s" self-turn-to-xz" stub-step ;
+fvariable turn-x  fvariable turn-z
+: self-turn-to-xz ( F: x z -- )   \ (at once)
+    self-char dup 0< if  drop fdrop fdrop exit  then
+    turn-z f! turn-x f!
+    dup char-pos fswap fdrop                        ( F: cx cz )
+    turn-z f@ fswap f-  fswap turn-x f@ fswap f-  fswap fatan2   ( F: heading: atan2 dx dz )
+    dup event-char-yaw  dup 15 move! move-done ;
 \ 8F: Character `who`'s shadow volumes off (its model's +0x4D9; Model_DrawWithShadow).
 : char-no-shadow ( who on -- )  drop drop s" char-no-shadow" stub-step ;
 \ 90: Room light `light`: op 0 back to the room's own; 1 / 2 its value 7 / 11 (intensity?)
@@ -492,7 +522,7 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 \ looking at something.
 : hewie-look-char ( id F: dy -- )  drop fdrop s" hewie-look-char" stub-step ;
 \ C7: self: character move 16 with v (an animation).
-: self-move-16 ( v -- )  drop s" self-move-16" stub-step ;
+: self-move-16 ( v -- )  self-char dup 0< if  2drop exit  then  swap $10 anim-move ;
 \ C8: A dust burst (SpriteBurst) of `kind` at (x, y, z): colour r, g, b if `own`, else grey
 \ (0x80 for kind 0, else 0x50); size 16.
 : dust ( kind r g b own F: x y z -- )  drop drop drop drop drop fdrop fdrop fdrop s" dust" stub-step ;
@@ -633,7 +663,9 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 : game-mode? ( mode -- flag )  drop s" game-mode?" stub-flag ;
 \ 0E: Script slots 0xF0..0xFA: that slot's script runs; else character `who` is in a scripted
 \ state (+0xE0).
-: char-busy? ( who -- flag )  drop s" char-busy?" stub-flag ;
+: char-busy? ( who -- flag )
+    dup scene-id? if  slot-for script-slot slot.task sl@ 0<>  exit  then
+    char-slot dup 0< if  drop false exit  then  character char.scripted sl@ 0<> ;
 \ 0F: Hewie (in the scene) is near enough for Fiona's commands (Hewie_FionaNearCommand).
 : hewie-near-command? ( -- flag )  s" hewie-near-command?" stub-flag ;
 \ 10: The stalker alert state (Progress_StalkerAlert) is v.
@@ -694,7 +726,7 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 \ 29: Event bit n is set (commands 0x57 / 0x58).
 : ebit? ( n -- flag )  event-state ev.bits bit? ;
 \ 2A: A fade (command 0x5C) is running.
-: fading? ( -- flag )  s" fading?" stub-flag ;
+: fading? ( -- flag )  fading ;
 \ 2B: The fade's frame count (+0x11F0) has reached +0x40. Unused by the scripts.
 : fade-past-40? ( -- flag )  s" fade-past-40?" stub-flag ;
 \ 2C: The camera director's setup changed (+0x2C, CamDirector_SetupChanged).

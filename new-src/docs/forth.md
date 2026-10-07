@@ -20,6 +20,8 @@ for this game. Names are case-insensitive.
   `spawn-held` starts one the engine leaves alone: `id resume` gives it its turn (whoever drives
   it decides when; it answers whether the task is still alive). `xt restart` makes the running
   task start over in another word at once, its stacks emptied (the event scripts' "go to").
+- **A task that never yields** is stopped after about 20 million steps in one turn ("ran too
+  long without yielding"), so one script can't freeze the game.
 - **Errors** print a message with the file and line and unwind: at the prompt the stacks are
   emptied; a task that errs is stopped; an `on-tick` hook that errs is removed. `' word catch`
   runs a word and gives -1 instead of unwinding (`error-message` has the text).

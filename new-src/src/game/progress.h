@@ -44,6 +44,12 @@ typedef struct ScriptChar {
     int32_t actor;      /* new-src's actor (-1: none) */
     int32_t cam_set;    /* the camera set and path for when the camera follows it (+0xE8, +0xEC) */
     int32_t cam_path;
+    int32_t move;       /* the move a script gave it (+0xF4: 2 idle, 5 / 10 walk / run to a point,
+                         * 7 / 8 / 16 an animation, ...), 0 none */
+    int32_t move_done;  /* that move is done (+0xE1) */
+    int32_t move_anim;  /* its animation */
+    float target[3];    /* where it goes (+0x110) */
+    float face;         /* the heading it ends with (+0x10C), radians; > 9: keep */
     float pos[3];       /* where it is (+0x10) */
     float prev[3];      /* where it was the frame before (+0x40) */
 } ScriptChar;

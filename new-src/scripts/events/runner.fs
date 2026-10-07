@@ -82,7 +82,7 @@ USING: game-state events.core events.words events.builtin events.map0 events.map
 \ a frame (SceneGame's update): the camera eases, phases 1 and 2, the action scripts, the
 \ camera takes the followed character's setup, phase 3, the camera placed
 : run-frame ( -- )
-    director-ease  1 run-phase  2 run-phase  run-slots
+    fade-step  director-ease  1 run-phase  2 run-phase  run-slots
     camera-frame director-track  3 run-phase  director-update ;
 
 \ for the console: what is running

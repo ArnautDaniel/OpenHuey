@@ -165,4 +165,20 @@ whether the original keeps her in view there (or she can't go there) needs the s
 - door-bits sets which parts of the room's door models are drawn (its middle operand is set /
   clear, not a door): kept for when new-src draws door models.
 
-Next: characters doing their scripted moves; door models; the window's look.
+## Status (2026-10-07): sounds, moves, fades
+
+- sound / char-sound / sound-set play the game's sounds from banks 4 / 5 / 6 (distance and pan
+  approximated; char-sound's last operand is a bank).
+- Characters' scripted moves (the state in the C characters: move, done, animation, target,
+  heading): animations (moves 7 / 8 / 16: self-anim, self-anim-blend, self-move-16), walking /
+  running to a point (5 / 10: self-move-to, straight over the nav mesh, then facing), turning
+  (self-turn-to-xz), idling; self-wait-anim waits at least a frame (the character takes its move
+  on its own update), self-wait-done until the move is done. Placing: char-to-xz (the triangle's
+  height), char-to-tri, char-to-tri-facing; char-visible; char-busy?. While scripted, the player
+  and Hewie's own control wait.
+- The screen fade (fade, wait-fade, fade-finish, fade-over, fading?): black over the picture,
+  the message window above.
+- Room $00's action 0 (its opening scene) runs: Fiona turns, looks up, says her line.
+
+Next: walking to triangles (moves 6 / 11), looking at things (12 / 13), cutscenes and movies, door
+models; the window's look.

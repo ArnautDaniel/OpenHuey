@@ -10,9 +10,12 @@ variable seed  12345 seed !
 :noname 2drop coin ; is stub-flag  :noname 2drop yield ; is stub-step
 
 variable script   variable finished   variable unbalanced   variable runs
-\ each script runs as if in action slot 0 (its waits wait, its frame count counts)
+\ each script runs as if in action slot 0 for Fiona (its waits wait - nobody carries out her moves
+\ here - and its frame count counts)
+reset-characters  0 0 character char.id l!  -1 0 character char.present l!
 : checked ( -- )
-    0 event-state ev.slot l!  0 0 script-slot slot.frames l!
+    0 event-state ev.slot l!  0 0 script-slot slot.frames l!  0 event-state ev.self-char l!
+    0 0 character char.move l!
     script @ execute
     depth fdepth or if 1 unbalanced +! ." unbalanced: " script @ . cr then
     true finished ! ;

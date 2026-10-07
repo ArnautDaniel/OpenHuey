@@ -194,6 +194,15 @@ defer event-sound ( id bank -- )             ' 2drop is event-sound
 defer event-sound-at ( id bank -- ) ( F: x y z -- )
 :noname 2drop fdrop fdrop fdrop ; is event-sound-at
 defer event-sound-set ( set -- )             ' drop is event-sound-set
+\ characters: an actor's place set, its heading (radians), shown or not; its animation played
+\ (once or looping) and whether it has come to its end
+defer event-char-place ( cs -- ) ( F: x y z -- )   :noname drop fdrop fdrop fdrop ; is event-char-place
+defer event-char-yaw ( cs -- ) ( F: a -- )          :noname drop fdrop ; is event-char-yaw
+defer event-char-show ( cs on -- )                  ' 2drop is event-char-show
+defer event-char-anim ( cs anim loop? -- )          :noname 2drop drop ; is event-char-anim
+defer event-char-anim-done? ( cs -- flag )          :noname drop true ; is event-char-anim-done?
+\ a nav triangle's middle (for placing on triangles)
+defer event-tri-center ( tri -- ) ( F: -- x y z )   :noname drop 0e 0e 0e ; is event-tri-center
 \ the message window's parameter `slot` shows system message $100 + id's first line
 defer message-parameter ( slot id -- ) ' 2drop is message-parameter
 
@@ -215,6 +224,27 @@ defer message-parameter ( slot id -- ) ' 2drop is message-parameter
     event-exit-door dup 0< if  drop false exit  then  $10 door-bit? 0= ;
 \ an exit asked for (exit-check): the game takes it after the frame
 variable exit-wanted  -1 exit-wanted !
+
+\ ---- the screen fade (the event's +0x20): 0 clear .. 1000 black ------------------------------
+variable fade-now  variable fade-from  variable fade-to  variable fade-frames  variable fade-t
+: fade-start ( frames kind -- )
+    $F and dup 1 = swap 0= or if  1000 0  else  0 1000  then   ( frames from to )
+    fade-to !  fade-from !  0 max fade-frames !  0 fade-t !
+    fade-frames @ 0= if  fade-to @ fade-now !  then ;
+: fading ( -- flag )  fade-t @ fade-frames @ < ;
+: fade-step ( -- )   \ each frame
+    fading if
+        1 fade-t +!
+        fade-to @ fade-from @ - fade-t @ * fade-frames @ / fade-from @ + fade-now !
+    then ;
+: fade-done ( -- )  fade-frames @ fade-t !  fade-to @ fade-now ! ;
+
+\ ---- characters' moves (the original's character update does them: +0xF4 the move, +0xE1 done)
+\ an animation, or a place to go: play.fs steps them each frame
+: move! ( cs move -- )  over character char.move l!  character char.move-done 0 swap l! ;
+: move-done ( cs -- )  character char.move-done -1 swap l! ;
+: anim-move ( cs anim move -- )
+    rot >r  r@ character char.move-anim  2 pick swap l!  r@ swap move!  r> swap 0 event-char-anim ;
 
 \ ---- characters' places and areas ----------------------------------------------------------
 : char-pos ( cs -- ) ( F: -- x y z )  character char.pos dup sf@ dup 4 + sf@ 8 + sf@ ;
