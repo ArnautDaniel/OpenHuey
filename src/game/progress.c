@@ -1619,6 +1619,7 @@ s32 Progress_LoadEventChar(Progress *p, u32 id, u32 slot) {
     return ok;
 }
 
+/* (the base's: SceneGame's progress overrides it with SceneGame_SetCreatureCount) */
 /* 0x00173650 */
 void Progress_Noop78(void) {
 }

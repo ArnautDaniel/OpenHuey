@@ -3913,7 +3913,7 @@ void EventCmd_Run(VObject *ev) {
         }
         break;
     }
-    case 0x99:
+    case 0x99:   /* flag 0x16, and SceneGame_SetCreatureCount (pc[1], pc[2]): the progress' +0x78 */
         Progress_SetFlag(p, 0x16);
         VCALL(p, 0x78, void (*)(Progress *, s32, s32))(p, PC(ev)[1], PC(ev)[2]);
         break;

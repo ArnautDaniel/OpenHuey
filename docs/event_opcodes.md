@@ -212,7 +212,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 96 | 6 | `fiona-target` | `id:u8` `frames:s32` | Fiona looks at / targets character `id` for `frames` (30 when not above 0) (Fiona_SetTarget). |
 | 97 | 2 | `fiona-costume` | `costume:u8` | Fiona's model swapped for costume `costume` (taken out, reloaded, not active). |
 | 98 | 2 | `char-in` | `slot:u8` | The character in `slot` comes in (waits while it is loading); it and Fiona active. |
-| 99 | 3 | `state-flag-16` | `a:u8` `b:u8` | State flag 0x16 set; the progress' +0x78 (Progress_Noop78: nothing). |
+| 99 | 3 | `creature-count` | `a:u8` `b:u8` | State flag 0x16 set and the creature count set from (a, b) (SceneGame_SetCreatureCount: the progress' +0x78). |
 | 9A | 3 | `self-through-door` | `door:u16` | self: as 0x6F, the exit given by door id `door`. |
 | 9B | 7 | `screen-blend` | `a:u32` `b:u8` `on:u8` | Room effect slot 0x1E: on 0 removed, else made anew as a screen blend (ScreenBlend_Init) with a (little-endian) and b. |
 | 9C | 18 | `fog` | `a:u32` `b:u32` `near:fx` `far:fx` `on:u8` | Room effect slot 0x1D: on 0 removed, else made anew as fog (Fog_Init): a, b raw floats (little-endian), near, far. |

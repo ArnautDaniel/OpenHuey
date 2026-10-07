@@ -255,7 +255,7 @@ CMD = {
     0x96: ('fiona-target', 'id:u8 frames:s32', 'Fiona looks at / targets character `id` for `frames` (30 when not above 0) (Fiona_SetTarget).'),
     0x97: ('fiona-costume', 'costume:u8', 'Fiona\'s model swapped for costume `costume` (taken out, reloaded, not active).'),
     0x98: ('char-in', 'slot:u8', 'The character in `slot` comes in (waits while it is loading); it and Fiona active.'),
-    0x99: ('state-flag-16', 'a:u8 b:u8', 'State flag 0x16 set; the progress\' +0x78 (Progress_Noop78: nothing).'),
+    0x99: ('creature-count', 'a:u8 b:u8', 'State flag 0x16 set and the creature count set from (a, b) (SceneGame_SetCreatureCount: the progress\' +0x78).'),
     0x9A: ('self-through-door', 'door:u16', 'self: as 0x6F, the exit given by door id `door`.'),
     0x9B: ('screen-blend', 'a:u32 b:u8 on:u8',
            'Room effect slot 0x1E: on 0 removed, else made anew as a screen blend (ScreenBlend_Init) '
