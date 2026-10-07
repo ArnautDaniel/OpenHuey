@@ -409,11 +409,70 @@ variable snd-anim  -1 snd-anim !  fvariable snd-frame
 \ his animation's root motion: turned by it, moved by it (unless the behaviour moved him)
 : root-motion ( -- )  root@  him rm-x f@ rm-z f@ c-move-local ;
 
+\ ---- under a script ----
+\ Hewie_FullStop: what the scripts' request 1 clears
+: full-stop ( -- )
+    0 h-broke !  0 h-whistle !  $FF h-look-char !  0 h-scene-req !  0 h-look-pt? !  $B state-flag-clear ;
+\ fiona_reachable: under a script in the room being played, he can get to her
+: fiona-reachable? ( -- flag )
+    h-busy? 0= if  true exit  then
+    h-room played-room <> if  true exit  then
+    h-2d @ h-2b @ or if  false exit  then
+    her c-active? 0= if  true exit  then
+    her c-tri her c-pos plan-to ;
+\ the move the scripts gave him, into his fields (the original keeps them in the character)
+fvariable rq-y
+: move-fields ( -- )
+    him cells move-a + @ h-to-tri !  him cells move-b + @ h-to-anim !
+    him character char.face sf@ h-to-yaw f!
+    h-to him character char.target vec-copy
+    \ (the scripts give points on the floor at height 0: onto his triangle's floor)
+    h-to-tri @ dup 0 nav-tris within if
+        tri-center fdrop rq-y f! fdrop
+        h-to sf@ rq-y f@ 8e f+ h-to 8 + sf@ floor-below if  h-to 4 + sf!  else  rq-y f@ h-to 4 + sf!  then
+    else  drop  then ;
+\ Hewie_Requests: the state block's requests (7 holds, 13 her command, 5 stops him), then the
+\ scripts' move as the action that carries it out
+: requests ( -- )
+    req@ 7 = if  exit  then
+    req@ 4 = if  0 req!  then
+    req@ 13 = if  fiona-reachable? if  fiona-command if  full-stop  then  0 req!  exit  then  0 req!  then
+    req@ 5 = if  path-end  0 0 want  0 req!  then
+    0 req!
+    him character char.move sl@ ?dup 0= if  exit  then
+    move-fields
+    case
+        1 of  full-stop  0  endof
+        2 of  0  endof  3 of  0  endof  4 of  0  endof
+        5 of  $3F  endof  6 of  $41  endof  7 of  $3B  endof  8 of  $3C  endof  9 of  $3D  endof
+        10 of  $40  endof  11 of  $42  endof  14 of  $43  endof  15 of  $44  endof  16 of  $3E  endof
+        18 of  $45  endof  19 of  $7F  endof  20 of  $46  endof  21 of  $47  endof
+        12 of  0 h-look-pt? !  him cells move-slot + @ h-look-char !  h-done  -1  endof
+        13 of  1 h-look-pt? !  h-look-pt h-to vec-copy  -1  endof
+        >r -1 r>
+    endcase
+    dup 0< 0= if  0 want  else  drop  then
+    0 him character char.move l! ;
+\ Hewie_Think: a frame of his while a script has him
+: hewie-think ( -- )
+    h-2b @ if  0  else  $29020008  then  him c-mask!
+    1 h-snd-t +!  h-snd-t @ 3000 > if  3000 h-snd-t !  then
+    alert  h-cond 2 <> if  report-fiona-near  then
+    requests
+    0 h-no-root !  1 h-root-ok !
+    h-state @ ?dup if  execute  then
+    turn-by-anim
+    h-disabled? 0= h-no-root @ 0= and if  root@  him rm-x f@ rm-z f@ c-move-local  then
+    turn-head  anim-sounds
+    h-yaw h-yaw-was f!  h-action @ h-last-action ! ;
+
 \ ---- Hewie_Update: a frame of his ----
+variable was-busy
 : hewie-frame ( -- )
+    h-busy? if  -1 was-busy !  hewie-think exit  then
+    was-busy @ if  0 was-busy !  full-stop  to-default  then   \ (the script let him go)
     upkeep  alert  h-cond 2 <> if  report-fiona-near  then  obedience
     state-block
-    h-busy? if  exit  then    \ (a script moves him: events/play.fs)
     h-2b @ if  8  else  $29020008  then  him c-mask!
     0 h-no-root !  1 h-root-ok !
     cutscene-active? if  standing-frame  else  hewie-control @ 0= if  own-decisions  then  then
@@ -435,6 +494,12 @@ variable snd-anim  -1 snd-anim !  fvariable snd-frame
     ['] st-calm h-mood-state !
     0 0 set-action ;
 
+\ Hewie_MayBreakOff: may what he does be broken off (`once`: only the first time)? 0 yes, -1 no
+: may-break-off ( once -- 0 | -1 )
+    h-broke @ 1 = and if  -1 exit  then
+    h-busy? 0= h-cmd @ $80000008 and 8 <> and if  -1 exit  then
+    1 h-broke !
+    h-waiting @ 0<> h-action @ $7D <> and  h-mood @ 3 = or if  -1  else  0  then ;
 \ Hewie_FionaCanCommand (for the scripts): she is here and he can take a command
 : can-command? ( -- flag )
     her with? 0= h-busy? or h-mode 0<> or h-mood @ 3 = or if  false exit  then

@@ -580,3 +580,125 @@ fvariable wp-left  variable wp-on
         30 h-t1 !  h-yaw pi f+ angle-wrap 20e 30 150 30 best-heading h-heading f!
     then
     8 keep-pose  h-heading f@ head-toward-soon  h-heading f@ run-turn 1.5e deg>rad fmax turn-to fdrop ;
+
+\ ---- under a script (the moves Hewie_Requests turns into actions 0x3B..0x47, 0x7F) ----
+\ the playback rate of his motion (the motion's +0x6A4 +0x1C)
+: rate! ( F: r -- )  h-actor dup 0< if  drop fdrop exit  then  actor act.rate sf! ;
+\ Hewie_StateRootMotion (0x3B..0x3E, 0x47): the animation's root motion moves him (0x47: not
+\ at all; through blocked floor, +0x2B, its height too)
+: st-root-motion ( -- )
+    h-action @ $47 = if  1 h-no-root !  exit  then
+    h-2b @ if
+        h-pos 4 + sf@  root@  him rm-x f@ rm-z f@ c-move-local  rm-y f@ f+ h-pos 4 + sf!  him c-sync
+        1 h-no-root !  0 h-root-ok !
+    then ;
+\ Hewie_StateWalkPath (0x41 / 0x42): along the planned way to h-to, by his gait (7 / 9) or
+\ animation h-to-anim; at the end the rest of the step, done
+create wk-at 12 allot
+: st-walk-path ( -- )
+    settled? if
+        h-to-anim @ -1 <> if  h-to-anim @ play-if-not
+        else  h-action @ $41 = if  7  else  9  then  keep-pose  then
+    then
+    rest                                                              ( F: rest )
+    h-to-tri @  him h-to -1 c-tri-to <> if
+        h-action @ $3F = if  10e  else  20e  then  him path-ahead drop  him pa-pos c-heading-to
+    else  him h-to c-heading-to  then                                ( F: rest a )
+    fdup head-toward-soon  run-turn him c-turn-toward                ( F: rest left )
+    stride-len fdup f0< if  fdrop fdrop 0e  else  fswap pi fswap f- pi f/ f*  then   ( F: rest mv )
+    him path-ahead him path-i!  pa-pos vec@ him c-place!  1 h-no-root !
+    path-done? if
+        stride-len fswap fover fover f> if  f- 0e fswap him c-move-local  else  fdrop fdrop  then
+        h-done  0 0 want exit
+    then  fdrop ;
+\ Hewie_State2138: his way to the triangle h-to-tri's middle, then walk it
+: st-2138 ( -- )
+    slide-root
+    h-to-tri @ dup 0< if  drop to-default exit  then  tri-center h-to vec!
+    h-to-tri @ h-to plan-to if  4 look!  ['] st-walk-path behave  else  to-default  then ;
+
+\ Hewie_StateTurnStart / Turning / State1C98 (0x43 / 0x44): once stopped, turning on the spot
+\ (0x1300, eased) to h-to-yaw; then standing again
+: st-1c98 ( -- )
+    settled? 0= if  exit  then
+    anim@ $1300 = if  game-mode @ 0= if  0  else  3  then  5 play-blend  1e rate!  exit  then
+    h-done  to-default ;
+: st-turning ( -- )
+    1 h-no-root !  0e h-look-pitch f!  h-to-yaw f@ head-toward
+    h-to-yaw f@ h-yaw f- angle-wrap fabs pi f* h-heading f@ f/ fsin             ( F: s )
+    fdup h-heading f@ f* f2* pi f/ 0.6e fmin rate!
+    h-heading f@ f* 0.05e f* 0.5e deg>rad fmax                                    ( F: step )
+    him h-to-yaw f@ fswap c-turn-toward f0= if  ['] st-1c98 behave  then ;
+: st-turn-start ( -- )
+    1 h-no-root !
+    settled? 0= if  exit  then
+    h-to-yaw f@ h-yaw f- angle-wrap fabs
+    fdup 1e deg>rad f< if  fdrop h-to-yaw f@ h-yaw!  ['] st-1c98 behave exit  then
+    $1300 play  0e rate!
+    1.01e f* h-heading f!  ['] st-turning behave ;
+
+\ Hewie_StateHeadForSpot / Wander (0x46): to the spot h-to (gait 7, head on it); there, milling
+\ about it
+defer st-wander
+: st-head-for-spot ( -- )
+    h-pos h-to vec-dist-xz 10e f< if
+        0 h-t1 !  0 h-t2 !  h-yaw h-heading f!  ['] st-wander behave exit
+    then
+    him h-to c-heading-to  run-turn turn-to                          ( F: left )
+    h-to look-at h-look-yaw f! h-look-pitch f!  8 look-now!
+    1.0471976e f<= if  0 step-to-pose 0= if  h-done  then  else  7 keep-pose  then ;
+:noname ( -- )   \ Hewie_StateWander
+    h-pos h-to vec-dist-xz 15e f> if  ['] st-head-for-spot behave exit  then
+    h-t2 @ if  -1 h-t2 +!
+    else
+        h-t1 @ if  -1 h-t1 +!  then
+        h-heading f@ 20e free-ahead 20e f<  h-t1 @ 0= or if
+            3 roll 30 * 30 + h-t1 !  30 h-t2 !
+            him h-to c-heading-to pi f+ angle-wrap  30e 30 150 30 best-heading h-heading f!
+        then
+    then
+    h-heading f@ head-toward-soon  h-heading f@ run-turn turn-to fdrop  7 keep-pose ;
+is st-wander
+
+\ ---- the leap (0x7F): Hewie_StateRunForSpot / Leap / TurnTo / 1C48 ----
+fvariable lp-y  fvariable lp-fall  fvariable lp-rise  fvariable lx  fvariable lz  fvariable ll
+create lp-dir 12 allot
+: st-turn-to ( -- )
+    h-to-yaw f@ h-yaw f- angle-wrap  fdup fabs 30e deg>rad f<  h-head-yaw f@ fover f* f0< 0= or if
+        fdrop him h-to-yaw f@ 10e deg>rad c-turn-toward fdrop
+    else  f0< if  h-yaw 10e deg>rad f+  else  h-yaw 10e deg>rad f-  then  angle-wrap h-yaw!  then
+    anim-done? if
+        h-t2 @ 0= if  0 h-2d !  then
+        -1 stand-anim  ['] st-1c48 behave
+    then
+    root@  lp-dir vec@ rm-z f@ f* frot rm-z f@ f* frot frot  fswap fdrop  him c-move-any
+    1 h-no-root ! ;
+: st-leap ( -- )
+    h-to-yaw f@ 10e deg>rad turn-to fdrop
+    anim-done? anim@ $1E05 <> and if  $1E05 play-cut  1.2889e lp-fall f!  then
+    anim@ $1E04 = if
+        root@  lp-dir vec@ rm-z f@ f* frot rm-z f@ f* frot frot fswap fdrop  him c-move-any
+        lp-y f@ rm-y f@ lp-rise f@ f* f+                                   ( F: y )
+    else
+        lp-dir vec@ 3e f* frot 3e f* frot frot fswap fdrop  him c-move-any
+        lp-fall f@ 0.5e f+ 3e fmin lp-fall f!
+        lp-y f@ lp-fall f@ f-
+    then
+    1 h-no-root !
+    h-pos 4 + sf@ fover f> if   \ below the ground: landed
+        fdrop $1E06 play-cut  ['] st-turn-to behave exit
+    then
+    fdup lp-y f!  h-pos 4 + sf!  him c-sync ;
+: st-run-for-spot ( -- )
+    h-to-tri @ h-to plan-and-go if  0 0 want exit  then
+    settled? rest h-to-anim @ s>f f< and if
+        h-to sf@ h-pos sf@ f- lx f!  h-to 8 + sf@ h-pos 8 + sf@ f- lz f!
+        lx f@ fsq lz f@ fsq f+ fsqrt  fdup f0= if  fdrop 1e  then  ll f!
+        lx f@ ll f@ f/  0e  lz f@ ll f@ f/  lp-dir vec!
+        h-pos 4 + sf@ lp-y f!
+        him h-to c-heading-to fdup h-to-yaw f!  20e deg>rad turn-to fdrop
+        $1E04 play  1 h-2d !  1 h-no-root !
+        ['] st-leap behave exit
+    then
+    5 step-to-pose 0= if  $202 play-if-not  then
+    stride 0= if  8 keep-pose  then ;

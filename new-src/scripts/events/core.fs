@@ -299,6 +299,10 @@ variable fiona-near       \ how near Hewie Fiona is (+0x7B9: 1 within 20, 2 with
 variable hewie-control    \ the player controls Hewie (+0x1FBEC1)
 \ whether Fiona can give Hewie a command now (partner: Hewie_FionaCanCommand)
 defer event-hewie-can-command? ( -- flag )   ' false is event-hewie-can-command?
+\ Hewie's side of the scripts' commands and conditions (by opcode; hewie.fs fills them in)
+defer event-hewie ( op a b -- )      :noname 2drop drop ; is event-hewie
+defer event-hewie? ( op a -- flag )  :noname 2drop false ; is event-hewie?
+defer event-hewie-look ( -- ) ( F: x y z -- )   :noname fdrop fdrop fdrop ; is event-hewie-look
 
 \ ---- the player's request (progress +0x1134: what her action button does, set again each frame by
 \ the room's scripts - 0x0A): 5 starts her action script `request-arg`; its kind (+0x1151) ----
@@ -352,8 +356,21 @@ variable fade-now  variable fade-from  variable fade-to  variable fade-frames  v
 \ an animation, or a place to go: play.fs steps them each frame
 : move! ( cs move -- )  over character char.move l!  character char.move-done 0 swap l! ;
 : move-done ( cs -- )  character char.move-done -1 swap l! ;
+\ the move's details: +0x100 a character slot, +0x104 a triangle or an animation, +0x108 another
+\ (0xFFFF: -1) or a blend; the point (+0x110) and heading (+0x10C) are char.target / char.face
+create move-slot  characters cells allot  move-slot characters cells 0 fill
+create move-a     characters cells allot  move-a characters cells 0 fill
+create move-b     characters cells allot  move-b characters cells 0 fill
+: move-ab! ( cs a b -- )  rot >r  r@ cells move-b + !  r> cells move-a + ! ;
+\ the characters that carry out their moves themselves, as the original's do (Hewie's
+\ Hewie_Requests); the others' are walked by events/play.fs
+create own-moves  characters cells allot  own-moves characters cells 0 fill
+: own-moves? ( cs -- flag )  dup 0< if  drop false exit  then  cells own-moves + @ ;
 : anim-move ( cs anim move -- )
-    rot >r  r@ character char.move-anim  2 pick swap l!  r@ swap move!  r> swap 0 event-char-anim ;
+    rot >r  r@ character char.move-anim  2 pick swap l!
+    r@ 2 pick -1 move-ab!  r@ swap move!
+    r@ own-moves? if  r> 2drop exit  then
+    r> swap 0 event-char-anim ;
 
 \ ---- characters' places and areas ----------------------------------------------------------
 : char-pos ( cs -- ) ( F: -- x y z )  character char.pos dup sf@ dup 4 + sf@ 8 + sf@ ;

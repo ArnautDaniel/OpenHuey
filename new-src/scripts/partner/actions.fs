@@ -198,7 +198,25 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
             h-target @ 0< pursuer @ sees? and if
                 h-pos pursuer @ c-pos vec-dist 150e f< if  pursuer @ h-target !  then
             then  0 h-cmd !  ['] st-bark behave  endof
-    \ the rest (leaving rooms, hiding, fetching, scripted moves, being steered): later phases
+    \ under a script (Hewie_Requests): animations with their root motion, walks, turns, a bark
+    $3B of  0 mode!  4 look!  0 h-cmd !  h-to-tri @ play  h-done  ['] st-root-motion behave  endof
+    $3C of  0 mode!  4 look!  0 h-cmd !  h-to-tri @ h-to-anim @ play-blend  h-done  ['] st-root-motion behave  endof
+    $47 of  0 mode!  4 look!  0 h-cmd !  h-to-tri @ h-to-anim @ play-blend  h-done  ['] st-root-motion behave  endof
+    $3D of  0 mode!  4 look!  0 h-cmd !  h-to-tri @ h-to-anim @ play-blend8  h-done  ['] st-root-motion behave  endof
+    $3E of  0 mode!  4 look!  0 h-cmd !  h-to-anim @ stand-anim  h-done  ['] st-root-motion behave  endof
+    $3F of  0 mode!  0 h-cmd !  0 h-t1 !  0 h-t2 !  ['] st-set-off behave  endof
+    $40 of  0 mode!  0 h-cmd !  0 h-t1 !  2 h-t2 !  ['] st-set-off behave  endof
+    $41 of  0 mode!  0 h-cmd !  ['] st-2138 behave  endof
+    $42 of  0 mode!  0 h-cmd !  ['] st-2138 behave  endof
+    $43 of  him cells move-slot + @ dup c-active? if
+                0 mode!  0 h-cmd !  him swap c-pos c-heading-to h-to-yaw f!  ['] st-turn-start behave
+            else  drop h-done  then  endof
+    $44 of  0 mode!  0 h-cmd !  ['] st-turn-start behave  endof
+    $45 of  0 mode!  0 h-cmd !  ['] st-2168 behave  endof
+    $46 of  0 mode!  0 h-cmd !  ['] st-head-for-spot behave  endof
+    $7F of  h-to 4 + sf@ lp-rise f!  h-2d @ 1 = if  1  else  0  then  h-t2 !
+            0 mode!  0 h-cmd !  ['] st-run-for-spot behave  endof
+    \ the rest (leaving rooms, hiding, fetching, being steered): later phases
     >r  r@ 0= 0= if  0 0 want  then  r>
     endcase ;
 : set-action-now ( act arg -- )   \ Hewie_SetAction

@@ -143,18 +143,23 @@ defer adjust-action ( act -- act' ) ' noop is adjust-action    \ Hewie_AdjustAct
 \ ---- his animations (his motion: Motion_Play*, MOTION_ANIM, the end and fade flags) ----
 : anim@ ( -- id )  h-actor dup 0< if  exit  then  motion@ ;
 \ Motion_PlayTable: with the fade and flags his motion table gives
+: rate-1 ( a -- )  actor 1e act.rate sf! ;   \ (playing anew: its own pace)
 : play ( anim -- )
-    h-actor dup 0< if  2drop exit  then  swap
+    h-actor dup 0< if  2drop exit  then  dup rate-1  swap
     2dup motion-entry >r drop r>                  ( a anim blend flags )
     motion-play ;
 \ Motion_Play: the table's flags, cut in
 : play-cut ( anim -- )
-    h-actor dup 0< if  2drop exit  then  swap
+    h-actor dup 0< if  2drop exit  then  dup rate-1  swap
     2dup motion-entry nip nip 0 swap motion-play ;
 \ Motion_PlayBlend: over `n` frames
 : play-blend ( anim n -- )
-    h-actor dup 0< if  drop 2drop exit  then  -rot
+    h-actor dup 0< if  drop 2drop exit  then  dup rate-1  -rot
     over h-actor swap motion-entry nip nip motion-play ;
+\ Motion_PlayBlend8: blended over `n` frames, with no time of its own (flag 8)
+: play-blend8 ( anim n -- )
+    h-actor dup 0< if  drop 2drop exit  then  dup rate-1  -rot
+    over h-actor swap motion-entry nip nip 8 or motion-play ;
 \ the animation came to its end this frame (its key flag 0x20); it isn't fading in any more
 : anim-done? ( -- flag )  h-actor dup 0< if  exit  then  actor act.mflags l@ $20 and 0<> ;
 : settled? ( -- flag )  h-actor dup 0< if  drop true exit  then  actor act.fade sf@ 0e f<= ;

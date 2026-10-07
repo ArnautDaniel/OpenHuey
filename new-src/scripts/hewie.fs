@@ -156,14 +156,51 @@ create meet-at 12 allot  fvariable fs-ox  fvariable fs-oz  fvariable fs-yaw
     dup $2B = if  drop 0 meet-start 0= if  $2F command-hewie  then  exit  then
     command-hewie ;
 
+\ ---- the scripts' commands and conditions on him (src/game/event.c EventCmd_Hewie) ----
+\ Hewie_SetAnim: his yelp's time (unless negative) and animation
+: set-anim ( a anim -- )  h-yelp-anim !  dup 0< if  drop  else  h-yelp !  then ;
+variable room-side  -1 room-side !   \ +0xF3668: which side of a divided room he is on
+:noname ( op a b -- )
+    rot case
+        $39 of  set-action  endof
+        $63 of  drop s>f deg>rad angle-wrap h-to-yaw f!  $72 0 set-action  endof
+        $77 of  set-anim  endof
+        $85 of  drop add-trust  endof
+        $BB of  drop  h-room played-room = if  5 h-wait !  0<> h-stay !  else  drop  then  endof
+        $BD of  2drop  300 h-pet-time !  endof
+        $C4 of  drop -1 set-mode  endof
+        $D0 of  drop dup 3 u< 0= if  drop -1  then  room-side !  endof
+        $D7 of  drop play-cut  endof
+        >r 2drop r>
+    endcase ; is event-hewie
+:noname ( op a -- flag )
+    swap case
+        $0F of  drop  her with? h-mood @ 3 <> and can-command? and dup if
+                    drop  her c-tri her c-pos plan-to dup if  drop rest 150e f<=  then
+                then  endof
+        $24 of  h-action @ =  endof
+        $31 of  drop 0 may-break-off 0=  endof
+        $33 of  room-side @ =  endof
+        $42 of  drop h-waiting @ 0<>  endof
+        $43 of  h-mood @ =  endof
+        $5A of  drop fiona-reachable?  endof
+        $61 of  h-trust @ =  endof
+        >r drop false r>
+    endcase ; is event-hewie?
+:noname ( F: x y z -- )   \ (only when he isn't already looking at something)
+    h-look @ if  fdrop fdrop fdrop exit  then  1 h-look !  h-scent vec! ; is event-hewie-look
+
 \ ---- each frame ----
 :noname ( -- flag )  can-command? ; is event-hewie-can-command?
 : hewie-tick ( -- )
     playing @ hewie-along @ and paused @ 0= and 0= if  exit  then
     hewie @ 0< if  spawn-hewie  hewie @ 0< if  exit  then  then
-    hewie-ready @ 0= if  hewie @ dup $3D5F90 motion-table  1 character char.actor l!  -1 hewie-ready !  then
+    hewie-ready @ 0= if
+        hewie @ dup $3D5F90 motion-table  1 character char.actor l!  -1 hewie-ready !
+        -1 1 cells own-moves + !   \ (his moves are his own: Hewie_Requests)
+    then
     played-room dup her character char.room l!  him character char.room l!
-    her from-actor  h-busy? if  him from-actor  then
+    her from-actor
     played-room hewie-room @ <> if  heel  hewie-start  then
     fiona-commands  meet-tick
     hewie-frame ;

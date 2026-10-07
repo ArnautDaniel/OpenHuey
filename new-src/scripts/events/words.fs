@@ -5,6 +5,14 @@
 IN: events.words
 USING: game-state events.core ;
 
+: deg ( F: a -- d )  180e f* 3.14159265e f/ ;
+: wrap-angle ( F: a -- a' )
+    begin  fdup 3.14159265e f> while  6.28318531e f-  repeat
+    begin  fdup -3.14159265e f< while  6.28318531e f+  repeat ;
+\ how far (degrees, 0..180) character `cs` turns from its heading to face (x, z)
+fvariable fx  fvariable fz
+
+
 \ ---- commands
 
 \ 00: Door / exit use: with bit 7 set, flags the progress (+0x4 = 1) and keeps the exit
@@ -51,7 +59,8 @@ USING: game-state events.core ;
 \ 08: self: waits until the move has finished (move state 0 and its motion's end flag 0x20).
 : self-wait-anim ( -- )   \ (the move's animation has come round)
     in-slot? 0= if  exit  then  self-char dup 0< if  drop exit  then
-    begin  yield  dup event-char-anim-done?  until  move-done ;   \ (the character takes the move a frame on)
+    begin  yield  dup event-char-anim-done?  over own-moves? if  over character char.move sl@ 0= and  then  until
+    move-done ;   \ (the character takes the move a frame on)
 \ 09: Waits while the message window is open.
 : wait-message ( -- )  [: event-state ev.message sl@ 0< ;] wait-until ;
 \ 0A: Requests a scene change (progress +0x1134 = scene, +0x113C = arg, +0x1151 = kind) when the
@@ -66,23 +75,30 @@ USING: game-state events.core ;
 : camera-value ( which F: v -- )  drop fdrop s" camera-value" stub-step ;
 \ 0C: self: goes to (x, z) on triangle `tri` (tri2 0xFFFF: none), then faces `face`; `move` the
 \ character move (5 / 10 walk / run to a point, ...).
-: self-move-to ( tri face tri2 move F: x z -- )   \ (walking / running in a straight line)
+: opt16 ( v -- v' )  dup $FFFF = if  drop -1  then ;
+variable mv-b
+: self-move-to ( tri face tri2 move F: x z -- )   \ (others than Hewie: walking / running straight)
     self-char dup 0< if  2drop 2drop drop fdrop fdrop exit  then
-    >r  r@ character char.target dup 8 + sf!  sf!
-    nip rot drop                                    ( face move )  ( R: cs )
-    r@ swap move!  s>f deg>rad r> character char.face sf! ;
+    >r  r@ character char.target dup 8 + sf!  dup 0e 4 + sf!  sf!   \ (y 0: the floor is found)
+    swap opt16 mv-b !  rot  r@ swap mv-b @ move-ab!                 ( face move )  ( R: cs )
+    r@ swap move!  s>f deg>rad wrap-angle r> character char.face sf! ;
 \ 0D: self: waits until the current move is done (+0xE1 == 1).
 : self-wait-done ( -- )
     in-slot? 0= if  exit  then  self-char dup 0< if  drop exit  then
-    begin  dup character char.move-done sl@ 0=  dup if  over character char.move sl@ 0= 0= and  then
+    begin  dup character char.move-done sl@ 0=
+        dup if  over own-moves? 0= if  over character char.move sl@ 0= 0= and  then  then
     while  yield  repeat  drop ;
 \ 0E: self: move `move` with triangles `tri` / `tri2` (0xFFFF: none) (6 / 11 walk / run to a
 \ triangle, 17 ...).
-: self-move-tri ( tri tri2 move -- )  drop drop drop s" self-move-tri" stub-step ;
+: self-move-tri ( tri tri2 move -- )   \ (Fiona's walks to a triangle: her phase)
+    self-char dup own-moves? 0= if  drop 2drop drop s" self-move-tri" stub-step exit  then
+    >r  rot rot opt16 r@ -rot move-ab!  r> swap move! ;
 \ 0F: self: back to idle (character move 2).
 : self-idle ( -- )  self-char dup 0< if  drop exit  then  dup 2 move!  move-done ;
 \ 10: self: move `move` toward character slot `slot` (14 turn to a character, ...).
-: self-move-slot ( slot move -- )  drop drop s" self-move-slot" stub-step ;
+: self-move-slot ( slot move -- )
+    self-char dup own-moves? 0= if  drop 2drop s" self-move-slot" stub-step exit  then
+    >r  swap r@ cells move-slot + !  r> swap move! ;
 \ 11: Brings in character `id` as the partner (slot 2: loads and starts it, resets the
 \ summoner).
 : partner-load ( id -- )  drop s" partner-load" stub-step ;
@@ -158,7 +174,10 @@ USING: game-state events.core ;
 \ after Fiona when she is in another room.
 : stalker-search-delay ( id frames -- )  drop drop s" stalker-search-delay" stub-step ;
 \ 2B: self: looks at character `id` (character move 12; 0xFF: stop). (Not "follow".)
-: self-look-at ( id -- )  drop s" self-look-at" stub-step ;
+: self-look-at ( id -- )
+    self-char dup own-moves? 0= if  2drop s" self-look-at" stub-step exit  then
+    swap dup $FF <> if  char-slot dup 6 u< 0= if  2drop exit  then  then
+    over cells move-slot + !  12 move! ;
 \ 2E: Stalker `id`: adds `point` to its route (0xFFFF: on to its next route point).
 : stalker-route ( id point -- )  drop drop s" stalker-route" stub-step ;
 \ 2F: Stalker `id`: 0 go for Fiona, 2 chase her from here, 3 start searching.
@@ -188,7 +207,7 @@ create effect-bytes 64 allot  variable #effect-bytes
 \ 38: Script variable - 1.
 : var-dec ( var -- )  -1 swap 4 * event-state ev.vars + +l! ;
 \ 39: Hewie: action a with argument b (Hewie_SetAction).
-: hewie-action ( a b -- )  drop drop s" hewie-action" stub-step ;
+: hewie-action ( a b -- )  $39 -rot event-hewie ;
 \ 3A: Room `room` is loaded ahead into the spare room slot (SceneGame_LoadSpareRoom).
 : room-preload ( room -- )  drop ;   \ (as 0x01)
 \ 3B: Places character `who` (0xFF: self) on triangle `tri` facing `face`.
@@ -212,7 +231,10 @@ create effect-bytes 64 allot  variable #effect-bytes
 \ 41: Progress variable n + 1 (the progress' byte variables, +0x9C).
 : pvar-inc ( n -- )  progress pr.vars + dup c@ 1+ swap c! ;
 \ 42: self: turns to character `id` (character move 14).
-: self-turn-to ( id -- )  drop s" self-turn-to" stub-step ;
+: self-turn-to ( id -- )
+    self-char dup own-moves? 0= if  2drop s" self-turn-to" stub-step exit  then
+    swap char-slot dup 6 u< 0= if  2drop exit  then
+    over cells move-slot + !  14 move! ;
 \ 43: Raises the threat / panic meter (progress +0x7B8) by v (0..100).
 : threat-raise ( v -- )  drop s" threat-raise" stub-step ;
 \ 44: The sub-screen's start flag set (SceneGame_SubScreenStart).
@@ -233,7 +255,9 @@ create effect-bytes 64 allot  variable #effect-bytes
 \ 4A: The camera director restarts (CamDirector_Restart).
 : camera-restart ( -- )  director-restart ;
 \ 4B: self: turns to heading `face` (character move 15).
-: self-turn-angle ( face -- )  drop s" self-turn-angle" stub-step ;
+: self-turn-angle ( face -- )
+    self-char dup own-moves? 0= if  2drop s" self-turn-angle" stub-step exit  then
+    swap s>f deg>rad wrap-angle dup character char.face sf!  15 move! ;
 \ 4C: The room's door models: bit a + 1 + b of each set (set 1) or cleared (Doors_SetBits; the
 \ progress' +0x68 is empty).
 \ (they say which parts of the room's door models are drawn: kept for when new-src draws them)
@@ -330,7 +354,7 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
         $C of  8 event-scene-signals 0 ?do  1 prepared-page +!  loop  endof
     endcase ;
 \ 63: Hewie turns to heading `face` (Hewie action 0x72).
-: hewie-face ( face -- )  drop s" hewie-face" stub-step ;
+: hewie-face ( face -- )  $63 swap 0 event-hewie ;
 \ 64: The depth-range effect (room effect slot 0x1C) removed.
 : depth-range-off ( -- )  s" depth-range-off" stub-step ;
 \ 65: Room effect slot 0x1C made anew as a depth range (DepthRange_Init) with the four values.
@@ -381,10 +405,11 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 \ (Obstacles_ModelBack).
 : obstacle-model-back ( i n -- )  drop drop s" obstacle-model-back" stub-step ;
 \ 77: Hewie plays animation `anim` (Hewie_SetAnim).
-: hewie-anim ( a anim -- )  drop drop s" hewie-anim" stub-step ;
+: hewie-anim ( a anim -- )  $77 -rot event-hewie ;
 \ 78: Hewie steps to a pose (3, or 0 in special modes) and barks (character move 0x12 -> his
 \ action 0x45).
-: hewie-bark ( -- )  s" hewie-bark" stub-step ;
+: hewie-slot ( -- cs | -1 )  1 char-slot ;
+: hewie-bark ( -- )  hewie-slot dup 0< if  drop exit  then  $12 move! ;
 \ 79: Places character `who` at (x, z) on triangle `tri` (height from the triangle), facing
 \ `face`.
 fvariable at-x  fvariable at-z
@@ -396,7 +421,10 @@ fvariable at-x  fvariable at-z
     at-x f@ fswap at-z f@  dup event-char-place
     swap s>f deg>rad event-char-yaw ;
 \ 7A: Hewie goes to the point on triangle `tri` (operands stored x, z, y) (character move 0x13).
-: hewie-go-to ( tri b F: x z y -- )  drop drop fdrop fdrop fdrop s" hewie-go-to" stub-step ;
+: hewie-go-to ( tri b F: x z y -- )
+    hewie-slot dup 0< if  drop 2drop fdrop fdrop fdrop exit  then  >r
+    r@ character char.target  dup 4 + sf!  dup 8 + sf!  sf!
+    r@ -rot move-ab!  r> $13 move! ;
 \ 7B: Waits until character `who`'s motion event flags have any of `bits`.
 : char-wait-motion ( who bits -- )  drop drop s" char-wait-motion" stub-step wait-frame ;
 \ 7C: Zone `z` (0..31, for conditions 0x07 / 0x08 ...) on: centre (x, y, z), radius r, height h,
@@ -416,8 +444,9 @@ fvariable at-x  fvariable at-z
 \ 80: Room effect slot `fx` removed.
 : effect-remove ( fx -- )  drop s" effect-remove" stub-step ;
 \ 81: self: animation `anim` with b (character move 8).
-: self-anim-blend ( anim b -- )   \ (move 8; the blend `b` isn't kept)
-    drop self-char dup 0< if  2drop exit  then  swap 8 anim-move ;
+: self-anim-blend ( anim b -- )   \ (move 8; the blend: for those who carry out their moves)
+    self-char dup 0< if  drop 2drop exit  then
+    >r  r@ 2 pick rot move-ab!  r> swap 8 anim-move ;
 \ 82: The event camera (camera director): with on, set from the four values (EventCam_Set); then
 \ held on / off (CamDirector_HoldEffect1C).
 : event-camera ( on F: a b c d -- )  drop fdrop fdrop fdrop fdrop s" event-camera" stub-step ;
@@ -428,7 +457,7 @@ fvariable at-x  fvariable at-z
 \ 84: The summoner takes the partner (Summoner_Take(a)).
 : summon-take ( a -- )  drop s" summon-take" stub-step ;
 \ 85: Hewie's trust in Fiona + n (Hewie_AddTrust).
-: hewie-trust ( n -- )  drop s" hewie-trust" stub-step ;
+: hewie-trust ( n -- )  $85 swap 0 event-hewie ;
 \ 86: Room effect slot `fx` made anew as an EvEffect86 at (x, y, z) with `kind`.
 : effect-86 ( fx kind F: x y z -- )  drop drop fdrop fdrop fdrop s" effect-86" stub-step ;
 \ 87: Sends room effect `fx` 1 if character `who` hasn't moved this frame, else 2.
@@ -514,7 +543,9 @@ fvariable turn-x  fvariable turn-z
 \ A3: The panic's stage = `stage` (Panic_SetStage).
 : panic-stage ( stage -- )  panic ! ;   \ (Panic_SetStage: the panic's own effects come with Fiona's)
 \ A4: self: animation `anim` with b (character move 9).
-: self-anim-9 ( anim b -- )  drop drop s" self-anim-9" stub-step ;
+: self-anim-9 ( anim b -- )
+    self-char dup own-moves? 0= if  drop 2drop s" self-anim-9" stub-step exit  then
+    >r  r@ -rot move-ab!  r> 9 move! ;
 \ A5: Requests scene 5 (an ending / the results, id `id`) unless state flag 0x12 or Fiona is
 \ busy.
 : scene-ending ( id -- )  drop s" scene-ending" stub-step ;
@@ -531,7 +562,9 @@ fvariable turn-x  fvariable turn-z
 \ AA: self: walks to (x, z) with animation `anim`, then faces `face` (character move 17).
 : self-walk-anim ( anim tri tri2 face F: x z -- )  drop drop drop drop fdrop fdrop s" self-walk-anim" stub-step ;
 \ AB: self: looks at (x, y, z) (character move 13). (Not "go to".)
-: self-look-at-point ( F: x y z -- )  fdrop fdrop fdrop s" self-look-at-point" stub-step ;
+: self-look-at-point ( F: x y z -- )
+    self-char dup own-moves? 0= if  drop fdrop fdrop fdrop s" self-look-at-point" stub-step exit  then
+    dup character char.target  dup 8 + sf!  dup 4 + sf!  sf!  13 move! ;
 \ AC: self: the character fades at doorways (+0xE4: Character_RegionFade picks its draw layer
 \ each frame); off keeps a fixed layer (see 0xAE / 0xB5).
 : self-doorway-fade ( on -- )  drop s" self-doorway-fade" stub-step ;
@@ -542,9 +575,17 @@ fvariable turn-x  fvariable turn-z
 \ the character in the fading layer 0x0F.
 : char-tint ( who rgba on -- )  drop drop drop s" char-tint" stub-step ;
 \ AF: Hewie goes to (x, y, z) (character move 0x14).
-: hewie-go-to-point ( F: x y z -- )  fdrop fdrop fdrop s" hewie-go-to-point" stub-step ;
+: hewie-go-to-point ( F: x y z -- )
+    hewie-slot dup 0< if  drop fdrop fdrop fdrop exit  then
+    dup character char.target  dup 8 + sf!  dup 4 + sf!  sf!  $14 move! ;
 \ B0: Hewie goes to zone `zone`'s point (variable `zone`): run 0 move 0x14, 1 move 13.
-: hewie-go-to-zone ( zone run -- )  drop drop s" hewie-go-to-zone" stub-step ;
+: zone-of-var ( var -- z )  4 * event-state ev.vars + sl@ ;
+: hewie-go-to-zone ( zone run -- )
+    hewie-slot dup 0< if  drop 2drop exit  then  >r
+    swap zone-of-var dup zones u< 0= if  2drop r> drop exit  then
+    zone# dup l@ if  dup 8 + sf@  dup 12 + sf@  16 + sf@  r@ character char.target  dup 8 + sf!  dup 4 + sf!  sf!
+    else  drop  then
+    r> swap if  13  else  $14  then  move! ;
 \ B1: As 0x7F with the slot and position in script variables (positions / 1000).
 : flicker-sprite-var ( fx x y z -- )  drop drop drop drop s" flicker-sprite-var" stub-step ;
 \ B2: Fiona is thrown down by character `id` (reaction action 4, sub 0xA, with a rumble;
@@ -570,12 +611,12 @@ fvariable turn-x  fvariable turn-z
 : char-hand-over ( from to -- )  drop drop s" char-hand-over" stub-step ;
 \ BB: Hewie (if in this room): his wait timer = 5 frames and his "forced action 4" flag
 \ (+0xF3588) on / off.
-: hewie-wait-5 ( on -- )  drop s" hewie-wait-5" stub-step ;
+: hewie-wait-5 ( on -- )  $BB swap 0 event-hewie ;
 \ BC: Fiona reacts to Hewie (Fiona_HewieReact 8).
 : fiona-hewie-react ( -- )  s" fiona-hewie-react" stub-step ;
 \ BD: Hewie's +0xF3688 = 300: for a while he obeys stay / wait commands at once
 \ (Hewie_CommandAction). Unused by the scripts.
-: hewie-stay-300 ( -- )  s" hewie-stay-300" stub-step ;
+: hewie-stay-300 ( -- )  $BD 0 0 event-hewie ;
 \ BE: The in-game item tab (SubScreen_TabCommand): op 0 announces the script's item `item`
 \ (Events_ScriptRoom), 1 waits for its files, 2 slides the tab in, 4 out; waits while it moves.
 : item-tab ( op item -- )  drop drop s" item-tab" stub-step ;
@@ -590,17 +631,26 @@ fvariable turn-x  fvariable turn-z
 : door-lock-for ( id door state -- )  drop drop drop s" door-lock-for" stub-step ;
 \ C3: Hewie plays animation `anim` (blend) with its root motion (character move 0x15 -> his
 \ action 0x47).
-: hewie-anim-root ( anim blend -- )  drop drop s" hewie-anim-root" stub-step ;
+: hewie-anim-root ( anim blend -- )
+    hewie-slot dup 0< if  drop 2drop exit  then  >r  r@ -rot move-ab!  r> $15 move! ;
 \ C4: Hewie's mode (Hewie_SetMode).
-: hewie-mode ( mode -- )  drop s" hewie-mode" stub-step ;
+: hewie-mode ( mode -- )  $C4 swap 0 event-hewie ;
 \ C5: Hewie looks at zone `zone`'s point (variable `zone`), raised by dy, if he isn't already
 \ looking at something.
-: hewie-look-zone ( zone F: dy -- )  drop fdrop s" hewie-look-zone" stub-step ;
+: hewie-look-zone ( zone F: dy -- )
+    zone-of-var dup zones u< 0= if  drop fdrop exit  then
+    zone# dup l@ 0= if  drop fdrop exit  then
+    dup 8 + sf@  dup 12 + sf@ frot f+  16 + sf@  event-hewie-look ;
 \ C6: Hewie looks at character `id` (in this room, active), raised by dy, if he isn't already
 \ looking at something.
-: hewie-look-char ( id F: dy -- )  drop fdrop s" hewie-look-char" stub-step ;
+: hewie-look-char ( id F: dy -- )
+    char-slot dup char-here 0= if  drop fdrop exit  then
+    character char.pos  dup sf@  dup 4 + sf@ frot f+  8 + sf@  event-hewie-look ;
 \ C7: self: character move 16 with v (an animation).
-: self-move-16 ( v -- )  self-char dup 0< if  2drop exit  then  swap $10 anim-move ;
+: self-move-16 ( v -- )
+    self-char dup 0< if  2drop exit  then
+    dup own-moves? if  tuck 0 swap move-ab!  $10 move! exit  then
+    swap $10 anim-move ;
 \ C8: A dust burst (SpriteBurst) of `kind` at (x, y, z): colour r, g, b if `own`, else grey
 \ (0x80 for kind 0, else 0x50); size 16.
 : dust ( kind r g b own F: x y z -- )  drop drop drop drop drop fdrop fdrop fdrop s" dust" stub-step ;
@@ -620,7 +670,7 @@ fvariable turn-x  fvariable turn-z
 \ CF: The playing movie's volume = v (0..1), applied; +0x1BC set (starts it: see the FMV notes).
 : movie-volume ( F: v -- )  event-movie-volume  0 event-movie-pause ;
 \ D0: Hewie's side (0..2, else none).
-: hewie-side ( side -- )  drop s" hewie-side" stub-step ;
+: hewie-side ( side -- )  $D0 swap 0 event-hewie ;
 \ D1: The sub-screen's map turns to page `page` (+0x2C: Map_TurnTo).
 : map-page ( page -- )  drop s" map-page" stub-step ;
 \ D2: Every placed thing is removed (PlacedThings_Clear).
@@ -637,7 +687,7 @@ fvariable turn-x  fvariable turn-z
 \ (Renderer_Set304DE0).
 : effects-arena-flip ( -- )  s" effects-arena-flip" stub-step ;
 \ D7: Hewie's motion plays `anim` (Motion_Play).
-: hewie-anim-set ( anim -- )  drop s" hewie-anim-set" stub-step ;
+: hewie-anim-set ( anim -- )  $D7 swap 0 event-hewie ;
 \ D8: By progress +0xFB6 (from 20: steps of 20): item 0x270..0x273 added, with the pickup sound.
 : reward-item ( -- )  s" reward-item" stub-step ;
 \ D9: A scene effect: a dust mote source (DustMoteSource) at (x, y, z) of `size`.
@@ -703,12 +753,6 @@ fvariable turn-x  fvariable turn-z
 
 \ ---- for the conditions: facing, touching, the characters' sizes ----
 \ radians to degrees (cond_deg); an angle into -pi .. pi (Angle_Wrap)
-: deg ( F: a -- d )  180e f* 3.14159265e f/ ;
-: wrap-angle ( F: a -- a' )
-    begin  fdup 3.14159265e f> while  6.28318531e f-  repeat
-    begin  fdup -3.14159265e f< while  6.28318531e f+  repeat ;
-\ how far (degrees, 0..180) character `cs` turns from its heading to face (x, z)
-fvariable fx  fvariable fz
 : faces-off ( cs -- ) ( F: x z -- deg )
     fz f! fx f!  dup char-pos fswap fdrop                     ( cs ) ( F: cx cz )
     fz f@ fswap f-  fswap fx f@ fswap f-  fswap fatan2        ( F: atan2 dx dz )
@@ -779,7 +823,7 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
     dup scene-id? if  slot-for script-slot slot.task sl@ 0<>  exit  then
     char-slot dup 0< if  drop false exit  then  character char.scripted sl@ 0<> ;
 \ 0F: Hewie (in the scene) is near enough for Fiona's commands (Hewie_FionaNearCommand).
-: hewie-near-command? ( -- flag )  s" hewie-near-command?" stub-flag ;
+: hewie-near-command? ( -- flag )  $0F 0 event-hewie? ;
 \ 10: The stalker alert state (Progress_StalkerAlert) is v.
 : stalker-alert? ( v -- flag )  drop s" stalker-alert?" stub-flag ;
 \ 12: The event counter (+0x703, commands 0x16..0x18) is n.
@@ -831,7 +875,7 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 \ while the stalker is present (+0x1544).
 : chars-within? ( a b d -- flag )  drop drop drop s" chars-within?" stub-flag ;
 \ 24: Hewie (in the scene)'s current action (+0xF3564) is v.
-: hewie-action? ( v -- flag )  drop s" hewie-action?" stub-flag ;
+: hewie-action? ( v -- flag )  $24 swap event-hewie? ;
 \ 25: The camera director's +0x24 is v.
 : camera-mode? ( v -- flag )  drop s" camera-mode?" stub-flag ;
 \ 26: The action Fiona last started (+0x1AD6BC, Fiona_MarkActionStart; -1 none) is v.
@@ -864,11 +908,11 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 \ 30: Character `who` (active, in the current room) is heading for exit `exit` (+0x14D4).
 : char-heading-for? ( who exit -- flag )  drop drop s" char-heading-for?" stub-flag ;
 \ 31: Hewie (in the scene) may not break off (Hewie_MayBreakOff is 0).
-: hewie-stays? ( -- flag )  s" hewie-stays?" stub-flag ;
+: hewie-stays? ( -- flag )  $31 0 event-hewie? ;
 \ 32: Character `who` (active) is in room `room`.
 : char-in-room? ( who room -- flag )  drop drop s" char-in-room?" stub-flag ;
 \ 33: Hewie (in the scene) is on side `side` of the room (+0xF3668; command 0xD0 sets it).
-: hewie-side? ( side -- flag )  drop s" hewie-side?" stub-flag ;
+: hewie-side? ( side -- flag )  $33 swap event-hewie? ;
 \ 34: Character `who` (active)'s animation event flags have any of `bits`.
 : char-motion-flags? ( who bits -- flag )  drop drop s" char-motion-flags?" stub-flag ;
 \ 35: Character `who` (in this room, its radius / height) against zone `zone`: all of `bits`
@@ -909,10 +953,10 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 \ 41: Character `who`'s state +0xC4 is v (see command 0x47).
 : char-C4? ( who v -- flag )  drop drop s" char-C4?" stub-flag ;
 \ 42: Hewie's pool (+0xF359C) is in use (+0xF3598). Unused by the scripts.
-: hewie-pool-in-use? ( -- flag )  s" hewie-pool-in-use?" stub-flag ;
+: hewie-pool-in-use? ( -- flag )  $42 0 event-hewie? ;
 \ 43: Hewie's mode (+0xF35C0: 0 normal, 1..3 timed; command 0xC4 sets it) is `mode`. Unused by
 \ the scripts.
-: hewie-mode? ( mode -- flag )  drop s" hewie-mode?" stub-flag ;
+: hewie-mode? ( mode -- flag )  $43 swap event-hewie? ;
 \ 44: Character `who` (active, in the current room) stands on a triangle with any of `flags`.
 : char-on-nav-flags? ( who flags -- flag )  drop drop s" char-on-nav-flags?" stub-flag ;
 \ 45: Character `id` is out of sight: absent, inactive, elsewhere, or off the camera.
@@ -960,7 +1004,7 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 \ 59: Fiona is caught (+0x1AD630). Unused by the scripts.
 : fiona-caught? ( -- flag )  s" fiona-caught?" stub-flag ;
 \ 5A: Hewie can reach Fiona (Hewie_FionaReachable; no Hewie: yes).
-: hewie-reachable? ( -- flag )  s" hewie-reachable?" stub-flag ;
+: hewie-reachable? ( -- flag )  $5A 0 event-hewie? ;
 \ 5B: The event's +0x704 (command 0xD4) has reached v.
 : event-704-reached? ( v -- flag )  event-state ev.room-frames l@ swap $FFFFFFFF and u< 0= ;
 \ 5C: The ADX stream: what 0 can start, else is playing (none: yes).
@@ -974,7 +1018,7 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 \ 60: Resident flag n is set (kept across games).
 : resident-flag? ( n -- flag )  progress pr.resident bit? ;
 \ 61: Hewie's trust level (+0xF35CC, it picks his wait timers) is v. Unused by the scripts.
-: hewie-trust-level? ( v -- flag )  drop s" hewie-trust-level?" stub-flag ;
+: hewie-trust-level? ( v -- flag )  $61 swap event-hewie? ;
 \ 62: The file loader's current load is done (Loader_CurrentDone).
 : loader-done? ( -- flag )  s" loader-done?" stub-flag ;
 \ 63: Character `id` is in slot `slot` and finished loading.

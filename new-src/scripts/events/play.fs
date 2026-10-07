@@ -131,7 +131,7 @@ fvariable go-x  fvariable go-z  fvariable go-dx  fvariable go-dz  fvariable go-d
     0 nav-block!  place-char ;
 : moves ( -- )   \ each frame, after the scripts
     characters 0 do
-        i character char.present sl@ if  i character char.move-done sl@ 0= if
+        i character char.present sl@  i own-moves? 0= and if  i character char.move-done sl@ 0= if
             i character char.move sl@
             dup walk-move? if  drop i go-step  else
             anim-move? if  i event-char-anim-done? if  i move-done  then  then  then
