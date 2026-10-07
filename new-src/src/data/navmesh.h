@@ -35,6 +35,12 @@ int navmesh_find(const NavMesh *n, Vec3 p, float climb, float *height);
 /* move from p by (dx, dz), staying on the mesh with `radius` to spare ahead: sliding along
  * walls, following the floor */
 Vec3 navmesh_move(const NavMesh *n, Vec3 p, float dx, float dz, float climb, float radius);
+/* a way over the mesh from (tri `from`, point a) to (tri `to`, point b), keeping off the
+ * `block` flags (the triangle it starts on excepted): A* over the triangles, then pulled
+ * tight through the edges they share. Its turning points into out (b last; up to max): their
+ * number, 0 if there is no way. (The original's planner, src/game/navmesh.c PathPlan_*, runs
+ * several searches and curves its paths; this keeps to the shortest.) */
+int navmesh_path(const NavMesh *n, int from, Vec3 a, int to, Vec3 b, Vec3 *out, int max);
 /* the middle of triangle i */
 Vec3 navmesh_center(const NavMesh *n, int i);
 /* the middle of the triangle nearest p */

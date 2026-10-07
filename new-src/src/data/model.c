@@ -470,6 +470,42 @@ static Mat4 bone_local(const float *rot, const float *pos) {
     return mat4_mul(tr, mat4_mul(rz, mat4_mul(ry, rx)));
 }
 
+int model_root_delta(const Model *m, int index, float frame, float *turn, Vec3 *step) {
+    Reader r = bank(m);
+    size_t rec = 0x10 + (size_t)index * 0x14;
+    int p;
+
+    *turn = 0.0f;
+    *step = vec3(0, 0, 0);
+    if (index < 0 || index >= model_motion_count(m)) {
+        return 0;
+    }
+    for (p = 0; p < 5; p++) {
+        size_t part = rec + u32(&r, rec + p * 4);
+        uint32_t ntracks, k;
+        int frames;
+
+        if (part == rec) {
+            continue;
+        }
+        ntracks = u32(&r, part);
+        frames = (int)u32(&r, part + 4);
+        for (k = 0; k < ntracks && !r.bad; k++) {
+            size_t track = part + u32(&r, part + 8) + k * 12;
+            float rot[3] = {0, 0, 0}, pos[3] = {0, 0, 0};
+
+            if ((int32_t)u32(&r, track) != -1) {
+                continue;
+            }
+            sample_track(&r, track, frames, frame, rot, pos);
+            *turn = rot[1];
+            *step = vec3(pos[0], pos[1], pos[2]);
+            return 1;
+        }
+    }
+    return 0;
+}
+
 void model_pose(const Model *m, int index, float frame, Mat4 *skin) {
     model_pose_root(m, index, frame, skin, NULL);
 }

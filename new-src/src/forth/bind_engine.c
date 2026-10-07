@@ -110,6 +110,26 @@ PRIM(p_nav_tri) {   /* ( F: x y z -- ) ( -- tri | -1 ) the nav triangle under a 
 
     PUSH(navmesh_find(&gEngine.room.nav, vec3(x, y, z), 4.0f, &h));
 }
+#define PATH_MAX_POINTS 64
+static Vec3 sPath[PATH_MAX_POINTS];
+static int sPathN;
+PRIM(p_nav_path) {   /* ( from to -- n ) ( F: ax ay az bx by bz -- ) a way between two points on their
+                      * triangles, kept off the blocked flags (nav-block!): its turning points */
+    float bz = (float)FPOP(), by = (float)FPOP(), bx = (float)FPOP();
+    float az = (float)FPOP(), ay = (float)FPOP(), ax = (float)FPOP();
+    Cell to = POP(), from = POP();
+
+    sPathN = navmesh_path(&gEngine.room.nav, (int)from, vec3(ax, ay, az), (int)to, vec3(bx, by, bz), sPath, PATH_MAX_POINTS);
+    PUSH(sPathN);
+}
+PRIM(p_nav_path_point) {   /* ( i -- ) ( F: -- x y z ) the last way's point i */
+    Cell i = POP();
+    Vec3 p = i >= 0 && i < sPathN ? sPath[i] : vec3(0, 0, 0);
+
+    FPUSH(p.x);
+    FPUSH(p.y);
+    FPUSH(p.z);
+}
 PRIM(p_tri_center) {   /* ( tri -- ) ( F: -- x y z ) */
     Cell i = POP();
     Vec3 c;
@@ -713,6 +733,18 @@ PRIM(p_motion_store) {   /* ( id motion-id -- ) play a motion from its start */
         a->frame = 0.0f;
     }
 }
+PRIM(p_root_delta) {   /* ( id -- ) ( F: -- turn dx dy dz ) its motion's root movement this frame
+                         * (model space, scaled to the room) */
+    Actor *a = actor_arg(f, POP());
+    float turn;
+    Vec3 step;
+
+    model_root_delta(&a->model, a->motion, a->frame, &turn, &step);
+    FPUSH(turn);
+    FPUSH(step.x * a->scale);
+    FPUSH(step.y * a->scale);
+    FPUSH(step.z * a->scale);
+}
 PRIM(p_has_motion) {   /* ( id motion-id -- flag ) */
     Cell mid = POP();
     Actor *a = actor_arg(f, POP());
@@ -1043,7 +1075,7 @@ void bind_engine(Forth *f) {
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
-        {".director", p_cam_info}, {"area-in?", p_area_in}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"area-middle", p_area_middle}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
+        {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"area-middle", p_area_middle}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
         {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},
@@ -1060,7 +1092,7 @@ void bind_engine(Forth *f) {
         {"message-options", p_message_options}, {"message-option", p_message_option},
         {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor", p_actor},
-        {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
+        {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"root-delta", p_root_delta}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
         {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"mouse-down?", p_mouse_down},

@@ -155,3 +155,169 @@ Vec3 navmesh_nearest(const NavMesh *n, Vec3 p) {
     }
     return best;
 }
+
+/* ---- paths ---- */
+
+typedef struct Node {
+    float g, f;
+    int parent, state;   /* state 0 unseen, 1 open, 2 closed */
+} Node;
+
+static float cross2(Vec3 o, Vec3 a, Vec3 b) {   /* > 0: b is on the "left" of o->a (x, z) */
+    return (a.x - o.x) * (b.z - o.z) - (a.z - o.z) * (b.x - o.x);
+}
+
+/* the edge triangle t shares with u, as its two corners: left and right as seen from t's middle
+ * (in cross2's sense) */
+static int shared_edge(const NavMesh *n, int t, int u, Vec3 *l, Vec3 *r) {
+    int e;
+
+    for (e = 0; e < 3; e++) {
+        if (n->tris[t].next[e] == u) {
+            Vec3 p = n->tris[t].v[e], q = n->tris[t].v[(e + 1) % 3], c = navmesh_center(n, t);
+            Vec3 mid = vec3((p.x + q.x) * 0.5f, 0.0f, (p.z + q.z) * 0.5f);
+
+            if (cross2(c, mid, p) > 0.0f) {
+                *l = p;
+                *r = q;
+            } else {
+                *l = q;
+                *r = p;
+            }
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int navmesh_path(const NavMesh *n, int from, Vec3 a, int to, Vec3 b, Vec3 *out, int max) {
+    Node *nodes;
+    int *open, nopen = 0, i, k, cur = -1, *chain, nchain = 0, npts = 0;
+    Vec3 apex, left, right;
+    int li = 0, ri = 0, ai = 0;
+    Vec3 *pl, *pr;
+
+    if (from < 0 || to < 0 || from >= n->ntris || to >= n->ntris || max < 1) {
+        return 0;
+    }
+    if (from == to) {
+        out[0] = b;
+        return 1;
+    }
+    nodes = calloc((size_t)n->ntris, sizeof(Node));
+    open = malloc((size_t)n->ntris * sizeof(int));
+    if (nodes == NULL || open == NULL) {
+        free(nodes);
+        free(open);
+        return 0;
+    }
+    nodes[from].state = 1;
+    nodes[from].parent = -1;
+    nodes[from].f = vec3_len(vec3_sub(b, a));
+    open[nopen++] = from;
+    while (nopen > 0) {
+        int best = 0;
+        Vec3 c;
+
+        for (i = 1; i < nopen; i++) {
+            if (nodes[open[i]].f < nodes[open[best]].f) {
+                best = i;
+            }
+        }
+        cur = open[best];
+        open[best] = open[--nopen];
+        nodes[cur].state = 2;
+        if (cur == to) {
+            break;
+        }
+        c = cur == from ? a : navmesh_center(n, cur);
+        for (k = 0; k < 3; k++) {
+            int u = n->tris[cur].next[k];
+            Vec3 cu;
+            float g;
+
+            if (u < 0 || u >= n->ntris || nodes[u].state == 2 || (n->tris[u].flags & n->block)) {
+                continue;
+            }
+            cu = u == to ? b : navmesh_center(n, u);
+            g = nodes[cur].g + vec3_len(vec3_sub(cu, c));
+            if (nodes[u].state == 0 || g < nodes[u].g) {
+                nodes[u].g = g;
+                nodes[u].f = g + vec3_len(vec3_sub(b, cu));
+                nodes[u].parent = cur;
+                if (nodes[u].state == 0) {
+                    open[nopen++] = u;
+                }
+                nodes[u].state = 1;
+            }
+        }
+        cur = -1;
+    }
+    free(open);
+    if (cur != to) {
+        free(nodes);
+        return 0;
+    }
+    /* the chain of triangles, start to end */
+    for (k = to; k >= 0; k = nodes[k].parent) {
+        nchain++;
+    }
+    chain = malloc((size_t)nchain * sizeof(int));
+    pl = malloc((size_t)(nchain + 1) * sizeof(Vec3));
+    pr = malloc((size_t)(nchain + 1) * sizeof(Vec3));
+    if (chain == NULL || pl == NULL || pr == NULL) {
+        free(chain);
+        free(pl);
+        free(pr);
+        free(nodes);
+        return 0;
+    }
+    i = nchain;
+    for (k = to; k >= 0; k = nodes[k].parent) {
+        chain[--i] = k;
+    }
+    free(nodes);
+    /* the portals: each shared edge, then the end point as a closed one */
+    for (i = 0; i + 1 < nchain; i++) {
+        shared_edge(n, chain[i], chain[i + 1], &pl[i], &pr[i]);
+    }
+    pl[nchain - 1] = pr[nchain - 1] = b;
+    /* the funnel (simple stupid funnel algorithm) */
+    apex = left = right = a;
+    for (i = 0; i < nchain && npts < max; i++) {
+        Vec3 l = pl[i], r = pr[i];
+
+        if (cross2(apex, right, r) >= 0.0f) {   /* the right side narrows */
+            if (vec3_len(vec3_sub(apex, right)) < 1e-4f || cross2(apex, left, r) < 0.0f) {
+                right = r;
+                ri = i;
+            } else {   /* it crosses the left: the left corner is a turning point */
+                out[npts++] = left;
+                apex = right = left;
+                ai = ri = li;
+                i = ai;
+                continue;
+            }
+        }
+        if (cross2(apex, left, l) <= 0.0f) {   /* the left side narrows */
+            if (vec3_len(vec3_sub(apex, left)) < 1e-4f || cross2(apex, right, l) > 0.0f) {
+                left = l;
+                li = i;
+            } else {
+                out[npts++] = right;
+                apex = left = right;
+                ai = li = ri;
+                i = ai;
+                continue;
+            }
+        }
+    }
+    if (npts < max && (npts == 0 || vec3_len(vec3_sub(out[npts - 1], b)) > 1e-4f)) {
+        out[npts++] = b;
+    }
+    (void)ai;
+    free(chain);
+    free(pl);
+    free(pr);
+    return npts;
+}

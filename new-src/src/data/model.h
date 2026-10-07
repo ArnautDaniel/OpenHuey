@@ -56,6 +56,10 @@ int model_motion_frames(const Model *m, int index);
 /* the skin matrices (model space) for a motion at a time in frames (fractions blend), or the
  * rest pose for index -1 */
 void model_pose(const Model *m, int index, float frame, Mat4 *skin);
+/* the motion's root movement at a time: its per-frame turn about y (radians) and step (model
+ * space: forward is +z) - the special track -1 that moves the character itself (the original's
+ * Motion_RootRotation / Motion_RootTranslation); 0 if it has none */
+int model_root_delta(const Model *m, int index, float frame, float *turn, Vec3 *step);
 /* the same, and the root bone's posed position (model space) */
 void model_pose_root(const Model *m, int index, float frame, Mat4 *skin, Vec3 *root);
 
