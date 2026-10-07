@@ -24,10 +24,6 @@ variable fiona-cmd  -1 fiona-cmd !    \ the command her controls give this frame
 : roll ( n -- i )  s>f rnd01 f* f>s ;   \ (s32)(n x r)
 
 \ ---- the characters (chars has their bodies) ----
-: c-active? ( cs -- flag )  dup c-ok? 0= if  drop false exit  then  character char.present sl@ 0<> ;
-: c-room ( cs -- room )  character char.room sl@ ;
-: c-cond ( cs -- n )  character char.cond sl@ ;
-: c-mode ( cs -- n )  character char.mode sl@ ;
 : c-sub ( cs -- n )  character char.sub sl@ ;
 : played-room ( -- room )  room-id ;   \ (the room loaded: the one being played)
 \ |a| of a wrapped angle (hwrap_abs)
