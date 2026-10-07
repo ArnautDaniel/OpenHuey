@@ -125,5 +125,56 @@ USING: engine game-state events.core events.words chars relations fiona.doors pu
 ' activate $5C vt!
 \ Pursuer_SetRage (+0x31C): +0x16B8 2 / 0
 :noname ( on -- )  if  2  else  0  then  $16B8 pu-l! ; $31C vt!
+\ ---- his head (Pursuer_HeadLook) by his look (+0x1710): 1 at Fiona, 2 at Hewie (5 above him) -
+\ when he sees them; 3 at his goal (+0x15B0) when it's in view and within 30 degrees; 5 at
+\ +0x1700; else (and 0 as it was) back ahead. Eased at his head's speed (+0xA4); +0x1574 his
+\ sight's heading. His model turns it (HumanModel_AdjustBone): the head (0x16) its pitch and
+\ half its turn, the neck (0xF) the other half ----
+fvariable head-pitch   \ (his motion's +0x854)
+create hl-eye 12 allot  create hl-at 12 allot
+: look-angles ( v -- ) ( F: -- pitch turn )   \ Motion_LookAt from his eye (the model's +0x860: 16 up)
+    hl-eye p-pos vec-copy  hl-eye 4 + dup sf@ 16e f+ sf!
+    dup 4 + sf@  hl-eye 4 + sf@ f-  dup hl-eye swap vec-dist-xz  fatan2
+    hl-eye swap vec-heading p-yaw f- angle-wrap ;
+fvariable e-v  fvariable e-to  fvariable e-s
+: ease ( F: v to step -- v' )   \ (Motion_EaseTilt: by at most step)
+    fabs e-s f!  e-to f!  e-v f!
+    e-to f@ e-v f@ f- fabs e-s f@ f<= if  e-to f@ exit  then
+    e-to f@ e-v f@ f<= if  e-v f@ e-s f@ f-  else  e-v f@ e-s f@ f+  then ;
+fvariable he-ty  fvariable he-sp  fvariable he-sy
+: head-ease ( F: pitch turn sp-pitch sp-turn -- )
+    he-sy f!  he-sp f!  he-ty f!
+    head-pitch f@ fswap he-sp f@ ease head-pitch f!
+    head-yaw f@ he-ty f@ he-sy f@ ease head-yaw f! ;
+: sight-heading ( -- )  p-yaw head-yaw f@ f+ angle-wrap $1574 pu-f! ;
+: head-at ( v -- )   \ (Pursuer_LookAt: the turn only, small ones none)
+    look-angles fswap fdrop  fdup fabs 0.05e f< if  fdrop 0e  then
+    0e fswap 0e $A4 vcall head-ease  sight-heading ;
+: look-ahead ( -- )   \ (the motion's +0x5C: back to none at the head's speed)
+    0e 0e $A4 vcall fdup head-ease  sight-heading ;
+: head-look ( -- )
+    $1710 pu-c@ case
+        0 of  exit  endof
+        1 of  $1544 pu-c@ if  her c-pos head-at exit  then  endof
+        2 of  $1545 pu-c@ if
+                  hl-at dog c-pos vec-copy  hl-at 4 + dup sf@ 5e f+ sf!
+                  hl-at look-angles  $A4 vcall fdup head-ease  sight-heading exit
+              then  endof
+        3 of  $15B0 pu $40080 v-tri-in $15A4 pu-l@ =  if
+                  p-pos $15B0 pu  $1574 pu-f@ $1580 pu-f@ $1584 pu-f@ can-see? if
+                      me $15B0 pu c-heading-to p-yaw f- angle-wrap fabs 0.5235988e f< if  $15B0 pu head-at  then
+                      exit
+                  then
+              then  endof
+        5 of  $1700 pu head-at exit  endof
+    endcase
+    look-ahead ;
+: head-pose ( -- )
+    p-actor dup 0< if  drop exit  then
+    dup turns-clear
+    head-pitch f@ fnegate  head-yaw f@ 0.5e f*  dup $16 turn+
+    0e  head-yaw f@ 0.5e f*  $F turn+ ;
 \ his model's frame (Pursuer_ModelUpdate, +0x40): the engine moves his model; his head's look
-:noname ( -- )  not-yet" Pursuer_HeadLook" ; $40 vt!
+:noname ( -- )  head-look  head-pose ; $40 vt!
+\ Debilitas_TurnRateFast (+0xA4): his head's speed, 8 degrees a frame
+:noname ( F: -- r )  0.13962634e ; $A4 vt!
