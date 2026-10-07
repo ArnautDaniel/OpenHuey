@@ -14,5 +14,7 @@ void sound_play(const int16_t *pcm, int n, float volume, float pan);
 /* a stream mixed in as well (a movie's sound): it adds `frames` stereo frames into `out`;
  * NULL none */
 void sound_stream(void (*mix)(int16_t *out, int frames));
+/* more streams (slots 1..3: 1 the music, 2 the sequencer), mixed after the voices */
+void sound_stream_slot(int slot, void (*mix)(int16_t *out, int frames));
 
 #endif

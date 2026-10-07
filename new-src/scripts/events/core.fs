@@ -215,6 +215,10 @@ defer event-look ( slot addr n -- )   :noname 2drop drop ; is event-look
 \ movies (platform/movie.c): one opened paused, started, stopped, paused / resumed, its volume;
 \ its state as the original's Movie_Status (2 paused, 1 running, -1 none) and the frame shown
 \ (-1 none yet)
+\ the background music (BgmCtl): a track wanted (0xFF none) at a level, paused or not; the
+\ stream paused / resumed
+defer event-bgm-want ( track pause -- ) ( F: level -- )   :noname 2drop fdrop ; is event-bgm-want
+defer event-music-pause ( on -- )         ' drop is event-music-pause
 defer event-movie-open ( addr len -- )    ' 2drop is event-movie-open
 defer event-movie-stop ( -- )             ' noop is event-movie-stop
 defer event-movie-pause ( on -- )         ' drop is event-movie-pause

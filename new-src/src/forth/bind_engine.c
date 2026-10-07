@@ -11,6 +11,7 @@
 #include "../data/soundbank.h"
 #include "../platform/sound.h"
 #include "../platform/movie.h"
+#include "../platform/music.h"
 
 #include "../core/files.h"
 
@@ -622,6 +623,17 @@ PRIM(p_cs_in_shot) { PUSH(cutscene_playing_shot() ? -1 : 0); }
 PRIM(p_cs_near_end) { PUSH(cutscene_near_end() ? -1 : 0); }
 PRIM(p_cs_shot_at) { PUSH(cutscene_shot_at((int)POP())); }   /* ( frame -- shot ) -1 none */
 PRIM(p_cs_signals) { PUSH(cutscene_signal_count((int)POP())); }   /* ( bit -- n ) since last frame */
+PRIM(p_music_play) {   /* ( addr len loop paused -- flag ) a track (ADX file) streamed */
+    Cell paused = POP(), loop = POP(), n = POP(), a = POP();
+    char path[256];
+
+    snprintf(path, sizeof(path), "%.*s", (int)n, (const char *)a);
+    PUSH(music_play(path, loop != 0, paused != 0) ? -1 : 0);
+}
+PRIM(p_music_stop) { music_stop(); }
+PRIM(p_music_pause) { music_pause(POP() != 0); }   /* ( on -- ) */
+PRIM(p_music_volume) { music_volume((float)FPOP()); }   /* ( F: v -- ) 0..1 */
+PRIM(p_music_playing) { PUSH(music_playing() ? -1 : 0); }
 PRIM(p_pause) { gEngine.paused = POP() != 0; }   /* ( flag -- ) actors and the room stand still */
 PRIM(p_cs_active) { PUSH(cutscene_active() ? -1 : 0); }
 PRIM(p_cs_total) { PUSH(cutscene_signal_total((int)POP())); }   /* ( bit -- n ) its count so far less one */
@@ -1011,7 +1023,8 @@ void bind_engine(Forth *f) {
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
         {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},
-        {"cutscene-signals", p_cs_signals}, {"cutscene-active?", p_cs_active}, {"pause!", p_pause}, {"cutscene-signal-total", p_cs_total}, {"cutscene-letterbox-off", p_cs_letterbox_off}, {"movie-close", p_movie_close}, {"movie-pause", p_movie_pause}, {"movie-paused?", p_movie_paused}, {"movie-compose", p_movie_compose},
+        {"cutscene-signals", p_cs_signals}, {"cutscene-active?", p_cs_active}, {"pause!", p_pause}, {"music-play", p_music_play}, {"music-stop", p_music_stop},
+        {"music-pause", p_music_pause}, {"music-volume!", p_music_volume}, {"music-playing?", p_music_playing}, {"cutscene-signal-total", p_cs_total}, {"cutscene-letterbox-off", p_cs_letterbox_off}, {"movie-close", p_movie_close}, {"movie-pause", p_movie_pause}, {"movie-paused?", p_movie_paused}, {"movie-compose", p_movie_compose},
         {"movie-volume!", p_movie_volume}, {"movie-draw", p_movie_draw}, {"stage-light", p_stage_light}, {"stage-lights", p_stage_lights},
         {"stage-ambient", p_stage_ambient}, {"room-clear", p_room_clear}, {"common-sound", p_common_sound},
         {"bank-sound", p_bank_sound}, {"bank-sound-at", p_bank_sound_at}, {"sound-set!", p_sound_set}, {"sound-to-wav", p_sound_to_wav}, {"exit-door", p_exit_door}, {"door-flags", p_door_flags},

@@ -192,6 +192,33 @@ variable started   \ (the camera director set up for play)
     run-frame  action-button  moves  remember-places  false doors-follow  take-exit ;
 ' events-tick on-tick
 
+\ ---- the background music (src/game/music.c BgmCtl): the scripts want a track (0xFF none) at a
+\ level; a new one starts at once (paused if asked), none fades the playing one out over 30
+\ frames, wanting it again fades it back in. The stream's loudness: the original sets it as
+\ 100 log10 v tenths of a dB, so the square root of v as an amplitude ----
+variable bgm-cur  $FF bgm-cur !   variable bgm-req  $FF bgm-req !   variable bgm-pause
+fvariable bgm-level  1e bgm-level f!  fvariable bgm-fade  fvariable bgm-speed
+:noname ( track pause -- ) ( F: level -- )
+    bgm-pause !  dup bgm-req !  $FF <> if  bgm-level f!  else  fdrop  then ; is event-bgm-want
+' music-pause is event-music-pause
+: bgm-start ( -- )
+    bgm-req @ dup bgm-cur !  bgm-track bgm-pause @ music-play drop ;
+: bgm-tick ( -- )
+    false                                                   ( start? )
+    bgm-cur @ bgm-req @ <> if
+        bgm-req @ $FF = if  -1e 30e f/ bgm-speed f!  else  drop true  1e bgm-fade f!  then
+    else
+        bgm-req @ $FF <> bgm-speed f@ f0< and if  1e 30e f/ bgm-speed f!  then
+    then
+    bgm-cur @ $FF <> if
+        bgm-fade f@ bgm-speed f@ f+ 0e fmax 1e fmin bgm-fade f!
+        bgm-fade f@ 1e f>= bgm-fade f@ 0e f<= or if  0e bgm-speed f!  then
+        bgm-fade f@ 0e f<= if  music-stop  $FF bgm-cur !  then
+    then
+    bgm-fade f@ bgm-level f@ f* 0e fmax 1e fmin fsqrt music-volume!
+    if  bgm-start  then ;
+' bgm-tick on-tick
+
 \ ---- movies ----
 \ the movie, for the classes that show it (src/game/movie.c): 1 keyed by its brightness, 2 opaque
 \ but only while state flag $29 (a scene's signal 11 turns it), 3 by its own alpha, 5 opaque - all

@@ -16,7 +16,8 @@ typedef struct Voice {
 static SDL_AudioStream *sStream;
 static Voice sVoices[VOICES];
 static SDL_Mutex *sLock;
-static void (*volatile sStreamMix)(int16_t *out, int frames);
+#define STREAMS 4
+static void (*volatile sStreamMix[STREAMS])(int16_t *out, int frames);   /* [0] the movie's */
 
 static void SDLCALL feed(void *ud, SDL_AudioStream *s, int additional, int total) {
     int16_t buf[1024 * 2];
@@ -47,8 +48,10 @@ static void SDLCALL feed(void *ud, SDL_AudioStream *s, int additional, int total
             }
         }
         SDL_UnlockMutex(sLock);
-        if (sStreamMix != NULL) {
-            sStreamMix(buf, frames);
+        for (v = 0; v < STREAMS; v++) {
+            if (sStreamMix[v] != NULL) {
+                sStreamMix[v](buf, frames);
+            }
         }
         SDL_PutAudioStreamData(s, buf, frames * 4);
         additional -= frames * 4;
@@ -120,7 +123,20 @@ void sound_stream(void (*mix)(int16_t *out, int frames)) {
     if (sLock != NULL) {
         SDL_LockMutex(sLock);
     }
-    sStreamMix = mix;
+    sStreamMix[0] = mix;
+    if (sLock != NULL) {
+        SDL_UnlockMutex(sLock);
+    }
+}
+
+void sound_stream_slot(int slot, void (*mix)(int16_t *out, int frames)) {
+    if (slot <= 0 || slot >= STREAMS) {
+        return;
+    }
+    if (sLock != NULL) {
+        SDL_LockMutex(sLock);
+    }
+    sStreamMix[slot] = mix;
     if (sLock != NULL) {
         SDL_UnlockMutex(sLock);
     }

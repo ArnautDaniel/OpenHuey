@@ -393,9 +393,10 @@ fvariable at-x  fvariable at-z
     r@ 16 + sf!  r@ 12 + sf!  r@ 8 + sf!  1 r> l! ;
 \ 7D: Zone `z` on around room effect `fx`'s position: radius r, height h, kind.
 : zone-at-effect ( z fx r h kind -- )  drop drop drop drop drop s" zone-at-effect" stub-step ;
-\ 7E: Background music track `track` wanted on / off at volume `vol` (BgmCtl_Want); on 0xFF:
-\ resume the ADX stream instead.
-: bgm ( track on F: vol -- )  drop drop fdrop s" bgm" stub-step ;
+\ 7E: Background music track `track` (0xFF: none - the playing one fades out) wanted at volume
+\ `vol` (BgmCtl_Want), started paused if `pause`; pause 0xFF: resume the ADX stream instead.
+: bgm ( track pause F: vol -- )
+    dup $FF = if  2drop fdrop  0 event-music-pause exit  then  event-bgm-want ;
 \ 7F: Room effect slot `fx` made anew as a flickering animated sprite (EvEffect7F) at (x, y, z).
 : flicker-sprite ( fx F: x y z -- )  drop fdrop fdrop fdrop s" flicker-sprite" stub-step ;
 \ 80: Room effect slot `fx` removed.
