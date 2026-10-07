@@ -58,6 +58,7 @@ static struct {
     void *(*frame_alloc)(void);
     void (*frame_free)(void **frame);
     void *(*av_malloc)(size_t size);
+    void (*av_free)(void *ptr);
 } av;
 
 static int av_load(void) {
@@ -99,6 +100,7 @@ static int av_load(void) {
     SYM(frame_alloc, "av_frame_alloc");
     SYM(frame_free, "av_frame_free");
     SYM(av_malloc, "av_malloc");
+    SYM(av_free, "av_free");
 #undef SYM
     av.ok = 1;
     return 1;
@@ -116,13 +118,16 @@ typedef struct Ply {
     int paused;
     int vol;          /* 0.1 dB */
     FILE *f;
-    int eof;          /* the file is read to its end */
+    int eof;          /* the file is read to its end (2: and the parser flushed) */
     int drained;      /* the decoder gave its last frame */
     /* reading */
     uint8_t buf[0x10000];
     int bufPos, bufLen;
     /* video */
     void *ctx, *parser, *pkt, *frm;
+    struct { uint8_t *data; int size; } *queue;   /* frames parsed, not yet taken by the decoder
+                                                   * (one PES packet may hold several) */
+    int queued, queueCap;
     double fps;
     int w, h;
     uint8_t *rgb;     /* the frame shown, w x h RGBA */
@@ -354,13 +359,24 @@ static void video_feed(Ply *p, const uint8_t *b, int n) {
                     }
                 }
             }
+            if (p->queued == p->queueCap) {
+                int cap = p->queueCap * 2 + 16;
+                void *more = realloc(p->queue, (size_t)cap * sizeof(*p->queue));
+
+                if (more == NULL) {
+                    av.av_free(data);
+                    data = NULL;
+                } else {
+                    p->queue = more;
+                    p->queueCap = cap;
+                }
+            }
             if (data != NULL) {
                 memcpy(data, out, (size_t)outSize);
                 memset(data + outSize, 0, AV_PAD);
-                if (av.packet_from_data(p->pkt, data, outSize) == 0) {
-                    av.send_packet(p->ctx, p->pkt);
-                    av.packet_unref(p->pkt);
-                }
+                p->queue[p->queued].data = data;
+                p->queue[p->queued].size = outSize;
+                p->queued++;
             }
         }
         if (b == NULL) {
@@ -462,11 +478,25 @@ static int video_next(Ply *p) {
             p->readyNo = p->decoded++;
             return 1;
         }
+        if (p->queued > 0) {   /* the decoder wants more: the next frame parsed */
+            if (av.packet_from_data(p->pkt, p->queue[0].data, p->queue[0].size) == 0) {
+                av.send_packet(p->ctx, p->pkt);   /* (it takes it: it has just said it wants input) */
+                av.packet_unref(p->pkt);
+            } else {
+                av.av_free(p->queue[0].data);
+            }
+            memmove(p->queue, p->queue + 1, (size_t)--p->queued * sizeof(*p->queue));
+            continue;
+        }
         if (p->drained) {
             return 0;
         }
-        if (p->eof) {
+        if (p->eof == 1) {   /* the parser's last frame, then the decoder's */
             video_feed(p, NULL, 0);
+            p->eof = 2;
+            continue;
+        }
+        if (p->eof == 2) {
             av.send_packet(p->ctx, NULL);   /* flush */
             p->drained = 1;
             continue;
@@ -534,6 +564,12 @@ static void ply_close(Ply *p) {
     if (p->pkt != NULL) {
         av.packet_free(&p->pkt);
     }
+    while (p->queued > 0) {
+        av.av_free(p->queue[--p->queued].data);
+    }
+    free(p->queue);
+    p->queue = NULL;
+    p->queueCap = 0;
     if (p->frm != NULL) {
         av.frame_free(&p->frm);
     }
