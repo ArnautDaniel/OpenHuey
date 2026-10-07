@@ -186,8 +186,8 @@ variable mv-b
 : stalker-knock-down ( id -- )  drop s" stalker-knock-down" stub-step ;
 \ 31: Stalker `id`'s rage on / off (virtual +0x31C: Pursuer_SetRage, +0x16B8 = 2 / 0).
 : stalker-rage ( id on -- )  drop drop s" stalker-rage" stub-step ;
-\ 32: Sound channel `ch`'s volume (sound +0x7C).
-: sound-volume ( ch vol -- )  drop drop s" sound-volume" stub-step ;
+\ 32: Core `ch`'s reverb level (SndDriver_SetVolume: 0 the music's, 1 the sound effects').
+: sound-volume ( ch vol -- )  event-reverb ;
 \ 33: Sends room effect `fx` the string (if not empty).
 create effect-bytes 64 allot  variable #effect-bytes
 : effect-string ( fx text.. n -- )   \ (RoomEffects_Send: the effect in slot `fx` takes the bytes)
@@ -219,7 +219,9 @@ create effect-bytes 64 allot  variable #effect-bytes
 \ (SceneGame_SetRoomDoors).
 : room-doors-state ( who room b -- )  drop drop drop s" room-doors-state" stub-step ;
 \ 3D: Character `who` silent (+0x2C): its own sounds (Actor_PlaySound) don't play.
-: char-silent ( who on -- )  drop drop s" char-silent" stub-step ;
+: char-silent ( who on -- )
+    0<> 1 and swap  dup $FF = if  drop self-char  else  char-slot  then
+    dup 0< if  2drop exit  then  character char.silent l! ;
 \ 3E: Stalker `id` leaves the scene and is put into room `room` (0xFFFF: its own) at `at`,
 \ entering as `how` (0..2) (its virtual +0x64).
 : stalker-to-room ( id room at how -- )  drop drop drop drop s" stalker-to-room" stub-step ;
@@ -242,7 +244,7 @@ create effect-bytes 64 allot  variable #effect-bytes
 \ 45: Character `who` (0xFF: self) plays sound `id` of bank `bank` where it stands.
 : char-sound ( who id bank -- )   \ (Actor_PlaySound: at the character)
     rot dup $FF = if  drop self-char  else  char-slot  then
-    dup 0< if  drop 2drop exit  then  char-pos event-sound-at ;
+    dup 0< if  drop 2drop exit  then  dup char-pos  -rot 0 0 actor-sound ;
 \ 46: The doors redo their setup for the current room (Doors_RoomIn).
 : doors-room-in ( -- )  s" doors-room-in" stub-step ;
 \ 47: Character `who`: +0xC4 = v (a stalker's presence state: 1 / 2 seen / near ...?).
@@ -365,12 +367,15 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 \ 67: Character `who`'s nav triangle looked up from its position.
 : char-find-tri ( who -- )  drop s" char-find-tri" stub-step ;
 \ 68: Sound `id` of bank `bank` & 0x3F; bank >> 6: 0 at (x, y, z) (only if the progress' +0x7C
-\ allows: always in this game), 2 plain, else at the camera; vol / pitch offsets.
-: sound ( id bank vol pitch F: x y z -- )   \ (cmd_sound; the volume / pitch offsets aren't kept yet)
-    2drop dup 6 rshift swap $3F and swap            ( id bank where )
-    0= if  event-sound-at  else  fdrop fdrop fdrop event-sound  then ;
+\ allows: always in this game), 2 plain, else at the camera; vol / pitch offsets (the plain one
+\ takes none).
+variable snd-vol  variable snd-pitch
+: sound ( id bank vol pitch F: x y z -- )   \ (cmd_sound)
+    snd-pitch ! snd-vol !  dup 6 rshift swap $3F and swap            ( id bank where )
+    dup 2 = if  drop fdrop fdrop fdrop event-sound exit  then
+    if  fdrop fdrop fdrop event-camera-eye  then  snd-vol @ snd-pitch @ event-sound-at ;
 \ 69: Stops sound `id` of bank `bank` (SndDriver_StopSound).
-: sound-stop ( id bank -- )  drop drop s" sound-stop" stub-step ;
+: sound-stop ( id bank -- )  event-sound-stop ;
 \ 6A: Stage music by `op`: 0 global volume fade to a over b frames (MusicDir_GlobalVolumeTo); 1
 \ the stage's channels (+0x40); 2 load (+0xC) and hold (+0x1C); 3 waits until its banks are in;
 \ 4 release; 5 silence.
@@ -555,7 +560,7 @@ fvariable turn-x  fvariable turn-z
 \ A7: Character `id`'s model takes its loaded buffer (0xA6); waits while the loader is busy.
 : char-file-use ( id -- )  drop s" char-file-use" stub-step ;
 \ A8: Loads the current room's sound set.
-: room-sounds ( -- )  s" room-sounds" stub-step ;
+: room-sounds ( -- )  event-room-sounds ;   \ (Progress_LoadRoomSounds)
 \ A9: A scene effect (Effect71000, 0x60 bytes) with a and eight values; its slot kept in script
 \ variable `var`.
 : scene-effect-71000 ( var a F: v0 v1 v2 v3 v4 v5 v6 v7 -- )  drop drop fdrop fdrop fdrop fdrop fdrop fdrop fdrop fdrop s" scene-effect-71000" stub-step ;
@@ -657,7 +662,7 @@ fvariable turn-x  fvariable turn-z
 \ C9: The panic level set to `level` if it has reached it (Panic_SetLevel).
 : panic-level ( level -- )  drop s" panic-level" stub-step ;
 \ CA: Every sound's volume scaled by v (progress +0x1118).
-: sound-volume-scale ( F: v -- )  fdrop s" sound-volume-scale" stub-step ;
+: sound-volume-scale ( F: v -- )  event-sound-scale ;
 \ CB: The room's creatures (0 all, 1 slots 0..6, 2 slots 7..9) told (+0x10) and removed.
 : creatures-clear ( which -- )  drop s" creatures-clear" stub-step ;
 \ CC: op 3: the cutscene director's +0x78 with id; else stalker `id`'s model: 0 +0x2C, 1 +0x30,
@@ -896,7 +901,7 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 \ 2C: The camera director's setup changed (+0x2C, CamDirector_SetupChanged).
 : camera-setup-changed? ( -- flag )  director-changed? ;
 \ 2D: Sound bank `bank` is loaded (SndDriver_BankLoaded).
-: sound-bank-loaded? ( bank -- flag )  drop s" sound-bank-loaded?" stub-flag ;
+: sound-bank-loaded? ( bank -- flag )  event-sound-loaded? ;
 \ 2E: Character `who` (in this room) stands on a triangle of nav group `group` (NavGroups
 \ +0x14).
 : char-in-nav-group? ( who group -- flag )

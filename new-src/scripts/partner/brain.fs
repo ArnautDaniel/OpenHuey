@@ -471,6 +471,10 @@ create wag-b  $210D , $210E , $210F ,  $210D , $2110 , $2111 ,
 \ in rooms 7 / 0xD1 / 0x106: with the room effects.)
 create feet-was 4 cells allot  feet-was 4 cells 0 fill
 variable feet-new  variable feet-n
+\ the step's pitch by how fast he goes: 0..2 semitones up from 0.28 to 2.4 a frame forward
+: step-pitch ( -- n )
+    h-actor root-delta  fswap fdrop fswap fdrop fswap fdrop  floor-k f@ f*
+    0.28e f- 2.12e f/  0e fmax 1e fmin  2e f* f>s $7F and ;
 : feet ( -- )
     h-disabled? h-tri 0< or if  exit  then
     0 feet-new !
@@ -481,10 +485,11 @@ variable feet-new  variable feet-n
     loop
     feet-new @ 0= if  exit  then
     h-tri nav-flags $2018000 and case
-        $8000 of  $14  endof  $10000 of  $18  endof  $18000 of  $1C  endof  $2000000 of  $78  endof
-        >r $10 r>
-    endcase
-    feet-n @ 3 and +  5  h-pos vec@ event-sound-at  1 feet-n +! ;
+        $8000 of  $14 5  endof  $10000 of  $18 5  endof  $18000 of  $1C 5  endof  $2000000 of  $78 5  endof
+        $2008000 of  6 sound-loaded? if  $18 6  else  $10 5  then  endof
+        >r $10 5 r>
+    endcase                                                    ( snd bank )
+    swap feet-n @ 3 and +  swap  him -rot  0 step-pitch  h-pos vec@ actor-sound  1 feet-n +! ;
 
 \ Hewie_MoveSubMode: what he is doing, for the scripts (+0xFC)
 : move-sub ( -- )

@@ -13,6 +13,7 @@
 #include "forth/forth.h"
 #include "game/engine.h"
 #include "game/progress.h"
+#include "platform/snddrv.h"
 #include "platform/sound.h"
 #include "platform/platform.h"
 #include "render/render.h"
@@ -267,6 +268,15 @@ int main(int argc, char **argv) {
     forth_set_output(e->forth, console_output, &e->console);
     if (!sound_open()) {   /* (none: the game is silent) */
         fprintf(stderr, "hg2: no sound (%s)\n", SDL_GetError());
+    }
+    {   /* the reverb's presets: libsd's, from the game's modules beside the data folder */
+        size_t n = 0;
+        uint8_t *libsd = files_read("../MODULES/LIBSD.IRX", &n);
+
+        if (!snddrv_reverb_setup(libsd, n)) {
+            fprintf(stderr, "hg2: no MODULES/LIBSD.IRX beside the data: no reverb\n");
+        }
+        free(libsd);
     }
     bind_engine(e->forth);
     bind_state(e->forth);

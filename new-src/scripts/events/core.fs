@@ -189,12 +189,20 @@ defer event-nav-group ( set? group bits -- )      :noname 2drop drop ; is event-
 defer event-nav-tri ( set? tri bits -- )          :noname 2drop drop ; is event-nav-tri
 defer event-nav-in-group? ( group -- flag ) ( F: x y z -- )
 :noname drop fdrop fdrop fdrop false ; is event-nav-in-group?
-\ sounds: of bank `bank` (4 the sound set, 5 common, 6 the room's) heard plainly, or at a point;
-\ which sound set bank 4 holds
+\ sounds: of bank `bank` (4 the sound set, 5 common, 6 the room's, 7 the pursuer's) heard plainly,
+\ or at a point (louder / softer by vol / 128, pitch semitones up); stopped; which sound set bank
+\ 4 holds; the room's sounds loaded (its old ones stopped); a bank loaded; the scripts' scale of
+\ the sounds that take it; where the camera is
 defer event-sound ( id bank -- )             ' 2drop is event-sound
-defer event-sound-at ( id bank -- ) ( F: x y z -- )
-:noname 2drop fdrop fdrop fdrop ; is event-sound-at
+defer event-sound-at ( id bank vol pitch -- ) ( F: x y z -- )
+:noname 2drop 2drop fdrop fdrop fdrop ; is event-sound-at
+defer event-sound-stop ( id bank -- )        ' 2drop is event-sound-stop
 defer event-sound-set ( set -- )             ' drop is event-sound-set
+defer event-room-sounds ( -- )               ' noop is event-room-sounds
+defer event-sound-loaded? ( bank -- flag )   :noname drop true ; is event-sound-loaded?
+defer event-sound-scale ( F: v -- )          ' fdrop is event-sound-scale
+defer event-camera-eye ( F: -- x y z )       :noname 0e 0e 0e ; is event-camera-eye
+defer event-reverb ( core v -- )             ' 2drop is event-reverb
 \ characters: an actor's place set, its heading (radians: 0 along +z, as atan2 dx dz) set and read,
 \ shown or not; its animation played
 \ (once or looping) and whether it has come to its end
@@ -375,6 +383,10 @@ create own-moves  characters cells allot  own-moves characters cells 0 fill
 \ ---- characters' places and areas ----------------------------------------------------------
 : char-pos ( cs -- ) ( F: -- x y z )  character char.pos dup sf@ dup 4 + sf@ 8 + sf@ ;
 : char-prev ( cs -- ) ( F: -- x y z )  character char.prev dup sf@ dup 4 + sf@ 8 + sf@ ;
+\ Actor_PlaySound: character cs's sound at a point, unless it is silent
+: actor-sound ( cs id bank vol pitch -- ) ( F: x y z -- )
+    >r >r >r >r  character char.silent sl@ if  r> r> r> r> 2drop 2drop fdrop fdrop fdrop exit  then
+    r> r> r> r> event-sound-at ;
 \ Events_InArea for a character (where it stands)
 : char-in-area ( cs area -- flag )  swap char-pos event-area-in? ;
 \ EventCond_AreaCross: its last step into (1) or out of (-1) the area
@@ -425,6 +437,7 @@ create own-moves  characters cells allot  own-moves characters cells 0 fill
 : reset-characters ( -- )
     characters 0 do
         i character  0 over char.present l!  -1 over char.id l!  -1 over char.room l!
-        0 over char.scripted l!  -1 over char.actor l!  -1 over char.cam-set l!  -1 swap char.cam-path l!
+        0 over char.scripted l!  -1 over char.actor l!  -1 over char.cam-set l!  -1 over char.cam-path l!
+        0 swap char.silent l!
     loop  0 event-state ev.camera-char l! ;
 -1 event-state ev.room l!  reset-characters  reset-events

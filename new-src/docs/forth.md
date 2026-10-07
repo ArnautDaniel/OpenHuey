@@ -139,8 +139,21 @@ runs: redefine a word and the next tick uses it (words already compiled into oth
 old one; hooks are looked up by execution token, so re-register with `on-tick` after a change,
 or go through a `defer`).
 
-Sound: `common-sound ( id -- )` plays sound `id` of the common bank (C_0000: Fiona's, Hewie's,
-the house's); `sound-to-wav ( id bank addr len -- )` writes one to a file; `bank-sound ( id bank -- )`, `bank-sound-at` (at a point) play from bank 4 (the sound set), 5 (common) or 6 (the room's).
+Sound effects (the original's sound driver, src/platform/snddrv.c, on the SPU2-like voices of
+spu.c): `bank-sound ( id bank -- )` plays sound `id` of a bank plainly, `sound-at ( id bank vol
+pitch -- ) ( F: x y z -- )` at a point of the room (Actor_PlaySound: placed by the camera with
+the original's distance curves and pan; vol x / 128 louder or softer, pitch semitones up),
+`bank-sound-at ( id bank -- ) ( F: x y z -- )` the same with no offsets, `common-sound ( id -- )`
+from the common bank. Banks: 4 the sound set (`sound-set! ( set -- )`), 5 the common sounds
+(C_0000: Fiona's, Hewie's, the house's), 6 the room's (`sound-load ( k -- )` loads 4 / 5 / 6 now,
+else they load when first used), 7 the pursuer's, any as `sound-bank ( k addr len -- flag )`
+names it; `sound-loaded? ( k -- flag )`. A sound's entries go on voices of their own at a
+priority, so a new sound takes over an older one on the same voice. `stop-sound ( id bank -- )`
+releases one, `sound-stop-voices ( core0 core1 -- )` the voices in the masks, `sound-stop-all`.
+`sound-volume! ( F: sound master -- )`, `sound-fade ( 0..255 -- )` (the pause screen's),
+`sound-scale! ( F: v -- )` (the scripts' scale for sounds with id bit 30), `sound-reverb! ( core v
+-- )` (core 0 the music's, 1 the effects': 0..0x3FFF; the rooms set it). `.voices` lists the
+effect voices sounding.
 
 `game-state` (C, `src/game/progress.c`; in the `forth` tool too) holds what the event scripts
 share: `progress` (`pr.story pr.state pr.vars pr.resident pr.visited`: flag words, l@ / c@) and

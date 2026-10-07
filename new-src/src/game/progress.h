@@ -69,6 +69,7 @@ typedef struct ScriptChar {
     int32_t req, req_arg;   /* a pending request from outside (+0x14E8 / +0x14EC: 12 Fiona's
                              * call, 13 her command, ...) */
     float radius, height;   /* (+0xC8 / +0xCC) */
+    int32_t silent;     /* its own sounds (Actor_PlaySound) don't play (+0x2C) */
 } ScriptChar;
 
 /* an action script running (the original's 0x18-byte contexts at +0x564) */

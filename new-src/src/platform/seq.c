@@ -2,16 +2,15 @@
 #include "seq.h"
 
 #include "../core/files.h"
-#include "sound.h"
+#include "spu.h"
 
-#include <SDL3/SDL.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define NPORT 4
-#define NVOICE 48
+#define NVOICE 24   /* core 0's voices: the music's (the effects have core 1's) */
 
 typedef struct Chan {
     int prog, vol, expr, pan, bend;
@@ -35,27 +34,14 @@ typedef struct Port {
     Chan ch[16];
 } Port;
 
-enum { ENV_OFF, ENV_ATTACK, ENV_DECAY, ENV_SUSTAIN, ENV_RELEASE };
-
 typedef struct Voice {
     int port, ch, note;         /* port -1: free (it may still be releasing) */
     int vol14, pan;             /* the note's volume and pan (before the channel's) */
     int base_note, fine, rate, bend_lo, bend_hi;
     unsigned age;
-    /* the sound processor's side */
-    float gl, gr;
-    unsigned pitch;             /* 0x1000: 48 kHz */
-    unsigned adsr1, adsr2;
-    size_t ssa, lsa, nax;       /* bytes in the .BD */
-    int lsa_set;
-    int env, level, counter;
-    unsigned pos;               /* 12-bit fraction */
-    int16_t buf[28];
-    int s1, s2, idx, prev, cur;
-} Voice;
+} Voice;   /* (the sound processor's side of it: spu.c, the same voice number) */
 
 static struct {
-    SDL_Mutex *lock;
     uint8_t *hd, *bd;
     size_t hd_size, bd_size;
     Port port[NPORT];
@@ -67,14 +53,8 @@ static struct {
 static unsigned rd32(const uint8_t *p) { return p[0] | p[1] << 8 | p[2] << 16 | (unsigned)p[3] << 24; }
 static unsigned rd16(const uint8_t *p) { return p[0] | p[1] << 8; }
 
-static void lock(void) {
-    if (S.lock == NULL) {
-        S.lock = SDL_CreateMutex();
-    }
-    SDL_LockMutex(S.lock);
-}
-
-static void unlock(void) { SDL_UnlockMutex(S.lock); }
+static void lock(void) { spu_lock(); }
+static void unlock(void) { spu_unlock(); }
 
 /* the header's bytes at off .. off + n, or NULL */
 static const uint8_t *hd_at(size_t off, size_t n) {
@@ -95,166 +75,13 @@ static unsigned vlq(const uint8_t **pp, const uint8_t *end) {
     return v;
 }
 
-/* ---- the sound processor's voices (PS-ADPCM, pitch, ADSR as the hardware: psx-spx) ---- */
-
-static const int kFilter[5][2] = {{0, 0}, {60, 0}, {115, -52}, {98, -55}, {122, -60}};
-
-static void decode_block(Voice *v) {
-    const uint8_t *b;
-    int shift, f, i;
-
-    if (v->nax + 16 > S.bd_size) {
-        v->env = ENV_OFF;
-        return;
-    }
-    b = S.bd + (v->nax & ~(size_t)0xF);
-    shift = b[0] & 0xF;
-    f = (b[0] >> 4) & 7;
-    shift = shift > 12 ? 9 : shift;
-    f = f > 4 ? 0 : f;
-    if ((b[1] & 4) && !v->lsa_set) {
-        v->lsa = v->nax;
-    }
-    for (i = 0; i < 28; i++) {
-        int n = (b[2 + i / 2] >> ((i & 1) * 4)) & 0xF;
-        int s = (int16_t)(n << 12) >> shift;
-
-        s += (v->s1 * kFilter[f][0] + v->s2 * kFilter[f][1]) / 64;
-        s = s > 32767 ? 32767 : s < -32768 ? -32768 : s;
-        v->buf[i] = (int16_t)s;
-        v->s2 = v->s1;
-        v->s1 = s;
-    }
-}
-
-static void next_block(Voice *v) {
-    const uint8_t *b = S.bd + (v->nax & ~(size_t)0xF);
-
-    if (b[1] & 1) {   /* the end: the loop, or silence */
-        if (b[1] & 2) {
-            v->nax = v->lsa;
-        } else {
-            v->env = ENV_OFF;
-            v->level = 0;
-            return;
-        }
-    } else {
-        v->nax += 16;
-    }
-    decode_block(v);
-}
-
-static void env_step(Voice *v, int exp, int dec, int shift, int step) {
-    int cycles = 1 << (shift - 11 > 0 ? shift - 11 : 0);
-    int delta = (dec ? -8 + step : 7 - step) << (11 - shift > 0 ? 11 - shift : 0);
-
-    if (exp && !dec && v->level > 0x6000) {
-        cycles *= 4;
-    }
-    if (exp && dec) {
-        delta = delta * v->level >> 15;
-    }
-    if (++v->counter < cycles) {
-        return;
-    }
-    v->counter = 0;
-    v->level += delta;
-    v->level = v->level > 0x7FFF ? 0x7FFF : v->level < 0 ? 0 : v->level;
-}
-
-static void env_tick(Voice *v) {
-    unsigned a1 = v->adsr1, a2 = v->adsr2;
-
-    switch (v->env) {
-    case ENV_ATTACK:
-        env_step(v, a1 >> 15, 0, (a1 >> 10) & 0x1F, (a1 >> 8) & 3);
-        if (v->level >= 0x7FFF) {
-            v->env = ENV_DECAY;
-            v->counter = 0;
-        }
-        break;
-    case ENV_DECAY:
-        env_step(v, 1, 1, (a1 >> 4) & 0xF, 0);
-        if (v->level <= (int)(((a1 & 0xF) + 1) * 0x800)) {
-            v->env = ENV_SUSTAIN;
-            v->counter = 0;
-        }
-        break;
-    case ENV_SUSTAIN:
-        env_step(v, a2 >> 15, (a2 >> 14) & 1, (a2 >> 8) & 0x1F, (a2 >> 6) & 3);
-        break;
-    case ENV_RELEASE:
-        env_step(v, (a2 >> 5) & 1, 1, a2 & 0x1F, 0);
-        if (v->level <= 0) {
-            v->env = ENV_OFF;
-        }
-        break;
-    }
-}
-
-static void key_on(Voice *v) {
-    v->nax = v->ssa;
-    v->lsa = v->ssa;
-    v->lsa_set = 0;
-    v->s1 = v->s2 = 0;
-    v->pos = 0;
-    v->idx = 0;
-    v->prev = 0;
-    v->env = ENV_ATTACK;
-    v->level = 0;
-    v->counter = 0;
-    decode_block(v);
-    v->cur = v->buf[0];
-}
-
-static void key_off(Voice *v) {
-    if (v->env != ENV_OFF) {
-        v->env = ENV_RELEASE;
-        v->counter = 0;
-    }
-}
-
-static void render(float *out, int frames) {
-    int n, i;
-
-    for (n = 0; n < NVOICE; n++) {
-        Voice *v = &S.voice[n];
-
-        for (i = 0; i < frames && v->env != ENV_OFF; i++) {
-            unsigned step = v->pitch > 0x3FFF ? 0x3FFF : v->pitch;
-            float s;
-
-            v->pos += step;
-            while (v->pos >= 0x1000) {
-                v->pos -= 0x1000;
-                v->prev = v->cur;
-                if (++v->idx >= 28) {
-                    v->idx = 0;
-                    next_block(v);
-                    if (v->env == ENV_OFF) {
-                        break;
-                    }
-                }
-                v->cur = v->buf[v->idx];
-            }
-            if (v->env == ENV_OFF) {
-                break;
-            }
-            s = (v->prev + (v->cur - v->prev) * (v->pos / 4096.0f)) / 32768.0f * (v->level / 32767.0f);
-            out[2 * i] += s * v->gl;
-            out[2 * i + 1] += s * v->gr;
-            env_tick(v);
-        }
-    }
-}
-
 /* ---- the synth (modhsyn) ---- */
 
 static int voice_alloc(void) {
     int v, best = 0;
 
     for (v = 0; v < NVOICE; v++) {
-        if (S.voice[v].port < 0 && S.voice[v].env == ENV_OFF) {
+        if (S.voice[v].port < 0 && !spu_voice_busy(v)) {
             return v;
         }
     }
@@ -292,8 +119,7 @@ static void voice_volume(int v) {
     } else {
         l = r = x;
     }
-    sv->gl = (l & 0x3FFF) / 16384.0f;
-    sv->gr = (r & 0x3FFF) / 16384.0f;
+    spu_voice_volume(v, l & 0x3FFF, r & 0x3FFF);
 }
 
 /* sceSdNote2Pitch: 0x1000 at the sample's own note */
@@ -310,7 +136,7 @@ static void voice_pitch(int v) {
     int hi = c->bend_range >= 0 ? c->bend_range : sv->bend_hi, lo = c->bend_range >= 0 ? c->bend_range : sv->bend_lo;
     double semis = b >= 0 ? b / 8192.0 * hi : b / 8192.0 * lo;
 
-    sv->pitch = note_pitch(sv->base_note, sv->note, sv->fine + (int)lround(semis * 128.0)) * (unsigned)sv->rate / 48000u;
+    spu_voice_pitch(v, note_pitch(sv->base_note, sv->note, sv->fine + (int)lround(semis * 128.0)) * (unsigned)sv->rate / 48000u);
 }
 
 static void note_off(Port *p, int ch, int note) {
@@ -318,7 +144,7 @@ static void note_off(Port *p, int ch, int note) {
 
     for (v = 0; v < NVOICE; v++) {
         if (S.voice[v].port == (int)(p - S.port) && S.voice[v].ch == ch && S.voice[v].note == note) {
-            key_off(&S.voice[v]);
+            spu_key_off(1ull << v);
             S.voice[v].port = -1;
         }
     }
@@ -392,12 +218,12 @@ static void note_on(Port *p, int ch, int note, int vel) {
             pan = (int8_t)(sm[0xD] - 0x40) + (int8_t)(pr[7] - 0x40) + (int8_t)(sp[0x11] - 0x40) + 0x40;
             S.voice[v].pan = pan < 0 ? 0 : pan > 127 ? 127 : pan;
             S.voice[v].age = ++S.age;
-            S.voice[v].ssa = rd32(vg) & ~(size_t)0xF;
-            S.voice[v].adsr1 = rd16(sm + 0x12);
-            S.voice[v].adsr2 = rd16(sm + 0x14);
+            spu_voice_sample(v, S.bd, S.bd_size, rd32(vg));
+            spu_voice_adsr(v, rd16(sm + 0x12), rd16(sm + 0x14));
+            spu_voice_mix(v, sm[0x29]);
             voice_pitch(v);
             voice_volume(v);
-            key_on(&S.voice[v]);
+            spu_key_on(1ull << v);
         }
     }
 }
@@ -417,7 +243,7 @@ static void all_off(Port *p) {
 
     for (v = 0; v < NVOICE; v++) {
         if (S.voice[v].port == (int)(p - S.port)) {
-            key_off(&S.voice[v]);
+            spu_key_off(1ull << v);
             S.voice[v].port = -1;
         }
     }
@@ -570,27 +396,6 @@ static void tick(double sec) {
     }
 }
 
-static void mix(int16_t *out, int frames) {
-    float buf[2048];
-    int done = 0, i;
-
-    lock();
-    while (done < frames) {
-        int n = frames - done > 1024 ? 1024 : frames - done;
-
-        tick((double)n / SOUND_RATE);
-        memset(buf, 0, sizeof(float) * (size_t)n * 2);
-        render(buf, n);
-        for (i = 0; i < n * 2; i++) {
-            int v = out[done * 2 + i] + (int)(buf[i] * 32767.0f);
-
-            out[done * 2 + i] = (int16_t)(v > 32767 ? 32767 : v < -32768 ? -32768 : v);
-        }
-        done += n;
-    }
-    unlock();
-}
-
 /* ---- the driver's side ---- */
 
 static void hook(void) {
@@ -610,7 +415,7 @@ static void hook(void) {
                 S.port[v].ch[c].scale = 127;
             }
         }
-        sound_stream_slot(2, mix);
+        spu_on_tick(tick);
     }
 }
 
@@ -630,6 +435,7 @@ int seq_bank(const char *name) {
     }
     lock();
     hook();
+    spu_forget(S.bd);
     free(S.hd);
     free(S.bd);
     S.hd = hd;
@@ -756,8 +562,6 @@ void seq_reset(void) {
         S.port[k].file = NULL;
         S.port[k].data = S.port[k].end = S.port[k].pos = NULL;
     }
-    for (k = 0; k < NVOICE; k++) {
-        S.voice[k].env = ENV_OFF;
-    }
+    spu_forget(S.bd);
     unlock();
 }

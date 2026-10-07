@@ -320,7 +320,7 @@ defer noise-make ( loudness room tri -- )   :noname drop 2drop ; is noise-make  
     dup $65 = over $66 = or if  $80 h-room h-tri noise-make  then
     dup $5D = over $5E = or if  $1B h-room h-tri noise-make  then
     dup too-soon? if  drop exit  then
-    dup 5 h-pos vec@ event-sound-at  h-snd !  0 h-snd-t ! ;
+    him over 5 0 0 h-pos vec@ actor-sound  h-snd !  0 h-snd-t ! ;
 
 \ Hewie_Bark: by his pose when calm (standing 0x1B00, sitting 0x1B01, lying 0x1B02, limping
 \ 0x1B05), else by his mood (2: 0x1B04, else 0x1B03); restarted when already barking

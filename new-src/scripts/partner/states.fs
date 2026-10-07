@@ -130,7 +130,7 @@ create tt-at 12 allot
 : st-run-to-fiona ( -- )   \ Hewie_StateRunToFiona: a happy whine, lying low by her, then on
     her with? 0= if  to-default exit  then
     3 step-to-pose if  exit  then
-    $60 5 h-pos vec@ event-sound-at
+    him $60 5 0 0 h-pos vec@ actor-sound
     0 look!  her h-target !  3 keep-pose  30 h-t1 !  ['] st-1990 behave ;
 
 \ ---- scolded from afar (action 0x71): sitting, the ears down (0x1C04); three times within 600
