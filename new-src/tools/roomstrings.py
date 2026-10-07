@@ -100,6 +100,41 @@ lines += ['', '\\ the background music\'s tracks (pstr_ADX00_AD_01_ADX): the fil
 for i, (name, loop) in enumerate(tracks):
     lines.append('        $%02X of  s" %s" %s  endof' % (i, name, 'true' if loop else 'false'))
 lines.append('        >r s" " false r>  endcase ;')
+# the stage music's tables per stage set (SceneGame_MusicDirector's sTables: the chase table, then
+# per track and channel the volumes, bends and pans, then the four tracks' sequence volumes)
+scene = open(os.path.join(root, 'src', 'game', 'scene_game.c')).read()
+rows = re.findall(r'\{(D_\w+), (D_\w+), (D_\w+), (D_\w+), (str_\w+), (D_\w+)\}', scene)
+
+
+def addr(name):
+    return int(name[2:], 16) if name.startswith('D_') else syms[name]
+
+
+lines += ['', '\\ the stage music\'s tables (SceneGame_MusicDirector): per stage set, the 4 x 16 channels\'',
+          '\\ volumes, bends and pans, and the 4 tracks\' sequence volumes']
+for k, row in enumerate(rows):
+    for label, name, n in (('vols', row[1], 64), ('bends', row[2], 64), ('pans', row[3], 64), ('seq-vols', row[4], 4)):
+        b = at(addr(name), n)
+        lines.append('create stage%d-%s  %s' % (k, label, ' '.join('$%02X c,' % x for x in b)))
+lines += [': stage-table ( stage which -- addr )   \\ which: 0 volumes, 1 bends, 2 pans, 3 sequence volumes',
+          '    swap case']
+for k in range(len(rows)):
+    lines.append('        %d of  case  0 of stage%d-vols endof  1 of stage%d-bends endof  2 of stage%d-pans endof'
+                 '  >r stage%d-seq-vols r>  endcase  endof' % (k, k, k, k, k))
+lines.append('        >r drop stage0-vols r>  endcase ;')
+# the stage music's files per stage set (MusicStageN_Load's sFiles: the bank's header, the four
+# sequences - panic, calm A and B, chase - and the bank's samples)
+music = open(os.path.join(root, 'src', 'game', 'music.c')).read()
+sets = re.findall(r'sFiles\[6\] = \{([^}]*)\}', music)
+lines += ['', '\\ the stage music\'s files (MusicStageN_Load): 0 the bank (.HD), 1..4 the sequences (panic,',
+          '\\ calm A and B, chase), 5 the bank\'s samples (.BD)',
+          ': stage-file ( stage i -- addr len )',
+          '    swap case']
+for k, names in enumerate(sets):
+    files = [cstring(addr(n.strip())) for n in names.split(',')]
+    lines.append('        %d of  case  %s  >r s" " r>  endcase  endof'
+                 % (k, '  '.join('%d of s" %s" endof' % (i, f) for i, f in enumerate(files))))
+lines.append('        >r drop s" " r>  endcase ;')
 out = os.path.join(root, 'new-src', 'scripts', 'events', 'strings.fs')
 open(out, 'w').write('\n'.join(lines) + '\n')
 print(out, len(rooms), 'rooms')

@@ -12,6 +12,7 @@
 #include "../platform/sound.h"
 #include "../platform/movie.h"
 #include "../platform/music.h"
+#include "../platform/seq.h"
 
 #include "../core/files.h"
 
@@ -634,6 +635,29 @@ PRIM(p_music_stop) { music_stop(); }
 PRIM(p_music_pause) { music_pause(POP() != 0); }   /* ( on -- ) */
 PRIM(p_music_volume) { music_volume((float)FPOP()); }   /* ( F: v -- ) 0..1 */
 PRIM(p_music_playing) { PUSH(music_playing() ? -1 : 0); }
+static void path_arg(Forth *f, char *out, size_t n) {   /* ( addr len -- ) */
+    Cell len = POP(), a = POP();
+
+    snprintf(out, n, "%.*s", (int)len, (const char *)a);
+}
+PRIM(p_seq_bank) { char p[128]; path_arg(f, p, sizeof(p)); PUSH(seq_bank(p) ? -1 : 0); }   /* ( addr len -- flag ) */
+PRIM(p_seq_load) {   /* ( k addr len -- flag ) */
+    char p[128];
+
+    path_arg(f, p, sizeof(p));
+    PUSH(seq_load((int)POP(), p) ? -1 : 0);
+}
+PRIM(p_seq_play) { Cell on = POP(); seq_play((int)POP(), on != 0); }   /* ( k on -- ) */
+PRIM(p_seq_playing) { PUSH(seq_playing((int)POP()) ? -1 : 0); }
+PRIM(p_seq_volume) { Cell v = POP(); seq_volume((int)POP(), (int)v); }   /* ( k v -- ) */
+PRIM(p_seq_port_volume) { Cell v = POP(); seq_port_volume((int)POP(), (int)v); }
+PRIM(p_seq_chan_volume) { Cell v = POP(), ch = POP(); seq_chan_volume((int)POP(), (int)ch, (int)v); }   /* ( k ch v -- ) */
+PRIM(p_seq_midi) {   /* ( k status d1 d2 -- ) */
+    Cell d2 = POP(), d1 = POP(), st = POP();
+
+    seq_midi((int)POP(), (int)st, (int)d1, (int)d2);
+}
+PRIM(p_seq_reset) { seq_reset(); }
 PRIM(p_pause) { gEngine.paused = POP() != 0; }   /* ( flag -- ) actors and the room stand still */
 PRIM(p_cs_active) { PUSH(cutscene_active() ? -1 : 0); }
 PRIM(p_cs_total) { PUSH(cutscene_signal_total((int)POP())); }   /* ( bit -- n ) its count so far less one */
@@ -1023,7 +1047,9 @@ void bind_engine(Forth *f) {
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
         {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},
-        {"cutscene-signals", p_cs_signals}, {"cutscene-active?", p_cs_active}, {"pause!", p_pause}, {"music-play", p_music_play}, {"music-stop", p_music_stop},
+        {"cutscene-signals", p_cs_signals}, {"cutscene-active?", p_cs_active}, {"pause!", p_pause}, {"seq-bank", p_seq_bank}, {"seq-load", p_seq_load}, {"seq-play", p_seq_play},
+        {"seq-playing?", p_seq_playing}, {"seq-volume", p_seq_volume}, {"seq-port-volume", p_seq_port_volume},
+        {"seq-chan-volume", p_seq_chan_volume}, {"seq-midi", p_seq_midi}, {"seq-reset", p_seq_reset}, {"music-play", p_music_play}, {"music-stop", p_music_stop},
         {"music-pause", p_music_pause}, {"music-volume!", p_music_volume}, {"music-playing?", p_music_playing}, {"cutscene-signal-total", p_cs_total}, {"cutscene-letterbox-off", p_cs_letterbox_off}, {"movie-close", p_movie_close}, {"movie-pause", p_movie_pause}, {"movie-paused?", p_movie_paused}, {"movie-compose", p_movie_compose},
         {"movie-volume!", p_movie_volume}, {"movie-draw", p_movie_draw}, {"stage-light", p_stage_light}, {"stage-lights", p_stage_lights},
         {"stage-ambient", p_stage_ambient}, {"room-clear", p_room_clear}, {"common-sound", p_common_sound},

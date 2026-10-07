@@ -56,8 +56,8 @@ USING: events.core events.words events.builtin ;
     0 door-locked? not if
         $2C story-flag? not if
             $2C story-flag-set
-            \ (nop-progress-74: no effect in this game)
-            \ (nop-progress-74: no effect in this game)
+            0 0 338 4 15 -1 0 0.0 creature-place
+            0 0 320 4 15 -1 0 0.0 creature-place
         then
     then
     $280 story-flag? not if
@@ -124,10 +124,10 @@ USING: events.core events.words events.builtin ;
     8 2 0 1 chars-area-camera
     9 0 -1 1 chars-area-camera
     0 1 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     4 story-flag? not if
         1 char-here? 1 2 char-C4? not and if
@@ -930,7 +930,7 @@ USING: events.core events.words events.builtin ;
     $18 state-flag-set
     1 self-scripted
     self-wait-done
-    \ (nop-progress-18: no effect in this game)
+    $35 room-preload
     $F $44 fade
     wait-fade
     1 action-end
@@ -1159,7 +1159,7 @@ USING: events.core events.words events.builtin ;
 : room01.enter ( -- )   \ 003EE770
     $37 story-flag? $24 story-flag? not and if
         $24 story-flag-set
-        \ (nop-progress-74: no effect in this game)
+        1 0 443 4 8 -1 0 0.0 creature-place
     then
     $3B story-flag? not if
         1 exit-door-open? if
@@ -1298,20 +1298,20 @@ USING: events.core events.words events.builtin ;
     then
     $12 story-flag? not if
         0 3 char-entered-area? if
-            \ (nop-progress-14: no effect in this game)
+            1 exit-prepare
         then
         0 4 char-entered-area? if
-            \ (nop-progress-14: no effect in this game)
+            0 exit-prepare
         then
     else
         0 3 char-entered-area? 0 5 char-entered-area? or if
-            \ (nop-progress-14: no effect in this game)
+            1 exit-prepare
         then
         0 4 char-entered-area? if
-            \ (nop-progress-14: no effect in this game)
+            0 exit-prepare
         then
         0 6 char-entered-area? if
-            \ (nop-progress-14: no effect in this game)
+            2 exit-prepare
         then
     then
     0 ebit? if
@@ -1872,7 +1872,7 @@ USING: events.core events.words events.builtin ;
         $34 story-flag? $21 story-flag? not and if
             2 3 0 char-load
         then
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 5 char-entered-area? 0 6 char-entered-area? or if
         $34 story-flag? $21 story-flag? not and if
@@ -1880,13 +1880,13 @@ USING: events.core events.words events.builtin ;
         then
     then
     0 5 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 6 char-entered-area? 0 7 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     0 8 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        3 exit-prepare
     then
     0 5 char-entered-area? if
         2 map-page
@@ -2230,8 +2230,8 @@ USING: events.core events.words events.builtin ;
             $5F $1F9 noise
             0 $F1 $A action
             $23 story-flag? not if
-                \ (nop-progress-74: no effect in this game)
-                \ (nop-progress-74: no effect in this game)
+                1 0 443 4 0 -1 0 0.0 creature-place
+                $25 0 217 4 0 -1 0 0.0 creature-place
             then
         then
         0 self-scripted
@@ -3340,7 +3340,7 @@ USING: events.core events.words events.builtin ;
     $22B item-give
     $18 state-flag-clear
     0 self-scripted
-    \ (nop-progress-24: no effect in this game)
+    $FE 3 0 room-doors-state
     0 ebit-clear
     self-idle-or-end
 ;
@@ -3837,18 +3837,18 @@ USING: events.core events.words events.builtin ;
     0 3 char-entered-area? if
         $5B story-flag? $5C story-flag? not and if
         then
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 4 char-entered-area? if
         $5B story-flag? $5C story-flag? not and if
         then
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 5 char-entered-area? if
         $5B story-flag? $5C story-flag? not and if
             $FE $C char-file-load
         then
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
 ;
 
@@ -3922,7 +3922,7 @@ USING: events.core events.words events.builtin ;
     $18 state-flag-set
     1 self-scripted
     $F $44 fade
-    \ (nop-progress-18: no effect in this game)
+    $A room-preload
     self-wait-done
     wait-fade
     $1B state-flag-set
@@ -4127,9 +4127,9 @@ USING: events.core events.words events.builtin ;
         yield
     repeat
     $80 exit-taken? if
-        \ (nop-progress-18: no effect in this game)
+        $A room-preload
     else
-        \ (nop-progress-18: no effect in this game)
+        7 room-preload
     then
     wait-fade
     $10 $FF movie-param
@@ -4391,7 +4391,7 @@ USING: events.core events.words events.builtin ;
         2 cutscene-mode? not while
         yield
     repeat
-    \ (nop-progress-18: no effect in this game)
+    $37 room-preload
     $10 $FF movie-param
     $FF panic-stage? if
         3 panic-stage
@@ -4605,10 +4605,10 @@ USING: events.core events.words events.builtin ;
     $B 1 1 1 chars-area-camera
     $C 2 2 1 chars-area-camera
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 4 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     $5B story-flag? $5C story-flag? not and if
         0 -4.53 -46.0 -47.5 $1E 15 0 zone
@@ -4669,7 +4669,7 @@ USING: events.core events.words events.builtin ;
 : room05.act00 ( -- )   \ 003F1A80
     yield
     camera-restart
-    \ (nop-progress-14: no effect in this game)
+    1 exit-prepare
     self-frames-reset
     self-wait-16
     8 state-flag-clear
@@ -4912,16 +4912,16 @@ USING: events.core events.words events.builtin ;
     $10 1 -1 1 chars-area-camera
     $11 2 -1 1 chars-area-camera
     0 4 char-entered-area? 0 $C char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 6 char-entered-area? 0 $B char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 5 char-entered-area? 0 $A char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     0 7 char-entered-area? 0 $D char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        3 exit-prepare
     then
 ;
 
@@ -5023,7 +5023,7 @@ USING: events.core events.words events.builtin ;
         wait-fade
         1 action-end
         1 char-done
-        \ (nop-progress-18: no effect in this game)
+        $11 room-preload
         0 1 $14 door-bits
         $FF panic-stage? if
             3 panic-stage
@@ -5281,10 +5281,10 @@ USING: events.core events.words events.builtin ;
     4 0 0 1 chars-area-camera
     5 1 1 1 chars-area-camera
     0 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
         1 map-page
@@ -5412,7 +5412,7 @@ USING: events.core events.words events.builtin ;
     $E story-flag? if
         $2D story-flag? not if
             $2D story-flag-set
-            \ (nop-progress-74: no effect in this game)
+            8 0 248 4 15 -1 0 0.0 creature-place
         then
         4 1 object-show
         5 1 object-show
@@ -5433,8 +5433,8 @@ USING: events.core events.words events.builtin ;
     7 story-flag? if
         $38 story-flag? not if
             $38 story-flag-set
-            \ (nop-progress-74: no effect in this game)
-            \ (nop-progress-74: no effect in this game)
+            8 0 274 4 15 -1 0 0.0 creature-place
+            8 0 448 4 15 -1 0 0.0 creature-place
         then
     then
     $31B story-flag? if
@@ -5651,16 +5651,16 @@ USING: events.core events.words events.builtin ;
     $1C 0 0 1 chars-area-camera
     $1D 4 -1 1 chars-area-camera
     0 6 char-entered-area? 0 $A char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 7 char-entered-area? 0 8 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 9 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     0 $B char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        3 exit-prepare
     then
     0 -277.0 0.0 -142.0 6 10 0 zone
     0 0 8 char-zone-bits? if
@@ -5835,7 +5835,7 @@ USING: events.core events.words events.builtin ;
         self-wait-anim
         $E story-flag-set
         $2D story-flag-set
-        \ (nop-progress-74: no effect in this game)
+        8 0 248 4 15 -1 0 0.0 creature-place
         wait-fade
         $21 resident-flag-set
         $227 item-give
@@ -5849,7 +5849,7 @@ USING: events.core events.words events.builtin ;
     then
     $18 state-flag-clear
     0 self-scripted
-    \ (nop-progress-14: no effect in this game)
+    1 exit-prepare
     self-idle-or-end
 ;
 
@@ -5992,7 +5992,7 @@ USING: events.core events.words events.builtin ;
         yield
     repeat
     $1E $C8 movie-param
-    \ (nop-progress-18: no effect in this game)
+    $2F room-preload
     3 char-unload
     4 3 char-hand-over
     $FF panic-stage? if
@@ -6580,7 +6580,7 @@ USING: events.core events.words events.builtin ;
     then
     1 self-scripted
     $301 story-flag-set
-    \ (nop-progress-24: no effect in this game)
+    1 9 1 room-doors-state
     $FE 9 103 2 stalker-to-room
     $FE $67 180 char-to-tri-facing
     $FE 1 char-visible
@@ -6687,9 +6687,9 @@ USING: events.core events.words events.builtin ;
     0 0 char-no-shadow
     $FE 0 char-no-shadow
     $E door-open-clear
-    \ (nop-progress-14: no effect in this game)
+    0 exit-prepare
     0 exit-check
-    \ (nop-progress-24: no effect in this game)
+    1 9 0 room-doors-state
     $301 story-flag-set
     $302 story-flag-clear
     self-idle-or-end
@@ -7301,7 +7301,7 @@ USING: events.core events.words events.builtin ;
     $A story-flag? if
         $2F story-flag? not if
             $2F story-flag-set
-            \ (nop-progress-74: no effect in this game)
+            $A 0 43 4 15 -1 0 0.0 creature-place
         then
     then
     $24C story-flag? $24D story-flag? not and if
@@ -7390,10 +7390,10 @@ USING: events.core events.words events.builtin ;
     9 0 0 1 chars-area-camera
     $A 2 -1 1 chars-area-camera
     0 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     $24C story-flag? not if
         0 39.5 80.0 -38.8 $A 5 0 zone
@@ -7514,7 +7514,7 @@ USING: events.core events.words events.builtin ;
         2 cutscene-mode? not while
         yield
     repeat
-    \ (nop-progress-18: no effect in this game)
+    4 room-preload
     wait-fade
     $17 state-flag-set
     $10 $FF movie-param
@@ -7642,7 +7642,7 @@ USING: events.core events.words events.builtin ;
     $18 state-flag-clear
     0 self-scripted
     camera-restart
-    \ (nop-progress-14: no effect in this game)
+    0 exit-prepare
     $F $41 fade
     self-idle-or-end
 ;
@@ -7743,7 +7743,7 @@ USING: events.core events.words events.builtin ;
         2 cutscene-mode? not while
         yield
     repeat
-    \ (nop-progress-18: no effect in this game)
+    4 room-preload
     $10 $FF movie-param
     $FF panic-stage? if
         3 panic-stage
@@ -7892,10 +7892,10 @@ USING: events.core events.words events.builtin ;
     4 0 0 1 chars-area-camera
     5 1 1 1 chars-area-camera
     0 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     1 char-here? if
         35 fiona-started? 1 2 char-C4? not and if
@@ -9366,7 +9366,7 @@ USING: events.core events.words events.builtin ;
     $AF story-flag? if
         $3F story-flag? not if
             $3F story-flag-set
-            \ (nop-progress-74: no effect in this game)
+            $E 0 829 $80 10 -1 $FF80 0.0 creature-place
         then
     then
 ;
@@ -9478,13 +9478,13 @@ USING: events.core events.words events.builtin ;
     $E 2 2 1 chars-area-camera
     $F 4 4 1 chars-area-camera
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 4 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 5 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     0 $D char-entered-area? if
         3 map-page
@@ -9800,7 +9800,7 @@ USING: events.core events.words events.builtin ;
         yield
     repeat
     wait-fade
-    \ (nop-progress-18: no effect in this game)
+    $37 room-preload
     3 char-unload
     4 char-unload
     $FF panic-stage? if
@@ -10117,19 +10117,19 @@ USING: events.core events.words events.builtin ;
         then
     then
     0 4 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 5 char-left-area? 0 6 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        3 exit-prepare
     then
     0 7 char-left-area? 0 8 char-entered-area? or if
         3 story-flag? $31 story-flag? not and if
             3 3 1 char-load
         then
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 9 char-left-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     0 0 var? if
         1 $D char-in-area? if
@@ -10359,7 +10359,7 @@ USING: events.core events.words events.builtin ;
     1 room0F.cmd03
     $12 state-flag-clear
     0 0 char-silent
-    \ (nop-progress-18: no effect in this game)
+    $31 room-preload
     fiona-calm-reset
     8 state-flag-set
     $FE action-end
@@ -10593,7 +10593,7 @@ USING: events.core events.words events.builtin ;
 : room0F.act0A ( -- )   \ 003F67F0
     $18 state-flag-set
     1 self-scripted
-    \ (nop-progress-18: no effect in this game)
+    $15 room-preload
     self-wait-done
     $F 0 fade
     wait-fade
@@ -11303,13 +11303,13 @@ USING: events.core events.words events.builtin ;
     $16 4 3 1 chars-area-camera
     $17 3 -1 1 chars-area-camera
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 4 char-left-area? 0 5 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     0 6 char-left-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 $12 char-entered-area? if
         2 ebit-set
@@ -11531,20 +11531,20 @@ USING: events.core events.words events.builtin ;
     self-wait-done
     3 partner-load
     2 char-unload
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
+    $FE $E 1 room-doors-state
+    $FE $F 1 room-doors-state
+    $FE $25 1 room-doors-state
+    $FE $60 1 room-doors-state
+    $FE $63 1 room-doors-state
+    $FE $4C 1 room-doors-state
+    $FE $66 1 room-doors-state
+    $FE $61 1 room-doors-state
+    $FE $53 1 room-doors-state
+    $FE $54 1 room-doors-state
     $FE $6C 1 door-lock-for
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
+    1 $53 1 room-doors-state
+    1 $5F 1 room-doors-state
+    $FE $5F 1 room-doors-state
     1 door-reopen-unlock
     $D door-reopen-unlock
     $58 door-close-off-lock
@@ -11630,8 +11630,8 @@ USING: events.core events.words events.builtin ;
     then then then
     effects-arena-flip
     1 char-in
-    \ (nop-progress-4C: no effect in this game)
-    \ (nop-progress-48: no effect in this game)
+    music-stage-end
+    1 music-stage
     2 0 0 music
     3 0 0 music
     4 0 0 music
@@ -11854,13 +11854,13 @@ USING: events.core events.words events.builtin ;
         3 story-flag? $31 story-flag? not and if
             3 0 char-remove
         then
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-left-area? if
         3 story-flag? $31 story-flag? not and if
             3 3 1 char-load
         then
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     $242 story-flag? not if
         0 34.2 0.0 60.5 $A 5 0 zone
@@ -12088,7 +12088,7 @@ USING: events.core events.words events.builtin ;
     8 state-flag-set
     $1D 3 $FF char-load
     3 char-unload
-    \ (nop-progress-14: no effect in this game)
+    0 exit-prepare
     $32 $FF movie-param
     0 1 $14 door-bits
     $FF panic-stage? if
@@ -12517,10 +12517,10 @@ USING: events.core events.words events.builtin ;
     $10 1 0 1 chars-area-camera
     $11 5 -1 1 chars-area-camera
     0 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 $13 char-entered-area? if
         2 map-page
@@ -13049,7 +13049,7 @@ USING: events.core events.words events.builtin ;
     $12 state-flag-set
     0 1 char-silent
     camera-restart
-    \ (nop-progress-24: no effect in this game)
+    $FE $12 0 room-doors-state
     $18 state-flag-clear
     0 self-scripted
     0 exit-check
@@ -13667,16 +13667,16 @@ USING: events.core events.words events.builtin ;
     $B 1 1 1 chars-area-camera
     $C 3 -1 1 chars-area-camera
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     0 4 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 5 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     0 6 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     3 story-flag? $28 story-flag? not and if
         0 $F char-entered-area? 0 $F char-left-area? or $FE char-here? not and if
@@ -13866,7 +13866,7 @@ USING: events.core events.words events.builtin ;
     wait-fade
     8 state-flag-set
     $12 state-flag-set
-    \ (nop-progress-14: no effect in this game)
+    0 exit-prepare
     $18 state-flag-clear
     0 self-scripted
     $81 exit-check
@@ -14151,10 +14151,10 @@ USING: events.core events.words events.builtin ;
     8 3 -1 1 chars-area-camera
     9 1 -1 1 chars-area-camera
     0 2 char-left-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     $246 story-flag? not if
         2 -44.9 -8.0 -12.9 $A 5 0 zone
@@ -14707,21 +14707,21 @@ USING: events.core events.words events.builtin ;
     6 1 -1 1 chars-area-camera
     7 0 0 1 chars-area-camera
     0 2 char-left-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     $13 story-flag? not if
         0 0 var-set
     else room15.cond00? not if
         0 0 var-set
     then then
-    \ (nop-progress-24: no effect in this game)
+    1 $15 0 room-doors-state
     $13 story-flag? if
         0 0 var? if
             0 0 char-in-nav-group? 1 0 char-in-nav-group? or $FE 0 char-in-nav-group? or if
-                \ (nop-progress-24: no effect in this game)
+                1 $15 1 room-doors-state
             else
                 $13 story-flag-clear
                 1 0 $20000 nav-group
@@ -14857,7 +14857,7 @@ USING: events.core events.words events.builtin ;
             1 0 $14 door-bits
             $14 story-flag-set
             40 hewie-trust
-            \ (nop-progress-24: no effect in this game)
+            $FE $15 0 room-doors-state
             0 1 $1000000 nav-group
             9 door-unlock
             self-wait-anim
@@ -14940,7 +14940,7 @@ USING: events.core events.words events.builtin ;
         6 sound-bank-loaded? not while
         yield
     repeat
-    \ (nop-progress-18: no effect in this game)
+    $F room-preload
     $40000001 6 0.0 30.0 30.0 0 0 sound
     3 room15.cmd00
     2 6 0.0 30.0 30.0 0 0 sound
@@ -15386,7 +15386,7 @@ USING: events.core events.words events.builtin ;
     wait-fade
     things-clear
     -1 self-move-16
-    \ (nop-progress-18: no effect in this game)
+    5 room-preload
     $28 $B4 movie-param
     $FF panic-stage? if
         3 panic-stage
@@ -15444,8 +15444,8 @@ USING: events.core events.words events.builtin ;
     $38 door-close-off-lock
     $39 door-close-off-lock
     exits-rebuild
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
+    $FE 5 0 room-doors-state
+    $FE 6 0 room-doors-state
     0 camera-mode? if
         $80 exit-check
     else
@@ -15664,10 +15664,10 @@ USING: events.core events.words events.builtin ;
     6 2 -1 1 chars-area-camera
     7 1 0 -1 chars-area-camera
     0 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     5 story-flag? not if
         0 2 char-left-area? if
@@ -16277,7 +16277,7 @@ USING: events.core events.words events.builtin ;
     $AF story-flag? if
         $40 story-flag? not if
             $40 story-flag-set
-            \ (nop-progress-74: no effect in this game)
+            $19 0 389 $80 10 -1 $FFDC 0.0 creature-place
         then
     then
 ;
@@ -16406,19 +16406,19 @@ USING: events.core events.words events.builtin ;
     $12 1 1 1 chars-area-camera
     $13 2 -1 1 chars-area-camera
     0 4 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 5 char-entered-area? 0 7 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     0 6 char-entered-area? 0 8 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        3 exit-prepare
     then
     0 9 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        4 exit-prepare
     then
     0 $15 char-entered-area? 0 $16 char-entered-area? or if
-        \ (nop-progress-18: no effect in this game)
+        $27 room-preload
     then
     0 6 char-entered-area? if
         3 map-page
@@ -17800,10 +17800,10 @@ USING: events.core events.words events.builtin ;
     4 0 -1 1 chars-area-camera
     5 1 -1 1 chars-area-camera
     0 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     1 20.5 0.0 49.99 $14 17 0 zone
     1 char-here? 0 game-mode? and if
@@ -18148,10 +18148,10 @@ USING: events.core events.words events.builtin ;
     5 1 0 1 chars-area-camera
     6 1 0 1 chars-area-camera
     0 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     7 story-flag? not if
         0 55.0 4.0 -30.0 $A 5 0 zone
@@ -19132,13 +19132,13 @@ USING: events.core events.words events.builtin ;
     $A 0 0 1 chars-area-camera
     $B 1 1 1 chars-area-camera
     0 6 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 5 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 4 char-entered-area? 0 7 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     1 char-here? if
         118 hewie-action? not if
@@ -19722,10 +19722,10 @@ USING: events.core events.words events.builtin ;
         1 exit-check
     then
     0 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 -366.29 0.0 -24.86 $23 29 0 zone
     1 char-here? 0 game-mode? and if
@@ -19807,8 +19807,8 @@ USING: events.core events.words events.builtin ;
     $A story-flag? if
         $2E story-flag? not if
             $2E story-flag-set
-            \ (nop-progress-74: no effect in this game)
-            \ (nop-progress-74: no effect in this game)
+            $20 0 316 $D 15 -1 0 0.0 creature-place
+            $20 0 361 4 15 -1 0 0.0 creature-place
         then
     then
     2 story-flag? not if
@@ -19984,30 +19984,30 @@ USING: events.core events.words events.builtin ;
     $15 0 0 1 chars-area-camera
     $1A 1 1 1 chars-area-camera
     0 5 char-entered-area? 0 $B char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 6 char-entered-area? 0 7 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 9 char-entered-area? if
         5 story-flag? 6 story-flag? not and if
             3 3 2 char-load
             4 4 2 char-load
         then
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     0 $C char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        3 exit-prepare
     then
     0 8 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        4 exit-prepare
     then
     0 $A char-entered-area? if
         5 story-flag? 6 story-flag? not and if
             3 0 char-remove
             4 0 char-remove
         then
-        \ (nop-progress-14: no effect in this game)
+        4 exit-prepare
     then
     $D story-flag? not if
         0 $17 char-entered-area? 8 ebit? not and if
@@ -20027,7 +20027,7 @@ USING: events.core events.words events.builtin ;
             $1C story-flag-set
             0 obstacle-stop
             $12 door-unlock
-            \ (nop-progress-24: no effect in this game)
+            $FE $24 0 room-doors-state
         then
     then
     0 0 8 -4 0 zone-at-effect
@@ -20972,10 +20972,10 @@ USING: events.core events.words events.builtin ;
     $19 0 0 1 chars-area-camera
     $1A 2 2 1 chars-area-camera
     0 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     $300 story-flag? not if
         0 1 $14 door-bits
@@ -21542,7 +21542,7 @@ USING: events.core events.words events.builtin ;
         1 2 2 char-camera
         1 camera-follow
     then
-    \ (nop-progress-14: no effect in this game)
+    1 exit-prepare
     0 $A8 46 char-to-tri-facing
     $3C door-open-clear
     $3D door-open-clear
@@ -21660,7 +21660,7 @@ USING: events.core events.words events.builtin ;
     0 $13 -16.325 -66.999 -8 char-to-xz
     0 self-move-16
     self-wait-anim
-    \ (nop-progress-14: no effect in this game)
+    0 exit-prepare
     $E state-flag-clear
     $FE action-end
     1 summon-take
@@ -24178,10 +24178,10 @@ USING: events.core events.words events.builtin ;
     4 0 -1 1 chars-area-camera
     5 1 -1 1 chars-area-camera
     0 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     $209 story-flag? not if
         0 34.0 0.0 29.0 5 8 1 zone
@@ -25046,13 +25046,13 @@ USING: events.core events.words events.builtin ;
     $13 0 0 1 chars-area-camera
     $14 4 2 1 chars-area-camera
     0 5 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 6 char-entered-area? 0 3 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 4 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     0 4 char-entered-area? if
         3 map-page
@@ -25333,7 +25333,7 @@ USING: events.core events.words events.builtin ;
     0 state-flag-set
     $25 story-flag? not if
         $25 story-flag-set
-        \ (nop-progress-74: no effect in this game)
+        $25 0 217 3 6 -1 0 0.0 creature-place
     then
     $14 item-use
     6 door-unlock
@@ -25804,10 +25804,10 @@ USING: events.core events.words events.builtin ;
     4 1 -1 1 chars-area-camera
     5 0 0 1 chars-area-camera
     0 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 -4.0 0.0 4.0 4 7 0 zone
     1 6.0 0.0 -7.0 3 7 0 zone
@@ -26763,7 +26763,7 @@ USING: events.core events.words events.builtin ;
     $E state-flag-set
     $13 state-flag-set
     1 self-scripted
-    \ (nop-progress-18: no effect in this game)
+    8 room-preload
     $E 3 $FF char-load
     $F 4 char-load-2
     self-wait-done
@@ -26787,7 +26787,7 @@ USING: events.core events.words events.builtin ;
     1 self-scripted
     $FE 0 0 char-camera
     $FE camera-follow
-    \ (nop-progress-18: no effect in this game)
+    8 room-preload
     $E 3 $FF char-load
     $F 4 char-load-2
     self-wait-done
@@ -27097,7 +27097,7 @@ USING: events.core events.words events.builtin ;
 ;
 
 : room29.act00 ( -- )   \ 004041B0
-    \ (nop-progress-24: no effect in this game)
+    1 $29 1 room-doors-state
     1 self-scripted
     $FE $29 116 2 stalker-to-room
     $FE $74 180 char-to-tri-facing
@@ -27178,14 +27178,14 @@ USING: events.core events.words events.builtin ;
     $FE char-done
     0 self-scripted
     8 state-flag-set
-    \ (nop-progress-14: no effect in this game)
+    0 exit-prepare
     $20 door-open-clear
     0 ebit? if
         $80 exit-check
     else
         $81 exit-check
     then
-    \ (nop-progress-24: no effect in this game)
+    1 $29 0 room-doors-state
     $31D story-flag-set
     $22 resident-flag-set
     self-idle-or-end
@@ -27833,17 +27833,17 @@ USING: events.core events.words events.builtin ;
     $1B 1 0 1 chars-area-camera
     $1C 5 4 1 chars-area-camera
     0 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 3 char-entered-area? 0 7 char-entered-area? or 0 8 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 6 char-entered-area? if
         $1A 3 3 char-load
-        \ (nop-progress-14: no effect in this game)
+        3 exit-prepare
     then
     0 9 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     0 6 char-left-area? if
         3 0 char-remove
@@ -28136,18 +28136,18 @@ USING: events.core events.words events.builtin ;
     2 partner-load
     $E 3 $FF char-load
     $F 4 char-load-2
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
-    \ (nop-progress-24: no effect in this game)
+    $FE 3 1 room-doors-state
+    $FE 5 1 room-doors-state
+    $FE 6 1 room-doors-state
+    $FE $17 1 room-doors-state
+    $FE $B 1 room-doors-state
+    $FE $C 1 room-doors-state
+    $FE $15 1 room-doors-state
+    $FE $24 1 room-doors-state
+    $FE $12 1 room-doors-state
+    1 $17 1 room-doors-state
     2 char-unload
-    \ (nop-progress-48: no effect in this game)
+    0 music-stage
     2 0 0 music
     4 0 0 music
     5 ebit-set
@@ -29054,12 +29054,12 @@ USING: events.core events.words events.builtin ;
         $5B story-flag? $5C story-flag? not and if
             $FE 0 char-file-load
         then
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
         $5B story-flag? $5C story-flag? not and if
         then
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     $5B story-flag? $5C story-flag? not and if
         0 4 char-left-area? if
@@ -30020,7 +30020,7 @@ USING: events.core events.words events.builtin ;
     8 state-flag-clear
     $F $41 fade
     $E story-flag-set
-    \ (nop-progress-14: no effect in this game)
+    0 exit-prepare
     wait-fade
     $227 item-give
     $18 state-flag-clear
@@ -30031,7 +30031,7 @@ USING: events.core events.words events.builtin ;
 : room2F.act01 ( -- )   \ 00412C00
     $18 state-flag-set
     1 self-scripted
-    \ (nop-progress-18: no effect in this game)
+    8 room-preload
     self-wait-done
     2 message
     wait-message
@@ -30048,7 +30048,7 @@ USING: events.core events.words events.builtin ;
         then
         $82 exit-check
     else
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
         $18 state-flag-clear
         0 self-scripted
     then
@@ -30297,13 +30297,13 @@ USING: events.core events.words events.builtin ;
     0 2 char-entered-area? if
         $5B story-flag? $5C story-flag? not and if
         then
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
         $5B story-flag? $5C story-flag? not and if
             $FE 1 char-file-load
         then
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 2 char-entered-area? if
         3 map-page
@@ -30417,7 +30417,7 @@ USING: events.core events.words events.builtin ;
 : room30.act00 ( -- )   \ 004131F0
     $18 state-flag-set
     1 self-scripted
-    \ (nop-progress-18: no effect in this game)
+    8 room-preload
     self-wait-done
     2 message
     wait-message
@@ -30434,7 +30434,7 @@ USING: events.core events.words events.builtin ;
         then
         $82 exit-check
     else
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
         $18 state-flag-clear
         0 self-scripted
     then
@@ -30708,7 +30708,7 @@ USING: events.core events.words events.builtin ;
     repeat
     wait-fade
     0 $F9 1 action
-    \ (nop-progress-18: no effect in this game)
+    $21 room-preload
     $29 state-flag-set
     $FF panic-stage? if
         3 panic-stage
@@ -31090,10 +31090,10 @@ USING: events.core events.words events.builtin ;
     9 2 -1 1 chars-area-camera
     $A 2 -1 1 chars-area-camera
     0 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     $300 story-flag? not if
         0 1 $14 door-bits

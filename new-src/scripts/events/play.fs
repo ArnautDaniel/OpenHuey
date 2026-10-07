@@ -219,6 +219,63 @@ fvariable bgm-level  1e bgm-level f!  fvariable bgm-fade  fvariable bgm-speed
     if  bgm-start  then ;
 ' bgm-tick on-tick
 
+\ ---- the stage music (src/game/music.c MusicDir): made by the scripts for a stage set (0x6B),
+\ its bank and four sequences (0 panic, 1 / 2 the calm music's parts, 3 the chase) loaded; held
+\ and released (0x6A 2 / 4); then started: the sequences from their start, the stage's
+\ sequence volumes and channel volumes / pans / bends, the calm parts full and the others
+\ silent, the global volume fading in over 90 frames. Not yet: the chase and the panic (they
+\ follow the stalkers) ----
+variable sm-stage  -1 sm-stage !  variable sm-step  variable sm-hold
+fvariable sm-global  fvariable sm-to  fvariable sm-rate   255e sm-to f!
+create sm-track 4 cells allot   \ each track's volume (0..255)
+: sm-apply ( -- )   \ the tracks' volumes through the global one (vol_out)
+    4 0 do  i  i cells sm-track + @ s>f sm-global f@ f* 255e f/ f>s  seq-port-volume  loop ;
+: sm-file ( i -- addr len )  sm-stage @ swap stage-file ;
+: sm-load ( stage -- )
+    seq-reset  dup sm-stage !  0 sm-step !  0 sm-hold !  0e sm-global f!  255e sm-to f!
+    0< if  exit  then
+    0 sm-file 3 - seq-bank drop                      \ (BGM\STAGEn_BANK: .HD and .BD)
+    4 0 do  i  i 1+ sm-file seq-load drop  0 i cells sm-track + !  loop ;
+' sm-load is event-music-stage
+: sm-volume-to ( v frames -- )   \ (MusicDir_GlobalVolumeTo)
+    swap s>f sm-to f!  dup 0> if  s>f  sm-to f@ sm-global f@ f- fswap f/ sm-rate f!  else  drop  sm-to f@ sm-global f! 0e sm-rate f!  then ;
+:noname ( op a b -- )
+    sm-stage @ 0< if  2drop drop exit  then
+    rot case
+        0 of  sm-step @ 4 < if  drop s>f sm-to f!  else  sm-volume-to  then  endof
+        2 of  2drop -1 sm-hold !  endof
+        4 of  2drop 0 sm-hold !  endof
+        5 of  2drop  4 0 do  0 i cells sm-track + !  loop  sm-apply  endof
+        >r 2drop r>
+    endcase ; is event-music
+: sm-start ( -- )   \ (MusicDir_Start)
+    4 0 do
+        i  sm-stage @ 3 stage-table i + c@ 20 max seq-volume
+        16 0 do
+            j i  sm-stage @ 0 stage-table j 16 * + i + c@  seq-chan-volume
+            j  $B0 i or  10  sm-stage @ 2 stage-table j 16 * + i + c@  seq-midi
+            j  $E0 i or  0  sm-stage @ 1 stage-table j 16 * + i + c@  seq-midi
+        loop
+    loop
+    0 sm-track !  255 1 cells sm-track + !  255 2 cells sm-track + !  0 3 cells sm-track + !
+    sm-to f@ f>s 90 sm-volume-to ;
+: sm-tick ( -- )   \ (MusicDir_Update)
+    sm-stage @ 0< paused @ or if  exit  then
+    sm-step @ case
+        0 of  1 sm-step !  endof
+        1 of  sm-hold @ 0= if  4 0 do  i -1 seq-play  loop  2 sm-step !  then  endof
+        2 of  sm-start  sm-apply  4 sm-step !  endof
+        4 of
+            sm-rate f@ f0= 0= if
+                sm-global f@ sm-rate f@ f+ sm-global f!
+                sm-rate f@ f0< if  sm-global f@ sm-to f@ f<  else  sm-global f@ sm-to f@ f>  then
+                if  sm-to f@ sm-global f!  0e sm-rate f!  then
+            then
+            sm-apply
+        endof
+    endcase ;
+' sm-tick on-tick
+
 \ ---- movies ----
 \ the movie, for the classes that show it (src/game/movie.c): 1 keyed by its brightness, 2 opaque
 \ but only while state flag $29 (a scene's signal 11 turns it), 3 by its own alpha, 5 opaque - all

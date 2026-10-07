@@ -784,7 +784,7 @@ USING: events.core events.words events.map0 ;
         6 state-flag-set
         8 cutscene-control
     then
-    \ (nop-progress-18: no effect in this game)
+    $37 room-preload
     3 0 char-remove
     4 0 char-remove
     $17 0 char-no-shadow
@@ -900,7 +900,7 @@ USING: events.core events.words events.map0 ;
     $17 action-end
     $17 char-done
     $20 4 $FF char-load
-    \ (nop-progress-18: no effect in this game)
+    $33 room-preload
     $80 exit-check
     self-idle-or-end
 ;
@@ -1085,7 +1085,7 @@ USING: events.core events.words events.map0 ;
         8 cutscene-control
     then
     $20 4 $FF char-load
-    \ (nop-progress-18: no effect in this game)
+    $33 room-preload
     3 0 char-remove
     $80 exit-check
     $2C 1 pvar-set
@@ -1317,7 +1317,7 @@ USING: events.core events.words events.map0 ;
         6 state-flag-set
         8 cutscene-control
     then
-    \ (nop-progress-18: no effect in this game)
+    $E room-preload
     0 0 char-no-shadow
     1 0 char-no-shadow
     $80 exit-check
@@ -1395,7 +1395,7 @@ USING: events.core events.words events.map0 ;
         6 state-flag-set
         8 cutscene-control
     then
-    \ (nop-progress-18: no effect in this game)
+    $36 room-preload
     0 0 char-no-shadow
     $80 exit-check
     self-idle-or-end
@@ -1554,7 +1554,7 @@ USING: events.core events.words events.map0 ;
         6 state-flag-set
         8 cutscene-control
     then
-    \ (nop-progress-18: no effect in this game)
+    $36 room-preload
     0 0 char-no-shadow
     $80 exit-check
     $2C 1 pvar-set
@@ -1699,7 +1699,7 @@ USING: events.core events.words events.map0 ;
         6 state-flag-set
         8 cutscene-control
     then
-    \ (nop-progress-18: no effect in this game)
+    $E room-preload
     0 0 char-no-shadow
     1 0 char-no-shadow
     $80 exit-check
@@ -1822,7 +1822,7 @@ USING: events.core events.words events.map0 ;
         yield
     repeat
     wait-fade
-    \ (nop-progress-18: no effect in this game)
+    $37 room-preload
     $FF panic-stage? if
         3 panic-stage
     then
@@ -2040,223 +2040,223 @@ defer room37.act00
 
 : room37.act03 ( -- )   \ 004461B0
     $2A 0 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $21 room-preload
     else $2A 1 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $21 room-preload
     else $2A 2 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $20 room-preload
     else $2A 3 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $23 room-preload
     else $2A 4 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $24 room-preload
     else $2A 5 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $24 room-preload
     else $2A 6 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        9 room-preload
     else $2A 7 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $25 room-preload
     else $2A 8 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        9 room-preload
     else $2A 9 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        9 room-preload
     else $2A $A pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $12 room-preload
     else $2A $B pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $F room-preload
     else $2A $C pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $31 room-preload
     else $2A $D pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $2A room-preload
     else $2A $E pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $13 room-preload
     else $2A $F pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $21 room-preload
     else $2A $10 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $21 room-preload
     else $2A $11 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        0 room-preload
     else $2A $12 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        0 room-preload
     else $2A $13 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $12 room-preload
     else $2A $14 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $F room-preload
     else $2A $15 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $15 room-preload
     else $2A $16 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $18 room-preload
     else $2A $17 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $19 room-preload
     else $2A $18 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $19 room-preload
     else $2A $19 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $19 room-preload
     else $2A $1A pvar? if
-        \ (nop-progress-18: no effect in this game)
+        8 room-preload
     else $2A $1B pvar? if
-        \ (nop-progress-18: no effect in this game)
+        8 room-preload
     else $2A $1C pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $1C room-preload
     else $2A $1D pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $29 room-preload
     else $2A $1E pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $1E room-preload
     else $2A $1F pvar? if
-        \ (nop-progress-18: no effect in this game)
+        2 room-preload
     else $2A $20 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        3 room-preload
     else $2A $21 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $17 room-preload
     else $2A $22 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $23 room-preload
     else $2A $23 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        4 room-preload
     else $2A $24 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $A room-preload
     else $2A $25 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $C room-preload
     else $2A $26 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $C room-preload
     else $2A $27 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $C room-preload
     else $2A $28 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $C room-preload
     else $2A $29 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $C room-preload
     else $2A $2B pvar? if
-        \ (nop-progress-18: no effect in this game)
+        6 room-preload
     else $2A $2C pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $11 room-preload
     else $2A $2D pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $32 room-preload
     else $2A $2A pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $29 room-preload
     else $2A $31 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $49 room-preload
     else $2A $2E pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $2E room-preload
     else $2A $2F pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $55 room-preload
     else $2A $30 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $5D room-preload
     else $2A $32 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $4F room-preload
     else $2A $33 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $4F room-preload
     else $2A $34 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $51 room-preload
     else $2A $35 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $51 room-preload
     else $2A $36 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $51 room-preload
     else $2A $37 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $51 room-preload
     else $2A $38 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $50 room-preload
     else $2A $39 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $4C room-preload
     else $2A $3A pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $4C room-preload
     else $2A $3B pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $4C room-preload
     else $2A $45 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $63 room-preload
     else $2A $46 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $63 room-preload
     else $2A $3C pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $48 room-preload
     else $2A $3D pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $52 room-preload
     else $2A $3E pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $48 room-preload
     else $2A $3F pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $48 room-preload
     else $2A $40 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $66 room-preload
     else $2A $42 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $53 room-preload
     else $2A $43 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $59 room-preload
     else $2A $44 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $59 room-preload
     else $2A $47 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $60 room-preload
     else $2A $48 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $60 room-preload
     else $2A $49 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $47 room-preload
     else $2A $4A pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $59 room-preload
     else $2A $4B pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $59 room-preload
     else $2A $4C pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $4A room-preload
     else $2A $4D pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $40 room-preload
     else $2A $4E pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $40 room-preload
     else $2A $4F pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $106 room-preload
     else $2A $50 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $108 room-preload
     else $2A $51 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $10B room-preload
     else $2A $52 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $59 room-preload
     else $2A $53 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $C0 room-preload
     else $2A $54 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $C0 room-preload
     else $2A $55 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $C0 room-preload
     else $2A $56 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $C5 room-preload
     else $2A $57 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $C7 room-preload
     else $2A $58 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $C7 room-preload
     else $2A $59 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $C7 room-preload
     else $2A $5A pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $C7 room-preload
     else $2A $5B pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $83 room-preload
     else $2A $5C pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $81 room-preload
     else $2A $5D pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $8A room-preload
     else $2A $5E pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $8C room-preload
     else $2A $5F pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $8C room-preload
     else $2A $60 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $8C room-preload
     else $2A $61 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $8E room-preload
     else $2A $62 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $85 room-preload
     else $2A $63 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $84 room-preload
     else $2A $64 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $8F room-preload
     else $2A $65 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $92 room-preload
     else $2A $66 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $92 room-preload
     else $2A $67 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $92 room-preload
     else $2A $68 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $8F room-preload
     else $2A $69 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $8D room-preload
     else $2A $6A pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $35 room-preload
     else $2A $6B pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $35 room-preload
     else $2A $6C pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $35 room-preload
     else $2A $6D pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $34 room-preload
     then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then then
     exit
 ;
@@ -2358,7 +2358,7 @@ defer room37.act00
         yield
     repeat
     $2E 0 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $D9 room-preload
         7 partner-load
         $1B story-flag-set
         $41 story-flag-clear
@@ -2369,7 +2369,7 @@ defer room37.act00
         $94 story-flag-clear
         $95 story-flag-clear
     else $2E 1 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $E0 room-preload
         $22 partner-load
         $1B story-flag-set
         $41 story-flag-set
@@ -2380,7 +2380,7 @@ defer room37.act00
         $94 story-flag-clear
         $95 story-flag-clear
     else $2E 2 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $D9 room-preload
         $C partner-load
         $1B story-flag-set
         $41 story-flag-set
@@ -2391,7 +2391,7 @@ defer room37.act00
         $94 story-flag-set
         $95 story-flag-set
     else $2E 3 pvar? if
-        \ (nop-progress-18: no effect in this game)
+        $E0 room-preload
         $17 partner-load
         $1B story-flag-set
         $41 story-flag-set
@@ -2830,7 +2830,7 @@ defer room37.act00
         1 1 1 char-camera
         1 camera-follow
     then
-    \ (nop-progress-4C: no effect in this game)
+    music-stage-end
     1 $C4 -10.03 -61.53 0 char-to-xz
     1 1 1 char-camera
     yield
@@ -3028,16 +3028,16 @@ defer room37.act00
     $14 2 1 1 chars-area-camera
     $15 3 2 1 chars-area-camera
     0 4 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 5 char-entered-area? 0 6 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 7 char-entered-area? 0 8 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     0 9 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        3 exit-prepare
     then
 ;
 
@@ -3235,10 +3235,10 @@ defer room37.act00
         1 exit-check
     then
     0 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
 ;
 
@@ -3331,13 +3331,13 @@ defer room37.act00
         2 exit-check
     then
     0 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 4 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 5 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
 ;
 
@@ -3398,10 +3398,10 @@ defer room37.act00
     $E 0 0 1 chars-area-camera
     $F 6 6 1 chars-area-camera
     0 4 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     0 5 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
 ;
 
@@ -3505,7 +3505,7 @@ defer room37.act00
     $D 4 4 1 chars-area-camera
     $E 5 -1 1 chars-area-camera
     1 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     1 ebit? not if
         0 $10 char-in-area? if
@@ -3556,7 +3556,7 @@ defer room37.act00
         1 adx? not while
         yield
     repeat
-    \ (nop-progress-18: no effect in this game)
+    $37 room-preload
     $C subscreen-open
     begin
         4 state-flag? while
@@ -3676,12 +3676,12 @@ defer room37.act00
     4 0 0 1 chars-area-camera
     5 1 1 1 chars-area-camera
     1 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     1 3 char-entered-area? if
         $1A 4 1 char-load
         $E 5 1 char-load
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     1 3 char-left-area? if
         4 0 char-remove
@@ -3842,16 +3842,16 @@ defer room37.act00
         3 exit-check
     then then
     1 4 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     1 5 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     1 6 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     1 7 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        3 exit-prepare
     then
 ;
 
@@ -4008,16 +4008,16 @@ defer room37.act00
     $C 0 0 1 chars-area-camera
     $D 4 4 1 chars-area-camera
     1 4 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     1 5 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     1 6 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     1 7 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        3 exit-prepare
     then
 ;
 
@@ -4178,16 +4178,16 @@ defer room37.act00
         3 exit-check
     then then
     1 4 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     1 5 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     1 6 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     1 7 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        3 exit-prepare
     then
 ;
 
@@ -4391,19 +4391,19 @@ defer room37.act00
     $E 0 0 1 chars-area-camera
     $F 3 3 1 chars-area-camera
     1 5 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     1 6 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     1 7 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     1 8 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        3 exit-prepare
     then
     1 9 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        4 exit-prepare
     then
     0 ebit? $35B story-flag? not and if
         0 -24.0 8.31 -132.0 $19 10 0 zone
@@ -4650,13 +4650,13 @@ defer room37.act00
         3 exit-check
     then then
     1 4 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     1 6 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     1 7 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        3 exit-prepare
     then
     1 70.5 5.0 -5.5 $14 10 0 zone
     1 1 8 char-zone-bits? if
@@ -5070,16 +5070,16 @@ defer room37.act00
     $C 0 0 1 chars-area-camera
     $D 1 1 1 chars-area-camera
     1 4 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     1 5 char-entered-area? 1 6 char-entered-area? or 1 8 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     1 7 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     1 9 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        3 exit-prepare
     then
     0 ebit? $35C story-flag? not and if
         roomD8.cond00? if
@@ -5191,7 +5191,7 @@ defer room37.act00
     hewie-controlled? not if
         0 self-is? if
             $80 exit-taken? if
-                \ (nop-progress-14: no effect in this game)
+                0 exit-prepare
                 roomD9.cmd00
                 $2F 0 pvar-set
                 0 char-activate
@@ -5211,9 +5211,9 @@ defer room37.act00
                 $FE $D8 123 2 stalker-to-room
                 stalker-item-cooldown
                 $2E 0 pvar? if
-                    \ (nop-progress-48: no effect in this game)
+                    0 music-stage
                 else
-                    \ (nop-progress-48: no effect in this game)
+                    3 music-stage
                 then
                 2 0 0 music
                 4 0 0 music
@@ -5351,7 +5351,7 @@ defer room37.act00
     hewie-controlled? not if
         0 self-is? if
             $80 exit-taken? if
-                \ (nop-progress-14: no effect in this game)
+                0 exit-prepare
                 roomE0.cmd00
                 $30 0 pvar-set
                 $31 0 pvar-set
@@ -5374,9 +5374,9 @@ defer room37.act00
                 $FE $E1 406 2 stalker-to-room
                 stalker-item-cooldown
                 $2E 1 pvar? if
-                    \ (nop-progress-48: no effect in this game)
+                    1 music-stage
                 else
-                    \ (nop-progress-48: no effect in this game)
+                    2 music-stage
                 then
                 2 0 0 music
                 4 0 0 music
@@ -5692,10 +5692,10 @@ defer room37.act00
     $16 4 3 1 chars-area-camera
     $17 3 -1 1 chars-area-camera
     1 4 char-left-area? 1 5 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     1 6 char-left-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 0 8 -4 0 zone-at-effect
     0 0 3 char-zone-bits? 0 0 3 char-zone-bits-before? not and if
@@ -5846,10 +5846,10 @@ defer room37.act00
     8 1 1 1 chars-area-camera
     9 2 2 1 chars-area-camera
     1 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     1 3 char-left-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 0 8 -4 0 zone-at-effect
     0 0 3 char-zone-bits? 0 0 3 char-zone-bits-before? not and if
@@ -6135,10 +6135,10 @@ defer room37.act00
     $10 1 0 1 chars-area-camera
     $11 5 -1 1 chars-area-camera
     1 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     1 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     0 0 8 -4 0 zone-at-effect
     0 0 3 char-zone-bits? 0 0 3 char-zone-bits-before? not and if
@@ -6464,13 +6464,13 @@ defer room37.act00
     $B 1 1 1 chars-area-camera
     $C 0 0 1 chars-area-camera
     1 5 char-left-area? 1 6 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        3 exit-prepare
     then
     1 7 char-left-area? 1 8 char-entered-area? or if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     1 9 char-left-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
     6 sound-bank-loaded? if
         1 var-inc
@@ -6926,10 +6926,10 @@ defer room37.act00
     6 1 -1 1 chars-area-camera
     7 0 0 1 chars-area-camera
     1 2 char-left-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     1 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
 ;
 
@@ -7075,10 +7075,10 @@ defer room37.act00
     6 2 -1 1 chars-area-camera
     7 1 0 -1 chars-area-camera
     1 2 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     1 3 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        0 exit-prepare
     then
     4 -0.56 0.0 -21.78 $A 5 0 zone
     1 4 8 char-zone-bits? if
@@ -7339,10 +7339,10 @@ defer room37.act00
     $E 2 2 1 chars-area-camera
     $F 4 4 1 chars-area-camera
     1 4 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        1 exit-prepare
     then
     1 5 char-entered-area? if
-        \ (nop-progress-14: no effect in this game)
+        2 exit-prepare
     then
 ;
 
@@ -7827,7 +7827,7 @@ defer room37.act00
         1 adx? not while
         yield
     repeat
-    \ (nop-progress-18: no effect in this game)
+    $37 room-preload
     $C subscreen-open
     begin
         4 state-flag? while

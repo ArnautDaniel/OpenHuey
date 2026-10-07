@@ -219,6 +219,11 @@ defer event-look ( slot addr n -- )   :noname 2drop drop ; is event-look
 \ stream paused / resumed
 defer event-bgm-want ( track pause -- ) ( F: level -- )   :noname 2drop fdrop ; is event-bgm-want
 defer event-music-pause ( on -- )         ' drop is event-music-pause
+\ the stage music: the director for stage set 0..3 (-1: ended)
+defer event-music-stage ( stage -- )      ' drop is event-music-stage
+\ its commands (0x6A): 0 the global volume to a over b frames, 1 the stage's channels, 2 load and
+\ hold, 3 wait for the banks, 4 release (it starts), 5 silence
+defer event-music ( op a b -- )           :noname 2drop drop ; is event-music
 defer event-movie-open ( addr len -- )    ' 2drop is event-movie-open
 defer event-movie-stop ( -- )             ' noop is event-movie-stop
 defer event-movie-pause ( on -- )         ' drop is event-movie-pause

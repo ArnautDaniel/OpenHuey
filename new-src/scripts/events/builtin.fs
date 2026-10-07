@@ -719,8 +719,8 @@ defer builtin.act97
                 4 panic-stage
             then
         else
-            \ (nop-progress-24: no effect in this game)
-            \ (nop-progress-24: no effect in this game)
+            $FE $48 0 room-doors-state
+            $FE $66 1 room-doors-state
         then
     then
     $AF story-flag? if

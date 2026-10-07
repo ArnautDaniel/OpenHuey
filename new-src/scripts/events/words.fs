@@ -16,6 +16,8 @@ USING: game-state events.core ;
     dup exit-passable 0= if  drop exit  then
     0 character char.scripted sl@ if  drop exit  then
     dup event-state ev.exit l!  exit-wanted ! ;
+\ 01: The room behind exit `exit` is loaded ahead into the other room slot (SceneGame_PrepareExit).
+: exit-prepare ( exit -- )  drop ;   \ (a load ahead: rooms come in at once here)
 \ 02: Places character `who` (0xFF: self) on nav triangle `tri` in the event's room.
 : char-to-tri ( who tri -- )
     swap dup $FF = if  drop self-char  else  char-slot  then
@@ -187,11 +189,16 @@ create effect-bytes 64 allot  variable #effect-bytes
 : var-dec ( var -- )  -1 swap 4 * event-state ev.vars + +l! ;
 \ 39: Hewie: action a with argument b (Hewie_SetAction).
 : hewie-action ( a b -- )  drop drop s" hewie-action" stub-step ;
+\ 3A: Room `room` is loaded ahead into the spare room slot (SceneGame_LoadSpareRoom).
+: room-preload ( room -- )  drop ;   \ (as 0x01)
 \ 3B: Places character `who` (0xFF: self) on triangle `tri` facing `face`.
 : char-to-tri-facing ( who tri face -- )
     rot dup $FF = if  drop self-char  else  char-slot  then
     dup 0< if  2drop drop exit  then
     rot event-tri-center dup event-char-place  swap s>f deg>rad event-char-yaw ;
+\ 3C: Every door with a side in room `room` gets the state (a, b), a being character `who`'s slot
+\ (SceneGame_SetRoomDoors).
+: room-doors-state ( who room b -- )  drop drop drop s" room-doors-state" stub-step ;
 \ 3D: Character `who` silent (+0x2C): its own sounds (Actor_PlaySound) don't play.
 : char-silent ( who on -- )  drop drop s" char-silent" stub-step ;
 \ 3E: Stalker `id` leaves the scene and is put into room `room` (0xFFFF: its own) at `at`,
@@ -208,6 +215,8 @@ create effect-bytes 64 allot  variable #effect-bytes
 : self-turn-to ( id -- )  drop s" self-turn-to" stub-step ;
 \ 43: Raises the threat / panic meter (progress +0x7B8) by v (0..100).
 : threat-raise ( v -- )  drop s" threat-raise" stub-step ;
+\ 44: The sub-screen's start flag set (SceneGame_SubScreenStart).
+: subscreen-start ( -- )  s" subscreen-start" stub-step ;
 \ 45: Character `who` (0xFF: self) plays sound `id` of bank `bank` where it stands.
 : char-sound ( who id bank -- )   \ (Actor_PlaySound: at the character)
     rot dup $FF = if  drop self-char  else  char-slot  then
@@ -341,7 +350,12 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 \ 6A: Stage music by `op`: 0 global volume fade to a over b frames (MusicDir_GlobalVolumeTo); 1
 \ the stage's channels (+0x40); 2 load (+0xC) and hold (+0x1C); 3 waits until its banks are in;
 \ 4 release; 5 silence.
-: music ( op a b -- )  drop drop drop s" music" stub-step ;
+: music ( op a b -- )  event-music ;
+\ 6B: The stage music director made for stage set `stage` (0..3: BGM/STAGEn_BANK with PANIC and
+\ Sn_NORMALA / B / CHASE; SceneGame_MusicDirector).
+: music-stage ( stage -- )  event-music-stage ;
+\ 6C: The stage music director ended (SceneGame_EndMusic).
+: music-stage-end ( -- )  -1 event-music-stage ;
 \ 6D: Opens the sub-screen in mode `mode` (0 the in-game menu, 1 save, 2 the word plates, ...;
 \ SubScreen.mode) and sets state flag 4.
 : subscreen-open ( mode -- )  drop s" subscreen-open" stub-step ;
@@ -424,6 +438,10 @@ fvariable at-x  fvariable at-z
 \ 89: Prepares message `msg` for the window (shown later, see 0x62 12).
 : message-prepare ( msg -- )
     dup $FFFF = if  drop -1  then  prepared !  -1 prepared-page ! ;
+\ 8A: A creature of kind `kind` placed in room `room` at triangle `tri` (flags bit 7: of the other
+\ class, in a free slot 7..9; tri -1: a free slot 0..5, else slot 6) (SceneGame_PlaceCreature).
+: creature-place ( room a tri flags kind which g F: f -- )
+    drop drop drop drop drop drop drop fdrop s" creature-place" stub-step ;
 \ 8B: The game-over flag (progress +0x73EB00, also set when Fiona is caught for good) = v.
 : game-over-flag ( v -- )  drop s" game-over-flag" stub-step ;
 \ 8C: A scene effect (Effect6FF60, 0xE40 bytes) at (x, y, z) with zone rectangle `zone` (0x8D),
