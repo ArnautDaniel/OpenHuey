@@ -149,7 +149,7 @@ variable s-kind  variable s-dmg  variable s-extra
 \ ---- Fiona_CanInteract (her vtable +0x68): whether she takes a request of `kind` ----
 :noname ( cs kind asker b -- flag )
     >r >r nip r> r>                                    ( kind asker b )
-    2 pick 5 = if  nip nip door-animating? 0<> exit   \ (gDoors +0x40)  then
+    2 pick 5 = if  nip nip has-door? exit  then   \ (kind 5: through the door at exit b)
     drop  dup $FF <> if
         dup c-ok? 0= if  2drop false exit  then
         dup character char.present sl@ 0= swap character char.disabled sl@ 0<> and if  drop false exit  then

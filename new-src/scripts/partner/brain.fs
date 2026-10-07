@@ -697,4 +697,4 @@ variable was-busy
         then
     then
     rot 5 <> if  2drop true exit  then
-    nip door-animating? 0<> ;  him relations:accepts!
+    nip has-door? ;  him relations:accepts!

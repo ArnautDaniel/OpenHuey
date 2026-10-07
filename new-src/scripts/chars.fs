@@ -160,3 +160,6 @@ variable po-a  variable po-b
         i 2* s>f deg>rad fnegate po-try if  0 unloop exit  then
         i 2* s>f deg>rad po-try if  0 unloop exit  then
     loop  -1 ;
+
+\ Doors_HasExit (gDoors +0x40): the room has a door at that exit
+: has-door? ( exit -- flag )  room-door-at >r fdrop fdrop fdrop r> ;
