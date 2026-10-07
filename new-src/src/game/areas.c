@@ -113,3 +113,33 @@ int area_cross(const Room *r, int area, Vec3 prev, Vec3 cur) {
     }
     return 0;
 }
+
+int area_count(const Room *r) {
+    size_t size;
+    const uint8_t *sec = pac_section(&r->pac, PAC_EVENTS, &size);
+    uint32_t first;
+
+    if (sec == NULL || size < 4) {
+        return 0;
+    }
+    memcpy(&first, sec, 4);
+    return (int)(first / 4 < size / 4 ? first / 4 : size / 4);
+}
+
+int area_corner(const Room *r, int area, int k, Vec3 *out) {
+    size_t left;
+    const uint8_t *a = area_at(r, area, &left);
+
+    if (a == NULL || left < 0x50 || k < 0 || k > 3) {
+        return 0;
+    }
+    *out = vec3(f32_at(a, 0x10 + k * 0x10), f32_at(a, 0x14 + k * 0x10), f32_at(a, 0x18 + k * 0x10));
+    return 1;
+}
+
+int area_kind(const Room *r, int area) {
+    size_t left;
+    const uint8_t *a = area_at(r, area, &left);
+
+    return a == NULL ? -1 : s32_at(a, 0);
+}

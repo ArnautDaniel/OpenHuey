@@ -450,6 +450,53 @@ PRIM(p_door_swing) {   /* ( exit at-once -- ) ( F: degrees -- ) the room's door 
 
     room_door_swing(&gEngine.room, (int)exit, (float)FPOP(), now != 0);
 }
+PRIM(p_to_screen) {   /* ( -- flag ) ( F: x y z -- sx sy ) a point of the room on the window (pixels;
+                       * false: behind the camera) */
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+    float aspect = render_aspect(), ww = (float)gEngine.width, hh = (float)gEngine.height, pw = ww, ox = 0.0f;
+    Mat4 vp = mat4_mul(camera_proj(&gEngine.camera, aspect), camera_view(&gEngine.camera));
+    float cx = vp.m[0] * x + vp.m[4] * y + vp.m[8] * z + vp.m[12];
+    float cy = vp.m[1] * x + vp.m[5] * y + vp.m[9] * z + vp.m[13];
+    float cw = vp.m[3] * x + vp.m[7] * y + vp.m[11] * z + vp.m[15];
+
+    if (gRender.aspect == 1) {   /* (4:3 pillarboxed) */
+        pw = hh * 4.0f / 3.0f;
+        ox = (ww - pw) / 2.0f;
+    }
+    if (cw <= 0.01f) {
+        FPUSH(0.0);
+        FPUSH(0.0);
+        PUSH(0);
+        return;
+    }
+    FPUSH(ox + (cx / cw * 0.5f + 0.5f) * pw);
+    FPUSH((1.0f - (cy / cw * 0.5f + 0.5f)) * hh);
+    PUSH(-1);
+}
+PRIM(p_placed_count) { PUSH(gEngine.room.placed.n); }   /* ( -- n ) the room's placed objects */
+PRIM(p_placed_info) {   /* ( i -- addr len shown ) ( F: -- x y z ) its name, shown, where */
+    Cell i = POP();
+    const Placed *p = i >= 0 && i < gEngine.room.placed.n ? &gEngine.room.placed.p[i] : NULL;
+
+    PUSH(p != NULL ? (Cell)p->name : (Cell)"");
+    PUSH(p != NULL ? (Cell)strnlen(p->name, sizeof(p->name)) : 0);
+    PUSH(p != NULL && p->shown ? -1 : 0);
+    FPUSH(p != NULL ? p->pos.x : 0.0);
+    FPUSH(p != NULL ? p->pos.y : 0.0);
+    FPUSH(p != NULL ? p->pos.z : 0.0);
+}
+PRIM(p_area_count) { PUSH(area_count(&gEngine.room)); }   /* ( -- n ) */
+PRIM(p_area_kind) { PUSH(area_kind(&gEngine.room, (int)POP())); }   /* ( area -- kind ) 1 a box, -1 none */
+PRIM(p_area_corner) {   /* ( area k -- flag ) ( F: -- x y z ) */
+    Cell k = POP(), a = POP();
+    Vec3 c = vec3(0, 0, 0);
+    int ok = area_corner(&gEngine.room, (int)a, (int)k, &c);
+
+    FPUSH(c.x);
+    FPUSH(c.y);
+    FPUSH(c.z);
+    PUSH(ok ? -1 : 0);
+}
 PRIM(p_area_middle) {   /* ( area -- flag ) ( F: -- x y z ) its first and third corners' middle */
     Vec3 m = vec3(0, 0, 0);
     int ok = area_middle(&gEngine.room, (int)POP(), &m);
@@ -1121,6 +1168,13 @@ PRIM(p_n_to_s) {   /* ( n -- addr len ) */
     PUSH(b);
     PUSH(strlen(b));
 }
+PRIM(p_h_to_s) {   /* ( n -- addr len ) in hex, 0x.. */
+    char *b = sNumText[sNumNext++ % 4];
+
+    snprintf(b, sizeof(sNumText[0]), "0x%lX", (unsigned long)POP());
+    PUSH(b);
+    PUSH(strlen(b));
+}
 PRIM(p_f_to_s) {   /* ( places -- addr len ) ( F: x -- ) */
     char *b = sNumText[sNumNext++ % 4];
     Cell places = POP();
@@ -1285,7 +1339,7 @@ void bind_engine(Forth *f) {
         {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-free", p_v_free},
         {"v-path", p_v_path}, {"v-tri", p_v_tri}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
-        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"area-middle", p_area_middle}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
+        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
         {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},
@@ -1310,7 +1364,7 @@ void bind_engine(Forth *f) {
         {"on-tick", p_on_tick}, {"off-tick", p_off_tick}, {"ticks", p_ticks}, {"dt", p_dt},
         {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},
         {"pen-scale", p_pen_scale}, {"draw-text", p_draw_text}, {"draw-rect", p_draw_rect},
-        {"screen-size", p_screen_size}, {"char-size", p_char_size}, {"n>s", p_n_to_s}, {"f>s$", p_f_to_s},
+        {"screen-size", p_screen_size}, {"char-size", p_char_size}, {"n>s", p_n_to_s}, {"h>s", p_h_to_s}, {"f>s$", p_f_to_s},
         {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"user-dir", p_user_dir}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
         {"end-file", p_end_file}, {"xt>name", p_xt_to_name},
         {"clear-color", p_clear_color}, {"screenshot", p_screenshot}, {"console!", p_console},

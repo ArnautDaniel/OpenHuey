@@ -18,4 +18,10 @@ int area_middle(const Room *r, int area, Vec3 *out);
  * other way), 0 neither */
 int area_cross(const Room *r, int area, Vec3 prev, Vec3 cur);
 
+/* how many areas the room's table has; area `area`'s corner k (0..3); its kind (+0: 1 a box
+ * area_inside tests, else a gate line; -1 none) - for the debug labels */
+int area_count(const Room *r);
+int area_corner(const Room *r, int area, int k, Vec3 *out);
+int area_kind(const Room *r, int area);
+
 #endif
