@@ -1,8 +1,7 @@
 \ events/play.fs - the event scripts in the game: while playing, each room's scripts run as in
 \ the original (events/runner.fs), with Fiona and Hewie as the scripts' characters.
 \ What isn't there yet: most of the words (each says so on the console the first time it runs;
-\ `.missing` lists them), the message window (a line of text for now: Enter closes it), and
-\ characters walking their scripted moves.
+\ `.missing` lists them) and characters walking their scripted moves.
 IN: events.play
 USING: engine state player hewie game-state events.core events.runner ;
 
@@ -39,6 +38,7 @@ USING: engine state player hewie game-state events.core events.runner ;
 :noname  directed? if  cam-update  then ; is director-update
 :noname  directed? 0= if  follow  then ; is steer-camera
 \ the room's event areas
+' message-param! is message-parameter
 ' area-in? is event-area-in?   ' area-cross is event-area-cross   ' exit-area is event-exit-area
 
 \ the characters' places from their actors (now, and the frame before)
@@ -62,15 +62,50 @@ variable started
         started @ 0= if  start-play  -1 started !  then
         room-id came-in-by @ enter-room  -1 came-in-by !  remember-places  exit
     then
-    run-frame  remember-places
-    event-state ev.message sl@ 0< 0= key: Return key-pressed? and if
-        -1 event-state ev.message l!
-    then ;
+    run-frame  remember-places ;
 ' events-tick on-tick
 
-\ the message window, for now: which message it would show
-: message-line
-    event-state ev.message sl@ dup 0< if  drop exit  then
-    $FFFFFFFF pen-color 2 pen-scale
-    s" message " 40 40 draw-text  n>s 140 40 draw-text  s" (Enter)" 220 40 draw-text ;
-' message-line on-draw
+\ ---- the message window (the original's Task: src/game/text.c) ----
+\ The text laid out by game/messages.c; Enter turns the page; on the last page of a choice, the
+\ arrows pick an option and Enter answers it (the window then shows the message the option leads
+\ to, or closes). The answer is what `answer?` asks.
+variable shown  -1 shown !        \ the message laid out
+variable pages  variable pg  variable pick
+: open? ( -- flag )  event-state ev.message sl@ 0< 0= ;
+: lay-out ( -- )
+    event-state ev.message sl@ dup shown !  message-layout pages !  0 pg !
+    message-choice-flags 2 and if  message-options 1- 0 max  else  0  then  pick ! ;
+: last-page? ( -- flag )  pg @ pages @ 1- >= ;
+: choosing? ( -- flag )  last-page? message-options 0> and ;
+: close-window ( -- )  -1 event-state ev.message l!  -1 shown ! ;
+: answer ( -- )
+    pick @ event-state ev.answer l!
+    pick @ message-option >r drop 2drop r>  dup $FFFF = if  drop close-window exit  then
+    event-state ev.message sl@ $C000 and or event-state ev.message l! ;
+: window-keys ( -- )
+    open? 0= if  -1 shown !  exit  then
+    event-state ev.message sl@ shown @ <> if  lay-out  then
+    choosing? if
+        key: Up key-pressed?  key: Left key-pressed? or if  pick @ 1- 0 max pick !  then
+        key: Down key-pressed?  key: Right key-pressed? or if  pick @ 1+ message-options 1- min pick !  then
+    then
+    key: Return key-pressed? if
+        choosing? if  answer exit  then
+        last-page? if  close-window  else  1 pg +!  then
+    then ;
+
+variable sw  variable sh  variable lh
+: at-line ( n -- x y )  sw @ 10 / 24 +  swap lh @ *  sh @ 3 * 4 / 12 + + ;
+: window ( -- )
+    open? 0= shown @ 0< or if  exit  then
+    screen-size sh ! sw !  2 pen-scale  char-size nip 5 * 4 / lh !
+    $101018C0 pen-color                                    \ the box: the lower part of the screen
+    sw @ 10 /  sh @ 3 * 4 /  sw @ 8 * 10 /  sh @ 5 /  draw-rect
+    $FFFFFFFF pen-color
+    pg @ message-lines 0 ?do  pg @ i message-line  i at-line draw-text  loop
+    choosing? if                                           \ the cursor at the option picked
+        s" >"  pick @ message-option drop  char-size drop * >r  nip at-line swap r> + swap draw-text
+    then
+    last-page? 0= if  s" (Enter)"  sw @ 8 * 10 /  sh @ 9 * 10 /  draw-text  then ;
+' window-keys on-tick
+' window on-draw

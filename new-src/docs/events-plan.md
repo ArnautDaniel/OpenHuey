@@ -135,5 +135,17 @@ table (`tools/event_opcodes.py`, `docs/event_opcodes.md`).
 To check against the original: in room $0E Fiona can run where path 0 loses her (x -94);
 whether the original keeps her in view there (or she can't go there) needs the src build.
 
-Next: the message window with the game's text; doors (opening, locked) and nav groups;
-characters doing their scripted moves.
+## Status (2026-10-07): messages
+
+- `src/game/messages.c`: the game's messages (system: SUBSCR/MSG_BASE.BIN, ids with bit 15;
+  the second table: MSG_SUB.BIN, bit 14; the room's own: section 10), laid out as pages of
+  plain lines with their options (the byte code: include/text.h); parameters as
+  Msg_SetParamSystem has them; colours, speeds, waits and the other fonts' glyphs dropped.
+- The window is Forth (events/play.fs): a box over the lower screen, Enter turns the page, the
+  arrows pick an option, Enter answers (the option's message follows, or the window closes);
+  `answer?`, `message-param-room`, `message-close`, `message-closed?`, `wait-message`.
+- `key-hold` now also makes `key-pressed?` true on the tick a held key goes down (scripted
+  tests can press keys).
+
+Next: doors (opening, locked) and nav groups; characters doing their scripted moves; the
+window's look (the game's font and box, typing out).

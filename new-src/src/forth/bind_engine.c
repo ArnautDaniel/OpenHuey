@@ -6,6 +6,7 @@
 #include "../game/areas.h"
 #include "../game/camdirector.h"
 #include "../game/exits.h"
+#include "../game/messages.h"
 
 #include "../core/files.h"
 
@@ -258,6 +259,46 @@ PRIM(p_exit_spot) {   /* ( exit which -- tri ) ( F: -- x y z ) where to stand at
     FPUSH(p.y);
     FPUSH(p.z);
 }
+/* ---- messages (game/messages.c): laid out in pages of lines, for the window in Forth ---- */
+
+static const MessageLayout *sMsg;
+PRIM(p_message_layout) {   /* ( id -- pages ) lay message `id` out (bit 15 system, 14 the second table) */
+    sMsg = message_layout((int)POP());
+    PUSH(sMsg->npages);
+}
+PRIM(p_message_lines) {   /* ( page -- n ) */
+    Cell pg = POP();
+
+    PUSH(sMsg != NULL && pg >= 0 && pg < sMsg->npages ? sMsg->pages[pg].nlines : 0);
+}
+PRIM(p_message_line) {   /* ( page line -- addr len ) */
+    Cell ln = POP(), pg = POP();
+
+    if (sMsg == NULL || pg < 0 || pg >= sMsg->npages || ln < 0 || ln >= sMsg->pages[pg].nlines) {
+        PUSH(0);
+        PUSH(0);
+        return;
+    }
+    PUSH(sMsg->pages[pg].lines[ln]);
+    PUSH(strlen(sMsg->pages[pg].lines[ln]));
+}
+PRIM(p_message_options) { PUSH(sMsg != NULL ? sMsg->noptions : 0); }   /* ( -- n ) */
+PRIM(p_message_option) {   /* ( i -- page line col leads-to ) */
+    Cell i = POP();
+    const MessageOption *o = sMsg != NULL && i >= 0 && i < sMsg->noptions ? &sMsg->options[i] : NULL;
+
+    PUSH(o ? o->page : -1);
+    PUSH(o ? o->line : -1);
+    PUSH(o ? o->col : 0);
+    PUSH(o ? o->leads_to : 0xFFFF);
+}
+PRIM(p_message_choice_flags) { PUSH(sMsg != NULL ? sMsg->choice_flags : 0); }
+PRIM(p_message_param) {   /* ( slot id -- ) parameter `slot` shows system message `id` */
+    Cell id = POP(), slot = POP();
+
+    message_set_param((int)slot, (int)id);
+}
+
 PRIM(p_exit_area) {   /* ( exit -- area ) the event area of this room's exit (the room table) */
     Cell exit = POP();
     int room = gEngine.room.id;
@@ -355,7 +396,11 @@ PRIM(p_key_hold) {   /* ( scancode flag -- ) hold a key down (or let it go) as i
 
     gEngine.held[k] = on != 0;
 }
-PRIM(p_key_pressed) { PUSH(gEngine.input.pressed[scancode(f)] ? -1 : 0); }
+PRIM(p_key_pressed) {
+    Cell k = scancode(f);
+
+    PUSH(gEngine.input.pressed[k] || gEngine.held_pressed[k] ? -1 : 0);
+}
 PRIM(p_key_colon) {   /* key: name ( -- scancode ), immediate: `key: W`, `key: Left_Shift` */
     size_t n;
     const char *s = forth_parse_name(f, &n);
@@ -563,6 +608,10 @@ void engine_tick(Engine *e) {
     int i;
 
     e->ticks++;
+    for (i = 0; i < SDL_SCANCODE_COUNT; i++) {   /* keys scripts put down count as pressed once */
+        e->held_pressed[i] = e->held[i] && !e->held_last[i];
+        e->held_last[i] = e->held[i];
+    }
     forth_run_tasks(e->forth);
     for (i = 0; i < e->nhooks; i++) {
         if (forth_call(e->forth, e->hooks[i]) != 0) {
@@ -606,7 +655,10 @@ void bind_engine(Forth *f) {
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
-        {".director", p_cam_info}, {"area-in?", p_area_in}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"exit-spot", p_exit_spot},
+        {".director", p_cam_info}, {"area-in?", p_area_in}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area},
+        {"message-layout", p_message_layout}, {"message-lines", p_message_lines}, {"message-line", p_message_line},
+        {"message-options", p_message_options}, {"message-option", p_message_option},
+        {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},

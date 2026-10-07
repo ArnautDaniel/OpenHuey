@@ -550,7 +550,8 @@ USING: game-state events.core ;
 \ 59 0A: Door `door`: its open bit cleared.
 : door-open-clear ( door -- )  drop s" door-open-clear" stub-step ;
 \ 59 0B: The message's parameter 0 = room id n as the script sees it (Events_ScriptRoom).
-: message-param-room ( n -- )  drop s" message-param-room" stub-step ;
+: message-param-room ( n -- )   \ (Events_ScriptRoom's $40 / $41 -> $70 isn't kept yet)
+    0 swap message-parameter ;
 \ 59 0C: Item `item` is used up (Items_UseId).
 : item-use ( item -- )  drop s" item-use" stub-step ;
 \ 59 0D: Item `item` added to the inventory, with the pickup sound; bit 0x8000 marks the
@@ -660,7 +661,7 @@ USING: game-state events.core ;
 \ 21: The controlled character's current action (Fiona +0x1AD6B8, Hewie +0xF3798) is v.
 : control-action? ( v -- flag )  drop s" control-action?" stub-flag ;
 \ 22: The message window is closed and its chosen answer (+0x750) is v.
-: answer? ( v -- flag )  drop s" answer?" stub-flag ;
+: answer? ( v -- flag )  event-state ev.message sl@ 0< swap event-state ev.answer sl@ = and ;
 \ 23: Characters `a` and `b` (active) are within distance |d|; Fiona or Hewie to a stalker only
 \ while the stalker is present (+0x1544).
 : chars-within? ( a b d -- flag )  drop drop drop s" chars-within?" stub-flag ;

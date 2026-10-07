@@ -59,6 +59,7 @@ typedef struct EventState {
     int32_t room_frames;            /* phase 1 calls in this room (+0x704) */
     int32_t result;                 /* the event result (+0x934) */
     int32_t message;                /* the message window's text (-1: closed) (+0x708 task) */
+    int32_t answer;                 /* the window's chosen option (+0x750) */
     int32_t message_owner;          /* the character whose script opened it (+0x80C), -1 none */
     int32_t slot;                   /* the action slot running now (-1: a phase script) */
     int32_t self_id;                /* the running context's id (+0x13; 0xFF in a phase) */

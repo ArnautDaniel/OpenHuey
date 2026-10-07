@@ -179,6 +179,8 @@ defer event-area-in? ( area -- flag ) ( F: x y z -- )
 defer event-area-cross ( area -- n ) ( F: px py pz x y z -- )
 :noname drop fdrop fdrop fdrop fdrop fdrop fdrop 0 ; is event-area-cross
 defer event-exit-area ( exit -- area ) :noname drop $FFFF ; is event-exit-area
+\ the message window's parameter `slot` shows system message $100 + id's first line
+defer message-parameter ( slot id -- ) ' 2drop is message-parameter
 
 \ ---- characters' places and areas ----------------------------------------------------------
 : char-pos ( cs -- ) ( F: -- x y z )  character char.pos dup sf@ dup 4 + sf@ 8 + sf@ ;

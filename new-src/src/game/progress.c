@@ -51,6 +51,7 @@ void bind_state(Forth *f) {
     field(f, "ev.result", offsetof(EventState, result));
     field(f, "ev.message", offsetof(EventState, message));
     field(f, "ev.message-owner", offsetof(EventState, message_owner));
+    field(f, "ev.answer", offsetof(EventState, answer));
     field(f, "ev.slot", offsetof(EventState, slot));
     field(f, "ev.self-id", offsetof(EventState, self_id));
     field(f, "ev.self-frames", offsetof(EventState, self_frames));

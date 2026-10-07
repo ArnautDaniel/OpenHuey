@@ -18,6 +18,8 @@ typedef struct Engine {
     Forth *forth;
     Input input;           /* this frame's input, as the game sees it (none while the console is open) */
     bool held[SDL_SCANCODE_COUNT];   /* keys held down by scripts (`key-hold`: demos, tests) */
+    bool held_last[SDL_SCANCODE_COUNT];     /* (as they were at the last tick's start) */
+    bool held_pressed[SDL_SCANCODE_COUNT];  /* went down since: they count as pressed this tick */
     Camera camera;
     Room room;
     World world;           /* how the rooms connect */
