@@ -2966,7 +2966,7 @@ void Event_RunScript(VObject *ev) {
         }
         EV_WAIT(ev) = 1;
         break;
-    case 0x07:   /* walk to triangle */
+    case 0x07:   /* play animation pc[1..2] (character move 7) */
         AT(c, 0x104, u32) = be16(pc + 1);
         CHAR_ACT(c, 7);
         break;
@@ -3075,7 +3075,7 @@ void Event_RunScript(VObject *ev) {
             AT(c, 0x1506, u16) = 0;
         }
         break;
-    case 0x2B:   /* follow character pc[1] (0xFF: none) */
+    case 0x2B:   /* look at character pc[1] (move 12; 0xFF: stop) */
         if (pc[1] == 0xFF) {
             AT(c, 0x100, s32) = 0xFF;
             CHAR_ACT(c, 0xC);
@@ -3088,7 +3088,7 @@ void Event_RunScript(VObject *ev) {
             }
         }
         break;
-    case 0xAB:   /* go to (x, y, z) */
+    case 0xAB:   /* look at (x, y, z) (move 13) */
         pos[0] = (f32)be32(pc + 1) / 1000.0f;
         pos[1] = (f32)be32(PC(ev) + 5) / 1000.0f;
         pos[3] = 1.0f;
@@ -3836,7 +3836,7 @@ void EventCmd_Run(VObject *ev) {
     case 0x68:
         cmd_sound(ev, p, pc);
         break;
-    case 0x71:   /* screen fade: pc[1] 0 out (1, 1), else pc[2]; over be16 pc[3..4] */
+    case 0x71:   /* pad rumble (gRumble): pc[1] 0 the small motor (1, 1), else strength pc[2]; for be16 pc[3..4] frames */
         if (pc[1] == 0) {
             VCALL(gRumble, 0x14, void (*)(VObject *, s32, s32, u32))(gRumble, 1, 1, be16(pc + 3));
         } else {
