@@ -47,6 +47,7 @@ Keys (all defined in `scripts/`, not in C):
 | Q E, arrows, right mouse | free camera: down / up, look around |
 | Space | at an exit: go through to the next room |
 | Enter | look / act where the room offers it (its scripts' requests); turn a message's page |
+| I | the inventory: what Fiona carries (the game stands still meanwhile) |
 | F1 | graphics: presets (as on the PS2 / enhanced / cinematic) and every setting; arrows to change |
 | [ ] | the room's own camera setups |
 | PageUp / PageDown | the next / previous room |

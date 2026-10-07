@@ -183,7 +183,7 @@ variable started   \ (the camera director set up for play)
     8 0 do  i dup exit-open if  -90e  else  0e  then  over door-swing  loop  drop ;
 
 : events-tick
-    playing @ 0= if  exit  then
+    playing @ 0= paused @ or if  exit  then
     cast  places
     event-state ev.room sl@ room-id <> if
         started @ 0= if  start-play  -1 started !  then
@@ -267,6 +267,39 @@ variable sw  variable sh  variable lh
     last-page? 0= if  s" (Enter)"  sw @ 8 * 10 /  sh @ 9 * 10 /  draw-text  then ;
 ' window-keys on-tick
 ' window on-draw
+
+\ ---- the inventory (I): what she carries - the items with their names (system message $8100 +
+\ id) and counts, and how many files; the game stands still while it is up ----
+variable inv-open
+: inventory-keys ( -- )
+    playing @ 0= title @ or if  exit  then
+    key: I key-pressed? if
+        inv-open @ 0= dup inv-open !  dup paused !  pause!
+    then ;
+' inventory-keys on-tick
+: item-name ( id -- addr len )   \ (its first line)
+    $8100 + message-layout 0> if  0 message-lines 0> if  0 0 message-line exit  then  then  s" ?" ;
+variable iy
+: inventory ( -- )
+    inv-open @ 0= if  exit  then
+    screen-size sh ! sw !  2 pen-scale  char-size nip 5 * 4 / lh !
+    $101018E0 pen-color  sw @ 8 /  sh @ 8 /  sw @ 3 * 4 /  sh @ 3 * 4 /  draw-rect
+    $D8D0C8FF pen-color  s" ITEMS"  sw @ 8 / 16 +  sh @ 8 / 12 +  draw-text
+    sh @ 8 / 12 + lh @ 2* + iy !
+    $100 0 do
+        i items-of ?dup if
+            iy @ sh @ 7 * 8 / < if
+                $FFFFFFFF pen-color  i item-name  sw @ 8 / 24 +  iy @  draw-text
+                s" x" sw @ 5 * 8 / iy @ draw-text  n>s  sw @ 5 * 8 / char-size drop + iy @ draw-text
+                lh @ iy +!
+            then
+        then
+    loop
+    0  128 0 do  progress pr.files i 2* + w@ 0<> -  loop
+    $B0A890FF pen-color  s" files: " sw @ 8 / 24 +  sh @ 7 * 8 / lh @ -  draw-text
+    n>s  sw @ 8 / 24 + 7 char-size drop * +  sh @ 7 * 8 / lh @ -  draw-text
+    s" (I: back)"  sw @ 5 * 8 /  sh @ 7 * 8 / lh @ -  draw-text ;
+' inventory on-draw
 
 \ the prepared message's page (0x62 12 turns them during a scene: its subtitles), along the bottom
 : subtitles ( -- )

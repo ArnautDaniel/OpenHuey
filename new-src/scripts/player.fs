@@ -116,7 +116,7 @@ variable best  fvariable best-d
 
 \ what moves the camera while playing (events/play.fs gives it to the game's camera director)
 defer steer-camera  ' follow is steer-camera
-: play  playing @ if  0 scripted? 0= if  walk  then  steer-camera  then ;
+: play  playing @ paused @ 0= and if  0 scripted? 0= if  walk  then  steer-camera  then ;
 ' play on-tick
 
 \ ---- switching ----

@@ -48,6 +48,7 @@ typedef struct Engine {
         } cam[2];
     } extra;
     long ticks;
+    int paused;            /* a menu is up: actors and the room stand still (`pause!`) */
     char hud[128];         /* a line of text at the bottom of the screen ("" none) */
     char screenshot[256];  /* a screenshot to save after this frame ("" none) */
     int width, height;     /* the window, in pixels */

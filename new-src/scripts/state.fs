@@ -4,6 +4,7 @@ IN: state
 
 variable playing  0 playing !
 variable menu-open  0 menu-open !
+variable paused  0 paused !       \ a menu stops the game (the inventory): nothing moves
 variable title  0 title !        \ the title screen is up (title.fs): the other keys keep quiet
 defer place-player
 \ the exit of this room the player came in by (-1: none - a jump, or the start)
