@@ -355,7 +355,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 23 | 7 | `chars-within?` | `a:chr` `b:chr` `d:s32` | Characters `a` and `b` (active) are within distance \|d\|; Fiona or Hewie to a stalker only while the stalker is present (+0x1544). |
 | 24 | 5 | `hewie-action?` | `v:s32` | Hewie (in the scene)'s current action (+0xF3564) is v. |
 | 25 | 2 | `camera-mode?` | `v:s8` | The camera director's +0x24 is v. |
-| 26 | 5 | `fiona-action?` | `v:s32` | The action Fiona last started (+0x1AD6BC, Fiona_MarkActionStart; -1 none) is v. |
+| 26 | 5 | `fiona-started?` | `v:s32` | The action Fiona last started (+0x1AD6BC, Fiona_MarkActionStart; -1 none) is v. |
 | 27 | 7 | `char-faces-xz?` | `who:chr` `x:s16` `z:s16` `within:u8` | Character `who` (in this room) faces (x, z), within `within` degrees. |
 | 28 | 4 | `obstacle-on?` | `i:u8` `tri:u16` | Pushable obstacle `i` stands on triangle `tri` (Obstacles_IsSquare). |
 | 29 | 2 | `ebit?` | `n:u8` | Event bit n is set (commands 0x57 / 0x58). |

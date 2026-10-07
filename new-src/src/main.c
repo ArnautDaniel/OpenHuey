@@ -212,7 +212,7 @@ int main(int argc, char **argv) {
     e->room.id = -1;
     e->camera = (Camera){vec3(0, 0, 0), 0, 0, 1.0f, 5.0f, 20000.0f, 1.0f};
     load_world(&e->world, opt.data);
-    e->forth = forth_new(4 << 20);
+    e->forth = forth_new(16 << 20);   /* (the converted event scripts take most) */
     forth_set_output(e->forth, console_output, &e->console);
     bind_engine(e->forth);
     if (!load_scripts(e->forth)) {

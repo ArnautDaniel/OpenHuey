@@ -134,6 +134,10 @@ runs: redefine a word and the next tick uses it (words already compiled into oth
 old one; hooks are looked up by execution token, so re-register with `on-tick` after a change,
 or go through a `defer`).
 
+The rooms' event scripts are `scripts/events/` (converted from the game's bytecode: see
+`docs/events-plan.md`): `events.words` (the command and condition words, stubs for now) and one
+vocabulary per map of the castle, `events.map0`..`map4`, `events.other`, `events.builtin`.
+
 ## Tests
 
 `tests/test_*.fs` are vocabularies that say `USING: tester ;` (`T{ 1 2 + -> 3 }T`); `ctest` runs each.

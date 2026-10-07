@@ -66,3 +66,34 @@ game's event bytecode.
 9. Match the original's behaviour and timing as closely as possible.
 Also: the Forth may grow lists and higher-order words (map, reduce, ...) where they make the
 scripts simpler.
+
+## Status (2026-10-06): converted
+
+`tools/events2forth.py` has run: every script of the game (2268: each room's entering, phase,
+character-entering and action scripts, and the shared ones) is Forth in `scripts/events/`, in
+one file per map Fiona finds (the game's own `kMapRooms`: `map0`..`map4`, `other` for rooms on
+no map, `builtin` for the shared scripts). Names and operands come from the decomp's opcode
+table (`tools/event_opcodes.py`, `docs/event_opcodes.md`).
+
+- `events/words.fs` holds one word per command and condition, with its description. They are
+  **stubs** for now (commands drop their operands, conditions answer `stub-flag`); writing them
+  for real, in Forth over C words, is the next step. The room tables (`room-scripts`,
+  `action-scripts`, `builtin-scripts`) are real: each file registers its scripts at the end of
+  each room.
+- Each room's own C commands / conditions are `roomXX.cmdNN` / `roomXX.condNN?` stubs at the top
+  of the room, with the C function's description, to be written in Forth.
+- Control flow: F9 became `else` chains (`a if X else b if Y else Z then then`); the loop point
+  became `begin ... while ... repeat` (883), `begin ... until` (20), `begin ... again` (115), or
+  a loop that leaves a flag, `true` out / `false` round (229). Eight action scripts repeat 7-18
+  lines in both branches of an if (where an F9 or a loop back leaves from deep inside).
+- Going to another script is `['] target goto`; nine scripts reached in a cycle are `defer`red.
+  The shared scripts reach room actions by id (`goto-action`, `call-action`).
+- Oddities of the original, kept and commented: room 5A's action 2 has an else outside any
+  block (the original never runs it); room 34 calls action 9, which it doesn't have (the
+  original reads past its table).
+- `tests/test_events.fs` loads everything and runs every script as a task three times with the
+  stub conditions answering at random: each leaves its stacks as it found them.
+- The dictionary is 16 MB (the scripts take 2.7 MB).
+
+Next: the words, a script runner (a task per action slot, `goto` restarting it, the phases
+called from the room loop), then the room words.

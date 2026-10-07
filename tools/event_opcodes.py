@@ -415,7 +415,7 @@ COND = {
            'while the stalker is present (+0x1544).'),
     0x24: ('hewie-action?', 'v:s32', 'Hewie (in the scene)\'s current action (+0xF3564) is v.'),
     0x25: ('camera-mode?', 'v:s8', 'The camera director\'s +0x24 is v.'),
-    0x26: ('fiona-action?', 'v:s32', 'The action Fiona last started (+0x1AD6BC, Fiona_MarkActionStart; -1 none) is v.'),
+    0x26: ('fiona-started?', 'v:s32', 'The action Fiona last started (+0x1AD6BC, Fiona_MarkActionStart; -1 none) is v.'),
     0x27: ('char-faces-xz?', 'who:chr x:s16 z:s16 within:u8', 'Character `who` (in this room) faces (x, z), within `within` degrees.'),
     0x28: ('obstacle-on?', 'i:u8 tri:u16', 'Pushable obstacle `i` stands on triangle `tri` (Obstacles_IsSquare).'),
     0x29: ('ebit?', 'n:u8', 'Event bit n is set (commands 0x57 / 0x58).'),
@@ -572,10 +572,10 @@ def check():
         if n is not None and op != 0x11 and n > want:
             print('cond %02X %s: operands take %d bytes, the condition has %d' % (op, name, n, want))
             bad += 1
-    names = [v[0] for v in CMD.values()]
+    names = [v[0] for table in (CMD, COND, FLAGS, PLACED) for v in table.values()]
     for n in set(names):
         if names.count(n) > 1:
-            print('command name used twice: %s' % n)
+            print('name used twice: %s' % n)
             bad += 1
     print('%d commands, %d conditions, %d flag sub-commands, %d placed-object sub-commands described'
           % (len(CMD), len(COND), len(FLAGS), len(PLACED)))

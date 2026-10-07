@@ -28,7 +28,7 @@ static void repl(Forth *f) {
 }
 
 int main(int argc, char **argv) {
-    Forth *f = forth_new(1 << 20);
+    Forth *f = forth_new(16 << 20);
     const char *dir = getenv("HG2_SCRIPTS") != NULL ? getenv("HG2_SCRIPTS") : HG2_SCRIPT_DIR;
     char prelude[1024];
     int i, interactive = argc == 1, failed = 0;
