@@ -1149,6 +1149,12 @@ PRIM(p_motion_entry) {   /* ( id motion-id -- blend pose flags ) its model's tab
     PUSH(pose);
     PUSH(flags);
 }
+PRIM(p_motion_index) {   /* ( id motion-id -- i | -1 ) its place in the model's motion list (Motion_AnimIndex) */
+    Cell mid = POP();
+    Actor *a = actor_arg(f, POP());
+
+    PUSH(a != NULL ? model_motion_pos(&a->model, model_motion_find(&a->model, (int)mid)) : -1);
+}
 PRIM(p_motion_table) {   /* ( id vaddr -- ) its motion table: in the executable at vaddr, an entry a motion */
     Cell va = POP();
     Actor *a = actor_arg(f, POP());
@@ -1616,7 +1622,7 @@ void bind_engine(Forth *f) {
         {"message-options", p_message_options}, {"message-option", p_message_option},
         {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor", p_actor},
-        {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
+        {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
         {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
         {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},

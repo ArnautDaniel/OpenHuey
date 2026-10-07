@@ -8,6 +8,8 @@ USING: engine game-state events.core events.words chars relations fiona.doors pu
 \ ---- his floor ----
 : tri-flags ( tri -- flags )  dup 0< if  drop 0 exit  then  nav-flags ;
 : p-mask ( -- mask )  me c-mask ;
+\ NavMesh +0x10 == 3: the point lies on the triangle (any floor under it: that one)
+: on-tri? ( tri v -- flag )  0 v-tri-in = ;
 : tri-blocked? ( tri -- flag )  tri-flags p-mask and 0<> ;          \ Npc_TriBlocked
 \ Npc_TriIfStandable: the triangle, or (blocked for him) the nearest he may stand on near it
 \ (the original's planner kind 7: cheapest first within 30 of it - here the nearest by edges)
@@ -81,7 +83,7 @@ create plt-v 12 allot
 create dt-v 12 allot
 : distance-to ( cs -- ) ( F: -- d )
     dup c-room p-room <> if  drop -1e exit  then
-    dup c-tri over c-pos v-tri-in over c-tri <> if                \ (its place off its triangle:)
+    dup c-tri over c-pos on-tri? 0= if                            \ (its place off its triangle:)
         dup c-tri tri-center dt-v vec!
         dup c-tri  me dt-v p-mask c-tri-to = if  me swap c-pos c-dist-to exit  then
     then
@@ -99,7 +101,7 @@ create dt-v 12 allot
 create plc-v 12 allot
 : path-length-char ( cs -- flag )
     dup 0< if  drop p-target  then
-    dup c-tri over c-pos v-tri-in over c-tri <> if  dup c-tri tri-center plc-v vec!
+    dup c-tri over c-pos on-tri? 0= if  dup c-tri tri-center plc-v vec!
     else  plc-v over c-pos vec-copy  then
     dup c-tri plc-v plc-v nearest-walkable  plc-v p-mask path-length  d-path!
     dup her = if  d-path d-fiona!  else  dog = if  d-path d-hewie!  then  then
@@ -131,8 +133,8 @@ fvariable cs-half  fvariable cs-range  fvariable cs-head
 create sc-at 12 allot  create sc-me 12 allot  create sc-off 12 allot  create sc-pt 12 allot
 fvariable sc-ang
 : sees-char? ( cs -- flag )
-    dup c-tri over c-pos v-tri-in over c-tri <> if  dup c-tri tri-center sc-at vec!  else  sc-at over c-pos vec-copy  then
-    p-tri p-pos v-tri-in p-tri <> if  p-tri tri-center sc-me vec!  else  sc-me p-pos vec-copy  then
+    dup c-tri over c-pos on-tri? 0= if  dup c-tri tri-center sc-at vec!  else  sc-at over c-pos vec-copy  then
+    p-tri p-pos on-tri? 0= if  p-tri tri-center sc-me vec!  else  sc-me p-pos vec-copy  then
     p-pos over c-pos  $1574 pu-f@ $1580 pu-f@ $1584 pu-f@ can-see? 0= if  drop false exit  then
     p-tri sc-me sc-at sight-mask v-walk over c-tri = if  drop true exit  then
     \ (round it: points its radius off the line to it, every 22.5 degrees)

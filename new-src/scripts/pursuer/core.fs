@@ -37,7 +37,7 @@ variable p-state    variable p-behave   variable p-move
 : run ( slot -- )  @ ?dup if  execute  then ;   \ ptmf_test / ptmf_scall
 : behave ( xt -- )  p-state ! ;                 \ Actor_SetState
 : behaviour! ( xt -- )  p-behave !  -1 $1758 pu-l! ;   \ ptmf_set +0x174C, +0x1758 -1
-: move! ( xt -- )  p-move ! ;                   \ Pursuer_SetMove (+0x17A0)
+: set-move ( xt -- )  p-move ! ;                   \ Pursuer_SetMove (+0x17A0)
 
 \ ---- his Character fields ----
 : p-char ( -- addr )  me character ;
@@ -118,14 +118,14 @@ variable ps-a  variable ps-b  variable ps-f
 \ ---- the actions (vtable +0x114, Pursuer_StartAction: kPursuerSteps or his own +0x1714) ----
 \ an action: its state, id (+0x175C), move mode and sub, sense mode (+0x15C0), look (+0x1710)
 6 cells constant /action
-create steps  $2A /action * allot   \ (pursuer.steps fills it)
+create actions  $2A /action * allot   \ (pursuer.steps fills it)
 variable own-steps   \ +0x1714: his own table (0x1000 + i)
 : action# ( kind -- addr )
-    dup $1000 and if  $FFF and /action * own-steps @ +  else  /action * steps +  then ;
-: start-action ( kind -- )
+    dup $1000 and if  $FFF and /action * own-steps @ +  else  /action * actions +  then ;
+: p-start-action ( kind -- )
     action# >r  r@ @ behave  r@ cell+ @ $175C pu-l!  r@ 2 cells + @ p-mode!  r@ 3 cells + @ p-sub!
     r@ 4 cells + @ $15C0 pu-c!  r> 5 cells + @ $1710 pu-c!  1 $15A0 pu-c! ;
-: start-action-next ( kind -- )   \ Pursuer_StartActionNext: its id, mode and sub only
+: p-p-start-action-next ( kind -- )   \ Pursuer_StartActionNext: its id, mode and sub only
     dup $1758 pu-l!  action# >r  r@ cell+ @ $175C pu-l!  r@ 2 cells + @ p-mode!  r> 3 cells + @ p-sub! ;
 
 
@@ -134,12 +134,15 @@ variable own-steps   \ +0x1714: his own table (0x1000 + i)
 : step-next? ( -- flag )  $16F0 pu-c@ 1 = ;   : step-next! ( n -- )  $16F0 pu-c! ;   \ PURSUER_STEP_NEXT
 
 \ ---- what isn't ported yet: says so once on the console ----
-create told 64 cells allot  told 64 cells 0 fill  variable ntold
+create told 64 32 * allot  variable ntold   \ (the names told: 31 characters each)
+: told# ( i -- addr )  32 * told + ;
+: told$ ( i -- addr len )  told# dup 1+ swap c@ ;
 : (not-yet) ( addr len -- )
-    ntold @ 0 ?do  i cells told + @ count 2over compare 0= if  2drop unloop exit  then  loop
-    ntold @ 64 < if  here >r  dup c, here over allot swap move  r> ntold @ cells told + !  1 ntold +!
-    else  2drop exit  then
-    ." pursuer: not yet " ntold @ 1- cells told + @ count type cr ;
+    31 min
+    ntold @ 0 ?do  i told$ 2over compare 0= if  2drop unloop exit  then  loop
+    ntold @ 64 >= if  2drop exit  then
+    dup ntold @ told# c!  ntold @ told# 1+ swap move  1 ntold +!
+    ." pursuer: not yet " ntold @ 1- told$ type cr ;
 : not-yet" ( "text" -- )  postpone s" postpone (not-yet) ; immediate
 
 \ ---- the game's own tables (his pointer fields hold their addresses in the executable) ----
