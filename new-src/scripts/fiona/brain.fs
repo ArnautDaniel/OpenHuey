@@ -51,6 +51,11 @@ defer f-noise ( loud room tri -- )   :noname drop 2drop ; is f-noise
             endcase
         else f-mode 3 = if  fear-down  then then
     then
+    f-freeze-t @ 0> if   \ (the blow's hold: Motion_Unfreeze)
+        -1 f-freeze-t +!  f-freeze-t @ 0<= if
+            f-actor dup 0< 0= if  actor act.mflags dup l@ $40 invert and swap l!  else  drop  then
+        then
+    then
     f-door-t @ if  -1 f-door-t +!  then
     f-busy-t @ if  -1 f-busy-t +!  then
     f-mode if  0 f-run-t !  then ;

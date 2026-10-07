@@ -100,6 +100,7 @@ variable h-cmd-tri  vector h-cmd-pos  fvariable h-cmd-yaw   \ the spot her 0x23 
 variable h-to-tri  variable h-to-anim  fvariable h-to-yaw  vector h-to
 variable h-pet  variable h-1d                     \ +0xF36C0 strokes, +0xF36A2 rolls
 variable h-hurt-t                                 \ +0xF35AC: frames to his next health point
+variable h-by  $FF h-by !  variable h-how          \ +0x100 / +0x104: who struck him last ($FF: a door), and how
 
 : h-reset-fields ( -- )
     0 h-action !  0 h-last-action !  0 h-next !  0 h-wait !  -1 h-target !  -1 h-target2 !

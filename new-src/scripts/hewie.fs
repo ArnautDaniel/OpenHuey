@@ -79,6 +79,7 @@ variable room-side  -1 room-side !   \ +0xF3668: which side of a divided room he
     hewie @ 0< if  spawn-hewie  hewie @ 0< if  exit  then  then
     hewie-ready @ 0= if
         hewie @ dup $3D5F90 motion-table  1 character char.actor l!  -1 hewie-ready !
+        1 2.5e 5e c-size!          \ (Hewie_Reset: radius 2.5, height 5)
         -1 1 cells own-moves + !   \ (his moves are his own: Hewie_Requests)
     then
     played-room her character char.room l!

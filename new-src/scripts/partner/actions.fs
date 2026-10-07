@@ -64,6 +64,31 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
     dup c-pos h-pos vec-dist-xz 6e f> if  drop 0 0 want exit  then
     back-off ;
 
+\ ---- struck (Hewie_AfterYelp): down, he lies there (action 0x52, the count of it: progress
+\ +0xFBA); else struck by Fiona with her in his room, he cowers (9 the first time, 0xB after);
+\ else back to normal. (His feeling for a stalker that struck him: with them.) ----
+variable downs   \ (progress +0xFBA, to 9999)
+: after-yelp ( -- )
+    h-cond 2 = if  downs @ 1+ 9999 min downs !  $52 0 want exit  then
+    0 h-2d !
+    hewie-control @ 0=  h-by @ 0= and  her c-room h-room = and  h-hits @ 0> and if
+        h-hits @ 1 = if  9  else  $B  then  0 want exit
+    then
+    to-default ;
+: st-on-event-20 ( -- )  anim-done? if  0 h-2b !  after-yelp  then ;   \ Hewie_StateOnEvent20
+\ Hewie_StateMoveAlong: pushed along heading h-heading by h-turn, less h-f36cc a frame
+: st-move-along ( -- )
+    h-heading f@ fdup fsin h-turn f@ f*  fswap fcos h-turn f@ f*  him c-move
+    1 h-no-root !
+    h-turn f@ h-f36cc f@ f- fdup h-turn f!  0e f> if  exit  then
+    h-action @ $6C <> if  ['] st-on-event-20 behave exit  then
+    0 h-2b !  0 h-2d !  h-hp 0= if  1 him character char.hp l!  1 him character char.cond l!  then
+    to-default ;   \ (0x6C's way out through the door: with the doors)
+\ face(): toward the one that struck him (its heading; a door: away from it - later)
+: face-striker ( -- )
+    h-by @ $FF <> if  0 look!  h-by @ dup h-target !  c-yaw h-heading f!
+    else  4 look!  h-yaw h-heading f!  then ;
+
 \ ---- Hewie_SetAction ----
 : (set-action) ( act -- )
     case
@@ -190,6 +215,10 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
     $72 of  her sees? if  her h-target !  path-end  0 mode!  0 h-cmd !  ['] st-keep-behind behave
             else  0 0 want  then  endof
     $73 of  0 mode!  0 h-cmd !  ['] st-anim-over behave  endof
+    $68 of  4 mode!  face-striker  0 h-cmd !  4e h-turn f!  0.5e h-f36cc f!  $1000 play  $66 make-sound
+            ['] st-move-along behave  endof
+    $69 of  4 mode!  face-striker  0 h-cmd !  1.5e h-turn f!  0.5e h-f36cc f!  $1000 play
+            h-how @ 1 = if  $65  else  $66  then  make-sound  ['] st-move-along behave  endof
     $74 of  0 mode!  0 h-cmd !  $2213 play  $66 make-sound  ['] st-22e8 behave  endof
     $76 of  0 mode!  0 h-cmd !  ['] st-play-anim behave  endof
     $77 of  6 mode!  8 h-cmd !  ['] st-nothing behave  endof

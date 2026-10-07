@@ -58,10 +58,12 @@ create asks 3 6 * cells allot
 : ask-reset ( k -- )  ask# 6 cells 0 fill ;
 : asks-reset ( -- )  3 0 do  i ask-reset  loop ;
 asks-reset
-\ a request from slot k: of the characters in `mask`, kind, a, b, f
+\ a request from slot k (Relation_Request): of the characters in `mask`, kind, a, b, f (who
+\ accepted the last one, +0xC, stays until the next resolve)
 : ask ( mask kind a b k -- ) ( F: f -- )
-    ask# >r  r@ 3 cells + !  r@ 2 cells + !  r@ cell+ !  r@ !  r@ 4 cells + sf!  0 r> 5 cells + ! ;
+    ask# >r  r@ 3 cells + !  r@ 2 cells + !  r@ cell+ !  r@ !  r> 4 cells + sf! ;
 : ask-accepted ( k -- mask )  ask# 5 cells + @ ;
+: asks-clear ( -- )  3 0 do  i ask# 5 cells 0 fill  loop ;   \ (the requests, not who took them)
 
 \ Character_Held: asked to react (4) or let go (5), or in a command
 : held? ( cs -- flag )
@@ -69,7 +71,11 @@ asks-reset
     dup req-of dup 4 = swap 5 = or if  drop true exit  then  linked? ;
 
 \ a character's answer to a request (its vtable +0x68: kind, the asker, b): each character's own
-defer accepts? ( cs kind asker b -- flag )   :noname 2drop 2drop false ; is accepts?
+\ (vtable +0x68: each slot's own word, set by its character's code; none: no)
+create accepters  ' false , ' false , ' false ,
+: accepts! ( xt cs -- )  cells accepters + ! ;
+:noname 2drop 2drop false ;  dup 0 accepts!  dup 1 accepts!  2 accepts!
+: accepts? ( cs kind asker b -- flag )  3 pick cells accepters + @ execute ;
 : in-play? ( cs -- flag )  dup c-ok? 0= if  drop false exit  then  character char.present sl@ 0<> ;
 variable no-hewie   \ (progress +0xC bit 0x2000: Hewie takes no requests)
 
@@ -129,7 +135,7 @@ variable rs-k  variable rs-r
 : rs-word ( i -- n )  cells rs-r @ + @ ;
 PRIVATE>
 : resolve ( -- )
-    3 0 do  $FF i owner!  loop  0 taken !
+    3 0 do  $FF i owner!  0 i ask# 5 cells + !  loop  0 taken !
     3 0 do  2 i -  dup in-play? over taken? 0= and if  false claim  else  drop  then  loop
     3 0 do  2 i -  dup in-play? over taken? 0= and if  true claim  else  drop  then  loop
     3 0 do
@@ -159,4 +165,4 @@ PRIVATE>
             i req-of 7 <> and if  0e  7 i ask# cell+ @ i 0 0 i req-set  then
         then
     loop
-    asks-reset ;
+    asks-clear ;

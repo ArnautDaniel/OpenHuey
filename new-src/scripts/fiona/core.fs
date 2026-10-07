@@ -42,6 +42,7 @@ variable f-recovery   \ +0x1AD5F8: frames still shaken (of 1800)
 variable f-panic-t    \ +0x1AD5E8: frames of the panic run left
 variable f-stumble-t  \ +0x1AD5EC
 variable f-door-t     \ +0x1AD5F0
+variable f-freeze-t   \ +0x14D0: frames held still by a blow (Motion_Freeze)
 fvariable f-stick-k   \ +0x1AD624: the root motion's share by the stick (eases off when released)
 fvariable f-blend-w   \ +0x1AD628: the walk's blend last set
 variable f-look-on    \ +0x1AD5FC: looking at a character / point
@@ -66,7 +67,7 @@ vector f-prev  variable f-prev-tri           \ +0x40 / +0x38: where she was as t
     0 f-act !  0 f-fear-bits !  0 f-turn-mode !  6 f-still !  0 f-lock !
     f-dir 12 0 fill  f-stick 12 0 fill  f-last 12 0 fill
     0 f-rest !  0 f-run-t !  0 f-busy-t !  1e f-tired-w f!  0e f-fear f!  0 f-recovery !
-    0 f-panic-t !  0 f-stumble-t !  0 f-door-t !  1e f-stick-k f!  0e f-blend-w f!
+    0 f-panic-t !  0 f-stumble-t !  0 f-door-t !  0 f-freeze-t !  1e f-stick-k f!  0e f-blend-w f!
     0 f-look-on !  -1 f-look-who !  0 f-look-hold !  -1 f-look-cmd !  -1 f-cmd !  -1 f-cmd-code !
     1 f-step-l !  1 f-step-r !  0 f-steps !  0 f-2a !  0 f-2b !  0 f-2d !  0 f-e1 !
     -1 f-target !  0 f-target-t ! ;

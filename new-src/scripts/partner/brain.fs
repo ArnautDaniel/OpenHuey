@@ -250,12 +250,48 @@ variable pk-roll  variable pk-sum  variable pk-favoured
                   endcase
               then  0 h-broke !  endof
     endcase ;
+\ ---- Hewie_TakeDamage (vtable +0x94): hard with him under control half as much again; down
+\ at 0 (never on the kind setting 2: he keeps 1) ----
+: take-damage ( n -- )
+    hewie-control @ progress pr.vars $27 + c@ 1 = and if  s>f 1.5e f* f>s  then
+    abs h-hp swap - 0 max hp!
+    h-hp 0= progress pr.vars $27 + c@ 2 = and if  1 hp!  then ;
+\ ---- Hewie_TakeBlow: a blow (his request block: [1] how, [2] by whom, [3] damage). Down, he
+\ only goes limp (0x74); held, only 0xB counts; double from Fiona. 1..4 he yelps (0x69; 3 also
+\ knocks him down): from Fiona he is scolded by it and, hit often, may sulk (mood 3). (5 a door
+\ and the others' grudges: with them.) False: not taken ----
+create sulk-chance  0 , 0 , 0 , 4 , 8 , 12 , 16 ,   \ (D_003B127E: by how often she hit him, of 16)
+: h-sub ( -- n )  him character char.sub sl@ ;
+: take-blow ( -- taken? )
+    1 req-w >r
+    h-cond 2 = r@ 6 <> and if  r> drop  h-action @ $74 <> if  $74 0 want  then  true exit  then
+    h-mode 4 = r@ $B <> and if  r> drop false exit  then
+    r@ $B <> h-mode 8 = and h-sub $18 - 2 u< and if  r> drop false exit  then
+    r@ 5 = if  r> drop true exit  then   \ (a door: with the doors)
+    h-mood @ 3 = if  2 req-w h-call !  then
+    3 req-w  2 req-w 0= if  2*  then  take-damage
+    h-hurt-t @ 0<= if  300 h-hurt-t !  then
+    0 h-2b !
+    r@ 1 5 within if
+        r@ 3 = if  2 cond!  then
+        r@ h-how !  2 req-w h-by !
+        h-by @ $FF <> if
+            h-by @ if  0 h-hits !
+            else
+                h-action @ h-did-was !  0 3 praise-scold drop
+                h-hits @ 1+ 6 min h-hits !  300 h-hit-t !
+                16 roll h-hits @ cells sulk-chance + @ < if  $FF h-call !  3 -1 set-mode  then
+            then
+        then
+        $69 0 want
+    then
+    r> drop true ;
 : state-block ( -- )
     -1 h-cmd-was !
     h-room played-room <> if  0 req!  exit  then
     req@ 7 = if  exit  then
     req@ 5 = if  path-end  0 0 want  0 req!  exit  then
-    req@ 4 = if  0 req!  then   \ (a blow: with the stalkers)
+    req@ 4 = if  take-blow  0 req!  if  exit  then  then
     req@ 12 = req-arg@ 6 u< and if  req-arg@ her-call  0 req!  then
     req@ 11 = if
         req-arg@ case  0 of  $79 0 want  endof  1 of  $7A 0 want  endof  2 of  $84 0 want  endof  endcase
@@ -633,3 +669,32 @@ variable was-busy
     her with? 0= h-busy? or h-mode 0<> or h-mood @ 3 = or if  false exit  then
     h-cmd @ 0= h-cmd @ $80000000 and or if  false exit  then
     req@ 0= ;
+
+\ ---- Hewie_CanInteract (his vtable +0x68): whether he takes a request of `kind` from `asker`.
+\ Standing idle facing it (within 3pi/8 to its left - the original's unsigned test), he may
+\ dare to dodge kinds 1..4 instead (Hewie_Dares: from trust 2, a roll of 16 under his trust + 1
+\ + his nerve with that stalker; h-scene-req: action 0x79) ----
+: nerve ( cs -- n )
+    character char.id sl@ case
+        2 of 0 endof  6 of 0 endof  7 of 0 endof  27 of 0 endof
+        3 of 1 endof  34 of 1 endof  35 of 1 endof  36 of 1 endof
+        4 of 3 endof  23 of 3 endof  37 of 3 endof
+        10 of 2 endof  11 of 2 endof  12 of 2 endof  39 of 2 endof
+        >r -1 r>
+    endcase  dup 0< if  drop 0 exit  then  cells h-dare + @ 5 / 8 min ;
+: dares? ( cs -- flag )
+    h-trust @ 2 < over c-active? 0= or if  drop false exit  then
+    nerve h-trust @ + 1+  16 roll swap < ;
+:noname ( cs kind asker b -- flag )
+    >r >r nip r> r>                                     ( kind asker b )
+    h-mode 4 = 2 pick $B <> and if  drop 2drop false exit  then
+    h-mode 8 = h-sub $18 - 2 u< and h-action @ $76 = or if  drop 2drop false exit  then
+    2 pick 5 <> h-action @ $65 = and if  drop 2drop false exit  then
+    $1D state-flag? 0= h-mode 0= and  2 pick 1 5 within and  h-cond 2 <> and  h-action @ $79 <> and if
+        over c-ok? if
+            him 2 pick c-pos c-heading-to h-yaw f- angle-wrap 1.1780972e f<
+            if  over dares? if  1 h-scene-req !  drop 2drop false exit  then  then
+        then
+    then
+    rot 5 <> if  2drop true exit  then
+    nip door-animating? 0<> ;  him relations:accepts!

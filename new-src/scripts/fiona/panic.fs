@@ -234,11 +234,17 @@ create pc-at 12 allot
     false ; is panic-control
 
 \ ---- turning to flee (R1: request 0xB 0x22) ----
-defer slam-door ( to? -- slammed? )  :noname drop false ; is slam-door   \ (Fiona_SlamDoor: with the stalkers)
+\ Fiona_SlamDoor: run through (and slam) a door toward `to` (`ahead`: facing her way)
+defer slam-door ( to ahead -- slammed? )  :noname 2drop false ; is slam-door   \ (with the stalkers)
+\ the point `d` ahead of her (behind: negative)
+create ahead-at 12 allot
+: at-ahead ( F: d -- addr )
+    0e fswap f-yaw rotate-by
+    f-pos 8 + sf@ f+ ahead-at 8 + sf!  f-pos sf@ f+ ahead-at sf!  f-pos 4 + sf@ ahead-at 4 + sf!  ahead-at ;
 : st-flee-turn ( -- )   \ Fiona_StateFleeTurn (0x403)
     f-end? if  9 hewie-react  to-idle exit  then
     f-events 2 and if  0 f-mode!  0 f-2d !  $26 pvar@ 8 <> if  10e add-fear  then  then
-    f-events $20 and if  0 slam-door drop  then
+    f-events $20 and if  me c-radius fnegate at-ahead 0 slam-door drop  then
     f-heading f@ 12e deg>rad f-turn-toward fdrop
     root@ rm-x f@ rm-z f@ f-heading f@ rotate-by f-move ;
 : st-flee-start ( -- )   \ Fiona_StateFleeStart
