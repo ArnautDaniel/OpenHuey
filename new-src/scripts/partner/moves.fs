@@ -16,8 +16,8 @@ fvariable rm-turn  fvariable rm-x  fvariable rm-y  fvariable rm-z
 : slide-root ( -- )  root@  him rm-x f@ rm-z f@ c-move-local  1 h-no-root ! ;
 \ where his head is (bone 0x1F as last drawn; not drawn: 5 ahead of him)
 : head-at ( v -- )
-    h-actor dup 0< if  drop  dup h-pos h-yaw 5e vec-ahead exit  then
-    dup actor act.visible l@ 0= if  drop  dup h-pos h-yaw 5e vec-ahead exit  then
+    h-actor dup 0< if  drop  h-pos h-yaw 5e vec-ahead exit  then
+    dup actor act.visible l@ 0= if  drop  h-pos h-yaw 5e vec-ahead exit  then
     $1F bone-pos vec! ;
 \ his stride this frame: the root motion's forward step
 : stride-len ( F: -- s )  root@ rm-z f@ ;

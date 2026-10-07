@@ -175,6 +175,8 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
     $6F of  0 h-cmd !  ['] st-run-to-fiona behave  endof
     $70 of  30 h-t1 !  0 h-t2 !  0 mode!  4 look!  0 h-cmd !  ['] st-run behave  endof
     $71 of  0 mode!  4 look!  $400 h-cmd !  ['] st-22b8 behave  endof
+    $72 of  her sees? if  her h-target !  path-end  0 mode!  0 h-cmd !  ['] st-keep-behind behave
+            else  0 0 want  then  endof
     $73 of  0 mode!  0 h-cmd !  ['] st-anim-over behave  endof
     $74 of  0 mode!  0 h-cmd !  $2213 play  $66 make-sound  ['] st-22e8 behave  endof
     $76 of  0 mode!  0 h-cmd !  ['] st-play-anim behave  endof

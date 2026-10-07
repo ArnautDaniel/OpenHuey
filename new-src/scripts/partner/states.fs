@@ -156,7 +156,7 @@ create tt-at 12 allot
 : st-1d98 ( -- )
     h-room played-room <> if  1 h-pending !  exit  then
     anim-group dup 10 = over 9 = or swap 8 = or if
-        stride-len fdup h-yaw fswap free-ahead f< settled? and if  -1 stand-anim  then
+        stride-len fdup h-yaw fswap free-ahead f> settled? and if  -1 stand-anim  then
     then
     4 step-to-pose 0= if  4 keep-pose  1 h-pending !  then ;
 \ Hewie_State1DC8: by her (low) while she is here
@@ -702,3 +702,51 @@ create lp-dir 12 allot
     then
     5 step-to-pose 0= if  $202 play-if-not  then
     stride 0= if  8 keep-pose  then ;
+
+\ ---- behind Fiona (action 0x72, the scripts' hewie-face): to the place behind her facing her way
+\ (h-to-yaw), then settled there exactly (Hewie_StateKeepBehind / BackToNormal / BehindFiona /
+\ ByFiona / PlayToEnd). (The original plays the event motion 0x8000 while he settles; without
+\ one he takes 10 frames.) ----
+create kb-at 12 allot  variable kb-tri  fvariable kb-step  fvariable kb-turn
+: her-free? ( -- flag )  her with?  her character char.scripted sl@ 0= and ;
+\ the place behind her: meet-offsets kind 0 in her frame by h-to-yaw (her own place when that
+\ isn't open floor)
+: behind-spot ( -- )
+    meet-offsets f@  meet-offsets 1 floats + f@                       ( F: ox oz )
+    fover h-to-yaw f@ fcos f*  fover h-to-yaw f@ fsin f* f+  her c-pos sf@ f+  kb-at sf!
+    fswap h-to-yaw f@ fsin f* fnegate  fswap h-to-yaw f@ fcos f* f+  her c-pos 8 + sf@ f+  kb-at 8 + sf!
+    her c-pos 4 + sf@ kb-at 4 + sf!
+    kb-at $29020008 v-tri-in dup 0< if  drop her c-tri  kb-at her c-pos vec-copy  then  kb-tri ! ;
+: st-play-to-end ( -- )
+    her-free? 0= if  to-default exit  then
+    anim-done? if  to-default  then  1 h-no-root ! ;
+: st-by-fiona ( -- )
+    her-free? 0= if  0 0 want exit  then
+    -1 h-t1 +!  h-t1 @ 0<= if
+        kb-at vec@ him c-place!  kb-turn f@ h-yaw!  ['] st-play-to-end behave
+    else
+        him kb-turn f@ h-f36cc f@ c-turn-toward fdrop
+        kb-step f@ him path-ahead him path-i!  pa-pos vec@ him c-place!
+    then  1 h-no-root ! ;
+: req@-7? ( -- flag )   \ his state block holds 7 (then cleared)
+    him character char.req sl@ 7 = dup if  0 him character char.req l!  then ;
+: st-behind-fiona ( -- )
+    req@-7? if  0 0 want exit  then
+    her-free? 0= if  0 0 want exit  then
+    behind-spot
+    kb-tri @ kb-at plan-and-go if  0 0 want exit  then
+    rest 0.1e f* kb-step f!
+    h-to-yaw f@ pi f+ angle-wrap fdup kb-turn f!  h-yaw f- angle-wrap fabs 0.1e f* h-f36cc f!
+    10 h-t1 !  1 h-no-root !  ['] st-by-fiona behave ;
+: st-back-to-normal ( -- )
+    her-free? if  ['] st-behind-fiona behave  else  to-default  then ;
+: st-keep-behind ( -- )
+    her-free? 0= if  0 0 want exit  then
+    behind-spot
+    h-pos kb-at vec-dist 10e f< if
+        h-to-yaw f@ pi f+ h-yaw f- angle-wrap fabs pi f2/ f< if
+            4 look-now!  ['] st-back-to-normal behave  exit
+        then
+    then
+    path-done? if  kb-tri @ kb-at plan-and-go if  exit  then  then
+    stride if  $202  else  $201  then  play-if-not ;
