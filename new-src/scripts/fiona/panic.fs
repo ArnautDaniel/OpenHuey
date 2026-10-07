@@ -56,7 +56,30 @@ create breath-vol  -56 , -40 , -16 , 0 , 0 ,   \ (-0x38 -0x28 -0x10)
     1- cells breath-vol + @  >r  me $29 5 r> 0 f-pos vec@ actor-sound ;
 
 \ ---- Panic_Stage ----
-defer pursuer-fear ( -- )  ' noop is pursuer-fear   \ (the stalker's part of the inputs: with them)
+\ the stalker's part of the inputs (Panic_FearInputs): by his kind (D_0041A0A0: 5 a kind) and how
+\ near he is - distance and 3 x the height between them: under 10 / 20 / 40 / 60 / 100; a
+\ negative entry a fright (held 30, 50 lasting and passing); in her room, not down, not under
+\ progress flag 0x21. (Both on a ladder, the height table D_0041A0F0: his ladders aren't kept.)
+: stalker-kind ( id -- k )
+    case  5 of 3 endof  4 of 2 endof  $24 of 1 endof  $23 of 1 endof  $22 of 1 endof  3 of 1 endof
+          $1B of 0 endof  7 of 0 endof  6 of 0 endof  2 of 0 endof  >r -1 r>  endcase ;
+: fear-add ( F: f -- )
+    fdup f0< if  fdrop 30 pn-hold !  pn-d f@ 50e f+ pn-d f!  pn-a f@ 50e f+ pn-a f!  exit  then
+    0.0333333e f* pn-d2 f@ f+ pn-d2 f! ;
+fvariable sf-dy
+: stalker-fear ( -- )
+    pursuer-slot @ dup c-ok? 0= if  drop exit  then
+    dup character char.present sl@ 0=  over character char.cond sl@ 2 = or if  drop exit  then
+    dup character char.room sl@ room-id <> if  drop exit  then
+    $21 state-flag? if  drop exit  then
+    dup c-pos 4 + sf@ f-pos 4 + sf@ f- fabs sf-dy f!
+    dup c-pos f-pos vec-dist-xz sf-dy f@ 3e f* f+                  ( cs ) ( F: d )
+    character char.id sl@ stalker-kind dup 0< if  drop fdrop exit  then
+    fdup 100e f< 0= if  drop fdrop exit  then
+    fdup 10e f< if  0  else fdup 20e f< if  1  else fdup 40e f< if  2  else fdup 60e f< if  3  else  4
+    then then then then  fdrop
+    swap 5 * + 4 * $41A0A0 + 4 exe-bytes dup if  sf@ fear-add  else  drop  then ;
+defer pursuer-fear ( -- )  ' stalker-fear is pursuer-fear
 : stage-by-level ( -- )
     pn-level f@ 100e f< 0= if   \ she panics
         100e pn-level f!  100e pn-last f!  0e pn-pass f!

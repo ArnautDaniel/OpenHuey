@@ -6,12 +6,6 @@
 IN: partner.core
 USING: engine game-state events.core events.words chars ;
 
-\ the progress's condition bits (Progress_SetCondBit / Progress_CondBit; bit 4: Hewie is alert
-\ to the pursuer)
-variable cond-bits
-: cond-bit? ( n -- flag )  1 swap lshift cond-bits @ and 0<> ;
-: cond-bit! ( n -- )  1 swap lshift cond-bits @ or cond-bits ! ;
-
 1 constant him
 0 constant her
 variable pursuer  -1 pursuer !        \ the stalker's slot, -1 none

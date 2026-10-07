@@ -174,6 +174,9 @@ create f-end-pos 12 allot   \ where her frame left her (moved since by the rooms
     f-state @ ?dup if  execute  then
     keep-apart  joint-action
     motion-sounds  footsteps
+    f-pu-ok @ if   \ (him within 200: condition bit 5; within 150: 0 too)
+        me pursuer-slot @ c-pos c-dist-to  fdup 200e f<= if  5 cond-bit!  150e f<= if  0 cond-bit!  then  else  fdrop  then
+    then
     f-mode 0= f-act @ 1 <> and if  f-sub 2 > if  0 f-sub!  then  then
     f-req@ 7 = if  0 me character char.req l!  then
     f-end-pos f-pos vec-copy ;

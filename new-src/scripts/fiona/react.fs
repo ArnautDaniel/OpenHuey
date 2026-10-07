@@ -178,6 +178,8 @@ variable charm-item   \ (the sub screen's slot 1: the charm that keeps her from 
     0 f-target-t !  0 f-freeze-t !  1 f-2d !  start-in-door
     me 2 relations:req-word-of f-who !
     $A f-act !  4 f-mode!  dup f-sub!
+    dup $C - 4 u< over $A = or if  f-who @ dup $FF <> swap 1 <> and if  1 cond-bit!  then  then   \ (struck:
+    dup $B = over 9 = or over 8 = or if  1 cond-bit!  then                                       \  bit 1)
     case
         $C of  st-knock  endof  $D of  st-knock  endof  $E of  st-knock  endof  $F of  st-knock  endof
         $A of  me 4 relations:req-word-of $8000 and if  reset-recovery  then

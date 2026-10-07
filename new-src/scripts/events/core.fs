@@ -305,6 +305,12 @@ variable exit-wanted  -1 exit-wanted !
 
 \ ---- the game's state the characters' behaviour reads (progress / scene fields) ----
 variable game-mode        \ Progress_GameMode: 0 calm, 1 being followed, 2 the chase
+\ the progress's condition bits, the frame's (Progress_SetCondBit / Progress_CondBit; cleared by
+\ danger.fs): 0 / 5 Fiona within 150 / 200 of him, 1 she was struck, 2 no stalker, 3 he chases,
+\ 4 Hewie is alert to him, 6 hunted
+variable cond-bits
+: cond-bit? ( n -- flag )  1 swap lshift cond-bits @ and 0<> ;
+: cond-bit! ( n -- )  1 swap lshift cond-bits @ or cond-bits ! ;
 \ the panic's and Fiona's fear's commands (by opcode: 43 / 93 / A3 / C0 / C9 the panic, 4E / 4F /
 \ 94 / 95 her fear and recovery; BF her fear set): fiona.panic
 defer event-panic ( op v -- )   :noname 2drop ; is event-panic
