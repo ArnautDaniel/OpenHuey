@@ -12,7 +12,7 @@ behaviour ear
   on heard-nothing ( -- )  -1 got !  0 got-loud ! ;
 end-behaviour
 
-front-garden-2 room
+front-garden-2 -1 rooms send go-to-room  actors-frame   \ (game.fs started a game: move it here)
 ear ear-state s" ear" spawn constant ear
 deliver
 : put-ear ( tri -- )   \ stand it on a triangle of the played room
