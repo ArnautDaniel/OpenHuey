@@ -1829,8 +1829,6 @@ src/game/heap.c Heap_Free --runs=200 --pre=a0+0xC=0x0A000000..0x0A000000 --pre=a
 src/game/heap.c Heap_Free --runs=200 --pre=a0+0xC=0x0A000000..0x0A000000 --pre=a0+0x10=1..6 --pre=@0x0A000000=0..1 --pre=@0x0A000010=0..1 --pre=@0x0A000020=0..1 --pre=@0x0A000030=0..1 --pre=@0x0A000040=0..1 --pre=@0x0A000050=0..1 --pre=@0x0A000008=0x100..0x100 --pre=@0x0A000018=0x200..0x200 --pre=@0x0A000028=0x300..0x300 --pre=@0x0A000038=0x400..0x400 --pre=@0x0A000048=0x500..0x500 --pre=@0x0A000058=0x600..0x600 --pre=@0x0A00000C=0x40..0x100 --pre=@0x0A00001C=0x40..0x100 --pre=@0x0A00002C=0x40..0x100 --pre=@0x0A00003C=0x40..0x100 --pre=@0x0A00004C=0x40..0x100 --pre=@0x0A00005C=0x40..0x100 --pre=a1=0x500..0x500
 src/game/heap.c Heap_Free --runs=200 --pre=a0+0xC=0x0A000000..0x0A000000 --pre=a0+0x10=1..6 --pre=@0x0A000000=0..1 --pre=@0x0A000010=0..1 --pre=@0x0A000020=0..1 --pre=@0x0A000030=0..1 --pre=@0x0A000040=0..1 --pre=@0x0A000050=0..1 --pre=@0x0A000008=0x100..0x100 --pre=@0x0A000018=0x200..0x200 --pre=@0x0A000028=0x300..0x300 --pre=@0x0A000038=0x400..0x400 --pre=@0x0A000048=0x500..0x500 --pre=@0x0A000058=0x600..0x600 --pre=@0x0A00000C=0x40..0x100 --pre=@0x0A00001C=0x40..0x100 --pre=@0x0A00002C=0x40..0x100 --pre=@0x0A00003C=0x40..0x100 --pre=@0x0A00004C=0x40..0x100 --pre=@0x0A00005C=0x40..0x100 --pre=a1=0x600..0x600
 src/sdk/libgraph.c sceGsSwapDBuff --pre=a1=0..3
-src/game/renderer.c Renderer_WaitChain
-src/game/renderer.c Renderer_SendFinal
 src/game/system.c System_EndFrame --runs=20 --irq=0x0047B204 --irq=0x0047B208
 src/game/loader.c Loader_Tick --runs=300 --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x12804=0..2 --pre=a0+0x12805=0..2 --pre=a0+0x8=0..9 --pre=a0+0x130=0..9 --pre=a0+0x258=0..9 --pre=a0+0x124=0..2 --pre=a0+0x24C=0..0x84 --stub-ret=0 --stub-ret=1 --stub-ret=2 --stub-ret=3 --stub-ret=4 --stub-ret-prob=0.8
 src/game/pad.c Rumble_Tick --runs=300 --pre=a0+0x4=0..1 --pre=a0+0x5=0..1 --pre=a0+0x8=0..2 --pre=a0+0x14=0..2 --pre=a0+0x68=0..2 --pre=a0+0x74=0..2 --pre=a0+0x84=0..1 --pre=a0+0x80=0..1 --pre=@0x0044FEB0=0x0A200000..0x0A200000 --pre=@0x0A200000=0x0046ADB0..0x0046ADB0 --pre=a0+0x0=0x0046F4F0..0x0046F4F0
@@ -1882,7 +1880,6 @@ src/game/renderer.c Renderer_LayerBegin --runs=20 --pre=a1=20..20 --pre=a0+0x304
 src/game/renderer.c Renderer_LayerBegin --runs=20 --pre=a1=35..35 --pre=a0+0x304BB4=0..0 --pre=a0+0x304A88=a0+0x230 --stub-ret=0 --stub-ret=1
 src/game/renderer.c Renderer_LayerBegin --runs=20 --pre=a1=28..28 --pre=a0+0x304BB4=0..0 --pre=a0+0x304A6C=a0+0x1C0 --stub-ret=0 --stub-ret=1
 src/game/renderer.c Renderer_Draw --runs=100 --pre=a2=0..54 --stub-ret=0 --stub-ret=1
-src/game/renderer.c Overlay_DrawRect
 src/game/renderer.c Overlay_Draw
 src/game/renderer.c TexCache_Tex0 --stub-ret=-1 --stub-ret=0x80000003 --stub-ret=2
 src/game/camera.c Camera_dtor
@@ -2072,20 +2069,15 @@ src/game/scene_title.c SceneTitle_StateAttractFade --pre=a0=0x0B000000..0x0B0000
 src/game/scene_title.c SceneTitle_SeqLoad --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E980=0x0B200000..0x0B200000 --pre=a0+0x14=0..1 --pre=a0+0x20=0..0x01000000 --stub-ret=0 --stub-ret=0x0B300000
 src/game/scene_title.c SceneTitle_SeqFadeIn --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C=0..160 --pre=a0+0x74940=0..1
 src/game/scene_title.c SceneTitle_PrepareBackground --pre=a0=0x0B000000..0x0B000000 --runs=60 --stub-ret=-1 --stub-ret=0x80000002 --stub-ret=1 --stub-ret=0
-src/game/scene_title.c SceneTitle_DrawPicture --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x0B200000 --stub-ret=0 --pre=a0+0x11DA8C=a0+0x200
-src/game/scene_title.c SceneTitle_DrawLogo --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x0B200000 --stub-ret=0 --pre=a0+0x11DA8C=a0+0x200
-src/game/scene_title.c SceneTitle_DrawRect --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x0B200000 --stub-ret=0 --pre=a0+0x11DA90=a0+0x200 --pre=a1=0..0x100 --pre=a2=0..0x100 --pre=a3=1..0x100 --pre=a4=1..0x100 --pre=a5=0..0x200 --pre=a6=0..0x200
 src/game/scene_title.c SceneTitle_DrawPressStart --pre=a0=0x0B000000..0x0B000000
 src/game/scene_title.c SceneTitle_DrawPressStartGlow --pre=a0=0x0B000000..0x0B000000
 src/game/scene_title.c SceneTitle_SeqPressStart --pre=a0=0x0B000000..0x0B000000 --pre=a0+0x1C=0..360000 --pre=a0+0x18=0x380..0x386 --pre=@0x0047E36C=0..0x10
 src/game/renderer.c Vram_Tex2 --runs=100 --pre=a1=0..63 --pre=a2=0..15 --pre=a3=0..0x14 --pre=a4=1..1024 --pre=a5=1..1024 --pre=a6=0..2
-src/game/scene_title.c SceneTitle_DrawBackImage --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x0B200000 --stub-ret=0
 src/game/renderer.c Vram_EntryTex0 --pre=a1=0..63
 src/game/renderer.c Vram_EntryTex0Indexed --pre=a1=0..63
 src/game/renderer.c Vram_EntryTex0Csa --pre=a1=0..63
 src/game/renderer.c Vram_EntryTex2 --pre=a1=0..63
 src/game/scene_title.c SceneTitle_SeqToMenu --pre=a0=0x0B000000..0x0B000000 --runs=60 --pre=a0+0x18=0..4 --pre=a0+0x1C=0..32 --pre=a0+0x74940=0..1 --pre=a0+0x11DA94=0..1
-src/game/scene_title.c SceneTitle_DrawMenuPanel --pre=a0=0x0B000000..0x0B000000 --stub-ret=0x0B200000 --stub-ret=0 --pre=a0+0x11DA90=a0+0x200
 src/game/scene_title.c SceneTitle_SeqMenu --pre=a0=0x0B000000..0x0B000000 --pre=@0x0044E560=0x0B100000..0x0B100000 --pre=@0x0B100000=0x0046BF20..0x0046BF20 --pre=@0x0044E970=0x0B180000..0x0B180000 --pre=@0x0B180000=0x0046A110..0x0046A110 --runs=100 --pre=a0+0x20=0x0000..0x0700 --pre=@0x0047E36C=0..0x3F --pre=a0+0x11DA94=0..1 --pre=a0+0x18=0x380..0x386
 src/game/music.c BgmCtl_Want --pre=a0=0x0B000000..0x0B000000 --pre=a1=0xFE..0xFF
 src/game/music.c BgmCtl_Want --pre=a0=0x0B000000..0x0B000000
