@@ -42,7 +42,7 @@ add_executable(hg2
     src/platform/gl.c src/platform/platform.c src/platform/sound.c src/platform/movie.c src/platform/music.c src/platform/seq.c
     src/render/render.c src/render/post.c
     src/data/pac.c src/data/tex.c src/data/roommesh.c src/data/model.c src/data/navmesh.c src/data/exe.c src/data/soundbank.c
-    src/game/room.c src/game/console.c src/game/actor.c src/game/world.c
+    src/game/room.c src/game/console.c src/game/actor.c src/game/doglegs.c src/game/world.c
     src/game/camdirector.c src/game/areas.c src/game/exits.c src/game/messages.c src/game/cutscene.c src/game/placed.c
     src/forth/bind_engine.c)
 target_link_libraries(hg2 PRIVATE forth gamestate SDL3::SDL3 OpenGL::GL ${CMAKE_DL_LIBS})

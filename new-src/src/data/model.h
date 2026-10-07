@@ -88,5 +88,8 @@ typedef struct ModelTurn {
     float pitch, yaw;
 } ModelTurn;
 void model_pose_turns(const ModelTurn *t, int n);
+/* a hook on the next poses: the bones' world matrices (model space) once built, before skinning */
+typedef void (*ModelPoseHook)(Mat4 *world, int nbones, void *user);
+void model_pose_hook(ModelPoseHook hook, void *user);
 
 #endif

@@ -208,6 +208,7 @@ variable room-side  -1 room-side !   \ +0xF3668: which side of a divided room he
         played-room room!  heel  hewie-start  played-room hewie-room !
     then
     h-disabled? 0= 1 and hewie @ actor act.visible l!
+    hewie @ h-disabled? 0= dog-legs   \ (his feet planted on the floor while he is here)
     fiona-commands  meet-tick
     hewie-frame ;
 ' hewie-tick on-tick

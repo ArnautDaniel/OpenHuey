@@ -6,6 +6,7 @@
 
 #include "../data/model.h"
 #include "../render/render.h"
+#include "doglegs.h"
 
 #define MAX_ACTORS 16
 #define ACTOR_MAX_TEXTURES 64
@@ -58,6 +59,7 @@ typedef struct Actor {
     /* bones turned where it looks (Hewie's neck: DogModel_AdjustBone) */
     ModelTurn turns[8];
     int nturns;
+    DogLegs legs;           /* a dog's feet planted and its legs fitted to them (Hewie) */
 } Actor;
 
 /* load O_FIN/FIN_000 (.PCK + .TEX): the actor's number, or -1 */

@@ -186,10 +186,12 @@ fvariable fs-up  fvariable fs-down  variable fs-there
 
 \ ---- where his head looks (Hewie_TurnHead) ----
 \ Motion_LookAt from his eyes (about 7 above him): the pitch and the turn from his heading
-: look-at ( v -- ) ( F: -- pitch turn )
-    dup 4 + sf@  h-pos 4 + sf@ 7e f+ f-                               ( F: rise )
-    dup h-pos swap vec-dist-xz  fatan2
-    him swap c-heading-to h-yaw f- angle-wrap ;
+create eye-at 12 allot
+: look-at ( v -- ) ( F: -- pitch turn )   \ from his eyes (the model's +0x860: 5.6 up, 3 ahead)
+    eye-at h-pos h-yaw 3e vec-ahead  eye-at 4 + dup sf@ 5.6e f+ sf!
+    dup 4 + sf@  eye-at 4 + sf@ f-                                  ( F: rise )
+    dup eye-at swap vec-dist-xz  fatan2
+    eye-at swap vec-heading h-yaw f- angle-wrap ;
 : char-look ( cs -- ) ( F: -- pitch turn )   \ at a character's head (about 11 up)
     c-pos cp-try swap vec-copy  cp-try 4 + dup sf@ 11e f+ sf!  cp-try look-at ;
 fvariable hd-p  fvariable hd-y  fvariable hd-s

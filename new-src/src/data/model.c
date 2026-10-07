@@ -639,6 +639,13 @@ const Vec3 *model_pose_origins(void) { return sOrigins; }
 
 static ModelTurn sTurns[8];
 static int sNTurns;
+static ModelPoseHook sHook;
+static void *sHookUser;
+
+void model_pose_hook(ModelPoseHook hook, void *user) {
+    sHook = hook;
+    sHookUser = user;
+}
 
 void model_pose_turns(const ModelTurn *t, int n) {
     sNTurns = n < 8 ? n : 8;
@@ -731,6 +738,9 @@ void model_pose_layers(const Model *m, const ModelLayer *layers, int nlayers, Ma
         if (!progress) {
             break;
         }
+    }
+    if (sHook != NULL) {
+        sHook(world, m->nbones, sHookUser);
     }
     for (i = 0; i < m->nbones; i++) {
         skin[i] = done[i] ? mat4_mul(world[i], m->bones[i].inv_bind) : mat4_identity();

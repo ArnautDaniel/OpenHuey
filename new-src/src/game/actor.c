@@ -1,5 +1,7 @@
 #include "actor.h"
 
+#include <math.h>
+
 #include "../core/files.h"
 #include "../data/tex.h"
 
@@ -119,6 +121,7 @@ static int step_time(float *t, float speed, int frames, int loop) {
 
 static void part_start(struct ActorPart *p, int index, int flags, float blend);
 static int model_motion_entry_flags(const Actor *a, int index);
+static void legs_contact(Actor *a);
 
 static void part_tick(Actor *a, struct ActorPart *p) {
     if (p->motion >= 0 && !(p->flags & 0x10)) {
@@ -147,6 +150,9 @@ void actor_tick(Actor *a) {
     }
     for (i = 0; i < 3; i++) {
         part_tick(a, &a->parts[i]);
+    }
+    if (a->legs.on) {
+        legs_contact(a);
     }
     if (a->motion < 0 || (a->mflags & 0x40)) {
         return;
@@ -289,6 +295,45 @@ int actor_motion_entry(const Actor *a, int index, int *blend, int *pose, int *fl
     return 1;
 }
 
+/* ---- a dog's legs (doglegs.c) through the pose hook ---- */
+static Actor *sLegsActor;
+static Mat4 sLegsPlace, sLegsUnplace;
+
+static void legs_hook(Mat4 *world, int n, void *user) {
+    (void)n;
+    (void)user;
+    doglegs_pose(&sLegsActor->legs, &sLegsActor->model, world, &sLegsPlace, &sLegsUnplace);
+}
+
+/* room -> model space: the place undone (turn back, unscale) */
+static Mat4 unplace_of(const Actor *a) {
+    Mat4 u = mat4_identity();
+    float c = cosf(a->yaw), s = sinf(a->yaw), k = a->scale != 0.0f ? 1.0f / a->scale : 1.0f;
+
+    u.m[0] = c * k;  u.m[2] = s * k;
+    u.m[5] = k;
+    u.m[8] = -s * k; u.m[10] = c * k;
+    u.m[12] = -(u.m[0] * a->pos.x + u.m[8] * a->pos.z);
+    u.m[13] = -k * a->pos.y;
+    u.m[14] = -(u.m[2] * a->pos.x + u.m[10] * a->pos.z);
+    return u;
+}
+
+/* the feet's contact this tick (the contact tracks -5 / -6, as foot-down?) */
+static void legs_contact(Actor *a) {
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        float c0[3], c1[3];
+        int code = i < 2 ? -5 : -6, k = i & 1;
+        int has0 = model_track_raw(&a->model, a->motion, code, a->frame, c0);
+        int has1 = a->fade > 0.0f && a->prev_motion >= 0 && model_track_raw(&a->model, a->prev_motion, code, a->prev_frame, c1);
+
+        a->legs.down_was[i] = a->legs.down[i];
+        a->legs.down[i] = has0 && has1 ? (c0[k] > 0.0f && c1[k] > 0.0f) : (has0 && c0[k] > 0.0f);
+    }
+}
+
 /* the posed vertices and normals, in room space (the shader lights them) */
 static void skin(Actor *a) {
     static Mat4 skin_m[MODEL_MAX_BONES];
@@ -333,15 +378,22 @@ static void skin(Actor *a) {
                 l[nl++] = (ModelLayer){p->motion, p->frame, p->prev, p->prev_frame, y * y * (3.0f - 2.0f * y), 4 << k};
             }
         }
-        model_pose_turns(a->turns, a->nturns);
-        model_pose_layers(m, l, nl, skin_m, NULL);
-        model_pose_turns(NULL, 0);
         place.m[0] = c * a->scale;  place.m[2] = -s * a->scale;
         place.m[5] = a->scale;
         place.m[8] = s * a->scale;  place.m[10] = c * a->scale;
         place.m[12] = a->pos.x;
         place.m[13] = a->pos.y;
         place.m[14] = a->pos.z;
+        model_pose_turns(a->turns, a->nturns);
+        if (a->legs.on) {
+            sLegsActor = a;
+            sLegsPlace = place;
+            sLegsUnplace = unplace_of(a);
+            model_pose_hook(legs_hook, NULL);
+        }
+        model_pose_layers(m, l, nl, skin_m, NULL);
+        model_pose_hook(NULL, NULL);
+        model_pose_turns(NULL, 0);
     }
     for (i = 0; i < m->nbones; i++) {   /* the bones' origins, placed */
         a->bones[i] = mat4_point(&place, model_pose_origins()[i]);

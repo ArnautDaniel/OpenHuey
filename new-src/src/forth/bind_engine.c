@@ -1052,6 +1052,15 @@ PRIM(p_foot_down) {   /* ( id foot -- flag ) foot 0..3 (front right, front left,
         PUSH(has0 && c0[k] > 0.0f ? -1 : 0);
     }
 }
+PRIM(p_dog_legs) {   /* ( id on -- ) its feet planted and its legs fitted (a dog's skeleton: Hewie) */
+    Cell on = POP();
+    Actor *a = actor_arg(f, POP());
+
+    if ((on != 0) != (a->legs.on != 0)) {
+        doglegs_reset(&a->legs);
+    }
+    a->legs.on = on != 0;
+}
 PRIM(p_has_motion) {   /* ( id motion-id -- flag ) */
     Cell mid = POP();
     Actor *a = actor_arg(f, POP());
@@ -1410,7 +1419,7 @@ void bind_engine(Forth *f) {
         {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry},
-        {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"foot-down?", p_foot_down}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
+        {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
         {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"mouse-down?", p_mouse_down},
