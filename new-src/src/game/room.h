@@ -27,6 +27,8 @@ typedef struct RoomLight {
  * swing from rest in degrees (-90: open) easing to the wanted one */
 typedef struct RoomDoor {
     int present;
+    const uint8_t *sides;   /* its two sides' nav triangles (section 7 +0x28: a count and the
+                             * triangles, then the other side's) - the passage a door blocks */
     RoomMesh mesh;
     GpuMesh gpu;
     Vec3 pos, rot;
@@ -63,6 +65,11 @@ void room_look_set(int slot, const uint8_t *d, size_t n);
 void room_free(Room *r);
 /* door `exit`'s swing (degrees from shut; -90 open): eased there, or set at once */
 void room_door_swing(Room *r, int exit, float degrees, int at_once);
+/* the door at an exit lets characters through or not (Doors_RoomIn / Doors_Refresh): shut, its
+ * near side's triangles take the passage flags 0x60000 (open: the far side's, where the door
+ * now stands); `locks` (0x1000000 / 0x4000000: locked to the stalkers' / Hewie's sides) on the
+ * near side as well */
+void room_door_passage(Room *r, int exit, int open, uint32_t locks);
 /* door `exit` turned to `radians` (its whole turn, as a cutscene keys it: Doors_TurnTo) */
 void room_door_angle(Room *r, int exit, float radians);
 /* a tick: the room's flip books step, its doors swing */

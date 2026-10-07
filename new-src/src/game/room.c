@@ -232,6 +232,7 @@ static void load_doors(Room *r) {
             continue;
         }
         d->pos = vec3(rdf(s7 + o + 4), rdf(s7 + o + 8), rdf(s7 + o + 12));
+        d->sides = s7 + o + 0x28;
         d->rot = vec3(rdf(s7 + o + 0x1C), rdf(s7 + o + 0x20), rdf(s7 + o + 0x24));
         if (s8 != NULL && (size_t)(n + 1) * 4 <= s8size) {
             memcpy(&m, s8 + n * 4, 4);
@@ -251,6 +252,51 @@ void room_door_swing(Room *r, int exit, float degrees, int at_once) {
         if (at_once) {
             r->doors[exit].swing = degrees;
         }
+    }
+}
+
+/* flags set (or cleared) on one side's triangles (Doors_Passage) */
+static void door_side_flags(Room *r, const RoomDoor *d, int side, uint32_t flags, int set) {
+    const uint8_t *end = r->pac.data + r->pac.size, *t = d->sides;
+    uint32_t n, k, tri;
+
+    if (t == NULL || t + 4 > end) {
+        return;
+    }
+    memcpy(&n, t, 4);
+    t += 4;
+    if (side != 0) {
+        t += (size_t)n * 4;
+        if (t + 4 > end) {
+            return;
+        }
+        memcpy(&n, t, 4);
+        t += 4;
+    }
+    for (k = 0; k < n && t + 4 <= end; k++, t += 4) {
+        memcpy(&tri, t, 4);
+        if (tri < (uint32_t)r->nav.ntris) {
+            if (set) {
+                r->nav.tris[tri].flags |= flags;
+            } else {
+                r->nav.tris[tri].flags &= ~flags;
+            }
+        }
+    }
+}
+
+void room_door_passage(Room *r, int exit, int open, uint32_t locks) {
+    const RoomDoor *d;
+
+    if (exit < 0 || exit >= ROOM_DOORS || !r->doors[exit].present) {
+        return;
+    }
+    d = &r->doors[exit];
+    door_side_flags(r, d, open ? 0 : 1, 0x60000, 0);
+    door_side_flags(r, d, open ? 1 : 0, 0x60000, 1);
+    door_side_flags(r, d, 0, 0x5000000, 0);
+    if (locks != 0) {
+        door_side_flags(r, d, 0, locks, 1);
     }
 }
 

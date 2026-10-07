@@ -177,8 +177,15 @@ variable started   \ (the camera director set up for play)
     key: Return key-pressed? if  0 0 request-arg @ action  0 0 hud  then ;
 
 \ the doors' models: open (a quarter turn) or shut as their exits are (Doors_RoomIn), swinging
-\ when that changes
+\ when that changes; and the passage they block on the nav mesh (a shut door's doorway; locked
+\ to Hewie or the stalkers from a side: Doors_Refresh)
+: door-locks ( exit -- flags )
+    event-exit-door dup 0< if  drop 0 exit  then
+    dup door-locked if  drop $5000000 exit  then
+    door-word dup 0= if  drop 0 exit  then  l@ 4 rshift
+    0 over 2 and if  $1000000 or  then  swap 4 and if  $4000000 or  then ;
 : doors-follow ( at-once -- )   \ (not while a scene keys them)
+    8 0 do  i dup exit-open over door-locks door-passage  loop
     cutscene-active? if  drop exit  then
     8 0 do  i dup exit-open if  -90e  else  0e  then  over door-swing  loop  drop ;
 
