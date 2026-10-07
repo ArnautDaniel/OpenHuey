@@ -56,7 +56,7 @@ typedef struct Actor {
         float frame, prev_frame, fade, fade_len;
     } parts[3];
     /* bones turned where it looks (Hewie's neck: DogModel_AdjustBone) */
-    ModelTurn turns[4];
+    ModelTurn turns[8];
     int nturns;
 } Actor;
 

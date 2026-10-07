@@ -65,6 +65,9 @@ void model_pose_root(const Model *m, int index, float frame, Mat4 *skin, Vec3 *r
 /* cross-faded from motion `prev` at its time, weight w (1: all of it .. 0: none) */
 void model_pose_blend(const Model *m, int index, float frame, int prev, float prev_frame, float w, Mat4 *skin,
                       Vec3 *root);
+/* a special track (`code` < 0: -1 the root's movement, -5 / -6 the front / hind feet's contact,
+ * ...) of a motion at a time: its three values (raw); 0 if the motion hasn't it */
+int model_track_raw(const Model *m, int index, int code, float frame, float out[3]);
 /* the bones' origins (model space) of the last pose model_pose_blend / model_pose_root made */
 const Vec3 *model_pose_origins(void);
 /* which of a motion's five parts it has (bit p: part p - 0 the special channels, 1 the body,

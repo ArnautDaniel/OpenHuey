@@ -506,6 +506,66 @@ int model_root_delta(const Model *m, int index, float frame, float *turn, Vec3 *
     return 0;
 }
 
+int model_track_raw(const Model *m, int index, int code, float frame, float out[3]) {
+    Reader r = bank(m);
+    size_t rec = 0x10 + (size_t)index * 0x14;
+    int p;
+
+    out[0] = out[1] = out[2] = 0.0f;
+    if (index < 0 || index >= model_motion_count(m)) {
+        return 0;
+    }
+    for (p = 0; p < 5; p++) {
+        size_t part = rec + u32(&r, rec + p * 4);
+        uint32_t ntracks, k;
+        int frames;
+
+        if (part == rec) {
+            continue;
+        }
+        ntracks = u32(&r, part);
+        frames = (int)u32(&r, part + 4);
+        for (k = 0; k < ntracks && !r.bad; k++) {
+            size_t track = part + u32(&r, part + 8) + k * 12, keys;
+            uint32_t type, kind;
+            int count, a, b2, j;
+            float t;
+
+            if ((int32_t)u32(&r, track) != code) {
+                continue;
+            }
+            type = u32(&r, track + 4);
+            kind = type & 0xFFFF;
+            keys = track + u32(&r, track + 8);
+            count = (type >> 16 & 1) ? 1 : frames;
+            if (count <= 0) {
+                return 0;
+            }
+            a = (int)frame % count;
+            b2 = (a + 1) % count;
+            t = frame - (float)(int)frame;
+            for (j = 0; j < 3; j++) {
+                float va, vb;
+
+                if (kind == 8 || kind == 9) {
+                    va = f32(&r, keys + a * 12 + j * 4);
+                    vb = f32(&r, keys + b2 * 12 + j * 4);
+                } else {
+                    va = s16(&r, keys + a * 6 + j * 2);
+                    vb = s16(&r, keys + b2 * 6 + j * 2);
+                    if (kind == 5 && j == 2) {
+                        va /= 32768.0f;
+                        vb /= 32768.0f;
+                    }
+                }
+                out[j] = va + (vb - va) * t;
+            }
+            return 1;
+        }
+    }
+    return 0;
+}
+
 void model_pose(const Model *m, int index, float frame, Mat4 *skin) {
     model_pose_root(m, index, frame, skin, NULL);
 }

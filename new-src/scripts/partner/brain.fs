@@ -455,13 +455,36 @@ create wag-b  $210D , $210E , $210F ,  $210D , $2110 , $2111 ,
     ov-ears @ oe @ <> ov-ears @ 0= and if  0 ov-ears-t !  then
     ov-tail @ ot @ <> ov-tail @ dup 4 = swap 6 = or and if  0 ov-tail-t !  0 ov-tail-on !  then
     head-overlay  ears-overlay  tail-overlay ;
-\ his neck turned where his head looks (DogModel_AdjustBone: bones 0x1D, 0x1E, 0x1F)
+\ his body as it is posed (DogModel_AdjustBone): his back and shoulders along the floor
+\ (bones 0 and 16), his neck turned where his head looks (bones 0x1D, 0x1E, 0x1F)
 : neck ( -- )
     h-actor dup 0< if  drop exit  then
-    h-head-pitch f@ -0.4e f*  h-head-yaw f@ 0.25e f*
-    h-head-pitch f@ -0.4e f*  h-head-yaw f@ 0.25e f*
-    h-head-pitch f@ -0.2e f*  h-head-yaw f@ 0.25e f*
-    $1D $1E $1F head-turns ;
+    dup turns-clear
+    back-pitch f@ f0= 0= if  back-pitch f@ 0e  dup 0 turn+  then
+    front-pitch f@ back-pitch f@ f- fdup f0= if  fdrop  else  0e  dup $10 turn+  then
+    h-head-pitch f@ -0.4e f*  h-head-yaw f@ 0.25e f*  dup $1D turn+
+    h-head-pitch f@ -0.4e f*  h-head-yaw f@ 0.25e f*  dup $1E turn+
+    h-head-pitch f@ -0.2e f*  h-head-yaw f@ 0.25e f*  $1F turn+ ;
+
+\ Hewie_Feet: a step's sound as a foot comes down (the motions' contact tracks), by the floor
+\ (triangle flags 0x8000 / 0x10000 / 0x18000 / 0x2000000); four sounds in turn. (Water steps
+\ in rooms 7 / 0xD1 / 0x106: with the room effects.)
+create feet-was 4 cells allot  feet-was 4 cells 0 fill
+variable feet-new  variable feet-n
+: feet ( -- )
+    h-disabled? h-tri 0< or if  exit  then
+    0 feet-new !
+    4 0 do
+        h-actor i foot-down?
+        dup i cells feet-was + @ 0= and if  1 i lshift feet-new @ or feet-new !  then
+        i cells feet-was + !
+    loop
+    feet-new @ 0= if  exit  then
+    h-tri nav-flags $2018000 and case
+        $8000 of  $14  endof  $10000 of  $18  endof  $18000 of  $1C  endof  $2000000 of  $78  endof
+        >r $10 r>
+    endcase
+    feet-n @ 3 and +  5  h-pos vec@ event-sound-at  1 feet-n +! ;
 
 \ Hewie_MoveSubMode: what he is doing, for the scripts (+0xFC)
 : move-sub ( -- )
@@ -532,7 +555,7 @@ fvariable rq-y
     h-state @ ?dup if  execute  then
     turn-by-anim
     h-disabled? 0= h-no-root @ 0= and if  root@  him rm-x f@ rm-z f@ c-move-local  then
-    turn-head  neck  anim-sounds
+    turn-head  neck  anim-sounds  feet
     h-yaw h-yaw-was f!  h-action @ h-last-action ! ;
 
 \ Hewie_HiddenFrame: each frame out of the room being played - down he stays down; Fiona
@@ -568,13 +591,14 @@ variable was-busy
     then
     state-block
     h-2b @ if  8  else  $29020008  then  him c-mask!
+    h-root-ok @ fit-floor
     0 h-no-root !  1 h-root-ok !
     cutscene-active? if  standing-frame  else  hewie-control @ 0= if  own-decisions  then  then
     h-mood-state @ ?dup if  execute  then
     h-state @ ?dup if  execute  then
     turn-by-anim
     h-no-root @ 0= if  root-motion  then
-    turn-head  neck  set-overlays  anim-sounds
+    turn-head  neck  set-overlays  anim-sounds  feet
     h-yaw h-yaw-was f!  h-action @ h-last-action !  h-alert @ h-alert-was !
     0 h-look !  move-sub ;
 

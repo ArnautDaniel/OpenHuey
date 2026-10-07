@@ -7,9 +7,29 @@ USING: engine game-state events.core chars partner.core ;
 \ ---- his animation's root motion this frame (Motion_RootMovement / Motion_RootRotation; the
 \ model's ground speed factor, motion +0x48, taken as 1) ----
 fvariable rm-turn  fvariable rm-x  fvariable rm-y  fvariable rm-z
+\ his stride's share on sloped floor (DogModel_FloorLevel: the level part of the way from the
+\ floor 5 behind him to the floor 5 ahead; the motion's +0x48)
+fvariable floor-k  1e floor-k f!
 : root@ ( -- )
     h-actor dup 0< if  drop 0e rm-turn f!  0e rm-x f!  0e rm-y f!  0e rm-z f!  exit  then
-    root-delta  rm-z f!  rm-y f!  rm-x f!  rm-turn f! ;
+    root-delta  floor-k f@ f* rm-z f!  rm-y f!  rm-x f!  rm-turn f! ;
+
+\ ---- DogModel_BodyFrames: on the floor his back (bone 0) lies along it from 5 behind him to
+\ him, his shoulders (bone 16) from him to 5 ahead ----
+fvariable back-pitch  fvariable front-pitch  fvariable fy0  fvariable fya  fvariable fyb
+create fl-at 12 allot
+: floor-along ( F: d -- y )   \ the walk mesh's floor d along his heading
+    h-yaw fswap  fl-at h-pos vec-ahead  fl-at vec@ nav-floor drop ;
+: fit-floor ( reach? -- )
+    0e back-pitch f!  0e front-pitch f!  1e floor-k f!
+    h-actor 0< h-tri 0< or if  drop exit  then
+    h-pos vec@ nav-floor 0= if  fdrop drop exit  then
+    h-pos 4 + sf@ fswap f- 0.01e f> if  drop exit  then   \ (off the floor)
+    0= if  exit  then
+    h-pos 4 + sf@ fy0 f!  5e floor-along fya f!  -5e floor-along fyb f!
+    fy0 f@ fyb f@ f- 5e fatan2 fnegate back-pitch f!
+    fya f@ fy0 f@ f- 5e fatan2 fnegate front-pitch f!
+    10e fya f@ fyb f@ f- fsq 100e f+ fsqrt f/ floor-k f! ;
 \ turn_by_anim: the animation's turn added to his heading
 : turn-by-anim ( -- )  root@  h-yaw rm-turn f@ f+ angle-wrap h-yaw! ;
 \ root_motion / slide_root: moved by the step (level), sliding along walls; the frame's move done

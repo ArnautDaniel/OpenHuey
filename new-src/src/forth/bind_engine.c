@@ -221,6 +221,15 @@ PRIM(p_v_tri) {   /* ( v -- tri ) the triangle under v (any) */
 
     PUSH(navmesh_find(n, vec3(v[0], v[1], v[2]), 4.0f, &h));
 }
+PRIM(p_nav_floor) {   /* ( -- found ) ( F: x y z -- y' ) the walk mesh's floor at (x, z) nearest
+                       * height y (8 up at most); y as given if none */
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP(), h = y;
+    NavMesh *n = nav_masked(0);
+    int t = navmesh_find(n, vec3(x, y, z), 8.0f, &h);
+
+    FPUSH(t >= 0 ? h : y);
+    PUSH(t >= 0 ? -1 : 0);
+}
 PRIM(p_v_tri_in) {   /* ( v mask -- tri ) the triangle under v not of the mask's flags (-1 none) */
     uint32_t mask = (uint32_t)POP();
     float *v = vec_arg(f), h;
@@ -1011,28 +1020,36 @@ PRIM(p_motion_overlay) {   /* ( id motion-id -- ) Motion_PlayTableNoCheck: as it
 
     actor_motion_when_free(a, model_motion_find(&a->model, (int)mid));
 }
-PRIM(p_head_turns) {   /* ( id b1 b2 b3 -- ) ( F: p1 y1 p2 y2 p3 y3 -- ) three bones turned where it looks
-                        * (pitch about its x, yaw about its up; bone -1: none) */
-    Cell b[3];
-    float py[6];
-    Actor *a;
-    int i;
+PRIM(p_turns_clear) { actor_arg(f, POP())->nturns = 0; }   /* ( id -- ) no bones turned */
+PRIM(p_turn_add) {   /* ( id bone -- ) ( F: pitch yaw -- ) a bone turned as it is posed (pitch about the
+                      * model's x - positive: forward and down - then yaw about its up), its
+                      * children with it; up to 8 */
+    Cell bone = POP();
+    Actor *a = actor_arg(f, POP());
+    float yaw = (float)FPOP(), pitch = (float)FPOP();
 
-    for (i = 2; i >= 0; i--) {
-        b[i] = POP();
+    if (a->nturns < 8 && bone >= 0) {
+        a->turns[a->nturns].bone = (int)bone;
+        a->turns[a->nturns].pitch = pitch;
+        a->turns[a->nturns].yaw = yaw;
+        a->nturns++;
     }
-    for (i = 5; i >= 0; i--) {
-        py[i] = (float)FPOP();
-    }
-    a = actor_arg(f, POP());
-    a->nturns = 0;
-    for (i = 0; i < 3; i++) {
-        if (b[i] >= 0) {
-            a->turns[a->nturns].bone = (int)b[i];
-            a->turns[a->nturns].pitch = py[i * 2];
-            a->turns[a->nturns].yaw = py[i * 2 + 1];
-            a->nturns++;
-        }
+}
+PRIM(p_foot_down) {   /* ( id foot -- flag ) foot 0..3 (front right, front left, hind right, hind left)
+                       * on the ground now (DogModel_FootDown: the contact tracks -5 / -6; while a
+                       * motion fades in, down in both, or in the new one if only it says) */
+    Cell foot = POP();
+    Actor *a = actor_arg(f, POP());
+    float c0[3], c1[3];
+    int code = foot < 2 ? -5 : -6, k = (int)(foot & 1);
+    int has0 = model_track_raw(&a->model, a->motion, code, a->frame, c0);
+    int has1 = a->fade > 0.0f && a->prev_motion >= 0 &&
+               model_track_raw(&a->model, a->prev_motion, code, a->prev_frame, c1);
+
+    if (has0 && has1) {
+        PUSH(c0[k] > 0.0f && c1[k] > 0.0f ? -1 : 0);
+    } else {
+        PUSH(has0 && c0[k] > 0.0f ? -1 : 0);
     }
 }
 PRIM(p_has_motion) {   /* ( id motion-id -- flag ) */
@@ -1373,7 +1390,7 @@ void bind_engine(Forth *f) {
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
         {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-free", p_v_free},
-        {"v-path", p_v_path}, {"v-tri", p_v_tri}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
+        {"v-path", p_v_path}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
         {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"door-passage", p_door_passage}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
@@ -1393,7 +1410,7 @@ void bind_engine(Forth *f) {
         {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry},
-        {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"motion-overlay", p_motion_overlay}, {"head-turns", p_head_turns}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
+        {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"foot-down?", p_foot_down}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
         {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"mouse-down?", p_mouse_down},
