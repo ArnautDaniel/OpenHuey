@@ -407,3 +407,13 @@ variable iy
         prepared-page @ i message-line  sw @ 8 /  sh @ 7 * 8 / 8 +  i lh @ * +  draw-text
     loop ;
 ' subtitles on-draw
+
+\ ---- what the conditions ask of the engine (events.core's defers) ----
+:noname ( cs -- bits )  actor-of dup 0< if  drop 0 exit  then  actor act.mflags l@ ; is char-mflags
+' nav-flags is event-tri-flags
+fvariable os-y
+:noname ( F: x y z -- flag )   \ (the camera's +0xD4, turned round: in the window)
+    to-screen 0= if  fdrop fdrop false exit  then
+    os-y f!  screen-size s>f s>f                                 ( F: sx h w )
+    frot fdup f0< if  fdrop fdrop fdrop false exit  then  f< if  fdrop false exit  then
+    os-y f@ fdup f0< if  fdrop fdrop false exit  then  f< 0= ; is on-camera?

@@ -343,6 +343,25 @@ defer event-hewie-can-command? ( -- flag )   ' false is event-hewie-can-command?
 \ Hewie's side of the scripts' commands and conditions (by opcode; hewie.fs fills them in)
 defer event-hewie ( op a b -- )      :noname 2drop drop ; is event-hewie
 defer event-hewie? ( op a -- flag )  :noname 2drop false ; is event-hewie?
+\ what the characters' own modules know of them, for the conditions: the exit one heads for
+\ (+0x14D4, $FF none), its full health (+0x14CC), its animation's event flags (+0x6A4 +0x18:
+\ $20 at an event), whether a stalker in slot 2..5 has seen Fiona (+0x1544), Fiona's action
+\ (+0x1AD580) and the controls' command this frame (Fiona +0x1AD6B8 / Hewie +0xF3798), the panic
+\ level (+0x7BC), a point on the camera (+0xD4)
+defer char-door ( cs -- exit | $FF )       :noname 0= if  event-state ev.exit sl@  else  $FF  then ; is char-door
+defer char-hp-max ( cs -- n )              :noname character char.hp sl@ ; is char-hp-max
+defer char-mflags ( cs -- bits )           :noname drop 0 ; is char-mflags
+defer char-saw-fiona? ( cs -- flag )       :noname drop true ; is char-saw-fiona?
+defer fiona-act ( -- n )                   ' false is fiona-act
+defer control-code ( -- v )                :noname -1 ; is control-code
+defer panic-level@ ( F: -- l )             :noname 0e ; is panic-level@
+defer on-camera? ( F: x y z -- flag )      :noname fdrop fdrop fdrop true ; is on-camera?
+defer event-tri-flags ( tri -- flags )     :noname drop 0 ; is event-tri-flags
+\ the stalker's (slot 2): Progress_StalkerAlert (its mode, $FF none in play), Pursuer_InStance2Anim
+\ (+0x10C), free to be seized (EventCond 0x65)
+defer stalker-alert ( -- a )               :noname $FF ; is stalker-alert
+defer stalker-in-stance-2? ( -- flag )     ' false is stalker-in-stance-2?
+defer stalker-free ( -- flag )             ' false is stalker-free
 defer event-hewie-look ( -- ) ( F: x y z -- )   :noname fdrop fdrop fdrop ; is event-hewie-look
 
 \ ---- the player's request (progress +0x1134: what her action button does, set again each frame by

@@ -47,3 +47,16 @@ create in-front 12 allot  create try-d 40 , 25 ,
     p-scripted if  $44 vcall  else  $30 vcall  then
     in-played-room?  p-char char.disabled sl@ 0= and 1 and  stalker @ actor act.visible l! ;
 ' stalker-tick on-tick
+
+\ ---- what the scripts' conditions read of him (events.core's defers) ----
+:noname ( -- a )  me c-active? if  mode  else  $FF  then ; is stalker-alert
+:noname ( -- flag )  p-cond 2 =  p-anim dup $1805 = swap $1806 = or  and ; is stalker-in-stance-2?
+\ (EventCond 0x65: not held - his state block 4 / 5 - nor knocked down (8: 0x18 / 0x19) or reeling
+\ (4: 9 / 0xA); Actor_TriFreeFor: not yet)
+:noname ( -- flag )
+    0 p-req dup 4 = swap 5 = or if  false exit  then
+    p-mode 8 = if  p-sub dup $18 = swap $19 = or 0= exit  then
+    p-mode 4 = if  p-sub dup 9 = swap $A = or 0= exit  then  true ; is stalker-free
+:noname ( cs -- exit )  dup me = if  drop p-door exit  then  0= if  game-state:event-state ev.exit sl@  else  $FF  then ; is char-door
+:noname ( cs -- n )  dup me = if  drop p-hp-max exit  then  character char.hp sl@ ; is char-hp-max
+:noname ( cs -- flag )  me = if  $1544 pu-c@ 1 =  else  true  then ; is char-saw-fiona?

@@ -20,3 +20,7 @@ variable fiona-ready  -1 fiona-ready !   \ the model she was set up with
 ' fiona-control is control-fiona
 \ (the camera-cut rule of her controls: the director's setup changed)
 ' cam-changed? is camera-cut?
+\ (what the scripts' conditions read of her: her action, her controls' command, the panic level)
+:noname ( -- n )  f-act @ ; is fiona-act
+:noname ( -- v )  hewie-control @ if  -1  else  f-cmd @  then ; is control-code
+:noname ( F: -- l )  pn-level f@ ; is panic-level@

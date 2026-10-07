@@ -833,7 +833,7 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 \ 0F: Hewie (in the scene) is near enough for Fiona's commands (Hewie_FionaNearCommand).
 : hewie-near-command? ( -- flag )  $0F 0 event-hewie? ;
 \ 10: The stalker alert state (Progress_StalkerAlert) is v.
-: stalker-alert? ( v -- flag )  drop s" stalker-alert?" stub-flag ;
+: stalker-alert? ( v -- flag )  stalker-alert = ;
 \ 12: The event counter (+0x703, commands 0x16..0x18) is n.
 : counter? ( n -- flag )  event-state ev.counter sl@ = ;
 \ 13: This script's frame count (+0x14) is n.
@@ -853,7 +853,9 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 \ 18: Character `id`'s pursuer group fields (PursuerGroup_Fields(group)) have bit 4.
 : char-group-bit4? ( id group -- flag )  drop drop s" char-group-bit4?" stub-flag ;
 \ 19: Character `who` (active) is in this room on triangle `tri`.
-: char-on-tri? ( who tri -- flag )  drop drop s" char-on-tri?" stub-flag ;
+: char-on-tri? ( who tri -- flag )
+    swap char-slot dup 0< if  2drop false exit  then
+    dup in-room? 0= if  2drop false exit  then  character char.tri sl@ = ;
 \ 1A: The event result (+0x934: set by command 0x62 0 / 2, the movie's state) is v.
 : result? ( v -- flag )  event-state ev.result sl@ = ;
 \ 1B: Progress variable n is v.
@@ -866,7 +868,7 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 : panic-stage? ( stage -- flag )
     dup $FF = if  drop panic @ 4 5 1+ within  else  panic @ =  then ;
 \ 1E: Character `who` (active) has no health left.
-: char-dead? ( who -- flag )  drop s" char-dead?" stub-flag ;
+: char-dead? ( who -- flag )  char-slot dup 0< if  drop false exit  then  character char.hp sl@ 0= ;
 \ 1F: Character `a` touches `b` (margins m0, m1) and faces it, within `within` degrees.
 : char-touching-facing? ( a b m0 m1 within -- flag )
     >r m1 ! m0 !  char-slot swap char-slot                          ( b a )
@@ -876,12 +878,19 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 \ 20: The cutscene director's mode (+0x2C) is `mode`.
 : cutscene-mode? ( mode -- flag )  event-scene-status = ;
 \ 21: The controlled character's current action (Fiona +0x1AD6B8, Hewie +0xF3798) is v.
-: control-action? ( v -- flag )  drop s" control-action?" stub-flag ;
+: control-action? ( v -- flag )  control-code = ;
 \ 22: The message window is closed and its chosen answer (+0x750) is v.
 : answer? ( v -- flag )  event-state ev.message sl@ 0< swap event-state ev.answer sl@ = and ;
 \ 23: Characters `a` and `b` (active) are within distance |d|; Fiona or Hewie to a stalker only
 \ while the stalker is present (+0x1544).
-: chars-within? ( a b d -- flag )  drop drop drop s" chars-within?" stub-flag ;
+fvariable cw-x  fvariable cw-y  fvariable cw-z
+: chars-within? ( a b d -- flag )   \ (Fiona or Hewie to a stalker only once it has seen her)
+    abs s>f  char-slot swap char-slot                                   ( s2 s1 ) ( F: lim )
+    over 0< over 0< or if  2drop fdrop false exit  then
+    dup 2 < 2 pick 2 6 within and if  over char-saw-fiona? 0= if  2drop fdrop false exit  then  then
+    char-pos cw-z f! cw-y f! cw-x f!  char-pos
+    cw-z f@ f- fdup f*  fswap cw-y f@ f- fdup f* f+  fswap cw-x f@ f- fdup f* f+ fsqrt
+    f< 0= ;
 \ 24: Hewie (in the scene)'s current action (+0xF3564) is v.
 : hewie-action? ( v -- flag )  $24 swap event-hewie? ;
 \ 25: The camera director's +0x24 is v.
@@ -914,15 +923,17 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 \ 2F: Fewer than 10 of item 0x3F are held (Items_CountItem3F).
 : item-3F-under-10? ( -- flag )  $3F items-of 10 < ;
 \ 30: Character `who` (active, in the current room) is heading for exit `exit` (+0x14D4).
-: char-heading-for? ( who exit -- flag )  drop drop s" char-heading-for?" stub-flag ;
+: char-heading-for? ( who exit -- flag )
+    swap char-slot dup 0< if  2drop false exit  then
+    dup in-room? 0= if  2drop false exit  then  char-door = ;
 \ 31: Hewie (in the scene) may not break off (Hewie_MayBreakOff is 0).
 : hewie-stays? ( -- flag )  $31 0 event-hewie? ;
 \ 32: Character `who` (active) is in room `room`.
-: char-in-room? ( who room -- flag )  drop drop s" char-in-room?" stub-flag ;
+: char-in-room? ( who room -- flag )  swap char-slot dup 0< if  2drop false exit  then  character char.room sl@ = ;
 \ 33: Hewie (in the scene) is on side `side` of the room (+0xF3668; command 0xD0 sets it).
 : hewie-side? ( side -- flag )  $33 swap event-hewie? ;
 \ 34: Character `who` (active)'s animation event flags have any of `bits`.
-: char-motion-flags? ( who bits -- flag )  drop drop s" char-motion-flags?" stub-flag ;
+: char-motion-flags? ( who bits -- flag )  swap char-slot dup 0< if  2drop false exit  then  char-mflags and 0<> ;
 \ 35: Character `who` (in this room, its radius / height) against zone `zone`: all of `bits`
 \ (Zone_TestCylinder).
 : char-zone-bits? ( who zone bits -- flag )
@@ -949,44 +960,59 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
     rot 2dup < if  2drop drop false exit  then                           ( n m at )
     >r swap - r> < ;
 \ 3C: The stalker (active, in this room) is of kind `kind`.
-: stalker-kind-here? ( kind -- flag )  drop s" stalker-kind-here?" stub-flag ;
+: stalker-kind-here? ( kind -- flag )
+    2 character char.present sl@ 0= if  drop false exit  then
+    2 in-room? 0= if  drop false exit  then  2 character char.id sl@ = ;
 \ 3D: Fiona can be controlled (Fiona_IsIdle) and the panic's stage is below 4.
-: fiona-free? ( -- flag )  s" fiona-free?" stub-flag ;
+: fiona-free? ( -- flag )  0 character char.mode sl@ 0=  fiona-act dup $E = over 1 = or swap $F = or 0= and  panic @ 4 < and ;
 \ 3E: Character `who` (active, in this room) is not at door `door` (Doors_Side).
 : char-not-at-door? ( who door -- flag )  drop drop s" char-not-at-door?" stub-flag ;
 \ 3F: Fiona's action (+0x1AD580) is v.
-: fiona-action? ( v -- flag )  drop s" fiona-action?" stub-flag ;
+: fiona-action? ( v -- flag )  fiona-act = ;
 \ 40: The cutscene has just come within 17 frames of its end (Cutscene_NearEnd).
 : cutscene-near-end? ( -- flag )  event-scene-near-end? ;
 \ 41: Character `who`'s state +0xC4 is v (see command 0x47).
-: char-C4? ( who v -- flag )  drop drop s" char-C4?" stub-flag ;
+: char-C4? ( who v -- flag )  swap char-slot dup 0< if  2drop false exit  then  character char.cond sl@ = ;
 \ 42: Hewie's pool (+0xF359C) is in use (+0xF3598). Unused by the scripts.
 : hewie-pool-in-use? ( -- flag )  $42 0 event-hewie? ;
 \ 43: Hewie's mode (+0xF35C0: 0 normal, 1..3 timed; command 0xC4 sets it) is `mode`. Unused by
 \ the scripts.
 : hewie-mode? ( mode -- flag )  $43 swap event-hewie? ;
 \ 44: Character `who` (active, in the current room) stands on a triangle with any of `flags`.
-: char-on-nav-flags? ( who flags -- flag )  drop drop s" char-on-nav-flags?" stub-flag ;
+: char-on-nav-flags? ( who flags -- flag )
+    swap char-slot dup 0< if  2drop false exit  then
+    dup in-room? 0= if  2drop false exit  then
+    character char.tri sl@ dup 0< if  2drop false exit  then  event-tri-flags and 0<> ;
 \ 45: Character `id` is out of sight: absent, inactive, elsewhere, or off the camera.
-: char-unseen? ( id -- flag )  drop s" char-unseen?" stub-flag ;
+: char-unseen? ( id -- flag )
+    char-slot dup 0< if  drop true exit  then
+    dup in-room? 0= if  drop true exit  then  char-pos on-camera? 0= ;
 \ 46: Story flag (number in script variable `var`) is set.
 : story-flag-var? ( var -- flag )  4 * event-state ev.vars + sl@ progress pr.story bit? ;
 \ 47: This script's character and character `id` (active, in this room, not +0x2A) touch (its
 \ margins).
-: self-touching? ( id -- flag )  drop s" self-touching?" stub-flag ;
+: self-touching? ( id -- flag )
+    self-char dup 0< if  2drop false exit  then
+    swap char-slot dup 0< if  2drop false exit  then
+    dup in-room? 0= if  2drop false exit  then
+    dup character char.disabled sl@ if  2drop false exit  then
+    dup char-body fswap f>s f>s  touching? ;
 \ 48: This script's character is idle (+0xF4 0) at a motion event: marks it done (+0xE1).
-: self-at-motion-event? ( -- flag )  s" self-at-motion-event?" stub-flag ;
+: self-at-motion-event? ( -- flag )
+    self-char dup 0< if  drop false exit  then
+    dup character char.move sl@ if  drop false exit  then
+    dup char-mflags $20 and 0= if  drop false exit  then  move-done true ;
 \ 49: Character `who`'s action (+0xF8) is v.
-: char-action? ( who v -- flag )  drop drop s" char-action?" stub-flag ;
+: char-action? ( who v -- flag )  swap char-slot dup 0< if  2drop false exit  then  character char.mode sl@ = ;
 \ 4A: The cutscene's current frame is in shot `shot` (Cutscene_ShotAt).
 : cutscene-shot? ( shot -- flag )  event-scene-frame event-scene-shot-at = ;
 \ 4B: The stalker (active) is in stance 2 playing animation 0x1805 / 0x1806 (virtual +0x10C,
 \ Pursuer_InStance2Anim). Unused by the scripts.
-: stalker-stance-2? ( -- flag )  s" stalker-stance-2?" stub-flag ;
+: stalker-stance-2? ( -- flag )  2 character char.present sl@ 0<> stalker-in-stance-2? and ;
 \ 4C: Fiona can give Hewie a command (Hewie_FionaCanCommand).
 : hewie-can-command? ( -- flag )  event-hewie-can-command? ;
 \ 4D: This script's character's move is done (+0xE1).
-: self-done? ( -- flag )  s" self-done?" stub-flag ;
+: self-done? ( -- flag )  self-char dup 0< if  drop false exit  then  character char.move-done sl@ 0<> ;
 \ 4E: The message window is closed.
 : message-closed? ( -- flag )  event-state ev.message sl@ 0< ;
 \ 4F: The point (x, y, z) is in the camera's view (+0xD4).
@@ -994,17 +1020,17 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 \ 50: Character `who` (active, in this room)'s triangle is free for it (Actor_TriFreeFor).
 : char-tri-free? ( who -- flag )  drop s" char-tri-free?" stub-flag ;
 \ 51: The panic level (+0x7BC) is 98 or more.
-: panic-98? ( -- flag )  s" panic-98?" stub-flag ;
+: panic-98? ( -- flag )  panic-level@ 98e f< 0= ;
 \ 52: Character `who` (active) is at full health.
-: char-full-health? ( who -- flag )  drop s" char-full-health?" stub-flag ;
+: char-full-health? ( who -- flag )  char-slot dup 0< if  drop false exit  then  dup character char.hp sl@ swap char-hp-max = ;
 \ 53: One of the 10 room creatures (active, in the current room) is in action v.
 : creature-action? ( v -- flag )  drop s" creature-action?" stub-flag ;
 \ 54: The stalker is of kind `kind`.
-: stalker-kind? ( kind -- flag )  drop s" stalker-kind?" stub-flag ;
+: stalker-kind? ( kind -- flag )  2 character char.present sl@ 0= if  drop false exit  then  2 character char.id sl@ = ;
 \ 55: The stalker is in the scene.
-: stalker-active? ( -- flag )  s" stalker-active?" stub-flag ;
+: stalker-active? ( -- flag )  2 character char.present sl@ 0<> ;
 \ 56: Character `id` is at a motion event (its end flag 0x20).
-: char-at-motion-event? ( id -- flag )  drop s" char-at-motion-event?" stub-flag ;
+: char-at-motion-event? ( id -- flag )  char-slot dup 0< if  drop false exit  then  char-mflags $20 and 0<> ;
 \ 57: A movie is playing.
 : movie-playing? ( -- flag )  event-movie-state 0< 0= ;
 \ 58: This script's character touches one of room creatures 7..9 (active, in this room).
@@ -1035,4 +1061,6 @@ fvariable ta-y  fvariable tb-y  variable m0  variable m1
 : noise-slot-D? ( -- flag )  s" noise-slot-D?" stub-flag ;
 \ 65: The stalker (active) is in the current room and free: not held, not in certain attack
 \ moves, its triangle free.
-: stalker-free? ( -- flag )  s" stalker-free?" stub-flag ;
+: stalker-free? ( -- flag )
+    2 character char.present sl@ 0= if  false exit  then
+    2 in-room? 0= if  false exit  then  stalker-free ;
