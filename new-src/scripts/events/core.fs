@@ -179,6 +179,7 @@ defer event-area-in? ( area -- flag ) ( F: x y z -- )
 defer event-area-cross ( area -- n ) ( F: px py pz x y z -- )
 :noname drop fdrop fdrop fdrop fdrop fdrop fdrop 0 ; is event-area-cross
 defer event-exit-area ( exit -- area ) :noname drop $FFFF ; is event-exit-area
+defer event-area-middle ( area -- flag ) ( F: -- x y z )   :noname drop 0e 0e 0e false ; is event-area-middle
 \ the room's exits and doors (the door table): exit `exit`'s door (-1 none), a door's fixed
 \ flags (bit 0: a doorway, always open)
 defer event-exit-door ( exit -- door )   :noname drop -1 ; is event-exit-door
@@ -194,10 +195,12 @@ defer event-sound ( id bank -- )             ' 2drop is event-sound
 defer event-sound-at ( id bank -- ) ( F: x y z -- )
 :noname 2drop fdrop fdrop fdrop ; is event-sound-at
 defer event-sound-set ( set -- )             ' drop is event-sound-set
-\ characters: an actor's place set, its heading (radians), shown or not; its animation played
+\ characters: an actor's place set, its heading (radians: 0 along +z, as atan2 dx dz) set and read,
+\ shown or not; its animation played
 \ (once or looping) and whether it has come to its end
 defer event-char-place ( cs -- ) ( F: x y z -- )   :noname drop fdrop fdrop fdrop ; is event-char-place
 defer event-char-yaw ( cs -- ) ( F: a -- )          :noname drop fdrop ; is event-char-yaw
+defer event-char-heading ( cs -- ) ( F: -- a )      :noname drop 0e ; is event-char-heading
 defer event-char-show ( cs on -- )                  ' 2drop is event-char-show
 defer event-char-anim ( cs anim loop? -- )          :noname 2drop drop ; is event-char-anim
 defer event-char-anim-done? ( cs -- flag )          :noname drop true ; is event-char-anim-done?
@@ -259,6 +262,33 @@ defer message-parameter ( slot id -- ) ' 2drop is message-parameter
     event-exit-door dup 0< if  drop false exit  then  $10 door-bit? 0= ;
 \ an exit asked for (exit-check): the game takes it after the frame
 variable exit-wanted  -1 exit-wanted !
+
+\ ---- the player's request (progress +0x1134: what her action button does, set again each frame by
+\ the room's scripts - 0x0A): 5 starts her action script `request-arg`; its kind (+0x1151) ----
+variable request  variable request-arg  variable request-kind
+: requests-off ( -- )  0 request !  0 request-arg !  0 request-kind ! ;
+
+\ ---- zones (the original's 32 at +0xBF0, 0x30 each): cylinders the scripts set (0x7C) for the
+\ conditions; all off when phase 1 starts, every frame. Here 28 bytes each: on, kind, the
+\ centre's x y z, radius, height (either way up) ----
+32 constant zones
+create zone-table  zones 28 * allot
+: zone# ( z -- addr )  28 * zone-table + ;
+: zones-off ( -- )  zone-table zones 28 * 0 fill ;
+zones-off
+\ Zone_TestCylinder: a point with radius `r` and height `h` against zone `z`: 1 they overlap in
+\ height, 4 it is within it in height, 2 they overlap across, 8 its centre is inside across
+fvariable zr  fvariable zh  fvariable zx  fvariable zy  fvariable zz  fvariable zdy
+: zone-test ( z -- bits ) ( F: x y z r h -- )
+    zh f! zr f! zz f! zy f! zx f!
+    zone# dup l@ 0= if  drop 0 exit  then  >r
+    zy f@ zh f@ 2e f/ f+  r@ 12 + sf@ r@ 24 + sf@ 2e f/ f+  f- fabs zdy f!
+    0
+    zdy f@  r@ 24 + sf@ fabs zh f@ fabs f+ 2e f/  f<= if  1 or  then
+    zdy f@  r@ 24 + sf@ fabs zh f@ fabs f- 2e f/  f<= if  4 or  then
+    r@ 16 + sf@ zz f@ f- fdup f*  r@ 8 + sf@ zx f@ f- fdup f* f+       ( bits ) ( F: d2 )
+    fdup  r@ 20 + sf@ zr f@ f+ fdup f* f<= if  2 or  then
+    r> 20 + sf@ fdup f* f<= if  8 or  then ;
 
 \ ---- scenes: the cues (the scene frames 0x62 7 / 5 take; +0xBE4 / +0xBE8), the prepared message
 \ (0x89) and the page of it shown (0x62 12 turns them: the scene's subtitles) ----

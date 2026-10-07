@@ -28,7 +28,7 @@ USING: game-state events.core events.words events.builtin events.map0 events.map
 : run-phase ( phase -- )
     phase-context
     dup 0 = if  entering  then
-    dup 1 = if  1 event-state ev.room-frames +l!  then
+    dup 1 = if  1 event-state ev.room-frames +l!  zones-off  then
     dup 5 = if  $22 state-flag-clear  then
     $26 state-flag? over 3 <> and 0= if  dup ev-room swap room-script @ run  then
     dup 1 = if  builtin.after-phase1  then
@@ -82,7 +82,7 @@ USING: game-state events.core events.words events.builtin events.map0 events.map
 \ a frame (SceneGame's update): the camera eases, phases 1 and 2, the action scripts, the
 \ camera takes the followed character's setup, phase 3, the camera placed
 : run-frame ( -- )
-    fade-step  director-ease  1 run-phase  2 run-phase  run-slots
+    requests-off  fade-step  director-ease  1 run-phase  2 run-phase  run-slots
     camera-frame director-track  3 run-phase  director-update ;
 
 \ for the console: what is running

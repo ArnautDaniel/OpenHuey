@@ -51,7 +51,7 @@ USING: engine state rooms player hewie doors game-state events.core events.words
 ' look-set is event-look
 ' tri-center is event-tri-center
 ' bank-sound is event-sound   ' bank-sound-at is event-sound-at   ' sound-set! is event-sound-set
-' area-in? is event-area-in?   ' area-cross is event-area-cross   ' exit-area is event-exit-area
+' area-middle is event-area-middle   ' area-in? is event-area-in?   ' area-cross is event-area-cross   ' exit-area is event-exit-area
 ' room-string is event-room-string
 \ movies and the cutscene director (as the original's, a movie's frames time a scene played in
 \ the room)
@@ -92,6 +92,7 @@ fvariable pl-x  fvariable pl-y  fvariable pl-z
     pl-x f@ r@ act.x sf!  pl-y f@ r@ act.y sf!  pl-z f@ r> act.z sf! ;
 ' place-char is event-char-place
 :noname ( cs -- ) ( F: a -- )  actor-of dup 0< if  drop fdrop exit  then  actor act.yaw sf! ; is event-char-yaw
+:noname ( cs -- ) ( F: -- a )  actor-of dup 0< if  drop 0e exit  then  actor act.yaw sf@ ; is event-char-heading
 :noname ( cs on -- )  swap actor-of dup 0< if  2drop exit  then  actor act.visible >r  0<> 1 and r> l! ; is event-char-show
 \ (a motion its model hasn't: nothing plays, and it counts as played)
 create no-anim  characters cells allot  no-anim characters cells 0 fill
@@ -168,6 +169,13 @@ variable started   \ (the camera director set up for play)
     dup event-exit-door dup 0< 0= if  door-open-clear  else  drop  then
     go-through ;
 
+\ her action button (Enter): a request the room's scripts made this frame (Progress_PlayerButtons:
+\ 5 starts her action script)
+: action-button ( -- )
+    request @ 5 <>  0 scripted? or  event-state ev.message sl@ 0< 0= or if  exit  then
+    s" Enter: look" hud
+    key: Return key-pressed? if  0 0 request-arg @ action  0 0 hud  then ;
+
 : events-tick
     playing @ 0= if  exit  then
     cast  places
@@ -175,7 +183,7 @@ variable started   \ (the camera director set up for play)
         started @ 0= if  start-play  -1 started !  then
         room-id came-in-by @ enter-room  -1 came-in-by !  remember-places  exit
     then
-    run-frame  moves  remember-places  take-exit ;
+    run-frame  action-button  moves  remember-places  take-exit ;
 ' events-tick on-tick
 
 \ ---- movies ----

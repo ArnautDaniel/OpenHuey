@@ -55,7 +55,11 @@ USING: game-state events.core ;
 \ 0A: Requests a scene change (progress +0x1134 = scene, +0x113C = arg, +0x1151 = kind) when the
 \ situation allows it (not while panicking for most kinds; kinds 0 / 3 may set the pending
 \ ending instead). Scene 5 is refused while Fiona is busy.
-: scene-change ( scene arg kind -- )  drop drop drop s" scene-change" stub-step ;
+: scene-change ( scene arg kind -- )   \ (no panic yet: never too late; game mode 2's ending not yet)
+    request @ 5 =  $12 progress pr.state bit? or  0 character char.move-done sl@ 0= 0 character char.move sl@ 0<> and or
+    if  2drop drop exit  then
+    2 pick 5 = 0 character char.scripted sl@ 0<> and if  2drop drop exit  then
+    request-kind !  request-arg !  request ! ;
 \ 0B: Camera +0xB4 (which 0) or +0xB0 (else) with `v` (a camera distance / height).
 : camera-value ( which F: v -- )  drop fdrop s" camera-value" stub-step ;
 \ 0C: self: goes to (x, z) on triangle `tri` (tri2 0xFFFF: none), then faces `face`; `move` the
@@ -383,7 +387,10 @@ fvariable at-x  fvariable at-z
 : char-wait-motion ( who bits -- )  drop drop s" char-wait-motion" stub-step wait-frame ;
 \ 7C: Zone `z` (0..31, for conditions 0x07 / 0x08 ...) on: centre (x, y, z), radius r, height h,
 \ kind `kind`.
-: zone ( z r h kind F: x y z -- )  drop drop drop drop fdrop fdrop fdrop s" zone" stub-step ;
+: zone ( z r h kind F: x y z -- )
+    3 pick zones u< 0= if  2drop 2drop fdrop fdrop fdrop exit  then
+    3 pick zone# >r  r@ 4 + l!  s>f r@ 24 + sf!  s>f r@ 20 + sf!  drop
+    r@ 16 + sf!  r@ 12 + sf!  r@ 8 + sf!  1 r> l! ;
 \ 7D: Zone `z` on around room effect `fx`'s position: radius r, height h, kind.
 : zone-at-effect ( z fx r h kind -- )  drop drop drop drop drop s" zone-at-effect" stub-step ;
 \ 7E: Background music track `track` wanted on / off at volume `vol` (BgmCtl_Want); on 0xFF:
@@ -670,6 +677,31 @@ fvariable turn-x  fvariable turn-z
 \ 50 04: Placed object `obj` hidden and put back as defined (PlacedObject_ToDef).
 : object-hide-reset ( obj -- )  drop s" object-hide-reset" stub-step ;
 
+\ ---- for the conditions: facing, touching, the characters' sizes ----
+\ radians to degrees (cond_deg); an angle into -pi .. pi (Angle_Wrap)
+: deg ( F: a -- d )  180e f* 3.14159265e f/ ;
+: wrap-angle ( F: a -- a' )
+    begin  fdup 3.14159265e f> while  6.28318531e f-  repeat
+    begin  fdup -3.14159265e f< while  6.28318531e f+  repeat ;
+\ how far (degrees, 0..180) character `cs` turns from its heading to face (x, z)
+fvariable fx  fvariable fz
+: faces-off ( cs -- ) ( F: x z -- deg )
+    fz f! fx f!  dup char-pos fswap fdrop                     ( cs ) ( F: cx cz )
+    fz f@ fswap f-  fswap fx f@ fswap f-  fswap fatan2        ( F: atan2 dx dz )
+    event-char-heading f- wrap-angle deg fabs ;
+\ a character's radius and height (+0xC8, +0xCC: Fiona 2 / 15, Hewie 2.5 / 5)
+: char-body ( cs -- cs ) ( F: -- r h )
+    dup character char.id sl@ 1 = if  2.5e 5e  else  2e 15e  then ;
+\ Actor_Touching: within the lower one's height (+ m1) and their radii (+ m0)
+fvariable ta-y  fvariable tb-y  variable m0  variable m1
+: touching? ( b a m0 m1 -- flag )
+    m1 ! m0 !  dup char-pos fdrop ta-y f! fdrop  over char-pos fdrop tb-y f! fdrop
+    ta-y f@ tb-y f@ f< if  dup  else  over  then  char-body drop fswap fdrop   ( b a ) ( F: lower's h )
+    m1 @ s>f f+  ta-y f@ tb-y f@ f- fabs fswap f<= 0= if  2drop false exit  then
+    char-body fdrop  swap char-body fdrop f+  m0 @ s>f f+                ( a b ) ( F: reach )
+    char-pos fswap fdrop  char-pos fswap fdrop                          ( F: reach ax az bx bz )
+    frot f- fdup f*  frot frot f- fdup f* f+ fsqrt  f< 0= ;
+
 \ ---- conditions
 
 \ 00: Story flag n is set (the progress' scenario flags, +0x1C).
@@ -689,9 +721,16 @@ fvariable turn-x  fvariable turn-z
 \ 04: The exit just taken (+0x702, see command 0x00) is `exit`.
 : exit-taken? ( exit -- flag )  event-state ev.exit sl@ = ;
 \ 05: Character `who` faces heading dir x 2 degrees, within `within` degrees.
-: char-heading? ( who dir within -- flag )  drop drop drop s" char-heading?" stub-flag ;
+: char-heading? ( who dir within -- flag )
+    rot char-slot dup 0< if  drop 2drop false exit  then
+    event-char-heading wrap-angle deg  swap $FF and dup $80 and if  $100 -  then  2* s>f f-  fabs
+    fdup 180e f> if  360e fswap f-  then  s>f f<= ;
 \ 06: Character `who` is inside area `area` and faces its middle, within `within` degrees.
-: char-faces-area? ( who area within -- flag )  drop drop drop s" char-faces-area?" stub-flag ;
+: char-faces-area? ( who area within -- flag )
+    rot char-slot dup 0< if  drop 2drop false exit  then          ( area within cs )
+    rot 2dup char-in-area 0= if  2drop drop false exit  then      ( within cs area )
+    event-area-middle drop  fswap fdrop                            ( within cs ) ( F: mx mz )
+    faces-off  s>f f<= ;
 \ 07: Whoever is controlled may take exit `exit` now: free (Fiona idle or walking, Hewie idle),
 \ inside the exit's area, its door open and the exit not marked.
 : exit-usable? ( exit -- flag )   \ (Fiona controlled; the exit's "marked" flag isn't kept yet)
@@ -752,7 +791,11 @@ fvariable turn-x  fvariable turn-z
 \ 1E: Character `who` (active) has no health left.
 : char-dead? ( who -- flag )  drop s" char-dead?" stub-flag ;
 \ 1F: Character `a` touches `b` (margins m0, m1) and faces it, within `within` degrees.
-: char-touching-facing? ( a b m0 m1 within -- flag )  drop drop drop drop drop s" char-touching-facing?" stub-flag ;
+: char-touching-facing? ( a b m0 m1 within -- flag )
+    >r m1 ! m0 !  char-slot swap char-slot                          ( b a )
+    over 0< over 0< or if  2drop r> drop false exit  then
+    2dup m0 @ m1 @ touching? 0= if  2drop r> drop false exit  then  ( b a )
+    swap char-pos fswap fdrop  faces-off  r> s>f f<= ;
 \ 20: The cutscene director's mode (+0x2C) is `mode`.
 : cutscene-mode? ( mode -- flag )  event-scene-status = ;
 \ 21: The controlled character's current action (Fiona +0x1AD6B8, Hewie +0xF3798) is v.
@@ -769,7 +812,10 @@ fvariable turn-x  fvariable turn-z
 \ 26: The action Fiona last started (+0x1AD6BC, Fiona_MarkActionStart; -1 none) is v.
 : fiona-started? ( v -- flag )  drop s" fiona-started?" stub-flag ;
 \ 27: Character `who` (in this room) faces (x, z), within `within` degrees.
-: char-faces-xz? ( who x z within -- flag )  drop drop drop drop s" char-faces-xz?" stub-flag ;
+: char-faces-xz? ( who x z within -- flag )
+    >r  s>f s>f fswap  char-slot dup 0< if  drop fdrop fdrop r> drop false exit  then
+    dup in-room? 0= if  drop fdrop fdrop r> drop false exit  then
+    faces-off  r> s>f f<= ;
 \ 28: Pushable obstacle `i` stands on triangle `tri` (Obstacles_IsSquare).
 : obstacle-on? ( i tri -- flag )  drop drop s" obstacle-on?" stub-flag ;
 \ 29: Event bit n is set (commands 0x57 / 0x58).
@@ -802,9 +848,15 @@ fvariable turn-x  fvariable turn-z
 : char-motion-flags? ( who bits -- flag )  drop drop s" char-motion-flags?" stub-flag ;
 \ 35: Character `who` (in this room, its radius / height) against zone `zone`: all of `bits`
 \ (Zone_TestCylinder).
-: char-zone-bits? ( who zone bits -- flag )  drop drop drop s" char-zone-bits?" stub-flag ;
+: char-zone-bits? ( who zone bits -- flag )
+    rot char-slot dup 0< if  drop 2drop false exit  then
+    dup in-room? 0= if  drop 2drop false exit  then
+    dup char-pos  char-body drop  swap zone-test over and = ;
 \ 36: As 0x35 with where the character was last frame.
-: char-zone-bits-before? ( who zone bits -- flag )  drop drop drop s" char-zone-bits-before?" stub-flag ;
+: char-zone-bits-before? ( who zone bits -- flag )
+    rot char-slot dup 0< if  drop 2drop false exit  then
+    dup in-room? 0= if  drop 2drop false exit  then
+    dup char-prev  char-body drop  swap zone-test over and = ;
 \ 37: Character `who` is in zone `zone` (Zone_HasAnyChar).
 : char-in-zone? ( who zone -- flag )  drop drop s" char-in-zone?" stub-flag ;
 \ 38: The cutscene director's cue (+0x34) has reached `cue`.
