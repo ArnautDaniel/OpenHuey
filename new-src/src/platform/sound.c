@@ -16,6 +16,7 @@ typedef struct Voice {
 static SDL_AudioStream *sStream;
 static Voice sVoices[VOICES];
 static SDL_Mutex *sLock;
+static void (*volatile sStreamMix)(int16_t *out, int frames);
 
 static void SDLCALL feed(void *ud, SDL_AudioStream *s, int additional, int total) {
     int16_t buf[1024 * 2];
@@ -46,6 +47,9 @@ static void SDLCALL feed(void *ud, SDL_AudioStream *s, int additional, int total
             }
         }
         SDL_UnlockMutex(sLock);
+        if (sStreamMix != NULL) {
+            sStreamMix(buf, frames);
+        }
         SDL_PutAudioStreamData(s, buf, frames * 4);
         additional -= frames * 4;
     }
@@ -110,4 +114,14 @@ void sound_play(const int16_t *pcm, int n, float volume, float pan) {
         sVoices[v].right = volume * (pan < 0.0f ? 1.0f + pan : 1.0f);
     }
     SDL_UnlockMutex(sLock);
+}
+
+void sound_stream(void (*mix)(int16_t *out, int frames)) {
+    if (sLock != NULL) {
+        SDL_LockMutex(sLock);
+    }
+    sStreamMix = mix;
+    if (sLock != NULL) {
+        SDL_UnlockMutex(sLock);
+    }
 }

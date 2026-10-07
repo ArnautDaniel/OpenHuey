@@ -144,6 +144,11 @@ GpuTexture render_blob_texture(void);
 
 /* 2D, in window pixels from the top left; colours 0xRRGGBBAA */
 void render_rect(float x, float y, float w, float h, uint32_t rgba);
+/* a picture over the screen (window pixels from the top left), times a colour (0xRRGGBBAA) */
+void render_image(GpuTexture t, float x, float y, float w, float h, uint32_t rgba);
+/* a texture (re)filled with a w x h RGBA picture each time (a movie); made anew when the size
+ * changes (*tw / *th: its size) */
+GpuTexture render_texture_stream(GpuTexture t, const uint8_t *rgba, int w, int h, int *tw, int *th);
 void render_text(float x, float y, float scale, uint32_t rgba, const char *s, int n);
 float render_text_width(float scale, int chars);
 float render_line_height(float scale);

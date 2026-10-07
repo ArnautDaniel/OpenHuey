@@ -9,6 +9,7 @@
 #include "../game/messages.h"
 #include "../data/soundbank.h"
 #include "../platform/sound.h"
+#include "../platform/movie.h"
 
 #include "../core/files.h"
 
@@ -511,6 +512,35 @@ PRIM(p_stage_ambient) {   /* ( F: r g b -- ) */
 }
 PRIM(p_room_clear) { room_free(&gEngine.room); }   /* ( -- ) no room: nothing drawn round the actors */
 
+/* ---- movies (platform/movie.c) ---- */
+
+static GpuTexture sMovieTex;
+static int sMovieW, sMovieH;
+PRIM(p_movie_open) {   /* ( addr len -- flag ) start a movie (a path in the data folder) */
+    Cell n = POP(), a = POP();
+    char path[256];
+
+    snprintf(path, sizeof(path), "%.*s", (int)n, (const char *)a);
+    PUSH(movie_open(path) ? -1 : 0);
+}
+PRIM(p_movie_status) { PUSH(movie_status()); }   /* ( -- n ) 0 none, 1 playing, 2 over */
+PRIM(p_movie_frame) { PUSH(movie_frame()); }     /* ( -- n ) the frame shown, -1 none */
+PRIM(p_movie_close) { movie_close(); }
+PRIM(p_movie_pause) { movie_pause((int)POP()); }   /* ( on -- ) */
+PRIM(p_movie_volume) { movie_volume((float)FPOP()); }   /* ( F: v -- ) */
+PRIM(p_movie_draw) {   /* ( x y w h -- ) the movie's picture there (window pixels) */
+    Cell dh = POP(), dw = POP(), y = POP(), x = POP();
+    int pw, ph, fresh;
+    const uint8_t *px = movie_picture(&pw, &ph, &fresh);
+
+    if (px != NULL && (fresh || sMovieTex == 0 || pw != sMovieW || ph != sMovieH)) {
+        sMovieTex = render_texture_stream(sMovieTex, px, pw, ph, &sMovieW, &sMovieH);
+    }
+    if (sMovieTex != 0 && px != NULL) {
+        render_image(sMovieTex, (float)x, (float)y, (float)dw, (float)dh, 0xFFFFFFFFu);
+    }
+}
+
 PRIM(p_exit_area) {   /* ( exit -- area ) the event area of this room's exit (the room table) */
     Cell exit = POP();
     int room = gEngine.room.id;
@@ -825,6 +855,7 @@ void engine_tick(Engine *e) {
     int i;
 
     e->ticks++;
+    movie_update();
     for (i = 0; i < SDL_SCANCODE_COUNT; i++) {   /* keys scripts put down count as pressed once */
         e->held_pressed[i] = e->held[i] && !e->held_last[i];
         e->held_last[i] = e->held[i];
@@ -872,7 +903,9 @@ void bind_engine(Forth *f) {
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
-        {".director", p_cam_info}, {"area-in?", p_area_in}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"stage-light", p_stage_light}, {"stage-lights", p_stage_lights},
+        {".director", p_cam_info}, {"area-in?", p_area_in}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
+        {"movie-frame", p_movie_frame}, {"movie-close", p_movie_close}, {"movie-pause", p_movie_pause},
+        {"movie-volume!", p_movie_volume}, {"movie-draw", p_movie_draw}, {"stage-light", p_stage_light}, {"stage-lights", p_stage_lights},
         {"stage-ambient", p_stage_ambient}, {"room-clear", p_room_clear}, {"common-sound", p_common_sound},
         {"bank-sound", p_bank_sound}, {"bank-sound-at", p_bank_sound_at}, {"sound-set!", p_sound_set}, {"sound-to-wav", p_sound_to_wav}, {"exit-door", p_exit_door}, {"door-flags", p_door_flags},
         {"nav-block!", p_nav_block}, {"nav-group!", p_nav_group}, {"nav-tri-flags!", p_nav_tri_flags},

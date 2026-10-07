@@ -201,7 +201,7 @@ typedef struct Vertex2d {
 static struct {
     GLuint mesh_prog, sampler;
     float sampler_aniso;
-    GLuint prog2d, vao2d, vbo2d, font, blob;
+    GLuint prog2d, prog2d_image, vao2d, vbo2d, font, blob;
     Vertex2d *v2d;
     int n2d, cap2d;
     int w, h;                   /* the window */
@@ -240,6 +240,16 @@ static const char *k2dFs =   /* the font is a coverage mask */
     "out vec4 o_color;\n"
     "void main() {\n"
     "    o_color = vec4(v_col.rgb, v_col.a * texture(u_font, v_uv).r);\n"
+    "}\n";
+
+static const char *k2dImageFs =   /* a picture (a movie's frame), times the colour */
+    "#version 460 core\n"
+    "in vec2 v_uv;\n"
+    "in vec4 v_col;\n"
+    "layout(binding = 0) uniform sampler2D u_image;\n"
+    "out vec4 o_color;\n"
+    "void main() {\n"
+    "    o_color = texture(u_image, v_uv) * v_col;\n"
     "}\n";
 
 static void attribute(GLuint vao, GLuint index, GLint size, GLenum type, GLboolean normalized, GLuint offset) {
@@ -288,6 +298,7 @@ static void make_blob(void) {
 int render_init(void) {
     R.mesh_prog = gl_program(kMeshVs, kMeshFs, "mesh");
     R.prog2d = gl_program(k2dVs, k2dFs, "2d");
+    R.prog2d_image = gl_program(k2dVs, k2dImageFs, "2d image");
     if (R.mesh_prog == 0 || R.prog2d == 0) {
         return 0;
     }
@@ -670,6 +681,44 @@ void render_rect(float x, float y, float w, float h, uint32_t rgba) {
     float u = ((FONT_COUNT - 1) * FONT_CELL_W + 2.5f) / FONT_ATLAS_W, v = 3.5f / FONT_CELL_H;
 
     quad(x, y, x + w, y + h, u, v, u, v, rgba);
+}
+
+void render_image(GpuTexture t, float x, float y, float w, float h, uint32_t rgba) {
+    Mat4 proj = mat4_ortho2d((float)R.w, (float)R.h);
+
+    flush_2d();   /* (what was drawn before stays under it) */
+    quad(x, y, x + w, y + h, 0.0f, 0.0f, 1.0f, 1.0f, rgba);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, R.w, R.h);
+    glNamedBufferData(R.vbo2d, (GLsizeiptr)(R.n2d * sizeof(Vertex2d)), R.v2d, GL_STREAM_DRAW);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glProgramUniformMatrix4fv(R.prog2d_image, 0, 1, GL_FALSE, proj.m);
+    glUseProgram(R.prog2d_image);
+    glBindTextureUnit(0, t);
+    glBindSampler(0, 0);
+    glBindVertexArray(R.vao2d);
+    glDrawArrays(GL_TRIANGLES, 0, R.n2d);
+    glBindVertexArray(0);
+    glDisable(GL_BLEND);
+    R.n2d = 0;
+}
+
+GpuTexture render_texture_stream(GpuTexture t, const uint8_t *rgba, int w, int h, int *tw, int *th) {
+    if (t == 0 || *tw != w || *th != h) {
+        render_texture_free(t);
+        glCreateTextures(GL_TEXTURE_2D, 1, &t);
+        glTextureStorage2D(t, 1, GL_SRGB8_ALPHA8, w, h);
+        glTextureParameteri(t, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(t, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(t, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(t, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        *tw = w;
+        *th = h;
+    }
+    glTextureSubImage2D(t, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+    return t;
 }
 
 void render_text(float x, float y, float scale, uint32_t rgba, const char *s, int n) {

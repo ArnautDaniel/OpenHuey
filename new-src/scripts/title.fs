@@ -52,7 +52,12 @@ variable picked
 : begin-game ( -- )
     0 title !  3 stage !  0 stage-lights  0.06e 0.06e 0.08e clear-color
     7e dog act.shadow sf!   \ (his contact shadow back: the actor default)
+    1 dog act.visible l!
     new-game ;
+
+\ New Game: the opening movie first, as the original's title does
+: opening ( -- )
+    s" OPENING.SFD" movie-open if  4 stage !  0 hewie @ actor act.visible l!  else  begin-game  then ;
 
 : title-tick ( -- )
     title @ 0= if  exit  then
@@ -66,11 +71,25 @@ variable picked
             then
         endof
         1 of  hewie @ motion-done? if  m-bark 0 play  bark-sound common-sound  2 stage !  then  endof
-        2 of  hewie @ motion-done? if  begin-game  then  endof
+        2 of  hewie @ motion-done? if  opening  then  endof
+        4 of   \ the opening movie (SceneTitle_StateNewGame), Enter (Start) skips it
+            movie-status 1 <>  key: Return key-pressed? or if  movie-close  begin-game  then
+        endof
     endcase ;
 ' title-tick on-tick
 
 \ the menu: the game's name above, the items low on the left
+\ a movie over everything, 4:3 in the middle of the window, black round it
+variable mw  variable mh
+: movie-over ( -- )
+    title @ 0= stage @ 4 <> or if  exit  then
+    $000000FF pen-color  0 0 screen-size draw-rect
+    screen-size mh ! mw !
+    mw @ 3 * 4 / mh @ min  dup 4 * 3 /               ( ph pw )
+    mw @ over - 2/  mh @ 3 pick - 2/                  ( ph pw x y )
+    2swap swap movie-draw ;
+' movie-over on-draw
+
 : title-draw ( -- )
     title @ 0= stage @ 0<> or if  exit  then
     $D8D0C8FF pen-color  4 pen-scale
