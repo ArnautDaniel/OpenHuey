@@ -112,6 +112,28 @@ table (`tools/event_opcodes.py`, `docs/event_opcodes.md`).
 - `tests/test_runner.fs`: entering room 00 by exit 0 runs its scripts (Fiona put at the exit),
   slots, self, goto, a character's action, flags.
 
-Next: the words that fire most (cameras: char-camera / camera-follow / area-camera; areas and
-zones; doors and nav groups; the message window with the game's text), and characters doing
-their scripted moves.
+## Status (2026-10-07): the game's camera
+
+- `src/game/camdirector.c`: the camera director ported (CamDirector_*, CamPath_*, Spline_*):
+  the room's camera sets (section 5) and paths (section 6, Bezier splines with an eye and a
+  look-at track); a new set cuts, a path is ridden nearest the followed character, no path turns
+  to keep it in view; the view angle dips and eases after a room start. (Its out-of-view test is
+  new-src's own frustum, not the original's matrices.)
+- `src/game/areas.c`: the room's event areas (section 2): quads (inside) and gates (crossed).
+- `src/game/exits.c`: an exit's spots from its door (section 7: out 4 behind, in 12 ahead,
+  through 12 behind, turned away from the exit's area, walked over the nav mesh), else the room
+  table. doors.fs uses them too (the door table's triangle was not where characters stand).
+- Words: `char-camera`, `camera-follow`, `area-camera`, `chars-area-camera`, `camera-restart`,
+  `camera-setup-changed?`, `char-in-area?`, `char-entered-area?`, `char-left-area?`; the
+  camera's character logic (Progress_CameraFollow / CameraOn / CameraSetup) in events/core.fs.
+  Characters' positions (now and the frame before) are in the scripts' state.
+- The runner does the director's steps where SceneGame does (ease, phases, slots, the followed
+  character's setup, track, phase 3, update; the room start after the characters enter).
+- While playing, the director is the camera; player.fs's chase camera stands in only when the
+  followed character has no camera set (a room jumped into, the start).
+
+To check against the original: in room $0E Fiona can run where path 0 loses her (x -94);
+whether the original keeps her in view there (or she can't go there) needs the src build.
+
+Next: the message window with the game's text; doors (opening, locked) and nav groups;
+characters doing their scripted moves.

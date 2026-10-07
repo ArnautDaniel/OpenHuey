@@ -43,6 +43,7 @@ add_executable(hg2
     src/render/render.c src/render/post.c
     src/data/pac.c src/data/tex.c src/data/roommesh.c src/data/model.c src/data/navmesh.c src/data/exe.c
     src/game/room.c src/game/console.c src/game/actor.c src/game/world.c
+    src/game/camdirector.c src/game/areas.c src/game/exits.c
     src/forth/bind_engine.c)
 target_link_libraries(hg2 PRIVATE forth gamestate SDL3::SDL3 OpenGL::GL)
 target_compile_definitions(hg2 PRIVATE "HG2_SCRIPT_DIR=\"${SCRIPT_DIR}\"" "HG2_DEFAULT_DATA=\"${DEFAULT_DATA}\""

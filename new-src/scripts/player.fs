@@ -113,7 +113,9 @@ variable best  fvariable best-d
     then
     her-pos fswap 11e f+ fswap look-at ;    \ (her chest: 11 units up)
 
-: play  playing @ if  walk follow  then ;
+\ what moves the camera while playing (events/play.fs gives it to the game's camera director)
+defer steer-camera  ' follow is steer-camera
+: play  playing @ if  walk steer-camera  then ;
 ' play on-tick
 
 \ ---- switching ----

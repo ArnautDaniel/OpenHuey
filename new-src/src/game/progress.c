@@ -56,6 +56,7 @@ void bind_state(Forth *f) {
     field(f, "ev.self-frames", offsetof(EventState, self_frames));
     field(f, "ev.self-char", offsetof(EventState, self_char));
     field(f, "ev.leaving", offsetof(EventState, leaving));
+    field(f, "ev.camera-char", offsetof(EventState, camera_char));
     field(f, "ev.slots", offsetof(EventState, slots));
     field(f, "ev.chars", offsetof(EventState, chars));
     field(f, "slot.task", offsetof(ScriptSlot, task));
@@ -67,5 +68,9 @@ void bind_state(Forth *f) {
     field(f, "char.room", offsetof(ScriptChar, room));
     field(f, "char.scripted", offsetof(ScriptChar, scripted));
     field(f, "char.actor", offsetof(ScriptChar, actor));
+    field(f, "char.cam-set", offsetof(ScriptChar, cam_set));
+    field(f, "char.cam-path", offsetof(ScriptChar, cam_path));
+    field(f, "char.pos", offsetof(ScriptChar, pos));      /* 3 floats: sf@ */
+    field(f, "char.prev", offsetof(ScriptChar, prev));
     forth_set_current(f, saved);
 }

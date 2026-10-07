@@ -12,24 +12,57 @@ USING: engine state player hewie game-state events.core events.runner ;
     fiona @ dup 0 character char.actor l!  0< 0= 0 character char.present l!
     hewie @ dup 1 character char.actor l!  0< 0= 1 character char.present l! ;
 
-\ a character at the outside point of this room's exit (Rooms_ExitPointOut: the exit's first
-\ triangle's centre)
+\ a character at the outside point of this room's exit (Rooms_ExitPointOut: exit-spot 0)
+: f3! ( addr -- ) ( F: x y z -- )  dup 8 + sf!  dup 4 + sf!  sf! ;
+: f3@ ( addr -- ) ( F: -- x y z )  dup sf@  dup 4 + sf@  8 + sf@ ;
+\ (the scripts' copy of where it is moves with it, as the original's char_place moves the
+\ character itself)
 : at-exit ( cs exit -- )
-    swap character char.actor sl@ dup 0< if  2drop exit  then   ( exit actor )
-    swap 0 exit-tri dup 0< if  2drop exit  then                ( actor tri )
-    tri-center  actor dup act.z sf!  dup act.y sf!  act.x sf! ;
+    over character char.actor sl@ 0< if  2drop exit  then
+    0 exit-spot 0< if  fdrop fdrop fdrop drop exit  then       ( cs )
+    character dup char.pos f3!  dup char.pos f3@  dup char.prev f3!
+    dup char.pos f3@  char.actor sl@ actor dup act.z sf!  dup act.y sf!  act.x sf! ;
 ' at-exit is place-at-exit
+
+\ the camera: the game's director (game/camdirector.c) instead of player.fs's
+: actor-of ( cs -- actor | -1 )  dup 0< if  exit  then  character char.actor sl@ ;
+:noname ( set path -- )  cam-setup ; is director-setup
+:noname ( cs -- )  actor-of cam-follow ; is director-follow
+' cam-restart is director-restart       ' cam-changed? is director-changed?
+' cam-new-room is director-new-room     ' cam-room-start is director-room-start
+' cam-ease is director-ease             ' cam-track is director-track
+\ (a room come into without an exit - a jump, the start - may leave the camera no set: then
+\ player.fs's chase camera stands in)
+: directed? ( -- flag )
+    event-state ev.camera-char sl@ dup $FF = if  drop true exit  then
+    character char.cam-set sl@ 0< 0= ;
+:noname  directed? if  cam-update  then ; is director-update
+:noname  directed? 0= if  follow  then ; is steer-camera
+\ the room's event areas
+' area-in? is event-area-in?   ' area-cross is event-area-cross   ' exit-area is event-exit-area
+
+\ the characters' places from their actors (now, and the frame before)
+: places ( -- )
+    characters 0 do
+        i actor-of dup 0< if  drop  else
+            actor dup act.x sf@  dup act.y sf@  act.z sf@  i character char.pos f3!
+        then
+    loop ;
+: remember-places ( -- )
+    characters 0 do  i character dup char.pos f3@  char.prev f3!  loop ;
 
 : leaving  playing @ event-state ev.room sl@ 0< 0= and if  leave-room  then ;
 ' leaving is leaving-room
 
+variable started
 : events-tick
     playing @ 0= if  exit  then
-    cast
+    cast  places
     event-state ev.room sl@ room-id <> if
-        room-id came-in-by @ enter-room  -1 came-in-by !  exit
+        started @ 0= if  start-play  -1 started !  then
+        room-id came-in-by @ enter-room  -1 came-in-by !  remember-places  exit
     then
-    run-frame
+    run-frame  remember-places
     event-state ev.message sl@ 0< 0= key: Return key-pressed? and if
         -1 event-state ev.message l!
     then ;

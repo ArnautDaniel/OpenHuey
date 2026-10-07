@@ -36,6 +36,10 @@ typedef struct ScriptChar {
     int32_t room;
     int32_t scripted;   /* doing a scripted action: its action script drives it */
     int32_t actor;      /* new-src's actor (-1: none) */
+    int32_t cam_set;    /* the camera set and path for when the camera follows it (+0xE8, +0xEC) */
+    int32_t cam_path;
+    float pos[3];       /* where it is (+0x10) */
+    float prev[3];      /* where it was the frame before (+0x40) */
 } ScriptChar;
 
 /* an action script running (the original's 0x18-byte contexts at +0x564) */
@@ -60,6 +64,7 @@ typedef struct EventState {
     int32_t self_id;                /* the running context's id (+0x13; 0xFF in a phase) */
     int32_t self_char;              /* the running context's character slot (+0x0), -1 none */
     int32_t leaving;                /* an exit was taken: no more actions start (progress +0x4) */
+    int32_t camera_char;            /* the character slot the camera follows (+0x1130), $FF none */
     int32_t self_frames;            /* a phase script's frame count (its context's +0x14) */
     ScriptSlot slots[SCRIPT_SLOTS];
     ScriptChar chars[CHARACTERS];

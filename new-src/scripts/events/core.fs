@@ -53,13 +53,15 @@ create builtin-scripts $80 cells allot           builtin-scripts $80 cells 0 fil
 \ script id (Fiona 0, Hewie 1, ...).
 
 : character ( slot -- addr )  /char * event-state ev.chars + ;
-\ Progress_SlotOfId: the slot of the character with script id `id` ($FE: the stalker), or -1
+\ Progress_SlotOfId: the slot of the character with script id `id` ($FE: the one in slot 2,
+\ the stalker's), or -1 ($FF: none)
 : char-slot ( id -- slot | -1 )
     $FF and
+    dup $FF = if  drop -1 exit  then
+    dup $FE = if  drop 2 character char.present sl@ if  2  else  -1  then  exit  then
     characters 0 do
-        i character dup char.present sl@ swap char.id sl@     ( id present cid )
-        2 pick $FE = if  drop i 2 >=  else  2 pick =  then
-        and if  drop i unloop exit  then
+        i character dup char.present sl@ swap char.id sl@ 2 pick =  and
+        if  drop i unloop exit  then
     loop  drop -1 ;
 : char-here ( slot -- flag )   \ present and in the scripts' room
     dup 0< if  drop false exit  then
@@ -159,6 +161,65 @@ variable seed  $2545F491 seed !
 \ ---- what the game provides (play.fs sets these; tests leave them) ----------------------------
 \ put character slot `cs` at the outside point of this room's exit `exit`
 defer place-at-exit ( cs exit -- )     :noname 2drop ; is place-at-exit
+\ the camera director (game/camdirector.c): the set and path to use, the character slot to
+\ follow (-1: nobody), and its steps
+defer director-setup ( set path -- )   :noname 2drop ; is director-setup
+defer director-follow ( cs -- )        ' drop is director-follow
+defer director-restart ( -- )          ' noop is director-restart
+defer director-changed? ( -- flag )    ' false is director-changed?
+defer director-new-room ( -- )         ' noop is director-new-room
+defer director-room-start ( -- )       ' noop is director-room-start
+defer director-ease ( -- )             ' noop is director-ease
+defer director-track ( -- )            ' noop is director-track
+defer director-update ( -- )           ' noop is director-update
+\ the room's event areas (game/areas.c): inside one (only quads have an inside), and a step's
+\ crossing (1 in, -1 out, 0); a room exit's area
+defer event-area-in? ( area -- flag ) ( F: x y z -- )
+:noname drop fdrop fdrop fdrop false ; is event-area-in?
+defer event-area-cross ( area -- n ) ( F: px py pz x y z -- )
+:noname drop fdrop fdrop fdrop fdrop fdrop fdrop 0 ; is event-area-cross
+defer event-exit-area ( exit -- area ) :noname drop $FFFF ; is event-exit-area
+
+\ ---- characters' places and areas ----------------------------------------------------------
+: char-pos ( cs -- ) ( F: -- x y z )  character char.pos dup sf@ dup 4 + sf@ 8 + sf@ ;
+: char-prev ( cs -- ) ( F: -- x y z )  character char.prev dup sf@ dup 4 + sf@ 8 + sf@ ;
+\ Events_InArea for a character (where it stands)
+: char-in-area ( cs area -- flag )  swap char-pos event-area-in? ;
+\ EventCond_AreaCross: its last step into (1) or out of (-1) the area
+: char-cross ( cs area -- n )  >r dup char-prev char-pos r> event-area-cross ;
+
+\ ---- the camera: which character it follows (src/game/progress.c) ---------------------------
+: in-room? ( cs -- flag )  character char.room sl@ event-state ev.room sl@ = ;
+\ Progress_CameraFollow: can the camera follow slot `idx` (Fiona always; another one in this
+\ room with a camera set); if not, Fiona it is, and the director follows her
+: followable? ( idx -- flag )
+    dup characters u< 0= if  drop false exit  then
+    dup character char.present sl@ 0= if  drop false exit  then
+    dup 0= if  drop true exit  then
+    dup character char.cam-set sl@ -1 <>  swap in-room? and ;
+: camera-follow-check ( idx -- idx' )
+    dup $FF = if  -1 director-follow exit  then
+    dup followable? if  exit  then
+    drop 0 director-follow 0 ;
+\ Progress_CameraOn: the camera follows slot `idx` ($FF: nobody), with its set and path
+: camera-on ( idx -- )
+    camera-follow-check dup event-state ev.camera-char l!
+    dup $FF = if  drop -1 director-follow exit  then
+    dup director-follow
+    character dup char.cam-set sl@ swap char.cam-path sl@ director-setup ;
+\ Progress_CameraSetup: slot `cs`'s camera set and path ($FF: straight to the director, which
+\ then follows nobody's); a character in another room gets none
+: char-cam! ( set path cs -- )  character >r  r@ char.cam-path l!  r> char.cam-set l! ;
+: camera-setup ( cs set path -- )
+    rot dup $FF = if  drop director-setup  $FF event-state ev.camera-char l!  exit  then
+    dup characters u< 0= if  drop 2drop exit  then
+    dup character char.present sl@ 0= if  drop 2drop exit  then
+    dup 0=  over in-room? or if  char-cam!  else  nip nip -1 -1 rot char-cam!  then ;
+\ each frame, after the action scripts: the followed character's set and path to the director
+: camera-frame ( -- )
+    event-state ev.camera-char sl@ camera-follow-check  dup event-state ev.camera-char l!
+    dup $FF = if  drop exit  then
+    character dup char.cam-set sl@ swap char.cam-path sl@ director-setup ;
 
 \ ---- a fresh start ---------------------------------------------------------------------------
 : reset-events ( -- )
@@ -172,6 +233,6 @@ defer place-at-exit ( cs exit -- )     :noname 2drop ; is place-at-exit
 : reset-characters ( -- )
     characters 0 do
         i character  0 over char.present l!  -1 over char.id l!  -1 over char.room l!
-        0 over char.scripted l!  -1 swap char.actor l!
-    loop ;
+        0 over char.scripted l!  -1 over char.actor l!  -1 over char.cam-set l!  -1 swap char.cam-path l!
+    loop  0 event-state ev.camera-char l! ;
 -1 event-state ev.room l!  reset-characters  reset-events

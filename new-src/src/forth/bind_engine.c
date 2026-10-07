@@ -3,6 +3,9 @@
  * Structs are reached by address plus field words: `camera cam.yaw sf@` reads the camera's yaw
  * (a field word adds its offset). Floats in structs are 32-bit: sf@ / sf!. */
 #include "../game/engine.h"
+#include "../game/areas.h"
+#include "../game/camdirector.h"
+#include "../game/exits.h"
 
 #include "../core/files.h"
 
@@ -190,6 +193,80 @@ PRIM(p_room_camera) {   /* ( i -- ) ( F: -- ex ey ez fov-radians tx ty tz ) */
      * Camera_ViewMatrix and the view-screen scales); ours is vertical */
     FPUSH(2.0 * atan(0.75 * tan((v[3] == 0.0f ? 60.0f : v[3]) * 3.14159265358979 / 360.0)));
     FPUSH(v[4]); FPUSH(v[5]); FPUSH(v[6]);
+}
+
+/* ---- the camera director (game/camdirector.c) ---- */
+
+PRIM(p_cam_new_room) { camdir_new_room(&gCamDir); }   /* ( -- ) the start of play: nothing set */
+PRIM(p_cam_room_start) {   /* ( -- ) this room's camera sets and paths taken, the camera put */
+    size_t size;
+    int n;
+    const float *sets = room_cameras(&n);
+    const uint8_t *paths = pac_section(&gEngine.room.pac, PAC_SECTION6, &size);
+
+    camdir_room_start(&gCamDir, sets, n, paths != NULL && size >= 8 ? (const int32_t *)paths : NULL);
+}
+PRIM(p_cam_setup) {   /* ( set path -- ) */
+    Cell path = POP(), set = POP();
+
+    camdir_set_setup(&gCamDir, (int)set, (int)path);
+}
+PRIM(p_cam_follow) {   /* ( actor -- ) follow an actor (10 units up), -1 nobody */
+    Cell a = POP();
+
+    camdir_follow(&gCamDir, (int)a, a < 0 ? vec3(0, 0, 0) : vec3(0, 10, 0));
+}
+PRIM(p_cam_ease) { camdir_ease(&gCamDir); }
+PRIM(p_cam_track) { camdir_track(&gCamDir); }
+PRIM(p_cam_update) {   /* ( -- ) the camera placed, and the engine's camera made the director's */
+    camdir_update(&gCamDir);
+    camdir_apply(&gCamDir, &gEngine.camera);
+}
+PRIM(p_cam_restart) { camdir_restart(&gCamDir); }
+PRIM(p_cam_changed) { PUSH(camdir_setup_changed(&gCamDir) ? -1 : 0); }
+PRIM(p_cam_info) {   /* ( -- ) for the console */
+    forth_printf(f, "set %d path %d (of %d) following %d, t %.1f of %d..%d, fov %.1f deg\n", gCamDir.set,
+                 gCamDir.path_no, gCamDir.npaths, gCamDir.target, gCamDir.path.t, gCamDir.path.tmin,
+                 gCamDir.path.tmax, gCamDir.fov * 57.29578f);
+    forth_printf(f, "eye %.1f %.1f %.1f  looking at %.1f %.1f %.1f\n", gCamDir.eye.x, gCamDir.eye.y, gCamDir.eye.z,
+                 gCamDir.look.x, gCamDir.look.y, gCamDir.look.z);
+}
+
+/* ---- the room's event areas (game/areas.c) ---- */
+
+PRIM(p_area_in) {   /* ( area -- flag ) ( F: x y z -- ) */
+    Cell area = POP();
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+
+    PUSH(area_inside(&gEngine.room, (int)area, vec3(x, y, z)) ? -1 : 0);
+}
+PRIM(p_area_cross) {   /* ( area -- n ) ( F: px py pz x y z -- ) 1 in, -1 out, 0 */
+    Cell area = POP();
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+    float pz = (float)FPOP(), py = (float)FPOP(), px = (float)FPOP();
+
+    PUSH(area_cross(&gEngine.room, (int)area, vec3(px, py, pz), vec3(x, y, z)));
+}
+PRIM(p_exit_spot) {   /* ( exit which -- tri ) ( F: -- x y z ) where to stand at an exit: 0 out, 1 in,
+                         * 2 through (tri -1: nowhere; 0 0 0) */
+    Cell which = POP(), exit = POP();
+    Vec3 p = vec3(0, 0, 0);
+    int tri = exit_spot(&gEngine.room, &gEngine.world, (int)exit, (int)which, &p);
+
+    PUSH(tri);
+    FPUSH(p.x);
+    FPUSH(p.y);
+    FPUSH(p.z);
+}
+PRIM(p_exit_area) {   /* ( exit -- area ) the event area of this room's exit (the room table) */
+    Cell exit = POP();
+    int room = gEngine.room.id;
+
+    if (room < 0 || room >= WORLD_ROOMS || exit < 0 || exit >= ROOM_EXITS) {
+        PUSH(0xFFFF);
+        return;
+    }
+    PUSH(gEngine.world.exits[room][exit].camera & 0xFFFF);
 }
 
 /* ---- the camera ---- */
@@ -526,6 +603,10 @@ void bind_engine(Forth *f) {
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center},
         {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"hud", p_hud}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
+        {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
+        {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
+        {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
+        {".director", p_cam_info}, {"area-in?", p_area_in}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},

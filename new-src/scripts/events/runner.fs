@@ -67,15 +67,23 @@ USING: game-state events.core events.words events.builtin events.map0 events.map
 
 \ ---- what the game calls ----------------------------------------------------------------------
 
-\ the characters in the scene go into this room with whoever took the exit
+\ the start of play (SceneGame_RoomIn): the camera director anew, following Fiona
+: start-play ( -- )  director-new-room  0 camera-on  director-room-start ;
+\ the characters in the scene go into this room with whoever took the exit (SceneGame_EnterRoom,
+\ then the room's camera taken and the camera on whoever it follows)
 : enter-room ( room exit -- )
     event-state ev.exit l!  event-state ev.room l!
     characters 0 do  i character char.present sl@ if  ev-room i character char.room l!  then  loop
     0 run-phase
     characters 0 do  i character char.present sl@ if  i char-enter  then  loop
-    3 run-phase ;
+    director-room-start  event-state ev.camera-char sl@ camera-on
+    3 run-phase  director-update ;
 : leave-room ( -- )  4 run-phase  5 run-phase ;
-: run-frame ( -- )  1 run-phase  2 run-phase  run-slots  3 run-phase ;
+\ a frame (SceneGame's update): the camera eases, phases 1 and 2, the action scripts, the
+\ camera takes the followed character's setup, phase 3, the camera placed
+: run-frame ( -- )
+    director-ease  1 run-phase  2 run-phase  run-slots
+    camera-frame director-track  3 run-phase  director-update ;
 
 \ for the console: what is running
 : .slots ( -- )

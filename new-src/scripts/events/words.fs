@@ -111,11 +111,24 @@ USING: game-state events.core ;
 : var-set ( var v -- )  swap 4 * event-state ev.vars + l! ;
 \ 27: Each character whose relation to area `area` is `rel`: its camera setup (+0xE8 / +0xEC) =
 \ a, b.
-: chars-area-camera ( area a b rel -- )  drop drop drop drop s" chars-area-camera" stub-step ;
+: chars-area-camera ( area set path rel -- )
+    characters 0 do
+        i character char.present sl@ if
+            i 4 pick char-cross over = if  2 pick 2 pick i char-cam!  then
+        then
+    loop  2drop 2drop ;
 \ 28: The camera follows character `id` (0xFF: nobody).
-: camera-follow ( id -- )  drop s" camera-follow" stub-step ;
+: camera-follow ( id -- )
+    dup $FF = if  drop $FF camera-on exit  then
+    char-slot dup 0< if  drop exit  then  camera-on ;
 \ 29: The characters in this room inside area `area`: camera setup (+0xE8 / +0xEC) = a, b.
-: area-camera ( area a b -- )  drop drop drop s" area-camera" stub-step ;
+: area-camera ( exit set path -- )   \ (the area of this room's exit `exit`: the room table)
+    rot event-exit-area -rot
+    characters 0 do
+        i character char.present sl@ if  i in-room? if
+            i 3 pick char-in-area if  2dup i char-cam!  then
+        then  then
+    loop  2drop drop ;
 \ 2A: Stalker `id`: frames it waits (+0x1660, default 900 = 15 s) before it searches or comes
 \ after Fiona when she is in another room.
 : stalker-search-delay ( id frames -- )  drop drop s" stalker-search-delay" stub-step ;
@@ -140,7 +153,7 @@ USING: game-state events.core ;
 \ sent the command's 7 bytes from `args` on, as they are.
 : butterflies ( fx args b b b b b b -- )  drop drop drop drop drop drop drop drop s" butterflies" stub-step ;
 \ 36: Character `id`'s camera setup (Progress_CameraSetup) a, b.
-: char-camera ( id a b -- )  drop drop drop s" char-camera" stub-step ;
+: char-camera ( id set path -- )  rot char-slot $FF and -rot camera-setup ;
 \ 37: Script variable + 1.
 : var-inc ( var -- )  1 swap 4 * event-state ev.vars + +l! ;
 \ 38: Script variable - 1.
@@ -177,7 +190,7 @@ USING: game-state events.core ;
 \ character in a scripted move is released (move 1).
 : action-end ( who -- )  end-for ;
 \ 4A: The camera director restarts (CamDirector_Restart).
-: camera-restart ( -- )  s" camera-restart" stub-step ;
+: camera-restart ( -- )  director-restart ;
 \ 4B: self: turns to heading `face` (character move 15).
 : self-turn-angle ( face -- )  drop s" self-turn-angle" stub-step ;
 \ 4C: Door `door`: Doors_SetBits(door, a, b) (the progress' +0x68 is empty).
@@ -569,11 +582,17 @@ USING: game-state events.core ;
 \ 00: Story flag n is set (the progress' scenario flags, +0x1C).
 : story-flag? ( n -- flag )  progress pr.story bit? ;
 \ 01: Character `who` (active) is in this room, inside event area `area`.
-: char-in-area? ( who area -- flag )  drop drop s" char-in-area?" stub-flag ;
+: char-in-area? ( who area -- flag )
+    swap char-slot dup 0< if  2drop false exit  then
+    dup in-room? 0= if  2drop false exit  then  swap char-in-area ;
 \ 02: Character `who` (active, in this room) has just entered area `area`.
-: char-entered-area? ( who area -- flag )  drop drop s" char-entered-area?" stub-flag ;
+: char-entered-area? ( who area -- flag )
+    swap char-slot dup 0< if  2drop false exit  then
+    dup in-room? 0= if  2drop false exit  then  swap char-cross 1 = ;
 \ 03: Character `who` (active, in this room) has just left area `area`.
-: char-left-area? ( who area -- flag )  drop drop s" char-left-area?" stub-flag ;
+: char-left-area? ( who area -- flag )
+    swap char-slot dup 0< if  2drop false exit  then
+    dup in-room? 0= if  2drop false exit  then  swap char-cross -1 = ;
 \ 04: The exit just taken (+0x702, see command 0x00) is `exit`.
 : exit-taken? ( exit -- flag )  event-state ev.exit sl@ = ;
 \ 05: Character `who` faces heading dir x 2 degrees, within `within` degrees.
@@ -662,7 +681,7 @@ USING: game-state events.core ;
 \ 2B: The fade's frame count (+0x11F0) has reached +0x40. Unused by the scripts.
 : fade-past-40? ( -- flag )  s" fade-past-40?" stub-flag ;
 \ 2C: The camera director's setup changed (+0x2C, CamDirector_SetupChanged).
-: camera-setup-changed? ( -- flag )  s" camera-setup-changed?" stub-flag ;
+: camera-setup-changed? ( -- flag )  director-changed? ;
 \ 2D: Sound bank `bank` is loaded (SndDriver_BankLoaded).
 : sound-bank-loaded? ( bank -- flag )  drop s" sound-bank-loaded?" stub-flag ;
 \ 2E: Character `who` (in this room) stands on a triangle of nav group `group` (NavGroups
