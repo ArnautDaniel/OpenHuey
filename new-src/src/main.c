@@ -124,15 +124,25 @@ static void light_actor(Engine *e, Actor *a) {
                             dist + radius * 6.0f + 200.0f);
     view = mat4_look(l->pos, dir, up);
     vp = mat4_mul(proj, view);
-    slot = render_shadow_add(&vp, center, radius, gRender.shadow_strength * fminf(1.0f, fmaxf(0.6f, lum * fall * 4.0f)));
+    slot = render_shadow_add(&vp, center, radius, gRender.shadow_strength * fminf(1.0f, fmaxf(0.6f, lum * fall * 4.0f)) *
+                                                      (e->extra.on ? fminf(1.0f, e->extra.scale) : 1.0f));   /* (a scene's dimmed lights cast less) */
     if (slot >= 0) {
         render_shadow_mesh(&a->gpu, a->model.d, a->model.nd);
     }
 }
 
 /* the lights of the next lit draws: the actor's (or the fixed key light) */
+/* a direction rotated by `angle` about a unit axis (Rodrigues) */
+static Vec3 turn_about(Vec3 v, Vec3 axis, float angle) {
+    float c = cosf(angle), s = sinf(angle);
+
+    return vec3_add(vec3_add(vec3_scale(v, c), vec3_scale(vec3_cross(axis, v), s)),
+                    vec3_scale(axis, vec3_dot(axis, v) * (1.0f - c)));
+}
+
 static void use_lights(Engine *e, const Actor *a) {
     DrawLight lights[3];
+    Vec3 ambient = e->nstage > 0 ? e->stage_ambient : e->room.ambient;
     int n = 0, k;
 
     for (k = 0; k < 3; k++) {
@@ -145,10 +155,38 @@ static void use_lights(Engine *e, const Actor *a) {
             n++;
         }
     }
+    if (e->extra.on && e->nstage == 0) {   /* (Lights_Scripted: the camera's lights into slots 2, then 1) */
+        Vec3 eye = e->camera.pos, fwd = camera_forward(&e->camera), up = vec3(0, 1, 0);
+        int slot = 2;
+
+        for (k = 0; k < n; k++) {
+            lights[k].color = vec3_scale(lights[k].color, e->extra.scale);
+        }
+        for (; n < 3; n++) {
+            lights[n].pos = eye;
+            lights[n].color = vec3(0, 0, 0);
+            lights[n].range = 0.0f;
+        }
+        ambient = vec3_add(ambient, e->extra.ambient);
+        for (k = 0; k < 2; k++) {
+            Vec3 d = vec3_scale(fwd, -1.0f), axis;
+
+            if (!e->extra.cam[k].on) {
+                continue;
+            }
+            axis = vec3_norm(vec3_cross(up, d));
+            d = turn_about(d, axis, e->extra.cam[k].up);
+            d = turn_about(d, up, e->extra.cam[k].about);
+            lights[slot].pos = vec3_add(eye, vec3_scale(d, 100000.0f));   /* (a direction: far off, no falloff) */
+            lights[slot].color = e->extra.cam[k].color;
+            lights[slot].range = 0.0f;
+            slot--;
+        }
+    }
     if (e->nstage > 0) {
-        render_draw_lights(e->stage_ambient, lights, n);
+        render_draw_lights(ambient, lights, n);
     } else {
-        render_draw_lights(e->room.ambient, lights, e->room.nlights > 0 ? n : -1);
+        render_draw_lights(ambient, lights, e->room.nlights > 0 || e->extra.on ? n : -1);
     }
 }
 

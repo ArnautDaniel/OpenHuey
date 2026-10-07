@@ -5,6 +5,7 @@
 #include "../game/engine.h"
 #include "../game/areas.h"
 #include "../game/camdirector.h"
+#include "../game/cutscene.h"
 #include "../game/exits.h"
 #include "../game/messages.h"
 #include "../data/soundbank.h"
@@ -527,6 +528,7 @@ PRIM(p_movie_status) { PUSH(movie_status()); }   /* ( -- n ) 0 none, 1 playing, 
 PRIM(p_movie_frame) { PUSH(movie_frame()); }     /* ( -- n ) the frame shown, -1 none */
 PRIM(p_movie_close) { movie_close(); }
 PRIM(p_movie_pause) { movie_pause((int)POP()); }   /* ( on -- ) */
+PRIM(p_movie_paused) { PUSH(movie_paused() ? -1 : 0); }
 PRIM(p_movie_volume) { movie_volume((float)FPOP()); }   /* ( F: v -- ) */
 PRIM(p_movie_draw) {   /* ( x y w h -- ) the movie's picture there (window pixels) */
     Cell dh = POP(), dw = POP(), y = POP(), x = POP();
@@ -540,6 +542,29 @@ PRIM(p_movie_draw) {   /* ( x y w h -- ) the movie's picture there (window pixel
         render_image(sMovieTex, (float)x, (float)y, (float)dw, (float)dh, 0xFFFFFFFFu);
     }
 }
+
+/* ---- the cutscene director (game/cutscene.c) ---- */
+
+PRIM(p_cs_start) {   /* ( addr len -- flag ) start the scene in that folder (e.g. EV0006) */
+    Cell n = POP(), a = POP();
+    char name[64];
+
+    snprintf(name, sizeof(name), "%.*s", (int)n, (const char *)a);
+    PUSH(cutscene_start(name) ? -1 : 0);
+}
+PRIM(p_cs_run) { cutscene_run_state(); }              /* ( -- ) its state a step */
+PRIM(p_cs_go) { cutscene_start_when_ready(); }        /* ( -- ) start when ready */
+PRIM(p_cs_frame_set) { cutscene_set_frame((int)POP()); }   /* ( n -- ) */
+PRIM(p_cs_frame) { PUSH(cutscene_frame()); }
+PRIM(p_cs_update) { cutscene_update(); }
+PRIM(p_cs_end) { cutscene_end(); }
+PRIM(p_cs_status) { PUSH(cutscene_status()); }        /* ( -- n ) 1 loading 2 ready 3 playing 5 over */
+PRIM(p_cs_in_shot) { PUSH(cutscene_playing_shot() ? -1 : 0); }
+PRIM(p_cs_near_end) { PUSH(cutscene_near_end() ? -1 : 0); }
+PRIM(p_cs_shot_at) { PUSH(cutscene_shot_at((int)POP())); }   /* ( frame -- shot ) -1 none */
+PRIM(p_cs_signals) { PUSH(cutscene_signal_count((int)POP())); }   /* ( bit -- n ) since last frame */
+PRIM(p_cs_total) { PUSH(cutscene_signal_total((int)POP())); }   /* ( bit -- n ) its count so far less one */
+PRIM(p_cs_letterbox_off) { cutscene_set_letterbox_off((int)POP() != 0); }   /* ( flag -- ) */
 
 PRIM(p_exit_area) {   /* ( exit -- area ) the event area of this room's exit (the room table) */
     Cell exit = POP();
@@ -590,6 +615,12 @@ PRIM(p_motion_store) {   /* ( id motion-id -- ) play a motion from its start */
         a->motion = index;
         a->frame = 0.0f;
     }
+}
+PRIM(p_has_motion) {   /* ( id motion-id -- flag ) */
+    Cell mid = POP();
+    Actor *a = actor_arg(f, POP());
+
+    PUSH(model_motion_find(&a->model, (int)mid) >= 0 ? -1 : 0);
 }
 PRIM(p_motion_fetch) {   /* ( id -- motion-id | -1 ) */
     Actor *a = actor_arg(f, POP());
@@ -872,12 +903,20 @@ void engine_tick(Engine *e) {
     for (i = 0; i < MAX_ACTORS; i++) {
         actor_tick(&e->actors[i]);
     }
+    cutscene_camera(&e->camera);   /* a cutscene's shot with the camera in it has it */
     room_tick(&e->room);
     render_look_tick();
 }
 
 void engine_draw_2d(Engine *e) {
     int i;
+
+    if (cutscene_letterbox()) {   /* (Cutscene_Letterbox: 56 lines of 448 at the top and bottom) */
+        float bar = (float)e->height * 56.0f / 448.0f;
+
+        render_rect(0.0f, 0.0f, (float)e->width, bar, 0x000000FFu);
+        render_rect(0.0f, (float)e->height - bar, (float)e->width, bar, 0x000000FFu);
+    }
 
     for (i = 0; i < e->ndraw_hooks; i++) {
         if (forth_call(e->forth, e->draw_hooks[i]) != 0) {
@@ -904,7 +943,10 @@ void bind_engine(Forth *f) {
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
         {".director", p_cam_info}, {"area-in?", p_area_in}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
-        {"movie-frame", p_movie_frame}, {"movie-close", p_movie_close}, {"movie-pause", p_movie_pause},
+        {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
+        {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end},
+        {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},
+        {"cutscene-signals", p_cs_signals}, {"cutscene-signal-total", p_cs_total}, {"cutscene-letterbox-off", p_cs_letterbox_off}, {"movie-close", p_movie_close}, {"movie-pause", p_movie_pause}, {"movie-paused?", p_movie_paused},
         {"movie-volume!", p_movie_volume}, {"movie-draw", p_movie_draw}, {"stage-light", p_stage_light}, {"stage-lights", p_stage_lights},
         {"stage-ambient", p_stage_ambient}, {"room-clear", p_room_clear}, {"common-sound", p_common_sound},
         {"bank-sound", p_bank_sound}, {"bank-sound-at", p_bank_sound_at}, {"sound-set!", p_sound_set}, {"sound-to-wav", p_sound_to_wav}, {"exit-door", p_exit_door}, {"door-flags", p_door_flags},
@@ -914,7 +956,7 @@ void bind_engine(Forth *f) {
         {"message-options", p_message_options}, {"message-option", p_message_option},
         {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor", p_actor},
-        {"motion!", p_motion_store}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
+        {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
         {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"mouse-down?", p_mouse_down},

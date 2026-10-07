@@ -3,7 +3,7 @@
 \ What isn't there yet: most of the words (each says so on the console the first time it runs;
 \ `.missing` lists them) and characters walking their scripted moves.
 IN: events.play
-USING: engine state rooms player hewie doors game-state events.core events.words events.runner ;
+USING: engine state rooms player hewie doors game-state events.core events.words events.runner events.strings ;
 
 \ the scripts' characters: slot 0 Fiona (script id 0), slot 1 Hewie (script id 1)
 : cast ( -- )
@@ -52,6 +52,20 @@ USING: engine state rooms player hewie doors game-state events.core events.words
 ' tri-center is event-tri-center
 ' bank-sound is event-sound   ' bank-sound-at is event-sound-at   ' sound-set! is event-sound-set
 ' area-in? is event-area-in?   ' area-cross is event-area-cross   ' exit-area is event-exit-area
+' room-string is event-room-string
+\ movies and the cutscene director (as the original's, a movie's frames time a scene played in
+\ the room)
+:noname ( addr len -- )  movie-open drop ; is event-movie-open
+:noname  movie-close ; is event-movie-stop
+' movie-pause is event-movie-pause   ' movie-volume! is event-movie-volume   ' movie-frame is event-movie-frame
+:noname ( -- n )  movie-status 1 <> if  -1  else  movie-paused? if  2  else  1  then  then ; is event-movie-state
+:noname ( addr len -- )  cutscene-load drop ; is event-scene-start
+' cutscene-run is event-scene-run       ' cutscene-go is event-scene-go
+' cutscene-frame! is event-scene-frame!  ' cutscene-update is event-scene-update
+' cutscene-end is event-scene-end       ' cutscene-status is event-scene-status
+' cutscene-in-shot? is event-scene-in-shot?   ' cutscene-frame is event-scene-frame
+' cutscene-near? is event-scene-near-end?    ' cutscene-shot-at is event-scene-shot-at
+' cutscene-signals is event-scene-signals    ' cutscene-signal-total is event-scene-total
 
 \ the characters' places from their actors (now, and the frame before)
 : places ( -- )
@@ -78,11 +92,17 @@ fvariable pl-x  fvariable pl-y  fvariable pl-z
 ' place-char is event-char-place
 :noname ( cs -- ) ( F: a -- )  actor-of dup 0< if  drop fdrop exit  then  actor act.yaw sf! ; is event-char-yaw
 :noname ( cs on -- )  swap actor-of dup 0< if  2drop exit  then  actor act.visible >r  0<> 1 and r> l! ; is event-char-show
+\ (a motion its model hasn't: nothing plays, and it counts as played)
+create no-anim  characters cells allot  no-anim characters cells 0 fill
 : char-anim ( cs anim loop? -- )
-    rot actor-of dup 0< if  drop 2drop exit  then
-    dup actor act.loop >r  swap 0<> 1 and r> l!  swap motion! ;
+    rot dup >r actor-of dup 0< if  r> drop drop 2drop exit  then
+    rot 2dup has-motion? 0= if  2drop drop  true r> cells no-anim + !  exit  then
+    false r> cells no-anim + !  rot                            ( actor anim loop? )
+    >r over actor act.loop r> 0<> 1 and swap l!  motion! ;
 ' char-anim is event-char-anim
-:noname ( cs -- flag )  actor-of dup 0< if  drop true exit  then  motion-done? ; is event-char-anim-done?
+:noname ( cs -- flag )
+    dup cells no-anim + @ if  drop true exit  then
+    actor-of dup 0< if  drop true exit  then  motion-done? ; is event-char-anim-done?
 
 \ walking / running to a point (moves 5 / 10): straight there over the nav mesh, then facing
 : anim-move? ( move -- flag )  dup 7 = over 8 = or swap $10 = or ;
@@ -209,3 +229,13 @@ variable sw  variable sh  variable lh
     last-page? 0= if  s" (Enter)"  sw @ 8 * 10 /  sh @ 9 * 10 /  draw-text  then ;
 ' window-keys on-tick
 ' window on-draw
+
+\ the prepared message's page (0x62 12 turns them during a scene: its subtitles), along the bottom
+: subtitles ( -- )
+    open? prepared @ 0< or prepared-page @ 0< or if  exit  then
+    prepared @ message-layout prepared-page @ > 0= if  exit  then
+    screen-size sh ! sw !  2 pen-scale  char-size nip 5 * 4 / lh !  $FFFFFFFF pen-color
+    prepared-page @ message-lines 0 ?do
+        prepared-page @ i message-line  sw @ 8 /  sh @ 7 * 8 / 8 +  i lh @ * +  draw-text
+    loop ;
+' subtitles on-draw

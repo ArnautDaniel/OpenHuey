@@ -107,18 +107,37 @@ void actor_tick(Actor *a) {
 /* the posed vertices and normals, in room space (the shader lights them) */
 static void skin(Actor *a) {
     static Mat4 skin_m[MODEL_MAX_BONES];
-    const Model *m = &a->model;
+    Model *m = &a->model;
     Mat4 place = mat4_identity();
     float c = cosf(a->yaw), s = sinf(a->yaw);
     int i, j;
 
-    model_pose(m, a->motion, a->frame, skin_m);
-    place.m[0] = c * a->scale;  place.m[2] = -s * a->scale;
-    place.m[5] = a->scale;
-    place.m[8] = s * a->scale;  place.m[10] = c * a->scale;
-    place.m[12] = a->pos.x;
-    place.m[13] = a->pos.y;
-    place.m[14] = a->pos.z;
+    if (a->drive != NULL) {   /* a cutscene's motion: placed in the room by its root bone */
+        const uint8_t *own = m->motions;
+        size_t own_size = m->motions_size;
+        Vec3 root = a->pos;
+        int root_bone;
+
+        m->motions = a->drive;
+        m->motions_size = a->drive_size;
+        model_pose_root(m, model_motion_find(m, 0x8000), a->drive_frame, skin_m, &root);
+        m->motions = own;
+        m->motions_size = own_size;
+        for (root_bone = 0; root_bone < m->nbones && m->bones[root_bone].parent >= 0; root_bone++) {
+        }
+        a->pos = vec3(root.x, root.y - (root_bone < m->nbones ? m->bones[root_bone].rest_pos[1] : 0.0f), root.z);
+        c = 1.0f;
+        s = 0.0f;
+        place.m[0] = place.m[5] = place.m[10] = a->scale;
+    } else {
+        model_pose(m, a->motion, a->frame, skin_m);
+        place.m[0] = c * a->scale;  place.m[2] = -s * a->scale;
+        place.m[5] = a->scale;
+        place.m[8] = s * a->scale;  place.m[10] = c * a->scale;
+        place.m[12] = a->pos.x;
+        place.m[13] = a->pos.y;
+        place.m[14] = a->pos.z;
+    }
     for (i = 0; i < m->nv; i++) {
         const SkinVertex *v = &m->v[i];
         MeshVertex *o = &a->posed[i];

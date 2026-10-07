@@ -237,7 +237,9 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 : fiona-recover ( -- )  s" fiona-recover" stub-step ;
 \ 51: Closes the message window if it shows `msg` (0xFFFF: any).
 : message-close ( msg -- )
-    dup $FFFF = swap event-state ev.message sl@ = or if  -1 event-state ev.message l!  then ;
+    dup $FFFF = swap event-state ev.message sl@ = or if
+        -1 event-state ev.message l!  -1 prepared !  -1 prepared-page !
+    then ;
 \ 52: The playing movie loops (Movie.loop = 1).
 : movie-loop ( -- )  s" movie-loop" stub-step ;
 \ 53: Pushable obstacle `i` (model "oshi0n", kind `kind`) placed on squares a, b
@@ -270,18 +272,45 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 : wait-fade ( -- )  [: fading 0= ;] wait-until ;
 \ 60: Plays the movie the room names as string `name` (room handler +0x34) with movie class
 \ `class` (0x62 0 / 2 to follow it).
-: movie-play ( name class -- )  drop drop s" movie-play" stub-step ;
+: movie-play ( name class -- )   \ (the class - how it is drawn - is the movie's own here)
+    drop  0 event-state ev.result l!
+    event-room-string event-movie-open  1 event-movie-pause ;
 \ 61: Every active character is told (+0x78); the cutscene director restarts on the room's scene
 \ script named by string `name`.
-: cutscene-start ( name -- )  drop s" cutscene-start" stub-step ;
+: cutscene-start ( name -- )   \ (the characters' +0x78: nothing to tell yet)
+    event-room-string event-scene-start ;
 \ 62: Movie / cutscene director control by `op`: 0 the movie's state into the result (+0x934: 2
-\ playing, 1 other, -1 none); 1 stop the movie; 2 restart it (waits until it runs); 3 director
+\ paused, 1 running, -1 none); 1 stop the movie; 2 restart it (waits until it runs); 3 director
 \ +0x10; 4 director +0x10 then +0x14 unless in mode 5; 5 / 6 / 7 the director's cues (before /
 \ after; off; the next one from the movie frame - its button 11 toggles state flag 0x29); 8
 \ camera director back to its default mode (CamDirector_ModeDefault), director +0x48, flag 0x29
 \ off; 9 / 10 pause / resume the movie; 11 a black screen over half; 12 shows the prepared
 \ message as often as the director says.
-: cutscene-control ( op -- )  drop s" cutscene-control" stub-step ;
+: movie-restart ( -- )   \ (waits while it runs; paused - ready: result 1; none: -1)
+    begin  event-movie-state 1 = while  wait-frame  repeat
+    event-movie-state 0< if  -1  else  1  then  event-state ev.result l! ;
+: cutscene-control ( op -- )
+    case
+        0 of  event-movie-state event-state ev.result l!  endof
+        1 of  event-movie-stop  0 event-state ev.result l!  endof
+        2 of  movie-restart  endof
+        3 of  event-scene-run  endof
+        4 of  event-scene-run
+              event-scene-status 5 <>  event-scene-in-shot? and if  event-scene-update  then  endof
+        5 of  event-scene-frame cue-prev !  event-scene-frame 1+ event-scene-frame!
+              event-scene-frame cue !  endof   \ (the director's next event: +0x30 on its +0x8)
+        6 of  -1 cue-prev !  -1 cue !  event-scene-go  event-scene-run  endof
+        7 of  cue @ cue-prev !  event-movie-frame cue !  cue @ event-scene-frame!
+              $B event-scene-signals 1 and if
+                  $29 progress pr.state bit? if  $29 progress pr.state bit-off
+                  else  $29 progress pr.state bit-on  then
+              then  endof
+        8 of  director-restart  event-scene-end  $29 progress pr.state bit-off  endof
+        9 of  event-movie-state 1 = if  1 event-movie-pause  then  endof   \ (2: paused)
+        $A of  event-movie-state 2 = if  0 event-movie-pause  then  endof
+        $B of  endof   \ (a half-black screen: drawn by nobody yet)
+        $C of  8 event-scene-signals 0 ?do  1 prepared-page +!  loop  endof
+    endcase ;
 \ 63: Hewie turns to heading `face` (Hewie action 0x72).
 : hewie-face ( face -- )  drop s" hewie-face" stub-step ;
 \ 64: The depth-range effect (room effect slot 0x1C) removed.
@@ -379,7 +408,8 @@ fvariable at-x  fvariable at-z
 \ 88: A noise of loudness `loud` in this room at triangle `tri` (stalkers hear it).
 : noise ( loud tri -- )  drop drop s" noise" stub-step ;
 \ 89: Prepares message `msg` for the window (shown later, see 0x62 12).
-: message-prepare ( msg -- )  drop s" message-prepare" stub-step ;
+: message-prepare ( msg -- )
+    dup $FFFF = if  drop -1  then  prepared !  -1 prepared-page ! ;
 \ 8B: The game-over flag (progress +0x73EB00, also set when Fiona is caught for good) = v.
 : game-over-flag ( v -- )  drop s" game-over-flag" stub-step ;
 \ 8C: A scene effect (Effect6FF60, 0xE40 bytes) at (x, y, z) with zone rectangle `zone` (0x8D),
@@ -554,7 +584,7 @@ fvariable turn-x  fvariable turn-z
 \ CE: The placed things are dealt out (Events_DealThings).
 : deal-things ( -- )  s" deal-things" stub-step ;
 \ CF: The playing movie's volume = v (0..1), applied; +0x1BC set (starts it: see the FMV notes).
-: movie-volume ( F: v -- )  fdrop s" movie-volume" stub-step ;
+: movie-volume ( F: v -- )  event-movie-volume  0 event-movie-pause ;
 \ D0: Hewie's side (0..2, else none).
 : hewie-side ( side -- )  drop s" hewie-side" stub-step ;
 \ D1: The sub-screen's map turns to page `page` (+0x2C: Map_TurnTo).
@@ -719,7 +749,7 @@ fvariable turn-x  fvariable turn-z
 \ 1F: Character `a` touches `b` (margins m0, m1) and faces it, within `within` degrees.
 : char-touching-facing? ( a b m0 m1 within -- flag )  drop drop drop drop drop s" char-touching-facing?" stub-flag ;
 \ 20: The cutscene director's mode (+0x2C) is `mode`.
-: cutscene-mode? ( mode -- flag )  drop s" cutscene-mode?" stub-flag ;
+: cutscene-mode? ( mode -- flag )  event-scene-status = ;
 \ 21: The controlled character's current action (Fiona +0x1AD6B8, Hewie +0xF3798) is v.
 : control-action? ( v -- flag )  drop s" control-action?" stub-flag ;
 \ 22: The message window is closed and its chosen answer (+0x750) is v.
@@ -773,13 +803,17 @@ fvariable turn-x  fvariable turn-z
 \ 37: Character `who` is in zone `zone` (Zone_HasAnyChar).
 : char-in-zone? ( who zone -- flag )  drop drop s" char-in-zone?" stub-flag ;
 \ 38: The cutscene director's cue (+0x34) has reached `cue`.
-: cutscene-cue-reached? ( cue -- flag )  drop s" cutscene-cue-reached?" stub-flag ;
+: cutscene-cue-reached? ( cue -- flag )  event-scene-frame swap < 0= ;
 \ 39: At least n of the script's item `item` (Events_ScriptRoom) are held.
 : item-count? ( item n -- flag )  drop drop s" item-count?" stub-flag ;
 \ 3A: The cutscene director reports event `k` this step (+0x54 above 0).
-: cutscene-event? ( k -- flag )  drop s" cutscene-event?" stub-flag ;
+: cutscene-event? ( k -- flag )  event-scene-signals 0> ;
 \ 3B: The cutscene director's counter for `k` (+0x58) passed `at` within this step.
-: cutscene-passed? ( k at -- flag )  drop drop s" cutscene-passed?" stub-flag ;
+: cutscene-passed? ( k at -- flag )
+    over event-scene-signals dup 0> 0= if  drop 2drop false exit  then   ( k at n )
+    rot event-scene-total                                                 ( at n m )
+    rot 2dup < if  2drop drop false exit  then                           ( n m at )
+    >r swap - r> < ;
 \ 3C: The stalker (active, in this room) is of kind `kind`.
 : stalker-kind-here? ( kind -- flag )  drop s" stalker-kind-here?" stub-flag ;
 \ 3D: Fiona can be controlled (Fiona_IsIdle) and the panic's stage is below 4.
@@ -789,7 +823,7 @@ fvariable turn-x  fvariable turn-z
 \ 3F: Fiona's action (+0x1AD580) is v.
 : fiona-action? ( v -- flag )  drop s" fiona-action?" stub-flag ;
 \ 40: The cutscene has just come within 17 frames of its end (Cutscene_NearEnd).
-: cutscene-near-end? ( -- flag )  s" cutscene-near-end?" stub-flag ;
+: cutscene-near-end? ( -- flag )  event-scene-near-end? ;
 \ 41: Character `who`'s state +0xC4 is v (see command 0x47).
 : char-C4? ( who v -- flag )  drop drop s" char-C4?" stub-flag ;
 \ 42: Hewie's pool (+0xF359C) is in use (+0xF3598). Unused by the scripts.
@@ -811,7 +845,7 @@ fvariable turn-x  fvariable turn-z
 \ 49: Character `who`'s action (+0xF8) is v.
 : char-action? ( who v -- flag )  drop drop s" char-action?" stub-flag ;
 \ 4A: The cutscene's current frame is in shot `shot` (Cutscene_ShotAt).
-: cutscene-shot? ( shot -- flag )  drop s" cutscene-shot?" stub-flag ;
+: cutscene-shot? ( shot -- flag )  event-scene-frame event-scene-shot-at = ;
 \ 4B: The stalker (active) is in stance 2 playing animation 0x1805 / 0x1806 (virtual +0x10C,
 \ Pursuer_InStance2Anim). Unused by the scripts.
 : stalker-stance-2? ( -- flag )  s" stalker-stance-2?" stub-flag ;
@@ -838,7 +872,7 @@ fvariable turn-x  fvariable turn-z
 \ 56: Character `id` is at a motion event (its end flag 0x20).
 : char-at-motion-event? ( id -- flag )  drop s" char-at-motion-event?" stub-flag ;
 \ 57: A movie is playing.
-: movie-playing? ( -- flag )  s" movie-playing?" stub-flag ;
+: movie-playing? ( -- flag )  event-movie-state 0< 0= ;
 \ 58: This script's character touches one of room creatures 7..9 (active, in this room).
 : self-near-creature? ( -- flag )  s" self-near-creature?" stub-flag ;
 \ 59: Fiona is caught (+0x1AD630). Unused by the scripts.

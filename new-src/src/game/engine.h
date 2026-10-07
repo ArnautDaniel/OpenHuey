@@ -33,6 +33,20 @@ typedef struct Engine {
     RoomLight stage[3];    /* lights set by scripts (a scene of their own, e.g. the title): */
     int nstage;            /* used in place of the room's when there are any */
     Vec3 stage_ambient;    /* (0..128, as a room's) */
+    /* scripted lighting on top of the room's (the original's Lights +0x950, Lights_Scripted; a
+     * cutscene's cues set it): the room lights' colours scaled, the ambient raised, and up to
+     * two lights from the camera's side, turned `up` (about the axis across the view) and
+     * `about` (about the vertical) from the direction back to the eye */
+    struct {
+        int on;
+        Vec3 ambient;
+        float scale;
+        struct {
+            int on;
+            Vec3 color;
+            float up, about;
+        } cam[2];
+    } extra;
     long ticks;
     char hud[128];         /* a line of text at the bottom of the screen ("" none) */
     char screenshot[256];  /* a screenshot to save after this frame ("" none) */

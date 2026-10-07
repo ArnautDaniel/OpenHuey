@@ -20,6 +20,7 @@ int movie_frame(void);
 /* the frame's picture (RGBA, w x h; NULL none); *fresh: new since the last call */
 const uint8_t *movie_picture(int *w, int *h, int *fresh);
 void movie_pause(int on);
+int movie_paused(void);
 void movie_volume(float v);   /* 0..1 */
 
 #endif

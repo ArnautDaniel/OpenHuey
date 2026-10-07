@@ -471,6 +471,10 @@ static Mat4 bone_local(const float *rot, const float *pos) {
 }
 
 void model_pose(const Model *m, int index, float frame, Mat4 *skin) {
+    model_pose_root(m, index, frame, skin, NULL);
+}
+
+void model_pose_root(const Model *m, int index, float frame, Mat4 *skin, Vec3 *root) {
     float rot[MODEL_MAX_BONES][3], pos[MODEL_MAX_BONES][3];
     Mat4 world[MODEL_MAX_BONES];
     int done[MODEL_MAX_BONES], i, p, pass;
@@ -531,5 +535,9 @@ void model_pose(const Model *m, int index, float frame, Mat4 *skin) {
     }
     for (i = 0; i < m->nbones; i++) {
         skin[i] = done[i] ? mat4_mul(world[i], m->bones[i].inv_bind) : mat4_identity();
+        if (root != NULL && m->bones[i].parent < 0 && done[i]) {
+            *root = vec3(world[i].m[12], world[i].m[13], world[i].m[14]);
+            root = NULL;
+        }
     }
 }

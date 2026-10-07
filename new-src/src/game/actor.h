@@ -31,6 +31,11 @@ typedef struct Actor {
     float shadow_size;      /* the contact shadow's radius (room units; 0: none) */
     Vec3 lo, hi;            /* the model's bounds (bind pose, model units) */
     int lights[3];          /* this frame: the room lights on it */
+    /* a cutscene's motion file driving it (NULL: its own motion): its animation 0x8000 at
+     * drive_frame, whose root bone is in room space (pos is then set from it) */
+    const uint8_t *drive;
+    size_t drive_size;
+    float drive_frame;
 } Actor;
 
 /* load O_FIN/FIN_000 (.PCK + .TEX): the actor's number, or -1 */

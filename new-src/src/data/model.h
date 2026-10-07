@@ -56,5 +56,7 @@ int model_motion_frames(const Model *m, int index);
 /* the skin matrices (model space) for a motion at a time in frames (fractions blend), or the
  * rest pose for index -1 */
 void model_pose(const Model *m, int index, float frame, Mat4 *skin);
+/* the same, and the root bone's posed position (model space) */
+void model_pose_root(const Model *m, int index, float frame, Mat4 *skin, Vec3 *root);
 
 #endif

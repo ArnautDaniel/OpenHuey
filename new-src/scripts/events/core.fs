@@ -209,6 +209,34 @@ defer event-tri-center ( tri -- ) ( F: -- x y z )   :noname drop 0e 0e 0e ; is e
 \ the room's look effects (slots $1C depth of field, $1D fog, $1E screen blend, $1F tint) from
 \ parameter bytes, as the original's effects take them (addr 0: the effect removed)
 defer event-look ( slot addr n -- )   :noname 2drop drop ; is event-look
+\ movies (platform/movie.c): one opened paused, started, stopped, paused / resumed, its volume;
+\ its state as the original's Movie_Status (2 paused, 1 running, -1 none) and the frame shown
+\ (-1 none yet)
+defer event-movie-open ( addr len -- )    ' 2drop is event-movie-open
+defer event-movie-stop ( -- )             ' noop is event-movie-stop
+defer event-movie-pause ( on -- )         ' drop is event-movie-pause
+defer event-movie-volume ( F: v -- )      ' fdrop is event-movie-volume
+defer event-movie-state ( -- n )          :noname -1 ; is event-movie-state
+defer event-movie-frame ( -- n )          :noname -1 ; is event-movie-frame
+\ the cutscene director (game/cutscene.c, the original's gCutscene): start the scene in a folder,
+\ its state a step, start when ready, the frame, a frame's update, the end; its status (1
+\ loading, 2 ready, 3 playing, 5 over), the playing shot in, the frame, near the end, the shot
+\ at a frame, how often a signal came since the last frame and its count so far (less one)
+defer event-scene-start ( addr len -- )   ' 2drop is event-scene-start
+defer event-scene-run ( -- )              ' noop is event-scene-run
+defer event-scene-go ( -- )               ' noop is event-scene-go
+defer event-scene-frame! ( n -- )         ' drop is event-scene-frame!
+defer event-scene-update ( -- )           ' noop is event-scene-update
+defer event-scene-end ( -- )              ' noop is event-scene-end
+defer event-scene-status ( -- n )         :noname 5 ; is event-scene-status
+defer event-scene-in-shot? ( -- flag )    ' false is event-scene-in-shot?
+defer event-scene-frame ( -- n )          :noname -1 ; is event-scene-frame
+defer event-scene-near-end? ( -- flag )   ' false is event-scene-near-end?
+defer event-scene-shot-at ( frame -- shot )   :noname drop -1 ; is event-scene-shot-at
+defer event-scene-signals ( bit -- n )    :noname drop 0 ; is event-scene-signals
+defer event-scene-total ( bit -- n )      :noname drop -1 ; is event-scene-total
+\ the room's string `i` (scenes, movies, objects: events/strings.fs)
+defer event-room-string ( i -- addr len ) :noname drop s" " ; is event-room-string
 \ the message window's parameter `slot` shows system message $100 + id's first line
 defer message-parameter ( slot id -- ) ' 2drop is message-parameter
 
@@ -230,6 +258,11 @@ defer message-parameter ( slot id -- ) ' 2drop is message-parameter
     event-exit-door dup 0< if  drop false exit  then  $10 door-bit? 0= ;
 \ an exit asked for (exit-check): the game takes it after the frame
 variable exit-wanted  -1 exit-wanted !
+
+\ ---- scenes: the cues (the scene frames 0x62 7 / 5 take; +0xBE4 / +0xBE8), the prepared message
+\ (0x89) and the page of it shown (0x62 12 turns them: the scene's subtitles) ----
+variable cue  -1 cue !  variable cue-prev  -1 cue-prev !   \ (+0xBE4 / +0xBE8)
+variable prepared  -1 prepared !  variable prepared-page  -1 prepared-page !
 
 \ ---- the screen fade (the event's +0x20): 0 clear .. 1000 black ------------------------------
 variable fade-now  variable fade-from  variable fade-to  variable fade-frames  variable fade-t
