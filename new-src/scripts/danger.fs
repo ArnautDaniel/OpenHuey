@@ -6,7 +6,7 @@
 \ and a creature in her room, each change holding a while. The condition bits are the frame's:
 \ cleared here after.
 IN: danger
-USING: engine state game-state events.core events.words chars pursuer.core ;
+USING: engine state game-state events.core events.words chars noises pursuer.core ;
 
 2 constant stalker-slot   \ (gCharSlot2)
 variable d-prev    \ +0x51 the state before the last change
@@ -58,5 +58,5 @@ defer camera-free? ( -- flag )   ' false is camera-free?
     game-mode @ 0= and if  6 cond-bit!  then ;
 : danger-tick ( -- )
     playing @ paused @ 0= and 0= if  exit  then
-    camera-free? 0= if  danger  then ;
+    hear-all  camera-free? 0= if  danger  then ;   \ (everyone hears the frame's noises first)
 ' danger-tick on-tick

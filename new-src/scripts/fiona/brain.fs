@@ -5,7 +5,7 @@ IN: fiona.brain
 USING: engine game-state events.core events.words chars fiona.core fiona.moves ;
 
 \ the noise the stalkers hear (Noise_Make: loudness, room, triangle; with them)
-defer f-noise ( loud room tri -- )   :noname drop 2drop ; is f-noise
+defer f-noise ( loud room tri -- )   :noname $FFFF 0 noise-make-in ; is f-noise   \ (Noise_Make, her slot 0)
 : noise-here ( loud -- )  f-room f-tri f-noise ;
 
 \ ---- who is about (Fiona_UpdatePresence) ----

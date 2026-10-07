@@ -311,6 +311,26 @@ variable game-mode        \ Progress_GameMode: 0 calm, 1 being followed, 2 the c
 variable cond-bits
 : cond-bit? ( n -- flag )  1 swap lshift cond-bits @ and 0<> ;
 : cond-bit! ( n -- )  1 swap lshift cond-bits @ or cond-bits ! ;
+\ the noises made this frame (progress +0x778: a slot of 0x10 each - 0 Fiona, 1 Hewie, 2 the
+\ stalker, 3 events, creatures and things; door openers their own): the loudness, room,
+\ triangle (-1: at a door) and door ($FFFF none). Heard at the frame's end, then cleared
+\ (Progress_PursuerRequest). The setting (+0x1114, event 0x91) makes the quiet ones quieter.
+create noise-loud 4 cells allot  create noise-room 4 cells allot
+create noise-tri 4 cells allot   create noise-door 4 cells allot
+variable noise-setting
+: noise-clear ( slot -- )   \ CharRequest_Clear
+    cells  0 over noise-loud + !  -1 over noise-room + !  -1 over noise-tri + !  $FFFF swap noise-door + ! ;
+: noises-clear ( -- )  4 0 do  i noise-clear  loop ;
+noises-clear
+\ Noise_Make: a noise in `slot` unless one louder is there already
+: noise-make-in ( loud room tri door slot -- )
+    >r  3 pick 0=  2 pick -1 = or  3 pick $FF and r@ cells noise-loud + @ < or if
+        2drop 2drop r> drop exit  then
+    r@ cells >r
+    dup $FFFF and $FFFF <> if  r@ noise-door + !  drop -1 r@ noise-tri + !
+    else  drop r@ noise-tri + !  $FFFF r@ noise-door + !  then
+    r@ noise-room + !  $FF and r> noise-loud + !  r> drop ;
+defer event-noise ( loud tri -- )   ' 2drop is event-noise   \ (event 0x88: slot 3, this room - noises.fs)
 \ the panic's and Fiona's fear's commands (by opcode: 43 / 93 / A3 / C0 / C9 the panic, 4E / 4F /
 \ 94 / 95 her fear and recovery; BF her fear set): fiona.panic
 defer event-panic ( op v -- )   :noname 2drop ; is event-panic

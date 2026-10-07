@@ -294,7 +294,7 @@ create pose-into  0 , $101 , $103 ,  $100 , 0 , $105 ,  $102 , $104 , 0 ,  $1001
 
 \ ---- his voice (Hewie_MakeSound): not within 10 frames of the last; some only after 40..60;
 \ the loud barks (0x65 / 0x66) and growls (0x5D / 0x5E) heard by the others ----
-defer noise-make ( loudness room tri -- )   :noname drop 2drop ; is noise-make   \ Noise_Make (the stalkers')
+defer noise-make ( loudness room tri -- )   :noname $FFFF 1 noise-make-in ; is noise-make   \ Noise_Make (his slot 1)
 : soon-after? ( snd t -- flag )  h-snd @ rot = h-snd-t @ rot < and ;
 : too-soon? ( snd -- flag )
     case

@@ -3,7 +3,7 @@
 \ through the house (Character_Route: the doors, +0x138C, +0x1384 their number); and the
 \ commands the progress gives him (Pursuer_GrabOrder).
 IN: pursuer.target
-USING: engine game-state events.core events.words chars relations fiona.doors partner.route pursuer.core pursuer.stubs pursuer.npc pursuer.modes ;
+USING: engine game-state events.core events.words chars relations fiona.doors partner.route noises pursuer.core pursuer.stubs pursuer.npc pursuer.modes ;
 
 \ ---- Character_Route: his route to room `to` (avoiding the doors in +0x148C): its door count
 \ (0 there, -1 none) ----
@@ -15,8 +15,8 @@ create p-route 64 cells allot
     dup $1384 pu-l!  0 $1388 pu-l! ;
 
 \ the noise he heard (c.heardSlot, c.heard.room / .tri: with the noises)
-: heard-slot ( -- slot | $FF )  $FF ;
-: heard-room ( -- room )  -1 ;   : heard-tri ( -- tri )  -1 ;
+: heard-slot ( -- slot | $FF )  me c-heard-slot ;
+: heard-room ( -- room )  me c-heard-room ;   : heard-tri ( -- tri )  me c-heard-tri ;
 
 \ ---- Pursuer_PickTarget (vtable +0xCC): what drew him (+0x16CB) and how much (+0x16CC); when
 \ it is more than what he follows (+0x16C9), his route to it (none: back to his own room's and

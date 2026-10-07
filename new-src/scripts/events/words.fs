@@ -471,7 +471,7 @@ fvariable at-x  fvariable at-z
 \ 87: Sends room effect `fx` 1 if character `who` hasn't moved this frame, else 2.
 : char-effect-moving ( who fx -- )  drop drop s" char-effect-moving" stub-step ;
 \ 88: A noise of loudness `loud` in this room at triangle `tri` (stalkers hear it).
-: noise ( loud tri -- )  drop drop s" noise" stub-step ;
+: noise ( loud tri -- )  event-noise ;
 \ 89: Prepares message `msg` for the window (shown later, see 0x62 12).
 : message-prepare ( msg -- )
     dup $FFFF = if  drop -1  then  prepared !  -1 prepared-page ! ;
@@ -500,7 +500,7 @@ fvariable turn-x  fvariable turn-z
 \ scaled by k.
 : light ( op light F: k -- )  drop drop fdrop s" light" stub-step ;
 \ 91: The noise level setting (progress +0x1114) = v.
-: noise-level ( v -- )  drop s" noise-level" stub-step ;
+: noise-level ( v -- )  noise-setting ! ;
 \ 92: As 0x05 but always starts the action; mode 1: at once for characters; who 0 also calls the
 \ progress' +0x44 (empty).
 : action-force ( mode who act -- )  true start-for ;

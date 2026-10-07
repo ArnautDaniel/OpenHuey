@@ -3,7 +3,7 @@
 \ sees and can reach (+0x1544 Fiona, +0x1545 Hewie, +0x1546 a noise), how far they are on foot
 \ (+0x1588 Fiona, +0x158C Hewie, +0x1590 the target) and a door in his way.
 IN: pursuer.npc
-USING: engine game-state events.core events.words chars relations fiona.doors pursuer.core pursuer.stubs ;
+USING: engine game-state events.core events.words chars relations fiona.doors noises pursuer.core pursuer.stubs ;
 
 \ ---- his floor ----
 : tri-flags ( tri -- flags )  dup 0< if  drop 0 exit  then  nav-flags ;
@@ -175,7 +175,7 @@ defer her-hidden? ( -- flag )   ' false is her-hidden?
     $B state-flag? if  false exit  then
     d-hewie 20e f<  d-hewie f0> and  p-2b 0= and if  me dog c-pos $40080 c-tri-to dog c-tri =  else  false  then ;
 \ NPC_HearNoise (+0xC8): a noise heard (the noise slots: with them)
-defer heard-noise? ( -- flag )   ' false is heard-noise?
+: heard-noise? ( -- flag )  me c-heard-slot $FF <> ;
 ' fiona-in-reach? $C0 vt!   ' hewie-in-reach? $C4 vt!   ' heard-noise? $C8 vt!
 
 \ his step this frame (Motion_RootMovement): how far

@@ -123,7 +123,8 @@ variable fs-l  variable fs-r  variable fs-step
         endcase
     then
     $16A4 pu-l@ 1 and +  $16A4 pu-1+
-    r> 0  step-speed 2e f* f>s $7F and  p-sound ;
+    r> 0  step-speed 2e f* f>s $7F and  p-sound
+    step-speed 0.5e f< if  $1C  else  $1F  then  p-room p-tri $FFFF 2 noise-make-in ;   \ (heard: his slot 2)
 
 \ ---- the timers (Stalker_ThinkTimers): frames in his state / behaviour (+0x1784 / +0x1780),
 \ the room wait +0x1664 or the route's rest +0x17B4, standing down (+0x1790: up again), held
