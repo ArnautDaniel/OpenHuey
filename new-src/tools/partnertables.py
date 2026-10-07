@@ -85,6 +85,20 @@ lines.append('')
 offs = struct.unpack('<8f', at(0x3B12A0, 32))
 lines.append("\\ kHewieMeetOffsets: where Fiona stands to meet him, by kind (x z, his frame; floats)")
 lines.append('create meet-offsets  %s' % ' '.join('%se f,' % repr(v) for v in offs))
+lines.append('')
+lines.append("\\ D_003B13F0 / D_003B1580: per animation, his overlay modes for each mood 0..3 (calm / tense):")
+lines.append("\\ head (Hewie_OverlayAnim), ears (Hewie_IdleOverlay), tail (Hewie_TailOverlay); 13 cells an")
+lines.append("\\ entry (animation, 4 head, 4 ears, 4 tail), -1 ends")
+for name, va in (('overlays-calm', 0x3B13F0), ('overlays-tense', 0x3B1580)):
+    vals = []
+    while True:
+        anim, = struct.unpack('<i', at(va, 4))
+        if anim == -1:
+            break
+        modes = struct.unpack('<12h', at(va + 4, 24))
+        vals.append('$%X , %s' % (anim, ' '.join('%d ,' % m for m in modes)))
+        va += 28
+    lines.append('create %s  %s  -1 ,' % (name, '  '.join(vals)))
 out = os.path.join(root, 'new-src', 'scripts', 'partner', 'tables.fs')
 open(out, 'w').write('\n'.join(lines) + '\n')
 print(out)

@@ -511,12 +511,32 @@ void model_pose(const Model *m, int index, float frame, Mat4 *skin) {
 }
 
 /* the bones' local turns and places for a motion at a time (the rest pose for index -1) */
-static void local_pose(const Model *m, int index, float frame, float (*rot)[3], float (*pos)[3]) {
+int model_motion_parts(const Model *m, int index) {
+    Reader r = bank(m);
+    size_t rec = 0x10 + (size_t)index * 0x14;
+    int p, mask = 0;
+
+    if (index < 0 || index >= model_motion_count(m)) {
+        return 0;
+    }
+    for (p = 0; p < 5; p++) {
+        if (u32(&r, rec + p * 4) != 0) {
+            mask |= 1 << p;
+        }
+    }
+    return mask;
+}
+
+/* the parts `mask` of a motion at a time over the bones' values (rest: reset first) */
+static void local_pose_parts(const Model *m, int index, float frame, float (*rot)[3], float (*pos)[3], int mask,
+                             int rest) {
     int i, p;
 
-    for (i = 0; i < m->nbones; i++) {
-        memcpy(rot[i], m->bones[i].rest_rot, sizeof(rot[i]));
-        memcpy(pos[i], m->bones[i].rest_pos, sizeof(pos[i]));
+    if (rest) {
+        for (i = 0; i < m->nbones; i++) {
+            memcpy(rot[i], m->bones[i].rest_rot, sizeof(rot[i]));
+            memcpy(pos[i], m->bones[i].rest_pos, sizeof(pos[i]));
+        }
     }
     if (index >= 0 && index < model_motion_count(m) && m->bone_table != NULL) {
         Reader r = bank(m);
@@ -527,7 +547,7 @@ static void local_pose(const Model *m, int index, float frame, float (*rot)[3], 
             uint32_t ntracks, k;
             int frames;
 
-            if (part == rec) {
+            if (part == rec || !(mask & (1 << p))) {
                 continue;
             }
             ntracks = u32(&r, part);
@@ -557,21 +577,74 @@ static Vec3 sOrigins[MODEL_MAX_BONES];   /* the last pose's bone origins (model 
 
 const Vec3 *model_pose_origins(void) { return sOrigins; }
 
+static ModelTurn sTurns[8];
+static int sNTurns;
+
+void model_pose_turns(const ModelTurn *t, int n) {
+    sNTurns = n < 8 ? n : 8;
+    memcpy(sTurns, t, (size_t)sNTurns * sizeof(*t));
+}
+
+/* bone i's world matrix turned about its own place: by `pitch` about model x, then `yaw` about
+ * model y (its children follow) */
+static void turn_bone(Mat4 *w, float pitch, float yaw) {
+    float cp = cosf(pitch), sp = sinf(pitch), cy = cosf(yaw), sy = sinf(yaw);
+    Mat4 r = mat4_identity(), out = *w;
+    int c;
+
+    /* r = Ry(yaw) * Rx(pitch), column-major */
+    r.m[0] = cy;   r.m[1] = 0.0f; r.m[2] = -sy;
+    r.m[4] = sy * sp; r.m[5] = cp; r.m[6] = cy * sp;
+    r.m[8] = sy * cp; r.m[9] = -sp; r.m[10] = cy * cp;
+    for (c = 0; c < 3; c++) {
+        const float *v = &w->m[c * 4];
+
+        out.m[c * 4 + 0] = r.m[0] * v[0] + r.m[4] * v[1] + r.m[8] * v[2];
+        out.m[c * 4 + 1] = r.m[1] * v[0] + r.m[5] * v[1] + r.m[9] * v[2];
+        out.m[c * 4 + 2] = r.m[2] * v[0] + r.m[6] * v[1] + r.m[10] * v[2];
+    }
+    *w = out;
+}
+
 void model_pose_blend(const Model *m, int index, float frame, int prev, float prev_frame, float w, Mat4 *skin,
                       Vec3 *root) {
-    static float rot[MODEL_MAX_BONES][3], pos[MODEL_MAX_BONES][3], rot2[MODEL_MAX_BONES][3], pos2[MODEL_MAX_BONES][3];
-    Mat4 world[MODEL_MAX_BONES];
-    int done[MODEL_MAX_BONES], i, pass, j;
+    ModelLayer l = {index, frame, prev, prev_frame, w, 0x1F};
 
-    local_pose(m, index, frame, rot, pos);
-    if (w > 0.0f) {   /* fading from the motion before: prev x w + this x (1 - w) */
-        local_pose(m, prev, prev_frame, rot2, pos2);
-        for (i = 0; i < m->nbones; i++) {
-            for (j = 0; j < 3; j++) {
-                rot[i][j] = lerp_angle(rot[i][j], rot2[i][j], w);
-                pos[i][j] += (pos2[i][j] - pos[i][j]) * w;
+    model_pose_layers(m, &l, 1, skin, root);
+}
+
+void model_pose_layers(const Model *m, const ModelLayer *layers, int nlayers, Mat4 *skin, Vec3 *root) {
+    static float rot[MODEL_MAX_BONES][3], pos[MODEL_MAX_BONES][3], rot2[MODEL_MAX_BONES][3], pos2[MODEL_MAX_BONES][3];
+    static float rot1[MODEL_MAX_BONES][3], pos1[MODEL_MAX_BONES][3];
+    Mat4 world[MODEL_MAX_BONES];
+    int done[MODEL_MAX_BONES], i, pass, j, k;
+
+    for (i = 0; i < m->nbones; i++) {
+        memcpy(rot[i], m->bones[i].rest_rot, sizeof(rot[i]));
+        memcpy(pos[i], m->bones[i].rest_pos, sizeof(pos[i]));
+    }
+    for (k = 0; k < nlayers; k++) {   /* each layer's parts over the bones (later layers win) */
+        const ModelLayer *l = &layers[k];
+
+        if (l->index < 0 || l->mask == 0) {
+            continue;
+        }
+        memcpy(rot1, rot, sizeof(float) * 3 * (size_t)m->nbones);
+        memcpy(pos1, pos, sizeof(float) * 3 * (size_t)m->nbones);
+        local_pose_parts(m, l->index, l->frame, rot1, pos1, l->mask, 0);
+        if (l->w > 0.0f && l->prev >= 0) {   /* fading from the motion before: prev x w + this x (1 - w) */
+            memcpy(rot2, rot, sizeof(float) * 3 * (size_t)m->nbones);
+            memcpy(pos2, pos, sizeof(float) * 3 * (size_t)m->nbones);
+            local_pose_parts(m, l->prev, l->prev_frame, rot2, pos2, l->mask, 0);
+            for (i = 0; i < m->nbones; i++) {
+                for (j = 0; j < 3; j++) {
+                    rot1[i][j] = lerp_angle(rot1[i][j], rot2[i][j], l->w);
+                    pos1[i][j] += (pos2[i][j] - pos1[i][j]) * l->w;
+                }
             }
         }
+        memcpy(rot, rot1, sizeof(float) * 3 * (size_t)m->nbones);
+        memcpy(pos, pos1, sizeof(float) * 3 * (size_t)m->nbones);
     }
     /* world matrices, parents first (a few passes in case a parent comes later in the list) */
     memset(done, 0, sizeof(done));
@@ -587,6 +660,11 @@ void model_pose_blend(const Model *m, int index, float frame, int prev, float pr
             world[i] = bone_local(rot[i], pos[i]);
             if (parent >= 0 && parent < m->nbones) {
                 world[i] = mat4_mul(world[parent], world[i]);
+            }
+            for (j = 0; j < sNTurns; j++) {
+                if (sTurns[j].bone == i) {
+                    turn_bone(&world[i], sTurns[j].pitch, sTurns[j].yaw);
+                }
             }
             done[i] = progress = 1;
         }

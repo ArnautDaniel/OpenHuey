@@ -394,6 +394,74 @@ variable snd-anim  -1 snd-anim !  fvariable snd-frame
     then
     snd-frame f!  anim@ snd-anim ! ;
 
+\ ---- his overlays: head, ears and tail playing their own motions by his animation and mood
+\ (Hewie_SetOverlays / OverlayAnim / IdleOverlay / TailOverlay) ----
+variable ov-head  variable ov-ears  variable ov-tail          \ +0xF3640 / +0xF3648 / +0xF3654
+variable ov-head-t  variable ov-ears-t  variable ov-ears-alt  variable ov-tail-t  variable ov-tail-on
+variable oh  variable oe  variable ot
+: overlay ( anim -- )  h-actor dup 0< if  2drop exit  then  swap motion-overlay ;
+: head-overlay ( -- )   \ his mouth: 0x1F00 / 0x1F01 / 0x1F02, or (3) changing now and then
+    ov-head @ case
+        0 of  $1F00 overlay  endof  1 of  $1F01 overlay  endof  2 of  $1F02 overlay  endof
+        3 of  -1 ov-head-t +!  ov-head-t @ 0< if
+                  15 roll 30 * 30 + ov-head-t !  rnd01 0.5e f< if  $1F00  else  $1F01  then  overlay
+              then  endof
+    endcase ;
+: ears-overlay ( -- )   \ his ears: 0x2000 / 0x2001 (hurt 0x2002), or (0) flicking between them
+    ov-ears @ case
+        0 of  h-cond 1 = if  $2002 overlay  else
+                  -1 ov-ears-t +!  ov-ears-t @ 0< if
+                      ov-ears-alt @ 0= if  $2000 overlay  1  else  $2001 overlay  0  then  ov-ears-alt !
+                      2 roll if  900  else  300  then  10 roll 30 * + ov-ears-t !
+                  then
+              then  endof
+        1 of  h-cond 1 = if  $2002  else  $2000  then  overlay  endof
+        2 of  $2001 overlay  endof
+    endcase ;
+: tail-play ( g a b c -- )   \ by his pose: c lying (groups 2 / 6), b sitting (1 / 5), else a
+    3 pick dup 6 = swap 2 = or if  >r 2drop drop r> overlay exit  then
+    3 pick dup 5 = swap 1 = or if  drop nip nip overlay exit  then
+    2drop nip overlay ;
+create wag-a  $2100 , $2103 , $2106 ,  $2102 , $2105 , $2102 ,
+create wag-b  $210D , $210E , $210F ,  $210D , $2110 , $2111 ,
+: tail-wag ( g tbl -- )   \ a wag for 10..35 frames now and then, else still 300 frames
+    -1 ov-tail-t +!  ov-tail-t @ 0>= if  2drop exit  then
+    ov-tail-on @ if  0 ov-tail-on !  300 ov-tail-t !
+    else  1 ov-tail-on !  6 roll 5 * 10 + ov-tail-t !  3 cells +  then
+    >r  r@ @  r@ cell+ @  r> 2 cells + @  tail-play ;
+: tail-overlay ( -- )
+    anim-group  ov-tail @ case
+        0 of  $2107 $2108 $2109 tail-play  endof
+        1 of  $210A $210B $210C tail-play  endof
+        2 of  $2100 $2103 $2106 tail-play  endof
+        3 of  $210D $210E $210F tail-play  endof
+        4 of  wag-a tail-wag  endof
+        5 of  $2101 $2104 $2101 tail-play  endof
+        6 of  wag-b tail-wag  endof
+        7 of  $2102 $2105 $2102 tail-play  endof
+        >r drop r>
+    endcase ;
+: overlay-entry ( -- e | 0 )
+    game-mode @ 0= if  overlays-calm  else  overlays-tense  then
+    begin  dup @ -1 <> while  dup @ anim@ = if  exit  then  13 cells +  repeat  drop 0 ;
+: set-overlays ( -- )
+    overlay-entry ?dup 0= if  exit  then
+    ov-head @ oh !  ov-ears @ oe !  ov-tail @ ot !
+    h-mood @ dup 4 u< if
+        cells over +  dup cell+ @ ov-head !  dup 5 cells + @ ov-ears !  9 cells + @ ov-tail !  drop
+    else  2drop  then
+    ov-head @ oh @ <> ov-head @ 3 = and if  0 ov-head-t !  then
+    ov-ears @ oe @ <> ov-ears @ 0= and if  0 ov-ears-t !  then
+    ov-tail @ ot @ <> ov-tail @ dup 4 = swap 6 = or and if  0 ov-tail-t !  0 ov-tail-on !  then
+    head-overlay  ears-overlay  tail-overlay ;
+\ his neck turned where his head looks (DogModel_AdjustBone: bones 0x1D, 0x1E, 0x1F)
+: neck ( -- )
+    h-actor dup 0< if  drop exit  then
+    h-head-pitch f@ -0.4e f*  h-head-yaw f@ 0.25e f*
+    h-head-pitch f@ -0.4e f*  h-head-yaw f@ 0.25e f*
+    h-head-pitch f@ -0.2e f*  h-head-yaw f@ 0.25e f*
+    $1D $1E $1F head-turns ;
+
 \ Hewie_MoveSubMode: what he is doing, for the scripts (+0xFC)
 : move-sub ( -- )
     h-mode 0= 0= if  exit  then
@@ -463,7 +531,7 @@ fvariable rq-y
     h-state @ ?dup if  execute  then
     turn-by-anim
     h-disabled? 0= h-no-root @ 0= and if  root@  him rm-x f@ rm-z f@ c-move-local  then
-    turn-head  anim-sounds
+    turn-head  neck  anim-sounds
     h-yaw h-yaw-was f!  h-action @ h-last-action ! ;
 
 \ ---- Hewie_Update: a frame of his ----
@@ -480,7 +548,7 @@ variable was-busy
     h-state @ ?dup if  execute  then
     turn-by-anim
     h-no-root @ 0= if  root-motion  then
-    turn-head  anim-sounds
+    turn-head  neck  set-overlays  anim-sounds
     h-yaw h-yaw-was f!  h-action @ h-last-action !  h-alert @ h-alert-was !
     0 h-look !  move-sub ;
 

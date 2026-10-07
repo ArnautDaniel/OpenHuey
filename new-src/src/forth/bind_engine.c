@@ -866,10 +866,7 @@ PRIM(p_motion_store) {   /* ( id motion-id -- ) play a motion from its start */
         forth_error(f, "motion!: %s has no motion %lX", a->name, (long)mid);
     }
     if (index != a->motion) {
-        a->motion = index;
-        a->frame = 0.0f;
-        a->mflags = a->loop ? 1 : 0;
-        a->fade = 0.0f;
+        actor_motion_start(a, index, a->loop ? 1 : 0, 0.0f);
     }
 }
 PRIM(p_motion_play) {   /* ( id motion-id blend flags -- ) from its start, cross-faded over blend ticks, with
@@ -923,6 +920,37 @@ PRIM(p_bone_pos) {   /* ( id bone -- ) ( F: -- x y z ) where the bone is in the 
     Vec3 p = actor_bone(actor_arg(f, POP()), (int)b);
 
     FPUSH(p.x); FPUSH(p.y); FPUSH(p.z);
+}
+PRIM(p_motion_overlay) {   /* ( id motion-id -- ) Motion_PlayTableNoCheck: as its part's own (see
+                            * actor_motion_when_free) */
+    Cell mid = POP();
+    Actor *a = actor_arg(f, POP());
+
+    actor_motion_when_free(a, model_motion_find(&a->model, (int)mid));
+}
+PRIM(p_head_turns) {   /* ( id b1 b2 b3 -- ) ( F: p1 y1 p2 y2 p3 y3 -- ) three bones turned where it looks
+                        * (pitch about its x, yaw about its up; bone -1: none) */
+    Cell b[3];
+    float py[6];
+    Actor *a;
+    int i;
+
+    for (i = 2; i >= 0; i--) {
+        b[i] = POP();
+    }
+    for (i = 5; i >= 0; i--) {
+        py[i] = (float)FPOP();
+    }
+    a = actor_arg(f, POP());
+    a->nturns = 0;
+    for (i = 0; i < 3; i++) {
+        if (b[i] >= 0) {
+            a->turns[a->nturns].bone = (int)b[i];
+            a->turns[a->nturns].pitch = py[i * 2];
+            a->turns[a->nturns].yaw = py[i * 2 + 1];
+            a->nturns++;
+        }
+    }
 }
 PRIM(p_has_motion) {   /* ( id motion-id -- flag ) */
     Cell mid = POP();
@@ -1275,7 +1303,7 @@ void bind_engine(Forth *f) {
         {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry},
-        {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
+        {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"motion-overlay", p_motion_overlay}, {"head-turns", p_head_turns}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
         {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"mouse-down?", p_mouse_down},

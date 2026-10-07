@@ -59,6 +59,9 @@ int actor_load(Actor *actors, const char *name) {
     a->rate = 1.0f;   /* (a motion frame a tick: the game ran its motions at its own 30 fps) */
     a->motion = -1;
     a->prev_motion = -1;
+    for (i = 0; i < 3; i++) {
+        a->parts[i].motion = a->parts[i].own = a->parts[i].prev = a->parts[i].pending = -1;
+    }
     a->loop = 1;
     a->visible = 1;
     a->shadow_size = 7.0f;
@@ -114,10 +117,38 @@ static int step_time(float *t, float speed, int frames, int loop) {
     return wrapped;
 }
 
-void actor_tick(Actor *a) {
-    int frames, loop;
+static void part_start(struct ActorPart *p, int index, int flags, float blend);
+static int model_motion_entry_flags(const Actor *a, int index);
 
-    if (!a->used || a->motion < 0 || (a->mflags & 0x40)) {
+static void part_tick(Actor *a, struct ActorPart *p) {
+    if (p->motion >= 0 && !(p->flags & 0x10)) {
+        step_time(&p->frame, 1.0f, model_motion_frames(&a->model, p->motion), p->flags & 1);
+    }
+    if (p->fade > 0.0f) {
+        if (p->prev >= 0) {
+            step_time(&p->prev_frame, 1.0f, model_motion_frames(&a->model, p->prev), 1);
+        }
+        p->fade -= 1.0f;
+    }
+    if (p->fade <= 0.0f && p->pending >= 0) {   /* one waiting for the fade */
+        int blend, pose, flags, i = p->pending;
+
+        p->pending = -1;
+        actor_motion_entry(a, i, &blend, &pose, &flags);
+        part_start(p, i, flags, (float)blend);
+    }
+}
+
+void actor_tick(Actor *a) {
+    int frames, loop, i;
+
+    if (!a->used) {
+        return;
+    }
+    for (i = 0; i < 3; i++) {
+        part_tick(a, &a->parts[i]);
+    }
+    if (a->motion < 0 || (a->mflags & 0x40)) {
         return;
     }
     frames = model_motion_frames(&a->model, a->motion);
@@ -142,7 +173,85 @@ void actor_tick(Actor *a) {
     }
 }
 
+static void part_start(struct ActorPart *p, int index, int flags, float blend) {
+    if (p->motion >= 0 && blend > 0.0f) {
+        p->prev = p->motion;
+        p->prev_frame = p->frame;
+        p->fade = p->fade_len = blend;
+    } else {
+        p->fade = p->fade_len = 0.0f;
+    }
+    p->motion = index;
+    p->frame = 0.0f;
+    p->flags = (flags & 0xFFFF) | (flags & 8 ? 0x10 : 0);
+}
+
+/* the original's Motion_Start: the body (part 1) as its motion, each part 2..4 its share of it,
+ * or its own */
 void actor_motion_start(Actor *a, int index, int flags, float blend) {
+    int parts = model_motion_parts(&a->model, index), k;
+
+    for (k = 0; k < 3; k++) {
+        struct ActorPart *p = &a->parts[k];
+
+        if (parts & (4 << k)) {
+            if (!(parts & 2)) {
+                p->own = index;   /* (a motion of the part's own) */
+            }
+            part_start(p, index, flags, blend);
+        } else if (p->own >= 0 && p->own != p->motion) {
+            part_start(p, p->own, model_motion_entry_flags(a, p->own), blend);
+        }
+    }
+    if ((parts & 2) || !(parts & 0x1C)) {
+        actor_body_start(a, index, flags, blend);
+    }
+}
+
+void actor_motion_when_free(Actor *a, int index) {
+    int parts = model_motion_parts(&a->model, index), whole, k, blend, pose, flags;
+
+    if (index < 0) {
+        return;
+    }
+    actor_motion_entry(a, index, &blend, &pose, &flags);
+    if (parts == 0x1F || (parts & 2)) {
+        if (a->motion != index) {
+            actor_motion_start(a, index, flags, (float)blend);
+        }
+        return;
+    }
+    whole = a->motion >= 0 && model_motion_parts(&a->model, a->motion) == 0x1F;
+    for (k = 0; k < 3; k++) {
+        struct ActorPart *p = &a->parts[k];
+
+        if (!(parts & (4 << k))) {
+            continue;
+        }
+        if (whole) {   /* the body motion has this part: its own for later */
+            p->own = index;
+            continue;
+        }
+        if (p->motion == index) {
+            continue;
+        }
+        p->own = index;
+        if (p->fade <= 0.0f) {
+            part_start(p, index, flags, (float)blend);
+        } else {
+            p->pending = index;
+        }
+    }
+}
+
+static int model_motion_entry_flags(const Actor *a, int index) {
+    int blend, pose, flags;
+
+    actor_motion_entry(a, index, &blend, &pose, &flags);
+    return flags;
+}
+
+void actor_body_start(Actor *a, int index, int flags, float blend) {
     int frames = model_motion_frames(&a->model, index);
 
     if (a->motion >= 0 && blend > 0.0f) {
@@ -207,9 +316,26 @@ static void skin(Actor *a) {
         place.m[0] = place.m[5] = place.m[10] = a->scale;
     } else {
         float x = a->fade_len > 0.0f && a->fade > 0.0f ? a->fade / a->fade_len : 0.0f;   /* (fade_weight) */
+        ModelLayer l[4];
+        int nl = 0, k, body = 0x03;
 
-        model_pose_blend(m, a->motion, a->frame, a->prev_motion, a->prev_frame, x * x * (3.0f - 2.0f * x), skin_m,
-                         NULL);
+        for (k = 0; k < 3; k++) {   /* the parts with no motion of their own go with the body */
+            if (a->parts[k].motion < 0) {
+                body |= 4 << k;
+            }
+        }
+        l[nl++] = (ModelLayer){a->motion, a->frame, a->prev_motion, a->prev_frame, x * x * (3.0f - 2.0f * x), body};
+        for (k = 0; k < 3; k++) {
+            const struct ActorPart *p = &a->parts[k];
+            float y = p->fade_len > 0.0f && p->fade > 0.0f ? p->fade / p->fade_len : 0.0f;
+
+            if (p->motion >= 0) {
+                l[nl++] = (ModelLayer){p->motion, p->frame, p->prev, p->prev_frame, y * y * (3.0f - 2.0f * y), 4 << k};
+            }
+        }
+        model_pose_turns(a->turns, a->nturns);
+        model_pose_layers(m, l, nl, skin_m, NULL);
+        model_pose_turns(NULL, 0);
         place.m[0] = c * a->scale;  place.m[2] = -s * a->scale;
         place.m[5] = a->scale;
         place.m[8] = s * a->scale;  place.m[10] = c * a->scale;

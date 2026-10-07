@@ -48,6 +48,16 @@ typedef struct Actor {
     size_t drive_size;
     float drive_frame;
     Vec3 bones[MODEL_MAX_BONES];   /* where each bone is, in the room (as last drawn) */
+    /* the parts that play motions of their own (motion parts 2..4; the original's three blend
+     * channels): a body motion with data for a part plays it there too, else the part goes back
+     * to its own motion (a motion with no body: Hewie's ears, tail and jaw overlays) */
+    struct ActorPart {
+        int32_t motion, own, prev, flags, pending;
+        float frame, prev_frame, fade, fade_len;
+    } parts[3];
+    /* bones turned where it looks (Hewie's neck: DogModel_AdjustBone) */
+    ModelTurn turns[4];
+    int nturns;
 } Actor;
 
 /* load O_FIN/FIN_000 (.PCK + .TEX): the actor's number, or -1 */
@@ -64,8 +74,15 @@ float actor_radius(const Actor *a);
 void actor_draw(Actor *a, const Mat4 *view_proj);
 /* the motion has played to its end (non-looping) */
 int actor_motion_done(const Actor *a);
-/* motion `index` from its start, cross-faded over `blend` ticks, with `flags` (see mflags) */
+/* motion `index` from its start, cross-faded over `blend` ticks, with `flags` (see mflags): its
+ * body, and its share of the parts (or theirs back to their own) */
 void actor_motion_start(Actor *a, int index, int flags, float blend);
+/* the body only */
+void actor_body_start(Actor *a, int index, int flags, float blend);
+/* the original's Motion_PlayWhenFree with the motion table's fade and flags: a body motion if it
+ * isn't playing; a part's motion becomes the part's own, started unless the body motion has the
+ * part too (then later) or the part is still fading (then once it is done) */
+void actor_motion_when_free(Actor *a, int index);
 /* its table entry: fade frames, pose, flags; 0 if it has none */
 int actor_motion_entry(const Actor *a, int index, int *blend, int *pose, int *flags);
 /* where bone `b` is in the room (as last posed), its position if there is no such bone */

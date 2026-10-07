@@ -67,5 +67,23 @@ void model_pose_blend(const Model *m, int index, float frame, int prev, float pr
                       Vec3 *root);
 /* the bones' origins (model space) of the last pose model_pose_blend / model_pose_root made */
 const Vec3 *model_pose_origins(void);
+/* which of a motion's five parts it has (bit p: part p - 0 the special channels, 1 the body,
+ * 2..4 parts that can play motions of their own: Hewie's ears, tail, jaw) */
+int model_motion_parts(const Model *m, int index);
+/* posing from layers: each a motion (cross-faded from the one before) for some of the parts */
+typedef struct ModelLayer {
+    int index;
+    float frame;
+    int prev;
+    float prev_frame, w;
+    int mask;        /* the parts it poses */
+} ModelLayer;
+void model_pose_layers(const Model *m, const ModelLayer *layers, int nlayers, Mat4 *skin, Vec3 *root);
+/* bones turned as the next pose is made (where a head looks: the original's DogModel_AdjustBone) */
+typedef struct ModelTurn {
+    int bone;
+    float pitch, yaw;
+} ModelTurn;
+void model_pose_turns(const ModelTurn *t, int n);
 
 #endif
