@@ -674,6 +674,28 @@ PRIM(p_area_corner) {   /* ( area k -- flag ) ( F: -- x y z ) */
     FPUSH(c.z);
     PUSH(ok ? -1 : 0);
 }
+PRIM(p_game_tick) { engine_tick(&gEngine); }   /* ( -- ) one whole frame of the game (tests: the actors, then the models and doors) */
+PRIM(p_door_move) {   /* ( exit open? slam? -- ) the played room's door swung open / shut (5 degrees a frame), or slammed */
+    Cell slam = POP(), open = POP(), exit = POP();
+
+    room_door_move(&gEngine.room, (int)exit, open != 0, slam != 0);
+}
+PRIM(p_door_events) {   /* ( exit -- sound how settled ) what its swing did this tick (room.h RoomDoor) */
+    Cell exit = POP();
+    const RoomDoor *d;
+
+    if (exit < 0 || exit >= ROOM_DOORS || !gEngine.room.doors[exit].present) {
+        PUSH(0);
+        PUSH(0);
+        PUSH(-1);
+        return;
+    }
+    d = &gEngine.room.doors[exit];
+    PUSH(d->sound);
+    PUSH(d->sound_how);
+    PUSH(d->settled);
+}
+PRIM(p_door_present) { Cell e = POP(); PUSH(e >= 0 && e < ROOM_DOORS && gEngine.room.doors[e].present ? -1 : 0); }   /* ( exit -- flag ) */
 PRIM(p_door_passage) {   /* ( exit open? locks -- ) the door's passage flags on the nav mesh */
     Cell locks = POP(), open = POP(), exit = POP();
 
@@ -1649,7 +1671,7 @@ void bind_engine(Forth *f) {
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
         {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
         {"door-anim", p_door_anim}, {"door-side", p_door_side}, {"door-near?", p_door_near}, {"door-in-area?", p_door_in_area},
-        {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
+        {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"door-move", p_door_move}, {"game-tick", p_game_tick}, {"door-events", p_door_events}, {"door-here?", p_door_present}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
         {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},

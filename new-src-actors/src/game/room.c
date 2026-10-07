@@ -251,11 +251,26 @@ static void load_doors(Room *r) {
 
 void room_door_swing(Room *r, int exit, float degrees, int at_once) {
     if (exit >= 0 && exit < ROOM_DOORS) {
-        r->doors[exit].target = degrees;
         if (at_once) {
-            r->doors[exit].swing = degrees;
+            r->doors[exit].swing = r->doors[exit].target = degrees;
+            r->doors[exit].mode = 0;
+        } else {
+            room_door_move(r, exit, degrees < -45.0f, 0);
         }
     }
+}
+
+void room_door_move(Room *r, int exit, int open, int slam) {
+    RoomDoor *d;
+
+    if (exit < 0 || exit >= ROOM_DOORS || !r->doors[exit].present) {
+        return;
+    }
+    d = &r->doors[exit];
+    d->mode = slam ? 3 : 2;
+    d->closing = !open;
+    d->sounded = 0;
+    d->keys = NULL;
 }
 
 /* ---- the doors' animations for their users (FIN_D000.MTN) ---- */
@@ -341,6 +356,8 @@ int room_door_anim_start(Room *r, int exit, int anim) {
     d->nkeys = frames;
     d->key = 0;
     d->closing = d->swing < -45.0f;
+    d->sounded = 0;
+    d->mode = 1;
     return 1;
 }
 
@@ -555,29 +572,63 @@ void room_tick(Room *r) {
 
     roommesh_tick(&r->mesh);
     placed_tick(&r->placed);
-    for (i = 0; i < ROOM_DOORS; i++) {   /* (a quarter turn in about 20 frames) */
+    for (i = 0; i < ROOM_DOORS; i++) {   /* (Door_Swing) */
         RoomDoor *d = &r->doors[i];
-        float step = 4.5f;
+        float step = d->mode == 3 ? 15.0f : 5.0f;
 
-        float was = d->swing;
-
-        if (d->keys != NULL) {   /* (Door_Swing 1: along the animation's swing, a frame a key) */
-            d->swing = d->target = rdf(d->keys + (size_t)d->key * 4);
-            if (++d->key >= d->nkeys) {
-                d->keys = NULL;
-            }
-        } else {
-            d->swing = fabsf(d->target - d->swing) <= step ? d->target : d->swing + (d->target > d->swing ? step : -step);
-        }
         d->sound = 0;
-        if (d->swing == was) {
-            d->sounded = 0;
-        } else if (!d->sounded && d->swing < was && was >= 0.0f) {
-            d->sounded = 1;
-            d->sound = 0x27;
-        } else if (!d->sounded && d->swing > was && d->swing > -6.0f) {
-            d->sounded = 1;
-            d->sound = 0x28;
+        d->sound_how = 0;
+        d->settled = -1;
+        switch (d->mode) {
+        case 1:   /* along the user's animation, a frame a key; creak / latch once */
+            d->swing = d->target = rdf(d->keys + (size_t)d->key * 4);
+            if (++d->key >= d->nkeys) {   /* (at rest where the animation leaves it) */
+                d->keys = NULL;
+                d->mode = 0;
+                d->settled = d->closing ? 0 : 1;
+            }
+            if (!d->sounded) {
+                if (d->closing) {
+                    if (d->swing > -6.0f) {
+                        d->sounded = 1;
+                        d->sound = 0x28;
+                        d->sound_how = 2;
+                    }
+                } else if (d->swing < 0.0f) {
+                    d->sounded = 1;
+                    d->sound = 0x27;
+                    d->sound_how = 1;
+                }
+            }
+            break;
+        case 2:
+        case 3:
+            if (!d->closing) {
+                d->swing -= step;
+                if (d->swing < -90.0f) {
+                    d->swing = -90.0f;
+                    d->mode = 0;
+                    d->settled = 1;
+                }
+            } else {
+                d->swing += step;
+                if (d->mode == 2 && !d->sounded && d->swing > -6.0f) {   /* (the latch, silent) */
+                    d->sounded = 1;
+                    d->sound = 0x28;
+                }
+                if (d->swing > 0.0f) {
+                    if (d->mode == 3) {   /* slammed: the latch, loud */
+                        d->sounded = 1;
+                        d->sound = 0x28;
+                        d->sound_how = 4;
+                    }
+                    d->swing = 0.0f;
+                    d->mode = 0;
+                    d->settled = 0;
+                }
+            }
+            d->target = d->swing;
+            break;
         }
     }
 }

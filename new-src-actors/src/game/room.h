@@ -39,9 +39,13 @@ typedef struct RoomDoor {
      * frame), its frame and frames; closing (+0x78: it was open) */
     const uint8_t *keys;
     int key, nkeys, closing;
+    int mode;               /* how it swings (Door_Swing +0x60): 0 still, 1 along `keys`, 2 by 5
+                             * degrees a frame, 3 slammed (15) */
     int sounded;            /* this swing's creak / latch played (+0x71) */
-    int sound;              /* the sound it makes this tick (Door_Swing: 0x27 the creak as it
-                             * starts to open, 0x28 the latch as it shuts past 6 degrees), 0 none */
+    /* what happened this tick (for the doors actor): the sound it made (0x27 the creak, 0x28 the
+     * latch; 0 none) and how loud its noise is (Door_PlaySound: 1 / 2 quiet, 3 / 4 loud, else
+     * none); `settled` 1 it came to rest open, 0 shut, -1 neither */
+    int sound, sound_how, settled;
 } RoomDoor;
 
 typedef struct Room {
@@ -99,6 +103,8 @@ int room_door_in_area(const Room *r, int exit, int kind, Vec3 p);
  * now stands); `locks` (0x1000000 / 0x4000000: locked to the stalkers' / Hewie's sides) on the
  * near side as well */
 void room_door_passage(Room *r, int exit, int open, uint32_t locks);
+/* door `exit` swung open or shut by 5 degrees a frame (Door_Swing 2), or slammed shut (3) */
+void room_door_move(Room *r, int exit, int open, int slam);
 /* door `exit` turned to `radians` (its whole turn, as a cutscene keys it: Doors_TurnTo) */
 void room_door_angle(Room *r, int exit, float radians);
 /* a tick: the room's flip books step, its doors swing */

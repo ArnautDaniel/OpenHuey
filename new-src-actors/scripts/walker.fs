@@ -3,7 +3,7 @@
 \ character: it tells the camera to follow it and the rooms when it goes out.
 \   W A S D  walk (relative to the view)     Shift  run     Space  go out by this exit
 IN: walker
-USING: engine keys vectors actors messages ;
+USING: engine keys vectors actors messages doors ;
 
 $000 constant m-idle   $200 constant m-walk   $202 constant m-run   \ (her motions)
 0.5e fconstant walk-speed    1.4e fconstant run-speed     \ units a frame
@@ -16,8 +16,9 @@ state: walker-state
   cell field moving     \ the motion playing
 end-state
 
-: rooms ( -- id )  s" rooms" actor-named ;
-: camera ( -- id )  s" camera" actor-named ;
+: rooms-id ( -- id )  s" rooms" actor-named ;
+: doors-id ( -- id )  s" doors" actor-named ;
+: camera-id ( -- id )  s" camera" actor-named ;
 : me ( -- addr )  model @ actor ;
 
 \ the body where the model is, and the model where the body is
@@ -79,16 +80,24 @@ fvariable mx  fvariable mz
         else  drop  then
     loop  -1 ;
 
+: go-out ( exit -- )   \ through a doorway at once; a door is held first
+    room-id over room-exit-door  dup 0< swap door-flags 1 and or if  rooms-id send go-through exit  then
+    room-id over room-exit-door door-locked? if  drop ." it's locked" cr exit  then
+    room-id swap fiona-kind doors-id send hold-door ;
+
 behaviour walking
   on spawned ( -- )
       s" O_FIN/FIN_000" actor-load model !  1 me act.visible l!  -1 moving !
       2e 15e body-size  self subscribe tick  self subscribe arrived ;
   on arrived ( room exit -- )  nip  dup 0< if  drop arrive-anywhere  else  arrive-by  then
-      m-idle play  self camera send follow ;
+      m-idle play  self camera-id send follow ;
   on tick ( -- )
       self body? 0= if  exit  then
       walk  model-to-body
-      key: Space pressed? if  exit-here dup 0< if  drop  else  rooms send go-through  then  then ;
+      key: Space pressed? if  exit-here dup 0< if  drop  else  go-out  then  then ;
+  \ (a door: held first, then through - and let go shut behind)
+  on door-held ( room exit -- )  2dup fiona-noise doors-id send let-go-shut  nip rooms-id send go-through ;
+  on door-refused ( room exit -- )  2drop ." it's locked" cr ;
 end-behaviour
 
 : walker-spawn ( -- id )  walking walker-state s" walker" spawn ;

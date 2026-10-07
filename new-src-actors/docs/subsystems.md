@@ -34,7 +34,7 @@ Owns: the room being played, and going from room to room.
 Takes: `go-to-room`. Broadcasts `room-loaded`, `entered-room`, `left-room`.
 Original: `scene_game.c` (room change), `room.c`.
 
-### Doors (`doors`)  — **spec** (`subsystems/doors.md`)
+### Doors (`doors`)  — **built** (`subsystems/doors.md`)
 Owns: each door's lock, open state, who holds it and its swing.
 Takes: `open`, `shut`, `slam`, `lock`, `unlock`, `hold`, `let-go`.
 Sends: `noise` (opened / shut / slammed), `hit` (slammed on someone), `door-state` broadcasts.

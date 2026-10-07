@@ -9,21 +9,27 @@ in step with the animation of whoever opens it, and that makes noise.
 
 ## API
 
+Declared in `scripts/messages.fs`. Kinds of character (for locks): `fiona-kind` 0,
+`hewie-kind` 1, `stalker-kind` 2. A `source` is the user's noise source (acoustics).
+
 | Message | Stack | To | Meaning |
 |---|---|---|---|
-| `lock` / `unlock` | `( door -- )` | doors | For everyone (story, keys). |
-| `lock-for` | `( door kind on -- )` | doors | For a kind of character: 0 Fiona, 1 Hewie, 2-5 the stalkers (`Progress_LockDoorFor`). |
+| `lock` / `unlock` | `( door -- )` | doors | For everyone (the story, keys). |
+| `lock-for` | `( door kind on -- )` | doors | Locked against a kind of character, or not (`Progress_LockDoorFor`). |
 | `close-off` | `( door -- )` | doors | Gone for good: no route goes through it. |
-| `use-door` | `( exit anim -- )` | doors | The sender opens / goes through the played room's door at `exit` with its animation `anim`: the door swings along it. |
-| `hold-door` / `let-go` | `( exit -- )` | doors | The sender holds it open / lets it go (it swings shut, or stays). |
-| `slam` | `( exit -- )` | doors | Shut hard on whoever is behind (later: hits them). |
-| `door-state` | `( door state -- )` | broadcast | Its state changed (open, shut, locked). |
-| `noise` | | acoustics | Doors are heard: opening or shutting, from the user's source. |
+| `hold-door` | `( room exit kind -- )` | doors | Take hold of a door before going through (any room). Answered `door-held` or `door-refused` `( room exit -- )`. |
+| `let-go-open` / `let-go-shut` | `( room exit source -- )` | doors | Let it go open or shut (off-screen: heard). |
+| `use-door` | `( exit anim source -- )` | doors | The played room's door swings along the user's animation; at rest it is let go. |
+| `swing-door` | `( exit open source -- )` | doors | Swung open / shut by 5 degrees a frame. |
+| `slam` | `( exit source -- )` | doors | Slammed shut (15 a frame, a loud latch). |
+| `door-changed` | `( door -- )` | broadcast | Its state changed. |
+| `noise` | | acoustics | The doors are heard. |
 
-**Facts** (C, read by anyone, changed only here): each door's lock bits and sides, open,
-closed off (`door-open?`, `door-locked?`, `door-closed-off?`); in the played room, each exit's
-door model: where it stands (`exit-stand`), its swing, its sides' nav triangles, which side a
-point is on, whether it blocks the floor (the passage).
+**Facts** (C; changed only here): each door's state word (`progress pr.doors`: held 1, open 2,
+stuck 4, locked 8, the kinds it's locked against in bits 4..7), closed off
+(`pr.closed-off`), `door-open?`, `door-locked?` (doors.fs), a doorway (`door-flags` bit 0).
+In the played room, by exit: `door-here?`, `exit-stand`, `door-events` (this frame's sound,
+its loudness, at rest), the passage on the floor (`door-passage`).
 
 ## State
 
@@ -45,7 +51,18 @@ From `doors.c` (`Doors_*`), `progress.c` (`Progress_*Door*`), `room_map.c` (clos
    user's source (`door_heard`).
 5. When a room is entered, its doors are set from their states: open ones open, shut ones
    shut (`Doors_RoomIn`). The swing angle of each door is kept when left (`Doors_SaveDoor`).
-6. *To read when built:* slamming, held doors and who may pass, the "locked" message and keys
+6. Holding (`DoorHold_Take`): refused for a doorway, a door locked against the holder's kind,
+   or one already held. *Quirk:* a door locked for everyone **can** be held, but letting it go
+   open fails and it stays held. Users check `door-locked?` first, as Fiona's "it's locked" does.
+7. Letting go (`DoorHold_Open` / `DoorHold_Shut`): only a held, unlocked, non-doorway door;
+   open also fails if it's stuck (bit 2). Either way it's no longer held. Off-screen, the door is
+   heard (0xF at the door, from the user's source); in the played room its own sounds are.
+8. In the played room a door model swings (`Door_Swing`): along its user's animation, by 5
+   degrees a frame, or slammed by 15. The creak (0x27) as it starts to open along an animation
+   and the latch (0x28) as it shuts past -6 degrees are heard at 0xF. A slam's latch is heard at
+   0x5F, and a plain swing's latch is silent. When it comes to rest, the door is let go open or
+   shut by its user.
+9. *To read when built:* slamming, held doors and who may pass, the "locked" message and keys
    (Fiona's side), the stalkers' knocking and breaking.
 
 ## Design notes
@@ -60,4 +77,15 @@ From `doors.c` (`Doors_*`), `progress.c` (`Progress_*Door*`), `room_map.c` (clos
 
 ## Status
 
-Spec.
+**Built** (`scripts/doors.fs`; the swing in C `room.c` now follows `Door_Swing`'s three modes and
+reports each frame's sound and rest). Checked by `tests/doors/test_doors.fs` (25 tests: locking;
+the locked-door quirk; holding once; letting go open / shut / not held; locked against a kind; a
+doorway; a door used off-screen heard at 0xF from its user's source; a held door swung open in
+the played room settles open; a slam's latch heard at 0x5F and the door left shut).
+
+The debug walker uses doors: at a real door it checks the lock, holds the door, goes through,
+and lets it go shut behind.
+
+Left: the event commands' door bits (with the story); `use-door` with Fiona's animations; a door
+used off-screen with no one to hear it; barging a door open (`Doors_SetOpened`, a loud 0x91);
+the stalkers' knocking and breaking; names for doors.

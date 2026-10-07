@@ -27,3 +27,23 @@ message entered-room ( room exit -- )        \ the room is in play
 message camera-setup ( who set path -- )     \ who's camera set and path (path -1: none)
 message follow ( who -- )                    \ the camera follows who (-1: nobody)
 message camera-cut ( -- )                    \ it cut to a new set
+
+\ ---- doors (docs/subsystems/doors.md) ----
+\ kinds of character, for locks: who is kept out
+0 constant fiona-kind   1 constant hewie-kind   2 constant stalker-kind
+message lock ( door -- )
+message unlock ( door -- )
+message lock-for ( door kind on -- )         \ locked against a kind of character, or not
+message close-off ( door -- )                \ gone for good (story)
+\ the played room's doors, by exit; `source` is the user's noise source
+message use-door ( exit anim source -- )     \ the door swings along the user's animation
+message swing-door ( exit open source -- )   \ swung open / shut by hand
+message slam ( exit source -- )
+\ any room's doors (off-screen users too): take hold of one before going through, then let
+\ it go open or shut; the doors answer `door-held` or `door-refused`
+message hold-door ( room exit kind -- )
+message door-held ( room exit -- )
+message door-refused ( room exit -- )
+message let-go-open ( room exit source -- )
+message let-go-shut ( room exit source -- )
+message door-changed ( door -- )             \ broadcast: its state changed
