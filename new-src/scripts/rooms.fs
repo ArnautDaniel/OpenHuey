@@ -31,6 +31,7 @@ fvariable lx  fvariable ly  fvariable lz  fvariable hx  fvariable hy  fvariable 
 : first-room  -1 1 next-room go ;
 
 : room-keys
+    title @ if  exit  then
     key: PageUp key-pressed? if  1 step-room  then
     key: PageDown key-pressed? if  -1 step-room  then ;
 ' room-keys on-tick

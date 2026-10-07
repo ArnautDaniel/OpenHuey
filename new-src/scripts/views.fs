@@ -1,7 +1,7 @@
 \ views.fs - the room's own camera setups (the views the game cuts between): [ and ] step
 \ through them. The free camera keeps working from wherever a view puts it.
 IN: views
-USING: engine vectors ;
+USING: engine vectors state ;
 
 variable view  -1 view !
 
@@ -27,6 +27,7 @@ fvariable tx  fvariable ty  fvariable tz
     view @ + room-cameras + room-cameras mod show-view ;
 
 : view-keys
+    title @ if  exit  then
     key: ] key-pressed? if  1 step-view  then
     key: [ key-pressed? if  -1 step-view  then ;
 ' view-keys on-tick

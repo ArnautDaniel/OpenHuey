@@ -12,6 +12,7 @@
 #include "forth/forth.h"
 #include "game/engine.h"
 #include "game/progress.h"
+#include "platform/sound.h"
 #include "platform/platform.h"
 #include "render/render.h"
 
@@ -215,6 +216,7 @@ int main(int argc, char **argv) {
     load_world(&e->world, opt.data);
     e->forth = forth_new(16 << 20);   /* (the converted event scripts take most) */
     forth_set_output(e->forth, console_output, &e->console);
+    sound_open();   /* (none: the game is silent) */
     bind_engine(e->forth);
     bind_state(e->forth);
     if (!load_scripts(e->forth)) {

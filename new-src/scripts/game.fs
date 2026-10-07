@@ -4,7 +4,7 @@
 \ For now the game is a room viewer with Fiona and Hewie: a free camera, PageUp / PageDown
 \ through the rooms, Tab to play, Space at exits, F1 for the graphics.
 IN: game
-USING: engine freecam views rooms player doors hewie graphics look events.play ;
+USING: engine freecam views rooms player doors hewie graphics look events.play title ;
 
 0.06e 0.06e 0.08e clear-color
-first-room
+show-title

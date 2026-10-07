@@ -137,6 +137,9 @@ runs: redefine a word and the next tick uses it (words already compiled into oth
 old one; hooks are looked up by execution token, so re-register with `on-tick` after a change,
 or go through a `defer`).
 
+Sound: `common-sound ( id -- )` plays sound `id` of the common bank (C_0000: Fiona's, Hewie's,
+the house's); `sound-to-wav ( id addr len -- )` writes one to a file.
+
 `game-state` (C, `src/game/progress.c`; in the `forth` tool too) holds what the event scripts
 share: `progress` (`pr.story pr.state pr.vars pr.resident pr.visited`: flag words, l@ / c@) and
 `event-state` (`ev.room ev.vars ev.bits ev.counter ev.exit ev.message ev.slots ev.chars ...`;

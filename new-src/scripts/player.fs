@@ -123,5 +123,6 @@ defer steer-camera  ' follow is steer-camera
 : start-playing  fiona @ 0< if  place-player  then  -1 playing !  ." playing (Tab: free camera)" cr ;
 : stop-playing  0 playing !  ." free camera (Tab: play)" cr ;
 : play-keys
+    title @ if  exit  then
     key: Tab key-pressed? if  playing @ if  stop-playing  else  start-playing  then  then ;
 ' play-keys on-tick

@@ -7,10 +7,13 @@
 #include "../game/camdirector.h"
 #include "../game/exits.h"
 #include "../game/messages.h"
+#include "../data/soundbank.h"
+#include "../platform/sound.h"
 
 #include "../core/files.h"
 
 #include <math.h>
+#include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
@@ -379,6 +382,53 @@ PRIM(p_door_flags) {   /* ( door -- flags ) its fixed flags (the door table; bit
 
     PUSH(d >= 0 && d < gEngine.world.ndoors ? (Cell)(gEngine.world.doors[d].flags & 0xFF) : 0);
 }
+/* ---- sounds: the common bank (C_0000, the original's bank 5: Fiona's, Hewie's, the house's) ---- */
+
+static SoundBank sCommon;
+static int common_bank(void) {
+    return sCommon.hd != NULL || soundbank_load(&sCommon, "C_0000");
+}
+PRIM(p_common_sound) {   /* ( id -- ) play sound `id` of the common bank */
+    Cell id = POP();
+    int n;
+    int16_t *pcm;
+
+    if (!common_bank()) {
+        return;
+    }
+    pcm = soundbank_render(&sCommon, (int)id, SOUND_RATE, &n);
+    sound_play(pcm, n, 1.0f, 0.0f);
+    free(pcm);
+}
+PRIM(p_sound_to_wav) {   /* ( id addr len -- ) the common bank's sound `id` into a .wav file (checking) */
+    Cell len = POP(), a = POP(), id = POP();
+    char path[512];
+    int n = 0;
+    int16_t *pcm = common_bank() ? soundbank_render(&sCommon, (int)id, SOUND_RATE, &n) : NULL;
+    FILE *fp;
+    uint32_t u;
+    uint16_t s;
+
+    snprintf(path, sizeof(path), "%.*s", (int)len, (const char *)a);
+    fp = fopen(path, "wb");
+    if (fp == NULL) {
+        free(pcm);
+        forth_error(f, "sound-to-wav: can't write %s", path);
+    }
+    fwrite("RIFF", 1, 4, fp); u = 36 + n * 2; fwrite(&u, 4, 1, fp);
+    fwrite("WAVEfmt ", 1, 8, fp); u = 16; fwrite(&u, 4, 1, fp);
+    s = 1; fwrite(&s, 2, 1, fp); fwrite(&s, 2, 1, fp);
+    u = SOUND_RATE; fwrite(&u, 4, 1, fp); u = SOUND_RATE * 2; fwrite(&u, 4, 1, fp);
+    s = 2; fwrite(&s, 2, 1, fp); s = 16; fwrite(&s, 2, 1, fp);
+    fwrite("data", 1, 4, fp); u = n * 2; fwrite(&u, 4, 1, fp);
+    if (pcm != NULL) {
+        fwrite(pcm, 2, (size_t)n, fp);
+    }
+    fclose(fp);
+    free(pcm);
+    forth_printf(f, "wrote %s: %d samples\n", path, n);
+}
+
 PRIM(p_exit_area) {   /* ( exit -- area ) the event area of this room's exit (the room table) */
     Cell exit = POP();
     int room = gEngine.room.id;
@@ -735,7 +785,7 @@ void bind_engine(Forth *f) {
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
-        {".director", p_cam_info}, {"area-in?", p_area_in}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"exit-door", p_exit_door}, {"door-flags", p_door_flags},
+        {".director", p_cam_info}, {"area-in?", p_area_in}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"common-sound", p_common_sound}, {"sound-to-wav", p_sound_to_wav}, {"exit-door", p_exit_door}, {"door-flags", p_door_flags},
         {"nav-block!", p_nav_block}, {"nav-group!", p_nav_group}, {"nav-tri-flags!", p_nav_tri_flags},
         {"nav-in-group?", p_nav_in_group}, {"nav-flags", p_nav_flags},
         {"message-layout", p_message_layout}, {"message-lines", p_message_lines}, {"message-line", p_message_line},

@@ -39,9 +39,9 @@ find_package(OpenGL REQUIRED)
 add_executable(hg2
     src/main.c
     src/core/files.c
-    src/platform/gl.c src/platform/platform.c
+    src/platform/gl.c src/platform/platform.c src/platform/sound.c
     src/render/render.c src/render/post.c
-    src/data/pac.c src/data/tex.c src/data/roommesh.c src/data/model.c src/data/navmesh.c src/data/exe.c
+    src/data/pac.c src/data/tex.c src/data/roommesh.c src/data/model.c src/data/navmesh.c src/data/exe.c src/data/soundbank.c
     src/game/room.c src/game/console.c src/game/actor.c src/game/world.c
     src/game/camdirector.c src/game/areas.c src/game/exits.c src/game/messages.c
     src/forth/bind_engine.c)
