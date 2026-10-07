@@ -136,6 +136,7 @@ fvariable pn-hold-scr   \ (progress +0x7D8: the panic's screen hold - with the s
 : st-knock ( -- )   \ (0xC..0xF: knocked down; a stumble resets her recovery)
     me 4 relations:req-word-of $8000 and if  reset-recovery  then
     0 f-2a !  ['] st-knocked-down behave ;
+defer react-led   ' noop is react-led   \ (9: led away - fiona.grab)
 variable charm-item   \ (the sub screen's slot 1: the charm that keeps her from being caught)
 : react-now ( -- done? )   \ (0: taken, the request used up)
     me 1 relations:req-word-of reaction  dup -1 = if  drop false exit  then
@@ -154,7 +155,7 @@ variable charm-item   \ (the sub screen's slot 1: the charm that keeps her from 
         $13 of  not-yet" Fiona_React: the fall (0x13)"  endof
         $12 of  not-yet" Fiona_React: held (0x12)"  endof
         $B of  not-yet" Fiona_React: a door (0xB)"  endof
-        9 of  not-yet" Fiona_React: led away (9)"  endof
+        9 of  react-led  endof
         8 of  not-yet" Fiona_React: off the ladder (8)"  endof
         $10 of  not-yet" Fiona_React: seized (0x10)"  endof
     endcase

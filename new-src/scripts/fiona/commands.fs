@@ -358,11 +358,13 @@ fvariable ja-base  create ja-at 12 allot
     me relations:cmd-start
     me relations:req2# >r  $C r@ l!  6 r@ 4 + l!  r> 8 + 24 0 fill
     true ;
+defer meet-action ( -- started? )   ' false is meet-action   \ (kind 1: led away - fiona.grab)
 : joint-action ( -- )
     me relations:cmd? 0= if  exit  then
     me relations:cmd-other c-ok? 0= me relations:cmd-other c-here? 0= or  8 state-flag? or if
         me relations:cmd-cancel exit
     then
+    me relations:cmd-kind 1 = if  meet-action if  exit  then  then
     me relations:cmd-kind 2 = me relations:cmd-arg 6 = and f-mode 0= and if
         dog character char.face sf@                                ( F: base )
         19 0 do

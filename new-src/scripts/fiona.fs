@@ -2,7 +2,7 @@
 \ (fiona.brain - the original's, src/game/fiona.c) in place of player.fs's walking.
 \   W A S D  the stick (camera relative)     Shift  run (the cross button)
 IN: fiona
-USING: engine state game-state events.core chars relations player fiona.core fiona.moves fiona.brain fiona.commands fiona.doors fiona.panic fiona.kick fiona.ladder fiona.react ;
+USING: engine state game-state events.core chars relations player fiona.core fiona.moves fiona.brain fiona.commands fiona.doors fiona.panic fiona.kick fiona.ladder fiona.react fiona.grab ;
 
 variable fiona-ready  -1 fiona-ready !   \ the model she was set up with
 : prepare ( -- )
