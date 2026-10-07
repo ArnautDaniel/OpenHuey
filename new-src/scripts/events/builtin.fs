@@ -1,7 +1,7 @@
 \ events/builtin.fs - the shared event scripts (ids 0x80..) and the built-in ones.
 \ Converted from the game's bytecode by tools/events2forth.py, once: edit by hand.
 IN: events.builtin
-USING: events.words ;
+USING: events.core events.words ;
 
 \ ---- the shared scripts (ids 0x80..) -----------------------------------------------------------
 

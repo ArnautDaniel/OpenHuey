@@ -11,6 +11,7 @@
 #include "core/files.h"
 #include "forth/forth.h"
 #include "game/engine.h"
+#include "game/progress.h"
 #include "platform/platform.h"
 #include "render/render.h"
 
@@ -215,6 +216,7 @@ int main(int argc, char **argv) {
     e->forth = forth_new(16 << 20);   /* (the converted event scripts take most) */
     forth_set_output(e->forth, console_output, &e->console);
     bind_engine(e->forth);
+    bind_state(e->forth);
     if (!load_scripts(e->forth)) {
         fprintf(stderr, "hg2: the scripts didn't load (see above); the console is open\n");
         e->console.open = 1;

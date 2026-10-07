@@ -1,17 +1,17 @@
 \ events/map1.fs - the event scripts of the rooms on the game's map 1 (kMapRooms).
 \ Converted from the game's bytecode by tools/events2forth.py, once: edit by hand.
 IN: events.map1
-USING: events.words events.builtin ;
+USING: events.core events.words events.builtin ;
 
 \ ---- room $2E ----------------------------------------------------------------------------------
 
 \ a lit quad at x -15.96, z -2 .. 6, height 111 / 91
-: room2E.cmd00 ( b0 -- )  drop stub-step ;
+: room2E.cmd00 ( b0 -- )  drop s" room2E.cmd00" stub-step ;
 \ the depth range (effect 0x1C) opening out with the cutscene from its frame 1260: 1 / 21 / 40 /
 \ 80 on by 0.4 a frame, up to 41 / 61 / 80 / 120
-: room2E.cmd03 ( -- )  stub-step ;
+: room2E.cmd03 ( -- )  s" room2E.cmd03" stub-step ;
 \ the pursuer's model's +0x9E8 by byte 3: 0 0.15, 1 0, else 0.05
-: room2E.cmd04 ( b0 -- )  drop stub-step ;
+: room2E.cmd04 ( b0 -- )  drop s" room2E.cmd04" stub-step ;
 
 : room2E.enter ( -- )   \ 0041D2E0
     room-sounds
@@ -471,7 +471,7 @@ USING: events.words events.builtin ;
 \ ---- room $40 ----------------------------------------------------------------------------------
 
 \ the scales ("tenbin") and their pans ("sara_l", "sara_r"): level (byte 3 0) or tipped
-: room40.cmd00 ( b0 -- )  drop stub-step ;
+: room40.cmd00 ( b0 -- )  drop s" room40.cmd00" stub-step ;
 
 : room40.enter ( -- )   \ 00406550
     room-sounds
@@ -2408,7 +2408,7 @@ USING: events.words events.builtin ;
 \ ---- room $43 ----------------------------------------------------------------------------------
 
 \ the effect BigFire_vtable (three quad drawers) started with parameter 0
-: room43.cmd00 ( -- )  stub-step ;
+: room43.cmd00 ( -- )  s" room43.cmd00" stub-step ;
 
 : room43.enter ( -- )   \ 00407AE0
     room-sounds
@@ -3318,9 +3318,9 @@ USING: events.words events.builtin ;
 \ ---- room $46 ----------------------------------------------------------------------------------
 
 \ Room46_Cmd00
-: room46.cmd00 ( b0 -- )  drop stub-step ;
+: room46.cmd00 ( b0 -- )  drop s" room46.cmd00" stub-step ;
 \ Room46_Cond00
-: room46.cond00? ( -- flag )  stub-flag ;
+: room46.cond00? ( -- flag )  s" room46.cond00?" stub-flag ;
 
 : room46.enter ( -- )   \ 00416A50
     room-sounds
@@ -4425,19 +4425,19 @@ USING: events.words events.builtin ;
 \ 0 sets them still; 1: while slower than 5, Hewie's movement (the squared length of his last
 \ step, +0x3C) past 1 makes them swing for 20 frames (the first also creaks: sounds 4 / 5 by
 \ turns, event bit 0x11); the tilt (+0x10) 1 + sin(phase) degrees, the phase (+0x30) on by 36
-: room48.cmd00 ( b0 -- )  drop stub-step ;
+: room48.cmd00 ( b0 -- )  drop s" room48.cmd00" stub-step ;
 \ room 0x48 (Room48_Cmd01_ptmf): character 0x26's +0xE4 cleared
-: room48.cmd01 ( -- )  stub-step ;
+: room48.cmd01 ( -- )  s" room48.cmd01" stub-step ;
 \ room 0x48 (D_00426818): byte 3 0 starts the wall shadow (WallShadow_vtable, its slot in event
 \ variable 2); else that one is ended
-: room48.cmd02 ( b0 -- )  drop stub-step ;
+: room48.cmd02 ( b0 -- )  drop s" room48.cmd02" stub-step ;
 \ room 0x48 (Room48_Cmd03_ptmf): character 0xFE's model +0x9E8 = -0.15 (byte 3 0) or 0
-: room48.cmd03 ( b0 -- )  drop stub-step ;
+: room48.cmd03 ( b0 -- )  drop s" room48.cmd03" stub-step ;
 \ room 0x48 (Room48_Cmd05_ptmf): the creatures (10) in play in the current room: the list's
 \ +0x2C
-: room48.cmd05 ( -- )  stub-step ;
+: room48.cmd05 ( -- )  s" room48.cmd05" stub-step ;
 \ room 0x48 (Room48_Cond00_ptmf): door 0 of room 0x48 (Progress_CurRoomFlag)
-: room48.cond00? ( -- flag )  stub-flag ;
+: room48.cond00? ( -- flag )  s" room48.cond00?" stub-flag ;
 
 : room48.enter ( -- )   \ 004252D0
     room-sounds
@@ -6063,12 +6063,12 @@ USING: events.words events.builtin ;
 \ ---- room $49 ----------------------------------------------------------------------------------
 
 \ a lit quad at x -43, z -15.12 .. 5.07, height 30.05 / 10.05
-: room49.cmd00 ( b0 -- )  drop stub-step ;
+: room49.cmd00 ( b0 -- )  drop s" room49.cmd00" stub-step ;
 \ the depth range (effect 0x1C) opening with the cutscene from its frame 1156: 1 / 1 / 40 / 100,
 \ the far two on by 1 a frame up to 80 / 140
-: room49.cmd01 ( -- )  stub-step ;
+: room49.cmd01 ( -- )  s" room49.cmd01" stub-step ;
 \ byte 3 0: the effect Room49Effect_vtable spawned, its slot in event var 0; 1: removed
-: room49.cmd02 ( b0 -- )  drop stub-step ;
+: room49.cmd02 ( b0 -- )  drop s" room49.cmd02" stub-step ;
 
 : room49.enter ( -- )   \ 00407F30
     room-sounds
@@ -7106,12 +7106,12 @@ USING: events.words events.builtin ;
 \ ---- room $4B ----------------------------------------------------------------------------------
 
 \ room 0x4B (D_00409910): a lit quad at x -63.65 .. -55.65, z 104.5, from 4 to 21
-: room4B.cmd00 ( b0 -- )  drop stub-step ;
+: room4B.cmd00 ( b0 -- )  drop s" room4B.cmd00" stub-step ;
 \ room 0x4B: the curtain ("Curtain") animated by event variable 0 (var0_anim: byte 3 0 forward,
 \ 1 back, 2 / 3 back at rest).
-: room4B.cmd01 ( b0 -- )  drop stub-step ;
+: room4B.cmd01 ( b0 -- )  drop s" room4B.cmd01" stub-step ;
 \ 1 unless the object at +0x18 exists and its byte +0x28 is 1.
-: room4B.cond00? ( -- flag )  stub-flag ;
+: room4B.cond00? ( -- flag )  s" room4B.cond00?" stub-flag ;
 
 : room4B.enter ( -- )   \ 00408B90
     room-sounds
@@ -8012,13 +8012,13 @@ USING: events.words events.builtin ;
 
 \ four room objects (Room4C_ObjectNames) pressed in (+0x24 down 0.2 to -0.7, a sound as each
 \ starts) while event flag i is set, else back up 0.2 to 0; byte 3 0 all reset
-: room4C.cmd00 ( b0 -- )  drop stub-step ;
+: room4C.cmd00 ( b0 -- )  drop s" room4C.cmd00" stub-step ;
 \ room 0x4C (Room4C_Cmd01_ptmf): byte 3 0 starts counting what the player does (her +0x1AD710
 \ on), 1 adds this frame's (Fiona_Shakes); at 35 events bit 0x13
-: room4C.cmd01 ( b0 -- )  drop stub-step ;
+: room4C.cmd01 ( b0 -- )  drop s" room4C.cmd01" stub-step ;
 \ room 0x4C (D_0040AC08): character 0x11's model parts 0xA2 / 0xA4 / 0xAC get bit 2 when byte 3
 \ is 0, else lose it
-: room4C.cmd02 ( b0 -- )  drop stub-step ;
+: room4C.cmd02 ( b0 -- )  drop s" room4C.cmd02" stub-step ;
 
 : room4C.enter ( -- )   \ 00409980
     room-sounds
@@ -9650,12 +9650,12 @@ USING: events.words events.builtin ;
 \ ---- room $4E ----------------------------------------------------------------------------------
 
 \ room 0x4E (D_0040B4D8): a lit quad at x -44 .. -36, z 60, from 54 to 71
-: room4E.cmd00 ( b0 -- )  drop stub-step ;
+: room4E.cmd00 ( b0 -- )  drop s" room4E.cmd00" stub-step ;
 \ room 0x4E: the curtain ("Curtain_2") animated by event variable 0 (var0_anim: byte 3 0
 \ forward, 1 back, 2 / 3 back at rest).
-: room4E.cmd01 ( b0 -- )  drop stub-step ;
+: room4E.cmd01 ( b0 -- )  drop s" room4E.cmd01" stub-step ;
 \ room 0x4E (D_0040B4F8): the 0x10-byte effect Room4EEffect_vtable made
-: room4E.cmd02 ( -- )  stub-step ;
+: room4E.cmd02 ( -- )  s" room4E.cmd02" stub-step ;
 
 : room4E.enter ( -- )   \ 0040AE90
     room-sounds
@@ -10128,16 +10128,16 @@ USING: events.words events.builtin ;
 
 \ room 0x4F (Room4F_Cmd00_ptmf): object byte 3 by byte 4: 0 up (+0x10 0), 1 down (-0.65), 2
 \ lowered a step (0.02, not during a movie); once down, events bit 3
-: room4F.cmd00 ( b0 b1 -- )  drop drop stub-step ;
+: room4F.cmd00 ( b0 b1 -- )  drop drop s" room4F.cmd00" stub-step ;
 \ room 0x4F (Room4F_Cmd01_ptmf): an effect (DustShaft_vtable, 0x7460 bytes), not started
-: room4F.cmd01 ( -- )  stub-step ;
+: room4F.cmd01 ( -- )  s" room4F.cmd01" stub-step ;
 \ byte 3 0: a SpiralSmoke_vtable effect (0x36C0 bytes) spawned, its slot kept in event var 0;
 \ else that slot's effect removed
-: room4F.cmd02 ( b0 -- )  drop stub-step ;
+: room4F.cmd02 ( b0 -- )  drop s" room4F.cmd02" stub-step ;
 \ lower the object (pstr_sikakebox)'s +0x14 by 0.025 a frame down to -0.78, then event 6 (+0x5C)
-: room4F.cmd03 ( -- )  stub-step ;
+: room4F.cmd03 ( -- )  s" room4F.cmd03" stub-step ;
 \ Room4F_Cond00
-: room4F.cond00? ( -- flag )  stub-flag ;
+: room4F.cond00? ( -- flag )  s" room4F.cond00?" stub-flag ;
 
 : room4F.enter ( -- )   \ 0040B520
     room-sounds
@@ -11132,7 +11132,7 @@ USING: events.words events.builtin ;
 
 \ ---- room $50 ----------------------------------------------------------------------------------
 
-: room50.cmd00 ( -- )  stub-step ;
+: room50.cmd00 ( -- )  s" room50.cmd00" stub-step ;
 
 : room50.enter ( -- )   \ 0040C190
     room-sounds
@@ -12179,8 +12179,8 @@ USING: events.words events.builtin ;
 \ ---- room $51 ----------------------------------------------------------------------------------
 
 \ room 0x51 (Room51_Cmd00_ptmf): byte 3 0 door 0 set going (+0xC); else wait (2) while it moves
-: room51.cmd00 ( b0 -- )  drop stub-step ;
-: room51.cmd01 ( -- )  stub-step ;
+: room51.cmd00 ( b0 -- )  drop s" room51.cmd00" stub-step ;
+: room51.cmd01 ( -- )  s" room51.cmd01" stub-step ;
 
 : room51.enter ( -- )   \ 0040CF40
     room-sounds
@@ -13789,9 +13789,9 @@ USING: events.words events.builtin ;
 
 \ ---- room $52 ----------------------------------------------------------------------------------
 
-: room52.cmd00 ( -- )  stub-step ;
+: room52.cmd00 ( -- )  s" room52.cmd00" stub-step ;
 \ 1 unless the object at +0x18 exists and its byte +0x28 is 1.
-: room52.cond00? ( -- flag )  stub-flag ;
+: room52.cond00? ( -- flag )  s" room52.cond00?" stub-flag ;
 
 : room52.enter ( -- )   \ 0040E3B0
     room-sounds
@@ -14996,9 +14996,9 @@ USING: events.words events.builtin ;
 \ ---- room $54 ----------------------------------------------------------------------------------
 
 \ Room54_Cmd00
-: room54.cmd00 ( b0 b1 -- )  drop drop stub-step ;
+: room54.cmd00 ( b0 b1 -- )  drop drop s" room54.cmd00" stub-step ;
 \ Room54_Cmd01
-: room54.cmd01 ( -- )  stub-step ;
+: room54.cmd01 ( -- )  s" room54.cmd01" stub-step ;
 
 : room54.enter ( -- )   \ 00426D80
     room-sounds
@@ -16216,7 +16216,7 @@ USING: events.words events.builtin ;
 \ ---- room $55 ----------------------------------------------------------------------------------
 
 \ Room55_Cmd00
-: room55.cmd00 ( b0 -- )  drop stub-step ;
+: room55.cmd00 ( b0 -- )  drop s" room55.cmd00" stub-step ;
 
 : room55.enter ( -- )   \ 00420B40
     room-sounds
@@ -16744,7 +16744,7 @@ USING: events.words events.builtin ;
 
 \ room 0x56 (Room56_Cmd00_ptmf): creatures 7..9 in the current room on a live triangle
 \ gRoomEventObj says yes to: +0x10, then the creature list's +0x28
-: room56.cmd00 ( -- )  stub-step ;
+: room56.cmd00 ( -- )  s" room56.cmd00" stub-step ;
 
 : room56.enter ( -- )   \ 0040ED10
     room-sounds
@@ -18106,7 +18106,7 @@ USING: events.words events.builtin ;
 \ ---- room $59 ----------------------------------------------------------------------------------
 
 \ room 0x59 (Room59_Cmd00_ptmf): character 0xFE's model +0x9E0 = 0.1 (byte 3 0) or 0
-: room59.cmd00 ( b0 -- )  drop stub-step ;
+: room59.cmd00 ( b0 -- )  drop s" room59.cmd00" stub-step ;
 
 : room59.enter ( -- )   \ 00410070
     room-sounds
@@ -19308,11 +19308,11 @@ USING: events.words events.builtin ;
 
 \ room 0x5C (Room5C_Cmd00_ptmf): the dial (+0x7C, 0..1) from script variable 0 by byte 3: 0
 \ 0x2B..0x38 (/ 13, +0x74 0 / +0x78 1), 1 0xC..0x20 (/ 20), 2 7..0x12 (/ 11) (+0x74 1 / +0x78 0)
-: room5C.cmd00 ( b0 -- )  drop stub-step ;
+: room5C.cmd00 ( b0 -- )  drop s" room5C.cmd00" stub-step ;
 \ room 0x5C (Room5C_Cond00_ptmf): the first creature within 3 of (59.1, 1.43) is put away with
 \ an effect (CreatureVanish_vtable) above it - blue (+0x1571 below 0x12) or red - and its action
 \ 0x8B
-: room5C.cond00? ( -- flag )  stub-flag ;
+: room5C.cond00? ( -- flag )  s" room5C.cond00?" stub-flag ;
 
 : room5C.enter ( -- )   \ 00410F70
     room-sounds
@@ -20137,9 +20137,9 @@ USING: events.words events.builtin ;
 \ ---- room $5D ----------------------------------------------------------------------------------
 
 \ room 0x5D (Room5D_Cmd00_ptmf): four objects 60 to the left
-: room5D.cmd00 ( -- )  stub-step ;
+: room5D.cmd00 ( -- )  s" room5D.cmd00" stub-step ;
 \ room 0x5D (Room5D_Cmd01_ptmf): the lever at -60 / 0 / 60 degrees by byte 3
-: room5D.cmd01 ( b0 -- )  drop stub-step ;
+: room5D.cmd01 ( b0 -- )  drop s" room5D.cmd01" stub-step ;
 
 : room5D.enter ( -- )   \ 00411B80
     room-sounds
@@ -21195,20 +21195,20 @@ USING: events.words events.builtin ;
 \ removed with its glow effect (event variable 1); 0 made, with the glow (FloorGlow_vtable);
 \ then (and for other values) its strength from event variable 0 (0..4: 0, 30, 60, 90, 128),
 \ also sent to the glow
-: room60.cmd00 ( b0 -- )  drop stub-step ;
+: room60.cmd00 ( b0 -- )  drop s" room60.cmd00" stub-step ;
 \ room 0x60 (as Room23_Cmd01, for character 0xFE): byte 3 0 a progress name, 1 wait for
 \ character 0xFE (2 while not), else done
-: room60.cmd01 ( b0 -- )  drop stub-step ;
+: room60.cmd01 ( b0 -- )  drop s" room60.cmd01" stub-step ;
 \ (as Room66_Effect) byte 4 0 starts the 8-byte effect Room60Effect_vtable (parameters from byte
 \ 3), its slot kept in event variable byte 3 + 2; else that effect is ended
-: room60.cmd02 ( b0 b1 -- )  drop drop stub-step ;
+: room60.cmd02 ( b0 b1 -- )  drop drop s" room60.cmd02" stub-step ;
 \ room 0x60 (Room60_Cmd03_ptmf): character 0xFE's model +0x9FC 0.4 / +0xA00 1 (byte 3 0), or 0
-: room60.cmd03 ( b0 -- )  drop stub-step ;
+: room60.cmd03 ( b0 -- )  drop s" room60.cmd03" stub-step ;
 \ character 0xFE's model +0x9E0 / +0x9E4 / +0x9E8: byte 3 0 -0.2 / 0.2 / -0.2; 1 eases them by
 \ script variable 6 (a step a call, waiting (2) for 60) to 0 / 0.3 / 0; else 0 / 0.3 / 0
-: room60.cmd04 ( b0 -- )  drop stub-step ;
+: room60.cmd04 ( b0 -- )  drop s" room60.cmd04" stub-step ;
 \ room 0x60 (Room60_Cmd05_ptmf): the player's model +0xCC 0 (byte 3 0) or 1
-: room60.cmd05 ( b0 -- )  drop stub-step ;
+: room60.cmd05 ( b0 -- )  drop s" room60.cmd05" stub-step ;
 
 : room60.enter ( -- )   \ 004280A0
     room-sounds
@@ -22507,10 +22507,10 @@ USING: events.words events.builtin ;
 \ room 0x61 (byte 3): 0 / 2 / 4 set up the paths of characters 0x14 (2 x 3 x 7 cells from (25,
 \ 0, 40), 480 frames a stretch; with the glint Glint_vtable) / 0x15 (2 x 3 x 5 from (30, 0, 50),
 \ 240) / 0x16 (the same box, 280); 1 / 3 / 5 move them a frame (returning 2: again next frame)
-: room61.cmd00 ( b0 -- )  drop stub-step ;
+: room61.cmd00 ( b0 -- )  drop s" room61.cmd00" stub-step ;
 \ room 0x61: the light shaft: byte 3 0 starts it (LightShaft, with its motes from (30, 0, 70)),
 \ its slot in event variable 3; 1 its haze on; 2 off.
-: room61.cmd01 ( b0 -- )  drop stub-step ;
+: room61.cmd01 ( b0 -- )  drop s" room61.cmd01" stub-step ;
 
 : room61.enter ( -- )   \ 004291C0
     0 $F1 0 action
@@ -22780,11 +22780,11 @@ USING: events.words events.builtin ;
 \ room 0x62 (Room62_Cmd00_ptmf): object byte 4 swings: byte 3 0 starts it (phase +0x30 0, size
 \ +0x34 0.01; object 0 with sound 7), else a step (+0x10 = size x sin(phase), phase on 60
 \ degrees, the size down 0.001); 2 until it is still
-: room62.cmd00 ( b0 b1 -- )  drop drop stub-step ;
+: room62.cmd00 ( b0 b1 -- )  drop drop s" room62.cmd00" stub-step ;
 \ room 0x62 (D_00422318): the room's effect 0 dropped by byte 3 - 0 at rest (speed 0), 1 raised
 \ by 0.5; else it falls (gravity 0.5 a frame, turning 0.16) and bounces off 0.7 losing 70% (a
 \ sound each bounce) until slower than 0.2 (+0x74 set: landed; 1), else still going (2)
-: room62.cmd01 ( b0 -- )  drop stub-step ;
+: room62.cmd01 ( b0 -- )  drop s" room62.cmd01" stub-step ;
 
 : room62.enter ( -- )   \ 00421C60
     room-sounds
@@ -23257,7 +23257,7 @@ USING: events.words events.builtin ;
 
 \ room 0x63: the script's character walks to Fiona's nav triangle (character move 6, with
 \ 0x204).
-: room63.cmd00 ( -- )  stub-step ;
+: room63.cmd00 ( -- )  s" room63.cmd00" stub-step ;
 
 defer room63.act05
 defer room63.act06
@@ -24273,19 +24273,19 @@ defer room63.act07
 \ ---- room $66 ----------------------------------------------------------------------------------
 
 \ Room66_Cmd00
-: room66.cmd00 ( b0 -- )  drop stub-step ;
+: room66.cmd00 ( b0 -- )  drop s" room66.cmd00" stub-step ;
 \ Room66_Cmd01
-: room66.cmd01 ( b0 b1 -- )  drop drop stub-step ;
+: room66.cmd01 ( b0 b1 -- )  drop drop s" room66.cmd01" stub-step ;
 \ Room66_Cmd02
-: room66.cmd02 ( b0 -- )  drop stub-step ;
+: room66.cmd02 ( b0 -- )  drop s" room66.cmd02" stub-step ;
 \ Room66_Cmd03
-: room66.cmd03 ( b0 b1 -- )  drop drop stub-step ;
+: room66.cmd03 ( b0 b1 -- )  drop drop s" room66.cmd03" stub-step ;
 \ Room66_Cmd04
-: room66.cmd04 ( -- )  stub-step ;
+: room66.cmd04 ( -- )  s" room66.cmd04" stub-step ;
 \ Room66_Cond00
-: room66.cond00? ( b0 -- flag )  drop stub-flag ;
+: room66.cond00? ( b0 -- flag )  drop s" room66.cond00?" stub-flag ;
 \ Room66_Cond01
-: room66.cond01? ( b0 b1 b2 b3 b4 -- flag )  drop drop drop drop drop stub-flag ;
+: room66.cond01? ( b0 b1 b2 b3 b4 -- flag )  drop drop drop drop drop s" room66.cond01?" stub-flag ;
 
 : room66.enter ( -- )   \ 0041E110
     room-sounds
@@ -26047,7 +26047,7 @@ defer room63.act07
 \ shown), left / right turn it (its setting, sound bit 3), cancel leaves (event bit 2); 2 the
 \ picked dial turns 4 degrees a frame to its setting, then - 1, 0, 2 - the lock opens (event
 \ bits 2 off, 4)
-: room69.cmd00 ( b0 -- )  drop stub-step ;
+: room69.cmd00 ( b0 -- )  drop s" room69.cmd00" stub-step ;
 
 : room69.enter ( -- )   \ 00437E50
     room-sounds
@@ -26554,11 +26554,11 @@ defer room63.act07
 \ ---- room $6A ----------------------------------------------------------------------------------
 
 \ room 0x6A (D_00438CE0): a lit quad at x 120, z 47 .. 39, from 4 to 21
-: room6A.cmd00 ( b0 -- )  drop stub-step ;
+: room6A.cmd00 ( b0 -- )  drop s" room6A.cmd00" stub-step ;
 \ room 0x6A (D_00438CF0): its object's animation (+0x74 forward, +0x78 back) at a point +0x7C
 \ (0..1) by byte 3 - 0 / 1 from event variable 0 (12..30 over 18, 12..28 over 16), 2 / 3 at the
 \ start / end
-: room6A.cmd01 ( b0 -- )  drop stub-step ;
+: room6A.cmd01 ( b0 -- )  drop s" room6A.cmd01" stub-step ;
 
 : room6A.enter ( -- )   \ 00438730
     room-sounds

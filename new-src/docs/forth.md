@@ -17,6 +17,9 @@ for this game. Names are case-insensitive.
 - **Tasks**: every running piece of Forth has its own stacks. `' word spawn` starts one (it gives
   an id); the engine runs each ready task a little every tick. Inside a task, `yield` gives way
   until the next tick and `n wait` for n ticks. `id kill` stops one, `.tasks` lists them.
+  `spawn-held` starts one the engine leaves alone: `id resume` gives it its turn (whoever drives
+  it decides when; it answers whether the task is still alive). `xt restart` makes the running
+  task start over in another word at once, its stacks emptied (the event scripts' "go to").
 - **Errors** print a message with the file and line and unwind: at the prompt the stacks are
   emptied; a task that errs is stopped; an `on-tick` hook that errs is removed. `' word catch`
   runs a word and gives -1 instead of unwinding (`error-message` has the text).
@@ -133,6 +136,12 @@ The console (`` ` ``) evaluates whatever is typed, so any of this can be changed
 runs: redefine a word and the next tick uses it (words already compiled into others keep the
 old one; hooks are looked up by execution token, so re-register with `on-tick` after a change,
 or go through a `defer`).
+
+`game-state` (C, `src/game/progress.c`; in the `forth` tool too) holds what the event scripts
+share: `progress` (`pr.story pr.state pr.vars pr.resident pr.visited`: flag words, l@ / c@) and
+`event-state` (`ev.room ev.vars ev.bits ev.counter ev.exit ev.message ev.slots ev.chars ...`;
+`slot.task slot.who slot.id slot.frames`, `char.present char.id char.room char.scripted
+char.actor`), with their sizes (`story-flags`, `script-slots`, `/slot`, `/char`, ...).
 
 The rooms' event scripts are `scripts/events/` (converted from the game's bytecode: see
 `docs/events-plan.md`): `events.words` (the command and condition words, stubs for now) and one

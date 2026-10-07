@@ -90,6 +90,7 @@ struct Task {
     Cell *ip;               /* the next cell of threaded code to run; NULL when stopped */
     Cell boot[2];           /* a task's first code: its word, then halt */
     int state;
+    int held;               /* run only by `resume`, never by the scheduler */
     long wake;              /* TASK_WAITING: the frame it runs again */
     int id;
     char name[WORD_NAME_MAX + 1];

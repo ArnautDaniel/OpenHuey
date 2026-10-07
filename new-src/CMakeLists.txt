@@ -17,9 +17,13 @@ add_library(forth STATIC src/forth/forth.c)
 target_include_directories(forth PUBLIC src/forth)
 target_link_libraries(forth PUBLIC m)
 
+# the game state the scripts share (no SDL: the forth tool and the tests have it too)
+add_library(gamestate STATIC src/game/progress.c)
+target_link_libraries(gamestate PUBLIC forth)
+
 add_executable(forth-tool src/forth/repl.c)
 set_target_properties(forth-tool PROPERTIES OUTPUT_NAME forth)
-target_link_libraries(forth-tool PRIVATE forth)
+target_link_libraries(forth-tool PRIVATE forth gamestate)
 target_compile_definitions(forth-tool PRIVATE "HG2_SCRIPT_DIR=\"${SCRIPT_DIR}\"")
 
 enable_testing()
@@ -40,6 +44,6 @@ add_executable(hg2
     src/data/pac.c src/data/tex.c src/data/roommesh.c src/data/model.c src/data/navmesh.c src/data/exe.c
     src/game/room.c src/game/console.c src/game/actor.c src/game/world.c
     src/forth/bind_engine.c)
-target_link_libraries(hg2 PRIVATE forth SDL3::SDL3 OpenGL::GL)
+target_link_libraries(hg2 PRIVATE forth gamestate SDL3::SDL3 OpenGL::GL)
 target_compile_definitions(hg2 PRIVATE "HG2_SCRIPT_DIR=\"${SCRIPT_DIR}\"" "HG2_DEFAULT_DATA=\"${DEFAULT_DATA}\""
     "HG2_DEFAULT_EXE=\"${CMAKE_CURRENT_SOURCE_DIR}/../baserom/SLUS_210.75\"")

@@ -1,7 +1,7 @@
 \ events/map2.fs - the event scripts of the rooms on the game's map 2 (kMapRooms).
 \ Converted from the game's bytecode by tools/events2forth.py, once: edit by hand.
 IN: events.map2
-USING: events.words ;
+USING: events.core events.words ;
 
 \ ---- room $67 ----------------------------------------------------------------------------------
 
@@ -577,7 +577,7 @@ USING: events.words ;
 \ ---- room $102 ---------------------------------------------------------------------------------
 
 \ room 0x102: three hanging things that Fiona pushes as she walks by, swinging (swing_three).
-: room102.cmd00 ( b0 -- )  drop stub-step ;
+: room102.cmd00 ( b0 -- )  drop s" room102.cmd00" stub-step ;
 
 : room102.enter ( -- )   \ 004174B0
     room-sounds
@@ -883,7 +883,7 @@ USING: events.words ;
 \ ---- room $103 ---------------------------------------------------------------------------------
 
 \ room 0x103: three hanging things that Fiona pushes as she walks by, swinging (swing_three).
-: room103.cmd00 ( b0 -- )  drop stub-step ;
+: room103.cmd00 ( b0 -- )  drop s" room103.cmd00" stub-step ;
 
 : room103.enter ( -- )   \ 00417840
     room-sounds
@@ -1189,7 +1189,7 @@ USING: events.words ;
 \ ---- room $104 ---------------------------------------------------------------------------------
 
 \ room 0x104: three hanging things that Fiona pushes as she walks by, swinging (swing_three).
-: room104.cmd00 ( b0 -- )  drop stub-step ;
+: room104.cmd00 ( b0 -- )  drop s" room104.cmd00" stub-step ;
 
 : room104.act02 ( -- )   \ 00417E90
     $FE camera-follow
@@ -1494,7 +1494,7 @@ USING: events.words ;
 \ ---- room $105 ---------------------------------------------------------------------------------
 
 \ room 0x105: three hanging things that Fiona pushes as she walks by, swinging (swing_three).
-: room105.cmd00 ( b0 -- )  drop stub-step ;
+: room105.cmd00 ( b0 -- )  drop s" room105.cmd00" stub-step ;
 
 : room105.enter ( -- )   \ 00417F40
     room-sounds
@@ -1802,7 +1802,7 @@ USING: events.words ;
 \ ---- room $106 ---------------------------------------------------------------------------------
 
 \ room 0x106: starts a water drip effect (OneDrip, 0xC0 bytes).
-: room106.cmd00 ( -- )  stub-step ;
+: room106.cmd00 ( -- )  s" room106.cmd00" stub-step ;
 
 : room106.enter ( -- )   \ 004182D0
     $86 story-flag? if
@@ -2343,13 +2343,13 @@ USING: events.words ;
 
 \ room 0x107: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
 \ sideways 2 a frame (room_nudge).
-: room107.cmd00 ( b0 -- )  drop stub-step ;
+: room107.cmd00 ( b0 -- )  drop s" room107.cmd00" stub-step ;
 \ room 0x107: starts the slowly turning backdrop model (Effect7A3D0: model 0x30 far off at
 \ (-225, -64, -1125)).
-: room107.cmd01 ( -- )  stub-step ;
+: room107.cmd01 ( -- )  s" room107.cmd01" stub-step ;
 \ room 0x107: a noise of loudness 0x20 or more was made in this room last frame (the progress'
 \ noise requests kept at +0x10D4).
-: room107.cond00? ( -- flag )  stub-flag ;
+: room107.cond00? ( -- flag )  s" room107.cond00?" stub-flag ;
 
 : room107.enter ( -- )   \ 00418AF0
     room-sounds
@@ -2550,7 +2550,7 @@ USING: events.words ;
 
 \ byte 3: 0 / 1 a named progress call; 2 waits (2) for Progress_Speak(1, 0), then the partner's
 \ message slot shows progress +0x73EDC0; else Progress_SpeechCall and the slot is closed
-: room108.cmd00 ( b0 -- )  drop stub-step ;
+: room108.cmd00 ( b0 -- )  drop s" room108.cmd00" stub-step ;
 
 : room108.enter ( -- )   \ 00418DC0
     room-sounds
@@ -3048,10 +3048,10 @@ USING: events.words ;
 
 \ character kind 0x1A: byte 3 0 starts Kind26_MoveTo(2, -6, 257); else waits (2) until
 \ Kind26_MoveDone says done
-: room109.cmd00 ( b0 -- )  drop stub-step ;
+: room109.cmd00 ( b0 -- )  drop s" room109.cmd00" stub-step ;
 \ room 0x109: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
 \ sideways 1 a frame (room_nudge).
-: room109.cmd01 ( b0 -- )  drop stub-step ;
+: room109.cmd01 ( b0 -- )  drop s" room109.cmd01" stub-step ;
 
 : room109.enter ( -- )   \ 004193D0
     room-sounds
@@ -3322,10 +3322,10 @@ USING: events.words ;
 
 \ room 0x10A: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
 \ sideways 1 a frame (room_nudge).
-: room10A.cmd00 ( b0 -- )  drop stub-step ;
+: room10A.cmd00 ( b0 -- )  drop s" room10A.cmd00" stub-step ;
 \ room 0x10A: a noise of loudness 0x20 or more was made in this room last frame (the progress'
 \ noise requests kept at +0x10D4).
-: room10A.cond00? ( -- flag )  stub-flag ;
+: room10A.cond00? ( -- flag )  s" room10A.cond00?" stub-flag ;
 
 : room10A.enter ( -- )   \ 00419730
     room-sounds
@@ -3590,10 +3590,10 @@ USING: events.words ;
 
 \ byte 3 0: a 0x4480 effect is spawned and its slot kept in event var 0; else that slot's effect
 \ is removed
-: room10B.cmd00 ( b0 -- )  drop stub-step ;
+: room10B.cmd00 ( b0 -- )  drop s" room10B.cmd00" stub-step ;
 \ room 0x10B: the progress' +0xFB6 count (it rises while Hewie is down, Hewie_AdjustAction) has
 \ reached 100.
-: room10B.cond00? ( -- flag )  stub-flag ;
+: room10B.cond00? ( -- flag )  s" room10B.cond00?" stub-flag ;
 
 : room10B.enter ( -- )   \ 00419A80
     $19 1.0 0 bgm

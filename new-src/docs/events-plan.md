@@ -95,5 +95,23 @@ table (`tools/event_opcodes.py`, `docs/event_opcodes.md`).
   stub conditions answering at random: each leaves its stacks as it found them.
 - The dictionary is 16 MB (the scripts take 2.7 MB).
 
-Next: the words, a script runner (a task per action slot, `goto` restarting it, the phases
-called from the room loop), then the room words.
+## Status (2026-10-06, later): running
+
+- `events/core.fs`: the script tables, flags, the scripts' characters, the 17 action slots (each
+  a held task), starting / ending actions (cmd_action, Event_StartAction, Event_CharSlot),
+  `goto` (`restart`: the task goes on in the other script), the missing-word report.
+- `events/runner.fs`: phases 0..5, characters entering, the slots a turn each, in the original's
+  order (`enter-room`, `run-frame`, `leave-room`; `.slots` for the console).
+- `events/words.fs`: the flags, variables, event bits, counters, frame counts and waits,
+  messages (the state; the window is a placeholder line), actions, `char-to-exit`, `self-is?`,
+  `char-here?`, `exit-taken?`, `chance?`, `result?` are real; the rest are stubs that say so on the
+  console the first time they run (`.missing` lists them).
+- `events/play.fs`: in the game, while playing: Fiona and Hewie are the scripts' characters 0
+  and 1, rooms entered run their scripts (with the exit come in by), each tick runs a frame.
+- Waits only wait in an action slot (the original ignores "self" commands in phase scripts).
+- `tests/test_runner.fs`: entering room 00 by exit 0 runs its scripts (Fiona put at the exit),
+  slots, self, goto, a character's action, flags.
+
+Next: the words that fire most (cameras: char-camera / camera-follow / area-camera; areas and
+zones; doors and nav groups; the message window with the game's text), and characters doing
+their scripted moves.

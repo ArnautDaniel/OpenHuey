@@ -12,6 +12,7 @@ fvariable lx  fvariable ly  fvariable lz  fvariable hx  fvariable hy  fvariable 
     0e camera cam.yaw sf!  0e camera cam.pitch sf! ;
 
 : go ( id -- )
+    leaving-room  -1 came-in-by !
     room .room frame-room  1.0e camera cam.fov sf!  -1 view !
     playing @ if  place-player  then ;
 

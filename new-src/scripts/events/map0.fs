@@ -1,17 +1,17 @@
 \ events/map0.fs - the event scripts of the rooms on the game's map 0 (kMapRooms).
 \ Converted from the game's bytecode by tools/events2forth.py, once: edit by hand.
 IN: events.map0
-USING: events.words events.builtin ;
+USING: events.core events.words events.builtin ;
 
 \ ---- room $00 ----------------------------------------------------------------------------------
 
 \ room 0x00: a grey glow (Effect737D0, size 30) at one of four spots picked by byte 3
 \ (glow4_spot from spot 0): byte 4 0 starts it, its slot kept in event variable byte 3; else it
 \ is removed.
-: room00.cmd00 ( b0 b1 -- )  drop drop stub-step ;
+: room00.cmd00 ( b0 b1 -- )  drop drop s" room00.cmd00" stub-step ;
 \ Fiona's model +0xD0 (0, 1.5, -2.5) and +0xCC(1) when byte 3 is 0, else (0, 1.5, -1.5) and
 \ +0xCC(0)
-: room00.cmd01 ( b0 -- )  drop stub-step ;
+: room00.cmd01 ( b0 -- )  drop s" room00.cmd01" stub-step ;
 
 : room00.enter ( -- )   \ 003ED800
     2 story-flag? not if
@@ -1575,21 +1575,21 @@ USING: events.words events.builtin ;
 
 \ the room object pstr_ori's +0x24 by byte 3: 0 set (37.978 with progress flag 0x12, else 11), 1
 \ up 0.25 to 37.978 (then event +0x5C (2)), 2 up 0.25, else down 0.25
-: room02.cmd00 ( b0 -- )  drop stub-step ;
+: room02.cmd00 ( b0 -- )  drop s" room02.cmd00" stub-step ;
 \ room 0x02 (Room02_Cmd01_ptmf): the panic (progress +0x7B8) raised to 80
-: room02.cmd01 ( -- )  stub-step ;
+: room02.cmd01 ( -- )  s" room02.cmd01" stub-step ;
 \ room 0x02 (D_003F03A0): the 0xE60-byte effect OrangeSparks_vtable by byte 3 - 0 made (its slot
 \ kept in event variable 0), 1 that one sent 0 (stop), else one more made and sent 1
-: room02.cmd02 ( b0 -- )  drop stub-step ;
+: room02.cmd02 ( b0 -- )  drop s" room02.cmd02" stub-step ;
 \ room 0x02 (D_003F03B0): the drum can's wobble by byte 3 - 0 still (rest height +0x38 = its
 \ height), 2 struck (+0x34 strength 1), 1 each frame: the strength fades by 0.2 while it bobs
 \ 0.2 x strength x sin(phase +0x30, on by 90 degrees) about the rest height
-: room02.cmd03 ( b0 -- )  drop stub-step ;
+: room02.cmd03 ( b0 -- )  drop s" room02.cmd03" stub-step ;
 \ room 0x02 (D_003F03C0): the player is about and down at floor level (y <= 0)
-: room02.cond00? ( -- flag )  stub-flag ;
+: room02.cond00? ( -- flag )  s" room02.cond00?" stub-flag ;
 \ room 0x02 (Room02_Cond01_ptmf): the pursuer is about, in a mode other than 0, 1 or 5, and
 \ progress +0x1130 isn't 0xFE
-: room02.cond01? ( -- flag )  stub-flag ;
+: room02.cond01? ( -- flag )  s" room02.cond01?" stub-flag ;
 
 : room02.enter ( -- )   \ 003EEDF0
     room-sounds
@@ -3009,10 +3009,10 @@ USING: events.words events.builtin ;
 \ ---- room $03 ----------------------------------------------------------------------------------
 
 \ room 0x03 (Room03_Cmd00_ptmf): three objects turned (-60, -60 degrees about x; -90 about z)
-: room03.cmd00 ( -- )  stub-step ;
+: room03.cmd00 ( -- )  s" room03.cmd00" stub-step ;
 \ a lever (pstr_kanagu, tilt +0x18 between -10 and 0 degrees): byte 3 0 back 2 degrees, 1 pulled
 \ (-10) with a puff of grey dust at it
-: room03.cmd01 ( b0 -- )  drop stub-step ;
+: room03.cmd01 ( b0 -- )  drop s" room03.cmd01" stub-step ;
 
 : room03.enter ( -- )   \ 003F0450
     room-sounds
@@ -3668,15 +3668,15 @@ USING: events.words events.builtin ;
 
 \ two dials (byte 3: pstr_syuukouki2 on var 0, pstr_syuukouki1 on var 1, from -90 degrees), byte
 \ 4 the step
-: room04.cmd00 ( b0 b1 -- )  drop drop stub-step ;
+: room04.cmd00 ( b0 b1 -- )  drop drop s" room04.cmd00" stub-step ;
 \ room 0x04 (Room04_Cmd01_ptmf): five objects turned -75 / 75 degrees in turn
-: room04.cmd01 ( -- )  stub-step ;
+: room04.cmd01 ( -- )  s" room04.cmd01" stub-step ;
 \ room 0x04 (Room04_Cmd02_ptmf): byte 3 0: room effect 0x1B (MirrorFragment_vtable) on its
 \ object, a box (640, -560, 1000, 0, 0x60); else the effect gone
-: room04.cmd02 ( b0 -- )  drop stub-step ;
+: room04.cmd02 ( b0 -- )  drop s" room04.cmd02" stub-step ;
 \ room 0x04 (Room04_Cmd03_ptmf): an effect on one object (byte 3 0: at 90 degrees) or the other
 \ (0)
-: room04.cmd03 ( b0 -- )  drop stub-step ;
+: room04.cmd03 ( b0 -- )  drop s" room04.cmd03" stub-step ;
 
 : room04.enter ( -- )   \ 003F0DF0
     $26 story-flag? not if
@@ -4761,7 +4761,7 @@ USING: events.words events.builtin ;
 
 \ room 0x06 (Room06_Cmd00_ptmf): its four objects (the name's 6th letter counting) to their
 \ places
-: room06.cmd00 ( -- )  stub-step ;
+: room06.cmd00 ( -- )  s" room06.cmd00" stub-step ;
 
 : room06.enter ( -- )   \ 003F1B60
     room-sounds
@@ -5392,16 +5392,16 @@ USING: events.words events.builtin ;
 \ ---- room $08 ----------------------------------------------------------------------------------
 
 \ room 0x08 (Room08_Cmd00_ptmf): the cutscene director's +0x6C 3 (byte 3 0) or 2
-: room08.cmd00 ( b0 -- )  drop stub-step ;
+: room08.cmd00 ( b0 -- )  drop s" room08.cmd00" stub-step ;
 \ room 0x08 (D_003F31D8): the hanging object named by the handler's string 0xA - byte 3 0 sets
 \ it still (+0x30 / +0x38 0, travel +0x3C 0.9); 1: the player's travel (+0x3C, its last move's
 \ length) past 5 makes it creak (sounds 4 / 5 by turns, event bit 7) and swing for 20 frames:
 \ its tilt (+0x10) 1 + sin(phase) degrees, the phase (+0x30) on by 36 a frame
-: room08.cmd01 ( b0 -- )  drop stub-step ;
+: room08.cmd01 ( b0 -- )  drop s" room08.cmd01" stub-step ;
 \ door be16 cmd[3..4]: Progress_DoorOpen
-: room08.cond00? ( b0 b1 -- flag )  drop drop stub-flag ;
+: room08.cond00? ( b0 b1 -- flag )  drop drop s" room08.cond00?" stub-flag ;
 \ room 0x08 (Room08_Cond01_ptmf): the stalker is there but not about
-: room08.cond01? ( -- flag )  stub-flag ;
+: room08.cond01? ( -- flag )  s" room08.cond01?" stub-flag ;
 
 : room08.enter ( -- )   \ 003F2500
     0 $35 room08.cond00? if
@@ -6404,7 +6404,7 @@ USING: events.words events.builtin ;
 
 \ room 0x09 (Room09_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) is in
 \ another room than 9 (the player about too)
-: room09.cond00? ( -- flag )  stub-flag ;
+: room09.cond00? ( -- flag )  s" room09.cond00?" stub-flag ;
 
 : room09.enter ( -- )   \ 003F3240
     $3B story-flag? not if
@@ -7290,9 +7290,9 @@ USING: events.words events.builtin ;
 \ ---- room $0A ----------------------------------------------------------------------------------
 
 \ the dial pstr_syuukouki on progress var 3
-: room0A.cmd00 ( b0 -- )  drop stub-step ;
+: room0A.cmd00 ( b0 -- )  drop s" room0A.cmd00" stub-step ;
 \ room 0x0A (Room0A_Cmd01_ptmf): an effect on its object at -2.88
-: room0A.cmd01 ( -- )  stub-step ;
+: room0A.cmd01 ( -- )  s" room0A.cmd01" stub-step ;
 
 : room0A.enter ( -- )   \ 003F3C90
     $26 story-flag? not if
@@ -7820,7 +7820,7 @@ USING: events.words events.builtin ;
 \ ---- room $0B ----------------------------------------------------------------------------------
 
 \ room 0x0B (Room0B_Cond00_ptmf): the player is 20 .. 120 from (x, z) = s16 bytes 3..4, 5..6
-: room0B.cond00? ( b0 b1 b2 b3 -- flag )  drop drop drop drop stub-flag ;
+: room0B.cond00? ( b0 b1 b2 b3 -- flag )  drop drop drop drop s" room0B.cond00?" stub-flag ;
 
 : room0B.enter ( -- )   \ 003F43C0
     room-sounds
@@ -8045,15 +8045,15 @@ USING: events.words events.builtin ;
 
 \ room 0x0C (Room0C_Cmd01_ptmf): script variable byte 3 down by the player's hit (byte 4: 1 from
 \ the weak blow 0x1A, else 5) or the pursuer's (+0x108), not below 0
-: room0C.cmd01 ( b0 b1 -- )  drop drop stub-step ;
+: room0C.cmd01 ( b0 b1 -- )  drop drop s" room0C.cmd01" stub-step ;
 \ room 0x0C (Room0C_Cmd02_ptmf): the screen darkened as the cutscene runs past frame 0x4AE (32 a
 \ frame, up to 0x80)
-: room0C.cmd02 ( -- )  stub-step ;
+: room0C.cmd02 ( -- )  s" room0C.cmd02" stub-step ;
 \ room 0x0C (Room0C_Cmd03_ptmf): three objects (pair byte 4) swing: byte 3 0 set up (rest +0x30,
 \ phase +0x34 half a turn apart, swing +0x3C 0.75 / 0.5), 1 a step (phase on 60 degrees, the
 \ swing down 0.1, x = rest + swing x sin(phase); 2 once still), 2 all to x 10. 2 while any
 \ swings
-: room0C.cmd03 ( b0 b1 -- )  drop drop stub-step ;
+: room0C.cmd03 ( b0 b1 -- )  drop drop s" room0C.cmd03" stub-step ;
 
 : room0C.enter ( -- )   \ 003F4650
     room-sounds
@@ -9878,16 +9878,16 @@ USING: events.words events.builtin ;
 
 \ room 0x0F: the floor plate ("fumi_yuka") fading: its +0x24 toward 1 while event variable 0 is
 \ unset, toward 0 once set; byte 3 0 at once, else by 0.2 a step (var_fade).
-: room0F.cmd00 ( b0 -- )  drop stub-step ;
+: room0F.cmd00 ( b0 -- )  drop s" room0F.cmd00" stub-step ;
 \ room 0x0F (Room0F_Cmd01_ptmf): three objects' +0x14 back to 0
-: room0F.cmd01 ( -- )  stub-step ;
+: room0F.cmd01 ( -- )  s" room0F.cmd01" stub-step ;
 \ room 0x0F (Room0F_Cmd02_ptmf): an effect (DriftingFlecks_vtable, 0x840 bytes) with its box
-: room0F.cmd02 ( -- )  stub-step ;
+: room0F.cmd02 ( -- )  s" room0F.cmd02" stub-step ;
 \ room 0x0F (Room0F_Cmd03_ptmf): the player's model +0xBC (1, 0.25) or (0, 0) by byte 3
-: room0F.cmd03 ( b0 -- )  drop stub-step ;
+: room0F.cmd03 ( b0 -- )  drop s" room0F.cmd03" stub-step ;
 \ room 0x0F (Room0F_Cmd04_ptmf): the player's model +0xD0 (0, 1.5, -2 / -1.5 by byte 3) and
 \ +0xCC
-: room0F.cmd04 ( b0 -- )  drop stub-step ;
+: room0F.cmd04 ( b0 -- )  drop s" room0F.cmd04" stub-step ;
 
 : room0F.enter ( -- )   \ 003F5EC0
     room-sounds
@@ -11145,7 +11145,7 @@ USING: events.words events.builtin ;
 \ ---- room $10 ----------------------------------------------------------------------------------
 
 \ room 0x10 (Room10_Cond00_ptmf): the stalker is there, not about, in mode 2, 6 or 7
-: room10.cond00? ( -- flag )  stub-flag ;
+: room10.cond00? ( -- flag )  s" room10.cond00?" stub-flag ;
 
 : room10.enter ( -- )   \ 003F6F80
     room-sounds
@@ -12344,7 +12344,7 @@ USING: events.words events.builtin ;
 
 \ room 0x12 (Room12_Cmd00_ptmf): byte 3 0: the smoke puffs (SmokePuffs_vtable), their slot in
 \ script variable 0; else that slot started
-: room12.cmd00 ( b0 -- )  drop stub-step ;
+: room12.cmd00 ( b0 -- )  drop s" room12.cmd00" stub-step ;
 
 : room12.enter ( -- )   \ 003F8200
     room-sounds
@@ -13511,7 +13511,7 @@ USING: events.words events.builtin ;
 \ ---- room $13 ----------------------------------------------------------------------------------
 
 \ room 0x13: the grate ("kousi"): byte 3 0 shut (turn 0), else swung open a quarter turn.
-: room13.cmd00 ( b0 -- )  drop stub-step ;
+: room13.cmd00 ( b0 -- )  drop s" room13.cmd00" stub-step ;
 
 : room13.enter ( -- )   \ 003F91A0
     room-sounds
@@ -14027,7 +14027,7 @@ USING: events.words events.builtin ;
 
 \ room 0x14: the curtain ("Cartain") animated by event variable 0 (var0_obj_anim: byte 3 picks
 \ the frame range and direction).
-: room14.cmd00 ( b0 -- )  drop stub-step ;
+: room14.cmd00 ( b0 -- )  drop s" room14.cmd00" stub-step ;
 
 : room14.enter ( -- )   \ 003F99E0
     room-sounds
@@ -14578,9 +14578,9 @@ USING: events.words events.builtin ;
 \ a lid (pstr_kousi_2, +0x24 its height, +0x34 its speed): byte 3 0 up, 1 shut; 2 falling and
 \ bouncing shut (the first landing clears progress flag 0x50 and, unless the director says no,
 \ thuds), 2 while moving; 3 a random rattle up, 2 while it stays below
-: room15.cmd00 ( b0 -- )  drop stub-step ;
+: room15.cmd00 ( b0 -- )  drop s" room15.cmd00" stub-step ;
 \ room 0x15 (Room15_Cond00_ptmf): Hewie is about in room 0xF in state 0x2F or 0x52
-: room15.cond00? ( -- flag )  stub-flag ;
+: room15.cond00? ( -- flag )  s" room15.cond00?" stub-flag ;
 
 : room15.enter ( -- )   \ 003FA090
     room-sounds
@@ -15540,7 +15540,7 @@ USING: events.words events.builtin ;
 \ ---- room $18 ----------------------------------------------------------------------------------
 
 \ room 0x18 (Room18_Cmd00_ptmf): object byte 3's PlacedObject_ToDef
-: room18.cmd00 ( b0 -- )  drop stub-step ;
+: room18.cmd00 ( b0 -- )  drop s" room18.cmd00" stub-step ;
 
 : room18.enter ( -- )   \ 003FAA20
     5 story-flag? not if
@@ -16252,7 +16252,7 @@ USING: events.words events.builtin ;
 
 \ room 0x19 (Room19_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) while
 \ Hewie is controlled: in another room, or 30 or more from the player
-: room19.cond00? ( -- flag )  stub-flag ;
+: room19.cond00? ( -- flag )  s" room19.cond00?" stub-flag ;
 
 : room19.enter ( -- )   \ 003FB3B0
     room-sounds
@@ -17264,9 +17264,9 @@ USING: events.words events.builtin ;
 \ ---- room $1A ----------------------------------------------------------------------------------
 
 \ room 0x1A (D_003FC660): the fan turns
-: room1A.cmd00 ( -- )  stub-step ;
+: room1A.cmd00 ( -- )  s" room1A.cmd00" stub-step ;
 \ room 0x1A: room effect slot 0 made anew as the second TV screen (TvScreenB).
-: room1A.cmd01 ( -- )  stub-step ;
+: room1A.cmd01 ( -- )  s" room1A.cmd01" stub-step ;
 
 : room1A.enter ( -- )   \ 003FC060
     room-sounds
@@ -17725,7 +17725,7 @@ USING: events.words events.builtin ;
 
 \ five pendulums (Room1B_ObjectNames[byte 3]) of their own periods and swings: byte 4 0 still at
 \ a phase offset (+0x34) 60 x the index, 1 swinging on (+0x30, +0x14)
-: room1B.cmd00 ( b0 b1 -- )  drop drop stub-step ;
+: room1B.cmd00 ( b0 b1 -- )  drop drop s" room1B.cmd00" stub-step ;
 
 : room1B.enter ( -- )   \ 003FC6A0
     $14 1.0 0 bgm
@@ -18048,9 +18048,9 @@ USING: events.words events.builtin ;
 
 \ room 0x1C (Room1C_Cmd00_ptmf): room effect 0x1C (a depth range) with the cutscene from frame
 \ 0x14A: near 1 .. 1 + 1.4 t (at most 67.6), far 48.6 + 4 t (at most 230)
-: room1C.cmd00 ( -- )  stub-step ;
+: room1C.cmd00 ( -- )  s" room1C.cmd00" stub-step ;
 \ room 0x1C (D_003FD350): a sound (0xC0000000, bank 6) at the room's effect 1
-: room1C.cmd01 ( -- )  stub-step ;
+: room1C.cmd01 ( -- )  s" room1C.cmd01" stub-step ;
 
 : room1C.act06 ( -- )   \ 003FD070
     0 $FF $E2 0 $D $FF $D8 1 butterflies
@@ -18563,11 +18563,11 @@ USING: events.words events.builtin ;
 \ ---- room $1D ----------------------------------------------------------------------------------
 
 \ room 0x1D (Room1D_Cmd00_ptmf): script variable 0 = 2 .. 5 at random
-: room1D.cmd00 ( -- )  stub-step ;
+: room1D.cmd00 ( -- )  s" room1D.cmd00" stub-step ;
 \ room 0x1D (Room1D_Cmd01_ptmf): door 0's +0x74 (0, or -0.08 by byte 3)
-: room1D.cmd01 ( b0 -- )  drop stub-step ;
+: room1D.cmd01 ( b0 -- )  drop s" room1D.cmd01" stub-step ;
 \ Fiona in move 5, room 0x1D's flag 0 not set and its exit 0's door shut
-: room1D.cond00? ( -- flag )  stub-flag ;
+: room1D.cond00? ( -- flag )  s" room1D.cond00?" stub-flag ;
 
 : room1D.act04 ( -- )   \ 003FD720
     $2D state-flag-clear
@@ -19655,7 +19655,7 @@ USING: events.words events.builtin ;
 
 \ two wheels (Room1F_ObjectNames) rocking 4 degrees (+0x18) through their phase +0x30, 6 degrees
 \ a step (byte 3 1; 0 reset), the first one's creak (-366, 30, -25) at each turn
-: room1F.cmd00 ( b0 -- )  drop stub-step ;
+: room1F.cmd00 ( b0 -- )  drop s" room1F.cmd00" stub-step ;
 
 : room1F.enter ( -- )   \ 003FE300
     room-sounds
@@ -19770,23 +19770,23 @@ USING: events.words events.builtin ;
 \ ---- room $20 ----------------------------------------------------------------------------------
 
 \ room 0x20 (Room20_Cmd01_ptmf): the falling object back up in place
-: room20.cmd01 ( -- )  stub-step ;
+: room20.cmd01 ( -- )  s" room20.cmd01" stub-step ;
 \ a pendulum (room object Room20_ObjectNames[byte 3]): byte 4 0 still; 1 its phase +0x30 on by 2
 \ degrees (a tick sound at (-85, 30, 90) each turn), swinging 15 degrees (+0x14)
-: room20.cmd02 ( b0 b1 -- )  drop drop stub-step ;
+: room20.cmd02 ( b0 b1 -- )  drop drop s" room20.cmd02" stub-step ;
 \ room 0x20 (Room20_Cmd03_ptmf): the falling object falls (gravity 0.2 a frame on its velocity
 \ +0x30, spinning 1 degree a frame) along the nav mesh, events bit 1 set while it lies on open
 \ floor; landing on floor that isn't 0x10000 raises dust
-: room20.cmd03 ( -- )  stub-step ;
+: room20.cmd03 ( -- )  s" room20.cmd03" stub-step ;
 \ room 0x20 (Room20_Cmd05_ptmf): the character turns to face object byte 3
-: room20.cmd05 ( b0 -- )  drop stub-step ;
+: room20.cmd05 ( b0 -- )  drop s" room20.cmd05" stub-step ;
 \ room 0x20 (Room20_Cond00_ptmf): the player, free and within 5 of the falling object, knocks it
 \ - it gets a push (0, 1, 1) turned by her facing, and its nav triangle
-: room20.cond00? ( -- flag )  stub-flag ;
+: room20.cond00? ( -- flag )  s" room20.cond00?" stub-flag ;
 \ room 0x20 (Room20_Cond01_ptmf): the character's script value is at least be32 bytes 3..6
-: room20.cond01? ( b0 b1 b2 b3 -- flag )  drop drop drop drop stub-flag ;
+: room20.cond01? ( b0 b1 b2 b3 -- flag )  drop drop drop drop s" room20.cond01?" stub-flag ;
 \ room 0x20 (Room20_Cond02_ptmf): object byte 3 becomes event point byte 4 (radii 5)
-: room20.cond02? ( b0 b1 -- flag )  drop drop stub-flag ;
+: room20.cond02? ( b0 b1 -- flag )  drop drop s" room20.cond02?" stub-flag ;
 
 : room20.enter ( -- )   \ 003FE460
     room-sounds
@@ -20732,22 +20732,22 @@ USING: events.words events.builtin ;
 
 \ ---- room $21 ----------------------------------------------------------------------------------
 
-: room21.cmd00 ( -- )  stub-step ;
+: room21.cmd00 ( -- )  s" room21.cmd00" stub-step ;
 \ room 0x21 (D_00400B98): the fan turns, except while a movie plays
-: room21.cmd01 ( -- )  stub-step ;
+: room21.cmd01 ( -- )  s" room21.cmd01" stub-step ;
 \ room 0x21 (D_00400BA8)
-: room21.cmd02 ( b0 -- )  drop stub-step ;
+: room21.cmd02 ( b0 -- )  drop s" room21.cmd02" stub-step ;
 \ Sets bit 1 of the flag byte three times (inlined setter calls); returns 1.
-: room21.cmd03 ( -- )  stub-step ;
+: room21.cmd03 ( -- )  s" room21.cmd03" stub-step ;
 \ room 0x21 (D_00400BC8)
-: room21.cmd04 ( b0 -- )  drop stub-step ;
+: room21.cmd04 ( b0 -- )  drop s" room21.cmd04" stub-step ;
 \ room 0x21 (Room21_Cmd05_ptmf): the player's model +0xC8 vector by byte 3
-: room21.cmd05 ( b0 -- )  drop stub-step ;
+: room21.cmd05 ( b0 -- )  drop s" room21.cmd05" stub-step ;
 \ room 0x21 (Room21_Cmd06_ptmf): Fiona's model +0x1570 (byte 3 0) / +0x1574 (1) = byte 4
-: room21.cmd06 ( b0 b1 -- )  drop drop stub-step ;
+: room21.cmd06 ( b0 b1 -- )  drop drop s" room21.cmd06" stub-step ;
 \ room 0x21 (Room21_Cond00_ptmf): the pursuer, about and not in state 2, is in its mode 2 but in
 \ another room than the current one (the player about too)
-: room21.cond00? ( -- flag )  stub-flag ;
+: room21.cond00? ( -- flag )  s" room21.cond00?" stub-flag ;
 
 : room21.enter ( -- )   \ 003FF170
     room-sounds
@@ -23292,13 +23292,13 @@ USING: events.words events.builtin ;
 \ ---- room $23 ----------------------------------------------------------------------------------
 
 \ room 0x23 (Room23_Cmd00_ptmf): Fiona's model +0x9A0 / +0x9A8: 0 (byte 3 1) or 0.12 / 0.2
-: room23.cmd00 ( b0 -- )  drop stub-step ;
+: room23.cmd00 ( b0 -- )  drop s" room23.cmd00" stub-step ;
 \ room 0x23 (Room23_Cmd01_ptmf): byte 3 0 a progress name, 1 wait for character 3 (2 while not),
 \ else done
-: room23.cmd01 ( b0 -- )  drop stub-step ;
+: room23.cmd01 ( b0 -- )  drop s" room23.cmd01" stub-step ;
 \ room 0x23 (Room23_Cond00_ptmf): none of the six slots' PursuerGroup_Fields bits 0..3, and the
 \ stalker is about but not active, in mode 2, 6 or 7
-: room23.cond00? ( -- flag )  stub-flag ;
+: room23.cond00? ( -- flag )  s" room23.cond00?" stub-flag ;
 
 : room23.enter ( -- )   \ 004010A0
     room-sounds
@@ -24065,11 +24065,11 @@ USING: events.words events.builtin ;
 \ ---- room $24 ----------------------------------------------------------------------------------
 
 \ Room24_Cmd00
-: room24.cmd00 ( b0 -- )  drop stub-step ;
+: room24.cmd00 ( b0 -- )  drop s" room24.cmd00" stub-step ;
 \ Room24_Cmd01
-: room24.cmd01 ( -- )  stub-step ;
+: room24.cmd01 ( -- )  s" room24.cmd01" stub-step ;
 \ Room24_Cmd02
-: room24.cmd02 ( -- )  stub-step ;
+: room24.cmd02 ( -- )  s" room24.cmd02" stub-step ;
 
 : room24.enter ( -- )   \ 00401890
     room-sounds
@@ -24900,10 +24900,10 @@ USING: events.words events.builtin ;
 \ ---- room $25 ----------------------------------------------------------------------------------
 
 \ the rising motes started
-: room25.cmd00 ( -- )  stub-step ;
+: room25.cmd00 ( -- )  s" room25.cmd00" stub-step ;
 \ room 0x25: Fiona is active and in a reaction (action 4) with no character behind it (+0x100
 \ 0xFF).
-: room25.cond00? ( -- flag )  stub-flag ;
+: room25.cond00? ( -- flag )  s" room25.cond00?" stub-flag ;
 
 : room25.enter ( -- )   \ 00402330
     room-sounds
@@ -25621,17 +25621,17 @@ USING: events.words events.builtin ;
 \ ---- room $26 ----------------------------------------------------------------------------------
 
 \ the two doors ("left", "right") opening: byte 3 0 at once (2.25), else a step (0.075)
-: room26.cmd00 ( b0 -- )  drop stub-step ;
+: room26.cmd00 ( b0 -- )  drop s" room26.cmd00" stub-step ;
 \ the three rocking chairs ("movechair_1..3"; +0x30 the rock's phase in degrees, +0x34 its size,
 \ +0x38 how fast it dies down; +0x10 the tilt), by byte 3: 0 all still; 1 a rocking step (6
 \ degrees; each swing smaller, the first chair creaking at a volume by its size); 2 / 3 set
 \ rocking at full size from their tilt now (swinging forward / back), with a creak
-: room26.cmd01 ( b0 -- )  drop stub-step ;
+: room26.cmd01 ( b0 -- )  drop s" room26.cmd01" stub-step ;
 \ the partner's target (+0xF35E0 on, +0xF35F0) 3 above the rocking chair (movechair_2): its seat
 \ 6 ahead, tipped by its rock (90 x +0x34 x sin +0x30 degrees) and turned with it
-: room26.cmd02 ( -- )  stub-step ;
+: room26.cmd02 ( -- )  s" room26.cmd02" stub-step ;
 \ the first rocking chair still rocking (+0x34 over 0.3)
-: room26.cond00? ( -- flag )  stub-flag ;
+: room26.cond00? ( -- flag )  s" room26.cond00?" stub-flag ;
 
 : room26.enter ( -- )   \ 00402D50
     room-sounds
@@ -26544,7 +26544,7 @@ USING: events.words events.builtin ;
 \ ---- room $28 ----------------------------------------------------------------------------------
 
 \ the pursuer's Pursuer_GrabHewieBehind
-: room28.cond00? ( b0 -- flag )  drop stub-flag ;
+: room28.cond00? ( b0 -- flag )  drop s" room28.cond00?" stub-flag ;
 
 : room28.enter ( -- )   \ 00403980
     $16 1.0 0 bgm
@@ -26961,9 +26961,9 @@ USING: events.words events.builtin ;
 
 \ the stalker in play is chasing (+0x153C 2, 6 or 7, not +0xC4 2) with the progress state 2: in
 \ this room, whether the camera sees it; elsewhere 1
-: room29.cond00? ( -- flag )  stub-flag ;
+: room29.cond00? ( -- flag )  s" room29.cond00?" stub-flag ;
 \ no thing of kind 3 lies about
-: room29.cond01? ( -- flag )  stub-flag ;
+: room29.cond01? ( -- flag )  s" room29.cond01?" stub-flag ;
 
 : room29.enter ( -- )   \ 00403F90
     $31D story-flag? if
@@ -27564,13 +27564,13 @@ USING: events.words events.builtin ;
 
 \ the box and the grate, by byte 3: 0 the box's +0x28 on by 0.4; the grate's +0x14 (an angle) 1
 \ back 1.5 degrees, 2 on 0.5, 3 back 0.5
-: room2A.cmd00 ( b0 -- )  drop stub-step ;
+: room2A.cmd00 ( b0 -- )  drop s" room2A.cmd00" stub-step ;
 \ Room2A_Cmd01
-: room2A.cmd01 ( b0 -- )  drop stub-step ;
+: room2A.cmd01 ( b0 -- )  drop s" room2A.cmd01" stub-step ;
 \ room 0x2A: its effect (Room2AWisps_vtable) started at (220, 0, -100)
-: room2A.cmd02 ( -- )  stub-step ;
+: room2A.cmd02 ( -- )  s" room2A.cmd02" stub-step ;
 \ the 0x14-byte effect (Effect78BC0_vtable) started with the command's parameters (from byte 3)
-: room2A.cmd03 ( b0 -- )  drop stub-step ;
+: room2A.cmd03 ( b0 -- )  drop s" room2A.cmd03" stub-step ;
 
 : room2A.enter ( -- )   \ 00404740
     room-sounds
@@ -28691,7 +28691,7 @@ USING: events.words events.builtin ;
 
 \ character kind 0x1A: byte 3 0 starts Kind26_MoveToB(2, -290, 42); else waits (2) until
 \ Kind26_MoveDoneB says done
-: room2B.cmd00 ( b0 -- )  drop stub-step ;
+: room2B.cmd00 ( b0 -- )  drop s" room2B.cmd00" stub-step ;
 
 : room2B.enter ( -- )   \ 00405640
     room-sounds
@@ -29147,18 +29147,18 @@ USING: events.words events.builtin ;
 \ a hanging thing (the room's +0x34 (byte 3 + 2) object) swinging, by byte 4: 0 / 2 set going
 \ (12 degrees) away from the partner / Fiona; 1 a step (22.5 degrees of its swing, shrinking to
 \ 0.4 at each end; under half a degree it stops) - 2 while it swings
-: room2D.cmd00 ( b0 b1 -- )  drop drop stub-step ;
+: room2D.cmd00 ( b0 b1 -- )  drop drop s" room2D.cmd00" stub-step ;
 \ something dropped (effect LoopingSprite_vtable, its slot in event var 1) from (-276.5, 3,
 \ 160), by byte 3: 0 started (event var 0 the frame count); 1 a frame (2 while falling): it
 \ drifts 0.5 a frame in x and falls 0.05 x n(n+1)/2, gone below -10
-: room2D.cmd01 ( b0 -- )  drop stub-step ;
+: room2D.cmd01 ( b0 -- )  drop s" room2D.cmd01" stub-step ;
 \ room 0x2D: two hanging things (the room's objects 4 and 5) that Fiona pushes as she walks by:
 \ past a step total of 5 they swing for 20 frames and the first toggles event flag 3 with a
 \ sound (hangers_swing).
-: room2D.cmd02 ( b0 -- )  drop stub-step ;
+: room2D.cmd02 ( b0 -- )  drop s" room2D.cmd02" stub-step ;
 \ Hewie (in state 0x7F, +0xF3564) within 5 of the spot by byte 3: 0 (-259.5, 190), 1 (-276, 160)
 \ (others: what the caller left)
-: room2D.cond00? ( b0 -- flag )  drop stub-flag ;
+: room2D.cond00? ( b0 -- flag )  drop s" room2D.cond00?" stub-flag ;
 
 : room2D.enter ( -- )   \ 00405AC0
     room-sounds
@@ -29850,7 +29850,7 @@ USING: events.words events.builtin ;
 \ ---- room $2F ----------------------------------------------------------------------------------
 
 \ room 0x2F (Room2F_Cond00_ptmf): the pursuer's Pursuer_GrabHewieBehind
-: room2F.cond00? ( b0 -- flag )  drop stub-flag ;
+: room2F.cond00? ( b0 -- flag )  drop s" room2F.cond00?" stub-flag ;
 
 : room2F.enter ( -- )   \ 00412950
     room-sounds
@@ -30206,7 +30206,7 @@ USING: events.words events.builtin ;
 \ ---- room $30 ----------------------------------------------------------------------------------
 
 \ room 0x30 (Room30_Cond00_ptmf): the pursuer's Pursuer_GrabHewieBehind
-: room30.cond00? ( b0 -- flag )  drop stub-flag ;
+: room30.cond00? ( b0 -- flag )  drop s" room30.cond00?" stub-flag ;
 
 : room30.enter ( -- )   \ 00412EA0
     room-sounds
@@ -30607,11 +30607,11 @@ USING: events.words events.builtin ;
 \ ---- room $31 ----------------------------------------------------------------------------------
 
 \ Room31_Cmd00
-: room31.cmd00 ( -- )  stub-step ;
+: room31.cmd00 ( -- )  s" room31.cmd00" stub-step ;
 \ Room31_Cmd01
-: room31.cmd01 ( -- )  stub-step ;
+: room31.cmd01 ( -- )  s" room31.cmd01" stub-step ;
 \ Room31_Cmd02
-: room31.cmd02 ( b0 -- )  drop stub-step ;
+: room31.cmd02 ( b0 -- )  drop s" room31.cmd02" stub-step ;
 
 : room31.enter ( -- )   \ 00429E40
     room31.cmd00
@@ -30893,19 +30893,19 @@ USING: events.words events.builtin ;
 \ ---- room $32 ----------------------------------------------------------------------------------
 
 \ room 0x32: room effect slot 1 made anew as the first TV screen (TvScreenA).
-: room32.cmd00 ( -- )  stub-step ;
+: room32.cmd00 ( -- )  s" room32.cmd00" stub-step ;
 \ room 0x32 (D_0042C2A8): the fan turns, except while a movie plays
-: room32.cmd01 ( -- )  stub-step ;
+: room32.cmd01 ( -- )  s" room32.cmd01" stub-step ;
 \ room 0x32 (D_0042C2B8)
-: room32.cmd02 ( b0 -- )  drop stub-step ;
+: room32.cmd02 ( b0 -- )  drop s" room32.cmd02" stub-step ;
 \ a room callback: byte 3 0 a progress name, 1 wait for character 3 (2 while not), else done
-: room32.cmd03 ( b0 -- )  drop stub-step ;
+: room32.cmd03 ( b0 -- )  drop s" room32.cmd03" stub-step ;
 \ room 0x32 (D_0042C2D8): byte 3 0..3 the lit quad (room effect 0x1A) as room 0x21's; 4 and up
 \ the mirror fragment's reflection (room effect 0x1A, MirrorFragment_vtable) on the object
 \ "a_fragment0": 1.8 across, -0.1 down, strength 1, kind 2, alpha 0xFF
-: room32.cmd04 ( b0 -- )  drop stub-step ;
+: room32.cmd04 ( b0 -- )  drop s" room32.cmd04" stub-step ;
 \ the player's model tint: white (byte 3 0) or blue halved
-: room32.cmd05 ( b0 -- )  drop stub-step ;
+: room32.cmd05 ( b0 -- )  drop s" room32.cmd05" stub-step ;
 
 : room32.enter ( -- )   \ 0042B0B0
     room-sounds

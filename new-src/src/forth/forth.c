@@ -1688,7 +1688,7 @@ void forth_run_tasks(Forth *f) {
         if (t->state == TASK_WAITING && f->frame >= t->wake) {
             t->state = TASK_READY;
         }
-        if (t->state == TASK_READY) {
+        if (t->state == TASK_READY && !t->held) {
             task_turn(f, t);
         }
         if (t->state == TASK_DONE) {
@@ -1718,6 +1718,41 @@ PRIM(p_wait) {   /* ( frames -- ) */
     f->yielded = 1;
 }
 PRIM(p_spawn) { PUSH(forth_spawn(f, (Word *)POP())->id); }   /* ( xt -- id ) */
+PRIM(p_spawn_held) {   /* ( xt -- id ) a task only `resume` runs */
+    Task *t = forth_spawn(f, (Word *)POP());
+
+    t->held = 1;
+    PUSH(t->id);
+}
+static Task *task_by_id(Forth *f, Cell id) {
+    Task *t;
+
+    for (t = f->tasks; t != NULL && t->id != id; t = t->next) {
+    }
+    return t;
+}
+PRIM(p_resume) {   /* ( id -- flag ) give task `id` its turn now (it may be waiting); is it still alive? */
+    Task *t = task_by_id(f, POP());
+
+    if (t != NULL && t != f->t && t->state != TASK_DONE) {
+        if (t->state == TASK_WAITING && f->frame >= t->wake) {
+            t->state = TASK_READY;
+        }
+        if (t->state == TASK_READY) {
+            task_turn(f, t);
+        }
+    }
+    PUSH(t != NULL && t->state != TASK_DONE ? -1 : 0);
+}
+PRIM(p_restart) {   /* ( xt -- ) the running task starts over in xt: stacks emptied, it goes on at once */
+    Word *to = (Word *)POP();
+
+    yield_check(f, "restart");
+    f->t->boot[0] = (Cell)to;
+    f->t->boot[1] = (Cell)f->w_halt;
+    f->t->sp = f->t->rp = f->t->fp = 0;
+    IP = f->t->boot;
+}
 PRIM(p_kill) {   /* ( id -- ) */
     Cell id = POP();
     Task *t;
@@ -1797,7 +1832,8 @@ static void define_core(Forth *f) {
         {"IN:", p_in}, {"USING:", p_using}, {"USE:", p_use}, {"<PRIVATE", p_private_begin},
         {"PRIVATE>", p_private_end}, {"bye", p_bye}, {"catch", p_catch}, {"error-message", p_error_message},
         {"i", p_i}, {"j", p_j}, {"leave", p_leave}, {"unloop", p_unloop},
-        {"yield", p_yield}, {"wait", p_wait}, {"spawn", p_spawn}, {"kill", p_kill}, {"me", p_me},
+        {"yield", p_yield}, {"wait", p_wait}, {"spawn", p_spawn}, {"spawn-held", p_spawn_held}, {"resume", p_resume},
+        {"restart", p_restart}, {"kill", p_kill}, {"me", p_me},
         {"frame", p_frame}, {"tick-tasks", p_tick_tasks}, {".tasks", p_tasks},
     };
     static const struct {

@@ -5,6 +5,7 @@
  *                          1 if a file had an error, else 0)
  *   forth -i a.fs          run the files, then a prompt */
 #include "forth.h"
+#include "../game/progress.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,6 +35,7 @@ int main(int argc, char **argv) {
     int i, interactive = argc == 1, failed = 0;
 
     forth_prim(f, "exit-status", p_exit_status);
+    bind_state(f);
     forth_add_root(f, dir);
     snprintf(prelude, sizeof(prelude), "%s/prelude.fs", dir);
     if (forth_include(f, prelude) != 0) {

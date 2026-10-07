@@ -27,6 +27,7 @@ fvariable ax  fvariable az
 
 : go-through ( exit -- )
     exit-leads over 0< if  2drop exit  then        ( room exit' )
+    leaving-room  dup came-in-by !
     swap room .room  -1 view !
     arrive ;
 

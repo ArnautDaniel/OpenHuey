@@ -1,0 +1,74 @@
+/* The game's state that the event scripts read and change: the story so far (Progress: what a
+ * save keeps) and the event system's own state while in a room (EventState). C owns both;
+ * Forth reaches them through `progress` / `event-state` and the field words (bind_state).
+ *
+ * The original keeps these in its progress object and the event object (src/game/progress.c,
+ * src/game/event.c); the offsets in the comments are theirs. */
+#ifndef PROGRESS_H
+#define PROGRESS_H
+
+#include <stdint.h>
+
+#include "../forth/forth.h"
+
+#define STORY_FLAGS 0x400       /* the scripts use up to 0x36B */
+#define STATE_FLAGS 64          /* the original has 46 */
+#define PROGRESS_VARS 64        /* the scripts use up to 0x33 */
+#define RESIDENT_FLAGS 128
+#define ROOM_COUNT 0x110
+#define CHARACTERS 6            /* the original's character slots: 0 Fiona, 1 Hewie, 2.. others */
+#define SCRIPT_SLOTS 17         /* the action scripts running at once */
+#define SCRIPT_VARS 32
+
+typedef struct Progress {
+    uint32_t story[STORY_FLAGS / 32];       /* the scenario flags (+0x1C) */
+    uint32_t state[STATE_FLAGS / 32];       /* control, panic, ... (+0x8) */
+    uint8_t vars[PROGRESS_VARS];            /* the byte variables (+0x9C) */
+    uint32_t resident[RESIDENT_FLAGS / 32]; /* kept across games: unlocks (the game's +0x24) */
+    uint32_t visited[(ROOM_COUNT + 31) / 32];   /* rooms entered (+0xDC) */
+} Progress;
+
+/* a character as the scripts see it (the original's character object: +0x30 its room, +0xE0
+ * busy, +0x14E8 its script state, 5: running an action script; +0x153C its script id) */
+typedef struct ScriptChar {
+    int32_t present;    /* in the game (the original's +0x28) */
+    int32_t id;         /* its script id: 0 Fiona, 1 Hewie, ... (-1: slot empty) */
+    int32_t room;
+    int32_t scripted;   /* doing a scripted action: its action script drives it */
+    int32_t actor;      /* new-src's actor (-1: none) */
+} ScriptChar;
+
+/* an action script running (the original's 0x18-byte contexts at +0x564) */
+typedef struct ScriptSlot {
+    int32_t task;       /* the Forth task running it (0: the slot is free) */
+    int32_t who;        /* its character's slot (-1: a scene script, no character) */
+    int32_t id;         /* the id it was started for (+0x13): what `self-is?` compares */
+    int32_t frames;     /* frames it has run (+0x14): `self-frames-reset`, `self-wait-frames` */
+} ScriptSlot;
+
+typedef struct EventState {
+    int32_t room;                   /* the room the scripts are for (+0x560) */
+    int32_t vars[SCRIPT_VARS];      /* the script variables (+0x810), cleared on entering */
+    uint32_t bits;                  /* the event bits (+0x890), cleared on entering */
+    int32_t counter;                /* the event counter (+0x703) */
+    int32_t exit;                   /* the exit taken (+0x702) */
+    int32_t room_frames;            /* phase 1 calls in this room (+0x704) */
+    int32_t result;                 /* the event result (+0x934) */
+    int32_t message;                /* the message window's text (-1: closed) (+0x708 task) */
+    int32_t message_owner;          /* the character whose script opened it (+0x80C), -1 none */
+    int32_t slot;                   /* the action slot running now (-1: a phase script) */
+    int32_t self_id;                /* the running context's id (+0x13; 0xFF in a phase) */
+    int32_t self_char;              /* the running context's character slot (+0x0), -1 none */
+    int32_t leaving;                /* an exit was taken: no more actions start (progress +0x4) */
+    int32_t self_frames;            /* a phase script's frame count (its context's +0x14) */
+    ScriptSlot slots[SCRIPT_SLOTS];
+    ScriptChar chars[CHARACTERS];
+} EventState;
+
+extern Progress gProgress;
+extern EventState gEvents;
+
+/* `progress`, `event-state` and their fields, in the vocabulary `game-state` */
+void bind_state(Forth *f);
+
+#endif

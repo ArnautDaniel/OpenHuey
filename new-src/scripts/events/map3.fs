@@ -1,12 +1,12 @@
 \ events/map3.fs - the event scripts of the rooms on the game's map 3 (kMapRooms).
 \ Converted from the game's bytecode by tools/events2forth.py, once: edit by hand.
 IN: events.map3
-USING: events.words events.builtin ;
+USING: events.core events.words events.builtin ;
 
 \ ---- room $80 ----------------------------------------------------------------------------------
 
 \ (as Room2A_Cmd03) the 0x14-byte effect BackdropModel2_vtable started with byte 3 as a word
-: room80.cmd00 ( b0 -- )  drop stub-step ;
+: room80.cmd00 ( b0 -- )  drop s" room80.cmd00" stub-step ;
 
 : room80.enter ( -- )   \ 0043EA90
     $18 1.0 0 bgm
@@ -170,7 +170,7 @@ USING: events.words events.builtin ;
 \ ---- room $C1 ----------------------------------------------------------------------------------
 
 \ room 0xC1: the summoner's countdown (progress +0x764) has run out.
-: roomC1.cond00? ( -- flag )  stub-flag ;
+: roomC1.cond00? ( -- flag )  s" roomC1.cond00?" stub-flag ;
 
 : roomC1.enter ( -- )   \ 0043EC80
     room-sounds
@@ -444,11 +444,11 @@ USING: events.words events.builtin ;
 
 \ byte 3 0 / 1: shut / open (pi/2); 2 / 3 opening / shutting by script variable 0 (0..120
 \ frames, eased by a sine)
-: roomC2.cmd00 ( b0 -- )  drop stub-step ;
+: roomC2.cmd00 ( b0 -- )  drop s" roomC2.cmd00" stub-step ;
 \ byte 3 to the player's Character_ChooseExit while she's active
-: roomC2.cmd01 ( b0 -- )  drop stub-step ;
+: roomC2.cmd01 ( b0 -- )  drop s" roomC2.cmd01" stub-step ;
 \ room 0xC2: the summoner's countdown (progress +0x764) has run out.
-: roomC2.cond00? ( -- flag )  stub-flag ;
+: roomC2.cond00? ( -- flag )  s" roomC2.cond00?" stub-flag ;
 
 : roomC2.enter ( -- )   \ 0043F0C0
     room-sounds
@@ -989,14 +989,14 @@ USING: events.words events.builtin ;
 \ ---- room $C3 ----------------------------------------------------------------------------------
 
 \ (as RoomC2_Cmd00, the room object named RoomC3_ObjectNames, opening to -pi/2)
-: roomC3.cmd00 ( b0 -- )  drop stub-step ;
+: roomC3.cmd00 ( b0 -- )  drop s" roomC3.cmd00" stub-step ;
 \ the player (active, +0xE0 clear) put in action 0xB / 0x21 / 0xFF unless held (7); then
 \ progress +0x7B8 gets 50
-: roomC3.cmd01 ( -- )  stub-step ;
+: roomC3.cmd01 ( -- )  s" roomC3.cmd01" stub-step ;
 \ sound 3 (bank 6) at the room object named pstr_doramukan_2[0]
-: roomC3.cmd02 ( -- )  stub-step ;
+: roomC3.cmd02 ( -- )  s" roomC3.cmd02" stub-step ;
 \ room 0xC3: the summoner's countdown (progress +0x764) has run out.
-: roomC3.cond00? ( -- flag )  stub-flag ;
+: roomC3.cond00? ( -- flag )  s" roomC3.cond00?" stub-flag ;
 
 : roomC3.enter ( -- )   \ 0043F8F0
     room-sounds
@@ -1525,7 +1525,7 @@ USING: events.words events.builtin ;
 \ 11 - k keeps its slot): made on first use when byte 3 is set, then sent (on byte 3, index 8 -
 \ k, the variable, the object), with sound 1 at the object when on and the camera director's
 \ +0x38 is clear
-: roomC5.cmd00 ( b0 b1 -- )  drop drop stub-step ;
+: roomC5.cmd00 ( b0 b1 -- )  drop drop s" roomC5.cmd00" stub-step ;
 
 : roomC5.enter ( -- )   \ 004401B0
     room-sounds
@@ -2702,28 +2702,28 @@ USING: events.words events.builtin ;
 \ the screen fade (renderer +0x70) by script variable 1 with Hewie's light 0xF: byte 3 0 clear
 \ (0x808080), 2 full (0x80808080); 1 fades in by 0x10 a call and 3 back out, waiting (2),
 \ Hewie's +0xE4 set once there
-: roomC7.cmd00 ( b0 -- )  drop stub-step ;
+: roomC7.cmd00 ( b0 -- )  drop s" roomC7.cmd00" stub-step ;
 \ (as Room0C_Cmd01, the player only)
-: roomC7.cmd01 ( b0 -- )  drop stub-step ;
+: roomC7.cmd01 ( b0 -- )  drop s" roomC7.cmd01" stub-step ;
 \ a cursor effect (RoomC7Cursor_vtable) at (x, y) kept in script variables 7 / 8, its slot in 6:
 \ byte 3 0 puts it at (246, 242); 1 moves it 4 a frame by the stick or the d-pad (x 0..492, y
 \ 0..420), waiting (2) until confirm (event 4 +0x5C) or cancel (+0x60); 2 ends it
-: roomC7.cmd02 ( b0 -- )  drop stub-step ;
+: roomC7.cmd02 ( b0 -- )  drop s" roomC7.cmd02" stub-step ;
 \ (as RoomC0_Cmd01) byte 3 2 up from frame 1268 (2.79 a frame, light 0x23) and 3 from frame 25
 \ (4.27, light 0xF), held at 0x80; 1 the fade fully on with light 0xA, else off with light 0x11
 \ (+0x64)
-: roomC7.cmd03 ( b0 -- )  drop stub-step ;
+: roomC7.cmd03 ( b0 -- )  drop s" roomC7.cmd03" stub-step ;
 \ (as Room2A_Cmd03) the 0xD40-byte effect Debris_vtable started with byte 3
-: roomC7.cmd04 ( b0 -- )  drop stub-step ;
+: roomC7.cmd04 ( b0 -- )  drop s" roomC7.cmd04" stub-step ;
 \ (as Room23_Cmd00) the kind-0xB character's model +0xCC8: 0 (byte 3 1) or -0.02
-: roomC7.cmd05 ( b0 -- )  drop stub-step ;
+: roomC7.cmd05 ( b0 -- )  drop s" roomC7.cmd05" stub-step ;
 \ (as Room48_Cmd02) byte 3 0 starts the effect BackdropModel_vtable (its slot in event variable
 \ 9); else that one is ended (EffectMgr_Remove)
-: roomC7.cmd06 ( b0 -- )  drop stub-step ;
+: roomC7.cmd06 ( b0 -- )  drop s" roomC7.cmd06" stub-step ;
 \ script variables 7 / 8 (the player's spot) in 151..269 / 171..219
-: roomC7.cond00? ( -- flag )  stub-flag ;
+: roomC7.cond00? ( -- flag )  s" roomC7.cond00?" stub-flag ;
 \ a room callback: the pursuer's Pursuer_GrabHewieBehind
-: roomC7.cond01? ( -- flag )  stub-flag ;
+: roomC7.cond01? ( -- flag )  s" roomC7.cond01?" stub-flag ;
 
 : roomC7.enter ( -- )   \ 0042F500
     room-sounds
@@ -4143,7 +4143,7 @@ USING: events.words events.builtin ;
 \ ---- room $C8 ----------------------------------------------------------------------------------
 
 \ an effect TurningModel_vtable (8 bytes), not started
-: roomC8.cmd00 ( -- )  stub-step ;
+: roomC8.cmd00 ( -- )  s" roomC8.cmd00" stub-step ;
 
 : roomC8.enter ( -- )   \ 00441520
     $18 1.0 0 bgm

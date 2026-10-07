@@ -1,7 +1,7 @@
 \ events/map4.fs - the event scripts of the rooms on the game's map 4 (kMapRooms).
 \ Converted from the game's bytecode by tools/events2forth.py, once: edit by hand.
 IN: events.map4
-USING: events.words events.builtin ;
+USING: events.core events.words events.builtin ;
 
 \ ---- room $81 ----------------------------------------------------------------------------------
 
@@ -1787,7 +1787,7 @@ USING: events.words events.builtin ;
 
 \ room 0x84: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: room84.cmd00 ( -- )  stub-step ;
+: room84.cmd00 ( -- )  s" room84.cmd00" stub-step ;
 
 : room84.enter ( -- )   \ 00432420
     0 1 $14 door-bits
@@ -2072,7 +2072,7 @@ USING: events.words events.builtin ;
 
 \ room 0x85: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: room85.cmd00 ( -- )  stub-step ;
+: room85.cmd00 ( -- )  s" room85.cmd00" stub-step ;
 
 : room85.enter ( -- )   \ 00432700
     room-sounds
@@ -2438,7 +2438,7 @@ USING: events.words events.builtin ;
 
 \ room 0x86: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: room86.cmd00 ( -- )  stub-step ;
+: room86.cmd00 ( -- )  s" room86.cmd00" stub-step ;
 
 : room86.enter ( -- )   \ 0042C770
     $A7 story-flag? not if
@@ -2532,7 +2532,7 @@ USING: events.words events.builtin ;
 
 \ room 0x87: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: room87.cmd00 ( -- )  stub-step ;
+: room87.cmd00 ( -- )  s" room87.cmd00" stub-step ;
 
 : room87.enter ( -- )   \ 00432B10
     $350 story-flag? not if
@@ -2691,7 +2691,7 @@ USING: events.words events.builtin ;
 
 \ room 0x88: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: room88.cmd00 ( -- )  stub-step ;
+: room88.cmd00 ( -- )  s" room88.cmd00" stub-step ;
 
 : room88.enter ( -- )   \ 00432CA0
     room-sounds
@@ -3699,21 +3699,21 @@ USING: events.words events.builtin ;
 \ ---- room $8C ----------------------------------------------------------------------------------
 
 \ (as RoomC7_Cmd01)
-: room8C.cmd00 ( b0 -- )  drop stub-step ;
+: room8C.cmd00 ( b0 -- )  drop s" room8C.cmd00" stub-step ;
 \ the room object named pstr_dynamo swung: byte 3 0 starts it (rest +0x30 from +0x20, phase
 \ +0x34 0, amplitude +0x3C 1); 1 steps the phase back 60 degrees and the amplitude down 0.25,
 \ height +0x28 = +0x38 + amplitude * sin, waiting (2) until it has died out
-: room8C.cmd01 ( b0 -- )  drop stub-step ;
+: room8C.cmd01 ( b0 -- )  drop s" room8C.cmd01" stub-step ;
 \ a turning machine: the wheel pstr_roller (angle +0x18, height +0x24 5.1) driven by the belt
 \ pstr_belt (offset +0x20 wrapping at 10, height +0x24 -3, speed +0x30). Byte 3 0 sets it up
 \ (speed 0.4); 1 runs it a frame (both shaking by up to 0.05); 2 also slows it by 0.01, waiting
 \ (2) until it stops. (The wheel's wrap steps +0x10, not the angle.)
-: room8C.cmd02 ( b0 -- )  drop stub-step ;
+: room8C.cmd02 ( b0 -- )  drop s" room8C.cmd02" stub-step ;
 \ Hewie's +0x14C8 to script variable 2 (byte 3 0), or back from it (1; 0 there gives 10)
-: room8C.cmd03 ( b0 -- )  drop stub-step ;
+: room8C.cmd03 ( b0 -- )  drop s" room8C.cmd03" stub-step ;
 \ the placed things of kinds 0, 2, 3, 5, 7 and 8 the event manager finds in area 0xB (+0x10):
 \ their timer (+0xE4) to 300000
-: room8C.cmd04 ( -- )  stub-step ;
+: room8C.cmd04 ( -- )  s" room8C.cmd04" stub-step ;
 
 : room8C.enter ( -- )   \ 00433CC0
     room-sounds
@@ -4786,14 +4786,14 @@ USING: events.words events.builtin ;
 
 \ room 0x8D: three grey smoke effects (Effect79B00, size 60) at the room's spots 7, 4, 3
 \ (grey_three).
-: room8D.cmd00 ( -- )  stub-step ;
+: room8D.cmd00 ( -- )  s" room8D.cmd00" stub-step ;
 \ byte 3: 0 made (lights 0x14 on characters 3 and 0) and 1 lit on character 3 (second kind, size
 \ 1, sparks from its own slot); 2 ending, 3 ended; 4 / 6 sized 1 / 0.5; 5 / 7 shrinking with
 \ variable 1 (a step a call, to 0.5 + v / 200 or v / 334)
-: room8D.cmd01 ( b0 -- )  drop stub-step ;
+: room8D.cmd01 ( b0 -- )  drop s" room8D.cmd01" stub-step ;
 \ room 0x8D: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: room8D.cmd02 ( -- )  stub-step ;
+: room8D.cmd02 ( -- )  s" room8D.cmd02" stub-step ;
 
 : room8D.enter ( -- )   \ 004348E0
     room-sounds
@@ -5441,11 +5441,11 @@ USING: events.words events.builtin ;
 
 \ door 0 swung by script variable 0: byte 3 0 sets it to -90; 1 opens it 10 degrees a step to 0
 \ (doors +0x74), waiting (2) until there
-: room8E.cmd00 ( b0 -- )  drop stub-step ;
+: room8E.cmd00 ( b0 -- )  drop s" room8E.cmd00" stub-step ;
 \ the room object named pstr_tana falling over: byte 3 0 starts it (angle +0x30, speed +0x34 and
 \ acceleration +0x38 0, jerk +0x3C 0.005); 1 steps them, its tilt +0x10 = (1 - sin(90 - angle))
 \ * pi/2, waiting (2) until the angle reaches 90; 2 puts it down (sin(pi/2))
-: room8E.cmd01 ( b0 -- )  drop stub-step ;
+: room8E.cmd01 ( b0 -- )  drop s" room8E.cmd01" stub-step ;
 
 defer room8E.act02
 : room8E.enter ( -- )   \ 00435050
@@ -6193,19 +6193,19 @@ defer room8E.act02
 \ a struggle: byte 3 0 resets Fiona's shake tracking (+0x1AD710 / +0x1AD714); 1 adds her shakes
 \ to script variable byte 4, with a grunt (voice 0x3D or 0x45 at random) when the cool-down
 \ variable byte 6 is out (it then runs 45 / 60), and at 100 the event byte 5 (+0x5C)
-: room8F.cmd00 ( bytes.. n -- )  0 ?do drop loop stub-step ;
+: room8F.cmd00 ( bytes.. n -- )  0 ?do drop loop s" room8F.cmd00" stub-step ;
 \ byte 3: 0 / 1 a named progress call; 2 waits (2) for Progress_Speak(0, 0); else
 \ Progress_SpeechCall
-: room8F.cmd01 ( b0 -- )  drop stub-step ;
+: room8F.cmd01 ( b0 -- )  drop s" room8F.cmd01" stub-step ;
 \ room 0x8F: three grey smoke effects (Effect79B00, size 50) at the room's spots 0, 1, 6
 \ (grey_three).
-: room8F.cmd02 ( -- )  stub-step ;
+: room8F.cmd02 ( -- )  s" room8F.cmd02" stub-step ;
 \ room 0x8F: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: room8F.cmd03 ( -- )  stub-step ;
+: room8F.cmd03 ( -- )  s" room8F.cmd03" stub-step ;
 \ the pursuer is active and out of view: state 3 (+0xE8), or the camera's on-screen test (+0xD4)
 \ fails
-: room8F.cond00? ( -- flag )  stub-flag ;
+: room8F.cond00? ( -- flag )  s" room8F.cond00?" stub-flag ;
 
 : room8F.enter ( -- )   \ 00435990
     room-sounds
@@ -7197,15 +7197,15 @@ defer room8E.act02
 \ ---- room $91 ----------------------------------------------------------------------------------
 
 \ room 0x91 (Room91_Cmd00_ptmf): door 0's +0x68 (0)
-: room91.cmd00 ( -- )  stub-step ;
+: room91.cmd00 ( -- )  s" room91.cmd00" stub-step ;
 \ script variable 0 down by the player's hit (1 from the weak blow 0x1A, else 5), not below 0
-: room91.cmd01 ( -- )  stub-step ;
+: room91.cmd01 ( -- )  s" room91.cmd01" stub-step ;
 \ room 0x91: three grey smoke effects (Effect79B00, size 70) at the room's spots 1, 3, 0xB
 \ (grey_three).
-: room91.cmd02 ( -- )  stub-step ;
+: room91.cmd02 ( -- )  s" room91.cmd02" stub-step ;
 \ room 0x91: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: room91.cmd03 ( -- )  stub-step ;
+: room91.cmd03 ( -- )  s" room91.cmd03" stub-step ;
 
 : room91.enter ( -- )   \ 00436600
     room-sounds
@@ -7645,44 +7645,44 @@ defer room8E.act02
 \ 0 sets them up (speed and base 4 degrees, top 20); else each frame (unless the progress' +0x54
 \ says no): state 0 slows by 5% of the base to 0, 1 speeds by 2% up to the base, 2 by 10% up to
 \ the top, 3 jumps to the base
-: room92.cmd00 ( b0 -- )  drop stub-step ;
+: room92.cmd00 ( b0 -- )  drop s" room92.cmd00" stub-step ;
 \ room 0x92: three grey smoke effects (Effect79B00, size 50) at the room's spots 2, 7, 5
 \ (grey_three).
-: room92.cmd01 ( -- )  stub-step ;
+: room92.cmd01 ( -- )  s" room92.cmd01" stub-step ;
 \ up to 6 things out (script variable 6 counts them): 1..3 more placed things of kind 9 (+0x8),
 \ each tied to the first room object 10..15 flagged (+0 = 1) (+0x122 its index), set up (+0xC,
 \ +0x28 on) and dropped at a random spot 40..50 out and 25..40 up in any direction that lands on
 \ the nav mesh (+0x3C)
-: room92.cmd02 ( -- )  stub-step ;
+: room92.cmd02 ( -- )  s" room92.cmd02" stub-step ;
 \ the placed thing 10 brought back (list +0x14 / +0x8, its +0xC, +0x28 on) and put on one of
 \ five spots round a circle (script variable 1, then on by 2 of 5): turned to the spot's angle
 \ (with a little random), 2.1 up and 1.5..2 out on triangle 0x3B; then effect SmokeTrail_vtable
 \ on it
-: room92.cmd03 ( -- )  stub-step ;
+: room92.cmd03 ( -- )  s" room92.cmd03" stub-step ;
 \ (as Room49_Cmd02) byte 3 0: the effect WispColumn_vtable spawned (told 1), its slot in event
 \ var 0; 1: it is told 0
-: room92.cmd04 ( b0 -- )  drop stub-step ;
+: room92.cmd04 ( b0 -- )  drop s" room92.cmd04" stub-step ;
 \ the things that fell below -30: placed things of kind 9 are reset (+0x28) and each counts down
 \ script variable 6 (and the event manager's +0x5C); room objects 10..15 that did get +0 set
-: room92.cmd05 ( -- )  stub-step ;
+: room92.cmd05 ( -- )  s" room92.cmd05" stub-step ;
 \ the 0x20E0-byte effect SparkSpray_vtable (sent byte 3): byte 3 0 / 1 one made, its slot in
 \ script variable 2 / 3; 2 / 3 the one in variable 2 / 3 (if any) sent nothing
-: room92.cmd06 ( b0 -- )  drop stub-step ;
+: room92.cmd06 ( b0 -- )  drop s" room92.cmd06" stub-step ;
 \ (as slam_shake, both of Lorenzo's forms: 0xA and 0x27)
-: room92.cmd07 ( -- )  stub-step ;
+: room92.cmd07 ( -- )  s" room92.cmd07" stub-step ;
 \ room objects 8 / 9 raised (+0x24 down 0.2 a call to 0) while the event manager's +0x58 test 4
 \ / 5 holds, else lowered back (up 0.4 a call to 0.7)
-: room92.cmd08 ( -- )  stub-step ;
+: room92.cmd08 ( -- )  s" room92.cmd08" stub-step ;
 \ a noise at (-70 or 70 by byte 3, 14, 0): byte 4 0 / 1 / 2 kind 1 / 2 / 4
-: room92.cmd09 ( b0 b1 -- )  drop drop stub-step ;
+: room92.cmd09 ( b0 b1 -- )  drop drop s" room92.cmd09" stub-step ;
 \ Room92_Cmd0A
-: room92.cmd0A ( -- )  stub-step ;
+: room92.cmd0A ( -- )  s" room92.cmd0A" stub-step ;
 \ Room92_Cmd0B
-: room92.cmd0B ( -- )  stub-step ;
+: room92.cmd0B ( -- )  s" room92.cmd0B" stub-step ;
 \ Room92_Cmd0C
-: room92.cmd0C ( b0 b1 -- )  drop drop stub-step ;
+: room92.cmd0C ( b0 b1 -- )  drop drop s" room92.cmd0C" stub-step ;
 \ Room92_Cmd0D
-: room92.cmd0D ( b0 -- )  drop stub-step ;
+: room92.cmd0D ( b0 -- )  drop s" room92.cmd0D" stub-step ;
 
 defer room92.act0F
 : room92.enter ( -- )   \ 00436CF0
@@ -8900,7 +8900,7 @@ defer room92.act0F
 \ ---- room $93 ----------------------------------------------------------------------------------
 
 \ Room93_Cmd00
-: room93.cmd00 ( -- )  stub-step ;
+: room93.cmd00 ( -- )  s" room93.cmd00" stub-step ;
 
 : room93.enter ( -- )   \ 00444170
     $345 story-flag-set
@@ -9089,7 +9089,7 @@ defer room92.act0F
 
 \ room 0x94: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: room94.cmd00 ( -- )  stub-step ;
+: room94.cmd00 ( -- )  s" room94.cmd00" stub-step ;
 
 : room94.enter ( -- )   \ 00444390
     $346 story-flag-set
@@ -9233,7 +9233,7 @@ defer room92.act0F
 
 \ room 0x95: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: room95.cmd00 ( -- )  stub-step ;
+: room95.cmd00 ( -- )  s" room95.cmd00" stub-step ;
 
 : room95.enter ( -- )   \ 004444E0
     $347 story-flag-set
@@ -9416,7 +9416,7 @@ defer room92.act0F
 
 \ room 0x96: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: room96.cmd00 ( -- )  stub-step ;
+: room96.cmd00 ( -- )  s" room96.cmd00" stub-step ;
 
 : room96.enter ( -- )   \ 004446E0
     $348 story-flag-set
@@ -9566,7 +9566,7 @@ defer room92.act0F
 
 \ room 0x97: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: room97.cmd00 ( -- )  stub-step ;
+: room97.cmd00 ( -- )  s" room97.cmd00" stub-step ;
 
 : room97.enter ( -- )   \ 00437D60
     1 0 8 nav-group
@@ -9656,7 +9656,7 @@ defer room92.act0F
 \ ---- room $98 ----------------------------------------------------------------------------------
 
 \ Room98_Cmd00
-: room98.cmd00 ( -- )  stub-step ;
+: room98.cmd00 ( -- )  s" room98.cmd00" stub-step ;
 
 : room98.char-enter ( -- )   \ 00442F60
     hewie-controlled? not if
@@ -9767,7 +9767,7 @@ defer room92.act0F
 \ ---- room $99 ----------------------------------------------------------------------------------
 
 \ Room99_Cmd00
-: room99.cmd00 ( -- )  stub-step ;
+: room99.cmd00 ( -- )  s" room99.cmd00" stub-step ;
 
 : room99.char-enter ( -- )   \ 00443560
     hewie-controlled? not if
@@ -9935,7 +9935,7 @@ defer room92.act0F
 
 \ room 0x9A: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: room9A.cmd00 ( -- )  stub-step ;
+: room9A.cmd00 ( -- )  s" room9A.cmd00" stub-step ;
 
 : room9A.char-enter ( -- )   \ 00443740
     hewie-controlled? not if
@@ -10047,7 +10047,7 @@ defer room92.act0F
 
 \ (as Room2D_Cmd02) three hanging things (+0x34 0..2), pushed by the square of Fiona's step past
 \ 1, event flag 4 with sounds 4 / 5
-: room9B.cmd00 ( b0 -- )  drop stub-step ;
+: room9B.cmd00 ( b0 -- )  drop s" room9B.cmd00" stub-step ;
 
 : room9B.enter ( -- )   \ 00443870
     room-sounds

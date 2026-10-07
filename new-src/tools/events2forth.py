@@ -513,7 +513,7 @@ def room_stubs(room, uses):
     for (kind, idx), counts in sorted(uses.items()):
         name = 'room%02X.%s%02X%s' % (room, kind, idx, '?' if kind == 'cond' else '')
         out += wrap(notes.get((kind, idx), 'Room%02X_%s%02X' % (room, kind.capitalize(), idx)))
-        end = 'stub-flag' if kind == 'cond' else 'stub-step'
+        end = 's" %s" %s' % (name, 'stub-flag' if kind == 'cond' else 'stub-step')
         if len(counts) > 1:   # (given different numbers of bytes: the count comes last)
             STATS['room words given different byte counts'] += 1
             args, body = 'bytes.. n', '0 ?do drop loop ' + end
@@ -527,7 +527,7 @@ def room_stubs(room, uses):
 
 # ---- the words file ------------------------------------------------------------------------------
 
-CORE = {'yield'}
+CORE = set()
 
 
 def stub(name, spec, desc, kind, tag, extra=0):
@@ -541,7 +541,7 @@ def stub(name, spec, desc, kind, tag, extra=0):
     if name in CORE:
         return out + ['\\ (the core word `%s`)' % name]
     body = ' '.join(['0 ?do drop loop' if i.endswith('.. n') else 'drop' for i in reversed(ints)]
-                    + ['fdrop'] * len(floats) + ['stub-flag' if kind == 'cond' else 'stub-step'])
+                    + ['fdrop'] * len(floats) + ['s" %s" %s' % (name, 'stub-flag' if kind == 'cond' else 'stub-step')])
     return out + [(': %s ( %s )  %s ;' % (name, eff, body)).replace('  ;', ' ;')]
 
 
@@ -557,34 +557,10 @@ def operands_names(spec):
 def words_file():
     out = ['\\ events/words.fs - the words the converted event scripts are written in: one per',
            '\\ command and condition of the original bytecode (docs/event_opcodes.md). Generated',
-           '\\ as stubs by tools/events2forth.py; each is to be written for real (in Forth on top of',
-           '\\ C words), after which this file is the source.',
-           'IN: events.words', '',
-           '\\ what the stub conditions answer, and what the stub commands do (tests: random, yield)',
-           'defer stub-flag  \' false is stub-flag',
-           'defer stub-step  \' noop is stub-step',
-           '',
-           '\\ ---- running scripts', '',
-           '\\ the task goes on in script `xt` and never comes back (the bytecode\'s 0x25)',
-           ': goto ( xt -- )  drop stub-step ;',
-           '\\ the same by id, in the current room (the shared scripts don\'t know their room)',
-           ': goto-action ( id -- )  drop ;',
-           ': call-action ( id -- )  drop ;',
-           ': room-command ( bytes.. n cmd -- )  drop 0 ?do drop loop ;',
-           ': room-condition? ( bytes.. n cond -- flag )  drop 0 ?do drop loop false ;',
-           '\\ the scripts by room: slot 0 entering, 1..5 the phases, 6 a character entering; the',
-           '\\ action scripts by room and id (0..$7F); the shared ones by id ($80..$FF). 0: none',
-           '$110 constant rooms',
-           'create room-scripts    rooms 7 * cells allot     room-scripts rooms 7 * cells 0 fill',
-           'create action-scripts  rooms $80 * cells allot   action-scripts rooms $80 * cells 0 fill',
-           'create builtin-scripts $80 cells allot           builtin-scripts $80 cells 0 fill',
-           ': room-script ( room slot -- addr )  swap 7 * + cells room-scripts + ;',
-           ': action-script ( room id -- addr )  swap $80 * + cells action-scripts + ;',
-           ': builtin-script ( id -- addr )  $80 - cells builtin-scripts + ;',
-           ': room-script! ( xt room slot -- )  room-script ! ;',
-           ': action-script! ( xt room id -- )  action-script ! ;',
-           ': builtin-script! ( xt id -- )  builtin-script ! ;',
-           '']
+           '\\ as stubs by tools/events2forth.py (stub-step / stub-flag: events/core.fs); each is',
+           '\\ written for real in place of its stub, by hand: this file is the source now.',
+           'IN: events.words',
+           'USING: game-state events.core ;', '']
     out += ['\\ ---- commands', '']
     for op in sorted(OPS.CMD):
         name, spec, desc = OPS.CMD[op]
@@ -735,7 +711,7 @@ def header(vocab, uses):
     return ['\\ events/%s.fs - %s.' % (vocab.split('.')[1], what),
             '\\ Converted from the game\'s bytecode by tools/events2forth.py, once: edit by hand.',
             'IN: %s' % vocab,
-            'USING: %s ;' % ' '.join(['events.words'] + sorted(uses - {vocab}))]
+            'USING: %s ;' % ' '.join(['events.core', 'events.words'] + sorted(uses - {vocab}))]
 
 
 def main():
@@ -750,7 +726,8 @@ def main():
             print('\n'.join(lines))
     elif not a.stats:
         OUT.mkdir(parents=True, exist_ok=True)
-        (OUT / 'words.fs').write_text('\n'.join(words_file()) + '\n')
+        if not (OUT / 'words.fs').exists():   # (written once: after that it is edited by hand)
+            (OUT / 'words.fs').write_text('\n'.join(words_file()) + '\n')
         for vocab, lines in files.items():
             path = OUT / (vocab.split('.')[1] + '.fs')
             path.write_text('\n'.join(header(vocab, uses[vocab]) + lines) + '\n')

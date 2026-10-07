@@ -1,7 +1,7 @@
 \ events/other.fs - the event scripts of the rooms on none of the game's maps.
 \ Converted from the game's bytecode by tools/events2forth.py, once: edit by hand.
 IN: events.other
-USING: events.words events.map0 ;
+USING: events.core events.words events.map0 ;
 
 \ ---- room $0D ----------------------------------------------------------------------------------
 
@@ -85,7 +85,7 @@ USING: events.words events.map0 ;
 \ the items 0x91 / 0x92, by byte 3: 0 which of them Fiona lacks (one each) kept in event var 0
 \ (0x91 low byte, 0x92 the next), and event +0x5C(3) when any; 1 they are given back, event
 \ +0x5C(0) / (1)
-: room27.cmd00 ( b0 -- )  drop stub-step ;
+: room27.cmd00 ( b0 -- )  drop s" room27.cmd00" stub-step ;
 
 : room27.enter ( -- )   \ 0041C390
     room-sounds
@@ -1890,7 +1890,7 @@ USING: events.words events.map0 ;
 \ ---- room $37 ----------------------------------------------------------------------------------
 
 \ Room37_Cmd00
-: room37.cmd00 ( -- )  stub-step ;
+: room37.cmd00 ( -- )  s" room37.cmd00" stub-step ;
 
 defer room37.act00
 : room37.enter ( -- )   \ 00445BC0
@@ -2890,7 +2890,7 @@ defer room37.act00
 \ / down picks one (event var 0), left / right turns it (event +0x5C 3), cancel leaves (+0x60
 \ 2); 2 turning to it 4 degrees a step, and there: solved at 1 / 0 / 2 (+0x60 2, +0x5C 4), else
 \ +0x60 3; 3 wait
-: room5A.cmd00 ( b0 -- )  drop stub-step ;
+: room5A.cmd00 ( b0 -- )  drop s" room5A.cmd00" stub-step ;
 
 : room5A.char-enter ( -- )   \ 00410BE0
     hewie-controlled? not if
@@ -3420,13 +3420,13 @@ defer room37.act00
 \ ---- room $D0 ----------------------------------------------------------------------------------
 
 \ RoomD0_Cmd00
-: roomD0.cmd00 ( -- )  stub-step ;
+: roomD0.cmd00 ( -- )  s" roomD0.cmd00" stub-step ;
 \ RoomD0_Cmd01
-: roomD0.cmd01 ( -- )  stub-step ;
+: roomD0.cmd01 ( -- )  s" roomD0.cmd01" stub-step ;
 \ RoomD0_Cmd02
-: roomD0.cmd02 ( -- )  stub-step ;
+: roomD0.cmd02 ( -- )  s" roomD0.cmd02" stub-step ;
 \ RoomD0_Cond00
-: roomD0.cond00? ( -- flag )  stub-flag ;
+: roomD0.cond00? ( -- flag )  s" roomD0.cond00?" stub-flag ;
 
 : roomD0.enter ( -- )   \ 004469C0
     0 $16F 8 nav-group-2
@@ -3598,12 +3598,12 @@ defer room37.act00
 \ ---- room $D1 ----------------------------------------------------------------------------------
 
 \ as Room106_Cmd00
-: roomD1.cmd00 ( -- )  stub-step ;
+: roomD1.cmd00 ( -- )  s" roomD1.cmd00" stub-step ;
 \ room 0xD1: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomD1.cmd01 ( -- )  stub-step ;
+: roomD1.cmd01 ( -- )  s" roomD1.cmd01" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomD1.cond00? ( -- flag )  stub-flag ;
+: roomD1.cond00? ( -- flag )  s" roomD1.cond00?" stub-flag ;
 
 : roomD1.enter ( -- )   \ 00446C00
     room-sounds
@@ -3717,9 +3717,9 @@ defer room37.act00
 
 \ room 0xD2: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomD2.cmd00 ( -- )  stub-step ;
+: roomD2.cmd00 ( -- )  s" roomD2.cmd00" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomD2.cond00? ( -- flag )  stub-flag ;
+: roomD2.cond00? ( -- flag )  s" roomD2.cond00?" stub-flag ;
 
 : roomD2.char-enter ( -- )   \ 00446D60
     hewie-controlled? not if
@@ -3877,9 +3877,9 @@ defer room37.act00
 
 \ room 0xD3: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomD3.cmd00 ( -- )  stub-step ;
+: roomD3.cmd00 ( -- )  s" roomD3.cmd00" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomD3.cond00? ( -- flag )  stub-flag ;
+: roomD3.cond00? ( -- flag )  s" roomD3.cond00?" stub-flag ;
 
 : roomD3.char-enter ( -- )   \ 00446F30
     hewie-controlled? not if
@@ -4053,9 +4053,9 @@ defer room37.act00
 
 \ room 0xD4: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomD4.cmd00 ( -- )  stub-step ;
+: roomD4.cmd00 ( -- )  s" roomD4.cmd00" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomD4.cond00? ( -- flag )  stub-flag ;
+: roomD4.cond00? ( -- flag )  s" roomD4.cond00?" stub-flag ;
 
 : roomD4.char-enter ( -- )   \ 00447130
     hewie-controlled? not if
@@ -4213,14 +4213,14 @@ defer room37.act00
 
 \ (as Room109_Cmd00) character kind 0x1A: byte 3 0 starts Kind26_MoveTo(2, -6, 257); else waits
 \ (2) until Kind26_MoveDone says done
-: roomD5.cmd00 ( b0 -- )  drop stub-step ;
+: roomD5.cmd00 ( b0 -- )  drop s" roomD5.cmd00" stub-step ;
 \ as Room109_Cmd01
-: roomD5.cmd01 ( b0 -- )  drop stub-step ;
+: roomD5.cmd01 ( b0 -- )  drop s" roomD5.cmd01" stub-step ;
 \ room 0xD5: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomD5.cmd02 ( -- )  stub-step ;
+: roomD5.cmd02 ( -- )  s" roomD5.cmd02" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomD5.cond00? ( -- flag )  stub-flag ;
+: roomD5.cond00? ( -- flag )  s" roomD5.cond00?" stub-flag ;
 
 : roomD5.enter ( -- )   \ 00447300
     room-sounds
@@ -4483,12 +4483,12 @@ defer room37.act00
 \ ---- room $D6 ----------------------------------------------------------------------------------
 
 \ (as Room105_Cmd00) pushed by the character slot byte 4 names
-: roomD6.cmd00 ( b0 b1 -- )  drop drop stub-step ;
+: roomD6.cmd00 ( b0 b1 -- )  drop drop s" roomD6.cmd00" stub-step ;
 \ room 0xD6: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomD6.cmd01 ( -- )  stub-step ;
+: roomD6.cmd01 ( -- )  s" roomD6.cmd01" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomD6.cond00? ( -- flag )  stub-flag ;
+: roomD6.cond00? ( -- flag )  s" roomD6.cond00?" stub-flag ;
 
 : roomD6.act02 ( -- )   \ 00447990
     1 ebit-clear
@@ -4810,14 +4810,14 @@ defer room37.act00
 \ ---- room $D7 ----------------------------------------------------------------------------------
 
 \ as Room107_Cmd00
-: roomD7.cmd00 ( b0 -- )  drop stub-step ;
+: roomD7.cmd00 ( b0 -- )  drop s" roomD7.cmd00" stub-step ;
 \ room 0xD7: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomD7.cmd01 ( -- )  stub-step ;
+: roomD7.cmd01 ( -- )  s" roomD7.cmd01" stub-step ;
 \ as Room107_Cmd01
-: roomD7.cmd02 ( -- )  stub-step ;
+: roomD7.cmd02 ( -- )  s" roomD7.cmd02" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomD7.cond01? ( -- flag )  stub-flag ;
+: roomD7.cond01? ( -- flag )  s" roomD7.cond01?" stub-flag ;
 
 : roomD7.enter ( -- )   \ 00447A70
     room-sounds
@@ -4928,15 +4928,15 @@ defer room37.act00
 \ ---- room $D8 ----------------------------------------------------------------------------------
 
 \ as Room109_Cmd01
-: roomD8.cmd00 ( b0 -- )  drop stub-step ;
+: roomD8.cmd00 ( b0 -- )  drop s" roomD8.cmd00" stub-step ;
 \ room 0xD8: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomD8.cmd01 ( -- )  stub-step ;
+: roomD8.cmd01 ( -- )  s" roomD8.cmd01" stub-step ;
 \ (as Room10A_Cond00) last frame's noise requests (gProgress +0x10D4) of kind 0xD8 / 0xD7 and
 \ loudness 0x20 or more
-: roomD8.cond00? ( -- flag )  stub-flag ;
+: roomD8.cond00? ( -- flag )  s" roomD8.cond00?" stub-flag ;
 \ the progress object's +0x7C with the caller's arguments
-: roomD8.cond01? ( -- flag )  stub-flag ;
+: roomD8.cond01? ( -- flag )  s" roomD8.cond01?" stub-flag ;
 
 : roomD8.enter ( -- )   \ 00447BD0
     room-sounds
@@ -5149,14 +5149,14 @@ defer room37.act00
 
 \ room 0xD9: starts the countdown clock (clock_start: progress +0x1FBEC1 on, Hewie restarted,
 \ the camera director +0x40 14, the time zeroed).
-: roomD9.cmd00 ( -- )  stub-step ;
+: roomD9.cmd00 ( -- )  s" roomD9.cmd00" stub-step ;
 \ room 0xD9: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomD9.cmd01 ( -- )  stub-step ;
+: roomD9.cmd01 ( -- )  s" roomD9.cmd01" stub-step ;
 \ (as Room48_Cmd04) room 0x48 (Room48_Cmd04_ptmf): the player's Character_ChooseExit(0)
-: roomD9.cmd02 ( -- )  stub-step ;
+: roomD9.cmd02 ( -- )  s" roomD9.cmd02" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomD9.cond00? ( -- flag )  stub-flag ;
+: roomD9.cond00? ( -- flag )  s" roomD9.cond00?" stub-flag ;
 
 : roomD9.enter ( -- )   \ 00447E80
     $19 1.0 0 bgm
@@ -5263,19 +5263,19 @@ defer room37.act00
 \ ---- room $E0 ----------------------------------------------------------------------------------
 
 \ RoomE0_Cmd00
-: roomE0.cmd00 ( -- )  stub-step ;
+: roomE0.cmd00 ( -- )  s" roomE0.cmd00" stub-step ;
 \ RoomE0_Cmd01
-: roomE0.cmd01 ( -- )  stub-step ;
+: roomE0.cmd01 ( -- )  s" roomE0.cmd01" stub-step ;
 \ RoomE0_Cmd02
-: roomE0.cmd02 ( b0 -- )  drop stub-step ;
+: roomE0.cmd02 ( b0 -- )  drop s" roomE0.cmd02" stub-step ;
 \ RoomE0_Cmd03
-: roomE0.cmd03 ( b0 -- )  drop stub-step ;
+: roomE0.cmd03 ( b0 -- )  drop s" roomE0.cmd03" stub-step ;
 \ RoomE0_Cmd04
-: roomE0.cmd04 ( -- )  stub-step ;
+: roomE0.cmd04 ( -- )  s" roomE0.cmd04" stub-step ;
 \ RoomE0_Cmd05
-: roomE0.cmd05 ( -- )  stub-step ;
+: roomE0.cmd05 ( -- )  s" roomE0.cmd05" stub-step ;
 \ RoomE0_Cond00
-: roomE0.cond00? ( -- flag )  stub-flag ;
+: roomE0.cond00? ( -- flag )  s" roomE0.cond00?" stub-flag ;
 
 : roomE0.enter ( -- )   \ 004480B0
     room-sounds
@@ -5615,9 +5615,9 @@ defer room37.act00
 
 \ room 0xE1: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomE1.cmd00 ( -- )  stub-step ;
+: roomE1.cmd00 ( -- )  s" roomE1.cmd00" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomE1.cond00? ( -- flag )  stub-flag ;
+: roomE1.cond00? ( -- flag )  s" roomE1.cond00?" stub-flag ;
 
 : roomE1.enter ( -- )   \ 00448590
     $2E 1 pvar? if
@@ -5763,9 +5763,9 @@ defer room37.act00
 
 \ room 0xE2: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomE2.cmd00 ( -- )  stub-step ;
+: roomE2.cmd00 ( -- )  s" roomE2.cmd00" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomE2.cond00? ( -- flag )  stub-flag ;
+: roomE2.cond00? ( -- flag )  s" roomE2.cond00?" stub-flag ;
 
 : roomE2.enter ( -- )   \ 004488B0
     0 1.2 15.55 -24.813 0 effect-86
@@ -6011,9 +6011,9 @@ defer room37.act00
 
 \ room 0xE3: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomE3.cmd00 ( -- )  stub-step ;
+: roomE3.cmd00 ( -- )  s" roomE3.cmd00" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomE3.cond00? ( -- flag )  stub-flag ;
+: roomE3.cond00? ( -- flag )  s" roomE3.cond00?" stub-flag ;
 
 : roomE3.enter ( -- )   \ 00448D20
     0 -35.8 -50.5 -27.25 0 effect-86
@@ -6348,12 +6348,12 @@ defer room37.act00
 \ ---- room $E4 ----------------------------------------------------------------------------------
 
 \ (as Room0F_Cmd00) the room object RoomE4_ObjectNames by event variable 2
-: roomE4.cmd00 ( b0 -- )  drop stub-step ;
+: roomE4.cmd00 ( b0 -- )  drop s" roomE4.cmd00" stub-step ;
 \ room 0xE4: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomE4.cmd01 ( -- )  stub-step ;
+: roomE4.cmd01 ( -- )  s" roomE4.cmd01" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomE4.cond00? ( -- flag )  stub-flag ;
+: roomE4.cond00? ( -- flag )  s" roomE4.cond00?" stub-flag ;
 
 : roomE4.enter ( -- )   \ 00449250
     room-sounds
@@ -6545,12 +6545,12 @@ defer room37.act00
 \ ---- room $E5 ----------------------------------------------------------------------------------
 
 \ (as Room14_Cmd00) the same for the room object D_0047B0FC
-: roomE5.cmd00 ( b0 -- )  drop stub-step ;
+: roomE5.cmd00 ( b0 -- )  drop s" roomE5.cmd00" stub-step ;
 \ room 0xE5: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomE5.cmd01 ( -- )  stub-step ;
+: roomE5.cmd01 ( -- )  s" roomE5.cmd01" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomE5.cond00? ( -- flag )  stub-flag ;
+: roomE5.cond00? ( -- flag )  s" roomE5.cond00?" stub-flag ;
 
 : roomE5.enter ( -- )   \ 00449570
     room-sounds
@@ -6848,12 +6848,12 @@ defer room37.act00
 \ ---- room $E6 ----------------------------------------------------------------------------------
 
 \ the room object named by RoomE6_ObjectNames[0]: +0x24 -25.3, +0x34 0
-: roomE6.cmd00 ( -- )  stub-step ;
+: roomE6.cmd00 ( -- )  s" roomE6.cmd00" stub-step ;
 \ room 0xE6: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomE6.cmd01 ( -- )  stub-step ;
+: roomE6.cmd01 ( -- )  s" roomE6.cmd01" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomE6.cond00? ( -- flag )  stub-flag ;
+: roomE6.cond00? ( -- flag )  s" roomE6.cond00?" stub-flag ;
 
 : roomE6.enter ( -- )   \ 004498F0
     1 0 $20000 nav-group
@@ -6964,9 +6964,9 @@ defer room37.act00
 
 \ room 0xE7: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomE7.cmd00 ( -- )  stub-step ;
+: roomE7.cmd00 ( -- )  s" roomE7.cmd00" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomE7.cond00? ( -- flag )  stub-flag ;
+: roomE7.cond00? ( -- flag )  s" roomE7.cond00?" stub-flag ;
 
 : roomE7.enter ( -- )   \ 00449AD0
     0 34.2 18.3 14.2 1 effect-86
@@ -7270,9 +7270,9 @@ defer room37.act00
 
 \ room 0xE8: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: roomE8.cmd00 ( -- )  stub-step ;
+: roomE8.cmd00 ( -- )  s" roomE8.cmd00" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomE8.cond00? ( -- flag )  stub-flag ;
+: roomE8.cond00? ( -- flag )  s" roomE8.cond00?" stub-flag ;
 
 : roomE8.char-enter ( -- )   \ 00449EE0
     hewie-controlled? not if
@@ -7392,16 +7392,16 @@ defer room37.act00
 
 \ room 0xE9: stops the countdown clock (clock_stop: progress +0x1FBEC1 off, the camera director
 \ +0x40 -1).
-: roomE9.cmd00 ( -- )  stub-step ;
+: roomE9.cmd00 ( -- )  s" roomE9.cmd00" stub-step ;
 \ room 0xE9: saves the countdown clock's time in script variables 0..2 (clock_save).
-: roomE9.cmd01 ( -- )  stub-step ;
+: roomE9.cmd01 ( -- )  s" roomE9.cmd01" stub-step ;
 \ (as Room00_Cmd00) the same four spots for bytes 3..6
-: roomE9.cmd02 ( b0 b1 -- )  drop drop stub-step ;
+: roomE9.cmd02 ( b0 b1 -- )  drop drop s" roomE9.cmd02" stub-step ;
 \ room 0xE9: draws the countdown clock, frozen at the saved time while event flag 1 is set
 \ (clock_draw_saved; a frame hook).
-: roomE9.cmd03 ( -- )  stub-step ;
+: roomE9.cmd03 ( -- )  s" roomE9.cmd03" stub-step ;
 \ the progress object's +0x7C with the caller's arguments
-: roomE9.cond00? ( -- flag )  stub-flag ;
+: roomE9.cond00? ( -- flag )  s" roomE9.cond00?" stub-flag ;
 
 : roomE9.enter ( -- )   \ 0044A2C0
     $2E 1 pvar? if

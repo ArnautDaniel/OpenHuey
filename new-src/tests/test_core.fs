@@ -153,6 +153,24 @@ T{ woke @ -> -1 }T
 2 tick-tasks  tid kill  1 tick-tasks
 T{ 0 -> 0 }T
 
+testing held tasks, resume, restart
+0 steps !  ' stepper spawn-held constant held
+3 tick-tasks
+T{ steps @ -> 0 }T
+T{ held resume steps @ -> -1 1 }T
+T{ held resume held resume held resume steps @ -> -1 -1 0 3 }T
+T{ held resume -> 0 }T
+variable path
+: second  2 path !  yield  3 path ! ;
+: first  1 path !  ['] second restart  99 path ! ;
+' first spawn-held constant hop
+T{ hop resume path @ -> -1 2 }T
+T{ hop resume path @ -> 0 3 }T
+: deep  1 2 3  ['] second restart ;
+: deeper  deep 4 5 ;
+' deeper spawn-held constant hop2
+T{ hop2 resume hop2 resume path @ -> -1 0 3 }T
+
 testing errors recover
 : bad s" 1 2 nosuchword" evaluate ;
 T{ ' bad catch -> -1 }T
