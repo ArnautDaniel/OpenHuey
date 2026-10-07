@@ -7,8 +7,8 @@
  * The scripts drive it: start (cutscene-start), step it until ready (status 2), let it start,
  * give it the movie's frame each frame and update. Its status: 1 loading, 2 ready, 3 playing,
  * 5 over. Actors are characters by script id (actor i -> id kMap[i]), found through the event
- * state's characters. Not yet: the doors, the object groups, the flash (signal 0) and the
- * rumble. */
+ * state's characters; the room's doors and object groups keyed too. Not yet: the flash (signal
+ * 0) and the rumble. */
 #ifndef CUTSCENE_H
 #define CUTSCENE_H
 
@@ -30,6 +30,7 @@ int cutscene_signal_count(int bit);     /* signal `bit` since the last frame */
 int cutscene_signal_total(int bit);     /* its count so far, less one (Cutscene_Get206) */
 /* the camera this frame, if the shot keys it: 1 and the engine camera set */
 int cutscene_camera(Camera *c);
+int cutscene_active(void);              /* playing (cast, not over or ended) */
 int cutscene_letterbox(void);           /* bars at the top and bottom */
 void cutscene_set_letterbox_off(int off);
 

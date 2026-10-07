@@ -178,7 +178,8 @@ variable started   \ (the camera director set up for play)
 
 \ the doors' models: open (a quarter turn) or shut as their exits are (Doors_RoomIn), swinging
 \ when that changes
-: doors-follow ( at-once -- )
+: doors-follow ( at-once -- )   \ (not while a scene keys them)
+    cutscene-active? if  drop exit  then
     8 0 do  i dup exit-open if  -90e  else  0e  then  over door-swing  loop  drop ;
 
 : events-tick

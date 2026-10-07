@@ -63,6 +63,8 @@ void room_look_set(int slot, const uint8_t *d, size_t n);
 void room_free(Room *r);
 /* door `exit`'s swing (degrees from shut; -90 open): eased there, or set at once */
 void room_door_swing(Room *r, int exit, float degrees, int at_once);
+/* door `exit` turned to `radians` (its whole turn, as a cutscene keys it: Doors_TurnTo) */
+void room_door_angle(Room *r, int exit, float radians);
 /* a tick: the room's flip books step, its doors swing */
 void room_tick(Room *r);
 /* draw it as the eye sees it: solid and see-through parts, the moving batches, the glows, then

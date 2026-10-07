@@ -254,6 +254,12 @@ void room_door_swing(Room *r, int exit, float degrees, int at_once) {
     }
 }
 
+void room_door_angle(Room *r, int exit, float radians) {
+    if (exit >= 0 && exit < ROOM_DOORS) {
+        r->doors[exit].swing = r->doors[exit].target = (radians - r->doors[exit].rot.y) * 180.0f / 3.14159265f;
+    }
+}
+
 int room_load(Room *r, int id) {
     char path[64];
     size_t size;

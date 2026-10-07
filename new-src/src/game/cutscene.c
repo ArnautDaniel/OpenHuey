@@ -37,6 +37,8 @@ static struct {
     int frame, last;        /* (+0xC, +0x10) */
     int shot;               /* the shot started (the playing buffer's), -1 none */
     const uint8_t *camera;  /* the shot's camera part (+0x20) */
+    const uint8_t *doors[8];    /* the shot's doors' keys (+0x24) */
+    const uint8_t *groups[8];   /* the shot's object groups' keys (+0x44) */
     Slot slots[SLOTS];
     int counts[16];         /* each signal's count so far (+0x206) */
     int cast;               /* Cutscene_Cast ran: the actors are taken */
@@ -235,9 +237,106 @@ static void release(void) {
     C.cast = 0;
 }
 
+/* ---- the room's object groups: the script's header +0x4 + k x 4 is group k's list (a count,
+ * then 0x10-byte entries named at +0x4); a shot's group keys (+0xA0 + k x 4: a count, then
+ * 0x1C-byte entries named at +0xC with their keys' offset at +0x8 - 0x18 bytes a frame: the
+ * turn, then the place) ---- */
+
+static int script_groups(void) {
+    int m = 0, r;
+
+    for (r = 0; r < records(); r++) {
+        m |= record(r)[5];
+    }
+    return m;
+}
+
+/* group k's object i (NULL none) */
+static Placed *group_object(int k, int i) {
+    uint32_t o = (uint32_t)rd32(C.script + 4 + k * 4);
+    char name[13];
+
+    if (o == 0 || o + 4 > C.script_size || i >= (int)rd32(C.script + o) || o + 4 + (size_t)(i + 1) * 0x10 > C.script_size) {
+        return NULL;
+    }
+    memcpy(name, C.script + o + 4 + i * 0x10 + 4, 12);
+    name[12] = 0;
+    return placed_named(&gEngine.room.placed, name);
+}
+
+static int group_count(int k) {
+    uint32_t o = (uint32_t)rd32(C.script + 4 + k * 4);
+
+    return o == 0 || o + 4 > C.script_size ? 0 : (int)rd32(C.script + o);
+}
+
+/* the groups the script animates put back as they were defined (Cutscene_RestoreGroups) */
+static void restore_groups(void) {
+    int groups = script_groups(), k, i;
+
+    for (k = 0; k < 8; k++) {
+        for (i = 0; (groups & (1 << k)) && i < group_count(k); i++) {
+            Placed *p = group_object(k, i);
+
+            if (p != NULL) {
+                p->rot = p->def_rot;
+                p->pos = p->def_pos;
+            }
+        }
+    }
+}
+
+/* this frame's keys of the shot's groups and doors (Cutscene_GroupKeys, Cutscene_Update) */
+static void group_door_keys(int t) {
+    const uint8_t *r = record(cutscene_shot_at(C.frame));
+    int k;
+
+    if (r == NULL || t < 0) {
+        return;
+    }
+    for (k = 0; k < 8; k++) {
+        const uint8_t *tr = C.groups[k];
+        uint32_t i;
+
+        if (!(r[5] & (1 << k)) || tr == NULL) {
+            continue;
+        }
+        for (i = 0; i < (uint32_t)rd32(tr); i++) {
+            const uint8_t *e = tr + 4 + i * 0x1C, *key = tr + rd32(e + 8) + t * 0x18;
+            char name[17];
+            Placed *p;
+            float f[6];
+            int j;
+
+            memcpy(name, e + 0xC, 16);
+            name[16] = 0;
+            p = placed_named(&gEngine.room.placed, name);
+            if (p == NULL) {
+                continue;
+            }
+            for (j = 0; j < 6; j++) {
+                uint32_t u = (uint32_t)rd32(key + j * 4);
+
+                memcpy(&f[j], &u, 4);
+            }
+            p->rot = vec3(f[0], f[1], f[2]);   /* (Angle_Wrap: the matrix doesn't mind) */
+            p->pos = vec3(f[3], f[4], f[5]);
+        }
+    }
+    for (k = 0; k < 8; k++) {   /* (Doors_TurnTo: the door's turn, radians) */
+        if ((r[4] & (1 << k)) && C.doors[k] != NULL) {
+            uint32_t u = (uint32_t)rd32(C.doors[k] + 0x20 + t * 12 + 4);
+            float a;
+
+            memcpy(&a, &u, 4);
+            room_door_angle(&gEngine.room, k, a);
+        }
+    }
+}
+
 /* shot `rec` starts: the camera's keys; each actor in it driven by its keys (shown, animation
- * 0x8000), those out of it back to their own motion (Cutscene_StartShot). Not yet: the doors'
- * keys, the object groups. */
+ * 0x8000), those out of it back to their own motion; the doors' keys; the object groups in it
+ * shown with their keys, the others the script animates hidden (Cutscene_StartShot) */
 static void start_shot(int rec) {
     const uint8_t *r = record(rec);
     uint32_t actors = r != NULL ? rd32(r) : 0;
@@ -268,6 +367,28 @@ static void start_shot(int rec) {
         } else {
             a->drive = NULL;
             s->animated = 0;
+        }
+    }
+    for (i = 0; i < 8; i++) {
+        int k, hide;
+
+        if (r != NULL && (r[4] & (1 << i))) {
+            C.doors[i] = shot_part(rec, 0x80 + i * 4, NULL);
+        }
+        if (r != NULL && (r[5] & (1 << i))) {
+            C.groups[i] = shot_part(rec, 0xA0 + i * 4, NULL);
+            hide = 0;
+        } else if (script_groups() & (1 << i)) {
+            hide = 1;
+        } else {
+            continue;
+        }
+        for (k = 0; k < group_count(i); k++) {
+            Placed *p = group_object(i, k);
+
+            if (p != NULL) {
+                p->shown = !hide;
+            }
         }
     }
 }
@@ -435,6 +556,7 @@ void cutscene_update(void) {
             a->drive_frame = (float)(t < 0 ? 0 : t);
         }
     }
+    group_door_keys(t);
     cues();
     for (i = 0; i < 16; i++) {
         C.counts[i] += cutscene_signal_count(i);
@@ -455,6 +577,7 @@ void cutscene_end(void) {
         gRoomLook.has_dof = C.look.has_dof;
         memcpy(gRoomLook.dof, C.look.dof, sizeof(gRoomLook.dof));
         memset(&gEngine.extra, 0, sizeof(gEngine.extra));
+        restore_groups();
     }
     release();
     C.state = STATE_IDLE;
@@ -495,8 +618,12 @@ int cutscene_camera(Camera *c) {
     return 1;
 }
 
+int cutscene_active(void) {
+    return C.state == STATE_PLAYING && C.status != 5;
+}
+
 int cutscene_letterbox(void) {
-    return C.state == STATE_PLAYING && C.status != 5 && !C.letterbox_off;
+    return cutscene_active() && !C.letterbox_off;
 }
 
 void cutscene_set_letterbox_off(int off) {
