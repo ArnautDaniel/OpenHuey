@@ -497,6 +497,8 @@ s32 Room92_Cmd02(void) {
     return 1;
 }
 
+/* room 0x92: three grey smoke effects (Effect79B00, size 50) at the room's spots 2, 7, 5
+ * (grey_three). */
 /* 0x00343180 */
 s32 Room92_Cmd01(void) {
     static const s16 spot[3] = {2, 7, 5};

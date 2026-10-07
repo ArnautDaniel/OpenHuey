@@ -92,6 +92,8 @@ s32 Room4B_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room4B_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x4B: the curtain ("Curtain") animated by event variable 0 (var0_anim: byte 3 0 forward,
+ * 1 back, 2 / 3 back at rest). */
 /* 0x002B31A0 */
 s32 Room4B_Cmd01(void *self, void *a1, u8 *cmd) {
     return var0_anim(cmd, pstr_Curtain);

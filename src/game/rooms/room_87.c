@@ -54,5 +54,7 @@ s32 Room87_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room87_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x87: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
+ * shake of 0.5 (slam_shake; a frame hook). */
 /* 0x0033F5F0 */
 s32 Room87_Cmd00(void) { return slam_shake(); }

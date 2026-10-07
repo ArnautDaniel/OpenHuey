@@ -48,5 +48,6 @@ s32 Room105_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room105_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x105: three hanging things that Fiona pushes as she walks by, swinging (swing_three). */
 /* 0x002E69B0 */
 s32 Room105_Cmd00(VObject *self, void *a1, u8 *cmd) { return swing_three(self, cmd); }

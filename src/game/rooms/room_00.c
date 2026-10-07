@@ -84,6 +84,9 @@ s32 Room00_Cmd01(void *self, void *a1, u8 *cmd) {
     return 1;
 }
 
+/* room 0x00: a grey glow (Effect737D0, size 30) at one of four spots picked by byte 3
+ * (glow4_spot from spot 0): byte 4 0 starts it, its slot kept in event variable byte 3; else it
+ * is removed. */
 /* 0x002A8BA0 */
 s32 Room00_Cmd00(void *self, void *a1, u8 *cmd) {
     return glow4_spot(cmd, 0);

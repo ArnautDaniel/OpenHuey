@@ -81,6 +81,8 @@ s32 Room4E_Cmd02(void) {
     return 1;
 }
 
+/* room 0x4E: the curtain ("Curtain_2") animated by event variable 0 (var0_anim: byte 3 0
+ * forward, 1 back, 2 / 3 back at rest). */
 /* 0x002B3B70 */
 s32 Room4E_Cmd01(void *self, void *a1, u8 *cmd) {
     return var0_anim(cmd, pstr_Curtain_2);

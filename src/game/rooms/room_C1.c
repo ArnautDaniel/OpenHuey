@@ -69,6 +69,7 @@ s32 RoomC1_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &RoomC1_CondTable[i & 0xFF], a, b);
 }
 
+/* room 0xC1: the summoner's countdown (progress +0x764) has run out. */
 /* 0x0034A490 */
 s32 RoomC1_Cond00(void) {
     return Countdown_Seconds((u8 *)gProgress + 0x764) == 0;

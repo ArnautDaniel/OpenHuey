@@ -80,6 +80,8 @@ s32 Room6C_Cond01(void) {
     return mode == 4 || mode == 5;
 }
 
+/* room 0x6C: the stalker is active, its camera setup (+0xE8) isn't 4 or 5, and the camera isn't
+ * on it (progress +0x1130, the character the camera follows, isn't 0xFE). */
 /* 0x00344B10 */
 s32 Room6C_Cond00(void) {
     u8 *p = (u8 *)gCharPursuer;

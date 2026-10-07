@@ -131,6 +131,8 @@ s32 Room0F_Cmd01(void) {
     return 1;
 }
 
+/* room 0x0F: the floor plate ("fumi_yuka") fading: its +0x24 toward 1 while event variable 0 is
+ * unset, toward 0 once set; byte 3 0 at once, else by 0.2 a step (var_fade). */
 /* 0x002ABDD0 */
 s32 Room0F_Cmd00(void *self, void *a1, u8 *cmd) {
     return var_fade(pstr_fumi_yuka, 0, cmd);

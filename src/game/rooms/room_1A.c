@@ -68,6 +68,7 @@ s32 Room1A_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room1A_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x1A: room effect slot 0 made anew as the second TV screen (TvScreenB). */
 /* 0x002AD550 */
 s32 Room1A_Cmd01(void) {   /* room effect 0 (TvScreenB_vtable) */
     room_effect_slot_new(gRoomEffects, 0, TvScreenB_vtable);

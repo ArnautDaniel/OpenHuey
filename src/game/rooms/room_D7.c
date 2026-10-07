@@ -74,6 +74,8 @@ s32 RoomD7_Cmd02(void) {
     return 1;
 }
 
+/* room 0xD7: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
+ * (clock_draw; a frame hook). */
 /* 0x0036F690 */
 s32 RoomD7_Cmd01(void) { return clock_draw(D_0047B2D0, str_59_59_8); }
 
@@ -93,6 +95,8 @@ s32 RoomD7_Cond01(void *self, s32 a1, s32 a2, s32 a3) {
     return VCALL((VObject *)gProgress, 0x7C, s32 (*)(VObject *, s32, s32, s32))((VObject *)gProgress, a1, a2, a3);
 }
 
+/* room 0xD7: a noise of loudness 0x20 or more was made in this room last frame (the progress'
+ * noise requests kept at +0x10D4). */
 /* 0x0036F8D0 */
 s32 RoomD7_Cond00(void) {
     u8 *e = (u8 *)gProgress + 0x10D4;

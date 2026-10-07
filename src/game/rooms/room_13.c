@@ -68,6 +68,7 @@ s32 Room13_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room13_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x13: the grate ("kousi"): byte 3 0 shut (turn 0), else swung open a quarter turn. */
 /* 0x002AC600 */
 s32 Room13_Cmd00(void *a0, void *a1, u8 *arg) {
     u8 *kousi = VCALL(gRoomObjects, 0x18, u8 *(*)(VObject *, const char *))(gRoomObjects, pstr_kousi[0]);

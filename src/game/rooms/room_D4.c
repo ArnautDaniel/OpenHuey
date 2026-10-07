@@ -62,5 +62,7 @@ s32 RoomD4_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &RoomD4_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0xD4: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
+ * (clock_draw; a frame hook). */
 /* 0x0036E930 */
 s32 RoomD4_Cmd00(void) { return clock_draw(D_0047B2B0, str_59_59_5); }

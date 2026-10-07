@@ -62,6 +62,8 @@ s32 Room14_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room14_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x14: the curtain ("Cartain") animated by event variable 0 (var0_obj_anim: byte 3 picks
+ * the frame range and direction). */
 /* 0x002AC790 */
 s32 Room14_Cmd00(void *self, void *a1, u8 *cmd) {
     return var0_obj_anim(pstr_Cartain, cmd);

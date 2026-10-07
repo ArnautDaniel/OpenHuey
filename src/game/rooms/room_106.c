@@ -48,6 +48,7 @@ s32 Room106_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room106_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x106: starts a water drip effect (OneDrip, 0xC0 bytes). */
 /* 0x002E6E20 */
 s32 Room106_Cmd00(void) {
     Effect_New(gEffects, 0xC0, effect_C0_init);

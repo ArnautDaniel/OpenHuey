@@ -53,6 +53,8 @@ s32 Room10A_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room10A_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x10A: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
+ * sideways 1 a frame (room_nudge). */
 /* 0x002E77B0 */
 s32 Room10A_Cmd00(void *self, void *a1, u8 *cmd) { return room_nudge(&D_0047B27C, cmd, 1.0f); }
 
@@ -62,6 +64,8 @@ s32 Room10A_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room10A_CondTable[i & 0xFF], a, b);
 }
 
+/* room 0x10A: a noise of loudness 0x20 or more was made in this room last frame (the progress'
+ * noise requests kept at +0x10D4). */
 /* 0x002E7880 */
 s32 Room10A_Cond00(void) {
     u8 *e = (u8 *)gProgress + 0x10D4;

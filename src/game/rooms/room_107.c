@@ -53,12 +53,16 @@ s32 Room107_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room107_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x107: starts the slowly turning backdrop model (Effect7A3D0: model 0x30 far off at
+ * (-225, -64, -1125)). */
 /* 0x002E7020 */
 s32 Room107_Cmd01(void) {
     Effect_New(gEffects, 0x10, effect_10_init);
     return 1;
 }
 
+/* room 0x107: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
+ * sideways 2 a frame (room_nudge). */
 /* 0x002E70F0 */
 s32 Room107_Cmd00(void *self, void *a1, u8 *cmd) { return room_nudge(&D_0047B274, cmd, 2.0f); }
 
@@ -68,6 +72,8 @@ s32 Room107_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room107_CondTable[i & 0xFF], a, b);
 }
 
+/* room 0x107: a noise of loudness 0x20 or more was made in this room last frame (the progress'
+ * noise requests kept at +0x10D4). */
 /* 0x002E71C0 */
 s32 Room107_Cond00(void) {
     u8 *e = (u8 *)gProgress + 0x10D4;

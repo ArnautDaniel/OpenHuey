@@ -83,6 +83,8 @@ s32 Room25_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room25_CondTable[i & 0xFF], a, b);
 }
 
+/* room 0x25: Fiona is active and in a reaction (action 4) with no character behind it (+0x100
+ * 0xFF). */
 /* 0x002B0230 */
 s32 Room25_Cond00(void) {
     u8 *obj = (u8 *)gCharPlayer;

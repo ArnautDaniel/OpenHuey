@@ -73,6 +73,8 @@ s32 Room63_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room63_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x63: the script's character walks to Fiona's nav triangle (character move 6, with
+ * 0x204). */
 /* 0x00308AC0 */
 s32 Room63_Cmd00(void *self, u8 *obj) {
     U32(obj, 0x104) = U32(gCharPlayer, 0x34);

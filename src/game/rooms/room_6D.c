@@ -69,6 +69,7 @@ s32 Room6D_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room6D_CondTable[i & 0xFF], a, b);
 }
 
+/* room 0x6D: the stalker is active with camera setup (+0xE8) 0. */
 /* 0x00344CC0 */
 s32 Room6D_Cond01(void) {
     u8 *p = (u8 *)gCharPursuer;
@@ -79,6 +80,8 @@ s32 Room6D_Cond01(void) {
     return *(s32 *)(p + 0xE8) == 0;
 }
 
+/* room 0x6D: the stalker is active with a camera setup (+0xE8) other than 0, and the camera
+ * isn't on it (progress +0x1130 isn't 0xFE). */
 /* 0x00344D10 */
 s32 Room6D_Cond00(void) {
     u8 *p = (u8 *)gCharPursuer;

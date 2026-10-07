@@ -113,11 +113,13 @@ s32 Room2E_Cmd03(void) {
     return 1;
 }
 
+/* room 0x2E: does nothing (returns 1: the script goes on). */
 /* 0x002FF300 */
 s32 Room2E_Cmd02(void) {
     return 1;
 }
 
+/* room 0x2E: does nothing (returns 1: the script goes on). */
 /* 0x002FF310 */
 s32 Room2E_Cmd01(void) {
     return 1;

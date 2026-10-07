@@ -97,9 +97,13 @@ s32 Room8F_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room8F_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x8F: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
+ * shake of 0.5 (slam_shake; a frame hook). */
 /* 0x00340F50 */
 s32 Room8F_Cmd03(void) { return slam_shake(); }
 
+/* room 0x8F: three grey smoke effects (Effect79B00, size 50) at the room's spots 0, 1, 6
+ * (grey_three). */
 /* 0x00340FE0 */
 s32 Room8F_Cmd02(void) {
     static const s16 spot[3] = {0, 1, 6};

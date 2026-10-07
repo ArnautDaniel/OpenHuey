@@ -104,6 +104,9 @@ s32 Room2D_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room2D_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x2D: two hanging things (the room's objects 4 and 5) that Fiona pushes as she walks by:
+ * past a step total of 5 they swing for 20 frames and the first toggles event flag 3 with a
+ * sound (hangers_swing). */
 /* 0x002B1A00 */
 s32 Room2D_Cmd02(VObject *self, void *a1, u8 *cmd) {
     return hangers_swing(self, cmd, 4, 2, 5.0f, 1, 3, 1, 2);

@@ -71,5 +71,7 @@ s32 RoomE1_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &RoomE1_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0xE1: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
+ * (clock_draw; a frame hook). */
 /* 0x00379140 */
 s32 RoomE1_Cmd00(void) { return clock_draw(D_0047B300, str_59_59_12); }

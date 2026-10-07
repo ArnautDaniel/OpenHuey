@@ -273,6 +273,8 @@ s32 Room61_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room61_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x61: the light shaft: byte 3 0 starts it (LightShaft, with its motes from (30, 0, 70)),
+ * its slot in event variable 3; 1 its haze on; 2 off. */
 /* 0x003114C0 */
 s32 Room61_Cmd01(void *self, void *a1, u8 *cmd) {
     s32 arg[5] __attribute__((aligned(16)));

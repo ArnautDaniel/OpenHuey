@@ -74,6 +74,8 @@ s32 RoomE9_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &RoomE9_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0xE9: draws the countdown clock, frozen at the saved time while event flag 1 is set
+ * (clock_draw_saved; a frame hook). */
 /* 0x0037ACE0 */
 s32 RoomE9_Cmd03(void) { return clock_draw_saved(D_0047B340, str_59_59_20); }
 
@@ -83,8 +85,11 @@ s32 RoomE9_Cmd02(void *self, void *a1, u8 *cmd) {
     return glow4_spot(cmd, 3);
 }
 
+/* room 0xE9: saves the countdown clock's time in script variables 0..2 (clock_save). */
 /* 0x0037B210 */
 s32 RoomE9_Cmd01(void) { return clock_save(); }
 
+/* room 0xE9: stops the countdown clock (clock_stop: progress +0x1FBEC1 off, the camera director
+ * +0x40 -1). */
 /* 0x0037B290 */
 s32 RoomE9_Cmd00(void) { return clock_stop(); }

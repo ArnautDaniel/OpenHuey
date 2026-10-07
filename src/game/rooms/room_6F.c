@@ -68,6 +68,7 @@ s32 Room6F_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room6F_CondTable[i & 0xFF], a, b);
 }
 
+/* room 0x6F: always false. */
 /* 0x00344FB0 */
 s32 Room6F_Cond00(void) {
     return 0;
@@ -79,6 +80,7 @@ s32 Room6F_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room6F_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x6F: does nothing (returns 1: the script goes on). */
 /* 0x00344FF0 */
 s32 Room6F_Cmd00(void) {
     return 0x1;

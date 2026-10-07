@@ -61,6 +61,7 @@ s32 Room45_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room45_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x45: does nothing (returns 1: the script goes on). */
 /* 0x002B2950 */
 s32 Room45_Cmd00(void) {
     return 1;

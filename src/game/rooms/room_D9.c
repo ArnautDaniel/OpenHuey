@@ -76,8 +76,12 @@ s32 RoomD9_Cmd02(void) {
     return 1;
 }
 
+/* room 0xD9: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
+ * (clock_draw; a frame hook). */
 /* 0x0036FE70 */
 s32 RoomD9_Cmd01(void) { return clock_draw(D_0047B2F0, str_59_59_10); }
 
+/* room 0xD9: starts the countdown clock (clock_start: progress +0x1FBEC1 on, Hewie restarted,
+ * the camera director +0x40 14, the time zeroed). */
 /* 0x0036FFC0 */
 s32 RoomD9_Cmd00(void) { return clock_start(); }

@@ -48,6 +48,8 @@ s32 Room109_Command(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room109_CmdTable[i & 0xFF], a, b);
 }
 
+/* room 0x109: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
+ * sideways 1 a frame (room_nudge). */
 /* 0x002E7560 */
 s32 Room109_Cmd01(void *self, void *a1, u8 *cmd) { return room_nudge(&D_0047B278, cmd, 1.0f); }
 

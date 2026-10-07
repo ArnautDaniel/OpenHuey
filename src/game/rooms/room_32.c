@@ -146,6 +146,7 @@ s32 Room32_Cmd01(void) {
     return 1;
 }
 
+/* room 0x32: room effect slot 1 made anew as the first TV screen (TvScreenA). */
 /* 0x00321590 */
 s32 Room32_Cmd00(void) {
     room_effect_slot_new(gRoomEffects, 1, TvScreenA_vtable);

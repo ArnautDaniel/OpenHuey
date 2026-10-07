@@ -58,6 +58,8 @@ s32 Room10B_Condition(void *self, u32 i, s32 a, s32 b) {
     return ptmf_scall_r2(self, &Room10B_CondTable[i & 0xFF], a, b);
 }
 
+/* room 0x10B: the progress' +0xFB6 count (it rises while Hewie is down, Hewie_AdjustAction) has
+ * reached 100. */
 /* 0x002E7A00 */
 s32 Room10B_Cond00(void) {
     return AT(gProgress, 0xFB6, s16) >= 100;
