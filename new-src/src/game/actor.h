@@ -27,6 +27,17 @@ typedef struct Actor {
     float rate;             /* motion frames a tick (1: the game ran its motions at its 30 fps) */
     int32_t motion;         /* index in the motion bank, -1 the rest pose */
     int32_t loop;           /* the motion repeats (else it holds its last frame) */
+    /* the motion player as the original's (src/game/model.c Motion_Start / Motion_Advance):
+     * its flags - 1 loops, 2 keeps the phase of the one before, 0x10 no time of its own,
+     * 0x20 wrapped this tick (the end reached), 0x40 frozen, 0x400 at its last frame - and a
+     * cross-fade from the motion before over fade_len ticks */
+    int32_t mflags;
+    int32_t prev_motion;
+    float prev_frame;
+    float fade, fade_len;
+    const uint8_t *table;   /* the model's motion table (6 bytes a motion, in bank order: its fade
+                             * frames s16, its pose u8, -, its flags u16), NULL none */
+    int ntable;
     int32_t visible;
     float shadow_size;      /* the contact shadow's radius (room units; 0: none) */
     Vec3 lo, hi;            /* the model's bounds (bind pose, model units) */
@@ -52,5 +63,9 @@ float actor_radius(const Actor *a);
 void actor_draw(Actor *a, const Mat4 *view_proj);
 /* the motion has played to its end (non-looping) */
 int actor_motion_done(const Actor *a);
+/* motion `index` from its start, cross-faded over `blend` ticks, with `flags` (see mflags) */
+void actor_motion_start(Actor *a, int index, int flags, float blend);
+/* its table entry: fade frames, pose, flags; 0 if it has none */
+int actor_motion_entry(const Actor *a, int index, int *blend, int *pose, int *flags);
 
 #endif

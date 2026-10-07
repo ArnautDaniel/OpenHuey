@@ -8,6 +8,7 @@
 #define WORLD_H
 
 #include <stdint.h>
+#include "../data/exe.h"
 
 #define WORLD_DOORS 400
 #define WORLD_ROOMS 0x110
@@ -30,11 +31,14 @@ typedef struct RoomExit {
 
 typedef struct World {
     int loaded;
+    Exe exe;                /* the executable, kept: other tables are read from it as needed */
     Door doors[WORLD_DOORS];
     int ndoors;
     RoomExit exits[WORLD_ROOMS][ROOM_EXITS];
 } World;
 
+/* n bytes of the executable at a PS2 address (NULL: not there) */
+const uint8_t *world_exe(const World *w, uint32_t vaddr, size_t n);
 /* read the tables from the executable; 0 if it couldn't be read */
 int world_load(World *w, const char *exe_path);
 /* where exit `exit` of `room` leads: the room (and its exit in *to_exit), or -1 */

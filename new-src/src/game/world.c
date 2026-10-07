@@ -21,6 +21,10 @@ static int u16(const uint8_t *p) {
     return x;
 }
 
+const uint8_t *world_exe(const World *w, uint32_t vaddr, size_t n) {
+    return w->exe.data != NULL ? exe_at(&w->exe, vaddr, n) : NULL;
+}
+
 int world_load(World *w, const char *exe_path) {
     Exe e;
     const uint8_t *doors, *rooms;
@@ -67,7 +71,7 @@ int world_load(World *w, const char *exe_path) {
     }
     w->ndoors = i;
     w->loaded = 1;
-    exe_free(&e);
+    w->exe = e;
     return 1;
 }
 

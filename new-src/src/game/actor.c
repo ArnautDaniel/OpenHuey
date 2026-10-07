@@ -58,6 +58,7 @@ int actor_load(Actor *actors, const char *name) {
     a->scale = 1.0f;
     a->rate = 1.0f;   /* (a motion frame a tick: the game ran its motions at its own 30 fps) */
     a->motion = -1;
+    a->prev_motion = -1;
     a->loop = 1;
     a->visible = 1;
     a->shadow_size = 7.0f;
@@ -87,21 +88,92 @@ int actor_motion_done(const Actor *a) {
     return a->motion >= 0 && !a->loop && a->frame >= (float)(model_motion_frames(&a->model, a->motion) - 1);
 }
 
-void actor_tick(Actor *a) {
-    int frames;
+/* a play time on by the speed: looping wraps it, else it stops at the last frame; 1 when it
+ * went past the end (anim_step) */
+static int step_time(float *t, float speed, int frames, int loop) {
+    int wrapped = 0;
 
-    if (!a->used || a->motion < 0) {
+    *t += speed;
+    if (loop) {
+        while (*t < 0.0f) {
+            *t += (float)frames;
+        }
+        while (*t >= (float)frames) {
+            *t -= (float)frames;
+            wrapped = 1;
+        }
+        return wrapped;
+    }
+    if (*t < 0.0f) {
+        *t = 0.0f;
+    }
+    if (*t > (float)(frames - 1)) {
+        *t = (float)(frames - 1);
+        wrapped = 1;
+    }
+    return wrapped;
+}
+
+void actor_tick(Actor *a) {
+    int frames, loop;
+
+    if (!a->used || a->motion < 0 || (a->mflags & 0x40)) {
         return;
     }
     frames = model_motion_frames(&a->model, a->motion);
-    a->frame += a->rate;
-    if (a->loop) {
-        while (a->frame >= (float)frames) {
-            a->frame -= (float)frames;
+    loop = a->loop || (a->mflags & 1);
+    if (!(a->mflags & 0x10)) {
+        if (step_time(&a->frame, a->rate, frames, loop)) {
+            a->mflags |= 0x20;
+        } else {
+            a->mflags &= ~0x20;
         }
-    } else if (a->frame > (float)(frames - 1)) {
-        a->frame = (float)(frames - 1);
+        if (a->frame >= (float)(frames - 1)) {
+            a->mflags |= 0x400;
+        } else {
+            a->mflags &= ~0x400;
+        }
     }
+    if (a->fade > 0.0f) {   /* the motion before goes on while it fades out */
+        if (a->prev_motion >= 0) {
+            step_time(&a->prev_frame, a->rate, model_motion_frames(&a->model, a->prev_motion), 1);
+        }
+        a->fade -= 1.0f;
+    }
+}
+
+void actor_motion_start(Actor *a, int index, int flags, float blend) {
+    int frames = model_motion_frames(&a->model, index);
+
+    if (a->motion >= 0 && blend > 0.0f) {
+        a->prev_motion = a->motion;
+        a->prev_frame = a->frame;
+        a->fade = a->fade_len = blend;
+    } else {
+        a->fade = a->fade_len = 0.0f;
+    }
+    if ((flags & a->mflags & 2) && a->motion >= 0) {   /* in step: the same phase */
+        a->frame = (float)frames * (a->frame / (float)model_motion_frames(&a->model, a->motion));
+    } else {
+        a->frame = 0.0f;
+    }
+    a->motion = index;
+    a->mflags = (flags & 0xFFFF) | (flags & 8 ? 0x10 : 0);
+    a->loop = flags & 1;
+}
+
+int actor_motion_entry(const Actor *a, int index, int *blend, int *pose, int *flags) {
+    const uint8_t *e;
+
+    if (a->table == NULL || index < 0 || index >= a->ntable) {
+        *blend = *pose = *flags = 0;
+        return 0;
+    }
+    e = a->table + index * 6;
+    *blend = (int16_t)(e[0] | e[1] << 8);
+    *pose = e[2];
+    *flags = e[4] | e[5] << 8;
+    return 1;
 }
 
 /* the posed vertices and normals, in room space (the shader lights them) */
@@ -130,7 +202,10 @@ static void skin(Actor *a) {
         s = 0.0f;
         place.m[0] = place.m[5] = place.m[10] = a->scale;
     } else {
-        model_pose(m, a->motion, a->frame, skin_m);
+        float x = a->fade_len > 0.0f && a->fade > 0.0f ? a->fade / a->fade_len : 0.0f;   /* (fade_weight) */
+
+        model_pose_blend(m, a->motion, a->frame, a->prev_motion, a->prev_frame, x * x * (3.0f - 2.0f * x), skin_m,
+                         NULL);
         place.m[0] = c * a->scale;  place.m[2] = -s * a->scale;
         place.m[5] = a->scale;
         place.m[8] = s * a->scale;  place.m[10] = c * a->scale;

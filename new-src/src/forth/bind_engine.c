@@ -731,7 +731,43 @@ PRIM(p_motion_store) {   /* ( id motion-id -- ) play a motion from its start */
     if (index != a->motion) {
         a->motion = index;
         a->frame = 0.0f;
+        a->mflags = a->loop ? 1 : 0;
+        a->fade = 0.0f;
     }
+}
+PRIM(p_motion_play) {   /* ( id motion-id blend flags -- ) from its start, cross-faded over blend ticks, with
+                         * the flags (1 loops, 2 in step, 8 no time of its own); a motion it lacks:
+                         * nothing (the original's Motion_Start too) */
+    Cell flags = POP(), blend = POP(), mid = POP();
+    Actor *a = actor_arg(f, POP());
+    int index = model_motion_find(&a->model, (int)mid);
+
+    if (index >= 0) {
+        actor_motion_start(a, index, (int)flags, (float)blend);
+    }
+}
+PRIM(p_motion_entry) {   /* ( id motion-id -- blend pose flags ) its model's table entry (0s: none) */
+    Cell mid = POP();
+    Actor *a = actor_arg(f, POP());
+    int blend, pose, flags;
+
+    actor_motion_entry(a, model_motion_find(&a->model, (int)mid), &blend, &pose, &flags);
+    PUSH(blend);
+    PUSH(pose);
+    PUSH(flags);
+}
+PRIM(p_motion_table) {   /* ( id vaddr -- ) its motion table: in the executable at vaddr, an entry a motion */
+    Cell va = POP();
+    Actor *a = actor_arg(f, POP());
+    int n = model_motion_count(&a->model);
+
+    a->table = world_exe(&gEngine.world, (uint32_t)va, (size_t)n * 6);
+    a->ntable = a->table != NULL ? n : 0;
+}
+PRIM(p_exe_bytes) {   /* ( vaddr n -- addr | 0 ) the executable's bytes there (read-only) */
+    Cell n = POP(), va = POP();
+
+    PUSH(world_exe(&gEngine.world, (uint32_t)va, (size_t)n));
 }
 PRIM(p_root_delta) {   /* ( id -- ) ( F: -- turn dx dy dz ) its motion's root movement this frame
                          * (model space, scaled to the room) */
@@ -1092,7 +1128,8 @@ void bind_engine(Forth *f) {
         {"message-options", p_message_options}, {"message-option", p_message_option},
         {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor", p_actor},
-        {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"root-delta", p_root_delta}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
+        {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry},
+        {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
         {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"mouse-down?", p_mouse_down},
@@ -1131,6 +1168,7 @@ void bind_engine(Forth *f) {
     field(f, "act.frame", offsetof(Actor, frame));
     field(f, "act.rate", offsetof(Actor, rate));
     field(f, "act.loop", offsetof(Actor, loop));        /* 32-bit: l@ l! */
+    field(f, "act.mflags", offsetof(Actor, mflags));    /* 32-bit: the motion's flags (0x20 wrapped this tick) */
     field(f, "act.visible", offsetof(Actor, visible));  /* 32-bit: l@ l! */
     field(f, "act.shadow", offsetof(Actor, shadow_size));
     /* the picture's settings (render.h RenderSettings): flags and counts are 32-bit (l@ l!),

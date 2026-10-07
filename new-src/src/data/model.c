@@ -510,10 +510,9 @@ void model_pose(const Model *m, int index, float frame, Mat4 *skin) {
     model_pose_root(m, index, frame, skin, NULL);
 }
 
-void model_pose_root(const Model *m, int index, float frame, Mat4 *skin, Vec3 *root) {
-    float rot[MODEL_MAX_BONES][3], pos[MODEL_MAX_BONES][3];
-    Mat4 world[MODEL_MAX_BONES];
-    int done[MODEL_MAX_BONES], i, p, pass;
+/* the bones' local turns and places for a motion at a time (the rest pose for index -1) */
+static void local_pose(const Model *m, int index, float frame, float (*rot)[3], float (*pos)[3]) {
+    int i, p;
 
     for (i = 0; i < m->nbones; i++) {
         memcpy(rot[i], m->bones[i].rest_rot, sizeof(rot[i]));
@@ -539,12 +538,34 @@ void model_pose_root(const Model *m, int index, float frame, Mat4 *skin, Vec3 *r
                 int bone;
 
                 if (code < 0 || code + 1 >= 256) {
-                    continue;   /* root motion and other special channels: not yet */
+                    continue;   /* the root's own movement and other special channels */
                 }
                 bone = (int8_t)m->bone_table[code + 1];
                 if (bone >= 0 && bone < m->nbones) {
                     sample_track(&r, track, frames, frame, rot[bone], pos[bone]);
                 }
+            }
+        }
+    }
+}
+
+void model_pose_root(const Model *m, int index, float frame, Mat4 *skin, Vec3 *root) {
+    model_pose_blend(m, index, frame, -1, 0.0f, 0.0f, skin, root);
+}
+
+void model_pose_blend(const Model *m, int index, float frame, int prev, float prev_frame, float w, Mat4 *skin,
+                      Vec3 *root) {
+    static float rot[MODEL_MAX_BONES][3], pos[MODEL_MAX_BONES][3], rot2[MODEL_MAX_BONES][3], pos2[MODEL_MAX_BONES][3];
+    Mat4 world[MODEL_MAX_BONES];
+    int done[MODEL_MAX_BONES], i, pass, j;
+
+    local_pose(m, index, frame, rot, pos);
+    if (w > 0.0f) {   /* fading from the motion before: prev x w + this x (1 - w) */
+        local_pose(m, prev, prev_frame, rot2, pos2);
+        for (i = 0; i < m->nbones; i++) {
+            for (j = 0; j < 3; j++) {
+                rot[i][j] = lerp_angle(rot[i][j], rot2[i][j], w);
+                pos[i][j] += (pos2[i][j] - pos[i][j]) * w;
             }
         }
     }

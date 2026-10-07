@@ -62,5 +62,8 @@ void model_pose(const Model *m, int index, float frame, Mat4 *skin);
 int model_root_delta(const Model *m, int index, float frame, float *turn, Vec3 *step);
 /* the same, and the root bone's posed position (model space) */
 void model_pose_root(const Model *m, int index, float frame, Mat4 *skin, Vec3 *root);
+/* cross-faded from motion `prev` at its time, weight w (1: all of it .. 0: none) */
+void model_pose_blend(const Model *m, int index, float frame, int prev, float prev_frame, float w, Mat4 *skin,
+                      Vec3 *root);
 
 #endif
