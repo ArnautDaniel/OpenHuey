@@ -17,9 +17,21 @@ typedef struct NavTri {
     uint32_t lights;   /* the room lights reaching it: bit i = light i (+0x4C) */
 } NavTri;
 
+/* a link between two levels - a ladder (the original's nav door regions, NavMesh +0x20): a pair
+ * of triangles tagged with the same group (flags bits 9..13), [0] the one with the larger y (the
+ * game's y runs down: the foot), each with the heading out across its edge toward the other and
+ * that edge's middle */
+typedef struct NavLink {
+    int tri[2];
+    float yaw[2];
+    Vec3 spot[2];
+} NavLink;
+
 typedef struct NavMesh {
     NavTri *tris;
     int ntris;
+    NavLink links[5];
+    int nlinks;
     uint32_t block;    /* triangles with any of these flags are walls to whoever moves now (the
                         * original's per-character mask: Fiona 0x28020018, Hewie 0x29020008) */
 } NavMesh;
@@ -29,6 +41,16 @@ int navmesh_build(NavMesh *n, const uint8_t *sec, size_t size);
  * triangle adds 0x4000 (bit 0) and 0x80000 (bit 1) */
 void navmesh_take_flags(NavMesh *n, const uint8_t *sec16, size_t size);
 void navmesh_free(NavMesh *n);
+/* the links (NavMesh_FindDoorRegions; navmesh_take_flags calls it) */
+void navmesh_find_links(NavMesh *n);
+/* p is at link i (NavMesh_AtDoorRegion: within 5 in height and 20 across of either spot) */
+int navmesh_link_at(const NavMesh *n, int i, Vec3 p);
+/* which side of link i p (on triangle tri) is at (NavMesh_DoorSide: within 5 in height and 12
+ * across of that side's spot, walking straight onto its triangle); -1 neither */
+int navmesh_link_side(const NavMesh *n, int i, int tri, Vec3 p);
+/* the point in front of link i's side (Actor_DoorFront: 5 out, shifted by (ox, oz) in its
+ * frame), reached over the mesh from the spot: its triangle (the point in *out), -1 none */
+int navmesh_link_front(const NavMesh *n, int i, int side, float ox, float oz, Vec3 *out);
 /* the triangle under (x, z) whose surface is nearest height y (and not more than `climb`
  * above it), not one of the `block` flags; -1 if none. *height: its surface there */
 int navmesh_find(const NavMesh *n, Vec3 p, float climb, float *height);

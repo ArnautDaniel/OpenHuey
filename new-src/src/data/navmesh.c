@@ -49,6 +49,7 @@ void navmesh_take_flags(NavMesh *n, const uint8_t *sec16, size_t size) {
             }
         }
     }
+    navmesh_find_links(n);
 }
 
 void navmesh_free(NavMesh *n) {
@@ -424,4 +425,144 @@ int navmesh_walk(const NavMesh *n, int from, Vec3 a, Vec3 b, float *reach) {
         t = tr->next[cross];
     }
     return -1;
+}
+
+/* ---- links (ladders) ---- */
+
+void navmesh_find_links(NavMesh *n) {
+    int i, g, sd;
+
+    for (g = 0; g < 5; g++) {
+        n->links[g].tri[0] = n->links[g].tri[1] = -1;
+    }
+    for (i = 0; i < n->ntris; i++) {
+        uint32_t grp = n->tris[i].flags & 0x3E00;
+        NavLink *l;
+
+        if (grp == 0 || (grp >> 9) > 5) {
+            continue;
+        }
+        l = &n->links[(grp >> 9) - 1];
+        if (l->tri[0] == -1) {
+            l->tri[0] = i;
+        } else if (n->tris[i].v[0].y <= n->tris[l->tri[0]].v[0].y) {
+            l->tri[1] = i;
+        } else {
+            l->tri[1] = l->tri[0];
+            l->tri[0] = i;
+        }
+    }
+    for (g = 0; g < 5; g++) {
+        NavLink *l = &n->links[g];
+        Vec3 c[2];
+
+        if (l->tri[0] == -1 || l->tri[1] == -1) {
+            break;
+        }
+        for (sd = 0; sd < 2; sd++) {
+            c[sd] = navmesh_center(n, l->tri[sd]);
+        }
+        for (sd = 0; sd < 2; sd++) {   /* the edge the way to the other crosses (vt+0x20) */
+            const NavTri *t = &n->tris[l->tri[sd]];
+            float best = -1.0f, ex, ez, px, pz, len;
+            int e, cross = 0;
+            Vec3 a, b;
+
+            for (e = 0; e < 3; e++) {
+                float fr = seg_cross(c[sd], c[sd ^ 1], t->v[e], t->v[(e + 1) % 3]);
+
+                if (fr >= 0.0f && (best < 0.0f || fr < best)) {
+                    best = fr;
+                    cross = e;
+                }
+            }
+            a = t->v[cross];
+            b = t->v[(cross + 1) % 3];
+            ex = b.x - a.x;
+            ez = b.z - a.z;
+            px = -ez;   /* across the edge, away from its own middle */
+            pz = ex;
+            if (px * (c[sd].x - a.x) + pz * (c[sd].z - a.z) > 0.0f) {
+                px = -px;
+                pz = -pz;
+            }
+            len = sqrtf(px * px + pz * pz);
+            l->yaw[sd] = len > 0.0f ? atan2f(px / len, pz / len) : 0.0f;
+            l->spot[sd] = vec3((a.x + b.x) * 0.5f, (a.y + b.y) * 0.5f, (a.z + b.z) * 0.5f);
+        }
+    }
+    for (g = 0; g < 5 && n->links[g].tri[0] != -1 && n->links[g].tri[1] != -1; g++) {
+    }
+    n->nlinks = g;
+}
+
+int navmesh_link_at(const NavMesh *n, int i, Vec3 p) {
+    int sd;
+
+    if (i < 0 || i >= n->nlinks) {
+        return 0;
+    }
+    for (sd = 0; sd < 2; sd++) {
+        Vec3 s = n->links[i].spot[sd];
+        float dx = p.x - s.x, dz = p.z - s.z;
+
+        if (fabsf(p.y - s.y) <= 5.0f && sqrtf(dx * dx + dz * dz) <= 20.0f) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int navmesh_link_side(const NavMesh *n, int i, int tri, Vec3 p) {
+    int sd;
+
+    if (i < 0 || i >= n->nlinks) {
+        return -1;
+    }
+    for (sd = 0; sd < 2; sd++) {
+        Vec3 s = n->links[i].spot[sd];
+        float dx = p.x - s.x, dz = p.z - s.z;
+        NavMesh m = *n;
+
+        if (!(fabsf(p.y - s.y) <= 5.0f) || !(sqrtf(dx * dx + dz * dz) <= 12.0f)) {
+            continue;
+        }
+        m.block = 0;
+        if (navmesh_walk(&m, tri, p, s, NULL) == n->links[i].tri[sd]) {
+            return sd;
+        }
+    }
+    return -1;
+}
+
+int navmesh_link_front(const NavMesh *n, int i, int side, float ox, float oz, Vec3 *out) {
+    float dx, dz, yaw, sn, cs;
+    Vec3 base, target;
+    NavMesh m;
+    int t;
+
+    if (i < 0 || i >= n->nlinks || side < 0 || side > 1) {
+        return -1;
+    }
+    dx = -ox;
+    dz = side == 0 ? 5.0f + oz : -(oz - 5.0f);
+    yaw = n->links[i].yaw[side];
+    sn = sinf(yaw);
+    cs = cosf(yaw);
+    base = n->links[i].spot[side];
+    target = vec3(base.x + cs * dx + sn * dz, base.y, base.z - sn * dx + cs * dz);
+    m = *n;
+    m.block = 0;
+    t = navmesh_walk(&m, n->links[i].tri[side], base, target, NULL);
+    if (t < 0) {
+        return -1;
+    }
+    {
+        float h;
+        int u = navmesh_find(&m, target, 1000.0f, &h);
+
+        target.y = u == t ? h : base.y;
+    }
+    *out = target;
+    return t;
 }

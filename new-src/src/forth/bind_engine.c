@@ -202,6 +202,59 @@ PRIM(p_v_wall) {   /* ( tri a b mask -- flag ) ( F: -- yaw ) the wall a straight
     FPUSH(yaw);
     PUSH(hit ? -1 : 0);
 }
+/* ---- the nav links (ladders: the original's nav door regions) ---- */
+static const NavLink *nav_link(Cell i) {
+    NavMesh *n = &gEngine.room.nav;
+
+    return i >= 0 && i < n->nlinks ? &n->links[i] : NULL;
+}
+PRIM(p_nav_next) {   /* ( tri k -- tri' ) the triangle across edge k (0..2), -1 none */
+    Cell k = POP(), t = POP();
+    NavMesh *n = &gEngine.room.nav;
+
+    PUSH(t >= 0 && t < n->ntris && k >= 0 && k < 3 ? n->tris[t].next[k] : -1);
+}
+PRIM(p_nav_links) { PUSH(gEngine.room.nav.nlinks); }   /* ( -- n ) */
+PRIM(p_nav_link_tri) {   /* ( i side -- tri ) NavMesh_DoorTri; -1 none */
+    Cell sd = POP();
+    const NavLink *l = nav_link(POP());
+
+    PUSH(l != NULL && sd >= 0 && sd < 2 ? l->tri[sd] : -1);
+}
+PRIM(p_nav_link_yaw) {   /* ( i side -- ) ( F: -- yaw ) NavMesh_DoorFacing */
+    Cell sd = POP();
+    const NavLink *l = nav_link(POP());
+
+    FPUSH(l != NULL && sd >= 0 && sd < 2 ? l->yaw[sd] : 0.0f);
+}
+PRIM(p_nav_link_spot) {   /* ( i side -- ) ( F: -- x y z ) NavMesh_DoorSpot */
+    Cell sd = POP();
+    const NavLink *l = nav_link(POP());
+    Vec3 v = l != NULL && sd >= 0 && sd < 2 ? l->spot[sd] : vec3(0, 0, 0);
+
+    FPUSH(v.x); FPUSH(v.y); FPUSH(v.z);
+}
+PRIM(p_nav_link_at) {   /* ( v i -- flag ) NavMesh_AtDoorRegion */
+    Cell i = POP();
+    float *v = vec_arg(f);
+
+    PUSH(navmesh_link_at(&gEngine.room.nav, (int)i, vec3(v[0], v[1], v[2])) ? -1 : 0);
+}
+PRIM(p_nav_link_side) {   /* ( v tri i -- side ) NavMesh_DoorSide; -1 neither */
+    Cell i = POP(), tri = POP();
+    float *v = vec_arg(f);
+
+    PUSH(navmesh_link_side(&gEngine.room.nav, (int)i, (int)tri, vec3(v[0], v[1], v[2])));
+}
+PRIM(p_nav_link_front) {   /* ( i side -- tri ) ( F: ox oz -- x y z ) Actor_DoorFront; -1 none */
+    Cell sd = POP(), i = POP();
+    float oz = (float)FPOP(), ox = (float)FPOP();
+    Vec3 out = vec3(0, 0, 0);
+    int t = navmesh_link_front(&gEngine.room.nav, (int)i, (int)sd, ox, oz, &out);
+
+    FPUSH(out.x); FPUSH(out.y); FPUSH(out.z);
+    PUSH(t);
+}
 PRIM(p_v_free) {   /* ( tri v mask -- ) ( F: yaw dist -- free ) how far from v along the heading is
                     * free, up to dist (Actor_FreeDistance) */
     uint32_t mask = (uint32_t)POP();
@@ -1539,7 +1592,7 @@ void bind_engine(Forth *f) {
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
-        {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-wall", p_v_wall}, {"v-free", p_v_free},
+        {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-wall", p_v_wall}, {"nav-links", p_nav_links}, {"nav-next", p_nav_next}, {"nav-link-tri", p_nav_link_tri}, {"nav-link-yaw", p_nav_link_yaw}, {"nav-link-spot", p_nav_link_spot}, {"nav-link-at?", p_nav_link_at}, {"nav-link-side", p_nav_link_side}, {"nav-link-front", p_nav_link_front}, {"v-free", p_v_free},
         {"v-path", p_v_path}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
         {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
