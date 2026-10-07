@@ -288,9 +288,12 @@ create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
 : obstacle-stop ( i -- )  drop s" obstacle-stop" stub-step ;
 \ 55: The screen fade colour `rgba`, drawn in renderer layer `layer` (Events_Fade).
 : fade-colour ( rgba layer -- )  drop drop s" fade-colour" stub-step ;
-\ 56: self (the player for script slots): knocks on / tries door `door` (sound 0x27 for how 1,
-\ else 0x28), if it isn't open.
-: self-door-knock ( door how -- )  drop drop s" self-door-knock" stub-step ;
+\ 56: self (the player for script slots) knocks on / tries the room's door at exit `door`: sound
+\ 0x27 for how 1, else 0x28, at the door (none if there is no door there).
+: self-door-knock ( door how -- )
+    swap event-door-at 0= if  drop fdrop fdrop fdrop exit  then
+    1 = if  $27  else  $28  then  self-char dup 0< if  2drop fdrop fdrop fdrop exit  then
+    swap 5 0 0 actor-sound ;
 \ 57: Event bit n set (+0x890, cleared when the room changes).
 : ebit-set ( n -- )  event-state ev.bits bit-on ;
 \ 58: Event bit n cleared.

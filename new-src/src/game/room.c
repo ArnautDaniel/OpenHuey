@@ -379,7 +379,19 @@ void room_tick(Room *r) {
         RoomDoor *d = &r->doors[i];
         float step = 4.5f;
 
+        float was = d->swing;
+
         d->swing = fabsf(d->target - d->swing) <= step ? d->target : d->swing + (d->target > d->swing ? step : -step);
+        d->sound = 0;
+        if (d->swing == was) {
+            d->sounded = 0;
+        } else if (!d->sounded && d->swing < was && was >= 0.0f) {
+            d->sounded = 1;
+            d->sound = 0x27;
+        } else if (!d->sounded && d->swing > was && d->swing > -6.0f) {
+            d->sounded = 1;
+            d->sound = 0x28;
+        }
     }
 }
 

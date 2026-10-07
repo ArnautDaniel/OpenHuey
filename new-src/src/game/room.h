@@ -33,6 +33,9 @@ typedef struct RoomDoor {
     GpuMesh gpu;
     Vec3 pos, rot;
     float swing, target;
+    int sounded;            /* this swing's creak / latch played (+0x71) */
+    int sound;              /* the sound it makes this tick (Door_Swing: 0x27 the creak as it
+                             * starts to open, 0x28 the latch as it shuts past 6 degrees), 0 none */
 } RoomDoor;
 
 typedef struct Room {

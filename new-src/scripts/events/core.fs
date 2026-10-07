@@ -203,6 +203,9 @@ defer event-sound-loaded? ( bank -- flag )   :noname drop true ; is event-sound-
 defer event-sound-scale ( F: v -- )          ' fdrop is event-sound-scale
 defer event-camera-eye ( F: -- x y z )       :noname 0e 0e 0e ; is event-camera-eye
 defer event-reverb ( core v -- )             ' 2drop is event-reverb
+\ where the room's door at an exit stands (false: none)
+defer event-door-at ( exit -- flag ) ( F: -- x y z )
+:noname drop 0e 0e 0e false ; is event-door-at
 \ characters: an actor's place set, its heading (radians: 0 along +z, as atan2 dx dz) set and read,
 \ shown or not; its animation played
 \ (once or looping) and whether it has come to its end

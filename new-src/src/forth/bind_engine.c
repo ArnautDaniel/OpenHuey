@@ -490,6 +490,23 @@ PRIM(p_door_swing) {   /* ( exit at-once -- ) ( F: degrees -- ) the room's door 
 
     room_door_swing(&gEngine.room, (int)exit, (float)FPOP(), now != 0);
 }
+PRIM(p_door_at) {   /* ( exit -- flag ) ( F: -- x y z ) where the room's door at that exit stands
+                     * (Doors_GetPos); false: no door there */
+    Cell exit = POP();
+    const RoomDoor *d = exit >= 0 && exit < ROOM_DOORS ? &gEngine.room.doors[exit] : NULL;
+
+    if (d == NULL || !d->present) {
+        FPUSH(0.0);
+        FPUSH(0.0);
+        FPUSH(0.0);
+        PUSH(0);
+        return;
+    }
+    FPUSH(d->pos.x);
+    FPUSH(d->pos.y);
+    FPUSH(d->pos.z);
+    PUSH(-1);
+}
 PRIM(p_to_screen) {   /* ( -- flag ) ( F: x y z -- sx sy ) a point of the room on the window (pixels;
                        * false: behind the camera) */
     float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
@@ -1383,6 +1400,17 @@ void engine_tick(Engine *e) {
     }
     cutscene_camera(&e->camera);   /* a cutscene's shot with the camera in it has it */
     room_tick(&e->room);
+    for (i = 0; i < ROOM_DOORS; i++) {   /* (Door_PlaySound: at the door, common sounds) */
+        const RoomDoor *d = &e->room.doors[i];
+
+        if (d->present && d->sound != 0) {
+            float at[3], ahead[3];
+
+            bank_want(5);
+            view_point(d->pos.x, d->pos.y, d->pos.z, at, ahead);
+            snddrv_play_placed((uint32_t)d->sound, 5, 0, 0, at, ahead);
+        }
+    }
     render_look_tick();
 }
 
@@ -1423,7 +1451,7 @@ void bind_engine(Forth *f) {
         {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-free", p_v_free},
         {"v-path", p_v_path}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
-        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"door-passage", p_door_passage}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
+        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-passage", p_door_passage}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
         {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},

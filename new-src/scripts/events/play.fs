@@ -55,7 +55,7 @@ USING: engine state rooms player hewie doors game-state events.core events.words
 :noname  0 $1B0C00 sound-stop-voices  6 sound-load ; is event-room-sounds
 :noname  dup sound-load sound-loaded? ; is event-sound-loaded?
 :noname  camera cam.x sf@ camera cam.y sf@ camera cam.z sf@ ; is event-camera-eye
-' sound-reverb! is event-reverb
+' sound-reverb! is event-reverb   ' room-door-at is event-door-at
 ' area-middle is event-area-middle   ' area-in? is event-area-in?   ' area-cross is event-area-cross   ' exit-area is event-exit-area
 ' room-string is event-room-string   ' placed-op is event-object
 \ movies and the cutscene director (as the original's, a movie's frames time a scene played in
