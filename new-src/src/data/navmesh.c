@@ -98,8 +98,17 @@ int navmesh_find(const NavMesh *n, Vec3 p, float climb, float *height) {
 
 Vec3 navmesh_move(const NavMesh *n, Vec3 p, float dx, float dz, float climb, float radius) {
     const float tries[3][2] = {{dx, dz}, {dx, 0.0f}, {0.0f, dz}};   /* straight, else slide */
-    int i;
+    NavMesh *m = (NavMesh *)n;
+    uint32_t block = n->block;
+    float h0;
+    int i, here;
+    Vec3 out = p;
 
+    /* standing on a triangle the mask blocks (put there by a door, a script): it only keeps one
+     * from going onto such triangles, not from leaving this one */
+    m->block = 0;
+    here = navmesh_find(n, p, climb, &h0);
+    m->block = here >= 0 && (n->tris[here].flags & block) ? 0 : block;
     for (i = 0; i < 3; i++) {
         float len = sqrtf(tries[i][0] * tries[i][0] + tries[i][1] * tries[i][1]), h, h2;
         Vec3 q = vec3(p.x + tries[i][0], p.y, p.z + tries[i][1]), ahead;
@@ -110,10 +119,12 @@ Vec3 navmesh_move(const NavMesh *n, Vec3 p, float dx, float dz, float climb, flo
         ahead = vec3(q.x + tries[i][0] / len * radius, p.y, q.z + tries[i][1] / len * radius);
         if (navmesh_find(n, q, climb, &h) >= 0 && navmesh_find(n, ahead, climb, &h2) >= 0) {
             q.y = h;
-            return q;
+            out = q;
+            break;
         }
     }
-    return p;
+    m->block = block;
+    return out;
 }
 
 Vec3 navmesh_center(const NavMesh *n, int i) {

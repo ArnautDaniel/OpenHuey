@@ -52,7 +52,7 @@ variable picked
 : begin-game ( -- )
     0 title !  3 stage !  0 stage-lights  0.06e 0.06e 0.08e clear-color
     7e dog act.shadow sf!   \ (his contact shadow back: the actor default)
-    first-room  start-playing ;
+    new-game ;
 
 : title-tick ( -- )
     title @ 0= if  exit  then

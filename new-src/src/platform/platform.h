@@ -6,8 +6,8 @@
 
 typedef struct Input {
     const bool *keys;            /* held now, by SDL scancode */
-    bool pressed[SDL_SCANCODE_COUNT];   /* went down this frame */
-    float mouse_dx, mouse_dy;    /* mouse motion this frame (pixels) */
+    bool pressed[SDL_SCANCODE_COUNT];   /* went down since the last game tick took them */
+    float mouse_dx, mouse_dy;    /* mouse motion since then (pixels) */
     unsigned mouse_buttons;      /* held now: SDL_BUTTON_MASK(n) */
     char text[64];               /* text typed this frame (UTF-8) */
     int quit;                    /* the window was closed */

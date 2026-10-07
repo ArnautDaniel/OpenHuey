@@ -201,6 +201,9 @@ defer event-char-yaw ( cs -- ) ( F: a -- )          :noname drop fdrop ; is even
 defer event-char-show ( cs on -- )                  ' 2drop is event-char-show
 defer event-char-anim ( cs anim loop? -- )          :noname 2drop drop ; is event-char-anim
 defer event-char-anim-done? ( cs -- flag )          :noname drop true ; is event-char-anim-done?
+\ a character leaves the scene / comes back (the original: its Deactivate / Activate)
+defer event-char-out ( cs -- )   ' drop is event-char-out
+defer event-char-in ( cs -- )    ' drop is event-char-in
 \ a nav triangle's middle (for placing on triangles)
 defer event-tri-center ( tri -- ) ( F: -- x y z )   :noname drop 0e 0e 0e ; is event-tri-center
 \ the message window's parameter `slot` shows system message $100 + id's first line

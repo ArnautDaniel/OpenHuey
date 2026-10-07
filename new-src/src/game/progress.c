@@ -2,6 +2,7 @@
 #include "progress.h"
 
 #include <stddef.h>
+#include <string.h>
 
 Progress gProgress;
 EventState gEvents;
@@ -16,6 +17,7 @@ static void field(Forth *f, const char *name, size_t offset) {
 
 static void p_progress(Forth *f, Word *w) { (void)w; forth_push(f, (Cell)&gProgress); }
 static void p_event_state(Forth *f, Word *w) { (void)w; forth_push(f, (Cell)&gEvents); }
+static void p_progress_reset(Forth *f, Word *w) { (void)f; (void)w; memset(&gProgress, 0, sizeof(gProgress)); }
 
 void bind_state(Forth *f) {
     Vocab *saved = f->m.current, *v = forth_vocab(f, "game-state");
@@ -24,6 +26,7 @@ void bind_state(Forth *f) {
     v->state = VOCAB_LOADED;
     forth_prim(f, "progress", p_progress);
     forth_prim(f, "event-state", p_event_state);
+    forth_prim(f, "progress-reset", p_progress_reset);   /* ( -- ) a new game's (Progress_Reset) */
     /* sizes */
     forth_constant(f, "story-flags", STORY_FLAGS);
     forth_constant(f, "state-flags", STATE_FLAGS);

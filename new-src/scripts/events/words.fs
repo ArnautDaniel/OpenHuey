@@ -86,9 +86,12 @@ USING: game-state events.core ;
 \ 13: Takes out the character in `slot` (waits while it is still loading).
 : char-unload ( slot -- )  drop s" char-unload" stub-step ;
 \ 14: Character `id` leaves the scene (the partner slot: the summoner takes it).
-: char-done ( id -- )  drop s" char-done" stub-step ;
+: char-done ( id -- )   \ (Progress_CharDone: the character's Deactivate)
+    char-slot dup 0< if  drop exit  then
+    dup character char.scripted 0 swap l!  dup 1+ free-slot  event-char-out ;
 \ 15: Activates character `id` (Progress_ActivateChar).
-: char-activate ( id -- )  drop s" char-activate" stub-step ;
+: char-activate ( id -- )   \ (Progress_ActivateChar)
+    char-slot dup 0< if  drop exit  then  event-char-in ;
 \ 16: The event counter (+0x703) = n.
 : counter-set ( n -- )  event-state ev.counter l! ;
 \ 17: The event counter + 1.
@@ -339,7 +342,7 @@ fvariable at-x  fvariable at-z
 \ 7A: Hewie goes to the point on triangle `tri` (operands stored x, z, y) (character move 0x13).
 : hewie-go-to ( tri b F: x z y -- )  drop drop fdrop fdrop fdrop s" hewie-go-to" stub-step ;
 \ 7B: Waits until character `who`'s motion event flags have any of `bits`.
-: char-wait-motion ( who bits -- )  drop drop s" char-wait-motion" stub-step ;
+: char-wait-motion ( who bits -- )  drop drop s" char-wait-motion" stub-step wait-frame ;
 \ 7C: Zone `z` (0..31, for conditions 0x07 / 0x08 ...) on: centre (x, y, z), radius r, height h,
 \ kind `kind`.
 : zone ( z r h kind F: x y z -- )  drop drop drop drop fdrop fdrop fdrop s" zone" stub-step ;
@@ -424,7 +427,9 @@ fvariable turn-x  fvariable turn-z
 \ 9D: Character `id` plays animation `anim` (blend, speed) and is held in a scripted state.
 : char-anim-hold ( id anim blend speed -- )  drop drop drop drop s" char-anim-hold" stub-step ;
 \ 9E: Waits until character `id`'s animation comes round (its end flag 0x20).
-: wait-char-anim ( id -- )  drop s" wait-char-anim" stub-step ;
+: wait-char-anim ( id -- )   \ (its animation has come round; an absent character: a frame)
+    char-slot dup 0< if  drop wait-frame exit  then
+    begin  wait-frame  dup event-char-anim-done?  until  drop ;
 \ 9F: A scene effect: a swarm of specks (SpeckSwarm) at (x, y, z).
 : specks ( a b c0 c1 c2 c3 F: x y z -- )  drop drop drop drop drop drop fdrop fdrop fdrop s" specks" stub-step ;
 \ A0: A scene effect: a splash (Splash) at (x, y, z).

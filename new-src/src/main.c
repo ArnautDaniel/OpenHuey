@@ -226,7 +226,9 @@ int main(int argc, char **argv) {
     load_world(&e->world, opt.data);
     e->forth = forth_new(16 << 20);   /* (the converted event scripts take most) */
     forth_set_output(e->forth, console_output, &e->console);
-    sound_open();   /* (none: the game is silent) */
+    if (!sound_open()) {   /* (none: the game is silent) */
+        fprintf(stderr, "hg2: no sound (%s)\n", SDL_GetError());
+    }
     bind_engine(e->forth);
     bind_state(e->forth);
     if (!load_scripts(e->forth)) {
@@ -248,6 +250,7 @@ int main(int argc, char **argv) {
         }
         if (e->input.pressed[SDL_SCANCODE_GRAVE]) {
             e->console.open = !e->console.open;
+            e->input.pressed[SDL_SCANCODE_GRAVE] = false;   /* (taken here, once) */
         }
         if (e->console.open != was_open) {
             platform_text_input(e->console.open);

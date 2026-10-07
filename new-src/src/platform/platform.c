@@ -53,8 +53,8 @@ void platform_close(void) {
 void platform_poll(Input *in) {
     SDL_Event e;
 
-    memset(in->pressed, 0, sizeof(in->pressed));
-    in->mouse_dx = in->mouse_dy = 0.0f;
+    /* (presses and mouse motion add up until a game tick takes them: a frame can come without a
+     * tick, and a press then must not be lost) */
     in->text[0] = 0;
     while (SDL_PollEvent(&e)) {
         switch (e.type) {

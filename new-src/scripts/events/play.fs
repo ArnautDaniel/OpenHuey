@@ -3,13 +3,18 @@
 \ What isn't there yet: most of the words (each says so on the console the first time it runs;
 \ `.missing` lists them) and characters walking their scripted moves.
 IN: events.play
-USING: engine state player hewie doors game-state events.core events.words events.runner ;
+USING: engine state rooms player hewie doors game-state events.core events.words events.runner ;
 
 \ the scripts' characters: slot 0 Fiona (script id 0), slot 1 Hewie (script id 1)
 : cast ( -- )
     0 0 character char.id l!  1 1 character char.id l!
     fiona @ dup 0 character char.actor l!  0< 0= 0 character char.present l!
-    hewie @ dup 1 character char.actor l!  0< 0= 1 character char.present l! ;
+    hewie @ dup 1 character char.actor l!  0< 0= hewie-along @ and 1 character char.present l! ;
+
+\ Hewie out of the scene and back (the scripts' char-done / char-activate)
+: show-hewie ( on -- )  hewie @ 0< if  drop exit  then  0<> 1 and hewie @ actor act.visible l! ;
+:noname ( cs -- )  1 = if  0 hewie-along !  0 show-hewie  then ; is event-char-out
+:noname ( cs -- )  1 = if  -1 hewie-along !  -1 show-hewie  then ; is event-char-in
 
 \ a character at the outside point of this room's exit (Rooms_ExitPointOut: exit-spot 0)
 : f3! ( addr -- ) ( F: x y z -- )  dup 8 + sf!  dup 4 + sf!  sf! ;
@@ -110,6 +115,17 @@ fvariable go-x  fvariable go-z  fvariable go-dx  fvariable go-dz  fvariable go-d
         then  then
     loop ;
 
+\ ---- a new game: as the original sets up its entry 0x2A (SceneGame_StateEntry): a fresh
+\ progress, state flags 3, 8 and $28, Fiona's costume variable $26 = 1 and $27 = 0, then room
+\ $2A, whose entering script does the rest (Fiona in her cage, Hewie away, the doors locked) ----
+variable started   \ (the camera director set up for play)
+: start-new-game ( -- )
+    progress-reset  reset-characters  reset-events  -1 event-state ev.room l!  0 started !
+    3 state-flag-set  8 state-flag-set  $28 state-flag-set
+    $26 1 pvar-set  $27 0 pvar-set
+    $2A go  -1 came-in-by !  start-playing ;
+' start-new-game is new-game
+
 : leaving  playing @ event-state ev.room sl@ 0< 0= and if  leave-room  then ;
 ' leaving is leaving-room
 
@@ -126,7 +142,6 @@ fvariable go-x  fvariable go-z  fvariable go-dx  fvariable go-dz  fvariable go-d
     dup event-exit-door dup 0< 0= if  door-open-clear  else  drop  then
     go-through ;
 
-variable started
 : events-tick
     playing @ 0= if  exit  then
     cast  places

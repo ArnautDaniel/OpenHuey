@@ -68,5 +68,5 @@ fvariable hx  fvariable hz
     close-enough f> if  turn-to-her h-walk-speed f@ trot  hewie @ h-walk motion!  exit  then
     hewie @ h-stand motion!  turn-to-her ;
 
-: hewie-tick  playing @ if  1 scripted? 0= if  keep-up  then  then ;
+: hewie-tick  playing @ hewie-along @ and if  1 scripted? 0= if  keep-up  then  then ;
 ' hewie-tick on-tick

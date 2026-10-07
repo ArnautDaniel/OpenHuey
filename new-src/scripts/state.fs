@@ -16,3 +16,7 @@ defer exit-locked? ( exit -- flag )  :noname drop false ; is exit-locked?
 defer use-exit ( exit -- )  ' drop is use-exit
 \ is character slot n (0 Fiona, 1 Hewie) being moved by a script (then its own control waits)
 defer scripted? ( n -- flag )  :noname drop false ; is scripted?
+\ Hewie is in the scene with her (a script can send him off, and bring him back)
+variable hewie-along  -1 hewie-along !
+\ a new game from the title (events/play.fs: the game's own start)
+defer new-game  ' noop is new-game
