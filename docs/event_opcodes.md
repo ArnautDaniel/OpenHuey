@@ -91,7 +91,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 1D | 7 | `nav-group` | `set:u8` `group:u8` `bits:u32` | Nav-triangle flag groups (gRoomEventObj, NavGroups): set 1: +0xC, else +0x10 with group and bits (sets / clears the flags of a group of triangles). |
 | 1E | 2 | `self-to-exit-in` | `exit:u8` | self: put at the inside point of exit `exit` (Rooms_ExitPointIn), facing the way through it. |
 | 1F | 3 | `char-visible` | `who:chr` `on:u8` | Character `who` shown or hidden (+0x29), if it is in the current room. |
-| 20 | 2 | `self-flag-2B` | `on:u8` | self: the character's +0x2B (on / off) (?). |
+| 20 | 2 | `self-noclip` | `on:u8` | self: the character's root motion ignores the nav blocking mask (+0x2B) - it walks through blocked triangles (stalkers use it at doors). |
 | 21 | 2 | `self-scripted` | `on:u8` | self: the character's +0x2D; turning it on for Fiona while her script state is 4 resets that state. |
 | 22 | str | `room-command` | `cmd:u8` `len:u8` `args:str` | The room's own command `cmd` (room handler +0x28: RoomXX_Command / CmdTable) with the script's character and the command bytes. Returns: bit 1 wait, bit 0 go on, else the room command moved the pc itself. |
 | 23 | 1 | `loop-mark` | - | Marks the loop point (just after this command) for 0x24. |
@@ -101,17 +101,17 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 27 | 5 | `chars-area-camera` | `area:u8` `a:s8` `b:s8` `rel:s8` | Each character whose relation to area `area` is `rel`: its camera setup (+0xE8 / +0xEC) = a, b. |
 | 28 | 2 | `camera-follow` | `id:u8` | The camera follows character `id` (0xFF: nobody). |
 | 29 | 4 | `area-camera` | `area:u8` `a:s8` `b:s8` | The characters in this room inside area `area`: camera setup (+0xE8 / +0xEC) = a, b. |
-| 2A | 6 | `stalker-value` | `id:u8` `v:s32` | Stalker `id` (slots 2..5): +0x1660 = v (?). |
+| 2A | 6 | `stalker-search-delay` | `id:u8` `frames:s32` | Stalker `id`: frames it waits (+0x1660, default 900 = 15 s) before it searches or comes after Fiona when she is in another room. |
 | 2B | 2 | `self-look-at` | `id:u8` | self: looks at character `id` (character move 12; 0xFF: stop). (Not "follow".) |
 | 2C | 2 | `call-script` | `id:u8` | Calls script `id`; 0x2D returns to the command after this. |
 | 2D | 1 | `return` | - | Returns from 0x2C. |
 | 2E | 4 | `stalker-route` | `id:u8` `point:u16` | Stalker `id`: adds `point` to its route (0xFFFF: on to its next route point). |
 | 2F | 3 | `stalker-mode` | `id:u8` `mode:u8` | Stalker `id`: 0 go for Fiona, 2 chase her from here, 3 start searching. |
 | 30 | 2 | `stalker-knock-down` | `id:u8` | Stalker `id` is knocked down. |
-| 31 | 3 | `stalker-31C` | `id:u8` `on:u8` | Stalker `id`: its virtual +0x31C with on / off (?). |
+| 31 | 3 | `stalker-rage` | `id:u8` `on:u8` | Stalker `id`'s rage on / off (virtual +0x31C: Pursuer_SetRage, +0x16B8 = 2 / 0). |
 | 32 | 4 | `sound-volume` | `ch:u8` `vol:u16` | Sound channel `ch`'s volume (sound +0x7C). |
 | 33 | str | `effect-string` | `fx:u8` `len:u8` `text:str` | Sends room effect `fx` the string (if not empty). |
-| 34 | 2 | `renderer-1C` | `on:u8` | The renderer's display settings +0x1C on / off (?). |
+| 34 | 2 | `renderer-flag-304C04` | `on:u8` | The renderer's display setting +0x304C04 on / off; nothing in the game reads it (unused by the scripts). |
 | 35 | 9 | `butterflies` | `fx:u8` `args:u8` | Room effect slot `fx` (under 0x20) made anew as a butterflies effect (argument 8), then sent the command's 7 bytes from `args` on, as they are. |
 | 36 | 4 | `char-camera` | `id:u8` `a:s8` `b:s8` | Character `id`'s camera setup (Progress_CameraSetup) a, b. |
 | 37 | 2 | `var-inc` | `var:var` | Script variable + 1. |
@@ -120,7 +120,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 3A | 3 | `nop-progress-18` | `a:u16` | Calls the progress' +0x18: empty in this game (no effect). |
 | 3B | 6 | `char-to-tri-facing` | `who:chr` `tri:u16` `face:deg` | Places character `who` (0xFF: self) on triangle `tri` facing `face`. |
 | 3C | 5 | `nop-progress-24` | `id:u8` `v:u16` `b:u8` | Calls the progress' +0x24 for character `id`: empty in this game (no effect). |
-| 3D | 3 | `char-flag-2C` | `who:chr` `on:u8` | Character `who`: +0x2C on / off (?). |
+| 3D | 3 | `char-silent` | `who:chr` `on:u8` | Character `who` silent (+0x2C): its own sounds (Actor_PlaySound) don't play. |
 | 3E | 7 | `stalker-to-room` | `id:u8` `room:u16` `at:s16` `how:u8` | Stalker `id` leaves the scene and is put into room `room` (0xFFFF: its own) at `at`, entering as `how` (0..2) (its virtual +0x64). |
 | 3F | 6 | `hewie-to-room` | `room:u16` `how:u8` `at:s16` | Hewie into room `room` at `at`, entering as `how` (his +0x64). |
 | 40 | 3 | `char-remove` | `slot:u8` `how:u8` | The script slot of character slot `slot` is cleared and the character removed (Progress_RemoveChar(slot, how)). |
@@ -131,17 +131,17 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 45 | 7 | `char-sound` | `who:chr` `id:u32` `vol:u8` | Character `who` (0xFF: self) plays sound `id` (Actor_PlaySound). |
 | 46 | 1 | `doors-room-in` | - | The doors redo their setup for the current room (Doors_RoomIn). |
 | 47 | 6 | `char-set-C4` | `who:chr` `v:s32` | Character `who`: +0xC4 = v (a stalker's presence state: 1 / 2 seen / near ...?). |
-| 48 | 2 | `char-restore-14C8` | `who:chr` | Character `who`: +0x14C8 = +0x14CC (restores a saved value) (?). |
+| 48 | 2 | `char-full-health` | `who:chr` | Character `who`'s health back to its maximum (+0x14C8 = +0x14CC). |
 | 49 | 2 | `action-end` | `who:chr` | Ends character `who`'s action script (script slots 0xF0..0xFA: the slot is freed); a character in a scripted move is released (move 1). |
 | 4A | 1 | `camera-restart` | - | The camera director restarts (CamDirector_Restart). |
 | 4B | 3 | `self-turn-angle` | `face:deg` | self: turns to heading `face` (character move 15). |
 | 4C | 4 | `door-bits` | `a:u8` `door:u8` `b:u8` | Door `door`: Doors_SetBits(door, a, b) (the progress' +0x68 is empty). |
 | 4D | 5 | `door-copy` | `door:u16` `from:u16` | Door `door` takes on door `from`'s states: open bit, lock, closed-off; and `from`'s exit in this room saves its door state. |
-| 4E | 1 | `fiona-clear-1AD5F4` | - | Fiona's +0x1AD5F4 / +0x1AD5F8 cleared (?). |
+| 4E | 1 | `fiona-calm-reset` | - | Fiona's fear (+0x1AD5F4, 0..100; over 90 she panics) and her exhaustion count (+0x1AD5F8, up to 1800 frames) reset to 0. |
 | 4F | 1 | `fiona-recover` | - | Fiona recovers (Fiona_ResetRecovery). |
 | 50 | 4 | `placed-object` | `op:u8` `obj:u8` `v:u8` | A placed object of the room (the room's object name `obj`, RoomXX_ObjectNames): see the 0x50 sub-commands. |
 | 51 | 3 | `message-close` | `msg:u16` | Closes the message window if it shows `msg` (0xFFFF: any). |
-| 52 | 1 | `movie-flag-1C4` | - | The playing movie's +0x1C4 = 1 (?). |
+| 52 | 1 | `movie-loop` | - | The playing movie loops (Movie.loop = 1). |
 | 53 | 8 | `obstacle-place` | `i:u8` `n:u8` `kind:u8` `a:u16` `b:u16` | Pushable obstacle `i` (model "oshi0n", kind `kind`) placed on squares a, b (Obstacles_PlaceAt). |
 | 54 | 2 | `obstacle-stop` | `i:u8` | Pushable obstacle `i` can no longer move (Obstacles_Stop). |
 | 55 | 6 | `fade-colour` | `rgba:u32` `layer:u8` | The screen fade colour `rgba`, drawn in renderer layer `layer` (Events_Fade). |
@@ -164,11 +164,11 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 66 | 49 | `lights-doorway` | `x0:fx` `y0:fx` `z0:fx` `x1:fx` `y1:fx` `z1:fx` `x2:fx` `y2:fx` `z2:fx` `x3:fx` `y3:fx` `z3:fx` | A lit doorway for the room's lights (lights +0x38): four corners; its facing and middle are derived. |
 | 67 | 2 | `char-find-tri` | `who:chr` | Character `who`'s nav triangle looked up from its position. |
 | 68 | 20 | `sound` | `id:u32` `bank:u8` `x:fx` `y:fx` `z:fx` `vol:s8` `pitch:s8` | Sound `id` of bank `bank` & 0x3F; bank >> 6: 0 at (x, y, z) (only if the progress' +0x7C allows: always in this game), 2 plain, else at the camera; vol / pitch offsets. |
-| 69 | 6 | `sound-driver-18` | `id:u32` `b:u8` | The sound driver's +0x18 with id and b (stops / releases a sound?) (?). |
+| 69 | 6 | `sound-stop` | `id:u32` `bank:u8` | Stops sound `id` of bank `bank` (SndDriver_StopSound). |
 | 6A | 4 | `music` | `op:u8` `a:u8` `b:u8` | Stage music by `op`: 0 global volume fade to a over b frames (MusicDir_GlobalVolumeTo); 1 the stage's channels (+0x40); 2 load (+0xC) and hold (+0x1C); 3 waits until its banks are in; 4 release; 5 silence. |
 | 6B | 2 | `nop-progress-48` | `a:u8` | Calls the progress' +0x48: empty in this game (no effect). |
 | 6C | 1 | `nop-progress-4C` | - | Calls the progress' +0x4C: empty in this game (no effect). |
-| 6D | 2 | `subscreen-mode` | `v:u8` | The sub-screen's +0x4 = v; state flag 4 set (opens a sub-screen page?) (?). |
+| 6D | 2 | `subscreen-open` | `mode:u8` | Opens the sub-screen in mode `mode` (0 the in-game menu, 1 save, 2 the word plates, ...; SubScreen.mode) and sets state flag 4. |
 | 6E | 3 | `movie-param` | `a:u8` `b:u8` | The playing movie's Sofdec setting (Sofdec_SetParam(a, b)). |
 | 6F | 2 | `self-through-exit` | `exit:u8` | self: walks through exit `exit` of this room (character move 5 to the door's far point). |
 | 70 | 2 | `self-through-exit-back` | `exit:u8` | self: as 0x6F, the other way through. |
@@ -177,9 +177,9 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 73 | 6 | `obstacle-save-at` | `i:u8` `a:u16` `b:u16` | Pushable obstacle `i`'s saved squares = a, b (Obstacles_SetSaved). |
 | 74 | 2 | `obstacle-save` | `i:u8` | Pushable obstacle `i`'s current squares saved (Obstacles_TakeSaved). |
 | 75 | 2 | `obstacle-keep-spot` | `i:u8` | Pushable obstacle `i`'s spot kept (Obstacles_KeepSpot). |
-| 76 | 3 | `obstacle-model-back` | `i:u8` `a:u8` | Pushable obstacle `i`'s model put back (Obstacles_ModelBack) (?). |
+| 76 | 3 | `obstacle-model-back` | `i:u8` `n:u8` | Pushable obstacle `i`'s model ("oshi0n" number n) put back at its kept spot (Obstacles_ModelBack). |
 | 77 | 5 | `hewie-anim` | `a:s16` `anim:u16` | Hewie plays animation `anim` (Hewie_SetAnim). |
-| 78 | 1 | `hewie-move-12` | - | Hewie: character move 0x12 (?). |
+| 78 | 1 | `hewie-bark` | - | Hewie steps to a pose (3, or 0 in special modes) and barks (character move 0x12 -> his action 0x45). |
 | 79 | 14 | `char-to-xz` | `who:chr` `tri:u16` `x:fx` `z:fx` `face:deg` | Places character `who` at (x, z) on triangle `tri` (height from the triangle), facing `face`. |
 | 7A | 17 | `hewie-go-to` | `tri:u16` `x:fx` `z:fx` `y:fx` `b:s16` | Hewie goes to the point on triangle `tri` (operands stored x, z, y) (character move 0x13). |
 | 7B | 3 | `char-wait-motion` | `who:chr` `bits:u8` | Waits until character `who`'s motion event flags have any of `bits`. |
@@ -198,11 +198,11 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 88 | 4 | `noise` | `loud:u8` `tri:u16` | A noise of loudness `loud` in this room at triangle `tri` (stalkers hear it). |
 | 89 | 3 | `message-prepare` | `msg:u16` | Prepares message `msg` for the window (shown later, see 0x62 12). |
 | 8A | 15 | `nop-progress-74` | `a:u16` `b:s8` `c:s16` `d:u8` `e:s8` `f:s8` `g:u16` `h:fx` | Calls the progress' +0x74 (Progress_Noop74): no effect. |
-| 8B | 2 | `progress-73EB00` | `v:u8` | Progress +0x73EB00 = v (?). |
+| 8B | 2 | `game-over-flag` | `v:u8` | The game-over flag (progress +0x73EB00, also set when Fiona is caught for good) = v. |
 | 8C | 23 | `scene-effect-8C` | `x:fx` `y:fx` `z:fx` `zone:u8` `n:s32` `b:u8` `t:fx` | A scene effect (Effect6FF60, 0xE40 bytes) at (x, y, z) with zone rectangle `zone` (0x8D), n, b, t. |
 | 8D | 19 | `zone-rect` | `z:u8` `id:u8` `x0:fx` `z0:fx` `x1:fx` `z1:fx` | Zone rectangle `z` (+0x894): an id and x0, z0, x1, z1 (used by 0x8C and some conditions). |
 | 8E | 9 | `self-turn-to-xz` | `x:fx` `z:fx` | self: turns to face (x, z) (character move 15). |
-| 8F | 3 | `char-model-4D9` | `who:chr` `on:u8` | Character `who`'s model +0x4D9 on / off (its shadow volumes off?) (?). |
+| 8F | 3 | `char-no-shadow` | `who:chr` `on:u8` | Character `who`'s shadow volumes off (its model's +0x4D9; Model_DrawWithShadow). |
 | 90 | 7 | `light` | `op:u8` `light:u8` `k:fx` | Room light `light`: op 0 back to the room's own; 1 / 2 its value 7 / 11 (intensity?) scaled by k. |
 | 91 | 2 | `noise-level` | `v:u8` | The noise level setting (progress +0x1114) = v. |
 | 92 | 4 | `action-force` | `mode:u8` `who:chr` `act:u8` | As 0x05 but always starts the action; mode 1: at once for characters; who 0 also calls the progress' +0x44 (empty). |
@@ -221,7 +221,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 9F | 19 | `specks` | `a:u8` `x:fx` `y:fx` `z:fx` `b:u8` `c0:u8` `c1:u8` `c2:u8` `c3:u8` | A scene effect: a swarm of specks (SpeckSwarm) at (x, y, z). |
 | A0 | 20 | `splash` | `a:u8` `b:u8` `x:fx` `y:fx` `z:fx` `c:u8` `d0:u8` `d1:u8` `d2:u8` `d3:u8` | A scene effect: a splash (Splash) at (x, y, z). |
 | A1 | 1 | `exits-rebuild` | - | The rooms' exits are rebuilt (room manager +0x90). |
-| A2 | 3 | `door-88` | `door:u8` `on:u8` | Door `door`: the doors' +0x88 on / off (?). |
+| A2 | 3 | `door-flag-82` | `door:u8` `on:u8` | Door `door`'s second flag (+0x82; Doors_SetFlag82). Nothing in the C reads it yet. |
 | A3 | 2 | `panic-stage` | `stage:u8` | The panic's stage = `stage` (Panic_SetStage). |
 | A4 | 5 | `self-anim-9` | `anim:u16` `b:u16` | self: animation `anim` with b (character move 9). |
 | A5 | 3 | `scene-ending` | `id:u16` | Requests scene 5 (an ending / the results, id `id`) unless state flag 0x12 or Fiona is busy. |
@@ -231,13 +231,13 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | A9 | 35 | `scene-effect-71000` | `var:var` `a:u8` `v0:fx` `v1:fx` `v2:fx` `v3:fx` `v4:fx` `v5:fx` `v6:fx` `v7:fx` | A scene effect (Effect71000, 0x60 bytes) with a and eight values; its slot kept in script variable `var`. |
 | AA | 17 | `self-walk-anim` | `anim:u16` `tri:u16` `tri2:s16` `x:fx` `z:fx` `face:deg` | self: walks to (x, z) with animation `anim`, then faces `face` (character move 17). |
 | AB | 13 | `self-look-at-point` | `x:fx` `y:fx` `z:fx` | self: looks at (x, y, z) (character move 13). (Not "go to".) |
-| AC | 2 | `self-flag-E4` | `on:u8` | self: the character's +0xE4 on / off (?). |
+| AC | 2 | `self-doorway-fade` | `on:u8` | self: the character fades at doorways (+0xE4: Character_RegionFade picks its draw layer each frame); off keeps a fixed layer (see 0xAE / 0xB5). |
 | AD | 2 | `self-face-zone` | `zone:u8` | self: turns to the point of zone `zone` (its number from script variable `zone`: Events_GetVar) (move 15). |
 | AE | 7 | `char-tint` | `who:chr` `rgba:u32` `on:u8` | Character `who`: on 0: +0xE4 = 1; else drawn tinted: the renderer's tint (+0x70) = rgba, the character in the fading layer 0x0F. |
 | AF | 13 | `hewie-go-to-point` | `x:fx` `y:fx` `z:fx` | Hewie goes to (x, y, z) (character move 0x14). |
 | B0 | 3 | `hewie-go-to-zone` | `zone:u8` `run:u8` | Hewie goes to zone `zone`'s point (variable `zone`): run 0 move 0x14, 1 move 13. |
 | B1 | 5 | `flicker-sprite-var` | `fx:var` `x:var` `y:var` `z:var` | As 0x7F with the slot and position in script variables (positions / 1000). |
-| B2 | 3 | `fiona-action-4` | `id:u8` `on:u8` | Fiona's action 4 toward character `id` (Fiona_StartAction4) (?). |
+| B2 | 3 | `fiona-thrown` | `id:u8` `recover:u8` | Fiona is thrown down by character `id` (reaction action 4, sub 0xA, with a rumble; Fiona_StartAction4); recover 1 also resets her recovery. |
 | B3 | 16 | `char-to-xyz` | `who:chr` `x:fx` `y:fx` `z:fx` `face:deg` | Places character `who` at (x, y, z) facing `face` (triangle looked up). |
 | B4 | 2 | `avoid-prompt` | `v:u8` | The avoid / struggle prompt (+0xC with v). |
 | B5 | 3 | `char-layer` | `who:chr` `layer:u8` | Character `who` drawn in renderer layer `layer` (Character_Set152C). |
@@ -246,34 +246,34 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | B8 | 6 | `char-heal` | `id:u8` `n:s32` | Character `id` (in the scene) heals by \|n\|, up to its maximum (+0x14CC). |
 | B9 | 3 | `char-load-2` | `id:u8` `slot:u8` | Brings in character `id` in slot `slot` (CharLoad_EventChar, the second loader). |
 | BA | 3 | `char-hand-over` | `from:slot` `to:slot` | The character in slot `from` gives its motion banks to slot `to` (waits while `to` is loading). |
-| BB | 2 | `hewie-state-5` | `on:u8` | Hewie (if in this room): his state +0xF355C = 5 with +0xF3588 on / off (?). |
+| BB | 2 | `hewie-wait-5` | `on:u8` | Hewie (if in this room): his wait timer = 5 frames and his "forced action 4" flag (+0xF3588) on / off. |
 | BC | 1 | `fiona-hewie-react` | - | Fiona reacts to Hewie (Fiona_HewieReact 8). |
-| BD | 1 | `hewie-timer-300` | - | Hewie's timer +0xF3688 = 300 (?). |
-| BE | 3 | `wait-subscreen` | `a:u8` `item:u8` | Waits on the sub-screen's +0x20 with a and the script's item `item` (Events_ScriptRoom) (?). |
-| BF | 5 | `fiona-1AD5F4` | `v:fx` | Fiona's +0x1AD5F4 = v (0..100) (?). |
-| C0 | 2 | `progress-7DC-grow` | `v:u8` | Progress +0x7DC grows by v (0..100) (a panic / threat accumulator?) (?). |
+| BD | 1 | `hewie-stay-300` | - | Hewie's +0xF3688 = 300: for a while he obeys stay / wait commands at once (Hewie_CommandAction). Unused by the scripts. |
+| BE | 3 | `item-tab` | `op:u8` `item:u8` | The in-game item tab (SubScreen_TabCommand): op 0 announces the script's item `item` (Events_ScriptRoom), 1 waits for its files, 2 slides the tab in, 4 out; waits while it moves. |
+| BF | 5 | `fiona-fear` | `v:fx` | Fiona's fear (+0x1AD5F4) = v (0..100; over 90 she panics). |
+| C0 | 2 | `threat-add` | `v:u8` | The threat meter's accumulator (progress +0x7DC: the threat object +0x24) grows by v (0..100), as a small Threat_Raise. |
 | C1 | 2 | `sound-set` | `set:u8` | Loads sound set `set` (Progress_LoadSoundSet). |
 | C2 | 5 | `door-lock-for` | `id:u8` `door:u16` `state:u8` | Door `door`'s lock for character `id` = state (Progress_LockDoorFor). |
-| C3 | 5 | `hewie-move-15` | `a:u16` `b:u16` | Hewie: character move 0x15 with a, b (?). |
+| C3 | 5 | `hewie-anim-root` | `anim:u16` `blend:u16` | Hewie plays animation `anim` (blend) with its root motion (character move 0x15 -> his action 0x47). |
 | C4 | 5 | `hewie-mode` | `mode:u32` | Hewie's mode (Hewie_SetMode). |
 | C5 | 6 | `hewie-look-zone` | `zone:u8` `dy:fx` | Hewie looks at zone `zone`'s point (variable `zone`), raised by dy, if he isn't already looking at something. |
 | C6 | 6 | `hewie-look-char` | `id:u8` `dy:fx` | Hewie looks at character `id` (in this room, active), raised by dy, if he isn't already looking at something. |
 | C7 | 3 | `self-move-16` | `v:s16` | self: character move 16 with v (an animation). |
 | C8 | 18 | `dust` | `kind:u8` `x:fx` `y:fx` `z:fx` `r:u8` `g:u8` `b:u8` `own:u8` | A dust burst (SpriteBurst) of `kind` at (x, y, z): colour r, g, b if `own`, else grey (0x80 for kind 0, else 0x50); size 16. |
 | C9 | 2 | `panic-level` | `level:u8` | The panic level set to `level` if it has reached it (Panic_SetLevel). |
-| CA | 5 | `progress-1118` | `v:fx` | Progress +0x1118 = v (?). |
+| CA | 5 | `sound-volume-scale` | `v:fx` | Every sound's volume scaled by v (progress +0x1118). |
 | CB | 2 | `creatures-clear` | `which:u8` | The room's creatures (0 all, 1 slots 0..6, 2 slots 7..9) told (+0x10) and removed. |
 | CC | 4 | `char-model-op` | `op:u8` `id:u8` `v:u8` | op 3: the cutscene director's +0x78 with id; else stalker `id`'s model: 0 +0x2C, 1 +0x30, 2 +0x34 with v, 4 Daniella's capsules back (v). |
-| CD | 2 | `renderer-60` | `v:u8` | The renderer's +0x60 with v (?). |
+| CD | 2 | `sprites-additive` | `mode:u8` | The renderer draws sprites additively in mode `mode` (Renderer_Additive). |
 | CE | 1 | `deal-things` | - | The placed things are dealt out (Events_DealThings). |
 | CF | 5 | `movie-volume` | `v:fx` | The playing movie's volume = v (0..1), applied; +0x1BC set (starts it: see the FMV notes). |
 | D0 | 3 | `hewie-side` | `side:u16` | Hewie's side (0..2, else none). |
-| D1 | 2 | `subscreen-2C` | `v:s8` | The sub-screen's +0x2C with v (SubScreen_Part97980: the map page) (?). |
-| D2 | 1 | `things-24` | - | The placed things' +0x24 (?). |
-| D3 | 5 | `camera-6C` | `v:fx` | The camera's +0x6C with v (?). |
-| D4 | 5 | `event-704` | `v:s32` | The event's +0x704 = v (?). |
+| D1 | 2 | `map-page` | `page:s8` | The sub-screen's map turns to page `page` (+0x2C: Map_TurnTo). |
+| D2 | 1 | `things-clear` | - | Every placed thing is removed (PlacedThings_Clear). |
+| D3 | 5 | `camera-shake` | `v:fx` | Camera shake: each frame the eye is moved randomly by up to v on each axis (camera +0x4, Camera_Set4); 0 stops it. |
+| D4 | 5 | `room-frames-set` | `n:s32` | The frames-in-this-room count (+0x704: phase 1 counts it, entering resets it) = n (see condition 0x5B). |
 | D5 | 3 | `pvar-set` | `n:u8` `v:u8` | Progress variable n = v. |
-| D6 | 1 | `renderer-1C-if-8` | - | If state flag 8: the renderer's +0x1C (?). |
+| D6 | 1 | `effects-arena-flip` | - | If state flag 8: the renderer flips its second packet arena next frame and clears it (Renderer_Set304DE0). |
 | D7 | 3 | `hewie-anim-set` | `anim:u16` | Hewie's motion plays `anim` (Motion_Play). |
 | D8 | 1 | `reward-item` | - | By progress +0xFB6 (from 20: steps of 20): item 0x270..0x273 added, with the pickup sound. |
 | D9 | 17 | `dust-motes` | `x:fx` `y:fx` `z:fx` `size:fx` | A scene effect: a dust mote source (DustMoteSource) at (x, y, z) of `size`. |
@@ -289,7 +289,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 59 03 | 4 | `state-flag-clear` | `_:u8` `n:u16` | State flag n cleared. |
 | 59 04 | 4 | `door-unlock` | `_:u8` `door:u16` | Door `door` unlocked. |
 | 59 05 | 4 | `door-lock` | `_:u8` `door:u16` | Door `door` locked. |
-| 59 06 | 4 | `door-bit2` | `_:u8` `door:u16` | Door `door`: its second state bit set (Progress_DoorSetBit2) (?). |
+| 59 06 | 4 | `door-passable` | `_:u8` `door:u16` | Door `door` passable as if unlocked (its state bit 4: DoorHold_Usable), and characters can't hold it open (DoorHold_Open). |
 | 59 07 | 4 | `door-reopen-lock` | `_:u8` `door:u16` | Door `door` no longer closed off (Rooms_Reopen), then locked (as 0x05). |
 | 59 08 | 4 | `door-close-off-unlock` | `_:u8` `door:u16` | Door `door` closed off (Rooms_CloseOff), then unlocked (as 0x04). |
 | 59 09 | 4 | `door-open-set` | `_:u8` `door:u16` | Door `door`: its open bit set. |
@@ -338,7 +338,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 12 | 2 | `counter?` | `n:u8` | The event counter (+0x703, commands 0x16..0x18) is n. |
 | 13 | 3 | `frames?` | `n:u16` | This script's frame count (+0x14) is n. |
 | 14 | 6 | `var?` | `var:var` `v:s32` | Script variable `var` is v. |
-| 15 | 3 | `pad?` | `a:u8` `b:u8` | An input test: a with bit 7, Progress_FionaFlag(a); else Progress_PadCondition(a, b) (?). |
+| 15 | 3 | `pad?` | `button:u8` `how:u8` | Pad test: button 0 circle, 1 square, 2 L1, 3 triangle, 4 R1, 5 cross, 6 start, held (how bit 0) or just pressed (bit 1). Button with bit 7: Fiona's shake flag set and Fiona_Shakes instead. |
 | 16 | 2 | `char-here?` | `id:u8` | Character `id` is active and in this room. |
 | 17 | 2 | `self-is?` | `id:u8` | This script's character is `id` (0xFE: the active stalker). |
 | 18 | 3 | `char-group-bit4?` | `id:u8` `group:u8` | Character `id`'s pursuer group fields (PursuerGroup_Fields(group)) have bit 4. |
@@ -353,22 +353,22 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 21 | 5 | `control-action?` | `v:s32` | The controlled character's current action (Fiona +0x1AD6B8, Hewie +0xF3798) is v. |
 | 22 | 2 | `answer?` | `v:u8` | The message window is closed and its chosen answer (+0x750) is v. |
 | 23 | 7 | `chars-within?` | `a:chr` `b:chr` `d:s32` | Characters `a` and `b` (active) are within distance \|d\|; Fiona or Hewie to a stalker only while the stalker is present (+0x1544). |
-| 24 | 5 | `hewie-state?` | `v:s32` | Hewie (in the scene)'s +0xF3564 is v. |
+| 24 | 5 | `hewie-action?` | `v:s32` | Hewie (in the scene)'s current action (+0xF3564) is v. |
 | 25 | 2 | `camera-mode?` | `v:s8` | The camera director's +0x24 is v. |
-| 26 | 5 | `fiona-1AD6BC?` | `v:s32` | Fiona's +0x1AD6BC is v (?). |
+| 26 | 5 | `fiona-action?` | `v:s32` | The action Fiona last started (+0x1AD6BC, Fiona_MarkActionStart; -1 none) is v. |
 | 27 | 7 | `char-faces-xz?` | `who:chr` `x:s16` `z:s16` `within:u8` | Character `who` (in this room) faces (x, z), within `within` degrees. |
 | 28 | 4 | `obstacle-on?` | `i:u8` `tri:u16` | Pushable obstacle `i` stands on triangle `tri` (Obstacles_IsSquare). |
 | 29 | 2 | `ebit?` | `n:u8` | Event bit n is set (commands 0x57 / 0x58). |
 | 2A | 1 | `fading?` | - | A fade (command 0x5C) is running. |
-| 2B | 1 | `fade-2B?` | - | The fade's frame count (+0x11F0) has reached +0x40 (?). |
+| 2B | 1 | `fade-past-40?` | - | The fade's frame count (+0x11F0) has reached +0x40. Unused by the scripts. |
 | 2C | 1 | `camera-setup-changed?` | - | The camera director's setup changed (+0x2C, CamDirector_SetupChanged). |
-| 2D | 2 | `sound-playing?` | `ch:u8` | Sound channel `ch` (the sound driver's +0xA4) (playing?) (?). |
+| 2D | 2 | `sound-bank-loaded?` | `bank:u8` | Sound bank `bank` is loaded (SndDriver_BankLoaded). |
 | 2E | 3 | `char-in-nav-group?` | `who:chr` `group:u8` | Character `who` (in this room) stands on a triangle of nav group `group` (NavGroups +0x14). |
 | 2F | 1 | `item-3F-under-10?` | - | Fewer than 10 of item 0x3F are held (Items_CountItem3F). |
-| 30 | 3 | `char-14D4?` | `who:chr` `v:u8` | Character `who` (active) is in the current room with +0x14D4 == v (?). |
+| 30 | 3 | `char-heading-for?` | `who:chr` `exit:u8` | Character `who` (active, in the current room) is heading for exit `exit` (+0x14D4). |
 | 31 | 1 | `hewie-stays?` | - | Hewie (in the scene) may not break off (Hewie_MayBreakOff is 0). |
 | 32 | 4 | `char-in-room?` | `who:chr` `room:u16` | Character `who` (active) is in room `room`. |
-| 33 | 2 | `hewie-F3668?` | `v:s8` | Hewie (in the scene)'s +0xF3668 is v (?). |
+| 33 | 2 | `hewie-side?` | `side:s8` | Hewie (in the scene) is on side `side` of the room (+0xF3668; command 0xD0 sets it). |
 | 34 | 3 | `char-motion-flags?` | `who:chr` `bits:u8` | Character `who` (active)'s animation event flags have any of `bits`. |
 | 35 | 4 | `char-zone-bits?` | `who:chr` `zone:u8` `bits:u8` | Character `who` (in this room, its radius / height) against zone `zone`: all of `bits` (Zone_TestCylinder). |
 | 36 | 4 | `char-zone-bits-before?` | `who:chr` `zone:u8` `bits:u8` | As 0x35 with where the character was last frame. |
@@ -381,18 +381,18 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 3D | 1 | `fiona-free?` | - | Fiona can be controlled (Fiona_IsIdle) and the panic's stage is below 4. |
 | 3E | 4 | `char-not-at-door?` | `who:chr` `door:u16` | Character `who` (active, in this room) is not at door `door` (Doors_Side). |
 | 3F | 5 | `fiona-action?` | `v:u32` | Fiona's action (+0x1AD580) is v. |
-| 40 | 1 | `cutscene-68?` | - | The cutscene director's +0x68 (?). |
+| 40 | 1 | `cutscene-near-end?` | - | The cutscene has just come within 17 frames of its end (Cutscene_NearEnd). |
 | 41 | 3 | `char-C4?` | `who:chr` `v:u8` | Character `who`'s state +0xC4 is v (see command 0x47). |
-| 42 | 1 | `hewie-F3598?` | - | Hewie (in the scene)'s +0xF3598 is 1 (?). |
-| 43 | 5 | `hewie-F35C0?` | `v:s32` | Hewie (in the scene)'s +0xF35C0 is v (?). |
+| 42 | 1 | `hewie-pool-in-use?` | - | Hewie's pool (+0xF359C) is in use (+0xF3598). Unused by the scripts. |
+| 43 | 5 | `hewie-mode?` | `mode:s32` | Hewie's mode (+0xF35C0: 0 normal, 1..3 timed; command 0xC4 sets it) is `mode`. Unused by the scripts. |
 | 44 | 6 | `char-on-nav-flags?` | `who:chr` `flags:u32` | Character `who` (active, in the current room) stands on a triangle with any of `flags`. |
 | 45 | 2 | `char-unseen?` | `id:u8` | Character `id` is out of sight: absent, inactive, elsewhere, or off the camera. |
 | 46 | 2 | `story-flag-var?` | `var:var` | Story flag (number in script variable `var`) is set. |
 | 47 | 2 | `self-touching?` | `id:u8` | This script's character and character `id` (active, in this room, not +0x2A) touch (its margins). |
 | 48 | 1 | `self-at-motion-event?` | - | This script's character is idle (+0xF4 0) at a motion event: marks it done (+0xE1). |
 | 49 | 3 | `char-action?` | `who:chr` `v:u8` | Character `who`'s action (+0xF8) is v. |
-| 4A | 2 | `cutscene-1C?` | `v:u8` | The cutscene director's +0x1C of its cue is v (?). |
-| 4B | 1 | `stalker-10C?` | - | The stalker is active and its virtual +0x10C says yes (?). |
+| 4A | 2 | `cutscene-shot?` | `shot:u8` | The cutscene's current frame is in shot `shot` (Cutscene_ShotAt). |
+| 4B | 1 | `stalker-stance-2?` | - | The stalker (active) is in stance 2 playing animation 0x1805 / 0x1806 (virtual +0x10C, Pursuer_InStance2Anim). Unused by the scripts. |
 | 4C | 1 | `hewie-can-command?` | - | Fiona can give Hewie a command (Hewie_FionaCanCommand). |
 | 4D | 1 | `self-done?` | - | This script's character's move is done (+0xE1). |
 | 4E | 1 | `message-closed?` | - | The message window is closed. |
@@ -406,7 +406,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 56 | 2 | `char-at-motion-event?` | `id:u8` | Character `id` is at a motion event (its end flag 0x20). |
 | 57 | 1 | `movie-playing?` | - | A movie is playing. |
 | 58 | 1 | `self-near-creature?` | - | This script's character touches one of room creatures 7..9 (active, in this room). |
-| 59 | 1 | `fiona-1AD630?` | - | Fiona's +0x1AD630 (?). |
+| 59 | 1 | `fiona-caught?` | - | Fiona is caught (+0x1AD630). Unused by the scripts. |
 | 5A | 1 | `hewie-reachable?` | - | Hewie can reach Fiona (Hewie_FionaReachable; no Hewie: yes). |
 | 5B | 5 | `event-704-reached?` | `v:u32` | The event's +0x704 (command 0xD4) has reached v. |
 | 5C | 2 | `adx?` | `what:u8` | The ADX stream: what 0 can start, else is playing (none: yes). |
@@ -414,9 +414,9 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 5E | 3 | `subscreen-bit?` | `n:u16` | The sub-screen's bit n is set (SubScreen_TestBit; see 0x59 0x11). |
 | 5F | 3 | `pvars-equal?` | `a:u8` `b:u8` | Progress variables a and b are equal. |
 | 60 | 3 | `resident-flag?` | `n:u16` | Resident flag n is set (kept across games). |
-| 61 | 2 | `hewie-F35CC?` | `v:u8` | Hewie's +0xF35CC is v (?). |
-| 62 | 1 | `loader-idle?` | - | The file loader's +0x38 (done / idle?) (?). |
+| 61 | 2 | `hewie-trust-level?` | `v:u8` | Hewie's trust level (+0xF35CC, it picks his wait timers) is v. Unused by the scripts. |
+| 62 | 1 | `loader-done?` | - | The file loader's current load is done (Loader_CurrentDone). |
 | 63 | 3 | `char-loaded?` | `slot:u8` `id:u8` | Character `id` is in slot `slot` and finished loading. |
-| 64 | 1 | `progress-1050-D?` | - | Progress +0x1050 is 0xD (?). |
+| 64 | 1 | `noise-slot-D?` | - | The first noise slot (progress +0x1050) is of kind 0xD. Unused by the scripts. |
 | 65 | 1 | `stalker-free?` | - | The stalker (active) is in the current room and free: not held, not in certain attack moves, its triangle free. |
 

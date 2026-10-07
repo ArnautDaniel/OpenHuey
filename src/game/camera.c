@@ -54,7 +54,7 @@
 
 typedef struct Camera {
     /* 0x000 */ void **vtbl;
-    /* 0x004 */ f32 unk4;
+    /* 0x004 */ f32 unk4;             /* shake: the eye jitters by up to this each frame (event 0xD3) */
     /* 0x008 */ u32 pad8;
     /* 0x00C */ f32 nearZ;
     /* 0x010 */ f32 farZ;
@@ -1148,7 +1148,7 @@ f32 Camera_ViewHeading(Camera *c) { return msl_atan2f(c->view[0][2], c->view[2][
 
 /* +0x6C */
 /* 0x00121FF0 */
-void Camera_Set4(Camera *c, f32 v) { c->unk4 = v; }
+void Camera_Set4(Camera *c, f32 v) { c->unk4 = v; }   /* the shake */
 
 /* +0x70 / +0x74 roll */
 /* 0x00121910 */
