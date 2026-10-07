@@ -25,8 +25,8 @@ fvariable ax  fvariable az
     place-fiona  face-away ;
 
 : go-through ( exit -- )
-    exit-leads over 0< if  2drop exit  then        ( room exit' )
-    leaving-room  dup came-in-by !
+    dup exit-leads over 0< if  2drop drop exit  then        ( exit room exit' )
+    leaving-room  rot char-leaves  dup came-in-by !
     swap room .room  -1 view !
     arrive ;
 

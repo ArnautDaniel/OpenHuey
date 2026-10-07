@@ -11,6 +11,8 @@ defer place-player
 variable came-in-by  -1 came-in-by !
 \ about to leave the room (the event scripts' last phases run)
 defer leaving-room  ' noop is leaving-room
+\ she leaves the room by an exit: the others in it decide what to do (characters' vtable +0x34)
+defer char-leaves ( exit -- )  ' drop is char-leaves
 \ exits: is one locked, and taking one (doors.fs goes straight through; the event scripts open
 \ the door and step her into the doorway, and the room's scripts take her through)
 defer exit-locked? ( exit -- flag )  :noname drop false ; is exit-locked?

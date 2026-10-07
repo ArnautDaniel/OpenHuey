@@ -9,7 +9,7 @@
 \   4  praise (0x28 by him: she pets him; 0x29 from afar)   - hold it to keep petting
 \   5  scold (0x2B by him; 0x2F from afar)
 IN: hewie
-USING: engine state game-state events.core chars partner.core partner.tables partner.moves partner.states partner.actions partner.brain ;
+USING: engine state game-state events.core chars partner.core partner.tables partner.moves partner.route partner.states partner.offscreen partner.actions partner.brain ;
 
 variable hewie        -1 hewie !
 variable hewie-room   -1 hewie-room !
@@ -190,6 +190,9 @@ variable room-side  -1 room-side !   \ +0xF3668: which side of a divided room he
 :noname ( F: x y z -- )   \ (only when he isn't already looking at something)
     h-look @ if  fdrop fdrop fdrop exit  then  1 h-look !  h-scent vec! ; is event-hewie-look
 
+\ she leaves the room: he decides how to follow (Hewie_Vt34)
+:noname ( exit -- )  hewie-along @ hewie-ready @ and if  fiona-left  else  drop  then ; is char-leaves
+
 \ ---- each frame ----
 :noname ( -- flag )  can-command? ; is event-hewie-can-command?
 : hewie-tick ( -- )
@@ -199,9 +202,12 @@ variable room-side  -1 room-side !   \ +0xF3668: which side of a divided room he
         hewie @ dup $3D5F90 motion-table  1 character char.actor l!  -1 hewie-ready !
         -1 1 cells own-moves + !   \ (his moves are his own: Hewie_Requests)
     then
-    played-room dup her character char.room l!  him character char.room l!
+    played-room her character char.room l!
     her from-actor
-    played-room hewie-room @ <> if  heel  hewie-start  then
+    hewie-room @ 0< if   \ (brought in: at her heel, in her room)
+        played-room room!  heel  hewie-start  played-room hewie-room !
+    then
+    h-disabled? 0= 1 and hewie @ actor act.visible l!
     fiona-commands  meet-tick
     hewie-frame ;
 ' hewie-tick on-tick
@@ -215,3 +221,39 @@ variable room-side  -1 room-side !   \ +0xF3668: which side of a divided room he
     0 hewie-along !  hewie @ 0< 0= if  0 hewie @ actor act.visible l!  then ;
 : summon ( addr len -- )   s" hewie" compare 0= if  hewie-in  else  ." summon: only hewie for now" cr  then ;
 : dismiss ( addr len -- )  s" hewie" compare 0= if  hewie-out  else  ." dismiss: only hewie for now" cr  then ;
+
+\ ---- from the console: send him somewhere, through the house if need be ----
+\   10e 0e 20e $13 hewie-goto     the point (x y z) in room 0x13
+\ In his room he walks there (action 0x3F). For another room the game's route planner gives
+\ the doors: he walks to the first one where you can see him and goes through, then makes his
+\ way on off screen (action 0x33, as to a noise he heard); in the room being played he walks
+\ to the point. (Left in another room, his own mind soon sends him back to Fiona.)
+create goal 12 allot  variable goal-room  -1 goal-room !
+variable goal-stage   \ 0 none, 1 walking to the door (exit goal-exit), 2 on the way, 3 to the point
+variable goal-exit
+: walk-to ( v -- )   \ his action 0x3F to point v of the room being played
+    h-to swap vec-copy  h-to him c-mask v-tri-in dup 0< if  drop h-to v-tri  then  h-to-tri !
+    -1 h-to-anim !  0e h-to-yaw f!  $3F 0 set-action ;
+create door-at 12 allot
+: hewie-goto ( room -- ) ( F: x y z -- )
+    goal vec!  goal-room !  0 goal-stage !
+    hewie-along @ 0= if  ." hewie isn't here (summon him first)" cr exit  then
+    goal-room @ h-room = if
+        h-disabled? if  ." he is in that room already" cr  else  goal walk-to  then  exit
+    then
+    h-room goal-room @ h-avoid find-route 0> 0= if  ." no way there for him" cr exit  then
+    h-disabled? if  goal-room @ h-noise-room !  2 goal-stage !  $33 0 set-action exit  then
+    route @ h-room door-exit dup goal-exit !
+    1 exit-spot drop door-at vec!  door-at walk-to  1 goal-stage ! ;
+: goal-tick ( -- )
+    goal-stage @ case
+        1 of  h-action @ $3F = h-action @ $64 = or 0= if   \ at the door (or stopped): through it
+                  goal-exit @ through-exit drop
+                  h-room goal-room @ = if  0 goal-stage !
+                  else  goal-room @ h-noise-room !  2 goal-stage !  $33 0 set-action  then
+              then  endof
+        2 of  h-room goal-room @ = h-disabled? 0= and if  3 goal-stage !  goal walk-to  then
+              h-room goal-room @ = h-disabled? and if  0 goal-stage !  then  endof
+        3 of  0 goal-stage !  endof
+    endcase ;
+' goal-tick on-tick

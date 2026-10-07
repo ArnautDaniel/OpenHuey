@@ -2,7 +2,7 @@
 \ Fiona's commands and calls (his state block), his own decisions, what he does next by his
 \ trust (the weighted lists), and the frame (Hewie_Update).
 IN: partner.brain
-USING: engine game-state events.core events.words chars partner.core partner.tables partner.moves partner.states partner.actions ;
+USING: engine game-state events.core events.words chars partner.core partner.tables partner.moves partner.route partner.states partner.offscreen partner.actions ;
 
 : req@ ( -- n )  him character char.req sl@ ;
 : req-arg@ ( -- n )  him character char.req-arg sl@ ;
@@ -32,6 +32,7 @@ defer fiona-react ( n -- )   ' drop is fiona-react   \ Fiona_HewieReact (her sid
 
 \ ---- Hewie_Upkeep: his timers, health and mood each frame ----
 : upkeep ( -- )
+    h-room played-room <> disabled!
     req@ 5 = if  exit  then
     h-cooldown @ if  -1 h-cooldown +!  then
     h-cond 2 <>  h-hp 0<> and  h-hp 100 < and if
@@ -534,12 +535,37 @@ fvariable rq-y
     turn-head  neck  anim-sounds
     h-yaw h-yaw-was f!  h-action @ h-last-action ! ;
 
+\ Hewie_HiddenFrame: each frame out of the room being played - down he stays down; Fiona
+\ panicking may bring him (0x39, once at 4 and once at 5, by his trust); a yelp's time out, he
+\ sets off toward her (0x2C). (Noises he hears: with the stalkers.)
+: hidden-frame ( -- )
+    h-cond 2 = if  h-action @ $52 <> if  $52 0 want  then  exit  then
+    h-panic-seen @ 2 and 0= if
+        false
+        panic @ 5 = if  h-panic-seen @ 2 or h-panic-seen !  drop true
+        else h-panic-seen @ 1 and 0= panic @ 4 = and if  h-panic-seen @ 1 or h-panic-seen !  drop true  then  then
+        if  hidden-out-chance by-chance h-mode $39 <> and if  $39 0 want exit  then  then
+    then
+    panic @ 4 < if  0 h-panic-seen !  then
+    h-yelp @ if
+        h-yelp @ 0> h-action @ $77 <> and if  $77 0 want exit  then
+    else  -1 h-yelp !  0 h-hide !  $2C 0 want  then
+    h-cmd @ $80000040 and $40 = 1 cond-bit? and if  1 h-pending !  then ;
+
 \ ---- Hewie_Update: a frame of his ----
 variable was-busy
 : hewie-frame ( -- )
     h-busy? if  -1 was-busy !  hewie-think exit  then
     was-busy @ if  0 was-busy !  full-stop  to-default  then   \ (the script let him go)
     upkeep  alert  h-cond 2 <> if  report-fiona-near  then  obedience
+    h-disabled? if   \ out of the room being played
+        arrive 0= if
+            req@ 13 = if  fiona-command drop  then  0 req!
+            hidden-frame
+            h-mood-state @ ?dup if  execute  then
+            h-state @ ?dup if  execute  then
+        then  exit
+    then
     state-block
     h-2b @ if  8  else  $29020008  then  him c-mask!
     0 h-no-root !  1 h-root-ok !
@@ -568,6 +594,8 @@ variable was-busy
     h-busy? 0= h-cmd @ $80000008 and 8 <> and if  -1 exit  then
     1 h-broke !
     h-waiting @ 0<> h-action @ $7D <> and  h-mood @ 3 = or if  -1  else  0  then ;
+' when-idle is idle-off
+
 \ Hewie_FionaCanCommand (for the scripts): she is here and he can take a command
 : can-command? ( -- flag )
     her with? 0= h-busy? or h-mode 0<> or h-mood @ 3 = or if  false exit  then

@@ -285,6 +285,37 @@ PRIM(p_exit_tri) {   /* ( exit which -- tri | -1 ) the current room's exit trian
 
     PUSH(world_exit_tri(&gEngine.world, gEngine.room.id, (int)exit, (int)which));
 }
+/* ---- the house's doors for any room (the original's gRooms queries; the exit words above are
+ * the loaded room's) ---- */
+PRIM(p_room_exit_door) {   /* ( room exit -- door | -1 ) */
+    Cell exit = POP(), room = POP();
+
+    PUSH(room >= 0 && room < WORLD_ROOMS && exit >= 0 && exit < ROOM_EXITS ? gEngine.world.exits[room][exit].door : -1);
+}
+PRIM(p_room_exit_leads) {   /* ( room exit -- room' exit' | -1 -1 ) */
+    Cell exit = POP(), room = POP();
+    int to_exit = -1, r = room >= 0 && room < WORLD_ROOMS ? world_exit_leads(&gEngine.world, (int)room, (int)exit, &to_exit) : -1;
+
+    PUSH(r);
+    PUSH(r < 0 ? -1 : to_exit);
+}
+PRIM(p_door_sides) {   /* ( door -- room0 exit0 tri0 room1 exit1 tri1 ) its two sides (-1s: none) */
+    Cell d = POP();
+    int k;
+
+    for (k = 0; k < 2; k++) {
+        const DoorSide *s = d >= 0 && d < gEngine.world.ndoors ? &gEngine.world.doors[d].side[k] : NULL;
+
+        PUSH(s != NULL ? s->room : -1);
+        PUSH(s != NULL ? s->exit : -1);
+        PUSH(s != NULL ? s->tri : -1);
+    }
+}
+PRIM(p_room_exit_tri) {   /* ( room exit which -- tri ) its triangle: 0 out, 1 in, 2 through */
+    Cell which = POP(), exit = POP(), room = POP();
+
+    PUSH(world_exit_tri(&gEngine.world, (int)room, (int)exit, (int)which));
+}
 PRIM(p_exit_leads) {   /* ( exit -- room exit' | -1 -1 ) where an exit of this room goes */
     Cell exit = POP();
     int to_exit = -1, room = world_exit_leads(&gEngine.world, gEngine.room.id, (int)exit, &to_exit);
@@ -1336,7 +1367,7 @@ void bind_engine(Forth *f) {
         {"room", p_room}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
         {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
-        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"hud", p_hud}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
+        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},

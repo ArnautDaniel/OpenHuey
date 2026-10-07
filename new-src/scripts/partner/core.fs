@@ -29,7 +29,7 @@ variable fiona-cmd  -1 fiona-cmd !    \ the command her controls give this frame
 : c-cond ( cs -- n )  character char.cond sl@ ;
 : c-mode ( cs -- n )  character char.mode sl@ ;
 : c-sub ( cs -- n )  character char.sub sl@ ;
-: played-room ( -- room )  event-state ev.room sl@ ;
+: played-room ( -- room )  room-id ;   \ (the room loaded: the one being played)
 \ |a| of a wrapped angle (hwrap_abs)
 : wrap-abs ( F: a -- |a| )  angle-wrap fabs ;
 : deg>rad ( F: d -- r )  3.14159265e f* 180e f/ ;

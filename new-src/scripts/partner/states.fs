@@ -521,7 +521,7 @@ fvariable wp-left  variable wp-on
         then
         0.25e
     else
-        fdup head-toward  fdup run-turn  him frot frot c-turn-toward fdup wp-left f!
+        fdup head-toward  run-turn him c-turn-toward  fdup wp-left f!
         stride-len fdup f0< if  fdrop fdrop 0e  else  fswap pi fswap f- pi f/ f*  then
         0.05e fmax
     then

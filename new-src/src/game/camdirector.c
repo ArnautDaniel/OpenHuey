@@ -51,7 +51,11 @@ static void spline_seek_to(const Spline *s, float *t, int *seg, float u) {
             if (!(u < p0) && u < p[8]) {
                 return;
             }
-        } else if (p0 == u) {
+        } else if (!(u < p0)) {   /* (the last key: at or past it - the original wants it exact,
+                                   * and else walks off the keys) */
+            return;
+        }
+        if (u < p0 && k == 0) {   /* (before the first: stay on it) */
             return;
         }
         if (u < p0) {

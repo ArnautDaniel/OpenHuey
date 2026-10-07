@@ -3,7 +3,7 @@
 \ the behaviour that carries it out. The actions that belong to later phases - going for the
 \ stalkers, leaving the room, fetching, being steered - fall back to the default action here.
 IN: partner.actions
-USING: engine game-state events.core events.words chars partner.core partner.tables partner.moves partner.states ;
+USING: engine game-state events.core events.words chars partner.core partner.tables partner.moves partner.route partner.states partner.offscreen ;
 
 : mode! ( n -- )  him character char.mode l! ;
 : sees? ( cs -- flag )  with? ;   \ Hewie_WithChar2
@@ -134,6 +134,18 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
     $29 of  h-tri nav-flags $80001 and if  0 0 want  else  0 mode!  4 look!  $7AF h-cmd !  ['] st-after-29 behave  then  endof
     $2A of  h-tri nav-flags $80001 and if  0 0 want  else  0 mode!  4 look!  $7AF h-cmd !  ['] st-after-2b behave  then  endof
     $2B of  h-tri nav-flags $80001 and if  0 0 want  else  0 mode!  4 look!  $7AF h-cmd !  ['] st-after-2b behave  then  endof
+    \ off screen (out of the room being played): toward her, waiting, out at random, to a noise
+    $2C of  route-played  endof
+    $2D of  route-played  endof
+    $39 of  route-played  endof
+    $2E of  6 mode!  $DF h-cmd !  idle-wait trust-of h-wait !  ['] st-nothing behave  endof
+    $2F of  6 mode!  $88 h-cmd !  h-wanted @ h-wait !  ['] st-nothing behave  endof
+    $30 of  6 mode!  $80 h-cmd !  h-wanted @ h-wait !  ['] st-nothing behave  endof
+    $31 of  6 mode!  $DF h-cmd !  h-wanted @ h-wait !  ['] st-nothing behave  endof
+    $32 of  false off-random  endof
+    $33 of  to-noise  endof
+    $35 of  true off-random  endof
+    $36 of  6 mode!  0 h-cmd !  ['] st-nothing behave  endof
     $34 of  6 mode!  $80 h-cmd !  60 h-wait !  ['] st-loud-noise behave  endof
     $37 of  6 mode!  0 h-cmd !  him c-path-clear  ['] st-to-default behave  endof
     $48 of  h-to-yaw f@ h-yaw f- angle-wrap fabs 6e deg>rad f/ f>s  dup h-t1 !  6 < if  1  else  0  then  h-t2 !

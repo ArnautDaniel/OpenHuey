@@ -73,7 +73,8 @@ USING: game-state events.core events.words events.builtin events.map0 events.map
 \ then the room's camera taken and the camera on whoever it follows)
 : enter-room ( room exit -- )
     event-state ev.exit l!  event-state ev.room l!
-    characters 0 do  i character char.present sl@ if  ev-room i character char.room l!  then  loop
+    \ (only whoever is controlled - Fiona - comes into it: the others are where they are)
+    0 character char.present sl@ if  ev-room 0 character char.room l!  then
     0 run-phase
     characters 0 do  i character char.present sl@ if  i char-enter  then  loop
     director-room-start  event-state ev.camera-char sl@ camera-on
