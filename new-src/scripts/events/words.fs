@@ -480,8 +480,10 @@ fvariable turn-x  fvariable turn-z
 : fiona-costume ( costume -- )  drop s" fiona-costume" stub-step ;
 \ 98: The character in `slot` comes in (waits while it is loading); it and Fiona active.
 : char-in ( slot -- )  drop s" char-in" stub-step ;
-\ 99: State flag 0x16 set; the progress' +0x78 (Progress_Noop78: nothing).
-: state-flag-16 ( a b -- )  2drop $16 progress pr.state bit-on ;
+\ 99: State flag 0x16 set and the creature count set from (a, b) (SceneGame_SetCreatureCount:
+\ the scene's +0x105344D / +0x105344E).
+: creature-count ( a b -- )   \ (the counts: kept with the creatures, not yet)
+    2drop $16 progress pr.state bit-on ;
 \ 9A: self: as 0x6F, the exit given by door id `door`.
 : self-through-door ( door -- )  drop s" self-through-door" stub-step ;
 \ 9B: Room effect slot 0x1E: on 0 removed, else made anew as a screen blend (ScreenBlend_Init)

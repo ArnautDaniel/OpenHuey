@@ -4194,7 +4194,7 @@ USING: events.core events.words events.builtin ;
         1 0 room04.cmd00
         room04.cmd01
         0 1 $20000 nav-group
-        5 0 state-flag-16
+        5 0 creature-count
         camera-restart
         $1B state-flag-clear
         $18 state-flag-clear
@@ -7637,7 +7637,7 @@ USING: events.core events.words events.builtin ;
     self-wait-done
     $22 door-unlock
     $26 story-flag-set
-    5 0 state-flag-16
+    5 0 creature-count
     $1B state-flag-clear
     $18 state-flag-clear
     0 self-scripted

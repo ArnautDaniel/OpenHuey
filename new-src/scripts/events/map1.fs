@@ -5135,7 +5135,7 @@ USING: events.core events.words events.builtin ;
     $130 -83.0 -83.0 60 $FFFF $A self-move-to
     self-wait-done
     $AF story-flag? if
-        5 0 state-flag-16
+        5 0 creature-count
     then
     0 self-noclip
     $18 state-flag-clear
