@@ -112,7 +112,7 @@ create plc-v 12 allot
     dup c-tri over c-pos on-tri? 0= if  dup c-tri tri-center plc-v vec!
     else  plc-v over c-pos vec-copy  then
     dup c-tri plc-v plc-v nearest-walkable  plc-v plan-length  d-path!
-    dup her = if  d-path d-fiona!  else  dog = if  d-path d-hewie!  then  then
+    dup her = if  drop d-path d-fiona!  else  dog = if  d-path d-hewie!  then  then
     d-path f0< 0= ;
 ' path-length-char $E0 vt!
 \ NPC_PathLengthSpot (+0xDC: to +0x15C4 / +0x15D0) and NPC_PathLengthGoal (+0xD8: +0x15A4 / +0x15B0)

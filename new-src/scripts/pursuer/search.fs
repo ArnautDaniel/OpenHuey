@@ -16,9 +16,9 @@ USING: engine game-state events.core events.words chars relations fiona.doors pu
 \ ---- his tables of what to do (+0x1718: rows of a kind, an argument, a percentage) ----
 create attack-tables
     $3AF780 , $3AF800 , $3AF7C0 , $3AF840 , $3AF880 , $3AF8A0 , $3AF8C0 , $3AF900 , $3AF930 ,
-    $3AF978 , $3AF990 , $3AF9D0 , $3AF9E0 , $3AFA10 , $3AFA70 , $3AFA80 , $3AFA44 ,
+    $3AF978 , $3AF990 , $3AF9D0 , $3AF9E0 , $3AFA10 , $3AFA70 , $3AFA80 , $3AFA40 ,
     $3AFBA0 , $3AFC40 , $3AFBF0 , $3AFC80 , $3AFCB0 , $3AFCF0 , $3AFD10 , $3AFD50 , $3AFD80 ,
-    $3AFDC0 , $3AFDD0 , $3AFE00 , $3AFE14 , $3AFE50 , $3AFED0 , $3AFEE0 , $3AFEA4 ,
+    $3AFDC0 , $3AFDD0 , $3AFE00 , $3AFE10 , $3AFE50 , $3AFED0 , $3AFEE0 , $3AFEA0 ,
 
 \ Debilitas_AttackTable (vtable +0x130): the table for a situation (0..16)
 : attack-table ( situation -- )

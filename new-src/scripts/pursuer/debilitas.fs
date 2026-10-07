@@ -73,7 +73,7 @@ USING: engine game-state events.core events.words chars relations fiona.doors pu
     \ (Debilitas_Setup)
     alt? if  110  else  70  then  p-hp-max!
     $3AF4D0 $171C pu-l!  $3AFA90 $1730 pu-l!  $3AFAF0 $1740 pu-l!  $3AFB10 $173C pu-l!
-    $3AFB58 $1748 pu-l!
+    $3AFB58 $1748 pu-l!  $3AFB70 $17F0 pu-l!   \ (str_Z_2: his chase table)
     20 $16DC pu-l!  10e $16E8 pu-f!                   \ (Hewie's bites he takes)
     alt? if  540  else  300  then  $16D4 pu-l!  1800 $16D8 pu-l!
     alt? if  1350  else  1800  then  $16D0 pu-l!  4500 $16E0 pu-l!  90 $16E4 pu-l!

@@ -176,3 +176,62 @@ create tsw-at 12 allot
     4 begin-action  her p-target!  fresh
     [: $27C vcall ;] behaviour!  $27C vcall ;
 ' chase-fiona $278 vt!
+
+\ ---- Pursuer_BehaviourRun: his state, then by how his action went: walking to her place (4:
+\ she's gone - searching; there - his table for it), a table's step (40 / 41), a step round a
+\ door or the like (0x1C 11 13 18), a gesture over (2 9 23), seen her (16). Then: seeing her,
+\ after her (or his chase when he's there); his steps over, the next; or the reaction ----
+: run-walk-to ( -- )   \ 4
+    $16EF pu-c@ 1 = if
+        2 mode!  2 $2C0 vcall  2 $16C9 pu-c!  3 $16CA pu-c!  search-room  1 $16ED pu-c!  0 $16EF pu-c!
+    else d-path 10e f<  d-path f0< 0= and if
+        0 step-done!
+        mode 0= if  fiona.core:f-2a @ if  0 $1660 pu-l!  then
+        else  $16C9 pu-c@ 3 <> if  2 $16C9 pu-c!  then  -1 $179C pu-l!
+            $16CA pu-c@ 4 <> if  3 $16CA pu-c!  then  then
+        $10 $130 vcall  pick-from-table
+    then then ;
+: run-table-step ( -- )   \ 40 / 41
+    step-done? 0= if  exit  then
+    0 step-done!
+    $16C9 pu-c@ dup 4 = over 1 = or swap 5 = or if
+        $179C pu-l@ dup -1 <> if  dup $15A4 pu-l!  tri-center $15B0 pu vec!  else  drop  then
+        4 $114 vcall
+    else
+        $175C pu-l@ $28 = if  $E  else  $F  then  $130 vcall  4 $114 vcall  pick-from-table
+    then ;
+: run-step-over ( -- )   \ 0x1C 11 13 18
+    $16EF pu-c@ 1 = if  4 $114 vcall  0 $16EF pu-c!
+    else step-done? if  4 $114 vcall  0 step-done!  then then ;
+: run-gesture-over ( -- )   \ 2 9 23
+    step-done? if
+        mode if  1 $16ED pu-c!  else  -1 $B4 vcall  4 $114 vcall  then  0 step-done!
+    then ;
+: behaviour-run ( -- )
+    p-state run
+    $175C pu-l@ case
+        4 of  run-walk-to  endof
+        40 of  run-table-step  exit  endof   41 of  run-table-step  exit  endof
+        12 of  step-done? if  0 step-done!  4 $114 vcall  then  endof
+        28 of  $1544 pu-c@ if  1 step-next!  then  run-step-over  endof
+        11 of  run-step-over  endof   13 of  run-step-over  endof   18 of  run-step-over  endof
+        2 of  run-gesture-over  endof   9 of  run-gesture-over  endof   23 of  run-gesture-over  endof
+        16 of  step-done? if  1 step-next!  1 $1544 pu-c!  0 step-done!  then  endof
+    endcase
+    step-next? 0= if  exit  then
+    $1544 pu-c@ 1 = if
+        reached-room? if  [: $264 vcall ;]  else  [: $280 vcall ;]  then  behaviour!
+    else $16ED pu-c@ 1 = if  $13C vcall
+    else $16F3 pu-c@ 1 = if
+        reached-room? if  $1C $114 vcall  else  [: $280 vcall ;] behaviour!  $1C $118 vcall  then
+        0 $16F3 pu-c!  exit
+    then then then
+    $16F3 pu-c@ 1 = if  $1C $118 vcall  0 $16F3 pu-c!  then ;
+\ Debilitas_BehaviourRun (vtable +0x27C): walking to her place, his walk by how near she is
+: debilitas-behaviour-run ( -- )
+    behaviour-run
+    $175C pu-l@ 4 <>  p-faded? 0= or if  exit  then
+    $16B4 pu-c@ 1 = if  $1788 pu-l@ $201 <> if  $328 vcall 0 play-anim-if drop  then
+    else mode 0=  d-fiona $17E8 pu-f@ f< and if  $1788 pu-l@ $200 <> if  $324 vcall 0 play-anim-if drop  then
+    else $1788 pu-l@ $201 <> if  $328 vcall 0 play-anim-if drop  then then then ;
+' debilitas-behaviour-run $27C vt!

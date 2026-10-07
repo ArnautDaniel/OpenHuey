@@ -29,7 +29,9 @@ create pu-mem $1800 allot  pu-mem $1800 0 fill
 \ ---- his virtual functions (the vtable: 0x330 bytes) ----
 create pvt $330 4 / cells allot
 : vt! ( xt off -- )  4 / cells pvt + ! ;
-: vcall ( i*x off -- j*x )  4 / cells pvt + @ execute ;
+: vcall ( i*x off -- j*x )
+    dup 4 / cells pvt + @ ?dup if  nip execute exit  then
+    ." pursuer: empty vtable slot $" hex . decimal .s cr ;
 \ a PTMF naming a virtual function: `$294 vptmf v-offscreen-step`
 : vptmf ( off "name" -- )  create ,  does> @ vcall ;
 \ a PTMF slot: the state (a.state), the behaviour (+0x174C), the off-screen move (+0x17A0)
