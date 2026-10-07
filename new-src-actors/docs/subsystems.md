@@ -29,18 +29,18 @@ Original: `event.c` (commands, conditions), the converted room scripts.
 Note: the room scripts are data. They are converted once (as in new-src) into Forth that sends
 messages.
 
-### Rooms (`rooms`)
+### Rooms (`rooms`)  — **spec** (`subsystems/rooms.md`)
 Owns: the room being played, and going from room to room.
 Takes: `go-to-room`. Broadcasts `room-loaded`, `entered-room`, `left-room`.
 Original: `scene_game.c` (room change), `room.c`.
 
-### Doors (`doors`)
+### Doors (`doors`)  — **spec** (`subsystems/doors.md`)
 Owns: each door's lock, open state, who holds it and its swing.
 Takes: `open`, `shut`, `slam`, `lock`, `unlock`, `hold`, `let-go`.
 Sends: `noise` (opened / shut / slammed), `hit` (slammed on someone), `door-state` broadcasts.
 Original: `doors.c`, `Progress_*Door*`.
 
-### Camera (`camera`)
+### Camera (`camera`)  — **spec** (`subsystems/camera.md`)
 Owns: the room's camera setups, who it follows, cuts and eases.
 Takes: `follow`, `use-setup`, `event-camera`, `release`.
 Original: `camera.c`, `camdirector.c`.
@@ -115,7 +115,8 @@ Original: `gameover.c`, `title.c`, the ending scene.
 ## Order
 
 1. The kernel and `acoustics`: the prototype.
-2. `rooms`, `doors`, `camera`: the world working with actors.
+2. `rooms`, `doors`, `camera`: the world working with actors, walked by a debug `walker`
+   (a body moved by the keys over the nav mesh, going through exits) until Fiona replaces it.
 3. `fiona`, `hewie`: the player's side.
 4. `story` (the converted scripts sending messages).
 5. `stalker` (Debilitas first), `danger`, `summoner`, `music`.
