@@ -47,4 +47,18 @@ int world_exit_leads(const World *w, int room, int exit, int *to_exit);
  * none; -1 if none */
 int world_exit_tri(const World *w, int room, int exit, int which);
 
+
+/* ---- the doors with the game's state (gProgress: locks, closed off) ---- */
+/* which exit of `room` door `d` is (-1: not in that room, or closed off) (Rooms_DoorExit) */
+int world_door_exit(const World *w, int d, int room);
+/* the room door `d` leads to from `room` (-1: none, or closed off) (Rooms_DoorLeadsTo) */
+int world_door_leads(const World *w, int d, int room);
+/* is door `d` open: a doorway, or not locked and open (Progress_DoorOpen) */
+int world_door_open(const World *w, int d);
+/* a route from room `from` to `to` for a walker of `kind` (0: any; else the doors' one-way
+ * flags count), through doors not locked or closed off, at most `max` doors (-1: no limit):
+ * its doors into out[] (first first, up to nout), and their number; 0 already there; -1 none
+ * (RoutePlanner_FindRoute with no doors to avoid, from no door, to any door) */
+int world_route(const World *w, int from, int to, int kind, int max, int *out, int nout);
+
 #endif

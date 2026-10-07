@@ -47,6 +47,12 @@ Two kinds of information flow are allowed:
 - **Changes** are messages. To open a door, hurt Fiona or start the music, you send a message
   to whoever owns it.
 
+**Bodies.** Where a character physically is (its room, nav triangle, position, heading,
+radius and height) is a fact too, kept in C as its *body*. Only the character moves its body,
+but anyone may look: hearing, sight and distances all need it, the way a physics engine's
+bodies are public. The same goes for **door states** (locked, open). They are kept in C because
+routes through the house depend on them, but only the doors subsystem changes them.
+
 Kernel details: `docs/actors.md`.
 
 ## A frame (30 a second, the original's rate)

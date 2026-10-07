@@ -25,12 +25,19 @@
 
 #define MAX_EVALS 16
 
+static int sTestStatus;
+static void p_exit_status(Forth *f, Word *w) {   /* ( n -- ) a test's exit status (--test) */
+    (void)w;
+    sTestStatus = (int)forth_pop(f);
+}
+
 typedef struct Options {
     int hidden;
     long frames;   /* 0: run until closed */
     const char *evals[MAX_EVALS];
     int nevals;
     const char *data;
+    const char *test;   /* --test FILE: run it after the scripts, headless, and exit with its status */
 } Options;
 
 static int parse_options(int argc, char **argv, Options *o) {
@@ -45,8 +52,11 @@ static int parse_options(int argc, char **argv, Options *o) {
             o->frames = atol(argv[++i]);
         } else if (strcmp(argv[i], "--eval") == 0 && i + 1 < argc && o->nevals < MAX_EVALS) {
             o->evals[o->nevals++] = argv[++i];
+        } else if (strcmp(argv[i], "--test") == 0 && i + 1 < argc) {
+            o->test = argv[++i];
+            o->hidden = 1;
         } else if (argv[i][0] == '-') {
-            fprintf(stderr, "usage: hg2 [--hidden] [--frames N] [--eval code] [data-dir]\n");
+            fprintf(stderr, "usage: hga [--hidden] [--frames N] [--eval code] [--test file.fs] [data-dir]\n");
             return 0;
         } else {
             o->data = argv[i];
@@ -282,12 +292,31 @@ int main(int argc, char **argv) {
     bind_engine(e->forth);
     bind_state(e->forth);
     bind_hactor(e->forth);
+    forth_prim(e->forth, "exit-status", p_exit_status);
     if (!load_scripts(e->forth)) {
         fprintf(stderr, "hg2: the scripts didn't load (see above); the console is open\n");
         e->console.open = 1;
     }
     for (i = 0; i < opt.nevals; i++) {
         forth_eval(e->forth, opt.evals[i], strlen(opt.evals[i]), "--eval");
+    }
+    if (opt.test != NULL) {   /* (its folder a root too: its USING:s, e.g. tester) */
+        char root[1024], *slash;
+        int failed;
+
+        snprintf(root, sizeof(root), "%s", opt.test);
+        slash = strrchr(root, '/');
+        if (slash != NULL) {
+            *slash = 0;
+            forth_add_root(e->forth, root);
+            slash = strrchr(root, '/');   /* and the folder above (tests/: tester.fs) */
+            if (slash != NULL) {
+                *slash = 0;
+                forth_add_root(e->forth, root);
+            }
+        }
+        failed = forth_include(e->forth, opt.test) != 0;
+        return failed ? 1 : sTestStatus;
     }
 
     last = SDL_GetTicksNS();

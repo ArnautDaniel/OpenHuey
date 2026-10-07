@@ -1,7 +1,13 @@
 # The actor kernel
 
-C (`src/actors/`) keeps the actors, their mailboxes and the schedule, so delivery stays fast
+C (`src/hactor/`) keeps the actors, their mailboxes and the schedule, so delivery stays fast
 and traceable. Forth defines everything else.
+
+**Names.** In C the kernel's actor is an `HActor` ("Haunting actor"). `Actor` (game/actor.h,
+the Forth words `actor-load` and `act.*`) is something else: an animated model the renderer
+draws. In the docs and scripts, "actor" means an HActor; an animated model is a "model".
+
+Every actor has an **id**: a small number, given by `spawn`, that messages are addressed to.
 
 ## Forth words
 
@@ -36,9 +42,11 @@ behaviour stunned  extends listening   \ unhandled messages fall through to `lis
 end-behaviour
 ```
 
-A handler runs with its message's arguments on the stack, and must consume them. A message
-the behaviour (and its parents) doesn't handle is dropped, and the kernel counts it and reports
-it once per behaviour and kind (`.unhandled`).
+A handler runs with its message's arguments on the stack, and must consume them. If it
+doesn't, or it fails, the kernel names the actor and handler, and puts the stacks (data,
+return, float) back as they were. A message the behaviour (and its parents) doesn't handle is
+dropped, and the kernel counts it and reports it once per behaviour and kind (`.unhandled`).
+The kernel's own messages (`tick`, `frame-end`, `spawned`, `killed`) are dropped quietly.
 
 `become ( behaviour -- )` switches the current actor to another behaviour from the next
 message on.
@@ -74,18 +82,25 @@ sender  ( -- id )          \ who sent the message being handled (-1: the kernel)
 - `trace-on` / `trace-off`: print every message as it is delivered (`frame  from -> to  kind
   args`).
 - `.actors`: every actor with its behaviour, its state type and its mailbox count.
+- `enter ( id -- )` / `leave`: the console inside an actor. Its fields, `self`, `become`
+  and sends are that actor's, so `fiona enter  fear f@ f.` reads Fiona's own fear. (Later the
+  console is an actor itself, and `enter` opens that actor's REPL.)
 
-## C (`actors.h`)
+## C (`hactor.h`)
 
 ```c
-int  actors_spawn(const char *name, Behaviour *b, int state_type);
-void actors_send(int from, int to, int kind, const Cell *args, int n);
-void actors_broadcast(int from, int kind, const Cell *args, int n);
-void actors_frame(Forth *f);
+void bind_hactor(Forth *f);                 /* the words (vocabulary `actors`) */
+void hactor_frame(Forth *f);                /* one frame: the engine calls it each tick */
+void hactor_send(int from, int to, int kind, const Cell *args, int n);
+void hactor_broadcast(int from, int kind, const Cell *args, int n);
+void hactor_reset(void);
 ```
 
-The engine sends some messages itself. Kinds below 16 are the kernel's: `tick`, `frame-end`,
-`spawned`, `killed`. More come with later subsystems: `input`, `room-loaded`, `animation-event`.
+The engine sends some messages itself. The first kinds are the kernel's: `tick`, `frame-end`,
+`spawned`, `killed`. More come with later subsystems: `input`, `room-loaded`,
+`animation-event`.
+
+Tests: `tests/test_actors.fs` (`ctest`).
 
 ## Rules
 

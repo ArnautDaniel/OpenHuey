@@ -1,4 +1,5 @@
 #include "world.h"
+#include "progress.h"
 
 #include "../data/exe.h"
 
@@ -112,4 +113,165 @@ int world_exit_tri(const World *w, int room, int exit, int which) {
     }
     here = side_of(w, room, exit, 0);
     return here != NULL ? here->tri : -1;
+}
+
+/* ---- the doors with the game's state ---- */
+
+static int closed_off(const World *w, int d) {
+    return d < 0 || d >= w->ndoors || ((gProgress.closed_off[d / 32] >> (d % 32)) & 1);
+}
+
+int world_door_exit(const World *w, int d, int room) {
+    int s;
+
+    if (closed_off(w, d)) {
+        return -1;
+    }
+    for (s = 0; s < 2; s++) {
+        if (w->doors[d].side[s].room == room) {
+            return w->doors[d].side[s].exit;
+        }
+    }
+    return -1;
+}
+
+int world_door_leads(const World *w, int d, int room) {
+    int s;
+
+    if (closed_off(w, d)) {
+        return -1;
+    }
+    for (s = 0; s < 2; s++) {
+        if (w->doors[d].side[s].room == room) {
+            return w->doors[d].side[s ^ 1].room;
+        }
+    }
+    return -1;
+}
+
+int world_door_open(const World *w, int d) {
+    uint32_t state;
+
+    if (d < 0 || d >= w->ndoors) {
+        return 0;
+    }
+    if (w->doors[d].flags & 1) {   /* a doorway */
+        return 1;
+    }
+    state = gProgress.doors[d];
+    return !(state & 8) && (state & 2) != 0;
+}
+
+/* a door's one-way flag on `room`'s side (other: seen from the far side) for walkers of `kind`
+ * (0: always counted; else only where the door says it counts): 1 / 0, or -1 (Rooms_DoorFromSide
+ * / Rooms_DoorFromOther) */
+static int door_way(const World *w, int d, int room, int kind, int other) {
+    static const uint32_t flag[2][2] = {{0x10, 0x8}, {0x8, 0x10}}, check[2][2] = {{0x40, 0x80}, {0x80, 0x40}};
+    uint32_t flags;
+    int s;
+
+    if (closed_off(w, d)) {
+        return -1;
+    }
+    flags = w->doors[d].flags;
+    for (s = 0; s < 2; s++) {
+        if (w->doors[d].side[s].room == room && (!kind || (flags & check[other][s]))) {
+            return (flags & flag[other][s]) ? 1 : 0;
+        }
+    }
+    return -1;
+}
+
+typedef struct Step {
+    int door, room, far, from, depth;
+} Step;
+
+#define ROUTE_STEPS 128
+
+typedef struct Search {
+    const World *w;
+    int kind, way;   /* the way the step being searched from came through its door (-1: none) */
+    Step steps[ROUTE_STEPS];
+    int head, tail, cur;
+    uint32_t seen[(WORLD_DOORS + 31) / 32];
+} Search;
+
+/* the doors out of `room` as steps from the current one (RoutePlanner_QueueDoors) */
+static int queue_doors(Search *q, int room) {
+    const World *w = q->w;
+    int i;
+
+    for (i = 0; i < ROOM_EXITS; i++) {
+        int d = room >= 0 && room < WORLD_ROOMS ? w->exits[room][i].door : -1;
+        uint32_t bit;
+        Step *s;
+
+        if (d < 0 || closed_off(w, d)) {
+            continue;
+        }
+        if ((q->way == 0 || q->way == 1) && q->way != door_way(w, d, room, q->kind, 0)) {
+            continue;
+        }
+        bit = 1u << (d % 32);
+        if (q->seen[d / 32] & bit) {
+            continue;
+        }
+        if (!(gProgress.doors[d] & 8)) {   /* (not locked; passable from any side) */
+            s = &q->steps[q->tail++];
+            if (q->tail >= ROUTE_STEPS) {
+                return -1;
+            }
+            s->door = d;
+            s->room = world_door_leads(w, d, room);
+            s->far = door_way(w, d, room, q->kind, 1);
+            s->from = q->cur;
+            s->depth = q->cur >= 0 ? q->steps[q->cur].depth + 1 : 0;
+        }
+        q->seen[d / 32] |= bit;
+    }
+    return 0;
+}
+
+int world_route(const World *w, int from, int to, int kind, int max, int *out, int nout) {
+    static Search q;   /* (big: kept off the stack) */
+    int n, k, i;
+
+    if (from < 0 || from >= WORLD_ROOMS || to < 0 || to >= WORLD_ROOMS) {
+        return -1;
+    }
+    if (from == to) {
+        return 0;
+    }
+    memset(&q, 0, sizeof(q));
+    q.w = w;
+    q.kind = kind;
+    q.way = -1;
+    q.cur = -1;
+    if (queue_doors(&q, from) < 0) {
+        return -1;
+    }
+    while (q.head < q.tail) {
+        Step *s = &q.steps[q.head];
+
+        q.cur = q.head++;
+        if (max >= 0 && s->depth >= max) {
+            return -1;
+        }
+        q.way = s->far;
+        if (s->room == to) {
+            for (n = 0, k = q.cur; k >= 0; k = q.steps[k].from) {
+                n++;
+            }
+            for (i = n - 1, k = q.cur; k >= 0; k = q.steps[k].from, i--) {
+                if (i < nout) {
+                    out[i] = q.steps[k].door;
+                }
+            }
+            return n;
+        }
+        if (queue_doors(&q, s->room) < 0) {
+            return -1;
+        }
+    }
+    return -1;
 }

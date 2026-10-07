@@ -52,3 +52,12 @@ add_executable(hga
 target_link_libraries(hga PRIVATE forth gamestate hactor SDL3::SDL3 OpenGL::GL ${CMAKE_DL_LIBS})
 target_compile_definitions(hga PRIVATE "HG2_SCRIPT_DIR=\"${SCRIPT_DIR}\"" "HG2_DEFAULT_DATA=\"${DEFAULT_DATA}\""
     "HG2_DEFAULT_EXE=\"${CMAKE_CURRENT_SOURCE_DIR}/../baserom/SLUS_210.75\"")
+
+# the subsystems' tests: headless in the game (they need the game's data), tests/<subsystem>/test_*.fs
+file(GLOB GAME_TESTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/*/test_*.fs")
+foreach(t ${GAME_TESTS})
+    get_filename_component(name "${t}" NAME_WE)
+    get_filename_component(dir "${t}" DIRECTORY)
+    get_filename_component(sub "${dir}" NAME)
+    add_test(NAME ${sub}_${name} COMMAND hga --test "${t}")
+endforeach()

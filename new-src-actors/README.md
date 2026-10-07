@@ -23,5 +23,9 @@ cmake -S new-src-actors -B build/new-src-actors -G Ninja
 cmake --build build/new-src-actors
 build/new-src-actors/hga                 # the game (data: ../Haunting Ground (USA)/data)
 build/new-src-actors/hga --hidden --frames 300 --eval "..."   # headless, for tests
-ctest --test-dir build/new-src-actors    # the Forth tests
+ctest --test-dir build/new-src-actors    # all the tests
+build/new-src-actors/hga --test new-src-actors/tests/acoustics/test_hearing.fs   # one subsystem's
 ```
+
+Tests: `tests/test_*.fs` are the language and the kernel (the `forth` tool, no game data);
+`tests/<subsystem>/test_*.fs` run inside the game headless (`hga --test`), with the game's data.

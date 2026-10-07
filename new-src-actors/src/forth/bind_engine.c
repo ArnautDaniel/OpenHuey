@@ -816,6 +816,45 @@ PRIM(p_exit_door) {   /* ( exit -- door | -1 ) the door this room's exit goes th
 
     PUSH(room >= 0 && room < WORLD_ROOMS && exit >= 0 && exit < ROOM_EXITS ? gEngine.world.exits[room][exit].door : -1);
 }
+/* ---- the house's doors and routes (world.c, with the game's door states) ---- */
+static int sRoute[64], sRouteN;
+PRIM(p_route) {   /* ( from to kind max -- n ) a route between rooms (0 there, -1 none): its doors by route-door */
+    Cell max = POP(), kind = POP(), to = POP(), from = POP();
+
+    sRouteN = world_route(&gEngine.world, (int)from, (int)to, (int)kind, (int)max, sRoute, 64);
+    PUSH(sRouteN);
+}
+PRIM(p_route_door) {   /* ( i -- door ) the route's i-th door, first first */
+    Cell i = POP();
+
+    if (i < 0 || i >= sRouteN || i >= 64) {
+        forth_error(f, "route-door: the route has no door %ld", (long)i);
+    }
+    PUSH(sRoute[i]);
+}
+PRIM(p_door_open) { Cell d = POP(); PUSH(world_door_open(&gEngine.world, (int)d) ? -1 : 0); }   /* ( door -- flag ) */
+PRIM(p_door_exit_in) {   /* ( door room -- exit | -1 ) */
+    Cell room = POP(), d = POP();
+
+    PUSH(world_door_exit(&gEngine.world, (int)d, (int)room));
+}
+PRIM(p_door_leads) {   /* ( door room -- room' | -1 ) */
+    Cell room = POP(), d = POP();
+
+    PUSH(world_door_leads(&gEngine.world, (int)d, (int)room));
+}
+PRIM(p_exit_stand) {   /* ( exit -- flag ) ( F: -- x y z ) where the played room's door at that exit stands */
+    Cell exit = POP();
+    const RoomDoor *d;
+
+    if (exit < 0 || exit >= ROOM_DOORS || !gEngine.room.doors[exit].present) {
+        PUSH(0);
+        return;
+    }
+    d = &gEngine.room.doors[exit];
+    FPUSH(d->stand.x); FPUSH(d->stand.y); FPUSH(d->stand.z);
+    PUSH(-1);
+}
 PRIM(p_door_flags) {   /* ( door -- flags ) its fixed flags (the door table; bit 0 a doorway) */
     Cell d = POP();
 
@@ -1592,7 +1631,7 @@ void bind_engine(Forth *f) {
         const char *name;
         Code code;
     } prims[] = {
-        {"room", p_room}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
+        {"room", p_room}, {"route", p_route}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
         {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
         {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},

@@ -75,11 +75,11 @@ put in motions by the story.
 Takes: `place`, `play-motion`, `hold-motion`, `show`, `hide`.
 Original: `story_chars.c`, `char_load.c`.
 
-### Sound in the house (`acoustics`)  — **spec**
+### Sound in the house (`acoustics`)  — **built, checked**
 Owns: the noises made this frame.
 Takes: `noise`, `listen`, `stop-listening`. Sends `heard` to each listener that hears one.
 Original: `Noise_Make`, `Character_Hearing`, `Progress_PursuerRequest`.
-Page: `docs/subsystems/noise.md`.
+Page: `docs/subsystems/acoustics.md`.
 
 ### Danger (`danger`)
 Owns: calm / tense / chased and its hold timers.
