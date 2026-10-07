@@ -70,7 +70,7 @@
 #include "glr.h"
 #endif
 
-extern void *Heap_vtable[], *D_004699E0[];
+extern void *Heap_vtable[], *SceneTableBase_vtable[];
 
 void ChainPool_FreeAll(u8 *pool);
 u8 *Chain_Entry(u8 *chain, s32 n);
@@ -91,7 +91,7 @@ s32 SkelNode_Link(u8 *prev, u8 *node);
 Heap *Heap_dtor(Heap *h, s32 flags) {
     if (h != NULL) {
         h->vtbl = Heap_vtable;
-        h->vtbl = D_004699E0;
+        h->vtbl = SceneTableBase_vtable;
         if ((s16)flags > 0) {
             __dl__FPv(h);
         }
@@ -352,7 +352,7 @@ void SkelPool_FreeAll(u8 *pool) {
 
 /* 0x002D1580 */
 void *SceneHeap_ctor(u8 *p) {
-    F(p, 0x0, void *) = D_004699E0;
+    F(p, 0x0, void *) = SceneTableBase_vtable;
     F(p, 0x4, u32) = 0;
     F(p, 0x8, u32) = 0;
     F(p, 0x0, void *) = Heap_vtable;
@@ -492,11 +492,11 @@ void Heap_Free(Heap *h, u8 *addr) {
 void SceneHeap_delete(void *p) {
 }
 
-/* ---- fixed-size block pool (vtable BlockPool_vtable; base D_004699E0): n blocks of one size,
+/* ---- fixed-size block pool (vtable BlockPool_vtable; base SceneTableBase_vtable): n blocks of one size,
  * a used flag each ---- */
 
 extern void *BlockPool_vtable[];
-extern void *D_004699E0[];
+extern void *SceneTableBase_vtable[];
 
 /* +0x8 */
 /* 0x00120D00 */
@@ -504,7 +504,7 @@ BlockPool *BlockPool_dtor(BlockPool *p, s32 flags) {
     if (p != NULL) {
         p->vtbl = BlockPool_vtable;
         if (p != NULL) {
-            p->vtbl = D_004699E0;
+            p->vtbl = SceneTableBase_vtable;
         }
         if ((s16)flags > 0) {
             __dl__FPv(p);

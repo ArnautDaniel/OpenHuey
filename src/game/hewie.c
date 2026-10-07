@@ -112,9 +112,9 @@ static void HewieModel_Destroy(u8 *m, s32 flags) {
     __destroy_arr(m + 0x960, IK3_Destroy, 0x90, 2);
     AT(m, 0x0, void **) = Model_vtable;
     AT(m, 0x0, void **) = ModelBase_vtable;
-    AT(m, 0x1D0, void **) = D_0046B1C0;
+    AT(m, 0x1D0, void **) = Shadow_vtable;
     AT(m, 0x1D0, void **) = Helper469D00_vtable;
-    AT(m, 0x10, void **) = D_0046ADA0;
+    AT(m, 0x10, void **) = ModelDrawer_vtable;
     AT(m, 0x10, void **) = Helper469D00_vtable;
     if ((s16)flags > 0) {
         StalkerModel_delete(m);

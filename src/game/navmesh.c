@@ -80,7 +80,7 @@
 
 #define MESH_SIZE 0x50
 
-extern void *D_0046AA40[];
+extern void *NavMeshBase_vtable[];
 void *NavMeshBase_dtor(u8 *o, s32 flags);
 
 typedef struct { f32 x, y, z, w; } Vec4;
@@ -91,7 +91,7 @@ typedef struct { u32 unk0; Tri *tris; u32 count; } TriMesh;
 
 s32 NavMesh_PointInTri(TriMesh *mesh, u32 index, Vec4 *p);
 
-extern void *PathPlan_vtable[], *D_0046AC00[];
+extern void *PathPlan_vtable[], *PathPlanBase_vtable[];
 extern VObject *gSceneGameF29740;
 extern const u32 PathPlan_StepBreadth_ptmf[];   /* the step functions (PTMFs, 16-byte aligned) by request kind 0..7; 8: at the goal */
 #define SEARCH(pl, i) ((u8 *)(pl) + 0x10 + (i) * 0x10060)
@@ -108,7 +108,7 @@ extern void *gRoomEventObj;
 void *NavGroups_ctor(u8 *p);
 void *NavMesh_ctor(u8 *p);
 
-extern void *D_0046DB60[];
+extern void *NavGroupsBase_vtable[];
 /* the nav mesh triangle t's flag word (NULL->flags, as the original, past the end) */
 static u32 *tri_flags_word(u32 t) {
     u8 *tri = t < AT(gNavMesh, 0x8, u32) && AT(gNavMesh, 0x4, u8 *) != NULL
@@ -359,11 +359,11 @@ void NavMesh_DropPending(u8 *p) {
     }
 }
 
-/* destructor (vtable D_0046AA40) */
+/* destructor (vtable NavMeshBase_vtable) */
 /* 0x0017CDD0 */
 void *NavMeshBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046AA40;
+        AT(o, 0x0, void **) = NavMeshBase_vtable;
         gNavMesh = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -378,7 +378,7 @@ void *PathPlan_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = PathPlan_vtable;
         if (o != NULL) {
-            AT(o, 0x0, void **) = D_0046AC00;
+            AT(o, 0x0, void **) = PathPlanBase_vtable;
             if (o != NULL) {
                 gSceneGameF29740 = NULL;
             }
@@ -2017,11 +2017,11 @@ s32 PathPlan_EndCentre(u8 *pl, s32 id, f32 *centre) {
     return -1;
 }
 
-/* destructor (vtable D_0046AC00) */
+/* destructor (vtable PathPlanBase_vtable) */
 /* 0x001AABD0 */
 void *PathPlanBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046AC00;
+        AT(o, 0x0, void **) = PathPlanBase_vtable;
         gSceneGameF29740 = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -2035,7 +2035,7 @@ void *PathPlanBase_dtor(u8 *o, s32 flags) {
 void *NavGroups_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = NavGroups_vtable;
-        AT(o, 0x0, void **) = D_0046DB60;
+        AT(o, 0x0, void **) = NavGroupsBase_vtable;
         gRoomEventObj = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -2135,7 +2135,7 @@ s32 NavGroups_SetFlags(u8 *o, s32 clear, u32 g, u32 bits) {
 /* 0x002A88D0 */
 void *NavGroupsBase_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046DB60;
+        AT(o, 0x0, void **) = NavGroupsBase_vtable;
         gRoomEventObj = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -2744,10 +2744,10 @@ f32 NavMesh_HeightOver(NavMesh *nm, u32 t, const f32 *p) {
     return sceVu0InnerProduct(a, n);
 }
 
-extern void *NavMesh_vtable[], *D_0046AA40[];
+extern void *NavMesh_vtable[], *NavMeshBase_vtable[];
 
 /* the nav mesh (NavMesh_vtable): its two tables (+0x4 / +0xC, with their counts) let go, then the
- * base (D_0046AA40, clearing gNavMesh) */
+ * base (NavMeshBase_vtable, clearing gNavMesh) */
 /* 0x00179F60 */
 void *NavMesh_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
@@ -2760,7 +2760,7 @@ void *NavMesh_dtor(u8 *o, s32 flags) {
             AT(o, 0xC, void *) = NULL;
             AT(o, 0x10, s32) = 0;
         }
-        AT(o, 0x0, void **) = D_0046AA40;
+        AT(o, 0x0, void **) = NavMeshBase_vtable;
         gNavMesh = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);

@@ -68,10 +68,10 @@
 #include <stdlib.h>
 #endif
 
-extern void *D_0046D730[];
-extern void *D_0046D790[];
+extern void *RoomEffectBase_vtable[];
+extern void *TintDrawer_vtable[];
 extern void *Bloom_vtable[];
-extern void *D_0046EB60[];
+extern void *FogDrawer_vtable[];
 extern void *DepthRange_vtable[];
 
 extern u8 D_0041B5F0[];
@@ -112,7 +112,7 @@ void StrikeMark_Start(u8 *p);
 extern void *ScreenBlend_vtable[];
 extern void *Fog_vtable[];
 extern void *DustMoteSource_vtable[];
-extern void *SpriteBurst_vtable[], *Splash_vtable[], *SpeckSwarm_vtable[], *D_0046EA90[];
+extern void *SpriteBurst_vtable[], *Splash_vtable[], *SpeckSwarm_vtable[], *Butterflies_vtable[];
 extern void *EvEffect86_vtable[], *EvEffect7F_vtable[];
 void **RoomEffectBase_dtor(void **o, s32 flags);
 void *DustMoteSource_dtor(u8 *o, s32 flags);
@@ -128,13 +128,13 @@ extern void *TvScreenB_vtable[];
 extern u64 Movie_PageTex0(u8 *mv, s32 page);
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
-extern void *D_00476B50[];
+extern void *FixModelDraw_vtable[];
 /* bursts of four quad drawers (0xFC0 bytes, BurstA_vtable, drawers from +0xB50; 0x22D0 bytes,
    BurstB_vtable, drawers from +0x1A50) */
 extern void *BurstA_vtable[], *BurstB_vtable[];
 extern f32 D_004469A8, D_004469AC, D_004469B0;   /* the three points' offsets across the view */
 extern void *Room2AWisps_vtable[];
-extern void *D_00478B70[];
+extern void *Caustic_vtable[];
 extern void Room2AWisps_Particle(u8 *o, s32 i);
 extern void *Effect78BC0_vtable[];
 extern void *Room55Effect_vtable[];
@@ -210,7 +210,7 @@ static inline __attribute__((always_inline)) s32 spin_step(u8 *o, u32 stepX, u32
     return 1;
 }
 
-/* a model to draw this frame: position, ..., angles, model, colour. Drawn by D_00478B70's
+/* a model to draw this frame: position, ..., angles, model, colour. Drawn by Caustic_vtable's
  * Caustic_Draw these are a light caustic: n the texture, radius the patch's size, angle[0]
  * the ripple phase, angle[1] / angle[2] its two layers' turns, model the alpha threshold of
  * its glow */
@@ -223,7 +223,7 @@ typedef struct ModelDrawParams {
     u32 rgba;
 } ModelDrawParams;
 
-/* the temporary draw object ModelDraw_Queue fills from the parameters (vtable D_00478B70) */
+/* the temporary draw object ModelDraw_Queue fills from the parameters (vtable Caustic_vtable) */
 typedef struct ModelDraw {
     void **vtbl;
     s32 slot;
@@ -986,7 +986,7 @@ void **Fog_Init(void **o) {   /* event 0x9C */
 /* 0x00208360 */
 void **RoomEffectBase_dtor(void **o, s32 flags) {
     if (o != NULL) {
-        o[0] = D_0046D730;
+        o[0] = RoomEffectBase_vtable;
         if ((s16)flags > 0) {
             RoomEffects_delete(o);
         }
@@ -1022,7 +1022,7 @@ void **DepthRange_Init(void **o) {   /* event 0x65 */
 
 /* 0x00208F30 */
 void **Butterflies_Init(void **o, u32 n) {   /* event 0x35 */
-    o[0] = D_0046EA90;
+    o[0] = Butterflies_vtable;
     AT(o, 0x8C, f32) = (f32)n;
     return o;
 }
@@ -1222,7 +1222,7 @@ void *TvScreenA_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = TvScreenA_vtable;
         if (o != NULL) {
-            AT(o, 0x0, void **) = D_0046D730;
+            AT(o, 0x0, void **) = RoomEffectBase_vtable;
         }
         if ((s16)flags > 0) {
             RoomEffects_delete(o);
@@ -1259,9 +1259,9 @@ void TvScreenA_Start(Movie *m) {
 /* 0x002B8E70 */
 void *Butterflies_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046EA90;
+        AT(o, 0x0, void **) = Butterflies_vtable;
         if (o != NULL) {
-            AT(o, 0x0, void **) = D_0046D730;
+            AT(o, 0x0, void **) = RoomEffectBase_vtable;
         }
         if ((s16)flags > 0) {
             RoomEffects_delete(o);
@@ -1559,7 +1559,7 @@ void Butterflies_Start(u8 *o) {
 void *Fog_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = Fog_vtable;
-        AT(o, 0x0, void **) = D_0046D730;
+        AT(o, 0x0, void **) = RoomEffectBase_vtable;
         if ((s16)flags > 0) {
             RoomEffects_delete(o);
         }
@@ -1703,7 +1703,7 @@ void ScreenBlend_Update(u8 *o) {
 void Tint_Update(u8 *o) {
 }
 
-extern void *D_0046EB60[], *Helper469D00_vtable[];
+extern void *FogDrawer_vtable[], *Helper469D00_vtable[];
 extern void FogDrawer_Queue(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b);
 
 /* +0x14 draw (the fog): a temporary drawer object paints its colours (+0x10, +0x14) over the
@@ -1712,18 +1712,18 @@ extern void FogDrawer_Queue(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 
 void Fog_Draw(u8 *o) {
     u8 drawer[0x20] __attribute__((aligned(16)));
 
-    AT(drawer, 0x0, void **) = D_0046EB60;
+    AT(drawer, 0x0, void **) = FogDrawer_vtable;
     AT(drawer, 0x4, s32) = -1;
     FogDrawer_Queue(drawer, AT(o, 0x10, u32), AT(o, 0x14, u32), AT(o, 0x1C, s32) != 0 ? 9 : 0x21,
                   AT(o, 0x50, f32), AT(o, 0x54, f32));
     AT(drawer, 0x0, void **) = Helper469D00_vtable;
 }
 
-/* destructor (vtable D_0046EB60) */
+/* destructor (vtable FogDrawer_vtable) */
 /* 0x002BB220 */
 void *FogDrawer_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046EB60;
+        AT(o, 0x0, void **) = FogDrawer_vtable;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -1749,7 +1749,7 @@ void FogDrawer_Queue(void *drawer, u32 c0, u32 c1, s32 layer, f32 a, f32 b) {
 void *DepthRange_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = DepthRange_vtable;
-        AT(o, 0x0, void **) = D_0046D730;
+        AT(o, 0x0, void **) = RoomEffectBase_vtable;
         if ((s16)flags > 0) {
             RoomEffects_delete(o);
         }
@@ -1773,7 +1773,7 @@ void ScreenBlend_Draw(u8 *o) {
     AT(drawer, 0x0, void **) = Helper469D00_vtable;
 }
 
-extern void *D_0046D790[];
+extern void *TintDrawer_vtable[];
 extern void ColourDrawer_Queue(void *drawer, u32 rgba, s32 which, s32 arg);
 
 /* +0x14 draw of a two-colour screen effect: a temporary drawer paints each colour (+0x10 first,
@@ -1782,7 +1782,7 @@ extern void ColourDrawer_Queue(void *drawer, u32 rgba, s32 which, s32 arg);
 void Tint_Draw(u8 *o) {
     u8 drawer[0x20] __attribute__((aligned(16)));
 
-    AT(drawer, 0x0, void **) = D_0046D790;
+    AT(drawer, 0x0, void **) = TintDrawer_vtable;
     AT(drawer, 0x4, s32) = -1;
     if (AT(o, 0x10, u32) & 0xFF000000) {
         ColourDrawer_Queue(drawer, AT(o, 0x10, u32), 0, AT(o, 0x18, s32));
@@ -1793,11 +1793,11 @@ void Tint_Draw(u8 *o) {
     AT(drawer, 0x0, void **) = Helper469D00_vtable;
 }
 
-/* destructor (vtable D_0046D790) */
+/* destructor (vtable TintDrawer_vtable) */
 /* 0x00267480 */
 void *TintDrawer_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046D790;
+        AT(o, 0x0, void **) = TintDrawer_vtable;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -1821,7 +1821,7 @@ void ColourDrawer_Queue(void *d, u32 rgba, s32 which, s32 arg) {
 void *ScreenBlend_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = ScreenBlend_vtable;
-        AT(o, 0x0, void **) = D_0046D730;
+        AT(o, 0x0, void **) = RoomEffectBase_vtable;
         if ((s16)flags > 0) {
             RoomEffects_delete(o);
         }
@@ -2008,14 +2008,14 @@ extern void *DepthRange_vtable[];      /* the effect 0x1C kind */
  * frame count +0x6B), +0x70 frame timer, +0x74 rest before the next run, +0x78 slow (long
  * rests) */
 
-extern void *EvEffect7F_vtable[], *D_0046D730[], *QuadDrawer_vtable[];
+extern void *EvEffect7F_vtable[], *RoomEffectBase_vtable[], *QuadDrawer_vtable[];
 
 /* +0x8 destructor */
 /* 0x002E7BB0 */
 u8 *EvEffect7F_dtor(u8 *e, s32 flags) {
     if (e != NULL) {
         AT(e, 0x0, void **) = EvEffect7F_vtable;
-        AT(e, 0x0, void **) = D_0046D730;
+        AT(e, 0x0, void **) = RoomEffectBase_vtable;
         if ((s16)flags > 0) {
             RoomEffects_delete(e);
         }
@@ -2510,7 +2510,7 @@ extern void *EvEffect86_vtable[], *Wisps_vtable[];
 u8 *EvEffect86_dtor(u8 *e, s32 flags) {
     if (e != NULL) {
         AT(e, 0x0, void **) = EvEffect86_vtable;
-        AT(e, 0x0, void **) = D_0046D730;
+        AT(e, 0x0, void **) = RoomEffectBase_vtable;
         if ((s16)flags > 0) {
             RoomEffects_delete(e);
         }
@@ -2710,7 +2710,7 @@ void EvEffect86_Start(u8 *e) {
 void DepthRange_Update(void) {
 }
 
-extern void *D_0046EC80[];
+extern void *DofDrawer_vtable[];
 
 /* hand a depth-band drawer (`d`: +0x8 .. +0x14 a, from, to, b) to the renderer (layer 0x21)
  * unless the band covers all of the camera's depth range (+0xCC near, +0xD0 far) */
@@ -2847,7 +2847,7 @@ void *EffectMgr_new(u32 size, void *place) {
     return place;
 }
 
-/* DepthRange_vtable +0x14 draw: its band (+0x50 .. +0x5C) through a D_0046EC80 drawer */
+/* DepthRange_vtable +0x14 draw: its band (+0x50 .. +0x5C) through a DofDrawer_vtable drawer */
 /* 0x002C6570 */
 void DepthRange_Draw(u8 *e) {
     struct {
@@ -2857,7 +2857,7 @@ void DepthRange_Draw(u8 *e) {
     } d;
 
     d.a = -1;
-    d.vtbl = D_0046EC80;
+    d.vtbl = DofDrawer_vtable;
     DepthBand_Queue((u8 *)&d, AT(e, 0x50, f32), AT(e, 0x54, f32), AT(e, 0x58, f32), AT(e, 0x5C, f32));
     d.vtbl = Helper469D00_vtable;
 }
@@ -4551,7 +4551,7 @@ void *TvScreenB_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = TvScreenB_vtable;
         if (o != NULL) {
-            AT(o, 0x0, void **) = D_0046D730;
+            AT(o, 0x0, void **) = RoomEffectBase_vtable;
         }
         if ((s16)flags > 0) {
             RoomEffects_delete(o);
@@ -5351,16 +5351,16 @@ void Room55Effect_Draw(u8 *o) {
     p.model = AT(o, 0x10, s32);
     p.rgba = 0x80808080;
     d.slot = -1;
-    d.vtbl = D_00478B70;
+    d.vtbl = Caustic_vtable;
     ModelDraw_Queue(&d, &p);
     d.vtbl = Helper469D00_vtable;
 }
 
-/* destructor (vtable D_00478B70) */
+/* destructor (vtable Caustic_vtable) */
 /* 0x00347640 */
 void *Caustic_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00478B70;
+        AT(o, 0x0, void **) = Caustic_vtable;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -8992,7 +8992,7 @@ void *MirrorFragment_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = MirrorFragment_vtable;
         if (o != NULL) {
-            AT(o, 0x0, void **) = D_0046D730;
+            AT(o, 0x0, void **) = RoomEffectBase_vtable;
         }
         if ((s16)flags > 0) {
             RoomEffects_delete(o);
@@ -10836,11 +10836,11 @@ void StrandSplash_Start(u8 *self) {
     self[0xC46] = 0xFF;
 }
 
-/* destructor (vtable D_00476B50) */
+/* destructor (vtable FixModelDraw_vtable) */
 /* 0x003156A0 */
 void *FixModelDraw_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00476B50;
+        AT(o, 0x0, void **) = FixModelDraw_vtable;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -11172,7 +11172,7 @@ void Effect7A3D0_Draw(u8 *o) {
     p.model = 0x30;
     p.rgba = 0x80808080;
     d.slot = -1;
-    d.vtbl = D_00478B70;
+    d.vtbl = Caustic_vtable;
     ModelDraw_Queue(&d, &p);
     d.vtbl = Helper469D00_vtable;
 }
@@ -11232,7 +11232,7 @@ void BackdropModel_Draw(u8 *o) {
     p.model = 0x2A;
     p.rgba = 0x40404040;
     d.slot = -1;
-    d.vtbl = D_00478B70;
+    d.vtbl = Caustic_vtable;
     ModelDraw_Queue(&d, &p);
     d.vtbl = Helper469D00_vtable;
 }
@@ -11276,7 +11276,7 @@ void TurningModel_Draw(u8 *o) {
     p.model = 0x2C;
     p.rgba = 0x40404040;
     d.slot = -1;
-    d.vtbl = D_00478B70;
+    d.vtbl = Caustic_vtable;
     ModelDraw_Queue(&d, &p);
     d.vtbl = Helper469D00_vtable;
 }
@@ -11332,7 +11332,7 @@ void BackdropModel2_Draw(u8 *o) {
         p.model = 0x2C;
     }
     d.slot = -1;
-    d.vtbl = D_00478B70;
+    d.vtbl = Caustic_vtable;
     ModelDraw_Queue(&d, &p);
     d.vtbl = Helper469D00_vtable;
 }
@@ -13064,7 +13064,7 @@ void Fire_Start(u8 *p) {
 }
 
 #ifdef HG_NATIVE
-/* Caustic_Draw, the caustic (vtable D_00478B70 +0xC; the draw object of ModelDraw_Queue): the
+/* Caustic_Draw, the caustic (vtable Caustic_vtable +0xC; the draw object of ModelDraw_Queue): the
  * frame's alpha cleared, then two 8 x 8 grids of the texture (+0x20) - a square of side +0x24
  * at +0x10 lying flat, turned +0x2C / +0x30 about y - added at 1/8 in colour +0x38, depth
  * tested without depth writes. Their texture coordinates wobble by 0.05 with the phase +0x28
@@ -13186,7 +13186,7 @@ void Effect78BC0_Draw(u8 *o) {
     p.model = AT(o, 0x10, s32);
     p.rgba = 0x80808080;
     d.slot = -1;
-    d.vtbl = D_00478B70;
+    d.vtbl = Caustic_vtable;
     ModelDraw_Queue(&d, &p);
     d.vtbl = Helper469D00_vtable;
 }
@@ -13242,7 +13242,7 @@ void Room4EEffect_Draw(u8 *o) {
     p.model = 0x80;
     p.rgba = 0x80808080;
     d.slot = -1;
-    d.vtbl = D_00478B70;
+    d.vtbl = Caustic_vtable;
     ModelDraw_Queue(&d, &p);
     d.vtbl = Helper469D00_vtable;
 }

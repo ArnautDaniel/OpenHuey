@@ -4,8 +4,8 @@
 
 #include "common.h"
 
-extern void *Helper469D00_vtable[], *D_0046ADA0[], *ModelBase_vtable[], *Model_vtable[], *HumanModel_vtable[],
-    *IK2_vtable[], *D_0046B1C0[];
+extern void *Helper469D00_vtable[], *ModelDrawer_vtable[], *ModelBase_vtable[], *Model_vtable[], *HumanModel_vtable[],
+    *IK2_vtable[], *Shadow_vtable[];
 
 typedef struct Progress Progress;
 
@@ -100,9 +100,9 @@ static inline void *HumanModel_Destroy(u8 *m, s32 flags) {
         AT(m, 0x928, void **) = IK2_vtable;
         AT(m, 0x0, void **) = Model_vtable;
         AT(m, 0x0, void **) = ModelBase_vtable;
-        AT(m, 0x1D0, void **) = D_0046B1C0;
+        AT(m, 0x1D0, void **) = Shadow_vtable;
         AT(m, 0x1D0, void **) = Helper469D00_vtable;
-        AT(m, 0x10, void **) = D_0046ADA0;
+        AT(m, 0x10, void **) = ModelDrawer_vtable;
         AT(m, 0x10, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             StalkerModel_delete(m);

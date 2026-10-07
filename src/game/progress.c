@@ -2366,18 +2366,18 @@ void Progress_CutsceneSlotDone(Progress *p, s32 slot) {
     }
 }
 
-extern void *Progress_vtable[], *D_0046A9C0[], *D_0046A9B0[], *Creatures_vtable[], *D_0046A980[];
-extern void *PlacedThings_vtable[], *D_0046A950[], *Message_vtable[], *D_0046A0D0[], *Heap_vtable[];
-extern void *BlockPool_vtable[], *D_004699E0[];
+extern void *Progress_vtable[], *Obj46A9C0_vtable[], *Obj46A9B0_vtable[], *Creatures_vtable[], *CreaturesBase_vtable[];
+extern void *PlacedThings_vtable[], *PlacedThingsBase_vtable[], *Message_vtable[], *MessageBase_vtable[], *Heap_vtable[];
+extern void *BlockPool_vtable[], *SceneTableBase_vtable[];
 
 #define VT(o, off) AT(o, off, void **)
 
-/* a list head (vtables D_004699E0 -> BlockPool_vtable): destructor body */
+/* a list head (vtables SceneTableBase_vtable -> BlockPool_vtable): destructor body */
 static inline void ListHead_Destroy(u8 *o) {
     if (o != NULL) {
         VT(o, 0) = BlockPool_vtable;
         if (o != NULL) {
-            VT(o, 0) = D_004699E0;
+            VT(o, 0) = SceneTableBase_vtable;
         }
     }
 }
@@ -2407,19 +2407,19 @@ void *Progress_dtor(Progress *p, s32 flags) {
         }
     }
     if (b + 0x73EB60 != NULL) {
-        VT(b, 0x73EB60) = D_0046A9C0;
+        VT(b, 0x73EB60) = Obj46A9C0_vtable;
         Progress73EC80_dtor(b + 0x73EC80, -1);
         Task_dtor((Task *)(b + 0x73EB6C), -1);
     }
     if (b + 0x73EB00 != NULL) {
-        VT(b, 0x73EB4C) = D_0046A9B0;
+        VT(b, 0x73EB4C) = Obj46A9B0_vtable;
     }
     if (b + 0x706440 != NULL) {   /* the creatures (gCreatures) */
         VT(b, 0x706468) = Creatures_vtable;
         ListHead_Destroy(b + 0x715A70);
         ListHead_Destroy(b + 0x714080);
         if (b + 0x706440 != NULL) {
-            VT(b, 0x706468) = D_0046A980;
+            VT(b, 0x706468) = CreaturesBase_vtable;
             if (b + 0x706440 != NULL) {
                 gCreatures = NULL;
             }
@@ -2429,7 +2429,7 @@ void *Progress_dtor(Progress *p, s32 flags) {
         VT(b, 0x6FC340) = PlacedThings_vtable;
         ListHead_Destroy(b + 0x706380);
         if (b + 0x6FC340 != NULL) {
-            VT(b, 0x6FC340) = D_0046A950;
+            VT(b, 0x6FC340) = PlacedThingsBase_vtable;
             if (b + 0x6FC340 != NULL) {
                 gPlacedThings = NULL;
             }
@@ -2438,7 +2438,7 @@ void *Progress_dtor(Progress *p, s32 flags) {
     if (b + 0x6FC218 != NULL) {   /* the boot message */
         VT(b, 0x6FC218) = Message_vtable;
         if (b + 0x6FC218 != NULL) {
-            VT(b, 0x6FC218) = D_0046A0D0;
+            VT(b, 0x6FC218) = MessageBase_vtable;
             if (b + 0x6FC218 != NULL) {
                 gBootMessage = NULL;
             }
@@ -2447,7 +2447,7 @@ void *Progress_dtor(Progress *p, s32 flags) {
     if (b + 0x6FBF00 != NULL) {
         VT(b, 0x6FBF00) = Heap_vtable;
         if (b + 0x6FBF00 != NULL) {
-            VT(b, 0x6FBF00) = D_004699E0;
+            VT(b, 0x6FBF00) = SceneTableBase_vtable;
         }
     }
     if (p != NULL) {

@@ -64,7 +64,7 @@
 #endif
 
 extern void *Actor_vtable[];   /* Actor */
-extern void *PlacedThings_vtable[], *Thing_vtable[], *BlockPool_vtable[], *D_004699E0[], *D_0046A950[];
+extern void *PlacedThings_vtable[], *Thing_vtable[], *BlockPool_vtable[], *SceneTableBase_vtable[], *PlacedThingsBase_vtable[];
 extern void *Ball_vtable[], *Thing01_vtable[], *Thing02_vtable[], *Thing03_vtable[], *Thing04_vtable[], *Thing05_vtable[],
     *Thing06_vtable[], *Thing07_vtable[], *Thing08_vtable[], *Thing09_vtable[], *Thing10_vtable[], *ThingShared_vtable[];
 
@@ -72,11 +72,11 @@ extern void *Ball_vtable[], *Thing01_vtable[], *Thing02_vtable[], *Thing03_vtabl
 #define SAVED(p) ((u8 *)(p) + 0xA14)
 #define NUM_SAVED 60
 
-extern void *D_00476B50[];
+extern void *FixModelDraw_vtable[];
 
 void ThingShared_Frame(u8 *o);
 
-extern void *PlacedObjects_vtable[], *D_0046F390[];
+extern void *PlacedObjects_vtable[], *PlacedObjectsBase_vtable[];
 extern VObject *gRoomObjects;          /* the room objects */
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
@@ -122,8 +122,8 @@ void *PlacedThings_Destroy(u8 *m, s32 flags) {
     if (m != NULL) {
         AT(m, 0x0, void **) = PlacedThings_vtable;
         AT(m, 0xA040, void **) = BlockPool_vtable;
-        AT(m, 0xA040, void **) = D_004699E0;
-        AT(m, 0x0, void **) = D_0046A950;
+        AT(m, 0xA040, void **) = SceneTableBase_vtable;
+        AT(m, 0x0, void **) = PlacedThingsBase_vtable;
         gPlacedThings = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(m);
@@ -138,7 +138,7 @@ void *PlacedThings_ctor(u8 *p) {
 
     gPlacedThings = (VObject *)p;
     F(p, 0x0, void *) = PlacedThings_vtable;
-    F(a, 0x0, void *) = D_004699E0;
+    F(a, 0x0, void *) = SceneTableBase_vtable;
     F(a, 0x4, u32) = 0;
     F(a, 0x8, u32) = 0;
     F(a, 0x0, void *) = BlockPool_vtable;
@@ -233,7 +233,7 @@ void ThingSave_Clear(s32 *e) {
 }
 
 /* (possibly dead code: nothing in the game references it) */
-/* destructor (PlacedObjects_vtable): its 64 entries (+0x20, 0xB0 each), then the base (D_0046F390,
+/* destructor (PlacedObjects_vtable): its 64 entries (+0x20, 0xB0 each), then the base (PlacedObjectsBase_vtable,
  * clearing gRoomObjects) */
 /* (possibly dead code: nothing in the game references it) */
 /* 0x002D0D60 */
@@ -241,7 +241,7 @@ void *PlacedThings_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = PlacedObjects_vtable;
         __destroy_arr(o + 0x20, (void *(*)(void *, s32))QuadEntry_dtor, 0xB0, 0x40);
-        AT(o, 0x0, void **) = D_0046F390;
+        AT(o, 0x0, void **) = PlacedObjectsBase_vtable;
         gRoomObjects = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -1228,7 +1228,7 @@ void Thing01_Setup(u8 *o) {
 /* ---- kind 2 (Thing02_vtable, over the shared thing class ThingShared_vtable): set down at a random turn;
  * it goes off (sound 0x8E and a ThingBurst_vtable burst at it) when the shared checks say so ---- */
 
-extern void *Thing02_vtable[], *ThingShared_vtable[], *D_00476B50[];
+extern void *Thing02_vtable[], *ThingShared_vtable[], *FixModelDraw_vtable[];
 extern void ThingShared_Setup(u8 *o);   /* ThingShared_vtable +0xC */
 extern void ThingShared_ReachStalkers(u8 *o);
 extern s32 ThingShared_Armed(u8 *o);
@@ -1252,7 +1252,7 @@ void *Thing02_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* its model (a D_00476B50 drawer, settings a / b / c) turned by +0x132 / 256 of a full turn
+/* its model (a FixModelDraw_vtable drawer, settings a / b / c) turned by +0x132 / 256 of a full turn
    - 180 */
 static inline void turned_model(u8 *o, s32 a, s32 b, s32 c) {
     static const union { u32 u; f32 f; } kPi = {0x40490FDB};
@@ -1266,7 +1266,7 @@ static inline void turned_model(u8 *o, s32 a, s32 b, s32 c) {
     rot[0] = 0.0f;
     rot[1] = kPi.f * (360.0f * ((f32)(u32)AT(o, 0x132, u16) / 256.0f) - 180.0f) / 180.0f;
     rot[2] = 0.0f;
-    d.vtbl = D_00476B50;
+    d.vtbl = FixModelDraw_vtable;
     d.a = -1;
     ModelDraw_Fill((u8 *)&d, BALL_POS(o), rot, a, b, c);
     d.vtbl = Helper469D00_vtable;
@@ -2297,7 +2297,7 @@ void Thing03_Draw(u8 *o) {
     rot[1] = 0.0f;
     rot[0] = kDown.f;
     rot[2] = kPi.f * (360.0f * ((f32)(u32)AT(o, 0x124, u16) / 256.0f) - 180.0f) / 180.0f;
-    d.vtbl = D_00476B50;
+    d.vtbl = FixModelDraw_vtable;
     d.a = -1;
     late = AT(o, 0xE4, s32) - 8992;
     if (late > 0) {

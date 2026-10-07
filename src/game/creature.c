@@ -66,7 +66,7 @@ extern void *CreatureA_vtable[], *CreatureBase_vtable[], *Character_vtable[], *A
 
 /* ---- the creature base (CreatureBase_vtable): defaults ---- */
 
-extern PTMF D_01990D40[];
+extern PTMF Room4F_Commands[];
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -83,7 +83,7 @@ extern PTMF D_01990D40[];
 
 extern const char *const pstr_O_DNL_DNL_202_TEX;
 
-extern void *Creatures_vtable[], *BlockPool_vtable[], *D_004699E0[], *D_0046A980[];
+extern void *Creatures_vtable[], *BlockPool_vtable[], *SceneTableBase_vtable[], *CreaturesBase_vtable[];
 u32 Creatures_MessageSlot(u8 *p);
 void *Creatures_ModelSet(u8 *p);
 u32 Creatures_Get(u8 *p, u32 i);
@@ -1945,25 +1945,25 @@ s32 Room4F_CreatureVanish(void) {
     return 0;
 }
 
-/* (self->*D_01990D40[i])(a, b) */
+/* (self->*Room4F_Commands[i])(a, b) */
 /* 0x002B4250 */
 s32 Room4F_Command(void *self, u32 i, s32 a, s32 b) {
-    return ptmf_scall_r2(self, &D_01990D40[i & 0xFF], a, b);
+    return ptmf_scall_r2(self, &Room4F_Commands[i & 0xFF], a, b);
 }
 
 /* (possibly dead code: nothing in the game references it) */
 /* destructor (vtable at +0x28, Creatures_vtable): members at +0xF630 / +0xDC40, then the base
- * (D_0046A980, clearing gCreatures) */
+ * (CreaturesBase_vtable, clearing gCreatures) */
 /* (possibly dead code: nothing in the game references it) */
 /* 0x002D0DF0 */
 void *Creatures_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x28, void **) = Creatures_vtable;
         AT(o, 0xF630, void **) = BlockPool_vtable;
-        AT(o, 0xF630, void **) = D_004699E0;
+        AT(o, 0xF630, void **) = SceneTableBase_vtable;
         AT(o, 0xDC40, void **) = BlockPool_vtable;
-        AT(o, 0xDC40, void **) = D_004699E0;
-        AT(o, 0x28, void **) = D_0046A980;
+        AT(o, 0xDC40, void **) = SceneTableBase_vtable;
+        AT(o, 0x28, void **) = CreaturesBase_vtable;
         gCreatures = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -1979,14 +1979,14 @@ void *Creatures_ctor(u8 *p) {
 
     gCreatures = p;
     F(p, 0x28, void *) = Creatures_vtable;
-    F(a, 0x0, void *) = D_004699E0;
+    F(a, 0x0, void *) = SceneTableBase_vtable;
     F(a, 0x4, u32) = 0;
     F(a, 0x8, u32) = 0;
     F(a, 0x0, void *) = BlockPool_vtable;
     F(a, 0xC, u32) = 0;
     F(a, 0x10, u32) = 0;
     F(a, 0x14, u32) = 0;
-    F(b, 0x0, void *) = D_004699E0;
+    F(b, 0x0, void *) = SceneTableBase_vtable;
     F(b, 0x4, u32) = 0;
     F(b, 0x8, u32) = 0;
     F(b, 0x0, void *) = BlockPool_vtable;

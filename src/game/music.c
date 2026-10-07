@@ -58,7 +58,7 @@ extern const PTMF MusicDir_TrackFade_ptmf;   /* MusicDir_TrackFade: a track volu
 extern const PTMF MusicDir_GlobalFade_ptmf;   /* MusicDir_GlobalFade: the global volume fade */
 extern const PTMF MusicDir_SeqFade_ptmf;   /* MusicDir_SeqFade: a sequence volume fade */
 extern const PTMF MusicDir_BendFade_ptmf;   /* MusicDir_BendFade: a channel bend fade */
-extern void *MusicDir_vtable[], *D_0046EBE0[];
+extern void *MusicDir_vtable[], *MusicDirBase_vtable[];
 
 #define TRACK(d, k) ((u8 *)(d) + 0x34 + ((k) & 0xFF) * 0x110)
 #define CHAN(d, k, c) (TRACK(d, k) + ((c) & 0xFF) * 0x10)
@@ -73,7 +73,7 @@ typedef struct BgmTrack {
 
 extern BgmTrack pstr_ADX00_AD_01_ADX[];   /* the tracks */
 extern void *BgmCtl_vtable[];   /* BgmCtl */
-extern void *D_0046A100[];   /* its base */
+extern void *BgmCtlBase_vtable[];   /* its base */
 #define ADXT_STAT_PLAYEND 6
 
 void Bgm_ApplyVolume(Bgm *b);
@@ -180,7 +180,7 @@ BgmCtl *BgmCtl_dtor(BgmCtl *c, s32 flags) {
     if (c != NULL) {
         c->vtbl = BgmCtl_vtable;
         if (c != NULL) {
-            c->vtbl = D_0046A100;
+            c->vtbl = BgmCtlBase_vtable;
             if (c != NULL) {
                 gMusic = NULL;
             }
@@ -752,11 +752,11 @@ void MusicDir_Setup(u8 *d) {
     }
 }
 
-/* the base's destructor (D_0046EBE0) */
+/* the base's destructor (MusicDirBase_vtable) */
 /* 0x002C6180 */
 void *MusicDirBase_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
-        AT(d, 0x0, void **) = D_0046EBE0;
+        AT(d, 0x0, void **) = MusicDirBase_vtable;
         if (d != NULL) {
             gStageMusic = NULL;
         }
@@ -946,7 +946,7 @@ static inline void director_dtor(u8 *d) {
     __destroy_arr(d + 0x474, MusicCue_dtor, 0x28, 0x18);
     __destroy_arr(d + 0x34, (void *(*)(void *, s32))MusicTrack_dtor, 0x110, 4);
     if (d != NULL) {
-        AT(d, 0x0, void **) = D_0046EBE0;
+        AT(d, 0x0, void **) = MusicDirBase_vtable;
         if (d != NULL) {
             gStageMusic = NULL;
         }
@@ -1531,7 +1531,7 @@ static inline void *stage_dtor(u8 *d, s32 flags, void **vt) {
             __destroy_arr(d + 0x474, MusicCue_dtor, 0x28, 0x18);
             __destroy_arr(d + 0x34, (void *(*)(void *, s32))MusicTrack_dtor, 0x110, 4);
             if (d != NULL) {
-                AT(d, 0x0, void **) = D_0046EBE0;
+                AT(d, 0x0, void **) = MusicDirBase_vtable;
                 if (d != NULL) {
                     gStageMusic = NULL;
                 }

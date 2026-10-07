@@ -72,7 +72,7 @@ extern u8 D_003AF210[];
 
 extern u8 D_004137B0[], D_00414220[], D_00414270[], D_00413E10[], D_00413E60[], D_00413E80[], str_Z_5[];
 extern u8 D_004139D0[], D_00413A10[], D_00413640[], D_004137A0[], D_0047AC08[];
-extern const PTMF D_004135D0;
+extern const PTMF Debilitas3_Actions;
 extern u8 D_0042E440[];
 extern u8 D_0042E480[];
 extern const PTMF Pursuer_AttackNextStep_ptmf5;
@@ -95,7 +95,7 @@ void Kind27_StateBlow(Pursuer *p);
 extern const PTMF Kind27_StateBlow_ptmf, Kind27_StateTurnToFiona_ptmf;
 extern u8 D_0042E720[], D_0042F110[], D_0042F160[], D_0042ED60[], str_Z_9[], D_0042ECF0[], D_0042ED40[];
 extern u8 D_0042E940[], D_0042E980[], D_0042E5B0[], D_0042E710[], D_0047ADC0[];
-extern const PTMF D_0042E540;
+extern const PTMF Kind27_Actions;
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
 /* Field access by byte offset into objects whose layout is not yet known. */
@@ -617,7 +617,7 @@ void Debilitas_StandAnim(Pursuer *p) {
     }
 }
 
-extern PTMF D_003AF2D0;
+extern PTMF Debilitas_Actions;
 extern u8 D_003AF340[], D_003AF4A0[], D_003AF4D0[], D_003AF6F0[], D_003AF730[], D_003AFA90[],
     D_003AFAF0[], D_003AFB10[], D_003AFB58[], str_Z_2[], D_0047A900[];
 
@@ -650,7 +650,7 @@ void Debilitas_Setup(Pursuer *p) {
     p->c.hp = p->c.hpMax;
     p->c.hearThreshold = 0;
     PU(p, 0x16B4, u8) = 0;
-    PU(p, 0x1714, PTMF *) = &D_003AF2D0;
+    PU(p, 0x1714, PTMF *) = &Debilitas_Actions;
     PU(p, 0x1720, u8 *) = D_003AF6F0;
     PU(p, 0x1724, u8 *) = D_003AF730;
     PU(p, 0x16AC, u8 *) = D_003AF340;
@@ -1318,7 +1318,7 @@ void Debilitas3_Setup(Pursuer *p) {
     p->c.hp = p->c.hpMax;
     p->c.hearThreshold = 0;
     PU(p, 0x16B4, u8) = 2;
-    PU(p, 0x1714, const PTMF *) = &D_004135D0;
+    PU(p, 0x1714, const PTMF *) = &Debilitas3_Actions;
     PU(p, 0x1720, u8 *) = D_004139D0;
     PU(p, 0x1724, u8 *) = D_00413A10;
     PU(p, 0x16AC, u8 *) = D_00413640;
@@ -1825,7 +1825,7 @@ void Kind27_Setup(Pursuer *p) {
     p->c.hp = p->c.hpMax;
     p->c.hearThreshold = 0;
     PU(p, 0x16B4, u8) = 3;
-    PU(p, 0x1714, const PTMF *) = &D_0042E540;
+    PU(p, 0x1714, const PTMF *) = &Kind27_Actions;
     PU(p, 0x1720, u8 *) = D_0042E940;
     PU(p, 0x1724, u8 *) = D_0042E980;
     PU(p, 0x16AC, u8 *) = D_0042E5B0;

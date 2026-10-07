@@ -69,7 +69,7 @@ f32 Kind37_ReachHewie(void);
 s32 Kind37_SlowWalkAnim(u8 *p);
 void *Kind37_ModelFiles(void);
 
-extern void *D_00470390[];
+extern void *Capsule_vtable[];
 extern void *BonePoint_vtable[];
 void *Part60_ctor(u8 *p);
 void *HangPoint_ctor(u8 *p);
@@ -225,7 +225,7 @@ static inline void model_1310(u8 *m, void **vtbl) {
     AT(m, 0x10D4, s32) = 0;
     AT(m, 0x10D0, s32) = 0;
     for (e = m + 0x10E0; e < m + 0x1310; e += 0x70) {
-        AT(e, 0x30, void **) = D_00470390;
+        AT(e, 0x30, void **) = Capsule_vtable;
     }
 }
 
@@ -520,7 +520,7 @@ void *Riccardo_ModelFiles(void) {
     return (F(gProgress, 0x30, u32) & 0x8000) ? D_00414800 : D_004147C0;
 }
 
-extern u8 D_004148A0[], D_004148E0[], D_00414A30[], D_00414A40[], D_00414CD0[], D_00414D00[],
+extern u8 Riccardo_Actions[], D_004148E0[], D_00414A30[], D_00414A40[], D_00414CD0[], D_00414D00[],
     D_00415060[], D_004150B0[], D_004150D0[], str_Z_6[], D_00415130[], D_004155E0[],
     D_00415630[], D_00415650[], D_0047AC30[];
 
@@ -566,7 +566,7 @@ void Riccardo_Setup(Pursuer *p) {
     p->c.a.height = 17.0f;
     p->c.hp = p->c.hpMax;
     p->c.hearThreshold = 12;
-    PU(p, 0x1714, u8 *) = D_004148A0;
+    PU(p, 0x1714, u8 *) = Riccardo_Actions;
     PU(p, 0x1720, u8 *) = D_00414CD0;
     PU(p, 0x1724, u8 *) = D_00414D00;
     PU(p, 0x16AC, u8 *) = D_004148E0;
@@ -1630,7 +1630,7 @@ static void Riccardo_BackOrHold(Pursuer *p, f32 roll) {
     }
 }
 
-extern u8 D_0047AC38[];
+extern u8 Riccardo_ChaseTable[];
 
 /* the threat-level chance of a lunge (attack table 0xA); 1 when he lunges */
 static inline s32 Riccardo_Lunge(Pursuer *p, u8 *tbl) {
@@ -1834,16 +1834,16 @@ static inline __attribute__((always_inline)) void Riccardo_Chase(Pursuer *p, u8 
 
 /* 0x002DA6B0 */
 void Riccardo_StateChase(Pursuer *p) {
-    Riccardo_Chase(p, D_0047AC38, &D_004156A0, &D_004156B0);
+    Riccardo_Chase(p, Riccardo_ChaseTable, &D_004156A0, &D_004156B0);
 }
 
-extern u8 D_0047AF50[];
+extern u8 Riccardo2_ChaseTable[];
 extern const PTMF D_00442928, D_00442938;
 
 /* (as Riccardo_StateChase) the same chase in the other class, with its lunge table and states */
 /* 0x0034BFF0 */
 void Kind37_StateChase(Pursuer *p) {
-    Riccardo_Chase(p, D_0047AF50, &D_00442928, &D_00442938);
+    Riccardo_Chase(p, Riccardo2_ChaseTable, &D_00442928, &D_00442938);
 }
 
 /* ---- the same shapes in other classes, generated from the functions they copy (2026-10-05) ---- */

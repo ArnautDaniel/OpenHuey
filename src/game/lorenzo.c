@@ -749,7 +749,7 @@ void *Lorenzo2_ModelFiles(void) {
     return b5_prog_flag8000() ? D_00422480 : D_00422440;
 }
 
-extern u8 D_00422500[], D_00422650[], D_00422690[], D_004226F0[], D_00422880[], D_00422A10[],
+extern u8 D_00422500[], D_00422650[], Lorenzo2_Actions[], D_004226F0[], D_00422880[], D_00422A10[],
     D_00422A40[], D_00423020[], D_004230C0[], D_004230E0[], str_Z_8[], D_004238B0[],
     D_00423950[], D_00423990[], D_019910C8[], D_0047AD10[];
 
@@ -787,7 +787,7 @@ void Lorenzo2_Setup(Pursuer *p) {
     p->c.a.height = 18.0f;
     p->c.hp = p->c.hpMax;
     p->c.hearThreshold = 12;
-    PU(p, 0x1714, u8 *) = D_00422690;
+    PU(p, 0x1714, u8 *) = Lorenzo2_Actions;
     PU(p, 0x1720, u8 *) = D_00422A10;
     PU(p, 0x1724, u8 *) = D_00422A40;
     PU(p, 0x16AC, u8 *) = D_00422500;
@@ -1892,9 +1892,9 @@ void *LorenzoModel_dtor(u8 *m, s32 flags) {
         __destroy_arr(m + 0x890, HangPoint_dtor, 0x50, 6);
         AT(m, 0x0, void **) = Model_vtable;
         AT(m, 0x0, void **) = ModelBase_vtable;
-        AT(m, 0x1D0, void **) = D_0046B1C0;
+        AT(m, 0x1D0, void **) = Shadow_vtable;
         AT(m, 0x1D0, void **) = Helper469D00_vtable;
-        AT(m, 0x10, void **) = D_0046ADA0;
+        AT(m, 0x10, void **) = ModelDrawer_vtable;
         AT(m, 0x10, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             StalkerModel_delete(m);
@@ -2682,7 +2682,7 @@ void Kind39_StartGrab(Pursuer *p) {
 }
 
 extern u8 D_00444ED0[], D_00445990[], D_004459E0[], D_00445A00[], D_00445A48[], D_00444D40[], D_004454E0[],
-    D_00445530[], D_00445550[], str_Z_13[], D_00444CE0[], D_00445060[], D_00445090[], D_00444B50[],
+    D_00445530[], D_00445550[], str_Z_13[], Kind39_Actions[], D_00445060[], D_00445090[], D_00444B50[],
     D_00444CA0[], D_0047B010[];
 
 /* (as Lorenzo2_Setup) the other class's setup: its tables, and its own stats */
@@ -2719,7 +2719,7 @@ void Kind39_Setup(Pursuer *p) {
     p->c.a.height = 18.0f;
     p->c.hp = p->c.hpMax;
     p->c.hearThreshold = 12;
-    PU(p, 0x1714, u8 *) = D_00444CE0;
+    PU(p, 0x1714, u8 *) = Kind39_Actions;
     PU(p, 0x1720, u8 *) = D_00445060;
     PU(p, 0x1724, u8 *) = D_00445090;
     PU(p, 0x16AC, u8 *) = D_00444B50;

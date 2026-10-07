@@ -158,7 +158,7 @@ s32 Room5C_Command(void *self, u32 i, s32 a, s32 b) {
  * (/ 13, +0x74 0 / +0x78 1), 1 0xC..0x20 (/ 20), 2 7..0x12 (/ 11) (+0x74 1 / +0x78 0) */
 /* 0x002B5C30 */
 s32 Room5C_Cmd00(void *self, void *a1, u8 *cmd) {
-    u8 *o = room_obj(D_0047ABEC);
+    u8 *o = room_obj(Room5C_DialName);
     u32 v;
 
     if (o == NULL) {

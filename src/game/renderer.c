@@ -78,7 +78,7 @@ extern void *Helper469D00_vtable[];
 void *Bloom_dtor(u8 *o, s32 flags);
 
 extern void *TexCache_vtable[];
-extern void *D_0046B1F0[];
+extern void *TexCacheBase_vtable[];
 void *TexCache_dtor(u8 *o, s32 flags);
 
 /* the rectangle's corners: x, y (0 / 1: 512 units from the 0x700 origin), kick */
@@ -91,8 +91,8 @@ s32 Overlay_Draw(void *ov);
 s32 Bloom_Draw(u8 *o);
 
 extern void *Renderer_vtable[];
-extern void *D_0046ACF0[];
-extern void *D_0046AF20[];
+extern void *RendererBase_vtable[];
+extern void *VramBase_vtable[];
 extern void *Vram_vtable[];
 
 typedef struct TexEntry {
@@ -292,7 +292,7 @@ void Vram_Upload(u8 *v, s32 slot, const void *pix, const void *clut);
 void *Renderer_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = Renderer_vtable;
-        AT(o, 0x0, void **) = D_0046ACF0;
+        AT(o, 0x0, void **) = RendererBase_vtable;
         gRenderer = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -616,7 +616,7 @@ s32 Renderer_Draw(u8 *r, void *obj, s32 layer, void *arg) {
 void *Vram_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = Vram_vtable;
-        AT(o, 0x0, void **) = D_0046AF20;
+        AT(o, 0x0, void **) = VramBase_vtable;
         gVram = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -1492,7 +1492,7 @@ void TexCache_ForgetLayers(TexCache *c) {
 void *TexCache_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = TexCache_vtable;
-        AT(o, 0x0, void **) = D_0046B1F0;
+        AT(o, 0x0, void **) = TexCacheBase_vtable;
         gTexCache = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);

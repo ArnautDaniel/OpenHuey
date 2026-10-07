@@ -246,7 +246,7 @@ u8 *Debilitas2_ModelFiles(Pursuer *p) {
     return (AT(gProgress, 0x30, u32) & 0x8000) ? D_0041B5B0 : D_0041B570;
 }
 
-extern u8 D_0041B670[], D_0041B6E0[], D_0041B840[], D_0041B860[], D_0041BA80[], D_0041BAC0[],
+extern u8 Debilitas2_Actions[], D_0041B6E0[], D_0041B840[], D_0041B860[], D_0041BA80[], D_0041BAC0[],
     D_0041BDF0[], D_0041BE60[], D_0041BE80[], str_Z_7[], D_0041C260[], D_0041C2B0[],
     D_0047ACA8[];
 
@@ -280,7 +280,7 @@ void Debilitas2_Setup(Pursuer *p) {
     p->c.hp = p->c.hpMax;
     p->c.hearThreshold = 0;
     PU(p, 0x16B4, u8) = 1;
-    PU(p, 0x1714, u8 *) = D_0041B670;
+    PU(p, 0x1714, u8 *) = Debilitas2_Actions;
     PU(p, 0x1720, u8 *) = D_0041BA80;
     PU(p, 0x1724, u8 *) = D_0041BAC0;
     PU(p, 0x16AC, u8 *) = D_0041B6E0;

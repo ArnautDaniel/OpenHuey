@@ -64,7 +64,7 @@ static inline s32 b5_prog_flag8000(void);
 
 static inline s32 b5_prog_flag8000(void);
 
-extern void *D_0046D730[];
+extern void *RoomEffectBase_vtable[];
 extern void *EffectBase_vtable[];
 extern void *Reflection_vtable[];
 extern void *Effect79FF0_vtable[];
@@ -83,7 +83,7 @@ extern VObject *gSceneGameF29740; /* path planner */
 extern u8 D_0047A930[8];   /* 0..7 */
 extern s32 Summoner_Offstage(u8 *o);
 extern s32 Summoner_InPlay(u8 *o);
-extern u8 D_0047AC90[];        /* per noise level: summon chance, hunted chance (percent) */
+extern u8 Pursuer_NoiseChances[];        /* per noise level: summon chance, hunted chance (percent) */
 extern u32 D_00419DC0[];       /* the seconds before the pursuer can be summoned, by kind */
 /* the summoner `o` takes the pursuer as it is now (when active: its room +0x8, its state +0,
    kind `kind`, waited 0); then progress slot refresh (Progress_CharDone) */
@@ -645,14 +645,14 @@ s32 Pursuer_LoadMessage(Pursuer *p) {
     return 1;
 }
 
-extern void *D_0046D800[];
+extern void *DoorShadow_vtable[];
 extern void *Helper469D00_vtable[];
 
 /* destructor of a small object (vtables 0x46D800 -> 0x469D00) */
 /* 0x00278490 */
-void **SmallObj46D800_dtor(void **obj, s32 flags) {
+void **DoorShadow_dtor(void **obj, s32 flags) {
     if (obj != NULL) {
-        *obj = D_0046D800;
+        *obj = DoorShadow_vtable;
         if (obj != NULL) {
             *obj = Helper469D00_vtable;
         }
@@ -5686,7 +5686,7 @@ void Summoner_Noise(u8 *o, u8 *n) {
     if ((s8)lvl < 0) {
         lvl = 0;
     }
-    t = D_0047AC90 + (s8)lvl * 2;
+    t = Pursuer_NoiseChances + (s8)lvl * 2;
     pu = (u8 *)gCharPursuer;
     if (pu != NULL && (AT(pu, 0xD0, u8) != 0 || AT(pu, 0xD1, u8) != 0)) {
         if (AT(pu, 0x28, u8) != 0) {
@@ -11463,7 +11463,7 @@ Pursuer *NPC_dtor(Pursuer *p, s32 flags) {
 void *Obj472F60_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = Reflection_vtable;
-        AT(o, 0x0, void **) = D_0046D730;
+        AT(o, 0x0, void **) = RoomEffectBase_vtable;
         if ((s16)flags > 0) {
             RoomEffects_delete(o);
         }

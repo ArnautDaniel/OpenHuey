@@ -1,6 +1,6 @@
 /* Character shadows: shadow volumes of per-bone boxes, counted in renderer layer 6.
  *
- * A model's shadow object (model +0x1D0, vtable D_0046B1C0) is queued in layer 6 once per
+ * A model's shadow object (model +0x1D0, vtable Shadow_vtable) is queued in layer 6 once per
  * light that casts it (Shadow_Queue). Its draw (Shadow_Draw) extrudes the bone boxes away
  * from the light and draws their volumes with a counter in the half-size layer-6 buffer: the
  * PS2 does it in the buffer's alpha, read through a palette that adds or takes 1 (lights +0x30),
@@ -54,7 +54,7 @@
 #include "glr.h"
 #endif
 
-extern void *Lights_vtable[], *D_0046B350[];
+extern void *Lights_vtable[], *LightsBase_vtable[];
 void Lights_Brightest(VObject *l, s32 *out, u32 tri, const f32 *pos);
 /* clip-space point c inside the view volume (|x|, |y|, |z| within w) */
 static s32 clip_inside(const f32 *c) {
@@ -180,7 +180,7 @@ void Shadow_Queue(u8 *s, s32 tri, s32 bone, f32 *light, s32 layer) {
 void *Lights_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = Lights_vtable;
-        AT(o, 0x0, void **) = D_0046B350;
+        AT(o, 0x0, void **) = LightsBase_vtable;
         gLights = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -986,7 +986,7 @@ void Lights_TakeRoom(VObject *l, u8 *sec) {
     }
 }
 
-/* ---- a door's shadow (doors +0x190, class D_0046D800): the light through a doorway, as the
+/* ---- a door's shadow (doors +0x190, class DoorShadow_vtable): the light through a doorway, as the
  * door's lit face swept away from the light into a box, its four sides drawn in layer 6's
  * buffer shading from the door's colour (+0x54: 0x808080 and the strength) to nothing at the
  * far end. +0x10 the door's matrix, +0x50 its lit face (0 or 6: four corners from +0x50 in

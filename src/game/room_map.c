@@ -304,7 +304,7 @@ s32 Rooms_ExitDoorFlags(VObject *r, s32 room, s32 exit) {
 
 extern u8 D_003D8BC0[];
 extern f32 D_003DE8C0[];      /* the rooms' centres (x, y, z) */
-extern void *D_0046C480[];
+extern void *RoomsBase_vtable[];
 
 #define DOOR_SIDE(def, s) ((const u8 *)(def) + (s) * 6)
 #define ROOM_EXIT(room, exit, off) AT(D_003D8BC0, (room) * 0x40 + ((exit) & 0xFF) * 8 + (off), s16)
@@ -682,7 +682,7 @@ VObject *Rooms_dtor(VObject *r, s32 flags) {
         return r;
     }
     r->vtbl = Rooms_vtable;
-    r->vtbl = D_0046C480;
+    r->vtbl = RoomsBase_vtable;
     gRooms = NULL;
     if ((s16)flags > 0) {
         __dl__FPv(r);
@@ -696,7 +696,7 @@ VObject *RoomsBase_dtor(VObject *r, s32 flags) {
     if (r == NULL) {
         return r;
     }
-    r->vtbl = D_0046C480;
+    r->vtbl = RoomsBase_vtable;
     gRooms = NULL;
     if ((s16)flags > 0) {
         __dl__FPv(r);
@@ -1268,10 +1268,10 @@ void Obstacle_Placed(u8 *o) {
  * model, +0x50), their moves (OBSTACLE.MTN at +0x380: count, then offsets), the 5 saved
  * places (+0x580, 8 each) and spots (+0x5B0, 0x10 each) ---- */
 
-extern void *Obstacles_vtable[], *D_0046C380[];
+extern void *Obstacles_vtable[], *ObstaclesBase_vtable[];
 extern VObject *gRoomObjects;   /* the room's objects: +0x18 (name) the object */
-extern u8 *D_0047A938[];      /* obstacle kinds: offset (x, z), n parts, then n x 0x10 */
-extern const char D_0047A940[], D_0047A948[], D_0047A950[];   /* "oshi00" */
+extern u8 *ObstacleKinds[];      /* obstacle kinds: offset (x, z), n parts, then n x 0x10 */
+extern const char ObstacleName_Make[], ObstacleName_Make2[], ObstacleName_Model[];   /* "oshi00" */
 extern void Obstacle_UnmarkRing(u8 *o, const f32 *dir);
 
 #define OBST(l, i) ((u8 *)(l) + 0x10 + (i) * 0xB0)
@@ -1303,7 +1303,7 @@ void *Obstacles_dtor(u8 *l, s32 flags) {
     if (l != NULL) {
         AT(l, 0x0, void **) = Obstacles_vtable;
         __destroy_arr(l + 0x10, Obstacle_dtor, 0xB0, 5);
-        AT(l, 0x0, void **) = D_0046C380;
+        AT(l, 0x0, void **) = ObstaclesBase_vtable;
         gObstacles = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(l);
@@ -1316,7 +1316,7 @@ void *Obstacles_dtor(u8 *l, s32 flags) {
 /* 0x0021B090 */
 void *ObstaclesBase_dtor(void *l, s32 flags) {
     if (l != NULL) {
-        AT(l, 0x0, void **) = D_0046C380;
+        AT(l, 0x0, void **) = ObstaclesBase_vtable;
         gObstacles = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(l);
@@ -1327,7 +1327,7 @@ void *ObstaclesBase_dtor(void *l, s32 flags) {
 
 /* place obstacle i of `kind` with model "oshi0n": its offset and parts from the kind */
 static void obstacle_make(u8 *l, s32 i, u32 n, s32 kind, const char *base, s32 a, s32 b, s32 saved) {
-    u8 *def = D_0047A938[kind];
+    u8 *def = ObstacleKinds[kind];
     u8 *o, *m, *part;
     s32 k;
 
@@ -1361,7 +1361,7 @@ static void obstacle_make(u8 *l, s32 i, u32 n, s32 kind, const char *base, s32 a
 /* 0x0021AE30 */
 void Obstacles_PlaceAt(u8 *l, s32 i, u32 n, s32 kind, s32 a, s32 b) {
     if (i < 5) {
-        obstacle_make(l, i, n, kind, D_0047A940, a, b, 0);
+        obstacle_make(l, i, n, kind, ObstacleName_Make, a, b, 0);
     }
 }
 
@@ -1369,7 +1369,7 @@ void Obstacles_PlaceAt(u8 *l, s32 i, u32 n, s32 kind, s32 a, s32 b) {
 /* 0x0021ACD0 */
 void Obstacles_PlaceSaved(u8 *l, s32 i, u32 n, s32 kind) {
     if (i < 5) {
-        obstacle_make(l, i, n, kind, D_0047A948, 0, 0, 1);
+        obstacle_make(l, i, n, kind, ObstacleName_Make2, 0, 0, 1);
     }
 }
 
@@ -1534,7 +1534,7 @@ void Obstacles_ModelBack(u8 *l, s32 i, u32 n) {
     if (i < 0 || i >= 5) {
         return;
     }
-    m = obstacle_model(D_0047A950, n & 0xFF);
+    m = obstacle_model(ObstacleName_Model, n & 0xFF);
     if (m != NULL) {
         AT(OBST(l, i), 0x50, u8 *) = m;
         sceVu0CopyVector((f32 *)(m + 0x20), &AT(l, 0x5B0 + i * 0x10, f32));

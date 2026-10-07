@@ -49,7 +49,7 @@ extern const char *const Room0C_ObjectNames[];                  /* room 0x0C (+1
 extern const char *const pstr_hook, *const pstr_a_Puppet, *const pstr_Puppetdoor;   /* room 0x0F */
 extern const char *const Room18_ObjectNames[];   /* room 0x18's objects */
 extern const char *const Room4F_ObjectNames[];   /* room 0x4F's objects */
-extern const char *const D_0047ABEC;     /* room 0x5C's dial */
+extern const char *const Room5C_DialName;     /* room 0x5C's dial */
 extern const char *const pstr_doll;     /* room 0x5D's lever */
 extern const char *const Room5D_ObjectNames[];   /* room 0x5D's (+2: four objects) */
 extern const char *const Room62_ObjectNames[];   /* room 0x62's objects */

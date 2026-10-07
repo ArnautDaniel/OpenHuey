@@ -16,8 +16,10 @@ differently). Last updated 2026-10-06.
   them) and the room +0x340 object (`func_00268180`, its flag is never set). Their drawing is
   done in OpenGL (`src/game/model.c`, `src/game/room.c`, `native/platform/glr.c`); the packets
   themselves are only in `asm/`.
-- About 1,350 data labels are still anonymous (`D_xxxxxxxx`): mostly script blobs, tables and
-  float constants.
+- About 1,250 data labels are still anonymous (`D_xxxxxxxx`): mostly script blobs, tables and
+  float constants used by one function. Every vtable is named (`Foo_vtable`, a base's
+  `FooBase_vtable`, a second base's `Foo_vtableN` by its offset); a few classes whose role isn't
+  known keep their address (`Obj46A9B0_vtable`).
 - The event script opcodes are fully described: `docs/event_opcodes.md`, listings with
   `tools/evdis.py ROOM`. Every room command and condition (`RoomXX_CmdNN` / `RoomXX_CondNN`) has a
   description in its file.
@@ -70,13 +72,12 @@ the code involved.
   last full run 7,211 of 7,226 tests passed; the failures were test-input problems since fixed,
   except `RoomMgr_MakeCurrent` (1 run in 40: a section pointer landing on the manager's own
   table, which real room files can't do).
-- **506 test lines pin `0x46BF20` as a generic vtable.** That is `SndDriver_vtable`, so their
-  virtual calls land on sound-driver methods and difftest compares the wrong callee's argument
-  registers: a dropped argument to a virtual callee can pass there. Fix a line with the object's
-  real vtable when touching it.
-- **`gSound`'s vtable is `D_0046BF2C`**, not `SndDriver_vtable`: gSound points 4 bytes into the
-  sound driver, so its virtual +X is `SndDriver_vtable` +0xC+X. Test lines pinning gSound's
-  object to 0x46BF20 are off by 0xC.
+- **486 test lines pin `0x46BF20` (`SndDriver_vtable`) as a generic vtable** for objects
+  whose class doesn't matter to the test, so their virtual calls land on sound-driver methods
+  and difftest compares the wrong callee's argument registers: a dropped argument to a virtual
+  callee can pass there. Fix a line with the object's real vtable when touching it. (`gSound`
+  points 4 bytes into the sound driver; its vtable is `SndDriver_vtable4`, and the lines that
+  pin gSound use it.)
 - PC-only code (`#ifdef HG_NATIVE` paths and `native/platform/`) is not difftested.
 - Behaviour-preserving cleanups were checked with `tools/codesnap.py` (per-function compiled
   code, inlining off) against the commit before the cleanup.

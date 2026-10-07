@@ -53,7 +53,7 @@ _Static_assert(__builtin_offsetof(MovieLib, create) == 0x28, "MovieLib.create");
 #define CPRM(lib, off, type) (*(type *)((lib)->create + (off) - 0x28))
 
 extern void *MovieLib_vtable[];
-extern void *D_0046AED0[];
+extern void *MovieLibBase_vtable[];
 
 extern s32 pstr_This_CFT_function_doesn_t_support_the_fu, D_003E5264;
 extern void *D_01976F98;
@@ -75,9 +75,9 @@ extern u8 str_CRI_SFX_PS2EE_Ver_2_08_Build_Sep_17_2004[];
 extern u8 str_CRI_SUD_PS2EE_Ver_0_05_Build_Sep_17_2004[];
 void *Cft_ValuePtr(void);
 
-extern void *D_0046AEC0[];
+extern void *AdxBase_vtable[];
 extern u8 str_VOL[];
-extern void *D_0046AF00[], *D_0046AF0C[], *D_0046AD88[];
+extern void *MovieSys_vtable[], *MovieSys_vtable124[], *Obj46AD88_vtable[];
 #ifdef HG_NATIVE
 #define CORE_SYNC_EI()
 #else
@@ -106,11 +106,11 @@ void MovieLib_Shutdown(u8 *o) {
     func_001C8648(str_VOL);
     RemoveIntcHandler(3, AT(o, 0x12C, s32));
 }
-/* destructor (vtable D_0046AED0) */
+/* destructor (vtable MovieLibBase_vtable) */
 /* 0x001BF660 */
 void *MovieLibBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046AED0;
+        AT(o, 0x0, void **) = MovieLibBase_vtable;
         AT(o, 0x4, u8) = 0;
         gMovieLib = NULL;
         if ((s16)flags > 0) {
@@ -120,19 +120,19 @@ void *MovieLibBase_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* destructor (D_0046AF00): its members at +0x7C44 (D_0046AED0, clearing gMovieLib) and +0x124
- * (D_0046AD88), then the base (D_0046AEC0, clearing gAdx) */
+/* destructor (MovieSys_vtable): its members at +0x7C44 (MovieLibBase_vtable, clearing gMovieLib) and +0x124
+ * (Obj46AD88_vtable), then the base (AdxBase_vtable, clearing gAdx) */
 /* 0x001BF6C0 */
 void *MovieSys_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046AF00;
-        AT(o, 0x124, void **) = D_0046AF0C;
+        AT(o, 0x0, void **) = MovieSys_vtable;
+        AT(o, 0x124, void **) = MovieSys_vtable124;
         AT(o, 0x7C44, void **) = MovieLib_vtable;
-        AT(o, 0x7C44, void **) = D_0046AED0;
+        AT(o, 0x7C44, void **) = MovieLibBase_vtable;
         AT(o, 0x7C48, u8) = 0;
         gMovieLib = NULL;
-        AT(o, 0x124, void **) = D_0046AD88;
-        AT(o, 0x0, void **) = D_0046AEC0;
+        AT(o, 0x124, void **) = Obj46AD88_vtable;
+        AT(o, 0x0, void **) = AdxBase_vtable;
         AT(o, 0x4, s32) = 0;
         AT(o, 0x8, s32) = 0;
         AT(o, 0xC, s32) = 0;
@@ -149,7 +149,7 @@ MovieLib *MovieLib_dtor(MovieLib *lib, s32 flags) {
     if (lib != NULL) {
         lib->vtbl = MovieLib_vtable;
         if (lib != NULL) {
-            lib->vtbl = D_0046AED0;
+            lib->vtbl = MovieLibBase_vtable;
             lib->unk4 = 0;
             if (lib != NULL) {
                 gMovieLib = NULL;

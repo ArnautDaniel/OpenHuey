@@ -8516,10 +8516,10 @@ void Fiona_StatePulledFree(Fiona *f) {
 }
 
 extern const PTMF Fiona_StatePulledFree_ptmf2, Fiona_StatePulledFree_ptmf3, Fiona_StatePulledFree_ptmf4, Fiona_StateDraggedOff_ptmf;
-extern s8 D_0047A910[];   /* shakes needed to break free, by the threat meter's level */
+extern s8 Fiona_ShakesToBreakFree[];   /* shakes needed to break free, by the threat meter's level */
 
 /* dragged by the hand (Fiona_StateDragged_ptmf): she struggles - shakes (Fiona_Shakes) add to +0x1AD6C8,
- * capped at 10 per pull so far (+0x1AD6CC); enough for the threat level (D_0047A910, or when
+ * capped at 10 per pull so far (+0x1AD6CC); enough for the threat level (Fiona_ShakesToBreakFree, or when
  * the game drives her, as many pulls as the level) and she breaks free (+0x1AD6C8 -1,
  * +0x1AD6C0 set, the leader told to stop: state 7). Each pull (0x1401, at the motion's event
  * 0x20) may draw a cry when the game drives her; free, she slips out (0x1403); the sixth pull
@@ -8575,7 +8575,7 @@ void Fiona_StateDragged(Fiona *f) {
         Progress *p = gProgress;
 
         if (AT(p, 0x1FBEC1, u8) == 0) {
-            if (!(FI(f, 0x1AD6C8, s32) < D_0047A910[AT(p, 0x7B8, u8)])) {
+            if (!(FI(f, 0x1AD6C8, s32) < Fiona_ShakesToBreakFree[AT(p, 0x7B8, u8)])) {
                 FI(f, 0x1AD6C8, s32) = -1;
             }
         } else if (FI(f, 0x1AD6CC, s32) == AT(p, 0x7B8, u8)) {
@@ -10056,7 +10056,7 @@ u32 Fiona_BlowCreatures(Fiona *f, u32 skip, s32 arg, f32 *pos, f32 reach) {
     return mask;
 }
 
-extern s8 D_0047A908[6];   /* chances (%) by the pursuer's health ratio */
+extern s8 Fiona_ChanceByPursuerHealth[6];   /* chances (%) by the pursuer's health ratio */
 
 /* when she is being chased (FI 0x1AD5D6), a roll against the chance for how worn the pursuer
  * is (+0x14C8 / +0x14CC: over 0.8, 0.6, 0.4, 0.2, 0.1, under) */
@@ -10082,7 +10082,7 @@ s32 Fiona_ChaseRoll(Fiona *f) {
     } else {
         k = 5;
     }
-    if ((s8)(s32)(100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)) < D_0047A908[k]) {
+    if ((s8)(s32)(100.0f * VCALL(gRandom, 0x1C, f32 (*)(VObject *))(gRandom)) < Fiona_ChanceByPursuerHealth[k]) {
         return 1;
     }
     return 0;

@@ -37,7 +37,7 @@ typedef struct Task {
     /* 0x15 */ u8 baseColor;
     /* 0x16 */ u8 alpha;
     /* 0x17 */ u8 layer;          /* renderer layer */
-    /* 0x18 */ u8 speed;          /* index into the frames-per-glyph table D_0047B140 */
+    /* 0x18 */ u8 speed;          /* index into the frames-per-glyph table Text_GlyphFrames */
     /* 0x19 */ u8 pad19;
     /* 0x1A */ s16 x;             /* box centre, screen */
     /* 0x1C */ s16 y;

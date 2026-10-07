@@ -9,7 +9,7 @@ typedef struct Scene Scene;
 /* scene_game.c */
 extern Scene *SceneGame_ctor(Scene *g);   /* mode 3: gameplay (16 MB) */
 extern void *RoomBase_dtor(void *o, s32 flags);
-extern void *Obj46BA68_dtor(u8 *o, s32 flags);
+extern void *EventPoint_dtor(u8 *o, s32 flags);
 extern void *Kind33Model_ctor(u8 *m);
 
 /* ---- (was unsorted.h) ---- */

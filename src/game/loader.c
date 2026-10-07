@@ -85,7 +85,7 @@ extern void *Bloom_vtable[];
 
 #define TWO_PI 0x1.921fb6p+2f
 
-extern void *D_00476F40[];
+extern void *LoadingEmblem_vtable[];
 void *LoadingEmblem_dtor(u8 *o, s32 flags);
 
 s32 Loader_CurrentDone(u8 *p);
@@ -661,7 +661,7 @@ s32 Loader_Queue(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
     return id;
 }
 
-extern void *Loader_vtable[], *D_0046A220[];
+extern void *Loader_vtable[], *LoaderBase_vtable[];
 
 /* the request in progress: stopped (with or without waiting) or, before it reads, dropped */
 static void LoadReq_Cancel(LoadReq *q, s32 wait) {
@@ -773,7 +773,7 @@ s32 Loader_State(u8 *l, s32 id) {
 
 /* the loader base: destructor */
 static inline void LoaderBase_Destroy(VObject *l) {
-    *(void ***)l = D_0046A220;
+    *(void ***)l = LoaderBase_vtable;
     if (l != NULL) {
         gFileLoader = NULL;
     }
@@ -790,11 +790,11 @@ void *LoaderBase_dtor(VObject *l, s32 flags) {
     return l;
 }
 
-/* destructor (vtable D_00476F40) */
+/* destructor (vtable LoadingEmblem_vtable) */
 /* 0x0033D990 */
 void *LoadingEmblem_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00476F40;
+        AT(o, 0x0, void **) = LoadingEmblem_vtable;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             __dl__FPv(o);

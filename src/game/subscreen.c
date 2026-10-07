@@ -73,7 +73,7 @@ s32 SubScreen_EntryMotions(void *o, u32 i);   /* (a u8) */
 void *Kind14Model_ctor(u8 *m);
 u32 SubScreen_FileCount(u8 *o);
 
-extern void *D_0046EC80[];
+extern void *DofDrawer_vtable[];
 
 extern u8 *kMapRooms[];     /* per map: its rooms (0x18-byte entries, -1 terminated); NULL ends */
 extern void **kMapPages[];  /* per map: its pages (by the entry's +0x4) */
@@ -86,16 +86,16 @@ extern u8 D_00420570[];        /* the alternative room entries (0x18 each) */
 #define MAP_PICTURE_AREA 0x6000000   /* the file loader's area for the page's picture */
 
 extern void *SubScreen_vtable[];          /* the title work */
-extern void *D_0046A090[], *D_0046A078[], *D_004699E0[], *BlockPool_vtable[], *D_0046A068[];
-extern void *D_0046A058[];
+extern void *SubScreenBase_vtable[], *SubPool_vtable[], *SceneTableBase_vtable[], *BlockPool_vtable[], *TextObj_vtable[];
+extern void *BootCard_vtable[];
 extern void TextObj_Release(u8 *o);
 /* the entry pool's destructor body: its list, its 192 entries, the global */
 static inline void Pool_Destroy(u8 *pool) {
-    AT(pool, 0x0, void **) = D_0046A078;
+    AT(pool, 0x0, void **) = SubPool_vtable;
     if (pool + 0x1208 != NULL) {
         AT(pool, 0x1208, void **) = BlockPool_vtable;
         if (pool + 0x1208 != NULL) {
-            AT(pool, 0x1208, void **) = D_004699E0;
+            AT(pool, 0x1208, void **) = SceneTableBase_vtable;
         }
     }
     __destroy_arr(pool + 8, PoolEntry_dtor, 0x18, 0xC0);
@@ -251,11 +251,11 @@ void Options_Defaults(u8 *o) {
     *(u32 *)(o + 8) = 0x3F800000;   /* 1.0f */
 }
 
-/* destructor (vtable D_0046EC80) */
+/* destructor (vtable DofDrawer_vtable) */
 /* 0x002C65C0 */
-void *Obj46EC80_dtor(u8 *o, s32 flags) {
+void *DofDrawer_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046EC80;
+        AT(o, 0x0, void **) = DofDrawer_vtable;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -265,24 +265,24 @@ void *Obj46EC80_dtor(u8 *o, s32 flags) {
 }
 
 /* the sub screen (SubScreen_vtable): its load / save screens, text object and two text tasks, then
- * the base (D_0046A090): the pool's entries, the globals gSubPool / gSubScreen cleared */
+ * the base (SubScreenBase_vtable): the pool's entries, the globals gSubPool / gSubScreen cleared */
 /* 0x002D0110 */
 void *SubScreen_dtor(SubScreen *w, s32 flags) {
     if (w != NULL) {
         u8 *o = (u8 *)w;
 
         w->vtbl = SubScreen_vtable;
-        AT(o, 0xA8AC0, void **) = D_0046A058;
+        AT(o, 0xA8AC0, void **) = BootCard_vtable;
         Task_dtor((Task *)(o + 0xA8AD8), -1);
-        AT(o, 0x97980, void **) = D_0046A068;
+        AT(o, 0x97980, void **) = TextObj_vtable;
         TextObj_Release(o + 0x97980);
         Task_dtor((Task *)(o + 0x97984), -1);
         task_end_child(&w->text);
         task_end_child(&w->ask);
-        w->vtbl = D_0046A090;
-        AT(o, 0x8, void **) = D_0046A078;
+        w->vtbl = SubScreenBase_vtable;
+        AT(o, 0x8, void **) = SubPool_vtable;
         AT(o, 0x1210, void **) = BlockPool_vtable;
-        AT(o, 0x1210, void **) = D_004699E0;
+        AT(o, 0x1210, void **) = SceneTableBase_vtable;
         __destroy_arr(o + 0x10, PoolEntry_dtor, 0x18, 0xC0);
         gSubPool = NULL;
         gSubScreen = NULL;
@@ -2461,7 +2461,7 @@ void SubScreen_StateThrowAsk(SubScreen *s) {
 
 /* ---- the screen's frame ---- */
 
-extern void *Overlay_vtable[], *D_0046EC80[], *Helper469D00_vtable[];
+extern void *Overlay_vtable[], *DofDrawer_vtable[], *Helper469D00_vtable[];
 extern const PTMF SubScreen_DrawClosing_ptmf;
 
 /* the running screen each frame: its state; behind it a darkening overlay (pages, kind 0x80..)
@@ -2504,7 +2504,7 @@ void SubScreen_StateRun(SubScreen *s) {
         }
     }
     dof.a = -1;
-    dof.vtbl = D_0046EC80;
+    dof.vtbl = DofDrawer_vtable;
     DepthBand_Queue((u8 *)&dof, 1.0f, 151.0f, 2000.0f, 2000.0f);
     if (s->close == 1 || (p != NULL && Progress_TestFlag(p, 4))) {
         s->fading = 1;
@@ -2789,7 +2789,7 @@ void SubScreen_DrawClosing(SubScreen *s) {
     }
     sub_fade_back(s);
     dof.a = -1;
-    dof.vtbl = D_0046EC80;
+    dof.vtbl = DofDrawer_vtable;
     DepthBand_Queue((u8 *)&dof, 1.0f, 151.0f, 2000.0f, 2000.0f);
     sub_fade_sound(f);
     dof.vtbl = Helper469D00_vtable;
@@ -2825,7 +2825,7 @@ void SubScreen_DrawOpening(SubScreen *s) {
     sub_fade_sound(f);
     sub_fade_back(s);
     dof.a = -1;
-    dof.vtbl = D_0046EC80;
+    dof.vtbl = DofDrawer_vtable;
     DepthBand_Queue((u8 *)&dof, 1.0f, 10.0f * (kTenth.f + 15.0f * (100.0f * (f32)s->fade / 64.0f / 100.0f)), 2000.0f,
                   2000.0f);
     if (gProgress != NULL) {

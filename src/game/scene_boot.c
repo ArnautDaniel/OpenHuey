@@ -17,8 +17,8 @@
 extern void *Scene_vtable[];
 extern void *SceneBoot_vtable[];
 extern void *Message_vtable[];   /* vtable of SceneBoot.msg */
-extern void *D_0046A0D0[];   /* base vtable of SceneBoot.msg */
-extern void *D_0046A058[];   /* vtable of SceneBoot.card */
+extern void *MessageBase_vtable[];   /* base vtable of SceneBoot.msg */
+extern void *BootCard_vtable[];   /* vtable of SceneBoot.card */
 extern void *Overlay_vtable[];   /* vtable of SceneBoot.unkC75D0 */
 extern void *Helper469D00_vtable[];   /* base vtable of SceneBoot.unkC75D0 */
 
@@ -61,7 +61,7 @@ SceneBoot *SceneBoot_ctor(SceneBoot *boot) {
         Task_Init(&boot->tasks[i]);
     }
 
-    boot->card.vtbl = D_0046A058;
+    boot->card.vtbl = BootCard_vtable;
     Task_Init(&boot->card.task);
     boot->card.state = -1;
 
@@ -83,7 +83,7 @@ SceneBoot *SceneBoot_dtor(SceneBoot *boot, s32 flags) {
     boot->base.vtbl = SceneBoot_vtable;
     boot->unkC75D0Vtbl = Overlay_vtable;
     boot->unkC75D0Vtbl = Helper469D00_vtable;
-    boot->card.vtbl = D_0046A058;
+    boot->card.vtbl = BootCard_vtable;
     Task_dtor(&boot->card.task, -1);
     for (i = 2; i >= 0; i--) {
         if (boot->tasks[i].child != NULL) {
@@ -92,7 +92,7 @@ SceneBoot *SceneBoot_dtor(SceneBoot *boot, s32 flags) {
         }
     }
     boot->msg.vtbl = Message_vtable;
-    boot->msg.vtbl = D_0046A0D0;
+    boot->msg.vtbl = MessageBase_vtable;
     gBootMessage = NULL;
     boot->base.vtbl = Scene_vtable;
     if ((s16)flags > 0) {

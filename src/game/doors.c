@@ -40,7 +40,7 @@
 #include "sce/intc.h"
 #include "input.h"
 
-extern void *Doors_vtable[], *D_0046C5D0[], *D_0046C780[], *D_0046D800[], *Helper469D00_vtable[];
+extern void *Doors_vtable[], *DoorsBase_vtable[], *PlacedMesh_vtable[], *DoorShadow_vtable[], *Helper469D00_vtable[];
 extern const f32 D_003E51A0[][8];   /* door kinds' areas: 4 (x, z) corners */
 
 #define DOOR(d, i) ((u8 *)(d) + ((i) & 0xFF) * 0x210)
@@ -171,9 +171,9 @@ static s32 door_walk(VObject *nm, u32 *tri, f32 *from, f32 *to) {
 /* 0x00221920 */
 void *Door_dtor(u8 *e, s32 flags) {
     if (e != NULL) {
-        AT(e, 0x190, void **) = D_0046D800;
+        AT(e, 0x190, void **) = DoorShadow_vtable;
         AT(e, 0x190, void **) = Helper469D00_vtable;
-        AT(e, 0x80, void **) = D_0046C780;
+        AT(e, 0x80, void **) = PlacedMesh_vtable;
         AT(e, 0x88, s32) = 0;
         AT(e, 0x80, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
@@ -189,7 +189,7 @@ void *Doors_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
         AT(d, 0x0, void **) = Doors_vtable;
         __destroy_arr(d + 0x10, (void *(*)(void *, s32))Door_dtor, 0x210, 8);
-        AT(d, 0x0, void **) = D_0046C5D0;
+        AT(d, 0x0, void **) = DoorsBase_vtable;
         gDoors = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(d);
@@ -202,7 +202,7 @@ void *Doors_dtor(u8 *d, s32 flags) {
 /* 0x00223D80 */
 void *DoorsBase_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
-        AT(d, 0x0, void **) = D_0046C5D0;
+        AT(d, 0x0, void **) = DoorsBase_vtable;
         gDoors = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(d);
@@ -1164,7 +1164,7 @@ void Door_Reset(u8 *door) {
  *   each: door, room, door on the far side, depth, from), +0x62C the step looked at, +0x630
  *   rooms seen (bits) ---- */
 
-extern void *RoutePlanner_vtable[], *D_0046C530[];
+extern void *RoutePlanner_vtable[], *RoutePlannerBase_vtable[];
 
 typedef struct RouteStep {
     u16 door, room, far, depth;
@@ -1296,7 +1296,7 @@ s32 RoutePlanner_FindRoute(u8 *rp, u32 from, u32 to, s32 side, u32 *avoid, u16 *
 void *RoutePlanner_dtor(void *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = RoutePlanner_vtable;
-        AT(o, 0x0, void **) = D_0046C530;
+        AT(o, 0x0, void **) = RoutePlannerBase_vtable;
         gRoutePlanner = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -1309,7 +1309,7 @@ void *RoutePlanner_dtor(void *o, s32 flags) {
 /* 0x00220CB0 */
 void *RoutePlannerBase_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046C530;
+        AT(o, 0x0, void **) = RoutePlannerBase_vtable;
         gRoutePlanner = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);

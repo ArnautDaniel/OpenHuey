@@ -133,7 +133,7 @@ void Cutscene_SetScript(u8 *self, u32 a, u32 b);
 s32 Cutscene_Call8(void *self);
 void Cutscene_Destroy(u8 *p);
 
-extern void *D_0046BB20[];
+extern void *CutsceneBase_vtable[];
 extern void *Cutscene_vtable[];
 void *Cutscene_dtor(u8 *o, s32 flags);
 void *Cutscene_ctor(u8 *p);
@@ -1126,7 +1126,7 @@ void Cutscene_Destroy(u8 *p) {
 void *Cutscene_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = Cutscene_vtable;
-        AT(o, 0x0, void **) = D_0046BB20;
+        AT(o, 0x0, void **) = CutsceneBase_vtable;
         gCutscene = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);

@@ -1,4 +1,4 @@
-/* Mesh drawing (the room's parts, vtable D_0046C770; placed objects' models) with OpenGL. */
+/* Mesh drawing (the room's parts, vtable RoomMeshes_vtable; placed objects' models) with OpenGL. */
 #include "common.h"
 #include "game.h"
 #include "sce/libvu0.h"
@@ -75,10 +75,10 @@ extern void RoomMesh_PlaceBatch(u8 *o);
 s32 *RoomMesh_WriteBatchLit(u8 *o, s32 *batch);   /* the lit layout's batch writer: the next batch */
 extern s32 *RoomMesh_WriteBatch0(u8 *o, s32 *batch);
 
-extern void *D_0046C780[], *Helper469D00_vtable[];
+extern void *PlacedMesh_vtable[], *Helper469D00_vtable[];
 void *PlacedMesh_dtor(u8 *o, s32 flags);
 
-extern void *D_0046D770[];
+extern void *PlacedModelBase_vtable[];
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
 void PlacedObjects_SetPair(void *p, s32 a, s32 b);
@@ -86,7 +86,7 @@ void *PlacedModelBase_dtor(u8 *o, s32 flags);
 s32 PlacedObjects_Sum(u8 *self);
 s32 PlacedObjects_CallDtor(void *self);
 
-extern void *D_0046C770[];
+extern void *RoomMeshes_vtable[];
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
 void *RoomMeshes_dtor(u8 *o, s32 flags);
@@ -94,7 +94,7 @@ void *RoomMeshes_ctor(u8 *p);
 
 extern void *PlacedObjects_vtable[];
 extern void *gRoomObjects;
-extern u8 D_0046D800[];
+extern u8 DoorShadow_vtable[];
 void *PlacedModelHolder_ctor(u8 *p);
 extern void NavMesh_DropPending(u8 *p);
 extern void Doors_ReleaseRequests(u8 *p);
@@ -104,7 +104,7 @@ extern const PTMF sGameStateNull;
 extern void Doors_Reset(u8 *p);
 extern char str_ST_N_ST_N_PAC[];   /* "ST_%03X\\ST_%03X.PAC" */
 extern u8 gLanguage;
-extern u8 *D_01991EC4;   /* the current room's section 10 */
+extern u8 *Ending_Text;   /* the current room's section 10 */
 extern void Doors_TakeRoom(u8 *d, u8 *sec);
 extern s32 RoomMgr_TakeSection14(u8 *o, u8 *sec);
 extern void RoomMgr_TakeAreas(u8 *rm, u8 *sec);
@@ -292,7 +292,7 @@ void RoomMgr_MakeCurrent(u8 *rm, s32 slot) {
     } else {
         ROOM_SEC(rm, 0x99A8) = NULL;
     }
-    D_01991EC4 = ROOM_SEC(rm, 0x99A8);
+    Ending_Text = ROOM_SEC(rm, 0x99A8);
     if (AT(pac, 0x2C, u32) != 0) {
         ROOM_SEC(rm, 0x99AC) = pac + AT(pac, 0x2C, u32);
         VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, ROOM_SEC(rm, 0x99AC), 0x15);
@@ -556,11 +556,11 @@ void RoomMgr_ctor(u8 *m) {
     RoomMgr_Clear(m);
 }
 
-/* destructor (vtable D_0046C770) */
+/* destructor (vtable RoomMeshes_vtable) */
 /* 0x0025C850 */
 void *RoomMeshes_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046C770;
+        AT(o, 0x0, void **) = RoomMeshes_vtable;
         AT(o, 0x8, s32) = 0;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
@@ -570,11 +570,11 @@ void *RoomMeshes_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* destructor (vtable D_0046C780) */
+/* destructor (vtable PlacedMesh_vtable) */
 /* 0x0025E950 */
 void *PlacedMesh_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046C780;
+        AT(o, 0x0, void **) = PlacedMesh_vtable;
         AT(o, 0x8, s32) = 0;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
@@ -1257,11 +1257,11 @@ void PlacedObject_Clear(u8 *e) {
     Triple_Set(e + 0x98, 0, 0, 0);
 }
 
-/* destructor (vtable D_0046D770) */
+/* destructor (vtable PlacedModelBase_vtable) */
 /* 0x00267500 */
 void *PlacedModelBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046D770;
+        AT(o, 0x0, void **) = PlacedModelBase_vtable;
         AT(o, 0x0, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -1508,7 +1508,7 @@ void *PlacedObjects_ctor(u8 *p) {
 void *PlacedModelHolder_ctor(u8 *p) {
     F(p, 0x40, void *) = Helper469D00_vtable;
     F(p, 0x44, s32) = -1;
-    F(p, 0x40, void *) = D_0046D770;
+    F(p, 0x40, void *) = PlacedModelBase_vtable;
     F(p, 0xA0, u32) = 0;
     F(p, 0x98, u32) = 0;
     F(p, 0x9C, u32) = 0;
@@ -1519,7 +1519,7 @@ void *PlacedModelHolder_ctor(u8 *p) {
 void *PlacedMeshHolder_ctor(u8 *p) {
     F(p, 0x80, void *) = Helper469D00_vtable;
     F(p, 0x84, s32) = -1;
-    F(p, 0x80, void *) = D_0046C780;
+    F(p, 0x80, void *) = PlacedMesh_vtable;
     F(p, 0x120, u32) = 0;
     F(p, 0x124, u32) = 0;
     F(p, 0xE4, s32) = -1;
@@ -1528,7 +1528,7 @@ void *PlacedMeshHolder_ctor(u8 *p) {
     F(p, 0xE8, u32) = 0;
     F(p, 0x190, void *) = Helper469D00_vtable;
     F(p, 0x194, s32) = -1;
-    F(p, 0x190, void *) = D_0046D800;
+    F(p, 0x190, void *) = DoorShadow_vtable;
     return p;
 }
 
@@ -1536,7 +1536,7 @@ void *PlacedMeshHolder_ctor(u8 *p) {
 void *RoomMeshes_ctor(u8 *p) {
     F(p, 0x0, void *) = Helper469D00_vtable;
     F(p, 0x4, s32) = -1;
-    F(p, 0x0, void *) = D_0046C770;
+    F(p, 0x0, void *) = RoomMeshes_vtable;
     F(p, 0x7C, u32) = 0;
     F(p, 0x80, u32) = 0;
     F(p, 0x64, s32) = -1;

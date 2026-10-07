@@ -14,7 +14,7 @@ typedef struct SysData {
 } SysData;
 _Static_assert(sizeof(SysData) == 0x50, "SysData size");
 
-/* The boot memory card check (SceneBoot +0xC7440, vtable D_0046A058): reads the system data
+/* The boot memory card check (SceneBoot +0xC7440, vtable BootCard_vtable): reads the system data
  * from the card in slot 1 or 2, telling the player when there's none. */
 typedef struct BootCard {
     /* 0x000 */ void **vtbl;

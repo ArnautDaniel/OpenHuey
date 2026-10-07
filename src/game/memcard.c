@@ -1,4 +1,4 @@
-/* Memory card manager (system +0x390, global gMemCard, vtable MemCard_vtable; base D_0046AE60).
+/* Memory card manager (system +0x390, global gMemCard, vtable MemCard_vtable; base MemCardBase_vtable).
  * Requests (one at a time) store their parameters and a state; the per-frame tick runs the
  * state until it sets the status (+0x4, -1 while busy). The states talk to the card through
  * libmc and are platform code (native/platform/memcard.c on PC).
@@ -30,7 +30,7 @@
 #include "gl2d.h"
 #include "progress.h"
 
-extern void *MemCard_vtable[], *D_0046AEB4[], *D_0046AD88[], *D_0046AE60[];
+extern void *MemCard_vtable[], *MemCard_subVtable[], *Obj46AD88_vtable[], *MemCardBase_vtable[];
 
 /* the states (libmc) */
 
@@ -40,7 +40,7 @@ extern s32 gCardCheckStatus[2];   /* check status per slot */
 extern s32 gCardSlot1Status;      /* slot 1's status; 9: its data couldn't be read */
 extern u8 str_BASLUS_21075HG[];
 void *SaveIcon_Data(void);
-extern void *D_0046A058[];
+extern void *BootCard_vtable[];
 extern void SaveScreen_DrawPart(BootCard *b, s32 part);
 void SaveScreen_DrawList(BootCard *b);
 void SaveScreen_MergeSystem(BootCard *b, SysData *cur, SysData *loaded);
@@ -49,7 +49,7 @@ void SaveScreen_MergeSystem(BootCard *b, SysData *cur, SysData *loaded);
 extern s16 D_00412770[][10];
 /* where each save was made: room, area -> its name's message (0xFFF ends) */
 extern u16 D_00412800[][3];
-extern u32 D_0047ABF8;                    /* written over a header's sum while its save is written */
+extern u32 MemCard_SpoiledSum;                    /* written over a header's sum while its save is written */
 extern s32 D_0047B264;                    /* the last check's status */
 extern s32 gCardEmptyWritten;                    /* the empty saves written so far */
 extern const char str_N_2[];           /* "%d" */
@@ -247,7 +247,7 @@ void BootCard_StateSave(BootCard *b);
 /* destructor */
 BootCard *BootCard_dtor(BootCard *b, s32 flags) {
     if (b != NULL) {
-        b->vtbl = D_0046A058;
+        b->vtbl = BootCard_vtable;
         if (&b->task != NULL && b->task.child != NULL) {
             Task_dtor(b->task.child, 1);
             b->task.child = NULL;
@@ -258,11 +258,11 @@ BootCard *BootCard_dtor(BootCard *b, s32 flags) {
     }
     return b;
 }
-/* destructor (vtable D_0046AE60) */
+/* destructor (vtable MemCardBase_vtable) */
 /* 0x001BF2E0 */
 void *MemCardBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046AE60;
+        AT(o, 0x0, void **) = MemCardBase_vtable;
         gMemCard = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -284,11 +284,11 @@ static inline void request(MemCard *mc, s32 port, void (*state)(MemCard *)) {
 MemCard *MemCard_dtor(MemCard *mc, s32 flags) {
     if (mc != NULL) {
         mc->vtbl = MemCard_vtable;
-        mc->subVtbl = D_0046AEB4;
+        mc->subVtbl = MemCard_subVtable;
         if (&mc->subVtbl != NULL) {
-            mc->subVtbl = D_0046AD88;
+            mc->subVtbl = Obj46AD88_vtable;
         }
-        mc->vtbl = D_0046AE60;
+        mc->vtbl = MemCardBase_vtable;
         gMemCard = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(mc);
@@ -716,7 +716,7 @@ void BootCard_FreshData(BootCard *b) {
  * checking it (no data: 4, "create it?"; unformatted: 5, "format?" then 6 / 7 formatting); 8
  * the 12 empty saves written, then the icon (9) and icon.sys (10); 11 the system data read; 12
  * choosing the save (13: "overwrite?"); 14..17 written in turn: the system data, the save's
- * header sum spoiled (D_0047ABF8), the save, its header; 18 done; 50 "which card"; 100 / 101 a message, then back to 1; 150
+ * header sum spoiled (MemCard_SpoiledSum), the save, its header; 18 done; 50 "which card"; 100 / 101 a message, then back to 1; 150
  * saved; 200 "quit?"; 300 cancelled / finished (-1) */
 /* 0x002BDAB0 */
 void BootCard_StateSave(BootCard *b) {
@@ -1060,7 +1060,7 @@ void BootCard_StateSave(BootCard *b) {
             MEMCARD_WRITE(mc, b->port, b->sys, 0, 0x50);
             break;
         case 15:
-            MEMCARD_WRITE(mc, b->port, &D_0047ABF8, b->cursor * 0x18 + 0x50, 4);
+            MEMCARD_WRITE(mc, b->port, &MemCard_SpoiledSum, b->cursor * 0x18 + 0x50, 4);
             break;
         case 16:
             MEMCARD_WRITE(mc, b->port, (u8 *)b->sys + SAVE_DATA_OFF, b->cursor * SAVE_SIZE + SAVE_DATA_OFF,
@@ -1290,7 +1290,7 @@ void SaveScreen_Init(BootCard *b, void *buf0, void *buf1) {
 
 /* constructor */
 BootCard *BootCard_ctor(BootCard *b) {
-    b->vtbl = D_0046A058;
+    b->vtbl = BootCard_vtable;
     Task_Construct(&b->task);
     b->state = -1;
     return b;

@@ -60,7 +60,7 @@ extern u8 D_0042A300[];
 
 #define PTR(p, off) (*(void * *)((u8 *)(p) + (off)))
 
-extern void *D_00470390[];
+extern void *Capsule_vtable[];
 extern void *BonePoint_vtable[];
 void *Part60_ctor(u8 *p);
 void *HangPoint_ctor(u8 *p);
@@ -195,7 +195,7 @@ static inline void model_1310(u8 *m, void **vtbl) {
     AT(m, 0x10D4, s32) = 0;
     AT(m, 0x10D0, s32) = 0;
     for (e = m + 0x10E0; e < m + 0x1310; e += 0x70) {
-        AT(e, 0x30, void **) = D_00470390;
+        AT(e, 0x30, void **) = Capsule_vtable;
     }
 }
 
@@ -628,9 +628,9 @@ void *Kind23Model_dtor(u8 *m, s32 flags) {
         AT(m, 0x928, void **) = IK2_vtable;
         AT(m, 0x0, void **) = Model_vtable;
         AT(m, 0x0, void **) = ModelBase_vtable;
-        AT(m, 0x1D0, void **) = D_0046B1C0;
+        AT(m, 0x1D0, void **) = Shadow_vtable;
         AT(m, 0x1D0, void **) = Helper469D00_vtable;
-        AT(m, 0x10, void **) = D_0046ADA0;
+        AT(m, 0x10, void **) = ModelDrawer_vtable;
         AT(m, 0x10, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             StalkerModel_delete(m);

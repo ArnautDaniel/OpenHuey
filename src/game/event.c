@@ -198,7 +198,7 @@ extern s32 Zone_HasAnyChar(u8 *zone, u8 *c);   /* character in a zone */
 extern s32 Zone_TestCylinder(u8 *zone, f32 *p, f32 r, f32 h);   /* a point against a zone (bits) */
 u32 Events_ScriptCharValue(VObject *ev, s32 id);
 
-extern void *D_0046BAA0[];
+extern void *EventsBase_vtable[];
 void *Events_ctor(u8 *p);
 
 u8 *Events_CurrentBlock(u8 *o);
@@ -977,7 +977,7 @@ void EventCmd_ClearMark(u8 *p) {
 /* 0x002D1080 */
 void *Events_ctor(u8 *p) {
     gEvents = (VObject *)p;
-    F(p, 0x0, void *) = D_0046BAA0;
+    F(p, 0x0, void *) = EventsBase_vtable;
     return p;
 }
 
@@ -4872,13 +4872,13 @@ s32 Events_ScriptRoom(void *ev, s32 room) {
     return room;
 }
 
-extern void *D_0046BA80[];
+extern void *Obj46BA80_vtable[];
 
-/* destructor of class D_0046BA80 */
+/* destructor of class Obj46BA80_vtable */
 /* 0x0020C120 */
 void *Obj46BA80_dtor(void **o, s32 flags) {
     if (o != NULL) {
-        o[0] = D_0046BA80;
+        o[0] = Obj46BA80_vtable;
         if ((s16)flags > 0) {
             __dl__FPv(o);
         }
@@ -4886,11 +4886,11 @@ void *Obj46BA80_dtor(void **o, s32 flags) {
     return o;
 }
 
-/* the events' base destructor (D_0046BAA0): the global events pointer cleared */
+/* the events' base destructor (EventsBase_vtable): the global events pointer cleared */
 /* 0x0020C170 */
 void *EventsBase_dtor(void **o, s32 flags) {
     if (o != NULL) {
-        o[0] = D_0046BAA0;
+        o[0] = EventsBase_vtable;
         gEvents = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -4899,7 +4899,7 @@ void *EventsBase_dtor(void **o, s32 flags) {
     return o;
 }
 
-extern void *Events_vtable[], *D_0046B3B8[], *Cutscene_vtable[], *D_0046BB20[], *Overlay_vtable[], *Helper469D00_vtable[];
+extern void *Events_vtable[], *Events_vtableC[], *Cutscene_vtable[], *CutsceneBase_vtable[], *Overlay_vtable[], *Helper469D00_vtable[];
 
 /* +0x8 the events' destructor: its 32 points, the cutscene director (+0x938), the message
  * window (+0x708), the rooms' handlers (+0x120), the fade (+0x20), then its bases */
@@ -4909,10 +4909,10 @@ u8 *Events_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = Events_vtable;
-    AT(o, 0xC, void **) = D_0046B3B8;
-    __destroy_arr(o + 0xBF0, (void * (*)(void *, s32))Obj46BA68_dtor, 0x30, 0x20);
+    AT(o, 0xC, void **) = Events_vtableC;
+    __destroy_arr(o + 0xBF0, (void * (*)(void *, s32))EventPoint_dtor, 0x30, 0x20);
     AT(o, 0x938, void **) = Cutscene_vtable;
-    AT(o, 0x938, void **) = D_0046BB20;
+    AT(o, 0x938, void **) = CutsceneBase_vtable;
     gCutscene = NULL;
     if (AT(o, 0x784, void *) != NULL) {
         Task_dtor(AT(o, 0x784, void *), 1);
@@ -4921,9 +4921,9 @@ u8 *Events_dtor(u8 *o, s32 flags) {
     __destroy_arr(o + 0x120, RoomBase_dtor, 4, 0x110);
     AT(o, 0x20, void **) = Overlay_vtable;
     AT(o, 0x20, void **) = Helper469D00_vtable;
-    AT(o, 0xC, void **) = D_0046BAA0;
+    AT(o, 0xC, void **) = EventsBase_vtable;
     gEvents = NULL;
-    AT(o, 0x0, void **) = D_0046BA80;
+    AT(o, 0x0, void **) = Obj46BA80_vtable;
     if ((s16)flags > 0) {
         __dl__FPv(o);
     }

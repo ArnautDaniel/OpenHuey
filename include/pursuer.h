@@ -85,7 +85,7 @@ extern void Pursuer_Disable(Pursuer *p);
 extern void Pursuer_EventOver2(Pursuer *p);
 extern void Pursuer_Enable(Pursuer *p);
 extern s32 Pursuer_LoadMessage(Pursuer *p);
-extern void **SmallObj46D800_dtor(void **obj, s32 flags);
+extern void **DoorShadow_dtor(void **obj, s32 flags);
 extern s32 Pursuer_ThresholdEntry(Pursuer *p, f32 *table, u32 n);
 extern void Pursuer_StateRunToTri(Pursuer *p);
 extern void Pursuer_WaitRoomFlag(Pursuer *p);

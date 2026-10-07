@@ -44,19 +44,19 @@
 #include "system.h"
 #include "char_load.h"
 
-extern void *Helper469D00_vtable[], *D_0046ADA0[], *ModelBase_vtable[], *Model_vtable[], *DogModel_vtable[], *IK3_vtable[];
+extern void *Helper469D00_vtable[], *ModelDrawer_vtable[], *ModelBase_vtable[], *Model_vtable[], *DogModel_vtable[], *IK3_vtable[];
 
 extern void *HangPoint_vtable[];
-extern void *D_00470390[];
+extern void *Capsule_vtable[];
 extern void *BonePoint_vtable[];
 extern void *BoneHangPoint_vtable[];
 extern void *SprungPoint_vtable[];
-extern void *D_00470460[];
-extern void *D_00470700[];
-extern void *D_00472350[];
-extern void *D_00472C10[];
-extern void *D_004737F0[];
-extern void *D_00473810[];
+extern void *HairPoint_vtable[];
+extern void *SwayPointA_vtable[];
+extern void *SwayPointB_vtable[];
+extern void *HangingPart_vtable[];
+extern void *Part50_vtable[];
+extern void *Part60_vtable[];
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
 void *Part_ctor(u8 *p);
@@ -258,13 +258,13 @@ void *Model_dtor(void **m, s32 flags) {
 
             m[0] = ModelBase_vtable;
             if (a != NULL) {
-                *a = D_0046B1C0;
+                *a = Shadow_vtable;
                 if (a != NULL) {
                     *a = Helper469D00_vtable;
                 }
             }
             if (b != NULL) {
-                *b = D_0046ADA0;
+                *b = ModelDrawer_vtable;
                 if (b != NULL) {
                     *b = Helper469D00_vtable;
                 }
@@ -308,13 +308,13 @@ s32 Model_ModelFile(u8 *m) {
     return 0;
 }
 
-/* the model's drawing object (vtable D_0046ADA0, on the overlay base Helper469D00_vtable) */
+/* the model's drawing object (vtable ModelDrawer_vtable, on the overlay base Helper469D00_vtable) */
 static inline void DrawObj_Init(u8 *o) {
     s32 i;
 
     AT(o, 0x0, void **) = Helper469D00_vtable;
     AT(o, 0x4, s32) = -1;
-    AT(o, 0x0, void **) = D_0046ADA0;
+    AT(o, 0x0, void **) = ModelDrawer_vtable;
     AT(o, 0xC, s32) = 0;
     AT(o, 0x10, s32) = 0;
     AT(o, 0x8, s32) = 0;
@@ -406,8 +406,8 @@ extern void *DogModelB_vtable[];
  * make (0xC8, 0xD9, 0x9C, 0x9F, 0xA0, 0xA9, 0x35, 0x65, 0x9B, 0x8C) and a few others ---- */
 
 extern void *DustMoteSource_vtable[], *SpriteBurst_vtable[], *Effect71000_vtable[], *Splash_vtable[], *SpeckSwarm_vtable[], *Fog_vtable[],
-    *D_0046D730[], *ScreenBlend_vtable[], *CharModel_vtable[], *Costume8Model_vtable[], *WindHangPoint_vtable[], *SpringPartBase_vtable[],
-    *CostumeHangPoint_vtable[], *HairPoint2_vtable[], *Effect6FF60_vtable[], *DepthRange_vtable[], *D_0046EA90[];
+    *RoomEffectBase_vtable[], *ScreenBlend_vtable[], *CharModel_vtable[], *Costume8Model_vtable[], *WindHangPoint_vtable[], *SpringPartBase_vtable[],
+    *CostumeHangPoint_vtable[], *HairPoint2_vtable[], *Effect6FF60_vtable[], *DepthRange_vtable[], *Butterflies_vtable[];
 extern void *Helper469D00_vtable[], *QuadDrawer_vtable[];
 extern void *HumanModel_PartsCtor(u8 *m);
 
@@ -3948,7 +3948,7 @@ void HairPoint2_Frame(u8 *l, u8 *s) {
     sceVu0AddVector((f32 *)(l + 0x10), (f32 *)(l + 0x10), d);
 }
 
-/* +0x10 of her six hanging parts (+0xAA0, vtable D_00472C10): pulled along bone 0x1F's Z (by
+/* +0x10 of her six hanging parts (+0xAA0, vtable HangingPart_vtable): pulled along bone 0x1F's Z (by
    +0x44), the set's force, pushed off the colliders, kept above the set's floor (+0x1C, when
    +0x20), damped, held at its length from the anchor */
 /* 0x003168F0 */
@@ -3978,7 +3978,7 @@ void HangingPart_Step(u8 *p, u8 *set) {
     Part_Hold(p, at, prev);
 }
 
-/* +0x10 of his 0x50 parts (vtable D_004737F0): drawn toward where its bone points (its length
+/* +0x10 of his 0x50 parts (vtable Part50_vtable): drawn toward where its bone points (its length
    out along the bone's X axis, by +0x44), the set's force, damped, at its length */
 /* 0x0031EA10 */
 void Part50_Step(u8 *p, u8 *set) {
@@ -4007,7 +4007,7 @@ void Part50_Step(u8 *p, u8 *set) {
 
 /* ---- Riccardo's parts ---- */
 
-/* +0x10 of his 0x60 parts (vtable D_00473810): follow the anchor (0.6), the set's force, the
+/* +0x10 of his 0x60 parts (vtable Part60_vtable): follow the anchor (0.6), the set's force, the
    colliders (strength 1), held about 1.9 from the part it's tied to (+0x48, by +0x44), damped,
    at its length */
 /* 0x0031EB70 */
@@ -4118,7 +4118,7 @@ void HangPoint_Frame(u8 *p, u8 *s) {
     sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
 }
 
-/* ---- the capsule collider (vtable D_00470390, +0x30 in a 0x70 part): ends +0 / +0x40 in the
+/* ---- the capsule collider (vtable Capsule_vtable, +0x30 in a 0x70 part): ends +0 / +0x40 in the
    world, +0x10 / +0x50 in their bones' (+0x28 / +0x60) space, radius +0x20 (1 / it +0x24) ---- */
 
 /* +0x8: the push on point `pt` (into `out`), `k` times its depth: off the segment when it's
@@ -4452,7 +4452,7 @@ void SprungPoint_Frame(u8 *p, u8 *s) {
     sceVu0SubVector((f32 *)(p + 0x10), (f32 *)p, prev);
 }
 
-/* ---- Daniella's hair point (vtable D_00470460, +0x30 in a 0x70 part): the position +0, its
+/* ---- Daniella's hair point (vtable HairPoint_vtable, +0x30 in a 0x70 part): the position +0, its
    velocity +0x10, anchored (+0x20) to bone +0x24 or the point +0x2C, its length +0x40, the
    partner point in the other strand +0x44 (side +0x48), the anchor last frame +0x50, its
    stiffness +0x60 ---- */
@@ -5137,7 +5137,7 @@ f32 Model_FloorLevel(void) { return 1.0f; }
 /* ---- the stalkers' and event characters' models (built by the loaders CharLoad_Kind33Model ..
  * CharLoad_DebilitasModel for CharLoad_Partner) ---- */
 
-extern void *D_0046B1C0[], *IK2_vtable[], *SpringPartBase_vtable[];
+extern void *Shadow_vtable[], *IK2_vtable[], *SpringPartBase_vtable[];
 
 /* the human characters' model base before its kind (vtable ModelBase_vtable): drawing object, the
    +0x1D0 part, the model fields */
@@ -5147,7 +5147,7 @@ void *HumanModel_BaseCtor(u8 *m) {
     DrawObj_Init(m + 0x10);
     AT(m, 0x1D0, void **) = Helper469D00_vtable;
     AT(m, 0x1D4, s32) = -1;
-    AT(m, 0x1D0, void **) = D_0046B1C0;
+    AT(m, 0x1D0, void **) = Shadow_vtable;
     AT(m, 0x4B0, s32) = 0;
     ModelBase_Zero(m);
     return m;
@@ -5171,7 +5171,7 @@ void *HumanModel_dtor(u8 *m, s32 flags) {
 
 /* 0x0016FAE0 */
 void *Capsule_ctor(u8 *p) {
-    FLD(p, 0x30, void **) = D_00470390;
+    FLD(p, 0x30, void **) = Capsule_vtable;
     return p;
 }
 
@@ -5189,20 +5189,20 @@ static inline void *Part_Destroy(u8 *e, s32 at, void **vt, void **base, s32 flag
 }
 
 /* 0x0016F680 */
-void *Part46B1C0_dtor(void *e, s32 flags) {
-    return Part_Destroy(e, 0x0, D_0046B1C0, Helper469D00_vtable, flags);
+void *Shadow_dtor(void *e, s32 flags) {
+    return Part_Destroy(e, 0x0, Shadow_vtable, Helper469D00_vtable, flags);
 }
 
 /* 0x0016F6E0 */
-void *Part46ADA0_dtor(void *e, s32 flags) {
-    return Part_Destroy(e, 0x0, D_0046ADA0, Helper469D00_vtable, flags);
+void *ModelDrawer_dtor(void *e, s32 flags) {
+    return Part_Destroy(e, 0x0, ModelDrawer_vtable, Helper469D00_vtable, flags);
 }
 
 /* 0x0016F740 */
 void *Part_ctor(u8 *p) {
     FLD(p, 0x0, void **) = Helper469D00_vtable;
     FLD(p, 0x4, s32) = -1;
-    FLD(p, 0x0, void **) = D_0046B1C0;
+    FLD(p, 0x0, void **) = Shadow_vtable;
     FLD(p, 0x2E0, s32) = 0;
     return p;
 }
@@ -5244,8 +5244,8 @@ s32 Model_Vt7C(u8 *m) {
     return 0;
 }
 
-extern void *HangPoint_vtable[], *D_00473810[], *D_00470700[], *SprungPoint_vtable[], *BoneHangPoint_vtable[],
-    *D_00472350[], *D_004737F0[], *D_00470460[], *D_00472C10[];
+extern void *HangPoint_vtable[], *Part60_vtable[], *SwayPointA_vtable[], *SprungPoint_vtable[], *BoneHangPoint_vtable[],
+    *SwayPointB_vtable[], *Part50_vtable[], *HairPoint_vtable[], *HangingPart_vtable[];
 
 /* 0x0016FBB0 */
 void *HangPoint_dtor(void *e, s32 flags) {
@@ -5260,12 +5260,12 @@ void *HangPoint_ctor(u8 *p) {
 
 /* 0x0016FB00 */
 void *Part60_dtor(void *e, s32 flags) {
-    return Part_Destroy(e, 0x30, D_00473810, SpringPartBase_vtable, flags);
+    return Part_Destroy(e, 0x30, Part60_vtable, SpringPartBase_vtable, flags);
 }
 
 /* 0x0016FB60 */
 void *Part60_ctor(u8 *p) {
-    FLD(p, 0x30, void **) = D_00473810;
+    FLD(p, 0x30, void **) = Part60_vtable;
     return p;
 }
 
@@ -5284,7 +5284,7 @@ void *BonePoint_ctor(u8 *p) {
 
 /* 0x00170080 */
 void *SwayPointA_dtor(void *e, s32 flags) {
-    return Part_Destroy(e, 0x30, D_00470700, SpringPartBase_vtable, flags);
+    return Part_Destroy(e, 0x30, SwayPointA_vtable, SpringPartBase_vtable, flags);
 }
 
 /* 0x00170290 */
@@ -5299,45 +5299,45 @@ void *BoneHangPoint_dtor(void *e, s32 flags) {
 
 /* 0x001709D0 */
 void *SwayPointB_dtor(void *e, s32 flags) {
-    return Part_Destroy(e, 0x30, D_00472350, SpringPartBase_vtable, flags);
+    return Part_Destroy(e, 0x30, SwayPointB_vtable, SpringPartBase_vtable, flags);
 }
 
 /* 0x00170A30 */
 void *SwayPointB_ctor(u8 *p) {
-    FLD(p, 0x30, void **) = D_00472350;
+    FLD(p, 0x30, void **) = SwayPointB_vtable;
     return p;
 }
 
 /* 0x00170CB0 */
 void *Part50_dtor(void *e, s32 flags) {
-    return Part_Destroy(e, 0x30, D_004737F0, SpringPartBase_vtable, flags);
+    return Part_Destroy(e, 0x30, Part50_vtable, SpringPartBase_vtable, flags);
 }
 
 /* 0x00170D10 */
 void *Part50_ctor(u8 *p) {
-    FLD(p, 0x30, void **) = D_004737F0;
+    FLD(p, 0x30, void **) = Part50_vtable;
     return p;
 }
 
 /* 0x00170EB0 */
 void *HairPoint_dtor(void *e, s32 flags) {
-    return Part_Destroy(e, 0x30, D_00470460, SpringPartBase_vtable, flags);
+    return Part_Destroy(e, 0x30, HairPoint_vtable, SpringPartBase_vtable, flags);
 }
 
 /* 0x00170F10 */
 void *HairPoint_ctor(u8 *p) {
-    FLD(p, 0x30, void **) = D_00470460;
+    FLD(p, 0x30, void **) = HairPoint_vtable;
     return p;
 }
 
 /* 0x00170F30 */
 void *HangingPart_dtor(void *e, s32 flags) {
-    return Part_Destroy(e, 0x30, D_00472C10, SpringPartBase_vtable, flags);
+    return Part_Destroy(e, 0x30, HangingPart_vtable, SpringPartBase_vtable, flags);
 }
 
 /* 0x00170F90 */
 void *HangingPart_ctor(u8 *p) {
-    FLD(p, 0x30, void **) = D_00472C10;
+    FLD(p, 0x30, void **) = HangingPart_vtable;
     return p;
 }
 
@@ -5348,9 +5348,9 @@ void *ModelBase_dtor(void *p, s32 flags) {
 
     if (m != NULL) {
         AT(m, 0x0, void **) = ModelBase_vtable;
-        AT(m, 0x1D0, void **) = D_0046B1C0;
+        AT(m, 0x1D0, void **) = Shadow_vtable;
         AT(m, 0x1D0, void **) = Helper469D00_vtable;
-        AT(m, 0x10, void **) = D_0046ADA0;
+        AT(m, 0x10, void **) = ModelDrawer_vtable;
         AT(m, 0x10, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             __dl__FPv(m);
@@ -5373,7 +5373,7 @@ void *CharModel_dtor(void *p, s32 flags) {
 
 /* 0x00170460 */
 void *SwayPointA_ctor(u8 *p) {
-    FLD(p, 0x30, void **) = D_00470700;
+    FLD(p, 0x30, void **) = SwayPointA_vtable;
     return p;
 }
 
@@ -5460,7 +5460,7 @@ extern void *HumanModel_vtable[];   /* the base with two parts at +0x8D0 / +0x93
 
 extern void *BonePoint_vtable[];
 
-extern void *D_00470390[];
+extern void *Capsule_vtable[];
 
 /* kind 33 */
 /* 0x0016F420 */

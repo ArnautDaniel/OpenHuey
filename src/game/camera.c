@@ -1,4 +1,4 @@
-/* Camera (Game +0x14D9B00, global gCamera, vtable Camera_vtable; base vtable D_00469B40). The
+/* Camera (Game +0x14D9B00, global gCamera, vtable Camera_vtable; base vtable CameraBase_vtable). The
  * view comes from an eye and a target point; matrices are built by the larger methods.
  *
  * (was camctl.c) The camera director (SceneGame +0xF6CBB0, second vtable at +0x64): drives the
@@ -99,7 +99,7 @@ typedef struct CameraSet {
 } CameraSet;
 
 extern void *Camera_vtable[];
-extern void *D_00469B40[];
+extern void *CameraBase_vtable[];
 
 #define FLD(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
@@ -118,7 +118,7 @@ extern void CamDirector_KeepInView(u8 *d, s32 n);
 extern f32 CamPath_Move(u8 *d, f32 t, f32 u);
 extern f32 D_0047E410, D_0047E418;   /* the right stick, x and y (-1..1) */
 void EventCam_Frame(f32 *p);           /* the event camera's frame */
-extern void *D_0046C660[], *CamDirector_vtable[], *D_0046C6F0[];
+extern void *CamDirectorBase64_vtable[], *CamDirector_vtable[], *CamDirectorBase_vtable[];
 void CamDirector_Set50(u8 *o, f32 v);
 
 extern void *DepthRange_vtable[];
@@ -172,7 +172,7 @@ Camera *Camera_dtor(Camera *c, s32 flags) {
     if (c != NULL) {
         c->vtbl = Camera_vtable;
         if (c != NULL) {
-            c->vtbl = D_00469B40;
+            c->vtbl = CameraBase_vtable;
             if (c != NULL) {
                 gCamera = NULL;
             }
@@ -215,11 +215,11 @@ void Camera_Defaults(Camera *c) {
     VCALL(c, 0x78, void (*)(Camera *, s32 *))(c, NULL);
 }
 
-/* destructor (vtable D_00469B40) */
+/* destructor (vtable CameraBase_vtable) */
 /* 0x00122AD0 */
 void *CameraBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_00469B40;
+        AT(o, 0x0, void **) = CameraBase_vtable;
         gCamera = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -515,9 +515,9 @@ void CamDirector_SetSetup(u8 *f, s32 a, s32 b) {
 /* 0x00223E40 */
 void *CamDirector_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
-        AT(d, 0x64, void **) = D_0046C660;
+        AT(d, 0x64, void **) = CamDirectorBase64_vtable;
         AT(d, 0x60, void **) = CamDirector_vtable;
-        AT(d, 0x60, void **) = D_0046C6F0;
+        AT(d, 0x60, void **) = CamDirectorBase_vtable;
         gCamDirector = NULL;
         AT(d, 0x2C, s32) = 0;
         AT(d, 0x38, s32) = 0;

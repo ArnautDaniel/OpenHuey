@@ -32,7 +32,7 @@ Screenshots: `docs/img/native_*.png`.
   defaults).
 - To check against the real game: the dark boxes behind the menu entries (they come from the
   entries' CLUT 1 background colour); the Dolby logo sits left of centre.
-- Untranscribed but known: the base-class destructor of the block pool (`D_004699E0` +8 points
+- Untranscribed but known: the base-class destructor of the block pool (`SceneTableBase_vtable` +8 points
   at 0x00120EF0, inside `BlockPool_Init`'s label: needs a symbol before it can be called natively);
   the movie states `Movie_StatePausedFirst`, `Movie_StateWaitFirst`, `Movie_StateOpening`.
 - New this round (all difftested): the message / dialog system (`task.c`), the boot memory card

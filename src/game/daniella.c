@@ -87,7 +87,7 @@ f32 Kind36_FrightSeen(void);
 f32 Kind36_ReachHewie(void);
 void *Kind36_ModelFiles(void);
 
-extern void *D_00470390[];
+extern void *Capsule_vtable[];
 extern void *BonePoint_vtable[];
 extern void *SprungPoint_vtable[];
 void *BoneHangPoint_ctor(u8 *p);
@@ -2003,14 +2003,14 @@ void *DaniellaModel_ctor(u8 *m) {
     }
     __construct_array(m + 0xAA0, HangingPart_ctor, HangingPart_dtor, 0x50, 6);
     for (e = m + 0xC80; e < m + 0xD60; e += 0x70) {
-        AT(e, 0x30, void **) = D_00470390;
+        AT(e, 0x30, void **) = Capsule_vtable;
     }
     for (e = m + 0xD60; e < m + 0xDE0; e += 0x40) {
         AT(e, 0x30, void **) = BonePoint_vtable;
     }
     __construct_array(m + 0xDE0, HairPoint_ctor, HairPoint_dtor, 0x70, 0xA);
     for (e = m + 0x1240; e < m + 0x1470; e += 0x70) {
-        AT(e, 0x30, void **) = D_00470390;
+        AT(e, 0x30, void **) = Capsule_vtable;
     }
     AT(m, 0x14A0, void **) = SprungPoint_vtable;
     __construct_array(m + 0x14D0, BoneHangPoint_ctor, BoneHangPoint_dtor, 0x50, 2);

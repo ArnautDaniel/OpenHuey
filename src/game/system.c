@@ -39,14 +39,14 @@
 #include "heap.h"
 #include "movie.h"
 
-extern void *D_0046BEE0[];
+extern void *GameBase_vtable[];
 
 extern void *Renderer_vtable[];
-extern void *D_0046ACF0[];
-extern void *D_0046AD88[];
-extern void *D_0046ADD0[];
-extern void *D_0046AE10[];
-extern void *D_0046AF20[];
+extern void *RendererBase_vtable[];
+extern void *Obj46AD88_vtable[];
+extern void *PadsBase_vtable[];
+extern void *SystemBase_vtable[];
+extern void *VramBase_vtable[];
 extern void *Vram_vtable[];
 
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
@@ -60,14 +60,14 @@ extern const PTMF sGameStateShutdown; /* { 0, -1, Game_StateShutdown } */
 extern const PTMF sGameStateNull;     /* all zero: ends Game_Run */
 extern const PTMF sSceneResetState;   /* virtual: scene vtable +0x14 */
 extern void *Helper469D00_vtable[];
-extern void *D_0046D770[];
+extern void *PlacedModelBase_vtable[];
 void *TexCache_dtor(u8 *o, s32 flags);
 extern void hg_debug_next_scene(s32 *mode, s32 *param);   /* native/platform/debug.c */
 extern const char D_0045D7C0[], D_0045D7D0[], D_0045D7E0[];   /* C_0000.HD / .SDT / .BD */
 extern void Options_Defaults(u8 *o);
-extern void *D_004699E0[];
-extern void *Game_vtable[], *D_0046BF08[], *Heap_vtable[];
-extern void *Camera_vtable[], *D_00469B40[], *System_vtable[];
+extern void *SceneTableBase_vtable[];
+extern void *Game_vtable[], *SceneTable_vtable[], *Heap_vtable[];
+extern void *Camera_vtable[], *CameraBase_vtable[], *System_vtable[];
 extern void *gSkelPool, *gChainPool;
 extern void Options_Defaults(u8 *o);
 extern void *Pads_dtor(u8 *o, s32 flags);
@@ -155,7 +155,7 @@ void *Libc_Data44DAB0(void) {
 /* 0x0020E7F0 */
 void *GameBase_ctor(Game *game) {
     gGamePtr = (u8 *)game;
-    game->vtbl = D_0046BEE0;
+    game->vtbl = GameBase_vtable;
     game->nextMode = 0;
     game->softResetEnabled = 0;
     game->modeParam = 0;
@@ -237,7 +237,7 @@ void Game_StartNextScene(Game *game) {
 /* 0x002D0CE0 */
 void *QuadEntry_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x40, void **) = D_0046D770;
+        AT(o, 0x40, void **) = PlacedModelBase_vtable;
         AT(o, 0x40, void **) = Helper469D00_vtable;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -407,9 +407,9 @@ void *IopArrayB_ctor(void *e) {
 
 /* Global pointers to the parts (set by the constructor). */
 
-extern void *System_vtable[], *D_0046ADD0[], *Pads_vtable[], *D_0046ADC4[], *D_0046AD88[], *MemCard_vtable[], *D_0046AEB4[];
-extern void *Renderer_vtable[], *D_0046AF00[], *D_0046AF0C[], *MovieLib_vtable[], *Vram_vtable[], *Loader_vtable[];
-extern void *SndDriver_vtable[], *D_0046BF2C[];
+extern void *System_vtable[], *PadsBase_vtable[], *Pads_vtable[], *Pads_vtable18[], *Obj46AD88_vtable[], *MemCard_vtable[], *MemCard_subVtable[];
+extern void *Renderer_vtable[], *MovieSys_vtable[], *MovieSys_vtable124[], *MovieLib_vtable[], *Vram_vtable[], *Loader_vtable[];
+extern void *SndDriver_vtable[], *SndDriver_vtable4[];
 extern u8 gInput[], kButtonMap[16], kAnalogMap[16];
 extern const PTMF sGameStateNull;
 
@@ -423,9 +423,9 @@ void *System_ctor(u8 *s) {
 
     AT(s, 0x0, void **) = System_vtable;
     gSystem = (VObject *)s;
-    AT(s, 0x20, void **) = D_0046AD88;
+    AT(s, 0x20, void **) = Obj46AD88_vtable;
     gPad = (VObject *)(s + 0x40);
-    AT(s, 0x40, void **) = D_0046ADD0;
+    AT(s, 0x40, void **) = PadsBase_vtable;
     Fades_Start(s + 0x40, gInput);
     for (i = 0; i < 16; i++) {
         kButtonMap[i] = i;
@@ -434,12 +434,12 @@ void *System_ctor(u8 *s) {
         kAnalogMap[i] = i;
     }
     AT(s, 0x40, void **) = Pads_vtable;
-    AT(s, 0x58, void **) = D_0046ADC4;
+    AT(s, 0x58, void **) = Pads_vtable18;
     Rumble_ctor((Rumble *)(s + 0x300));
 
     gMemCard = (MemCard *)(s + 0x390);
     AT(s, 0x390, void **) = MemCard_vtable;
-    AT(s, 0x39C, void **) = D_0046AEB4;
+    AT(s, 0x39C, void **) = MemCard_subVtable;
     gRenderer = (VObject *)(s + 0x460);
     AT(s, 0x3A4, PTMF) = sGameStateNull;
     AT(s, 0x460, void **) = Renderer_vtable;
@@ -447,12 +447,12 @@ void *System_ctor(u8 *s) {
 
     p = s + 0x305280;
     gAdx = p;
-    AT(p, 0x0, void **) = D_0046AF00;
+    AT(p, 0x0, void **) = MovieSys_vtable;
     AT(p, 0x4, s32) = 0;
     AT(p, 0x8, s32) = 0;
     AT(p, 0xC, s32) = 0;
     AT(p, 0x10, u8) = 0;
-    AT(p, 0x124, void **) = D_0046AF0C;
+    AT(p, 0x124, void **) = MovieSys_vtable124;
     AT(p, 0x7C48, u8) = 0;
     gMovieLib = p + 0x7C44;
     AT(p, 0x7C44, void **) = MovieLib_vtable;
@@ -467,7 +467,7 @@ void *System_ctor(u8 *s) {
     p = s + 0x395D40;
     gSound = (VObject *)(p + 4);
     AT(p, 0x0, void **) = SndDriver_vtable;
-    AT(p, 0x4, void **) = D_0046BF2C;
+    AT(p, 0x4, void **) = SndDriver_vtable4;
     __construct_array(p + 0x84, IopArrayA_ctor, (void (*)(void *, s32))IopBuffers_dtor, 0x10, 8);
     __construct_array(p + 0x108, IopArrayB_ctor, IopArray_dtor, 0x18, 8);
     AT(p, 0x80, s32) = 0;
@@ -518,11 +518,11 @@ void RenderState_Defaults(u8 *r) {
     AT(r, 0x304DDC, s32) = 0;
 }
 
-/* destructor (vtable D_0046ACF0) */
+/* destructor (vtable RendererBase_vtable) */
 /* 0x001BC090 */
-void *Obj46ACF0_dtor(u8 *o, s32 flags) {
+void *RendererBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046ACF0;
+        AT(o, 0x0, void **) = RendererBase_vtable;
         gRenderer = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -531,11 +531,11 @@ void *Obj46ACF0_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* destructor (vtable D_0046AD88) */
+/* destructor (vtable Obj46AD88_vtable) */
 /* 0x001BC320 */
 void *Obj46AD88_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046AD88;
+        AT(o, 0x0, void **) = Obj46AD88_vtable;
         if ((s16)flags > 0) {
             __dl__FPv(o);
         }
@@ -543,7 +543,7 @@ void *Obj46AD88_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-extern void *D_0046BF08[], *D_004699E0[], *Heap_vtable[];
+extern void *SceneTable_vtable[], *SceneTableBase_vtable[], *Heap_vtable[];
 
 /* Game +0x400A00: the scene table (4 scene pointers) and the scene heap after it (Game.sceneHeap,
  * 0x10D9000 bytes from +0x40). */
@@ -553,8 +553,8 @@ void *SceneTable_ctor(u8 *t) {
     s32 i;
 
     gSceneTable = t;
-    AT(t, 0x0, void **) = D_0046BF08;
-    heap->vtbl = D_004699E0;
+    AT(t, 0x0, void **) = SceneTable_vtable;
+    heap->vtbl = SceneTableBase_vtable;
     AT(heap, 0x4, s32) = 0;
     AT(heap, 0x8, s32) = 0;
     heap->vtbl = Heap_vtable;
@@ -653,11 +653,11 @@ void *Slots_ctor(u8 *o) {
     return o;
 }
 
-/* destructor (vtable D_0046BEE0) */
+/* destructor (vtable GameBase_vtable) */
 /* 0x0020DB40 */
-void *Obj46BEE0_dtor(u8 *o, s32 flags) {
+void *GameBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046BEE0;
+        AT(o, 0x0, void **) = GameBase_vtable;
         gGamePtr = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -687,10 +687,10 @@ void *Game_dtor(u8 *g, s32 flags) {
     gChainPool = NULL;
 
     AT(g, 0x14D9B00, void **) = Camera_vtable;
-    AT(g, 0x14D9B00, void **) = D_00469B40;
+    AT(g, 0x14D9B00, void **) = CameraBase_vtable;
     gCamera = NULL;
 
-    AT(g, 0x400A00, void **) = D_0046BF08;
+    AT(g, 0x400A00, void **) = SceneTable_vtable;
     for (i = 0; i < 4; i++) {
         void **slot = (void **)(g + 0x400A04) + i;
 
@@ -705,7 +705,7 @@ void *Game_dtor(u8 *g, s32 flags) {
         }
     }
     AT(g, 0x14D9A40, void **) = Heap_vtable;
-    AT(g, 0x14D9A40, void **) = D_004699E0;
+    AT(g, 0x14D9A40, void **) = SceneTableBase_vtable;
     gSceneTable = NULL;
 
     Random_dtor((VObject *)(g + 0x400000), -1);
@@ -720,9 +720,9 @@ void *Game_dtor(u8 *g, s32 flags) {
     Rumble_dtor((Rumble *)(g + 0x69DC0), -1);
     Pads_dtor(g + 0x69B00, -1);
     Obj46AD88_dtor(g + 0x69AE0, -1);
-    Obj46AE10_dtor(g + 0x69AC0, 0);
+    SystemBase_dtor(g + 0x69AC0, 0);
 
-    AT(g, 0x0, void **) = D_0046BEE0;
+    AT(g, 0x0, void **) = GameBase_vtable;
     gGamePtr = NULL;
     if ((s16)flags > 0) {
         __dl__FPv(g);
@@ -781,11 +781,11 @@ void System_Init(u8 *s) {
     Loader_RegisterAll(s + 0x319900);
 }
 
-/* destructor (vtable D_0046AE10) */
+/* destructor (vtable SystemBase_vtable) */
 /* 0x001BF220 */
-void *Obj46AE10_dtor(u8 *o, s32 flags) {
+void *SystemBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046AE10;
+        AT(o, 0x0, void **) = SystemBase_vtable;
         gSystem = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -794,11 +794,11 @@ void *Obj46AE10_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-/* destructor (vtable D_0046AF20) */
+/* destructor (vtable VramBase_vtable) */
 /* 0x001BF7A0 */
-void *Obj46AF20_dtor(u8 *o, s32 flags) {
+void *VramBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046AF20;
+        AT(o, 0x0, void **) = VramBase_vtable;
         gVram = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -839,11 +839,11 @@ void System_EndFrame(u8 *s) {
     MemCard_Tick((MemCard *)(s + 0x390));
 }
 
-/* destructor (vtable D_0046ADD0) */
+/* destructor (vtable PadsBase_vtable) */
 /* 0x001BE730 */
-void *Obj46ADD0_dtor(u8 *o, s32 flags) {
+void *PadsBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046ADD0;
+        AT(o, 0x0, void **) = PadsBase_vtable;
         gPad = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -892,8 +892,8 @@ void *IopArray_dtor(u8 *o, s32 flags) {
     return o;
 }
 
-extern void *D_0046AE10[], *D_0046AF90[], *D_0046AF20[], *D_0046A220[], *D_0046ACF0[];
-extern void *D_0046AEC0[], *D_0046AED0[], *D_0046AE60[], *Rumble_vtable[], *D_0046AE30[];
+extern void *SystemBase_vtable[], *SndDriverBase_vtable[], *VramBase_vtable[], *LoaderBase_vtable[], *RendererBase_vtable[];
+extern void *AdxBase_vtable[], *MovieLibBase_vtable[], *MemCardBase_vtable[], *Rumble_vtable[], *RumbleBase_vtable[];
 
 /* destructor (vtable +0x8): the members in reverse, each with its vtable chain and global cleared */
 /* 0x001BE7A0 */
@@ -907,57 +907,57 @@ void *System_dtor(u8 *s, s32 flags) {
 
     p = s + 0x395D40;   /* sound driver */
     AT(p, 0x0, void **) = SndDriver_vtable;
-    AT(p, 0x4, void **) = D_0046BF2C;
+    AT(p, 0x4, void **) = SndDriver_vtable4;
     __destroy_arr(p + 0x108, (void *(*)(void *, s32))IopArray_dtor, 0x18, 8);
     __destroy_arr(p + 0x84, (void *(*)(void *, s32))IopBuffers_dtor, 0x10, 8);
-    AT(p, 0x4, void **) = D_0046AF90;
+    AT(p, 0x4, void **) = SndDriverBase_vtable;
     gSound = NULL;
-    AT(p, 0x0, void **) = D_0046AD88;
+    AT(p, 0x0, void **) = Obj46AD88_vtable;
 
     AT(s, 0x319900, void **) = Loader_vtable;   /* file loader */
-    AT(s, 0x319900, void **) = D_0046A220;
+    AT(s, 0x319900, void **) = LoaderBase_vtable;
     gFileLoader = NULL;
 
     AT(s, 0x30CF40, void **) = Vram_vtable;
-    AT(s, 0x30CF40, void **) = D_0046AF20;
+    AT(s, 0x30CF40, void **) = VramBase_vtable;
     gVram = NULL;
 
     p = s + 0x305280;   /* ADX sound system */
-    AT(p, 0x0, void **) = D_0046AF00;
-    AT(p, 0x124, void **) = D_0046AF0C;
+    AT(p, 0x0, void **) = MovieSys_vtable;
+    AT(p, 0x124, void **) = MovieSys_vtable124;
     AT(p, 0x7C44, void **) = MovieLib_vtable;
-    AT(p, 0x7C44, void **) = D_0046AED0;
+    AT(p, 0x7C44, void **) = MovieLibBase_vtable;
     AT(p, 0x7C48, u8) = 0;
     gMovieLib = NULL;
-    AT(p, 0x124, void **) = D_0046AD88;
-    AT(p, 0x0, void **) = D_0046AEC0;
+    AT(p, 0x124, void **) = Obj46AD88_vtable;
+    AT(p, 0x0, void **) = AdxBase_vtable;
     AT(p, 0x4, s32) = 0;
     AT(p, 0x8, s32) = 0;
     AT(p, 0xC, s32) = 0;
     gAdx = NULL;
 
     AT(s, 0x460, void **) = Renderer_vtable;   /* renderer */
-    AT(s, 0x460, void **) = D_0046ACF0;
+    AT(s, 0x460, void **) = RendererBase_vtable;
     gRenderer = NULL;
 
     AT(s, 0x390, void **) = MemCard_vtable;   /* memory card */
-    AT(s, 0x39C, void **) = D_0046AEB4;
-    AT(s, 0x39C, void **) = D_0046AD88;
-    AT(s, 0x390, void **) = D_0046AE60;
+    AT(s, 0x39C, void **) = MemCard_subVtable;
+    AT(s, 0x39C, void **) = Obj46AD88_vtable;
+    AT(s, 0x390, void **) = MemCardBase_vtable;
     gMemCard = NULL;
 
     AT(s, 0x300, void **) = Rumble_vtable;   /* rumble */
-    AT(s, 0x300, void **) = D_0046AE30;
+    AT(s, 0x300, void **) = RumbleBase_vtable;
     gRumble = NULL;
 
     AT(s, 0x40, void **) = Pads_vtable;    /* pads */
-    AT(s, 0x58, void **) = D_0046ADC4;
-    AT(s, 0x58, void **) = D_0046AD88;
-    AT(s, 0x40, void **) = D_0046ADD0;
+    AT(s, 0x58, void **) = Pads_vtable18;
+    AT(s, 0x58, void **) = Obj46AD88_vtable;
+    AT(s, 0x40, void **) = PadsBase_vtable;
     gPad = NULL;
 
-    AT(s, 0x20, void **) = D_0046AD88;
-    AT(s, 0x0, void **) = D_0046AE10;
+    AT(s, 0x20, void **) = Obj46AD88_vtable;
+    AT(s, 0x0, void **) = SystemBase_vtable;
     gSystem = NULL;
     if ((s16)flags > 0) {
         __dl__FPv(s);

@@ -41,10 +41,10 @@
 
 extern const char str_DS2O_S1_IRX[];                     /* pad IOP module */
 
-extern void *Pads_vtable[], *D_0046ADC4[], *D_0046ADD0[], *D_0046AD88[];
+extern void *Pads_vtable[], *Pads_vtable18[], *PadsBase_vtable[], *Obj46AD88_vtable[];
 void *Pads_dtor(u8 *o, s32 flags);
 
-extern void *Rumble_vtable[], *D_0046AE30[];
+extern void *Rumble_vtable[], *RumbleBase_vtable[];
 #define RUMBLE_VCALL(f, off, type) ((type)(f)->vtbl[(off) / 4])
 
 void Pads_Shutdown(u8 *pads);
@@ -126,9 +126,9 @@ void *Pads_dtor(u8 *o, s32 flags) {
         return o;
     }
     AT(o, 0x0, void **) = Pads_vtable;
-    AT(o, 0x18, void **) = D_0046ADC4;
-    AT(o, 0x18, void **) = D_0046AD88;
-    AT(o, 0x0, void **) = D_0046ADD0;
+    AT(o, 0x18, void **) = Pads_vtable18;
+    AT(o, 0x18, void **) = Obj46AD88_vtable;
+    AT(o, 0x0, void **) = PadsBase_vtable;
     gPad = NULL;
     if ((s16)flags > 0) {
         __dl__FPv(o);
@@ -152,11 +152,11 @@ void Pads_Init(u8 *pads) {
     AT(p, 0x248, u8) = 0;
 }
 
-/* destructor (vtable D_0046AE30) */
+/* destructor (vtable RumbleBase_vtable) */
 /* 0x001BF280 */
 void *RumbleBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046AE30;
+        AT(o, 0x0, void **) = RumbleBase_vtable;
         gRumble = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -170,7 +170,7 @@ void *RumbleBase_dtor(u8 *o, s32 flags) {
 Rumble *Rumble_dtor(Rumble *f, s32 flags) {
     if (f != NULL) {
         f->vtbl = Rumble_vtable;
-        f->vtbl = D_0046AE30;
+        f->vtbl = RumbleBase_vtable;
         gRumble = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(f);

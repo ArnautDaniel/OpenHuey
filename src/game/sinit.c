@@ -14,7 +14,7 @@ extern const PTMF Debilitas_StartWander_ptmf;
 extern const PTMF Debilitas_StartTurnToFiona_ptmf;
 extern const PTMF Debilitas_StartLunge_ptmf;
 extern const PTMF Debilitas_StartGrab_ptmf;
-extern PTMF D_003AF2D0;
+extern PTMF Debilitas_Actions;
 extern PTMF D_003AF2EC;
 extern PTMF D_003AF308;
 extern PTMF D_003AF324;
@@ -245,13 +245,13 @@ extern const PTMF Debilitas3_StateNone_ptmf;
 extern const PTMF Debilitas3_StartTurnToFiona_ptmf;
 extern const PTMF Debilitas3_StartLunge_ptmf;
 extern const PTMF Debilitas3_StartGrab_ptmf;
-extern PTMF D_004135D0;
+extern PTMF Debilitas3_Actions;
 extern PTMF D_004135EC;
 extern PTMF D_00413608;
 extern PTMF D_00413624;
 extern const PTMF Riccardo_StartFlurry_ptmf;
 extern const PTMF Riccardo_StartLunge_ptmf;
-extern PTMF D_004148A0;
+extern PTMF Riccardo_Actions;
 extern PTMF D_004148BC;
 extern const PTMF Room46_CharHook_ptmf;
 extern const PTMF Room46_PursuerBusy_ptmf;
@@ -274,7 +274,7 @@ extern const PTMF Room_EmptyHook_ptmf;
 extern const PTMF D_0041B640;
 extern const PTMF D_0041B650;
 extern const PTMF D_0041B660;
-extern PTMF D_0041B670;
+extern PTMF Debilitas2_Actions;
 extern PTMF D_0041B68C;
 extern PTMF D_0041B6A8;
 extern PTMF D_0041B6C4;
@@ -298,7 +298,7 @@ extern const PTMF Room62_Cmd01_ptmf;
 extern const PTMF Lorenzo2_StartSink_ptmf;
 extern const PTMF Lorenzo2_StartStalkBelow_ptmf;
 extern const PTMF Lorenzo2_StartGrab_ptmf;
-extern PTMF D_00422690;
+extern PTMF Lorenzo2_Actions;
 extern PTMF D_004226AC;
 extern PTMF D_004226C8;
 extern const PTMF Room48_Cmd00_ptmf;
@@ -338,7 +338,7 @@ extern const PTMF Kind27_StateNone_ptmf;
 extern const PTMF Kind27_StartTurnToFiona_ptmf;
 extern const PTMF Kind27_StartLunge_ptmf;
 extern const PTMF Kind27_StartGrab_ptmf;
-extern PTMF D_0042E540;
+extern PTMF Kind27_Actions;
 extern PTMF D_0042E55C;
 extern PTMF D_0042E578;
 extern PTMF D_0042E594;
@@ -420,7 +420,7 @@ extern const PTMF Room96_Cmd00_ptmf;
 extern const PTMF Kind39_StartSink_ptmf;
 extern const PTMF Kind39_StartStalkBelow_ptmf;
 extern const PTMF Kind39_StartGrab_ptmf;
-extern PTMF D_00444CE0;
+extern PTMF Kind39_Actions;
 extern PTMF D_00444CFC;
 extern PTMF D_00444D18;
 extern const PTMF Room37_Fan_ptmf;
@@ -501,7 +501,7 @@ extern PTMF D_0047E324;
 extern PTMF D_0047E330;
 extern PTMF D_0047E33C;
 extern PTMF D_0047E348;
-extern PTMF D_01990700;
+extern PTMF Room00_Commands;
 extern PTMF D_0199070C;
 extern PTMF Room00_CondTable;
 extern PTMF Room02_CmdTable;
@@ -608,7 +608,7 @@ extern PTMF D_01990CF8;
 extern PTMF Room4E_CmdTable;
 extern PTMF D_01990D1C;
 extern PTMF D_01990D28;
-extern PTMF D_01990D40;
+extern PTMF Room4F_Commands;
 extern PTMF D_01990D4C;
 extern PTMF D_01990D58;
 extern PTMF D_01990D64;
@@ -837,7 +837,7 @@ extern PTMF RoomE9_CondTable;
 
 /* 0x00464860 */
 void Sinit_Debilitas(void) {
-    D_003AF2D0 = Debilitas_StartWander_ptmf;
+    Debilitas_Actions = Debilitas_StartWander_ptmf;
     D_003AF2EC = Debilitas_StartTurnToFiona_ptmf;
     D_003AF308 = Debilitas_StartLunge_ptmf;
     D_003AF324 = Debilitas_StartGrab_ptmf;
@@ -908,7 +908,7 @@ void Sinit_Pursuer(void) {
 
 /* 0x00465470 */
 void Sinit_SceneGameMembers(void) {
-    D_01990700 = Room00_Cmd00_ptmf;
+    Room00_Commands = Room00_Cmd00_ptmf;
     D_0199070C = Room00_Cmd01_ptmf;
     Room00_CondTable = D_003EE730;
 }
@@ -1179,7 +1179,7 @@ void Sinit_Room4E(void) {
 
 /* 0x004667B0 */
 void Sinit_Creature(void) {
-    D_01990D40 = Room4F_Cmd00_ptmf;
+    Room4F_Commands = Room4F_Cmd00_ptmf;
     D_01990D4C = Room4F_Cmd01_ptmf;
     D_01990D58 = Room4F_Cmd02_ptmf;
     D_01990D64 = Room4F_Cmd03_ptmf;
@@ -1242,7 +1242,7 @@ void Sinit_Room30(void) {
 
 /* 0x00466B10 */
 void Sinit_Debilitas3(void) {
-    D_004135D0 = Debilitas3_StateNone_ptmf;
+    Debilitas3_Actions = Debilitas3_StateNone_ptmf;
     D_004135EC = Debilitas3_StartTurnToFiona_ptmf;
     D_00413608 = Debilitas3_StartLunge_ptmf;
     D_00413624 = Debilitas3_StartGrab_ptmf;
@@ -1250,7 +1250,7 @@ void Sinit_Debilitas3(void) {
 
 /* 0x00466C30 */
 void Sinit_Riccardo(void) {
-    D_004148A0 = Riccardo_StartFlurry_ptmf;
+    Riccardo_Actions = Riccardo_StartFlurry_ptmf;
     D_004148BC = Riccardo_StartLunge_ptmf;
 }
 
@@ -1317,7 +1317,7 @@ void Sinit_Room10B(void) {
 
 /* 0x00466F80 */
 void Sinit_Debilitas2(void) {
-    D_0041B670 = Room_EmptyHook_ptmf;
+    Debilitas2_Actions = Room_EmptyHook_ptmf;
     D_0041B68C = D_0041B640;
     D_0041B6A8 = D_0041B650;
     D_0041B6C4 = D_0041B660;
@@ -1366,7 +1366,7 @@ void Sinit_Room62(void) {
 
 /* 0x00467360 */
 void Sinit_Lorenzo(void) {
-    D_00422690 = Lorenzo2_StartSink_ptmf;
+    Lorenzo2_Actions = Lorenzo2_StartSink_ptmf;
     D_004226AC = Lorenzo2_StartStalkBelow_ptmf;
     D_004226C8 = Lorenzo2_StartGrab_ptmf;
 }
@@ -1438,7 +1438,7 @@ void Sinit_RoomC0(void) {
 
 /* 0x00467A00 */
 void Sinit_Debilitas3_2(void) {
-    D_0042E540 = Kind27_StateNone_ptmf;
+    Kind27_Actions = Kind27_StateNone_ptmf;
     D_0042E55C = Kind27_StartTurnToFiona_ptmf;
     D_0042E578 = Kind27_StartLunge_ptmf;
     D_0042E594 = Kind27_StartGrab_ptmf;
@@ -1645,7 +1645,7 @@ void Sinit_Room96(void) {
 
 /* 0x00468880 */
 void Sinit_Lorenzo_2(void) {
-    D_00444CE0 = Kind39_StartSink_ptmf;
+    Kind39_Actions = Kind39_StartSink_ptmf;
     D_00444CFC = Kind39_StartStalkBelow_ptmf;
     D_00444D18 = Kind39_StartGrab_ptmf;
 }

@@ -77,7 +77,7 @@ extern char gMessageNames[][8];    /* names (code 0x13) */
 extern u8 gLanguage;           /* language */
 extern u8 D_0044AD00[];         /* small font glyphs: high nibble blank columns, low nibble drop */
 extern u16 D_0044B010[][2];     /* box position presets */
-extern u8 D_0047B140[];         /* frames per glyph, by speed */
+extern u8 Text_GlyphFrames[];         /* frames per glyph, by speed */
 extern u8 D_0047B144[];         /* the choice cursor glyph */
 extern u8 D_0047B148[];         /* the page arrow glyph */
 
@@ -125,14 +125,14 @@ typedef struct MsgSlot {
 
 #define MSG_LAST(m) AT(m, 0x100, u8)
 
-extern void *D_0046A0D0[];
+extern void *MessageBase_vtable[];
 extern void *Message_vtable[];
 #define F(p, off, T) (*(T *)((u8 *)(p) + (off)))
 
 void *Message_dtor(u8 *o, s32 flags);
 void *Message_ctor(u8 *p);
 
-extern void *D_0046A9C0[], *Overlay_vtable[];
+extern void *Obj46A9C0_vtable[], *Overlay_vtable[];
 
 static inline void Message_Reset(u8 *m) {
     s8 i;
@@ -542,7 +542,7 @@ void *Message_Pool(void) {
 void *Message_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = Message_vtable;
-        AT(o, 0x0, void **) = D_0046A0D0;
+        AT(o, 0x0, void **) = MessageBase_vtable;
         gBootMessage = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -1392,7 +1392,7 @@ void Task_StateType(Task *t) {
             if (n != 0) {
                 t->cur.p += n;
                 if (!(gMenuPressed & MENU_CANCEL) && !hidden) {
-                    t->wait = D_0047B140[t->speed];
+                    t->wait = Text_GlyphFrames[t->speed];
                     if (t->wait != 0) {
                         Task_SetState(t, Task_StateGlyphDelay);
                         stop = 1;
@@ -1592,11 +1592,11 @@ Task *Task_ctor(Task *t) {
     return t;
 }
 
-/* a message object with its own dimming overlay (vtable D_0046A9C0): a Task at +0xC, the
+/* a message object with its own dimming overlay (vtable Obj46A9C0_vtable): a Task at +0xC, the
  * overlay (Overlay_vtable) at +0x120 */
 /* 0x002D13B0 */
 void *DimMessage_ctor(u8 *p) {
-    AT(p, 0x0, void **) = D_0046A9C0;
+    AT(p, 0x0, void **) = Obj46A9C0_vtable;
     Task_Construct((Task *)(p + 0xC));
     AT(p, 0x120, void **) = Helper469D00_vtable;
     AT(p, 0x124, s32) = -1;

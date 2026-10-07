@@ -46,7 +46,7 @@ typedef void (*RectFn)(VObject *, s32, s32, s32, s32, s32, s32, s32, s32, u32, s
 
 #define PANIC(p) ((u8 *)(p) + 0x7B8)
 
-extern void *D_0046D730[];
+extern void *RoomEffectBase_vtable[];
 
 void SceneGame_SetByte19034(u8 *p, u32 v);
 
@@ -55,7 +55,7 @@ void SceneGame_SetByte19034(u8 *p, u32 v);
 void *GameOverBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
         AT(o, 0x0, void **) = Tint_vtable;
-        AT(o, 0x0, void **) = D_0046D730;
+        AT(o, 0x0, void **) = RoomEffectBase_vtable;
         if ((s16)flags > 0) {
             RoomEffects_delete(o);
         }

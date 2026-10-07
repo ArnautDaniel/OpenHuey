@@ -1,5 +1,5 @@
 /* The sound driver object (system +0x395D40, vtable SndDriver_vtable; its sound interface at +4,
- * vtable D_0046BF2C, is the global gSound): banks of sounds loaded into the IOP sound
+ * vtable SndDriver_vtable4, is the global gSound): banks of sounds loaded into the IOP sound
  * driver, sound effects (2D, or placed in 3D from the block at +0x10), sequences, volumes and
  * the output mode. It talks to SNDDRV.IRX through the EE sound library (snd_lib.c).
  *
@@ -54,7 +54,7 @@ extern u32 kSoundBankSizes[8][3];   /* the banks' header / table sizes and sound
 #define LOADED(d, k) AT(BANK(d, k), 0xD, u8)
 #define BANK_TYPE(d, k) AT(BANK(d, k), 0xC, u8)
 
-extern void *D_0046AF90[];
+extern void *SndDriverBase_vtable[];
 void *SndDriverBase_dtor(u8 *o, s32 flags);
 
 /* the RPC clients and the argument / result blocks */
@@ -126,11 +126,11 @@ void SndLib_TransferDone1(u32 *flags);
 void *SndLib_ServerCall(u32 fno, void *buf);
 void SndLib_ServerThread(void);
 
-/* destructor (vtable D_0046AF90) */
+/* destructor (vtable SndDriverBase_vtable) */
 /* 0x001BF800 */
 void *SndDriverBase_dtor(u8 *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046AF90;
+        AT(o, 0x0, void **) = SndDriverBase_vtable;
         gSound = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(o);
@@ -1520,24 +1520,24 @@ void Sound_PlayBankAt(VObject *snd, u32 id, u32 bank, f32 *pos, s32 vol, s32 pit
     VCALL(snd, 0xB4, void (*)(VObject *, u32, u32, s32, s32))(snd, id, bank, vol, pitch);
 }
 
-extern void *SndDriver_vtable[], *D_0046BF2C[], *D_0046AF90[], *D_0046AD88[];
+extern void *SndDriver_vtable[], *SndDriver_vtable4[], *SndDriverBase_vtable[], *Obj46AD88_vtable[];
 
 /* destructor */
 /* 0x0020E000 */
 u8 *SndDriver_dtor(u8 *d, s32 flags) {
     if (d != NULL) {
         AT(d, 0x0, void **) = SndDriver_vtable;
-        AT(d, 0x4, void **) = D_0046BF2C;
+        AT(d, 0x4, void **) = SndDriver_vtable4;
         __destroy_arr(d + 0x108, (void * (*)(void *, s32))IopArray_dtor, 0x18, 8);
         __destroy_arr(d + 0x84, (void * (*)(void *, s32))IopBuffers_dtor, 0x10, 8);
         if (d + 4 != NULL) {
-            AT(d, 0x4, void **) = D_0046AF90;
+            AT(d, 0x4, void **) = SndDriverBase_vtable;
             if (d + 4 != NULL) {
                 gSound = NULL;
             }
         }
         if (d != NULL) {
-            AT(d, 0x0, void **) = D_0046AD88;
+            AT(d, 0x0, void **) = Obj46AD88_vtable;
         }
         if ((s16)flags > 0) {
             __dl__FPv(d);

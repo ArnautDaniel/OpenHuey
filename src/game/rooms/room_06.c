@@ -10,7 +10,7 @@
 extern void *RoomBase_vtable[];
 extern void *Room06_vtable[];
 extern const f32 D_003F2180[4][4];   /* room 0x06: where its four objects go */
-extern const char D_0047A9A0[7];     /* room 0x06: the first object's name (its 6th letter counts on) */
+extern const char Room06_FirstObjName[7];     /* room 0x06: the first object's name (its 6th letter counts on) */
 
 extern u8 Room06_EnterScript_data[];
 extern u8 Room06_CharEnterScript_data[];
@@ -78,7 +78,7 @@ s32 Room06_Cmd00(void) {
     s32 i;
 
     for (i = 0; i < 7; i++) {
-        name[i] = D_0047A9A0[i];
+        name[i] = Room06_FirstObjName[i];
     }
     for (i = 0; i < 4; i++) {
         u8 *o = room_obj(name);

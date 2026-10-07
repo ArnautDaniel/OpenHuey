@@ -52,11 +52,11 @@ _Static_assert(__builtin_offsetof(SceneEnding, task) == 0x48, "SceneEnding.task"
 extern void *Scene_vtable[];
 extern void *SceneEnding_vtable[];          /* SceneEnding */
 extern void *SubScreen_vtable[];          /* the sub screen */
-extern void *Message_vtable[], *D_0046A0D0[];   /* the message object, its base */
-extern void *BgmCtl_vtable[], *D_0046A100[];   /* the BGM controller, its base */
+extern void *Message_vtable[], *MessageBase_vtable[];   /* the message object, its base */
+extern void *BgmCtl_vtable[], *BgmCtlBase_vtable[];   /* the BGM controller, its base */
 extern void *MovieScene_vtable[];          /* SceneMovie */
 extern u8 gLanguage;               /* the message language set */
-extern u8 *D_01991EC4;              /* the message text */
+extern u8 *Ending_Text;              /* the message text */
 extern const char str_STAFF_ROLL_SFD[];     /* "STAFF_ROLL.SFD" */
 extern const char str_SYSTEM_ENDING_A_TEX[], str_SYSTEM_ENDING_B_TEX[], str_SYSTEM_ENDING_C_TEX[], str_SYSTEM_ENDING_D_TEX[];   /* "SYSTEM\\ENDING_A..D.TEX" */
 extern const char str_SUBSCR_MSG_END_BIN[];     /* "SUBSCR\\MSG_END.BIN" */
@@ -107,7 +107,7 @@ SceneEnding *SceneEnding_dtor(SceneEnding *s, s32 flags) {
         if (bgm != NULL) {
             AT(bgm, 0, void **) = BgmCtl_vtable;
             if (bgm != NULL) {
-                AT(bgm, 0, void **) = D_0046A100;
+                AT(bgm, 0, void **) = BgmCtlBase_vtable;
                 if (bgm != NULL) {
                     gMusic = NULL;
                 }
@@ -116,7 +116,7 @@ SceneEnding *SceneEnding_dtor(SceneEnding *s, s32 flags) {
         if (msg != NULL) {
             AT(msg, 0, void **) = Message_vtable;
             if (msg != NULL) {
-                AT(msg, 0, void **) = D_0046A0D0;
+                AT(msg, 0, void **) = MessageBase_vtable;
                 if (msg != NULL) {
                     gBootMessage = NULL;
                 }
@@ -750,7 +750,7 @@ void SceneEnding_SeqSetup(SceneEnding *s) {
     VCALL(msg, 0x8, void (*)(VObject *, s32, void *))(msg, 6, END_PIC_FILE(s));
     VCALL(msg, 0x10, void (*)(VObject *, s32, void *, s32))(msg, 6, END_PIC_FILE(s), 0);
     LOADER_LOAD(str_SUBSCR_MSG_END_BIN, END_TEXT(s));
-    D_01991EC4 = END_TEXT(s);
+    Ending_Text = END_TEXT(s);
     LOADER_LOAD(str_SUBSCR_MSG_END_TEX, END_FONT(s));
     VCALL(gTexCache, 0x10, void (*)(VObject *, void *, s32))(gTexCache, END_FONT(s), 0x15);
     gLanguage = 1;

@@ -52,7 +52,7 @@ extern const char *const pstr_kibako, *const pstr_a_koushi;   /* "kibako" (the b
 void Mtx_ApplyVector(f32 *out, f32 (*m)[4], const f32 *v);
 
 extern void *Random_vtable[];
-extern void *D_0046AB80[];
+extern void *RandomBase_vtable[];
 #define DBL_2POW26 0x4190000000000000ULL     /* 67108864.0 */
 
 #define DBL_2POWM53 0x3CA0000000000000ULL    /* 1.0 / 9007199254740992.0 */
@@ -209,7 +209,7 @@ void Random_Refill(VObject *r) {
 VObject *Random_dtor(VObject *r, s32 flags) {
     if (r != NULL) {
         r->vtbl = Random_vtable;
-        r->vtbl = D_0046AB80;
+        r->vtbl = RandomBase_vtable;
         gRandom = NULL;
         if ((s16)flags > 0) {
             __dl__FPv(r);
@@ -231,7 +231,7 @@ VObject *Random_ctor(VObject *rng, s32 seed) {
 /* 0x001A4910 */
 void *RandomBase_dtor(void *o, s32 flags) {
     if (o != NULL) {
-        AT(o, 0x0, void **) = D_0046AB80;
+        AT(o, 0x0, void **) = RandomBase_vtable;
         if (o != NULL) {
             gRandom = NULL;
         }

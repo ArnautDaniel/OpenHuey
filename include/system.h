@@ -16,7 +16,7 @@ extern void *SmallPool_ctor(u8 *p);   /* object pool (+0x14D9DD0) */
 extern void *BigPool_ctor(u8 *p);   /* object pool (+0x14DC530) */
 extern void *Slots_ctor(u8 *o);   /* Game.unk14E8C90 */
 extern void Slots_Init(u8 *o);   /* init Game.unk14E8C90 */
-extern void *Obj46AE10_dtor(u8 *o, s32 flags);
+extern void *SystemBase_dtor(u8 *o, s32 flags);
 extern void *IopBuffers_dtor(u8 *e, s32 flags);
 extern void *IopArray_dtor(u8 *o, s32 flags);
 

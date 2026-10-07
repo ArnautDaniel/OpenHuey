@@ -7,7 +7,7 @@ typedef void (*Ctor)(void);
 
 /* Static constructor table (MW __sinit_*), run by the PS2 runtime's __init (0x00100290). Its two
  * halves are separate data files; on x86 alignment padding between them reads as NULL. */
-extern Ctor D_00469460[];
+extern Ctor Sinit_Table[];
 extern Ctor D_0046969C[];
 
 extern char gGame[];
@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
         }
         closedir(d);
     }
-    for (c = D_00469460; c < D_0046969C; c++) {
+    for (c = Sinit_Table; c < D_0046969C; c++) {
         if (*c != NULL) {
             (*c)();
         }
