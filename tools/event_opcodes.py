@@ -42,7 +42,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CMD = {
     0x00: ('exit-check', 'exit:u8',
            'Door / exit use: with bit 7 set, flags the progress (+0x4 = 1) and keeps the exit '
-           '(+0x702); otherwise, if the exit is unlocked and passable for whoever is controlled '
+           '(+0x702); otherwise, if the exit is not locked and passable for whoever is controlled '
            '(Fiona idle or walking; Hewie idle), +0x702 = progress +0x10 (empty in this game: 0).'),
     0x01: ('nop-progress-14', 'a:u8', 'Calls the progress\' +0x14 with the byte: empty in this game (no effect).'),
     0x02: ('char-to-tri', 'who:chr tri:u16', 'Places character `who` (0xFF: self) on nav triangle `tri` in the event\'s room.'),
@@ -87,8 +87,9 @@ CMD = {
     0x1B: ('yield', '', 'self: waits one frame (the pc moves past it first).'),
     0x1C: ('self-wait-16', '', 'self: waits until this script\'s frame count is 16.'),
     0x1D: ('nav-group', 'set:u8 group:u8 bits:u32',
-           'Nav-triangle flag groups (gRoomEventObj, NavGroups): set 1: +0xC, else +0x10 with '
-           'group and bits (sets / clears the flags of a group of triangles).'),
+           'Nav-triangle flag groups (gRoomEventObj, NavGroups: the room\'s section 14): set 1 sets '
+           '`bits` on group `group`\'s triangles, else clears them. Flags in a character\'s mask block '
+           'it (Fiona 0x28020018, Hewie 0x29020008).'),
     0x1E: ('self-to-exit-in', 'exit:u8', 'self: put at the inside point of exit `exit` (Rooms_ExitPointIn), facing the way through it.'),
     0x1F: ('char-visible', 'who:chr on:u8', 'Character `who` shown or hidden (+0x29), if it is in the current room.'),
     0x20: ('self-noclip', 'on:u8', 'self: the character\'s root motion ignores the nav blocking mask (+0x2B) - it walks through blocked triangles (stalkers use it at doors).'),
@@ -147,7 +148,7 @@ CMD = {
            'character in a scripted move is released (move 1).'),
     0x4A: ('camera-restart', '', 'The camera director restarts (CamDirector_Restart).'),
     0x4B: ('self-turn-angle', 'face:deg', 'self: turns to heading `face` (character move 15).'),
-    0x4C: ('door-bits', 'a:u8 door:u8 b:u8', 'Door `door`: Doors_SetBits(door, a, b) (the progress\' +0x68 is empty).'),
+    0x4C: ('door-bits', 'a:u8 set:u8 b:u8', 'The room\'s door models: bit a + 1 + b of each set (`set` 1) or cleared (Doors_SetBits(set, a, b): which parts are drawn; the progress\' +0x68 is empty).'),
     0x4D: ('door-copy', 'door:u16 from:u16',
            'Door `door` takes on door `from`\'s states: open bit, lock, closed-off; and `from`\'s '
            'exit in this room saves its door state.'),
@@ -331,7 +332,7 @@ CMD = {
     0xD7: ('hewie-anim-set', 'anim:u16', 'Hewie\'s motion plays `anim` (Motion_Play).'),
     0xD8: ('reward-item', '', 'By progress +0xFB6 (from 20: steps of 20): item 0x270..0x273 added, with the pickup sound.'),
     0xD9: ('dust-motes', 'x:fx y:fx z:fx size:fx', 'A scene effect: a dust mote source (DustMoteSource) at (x, y, z) of `size`.'),
-    0xDA: ('nav-group-2', 'set:u8 group:u16 bits:u32', 'Nav-triangle flag groups (gRoomEventObj): set 1: +0x18, else +0x1C with group and bits (as 0x1D, 16-bit group).'),
+    0xDA: ('nav-tri-flags', 'set:u8 tri:u16 bits:u32', 'Nav triangle `tri`\'s flags (gRoomEventObj, NavGroups_SetTri / _ClearTri): set 1 sets `bits`, else clears them.'),
 }
 
 # ---- sub-commands of 0x59 (flags, items, doors: operand 1 the sub-command, then n) ----------
@@ -341,11 +342,11 @@ FLAGS = {
     0x01: ('story-flag-clear', '_:u8 n:u16', 'Story flag n cleared.'),
     0x02: ('state-flag-set', '_:u8 n:u16', 'State flag n set (the progress\' 46 flags, +0x8: control, panic, ...).'),
     0x03: ('state-flag-clear', '_:u8 n:u16', 'State flag n cleared.'),
-    0x04: ('door-unlock', '_:u8 door:u16', 'Door `door` unlocked.'),
-    0x05: ('door-lock', '_:u8 door:u16', 'Door `door` locked.'),
+    0x04: ('door-lock', '_:u8 door:u16', 'Door `door` locked (its state bit 3 set: Progress_UnlockDoor). (Door state bit 3 is the lock: the decomp\'s Progress_UnlockDoor / LockDoor / DoorUnlocked have it the wrong way round.)'),
+    0x05: ('door-unlock', '_:u8 door:u16', 'Door `door` unlocked (bit 3 cleared: Progress_LockDoor).'),
     0x06: ('door-passable', '_:u8 door:u16', 'Door `door` passable as if unlocked (its state bit 4: DoorHold_Usable), and characters can\'t hold it open (DoorHold_Open).'),
-    0x07: ('door-reopen-lock', '_:u8 door:u16', 'Door `door` no longer closed off (Rooms_Reopen), then locked (as 0x05).'),
-    0x08: ('door-close-off-unlock', '_:u8 door:u16', 'Door `door` closed off (Rooms_CloseOff), then unlocked (as 0x04).'),
+    0x07: ('door-reopen-unlock', '_:u8 door:u16', 'Door `door` no longer closed off (Rooms_Reopen), then unlocked (as 0x05).'),
+    0x08: ('door-close-off-lock', '_:u8 door:u16', 'Door `door` closed off (Rooms_CloseOff), then locked (as 0x04).'),
     0x09: ('door-open-set', '_:u8 door:u16', 'Door `door`: its open bit set.'),
     0x0A: ('door-open-clear', '_:u8 door:u16', 'Door `door`: its open bit cleared.'),
     0x0B: ('message-param-room', '_:u8 n:u16', 'The message\'s parameter 0 = room id n as the script sees it (Events_ScriptRoom).'),
@@ -386,7 +387,7 @@ COND = {
     0x08: ('state-flag?', 'n:u16', 'State flag n is set (the progress\' 46 flags).'),
     0x09: ('scene-request?', 'v:s32', 'The pending scene request (progress +0x1134) is v.'),
     0x0A: ('exit-door-open?', 'exit:u8', 'The door at exit `exit` of this room is open.'),
-    0x0B: ('door-unlocked?', 'door:u16', 'Door `door` is unlocked.'),
+    0x0B: ('door-locked?', 'door:u16', 'Door `door` is locked (state bit 3: Progress_DoorUnlocked, named the wrong way round).'),
     0x0C: ('door-not-closed-off?', 'door:u16', 'Door `door` isn\'t closed off (Rooms_DoorClosedOff).'),
     0x0D: ('game-mode?', 'mode:u8', 'The game mode is `mode` (Progress_GameMode).'),
     0x0E: ('char-busy?', 'who:chr', 'Script slots 0xF0..0xFA: that slot\'s script runs; else character `who` is in a scripted state (+0xE0).'),

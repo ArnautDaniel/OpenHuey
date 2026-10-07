@@ -33,7 +33,8 @@ fvariable h-turn        0.15e h-turn f!
 : trot ( F: distance -- )
     fdup him act.yaw sf@ fsin f* px f!  him act.yaw sf@ fcos f* pz f!
     nav-tris if
-        his-pos px f@ pz f@ step-up 2.5e nav-move
+        $29020008 nav-block!                     \ (the triangles that stop him: the game's mask)
+        his-pos px f@ pz f@ step-up 2.5e nav-move  0 nav-block!
         him act.z sf!  him act.y sf!  him act.x sf!
     else
         him act.x sf@ px f@ f+ him act.x sf!

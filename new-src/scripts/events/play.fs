@@ -3,7 +3,7 @@
 \ What isn't there yet: most of the words (each says so on the console the first time it runs;
 \ `.missing` lists them) and characters walking their scripted moves.
 IN: events.play
-USING: engine state player hewie game-state events.core events.runner ;
+USING: engine state player hewie doors game-state events.core events.words events.runner ;
 
 \ the scripts' characters: slot 0 Fiona (script id 0), slot 1 Hewie (script id 1)
 : cast ( -- )
@@ -37,6 +37,10 @@ USING: engine state player hewie game-state events.core events.runner ;
     character char.cam-set sl@ 0< 0= ;
 :noname  directed? if  cam-update  then ; is director-update
 :noname  directed? 0= if  follow  then ; is steer-camera
+\ the room's doors and nav mesh
+' exit-door is event-exit-door   ' door-flags is event-door-flags
+' nav-group! is event-nav-group   ' nav-tri-flags! is event-nav-tri
+:noname ( group -- flag ) ( F: x y z -- )  nav-tri swap nav-in-group? ; is event-nav-in-group?
 \ the room's event areas
 ' message-param! is message-parameter
 ' area-in? is event-area-in?   ' area-cross is event-area-cross   ' exit-area is event-exit-area
@@ -54,6 +58,19 @@ USING: engine state player hewie game-state events.core events.runner ;
 : leaving  playing @ event-state ev.room sl@ 0< 0= and if  leave-room  then ;
 ' leaving is leaving-room
 
+\ exits: a locked door stays shut; otherwise the door opens and she steps into the doorway (the
+\ exit's "in" spot, in its area), where the room's phase 1 sees her and takes the exit
+:noname ( exit -- flag )  event-exit-door dup 0< if  drop false  else  door-locked  then ; is exit-locked?
+: step-in ( exit -- )
+    dup event-exit-door dup 0< 0= if  door-open-set  else  drop  then
+    1 exit-spot 0< if  fdrop fdrop fdrop exit  then  place-fiona ;
+' step-in is use-exit
+\ an exit the scripts took (exit-check): through it after the frame; its door shuts behind
+: take-exit ( -- )
+    exit-wanted @ dup 0< if  drop exit  then  -1 exit-wanted !
+    dup event-exit-door dup 0< 0= if  door-open-clear  else  drop  then
+    go-through ;
+
 variable started
 : events-tick
     playing @ 0= if  exit  then
@@ -62,7 +79,7 @@ variable started
         started @ 0= if  start-play  -1 started !  then
         room-id came-in-by @ enter-room  -1 came-in-by !  remember-places  exit
     then
-    run-frame  remember-places ;
+    run-frame  remember-places  take-exit ;
 ' events-tick on-tick
 
 \ ---- the message window (the original's Task: src/game/text.c) ----

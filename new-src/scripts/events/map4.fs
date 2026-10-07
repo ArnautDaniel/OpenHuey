@@ -32,36 +32,36 @@ USING: events.core events.words events.builtin ;
             \ (nop-progress-74: no effect in this game)
         then
     then
-    1 $51 $10000000 nav-group-2
-    1 $21C $10000000 nav-group-2
-    1 $2F $10000000 nav-group-2
-    1 $54 $10000000 nav-group-2
-    1 $23B $10000000 nav-group-2
-    1 $43 $10000000 nav-group-2
-    1 $22C $10000000 nav-group-2
-    1 $44 $10000000 nav-group-2
-    1 $22D $10000000 nav-group-2
-    1 $45 $10000000 nav-group-2
-    1 $22E $10000000 nav-group-2
-    1 $46 $10000000 nav-group-2
-    1 $22F $10000000 nav-group-2
-    1 $40 $10000000 nav-group-2
-    1 $229 $10000000 nav-group-2
-    1 $3D $10000000 nav-group-2
-    1 $226 $10000000 nav-group-2
-    1 $3A $10000000 nav-group-2
-    1 $224 $10000000 nav-group-2
-    1 $28 $10000000 nav-group-2
-    1 $216 $10000000 nav-group-2
-    1 $2D $10000000 nav-group-2
-    1 $21A $10000000 nav-group-2
-    1 $53 $10000000 nav-group-2
-    1 $21E $10000000 nav-group-2
-    1 $31 $10000000 nav-group-2
-    1 $56 $10000000 nav-group-2
-    1 $23D $10000000 nav-group-2
-    1 $4B $10000000 nav-group-2
-    1 $234 $10000000 nav-group-2
+    1 $51 $10000000 nav-tri-flags
+    1 $21C $10000000 nav-tri-flags
+    1 $2F $10000000 nav-tri-flags
+    1 $54 $10000000 nav-tri-flags
+    1 $23B $10000000 nav-tri-flags
+    1 $43 $10000000 nav-tri-flags
+    1 $22C $10000000 nav-tri-flags
+    1 $44 $10000000 nav-tri-flags
+    1 $22D $10000000 nav-tri-flags
+    1 $45 $10000000 nav-tri-flags
+    1 $22E $10000000 nav-tri-flags
+    1 $46 $10000000 nav-tri-flags
+    1 $22F $10000000 nav-tri-flags
+    1 $40 $10000000 nav-tri-flags
+    1 $229 $10000000 nav-tri-flags
+    1 $3D $10000000 nav-tri-flags
+    1 $226 $10000000 nav-tri-flags
+    1 $3A $10000000 nav-tri-flags
+    1 $224 $10000000 nav-tri-flags
+    1 $28 $10000000 nav-tri-flags
+    1 $216 $10000000 nav-tri-flags
+    1 $2D $10000000 nav-tri-flags
+    1 $21A $10000000 nav-tri-flags
+    1 $53 $10000000 nav-tri-flags
+    1 $21E $10000000 nav-tri-flags
+    1 $31 $10000000 nav-tri-flags
+    1 $56 $10000000 nav-tri-flags
+    1 $23D $10000000 nav-tri-flags
+    1 $4B $10000000 nav-tri-flags
+    1 $234 $10000000 nav-tri-flags
 ;
 
 : room81.char-enter ( -- )   \ 00430C40
@@ -487,7 +487,7 @@ USING: events.core events.words events.builtin ;
     then
     0 0 $14 door-bits
     1 1 $14 door-bits
-    $E0 door-lock
+    $E0 door-unlock
     $24 item-use
     2 ebit-set
     0 state-flag-clear
@@ -1127,10 +1127,10 @@ USING: events.core events.words events.builtin ;
     $14 self-wait-frames
     0 3 6 char-sound
     $25 message-param-room
-    $E6 door-unlocked? not if
+    $E6 door-locked? not if
         $25 item-use
     then
-    $E2 door-lock
+    $E2 door-unlock
     20 self-move-16
     self-frames-reset
     $14 self-wait-frames
@@ -1181,9 +1181,9 @@ USING: events.core events.words events.builtin ;
     then then then
     effects-arena-flip
     1 char-in
-    $E6 door-unlock
-    $EA door-unlock
-    $103 door-unlock
+    $E6 door-lock
+    $EA door-lock
+    $103 door-lock
     \ (nop-progress-24: no effect in this game)
     \ (nop-progress-24: no effect in this game)
     \ (nop-progress-24: no effect in this game)
@@ -1479,7 +1479,7 @@ USING: events.core events.words events.builtin ;
     0 0 char-no-shadow
     $80 exit-check
     $E2 door-open-clear
-    $E2 door-unlock
+    $E2 door-lock
     $43 resident-flag-set
     \ (nop-progress-4C: no effect in this game)
     \ (nop-progress-48: no effect in this game)
@@ -1925,7 +1925,7 @@ USING: events.core events.words events.builtin ;
     camera-restart
     $95 story-flag-set
     1 0 0 music
-    $EF door-lock
+    $EF door-unlock
     $EF door-open-set
     $26 1 pvar? if
         1 fiona-costume
@@ -2290,8 +2290,8 @@ USING: events.core events.words events.builtin ;
     then
     camera-restart
     $EF door-open-clear
-    $E9 door-unlock
-    $EF door-unlock
+    $E9 door-lock
+    $EF door-lock
     doors-room-in
     $98 story-flag-set
     $F $41 fade
@@ -2714,32 +2714,32 @@ USING: events.core events.words events.builtin ;
     $2F1 story-flag? $2F2 story-flag? not and if
         2 35.0 71.0 33.0 flicker-sprite
     then
-    1 $51 $10000000 nav-group-2
-    1 $21C $10000000 nav-group-2
-    1 $2F $10000000 nav-group-2
-    1 $54 $10000000 nav-group-2
-    1 $23B $10000000 nav-group-2
-    1 $43 $10000000 nav-group-2
-    1 $22C $10000000 nav-group-2
-    1 $350 $10000000 nav-group-2
-    1 $41 $10000000 nav-group-2
-    1 $22D $10000000 nav-group-2
-    1 $354 $10000000 nav-group-2
-    1 $232 $10000000 nav-group-2
-    1 $355 $10000000 nav-group-2
-    1 $34C $10000000 nav-group-2
-    1 $35C $10000000 nav-group-2
-    1 $351 $10000000 nav-group-2
-    1 $48 $10000000 nav-group-2
-    1 $235 $10000000 nav-group-2
-    1 $356 $10000000 nav-group-2
-    1 $234 $10000000 nav-group-2
-    1 $4B $10000000 nav-group-2
-    1 $23D $10000000 nav-group-2
-    1 $56 $10000000 nav-group-2
-    1 $31 $10000000 nav-group-2
-    1 $21E $10000000 nav-group-2
-    1 $53 $10000000 nav-group-2
+    1 $51 $10000000 nav-tri-flags
+    1 $21C $10000000 nav-tri-flags
+    1 $2F $10000000 nav-tri-flags
+    1 $54 $10000000 nav-tri-flags
+    1 $23B $10000000 nav-tri-flags
+    1 $43 $10000000 nav-tri-flags
+    1 $22C $10000000 nav-tri-flags
+    1 $350 $10000000 nav-tri-flags
+    1 $41 $10000000 nav-tri-flags
+    1 $22D $10000000 nav-tri-flags
+    1 $354 $10000000 nav-tri-flags
+    1 $232 $10000000 nav-tri-flags
+    1 $355 $10000000 nav-tri-flags
+    1 $34C $10000000 nav-tri-flags
+    1 $35C $10000000 nav-tri-flags
+    1 $351 $10000000 nav-tri-flags
+    1 $48 $10000000 nav-tri-flags
+    1 $235 $10000000 nav-tri-flags
+    1 $356 $10000000 nav-tri-flags
+    1 $234 $10000000 nav-tri-flags
+    1 $4B $10000000 nav-tri-flags
+    1 $23D $10000000 nav-tri-flags
+    1 $56 $10000000 nav-tri-flags
+    1 $31 $10000000 nav-tri-flags
+    1 $21E $10000000 nav-tri-flags
+    1 $53 $10000000 nav-tri-flags
 ;
 
 : room88.char-enter ( -- )   \ 00432DF0
@@ -4063,7 +4063,7 @@ USING: events.core events.words events.builtin ;
     $E5 door-open-clear
     1 0 self-door-knock
     doors-room-in
-    $E5 door-unlock
+    $E5 door-lock
     $10 state-flag-set
     $FE char-full-health
     6 0 object-show
@@ -4244,7 +4244,7 @@ USING: events.core events.words events.builtin ;
     $FE action-end
     3 summon-take
     0 state-flag-clear
-    $E5 door-lock
+    $E5 door-unlock
     0 $7A -10.04 37.76 18 char-to-xz
     1 char-activate
     1 $9D 6.01 27.57 18 char-to-xz
@@ -4394,10 +4394,10 @@ USING: events.core events.words events.builtin ;
     $14 self-wait-frames
     0 3 6 char-sound
     $25 message-param-room
-    $E2 door-unlocked? not if
+    $E2 door-locked? not if
         $25 item-use
     then
-    $E6 door-lock
+    $E6 door-unlock
     20 self-move-16
     self-frames-reset
     $14 self-wait-frames
@@ -5120,7 +5120,7 @@ USING: events.core events.words events.builtin ;
     $13 state-flag-clear
     2 1 $14 door-bits
     $EA door-open-clear
-    $EA door-unlock
+    $EA door-lock
     doors-room-in
     3 0.0 0.0 65.0 $80 $80 $80 1 dust
     $F $11 fade
@@ -5689,7 +5689,7 @@ defer room8E.act02
     camera-restart
     0 ebit-set
     $E9 door-open-set
-    $E9 door-lock
+    $E9 door-unlock
     doors-room-in
     $F $41 fade
     wait-fade
@@ -5709,7 +5709,7 @@ defer room8E.act02
     1 room8E.cmd00
     0 $28 5 char-sound
     $E9 door-open-clear
-    $E9 door-unlock
+    $E9 door-lock
     doors-room-in
     0 $43 5 char-sound
     $F01 3 self-anim-blend
@@ -6790,7 +6790,7 @@ defer room8E.act02
                 $14 self-wait-frames
                 $FF panic-stage? not if
                     0 $72 5 char-sound
-                    $EA door-lock
+                    $EA door-unlock
                     $8008 message
                     20 self-move-16
                     self-frames-reset
@@ -6800,8 +6800,8 @@ defer room8E.act02
             then
         then
     then
-    $E6 door-unlock
-    $E9 door-unlock
+    $E6 door-lock
+    $E9 door-lock
     self-idle-or-end
 ;
 
@@ -7355,7 +7355,7 @@ defer room8E.act02
             then
         then
     then
-    $EB door-unlocked? if
+    $EB door-locked? if
         4 -37.0 0.0 177.0 7 20 0 zone
         0 4 char-in-zone? if
             0 $F1 4 action
@@ -7580,7 +7580,7 @@ defer room8E.act02
         room91.cmd01
         $91 5 -37.0 10.0 177.0 0 0 sound
         0 0 var? if
-            $EB door-lock
+            $EB door-unlock
             room91.cmd00
             $EB door-open-set
         then
@@ -7600,7 +7600,7 @@ defer room8E.act02
     self-frames-reset
     8 self-wait-frames
     0 exit-door-open? not if
-        $EB door-lock
+        $EB door-unlock
         $91 5 -37.0 10.0 177.0 0 0 sound
         room91.cmd00
         $EB door-open-set
@@ -8170,7 +8170,7 @@ defer room92.act0F
     5 3 var-set
     $ED door-open-clear
     doors-room-in
-    $ED door-unlock
+    $ED door-lock
     $A2 story-flag-set
     $10 state-flag-set
     4 ebit-clear
@@ -8293,13 +8293,13 @@ defer room92.act0F
     2 0 char-remove
     $C partner-load
     2 char-unload
-    $ED door-lock
+    $ED door-unlock
     4 0 object-show
     5 0 object-show
-    $E6 door-unlock
-    $E7 door-unlock
+    $E6 door-lock
+    $E7 door-lock
     $EB door-open-clear
-    $EB door-unlock
+    $EB door-lock
     room92.cmd01
     $40000030 $47 0.0 0.0 0.0 0 0 sound
     0 room92.cmd0D

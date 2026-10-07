@@ -41,6 +41,9 @@ void bind_state(Forth *f) {
     field(f, "pr.vars", offsetof(Progress, vars));
     field(f, "pr.resident", offsetof(Progress, resident));
     field(f, "pr.visited", offsetof(Progress, visited));
+    field(f, "pr.doors", offsetof(Progress, doors));
+    field(f, "pr.closed-off", offsetof(Progress, closed_off));
+    forth_constant(f, "doors", DOORS);
     /* EventState: 32-bit (sl@ l!) */
     field(f, "ev.room", offsetof(EventState, room));
     field(f, "ev.vars", offsetof(EventState, vars));

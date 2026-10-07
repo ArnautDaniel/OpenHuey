@@ -59,7 +59,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 
 | op | len | name | operands | what it does |
 |----|-----|------|----------|--------------|
-| 00 | 2 | `exit-check` | `exit:u8` | Door / exit use: with bit 7 set, flags the progress (+0x4 = 1) and keeps the exit (+0x702); otherwise, if the exit is unlocked and passable for whoever is controlled (Fiona idle or walking; Hewie idle), +0x702 = progress +0x10 (empty in this game: 0). |
+| 00 | 2 | `exit-check` | `exit:u8` | Door / exit use: with bit 7 set, flags the progress (+0x4 = 1) and keeps the exit (+0x702); otherwise, if the exit is not locked and passable for whoever is controlled (Fiona idle or walking; Hewie idle), +0x702 = progress +0x10 (empty in this game: 0). |
 | 01 | 2 | `nop-progress-14` | `a:u8` | Calls the progress' +0x14 with the byte: empty in this game (no effect). |
 | 02 | 4 | `char-to-tri` | `who:chr` `tri:u16` | Places character `who` (0xFF: self) on nav triangle `tri` in the event's room. |
 | 03 | 3 | `message` | `msg:u16` | Opens message window text `msg` (bit 0x4000: the second language table); the window belongs to the script's character (+0x80C). See 0x09 to wait for it. |
@@ -88,7 +88,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 1A | 1 | `self-frames-reset` | - | self: this script's frame count = 0. |
 | 1B | 1 | `yield` | - | self: waits one frame (the pc moves past it first). |
 | 1C | 1 | `self-wait-16` | - | self: waits until this script's frame count is 16. |
-| 1D | 7 | `nav-group` | `set:u8` `group:u8` `bits:u32` | Nav-triangle flag groups (gRoomEventObj, NavGroups): set 1: +0xC, else +0x10 with group and bits (sets / clears the flags of a group of triangles). |
+| 1D | 7 | `nav-group` | `set:u8` `group:u8` `bits:u32` | Nav-triangle flag groups (gRoomEventObj, NavGroups: the room's section 14): set 1 sets `bits` on group `group`'s triangles, else clears them. Flags in a character's mask block it (Fiona 0x28020018, Hewie 0x29020008). |
 | 1E | 2 | `self-to-exit-in` | `exit:u8` | self: put at the inside point of exit `exit` (Rooms_ExitPointIn), facing the way through it. |
 | 1F | 3 | `char-visible` | `who:chr` `on:u8` | Character `who` shown or hidden (+0x29), if it is in the current room. |
 | 20 | 2 | `self-noclip` | `on:u8` | self: the character's root motion ignores the nav blocking mask (+0x2B) - it walks through blocked triangles (stalkers use it at doors). |
@@ -135,7 +135,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 49 | 2 | `action-end` | `who:chr` | Ends character `who`'s action script (script slots 0xF0..0xFA: the slot is freed); a character in a scripted move is released (move 1). |
 | 4A | 1 | `camera-restart` | - | The camera director restarts (CamDirector_Restart). |
 | 4B | 3 | `self-turn-angle` | `face:deg` | self: turns to heading `face` (character move 15). |
-| 4C | 4 | `door-bits` | `a:u8` `door:u8` `b:u8` | Door `door`: Doors_SetBits(door, a, b) (the progress' +0x68 is empty). |
+| 4C | 4 | `door-bits` | `a:u8` `set:u8` `b:u8` | The room's door models: bit a + 1 + b of each set (`set` 1) or cleared (Doors_SetBits(set, a, b): which parts are drawn; the progress' +0x68 is empty). |
 | 4D | 5 | `door-copy` | `door:u16` `from:u16` | Door `door` takes on door `from`'s states: open bit, lock, closed-off; and `from`'s exit in this room saves its door state. |
 | 4E | 1 | `fiona-calm-reset` | - | Fiona's fear (+0x1AD5F4, 0..100; over 90 she panics) and her exhaustion count (+0x1AD5F8, up to 1800 frames) reset to 0. |
 | 4F | 1 | `fiona-recover` | - | Fiona recovers (Fiona_ResetRecovery). |
@@ -277,7 +277,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | D7 | 3 | `hewie-anim-set` | `anim:u16` | Hewie's motion plays `anim` (Motion_Play). |
 | D8 | 1 | `reward-item` | - | By progress +0xFB6 (from 20: steps of 20): item 0x270..0x273 added, with the pickup sound. |
 | D9 | 17 | `dust-motes` | `x:fx` `y:fx` `z:fx` `size:fx` | A scene effect: a dust mote source (DustMoteSource) at (x, y, z) of `size`. |
-| DA | 8 | `nav-group-2` | `set:u8` `group:u16` `bits:u32` | Nav-triangle flag groups (gRoomEventObj): set 1: +0x18, else +0x1C with group and bits (as 0x1D, 16-bit group). |
+| DA | 8 | `nav-tri-flags` | `set:u8` `tri:u16` `bits:u32` | Nav triangle `tri`'s flags (gRoomEventObj, NavGroups_SetTri / _ClearTri): set 1 sets `bits`, else clears them. |
 
 ## 0x59 sub-commands (operand 1)
 
@@ -287,11 +287,11 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 59 01 | 4 | `story-flag-clear` | `_:u8` `n:u16` | Story flag n cleared. |
 | 59 02 | 4 | `state-flag-set` | `_:u8` `n:u16` | State flag n set (the progress' 46 flags, +0x8: control, panic, ...). |
 | 59 03 | 4 | `state-flag-clear` | `_:u8` `n:u16` | State flag n cleared. |
-| 59 04 | 4 | `door-unlock` | `_:u8` `door:u16` | Door `door` unlocked. |
-| 59 05 | 4 | `door-lock` | `_:u8` `door:u16` | Door `door` locked. |
+| 59 04 | 4 | `door-lock` | `_:u8` `door:u16` | Door `door` locked (its state bit 3 set: Progress_UnlockDoor). (Door state bit 3 is the lock: the decomp's Progress_UnlockDoor / LockDoor / DoorUnlocked have it the wrong way round.) |
+| 59 05 | 4 | `door-unlock` | `_:u8` `door:u16` | Door `door` unlocked (bit 3 cleared: Progress_LockDoor). |
 | 59 06 | 4 | `door-passable` | `_:u8` `door:u16` | Door `door` passable as if unlocked (its state bit 4: DoorHold_Usable), and characters can't hold it open (DoorHold_Open). |
-| 59 07 | 4 | `door-reopen-lock` | `_:u8` `door:u16` | Door `door` no longer closed off (Rooms_Reopen), then locked (as 0x05). |
-| 59 08 | 4 | `door-close-off-unlock` | `_:u8` `door:u16` | Door `door` closed off (Rooms_CloseOff), then unlocked (as 0x04). |
+| 59 07 | 4 | `door-reopen-unlock` | `_:u8` `door:u16` | Door `door` no longer closed off (Rooms_Reopen), then unlocked (as 0x05). |
+| 59 08 | 4 | `door-close-off-lock` | `_:u8` `door:u16` | Door `door` closed off (Rooms_CloseOff), then locked (as 0x04). |
 | 59 09 | 4 | `door-open-set` | `_:u8` `door:u16` | Door `door`: its open bit set. |
 | 59 0A | 4 | `door-open-clear` | `_:u8` `door:u16` | Door `door`: its open bit cleared. |
 | 59 0B | 4 | `message-param-room` | `_:u8` `n:u16` | The message's parameter 0 = room id n as the script sees it (Events_ScriptRoom). |
@@ -328,7 +328,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 08 | 3 | `state-flag?` | `n:u16` | State flag n is set (the progress' 46 flags). |
 | 09 | 5 | `scene-request?` | `v:s32` | The pending scene request (progress +0x1134) is v. |
 | 0A | 2 | `exit-door-open?` | `exit:u8` | The door at exit `exit` of this room is open. |
-| 0B | 3 | `door-unlocked?` | `door:u16` | Door `door` is unlocked. |
+| 0B | 3 | `door-locked?` | `door:u16` | Door `door` is locked (state bit 3: Progress_DoorUnlocked, named the wrong way round). |
 | 0C | 3 | `door-not-closed-off?` | `door:u16` | Door `door` isn't closed off (Rooms_DoorClosedOff). |
 | 0D | 2 | `game-mode?` | `mode:u8` | The game mode is `mode` (Progress_GameMode). |
 | 0E | 2 | `char-busy?` | `who:chr` | Script slots 0xF0..0xFA: that slot's script runs; else character `who` is in a scripted state (+0xE0). |

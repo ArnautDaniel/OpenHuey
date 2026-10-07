@@ -73,7 +73,8 @@ fvariable mx  fvariable mz      \ the wanted direction this tick (on the ground)
 
 : step-nav ( F: distance -- )
     fdup her act.yaw sf@ fsin f* px f!  her act.yaw sf@ fcos f* pz f!
-    her-pos px f@ pz f@ step-up body nav-move
+    $28020018 nav-block!                         \ (the triangles that stop her: the game's mask)
+    her-pos px f@ pz f@ step-up body nav-move  0 nav-block!
     her act.z sf!  her act.y sf!  her act.x sf! ;
 
 : step ( F: distance -- )  nav-tris if  step-nav  else  step-floor  then ;

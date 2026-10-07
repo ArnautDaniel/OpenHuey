@@ -147,5 +147,22 @@ whether the original keeps her in view there (or she can't go there) needs the s
 - `key-hold` now also makes `key-pressed?` true on the tick a held key goes down (scripted
   tests can press keys).
 
-Next: doors (opening, locked) and nav groups; characters doing their scripted moves; the
-window's look (the game's font and box, typing out).
+## Status (2026-10-07): doors and nav groups
+
+- The progress keeps the 400 doors' states and the closed-off doors. Bit 3 of a door's state is
+  its LOCK: the decomp's Progress_UnlockDoor / LockDoor / DoorUnlocked / ExitUnlocked are named
+  the wrong way round (a script uses a key, then clears bit 3), and tools/event_opcodes.py had
+  the inversion (59 04 is door-lock, 59 05 door-unlock, condition 0B door-locked?): fixed there.
+  To backport to src as names / comments.
+- exit-check, exit-usable?, exit-door-open?, the door state commands and conditions are real.
+  Leaving a room is the scripts' now, as in the game: Space at an exit (if its door isn't
+  locked) opens the door and steps Fiona into the doorway; the room's phase 1 sees her there
+  (exit-usable?) and takes the exit (exit-check); the door shuts behind.
+- The nav mesh takes its flags as the game sets them up (section 16); nav-group (section 14's
+  triangle groups), nav-tri-flags (was named nav-group-2: it is one triangle, NavGroups_SetTri)
+  and char-in-nav-group? change and read them; Fiona and Hewie walk with the game's blocking
+  masks (0x28020018 / 0x29020008).
+- door-bits sets which parts of the room's door models are drawn (its middle operand is set /
+  clear, not a door): kept for when new-src draws door models.
+
+Next: characters doing their scripted moves; door models; the window's look.

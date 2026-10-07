@@ -203,6 +203,8 @@ int room_load(Room *r, int id) {
     load_textures(r);
     sec = pac_section(&r->pac, PAC_NAV, &size);
     navmesh_build(&r->nav, sec, size);
+    sec = pac_section(&r->pac, PAC_NAV3, &size);
+    navmesh_take_flags(&r->nav, sec, sec != NULL ? size : 0);
     load_look(r);
     load_lights(r);
     if (r->mesh.ndyn > 0) {

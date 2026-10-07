@@ -33,9 +33,11 @@ fvariable ax  fvariable az
 : doors
     playing @ 0= if  exit  then
     exit-under dup 0< if  drop 0 0 hud exit  then
+    dup exit-locked? if  drop s" locked" hud exit  then
     s" Space: go through" hud
-    key: Space key-pressed? if  go-through  0 0 hud  else  drop  then ;
+    key: Space key-pressed? if  use-exit  0 0 hud  else  drop  then ;
 ' doors on-tick
+' go-through is use-exit
 
 \ where this room's exits lead (for the console)
 : .exits

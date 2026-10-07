@@ -1906,8 +1906,8 @@ defer room37.act00
     $57 resident-flag? $58 resident-flag? or if
         $59 resident-flag-set
     then
-    $10C door-unlock
-    $10D door-unlock
+    $10C door-lock
+    $10D door-lock
     1.0 sound-volume-scale
     0 $F1 $D action
     1.0 sound-volume-scale
@@ -2405,7 +2405,7 @@ defer room37.act00
     $F 1 fade
     wait-fade
     $2E $FF pvar? not if
-        $10C door-lock
+        $10C door-unlock
         0 3 self-move-slot
         self-wait-done
         0 1 9 action
@@ -2660,7 +2660,7 @@ defer room37.act00
 
 : room37.act08 ( -- )   \ 00446680
     self-wait-done
-    $10D door-lock
+    $10D door-unlock
     1 3 self-move-slot
     self-wait-done
     $F 0 fade
@@ -3429,8 +3429,8 @@ defer room37.act00
 : roomD0.cond00? ( -- flag )  s" roomD0.cond00?" stub-flag ;
 
 : roomD0.enter ( -- )   \ 004469C0
-    0 $16F 8 nav-group-2
-    0 $174 8 nav-group-2
+    0 $16F 8 nav-tri-flags
+    0 $174 8 nav-tri-flags
     $19 1.0 0 bgm
     $10 54.3 20.2 154.5 $E $80 $80 $80 $40 specks
     $10 -53.5 20.2 154.5 $E $80 $80 $80 $40 specks
@@ -5394,11 +5394,11 @@ defer room37.act00
                 $128 door-open-clear
                 $129 door-open-clear
                 $12A door-open-clear
-                $126 door-unlock
-                $127 door-unlock
-                $128 door-unlock
-                $129 door-unlock
-                $12A door-unlock
+                $126 door-lock
+                $127 door-lock
+                $128 door-lock
+                $129 door-lock
+                $12A door-lock
                 doors-room-in
                 0 1 5 action
             then

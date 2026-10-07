@@ -2098,7 +2098,7 @@ USING: events.core events.words ;
     $18 state-flag-set
     1 self-scripted
     self-wait-done
-    $34 door-unlock
+    $34 door-lock
     \ (nop-progress-24: no effect in this game)
     1 0 movie-play
     0 cutscene-start

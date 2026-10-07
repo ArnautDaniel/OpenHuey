@@ -181,9 +181,9 @@ USING: events.core events.words events.builtin ;
         0 -39.66 1.0 0.99 flicker-sprite
     then
     1 $2300 sound-volume
-    1 $1F $10000000 nav-group-2
-    1 $2F $10000000 nav-group-2
-    1 $89 $10000000 nav-group-2
+    1 $1F $10000000 nav-tri-flags
+    1 $2F $10000000 nav-tri-flags
+    1 $89 $10000000 nav-tri-flags
 ;
 
 : roomC1.char-enter ( -- )   \ 0043ECC0
@@ -1002,16 +1002,16 @@ USING: events.core events.words events.builtin ;
     room-sounds
     0 exit-taken? if
         $342 story-flag? not if
-            $FF door-unlock
-            $101 door-unlock
-        else
             $FF door-lock
             $101 door-lock
+        else
+            $FF door-unlock
+            $101 door-unlock
         then
     else 1 exit-taken? if
         $342 story-flag-set
-        $FF door-lock
-        $101 door-lock
+        $FF door-unlock
+        $101 door-unlock
     then then
     2 0 $14 door-bits
     3 0 $14 door-bits
@@ -1439,11 +1439,11 @@ USING: events.core events.words events.builtin ;
         0 roomC3.cmd00
     then
     $342 story-flag? not if
-        $FF door-unlock
-        $101 door-unlock
-    else
         $FF door-lock
         $101 door-lock
+    else
+        $FF door-unlock
+        $101 door-unlock
     then
     1 ebit-clear
     self-idle-or-end
@@ -2248,8 +2248,8 @@ USING: events.core events.words events.builtin ;
     then
     50 hewie-trust
     8 state-flag-set
-    $FF door-reopen-lock
-    $101 door-close-off-unlock
+    $FF door-reopen-unlock
+    $101 door-close-off-lock
     exits-rebuild
     $C6 0 -1 hewie-to-room
     $3E resident-flag-set
@@ -3269,9 +3269,9 @@ USING: events.core events.words events.builtin ;
         2 0 char-remove
     then
     camera-restart
-    $103 door-lock
-    $100 door-lock
-    $E0 door-unlock
+    $103 door-unlock
+    $100 door-unlock
+    $E0 door-lock
     \ (nop-progress-24: no effect in this game)
     \ (nop-progress-24: no effect in this game)
     \ (nop-progress-24: no effect in this game)
@@ -3417,7 +3417,7 @@ USING: events.core events.words events.builtin ;
     8 1 $14 door-bits
     0 roomC7.cmd06
     $100 door-open-clear
-    $100 door-unlock
+    $100 door-lock
     doors-room-in
     camera-restart
     0 $33 6.38 70.12 180 char-to-xz

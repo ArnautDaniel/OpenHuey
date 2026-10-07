@@ -179,8 +179,36 @@ defer event-area-in? ( area -- flag ) ( F: x y z -- )
 defer event-area-cross ( area -- n ) ( F: px py pz x y z -- )
 :noname drop fdrop fdrop fdrop fdrop fdrop fdrop 0 ; is event-area-cross
 defer event-exit-area ( exit -- area ) :noname drop $FFFF ; is event-exit-area
+\ the room's exits and doors (the door table): exit `exit`'s door (-1 none), a door's fixed
+\ flags (bit 0: a doorway, always open)
+defer event-exit-door ( exit -- door )   :noname drop -1 ; is event-exit-door
+defer event-door-flags ( door -- flags ) :noname drop 0 ; is event-door-flags
+\ the nav mesh: a group of triangles' flags set / cleared, one triangle's, is a triangle in a group
+defer event-nav-group ( set? group bits -- )      :noname 2drop drop ; is event-nav-group
+defer event-nav-tri ( set? tri bits -- )          :noname 2drop drop ; is event-nav-tri
+defer event-nav-in-group? ( group -- flag ) ( F: x y z -- )
+:noname drop fdrop fdrop fdrop false ; is event-nav-in-group?
 \ the message window's parameter `slot` shows system message $100 + id's first line
 defer message-parameter ( slot id -- ) ' 2drop is message-parameter
+
+\ ---- doors (src/game/progress.c: the door states) --------------------------------------------
+: door-word ( door -- addr | 0 )  dup 0 doors within if  4 * progress pr.doors +  else  drop 0  then ;
+: door-bit? ( door mask -- flag )  swap door-word dup if  l@ and 0<>  else  2drop false  then ;
+: door-bit-on ( door mask -- )  swap door-word dup if  dup l@ rot or swap l!  else  2drop  then ;
+: door-bit-off ( door mask -- )  swap door-word dup if  dup l@ rot invert and swap l!  else  2drop  then ;
+: door-locked ( door -- flag )  8 door-bit? ;
+: closed-off? ( door -- flag )
+    dup 0 doors within 0= if  drop false exit  then  progress pr.closed-off bit? ;
+\ Progress_ExitOpen: a doorway, or a door not locked with its open bit
+: exit-open ( exit -- flag )
+    event-exit-door dup 0< if  drop false exit  then
+    dup event-door-flags 1 and if  drop true exit  then
+    dup door-locked if  drop false exit  then  2 door-bit? ;
+\ Progress_ExitPassable for side 0 (bits 4..7: the sides it is locked from)
+: exit-passable ( exit -- flag )
+    event-exit-door dup 0< if  drop false exit  then  $10 door-bit? 0= ;
+\ an exit asked for (exit-check): the game takes it after the frame
+variable exit-wanted  -1 exit-wanted !
 
 \ ---- characters' places and areas ----------------------------------------------------------
 : char-pos ( cs -- ) ( F: -- x y z )  character char.pos dup sf@ dup 4 + sf@ 8 + sf@ ;

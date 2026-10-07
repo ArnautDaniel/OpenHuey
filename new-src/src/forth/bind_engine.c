@@ -299,6 +299,86 @@ PRIM(p_message_param) {   /* ( slot id -- ) parameter `slot` shows system messag
     message_set_param((int)slot, (int)id);
 }
 
+/* ---- the nav mesh's flags: what blocks whom, and the room's triangle groups ---- */
+
+PRIM(p_nav_block) {   /* ( mask -- ) triangles with these flags are walls to the next moves */
+    gEngine.room.nav.block = (uint32_t)POP();
+}
+/* the room's triangle groups (PAC section 14: a count, offsets of {n, triangles}) */
+static const uint8_t *nav_group(int g, uint32_t *n) {
+    size_t size;
+    const uint8_t *sec = pac_section(&gEngine.room.pac, PAC_OBSTACLES, &size);
+    uint32_t count, off;
+
+    if (sec == NULL || size < 4) {
+        return NULL;
+    }
+    memcpy(&count, sec, 4);
+    if (g < 0 || (uint32_t)g >= count || (size_t)(g + 2) * 4 > size) {
+        return NULL;
+    }
+    memcpy(&off, sec + 4 + g * 4, 4);
+    if ((size_t)off + 4 > size) {
+        return NULL;
+    }
+    memcpy(n, sec + off, 4);
+    if ((size_t)off + 4 + (size_t)*n * 4 > size) {
+        return NULL;
+    }
+    return sec + off + 4;
+}
+static void tri_flags(int t, int set, uint32_t bits) {
+    NavMesh *nm = &gEngine.room.nav;
+
+    if (t >= 0 && t < nm->ntris) {
+        nm->tris[t].flags = set ? nm->tris[t].flags | bits : nm->tris[t].flags & ~bits;
+    }
+}
+PRIM(p_nav_group) {   /* ( set? group bits -- ) the group's triangles' flags set or cleared (NavGroups) */
+    uint32_t bits = (uint32_t)POP(), n, i, t;
+    Cell g = POP(), set = POP();
+    const uint8_t *tris = nav_group((int)g, &n);
+
+    for (i = 0; tris != NULL && i < n; i++) {
+        memcpy(&t, tris + i * 4, 4);
+        tri_flags((int)t, set != 0, bits);
+    }
+}
+PRIM(p_nav_tri_flags) {   /* ( set? tri bits -- ) one triangle's */
+    uint32_t bits = (uint32_t)POP();
+    Cell t = POP(), set = POP();
+
+    tri_flags((int)t, set != 0, bits);
+}
+PRIM(p_nav_in_group) {   /* ( tri group -- flag ) */
+    Cell g = POP(), t = POP();
+    uint32_t n, i, k;
+    const uint8_t *tris = nav_group((int)g, &n);
+    int in = 0;
+
+    for (i = 0; tris != NULL && i < n && !in; i++) {
+        memcpy(&k, tris + i * 4, 4);
+        in = (Cell)k == t;
+    }
+    PUSH(in ? -1 : 0);
+}
+PRIM(p_nav_flags) {   /* ( tri -- flags ) */
+    Cell t = POP();
+
+    PUSH(t >= 0 && t < gEngine.room.nav.ntris ? gEngine.room.nav.tris[t].flags : 0);
+}
+
+PRIM(p_exit_door) {   /* ( exit -- door | -1 ) the door this room's exit goes through (the door table) */
+    Cell exit = POP();
+    int room = gEngine.room.id;
+
+    PUSH(room >= 0 && room < WORLD_ROOMS && exit >= 0 && exit < ROOM_EXITS ? gEngine.world.exits[room][exit].door : -1);
+}
+PRIM(p_door_flags) {   /* ( door -- flags ) its fixed flags (the door table; bit 0 a doorway) */
+    Cell d = POP();
+
+    PUSH(d >= 0 && d < gEngine.world.ndoors ? (Cell)(gEngine.world.doors[d].flags & 0xFF) : 0);
+}
 PRIM(p_exit_area) {   /* ( exit -- area ) the event area of this room's exit (the room table) */
     Cell exit = POP();
     int room = gEngine.room.id;
@@ -655,7 +735,9 @@ void bind_engine(Forth *f) {
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"cam-follow", p_cam_follow}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
-        {".director", p_cam_info}, {"area-in?", p_area_in}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area},
+        {".director", p_cam_info}, {"area-in?", p_area_in}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"exit-door", p_exit_door}, {"door-flags", p_door_flags},
+        {"nav-block!", p_nav_block}, {"nav-group!", p_nav_group}, {"nav-tri-flags!", p_nav_tri_flags},
+        {"nav-in-group?", p_nav_in_group}, {"nav-flags", p_nav_flags},
         {"message-layout", p_message_layout}, {"message-lines", p_message_lines}, {"message-line", p_message_line},
         {"message-options", p_message_options}, {"message-option", p_message_option},
         {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"exit-spot", p_exit_spot},

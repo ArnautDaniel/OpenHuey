@@ -35,6 +35,22 @@ int navmesh_build(NavMesh *n, const uint8_t *sec, size_t size) {
     return 1;
 }
 
+void navmesh_take_flags(NavMesh *n, const uint8_t *sec16, size_t size) {
+    int i;
+
+    for (i = 0; i < n->ntris; i++) {
+        n->tris[i].flags &= 0xDF39FFFFu;
+        if (sec16 != NULL && (size_t)i < size) {
+            if (sec16[i] & 1) {
+                n->tris[i].flags |= 0x4000;
+            }
+            if (sec16[i] & 2) {
+                n->tris[i].flags |= 0x80000;
+            }
+        }
+    }
+}
+
 void navmesh_free(NavMesh *n) {
     free(n->tris);
     memset(n, 0, sizeof(*n));
@@ -63,7 +79,7 @@ int navmesh_find(const NavMesh *n, Vec3 p, float climb, float *height) {
         const NavTri *t = &n->tris[i];
         float w[3], h, d;
 
-        if (!inside(t, p.x, p.z, w)) {
+        if ((t->flags & n->block) || !inside(t, p.x, p.z, w)) {
             continue;
         }
         h = w[0] * t->v[0].y + w[1] * t->v[1].y + w[2] * t->v[2].y;

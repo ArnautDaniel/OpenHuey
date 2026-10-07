@@ -53,7 +53,7 @@ USING: events.core events.words events.builtin ;
     $23C story-flag? $23D story-flag? not and if
         0 -331.4 61.0 239.2 flicker-sprite
     then
-    0 door-unlocked? not if
+    0 door-locked? not if
         $2C story-flag? not if
             $2C story-flag-set
             \ (nop-progress-74: no effect in this game)
@@ -1642,12 +1642,12 @@ USING: events.core events.words events.builtin ;
     $E 122.8 19.0 103.2 $E $80 $80 $80 $40 specks
     $C 63.3 19.0 151.6 $10 $80 $80 $80 $40 specks
     8 34.2 19.0 92.1 $C $80 $80 $80 $40 specks
-    1 $38B $10000000 nav-group-2
-    1 $1B9 $10000000 nav-group-2
-    1 $38C $10000000 nav-group-2
-    1 $38D $10000000 nav-group-2
-    1 $386 $10000000 nav-group-2
-    1 $38E $10000000 nav-group-2
+    1 $38B $10000000 nav-tri-flags
+    1 $1B9 $10000000 nav-tri-flags
+    1 $38C $10000000 nav-tri-flags
+    1 $38D $10000000 nav-tri-flags
+    1 $386 $10000000 nav-tri-flags
+    1 $38E $10000000 nav-tri-flags
 ;
 
 : room02.act0E ( -- )   \ 003EFED0
@@ -2223,7 +2223,7 @@ USING: events.core events.words events.builtin ;
             $3E self-wait-frames
             $40000000 6 50.0 -5.0 171.0 0 0 sound
             self-wait-anim
-            $14 door-lock
+            $14 door-unlock
             -1 self-move-16
             self-wait-anim
             $12 story-flag-set
@@ -3322,7 +3322,7 @@ USING: events.core events.words events.builtin ;
     room03.cmd00
     9 story-flag-set
     $18 $35 door-copy
-    $35 door-close-off-unlock
+    $35 door-close-off-lock
     exits-rebuild
     1 $2F char-in-room? if
         $30 0 -1 hewie-to-room
@@ -3905,7 +3905,7 @@ USING: events.core events.words events.builtin ;
                 $14 self-wait-frames
                 $FF panic-stage? not if
                     0 $72 5 char-sound
-                    $1E door-lock
+                    $1E door-unlock
                     $8008 message
                     20 self-move-16
                     self-frames-reset
@@ -4188,7 +4188,7 @@ USING: events.core events.words events.builtin ;
         $17 state-flag-clear
         $81 exit-check
     else
-        $22 door-lock
+        $22 door-unlock
         $26 story-flag-set
         0 0 room04.cmd00
         1 0 room04.cmd00
@@ -5088,7 +5088,7 @@ USING: events.core events.words events.builtin ;
         0 0 6 char-sound
         6 message-param-room
         6 item-use
-        $34 door-lock
+        $34 door-unlock
         20 self-move-16
         self-frames-reset
         $14 self-wait-frames
@@ -7481,7 +7481,7 @@ USING: events.core events.words events.builtin ;
                 $14 self-wait-frames
                 $FF panic-stage? not if
                     0 $72 5 char-sound
-                    $15 door-lock
+                    $15 door-unlock
                     $8008 message
                     20 self-move-16
                     self-frames-reset
@@ -7635,7 +7635,7 @@ USING: events.core events.words events.builtin ;
 : room0A.act03 ( -- )   \ 003F41C0
     1 self-scripted
     self-wait-done
-    $22 door-lock
+    $22 door-unlock
     $26 story-flag-set
     5 0 state-flag-16
     $1B state-flag-clear
@@ -8154,7 +8154,7 @@ USING: events.core events.words events.builtin ;
     then
     $15 story-flag? $16 story-flag? not and if
         $FE 2 char-C4? if
-            $28 door-lock
+            $28 door-unlock
             $16 story-flag-set
             $1B state-flag-set
             $FF panic-stage? if
@@ -8167,7 +8167,7 @@ USING: events.core events.words events.builtin ;
             then
         then
         $35 story-flag? $36 story-flag? and if
-            $28 door-lock
+            $28 door-unlock
             $16 story-flag-set
             $1B state-flag-set
             $FF panic-stage? if
@@ -8302,11 +8302,11 @@ USING: events.core events.words events.builtin ;
     8 state-flag-set
     $FE 0 char-no-shadow
     6 story-flag-set
-    $11 door-lock
+    $11 door-unlock
     1 1 $14 door-bits
     6 1 object-show
     $28 door-open-clear
-    $28 door-unlock
+    $28 door-lock
     doors-room-in
     $10 state-flag-set
     0 3 -90 char-to-tri-facing
@@ -8425,7 +8425,7 @@ USING: events.core events.words events.builtin ;
     then
     camera-restart
     $28 door-open-clear
-    $28 door-lock
+    $28 door-unlock
     doors-room-in
     $15 1.0 0 bgm
     $1B state-flag-clear
@@ -8606,7 +8606,7 @@ USING: events.core events.words events.builtin ;
     then
     camera-restart
     $28 door-open-clear
-    $28 door-lock
+    $28 door-unlock
     doors-room-in
     $A 0 object-show
     1 0 8 nav-group
@@ -9600,7 +9600,7 @@ USING: events.core events.words events.builtin ;
                 $14 self-wait-frames
                 $FF panic-stage? not if
                     0 $72 5 char-sound
-                    0 door-lock
+                    0 door-unlock
                     $8008 message
                     20 self-move-16
                     self-frames-reset
@@ -9902,7 +9902,7 @@ USING: events.core events.words events.builtin ;
         3 0 object-show
         4 0 object-show
     then
-    7 door-unlocked? if
+    7 door-locked? if
         1 0 $800008 nav-group
     then
     $80 exit-taken? if
@@ -9947,7 +9947,7 @@ USING: events.core events.words events.builtin ;
     else
         4 0 $14 door-bits
     then
-    8 door-unlocked? if
+    8 door-locked? if
         5 0 $14 door-bits
     else
         5 1 $14 door-bits
@@ -10375,7 +10375,7 @@ USING: events.core events.words events.builtin ;
     $18 state-flag-set
     self-wait-done
     0 item-use
-    7 door-lock
+    7 door-unlock
     $11 story-flag-set
     0 $F0 5 action
     1 wait-counter
@@ -10833,7 +10833,7 @@ USING: events.core events.words events.builtin ;
     self-frames-reset
     $1E self-wait-frames
     0 $72 5 char-sound
-    8 door-lock
+    8 door-unlock
     $903 self-anim
     130.0 -20.0 170.0 self-look-at-point
     yield
@@ -10854,7 +10854,7 @@ USING: events.core events.words events.builtin ;
     $17 state-flag-set
     1 self-scripted
     1 15.0 -10.0 0.0 0.0 event-camera
-    8 door-unlocked? if
+    8 door-locked? if
         4 message
         wait-message
     else
@@ -11545,46 +11545,46 @@ USING: events.core events.words events.builtin ;
     \ (nop-progress-24: no effect in this game)
     \ (nop-progress-24: no effect in this game)
     \ (nop-progress-24: no effect in this game)
-    1 door-reopen-lock
-    $D door-reopen-lock
-    $58 door-close-off-unlock
-    $5A door-close-off-unlock
-    $4D door-close-off-unlock
-    $4E door-close-off-unlock
-    $50 door-close-off-unlock
-    $53 door-close-off-unlock
-    $5C door-close-off-unlock
-    $79 door-close-off-unlock
+    1 door-reopen-unlock
+    $D door-reopen-unlock
+    $58 door-close-off-lock
+    $5A door-close-off-lock
+    $4D door-close-off-lock
+    $4E door-close-off-lock
+    $50 door-close-off-lock
+    $53 door-close-off-lock
+    $5C door-close-off-lock
+    $79 door-close-off-lock
     exits-rebuild
     camera-restart
-    2 door-unlock
-    $34 door-unlock
-    $62 door-unlock
-    $44 door-unlock
-    $47 door-unlock
-    $4F door-unlock
-    $56 door-unlock
-    $67 door-unlock
-    $7D door-unlock
-    $51 door-unlock
-    $52 door-unlock
-    $64 door-unlock
-    $6C door-unlock
-    $74 door-unlock
-    $78 door-unlock
-    $5E door-unlock
-    $76 door-unlock
-    $7B door-unlock
-    $7C door-unlock
-    $63 door-unlock
-    $54 door-unlock
+    2 door-lock
+    $34 door-lock
+    $62 door-lock
+    $44 door-lock
+    $47 door-lock
+    $4F door-lock
+    $56 door-lock
+    $67 door-lock
+    $7D door-lock
+    $51 door-lock
+    $52 door-lock
+    $64 door-lock
+    $6C door-lock
+    $74 door-lock
+    $78 door-lock
+    $5E door-lock
+    $76 door-lock
+    $7B door-lock
+    $7C door-lock
+    $63 door-lock
+    $54 door-lock
     1 door-open-clear
-    1 door-unlock
+    1 door-lock
     3 door-open-clear
-    3 door-unlock
+    3 door-lock
     $C door-open-clear
-    $C door-unlock
-    $D door-lock
+    $C door-lock
+    $D door-unlock
     $D door-open-set
     doors-room-in
     $14 state-flag-set
@@ -12222,7 +12222,7 @@ USING: events.core events.words events.builtin ;
                 $14 self-wait-frames
                 $FF panic-stage? not if
                     0 $72 5 char-sound
-                    3 door-lock
+                    3 door-unlock
                     $8008 message
                     20 self-move-16
                     self-frames-reset
@@ -12934,7 +12934,7 @@ USING: events.core events.words events.builtin ;
                 $14 self-wait-frames
                 $FF panic-stage? not if
                     0 $72 5 char-sound
-                    4 door-lock
+                    4 door-unlock
                     $8008 message
                     20 self-move-16
                     self-frames-reset
@@ -13848,7 +13848,7 @@ USING: events.core events.words events.builtin ;
     0 self-move-16
     camera-restart
     $28 story-flag-set
-    $B door-lock
+    $B door-unlock
     1 room13.cmd00
     0 0 $20000 nav-group
     1 1 $20000 nav-group
@@ -14340,7 +14340,7 @@ USING: events.core events.words events.builtin ;
     0 2 6 char-sound
     7 message-param-room
     7 item-use
-    $A door-lock
+    $A door-unlock
     20 self-move-16
     self-frames-reset
     $14 self-wait-frames
@@ -14859,7 +14859,7 @@ USING: events.core events.words events.builtin ;
             40 hewie-trust
             \ (nop-progress-24: no effect in this game)
             0 1 $1000000 nav-group
-            9 door-lock
+            9 door-unlock
             self-wait-anim
             $8277 item-give
         then
@@ -15439,10 +15439,10 @@ USING: events.core events.words events.builtin ;
         8 cutscene-control
     then
     8 state-flag-set
-    $1C door-reopen-lock
-    $1D door-reopen-lock
-    $38 door-close-off-unlock
-    $39 door-close-off-unlock
+    $1C door-reopen-unlock
+    $1D door-reopen-unlock
+    $38 door-close-off-lock
+    $39 door-close-off-lock
     exits-rebuild
     \ (nop-progress-24: no effect in this game)
     \ (nop-progress-24: no effect in this game)
@@ -15899,7 +15899,7 @@ USING: events.core events.words events.builtin ;
     then
     5 story-flag-set
     $11 door-open-clear
-    $11 door-unlock
+    $11 door-lock
     0 state-flag-set
     $FE char-activate
     $FE $18 218 2 stalker-to-room
@@ -17924,7 +17924,7 @@ USING: events.core events.words events.builtin ;
                 $14 self-wait-frames
                 $FF panic-stage? not if
                     0 $72 5 char-sound
-                    $19 door-lock
+                    $19 door-unlock
                     $8008 message
                     20 self-move-16
                     self-frames-reset
@@ -18069,7 +18069,7 @@ USING: events.core events.words events.builtin ;
 
 : room1C.enter ( -- )   \ 003FCB30
     room-sounds
-    $26 door-unlocked? if
+    $26 door-locked? if
         0 0 $33 0 $14 $FF $E3 1 butterflies
         1 0 $33 0 $16 $FF $E2 0 butterflies
         2 0 $33 0 $12 $FF $E2 0 butterflies
@@ -18299,7 +18299,7 @@ USING: events.core events.words events.builtin ;
     1 action-end
     1 item-use
     2 item-use
-    $26 door-lock
+    $26 door-unlock
     7 story-flag-set
     room1C.act06
     0 0 $20000000 nav-group
@@ -18668,22 +18668,22 @@ USING: events.core events.words events.builtin ;
         $FE 0 char-effect-moving
     then
     0 $1ED obstacle-on? if
-        $26 door-unlocked? if
-            $26 door-lock
-        then
-    then
-    -2147483644 scene-request? not room1D.cond00? and if
-        $26 door-unlocked? not if
+        $26 door-locked? if
             $26 door-unlock
         then
     then
+    -2147483644 scene-request? not room1D.cond00? and if
+        $26 door-locked? not if
+            $26 door-lock
+        then
+    then
     1 ebit? not if
-        $26 door-unlocked? if
+        $26 door-locked? if
             $FE $1C char-in-room? if
                 0 $F2 9 action
             then
         then
-    else $26 door-unlocked? not if
+    else $26 door-locked? not if
         $F2 action-end
         0 room1D.cmd01
         $FE 1 stalker-mode
@@ -18924,7 +18924,7 @@ USING: events.core events.words events.builtin ;
         0 var-dec
         yield
     repeat
-    $26 door-unlocked? if
+    $26 door-locked? if
         $31A story-flag? not if
             $31A story-flag-set
         else $4B chance? if
@@ -20026,7 +20026,7 @@ USING: events.core events.words events.builtin ;
         0 $377 obstacle-on? if
             $1C story-flag-set
             0 obstacle-stop
-            $12 door-lock
+            $12 door-unlock
             \ (nop-progress-24: no effect in this game)
         then
     then
@@ -20205,8 +20205,8 @@ USING: events.core events.words events.builtin ;
             0 summon-take
         then
     then
-    6 story-flag? $11 door-unlocked? and if
-        $11 door-lock
+    6 story-flag? $11 door-locked? and if
+        $11 door-unlock
     then
 ;
 
@@ -20765,10 +20765,10 @@ USING: events.core events.words events.builtin ;
         2 -9.0 1.0 -11.0 flicker-sprite
     then
     0 story-flag? not if
-        $3D door-unlock
+        $3D door-lock
     then
     2 story-flag? 3 story-flag? not and if
-        $3D door-unlock
+        $3D door-lock
     then
     $17 story-flag? 0 story-flag? not and if
         1 1 $14 door-bits
@@ -21311,8 +21311,8 @@ USING: events.core events.words events.builtin ;
     $C ebit? if
         $FE $10 448 2 stalker-to-room
         $FE 0 stalker-mode
-        $3C door-lock
-        $3D door-lock
+        $3C door-unlock
+        $3D door-unlock
         $1F state-flag-set
     then
     $FF 3 -1 char-camera
@@ -21514,7 +21514,7 @@ USING: events.core events.words events.builtin ;
     2 room21.cmd05
     $3C door-open-clear
     doors-room-in
-    $3C door-unlock
+    $3C door-lock
     0 $10E -27.455 -48.354 107 char-to-xz
     hewie-controlled? not if
         0 1 1 char-camera
@@ -21546,7 +21546,7 @@ USING: events.core events.words events.builtin ;
     0 $A8 46 char-to-tri-facing
     $3C door-open-clear
     $3D door-open-clear
-    $3D door-unlock
+    $3D door-lock
     doors-room-in
     camera-restart
     $F $51 fade
@@ -21565,7 +21565,7 @@ USING: events.core events.words events.builtin ;
         yield
     repeat
     $13 state-flag-set
-    $3D door-lock
+    $3D door-unlock
     0 counter-set
     0 $FE $13 action
     1 wait-counter
@@ -21988,8 +21988,8 @@ USING: events.core events.words events.builtin ;
             1 camera-follow
         then
         camera-restart
-        $3C door-lock
-        $3D door-lock
+        $3C door-unlock
+        $3D door-unlock
         0 story-flag-set
         $14 state-flag-clear
         $F $51 fade
@@ -22370,8 +22370,8 @@ USING: events.core events.words events.builtin ;
     $801B message
     wait-message
     $3C door-open-clear
-    $3C door-unlock
-    $3D door-unlock
+    $3C door-lock
+    $3D door-lock
     doors-room-in
     $1F state-flag-set
     $C ebit-set
@@ -24526,7 +24526,7 @@ USING: events.core events.words events.builtin ;
     3 0 char-remove
     0 $A8 -160 char-to-tri-facing
     camera-restart
-    $13 door-lock
+    $13 door-unlock
     $1B story-flag-set
     1 0 0 music
     0 0 $20000 nav-group
@@ -24628,7 +24628,7 @@ USING: events.core events.words events.builtin ;
     $A 1 object-show
     0 $A8 -160 char-to-tri-facing
     camera-restart
-    $13 door-lock
+    $13 door-unlock
     $1B story-flag-set
     1 0 0 music
     0 0 $20000 nav-group
@@ -25336,7 +25336,7 @@ USING: events.core events.words events.builtin ;
         \ (nop-progress-74: no effect in this game)
     then
     $14 item-use
-    6 door-lock
+    6 door-unlock
     0 self-scripted
     $18 state-flag-clear
     $12 state-flag-clear
@@ -25487,7 +25487,7 @@ USING: events.core events.words events.builtin ;
     0 1 5 char-sound
     $14 message-param-room
     $14 item-use
-    6 door-lock
+    6 door-unlock
     20 self-move-16
     self-frames-reset
     $14 self-wait-frames
@@ -26753,7 +26753,7 @@ USING: events.core events.words events.builtin ;
         0 $FE 3 action
     then
     $35 $36 door-copy
-    $36 door-close-off-unlock
+    $36 door-close-off-lock
     exits-rebuild
     exit
 ;
@@ -27596,31 +27596,31 @@ USING: events.core events.words events.builtin ;
         $1D state-flag-set
         $11 state-flag-set
         $14 state-flag-set
-        7 door-unlock
-        9 door-unlock
-        $A door-unlock
-        $B door-unlock
-        $13 door-unlock
-        $22 door-unlock
-        $26 door-unlock
-        $12 door-unlock
-        $2F door-unlock
-        2 door-unlock
-        0 door-unlock
-        3 door-unlock
-        6 door-unlock
-        8 door-unlock
-        $14 door-unlock
-        $15 door-unlock
-        $19 door-unlock
-        $1E door-unlock
-        $34 door-unlock
-        $35 door-close-off-unlock
-        $18 door-close-off-unlock
-        $1C door-close-off-unlock
-        $1D door-close-off-unlock
-        1 door-close-off-unlock
-        $D door-close-off-unlock
+        7 door-lock
+        9 door-lock
+        $A door-lock
+        $B door-lock
+        $13 door-lock
+        $22 door-lock
+        $26 door-lock
+        $12 door-lock
+        $2F door-lock
+        2 door-lock
+        0 door-lock
+        3 door-lock
+        6 door-lock
+        8 door-lock
+        $14 door-lock
+        $15 door-lock
+        $19 door-lock
+        $1E door-lock
+        $34 door-lock
+        $35 door-close-off-lock
+        $18 door-close-off-lock
+        $1C door-close-off-lock
+        $1D door-close-off-lock
+        1 door-close-off-lock
+        $D door-close-off-lock
         exits-rebuild
         0 pvar-inc
         0 pvar-inc
@@ -28395,7 +28395,7 @@ USING: events.core events.words events.builtin ;
     self-frames-reset
     8 self-wait-frames
     0 2 $20000 nav-group
-    $2F door-lock
+    $2F door-unlock
     hewie-controlled? not if
         0 5 4 char-camera
         0 camera-follow
@@ -29110,7 +29110,7 @@ USING: events.core events.words events.builtin ;
         $34 door-open-clear
     then
     doors-room-in
-    $34 door-unlock
+    $34 door-lock
     self-frames-reset
     $3C self-wait-frames
     1 char-here? not 1 0 char-in-area? or if
@@ -29858,11 +29858,11 @@ USING: events.core events.words events.builtin ;
     $260 story-flag? not if
         1 -151.78 97.684 -50.579 flicker-sprite
     then
-    1 $13 $10000000 nav-group-2
-    1 $124 $10000000 nav-group-2
-    1 $6B $10000000 nav-group-2
-    1 $69 $10000000 nav-group-2
-    1 $54 $10000000 nav-group-2
+    1 $13 $10000000 nav-tri-flags
+    1 $124 $10000000 nav-tri-flags
+    1 $6B $10000000 nav-tri-flags
+    1 $69 $10000000 nav-tri-flags
+    1 $54 $10000000 nav-tri-flags
 ;
 
 : room2F.char-enter ( -- )   \ 004129A0
@@ -30217,11 +30217,11 @@ USING: events.core events.words events.builtin ;
     $2FE story-flag? $2FF story-flag? not and if
         0 -105.0 135.0 23.0 flicker-sprite
     then
-    1 $13 $10000000 nav-group-2
-    1 $124 $10000000 nav-group-2
-    1 $6B $10000000 nav-group-2
-    1 $69 $10000000 nav-group-2
-    1 $54 $10000000 nav-group-2
+    1 $13 $10000000 nav-tri-flags
+    1 $124 $10000000 nav-tri-flags
+    1 $6B $10000000 nav-tri-flags
+    1 $69 $10000000 nav-tri-flags
+    1 $54 $10000000 nav-tri-flags
 ;
 
 : room30.char-enter ( -- )   \ 00412F00
@@ -31965,9 +31965,9 @@ USING: events.core events.words events.builtin ;
         1 camera-follow
     then
     camera-restart
-    1 door-lock
-    3 door-lock
-    $C door-lock
+    1 door-unlock
+    3 door-unlock
+    $C door-unlock
     $14 state-flag-clear
     $1E state-flag-clear
     1 wait-counter

@@ -8,11 +8,14 @@ USING: game-state events.core ;
 \ ---- commands
 
 \ 00: Door / exit use: with bit 7 set, flags the progress (+0x4 = 1) and keeps the exit
-\ (+0x702); otherwise, if the exit is unlocked and passable for whoever is controlled (Fiona
+\ (+0x702); otherwise, if the exit is not locked and passable for whoever is controlled (Fiona
 \ idle or walking; Hewie idle), +0x702 = progress +0x10 (empty in this game: 0).
-: exit-check ( exit -- )   \ (the door use itself is doors.fs's for now)
+: exit-check ( exit -- )   \ (cmd_exit: Fiona controlled; her action counts as free unless scripted)
     dup $80 and if  event-state ev.exit l!  -1 event-state ev.leaving l!  exit  then
-    drop s" exit-check" stub-step ;
+    dup event-exit-door dup 0< 0= if  door-locked if  drop exit  then  else  drop  then
+    dup exit-passable 0= if  drop exit  then
+    0 character char.scripted sl@ if  drop exit  then
+    dup event-state ev.exit l!  exit-wanted ! ;
 \ 02: Places character `who` (0xFF: self) on nav triangle `tri` in the event's room.
 : char-to-tri ( who tri -- )  drop drop s" char-to-tri" stub-step ;
 \ 03: Opens message window text `msg` (bit 0x4000: the second language table); the window
@@ -95,7 +98,7 @@ USING: game-state events.core ;
 : self-wait-16 ( -- )  16 self-wait-frames ;
 \ 1D: Nav-triangle flag groups (gRoomEventObj, NavGroups): set 1: +0xC, else +0x10 with group
 \ and bits (sets / clears the flags of a group of triangles).
-: nav-group ( set group bits -- )  drop drop drop s" nav-group" stub-step ;
+: nav-group ( set group bits -- )  rot 1 = -rot event-nav-group ;
 \ 1E: self: put at the inside point of exit `exit` (Rooms_ExitPointIn), facing the way through
 \ it.
 : self-to-exit-in ( exit -- )  drop s" self-to-exit-in" stub-step ;
@@ -193,8 +196,12 @@ USING: game-state events.core ;
 : camera-restart ( -- )  director-restart ;
 \ 4B: self: turns to heading `face` (character move 15).
 : self-turn-angle ( face -- )  drop s" self-turn-angle" stub-step ;
-\ 4C: Door `door`: Doors_SetBits(door, a, b) (the progress' +0x68 is empty).
-: door-bits ( a door b -- )  drop drop drop s" door-bits" stub-step ;
+\ 4C: The room's door models: bit a + 1 + b of each set (set 1) or cleared (Doors_SetBits; the
+\ progress' +0x68 is empty).
+\ (they say which parts of the room's door models are drawn: kept for when new-src draws them)
+create door-model-bits 8 cells allot  door-model-bits 8 cells 0 fill
+: door-bits ( a set b -- )   \ (Doors_SetBits(set, a, b): bit a + 1 + b of every door)
+    rot 1+ + swap if  door-model-bits bit-on  else  door-model-bits bit-off  then ;
 \ 4D: Door `door` takes on door `from`'s states: open bit, lock, closed-off; and `from`'s exit
 \ in this room saves its door state.
 : door-copy ( door from -- )  drop drop s" door-copy" stub-step ;
@@ -525,7 +532,7 @@ USING: game-state events.core ;
 : dust-motes ( F: x y z size -- )  fdrop fdrop fdrop fdrop s" dust-motes" stub-step ;
 \ DA: Nav-triangle flag groups (gRoomEventObj): set 1: +0x18, else +0x1C with group and bits (as
 \ 0x1D, 16-bit group).
-: nav-group-2 ( set group bits -- )  drop drop drop s" nav-group-2" stub-step ;
+: nav-tri-flags ( set tri bits -- )  rot 1 = -rot event-nav-tri ;
 \ 59 00: Story flag n set (the progress' scenario flags, +0x1C).
 : story-flag-set ( n -- )  progress pr.story bit-on ;
 \ 59 01: Story flag n cleared.
@@ -535,20 +542,22 @@ USING: game-state events.core ;
 \ 59 03: State flag n cleared.
 : state-flag-clear ( n -- )  progress pr.state bit-off ;
 \ 59 04: Door `door` unlocked.
-: door-unlock ( door -- )  drop s" door-unlock" stub-step ;
+: door-lock ( door -- )  8 door-bit-on ;
 \ 59 05: Door `door` locked.
-: door-lock ( door -- )  drop s" door-lock" stub-step ;
+: door-unlock ( door -- )  8 door-bit-off ;
 \ 59 06: Door `door` passable as if unlocked (its state bit 4: DoorHold_Usable), and characters
 \ can't hold it open (DoorHold_Open).
-: door-passable ( door -- )  drop s" door-passable" stub-step ;
+: door-passable ( door -- )  4 door-bit-on ;
 \ 59 07: Door `door` no longer closed off (Rooms_Reopen), then locked (as 0x05).
-: door-reopen-lock ( door -- )  drop s" door-reopen-lock" stub-step ;
+: door-reopen-unlock ( door -- )
+    dup 0 doors within if  dup progress pr.closed-off bit-off  then  door-unlock ;
 \ 59 08: Door `door` closed off (Rooms_CloseOff), then unlocked (as 0x04).
-: door-close-off-unlock ( door -- )  drop s" door-close-off-unlock" stub-step ;
+: door-close-off-lock ( door -- )
+    dup 0 doors within if  dup progress pr.closed-off bit-on  then  door-lock ;
 \ 59 09: Door `door`: its open bit set.
-: door-open-set ( door -- )  drop s" door-open-set" stub-step ;
+: door-open-set ( door -- )  2 door-bit-on ;
 \ 59 0A: Door `door`: its open bit cleared.
-: door-open-clear ( door -- )  drop s" door-open-clear" stub-step ;
+: door-open-clear ( door -- )  2 door-bit-off ;
 \ 59 0B: The message's parameter 0 = room id n as the script sees it (Events_ScriptRoom).
 : message-param-room ( n -- )   \ (Events_ScriptRoom's $40 / $41 -> $70 isn't kept yet)
     0 swap message-parameter ;
@@ -602,17 +611,20 @@ USING: game-state events.core ;
 : char-faces-area? ( who area within -- flag )  drop drop drop s" char-faces-area?" stub-flag ;
 \ 07: Whoever is controlled may take exit `exit` now: free (Fiona idle or walking, Hewie idle),
 \ inside the exit's area, its door open and the exit not marked.
-: exit-usable? ( exit -- flag )  drop s" exit-usable?" stub-flag ;
+: exit-usable? ( exit -- flag )   \ (Fiona controlled; the exit's "marked" flag isn't kept yet)
+    0 character char.scripted sl@ if  drop false exit  then
+    0 over event-exit-area char-in-area 0= if  drop false exit  then
+    exit-open ;
 \ 08: State flag n is set (the progress' 46 flags).
 : state-flag? ( n -- flag )  progress pr.state bit? ;
 \ 09: The pending scene request (progress +0x1134) is v.
 : scene-request? ( v -- flag )  drop s" scene-request?" stub-flag ;
 \ 0A: The door at exit `exit` of this room is open.
-: exit-door-open? ( exit -- flag )  drop s" exit-door-open?" stub-flag ;
+: exit-door-open? ( exit -- flag )  exit-open ;
 \ 0B: Door `door` is unlocked.
-: door-unlocked? ( door -- flag )  drop s" door-unlocked?" stub-flag ;
+: door-locked? ( door -- flag )  door-locked ;
 \ 0C: Door `door` isn't closed off (Rooms_DoorClosedOff).
-: door-not-closed-off? ( door -- flag )  drop s" door-not-closed-off?" stub-flag ;
+: door-not-closed-off? ( door -- flag )  closed-off? 0= ;
 \ 0D: The game mode is `mode` (Progress_GameMode).
 : game-mode? ( mode -- flag )  drop s" game-mode?" stub-flag ;
 \ 0E: Script slots 0xF0..0xFA: that slot's script runs; else character `who` is in a scripted
@@ -687,7 +699,10 @@ USING: game-state events.core ;
 : sound-bank-loaded? ( bank -- flag )  drop s" sound-bank-loaded?" stub-flag ;
 \ 2E: Character `who` (in this room) stands on a triangle of nav group `group` (NavGroups
 \ +0x14).
-: char-in-nav-group? ( who group -- flag )  drop drop s" char-in-nav-group?" stub-flag ;
+: char-in-nav-group? ( who group -- flag )
+    swap char-slot dup 0< if  2drop false exit  then
+    dup in-room? 0= if  2drop false exit  then
+    char-pos event-nav-in-group? ;
 \ 2F: Fewer than 10 of item 0x3F are held (Items_CountItem3F).
 : item-3F-under-10? ( -- flag )  s" item-3F-under-10?" stub-flag ;
 \ 30: Character `who` (active, in the current room) is heading for exit `exit` (+0x14D4).

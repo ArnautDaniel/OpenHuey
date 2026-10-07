@@ -19,6 +19,7 @@
 #define CHARACTERS 6            /* the original's character slots: 0 Fiona, 1 Hewie, 2.. others */
 #define SCRIPT_SLOTS 17         /* the action scripts running at once */
 #define SCRIPT_VARS 32
+#define DOORS 400
 
 typedef struct Progress {
     uint32_t story[STORY_FLAGS / 32];       /* the scenario flags (+0x1C) */
@@ -26,6 +27,11 @@ typedef struct Progress {
     uint8_t vars[PROGRESS_VARS];            /* the byte variables (+0x9C) */
     uint32_t resident[RESIDENT_FLAGS / 32]; /* kept across games: unlocks (the game's +0x24) */
     uint32_t visited[(ROOM_COUNT + 31) / 32];   /* rooms entered (+0xDC) */
+    /* each door's state (+0x124): bit 0 held, 1 open, 2 passable, 3 LOCKED (the decomp's
+     * Progress_UnlockDoor / LockDoor / DoorUnlocked are named the wrong way round), bits 4..7
+     * the sides it is locked from */
+    uint32_t doors[DOORS];
+    uint32_t closed_off[(DOORS + 31) / 32];      /* doors closed off for good (the rooms' +0x4) */
 } Progress;
 
 /* a character as the scripts see it (the original's character object: +0x30 its room, +0xE0
