@@ -2376,7 +2376,8 @@ void EventCmd_PlacedObject(VObject *ev) {
 
 /* music commands: 0x6A sub-op pc[1] on the music (gStageMusic): 0 +0x38 fade (pc[2], pc[3]),
  * 1 +0x40, 2 +0xC then +0x1C, 3 wait while +0x10 says it isn't ready, 4 +0x18, 5 +0x4C; 0x6B
- * the progress' +0x48 with pc[1]; 0x6C its +0x4C */
+ * the progress' +0x48 with pc[1] (SceneGame_MusicDirector: the stage set's music director);
+ * 0x6C its +0x4C (SceneGame_EndMusic) */
 /* 0x001FFC70 */
 void EventCmd_Music(VObject *ev) {
     VObject *mus = gStageMusic;
@@ -3233,10 +3234,11 @@ void EventCmd_Run(VObject *ev) {
     case 0x00:
         cmd_exit(ev, p, pc);
         break;
-    case 0x01:
+    case 0x01:   /* the room behind exit pc[1] loaded ahead (SceneGame_PrepareExit: the progress is the
+                  * game scene's second base, so its +0x14 .. +0x74 are SceneGame's) */
         VCALL(p, 0x14, void (*)(Progress *, s32))(p, pc[1]);
         break;
-    case 0x3A:
+    case 0x3A:   /* room be16 pc[1..2] loaded ahead into the spare slot (SceneGame_LoadSpareRoom) */
         VCALL(p, 0x18, void (*)(Progress *, u32))(p, be16(pc + 1));
         break;
     case 0x03: {
@@ -3416,7 +3418,8 @@ void EventCmd_Run(VObject *ev) {
             Progress_CharStart3(p, PC(ev)[2]);
         }
         break;
-    case 0x3C: {   /* the progress' +0x24 for character pc[1]: value be16 pc[2..3], pc[4] */
+    case 0x3C: {   /* the doors of room be16 pc[2..3] set to (character pc[1]'s slot, pc[4])
+                    * (SceneGame_SetRoomDoors: the progress' +0x24) */
         u8 who = (u8)Progress_SlotOfId(p, pc[1]);
 
         VCALL(p, 0x24, void (*)(Progress *, u32, u32, u32))(p, (u16)be16(PC(ev) + 2), who, PC(ev)[4]);
@@ -3729,7 +3732,7 @@ void EventCmd_Run(VObject *ev) {
         Threat_Raise((u8 *)p + 0x7B8, v);
         break;
     }
-    case 0x44:
+    case 0x44:   /* the sub-screen's start flag (SceneGame_SubScreenStart: the progress' +0x6C) */
         VCALL(p, 0x6C, void (*)(Progress *))(p);
         break;
     case 0x46:
@@ -3860,7 +3863,7 @@ void EventCmd_Run(VObject *ev) {
         Noise_Make((u8 *)p + 0x7A8, PC(ev)[1], room, be16(pc + 2), 0xFFFF);
         break;
     }
-    case 0x8A:
+    case 0x8A:   /* a creature placed (SceneGame_PlaceCreature: the progress' +0x74) */
         VCALL(p, 0x74, void (*)(Progress *, u32, s32, s32, s32, s32, s32, u32, f32))(
             p, be16(pc + 1), (s16)be16(pc + 4), (s8)pc[3], pc[6], (s8)pc[7], (s8)pc[8], be16(pc + 9),
             (f32)be32(pc + 0xB) / 1000.0f);

@@ -60,7 +60,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | op | len | name | operands | what it does |
 |----|-----|------|----------|--------------|
 | 00 | 2 | `exit-check` | `exit:u8` | Door / exit use: with bit 7 set, flags the progress (+0x4 = 1) and keeps the exit (+0x702); otherwise, if the exit is not locked and passable for whoever is controlled (Fiona idle or walking; Hewie idle), +0x702 = progress +0x10 (empty in this game: 0). |
-| 01 | 2 | `nop-progress-14` | `a:u8` | Calls the progress' +0x14 with the byte: empty in this game (no effect). |
+| 01 | 2 | `exit-prepare` | `exit:u8` | The room behind exit `exit` of the current one is loaded ahead into the other room slot, unless it is there (SceneGame_PrepareExit: the progress' +0x14, which is SceneGame's - the progress is its second base). |
 | 02 | 4 | `char-to-tri` | `who:chr` `tri:u16` | Places character `who` (0xFF: self) on nav triangle `tri` in the event's room. |
 | 03 | 3 | `message` | `msg:u16` | Opens message window text `msg` (bit 0x4000: the second language table); the window belongs to the script's character (+0x80C). See 0x09 to wait for it. |
 | 04 | 3 | `char-to-exit` | `who:chr` `exit:u8` | Places character `who` (0xFF: self) at the outside point of exit `exit` (Rooms_ExitPointOut). |
@@ -117,9 +117,9 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 37 | 2 | `var-inc` | `var:var` | Script variable + 1. |
 | 38 | 2 | `var-dec` | `var:var` | Script variable - 1. |
 | 39 | 9 | `hewie-action` | `a:u32` `b:u32` | Hewie: action a with argument b (Hewie_SetAction). |
-| 3A | 3 | `nop-progress-18` | `a:u16` | Calls the progress' +0x18: empty in this game (no effect). |
+| 3A | 3 | `room-preload` | `room:u16` | Room `room` is loaded ahead into the spare room slot, unless it is there (SceneGame_LoadSpareRoom: the progress' +0x18). |
 | 3B | 6 | `char-to-tri-facing` | `who:chr` `tri:u16` `face:deg` | Places character `who` (0xFF: self) on triangle `tri` facing `face`. |
-| 3C | 5 | `nop-progress-24` | `id:u8` `v:u16` `b:u8` | Calls the progress' +0x24 for character `id`: empty in this game (no effect). |
+| 3C | 5 | `room-doors-state` | `who:u8` `room:u16` `b:u8` | Every door with a side in room `room` gets the state (a, b), a being character `who`'s slot (SceneGame_SetRoomDoors: the progress' +0x24). |
 | 3D | 3 | `char-silent` | `who:chr` `on:u8` | Character `who` silent (+0x2C): its own sounds (Actor_PlaySound) don't play. |
 | 3E | 7 | `stalker-to-room` | `id:u8` `room:u16` `at:s16` `how:u8` | Stalker `id` leaves the scene and is put into room `room` (0xFFFF: its own) at `at`, entering as `how` (0..2) (its virtual +0x64). |
 | 3F | 6 | `hewie-to-room` | `room:u16` `how:u8` `at:s16` | Hewie into room `room` at `at`, entering as `how` (his +0x64). |
@@ -127,7 +127,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 41 | 2 | `pvar-inc` | `n:u8` | Progress variable n + 1 (the progress' byte variables, +0x9C). |
 | 42 | 2 | `self-turn-to` | `id:u8` | self: turns to character `id` (character move 14). |
 | 43 | 2 | `threat-raise` | `v:u8` | Raises the threat / panic meter (progress +0x7B8) by v (0..100). |
-| 44 | 1 | `nop-progress-6C` | - | Calls the progress' +0x6C: empty in this game (no effect). |
+| 44 | 1 | `subscreen-start` | - | The sub-screen's start flag (scene +0x73EEE0) set (SceneGame_SubScreenStart: the progress' +0x6C). |
 | 45 | 7 | `char-sound` | `who:chr` `id:u32` `bank:u8` | Character `who` (0xFF: self) plays sound `id` of bank `bank` where it stands (Actor_PlaySound; banks: 4 the sound set, 5 common, 6 the room's). |
 | 46 | 1 | `doors-room-in` | - | The doors redo their setup for the current room (Doors_RoomIn). |
 | 47 | 6 | `char-set-C4` | `who:chr` `v:s32` | Character `who`: +0xC4 = v (a stalker's presence state: 1 / 2 seen / near ...?). |
@@ -166,8 +166,8 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 68 | 20 | `sound` | `id:u32` `bank:u8` `x:fx` `y:fx` `z:fx` `vol:s8` `pitch:s8` | Sound `id` of bank `bank` & 0x3F; bank >> 6: 0 at (x, y, z) (only if the progress' +0x7C allows: always in this game), 2 plain, else at the camera; vol / pitch offsets. |
 | 69 | 6 | `sound-stop` | `id:u32` `bank:u8` | Stops sound `id` of bank `bank` (SndDriver_StopSound). |
 | 6A | 4 | `music` | `op:u8` `a:u8` `b:u8` | Stage music by `op`: 0 global volume fade to a over b frames (MusicDir_GlobalVolumeTo); 1 the stage's channels (+0x40); 2 load (+0xC) and hold (+0x1C); 3 waits until its banks are in; 4 release; 5 silence. |
-| 6B | 2 | `nop-progress-48` | `a:u8` | Calls the progress' +0x48: empty in this game (no effect). |
-| 6C | 1 | `nop-progress-4C` | - | Calls the progress' +0x4C: empty in this game (no effect). |
+| 6B | 2 | `music-stage` | `stage:u8` | The stage music director made for stage set `stage` (0..3: BGM\STAGEn_BANK with PANIC and Sn_NORMALA / B / CHASE; SceneGame_MusicDirector: the progress' +0x48). |
+| 6C | 1 | `music-stage-end` | - | The stage music director ended and deleted (SceneGame_EndMusic: the progress' +0x4C). |
 | 6D | 2 | `subscreen-open` | `mode:u8` | Opens the sub-screen in mode `mode` (0 the in-game menu, 1 save, 2 the word plates, ...; SubScreen.mode) and sets state flag 4. |
 | 6E | 3 | `movie-param` | `a:u8` `b:u8` | The playing movie's luminance keys: clear up to a, opaque from b (Sofdec_SetParam, as mwPlySetLumiKey; for the movie classes laid over by brightness). |
 | 6F | 2 | `self-through-exit` | `exit:u8` | self: walks through exit `exit` of this room (character move 5 to the door's far point). |
@@ -197,7 +197,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | 87 | 3 | `char-effect-moving` | `who:chr` `fx:u8` | Sends room effect `fx` 1 if character `who` hasn't moved this frame, else 2. |
 | 88 | 4 | `noise` | `loud:u8` `tri:u16` | A noise of loudness `loud` in this room at triangle `tri` (stalkers hear it). |
 | 89 | 3 | `message-prepare` | `msg:u16` | Prepares message `msg` for the window (shown later, see 0x62 12). |
-| 8A | 15 | `nop-progress-74` | `a:u16` `b:s8` `c:s16` `d:u8` `e:s8` `f:s8` `g:u16` `h:fx` | Calls the progress' +0x74 (Progress_Noop74): no effect. |
+| 8A | 15 | `creature-place` | `room:u16` `a:s8` `tri:s16` `flags:u8` `kind:s8` `which:s8` `g:u16` `f:fx` | A creature of kind `kind` placed in room `room` at triangle `tri` (flags bit 7: of the other class, in a free slot 7..9; tri -1: a free slot 0..5, else slot 6), with the rest as given (SceneGame_PlaceCreature: the progress' +0x74). |
 | 8B | 2 | `game-over-flag` | `v:u8` | The game-over flag (progress +0x73EB00, also set when Fiona is caught for good) = v. |
 | 8C | 23 | `scene-effect-8C` | `x:fx` `y:fx` `z:fx` `zone:u8` `n:s32` `b:u8` `t:fx` | A scene effect (Effect6FF60, 0xE40 bytes) at (x, y, z) with zone rectangle `zone` (0x8D), n, b, t. |
 | 8D | 19 | `zone-rect` | `z:u8` `id:u8` `x0:fx` `z0:fx` `x1:fx` `z1:fx` | Zone rectangle `z` (+0x894): an id and x0, z0, x1, z1 (used by 0x8C and some conditions). |

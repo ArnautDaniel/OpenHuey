@@ -1623,6 +1623,8 @@ s32 Progress_LoadEventChar(Progress *p, u32 id, u32 slot) {
 void Progress_Noop78(void) {
 }
 
+/* (the base's: the game's progress is SceneGame's second base, whose +0x74 is
+ * SceneGame_PlaceCreature) */
 /* 0x00173660 */
 void Progress_Noop74(void) {
 }
