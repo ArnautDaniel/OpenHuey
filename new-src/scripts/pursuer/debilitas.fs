@@ -2,7 +2,7 @@
 \ stalker of the first chapters): his setup and the Pursuer functions he overrides, over the
 \ Pursuer's own (Pursuer_Setup, NPC_Reset / Pursuer_Reset, Pursuer_Activate).
 IN: pursuer.debilitas
-USING: engine game-state events.core events.words chars relations fiona.doors pursuer.core pursuer.stubs pursuer.npc pursuer.modes pursuer.steps pursuer.behave pursuer.frame ;
+USING: engine game-state events.core events.words chars relations fiona.doors pursuer.core pursuer.stubs pursuer.npc pursuer.modes pursuer.steps pursuer.behave pursuer.frame pursuer.debact ;
 
 \ the hard setting (progress +0x30 bit 0x8000: his stats and files differ)
 
@@ -80,7 +80,7 @@ USING: engine game-state events.core events.words chars relations fiona.doors pu
     alt? if  40e  else  50e  then  $17E4 pu-f!
     80e $17E8 pu-f!                                     \ (the slow walk when the way to her is shorter)
     me 5e 20e c-size!  p-hp-max p-hp!  0 p-hear!  0 $16B4 pu-c!
-    not-yet" Debilitas_Actions (his own action table +0x1714)"
+    deb-actions own-steps !
     $3AF6F0 $1720 pu-l!  $3AF730 $1724 pu-l!  $3AF340 $16AC pu-l!  $3AF4A0 $16B0 pu-l!
     $47A900 $1734 pu-l!  0 $17EC pu-l!
     8e $1694 pu-f!  1.5e $169C pu-f!  12e $1698 pu-f!  1.5e $16A0 pu-f! ;

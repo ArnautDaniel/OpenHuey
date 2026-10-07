@@ -4,7 +4,7 @@
 \   debilitas-in      Debilitas in this room, 40 in front of Fiona
 \   debilitas-out     sends him off
 IN: stalker
-USING: engine state game-state events.core chars relations pursuer.core pursuer.stubs pursuer.npc pursuer.modes pursuer.steps pursuer.behave pursuer.search pursuer.moves pursuer.target pursuer.frame pursuer.debilitas ;
+USING: engine state game-state events.core chars relations pursuer.core pursuer.stubs pursuer.npc pursuer.modes pursuer.steps pursuer.behave pursuer.search pursuer.moves pursuer.target pursuer.chase pursuer.debchase pursuer.react pursuer.debact pursuer.frame pursuer.debilitas ;
 
 variable stalker  -1 stalker !   \ his actor
 : load-debilitas ( -- )
@@ -15,16 +15,26 @@ variable stalker  -1 stalker !   \ his actor
 : cast-stalker ( -- )   \ (the scripts' character record for slot 2)
     stalker @ p-char char.actor l!  2 p-char char.id l!  1 p-char char.present l!
     me fiona.core:pursuer-slot ! ;
-create in-front 12 allot
-: debilitas-in ( -- )
-    load-debilitas  stalker @ 0< if  ." no Debilitas" cr exit  then
-    cast-stalker  played p-room!
-    in-front her c-pos her c-yaw 40e vec-ahead
-    in-front me c-mask v-tri-in 0< if  in-front her c-pos vec-copy  then
+: stalker-mask ( -- )  $2C020068 me c-mask! ;   \ (Debilitas_BlockFlags)
+\ a floor he may stand on near her: in front of her, else round her; 40 off, then 25
+create in-front 12 allot  create try-d 40 , 25 ,
+: spot-round-her ( -- found? )
+    2 0 do
+        8 0 do
+            in-front her c-pos  her c-yaw i s>f 0.7853982e f* f+  j cells try-d + @ s>f  vec-ahead
+            in-front me c-mask v-tri-in 0< 0= if  unloop unloop true exit  then
+        loop
+    loop  false ;
+: place-it ( -- )
     in-front vec@ me c-place!
     $C vcall  $5C vcall                    \ (Pursuer_Reset, Pursuer_Activate)
     me her c-pos c-heading-to p-yaw!
     1 stalker @ actor act.visible l! ;
+: debilitas-in ( -- )
+    load-debilitas  stalker @ 0< if  ." no Debilitas" cr exit  then
+    cast-stalker  played p-room!  stalker-mask
+    spot-round-her 0= if  in-front her c-pos vec-copy  then
+    place-it ;
 : debilitas-out ( -- )
     stalker @ 0< if  exit  then
     0 stalker @ actor act.visible l!  0 p-char char.present l!  -1 fiona.core:pursuer-slot ! ;
