@@ -1,7 +1,7 @@
 \ fiona.fs - Fiona, the player (docs/subsystems/fiona.md). Phase F1: her body and model, the
 \ controls, standing, walking, running and turning, her footsteps, going out by exits.
 IN: fiona
-USING: engine actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.fear fiona.commands ;
+USING: engine actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.fear fiona.commands fiona.moves ;
 
 : rooms-id ( -- id )  s" rooms" actor-named ;
 : camera-id ( -- id )  s" camera" actor-named ;
@@ -26,11 +26,11 @@ fvariable ix  fvariable iy  fvariable iz
 : idle ( -- )   \ Fiona_ToIdle: free, standing, her moves her own
     0 her-doing !  0 her-mode !  her-yaw f@ her-heading f!  0 her-rest !  0 her-turn-mode !
     -1 idle-anim  ['] idle-move her-act ! ;
-' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle   ' idle is fiona.commands:to-idle
+' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle   ' idle is fiona.commands:to-idle   ' idle is fiona.moves:to-idle
 : fresh ( -- )   \ standing, the controls as new
     0 her-doing !  0 her-mode !  0 her-sub !  6 her-still !  0 her-turn-mode !  0 her-lock !
     1e her-stick-k f!  -1 her-variant !  1e her-tired-w f!  0 her-rest !  0 her-run-t !
-    -1 her-cmd !  0 her-busy-t !  0 her-scripted !  1 her-step-l !  1 her-step-r !  -1 her-door-exit !  her-path path-clear  stand  idle ;
+    -1 her-cmd !  0 her-busy-t !  0 her-scripted !  0 her-move !  -1 her-move-done !  1 her-step-l !  1 her-step-r !  -1 her-door-exit !  her-path path-clear  stand  idle ;
 
 \ ---- walking to a point (go-to: the console's, later the story's moves): her way over the nav
 \ mesh, arriving facing the way she walked ----
@@ -76,8 +76,17 @@ behaviour free
   on door-held ( room exit -- )  2drop  got-hold ;
   on door-refused ( room exit -- )  2drop  idle ;
   on tick ( -- )  self body? if  frame  then ;
-  on frame-end ( -- )   \ what she is doing, as the frame left her
-      self body? if  her-mode @ her-sub @ her-cond @ her-cmd @ broadcast fiona-doing  then ;
+  on frame-end ( -- )   \ what she is doing, as the frame left her; her move
+      self body? 0= if  exit  then
+      her-mode @ her-sub @ her-cond @ her-cmd @ broadcast fiona-doing
+      her-move-done @  ended?  broadcast moving ;
+  \ the story's moves (fiona.moves)
+  on scripted-move ( kind a b x y z yaw -- )
+      cell>f her-move-yaw f!  >r >r cell>f r> cell>f r> cell>f her-move-at vec!
+      her-move-b !  her-move-a !  dup her-move !  start-move ;
+  on hold-anim ( anim blend -- )   \ (the scripts' 0x9D: in it, held)
+      -1 play-blend  2 her-mode !  $11 her-doing !  ['] root-move her-act !  done ;
+  on show ( on -- )  0<> 1 and her act.visible l! ;
   \ Hewie (F3)
   on hewie-doing ( here action mode sub cond mood group -- )
       dog-group !  dog-mood !  dog-cond !  dog-sub !  dog-mode !  dog-action !  dog-here ! ;

@@ -17,7 +17,7 @@ USING: engine game-state actors messages common room-names story.state story.wor
     this-room @ progress pr.visited bit-on
     vars #vars cells 0 fill  0 ebits !  0 counter !  0 room-frames !  0 result !
     free-slots  -1 msg !  -1 msg-owner !  0 leaving !  -1 going !
-    #chars 0 do  0 i cells char-scripted + !  loop
+    #chars 0 do  0 i cells char-scripted + !  -1 i cells move-done-of + !  loop
     -1 prep-scene !  -1 prepared-msg !  zones-off ;
 : phase ( n -- )
     phase-context
@@ -64,7 +64,7 @@ behaviour playing-room
   on room-enter ( room exit -- )
       dup came-by !  exit-taken !  this-room !  $FF camera-char !
       self subscribe tick  self subscribe frame-end
-      self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing
+      self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing  self subscribe moving
       0 phase
       #chars 0 do  i char-enter  loop
       remember-chars
@@ -75,6 +75,9 @@ behaviour playing-room
   on take-offer ( scene arg -- )   \ (she took it: scene 5, her action script `arg`)
       swap 5 <> leaving @ or msg @ 0< 0= or if  drop exit  then
       0 0 rot action ;
+  on moving ( done ended -- )   \ (a character's move: done, its animation come round)
+      sender cs>who dup 0< if  drop 2drop exit  then
+      tuck cells anim-ended-of + !  cells move-done-of + ! ;
   on text-closed ( msg answer -- )  answer !  msg @ = if  -1 msg !  then ;
   on frame-end ( -- )
       3 phase  remember-chars

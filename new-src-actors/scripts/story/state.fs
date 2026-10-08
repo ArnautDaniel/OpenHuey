@@ -31,6 +31,8 @@ state: room-state
   \ the characters: where each was at the last frame's end (for areas entered / left), whether
   \ it was seen, and whether a script of this room has it (+0xE0: its scripted state)
   #chars 12 * field char-was  #chars cells field char-seen  #chars cells field char-scripted
+  \ each character's move (+0xE1: done) and whether its animation ended, as it last told (moving)
+  #chars cells field move-done-of  #chars cells field anim-ended-of
   cell field camera-char        \ the character slot the camera follows ($FF: nobody)
   \ the action prepared this frame (the scripts' scene-change: +0x1134): the scene (-1 none), its
   \ argument and kind - scene 5 an action script for Fiona, taken with the action button

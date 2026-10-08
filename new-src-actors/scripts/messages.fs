@@ -103,3 +103,14 @@ message prompt ( kind -- )                   \ (the window) an action is offered
 message offer ( scene arg -- )               \ (room -> Fiona) an action here this frame, taken with the action button
 message take-offer ( scene arg -- )          \ (Fiona -> room) she took it
 message scripted ( on -- )                   \ (room -> a character) a script of the room has you (on) / lets go (off)
+
+\ ---- the story's moves (the original's +0xF4 / +0xE1; docs/subsystems/story.md S3) ----
+\ kind: 1 full stop, 2 idle, 5 / 10 walk / run to a spot (b: -1 straight, else along a path),
+\ 6 / 11 walk / run a path to a triangle, 7 an animation (a), 8 blended (a, b frames), 9 blended
+\ with no time of its own, 16 her idle (b), 12 look at a character (a: its actor, -1 stop), 13 look
+\ at the point, 14 turn to a character (a: its actor), 15 turn to the heading, 17 walk the way to
+\ the spot with animation a (blend b), arriving as it ends
+message scripted-move ( kind a b x y z yaw -- )   \ (to a character; floats f>cell; a / b: as the kind says)
+message moving ( done ended -- )             \ broadcast at each frame's end by a character: its move done, its animation ended
+message hold-anim ( anim blend -- )          \ (to a character) play this animation and stay in it (the scripts' 0x9D)
+message show ( on -- )                       \ (to a character) shown or hidden (the scripts' 0x1F)
