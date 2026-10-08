@@ -582,10 +582,9 @@ void room_tick(Room *r) {
         switch (d->mode) {
         case 1:   /* along the user's animation, a frame a key; creak / latch once */
             d->swing = d->target = rdf(d->keys + (size_t)d->key * 4);
-            if (++d->key >= d->nkeys) {   /* (at rest where the animation leaves it) */
+            if (++d->key >= d->nkeys) {   /* (no rest reported: its user lets it go) */
                 d->keys = NULL;
                 d->mode = 0;
-                d->settled = d->closing ? 0 : 1;
             }
             if (!d->sounded) {
                 if (d->closing) {

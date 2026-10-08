@@ -83,8 +83,8 @@ the locked-door quirk; holding once; letting go open / shut / not held; locked a
 doorway; a door used off-screen heard at 0xF from its user's source; a held door swung open in
 the played room settles open; a slam's latch heard at 0x5F and the door left shut).
 
-The debug walker uses doors: at a real door it checks the lock, holds the door, goes through,
-and lets it go shut behind.
+Fiona uses doors (docs/subsystems/fiona.md): she holds a door, opens or shuts it by hand along
+her animation, and lets it go as she steps out.
 
 Left: the event commands' door bits (with the story); `use-door` with Fiona's animations; a door
 used off-screen with no one to hear it; barging a door open (`Doors_SetOpened`, a loud 0x91);

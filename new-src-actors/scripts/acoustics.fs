@@ -54,7 +54,7 @@ fvariable sx  fvariable sy  fvariable sz
     sz f@ f- fsq  fswap sy f@ f- fabs 3e f*  frot sx f@ f- fsq  frot f+ fsqrt  f+
     0.1e f* f>s - ;
 : route-end ( n -- door | -1 )  dup 0> if  1- route-door  else  drop -1  then ;
-: by-route ( loud -- loud' )   \ through at most 2 noise-doors, for a walker (kind 1)
+: by-route ( loud -- loud' )   \ through at most 2 doors, for a walker (kind 1)
     who @ body-room noise-rooms n@ 1 2 route                           ( loud n )
     noise-doors n@ 0< 0=  over 0> and if
         dup route-end noise-rooms n@ door-exit-in none>ff  exit-was @ = if  1-  then

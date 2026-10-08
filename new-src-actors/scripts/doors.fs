@@ -5,22 +5,23 @@ IN: doors
 USING: engine game-state actors messages ;
 
 \ ---- a door's state word ----
-1 constant held   2 constant opened   4 constant stuck   8 constant locked
+1 constant held-bit   2 constant opened-bit   4 constant stuck-bit   8 constant locked-bit
 : door-word ( door -- addr )  4 * progress pr.doors + ;
 : state@ ( door -- w )  door-word l@ ;
-: set ( door bits -- )  over door-word l@ or swap door-word l! ;
-: clear ( door bits -- )  invert over door-word l@ and swap door-word l! ;
-: against ( door -- bits )  state@ 4 rshift $F and ;           \ the kinds it is locked against
+: set-bits ( door bits -- )  over door-word l@ or swap door-word l! ;
+: clear-bits ( door bits -- )  invert over door-word l@ and swap door-word l! ;
+: against ( door -- bits )  state@ 4 rshift $F and ;           \ the kinds it is locked-bit against
 : kind-bit ( kind -- bit )  case  0 of 1 endof  1 of 2 endof  >r 4 r>  endcase ;
 : fixed? ( door -- flag )  door-flags 1 and 0<> ;                \ a doorway: always open
 : door-of ( room exit -- door | -1 )  room-exit-door ;
 \ (a fact for users: check it before trying a door - holding doesn't, as in the original)
-: door-locked? ( door -- flag )  dup 0< if  drop false exit  then  state@ locked and 0<> ;
+: door-locked? ( door -- flag )  dup 0< if  drop false exit  then  state@ locked-bit and 0<> ;
+: door-held? ( door -- flag )  dup 0< if  drop false exit  then  state@ held-bit and 0<> ;
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
 
 \ ---- the played room's doors on the floor (Doors_RoomIn / Doors_Refresh) ----
 : locks ( door -- flags )   \ the passage flags its locks put on the floor
-    dup state@ locked and if  drop $5000000 exit  then
+    dup state@ locked-bit and if  drop $5000000 exit  then
     against  dup 2 and if  $1000000  else  0  then  swap 4 and if  $4000000 or  then ;
 : refresh ( exit -- )   \ its passage: open or shut, and its locks
     dup door-here? 0= if  drop exit  then
@@ -41,7 +42,7 @@ USING: engine game-state actors messages ;
 
 \ ---- held doors (DoorHold_Take / DoorHold_Open / DoorHold_Shut) ----
 variable the-room   variable the-door   variable the-source
-\ a held door let go off-screen is heard: 0xF at the door, from the user's source (door_heard)
+\ a held-bit door let go off-screen is heard: 0xF at the door, from the user's source (door_heard)
 : heard-off-screen ( -- )
     the-room @ room-id = if  exit  then
     $F  the-room @  -1  the-door @  the-source @  acoustics-id send noise ;
@@ -49,15 +50,15 @@ variable the-room   variable the-door   variable the-source
     >r door-of dup 0< if  r> 2drop false exit  then              ( door ) ( r: kind )
     dup fixed? if  r> 2drop false exit  then
     r> kind-bit over against and if  drop false exit  then
-    dup state@ held and if  drop false exit  then
-    held set  true ;
+    dup state@ held-bit and if  drop false exit  then
+    held-bit set-bits  true ;
 : let-go ( room exit source open? -- )
     >r  the-source !  over the-room !  door-of the-door !  r>       ( open? )
     the-door @ 0< if  drop exit  then
-    the-door @ fixed?  the-door @ state@ locked and or  the-door @ state@ held and 0= or if  drop exit  then
-    if  the-door @ state@ stuck and if  exit  then  the-door @ opened set
-    else  the-door @ opened clear  then
-    the-door @ held clear
+    the-door @ fixed?  the-door @ state@ locked-bit and or  the-door @ state@ held-bit and 0= or if  drop exit  then
+    if  the-door @ state@ stuck-bit and if  exit  then  the-door @ opened-bit set-bits
+    else  the-door @ opened-bit clear-bits  then
+    the-door @ held-bit clear-bits
     the-door @ changed  heard-off-screen ;
 
 \ ---- the played room's door models: who is using each (its noise source) ----
@@ -76,10 +77,10 @@ variable ev-exit
 behaviour keeping
   on spawned ( -- )  self subscribe tick  self subscribe entered-room  users 8 cells -1 fill ;
   on entered-room ( room exit -- )  2drop  room-in  users 8 cells -1 fill ;
-  on lock ( door -- )  dup locked set  changed ;
-  on unlock ( door -- )  dup locked clear  changed ;
+  on lock ( door -- )  dup locked-bit set-bits  changed ;
+  on unlock ( door -- )  dup locked-bit clear-bits  changed ;
   on lock-for ( door kind on -- )
-      >r kind-bit 4 lshift  over swap  r> if  set  else  clear  then  changed ;
+      >r kind-bit 4 lshift  over swap  r> if  set-bits  else  clear-bits  then  changed ;
   on close-off ( door -- )  dup closed-off!  changed ;
   on use-door ( exit anim source -- )
       2 pick user !  over room-id swap door-of 0< if  2drop exit  then

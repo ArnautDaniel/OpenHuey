@@ -21,10 +21,10 @@ witnessing witness-state s" witness" spawn constant witness
 
 testing a new game starts in the cage room
 T{ room-id -> front-garden-3 }T
-T{ walker body-room -> front-garden-3 }T
+T{ fiona body-room -> front-garden-3 }T
 
 testing going out by an exit: leaving, arrived, entered - in that order, with both exits
-: out-by ( exit -- )  walker enter  rooms send go-through  leave  3 frames ;
+: out-by ( exit -- )  fiona enter  rooms send go-through  leave  3 frames ;
 front-garden-3 0 room-exit-leads constant arrive-exit constant next-room
 forget  0 out-by
 T{ room-id -> next-room }T
@@ -32,9 +32,9 @@ T{ seen @ length -> 9 }T
 T{ 0 seen@ 1 seen@ 2 seen@ -> 1 front-garden-3 0 }T
 T{ 3 seen@ 4 seen@ 5 seen@ -> 2 next-room arrive-exit }T
 T{ 6 seen@ 7 seen@ 8 seen@ -> 3 next-room arrive-exit }T
-testing the walker arrives by that exit, on the room's nav mesh
-T{ walker body-room -> next-room }T
-T{ walker body-tri 0< -> 0 }T
+testing Fiona arrives by that exit, on the room's nav mesh
+T{ fiona body-room -> next-room }T
+T{ fiona body-tri 0< -> 0 }T
 
 testing and back the way it came
 forget  arrive-exit out-by
@@ -49,6 +49,6 @@ testing a jump (no exit): no exit to arrive by
 forget  front-garden-2 -1 rooms send go-to-room  3 frames
 T{ room-id -> front-garden-2 }T
 T{ 2 seen@ 5 seen@ -> -1 -1 }T
-T{ walker body-room -> front-garden-2 }T
+T{ fiona body-room -> front-garden-2 }T
 
 test-summary

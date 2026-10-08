@@ -63,6 +63,6 @@ the cage room; out by an exit - leaving / arrived / entered in order, with both 
 again; an exit to nowhere; a jump). Listeners subscribe to `leaving-room`, `arrived` and
 `entered-room`.
 
-Walked so far by the debug walker (`scripts/walker.fs`: WASD, Shift, Space at an exit). Left:
+Walked by Fiona (`scripts/fiona.fs`: WASD, Shift, Space at a door). Left:
 the sound bank swap (with the audio subsystem); the controlled character's rule (with Fiona
 and Hewie).

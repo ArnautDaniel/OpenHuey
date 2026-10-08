@@ -45,7 +45,7 @@ Owns: the room's camera setups, who it follows, cuts and eases.
 Takes: `follow`, `use-setup`, `event-camera`, `release`.
 Original: `camera.c`, `camdirector.c`.
 
-### Fiona (`fiona`)
+### Fiona (`fiona`)  — **F1 built** (`subsystems/fiona.md`)
 Owns: her moves, her actions (doors, ladders, items, pushing), her health, fear and panic.
 Takes: `input`, `hit`, `seize`, `lead`, `let-go`, `frighten`, `heal`, `place`, `play-motion`.
 Sends: `noise` (steps, screams, falls), `kick`/`shove` (as `hit` to whoever she struck),
@@ -115,8 +115,8 @@ Original: `gameover.c`, `title.c`, the ending scene.
 ## Order
 
 1. The kernel and `acoustics`: the prototype.
-2. `rooms`, `doors`, `camera`: the world working with actors, walked by a debug `walker`
-   (a body moved by the keys over the nav mesh, going through exits) until Fiona replaces it.
+2. `rooms`, `doors`, `camera`: the world working with actors (walked by a debug walker until
+   Fiona's F1 replaced it).
 3. `fiona`, `hewie`: the player's side.
 4. `story` (the converted scripts sending messages).
 5. `stalker` (Debilitas first), `danger`, `summoner`, `music`.
