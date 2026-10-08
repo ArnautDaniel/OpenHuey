@@ -19,7 +19,7 @@ messages it takes and sends (a first draft: the API is settled on its own page,
 
 ## Actors
 
-### The story (`story`)
+### The story (`story`)  — **S1 built** (`subsystems/story.md`)
 Owns: story flags, script variables, the room's phase scripts and the characters' action
 scripts.
 Takes: `entered-room`, `left-room`, `exit-taken`, `action-pressed`, `area-entered`, `scene-cue`.

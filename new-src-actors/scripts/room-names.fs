@@ -145,6 +145,39 @@ $10A  constant chaos-forest-12          \ Chaos Forest
 $10B  constant chaos-forest-13          \ Chaos Forest
 
 \ a room's name, for the console and traces ("unnamed-room": not on any map)
+\ ---- rooms with event scripts on no page of the pause map (special rooms, scenes): to name
+$D    constant off-map-0d              \ (on no map page)
+$27   constant off-map-27              \ (on no map page)
+$33   constant off-map-33              \ (on no map page)
+$34   constant off-map-34              \ (on no map page)
+$35   constant off-map-35              \ (on no map page)
+$36   constant off-map-36              \ (on no map page)
+$37   constant off-map-37              \ (on no map page)
+$5A   constant off-map-5a              \ (on no map page)
+$64   constant off-map-64              \ (on no map page)
+$65   constant off-map-65              \ (on no map page)
+$C4   constant off-map-c4              \ (on no map page)
+$D0   constant off-map-d0              \ (on no map page)
+$D1   constant off-map-d1              \ (on no map page)
+$D2   constant off-map-d2              \ (on no map page)
+$D3   constant off-map-d3              \ (on no map page)
+$D4   constant off-map-d4              \ (on no map page)
+$D5   constant off-map-d5              \ (on no map page)
+$D6   constant off-map-d6              \ (on no map page)
+$D7   constant off-map-d7              \ (on no map page)
+$D8   constant off-map-d8              \ (on no map page)
+$D9   constant off-map-d9              \ (on no map page)
+$E0   constant off-map-e0              \ (on no map page)
+$E1   constant off-map-e1              \ (on no map page)
+$E2   constant off-map-e2              \ (on no map page)
+$E3   constant off-map-e3              \ (on no map page)
+$E4   constant off-map-e4              \ (on no map page)
+$E5   constant off-map-e5              \ (on no map page)
+$E6   constant off-map-e6              \ (on no map page)
+$E7   constant off-map-e7              \ (on no map page)
+$E8   constant off-map-e8              \ (on no map page)
+$E9   constant off-map-e9              \ (on no map page)
+
 : room-name ( room -- addr len )
     case
         $0 of  s" front-garden-1"  endof
@@ -287,5 +320,36 @@ $10B  constant chaos-forest-13          \ Chaos Forest
         $109 of  s" chaos-forest-11"  endof
         $10A of  s" chaos-forest-12"  endof
         $10B of  s" chaos-forest-13"  endof
+        $D of  s" off-map-0d"  endof
+        $27 of  s" off-map-27"  endof
+        $33 of  s" off-map-33"  endof
+        $34 of  s" off-map-34"  endof
+        $35 of  s" off-map-35"  endof
+        $36 of  s" off-map-36"  endof
+        $37 of  s" off-map-37"  endof
+        $5A of  s" off-map-5a"  endof
+        $64 of  s" off-map-64"  endof
+        $65 of  s" off-map-65"  endof
+        $C4 of  s" off-map-c4"  endof
+        $D0 of  s" off-map-d0"  endof
+        $D1 of  s" off-map-d1"  endof
+        $D2 of  s" off-map-d2"  endof
+        $D3 of  s" off-map-d3"  endof
+        $D4 of  s" off-map-d4"  endof
+        $D5 of  s" off-map-d5"  endof
+        $D6 of  s" off-map-d6"  endof
+        $D7 of  s" off-map-d7"  endof
+        $D8 of  s" off-map-d8"  endof
+        $D9 of  s" off-map-d9"  endof
+        $E0 of  s" off-map-e0"  endof
+        $E1 of  s" off-map-e1"  endof
+        $E2 of  s" off-map-e2"  endof
+        $E3 of  s" off-map-e3"  endof
+        $E4 of  s" off-map-e4"  endof
+        $E5 of  s" off-map-e5"  endof
+        $E6 of  s" off-map-e6"  endof
+        $E7 of  s" off-map-e7"  endof
+        $E8 of  s" off-map-e8"  endof
+        $E9 of  s" off-map-e9"  endof
         >r  s" unnamed-room"  r>
     endcase ;

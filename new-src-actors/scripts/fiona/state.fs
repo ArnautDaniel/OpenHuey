@@ -65,7 +65,6 @@ state: fiona-state
   cell field her-door-anim      \ hers (0x600 + kind; 0x608.. trying a locked one)
   cell field her-door-opens     \ she opens it (else shuts it)
   cell field her-rattle         \ frames after trying a locked one
-  cell field her-armed
   \ Hewie (F3): her command this frame (-1 none: 0 up, 1 down, 2 R3, 3 right, 4 left), the
   \ command's code and where it was given, frames the pad isn't read, the praise's repeats
   cell field her-cmd   cell field her-busy-t

@@ -13,6 +13,7 @@ USING: tester engine game-state actors messages room-names facts game fiona.stat
 : stalker-in ( room alert chasing -- )  game:danger send stalker-here ;   \ (as the stalkers will, each frame)
 
 3 frames
+game:story send story-stop  deliver  progress pr.state 8 0 fill   \ (no room scripts: this test sets the flags by hand)
 testing a new game: no stalker, calm; Fiona told
 T{ level hers -> 0 0 }T
 

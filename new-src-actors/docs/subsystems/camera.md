@@ -53,9 +53,9 @@ sub-state.
 **Built** (`scripts/camera.fs`). The C director now follows a point (`cam-target!`), set each
 frame from the followed actor's body, not a model.
 
-*Stand-in until the story:* nobody gives setups yet, so a character without one gets the
-room's camera set whose look-at point is nearest it (no path). It goes when the story sends
-`camera-setup`.
+The story's room scripts give the setups (`camera-setup`) and say whom to follow. A character
+the scripts give no setup gets the room's camera set whose look-at point is nearest it (no
+path): a fallback. `camera-restart` restarts the director (the scripts' 0x4A).
 
 Left: who may be followed (Fiona's rule), the event camera (with cutscenes), a debug free
 camera, a test with the room scripts' setups.

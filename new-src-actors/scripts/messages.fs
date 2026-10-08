@@ -80,3 +80,12 @@ message meet-now ( type -- )
 message meet-on ( -- )
 message meet-refused ( -- )
 message meet-off ( -- )                      \ either gives it up
+
+\ ---- the story (docs/subsystems/story.md) ----
+message to-exit ( exit -- )                  \ (a character) put yourself on the exit's outside spot, facing in
+message camera-restart ( -- )                \ (the camera) the director starts over
+message room-enter ( room exit -- )          \ (a room actor, from the story) the room is in: phase 0, the characters, phase 3
+message room-leave ( -- )                    \ its exit is taken: phase 4
+message room-left ( -- )                     \ the next room is in: phase 5, then it reports
+message room-done ( -- )                     \ (to the story) finished: it may go
+message story-stop ( -- )                    \ (to the story) no more room scripts (tests of the others, the console)

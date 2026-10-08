@@ -106,10 +106,9 @@ footsteps, `spots` walking to a spot, `doors` her door use; shared: `scripts/pat
 - a locked door: she tries it (0x609) and gives up, the door never held;
 - going out by an exit's area; arriving, not sent straight back.
 
-*Stand-ins until the story:*
-- the exit check (in an exit's area and free: the room scripts do it). It waits until she has
-  been out of every exit's area since arriving.
-- her arrival on the exit's outside spot, facing in (the scripts' `char-to-exit`).
+Exits are the story's now: the rooms' scripts take them (`exit-check`) and place her as she
+arrives (`to-exit`: the exit's outside spot, facing in). Her own placement on `arrived` stays
+for a room whose scripts don't place her.
 
 The debug walker is gone.
 

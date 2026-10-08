@@ -33,6 +33,7 @@ behaviour filming
       self subscribe tick  self subscribe frame-end  self subscribe arrived  self subscribe entered-room ;
   on follow ( who -- )  dup followed !  cam-follow ;
   on camera-setup ( who set path -- )  rot setup tuck cell+ !  ! ;
+  on camera-restart ( -- )  cam-restart ;
   on arrived ( room exit -- )  2drop  forget-setups  cam-new-room  0 started ! ;
   on entered-room ( room exit -- )  2drop  cam-room-start  -1 started ! ;
   on tick ( -- )  started @ if  cam-ease  then ;

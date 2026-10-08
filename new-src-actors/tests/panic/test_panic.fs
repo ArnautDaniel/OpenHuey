@@ -13,6 +13,7 @@ USING: tester engine game-state actors messages room-names common game fiona.sta
 : hold ( key -- )  true key-hold ;   : release ( key -- )  false key-hold ;
 
 3 frames
+game:story send story-stop  deliver  progress pr.state 8 0 fill   \ (no room scripts: this test sets the flags by hand)
 testing calm at the start
 T{ stage -> 0 }T
 testing a level set by the story: its stage

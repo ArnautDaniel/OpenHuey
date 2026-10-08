@@ -15,6 +15,7 @@ create from 12 allot  create now 12 allot
 : since ( F: -- d )  fiona body-pos now vec!  from now vec-dist-xz ;
 
 2 frames
+game:story send story-stop  deliver  progress pr.state 8 0 fill   \ (no room scripts: this test sets the flags by hand)
 testing a new game: in the cage room, standing, followed by the camera
 T{ room-id  fiona body-room -> front-garden-3 front-garden-3 }T
 T{ anim -> 0 }T
@@ -55,8 +56,7 @@ clean0 at-door
 T{ key: Space press  doing -> 3 }T
 T{ 30 $600 watch-anim  state0 -> -1 1 }T          \ her animation, the door held
 T{ 120 frames  state0  doing -> 2 0 }T            \ let go open; free again
-testing her animation took her through: the exit taken
-T{ room-id -> front-garden-2 0 room-exit-leads drop }T
+\ (her animation takes her into the exit's area; the story takes the exit: tests/story/test_story.fs)
 front-garden-2 -1 rooms send go-to-room  5 frames
 
 testing a locked door: she tries it, and gives up
@@ -65,10 +65,6 @@ T{ key: Space press  60 $609 watch-anim -> -1 }T
 T{ 90 frames  doing  state0 -> 0 8 }T             \ free; still locked, never held
 door0 doors send unlock  deliver
 
-testing going out: in the exit's area and free, the exit is taken
-clean0  door0 4 * progress pr.doors + 2 swap l!   \ (open)
-T{ fiona enter  0 0 exit-spot drop her-at vec!  leave-actor  3 frames  room-id -> front-garden-2 0 room-exit-leads drop }T
-testing and arriving, she isn't sent straight back
-T{ 20 frames  room-id -> front-garden-2 0 room-exit-leads drop }T
+\ (going out by an exit: the story's room scripts take it - tests/story/test_story.fs)
 
 test-summary
