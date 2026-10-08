@@ -120,7 +120,7 @@ fvariable u-a  fvariable u-b  fvariable u-c  fvariable u-d
     inputs-clear ;
 
 behaviour panicking
-  on spawned ( -- )  1e scale f!  self subscribe frame-end  self subscribe danger ;
+  on spawned ( -- )  1e scale f!  self subscribe frame-end  self subscribe danger  self subscribe fiona-doing ;
   on danger ( level -- )  the-danger ! ;
   on fiona-doing ( mode sub cond -- )  her-cond !  her-sub !  her-mode ! ;
   on fright ( amount -- )  cell>f add-fright ;

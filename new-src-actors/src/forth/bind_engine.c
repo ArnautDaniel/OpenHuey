@@ -800,7 +800,18 @@ PRIM(p_area_corner) {   /* ( area k -- flag ) ( F: -- x y z ) */
     FPUSH(c.z);
     PUSH(ok ? -1 : 0);
 }
-PRIM(p_game_tick) { engine_tick(&gEngine); }   /* ( -- ) one whole frame of the game (tests: the actors, then the models and doors) */
+PRIM(p_game_tick) {   /* ( -- ) one whole frame of the game (tests: the actors, then the models and
+                       * doors; the models posed as drawing would, so their bones are where a
+                       * drawn frame leaves them) */
+    int i;
+
+    engine_tick(&gEngine);
+    for (i = 0; i < MAX_ACTORS; i++) {
+        if (gEngine.actors[i].used && gEngine.actors[i].visible) {
+            actor_prepare(&gEngine.actors[i]);
+        }
+    }
+}
 PRIM(p_door_move) {   /* ( exit open? slam? -- ) the played room's door swung open / shut (5 degrees a frame), or slammed */
     Cell slam = POP(), open = POP(), exit = POP();
 
@@ -975,6 +986,18 @@ PRIM(p_route) {   /* ( from to kind max -- n ) a route between rooms (0 there, -
     Cell max = POP(), kind = POP(), to = POP(), from = POP();
 
     sRouteN = world_route(&gEngine.world, (int)from, (int)to, (int)kind, (int)max, sRoute, 64);
+    PUSH(sRouteN);
+}
+PRIM(p_route_avoiding) {   /* ( from to kind max avoid -- n ) the same, not through the doors whose bits
+                            * are set in avoid (cells: door d is bit d mod 32 of cell d / 32) */
+    Cell *a = (Cell *)POP(), max = POP(), kind = POP(), to = POP(), from = POP();
+    uint32_t bits[(WORLD_DOORS + 31) / 32];
+    int i;
+
+    for (i = 0; i < (WORLD_DOORS + 31) / 32; i++) {
+        bits[i] = (uint32_t)a[i];
+    }
+    sRouteN = world_route_avoiding(&gEngine.world, (int)from, (int)to, (int)kind, (int)max, bits, sRoute, 64);
     PUSH(sRouteN);
 }
 PRIM(p_route_door) {   /* ( i -- door ) the route's i-th door, first first */
@@ -1784,7 +1807,7 @@ void bind_engine(Forth *f) {
         const char *name;
         Code code;
     } prims[] = {
-        {"room", p_room}, {"route", p_route}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
+        {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
         {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
         {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},

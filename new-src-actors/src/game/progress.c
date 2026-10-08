@@ -49,6 +49,9 @@ void bind_state(Forth *f) {
     field(f, "pr.items", offsetof(Progress, items));
     field(f, "pr.files", offsetof(Progress, files));
     field(f, "pr.items-counted", offsetof(Progress, items_counted));
+    field(f, "pr.hewie-mistreated", offsetof(Progress, hewie_mistreated));
+    field(f, "pr.hewie-pleased", offsetof(Progress, hewie_pleased));
+    field(f, "pr.hewie-downs", offsetof(Progress, hewie_downs));
     forth_constant(f, "door-count", DOORS);
     /* EventState: 32-bit (sl@ l!) */
     field(f, "ev.room", offsetof(EventState, room));

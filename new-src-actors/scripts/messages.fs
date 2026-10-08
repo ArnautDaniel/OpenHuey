@@ -56,7 +56,13 @@ message danger ( level -- )                  \ broadcast: 0 calm, 1 followed, 2 
 \ ---- panic (docs/subsystems/panic.md); amounts and levels are floats (f>cell) ----
 message fright ( amount -- )
 message fear-in ( amount -- )
-message fiona-doing ( mode sub cond -- )
 message panic-stage! ( stage -- )
 message panic-level! ( level -- )
 message panic ( stage level -- )             \ broadcast each frame
+
+\ ---- Fiona (docs/subsystems/fiona.md) ----
+message fiona-doing ( mode sub cond -- )     \ broadcast each frame: her move mode, what she does, her condition
+
+\ ---- Hewie (docs/subsystems/hewie.md) ----
+message join-fiona ( -- )                    \ he comes into the game at her heel (the story; the console)
+message part-from-fiona ( -- )               \ he leaves the game

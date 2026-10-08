@@ -191,6 +191,7 @@ typedef struct Step {
 typedef struct Search {
     const World *w;
     int kind, way;   /* the way the step being searched from came through its door (-1: none) */
+    const uint32_t *avoid;   /* doors not to take (a bit a door), or NULL */
     Step steps[ROUTE_STEPS];
     int head, tail, cur;
     uint32_t seen[(WORLD_DOORS + 31) / 32];
@@ -216,7 +217,7 @@ static int queue_doors(Search *q, int room) {
         if (q->seen[d / 32] & bit) {
             continue;
         }
-        if (!(gProgress.doors[d] & 8)) {   /* (not locked; passable from any side) */
+        if (!(q->avoid && (q->avoid[d / 32] & bit)) && !(gProgress.doors[d] & 8)) {   /* (not avoided, not locked; passable from any side) */
             s = &q->steps[q->tail++];
             if (q->tail >= ROUTE_STEPS) {
                 return -1;
@@ -233,6 +234,10 @@ static int queue_doors(Search *q, int room) {
 }
 
 int world_route(const World *w, int from, int to, int kind, int max, int *out, int nout) {
+    return world_route_avoiding(w, from, to, kind, max, NULL, out, nout);
+}
+
+int world_route_avoiding(const World *w, int from, int to, int kind, int max, const uint32_t *avoid, int *out, int nout) {
     static Search q;   /* (big: kept off the stack) */
     int n, k, i;
 
@@ -245,6 +250,7 @@ int world_route(const World *w, int from, int to, int kind, int max, int *out, i
     memset(&q, 0, sizeof(q));
     q.w = w;
     q.kind = kind;
+    q.avoid = avoid;
     q.way = -1;
     q.cur = -1;
     if (queue_doors(&q, from) < 0) {

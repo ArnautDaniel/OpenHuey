@@ -39,6 +39,9 @@ typedef struct Progress {
      * +0x15F8: 128, 0-terminated, in the order found) */
     uint16_t files[128];
     int32_t items_counted;                  /* items given by the scripts' 0x83 (+0xFBE) */
+    /* how Hewie has been treated, for the dog's level at the end (0..10000; Hewie keeps them):
+     * mistreated (+0xFB6: kicked, knocked down, upset), pleased (+0xFB8), knocked down (+0xFBA) */
+    int32_t hewie_mistreated, hewie_pleased, hewie_downs;
 } Progress;
 
 /* a character as the scripts see it (the original's character object: +0x30 its room, +0xE0

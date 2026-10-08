@@ -47,7 +47,7 @@ fvariable ox  fvariable oz  fvariable ix  fvariable iy  fvariable iz
 \ ---- each frame (Fiona_Update, the parts built so far) ----
 : frame ( -- )
     her-at her-was-at 12 move  her-tri @ her-was-tri !  her-yaw f@ her-yaw-was f!
-    her-mode @ her-sub @ her-cond @ panic-id send fiona-doing
+    her-mode @ her-sub @ her-cond @ broadcast fiona-doing
     feel-the-panic
     read-controls
     her-mode @ 0= if  panic-controls drop  then

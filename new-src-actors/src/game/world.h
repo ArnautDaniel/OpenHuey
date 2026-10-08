@@ -60,5 +60,8 @@ int world_door_open(const World *w, int d);
  * its doors into out[] (first first, up to nout), and their number; 0 already there; -1 none
  * (RoutePlanner_FindRoute with no doors to avoid, from no door, to any door) */
 int world_route(const World *w, int from, int to, int kind, int max, int *out, int nout);
+/* the same, not through the doors set in `avoid` (a bit a door: door d is bit d % 32 of
+ * avoid[d / 32]; WORLD_DOORS bits) */
+int world_route_avoiding(const World *w, int from, int to, int kind, int max, const uint32_t *avoid, int *out, int nout);
 
 #endif

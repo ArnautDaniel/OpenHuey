@@ -33,6 +33,7 @@ Declared in `scripts/messages.fs`.
 | `follow` | `( who -- )` | to camera | Follow her (when she becomes the one controlled). |
 | `hold-door`, `use-door`, `let-go-open`, `let-go-shut` | | to doors | At a door. |
 | `noise` | | to acoustics | Her steps (and later her screams, falls). Her source: `fiona-noise`. |
+| `fiona-doing` | `( mode sub cond -- )` | broadcast, each frame | What she is doing (the panic and Hewie listen). |
 
 **Facts she reads:** the controls (keys / pad: the input is a fact, read each frame); her
 model's motion (root motion, the motion's event flags, its end); the floor (nav triangles and
@@ -123,6 +124,10 @@ voice; keeping clear of others (with Hewie).
 - turning to flee (Q: 0x403, fear up 10);
 - her looks follow the danger and the panic (the chased walk 0x208, the shaken and frightened
   blends).
+
+Found with Hewie's tests: placing her on front-garden-2's exit 0 spot (`0 0 exit-spot`) right
+after the room is entered puts her outside the exit's area (the spot is 64 above her floor), so
+the stand-in exit check doesn't fire; Fiona's own test reaches it after the door tests. To look at.
 
 Left for F2: the slow locked-door try; shaking the panic off faster while down (with the
 shake-free of F4); the flee's door slam and Hewie's reaction; charms (with items).
