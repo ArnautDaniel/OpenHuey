@@ -161,3 +161,7 @@ angles didn't show it clearly. If it is still wrong, the stick-relative turn of 
 **`go-to`** `( x y z -- )` (floats `f>cell`): she walks there over the nav mesh (walk-to-spot)
 and stands. At the console: `10e 0e 20e walk` (scripts/debug.fs). For debugging, and the base of the story's
 scripted moves.
+
+**F5 begun** (with the story's S3): the story's moves (`scripted-move`: `scripts/fiona/moves.fs`),
+`scripted` on / off (her hands off the controls), `hold-anim`, `show`, `moving` each frame;
+examining (`offer` / `take-offer`), messages on screen (`text-shown`: she stands).

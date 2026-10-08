@@ -6,7 +6,7 @@
 \ He is spawned with the game but comes in only when told (`join-fiona`: the story, or the
 \ console); `part-from-fiona` sends him off.
 IN: hewie
-USING: engine actors messages common paths hewie.state hewie.body hewie.model hewie.moving hewie.states hewie.offscreen hewie.actions hewie.commands hewie.mind ;
+USING: engine actors messages common paths hewie.state hewie.body hewie.model hewie.moving hewie.states hewie.offscreen hewie.actions hewie.commands hewie.mind hewie.scripted ;
 
 \ at heel: behind her and a little to her side (where she is when that isn't floor), her way
 create heel-at 12 allot
@@ -31,7 +31,7 @@ behaviour hewie-own
       2.5e 5e body-size  his-floor body-mask!  body-off
       s" fiona" actor-named his-fiona !
       self subscribe tick  self subscribe leaving-room  self subscribe arrived
-      self subscribe danger  self subscribe panic  self subscribe fiona-doing ;
+      self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe frame-end ;
   on join-fiona ( -- )  s" fiona" actor-named his-fiona !  room-id fiona-room !  join ;
   on part-from-fiona ( -- )  part ;
   on place ( x y z yaw -- )   \ (the story puts him)
@@ -61,6 +61,19 @@ behaviour hewie-own
       along? if  meet-second?  else  drop false  then
       if  sender send meet-on  tell-doing  else  sender send meet-refused  then ;
   on meet-off ( -- )  -1 his-meet ! ;
+  \ the story's moves (H4: Hewie_Requests)
+  on scripted ( on -- )  along? if  his-busy !  else  drop  then ;
+  on scripted-move ( kind a b x y z yaw -- )
+      along? 0= if  2drop 2drop 2drop drop exit  then
+      cell>f his-to-yaw f!  >r >r cell>f r> cell>f r> cell>f his-to vec!
+      his-to-anim !  his-to-tri !  0 his-done !
+      dup 12 = if  drop his-to-tri @ his-look-char !  0 his-look-pt? !  done! exit  then
+      dup 13 = if  drop his-look-pt his-to vec-copy  1 his-look-pt? !  done! exit  then
+      dup 1 = if  full-stop  then
+      move-action dup 0< if  drop done! exit  then  0 want ;
+  on hold-anim ( anim blend -- )  along? 0= if  2drop exit  then  his-to-anim !  his-to-tri !  $3C 0 want ;
+  on show ( on -- )  along? 0= if  drop exit  then  0<> 1 and him-model act.visible l! ;
+  on frame-end ( -- )  along? if  his-done @  anim-done?  broadcast moving  then ;
 end-behaviour
 
 : hewie-spawn ( -- id )  hewie-own hewie-state s" hewie" spawn ;

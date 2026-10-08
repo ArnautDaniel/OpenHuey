@@ -128,3 +128,8 @@ reaction spending his patience.
 
 Not yet: her head turned to him after a command (Fiona's looks, later), the scripts' "can she
 command him" (H4).
+
+**H4 begun** (with the story's S3): the story's moves (`scripted-move` → his actions 0x3B..0x47,
+0x7F; `scripted` on / off: Hewie_Think while a script has him; `hold-anim`, `show`; `moving`
+reported each frame). Left for H4: fetching (0x78), the Hewie-controlled sections, behind Fiona
+(0x72), the scripts' other Hewie commands (`hewie-action`, `hewie-to-room`...).

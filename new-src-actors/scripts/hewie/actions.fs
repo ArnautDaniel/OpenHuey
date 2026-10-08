@@ -3,7 +3,7 @@
 \ carries it out. Actions of the later phases fall back as noted (H2 her commands, H3 the
 \ stalkers, H4 the story).
 IN: hewie.actions
-USING: engine game-state actors common facts paths hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen flag-names ;
+USING: engine game-state actors common facts paths hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen hewie.scripted flag-names ;
 
 : mode! ( n -- )  his-mode ! ;
 : give-up ( -- )  6 0 want ;            \ nothing to do: sniffing about (steered: the default - H4)
@@ -48,12 +48,15 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
 : by-her? ( -- flag )  her-with? ;
 : target-her ( -- )  0 look!  her his-target ! ;
 \ keeping near (0x53..0x57, 0x7C): the turn, the timers, what may break in
+: anim-setup ( look cmd -- )  0 mode!  his-cmd !  look! ;   \ (the scripted animations' set-up)
 : keep-near ( F: turn -- ) ( cmd -- )
     his-turn f!  0 his-t1 !  0 his-t2 !  his-yaw his-heading f!  his-cmd !  ['] st-keep-near behave ;
 
 : (set-action) ( act -- )
     case
-    0 of  -1 his-target2 !  0 mode!  0 his-cmd !  0 his-2d !  1 his-pending !  4 look!  ['] st-1d98 behave  endof
+    0 of  -1 his-target2 !  0 mode!  0 his-cmd !
+          his-busy @ if  4 look!  ['] st-1d88 behave   \ (a script has him)
+          else  0 his-2d !  1 his-pending !  4 look!  ['] st-1d98 behave  then  endof
     1 of  by-her? if  0 mode!  target-her  $6AE his-cmd !  ['] st-1dc8 behave  else  4 0 want  then  endof
     2 of  by-her? if  0 mode!  target-her  trust-wait his-wait !  $688 his-cmd !  ['] st-1dc8 behave
           else  4 0 want  then  endof
@@ -172,7 +175,22 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
     $85 of  0 mode!  -1 his-target !
             by-her? her-dist 150e f< and if  her his-target !  then
             0 his-cmd !  ['] st-bark behave  endof
-    \ the rest (her commands H2, the stalkers H3, the story's moves H4): the default
+    \ the story's moves (Hewie_Requests): animations with their root motion, walks, turns, a bark, the leap
+    $3B of  4 0 anim-setup  his-to-tri @ play  done!  ['] st-root-motion behave  endof
+    $3C of  4 0 anim-setup  his-to-tri @ his-to-anim @ play-blend  done!  ['] st-root-motion behave  endof
+    $47 of  4 0 anim-setup  his-to-tri @ his-to-anim @ play-blend  done!  ['] st-root-motion behave  endof
+    $3D of  4 0 anim-setup  his-to-tri @ his-to-anim @ play-blend8  done!  ['] st-root-motion behave  endof
+    $3E of  4 0 anim-setup  his-to-anim @ stand-anim  done!  ['] st-root-motion behave  endof
+    $3F of  0 mode!  0 his-cmd !  0 his-t1 !  0 his-t2 !  ['] st-set-off behave  endof
+    $40 of  0 mode!  0 his-cmd !  0 his-t1 !  2 his-t2 !  ['] st-set-off behave  endof
+    $41 of  0 mode!  0 his-cmd !  ['] st-2138 behave  endof
+    $42 of  0 mode!  0 his-cmd !  ['] st-2138 behave  endof
+    $44 of  0 mode!  0 his-cmd !  ['] st-turn-start behave  endof
+    $45 of  0 mode!  0 his-cmd !  ['] st-2168 behave  endof
+    $46 of  0 mode!  0 his-cmd !  ['] st-head-for-spot behave  endof
+    $7F of  his-to 4 + sf@ lp-rise f!  his-2d @ 1 = if  1  else  0  then  his-t2 !
+            0 mode!  0 his-cmd !  ['] st-run-for-spot behave  endof
+    \ the rest (her commands H2, the stalkers H3): the default
     >r  r@ if  to-default  then  r>
     endcase ;
 : set-action-now ( act arg -- )   \ Hewie_SetAction

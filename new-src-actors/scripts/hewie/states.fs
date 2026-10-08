@@ -483,7 +483,7 @@ fvariable wp-left  variable wp-on
     settled? 0= if  exit  then
     path-done? his-t1 @ 0<> and wp-left f@ f0= and
     his-to-anim @ -1 <> if  anim@ his-to-anim @ =  else  anim-group 0=  then  and if
-        his-action @ $63 = if  $64 $13 want  else  1 his-done !  to-default  then  exit
+        his-action @ $63 = if  $64 $13 want  else  -1 his-done !  to-default  then  exit
     then
     his-to-anim @ -1 <> if
         anim@ his-to-anim @ = if  rest 3e f< if  1 his-t1 !  then

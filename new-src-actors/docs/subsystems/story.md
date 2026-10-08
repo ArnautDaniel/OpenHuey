@@ -149,6 +149,26 @@ Checked by `tests/story/test_examine.fs` (10 tests): in front of the hole the ac
 the button starts her script and the window shows its text, she can't move meanwhile, the button
 closes it and frees her; an answer; items given and counted; a zone against her body.
 
+**S3 built** (2026-10-08): the characters' moves. A script's move (the original's +0xF4) is a
+`scripted-move ( kind a b x y z yaw )` to the character, which carries it out itself, as the
+original's do; each character broadcasts `moving ( done ended )` at each frame's end (+0xE1 and
+its animation's end), which the room keeps for `self-wait-done` / `self-wait-anim` /
+`wait-char-anim`. Done is true while idle (a character with no move is done). Words: `self-move-to`,
+`self-move-tri`, `self-idle`, `self-anim`, `self-anim-blend`, `self-anim-9`, `self-move-16`,
+`self-turn-angle`, `self-turn-to-xz`, `self-turn-to`, `self-look-at`, `self-look-at-point`,
+`self-move-slot`, `self-walk-anim`, `char-anim-hold` (`hold-anim`), `char-visible` (`show`).
+- Fiona (`scripts/fiona/moves.fs`, from Fiona_Requests and the Fiona_StateCmd* states): straight
+  to a spot (her door walk), along a path turning 10 degrees a frame and stepping by her root
+  motion, turning on the spot (0x400 / 0x401), animations, her idle, the walk with an
+  animation arriving at its event. Not yet: the paths' curve smoothing (Character_WaypointsCurve),
+  her looks (12 / 13 do nothing yet), a door's use from a script (3 / 4).
+- Hewie (`scripts/hewie/scripted.fs`, Hewie_Requests): the moves become his actions 0x3B..0x47
+  and 0x7F (root-motion animations, walking a path, turning on the spot, heading for a spot and
+  milling about, the scripts' bark, the leap); his looks at a character or a point. While a
+  script has him (`scripted`) his frame is Hewie_Think; let go, his full stop and the default.
+Checked by `tests/story/test_moves.fs` (11 tests) and `test_examine.fs` (her walk to the spot
+and the kneel around the message).
+
 **Debugging** (`scripts/debug.fs`, at the console and in tests): `room!`, `room-by!`, `tp`,
 `tp-facing`, `tp-area`, `tp-area-facing`, `tp-exit`, `tp-tri`, `walk`, `press`, `.here`.
 
@@ -156,7 +176,6 @@ Next, by how much the scripts use them:
 
 | Stage | Words |
 |---|---|
-| S3 | The characters' scripted moves (`self-*`: walk to, turn, animations, looks; `char-to-xyz`, `char-anim-hold`, `char-activate`, `char-load`): Fiona F5 and Hewie H4, as messages to them. |
 | S4 | Fades, cutscenes and movies (`fade`, `cutscene-control`, `movie-play`), music (`bgm`, `music`), scene changes. |
 | S5 | Effects, placed objects, lights (`object-show`, `effect-*`, `specks`, `lights-doorway`). |
 | S6 | The stalkers' and creatures' words, with them. |

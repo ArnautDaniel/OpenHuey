@@ -2,7 +2,7 @@
 \ notices, his own decisions, his mode's behaviour (calm / wary / tense), what he does next by
 \ his trust (the weighted lists), and his body as it is shown (overlays, neck, feet, sounds).
 IN: hewie.mind
-USING: engine actors common facts paths messages hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen hewie.actions hewie.commands ;
+USING: engine actors common facts paths messages hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen hewie.actions hewie.commands flag-names ;
 
 \ report_fiona_near: how near she is, for the story (1 within 20, 2 within 50, 3 further)
 : report-near ( -- )
@@ -377,7 +377,22 @@ variable feet-new
     self body? 0= if  0 0 0 0 0 0 0
     else  his-away @ if  1  else  2  then  his-action @ his-mode @ his-sub @ his-cond @ his-mood @ anim-group  then
     broadcast hewie-doing ;
+: full-stop ( -- )   \ Hewie_FullStop: what a script's letting go clears
+    0 his-broke !  0 his-hits !  -1 his-look-char !  0 his-scene-req !  0 his-look-pt? !
+    hewie-hidden state-flag-clear ;
+: think ( -- )   \ Hewie_Think: a frame of his while a script has him
+    his-2b @ if  0  else  his-floor  then  body-mask!
+    1 his-snd-t +!  his-snd-t @ 3000 > if  3000 his-snd-t !  then
+    alert  his-cond @ 2 <> if  report-near  then
+    0 his-no-root !  1 his-root-ok !
+    his-act @ ?dup if  execute  then
+    turn-by-anim
+    his-away @ 0= his-no-root @ 0= and if  root-move  then
+    turn-head  neck  anim-sounds  feet
+    his-yaw his-yaw-was f!  his-action @ his-last-action !  show-him  tell-doing ;
 : frame ( -- )
+    his-busy @ if  -1 his-was-busy !  think exit  then
+    his-was-busy @ if  0 his-was-busy !  full-stop  to-default  then   \ (the script let him go)
     upkeep  alert  his-cond @ 2 <> if  report-near  then  obedience
     his-away @ if   \ out of the room being played
         arrive 0= if
@@ -401,7 +416,7 @@ variable feet-new
 
 \ Hewie_Activate: his state as he comes into the game (calm, the default action)
 : fresh ( -- )
-    -1 his-meet !  -1 his-target !  -1 his-target2 !  -1 his-look-char !  -1 his-door !  -1 his-noise-room !
+    -1 his-done !  0 his-busy !  -1 his-meet !  -1 his-target !  -1 his-target2 !  -1 his-look-char !  -1 his-door !  -1 his-noise-room !
     $FF his-call !  $FF his-by !  -1 his-yelp !  -1 his-snd-anim !  1e his-floor-k f!
     16 his-skill !  16 his-skill cell+ !  16 his-skill 2 cells + !
     0 -1 set-mood  0 add-trust
