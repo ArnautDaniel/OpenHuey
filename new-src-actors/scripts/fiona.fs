@@ -1,7 +1,7 @@
 \ fiona.fs - Fiona, the player (docs/subsystems/fiona.md). Phase F1: her body and model, the
 \ controls, standing, walking, running and turning, her footsteps, going out by exits.
 IN: fiona
-USING: engine actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors ;
+USING: engine actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.fear ;
 
 : rooms-id ( -- id )  s" rooms" actor-named ;
 : camera-id ( -- id )  s" camera" actor-named ;
@@ -27,7 +27,7 @@ fvariable ox  fvariable oz  fvariable ix  fvariable iy  fvariable iz
 : idle ( -- )   \ Fiona_ToIdle: free, standing, her moves her own
     0 her-doing !  0 her-mode !  her-yaw f@ her-heading f!  0 her-rest !  0 her-turn-mode !
     -1 idle-anim  ['] idle-move her-act ! ;
-' idle is to-idle
+' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle
 : fresh ( -- )   \ standing, the controls as new
     0 her-doing !  0 her-mode !  0 her-sub !  6 her-still !  0 her-turn-mode !  0 her-lock !
     1e her-stick-k f!  -1 her-variant !  1e her-tired-w f!  0 her-rest !  0 her-run-t !
@@ -47,7 +47,11 @@ fvariable ox  fvariable oz  fvariable ix  fvariable iy  fvariable iz
 \ ---- each frame (Fiona_Update, the parts built so far) ----
 : frame ( -- )
     her-at her-was-at 12 move  her-tri @ her-was-tri !  her-yaw f@ her-yaw-was f!
+    her-mode @ her-sub @ her-cond @ panic-id send fiona-doing
+    feel-the-panic
     read-controls
+    her-mode @ 0= if  panic-controls drop  then
+    try-flee
     try-doors
     her-act @ execute
     footsteps
@@ -57,9 +61,12 @@ fvariable ox  fvariable oz  fvariable ix  fvariable iy  fvariable iz
 behaviour free
   on spawned ( -- )
       s" O_FIN/FIN_000" actor-load her-model !  1 her act.visible l!  2e 15e body-size
-      self subscribe tick  self subscribe arrived  self subscribe camera-cut ;
+      self subscribe tick  self subscribe arrived  self subscribe camera-cut
+      self subscribe danger  self subscribe panic ;
   on arrived ( room exit -- )  nip arrive-at  fresh  0 her-armed !  self camera-id send follow ;
   on camera-cut ( -- )  -1 her-cut ! ;
+  on danger ( level -- )  her-danger ! ;
+  on panic ( stage level -- )  cell>f her-panic-level f!  her-panic-stage ! ;
   on door-held ( room exit -- )  2drop  got-hold ;
   on door-refused ( room exit -- )  2drop  idle ;
   on tick ( -- )  self body? if  frame  then ;

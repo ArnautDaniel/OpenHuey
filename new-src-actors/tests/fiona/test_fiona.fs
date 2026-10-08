@@ -4,7 +4,7 @@ IN: test-fiona
 USING: tester engine game-state actors messages room-names game fiona.state fiona.model fiona.moving fiona.doors ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
-: her@ ( xt -- x )  fiona enter  execute  leave ;          \ (one of her fields, read inside her)
+: her@ ( xt -- x )  fiona enter  execute  leave-actor ;          \ (one of her fields, read inside her)
 : anim ( -- id )  ['] anim@ her@ ;
 : sub ( -- n )  [: her-sub @ ;] her@ ;
 : doing ( -- n )  [: her-doing @ ;] her@ ;
@@ -18,7 +18,7 @@ create from 12 allot  create now 12 allot
 testing a new game: in the cage room, standing, followed by the camera
 T{ room-id  fiona body-room -> front-garden-3 front-garden-3 }T
 T{ anim -> 0 }T
-T{ game:camera enter  camera:followed @  leave -> fiona }T
+T{ game:camera enter  camera:followed @  leave-actor -> fiona }T
 
 testing walking, running, stopping
 moved
@@ -35,7 +35,7 @@ behaviour ear
   on heard-nothing ( -- ) ;
 end-behaviour
 ear ear-state s" ear" spawn constant ear
-deliver  ear enter  fiona body-room fiona body-tri fiona body-pos body-place  0 stalker-noise acoustics send listen  leave
+deliver  ear enter  fiona body-room fiona body-tri fiona body-pos body-place  0 stalker-noise acoustics send listen  leave-actor
 T{ 0 loudest !  key: W hold  40 frames  key: W release  loudest @ -> 4 }T
 T{ 0 loudest !  key: W hold key: Left_Shift hold  40 frames  key: Left_Shift release key: W release  loudest @ -> $14 }T
 ear kill
@@ -46,7 +46,7 @@ front-garden-2 -1 rooms send go-to-room  5 frames
 : state0 ( -- w )  door0 4 * progress pr.doors + l@ ;
 : clean0 ( -- )  door0 4 * progress pr.doors + 0 swap l! ;
 : at-door ( -- )   \ (by its spot for her first door animation)
-    fiona enter  0 0 door-user-spot drop  fdrop  her-at vec!  her-at blocked-floor v-tri-in her-tri !  leave  3 frames ;
+    fiona enter  0 0 door-user-spot drop  fdrop  her-at vec!  her-at blocked-floor v-tri-in her-tri !  leave-actor  3 frames ;
 : watch-anim ( n anim -- seen? )   \ up to n frames for that animation
     false swap rot 0 ?do  game-tick  dup anim = if  nip true swap leave  then  loop  drop ;
 
@@ -67,7 +67,7 @@ door0 doors send unlock  deliver
 
 testing going out: in the exit's area and free, the exit is taken
 clean0  door0 4 * progress pr.doors + 2 swap l!   \ (open)
-T{ fiona enter  0 0 exit-spot drop her-at vec!  leave  3 frames  room-id -> front-garden-2 0 room-exit-leads drop }T
+T{ fiona enter  0 0 exit-spot drop her-at vec!  leave-actor  3 frames  room-id -> front-garden-2 0 room-exit-leads drop }T
 testing and arriving, she isn't sent straight back
 T{ 20 frames  room-id -> front-garden-2 0 room-exit-leads drop }T
 

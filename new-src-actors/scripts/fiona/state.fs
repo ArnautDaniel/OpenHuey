@@ -37,11 +37,17 @@ state: fiona-state
   \ the danger around her (told by the danger actor: 0 calm, 1 followed, 2 chased) and the panic
   cell field her-danger
   1 floats field her-panic-level   \ 0..100
+  cell field her-panic-stage       \ (told by the panic: 0 calm .. 4 panicking, 5 calming)
+  cell field her-cond              \ her condition: 0 well, 1 hurt, 2 down (F4)
   \ her feelings (F2: fear and panic - zero until then)
   1 floats field her-fear       \ 0..99
   cell field her-recovery       \ frames since a fright
   cell field her-fear-bits      \ 1 out of breath, 2 panicking
   1 floats field her-tired-w
+  cell field her-panic-t      \ frames her panic run (or being out of breath) lasts
+  cell field her-stumble-t    \ frames before she may fall again
+  cell field her-attack-t     \ the panic attack's frames
+  1 floats field her-fall-yaw  cell field her-fall-turn  cell field her-wall-side
   \ her footsteps
   cell field her-step-l   cell field her-step-r   cell field her-steps
   \ what she is doing, run each frame (an xt: the original's state), and its part

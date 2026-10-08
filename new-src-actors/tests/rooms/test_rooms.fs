@@ -24,7 +24,7 @@ T{ room-id -> front-garden-3 }T
 T{ fiona body-room -> front-garden-3 }T
 
 testing going out by an exit: leaving, arrived, entered - in that order, with both exits
-: out-by ( exit -- )  fiona enter  rooms send go-through  leave  3 frames ;
+: out-by ( exit -- )  fiona enter  rooms send go-through  leave-actor  3 frames ;
 front-garden-3 0 room-exit-leads constant arrive-exit constant next-room
 forget  0 out-by
 T{ room-id -> next-room }T

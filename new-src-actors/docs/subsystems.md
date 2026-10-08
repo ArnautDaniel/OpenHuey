@@ -45,7 +45,7 @@ Owns: the room's camera setups, who it follows, cuts and eases.
 Takes: `follow`, `use-setup`, `event-camera`, `release`.
 Original: `camera.c`, `camdirector.c`.
 
-### Fiona (`fiona`)  — **F1 built** (`subsystems/fiona.md`)
+### Fiona (`fiona`)  — **F1, F2 built** (`subsystems/fiona.md`)
 Owns: her moves, her actions (doors, ladders, items, pushing), her health, fear and panic.
 Takes: `input`, `hit`, `seize`, `lead`, `let-go`, `frighten`, `heal`, `place`, `play-motion`.
 Sends: `noise` (steps, screams, falls), `kick`/`shove` (as `hit` to whoever she struck),
@@ -81,11 +81,14 @@ Takes: `noise`, `listen`, `stop-listening`. Sends `heard` to each listener that 
 Original: `Noise_Make`, `Character_Hearing`, `Progress_PursuerRequest`.
 Page: `docs/subsystems/acoustics.md`.
 
-### Danger (`danger`)
+### Danger (`danger`)  — **built** (`subsystems/danger.md`)
 Owns: calm / tense / chased and its hold timers.
 Takes: `stalker-mode`, `stalker-room`, `fiona-room`, `creature-near`, `hunted`, story overrides.
 Broadcasts: `danger` (music, Fiona's fear, Hewie, the scripts' conditions read it).
 Original: `SceneGame_Danger`.
+
+### Panic (`panic`)  — **built** (`subsystems/panic.md`)
+The panic meter: level, stage, Fiona's breath and scream.
 
 ### The summoner (`summoner`)
 Brings the stalker into play and takes him out, by the story's stage and where Fiona is.

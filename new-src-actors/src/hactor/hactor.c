@@ -553,7 +553,7 @@ PRIM(p_kill) {
 }
 PRIM(p_self) { PUSH(sSelf); }
 /* the console inside an actor: its fields, `self`, `become` and sends as that actor's (until
- * `leave`); messages delivered meanwhile still run as their own actors */
+ * `leave-actor`); messages delivered meanwhile still run as their own actors */
 PRIM(p_enter) {
     int id = (int)POP();
 
@@ -702,7 +702,7 @@ void bind_hactor(Forth *f) {
         {"behaviour", p_behaviour, 0}, {"extends", p_extends, 0}, {"on", p_on, 0},
         {"end-behaviour", p_end_behaviour, 0}, {"become", p_become, 0},
         {"state:", p_state, 0}, {"field", p_field, 0}, {"end-state", p_end_state, 0},
-        {"spawn", p_spawn, 0}, {"kill", p_kill, 0}, {"self", p_self, 0}, {"enter", p_enter, 0}, {"leave", p_leave, 0}, {"sender", p_sender, 0},
+        {"spawn", p_spawn, 0}, {"kill", p_kill, 0}, {"self", p_self, 0}, {"enter", p_enter, 0}, {"leave-actor", p_leave, 0}, {"sender", p_sender, 0},
         {"alive?", p_alive, 0}, {"actor-name", p_actor_name, 0}, {"actor-named", p_actor_named, 0}, {"behaviour-of", p_behaviour_of, 0},
         {"actors-frame", p_frame, 0}, {"deliver", p_deliver, 0}, {"actors-reset", p_reset, 0},
         {"trace-on", p_trace_on, 0}, {"trace-off", p_trace_off, 0}, {"queued", p_queued, 0},

@@ -47,3 +47,16 @@ message door-refused ( room exit -- )
 message let-go-open ( room exit source -- )
 message let-go-shut ( room exit source -- )
 message door-changed ( door -- )             \ broadcast: its state changed
+
+\ ---- danger (docs/subsystems/danger.md) ----
+message danger-signal ( bit -- )             \ this frame: 1 Fiona struck, 3 chasing, 4 Hewie alert, 6 hunted...
+message stalker-here ( room alert chasing -- )   \ the stalker in play this frame
+message danger ( level -- )                  \ broadcast: 0 calm, 1 followed, 2 chased
+
+\ ---- panic (docs/subsystems/panic.md); amounts and levels are floats (f>cell) ----
+message fright ( amount -- )
+message fear-in ( amount -- )
+message fiona-doing ( mode sub cond -- )
+message panic-stage! ( stage -- )
+message panic-level! ( level -- )
+message panic ( stage level -- )             \ broadcast each frame

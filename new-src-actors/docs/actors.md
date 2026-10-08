@@ -82,7 +82,8 @@ sender  ( -- id )          \ who sent the message being handled (-1: the kernel)
 - `trace-on` / `trace-off`: print every message as it is delivered (`frame  from -> to  kind
   args`).
 - `.actors`: every actor with its behaviour, its state type and its mailbox count.
-- `enter ( id -- )` / `leave`: the console inside an actor. Its fields, `self`, `become`
+- `enter ( id -- )` / `leave-actor`: the console inside an actor. (Not `leave`: that is the
+  loop word.) Its fields, `self`, `become`
   and sends are that actor's, so `fiona enter  fear f@ f.` reads Fiona's own fear. (Later the
   console is an actor itself, and `enter` opens that actor's REPL.)
 

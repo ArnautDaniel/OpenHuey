@@ -25,12 +25,12 @@ front-garden-2 -1 rooms send go-to-room  2 frames
 : state@ ( d -- w )  4 * progress pr.doors + l@ ;
 : clean ( d -- )  4 * progress pr.doors + 0 swap l! ;
 door0 clean
-: hold ( room exit kind -- answer )  -1 answer !  as-user doors send hold-door leave  deliver  answer @ ;
+: hold ( room exit kind -- answer )  -1 answer !  as-user doors send hold-door leave-actor  deliver  answer @ ;
 
 testing locking
 T{ door0 doors send lock deliver  door0 state@ 8 and 0<>  door0 door-open? -> -1 0 }T
 T{ front-garden-2 0 fiona-kind hold -> 1 }T        \ (quirk: a locked door can be held...)
-T{ as-user front-garden-2 0 fiona-noise doors send let-go-open leave deliver  door0 door-open?  door0 state@ 1 and -> 0 1 }T
+T{ as-user front-garden-2 0 fiona-noise doors send let-go-open leave-actor deliver  door0 door-open?  door0 state@ 1 and -> 0 1 }T
                                                     \ (...but not opened, and it stays held)
 T{ door0 doors send unlock deliver  door0 state@ 8 and -> 0 }T
 door0 clean
@@ -39,18 +39,18 @@ testing holding: once, by one
 T{ front-garden-2 0 fiona-kind hold -> 1 }T
 T{ front-garden-2 0 hewie-kind hold -> 0 }T                       \ already held
 testing letting go open, then shut
-T{ as-user front-garden-2 0 fiona-noise doors send let-go-open leave deliver  door0 door-open?  door0 state@ 1 and -> -1 0 }T
+T{ as-user front-garden-2 0 fiona-noise doors send let-go-open leave-actor deliver  door0 door-open?  door0 state@ 1 and -> -1 0 }T
 T{ front-garden-2 0 fiona-kind hold -> 1 }T
-T{ as-user front-garden-2 0 fiona-noise doors send let-go-shut leave deliver  door0 door-open? -> 0 }T
+T{ as-user front-garden-2 0 fiona-noise doors send let-go-shut leave-actor deliver  door0 door-open? -> 0 }T
 testing letting go of a door nobody holds changes nothing
-T{ as-user front-garden-2 0 fiona-noise doors send let-go-open leave deliver  door0 door-open? -> 0 }T
+T{ as-user front-garden-2 0 fiona-noise doors send let-go-open leave-actor deliver  door0 door-open? -> 0 }T
 
 testing locked against one kind
 T{ door0 stalker-kind true doors send lock-for deliver  front-garden-2 0 stalker-kind hold -> 0 }T
 T{ front-garden-2 0 fiona-kind hold -> 1 }T
-T{ as-user front-garden-2 0 fiona-noise doors send let-go-shut leave deliver -> }T
+T{ as-user front-garden-2 0 fiona-noise doors send let-go-shut leave-actor deliver -> }T
 T{ door0 stalker-kind false doors send lock-for deliver  front-garden-2 0 stalker-kind hold -> 1 }T
-T{ as-user front-garden-2 0 stalker-noise doors send let-go-shut leave deliver -> }T
+T{ as-user front-garden-2 0 stalker-noise doors send let-go-shut leave-actor deliver -> }T
 
 testing a doorway can't be held (always open)
 T{ front-garden-2 2 fiona-kind hold -> 0 }T
@@ -58,24 +58,24 @@ T{ front-garden-2 2 fiona-kind hold -> 0 }T
 testing a door used off-screen is heard (0xF at the door, from the user's source)
 \ (the listener in the neighbour room, the door used from that side)
 : listen-in ( room -- )   \ the user listens, standing on that room's first triangle (not played: no distance)
-    as-user  0 0e 0e 0e body-place  0 stalker-noise s" acoustics" actor-named send listen  leave  deliver ;
+    as-user  0 0e 0e 0e body-place  0 stalker-noise s" acoustics" actor-named send listen  leave-actor  deliver ;
 next0 listen-in
 T{ next0 back0 hewie-kind hold -> 1 }T
-T{ -1 got !  as-user next0 back0 hewie-noise doors send let-go-open leave  actors-frame  got @ got-loud @ -> hewie-noise $F }T
+T{ -1 got !  as-user next0 back0 hewie-noise doors send let-go-open leave-actor  actors-frame  got @ got-loud @ -> hewie-noise $F }T
 T{ next0 back0 hewie-kind hold -> 1 }T
-T{ as-user next0 back0 hewie-noise doors send let-go-shut leave  actors-frame -> }T
+T{ as-user next0 back0 hewie-noise doors send let-go-shut leave-actor  actors-frame -> }T
 
 testing in the played room a held door swung open settles open (and makes its creak's noise)
 door0 clean
 : listen-here ( -- )   \ the user listens at the door, in the played room
-    as-user  0 exit-stand drop  room-id 0 body-place  leave ;
+    as-user  0 exit-stand drop  room-id 0 body-place  leave-actor ;
 listen-here
 T{ front-garden-2 0 fiona-kind hold -> 1 }T
-T{ as-user 0 true fiona-noise doors send swing-door leave  30 frames  door0 door-open? -> -1 }T
+T{ as-user 0 true fiona-noise doors send swing-door leave-actor  30 frames  door0 door-open? -> -1 }T
 testing slammed shut: the latch is loud (0x5F)
 T{ front-garden-2 0 fiona-kind hold -> 1 }T
 : slammed ( -- source loud )
-    -1 got !  0 got-loud !  as-user 0 fiona-noise doors send slam leave
+    -1 got !  0 got-loud !  as-user 0 fiona-noise doors send slam leave-actor
     12 0 do  game-tick  got @ 0< 0= if  leave  then  loop  got @ got-loud @ ;
 T{ slammed -> fiona-noise $5F }T
 T{ door0 door-open? -> 0 }T

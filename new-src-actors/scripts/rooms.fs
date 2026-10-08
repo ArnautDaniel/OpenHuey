@@ -12,7 +12,7 @@ state: rooms-state
   cell field came-by       \ the exit it was entered by (-1: none)
 end-state
 
-: leave ( exit -- )   \ leaving-room, unless no room is played yet
+: leaving ( exit -- )   \ leaving-room, unless no room is played yet
     played @ 0< if  drop exit  then  played @ swap broadcast leaving-room ;
 
 behaviour rooming
@@ -20,8 +20,8 @@ behaviour rooming
   on go-through ( exit -- )   \ the room behind it, arriving by the exit on its side
       played @ over room-exit-leads                         ( exit room' exit' )
       over 0< if  2drop drop exit  then
-      rot leave  self send rooms-load ;
-  on go-to-room ( room exit -- )  -1 leave  self send rooms-load ;
+      rot leaving  self send rooms-load ;
+  on go-to-room ( room exit -- )  -1 leaving  self send rooms-load ;
   on rooms-load ( room exit -- )
       over room-exists? 0= if  ." go-to-room: no room " swap . drop cr exit  then
       over room  over played !  dup came-by !

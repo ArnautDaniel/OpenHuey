@@ -112,3 +112,17 @@ The debug walker is gone.
 Left for F1: the slow locked-door try (with the panic, F2); the camera-cut steering is built
 but untested (a cut needs the story's camera setups); her motion sounds (key-frame sounds) and
 voice; keeping clear of others (with Hewie).
+
+**F2 built** (`scripts/fiona/fear.fs`, with `scripts/danger.fs` and `scripts/panic.fs`):
+- her fear meter, rising as she runs and falling as she walks or stands (faster when calm);
+- out of breath from the panic's stage 2;
+- panicking at 4, with a scream heard (0x6F) and the panic run (0x206) until out of breath (0x207);
+- stumbling (0x1001) as she runs into something, and one time in five a fall (0xB00): she
+  slides along the wall (0xB01) and gets up (0xB02) once the panic has passed;
+- the panic attack at full fear (150 frames);
+- turning to flee (Q: 0x403, fear up 10);
+- her looks follow the danger and the panic (the chased walk 0x208, the shaken and frightened
+  blends).
+
+Left for F2: the slow locked-door try; shaking the panic off faster while down (with the
+shake-free of F4); the flee's door slam and Hewie's reaction; charms (with items).

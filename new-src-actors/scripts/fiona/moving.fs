@@ -1,11 +1,9 @@
 \ fiona/moving.fs - how Fiona moves (Fiona_StateIdleMove, the turning states, Fiona_Footsteps):
 \ her animations' root motion moves her over her floor; she stands, rests, walks and runs.
 IN: fiona.moving
-USING: engine game-state actors messages common fiona.state fiona.model fiona.controls ;
+USING: engine game-state actors messages common facts fiona.state fiona.model fiona.controls ;
 
 $28020018 constant blocked-floor   \ the nav triangles she can't stand on (the game's mask)
-: state-flag? ( n -- flag )   \ (the progress' state flags: a fact the story keeps)
-    dup 5 rshift 4 * progress pr.state + l@  swap 31 and 1 swap lshift and 0<> ;
 
 \ ---- her animation's root motion (Motion_RootMovement / Motion_RootRotation) ----
 fvariable rm-turn  fvariable rm-x  fvariable rm-y  fvariable rm-z
@@ -38,16 +36,38 @@ fvariable sk-x  fvariable sk-y  fvariable sk-z
         2 of  her-still @ 6 < if  run-look  else  0 her-rest !  0 her-run-t !  -1 idle-anim  then  endof
         >r  0 her-rest !  0 her-run-t !  -1 idle-anim  r>
     endcase ;
+defer exhausted   ' noop is exhausted   \ (Fiona_Exhausted: fiona.fear)
 : stick-held ( -- )   \ the stick held: walk, or run with the run button (not under story flag 0x1E)
     stick-heading her-heading f!
-    $1E state-flag? 0=  her-run? @ and if  1 her-run-t +!  run-look
+    $1E state-flag? 0=  her-run? @ and if
+        her-fear-bits @ 1 and if   \ out of breath: running only while it lasts
+            -1 her-panic-t +!  her-panic-t @ 0< 0= if  1 her-run-t +!  run-look  else  exhausted  0 her-run-t !  then
+        else  1 her-run-t +!  run-look  then
     else  0 her-run-t !  walk-look  then ;
 fvariable mv-x  fvariable mv-z  fvariable mv-dz
 : idle-move ( -- )
     her-still @ 0= if  1e  else  her-stick-k f@ 0.05e f- 0e fmax  then  her-stick-k f!
     group
-    settled? her-doing @ 0= and if
-        her-still @ if  dup released  else  stick-held  then
+    settled? if
+        her-doing @ 0= if
+            her-fear-bits @ 2 and 0= if
+                her-still @ if  dup released  else  stick-held  then
+            else   \ panicking: running blindly until out of breath
+                1e her-stick-k f!
+                -1 her-panic-t +!  her-panic-t @ 0< 0= if
+                    run-look  her-still @ 0= if  stick-heading her-heading f!  then
+                else  exhausted  then
+                0 her-run-t !
+            then
+        else   \ (out of breath: at its end free again)
+            1e her-stick-k f!
+            ended? if
+                0 her-doing !
+                her-fear-bits @ 2 and 0= if
+                    her-still @ if  her-still @ 6 >= if  stand  then  else  run-look  then
+                else  run-look  then
+            then
+        then
     then  drop
     root-turn
     her-turn-mode @ 2 = if   \ the accelerating turn toward the old camera's heading

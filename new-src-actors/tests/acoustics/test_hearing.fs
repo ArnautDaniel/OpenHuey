@@ -16,8 +16,8 @@ front-garden-2 -1 rooms send go-to-room  actors-frame   \ (game.fs started a gam
 ear ear-state s" ear" spawn constant ear
 deliver
 : put-ear ( tri -- )   \ stand it on a triangle of the played room
-    ear enter  dup tri-center  room-id swap body-place  2e 15e body-size  leave ;
-: ear-listens ( threshold source -- )  ear enter  acoustics send listen  leave  deliver ;
+    ear enter  dup tri-center  room-id swap body-place  2e 15e body-size  leave-actor ;
+: ear-listens ( threshold source -- )  ear enter  acoustics send listen  leave-actor  deliver ;
 : make ( loud room tri door source -- )  acoustics send noise ;
 : outcome ( -- source loud )  actors-frame  got @  got-loud @ ;
 
@@ -93,7 +93,7 @@ testing a door's noise reaches the room it is in
 T{ $80 front-garden-3 -1 door2 hewie-noise make  outcome -> hewie-noise $80 }T
 
 testing a listener with no body hears nothing (and no message)
-ear enter body-off leave
+ear enter body-off leave-actor
 T{ $80 front-garden-2 100 -1 fiona-noise make  -5 got !  0 got-loud !  outcome -> -5 0 }T
 
 test-summary

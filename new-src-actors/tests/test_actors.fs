@@ -33,16 +33,16 @@ actors-reset
 counting counter-state s" a" spawn constant a
 T{ a alive? -> -1 }T
 T{ 7 a send ping  deliver  log @ length -> 1 }T
-T{ a enter  count @  last @  leave -> 1 7 }T
+T{ a enter  count @  last @  leave-actor -> 1 7 }T
 
 testing behaviours: inherited handlers, become
 actors-reset  list log !
 echoing counter-state s" e" spawn constant e
 answering counter-state s" q" spawn constant q
-: ask-e ( -- )  q enter  5 e send ping  leave ;
+: ask-e ( -- )  q enter  5 e send ping  leave-actor ;
 T{ ask-e deliver  log @ 0 swap nth  log @ 1 swap nth -> 5 1006 }T   \ e answered q's ping
 T{ e send hello deliver  log @ 2 swap nth -> 100 }T               \ (from counting)
-T{ e enter  counting become  leave  3 e send ping  deliver  e enter count @ leave -> 1 }T
+T{ e enter  counting become  leave-actor  3 e send ping  deliver  e enter count @ leave-actor -> 1 }T
 
 testing delivery rounds and order
 actors-reset  list log !
