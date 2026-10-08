@@ -111,6 +111,17 @@ message scripted ( on -- )                   \ (room -> a character) a script of
 \ at the point, 14 turn to a character (a: its actor), 15 turn to the heading, 17 walk the way to
 \ the spot with animation a (blend b), arriving as it ends
 message scripted-move ( kind a b x y z yaw -- )   \ (to a character; floats f>cell; a / b: as the kind says)
-message moving ( done ended -- )             \ broadcast at each frame's end by a character: its move done, its animation ended
+message moving ( done ended events -- )      \ broadcast at each frame's end by a character: its move done, its animation ended, its motion's event keys
 message hold-anim ( anim blend -- )          \ (to a character) play this animation and stay in it (the scripts' 0x9D)
 message show ( on -- )                       \ (to a character) shown or hidden (the scripts' 0x1F)
+
+\ ---- the screen and the music (docs/subsystems/screen.md, music.md) ----
+message fade ( frames kind -- )              \ (the screen) fade in (kind 0 / 1) or out over frames
+message fade-finish ( -- )                   \ (the screen) the fade counts as over
+message fade-done ( -- )                     \ (to who faded) it's over
+message bgm-want ( track pause level -- )    \ (the music) background track wanted ($FF none), paused, its level (f>cell)
+message bgm-resume ( -- )                    \ (the music) the streamed track resumed
+message music-op ( op a b -- )               \ (the music) the stage music: 0 volume to a over b frames, 2 hold, 4 release, 5 silence
+message music-stage ( stage -- )             \ (the music) the stage set's music made (-1: ended)
+\ ---- scenes (the cutscene director: docs/subsystems/story.md S4) ----
+message scene ( on -- )                      \ broadcast: a cutscene has the characters (on) / gives them back (off)

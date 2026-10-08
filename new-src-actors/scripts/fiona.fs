@@ -55,10 +55,10 @@ create goal 12 allot
 
 behaviour free
   on spawned ( -- )
-      s" O_FIN/FIN_000" actor-load dup her-model !  $3D5CC0 motion-table   \ (CharModel_SecondaryMotion: her fades and flags)
+      s" O_FIN/FIN_000" actor-load dup her-model !  0 over cast-as  $3D5CC0 motion-table   \ (CharModel_SecondaryMotion: her fades and flags)
       1 her act.visible l!  2e 15e body-size
       self subscribe tick  self subscribe arrived  self subscribe camera-cut
-      self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown ;
+      self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown  self subscribe scene ;
   on arrived ( room exit -- )  nip arrive-at  fresh  self camera-id send follow ;   \ (the story's scripts place her too)
   on to-exit ( exit -- )  arrive-at  fresh ;
   \ examining (Progress_PlayerButtons): an action offered here, taken with the action button
@@ -68,6 +68,7 @@ behaviour free
       if  sender send take-offer  else  2drop  then ;
   on scripted ( on -- )  idle  her-scripted ! ;
   on text-shown ( on -- )  her-reading ! ;
+  on scene ( on -- )  her-in-scene ! ;   \ (a cutscene has her)
   on go-to ( x y z -- )  >r >r cell>f r> cell>f r> cell>f  go-to-point ;
   on place ( x y z yaw -- )  >r >r >r cell>f r> cell>f r> cell>f r> cell>f  put  fresh ;   \ (the story puts her)   \ (the room's scripts: Rooms_ExitPointOut, facing in)
   on camera-cut ( -- )  -1 her-cut ! ;
@@ -79,7 +80,7 @@ behaviour free
   on frame-end ( -- )   \ what she is doing, as the frame left her; her move
       self body? 0= if  exit  then
       her-mode @ her-sub @ her-cond @ her-cmd @ broadcast fiona-doing
-      her-move-done @  ended?  broadcast moving ;
+      her-move-done @  ended?  her-model @ 0 0 1 motion-events  broadcast moving ;
   \ the story's moves (fiona.moves)
   on scripted-move ( kind a b x y z yaw -- )
       cell>f her-move-yaw f!  >r >r cell>f r> cell>f r> cell>f her-move-at vec!

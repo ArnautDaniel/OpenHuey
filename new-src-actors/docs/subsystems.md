@@ -19,7 +19,7 @@ messages it takes and sends (a first draft: the API is settled on its own page,
 
 ## Actors
 
-### The story (`story`)  — **S1, S2 built** (`subsystems/story.md`)
+### The story (`story`)  — **S1-S4 built** (`subsystems/story.md`)
 Owns: story flags, script variables, the room's phase scripts and the characters' action
 scripts.
 Takes: `entered-room`, `left-room`, `exit-taken`, `action-pressed`, `area-entered`, `scene-cue`.
@@ -94,10 +94,18 @@ The panic meter: level, stage, Fiona's breath and scream.
 Brings the stalker into play and takes him out, by the story's stage and where Fiona is.
 Original: `Summoner_*`.
 
-### Music (`music`)
-Owns: the background track, the chase music stages, volumes and fades.
-Takes: `music`, `music-stage`, `danger`.
-Original: `music.c`, `BgmCtl`.
+### Music (`music`)  — **built** (`subsystems/music.md`)
+Owns: the background track, the stage music, volumes and fades.
+Takes: `bgm-want`, `bgm-resume`, `music-op`, `music-stage` (`danger`: with the chase music).
+Original: `music.c`, `BgmCtl`, `MusicDir_*`.
+
+### The screen (`screen`)  — **built** (`subsystems/screen.md`)
+Owns: the fade to and from black. Takes: `fade`, `fade-finish`. Answers `fade-done`.
+Original: the event's fade (+0x20, `Events_Fade`).
+
+### The pause (`pause`)  — **movie pause built** (`subsystems/pause.md`)
+Owns: the pause screen. Start during a scene's movie: back to it, or skip it (`movie-skipped`).
+Original: `pause.c`.
 
 ### Items and the sub screen (`items`, `subscreen`)
 Owns: the inventory, item use, the files, the map.

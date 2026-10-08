@@ -6,7 +6,7 @@ IN: fiona.controls
 USING: engine keys common fiona.state ;
 
 fvariable sx  fvariable sz         \ the stick: x right, z down (as the pad's)
-: hands-off? ( -- flag )  her-scripted @ her-reading @ or ;   \ (a script has her, or a message is up)
+: hands-off? ( -- flag )  her-scripted @ her-reading @ or her-in-scene @ or ;   \ (a script or a cutscene has her, or a message is up)
 : read-stick ( -- )
     0e sx f!  0e sz f!
     hands-off? if  exit  then

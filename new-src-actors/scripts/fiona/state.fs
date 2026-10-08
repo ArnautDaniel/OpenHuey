@@ -72,7 +72,7 @@ state: fiona-state
   cell field her-held-n
   \ her hands off the controls: a script of the room has her (the original's +0xE0), or a
   \ message is on screen
-  cell field her-scripted  cell field her-reading
+  cell field her-scripted  cell field her-reading  cell field her-in-scene
   \ the story's move (kind 0: none): its numbers, the spot and heading; done; its walk's step and turn
   cell field her-move  cell field her-move-a  cell field her-move-b  cell field her-move-done
   12 field her-move-at  1 floats field her-move-yaw

@@ -134,7 +134,7 @@ command. The new game stays the default start.
   character tells it so, and a room releases its characters as it stops or is left. Other
   scenes (changes of scene, endings): S4.
 - **Messages:** `message` (the window shows it; `text-closed` answers), `wait-message`,
-  `message-close`, `answer?`, `message-prepare` (kept for S4's subtitles), `message-param-room`.
+  `message-close`, `answer?`, `message-prepare` (S4's subtitles), `message-param-room`.
 - **Her pad:** `control-action?` (her gesture this frame, from `fiona-doing`), `pad?` (the
   buttons, `keys.fs`).
 - **Facing:** `char-faces-xz?`, `char-faces-area?`; **move modes:** `char-action?`.
@@ -169,6 +169,29 @@ its animation's end), which the room keeps for `self-wait-done` / `self-wait-ani
 Checked by `tests/story/test_moves.fs` (11 tests) and `test_examine.fs` (her walk to the spot
 and the kneel around the message).
 
+**S4 built** (2026-10-08): fades, movies, cutscenes, music, motion events.
+- **Fades** go to the `screen` actor (`fade`, `fade-finish`, `fade-over`); it answers `fade-done`,
+  and `wait-fade` waits on the room's `fading`. (The kinds' music bits 0xC0 / 0x30: not yet.)
+- **Movies** are the engine's (one at a time): `movie-play` opens the room's string paused (its
+  class picks the compositing and whether it is drawn), `movie-volume` starts it, `movie-param`,
+  `movie-playing?`. The room draws a drawn class's picture on UI layer 0 (`ui-movie`).
+- **Cutscenes** are the C director's, cast from the characters' models: each character says
+  which it is (`cast-as`: Fiona at her spawn, Hewie as he joins and parts). `cutscene-start`
+  loads the room's scene and broadcasts `scene` on (Fiona is hands-off); `cutscene-control`'s 13
+  ops step it, its cues, the movie, the subtitles (op 12 turns the prepared message's pages -
+  drawn on layer 4), and op 8 ends it (`scene` off, the camera back). The conditions:
+  `cutscene-mode?`, `-cue-reached?`, `-event?`, `-passed?`, `-near-end?`, `-shot?`.
+- **Music** goes to the `music` actor: `bgm`, `music`, `music-stage`, `music-stage-end`.
+- **Motion events:** each character's `moving` now carries its motion's event keys
+  (`moving ( done ended events )`): `char-at-motion-event?`, `self-at-motion-event?`.
+- Skipping: the movie pause (`pause` actor) sets `movie-skipped`, which the scenes' scripts read.
+A room left or stopped closes its movie and ends its scene.
+Checked by `tests/story/test_scene.fs` (11 tests): the cage room's opening (its stage music, the
+background track, faded in); a fade out and in with `fade-done`; the scene at the cage (act00) -
+the movie, the cutscene, Fiona in it, its subtitles - skipped from the movie pause, and played to
+its end (Fiona free, the track back). Seen on screen: the scene's camera and letterbox, the
+subtitles, the pause and the skip's darkening.
+
 **Debugging** (`scripts/debug.fs`, at the console and in tests): `room!`, `room-by!`, `tp`,
 `tp-facing`, `tp-area`, `tp-area-facing`, `tp-exit`, `tp-tri`, `walk`, `press`, `.here`.
 
@@ -176,6 +199,6 @@ Next, by how much the scripts use them:
 
 | Stage | Words |
 |---|---|
-| S4 | Fades, cutscenes and movies (`fade`, `cutscene-control`, `movie-play`), music (`bgm`, `music`), scene changes. |
+| S4 | (built) The rest: scene changes (`scene-change`'s other scenes), endings, `movie-loop`, the half-black screen (op 11). |
 | S5 | Effects, placed objects, lights (`object-show`, `effect-*`, `specks`, `lights-doorway`). |
 | S6 | The stalkers' and creatures' words, with them. |

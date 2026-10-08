@@ -7,8 +7,8 @@
 IN: window
 USING: engine actors messages keys ;
 
-1 constant text-layer      \ (the UI layers it draws on)
-2 constant prompt-layer
+2 constant text-layer      \ (the UI layers: 0 the movie, 1 the fade, 2 the window, 3 the prompt)
+3 constant prompt-layer
 
 state: window-state
   cell field shown          \ the message shown (-1: none)

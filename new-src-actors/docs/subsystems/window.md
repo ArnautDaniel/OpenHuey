@@ -19,7 +19,8 @@ examined. The original's text Task (`src/game/text.c`) and `SceneGame_ActionProm
 **Facts:** the messages laid out by C (`game/messages.c`: pages of lines, the options; the
 parameters `message-param!`), the action button (`circle` in `keys.fs`), the arrows.
 **Draws** on the retained UI layer (`ui-clear`, `ui-rect`, `ui-text`: C keeps what an actor put
-there and draws it each frame), layers 1 (the window) and 2 (the prompt).
+there and draws it each frame), layers 2 (the window) and 3 (the prompt). The layers, in drawing
+order: 0 a scene's movie, 1 the fade, 2 the window, 3 the prompt, 4 the subtitles, 5 the pause.
 
 ## Rules
 

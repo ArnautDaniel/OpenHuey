@@ -9,6 +9,7 @@
 #include "../game/cutscene.h"
 #include "../game/exits.h"
 #include "../game/messages.h"
+#include "../game/progress.h"
 #include "../platform/snddrv.h"
 #include "../platform/sound.h"
 #include "../platform/movie.h"
@@ -1209,8 +1210,7 @@ PRIM(p_movie_compose) {   /* ( compo lo hi -- ) */
 }
 PRIM(p_movie_paused) { PUSH(movie_paused() ? -1 : 0); }
 PRIM(p_movie_volume) { movie_volume((float)FPOP()); }   /* ( F: v -- ) */
-PRIM(p_movie_draw) {   /* ( x y w h -- ) the movie's picture there (window pixels) */
-    Cell dh = POP(), dw = POP(), y = POP(), x = POP();
+static void movie_draw_at(float x, float y, float dw, float dh) {
     int pw, ph, fresh;
     const uint8_t *px = movie_picture(&pw, &ph, &fresh);
 
@@ -1218,8 +1218,13 @@ PRIM(p_movie_draw) {   /* ( x y w h -- ) the movie's picture there (window pixel
         sMovieTex = render_texture_stream(sMovieTex, px, pw, ph, &sMovieW, &sMovieH);
     }
     if (sMovieTex != 0 && px != NULL) {
-        render_image(sMovieTex, (float)x, (float)y, (float)dw, (float)dh, 0xFFFFFFFFu);
+        render_image(sMovieTex, x, y, dw, dh, 0xFFFFFFFFu);
     }
+}
+PRIM(p_movie_draw) {   /* ( x y w h -- ) the movie's picture there (window pixels) */
+    Cell dh = POP(), dw = POP(), y = POP(), x = POP();
+
+    movie_draw_at((float)x, (float)y, (float)dw, (float)dh);
 }
 
 /* ---- the cutscene director (game/cutscene.c) ---- */
@@ -1786,7 +1791,7 @@ void engine_tick(Engine *e) {
 #define UI_LAYERS 8
 #define UI_ITEMS 64
 typedef struct UiItem {
-    int text;                 /* 0 a rectangle, 1 text */
+    int text;                 /* 0 a rectangle, 1 text, 2 the movie's picture */
     float x, y, w, h;         /* (text: w the scale) */
     uint32_t rgba;
     char s[96];
@@ -1804,6 +1809,31 @@ static UiItem *ui_add(Forth *f, Cell layer) {
 
     return sUiN[l] < UI_ITEMS ? &sUi[l][sUiN[l]++] : NULL;
 }
+PRIM(p_cast_as) {   /* ( id model -- ) the character with script id `id` (0 Fiona, 1 Hewie..) has
+                     * that model (-1: none): the cutscenes' cast finds it (gEvents.chars) */
+    Cell model = POP(), id = POP();
+    int i, free_i = -1;
+
+    for (i = 0; i < CHARACTERS; i++) {
+        ScriptChar *c = &gEvents.chars[i];
+
+        if (c->present && c->id == id) {
+            break;
+        }
+        if (!c->present && free_i < 0) {
+            free_i = i;
+        }
+    }
+    if (i == CHARACTERS) {
+        i = free_i;
+    }
+    if (i < 0) {
+        return;
+    }
+    gEvents.chars[i].present = model >= 0;
+    gEvents.chars[i].id = (int32_t)id;
+    gEvents.chars[i].actor = (int32_t)model;
+}
 PRIM(p_ui_clear) { sUiN[ui_layer(f, POP())] = 0; }   /* ( layer -- ) */
 PRIM(p_ui_rect) {   /* ( layer x y w h rgba -- ) */
     Cell rgba = POP(), height = POP(), width = POP(), y = POP(), x = POP();
@@ -1811,6 +1841,14 @@ PRIM(p_ui_rect) {   /* ( layer x y w h rgba -- ) */
 
     if (u != NULL) {
         *u = (UiItem){0, (float)x, (float)y, (float)width, (float)height, (uint32_t)rgba, ""};
+    }
+}
+PRIM(p_ui_movie) {   /* ( layer x y w h -- ) the playing movie's picture */
+    Cell height = POP(), width = POP(), y = POP(), x = POP();
+    UiItem *u = ui_add(f, POP());
+
+    if (u != NULL) {
+        *u = (UiItem){2, (float)x, (float)y, (float)width, (float)height, 0, ""};
     }
 }
 PRIM(p_ui_text) {   /* ( layer addr len x y rgba scale -- ) */
@@ -1829,7 +1867,9 @@ static void ui_draw(void) {
         for (i = 0; i < sUiN[l]; i++) {
             const UiItem *u = &sUi[l][i];
 
-            if (u->text) {
+            if (u->text == 2) {
+                movie_draw_at(u->x, u->y, u->w, u->h);
+            } else if (u->text) {
                 render_text(u->x, u->y, u->w, u->rgba, u->s, (int)strlen(u->s));
             } else {
                 render_rect(u->x, u->y, u->w, u->h, u->rgba);
@@ -1868,7 +1908,7 @@ void bind_engine(Forth *f) {
         {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
         {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
-        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
+        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"ui-movie", p_ui_movie}, {"cast-as", p_cast_as}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-follow", p_cam_follow}, {"cam-target!", p_cam_target}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},

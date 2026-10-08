@@ -272,6 +272,7 @@ int main(int argc, char **argv) {
     }
 
     memset(e, 0, sizeof(*e));
+    platform_size(&e->width, &e->height);   /* (frames ticked before the first draw - tests, --eval - see it) */
     e->room.id = -1;
     e->camera = (Camera){vec3(0, 0, 0), 0, 0, 1.0f, 5.0f, 20000.0f, 1.0f};
     load_world(&e->world, opt.data);

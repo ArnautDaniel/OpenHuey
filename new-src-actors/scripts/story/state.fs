@@ -32,12 +32,16 @@ state: room-state
   \ it was seen, and whether a script of this room has it (+0xE0: its scripted state)
   #chars 12 * field char-was  #chars cells field char-seen  #chars cells field char-scripted
   \ each character's move (+0xE1: done) and whether its animation ended, as it last told (moving)
-  #chars cells field move-done-of  #chars cells field anim-ended-of
+  #chars cells field move-done-of  #chars cells field anim-ended-of  #chars cells field events-of
   cell field camera-char        \ the character slot the camera follows ($FF: nobody)
   \ the action prepared this frame (the scripts' scene-change: +0x1134): the scene (-1 none), its
   \ argument and kind - scene 5 an action script for Fiona, taken with the action button
   cell field prep-scene  cell field prep-arg  cell field prep-kind
   cell field prepared-msg       \ a message prepared for a scene's subtitles (-1 none)
+  cell field prepared-page      \ its page shown (0x62 12 turns them; -1 none)
+  \ the scene: the movie's class (Progress_PlayMovie's kind: 0 not drawn - a scene's timing and
+  \ sound; 1..6 drawn), the cues (+0xBE4 / +0xBE8), a fade running (the screen's)
+  cell field movie-kind  cell field cue  cell field cue-prev  cell field fading
   #zones /zone * field zones    \ the zones (all off as phase 1 starts)
   #zones 5 cells * field zone-rects   \ the zone rectangles (an id, x0 z0 x1 z1: for the scene effects)
   \ what the others tell (fiona-doing, hewie-doing, danger, panic)
