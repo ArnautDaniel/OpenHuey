@@ -23,7 +23,8 @@ enum {
     SPRITE_CORNERS = 2,    /* its own corners, not turned to the camera */
     SPRITE_QUARTER = 4,    /* the camera's turn, then a quarter about y */
     SPRITE_ADD = 0x40,     /* added to the picture */
-    SPRITE_GLOW = 0x80     /* also glows (the original's glow pass: not yet) */
+    SPRITE_GLOW = 0x80,    /* also glows (the original's glow pass: not yet) */
+    SPRITE_OPAQUE = 0x100  /* not blended, writes depth (the shards' boxes) */
 };
 
 typedef struct Sprite {
@@ -32,6 +33,8 @@ typedef struct Sprite {
     float rot;             /* about the view axis */
     uint8_t rgba[4];       /* 0x80 = 1.0 */
     int frame;
+    int own;               /* its own four corners (c): a quad anywhere (a shard's face) */
+    float c[4][3];
 } Sprite;
 
 /* the cache's group `group` from a texture bank (NULL: gone); the bank must stay while it's used */
@@ -48,6 +51,7 @@ void sprites_cells(int b, int x, int y, int cw, int ch, int tw, int th, int fram
 void sprites_flags(int b, int flags, int layer);
 void sprites_offset(int b, float cx, float cy);           /* the corners' offset */
 void sprites_corner(int b, int k, float x, float y, float z);   /* its own corner k (0..3) */
+void sprites_uv(int b, float u0, float v0, float u1, float v1);   /* a cell in texture coordinates (all its sprites) */
 /* the batch's records: n of them (its count is n; -1: the count kept), to be written */
 Sprite *sprites_records(int b, int n);
 

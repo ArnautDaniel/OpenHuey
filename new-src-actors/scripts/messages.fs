@@ -128,3 +128,7 @@ message scene ( on -- )                      \ broadcast: a cutscene has the cha
 \ ---- the rooms' effects (docs/subsystems/effects.md) ----
 message effect-start ( x y z command kind -- )   \ (an effect) its place (f>cell) and how it starts
 message effect-command ( v -- )                  \ (an effect) a command later (the scripts' 0x87: 1 still, 2 moving)
+message specks-start ( x y z count spread rgba -- )   \ (a speck swarm) its centre (f>cell), how many, how far they stray, their colour $RRGGBBAA
+message shards-start ( tex u v du dv floor -- )   \ (shards) their texture (the room's), its cell (f>cell: u v du dv), the floor below the origin (f>cell); thrown
+message butterflies-start ( x y z count -- )   \ (butterflies) where they make for (whole numbers), how many (0: as they are)
+message dust-start ( rgba x y z vx vy vz -- )  \ (a mote of dust) its colour $RRGGBBAA, place and velocity (f>cell)

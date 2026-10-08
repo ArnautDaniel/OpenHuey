@@ -111,14 +111,15 @@ Original: `pause.c`.
 Owns: the inventory, item use, the files, the map.
 Original: `items.c`, `subscreen.c`.
 
+### Effects (`effects.fs`: an actor per effect)  — **S5b built** (`subsystems/effects.md`)
+Flames, sparks, flickering sprites, specks, shards, butterflies: the room's 32 effect slots
+(kept by the room actor) and the scene effects. Drawn with the engine's sprite batches.
+Original: `effects.c`.
+
 ### Messages on screen (`window`)  — **built** (`subsystems/window.md`)
 Owns: the text window and the choices.
 Takes: `say`, `ask`. Sends `answered`, `closed`.
 Original: `text.c`, messages.
-
-### Effects (`effects`)
-Room and scene effects (dust, specks, flicker, splashes).
-Original: `effects.c`, `effectmgr.c`.
 
 ### Game over, title, ending (`scenes`)
 Original: `gameover.c`, `title.c`, the ending scene.

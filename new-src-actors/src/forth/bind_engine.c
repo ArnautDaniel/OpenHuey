@@ -164,6 +164,33 @@ PRIM(p_sprites_corner) {   /* ( b k -- ) ( F: x y z -- ) its own corner k */
 
     sprites_corner((int)POP(), (int)k, x, y, z);
 }
+PRIM(p_sprites_uv) {   /* ( b -- ) ( F: u0 v0 u1 v1 -- ) its cell in texture coordinates */
+    float v1 = (float)FPOP(), u1 = (float)FPOP(), v0 = (float)FPOP(), u0 = (float)FPOP();
+
+    sprites_uv((int)POP(), u0, v0, u1, v1);
+}
+PRIM(p_sprite_quad) {   /* ( b i rgba -- ) ( F: x0 y0 z0 .. x3 y3 z3 -- ) record i: a quad with its own corners
+                         * (0 1 2 3: two triangles 0 1 2 and 2 1 3; the cell's corners in that order) */
+    float c[4][3];
+    int k;
+    Cell rgba = POP(), i = POP(), b = POP();
+    Sprite *s = sprites_records((int)b, -1);
+
+    for (k = 3; k >= 0; k--) {
+        c[k][2] = (float)FPOP();
+        c[k][1] = (float)FPOP();
+        c[k][0] = (float)FPOP();
+    }
+    if (s != NULL && i >= 0 && i < SPRITES_PER_BATCH) {
+        memset(&s[i], 0, sizeof(s[i]));
+        s[i].rgba[0] = (uint8_t)(rgba >> 24);
+        s[i].rgba[1] = (uint8_t)(rgba >> 16);
+        s[i].rgba[2] = (uint8_t)(rgba >> 8);
+        s[i].rgba[3] = (uint8_t)rgba;
+        s[i].own = 1;
+        memcpy(s[i].c, c, sizeof(c));
+    }
+}
 PRIM(p_sprites_count) {   /* ( b n -- ) how many it draws (records 0..n-1) */
     Cell n = POP();
 
@@ -178,7 +205,7 @@ PRIM(p_sprite_store) {   /* ( b i rgba frame -- ) ( F: x y z w h rot -- ) record
 
     if (s != NULL && i >= 0 && i < SPRITES_PER_BATCH) {
         s[i] = (Sprite){x, y, z, half_w, half_h, rot, {(uint8_t)(rgba >> 24), (uint8_t)(rgba >> 16), (uint8_t)(rgba >> 8), (uint8_t)rgba},
-                        (int)frame};
+                        (int)frame, 0, {{0}}};
     }
 }
 PRIM(p_floor_below) {   /* ( F: x y z -- y' ) ( -- flag ) the solid surface under a point */
@@ -2014,7 +2041,7 @@ void bind_engine(Forth *f) {
         Code code;
     } prims[] = {
         {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
-        {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"look-on?", p_look_on}, {"sprites", p_sprites_new}, {"sprites-free", p_sprites_free}, {"sprites-free-all", p_sprites_free_all}, {"sprites-texture", p_sprites_texture}, {"sprites-cells", p_sprites_cells}, {"sprites-flags", p_sprites_flags}, {"sprites-offset", p_sprites_offset}, {"sprites-corner", p_sprites_corner}, {"sprites-count", p_sprites_count}, {"sprite!", p_sprite_store}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
+        {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"look-on?", p_look_on}, {"sprites", p_sprites_new}, {"sprites-free", p_sprites_free}, {"sprites-free-all", p_sprites_free_all}, {"sprites-texture", p_sprites_texture}, {"sprites-cells", p_sprites_cells}, {"sprites-flags", p_sprites_flags}, {"sprites-offset", p_sprites_offset}, {"sprites-corner", p_sprites_corner}, {"sprites-count", p_sprites_count}, {"sprite!", p_sprite_store}, {"sprites-uv", p_sprites_uv}, {"sprite-quad!", p_sprite_quad}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
         {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"ui-movie", p_ui_movie}, {"cast-as", p_cast_as}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},

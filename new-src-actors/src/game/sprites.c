@@ -31,6 +31,8 @@ typedef struct Batch {
     int flags, layer;
     float cx, cy;
     float corner[4][3];
+    int uv;                 /* its cell given in texture coordinates */
+    float u0, v0, u1, v1;
     int n;
     Sprite s[SPRITES_PER_BATCH];
     GpuMesh gpu;
@@ -200,6 +202,18 @@ void sprites_corner(int b, int k, float cx, float cy, float cz) {
     }
 }
 
+void sprites_uv(int b, float u0, float v0, float u1, float v1) {
+    Batch *x = batch(b);
+
+    if (x != NULL) {
+        x->uv = 1;
+        x->u0 = u0;
+        x->v0 = v0;
+        x->u1 = u1;
+        x->v1 = v1;
+    }
+}
+
 Sprite *sprites_records(int b, int n) {
     Batch *x = batch(b);
 
@@ -267,7 +281,14 @@ static int draw_batch(Batch *x, const Mat4 *view_proj, const Mat4 *view) {
         float st[4][2];
         static const int kTri[6] = {0, 1, 2, 2, 1, 3};
 
-        cell(x, f, &u0, &v0, &u1, &v1);
+        if (x->uv) {
+            u0 = x->u0;
+            v0 = x->v0;
+            u1 = x->u1;
+            v1 = x->v1;
+        } else {
+            cell(x, f, &u0, &v0, &u1, &v1);
+        }
         for (k = 0; k < 4; k++) {
             float lx, ly, lz = 0.0f, rx, ry;
 
@@ -283,7 +304,9 @@ static int draw_batch(Batch *x, const Mat4 *view_proj, const Mat4 *view) {
             ly *= s->h;
             rx = c * lx - sn * ly;   /* (sceVu0RotMatrixZ) */
             ry = sn * lx + c * ly;
-            if (x->flags & SPRITE_CORNERS) {   /* not turned to the camera */
+            if (s->own) {
+                q[k] = vec3(s->c[k][0], s->c[k][1], s->c[k][2]);
+            } else if (x->flags & SPRITE_CORNERS) {   /* not turned to the camera */
                 q[k] = vec3(s->x + rx, s->y + ry, s->z + lz);
             } else {
                 q[k] = vec3_add(vec3(s->x, s->y, s->z), vec3_add(vec3_scale(right, rx), vec3_scale(down, ry)));
@@ -313,6 +336,10 @@ static int draw_batch(Batch *x, const Mat4 *view_proj, const Mat4 *view) {
     d.blend = !(x->flags & SPRITE_ADD);
     d.additive = (x->flags & SPRITE_ADD) != 0;
     d.no_zwrite = 1;
+    if (x->flags & SPRITE_OPAQUE) {
+        d.blend = d.additive = 0;
+        d.no_zwrite = 0;
+    }
     {
         static const uint32_t kAll[8] = {~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u};
 

@@ -205,6 +205,13 @@ subtitles, the pause and the skip's darkening.
 - **The look:** `depth-range` / `-off` (slot $1C), `fog` ($1D), `screen-blend` ($1E).
 Checked by `tests/story/test_things.fs` (8 tests).
 
+**S5b built** (2026-10-08): the rooms' effects (`docs/subsystems/effects.md`) - an actor each,
+drawn with the engine's sprites. Room effects in the room's 32 slots (`effect-86`,
+`flicker-sprite`, `-var`, `butterflies`, `effect-remove`, `zone-at-effect`, `char-effect-moving`),
+going with the room; scene effects ending by themselves or with the next room (`specks`,
+`scene-effect-8C`). `effects-arena-flip` is the PS2's packet memory: nothing here.
+Checked by `tests/story/test_effects.fs` (10 tests).
+
 **Debugging** (`scripts/debug.fs`, at the console and in tests): `act` (a room action script as Fiona's), `room!`, `room-by!`, `tp`,
 `tp-facing`, `tp-area`, `tp-area-facing`, `tp-exit`, `tp-tri`, `walk`, `press`, `.here`.
 
