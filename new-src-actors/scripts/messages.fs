@@ -132,3 +132,6 @@ message specks-start ( x y z count spread rgba -- )   \ (a speck swarm) its cent
 message shards-start ( tex u v du dv floor -- )   \ (shards) their texture (the room's), its cell (f>cell: u v du dv), the floor below the origin (f>cell); thrown
 message butterflies-start ( x y z count -- )   \ (butterflies) where they make for (whole numbers), how many (0: as they are)
 message dust-start ( rgba x y z vx vy vz -- )  \ (a mote of dust) its colour $RRGGBBAA, place and velocity (f>cell)
+\ ---- the stalkers (docs/subsystems/stalker.md) ----
+message stalker-in ( room tri -- )           \ (a stalker) into the game, in that room on that triangle
+message stalker-out ( -- )                   \ (a stalker) out of the game
