@@ -7,12 +7,10 @@
 \ (stay / come), 4 right (praise; held: more), 5 left (scold). They are read only under state
 \ flag 0xD (the story: Hewie is hers to command) and not 0x2B.
 IN: fiona.commands
-USING: engine game-state actors messages common facts keys fiona.state fiona.model fiona.moving fiona.spots flag-names ;
+USING: engine game-state actors messages common facts keys fiona.state fiona.model fiona.moving fiona.spots fiona.looks flag-names ;
 
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
-: hewie-id ( -- id )  s" hewie" actor-named ;
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
-: dog-ok? ( -- flag )  dog-here @ 2 = ;            \ with her (the original's +0x1AD5D5)
 : dog-in? ( -- flag )  dog-here @ 0<> ;            \ in the game (+0x1AD5D4)
 : dog-at ( -- v )  hewie-id body-at ;
 : dog-dist ( F: -- d )  dog-ok? if  her-at dog-at vec-dist  else  1000e  then ;
@@ -114,10 +112,15 @@ create ch-at 12 allot
         >r 0 r>
     endcase  ?dup if  -1 play-table  then ;
 : motion-bits ( -- bits )  her-model @ 0 0 1 motion-events ;   \ (its key frames this frame)
+: face-after ( -- )   \ (the one looked at after the command stays the one she faces)
+    her-look-after @ 0< 0= if  her-look-after @ her-look-who !  1 her-look-on !  then ;
 : look-around ( -- )   \ Fiona_StateLookAround (0xC0E, then 0xC0F): the command given on its event
+    face-after
     motion-bits 2 and if  command-hewie  then
     ended? if  anim@ $C0E = if  $C0F play-now exit  then  to-idle  then ;
-: look-end ( -- )  settled? if  idle-after-command  ['] look-around her-act !  then ;   \ Fiona_StateLookEnd
+: look-end ( -- )   \ Fiona_StateLookEnd (plain-commands: the look forgotten)
+    plain-commands state-flag? if  -1 her-look-after !  else  face-after  then
+    settled? if  idle-after-command  ['] look-around her-act !  then ;
 
 \ ---- the gesture for "praise" while he is down (0x2A: Fiona_StateWalkThenGesture ..) ----
 : gesture-end ( -- )  ended? if  to-idle  then  root-move ;
@@ -177,8 +180,13 @@ create ch-at 12 allot
     endcase ;
 
 \ ---- Fiona_StateActionOver ----
+: in-sight? ( id -- flag )  >r her-tri @ her-at r> body-at $40080 v-walk 0< 0= ;   \ fiona_in_sight
 : action-over ( -- )
     settled? if
+        -1 her-look-after !   \ (whom she glances at after it: Hewie, with her and in sight)
+        her-sub @ dup $24 = over $2B = or swap $28 = or 0=  dog-ok? and if
+            hewie-id dup in-sight? if  her-look-after !  else  drop  then
+        then
         her-sub @ case
             $2A of  ['] walk-then-gesture her-act !  endof
             $24 of  meet-type hewie-id send meet-me  ['] meet-waiting her-act !  endof

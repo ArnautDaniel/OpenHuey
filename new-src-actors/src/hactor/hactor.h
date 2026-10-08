@@ -31,6 +31,8 @@ typedef struct HBody {
     float pos[3];           /* x y z: a vector the vec words take (body-at) */
     float yaw, radius, height;
     uint32_t mask;          /* the nav triangles it can't stand on */
+    int has_head;           /* its head is told (body-head!): where others look at it */
+    float head[3];          /* (the model's head bone; else its top: pos + height) */
 } HBody;
 
 /* actor `id`'s body (NULL: no such actor); the actor being run (-1: none) */

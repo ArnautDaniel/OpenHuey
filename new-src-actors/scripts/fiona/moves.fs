@@ -92,8 +92,8 @@ fvariable turn-left  fvariable stepping
         8 of  $11 her-doing !  her-move-a @ her-move-b @ -1 play-blend  done  ['] root-move her-act !  endof
         9 of  $11 her-doing !  her-move-a @ her-move-b @ -1 play-blend  done  ['] root-move her-act !  endof   \ (no time of its own: like 8 here)
         16 of  $11 her-doing !  her-move-b @ idle-anim  done  ['] root-move her-act !  endof
-        12 of  done  endof   \ (her looks: with her head turning, later)
-        13 of  done  endof
+        12 of  her-move-a @ dup 0< if  drop 0 her-look-on !  else  her-look-who !  1 her-look-on !  then  done  endof
+        13 of  her-move-at her-look-pt 12 move  -1 her-look-who !  1 her-look-on !  done  endof
         14 of  $16 her-doing !  her-move-yaw f@ her-heading f!  ['] turning her-act !  endof   \ (the heading to the character: the room's)
         15 of  $17 her-doing !  her-move-yaw f@ her-heading f!  ['] turning her-act !  endof
         17 of  plan if

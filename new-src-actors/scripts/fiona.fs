@@ -1,7 +1,7 @@
 \ fiona.fs - Fiona, the player (docs/subsystems/fiona.md). Phase F1: her body and model, the
 \ controls, standing, walking, running and turning, her footsteps, going out by exits.
 IN: fiona
-USING: engine actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.fear fiona.commands fiona.moves ;
+USING: engine actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.fear fiona.looks fiona.commands fiona.moves ;
 
 : rooms-id ( -- id )  s" rooms" actor-named ;
 : camera-id ( -- id )  s" camera" actor-named ;
@@ -44,11 +44,13 @@ create goal 12 allot
 \ ---- each frame (Fiona_Update, the parts built so far) ----
 : frame ( -- )
     her-at her-was-at 12 move  her-tri @ her-was-tri !  her-yaw f@ her-yaw-was f!
+    look-cleared
     feel-the-panic
     read-controls
     her-mode @ 0= if  panic-controls  else  false  then  0=  hands-off? 0= and if  control-command  then
     hands-off? if  -1 her-cmd !  else  read-command  try-flee  try-doors  then
     her-act @ execute
+    looks
     command-sounds
     footsteps
     show-her ;
@@ -80,6 +82,7 @@ behaviour free
   on frame-end ( -- )   \ what she is doing, as the frame left her; her move
       self body? 0= if  exit  then
       her-mode @ her-sub @ her-cond @ her-cmd @ broadcast fiona-doing
+      tell-head
       her-move-done @  ended?  her-model @ 0 0 1 motion-events  broadcast moving ;
   \ the story's moves (fiona.moves)
   on scripted-move ( kind a b x y z yaw -- )

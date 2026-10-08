@@ -670,6 +670,24 @@ PRIM(p_body_pos) {   /* ( id -- ) ( F: -- x y z ) */
 }
 PRIM(p_body_yaw) { forth_fpush(f, bodied(f, POP(), "body-yaw")->body.yaw); }
 PRIM(p_body_at) { PUSH(bodied(f, POP(), "body-at")->body.pos); }   /* ( id -- v ) its position as a vector (read it, don't write it) */
+PRIM(p_body_head) {   /* ( id -- v ) where its head is (as its owner tells: else the top of its body) */
+    HActor *a = bodied(f, POP(), "body-head");
+
+    if (!a->body.has_head) {
+        a->body.head[0] = a->body.pos[0];
+        a->body.head[1] = a->body.pos[1] + a->body.height;
+        a->body.head[2] = a->body.pos[2];
+    }
+    PUSH(a->body.head);
+}
+PRIM(p_body_head_store) {   /* ( F: x y z -- ) my head is there */
+    HActor *a = me(f, "body-head! (no actor is being run)");
+
+    a->body.head[2] = (float)forth_fpop(f);
+    a->body.head[1] = (float)forth_fpop(f);
+    a->body.head[0] = (float)forth_fpop(f);
+    a->body.has_head = 1;
+}
 PRIM(p_body_mask) { PUSH(bodied(f, POP(), "body-mask")->body.mask); }
 PRIM(p_body_mask_store) { me(f, "body-mask! (no actor is being run)")->body.mask = (uint32_t)POP(); }   /* ( mask -- ) */
 PRIM(p_body_tri_store) { me(f, "body-tri! (no actor is being run)")->body.tri = (int)POP(); }   /* ( tri -- ) */
@@ -757,7 +775,7 @@ void bind_hactor(Forth *f) {
         {"body-place", p_body_place, 0}, {"body-turn", p_body_turn, 0}, {"body-size", p_body_size, 0},
         {"body-off", p_body_off, 0}, {"body?", p_has_body, 0}, {"body-room", p_body_room, 0},
         {"body-tri", p_body_tri, 0}, {"body-pos", p_body_pos, 0}, {"body-yaw", p_body_yaw, 0},
-        {"body-dims", p_body_dims, 0}, {"body-at", p_body_at, 0}, {"body-mask", p_body_mask, 0},
+        {"body-dims", p_body_dims, 0}, {"body-at", p_body_at, 0}, {"body-head", p_body_head, 0}, {"body-head!", p_body_head_store, 0}, {"body-mask", p_body_mask, 0},
         {"body-mask!", p_body_mask_store, 0}, {"body-tri!", p_body_tri_store, 0}, {"body-room!", p_body_room_store, 0},
     };
     Vocab *saved = f->m.current, *v = forth_vocab(f, "actors");

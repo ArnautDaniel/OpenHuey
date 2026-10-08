@@ -80,5 +80,10 @@ state: fiona-state
   \ Hewie as he tells it (hewie-doing): here (0 out of the game, 1 elsewhere, 2 with her), his
   \ action, move mode and its part, condition, mood, pose group
   cell field dog-here  cell field dog-action  cell field dog-mode  cell field dog-sub
-  cell field dog-cond  cell field dog-mood  cell field dog-group          \ (the stand-in exit check: she has been out of every exit's area since arriving)
+  cell field dog-cond  cell field dog-mood  cell field dog-group
+  \ her head's look (+0x1AD5FC on, +0x1AD600 at whom - an actor, -1 a point - +0x1AD610 the point,
+  \ +0x1AD620 frames to keep it, +0x1AD664 whom to face after a command), the head's angles
+  \ as eased (the motion's +0x854 pitch, +0x858 turn)
+  cell field her-look-on  cell field her-look-who  12 field her-look-pt  cell field her-look-hold
+  cell field her-look-after  1 floats field her-head-pitch  1 floats field her-head-yaw          \ (the stand-in exit check: she has been out of every exit's area since arriving)
 end-state
