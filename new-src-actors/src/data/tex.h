@@ -25,5 +25,7 @@ int tex_count(const uint8_t *bank, size_t size);
 const TexEntry *tex_entry(const uint8_t *bank, int i);
 /* decode texture i to RGBA8 (w*h*4 bytes, alpha 0..255): 1 on success */
 int tex_decode(const uint8_t *bank, size_t size, int i, uint8_t *rgba);
+/* ... a 16-colour one with palette `csa` (0..31; -1 the first) */
+int tex_decode_csa(const uint8_t *bank, size_t size, int i, int csa, uint8_t *rgba);
 
 #endif

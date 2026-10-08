@@ -13,6 +13,7 @@
 #include "forth/forth.h"
 #include "game/engine.h"
 #include "game/progress.h"
+#include "game/sprites.h"
 #include "hactor/hactor.h"
 #include "platform/snddrv.h"
 #include "platform/sound.h"
@@ -230,6 +231,7 @@ static void draw(Engine *e) {
             actor_draw(&e->actors[i], &vp);
         }
     }
+    sprites_draw(&vp, &view);   /* the effects (after the opaque scene: they don't write depth) */
     render_post();
     engine_draw_2d(e);   /* scripts' 2D (on-draw hooks) */
     if (e->hud[0] != 0) {
@@ -272,6 +274,7 @@ int main(int argc, char **argv) {
     }
 
     memset(e, 0, sizeof(*e));
+    sprites_init();
     platform_size(&e->width, &e->height);   /* (frames ticked before the first draw - tests, --eval - see it) */
     e->room.id = -1;
     e->camera = (Camera){vec3(0, 0, 0), 0, 0, 1.0f, 5.0f, 20000.0f, 1.0f};

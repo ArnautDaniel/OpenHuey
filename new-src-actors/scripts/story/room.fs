@@ -19,7 +19,7 @@ USING: engine game-state actors messages common room-names story.state story.wor
     free-slots  -1 msg !  -1 msg-owner !  0 leaving !  -1 going !
     #chars 0 do  0 i cells char-scripted + !  -1 i cells move-done-of + !  loop
     -1 prep-scene !  -1 prepared-msg !  -1 prepared-page !  zones-off
-    0 movie-kind !  -1 cue !  -1 cue-prev !  0 fading ! ;
+    0 movie-kind !  -1 cue !  -1 cue-prev !  0 fading !  effects-none ;
 : phase ( n -- )
     phase-context
     dup 0 = if  entering  then
@@ -85,8 +85,8 @@ behaviour playing-room
       3 phase  remember-chars  draw-scene
       going @ 0< 0= if  going @  -1 going !  -1 leaving !  rooms-id send go-through  then ;
   on room-leave ( -- )  4 phase ;
-  on room-left ( -- )  5 phase  free-slots  release-all  scene-gone  story-id send room-done ;
-  on story-stop ( -- )  free-slots  release-all  scene-gone  story-id send room-done ;
+  on room-left ( -- )  5 phase  free-slots  release-all  scene-gone  effects-off  story-id send room-done ;
+  on story-stop ( -- )  free-slots  release-all  scene-gone  effects-off  story-id send room-done ;
   on danger ( level -- )  the-danger ! ;
   on panic ( stage level -- )  drop the-panic ! ;
   on fiona-doing ( mode sub cond cmd -- )  fiona-cmd !  drop  fiona-sub !  fiona-mode ! ;

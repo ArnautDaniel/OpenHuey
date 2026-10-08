@@ -9,7 +9,8 @@ USING: actors ;
 32 constant #zones      \ zones (cylinders the scripts set each frame)
 28 constant /zone       \ a zone: on, kind, the centre's x y z, radius, height
 17 constant #slots      \ action scripts at once: 0..5 the characters' (slot = character + 1), 6.. the scenes' (ids 0xF0..0xFA)
-6 constant #chars       \ characters the scripts know by slot: 0 Fiona, 1 Hewie, 2.. the others
+6 constant #chars
+32 constant #effects    \ the room's effect slots (RoomEffects: 0x20)       \ characters the scripts know by slot: 0 Fiona, 1 Hewie, 2.. the others
 
 state: room-state
   cell field this-room           \ the room these scripts are for
@@ -43,6 +44,8 @@ state: room-state
   \ sound; 1..6 drawn), the cues (+0xBE4 / +0xBE8), a fade running (the screen's)
   cell field movie-kind  cell field cue  cell field cue-prev  cell field fading
   #zones /zone * field zones    \ the zones (all off as phase 1 starts)
+  \ the room's effects: each slot's actor (-1 none) and where it was made
+  #effects cells field fx-ids  #effects 3 * floats field fx-at
   #zones 5 cells * field zone-rects   \ the zone rectangles (an id, x0 z0 x1 z1: for the scene effects)
   \ what the others tell (fiona-doing, hewie-doing, danger, panic)
   cell field fiona-busy  cell field fiona-mode  cell field fiona-sub

@@ -40,6 +40,9 @@ typedef struct HActor {
     uint8_t *state;
     long handled;           /* messages it has handled */
     HBody body;
+    int dying;              /* its `killed` handler (its last words) is running */
+    int doomed;             /* killed by itself in a handler: gone when the handler returns */
+    int running;            /* a handler of its is running */
 } HActor;
 
 typedef struct HMessage {
@@ -160,6 +163,8 @@ static void trace(Forth *f, const HMessage *m) {
     forth_printf(f, "\n");
 }
 
+static void destroy(HActor *a, int id);
+
 static void dispatch(Forth *f, const HMessage *m) {
     HActor *a = m->to >= 0 && m->to < HACTOR_MAX ? &sActors[m->to] : NULL;
     HBehaviour *b;
@@ -195,7 +200,10 @@ static void dispatch(Forth *f, const HMessage *m) {
     }
     sSelf = m->to;
     sSender = m->from;
-    if (forth_call(f, h) != 0) {
+    a->running++;
+    i = forth_call(f, h);
+    a->running--;
+    if (i != 0) {
         forth_printf(f, "  (in %s's `on %s`, behaviour %s)\n", a->name, sKinds[m->kind].name, a->beh->name);
     } else if (f->t->sp != sp0 || f->t->fp != fp0) {
         forth_printf(f, "%s's `on %s` left %d cells and %d floats on the stacks\n", a->name,
@@ -207,6 +215,9 @@ static void dispatch(Forth *f, const HMessage *m) {
     a->handled++;
     sSelf = self;
     sSender = sender;
+    if (a->doomed && a->running == 0) {
+        destroy(a, m->to);
+    }
 }
 
 /* rounds until the queue is empty (or ROUNDS_MAX) */
@@ -546,15 +557,40 @@ PRIM(p_spawn) {
     enqueue(sSelf, id, HK_SPAWNED, NULL, 0);
     PUSH(id);
 }
-PRIM(p_kill) {
-    int id = (int)POP(), k;
-    HActor *a = live(f, id, "kill");
+static void destroy(HActor *a, int id) {
+    int k;
 
     free(a->state);
     memset(a, 0, sizeof(*a));
     for (k = 0; k < HKINDS_MAX; k++) {
         sSubs[k][id / 32] &= ~(1u << (id % 32));
     }
+    for (k = 0; k < sQueueN; k++) {   /* (what was on its way to it: dead letters, not the next one's) */
+        if (sQueue[k].to == id) {
+            sQueue[k].to = -1;
+        }
+    }
+}
+/* kill: the actor's `killed` handler first (its last words: it lets go of what it holds), then
+ * it's gone - after the handler running, if it killed itself in one */
+PRIM(p_kill) {
+    int id = (int)POP();
+    HActor *a = live(f, id, "kill");
+
+    if (a->dying) {
+        return;
+    }
+    a->dying = 1;
+    {
+        HMessage m = {HK_KILLED, sSelf, id, 0, {0}};
+
+        dispatch(f, &m);
+    }
+    if (a->running > 0) {
+        a->doomed = 1;
+        return;
+    }
+    destroy(a, id);
 }
 PRIM(p_self) { PUSH(sSelf); }
 /* the console inside an actor: its fields, `self`, `become` and sends as that actor's (until

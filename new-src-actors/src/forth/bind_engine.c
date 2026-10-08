@@ -10,6 +10,7 @@
 #include "../game/exits.h"
 #include "../game/messages.h"
 #include "../game/progress.h"
+#include "../game/sprites.h"
 #include "../platform/snddrv.h"
 #include "../platform/sound.h"
 #include "../platform/movie.h"
@@ -132,6 +133,53 @@ PRIM(p_look_on) {   /* ( slot -- flag ) the look's effect in that slot ($1C..$1F
              slot == 0x1D ? gRoomLook.has_fog : slot == 0x1C ? gRoomLook.has_dof : 0;
 
     PUSH(on ? -1 : 0);
+}
+/* ---- sprites (game/sprites.h): an effect's batch of camera-facing quads ---- */
+PRIM(p_sprites_new) { PUSH(sprites_new()); }        /* ( -- b ) a batch, -1 none free */
+PRIM(p_sprites_free) { sprites_free((int)POP()); }  /* ( b -- ) */
+PRIM(p_sprites_free_all) { sprites_free_all(); }    /* ( -- ) */
+PRIM(p_sprites_texture) {   /* ( b group id palette -- ) its texture: the cache's group + id, palette (-1 the first) */
+    Cell pal = POP(), id = POP(), group = POP();
+
+    sprites_texture((int)POP(), (int)group, (int)id, (int)pal);
+}
+PRIM(p_sprites_cells) {   /* ( b x y cw ch tw th frames -- ) its frames' cells of a tw x th sheet */
+    Cell frames = POP(), th = POP(), tw = POP(), ch = POP(), cw = POP(), y = POP(), x = POP();
+
+    sprites_cells((int)POP(), (int)x, (int)y, (int)cw, (int)ch, (int)tw, (int)th, (int)frames);
+}
+PRIM(p_sprites_flags) {   /* ( b flags layer -- ) SPRITE_* flags, the draw order */
+    Cell layer = POP(), flags = POP();
+
+    sprites_flags((int)POP(), (int)flags, (int)layer);
+}
+PRIM(p_sprites_offset) {   /* ( b -- ) ( F: cx cy -- ) the corners' offset */
+    float cy = (float)FPOP(), cx = (float)FPOP();
+
+    sprites_offset((int)POP(), cx, cy);
+}
+PRIM(p_sprites_corner) {   /* ( b k -- ) ( F: x y z -- ) its own corner k */
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+    Cell k = POP();
+
+    sprites_corner((int)POP(), (int)k, x, y, z);
+}
+PRIM(p_sprites_count) {   /* ( b n -- ) how many it draws (records 0..n-1) */
+    Cell n = POP();
+
+    sprites_records((int)POP(), (int)n);
+}
+PRIM(p_sprite_store) {   /* ( b i rgba frame -- ) ( F: x y z w h rot -- ) record i: rgba $RRGGBBAA
+                          * (0x80 = 1.0), half sizes w h, turned rot about the view axis */
+    float rot = (float)FPOP(), half_h = (float)FPOP(), half_w = (float)FPOP();
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+    Cell frame = POP(), rgba = POP(), i = POP(), b = POP();
+    Sprite *s = sprites_records((int)b, -1);
+
+    if (s != NULL && i >= 0 && i < SPRITES_PER_BATCH) {
+        s[i] = (Sprite){x, y, z, half_w, half_h, rot, {(uint8_t)(rgba >> 24), (uint8_t)(rgba >> 16), (uint8_t)(rgba >> 8), (uint8_t)rgba},
+                        (int)frame};
+    }
 }
 PRIM(p_floor_below) {   /* ( F: x y z -- y' ) ( -- flag ) the solid surface under a point */
     float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP(), h;
@@ -1966,7 +2014,7 @@ void bind_engine(Forth *f) {
         Code code;
     } prims[] = {
         {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
-        {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"look-on?", p_look_on}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
+        {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"look-on?", p_look_on}, {"sprites", p_sprites_new}, {"sprites-free", p_sprites_free}, {"sprites-free-all", p_sprites_free_all}, {"sprites-texture", p_sprites_texture}, {"sprites-cells", p_sprites_cells}, {"sprites-flags", p_sprites_flags}, {"sprites-offset", p_sprites_offset}, {"sprites-corner", p_sprites_corner}, {"sprites-count", p_sprites_count}, {"sprite!", p_sprite_store}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
         {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"ui-movie", p_ui_movie}, {"cast-as", p_cast_as}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},

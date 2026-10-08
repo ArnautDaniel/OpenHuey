@@ -80,4 +80,21 @@ sloppy counter-state s" s" spawn constant s
 T{ depth-after -> 0 }T
 T{ s alive? -> -1 }T
 
+testing last words: kill runs the actor's killed handler first; killing itself, it goes after the handler
+actors-reset  list log !
+behaviour mortal
+  on killed ( -- )  7 note ;
+  on ping ( n -- )  drop  self kill  8 note ;   \ (its fields are still there for the rest of the handler)
+end-behaviour
+mortal counter-state s" m" spawn constant m1
+mortal counter-state s" m" spawn constant m2
+T{ m1 kill  m1 alive?  log @ length  log @ 0 swap nth -> 0 1 7 }T
+T{ 0 m2 send ping  deliver  m2 alive?  log @ 1 swap nth  log @ 2 swap nth -> 0 7 8 }T
+testing what was on its way to a killed actor isn't the next one's (its id used again)
+actors-reset  list log !
+mortal counter-state s" m" spawn constant m3
+0 m3 send ping   m3 kill
+mortal counter-state s" m" spawn constant m4
+T{ m4 m3 =  deliver  log @ length -> -1 1 }T   \ (only m3's last words)
+
 test-summary

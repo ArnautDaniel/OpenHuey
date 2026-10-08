@@ -125,3 +125,6 @@ message music-op ( op a b -- )               \ (the music) the stage music: 0 vo
 message music-stage ( stage -- )             \ (the music) the stage set's music made (-1: ended)
 \ ---- scenes (the cutscene director: docs/subsystems/story.md S4) ----
 message scene ( on -- )                      \ broadcast: a cutscene has the characters (on) / gives them back (off)
+\ ---- the rooms' effects (docs/subsystems/effects.md) ----
+message effect-start ( x y z command kind -- )   \ (an effect) its place (f>cell) and how it starts
+message effect-command ( v -- )                  \ (an effect) a command later (the scripts' 0x87: 1 still, 2 moving)

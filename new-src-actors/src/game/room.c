@@ -2,6 +2,7 @@
 
 #include "../core/files.h"
 #include "../data/tex.h"
+#include "sprites.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -526,6 +527,14 @@ int room_load(Room *r, int id) {
         render_mesh_upload(&r->gpu, r->mesh.v, r->mesh.nv);
     }
     load_textures(r);
+    {   /* the effects' textures: groups 0 and 0x15 of the cache (RoomMgr_MakeCurrent) */
+        size_t tsize;
+        const uint8_t *bank = pac_section(&r->pac, PAC_TEXTURES, &tsize);
+
+        sprites_group(0, bank, bank != NULL ? tsize : 0);
+        bank = pac_section(&r->pac, PAC_TEXTURES2, &tsize);
+        sprites_group(0x15, bank, bank != NULL ? tsize : 0);
+    }
     sec = pac_section(&r->pac, PAC_NAV, &size);
     navmesh_build(&r->nav, sec, size);
     sec = pac_section(&r->pac, PAC_NAV3, &size);
@@ -564,6 +573,8 @@ void room_free(Room *r) {
     free(r->moving_d);
     roommesh_free(&r->mesh);
     navmesh_free(&r->nav);
+    sprites_group(0, NULL, 0);
+    sprites_group(0x15, NULL, 0);
     free(r->pac.data);
     memset(r, 0, sizeof(*r));
     r->id = -1;
