@@ -1,7 +1,7 @@
 \ fiona.fs - Fiona, the player (docs/subsystems/fiona.md). Phase F1: her body and model, the
 \ controls, standing, walking, running and turning, her footsteps, going out by exits.
 IN: fiona
-USING: engine actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.fear fiona.looks fiona.commands fiona.moves ;
+USING: engine game-state actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.fear fiona.looks fiona.commands fiona.moves ;
 
 : rooms-id ( -- id )  s" rooms" actor-named ;
 : camera-id ( -- id )  s" camera" actor-named ;
@@ -55,13 +55,22 @@ create goal 12 allot
     footsteps
     show-her ;
 
+\ her model by costume (progress variable $26; SceneGame_StateEntry's CharLoad_*): 0 her clothes,
+\ 1 the slip she wakes in (the other costumes' files: later - her clothes meanwhile)
+: costume-file ( n -- addr len )  1 = if  s" O_FIS/FIS_000"  else  s" O_FIN/FIN_000"  then ;
+: wear ( n -- )
+    dup her-costume !
+    her-model @ dup 0< 0= if  actor-free  else  drop  then   \ (-1: none yet)
+    costume-file actor-load dup her-model !  0 over cast-as  $3D5CC0 motion-table   \ (CharModel_SecondaryMotion: her fades and flags)
+    her-model @ s" O_FIN/FIN_000" actor-markers   \ (FionaModel_MarkerFile: the slip's markers are her clothes')
+    self body? 0<> 1 and her act.visible l!  0 -1 play-table ;   \ (shown once she is in a room)
+
 behaviour free
   on spawned ( -- )
-      s" O_FIN/FIN_000" actor-load dup her-model !  0 over cast-as  $3D5CC0 motion-table   \ (CharModel_SecondaryMotion: her fades and flags)
-      1 her act.visible l!  2e 15e body-size
+      -1 her-model !  progress pr.vars $26 + c@ wear  2e 15e body-size
       self subscribe tick  self subscribe arrived  self subscribe camera-cut
       self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown  self subscribe scene ;
-  on arrived ( room exit -- )  nip arrive-at  fresh  self camera-id send follow ;   \ (the story's scripts place her too)
+  on arrived ( room exit -- )  nip arrive-at  fresh  1 her act.visible l!  self camera-id send follow ;   \ (the story's scripts place her too)
   on to-exit ( exit -- )  arrive-at  fresh ;
   \ examining (Progress_PlayerButtons): an action offered here, taken with the action button
   \ while she is free; a script of the room has her, or lets go; a message on screen
@@ -69,6 +78,7 @@ behaviour free
       her-mode @ 0= her-doing @ 0= and  hands-off? 0= and  action-button? and
       if  sender send take-offer  else  2drop  then ;
   on scripted ( on -- )  idle  her-scripted ! ;
+  on costume ( n -- )  wear  show-her ;   \ (the new game; the story's 0x97)
   on text-shown ( on -- )  her-reading ! ;
   on scene ( on -- )  her-in-scene ! ;   \ (a cutscene has her)
   on go-to ( x y z -- )  >r >r cell>f r> cell>f r> cell>f  go-to-point ;

@@ -297,6 +297,7 @@ int main(int argc, char **argv) {
     bind_state(e->forth);
     bind_hactor(e->forth);
     forth_prim(e->forth, "exit-status", p_exit_status);
+    forth_constant(e->forth, "hidden?", opt.hidden ? -1 : 0);   /* (no window: tests, screenshots - no opening movie) */
     if (!load_scripts(e->forth)) {
         fprintf(stderr, "hg2: the scripts didn't load (see above); the console is open\n");
         e->console.open = 1;

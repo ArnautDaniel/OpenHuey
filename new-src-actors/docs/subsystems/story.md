@@ -212,6 +212,17 @@ going with the room; scene effects ending by themselves or with the next room (`
 `scene-effect-8C`). `effects-arena-flip` is the PS2's packet memory: nothing here.
 Checked by `tests/story/test_effects.fs` (10 tests).
 
+**The start of a game** (`scripts/opening.fs`, 2026-10-08): the title (from new-src: Hewie lying
+in the warm light, NEW GAME / QUIT; New Game: he gets up and barks), the opening movie
+(OPENING.SFD, as the original's title plays it; the action or start button skips it), then the
+new game's entry as SceneGame_StateEntry makes it for entry $2A: state flags `new-game-sounds`,
+`world-held`, `in-play`; costume variable $26 = 1 (Fiona in the slip she wakes in, `O_FIS` with
+her clothes' markers `O_FIN/FIN_000.MRK`), Hewie's $27 = 0; room $2A, whose scripts do the rest.
+Without a window (tests, screenshots) the new game starts at once. `free-play` cuts the title
+short. Fiona's model follows the costume (`costume` message: 0 her clothes, 1 the slip; the
+others later); her head's bones with it. The slip's own animations are fewer: the scripts load
+more with event $A7 (a second motion set: not yet) - the mechanics tests put her in her clothes.
+
 **Debugging** (`scripts/debug.fs`, at the console and in tests): `act` (a room action script as Fiona's), `room!`, `room-by!`, `tp`,
 `tp-facing`, `tp-area`, `tp-area-facing`, `tp-exit`, `tp-tri`, `walk`, `press`, `.here`.
 

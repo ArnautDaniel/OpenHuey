@@ -1457,6 +1457,19 @@ PRIM(p_actor_load) {   /* ( addr len -- id ) s" O_FIN/FIN_000" actor-load */
     PUSH(id);
 }
 PRIM(p_actor_free) { actor_free(actor_arg(f, POP())); }
+PRIM(p_actor_markers) {   /* ( id addr len -- ) its motions' event keys from that marker file (NAME, ".MRK" added):
+                           * a model whose markers are another's (the slip's: O_FIN/FIN_000) */
+    char name[128], path[160];
+    Actor *a;
+
+    path_arg(f, name, sizeof(name));
+    a = actor_arg(f, POP());
+    snprintf(path, sizeof(path), "%s.MRK", name);
+    if (files_exist(path)) {
+        free(a->events);
+        a->events = files_read(path, &a->events_size);
+    }
+}
 PRIM(p_actor) { PUSH(actor_arg(f, POP())); }   /* ( id -- addr ) */
 PRIM(p_motion_store) {   /* ( id motion-id -- ) play a motion from its start */
     Cell mid = POP();
@@ -2071,7 +2084,7 @@ void bind_engine(Forth *f) {
         {"message-layout", p_message_layout}, {"message-lines", p_message_lines}, {"message-line", p_message_line},
         {"message-options", p_message_options}, {"message-option", p_message_option},
         {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"exit-spot", p_exit_spot},
-        {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor", p_actor},
+        {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor-markers", p_actor_markers}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
         {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},

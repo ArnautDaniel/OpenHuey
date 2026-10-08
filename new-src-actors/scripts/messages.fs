@@ -135,3 +135,4 @@ message dust-start ( rgba x y z vx vy vz -- )  \ (a mote of dust) its colour $RR
 \ ---- the stalkers (docs/subsystems/stalker.md) ----
 message stalker-in ( room tri -- )           \ (a stalker) into the game, in that room on that triangle
 message stalker-out ( -- )                   \ (a stalker) out of the game
+message costume ( n -- )                     \ (Fiona) her model for costume n (0 her clothes, 1 the slip)

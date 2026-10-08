@@ -7,7 +7,9 @@
 IN: fiona.looks
 USING: engine actors common fiona.state fiona.model ;
 
-$35 constant head-bone   $2B constant neck-bone   14e fconstant eye-up
+: head-bone ( -- b )  her-costume @ 1 = if  $35  else  $21  then ;   \ (FionaModel / EventHumanModel +0x8B0)
+: neck-bone ( -- b )  her-costume @ 1 = if  $2B  else  $17  then ;   \ (+0x8B4)
+14e fconstant eye-up
 : dog-ok? ( -- flag )  dog-here @ 2 = ;            \ Hewie with her (the original's +0x1AD5D5)
 : hewie-id ( -- id )  s" hewie" actor-named ;
 

@@ -5,6 +5,7 @@ USING: actors paths ;
 
 state: fiona-state
   cell field her-model          \ her model (an Actor)
+  cell field her-costume        \ which (progress variable $26: 0 her clothes O_FIN, 1 the slip she wakes in O_FIS)
   cell field her-doing          \ what she is busy with: 0 free (see `busy-*` in fiona.fs)
   cell field her-mode           \ how she moves (0 on her own; more with the later phases)
   cell field her-sub            \ within it: 0 standing, 1 walking, 2 running, 5 pushing...

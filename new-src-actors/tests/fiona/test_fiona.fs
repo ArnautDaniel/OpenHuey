@@ -15,6 +15,7 @@ create from 12 allot  create now 12 allot
 : since ( F: -- d )  fiona body-pos now vec!  from now vec-dist-xz ;
 
 2 frames
+0 fiona send costume  1 frames   \ (her clothes: these are her mechanics, not the new game's slip)
 game:story send story-stop  deliver  progress pr.state 8 0 fill   \ (no room scripts: this test sets the flags by hand)
 testing a new game: in the cage room, standing, followed by the camera
 T{ room-id  fiona body-room -> front-garden-3 front-garden-3 }T

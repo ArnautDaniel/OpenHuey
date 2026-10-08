@@ -18,6 +18,7 @@ USING: tester engine game-state actors messages common facts room-names game hew
 1 seed !
 
 5 frames
+0 fiona send costume  1 frames   \ (her clothes: these are her mechanics, not the new game's slip)
 hewie send join-fiona  3 frames
 \ (calm, trusting, obeying, by her: the default action)
 : ready ( -- )  [: 1000 add-trust  obeys  0 -1 set-mood  0 0 set-action ;] his!  30 frames ;
