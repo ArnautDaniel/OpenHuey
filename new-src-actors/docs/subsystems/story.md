@@ -125,11 +125,37 @@ until the opening can play (it needs the scripted moves, Hewie's squeeze through
 the cutscenes): `opening-done`, `grate-open`, the world not held, Hewie with her and hers to
 command. The new game stays the default start.
 
+**S2 built** (2026-10-08): examining and messages, items, zones.
+- **Examining** (`cmd_scene_change`, `Progress_PlayerButtons`): the scripts prepare an action
+  each frame (`scene-change`; cleared after phase 1, as `Progress_CharRequests` does). After
+  phase 2 the room offers a "scene 5" one to Fiona (`offer`) and shows the prompt; with the
+  action button pressed that frame, free, she takes it (`take-offer`): her action script starts
+  and she is scripted (`scripted` on) until it ends (`scripted` off) - every script that takes a
+  character tells it so, and a room releases its characters as it stops or is left. Other
+  scenes (changes of scene, endings): S4.
+- **Messages:** `message` (the window shows it; `text-closed` answers), `wait-message`,
+  `message-close`, `answer?`, `message-prepare` (kept for S4's subtitles), `message-param-room`.
+- **Her pad:** `control-action?` (her gesture this frame, from `fiona-doing`), `pad?` (the
+  buttons, `keys.fs`).
+- **Facing:** `char-faces-xz?`, `char-faces-area?`; **move modes:** `char-action?`.
+- **Zones:** `zone`, `zone-rect`, `char-zone-bits?`, `char-zone-bits-before?` (all off as phase
+  1 starts). `char-in-zone?` is about attack points (her kick, his bite): false until the kicks
+  (F4) and his bites (H3).
+- **Items:** `item-give` (a file, with the pickup sound), `item-add`, `item-count?`,
+  `item-give-count`, `item-use`; `script-item` (Events_ScriptRoom: `items-40-as-70`). The story
+  writes the inventory in the progress until the items subsystem owns it.
+
+Checked by `tests/story/test_examine.fs` (10 tests): in front of the hole the action is offered,
+the button starts her script and the window shows its text, she can't move meanwhile, the button
+closes it and frees her; an answer; items given and counted; a zone against her body.
+
+**Debugging** (`scripts/debug.fs`, at the console and in tests): `room!`, `room-by!`, `tp`,
+`tp-facing`, `tp-area`, `tp-area-facing`, `tp-exit`, `tp-tri`, `walk`, `press`, `.here`.
+
 Next, by how much the scripts use them:
 
 | Stage | Words |
 |---|---|
-| S2 | Messages and examining: the message window (`message`, `wait-message`, `message-prepare`, `answer?`), the action button (`control-action?`, `pad?`), items (`item-give`, `item-count?`, `item-tab`), zones (`zone`, `char-in-zone?`, `char-zone-bits?`). |
 | S3 | The characters' scripted moves (`self-*`: walk to, turn, animations, looks; `char-to-xyz`, `char-anim-hold`, `char-activate`, `char-load`): Fiona F5 and Hewie H4, as messages to them. |
 | S4 | Fades, cutscenes and movies (`fade`, `cutscene-control`, `movie-play`), music (`bgm`, `music`), scene changes. |
 | S5 | Effects, placed objects, lights (`object-show`, `effect-*`, `specks`, `lights-doorway`). |

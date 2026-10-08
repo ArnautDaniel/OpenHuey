@@ -70,6 +70,9 @@ state: fiona-state
   cell field her-cmd   cell field her-busy-t
   cell field her-act-tri  1 floats field her-act-yaw  12 field her-act-at
   cell field her-held-n
+  \ her hands off the controls: a script of the room has her (the original's +0xE0), or a
+  \ message is on screen
+  cell field her-scripted  cell field her-reading
   \ Hewie as he tells it (hewie-doing): here (0 out of the game, 1 elsewhere, 2 with her), his
   \ action, move mode and its part, condition, mood, pose group
   cell field dog-here  cell field dog-action  cell field dog-mode  cell field dog-sub

@@ -17,11 +17,12 @@ USING: engine game-state actors messages common room-names story.state story.wor
     this-room @ progress pr.visited bit-on
     vars #vars cells 0 fill  0 ebits !  0 counter !  0 room-frames !  0 result !
     free-slots  -1 msg !  -1 msg-owner !  0 leaving !  -1 going !
-    #chars 0 do  0 i cells char-scripted + !  loop ;
+    #chars 0 do  0 i cells char-scripted + !  loop
+    -1 prep-scene !  -1 prepared-msg !  zones-off ;
 : phase ( n -- )
     phase-context
     dup 0 = if  entering  then
-    dup 1 = if  1 room-frames +!  then
+    dup 1 = if  1 room-frames +!  zones-off  then
     dup 5 = if  hunted state-flag-clear  then
     events-held state-flag? over 3 <> and 0= if  dup this-room @ swap room-script @ run  then
     dup 1 = if  shared.after-phase1  then
@@ -39,7 +40,7 @@ USING: engine game-state actors messages common room-names story.state story.wor
 : dropped? ( k -- flag )
     cells slot-who + @ dup 0< if  drop false exit  then  cells char-scripted + @ 0= ;
 : drop-script ( k -- )
-    dup cells slot-who + @ msg-owner @ = if  -1 msg !  -1 msg-owner !  then  free-slot ;
+    dup cells slot-who + @ msg-owner @ = if  $FFFF message-close  -1 msg-owner !  then  free-slot ;
 : turn ( k -- )
     dup slot-task @ 0= if  drop exit  then
     dup dropped? if  drop-script exit  then
@@ -50,6 +51,13 @@ USING: engine game-state actors messages common room-names story.state story.wor
 : run-slots ( -- )  #slots 0 do  i turn  loop  phase-context ;
 
 : rooms-id ( -- id )  s" rooms" actor-named ;
+: release-all ( -- )  #chars 0 do  i release  loop ;   \ (its scripts gone: the characters free)
+\ the action prepared this frame, offered to her (Progress_PlayerButtons reads her button) and
+\ shown as the action prompt - not while a message is open
+: offer-it ( -- )
+    prep-scene @ 5 <> msg @ 0< 0= or if  exit  then
+    0 char-actor dup 0< if  drop exit  then  >r  5 prep-arg @ r> send offer
+    1 window-id send prompt ;
 : story-id ( -- id )  s" story" actor-named ;
 
 behaviour playing-room
@@ -61,17 +69,23 @@ behaviour playing-room
       #chars 0 do  i char-enter  loop
       remember-chars
       3 phase ;
-  on tick ( -- )  1 phase  2 phase  run-slots ;
+  on tick ( -- )
+      1 phase  -1 prep-scene !   \ (Progress_CharRequests: the actions prepared afresh)
+      2 phase  offer-it  run-slots ;
+  on take-offer ( scene arg -- )   \ (she took it: scene 5, her action script `arg`)
+      swap 5 <> leaving @ or msg @ 0< 0= or if  drop exit  then
+      0 0 rot action ;
+  on text-closed ( msg answer -- )  answer !  msg @ = if  -1 msg !  then ;
   on frame-end ( -- )
       3 phase  remember-chars
       going @ 0< 0= if  going @  -1 going !  -1 leaving !  rooms-id send go-through  then ;
   on room-leave ( -- )  4 phase ;
-  on room-left ( -- )  5 phase  free-slots  story-id send room-done ;
-  on story-stop ( -- )  free-slots  story-id send room-done ;
+  on room-left ( -- )  5 phase  free-slots  release-all  story-id send room-done ;
+  on story-stop ( -- )  free-slots  release-all  story-id send room-done ;
   on danger ( level -- )  the-danger ! ;
   on panic ( stage level -- )  drop the-panic ! ;
-  on fiona-doing ( mode sub cond cmd -- )  2drop  fiona-sub !  fiona-mode ! ;
-  on hewie-doing ( here action mode sub cond mood group -- )  2drop 2drop drop  hewie-act !  hewie-here ! ;
+  on fiona-doing ( mode sub cond cmd -- )  fiona-cmd !  drop  fiona-sub !  fiona-mode ! ;
+  on hewie-doing ( here action mode sub cond mood group -- )  2drop 2drop  hewie-move-mode !  hewie-act !  hewie-here ! ;
 end-behaviour
 
 \ a room's actor, named for the room

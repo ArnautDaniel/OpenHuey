@@ -1781,6 +1781,63 @@ void engine_tick(Engine *e) {
     render_look_tick();
 }
 
+/* ---- the retained 2D layer: what actors put on the screen (the message window, prompts),
+ * kept until they change it and drawn each frame, layer by layer over the picture ---- */
+#define UI_LAYERS 8
+#define UI_ITEMS 64
+typedef struct UiItem {
+    int text;                 /* 0 a rectangle, 1 text */
+    float x, y, w, h;         /* (text: w the scale) */
+    uint32_t rgba;
+    char s[96];
+} UiItem;
+static UiItem sUi[UI_LAYERS][UI_ITEMS];
+static int sUiN[UI_LAYERS];
+static int ui_layer(Forth *f, Cell layer) {
+    if (layer < 0 || layer >= UI_LAYERS) {
+        forth_error(f, "ui: no layer %ld", (long)layer);
+    }
+    return (int)layer;
+}
+static UiItem *ui_add(Forth *f, Cell layer) {
+    int l = ui_layer(f, layer);
+
+    return sUiN[l] < UI_ITEMS ? &sUi[l][sUiN[l]++] : NULL;
+}
+PRIM(p_ui_clear) { sUiN[ui_layer(f, POP())] = 0; }   /* ( layer -- ) */
+PRIM(p_ui_rect) {   /* ( layer x y w h rgba -- ) */
+    Cell rgba = POP(), height = POP(), width = POP(), y = POP(), x = POP();
+    UiItem *u = ui_add(f, POP());
+
+    if (u != NULL) {
+        *u = (UiItem){0, (float)x, (float)y, (float)width, (float)height, (uint32_t)rgba, ""};
+    }
+}
+PRIM(p_ui_text) {   /* ( layer addr len x y rgba scale -- ) */
+    Cell scale = POP(), rgba = POP(), y = POP(), x = POP(), n = POP(), a = POP();
+    UiItem *u = ui_add(f, POP());
+
+    if (u != NULL) {
+        *u = (UiItem){1, (float)x, (float)y, (float)(scale < 1 ? 1 : scale), 0.0f, (uint32_t)rgba, ""};
+        snprintf(u->s, sizeof(u->s), "%.*s", (int)(n > 0 ? n : 0), n > 0 ? (const char *)a : "");
+    }
+}
+static void ui_draw(void) {
+    int l, i;
+
+    for (l = 0; l < UI_LAYERS; l++) {
+        for (i = 0; i < sUiN[l]; i++) {
+            const UiItem *u = &sUi[l][i];
+
+            if (u->text) {
+                render_text(u->x, u->y, u->w, u->rgba, u->s, (int)strlen(u->s));
+            } else {
+                render_rect(u->x, u->y, u->w, u->h, u->rgba);
+            }
+        }
+    }
+}
+
 void engine_draw_2d(Engine *e) {
     int i;
 
@@ -1791,6 +1848,7 @@ void engine_draw_2d(Engine *e) {
         render_rect(0.0f, (float)e->height - bar, (float)e->width, bar, 0x000000FFu);
     }
 
+    ui_draw();
     for (i = 0; i < e->ndraw_hooks; i++) {
         if (forth_call(e->forth, e->draw_hooks[i]) != 0) {
             forth_printf(e->forth, "on-draw: %s removed after an error\n", e->draw_hooks[i]->name);
@@ -1810,7 +1868,7 @@ void bind_engine(Forth *f) {
         {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
         {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
-        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
+        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-follow", p_cam_follow}, {"cam-target!", p_cam_target}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},

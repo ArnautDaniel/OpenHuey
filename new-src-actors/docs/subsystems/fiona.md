@@ -159,5 +159,5 @@ angles didn't show it clearly. If it is still wrong, the stick-relative turn of 
 (the old camera's frame) is the next suspect.
 
 **`go-to`** `( x y z -- )` (floats `f>cell`): she walks there over the nav mesh (walk-to-spot)
-and stands. At the console: `fiona 10e 0e 20e go`. For debugging, and the base of the story's
+and stands. At the console: `10e 0e 20e walk` (scripts/debug.fs). For debugging, and the base of the story's
 scripted moves.

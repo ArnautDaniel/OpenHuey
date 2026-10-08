@@ -6,11 +6,13 @@ IN: fiona.controls
 USING: engine keys common fiona.state ;
 
 fvariable sx  fvariable sz         \ the stick: x right, z down (as the pad's)
+: hands-off? ( -- flag )  her-scripted @ her-reading @ or ;   \ (a script has her, or a message is up)
 : read-stick ( -- )
     0e sx f!  0e sz f!
+    hands-off? if  exit  then
     key: D held? if  1e sx f!  then  key: A held? if  sx f@ 1e f- sx f!  then
     key: S held? if  1e sz f!  then  key: W held? if  sz f@ 1e f- sz f!  then ;
-: run-held? ( -- flag )  key: Left_Shift held?  key: Right_Shift held? or ;
+: run-held? ( -- flag )  hands-off? 0=  key: Left_Shift held?  key: Right_Shift held? or  and ;
 : cam-yaw ( F: -- a )  camera cam.yaw sf@ ;
 \ a stick direction turned into the room by a camera heading (0 looks along -z)
 fvariable tn-x  fvariable tn-z

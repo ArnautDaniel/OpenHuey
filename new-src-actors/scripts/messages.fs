@@ -91,3 +91,15 @@ message room-leave ( -- )                    \ its exit is taken: phase 4
 message room-left ( -- )                     \ the next room is in: phase 5, then it reports
 message room-done ( -- )                     \ (to the story) finished: it may go
 message story-stop ( -- )                    \ (to the story) no more room scripts (tests of the others, the console)
+
+\ ---- messages on screen (docs/subsystems/window.md) ----
+message show-text ( msg -- )                 \ (the window) show message msg; its closing answered to the sender
+message close-text ( msg -- )                \ (the window) close it if it shows msg ($FFFF: whatever it shows)
+message text-closed ( msg answer -- )        \ (to who showed it) closed; the option chosen (-1 none)
+message text-shown ( on -- )                 \ broadcast: the window opened / closed (Fiona stands while it's open)
+message prompt ( kind -- )                   \ (the window) an action is offered here this frame (the action prompt)
+
+\ ---- examining (the scripts' prepared action, Progress_PlayerButtons) ----
+message offer ( scene arg -- )               \ (room -> Fiona) an action here this frame, taken with the action button
+message take-offer ( scene arg -- )          \ (Fiona -> room) she took it
+message scripted ( on -- )                   \ (room -> a character) a script of the room has you (on) / lets go (off)

@@ -30,7 +30,7 @@ fvariable ix  fvariable iy  fvariable iz
 : fresh ( -- )   \ standing, the controls as new
     0 her-doing !  0 her-mode !  0 her-sub !  6 her-still !  0 her-turn-mode !  0 her-lock !
     1e her-stick-k f!  -1 her-variant !  1e her-tired-w f!  0 her-rest !  0 her-run-t !
-    -1 her-cmd !  0 her-busy-t !  1 her-step-l !  1 her-step-r !  -1 her-door-exit !  her-path path-clear  stand  idle ;
+    -1 her-cmd !  0 her-busy-t !  0 her-scripted !  1 her-step-l !  1 her-step-r !  -1 her-door-exit !  her-path path-clear  stand  idle ;
 
 \ ---- walking to a point (go-to: the console's, later the story's moves): her way over the nav
 \ mesh, arriving facing the way she walked ----
@@ -46,10 +46,8 @@ create goal 12 allot
     her-at her-was-at 12 move  her-tri @ her-was-tri !  her-yaw f@ her-yaw-was f!
     feel-the-panic
     read-controls
-    her-mode @ 0= if  panic-controls  else  false  then  0= if  control-command  then
-    read-command
-    try-flee
-    try-doors
+    her-mode @ 0= if  panic-controls  else  false  then  0=  hands-off? 0= and if  control-command  then
+    hands-off? if  -1 her-cmd !  else  read-command  try-flee  try-doors  then
     her-act @ execute
     command-sounds
     footsteps
@@ -60,9 +58,16 @@ behaviour free
       s" O_FIN/FIN_000" actor-load dup her-model !  $3D5CC0 motion-table   \ (CharModel_SecondaryMotion: her fades and flags)
       1 her act.visible l!  2e 15e body-size
       self subscribe tick  self subscribe arrived  self subscribe camera-cut
-      self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end ;
+      self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown ;
   on arrived ( room exit -- )  nip arrive-at  fresh  self camera-id send follow ;   \ (the story's scripts place her too)
   on to-exit ( exit -- )  arrive-at  fresh ;
+  \ examining (Progress_PlayerButtons): an action offered here, taken with the action button
+  \ while she is free; a script of the room has her, or lets go; a message on screen
+  on offer ( scene arg -- )
+      her-mode @ 0= her-doing @ 0= and  hands-off? 0= and  action-button? and
+      if  sender send take-offer  else  2drop  then ;
+  on scripted ( on -- )  idle  her-scripted ! ;
+  on text-shown ( on -- )  her-reading ! ;
   on go-to ( x y z -- )  >r >r cell>f r> cell>f r> cell>f  go-to-point ;
   on place ( x y z yaw -- )  >r >r >r cell>f r> cell>f r> cell>f r> cell>f  put  fresh ;   \ (the story puts her)   \ (the room's scripts: Rooms_ExitPointOut, facing in)
   on camera-cut ( -- )  -1 her-cut ! ;

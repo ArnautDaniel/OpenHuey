@@ -1,0 +1,32 @@
+\ debug.fs - words for the console and the tests: put Fiona anywhere, change rooms, press a
+\ button, see where she is. They go through the actors' own messages (place, go-to-room, ...).
+\   front-garden-2 room!            to a room (its start)          front-garden-2 1 room-by!  by its exit 1
+\   10e 0e 20e tp                   Fiona there, her heading kept  10e 0e 20e -90e tp-facing  facing -90 degrees
+\   $18 tp-area                     into an event area's middle    $18 -90 tp-area-facing
+\   2 tp-exit                       into exit 2's area             $1F2 tp-tri                on a nav triangle's middle
+\   10e 0e 20e walk                 walking there (over the nav mesh)
+\   circle press                    a button pressed for a frame   .here                      where she is
+IN: debug
+USING: engine actors messages keys room-names ;
+
+: fiona-id ( -- id )  s" fiona" actor-named ;
+: rooms-id ( -- id )  s" rooms" actor-named ;
+: room! ( room -- )  -1 rooms-id send go-to-room ;
+: room-by! ( room exit -- )  rooms-id send go-to-room ;
+: tp-facing ( F: x y z deg -- )
+    deg>rad  f>cell >r  f>cell >r  f>cell >r  f>cell  r> r> r>  fiona-id send place  deliver ;
+: tp ( F: x y z -- )  fiona-id body-yaw  180e f* pi f/  tp-facing ;   \ (her heading kept)
+create spot 12 allot
+: tp-area-facing ( area deg -- )   \ (its middle)
+    swap area-middle 0= if  drop fdrop fdrop fdrop ." no such area" cr exit  then  s>f tp-facing ;
+: tp-area ( area -- )  area-middle 0= if  fdrop fdrop fdrop ." no such area" cr exit  then  tp ;
+: tp-exit ( exit -- )  exit-area tp-area ;
+: tp-tri ( tri -- )  tri-center tp ;
+: walk ( F: x y z -- )   \ (over the nav mesh, then she stands)
+    f>cell >r  f>cell >r  f>cell  r> r>  fiona-id send go-to ;
+: press ( button -- )   \ (pressed for a frame: its key down, then up)
+    button-keys drop  dup true key-hold  game-tick  false key-hold ;
+: .here ( -- )
+    ." room " room-id room-name type  ."  at " fiona-id body-pos  frot f. fswap f. f.
+    ." tri " fiona-id body-tri .  ." areas:"
+    area-count 0 ?do  fiona-id body-pos i area-in? if  space i .  then  loop  cr ;

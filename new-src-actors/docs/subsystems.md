@@ -19,7 +19,7 @@ messages it takes and sends (a first draft: the API is settled on its own page,
 
 ## Actors
 
-### The story (`story`)  — **S1 built** (`subsystems/story.md`)
+### The story (`story`)  — **S1, S2 built** (`subsystems/story.md`)
 Owns: story flags, script variables, the room's phase scripts and the characters' action
 scripts.
 Takes: `entered-room`, `left-room`, `exit-taken`, `action-pressed`, `area-entered`, `scene-cue`.
@@ -103,7 +103,7 @@ Original: `music.c`, `BgmCtl`.
 Owns: the inventory, item use, the files, the map.
 Original: `items.c`, `subscreen.c`.
 
-### Messages on screen (`messages`)
+### Messages on screen (`window`)  — **built** (`subsystems/window.md`)
 Owns: the text window and the choices.
 Takes: `say`, `ask`. Sends `answered`, `closed`.
 Original: `text.c`, messages.

@@ -1,7 +1,7 @@
 \ game.fs - where the game starts (after prelude.fs): the actors that make up the game are
 \ spawned here. (docs/subsystems.md: the map and the order.)
 IN: game
-USING: engine actors messages room-names acoustics rooms doors camera danger panic fiona hewie story story.words flag-names story-names ;
+USING: engine actors messages room-names acoustics rooms doors camera danger panic window fiona hewie story story.words flag-names story-names debug ;
 
 acoustics-spawn constant acoustics
 rooms-spawn constant rooms
@@ -9,6 +9,7 @@ doors-spawn constant doors
 camera-spawn constant camera
 danger-spawn constant danger
 panic-spawn constant panic
+window-spawn constant window
 fiona-spawn constant fiona
 hewie-spawn constant hewie
 story-spawn constant story
@@ -24,6 +25,3 @@ front-garden-3 -1 rooms send go-to-room
     opening-done story-flag-set  grate-open story-flag-set  world-held state-flag-clear  hewie-commandable state-flag-set
     front-garden-3 -1 rooms send go-to-room
     hewie send join-fiona ;
-
-\ at the console: send someone walking to a point (over the nav mesh), e.g.  fiona 10e 0e 20e go
-: go ( who F: x y z -- )  >r  f>cell >r  f>cell >r  f>cell  r> r> r>  send go-to ;

@@ -6,6 +6,8 @@ IN: story.state
 USING: actors ;
 
 32 constant #vars       \ script variables
+32 constant #zones      \ zones (cylinders the scripts set each frame)
+28 constant /zone       \ a zone: on, kind, the centre's x y z, radius, height
 17 constant #slots      \ action scripts at once: 0..5 the characters' (slot = character + 1), 6.. the scenes' (ids 0xF0..0xFA)
 6 constant #chars       \ characters the scripts know by slot: 0 Fiona, 1 Hewie, 2.. the others
 
@@ -30,8 +32,14 @@ state: room-state
   \ it was seen, and whether a script of this room has it (+0xE0: its scripted state)
   #chars 12 * field char-was  #chars cells field char-seen  #chars cells field char-scripted
   cell field camera-char        \ the character slot the camera follows ($FF: nobody)
+  \ the action prepared this frame (the scripts' scene-change: +0x1134): the scene (-1 none), its
+  \ argument and kind - scene 5 an action script for Fiona, taken with the action button
+  cell field prep-scene  cell field prep-arg  cell field prep-kind
+  cell field prepared-msg       \ a message prepared for a scene's subtitles (-1 none)
+  #zones /zone * field zones    \ the zones (all off as phase 1 starts)
+  #zones 5 cells * field zone-rects   \ the zone rectangles (an id, x0 z0 x1 z1: for the scene effects)
   \ what the others tell (fiona-doing, hewie-doing, danger, panic)
   cell field fiona-busy  cell field fiona-mode  cell field fiona-sub
-  cell field hewie-here  cell field hewie-act
+  cell field fiona-cmd  cell field hewie-here  cell field hewie-act  cell field hewie-move-mode
   cell field the-danger  cell field the-panic
 end-state
