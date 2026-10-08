@@ -73,6 +73,66 @@ PRIM(p_room_group) {   /* ( group flag -- ) show or hide a visibility group */
         gEngine.room.groups[g >> 5] &= ~(1u << (g & 31));
     }
 }
+PRIM(p_door_group) {   /* ( group flag -- ) every door's model part `group` shown or not (Doors_SetBits) */
+    Cell on = POP(), g = POP();
+    int i;
+
+    if (g < 0 || g > 255) {
+        forth_error(f, "door-group!: group %ld out of range", (long)g);
+    }
+    for (i = 0; i < ROOM_DOORS; i++) {
+        RoomDoor *d = &gEngine.room.doors[i];
+
+        if (!d->present) {
+            continue;
+        }
+        if (on) {
+            d->groups[g >> 5] |= 1u << (g & 31);
+        } else {
+            d->groups[g >> 5] &= ~(1u << (g & 31));
+        }
+    }
+}
+PRIM(p_light_own) {   /* ( i -- ) room light i back to the room file's (Lights_RestoreLight) */
+    Cell i = POP();
+
+    if (i >= 0 && i < gEngine.room.nlights) {
+        gEngine.room.lights[i] = gEngine.room.own_lights[i];
+    }
+}
+PRIM(p_light_scale) {   /* ( i which -- ) ( F: k -- ) room light i's intensity (which 1) or shadow
+                         * length (2) times k (the scripts' 0x90) */
+    float k = (float)FPOP();
+    Cell which = POP(), i = POP();
+
+    if (i >= 0 && i < gEngine.room.nlights) {
+        if (which == 1) {
+            gEngine.room.lights[i].intensity *= k;
+        } else if (which == 2) {
+            gEngine.room.lights[i].shadow *= k;
+        }
+    }
+}
+PRIM(p_door_group_q) {   /* ( exit group -- flag ) that door's model part `group` is shown */
+    Cell g = POP(), i = POP();
+
+    PUSH(i >= 0 && i < ROOM_DOORS && g >= 0 && g < 256 && gEngine.room.doors[i].present &&
+                 (g == 0 || (gEngine.room.doors[i].groups[g >> 5] >> (g & 31) & 1u)) ? -1 : 0);
+}
+PRIM(p_light_fetch) {   /* ( i -- ) ( F: -- intensity shadow ) room light i's (0 0: none) */
+    Cell i = POP();
+    const RoomLight *l = i >= 0 && i < gEngine.room.nlights ? &gEngine.room.lights[i] : NULL;
+
+    FPUSH(l != NULL ? l->intensity : 0.0f);
+    FPUSH(l != NULL ? l->shadow : 0.0f);
+}
+PRIM(p_look_on) {   /* ( slot -- flag ) the look's effect in that slot ($1C..$1F) is on */
+    Cell slot = POP();
+    int on = slot == 0x1F ? gRoomLook.has_tint : slot == 0x1E ? gRoomLook.has_bloom :
+             slot == 0x1D ? gRoomLook.has_fog : slot == 0x1C ? gRoomLook.has_dof : 0;
+
+    PUSH(on ? -1 : 0);
+}
 PRIM(p_floor_below) {   /* ( F: x y z -- y' ) ( -- flag ) the solid surface under a point */
     float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP(), h;
 
@@ -1177,7 +1237,7 @@ PRIM(p_stage_light) {   /* ( i -- ) ( F: x y z r g b range -- ) light i (0..2) o
     float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
 
     if (i >= 0 && i < 3) {
-        gEngine.stage[i] = (RoomLight){vec3(x, y, z), vec3(r, g, b), 1.0f, range};
+        gEngine.stage[i] = (RoomLight){vec3(x, y, z), vec3(r, g, b), 1.0f, range, 0.0f};
     }
 }
 PRIM(p_stage_lights) { gEngine.nstage = (int)POP(); }   /* ( n -- ) how many (0: the room's again) */
@@ -1906,7 +1966,7 @@ void bind_engine(Forth *f) {
         Code code;
     } prims[] = {
         {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
-        {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
+        {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"look-on?", p_look_on}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
         {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"ui-movie", p_ui_movie}, {"cast-as", p_cast_as}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},

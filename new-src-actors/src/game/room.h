@@ -18,6 +18,7 @@ typedef struct RoomLight {
     Vec3 color;
     float intensity;
     float range;
+    float shadow;           /* how far its shadows reach (+0x2C: Shadow_Draw's extrusion) */
 } RoomLight;
 
 #define ROOM_DOORS 8
@@ -46,6 +47,8 @@ typedef struct RoomDoor {
      * latch; 0 none) and how loud its noise is (Door_PlaySound: 1 / 2 quiet, 3 / 4 loud, else
      * none); `settled` 1 it came to rest open, 0 shut, -1 neither */
     int sound, sound_how, settled;
+    uint32_t groups[8];     /* its model's parts shown: bit g, group g (0 always) - the scripts'
+                             * door bits (Doors_SetBits: door +0x120) */
 } RoomDoor;
 
 typedef struct Room {
@@ -61,6 +64,7 @@ typedef struct Room {
     PlacedSet placed;       /* the objects the scripts show and move (sections 12, 15) */
     Vec3 ambient;           /* (0..128) */
     RoomLight lights[ROOM_MAX_LIGHTS];
+    RoomLight own_lights[ROOM_MAX_LIGHTS];   /* as the room file has them (Lights +0x9E0) */
     int nlights;
     GpuMesh moving;         /* the batches that move with the view or animate, rebuilt each frame */
     MeshVertex *moving_v;

@@ -192,6 +192,19 @@ the movie, the cutscene, Fiona in it, its subtitles - skipped from the movie pau
 its end (Fiona free, the track back). Seen on screen: the scene's camera and letterbox, the
 subtitles, the pause and the skip's darkening.
 
+**S5a built** (2026-10-08): the room's things.
+- **Placed objects** by the room's string naming them (`object-show`, `object-anim`,
+  `-anim-loop`, `-anim-reset`: the engine's `placed-op`).
+- **The doors' parts:** each door's model has a group mask (`door-group!`, as Doors_SetBits sets
+  door +0x120 on every present door); a batch shows while its group's bit is on (0 always).
+  Six doors in five rooms have parts in a group (castle-b1-6's in 22): the scripts' `door-bits`
+  shows them. The masks start empty with each room, as the original's doors are made anew.
+- **Lights** (`light`): back to the room's own (`light-own`), or the intensity / the shadows'
+  reach scaled (`light-scale`). `lights-doorway` (the shadow volumes' blockers) has nothing to
+  do with shadow maps.
+- **The look:** `depth-range` / `-off` (slot $1C), `fog` ($1D), `screen-blend` ($1E).
+Checked by `tests/story/test_things.fs` (8 tests).
+
 **Debugging** (`scripts/debug.fs`, at the console and in tests): `act` (a room action script as Fiona's), `room!`, `room-by!`, `tp`,
 `tp-facing`, `tp-area`, `tp-area-facing`, `tp-exit`, `tp-tri`, `walk`, `press`, `.here`.
 
@@ -200,5 +213,6 @@ Next, by how much the scripts use them:
 | Stage | Words |
 |---|---|
 | S4 | (built) The rest: scene changes (`scene-change`'s other scenes), endings, `movie-loop`, the half-black screen (op 11). |
-| S5 | Effects, placed objects, lights (`object-show`, `effect-*`, `specks`, `lights-doorway`). |
+| S5b | Effects: a sprite batch in C, an effect as an actor per slot; the classes by use (`effect-86` flames, `flicker-sprite`, `zone-at-effect`, `char-effect-moving`, `specks`, `butterflies`, `scene-effect-8C`, `effects-arena-flip`). |
+| S5c | The rooms' own commands (`<room>.cmdNN`: their effects - wisps, smoke, drips, the mirror...). |
 | S6 | The stalkers' and creatures' words, with them. |

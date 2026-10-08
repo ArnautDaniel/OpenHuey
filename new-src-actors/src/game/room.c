@@ -158,6 +158,8 @@ static void load_lights(Room *r) {
         r->lights[i].color = vec3(v[4], v[5], v[6]);
         r->lights[i].intensity = v[7];
         r->lights[i].range = v[8];
+        r->lights[i].shadow = v[11];
+        r->own_lights[i] = r->lights[i];
     }
     r->nlights = i;
 }
@@ -663,7 +665,6 @@ static void draw_parts(Room *r, const Mat4 *vp, int lo, int hi) {
 }
 
 void room_draw(Room *r, const Mat4 *view_proj, Vec3 eye, Vec3 forward) {
-    static const uint32_t kAll[8] = {~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u};
     int i;
 
     if (r->id < 0) {
@@ -674,7 +675,7 @@ void room_draw(Room *r, const Mat4 *view_proj, Vec3 eye, Vec3 forward) {
         if (r->doors[i].present) {
             Mat4 mvp = mat4_mul(*view_proj, door_matrix(&r->doors[i]));
 
-            render_mesh(&r->doors[i].gpu, &mvp, r->doors[i].mesh.d, r->doors[i].mesh.nd, r->textures, r->ntextures, kAll);
+            render_mesh(&r->doors[i].gpu, &mvp, r->doors[i].mesh.d, r->doors[i].mesh.nd, r->textures, r->ntextures, r->doors[i].groups);
         }
     }
     placed_draw(&r->placed, view_proj, r->textures, r->ntextures);
