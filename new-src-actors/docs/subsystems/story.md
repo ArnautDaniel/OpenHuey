@@ -192,7 +192,7 @@ the movie, the cutscene, Fiona in it, its subtitles - skipped from the movie pau
 its end (Fiona free, the track back). Seen on screen: the scene's camera and letterbox, the
 subtitles, the pause and the skip's darkening.
 
-**Debugging** (`scripts/debug.fs`, at the console and in tests): `room!`, `room-by!`, `tp`,
+**Debugging** (`scripts/debug.fs`, at the console and in tests): `act` (a room action script as Fiona's), `room!`, `room-by!`, `tp`,
 `tp-facing`, `tp-area`, `tp-area-facing`, `tp-exit`, `tp-tri`, `walk`, `press`, `.here`.
 
 Next, by how much the scripts use them:

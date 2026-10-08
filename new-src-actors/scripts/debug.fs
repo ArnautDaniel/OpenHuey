@@ -6,8 +6,9 @@
 \   2 tp-exit                       into exit 2's area             $1F2 tp-tri                on a nav triangle's middle
 \   10e 0e 20e walk                 walking there (over the nav mesh)
 \   circle press                    a button pressed for a frame   .here                      where she is
+\   0 act                           the room's action script 0, as Fiona's (a scene: try front-garden-3's)
 IN: debug
-USING: engine actors messages keys room-names ;
+USING: engine actors messages keys room-names flag-names story.words ;
 
 : fiona-id ( -- id )  s" fiona" actor-named ;
 : rooms-id ( -- id )  s" rooms" actor-named ;
@@ -30,3 +31,7 @@ create spot 12 allot
     ." room " room-id room-name type  ."  at " fiona-id body-pos  frot f. fswap f. f.
     ." tri " fiona-id body-tri .  ." areas:"
     area-count 0 ?do  fiona-id body-pos i area-in? if  space i .  then  loop  cr ;
+: act ( n -- )   \ (the world let go first: the new game holds it until the opening has played)
+    world-held state-flag-clear
+    room-id room-name actor-named dup 0< if  2drop ." no room actor" cr exit  then
+    enter  0 0 rot action  leave-actor ;
