@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-2
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x4B (D_00409910): a lit quad at x -63.65 .. -55.65, z 104.5, from 4 to 21
 : old-mansion-b1-2.cmd00 ( b0 -- )  drop s" old-mansion-b1-2.cmd00" stub-step ;
@@ -506,7 +506,7 @@ USING: room-names story.words story.shared ;
         self-frames-reset
         4 self-wait-frames
         0 $8F 145.0 -75.0 180 char-to-xz
-        $17 state-flag-set
+        world-frozen state-flag-set
         1 self-scripted
         1 20.0 5.0 0.0 3.0 event-camera
         self-frames-reset
@@ -517,7 +517,7 @@ USING: room-names story.words story.shared ;
         4 self-wait-frames
         0 0.0 0.0 0.0 0.0 event-camera
         0 $8F 143.75 -75.3 180 char-to-xz
-        $17 state-flag-clear
+        world-frozen state-flag-clear
         0 self-scripted
     then
     self-idle-or-end
@@ -543,7 +543,7 @@ USING: room-names story.words story.shared ;
     $8019 message
     wait-message
     0 self-scripted
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     self-idle-or-end
 ;
 
@@ -572,7 +572,7 @@ USING: room-names story.words story.shared ;
         self-frames-reset
         4 self-wait-frames
         0 $29 145.0 75.0 0 char-to-xz
-        $17 state-flag-set
+        world-frozen state-flag-set
         1 self-scripted
         1 20.0 5.0 0.0 3.0 event-camera
         self-frames-reset
@@ -583,7 +583,7 @@ USING: room-names story.words story.shared ;
         4 self-wait-frames
         0 0.0 0.0 0.0 0.0 event-camera
         0 $29 146.25 75.3 0 char-to-xz
-        $17 state-flag-clear
+        world-frozen state-flag-clear
         1 self-scripted
     then
     self-idle-or-end
@@ -609,7 +609,7 @@ USING: room-names story.words story.shared ;
     $8019 message
     wait-message
     0 self-scripted
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     self-idle-or-end
 ;
 
@@ -643,7 +643,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-b1-2.act05 ( -- )   \ 00409530
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     90.0 0.0 self-turn-to-xz
@@ -654,7 +654,7 @@ USING: room-names story.words story.shared ;
     wait-message
     $F 7 fade
     wait-fade
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -859,17 +859,17 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-b1-2.act0D ( -- )   \ 00409860
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     self-frames-reset
     4 self-wait-frames
     0 $F4 -53.0 -16.0 -90 char-to-xz
-    $17 state-flag-set
+    world-frozen state-flag-set
     1 12.0 0.0 0.0 5.0 event-camera
     5 message
     wait-message
-    $17 state-flag-clear
+    world-frozen state-flag-clear
     0 0.0 0.0 0.0 0.0 event-camera
     self-frames-reset
     4 self-wait-frames
@@ -881,7 +881,7 @@ USING: room-names story.words story.shared ;
     1 2 var? if
         $236 item-give
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;

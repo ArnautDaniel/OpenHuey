@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-7
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x1D (Room1D_Cmd00_ptmf): script variable 0 = 2 .. 5 at random
 : castle-b1-7.cmd00 ( -- )  s" castle-b1-7.cmd00" stub-step ;
@@ -12,7 +12,7 @@ USING: room-names story.words story.shared ;
 : castle-b1-7.cond00? ( -- flag )  s" castle-b1-7.cond00?" stub-flag ;
 
 : castle-b1-7.act04 ( -- )   \ 003FD720
-    $2D state-flag-clear
+    room-flag-2d state-flag-clear
     1 char-here? 1 hewie-side? and if
         $1E 0 -1 hewie-to-room
         1800 2 hewie-anim
@@ -23,7 +23,7 @@ USING: room-names story.words story.shared ;
 : castle-b1-7.enter ( -- )   \ 003FD370
     room-sounds
     1 $1E char-in-room? 119 hewie-action? and if
-        $2D state-flag-set
+        room-flag-2d state-flag-set
         $1D 1 252 hewie-to-room
         8 story-flag? not if
             0 1 2 action
@@ -129,7 +129,7 @@ USING: room-names story.words story.shared ;
         $F2 action-end
         0 castle-b1-7.cmd01
         $FE 1 stalker-mode
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
         1 ebit-clear
     then then
     $252 story-flag? not if
@@ -335,7 +335,7 @@ USING: room-names story.words story.shared ;
 
 : castle-b1-7.act09 ( -- )   \ 003FD810
     1 ebit-set
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     self-frames-reset
     $3C self-wait-frames
     castle-b1-7.cmd00
@@ -377,7 +377,7 @@ USING: room-names story.words story.shared ;
     else
         $FE 1 stalker-mode
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     1 ebit-clear
     self-idle-or-end
 ;

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-5
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x0B (Room0B_Cond00_ptmf): the player is 20 .. 120 from (x, z) = s16 bytes 3..4, 5..6
 : castle-b1-5.cond00? ( b0 b1 b2 b3 -- flag )  drop drop drop drop s" castle-b1-5.cond00?" stub-flag ;
@@ -107,7 +107,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-b1-5.act00 ( -- )   \ 003F4500
-    $2C state-flag-set
+    capture-no-end state-flag-set
     1 self-scripted
     begin
         0 char-busy? not while
@@ -127,7 +127,7 @@ USING: room-names story.words story.shared ;
     self-frames-reset
     self-wait-16
     0 game-over-flag
-    $C state-flag-set
+    caught state-flag-set
     self-idle-or-end
 ;
 

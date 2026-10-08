@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e9
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0xE9: stops the countdown clock (clock_stop: progress +0x1FBEC1 off, the camera director
 \ +0x40 -1).
@@ -423,8 +423,8 @@ USING: room-names story.words story.shared ;
 ;
 
 : off-map-e9.act01 ( -- )   \ 0044A8C0
-    $18 state-flag-set
-    $E state-flag-set
+    stalkers-stay state-flag-set
+    stalkers-blind state-flag-set
     1 self-scripted
     off-map-e9.cmd01
     $34 1.0 1 bgm
@@ -444,12 +444,12 @@ USING: room-names story.words story.shared ;
     $37 room-preload
     $C subscreen-open
     begin
-        4 state-flag? while
+        subscreen-wanted state-flag? while
         yield
     repeat
     9 subscreen-open
     begin
-        4 state-flag? while
+        subscreen-wanted state-flag? while
         yield
     repeat
     $F $50 fade
@@ -458,7 +458,7 @@ USING: room-names story.words story.shared ;
     $37 0 -1 hewie-to-room
     $10C door-open-clear
     2 0 char-remove
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     $81 exit-check
     self-idle-or-end
 ;

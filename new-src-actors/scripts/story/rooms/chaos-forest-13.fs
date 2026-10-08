@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-13
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ byte 3 0: a 0x4480 effect is spawned and its slot kept in event var 0; else that slot's effect
 \ is removed
@@ -104,7 +104,7 @@ USING: room-names story.words story.shared ;
 
 : chaos-forest-13.act00 ( -- )   \ 00419BB0
     1 self-scripted
-    0 state-flag-clear
+    summoner-on state-flag-clear
     $FE action-end
     $FE char-done
     1 action-end
@@ -114,7 +114,7 @@ USING: room-names story.words story.shared ;
     $FF 1.0 0 bgm
     wait-fade
     $AF story-flag? if
-        $16 state-flag-clear
+        creatures-on state-flag-clear
         1 creatures-clear
     then
     0 creatures-clear
@@ -143,11 +143,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -174,14 +174,14 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     $FE action-end
@@ -190,9 +190,9 @@ USING: room-names story.words story.shared ;
     3 ebit? if
         1 chaos-forest-13.cmd00
     then
-    8 state-flag-set
+    world-held state-flag-set
     $87 story-flag? chaos-forest-13.cond00? not or if
-        3 state-flag-set
+        new-game-sounds state-flag-set
         1 sound-set
         3 fiona-costume
         $26 3 pvar-set
@@ -267,11 +267,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -298,20 +298,20 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     2 0 char-remove
     3 0 char-remove
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end

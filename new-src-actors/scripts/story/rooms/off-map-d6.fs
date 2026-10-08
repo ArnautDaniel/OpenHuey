@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d6
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ (as Room105_Cmd00) pushed by the character slot byte 4 names
 : off-map-d6.cmd00 ( b0 b1 -- )  drop drop s" off-map-d6.cmd00" stub-step ;
@@ -133,7 +133,7 @@ USING: room-names story.words story.shared ;
     then then
     3 0 0 area-camera
     $FE self-is? if
-        9 state-flag? $FE 1 char-heading-for? and if
+        fiona-hidden state-flag? $FE 1 char-heading-for? and if
             2 ebit-set
             off-map-d6.act02
         else
@@ -217,8 +217,8 @@ USING: room-names story.words story.shared ;
 
 : off-map-d6.phase5 ( -- )   \ 004478B0
     0 char-busy? if
-        9 state-flag-clear
-        $18 state-flag-clear
+        fiona-hidden state-flag-clear
+        stalkers-stay state-flag-clear
         0 action-end
         0 $E7 90.99 -3.17 90 char-to-xz
     then
@@ -228,8 +228,8 @@ USING: room-names story.words story.shared ;
     0 ebit? if
         2 avoid-prompt
     then
-    9 state-flag-clear
-    $18 state-flag-set
+    fiona-hidden state-flag-clear
+    stalkers-stay state-flag-set
     $FE self-look-at
     yield
     4 $14 self-anim-blend
@@ -238,13 +238,13 @@ USING: room-names story.words story.shared ;
     yield
     0 self-scripted
     0 self-noclip
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 0 $40000 nav-group
     self-idle-or-end
 ;
 
 : off-map-d6.act00 ( -- )   \ 004478D0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $19A 70.5 -5.5 90 $FFFF $A self-move-to
@@ -256,8 +256,8 @@ USING: room-names story.words story.shared ;
     $800 self-anim
     self-wait-anim
     $801 self-anim
-    9 state-flag-set
-    $18 state-flag-clear
+    fiona-hidden state-flag-set
+    stalkers-stay state-flag-clear
     0 avoid-prompt
     begin
         -1 control-action? if
@@ -277,17 +277,17 @@ USING: room-names story.words story.shared ;
                 yield
             then
         else
-            9 state-flag-clear
+            fiona-hidden state-flag-clear
             $FE action-end
             2 game-mode? if
                 ['] off-map-d6.act01 goto
             then
-            $18 state-flag-set
+            stalkers-stay state-flag-set
             $802 self-anim
             self-wait-anim
             0 self-scripted
             0 self-noclip
-            $18 state-flag-clear
+            stalkers-stay state-flag-clear
             0 0 $40000 nav-group
             self-idle-or-end
         then

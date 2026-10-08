@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-24
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 defer old-mansion-1f-24.act02
 : old-mansion-1f-24.enter ( -- )   \ 0043B020
@@ -32,9 +32,9 @@ defer old-mansion-1f-24.act02
         1 exit-taken? not if
             $FE 2 char-file-load
         then
-        7 state-flag-set
-        $21 state-flag-set
-        $23 state-flag-set
+        force-followed state-flag-set
+        stalker-no-fear state-flag-set
+        no-stalker-camera state-flag-set
         $FE char-activate
         $FE 1 char-silent
         $FE $70 49 2 stalker-to-room
@@ -242,14 +242,14 @@ defer old-mansion-1f-24.act02
 
 : old-mansion-1f-24.phase5 ( -- )   \ 0043B390
     4 ebit? if
-        $21 state-flag-clear
-        $23 state-flag-clear
+        stalker-no-fear state-flag-clear
+        no-stalker-camera state-flag-clear
         1 $FE 0 char-model-op
         $FE 0 char-silent
         $FE action-end
         $FE char-done
     then
-    7 state-flag-clear
+    force-followed state-flag-clear
 ;
 
 : old-mansion-1f-24.act00 ( -- )   \ 0047AEC8
@@ -341,7 +341,7 @@ defer old-mansion-1f-24.act02
 
 : old-mansion-1f-24.act05 ( -- )   \ 0043B450
     1 self-scripted
-    $13 state-flag-set
+    hewie-no-attack state-flag-set
     self-wait-done
     6 ebit-set
     begin
@@ -375,7 +375,7 @@ defer old-mansion-1f-24.act02
         yield
     repeat
     0 self-scripted
-    $13 state-flag-clear
+    hewie-no-attack state-flag-clear
     self-idle-or-end
 ;
 

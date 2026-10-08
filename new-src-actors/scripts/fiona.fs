@@ -6,8 +6,10 @@ USING: engine actors messages common paths doors fiona.state fiona.model fiona.c
 : rooms-id ( -- id )  s" rooms" actor-named ;
 : camera-id ( -- id )  s" camera" actor-named ;
 
-\ ---- arriving (by an exit: on its spot inside, facing in from its spot outside) ----
-fvariable ox  fvariable oz  fvariable ix  fvariable iy  fvariable iz
+\ ---- arriving (by an exit: on its outside spot - Rooms_ExitPointOut - her heading kept from
+\ going through, as the original's: Fiona_Vt34 saves it, the scripts' 0x04 places without
+\ turning) ----
+fvariable ix  fvariable iy  fvariable iz
 : put ( F: x y z yaw -- )
     fdup her-yaw f!  her-heading f!
     her-at 8 + sf!  her-at 4 + sf!  her-at sf!
@@ -18,12 +20,9 @@ fvariable ox  fvariable oz  fvariable ix  fvariable iy  fvariable iz
     room-cameras if  0 room-camera  iz f! iy f! ix f!  fdrop fdrop fdrop fdrop  ix f@ iy f@ iz f@
     else  0e 0e 0e  then
     nav-tris if  nav-nearest  then  0e put ;
-: arrive-at ( exit -- )   \ (the room scripts' char-to-exit: its outside spot, facing in)
+: arrive-at ( exit -- )   \ (the room scripts' char-to-exit: its outside spot, her heading kept)
     dup 0 exit-spot 0< if  fdrop fdrop fdrop  drop arrive-anywhere exit  then
-    iz f! iy f! ix f!
-    1 exit-spot 0< if  fdrop fdrop fdrop  ix f@ iy f@ iz f@ 0e put exit  then
-    oz f! fdrop ox f!
-    ix f@ iy f@ iz f@  ox f@ ix f@ f-  oz f@ iz f@ f-  fatan2  put ;
+    drop  her-yaw f@ put ;
 : idle ( -- )   \ Fiona_ToIdle: free, standing, her moves her own
     0 her-doing !  0 her-mode !  her-yaw f@ her-heading f!  0 her-rest !  0 her-turn-mode !
     -1 idle-anim  ['] idle-move her-act ! ;
@@ -32,6 +31,15 @@ fvariable ox  fvariable oz  fvariable ix  fvariable iy  fvariable iz
     0 her-doing !  0 her-mode !  0 her-sub !  6 her-still !  0 her-turn-mode !  0 her-lock !
     1e her-stick-k f!  -1 her-variant !  1e her-tired-w f!  0 her-rest !  0 her-run-t !
     -1 her-cmd !  0 her-busy-t !  1 her-step-l !  1 her-step-r !  -1 her-door-exit !  her-path path-clear  stand  idle ;
+
+\ ---- walking to a point (go-to: the console's, later the story's moves): her way over the nav
+\ mesh, arriving facing the way she walked ----
+create goal 12 allot
+: going ( -- )  walk-to-spot dup 0< if  drop idle exit  then  if  exit  then  idle ;
+: go-to-point ( F: x y z -- )
+    goal vec!  goal blocked-floor v-tri-in dup 0< if  drop exit  then
+    goal vec@  her-at goal vec-heading  walk-spot
+    2 her-mode !  $14 her-doing !  ['] going her-act ! ;
 
 \ ---- each frame (Fiona_Update, the parts built so far) ----
 : frame ( -- )
@@ -49,11 +57,14 @@ fvariable ox  fvariable oz  fvariable ix  fvariable iy  fvariable iz
 
 behaviour free
   on spawned ( -- )
-      s" O_FIN/FIN_000" actor-load her-model !  1 her act.visible l!  2e 15e body-size
+      s" O_FIN/FIN_000" actor-load dup her-model !  $3D5CC0 motion-table   \ (CharModel_SecondaryMotion: her fades and flags)
+      1 her act.visible l!  2e 15e body-size
       self subscribe tick  self subscribe arrived  self subscribe camera-cut
       self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end ;
   on arrived ( room exit -- )  nip arrive-at  fresh  self camera-id send follow ;   \ (the story's scripts place her too)
-  on to-exit ( exit -- )  arrive-at  fresh ;   \ (the room's scripts: Rooms_ExitPointOut, facing in)
+  on to-exit ( exit -- )  arrive-at  fresh ;
+  on go-to ( x y z -- )  >r >r cell>f r> cell>f r> cell>f  go-to-point ;
+  on place ( x y z yaw -- )  >r >r >r cell>f r> cell>f r> cell>f r> cell>f  put  fresh ;   \ (the story puts her)   \ (the room's scripts: Rooms_ExitPointOut, facing in)
   on camera-cut ( -- )  -1 her-cut ! ;
   on danger ( level -- )  her-danger ! ;
   on panic ( stage level -- )  cell>f her-panic-level f!  her-panic-stage ! ;

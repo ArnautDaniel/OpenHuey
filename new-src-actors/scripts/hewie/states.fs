@@ -6,7 +6,7 @@
 \ away, dashing, the stance, barking, being down). Later: praise and commands (H2), the stalkers
 \ (H3), the story's moves (H4).
 IN: hewie.states
-USING: engine game-state actors common facts paths hewie.state hewie.body hewie.tables hewie.model hewie.moving ;
+USING: engine game-state actors common facts paths hewie.state hewie.body hewie.tables hewie.model hewie.moving flag-names ;
 
 \ ---- how he is treated: the progress's counters (for the dog's level at the end) ----
 : counter+ ( n addr -- )  tuck l@ + 0 10000 clamp swap l! ;
@@ -46,8 +46,8 @@ create trust-bounds  100 , 280 , 450 , 600 , 750 , 900 , 1000 ,
     his-trust-points @ + 0 10000 clamp dup his-trust-points !
     0 begin  dup 7 < if  2dup cells trust-bounds + @ >=  else  false  then  while  1+  repeat
     nip his-trust !
-    $11 state-flag? his-trust @ 2 >= and if  $11 state-flag-clear  then
-    $1D state-flag? his-trust @ 3 >= and if  $1D state-flag-clear  then ;
+    hewie-timid state-flag? his-trust @ 2 >= and if  hewie-timid state-flag-clear  then
+    hewie-no-dodge state-flag? his-trust @ 3 >= and if  hewie-no-dodge state-flag-clear  then ;
 
 \ Hewie_RandomLevel: a gait at random (0 walk, 1 trot, 2 run; brisker on hard or when not calm)
 : random-level ( -- n )

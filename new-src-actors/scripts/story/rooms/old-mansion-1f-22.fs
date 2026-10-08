@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-22
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-22.enter ( -- )   \ 0043A120
     room-sounds
@@ -126,7 +126,7 @@ USING: room-names story.words story.shared ;
     then then
     1 1 1 area-camera
     $FE self-is? if
-        9 state-flag? if
+        fiona-hidden state-flag? if
             4 ebit-set
             old-mansion-1f-22.act06
         else
@@ -197,7 +197,7 @@ USING: room-names story.words story.shared ;
     counter-inc
     2 avoid-prompt
     0 camera-follow
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     1 self-noclip
     $8003 0 self-anim-blend
     self-wait-anim
@@ -212,7 +212,7 @@ USING: room-names story.words story.shared ;
     1 self-scripted
     counter-inc
     0 camera-follow
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     $FE char-here? if
         $FE 0 stalker-mode
         $FE action-end
@@ -245,7 +245,7 @@ USING: room-names story.words story.shared ;
     counter-inc
     1 ebit-set
     0 camera-follow
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     $FE char-here? 0 0 var? and if
         $FE 0 stalker-mode
         $FE action-end
@@ -272,7 +272,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-1f-22.act01 ( -- )   \ 0043A350
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     4 ebit-clear
     1 self-scripted
     self-wait-done
@@ -341,8 +341,8 @@ USING: room-names story.words story.shared ;
     then
     0 self-noclip
     0 0 $20000 nav-group
-    $18 state-flag-clear
-    9 state-flag-set
+    stalkers-stay state-flag-clear
+    fiona-hidden state-flag-set
     0 avoid-prompt
     begin
         0 2 pad? not 1 1 var? or if
@@ -373,7 +373,7 @@ USING: room-names story.words story.shared ;
             then
             counter-inc
             0 camera-follow
-            9 state-flag-clear
+            fiona-hidden state-flag-clear
             $FE char-here? if
                 $FE 0 stalker-mode
                 $FE action-end
@@ -421,13 +421,13 @@ USING: room-names story.words story.shared ;
         self-wait-anim
     then
     0 self-noclip
-    $B state-flag-set
+    hewie-hidden state-flag-set
     begin
         0 char-busy? if
             2 counter? not if
                 yield
             else
-                $B state-flag-clear
+                hewie-hidden state-flag-clear
                 1 self-noclip
                 1 ebit? if
                     $8004 0 self-anim-blend
@@ -447,7 +447,7 @@ USING: room-names story.words story.shared ;
                 self-idle-or-end
             then
         else
-            $B state-flag-clear
+            hewie-hidden state-flag-clear
             1 self-noclip
             1 ebit? if
                 $8004 0 self-anim-blend
@@ -534,7 +534,7 @@ USING: room-names story.words story.shared ;
     else
         $1601 self-anim
         self-wait-anim
-        9 state-flag? if
+        fiona-hidden state-flag? if
             2 avoid-prompt
             $FF panic-stage? if
                 3 panic-stage

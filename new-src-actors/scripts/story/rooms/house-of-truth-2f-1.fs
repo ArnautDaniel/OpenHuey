@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-2f-1
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : house-of-truth-2f-1.enter ( -- )   \ 004314B0
     $297 story-flag? not if
@@ -377,13 +377,13 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-2f-1.act00 ( -- )   \ 00431B20
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     $F $44 fade
     self-wait-done
     wait-fade
     0 creatures-clear
-    $12 state-flag-set
+    scene-locked state-flag-set
     0 exit-prepare
     0 self-scripted
     $80 exit-check
@@ -415,7 +415,7 @@ USING: room-names story.words story.shared ;
         self-frames-reset
         4 self-wait-frames
         0 $26E -10.0 135.3 0 char-to-xz
-        $17 state-flag-set
+        world-frozen state-flag-set
         1 self-scripted
         1 20.0 0.0 0.0 2.0 event-camera
         self-frames-reset
@@ -426,7 +426,7 @@ USING: room-names story.words story.shared ;
         4 self-wait-frames
         0 0.0 0.0 0.0 0.0 event-camera
         1 ebit-clear
-        $17 state-flag-clear
+        world-frozen state-flag-clear
         0 self-scripted
     then
     self-idle-or-end
@@ -451,7 +451,7 @@ USING: room-names story.words story.shared ;
     $14 self-wait-frames
     $8019 message
     wait-message
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -506,14 +506,14 @@ USING: room-names story.words story.shared ;
     $FE $82 622 2 stalker-to-room
     $FE $26E 180 char-to-tri-facing
     $FE 1 1 char-camera
-    0 state-flag-set
+    summoner-on state-flag-set
     stalker-item-cooldown
     room-sounds
     $F $41 fade
     wait-fade
     $24F item-give
-    $12 state-flag-clear
-    $18 state-flag-clear
+    scene-locked state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;

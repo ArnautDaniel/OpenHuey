@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-5
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ a hanging thing (the room's +0x34 (byte 3 + 2) object) swinging, by byte 4: 0 / 2 set going
 \ (12 degrees) away from the partner / Fiona; 1 a step (22.5 degrees of its swing, shrinking to
@@ -115,7 +115,7 @@ USING: room-names story.words story.shared ;
     then then
     0 0 0 area-camera
     $FE self-is? if
-        9 state-flag? if
+        fiona-hidden state-flag? if
             2 ebit-set
             front-garden-5.act09
         else
@@ -408,21 +408,21 @@ USING: room-names story.words story.shared ;
     0 ebit? if
         2 avoid-prompt
     then
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     0 camera-follow
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     $C3 -67.3 79.93 89 $207 5 self-move-to
     self-wait-done
     4 $14 self-anim-blend
     self-wait-anim
     0 self-scripted
     0 self-noclip
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     self-idle-or-end
 ;
 
 : front-garden-5.act07 ( -- )   \ 00406090
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     2 ebit-clear
     1 self-scripted
     0 ebit-clear
@@ -438,8 +438,8 @@ USING: room-names story.words story.shared ;
     $D6 -100.488 79.931 90 $803 5 self-move-to
     self-wait-done
     $801 self-anim
-    9 state-flag-set
-    $18 state-flag-clear
+    fiona-hidden state-flag-set
+    stalkers-stay state-flag-clear
     0 avoid-prompt
     begin
         0 2 pad? not if
@@ -459,20 +459,20 @@ USING: room-names story.words story.shared ;
                 yield
             then
         else
-            9 state-flag-clear
+            fiona-hidden state-flag-clear
             0 camera-follow
             $FE action-end
             2 game-mode? if
                 ['] front-garden-5.act08 goto
             then
-            $18 state-flag-set
+            stalkers-stay state-flag-set
             $E5 -74.756 82.505 90 $803 5 self-move-to
             self-wait-done
             $802 self-anim
             self-wait-anim
             0 self-scripted
             0 self-noclip
-            $18 state-flag-clear
+            stalkers-stay state-flag-clear
             self-idle-or-end
         then
     again

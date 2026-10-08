@@ -121,7 +121,7 @@ commands taken (Hewie_FionaCommand / CommandAction / ActOnCommand: stay, come, c
 there, go for it, praise and scold from afar with his mood, her cry for help by his trust),
 her reactions, the meeting (Hewie_FindSpot, his calls 12), the behaviours for them (turning
 with her, praised / petted / patted, scolded, won't, walking to the spot she showed, readying).
-Checked by `tests/hewie/test_commands.fs` (17 tests): no gestures without state flag 0xD; her
+Checked by `tests/hewie/test_commands.fs` (17 tests): no gestures without `hewie-commandable`; her
 reading his broadcast; come back (0x2C → 0x1D → 0xD); go there (0x23 → 0x63, the spot kept);
 the meeting (praise close: 0x48, sits, 0x4A petted, her 0xC07); her cry for help (0x30); a
 reaction spending his patience.

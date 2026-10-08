@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-14
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-14.enter ( -- )   \ 004268B0
     room-sounds
@@ -107,7 +107,7 @@ USING: room-names story.words story.shared ;
     1 result? if
         1.0 movie-volume
         yield
-        8 state-flag-set
+        world-held state-flag-set
         begin
             0 cutscene-control
             -1 result? not if
@@ -127,10 +127,10 @@ USING: room-names story.words story.shared ;
             yield
         repeat
         yield
-        8 state-flag-clear
+        world-held state-flag-clear
     then
     $337 story-flag-set
-    8 state-flag-set
+    world-held state-flag-set
     $E item-use
     3 stalker-kind? $22 stalker-kind? or if
         0 0 $14 door-bits
@@ -161,11 +161,11 @@ USING: room-names story.words story.shared ;
             1.0 movie-volume
             effects-arena-flip
             yield
-            $1A state-flag-clear
+            movie-skipped state-flag-clear
             $F 1 fade
             $A cutscene-control
             begin
-                $1A state-flag? not if
+                movie-skipped state-flag? not if
                     7 cutscene-control
                     cutscene-near-end? if
                         $F 0 fade
@@ -192,17 +192,17 @@ USING: room-names story.words story.shared ;
             $B cutscene-control
             wait-fade
             1 cutscene-control
-            8 state-flag-set
+            world-held state-flag-set
             effects-arena-flip
             begin
                 movie-playing? while
                 yield
             repeat
             yield
-            6 state-flag-set
+            pause-wanted state-flag-set
             8 cutscene-control
         then
-        8 state-flag-set
+        world-held state-flag-set
         $FE $53 0 room-doors-state
         $FE $75 0 door-lock-for
         $FE $53 43 2 stalker-to-room
@@ -211,7 +211,7 @@ USING: room-names story.words story.shared ;
         stalker-item-cooldown
         1 self-scripted
         $333 story-flag-set
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
         0 $16 -1.36 20.03 0 char-to-xz
         hewie-controlled? not if
             0 0 0 char-camera
@@ -233,7 +233,7 @@ USING: room-names story.words story.shared ;
         then
         yield
         camera-restart
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
     then
     8 0 object-show
     9 0 object-show
@@ -390,11 +390,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -421,21 +421,21 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     8 0 object-show
     9 0 object-show
     2 0 char-remove
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end

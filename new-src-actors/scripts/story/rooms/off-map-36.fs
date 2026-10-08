@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-36
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : off-map-36.char-enter ( -- )   \ 00443E60
     0 self-is? if
@@ -17,9 +17,9 @@ USING: room-names story.words story.shared ;
 
 : off-map-36.act00 ( -- )   \ 00443E70
     1 resident-flag? not if
-        $19 state-flag-set
+        no-pause state-flag-set
     then
-    8 state-flag-set
+    world-held state-flag-set
     1 action-end
     1 char-done
     1 0 movie-play
@@ -42,11 +42,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -73,20 +73,20 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     3 0 char-remove
     $2D 0 pvar-set
     2 game-over-flag
-    $C state-flag-set
+    caught state-flag-set
     self-idle-or-end
 ;
 
@@ -114,11 +114,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -145,20 +145,20 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     3 0 char-remove
     $FF 0 char-visible
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-12
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x69 (D_004386F8): the three-dial lock by byte 3 - 0 the dials (and their lit twins) set
 \ to their settings; 1 the player at it: up / down pick the dial (event variable 0; its lit twin
@@ -227,7 +227,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-2f-12.act00 ( -- )   \ 004382D0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $7F -103.0 -75.0 -90 $FFFF 5 self-move-to
@@ -251,7 +251,7 @@ USING: room-names story.words story.shared ;
     wait-message
     $903 self-anim
     self-wait-anim
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -294,7 +294,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-2f-12.act02 ( -- )   \ 00438390
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $54 story-flag? not if
@@ -302,7 +302,7 @@ USING: room-names story.words story.shared ;
         wait-message
         0 answer? if
             0 $4B 293.136 -95.0 180 char-to-xz
-            $17 state-flag-set
+            world-frozen state-flag-set
             1 5.0 0.0 0.0 2.0 event-camera
             2 message
             2 ebit-set
@@ -325,7 +325,7 @@ USING: room-names story.words story.shared ;
                 yield
             repeat
             2 message-close
-            $17 state-flag-clear
+            world-frozen state-flag-clear
             0 0.0 0.0 0.0 0.0 event-camera
             0 0 object-show
             1 0 object-show
@@ -364,13 +364,13 @@ USING: room-names story.words story.shared ;
         7 message
         wait-message
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-2f-12.act03 ( -- )   \ 004384E0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $7F -103.0 -75.0 -90 $FFFF 5 self-move-to
@@ -391,13 +391,13 @@ USING: room-names story.words story.shared ;
         1 ebit-clear
     then
     $244 item-give
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-2f-12.act04 ( -- )   \ 00438530
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $7F -103.0 -75.0 -90 $FFFF 5 self-move-to
@@ -449,7 +449,7 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     5 message
     wait-message
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;

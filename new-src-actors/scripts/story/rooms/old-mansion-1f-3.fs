@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-3
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-3.enter ( -- )   \ 0041CA90
     room-sounds
@@ -16,7 +16,7 @@ USING: room-names story.words story.shared ;
         $1C $9002 1 0 char-anim-hold
     then
     0 $F1 1 action
-    $22 state-flag-set
+    hunted state-flag-set
     $322 story-flag? if
         1 char-here? 1 0 char-in-nav-group? and if
             1 $13 char-to-tri

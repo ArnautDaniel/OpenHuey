@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-4
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ Room31_Cmd00
 : castle-2f-4.cmd00 ( -- )  s" castle-2f-4.cmd00" stub-step ;
@@ -74,7 +74,7 @@ USING: room-names story.words story.shared ;
                 1 camera-follow
             then
             0 $A8 45 char-to-tri-facing
-            8 state-flag-set
+            world-held state-flag-set
             0 0 0 action
         then
     then
@@ -107,7 +107,7 @@ USING: room-names story.words story.shared ;
     wait-fade
     0 $F9 1 action
     $21 room-preload
-    $29 state-flag-set
+    movie-opaque state-flag-set
     $FF panic-stage? if
         3 panic-stage
     then
@@ -117,11 +117,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -148,17 +148,17 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
-    8 state-flag-set
+    world-held state-flag-set
     $80 exit-check
     0 $A char-layer
     self-idle-or-end
@@ -222,7 +222,7 @@ USING: room-names story.words story.shared ;
         yield
     repeat
     0 $F9 1 action
-    $29 state-flag-set
+    movie-opaque state-flag-set
     $FF panic-stage? if
         3 panic-stage
     then
@@ -232,11 +232,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -263,18 +263,18 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end

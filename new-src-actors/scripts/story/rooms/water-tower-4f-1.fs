@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-4f-1
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ (as RoomC2_Cmd00, the room object named RoomC3_ObjectNames, opening to -pi/2)
 : water-tower-4f-1.cmd00 ( b0 -- )  drop s" water-tower-4f-1.cmd00" stub-step ;
@@ -54,11 +54,11 @@ USING: room-names story.words story.shared ;
         4 0 object-show
     then
     $17 stalker-kind? if
-        $23 state-flag-set
+        no-stalker-camera state-flag-set
     then
-    0 state-flag? if
+    summoner-on state-flag? if
         4 ebit-set
-        0 state-flag-clear
+        summoner-on state-flag-clear
     then
     $FE action-end
     1 summon-take
@@ -197,7 +197,7 @@ USING: room-names story.words story.shared ;
                     5 ebit-clear
                 else 1 0 var? not if
                     1 var-dec
-                else 1 ebit? not $18 state-flag? not and if
+                else 1 ebit? not stalkers-stay state-flag? not and if
                     $342 story-flag? not if
                         $FE $C3 249 2 stalker-to-room
                         $FE 0 stalker-mode
@@ -273,14 +273,14 @@ USING: room-names story.words story.shared ;
 ;
 
 : water-tower-4f-1.phase5 ( -- )   \ 0043FCC0
-    $23 state-flag-clear
+    no-stalker-camera state-flag-clear
     4 ebit? if
-        0 state-flag-set
+        summoner-on state-flag-set
     then
 ;
 
 : water-tower-4f-1.act00 ( -- )   \ 0043FCD0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     1 ebit-set
     3 ebit-clear
@@ -362,7 +362,7 @@ USING: room-names story.words story.shared ;
         1 0 $14 door-bits
     then
     0 self-scripted
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     self-idle-or-end
 ;
 

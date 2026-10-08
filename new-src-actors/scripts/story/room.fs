@@ -7,7 +7,7 @@
 \ Events_CharEnter, Events_RunCharScripts; the order: src/game/scene_game.c).
 \ Under state flag 0x26 only phase 3 runs, and a shared script for characters entering.
 IN: story.room
-USING: engine game-state actors messages common room-names story.state story.words story.shared ;
+USING: engine game-state actors messages common room-names story.state story.words story.shared flag-names ;
 
 : phase-context ( -- )  -1 ctx-slot !  -1 ctx-who !  $FF ctx-id !  0 phase-frames ! ;
 : run ( xt | 0 -- )  ?dup if  execute  then ;
@@ -22,15 +22,15 @@ USING: engine game-state actors messages common room-names story.state story.wor
     phase-context
     dup 0 = if  entering  then
     dup 1 = if  1 room-frames +!  then
-    dup 5 = if  $22 state-flag-clear  then
-    $26 state-flag? over 3 <> and 0= if  dup this-room @ swap room-script @ run  then
+    dup 5 = if  hunted state-flag-clear  then
+    events-held state-flag? over 3 <> and 0= if  dup this-room @ swap room-script @ run  then
     dup 1 = if  shared.after-phase1  then
     2 = if  shared.after-phase2  then ;
 
 \ character slot `cs` enters this room: its entering script, run as itself
 : char-enter ( cs -- )
     dup char-here 0= if  drop exit  then
-    $26 state-flag? if  ['] shared.char-enter-26  else  this-room @ 6 room-script @  then
+    events-held state-flag? if  ['] shared.char-enter-26  else  this-room @ 6 room-script @  then
     ?dup 0= if  drop exit  then
     phase-context  swap dup ctx-who !  ctx-id !  execute ;
 

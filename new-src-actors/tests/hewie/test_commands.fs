@@ -2,7 +2,7 @@
 \ side (docs/subsystems/hewie.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/hewie/test_commands.fs
 IN: test-commands
-USING: tester engine game-state actors messages common facts room-names game hewie.state hewie.body hewie.model hewie.states fiona.state fiona.model ;
+USING: tester engine game-state actors messages common facts room-names game hewie.state hewie.body hewie.model hewie.states fiona.state fiona.model flag-names ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : his@ ( xt -- x )  hewie enter  execute  leave-actor ;
@@ -26,7 +26,7 @@ ready
 testing without state flag 0xD her gestures do nothing
 T{ key: 2 press  60 frames  [: her-mode @ ;] her@ -> 0 }T
 T{ [: his-cmd-was @ ;] his@ -> 0 }T
-$D set-flag
+hewie-commandable set-flag
 
 testing what she tells: Hewie's broadcast, read by her
 T{ [: dog-here @ dog-action @ ;] her@  -> 2 action }T

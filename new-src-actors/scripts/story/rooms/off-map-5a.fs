@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-5a
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ the three dials (Room5A_ObjectNames, progress vars gSndProgressVars: 0..3, 90 degrees each),
 \ event var 0 the one picked: byte 3 0 set (the original sets the picked one three times), 1 up
@@ -182,7 +182,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : off-map-5a.act00 ( -- )   \ 00410DD0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $A item-use
@@ -193,7 +193,7 @@ USING: room-names story.words story.shared ;
     $83 $85 0.0 0.0 0.0 0 0 sound
     $8012 message
     wait-message
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -203,20 +203,20 @@ USING: room-names story.words story.shared ;
     $F $41 fade
     0 $28 5 char-sound
     self-wait-done
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : off-map-5a.act02 ( -- )   \ 00410E30
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     1 message
     wait-message
     0 answer? if
         0 $D2 293.136 -95.0 180 char-to-xz
-        $17 state-flag-set
+        world-frozen state-flag-set
         1 5.0 0.0 0.0 2.0 event-camera
         2 message
         2 ebit-set
@@ -231,7 +231,7 @@ USING: room-names story.words story.shared ;
             yield
         repeat
         2 message-close
-        $17 state-flag-clear
+        world-frozen state-flag-clear
         0 0.0 0.0 0.0 0.0 event-camera
         4 ebit? if
             self-frames-reset
@@ -248,7 +248,7 @@ USING: room-names story.words story.shared ;
     \ (never runs in the original: an else outside any block)
     \   7 message
     \   wait-message
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -270,14 +270,14 @@ USING: room-names story.words story.shared ;
 ;
 
 : off-map-5a.act04 ( -- )   \ 00410EF0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     -115.0 -75.0 self-turn-to-xz
     self-wait-done
     5 message
     wait-message
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;

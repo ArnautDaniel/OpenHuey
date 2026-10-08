@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-16
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x1A (D_003FC660): the fan turns
 : castle-1f-16.cmd00 ( -- )  s" castle-1f-16.cmd00" stub-step ;
@@ -87,7 +87,7 @@ USING: room-names story.words story.shared ;
     then then
     0 1 -1 area-camera
     $FE self-is? if
-        9 state-flag? if
+        fiona-hidden state-flag? if
             4 ebit-set
             $30A story-flag? 2 creature-action? not and if
                 2 self-is? 6 self-is? or 7 self-is? or if
@@ -289,7 +289,7 @@ USING: room-names story.words story.shared ;
     then
     1 self-scripted
     0 camera-follow
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     1 self-noclip
     0 $7E 5 char-sound
     $8003 $A self-anim-blend
@@ -303,7 +303,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-1f-16.act03 ( -- )   \ 003FC420
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     4 ebit-clear
     1 self-scripted
     0 0 char-file-load
@@ -318,8 +318,8 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     $8001 $A self-anim-blend
     0 self-noclip
-    $18 state-flag-clear
-    9 state-flag-set
+    stalkers-stay state-flag-clear
+    fiona-hidden state-flag-set
     0 ebit-clear
     0 avoid-prompt
     $FF 3 -1 char-camera
@@ -345,7 +345,7 @@ USING: room-names story.words story.shared ;
                 ['] castle-1f-16.act04 goto
             then
             0 camera-follow
-            9 state-flag-clear
+            fiona-hidden state-flag-clear
             1 self-noclip
             $8002 5 self-anim-9
             self-frames-reset

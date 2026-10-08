@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d9
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0xD9: starts the countdown clock (clock_start: progress +0x1FBEC1 on, Hewie restarted,
 \ the camera director +0x40 14, the time zeroed).
@@ -104,7 +104,7 @@ USING: room-names story.words story.shared ;
 : off-map-d9.act00 ( -- )   \ 00447F78
     self-wait-done
     camera-restart
-    8 state-flag-clear
+    world-held state-flag-clear
     $F 1 fade
     wait-fade
     0 ebit-set

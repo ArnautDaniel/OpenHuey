@@ -2,14 +2,14 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-9
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : castle-2f-9.enter ( -- )   \ 003F1800
     $5B story-flag? $5C story-flag? not and if
         room-sounds
-        7 state-flag-set
-        $21 state-flag-set
-        $23 state-flag-set
+        force-followed state-flag-set
+        stalker-no-fear state-flag-set
+        no-stalker-camera state-flag-set
         1 0 $1000010 nav-group
         $FE char-activate
         $FE 5 354 2 stalker-to-room
@@ -187,15 +187,15 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-2f-9.phase5 ( -- )   \ 003F1A50
-    7 state-flag-clear
+    force-followed state-flag-clear
     $5B story-flag? $5C story-flag? not and if
         1 $FE 0 char-model-op
         $FE 0 char-silent
         $FE action-end
         $FE char-done
         0 0 char-in-area? if
-            $21 state-flag-clear
-            $23 state-flag-clear
+            stalker-no-fear state-flag-clear
+            no-stalker-camera state-flag-clear
         then
     then
 ;
@@ -206,17 +206,17 @@ USING: room-names story.words story.shared ;
     1 exit-prepare
     self-frames-reset
     self-wait-16
-    8 state-flag-clear
+    world-held state-flag-clear
     $F $41 fade
     $1D story-flag-set
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : castle-2f-9.act01 ( -- )   \ 003F1AA0
     1 self-scripted
-    $13 state-flag-set
+    hewie-no-attack state-flag-set
     0 counter-set
     $FE action-end
     self-frames-reset
@@ -224,17 +224,17 @@ USING: room-names story.words story.shared ;
     0 $FE 4 action
     1 wait-counter
     0 self-scripted
-    $13 state-flag-clear
+    hewie-no-attack state-flag-clear
     self-idle-or-end
 ;
 
 : castle-2f-9.act02 ( -- )   \ 003F1AC0
     1 self-scripted
-    $13 state-flag-set
+    hewie-no-attack state-flag-set
     1 message
     wait-message
     0 self-scripted
-    $13 state-flag-clear
+    hewie-no-attack state-flag-clear
     self-idle-or-end
 ;
 

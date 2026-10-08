@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-7
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ a struggle: byte 3 0 resets Fiona's shake tracking (+0x1AD710 / +0x1AD714); 1 adds her shakes
 \ to script variable byte 4, with a grunt (voice 0x3D or 0x45 at random) when the cool-down
@@ -149,7 +149,7 @@ USING: room-names story.words story.shared ;
     then then
     1 4 4 area-camera
     $FE self-is? if
-        9 state-flag? if
+        fiona-hidden state-flag? if
             house-of-truth-1f-7.act08
         else
             6 ebit-clear
@@ -232,7 +232,7 @@ USING: room-names story.words story.shared ;
         then
     then
     $FE 2 char-C4? not if
-        9 state-flag? 5 ebit? not and $FE char-here? and if
+        fiona-hidden state-flag? 5 ebit? not and $FE char-here? and if
             $FE char-busy? not if
                 8 ebit-set
                 house-of-truth-1f-7.act08
@@ -291,7 +291,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-1f-7.act00 ( -- )   \ 00435D30
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     1 1 movie-play
     0 cutscene-start
@@ -332,11 +332,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -363,14 +363,14 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     2 1 object-show
@@ -395,7 +395,7 @@ USING: room-names story.words story.shared ;
     $F $41 fade
     wait-fade
     $4C resident-flag-set
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -443,9 +443,9 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-1f-7.act03 ( -- )   \ 00435ED0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
-    $E state-flag-set
+    stalkers-blind state-flag-set
     $FE char-here? if
         0 $FE 4 action-force
     then
@@ -476,11 +476,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -507,14 +507,14 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     $50 resident-flag-set
@@ -532,7 +532,7 @@ USING: room-names story.words story.shared ;
         1 camera-follow
     then
     camera-restart
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 1 house-of-truth-1f-7.cmd00
     $8000 self-anim
     4 0 object-anim
@@ -576,7 +576,7 @@ USING: room-names story.words story.shared ;
         $FE action-end
     then
     7 ebit-clear
-    $E state-flag-clear
+    stalkers-blind state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -626,7 +626,7 @@ USING: room-names story.words story.shared ;
     1 self-scripted
     $FF 0 char-visible
     0 camera-follow
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     1 self-noclip
     0 $7E 5 char-sound
     $8003 $A self-anim-blend
@@ -640,7 +640,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-1f-7.act06 ( -- )   \ 004360A0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     6 ebit-clear
     1 self-scripted
     5 ebit-clear
@@ -658,8 +658,8 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     $8001 $A self-anim-blend
     0 self-noclip
-    $18 state-flag-clear
-    9 state-flag-set
+    stalkers-stay state-flag-clear
+    fiona-hidden state-flag-set
     3 ebit-clear
     0 avoid-prompt
     $FF 6 -1 char-camera
@@ -687,7 +687,7 @@ USING: room-names story.words story.shared ;
             then
             $FF 0 char-visible
             0 camera-follow
-            9 state-flag-clear
+            fiona-hidden state-flag-clear
             1 self-noclip
             $8002 5 self-anim-9
             self-frames-reset
@@ -809,7 +809,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-1f-7.act0E ( -- )   \ 00436320
-    $2C state-flag-set
+    capture-no-end state-flag-set
     self-wait-done
     0 $41 5 char-sound
     $1100 self-anim
@@ -817,7 +817,7 @@ USING: room-names story.words story.shared ;
     self-frames-reset
     $1E self-wait-frames
     1 game-over-flag
-    $C state-flag-set
+    caught state-flag-set
     self-idle-or-end
 ;
 
@@ -856,11 +856,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -887,21 +887,21 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     $26 3 pvar? $26 2 pvar? or if
         3 house-of-truth-1f-7.cmd01
     then
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end
@@ -937,11 +937,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -968,18 +968,18 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end

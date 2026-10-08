@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-3f-1
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x06 (Room06_Cmd00_ptmf): its four objects (the name's 6th letter counting) to their
 \ places
@@ -26,9 +26,9 @@ USING: room-names story.words story.shared ;
         castle-3f-1.cmd00
     then
     $5B story-flag? $5C story-flag? not and if
-        7 state-flag-set
-        $21 state-flag-set
-        $23 state-flag-set
+        force-followed state-flag-set
+        stalker-no-fear state-flag-set
+        no-stalker-camera state-flag-set
         $FE char-activate
         $FE 1 char-silent
         $FE 6 236 2 stalker-to-room
@@ -188,15 +188,15 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-3f-1.phase5 ( -- )   \ 003F1F00
-    7 state-flag-clear
+    force-followed state-flag-clear
     $5B story-flag? $5C story-flag? not and if
         1 $FE 0 char-model-op
         $FE 0 char-silent
         $FE action-end
         $FE char-done
         0 0 char-in-area? 0 1 char-in-area? or if
-            $21 state-flag-clear
-            $23 state-flag-clear
+            stalker-no-fear state-flag-clear
+            no-stalker-camera state-flag-clear
         then
     then
 ;
@@ -226,7 +226,7 @@ USING: room-names story.words story.shared ;
         self-frames-reset
         4 self-wait-frames
         0 $12E 0.0 -76.5 180 char-to-xz
-        $17 state-flag-set
+        world-frozen state-flag-set
         1 self-scripted
         1 20.0 5.0 0.0 4.0 event-camera
         self-frames-reset
@@ -237,7 +237,7 @@ USING: room-names story.words story.shared ;
         4 self-wait-frames
         0 0.0 0.0 0.0 0.0 event-camera
         0 $12E -1.25 -75.3 180 char-to-xz
-        $17 state-flag-clear
+        world-frozen state-flag-clear
         0 self-scripted
     then
     $258 item-give
@@ -245,14 +245,14 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-3f-1.act01 ( -- )   \ 003F1FD0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $34 self-through-door
     self-wait-done
     $41 story-flag? not if
         $F $44 fade
-        $12 state-flag-set
+        scene-locked state-flag-set
         3 partner-load
         2 char-unload
         1 0 movie-play
@@ -279,11 +279,11 @@ USING: room-names story.words story.shared ;
             1.0 movie-volume
             effects-arena-flip
             yield
-            $1A state-flag-clear
+            movie-skipped state-flag-clear
             $F 1 fade
             $A cutscene-control
             begin
-                $1A state-flag? not if
+                movie-skipped state-flag? not if
                     7 cutscene-control
                     cutscene-near-end? if
                         $F 0 fade
@@ -310,18 +310,18 @@ USING: room-names story.words story.shared ;
             $B cutscene-control
             wait-fade
             1 cutscene-control
-            8 state-flag-set
+            world-held state-flag-set
             effects-arena-flip
             begin
                 movie-playing? while
                 yield
             repeat
             yield
-            6 state-flag-set
+            pause-wanted state-flag-set
             8 cutscene-control
         then
         wait-fade
-        8 state-flag-set
+        world-held state-flag-set
         3 action-end
         3 char-done
         $80 exit-check
@@ -340,7 +340,7 @@ USING: room-names story.words story.shared ;
         $8019 message
         wait-message
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -382,11 +382,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -413,23 +413,23 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
-    8 state-flag-set
+    world-held state-flag-set
     3 action-end
     3 char-done
     0 0 $14 door-bits
     2 0 char-remove
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end

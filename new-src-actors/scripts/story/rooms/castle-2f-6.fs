@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-6
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : castle-2f-6.enter ( -- )   \ 00400C60
     $A story-flag? not if
@@ -171,14 +171,14 @@ USING: room-names story.words story.shared ;
     self-frames-reset
     self-wait-16
     0 0.0 0.0 0.0 0.0 event-camera
-    0 state-flag-set
-    $18 state-flag-clear
+    summoner-on state-flag-set
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : castle-2f-6.act01 ( -- )   \ 00400F10
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $C message
@@ -198,7 +198,7 @@ USING: room-names story.words story.shared ;
         $E message
         wait-message
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -217,7 +217,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-2f-6.act03 ( -- )   \ 00400F70
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     0 1 char-file-load
@@ -237,7 +237,7 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     3 message
     wait-message
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -258,7 +258,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-2f-6.act05 ( -- )   \ 00400FE0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     0 1 char-file-load

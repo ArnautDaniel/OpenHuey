@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-8
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x5C (Room5C_Cmd00_ptmf): the dial (+0x7C, 0..1) from script variable 0 by byte 3: 0
 \ 0x2B..0x38 (/ 13, +0x74 0 / +0x78 1), 1 0xC..0x20 (/ 20), 2 7..0x12 (/ 11) (+0x74 1 / +0x78 0)
@@ -205,7 +205,7 @@ USING: room-names story.words story.shared ;
         then
     then
     $FE self-is? if
-        9 state-flag? if
+        fiona-hidden state-flag? if
             3 ebit-set
             old-mansion-2f-8.act08
         else
@@ -421,20 +421,20 @@ USING: room-names story.words story.shared ;
     $62 door-open-clear
     doors-room-in
     $62 door-lock
-    $16 state-flag-clear
+    creatures-on state-flag-clear
     1 creatures-clear
     $4A story-flag-set
     camera-restart
     $F $51 fade
     wait-fade
     $234 item-give
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-2f-8.act01 ( -- )   \ 00411670
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $5D room-preload
@@ -445,7 +445,7 @@ USING: room-names story.words story.shared ;
     8 self-wait-frames
     $F $44 fade
     wait-fade
-    8 state-flag-set
+    world-held state-flag-set
     $80 exit-check
     self-idle-or-end
 ;
@@ -455,15 +455,15 @@ USING: room-names story.words story.shared ;
     3 1 $14 door-bits
     self-wait-done
     camera-restart
-    8 state-flag-clear
+    world-held state-flag-clear
     $4B story-flag-set
     $54 door-unlock
     2 exit-prepare
     $F $41 fade
     wait-fade
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
-    0 state-flag-set
+    summoner-on state-flag-set
     self-idle-or-end
 ;
 
@@ -482,7 +482,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-2f-8.act04 ( -- )   \ 004116E0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     $27 room-preload
     self-wait-done
@@ -496,10 +496,10 @@ USING: room-names story.words story.shared ;
         $F 0 fade
         wait-fade
         0 $7E 5 char-sound
-        8 state-flag-set
+        world-held state-flag-set
         $FE exit-check
     else
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
         0 self-scripted
     then
     self-idle-or-end
@@ -512,7 +512,7 @@ USING: room-names story.words story.shared ;
     0 $7E 5 char-sound
     $F 1 fade
     wait-fade
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -524,7 +524,7 @@ USING: room-names story.words story.shared ;
     1 self-scripted
     self-wait-done
     0 camera-follow
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     1 self-noclip
     0 0 var-set
     $8002 5 self-anim-9
@@ -552,7 +552,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-2f-8.act06 ( -- )   \ 00411740
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     3 ebit-clear
     1 self-scripted
     0 0 char-file-load
@@ -577,8 +577,8 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     -1 self-move-16
     0 self-noclip
-    $18 state-flag-clear
-    9 state-flag-set
+    stalkers-stay state-flag-clear
+    fiona-hidden state-flag-set
     1 ebit-clear
     0 avoid-prompt
     $18 1 item-count? $19 1 item-count? or $1A 1 item-count? or $1B 1 item-count? or $1C 1 item-count? or if
@@ -606,7 +606,7 @@ USING: room-names story.words story.shared ;
                 ['] old-mansion-2f-8.act07 goto
             then
             0 camera-follow
-            9 state-flag-clear
+            fiona-hidden state-flag-clear
             1 self-noclip
             0 0 var-set
             $8001 5 self-anim-9
@@ -762,7 +762,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-2f-8.act0E ( -- )   \ 00411A80
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     62.0 27.0 self-turn-to-xz
@@ -783,7 +783,7 @@ USING: room-names story.words story.shared ;
         $43 subscreen-bit
         $45 subscreen-bit
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;

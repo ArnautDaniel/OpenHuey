@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-19
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-19.enter ( -- )   \ 00438D30
     room-sounds
@@ -106,7 +106,7 @@ USING: room-names story.words story.shared ;
         then
     then
     $FE self-is? if
-        9 state-flag? if
+        fiona-hidden state-flag? if
             5 ebit-set
             old-mansion-1f-19.act06
         else
@@ -187,7 +187,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-1f-19.act00 ( -- )   \ 00438F40
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     $27 room-preload
     3 0 char-remove
@@ -202,12 +202,12 @@ USING: room-names story.words story.shared ;
         $F 0 fade
         wait-fade
         0 $7E 5 char-sound
-        8 state-flag-set
+        world-held state-flag-set
         $FE exit-check
     else
         1 exit-prepare
         $1C 3 1 char-load
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
         0 self-scripted
     then
     self-idle-or-end
@@ -222,8 +222,8 @@ USING: room-names story.words story.shared ;
     0 $7E 5 char-sound
     $F 1 fade
     wait-fade
-    8 state-flag-clear
-    $18 state-flag-clear
+    world-held state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -243,7 +243,7 @@ USING: room-names story.words story.shared ;
     1 self-scripted
     0 camera-follow
     $FF 0 char-visible
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     1 self-noclip
     0 $7E 5 char-sound
     $8003 $A self-anim-blend
@@ -257,7 +257,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-1f-19.act04 ( -- )   \ 00438FA0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     5 ebit-clear
     1 self-scripted
     0 0 char-file-load
@@ -272,8 +272,8 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     $8001 $A self-anim-blend
     0 self-noclip
-    $18 state-flag-clear
-    9 state-flag-set
+    stalkers-stay state-flag-clear
+    fiona-hidden state-flag-set
     3 ebit-clear
     0 avoid-prompt
     $FF 2 -1 char-camera
@@ -303,7 +303,7 @@ USING: room-names story.words story.shared ;
             then
             0 camera-follow
             $FF 0 char-visible
-            9 state-flag-clear
+            fiona-hidden state-flag-clear
             1 self-noclip
             $8002 5 self-anim-9
             self-frames-reset

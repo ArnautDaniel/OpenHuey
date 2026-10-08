@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py), renamed by
 \ tools/story_convert.py, once: edit by hand.
 IN: story.shared
-USING: story.words ;
+USING: story.words flag-names ;
 
 \ ---- the shared scripts (ids 0x80..) -----------------------------------------------------------
 
@@ -31,7 +31,7 @@ defer shared.act97
 ;
 
 : shared.act82 ( -- )   \ 003D63A0
-    $A state-flag-clear
+    fiona-half-hidden state-flag-clear
     0 camera-follow
     self-frames-reset
     self-wait-16
@@ -53,7 +53,7 @@ defer shared.act97
     self-wait-done
     $800 self-anim
     self-wait-anim
-    $A state-flag-set
+    fiona-half-hidden state-flag-set
     fiona-hewie-react
     $801 self-anim
     begin
@@ -78,7 +78,7 @@ defer shared.act97
             $2D fiona-recovery-lower
             yield
         else
-            $A state-flag-clear
+            fiona-half-hidden state-flag-clear
             0 camera-follow
             $802 self-anim
             self-wait-anim
@@ -94,7 +94,7 @@ defer shared.act97
 ;
 
 : shared.act84 ( -- )   \ 003D63D0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     hewie-reachable? not if
@@ -109,7 +109,7 @@ defer shared.act97
         0 answer? if
             1 subscreen-open
             begin
-                4 state-flag? while
+                subscreen-wanted state-flag? while
                 yield
             repeat
             yield
@@ -117,12 +117,12 @@ defer shared.act97
         counter-inc
     then
     0 self-scripted
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     self-idle-or-end
 ;
 
 : shared.act85 ( -- )   \ 003D6410
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     hewie-reachable? not if
@@ -137,7 +137,7 @@ defer shared.act97
         0 answer? if
             1 subscreen-open
             begin
-                4 state-flag? while
+                subscreen-wanted state-flag? while
                 yield
             repeat
             yield
@@ -145,7 +145,7 @@ defer shared.act97
         counter-inc
     then
     0 self-scripted
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     self-idle-or-end
 ;
 
@@ -551,8 +551,8 @@ defer shared.act97
 ; is shared.act97
 
 : shared.act98 ( -- )   \ 003D6820
-    fading? not 8 state-flag? not and $F8 char-busy? not and if
-        0 char-busy? not $A state-flag? or if
+    fading? not world-held state-flag? not and $F8 char-busy? not and if
+        0 char-busy? not fiona-half-hidden state-flag? or if
             $351 story-flag? not if
                 $708 event-704-reached? 6 sound-bank-loaded? and if
                     0 $F8 $99 action
@@ -579,29 +579,29 @@ defer shared.act97
 ;
 
 : shared.act99 ( -- )   \ 003D6890
-    $12 state-flag-set
+    scene-locked state-flag-set
     0 $86 0.0 0.0 0.0 0 0 sound
     5 message
     wait-message
-    $12 state-flag-clear
+    scene-locked state-flag-clear
     self-idle-or-end
 ;
 
 : shared.act9A ( -- )   \ 003D68C0
-    $12 state-flag-set
+    scene-locked state-flag-set
     1 $86 0.0 0.0 0.0 0 0 sound
     6 message
     wait-message
-    $12 state-flag-clear
+    scene-locked state-flag-clear
     self-idle-or-end
 ;
 
 : shared.act9B ( -- )   \ 003D68F0
-    $12 state-flag-set
+    scene-locked state-flag-set
     2 $86 0.0 0.0 0.0 0 0 sound
     7 message
     wait-message
-    $12 state-flag-clear
+    scene-locked state-flag-clear
     self-idle-or-end
 ;
 
@@ -639,7 +639,7 @@ defer shared.act97
 ;
 
 : shared.actB9 ( -- )   \ 003D69E8
-    8 state-flag-clear
+    world-held state-flag-clear
     begin
         fade-finish
         yield
@@ -667,7 +667,7 @@ defer shared.act97
 ;
 
 : shared.actBD ( -- )   \ 003D6A20
-    8 state-flag-clear
+    world-held state-flag-clear
     self-frames-reset
     begin
         $F frames? not while
@@ -684,11 +684,11 @@ defer shared.act97
 
 : shared.after-phase1 ( -- )   \ 003D6240
     hewie-controlled? not if
-        $14 state-flag? not if
+        no-flee state-flag? not if
             noise-slot-D? not if
                 $D fiona-action? not if
                     2 2 pad? fiona-free? and if
-                        fading? not 8 state-flag? not and $17 state-flag? not and if
+                        fading? not world-held state-flag? not and world-frozen state-flag? not and if
                             2 game-mode? $34F story-flag? not and if
                                 0 $FE 70 chars-within? not if
                                     0 1 char-on-nav-flags? not if
@@ -710,13 +710,13 @@ defer shared.act97
             then
         then
     then
-    $A state-flag? $23 state-flag? not and $34F story-flag? not and if
+    fiona-half-hidden state-flag? no-stalker-camera state-flag? not and $34F story-flag? not and if
         $FE camera-follow
     then
     $75 story-flag? $76 story-flag? not and if
         $18 1 item-count? $19 1 item-count? or $1A 1 item-count? or $1B 1 item-count? or $1C 1 item-count? or if
             $3C panic-level
-            $FF panic-stage? not 9 state-flag? and if
+            $FF panic-stage? not fiona-hidden state-flag? and if
                 4 panic-stage
             then
         else

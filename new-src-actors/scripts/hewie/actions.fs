@@ -3,7 +3,7 @@
 \ carries it out. Actions of the later phases fall back as noted (H2 her commands, H3 the
 \ stalkers, H4 the story).
 IN: hewie.actions
-USING: engine game-state actors common facts paths hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen ;
+USING: engine game-state actors common facts paths hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen flag-names ;
 
 : mode! ( n -- )  his-mode ! ;
 : give-up ( -- )  6 0 want ;            \ nothing to do: sniffing about (steered: the default - H4)
@@ -199,7 +199,7 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
         else dup $61 = over $62 = or if  drop $B
         else dup attack-act? if  drop $A  then then then
     then
-    $13 state-flag? $2B state-flag? or if
+    hewie-no-attack state-flag? fiona-occupied state-flag? or if
         dup attack-act? over $61 = or over $62 = or if  drop $A  then
     then
     his-hold-call @ if  dup $50 = over $4F = or if  drop $A  then  then

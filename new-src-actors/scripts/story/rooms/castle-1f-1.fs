@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-1
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : castle-1f-1.enter ( -- )   \ 003EE770
     $37 story-flag? $24 story-flag? not and if
@@ -284,7 +284,7 @@ USING: room-names story.words story.shared ;
     1 char-busy? if
         1 action-end
         1 $FE -40.709 45.642 180 char-to-xz
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
     then
 ;
 
@@ -300,10 +300,10 @@ USING: room-names story.words story.shared ;
 : castle-1f-1.act01 ( -- )   \ 003EEC40
     0 $28 5 char-sound
     5 0 0 music
-    7 state-flag-set
+    force-followed state-flag-set
     yield
-    7 state-flag-clear
-    8 state-flag-clear
+    force-followed state-flag-clear
+    world-held state-flag-clear
     $AF story-flag? not if
         $22A item-add
     then
@@ -322,7 +322,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-1f-1.act03 ( -- )   \ 003EEC80
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     1 char-busy? not if
@@ -335,7 +335,7 @@ USING: room-names story.words story.shared ;
         self-frames-reset
         7 self-wait-frames
     else
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
     then
     0 self-scripted
     self-idle-or-end
@@ -355,7 +355,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     $1C03 $A self-anim-blend
     self-wait-anim
-    $A state-flag? 0 char-busy? not or if
+    fiona-half-hidden state-flag? 0 char-busy? not or if
         $95 $63 item-count? not if
             10 hewie-trust
         then
@@ -379,15 +379,15 @@ USING: room-names story.words story.shared ;
     self-wait-done
     0 self-noclip
     0 self-scripted
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     self-idle-or-end
 ;
 
 : castle-1f-1.act05 ( -- )   \ 003EED70
     1 self-scripted
     self-wait-done
-    $17 state-flag-set
-    $24 state-flag-set
+    world-frozen state-flag-set
+    draw-when-frozen state-flag-set
     $F 6 fade
     wait-fade
     $40AA message
@@ -400,8 +400,8 @@ USING: room-names story.words story.shared ;
     $83 $85 0.0 0.0 0.0 0 0 sound
     $801B message
     wait-message
-    $24 state-flag-clear
-    $17 state-flag-clear
+    draw-when-frozen state-flag-clear
+    world-frozen state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;

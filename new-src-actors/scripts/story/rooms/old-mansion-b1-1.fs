@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-1
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-b1-1.enter ( -- )   \ 00415BA0
     $264 story-flag? not if
@@ -28,7 +28,7 @@ USING: room-names story.words story.shared ;
         $1C $900A 1 0 char-anim-hold
     then
     0 $F1 0 action
-    $22 state-flag-set
+    hunted state-flag-set
     $2C6 story-flag? not if
         1 -6.17 39.94 -29.06 flicker-sprite
     then
@@ -137,7 +137,7 @@ USING: room-names story.words story.shared ;
     3 1 1 area-camera
     0 self-is? if
         $80 exit-taken? if
-            8 state-flag-set
+            world-held state-flag-set
             0.0 sound-volume-scale
             0 0 2 action
         else
@@ -316,10 +316,10 @@ USING: room-names story.words story.shared ;
 : old-mansion-b1-1.phase5 ( -- )   \ 00416130
     $1C action-end
     $1C char-done
-    $18 state-flag? if
+    stalkers-stay state-flag? if
         1 action-end
         1 $76 -40.52 -28.0 -90 char-to-xz
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
     then
 ;
 
@@ -520,15 +520,15 @@ USING: room-names story.words story.shared ;
     $F $51 fade
     wait-fade
     $23F item-give
-    $12 state-flag-clear
-    $18 state-flag-clear
+    scene-locked state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-b1-1.act03 ( -- )   \ 004163F0
     1 self-scripted
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     self-wait-done
     hewie-bark
     self-wait-done
@@ -541,7 +541,7 @@ USING: room-names story.words story.shared ;
     $1C03 $A self-anim-blend
     self-wait-anim
     $2C6 story-flag? not if
-        $A state-flag? 0 char-busy? not or if
+        fiona-half-hidden state-flag? 0 char-busy? not or if
             $71 $63 item-count? not if
                 10 hewie-trust
             then
@@ -568,7 +568,7 @@ USING: room-names story.words story.shared ;
     $C -59.57 -30.97 2.0 50 hewie-go-to
     self-wait-done
     1 1 8 nav-group
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;

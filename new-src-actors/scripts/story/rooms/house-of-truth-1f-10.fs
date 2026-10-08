@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-10
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ (as Room2D_Cmd02) three hanging things (+0x34 0..2), pushed by the square of Fiona's step past
 \ 1, event flag 4 with sounds 4 / 5
@@ -88,7 +88,7 @@ USING: room-names story.words story.shared ;
         then
     then
     $FE self-is? if
-        9 state-flag? if
+        fiona-hidden state-flag? if
             2 ebit-set
             house-of-truth-1f-10.act04
         else
@@ -210,7 +210,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-1f-10.act00 ( -- )   \ 00443BA0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     60.0 55.0 self-turn-to-xz
@@ -223,10 +223,10 @@ USING: room-names story.words story.shared ;
         $F 0 fade
         wait-fade
         0 $7E 5 char-sound
-        8 state-flag-set
+        world-held state-flag-set
         $FE exit-check
     else
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
         0 self-scripted
     then
     self-idle-or-end
@@ -240,7 +240,7 @@ USING: room-names story.words story.shared ;
     1 map-page
     $F 1 fade
     wait-fade
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -249,21 +249,21 @@ USING: room-names story.words story.shared ;
     0 ebit? if
         2 avoid-prompt
     then
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     0 camera-follow
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     $11F 32.119 -37.94 180 $207 5 self-move-to
     self-wait-done
     4 $14 self-anim-blend
     self-wait-anim
     0 self-scripted
     0 self-noclip
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     self-idle-or-end
 ;
 
 : house-of-truth-1f-10.act02 ( -- )   \ 00443C00
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     2 ebit-clear
     1 self-scripted
     0 ebit-clear
@@ -279,8 +279,8 @@ USING: room-names story.words story.shared ;
     $28 32.119 -7.5 180 $803 5 self-move-to
     self-wait-done
     $801 self-anim
-    9 state-flag-set
-    $18 state-flag-clear
+    fiona-hidden state-flag-set
+    stalkers-stay state-flag-clear
     0 avoid-prompt
     begin
         0 2 pad? not if
@@ -300,20 +300,20 @@ USING: room-names story.words story.shared ;
                 yield
             then
         else
-            9 state-flag-clear
+            fiona-hidden state-flag-clear
             0 camera-follow
             $FE action-end
             2 game-mode? if
                 ['] house-of-truth-1f-10.act03 goto
             then
-            $18 state-flag-set
+            stalkers-stay state-flag-set
             $11A 31.33 -24.45 180 $803 5 self-move-to
             self-wait-done
             $802 self-anim
             self-wait-anim
             0 self-scripted
             0 self-noclip
-            $18 state-flag-clear
+            stalkers-stay state-flag-clear
             self-idle-or-end
         then
     again

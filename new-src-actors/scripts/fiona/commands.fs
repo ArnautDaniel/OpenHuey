@@ -7,7 +7,7 @@
 \ (stay / come), 4 right (praise; held: more), 5 left (scold). They are read only under state
 \ flag 0xD (the story: Hewie is hers to command) and not 0x2B.
 IN: fiona.commands
-USING: engine game-state actors messages common facts keys fiona.state fiona.model fiona.moving fiona.spots ;
+USING: engine game-state actors messages common facts keys fiona.state fiona.model fiona.moving fiona.spots flag-names ;
 
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
 : hewie-id ( -- id )  s" hewie" actor-named ;
@@ -22,7 +22,7 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
 \ ---- her lines (fiona_voice; Fiona_OrderLine; Fiona_CallHewie) ----
 : line ( id -- )  5 0 0 her-pos sound-at ;
 : order-line ( -- )
-    $25 state-flag? if  rnd 0.5e f< if  $33  else  $39  then  line exit  then
+    plain-commands state-flag? if  rnd 0.5e f< if  $33  else  $39  then  line exit  then
     her-sub @ case
         $2C of  her-danger @ case  2 of  $33 line  endof  1 of  $31 line  endof  0 of  $32 line  endof  endcase
                 dog-ok? 0= if  $20 noise-here  then  endof
@@ -67,7 +67,7 @@ create ch-at 12 allot
         her-tri @ her-at ch-at $29020008 v-walk dup 0< if  drop  else  her-act-tri !  her-act-at ch-at vec-copy  then
     else  fdrop  then ;
 : command-hewie ( -- )
-    $25 state-flag? 0= if
+    plain-commands state-flag? 0= if
         her-sub @ $23 = if  go-spot  then
         her-sub @  her-act-tri @  her-act-yaw f@ f>cell  her-act-at sf@ f>cell  her-act-at 8 + sf@ f>cell
         hewie-id send command
@@ -106,7 +106,7 @@ create ch-at 12 allot
 \ ---- after a command's gesture (Fiona_StateActionOver, the looks after it) ----
 : play-now ( anim -- )  dup entry nip >r -1 0 r> start ;   \ (Motion_Play: cut in)
 : idle-after-command ( -- )   \ Fiona_IdleAfterCommand
-    $25 state-flag? if  rnd 0.5e f< if  1  else  $C02  then  -1 play-table exit  then
+    plain-commands state-flag? if  rnd 0.5e f< if  1  else  $C02  then  -1 play-table exit  then
     her-sub @ case
         $29 of  $C02  endof  $2F of  $C02  endof  $2E of  $C0E  endof  $23 of  $C04  endof
         $24 of  $C06  endof  $2C of  $C02  endof  $2A of  $C0A  endof  $25 of  $C03  endof
@@ -213,7 +213,7 @@ create call-anims  $C0E , $C0D , $C0A , $C07 , $C06 , $C04 , $C03 , $C02 , $C00 
     her-mode @ $D <> if  exit  then
     motion-bits 1 and 0= if  exit  then
     anim@ 1 = if  $39 line exit  then
-    anim@ call-anim? if  $25 state-flag? if  $33 line  else  call-line  then  then ;
+    anim@ call-anim? if  plain-commands state-flag? if  $33 line  else  call-line  then  then ;
 
 \ ---- the gestures (Gesture_Update; Fiona_ReadsPad) ----
 : gesture ( -- cmd )
@@ -222,7 +222,7 @@ create call-anims  $C0E , $C0D , $C0A , $C07 , $C06 , $C04 , $C03 , $C02 , $C00 
     key: 5 pressed? if  4 exit  then
     key: 4 held? if  3 exit  then  -1 ;   \ (held: as the stick held over - the praise's repeats)
 : reads-pad? ( -- flag )
-    $D state-flag? 0=  $2B state-flag? or  her-busy-t @ 0<> or if  false exit  then
+    hewie-commandable state-flag? 0=  fiona-occupied state-flag? or  her-busy-t @ 0<> or if  false exit  then
     her-mode @ dup $D = swap $A = or if  true exit  then
     her-mode @ 0= if  her-doing @ dup 1 <> swap $E <> and exit  then
     her-mode @ 4 = if  her-sub @ dup 9 = swap $12 = or exit  then

@@ -45,7 +45,7 @@ From `SceneGame_LeaveRoom`, the play sub-state (`scene_game.c` ~1033-1095), `Sce
    4. the camera's new room (no set, no path, no target);
    5. `entered-room`: sounds, then the scripts' phase 0. Then the characters in it enter, and
       the camera takes the room's sets and paths.
-4. The room's sounds (bank 6) are swapped on leaving and entering, unless story flag 0x27
+4. The room's sounds (bank 6) are swapped on leaving and entering, unless `keep-room-sounds`
    says to keep them (*to name*).
 
 ## Design notes

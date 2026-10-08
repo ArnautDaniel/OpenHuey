@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-9
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ the rising motes started
 : castle-1f-9.cmd00 ( -- )  s" castle-1f-9.cmd00" stub-step ;
@@ -353,7 +353,7 @@ USING: room-names story.words story.shared ;
 
 : castle-1f-9.act04 ( -- )   \ 004028F0
     1 self-scripted
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     self-wait-done
     $F $54 fade
     1 1 movie-play
@@ -377,11 +377,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -408,18 +408,18 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     0 8 -19.086 -6.777 166 char-to-xz
-    $12 state-flag-set
+    scene-locked state-flag-set
     $F $51 fade
     wait-fade
     $F 6 fade
@@ -435,7 +435,7 @@ USING: room-names story.words story.shared ;
     $801B message
     wait-message
     2 char-unload
-    0 state-flag-set
+    summoner-on state-flag-set
     $25 story-flag? not if
         $25 story-flag-set
         $25 0 217 3 6 -1 0 0.0 creature-place
@@ -443,13 +443,13 @@ USING: room-names story.words story.shared ;
     $14 item-use
     6 door-unlock
     0 self-scripted
-    $18 state-flag-clear
-    $12 state-flag-clear
+    stalkers-stay state-flag-clear
+    scene-locked state-flag-clear
     self-idle-or-end
 ;
 
 : castle-1f-9.act05 ( -- )   \ 004029F0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     0 1 6 action-force
@@ -515,7 +515,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     1 2 8 nav-group
     1 3 8 nav-group
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     $25 0 406 hewie-to-room
     self-idle-or-end
 ;
@@ -581,7 +581,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-1f-9.act0A ( -- )   \ 00402BA0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     1 self-through-exit
@@ -598,7 +598,7 @@ USING: room-names story.words story.shared ;
     $14 self-wait-frames
     $8019 message
     wait-message
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -655,11 +655,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -686,18 +686,18 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end

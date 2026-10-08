@@ -2,11 +2,11 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-7f-2
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : water-tower-7f-2.enter ( -- )   \ 00441170
     room-sounds
-    $22 state-flag-set
+    hunted state-flag-set
     $30 1.0 0 bgm
     $2DA story-flag? $2DB story-flag? not and if
         0 -9.0 140.97 -10.23 flicker-sprite
@@ -186,19 +186,19 @@ USING: room-names story.words story.shared ;
     1 exit-prepare
     self-frames-reset
     self-wait-16
-    8 state-flag-clear
+    world-held state-flag-clear
     $F $51 fade
     $828A item-give
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : water-tower-7f-2.act01 ( -- )   \ 00441450
-    8 state-flag-clear
+    world-held state-flag-clear
     $F $51 fade
     wait-fade
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     $FF 0 char-visible
     0 self-scripted
     self-idle-or-end
@@ -234,7 +234,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : water-tower-7f-2.act03 ( -- )   \ 004414D0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     0.0 -105.0 self-turn-to-xz
@@ -249,13 +249,13 @@ USING: room-names story.words story.shared ;
     $F 7 fade
     wait-fade
     self-wait-anim
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : water-tower-7f-2.phase5 ( -- )   \ 0047AF30
-    $22 state-flag-clear
+    hunted state-flag-clear
 ;
 
 \ ---- registered ----

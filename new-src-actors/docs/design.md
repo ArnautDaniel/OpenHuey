@@ -99,3 +99,11 @@ For each subsystem:
   names it.
 - Units: positions in the game's units; angles in radians inside, degrees only at the edges
   (data, scripts); time in frames (`30 = 1 second`).
+
+## Flags by name
+
+The game's state flags have names (`scripts/flag-names.fs`), from what the original's code does
+with each: `world-held`, `hunted`, `no-running`, `hewie-commandable`... Never a flag by its
+number, in code or in docs. A name marked "?" is only partly understood: rename it once it is.
+The story flags are named the same way as they are worked out (`scripts/story-names.fs`).
+`tools/flag_names.py` turns numbered flags in a file into names.

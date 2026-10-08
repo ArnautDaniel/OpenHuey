@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-8
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x91 (Room91_Cmd00_ptmf): door 0's +0x68 (0)
 : house-of-truth-1f-8.cmd00 ( -- )  s" house-of-truth-1f-8.cmd00" stub-step ;
@@ -273,13 +273,13 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-1f-8.act00 ( -- )   \ 00436A60
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     2 exit-prepare
     $F $54 fade
     self-wait-done
     wait-fade
-    8 state-flag-set
+    world-held state-flag-set
     $80 exit-check
     self-idle-or-end
 ;
@@ -295,7 +295,7 @@ USING: room-names story.words story.shared ;
     $FE $92 -1 2 stalker-to-room
     $FE 0 stalker-mode
     $FE $8D 1 room-doors-state
-    $13 state-flag-set
+    hewie-no-attack state-flag-set
     camera-restart
     house-of-truth-1f-8.cmd02
     $40000030 $47 0.0 0.0 0.0 0 0 sound
@@ -319,7 +319,7 @@ USING: room-names story.words story.shared ;
     $F1 action-end
     shared.act95
     0 5 var-set
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;

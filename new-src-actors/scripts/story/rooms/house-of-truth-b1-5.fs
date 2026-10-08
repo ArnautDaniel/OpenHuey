@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-5
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ Room93_Cmd00
 : house-of-truth-b1-5.cmd00 ( -- )  s" house-of-truth-b1-5.cmd00" stub-step ;
@@ -99,7 +99,7 @@ USING: room-names story.words story.shared ;
     $F 0 fade
     self-wait-done
     wait-fade
-    8 state-flag-set
+    world-held state-flag-set
     $80 exit-check
     0 self-scripted
     self-idle-or-end
@@ -109,12 +109,12 @@ USING: room-names story.words story.shared ;
     1 self-scripted
     0 ebit? if
         $FF 1.0 0 bgm
-        $27 state-flag-clear
+        keep-room-sounds state-flag-clear
     then
     $F 0 fade
     self-wait-done
     wait-fade
-    8 state-flag-set
+    world-held state-flag-set
     $80 exit-check
     0 self-scripted
     self-idle-or-end
@@ -130,7 +130,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-b1-5.act03 ( -- )   \ 004442E0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     -90 self-turn-angle
@@ -141,7 +141,7 @@ USING: room-names story.words story.shared ;
     wait-message
     $F 7 fade
     wait-fade
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -176,7 +176,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-b1-5.phase5 ( -- )   \ 0047AFD8
-    $12 state-flag-clear
+    scene-locked state-flag-clear
 ;
 
 \ ---- registered ----

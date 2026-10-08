@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-6
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ Room46_Cmd00
 : old-mansion-1f-6.cmd00 ( b0 -- )  drop s" old-mansion-1f-6.cmd00" stub-step ;
@@ -21,7 +21,7 @@ USING: room-names story.words story.shared ;
         $1C $9006 1 0 char-anim-hold
     then
     0 $F1 0 action
-    $22 state-flag-set
+    hunted state-flag-set
     $275 story-flag? not if
         0 -119.67 9.0 151.64 flicker-sprite
     then
@@ -130,7 +130,7 @@ USING: room-names story.words story.shared ;
         then
     then
     $FE self-is? if
-        9 state-flag? if
+        fiona-hidden state-flag? if
             6 ebit-set
             old-mansion-1f-6.act07
         else
@@ -181,7 +181,7 @@ USING: room-names story.words story.shared ;
         then
     then
     $FE 2 char-C4? not if
-        9 state-flag? 7 ebit? not and $FE char-here? and if
+        fiona-hidden state-flag? 7 ebit? not and $FE char-here? and if
             $FE char-busy? not if
                 8 ebit-set
                 old-mansion-1f-6.act07
@@ -416,7 +416,7 @@ USING: room-names story.words story.shared ;
     then
     1 self-scripted
     0 camera-follow
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     1 self-noclip
     0 $7E 5 char-sound
     $8003 $A self-anim-blend
@@ -430,7 +430,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-1f-6.act05 ( -- )   \ 00416F80
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     6 ebit-clear
     1 self-scripted
     7 ebit-clear
@@ -448,8 +448,8 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     $8001 $A self-anim-blend
     0 self-noclip
-    $18 state-flag-clear
-    9 state-flag-set
+    stalkers-stay state-flag-clear
+    fiona-hidden state-flag-set
     4 ebit-clear
     0 avoid-prompt
     $FF 4 -1 char-camera
@@ -475,7 +475,7 @@ USING: room-names story.words story.shared ;
                 ['] old-mansion-1f-6.act06 goto
             then
             0 camera-follow
-            9 state-flag-clear
+            fiona-hidden state-flag-clear
             1 self-noclip
             $8002 5 self-anim-9
             self-frames-reset

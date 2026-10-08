@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-27
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ the items 0x91 / 0x92, by byte 3: 0 which of them Fiona lacks (one each) kept in event var 0
 \ (0x91 low byte, 0x92 the next), and event +0x5C(3) when any; 1 they are given back, event
@@ -73,7 +73,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : off-map-27.act00 ( -- )   \ 0041C4A0
-    8 state-flag-clear
+    world-held state-flag-clear
     camera-restart
     $F 1 fade
     wait-fade
@@ -100,7 +100,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     $F 0 fade
     wait-fade
-    8 state-flag-set
+    world-held state-flag-set
     $FE exit-check
     self-idle-or-end
 ;
@@ -111,7 +111,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     3 subscreen-open
     begin
-        4 state-flag? while
+        subscreen-wanted state-flag? while
         yield
     repeat
     self-idle-or-end
@@ -130,11 +130,11 @@ USING: room-names story.words story.shared ;
         0 answer? if
             $F $44 fade
             wait-fade
-            8 state-flag-set
+            world-held state-flag-set
             0 0 6 char-sound
             self-frames-reset
             $3C self-wait-frames
-            3 state-flag-set
+            new-game-sounds state-flag-set
             1 sound-set
             2 fiona-costume
             $26 2 pvar-set
@@ -154,11 +154,11 @@ USING: room-names story.words story.shared ;
         0 answer? if
             $F $44 fade
             wait-fade
-            8 state-flag-set
+            world-held state-flag-set
             0 0 6 char-sound
             self-frames-reset
             $3C self-wait-frames
-            3 state-flag-set
+            new-game-sounds state-flag-set
             1 sound-set
             3 fiona-costume
             $26 3 pvar-set
@@ -248,7 +248,7 @@ USING: room-names story.words story.shared ;
         $FF 1.0 0 bgm
         7 subscreen-open
         begin
-            4 state-flag? while
+            subscreen-wanted state-flag? while
             yield
         repeat
         0 0.0 0.0 0.0 0.0 event-camera
@@ -257,37 +257,37 @@ USING: room-names story.words story.shared ;
         then
         $26 $28 pvars-equal? not if
             $26 1 pvar? if
-                3 state-flag-set
+                new-game-sounds state-flag-set
                 1 sound-set
                 1 fiona-costume
                 $26 1 pvar-set
             else $26 0 pvar? if
-                3 state-flag-clear
+                new-game-sounds state-flag-clear
                 0 sound-set
                 0 fiona-costume
                 $26 0 pvar-set
             else $26 2 pvar? if
-                3 state-flag-set
+                new-game-sounds state-flag-set
                 1 sound-set
                 2 fiona-costume
                 $26 2 pvar-set
             else $26 3 pvar? if
-                3 state-flag-set
+                new-game-sounds state-flag-set
                 1 sound-set
                 3 fiona-costume
                 $26 3 pvar-set
             else $26 6 pvar? if
-                3 state-flag-clear
+                new-game-sounds state-flag-clear
                 0 sound-set
                 6 fiona-costume
                 $26 6 pvar-set
             else $26 7 pvar? if
-                3 state-flag-clear
+                new-game-sounds state-flag-clear
                 0 sound-set
                 7 fiona-costume
                 $26 7 pvar-set
             else $26 8 pvar? if
-                3 state-flag-set
+                new-game-sounds state-flag-set
                 1 sound-set
                 8 fiona-costume
                 $26 8 pvar-set
@@ -479,7 +479,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : off-map-27.act0A ( -- )   \ 0041C9F0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     8.0 -4.0 self-turn-to-xz
@@ -500,7 +500,7 @@ USING: room-names story.words story.shared ;
         $42 subscreen-bit
         $44 subscreen-bit
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;

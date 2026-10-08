@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-7
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ a lid (pstr_kousi_2, +0x24 its height, +0x34 its speed): byte 3 0 up, 1 shut; 2 falling and
 \ bouncing shut (the first landing clears progress flag 0x50 and, unless the director says no,
@@ -206,8 +206,8 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-1f-7.act00 ( -- )   \ 003FA3D0
-    $2C state-flag-set
-    $19 state-flag-set
+    capture-no-end state-flag-set
+    no-pause state-flag-set
     1 self-scripted
     $FE action-end
     $FE char-done
@@ -262,7 +262,7 @@ USING: room-names story.words story.shared ;
     1.0 sound-volume-scale
     $1C resident-flag-set
     0 game-over-flag
-    $C state-flag-set
+    caught state-flag-set
     self-idle-or-end
 ;
 
@@ -361,8 +361,8 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-1f-7.act07 ( -- )   \ 003FA580
-    $17 state-flag-set
-    8 state-flag-clear
+    world-frozen state-flag-set
+    world-held state-flag-clear
     $F 1 fade
     wait-fade
     begin
@@ -377,7 +377,7 @@ USING: room-names story.words story.shared ;
     $1E self-wait-frames
     $F 0 fade
     wait-fade
-    8 state-flag-set
+    world-held state-flag-set
     0 0.0 0.0 0.0 0.0 event-camera
     3 6 sound-stop
     $80 exit-check
@@ -456,11 +456,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -487,18 +487,18 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end

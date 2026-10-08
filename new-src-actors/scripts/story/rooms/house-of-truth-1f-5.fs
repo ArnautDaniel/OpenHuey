@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-5
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x8D: three grey smoke effects (Effect79B00, size 60) at the room's spots 7, 4, 3
 \ (grey_three).
@@ -23,7 +23,7 @@ USING: room-names story.words story.shared ;
         1 ebit-set
     then
     1 ebit? if
-        $18 state-flag-set
+        stalkers-stay state-flag-set
     then
     $A4 story-flag? if
         1 0 $20000 nav-group
@@ -239,7 +239,7 @@ USING: room-names story.words story.shared ;
 
 : house-of-truth-1f-5.phase5 ( -- )   \ 00434C00
     1 ebit? if
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
     then
 ;
 
@@ -257,7 +257,7 @@ USING: room-names story.words story.shared ;
     $FE char-done
     $1E 3 $FF char-load
     $1F 4 $FF char-load
-    7 state-flag-set
+    force-followed state-flag-set
     3 char-unload
     4 char-unload
     0 1 $14 door-bits
@@ -281,11 +281,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -312,14 +312,14 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     2 house-of-truth-1f-5.cmd01
@@ -337,7 +337,7 @@ USING: room-names story.words story.shared ;
     1 char-activate
     $8D 0 123 hewie-to-room
     1 $7B -20 char-to-tri-facing
-    $13 state-flag-clear
+    hewie-no-attack state-flag-clear
     2 1 $14 door-bits
     $EA door-open-clear
     $EA door-lock
@@ -348,7 +348,7 @@ USING: room-names story.words story.shared ;
     $51 resident-flag-set
     $257 item-give
     $828E item-give
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     $96 story-flag-set
     1 ebit-clear
     shared.act95
@@ -358,7 +358,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-1f-5.act01 ( -- )   \ 00434D50
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     2 message
@@ -387,7 +387,7 @@ USING: room-names story.words story.shared ;
         repeat
         $81 exit-check
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -579,11 +579,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -610,21 +610,21 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     2 house-of-truth-1f-5.cmd01
     3 0 char-remove
     4 0 char-remove
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end

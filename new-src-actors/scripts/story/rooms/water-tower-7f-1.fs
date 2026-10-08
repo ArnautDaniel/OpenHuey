@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-7f-1
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ the 0x10-byte effect ObjectGlow_vtable on room object k + 1 (byte 4 = k, 1..8; script variable
 \ 11 - k keeps its slot): made on first use when byte 3 is set, then sent (on byte 3, index 8 -
@@ -12,7 +12,7 @@ USING: room-names story.words story.shared ;
 
 : water-tower-7f-1.enter ( -- )   \ 004401B0
     room-sounds
-    $22 state-flag-set
+    hunted state-flag-set
     $30 1.0 0 bgm
     2 8 var-set
     3 -1 var-set
@@ -658,7 +658,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : water-tower-7f-1.act00 ( -- )   \ 00440E20
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $FF 1.0 0 bgm
@@ -688,11 +688,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -719,18 +719,18 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     50 hewie-trust
-    8 state-flag-set
+    world-held state-flag-set
     $FF door-reopen-unlock
     $101 door-close-off-lock
     exits-rebuild
@@ -792,7 +792,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : water-tower-7f-1.act03 ( -- )   \ 00441000
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     0.0 -105.0 self-turn-to-xz
@@ -807,7 +807,7 @@ USING: room-names story.words story.shared ;
     $F 7 fade
     wait-fade
     self-wait-anim
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -851,11 +851,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -882,25 +882,25 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end
 ;
 
 : water-tower-7f-1.phase5 ( -- )   \ 0047AF20
-    $22 state-flag-clear
+    hunted state-flag-clear
 ;
 
 \ ---- registered ----

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-2
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x88: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
@@ -265,7 +265,7 @@ USING: room-names story.words story.shared ;
 
 : house-of-truth-1f-2.act00 ( -- )   \ 004332B0
     0 ebit? not if
-        $18 state-flag-set
+        stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
         0 0 char-file-load
@@ -304,7 +304,7 @@ USING: room-names story.words story.shared ;
             4 self-wait-frames
         then
         0 0.0 0.0 0.0 0.0 event-camera
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
         0 self-scripted
     else
         self-wait-done
@@ -317,7 +317,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-1f-2.act01 ( -- )   \ 00433370
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     -60.0 55.0 self-turn-to-xz
@@ -330,10 +330,10 @@ USING: room-names story.words story.shared ;
         $F 0 fade
         wait-fade
         0 $7E 5 char-sound
-        8 state-flag-set
+        world-held state-flag-set
         $FE exit-check
     else
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
         0 self-scripted
     then
     self-idle-or-end
@@ -347,7 +347,7 @@ USING: room-names story.words story.shared ;
     1 map-page
     $F 1 fade
     wait-fade
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -359,7 +359,7 @@ USING: room-names story.words story.shared ;
     $27 room-preload
     $F $41 fade
     wait-fade
-    0 state-flag-set
+    summoner-on state-flag-set
     0 self-scripted
     self-idle-or-end
 ;

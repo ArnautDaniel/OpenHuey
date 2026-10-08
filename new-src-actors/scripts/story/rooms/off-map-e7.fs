@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e7
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0xE7: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
@@ -96,7 +96,7 @@ USING: room-names story.words story.shared ;
     then then
     1 1 0 area-camera
     $FE self-is? if
-        9 state-flag? if
+        fiona-hidden state-flag? if
             2 ebit-set
             off-map-e7.act02
         else
@@ -188,8 +188,8 @@ USING: room-names story.words story.shared ;
 
 : off-map-e7.phase5 ( -- )   \ 00449D00
     0 char-busy? if
-        $18 state-flag-clear
-        9 state-flag-clear
+        stalkers-stay state-flag-clear
+        fiona-hidden state-flag-clear
         0 action-end
         0 $141 -0.1 -18.54 0 char-to-xz
     then
@@ -200,7 +200,7 @@ USING: room-names story.words story.shared ;
         2 avoid-prompt
     then
     1 self-scripted
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     1 self-noclip
     0 $7E 5 char-sound
     $8003 $A self-anim-blend
@@ -214,7 +214,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : off-map-e7.act00 ( -- )   \ 00449D20
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     0 0 char-file-load
     self-wait-done
@@ -231,8 +231,8 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     $8001 $A self-anim-blend
     0 self-noclip
-    $18 state-flag-clear
-    9 state-flag-set
+    stalkers-stay state-flag-clear
+    fiona-hidden state-flag-set
     0 ebit-clear
     0 avoid-prompt
     begin
@@ -256,7 +256,7 @@ USING: room-names story.words story.shared ;
             $FE char-here? if
                 ['] off-map-e7.act01 goto
             then
-            9 state-flag-clear
+            fiona-hidden state-flag-clear
             1 self-noclip
             $8002 5 self-anim-9
             self-frames-reset

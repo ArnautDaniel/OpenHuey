@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-4
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-4.enter ( -- )   \ 004070F0
     room-sounds
@@ -22,7 +22,7 @@ USING: room-names story.words story.shared ;
         $1C $9000 1 0 char-anim-hold
     then
     0 $F1 4 action
-    $22 state-flag-set
+    hunted state-flag-set
     $278 story-flag? not if
         0 -51.07 1.0 19.59 flicker-sprite
     then
@@ -221,7 +221,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-1f-4.act00 ( -- )   \ 004074F0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $E 38.0 18.0 20 $FFFF 5 self-move-to
@@ -249,13 +249,13 @@ USING: room-names story.words story.shared ;
     $77 story-flag? not if
         old-mansion-1f-4.act0E
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-1f-4.act01 ( -- )   \ 00407560
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $E 38.0 18.0 20 $FFFF 5 self-move-to
@@ -310,13 +310,13 @@ USING: room-names story.words story.shared ;
     $77 story-flag? not if
         old-mansion-1f-4.act0E
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-1f-4.act02 ( -- )   \ 00407680
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $E 38.0 18.0 20 $FFFF 5 self-move-to
@@ -337,13 +337,13 @@ USING: room-names story.words story.shared ;
         0 ebit-clear
     then
     $245 item-give
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-1f-4.act03 ( -- )   \ 004076D0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     90 self-turn-angle
@@ -356,7 +356,7 @@ USING: room-names story.words story.shared ;
     wait-message
     $F 7 fade
     wait-fade
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -446,7 +446,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-1f-4.act06 ( -- )   \ 00407820
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     self-frames-reset
@@ -476,7 +476,7 @@ USING: room-names story.words story.shared ;
         1 2 2 char-camera
         1 camera-follow
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -587,7 +587,7 @@ USING: room-names story.words story.shared ;
 
 : old-mansion-1f-4.act0C ( -- )   \ 00407980
     $77 story-flag? not if
-        $18 state-flag-set
+        stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
         self-frames-reset
@@ -617,7 +617,7 @@ USING: room-names story.words story.shared ;
             1 1 1 char-camera
             1 camera-follow
         then
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
         0 self-scripted
     else
         self-wait-done

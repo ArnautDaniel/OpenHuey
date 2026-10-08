@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-1f-1
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0xC1: the summoner's countdown (progress +0x764) has run out.
 : water-tower-1f-1.cond00? ( -- flag )  s" water-tower-1f-1.cond00?" stub-flag ;
@@ -10,7 +10,7 @@ USING: room-names story.words story.shared ;
 : water-tower-1f-1.enter ( -- )   \ 0043EC80
     room-sounds
     $17 stalker-kind? if
-        $23 state-flag-set
+        no-stalker-camera state-flag-set
     then
     $2D6 story-flag? $2D7 story-flag? not and if
         0 -39.66 1.0 0.99 flicker-sprite
@@ -189,7 +189,7 @@ USING: room-names story.words story.shared ;
 
 : water-tower-1f-1.act00 ( -- )   \ 0043EF80
     0 ebit? not if
-        $18 state-flag-set
+        stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
         0 0 char-file-load
@@ -228,7 +228,7 @@ USING: room-names story.words story.shared ;
             4 self-wait-frames
         then
         0 0.0 0.0 0.0 0.0 event-camera
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
         0 self-scripted
     else
         self-wait-done

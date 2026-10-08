@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-2
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x14: the curtain ("Cartain") animated by event variable 0 (var0_obj_anim: byte 3 picks
 \ the frame range and direction).
@@ -107,7 +107,7 @@ USING: room-names story.words story.shared ;
     then then
     1 2 -1 area-camera
     $FE self-is? if
-        9 state-flag? if
+        fiona-hidden state-flag? if
             5 ebit-set
             castle-b1-2.act07
         else
@@ -192,7 +192,7 @@ USING: room-names story.words story.shared ;
 
 : castle-b1-2.act01 ( -- )   \ 003F9BD0
     0 ebit? not if
-        $18 state-flag-set
+        stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
         0 0 char-file-load
@@ -231,7 +231,7 @@ USING: room-names story.words story.shared ;
             4 self-wait-frames
         then
         0 0.0 0.0 0.0 0.0 event-camera
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
         0 self-scripted
     else
         self-wait-done
@@ -308,7 +308,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-b1-2.act04 ( -- )   \ 003F9D50
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $A self-through-door
@@ -325,7 +325,7 @@ USING: room-names story.words story.shared ;
     $14 self-wait-frames
     $8019 message
     wait-message
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -334,7 +334,7 @@ USING: room-names story.words story.shared ;
     2 avoid-prompt
     1 self-scripted
     0 camera-follow
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     1 self-noclip
     0 0 var-set
     4 ebit? if
@@ -368,7 +368,7 @@ USING: room-names story.words story.shared ;
     then
     1 self-scripted
     0 camera-follow
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     1 self-noclip
     0 0 var-set
     $8003 5 self-anim-9
@@ -394,7 +394,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-b1-2.act05 ( -- )   \ 003F9D90
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     5 ebit-clear
     1 self-scripted
     0 0 char-file-load
@@ -419,8 +419,8 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     4 castle-b1-2.cmd00
     0 self-noclip
-    $18 state-flag-clear
-    9 state-flag-set
+    stalkers-stay state-flag-clear
+    fiona-hidden state-flag-set
     2 ebit-clear
     4 ebit-clear
     0 counter-set
@@ -450,7 +450,7 @@ USING: room-names story.words story.shared ;
                 ['] castle-b1-2.act09 goto
             then
             0 camera-follow
-            9 state-flag-clear
+            fiona-hidden state-flag-clear
             1 self-noclip
             0 0 var-set
             $8001 0 self-anim-9

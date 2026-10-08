@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-13
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ the pursuer's Pursuer_GrabHewieBehind
 : castle-2f-13.cond00? ( b0 -- flag )  drop s" castle-2f-13.cond00?" stub-flag ;
@@ -209,7 +209,7 @@ USING: room-names story.words story.shared ;
     $FF 1.0 0 bgm
     $F $44 fade
     wait-fade
-    8 state-flag-set
+    world-held state-flag-set
     $FE char-here? if
         0 $FE 3 action
     then
@@ -220,9 +220,9 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-2f-13.act00 ( -- )   \ 00403C80
-    $18 state-flag-set
-    $E state-flag-set
-    $13 state-flag-set
+    stalkers-stay state-flag-set
+    stalkers-blind state-flag-set
+    hewie-no-attack state-flag-set
     1 self-scripted
     8 room-preload
     $E 3 $FF char-load
@@ -235,16 +235,16 @@ USING: room-names story.words story.shared ;
     1 char-here? if
         8 0 -1 hewie-to-room
     then
-    $E state-flag-clear
-    $13 state-flag-clear
+    stalkers-blind state-flag-clear
+    hewie-no-attack state-flag-clear
     $80 exit-check
     self-idle-or-end
 ;
 
 : castle-2f-13.act01 ( -- )   \ 00403CC0
-    $18 state-flag-set
-    $E state-flag-set
-    $13 state-flag-set
+    stalkers-stay state-flag-set
+    stalkers-blind state-flag-set
+    hewie-no-attack state-flag-set
     1 self-scripted
     $FE 0 0 char-camera
     $FE camera-follow
@@ -256,8 +256,8 @@ USING: room-names story.words story.shared ;
     1 char-here? if
         $2F 0 -1 hewie-to-room
     then
-    $E state-flag-clear
-    $13 state-flag-clear
+    stalkers-blind state-flag-clear
+    hewie-no-attack state-flag-clear
     $81 exit-check
     self-idle-or-end
 ;
@@ -296,7 +296,7 @@ USING: room-names story.words story.shared ;
     0 self-noclip
     $260 story-flag? not if
         $260 story-flag? not if
-            $A state-flag? 0 char-busy? not or if
+            fiona-half-hidden state-flag? 0 char-busy? not or if
                 $70 $63 item-count? not if
                     10 hewie-trust
                 then

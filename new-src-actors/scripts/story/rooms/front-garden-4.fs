@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-4
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ character kind 0x1A: byte 3 0 starts Kind26_MoveToB(2, -290, 42); else waits (2) until
 \ Kind26_MoveDoneB says done
@@ -63,7 +63,7 @@ USING: room-names story.words story.shared ;
     then then
     1 0 0 area-camera
     $FE self-is? if
-        $A state-flag? 0 3 char-in-area? and $30B story-flag? not and $37 exit-door-open? and if
+        fiona-half-hidden state-flag? 0 3 char-in-area? and $30B story-flag? not and $37 exit-door-open? and if
             0 $FE 0 action
         then
     then
@@ -78,7 +78,7 @@ USING: room-names story.words story.shared ;
         1 exit-check
     then then
     $FE char-busy? if
-        $A state-flag? not if
+        fiona-half-hidden state-flag? not if
             $FE action-end
             0 ebit-clear
         then

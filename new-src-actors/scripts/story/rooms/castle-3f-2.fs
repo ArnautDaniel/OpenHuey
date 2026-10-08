@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-3f-2
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : castle-3f-2.char-enter ( -- )   \ 0041D140
     hewie-controlled? not if
@@ -89,7 +89,7 @@ USING: room-names story.words story.shared ;
 
 : castle-3f-2.act00 ( -- )   \ 0041D220
     $5C story-flag-set
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     0 exit-door-open? not if
         0 1 self-door-knock
@@ -130,7 +130,7 @@ USING: room-names story.words story.shared ;
     0 camera-follow
     counter-inc
     0 self-scripted
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     self-idle-or-end
 ;
 

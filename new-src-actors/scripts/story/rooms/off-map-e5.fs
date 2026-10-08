@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e5
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ (as Room14_Cmd00) the same for the room object D_0047B0FC
 : off-map-e5.cmd00 ( b0 -- )  drop s" off-map-e5.cmd00" stub-step ;
@@ -76,7 +76,7 @@ USING: room-names story.words story.shared ;
     then then
     0 0 0 area-camera
     $FE self-is? if
-        9 state-flag? if
+        fiona-hidden state-flag? if
             3 ebit-set
             off-map-e5.act02
         else
@@ -121,8 +121,8 @@ USING: room-names story.words story.shared ;
 
 : off-map-e5.phase5 ( -- )   \ 00449660
     0 char-busy? if
-        $18 state-flag-clear
-        9 state-flag-clear
+        stalkers-stay state-flag-clear
+        fiona-hidden state-flag-clear
         0 action-end
         0 $15 62.35 -10.65 0 char-to-xz
     then
@@ -131,7 +131,7 @@ USING: room-names story.words story.shared ;
 : off-map-e5.act01 ( -- )   \ 00449750
     2 avoid-prompt
     1 self-scripted
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     1 self-noclip
     0 0 var-set
     2 ebit? if
@@ -165,7 +165,7 @@ USING: room-names story.words story.shared ;
         2 avoid-prompt
     then
     1 self-scripted
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     1 self-noclip
     0 0 var-set
     $8003 5 self-anim-9
@@ -191,7 +191,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : off-map-e5.act00 ( -- )   \ 00449680
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     0 0 char-file-load
     self-wait-done
@@ -215,8 +215,8 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     4 off-map-e5.cmd00
     0 self-noclip
-    $18 state-flag-clear
-    9 state-flag-set
+    stalkers-stay state-flag-clear
+    fiona-hidden state-flag-set
     0 ebit-clear
     2 ebit-clear
     0 counter-set
@@ -245,7 +245,7 @@ USING: room-names story.words story.shared ;
                 $FE action-end
                 ['] off-map-e5.act04 goto
             then
-            9 state-flag-clear
+            fiona-hidden state-flag-clear
             1 self-noclip
             0 0 var-set
             $8001 0 self-anim-9

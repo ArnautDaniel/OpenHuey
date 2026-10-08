@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-4
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-2f-4.enter ( -- )   \ 0040F490
     room-sounds
@@ -115,7 +115,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-2f-4.act00 ( -- )   \ 0040F600
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $A4 -36.0 41.0 -35 $FFFF 5 self-move-to
@@ -139,13 +139,13 @@ USING: room-names story.words story.shared ;
     wait-message
     $903 self-anim
     self-wait-anim
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-2f-4.act01 ( -- )   \ 0040F670
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     180 self-turn-angle
@@ -166,13 +166,13 @@ USING: room-names story.words story.shared ;
         $48 subscreen-bit
         $49 subscreen-bit
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-2f-4.act02 ( -- )   \ 0040F6B0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $A4 -36.0 41.0 -35 $FFFF 5 self-move-to
@@ -193,13 +193,13 @@ USING: room-names story.words story.shared ;
         0 ebit-clear
     then
     $243 item-give
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-2f-4.act03 ( -- )   \ 0040F700
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $A4 -36.0 41.0 -35 $FFFF 5 self-move-to
@@ -251,7 +251,7 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     5 message
     wait-message
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;

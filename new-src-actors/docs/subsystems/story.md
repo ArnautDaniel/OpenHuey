@@ -85,7 +85,7 @@ conditions), `scene_game.c` (the order), `progress.c`.
 4. **Actions** (cmd 0x05 / 0x92): a scene's script in its slot if free (0x92: always); a
    character's in its slot, unless it already has one (0x92: always), the character then
    scripted until its script ends (`self-idle-or-end`). No new action once an exit is taken.
-5. **State flag 0x26** runs only phase 3 and a shared script for characters entering.
+5. **`events-held`** runs only phase 3 and a shared script for characters entering.
 
 ## Design notes
 
@@ -114,6 +114,16 @@ Checked by `tests/story/test_story.fs` (12 tests): the new game's room actor and
 script (Fiona's camera setup, followed); a room change swaps the actors; front-garden-2's phase 1
 takes exit 2 when Fiona is in its area, she arrives and isn't sent back; a door opened with her
 animation and the exit taken; an action script started as a coroutine.
+
+Since: placing characters (`char-to-tri`, `char-to-tri-facing`, `char-to-xz`, `char-to-xyz`:
+a `place` message to the character), the room's look (`effect-string`: its fog and colours to
+the renderer's `look-set` - without it every room kept its file's default, darker look). A
+second arrival without a leaving between (a jump) retires the room still current.
+
+**Free play** (`hga --eval free-play`, or at the console): the world as the opening leaves it,
+until the opening can play (it needs the scripted moves, Hewie's squeeze through the grate, and
+the cutscenes): `opening-done`, `grate-open`, the world not held, Hewie with her and hers to
+command. The new game stays the default start.
 
 Next, by how much the scripts use them:
 

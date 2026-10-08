@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-5
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x51 (Room51_Cmd00_ptmf): byte 3 0 door 0 set going (+0xC); else wait (2) while it moves
 : old-mansion-b1-5.cmd00 ( b0 -- )  drop s" old-mansion-b1-5.cmd00" stub-step ;
@@ -28,7 +28,7 @@ USING: room-names story.words story.shared ;
             stalker-active? not if
                 $75 story-flag? not $76 story-flag? or if
                     7 ebit-set
-                    7 state-flag-set
+                    force-followed state-flag-set
                 then
             then
         then
@@ -120,8 +120,8 @@ USING: room-names story.words story.shared ;
     0 0 0 area-camera
     $FE self-is? if
         7 ebit-clear
-        7 state-flag-clear
-        9 state-flag? if
+        force-followed state-flag-clear
+        fiona-hidden state-flag? if
             4 ebit-set
             old-mansion-b1-5.act0E
         else
@@ -254,12 +254,12 @@ USING: room-names story.words story.shared ;
 
 : old-mansion-b1-5.act00 ( -- )   \ 0040D290
     $43 story-flag? not if
-        $18 state-flag-set
+        stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
         self-frames-reset
         4 self-wait-frames
-        $17 state-flag-set
+        world-frozen state-flag-set
         0 $5F 18.0 25.5 0 char-to-xz
         1 15.0 10.0 0.0 0.0 event-camera
         self-frames-reset
@@ -281,7 +281,7 @@ USING: room-names story.words story.shared ;
                 yield
             repeat
             wait-fade
-            $17 state-flag-clear
+            world-frozen state-flag-clear
             1 char-here? if
                 9 ebit-clear
                 1 2 char-C4? if
@@ -302,11 +302,11 @@ USING: room-names story.words story.shared ;
                 1.0 movie-volume
                 effects-arena-flip
                 yield
-                $1A state-flag-clear
+                movie-skipped state-flag-clear
                 $F 1 fade
                 $A cutscene-control
                 begin
-                    $1A state-flag? not if
+                    movie-skipped state-flag? not if
                         7 cutscene-control
                         cutscene-near-end? if
                             $F 0 fade
@@ -333,14 +333,14 @@ USING: room-names story.words story.shared ;
                 $B cutscene-control
                 wait-fade
                 1 cutscene-control
-                8 state-flag-set
+                world-held state-flag-set
                 effects-arena-flip
                 begin
                     movie-playing? while
                     yield
                 repeat
                 yield
-                6 state-flag-set
+                pause-wanted state-flag-set
                 8 cutscene-control
             then
             wait-fade
@@ -386,10 +386,10 @@ USING: room-names story.words story.shared ;
                 $52 door-unlock
             then
         else
-            $17 state-flag-clear
+            world-frozen state-flag-clear
             0 0.0 0.0 0.0 0.0 event-camera
         then
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
         0 self-scripted
     else
         self-wait-done
@@ -401,12 +401,12 @@ USING: room-names story.words story.shared ;
 
 : old-mansion-b1-5.act01 ( -- )   \ 0040D450
     $44 story-flag? not if
-        $18 state-flag-set
+        stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
         self-frames-reset
         4 self-wait-frames
-        $17 state-flag-set
+        world-frozen state-flag-set
         0 $1E 12.5 3.0 90 char-to-xz
         hewie-controlled? not if
             0 2 2 char-camera
@@ -438,7 +438,7 @@ USING: room-names story.words story.shared ;
             1 char-here? 1 2 char-C4? and if
                 0 1 $86 action
             then
-            $17 state-flag-clear
+            world-frozen state-flag-clear
             $FF panic-stage? if
                 3 panic-stage
             then
@@ -448,11 +448,11 @@ USING: room-names story.words story.shared ;
                 1.0 movie-volume
                 effects-arena-flip
                 yield
-                $1A state-flag-clear
+                movie-skipped state-flag-clear
                 $F 1 fade
                 $A cutscene-control
                 begin
-                    $1A state-flag? not if
+                    movie-skipped state-flag? not if
                         7 cutscene-control
                         cutscene-near-end? if
                             $F 0 fade
@@ -479,14 +479,14 @@ USING: room-names story.words story.shared ;
                 $B cutscene-control
                 wait-fade
                 1 cutscene-control
-                8 state-flag-set
+                world-held state-flag-set
                 effects-arena-flip
                 begin
                     movie-playing? while
                     yield
                 repeat
                 yield
-                6 state-flag-set
+                pause-wanted state-flag-set
                 8 cutscene-control
             then
             wait-fade
@@ -523,10 +523,10 @@ USING: room-names story.words story.shared ;
                 $52 door-unlock
             then
         else
-            $17 state-flag-clear
+            world-frozen state-flag-clear
             0 0.0 0.0 0.0 0.0 event-camera
         then
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
         0 self-scripted
     else
         self-wait-done
@@ -538,12 +538,12 @@ USING: room-names story.words story.shared ;
 
 : old-mansion-b1-5.act02 ( -- )   \ 0040D5E0
     $45 story-flag? not if
-        $18 state-flag-set
+        stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
         self-frames-reset
         4 self-wait-frames
-        $17 state-flag-set
+        world-frozen state-flag-set
         0 6 -30.0 33.5 -90 char-to-xz
         1 10.0 5.0 0.0 2.0 event-camera
         self-frames-reset
@@ -568,7 +568,7 @@ USING: room-names story.words story.shared ;
             1 char-here? 1 2 char-C4? and if
                 0 1 $86 action
             then
-            $17 state-flag-clear
+            world-frozen state-flag-clear
             things-clear
             $10 $78 movie-param
             $FF panic-stage? if
@@ -580,11 +580,11 @@ USING: room-names story.words story.shared ;
                 1.0 movie-volume
                 effects-arena-flip
                 yield
-                $1A state-flag-clear
+                movie-skipped state-flag-clear
                 $F 1 fade
                 $A cutscene-control
                 begin
-                    $1A state-flag? not if
+                    movie-skipped state-flag? not if
                         7 cutscene-control
                         cutscene-near-end? if
                             $F 0 fade
@@ -611,14 +611,14 @@ USING: room-names story.words story.shared ;
                 $B cutscene-control
                 wait-fade
                 1 cutscene-control
-                8 state-flag-set
+                world-held state-flag-set
                 effects-arena-flip
                 begin
                     movie-playing? while
                     yield
                 repeat
                 yield
-                6 state-flag-set
+                pause-wanted state-flag-set
                 8 cutscene-control
             then
             wait-fade
@@ -648,10 +648,10 @@ USING: room-names story.words story.shared ;
                 $52 door-unlock
             then
         else
-            $17 state-flag-clear
+            world-frozen state-flag-clear
             0 0.0 0.0 0.0 0.0 event-camera
         then
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
         0 self-scripted
     else
         self-wait-done
@@ -665,7 +665,7 @@ USING: room-names story.words story.shared ;
     self-frames-reset
     8 self-wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
-    $17 state-flag-clear
+    world-frozen state-flag-clear
     0 answer? if
         $902 self-anim
         0 exit-door-open? if
@@ -694,18 +694,18 @@ USING: room-names story.words story.shared ;
         $FF self-look-at
         yield
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-b1-5.act03 ( -- )   \ 0040D750
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     self-frames-reset
     4 self-wait-frames
-    $17 state-flag-set
+    world-frozen state-flag-set
     0 $71 -13.0 -21.0 -90 char-to-xz
     1 15.0 -5.0 0.0 5.0 event-camera
     self-frames-reset
@@ -716,12 +716,12 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-b1-5.act04 ( -- )   \ 0040D790
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     self-frames-reset
     4 self-wait-frames
-    $17 state-flag-set
+    world-frozen state-flag-set
     0 $55 -1.0 -3.0 -90 char-to-xz
     hewie-controlled? not if
         0 0 0 char-camera
@@ -739,12 +739,12 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-b1-5.act05 ( -- )   \ 0040D7E0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     self-frames-reset
     4 self-wait-frames
-    $17 state-flag-set
+    world-frozen state-flag-set
     0 7 -28.0 20.0 -90 char-to-xz
     1 15.0 10.0 0.0 2.0 event-camera
     self-frames-reset
@@ -755,12 +755,12 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-b1-5.act06 ( -- )   \ 0040D820
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     self-frames-reset
     4 self-wait-frames
-    $17 state-flag-set
+    world-frozen state-flag-set
     0 $19 -2.0 24.0 0 char-to-xz
     1 20.0 20.0 0.0 1.0 event-camera
     self-frames-reset
@@ -771,9 +771,9 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-b1-5.act07 ( -- )   \ 0040D860
-    $2C state-flag-set
-    $19 state-flag-set
-    $18 state-flag-set
+    capture-no-end state-flag-set
+    no-pause state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $52 self-through-door
@@ -828,7 +828,7 @@ USING: room-names story.words story.shared ;
     $2C resident-flag-set
     0 0 char-no-shadow
     0 game-over-flag
-    $C state-flag-set
+    caught state-flag-set
     self-idle-or-end
 ;
 
@@ -841,7 +841,7 @@ USING: room-names story.words story.shared ;
     counter-inc
     2 avoid-prompt
     0 camera-follow
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     1 self-noclip
     $8003 0 self-anim-blend
     self-wait-anim
@@ -856,7 +856,7 @@ USING: room-names story.words story.shared ;
     1 self-scripted
     counter-inc
     0 camera-follow
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     $FE char-here? if
         $FE 0 stalker-mode
         $FE action-end
@@ -889,7 +889,7 @@ USING: room-names story.words story.shared ;
     counter-inc
     1 ebit-set
     0 camera-follow
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     $FE char-here? 0 0 var? and if
         $FE 0 stalker-mode
         $FE action-end
@@ -916,7 +916,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-b1-5.act09 ( -- )   \ 0040D970
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     4 ebit-clear
     7 ebit-clear
     1 self-scripted
@@ -986,8 +986,8 @@ USING: room-names story.words story.shared ;
     then
     0 self-noclip
     0 0 $20000 nav-group
-    $18 state-flag-clear
-    9 state-flag-set
+    stalkers-stay state-flag-clear
+    fiona-hidden state-flag-set
     0 avoid-prompt
     $18 1 item-count? $19 1 item-count? or $1A 1 item-count? or $1B 1 item-count? or $1C 1 item-count? or if
         0 2 6 char-sound
@@ -1019,7 +1019,7 @@ USING: room-names story.words story.shared ;
             then
             counter-inc
             0 camera-follow
-            9 state-flag-clear
+            fiona-hidden state-flag-clear
             $FE char-here? if
                 $FE 0 stalker-mode
                 $FE action-end
@@ -1067,13 +1067,13 @@ USING: room-names story.words story.shared ;
         self-wait-anim
     then
     0 self-noclip
-    $B state-flag-set
+    hewie-hidden state-flag-set
     begin
         0 char-busy? if
             2 counter? not if
                 yield
             else
-                $B state-flag-clear
+                hewie-hidden state-flag-clear
                 1 self-noclip
                 1 ebit? if
                     $8004 0 self-anim-blend
@@ -1093,7 +1093,7 @@ USING: room-names story.words story.shared ;
                 self-idle-or-end
             then
         else
-            $B state-flag-clear
+            hewie-hidden state-flag-clear
             1 self-noclip
             1 ebit? if
                 $8004 0 self-anim-blend
@@ -1180,7 +1180,7 @@ USING: room-names story.words story.shared ;
     else
         $1601 self-anim
         self-wait-anim
-        9 state-flag? if
+        fiona-hidden state-flag? if
             2 avoid-prompt
             $FF panic-stage? if
                 3 panic-stage
@@ -1202,8 +1202,8 @@ USING: room-names story.words story.shared ;
 
 : old-mansion-b1-5.act11 ( -- )   \ 0040DE60
     1 self-scripted
-    $18 state-flag-set
-    7 state-flag-set
+    stalkers-stay state-flag-set
+    force-followed state-flag-set
     self-wait-done
     0 $D char-file-load
     $7B 16.59 -25.02 180 $FFFF 5 self-move-to
@@ -1224,8 +1224,8 @@ USING: room-names story.words story.shared ;
     $8003 $A self-anim-blend
     self-wait-anim
     counter-inc
-    $18 state-flag-clear
-    7 state-flag-clear
+    stalkers-stay state-flag-clear
+    force-followed state-flag-clear
     7 ebit-clear
     $328 story-flag-set
     0 self-scripted
@@ -1303,11 +1303,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -1334,18 +1334,18 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end
@@ -1378,11 +1378,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -1409,18 +1409,18 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end
@@ -1454,11 +1454,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -1485,18 +1485,18 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end
@@ -1531,11 +1531,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -1562,25 +1562,25 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end
 ;
 
 : old-mansion-b1-5.phase5 ( -- )   \ 0047AB98
-    7 state-flag-clear
+    force-followed state-flag-clear
 ;
 
 \ ---- registered ----

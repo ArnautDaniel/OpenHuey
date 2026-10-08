@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-2f-2
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : house-of-truth-2f-2.enter ( -- )   \ 00431DE0
     0 1 $14 door-bits
@@ -44,7 +44,7 @@ USING: room-names story.words story.shared ;
         $80 exit-taken? if
             0 $81 0 char-to-tri-facing
             $82 1 -1 hewie-to-room
-            8 state-flag-set
+            world-held state-flag-set
             0 0 0 action
         then
     then
@@ -148,11 +148,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -179,14 +179,14 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     3 0 char-remove
@@ -233,7 +233,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     $9F 5.3 80.92 -68 $FFFF 5 self-move-to
     self-wait-done
-    $17 state-flag-set
+    world-frozen state-flag-set
     1 self-scripted
     1 8.0 0.0 0.0 4.5 event-camera
     1 message
@@ -241,7 +241,7 @@ USING: room-names story.words story.shared ;
     self-frames-reset
     8 self-wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
-    $17 state-flag-clear
+    world-frozen state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -306,7 +306,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-2f-2.act08 ( -- )   \ 00432210
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     0 ebit? not if
@@ -330,7 +330,7 @@ USING: room-names story.words story.shared ;
         self-wait-anim
         0 ebit-clear
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -381,7 +381,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-2f-2.act0B ( -- )   \ 004322D0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     25 self-turn-angle
@@ -401,7 +401,7 @@ USING: room-names story.words story.shared ;
         self-wait-anim
         $4B subscreen-bit
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -432,11 +432,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -463,20 +463,20 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     3 0 char-remove
     4 0 char-remove
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end

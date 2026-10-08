@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-2
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x13: the grate ("kousi"): byte 3 0 shut (turn 0), else swung open a quarter turn.
 : front-garden-2.cmd00 ( b0 -- )  drop s" front-garden-2.cmd00" stub-step ;
@@ -272,7 +272,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : front-garden-2.act01 ( -- )   \ 003F9700
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     $F $44 fade
     1 0 movie-play
@@ -296,11 +296,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -327,14 +327,14 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     wait-fade
@@ -346,22 +346,22 @@ USING: room-names story.words story.shared ;
     1 front-garden-2.cmd00
     0 0 $20000 nav-group
     1 1 $20000 nav-group
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     $F $41 fade
     self-idle-or-end
 ;
 
 : front-garden-2.act02 ( -- )   \ 003F97C0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     $F $54 fade
     self-wait-done
     wait-fade
-    8 state-flag-set
-    $12 state-flag-set
+    world-held state-flag-set
+    scene-locked state-flag-set
     0 exit-prepare
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     $81 exit-check
     0.0 sound-volume-scale
@@ -455,11 +455,11 @@ USING: room-names story.words story.shared ;
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -486,18 +486,18 @@ USING: room-names story.words story.shared ;
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end

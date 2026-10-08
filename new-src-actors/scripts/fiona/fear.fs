@@ -4,7 +4,7 @@
 \ panic run until she's out of breath; stumbling or falling as she runs into something; getting
 \ up again. The panic itself is its own actor (panic.fs): she hears its stage and level.
 IN: fiona.fear
-USING: engine keys game-state actors messages common facts fiona.state fiona.model fiona.controls fiona.moving ;
+USING: engine keys game-state actors messages common facts fiona.state fiona.model fiona.controls fiona.moving flag-names ;
 
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
@@ -144,5 +144,5 @@ create next-at 12 allot
 : flee-button? ( -- flag )  key: Q key-pressed? ;
 : try-flee ( -- )   \ (free, not under flag 0x14, recovered, not panicking)
     her-mode @ 0<>  her-doing @ 0<> or  flee-button? 0= or if  exit  then
-    $14 state-flag?  her-recovery @ 360 < 0= or  her-panic-stage @ 4 < 0= or if  exit  then
+    no-flee state-flag?  her-recovery @ 360 < 0= or  her-panic-stage @ 4 < 0= or if  exit  then
     $B her-mode !  $D her-doing !  ['] flee-start her-act ! ;

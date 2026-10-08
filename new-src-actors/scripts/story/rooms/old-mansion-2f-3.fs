@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-3
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x56 (Room56_Cmd00_ptmf): creatures 7..9 in the current room on a live triangle
 \ gRoomEventObj says yes to: +0x10, then the creature list's +0x28
@@ -169,7 +169,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-2f-3.act00 ( -- )   \ 0040EFF0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $A0 29.5 34.5 0 $FFFF 5 self-move-to
@@ -190,13 +190,13 @@ USING: room-names story.words story.shared ;
         2 ebit-clear
     then
     $241 item-give
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-2f-3.act01 ( -- )   \ 0040F040
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     $F $44 fade
     self-wait-done
@@ -205,11 +205,11 @@ USING: room-names story.words story.shared ;
     things-clear
     $FFFF message-close
     0 1 6 char-sound
-    8 state-flag-set
+    world-held state-flag-set
     self-frames-reset
     $3C self-wait-frames
     $80 exit-check
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -233,7 +233,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-2f-3.act04 ( -- )   \ 0040F080
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     $FE 0 6 char-sound
     $F $44 fade
@@ -258,7 +258,7 @@ USING: room-names story.words story.shared ;
     camera-restart
     $F $41 fade
     wait-fade
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -292,7 +292,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-2f-3.act07 ( -- )   \ 0040F150
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     -50.0 0.0 self-turn-to-xz
@@ -310,13 +310,13 @@ USING: room-names story.words story.shared ;
         $D message
         wait-message
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-2f-3.act08 ( -- )   \ 0040F190
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     180 self-turn-angle
@@ -332,13 +332,13 @@ USING: room-names story.words story.shared ;
     $C message
     wait-message
     $240 item-give
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-2f-3.act09 ( -- )   \ 0040F1C0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $A0 29.5 34.5 0 $FFFF 5 self-move-to
@@ -362,13 +362,13 @@ USING: room-names story.words story.shared ;
     wait-message
     $903 self-anim
     self-wait-anim
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-2f-3.act0A ( -- )   \ 0040F230
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $A0 29.5 34.5 0 $FFFF 5 self-move-to
@@ -427,13 +427,13 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     0 message
     wait-message
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-2f-3.act0B ( -- )   \ 0040F370
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     -3.17 12.09 self-turn-to-xz
@@ -450,13 +450,13 @@ USING: room-names story.words story.shared ;
         wait-message
     then
     self-wait-anim
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-2f-3.act0C ( -- )   \ 0040F3A0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     5.3 37.5 self-turn-to-xz
@@ -484,13 +484,13 @@ USING: room-names story.words story.shared ;
         $11 message
         wait-message
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-2f-3.act0D ( -- )   \ 0040F410
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $A01 self-anim
@@ -499,7 +499,7 @@ USING: room-names story.words story.shared ;
     $12 message
     wait-message
     self-wait-anim
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;

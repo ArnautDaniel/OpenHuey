@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-5
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-2f-5.enter ( -- )   \ 0040F910
     room-sounds
@@ -40,7 +40,7 @@ USING: room-names story.words story.shared ;
         $1C $9004 1 0 char-anim-hold
     then
     0 $F1 0 action
-    $22 state-flag-set
+    hunted state-flag-set
     $56 story-flag? if
         $78 story-flag? not if
             $78 story-flag-set
@@ -133,7 +133,7 @@ USING: room-names story.words story.shared ;
     then then
     6 1 -1 area-camera
     $FE self-is? if
-        9 state-flag? if
+        fiona-hidden state-flag? if
             3 ebit-set
             old-mansion-2f-5.act03
         else
@@ -328,7 +328,7 @@ USING: room-names story.words story.shared ;
     then
     1 self-scripted
     0 camera-follow
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     1 self-noclip
     0 $7E 5 char-sound
     $8003 $A self-anim-blend
@@ -342,7 +342,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-2f-5.act01 ( -- )   \ 0040FDF0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     3 ebit-clear
     1 self-scripted
     0 0 char-file-load
@@ -357,8 +357,8 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     $8001 $A self-anim-blend
     0 self-noclip
-    $18 state-flag-clear
-    9 state-flag-set
+    stalkers-stay state-flag-clear
+    fiona-hidden state-flag-set
     1 ebit-clear
     0 avoid-prompt
     $FF 2 -1 char-camera
@@ -384,7 +384,7 @@ USING: room-names story.words story.shared ;
                 ['] old-mansion-2f-5.act02 goto
             then
             0 camera-follow
-            9 state-flag-clear
+            fiona-hidden state-flag-clear
             1 self-noclip
             $8002 5 self-anim-9
             self-frames-reset

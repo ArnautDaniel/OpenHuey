@@ -1,7 +1,7 @@
 \ fiona/moving.fs - how Fiona moves (Fiona_StateIdleMove, the turning states, Fiona_Footsteps):
 \ her animations' root motion moves her over her floor; she stands, rests, walks and runs.
 IN: fiona.moving
-USING: engine game-state actors messages common facts fiona.state fiona.model fiona.controls ;
+USING: engine game-state actors messages common facts fiona.state fiona.model fiona.controls flag-names ;
 
 $28020018 constant blocked-floor   \ the nav triangles she can't stand on (the game's mask)
 
@@ -39,7 +39,7 @@ fvariable sk-x  fvariable sk-y  fvariable sk-z
 defer exhausted   ' noop is exhausted   \ (Fiona_Exhausted: fiona.fear)
 : stick-held ( -- )   \ the stick held: walk, or run with the run button (not under story flag 0x1E)
     stick-heading her-heading f!
-    $1E state-flag? 0=  her-run? @ and if
+    no-running state-flag? 0=  her-run? @ and if
         her-fear-bits @ 1 and if   \ out of breath: running only while it lasts
             -1 her-panic-t +!  her-panic-t @ 0< 0= if  1 her-run-t +!  run-look  else  exhausted  0 her-run-t !  then
         else  1 her-run-t +!  run-look  then
@@ -102,7 +102,7 @@ fvariable ft-x  fvariable ft-z  create foot-at 12 allot
 variable st-l  variable st-r  variable st-step  variable ft-base  variable ft-bank
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
 : footsteps ( -- )
-    her-tri @ 0<  8 state-flag? or if  exit  then
+    her-tri @ 0<  world-held state-flag? or if  exit  then
     0 contact st-r ! st-l !
     group 0= if  her act.fade sf@ f0> if  -1 contact st-r ! st-l !  else  1 st-l !  1 st-r !  then  then
     0 st-step !

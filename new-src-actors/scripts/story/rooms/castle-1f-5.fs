@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-5
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x10 (Room10_Cond00_ptmf): the stalker is there, not about, in mode 2, 6 or 7
 : castle-1f-5.cond00? ( -- flag )  s" castle-1f-5.cond00?" stub-flag ;
@@ -13,11 +13,11 @@ USING: room-names story.words story.shared ;
         1 exit-taken? if
             castle-1f-5.cond00? if
                 $308 story-flag-set
-                7 state-flag-set
+                force-followed state-flag-set
                 $C door-open-clear
                 doors-room-in
                 0 ebit-set
-                $13 state-flag-set
+                hewie-no-attack state-flag-set
                 $FE char-activate
                 $FE $10 161 2 stalker-to-room
                 $FE -1 -1 char-camera
@@ -282,8 +282,8 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-1f-5.act03 ( -- )   \ 003F7560
-    $13 state-flag-clear
-    7 state-flag-clear
+    hewie-no-attack state-flag-clear
+    force-followed state-flag-clear
     0 ebit-clear
     $FE action-end
     $FE char-done
@@ -447,13 +447,13 @@ USING: room-names story.words story.shared ;
     $D door-unlock
     $D door-open-set
     doors-room-in
-    $14 state-flag-set
-    $1E state-flag-set
-    $D state-flag-set
-    $12 state-flag-clear
-    8 state-flag-set
+    no-flee state-flag-set
+    no-running state-flag-set
+    hewie-commandable state-flag-set
+    scene-locked state-flag-clear
+    world-held state-flag-set
     $41 story-flag-set
-    5 state-flag-set
+    subscreen-locked state-flag-set
     $26 1 pvar? if
         1 fiona-costume
         1 sound-set
@@ -498,7 +498,7 @@ USING: room-names story.words story.shared ;
     1 char-activate
     $10 0 155 hewie-to-room
     1 $9B 0 char-to-tri-facing
-    $28 state-flag-clear
+    in-play state-flag-clear
     $F 1 fade
     wait-fade
     self-idle-or-end

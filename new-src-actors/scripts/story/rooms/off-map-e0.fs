@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e0
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ RoomE0_Cmd00
 : off-map-e0.cmd00 ( -- )  s" off-map-e0.cmd00" stub-step ;
@@ -147,7 +147,7 @@ USING: room-names story.words story.shared ;
         then
     then
     $FE self-is? if
-        9 state-flag? if
+        fiona-hidden state-flag? if
             5 ebit-set
             off-map-e0.act03
         else
@@ -215,8 +215,8 @@ USING: room-names story.words story.shared ;
 
 : off-map-e0.phase5 ( -- )   \ 00448340
     0 char-busy? if
-        $18 state-flag-clear
-        9 state-flag-clear
+        stalkers-stay state-flag-clear
+        fiona-hidden state-flag-clear
         0 action-end
         0 $27 13.59 -38.0 0 char-to-xz
     then
@@ -234,7 +234,7 @@ USING: room-names story.words story.shared ;
         2 avoid-prompt
     then
     1 self-scripted
-    9 state-flag-clear
+    fiona-hidden state-flag-clear
     1 self-noclip
     0 $7E 5 char-sound
     $8003 $A self-anim-blend
@@ -248,7 +248,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : off-map-e0.act01 ( -- )   \ 00448360
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     0 1 char-file-load
     self-wait-done
@@ -264,8 +264,8 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     $8001 $A self-anim-blend
     0 self-noclip
-    $18 state-flag-clear
-    9 state-flag-set
+    stalkers-stay state-flag-clear
+    fiona-hidden state-flag-set
     1 ebit-clear
     0 avoid-prompt
     begin
@@ -289,7 +289,7 @@ USING: room-names story.words story.shared ;
             $FE char-here? if
                 ['] off-map-e0.act02 goto
             then
-            9 state-flag-clear
+            fiona-hidden state-flag-clear
             1 self-noclip
             $8002 5 self-anim-9
             self-frames-reset
@@ -330,7 +330,7 @@ USING: room-names story.words story.shared ;
 : off-map-e0.act05 ( -- )   \ 004484D0
     self-wait-done
     camera-restart
-    8 state-flag-clear
+    world-held state-flag-clear
     $F 1 fade
     wait-fade
     6 ebit-set

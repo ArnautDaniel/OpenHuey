@@ -18,7 +18,8 @@ create heel-at 12 allot
     >r  heel-at vec@ room-id r> body-place  her body-yaw his-yaw! ;
 : along? ( -- flag )  self body? ;   \ in the game (his body in the house)
 : join ( -- )
-    her active? 0= if  exit  then
+    her active? 0= if  -1 his-joining !  exit  then   \ (she isn't in yet: when she arrives)
+    0 his-joining !
     1 him-model act.visible l!  heel  0 away!  fresh ;
 : part ( -- )
     body-off  0 him-model act.visible l!  model 0 dog-legs ;
@@ -33,9 +34,13 @@ behaviour hewie-own
       self subscribe danger  self subscribe panic  self subscribe fiona-doing ;
   on join-fiona ( -- )  s" fiona" actor-named his-fiona !  room-id fiona-room !  join ;
   on part-from-fiona ( -- )  part ;
+  on place ( x y z yaw -- )   \ (the story puts him)
+      along? 0= if  2drop 2drop exit  then
+      >r >r >r cell>f r> cell>f r> cell>f  his-place  r> cell>f his-yaw! ;
   on leaving-room ( room exit -- )   \ (the old room still in)
       2dup room-exit-leads drop fiona-room !  nip  along? if  fiona-left  else  drop  then ;
-  on arrived ( room exit -- )  drop fiona-room ! ;   \ (he comes in by himself: Hewie_Arrive, the doors off screen)
+  on arrived ( room exit -- )  drop fiona-room !
+      his-joining @ if  s" fiona" actor-named his-fiona !  join  then ;   \ (he comes in by himself: Hewie_Arrive, the doors off screen)
   on danger ( level -- )  his-danger ! ;
   on panic ( stage level -- )  drop his-panic ! ;
   on fiona-doing ( mode sub cond cmd -- )  fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode ! ;

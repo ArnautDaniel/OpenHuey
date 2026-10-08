@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-15
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x30 (Room30_Cond00_ptmf): the pursuer's Pursuer_GrabHewieBehind
 : castle-2f-15.cond00? ( b0 -- flag )  drop s" castle-2f-15.cond00?" stub-flag ;
@@ -214,7 +214,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-2f-15.act00 ( -- )   \ 004131F0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     8 room-preload
     self-wait-done
@@ -223,8 +223,8 @@ USING: room-names story.words story.shared ;
     0 answer? if
         $F 4 fade
         wait-fade
-        8 state-flag-set
-        $12 state-flag-set
+        world-held state-flag-set
+        scene-locked state-flag-set
         0 $86 0.0 0.0 0.0 0 0 sound
         self-frames-reset
         $B4 self-wait-frames
@@ -234,7 +234,7 @@ USING: room-names story.words story.shared ;
         $82 exit-check
     else
         0 exit-prepare
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
         0 self-scripted
     then
     self-idle-or-end
@@ -255,7 +255,7 @@ USING: room-names story.words story.shared ;
     0 self-noclip
     $260 story-flag? not if
         $260 story-flag? not if
-            $A state-flag? 0 char-busy? not or if
+            fiona-half-hidden state-flag? 0 char-busy? not or if
                 $70 $63 item-count? not if
                     10 hewie-trust
                 then

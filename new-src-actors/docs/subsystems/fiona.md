@@ -72,7 +72,7 @@ behaviour.
 3. **Standing.** Let go of the stick: walking eases to a stop, running to a stop. Standing
    still a while she rests (after 90 frames her resting animation), but only while followed
    (tense), not afraid, and not long recovered. Otherwise she plays her idle.
-4. **Running** needs the run button, and story flag 0x1E not set.
+4. **Running** needs the run button, and `no-running` not set.
 5. **Footsteps** follow her animation's foot contacts. Each plays its sound (by the floor's
    material) and is heard as a noise.
 6. **Doors.** With the action button by an exit:
@@ -135,8 +135,8 @@ Left for F2: the slow locked-door try; shaking the panic off faster while down (
 shake-free of F4); the flee's door slam and Hewie's reaction; charms (with items).
 
 **F3 built** (`scripts/fiona/commands.fs`, with Hewie's H2). The right stick's gestures (keys 1
-up, 2 down, 3 R3, 4 right - held for more praise, 5 left), read under state flag 0xD and not
-0x2B (Fiona_ReadsPad) and acted on the next frame. The code by what Hewie is doing and where
+up, 2 down, 3 R3, 4 right - held for more praise, 5 left), read under `hewie-commandable` and not
+`fiona-occupied` (Fiona_ReadsPad) and acted on the next frame. The code by what Hewie is doing and where
 (Fiona_HewieCommandAction): go there / go for it, come back, stay / come, praise, scold (from
 afar or close up). Her gesture (mode 0xD: 0xC00..0xC0F), her lines on its key frames
 (Fiona_MotionSounds' event 1; Fiona_CallHewie, Fiona_OrderLine), the command on its event 2
@@ -148,3 +148,16 @@ its repeats, 0xC0D scold). Refused when asked: from afar instead (praise 0x29, s
 
 Left for F3: her head turned to Hewie after a command (her looks aren't built); a creature
 ahead for "go for it" while followed (with the creatures).
+
+**Fixed (2026-10-07):** her model had no motion table (`$3D5CC0`, CharModel_SecondaryMotion): no
+animation looped or blended - the run stopped on its last frame and she slid in that pose.
+
+**To check by eye (with the user):** her heading as she arrives through a door. She was facing
+back into the door; now she keeps her heading from going through (as the original: Fiona_Vt34
+saves it, the scripts' 0x04 places without turning). Unverified on screen: the screenshot
+angles didn't show it clearly. If it is still wrong, the stick-relative turn of Fiona_Vt34
+(the old camera's frame) is the next suspect.
+
+**`go-to`** `( x y z -- )` (floats `f>cell`): she walks there over the nav mesh (walk-to-spot)
+and stands. At the console: `fiona 10e 0e 20e go`. For debugging, and the base of the story's
+scripted moves.

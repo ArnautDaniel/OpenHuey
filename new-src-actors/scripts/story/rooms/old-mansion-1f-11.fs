@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-11
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x4E (D_0040B4D8): a lit quad at x -44 .. -36, z 60, from 54 to 71
 : old-mansion-1f-11.cmd00 ( b0 -- )  drop s" old-mansion-1f-11.cmd00" stub-step ;
@@ -308,7 +308,7 @@ USING: room-names story.words story.shared ;
         wait-message
         0 ebit-set
     else
-        $18 state-flag-set
+        stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
         -90 self-turn-angle
@@ -333,7 +333,7 @@ USING: room-names story.words story.shared ;
             1 1 1 char-camera
             1 camera-follow
         then
-        $18 state-flag-clear
+        stalkers-stay state-flag-clear
         0 self-scripted
     then
     self-idle-or-end

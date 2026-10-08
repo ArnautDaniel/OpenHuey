@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-20
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-20.enter ( -- )   \ 00439160
     room-sounds
@@ -16,7 +16,7 @@ USING: room-names story.words story.shared ;
         $1C $900C 1 0 char-anim-hold
     then
     0 $F1 3 action
-    $22 state-flag-set
+    hunted state-flag-set
     $7E story-flag? not if
         0 1 $14 door-bits
         1 0 $20000 nav-group
@@ -588,17 +588,17 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-1f-20.act09 ( -- )   \ 00439A60
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $F $54 fade
     wait-fade
-    8 state-flag-set
-    $12 state-flag-set
+    world-held state-flag-set
+    scene-locked state-flag-set
     1 action-end
     1 char-done
     0 exit-prepare
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     $80 exit-check
     self-idle-or-end

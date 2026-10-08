@@ -2,7 +2,7 @@
 \ a lasting and a passing part, its stage, Fiona's breath and scream. Frights and fear come in
 \ as messages; each frame's end it updates and tells everyone its stage and level.
 IN: panic
-USING: engine actors messages facts ;
+USING: engine actors messages facts flag-names ;
 
 state: panic-state
   cell field stage           \ 0 calm, 1..3 at 60 / 75 / 90, 4 panicking, 5 calming down
@@ -113,7 +113,7 @@ fvariable u-a  fvariable u-b  fvariable u-c  fvariable u-d
         else
             lasting f@ passing f@ f+ lasting f!  u-a f@ passing f!  lasting f@ passing f@ f+ level f!
         then
-        $15 state-flag? if   \ (it reaches 100 only under flag 0x15 - as the original: never)
+        panic-can-max state-flag? if   \ (it reaches 100 only under flag 0x15 - as the original: never)
             level f@ 100e f< 0= if  99e level f!  99e lasting f!  0e passing f!  then
         then
     then

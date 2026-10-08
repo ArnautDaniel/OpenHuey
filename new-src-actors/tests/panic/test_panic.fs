@@ -31,7 +31,7 @@ T{ 80 game:panic send panic-level!  3 frames  stage  bits 1 and -> 2 1 }T
 
 testing panicking (stage 4): she screams, her fear bit 2, the panic run
 T{ 4 game:panic send panic-stage!  3 frames  stage  bits 2 and -> 4 2 }T
-T{ key: W hold  20 frames  anim -> $206 }T
+T{ key: W hold  8 frames  anim -> $206 }T   \ (by frame 13 the run has taken her into a wall: a stumble)
 T{ key: W release  anim dup $206 = swap $1001 = or -> -1 }T      \ (she runs on blindly, or stumbles)
 testing running blindly into walls: stumbles (0x1001), then a fall (0xB00) that ends the panic
 : seen ( n anim -- flag )  false swap rot 0 ?do  game-tick  dup anim = if  nip true swap leave  then  loop  drop ;

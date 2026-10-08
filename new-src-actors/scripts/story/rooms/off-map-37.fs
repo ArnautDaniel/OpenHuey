@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-37
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ Room37_Cmd00
 : off-map-37.cmd00 ( -- )  s" off-map-37.cmd00" stub-step ;
@@ -10,8 +10,8 @@ USING: room-names story.words story.shared ;
 defer off-map-37.act00
 : off-map-37.enter ( -- )   \ 00445BC0
     room-sounds
-    $D state-flag-set
-    $13 state-flag-set
+    hewie-commandable state-flag-set
+    hewie-no-attack state-flag-set
     1 resident-flag? 2 resident-flag? and 3 resident-flag? and 4 resident-flag? and if
         $15 resident-flag-set
     then
@@ -33,7 +33,7 @@ defer off-map-37.act00
     0 self-is? if
         0 exit-taken? if
             $32 1.0 0 bgm
-            8 state-flag-set
+            world-held state-flag-set
             $2B 0 pvar-set
             $FF panic-stage? if
                 3 panic-stage
@@ -41,7 +41,7 @@ defer off-map-37.act00
             0 0 $A action-force
         then
         $80 exit-taken? if
-            8 state-flag-set
+            world-held state-flag-set
             $FF panic-stage? if
                 3 panic-stage
             then
@@ -49,7 +49,7 @@ defer off-map-37.act00
         then
         $81 exit-taken? if
             $32 1.0 0 bgm
-            8 state-flag-set
+            world-held state-flag-set
             $FF panic-stage? if
                 3 panic-stage
             then
@@ -377,7 +377,7 @@ defer off-map-37.act00
 ;
 
 :noname   \ off-map-37.act00 (00445DE0; deferred: used before it is defined)
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     0 camera-mode? if
@@ -394,7 +394,7 @@ defer off-map-37.act00
     $FF 1.0 0 bgm
     8 subscreen-open
     begin
-        4 state-flag? while
+        subscreen-wanted state-flag? while
         yield
     repeat
     $2A $FF pvar? not if
@@ -407,7 +407,7 @@ defer off-map-37.act00
             1 result? if
                 1.0 movie-volume
                 yield
-                8 state-flag-set
+                world-held state-flag-set
                 begin
                     0 cutscene-control
                     -1 result? not if
@@ -427,9 +427,9 @@ defer off-map-37.act00
                     yield
                 repeat
                 yield
-                8 state-flag-clear
+                world-held state-flag-clear
             then
-            8 state-flag-set
+            world-held state-flag-set
             0 $11B -34.0 60.0 180 char-to-xz
             hewie-controlled? not if
                 0 2 2 char-camera
@@ -449,9 +449,9 @@ defer off-map-37.act00
             off-map-37.act03
             $2C 0 pvar-set
             $80 exit-check
-            8 state-flag-set
-            0 state-flag-clear
-            $26 state-flag-set
+            world-held state-flag-set
+            summoner-on state-flag-clear
+            events-held state-flag-set
         then
     else
         $2B 0 pvar-set
@@ -459,7 +459,7 @@ defer off-map-37.act00
         $F $41 fade
     then
     0 self-scripted
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     self-idle-or-end
 ; is off-map-37.act00
 
@@ -469,7 +469,7 @@ defer off-map-37.act00
     $FF 1.0 0 bgm
     $A subscreen-open
     begin
-        4 state-flag? while
+        subscreen-wanted state-flag? while
         yield
     repeat
     $2E 0 pvar? if
@@ -534,7 +534,7 @@ defer off-map-37.act00
         0 panic-stage
         1 action-end
         1 char-done
-        8 state-flag-set
+        world-held state-flag-set
         $26 1 pvar? if
             1 fiona-costume
             1 sound-set
@@ -573,8 +573,8 @@ defer off-map-37.act00
         1 char-in
         1 action-end
         1 char-done
-        $13 state-flag-clear
-        $E state-flag-clear
+        hewie-no-attack state-flag-clear
+        stalkers-blind state-flag-clear
         $80 exit-check
     else
         $32 1.0 0 bgm
@@ -583,7 +583,7 @@ defer off-map-37.act00
 ;
 
 : off-map-37.act02 ( -- )   \ 00446070
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     180 self-turn-angle
@@ -594,7 +594,7 @@ defer off-map-37.act00
     $FF 1.0 0 bgm
     7 subscreen-open
     begin
-        4 state-flag? while
+        subscreen-wanted state-flag? while
         yield
     repeat
     0 0.0 0.0 0.0 0.0 event-camera
@@ -603,37 +603,37 @@ defer off-map-37.act00
     then
     $26 $28 pvars-equal? not if
         $26 1 pvar? if
-            3 state-flag-set
+            new-game-sounds state-flag-set
             1 sound-set
             1 fiona-costume
             $26 1 pvar-set
         else $26 0 pvar? if
-            3 state-flag-clear
+            new-game-sounds state-flag-clear
             0 sound-set
             0 fiona-costume
             $26 0 pvar-set
         else $26 2 pvar? if
-            3 state-flag-set
+            new-game-sounds state-flag-set
             1 sound-set
             2 fiona-costume
             $26 2 pvar-set
         else $26 3 pvar? if
-            3 state-flag-set
+            new-game-sounds state-flag-set
             1 sound-set
             3 fiona-costume
             $26 3 pvar-set
         else $26 6 pvar? if
-            3 state-flag-clear
+            new-game-sounds state-flag-clear
             0 sound-set
             6 fiona-costume
             $26 6 pvar-set
         else $26 7 pvar? if
-            3 state-flag-clear
+            new-game-sounds state-flag-clear
             0 sound-set
             7 fiona-costume
             $26 7 pvar-set
         else $26 8 pvar? if
-            3 state-flag-set
+            new-game-sounds state-flag-set
             1 sound-set
             8 fiona-costume
             $26 8 pvar-set
@@ -679,12 +679,12 @@ defer off-map-37.act00
     $F $41 fade
     wait-fade
     0 self-scripted
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     self-idle-or-end
 ;
 
 : off-map-37.act04 ( -- )   \ 00446520
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     180 self-turn-angle
@@ -695,17 +695,17 @@ defer off-map-37.act00
     $FF 1.0 0 bgm
     $B subscreen-open
     begin
-        4 state-flag? while
+        subscreen-wanted state-flag? while
         yield
     repeat
     $32 1.0 0 bgm
     0 self-scripted
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     self-idle-or-end
 ;
 
 : off-map-37.act05 ( -- )   \ 00446560
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $121 0.0 10.5 180 $FFFF 5 self-move-to
@@ -716,19 +716,19 @@ defer off-map-37.act00
     $1E self-wait-frames
     $D subscreen-open
     begin
-        4 state-flag? while
+        subscreen-wanted state-flag? while
         yield
     repeat
     $32 1.0 0 bgm
     self-frames-reset
     8 self-wait-frames
     0 self-scripted
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     self-idle-or-end
 ;
 
 : off-map-37.act06 ( -- )   \ 004465C0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     9 -41.0 -38.0 -90 $FFFF 5 self-move-to
@@ -739,19 +739,19 @@ defer off-map-37.act00
     $FF 1.0 0 bgm
     $E subscreen-open
     begin
-        4 state-flag? while
+        subscreen-wanted state-flag? while
         yield
     repeat
     $32 1.0 0 bgm
     self-frames-reset
     8 self-wait-frames
     0 self-scripted
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     self-idle-or-end
 ;
 
 : off-map-37.act07 ( -- )   \ 00446620
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $D7 45.0 -39.0 90 $FFFF 5 self-move-to
@@ -762,14 +762,14 @@ defer off-map-37.act00
     $FF 1.0 0 bgm
     $F subscreen-open
     begin
-        4 state-flag? while
+        subscreen-wanted state-flag? while
         yield
     repeat
     $32 1.0 0 bgm
     self-frames-reset
     8 self-wait-frames
     0 self-scripted
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     self-idle-or-end
 ;
 
@@ -783,7 +783,7 @@ defer off-map-37.act00
     $7C 17.142 22.877 90 $FFFF 5 self-move-to
     self-wait-done
     wait-fade
-    8 state-flag-set
+    world-held state-flag-set
     begin
         1 adx? not while
         yield
@@ -791,7 +791,7 @@ defer off-map-37.act00
     self-frames-reset
     $1E self-wait-frames
     begin
-        $1C state-flag-set
+        quit-wanted state-flag-set
         yield
     again
 ;
@@ -824,7 +824,7 @@ defer off-map-37.act00
     1 1 1 char-camera
     yield
     camera-restart
-    $28 state-flag-clear
+    in-play state-flag-clear
     $F 1 fade
     wait-fade
     $10 resident-flag? not if

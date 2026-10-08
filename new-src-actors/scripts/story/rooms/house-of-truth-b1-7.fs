@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-7
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x95: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
@@ -98,7 +98,7 @@ USING: room-names story.words story.shared ;
     $F 0 fade
     self-wait-done
     wait-fade
-    8 state-flag-set
+    world-held state-flag-set
     $80 exit-check
     0 self-scripted
     self-idle-or-end
@@ -109,7 +109,7 @@ USING: room-names story.words story.shared ;
     $F 0 fade
     self-wait-done
     wait-fade
-    8 state-flag-set
+    world-held state-flag-set
     $80 exit-check
     0 self-scripted
     self-idle-or-end
@@ -125,7 +125,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-b1-7.act03 ( -- )   \ 00444630
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     -90 self-turn-angle
@@ -136,7 +136,7 @@ USING: room-names story.words story.shared ;
     wait-message
     $F 7 fade
     wait-fade
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -171,7 +171,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-b1-7.phase5 ( -- )   \ 0047AFE8
-    $12 state-flag-clear
+    scene-locked state-flag-clear
 ;
 
 \ ---- registered ----

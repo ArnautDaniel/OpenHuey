@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-9
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room objects 4 / 5 spinning (+0x10) at a speed (+0x30) eased by script variable 4 / 5: byte 3
 \ 0 sets them up (speed and base 4 degrees, top 20); else each frame (unless the progress' +0x54
@@ -274,7 +274,7 @@ defer house-of-truth-1f-9.act0F
     0 3 char-in-area? 0 0 $32 char-heading? and if
         5 0 0 scene-change
     then
-    $10 state-flag? if
+    scene-5-pending state-flag? if
         -2147483646 scene-request? if
             5 6 1 scene-change
         then
@@ -308,7 +308,7 @@ defer house-of-truth-1f-9.act0F
     yield
     $255 item-give
     $828C item-give
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -318,20 +318,20 @@ defer house-of-truth-1f-9.act0F
     $A3 story-flag? not if
         $A1 story-flag? not if
             1 char-here? 1 2 char-C4? not and $FE char-here? not and if
-                $18 state-flag-set
+                stalkers-stay state-flag-set
                 1 self-scripted
                 self-frames-reset
                 8 self-wait-frames
                 0 $31 0.0 58.0 0 char-to-xz
                 1 15.0 10.0 0.0 5.0 event-camera
-                $17 state-flag-set
+                world-frozen state-flag-set
                 self-frames-reset
                 8 self-wait-frames
                 2 message
                 wait-message
                 self-frames-reset
                 8 self-wait-frames
-                $17 state-flag-clear
+                world-frozen state-flag-clear
                 0 0.0 0.0 0.0 0.0 event-camera
                 0 $62 -10.0 54.0 140 char-to-xz
                 ['] house-of-truth-1f-9.act02 goto
@@ -340,14 +340,14 @@ defer house-of-truth-1f-9.act0F
                 8 self-wait-frames
                 0 $31 0.0 58.0 0 char-to-xz
                 1 15.0 10.0 0.0 5.0 event-camera
-                $17 state-flag-set
+                world-frozen state-flag-set
                 self-frames-reset
                 8 self-wait-frames
                 0 message
                 wait-message
                 self-frames-reset
                 8 self-wait-frames
-                $17 state-flag-clear
+                world-frozen state-flag-clear
                 0 0.0 0.0 0.0 0.0 event-camera
                 0 ebit-set
             else
@@ -361,14 +361,14 @@ defer house-of-truth-1f-9.act0F
             8 self-wait-frames
             0 $31 0.0 58.0 0 char-to-xz
             1 15.0 10.0 0.0 5.0 event-camera
-            $17 state-flag-set
+            world-frozen state-flag-set
             self-frames-reset
             8 self-wait-frames
             4 message
             wait-message
             self-frames-reset
             8 self-wait-frames
-            $17 state-flag-clear
+            world-frozen state-flag-clear
             0 0.0 0.0 0.0 0.0 event-camera
         then
     else 0 ebit? not if
@@ -376,14 +376,14 @@ defer house-of-truth-1f-9.act0F
         8 self-wait-frames
         0 $31 0.0 58.0 0 char-to-xz
         1 15.0 10.0 0.0 5.0 event-camera
-        $17 state-flag-set
+        world-frozen state-flag-set
         self-frames-reset
         8 self-wait-frames
         5 message
         wait-message
         self-frames-reset
         8 self-wait-frames
-        $17 state-flag-clear
+        world-frozen state-flag-clear
         0 0.0 0.0 0.0 0.0 event-camera
         0 ebit-set
     else
@@ -416,7 +416,7 @@ defer house-of-truth-1f-9.act0F
 ;
 
 : house-of-truth-1f-9.act03 ( -- )   \ 00437350
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     $C04 self-anim
@@ -430,10 +430,10 @@ defer house-of-truth-1f-9.act0F
 ;
 
 : house-of-truth-1f-9.act04 ( -- )   \ 00437370
-    0 state-flag-clear
+    summoner-on state-flag-clear
     $FE action-end
     $FE char-done
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     0.0 65.0 self-turn-to-xz
@@ -468,11 +468,11 @@ defer house-of-truth-1f-9.act0F
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -499,14 +499,14 @@ defer house-of-truth-1f-9.act0F
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     wait-fade
@@ -535,7 +535,7 @@ defer house-of-truth-1f-9.act0F
     doors-room-in
     $ED door-lock
     $A2 story-flag-set
-    $10 state-flag-set
+    scene-5-pending state-flag-set
     4 ebit-clear
     5 ebit-clear
     7 20 var-set
@@ -549,7 +549,7 @@ defer house-of-truth-1f-9.act0F
     $F 1 fade
     wait-fade
     $4D resident-flag-set
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -566,7 +566,7 @@ defer house-of-truth-1f-9.act0F
     7 ebit-clear
     3 ebit-clear
     9 ebit-clear
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     $F $54 fade
     self-wait-done
@@ -603,11 +603,11 @@ defer house-of-truth-1f-9.act0F
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -634,14 +634,14 @@ defer house-of-truth-1f-9.act0F
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     $92 0 151 hewie-to-room
@@ -650,7 +650,7 @@ defer house-of-truth-1f-9.act0F
     0 self-move-16
     0 $2B 54.575 -2.153 -90 char-to-xz
     camera-restart
-    $10 state-flag-clear
+    scene-5-pending state-flag-clear
     $FE action-end
     $FE char-done
     2 0 char-remove
@@ -672,7 +672,7 @@ defer house-of-truth-1f-9.act0F
     $256 item-give
     $828D item-give
     shared.act9C
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     shared.act95
     self-idle-or-end
@@ -795,11 +795,11 @@ defer house-of-truth-1f-9.act0F
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -826,18 +826,18 @@ defer house-of-truth-1f-9.act0F
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     wait-fade
-    8 state-flag-set
+    world-held state-flag-set
     $FE action-end
     $FE char-done
     $FF 0 char-visible
@@ -1024,11 +1024,11 @@ defer house-of-truth-1f-9.act0F
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -1055,19 +1055,19 @@ defer house-of-truth-1f-9.act0F
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     3 0 char-remove
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end
@@ -1104,11 +1104,11 @@ defer house-of-truth-1f-9.act0F
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -1135,19 +1135,19 @@ defer house-of-truth-1f-9.act0F
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     3 0 char-remove
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end
@@ -1186,11 +1186,11 @@ defer house-of-truth-1f-9.act0F
         1.0 movie-volume
         effects-arena-flip
         yield
-        $1A state-flag-clear
+        movie-skipped state-flag-clear
         $F 1 fade
         $A cutscene-control
         begin
-            $1A state-flag? not if
+            movie-skipped state-flag? not if
                 7 cutscene-control
                 cutscene-near-end? if
                     $F 0 fade
@@ -1217,19 +1217,19 @@ defer house-of-truth-1f-9.act0F
         $B cutscene-control
         wait-fade
         1 cutscene-control
-        8 state-flag-set
+        world-held state-flag-set
         effects-arena-flip
         begin
             movie-playing? while
             yield
         repeat
         yield
-        6 state-flag-set
+        pause-wanted state-flag-set
         8 cutscene-control
     then
     $FF 0 char-visible
     $80 exit-check
-    $26 state-flag-clear
+    events-held state-flag-clear
     1 action-end
     1 char-done
     self-idle-or-end

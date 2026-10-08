@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-11
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared flag-names ;
 
 \ room 0x62 (Room62_Cmd00_ptmf): object byte 4 swings: byte 3 0 starts it (phase +0x30 0, size
 \ +0x34 0.01; object 0 with sound 7), else a step (+0x10 = size x sin(phase), phase on 60
@@ -291,7 +291,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-2f-11.act05 ( -- )   \ 004220F0
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     -20 self-turn-angle
@@ -311,7 +311,7 @@ USING: room-names story.words story.shared ;
     $F 7 fade
     wait-fade
     $237 item-give
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -393,7 +393,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-2f-11.act09 ( -- )   \ 00422220
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     -90 self-turn-angle
@@ -414,13 +414,13 @@ USING: room-names story.words story.shared ;
         $63 subscreen-bit
         $65 subscreen-bit
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-2f-11.act0A ( -- )   \ 00422260
-    $18 state-flag-set
+    stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     -90 self-turn-angle
@@ -441,7 +441,7 @@ USING: room-names story.words story.shared ;
         $46 subscreen-bit
         $47 subscreen-bit
     then
-    $18 state-flag-clear
+    stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
