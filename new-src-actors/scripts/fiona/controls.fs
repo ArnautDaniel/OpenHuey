@@ -17,7 +17,7 @@ fvariable tn-x  fvariable tn-z
 : turned ( F: cam-yaw nx nz -- dx dz )
     tn-z f!  tn-x f!  fdup fcos tn-x f@ f*  fover fsin tn-z f@ f* f-
     fswap fdup fsin tn-x f@ f*  fswap fcos tn-z f@ f* f+ ;
-fvariable nx  fvariable nz  fvariable steer-yaw   \ (the stick normalized; the camera turn steering)
+fvariable nx  fvariable nz   \ (the stick normalized)
 : small? ( F: x z -- flag )  fabs 0.5e f<= fabs 0.5e f<= and ;
 : dir! ( F: x z -- )  her-dir 8 + sf!  0e her-dir 4 + sf!  her-dir sf! ;
 : dir-by ( F: yaw -- )  nx f@ nz f@ turned dir! ;
@@ -28,7 +28,7 @@ fvariable nx  fvariable nz  fvariable steer-yaw   \ (the stick normalized; the c
     her-mode @ dup 0= swap 10 = or 0= if  exit  then
     her-heading f@ her-yaw f!  0 her-still !
     nx f@ nz f@ small? if  exit  then
-    3 her-lock !  1 her-turn-mode !  cam-yaw steer-yaw f!
+    3 her-lock !  1 her-turn-mode !  cam-yaw her-steer-yaw f!
     cam-yaw nx f@ nz f@ turned fswap fatan2 her-heading f! ;
 defer settled-for-stand ( -- how )   \ (2 once her animation has faded in, else 1: fiona.moving)
 \ how the direction is taken: 0 the camera now, 1 her facing, 2 none, 3 the steering camera
@@ -39,13 +39,13 @@ defer settled-for-stand ( -- how )   \ (2 once her animation has faded in, else 
                   2  her-still @ 6 = if  0 her-turn-mode !  then
               else
                   3
-                  her-lock @ if  -1 her-lock +!  her-cam-yaw f@ steer-yaw f!
+                  her-lock @ if  -1 her-lock +!  her-cam-yaw f@ her-steer-yaw f!
                   else
                       sx f@ her-stick sf@ f-  sz f@ her-stick 8 + sf@ f-  vlen 0.01e f< if
-                          2 her-turn-mode !  0.5e deg>rad her-turn-rate f!  cam-yaw steer-yaw f!
+                          2 her-turn-mode !  0.5e deg>rad her-turn-rate f!  cam-yaw her-steer-yaw f!
                       then
                   then
-                  steer-yaw f@ nx f@ nz f@ turned fswap fatan2 her-turn-to f!
+                  her-steer-yaw f@ nx f@ nz f@ turned fswap fatan2 her-turn-to f!
               then  endof
         2 of  dup if
                   0  nx f@ nz f@ fatan2  her-last sf@ her-last 8 + sf@ fatan2 f- angle-wrap fabs

@@ -25,6 +25,7 @@ state: fiona-state
   1 floats field her-cam-yaw    \ the camera heading the controls use
   1 floats field her-turn-to    \ (mode 1 / 2) where to turn
   1 floats field her-turn-rate
+  1 floats field her-steer-yaw  \ the camera heading steering her after a cut
   cell field her-run?           \ the run button this frame
   cell field her-cut            \ the camera cut since the controls last looked
   1 floats field her-stick-k    \ how much of her root motion goes (0..1: eases off when let go)
@@ -33,6 +34,9 @@ state: fiona-state
   1 floats field her-blend-w    \ the variant weight last set
   cell field her-rest           \ frames rested
   cell field her-run-t          \ frames run
+  \ the danger around her (told by the danger actor: 0 calm, 1 followed, 2 chased) and the panic
+  cell field her-danger
+  1 floats field her-panic-level   \ 0..100
   \ her feelings (F2: fear and panic - zero until then)
   1 floats field her-fear       \ 0..99
   cell field her-recovery       \ frames since a fright

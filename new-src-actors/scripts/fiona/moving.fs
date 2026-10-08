@@ -28,10 +28,9 @@ fvariable sk-x  fvariable sk-y  fvariable sk-z
 
 \ ---- standing, walking, running (Fiona_StateIdleMove) ----
 :noname ( -- how )  settled? if  2  else  1  then ; is settled-for-stand
-variable chase-mode   \ (the danger: 1 followed - F2 sets it)
 : released ( group -- )   \ the stick let go
     case
-        0 of  chase-mode @ 1 =  her-fear-bits @ 0= and  her-fear f@ 20e f< and  her-recovery @ 360 < and if
+        0 of  her-danger @ 1 =  her-fear-bits @ 0= and  her-fear f@ 20e f< and  her-recovery @ 360 < and if
                   1 her-rest +!  her-rest @ 90 >= if  1 -1 play-table  else  -1 idle-anim  then
               else  stand  then  0 her-run-t !  endof
         5 of  ended? if  stand  then  0 her-run-t !  endof

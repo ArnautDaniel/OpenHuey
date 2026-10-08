@@ -49,22 +49,20 @@ variable ps-a  variable ps-v  variable ps-b  variable ps-f
 : group ( -- g )  anim@ anim-group ;
 
 \ ---- her looks: how she stands, walks and runs as she feels ----
-variable chased   \ (the danger: 2 chased - the danger subsystem will say; 0 for now)
-: idle-base ( -- anim )  chased @ 2 = if  5  else  0  then ;
+: idle-base ( -- anim )  her-danger @ 2 = if  5  else  0  then ;
 : weight-moved? ( F: w -- flag )  her-blend-w f@ f- fabs 0.1e f> ;
 fvariable calm-a  fvariable calm-b
 : feel ( -- )   \ a: (100 - fear) / 60, b: (1800 - recovery) / 1800
     100e her-fear f@ f- 60e f/ calm-a f!  1800 her-recovery @ - s>f 1800e f/ calm-b f! ;
 : idle-play ( anim blend variant -- )  over -1 = if  nip play-table  else  play-blend  then ;
 : playing? ( anim variant -- flag )  her-variant @ = swap anim@ = and ;
-fvariable panic-level   \ (the panic's level 0..100: F2)
 \ Fiona_IdleAnim: out of breath (variant 4, its weight eased toward the panic), shaken (2, by
 \ her fear) or frightened (3, by her recovery); weight 1 is her plain idle
 : idle-anim ( blend -- )
     her-mode @ 0= if  0 her-sub !  then
     her-fear-bits @ 1 and if
         idle-base 4 playing? 0= if  idle-base over 4 idle-play  then  drop
-        90e panic-level f@ f- 15e f/ 0e fmax                      ( F: t )
+        90e her-panic-level f@ f- 15e f/ 0e fmax                      ( F: t )
         her-tired-w f@ fover f< if  her-tired-w f@ 0.05e f+ fmin  else  her-tired-w f@ 0.05e f- fmax  then
         fdup her-tired-w f!  weight! exit
     then
@@ -96,7 +94,7 @@ variable look-base  variable look-scared  variable look-shaken
     look-base @ -1 playing? 0= if  look-base @ -1 play-table  then  1e weight! ;
 : walk-look ( -- )
     her-mode @ 0= if  1 her-sub !  then
-    chased @ 2 = if  $208  else  $200  then  look-base !  $204 look-scared !  $201 look-shaken !  move-look ;
+    her-danger @ 2 = if  $208  else  $200  then  look-base !  $204 look-scared !  $201 look-shaken !  move-look ;
 : run-look ( -- )
     her-mode @ 0= if  2 her-sub !  then
     her-fear-bits @ 2 and if  anim@ $206 <> if  $206 -1 play-table  1e weight!  then  exit  then

@@ -19,7 +19,7 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
             i door-of-exit dup 0< 0= swap door-held? 0= and if  i unloop exit  then
         then  then
     loop  -1 ;
-: quick? ( -- flag )  her-fear-bits @ 2 and 0=  chased @ 2 <> and ;   \ not panicking, not chased
+: quick? ( -- flag )  her-fear-bits @ 2 and 0=  her-danger @ 2 <> and ;   \ not panicking, not chased
 
 \ ---- the door use (her states, run each frame through her-act) ----
 : kind! ( kind anim -- )  her-door-anim !  her-door-kind ! ;

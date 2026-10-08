@@ -62,7 +62,9 @@ variable the-room   variable the-door   variable the-source
     the-door @ changed  heard-off-screen ;
 
 \ ---- the played room's door models: who is using each (its noise source) ----
-create users 8 cells allot
+state: doors-state
+  8 cells field users        \ by exit: the noise source of whoever is using its door (-1 none)
+end-state
 : user ( exit -- addr )  cells users + ;
 \ (Door_PlaySound: quiet 1 / 2 -> 0xF, loud 3 / 4 -> 0x5F; heard from the user's source)
 : noise-of ( how -- loud )  case  1 of $F endof  2 of $F endof  3 of $5F endof  4 of $5F endof  >r 0 r>  endcase ;
@@ -94,4 +96,4 @@ behaviour keeping
   on tick ( -- )  8 0 do  i door-here? if  i swing-events  then  loop ;
 end-behaviour
 
-: doors-spawn ( -- id )  keeping -1 s" doors" spawn ;
+: doors-spawn ( -- id )  keeping doors-state s" doors" spawn ;
