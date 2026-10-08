@@ -24,6 +24,19 @@ enum { HK_TICK, HK_FRAME_END, HK_SPAWNED, HK_KILLED, HK_KERNEL_KINDS };
 
 typedef struct HBehaviour HBehaviour;
 
+/* where an actor physically is: a fact anyone may read, changed only by the actor itself
+ * (docs/design.md, "Bodies"). The engine moves bodies over the nav mesh (bind_engine.c). */
+typedef struct HBody {
+    int has, room, tri;
+    float pos[3];           /* x y z: a vector the vec words take (body-at) */
+    float yaw, radius, height;
+    uint32_t mask;          /* the nav triangles it can't stand on */
+} HBody;
+
+/* actor `id`'s body (NULL: no such actor); the actor being run (-1: none) */
+HBody *hactor_body(int id);
+int hactor_self(void);
+
 /* the words (vocabulary `actors`) */
 void bind_hactor(Forth *f);
 /* one frame of the actors (the engine calls it each tick) */

@@ -39,10 +39,7 @@ typedef struct HActor {
     int type;               /* its state's type (-1: none) */
     uint8_t *state;
     long handled;           /* messages it has handled */
-    struct {                /* where it physically is: a fact anyone may read (docs/design.md) */
-        int has, room, tri;
-        double x, y, z, yaw, radius, height;
-    } body;
+    HBody body;
 } HActor;
 
 typedef struct HMessage {
@@ -243,6 +240,14 @@ void hactor_frame(Forth *f) {
     hactor_broadcast(-1, HK_FRAME_END, NULL, 0);
     deliver(f);
     sFrame++;
+}
+
+HBody *hactor_body(int id) {
+    return id >= 0 && id < HACTOR_MAX && sActors[id].used ? &sActors[id].body : NULL;
+}
+
+int hactor_self(void) {
+    return sSelf;
 }
 
 void hactor_reset(void) {
@@ -596,17 +601,17 @@ PRIM(p_body_place) {   /* ( room tri -- ) ( F: x y z -- ) */
 
     a->body.tri = (int)POP();
     a->body.room = (int)POP();
-    a->body.z = forth_fpop(f);
-    a->body.y = forth_fpop(f);
-    a->body.x = forth_fpop(f);
+    a->body.pos[2] = (float)forth_fpop(f);
+    a->body.pos[1] = (float)forth_fpop(f);
+    a->body.pos[0] = (float)forth_fpop(f);
     a->body.has = 1;
 }
-PRIM(p_body_turn) { me(f, "body-turn (no actor is being run)")->body.yaw = forth_fpop(f); }   /* ( F: yaw -- ) */
+PRIM(p_body_turn) { me(f, "body-turn (no actor is being run)")->body.yaw = (float)forth_fpop(f); }   /* ( F: yaw -- ) */
 PRIM(p_body_size) {   /* ( F: radius height -- ) */
     HActor *a = me(f, "body-size (no actor is being run)");
 
-    a->body.height = forth_fpop(f);
-    a->body.radius = forth_fpop(f);
+    a->body.height = (float)forth_fpop(f);
+    a->body.radius = (float)forth_fpop(f);
 }
 PRIM(p_body_off) { me(f, "body-off (no actor is being run)")->body.has = 0; }   /* out of the house */
 static HActor *bodied(Forth *f, Cell id, const char *what) {
@@ -623,11 +628,16 @@ PRIM(p_body_tri) { PUSH(bodied(f, POP(), "body-tri")->body.tri); }
 PRIM(p_body_pos) {   /* ( id -- ) ( F: -- x y z ) */
     HActor *a = bodied(f, POP(), "body-pos");
 
-    forth_fpush(f, a->body.x);
-    forth_fpush(f, a->body.y);
-    forth_fpush(f, a->body.z);
+    forth_fpush(f, a->body.pos[0]);
+    forth_fpush(f, a->body.pos[1]);
+    forth_fpush(f, a->body.pos[2]);
 }
 PRIM(p_body_yaw) { forth_fpush(f, bodied(f, POP(), "body-yaw")->body.yaw); }
+PRIM(p_body_at) { PUSH(bodied(f, POP(), "body-at")->body.pos); }   /* ( id -- v ) its position as a vector (read it, don't write it) */
+PRIM(p_body_mask) { PUSH(bodied(f, POP(), "body-mask")->body.mask); }
+PRIM(p_body_mask_store) { me(f, "body-mask! (no actor is being run)")->body.mask = (uint32_t)POP(); }   /* ( mask -- ) */
+PRIM(p_body_tri_store) { me(f, "body-tri! (no actor is being run)")->body.tri = (int)POP(); }   /* ( tri -- ) */
+PRIM(p_body_room_store) { me(f, "body-room! (no actor is being run)")->body.room = (int)POP(); }   /* ( room -- ) */
 PRIM(p_body_dims) {   /* ( id -- ) ( F: -- radius height ) */
     HActor *a = bodied(f, POP(), "body-dims");
 
@@ -711,7 +721,8 @@ void bind_hactor(Forth *f) {
         {"body-place", p_body_place, 0}, {"body-turn", p_body_turn, 0}, {"body-size", p_body_size, 0},
         {"body-off", p_body_off, 0}, {"body?", p_has_body, 0}, {"body-room", p_body_room, 0},
         {"body-tri", p_body_tri, 0}, {"body-pos", p_body_pos, 0}, {"body-yaw", p_body_yaw, 0},
-        {"body-dims", p_body_dims, 0},
+        {"body-dims", p_body_dims, 0}, {"body-at", p_body_at, 0}, {"body-mask", p_body_mask, 0},
+        {"body-mask!", p_body_mask_store, 0}, {"body-tri!", p_body_tri_store, 0}, {"body-room!", p_body_room_store, 0},
     };
     Vocab *saved = f->m.current, *v = forth_vocab(f, "actors");
     size_t i;

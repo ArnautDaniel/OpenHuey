@@ -181,6 +181,132 @@ PRIM(p_v_nav_move) {   /* ( v mask -- tri ) ( F: dx dz -- ) v moved by (dx, dz) 
     n->block = 0;
     PUSH(navmesh_find(n, p, 4.0f, &h));
 }
+/* ---- bodies (the actors' own: hactor.h) moved over the nav mesh; the actor being run moves
+ * its own, anyone may look at any (Actor_Move / MoveAny / TurnToward / HeadingTo / TriTo /
+ * FreeDistance / Touching) ---- */
+static HBody *own_body(Forth *f, const char *what) {
+    HBody *b = hactor_body(hactor_self());
+
+    if (b == NULL || !b->has) {
+        forth_error(f, "%s: no actor with a body is being run", what);
+    }
+    return b;
+}
+static HBody *any_body(Forth *f, Cell id, const char *what) {
+    HBody *b = hactor_body((int)id);
+
+    if (b == NULL || !b->has) {
+        forth_error(f, "%s: actor %ld has no body", what, (long)id);
+    }
+    return b;
+}
+static void body_move(HBody *b, uint32_t mask, float dx, float dz) {
+    NavMesh *n = nav_masked(mask);
+    Vec3 p = navmesh_move(n, vec3(b->pos[0], b->pos[1], b->pos[2]), dx, dz, 8.0f, 0.0f);
+    float h;
+    int t;
+
+    b->pos[0] = p.x;
+    b->pos[1] = p.y;
+    b->pos[2] = p.z;
+    n->block = 0;
+    t = navmesh_find(n, p, 4.0f, &h);
+    if (t >= 0) {
+        b->tri = t;
+    }
+}
+PRIM(p_body_move) {   /* ( F: dx dz -- ) by (dx, dz) as far as its mask allows, sliding along walls */
+    HBody *b = own_body(f, "body-move");
+    float dz = (float)FPOP(), dx = (float)FPOP();
+
+    body_move(b, b->mask, dx, dz);
+}
+PRIM(p_body_move_any) {   /* ( F: dx dz -- ) the same over any triangle */
+    HBody *b = own_body(f, "body-move-any");
+    float dz = (float)FPOP(), dx = (float)FPOP();
+
+    body_move(b, 0, dx, dz);
+}
+PRIM(p_body_move_local) {   /* ( F: x z -- ) a step in its own frame (x to its right, z ahead) */
+    HBody *b = own_body(f, "body-move-local");
+    float z = (float)FPOP(), x = (float)FPOP(), c = cosf(b->yaw), sn = sinf(b->yaw);
+
+    body_move(b, b->mask, c * x + sn * z, c * z - sn * x);
+}
+PRIM(p_body_turn_toward) {   /* ( F: target step -- left ) its heading toward target by at most step */
+    HBody *b = own_body(f, "body-turn-toward");
+    float step = (float)FPOP(), target = (float)FPOP();
+    float d = atan2f(sinf(target - b->yaw), cosf(target - b->yaw));
+
+    if (fabsf(d) <= step) {
+        b->yaw = target;
+        FPUSH(0.0f);
+        return;
+    }
+    b->yaw += d < 0.0f ? -step : step;
+    b->yaw = atan2f(sinf(b->yaw), cosf(b->yaw));
+    FPUSH(fabsf(atan2f(sinf(target - b->yaw), cosf(target - b->yaw))));
+}
+PRIM(p_body_heading_to) {   /* ( id v -- ) ( F: -- yaw ) from its body to v (its own heading when above / below) */
+    float *v = vec_arg(f);
+    HBody *b = any_body(f, POP(), "body-heading-to");
+    float dx = v[0] - b->pos[0], dz = v[2] - b->pos[2];
+
+    FPUSH(dx == 0.0f && dz == 0.0f ? b->yaw : atan2f(dx, dz));
+}
+PRIM(p_body_place_at) {   /* ( F: x y z -- ) its own, its triangle found under it (within its mask, else any) */
+    HBody *b = own_body(f, "body-place-at");
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP(), h;
+    NavMesh *n = nav_masked(b->mask);
+    int t = navmesh_find(n, vec3(x, y, z), 4.0f, &h);
+
+    n->block = 0;
+    if (t < 0) {
+        t = navmesh_find(n, vec3(x, y, z), 4.0f, &h);
+    }
+    b->pos[0] = x;
+    b->pos[1] = y;
+    b->pos[2] = z;
+    b->tri = t;
+    b->room = gEngine.room.id;
+}
+PRIM(p_body_tri_to) {   /* ( v mask -- tri ) walking straight from it to v (mask -1: its own): v's triangle, -1 a wall first */
+    Cell mask = POP();
+    float *v = vec_arg(f);
+    HBody *b = own_body(f, "body-tri-to");
+    NavMesh *n = nav_masked(mask == -1 ? b->mask : (uint32_t)mask);
+
+    PUSH(navmesh_walk(n, b->tri, vec3(b->pos[0], b->pos[1], b->pos[2]), vec3(v[0], v[1], v[2]), NULL));
+    n->block = 0;
+}
+PRIM(p_body_free) {   /* ( mask -- ) ( F: yaw d -- free ) how far ahead along yaw is free (mask -1: its own) */
+    Cell mask = POP();
+    HBody *b = own_body(f, "body-free");
+    float dist = (float)FPOP(), yaw = (float)FPOP(), reach;
+    NavMesh *n = nav_masked(mask == -1 ? b->mask : (uint32_t)mask);
+    Vec3 a = vec3(b->pos[0], b->pos[1], b->pos[2]), e = vec3(a.x + sinf(yaw) * dist, a.y, a.z + cosf(yaw) * dist);
+    int t = navmesh_walk(n, b->tri, a, e, &reach);
+
+    n->block = 0;
+    FPUSH(t >= 0 ? dist : reach);
+}
+PRIM(p_bodies_touching) {   /* ( a b -- flag ) ( F: margin vmargin -- ) within the lower one's height and their radii */
+    float vm = (float)FPOP(), m = (float)FPOP();
+    HBody *b = hactor_body((int)POP()), *a = hactor_body((int)POP());
+    float dx, dz;
+
+    if (a == NULL || b == NULL || !a->has || !b->has || a->room != b->room) {
+        PUSH(0);
+        return;
+    }
+    if (a->pos[1] < b->pos[1] ? b->pos[1] - a->pos[1] > a->height + vm : a->pos[1] - b->pos[1] > b->height + vm) {
+        PUSH(0);
+        return;
+    }
+    dx = a->pos[0] - b->pos[0];
+    dz = a->pos[2] - b->pos[2];
+    PUSH(sqrtf(dx * dx + dz * dz) <= a->radius + b->radius + m ? -1 : 0);
+}
 PRIM(p_v_walk) {   /* ( tri a b mask -- tri' ) straight from a (on tri) to b within the mask:
                     * b's triangle, -1 if a wall comes first (Actor_TriFrom) */
     uint32_t mask = (uint32_t)POP();
@@ -1664,7 +1790,7 @@ void bind_engine(Forth *f) {
         {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
-        {"cam-follow", p_cam_follow}, {"cam-target!", p_cam_target}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
+        {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-follow", p_cam_follow}, {"cam-target!", p_cam_target}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
         {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-wall", p_v_wall}, {"nav-links", p_nav_links}, {"nav-next", p_nav_next}, {"nav-link-tri", p_nav_link_tri}, {"nav-link-yaw", p_nav_link_yaw}, {"nav-link-spot", p_nav_link_spot}, {"nav-link-at?", p_nav_link_at}, {"nav-link-side", p_nav_link_side}, {"nav-link-front", p_nav_link_front}, {"v-free", p_v_free},
         {"v-path", p_v_path}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
