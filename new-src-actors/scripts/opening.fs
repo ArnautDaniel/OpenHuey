@@ -34,8 +34,8 @@ $103 constant m-get-up       \ lying to standing (sPoseInto[0][2])
 $1B00 constant m-bark        \ a bark, standing (Hewie_Bark)
 $65 constant bark-sound      \ the common bank's loud bark (Hewie_MakeSound)
 : him ( -- a )  dog @ actor ;
-: play ( anim loop? -- )   \ with his table's fade, looped or once (the title's own: new-src's)
-    >r  dog @ swap  2dup motion-entry nip  1 invert and  r> 1 and or  motion-play ;
+: play ( anim loop? -- )   \ as new-src's title: the motion from its start, looped or once, nothing else
+    0<> 1 and him act.loop l!  dog @ swap motion! ;
 : warm-lights ( -- )
     \ the key: a warm lamp-light, high in front of him to the side; behind, a low orange glow
     -10e 22e 26e   170e 115e 65e   160e  0 stage-light
@@ -55,7 +55,7 @@ fvariable tx  fvariable ty  fvariable tz
 : title-start ( -- )
     0 stage !  0 picked !  -1 titled !
     0e 0e 0e clear-color  warm-lights
-    s" O_HEW/HEW_000" actor-load dup dog !  $3D5F90 motion-table
+    s" O_HEW/HEW_000" actor-load dog !   \ (no motion table: as new-src's title, the motions played as they are)
     0e him act.x sf!  0e him act.y sf!  0e him act.z sf!  0e him act.yaw sf!  0e him act.shadow sf!
     1 him act.visible l!  m-lie -1 play  frame-him ;
 : title-end ( -- )   \ (his model gone, the room's lights back)
