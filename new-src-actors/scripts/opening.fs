@@ -17,6 +17,7 @@ state: opening-state
   cell field stage       \ 0 the menu, 1 he gets up, 2 he barks, 3 the movie, 4 the game started
   cell field picked      \ the menu's item
   cell field dog         \ the title's Hewie (a model of its own)
+  cell field titled      \ the title is up (its lights and Hewie to put away)
 end-state
 
 : flag-on ( n -- )  progress pr.state over 5 rshift 4 * + dup l@ rot 31 and 1 swap lshift or swap l! ;
@@ -33,8 +34,8 @@ $103 constant m-get-up       \ lying to standing (sPoseInto[0][2])
 $1B00 constant m-bark        \ a bark, standing (Hewie_Bark)
 $65 constant bark-sound      \ the common bank's loud bark (Hewie_MakeSound)
 : him ( -- a )  dog @ actor ;
-: play ( anim -- )   \ with his table's fade and flags (Hewie's play)
-    dog @ swap  2dup motion-entry >r drop r>  motion-play ;
+: play ( anim loop? -- )   \ with his table's fade, looped or once (the title's own: new-src's)
+    >r  dog @ swap  2dup motion-entry nip  1 invert and  r> 1 and or  motion-play ;
 : warm-lights ( -- )
     \ the key: a warm lamp-light, high in front of him to the side; behind, a low orange glow
     -10e 22e 26e   170e 115e 65e   160e  0 stage-light
@@ -52,12 +53,13 @@ fvariable tx  fvariable ty  fvariable tz
     0e 3e 0e look-at
     camera cam.yaw sf@ -0.25e f+ camera cam.yaw sf!  0.55e camera cam.fov sf! ;
 : title-start ( -- )
-    0 stage !  0 picked !
+    0 stage !  0 picked !  -1 titled !
     0e 0e 0e clear-color  warm-lights
     s" O_HEW/HEW_000" actor-load dup dog !  $3D5F90 motion-table
     0e him act.x sf!  0e him act.y sf!  0e him act.z sf!  0e him act.yaw sf!  0e him act.shadow sf!
-    1 him act.visible l!  m-lie play  frame-him ;
+    1 him act.visible l!  m-lie -1 play  frame-him ;
 : title-end ( -- )   \ (his model gone, the room's lights back)
+    titled @ 0= if  exit  then  0 titled !
     dog @ actor-free  0 stage-lights  0.06e 0.06e 0.08e clear-color  menu-layer ui-clear ;
 
 \ the menu, low on the left; the game's name above
@@ -77,7 +79,7 @@ variable sw  variable sh
 : menu-keys ( -- )
     key: Up key-pressed? if  picked @ 1- 0 max picked !  then
     key: Down key-pressed? if  picked @ 1+ 1 min picked !  then
-    circle button-pressed? if  picked @ 0= if  m-get-up play  1 stage !  else  bye  then  then ;
+    circle button-pressed? if  picked @ 0= if  m-get-up 0 play  1 stage !  else  bye  then  then ;
 
 \ ---- the opening movie over the whole window, 4:3 in the middle, black round it ----
 variable mx  variable my  variable mw  variable mh
@@ -91,7 +93,7 @@ variable mx  variable my  variable mw  variable mh
     title-end  3 stage !
     s" OPENING.SFD" movie-open 0= if  4 stage !  new-game  self kill  then ;
 : movie-over ( -- )  movie-close  movie-layer ui-clear  4 stage !  new-game  self kill ;   \ (stage 4 now: its last words leave it be)
-: ended? ( -- flag )  him act.mflags l@ $20 and 0<> ;
+: ended? ( -- flag )  dog @ motion-done? ;   \ (played once, at its last frame)
 
 behaviour opening-the-game
   on spawned ( -- )
@@ -100,7 +102,7 @@ behaviour opening-the-game
   on tick ( -- )
       stage @ case
           0 of  menu-keys  endof
-          1 of  ended? if  m-bark play  bark-sound common-sound  2 stage !  then  endof
+          1 of  ended? if  m-bark 0 play  bark-sound common-sound  2 stage !  then  endof
           2 of  ended? if  movie-start  then  endof
           3 of  movie-status 1 <>  circle button-pressed? or  start-button button-pressed? or if  movie-over  then  endof
       endcase ;

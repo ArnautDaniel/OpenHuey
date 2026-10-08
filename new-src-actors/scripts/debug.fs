@@ -39,3 +39,20 @@ create spot 12 allot
 : debilitas-id ( -- id )  s" debilitas" actor-named ;
 : debilitas-tri ( tri -- )  room-id swap debilitas-id send stalker-in ;
 : debilitas-out ( -- )  debilitas-id send stalker-out ;
+
+\ the room's name and number top right, every frame (to say where something happened): `label-off`, `label-on`
+8 constant label-layer
+variable label?  -1 label? !
+: label-on ( -- )  -1 label? ! ;
+: label-off ( -- )  0 label? !  label-layer ui-clear ;
+state: label-state  cell field label-unused  end-state
+behaviour labelling
+  on spawned ( -- )  self subscribe frame-end ;
+  on frame-end ( -- )
+      label-layer ui-clear
+      label? @ 0= room-id 0< or if  exit  then
+      2 pen-scale
+      label-layer  room-id room-name  screen-size drop  room-id room-name nip 7 + char-size drop * -  12  $E8E0C8FF 2 ui-text
+      label-layer  room-id h>s  screen-size drop 5 char-size drop * -  12  $A09880FF 2 ui-text ;
+end-behaviour
+: label-spawn ( -- id )  labelling label-state s" room-label" spawn ;

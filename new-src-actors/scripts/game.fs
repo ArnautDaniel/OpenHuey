@@ -17,6 +17,7 @@ fiona-spawn constant fiona
 hewie-spawn constant hewie
 debilitas-spawn constant debilitas
 story-spawn constant story
+label-spawn constant room-label   \ (debug: the room's name top right)
 
 \ the title, the opening movie, then a new game (opening.fs; without a window, the new game at once)
 opening-spawn constant opening
@@ -28,7 +29,7 @@ start-headless                                                 \ new game at onc
 \ The opening done, the grate open, the world not held (no scene playing), Hewie hers to
 \ command and with her.
 : free-play ( -- )   \ (the title and opening left out)
-    opening dup alive? if  kill  else  drop  then
+    s" opening" actor-named dup 0< if  drop  else  kill  then   \ (by name: its id may be another's by now)
     opening-done story-flag-set  grate-open story-flag-set  world-held state-flag-clear  hewie-commandable state-flag-set
     front-garden-3 -1 rooms send go-to-room
     hewie send join-fiona ;

@@ -24,11 +24,25 @@ fvariable ix  fvariable iy  fvariable iz
     dup 0 exit-spot 0< if  fdrop fdrop fdrop  drop arrive-anywhere exit  then
     drop  her-yaw f@ put ;
 : idle ( -- )   \ Fiona_ToIdle: free, standing, her moves her own
-    0 her-doing !  0 her-mode !  her-yaw f@ her-heading f!  0 her-rest !  0 her-turn-mode !
+    0 her-doing !  0 her-mode !  her-yaw f@ her-heading f!  0 her-rest !   \ (the turn mode kept: Fiona_ToIdle leaves +0x1AD588)
     -1 idle-anim  ['] idle-move her-act ! ;
 ' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle   ' idle is fiona.commands:to-idle   ' idle is fiona.moves:to-idle
+\ Fiona_Vt34: going out by a door - with the stick held, she faces where it points (by the camera
+\ she leaves) if that is less than a quarter turn round from her heading, and that camera keeps
+\ steering in the next room while the stick stays (turn mode 3: controls.fs after-cut)
+fvariable dl
+: fatan2-xz ( F: dx dz -- a )  fatan2 ;   \ (a direction's heading, as stick-heading takes it)
+: through-door ( -- )
+    her-scripted @ if  exit  then
+    her-stick sf@ fabs 0.5e f> her-stick 8 + sf@ fabs 0.5e f> or 0= if  exit  then
+    her-stick sf@ her-stick 8 + sf@ vlen fdup f0= if  fdrop exit  then  dl f!
+    cam-yaw  her-stick sf@ dl f@ f/  her-stick 8 + sf@ dl f@ f/  turned  fatan2-xz     ( F: heading )
+    fdup her-yaw f@ f- angle-wrap pi f2/ f< if
+        fdup her-yaw f!  her-heading f!  3 her-turn-mode !
+    else  fdrop  then ;
 : fresh ( -- )   \ standing, the controls as new
-    0 her-doing !  0 her-mode !  0 her-sub !  6 her-still !  0 her-turn-mode !  0 her-lock !
+    0 her-doing !  0 her-mode !  0 her-sub !  6 her-still !  0 her-lock !
+    her-turn-mode @ 3 <> if  0 her-turn-mode !  then   \ (a door's held stick kept through the arrival)
     1e her-stick-k f!  -1 her-variant !  1e her-tired-w f!  0 her-rest !  0 her-run-t !
     -1 her-cmd !  0 her-busy-t !  0 her-scripted !  0 her-move !  -1 her-move-done !  1 her-step-l !  1 her-step-r !  -1 her-door-exit !  her-path path-clear  stand  idle ;
 
@@ -68,15 +82,16 @@ create goal 12 allot
 behaviour free
   on spawned ( -- )
       -1 her-model !  progress pr.vars $26 + c@ wear  2e 15e body-size
-      self subscribe tick  self subscribe arrived  self subscribe camera-cut
+      self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe camera-cut
       self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown  self subscribe scene ;
+  on leaving-room ( room exit -- )  2drop  through-door ;
   on arrived ( room exit -- )  nip arrive-at  fresh  1 her act.visible l!  self camera-id send follow ;   \ (the story's scripts place her too)
   on to-exit ( exit -- )  arrive-at  fresh ;
   \ examining (Progress_PlayerButtons): an action offered here, taken with the action button
   \ while she is free; a script of the room has her, or lets go; a message on screen
   on offer ( scene arg -- )
       her-mode @ 0= her-doing @ 0= and  hands-off? 0= and  action-button? and
-      if  sender send take-offer  else  2drop  then ;
+      sender alive? and  if  sender send take-offer  else  2drop  then ;   \ (its room gone meanwhile: nobody to answer)
   on scripted ( on -- )  idle  her-scripted ! ;
   on costume ( n -- )  wear  show-her ;   \ (the new game; the story's 0x97)
   on text-shown ( on -- )  her-reading ! ;

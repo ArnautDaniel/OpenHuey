@@ -1936,7 +1936,7 @@ void engine_tick(Engine *e) {
 
 /* ---- the retained 2D layer: what actors put on the screen (the message window, prompts),
  * kept until they change it and drawn each frame, layer by layer over the picture ---- */
-#define UI_LAYERS 8
+#define UI_LAYERS 10
 #define UI_ITEMS 64
 typedef struct UiItem {
     int text;                 /* 0 a rectangle, 1 text, 2 the movie's picture */
