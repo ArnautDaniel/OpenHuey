@@ -1,7 +1,7 @@
 \ fiona.fs - Fiona, the player (docs/subsystems/fiona.md). Phase F1: her body and model, the
 \ controls, standing, walking, running and turning, her footsteps, going out by exits.
 IN: fiona
-USING: engine actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.fear ;
+USING: engine actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.fear fiona.commands ;
 
 : rooms-id ( -- id )  s" rooms" actor-named ;
 : camera-id ( -- id )  s" camera" actor-named ;
@@ -27,11 +27,11 @@ fvariable ox  fvariable oz  fvariable ix  fvariable iy  fvariable iz
 : idle ( -- )   \ Fiona_ToIdle: free, standing, her moves her own
     0 her-doing !  0 her-mode !  her-yaw f@ her-heading f!  0 her-rest !  0 her-turn-mode !
     -1 idle-anim  ['] idle-move her-act ! ;
-' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle
+' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle   ' idle is fiona.commands:to-idle
 : fresh ( -- )   \ standing, the controls as new
     0 her-doing !  0 her-mode !  0 her-sub !  6 her-still !  0 her-turn-mode !  0 her-lock !
     1e her-stick-k f!  -1 her-variant !  1e her-tired-w f!  0 her-rest !  0 her-run-t !
-    1 her-step-l !  1 her-step-r !  -1 her-door-exit !  her-path path-clear  stand  idle ;
+    -1 her-cmd !  0 her-busy-t !  1 her-step-l !  1 her-step-r !  -1 her-door-exit !  her-path path-clear  stand  idle ;
 
 \ ---- going out (a stand-in until the story: the room scripts take an exit while she is in its
 \ area and free - each frame. So that an arrival can't bounce her back out, only once she has
@@ -47,13 +47,14 @@ fvariable ox  fvariable oz  fvariable ix  fvariable iy  fvariable iz
 \ ---- each frame (Fiona_Update, the parts built so far) ----
 : frame ( -- )
     her-at her-was-at 12 move  her-tri @ her-was-tri !  her-yaw f@ her-yaw-was f!
-    her-mode @ her-sub @ her-cond @ broadcast fiona-doing
     feel-the-panic
     read-controls
-    her-mode @ 0= if  panic-controls drop  then
+    her-mode @ 0= if  panic-controls  else  false  then  0= if  control-command  then
+    read-command
     try-flee
     try-doors
     her-act @ execute
+    command-sounds
     footsteps
     show-her
     went-out dup 0< if  drop  else  rooms-id send go-through  then ;
@@ -62,7 +63,7 @@ behaviour free
   on spawned ( -- )
       s" O_FIN/FIN_000" actor-load her-model !  1 her act.visible l!  2e 15e body-size
       self subscribe tick  self subscribe arrived  self subscribe camera-cut
-      self subscribe danger  self subscribe panic ;
+      self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end ;
   on arrived ( room exit -- )  nip arrive-at  fresh  0 her-armed !  self camera-id send follow ;
   on camera-cut ( -- )  -1 her-cut ! ;
   on danger ( level -- )  her-danger ! ;
@@ -70,6 +71,16 @@ behaviour free
   on door-held ( room exit -- )  2drop  got-hold ;
   on door-refused ( room exit -- )  2drop  idle ;
   on tick ( -- )  self body? if  frame  then ;
+  on frame-end ( -- )   \ what she is doing, as the frame left her
+      self body? if  her-mode @ her-sub @ her-cond @ her-cmd @ broadcast fiona-doing  then ;
+  \ Hewie (F3)
+  on hewie-doing ( here action mode sub cond mood group -- )
+      dog-group !  dog-mood !  dog-cond !  dog-sub !  dog-mode !  dog-action !  dog-here ! ;
+  on meet-at ( tri x y z face -- )
+      asked? 0= if  2drop 2drop drop  hewie-id send meet-off exit  then
+      >r >r >r cell>f  r> cell>f  r> cell>f  r> cell>f  meet-placed ;
+  on meet-on ( -- )  her-act @ ['] meet-waiting = if  meet-started  else  hewie-id send meet-off  then ;
+  on meet-refused ( -- )  her-act @ ['] meet-waiting = if  meet-failed  then ;
 end-behaviour
 
 : fiona-spawn ( -- id )  free fiona-state s" fiona" spawn ;

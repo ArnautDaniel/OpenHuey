@@ -64,7 +64,10 @@ testing she goes out by the door; he follows - off screen, then comes in after h
 obeying  10 frames
 T{ 0 rooms send go-through  3 frames  room-id -> front-garden-2 0 room-exit-leads drop }T
 T{ hewie body-room room-id = -> 0 }T
-T{ 600 arrives? -> -1 }T
+variable took
+: arrives-in ( n -- frames|-1 )  0 ?do  game-tick  hewie body-room room-id =  [: his-away @ ;] his@ 0= and if  i unloop exit  then  loop  -1 ;
+3000 arrives-in dup took !  .( took ) . cr
+T{ took @ 0< -> 0 }T
 T{ hewie body-tri 0< -> 0 }T
 
 testing parted, he is gone

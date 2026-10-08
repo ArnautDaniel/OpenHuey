@@ -61,8 +61,22 @@ message panic-level! ( level -- )
 message panic ( stage level -- )             \ broadcast each frame
 
 \ ---- Fiona (docs/subsystems/fiona.md) ----
-message fiona-doing ( mode sub cond -- )     \ broadcast each frame: her move mode, what she does, her condition
+message fiona-doing ( mode sub cond cmd -- ) \ broadcast each frame: her move mode, what she does, her condition,
+                                             \ her command this frame (-1 none; 3 the praise held)
 
 \ ---- Hewie (docs/subsystems/hewie.md) ----
 message join-fiona ( -- )                    \ he comes into the game at her heel (the story; the console)
 message part-from-fiona ( -- )               \ he leaves the game
+message hewie-doing ( here action mode sub cond mood group -- )   \ broadcast each frame: here 0 out of the
+                                             \ game, 1 in another room, 2 with her; his action, move mode and
+                                             \ its part, condition, mood, his pose's group
+message command ( code tri yaw x z -- )      \ Fiona's command (0x23 go there: the spot; floats f>cell)
+message reaction ( n -- )                    \ how her doing strikes him (Fiona_HewieReact's row)
+\ a joint action by his side: she asks (type 0 scold, 2 praise, 4 stay); he finds her place by
+\ him, or refuses; she goes there, he sits; then the second part (1 / 3 / 5)
+message meet-me ( type -- )
+message meet-at ( tri x y z face -- )        \ (floats f>cell) stand there, facing so
+message meet-now ( type -- )
+message meet-on ( -- )
+message meet-refused ( -- )
+message meet-off ( -- )                      \ either gives it up

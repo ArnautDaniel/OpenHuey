@@ -100,9 +100,11 @@ state: hewie-state
   cell field ov-head-t  cell field ov-ears-t  cell field ov-ears-alt  cell field ov-tail-t  cell field ov-tail-on
   4 cells field his-feet-was  cell field his-feet-n
   cell field his-was-busy
+  \ a joint action with her (the meeting by his side): its type (-1 none), and its part (0 asked, 1 the second)
+  cell field his-meet  cell field his-meet-part
   \ told by others: the danger (0 calm, 1 followed, 2 chased), the panic's stage, what Fiona does
   cell field his-danger
   cell field his-panic
-  cell field fiona-mode  cell field fiona-sub  cell field fiona-cond
+  cell field fiona-mode  cell field fiona-sub  cell field fiona-cond  cell field fiona-cmd
   cell field fiona-room         \ the room she is in, or going to (told by the rooms: leaving, arrived)
 end-state

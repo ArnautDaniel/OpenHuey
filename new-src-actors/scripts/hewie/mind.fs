@@ -2,7 +2,7 @@
 \ notices, his own decisions, his mode's behaviour (calm / wary / tense), what he does next by
 \ his trust (the weighted lists), and his body as it is shown (overlays, neck, feet, sounds).
 IN: hewie.mind
-USING: engine actors common facts paths messages hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen hewie.actions ;
+USING: engine actors common facts paths messages hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen hewie.actions hewie.commands ;
 
 \ report_fiona_near: how near she is, for the story (1 within 20, 2 within 50, 3 further)
 : report-near ( -- )
@@ -67,7 +67,7 @@ USING: engine actors common facts paths messages hewie.state hewie.body hewie.ta
         her-dist 30e f< if
             -2 his-obey +!
             his-action @ dup $7D <> swap $7E <> and if
-                1 his-nudge +!  his-nudge @ 91 >= if  0 his-nudge !  then   \ (Fiona's reaction 0x10: H2)
+                1 his-nudge +!  his-nudge @ 91 >= if  0 his-nudge !  $10 react  then
             else  0 his-nudge !  then
         else  0 his-nudge !  then
     then
@@ -373,6 +373,10 @@ variable feet-new
     his-yaw him-model act.yaw sf!
     his-away @ 0= 1 and him-model act.visible l!
     model his-away @ 0= dog-legs ;
+: tell-doing ( -- )   \ what he is doing, for Fiona
+    self body? 0= if  0 0 0 0 0 0 0
+    else  his-away @ if  1  else  2  then  his-action @ his-mode @ his-sub @ his-cond @ his-mood @ anim-group  then
+    broadcast hewie-doing ;
 : frame ( -- )
     upkeep  alert  his-cond @ 2 <> if  report-near  then  obedience
     his-away @ if   \ out of the room being played
@@ -380,7 +384,7 @@ variable feet-new
             hidden-frame
             his-mood-act @ ?dup if  execute  then
             his-act @ ?dup if  execute  then
-            show-him exit
+            show-him  tell-doing exit
         then
     then
     his-2b @ if  8  else  his-floor  then  body-mask!
@@ -393,11 +397,11 @@ variable feet-new
     his-no-root @ 0= if  root-move  then
     turn-head  neck  set-overlays  anim-sounds  feet
     his-yaw his-yaw-was f!  his-action @ his-last-action !  his-alert @ his-alert-was !
-    0 his-smells !  move-sub  show-him ;
+    0 his-smells !  move-sub  show-him  tell-doing ;
 
 \ Hewie_Activate: his state as he comes into the game (calm, the default action)
 : fresh ( -- )
-    -1 his-target !  -1 his-target2 !  -1 his-look-char !  -1 his-door !  -1 his-noise-room !
+    -1 his-meet !  -1 his-target !  -1 his-target2 !  -1 his-look-char !  -1 his-door !  -1 his-noise-room !
     $FF his-call !  $FF his-by !  -1 his-yelp !  -1 his-snd-anim !  1e his-floor-k f!
     16 his-skill !  16 his-skill cell+ !  16 his-skill 2 cells + !
     0 -1 set-mood  0 add-trust

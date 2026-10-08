@@ -33,7 +33,10 @@ Declared in `scripts/messages.fs`.
 | `follow` | `( who -- )` | to camera | Follow her (when she becomes the one controlled). |
 | `hold-door`, `use-door`, `let-go-open`, `let-go-shut` | | to doors | At a door. |
 | `noise` | | to acoustics | Her steps (and later her screams, falls). Her source: `fiona-noise`. |
-| `fiona-doing` | `( mode sub cond -- )` | broadcast, each frame | What she is doing (the panic and Hewie listen). |
+| `fiona-doing` | `( mode sub cond cmd -- )` | broadcast at each frame's end | What she is doing as the frame left her, and her command (the panic and Hewie listen). |
+| `hewie-doing` | | in (Hewie's broadcast) | What he does: she chooses her commands by it (F3). |
+| `command`, `reaction`, `meet-me`, `meet-now`, `meet-off` | | to Hewie | Her commands, their effect on him, the meeting by his side (F3; docs/subsystems/hewie.md). |
+| `meet-at`, `meet-on`, `meet-refused` | | in (Hewie) | His answers. |
 
 **Facts she reads:** the controls (keys / pad: the input is a fact, read each frame); her
 model's motion (root motion, the motion's event flags, its end); the floor (nav triangles and
@@ -131,3 +134,18 @@ the stand-in exit check doesn't fire; Fiona's own test reaches it after the door
 
 Left for F2: the slow locked-door try; shaking the panic off faster while down (with the
 shake-free of F4); the flee's door slam and Hewie's reaction; charms (with items).
+
+**F3 built** (`scripts/fiona/commands.fs`, with Hewie's H2). The right stick's gestures (keys 1
+up, 2 down, 3 R3, 4 right - held for more praise, 5 left), read under state flag 0xD and not
+0x2B (Fiona_ReadsPad) and acted on the next frame. The code by what Hewie is doing and where
+(Fiona_HewieCommandAction): go there / go for it, come back, stay / come, praise, scold (from
+afar or close up). Her gesture (mode 0xD: 0xC00..0xC0F), her lines on its key frames
+(Fiona_MotionSounds' event 1; Fiona_CallHewie, Fiona_OrderLine), the command on its event 2
+(Fiona_CommandHewie: for "go there" the spot 5 short of where he would stop). "Come back" and
+"go for it" on the move: no gesture. Panicking or held: a cry for help (0x38). The meeting
+(stay / praise / scold by his side): she asks, walks to the place he finds (walk-to-spot),
+waits for him to sit, the second part and her gesture (0xC06 stay, 0xC07..0xC09 praise with
+its repeats, 0xC0D scold). Refused when asked: from afar instead (praise 0x29, scold 0x2F).
+
+Left for F3: her head turned to Hewie after a command (her looks aren't built); a creature
+ahead for "go for it" while followed (with the creatures).

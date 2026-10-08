@@ -122,7 +122,7 @@ fvariable u-a  fvariable u-b  fvariable u-c  fvariable u-d
 behaviour panicking
   on spawned ( -- )  1e scale f!  self subscribe frame-end  self subscribe danger  self subscribe fiona-doing ;
   on danger ( level -- )  the-danger ! ;
-  on fiona-doing ( mode sub cond -- )  her-cond !  her-sub !  her-mode ! ;
+  on fiona-doing ( mode sub cond cmd -- )  drop her-cond !  her-sub !  her-mode ! ;
   on fright ( amount -- )  cell>f add-fright ;
   on fear-in ( amount -- )   \ (a negative one is a fright: held 30, 50 lasting and passing)
       cell>f fdup f0< if  fdrop 30 hold !  fear-d f@ 50e f+ fear-d f!  fright-a f@ 50e f+ fright-a f!  exit  then

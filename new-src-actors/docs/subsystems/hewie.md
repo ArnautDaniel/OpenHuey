@@ -31,6 +31,12 @@ Declared in `scripts/messages.fs`.
 | `arrived` | `( room exit -- )` | in (rooms) | Where she is now. He comes in by himself, off screen through the doors (Hewie_Arrive / Hewie_StateToDoor). |
 | `noise` | | to acoustics | His loud barks and yelps (0x80) and growls / barking at someone (0x1B). Source: `hewie-noise`. |
 | `danger-signal` | `4` | to danger | He's alert to a stalker (H3: none yet). |
+| `hewie-doing` | `( here action mode sub cond mood group -- )` | broadcast, each frame (and again when a message changes what he does) | here: 0 out of the game, 1 in another room, 2 with her; his action, move mode and its part, condition, mood, pose group. Fiona chooses her commands by it. |
+| `command` | `( code tri yaw x z -- )` | in (Fiona) | Her command (the original's request 13). 0x23 "go there" carries the spot (floats `f>cell`). |
+| `reaction` | `( n -- )` | in (Fiona) | How her doing strikes him (Fiona_HewieReact's row): patience spent while he waits, a praise due. |
+| `meet-me` / `meet-at` / `meet-refused` | `( type )` / `( tri x y z face )` / `( )` | in / out | The meeting by his side, first part (type 0 scold, 2 praise, 4 stay): he finds her place and turns to her (0x48), or refuses. |
+| `meet-now` / `meet-on` / `meet-refused` | `( type )` / `( )` / `( )` | in / out | Second part (1 / 3 / 5): sitting, settled, facing the agreed way: scolded close up (0x49), petted (0x4A), patted (0x4B). |
+| `meet-off` | `( -- )` | in | She gave it up. |
 
 **Facts he reads:** his own body (moved by the engine's body operations: `body-move-local`,
 `body-turn-toward`, `body-free`, `body-tri-to`, `path-plan`), Fiona's body (`body-at`,
@@ -79,6 +85,14 @@ behaviours, `Hewie_WhatNext` / `WhenIdle` (the weighted lists, from the executab
   tried again until he follows her afresh). The doors' one-way flags count for his kind
   (`hewie-kind`). Not modelled: Progress_DoorPassable's side (the planner treats doors as
   passable from any side) and Progress_CurRoomFlag (waiting at a door the story holds).
+- The original's relations table (slot commands, request blocks 12 / 13, "hold" 7) is replaced
+  by the meeting messages and `command`: what Hewie_JointAction checked each frame he checks
+  when asked. A refusal answers at once (where the original cancelled and held her the next
+  frame).
+- What he does is told the moment a message changes it (`tell-doing` after `command` and the
+  meeting): she reads it before her next frame, as the original's shared fields allowed.
+- Following her, he may take a long while: every action gets a random wait (90..360 frames)
+  and 0xCF's travel re-picks from the idle list when it runs out (faithful).
 - Off screen, the way to the first door is counted down by its length (the path's rest when he
   set off from her room; else, as the original, the door's triangle number).
 
@@ -101,3 +115,16 @@ overlays, neck, feet, sounds, the frame). Checked by `tests/hewie/test_hewie.fs`
 
 Actions of the later phases fall back to the default (or to sniffing about). Left for H1:
 water steps (with the room effects), the story's use of `his-near` / `his-sub`.
+
+**H2 built** (`scripts/hewie/commands.fs`; Fiona's side `scripts/fiona/commands.fs`): her
+commands taken (Hewie_FionaCommand / CommandAction / ActOnCommand: stay, come, come back, go
+there, go for it, praise and scold from afar with his mood, her cry for help by his trust),
+her reactions, the meeting (Hewie_FindSpot, his calls 12), the behaviours for them (turning
+with her, praised / petted / patted, scolded, won't, walking to the spot she showed, readying).
+Checked by `tests/hewie/test_commands.fs` (17 tests): no gestures without state flag 0xD; her
+reading his broadcast; come back (0x2C → 0x1D → 0xD); go there (0x23 → 0x63, the spot kept);
+the meeting (praise close: 0x48, sits, 0x4A petted, her 0xC07); her cry for help (0x30); a
+reaction spending his patience.
+
+Not yet: her head turned to him after a command (Fiona's looks, later), the scripts' "can she
+command him" (H4).

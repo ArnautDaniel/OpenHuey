@@ -27,6 +27,20 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
     his-held @ 0= swap pursuer = and if  2 exit  then
     $5A 0 want  1 ;
 : after-call ( -- )  go-for case  0 of  6 0 want  endof  2 of  give-up  endof  endcase ;   \ (0x4F / 0x50)
+: after-coming-out ( -- )   \ Hewie_AfterComingOut (0x4E: her call - "go")
+    go-for case  0 of  6 0 want  endof  2 of  give-up  endof  endcase ;
+\ Hewie_After4D: by his pose, praise-me (0x28) / lying (0x26) or a roll over (0x2A)
+: after-4d ( -- )
+    anim-group rnd 0.5e f<                                           ( g coin )
+    swap case
+        0 of  his-cond @ 1 <> and if  $28  else  $2A  then  endof
+        4 of  his-cond @ 1 <> and if  $28  else  $2A  then  endof
+        1 of  if  $26  else  $2A  then  endof
+        5 of  if  $26  else  $2A  then  endof
+        2 of  his-cond @ 1 = or if  $26  else  $2A  then  endof
+        6 of  his-cond @ 1 = or if  $26  else  $2A  then  endof
+        >r drop $26 r>
+    endcase  0 want ;
 
 \ a pose to hold, looking about, what may break in, the behaviour
 : holding ( look cmd xt -- )  0 mode!  behave  his-cmd !  look! ;
@@ -86,6 +100,19 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
     $1B of  plain-floor? if  4 $62D ['] st-tricks holding  else  to-default  then  endof
     $1C of  plain-floor? if  900 his-wait !  4 $62D ['] st-tricks holding  else  to-default  then  endof
     $1D of  0 mode!  target-her  0 his-cmd !  ['] st-1f28 behave  endof
+    $1E of  0 mode!  target-her  0 his-cmd !  ['] st-1f88 behave  endof
+    \ her commands and meetings (H2)
+    $48 of  his-to-yaw f@ his-yaw f- angle-wrap fabs 6e deg>rad f/ f>s  dup his-t1 !  6 < if  1  else  0  then  his-t2 !
+            $C mode!  target-her  8 his-cmd !  ['] st-turn-with-fiona behave  endof
+    $49 of  $C mode!  4 look!  $408 his-cmd !  ['] st-2198 behave  endof
+    $4A of  $C mode!  4 look!  $408 his-cmd !  ['] st-2198 behave  endof
+    $4B of  $C mode!  4 look!  $408 his-cmd !  ['] st-2198 behave  endof
+    $4D of  after-4d  endof
+    $4E of  0 his-hold-call !  after-coming-out  endof
+    $63 of  by-her? if  0 mode!  $60F his-cmd !  0 his-t1 !  2 his-t2 !  -1 his-to-anim !  ['] st-set-off behave
+            else  to-default  then  endof
+    $71 of  0 mode!  4 look!  $400 his-cmd !  ['] st-22b8 behave  endof
+    $7A of  0 mode!  trust-wait his-wait !  60 his-t1 !  4 look-now!  $88 his-cmd !  ['] st-2388 behave  endof
     \ at the stalker (0x1F..0x23): H3
     $1F of  give-up  endof  $20 of  give-up  endof  $21 of  give-up  endof  $22 of  give-up  endof
     $23 of  give-up  endof

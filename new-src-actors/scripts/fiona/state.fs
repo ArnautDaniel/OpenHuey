@@ -65,5 +65,14 @@ state: fiona-state
   cell field her-door-anim      \ hers (0x600 + kind; 0x608.. trying a locked one)
   cell field her-door-opens     \ she opens it (else shuts it)
   cell field her-rattle         \ frames after trying a locked one
-  cell field her-armed          \ (the stand-in exit check: she has been out of every exit's area since arriving)
+  cell field her-armed
+  \ Hewie (F3): her command this frame (-1 none: 0 up, 1 down, 2 R3, 3 right, 4 left), the
+  \ command's code and where it was given, frames the pad isn't read, the praise's repeats
+  cell field her-cmd   cell field her-busy-t
+  cell field her-act-tri  1 floats field her-act-yaw  12 field her-act-at
+  cell field her-held-n
+  \ Hewie as he tells it (hewie-doing): here (0 out of the game, 1 elsewhere, 2 with her), his
+  \ action, move mode and its part, condition, mood, pose group
+  cell field dog-here  cell field dog-action  cell field dog-mode  cell field dog-sub
+  cell field dog-cond  cell field dog-mood  cell field dog-group          \ (the stand-in exit check: she has been out of every exit's area since arriving)
 end-state

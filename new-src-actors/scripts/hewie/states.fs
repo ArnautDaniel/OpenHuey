@@ -369,3 +369,146 @@ create kn-at 12 allot
         30 his-t1 !  his-yaw pi f+ angle-wrap 20e 30 150 30 best-heading his-heading f!
     then
     8 keep-pose  his-heading f@ head-toward-soon  his-heading f@ run-turn 1.5e deg>rad fmax turn-to fdrop ;
+
+\ ==== H2: Fiona's side - praise, scolding, petting, her commands ====
+
+\ Hewie_PraiseScold: praised (1) or scolded (0) for what he just did, if it is still what he
+\ did: his skills at it (after fetching) move by `by`. True if it counted
+: praise-scold ( praise? by -- flag )
+    his-did @ 0=  his-did @ his-did-was @ <> or if  2drop false exit  then
+    his-did-was @ $78 = if
+        his-roll-n @ 0 ?do
+            i cells his-rolls + @ >r
+            r@ cells his-rolled + @ 0<>  2 pick 1 <> if  0=  then
+            if  dup  else  dup negate  then  r@ cells his-skill + +!
+            r> cells his-skill + dup @ 0 31 clamp swap !
+        loop
+    then
+    2drop  0 his-follows !  0 his-did-2 !  0 his-did !  true ;
+
+\ ---- scolded from afar (action 0x71): sitting, the ears down (0x1C04); three times within 600
+\ frames upsets him ----
+: st-19b0 ( -- )
+    anim-done? 0= if  exit  then
+    his-praise-b @ 0> 0= if  1 his-praise-a !  600 his-praise-b !
+    else
+        1 his-praise-a +!
+        his-praise-a @ 3 <  his-mood @ 0<> or if  600 his-praise-b !
+        else  20 mistreated+  2 -1 set-mood  0 his-praise-a !  then
+    then  to-default ;
+: st-22b8 ( -- )  1 step-to-pose 0= if  $1C04 play  ['] st-19b0 behave  then ;
+\ Hewie_State1F88 (action 0x1E): won't - sits and turns his head away (0x1C01)
+: st-1f88 ( -- )
+    anim-done? anim@ $1C01 = and if  to-default exit  then
+    1 step-to-pose 0= if  $1C01 play  then ;
+
+\ ---- by her side: turning with her, then praised, scolded or petted ----
+\ Hewie_StateTurnWithFiona (action 0x48): turns with her (to his-to-yaw) while she gestures,
+\ then sits
+: st-turn-with-fiona ( -- )
+    her-with? 0= if  to-default exit  then
+    fiona-mode @ $D <> if  to-default
+    else
+        his-to-yaw f@ 6e deg>rad body-turn-toward fdrop
+        -1 his-t1 +!
+        his-t2 @ 0<> his-t1 @ 16 < and if  1 keep-pose
+        else  1 his-t2 !  $1300 play-if-not  then
+    then  1 his-no-root ! ;
+\ Hewie_StatePraised: at the end of each animation of 0x49 (scolded close up: three times within
+\ 600 frames upsets him), 0x4A (petted: strokes heal him; she holds the praise for more),
+\ 0x4B (patted)
+: st-praised ( -- )
+    his-danger @ 0= his-action @ $4A = and fiona-cmd @ 3 = and anim@ $1D01 = and if  2 his-t2 !  then
+    anim-done? 0= if  exit  then
+    his-action @ case
+        $49 of
+            false  his-praise-b @ 0> if
+                1 his-praise-a +!
+                his-praise-a @ 3 >= his-mood @ 0= and if
+                    20 mistreated+  2 -1 set-mood  drop true  0 his-praise-a !
+                else  600 his-praise-b !  then
+            else  1 his-praise-a !  600 his-praise-b !  then
+            0= his-t1 @ -6 = and if  calm-down  then
+            to-default
+        endof
+        $4A of
+            anim@ case
+                $1D00 of  3 his-t2 !  3 his-pet !  $1D01 play-cut  endof
+                $1D01 of  -1 his-t2 +!  -1 his-pet +!
+                          his-pet @ 0= if  4 his-pet !  his-hp @ 5 + 100 min hp!  then
+                          his-t2 @ 0= if  $1D02  else  $1D01  then  play-cut  endof
+                $1D02 of  his-hp @ 100 = if  -8 his-t1 !  his-t3 @ 0= if  -1 mistreated+  then  then
+                          his-t1 @ -8 = if  1 -1 set-mood  $1D 0 want  else  to-default  then  endof
+            endcase
+        endof
+        $4B of  300 his-pet-time !  his-waiting @ 0= if  2  else  0  then  0 want  endof
+    endcase ;
+: st-2198 ( -- )
+    his-action @ case
+        $4B of  $1C05 play  endof
+        $4A of  $1D00 play  his-hp @ 100 = if  1  else  0  then  his-t3 !  endof
+        $49 of  $1C04 play  endof
+    endcase  ['] st-praised behave ;
+
+\ Hewie_State2388 (action 0x7A): waiting low (animation 9), readying
+: st-2388 ( -- )
+    4 look!
+    anim@ 9 = if  his-t1 @ 0= if  1 his-ready !  else  -1 his-t1 +!  then
+    else  0 step-to-pose 0= if  9 play  then  then ;
+
+\ ---- walking to the spot she showed (0x63, then 0x64: scrambling about it) ----
+\ Hewie_StateWalkPath2: along the planned way to his-to (straight once on its triangle), stepping
+\ less the sharper he turns; near the end turning on the spot (0x1300) to his-to-yaw
+fvariable wp-left  variable wp-on
+: st-walk-path2 ( -- )
+    his-to-tri @  his-to -1 body-tri-to = wp-on !
+    stride-len
+    wp-on @ if  fdrop his-to heading-to
+    else  0e fmax 12e f* ahead@ drop  ahead heading-to  then        ( F: a )
+    anim@ $1300 = if
+        fdrop  his-to-yaw f@ head-toward
+        his-to-yaw f@ his-yaw f- angle-wrap fabs 1.7453293e f* his-turn f@ f/ fsin   ( F: t )
+        fdup his-turn f@ f* 0.05e f* 1e deg>rad fmax 6e deg>rad fmin                 ( F: t step )
+        his-to-yaw f@ fswap body-turn-toward wp-left f!  fdrop
+        wp-left f@ f0= settled? and if
+            his-danger @ 0= if  0  else  3  then  5 play-blend
+        then
+        0.25e
+    else
+        fdup head-toward  run-turn body-turn-toward  fdup wp-left f!
+        stride-len fdup f0< if  fdrop fdrop 0e  else  fswap pi fswap f- pi f/ f*  then
+        0.05e fmax
+    then
+    ahead@ his-path path-i!  ahead vec@ his-place  1 his-no-root !
+    settled? 0= if  exit  then
+    path-done? his-t1 @ 0<> and wp-left f@ f0= and
+    his-to-anim @ -1 <> if  anim@ his-to-anim @ =  else  anim-group 0=  then  and if
+        his-action @ $63 = if  $64 $13 want  else  1 his-done !  to-default  then  exit
+    then
+    his-to-anim @ -1 <> if
+        anim@ his-to-anim @ = if  rest 3e f< if  1 his-t1 !  then
+        else  his-to-anim @ play  then  exit
+    then
+    his-t1 @ 0= if
+        rest fdup 3e f< 0= if
+            his-t2 @ 2 = fdup 10e f< 0= and if  34e f< if  8  else  9  then  keep-pose
+            else  fdrop 7 keep-pose  then
+        else
+            fdrop  his-to-yaw f@ his-yaw f- angle-wrap fabs 1e deg>rad fmax his-turn f!
+            1 his-t1 !  $1300 play
+        then
+    then ;
+\ Hewie_StateSetOff: once standing, the way planned (no way: the default action)
+: st-set-off ( -- )
+    slide-root
+    his-to-anim @ -1 = if
+        0 step-to-pose if  exit  then
+        his-to-tri @ his-to plan-to if
+            his-t2 @ 2 = if  rest fdup 10e f< if  fdrop 7  else  34e f< if  8  else  9  then  then
+            else  7  then  keep-pose
+            ['] st-walk-path2 behave exit
+        then
+    else
+        his-to-tri @ his-to plan-to if  ['] st-walk-path2 behave exit  then
+    then
+    to-default ;

@@ -6,7 +6,7 @@
 \ He is spawned with the game but comes in only when told (`join-fiona`: the story, or the
 \ console); `part-from-fiona` sends him off.
 IN: hewie
-USING: engine actors messages common paths hewie.state hewie.body hewie.model hewie.moving hewie.states hewie.offscreen hewie.actions hewie.mind ;
+USING: engine actors messages common paths hewie.state hewie.body hewie.model hewie.moving hewie.states hewie.offscreen hewie.actions hewie.commands hewie.mind ;
 
 \ at heel: behind her and a little to her side (where she is when that isn't floor), her way
 create heel-at 12 allot
@@ -38,8 +38,24 @@ behaviour hewie-own
   on arrived ( room exit -- )  drop fiona-room ! ;   \ (he comes in by himself: Hewie_Arrive, the doors off screen)
   on danger ( level -- )  his-danger ! ;
   on panic ( stage level -- )  drop his-panic ! ;
-  on fiona-doing ( mode sub cond -- )  fiona-cond !  fiona-sub !  fiona-mode ! ;
-  on tick ( -- )  along? if  frame  then ;
+  on fiona-doing ( mode sub cond cmd -- )  fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode ! ;
+  on tick ( -- )  along? if  frame  else  tell-doing  then ;
+  \ her commands (H2)
+  on command ( code tri yaw x z -- )   \ (Hewie_StateBlock's 13)
+      along? 0= if  2drop 2drop drop exit  then
+      >r >r cell>f  r> cell>f  r> cell>f                       ( code tri ) ( F: yaw x z )
+      over $23 = if  showed  else  drop fdrop fdrop fdrop  then
+      fiona-command drop  0 his-broke !  tell-doing ;
+  on reaction ( n -- )  along? if  react  else  drop  then ;
+  on meet-me ( type -- )
+      along? if  meet-ask  else  drop -1  then
+      dup 0< if  drop  sender send meet-refused exit  then
+      fs-at sf@ f>cell  fs-at 4 + sf@ f>cell  fs-at 8 + sf@ f>cell  fs-yaw f@ pi f+ angle-wrap f>cell
+      sender send meet-at  tell-doing ;   \ (what he does now, before her next frame)
+  on meet-now ( type -- )
+      along? if  meet-second?  else  drop false  then
+      if  sender send meet-on  tell-doing  else  sender send meet-refused  then ;
+  on meet-off ( -- )  -1 his-meet ! ;
 end-behaviour
 
 : hewie-spawn ( -- id )  hewie-own hewie-state s" hewie" spawn ;
