@@ -27,10 +27,13 @@ T{ game:debilitas body?  shown? -> 0 0 }T
 
 testing his senses (P1b): seen ahead in his view, within reach close behind, not far behind; a noise heard
 front-garden-2 room!  10 frames
+: her-y ( F: -- y )  s" fiona" actor-named body-pos fdrop fswap fdrop ;
+140.64e her-y -217.33e 0e tp-facing  2 frames   \ (an open spot: him there, facing +z)
 s" fiona" actor-named body-tri debug:debilitas-tri  3 frames
 game:debilitas body-pos dz f! dy f! dx f!  game:debilitas body-yaw dyaw f!
+fvariable dd
 : there ( F: d -- )   \ (Fiona put d along his heading: negative behind him)
-    fdup dyaw f@ fsin f* dx f@ f+  dy f@  fswap dyaw f@ fcos f* dz f@ f+  tp  4 frames ;
+    dd f!  dd f@ dyaw f@ fsin f* dx f@ f+  dy f@  dd f@ dyaw f@ fcos f* dz f@ f+  tp  4 frames ;
 : seen ( -- flag )  [: sees-fiona @ ;] his ;
 T{ 40e there  seen  [: d-fiona f@ ;] his 40e f- fabs 1e f< -> -1 -1 }T
 T{ -15e there  seen -> -1 }T
