@@ -77,6 +77,8 @@ message seize ( type -- )                    \ to Fiona: taken to the sender's s
 message seize-taken ( -- )                   \ her answer: she's being led
 message seize-refused ( -- )                 \ her answer: no spot by him she can be led to (or she isn't free)
 message broke-free ( -- )                    \ to the stalker leading her: she shook free
+message game-over-kind ( kind -- )           \ (the game over) how the next one goes: 0 the movie's, 1 faded out
+                                             \ (caught), 2 none (a continue), 3 faded out with its own music
 message unhand ( -- )                        \ to Fiona: the stalker leading her no longer does
 
 \ ---- Hewie (docs/subsystems/hewie.md) ----

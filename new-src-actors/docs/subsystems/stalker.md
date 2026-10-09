@@ -152,5 +152,6 @@ attacks, with Fiona's F4a reactions. P2b done: taking her (by the hand, walking)
 and grab, her being led, dragged, shaking free, seized outright, with Fiona's F4b.
 `tests/stalker/test_stalker.fs` (42). Later parts kept with
 their phases: his footsteps heard through the walls and the rooms a stalker keeps to (+0x314:
-P4), the knock frightening her (with her fear's sounds), Hewie held (H3). Next: P2c (the game
-over: the `caught` flag set by her).
+P4), the knock frightening her (with her fear's sounds), Hewie held (H3). P2c done: the game
+over (`docs/subsystems/gameover.md`) - dragged or carried off, held, the sequence, back to the
+title. Next: P3 (him struck: her kick and shove with F4, Hewie's bites, slammed doors).

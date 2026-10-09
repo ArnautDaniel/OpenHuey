@@ -1417,6 +1417,7 @@ PRIM(p_seq_midi) {   /* ( k status d1 d2 -- ) */
 }
 PRIM(p_seq_reset) { seq_reset(); }
 PRIM(p_pause) { gEngine.paused = POP() != 0; }   /* ( flag -- ) actors and the room stand still */
+PRIM(p_still) { gEngine.still = POP() != 0; }    /* ( flag -- ) the models and the room stand still (the actors run) */
 PRIM(p_cs_active) { PUSH(cutscene_active() ? -1 : 0); }
 PRIM(p_cs_total) { PUSH(cutscene_signal_total((int)POP())); }   /* ( bit -- n ) its count so far less one */
 PRIM(p_cs_letterbox_off) { cutscene_set_letterbox_off((int)POP() != 0); }   /* ( flag -- ) */
@@ -1807,6 +1808,11 @@ PRIM(p_f_to_s) {   /* ( places -- addr len ) ( F: x -- ) */
 PRIM(p_gfx) { PUSH(&gRender); }
 PRIM(p_look) { PUSH(&gRoomLook); }   /* ( -- addr ) the room's look, as it is now */
 PRIM(p_look_reset) { room_reset_look(&gEngine.room); }   /* back to the room file's */
+PRIM(p_look_get) {   /* ( slot addr -- n ) a look effect's parameters as last set, into addr (16 at most; 0 none) */
+    Cell a = POP(), slot = POP();
+
+    PUSH((Cell)room_look_get((int)slot, (uint8_t *)a));
+}
 PRIM(p_look_set) {   /* ( slot addr n -- ) a look effect's parameters (addr 0: removed) */
     Cell n = POP(), a = POP(), slot = POP();
 
@@ -1915,6 +1921,10 @@ void engine_tick(Engine *e) {
         return;
     }
     hactor_frame(e->forth);   /* the actors' frame, then their models move on */
+    if (e->still) {   /* (the game over: the world stands still behind it, its actors running) */
+        render_look_tick();
+        return;
+    }
     for (i = 0; i < MAX_ACTORS; i++) {
         actor_tick(&e->actors[i]);
     }
@@ -2047,6 +2057,25 @@ void engine_draw_2d(Engine *e) {
     }
 }
 
+/* back as at the start (the game over's return to the title: a fresh game): the 2D layers
+ * cleared, the movie closed, the music, sequences and sounds stopped, no cutscene */
+void bind_engine_reset(void) {
+    memset(sUiN, 0, sizeof(sUiN));
+    movie_close();
+    music_stop();
+    seq_reset();
+    snddrv_stop_all();
+    cutscene_end();
+}
+static int sResetWanted;
+PRIM(p_soft_reset) { sResetWanted = 1; }   /* ( -- ) a fresh game at this frame's end (the title) */
+int bind_engine_reset_wanted(void) {
+    int r = sResetWanted;
+
+    sResetWanted = 0;
+    return r;
+}
+
 void bind_engine(Forth *f) {
     Vocab *saved = f->m.current, *engine = forth_vocab(f, "engine");
     static const struct {
@@ -2068,9 +2097,9 @@ void bind_engine(Forth *f) {
         {"door-anim", p_door_anim}, {"door-side", p_door_side}, {"door-near?", p_door_near}, {"door-in-area?", p_door_in_area},
         {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"door-move", p_door_move}, {"game-tick", p_game_tick}, {"door-events", p_door_events}, {"door-here?", p_door_present}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
-        {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end},
+        {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end}, {"soft-reset", p_soft_reset},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},
-        {"cutscene-signals", p_cs_signals}, {"cutscene-active?", p_cs_active}, {"pause!", p_pause}, {"seq-bank", p_seq_bank}, {"seq-load", p_seq_load}, {"seq-play", p_seq_play},
+        {"cutscene-signals", p_cs_signals}, {"cutscene-active?", p_cs_active}, {"pause!", p_pause}, {"still!", p_still}, {"seq-bank", p_seq_bank}, {"seq-load", p_seq_load}, {"seq-play", p_seq_play},
         {"seq-playing?", p_seq_playing}, {"seq-volume", p_seq_volume}, {"seq-port-volume", p_seq_port_volume},
         {"seq-chan-volume", p_seq_chan_volume}, {"seq-midi", p_seq_midi}, {"seq-reset", p_seq_reset}, {"music-play", p_music_play}, {"music-stop", p_music_stop},
         {"music-pause", p_music_pause}, {"music-volume!", p_music_volume}, {"music-playing?", p_music_playing}, {"cutscene-signal-total", p_cs_total}, {"cutscene-letterbox-off", p_cs_letterbox_off}, {"movie-close", p_movie_close}, {"movie-pause", p_movie_pause}, {"movie-paused?", p_movie_paused}, {"movie-compose", p_movie_compose},
@@ -2094,7 +2123,7 @@ void bind_engine(Forth *f) {
         {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},
         {"pen-scale", p_pen_scale}, {"draw-text", p_draw_text}, {"draw-rect", p_draw_rect},
         {"screen-size", p_screen_size}, {"char-size", p_char_size}, {"n>s", p_n_to_s}, {"h>s", p_h_to_s}, {"f>s$", p_f_to_s},
-        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"user-dir", p_user_dir}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
+        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"look@", p_look_get}, {"user-dir", p_user_dir}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
         {"end-file", p_end_file}, {"xt>name", p_xt_to_name},
         {"clear-color", p_clear_color}, {"screenshot", p_screenshot}, {"console!", p_console},
         {"data-dir", p_data_dir},

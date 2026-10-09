@@ -79,6 +79,7 @@ void room_reset_look(Room *r);
 /* one effect of the room's look from its parameters, as the scripts send them: slot 0x1C depth
  * of field, 0x1D fog, 0x1E screen blend, 0x1F tint (NULL: that effect removed) */
 void room_look_set(int slot, const uint8_t *d, size_t n);
+size_t room_look_get(int slot, uint8_t *out);   /* its parameters as last set (0: none) */
 void room_free(Room *r);
 /* door `exit`'s swing (degrees from shut; -90 open): eased there, or set at once */
 void room_door_swing(Room *r, int exit, float degrees, int at_once);

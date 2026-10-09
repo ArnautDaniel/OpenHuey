@@ -49,6 +49,7 @@ typedef struct Engine {
     } extra;
     long ticks;
     int paused;            /* a menu is up: actors and the room stand still (`pause!`) */
+    int still;             /* the models and the room stand still, the actors run (`still!`: the game over) */
     char hud[128];         /* a line of text at the bottom of the screen ("" none) */
     char screenshot[256];  /* a screenshot to save after this frame ("" none) */
     int width, height;     /* the window, in pixels */
@@ -58,6 +59,8 @@ extern Engine gEngine;
 
 /* the Forth words for the engine */
 void bind_engine(Forth *f);
+void bind_engine_reset(void);       /* the 2D, movie, music, sounds, cutscene as at the start */
+int bind_engine_reset_wanted(void); /* `soft-reset` asked for (once) */
 /* one game tick: tasks, then the per-tick hooks */
 void engine_tick(Engine *e);
 /* the scripts' 2D drawing for this frame (the on-draw hooks) */

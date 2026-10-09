@@ -252,6 +252,53 @@ static void draw(Engine *e) {
     platform_swap();
 }
 
+/* the game's Forth and its scripts (game.fs spawns the actors: the title first) */
+static void start_scripts(Engine *e, int hidden) {
+    e->forth = forth_new(16 << 20);   /* (the converted event scripts take most) */
+    forth_set_output(e->forth, console_output, &e->console);
+    bind_engine(e->forth);
+    bind_state(e->forth);
+    bind_hactor(e->forth);
+    forth_prim(e->forth, "exit-status", p_exit_status);
+    forth_constant(e->forth, "hidden?", hidden ? -1 : 0);   /* (no window: tests, screenshots - no opening movie) */
+    if (!load_scripts(e->forth)) {
+        fprintf(stderr, "hg2: the scripts didn't load (see above); the console is open\n");
+        e->console.open = 1;
+    }
+}
+
+/* a fresh game (`soft-reset`: the game over's return to the title, as the original makes its
+ * title scene anew): everything the scripts made let go - the actors and their models, the
+ * room, the effects, the 2D, sounds, music, movie; the progress cleared - and the scripts
+ * started again */
+static void soft_reset(Engine *e, int hidden) {
+    int i;
+
+    fprintf(stderr, "hg2: a fresh game\n");
+    hactor_reset();
+    for (i = 0; i < MAX_ACTORS; i++) {
+        if (e->actors[i].used) {
+            actor_free(&e->actors[i]);
+        }
+    }
+    room_free(&e->room);
+    e->room.id = -1;
+    sprites_free_all();
+    bind_engine_reset();
+    memset(&gProgress, 0, sizeof(gProgress));
+    e->nhooks = e->ndraw_hooks = 0;
+    e->nstage = 0;
+    memset(&e->extra, 0, sizeof(e->extra));
+    e->hud[0] = 0;
+    e->paused = 0;
+    e->still = 0;
+    e->clear = vec3(0, 0, 0);
+    memset(e->held, 0, sizeof(e->held));
+    e->camera = (Camera){vec3(0, 0, 0), 0, 0, 1.0f, 5.0f, 20000.0f, 1.0f};
+    forth_free(e->forth);
+    start_scripts(e, hidden);
+}
+
 int main(int argc, char **argv) {
     static const bool kNoKeys[SDL_SCANCODE_COUNT];
     Engine *e = &gEngine;
@@ -279,8 +326,6 @@ int main(int argc, char **argv) {
     e->room.id = -1;
     e->camera = (Camera){vec3(0, 0, 0), 0, 0, 1.0f, 5.0f, 20000.0f, 1.0f};
     load_world(&e->world, opt.data);
-    e->forth = forth_new(16 << 20);   /* (the converted event scripts take most) */
-    forth_set_output(e->forth, console_output, &e->console);
     if (!sound_open()) {   /* (none: the game is silent) */
         fprintf(stderr, "hg2: no sound (%s)\n", SDL_GetError());
     }
@@ -293,15 +338,7 @@ int main(int argc, char **argv) {
         }
         free(libsd);
     }
-    bind_engine(e->forth);
-    bind_state(e->forth);
-    bind_hactor(e->forth);
-    forth_prim(e->forth, "exit-status", p_exit_status);
-    forth_constant(e->forth, "hidden?", opt.hidden ? -1 : 0);   /* (no window: tests, screenshots - no opening movie) */
-    if (!load_scripts(e->forth)) {
-        fprintf(stderr, "hg2: the scripts didn't load (see above); the console is open\n");
-        e->console.open = 1;
-    }
+    start_scripts(e, opt.hidden);
     for (i = 0; i < opt.nevals; i++) {
         forth_eval(e->forth, opt.evals[i], strlen(opt.evals[i]), "--eval");
     }
@@ -363,6 +400,10 @@ int main(int argc, char **argv) {
         }
         if (ticks == 4) {
             lag = 0;   /* far behind (a stall): don't try to catch up */
+        }
+        if (bind_engine_reset_wanted()) {   /* (between frames: no handler running) */
+            soft_reset(e, opt.hidden);
+            continue;
         }
 
         if (ticks == 0 && opt.frames == 0) {   /* (the picture changes only with a tick: 30 a second) */

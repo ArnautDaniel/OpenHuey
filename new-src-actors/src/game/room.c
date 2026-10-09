@@ -69,8 +69,24 @@ void room_reset_look(Room *r) {
 /* one of the look's effects from its parameters (the original's room effect slots 0x1C depth of
  * field, 0x1D fog, 0x1E screen blend, 0x1F tint: Tint_SetParams, ScreenBlend_SetParams,
  * Fog_SetParams, DepthRange_SetParams); NULL: that effect removed */
+static uint8_t sLookRaw[4][16];   /* each effect's parameters as given (slots 0x1C..0x1F) */
+static size_t sLookN[4];
+size_t room_look_get(int slot, uint8_t *out) {
+    if (slot < 0x1C || slot > 0x1F) {
+        return 0;
+    }
+    memcpy(out, sLookRaw[slot - 0x1C], sLookN[slot - 0x1C]);
+    return sLookN[slot - 0x1C];
+}
 void room_look_set(int slot, const uint8_t *d, size_t n) {
     RoomLook *l = &gRoomLook;
+
+    if (slot >= 0x1C && slot <= 0x1F) {
+        sLookN[slot - 0x1C] = d != NULL ? (n < 16 ? n : 16) : 0;
+        if (d != NULL) {
+            memcpy(sLookRaw[slot - 0x1C], d, sLookN[slot - 0x1C]);
+        }
+    }
 
     switch (slot) {
     case 0x1F:

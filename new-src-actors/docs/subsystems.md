@@ -58,7 +58,7 @@ Takes: `command` (from Fiona), `praise`, `scold`, `hit`, `heard`, `tick`.
 Sends: `noise` (barks), `bite` (a `hit`), `noticed` (he's alert to a stalker).
 Original: `hewie.c`.
 
-### The stalkers (`stalker`)
+### The stalkers (`stalker`)  — **P1, P2 built** (`subsystems/stalker.md`)
 One family for Debilitas, Daniella, Riccardo and Lorenzo: the same senses, search, chase and
 attack, with each one's numbers, motions and special moves.
 Owns: its mode (searching / after her / held back / waiting), what it knows (where it saw her,
@@ -121,7 +121,7 @@ Owns: the text window and the choices.
 Takes: `say`, `ask`. Sends `answered`, `closed`.
 Original: `text.c`, messages.
 
-### Game over, title, ending (`scenes`)
+### Game over, title, ending (`scenes`)  — **game over built** (`subsystems/gameover.md`); the title in `opening`
 Original: `gameover.c`, `title.c`, the ending scene.
 
 ## Order
