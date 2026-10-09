@@ -41,6 +41,7 @@ typedef struct World {
 const uint8_t *world_exe(const World *w, uint32_t vaddr, size_t n);
 /* read the tables from the executable; 0 if it couldn't be read */
 int world_load(World *w, const char *exe_path);
+void world_rebuild_exits(World *w);   /* the exits through the doors not closed off (Rooms_Rebuild) */
 /* where exit `exit` of `room` leads: the room (and its exit in *to_exit), or -1 */
 int world_exit_leads(const World *w, int room, int exit, int *to_exit);
 /* exit's nav triangle (which: 0 out, 1 in, 2 through), the door's own when the room table has

@@ -272,6 +272,13 @@ variable slot2   -1 slot2 !
 : doors-id ( -- id )  s" doors" actor-named ;
 : door-lock ( door -- )  doors-id send lock ;
 : door-unlock ( door -- )  doors-id send unlock ;
+\ 59 08 / 07: a door closed off and locked (Rooms_CloseOff, then the lock) / back and unlocked
+\ (Rooms_Reopen): the exits it served take the next door listed once rebuilt (0xA1)
+: door-close-off-lock ( door -- )  dup doors-id send close-off  door-lock ;
+: door-reopen-unlock ( door -- )  dup doors-id send reopen  door-unlock ;
+\ 0xA1: the rooms' exits through the doors not closed off (Rooms_Rebuild) - by the doors actor,
+\ after the close-offs sent before it
+: exits-rebuild ( -- )  doors-id send rebuild-exits ;
 : door-not-closed-off? ( door -- flag )
     dup 0 door-count within 0= if  drop true exit  then  progress pr.closed-off bit? 0= ;
 
@@ -774,19 +781,16 @@ variable bf-fx  variable bf-x  variable bf-y  variable bf-z  variable bf-n
 : creature-place ( room a tri flags kind which g F: f -- )  drop  drop  drop  drop  drop  drop  drop  fdrop  s" creature-place" stub-step ;
 : creatures-clear ( which -- )  drop  s" creatures-clear" stub-step ;
 : deal-things ( -- )  s" deal-things" stub-step ;
-: door-close-off-lock ( door -- )  drop  s" door-close-off-lock" stub-step ;
 : door-copy ( door from -- )  drop  drop  s" door-copy" stub-step ;
 : door-flag-82 ( door on -- )  drop  drop  s" door-flag-82" stub-step ;
 : door-lock-for ( id door state -- )  drop  drop  drop  s" door-lock-for" stub-step ;
 : door-locked? ( door -- flag )  drop  s" door-locked?" stub-flag ;
 : door-open-clear ( door -- )  drop  s" door-open-clear" stub-step ;
 : door-open-set ( door -- )  drop  s" door-open-set" stub-step ;
-: door-reopen-unlock ( door -- )  drop  s" door-reopen-unlock" stub-step ;
 : doors-room-in ( -- )  s" doors-room-in" stub-step ;
 : dust ( kind r g b own F: x y z -- )  drop  drop  drop  drop  drop  fdrop  fdrop  fdrop  s" dust" stub-step ;
 : event-704-reached? ( v -- flag )  drop  s" event-704-reached?" stub-flag ;
 : event-camera ( on F: a b c d -- )  drop  fdrop  fdrop  fdrop  fdrop  s" event-camera" stub-step ;
-: exits-rebuild ( -- )  s" exits-rebuild" stub-step ;
 : fade-past-40? ( -- flag )  s" fade-past-40?" stub-flag ;
 : fading? ( -- flag )  s" fading?" stub-flag ;
 : fiona-action? ( v -- flag )  drop  s" fiona-action?" stub-flag ;

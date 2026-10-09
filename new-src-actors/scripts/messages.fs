@@ -34,7 +34,9 @@ message camera-cut ( -- )                    \ it cut to a new set
 message lock ( door -- )
 message unlock ( door -- )
 message lock-for ( door kind on -- )         \ locked against a kind of character, or not
-message close-off ( door -- )                \ gone for good (story)
+message close-off ( door -- )                \ gone for good (story): its exits use another door once rebuilt
+message reopen ( door -- )                   \ back (story; Rooms_Reopen)
+message rebuild-exits ( -- )                 \ the rooms' exits through the doors not closed off (story's 0xA1)
 \ the played room's doors, by exit; `source` is the user's noise source
 message use-door ( exit anim source -- )     \ the door swings along the user's animation
 message swing-door ( exit open source -- )   \ swung open / shut by hand

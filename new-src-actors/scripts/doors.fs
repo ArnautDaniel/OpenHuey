@@ -38,6 +38,8 @@ USING: engine game-state actors messages ;
     8 0 do  room-id i door-of over = if  i refresh  then  loop  drop ;
 : closed-off! ( door -- )
     dup 32 / 4 * progress pr.closed-off +  swap 32 mod 1 swap lshift  over l@ or  swap l! ;
+: reopened! ( door -- )
+    dup 32 / 4 * progress pr.closed-off +  swap 32 mod 1 swap lshift invert  over l@ and  swap l! ;
 : changed ( door -- )  dup refresh-door  broadcast door-changed ;
 
 \ ---- held doors (DoorHold_Take / DoorHold_Open / DoorHold_Shut) ----
@@ -84,6 +86,8 @@ behaviour keeping
   on lock-for ( door kind on -- )
       >r kind-bit 4 lshift  over swap  r> if  set-bits  else  clear-bits  then  changed ;
   on close-off ( door -- )  dup closed-off!  changed ;
+  on reopen ( door -- )  dup reopened!  changed ;
+  on rebuild-exits ( -- )  world-exits-rebuild ;
   on use-door ( exit anim source -- )
       2 pick user !  over room-id swap door-of 0< if  2drop exit  then
       door-anim drop ;

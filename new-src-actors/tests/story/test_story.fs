@@ -1,7 +1,7 @@
 \ The story: each room's event scripts as its actor (docs/subsystems/story.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/story/test_story.fs
 IN: test-story
-USING: tester engine game-state actors messages room-names game fiona.state story.state story.words ;
+USING: tester engine game-state actors messages room-names game fiona.state story.state story.words debug flag-names ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
@@ -49,4 +49,14 @@ testing an action script runs as the room's coroutine, a turn a frame
 variable before
 started before !
 T{ [: 0 $F6 $80 action-force ;] in-room  started -> before @ 1+ }T   \ (a scene slot, 0xF6: the shared script 0x80)
+testing the new game's entry closes off the doors to castle-2f-5 and rebuilds the exits: front-garden-2's way in leads to castle-2f-3 (as hg)
+T{ front-garden-2 0 room-exit-leads drop -> castle-2f-3 }T
+testing ... in castle-2f-3, crossing the gate halfway across (event area $E, z -20) starts the scene (act07: EV0002's movie and cutscene)
+front-garden-2 room!  20 frames  front-garden-2 0 room-exit-leads drop room!  30 frames
+world-held state-flag-clear
+-33.4e -8e -9.1e tp  10 frames
+-30.5e -1e -18e walk  40 frames  -29.6e -0.4e -19.5e walk  40 frames  -29.6e 0e -23e walk
+: scene? ( -- flag )  cutscene-active? movie-status 1 = or ;
+: soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
+T{ ' scene? 120 soon -> -1 }T
 test-summary

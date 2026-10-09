@@ -121,6 +121,31 @@ static int closed_off(const World *w, int d) {
     return d < 0 || d >= w->ndoors || ((gProgress.closed_off[d / 32] >> (d % 32)) & 1);
 }
 
+/* Rooms_Rebuild: each room's exits through the first door listed for them that isn't closed
+ * off (the scripts' 0xA1, a new game; an exit can have several - the story's versions of a
+ * room) */
+void world_rebuild_exits(World *w) {
+    int i, k, s;
+
+    for (i = 0; i < WORLD_ROOMS; i++) {
+        for (k = 0; k < ROOM_EXITS; k++) {
+            w->exits[i][k].door = -1;
+        }
+    }
+    for (i = 0; i < w->ndoors; i++) {
+        if (closed_off(w, i)) {
+            continue;
+        }
+        for (s = 0; s < 2; s++) {
+            const DoorSide *d = &w->doors[i].side[s];
+
+            if (d->room < WORLD_ROOMS && d->exit < ROOM_EXITS && w->exits[d->room][d->exit].door < 0) {
+                w->exits[d->room][d->exit].door = i;
+            }
+        }
+    }
+}
+
 int world_door_exit(const World *w, int d, int room) {
     int s;
 
