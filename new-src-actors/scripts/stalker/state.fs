@@ -10,7 +10,6 @@ state: stalker-state
   cell field hp  cell field hp-max
   cell field hard               \ the hard setting (progress +0x30 bit 0x8000: his numbers differ)
   cell field growl-t            \ +0x17EC: frames since his last growl
-  cell field doing              \ +0x1788: his action (0x1300, 0x1600...: the growl's exceptions)
   cell field my-move-mode       \ +0xF8: how he moves (0 on his own)
   cell field fiona-id  cell field hewie-id
   cell field my-kind            \ +0x153C: which character (2 Debilitas, 3 Daniella: the cutscenes' cast id)
@@ -28,4 +27,21 @@ state: stalker-state
   cell field hear-threshold     \ (+0x14B8: noises louder than this)
   /path field probe-path        \ (a way planned only to measure it)
   32 field my-file              \ its model's files (a counted name: its sounds too, bank 7 while loaded)
+  \ his moves (stalker/moving.fs): his way (+0x120..), what he plays (+0x1788), his step and
+  \ what it is doing (the original's state function and its counters)
+  /path field my-path
+  cell field anim               \ +0x1788: the animation he plays (-1 none)
+  cell field step               \ his step (an xt, run each frame: the original's Actor_SetState)
+  cell field step-t             \ +0x1624: a count the step keeps
+  cell field step-done          \ +0x16EE: the step is over
+  cell field goal-tri  12 field goal-at      \ +0x15A4 / +0x15B0: where he heads in the room
+  \ his mode's clock and his search (stalker/search.fs): the route's stops (+0x15E0: 8 of a
+  \ triangle and whether it was picked at random), the next (+0x1620) and the end (+0x1621)
+  cell field mode-t             \ +0x1660: frames left in his mode
+  16 cells field stops  cell field route-next  cell field route-end
+  cell field spot-next          \ +0x1738: the room's next search spot
+  cell field stop-wait          \ +0x1798: frames to look about at a stop picked at random
+  cell field route-done         \ +0x16F4: the route is over (his mode moves on)
+  cell field search-phase       \ 0 none, 1 walking to a stop, 2 searching it
+  cell field gesture            \ the look about he plays at a stop (-1: none)
 end-state

@@ -1,19 +1,16 @@
 \ stalker.fs - the stalkers (docs/subsystems/stalker.md; src/game/pursuer.c, debilitas.c): one
 \ actor per stalker in the game. The family's behaviour (`stalking`) and each one's over it
 \ (Debilitas: `debilitas`). P1: in the house - placed, standing, growling, telling the danger
-\ he is about.
+\ he is about; searching the room (stalker/search.fs: his modes, his route of stops, walking).
 IN: stalker
-USING: engine game-state actors messages common facts flag-names room-names stalker.state stalker.senses ;
+USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search ;
 
 : me ( -- id )  self ;
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
 : my-room ( -- room )  self body-room ;
 : played? ( -- flag )  in-game @ if  my-room room-id =  else  false  then ;   \ (Npc_InPlayedRoom)
-: hard? ( -- flag )  progress pr.vars $27 + c@ 1 = ;
 : danger-id ( -- id )  s" danger" actor-named ;
 
-: play-cut ( anim -- )   \ Motion_Play: at once, with its table's flags
-    my-model @ swap  2dup motion-entry nip nip  0 swap motion-play ;
 \ his model where his body is, shown in the room being played
 : pose ( -- )
     my-at sf@ him act.x sf!  my-at 4 + sf@ him act.y sf!  my-at 8 + sf@ him act.z sf!
@@ -31,18 +28,20 @@ USING: engine game-state actors messages common facts flag-names room-names stal
 : come-in ( room tri -- )
     loaded @ 0= if  load  then
     dup tri-center  body-place
-    -1 in-game !  3 my-mode !  0 growl-t !  0 doing !  0 my-move-mode !
+    -1 in-game !  0 growl-t !  0 my-move-mode !  -1 anim !
     hp @ 0> 0= if  hp-max @ hp !  then
-    0 play-cut  pose ;
+    route-clear  my-path path-clear  3 mode!  0 play-now  stand  pose
+    search-start ;
 : go-out ( -- )  0 in-game !  body-off  0 him act.visible l! ;
 
 \ ---- his frame (Debilitas_Update: so far the growl, his model) and his part in the danger ----
 : growl ( -- )   \ every 90 frames, standing on his own: sound $2A (bank 7)
     1 growl-t +!  growl-t @ 90 < if  exit  then
     0 growl-t !
-    my-move-mode @ 0= doing @ $1300 <> and doing @ $1600 <> and if  $2A 7 sound  then ;
+    my-move-mode @ 0= anim @ $1300 <> and anim @ $1600 <> and if  $2A 7 sound  then ;
 : frame ( -- )
-    senses
+    senses  modes
+    step @ ?dup if  execute  then  search
     played? growls @ and if  growl  then
     pose
     my-room  sees-fiona @ 0<> 1 and  my-mode @ 0= 1 and  danger-id send stalker-here ;

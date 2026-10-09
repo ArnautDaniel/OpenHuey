@@ -10,12 +10,18 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
 : hewie ( -- id )  hewie-id @ ;
 : here? ( id -- flag )   \ in the game and in my room
     dup 0< if  drop false exit  then  dup body? 0= if  drop false exit  then  body-room self body-room = ;
+\ walking straight from him to someone over the mask reaches their triangle (one off the floor:
+\ never - the walk's -1 is a wall)
+variable st-who
+: straight? ( id mask -- flag )
+    swap st-who !  st-who @ body-tri 0< if  drop false exit  then
+    >r  self body-tri my-at st-who @ body-at r> v-walk  st-who @ body-tri = ;
 
 \ ---- on foot (Npc_DistanceTo): straight there if nothing's in the way, else along a way
 \ planned over the floor; -1 no way ----
 : foot-dist ( id -- ) ( F: -- d )
     dup here? 0= if  drop -1e exit  then
-    >r  self body-tri my-at r@ body-at self body-mask v-walk r@ body-tri = if
+    >r  r@ self body-mask straight? if
         my-at r@ body-at vec-dist  r> drop exit
     then
     probe-path self body-tri my-at r@ body-tri r@ body-at self body-mask path-plan 0> if
@@ -34,7 +40,7 @@ create round-pt 12 allot  fvariable round-a  fvariable round-r  variable sc-who 
 : sees? ( id -- flag )   \ (Npc_SeesChar)
     dup here? 0= if  drop false exit  then  sc-who !
     sc-who @ body-at in-view? 0= if  false exit  then
-    self body-tri my-at sc-who @ body-at sight-mask v-walk  sc-who @ body-tri = if  true exit  then
+    sc-who @ sight-mask straight? if  true exit  then
     my-at sc-who @ body-at vec-heading pi f2/ f+ round-a f!
     sc-who @ body-dims fdrop round-r f!
     9 0 do
@@ -49,7 +55,7 @@ create round-pt 12 allot  fvariable round-a  fvariable round-r  variable sc-who 
     loop  false ;
 : near-straight? ( id F: d reach -- flag )   \ (within reach on foot, and straight there)
     f< 0= if  drop false exit  then
-    >r  self body-tri my-at r@ body-at $40080 v-walk r> body-tri = ;
+    $40080 straight? ;
 : fiona-in-reach? ( -- flag )   \ NPC_FionaInReach (her hiding place: with the hiding, F5)
     fiona sees? if  true exit  then
     fiona-hidden state-flag? if  false exit  then

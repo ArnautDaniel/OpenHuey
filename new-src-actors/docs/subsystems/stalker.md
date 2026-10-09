@@ -40,9 +40,41 @@ doors (open, locked: `door-state`).
 
 ## Rules (from src/game/pursuer.c, debilitas.c)
 
-To be filled in as each part is ported - the modes and their times, the search route, the
-sight and hearing ranges, his pace off screen, the chase's choices and the attacks' numbers.
 Debilitas: model `O_DB0/DB0_000`, motion table $3D89A0, radius 5, height 20, head bone $16.
+
+**Senses** (P1b, `stalker/senses.fs`): he sees 150 ahead, 60 degrees either side, past no wall
+(triangles $40080; $40088 while she hides) to her middle or one of 9 points round her far side;
+he can reach her within 20 on foot (10 half hidden), straight there; Fiona and Hewie are
+measured on foot in turn, a frame each. He hears noises above his threshold (Debilitas 0,
+Daniella 12) through the acoustics actor.
+
+**Modes** (P1c, `stalker/search.fs`, Pursuer_ModesSearching in the room being played): seeing
+her he is after her (mode 0) and his clock restarts (300 frames, hard 540); out of sight it
+runs down, then he searches the room (mode 2, 600 frames' clock, 2..5 stops); his route over
+he waits about (mode 3, 900 frames), then searches again. Heading for her room (1) he searches
+it once in; held off (4) he is after her again when his clock runs out. Coming into the game
+he waits about (3) and walks to one stop at random first. *Simplified so far*: the original's
+mode 3 in the played room waits for a re-search request (+0x16F2) from his behaviours rather
+than its clock; his clock only runs down there off screen.
+
+**The search route** (Pursuer_AddSearchStops, Pursuer_SearchRoute): up to 8 stops; each new one
+is, 60 in 100, the room's next search spot (the room class's table +0x38, generated into
+`stalker/spots.fs` by `tools/searchspots.py`: 146 rooms) while it has more, else a triangle
+at random he may stand on (not both $100000 and $200000). A stop he has no way to is skipped;
+past 8 the route is given up. A stop picked at random gets at most 150 frames' walk.
+
+**At a stop** (Debilitas_AttackTable "searched", $3AFA40): 50 walk on (standing a moment), 20
+look about $1302, 20 $1303, 10 $1305 (his gesture table $3AF6F0), played to its end.
+
+**Walking** (`stalker/moving.fs`): by his animation's root motion; along his way a stride at a
+time (Npc_WalkPathStride: the point a stride on; 45 degrees or more off with 4 or more left he
+only turns, twice his rate), turning 3 degrees a frame; setting off past 80 degrees off he
+turns on the spot ($400 left, $401 right, +2 past 160) until it ends or he faces the way; he
+slows to a stand within 10 of the stop. His walk (Debilitas_StandAnim): after her $200 when
+within 80 on foot and she isn't hiding, else $206; waiting $200; searching or heading $201.
+
+**After her** (mode 0) is, until P2's chase, a stand-in: toward her on foot, his way
+re-planned every 30 frames, standing facing her within 15.
 
 ## Design notes
 
@@ -56,4 +88,6 @@ Debilitas: model `O_DB0/DB0_000`, motion table $3D89A0, radius 5, height 20, hea
 
 ## Status
 
-Page drafted; P1 next.
+P1a (in/out, shown, growl, `stalker-here`), P1b (senses) and P1c (modes, search route,
+walking) done - `tests/stalker/test_stalker.fs` (16). Next: P1d (off screen from room to room,
+coming into the room being played), then P2 with Fiona's F4.
