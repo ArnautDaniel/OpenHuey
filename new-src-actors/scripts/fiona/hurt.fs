@@ -8,13 +8,14 @@ IN: fiona.hurt
 USING: engine game-state actors messages common facts flag-names fiona.state fiona.model fiona.moving fiona.fear ;
 
 defer to-idle ( -- )
+defer grabbed ( -- )   \ (seized outright: fiona.seized)
 : danger-id ( -- id )  s" danger" actor-named ;
 
 \ ---- how she stands for a stalker's attack (Pursuer_FionaState): out of reach while struck
 \ (her reactions, mode 4) or seized; the panic's stages 4 / 5; fleeing (mode $B); panicking
 \ (fear over 90, or the panic attack) ----
 : plight ( -- n )
-    her-mode @ 4 =  her-sub @ $10 = or if  3 exit  then
+    her-mode @ 4 =  her-sub @ $10 = or  stalkers-blind state-flag? or if  3 exit  then
     her-panic-stage @ dup 4 = swap 5 = or if  her-panic-stage @ exit  then
     her-mode @ $B = if  1 exit  then
     her-fear f@ 90e f>  her-doing @ $E = or if  2 exit  then
@@ -27,6 +28,7 @@ defer to-idle ( -- )
     her-tri @ dup 0< if  drop false exit  then  nav-flags $80003 and 0<> ;
 : reaction ( kind -- r | -1 )
     world-held state-flag? if  drop -1 exit  then
+    dup 3 = if  drop  her-mode @ 4 = her-sub @ $10 = and if  -1  else  $10  then  exit  then   \ (seized: even down)
     her-mode @ dup 4 = over $A = or swap 3 = or if  drop -1 exit  then
     case
         1 of  on-step? if  $C  else  $E  then  endof
@@ -110,7 +112,7 @@ fvariable side
 : watch-him ( -- )   \ (her head on him while caught by the arm or from behind)
     her-hit-how @ dup 1 = swap 3 = or striker? and if  1 her-look-on !  her-hit-who @ her-look-who !  then ;
 : after-caught ( -- )  ended? if  to-idle exit  then  watch-him  root-move ;
-: caught ( -- )
+: flinching ( -- )
     settled? if
         $43 0 her-sound
         her-hit-how @ case  4 of $F05 endof  1 of $F02 endof  2 of $F04 endof  >r $F03 r>  endcase
@@ -132,12 +134,13 @@ fvariable side
     f>cell s" panic" actor-named send fright
     -1 her-fall-turn !  0 her-busy-t !
     4 her-mode !  $A her-doing !  dup her-sub !
-    dup $20 <> if  1 danger-id send danger-signal  then   \ (Progress_SetCondBit 1: she's been struck)
+    dup $20 <> over $10 <> and if  1 danger-id send danger-signal  then   \ (Progress_SetCondBit 1: she's been struck)
     her-hit-how @ $8000 and if  0 her-recovery !  then
+    dup $10 = if  drop  fiona-occupied state-flag-set  grabbed  true exit  then
     case
         $20 of
             her-hit-how @ 5 = if  -1 her-hit-who !  ['] thrown her-act !
-            else  $B her-mode !  8 her-doing !  her-hit-how @ grip her-hit-how !  ['] caught her-act !  then
+            else  $B her-mode !  8 her-doing !  her-hit-how @ grip her-hit-how !  ['] flinching her-act !  then
         endof
         $A of  ['] thrown her-act !  endof
         >r ['] knocked her-act ! r>

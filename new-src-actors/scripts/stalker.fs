@@ -3,7 +3,7 @@
 \ (Debilitas: `debilitas`). P1: in the house - placed, standing, growling, telling the danger
 \ he is about; searching the room (stalker/search.fs: his modes, his route of stops, walking).
 IN: stalker
-USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.tables stalker.attack stalker.chase ;
+USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.tables stalker.attack stalker.chase stalker.grab ;
 
 : me ( -- id )  self ;
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
@@ -31,7 +31,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     route-clear  my-path path-clear  3 mode!  0 play-now  stand  pose
     -1 came-by !  -1 making-for !  0 doors-n !  0 door-i !  0 away-search !  0 knock-t !  avoid-clear
     away? 0= if  search-start  then ;
-: go-out ( -- )  0 in-game !  body-off  0 him act.visible l! ;
+: go-out ( -- )  let-her-go  0 in-game !  body-off  0 him act.visible l! ;
 
 \ ---- his frame (Debilitas_Update: so far the growl, his model) and his part in the danger ----
 : growl ( -- )   \ every 90 frames, standing on his own: sound $2A (bank 7)
@@ -64,7 +64,11 @@ behaviour stalking
   on heard ( loud room tri door source -- )  2drop hear ;
   on heard-nothing ( -- )  heard-none ;
   on door-held ( room exit -- )  nip swing-open ;
-  on hit-taken ( kind -- )  struck-home ;              \ (his blow struck her: his cry)
+  on hit-taken ( kind -- )  struck-home ;
+  on seize-taken ( -- )   \ (her answers to his taking her; one he isn't waiting for: let go)
+      leading @ if  1 answer !  else  fiona send unhand  then ;
+  on seize-refused ( -- )  2 answer ! ;
+  on broke-free ( -- )  3 answer ! ;              \ (his blow struck her: his cry)
   on fiona-plight ( state -- )  her-plight ! ;
   on panic ( stage level -- )  drop her-stage ! ;     \ (the door he came in by: swung open)
   on door-refused ( room exit -- )  2drop ;            \ (it won't open for him: he gives up on it - with P3's doors)

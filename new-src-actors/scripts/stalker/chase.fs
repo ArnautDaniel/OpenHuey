@@ -19,7 +19,8 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
     fiona body-at my-at vec-heading fiona body-yaw f- angle-wrap fabs pi f2/ f<= ;
 
 \ ---- what he does (the actions) ----
-: act! ( xt id -- )  chase-act !  act-xt !  0 step-done !  0 step-t ! ;
+: let-her-go ( -- )  leading @ if  0 leading !  fiona send unhand  then ;
+: act! ( xt id -- )  let-her-go  chase-act !  act-xt !  0 step-done !  0 step-t ! ;
 : watching ( -- )  freeze-t @ 0= if  root-move  then ;      \ (Pursuer_Move180)
 : stand-watch ( -- )  0 play  ['] watching 1 act! ;           \ 1: standing (Pursuer_Move17C)
 ' stand-watch is to-stand
@@ -64,6 +65,7 @@ create rd-was 12 allot
 
 \ ---- his tables (Pursuer_PickFromTable): a roll against the rows' running percentages ----
 defer pick-attack ( -- )
+defer take-her ( type -- )   defer lunge ( -- )   defer grab-dog ( -- )   \ (stalker.grab)
 : row ( table -- addr )   \ (the row the roll falls in)
     rnd 100e f*  begin  dup 2 cells + f@ fover f< while  /row +  repeat  fdrop ;
 : do-row ( kind arg -- )
@@ -72,10 +74,10 @@ defer pick-attack ( -- )
         $13 of  combo-start  endof
         $17 of  gesture!  endof   $18 of  gesture!  endof   $19 of  gesture!  endof   2 of  gesture!  endof
         $1A of  drop round-her  endof   $1B of  drop round-her  endof
-        \ $14 / $15: his hand on her (led away) when her floor is free for him, else his attack
-        \ tables 6 / 7 (Pursuer_PickAttack) - the hand with the grabs (P2b), the tables meanwhile
-        $14 of  drop pick-attack  endof   $15 of  drop pick-attack  endof
-        \ $1003 his grab, $1002 his lunge: with the grabs (P2b)
+        \ $14 / $15: taking her (by the hand, walking: stalker/grab.fs), $1002 his lunge,
+        \ $1003 his grab (at Hewie)
+        $14 of  drop 6 take-her  endof   $15 of  drop 8 take-her  endof
+        $1002 of  drop lunge  endof   $1003 of  drop grab-dog  endof
         >r drop stand-watch r>
     endcase ;
 : pick ( situation -- )  hard? table row  dup @ swap cell+ @ do-row ;

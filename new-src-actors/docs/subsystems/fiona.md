@@ -16,7 +16,7 @@ built in phases.
 | **F1** | Her body and model; the controls; standing, walking, running, turning, resting, idle looks; root motion on the floor; footsteps (sound and noise); going through exits and doors (her door animations, locked doors); the camera follows her | rooms, doors, camera, acoustics |
 | F2 | Fear and panic: the meter, calming down, the panic stages, panic runs and stumbles, exhaustion, recovery | danger |
 | F3 | Hewie: calling, gestures, commands, praise and scolding | hewie |
-| F4 | Defending: kick, shove, strike, slamming doors on someone. Reactions: knocked down, thrown, caught (F4a, done), grabbed, led away, dragged, shaking free (F4b), falls | stalkers |
+| F4 | Defending: kick, shove, strike, slamming doors on someone. Reactions: knocked down, thrown, caught (F4a, done), grabbed, led away, dragged, shaking free (F4b, done), falls | stalkers |
 | F5 | The story's moves (walk to a spot, a path, turn, an animation, hold), ladders, pushing, points of interest, items | story, items |
 
 The debug walker (`scripts/walker.fs`) stood in for her until F1 was done.
@@ -187,3 +187,28 @@ behind, $F05), then free. Each takes its fright to her panic; a blow tells the d
 struck (`danger-signal` 1); a stumble resets her recovery.
 Her costume 1 (the slip) lacks these animations - they come with the story's second motion set
 (event $A7); her clothes (costume 0) have them.
+
+## F4b: seized (`scripts/fiona/seized.fs`)
+
+| Message | Stack | Direction | Meaning |
+|---|---|---|---|
+| `seize` | `( type -- )` | in (a stalker) | Taken to the sender's side: 6 by the hand, 8 walking. |
+| `seize-taken` / `seize-refused` | | out, to the sender | Her answer. |
+| `broke-free` | | out, to him | She shook free. |
+| `unhand` | | in | He no longer leads her. |
+| `hit` kind 3 | | in | Seized outright. |
+
+Fiona_JointAction kind 1: only while free (mode 0), the world not held; her spot by him is his
+place plus kFionaMeetOffsets ($3B2460, by her costume and the type) turned by his heading, at
+its heading - reachable straight from him and from her, her floor free ($80001), a way there
+(in her own triangle: straight). Led there (her gasp $43): by the hand $1400, walking $1500 - a
+fifth of the way and of the turn each step while it fades in; then on the spot. By the hand:
+at his hand, then dragged - $1401 again and again; she shakes (Fiona_Shakes: the stick swung
+past 120 degrees or out from rest, and each button but Start), each drag letting ten more
+count; past her panic's stage's count (8 12 23 35 70, calming 0) she breaks away ($1403, he's
+told), else the sixth drag she's dragged off ($1404) - at its end the game's over. Walking:
+carried off ($1500's end). Seized outright (kind 3, Fiona_StateGrabbed): rising from a fall she
+is caught as she rises ($1503 / $B03), else held ($1100; pulled back - $1101 - when 17 ahead of her
+is free); her cry $41; at its end the game's over. He lets go (`unhand`, or gone): she pulls
+free ($F02). The game's over is the `caught` state flag (once; not with `capture-no-end`);
+`fiona-occupied` is set while she's held or dragged off.

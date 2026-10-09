@@ -71,6 +71,13 @@ message hit ( kind how fright -- )           \ from the sender: kind 1 / 2 a blo
                                              \ hold (caught: how is the grip, 1 an arm .. 4; 5 thrown off),
                                              \ $8000 in how a stumble; fright (a float cell) for her panic
 message hit-taken ( kind -- )                \ the answer: it struck home (none: it didn't)
+\ ---- seized (F4b, the stalkers' P2b: Relation_Request kind 9, Fiona_JointAction kind 1) ----
+message seize ( type -- )                    \ to Fiona: taken to the sender's side - 6 by the hand (dragged),
+                                             \ 8 walking (carried off)
+message seize-taken ( -- )                   \ her answer: she's being led
+message seize-refused ( -- )                 \ her answer: no spot by him she can be led to (or she isn't free)
+message broke-free ( -- )                    \ to the stalker leading her: she shook free
+message unhand ( -- )                        \ to Fiona: the stalker leading her no longer does
 
 \ ---- Hewie (docs/subsystems/hewie.md) ----
 message join-fiona ( -- )                    \ he comes into the game at her heel (the story; the console)

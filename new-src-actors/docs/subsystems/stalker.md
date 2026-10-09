@@ -108,8 +108,8 @@ he taunts or picks again. Within 24 - and within the ground he gains in 5 frames
 facing her within 20 degrees on her floor, and not held off, he attacks: his table for how she
 stands (`fiona-plight`: 0 calm, 1 fleeing, 2 panicking, 4 / 5 the panic's stages; 3 out of
 reach - none). Rows: a combo ($13), a taunt ($17..$19: his gesture table), round her ($1A /
-$1B: 5 degrees a step at his distance, the way she isn't facing; 30 of it or 120 frames), his
-tables 6 / 7 ($14 / $15 - taking her by the hand comes with P2b). After a combo his table 12
+$1B: 5 degrees a step at his distance, the way she isn't facing; 30 of it or 120 frames),
+taking her ($14 by the hand, $15 walking), his lunge ($1002), his grab ($1003). After a combo his table 12
 (it struck her) or 13 (taunts), held off 90 frames if it struck her, else 30.
 
 **The attacks** (`stalker/attack.fs`): a combo is up to 4 moves; each needs her within 50 (or
@@ -120,6 +120,19 @@ stumble by its chance, its fright); a wall in the way: a thud ($2B), the combo o
 half its fright still reaches her (Pursuer_Threat: x 0.75 each 10 off, none past 40). A hold
 ($2300..$2302: kind 6) catches whoever is within its reach of him at its key (the grip: its
 bone). Struck home (`hit-taken`): his cry ($B / $C / $D, bank 7), held still 5 frames.
+
+**Taking her** (P2b, `stalker/grab.fs`; Pursuer_StateFaceFiona / StateWalkOn, Pursuer_CloseOnFiona):
+her floor not free for him (flags $80001) - his attack tables 6 / 7 instead (7 from the panic's
+stage 4). Else he closes on her; within 20, facing her within 20 degrees, he asks her (`seize`:
+6 by the hand, 8 walking) - she may not be had (out of reach, the stalkers blind): his table for
+being near her (3); given up after 120 frames. Refused (`seize-refused`): his attack tables.
+Taken by the hand: his taunting hold - $1900, then $1901 again and again, a fright to her
+each time (10 the first, 5 after); she breaks free (`broke-free`) - he lets go ($1903, held off
+90); the sixth - he holds on ($1904) while she's dragged off. Taken walking: his grab ($1A01),
+holding on while she's carried off. Leaving any of it he lets her go (`unhand`).
+His lunge ($1306): in the panic's stage 5 on into his seize (combo 8: $E05, kind 3 - she's
+seized outright). His grab ($E06): at its key, Hewie by his hand (bone $1E, within 5) is held
+(a `hit` of kind 6, from behind); over at its end, losing her, or her 60 off.
 
 ## Design notes
 
@@ -135,6 +148,9 @@ bone). Struck home (`hit-taken`): his cry ($B / $C / $D, bank 7), held still 5 f
 
 P1 done: P1a (in/out, shown, growl, `stalker-here`), P1b (senses), P1c (modes, search route,
 walking), P1d (out of sight from room to room, knocking, coming in). P2a done: the chase and his
-attacks, with Fiona's F4a reactions. `tests/stalker/test_stalker.fs` (33). Later parts kept with
+attacks, with Fiona's F4a reactions. P2b done: taking her (by the hand, walking), his lunge
+and grab, her being led, dragged, shaking free, seized outright, with Fiona's F4b.
+`tests/stalker/test_stalker.fs` (42). Later parts kept with
 their phases: his footsteps heard through the walls and the rooms a stalker keeps to (+0x314:
-P4), the knock frightening her (with her fear's sounds). Next: P2b (the grabs) with F4b.
+P4), the knock frightening her (with her fear's sounds), Hewie held (H3). Next: P2c (the game
+over: the `caught` flag set by her).

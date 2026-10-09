@@ -1,7 +1,7 @@
 \ The stalkers, P1: Debilitas in the house (docs/subsystems/stalker.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/stalker/test_stalker.fs
 IN: test-stalker
-USING: tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase fiona.state ;
+USING: tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names ;
 fvariable dx  fvariable dy  fvariable dz  fvariable dyaw
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
@@ -100,12 +100,13 @@ debug:debilitas-out  2 frames
 testing after her (P2a): seeing her he chases her; his blows knock her down, a hard one throws her, a hold catches her
 : hers ( xt -- x )  game:fiona enter  execute  leave-actor ;
 0 game:fiona send costume  front-garden-2 room!  10 frames
-: face-off ( -- )   \ (him on the open spot facing 340 degrees, her 10 ahead facing him)
-    140.64e her-y -217.33e 0e tp-facing  2 frames
+: blind ( on -- )  if  stalkers-blind state-flag-set  else  stalkers-blind state-flag-clear  then ;
+: face-off ( -- )   \ (him on the open spot facing 340 degrees, her 10 ahead facing him; his attacks held meanwhile)
+    true blind  140.64e her-y -217.33e 0e tp-facing  2 frames
     s" fiona" actor-named body-tri  -500e her-y -500e tp  2 frames  debug:debilitas-tri  1 frames
     [: 340e deg>rad body-turn ;] his  1 frames
     game:debilitas body-pos dz f! dy f! dx f!
-    340e deg>rad fsin 10e f* dx f@ f+  dy f@  340e deg>rad fcos 10e f* dz f@ f+  160e tp-facing  3 frames ;
+    340e deg>rad fsin 10e f* dx f@ f+  dy f@  340e deg>rad fcos 10e f* dz f@ f+  160e tp-facing  3 frames  false blind  2 frames ;
 face-off
 T{ [: chasing? my-mode @ ;] his -> -1 0 }T
 : struck ( combo -- )  [: combo-start ;] his ;
@@ -124,5 +125,39 @@ testing a blow while she is down isn't taken
 300 up drop  face-off  0 struck  60 reacted drop
 T{ [: 2 0 10e f>cell stalker.senses:fiona send hit  0 took ! ;] his  3 frames  [: took @ ;] his -> 0 }T
 debug:debilitas-out  2 frames
+
+testing seized (P2b): taken by the hand - led to his side, dragged; six drags and she's dragged off (the game's end)
+variable take-type
+: take ( type -- )   \ (face to face; then he takes her)
+    take-type !  face-off  [: chase-now  take-type @ take-her ;] his ;
+: led? ( -- flag )  [: her-led @ ;] hers ;
+: soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
+300 up drop  6 take
+T{ ' led? 60 soon  [: [: leading @ -1 = ;] his ;] 5 soon  [: her-sub @ ;] hers -> -1 -1 9 }T
+T{ [: caught state-flag? ;] 1500 soon  [: taunts @ ;] his  [: her-drags @ ;] hers -> -1 6 6 }T
+caught state-flag-clear  debug:debilitas-out  10 frames  [: free! 0 her-mode ! ;] hers
+testing ... shaking free: she breaks away, he lets go
+6 take  ' led? 60 soon drop
+: dragging? ( -- flag )  [: anim@ $1401 = ;] hers ;
+' dragging? 300 soon drop
+: shake ( n -- )  0 ?do  cross debug:press  game-tick  loop ;   \ (a press, then up)
+12 shake  2 frames  true blind   \ (no taking her again meanwhile)
+T{ [: her-free @ ;] hers  [: answer @ ;] his -> -1 3 }T
+T{ [: [: her-mode @ 0= ;] hers ;] 300 soon -> -1 }T
+T{ [: [: leading @ 0= ;] his ;] 200 soon  caught state-flag? -> -1 0 }T
+false blind
+testing carried off walking: at its end the game's over
+8 take
+T{ ' led? 60 soon  [: caught state-flag? ;] 600 soon -> -1 -1 }T
+caught state-flag-clear  debug:debilitas-out  10 frames  [: free! 0 her-mode ! ;] hers
+testing seized outright (a kind 3 hold): held, at its key the game's over
+s" fiona" actor-named body-tri debug:debilitas-tri  2 frames
+T{ [: 3 0 30e f>cell stalker.senses:fiona send hit ;] his  3 frames  her-sub? -> $10 }T
+T{ [: caught state-flag? ;] 300 soon -> -1 }T
+caught state-flag-clear  fiona-occupied state-flag-clear  debug:debilitas-out  10 frames  [: 0 her-mode ! ;] hers
+testing she isn't free: refused - his attack tables instead
+face-off  [: 4 her-mode ! ;] hers  [: chase-now 6 take-her ;] his  10 frames
+T{ [: leading @  chase-act @ $14 = ;] his -> 0 0 }T
+[: 0 her-mode ! ;] hers  debug:debilitas-out  2 frames
 
 test-summary

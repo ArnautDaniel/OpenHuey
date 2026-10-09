@@ -52,6 +52,15 @@ state: fiona-state
   \ struck or caught (F4: fiona/hurt.fs): by whom (+0x100: an actor, -1 nobody), the blow's
   \ detail (the grip of a hold, $8000 a stumble), thrown backwards
   cell field her-hit-who  cell field her-hit-how  cell field her-throw-back
+  \ led away by a stalker (F4b: fiona/seized.fs): led on (till `let-go`); the spot by him
+  \ (+0x1AD6F0 its triangle, +0x1AD700, +0x1AD6F4 its heading), the step and turn to it; the
+  \ drags, the shakes (Fiona_Shakes: the stick's last way, out from rest), broken free; her cry
+  \ and the game's end marked once
+  cell field her-led  cell field her-led-tri  12 field her-led-at  1 floats field her-led-face
+  1 floats field her-led-step  1 floats field her-led-turn
+  cell field her-drags  cell field her-shakes  cell field her-free
+  1 floats field her-shake-a  cell field her-shake-rest
+  cell field her-cried  cell field her-ended
   \ her footsteps
   cell field her-step-l   cell field her-step-r   cell field her-steps
   \ what she is doing, run each frame (an xt: the original's state), and its part

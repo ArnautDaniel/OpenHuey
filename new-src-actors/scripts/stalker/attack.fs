@@ -60,7 +60,7 @@ defer to-stand ( -- )
 defer next-move ( -- )
 \ Pursuer_StateAttackStep: the move to its end, turning to her with it; at its key the blow
 : strike ( -- )
-    world-held state-flag? if  exit  then
+    world-held state-flag?  stalkers-blind state-flag? or if  exit  then
     my-model @ mv-bone bone-pos blow-at vec!
     anim @ 0<>  blow-at walled? and if   \ (into a wall: his stand, a thud)
         0 play-now  $2B 7 sound  combo-over exit

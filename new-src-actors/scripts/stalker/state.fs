@@ -68,5 +68,8 @@ state: stalker-state
   cell field cry  cell field hold-off  cell field freeze-t
   cell field her-plight  cell field her-stage
   cell field round-dir  1 floats field round-gone
+  \ taking her (stalker/grab.fs): leading her (his mode 8 while she's his; 1 asked, -1 holding), how (6 by the hand,
+  \ 8 walking), her answer (0 none yet, 1 taken, 2 refused, 3 broke free), his taunts so far
+  cell field leading  cell field lead-type  cell field answer  cell field taunts
   cell field gesture            \ the look about he plays at a stop (-1: none)
 end-state
