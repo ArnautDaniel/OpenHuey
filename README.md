@@ -2,6 +2,17 @@
 # OpenHuey
 <img width="300" height="400" alt="h" src="https://github.com/user-attachments/assets/224650eb-86ee-4886-8f7a-74fb6e9bcf45" />
 
+Another kind of Hewie
+
+This started with me really freaking wanting the Hewie model from Haunting Grounds because it's one of my favorite games.  It finally took me just getting Claude to run a decompile, about halfway through I had it make a model viewer and had my model but decided to keep going.  
+
+This project covers 99% of the disassembly for Haunting Grounds converted to C.  The 1% are specific graphics functions that were converted to C when I had it reimplement the graphics calls on OpenGL instead of trying to very dumbly write a PS2 emulator (which it tried to do!)  It's probably a little early for primetime.
+
+In new-src-actors I'm working on a more readable codebase conversion using Forth as the scripting language and a sort of actor philosophy for running the game objects.  C is used for the "engine" and renderer. It seems to work pretty well but it's not complete.  The plan is to take that more readable conversion and then hand write the final codebase (Or at least the bits that wouldn't be considered boilerplate)
+
+My goal is to get a working Haunting Grounds on PC with some modern enhancements (maybe widescreen if it doesnt break everything visually, old games liked to hide things in the sides sometimes).  Secondly, I think it'd be fun to have a scriptable/modable version of the game.  Maybe you want to try stalker royale or have 10 hewies for some crazy reason.
+
+------------- AI BELOW ------------------
 OpenHuey is a project to understand, preserve and rebuild **Haunting Ground** (Capcom, PS2, 2005,
 US release `SLUS_210.75`) for modern PCs. It has three parts:
 
