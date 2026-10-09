@@ -264,6 +264,13 @@ USING: room-names ;
         0 of  s" EV0005" endof
         1 of  s" EV0005\EV0005.SFD" endof
         >r s" " r>  endcase  endof
+    castle-2f-5 of  case
+        8 of  s" O_FIN_M\FIN_101.MTN" endof
+        9 of  s" O_HEW\HEW_101.MTN" endof
+        10 of  s" O_DNL\DNL_101.MTN" endof
+        12 of  s" EV0015" endof
+        13 of  s" EV0015\EV0015.SFD" endof
+        >r s" " r>  endcase  endof
     off-map-33 of  case
         0 of  s" EV1034" endof
         1 of  s" EV1034\EV1034.SFD" endof
@@ -279,6 +286,7 @@ USING: room-names ;
         3 of  s" EV0031\EV0031.SFD" endof
         4 of  s" EV0032" endof
         5 of  s" EV0032\EV0032.SFD" endof
+        8 of  s" O_HND\HND_000.PCK" endof
         >r s" " r>  endcase  endof
     off-map-36 of  case
         0 of  s" EV1031" endof
@@ -687,6 +695,7 @@ USING: room-names ;
         8 of  s" minihashi1" endof
         9 of  s" hashiyoko1" endof
         10 of  s" hashi1" endof
+        12 of  s" O_DNT\DNT_000.PCK" endof
         >r s" " r>  endcase  endof
     off-map-d6 of  case
         0 of  s" uekomi1" endof

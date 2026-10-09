@@ -16,6 +16,7 @@ pause-spawn constant pause
 fiona-spawn constant fiona
 hewie-spawn constant hewie
 debilitas-spawn constant debilitas
+daniella-spawn constant daniella
 story-spawn constant story
 label-spawn constant room-label   \ (debug: the room's name top right)
 

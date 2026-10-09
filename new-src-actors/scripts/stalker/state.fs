@@ -13,4 +13,8 @@ state: stalker-state
   cell field doing              \ +0x1788: his action (0x1300, 0x1600...: the growl's exceptions)
   cell field my-move-mode       \ +0xF8: how he moves (0 on his own)
   cell field fiona-id  cell field hewie-id
+  cell field my-kind            \ +0x153C: which character (2 Debilitas, 3 Daniella: the cutscenes' cast id)
+  cell field growls             \ his frame growls (Debilitas_Update; Daniella's doesn't)
+  cell field loaded             \ in the story's character slot 2 (partner-load .. char-unload)
+  32 field my-file              \ its model's files (a counted name: its sounds too, bank 7 while loaded)
 end-state
