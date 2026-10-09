@@ -57,8 +57,9 @@ out.append(': table ( situation hard? -- addr )  if  17 +  then  cells tables + 
 out.append('3 cells constant /row   \\ (kind, argument, percentage: a cell each)')
 out.append('')
 out.append('\\ his moves: animation, bone, second bone (-1 none), reach, kind (2 a blow, 4 a hard one,')
-out.append('\\ 3 a seize, 6 a hold), damage, threat, stumble chance, turns with it, cry (-1 none)')
-out.append('10 cells constant /move')
+out.append('\\ 3 a seize, 6 a hold), damage, threat, stumble chance, turns with it, cry (-1 none),')
+out.append('\\ unshaken (a shove doesn\'t make him flinch during it)')
+out.append('11 cells constant /move')
 rows = []
 for m in range(NMOVES):
     b = MOVES + 0x24 * m
@@ -66,9 +67,9 @@ for m in range(NMOVES):
     kind, = rd(b + 0x10, '<B')
     dmg, = rd(b + 0x12, '<h')
     thr, stum = rd(b + 0x14, '<ff')
-    turn, = rd(b + 0x1C, '<B')
+    turn, held = rd(b + 0x1C, '<BB')
     cry, = rd(b + 0x20, '<i')
-    rows.append('    $%X , $%X , %d , %s f, %d , %d , %s f, %s f, %d , %s ,' % (anim, bone, bone2, f(reach), kind, dmg, f(thr), f(stum), turn, ('$%X' % cry) if cry >= 0 else '-1'))
+    rows.append('    $%X , $%X , %d , %s f, %d , %d , %s f, %s f, %d , %s ,' % (anim, bone, bone2, f(reach), kind, dmg, f(thr), f(stum), turn, ('$%X' % cry) if cry >= 0 else '-1') + ' %d ,' % held)
 out.append('create moves\n' + '\n'.join(rows))
 out.append('create combos  ' + '  '.join(' '.join('%d ,' % x for x in rd(COMBOS + 4 * c, '<4b')) for c in range(NCOMBOS)))
 out.append('create gestures  ' + '  '.join('$%X , %d ,' % rd(GESTURES + 8 * g, '<iI') for g in range(NGESTURES)))

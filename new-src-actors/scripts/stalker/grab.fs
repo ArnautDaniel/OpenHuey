@@ -52,16 +52,16 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
     d-her 20e f<  d-her f0< 0= and
     fiona body-at heading-to yaw f- angle-wrap fabs 20e deg>rad f< and if
         may-take? if
-            0 answer !  1 leading !  lead-type @ fiona send seize  0 play   \ (asked: let go if he moves on)
+            0 answer !  1 leading !  lead-type @ fiona send seize  stand-anim play   \ (asked: let go if he moves on)
             ['] awaiting act-xt !  exit
         then
-        3 pick exit
+        3 choose exit
     then
     fiona body-at turn-rate turn-to fdrop
     fiona self body-mask straight? if  fiona body-at step-toward  else  walk-stride drop  then ;
 :noname ( type -- )
     her-floor-free? 0= if  drop pick-attack exit  then
-    dup lead-type !  6 = if  0  else  $200  then  play
+    dup lead-type !  6 = if  stand-anim  else  walk-fast  then  play
     fiona body-tri dup 0< 0= if  fiona body-at plan drop  else  drop  then
     ['] closing $14 act! ; is take-her
 

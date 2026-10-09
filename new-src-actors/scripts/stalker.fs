@@ -3,7 +3,7 @@
 \ (Debilitas: `debilitas`). P1: in the house - placed, standing, growling, telling the danger
 \ he is about; searching the room (stalker/search.fs: his modes, his route of stops, walking).
 IN: stalker
-USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.tables stalker.attack stalker.chase stalker.grab ;
+USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.tables stalker.attack stalker.chase stalker.grab stalker.struck ;
 
 : me ( -- id )  self ;
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
@@ -28,6 +28,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     else  >r -1 0e 0e 0e body-place r> drop  then                   \ (out of sight: in that room, nowhere yet)
     -1 in-game !  0 growl-t !  0 my-move-mode !  -1 anim !
     hp @ 0> 0= if  hp-max @ hp !  then
+    0 cond !  0 reeling !  0 hits !
     route-clear  my-path path-clear  3 mode!  0 play-now  stand  pose
     -1 came-by !  -1 making-for !  0 doors-n !  0 door-i !  0 away-search !  0 knock-t !  avoid-clear
     away? 0= if  search-start  then ;
@@ -40,7 +41,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     my-move-mode @ 0= anim @ $1300 <> and anim @ $1600 <> and if  $2A 7 sound  then ;
 : frame ( -- )
     away? if  away  pose  my-room 0 my-mode @ 0= 1 and danger-id send stalker-here  exit  then
-    thaw  senses  modes
+    thaw  hurt-down  senses  modes
     step @ ?dup if  execute  then  search
     played? growls @ and if  growl  then
     pose
@@ -65,6 +66,7 @@ behaviour stalking
   on heard-nothing ( -- )  heard-none ;
   on door-held ( room exit -- )  nip swing-open ;
   on hit-taken ( kind -- )  struck-home ;
+  on blow ( kind damage how -- )  sender striker !  struck  sender send blow-taken ;   \ (her shove or kick)
   on seize-taken ( -- )   \ (her answers to his taking her; one he isn't waiting for: let go)
       leading @ if  1 answer !  else  fiona send unhand  then ;
   on seize-refused ( -- )  2 answer ! ;

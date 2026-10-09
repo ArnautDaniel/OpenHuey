@@ -61,6 +61,9 @@ state: fiona-state
   cell field her-drags  cell field her-shakes  cell field her-free
   1 floats field her-shake-a  cell field her-shake-rest
   cell field her-cried  cell field her-ended
+  \ defending (F4: fiona/defend.fs): whom her blow struck so far (1 the stalker, 2 Hewie), held
+  \ still a moment by it (+0x14D0)
+  cell field her-struck  cell field her-recoil
   \ her footsteps
   cell field her-step-l   cell field her-step-r   cell field her-steps
   \ what she is doing, run each frame (an xt: the original's state), and its part

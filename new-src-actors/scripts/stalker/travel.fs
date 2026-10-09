@@ -74,7 +74,7 @@ create in-at 12 allot  create out-at 12 allot
     random-tri dup 0< if  drop fiona body-tri  then
     dup 0< if  drop exit  then  room-id swap dup tri-center body-place ;
 : in-play ( -- )   \ in the room being played now: his search there, or after her
-    0 away-search !  -1 anim !  0 play-now  my-path path-clear
+    0 away-search !  -1 anim !  stand-anim play-now  my-path path-clear
     my-mode @ 0= if  chase-start exit  then
     my-mode @ 1 = if  2 mode!  then
     search-again ;

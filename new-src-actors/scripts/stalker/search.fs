@@ -46,27 +46,28 @@ variable spots  variable spots-n  variable spots-used
         0 of  after-t  endof
         2 of  600 mode-t !  endof
         3 of  900 mode-t !  endof
+        4 of  900 mode-t !  endof   \ (held off: Debilitas 900)
     endcase ;
 
 \ ---- the steps (one runs each frame: `step`) ----
 : step! ( xt -- )  step !  0 step-done !  0 step-t ! ;
 : stand ( -- )   \ (vtable +0x320: Debilitas stands with 0)
-    0 play  ['] noop step! ;
+    stand-anim play  ['] noop step! ;
 \ his walk for his mode (Debilitas_StandAnim, vtable +0x128): after her, close (80 on foot) and
 \ she isn't hiding, $200, else $206; waiting $200; searching or heading for her room $201
 : walk-anim ( -- anim )
     my-mode @ case
-        0 of  d-fiona f@ 80e f<= d-fiona f@ f0< 0= and  fiona-hidden state-flag? 0= and if  $200  else  $206  then  endof
-        3 of  $200  endof
-        >r $201 r>
+        0 of  d-fiona f@ 80e f<= d-fiona f@ f0< 0= and  fiona-hidden state-flag? 0= and if  walk-fast  else  walk-slow  then  endof
+        3 of  walk-fast  endof
+        >r walk-slow r>
     endcase ;
 
 \ Pursuer_CloseInGoal: along his way; slowed to a stand within 10 of the goal; over once the
 \ stand has faded in (a stop picked at random: at most 150 frames' walk)
 : walking ( -- )
     walk-stride drop
-    way-left 10e f<  anim @ $201 = and if  0 play  then
-    anim @ 0= settled? and  my-path path-left? 0= or if  -1 step-done !  then ;
+    way-left 10e f<  anim @ walk-slow = and if  stand-anim play  then
+    anim @ stand-anim = settled? and  my-path path-left? 0= or if  -1 step-done !  then ;
 \ the turn on the spot: turned by it until it ends or he faces the way, then his walk
 create to-at 12 allot
 : turning ( -- )
@@ -79,7 +80,7 @@ create to-at 12 allot
 : set-off ( -- )
     0.1e my-path my-at path-ahead drop  to-at ahead vec-copy
     to-at way-to dup $FF = if  drop walk-anim play  ['] walking step!  exit  then
-    $400 + play-now  ['] turning step! ;
+    turn-base + play-now  ['] turning step! ;
 
 \ the look about at a stop (Pursuer_StateWalkGesture: Debilitas_AttackTable's gestures $1302,
 \ $1303, $1305 from his gesture table) to its end; or standing a moment (Pursuer_WalkAside)
@@ -87,7 +88,7 @@ create to-at 12 allot
 : standing ( -- )   1 step-t +!  settled? step-t @ 30 > and if  -1 step-done !  then ;
 : searched ( -- )   \ (situation $10: 50 walk on, 20 $1302, 20 $1303, 10 $1305)
     rnd 100e f*
-    fdup 50e f< if  fdrop -1 gesture !  0 play  ['] standing step!  exit  then
+    fdup 50e f< if  fdrop -1 gesture !  stand-anim play  ['] standing step!  exit  then
     fdup 70e f< if  fdrop $1302  else  90e f< if  $1303  else  $1305  then  then
     dup gesture !  play-now  ['] gesturing step! ;
 
@@ -130,7 +131,7 @@ create to-at 12 allot
 : after-her ( -- )
     -1 step-t +!  step-t @ 0> if  exit  then  30 step-t !
     fiona body-tri dup 0< if  drop exit  then  fiona body-at plan 0> 0= if  exit  then
-    d-fiona f@ 15e f< d-fiona f@ f0< 0= and if  0 play  my-path path-clear  else  walk-anim play  then ;
+    d-fiona f@ 15e f< d-fiona f@ f0< 0= and if  stand-anim play  my-path path-clear  else  walk-anim play  then ;
 : chase-step ( -- )   \ (the step while after her)
     my-path path-left? if  walk-stride drop  else  fiona body-at turn-rate turn-to fdrop  then
     after-her ;
@@ -148,7 +149,8 @@ defer lost-her ( -- )   ' chase-start is lost-her
 : search-again ( -- )  2 mode!  route-clear  search-stops add-stops  search-start ;
 : modes ( -- )
     here-played? 0= if  exit  then
-    sees-fiona @ if
+    reeling @ if  exit  then   \ (struck: his reaction first)
+    sees-fiona @  my-mode @ 4 <> and if   \ (held off: going away, not after her)
         my-mode @ if  0 mode!  route-clear  then
         chasing? 0= if  chase-begin  then  after-t exit
     then

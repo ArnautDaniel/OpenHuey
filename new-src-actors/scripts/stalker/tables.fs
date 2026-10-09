@@ -42,23 +42,24 @@ create tables  table-0 , table-1 , table-2 , table-3 , table-4 , table-5 , table
 3 cells constant /row   \ (kind, argument, percentage: a cell each)
 
 \ his moves: animation, bone, second bone (-1 none), reach, kind (2 a blow, 4 a hard one,
-\ 3 a seize, 6 a hold), damage, threat, stumble chance, turns with it, cry (-1 none)
-10 cells constant /move
+\ 3 a seize, 6 a hold), damage, threat, stumble chance, turns with it, cry (-1 none),
+\ unshaken (a shove doesn't make him flinch during it)
+11 cells constant /move
 create moves
-    $E00 , $12 , 20 , 5e f, 2 , 15 , 10e f, 0e f, 1 , $B ,
-    $E01 , $1C , 30 , 5e f, 2 , 30 , 15e f, 0e f, 1 , $B ,
-    $E02 , $12 , 20 , 5e f, 4 , 30 , 25e f, 50e f, 1 , $C ,
-    $E03 , $9 , 7 , 5e f, 4 , 15 , 15e f, 50e f, 1 , $C ,
-    $205 , $17 , -1 , 5e f, 4 , 50 , 50e f, 100e f, 1 , $C ,
-    $2300 , $2 , -1 , 20e f, 6 , 0 , 15e f, 0e f, 0 , -1 ,
-    $2301 , $2 , -1 , 25e f, 6 , 0 , 20e f, 0e f, 0 , -1 ,
-    $2302 , $1 , -1 , 20e f, 6 , 0 , 15e f, 0e f, 0 , -1 ,
-    $1306 , $1 , -1 , 0e f, 6 , 0 , 0e f, 0e f, 0 , -1 ,
-    $1305 , $1 , -1 , 0e f, 6 , 0 , 0e f, 0e f, 0 , -1 ,
-    $1A00 , $1 , -1 , 0e f, 6 , 0 , 0e f, 0e f, 0 , -1 ,
-    $E04 , $1E , 28 , 5e f, 3 , 50 , 30e f, 0e f, 0 , $D ,
-    $E05 , $1E , 20 , 5e f, 3 , 50 , 30e f, 0e f, 0 , $D ,
-    $1702 , $9 , 7 , 5e f, 4 , 15 , 20e f, 30e f, 0 , -1 ,
+    $E00 , $12 , 20 , 5e f, 2 , 15 , 10e f, 0e f, 1 , $B , 1 ,
+    $E01 , $1C , 30 , 5e f, 2 , 30 , 15e f, 0e f, 1 , $B , 0 ,
+    $E02 , $12 , 20 , 5e f, 4 , 30 , 25e f, 50e f, 1 , $C , 1 ,
+    $E03 , $9 , 7 , 5e f, 4 , 15 , 15e f, 50e f, 1 , $C , 1 ,
+    $205 , $17 , -1 , 5e f, 4 , 50 , 50e f, 100e f, 1 , $C , 1 ,
+    $2300 , $2 , -1 , 20e f, 6 , 0 , 15e f, 0e f, 0 , -1 , 0 ,
+    $2301 , $2 , -1 , 25e f, 6 , 0 , 20e f, 0e f, 0 , -1 , 0 ,
+    $2302 , $1 , -1 , 20e f, 6 , 0 , 15e f, 0e f, 0 , -1 , 0 ,
+    $1306 , $1 , -1 , 0e f, 6 , 0 , 0e f, 0e f, 0 , -1 , 0 ,
+    $1305 , $1 , -1 , 0e f, 6 , 0 , 0e f, 0e f, 0 , -1 , 0 ,
+    $1A00 , $1 , -1 , 0e f, 6 , 0 , 0e f, 0e f, 0 , -1 , 0 ,
+    $E04 , $1E , 28 , 5e f, 3 , 50 , 30e f, 0e f, 0 , $D , 0 ,
+    $E05 , $1E , 20 , 5e f, 3 , 50 , 30e f, 0e f, 0 , $D , 0 ,
+    $1702 , $9 , 7 , 5e f, 4 , 15 , 20e f, 30e f, 0 , -1 , 1 ,
 create combos  0 , -1 , -1 , -1 ,  1 , -1 , -1 , -1 ,  2 , -1 , -1 , -1 ,  3 , -1 , -1 , -1 ,  5 , -1 , -1 , -1 ,  6 , -1 , -1 , -1 ,  7 , -1 , -1 , -1 ,  11 , -1 , -1 , -1 ,  12 , -1 , -1 , -1 ,  0 , 1 , 2 , -1 ,  1 , 1 , 0 , -1 ,  1 , 0 , 1 , 2 ,  1 , 3 , 11 , -1 ,  0 , 3 , -1 , -1 ,  8 , 9 , -1 , -1 ,  0 , 1 , -1 , -1 ,
 create gestures  $1 , 1 ,  $1302 , 1 ,  $1306 , 0 ,  $1303 , 1 ,  $1304 , 0 ,  $1305 , 1 ,  $1300 , 0 ,  $1307 , 0 ,
 

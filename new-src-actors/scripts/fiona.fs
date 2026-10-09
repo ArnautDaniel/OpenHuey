@@ -2,7 +2,7 @@
 \ controls, standing, walking, running and turning, her footsteps, going out by exits; F4: struck
 \ and caught (fiona/hurt.fs).
 IN: fiona
-USING: engine game-state actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized ;
+USING: engine game-state actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend ;
 
 : rooms-id ( -- id )  s" rooms" actor-named ;
 : camera-id ( -- id )  s" camera" actor-named ;
@@ -27,7 +27,7 @@ fvariable ix  fvariable iy  fvariable iz
 : idle ( -- )   \ Fiona_ToIdle: free, standing, her moves her own
     0 her-doing !  0 her-mode !  her-yaw f@ her-heading f!  0 her-rest !   \ (the turn mode kept: Fiona_ToIdle leaves +0x1AD588)
     -1 idle-anim  ['] idle-move her-act ! ;
-' idle is fiona.hurt:to-idle   ' idle is fiona.seized:to-idle   ' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle   ' idle is fiona.commands:to-idle   ' idle is fiona.moves:to-idle
+' idle is fiona.defend:to-idle   ' idle is fiona.hurt:to-idle   ' idle is fiona.seized:to-idle   ' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle   ' idle is fiona.commands:to-idle   ' idle is fiona.moves:to-idle
 \ Fiona_Vt34: going out by a door - with the stick held, she faces where it points (by the camera
 \ she leaves) if that is less than a quarter turn round from her heading, and that camera keeps
 \ steering in the next room while the stick stays (turn mode 3: controls.fs after-cut)
@@ -63,7 +63,7 @@ create goal 12 allot
     feel-the-panic
     read-controls
     her-mode @ 0= if  panic-controls  else  false  then  0=  hands-off? 0= and if  control-command  then
-    hands-off? if  -1 her-cmd !  else  read-command  try-flee  try-doors  then
+    hands-off? if  -1 her-cmd !  else  read-command  try-flee  try-defend  try-doors  then
     her-act @ execute
     looks
     command-sounds
@@ -105,6 +105,7 @@ behaviour free
       cell>f  over >r  sender struck if  r> sender send hit-taken  else  r> drop  then ;
   on seize ( type -- )  sender swap seized if  sender send seize-taken  else  sender send seize-refused  then ;
   on unhand ( -- )  0 her-led ! ;
+  on blow-taken ( -- )  struck-home ;   \ (her shove or kick struck home)
   on danger ( level -- )  her-danger ! ;
   on panic ( stage level -- )  cell>f her-panic-level f!  her-panic-stage ! ;
   on door-held ( room exit -- )  2drop  got-hold ;

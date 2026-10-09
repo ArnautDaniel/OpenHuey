@@ -1,7 +1,7 @@
 \ The stalkers, P1: Debilitas in the house (docs/subsystems/stalker.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/stalker/test_stalker.fs
 IN: test-stalker
-USING: tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names gameover ;
+USING: tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names gameover stalker.struck fiona.defend ;
 fvariable dx  fvariable dy  fvariable dz  fvariable dyaw
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
@@ -163,5 +163,29 @@ testing she isn't free: refused - his attack tables instead
 face-off  [: 4 her-mode ! ;] hers  [: chase-now 6 take-her ;] his  10 frames
 T{ [: leading @  chase-act @ $14 = ;] his -> 0 0 }T
 [: 0 her-mode ! ;] hers  debug:debilitas-out  2 frames
+
+testing struck (P3a): her shove makes him flinch, her kick takes 5; out of health he's down a while, then up
+: close-up ( -- )   \ (face to face 7 apart, his attacks held)
+    true blind  140.64e her-y -217.33e 0e tp-facing  2 frames
+    s" fiona" actor-named body-tri  -500e her-y -500e tp  2 frames  debug:debilitas-tri  1 frames
+    [: 340e deg>rad body-turn ;] his  1 frames
+    game:debilitas body-pos dz f! dy f! dx f!
+    340e deg>rad fsin 7e f* dx f@ f+  dy f@  340e deg>rad fcos 7e f* dz f@ f+  160e tp-facing  3 frames ;
+: flinching? ( -- flag )  [: anim @ $1000 $1006 within ;] his ;
+close-up  [: 70 hp !  0 hits ! ;] his  square debug:press
+T{ ' flinching? 60 soon  [: hp @ hits @ ;] his -> -1 69 1 }T
+: kick ( -- )  [: 6 her-doing !  8 her-mode !  $1B her-sub !  ['] kick-start her-act ! ;] hers ;
+: settled ( -- )  [: [: reeling @ 0= ;] his  [: her-mode @ 0= ;] hers and ;] 300 soon drop ;
+settled  close-up  [: 70 hp !  0 hits ! ;] his  kick
+T{ [: [: hits @ 0> ;] his ;] 90 soon  [: hp @ hits @ ;] his -> -1 65 5 }T
+settled  close-up  [: 1 hp ! ;] his  square debug:press
+T{ [: [: cond @ 2 = ;] his ;] 60 soon  [: hp @  down-t @ 0> ;] his -> -1 0 -1 }T
+[: 1 down-t ! ;] his
+T{ [: [: cond @ 0=  reeling @ 0= and ;] his ;] 400 soon  [: hp @ hp-max @ = ;] his -> -1 -1 }T
+testing ... 20 damage and he gives up: his cry, held off (mode 4), out of the room
+settled  close-up  [: 70 hp !  25 hits ! ;] his  square debug:press
+T{ [: [: my-mode @ 4 = ;] his ;] 300 soon  [: hits @ ;] his -> -1 0 }T
+T{ [: [: away? ;] his ;] 900 soon -> -1 }T
+false blind  debug:debilitas-out  2 frames
 
 test-summary

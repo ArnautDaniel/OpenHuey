@@ -20,6 +20,7 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
 : mv-kind ( -- k )  mv 4 cells + @ ;    : mv-threat ( F: -- t )  mv 6 cells + f@ ;
 : mv-stumble ( F: -- c )  mv 7 cells + f@ ;
 : mv-turns? ( -- flag )  mv 8 cells + @ 0<> ;   : mv-cry ( -- id )  mv 9 cells + @ ;
+: mv-unshaken? ( -- flag )  mv 10 cells + @ 0<> ;
 
 \ ---- the threat on her (Pursuer_Threat): the fright, less with each 10 further off (x 0.75),
 \ none beyond 40 ----
@@ -54,7 +55,7 @@ fvariable wr-m
 
 \ ---- the combo ----
 defer to-stand ( -- )
-: combo-over ( -- )  -1 combo !  0 combo-step !  -1 step-done ! ;
+: combo-over ( -- )  -1 combo !  0 combo-step !  -1 step-done !  0 unshaken ! ;
 \ after it: held off a while (struck her: his table's 90; else 30 at least)
 : held-off-after ( -- )  took @ if  90  else  hold-off @ 30 max  then  hold-off ! ;
 defer next-move ( -- )
@@ -63,7 +64,7 @@ defer next-move ( -- )
     world-held state-flag?  stalkers-blind state-flag? or if  exit  then
     my-model @ mv-bone bone-pos blow-at vec!
     anim @ 0<>  blow-at walled? and if   \ (into a wall: his stand, a thud)
-        0 play-now  $2B 7 sound  combo-over exit
+        stand-anim play-now  $2B 7 sound  combo-over exit
     then
     swung @ 1 <> if  $10 7 sound  1 swung !  then
     sent @ if  exit  then
@@ -83,7 +84,7 @@ defer next-move ( -- )
     combo-step @ 1+ move-at -1 <>  d-fiona f@ 50e f< and  d-fiona f@ f0< 0= and if
         1 combo-step +!  next-move exit
     then
-    2 swung ! ;
+    2 swung !  0 unshaken ! ;
 \ Pursuer_StateAttackActive: a hold - at its key whoever is within its reach of him is held
 \ (the grip: the move's bone number); at its end held off 30 if it held her, and the next move
 : holding ( -- )
@@ -104,7 +105,7 @@ defer next-move ( -- )
     combo-step @ 4 < move-no -1 <> and  fiona here? and if
         mv-kind 6 = if  true  else  d-fiona f@ 50e ground-gained fmax f<=  d-fiona f@ f0< 0= and  then
         if
-            0 sent !  0 swung !  mv-anim play-now
+            0 sent !  0 swung !  mv-anim play-now  mv-unshaken? unshaken !
             mv-kind 6 = if  ['] holding  else  ['] striking  then  act-xt !  exit
         then
     then

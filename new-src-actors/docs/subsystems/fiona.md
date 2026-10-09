@@ -16,7 +16,7 @@ built in phases.
 | **F1** | Her body and model; the controls; standing, walking, running, turning, resting, idle looks; root motion on the floor; footsteps (sound and noise); going through exits and doors (her door animations, locked doors); the camera follows her | rooms, doors, camera, acoustics |
 | F2 | Fear and panic: the meter, calming down, the panic stages, panic runs and stumbles, exhaustion, recovery | danger |
 | F3 | Hewie: calling, gestures, commands, praise and scolding | hewie |
-| F4 | Defending: kick, shove, strike, slamming doors on someone. Reactions: knocked down, thrown, caught (F4a, done), grabbed, led away, dragged, shaking free (F4b, done), falls | stalkers |
+| F4 | Defending: kick, shove (F4c, done), strike, slamming doors on someone. Reactions: knocked down, thrown, caught (F4a, done), grabbed, led away, dragged, shaking free (F4b, done), falls | stalkers |
 | F5 | The story's moves (walk to a spot, a path, turn, an animation, hold), ladders, pushing, points of interest, items | story, items |
 
 The debug walker (`scripts/walker.fs`) stood in for her until F1 was done.
@@ -212,3 +212,17 @@ is caught as she rises ($1503 / $B03), else held ($1100; pulled back - $1101 - w
 is free); her cry $41; at its end the game's over. He lets go (`unhand`, or gone): she pulls
 free ($F02). The game's over is the `caught` state flag (once; not with `capture-no-end`);
 `fiona-occupied` is set while she's held or dragged off.
+
+## F4c: defending (`scripts/fiona/defend.fs`)
+
+The square button (E), while she's free (mode 0), not past the panic's stage 3 and not under
+`no-flee` (Progress_PlayerButtons; Fiona_StateBlock 8): standing, walking, resting, or just set
+off running (her recovery under way, or under $3D frames of running) - a shove; running, or
+turning to flee - a kick. The shove ($E00, its pace slower the longer she's been shaken -
+recovery past $1C3: (3150 - recovery) / 1800 x 1.5 - and the more frightened - fear past 40:
+(160 - fear) / 120) reaches 2 round her hand (bone 9) at its key: a `blow` 1, damage 1; into a
+wall it ends ($101). The kick ($E01: her cry $3D, a step of 1.0756 a frame while it fades in)
+meets whom she touches while its key is clear: a `blow` 2, damage 5, he may stumble (`how` 1:
+rolled by him); at its end her fear up 10. Each reaches the stalker and Hewie once a blow;
+struck home (`blow-taken`) she's held still 5 frames ($90 kicked, $8F shoved). Hewie is told
+(`reaction` 10 / 11) when she shoves or kicks without striking him.

@@ -22,7 +22,9 @@ requests to Fiona.
 | P2a | After her: the chase in her room (walking at her, stalking her, standing to watch her, turning to keep her in front, taunts, stepping round her), his attacks by his table for how she stands (combos from his move table: each blow a `hit` to whom it reaches, a hold catches her), the threat on her panic | Fiona F4a (knocked down, thrown, caught) |
 | P2b | Grabbing her: his hand on her (led away by the hand or walking), his grab and lunge, seized (shaking free), dragged | Fiona F4b (led, grabbed, shaking free) |
 | P2c | Dragged off: the game over | the game over |
-| P3 | Struck: her kick and shove (F4), Hewie's bites (H3), slammed doors; flinching, falling, getting up, giving up for a while after enough; losing her (she hides, gets away) | Fiona F4, Hewie H3 |
+| P3a | Struck by her: her kick and shove (F4); flinching, falling, down a while, getting up, hurt (a stumble), giving up for a while after enough | Fiona F4 |
+| P3b | Doors: his use of the doors in her room (opening, coming through, going out), a door slammed on him | P3a |
+| P3c | Hewie's bites | Hewie H3 |
 | P4 | The story's stalker words (put in a room, sent, held, released, loaded), the cutscenes' cast, the other stalkers | story |
 
 ## API (P1, a first draft)
@@ -121,6 +123,21 @@ half its fright still reaches her (Pursuer_Threat: x 0.75 each 10 off, none past
 ($2300..$2302: kind 6) catches whoever is within its reach of him at its key (the grip: its
 bone). Struck home (`hit-taken`): his cry ($B / $C / $D, bank 7), held still 5 frames.
 
+**Struck** (P3a, `stalker/struck.fs`; Pursuer_Hit, Pursuer_StateFlinch / StateKnockedDown /
+StateHurt, Pursuer_FrameUpdate, Debilitas_GivesUp): a `blow` takes its damage from his health
+and adds it to the damage he's had (to 999); a killing one (3) all of it. Its side - in front
+or behind him, +2 a kick or hard one - picks his flinch ($1001 / $1000 / $1004 / $1003; in a
+doorway $1002 / $1005); in a move that leaves him unshaken (his move table's byte $1D) a shove
+only gets a grunt ($1C). Out of health he falls (forward $1804 with floor ahead, else back
+$1800), lies there 1800 frames (hard 1350) - a blow then a twitch - and gets up ($1807 /
+$1803) with his health back; in a doorway he's left at 1. A stumble ($8000, or her kick's
+roll by how worn he is: his health over its most above 0.8 none, 0.6 2 in 100, 0.4 5, else 10)
+hurts him 900 frames: he stands 2, walks $202 / $203, turns $405.., and growls ($1F) after
+it. At his flinch's key, her blow, he may strike back: his table 8 (her in front) or 9.
+After a blow's reaction, 20 damage or more (not held off, not in a doorway, a way out): he
+gives up - his cry ($20), held off (mode 4, 900 frames), out by a door he can go by, the
+damage count back to 0.
+
 **Taking her** (P2b, `stalker/grab.fs`; Pursuer_StateFaceFiona / StateWalkOn, Pursuer_CloseOnFiona):
 her floor not free for him (flags $80001) - his attack tables 6 / 7 instead (7 from the panic's
 stage 4). Else he closes on her; within 20, facing her within 20 degrees, he asks her (`seize`:
@@ -154,4 +171,6 @@ and grab, her being led, dragged, shaking free, seized outright, with Fiona's F4
 their phases: his footsteps heard through the walls and the rooms a stalker keeps to (+0x314:
 P4), the knock frightening her (with her fear's sounds), Hewie held (H3). P2c done: the game
 over (`docs/subsystems/gameover.md`) - dragged or carried off, held, the sequence, back to the
-title. Next: P3 (him struck: her kick and shove with F4, Hewie's bites, slammed doors).
+title. P3a done: struck by her
+(`fiona/defend.fs`, `stalker/struck.fs`; 48 tests). Next: P3b (his use of the doors in her
+room, slammed doors), P3c (Hewie's bites, with H3).

@@ -77,6 +77,11 @@ message seize ( type -- )                    \ to Fiona: taken to the sender's s
 message seize-taken ( -- )                   \ her answer: she's being led
 message seize-refused ( -- )                 \ her answer: no spot by him she can be led to (or she isn't free)
 message broke-free ( -- )                    \ to the stalker leading her: she shook free
+\ ---- her blows on him (F4, the stalkers' P3: Relation_Request kinds 1 / 2 from Fiona; 5 a door) ----
+message blow ( kind damage how -- )          \ to a stalker (or Hewie): kind 1 a shove, 2 a kick, 3 a killing one, 4 a
+                                             \ hard one, 5 a door; how: $8000 he stumbles, 1 he may (her kick: by
+                                             \ how worn he is - Fiona_ChaseRoll, rolled by him)
+message blow-taken ( -- )                    \ the answer: it struck him
 message game-over-kind ( kind -- )           \ (the game over) how the next one goes: 0 the movie's, 1 faded out
                                              \ (caught), 2 none (a continue), 3 faded out with its own music
 message unhand ( -- )                        \ to Fiona: the stalker leading her no longer does

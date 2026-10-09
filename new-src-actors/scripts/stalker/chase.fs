@@ -22,7 +22,7 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
 : let-her-go ( -- )  leading @ if  0 leading !  fiona send unhand  then ;
 : act! ( xt id -- )  let-her-go  chase-act !  act-xt !  0 step-done !  0 step-t ! ;
 : watching ( -- )  freeze-t @ 0= if  root-move  then ;      \ (Pursuer_Move180)
-: stand-watch ( -- )  0 play  ['] watching 1 act! ;           \ 1: standing (Pursuer_Move17C)
+: stand-watch ( -- )  stand-anim play  ['] watching 1 act! ;           \ 1: standing (Pursuer_Move17C)
 ' stand-watch is to-stand
 \ walking or stalking at her (Pursuer_CloseIn + Debilitas_ChaseTarget): his way to her re-planned
 \ every 15 frames; straight at her once nothing is in the way
@@ -33,11 +33,11 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
     fiona self body-mask straight? if  fiona body-at step-toward exit  then
     walk-stride drop ;
 : walk-at ( id -- )   \ 5: walking ($200), 6: stalking ($201)
-    dup 5 = if  $200  else  $201  then  play  ['] at-her swap act! ;
+    dup 5 = if  walk-fast  else  walk-slow  then  play  ['] at-her swap act! ;
 : keep ( id frames -- )  hold-t !  walk-at ;
 \ 3: turned on the spot toward her
 : turning-to ( -- )  root-move  ended? if  -1 step-done !  then ;
-: turn-to-her ( way -- )  $400 + play-now  ['] turning-to 3 act! ;
+: turn-to-her ( way -- )  turn-base + play-now  ['] turning-to 3 act! ;
 \ a gesture (a taunt: his gesture table) played to its end
 : gesturing-at ( -- )  freeze-t @ 0= if  root-move  then  ended? if  -1 step-done !  then ;
 : gesture! ( n -- )
@@ -61,7 +61,7 @@ create rd-was 12 allot
     rd-was my-at vec-dist-xz round-gone f@ f+ fdup round-gone f!  30e f> if  -1 step-done !  then ;
 : round-her ( -- )
     fiona body-at my-at vec-heading fiona body-yaw f- angle-wrap f0> if  1  else  -1  then  round-dir !
-    0e round-gone f!  $200 play  ['] rounding $1A act! ;
+    0e round-gone f!  walk-fast play  ['] rounding $1A act! ;
 
 \ ---- his tables (Pursuer_PickFromTable): a roll against the rows' running percentages ----
 defer pick-attack ( -- )
@@ -80,9 +80,9 @@ defer take-her ( type -- )   defer lunge ( -- )   defer grab-dog ( -- )   \ (sta
         $1002 of  drop lunge  endof   $1003 of  drop grab-dog  endof
         >r drop stand-watch r>
     endcase ;
-: pick ( situation -- )  hard? table row  dup @ swap cell+ @ do-row ;
+: choose ( situation -- )  hard? table row  dup @ swap cell+ @ do-row ;   \ (Pursuer_PickFromTable)
 \ Pursuer_PickAttack: his tables 6 / 7 (the panic's stage 4 on)
-:noname ( -- )  her-stage @ 4 >= if  7  else  6  then  pick ; is pick-attack
+:noname ( -- )  her-stage @ 4 >= if  7  else  6  then  choose ; is pick-attack
 
 \ ---- his chase's choices (Debilitas_BackOrHold, Debilitas_StrikeOrWait) ----
 : back-or-hold ( i -- ) ( F: roll -- )   \ walk at her or stalk her, for his table's frames
@@ -90,13 +90,13 @@ defer take-her ( type -- )   defer lunge ( -- )   defer grab-dog ( -- )   \ (sta
 : lunge-chance ( -- n )   \ (Pursuer_ThresholdEntry: by how near she is)
     3 0 do  d-her  i 2* cells lunge-chances + f@ f<= if  i 2* 1+ cells lunge-chances + @ unloop exit  then  loop  0 ;
 : strike-or-wait ( -- )
-    rnd 100e f*  lunge-chance s>f f< if  10 pick exit  then
+    rnd 100e f*  lunge-chance s>f f< if  10 choose exit  then
     rnd 100e f*  faces-me? 0= if  d-her close-reach f<= 1 and  else  2  then  back-or-hold ;
 
 \ ---- the chase's step each frame (Debilitas_Chase) by what he is doing ----
 : standing-choice ( -- )   \ 1
     chase-t @ 90 mod 0= chase-t @ 0> and if
-        rnd 100e f* lunge-chance s>f f<= if  10 pick exit  then
+        rnd 100e f* lunge-chance s>f f<= if  10 choose exit  then
     then
     settled? if  fiona body-at 1.0471976e 2.6179939e way-past dup $FF <> if  turn-to-her exit  then  drop  then
     rnd 100e f*
@@ -126,7 +126,7 @@ defer take-her ( type -- )   defer lunge ( -- )   defer grab-dog ( -- )   \ (sta
     fiona body-at heading-to yaw f- angle-wrap fabs 20e deg>rad f<  same-floor? and ;
 : attack! ( -- )
     her-plight @ dup 3 = if  drop exit  then   \ (out of reach: struck already, hidden)
-    dup 0 6 within 0= if  drop 0  then  pick ;
+    dup 0 6 within 0= if  drop 0  then  choose ;
 : chase-run ( -- )
     1 chase-t +!
     hold-off @ if  -1 hold-off +!  then
@@ -135,7 +135,7 @@ defer take-her ( type -- )   defer lunge ( -- )   defer grab-dog ( -- )   \ (sta
         1 of  standing-choice  endof
         5 of  walking-choice  endof
         6 of  stalking-choice  endof
-        $13 of  step-done @ if  took @ if  12  else  13  then  pick  0 took !  exit  then  endof
+        $13 of  step-done @ if  took @ if  12  else  13  then  choose  0 took !  exit  then  endof
         >r  step-done @ if  stand-watch  then  r>
     endcase
     chase-act @ dup 1 = over 5 = or swap 6 = or if  in-reach? if  attack!  then  then ;

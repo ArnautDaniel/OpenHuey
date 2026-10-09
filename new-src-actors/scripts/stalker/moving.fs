@@ -16,6 +16,14 @@ USING: engine game-state actors facts flag-names paths stalker.state stalker.sen
 : play-now ( anim -- )   \ (Motion_PlayTable)
     dup anim !  my-model @ swap  2dup motion-entry nip  motion-play ;
 : play ( anim -- )  dup anim @ = if  drop exit  then  play-now ;
+: stand-anim ( -- a )  cond @ 1 = if  2  else  0  then ;   \ (vtable +0x320: hurt, 2)
+\ his walks (vtable +0x324 / +0x328): hurt $202 / $203; else $200, and the slow one - held off
+\ $203, searching or heading $201, after her $206
+: walk-fast ( -- a )  cond @ 1 = if  $202  else  $200  then ;
+: walk-slow ( -- a )
+    my-mode @ 4 =  cond @ 1 = or if  $203 exit  then
+    my-mode @ if  $201  else  $206  then ;
+: turn-base ( -- a )  cond @ 1 = if  $405  else  $400  then ;   \ (Pursuer_TurnOnSpot: hurt, $405..)
 : ended? ( -- flag )  model act.mflags l@ $20 and 0<> ;   \ came to its end this frame
 : settled? ( -- flag )  model act.fade sf@ 0e f<= ;       \ faded in
 

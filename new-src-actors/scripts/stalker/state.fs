@@ -71,5 +71,14 @@ state: stalker-state
   \ taking her (stalker/grab.fs): leading her (his mode 8 while she's his; 1 asked, -1 holding), how (6 by the hand,
   \ 8 walking), her answer (0 none yet, 1 taken, 2 refused, 3 broke free), his taunts so far
   cell field leading  cell field lead-type  cell field answer  cell field taunts
+  \ struck (stalker/struck.fs): his condition (+0x14CC: 0 well, 1 hurt - stumbled, 2 down), how
+  \ long he's hurt (+0x1790) and down (+0x1664), the damage he's taken since he last gave up
+  \ (+0x16C4), reeling from a blow (his reactions run; his mode waits), struck while down, her
+  \ blow (+0x1761 1: his counter at his flinch's key), his growl after a stumble (+0x16F5),
+  \ unshaken by a shove in this move (+0x16F7), the fall's lying pose and its stage, times down
+  \ for good (progress +0xFBC)
+  cell field cond  cell field hurt-t  cell field down-t  cell field hits
+  cell field reeling  cell field twitch  cell field by-her  cell field growl-after  cell field unshaken
+  cell field lie-anim  cell field down-stage  cell field knockouts  cell field striker
   cell field gesture            \ the look about he plays at a stop (-1: none)
 end-state
