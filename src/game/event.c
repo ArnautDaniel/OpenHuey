@@ -294,6 +294,7 @@ static void char_script_action(VObject *ev, Progress *p, s32 now) {
     s32 act = pc[3];
     u8 *c = char_by_id(p, pc[2]);
 
+    EVLOG("  -> character 0x%02X: scripted action 0x%02X%s", pc[2], act, now ? " at once" : "");
     AT(c, 0x14E8, s32) = 5;
     AT(c, 0x14EC, s32) = now;
     AT(c, 0x14F0, s32) = act;
@@ -304,6 +305,9 @@ static void char_script_action(VObject *ev, Progress *p, s32 now) {
 /* 0x05 / 0x92: start a character's scripted action (0x92 with operand 1: at once) */
 static void cmd_action(VObject *ev, Progress *p, const u8 *pc) {
     const u8 *q;
+
+    EVLOG("room 0x%X: script asks character 0x%02X for action 0x%02X%s", AT(ev, 0x560, s32), pc[2], pc[3],
+          pc[0] == 0x92 ? " (forced)" : "");
 
     if (AT(p, 0x4, s32) != 0) {
         return;
@@ -369,6 +373,9 @@ static void set_pending_ending(Progress *p) {
 static void cmd_scene_change(VObject *ev, Progress *p, const u8 *pc) {
     s32 ok = 0;
     s32 late;
+
+    EVLOG("room 0x%X: scene-change request %02X %02X %02X %02X %02X (pending 0x%X)", AT(ev, 0x560, s32), pc[1],
+          pc[2], pc[3], pc[4], pc[5], AT(p, 0x1134, s32));
 
     if (AT(p, 0x1134, s32) == 5) {
         return;
@@ -1106,6 +1113,17 @@ void Events_RunPhase(u8 *ev, u8 phase) {
     ctx.g = 0;
     ctx.i = 0;
     AT(ev, 0x6FC, void *) = &ctx;
+#ifdef HG_NATIVE
+    if (phase == 1 && hg_evlog_on()) {   /* (Fiona's place every 15 frames) */
+        static long n;
+
+        hg_evlog_frame();
+        if (gCharPlayer != NULL && ++n % 15 == 0) {
+            EVLOG("room 0x%X: Fiona at (%.1f %.1f %.1f) tri %d", AT(ev, 0x560, s32), AT(gCharPlayer, 0x10, f32),
+                  AT(gCharPlayer, 0x14, f32), AT(gCharPlayer, 0x18, f32), AT(gCharPlayer, 0x34, s32));
+        }
+    }
+#endif
     switch (phase) {
     case 0: {
         Progress *p = gProgress;
@@ -1184,6 +1202,7 @@ void Events_StartAction(VObject *ev, s32 slot, s32 act) {
     u8 *script;
 
     act &= 0xFF;
+    EVLOG("  -> character slot %d runs action 0x%02X (room 0x%X)", slot, act, AT(ev, 0x560, s32));
     if (act & 0x80) {
         script = kBuiltinScripts[act];
     } else {
@@ -1234,8 +1253,10 @@ void Event_StartAction(VObject *ev, s32 id, s32 script) {
         pc = VCALL(room, 0x24, u8 *(*)(VObject *, s32))(room, script);
     }
     if (pc == NULL) {
+        EVLOG("  -> action 0x%02X for id 0x%02X: the room has none", script, id & 0xFF);
         return;
     }
+    EVLOG("  -> action 0x%02X started for id 0x%02X (room 0x%X)", script, id & 0xFF, AT(e, 0x560, s32));
     s = e + 0x564 + (u8)Event_CharSlot(ev, id) * 0x18;
     AT(s, 0x0, s32) = -1;
     AT(s, 0x4, u8 *) = NULL;
@@ -1336,6 +1357,8 @@ void Events_CharEnter(VObject *ev, u8 *c) {
     if (AT(ev, 0x560, s32) != AT(c, 0x30, s32)) {
         return;
     }
+    EVLOG("==== character id 0x%02X enters room 0x%X at (%.1f %.1f %.1f) by door %d", AT(c, 0x153C, u8),
+          AT(ev, 0x560, s32), AT(c, 0x10, f32), AT(c, 0x14, f32), AT(c, 0x18, f32), AT(c, 0x14D4, u8));
     ROOMLOG("entry script: char %p (id %d) entering room %d at (%.1f %.1f %.1f) tri %d door %d",
             (void *)c, AT(c, 0x153C, u8), AT(ev, 0x560, s32), AT(c, 0x10, f32), AT(c, 0x14, f32),
             AT(c, 0x18, f32), AT(c, 0x34, s32), AT(c, 0x14D4, u8));
@@ -2442,6 +2465,7 @@ void EventCmd_Movie(VObject *ev) {
     case 0x60:
         EV_RESULT(ev) = 0;
         pc = PC(ev);
+        EVLOG("room 0x%X: movie %s (class %d)", AT(ev, 0x560, s32), room_string(ev, pc[1]), pc[2]);
         Progress_PlayMovie(gProgress, room_string(ev, pc[1]), pc[2]);
         return;
     case 0x61:
@@ -2450,6 +2474,7 @@ void EventCmd_Movie(VObject *ev) {
                 VCALL(gCharacters[i], 0x78, void (*)(VObject *))((VObject *)gCharacters[i]);
             }
         }
+        EVLOG("room 0x%X: cutscene %s", AT(ev, 0x560, s32), room_string(ev, PC(ev)[1]));
         VCALL(d, 0x8, void (*)(VObject *))(d);
         VCALL(d, 0x38, void (*)(VObject *, const char *))(d, room_string(ev, PC(ev)[1]));
         return;
@@ -2553,6 +2578,17 @@ void EventCmd_Flags(VObject *ev) {
         return;
     }
     n = be16(pc + 2);
+#ifdef HG_NATIVE
+    {
+        static const char *const kOps[0x13] = {
+            "story-flag-set", "story-flag-clear", "state-flag-set", "state-flag-clear", "door-lock", "door-unlock",
+            "door-passable", "door-reopen-unlock", "door-close-off-lock", "door-open-set", "door-open-clear",
+            "message-param-room", "item-use", "item-give", "item-add", "story-flag-set-var", "story-flag-clear-var",
+            "subscreen-bit", "resident-flag-set"};
+
+        EVLOG("room 0x%X: %s 0x%X", AT(ev, 0x560, s32), kOps[pc[1]], n);
+    }
+#endif
     switch (pc[1]) {
     case 0x00:
         flag_set((u8 *)p + 0x1C, n);

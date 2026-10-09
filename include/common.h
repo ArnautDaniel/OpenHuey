@@ -37,6 +37,17 @@ void hg_roomlog(const char *fmt, ...);
 #define ROOMLOG(...) do { } while (0)
 #endif
 
+/* HG_EVLOG=1 (PC only): the event scripts traced to stderr - actions asked for and started,
+ * scene offers, movies, cutscenes, flags, rooms entered, Fiona's place now and then */
+#ifdef HG_NATIVE
+int hg_evlog_on(void);
+void hg_evlog(const char *fmt, ...);
+void hg_evlog_frame(void);
+#define EVLOG(...) do { if (hg_evlog_on()) hg_evlog(__VA_ARGS__); } while (0)
+#else
+#define EVLOG(...) do { } while (0)
+#endif
+
 /* the EE's sqrt.s: the root of |x|, always the instruction (GCC may otherwise call sqrtf in a
  * block it thinks cold) */
 static inline float ee_sqrtf(float x) {

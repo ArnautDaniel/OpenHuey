@@ -154,3 +154,25 @@ void hg_roomlog(const char *fmt, ...) {
     fputc('\n', stderr);
     va_end(ap);
 }
+
+/* HG_EVLOG=1: the event scripts (include/common.h EVLOG); each line with a frame count */
+static long sEvFrame;
+void hg_evlog_frame(void) { sEvFrame++; }
+int hg_evlog_on(void) {
+    static int on = -1;
+
+    if (on < 0) {
+        on = getenv("HG_EVLOG") != NULL;
+    }
+    return on;
+}
+
+void hg_evlog(const char *fmt, ...) {
+    va_list ap;
+
+    va_start(ap, fmt);
+    fprintf(stderr, "evlog %ld: ", sEvFrame);
+    vfprintf(stderr, fmt, ap);
+    fputc('\n', stderr);
+    va_end(ap);
+}
