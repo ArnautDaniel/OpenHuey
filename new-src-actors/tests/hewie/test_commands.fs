@@ -25,7 +25,7 @@ hewie send join-fiona  3 frames
 ready
 
 testing without state flag 0xD her gestures do nothing
-T{ key: 2 press  60 frames  [: her-mode @ ;] her@ -> 0 }T
+T{ key: K press  60 frames  [: her-mode @ ;] her@ -> 0 }T
 T{ [: his-cmd-was @ ;] his@ -> 0 }T
 hewie-commandable set-flag
 
@@ -34,7 +34,7 @@ T{ [: dog-here @ dog-action @ ;] her@  -> 2 action }T
 
 testing "come back" (down) on the spot: a gesture (mode 0xD), the order heard (0x2C), he answers (0x1D) and comes (0xD)
 ready
-T{ key: 2 press  [: her-mode @ her-sub @ ;] her@ -> $D $2C }T
+T{ key: K press  [: her-mode @ her-sub @ ;] her@ -> $D $2C }T
 T{ 200 $1D takes? -> -1 }T
 T{ [: his-cmd-was @ ;] his@ -> $2C }T
 T{ 200 $D takes? -> -1 }T
@@ -42,7 +42,7 @@ T{ 200 $D takes? -> -1 }T
 
 testing "go there" (up): 0x23, he answers and makes for the spot she showed (0x63)
 ready
-T{ key: 1 press  [: her-sub @ ;] her@ -> $23 }T
+T{ key: I press  [: her-sub @ ;] her@ -> $23 }T
 T{ 300 $63 takes? -> -1 }T
 T{ [: his-to-tri @ ;] his@ 0< -> 0 }T
 300 frames
@@ -65,7 +65,7 @@ fvariable ox  fvariable oz
     [: try-at vec@  his-place  1 0 set-action ;] his!  2 frames ;   \ (by her: listening)
 close
 T{ apart 15e f< -> -1 }T
-T{ key: 4 press  [: her-sub @ ;] her@ -> $28 }T
+T{ key: L press  [: her-sub @ ;] her@ -> $28 }T
 T{ 200 $48 takes? -> -1 }T
 T{ 400 $4A takes? -> -1 }T
 T{ 200 $C07 her-anim? -> -1 }T

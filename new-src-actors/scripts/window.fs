@@ -56,7 +56,7 @@ variable sw  variable sh  variable lh
         key: Up key-pressed?  key: Left key-pressed? or if  picked @ 1- 0 max picked !  then
         key: Down key-pressed?  key: Right key-pressed? or if  picked @ 1+ message-options 1- min picked !  then
     then
-    circle button-pressed? if
+    cross button-pressed? if   \ (the menus' confirm: cross - Pads_FaceButtons' menu bit 4)
         choosing? if  answer exit  then
         last-page? if  close  else  1 page +!  then
     then ;

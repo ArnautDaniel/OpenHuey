@@ -225,10 +225,11 @@ create call-anims  $C0E , $C0D , $C0A , $C07 , $C06 , $C04 , $C03 , $C02 , $C00 
 
 \ ---- the gestures (Gesture_Update; Fiona_ReadsPad) ----
 : gesture ( -- cmd )
-    key: 1 pressed? if  0 exit  then  key: 2 pressed? if  1 exit  then
-    key: 3 pressed? if  2 exit  then  key: 4 pressed? if  3 exit  then
-    key: 5 pressed? if  4 exit  then
-    key: 4 held? if  3 exit  then  -1 ;   \ (held: as the stick held over - the praise's repeats)
+    \ (the right stick - I up, K down, L right, J left - and R3, F: as hg's keys for them)
+    key: I pressed? if  0 exit  then  key: K pressed? if  1 exit  then
+    key: F pressed? if  2 exit  then  key: L pressed? if  3 exit  then
+    key: J pressed? if  4 exit  then
+    key: L held? if  3 exit  then  -1 ;   \ (held: as the stick held over - the praise's repeats)
 : reads-pad? ( -- flag )
     hewie-commandable state-flag? 0=  fiona-occupied state-flag? or  her-busy-t @ 0<> or if  false exit  then
     her-mode @ dup $D = swap $A = or if  true exit  then

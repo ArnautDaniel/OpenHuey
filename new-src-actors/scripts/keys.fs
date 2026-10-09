@@ -11,13 +11,13 @@ USING: engine ;
 4 constant r1       5 constant cross    6 constant start-button
 : button-keys ( b -- key1 key2 )   \ (0: none)
     case
-        circle of  key: Space key: Return  endof
-        square of  key: E 0  endof
-        l1 of  key: Z 0  endof
-        triangle of  key: Tab 0  endof
-        r1 of  key: Q 0  endof
-        cross of  key: Backspace 0  endof
-        start-button of  key: P 0  endof
+        circle of  key: C key: Backspace  endof   \ (as hg: native/platform/input.c)
+        square of  key: Z 0  endof
+        l1 of  key: Q 0  endof
+        triangle of  key: V 0  endof
+        r1 of  key: E 0  endof
+        cross of  key: X key: Space  endof
+        start-button of  key: Return 0  endof
         >r 0 0 r>
     endcase ;
 : either ( k1 k2 xt -- flag )   \ (either key so)

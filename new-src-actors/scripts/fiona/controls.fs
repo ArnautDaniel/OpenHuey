@@ -12,7 +12,7 @@ fvariable sx  fvariable sz         \ the stick: x right, z down (as the pad's)
     hands-off? if  exit  then
     key: D held? if  1e sx f!  then  key: A held? if  sx f@ 1e f- sx f!  then
     key: S held? if  1e sz f!  then  key: W held? if  sz f@ 1e f- sz f!  then ;
-: run-held? ( -- flag )  hands-off? 0=  key: Left_Shift held?  key: Right_Shift held? or  and ;
+: run-held? ( -- flag )  hands-off? 0=  cross button-down? and ;   \ (Fiona_Move: cross held)
 : cam-yaw ( F: -- a )  camera cam.yaw sf@ ;
 \ a stick direction turned into the room by a camera heading (0 looks along -z)
 fvariable tn-x  fvariable tn-z

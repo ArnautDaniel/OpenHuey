@@ -12,9 +12,9 @@ USING: tester engine game-state actors messages keys room-names game debug flag-
 : pause-stage ( -- n )  game:pause enter  pause:stage @  leave-actor ;
 : in-scene? ( -- flag )  game:fiona enter  her-in-scene @  leave-actor ;
 : msg? ( -- flag )  [: msg @ ;] in-room 0< 0= ;
-: play ( n -- )  0 ?do  msg? if  circle press  then  game-tick  loop ;   \ (the messages read on)
+: play ( n -- )  0 ?do  msg? if  cross press  then  game-tick  loop ;   \ (the messages read on)
 : within ( n xt -- flag )   \ (within n frames xt says so)
-    swap 0 ?do  msg? if  circle press  then  game-tick  dup execute if  drop true unloop exit  then  loop  drop false ;
+    swap 0 ?do  msg? if  cross press  then  game-tick  dup execute if  drop true unloop exit  then  loop  drop false ;
 
 60 frames
 testing a new game: the cage room's opening - its stage music made, the background music, faded in

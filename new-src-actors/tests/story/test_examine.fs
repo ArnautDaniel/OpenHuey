@@ -24,12 +24,12 @@ testing while it is up she doesn't move
 create was 12 allot  game:fiona body-pos was vec!
 T{ key: W true key-hold  20 frames  key: W false key-hold  was game:fiona body-at vec-dist 0.01e f< -> -1 }T
 testing the button closes it; she gets up (0x802), her script goes on to its end and lets her go
-T{ circle press  5 frames  [: msg @ ;] in-room  shown  [: fiona.model:anim@ ;] hers -> -1 -1 $802 }T
+T{ cross press  5 frames  [: msg @ ;] in-room  shown  [: fiona.model:anim@ ;] hers -> -1 -1 $802 }T
 T{ 120 [: [: her-scripted @ ;] hers 0= ;] within  [: her-reading @ ;] hers -> -1 0 }T
 
 testing a message with a choice: the answer chosen comes back (answer?)
 : show ( msg -- )  [: story.words:message ;] in-room  deliver ;
-T{ [: 42 answer ! ;] in-room  10 show  2 frames  circle press  3 frames  [: answer @ ;] in-room -> -1 }T   \ (no choice: -1)
+T{ [: 42 answer ! ;] in-room  10 show  2 frames  cross press  3 frames  [: answer @ ;] in-room -> -1 }T   \ (no choice: -1)
 
 testing items: given with the pickup (a file), counted
 T{ [: $205 item-give  $205 item-give ;] in-room  progress pr.files w@ -> $205 }T

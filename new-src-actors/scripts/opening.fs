@@ -79,7 +79,7 @@ variable sw  variable sh
 : menu-keys ( -- )
     key: Up key-pressed? if  picked @ 1- 0 max picked !  then
     key: Down key-pressed? if  picked @ 1+ 1 min picked !  then
-    circle button-pressed? if  picked @ 0= if  m-get-up 0 play  1 stage !  else  bye  then  then ;
+    cross button-pressed? if  picked @ 0= if  m-get-up 0 play  1 stage !  else  bye  then  then ;   \ (confirm: cross)
 
 \ ---- the opening movie over the whole window, 4:3 in the middle, black round it ----
 variable mx  variable my  variable mw  variable mh
@@ -104,7 +104,7 @@ behaviour opening-the-game
           0 of  menu-keys  endof
           1 of  ended? if  m-bark 0 play  bark-sound common-sound  2 stage !  then  endof
           2 of  ended? if  movie-start  then  endof
-          3 of  movie-status 1 <>  circle button-pressed? or  start-button button-pressed? or if  movie-over  then  endof
+          3 of  movie-status 1 <>  start-button button-pressed? or if  movie-over  then  endof   \ (SceneTitle: Start skips)
       endcase ;
   on frame-end ( -- )  stage @ 3 < if  frame-him  then  menu-draw  movie-draw ;
   on killed ( -- )   \ (free play: the title or the movie cut short)

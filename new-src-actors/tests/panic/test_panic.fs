@@ -54,7 +54,7 @@ T{ 120 frames  stage  [: her-doing @ ;] her@ -> 0 0 }T
 testing turning to flee (Q): she whips round (0x403), her fear up 10
 : fear ( F: -- f )  fiona enter  her-fear f@  leave-actor ;
 : press ( key -- )  dup true key-hold  game-tick  false key-hold ;
-T{ fear f>s  key: Q press  60 $403 seen  -> 0 -1 }T
+T{ fear f>s  key: E press  60 $403 seen  -> 0 -1 }T
 T{ 60 frames  fear 2.95e about  [: her-doing @ ;] her@ -> -1 0 }T   \ (10 up, then calming 0.15 a frame standing)
 
 test-summary

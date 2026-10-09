@@ -83,7 +83,7 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
     her-pos door-side 1 = 1 and her-door-side !
     3 her-doing !  2 her-mode !
     door-start ;
-: action-button? ( -- flag )  key: Space key-pressed?  key: Return key-pressed? or ;
+: action-button? ( -- flag )  circle button-pressed? ;   \ (Progress_PlayerButtons: circle)
 \ Progress_PlayerButtons (her doors): free, the button, an exit she may use
 : try-doors ( -- )
     her-mode @ 0<>  her-doing @ 0<> or  her-sub @ 5 = or if  exit  then

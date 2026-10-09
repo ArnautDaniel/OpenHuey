@@ -101,6 +101,12 @@ void hg_input_read(unsigned char *data) {
         if (k[SDL_SCANCODE_D]) lx = 0xFF;
         if (k[SDL_SCANCODE_W]) ly = 0x00;
         if (k[SDL_SCANCODE_S]) ly = 0xFF;
+        /* the right stick (Hewie's commands) and R3 on the keyboard: IJKL, F (hga's too) */
+        add_key(&b, k, SDL_SCANCODE_F, B_R3);
+        if (k[SDL_SCANCODE_J]) rx = 0x00;
+        if (k[SDL_SCANCODE_L]) rx = 0xFF;
+        if (k[SDL_SCANCODE_I]) ry = 0x00;
+        if (k[SDL_SCANCODE_K]) ry = 0xFF;
 
         if (sPad == NULL) {
             int n = 0;

@@ -75,8 +75,7 @@ cmake --build build/native/cmake -j8
 build/native/cmake/hg [data folder]
 ```
 
-Keys: WASD the left stick, arrows the D-pad, X / Space Cross, C / Backspace Circle, Z Square,
-V Triangle, Q / E L1 / R1, 1 / 3 L2 / R2, Return Start, Tab Select. Gamepads work through SDL.
+Keys: see [Controls](#controls) below.
 
 Useful environment variables:
 - `HG_EVLOG=1` traces the room scripts (actions, scene requests, movies, cutscenes, flags,
@@ -94,23 +93,7 @@ cmake --build build/new-src-actors
 build/new-src-actors/hga [data folder]
 ```
 
-Keys:
-
-| Key | Does |
-|---|---|
-| WASD | Move |
-| Shift | Run |
-| Space / Return | Circle: act, examine, doors, menus |
-| E | Square: shove / kick |
-| Backspace | Cross |
-| Tab | Triangle |
-| Z | L1 |
-| Q | R1 (flee) |
-| P | Start (pause) |
-| 1–5 | Hewie's commands |
-| ` | The Forth console |
-
-The keys differ from `hg`'s for now.
+Keys: see [Controls](#controls) below. The backquote key (`) opens the Forth console.
 
 In the console:
 - `free-play` skips the opening into the first room.
@@ -122,6 +105,25 @@ More console words are listed in `new-src-actors/scripts/debug.fs`.
 
 Tests run headless: `ctest --test-dir build/new-src-actors`, or one suite:
 `build/new-src-actors/hga --test new-src-actors/tests/stalker/test_stalker.fs`.
+
+## Controls
+
+`hg` and `hga` share one keyboard layout. A gamepad works too, through SDL.
+
+| Key | Pad button | In play | In menus |
+|---|---|---|---|
+| WASD | Left stick | Move | |
+| Arrows | D-pad | | Move the cursor |
+| X / Space | Cross | Hold to run | Confirm, read on |
+| C / Backspace | Circle | Act: examine, doors | |
+| Z | Square | Shove / kick | |
+| V | Triangle | Items | Cancel |
+| Q / E | L1 / R1 | E: flee | |
+| 1 / 3 | L2 / R2 | | |
+| I J K L | Right stick | Hewie's commands | |
+| F | R3 | Hewie's command | |
+| Return | Start | Pause | Start; skip a movie |
+| Tab | Select | | |
 
 ## Repository layout
 

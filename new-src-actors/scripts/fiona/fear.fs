@@ -141,7 +141,7 @@ create next-at 12 allot
     settled? 0= if  exit  then
     her-yaw f@ her-heading f!                          \ (the stalker within 30: toward him - with them)
     $403 -1 play-table  ['] flee-turn her-act ! ;
-: flee-button? ( -- flag )  key: Q key-pressed? ;
+: flee-button? ( -- flag )  r1 button-pressed? ;   \ (Progress_PlayerButtons: R1)
 : try-flee ( -- )   \ (free, not under flag 0x14, recovered, not panicking)
     her-mode @ 0<>  her-doing @ 0<> or  flee-button? 0= or if  exit  then
     no-flee state-flag?  her-recovery @ 360 < 0= or  her-panic-stage @ 4 < 0= or if  exit  then

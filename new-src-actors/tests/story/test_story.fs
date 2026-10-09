@@ -42,7 +42,7 @@ door0 4 * progress pr.doors + 0 swap l!
 : press ( key -- )  dup true key-hold  game-tick  false key-hold ;
 : went? ( n -- flag )  0 ?do  game-tick  room-id front-garden-2 <> if  true unloop exit  then  loop  false ;
 at-door
-T{ key: Space press  240 went?  room-id -> -1 front-garden-2 0 room-exit-leads drop }T
+T{ key: C press  240 went?  room-id -> -1 front-garden-2 0 room-exit-leads drop }T
 
 testing an action script runs as the room's coroutine, a turn a frame
 : started ( -- n )  [: 0 #slots 0 do  i slot-task @ if  1+  then  loop ;] in-room ;
