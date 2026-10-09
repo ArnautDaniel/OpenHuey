@@ -3,11 +3,10 @@
 \ (Debilitas: `debilitas`). P1: in the house - placed, standing, growling, telling the danger
 \ he is about.
 IN: stalker
-USING: engine game-state actors messages common facts flag-names room-names stalker.state ;
+USING: engine game-state actors messages common facts flag-names room-names stalker.state stalker.senses ;
 
 : me ( -- id )  self ;
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
-: my-at ( -- v )  self body-at ;
 : my-room ( -- room )  self body-room ;
 : played? ( -- flag )  in-game @ if  my-room room-id =  else  false  then ;   \ (Npc_InPlayedRoom)
 : hard? ( -- flag )  progress pr.vars $27 + c@ 1 = ;
@@ -43,9 +42,16 @@ USING: engine game-state actors messages common facts flag-names room-names stal
     0 growl-t !
     my-move-mode @ 0= doing @ $1300 <> and doing @ $1600 <> and if  $2A 7 sound  then ;
 : frame ( -- )
+    senses
     played? growls @ and if  growl  then
     pose
-    my-room  my-mode @ 0= 1 and  my-mode @ 0= 1 and  danger-id send stalker-here ;
+    my-room  sees-fiona @ 0<> 1 and  my-mode @ 0= 1 and  danger-id send stalker-here ;
+\ the family's setup (Pursuer_Setup): his sight 150 ahead, 60 degrees either side; Fiona and
+\ Hewie known; listening for noises above his threshold (not his own)
+: family-setup ( -- )
+    150e view-range f!  1.0471976e view-half f!  -1e d-fiona f!  -1e d-hewie f!
+    s" fiona" actor-named fiona-id !  s" hewie" actor-named hewie-id !
+    hear-threshold @ stalker-noise s" acoustics" actor-named send listen ;
 
 : unload ( -- )  0 loaded !  in-game @ if  go-out  then  my-kind @ -1 cast-as ;
 behaviour stalking
@@ -55,6 +61,8 @@ behaviour stalking
   on stalker-out ( -- )  go-out ;
   on entered-room ( room exit -- )  2drop  in-game @ if  pose  then ;
   on tick ( -- )  in-game @ if  frame  then ;
+  on heard ( loud room tri door source -- )  2drop hear ;
+  on heard-nothing ( -- )  heard-none ;
 end-behaviour
 
 \ ---- Debilitas (debilitas.c Debilitas_Setup, DebilitasModel): 70 health (hard: 110), 5 across,
@@ -65,7 +73,7 @@ behaviour debilitas
   on spawned ( -- )
       s" O_DB0/DB0_000" 2dup file!  actor-load dup my-model !  $3D89A0 motion-table
       0 him act.visible l!
-      hard? if  110  else  70  then  dup hp-max !  hp !  2 my-kind !  -1 growls !
+      hard? if  110  else  70  then  dup hp-max !  hp !  2 my-kind !  -1 growls !  0 hear-threshold !  family-setup
       5e 20e body-size  debilitas-floor body-mask!  body-off  0 in-game !
       self subscribe tick  self subscribe entered-room ;
 end-behaviour
@@ -81,7 +89,7 @@ behaviour daniella
   on spawned ( -- )
       hard? if  s" O_DNL/DNL_001"  else  s" O_DNL/DNL_000"  then  2dup file!  actor-load dup my-model !  $419E60 motion-table
       0 him act.visible l!
-      hard? if  100  else  120  then  dup hp-max !  hp !  3 my-kind !  0 growls !
+      hard? if  100  else  120  then  dup hp-max !  hp !  3 my-kind !  0 growls !  12 hear-threshold !  family-setup
       3e 17e body-size  pursuer-floor body-mask!  body-off  0 in-game !
       self subscribe tick  self subscribe entered-room ;
 end-behaviour
