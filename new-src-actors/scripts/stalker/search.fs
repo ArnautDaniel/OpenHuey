@@ -124,8 +124,9 @@ create to-at 12 allot
     endcase ;
 : search-start ( -- )  0 route-done !  to-next-stop ;
 
-\ ---- after her (mode 0; P2's chase not yet): toward her on foot, his way re-planned every 30
-\ frames; standing facing her within 15 ----
+\ ---- to where she is (Pursuer_ChaseFiona, action 4: after her but not seeing her): toward
+\ her on foot, his way re-planned every 30 frames; standing facing her within 15. Seeing her,
+\ his chase (stalker/chase.fs: `chase-begin`) ----
 : after-her ( -- )
     -1 step-t +!  step-t @ 0> if  exit  then  30 step-t !
     fiona body-tri dup 0< if  drop exit  then  fiona body-at plan 0> 0= if  exit  then
@@ -134,6 +135,9 @@ create to-at 12 allot
     my-path path-left? if  walk-stride drop  else  fiona body-at turn-rate turn-to fdrop  then
     after-her ;
 : chase-start ( -- )  0 search-phase !  ['] chase-step step!  after-her ;
+defer chase-begin ( -- )   ' chase-start is chase-begin   \ (seeing her: stalker.chase)
+defer chasing? ( -- flag )   ' false is chasing?
+defer lost-her ( -- )   ' chase-start is lost-her
 
 \ ---- Pursuer_ModesSearching, in the room being played (elsewhere: with his travel, P1d):
 \ seeing her he's after her (mode 0) and his clock (300 frames) starts again; out of sight it
@@ -145,8 +149,10 @@ create to-at 12 allot
 : modes ( -- )
     here-played? 0= if  exit  then
     sees-fiona @ if
-        my-mode @ if  0 mode!  route-clear  chase-start  then  after-t exit
+        my-mode @ if  0 mode!  route-clear  then
+        chasing? 0= if  chase-begin  then  after-t exit
     then
+    chasing? if  lost-her  then   \ (lost sight of her: to where she is)
     my-mode @ case
         0 of  tick-down if  search-again  then  endof
         1 of  search-again  endof

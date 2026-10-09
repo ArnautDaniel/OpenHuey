@@ -1,7 +1,8 @@
 \ fiona.fs - Fiona, the player (docs/subsystems/fiona.md). Phase F1: her body and model, the
-\ controls, standing, walking, running and turning, her footsteps, going out by exits.
+\ controls, standing, walking, running and turning, her footsteps, going out by exits; F4: struck
+\ and caught (fiona/hurt.fs).
 IN: fiona
-USING: engine game-state actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.fear fiona.looks fiona.commands fiona.moves ;
+USING: engine game-state actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt ;
 
 : rooms-id ( -- id )  s" rooms" actor-named ;
 : camera-id ( -- id )  s" camera" actor-named ;
@@ -26,7 +27,7 @@ fvariable ix  fvariable iy  fvariable iz
 : idle ( -- )   \ Fiona_ToIdle: free, standing, her moves her own
     0 her-doing !  0 her-mode !  her-yaw f@ her-heading f!  0 her-rest !   \ (the turn mode kept: Fiona_ToIdle leaves +0x1AD588)
     -1 idle-anim  ['] idle-move her-act ! ;
-' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle   ' idle is fiona.commands:to-idle   ' idle is fiona.moves:to-idle
+' idle is fiona.hurt:to-idle   ' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle   ' idle is fiona.commands:to-idle   ' idle is fiona.moves:to-idle
 \ Fiona_Vt34: going out by a door - with the stick held, she faces where it points (by the camera
 \ she leaves) if that is less than a quarter turn round from her heading, and that camera keeps
 \ steering in the next room while the stick stays (turn mode 3: controls.fs after-cut)
@@ -99,6 +100,9 @@ behaviour free
   on go-to ( x y z -- )  >r >r cell>f r> cell>f r> cell>f  go-to-point ;
   on place ( x y z yaw -- )  >r >r >r cell>f r> cell>f r> cell>f r> cell>f  put  fresh ;   \ (the story puts her)   \ (the room's scripts: Rooms_ExitPointOut, facing in)
   on camera-cut ( -- )  -1 her-cut ! ;
+  \ struck or caught (F4: fiona.hurt)
+  on hit ( kind how fright -- )
+      cell>f  over >r  sender struck if  r> sender send hit-taken  else  r> drop  then ;
   on danger ( level -- )  her-danger ! ;
   on panic ( stage level -- )  cell>f her-panic-level f!  her-panic-stage ! ;
   on door-held ( room exit -- )  2drop  got-hold ;
@@ -107,6 +111,7 @@ behaviour free
   on frame-end ( -- )   \ what she is doing, as the frame left her; her move
       self body? 0= if  exit  then
       her-mode @ her-sub @ her-cond @ her-cmd @ broadcast fiona-doing
+      plight broadcast fiona-plight
       tell-head
       her-move-done @  ended?  her-model @ 0 0 1 motion-events  broadcast moving ;
   \ the story's moves (fiona.moves)

@@ -16,7 +16,7 @@ built in phases.
 | **F1** | Her body and model; the controls; standing, walking, running, turning, resting, idle looks; root motion on the floor; footsteps (sound and noise); going through exits and doors (her door animations, locked doors); the camera follows her | rooms, doors, camera, acoustics |
 | F2 | Fear and panic: the meter, calming down, the panic stages, panic runs and stumbles, exhaustion, recovery | danger |
 | F3 | Hewie: calling, gestures, commands, praise and scolding | hewie |
-| F4 | Defending: kick, shove, strike, slamming doors on someone. Reactions: knocked down, thrown, caught, grabbed, led away, dragged, shaking free, falls | stalkers |
+| F4 | Defending: kick, shove, strike, slamming doors on someone. Reactions: knocked down, thrown, caught (F4a, done), grabbed, led away, dragged, shaking free (F4b), falls | stalkers |
 | F5 | The story's moves (walk to a spot, a path, turn, an animation, hold), ladders, pushing, points of interest, items | story, items |
 
 The debug walker (`scripts/walker.fs`) stood in for her until F1 was done.
@@ -165,3 +165,25 @@ scripted moves.
 **F5 begun** (with the story's S3): the story's moves (`scripted-move`: `scripts/fiona/moves.fs`),
 `scripted` on / off (her hands off the controls), `hold-anim`, `show`, `moving` each frame;
 examining (`offer` / `take-offer`), messages on screen (`text-shown`: she stands).
+
+## F4a: struck and caught (`scripts/fiona/hurt.fs`)
+
+| Message | Stack | Direction | Meaning |
+|---|---|---|---|
+| `hit` | `( kind how fright -- )` | in (a stalker) | A blow or hold from the sender: kind 1 / 2 a blow, 4 a hard one, 6 a hold (how: the grip; 5 thrown off); `$8000` in how a stumble; fright a float cell. |
+| `hit-taken` | `( kind -- )` | out, to the sender | It struck home. |
+| `fiona-plight` | `( state -- )` | broadcast each frame | How she stands for an attack (Pursuer_FionaState): 0 calm, 1 fleeing, 2 panicking (fear over 90, the panic attack), 3 out of reach (struck, seized), 4 / 5 the panic's stages. |
+
+Fiona_Reaction / Fiona_React: none while a reaction is under way (mode 4, floored $A), on a
+ladder (her fall from it: with the ladders) or with the world held. A blow knocks her down -
+on a step or in a doorway (floor $80003) the short falls $100E / $100F, else $1000 / $1004 by the
+side it came from (front, behind +1, her right +2, her left +3), her cry $3E / $3F; up again, 30
+frames before she may fall again. A hard blow throws her: facing him back along her heading
+($1008, then up $100A), from behind forwards ($100B, up $100D); panicking she is flung down
+($B04) and stays down as from a panic fall ($B01, up when her breath is back); moved by the
+motion turned toward him, 20 degrees a frame. A hold catches her: her gasp $43, a flinch by
+his grip ($F02 by the arm looking at him - only facing him on open floor -, $F04, $F03 from
+behind, $F05), then free. Each takes its fright to her panic; a blow tells the danger she was
+struck (`danger-signal` 1); a stumble resets her recovery.
+Her costume 1 (the slip) lacks these animations - they come with the story's second motion set
+(event $A7); her clothes (costume 0) have them.

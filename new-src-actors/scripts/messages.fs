@@ -63,6 +63,14 @@ message panic ( stage level -- )             \ broadcast each frame
 \ ---- Fiona (docs/subsystems/fiona.md) ----
 message fiona-doing ( mode sub cond cmd -- ) \ broadcast each frame: her move mode, what she does, her condition,
                                              \ her command this frame (-1 none; 3 the praise held)
+message fiona-plight ( state -- )            \ broadcast each frame: how she stands for a stalker's attack
+                                             \ (Pursuer_FionaState): 0 calm, 1 fleeing, 2 panicking, 3 out
+                                             \ of reach (hidden, already struck), 4 / 5 the panic's stages 4 / 5
+\ ---- blows (F4, the stalkers' P2: Relation_Request kind 4 to Fiona / Hewie) ----
+message hit ( kind how fright -- )           \ from the sender: kind 1 / 2 a blow, 4 a hard one (thrown), 6 a
+                                             \ hold (caught: how is the grip, 1 an arm .. 4; 5 thrown off),
+                                             \ $8000 in how a stumble; fright (a float cell) for her panic
+message hit-taken ( kind -- )                \ the answer: it struck home (none: it didn't)
 
 \ ---- Hewie (docs/subsystems/hewie.md) ----
 message join-fiona ( -- )                    \ he comes into the game at her heel (the story; the console)

@@ -1,7 +1,7 @@
 \ The stalkers, P1: Debilitas in the house (docs/subsystems/stalker.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/stalker/test_stalker.fs
 IN: test-stalker
-USING: tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.senses stalker.moving stalker.search stalker.travel ;
+USING: tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase fiona.state ;
 fvariable dx  fvariable dy  fvariable dz  fvariable dyaw
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
@@ -95,6 +95,34 @@ castle-1f-10 debug:debilitas-hunt  2 frames
 T{ [: knock-t @ 0> ;] 900 wait-for  [: away? ;] his -> -1 -1 }T
 T{ [: my-room castle-1f-2 = ;] 200 wait-for  game:debilitas body-tri 0< 0= -> -1 -1 }T
 T{ 30 frames  32 state@ opened-bit and 0<> -> -1 }T
+debug:debilitas-out  2 frames
+
+testing after her (P2a): seeing her he chases her; his blows knock her down, a hard one throws her, a hold catches her
+: hers ( xt -- x )  game:fiona enter  execute  leave-actor ;
+0 game:fiona send costume  front-garden-2 room!  10 frames
+: face-off ( -- )   \ (him on the open spot facing 340 degrees, her 10 ahead facing him)
+    140.64e her-y -217.33e 0e tp-facing  2 frames
+    s" fiona" actor-named body-tri  -500e her-y -500e tp  2 frames  debug:debilitas-tri  1 frames
+    [: 340e deg>rad body-turn ;] his  1 frames
+    game:debilitas body-pos dz f! dy f! dx f!
+    340e deg>rad fsin 10e f* dx f@ f+  dy f@  340e deg>rad fcos 10e f* dz f@ f+  160e tp-facing  3 frames ;
+face-off
+T{ [: chasing? my-mode @ ;] his -> -1 0 }T
+: struck ( combo -- )  [: combo-start ;] his ;
+: her-sub? ( -- sub )  [: her-sub @ ;] hers ;
+: reacted ( n -- sub )   \ (up to n frames for a reaction: her sub then)
+    0 ?do  [: her-mode @ 4 = her-mode @ $B = or ;] hers if  her-sub? unloop exit  then  game-tick  loop  -1 ;
+T{ 0 struck  60 reacted  $C $10 within  [: took @ ;] his -> -1 1 }T
+T{ [: her-mode @ 0= ;] hers 0= -> -1 }T   \ (down a while)
+: up ( n -- flag )  0 ?do  [: her-mode @ 0= ;] hers if  true unloop exit  then  game-tick  loop  false ;
+T{ 300 up -> -1 }T
+face-off  3 struck
+T{ 60 reacted -> $A }T
+300 up drop  face-off  6 struck
+T{ 90 reacted  [: her-mode @ ;] hers -> $20 $B }T
+testing a blow while she is down isn't taken
+300 up drop  face-off  0 struck  60 reacted drop
+T{ [: 2 0 10e f>cell stalker.senses:fiona send hit  0 took ! ;] his  3 frames  [: took @ ;] his -> 0 }T
 debug:debilitas-out  2 frames
 
 test-summary

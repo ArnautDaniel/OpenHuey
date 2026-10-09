@@ -54,5 +54,19 @@ state: stalker-state
   13 cells field avoid
   cell field away-search
   cell field knock-t
+  \ after her in her room (stalker/chase.fs, attack.fs): what he is doing in the chase (+0x175C:
+  \ 1 standing, 3 turning, 5 walking at her, 6 stalking her, $13 a combo, $17.. a gesture, $1A
+  \ stepping round her) and its step (an xt); how long he keeps to it (+0x162C) and before he
+  \ moves on from watching her (+0x1630); frames in the chase (+0x1780); his combo (+0x1728,
+  \ its step +0x172C), whether its blow has swung (+0x104: 1 swung, 2 after) and been sent,
+  \ whom it struck (+0x1760: 1 Fiona), his cry for it (+0x1764), how long before he attacks
+  \ again (+0x178C), frames held still by a blow landing (+0x14D0); her plight and panic as told;
+  \ the way round her (+0x104, +0x1634)
+  cell field chase-act  cell field act-xt
+  cell field hold-t  cell field watch-t  cell field chase-t
+  cell field combo  cell field combo-step  cell field swung  cell field sent  cell field took
+  cell field cry  cell field hold-off  cell field freeze-t
+  cell field her-plight  cell field her-stage
+  cell field round-dir  1 floats field round-gone
   cell field gesture            \ the look about he plays at a stop (-1: none)
 end-state

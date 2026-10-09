@@ -49,6 +49,9 @@ state: fiona-state
   cell field her-stumble-t    \ frames before she may fall again
   cell field her-attack-t     \ the panic attack's frames
   1 floats field her-fall-yaw  cell field her-fall-turn  cell field her-wall-side
+  \ struck or caught (F4: fiona/hurt.fs): by whom (+0x100: an actor, -1 nobody), the blow's
+  \ detail (the grip of a hold, $8000 a stumble), thrown backwards
+  cell field her-hit-who  cell field her-hit-how  cell field her-throw-back
   \ her footsteps
   cell field her-step-l   cell field her-step-r   cell field her-steps
   \ what she is doing, run each frame (an xt: the original's state), and its part

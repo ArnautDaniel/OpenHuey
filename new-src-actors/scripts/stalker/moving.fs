@@ -3,9 +3,11 @@
 \ and stepped onto it), turning on the spot ($400..$403) when the way goes off to one side,
 \ his walk for his mode, standing.
 IN: stalker.moving
-USING: engine actors paths stalker.state stalker.senses ;
+USING: engine game-state actors facts flag-names paths stalker.state stalker.senses ;
 
 : model ( -- a )  my-model @ actor ;
+: sound ( id bank -- )   \ Pursuer_Sound: at him (not while the world is held)
+    world-held state-flag? if  2drop exit  then  >r >r  my-at vec@  r> r>  bank-sound-at ;
 : yaw ( F: -- a )  self body-yaw ;
 : yaw! ( F: a -- )  body-turn ;
 
@@ -30,11 +32,13 @@ fvariable rm-turn  fvariable rm-x  fvariable rm-y  fvariable rm-z
 : turn-rate ( F: -- r )  0.052359879e ;
 \ Pursuer_TurnOnSpot via Npc_TurnWayTo: past 80 degrees off he turns on the spot - $400 left,
 \ $401 right, +2 a half turn (past 160); $FF none
-: way-to ( v -- way )
-    heading-to yaw f- angle-wrap                                     ( F: d )
-    fdup fabs 1.3962634e f<= if  fdrop $FF exit  then
+fvariable wp-a  fvariable wp-b
+: way-past ( v -- way ) ( F: a b -- )   \ (Npc_TurnWayTo: past a off, b for a half turn)
+    wp-b f!  wp-a f!  heading-to yaw f- angle-wrap                   ( F: d )
+    fdup fabs wp-a f@ f<= if  fdrop $FF exit  then
     fdup f0< if  0  else  1  then
-    fabs 2.7925268e f> if  2 or  then ;
+    fabs wp-b f@ f> if  2 or  then ;
+: way-to ( v -- way )  1.3962634e 2.7925268e way-past ;
 
 \ ---- along his way: planned to (tri, v) over his floor; how far is left ----
 : plan ( tri v -- n )  >r >r  my-path self body-tri my-at r> r> self body-mask path-plan ;
@@ -55,3 +59,14 @@ create sp-at 12 allot
     self body-tri 0< if  room-id r@ sp-at vec@ body-place  then  r> drop   \ triangle kept)
     my-path path-i!
     my-path path-left? 0= ;
+
+\ Npc_StepToward: turned toward a point (past 45 degrees only turning, twice as fast); a stride
+\ at it - onto it when it is within the stride
+: step-toward ( v -- )
+    stride fdup f0< if  fdrop drop exit  then                        ( v ) ( F: s )
+    dup heading-to yaw f- angle-wrap fabs 0.7853982e f< 0= if
+        fdrop  turn-rate 2e f* turn-to fdrop exit
+    then
+    dup turn-rate turn-to fdrop
+    my-at over vec-dist-xz fover f<= if  fdrop vec@ body-place-at exit  then
+    drop  0e fswap body-move-local ;

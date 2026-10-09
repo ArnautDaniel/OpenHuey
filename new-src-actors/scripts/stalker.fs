@@ -3,7 +3,7 @@
 \ (Debilitas: `debilitas`). P1: in the house - placed, standing, growling, telling the danger
 \ he is about; searching the room (stalker/search.fs: his modes, his route of stops, walking).
 IN: stalker
-USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel ;
+USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.tables stalker.attack stalker.chase ;
 
 : me ( -- id )  self ;
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
@@ -15,8 +15,6 @@ USING: engine game-state actors messages common facts flag-names room-names path
     my-at sf@ him act.x sf!  my-at 4 + sf@ him act.y sf!  my-at 8 + sf@ him act.z sf!
     self body-yaw him act.yaw sf!
     played? 0<> 1 and him act.visible l! ;
-: sound ( id bank -- )   \ Pursuer_Sound: at him (not under a scene, nor the world held)
-    world-held state-flag? if  2drop exit  then  >r >r  my-at vec@  r> r>  bank-sound-at ;
 
 \ ---- in the game and out (Pursuer_Activate: waiting about, his first animation) ----
 \ in the story's character slot 2 (CharLoad_Partner: loaded and started, not yet anywhere) and
@@ -42,7 +40,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     my-move-mode @ 0= anim @ $1300 <> and anim @ $1600 <> and if  $2A 7 sound  then ;
 : frame ( -- )
     away? if  away  pose  my-room 0 my-mode @ 0= 1 and danger-id send stalker-here  exit  then
-    senses  modes
+    thaw  senses  modes
     step @ ?dup if  execute  then  search
     played? growls @ and if  growl  then
     pose
@@ -65,7 +63,10 @@ behaviour stalking
   on tick ( -- )  in-game @ if  frame  then ;
   on heard ( loud room tri door source -- )  2drop hear ;
   on heard-nothing ( -- )  heard-none ;
-  on door-held ( room exit -- )  nip swing-open ;     \ (the door he came in by: swung open)
+  on door-held ( room exit -- )  nip swing-open ;
+  on hit-taken ( kind -- )  struck-home ;              \ (his blow struck her: his cry)
+  on fiona-plight ( state -- )  her-plight ! ;
+  on panic ( stage level -- )  drop her-stage ! ;     \ (the door he came in by: swung open)
   on door-refused ( room exit -- )  2drop ;            \ (it won't open for him: he gives up on it - with P3's doors)
 end-behaviour
 
@@ -79,7 +80,7 @@ behaviour debilitas
       0 him act.visible l!
       hard? if  110  else  70  then  dup hp-max !  hp !  2 my-kind !  -1 growls !  0 hear-threshold !  family-setup
       5e 20e body-size  debilitas-floor body-mask!  body-off  0 in-game !
-      self subscribe tick  self subscribe entered-room ;
+      self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic ;
 end-behaviour
 
 : debilitas-spawn ( -- id )  debilitas stalker-state s" debilitas" spawn ;
@@ -95,6 +96,6 @@ behaviour daniella
       0 him act.visible l!
       hard? if  100  else  120  then  dup hp-max !  hp !  3 my-kind !  0 growls !  12 hear-threshold !  family-setup
       3e 17e body-size  pursuer-floor body-mask!  body-off  0 in-game !
-      self subscribe tick  self subscribe entered-room ;
+      self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic ;
 end-behaviour
 : daniella-spawn ( -- id )  daniella stalker-state s" daniella" spawn ;
