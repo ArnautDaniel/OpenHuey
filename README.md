@@ -1,5 +1,6 @@
-# OpenHuey
 
+# OpenHuey
+<img width="3000" height="4000" alt="h" src="https://github.com/user-attachments/assets/224650eb-86ee-4886-8f7a-74fb6e9bcf45" />
 OpenHuey is a project to understand, preserve and rebuild **Haunting Ground** (Capcom, PS2, 2005,
 US release `SLUS_210.75`) for modern PCs. It has three parts:
 
