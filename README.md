@@ -13,6 +13,7 @@ In new-src-actors I'm working on a more readable codebase conversion using Forth
 My goal is to get a working Haunting Grounds on PC with some modern enhancements (maybe widescreen if it doesnt break everything visually, old games liked to hide things in the sides sometimes).  Secondly, I think it'd be fun to have a scriptable/modable version of the game.  Maybe you want to try stalker royale or have 10 hewies for some crazy reason.
 
 ------------- AI BELOW ------------------
+
 OpenHuey is a project to understand, preserve and rebuild **Haunting Ground** (Capcom, PS2, 2005,
 US release `SLUS_210.75`) for modern PCs. It has three parts:
 
