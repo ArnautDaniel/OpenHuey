@@ -29,7 +29,7 @@ variable seen   \ a bit an action (under 0x40)
 0 seen !  1200 watch
 T{ seen @ count-bits 3 >= -> -1 }T
 T{ hewie body-tri 0< -> 0 }T
-T{ apart 120e f< -> -1 }T
+T{ apart 200e f<  hewie body-room -> -1 room-id }T   \ (still in her room; free to roam it since the opening lets go of the world)
 
 testing his trust: points to levels (100 280 450 ... 1000)
 T{ [: 99 add-trust his-trust @  1 add-trust his-trust @  900 add-trust his-trust @ ;] his@ -> 0 1 7 }T

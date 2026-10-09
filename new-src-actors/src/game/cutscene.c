@@ -217,6 +217,15 @@ static void cast(void) {
         s->in = 1;
         s->was_visible = gEngine.actors[s->actor].visible;
     }
+    if (getenv("HG_CASTLOG")) {
+        fprintf(stderr, "cast: actors %08x:", actors);
+        for (i = 1; i < SLOTS; i++) {
+            if (actors & (1u << i)) {
+                fprintf(stderr, " [%d kind %d -> %d]", i, i < 26 ? kMap[i] : -1, C.slots[i].actor);
+            }
+        }
+        fprintf(stderr, "\n");
+    }
     C.cast = 1;
 }
 
@@ -339,6 +348,9 @@ static void group_door_keys(int t) {
  * shown with their keys, the others the script animates hidden (Cutscene_StartShot) */
 static void start_shot(int rec) {
     const uint8_t *r = record(rec);
+    if (getenv("HG_CASTLOG") && r != NULL) {
+        fprintf(stderr, "shot %d: actors %08x\n", rec, (unsigned)rd32(r));
+    }
     uint32_t actors = r != NULL ? rd32(r) : 0;
     int i;
 

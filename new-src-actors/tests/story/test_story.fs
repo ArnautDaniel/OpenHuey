@@ -1,7 +1,7 @@
 \ The story: each room's event scripts as its actor (docs/subsystems/story.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/story/test_story.fs
 IN: test-story
-USING: tester engine game-state actors messages room-names game fiona.state story.state story.words debug flag-names ;
+USING: tester engine game-state actors messages room-names game fiona.state story.state story.words debug flag-names keys ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
@@ -53,10 +53,18 @@ testing the new game's entry closes off the doors to castle-2f-5 and rebuilds th
 T{ front-garden-2 0 room-exit-leads drop -> castle-2f-3 }T
 testing ... in castle-2f-3, crossing the gate halfway across (event area $E, z -20) starts the scene (act07: EV0002's movie and cutscene)
 front-garden-2 room!  20 frames  front-garden-2 0 room-exit-leads drop room!  30 frames
-world-held state-flag-clear
+T{ world-held state-flag? -> 0 }T   \ (the opening's fade-in let go of the world: the shared $B9)
 -33.4e -8e -9.1e tp  10 frames
 -30.5e -1e -18e walk  40 frames  -29.6e -0.4e -19.5e walk  40 frames  -29.6e 0e -23e walk
 : scene? ( -- flag )  cutscene-active? movie-status 1 = or ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
 T{ ' scene? 120 soon -> -1 }T
+testing ... Daniella is in it: loaded into the story's slot 3 (char-load) and cast for the scene
+T{ game:daniella enter  stalker.state:loaded @  leave-actor -> -1 }T
+testing ... the scene pauses (Start) and skips (Cross): over, the world let go
+60 frames  start-button debug:press  10 frames
+T{ game:pause enter  pause:stage @  leave-actor -> 2 }T
+cross debug:press
+: over? ( -- flag )  cutscene-active? 0=  movie-status 1 <> and ;
+T{ ' over? 600 soon  world-held state-flag? -> -1 0 }T
 test-summary
