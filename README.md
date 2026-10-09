@@ -1,6 +1,6 @@
 # Haunting Ground (USA) decompilation
 
-A **functional, non-matching** decompilation of *Haunting Ground* (PS2, Capcom, 2005),
+A **functional, non-matching** decompilation (and PC port) of *Haunting Ground* (PS2, Capcom, 2005),
 `SLUS_210.75` v1.01.
 
 The goal is C/C++ source that builds into a working ELF. It does not need to be
@@ -25,18 +25,21 @@ was built with Metrowerks CodeWarrior (`MW MIPS C Compiler 2.4.1.01`).
 | `0x003A1B80`–`0x0047B200` | data / rodata (incl. embedded `cdvdman` IRX at `0x0044A9A0`) |
 | `0x0047B200`–`0x01992000` | BSS (`_gp` = `0x004828F0`) |
 
-## Status
+## What's here
 
-- [x] Full-binary split with splat; assemble and link round-trip is byte-identical
-- [x] **Shiftable build**: with padding inserted after crt0 (4 bytes, 16 bytes, or 4 KB),
-      the game boots, shows the memory-card check and the Capcom logo with correct colours,
-      and plays the intro movie
-- [x] Library code mapped (`config/libraries.txt`): ~4,350 functions / 616 KB are Sony SDK,
-      CRI ADX/Sofdec, MSL runtime and libm; ~6,950 functions / 2 MB are Capcom game code.
-      237 library functions named (`tools/name_libs.py`: syscall stubs + API names from error strings)
-- [ ] Split `asm/game.s` into per-file / per-function units
-- [x] C build path: `src/**/*.c` replaces the matching asm functions in `build/SLUS_210.75.decomp.elf`
-- [ ] Decompile game code: Game top level, Scene base class, SceneBoot framework (18 functions, `src/game/`)
+| Path | What it is |
+|---|---|
+| `src/`, `include/` | The decompilation: the game's code as C, each function checked against the original by `tools/difftest.py` (both run on random inputs in an R5900 interpreter, their calls, writes and results compared). Builds back into the PS2 ELF with the remaining asm. |
+| `native/` | The PC port of `src/`: `hg`, the game running natively (SDL3, OpenGL). The reference for how the game behaves - `HG_EVLOG=1` traces the event scripts, `HG_ROOMLOG=1` the rooms. Build: see `docs/progress.md`. |
+| `new-src-actors/` | A rewrite meant to ship: the same engine, the gameplay redesigned as Forth actors passing messages (`hga`). See its README. |
+| `tools/`, `config/` | The splat / build pipeline, the decompilation helpers, the format tools. |
+| `docs/` | Where the decompilation stands (`progress.md`), known gaps (`known_issues.md`), formats, structure. |
+
+`new-src/`, an earlier Forth rewrite (`hg2`), is retired: it is kept at the git tag
+`new-src-final`.
+
+**No game data is included.** You need your own copy of the game: the executable for the
+build (`baserom/`), the extracted disc (`DATA.CVM`) to run `hg` / `hga`.
 
 ## Decompiling a function
 

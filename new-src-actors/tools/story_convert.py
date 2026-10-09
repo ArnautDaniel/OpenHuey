@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """The rooms' event scripts for new-src-actors, from new-src's conversion of the game's bytecode
-(new-src/scripts/events/map*.fs, other.fs, builtin.fs): one file a room, the rooms by name.
+(new-src/scripts/events/map*.fs, other.fs, builtin.fs - new-src is archived at the git tag
+new-src-final: check it out to run this again): one file a room, the rooms by name.
 
   scripts/story/rooms/<name>.fs   IN: story.rooms.<name>   its words <name>.enter, .phase1 ...,
                                   .act05 ..., and their registration (room-script! /

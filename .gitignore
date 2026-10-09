@@ -15,3 +15,25 @@ build.ninja
 tools/ps2dev/
 tools/m2c/
 __pycache__/
+
+# The game's own files (the extracted disc, its data) -- never commit
+/data/
+DATA.CVM
+*.iso
+*.ISO
+*.SFD
+*.PAC
+*.TEX
+*.ADX
+*.HD
+*.BD
+*.SDT
+*.IRX
+SLUS_*
+!config/SLUS_210.75.yaml
+
+# Runtime output: saves and options, logs, debug dumps
+save/
+*.log
+*.raw
+screenshot*.png

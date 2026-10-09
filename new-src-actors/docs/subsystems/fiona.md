@@ -55,7 +55,7 @@ she is using.
 From `Fiona_MoveInput`, `Fiona_StateIdleMove`, `Fiona_StateTurnStanding`,
 `Fiona_StateTurnOnSpot`, the door states (`Fiona_StateDoorStart` / `DoorWalk` / `DoorAnim` /
 `DoorStepOut`, `Fiona_StateLocked*`), `Fiona_Footsteps`, `Fiona_MotionSounds`. Reference:
-new-src's port (`new-src/scripts/fiona/moves.fs`, `doors.fs`, `core.fs`), faithful in
+new-src's port (archived: tag `new-src-final`, `new-src/scripts/fiona/moves.fs`, `doors.fs`, `core.fs`), faithful in
 behaviour.
 
 1. **The controls are camera-relative.** Up is where the camera looks. After a camera cut,

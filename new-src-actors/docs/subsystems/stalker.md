@@ -158,7 +158,7 @@ seized outright). His grab ($E06): at its key, Hewie by his hand (bone $1E, with
   grab is `seize`, answered by Fiona.
 - His tables (moves, attack tables by her state, his chances) are data from the executable,
   generated once like Hewie's (`tools/`).
-- The old new-src port (`new-src/scripts/pursuer/`) is a behaviour reference only: it keeps the
+- The old new-src port (archived: tag `new-src-final`, `new-src/scripts/pursuer/`) is a behaviour reference only: it keeps the
   original's offsets and vtable; this one is written in game terms.
 
 ## Status
