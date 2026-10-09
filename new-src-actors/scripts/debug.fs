@@ -35,10 +35,12 @@ create spot 12 allot
     world-held state-flag-clear
     room-id room-name actor-named dup 0< if  2drop ." no room actor" cr exit  then
     enter  0 0 rot action  leave-actor ;
-\ the stalker: Debilitas into Fiona's room on a triangle (her own: `0 debilitas-tri`), or out
+\ the stalker: Debilitas into Fiona's room on a triangle (her own: `fiona-id body-tri debilitas-tri`), or out
 : debilitas-id ( -- id )  s" debilitas" actor-named ;
 : debilitas-tri ( tri -- )  room-id swap debilitas-id send stalker-in ;
 : debilitas-out ( -- )  debilitas-id send stalker-out ;
+\ ... or out of sight in another room, heading for hers (`castle-1f-10 debilitas-hunt`)
+: debilitas-hunt ( room -- )  0 debilitas-id send stalker-in  debilitas-id send stalker-hunt ;
 
 \ the room's name and number top right, every frame (to say where something happened): `label-off`, `label-on`
 8 constant label-layer

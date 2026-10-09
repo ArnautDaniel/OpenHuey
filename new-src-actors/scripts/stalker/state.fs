@@ -43,5 +43,16 @@ state: stalker-state
   cell field stop-wait          \ +0x1798: frames to look about at a stop picked at random
   cell field route-done         \ +0x16F4: the route is over (his mode moves on)
   cell field search-phase       \ 0 none, 1 walking to a stop, 2 searching it
+  \ his travel out of sight (stalker/travel.fs): the room he heads for (+0x1594), his route's
+  \ doors (+0x138C, the next +0x1388, their number +0x1384), the way left to the next
+  \ (+0x14C4), the exit he came in by (his door) and the one he makes for (+0x17B0), the doors
+  \ that let him down (+0x148C), his search there (+0x17B4), a knock's wait
+  cell field goal-room
+  16 cells field doors  cell field doors-n  cell field door-i
+  1 floats field to-door
+  cell field came-by  cell field making-for
+  13 cells field avoid
+  cell field away-search
+  cell field knock-t
   cell field gesture            \ the look about he plays at a stop (-1: none)
 end-state

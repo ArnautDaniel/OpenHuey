@@ -1,7 +1,7 @@
 \ The stalkers, P1: Debilitas in the house (docs/subsystems/stalker.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/stalker/test_stalker.fs
 IN: test-stalker
-USING: tester engine game-state actors messages room-names game debug paths stalker stalker.state stalker.senses stalker.moving stalker.search ;
+USING: tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.senses stalker.moving stalker.search stalker.travel ;
 fvariable dx  fvariable dy  fvariable dz  fvariable dyaw
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
@@ -69,6 +69,32 @@ T{ on-floor?  [: my-mode @  sees-fiona @ ;] his -> -1 0 -1 }T
 : d-her ( F: -- d )  s" fiona" actor-named body-at  game:debilitas body-at vec-dist ;
 fvariable d0  d-her d0 f!  90 frames
 T{ d-her d0 f@ 5e f- f< -> -1 }T
+debug:debilitas-out  2 frames
+
+testing out of sight (P1d): heading for her room he comes through the doors into it, on its floor, shown, searching
+front-garden-3 room!  10 frames
+front-garden-2 0 game:debilitas send stalker-in  2 frames
+T{ game:debilitas body-room  game:debilitas body-tri  shown? -> front-garden-2 -1 0 }T
+[: 1 mode! ;] his
+T{ [: my-room front-garden-3 = ;] 900 wait-for  game:debilitas body-tri 0< 0=  shown? -> -1 -1 -1 }T
+T{ [: my-mode @ dup 0= swap 2 = or ;] his -> -1 }T
+testing she leaves his room: out of sight, after her he follows her into the next
+[: 0 mode! ;] his  front-garden-2 room!  2 frames
+T{ game:debilitas body-tri  shown?  [: goal-room @ ;] his -> -1 0 front-garden-2 }T
+T{ [: my-room front-garden-2 = ;] 900 wait-for  game:debilitas body-tri 0< 0= -> -1 -1 }T
+testing she comes into his room: he's put on its floor
+debug:debilitas-out  2 frames  front-garden-3 0 game:debilitas send stalker-in  2 frames
+T{ game:debilitas body-tri shown? -> -1 0 }T
+front-garden-3 room!  3 frames
+T{ game:debilitas body-tri 0< 0=  shown?  game:debilitas body-room -> -1 -1 front-garden-3 }T
+debug:debilitas-out  2 frames
+
+testing at a shut door into her room he knocks, waits, then comes in and it swings open
+castle-1f-2 room!  10 frames
+castle-1f-10 debug:debilitas-hunt  2 frames
+T{ [: knock-t @ 0> ;] 900 wait-for  [: away? ;] his -> -1 -1 }T
+T{ [: my-room castle-1f-2 = ;] 200 wait-for  game:debilitas body-tri 0< 0= -> -1 -1 }T
+T{ 30 frames  32 state@ opened-bit and 0<> -> -1 }T
 debug:debilitas-out  2 frames
 
 test-summary

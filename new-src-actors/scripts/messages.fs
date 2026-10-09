@@ -135,6 +135,7 @@ message dust-start ( rgba x y z vx vy vz -- )  \ (a mote of dust) its colour $RR
 \ ---- the stalkers (docs/subsystems/stalker.md) ----
 message stalker-in ( room tri -- )           \ (a stalker) into the game, in that room on that triangle
 message stalker-out ( -- )                   \ (a stalker) out of the game
+message stalker-hunt ( -- )                  \ (a stalker) heads for Fiona's room (mode 1: the summoner, the console)
 message costume ( n -- )                     \ (Fiona) her model for costume n (0 her clothes, 1 the slip)
 message stalker-load ( -- )                  \ (a stalker) into the story's character slot 2 (the cutscenes' cast)
 message stalker-unload ( -- )                \ (a stalker) out of slot 2 (and out of the game)

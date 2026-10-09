@@ -73,6 +73,23 @@ turns on the spot ($400 left, $401 right, +2 past 160) until it ends or he faces
 slows to a stand within 10 of the stop. His walk (Debilitas_StandAnim): after her $200 when
 within 80 on foot and she isn't hiding, else $206; waiting $200; searching or heading $201.
 
+**Out of sight** (P1d, `stalker/travel.fs`): his route through the doors (the engine's
+`route-avoiding`, walkers of `stalker-kind`); each stretch is the next door's triangle number
+on his side (plus the one he came in by - the original's own measure, Npc_NodeDistance),
+counted down at his pace: after her 1.6..1.8 a frame, searching or waiting 0.6, heading for her
+room or held off 1, while she hides 2. A door as he finds it (Npc_ExitKind): held shut - he
+waits; locked against him, locked or stuck - not that way again (a fresh route avoiding it);
+a doorway or open - through; shut - through, but into her room he first knocks (his sound
+$28 or $23, bank 7, at the door on her side) and waits 60..120 frames. Into her room he comes
+just inside the exit, facing in; a shut door he came by is taken (`hold-door`) and swung open.
+His modes out there: after her he heads for her room (a new route as she moves on), his
+clock out - heading for it (1); come to the room he heads for he searches it (its stops x 150
+frames), then waits about (900); his wait over he heads for her room unless she is in his or
+one next to it - then out by a door at random. When she leaves his room he is out of sight at
+once (after her: routed to her room); when she comes into his (Pursuer_BackOnMesh) he is put
+on its floor - by the door he made for if within 80 of it, facing it; else by the door he came
+in by, facing in; else anywhere he may stand. Console: `castle-1f-10 debilitas-hunt`.
+
 **After her** (mode 0) is, until P2's chase, a stand-in: toward her on foot, his way
 re-planned every 30 frames, standing facing her within 15.
 
@@ -88,6 +105,7 @@ re-planned every 30 frames, standing facing her within 15.
 
 ## Status
 
-P1a (in/out, shown, growl, `stalker-here`), P1b (senses) and P1c (modes, search route,
-walking) done - `tests/stalker/test_stalker.fs` (16). Next: P1d (off screen from room to room,
-coming into the room being played), then P2 with Fiona's F4.
+P1 done: P1a (in/out, shown, growl, `stalker-here`), P1b (senses), P1c (modes, search route,
+walking), P1d (out of sight from room to room, knocking, coming in) - `tests/stalker/test_stalker.fs`
+(26). Not yet: his footsteps heard through the walls, the knock frightening her (with her fear),
+the rooms a stalker keeps to (+0x314). Next: P2 with Fiona's F4.

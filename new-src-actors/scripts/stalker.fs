@@ -3,11 +3,10 @@
 \ (Debilitas: `debilitas`). P1: in the house - placed, standing, growling, telling the danger
 \ he is about; searching the room (stalker/search.fs: his modes, his route of stops, walking).
 IN: stalker
-USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search ;
+USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel ;
 
 : me ( -- id )  self ;
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
-: my-room ( -- room )  self body-room ;
 : played? ( -- flag )  in-game @ if  my-room room-id =  else  false  then ;   \ (Npc_InPlayedRoom)
 : danger-id ( -- id )  s" danger" actor-named ;
 
@@ -27,11 +26,13 @@ USING: engine game-state actors messages common facts flag-names room-names path
 : load ( -- )  -1 loaded !  my-kind @ my-model @ cast-as  7 file sound-bank drop ;   \ (slot 2's sounds: bank 7)
 : come-in ( room tri -- )
     loaded @ 0= if  load  then
-    dup tri-center  body-place
+    over room-id = if  dup tri-center body-place
+    else  >r -1 0e 0e 0e body-place r> drop  then                   \ (out of sight: in that room, nowhere yet)
     -1 in-game !  0 growl-t !  0 my-move-mode !  -1 anim !
     hp @ 0> 0= if  hp-max @ hp !  then
     route-clear  my-path path-clear  3 mode!  0 play-now  stand  pose
-    search-start ;
+    -1 came-by !  -1 making-for !  0 doors-n !  0 door-i !  0 away-search !  0 knock-t !  avoid-clear
+    away? 0= if  search-start  then ;
 : go-out ( -- )  0 in-game !  body-off  0 him act.visible l! ;
 
 \ ---- his frame (Debilitas_Update: so far the growl, his model) and his part in the danger ----
@@ -40,6 +41,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     0 growl-t !
     my-move-mode @ 0= anim @ $1300 <> and anim @ $1600 <> and if  $2A 7 sound  then ;
 : frame ( -- )
+    away? if  away  pose  my-room 0 my-mode @ 0= 1 and danger-id send stalker-here  exit  then
     senses  modes
     step @ ?dup if  execute  then  search
     played? growls @ and if  growl  then
@@ -58,10 +60,13 @@ behaviour stalking
   on stalker-unload ( -- )  unload ;
   on stalker-in ( room tri -- )  come-in ;
   on stalker-out ( -- )  go-out ;
-  on entered-room ( room exit -- )  2drop  in-game @ if  pose  then ;
+  on stalker-hunt ( -- )  in-game @ if  1 mode!  away? 0= if  search-again  then  then ;
+  on entered-room ( room exit -- )  drop room-changed  in-game @ if  pose  then ;
   on tick ( -- )  in-game @ if  frame  then ;
   on heard ( loud room tri door source -- )  2drop hear ;
   on heard-nothing ( -- )  heard-none ;
+  on door-held ( room exit -- )  nip swing-open ;     \ (the door he came in by: swung open)
+  on door-refused ( room exit -- )  2drop ;            \ (it won't open for him: he gives up on it - with P3's doors)
 end-behaviour
 
 \ ---- Debilitas (debilitas.c Debilitas_Setup, DebilitasModel): 70 health (hard: 110), 5 across,
