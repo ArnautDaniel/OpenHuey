@@ -33,6 +33,9 @@ void glr_strip(const float mvp[16], int n, const float *xyzw, const float *st, c
 /* PC-only bit: with GLR_PRIM_FIX or _ADD, subtracted instead: Cd - Cs * FIX / 128 or Cd - Cs * As
  * (GS ALPHA (0 - Cs) * FIX + Cd, (0 - Cs) * As + Cd) */
 #define GLR_PRIM_SUB 0x8000u
+/* PC-only bit: the vertex alpha is a mask for the passes that read the frame's alpha (the lit
+ * model parts' specular term), not transparency: only fully transparent texels are dropped */
+#define GLR_PRIM_KEEPA 0x2000u
 /* PC-only bit: with GLR_PRIM_FIX, a mix instead: (Cs - Cd) * FIX / 128 + Cd (GS ALPHA 0x64) */
 #define GLR_PRIM_LERP 0x4000u
 

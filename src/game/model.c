@@ -4648,8 +4648,8 @@ static ModelBuf sMb;
  * 4th colour row is the ambient. A vertex at world P with normal N gets
  *   min(ambient + sum_i colour_i * max(dir_i.N^, 0) * max(1 + falloff_i * (dir_i.P - dir_i.L_i), 0), 128)
  * (0x80 = 1.0 against the texture), alpha 127.
- * Not ported: parts whose mode ((model +0x88 + 2 x part) | record +0x18) & 0xFC is 4, 8 or 0xC
- * use the lit programs (e.g. D_003A2EF0 for rigid parts), which also put a specular term into
+ * Approximated (light_spec, skinned parts only): parts whose mode ((drawer +0x88 + 2 x part, the
+ * drawer at model +0x10) | record +0x20) & 0xFC is 4, 8 or 0xC use the lit programs (e.g. D_003A2EF0 for rigid parts), which also put a specular term into
  * the vertex alpha: sum over the lights of max(R.V, 0)^4 x the light's strength (colour row .y)
  * x its diffuse term, scaled by the eye vector's w (R the light reflected about the normal, V
  * towards the eye). The other programs (D_003A58A0 ...) skip normalizing the normal and give
@@ -4657,12 +4657,14 @@ static ModelBuf sMb;
 static f32 sLDir[4][4] __attribute__((aligned(16)));
 static f32 sLCol[4][4] __attribute__((aligned(16)));
 static f32 sLFall[4];
+static f32 sEye[4] __attribute__((aligned(16)));   /* the camera's position, for the specular term */
 
 static void light_setup(u8 *m) {
     f32 *root = Skel_Bone(AT(m, 0x18, void *), AT(m, 0x2C, s32));
 
     VCALL(gLights, 0x10, void (*)(VObject *, f32 *, s32, f32 (*)[4], f32 (*)[4], f32 *, f32 (*)[4]))(
         gLights, root != NULL ? root + 12 : NULL, AT(m, 0x28, s32), sLDir, sLCol, sLFall, NULL);
+    VCALL(gCamera, 0x20, void (*)(VObject *, f32 *))(gCamera, sEye);
     {
         static s32 sDbg = -1, sN;
 
@@ -4710,6 +4712,44 @@ static u32 light_rgba(const f32 *n, const f32 *p) {
     return out;
 }
 
+/* PC approximation of the lit programs' specular term (D_003A77F0 ...): the vertex alpha (0x80 =
+ * 1.0) = `k` (the part's strength) x the sum over the lights of max(R.V, 0)^4 x the light's
+ * strength (its colour's .y) x its diffuse term - R the light reflected about the normal, V
+ * towards the eye. The passes that read the frame's alpha (the bloom's mask) then see the shine
+ * instead of the whole part. */
+static u32 light_spec(const f32 *n, const f32 *p, f32 k) {
+    f32 len2 = n[0] * n[0] + n[1] * n[1] + n[2] * n[2];
+    f32 r = len2 > 0.0f ? 1.0f / __builtin_sqrtf(len2) : 0.0f;
+    f32 nn[3] = {n[0] * r, n[1] * r, n[2] * r}, v[3] = {sEye[0] - p[0], sEye[1] - p[1], sEye[2] - p[2]};
+    f32 vl = __builtin_sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]), a = 0.0f;
+    s32 i;
+
+    if (vl <= 0.0f) {
+        return 0;
+    }
+    v[0] /= vl;
+    v[1] /= vl;
+    v[2] /= vl;
+    for (i = 0; i < 3; i++) {
+        f32 l[3] = {sLDir[0][i], sLDir[1][i], sLDir[2][i]};
+        f32 d = l[0] * nn[0] + l[1] * nn[1] + l[2] * nn[2];
+        f32 f = 1.0f + sLFall[i] * (l[0] * p[0] + l[1] * p[1] + l[2] * p[2] + sLDir[3][i]);
+        f32 rv, s;
+
+        if (d <= 0.0f || f <= 0.0f) {
+            continue;
+        }
+        rv = (2.0f * d * nn[0] - l[0]) * v[0] + (2.0f * d * nn[1] - l[1]) * v[1] + (2.0f * d * nn[2] - l[2]) * v[2];
+        if (rv <= 0.0f) {
+            continue;
+        }
+        s = rv * rv;
+        a += s * s * sLCol[i][1] * d * f;
+    }
+    a *= k;
+    return a <= 0.0f ? 0 : a >= 255.0f ? 255 : (u32)a;
+}
+
 /* a normal (3 x s16 / 32768) turned by a matrix's 3 x 3, scaled by w, added to `acc` */
 static void normal_add(f32 *acc, f32 (*m)[4], const s16 *n, f32 w) {
     f32 x = n[0] / 32768.0f, y = n[1] / 32768.0f, z = n[2] / 32768.0f;
@@ -4748,8 +4788,10 @@ static void *model_tex(u8 *m, s32 tex) {
 }
 
 static void model_emit(u8 *m, const f32 *mvp, s32 n, s32 tex, s32 flags) {
-    /* second-pass parts (flags bit 0) are cut out by their texture's alpha */
-    glr_strip(mvp, n, sMb.xyzw, sMb.st, sMb.rgba, model_tex(m, tex), flags & 1 ? 1ULL << 34 : 0, 0x1C);
+    /* second-pass parts (flags bit 0) are cut out by their texture's alpha; a lit part's vertex
+     * alpha is its specular mask (GLR_PRIM_KEEPA, flags bit 31 here) */
+    glr_strip(mvp, n, sMb.xyzw, sMb.st, sMb.rgba, model_tex(m, tex), flags & 1 ? 1ULL << 34 : 0,
+              0x1C | ((u32)flags & 0x80000000u ? GLR_PRIM_KEEPA : 0));
 }
 
 static void vtx_set(s32 i, const f32 *p, u16 u, u16 v, u32 noTri) {
@@ -4766,7 +4808,8 @@ static void gl_skinned_parts(u8 *m, const f32 *mvp) {
     u8 *r0 = AT(m, 0x4C0, u8 *);
     u8 *mt = r0 + AT(r0, 0x4, s32);
     f32 pal[32][4][4] __attribute__((aligned(16)));
-    s32 i, k, j;
+    s32 i, k, j, lit;
+    f32 litK;
 
     for (i = 0; i < AT(mt, 0x0, s32); i++) {
         u8 *rec = mt + 0x10 + i * 0x30;
@@ -4786,6 +4829,13 @@ static void gl_skinned_parts(u8 *m, const f32 *mvp) {
         }
         for (j = 0; j < npal; j++) {
             bone_skin(m, pb[j], pal[j]);
+        }
+        {   /* the lit programs: mode ((drawer +0x88 + 2 x part) | record +0x20) & 0xFC 4, 8 or 0xC
+             * (func_001BD830), the specular strength (drawer +0x89 + 2 x part) / 128 */
+            u32 mode = (AT(m, 0x98 + 2 * i, u8) | (u32)AT(rec, 0x20, s32)) & 0xFC;
+
+            lit = mode == 4 || mode == 8 || mode == 0xC;
+            litK = AT(m, 0x99 + 2 * i, u8) / 128.0f;
         }
         mb_reserve(n);
         for (k = 0; k < n; k++) {
@@ -4815,8 +4865,11 @@ static void gl_skinned_parts(u8 *m, const f32 *mvp) {
             }
             vtx_set(k, o, uv[k * 2], uv[k * 2 + 1], fl[k] & 1);
             AT(sMb.rgba, k * 4, u32) = light_rgba(nn, o);
+            if (lit) {
+                sMb.rgba[k * 4 + 3] = (u8)light_spec(nn, o, litK);
+            }
         }
-        model_emit(m, mvp, n, AT(rec, 0x1C, s32), AT(rec, 0x20, s32));
+        model_emit(m, mvp, n, AT(rec, 0x1C, s32), AT(rec, 0x20, s32) | (lit ? (s32)0x80000000 : 0));
     }
 }
 

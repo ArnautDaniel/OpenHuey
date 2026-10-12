@@ -535,7 +535,7 @@ static int sScale = 1, sWantScale = 1;
 
 static GLuint sMeshProg, sFillProg, sVao, sQuadVao, sVbo;
 static GLint sFillLoc;
-static GLint sMvpLoc, sTexModeLoc, sTccLoc, sFbaLoc;
+static GLint sMvpLoc, sTexModeLoc, sTccLoc, sFbaLoc, sKeepALoc;
 static GLuint sFbo, sColor, sDepth, sViewDepth;   /* sViewDepth: each pixel's view depth */
 /* the glow buffer (B, kept between frames) with the scene's depth at its size, and the
  * scratch buffer its fade goes through (A) */
@@ -589,6 +589,7 @@ static const char *kMeshFs =
     "uniform int uTexMode;\n"   /* 0 none, 1 modulate, 2 decal */
     "uniform int uTcc;\n"
     "uniform int uFba;\n"   /* the frame's alpha written with bit 7 set (GS FBA) */
+    "uniform int uKeepA;\n"   /* GLR_PRIM_KEEPA: the vertex alpha is a mask, kept even at 0 */
     "in float vDepth;\n"
     "layout(location = 0) out vec4 oColor;\n"
     "layout(location = 1) out float oDepth;\n"   /* the view depth, for the fog pass */
@@ -601,7 +602,7 @@ static const char *kMeshFs =
     "        if (uTcc != 0) {\n"
     "            c.a = uTexMode == 1 ? c.a * t.a : t.a;\n"
     "        }\n"
-    "        if (c.a < 1.0 / 255.0) {\n"
+    "        if (uKeepA != 0 ? (uTcc != 0 && t.a < 1.0 / 255.0) : c.a < 1.0 / 255.0) {\n"
     "            discard;\n"
     "        }\n"
     "    }\n"
@@ -1484,6 +1485,7 @@ int glr_init(void) {
     sMvpLoc = p_glGetUniformLocation(sMeshProg, "uMvp");
     sTexModeLoc = p_glGetUniformLocation(sMeshProg, "uTexMode");
     sTccLoc = p_glGetUniformLocation(sMeshProg, "uTcc");
+    sKeepALoc = p_glGetUniformLocation(sMeshProg, "uKeepA");
     sFbaLoc = p_glGetUniformLocation(sMeshProg, "uFba");
     sFillProg = program(kQuadVs, kFillFs);
     sFillLoc = p_glGetUniformLocation(sFillProg, "uColor");
@@ -2249,6 +2251,7 @@ void glr_present(int outW, int outH) {
                 p_glProgramUniform1i(sMeshProg, sTccLoc, (int)(d->tex0 >> 34) & 1);
             }
             p_glProgramUniform1i(sMeshProg, sTexModeLoc, mode);
+            p_glProgramUniform1i(sMeshProg, sKeepALoc, (d->prim & GLR_PRIM_KEEPA) != 0);
             if (d->prim & 0x40) {   /* ABE */
                 p_glEnable(GL_BLEND);
                 p_glDisablei(GL_BLEND, 1);
