@@ -97,3 +97,18 @@ See `docs/model_format.md`. Where the decompilation stands: `docs/progress.md`; 
 
 - Register names use the **n32** convention (`$a4`–`$a7` = o32 `$t0`–`$t3`) because the
   ps2dev toolchain is n32. Don't hand-convert asm to o32 names.
+
+## The native build's data (`native/data/`)
+
+`hg` links the game's data, converted from the split by `tools/native_gen.py`. Its
+compiler-generated part is C in the repository instead: `native/data/group1.c`, written once
+by `tools/data_c.py` - the static constructor table, every vtable (the C++ runtime's and the
+game's) and every pointer-to-member constant (named `*_ptmf` or not), 3,456 labels in 223 runs.
+Each run is the words of a stretch of adjacent labels at their PS2 offsets, every label an alias
+into it, so whatever the code reads across labels (a vtable running on into the next label, a
+table of PTMFs indexed from its first) stays together. `native_gen.py` leaves zero-filled space
+where they were (`native/data/group1.txt`), so the rest keeps its layout. The PS2 build keeps
+the disassembly.
+
+Run `tools/data_c.py` again only to regenerate from a fresh split; check the result with a
+replay of saves against the previous `hg` (frame dumps and `HG_EVLOG` must match exactly).
