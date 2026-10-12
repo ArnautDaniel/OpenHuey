@@ -2036,6 +2036,12 @@ static void motion_root(u8 *m, s32 slot, s32 k, f32 dt, f32 *out) {
             t -= (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32);
         } while (!(t < (f32)AT(AT(anim, 0x4, u8 *), 0xC, s32)));
     }
+#ifdef HG_NATIVE
+    /* Track_Sample never sets tmp[7] (nor tmp[4..6] for a format without a position), and the
+     * original scales all four into out: stack garbage, harmless on the PS2 but NaN here at times
+     * (Fiona vanishing after the clothes in room 0x21) */
+    tmp[4] = tmp[5] = tmp[6] = tmp[7] = 0.0f;
+#endif
     Track_Sample(track, tmp, t);
     sceVu0ScaleVector(out, tmp + 4, AT(s, 0x574 + k * 4, f32));
 }
@@ -2417,6 +2423,9 @@ void Track_Blend(u8 *m, f32 *out, void *trackA, void *trackB, f32 ta, f32 tb, f3
     a[4] = a[5] = a[6] = 0.0f;
     b[0] = b[1] = b[2] = 0.0f;
     b[4] = b[5] = b[6] = 0.0f;
+#ifdef HG_NATIVE
+    a[3] = a[7] = b[3] = b[7] = 0.0f;   /* unset in the original, and copied out whole below */
+#endif
     if (trkA != NULL && *trkA != 0) {
         Track_Sample(trkA, a, ta);
     }
