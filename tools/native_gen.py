@@ -36,11 +36,38 @@ DIRECTIVE = re.compile(r"^(\s*(?:/\*.*?\*/)?\s*)\.(word|align)\b\s*(.*)$")
 SECTION = re.compile(r'^\.section\s+(\.\w+)')
 
 
-def convert(src: Path) -> str:
+# labels written as C (native/data/group1.c, tools/data_c.py): left as zero-filled space here
+GROUP1 = ROOT / "native/data/group1.txt"
+
+
+def group1():
+    if not GROUP1.exists():
+        return set()
+    return {l.strip() for l in GROUP1.read_text().splitlines() if l.strip() and not l.startswith("#")}
+
+
+def convert(src: Path, skip=frozenset()) -> str:
     out = [MACROS]
+    hidden = None   # inside a label that the C defines
     for line in src.read_text().splitlines():
         if line.startswith(".include"):
             continue
+        m = re.match(r"(dlabel|nonmatching) (\S+)", line)
+        if m and m.group(1) == "dlabel":
+            hidden = m.group(2) if m.group(2) in skip else None   # (not every label has an enddlabel)
+        if m and m.group(2) in skip:
+            continue
+        if line.startswith("enddlabel"):
+            if line.split()[-1] in skip:   # its symbol is the C's
+                hidden = None
+                continue
+            hidden = None
+        if hidden is not None:
+            m = DIRECTIVE.match(line)
+            w = re.match(r"^\s+/\* [0-9A-F]+ [0-9A-F]{8} ([0-9A-F]+) \*/", line)
+            if w:
+                out.append(f"    .space {len(w.group(1)) // 2}")   # keeps the layout
+                continue
         m = SECTION.match(line)
         if m:
             # writable: the PS2 "rodata" split also holds .sdata/.sbss variables
@@ -114,11 +141,12 @@ def main():
     ap.add_argument("-o", "--out", type=Path, default=ROOT / "build/native")
     a = ap.parse_args()
     (a.out / "data").mkdir(parents=True, exist_ok=True)
+    skip = group1()
     for src in sorted((ROOT / "asm/data").glob("*.s")):
         if src.name == "elf_header.s":
             continue
         dst = a.out / "data" / (src.stem + ".S")
-        text = convert(src)
+        text = convert(src, skip)
         if not dst.exists() or dst.read_text() != text:
             dst.write_text(text)
 
@@ -153,6 +181,7 @@ def main():
         t = src.read_text()
         defined |= set(re.findall(r"^dlabel (\S+)", t, re.M))
         refs |= set(re.findall(r"\.word ([A-Za-z_]\w*)", t))
+    defined |= skip
     for src in (ROOT / "src").rglob("*.c"):
         refs |= set(re.findall(r"\b((?:func|D)_[0-9A-F]{8})\b", src.read_text()))
     for name in sorted(refs - defined):

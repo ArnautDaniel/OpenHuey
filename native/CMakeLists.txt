@@ -40,13 +40,17 @@ add_custom_command(
     OUTPUT ${DATA_S} ${GEN}/stubs.c ${GEN}/thunks.S
     COMMAND ${PY} ${ROOT}/tools/native_gen.py -o ${GEN}
     DEPENDS ${ROOT}/tools/native_gen.py ${PS2_DATA} ${ROOT}/asm/game.s ${ROOT}/asm/sinit.s
+            ${CMAKE_CURRENT_SOURCE_DIR}/data/group1.txt
     COMMENT "Generating native data and stubs"
     VERBATIM)
 
 file(GLOB GAME_C CONFIGURE_DEPENDS ${ROOT}/src/game/*.c ${ROOT}/src/game/rooms/*.c ${ROOT}/src/sdk/*.c)
 file(GLOB PLATFORM_C CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/platform/*.c)
+# the compiler-generated part of the game's data as C (tools/data_c.py): the static constructor
+# table, the vtables, the pointer-to-member constants
+file(GLOB DATA_C CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/data/*.c)
 
-add_executable(hg ${DATA_S} ${GEN}/stubs.c ${GEN}/thunks.S ${GAME_C} ${PLATFORM_C})
+add_executable(hg ${DATA_S} ${GEN}/stubs.c ${GEN}/thunks.S ${GAME_C} ${PLATFORM_C} ${DATA_C})
 target_include_directories(hg PRIVATE ${ROOT}/include ${ROOT}/src ${CMAKE_CURRENT_SOURCE_DIR}/platform)
 # the decompiled code type-puns freely and relies on wrapping arithmetic like the original
 target_compile_options(hg PRIVATE $<$<COMPILE_LANGUAGE:C>:-g -O2 -fno-strict-aliasing -fwrapv -Wno-int-conversion>)
