@@ -3,7 +3,9 @@
  * close it. The settings are kept in <save dir>/options.cfg (HG_SAVE, else "save").
  *
  *   render scale  the scene drawn at 640 x 448 times 1..4, or fitted to the window
- *   display       a window or full screen */
+ *   display       a window or full screen
+ *   slot          one of 9 saves (quicksave.c), with the room in it; save / load: to / from it
+ *                 (taken at the next moment in play, as F5 / F9), and the menu closes */
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -11,11 +13,15 @@
 
 #include "glr.h"
 
-enum { OPT_SCALE, OPT_DISPLAY, OPT_CLOSE, OPT_COUNT };
+enum { OPT_SCALE, OPT_DISPLAY, OPT_SLOT, OPT_SAVE, OPT_LOAD, OPT_CLOSE, OPT_COUNT };
+
+extern void hg_quick_ask(int save, int slot);   /* quicksave.c */
+extern int hg_quick_slot_room(int slot);
 
 static int sOpen, sSel, sLoaded;
 static int sScale;        /* 0 fit the window, else 1..4 */
 static int sFullscreen;
+static int sSlot = 1;     /* 1..9 */
 
 static const char *cfg_path(void) {
     static char path[1024];
@@ -74,6 +80,16 @@ static void change(SDL_Window *w, int d) {
     case OPT_DISPLAY:
         sFullscreen ^= 1;
         break;
+    case OPT_SLOT:
+        sSlot = (sSlot - 1 + d + 9) % 9 + 1;
+        return;
+    case OPT_SAVE:
+    case OPT_LOAD:
+        if (d > 0) {   /* right / Enter, not left */
+            hg_quick_ask(sSel == OPT_SAVE, sSlot);
+            sOpen = 0;
+        }
+        return;
     case OPT_CLOSE:
         sOpen = 0;
         return;
@@ -131,9 +147,20 @@ void hg_options_draw(void) {
         snprintf(lines[1], sizeof(lines[1]), "RENDER SCALE: %dX (%dX%d)", sScale, 640 * sScale, 448 * sScale);
     }
     snprintf(lines[2], sizeof(lines[2]), "DISPLAY: %s", sFullscreen ? "FULL SCREEN" : "WINDOW");
-    snprintf(lines[3], sizeof(lines[3]), "CLOSE");
-    snprintf(lines[4], sizeof(lines[4]), " ");
-    snprintf(lines[5], sizeof(lines[5]), "UP/DOWN PICK  LEFT/RIGHT CHANGE  ` CLOSE");
+    {
+        int room = hg_quick_slot_room(sSlot);
+
+        if (room < 0) {
+            snprintf(lines[3], sizeof(lines[3]), "SLOT: < %d > EMPTY", sSlot);
+        } else {
+            snprintf(lines[3], sizeof(lines[3]), "SLOT: < %d > ROOM %02X", sSlot, room);
+        }
+    }
+    snprintf(lines[4], sizeof(lines[4]), "SAVE TO SLOT %d", sSlot);
+    snprintf(lines[5], sizeof(lines[5]), "LOAD SLOT %d", sSlot);
+    snprintf(lines[6], sizeof(lines[6]), "CLOSE");
+    snprintf(lines[7], sizeof(lines[7]), " ");
+    snprintf(lines[8], sizeof(lines[8]), "UP/DOWN PICK  LEFT/RIGHT CHANGE  ` CLOSE");
     for (i = 0; i < OPT_COUNT + 3; i++) {
         text[i] = lines[i];
     }

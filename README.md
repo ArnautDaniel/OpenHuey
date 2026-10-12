@@ -112,7 +112,9 @@ Useful environment variables:
 
 In play the room is shown in the top right corner (hex, as `HG_ROOM` takes it). **F5** quicksaves
 (the game's own save, taken anywhere in play, into `save/quicksave.bin`); **F9** loads it, in
-play or on the title. Quicksaves never touch the memory card saves.
+play or on the title. The options menu (`` ` ``) has 9 more save slots: SLOT picks one (its room
+is shown), SAVE / LOAD write or read it (`save/slot_N.bin`; `HG_QUICKLOAD=s3` starts from slot 3).
+Quicksaves and slots never touch the memory card saves.
 
 ### `hga`
 

@@ -6,7 +6,10 @@
  *        for continuing (gGamePtr +0x70 headers, +0x190 save) is left as it was.
  *   F9   quickload: the scenes end as on a soft reset and the game scene starts from the
  *        quicksave as from Load Game. Works in play and on the title.
- *   HG_QUICKLOAD=1   start from the quicksave instead of the title (after the boot scene)
+ *   ` menu       SLOT picks one of 9 more saves (<save dir>/slot_N.bin, its room shown), SAVE / LOAD
+ *                as F5 / F9 with that slot (options.c)
+ *   HG_QUICKLOAD=1   start from the quicksave instead of the title (after the boot scene);
+ *                HG_QUICKLOAD=s3 from slot 3
  *   HG_QUICKSAVE_AT=n / HG_QUICKLOAD_AT=n   (tests) F5 / F9 at video frame n
  *
  * In play the room (hex, as HG_ROOM takes it) is shown in the top right corner. */
@@ -32,18 +35,34 @@ extern void *gProgress;
 extern void SceneGame_Save(void *g, uint32_t slot);
 extern int32_t SceneGame_InPlay(void *g);
 
+/* the slot asked for, plus one (0: none); slot 0 is the quicksave (F5 / F9) */
 static int sSaveAsked, sLoadAsked, sLoading;
 static int sRoom = -1;
 static char sToast[64];
 static unsigned sToastUntil;
 extern unsigned hg_video_frame;   /* video.c */
 
-static const char *quick_path(void) {
+static const char *quick_path(int slot) {
     static char path[1024];
     const char *dir = getenv("HG_SAVE");
 
-    snprintf(path, sizeof(path), "%s/quicksave.bin", dir ? dir : "save");
+    if (slot == 0) {
+        snprintf(path, sizeof(path), "%s/quicksave.bin", dir ? dir : "save");
+    } else {
+        snprintf(path, sizeof(path), "%s/slot_%d.bin", dir ? dir : "save", slot);
+    }
     return path;
+}
+
+/* the name of a slot in messages */
+static const char *slot_name(int slot) {
+    static char name[16];
+
+    if (slot == 0) {
+        return "QUICKSAVE";
+    }
+    snprintf(name, sizeof(name), "SLOT %d", slot);
+    return name;
 }
 
 static void toast(const char *msg) {
@@ -65,6 +84,29 @@ int hg_quick_key(SDL_Scancode k) {
     return 0;
 }
 
+/* save to / load from slot `slot` (0..9) at the next safe point (the ` menu) */
+void hg_quick_ask(int save, int slot) {
+    if (save) {
+        sSaveAsked = slot + 1;
+    } else {
+        sLoadAsked = slot + 1;
+    }
+}
+
+/* the room saved in slot `slot`, -1 when it is empty */
+int hg_quick_slot_room(int slot) {
+    FILE *f = fopen(quick_path(slot), "rb");
+    int32_t room = -1;
+
+    if (f != NULL) {
+        if (fseek(f, 4, SEEK_SET) != 0 || fread(&room, 4, 1, f) != 1) {
+            room = -1;
+        }
+        fclose(f);
+    }
+    return room;
+}
+
 /* the game scene, when it is up and in play (not loading a room, in a menu or leaving a room) */
 static void *game_in_play(int32_t mode) {
     void *g;
@@ -80,7 +122,7 @@ static void *game_in_play(int32_t mode) {
     return g;
 }
 
-static void quicksave(void *g) {
+static void quicksave(void *g, int slot) {
     static uint8_t keep[SAVE_SIZE], keepHeader[0x18];
     FILE *f;
     int ok = 0;
@@ -95,7 +137,7 @@ static void quicksave(void *g) {
         snprintf(dir, sizeof(dir), "%s", d ? d : "save");
         SDL_CreateDirectory(dir);
     }
-    if ((f = fopen(quick_path(), "wb")) != NULL) {
+    if ((f = fopen(quick_path(slot), "wb")) != NULL) {
         ok = fwrite(gGamePtr + SAVE_OFF, 1, SAVE_SIZE, f) == SAVE_SIZE;
         ok = fclose(f) == 0 && ok;
     }
@@ -104,15 +146,19 @@ static void quicksave(void *g) {
     if (ok) {
         char msg[64];
 
-        snprintf(msg, sizeof(msg), "QUICKSAVED (ROOM %02X)", sRoom);
+        if (slot == 0) {
+            snprintf(msg, sizeof(msg), "QUICKSAVED (ROOM %02X)", sRoom);
+        } else {
+            snprintf(msg, sizeof(msg), "SAVED TO %s (ROOM %02X)", slot_name(slot), sRoom);
+        }
         toast(msg);
     } else {
-        toast("QUICKSAVE FAILED");
+        toast("SAVE FAILED");
     }
 }
 
-static int quick_exists(void) {
-    FILE *f = fopen(quick_path(), "rb");
+static int quick_exists(int slot) {
+    FILE *f = fopen(quick_path(slot), "rb");
 
     if (f == NULL) {
         return 0;
@@ -122,8 +168,8 @@ static int quick_exists(void) {
 }
 
 /* the quicksave into the resident save */
-static int quick_read(void) {
-    FILE *f = fopen(quick_path(), "rb");
+static int quick_read(int slot) {
+    FILE *f = fopen(quick_path(slot), "rb");
     int ok;
 
     if (f == NULL) {
@@ -158,24 +204,31 @@ int hg_quick_frame(int32_t mode) {
         sRoom = -1;
     }
     if (sSaveAsked) {
+        int slot = sSaveAsked - 1;
+
         sSaveAsked = 0;
         if (g != NULL) {
-            quicksave(g);
+            quicksave(g, slot);
         } else {
-            toast(mode == 3 ? "CAN'T QUICKSAVE NOW" : "QUICKSAVE: NOT IN PLAY");
+            toast(mode == 3 ? "CAN'T SAVE NOW" : "SAVE: NOT IN PLAY");
         }
     }
     if (sLoadAsked) {
+        int slot = sLoadAsked - 1;
+
         sLoadAsked = 0;
         if (sLoading) {
             return 0;
         }
         if (mode != 2 && mode != 3) {
-            toast("QUICKLOAD: NOT YET");
-        } else if (!quick_exists()) {
-            toast("NO QUICKSAVE");
+            toast("LOAD: NOT YET");
+        } else if (!quick_exists(slot)) {
+            char msg[64];
+
+            snprintf(msg, sizeof(msg), "%s IS EMPTY", slot_name(slot));
+            toast(msg);
         } else {
-            sLoading = 1;
+            sLoading = slot + 1;
             return 1;
         }
     }
@@ -187,21 +240,33 @@ int hg_quick_frame(int32_t mode) {
 void hg_quick_next_scene(int32_t *mode, int32_t *param) {
     static int startDone;
 
+    int slot;
+
     if (!startDone && *mode == 2 && getenv("HG_QUICKLOAD") != NULL) {
+        const char *v = getenv("HG_QUICKLOAD");
+
         startDone = 1;
-        sLoading = 1;
+        sLoading = (v[0] == 's' ? atoi(v + 1) : 0) + 1;
     }
     if (!sLoading) {
         return;
     }
+    slot = sLoading - 1;
     sLoading = 0;
-    if (!quick_read()) {
-        toast("QUICKLOAD FAILED");
+    if (!quick_read(slot)) {
+        toast("LOAD FAILED");
         return;
     }
     *mode = 3;
     *param = -1;   /* ENTRY_NEW: from the resident save */
-    toast("QUICKLOADED");
+    if (slot == 0) {
+        toast("QUICKLOADED");
+    } else {
+        char msg[64];
+
+        snprintf(msg, sizeof(msg), "LOADED %s", slot_name(slot));
+        toast(msg);
+    }
 }
 
 /* this frame's debug lines (video.c, before glr_present) */
