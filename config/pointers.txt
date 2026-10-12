@@ -205,6 +205,8 @@
 
 ## numbers that equal a code address (symbolized as pointers, so relocated on PC)
 0x0041B5F0 raw                  # Debilitas2's buffer sizes: the model's 0x1A3000 (= Fiona_FollowAnim)
+0x003E5E60 raw                  # movie.c's table D_003E5270: 0x00320000 among 0x00XX0000 / 0x0000FFxx pairs (= TintStalker_Draw)
+0x0042D6F8 raw                  # script-like bytes in D_0042D670 (... 191AFFFF 00072100 18000359): 0x00210700 (= SndDriver_LoadPart_thunk)
 
 ## event script bytes: aligned words of a script that look like data addresses (tools/evdis.py
 ## gives each command's bytes; a symbol among them breaks the script on PC - room 0x21's Hewie
