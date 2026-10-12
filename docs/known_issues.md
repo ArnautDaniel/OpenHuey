@@ -44,10 +44,14 @@ Marked "PC: an approximation, not decompiled" in their comments.
 
 ## Not ported
 
-- **The lit model microprograms' specular term.** Model parts whose mode is 4, 8 or 0xC use the
-  lit programs (e.g. `D_003A2EF0`), which also put a specular term into the vertex alpha (see
-  the comment above `light_setup` in `src/game/model.c`). The PC lights them with the plain
-  formula and alpha 127, so passes that read frame alpha (the bloom mask) see less on them.
+- **The lit model microprograms' specular term.** Skinned parts whose mode (drawer +0x88 + 2 x
+  part, or'd with the record's +0x20) is 4, 8 or 0xC use the lit programs (`D_003A77F0` ...,
+  chosen in `func_001BD830`), which put a specular term into the vertex alpha - the part's
+  strength (drawer +0x89 + 2 x part, / 128) x max(R.V, 0)^4 x each light's strength and diffuse
+  term. The PC approximates it (`light_spec` in `src/game/model.c`; `GLR_PRIM_KEEPA` keeps a zero
+  alpha drawn). Only the passes that read the frame's alpha show it (the screen bloom: the
+  loading screen and `ObjectGlow_Draw`). Fiona's costumes use it (e.g. 8 parts of her clothes);
+  Hewie doesn't. Rigid parts (`D_003A2EF0`) still get the plain formula.
 - **The lit room-mesh layout** (mode 1 of room and positioned meshes): no room uses it, and the
   resident room microprogram (`D_003A7530`) would pass its colour words straight to RGBAQ. The
   PC draws room meshes in that layout grey and positioned ones not at all (`glr_todo`).
