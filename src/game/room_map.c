@@ -990,10 +990,14 @@ static inline __attribute__((always_inline)) void part_area(u8 *o, const u8 *par
         Obstacle_StepSquare(o, &a, &b, dir);
     }
     for (z = 0; z < AT(part, 0x14, s32); z++) {
+        u32 rowA = a, rowB = b;   /* each row from its first square */
+
         for (x = 0; x < AT(part, 0x10, s32); x++) {
             sq_visit(mode, c, a, b, 0);
             Obstacle_StepSquare(o, &a, &b, sx);
         }
+        a = rowA;
+        b = rowB;
         Obstacle_StepSquare(o, &a, &b, sz);
     }
 }

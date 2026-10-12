@@ -88,6 +88,9 @@ void hg_frame(void) {
         {
             extern void hg_options_draw(void);   /* options.c */
 
+            extern void hg_quick_draw(void);     /* quicksave.c: the room shown */
+
+            hg_quick_draw();
             hg_options_draw();
         }
         glr_present(ww, wh);
@@ -115,8 +118,11 @@ void hg_frame(void) {
         }
         if (e.type == SDL_EVENT_KEY_DOWN && !e.key.repeat) {
             extern int hg_options_key(SDL_Window *w, SDL_Scancode k);   /* options.c: ` opens it */
+            extern int hg_quick_key(SDL_Scancode k);                    /* quicksave.c: F5 / F9 */
 
-            hg_options_key(sWindow, e.key.scancode);
+            if (!hg_quick_key(e.key.scancode)) {
+                hg_options_key(sWindow, e.key.scancode);
+            }
         }
     }
 }

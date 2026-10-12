@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef int s32;
+
 void hg_debug_next_scene(int32_t *mode, int32_t *param) {
     static int done;
     const char *room = getenv("HG_ROOM");
@@ -175,4 +177,24 @@ void hg_evlog(const char *fmt, ...) {
     vfprintf(stderr, fmt, ap);
     fputc('\n', stderr);
     va_end(ap);
+}
+
+/* a load queued (Loader_Queue) into memory that can't be a buffer - the program's code or the
+ * first page - is a wrong pointer somewhere: say which file and who asked, and refuse it (the
+ * PS2 would have overwritten whatever was there; here it is a crash a frame later) */
+s32 hg_loader_check(const char *path, unsigned to) {
+    extern char __executable_start[], etext[];
+
+    if (to >= 0x1000 && !(to >= (unsigned)__executable_start && to < (unsigned)etext)) {
+        return 1;
+    }
+    fprintf(stderr, "loader: \"%s\" queued into %s at 0x%08X, refused; asked from:\n", path,
+            to < 0x1000 ? "nowhere" : "the code", to);
+    {
+        void *frames[16];
+        int n = backtrace(frames, 16);
+
+        backtrace_symbols_fd(frames, n, 2);
+    }
+    return 0;
 }

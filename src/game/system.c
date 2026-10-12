@@ -63,6 +63,8 @@ extern void *Helper469D00_vtable[];
 extern void *PlacedModelBase_vtable[];
 void *TexCache_dtor(u8 *o, s32 flags);
 extern void hg_debug_next_scene(s32 *mode, s32 *param);   /* native/platform/debug.c */
+extern s32 hg_quick_frame(s32 mode);                       /* native/platform/quicksave.c */
+extern void hg_quick_next_scene(s32 *mode, s32 *param);
 extern const char D_0045D7C0[], D_0045D7D0[], D_0045D7E0[];   /* C_0000.HD / .SDT / .BD */
 extern void Options_Defaults(u8 *o);
 extern void *SceneTableBase_vtable[];
@@ -206,6 +208,7 @@ void Game_LoadCommonSounds(Game *game) {
 void Game_StartNextScene(Game *game) {
 #ifdef HG_NATIVE
     hg_debug_next_scene(&game->nextMode, &game->modeParam);
+    hg_quick_next_scene(&game->nextMode, &game->modeParam);
 #endif
     game->mode = game->nextMode;
     switch (game->nextMode) {
@@ -278,6 +281,27 @@ void Game_StateMain(Game *game) {
     }
     VCALL(&game->unk69AC0, 0x10, void (*)(VObject *))(&game->unk69AC0);
 
+#ifdef HG_NATIVE
+    /* native/platform/quicksave.c: F5 / F9 and the room shown. A quickload ends the scenes as
+     * the soft reset below does; Game_StartNextScene then starts the game from the quicksave */
+    if (hg_quick_frame(game->mode)) {
+        for (i = 0; i < GAME_NUM_SCENES; i++) {
+            Scene *scene = game->scenes[i];
+
+            if (scene != NULL) {
+                PTMF reset = sSceneResetState;
+
+                if (ptmf_test(&reset)) {
+                    scene->state = reset;
+                }
+                VCALL(scene, 0x14, void (*)(Scene *))(scene);
+            }
+        }
+        VCALL(gFileLoader, 0x1C, void (*)(VObject *))(gFileLoader);
+        game->resetHoldFrames = 0;
+        return;
+    }
+#endif
     if (game->softResetEnabled == 0) {
         game->resetHoldFrames = 0;
         return;

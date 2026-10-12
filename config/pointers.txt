@@ -202,3 +202,6 @@
 0x00448F48 raw   # D_00401F00 in script RoomE3_Phase3Script_data
 0x00448F54 raw   # D_00401F00 in script RoomE3_Phase3Script_data
 0x004493E4 raw   # D_00406800 in script RoomE4_Phase1Script_data
+
+## numbers that equal a code address (symbolized as pointers, so relocated on PC)
+0x0041B5F0 raw                  # Debilitas2's buffer sizes: the model's 0x1A3000 (= Fiona_FollowAnim)

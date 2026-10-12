@@ -150,6 +150,9 @@ int glr_scale(void);
 /* the PC options menu this frame: `n` lines, line `sel` picked (drawn over the window) */
 void glr_menu(const char *const *lines, int n, int sel);
 
+/* debug lines this frame, in the top right corner of the picture (quicksave.c: the room) */
+void glr_hud(const char *const *lines, int n);
+
 /* platform side (video.c) */
 int glr_init(void);                                    /* after the GL context exists */
 void glr_present(int outW, int outH);                  /* the frame drawn, shown at outW x outH */

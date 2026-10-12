@@ -3,7 +3,7 @@
 What to keep in mind when using `src/` as the reference for the original game. Each entry says
 whether it is a gap in the *decompilation* (src may describe the original wrongly or not at
 all) or only in the *PC port* (src describes the original; the PC build draws or plays it
-differently). Last updated 2026-10-06.
+differently). Last updated 2026-10-12.
 
 ## Coverage
 
@@ -57,14 +57,7 @@ Marked "PC: an approximation, not decompiled" in their comments.
 Not yet classified as decompilation errors or PC-only problems; check them before relying on
 the code involved.
 
-- **Pushable boxes** (`src/game/room_map.c` obstacles, Fiona's push states in `fiona.c`): the
-  push starts (`Fiona_StatePush`) but never steps the box, and in room 0x20 Fiona appears to walk
-  through the box. Notes: the ring triangles around a box carry `NAV_PUSHABLE` as expected; the
-  box's own reference squares had no blocking bit.
 - **The drawer**: after checking a drawer Fiona stays frozen in place (the game keeps running).
-- **The plate machine**: one of its animations is missing.
-- **The first cutscene** (EV0002, room 0x2A): reported once playing its sound with the picture
-  stuck on one frame. Not reproduced since.
 
 ## Verification
 
@@ -78,6 +71,14 @@ the code involved.
   callee can pass there. Fix a line with the object's real vtable when touching it. (`gSound`
   points 4 bytes into the sound driver; its vtable is `SndDriver_vtable4`, and the lines that
   pin gSound use it.)
+- **Callees are stubs that leave pointer outputs alone**, so a C function that loses track of a
+  value only a callee updates through a pointer can still pass. `part_area` (`room_map.c`) forgot
+  to go back to the start of each row between `Obstacle_StepSquare` calls and passed every run;
+  the boxes in room 0x20 couldn't be pushed. Check walks through squares / triangles by hand.
+- **Uninitialized lanes the original also leaves unset** (a vector's w, a sample buffer's unused
+  half) were stack garbage on the PS2 but can be NaN on PC, depending on the compiler: this
+  machine's GCC 16 is the reference for `hg`. `-ftrivial-auto-var-init=zero` on a suspect file
+  is a quick test. Fixed so far: `motion_root` / `Track_Blend` (`model.c`).
 - PC-only code (`#ifdef HG_NATIVE` paths and `native/platform/`) is not difftested.
 - Behaviour-preserving cleanups were checked with `tools/codesnap.py` (per-function compiled
   code, inlining off) against the commit before the cleanup.
