@@ -594,6 +594,15 @@ s32 Loader_Queue(u8 *l, const char *path, u32 dst, s32 flags, u32 buf) {
     u32 i;
     s32 id;
 
+#ifdef HG_NATIVE
+    {
+        extern s32 hg_loader_check(const char *path, u32 to);   /* native/platform/debug.c */
+
+        if (!hg_loader_check(path, buf != 0 ? buf : dst)) {   /* into code or nowhere: refused */
+            return -1;
+        }
+    }
+#endif
     t->state = 0;
     t->file = NULL;
     t->dir = NULL;
