@@ -34,19 +34,22 @@ extern s32 Items_CountItem3F(u8 *items);   /* the word plates held */
 
 /* item_classes.c: what other files call. */
 
+/* (data 8-aligned as on the PS2: x86-32 would put a u64 at +0xC) */
 typedef struct ItemObj {
     void *vtbl;
     s32 id;
     u8 flag;
-    u64 data; /* +0x10 */
+    u64 data __attribute__((aligned(8))); /* +0x10 */
 } ItemObj;
+_Static_assert(__builtin_offsetof(ItemObj, data) == 0x10 && sizeof(ItemObj) == 0x18, "ItemObj");
 
 typedef struct B2_Obj {
     void *vtbl;
     s32 id;
     u8 flag;
-    u64 data; /* +0x10 */
+    u64 data __attribute__((aligned(8))); /* +0x10 */
 } B2_Obj;
+_Static_assert(__builtin_offsetof(B2_Obj, data) == 0x10 && sizeof(B2_Obj) == 0x18, "B2_Obj");
 
 /* item_classes.c */
 extern ItemObj *Item29_ctor(ItemObj *self);

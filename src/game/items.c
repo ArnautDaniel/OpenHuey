@@ -1211,7 +1211,7 @@ void *Items_Give(u8 *items, u32 id, s32 n) {
 
             if (p != NULL) {
                 if (id == 0x3F) {
-                    Item3F_ctor(p, (s32)o);   /* (sic: no id passed - a1 still the object) */
+                    Item3F_ctor(p, 0x3F);
                 } else {
                     kItemCtors[id](p);
                 }
@@ -1852,8 +1852,7 @@ ItemObj *Item40_ctor(ItemObj *self) {
     return self;
 }
 
-/* item 0x3F's class takes its id as an argument; Items_Give calls it without one, so the id
- * is whatever a1 held: the object's own address (see there) */
+/* item 0x3F (the word plate): its class takes the id as an argument (Items_Give: 0x3F) */
 /* 0x00264060 */
 ItemObj *Item3F_ctor(ItemObj *self, s32 id) {
     self->vtbl = PoolEntry_vtable;
