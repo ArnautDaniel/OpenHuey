@@ -888,6 +888,9 @@ void Lights_Scripted(u8 *l, f32 (*dir)[4], f32 (*col)[4], f32 *fall, f32 (*lpos)
         up[0] = 0.0f;
         sceVu0OuterProduct(axis, up, d);
         sceVu0Normalize(axis, axis);
+#ifdef HG_NATIVE
+        m[3][0] = m[3][1] = m[3][2] = 0.0f;   /* unset in the original (garbage times d's w); NaN on PC */
+#endif
         Quat_FromAxisAngle(q, axis, AT(x, 0x20, f32));
         Quat_ToMatrix(q, m);
         sceVu0ApplyMatrix(d, m, d);

@@ -1062,6 +1062,13 @@ s32 Cutscene_ShotAt(u8 *d, s32 t) {
     u8 *s;
     s32 i, n;
 
+#ifdef HG_NATIVE
+    /* no shot script loaded yet: the original reads its length at address 0 (the PS2 kernel's
+     * memory) before it looks, then answers -1; here that read is a crash */
+    if (AT(d, 0x18, u8 *) == NULL) {
+        return -1;
+    }
+#endif
     if (t < 0) {
         do {
             t += AT(AT(d, 0x18, u8 *), 0x0, u16);
