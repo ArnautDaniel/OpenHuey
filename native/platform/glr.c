@@ -1041,6 +1041,20 @@ static uint32_t tex_check(const TexEntry *t) {
     for (i = 0; i < 64 && i < t->imageQwc * 16; i++) {
         c = (c ^ img[i]) * 16777619u;
     }
+    /* and samples through the whole image and palette: pictures loaded in turn into one buffer
+     * (the item tab's) can share their first rows */
+    {
+        uint32_t n = ((uint32_t)t->imageQwc + t->clutQwc) * 16, k;
+
+        if (n >= 4) {
+            for (k = 0; k < 256; k++) {
+                uint32_t at = (uint32_t)(((uint64_t)(n - 4) * k) / 255), v;
+
+                memcpy(&v, img + at, 4);
+                c = (c ^ v) * 16777619u;
+            }
+        }
+    }
     return c;
 }
 
