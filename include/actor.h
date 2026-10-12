@@ -183,7 +183,7 @@ extern void Character_Enable(Character *c);
 extern void Character_Disable(Character *c);
 extern f32 Character_PathRemaining2(Character *c);
 extern s32 Character_RouteVia(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7);
-extern s32 Character_Route(Character *c, s32 target, s32 unused2, s32 side, s32 unused4);
+extern s32 Character_Route(Character *c, s32 target, s32 want, s32 side, s32 max);   /* to room `target` (door `want`, at most `max` doors; -1: any) */
 extern void Character_ReleasePath(Character *c);
 extern s32 Character_Waypoints(Character *c);
 extern s32 Character_WaypointsCurve(Character *c);

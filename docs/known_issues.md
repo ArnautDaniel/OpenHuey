@@ -79,6 +79,13 @@ the code involved.
   value only a callee updates through a pointer can still pass. `part_area` (`room_map.c`) forgot
   to go back to the start of each row between `Obstacle_StepSquare` calls and passed every run;
   the boxes in room 0x20 couldn't be pushed. Check walks through squares / triangles by hand.
+- **Arguments past the eighth are on the stack and not compared.** `Character_Route` passed the
+  route planner 8 of its 10 arguments (the original stores `want` / `max` at 0($sp) / 8($sp)) and
+  passed every run; on PC the planner read stack garbage as its door limit, the routes failed and
+  the stalkers never followed Fiona from room to room. Every C function with more than 8
+  parameters was checked against its direct and virtual callers; one lead is left:
+  `Creatures_SetUpOne` passes no float for `CreatureB_SetupKind`'s `f` (the original leaves `$f12`
+  as its caller had it; no caller of Creatures +0x18 found yet).
 - **Uninitialized lanes the original also leaves unset** (a vector's w, a sample buffer's unused
   half) were stack garbage on the PS2 but can be NaN on PC, depending on the compiler: this
   machine's GCC 16 is the reference for `hg`. `-ftrivial-auto-var-init=zero` on a suspect file

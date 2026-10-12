@@ -1449,10 +1449,12 @@ s32 Character_RouteVia(Character *c, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32
         gRoutePlanner, a1, a2, a3, c->unk148C, c->unk138C, a4, a5, a6, a7);
 }
 
-/* Route request to gRoutePlanner +0xC toward `target`; side -1: the side of the current exit
- * (room manager +0x50 with 1), if any. Result kept in unk1384. */
+/* Route request to gRoutePlanner +0xC (RoutePlanner_FindRoute) toward room `target`, ending at
+ * door `want` (-1: any), in at most `max` doors; side -1: the side of the current exit (room
+ * manager +0x50 with 1), if any. Result kept in unk1384. (`want` and `max` go to the planner as
+ * its 9th / 10th arguments, on the stack: the original stores them at 0($sp) / 8($sp).) */
 /* 0x00126F80 */
-s32 Character_Route(Character *c, s32 target, s32 unused2, s32 side, s32 unused4) {
+s32 Character_Route(Character *c, s32 target, s32 want, s32 side, s32 max) {
     s32 useExit = 0;
 
     c->unk1388 = 0;
@@ -1462,8 +1464,8 @@ s32 Character_Route(Character *c, s32 target, s32 unused2, s32 side, s32 unused4
             side = VCALL(gRooms, 0x50, s32 (*)(VObject *, s32, u32, s32))(gRooms, c->a.room, c->door, 1);
         }
     }
-    c->unk1384 = VCALL(gRoutePlanner, 0xC, s32 (*)(VObject *, s32, s32, s32, void *, void *, s32, s32))(
-        gRoutePlanner, c->a.room, target, c->a.slot, c->unk148C, c->unk138C, useExit, side);
+    c->unk1384 = VCALL(gRoutePlanner, 0xC, s32 (*)(VObject *, s32, s32, s32, void *, void *, s32, s32, s32, s32))(
+        gRoutePlanner, c->a.room, target, c->a.slot, c->unk148C, c->unk138C, useExit, side, want, max);
     return c->unk1384;
 }
 
