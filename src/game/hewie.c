@@ -177,6 +177,10 @@ static void bone_turn(f32 (*b)[4], const f32 *axis1, f32 a1, const f32 *axis2, f
     f32 r2[4][4] __attribute__((aligned(16)));
     f32 r[4][4] __attribute__((aligned(16)));
 
+#ifdef HG_NATIVE
+    r1[3][0] = r1[3][1] = r1[3][2] = 0.0f;   /* unset in the original (garbage times 0); NaN on PC */
+    r2[3][0] = r2[3][1] = r2[3][2] = 0.0f;   /* (Hewie's front half vanished) */
+#endif
     Quat_FromAxisAngle(q, axis1, a1);
     Quat_ToMatrix(q, r1);
     Quat_FromAxisAngle(q, axis2, a2);

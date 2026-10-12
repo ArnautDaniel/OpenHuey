@@ -273,6 +273,10 @@ void Mtx_TurnTwo(f32 (*out)[4], f32 (*axes)[4], f32 a, f32 b) {
     q[2] = 0.0f;
     q[1] = 0.0f;
     q[0] = 0.0f;
+#ifdef HG_NATIVE
+    ra[3][0] = ra[3][1] = ra[3][2] = 0.0f;   /* unset in the original (garbage times 0); NaN on PC */
+    rb[3][0] = rb[3][1] = rb[3][2] = 0.0f;
+#endif
     Quat_FromAxisAngle(q, axes[0], a);
     Quat_ToMatrix(q, ra);
     Quat_FromAxisAngle(q, axes[1], b);
