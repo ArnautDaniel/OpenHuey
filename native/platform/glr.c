@@ -1230,9 +1230,66 @@ static void font_make(void) {
     p_glVertexArrayAttribBinding(sTextVao, 1, 0);
 }
 
+/* a dark panel at x, y (GL window pixels from the bottom left), pw x ph */
+static void panel_draw(int w, int h, int x, int y, int pw, int ph, float alpha) {
+    p_glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    p_glViewport(0, 0, w, h);
+    p_glDisable(GL_DEPTH_TEST);
+    p_glEnable(GL_BLEND);
+    p_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    p_glEnable(GL_SCISSOR_TEST);
+    p_glScissor(x, y, pw, ph);
+    p_glUseProgram(sFillProg);
+    p_glProgramUniform4f(sFillProg, sFillLoc, 0.0f, 0.0f, 0.0f, alpha);
+    p_glBindVertexArray(sQuadVao);
+    p_glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    p_glDisable(GL_SCISSOR_TEST);
+}
+
+/* one line of text in the 5 x 7 font, `k` window pixels per font pixel, its bottom left at x, y
+ * (blending on, as panel_draw leaves it) */
+static void text_draw(int w, int h, int x, int y, int k, const char *t, float r, float g, float b) {
+    static float v[64 * 6 * 4];
+    int cw = 6 * k, i, n;
+
+    for (i = n = 0; t[i] != 0 && n < 64; i++) {
+        int c = (unsigned char)t[i];
+        float x0, x1, y0, y1, u0, u1;
+        float q[6][4];
+        int j;
+
+        c = c >= 'a' && c <= 'z' ? c - 32 : c;
+        c = c < 32 || c > 96 ? 32 : c;
+        x0 = (float)(x + i * cw) / w * 2.0f - 1.0f;
+        x1 = (float)(x + i * cw + 6 * k) / w * 2.0f - 1.0f;
+        y0 = (float)y / h * 2.0f - 1.0f;
+        y1 = (float)(y + 8 * k) / h * 2.0f - 1.0f;
+        u0 = (float)((c - 32) * 6) / (65 * 6);
+        u1 = (float)((c - 32) * 6 + 6) / (65 * 6);
+        {
+            float tmp[6][4] = {{x0, y0, u0, 1}, {x1, y0, u1, 1}, {x0, y1, u0, 0},
+                               {x1, y0, u1, 1}, {x1, y1, u1, 0}, {x0, y1, u0, 0}};
+
+            memcpy(q, tmp, sizeof(q));
+        }
+        for (j = 0; j < 6; j++) {
+            memcpy(&v[(n * 6 + j) * 4], q[j], sizeof(q[j]));
+        }
+        n++;
+    }
+    if (n == 0) {
+        return;
+    }
+    p_glUseProgram(sTextProg);
+    p_glBindVertexArray(sTextVao);
+    p_glBindTextureUnit(0, sFontTex);
+    p_glNamedBufferData(sTextVbo, (GLsizeiptr)n * 6 * 4 * sizeof(float), v, GL_STREAM_DRAW);
+    p_glProgramUniform4f(sTextProg, sTextColorLoc, r, g, b, 1.0f);
+    p_glDrawArrays(GL_TRIANGLES, 0, n * 6);
+}
+
 /* the menu over the window (w x h pixels): a dark panel, its lines (the picked one yellow) */
 static void menu_draw(int w, int h) {
-    static float v[64 * 64 * 6 * 4];
     int k = h / 200 > 1 ? h / 200 : 1;   /* glyph pixels per font pixel */
     int cw = 6 * k, ch = 10 * k, maxLen = 0, i, n, line;
     int pw, ph, px0, py0;
@@ -1245,60 +1302,43 @@ static void menu_draw(int w, int h) {
     ph = sMenuN * ch + 3 * ch;
     px0 = (w - pw) / 2;
     py0 = (h - ph) / 2;
-    p_glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    p_glViewport(0, 0, w, h);
-    p_glDisable(GL_DEPTH_TEST);
-    p_glEnable(GL_BLEND);
-    p_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    p_glEnable(GL_SCISSOR_TEST);
-    p_glScissor(px0, py0, pw, ph);
-    p_glUseProgram(sFillProg);
-    p_glProgramUniform4f(sFillProg, sFillLoc, 0.0f, 0.0f, 0.0f, 0.8f);
-    p_glBindVertexArray(sQuadVao);
-    p_glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    p_glDisable(GL_SCISSOR_TEST);
-    p_glUseProgram(sTextProg);
-    p_glBindVertexArray(sTextVao);
-    p_glBindTextureUnit(0, sFontTex);
+    panel_draw(w, h, px0, py0, pw, ph, 0.8f);
     for (line = 0; line < sMenuN; line++) {
-        const char *t = sMenu[line];
-        int x = px0 + 2 * cw, y = py0 + ph - (line + 2) * ch;   /* GL rows from the bottom */
+        int y = py0 + ph - (line + 2) * ch;   /* GL rows from the bottom */
 
-        for (i = n = 0; t[i] != 0 && n < 64 * 64; i++) {
-            int c = (unsigned char)t[i];
-            float x0, x1, y0, y1, u0, u1;
-            float q[6][4];
-            int j;
-
-            c = c >= 'a' && c <= 'z' ? c - 32 : c;
-            c = c < 32 || c > 96 ? 32 : c;
-            x0 = (float)(x + i * cw) / w * 2.0f - 1.0f;
-            x1 = (float)(x + i * cw + 6 * k) / w * 2.0f - 1.0f;
-            y0 = (float)y / h * 2.0f - 1.0f;
-            y1 = (float)(y + 8 * k) / h * 2.0f - 1.0f;
-            u0 = (float)((c - 32) * 6) / (65 * 6);
-            u1 = (float)((c - 32) * 6 + 6) / (65 * 6);
-            {
-                float tmp[6][4] = {{x0, y0, u0, 1}, {x1, y0, u1, 1}, {x0, y1, u0, 0},
-                                   {x1, y0, u1, 1}, {x1, y1, u1, 0}, {x0, y1, u0, 0}};
-
-                memcpy(q, tmp, sizeof(q));
-            }
-            for (j = 0; j < 6; j++) {
-                memcpy(&v[(n * 6 + j) * 4], q[j], sizeof(q[j]));
-            }
-            n++;
+        if (line == sMenuSel) {
+            text_draw(w, h, px0 + 2 * cw, y, k, sMenu[line], 1.0f, 0.85f, 0.3f);
+        } else {
+            text_draw(w, h, px0 + 2 * cw, y, k, sMenu[line], 0.85f, 0.85f, 0.85f);
         }
+    }
+    p_glDisable(GL_BLEND);
+}
+
+/* the debug lines in the top right corner of the picture (x, y, vw x vh in the window), each
+ * right-aligned on its own small panel */
+static const char *const *sHud;
+static int sHudN;
+
+void glr_hud(const char *const *lines, int n) {
+    sHud = lines;
+    sHudN = n;
+}
+
+static void hud_draw(int w, int h, int x, int y, int vw, int vh) {
+    int k = vh / 300 > 1 ? vh / 300 : 1;
+    int cw = 6 * k, ch = 10 * k, line;
+
+    for (line = 0; line < sHudN; line++) {
+        int n = (int)strlen(sHud[line]), pw = n * cw + 2 * k + cw;
+        int px0 = x + vw - pw - cw, py0 = y + vh - (line + 1) * (ch + 2 * k) - cw;
+
         if (n == 0) {
             continue;
         }
-        p_glNamedBufferData(sTextVbo, (GLsizeiptr)n * 6 * 4 * sizeof(float), v, GL_STREAM_DRAW);
-        if (line == sMenuSel) {
-            p_glProgramUniform4f(sTextProg, sTextColorLoc, 1.0f, 0.85f, 0.3f, 1.0f);
-        } else {
-            p_glProgramUniform4f(sTextProg, sTextColorLoc, 0.85f, 0.85f, 0.85f, 1.0f);
-        }
-        p_glDrawArrays(GL_TRIANGLES, 0, n * 6);
+        panel_draw(w, h, px0, py0, pw, ch, 0.6f);
+        text_draw(w, h, px0 + cw / 2 + k, py0 + k, k, sHud[line], line == 0 ? 0.9f : 1.0f,
+                  line == 0 ? 0.9f : 0.85f, line == 0 ? 0.9f : 0.3f);
     }
     p_glDisable(GL_BLEND);
 }
@@ -2366,10 +2406,14 @@ void glr_present(int outW, int outH) {
         p_glClearNamedFramebufferfv(0, GL_COLOR, 0, kBlack);
         p_glBlitNamedFramebuffer(sFbo, 0, 0, 0, GLR_WIDTH, GLR_HEIGHT, x, y, x + vw, y + vh, GL_COLOR_BUFFER_BIT,
                                  GL_LINEAR);
+        if (sHud != NULL) {
+            hud_draw(outW, outH, x, y, vw, vh);
+        }
         if (sMenu != NULL) {
             menu_draw(outW, outH);
         }
     }
+    sHud = NULL;    /* the debug lines too */
     sMenu = NULL;   /* the options menu gives itself again each frame it is open */
 }
 

@@ -83,6 +83,16 @@ it, movies are skipped). The PS2 build of the decompilation also needs the ps2de
 
 ### `hg`
 
+`hg` takes the game's data (vtables, tables, strings) and a stub for every unwritten function from
+the disassembly, so split the executable first (once, and again after changing `config/`):
+
+```
+tools/setup.sh
+.venv/bin/python configure.py --split
+```
+
+Then:
+
 ```
 cmake -S native -B build/native/cmake
 cmake --build build/native/cmake -j8
@@ -98,6 +108,11 @@ Useful environment variables:
 - `HG_ROOM=2A` starts a new game at entry `2A`.
 - `HG_FASTBOOT=1` skips the logos.
 - `HG_HEADLESS=1` with `HG_MAXFRAMES=n` runs without a window.
+- `HG_QUICKLOAD=1` starts from the quicksave instead of the title.
+
+In play the room is shown in the top right corner (hex, as `HG_ROOM` takes it). **F5** quicksaves
+(the game's own save, taken anywhere in play, into `save/quicksave.bin`); **F9** loads it, in
+play or on the title. Quicksaves never touch the memory card saves.
 
 ### `hga`
 
