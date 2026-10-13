@@ -193,8 +193,7 @@ refused, bitten, throwing him off, his temper and going for Hewie; his blows rea
 `tests/story/test_stalker_words.fs`, 13). Next: P4b.
 
 **P4a - the story's words about him** (`scripts/story/words.fs`, src/game/event.c). He tells
-each frame (`stalker-doing`) his room, move mode and part, condition, health (packed: hp + its
-most x 65536, `health>`), kind, his alert (his mode: Progress_StalkerAlert) and the exit he
+each frame (`stalker-doing`) his room, move mode and part, condition, health and its most, kind, his alert (his mode: Progress_StalkerAlert) and the exit he
 came in by (+0x14D4); the room keeps it, with Fiona's and Hewie's conditions from their own
 broadcasts. Conditions: 0x55 in the game (told within a frame), 0x54 his kind (the kind
 partner-load put in slot 2: `slot2-kind`), 0x3C his kind and in this room, 0x10 his alert ($FF

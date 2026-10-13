@@ -93,8 +93,8 @@ behaviour playing-room
   on panic ( stage level -- )  drop the-panic ! ;
   on fiona-doing ( mode sub cond cmd -- )  fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode ! ;
   on hewie-doing ( here action mode sub cond mood group -- )  2drop hewie-cond !  drop  hewie-move-mode !  hewie-act !  hewie-here ! ;
-  on stalker-doing ( room mode sub cond health kind alert came -- )
-      st-came !  st-alert !  drop  health> st-hp-max !  st-hp !  st-cond !  st-sub !  st-mode !  st-room !  0 st-age ! ;
+  on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
+      st-came !  st-alert !  drop  st-hp-max !  st-hp !  st-cond !  st-sub !  st-mode !  st-room !  0 st-age ! ;
 end-behaviour
 
 \ a room's actor, named for the room

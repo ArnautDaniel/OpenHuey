@@ -68,7 +68,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     my-room
     away? if  3  else  reeling @ cond @ 2 = or bitten @ or if  4  else  leading @ if  8  else  0  then  then  then
     bitten @ if  9  else  cond @ 2 = if  $A  else  leading @ if  $18  else  0  then  then  then
-    cond @  hp @ 0 max  hp-max @ 16 lshift or  my-kind @  my-mode @  came-by @  broadcast stalker-doing ;
+    cond @  hp @  hp-max @  my-kind @  my-mode @  came-by @  broadcast stalker-doing ;
 \ the family's setup (Pursuer_Setup): his sight 150 ahead, 60 degrees either side; Fiona and
 \ Hewie known; listening for noises above his threshold (not his own)
 : family-setup ( -- )
