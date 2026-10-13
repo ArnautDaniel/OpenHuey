@@ -10,7 +10,7 @@ scene or a change and in after it, and wait for the fade. The original's event f
 
 | Message | Stack | Direction | Meaning |
 |---|---|---|---|
-| `fade` | `( frames kind -- )` | in (a room) | Fade over `frames` frames; kind & 0xF 0 / 1 in (from black), else out (to black). 0 frames: at once. |
+| `fade` | `( frames kind -- )` | in (a room) | Fade over `frames` frames; kind & 0xF: even out, odd in - 0 / 4 to black, 1 / 5 from black, 2 / 3 to / from white, 6 to half dark, 7 back from it (ScreenFade_Step). 0 frames: at once. |
 | `fade-finish` | `( -- )` | in | The fade is over now (where it was going). |
 | `fade-done` | `( -- )` | out, to who asked | The fade is over. |
 

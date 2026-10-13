@@ -27,6 +27,11 @@ T{ 10 frames  screen-level dup 0> swap 1000 < and  [: story.state:fading @ ;] in
 T{ 15 frames  screen-level [: story.state:fading @ ;] in-room -> 1000 0 }T
 [: 0 1 story.words:fade ;] in-room  2 frames
 T{ screen-level -> 0 }T
+testing the other kinds: 0 out (to black), 6 to half dark and 7 back (the instructions' pages)
+T{ [: 0 0 story.words:fade ;] in-room  2 frames  screen-level -> 1000 }T
+[: 0 1 story.words:fade ;] in-room
+T{ [: 10 6 story.words:fade ;] in-room  15 frames  screen-level -> 500 }T
+T{ [: 10 7 story.words:fade ;] in-room  15 frames  screen-level -> 0 }T
 
 testing the scene (act00): the movie, the cutscene, Fiona in it, the subtitles prepared
 world-held state-flag-clear   \ (as the opening left it, before her first scene)

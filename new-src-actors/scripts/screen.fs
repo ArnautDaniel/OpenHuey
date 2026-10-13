@@ -10,14 +10,19 @@ state: screen-state
   cell field level        \ 0 clear .. 1000 black
   cell field from  cell field to  cell field frames  cell field t
   cell field asked-by     \ who waits for it (-1 none)
+  cell field white        \ in white (kinds 2 and 3), not black
 end-state
 
 : fading? ( -- flag )  t @ frames @ < ;
-\ a fade over `frames` frames; kind and 0xF: 0 / 1 in (from black), others out (to black). (Its
-\ bits 0xC0 / 0x30 fade the music and the volume with it: with the music.)
+\ a fade over `frames` frames, by kind and $F (ScreenFade_Step): the even kinds go out, the odd
+\ come in - 0 / 4 to black, 1 / 5 from black, 2 / 3 the same in white, 6 to half dark, 7 back from
+\ it. (Its bits $C0 / $30 fade the music and the volume with it: with the music.)
+create kind-levels   \ (from, to)
+    0 , 1000 ,   1000 , 0 ,   0 , 1000 ,   1000 , 0 ,   0 , 1000 ,   1000 , 0 ,   0 , 500 ,   500 , 0 ,
 : start ( frames kind -- )
-    $F and dup 1 = swap 0= or if  1000 0  else  0 1000  then   ( frames from to )
-    to !  from !  0 max frames !  0 t !
+    $F and  dup 8 < 0= if  drop 4  then                     \ (8..15: no such kind - as out)
+    dup 2 4 within white !  2 cells * kind-levels +  dup @ from !  cell+ @ to !
+    0 max frames !  0 t !
     frames @ 0= if  to @ level !  then ;
 : finish ( -- )   \ it counts as over
     frames @ t !  to @ level !
@@ -29,7 +34,8 @@ end-state
 : draw ( -- )
     fade-layer ui-clear
     level @ dup 0> 0= if  drop exit  then
-    255 * 1000 / 0 max 255 min  >r  fade-layer 0 0 screen-size r> ui-rect ;   \ (black, that much opaque)
+    255 * 1000 / 0 max 255 min  white @ if  $FFFFFF00 or  then
+    >r  fade-layer 0 0 screen-size r> ui-rect ;   \ (black or white, that much opaque)
 
 behaviour fading
   on spawned ( -- )  -1 asked-by !  self subscribe tick  self subscribe frame-end ;

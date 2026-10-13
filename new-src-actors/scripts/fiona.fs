@@ -48,6 +48,14 @@ fvariable dl
     1e her-stick-k f!  -1 her-variant !  1e her-tired-w f!  0 her-rest !  0 her-run-t !
     -1 her-cmd !  0 her-busy-t !  0 her-scripted !  0 her-move !  -1 her-move-done !  1 her-step-l !  1 her-step-r !  -1 her-door-exit !  her-path path-clear  stand  idle ;
 
+\ arriving by an exit while walking or running on her own, she keeps on into the room: her
+\ stride and the held stick carry over (Fiona_Vt34 stops her only when she was busy)
+: going-on? ( -- flag )
+    her-mode @ 0=  her-doing @ 0= and  her-scripted @ 0= and  her-sub @ 1 3 within and ;
+: carry-on ( -- )
+    -1 her-cmd !  0 her-busy-t !  0 her-move !  -1 her-move-done !  -1 her-door-exit !  her-path path-clear ;
+: arrive ( exit -- )  arrive-at  going-on? if  carry-on  else  fresh  then ;
+
 \ ---- walking to a point (go-to: the console's, later the story's moves): her way over the nav
 \ mesh, arriving facing the way she walked ----
 create goal 12 allot
@@ -87,8 +95,8 @@ behaviour free
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe camera-cut
       self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown  self subscribe scene ;
   on leaving-room ( room exit -- )  2drop  through-door ;
-  on arrived ( room exit -- )  nip arrive-at  fresh  1 her act.visible l!  self camera-id send follow ;   \ (the story's scripts place her too)
-  on to-exit ( exit -- )  arrive-at  fresh ;
+  on arrived ( room exit -- )  nip arrive  1 her act.visible l!  self camera-id send follow ;   \ (the story's scripts place her too)
+  on to-exit ( exit -- )  arrive ;
   \ examining (Progress_PlayerButtons): an action offered here, taken with the action button
   \ while she is free; a script of the room has her, or lets go; a message on screen
   on offer ( scene arg -- )
