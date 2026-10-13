@@ -7,6 +7,7 @@
 #include "../data/model.h"
 #include "../render/render.h"
 #include "doglegs.h"
+#include "cloth.h"
 
 #define MAX_ACTORS 32   /* (the models loaded at once: Fiona, Hewie, the stalkers, the cast, the scenes') */
 #define ACTOR_MAX_TEXTURES 64
@@ -70,6 +71,7 @@ typedef struct Actor {
     ModelTurn turns[8];
     int nturns;
     DogLegs legs;           /* a dog's feet planted and its legs fitted to them (Hewie) */
+    Cloth *cloth;           /* its hanging parts (Fiona's slip, skirt, hair), NULL none */
     /* its motions' event keys (NAME.MRK: a byte of flags a frame for each motion, by the bank's
      * id list; the original's motion +0x4D4), NULL none */
     uint8_t *events;
