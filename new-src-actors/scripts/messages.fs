@@ -229,3 +229,9 @@ message keep-obstacle-spot ( i -- )           \ where it stands kept (for its mo
 message obstacle-model-to-spot ( i n -- )     \ model "oshi0n" its model, at the spot kept
 message push-obstacle ( i dx dz -- )          \ (Fiona) pushed two squares along (dx, dz; floats f>cell)
 message obstacle-moved ( i -- )               \ (Fiona) its move done
+
+\ ---- the event characters (docs/subsystems/cast.md): the figures in slots 3..5 ----
+message cast-load ( id -- )                   \ (a figure) be character `id` (its kind's model), loaded, not yet placed
+message cast-unload ( -- )                    \ (a figure) let it go
+message cast-out ( -- )                       \ (a figure) out of the scene, still loaded (the scripts' 0x14)
+message cast-dress ( model -- )               \ (a figure) wear that model (the scripts' hand-over 0xBA)
