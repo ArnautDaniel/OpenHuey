@@ -14,7 +14,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
 : pose ( -- )
     my-at sf@ him act.x sf!  my-at 4 + sf@ him act.y sf!  my-at 8 + sf@ him act.z sf!
     self body-yaw him act.yaw sf!
-    played? under-t @ 0= and 0<> 1 and him act.visible l! ;   \ (under the floor: Lorenzo's other class)
+    played? under-t @ 0= and unseen @ 0= and 0<> 1 and him act.visible l! ;   \ (under the floor: Lorenzo's other class)
 
 \ ---- in the game and out (Pursuer_Activate: waiting about, his first animation) ----
 \ in the story's character slot 2 (CharLoad_Partner: loaded and started, not yet anywhere) and
@@ -255,3 +255,60 @@ behaviour kind39
       self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
 end-behaviour
 : kind39-spawn ( -- id )  kind39 stalker-state s" kind39" spawn ;
+
+\ ---- Riccardo's other class (riccardo.c Kind37_Setup; kind 37): his chase with its own tables,
+\ 100 health (hard: 125), 3 across, 17 tall, its model O_RCT/RCT_000 (motion table $42AED0);
+\ near him at 30; struck enough, alerted (stalker/riccardo.fs `kind37-frame`) ----
+behaviour kind37
+  extends stalking
+  on spawned ( -- )
+      -1 her-came !
+      kind37-kit kit !  0 base-chase !  -1 gives-up !  0.06981317e turn-k f!  12e reach-k f!
+      ['] ric-begin own-chase !  ['] ric-run own-run !  20e attack-range f!  ['] kind37-frame own-frame !
+      s" O_RCT/RCT_000" 2dup file!  actor-load dup my-model !  $42AED0 motion-table
+      0 him act.visible l!
+      hard? if  125  else  100  then  dup hp-max !  hp !  37 my-kind !  0 growls !  12 hear-threshold !  family-setup
+      5400 45  cool-secs !  away-base !  -1 own-a !  -1 own-b !   \ (Kind37_Setup)
+      10e throw-k f!  50 tolerance !  0 temper !
+      3e 17e body-size  pursuer-floor body-mask!  body-off  0 in-game !
+      self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
+end-behaviour
+: kind37-spawn ( -- id )  kind37 stalker-state s" kind37" spawn ;
+
+\ ---- the TintStalker (tintstalker.c TintStalker_Setup; kind 23): the Pursuer's chase with its
+\ tables, Riccardo's look (O_RCT/RCT_000, motion table $42AED0), 100 health (hard: 125); seen
+\ only a while after each turn (stalker/riccardo.fs `tint-frame`) ----
+behaviour tintstalker
+  extends stalking
+  on spawned ( -- )
+      -1 her-came !
+      tintstalker-kit kit !  -1 base-chase !  -1 gives-up !  0.06981317e turn-k f!  12e reach-k f!
+      ['] tint-frame own-frame !  -1 tint-was !  -1 unseen !
+      s" O_RCT/RCT_000" 2dup file!  actor-load dup my-model !  $42AED0 motion-table
+      0 him act.visible l!
+      hard? if  125  else  100  then  dup hp-max !  hp !  23 my-kind !  0 growls !  12 hear-threshold !  family-setup
+      5400 45  cool-secs !  away-base !  -1 own-a !  -1 own-b !   \ (TintStalker_Setup)
+      hard? if  10e  else  15e  then  throw-k f!  50 tolerance !  0 temper !
+      3e 17e body-size  pursuer-floor body-mask!  body-off  0 in-game !
+      self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
+end-behaviour
+: tintstalker-spawn ( -- id )  tintstalker stalker-state s" tintstalker" spawn ;
+
+\ ---- kind 12 (lorenzo.c Kind12_Setup): the Pursuer's chase with its tables, 9999 health and never
+\ hurt, 3.5 across, 18 tall, its model O_LRF/LRF_000 (motion table $443FB0), reach 18, for Hewie
+\ 14; in her room it seizes her (stalker/riccardo.fs `kind12-frame`) ----
+behaviour kind12
+  extends stalking
+  on spawned ( -- )
+      -1 her-came !
+      kind12-kit kit !  -1 base-chase !  0 gives-up !  0.06981317e turn-k f!  14e reach-k f!  18e attack-range f!
+      ['] kind12-frame own-frame !
+      s" O_LRF/LRF_000" 2dup file!  actor-load dup my-model !  $443FB0 motion-table
+      0 him act.visible l!
+      9999 dup hp-max !  hp !  12 my-kind !  0 growls !  12 hear-threshold !  family-setup
+      3000 999  cool-secs !  away-base !  -1 own-a !  -1 own-b !   \ (Kind12_Setup)
+      0e throw-k f!  100 tolerance !  0 temper !
+      3.5e 18e body-size  pursuer-floor body-mask!  body-off  0 in-game !
+      self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
+end-behaviour
+: kind12-spawn ( -- id )  kind12 stalker-state s" kind12" spawn ;

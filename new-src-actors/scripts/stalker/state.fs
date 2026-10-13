@@ -121,6 +121,8 @@ state: stalker-state
   \ own actions ($1000.. in his tables: a table of xts; 0 Debilitas's), how near he attacks
   cell field own-chase  cell field own-run  cell field own-acts  1 floats field attack-range
   cell field own-frame          \ his own each frame (Riccardo's rage, snort, impact)
+  cell field alt-tables         \ his tables' second set (kind 37 alerted; else his rage)
+  cell field tint-t  cell field tint-was  cell field unseen   \ (the TintStalker: shown a while)
   cell field comings             \ +0x1630: the times he comes on, seen by her, before backing off
   cell field blows  cell field blow-move  cell field blow-aim   \ (Riccardo's flurry: blows left, the move, his aim)
   \ (Lorenzo's other class: under the floor - frames left, where he comes up, how; whom his sweep struck)

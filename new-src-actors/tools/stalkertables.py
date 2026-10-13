@@ -79,6 +79,14 @@ K39_TABLES = (dan(['Kind39_Attack0_%02d' % i for i in range(17)]) * 2 +
 K39_COMMON = dict(tables=K39_TABLES, combos=(0x445090, 12), gestures=(0x445060, 6), chase=0x3AFB70, lunge=0x3AF4B0,
                   temper=(0x445550, 0x445A00), pursue=(0x4454E0, 0x4454E0, 0x445990, 0x445990), throws=(9, 10),
                   grips=LY_COMMON['grips'])
+def k37(h, a):   # kind 37's attack tables [hard][alerted] (riccardo.c sAttackTables2)
+    names = ['Kind37_Attack%d%d_%02d' % (h, a, i) for i in range(14)] + ['Kind37_Attack%d0_14' % h]
+    names += ['str_r_20', 'str_t_23' if a == 0 else 'str_t_24'] if h == 0 else ['str_r_21', 'str_t_25' if a == 0 else 'str_t_26']
+    return dan(names)
+
+
+TS_TABLES = (dan(['TintStalker_Attack0_%02d' % i for i in range(15)] + ['str_r_8', 'str_t_13']) +
+             dan(['TintStalker_Attack1_%02d' % i for i in range(15)] + ['str_r_9', 'str_t_14']))
 STALKERS = [
     # name, prefix, attack tables [hard][rage][17] (Debilitas: his rage the same), moves, combos,
     # gestures, chase, lunge, temper (normal, hard), base chase [hard][rage], throws, grip offsets
@@ -106,6 +114,30 @@ STALKERS = [
     # kind 39 (lorenzo.c Kind39_*): Lorenzo's other class again with its own tables, no "rage"
     dict(name='Kind39', p='k39', moves=(0x444D40, 11), **K39_COMMON),
     dict(name='Kind39H', p='k39h', moves=(0x444ED0, 11), **K39_COMMON),
+    # Riccardo's other class (kind 37; riccardo.c Kind37_*): his chase with its own tables; alerted
+    # (struck enough: hurt) its alert tables and waits
+    dict(name='Kind37', p='k37', tables=k37(0, 0) + k37(0, 1) + k37(1, 0) + k37(1, 1),
+         moves=(0x4419E0, 18), combos=(0x441CA0, 20), gestures=(0x441C70, 6), chase=0x3AFB70, lunge=0x47AF50,
+         temper=(0x442230, 0x442230), pursue=(0x4421A0, 0x4421A0, 0x4421A0, 0x4421A0), throws=(16, 17),
+         grips=((-0.0389, 10.4049), (-0.0389, 10.4049), (0.7311, 13.251), (0.7311, 13.251),
+                (-1.1471, -2.5207), (-0.328, -2.3929)),
+         waits=(0x442290, 0x4428C0, 0x4422B0, 0x4428E0), flurry=(0x4156C0, 0x4156E0), lunge_n=1),
+    # the TintStalker (kind 23; tintstalker.c): the Pursuer's chase with its tables, Riccardo's look
+    dict(name='TintStalker', p='ts', tables=TS_TABLES[:17] * 2 + TS_TABLES[17:] * 2,
+         moves=(0x42A4E0, 18), combos=(0x42A7A0, 20), gestures=(0x42A770, 6), chase=0x3AFB70, lunge=0x3AF4B0,
+         temper=(0x42AB40, 0x42AB40), pursue=(0x42AAD0, 0x42AAD0, 0x42AAD0, 0x42AAD0), throws=(16, 17),
+         grips=((-0.0389, 10.4049), (-0.0389, 10.4049), (0.7311, 13.251), (0.7311, 13.251),
+                (-1.1471, -2.5207), (-0.328, -2.3929))),
+    # kind 12 (lorenzo.c Kind12_*): unkillable, it seizes her seeing her; its temper with Hewie is in
+    # memory the game fills (none), no throws, no grips of its own
+    dict(name='Kind12', p='k12',
+         tables=[0x423D90, 0x423DE0, 0x423DB0, 0x423DF8, 0x423E10, 0x423E38, 0x423E50, 0x423E70, 0x423E88,
+                 0x423E98, 0x423EB0, 0x423EC8, 0x423EE0, 0x423F00, 0x423F38, 0x423F48, 0x423F20] * 2 +
+                [0x423FE0, 0x424040, 0x424010, 0x424060, 0x424080, 0x4240B0, 0x4240C0, 0x4240F0, 0x424108,
+                 0x424118, 0x424130, 0x424158, 0x424170, 0x424190, 0x4241C8, 0x4241D8, 0x4241B0] * 2,
+         moves=(0x423CF0, 3), combos=(0x423D80, 4), gestures=(0x423D60, 4), chase=0x3AFB70, lunge=0x3AF4B0,
+         temper=(None, None), pursue=(0x423F60, 0x423F60, 0x4241F0, 0x4241F0), throws=(-1, -1),
+         grips=((0.0, 0.0),) * 6),
     dict(name='Daniella', p='dan', tables=DAN_TABLES,
          moves=(0x3D7550, 13), combos=(0x3D7760, 18), gestures=(0x3D7730, 6), chase=0x3AFB70, lunge=0x3AF4B0,
          temper=(0x3D7F40, 0x3D8890), pursue=(0x3D7E60, 0x3D7EB0, 0x3D87B0, 0x3D8800), throws=(11, 12),
@@ -167,8 +199,11 @@ for s in STALKERS:
     for k, t in enumerate(s['pursue']):
         out.append('create %s-pursue-%d  ' % (p, k) + '  '.join('%s f, %d , %d ,' % (f(a), b, c) for a, b, c in (rd(t + 12 * i, '<fii') for i in range(6))))
     out.append('create %s-grips  ' % p + '  '.join('%se f, %se f,' % (repr(x), repr(z)) for x, z in s['grips']))
-    if 'waits' in s:   # (his own chase's waits, +0x1824: back off, hold off, back off seen, hold off far, comings-on, the chance)
-        out.append('create %s-waits  ' % p + ' '.join('%d ,' % v for v in rd(s['waits'], '<5i')) + ' %s f,' % f(rd(s['waits'] + 20, '<f')[0]))
+    if 'waits' in s:   # (his own chase's waits, +0x1824: walking, stalking, walking seen, stalking far, comings-on,
+        # the chance - by the hard setting, and alerted: kind 37's)
+        w = s['waits'] if isinstance(s['waits'], tuple) else (s['waits'],) * 4
+        for k, t in enumerate(w):
+            out.append('create %s-waits-%d  ' % (p, k) + ' '.join('%d ,' % v for v in rd(t, '<5i')) + ' %s f,' % f(rd(t + 20, '<f')[0]))
         for k, t in enumerate(s['flurry']):   # (his flurry's blows, 1..7: running chances)
             out.append('create %s-flurry-%d  ' % (p, k) + ' '.join('%s f,' % f(v) for v in rd(t, '<6f')))
     out.append('create %s-kit  %s-tables , %s-moves , %s-combos , %s-gestures , %s-chase-frames , %s-chase-chances ,'
@@ -176,14 +211,15 @@ for s in STALKERS:
     out.append('    %s-lunge-chances , %s-temper-0 , %s-temper-1 , %s-pursue-0 , %s-pursue-1 , %s-pursue-2 , %s-pursue-3 ,'
                % ((p,) * 7))
     out.append('    %d , %d , %s-grips ,' % (s['throws'][0], s['throws'][1], p))
-    out.append(('    %s-waits , %s-flurry-0 , %s-flurry-1 ,' % (p, p, p)) if 'waits' in s else '    0 , 0 , 0 ,')
+    out.append(('    %s-waits-0 , %s-flurry-0 , %s-flurry-1 , %s-waits-1 , %s-waits-2 , %s-waits-3 ,' % ((p,) * 6))
+               if 'waits' in s else '    0 , 0 , 0 , 0 , 0 , 0 ,')
     out.append('')
 out += [
     '\\ ---- through his kit (his `kit` field) ----',
     ': kit# ( n -- x )  cells kit @ + @ ;',
     ': hard-set? ( -- flag )  progress pr.vars $27 + c@ 1 = ;',
     ': table ( situation hard? -- addr )   \\ (his rage: the second set of 17)',
-    '    if  34  else  0  then  raging @ if  17 +  then  +  cells 0 kit# + @ ;',
+    '    if  34  else  0  then  raging @ alt-tables @ or if  17 +  then  +  cells 0 kit# + @ ;',
     ': moves ( -- addr )  1 kit# ;',
     ': combos ( -- addr )  2 kit# ;',
     ': gestures ( -- addr )  3 kit# ;',
@@ -197,7 +233,8 @@ out += [
     ': throw-moves ( -- a b )  13 kit#  14 kit# ;',
     ': grip-offsets ( -- addr )  15 kit# ;',
     '\\ his own chase\'s waits (Riccardo: +0x1824) and his flurry\'s chances, by the hard setting (0: none)',
-    ': waits ( -- addr )  16 kit# ;',
+    ': waits ( -- addr )   \\ (by the hard setting; alerted - hurt - kind 37\'s own)',
+    '    hard-set? if  19  else  16  then  cond @ 1 = if  hard-set? if  2 +  else  4 +  then  then  kit# ;',
     ': flurry-chances ( -- addr )  hard-set? if  18  else  17  then  kit# ;',
 ]
 open(os.path.join(here, '..', 'scripts', 'stalker', 'tables.fs'), 'w').write('\n'.join(out) + '\n')

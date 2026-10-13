@@ -22,6 +22,9 @@ riccardo-spawn constant riccardo
 lorenzo-spawn constant lorenzo
 lorenzo2-spawn constant lorenzo2
 kind39-spawn constant kind39
+kind37-spawn constant kind37
+tintstalker-spawn constant tintstalker
+kind12-spawn constant kind12
 summoner-spawn constant summoner
 story-spawn constant story
 gameover-spawn constant gameover

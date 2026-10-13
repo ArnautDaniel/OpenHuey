@@ -64,7 +64,7 @@ Takes: `command` (from Fiona), `praise`, `scold`, `hit`, `heard`, `tick`.
 Sends: `noise` (barks), `bite` (a `hit`), `noticed` (he's alert to a stalker).
 Original: `hewie.c`.
 
-### The stalkers (`stalker`)  — **P1, P2, P3 built** (`subsystems/stalker.md`)
+### The stalkers (`stalker`)  — **P1-P4 built** (`subsystems/stalker.md`)
 One family for Debilitas, Daniella, Riccardo and Lorenzo: the same senses, search, chase and
 attack, with each one's numbers, motions and special moves.
 Owns: its mode (searching / after her / held back / waiting), what it knows (where it saw her,
@@ -75,7 +75,7 @@ Sends: `noise` (steps), `hit`/`seize`/`lead` to Fiona, `open` to doors, `stalker
 broadcasts (for danger and the music).
 Original: `pursuer.c`, `debilitas*.c`, `daniella.c`, `riccardo.c`, `lorenzo.c`.
 
-### Event characters (`cast`)
+### Event characters (`cast`) — not started; takes the cutscenes' cast beyond slot 2 (char-load-2, char-hand-over, char-loaded?)
 The story's other characters and things: the crows, the figures in scenes. Mostly placed and
 put in motions by the story.
 Takes: `place`, `play-motion`, `hold-motion`, `show`, `hide`.

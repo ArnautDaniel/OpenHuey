@@ -2,7 +2,7 @@
 \ (docs/subsystems/stalker.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/stalker/test_lorenzo.fs
 IN: test-lorenzo
-USING: tester engine game-state actors messages common room-names game debug flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.chase stalker.pursue fiona.state ;
+USING: tester engine game-state actors messages common room-names game debug flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.chase stalker.pursue stalker.riccardo fiona.state ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : lor ( -- id )  s" lorenzo" actor-named ;
@@ -28,4 +28,16 @@ T{ [: [: her-mode @ 4 = ;] fiona@ ;] 600 soon -> -1 }T
 testing the story's kind 11 is him
 T{ 11 story.words:stalker-actor  lor = -> -1 }T
 lor send stalker-out  3 frames
+
+\ ---- kind 12: unkillable; in her room it seizes her ----
+: k12 ( -- id )  s" kind12" actor-named ;
+testing kind 12: its kit, the Pursuer's chase, 9999 health, its model
+T{ k12 enter  kit @ kind12-kit =  base-chase @  hp-max @  my-model @ $E04 has-motion?  leave-actor -> -1 -1 9999 -1 }T
+[: [: her-mode @ 0= ;] fiona@ ;] 300 soon drop
+room-id game:fiona body-tri k12 send stalker-in  3 frames
+testing ... in her room: it seizes her ($10), and is never hurt
+T{ [: [: her-mode @ 4 =  her-sub @ $10 = and ;] fiona@ ;] 30 soon -> -1 }T
+T{ k12 enter  100 hp !  kind12-frame  hp @  leave-actor -> 9999 }T
+T{ 12 story.words:stalker-actor  k12 = -> -1 }T
+k12 send stalker-out  3 frames
 test-summary

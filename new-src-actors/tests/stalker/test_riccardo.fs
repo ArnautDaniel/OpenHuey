@@ -58,4 +58,24 @@ T{ [: raging @  4 her-stage !  riccardo-frame  raging @ ;] his -> -1 0 }T
 testing the story's kind 4 is him
 T{ 4 story.words:stalker-actor  ric = -> -1 }T
 ric send stalker-out  3 frames
+
+\ ---- his other class (kind 37): his chase with its own tables; struck enough, alerted ----
+: k37 ( -- id )  s" kind37" actor-named ;
+testing kind 37: its kit, his chase, near him at 30, his model
+T{ k37 enter  kit @ kind37-kit =  own-chase @ ' ric-begin =  come-reach f>s  hp @  my-model @ $E00 has-motion?  leave-actor -> -1 -1 30 100 -1 }T
+testing ... struck to 100 alerted (hurt): its alert tables and waits; calmer below
+T{ k37 enter  120 hits !  0 cond !  kind37-frame  cond @  alt-tables @  0 wait#  leave-actor -> 1 -1 150 }T
+T{ k37 enter  0 hits !  kind37-frame  cond @  alt-tables @  0 wait#  leave-actor -> 0 0 60 }T
+T{ 37 story.words:stalker-actor  k37 = -> -1 }T
+
+\ ---- the TintStalker (kind 23): the Pursuer's chase, seen only a while after each turn ----
+: ts ( -- id )  s" tintstalker" actor-named ;
+testing the TintStalker: its kit, the Pursuer's chase, unseen till it does something
+T{ ts enter  kit @ tintstalker-kit =  base-chase @  hp @  unseen @  leave-actor -> -1 -1 100 -1 }T
+room-id game:fiona body-tri ts send stalker-in  3 frames
+testing ... in her room: seen a while (150 frames), then gone
+T{ ts enter  unseen @  tint-t @ 0>  my-model @ actor act.visible l@  leave-actor -> 0 -1 1 }T
+T{ [: ts enter  unseen @  leave-actor ;] 200 soon -> -1 }T
+T{ 23 story.words:stalker-actor  ts = -> -1 }T
+ts send stalker-out  3 frames
 test-summary

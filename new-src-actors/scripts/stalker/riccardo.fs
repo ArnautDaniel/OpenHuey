@@ -18,7 +18,7 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
 : wait# ( i -- n )  cells waits + @ ;              \ (his waits: 0 walking, 1 stalking, 2 walking once
 : wait-chance ( F: -- c )  5 cells waits + f@ ;   \ seen, 3 stalking when far, 4 the comings-on)
-: come-reach ( F: -- r )  60e ;                     \ (+0x17C0)
+: come-reach ( F: -- r )  my-kind @ 37 = if  30e  else  60e  then ;   \ (+0x17C0: his other class's 30)
 : d-her ( F: -- d )  d-fiona f@ ;
 : stage5? ( -- flag )  her-stage @ 5 = ;
 
@@ -212,3 +212,27 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
     else  stage5? reeling @ 0= and  my-mode @ 0= and if  -1 raging !  $26 7 sound  then  then
     anim @ $600 =  my-model @ 0 0 1 motion-events 1 and and if  $24 5 sound  then
     impact ;
+
+\ ---- his other class (kind 37; riccardo.c Kind37_Update): struck enough (100 damage) he is
+\ alerted - hurt, his alert tables and waits - and calms again below ----
+: kind37-frame ( -- )
+    hits @ 100 < if  cond @ 1 = if  0 cond !  then
+    else  cond @ 1 2 within 0= cond @ 2 <> and if  1 cond !  then  then
+    cond @ 1 = alt-tables ! ;
+
+\ ---- the TintStalker (kind 23; tintstalker.c TintStalker_Tint / SetDelay): seen only a while
+\ (150 frames) after each turn of what it does - counting while it is free - then gone ----
+: tint-frame ( -- )
+    my-mode @ tint-was @ <> if  150 tint-t !  my-mode @ tint-was !  then
+    tint-t @ if  cond @ 1 3 within 0= if  -1 tint-t +!  then  then
+    tint-t @ 0= unseen ! ;
+
+\ ---- kind 12 (lorenzo.c Kind12_Update / EventState): never hurt (its health back each frame); in
+\ her room, free to go for her, it seizes her (her fright 100) - not in costumes 6 / 7 ----
+: kind12-frame ( -- )
+    hp-max @ hp !
+    world-held state-flag?  stalkers-blind state-flag? or if  exit  then
+    $26 progress pr.vars + c@ dup 6 = swap 7 = or if  exit  then
+    fiona here? 0= if  exit  then
+    her-plight @ 3 = if  exit  then   \ (struck or held already)
+    3 0 100e f>cell fiona send hit ;

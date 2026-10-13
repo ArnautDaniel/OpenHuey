@@ -728,7 +728,7 @@ variable bf-fx  variable bf-x  variable bf-y  variable bf-z  variable bf-n
 : stalker-actor ( kind -- id | -1 )   \ the stalker actors by kind (2 Debilitas, 3 Daniella, 4 Riccardo, 11 Lorenzo, 10 his other class; the others later)
     case  2 of  s" debilitas"  endof  6 of  s" debilitas"  endof  7 of  s" debilitas"  endof  27 of  s" debilitas"  endof
           3 of  s" daniella"  endof  34 of  s" daniella"  endof  35 of  s" daniella"  endof  36 of  s" daniella"  endof
-          4 of  s" riccardo"  endof  11 of  s" lorenzo"  endof  10 of  s" lorenzo2"  endof  39 of  s" kind39"  endof
+          4 of  s" riccardo"  endof  11 of  s" lorenzo"  endof  10 of  s" lorenzo2"  endof  39 of  s" kind39"  endof  37 of  s" kind37"  endof  23 of  s" tintstalker"  endof  12 of  s" kind12"  endof
           >r 0 0 r>  endcase
     dup if  actor-named  else  2drop -1  then ;
 : summoner-id ( -- id )  s" summoner" actor-named ;

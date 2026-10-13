@@ -27,7 +27,7 @@ requests to Fiona.
 | P3c | Hewie's bites | Hewie H3 |
 | **P4a** | The story's stalker words: its conditions about him (in the game, his kind, here, his alert, free, his condition, health, the exit he came in by, out of sight) and its orders (after her / searching, his clock, knocked down, rage, started again, condition, health, silent); his `moving` for the scripts' waits | story |
 | P4b | Daniella's own tables (moves, attack tables, temper) and behaviour (Daniella_Behaviour), his footsteps heard through the walls, the rooms a stalker keeps to | P4a |
-| **P4c** | Riccardo and Lorenzo (begun: Riccardo and Lorenzo built; their other classes next); the cutscenes' cast beyond slot 2 (char-load-2, char-hand-over, char-loaded?) | P4b |
+| **P4c** | Riccardo and Lorenzo, and the other classes (kinds 37, 23, 10, 39, 12); the cutscenes' cast beyond slot 2 went to the cast (event characters) | P4b |
 
 ## API (P1, a first draft)
 
@@ -345,10 +345,22 @@ of there). Under the floor 15 frames, unseen. **Kind 39** (lorenzo.c Kind39_*): 
 with its own tables, 250 health (hard 300), no "rage" (reach 18, for Hewie 12); its sweep
 strikes whoever it sees.
 
-The story's kinds: 4 Riccardo, 11 Lorenzo, 10 Lorenzo's other class, 39. Checked by `tests/stalker/test_riccardo.fs` (13) and
-`tests/stalker/test_lorenzo.fs` (6), `tests/stalker/test_lorenzo2.fs` (12). *Not yet*: Riccardo's cry hits and his hammer's debris and
+**Riccardo's other class** (kind 37; riccardo.c Kind37_*): his chase with its own tables, near
+him at 30 (Riccardo 60), its model O_RCT/RCT_000 (motion table $42AED0), 100 health (hard 125);
+struck to 100 damage it is alerted - hurt, its alert tables and waits (the kit's waits by the hard
+setting and alerted) - and calms below. **The TintStalker** (kind 23; tintstalker.c): the
+Pursuer's chase with its tables, the same look, seen only a while (150 frames) after each turn of
+what it does, then gone (`unseen`). **Kind 12** (lorenzo.c Kind12_*): the Pursuer's chase with
+its tables, its model O_LRF/LRF_000 (motion table $443FB0), 9999 health and never hurt; in her
+room, free to go for her (not in costumes 6 / 7), it seizes her (her fright 100).
+
+The story's kinds: 4 Riccardo, 37, 23, 11 Lorenzo, 10 Lorenzo's other class, 39, 12. Checked by `tests/stalker/test_riccardo.fs` (21 with kinds 37 and 23), `tests/stalker/test_lorenzo.fs` (10 with
+kind 12), `tests/stalker/test_lorenzo2.fs` (12 with kind 39). *Not yet*: Riccardo's cry hits and his hammer's debris and
 jolt (effects), his blow at a room object (gEvents +0x68), going to the door she hides behind;
 Lorenzo's footsteps only in his walks (the stalkers' steps on screen aren't written yet); the sparks, dust,
 the sink's rings and the burst of Lorenzo's other class (effects), his travel under the floor
-(he comes up at once after 15 frames); Riccardo's other class (kind 37, his tint), the
-TintStalker (23), kind 12; the cutscenes' cast beyond slot 2.
+(he comes up at once after 15 frames); the screen tints of kinds 37 and 23 (the TintStalker's
+fade in and out: shown or not), kind 12's marker; the situations of the ending (the TintStalker's
+table 15, its doors). The cutscenes' cast beyond slot 2 (`char-load-2`, `char-hand-over`,
+`char-loaded?`) goes with the event characters (the cast): every use is of figures that aren't
+stalkers (kinds 15, 28), loaded into slots 3..5 as the cast is.
