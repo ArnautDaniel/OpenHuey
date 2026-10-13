@@ -294,3 +294,22 @@ that way and the floor 2.2 ahead pushable, pushed again, else she strains. The s
 straining she lets go ($1202, then free), else free. The stalker touching her: free at once.
 Checked by `tests/obstacles/test_obstacles.fs`. Not yet: knocked while pushing (FI 0x1AD584
 bit 2), the push's rumble.
+
+## Her hanging parts (`src/game/cloth.c`)
+
+What hangs and sways on her model is C's, as posing is: the original's spring sets
+(`model.c` `SpringSet_*` and the point classes; `FionaModel_Setup`, `EventHumanModel_Setup`). Each
+part is a point with a velocity in the room, stepped once a game frame (so it trails as she moves
+and turns), held at its length from what it hangs from, pushed off spheres on her bones; then its
+bone is aimed at it before the model is skinned (the pose hook, as Hewie's legs).
+
+- **The slip** (`O_FIS`): eight strips of four from her hips (bones $B..$2A), each swinging from
+  hip bone 2 or 6 within a cone that widens down the strip and kept to its outer side; a bone
+  hanging from her head ($3D); her hair (four, $39..$3C, off spheres on her head and shoulders);
+  her chest sprung to its bone ($2D).
+- **Her clothes** (`O_FIN`): the skirt's six pairs from her hips; her hair ($25..$28); two bones
+  hanging ($29, $30); her chest ($19).
+
+Settled afresh (30 steps) when the model is loaded and when it is put somewhere more than 30
+away (hga's own: the original's points start at the origin and settle from there).
+Not yet: her other costumes' sets (`costume_hang16` / `costume_hang3`), the stalkers' and the cast's.

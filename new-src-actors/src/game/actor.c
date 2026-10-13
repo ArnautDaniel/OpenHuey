@@ -56,6 +56,7 @@ int actor_load(Actor *actors, const char *name) {
     a->used = 1;
     snprintf(a->name, sizeof(a->name), "%s", name);
     load_textures(a);
+    a->cloth = cloth_for(name);
     a->posed = malloc((size_t)a->model.nv * sizeof(MeshVertex));
     a->scale = 1.0f;
     a->rate = 1.0f;   /* (a motion frame a tick: the game ran its motions at its own 30 fps) */
@@ -91,6 +92,7 @@ void actor_free(Actor *a) {
     model_free(&a->model);
     free(a->posed);
     free(a->events);
+    free(a->cloth);
     memset(a, 0, sizeof(*a));
 }
 
@@ -156,6 +158,7 @@ void actor_tick(Actor *a) {
     for (i = 0; i < 3; i++) {
         part_tick(a, &a->parts[i]);
     }
+    cloth_tick(a->cloth);
     if (a->legs.on) {
         legs_contact(a);
     }
@@ -400,14 +403,18 @@ int actor_motion_entry(const Actor *a, int index, int *blend, int *pose, int *fl
     return 1;
 }
 
-/* ---- a dog's legs (doglegs.c) through the pose hook ---- */
-static Actor *sLegsActor;
-static Mat4 sLegsPlace, sLegsUnplace;
+/* ---- through the pose hook: a dog's legs (doglegs.c), the hanging parts (cloth.c) ---- */
+static Actor *sHookActor;
+static Mat4 sHookPlace, sHookUnplace;
 
-static void legs_hook(Mat4 *world, int n, void *user) {
-    (void)n;
+static void pose_hook(Mat4 *world, int n, void *user) {
     (void)user;
-    doglegs_pose(&sLegsActor->legs, &sLegsActor->model, world, &sLegsPlace, &sLegsUnplace);
+    if (sHookActor->legs.on) {
+        doglegs_pose(&sHookActor->legs, &sHookActor->model, world, &sHookPlace, &sHookUnplace);
+    }
+    if (sHookActor->cloth != NULL) {
+        cloth_pose(sHookActor->cloth, world, n, &sHookPlace, &sHookUnplace);
+    }
 }
 
 /* room -> model space: the place undone (turn back, unscale) */
@@ -455,7 +462,17 @@ static void skin(Actor *a) {
 
         m->motions = a->drive;
         m->motions_size = a->drive_size;
+        if (a->cloth != NULL) {   /* (its root in the room: the bones are there but for the scale) */
+            float k = a->scale != 0.0f ? 1.0f / a->scale : 1.0f;
+
+            sHookActor = a;
+            sHookPlace = sHookUnplace = mat4_identity();
+            sHookPlace.m[0] = sHookPlace.m[5] = sHookPlace.m[10] = a->scale;
+            sHookUnplace.m[0] = sHookUnplace.m[5] = sHookUnplace.m[10] = k;
+            model_pose_hook(pose_hook, NULL);
+        }
         model_pose_root(m, model_motion_find(m, 0x8000), a->drive_frame, skin_m, &root);
+        model_pose_hook(NULL, NULL);
         m->motions = own;
         m->motions_size = own_size;
         for (root_bone = 0; root_bone < m->nbones && m->bones[root_bone].parent >= 0; root_bone++) {
@@ -492,11 +509,11 @@ static void skin(Actor *a) {
         place.m[13] = a->pos.y;
         place.m[14] = a->pos.z;
         model_pose_turns(a->turns, a->nturns);
-        if (a->legs.on) {
-            sLegsActor = a;
-            sLegsPlace = place;
-            sLegsUnplace = unplace_of(a);
-            model_pose_hook(legs_hook, NULL);
+        if (a->legs.on || a->cloth != NULL) {
+            sHookActor = a;
+            sHookPlace = place;
+            sHookUnplace = unplace_of(a);
+            model_pose_hook(pose_hook, NULL);
         }
         model_pose_layers(m, l, nl, skin_m, NULL);
         model_pose_hook(NULL, NULL);
