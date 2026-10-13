@@ -8,7 +8,7 @@
 #include "../render/render.h"
 #include "doglegs.h"
 
-#define MAX_ACTORS 16
+#define MAX_ACTORS 32   /* (the models loaded at once: Fiona, Hewie, the stalkers, the cast, the scenes') */
 #define ACTOR_MAX_TEXTURES 64
 
 typedef struct Actor {

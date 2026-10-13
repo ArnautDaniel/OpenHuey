@@ -362,5 +362,4 @@ the sink's rings and the burst of Lorenzo's other class (effects), his travel un
 (he comes up at once after 15 frames); the screen tints of kinds 37 and 23 (the TintStalker's
 fade in and out: shown or not), kind 12's marker; the situations of the ending (the TintStalker's
 table 15, its doors). The cutscenes' cast beyond slot 2 (`char-load-2`, `char-hand-over`,
-`char-loaded?`) goes with the event characters (the cast): every use is of figures that aren't
-stalkers (kinds 15, 28), loaded into slots 3..5 as the cast is.
+`char-loaded?`) is the event characters' (`docs/subsystems/cast.md`).

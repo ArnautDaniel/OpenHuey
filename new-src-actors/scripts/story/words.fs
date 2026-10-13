@@ -62,18 +62,36 @@ create missing 16 1024 * allot  variable #missing
 \ partner-load brought in (the original's progress character table), -1 none
 variable slot2   -1 slot2 !
 variable slot2-kind   -1 slot2-kind !    \ (the kind partner-load put there: its +0x153C)
+: cast-actor ( slot -- id | -1 )   \ the event characters' figures (slots 3..5: cast.fs)
+    case  3 of  s" cast3"  endof  4 of  s" cast4"  endof  5 of  s" cast5"  endof  >r 0 0 r>  endcase
+    dup if  actor-named  else  2drop -1  then ;
+\ the story's character slots 2..5: the actor in each (the stalkers by kind, the figures) and the
+\ character's script id in it (the original's progress character table)
+create slot-actors  -1 , -1 , -1 , -1 , -1 , -1 ,
+create slot-chars  -1 , -1 , -1 , -1 , -1 , -1 ,
+: slot-actor ( slot -- addr )  cells slot-actors + ;
+: slot-id ( slot -- addr )  cells slot-chars + ;
+: slot-actor-of ( cs -- id | -1 )   \ whoever is in the slot, placed or not
+    case
+        0 of  fiona-id  endof
+        1 of  hewie-id  endof
+        2 of  slot2 @  endof
+        dup 3 6 within if  dup slot-actor @  else  -1  then  swap
+    endcase ;
 : char-actor ( cs -- id | -1 )
     case
         0 of  fiona-id  endof
         1 of  hewie-id  endof
         2 of  slot2 @  endof   \ (the stalker's slot: whoever partner-load put there)
-        >r -1 r>
+        dup 3 6 within if  dup slot-actor @  else  -1  then  swap
     endcase  dup 0< if  exit  then  dup body? 0= if  drop -1  then ;
-\ a script id to a slot: 0 Fiona, 1 Hewie, 0xFF the script's own (-1: nobody)
+\ a script id to a slot: 0 Fiona, 1 Hewie, 0xFF the script's own, the stalker $FE, the others by
+\ the slot they were loaded into (Progress_SlotOfId; -1: nobody)
 : char-slot ( id -- cs | -1 )
     dup $FF = if  drop self-char exit  then
     dup $FE = if  drop 2 exit  then   \ (the stalker)
-    dup 0 2 within if  exit  then  drop -1 ;
+    dup 0 2 within if  exit  then
+    6 3 do  i slot-id @ over = if  drop i unloop exit  then  loop  drop -1 ;
 : char-here ( cs -- flag )   \ in the game and in this room
     dup 0< if  drop false exit  then  char-actor dup 0< if  drop false exit  then  body-room this-room @ = ;
 : in-room? ( cs -- flag )  char-here ;
@@ -240,7 +258,7 @@ variable slot2-kind   -1 slot2-kind !    \ (the kind partner-load put there: its
 : exit-door-open? ( exit -- flag )  exit-open ;
 \ a character put on the exit's outside spot, facing in (Rooms_ExitPointOut)
 : char-to-exit ( who exit -- )
-    swap who>cs char-actor dup 0< if  2drop exit  then  send to-exit ;
+    swap who>cs dup 0< if  2drop exit  then  slot-actor-of dup 0< if  2drop exit  then  send to-exit ;
 
 \ ---- the camera (Progress_CameraSetup / CameraFollow) ----
 : camera-id ( -- id )  s" camera" actor-named ;
@@ -301,13 +319,13 @@ variable snd-vol  variable snd-pitch
 : room-sounds ( -- )  0 $1B0C00 sound-stop-voices  6 sound-load ;   \ (Progress_LoadRoomSounds)
 
 \ ---- placing characters (the story puts them: a message to each) ----
-: place-char ( cs F: x y z yaw -- )
-    char-actor dup 0< if  drop fdrop fdrop fdrop fdrop exit  then
+: place-char ( cs F: x y z yaw -- )   \ (a figure not yet placed too)
+    dup 0< if  drop -1  else  slot-actor-of  then  dup 0< if  drop fdrop fdrop fdrop fdrop exit  then
     >r  f>cell >r  f>cell >r  f>cell >r  f>cell  r> r> r> r>  send place ;
 fvariable at-y  fvariable keep-yaw
 : char-to-tri ( who tri -- )   \ (on the triangle's middle, its heading kept)
-    swap who>cs dup char-actor dup 0< if  drop 2drop exit  then
-    body-yaw keep-yaw f!  swap tri-center  keep-yaw f@  place-char ;
+    swap who>cs dup 0< if  2drop exit  then
+    dup char-actor dup 0< if  drop 0e  else  body-yaw  then  keep-yaw f!  swap tri-center  keep-yaw f@  place-char ;
 : char-to-tri-facing ( who tri face -- )
     rot who>cs dup 0< if  2drop drop exit  then
     rot tri-center  swap s>f deg>rad  place-char ;
@@ -442,7 +460,8 @@ fvariable zr  fvariable zh  fvariable zx  fvariable zy  fvariable zz  fvariable 
 \ ==== S3: the characters' moves (+0xF4: each carries out its own; +0xE1 its done) ====
 : cs>who ( id -- cs )   \ (an actor to its slot: -1 none)
     dup fiona-id = if  drop 0 exit  then  dup hewie-id = if  drop 1 exit  then
-    dup slot2 @ = slot2 @ 0< 0= and if  drop 2 exit  then  drop -1 ;
+    dup slot2 @ = slot2 @ 0< 0= and if  drop 2 exit  then
+    6 3 do  i slot-actor @ over = if  drop i unloop exit  then  loop  drop -1 ;
 : char-flag ( cs addr -- flag )  swap cells + @ ;
 \ CHAR_ACT: a move given (its done cleared until it says so); the move in mv-* (scratch)
 variable mv-kind  variable mv-a  variable mv-b  create mv-at 12 allot  fvariable mv-yaw
@@ -738,9 +757,11 @@ variable bf-fx  variable bf-x  variable bf-y  variable bf-z  variable bf-n
     summoner-id send summoner-reset ;
 \ the summoner (docs/subsystems/summoner.md)
 : summon-take ( kind -- )  summoner-id send summoner-take ;          \ 0x84: take the stalker out (Summoner_Take)
-: char-done ( id -- )   \ 0x14: character `id` leaves the scene - the stalker in slot 2: the summoner takes him
-    stalker-actor dup 0< 0=  over slot2 @ = and if  drop 0 summon-take exit  then  drop
-    s" char-done (not the stalker)" stub-step ;
+: char-done ( id -- )   \ 0x14: character `id` leaves the scene - the stalker in slot 2: the summoner takes him;
+    dup stalker-actor dup 0< 0=  over slot2 @ = and if  2drop 0 summon-take exit  then  drop
+    char-slot dup 3 6 within 0= if  drop exit  then          \ (a figure: out of the scene, still loaded -
+    dup slot-actor @ dup 0< if  2drop exit  then              \ the class's +0x58)
+    swap cast-actor over = if  send cast-out  else  send stalker-out  then ;
 \ 0x5A: the summoner's cooldown - `secs` seconds (less 0), or that much less (Summoner_SetCooldown /
 \ LessCooldown; the stub generator named its number "item")
 : item-cooldown ( secs less -- )
@@ -749,19 +770,27 @@ variable bf-fx  variable bf-x  variable bf-y  variable bf-z  variable bf-n
 : slot-unload ( -- )  slot2 @ dup 0< if  drop exit  then  send stalker-unload  -1 slot2 ! ;
 : char-unload ( slot -- )   \ 0x13: (despite its name) wait while the character in `slot` loads, then
     drop  in-slot? if  yield  then ;   \ start it (Progress_CharStart2): a frame - its load message taken
-\ the story's character slots 2..5 (the event characters: CharLoad_EventChar), by slot
-create slot-actors  -1 , -1 , -1 , -1 , -1 , -1 ,
-: slot-actor ( slot -- addr )  cells slot-actors + ;
-: char-load ( id slot exit -- )   \ 0x12: character `id` into `slot` (the stalkers by kind; exit $FF as is -
-    drop                                   \ from a room's exit: with their travel)
-    dup 6 u< 0= if  2drop exit  then
-    over stalker-actor dup 0< if  drop 2drop  s" char-load (not a stalker)" stub-step exit  then   ( id slot a )
-    tuck swap slot-actor !  nip                                              ( a )
-    send stalker-load ;
+\ whoever is in a slot let go (a figure unloaded, a stalker out)
+: slot-clear ( slot -- )
+    dup slot-actor @ dup 0< if  2drop exit  then                              ( slot a )
+    over cast-actor over = if  send cast-unload  else  send stalker-unload  then
+    -1 over slot-actor !  -1 swap slot-id ! ;
+variable cl-id  variable cl-slot  variable cl-exit
+: char-load ( id slot exit -- )   \ 0x12: character `id` into `slot`: a stalker by kind (exit: with his
+    cl-exit !  cl-slot !  cl-id !        \ travel); else a figure (cast.fs: CharLoad_EventChar) in slots 3..5,
+    cl-slot @ 6 u< 0= if  exit  then     \ at that exit of this room ($FF: as it is)
+    cl-id @ stalker-actor dup 0< 0= if
+        dup cl-slot @ slot-actor !  cl-id @ cl-slot @ slot-id !  send stalker-load exit
+    then  drop
+    cl-slot @ 3 6 within 0= if  s" char-load (a figure not in slots 3..5)" stub-step exit  then
+    cl-slot @ slot-clear
+    cl-slot @ cast-actor dup 0< if  drop exit  then                           ( a )
+    dup cl-slot @ slot-actor !  cl-id @ cl-slot @ slot-id !
+    cl-id @ over send cast-load
+    cl-exit @ $FF = if  drop exit  then  cl-exit @ swap send to-exit ;
 : char-remove ( slot how -- )   \ 0x40: the character in `slot` removed (Progress_RemoveChar)
     drop  dup 2 = if  drop slot-unload exit  then
-    dup 6 u< 0= if  drop exit  then
-    slot-actor dup @ dup 0< if  2drop exit  then  send stalker-unload  -1 swap ! ;
+    dup 6 u< 0= if  drop exit  then  slot-clear ;
 : stalker-to-room ( id room at how -- )   \ 0x3E: into room `room` ($FFFF its own) on triangle `at`
     drop  rot drop                                          \ (how: the side's door - with its travel)
     slot2 @ dup 0< if  drop 2drop exit  then  >r
@@ -828,6 +857,7 @@ fvariable oc-x  fvariable oc-y
 : char-silent ( who on -- )  swap char-id dup 0< if  2drop exit  then  send silent ;      \ 0x3D
 : char-activate ( id -- )   \ 0x15 (Progress_ActivateChar: the character's Activate) - the stalker
     dup char-slot 2 = if  drop slot2 @ dup 0< if  drop exit  then  send activate exit  then
+    char-slot 3 6 within if  exit  then   \ (a figure: in the scene once the story places it)
     s" char-activate (not the stalker)" stub-step ;
 : stalker-mode ( id mode -- )  swap stalker-id dup 0< if  2drop exit  then  send stalker-order ;   \ 0x2F
 : stalker-search-delay ( id frames -- )  swap stalker-id dup 0< if  2drop exit  then  send stalker-clock ;   \ 0x2A
@@ -903,12 +933,15 @@ create zp 12 allot
 : char-file-use ( id -- )  drop  s" char-file-use" stub-step ;
 : char-find-tri ( who -- )  drop  s" char-find-tri" stub-step ;
 : char-group-bit4? ( id group -- flag )  drop  drop  s" char-group-bit4?" stub-flag ;
-: char-hand-over ( from to -- )  drop  drop  s" char-hand-over" stub-step ;
+: char-hand-over ( from to -- )   \ 0xBA: the figure in `from` wears the model of the one in `to`
+    slot-id @ cast-model dup 0< if  2drop exit  then                \ (Pursuer_GiveMotionBanks)
+    swap slot-actor @ dup 0< if  2drop exit  then  send cast-dress ;
 : char-in ( slot -- )  drop  s" char-in" stub-step ;
 : char-in-nav-group? ( who group -- flag )  drop  drop  s" char-in-nav-group?" stub-flag ;
 : char-layer ( who layer -- )  drop  drop  s" char-layer" stub-step ;
-: char-load-2 ( id slot -- )  drop  drop  s" char-load-2" stub-step ;
-: char-loaded? ( slot id -- flag )  drop  drop  s" char-loaded?" stub-flag ;
+: char-load-2 ( id slot -- )  $FF char-load ;   \ 0xB9: a figure into a slot (CharLoad_EventChar)
+: char-loaded? ( slot id -- flag )   \ cond 0x63: character `id` is the one in `slot`
+    swap dup 6 u< 0= if  2drop false exit  then  slot-id @ = ;
 : char-model-op ( op id v -- )  drop  drop  drop  s" char-model-op" stub-step ;
 : char-no-shadow ( who on -- )  drop  drop  s" char-no-shadow" stub-step ;
 : char-not-at-door? ( who door -- flag )  drop  drop  s" char-not-at-door?" stub-flag ;

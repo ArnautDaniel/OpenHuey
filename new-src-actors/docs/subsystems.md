@@ -75,7 +75,7 @@ Sends: `noise` (steps), `hit`/`seize`/`lead` to Fiona, `open` to doors, `stalker
 broadcasts (for danger and the music).
 Original: `pursuer.c`, `debilitas*.c`, `daniella.c`, `riccardo.c`, `lorenzo.c`.
 
-### Event characters (`cast`) — not started; takes the cutscenes' cast beyond slot 2 (char-load-2, char-hand-over, char-loaded?)
+### Event characters (`cast`)  — **built** (`subsystems/cast.md`)
 The story's other characters and things: the crows, the figures in scenes. Mostly placed and
 put in motions by the story.
 Takes: `place`, `play-motion`, `hold-motion`, `show`, `hide`.
