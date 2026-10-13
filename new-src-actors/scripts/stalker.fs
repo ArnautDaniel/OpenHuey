@@ -3,7 +3,7 @@
 \ (Debilitas: `debilitas`). P1: in the house - placed, standing, growling, telling the danger
 \ he is about; searching the room (stalker/search.fs: his modes, his route of stops, walking).
 IN: stalker
-USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.tables stalker.attack stalker.chase stalker.grab stalker.struck ;
+USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.grab stalker.struck stalker.bitten ;
 
 : me ( -- id )  self ;
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
@@ -31,8 +31,24 @@ USING: engine game-state actors messages common facts flag-names room-names path
     0 cond !  0 reeling !  0 hits !
     route-clear  my-path path-clear  3 mode!  0 play-now  stand  pose
     -1 came-by !  -1 making-for !  0 doors-n !  0 door-i !  0 away-search !  0 knock-t !  avoid-clear
+    out-over  -1 held-door !  -1 push-exit !  0 stun-t !  0 bitten !  0 bite-how !  0 dog-t !  0 at-dog !
     away? 0= if  search-start  then ;
-: go-out ( -- )  let-her-go  0 in-game !  body-off  0 him act.visible l! ;
+: go-out ( -- )  let-her-go  let-door-go  out-over  0 in-game !  body-off  0 him act.visible l! ;
+
+\ ---- the summoner (summoner.fs): told where he is each frame while in slot 2; brought in by it
+\ out of sight (Pursuer_IntoRoomByEvent): by a noise after her, else waiting about - with a plan
+\ heading for her, without one off by an exit at random ----
+: own-room? ( -- flag )  my-room dup own-a @ =  swap own-b @ =  or  own-a @ 0< 0= and ;
+: status ( -- )
+    in-game @ if  my-room  else  -1  then  my-mode @  in-game @ 0<>  in-game @ if  own-room?  else  false  then
+    away-base @  cool-secs @  s" summoner" actor-named send stalker-status ;
+: summoned ( room exit found plan -- )
+    >r >r  over -1 come-in  came-by !  drop  r> r>                    ( found plan )
+    swap if  drop
+        her-room my-room = if  search-again  else  1 mode!  avoid-clear  head-for-her  then
+    else
+        3 mode!  if  avoid-clear  head-for-her  else  wander  then
+    then ;
 
 \ ---- his frame (Debilitas_Update: so far the growl, his model) and his part in the danger ----
 : growl ( -- )   \ every 90 frames, standing on his own: sound $2A (bank 7)
@@ -41,11 +57,18 @@ USING: engine game-state actors messages common facts flag-names room-names path
     my-move-mode @ 0= anim @ $1300 <> and anim @ $1600 <> and if  $2A 7 sound  then ;
 : frame ( -- )
     away? if  away  pose  my-room 0 my-mode @ 0= 1 and danger-id send stalker-here  exit  then
-    thaw  hurt-down  senses  modes
+    thaw  hurt-down  senses  modes  dog-temper
     step @ ?dup if  execute  then  search
     played? growls @ and if  growl  then
     pose
     my-room  sees-fiona @ 0<> 1 and  my-mode @ 0= 1 and  danger-id send stalker-here ;
+\ what he is doing, for Hewie (the original's character fields he reads: room, move mode and
+\ part, condition, health)
+: tell-doing ( -- )
+    my-room
+    away? if  3  else  reeling @ cond @ 2 = or bitten @ or if  4  else  leading @ if  8  else  0  then  then  then
+    bitten @ if  9  else  cond @ 2 = if  $A  else  leading @ if  $18  else  0  then  then  then
+    cond @  hp @  hp-max @  my-kind @  broadcast stalker-doing ;
 \ the family's setup (Pursuer_Setup): his sight 150 ahead, 60 degrees either side; Fiona and
 \ Hewie known; listening for noises above his threshold (not his own)
 : family-setup ( -- )
@@ -53,6 +76,12 @@ USING: engine game-state actors messages common facts flag-names room-names path
     s" fiona" actor-named fiona-id !  s" hewie" actor-named hewie-id !
     hear-threshold @ stalker-noise s" acoustics" actor-named send listen ;
 
+\ a door slammed off screen, the one he makes for: right behind it, its damage (not below 1) and
+\ he is after her
+: blow-away ( kind damage how -- )
+    rot 5 <> if  2drop exit  then
+    behind-door? 0= if  drop exit  then
+    hp @ swap - 1 max hp !  0 mode! ;
 : unload ( -- )  0 loaded !  in-game @ if  go-out  then  my-kind @ -1 cast-as ;
 behaviour stalking
   on stalker-load ( -- )  load ;
@@ -60,20 +89,28 @@ behaviour stalking
   on stalker-in ( room tri -- )  come-in ;
   on stalker-out ( -- )  go-out ;
   on stalker-hunt ( -- )  in-game @ if  1 mode!  away? 0= if  search-again  then  then ;
-  on entered-room ( room exit -- )  drop room-changed  in-game @ if  pose  then ;
-  on tick ( -- )  in-game @ if  frame  then ;
+  on entered-room ( room exit -- )  her-came !  room-changed  in-game @ if  pose  then ;
+  on tick ( -- )  in-game @ if  frame  tell-doing  then  loaded @ if  status  then ;
+  \ Hewie (P3c): his attack asked, his letting go, his bites, his growls
+  on dog-attack ( kind -- )  dog-attacked ;
+  on shaken-off ( -- )  bitten @ bite-how @ 0= and if  2 bite-how !  then ;
+  on bite ( damage hard -- )  bitten @ if  bitten-by  else  2drop  then ;
+  on snap ( -- )  in-game @ if  snapped  then ;
+  on stalker-summoned ( room exit found plan -- )  summoned ;
   on heard ( loud room tri door source -- )  2drop hear ;
   on heard-nothing ( -- )  heard-none ;
-  on door-held ( room exit -- )  nip swing-open ;
+  on door-held ( room exit -- )  nip held-answer ;   \ (his to open, or the door he came in by)
   on hit-taken ( kind -- )  struck-home ;
-  on blow ( kind damage how -- )  sender striker !  struck  sender send blow-taken ;   \ (her shove or kick)
+  on blow ( kind damage how -- )   \ (her shove or kick; a door she slammed: no answer)
+      away? if  blow-away exit  then
+      sender striker !  2 pick 5 = >r  struck  r> 0= if  sender send blow-taken  then ;
   on seize-taken ( -- )   \ (her answers to his taking her; one he isn't waiting for: let go)
       leading @ if  1 answer !  else  fiona send unhand  then ;
   on seize-refused ( -- )  2 answer ! ;
   on broke-free ( -- )  3 answer ! ;              \ (his blow struck her: his cry)
   on fiona-plight ( state -- )  her-plight ! ;
   on panic ( stage level -- )  drop her-stage ! ;     \ (the door he came in by: swung open)
-  on door-refused ( room exit -- )  2drop ;            \ (it won't open for him: he gives up on it - with P3's doors)
+  on door-refused ( room exit -- )  nip refused-answer ;
 end-behaviour
 
 \ ---- Debilitas (debilitas.c Debilitas_Setup, DebilitasModel): 70 health (hard: 110), 5 across,
@@ -82,9 +119,12 @@ $2C020068 constant debilitas-floor   \ (Debilitas_BlockFlags: the triangles he c
 behaviour debilitas
   extends stalking
   on spawned ( -- )
+      -1 her-came !
       s" O_DB0/DB0_000" 2dup file!  actor-load dup my-model !  $3D89A0 motion-table
       0 him act.visible l!
       hard? if  110  else  70  then  dup hp-max !  hp !  2 my-kind !  -1 growls !  0 hear-threshold !  family-setup
+      4500 away-base !  90 cool-secs !  $20 own-a !  $02 own-b !   \ (Debilitas_Setup; his rooms D_0041BE40)
+      20 tolerance !  10e throw-k f!  0 temper !                \ (his temper with Hewie)
       5e 20e body-size  debilitas-floor body-mask!  body-off  0 in-game !
       self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic ;
 end-behaviour
@@ -98,9 +138,12 @@ $2C020028 constant pursuer-floor
 behaviour daniella
   extends stalking
   on spawned ( -- )
+      -1 her-came !
       hard? if  s" O_DNL/DNL_001"  else  s" O_DNL/DNL_000"  then  2dup file!  actor-load dup my-model !  $419E60 motion-table
       0 him act.visible l!
       hard? if  100  else  120  then  dup hp-max !  hp !  3 my-kind !  0 growls !  12 hear-threshold !  family-setup
+      hard? if  6000 100  else  3600 140  then  cool-secs !  away-base !  -1 own-a !  -1 own-b !   \ (Daniella_Setup's first)
+      hard? if  80 25e  else  200 10e  then  throw-k f!  tolerance !  0 temper !   \ (her temper: Debilitas's table for now)
       3e 17e body-size  pursuer-floor body-mask!  body-off  0 in-game !
       self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic ;
 end-behaviour

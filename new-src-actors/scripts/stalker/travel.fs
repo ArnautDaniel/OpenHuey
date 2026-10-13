@@ -32,13 +32,19 @@ USING: engine game-state actors messages common facts flag-names paths doors sta
 : stretch ( -- ) ( F: -- d )
     next-door my-room door-tri 0 max s>f
     came-door dup 0< 0= over next-door <> and if  my-room door-tri 0 max s>f f+  else  drop  then ;
-: route! ( room -- n )   \ (planned: the first stretch set)
-    dup goal-room !  my-room swap stalker-kind -1 avoid route-avoiding
+\ the half of his room he is on: the one the exit he came in by opens onto, where the door marks
+\ it (Character_Route with no side: Rooms_ExitSideFlag of his door, checked); -1 either
+: my-way ( -- way )  came-by @ dup 0< if  exit  then  my-room swap 1 exit-way ;
+\ to a half of the goal room (`want`; -1 either: Fiona's half when she is across his own room -
+\ stalker/doorway.fs)
+: route-way! ( room want -- n )   \ (planned: the first stretch set)
+    >r dup goal-room !  >r my-room my-way r> r> stalker-kind -1 avoid route-sides
     dup 0> if
         dup 16 min 0 do  i route-door  i cells doors + !  loop
         dup 16 min doors-n !  0 door-i !
         next-door door-exit making-for !  stretch to-door f!
     else  0 doors-n !  0 door-i !  -1 making-for !  then ;
+: route! ( room -- n )  -1 route-way! ;
 : route-over? ( -- flag )  door-i @ doors-n @ < 0= ;
 
 \ ---- a door as he finds it (Npc_ExitKind): 2 held, 3 not for him (locked against him, locked,
@@ -62,11 +68,13 @@ USING: engine game-state actors messages common facts flag-names paths doors sta
         >r 1e r>
     endcase ;
 
-\ ---- coming into the room being played by an exit: just inside it, facing in, walking in
-\ (Pursuer_EnterRoom); after her and not seeing her, or come to her room, he searches it ----
+\ ---- coming into the room being played by an exit: 12 inside it (Rooms_ExitTriThrough: the
+\ exit's spots are 4 inside, 12 beyond, 12 inside), facing in - or, by the door he made for,
+\ facing it (Pursuer_BackOnMesh); after her and not seeing her, or come to her room, he
+\ searches it ----
 create in-at 12 allot  create out-at 12 allot
 : place-at-exit ( exit facing-in? -- ok? )
-    >r  dup 1 exit-spot dup 0< if  r> drop 2drop fdrop fdrop fdrop false exit  then
+    >r  dup 2 exit-spot dup 0< if  r> drop 2drop fdrop fdrop fdrop false exit  then
     >r in-at vec!  0 exit-spot drop out-at vec!
     room-id r> in-at vec@ body-place
     r> if  out-at in-at  else  in-at out-at  then  vec-heading body-turn  true ;
@@ -74,7 +82,7 @@ create in-at 12 allot  create out-at 12 allot
     random-tri dup 0< if  drop fiona body-tri  then
     dup 0< if  drop exit  then  room-id swap dup tri-center body-place ;
 : in-play ( -- )   \ in the room being played now: his search there, or after her
-    0 away-search !  -1 anim !  stand-anim play-now  my-path path-clear
+    0 away-search !  0 out-going !  -1 anim !  stand-anim play-now  my-path path-clear
     my-mode @ 0= if  chase-start exit  then
     my-mode @ 1 = if  2 mode!  then
     search-again ;
@@ -159,14 +167,15 @@ create seen-exits 8 cells allot
               then  endof
         4 of  tick-down if  0 mode!  then  endof
     endcase ;
-: away ( -- )  modes-away  travel ;
+: away ( -- )   \ (stunned a while once knocked out of her room by a door: stalker/doorway.fs)
+    stun-t @ if  -1 stun-t +!  exit  then  modes-away  travel ;
 
 \ ---- the room being played changes (Fiona went through a door): his room no longer it - out
 \ of sight, his walk stopped; she came into his - put on its floor (Pursuer_BackOnMesh: near
 \ the door he made for - within 80 of it - there, facing it; else by the door he came in by,
 \ facing in; else anywhere) ----
 : gone-from-view ( -- )
-    -1 body-tri!  my-path path-clear  ['] noop step !  0 search-phase !  -1 anim !
+    0 out-going !  -1 body-tri!  my-path path-clear  ['] noop step !  0 search-phase !  -1 anim !
     my-mode @ 0= if  avoid-clear  her-room route! drop  then ;
 : back-on-floor ( -- )
     making-for @ 0< 0=  to-door f@ 80e f<= and if

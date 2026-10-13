@@ -13,7 +13,7 @@ when told, and defends her from the stalkers on his own as his trust grows. He h
 |---|---|---|
 | **H1** | His body and model (legs fitted to the floor; head, ears and tail overlays; his neck turned where he looks); moving (strides, turning with his head leading, the freest heading); his mind: the danger's moods (calm / wary / tense), what he does next by his trust (the weighted lists), his own decisions; being with Fiona (keeping near, coming to her, stepping away, waiting by her); roaming, sniffing, tricks, barking; his upkeep (health, mood, obedience); his sounds and steps (heard); going from room to room with her and finding his way off-screen | Fiona F1-F2, rooms, doors, acoustics, danger, panic |
 | H2 | Fiona's side (F3): her calls, gestures and commands (come, wait, attack, praise, scold, pet), trust and obedience as she treats him | — |
-| H3 | The stalkers: noticing them, growling, going for them, leaps, bites, tackles; being struck, knocked down, yelping | stalkers |
+| **H3** | The stalkers: noticing them, growling, going for them, leaps, bites, tackles; being struck, knocked down, yelping | stalkers |
 | H4 | The story's moves (walk to a spot, turn, an animation, a leap), fetching, being steered (the Hewie-control sections) | story |
 
 ## API (H1)
@@ -30,7 +30,11 @@ Declared in `scripts/messages.fs`.
 | `leaving-room` | `( room exit -- )` | in (rooms) | She leaves his room by that exit: he follows her that way, by another exit, or stays (Hewie_Vt34). |
 | `arrived` | `( room exit -- )` | in (rooms) | Where she is now. He comes in by himself, off screen through the doors (Hewie_Arrive / Hewie_StateToDoor). |
 | `noise` | | to acoustics | His loud barks and yelps (0x80) and growls / barking at someone (0x1B). Source: `hewie-noise`. |
-| `danger-signal` | `4` | to danger | He's alert to a stalker (H3: none yet). |
+| `danger-signal` | `4` | to danger | He's alert to a stalker (Hewie_Alert: in his room within 200, ahead of his head). |
+| `stalker-doing` | `( room mode sub cond hp hp-max kind -- )` | in (the stalker's broadcast) | The stalker in the game, as he tells it each frame (`pursuer`). |
+| `dog-attack` | `( kind -- )` | to the stalker | His attack asked (10..15); answered `dog-grip ( tri x y z yaw )` or `dog-refused`. |
+| `bite` / `shaken-off` / `snap` | | to the stalker | A bite while holding on; he let go; growled or barked at him. |
+| `blow` | `( kind damage how -- )` | in | Struck: by the stalker (his blows, his throw $B), by her (shove, kick: answered `blow-taken`), by a door (5). |
 | `hewie-doing` | `( here action mode sub cond mood group -- )` | broadcast, each frame (and again when a message changes what he does) | here: 0 out of the game, 1 in another room, 2 with her; his action, move mode and its part, condition, mood, pose group. Fiona chooses her commands by it. |
 | `command` | `( code tri yaw x z -- )` | in (Fiona) | Her command (the original's request 13). 0x23 "go there" carries the spot (floats `f>cell`). |
 | `reaction` | `( n -- )` | in (Fiona) | How her doing strikes him (Fiona_HewieReact's row): patience spent while he waits, a praise due. |
@@ -81,9 +85,11 @@ behaviours, `Hewie_WhatNext` / `WhenIdle` (the weighted lists, from the executab
   on `arrived` where she is). When she leaves, the room being played is still the old one, so
   he must not head for "the played room" then.
 - Whom he targets is an actor id (-1 none), not a character slot.
-- The room planner takes his doors to avoid (`route-avoiding`: a door that let him down isn't
-  tried again until he follows her afresh). The doors' one-way flags count for his kind
-  (`hewie-kind`). Not modelled: Progress_DoorPassable's side (the planner treats doors as
+- The room planner takes his doors to avoid (`route-sides`: a door that let him down isn't
+  tried again until he follows her afresh) and starts from the half of his room he is on,
+  `his-way` (the original's +0xF3668: set by the exit he comes through or arrives by, 2 -
+  either - when he comes into the game; -1 looks it up from the exit he came in by, and then
+  the doors' one-way flags count for his kind, `hewie-kind`). Not modelled: Progress_DoorPassable's side (the planner treats doors as
   passable from any side) and Progress_CurRoomFlag (waiting at a door the story holds).
 - The original's relations table (slot commands, request blocks 12 / 13, "hold" 7) is replaced
   by the meeting messages and `command`: what Hewie_JointAction checked each frame he checks
@@ -128,6 +134,45 @@ reaction spending his patience.
 
 Not yet: her head turned to him after a command (Fiona's looks, later), the scripts' "can she
 command him" (H4).
+
+**H3 built** (`scripts/hewie/fight.fs`; the stalker's side `scripts/stalker/bitten.fs`, P3c).
+The stalker as he tells it (`stalker-doing`: `pursuer`, his mode and condition) - Hewie_Alert,
+Hewie_PickTarget, the tense lists' barking at him and facing him now find him. Barking at him
+(st-bark-at-target, st-bark) or growling: `snap` (his temper). At him (actions 0x1F..0x22;
+after her "go for it" - Hewie_AfterComingOut: his leg 0x21 when readied and coming at him head
+on, else 0x1F; after a call 0x1F / 0x20; Fiona held: by chance 0x5A): seeing him, not off
+screen, not bitten or down - at him at a trot or a run (StateRunAtPursuer); within 23, nothing
+breaks in, the side he comes from (Hewie_AttackSide: from behind his back 0, unless timid;
+else a flank, 1 / 2, Daniella the other way) picks the grip and the action, and the attack is
+asked (`dog-attack`: 15 the leg, a flank 10 / 11 readied, 12 / 13, head on 14). Refused: 0x5A.
+Taken (`dog-grip`): the leap (StateLeapGrip: his bites by action, grip and trust - the
+generated `bites-*` tables; his angry count eased; a third of the time his feeling for him up;
+$2217 / $2200 / $2209 turned about / $2214, his way and the turn covered in 8 frames - the leg
+12 - at the stalker's height, $68). Landed (StateLeapLands): the first bite (the leg 5 / 30, a
+flank kind 2 or 3 / 5 or 10 readied, 1 or 3 the far one, head on 4 / 10; doubled on hard; hard
+by chance - `hard-bite-chance` by the stalker's health band - Hewie_ReactionRoll), $6B, on the
+spot, the bite animation, the chance to hold on (his feeling + 10) x 5. Holding on
+(StateBiteHold): each time round a shake roll (his bites left; the chance, -10 each time held)
+- failing it he lets go (`shaken-off`, $2219 / $2202 / $220B / $2216, StateClamped, then on with
+his-pet-time 300); else bites again (the leg 5 / 10, a flank 2 or 3 / 2 or 3, head on 4 / 3);
+let go when she calls him off (0x27 / 0x2C) or the stalker is down. Thrown off (the stalker's
+`shaken-off`): at a flank (0x1F / 0x20) hanging ($2203 / $220C) - then held on if he dares
+(Hewie_Dares) or flung (10 damage), $2204 / $220D or $2207 / $2210, along his last root motion,
+falling 0.5 a frame, landing $2212 / $2213 (StateHanging, StateJumpArc); else letting go.
+Harrying (0x59 / 0x5A: near him, 0x53, then 0x23 closing in - his-wanted times, 3 for 0x5A).
+Struck (Hewie_TakeBlow, `blow`): down - 0x74; already struck or in a joint action - nothing; its
+damage (hers twice, not a door's); by the stalker a quarter of the time his feeling down; by
+her scolded (praise-scold), hit lately counted (to 6; one less every 300 frames) and angry by
+chance (`angry-chance`); his yelp ($1000, $65 a shove, else $66), pushed back from whoever
+struck him 1.5 less 0.5 a frame (0x69, StateMoveAlong); a door, from her side of it 5 less 1
+(0x6B); then at its event (Hewie_AfterYelp) down (0x52, his feeling for the stalker -3) or -
+her blow, by her, hit lately - cowering (9 the first time, 0xB), else on. Her blows struck home
+are answered `blow-taken`. Checked by `tests/hewie/test_fight.fs` (19 tests).
+
+Not yet (H3): his scuffles off screen (Hewie_Scuffle), his tackles (0x75; Hewie_StateTackle),
+growling at the stalker (0x7B and its flight, Hewie_FleeExit), the bite's hit effect, his
+feeling's mood (Hewie_FeelPursuer), held by the stalker's grab (`hit` 6), the door through
+which he is pushed (0x6C), the creatures.
 
 **H4 begun** (with the story's S3): the story's moves (`scripted-move` → his actions 0x3B..0x47,
 0x7F; `scripted` on / off: Hewie_Think while a script has him; `hold-anim`, `show`; `moving`

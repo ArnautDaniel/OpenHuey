@@ -4,7 +4,7 @@
 \ panic run until she's out of breath; stumbling or falling as she runs into something; getting
 \ up again. The panic itself is its own actor (panic.fs): she hears its stage and level.
 IN: fiona.fear
-USING: engine keys game-state actors messages common facts fiona.state fiona.model fiona.controls fiona.moving flag-names ;
+USING: engine keys game-state actors messages common facts fiona.state fiona.model fiona.controls fiona.moving fiona.slam flag-names ;
 
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
@@ -126,13 +126,18 @@ create next-at 12 allot
     false ;
 
 \ ---- turning to flee (R1 - Q on the keyboard: Fiona_StateFleeStart / FleeTurn): she whips round
-\ (0x403) and runs; as she turns her fear rises 10 (not in costume 8); slamming a door behind
-\ her and Hewie's reaction: with them ----
+\ (0x403) and runs; as she turns her fear rises 10 (not in costume 8), and a door she turns from
+\ is slammed (fiona/slam.fs); Hewie's reaction: with him ----
 : add-fear ( F: amount -- )  her-fear f@ f+ 0e fmax 100e fmin her-fear f! ;   \ Fiona_AddPanic (charms: with items)
 : events ( -- bits )  her-model @ 0 0 1 motion-events ;
 : costume ( -- n )  $26 progress pr.vars + c@ ;
+create behind-pt 12 allot   \ (her radius behind her: a door slammed as she turns from it)
 : flee-turn ( -- )
+    recoil-down
     ended? if  to-idle exit  then
+    events $20 and if
+        her-yaw f@ pi f+ angle-wrap self body-dims fdrop behind-pt her-at vec-ahead  behind-pt false slam-door drop
+    then
     events 2 and if  0 her-mode !  costume 8 <> if  10e add-fear  then  then
     12e deg>rad turn-to-heading fdrop
     root@ rm-x f@ rm-z f@ her-heading f@ rotate-by move-by ;

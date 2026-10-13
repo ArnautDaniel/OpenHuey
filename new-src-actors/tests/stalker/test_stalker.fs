@@ -1,7 +1,7 @@
 \ The stalkers, P1: Debilitas in the house (docs/subsystems/stalker.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/stalker/test_stalker.fs
 IN: test-stalker
-USING: tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names gameover stalker.struck fiona.defend ;
+USING: tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names gameover stalker.struck stalker.doorway fiona.defend fiona.slam ;
 fvariable dx  fvariable dy  fvariable dz  fvariable dyaw
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
@@ -186,6 +186,38 @@ testing ... 20 damage and he gives up: his cry, held off (mode 4), out of the ro
 settled  close-up  [: 70 hp !  25 hits ! ;] his  square debug:press
 T{ [: [: my-mode @ 4 = ;] his ;] 300 soon  [: hits @ ;] his -> -1 0 }T
 T{ [: [: away? ;] his ;] 900 soon -> -1 }T
+testing ... (P3b) by its door: lined up, his animation ($602), the door swung open with it - left open
+T{ room-id 0 room-exit-door door-open?  room-id 0 room-exit-door door-held? -> -1 0 }T
 false blind  debug:debilitas-out  2 frames
+
+testing a door slammed on him (P3b): Fiona beside the open door, him in its way - shut, 3 damage, knocked through and out (stunned 150)
+: door0 ( -- door )  room-id 0 room-exit-door ;
+settled  front-garden-3 room!  10 frames  front-garden-2 room!  10 frames
+door0 opened-bit set-bits  room-in  5 frames
+68e 124e -174e 180e tp-facing  3 frames
+s" fiona" actor-named body-tri debug:debilitas-tri  3 frames
+create d-at 12 allot  66e 124e -185e d-at vec!
+[: 70 hp !  room-id d-at v-tri d-at vec@ body-place  0e body-turn ;] his  2 frames
+create to-at 12 allot  68e 124e -178e to-at vec!
+T{ [: to-at true slam-door ;] hers -> -1 }T
+T{ [: [: anim @ $1004 = ;] his ;] 5 soon  [: hp @ ;] his -> -1 67 }T
+T{ [: [: away? ;] his ;] 30 soon  [: stun-t @ 100 > ;] his -> -1 -1 }T
+T{ [: [: door0 door-open? 0=  door0 door-held? 0= and ;] his ;] 30 soon -> -1 }T
+debug:debilitas-out  2 frames
+testing ... away from it (not in its way): staggered back ($1005), still in the room, after her
+s" fiona" actor-named body-tri debug:debilitas-tri  3 frames
+5 3 0 game:debilitas send blow  2 frames
+T{ [: anim @  away?  my-mode @ ;] his -> $1005 0 0 }T
+T{ [: [: reeling @ 0= ;] his ;] 120 soon -> -1 }T
+debug:debilitas-out  2 frames
+
+testing round to her (P3b): she across his own room ($40: halves joined through other rooms) - out by a door on his half, back in on hers
+$40 0 room-by!  20 frames
+s" fiona" actor-named body-tri debug:debilitas-tri  3 frames
+[: room-id 178 dup tri-center body-place  4 came-by !  0 mode!  chase-start ;] his  3 frames
+T{ [: across?  out-going @  making-for @ ;] his -> -1 -1 4 }T
+T{ [: [: away? ;] his ;] 300 soon -> -1 }T
+T{ [: [: away? 0=  my-way her-way = and ;] his ;] 3000 soon -> -1 }T
+debug:debilitas-out  2 frames
 
 test-summary

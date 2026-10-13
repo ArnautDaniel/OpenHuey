@@ -6,22 +6,10 @@
 \ stumble). A blow is a `blow` to whom it reaches; struck home she's held still 5 frames.
 \ Hewie is told when she shoves or kicks without him being struck (Fiona_HewieReact 10 / 11).
 IN: fiona.defend
-USING: engine game-state actors messages common keys facts flag-names fiona.state fiona.model fiona.moving fiona.fear fiona.controls fiona.looks ;
+USING: engine game-state actors messages common keys facts flag-names fiona.state fiona.model fiona.moving fiona.slam fiona.fear fiona.controls fiona.looks ;
 
 defer to-idle ( -- )
-\ the stalkers in her room (by name: those in the game, in this room)
-: stalker-here ( -- id | -1 )
-    s" debilitas" actor-named dup 0< 0= if  dup body? if  dup body-room room-id = if  exit  then  then  then  drop
-    s" daniella" actor-named dup 0< 0= if  dup body? if  dup body-room room-id = if  exit  then  then  then  drop
-    -1 ;
-: dog-in-room ( -- id | -1 )
-    hewie-id dup 0< 0= if  dup body? if  dup body-room room-id = if  exit  then  then  then  drop -1 ;
-
-\ ---- held still a moment by a blow struck home (Motion_Freeze, 5 frames) ----
-: recoil ( -- )  5 her-recoil !  her act.mflags dup l@ $40 or swap l! ;
-: recoil-down ( -- )
-    her-recoil @ 0= if  exit  then
-    -1 her-recoil +!  her-recoil @ 0= if  her act.mflags dup l@ $40 invert and swap l!  then ;
+\ (the stalker and Hewie in her room, held still by a blow: fiona/slam.fs)
 : moving ( -- )  her-recoil @ 0= if  root-move  then ;
 
 \ ---- whom a blow at a point reaches (Progress_CharNear: within their height and radius,
@@ -37,7 +25,7 @@ fvariable cn-m  variable cn-v  variable cn-id
 \ a blow sent: to the stalker (1) and Hewie (2) it reaches, each once a blow
 : strike ( kind damage how mask -- )
     her-struck @ invert and  dup her-struck @ or her-struck !
-    dup 1 and if  stalker-here >r  2over 2over drop r> send blow  then
+    dup 1 and if  stalker-in-room >r  2over 2over drop r> send blow  then
     2 and if  dog-in-room send blow  else  2drop drop  then ;
 
 \ ---- the shove: at its pace (slower the longer she's been shaken, the more frightened), her
@@ -50,8 +38,9 @@ create hand 12 allot
     moving
     events 2 and 0= if  exit  then
     her-model @ 9 bone-pos hand vec!
+    hand true slam-door if  exit  then                     \ (a door there slammed)
     hand blocked-floor v-tri-in 0< if  $101 10 -1 play-blend  ['] shove-end her-act ! exit  then
-    0  hand stalker-here 2e near-point? 1 and or  hand dog-in-room 2e near-point? 2 and or
+    0  hand stalker-in-room 2e near-point? 1 and or  hand dog-in-room 2e near-point? 2 and or
     ?dup if  >r 1 1 0 r> strike  then ;
 fvariable pace
 : shove-start ( -- )
@@ -65,6 +54,8 @@ fvariable pace
 
 \ ---- the kick: a step ahead while it fades in; while its key is clear it meets whom it
 \ touches (a kick, damage 5, he may stumble); at its end her fear up 10 ----
+create ahead-pt 12 allot   \ (her radius ahead)
+: ahead-pt! ( -- )  her-yaw f@ self body-dims fdrop ahead-pt her-at vec-ahead ;
 : kicking ( -- )
     recoil-down
     her-recoil @ 0= if  settled? 0= if  0e 1.0756e her-yaw f@ rotate-by move-by  else  root-move  then  then
@@ -73,7 +64,8 @@ fvariable pace
         10e add-fear  0 her-run-t !  to-idle exit
     then
     events 2 and if  exit  then
-    0  stalker-here touching? 1 and or  dog-in-room touching? 2 and or
+    ahead-pt! ahead-pt true slam-door if  exit  then                 \ (a door ahead slammed)
+    0  stalker-in-room touching? 1 and or  dog-in-room touching? 2 and or
     ?dup if  >r 2 5 1 r> strike  then ;
 : kick-start ( -- )
     root-move

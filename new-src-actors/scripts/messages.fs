@@ -41,6 +41,7 @@ message rebuild-exits ( -- )                 \ the rooms' exits through the door
 message use-door ( exit anim source -- )     \ the door swings along the user's animation
 message swing-door ( exit open source -- )   \ swung open / shut by hand
 message slam ( exit source -- )
+message barge ( exit source -- )             \ burst open (Fiona running into it)
 \ any room's doors (off-screen users too): take hold of one before going through, then let
 \ it go open or shut; the doors answer `door-held` or `door-refused`
 message hold-door ( room exit kind -- )
@@ -163,3 +164,25 @@ message stalker-hunt ( -- )                  \ (a stalker) heads for Fiona's roo
 message costume ( n -- )                     \ (Fiona) her model for costume n (0 her clothes, 1 the slip)
 message stalker-load ( -- )                  \ (a stalker) into the story's character slot 2 (the cutscenes' cast)
 message stalker-unload ( -- )                \ (a stalker) out of slot 2 (and out of the game)
+message stalker-doing ( room mode sub cond hp hp-max kind -- )   \ broadcast each frame by a stalker in the game: his
+                                             \ room, how he moves (0 his own, 3 off screen, 4 struck, 8 taking her), what
+                                             \ (9 Hewie on him, $A down, $18 leading her), condition, health, his kind
+\ ---- Hewie at the stalker (H3, the stalkers' P3c): his attack is a joint action (Relation_Request
+\ kind 9 / Pursuer_GrabOrder): asked, then taken - with the spot to leap to - or refused; his bites
+\ (kind $B) while he holds on; either lets go (their state 7) ----
+message dog-attack ( kind -- )               \ (Hewie -> the stalker) his attack: 10 / 11 the near flank (11 charged), 12 /
+                                             \ 13 the far one, 14 head on, 15 his leg
+message dog-grip ( tri x y z yaw -- )        \ (the stalker's answer) taken: leap to there, facing so (floats f>cell)
+message dog-refused ( -- )                   \ (the stalker's answer) not now
+message bite ( damage hard -- )              \ (Hewie -> the stalker he holds) a bite; hard: he stumbles
+message shaken-off ( -- )                    \ (Hewie -> the stalker) he let go / (the stalker -> Hewie) thrown off
+message snap ( -- )                          \ (Hewie -> the stalker) growled at, barked at (Relation kind 6): his temper up
+
+\ ---- the summoner (docs/subsystems/summoner.md) ----
+message stalker-status ( room mode in-game own away cool -- )   \ (the stalker in slot 2, each frame while loaded) where he is, his mode, in the game, in his own rooms, his time-away base (frames), his cooldown (s)
+message stalker-summoned ( room exit found plan -- )  \ (a stalker) in out of sight in `room` by `exit`; found: after her; else waiting about, plan: heading for her
+message noise-made ( loud room door -- )      \ broadcast at the frame's end: Fiona's loudest noise this frame (door -1: none)
+message summoner-take ( kind -- )             \ (the summoner) take the stalker out (0 the story / a wait, 1 held off, 2 beaten)
+message summoner-cooldown ( secs -- )         \ (the summoner) not before secs seconds
+message summoner-cooldown-less ( secs -- )    \ (the summoner) that much sooner
+message summoner-reset ( -- )                 \ (the summoner) afresh (a stalker loaded)

@@ -21,7 +21,8 @@ Declared in `scripts/messages.fs`. Kinds of character (for locks): `fiona-kind` 
 | `let-go-open` / `let-go-shut` | `( room exit source -- )` | doors | Let it go open or shut (off-screen: heard). |
 | `use-door` | `( exit anim source -- )` | doors | The played room's door swings along the user's animation; at rest it is let go. |
 | `swing-door` | `( exit open source -- )` | doors | Swung open / shut by 5 degrees a frame. |
-| `slam` | `( exit source -- )` | doors | Slammed shut (15 a frame, a loud latch). |
+| `slam` | `( exit source -- )` | doors | Slammed shut (15 a frame, a loud latch); taken hold of first, let go at rest. |
+| `barge` | `( exit source -- )` | doors | Burst open (15 a frame); taken hold of first, let go at rest (Fiona_SlamDoor). |
 | `door-changed` | `( door -- )` | broadcast | Its state changed. |
 | `noise` | | acoustics | The doors are heard. |
 
@@ -86,6 +87,7 @@ the played room settles open; a slam's latch heard at 0x5F and the door left shu
 Fiona uses doors (docs/subsystems/fiona.md): she holds a door, opens or shuts it by hand along
 her animation, and lets it go as she steps out.
 
-Left: the event commands' door bits (with the story); `use-door` with Fiona's animations; a door
-used off-screen with no one to hear it; barging a door open (`Doors_SetOpened`, a loud 0x91);
-the stalkers' knocking and breaking; names for doors.
+Used by the stalker in her room too (`stalker/doorway.fs`: his door animation with `use-door`),
+and slammed or burst open by Fiona (`fiona/slam.fs`). Left: the event commands' door bits (with
+the story); a door used off-screen with no one to hear it; `Doors_SetOpened`; the stalkers'
+breaking a door; names for doors.

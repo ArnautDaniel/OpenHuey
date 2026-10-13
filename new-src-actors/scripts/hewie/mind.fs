@@ -9,7 +9,7 @@ USING: engine actors common facts paths messages hewie.state hewie.body hewie.ta
     her-with? 0= if  exit  then
     her-dist  fdup 20e f<= if  fdrop 1  else  50e f<= if  2  else  3  then  then  his-near ! ;
 \ Hewie_Alert: the stalker in his room within 200, ahead of his head (125 degrees): the danger
-\ is told (H3: no stalker yet)
+\ is told
 : alert ( -- )
     pursuer dup active? 0=  his-away @ or  his-cond @ 2 = or if  drop 0 his-alert !  exit  then
     dup with? if
@@ -166,8 +166,11 @@ fvariable sl-x  fvariable sl-z
         his-panic @ 4 < if  0 his-panic-seen !  then
     then
     his-mood @ 3 = if  staying if  exit  then  then
-    \ Fiona held: newly so, by chance he goes for whoever holds her (H3: the holder)
-    her-with? fiona-mode @ 4 = and fiona-sub @ dup 9 = swap $12 = or and  his-held !
+    \ Fiona held: newly so, by chance he goes for whoever holds her - the stalker (0x5A)
+    her-with? fiona-mode @ 4 = and fiona-sub @ dup 9 = swap $12 = or and
+    dup  his-held @ 0= and  his-mood @ 3 <> and  pursuer with? and if
+        go-for-holder-chance by-chance if  his-held !  $5A 0 want exit  then
+    then  his-held !
     his-danger @ 2 <> his-alert-was @ 0= and his-alert @ 0<> and his-action @ $76 <> and if  $14 0 want  exit  then
     his-scene-req @ 1 = if  0 his-scene-req !  his-action @ $79 <> if  $79 0 want  exit  then  then
     anim-group 4 < his-action @ $6E <> and facing-down-slope? and if  $6E 0 want  exit  then
@@ -417,6 +420,7 @@ variable feet-new
 \ Hewie_Activate: his state as he comes into the game (calm, the default action)
 : fresh ( -- )
     -1 his-done !  0 his-busy !  -1 his-meet !  -1 his-target !  -1 his-target2 !  -1 his-look-char !  -1 his-door !  -1 his-noise-room !
+    2 his-way !   \ (Hewie_Activate: either half)
     $FF his-call !  $FF his-by !  -1 his-yelp !  -1 his-snd-anim !  1e his-floor-k f!
     16 his-skill !  16 his-skill cell+ !  16 his-skill 2 cells + !
     0 -1 set-mood  0 add-trust

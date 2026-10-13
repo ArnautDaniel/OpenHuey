@@ -727,9 +727,21 @@ variable bf-fx  variable bf-x  variable bf-y  variable bf-z  variable bf-n
 : stalker-actor ( kind -- id | -1 )   \ the stalker actors by kind (2 Debilitas, 3 Daniella; the others later)
     case  2 of  s" debilitas"  endof  3 of  s" daniella"  endof  >r 0 0 r>  endcase
     dup if  actor-named  else  2drop -1  then ;
-: partner-load ( id -- )   \ 0x11: kind `id` into slot 2, loaded and started (CharLoad_Partner)
+: summoner-id ( -- id )  s" summoner" actor-named ;
+: partner-load ( id -- )   \ 0x11: kind `id` into slot 2, loaded and started (CharLoad_Partner); the summoner afresh
     slot2 @ dup 0< 0= if  send stalker-unload  else  drop  then
-    stalker-actor dup slot2 !  dup 0< if  drop exit  then  send stalker-load ;
+    stalker-actor dup slot2 !  dup 0< if  drop exit  then  send stalker-load
+    summoner-id send summoner-reset ;
+\ the summoner (docs/subsystems/summoner.md)
+: summon-take ( kind -- )  summoner-id send summoner-take ;          \ 0x84: take the stalker out (Summoner_Take)
+: char-done ( id -- )   \ 0x14: character `id` leaves the scene - the stalker in slot 2: the summoner takes him
+    stalker-actor dup 0< 0=  over slot2 @ = and if  drop 0 summon-take exit  then  drop
+    s" char-done (not the stalker)" stub-step ;
+\ 0x5A: the summoner's cooldown - `secs` seconds (less 0), or that much less (Summoner_SetCooldown /
+\ LessCooldown; the stub generator named its number "item")
+: item-cooldown ( secs less -- )
+    if  summoner-id send summoner-cooldown-less  else  summoner-id send summoner-cooldown  then ;
+: stalker-item-cooldown ( -- )  -1 summoner-id send summoner-cooldown ;   \ 0x5B: his own (+0x2D4)
 : slot-unload ( -- )  slot2 @ dup 0< if  drop exit  then  send stalker-unload  -1 slot2 ! ;
 : char-unload ( slot -- )   \ 0x13: (despite its name) wait while the character in `slot` loads, then
     drop  in-slot? if  yield  then ;   \ start it (Progress_CharStart2): a frame - its load message taken
@@ -772,7 +784,6 @@ create slot-actors  -1 , -1 , -1 , -1 , -1 , -1 ,
 : char-C4? ( who v -- flag )  drop  drop  s" char-C4?" stub-flag ;
 : char-activate ( id -- )  drop  s" char-activate" stub-step ;
 : char-dead? ( who -- flag )  drop  s" char-dead?" stub-flag ;
-: char-done ( id -- )  drop  s" char-done" stub-step ;
 : char-file-load ( id file -- )  drop  drop  s" char-file-load" stub-step ;
 : char-file-use ( id -- )  drop  s" char-file-use" stub-step ;
 : char-find-tri ( who -- )  drop  s" char-find-tri" stub-step ;
@@ -852,7 +863,6 @@ create slot-actors  -1 , -1 , -1 , -1 , -1 , -1 ,
 : hewie-trust-level? ( v -- flag )  drop  s" hewie-trust-level?" stub-flag ;
 : hewie-wait-5 ( on -- )  drop  wait-frame  s" hewie-wait-5" stub-step ;
 : item-3F-under-10? ( -- flag )  s" item-3F-under-10?" stub-flag ;
-: item-cooldown ( item less -- )  drop  drop  s" item-cooldown" stub-step ;
 : item-tab ( op item -- )  drop  drop  s" item-tab" stub-step ;
 : loader-done? ( -- flag )  s" loader-done?" stub-flag ;
 : map-page ( page -- )  drop  s" map-page" stub-step ;
@@ -897,7 +907,6 @@ create slot-actors  -1 , -1 , -1 , -1 , -1 , -1 ,
 : stalker-alert? ( v -- flag )  drop  s" stalker-alert?" stub-flag ;
 : stalker-free? ( -- flag )  s" stalker-free?" stub-flag ;
 : stalker-gift ( -- )  s" stalker-gift" stub-step ;
-: stalker-item-cooldown ( -- )  s" stalker-item-cooldown" stub-step ;
 : stalker-kind-here? ( kind -- flag )  drop  s" stalker-kind-here?" stub-flag ;
 : stalker-kind? ( kind -- flag )  drop  s" stalker-kind?" stub-flag ;
 : stalker-knock-down ( id -- )  drop  s" stalker-knock-down" stub-step ;
@@ -910,7 +919,6 @@ create slot-actors  -1 , -1 , -1 , -1 , -1 , -1 ,
 : subscreen-bit ( n -- )  drop  s" subscreen-bit" stub-step ;
 : subscreen-bit? ( n -- flag )  drop  s" subscreen-bit?" stub-flag ;
 : subscreen-open ( mode -- )  drop  s" subscreen-open" stub-step ;
-: summon-take ( a -- )  drop  s" summon-take" stub-step ;
 : things-clear ( -- )  s" things-clear" stub-step ;
 : threat-add ( v -- )  drop  s" threat-add" stub-step ;
 : threat-raise ( v -- )  drop  s" threat-raise" stub-step ;

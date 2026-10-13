@@ -60,6 +60,7 @@ create moves
     $E04 , $1E , 28 , 5e f, 3 , 50 , 30e f, 0e f, 0 , $D , 0 ,
     $E05 , $1E , 20 , 5e f, 3 , 50 , 30e f, 0e f, 0 , $D , 0 ,
     $1702 , $9 , 7 , 5e f, 4 , 15 , 20e f, 30e f, 0 , -1 , 1 ,
+    $1705 , $12 , 20 , 5e f, 4 , 15 , 20e f, 30e f, 0 , -1 , 1 ,
 create combos  0 , -1 , -1 , -1 ,  1 , -1 , -1 , -1 ,  2 , -1 , -1 , -1 ,  3 , -1 , -1 , -1 ,  5 , -1 , -1 , -1 ,  6 , -1 , -1 , -1 ,  7 , -1 , -1 , -1 ,  11 , -1 , -1 , -1 ,  12 , -1 , -1 , -1 ,  0 , 1 , 2 , -1 ,  1 , 1 , 0 , -1 ,  1 , 0 , 1 , 2 ,  1 , 3 , 11 , -1 ,  0 , 3 , -1 , -1 ,  8 , 9 , -1 , -1 ,  0 , 1 , -1 , -1 ,
 create gestures  $1 , 1 ,  $1302 , 1 ,  $1306 , 0 ,  $1303 , 1 ,  $1304 , 0 ,  $1305 , 1 ,  $1300 , 0 ,  $1307 , 0 ,
 
@@ -68,3 +69,9 @@ create chase-frames  90 , 60 , 90 , 60 , 90 , 60 , 90 , 60 , 90 ,
 create chase-chances  50e f, 75e f, 75e f,
 \ a lunge's chance by how near she is (Pursuer_ThresholdEntry): within, chance
 create lunge-chances  15e f, 100 ,  30e f, 40 ,  60e f, 20 ,
+
+\ his temper with Hewie (+0x173C, D_003AFB10): what each thing Hewie does adds. Cells 0..3 a
+\ blow of his by its side (Pursuer_AddBiteDamage: dir 0 2 1 3), 4 / 5 growled at (5: she hides), 6..11
+\ the bite he takes (Pursuer_StateHewieBites: kinds 12 13 10 11 14 15), 12..17 each hold on
+\ (Pursuer_StateHewieHolds: likewise)
+create temper-table  5 , 8 , 10 , 16 , 1 , 3 , 5 , 10 , 5 , 10 , 10 , 15 , 5 , 10 , 5 , 10 , 10 , 15 ,

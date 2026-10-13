@@ -16,7 +16,7 @@ built in phases.
 | **F1** | Her body and model; the controls; standing, walking, running, turning, resting, idle looks; root motion on the floor; footsteps (sound and noise); going through exits and doors (her door animations, locked doors); the camera follows her | rooms, doors, camera, acoustics |
 | F2 | Fear and panic: the meter, calming down, the panic stages, panic runs and stumbles, exhaustion, recovery | danger |
 | F3 | Hewie: calling, gestures, commands, praise and scolding | hewie |
-| F4 | Defending: kick, shove (F4c, done), strike, slamming doors on someone. Reactions: knocked down, thrown, caught (F4a, done), grabbed, led away, dragged, shaking free (F4b, done), falls | stalkers |
+| F4 | Defending: kick, shove (F4c, done), strike, slamming doors on someone (F4d, done). Reactions: knocked down, thrown, caught (F4a, done), grabbed, led away, dragged, shaking free (F4b, done), falls | stalkers |
 | F5 | The story's moves (walk to a spot, a path, turn, an animation, hold), ladders, pushing, points of interest, items | story, items |
 
 The debug walker (`scripts/walker.fs`) stood in for her until F1 was done.
@@ -226,3 +226,18 @@ meets whom she touches while its key is clear: a `blow` 2, damage 5, he may stum
 rolled by him); at its end her fear up 10. Each reaches the stalker and Hewie once a blow;
 struck home (`blow-taken`) she's held still 5 frames ($90 kicked, $8F shoved). Hewie is told
 (`reaction` 10 / 11) when she shoves or kicks without striking him.
+
+## F4d: slamming a door (`scripts/fiona/slam.fs`)
+
+Fiona_SlamDoor, tried by her flee turn (at its event $20, her radius behind her, looking back),
+her kick (each frame of its window, her radius ahead) and her shove (at its key, her hand). A
+door of the room at rest that she faces within 45 degrees, on her way to a point on a door's
+passage (triangle flag $20000): shut, her in its area 4, neither locked nor stuck - burst open
+(`barge`); open, her in its area 1, faced side on - slammed shut (`slam`, her sound $91). Not one
+somebody holds or locked against her. She's held still 5 frames. Shut out by it: Hewie and the
+stalker at its front (area 0) on its far side (Doors_Side 1; slammed shut, or in its way - on its
+passage) - each a `blow` 5, 3 damage, how: the exit. Off screen, she being chased and the door
+burst open, the stalker decides (`blow` all the same: struck only when he is right behind it).
+Any shut out: the kick's and the shove's blow is spent. Checked by `tests/stalker/test_stalker.fs`
+(a slam on him in the doorway). Not yet: the rumble; the PursuerGroup bit 8 ("may pass") is
+taken as standing on the door's passage triangles.

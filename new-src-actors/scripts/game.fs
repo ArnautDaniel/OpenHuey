@@ -1,7 +1,7 @@
 \ game.fs - where the game starts (after prelude.fs): the actors that make up the game are
 \ spawned here. (docs/subsystems.md: the map and the order.)
 IN: game
-USING: engine actors messages room-names acoustics rooms doors camera danger panic window screen music pause fiona hewie stalker gameover opening story story.words flag-names story-names debug ;
+USING: engine actors messages room-names acoustics rooms doors camera danger panic window screen music pause fiona hewie stalker summoner gameover opening story story.words flag-names story-names debug ;
 
 acoustics-spawn constant acoustics
 rooms-spawn constant rooms
@@ -17,6 +17,7 @@ fiona-spawn constant fiona
 hewie-spawn constant hewie
 debilitas-spawn constant debilitas
 daniella-spawn constant daniella
+summoner-spawn constant summoner
 story-spawn constant story
 gameover-spawn constant gameover
 label-spawn constant room-label   \ (debug: the room's name top right)

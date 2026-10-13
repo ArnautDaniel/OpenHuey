@@ -2,7 +2,7 @@
 \ controls, standing, walking, running and turning, her footsteps, going out by exits; F4: struck
 \ and caught (fiona/hurt.fs).
 IN: fiona
-USING: engine game-state actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend ;
+USING: engine game-state actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.slam fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend ;
 
 : rooms-id ( -- id )  s" rooms" actor-named ;
 : camera-id ( -- id )  s" camera" actor-named ;

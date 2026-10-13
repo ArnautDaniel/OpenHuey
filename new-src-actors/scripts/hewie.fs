@@ -6,7 +6,7 @@
 \ He is spawned with the game but comes in only when told (`join-fiona`: the story, or the
 \ console); `part-from-fiona` sends him off.
 IN: hewie
-USING: engine actors messages common paths hewie.state hewie.body hewie.model hewie.moving hewie.states hewie.offscreen hewie.actions hewie.commands hewie.mind hewie.scripted ;
+USING: engine actors messages common paths hewie.state hewie.body hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.mind hewie.scripted ;
 
 \ at heel: behind her and a little to her side (where she is when that isn't floor), her way
 create heel-at 12 allot
@@ -31,7 +31,8 @@ behaviour hewie-own
       2.5e 5e body-size  his-floor body-mask!  body-off
       s" fiona" actor-named his-fiona !
       self subscribe tick  self subscribe leaving-room  self subscribe arrived
-      self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe frame-end ;
+      self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe frame-end
+      self subscribe stalker-doing  -1 st-id !  100 st-age !  -1 his-grip ! ;
   on join-fiona ( -- )  s" fiona" actor-named his-fiona !  room-id fiona-room !  join  1 his-model @ cast-as ;
   on part-from-fiona ( -- )  part  1 -1 cast-as ;
   on place ( x y z yaw -- )   \ (the story puts him)
@@ -73,7 +74,22 @@ behaviour hewie-own
       move-action dup 0< if  drop done! exit  then  0 want ;
   on hold-anim ( anim blend -- )  along? 0= if  2drop exit  then  his-to-anim !  his-to-tri !  $3C 0 want ;
   on show ( on -- )  along? 0= if  drop exit  then  0<> 1 and him-model act.visible l! ;
-  on frame-end ( -- )  along? if  his-done @  anim-done?  his-model @ 0 0 1 motion-events  broadcast moving  then ;
+  on frame-end ( -- )
+      along? if  his-done @  anim-done?  his-model @ 0 0 1 motion-events  broadcast moving  angry-down  then
+      st-age @ 100 < if  1 st-age +!  then ;
+  \ the stalker (H3: hewie/fight.fs): what he is doing; his answers to the attack; thrown off;
+  \ struck - by him, by her, by a door (answered `blow-taken` when it struck)
+  on stalker-doing ( room mode sub cond hp hp-max kind -- )
+      st-kind !  st-hp-max !  st-hp !  st-cond !  st-sub !  st-mode !  st-room !  sender st-id !  0 st-age ! ;
+  on dog-grip ( tri x y z yaw -- )
+      along? 0= if  2drop 2drop drop exit  then
+      his-act @ ['] st-await-grip <> if  2drop 2drop drop  sender send shaken-off exit  then   \ (no longer at it)
+      >r >r >r >r  r> cell>f  r> cell>f  r> cell>f  r> cell>f  leap ;   \ (tri; x y z yaw)
+  on dog-refused ( -- )  along? if  his-act @ ['] st-await-grip = if  $5A start  then  then ;
+  on shaken-off ( -- )  along? if  his-biting @ 2 < if  3 his-biting !  then  then ;
+  on blow ( kind damage how -- )
+      along? 0= if  2drop drop exit  then
+      sender take-blow  sender her = and if  sender send blow-taken  then ;
 end-behaviour
 
 : hewie-spawn ( -- id )  hewie-own hewie-state s" hewie" spawn ;

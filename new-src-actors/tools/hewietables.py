@@ -99,6 +99,22 @@ for name, va in (('overlays-calm', 0x3B13F0), ('overlays-tense', 0x3B1580)):
         vals.append('$%X , %s' % (anim, ' '.join('%d ,' % m for m in modes)))
         va += 28
     lines.append('create %s  %s  -1 ,' % (name, '  '.join(vals)))
+lines.append('')
+lines.append('\\ his fight with the stalker (H3)')
+vals = struct.unpack('<48b', at(0x3B12C0, 48))
+lines.append('\\ D_003B12C0 (Hewie_ReactionRoll): a bite of kind 0..7 is a hard one - percent by the stalker\'s')
+lines.append('\\ health band (0 above 0.8 of it, 1 0.6, 2 0.4, 3 0.2, 4 0.1, 5 below): 6 cells a kind')
+lines.append('create hard-bite-chance  %s' % '  '.join(' '.join('%d ,' % v for v in vals[k * 6:k * 6 + 6]) for k in range(8)))
+for name, va, what in (('bites-flank', 0x3B1310, 'D_003B1310: action 0x1F at a flank'),
+                       ('bites-flank-charged', 0x3B1320, 'D_003B1320: ... charged'),
+                       ('bites-head-on', 0x3B1330, 'D_003B1330: action 0x1F head on'),
+                       ('bites-leg', 0x3B1340, 'D_003B1340: action 0x21 (his leg)')):
+    vals = struct.unpack('<8h', at(va, 16))
+    lines.append('create %s  %s   \\ %s: how many bites, by trust' % (name, ' '.join('%d ,' % v for v in vals), what))
+vals = struct.unpack('<7h', at(0x3B127E, 14))
+lines.append('create angry-chance  %s   \\ D_003B127E: hit by her the nth time lately (1..6), angry: n in 16' % ' '.join('%d ,' % v for v in vals))
+vals = struct.unpack('<8h', at(0x3B1290, 16))
+lines.append('create scuffle-outcomes  %s   \\ D_003B1290: off screen with him - {outcome, percent}' % ' '.join('%d ,' % v for v in vals))
 out = os.path.join(root, 'new-src-actors', 'scripts', 'hewie', 'tables.fs')
 open(out, 'w').write('\n'.join(lines) + '\n')
 print(out)

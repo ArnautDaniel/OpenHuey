@@ -3,15 +3,12 @@
 \ carries it out. Actions of the later phases fall back as noted (H2 her commands, H3 the
 \ stalkers, H4 the story).
 IN: hewie.actions
-USING: engine game-state actors common facts paths hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen hewie.scripted flag-names ;
+USING: engine game-state actors common facts paths hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen hewie.scripted hewie.fight flag-names ;
 
 : mode! ( n -- )  his-mode ! ;
 : give-up ( -- )  6 0 want ;            \ nothing to do: sniffing about (steered: the default - H4)
 : trust-wait ( -- n )  his-trust @ 60 * 300 + ;
-\ Hewie_PickTarget: whom he goes for - the stalker in his room that he can get to (H3: none yet)
-: pick-target ( -- id | -1 )
-    pursuer dup with? 0= if  drop -1 exit  then
-    dup body-tri over body-at plan-to 0= if  drop -1  then ;
+\ (Hewie_PickTarget: hewie/fight.fs)
 \ Hewie_IdleAction: a trick at random (not the last one), on plain floor
 create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
 : plain-floor? ( -- flag )  his-tri nav-flags 3 and 0= ;
@@ -26,9 +23,13 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
     pick-target dup his-target2 !  dup with? 0= if  drop 0 exit  then
     his-held @ 0= swap pursuer = and if  2 exit  then
     $5A 0 want  1 ;
-: after-call ( -- )  go-for case  0 of  6 0 want  endof  2 of  give-up  endof  endcase ;   \ (0x4F / 0x50)
-: after-coming-out ( -- )   \ Hewie_AfterComingOut (0x4E: her call - "go")
-    go-for case  0 of  6 0 want  endof  2 of  give-up  endof  endcase ;
+\ (the stalker: at him - after 0x4F at a flank 0x1F, else 0x20)
+: after-call ( -- )
+    go-for case  0 of  6 0 want  endof  2 of  his-action @ $4F = if  $1F  else  $20  then  0 want  endof  endcase ;   \ (0x4F / 0x50)
+: after-coming-out ( -- )   \ Hewie_AfterComingOut (0x4E: her call - "go"; at the stalker: his leg
+    \ when charged and coming at him head on, else 0x1F)
+    go-for case  0 of  6 0 want  endof
+                 2 of  his-ready @ attack-side 0= and if  $21  else  $1F  then  0 want  endof  endcase ;
 \ Hewie_After4D: by his pose, praise-me (0x28) / lying (0x26) or a roll over (0x2A)
 : after-4d ( -- )
     anim-group rnd 0.5e f<                                           ( g coin )
@@ -116,9 +117,9 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
             else  to-default  then  endof
     $71 of  0 mode!  4 look!  $400 his-cmd !  ['] st-22b8 behave  endof
     $7A of  0 mode!  trust-wait his-wait !  60 his-t1 !  4 look-now!  $88 his-cmd !  ['] st-2388 behave  endof
-    \ at the stalker (0x1F..0x23): H3
-    $1F of  give-up  endof  $20 of  give-up  endof  $21 of  give-up  endof  $22 of  give-up  endof
-    $23 of  give-up  endof
+    \ at the stalker (0x1F..0x23: hewie/fight.fs)
+    $1F of  at-pursuer  endof  $20 of  at-pursuer  endof  $21 of  at-pursuer  endof  $22 of  at-pursuer  endof
+    $23 of  close-on  endof
     \ out of the room away from her (0x24 / 0x25): with the doors he may use (later)
     $24 of  to-default  endof
     $25 of  $10 0 want  endof
@@ -155,9 +156,14 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
     $56 of  0 mode!  60 his-wait !  30e $7AF keep-near  endof
     $57 of  0 mode!  20e $7AF keep-near  endof
     $58 of  4 $68F ['] st-pose2 holding  endof
-    \ at the stalkers and creatures: H3
-    $59 of  give-up  endof
-    $5A of  3 his-wanted !  give-up  endof
+    \ harrying the stalker (and the creatures, later)
+    $59 of  harry  endof
+    $5A of  3 his-wanted !  harry  endof
+    $53 of  his-target @ dup with? if
+                mode-of dup 4 <> swap 3 <> and if
+                    8 mode!  60 his-wait !  30e  his-mood @ 3 <> if  $88  else  $80  then  keep-near
+                else  give-up  then
+            else  drop give-up  then  endof
     $61 of  by-her? if  $54 $23 want  else  give-up  then  endof
     $62 of  3 his-wanted !  by-her? if  $54 $23 want  else  give-up  then  endof
     $67 of  by-her? if  0 mode!  target-her  0 his-t1 !  $78D his-cmd !  ['] st-step-away-fiona behave

@@ -20,7 +20,7 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
 : mv-kind ( -- k )  mv 4 cells + @ ;    : mv-threat ( F: -- t )  mv 6 cells + f@ ;
 : mv-stumble ( F: -- c )  mv 7 cells + f@ ;
 : mv-turns? ( -- flag )  mv 8 cells + @ 0<> ;   : mv-cry ( -- id )  mv 9 cells + @ ;
-: mv-unshaken? ( -- flag )  mv 10 cells + @ 0<> ;
+: mv-unshaken? ( -- flag )  mv 10 cells + @ 0<> ;   : mv-damage ( -- n )  mv 5 cells + @ ;
 
 \ ---- the threat on her (Pursuer_Threat): the fright, less with each 10 further off (x 0.75),
 \ none beyond 40 ----
@@ -48,12 +48,27 @@ fvariable wr-m
     dup 4 + sf@  fiona body-at 4 + sf@  fiona body-dims fswap fdrop f+ wr-m f@ f+ f< 0= if  drop false exit  then
     fiona body-at vec-dist-xz  fiona body-dims fdrop wr-m f@ f+ f< 0= if  false exit  then
     fiona body-at heading-to yaw f- angle-wrap fabs pi f2/ f< ;
+\ ... and Hewie's (Npc_WhoReachable takes him too: struck, he is sent the blow - its damage)
+: reaches-dog? ( v -- flag ) ( F: margin -- )
+    wr-m f!  hewie here? 0= if  drop false exit  then
+    dup 4 + sf@  hewie body-at 4 + sf@  wr-m f@ f- f> 0= if  drop false exit  then
+    dup 4 + sf@  hewie body-at 4 + sf@  hewie body-dims fswap fdrop f+ wr-m f@ f+ f< 0= if  drop false exit  then
+    hewie body-at vec-dist-xz  hewie body-dims fdrop wr-m f@ f+ f< 0= if  false exit  then
+    hewie body-at heading-to yaw f- angle-wrap fabs pi f2/ f< ;
+: strike-dog ( -- )   \ (the move's bones at him: kind, damage, a stumble by its chance)
+    dog-sent @ if  exit  then
+    my-model @ mv-bone bone-pos blow-at vec!  blow-at mv-reach reaches-dog?
+    mv-bone2 0< 0= if  my-model @ mv-bone2 bone-pos blow-at vec!  blow-at mv-reach reaches-dog? or  then
+    0= if  exit  then
+    mv-kind mv-damage  rnd 100e f* mv-stumble f<= if  $8000  else  0  then  hewie send blow  -1 dog-sent ! ;
 \ a wall between him and the blow (Npc_CanWalkStraight): it lands on nothing
 : walled? ( v -- flag )
     dup v-tri dup 0< if  2drop false exit  then  >r
     self body-tri my-at rot self body-mask v-walk r> <> ;
 
-\ ---- the combo ----
+\ ---- the combo: at her, or at Hewie while he is after him (stalker/bitten.fs) ----
+: quarry ( -- id )  at-dog @ if  hewie  else  fiona  then ;
+: d-quarry ( F: -- d )  at-dog @ if  d-hewie  else  d-fiona  then  f@ ;
 defer to-stand ( -- )
 : combo-over ( -- )  -1 combo !  0 combo-step !  -1 step-done !  0 unshaken ! ;
 \ after it: held off a while (struck her: his table's 90; else 30 at least)
@@ -67,6 +82,7 @@ defer next-move ( -- )
         stand-anim play-now  $2B 7 sound  combo-over exit
     then
     swung @ 1 <> if  $10 7 sound  1 swung !  then
+    strike-dog
     sent @ if  exit  then
     blow-at mv-reach reaches?
     mv-bone2 0< 0= if  my-model @ mv-bone2 bone-pos blow-at vec!  blow-at mv-reach reaches? or  then
@@ -76,12 +92,12 @@ defer next-move ( -- )
     then ;
 : striking ( -- )
     ended? if  held-off-after  combo-over exit  then
-    mv-turns? if  fiona body-at turn-rate turn-to fdrop  then
+    mv-turns? if  quarry body-at turn-rate turn-to fdrop  then
     freeze-t @ 0= if  root-move  then
     my-model @ 0 0 0 motion-events 2 and if  strike exit  then
     swung @ 1 <> if  exit  then
-    took @ 1 and 0= if  mv-threat 2e f/ threat  then          \ (missed her: half its fright)
-    combo-step @ 1+ move-at -1 <>  d-fiona f@ 50e f< and  d-fiona f@ f0< 0= and if
+    took @ 1 and 0=  at-dog @ 0= and if  mv-threat 2e f/ threat  then   \ (missed her: half its fright)
+    combo-step @ 1+ move-at -1 <>  d-quarry 50e f< and  d-quarry f0< 0= and if
         1 combo-step +!  next-move exit
     then
     2 swung !  0 unshaken ! ;
@@ -102,10 +118,10 @@ defer next-move ( -- )
 \ Pursuer_AttackNextStep: the combo's next move while she is in his room and near (50, or the
 \ ground he gains; a hold at any distance); else the combo is over
 :noname ( -- )
-    combo-step @ 4 < move-no -1 <> and  fiona here? and if
-        mv-kind 6 = if  true  else  d-fiona f@ 50e ground-gained fmax f<=  d-fiona f@ f0< 0= and  then
+    combo-step @ 4 < move-no -1 <> and  quarry here? and if
+        mv-kind 6 = if  true  else  d-quarry 50e ground-gained fmax f<=  d-quarry f0< 0= and  then
         if
-            0 sent !  0 swung !  mv-anim play-now  mv-unshaken? unshaken !
+            0 sent !  0 dog-sent !  0 swung !  mv-anim play-now  mv-unshaken? unshaken !
             mv-kind 6 = if  ['] holding  else  ['] striking  then  act-xt !  exit
         then
     then

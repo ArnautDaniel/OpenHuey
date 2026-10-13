@@ -80,4 +80,13 @@ T{ front-garden-2 0 fiona-kind hold -> 1 }T
 T{ slammed -> fiona-noise $5F }T
 T{ door0 door-open? -> 0 }T
 
+testing routes between the halves of a room (room $40: two halves joined through other rooms)
+create no-avoid 13 cells allot  no-avoid 13 cells 0 fill
+: halves ( from-way want -- n )  >r >r $40 r> $40 r> stalker-kind -1 no-avoid route-sides ;
+: first-way ( -- way )  0 route-door $40 door-exit-in  $40 swap 1 exit-way ;
+T{ $40 0 1 exit-way  $40 2 1 exit-way -> 1 0 }T                  \ (its exits open onto either half)
+T{ 0 0 halves  -1 1 halves  0 -1 halves -> 0 0 0 }T                \ the same half, or either: there
+T{ 0 1 halves 0>  first-way -> -1 0 }T                             \ round to the other: out by its own half
+T{ 1 0 halves 0>  first-way -> -1 1 }T
+
 test-summary

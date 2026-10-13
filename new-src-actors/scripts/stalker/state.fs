@@ -81,4 +81,27 @@ state: stalker-state
   cell field reeling  cell field twitch  cell field by-her  cell field growl-after  cell field unshaken
   cell field lie-anim  cell field down-stage  cell field knockouts  cell field striker
   cell field gesture            \ the look about he plays at a stop (-1: none)
+  \ for the summoner (summoner.fs): his time away's base (+0x16E0, frames), his cooldown (+0x16E4,
+  \ seconds: vtable +0x2D4), the rooms he keeps to (vtable +0x314: two, -1 none)
+  cell field away-base  cell field cool-secs  cell field own-a  cell field own-b
+  \ the doors of the room being played (stalker/doorway.fs): on his way out by an exit (+0x17B0:
+  \ making-for; the room's modes wait meanwhile), his animation's kind at its door (+0x104: 0 / 2
+  \ opening it from behind / in front; -1 none), the door asked for and the one held, frames
+  \ waited at one held shut; a door slammed on him - the exit (-1 none: staggered back), the
+  \ heading he is pushed along; frames stunned off screen after being knocked out of the room
+  \ (+0x1664: 150); the exit Fiona came in by (the half of the room she is on)
+  cell field out-going  cell field door-use  cell field asked  cell field held-door  cell field door-wait
+  cell field push-exit  1 floats field push-way  cell field stun-t
+  cell field her-came
+  \ Hewie (stalker/bitten.fs; Pursuer_StateHewieBites / HewieHolds, P3c): his temper with Hewie
+  \ (+0x16BC, to 1000) and how much he stands (+0x16DC), the throw's chance a hold (+0x16E8);
+  \ Hewie on him - the attack's kind (10..15; 0 none: +0x104), its animation (+0x1624), how it
+  \ goes (+0x1628: 0 held, 1 throwing him off, 2 let go), the holds so far (+0x1634), the heading
+  \ he turns to and by how much a frame; after Hewie (his temper up): frames of it
+  cell field temper  cell field tolerance  1 floats field throw-k
+  cell field bitten  cell field bite-anim  cell field bite-how  1 floats field holds
+  1 floats field bite-yaw  1 floats field bite-turn
+  cell field dog-t
+  cell field dog-sent            \ his blow this move has struck Hewie (stalker/attack.fs)
+  cell field at-dog              \ his combo is at Hewie (after him, his temper up), not her
 end-state
