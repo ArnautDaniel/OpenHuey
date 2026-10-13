@@ -77,6 +77,8 @@ state: fiona-state
   \ at a door
   cell field her-door-exit      \ the exit (-1 none)
   cell field her-ladder         \ the ladder she uses (+0x100: the room's nav link; -1 none)
+  cell field her-push           \ +0x1AD560: the obstacle she pushes (-1 none)
+  12 field her-push-dir         \ +0x1AD570: the push (x 0 z)
   cell field her-ladder-side    \ +0x104: the side she came at it from (0 the foot, 1 the top)
   cell field her-door-side      \ the side she came from (1 in front)
   cell field her-door-kind      \ its animation (0..7 of FIN_D000.MTN)

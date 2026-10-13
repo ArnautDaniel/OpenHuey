@@ -2,7 +2,7 @@
 \ controls, standing, walking, running and turning, her footsteps, going out by exits; F4: struck
 \ and caught (fiona/hurt.fs).
 IN: fiona
-USING: engine game-state actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.slam fiona.ladder fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend ;
+USING: engine game-state actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.slam fiona.ladder fiona.push fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend ;
 
 : rooms-id ( -- id )  s" rooms" actor-named ;
 : camera-id ( -- id )  s" camera" actor-named ;
@@ -27,7 +27,8 @@ fvariable ix  fvariable iy  fvariable iz
 : idle ( -- )   \ Fiona_ToIdle: free, standing, her moves her own
     0 her-doing !  0 her-mode !  her-yaw f@ her-heading f!  0 her-rest !   \ (the turn mode kept: Fiona_ToIdle leaves +0x1AD588)
     -1 idle-anim  ['] idle-move her-act ! ;
-' idle is fiona.defend:to-idle   ' idle is fiona.hurt:to-idle   ' idle is fiona.seized:to-idle   ' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle   ' idle is fiona.commands:to-idle   ' idle is fiona.moves:to-idle   ' idle is fiona.ladder:to-idle
+' idle is fiona.defend:to-idle   ' idle is fiona.hurt:to-idle   ' idle is fiona.seized:to-idle   ' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle   ' idle is fiona.commands:to-idle   ' idle is fiona.moves:to-idle   ' idle is fiona.ladder:to-idle   ' idle is fiona.push:to-idle
+' try-push is fiona.moving:push-check
 \ Fiona_Vt34: going out by a door - with the stick held, she faces where it points (by the camera
 \ she leaves) if that is less than a quarter turn round from her heading, and that camera keeps
 \ steering in the next room while the stick stays (turn mode 3: controls.fs after-cut)

@@ -218,3 +218,14 @@ message summoner-take ( kind -- )             \ (the summoner) take the stalker 
 message summoner-cooldown ( secs -- )         \ (the summoner) not before secs seconds
 message summoner-cooldown-less ( secs -- )    \ (the summoner) that much sooner
 message summoner-reset ( -- )                 \ (the summoner) afresh (a stalker loaded)
+
+\ ---- the obstacles (docs/subsystems/obstacles.md): the things pushed about ----
+message place-obstacle ( i n kind a b -- )    \ obstacle i (model "oshi0n", of a kind) placed at square (a, b)
+message place-obstacle-kept ( i n kind -- )   \ ... at the place kept for it
+message stop-obstacle ( i -- )                \ it can't be pushed any more
+message keep-obstacle ( i -- )                \ its place kept (where it is now)
+message keep-obstacle-at ( i a b -- )         \ ... that square
+message keep-obstacle-spot ( i -- )           \ where it stands kept (for its model)
+message obstacle-model-to-spot ( i n -- )     \ model "oshi0n" its model, at the spot kept
+message push-obstacle ( i dx dz -- )          \ (Fiona) pushed two squares along (dx, dz; floats f>cell)
+message obstacle-moved ( i -- )               \ (Fiona) its move done

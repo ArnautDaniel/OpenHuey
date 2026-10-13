@@ -40,6 +40,12 @@ Takes: `open`, `shut`, `slam`, `lock`, `unlock`, `hold`, `let-go`.
 Sends: `noise` (opened / shut / slammed), `hit` (slammed on someone), `door-state` broadcasts.
 Original: `doors.c`, `Progress_*Door*`.
 
+### Obstacles (`obstacles`)  — **built** (`subsystems/obstacles.md`)
+Owns: the things pushed about in the played room, their squares and the floor's flags under them.
+Takes: `place-obstacle`, `stop-obstacle`, `keep-obstacle`, `push-obstacle` (Fiona).
+Sends: `noise` (the scrape).
+Original: `room_map.c` (`Obstacles_*`, `Obstacle_*`).
+
 ### Camera (`camera`)  — **built** (`subsystems/camera.md`)
 Owns: the room's camera setups, who it follows, cuts and eases.
 Takes: `follow`, `use-setup`, `event-camera`, `release`.

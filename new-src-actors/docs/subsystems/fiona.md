@@ -279,3 +279,18 @@ slot bits for Hewie.
 
 Also fixed with it: `walk-anim` (Fiona_StateCmdWalkAnim) read the animation's key events for
 `MOTION_EVENTS` $20; it is the motion's come-round flag (`ended?`).
+
+## F5: pushing (`scripts/fiona/push.fs`)
+
+Fiona_FindPushable, tried each frame she walks or runs (her step's reach ahead, from where she
+was): the walk toward that point meets a wall (an edge, or her floor's blocks; `v-wall`), and
+the floor 2 to each side of it is pushable ($800000: an obstacle's ring). She turns square to
+the wall, from her side of it (Fiona_StateTurnStick: 10 degrees a frame, her action 1, sub 5),
+while the stick holds within 0.6 of that way, then leans on it ($1200: 2 back). As each move
+comes round (Fiona_StatePush): the obstacle on both sides (the lowest; looked for again at 2.2)
+pushed if it can go - `push-obstacle`, her push ($1201: 5 on, her sound $45; Fiona_StatePushStep)
+- else she strains ($1203). Pushing on, each push come round: `obstacle-moved`; the stick still
+that way and the floor 2.2 ahead pushable, pushed again, else she strains. The stick let go:
+straining she lets go ($1202, then free), else free. The stalker touching her: free at once.
+Checked by `tests/obstacles/test_obstacles.fs`. Not yet: knocked while pushing (FI 0x1AD584
+bit 2), the push's rumble.

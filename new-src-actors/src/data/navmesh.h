@@ -70,6 +70,10 @@ int navmesh_path(const NavMesh *n, int from, Vec3 a, int to, Vec3 b, Vec3 *out, 
  * blocked triangle): its direction as a heading; 0 if b is reached first */
 int navmesh_wall(const NavMesh *n, int from, Vec3 a, Vec3 b, float *yaw);
 int navmesh_walk(const NavMesh *n, int from, Vec3 a, Vec3 b, float *reach);
+/* a square of the pushable floor (triangles a, b) one square along (dx, dz): from its middle 5
+ * along over the mesh until two new triangles are crossed (Obstacle_StepSquare); 0, or -1 (a, b
+ * unchanged) at an edge of the mesh */
+int navmesh_square_step(const NavMesh *n, int *a, int *b, float dx, float dz);
 /* the middle of triangle i */
 Vec3 navmesh_center(const NavMesh *n, int i);
 /* the middle of the triangle nearest p */

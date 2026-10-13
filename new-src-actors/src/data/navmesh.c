@@ -118,10 +118,31 @@ Vec3 navmesh_move(const NavMesh *n, Vec3 p, float dx, float dz, float climb, flo
             continue;
         }
         ahead = vec3(q.x + tries[i][0] / len * radius, p.y, q.z + tries[i][1] / len * radius);
-        if (navmesh_find(n, q, climb, &h) >= 0 && navmesh_find(n, ahead, climb, &h2) >= 0) {
+        /* (and not onto a floor more than a climb above: the game's y runs down - a balcony over
+         * her when the floor ahead is blocked) */
+        if (navmesh_find(n, q, climb, &h) >= 0 && navmesh_find(n, ahead, climb, &h2) >= 0
+            && h >= p.y - climb && h2 >= p.y - climb) {
             q.y = h;
             out = q;
-            break;
+            m->block = block;
+            return out;
+        }
+    }
+    /* no way on nor along: up to the wall straight ahead (Actor_Move stops at it) */
+    if (here >= 0 && radius == 0.0f) {
+        float len = sqrtf(dx * dx + dz * dz), reach, h;
+
+        if (len > 0.0f) {
+            navmesh_walk(n, here, p, vec3(p.x + dx, p.y, p.z + dz), &reach);
+            reach -= 0.01f;
+            if (reach > 0.0f && reach < len) {
+                Vec3 q = vec3(p.x + dx * reach / len, p.y, p.z + dz * reach / len);
+
+                if (navmesh_find(n, q, climb, &h) >= 0 && h >= p.y - climb) {
+                    q.y = h;
+                    out = q;
+                }
+            }
         }
     }
     m->block = block;
@@ -423,6 +444,59 @@ int navmesh_walk(const NavMesh *n, int from, Vec3 a, Vec3 b, float *reach) {
         }
         came = t;
         t = tr->next[cross];
+    }
+    return -1;
+}
+
+/* ---- the pushed objects' squares (pairs of triangles of the pushable floor's grid) ---- */
+
+int navmesh_square_step(const NavMesh *n, int *a, int *b, float dx, float dz) {
+    int ta = *a, tb = *b, cur, came = -1, crossed = 0, steps, k;
+    float len = sqrtf(dx * dx + dz * dz), w[3];
+    Vec3 from = vec3(0, 0, 0), to;
+
+    if (ta < 0 || tb < 0 || ta >= n->ntris || tb >= n->ntris || len <= 0.0f) {
+        return -1;
+    }
+    for (k = 0; k < 3; k++) {
+        from = vec3_add(from, vec3_add(n->tris[ta].v[k], n->tris[tb].v[k]));
+    }
+    from = vec3_scale(from, 1.0f / 6.0f);
+    to = vec3(from.x + dx / len * 5.0f, from.y, from.z + dz / len * 5.0f);
+    cur = inside(&n->tris[ta], from.x, from.z, w) ? ta : tb;
+    for (steps = 0; steps < n->ntris + 2; steps++) {
+        const NavTri *tr = &n->tris[cur];
+        float best = -1.0f;
+        int e, cross = -1;
+
+        if (inside(tr, to.x, to.z, w)) {
+            return -1;
+        }
+        for (e = 0; e < 3; e++) {   /* the edge it leaves by */
+            float f = seg_cross(from, to, tr->v[e], tr->v[(e + 1) % 3]);
+
+            if (f < 0.0f || f > 1.0f || (came >= 0 && tr->next[e] == came)) {
+                continue;
+            }
+            if (cross < 0 || f > best) {
+                best = f;
+                cross = e;
+            }
+        }
+        if (cross < 0 || tr->next[cross] < 0) {
+            return -1;
+        }
+        came = cur;
+        cur = tr->next[cross];
+        if (cur != ta && cur != tb) {
+            tb = ta;
+            ta = cur;
+            if (++crossed == 2) {
+                *a = ta;
+                *b = tb;
+                return 0;
+            }
+        }
     }
     return -1;
 }

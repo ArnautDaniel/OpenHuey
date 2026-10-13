@@ -465,6 +465,16 @@ PRIM(p_v_wall) {   /* ( tri a b mask -- flag ) ( F: -- yaw ) the wall a straight
     FPUSH(yaw);
     PUSH(hit ? -1 : 0);
 }
+PRIM(p_nav_square_step) {   /* ( a b -- a' b' ok? ) ( F: dx dz -- ) a square of the pushable floor
+                             * (two triangles) one square along (dx, dz) (Obstacle_StepSquare) */
+    float dz = (float)FPOP(), dx = (float)FPOP();
+    int b = (int)POP(), a = (int)POP();
+    int r = navmesh_square_step(&gEngine.room.nav, &a, &b, dx, dz);
+
+    PUSH(a);
+    PUSH(b);
+    PUSH(r == 0 ? -1 : 0);
+}
 /* ---- the nav links (ladders: the original's nav door regions) ---- */
 static const NavLink *nav_link(Cell i) {
     NavMesh *n = &gEngine.room.nav;
@@ -807,6 +817,18 @@ PRIM(p_placed_op) {   /* ( addr len op arg -- ) the room's object by name: 0 sho
         p->rot = p->def_rot;
         p->pos = p->def_pos;
         break;
+    }
+}
+PRIM(p_placed_at) {   /* ( addr len -- ) ( F: x y z -- ) the room's object by name moved there */
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+    Cell n = POP(), a = POP();
+    char name[32];
+    Placed *p;
+
+    snprintf(name, sizeof(name), "%.*s", (int)n, (const char *)a);
+    p = placed_named(&gEngine.room.placed, name);
+    if (p != NULL) {
+        p->pos = vec3(x, y, z);
     }
 }
 PRIM(p_placed_list) {   /* ( -- ) the room's objects */
@@ -2121,7 +2143,7 @@ void bind_engine(Forth *f) {
         {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-wall", p_v_wall}, {"nav-links", p_nav_links}, {"nav-next", p_nav_next}, {"nav-link-tri", p_nav_link_tri}, {"nav-link-yaw", p_nav_link_yaw}, {"nav-link-spot", p_nav_link_spot}, {"nav-link-at?", p_nav_link_at}, {"nav-link-side", p_nav_link_side}, {"nav-link-front", p_nav_link_front}, {"v-free", p_v_free},
         {"v-path", p_v_path}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
-        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
+        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {"placed-at", p_placed_at}, {"nav-square-step", p_nav_square_step}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
         {"door-anim", p_door_anim}, {"door-side", p_door_side}, {"door-near?", p_door_near}, {"door-in-area?", p_door_in_area},
         {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"door-move", p_door_move}, {"game-tick", p_game_tick}, {"door-events", p_door_events}, {"door-here?", p_door_present}, {"door-turn", p_door_turn}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
