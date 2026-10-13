@@ -136,11 +136,11 @@ PRIVATE>
 \ can it be pushed along (dx, dz) (Obstacles_CanPush, Obstacle_CanPush): not stopped; nobody
 \ but her on the ring round it moved two or one squares along (Obstacle_RingClear); and the
 \ place two squares along, its own blocks lifted, the walkable floor ($100) without $440080
-create others 4 cells allot  variable #others
+create others 12 cells allot  variable #others
 : other-tris ( -- )   \ (the other characters in the room: their triangles)
     0 #others !
-    s" hewie" actor-named  s" debilitas" actor-named  s" daniella" actor-named
-    3 0 do
+    s" hewie" actor-named  s" debilitas" actor-named  s" daniella" actor-named  s" riccardo" actor-named  s" lorenzo" actor-named  s" lorenzo2" actor-named  s" kind39" actor-named  s" kind37" actor-named  s" tintstalker" actor-named  s" kind12" actor-named
+    10 0 do
         dup 0< 0= if  dup body? if  dup body-room room-id = if
             dup body-tri  #others @ cells others + !  1 #others +!
         then  then  then  drop

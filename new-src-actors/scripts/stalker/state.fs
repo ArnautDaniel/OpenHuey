@@ -117,4 +117,14 @@ state: stalker-state
   cell field at-dog              \ his combo is at Hewie (after him, his temper up), not her
   cell field raging              \ +0x16B8 2: in a rage (the story's 0x31) - his stance and walk
   cell field hushed              \ +0x2C: his own sounds don't play (the story's 0x3D)
+  \ (P4c) a stalker's own: his chase (its start and its step: Riccardo's; 0 the family's), his
+  \ own actions ($1000.. in his tables: a table of xts; 0 Debilitas's), how near he attacks
+  cell field own-chase  cell field own-run  cell field own-acts  1 floats field attack-range
+  cell field own-frame          \ his own each frame (Riccardo's rage, snort, impact)
+  cell field alt-tables         \ his tables' second set (kind 37 alerted; else his rage)
+  cell field tint-t  cell field tint-was  cell field unseen   \ (the TintStalker: shown a while)
+  cell field comings             \ +0x1630: the times he comes on, seen by her, before backing off
+  cell field blows  cell field blow-move  cell field blow-aim   \ (Riccardo's flurry: blows left, the move, his aim)
+  \ (Lorenzo's other class: under the floor - frames left, where he comes up, how; whom his sweep struck)
+  cell field under-t  12 field goal  cell field goal-tri  cell field rise-anim  cell field rise-xt  cell field swept
 end-state

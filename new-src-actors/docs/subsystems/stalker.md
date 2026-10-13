@@ -27,7 +27,7 @@ requests to Fiona.
 | P3c | Hewie's bites | Hewie H3 |
 | **P4a** | The story's stalker words: its conditions about him (in the game, his kind, here, his alert, free, his condition, health, the exit he came in by, out of sight) and its orders (after her / searching, his clock, knocked down, rage, started again, condition, health, silent); his `moving` for the scripts' waits | story |
 | P4b | Daniella's own tables (moves, attack tables, temper) and behaviour (Daniella_Behaviour), his footsteps heard through the walls, the rooms a stalker keeps to | P4a |
-| P4c | Riccardo and Lorenzo; the cutscenes' cast beyond slot 2 (char-load-2, char-hand-over, char-loaded?) | P4b |
+| **P4c** | Riccardo and Lorenzo, and the other classes (kinds 37, 23, 10, 39, 12); the cutscenes' cast beyond slot 2 went to the cast (event characters) | P4b |
 
 ## API (P1, a first draft)
 
@@ -298,3 +298,69 @@ frames - his temper back to 0, on. His blows reach Hewie as they reach her (a `b
 move's kind, damage and stumble). *Not yet*: his attack tables at Hewie (his `$1602` taunt, the
 holds), Daniella's own temper table (Debilitas's for now), Hewie's tackles adding to his temper
 (Pursuer_AddBiteDamage), the leg's down animation ($1709: his fall instead).
+
+## P4c: Riccardo and Lorenzo (`scripts/stalker/riccardo.fs`, `scripts/stalker.fs`)
+
+Each stalker's own is now his: `own-chase` / `own-run` (his chase's start and step - 0 the
+family's: Debilitas's or the Pursuer's), `own-acts` (his own actions, `$1000..` of his tables: a
+table of xts - 0 Debilitas's), `attack-range` (vtable +0x2F4; 0 the family's 24) and `own-frame`
+(his own each frame). The kits (`tools/stalkertables.py`) carry two more: Riccardo's waits
+(+0x1824) and his flurry's chances.
+
+**Riccardo** (kind 4; riccardo.c): 100 health (hard 125), 3 across, 17 tall, his model O_RCG/RCG_000
+(its 74 motions; motion table $41A2C0), reach 20, reach for Hewie 12. His walks: standing 1
+(hurt 2), $200 (in his rage too), slow $206 seeing her within 100, else $201.
+- His chase (Riccardo_ChaseDecision / StateBehaviour / Riccardo_Chase): at the panic's stage 5 the
+  Pursuer's. Out of sight of her: after her. Further than 100: stalking her ($6) his far wait
+  (300); near (60) and seen by her: standing to her (1), coming on his waits' count (60) of times
+  before walking at her; else by his chance (20) walking at her (60) or stalking her (150).
+  Standing: every 60 frames a lunge by his lunge table (75 within 150: his table 10); turning to
+  keep her in front. A wait run out within 100: a lunge, or walk / stalk again. Within his reach,
+  in front, on her floor: his attack table.
+- His own actions: `$1000` his flurry (Riccardo_StartFlurry: 1..7 blows by his chances; on her
+  floor his swing $E00 / $E04 at her, off it a slam down at her $2302 / $2304, one blow; at
+  Hewie on his floor his swing $E06). At a blow's key (Riccardo_StateBlowFiona / BlowHewie /
+  Blow): Hewie in the way of her takes it; her by how near (Riccardo_AttackForDistance: within 10
+  his grab 3, else 6 caught - below stage 4 - or 4 a hard blow, a stumble three times in four;
+  6 the heavy move with its stun); crouched under it, it passes over; after it another while
+  she's in front. `$1001` his lunge ($1300; at stage 5 into his move 5).
+- His frame (Riccardo_Update): his rage at the panic's stage 5 (his roar $26), out of it below;
+  his snort ($24) at $600's key; his hammer's impact (key $20): a noise ($40) where he stands.
+
+**Lorenzo** (kind 11; lorenzo.c): the Pursuer's chase with his tables; 50 health (hard 75), 5
+across, 20 tall, his model O_LRO/LRO_000 (motion table $4246C0), turning 2 degrees a frame,
+reach 18, reach for Hewie 12; no temper with Hewie in his tables (the game fills them at run
+time), no throws of Hewie.
+
+**Lorenzo's other class** (kind 10; lorenzo.c Lorenzo2_*, `scripts/stalker/lorenzo2.fs`): 250
+health (hard 400), 4 across, 18 tall, his model O_LRY/LRY_000 (motion table $424490); the
+Pursuer's chase with his kit (his moves by the hard setting: a kit each). From the panic's first
+stage his "rage" (mode 2: his rage tables, his reach 18, for Hewie 12); else reach 70 (hard 40),
+for Hewie 60 (30) - his attacks from afar. His own actions: `$1000` sinking ($1303) to come up 10
+short of her ($1305; nearer than 30, his move 1, or with no way to her a look about), `$1001`
+sinking ($1304) to come up by her (5 short) in his sweep ($E02: at its key she and Hewie within
+its reach, over his floor, are struck once each - a stumble by its chance), `$1002` his reach
+from afar ($E01: aimed where she is at its 12th frame; at its key whoever is within its reach
+of there). Under the floor 15 frames, unseen. **Kind 39** (lorenzo.c Kind39_*): the same class
+with its own tables, 250 health (hard 300), no "rage" (reach 18, for Hewie 12); its sweep
+strikes whoever it sees.
+
+**Riccardo's other class** (kind 37; riccardo.c Kind37_*): his chase with its own tables, near
+him at 30 (Riccardo 60), its model O_RCT/RCT_000 (motion table $42AED0), 100 health (hard 125);
+struck to 100 damage it is alerted - hurt, its alert tables and waits (the kit's waits by the hard
+setting and alerted) - and calms below. **The TintStalker** (kind 23; tintstalker.c): the
+Pursuer's chase with its tables, the same look, seen only a while (150 frames) after each turn of
+what it does, then gone (`unseen`). **Kind 12** (lorenzo.c Kind12_*): the Pursuer's chase with
+its tables, its model O_LRF/LRF_000 (motion table $443FB0), 9999 health and never hurt; in her
+room, free to go for her (not in costumes 6 / 7), it seizes her (her fright 100).
+
+The story's kinds: 4 Riccardo, 37, 23, 11 Lorenzo, 10 Lorenzo's other class, 39, 12. Checked by `tests/stalker/test_riccardo.fs` (21 with kinds 37 and 23), `tests/stalker/test_lorenzo.fs` (10 with
+kind 12), `tests/stalker/test_lorenzo2.fs` (12 with kind 39). *Not yet*: Riccardo's cry hits and his hammer's debris and
+jolt (effects), his blow at a room object (gEvents +0x68), going to the door she hides behind;
+Lorenzo's footsteps only in his walks (the stalkers' steps on screen aren't written yet); the sparks, dust,
+the sink's rings and the burst of Lorenzo's other class (effects), his travel under the floor
+(he comes up at once after 15 frames); the screen tints of kinds 37 and 23 (the TintStalker's
+fade in and out: shown or not), kind 12's marker; the situations of the ending (the TintStalker's
+table 15, its doors). The cutscenes' cast beyond slot 2 (`char-load-2`, `char-hand-over`,
+`char-loaded?`) goes with the event characters (the cast): every use is of figures that aren't
+stalkers (kinds 15, 28), loaded into slots 3..5 as the cast is.
