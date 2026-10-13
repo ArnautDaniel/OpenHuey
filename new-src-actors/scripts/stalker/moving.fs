@@ -6,8 +6,8 @@ IN: stalker.moving
 USING: engine game-state actors facts flag-names paths stalker.state stalker.senses ;
 
 : model ( -- a )  my-model @ actor ;
-: sound ( id bank -- )   \ Pursuer_Sound: at him (not while the world is held)
-    world-held state-flag? if  2drop exit  then  >r >r  my-at vec@  r> r>  bank-sound-at ;
+: sound ( id bank -- )   \ Pursuer_Sound: at him (not while the world is held, nor silenced)
+    world-held state-flag? hushed @ or if  2drop exit  then  >r >r  my-at vec@  r> r>  bank-sound-at ;
 : yaw ( F: -- a )  self body-yaw ;
 : yaw! ( F: a -- )  body-turn ;
 
@@ -16,12 +16,14 @@ USING: engine game-state actors facts flag-names paths stalker.state stalker.sen
 : play-now ( anim -- )   \ (Motion_PlayTable)
     dup anim !  my-model @ swap  2dup motion-entry nip  motion-play ;
 : play ( anim -- )  dup anim @ = if  drop exit  then  play-now ;
-: stand-anim ( -- a )  cond @ 1 = if  2  else  0  then ;   \ (vtable +0x320: hurt, 2)
+: stand-anim ( -- a )   \ (vtable +0x320 Pursuer_WalkAnim: hurt 2, in a rage 3)
+    cond @ 1 = if  2  else  raging @ if  3  else  0  then  then ;
 \ his walks (vtable +0x324 / +0x328): hurt $202 / $203; else $200, and the slow one - held off
 \ $203, searching or heading $201, after her $206
-: walk-fast ( -- a )  cond @ 1 = if  $202  else  $200  then ;
-: walk-slow ( -- a )
-    my-mode @ 4 =  cond @ 1 = or if  $203 exit  then
+: walk-fast ( -- a )  cond @ 1 = if  $202  else  raging @ if  $204  else  $200  then  then ;   \ (+0x324: in a rage $204)
+: walk-slow ( -- a )   \ (Pursuer_SlowWalkAnim: in a rage $205; Debilitas's held off $203)
+    my-mode @ 4 = base-chase @ 0= and  cond @ 1 = or if  $203 exit  then
+    raging @ if  $205 exit  then
     my-mode @ if  $201  else  $206  then ;
 : turn-base ( -- a )  cond @ 1 = if  $405  else  $400  then ;   \ (Pursuer_TurnOnSpot: hurt, $405..)
 : ended? ( -- flag )  model act.mflags l@ $20 and 0<> ;   \ came to its end this frame
@@ -37,7 +39,7 @@ fvariable rm-turn  fvariable rm-x  fvariable rm-y  fvariable rm-z
 : heading-to ( v -- ) ( F: -- a )  self swap body-heading-to ;
 : turn-to ( v -- ) ( F: step -- left )  heading-to fswap body-turn-toward ;
 \ the turn rate (vtable +0xA0; Debilitas 3 degrees a frame)
-: turn-rate ( F: -- r )  0.052359879e ;
+: turn-rate ( F: -- r )  turn-k f@ ;
 \ Pursuer_TurnOnSpot via Npc_TurnWayTo: past 80 degrees off he turns on the spot - $400 left,
 \ $401 right, +2 a half turn (past 160); $FF none
 fvariable wp-a  fvariable wp-b

@@ -122,7 +122,18 @@ fvariable u-a  fvariable u-b  fvariable u-c  fvariable u-d
 behaviour panicking
   on spawned ( -- )  1e scale f!  self subscribe frame-end  self subscribe danger  self subscribe fiona-doing ;
   on danger ( level -- )  the-danger ! ;
-  on fiona-doing ( mode sub cond cmd -- )  drop her-cond !  her-sub !  her-mode ! ;
+  on fiona-doing ( mode sub cond cmd doing -- )  2drop her-cond !  her-sub !  her-mode ! ;
+  \ the story's (the scripts' 0x43, 0xC0, 0x93, 0xC9): the threat (Threat_Raise: as a fright, into
+  \ the weighted parts), its accumulator, calming (bit $80: 128 at once; else v / 30), the level
+  \ set to one it hasn't passed
+  on threat ( amount -- )
+      cell>f fdup f0< if  fdrop exit  then
+      fdup 10e f< if  fear-d2 f@ f+ fear-d2 f!  exit  then
+      0.5e f*  30 hold !  fdup fear-d2 f@ f+ fear-d2 f!  fright-a2 f@ f+ fright-a2 f! ;
+  on threat-acc ( amount -- )  cell>f 0e fmax 100e fmin fear-d2 f@ f+ fear-d2 f! ;
+  on calm-in ( v -- )
+      dup $80 and if  drop 128e calm-b f@ f+ calm-b f!  else  s>f 30e f/ calm-b2 f@ f+ calm-b2 f!  then ;
+  on panic-reach ( level -- )  dup s>f level f@ f< if  drop  else  set-level  then ;
   on fright ( amount -- )  cell>f add-fright ;
   on fear-in ( amount -- )   \ (a negative one is a fright: held 30, 50 lasting and passing)
       cell>f fdup f0< if  fdrop 30 hold !  fear-d f@ 50e f+ fear-d f!  fright-a f@ 50e f+ fright-a f!  exit  then

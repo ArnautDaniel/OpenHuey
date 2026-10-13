@@ -65,7 +65,7 @@ fvariable turn-left  fvariable stepping
 
 \ ---- 17: the walk's animation along the way, arriving as it ends (Fiona_StateCmdWalkAnim) ----
 : walk-anim ( -- )
-    her-model @ 0 0 1 motion-events $20 and if
+    ended? if   \ (MOTION_EVENTS: the motion's flags - $20 come round)
         her-move-at blocked-floor v-tri-in dup 0< if  drop  else  her-tri !  then
         her-at her-move-at vec-copy  her-move-yaw f@ her-yaw f!  done exit
     then

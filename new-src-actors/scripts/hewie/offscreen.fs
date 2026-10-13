@@ -11,9 +11,14 @@ defer when-idle ( -- )   ' noop is when-idle     \ Hewie_WhenIdle (hewie.mind)
 : avoid-door ( door -- )   \ not that way again
     his-avoid over 5 rshift cells +  swap 31 and 1 swap lshift  over @ or swap ! ;
 
-\ Character_Route: the doors to room `to` (> 0 a way, 0 there, -1 none), and door_from_path:
-\ the first one and - the original's own measure - its triangle's number as the way to it
-: route-to ( to -- n )  his-room swap hewie-kind -1 his-avoid route-avoiding ;
+\ Character_Route: the doors to room `to` (> 0 a way, 0 there, -1 none) from the half of his
+\ room he is on - his-way, or (-1) the half the exit he came in by opens onto, looked up only
+\ where the door marks it (the walker's kind then counts) - and door_from_path: the first one
+\ and - the original's own measure - its triangle's number as the way to it
+: his-start ( -- way kind )
+    his-way @ dup -1 <> if  0 exit  then  drop
+    his-door @ dup 0< if  drop -1  else  his-room swap 1 exit-way  then  hewie-kind ;
+: route-to ( to -- n )  his-start >r >r  his-room r> rot  -1 r> -1 his-avoid route-sides ;
 : door-tri ( door room -- tri )   \ (Rooms_DoorTri: its triangle on that room's side, -1 none)
     >r door-sides                                         ( r0 e0 t0 r1 e1 t1 )
     2 pick r@ = if  >r 2drop 2drop drop r> r> drop exit  then
@@ -24,6 +29,7 @@ defer when-idle ( -- )   ' noop is when-idle     \ Hewie_WhenIdle (hewie.mind)
 \ Hewie_ThroughExit: into the room beyond exit `exit` of his (out of play there); -1 none
 : through-exit ( exit -- 0 | -1 )
     his-room swap room-exit-leads  over 0< if  2drop -1 exit  then
+    2dup 0 exit-way his-way !   \ (the half its exit opens onto)
     his-door !  body-room!  -1 body-tri!  0 his-at-door !  $17 his-sub !  1 away!  0 ;
 \ arrived (in the room being played): seen, what he is alert to taken in
 : arrived ( -- )  0 away!  his-alert @ his-alert-was ! ;
@@ -124,7 +130,9 @@ create ex-at 12 allot
 : arrive ( -- arrived? )
     his-room room-id <> if  false exit  then
     his-action @ dup 0= over $2C $3A within or over $52 = or swap $77 = or 0= if  false exit  then
-    0 his-alert !  -1 his-yelp-anim !  false                              ( placed? )
+    0 his-alert !  -1 his-yelp-anim !
+    his-room his-door @ 0 exit-way his-way !   \ (the half by the exit he came through)
+    false                                                                ( placed? )
     his-action @ case
         $2F of  -150 his-wait +!  his-wait @ 0> if
                     his-t2 @ 1 = if  his-cond @ 1 = if  7  else  1  then  play  then

@@ -25,7 +25,9 @@ requests to Fiona.
 | P3a | Struck by her: her kick and shove (F4); flinching, falling, down a while, getting up, hurt (a stumble), giving up for a while after enough | Fiona F4 |
 | P3b | Doors: his use of the doors in her room (opening, coming through, going out), a door slammed on him | P3a |
 | P3c | Hewie's bites | Hewie H3 |
-| P4 | The story's stalker words (put in a room, sent, held, released, loaded), the cutscenes' cast, the other stalkers | story |
+| **P4a** | The story's stalker words: its conditions about him (in the game, his kind, here, his alert, free, his condition, health, the exit he came in by, out of sight) and its orders (after her / searching, his clock, knocked down, rage, started again, condition, health, silent); his `moving` for the scripts' waits | story |
+| P4b | Daniella's own tables (moves, attack tables, temper) and behaviour (Daniella_Behaviour), his footsteps heard through the walls, the rooms a stalker keeps to | P4a |
+| P4c | Riccardo and Lorenzo; the cutscenes' cast beyond slot 2 (char-load-2, char-hand-over, char-loaded?) | P4b |
 
 ## API (P1, a first draft)
 
@@ -34,6 +36,14 @@ requests to Fiona.
 | `stalker-in` | `( room tri -- )` | in (the story, the console) | Come into the game in that room, on that triangle. |
 | `stalker-out` | `( -- )` | in | Out of the game. |
 | `stalker-here` | `( room alert chasing -- )` | out, to danger | In play this frame (alert: he knows of her; chasing). |
+| `stalker-status` | `( room mode in-game own away cool -- )` | out, to the summoner | Each frame while in slot 2 (docs/subsystems/summoner.md). |
+| `stalker-summoned` | `( room exit found plan -- )` | in, from the summoner | Come in out of sight by that exit: after her, or waiting about (Pursuer_IntoRoomByEvent). |
+| `stalker-doing` | `( room mode sub cond hp hp-max kind -- )` | out, broadcast each frame in the game | For Hewie: his room, how he moves (3 off screen, 4 struck, 8 taking her), what (9 bitten, $A down, $18 leading her), condition, health, kind. |
+| `blow` | `( kind damage how -- )` | in (Fiona: 1 shove, 2 kick, 5 a door - how its exit); out, to Hewie | Struck; his blows (and his throw, $B) strike Hewie. |
+| `dog-attack` / `dog-grip` / `dog-refused` | `( kind )` / `( tri x y z yaw )` / `( )` | in / out | Hewie's attack asked; taken (where Hewie leaps to) or not (P3c). |
+| `bite` | `( damage hard -- )` | in, from Hewie | A bite while he holds on. |
+| `shaken-off` | `( -- )` | in / out | Hewie let go / thrown off. |
+| `snap` | `( -- )` | in, from Hewie | Growled or barked at: his temper. |
 | `noise` | | out, to acoustics | His steps, growls. |
 | `heard` | | in, from acoustics | A noise he heard (he listens above a threshold). |
 | `fiona-doing`, `hewie-doing` | | in (broadcasts) | What they are doing (whether she can be struck, grabbed...). |
@@ -78,7 +88,10 @@ slows to a stand within 10 of the stop. His walk (Debilitas_StandAnim): after he
 within 80 on foot and she isn't hiding, else $206; waiting $200; searching or heading $201.
 
 **Out of sight** (P1d, `stalker/travel.fs`): his route through the doors (the engine's
-`route-avoiding`, walkers of `stalker-kind`); each stretch is the next door's triangle number
+`route-sides`, walkers of `stalker-kind`) from the half of his room he is on - some rooms are
+two halves joined only through other rooms; his is the one the exit he came in by opens onto,
+where the door marks it (`exit-way`, checked: Character_Route with no side). The half wanted in
+the goal room is "either", but going round to her across his own room (below): hers. Each stretch is the next door's triangle number
 on his side (plus the one he came in by - the original's own measure, Npc_NodeDistance),
 counted down at his pace: after her 1.6..1.8 a frame, searching or waiting 0.6, heading for her
 room or held off 1, while she hides 2. A door as he finds it (Npc_ExitKind): held shut - he
@@ -172,5 +185,116 @@ their phases: his footsteps heard through the walls and the rooms a stalker keep
 P4), the knock frightening her (with her fear's sounds), Hewie held (H3). P2c done: the game
 over (`docs/subsystems/gameover.md`) - dragged or carried off, held, the sequence, back to the
 title. P3a done: struck by her
-(`fiona/defend.fs`, `stalker/struck.fs`; 48 tests). Next: P3b (his use of the doors in her
-room, slammed doors), P3c (Hewie's bites, with H3).
+(`fiona/defend.fs`, `stalker/struck.fs`; 48 tests). P3b done (`stalker/doorway.fs`): his use of
+the doors in her room, round to her across his own room, slammed doors; also the coming-in
+spot fixed (below). P3c done (`stalker/bitten.fs`, with Hewie's H3): Hewie's attacks taken or
+refused, bitten, throwing him off, his temper and going for Hewie; his blows reach Hewie too.
+`tests/stalker/test_stalker.fs` (58), `tests/hewie/test_fight.fs` (19). P4a done (below;
+`tests/story/test_stalker_words.fs`, 13). P4b begun: Daniella (below;
+`tests/stalker/test_daniella.fs`, 7), his footsteps through the walls and his lair (below; 3
+more in `tests/stalker/test_stalker.fs`, 61). Next: P4c.
+
+**His footsteps through the walls** (Pursuer_FootstepsThroughWalls, Character_RouteExitPoint):
+out of sight making for a door of her room, within 80 of it, each 10 he closes in a step (his
+sounds 0 / 1 in turn, bank 7) out beyond that door - along its spot 2 -> 1, at his way left plus
+100 (an open door) or 150 (a shut one); not while silenced or the world is held. (The original's
+loudness was meant to grow; it is always full.)
+
+**His lair** (vtable +0x314, Debilitas_PickDestination, Pursuer_TravelOffscreen /
+Pursuer_Pace): held off (mode 4), he heads for the nearer of his own rooms by route (Debilitas
+castle-2f-2 $20 - its spot triangle 796 - and castle-1f-2 $02 - 794; Daniella none) and, out
+of sight there, travels no further while it lasts; coming into play there held off he walks to
+its spot. (The summoner may still take him: 5 s held off away from her.)
+
+**P4b - Daniella** (src/game/daniella.c; her vtable differs from Debilitas's in about 45
+places). *Her kit* (`stalker/tables.fs`, generated by `tools/stalkertables.py` with a set for
+each stalker; his `kit` field, the words `moves`, `combos`, `gestures`, `table`, `temper-table`,
+`pursue-row`, `throw-moves`, `grip-offsets` read through it): her attack tables by the hard
+setting and her rage (Daniella_AttackTable / SetRage: 4 x 17), 13 moves, 18 combos, 6 gestures,
+her temper with Hewie (normal and hard), her chase table by the panic's stage (+0x1730: four, by
+the hard setting and her rage), her throws off Hewie (moves 11 / 12), Hewie's grip spots by her
+(Daniella_ActionOffsets). *Her numbers*: a turn of 4 degrees a frame (Pursuer_TurnRate), her
+reach for Hewie 12, never giving up after damage (Pursuer_GivesUp), her walks the Pursuer's
+(slow in every mode: $206 after her, $201 else; $205 in a rage - Debilitas too). *The
+Pursuer's chase* (`stalker/pursue.fs`; Pursuer_ChaseDecision, BehaviourStalk, HoldOff,
+StateWalkThen404) for her - Debilitas keeps his own: close and in front of her, not panicking
+past stage 3 - standing to her; else by her row walking at her ($200) or stalking her ($201) for
+its frames; walking, her time out or Fiona past 100 - stalking; stalking, her time out within
+100 - her table 10; touching - a step back facing her ($404), and the row again once 5 further
+off; standing - turned to her, the row again out of the ground she gains or out of 20 degrees; a
+combo, a taunt or her way round over - the row again; within reach in front on her floor - her
+attack by Fiona's plight. Not yet: her model's own parts (hair, the hanging parts: DaniellaModel),
+her door behaviour (Daniella_DoorBreak), her later kinds (34..36) and their files, her own
+search spots and own rooms.
+
+**P4a - the story's words about him** (`scripts/story/words.fs`, src/game/event.c). He tells
+each frame (`stalker-doing`) his room, move mode and part, condition, health and its most, kind, his alert (his mode: Progress_StalkerAlert) and the exit he
+came in by (+0x14D4); the room keeps it, with Fiona's and Hewie's conditions from their own
+broadcasts. Conditions: 0x55 in the game (told within a frame), 0x54 his kind (the kind
+partner-load put in slot 2: `slot2-kind`), 0x3C his kind and in this room, 0x10 his alert ($FF
+not in the game), 0x65 free (here, not leading her, not bitten or down - his triangle not
+checked), 0x41 a condition (Fiona, Hewie, the stalker), 0x1E / 0x52 out of health / at its most
+(the stalker), 0x30 the exit came in by (Fiona: the room's; the stalker), 0x45 out of sight (not
+here, or off the window: `on-camera?` over `to-screen`; `point-on-camera?` too). Orders, sent to
+him (`stalker-order` etc.): 0x2F 0 after her (Pursuer_GoForFionaStance0: in her room his chase,
+elsewhere to her room), 2 searching here / to her room (ChaseFionaHere), 3 searching here /
+waiting about away (StartSearch) - up from down; while struck, bitten or leading her his mode
+only; 0x2A his mode's clock; 0x30 knocked down out of health (Pursuer_KnockedDown: in her room);
+0x31 rage (stance 3, walk $204); 0x15 started again (Pursuer_Activate: waiting about, 900, no
+rage, health back if none); 0x47 his condition (Hewie too); 0x48 / 0xB8 health; 0x3D silent (his
+own sounds). The stalkers' kinds map to their actors: Debilitas 2 6 7 27, Daniella 3 34 35 36.
+He broadcasts `moving` at each frame's end (0x7B `char-wait-motion` waits on its event keys).
+Not yet: `char-activate` for Hewie and the cast, `char-in`, the cast's words.
+
+**P3b - the doors in her room** (`stalker/doorway.fs`; Pursuer_BehaviourDoors' steps:
+Pursuer_NextPathExit, Door1C8, DoorLineUp, DoorGoThrough, DoorFace, DoorOpen, DoorThrough,
+DoorPush, Door1C4, ExitGoTo, Debilitas_ExitDone, DoorWait). Out of her room on foot by an exit
+(giving up, held off, or going round): walked to its spot 12 inside (`exit-spot` 2; the spots
+are 0 4 inside, 1 12 beyond the door, 2 12 inside - the frame faces the exit's event area,
+beyond the door; with no spot inside, straight to the door), then the door as he finds it
+(Npc_ExitKind): open or a doorway - on to its spot beyond (1, else 0), through; shut - lined up
+at his spot for its animation by the side he is on (Doors_Side: 0 behind it, kind 0; 1 in
+front, kind 2), turned to its heading, its handle asked for (`hold-door`), his animation
+($600 / $602) with the door swinging along it (`use-door`) until it rests, let go open, through;
+held by someone - he waits by it, looking again every 15 frames, 300 and he gives up on it;
+not for him (locked against him, locked, stuck) - not that way again, and on as after a blow.
+*Fixed with it*: coming into her room by an exit he is put on spot 2 (12 inside) facing in, by
+the door he made for facing it (Pursuer_BackOnMesh: Rooms_ExitTriThrough) - before, spot 1,
+which is beyond the door.
+
+**Round to her** (Debilitas_HeadForFiona, Npc_SameRoomOtherSide): she across his own room -
+the halves the exits they came in by open onto differ (`exit-way`; hers from `entered-room`) -
+after her and no way to her on foot, his route to her half (`route-sides`, want: her half), out
+by its first door on foot; seeing her on the way, after her.
+
+**Slammed** (Pursuer_Hit kind 5; Pursuer_StateHitAtDoor / StateBargedThrough): a `blow` 5 (3
+damage, how: the exit) - after her again (mode 0). In its way (within 9 of the door, or on its
+passage) and it not locked against him: knocked on through it ($1004), pushed 3 a frame away
+from her side until clear of it; where it leads out of the room, out (Pursuer_ThroughDoor),
+stunned there 150 frames (+0x1664); between his room's halves, on. Else staggered back from it
+($1005) and on. Out of health: not below 1 (knocked out of the room: as he gives up, health
+back, held off - his beaten state not modelled). Off screen, the door he makes for slammed
+with him within 15 of it: its damage (not below 1), after her.
+
+**P3c - Hewie** (`stalker/bitten.fs`; Pursuer_EventConcerns kind 9, Pursuer_GrabOrder /
+GrabHewieSpot, Pursuer_StateHewieBites / TurnAnim / HewieHolds / BackOnFeet, Pursuer_Hit
+kinds 6 and $B, Pursuer_BehaviourHewie). Hewie's attack asked (`dog-attack`, its kind 10..15):
+in her room, not bitten, down, reeling or leading her, he takes it - the spot by him Hewie
+leaps to (`dog-grip`: his offset for the kind - Debilitas_ActionOffsets - turned round from
+Hewie's side, the other side head on and at the leg, 10 degrees at a time either way, until
+one is on the floor and Hewie can run straight there) - else `dog-refused`. Bitten: his
+reaction for the kind ($1700 an arm 10 / 11, $1703 the other 12 / 13, $1706 head on 14, $1708
+the leg 15), turned to the grip's heading in 8 frames' worth (the leg 12), his temper up (his
+table: `temper-table`); each time round it his temper up again; at its last frame (kinds 10..13,
+not blind) he may throw Hewie off - the chance the holds so far x 10 (+0x16E8) + 25 x his
+temper over what he stands - his throw (+2: $1702 / $1705) striking Hewie (a `blow` $B, its
+move's damage 15). Hewie letting go (`shaken-off`): back on his feet (+1), down if out of health
+(the leg: down at once), then on as after a blow. Hewie's bites (`bite`): their damage, a hard
+one a stumble (hurt 900), his cry $1D. Growled or barked at (`snap`; within 100 of Hewie, not
+struck, searching or waiting about): temper +1 (+3 while she hides). His temper past what he
+stands (Debilitas 20; Daniella 200, hard 80) and free: after Hewie - toward him, a blow ($E00 or
+$E01, his combo at Hewie: `at-dog`) within reach facing him; the blow over, Hewie gone, or 300
+frames - his temper back to 0, on. His blows reach Hewie as they reach her (a `blow` with the
+move's kind, damage and stumble). *Not yet*: his attack tables at Hewie (his `$1602` taunt, the
+holds), Daniella's own temper table (Debilitas's for now), Hewie's tackles adding to his temper
+(Pursuer_AddBiteDamage), the leg's down animation ($1709: his fall instead).

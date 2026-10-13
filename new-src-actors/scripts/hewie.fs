@@ -6,7 +6,7 @@
 \ He is spawned with the game but comes in only when told (`join-fiona`: the story, or the
 \ console); `part-from-fiona` sends him off.
 IN: hewie
-USING: engine actors messages common paths hewie.state hewie.body hewie.model hewie.moving hewie.states hewie.offscreen hewie.actions hewie.commands hewie.mind hewie.scripted ;
+USING: engine actors messages common paths hewie.state hewie.body hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.mind hewie.scripted ;
 
 \ at heel: behind her and a little to her side (where she is when that isn't floor), her way
 create heel-at 12 allot
@@ -31,7 +31,8 @@ behaviour hewie-own
       2.5e 5e body-size  his-floor body-mask!  body-off
       s" fiona" actor-named his-fiona !
       self subscribe tick  self subscribe leaving-room  self subscribe arrived
-      self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe frame-end ;
+      self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe frame-end
+      self subscribe stalker-doing  -1 st-id !  100 st-age !  -1 his-grip ! ;
   on join-fiona ( -- )  s" fiona" actor-named his-fiona !  room-id fiona-room !  join  1 his-model @ cast-as ;
   on part-from-fiona ( -- )  part  1 -1 cast-as ;
   on place ( x y z yaw -- )   \ (the story puts him)
@@ -43,7 +44,21 @@ behaviour hewie-own
       his-joining @ if  s" fiona" actor-named his-fiona !  join  then ;   \ (he comes in by himself: Hewie_Arrive, the doors off screen)
   on danger ( level -- )  his-danger ! ;
   on panic ( stage level -- )  drop his-panic ! ;
-  on fiona-doing ( mode sub cond cmd -- )  fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode ! ;
+  on fiona-doing ( mode sub cond cmd doing -- )  drop fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode ! ;
+  \ the story's (H4: EventCmd_Hewie) - his action, trust, mood, a point to look to, his place and
+  \ half of the room, a wait; through blocked floor, left alone
+  on do-action ( action arg -- )  along? if  set-action  else  2drop  then ;
+  on trust+ ( n -- )  add-trust ;
+  on mood! ( mood -- )  along? if  -1 set-mood  else  drop  then ;
+  on scent-at ( x y z -- )
+      his-smells @ along? 0= or if  2drop drop exit  then
+      >r >r cell>f r> cell>f r> cell>f  his-scent vec!  1 his-smells ! ;
+  on hewie-place ( room tri side -- )   \ (his +0x64, Hewie_PlaceInRoom)
+      his-way !  over room-id = if  dup tri-center body-place  to-default  else  dup tri-center body-place  then ;
+  on hewie-side! ( side -- )  dup 3 u< 0= if  drop -1  then  his-way ! ;
+  on hewie-stay ( -- )  300 his-pet-time ! ;
+  on noclip ( on -- )  0<> 1 and his-2b ! ;
+  on aside ( on -- )  0<> 1 and his-2d ! ;
   on tick ( -- )  along? if  frame  else  tell-doing  then ;
   \ her commands (H2)
   on command ( code tri yaw x z -- )   \ (Hewie_StateBlock's 13)
@@ -73,7 +88,22 @@ behaviour hewie-own
       move-action dup 0< if  drop done! exit  then  0 want ;
   on hold-anim ( anim blend -- )  along? 0= if  2drop exit  then  his-to-anim !  his-to-tri !  $3C 0 want ;
   on show ( on -- )  along? 0= if  drop exit  then  0<> 1 and him-model act.visible l! ;
-  on frame-end ( -- )  along? if  his-done @  anim-done?  his-model @ 0 0 1 motion-events  broadcast moving  then ;
+  on frame-end ( -- )
+      along? if  his-done @  anim-done?  his-model @ 0 0 1 motion-events  broadcast moving  angry-down  then
+      st-age @ 100 < if  1 st-age +!  then ;
+  \ the stalker (H3: hewie/fight.fs): what he is doing; his answers to the attack; thrown off;
+  \ struck - by him, by her, by a door (answered `blow-taken` when it struck)
+  on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
+      2drop  st-kind !  st-hp-max !  st-hp !  st-cond !  st-sub !  st-mode !  st-room !  sender st-id !  0 st-age ! ;
+  on dog-grip ( tri x y z yaw -- )
+      along? 0= if  2drop 2drop drop exit  then
+      his-act @ ['] st-await-grip <> if  2drop 2drop drop  sender send shaken-off exit  then   \ (no longer at it)
+      >r >r >r >r  r> cell>f  r> cell>f  r> cell>f  r> cell>f  leap ;   \ (tri; x y z yaw)
+  on dog-refused ( -- )  along? if  his-act @ ['] st-await-grip = if  $5A start  then  then ;
+  on shaken-off ( -- )  along? if  his-biting @ 2 < if  3 his-biting !  then  then ;
+  on blow ( kind damage how -- )
+      along? 0= if  2drop drop exit  then
+      sender take-blow  sender her = and if  sender send blow-taken  then ;
 end-behaviour
 
 : hewie-spawn ( -- id )  hewie-own hewie-state s" hewie" spawn ;

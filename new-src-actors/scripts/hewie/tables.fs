@@ -106,3 +106,14 @@ create meet-offsets  2.0e f, 6.699999809265137e f, 0.0e f, 8.0e f, 0.0e f, 9.479
 \ entry (animation, 4 head, 4 ears, 4 tail), -1 ends
 create overlays-calm  $0 , 0 , 3 , 2 , 0 , 0 , 0 , 1 , 2 , 4 , 7 , 3 , 0 ,  $1 , 0 , 0 , 2 , 0 , 0 , 0 , 1 , 2 , 4 , 7 , 3 , 0 ,  $2 , 0 , 0 , 2 , 0 , 0 , 0 , 1 , 2 , 4 , 7 , 3 , 0 ,  $100 , 0 , 0 , 2 , 0 , 0 , 0 , 1 , 2 , 2 , 7 , 3 , 0 ,  $101 , 0 , 3 , 2 , 0 , 0 , 0 , 1 , 2 , 2 , 7 , 3 , 0 ,  $104 , 0 , 0 , 2 , 0 , 0 , 0 , 1 , 2 , 2 , 7 , 3 , 0 ,  $105 , 0 , 0 , 2 , 0 , 0 , 0 , 1 , 2 , 2 , 7 , 3 , 0 ,  $102 , 0 , 0 , 2 , 0 , 0 , 0 , 1 , 2 , 2 , 7 , 3 , 0 ,  $103 , 0 , 3 , 2 , 0 , 0 , 0 , 1 , 2 , 2 , 7 , 3 , 0 ,  $200 , 0 , 0 , 2 , 0 , 0 , 0 , 1 , 2 , 2 , 7 , 3 , 0 ,  $201 , 0 , 0 , 2 , 0 , 0 , 0 , 1 , 2 , 4 , 7 , 3 , 0 ,  $1C02 , 3 , 3 , 3 , 3 , 1 , 1 , 1 , 2 , 1 , 1 , 3 , 0 ,  $1300 , 0 , 0 , 2 , 0 , 0 , 0 , 1 , 2 , 4 , 7 , 3 , 0 ,  -1 ,
 create overlays-tense  $0 , 3 , 3 , 2 , 0 , 1 , 1 , 1 , 2 , 1 , 1 , 3 , 0 ,  $1 , 0 , 0 , 2 , 0 , 1 , 1 , 1 , 2 , 1 , 1 , 3 , 0 ,  $2 , 0 , 0 , 2 , 0 , 1 , 1 , 1 , 2 , 1 , 1 , 3 , 0 ,  $100 , 0 , 0 , 2 , 0 , 1 , 1 , 1 , 2 , 1 , 1 , 3 , 0 ,  $101 , 3 , 3 , 2 , 0 , 1 , 1 , 1 , 2 , 1 , 1 , 3 , 0 ,  $104 , 0 , 0 , 2 , 0 , 1 , 1 , 1 , 2 , 1 , 1 , 3 , 0 ,  $105 , 0 , 0 , 2 , 0 , 1 , 1 , 1 , 2 , 1 , 1 , 3 , 0 ,  $102 , 0 , 0 , 2 , 0 , 1 , 1 , 1 , 2 , 1 , 1 , 3 , 0 ,  $103 , 3 , 3 , 2 , 0 , 1 , 1 , 1 , 2 , 1 , 1 , 3 , 0 ,  $200 , 0 , 0 , 2 , 0 , 1 , 1 , 1 , 2 , 1 , 1 , 3 , 0 ,  $201 , 0 , 0 , 2 , 0 , 1 , 1 , 1 , 2 , 1 , 1 , 3 , 0 ,  $1C02 , 0 , 3 , 2 , 0 , 1 , 1 , 1 , 2 , 1 , 1 , 3 , 0 ,  $1300 , 0 , 0 , 2 , 0 , 1 , 1 , 1 , 2 , 1 , 1 , 3 , 0 ,  -1 ,
+
+\ his fight with the stalker (H3)
+\ D_003B12C0 (Hewie_ReactionRoll): a bite of kind 0..7 is a hard one - percent by the stalker's
+\ health band (0 above 0.8 of it, 1 0.6, 2 0.4, 3 0.2, 4 0.1, 5 below): 6 cells a kind
+create hard-bite-chance  0 , 0 , 1 , 5 , 10 , 20 ,  0 , 1 , 5 , 10 , 20 , 40 ,  0 , 0 , 1 , 5 , 10 , 20 ,  0 , 1 , 5 , 10 , 20 , 40 ,  0 , 1 , 5 , 10 , 60 , 40 ,  5 , 10 , 20 , 40 , 60 , 100 ,  0 , 0 , 1 , 5 , 10 , 20 ,  0 , 1 , 5 , 10 , 20 , 40 ,
+create bites-flank  1 , 1 , 3 , 3 , 3 , 3 , 3 , 3 ,   \ D_003B1310: action 0x1F at a flank: how many bites, by trust
+create bites-flank-charged  3 , 3 , 6 , 6 , 6 , 8 , 8 , 8 ,   \ D_003B1320: ... charged: how many bites, by trust
+create bites-head-on  1 , 1 , 1 , 3 , 3 , 3 , 3 , 3 ,   \ D_003B1330: action 0x1F head on: how many bites, by trust
+create bites-leg  3 , 3 , 3 , 6 , 6 , 8 , 8 , 8 ,   \ D_003B1340: action 0x21 (his leg): how many bites, by trust
+create angry-chance  0 , 0 , 0 , 4 , 8 , 12 , 16 ,   \ D_003B127E: hit by her the nth time lately (1..6), angry: n in 16
+create scuffle-outcomes  0 , 15 , 1 , 45 , 2 , 15 , 3 , 25 ,   \ D_003B1290: off screen with him - {outcome, percent}

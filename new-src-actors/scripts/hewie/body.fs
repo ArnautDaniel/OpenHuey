@@ -2,7 +2,7 @@
 \ operations), Fiona's and the others' bodies (facts), whom he is with, his way over the floor,
 \ chance, and the words that choose his next action (filled in by hewie.actions).
 IN: hewie.body
-USING: engine game-state actors messages common facts paths hewie.state ;
+USING: engine game-state actors messages common facts paths flag-names hewie.state ;
 
 $29020008 constant his-floor   \ the nav triangles he can't stand on (through blocked floor: 8)
 
@@ -27,8 +27,13 @@ $29020008 constant his-floor   \ the nav triangles he can't stand on (through bl
 \ ---- the others: their bodies (facts), Fiona's doings (her broadcast) ----
 : her ( -- id )  his-fiona @ ;
 : active? ( id -- flag )  dup 0< if  drop false exit  then  dup alive? if  body?  else  drop false  then ;
-: cond-of ( id -- n )  her = if  fiona-cond @  else  0  then ;   \ (the stalkers' with H3)
-: mode-of ( id -- n )  her = if  fiona-mode @  else  0  then ;
+\ the stalker in the game, as he last told (H3: `stalker-doing` each frame; -1 none)
+: pursuer ( -- id )  st-age @ 2 < if  st-id @  else  -1  then ;
+: pursuer? ( id -- flag )  dup 0< if  drop false exit  then  pursuer = ;
+: cond-of ( id -- n )
+    dup her = if  drop fiona-cond @ exit  then  pursuer? if  st-cond @  else  0  then ;
+: mode-of ( id -- n )
+    dup her = if  drop fiona-mode @ exit  then  pursuer? if  st-mode @  else  0  then ;
 \ in_his_room / Hewie_WithChar: active, not down, in his room - and on the floor of the room
 \ being played if that's his
 : with? ( id -- flag )
@@ -41,7 +46,6 @@ $29020008 constant his-floor   \ the nav triangles he can't stand on (through bl
 : fiona-at ( -- v )  her body-at ;
 : her-dist ( F: -- d )  his-at fiona-at vec-dist ;
 : heading-to ( v -- ) ( F: -- yaw )  self swap body-heading-to ;   \ from him (his heading when right above)
-: pursuer ( -- id )  -1 ;   \ the stalker in play (-1 none: H3)
 
 \ ---- his way over the floor (Hewie_PlanTo / Hewie_PlanAndGo) ----
 \ triangles either side of a room's divider (flags 0x100000 / 0x200000)
@@ -76,3 +80,8 @@ defer adjust-action ( act -- act' ) ' noop is adjust-action    \ Hewie_AdjustAct
 : noise-make ( loud tri -- )   \ heard in his room (tri -1: anywhere in it)
     his-room swap -1 hewie-noise acoustics-id send noise ;
 : alerted ( -- )  4 danger-id send danger-signal ;   \ he's alert to a stalker (the danger's bit 4)
+\ barking or growling at the stalker in his room makes him sore (Relation_Request kind 6; not
+\ while he mayn't attack)
+: snap-at ( -- )
+    hewie-no-attack state-flag? fiona-occupied state-flag? or if  exit  then
+    pursuer dup with? if  send snap  else  drop  then ;

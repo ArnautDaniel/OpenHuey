@@ -40,25 +40,31 @@ Takes: `open`, `shut`, `slam`, `lock`, `unlock`, `hold`, `let-go`.
 Sends: `noise` (opened / shut / slammed), `hit` (slammed on someone), `door-state` broadcasts.
 Original: `doors.c`, `Progress_*Door*`.
 
+### Obstacles (`obstacles`)  — **built** (`subsystems/obstacles.md`)
+Owns: the things pushed about in the played room, their squares and the floor's flags under them.
+Takes: `place-obstacle`, `stop-obstacle`, `keep-obstacle`, `push-obstacle` (Fiona).
+Sends: `noise` (the scrape).
+Original: `room_map.c` (`Obstacles_*`, `Obstacle_*`).
+
 ### Camera (`camera`)  — **built** (`subsystems/camera.md`)
 Owns: the room's camera setups, who it follows, cuts and eases.
 Takes: `follow`, `use-setup`, `event-camera`, `release`.
 Original: `camera.c`, `camdirector.c`.
 
-### Fiona (`fiona`)  — **F1, F2, F3 built** (`subsystems/fiona.md`)
+### Fiona (`fiona`)  — **F1, F2, F3 built; F4 but her strike and falls** (`subsystems/fiona.md`)
 Owns: her moves, her actions (doors, ladders, items, pushing), her health, fear and panic.
 Takes: `input`, `hit`, `seize`, `lead`, `let-go`, `frighten`, `heal`, `place`, `play-motion`.
 Sends: `noise` (steps, screams, falls), `kick`/`shove` (as `hit` to whoever she struck),
 commands to Hewie, `open`/`shut` to doors, `panic-stage` broadcasts.
 Original: `fiona.c`, `Panic_*`.
 
-### Hewie (`hewie`)  — **H1, H2 built** (`subsystems/hewie.md`)
+### Hewie (`hewie`)  — **H1, H2, H3 built** (`subsystems/hewie.md`)
 Owns: his trust, his commands, his moods, his own wandering.
 Takes: `command` (from Fiona), `praise`, `scold`, `hit`, `heard`, `tick`.
 Sends: `noise` (barks), `bite` (a `hit`), `noticed` (he's alert to a stalker).
 Original: `hewie.c`.
 
-### The stalkers (`stalker`)  — **P1, P2 built** (`subsystems/stalker.md`)
+### The stalkers (`stalker`)  — **P1, P2, P3 built** (`subsystems/stalker.md`)
 One family for Debilitas, Daniella, Riccardo and Lorenzo: the same senses, search, chase and
 attack, with each one's numbers, motions and special moves.
 Owns: its mode (searching / after her / held back / waiting), what it knows (where it saw her,
@@ -90,7 +96,7 @@ Original: `SceneGame_Danger`.
 ### Panic (`panic`)  — **built** (`subsystems/panic.md`)
 The panic meter: level, stage, Fiona's breath and scream.
 
-### The summoner (`summoner`)
+### The summoner (`summoner`)  — **built** (`subsystems/summoner.md`)
 Brings the stalker into play and takes him out, by the story's stage and where Fiona is.
 Original: `Summoner_*`.
 

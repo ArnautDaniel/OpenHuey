@@ -17,7 +17,7 @@ Every actor has an **id**: a small number, given by `spawn`, that messages are a
 message heard ( loud room tri door source -- )   \ declares a message: a kind and its arity
 ```
 
-A message has a kind (a small number) and up to 8 cell arguments. A float travels as a cell
+A message has a kind (a small number) and up to 16 cell arguments (HMSG_ARGS). A float travels as a cell
 (`f>cell` / `cell>f`). `message` takes the arity from the stack comment, so the comment is
 the declaration.
 

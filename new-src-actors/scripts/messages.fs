@@ -41,6 +41,7 @@ message rebuild-exits ( -- )                 \ the rooms' exits through the door
 message use-door ( exit anim source -- )     \ the door swings along the user's animation
 message swing-door ( exit open source -- )   \ swung open / shut by hand
 message slam ( exit source -- )
+message barge ( exit source -- )             \ burst open (Fiona running into it)
 \ any room's doors (off-screen users too): take hold of one before going through, then let
 \ it go open or shut; the doors answer `door-held` or `door-refused`
 message hold-door ( room exit kind -- )
@@ -63,8 +64,9 @@ message panic-level! ( level -- )
 message panic ( stage level -- )             \ broadcast each frame
 
 \ ---- Fiona (docs/subsystems/fiona.md) ----
-message fiona-doing ( mode sub cond cmd -- ) \ broadcast each frame: her move mode, what she does, her condition,
-                                             \ her command this frame (-1 none; 3 the praise held)
+message fiona-doing ( mode sub cond cmd doing -- ) \ broadcast each frame: her move mode, what she does, her
+                                             \ condition, her command this frame (-1 none; 3 the praise held), her
+                                             \ action (+0x1AD580: her-doing)
 message fiona-plight ( state -- )            \ broadcast each frame: how she stands for a stalker's attack
                                              \ (Pursuer_FionaState): 0 calm, 1 fleeing, 2 panicking, 3 out
                                              \ of reach (hidden, already struck), 4 / 5 the panic's stages 4 / 5
@@ -91,9 +93,13 @@ message unhand ( -- )                        \ to Fiona: the stalker leading her
 \ ---- Hewie (docs/subsystems/hewie.md) ----
 message join-fiona ( -- )                    \ he comes into the game at her heel (the story; the console)
 message part-from-fiona ( -- )               \ he leaves the game
-message hewie-doing ( here action mode sub cond mood group -- )   \ broadcast each frame: here 0 out of the
-                                             \ game, 1 in another room, 2 with her; his action, move mode and
-                                             \ its part, condition, mood, his pose's group
+message hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
+                                             \ broadcast each frame: here 0 out of the game, 1 in another room, 2
+                                             \ with her; his action, move mode and its part, condition, mood, his
+                                             \ pose's group; for the story: she may command him (Hewie_FionaCanCommand),
+                                             \ near enough for it (Hewie_FionaNearCommand), he can reach her
+                                             \ (Hewie_FionaReachable), he may be broken off (Hewie_MayBreakOff), his
+                                             \ half of the room (+0xF3668), his trust level
 message command ( code tri yaw x z -- )      \ Fiona's command (0x23 go there: the spot; floats f>cell)
 message reaction ( n -- )                    \ how her doing strikes him (Fiona_HewieReact's row)
 \ a joint action by his side: she asks (type 0 scold, 2 praise, 4 stay); he finds her place by
@@ -163,3 +169,63 @@ message stalker-hunt ( -- )                  \ (a stalker) heads for Fiona's roo
 message costume ( n -- )                     \ (Fiona) her model for costume n (0 her clothes, 1 the slip)
 message stalker-load ( -- )                  \ (a stalker) into the story's character slot 2 (the cutscenes' cast)
 message stalker-unload ( -- )                \ (a stalker) out of slot 2 (and out of the game)
+message stalker-doing ( room mode sub cond hp hp-max kind alert came -- )   \ broadcast each frame by a stalker in the
+                                             \ game: his room, how he moves (0 his own, 3 off screen, 4 struck, 8 taking her),
+                                             \ what (9 Hewie on him, $A down, $18 leading her), condition, health, his kind,
+                                             \ his alert (his mode: Progress_StalkerAlert), the exit he came in by (-1 none)
+\ ---- the story's orders to Hewie, Fiona and the panic (the scripts' commands; H4 / F5) ----
+message do-action ( action arg -- )          \ 0x39: his action (Hewie_SetAction)
+message trust+ ( n -- )                      \ 0x85: his trust (Hewie_AddTrust)
+message mood! ( mood -- )                    \ 0xC4: his mood (Hewie_SetMode, its own time)
+message scent-at ( x y z -- )                \ 0xC5 / 0xC6: a point to look to, if he has none (floats f>cell)
+message hewie-place ( room tri side -- )     \ 0x3F: put in a room on a triangle, on its half (his +0x64)
+message hewie-side! ( side -- )              \ 0xD0: his half of the room (0..2, else none)
+message hewie-stay ( -- )                    \ 0xBD: +0xF3688 300 frames
+message noclip ( on -- )                     \ 0x20: through blocked floor (+0x2B)
+message aside ( on -- )                      \ 0x21: left alone (+0x2D)
+message fear-less ( n -- )                   \ 0x94: Fiona calmer by n / 30 (Fiona_CalmDown)
+message recovery-less ( n -- )               \ 0x95: her recovery less 60 / n frames (Fiona_LowerRecovery)
+message threat ( amount -- )                 \ 0x43: the panic's threat (Threat_Raise; f>cell)
+message threat-acc ( amount -- )             \ 0xC0: the threat's accumulator (+0x7DC; f>cell)
+message calm-in ( v -- )                     \ 0x93: calming (bit $80: 128 at once, else v / 30)
+message panic-reach ( level -- )             \ 0xC9: the level set to it if not above it (Panic_SetLevel)
+\ ---- the story's orders to a character (the scripts' commands; P4) ----
+message stalker-order ( mode -- )            \ 0x2F: 0 after her, 2 to her room / searching here, 3 searching
+message stalker-clock ( frames -- )          \ 0x2A: his mode's clock (+0x1660)
+message stalker-knock-out ( -- )             \ 0x30: knocked down, out of health
+message rage ( on -- )                       \ 0x31: in a rage (Pursuer_SetRage: his stance and walk)
+message activate ( -- )                      \ 0x15: (re)started where he is (Pursuer_Activate)
+message set-cond ( v -- )                    \ 0x47: his condition (+0xC4: 0 well, 1 hurt, 2 down)
+message full-health ( -- )                   \ 0x48
+message heal ( n -- )                        \ 0xB8: by n, to his most
+message silent ( on -- )                     \ 0x3D: his own sounds don't play
+\ ---- Hewie at the stalker (H3, the stalkers' P3c): his attack is a joint action (Relation_Request
+\ kind 9 / Pursuer_GrabOrder): asked, then taken - with the spot to leap to - or refused; his bites
+\ (kind $B) while he holds on; either lets go (their state 7) ----
+message dog-attack ( kind -- )               \ (Hewie -> the stalker) his attack: 10 / 11 the near flank (11 charged), 12 /
+                                             \ 13 the far one, 14 head on, 15 his leg
+message dog-grip ( tri x y z yaw -- )        \ (the stalker's answer) taken: leap to there, facing so (floats f>cell)
+message dog-refused ( -- )                   \ (the stalker's answer) not now
+message bite ( damage hard -- )              \ (Hewie -> the stalker he holds) a bite; hard: he stumbles
+message shaken-off ( -- )                    \ (Hewie -> the stalker) he let go / (the stalker -> Hewie) thrown off
+message snap ( -- )                          \ (Hewie -> the stalker) growled at, barked at (Relation kind 6): his temper up
+
+\ ---- the summoner (docs/subsystems/summoner.md) ----
+message stalker-status ( room mode in-game own away cool -- )   \ (the stalker in slot 2, each frame while loaded) where he is, his mode, in the game, in his own rooms, his time-away base (frames), his cooldown (s)
+message stalker-summoned ( room exit found plan -- )  \ (a stalker) in out of sight in `room` by `exit`; found: after her; else waiting about, plan: heading for her
+message noise-made ( loud room door -- )      \ broadcast at the frame's end: Fiona's loudest noise this frame (door -1: none)
+message summoner-take ( kind -- )             \ (the summoner) take the stalker out (0 the story / a wait, 1 held off, 2 beaten)
+message summoner-cooldown ( secs -- )         \ (the summoner) not before secs seconds
+message summoner-cooldown-less ( secs -- )    \ (the summoner) that much sooner
+message summoner-reset ( -- )                 \ (the summoner) afresh (a stalker loaded)
+
+\ ---- the obstacles (docs/subsystems/obstacles.md): the things pushed about ----
+message place-obstacle ( i n kind a b -- )    \ obstacle i (model "oshi0n", of a kind) placed at square (a, b)
+message place-obstacle-kept ( i n kind -- )   \ ... at the place kept for it
+message stop-obstacle ( i -- )                \ it can't be pushed any more
+message keep-obstacle ( i -- )                \ its place kept (where it is now)
+message keep-obstacle-at ( i a b -- )         \ ... that square
+message keep-obstacle-spot ( i -- )           \ where it stands kept (for its model)
+message obstacle-model-to-spot ( i n -- )     \ model "oshi0n" its model, at the spot kept
+message push-obstacle ( i dx dz -- )          \ (Fiona) pushed two squares along (dx, dz; floats f>cell)
+message obstacle-moved ( i -- )               \ (Fiona) its move done

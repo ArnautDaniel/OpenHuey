@@ -89,6 +89,10 @@ behaviour hearing
   on stop-listening ( -- )  sender drop-listener ;
   on noise-setting ( n -- )  setting ! ;
   on frame-end ( -- )
+      \ (Fiona's loudest noise this frame, for the summoner: the original's pursuer request)
+      fiona-noise noise-louds nth-of @ ?dup if
+          fiona-noise noise-rooms nth-of @  fiona-noise noise-doors nth-of @  broadcast noise-made
+      then
       listeners @ length 0 ?do
           listeners @ i swap nth  dup body? if
               listeners @ i 1+ swap nth  listeners @ i 2 + swap nth  tell

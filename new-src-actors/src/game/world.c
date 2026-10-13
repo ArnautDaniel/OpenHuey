@@ -263,20 +263,45 @@ int world_route(const World *w, int from, int to, int kind, int max, int *out, i
 }
 
 int world_route_avoiding(const World *w, int from, int to, int kind, int max, const uint32_t *avoid, int *out, int nout) {
+    return world_route_sides(w, from, -1, to, -1, kind, max, avoid, out, nout);
+}
+
+int world_exit_way(const World *w, int room, int exit, int checked) {
+    static const uint32_t flag[2] = {0x10, 0x8}, check[2] = {0x40, 0x80};
+    int d, s;
+
+    if (room < 0 || room >= WORLD_ROOMS || exit < 0 || exit >= ROOM_EXITS) {
+        return -1;
+    }
+    d = w->exits[room][exit].door;
+    if (d < 0 || d >= WORLD_DOORS) {
+        return -1;
+    }
+    for (s = 0; s < 2; s++) {   /* (the side by room and exit: a door may join a room to itself) */
+        if (w->doors[d].side[s].room == room && w->doors[d].side[s].exit == exit &&
+            (!checked || (w->doors[d].flags & check[s]))) {
+            return (w->doors[d].flags & flag[s]) ? 1 : 0;
+        }
+    }
+    return -1;
+}
+
+int world_route_sides(const World *w, int from, int from_way, int to, int want, int kind, int max,
+                      const uint32_t *avoid, int *out, int nout) {
     static Search q;   /* (big: kept off the stack) */
     int n, k, i;
 
     if (from < 0 || from >= WORLD_ROOMS || to < 0 || to >= WORLD_ROOMS) {
         return -1;
     }
-    if (from == to) {
+    if (from == to && (want == -1 || from_way == -1 || from_way == want)) {
         return 0;
     }
     memset(&q, 0, sizeof(q));
     q.w = w;
     q.kind = kind;
     q.avoid = avoid;
-    q.way = -1;
+    q.way = from_way;
     q.cur = -1;
     if (queue_doors(&q, from) < 0) {
         return -1;
@@ -289,7 +314,7 @@ int world_route_avoiding(const World *w, int from, int to, int kind, int max, co
             return -1;
         }
         q.way = s->far;
-        if (s->room == to) {
+        if (s->room == to && (want == -1 || s->far == want)) {
             for (n = 0, k = q.cur; k >= 0; k = q.steps[k].from) {
                 n++;
             }

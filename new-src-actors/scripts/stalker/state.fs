@@ -4,6 +4,12 @@ IN: stalker.state
 USING: actors paths ;
 
 state: stalker-state
+  cell field kit                \ his tables (stalker/tables.fs: debilitas-kit, daniella-kit)
+  \ his own ways and numbers (his vtable): the Pursuer's chase (Pursuer_ChaseDecision /
+  \ BehaviourStalk: Daniella) or Debilitas's own (Debilitas_Behaviour), giving up after enough
+  \ damage (Debilitas_GivesUp; the Pursuer's never), his turn a frame (+0xA0), his reach in
+  \ the ground he gains (+0x2F0: Debilitas 16, Daniella 12)
+  cell field base-chase  cell field gives-up  1 floats field turn-k  1 floats field reach-k
   cell field my-model           \ its model (an Actor)
   cell field in-game            \ in the game (stalker-in .. stalker-out)
   cell field my-mode            \ +0x16C8: 0 after Fiona, 1 heading for her room, 2 searching it, 3 waiting about, 4 held off
@@ -81,4 +87,34 @@ state: stalker-state
   cell field reeling  cell field twitch  cell field by-her  cell field growl-after  cell field unshaken
   cell field lie-anim  cell field down-stage  cell field knockouts  cell field striker
   cell field gesture            \ the look about he plays at a stop (-1: none)
+  \ for the summoner (summoner.fs): his time away's base (+0x16E0, frames), his cooldown (+0x16E4,
+  \ seconds: vtable +0x2D4), the rooms he keeps to (vtable +0x314: two, -1 none)
+  cell field away-base  cell field cool-secs  cell field own-a  cell field own-b
+  \ his own rooms' spots (the +0x314 list's triangles: where he rests in them); his footsteps
+  \ heard through the walls (+0x1530 how far closed in since the last, +0x1534 / +0x1538 his
+  \ way left now and before, +0x16A4 his foot)
+  cell field own-a-tri  cell field own-b-tri
+  1 floats field step-acc  1 floats field step-last  cell field step-foot
+  \ the doors of the room being played (stalker/doorway.fs): on his way out by an exit (+0x17B0:
+  \ making-for; the room's modes wait meanwhile), his animation's kind at its door (+0x104: 0 / 2
+  \ opening it from behind / in front; -1 none), the door asked for and the one held, frames
+  \ waited at one held shut; a door slammed on him - the exit (-1 none: staggered back), the
+  \ heading he is pushed along; frames stunned off screen after being knocked out of the room
+  \ (+0x1664: 150); the exit Fiona came in by (the half of the room she is on)
+  cell field out-going  cell field door-use  cell field asked  cell field held-door  cell field door-wait
+  cell field push-exit  1 floats field push-way  cell field stun-t
+  cell field her-came
+  \ Hewie (stalker/bitten.fs; Pursuer_StateHewieBites / HewieHolds, P3c): his temper with Hewie
+  \ (+0x16BC, to 1000) and how much he stands (+0x16DC), the throw's chance a hold (+0x16E8);
+  \ Hewie on him - the attack's kind (10..15; 0 none: +0x104), its animation (+0x1624), how it
+  \ goes (+0x1628: 0 held, 1 throwing him off, 2 let go), the holds so far (+0x1634), the heading
+  \ he turns to and by how much a frame; after Hewie (his temper up): frames of it
+  cell field temper  cell field tolerance  1 floats field throw-k
+  cell field bitten  cell field bite-anim  cell field bite-how  1 floats field holds
+  1 floats field bite-yaw  1 floats field bite-turn
+  cell field dog-t
+  cell field dog-sent            \ his blow this move has struck Hewie (stalker/attack.fs)
+  cell field at-dog              \ his combo is at Hewie (after him, his temper up), not her
+  cell field raging              \ +0x16B8 2: in a rage (the story's 0x31) - his stance and walk
+  cell field hushed              \ +0x2C: his own sounds don't play (the story's 0x3D)
 end-state

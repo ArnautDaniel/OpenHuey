@@ -7,7 +7,7 @@
 \ behind). After it, 20 damage or more and he gives up: his cry, held off (mode 4) - he goes
 \ out of the room for a while.
 IN: stalker.struck
-USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.tables stalker.attack stalker.chase ;
+USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase ;
 
 \ ---- in a doorway (PursuerGroup_Find 0x20: in an exit's door area): the short flinches; not
 \ downed there ----
@@ -23,22 +23,23 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
             then
         else  drop  then
     loop  -1 ;
-: leaving ( -- )   \ (out by the door he made for)
-    walk-stride if  making-for @ dup 0< if  drop exit  then  through  then ;
-: give-up? ( -- flag )   \ (Debilitas_GivesUp: 20 damage, not held off already, not in a doorway, a way out)
+: leave-by ( exit -- )   \ (out by the door he made for: stalker/doorway.fs)
+    out-by 0= if  stand  then ;
+: give-up? ( -- flag )   \ (Debilitas_GivesUp: 20 damage, not held off already, not in a doorway, a way out;
+    gives-up @ 0= if  false exit  then   \ the Pursuer's: never)
     hits @ 20 <  my-mode @ 4 = or  at-door? or if  false exit  then
     way-out dup 0< if  drop false exit  then  making-for !  true ;
 : give-up ( -- )
-    0 hits !  $20 7 sound  4 mode!  0 search-phase !  walk-slow play  ['] leaving step! ;
+    0 hits !  $20 7 sound  4 mode!  0 search-phase !  making-for @ leave-by ;
 : recovered ( -- )
     0 reeling !
     hp @ 0> 0= if  hp-max @ hp !  then
     give-up? if  give-up exit  then
     growl-after @ my-mode @ 4 <> and if  $1F 7 sound  then  0 growl-after !
     my-mode @ 4 = if   \ (held off already: on out)
-        way-out dup 0< if  drop stand exit  then  making-for !  walk-slow play  ['] leaving step! exit
+        way-out dup 0< if  drop stand exit  then  leave-by exit
     then
-    sees-fiona @ if  chase-now  else  my-mode @ 0= if  chase-start  else  search-again  then  then ;
+    sees-fiona @ if  chase-begin  else  my-mode @ 0= if  chase-start  else  search-again  then  then ;
 
 \ ---- flinching (Pursuer_StateFlinch: by the side and height - 0 in front, 1 behind, +2 a low
 \ one; in a doorway the short ones); her blow: at its key he may strike back ----
@@ -99,6 +100,7 @@ create ahead-at 12 allot
     2 pick dup 2 = swap 4 = or if  2 or  then                      ( kind how dir )
     unshaken @  3 pick 1 = and  hp @ 0> and if  drop 2drop  $1C 7 sound exit  then
     striker @ fiona = if  -1 by-her !  then
+    2 pick 5 = if  drop nip  let-her-go combo-over 0 hold-off !  door-struck exit  then   \ (a door slammed on him: how is its exit)
     hp @ 0> 0= if  at-door? if  1 hp !  else  drop 2drop knock-down exit  then  then
     reeling @ if  drop 2drop exit  then                            \ (already reeling: the damage only)
     swap dup $8000 and  swap 1 and if  worn-roll or  then  if
@@ -109,3 +111,4 @@ create ahead-at 12 allot
 \ each frame: his hurt worn off
 : hurt-down ( -- )
     hurt-t @ 0= if  exit  then  -1 hurt-t +!  hurt-t @ 0= cond @ 1 = and if  0 cond !  then ;
+' recovered is door-recovered   ' recovered is door-done

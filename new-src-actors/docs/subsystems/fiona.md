@@ -16,7 +16,7 @@ built in phases.
 | **F1** | Her body and model; the controls; standing, walking, running, turning, resting, idle looks; root motion on the floor; footsteps (sound and noise); going through exits and doors (her door animations, locked doors); the camera follows her | rooms, doors, camera, acoustics |
 | F2 | Fear and panic: the meter, calming down, the panic stages, panic runs and stumbles, exhaustion, recovery | danger |
 | F3 | Hewie: calling, gestures, commands, praise and scolding | hewie |
-| F4 | Defending: kick, shove (F4c, done), strike, slamming doors on someone. Reactions: knocked down, thrown, caught (F4a, done), grabbed, led away, dragged, shaking free (F4b, done), falls | stalkers |
+| F4 | Defending: kick, shove (F4c, done), strike, slamming doors on someone (F4d, done). Reactions: knocked down, thrown, caught (F4a, done), grabbed, led away, dragged, shaking free (F4b, done), falls | stalkers |
 | F5 | The story's moves (walk to a spot, a path, turn, an animation, hold), ladders, pushing, points of interest, items | story, items |
 
 The debug walker (`scripts/walker.fs`) stood in for her until F1 was done.
@@ -226,3 +226,71 @@ meets whom she touches while its key is clear: a `blow` 2, damage 5, he may stum
 rolled by him); at its end her fear up 10. Each reaches the stalker and Hewie once a blow;
 struck home (`blow-taken`) she's held still 5 frames ($90 kicked, $8F shoved). Hewie is told
 (`reaction` 10 / 11) when she shoves or kicks without striking him.
+
+## F5: the story's words about her (`scripts/story/words.fs`)
+
+She tells, in `fiona-doing`, her action too (+0x1AD580: `her-doing`). Conditions 0x3F her action,
+0x3D free (Fiona_IsIdle: her mode 0, not 1 / $E / $F; the panic's stage below 4), 0x26 the action
+she started this frame (Fiona_MarkActionStart: her command to Hewie, cleared each frame - hga's
+`cmd`). Orders: 0x94 calmer by n / 30 (Fiona_CalmDown: off her fear), 0x95 her recovery shorter by
+60 / n frames (Fiona_LowerRecovery). The panic's (`docs/subsystems/panic.md`): 0x43 the threat
+(Threat_Raise - as a fright, into the weighted parts; `threat`), 0xC0 its accumulator, 0x93
+calming (the converter's `panic-grow`: bit $80 128 at once, else v / 30), 0xC9 the level set to
+one it hasn't passed. Checked by `tests/story/test_hewie_fiona_words.fs` (13, with Hewie's).
+
+## F4d: slamming a door (`scripts/fiona/slam.fs`)
+
+Fiona_SlamDoor, tried by her flee turn (at its event $20, her radius behind her, looking back),
+her kick (each frame of its window, her radius ahead) and her shove (at its key, her hand). A
+door of the room at rest that she faces within 45 degrees, on her way to a point on a door's
+passage (triangle flag $20000): shut, her in its area 4, neither locked nor stuck - burst open
+(`barge`); open, her in its area 1, faced side on - slammed shut (`slam`, her sound $91). Not one
+somebody holds or locked against her. She's held still 5 frames. Shut out by it: Hewie and the
+stalker at its front (area 0) on its far side (Doors_Side 1; slammed shut, or in its way - on its
+passage) - each a `blow` 5, 3 damage, how: the exit. Off screen, she being chased and the door
+burst open, the stalker decides (`blow` all the same: struck only when he is right behind it).
+Any shut out: the kick's and the shove's blow is spent. Checked by `tests/stalker/test_stalker.fs`
+(a slam on him in the doorway). Not yet: the rumble; the PursuerGroup bit 8 ("may pass") is
+taken as standing on the door's passage triangles.
+## F5: ladders (`scripts/fiona/ladder.fs`)
+
+A ladder is a nav link of the room (NavMesh_FindDoorRegions: two triangles sharing a link group,
+bits 9..13; `nav-link-*`): side 0 its foot (the lower triangle), side 1 its top, each with a spot
+(the edge toward the other) and a facing (across it, toward the ladder). Free (her mode 0, her
+action 0, the panic below stage 4), in its region on one side (`nav-link-at?`, `nav-link-side`),
+facing along that side (Actor_FacingDoor), the stalker not in the region nor touching her - the
+action button (Fiona_StateLadder): she walks to its end's spot (Actor_DoorFront with
+kFionaMeetOffsets - 12-byte entries x, z, degrees: the top 1.7 back from it, the foot 2.1 out),
+facing along it, and gets on ($700 from the top, $704 from the foot; her mode 3, sub 7). On it
+(Fiona_StateOnLadder), when a move has come round (the motion's flag $20 - Motion's
+`MOTION_EVENTS` are the slot's flags, not the key events) or while holding, the stick (W / S):
+down - the next rung ($701, its end $702), off at the foot within 18 of it ($703); up - the
+next rung ($705, its end $706), off at the top within 3 of it ($707); let go - holding ($708 /
+$709). After each move her triangle is the end's. The stalker in the region at its foot keeps
+her from getting off there (she holds on); at its top, within his height above her, from going
+up (Progress_WhoIsWhere's region bits: 4 side 0, 2 side 1). Off (Fiona_StateLadderOff): at the
+move's flag $20 she is put by that end (the foot 2.1 out, the top 1.7 back) and free. She is
+moved by her animations' root motion, up and down too, off the floor. Rooms with ladders:
+castle-1f-2 (two), room 3 (two), 29, 37, 40, 47, 48, 84. Checked by
+`tests/fiona/test_ladder.fs` (11): on from the top and down, off on the ground floor; turned
+from it nothing; on from the foot and up, off on the floor above; the stalker at its foot - she
+holds on. Not yet: knocked off it (FI 0x1AD584 bit 2: Fiona_StateCaughtCrawling), the region's
+slot bits for Hewie.
+
+Also fixed with it: `walk-anim` (Fiona_StateCmdWalkAnim) read the animation's key events for
+`MOTION_EVENTS` $20; it is the motion's come-round flag (`ended?`).
+
+## F5: pushing (`scripts/fiona/push.fs`)
+
+Fiona_FindPushable, tried each frame she walks or runs (her step's reach ahead, from where she
+was): the walk toward that point meets a wall (an edge, or her floor's blocks; `v-wall`), and
+the floor 2 to each side of it is pushable ($800000: an obstacle's ring). She turns square to
+the wall, from her side of it (Fiona_StateTurnStick: 10 degrees a frame, her action 1, sub 5),
+while the stick holds within 0.6 of that way, then leans on it ($1200: 2 back). As each move
+comes round (Fiona_StatePush): the obstacle on both sides (the lowest; looked for again at 2.2)
+pushed if it can go - `push-obstacle`, her push ($1201: 5 on, her sound $45; Fiona_StatePushStep)
+- else she strains ($1203). Pushing on, each push come round: `obstacle-moved`; the stick still
+that way and the floor 2.2 ahead pushable, pushed again, else she strains. The stick let go:
+straining she lets go ($1202, then free), else free. The stalker touching her: free at once.
+Checked by `tests/obstacles/test_obstacles.fs`. Not yet: knocked while pushing (FI 0x1AD584
+bit 2), the push's rumble.

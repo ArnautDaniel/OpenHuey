@@ -465,6 +465,16 @@ PRIM(p_v_wall) {   /* ( tri a b mask -- flag ) ( F: -- yaw ) the wall a straight
     FPUSH(yaw);
     PUSH(hit ? -1 : 0);
 }
+PRIM(p_nav_square_step) {   /* ( a b -- a' b' ok? ) ( F: dx dz -- ) a square of the pushable floor
+                             * (two triangles) one square along (dx, dz) (Obstacle_StepSquare) */
+    float dz = (float)FPOP(), dx = (float)FPOP();
+    int b = (int)POP(), a = (int)POP();
+    int r = navmesh_square_step(&gEngine.room.nav, &a, &b, dx, dz);
+
+    PUSH(a);
+    PUSH(b);
+    PUSH(r == 0 ? -1 : 0);
+}
 /* ---- the nav links (ladders: the original's nav door regions) ---- */
 static const NavLink *nav_link(Cell i) {
     NavMesh *n = &gEngine.room.nav;
@@ -755,6 +765,7 @@ PRIM(p_cam_follow) {   /* ( id -- ) follow someone (10 units up; cam-target! say
     camdir_follow(&gCamDir, (int)a, a < 0 ? vec3(0, 0, 0) : vec3(0, 10, 0));
 }
 PRIM(p_cam_ease) { camdir_ease(&gCamDir); }
+PRIM(p_cam_event) { PUSH(gCamDir.event ? -1 : 0); }   /* ( -- flag ) an event drives the camera (CamDirector +0x6C) */
 PRIM(p_cam_track) { camdir_track(&gCamDir); }
 PRIM(p_cam_update) {   /* ( -- ) the camera placed, and the engine's camera made the director's */
     camdir_update(&gCamDir);
@@ -806,6 +817,18 @@ PRIM(p_placed_op) {   /* ( addr len op arg -- ) the room's object by name: 0 sho
         p->rot = p->def_rot;
         p->pos = p->def_pos;
         break;
+    }
+}
+PRIM(p_placed_at) {   /* ( addr len -- ) ( F: x y z -- ) the room's object by name moved there */
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+    Cell n = POP(), a = POP();
+    char name[32];
+    Placed *p;
+
+    snprintf(name, sizeof(name), "%.*s", (int)n, (const char *)a);
+    p = placed_named(&gEngine.room.placed, name);
+    if (p != NULL) {
+        p->pos = vec3(x, y, z);
     }
 }
 PRIM(p_placed_list) {   /* ( -- ) the room's objects */
@@ -967,6 +990,12 @@ PRIM(p_door_events) {   /* ( exit -- sound how settled ) what its swing did this
     PUSH(d->sound);
     PUSH(d->sound_how);
     PUSH(d->settled);
+}
+PRIM(p_door_turn) {   /* ( exit -- ) ( F: -- a ) the played room's door's turn at rest (Doors_GetRestTurn;
+                      * 0 no door) */
+    Cell e = POP();
+
+    FPUSH(e >= 0 && e < ROOM_DOORS && gEngine.room.doors[e].present ? gEngine.room.doors[e].rot.y : 0.0);
 }
 PRIM(p_door_present) { Cell e = POP(); PUSH(e >= 0 && e < ROOM_DOORS && gEngine.room.doors[e].present ? -1 : 0); }   /* ( exit -- flag ) */
 PRIM(p_door_passage) {   /* ( exit open? locks -- ) the door's passage flags on the nav mesh */
@@ -1135,6 +1164,26 @@ PRIM(p_route_avoiding) {   /* ( from to kind max avoid -- n ) the same, not thro
     }
     sRouteN = world_route_avoiding(&gEngine.world, (int)from, (int)to, (int)kind, (int)max, bits, sRoute, 64);
     PUSH(sRouteN);
+}
+PRIM(p_route_sides) {   /* ( from from-way to want kind max avoid -- n ) the same between halves of rooms:
+                         * from half from-way of its room (0 / 1; else either) to half want of `to`
+                         * (-1 either) - world_route_sides */
+    Cell *a = (Cell *)POP(), max = POP(), kind = POP(), want = POP(), to = POP(), way = POP(), from = POP();
+    uint32_t bits[(WORLD_DOORS + 31) / 32];
+    int i;
+
+    for (i = 0; i < (WORLD_DOORS + 31) / 32; i++) {
+        bits[i] = (uint32_t)a[i];
+    }
+    sRouteN = world_route_sides(&gEngine.world, (int)from, (int)way, (int)to, (int)want, (int)kind, (int)max, bits,
+                                sRoute, 64);
+    PUSH(sRouteN);
+}
+PRIM(p_exit_way) {   /* ( room exit checked -- way ) the half of the room the exit opens onto: 1 / 0, -1 none
+                      * (Rooms_ExitSideFlag) */
+    Cell checked = POP(), exit = POP(), room = POP();
+
+    PUSH(world_exit_way(&gEngine.world, (int)room, (int)exit, checked != 0));
 }
 PRIM(p_route_door) {   /* ( i -- door ) the route's i-th door, first first */
     Cell i = POP();
@@ -2083,20 +2132,20 @@ void bind_engine(Forth *f) {
         const char *name;
         Code code;
     } prims[] = {
-        {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"world-exits-rebuild", p_exits_rebuild}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
+        {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-sides", p_route_sides}, {"exit-way", p_exit_way}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"world-exits-rebuild", p_exits_rebuild}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
         {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"look-on?", p_look_on}, {"sprites", p_sprites_new}, {"sprites-free", p_sprites_free}, {"sprites-free-all", p_sprites_free_all}, {"sprites-texture", p_sprites_texture}, {"sprites-cells", p_sprites_cells}, {"sprites-flags", p_sprites_flags}, {"sprites-offset", p_sprites_offset}, {"sprites-corner", p_sprites_corner}, {"sprites-count", p_sprites_count}, {"sprite!", p_sprite_store}, {"sprites-uv", p_sprites_uv}, {"sprite-quad!", p_sprite_quad}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
         {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"ui-movie", p_ui_movie}, {"cast-as", p_cast_as}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
-        {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-follow", p_cam_follow}, {"cam-target!", p_cam_target}, {"cam-ease", p_cam_ease}, {"cam-track", p_cam_track},
+        {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-follow", p_cam_follow}, {"cam-target!", p_cam_target}, {"cam-ease", p_cam_ease}, {"cam-event?", p_cam_event}, {"cam-track", p_cam_track},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
         {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-wall", p_v_wall}, {"nav-links", p_nav_links}, {"nav-next", p_nav_next}, {"nav-link-tri", p_nav_link_tri}, {"nav-link-yaw", p_nav_link_yaw}, {"nav-link-spot", p_nav_link_spot}, {"nav-link-at?", p_nav_link_at}, {"nav-link-side", p_nav_link_side}, {"nav-link-front", p_nav_link_front}, {"v-free", p_v_free},
         {"v-path", p_v_path}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
-        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
+        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {"placed-at", p_placed_at}, {"nav-square-step", p_nav_square_step}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
         {"door-anim", p_door_anim}, {"door-side", p_door_side}, {"door-near?", p_door_near}, {"door-in-area?", p_door_in_area},
-        {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"door-move", p_door_move}, {"game-tick", p_game_tick}, {"door-events", p_door_events}, {"door-here?", p_door_present}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
+        {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"door-move", p_door_move}, {"game-tick", p_game_tick}, {"door-events", p_door_events}, {"door-here?", p_door_present}, {"door-turn", p_door_turn}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
         {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end}, {"soft-reset", p_soft_reset},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},

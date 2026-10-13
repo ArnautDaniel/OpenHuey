@@ -57,7 +57,7 @@ variable spots  variable spots-n  variable spots-used
 \ she isn't hiding, $200, else $206; waiting $200; searching or heading for her room $201
 : walk-anim ( -- anim )
     my-mode @ case
-        0 of  d-fiona f@ 80e f<= d-fiona f@ f0< 0= and  fiona-hidden state-flag? 0= and if  walk-fast  else  walk-slow  then  endof
+        0 of  base-chase @ 0=  d-fiona f@ 80e f<= and d-fiona f@ f0< 0= and  fiona-hidden state-flag? 0= and if  walk-fast  else  walk-slow  then  endof
         3 of  walk-fast  endof
         >r walk-slow r>
     endcase ;
@@ -128,8 +128,10 @@ create to-at 12 allot
 \ ---- to where she is (Pursuer_ChaseFiona, action 4: after her but not seeing her): toward
 \ her on foot, his way re-planned every 30 frames; standing facing her within 15. Seeing her,
 \ his chase (stalker/chase.fs: `chase-begin`) ----
+defer round-to-her ( -- went? )   ' false is round-to-her   \ (she across his room: stalker/doorway.fs)
 : after-her ( -- )
     -1 step-t +!  step-t @ 0> if  exit  then  30 step-t !
+    round-to-her if  exit  then
     fiona body-tri dup 0< if  drop exit  then  fiona body-at plan 0> 0= if  exit  then
     d-fiona f@ 15e f< d-fiona f@ f0< 0= and if  stand-anim play  my-path path-clear  else  walk-anim play  then ;
 : chase-step ( -- )   \ (the step while after her)
@@ -149,7 +151,7 @@ defer lost-her ( -- )   ' chase-start is lost-her
 : search-again ( -- )  2 mode!  route-clear  search-stops add-stops  search-start ;
 : modes ( -- )
     here-played? 0= if  exit  then
-    reeling @ if  exit  then   \ (struck: his reaction first)
+    reeling @ out-going @ or at-dog @ or if  exit  then   \ (struck: his reaction first; on his way out by a door; after Hewie)
     sees-fiona @  my-mode @ 4 <> and if   \ (held off: going away, not after her)
         my-mode @ if  0 mode!  route-clear  then
         chasing? 0= if  chase-begin  then  after-t exit

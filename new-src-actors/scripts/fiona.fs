@@ -2,7 +2,7 @@
 \ controls, standing, walking, running and turning, her footsteps, going out by exits; F4: struck
 \ and caught (fiona/hurt.fs).
 IN: fiona
-USING: engine game-state actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend ;
+USING: engine game-state actors messages common paths doors fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.slam fiona.ladder fiona.push fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend ;
 
 : rooms-id ( -- id )  s" rooms" actor-named ;
 : camera-id ( -- id )  s" camera" actor-named ;
@@ -27,7 +27,8 @@ fvariable ix  fvariable iy  fvariable iz
 : idle ( -- )   \ Fiona_ToIdle: free, standing, her moves her own
     0 her-doing !  0 her-mode !  her-yaw f@ her-heading f!  0 her-rest !   \ (the turn mode kept: Fiona_ToIdle leaves +0x1AD588)
     -1 idle-anim  ['] idle-move her-act ! ;
-' idle is fiona.defend:to-idle   ' idle is fiona.hurt:to-idle   ' idle is fiona.seized:to-idle   ' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle   ' idle is fiona.commands:to-idle   ' idle is fiona.moves:to-idle
+' idle is fiona.defend:to-idle   ' idle is fiona.hurt:to-idle   ' idle is fiona.seized:to-idle   ' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle   ' idle is fiona.commands:to-idle   ' idle is fiona.moves:to-idle   ' idle is fiona.ladder:to-idle   ' idle is fiona.push:to-idle
+' try-push is fiona.moving:push-check
 \ Fiona_Vt34: going out by a door - with the stick held, she faces where it points (by the camera
 \ she leaves) if that is less than a quarter turn round from her heading, and that camera keeps
 \ steering in the next room while the stick stays (turn mode 3: controls.fs after-cut)
@@ -63,7 +64,7 @@ create goal 12 allot
     feel-the-panic
     read-controls
     her-mode @ 0= if  panic-controls  else  false  then  0=  hands-off? 0= and if  control-command  then
-    hands-off? if  -1 her-cmd !  else  read-command  try-flee  try-defend  try-doors  then
+    hands-off? if  -1 her-cmd !  else  read-command  try-flee  try-defend  try-doors  try-ladders  then
     her-act @ execute
     looks
     command-sounds
@@ -113,7 +114,7 @@ behaviour free
   on tick ( -- )  self body? if  frame  then ;
   on frame-end ( -- )   \ what she is doing, as the frame left her; her move
       self body? 0= if  exit  then
-      her-mode @ her-sub @ her-cond @ her-cmd @ broadcast fiona-doing
+      her-mode @ her-sub @ her-cond @ her-cmd @ her-doing @ broadcast fiona-doing
       plight broadcast fiona-plight
       tell-head
       her-move-done @  ended?  her-model @ 0 0 1 motion-events  broadcast moving ;
@@ -124,9 +125,13 @@ behaviour free
   on hold-anim ( anim blend -- )   \ (the scripts' 0x9D: in it, held)
       -1 play-blend  2 her-mode !  $11 her-doing !  ['] root-move her-act !  done ;
   on show ( on -- )  0<> 1 and her act.visible l! ;
+  \ the story's (F5): calmer (Fiona_CalmDown: n / 30 off her fear), her recovery shorter
+  \ (Fiona_LowerRecovery: 60 / n frames)
+  on fear-less ( n -- )  s>f 30e f/ fnegate her-fear f@ f+ 0e fmax her-fear f! ;
+  on recovery-less ( n -- )  1 max 60 swap / negate her-recovery +!  her-recovery @ 0 max her-recovery ! ;
   \ Hewie (F3)
-  on hewie-doing ( here action mode sub cond mood group -- )
-      dog-group !  dog-mood !  dog-cond !  dog-sub !  dog-mode !  dog-action !  dog-here ! ;
+  on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
+      2drop 2drop 2drop  dog-group !  dog-mood !  dog-cond !  dog-sub !  dog-mode !  dog-action !  dog-here ! ;
   on meet-at ( tri x y z face -- )
       asked? 0= if  2drop 2drop drop  hewie-id send meet-off exit  then
       >r >r >r cell>f  r> cell>f  r> cell>f  r> cell>f  meet-placed ;

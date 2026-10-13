@@ -41,6 +41,8 @@ USING: engine game-state actors messages ;
 : reopened! ( door -- )
     dup 32 / 4 * progress pr.closed-off +  swap 32 mod 1 swap lshift invert  over l@ and  swap l! ;
 : changed ( door -- )  dup refresh-door  broadcast door-changed ;
+: grab ( exit -- )   \ (held by the slammer: not a doorway)
+    room-id swap door-of dup 0< if  drop exit  then  dup fixed? if  drop exit  then  held-bit set-bits ;
 
 \ ---- held doors (DoorHold_Take / DoorHold_Open / DoorHold_Shut) ----
 variable the-room   variable the-door   variable the-source
@@ -92,7 +94,10 @@ behaviour keeping
       2 pick user !  over room-id swap door-of 0< if  2drop exit  then
       door-anim drop ;
   on swing-door ( exit open source -- )  2 pick user !  false door-move ;
-  on slam ( exit source -- )  over user !  false true door-move ;
+  \ slammed shut or burst open (Fiona_SlamDoor: taken hold of first - DoorHold_Take - then let go
+  \ open or shut at rest by its user, as a swing along an animation is)
+  on slam ( exit source -- )  over user !  dup grab  false true door-move ;
+  on barge ( exit source -- )  over user !  dup grab  true true door-move ;
   on hold-door ( room exit kind -- )
       >r 2dup r> take  if  sender send door-held  else  sender send door-refused  then ;
   on let-go-open ( room exit source -- )  true let-go ;

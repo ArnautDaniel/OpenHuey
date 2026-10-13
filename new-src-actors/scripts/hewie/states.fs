@@ -328,7 +328,7 @@ create kn-at 12 allot
     tt-at heading-to  fdup head-toward-soon  fdup run-turn turn-to
     fswap fdrop 60e deg>rad f> if  7 keep-pose exit  then
     0 step-to-pose 0= if
-        bark  -1 his-t1 +!  his-t1 @ 0= if  to-default exit  then
+        snap-at  bark  -1 his-t1 +!  his-t1 @ 0= if  to-default exit  then
     then  0 keep-pose ;
 \ Hewie_StateSteer (action 7): standing alert (3), head on his target
 : st-steer ( -- )
@@ -350,7 +350,7 @@ create kn-at 12 allot
 : st-bark ( -- )
     look-target
     his-danger @ 0= his-cond @ 1 <> and if  3  else  0  then
-    step-to-pose 0= if  bark  ['] st-look-low behave  then ;
+    step-to-pose 0= if  snap-at  bark  ['] st-look-low behave  then ;
 
 \ ---- hurt, down ----
 : st-1d18 ( -- )  0 step-to-pose 0= if  0 his-2d !  0 keep-pose  to-default  then ;   \ back up

@@ -45,6 +45,7 @@ defer exhausted   ' noop is exhausted   \ (Fiona_Exhausted: fiona.fear)
         else  1 her-run-t +!  run-look  then
     else  0 her-run-t !  walk-look  then ;
 fvariable mv-x  fvariable mv-z  fvariable mv-dz
+defer push-check ( F: reach -- )   ' fdrop is push-check   \ (something to push that far ahead: fiona/push.fs)
 : idle-move ( -- )
     her-still @ 0= if  1e  else  her-stick-k f@ 0.05e f- 0e fmax  then  her-stick-k f!
     group
@@ -87,7 +88,8 @@ fvariable mv-x  fvariable mv-z  fvariable mv-dz
     \ moved backwards (pushed along a wall corner): she stays where she was
     her-at sf@ her-was-at sf@ f- mv-x f@ f*  her-at 8 + sf@ her-was-at 8 + sf@ f- mv-z f@ f* f+ f0< if
         her-was-at her-at 12 move  her-was-tri @ her-tri !
-    then ;
+    then
+    mv-dz f@ push-check ;
 
 \ ---- her footsteps (Fiona_Footsteps): as a foot comes down, its floor's sound (the sound set,
 \ bank 4: by the triangle's material, a variant a step), louder running; heard as a noise ----

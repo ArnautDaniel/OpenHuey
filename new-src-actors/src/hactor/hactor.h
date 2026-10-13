@@ -15,7 +15,7 @@
 #include "../forth/forth.h"
 
 #define HACTOR_MAX 256      /* actors alive at once */
-#define HMSG_ARGS 8         /* cells a message carries */
+#define HMSG_ARGS 16        /* cells a message carries */
 #define HKINDS_MAX 512      /* message kinds */
 #define HNAME_MAX 31
 

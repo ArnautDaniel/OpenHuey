@@ -64,5 +64,15 @@ int world_route(const World *w, int from, int to, int kind, int max, int *out, i
 /* the same, not through the doors set in `avoid` (a bit a door: door d is bit d % 32 of
  * avoid[d / 32]; WORLD_DOORS bits) */
 int world_route_avoiding(const World *w, int from, int to, int kind, int max, const uint32_t *avoid, int *out, int nout);
+/* the same between sides of rooms: some rooms are two halves joined only through other rooms, a
+ * door opening onto one of them (its one-way flag on that side, world_exit_way / door_way). The
+ * walker is on half `from_way` of its room (0 / 1; else either: the doors from both halves are
+ * tried) and wants half `want` of `to` (-1 either), so `from == to` is only "there" on the same
+ * half (RoutePlanner_FindRoute: from_way its starting door way, want its wanted one) */
+int world_route_sides(const World *w, int from, int from_way, int to, int want, int kind, int max,
+                      const uint32_t *avoid, int *out, int nout);
+/* the half of `room` that exit `exit` opens onto (its door's one-way flag on that side: 1 / 0),
+ * -1 none; `checked`: only for doors whose side has the check flag (Rooms_ExitSideFlag) */
+int world_exit_way(const World *w, int room, int exit, int checked);
 
 #endif

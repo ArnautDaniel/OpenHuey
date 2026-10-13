@@ -28,6 +28,7 @@ state: hewie-state
   cell field his-busy           \ a script has him (+0xE0; H4)
   cell field his-done           \ the script's move is done (+0xE1; H4)
   /path field his-path
+  /path field his-probe          \ a way planned only to see if there is one (Hewie_FionaReachable)
   \ how he feels and obeys
   cell field his-mood   cell field his-mood-time   \ 0 normal, 1 pleased, 2 upset, 3 angry
   cell field his-waiting        \ waiting (1: does as he likes) or obeying (0)
@@ -85,6 +86,8 @@ state: hewie-state
   cell field his-by  cell field his-how   \ who struck him last ($FF: a door), and how
   \ off screen
   cell field his-door           \ the exit he came in by (-1 none)
+  cell field his-way            \ +0xF3668: the half of his room he is on (exit-way: 0 / 1; 2 either;
+                                \ -1 by the exit he came in by)
   cell field his-route-door     \ the door he is making for
   1 floats field his-left       \ how far there is left to it
   cell field his-at-door        \ 1 his way to it planned in the room, 0 counting
@@ -108,4 +111,21 @@ state: hewie-state
   cell field his-panic
   cell field fiona-mode  cell field fiona-sub  cell field fiona-cond  cell field fiona-cmd
   cell field fiona-room         \ the room she is in, or going to (told by the rooms: leaving, arrived)
+  \ the stalker as he tells it each frame (`stalker-doing`; H3): who, his room, how he moves and
+  \ what he does (3 off screen, 4 struck; 9 bitten, $A down), condition, health, kind; frames
+  \ since he last told (the original reads them off his character)
+  cell field st-id  cell field st-room  cell field st-mode  cell field st-sub  cell field st-cond
+  cell field st-hp  cell field st-hp-max  cell field st-kind  cell field st-age
+  \ at the stalker (hewie/fight.fs): the grip (+0x104: 0 head on, 1 / 2 a flank, -1 none yet),
+  \ biting (+0xF36B4: 0 / 1 biting, 2 let go, 3 thrown), bites left (+0xF36B8), the chance to
+  \ hold on (+0xF36BC), his feelings about each stalker (+0xF367C: Debilitas, Daniella, Lorenzo,
+  \ Riccardo; -10..10), hit by her lately (+0xF35C4, its timer +0xF35C8); the leap's step and
+  \ turn, the fling (+0xF36E0 / +0xF36C8), a
+  \ push (+0xF36C8 less +0xF36CC a frame, along +0xF36C4)
+  cell field his-grip  cell field his-biting  cell field his-bites  cell field his-hold
+  4 cells field his-feel
+  cell field his-angry-n  cell field his-angry-t
+  1 floats field his-leap-k  1 floats field his-leap-turn  1 floats field his-leap-yaw
+  1 floats field his-fly-x  1 floats field his-fly-y  1 floats field his-fly-z  1 floats field his-fly-h
+  1 floats field his-push  1 floats field his-push-less  1 floats field his-push-yaw
 end-state
