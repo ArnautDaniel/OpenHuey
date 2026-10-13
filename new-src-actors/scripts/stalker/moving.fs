@@ -6,8 +6,8 @@ IN: stalker.moving
 USING: engine game-state actors facts flag-names paths stalker.state stalker.senses ;
 
 : model ( -- a )  my-model @ actor ;
-: sound ( id bank -- )   \ Pursuer_Sound: at him (not while the world is held)
-    world-held state-flag? if  2drop exit  then  >r >r  my-at vec@  r> r>  bank-sound-at ;
+: sound ( id bank -- )   \ Pursuer_Sound: at him (not while the world is held, nor silenced)
+    world-held state-flag? hushed @ or if  2drop exit  then  >r >r  my-at vec@  r> r>  bank-sound-at ;
 : yaw ( F: -- a )  self body-yaw ;
 : yaw! ( F: a -- )  body-turn ;
 
@@ -16,10 +16,11 @@ USING: engine game-state actors facts flag-names paths stalker.state stalker.sen
 : play-now ( anim -- )   \ (Motion_PlayTable)
     dup anim !  my-model @ swap  2dup motion-entry nip  motion-play ;
 : play ( anim -- )  dup anim @ = if  drop exit  then  play-now ;
-: stand-anim ( -- a )  cond @ 1 = if  2  else  0  then ;   \ (vtable +0x320: hurt, 2)
+: stand-anim ( -- a )   \ (vtable +0x320 Pursuer_WalkAnim: hurt 2, in a rage 3)
+    cond @ 1 = if  2  else  raging @ if  3  else  0  then  then ;
 \ his walks (vtable +0x324 / +0x328): hurt $202 / $203; else $200, and the slow one - held off
 \ $203, searching or heading $201, after her $206
-: walk-fast ( -- a )  cond @ 1 = if  $202  else  $200  then ;
+: walk-fast ( -- a )  cond @ 1 = if  $202  else  raging @ if  $204  else  $200  then  then ;   \ (+0x324: in a rage $204)
 : walk-slow ( -- a )
     my-mode @ 4 =  cond @ 1 = or if  $203 exit  then
     my-mode @ if  $201  else  $206  then ;

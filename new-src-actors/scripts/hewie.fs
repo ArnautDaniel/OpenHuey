@@ -79,8 +79,8 @@ behaviour hewie-own
       st-age @ 100 < if  1 st-age +!  then ;
   \ the stalker (H3: hewie/fight.fs): what he is doing; his answers to the attack; thrown off;
   \ struck - by him, by her, by a door (answered `blow-taken` when it struck)
-  on stalker-doing ( room mode sub cond hp hp-max kind -- )
-      st-kind !  st-hp-max !  st-hp !  st-cond !  st-sub !  st-mode !  st-room !  sender st-id !  0 st-age ! ;
+  on stalker-doing ( room mode sub cond health kind alert came -- )
+      2drop  st-kind !  health> st-hp-max !  st-hp !  st-cond !  st-sub !  st-mode !  st-room !  sender st-id !  0 st-age ! ;
   on dog-grip ( tri x y z yaw -- )
       along? 0= if  2drop 2drop drop exit  then
       his-act @ ['] st-await-grip <> if  2drop 2drop drop  sender send shaken-off exit  then   \ (no longer at it)

@@ -233,4 +233,4 @@ Next, by how much the scripts use them:
 | S4 | (built) The rest: scene changes (`scene-change`'s other scenes), endings, `movie-loop`, the half-black screen (op 11). |
 | S5b | Effects: a sprite batch in C, an effect as an actor per slot; the classes by use (`effect-86` flames, `flicker-sprite`, `zone-at-effect`, `char-effect-moving`, `specks`, `butterflies`, `scene-effect-8C`, `effects-arena-flip`). |
 | S5c | The rooms' own commands (`<room>.cmdNN`: their effects - wisps, smoke, drips, the mirror...). |
-| S6 | The stalkers' and creatures' words, with them. |
+| S6 | The stalkers' and creatures' words, with them (the stalker's: P4a, `docs/subsystems/stalker.md`; the creatures' later). |

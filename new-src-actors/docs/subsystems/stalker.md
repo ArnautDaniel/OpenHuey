@@ -25,7 +25,9 @@ requests to Fiona.
 | P3a | Struck by her: her kick and shove (F4); flinching, falling, down a while, getting up, hurt (a stumble), giving up for a while after enough | Fiona F4 |
 | P3b | Doors: his use of the doors in her room (opening, coming through, going out), a door slammed on him | P3a |
 | P3c | Hewie's bites | Hewie H3 |
-| P4 | The story's stalker words (put in a room, sent, held, released, loaded), the cutscenes' cast, the other stalkers | story |
+| **P4a** | The story's stalker words: its conditions about him (in the game, his kind, here, his alert, free, his condition, health, the exit he came in by, out of sight) and its orders (after her / searching, his clock, knocked down, rage, started again, condition, health, silent); his `moving` for the scripts' waits | story |
+| P4b | Daniella's own tables (moves, attack tables, temper) and behaviour (Daniella_Behaviour), his footsteps heard through the walls, the rooms a stalker keeps to | P4a |
+| P4c | Riccardo and Lorenzo; the cutscenes' cast beyond slot 2 (char-load-2, char-hand-over, char-loaded?) | P4b |
 
 ## API (P1, a first draft)
 
@@ -187,7 +189,28 @@ title. P3a done: struck by her
 the doors in her room, round to her across his own room, slammed doors; also the coming-in
 spot fixed (below). P3c done (`stalker/bitten.fs`, with Hewie's H3): Hewie's attacks taken or
 refused, bitten, throwing him off, his temper and going for Hewie; his blows reach Hewie too.
-`tests/stalker/test_stalker.fs` (58), `tests/hewie/test_fight.fs` (19). Next: P4.
+`tests/stalker/test_stalker.fs` (58), `tests/hewie/test_fight.fs` (19). P4a done (below;
+`tests/story/test_stalker_words.fs`, 13). Next: P4b.
+
+**P4a - the story's words about him** (`scripts/story/words.fs`, src/game/event.c). He tells
+each frame (`stalker-doing`) his room, move mode and part, condition, health (packed: hp + its
+most x 65536, `health>`), kind, his alert (his mode: Progress_StalkerAlert) and the exit he
+came in by (+0x14D4); the room keeps it, with Fiona's and Hewie's conditions from their own
+broadcasts. Conditions: 0x55 in the game (told within a frame), 0x54 his kind (the kind
+partner-load put in slot 2: `slot2-kind`), 0x3C his kind and in this room, 0x10 his alert ($FF
+not in the game), 0x65 free (here, not leading her, not bitten or down - his triangle not
+checked), 0x41 a condition (Fiona, Hewie, the stalker), 0x1E / 0x52 out of health / at its most
+(the stalker), 0x30 the exit came in by (Fiona: the room's; the stalker), 0x45 out of sight (not
+here, or off the window: `on-camera?` over `to-screen`; `point-on-camera?` too). Orders, sent to
+him (`stalker-order` etc.): 0x2F 0 after her (Pursuer_GoForFionaStance0: in her room his chase,
+elsewhere to her room), 2 searching here / to her room (ChaseFionaHere), 3 searching here /
+waiting about away (StartSearch) - up from down; while struck, bitten or leading her his mode
+only; 0x2A his mode's clock; 0x30 knocked down out of health (Pursuer_KnockedDown: in her room);
+0x31 rage (stance 3, walk $204); 0x15 started again (Pursuer_Activate: waiting about, 900, no
+rage, health back if none); 0x47 his condition (Hewie too); 0x48 / 0xB8 health; 0x3D silent (his
+own sounds). The stalkers' kinds map to their actors: Debilitas 2 6 7 27, Daniella 3 34 35 36.
+He broadcasts `moving` at each frame's end (0x7B `char-wait-motion` waits on its event keys).
+Not yet: `char-activate` for Hewie and the cast, `char-in`, the cast's words.
 
 **P3b - the doors in her room** (`stalker/doorway.fs`; Pursuer_BehaviourDoors' steps:
 Pursuer_NextPathExit, Door1C8, DoorLineUp, DoorGoThrough, DoorFace, DoorOpen, DoorThrough,

@@ -164,9 +164,22 @@ message stalker-hunt ( -- )                  \ (a stalker) heads for Fiona's roo
 message costume ( n -- )                     \ (Fiona) her model for costume n (0 her clothes, 1 the slip)
 message stalker-load ( -- )                  \ (a stalker) into the story's character slot 2 (the cutscenes' cast)
 message stalker-unload ( -- )                \ (a stalker) out of slot 2 (and out of the game)
-message stalker-doing ( room mode sub cond hp hp-max kind -- )   \ broadcast each frame by a stalker in the game: his
-                                             \ room, how he moves (0 his own, 3 off screen, 4 struck, 8 taking her), what
-                                             \ (9 Hewie on him, $A down, $18 leading her), condition, health, his kind
+message stalker-doing ( room mode sub cond health kind alert came -- )   \ broadcast each frame by a stalker in the
+                                             \ game: his room, how he moves (0 his own, 3 off screen, 4 struck, 8 taking her),
+                                             \ what (9 Hewie on him, $A down, $18 leading her), condition, health (hp + its
+                                             \ most x 65536: `health>`), his kind,
+                                             \ his alert (his mode: Progress_StalkerAlert), the exit he came in by (-1 none)
+: health> ( health -- hp hp-max )  dup $FFFF and swap 16 rshift ;
+\ ---- the story's orders to a character (the scripts' commands; P4) ----
+message stalker-order ( mode -- )            \ 0x2F: 0 after her, 2 to her room / searching here, 3 searching
+message stalker-clock ( frames -- )          \ 0x2A: his mode's clock (+0x1660)
+message stalker-knock-out ( -- )             \ 0x30: knocked down, out of health
+message rage ( on -- )                       \ 0x31: in a rage (Pursuer_SetRage: his stance and walk)
+message activate ( -- )                      \ 0x15: (re)started where he is (Pursuer_Activate)
+message set-cond ( v -- )                    \ 0x47: his condition (+0xC4: 0 well, 1 hurt, 2 down)
+message full-health ( -- )                   \ 0x48
+message heal ( n -- )                        \ 0xB8: by n, to his most
+message silent ( on -- )                     \ 0x3D: his own sounds don't play
 \ ---- Hewie at the stalker (H3, the stalkers' P3c): his attack is a joint action (Relation_Request
 \ kind 9 / Pursuer_GrabOrder): asked, then taken - with the spot to leap to - or refused; his bites
 \ (kind $B) while he holds on; either lets go (their state 7) ----

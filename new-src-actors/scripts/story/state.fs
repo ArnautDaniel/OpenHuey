@@ -51,4 +51,10 @@ state: room-state
   cell field fiona-busy  cell field fiona-mode  cell field fiona-sub
   cell field fiona-cmd  cell field hewie-here  cell field hewie-act  cell field hewie-move-mode
   cell field the-danger  cell field the-panic
+  \ their conditions (the original's +0xC4 each: 0 well, 1 hurt, 2 down), and the stalker as he
+  \ tells it (stalker-doing: his room, how he moves and what, condition, health, his alert - his
+  \ mode, +0x16C8 - and the exit he came in by, +0x14D4; frames since he told: in the game)
+  cell field fiona-cond  cell field hewie-cond
+  cell field st-room  cell field st-mode  cell field st-sub  cell field st-cond  cell field st-hp
+  cell field st-hp-max  cell field st-alert  cell field st-came  cell field st-age
 end-state

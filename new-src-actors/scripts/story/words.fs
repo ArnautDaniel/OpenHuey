@@ -61,6 +61,7 @@ create missing 16 1024 * allot  variable #missing
 \ the stalker's slot (the story's character slot 2, `$FE` in the scripts): the stalker actor
 \ partner-load brought in (the original's progress character table), -1 none
 variable slot2   -1 slot2 !
+variable slot2-kind   -1 slot2-kind !    \ (the kind partner-load put there: its +0x153C)
 : char-actor ( cs -- id | -1 )
     case
         0 of  fiona-id  endof
@@ -725,12 +726,14 @@ variable bf-fx  variable bf-x  variable bf-y  variable bf-z  variable bf-n
 \ ==== the stalker's slot (the story's character slot 2, `$FE` in the scripts): who is in it ====
 \ (the original's progress character table; here the stalker actor partner-load brought in, -1 none)
 : stalker-actor ( kind -- id | -1 )   \ the stalker actors by kind (2 Debilitas, 3 Daniella; the others later)
-    case  2 of  s" debilitas"  endof  3 of  s" daniella"  endof  >r 0 0 r>  endcase
+    case  2 of  s" debilitas"  endof  6 of  s" debilitas"  endof  7 of  s" debilitas"  endof  27 of  s" debilitas"  endof
+          3 of  s" daniella"  endof  34 of  s" daniella"  endof  35 of  s" daniella"  endof  36 of  s" daniella"  endof
+          >r 0 0 r>  endcase
     dup if  actor-named  else  2drop -1  then ;
 : summoner-id ( -- id )  s" summoner" actor-named ;
 : partner-load ( id -- )   \ 0x11: kind `id` into slot 2, loaded and started (CharLoad_Partner); the summoner afresh
     slot2 @ dup 0< 0= if  send stalker-unload  else  drop  then
-    stalker-actor dup slot2 !  dup 0< if  drop exit  then  send stalker-load
+    dup slot2-kind !  stalker-actor dup slot2 !  dup 0< if  drop exit  then  send stalker-load
     summoner-id send summoner-reset ;
 \ the summoner (docs/subsystems/summoner.md)
 : summon-take ( kind -- )  summoner-id send summoner-take ;          \ 0x84: take the stalker out (Summoner_Take)
@@ -774,6 +777,67 @@ create slot-actors  -1 , -1 , -1 , -1 , -1 , -1 ,
 \ 0x97: Fiona's model swapped for costume `n` (progress variable $26's numbering)
 : fiona-costume ( n -- )  s" fiona" actor-named send costume ;
 
+
+\ ==== P4: the stalker for the story (the scripts' conditions and commands about him; he and the
+\ others tell what they are doing - the room keeps it: stalker-doing, fiona-doing, hewie-doing) ====
+: stalker-told? ( -- flag )  st-age @ 2 < ;                              \ (in the game)
+: stalker-active? ( -- flag )  stalker-told? ;                            \ cond 0x55
+: stalker-kind? ( kind -- flag )  slot2 @ 0< if  drop false exit  then  slot2-kind @ = ;   \ cond 0x54
+: stalker-here? ( -- flag )  stalker-told? st-room @ this-room @ = and ;
+: stalker-kind-here? ( kind -- flag )  stalker-here? swap slot2-kind @ = and ;   \ cond 0x3C
+: stalker-alert? ( v -- flag )  stalker-told? if  st-alert @  else  $FF  then  = ;   \ cond 0x10
+: stalker-free? ( -- flag )   \ cond 0x65: here, not leading her, not bitten or down
+    stalker-here? 0= if  false exit  then
+    st-mode @ 8 = st-sub @ $18 $1A within and if  false exit  then
+    st-mode @ 4 = st-sub @ 9 $B within and 0= ;
+\ a character's condition (+0xC4), health, the exit it came in by (conds 0x41, 0x1E, 0x52, 0x30)
+: char-C4? ( who v -- flag )
+    swap who>cs case
+        0 of  fiona-cond @ =  endof
+        1 of  hewie-here @ 0<> if  hewie-cond @ =  else  drop false  then  endof
+        2 of  stalker-told? if  st-cond @ =  else  drop false  then  endof
+        >r drop false r>
+    endcase ;
+: char-dead? ( who -- flag )  who>cs 2 = stalker-told? and st-hp @ 0= and ;
+: char-full-health? ( who -- flag )  who>cs 2 = stalker-told? and st-hp @ st-hp-max @ = and ;
+: char-heading-for? ( who exit -- flag )   \ cond 0x30: in this room, came in by that exit
+    swap who>cs case
+        0 of  came-by @ =  endof
+        2 of  stalker-here? swap st-came @ = and  endof
+        >r drop false r>
+    endcase ;
+\ out of sight (cond 0x45): not in the game, elsewhere, or off the camera (on the window)
+fvariable oc-x  fvariable oc-y
+: on-camera? ( F: x y z -- flag )
+    to-screen 0= if  fdrop fdrop false exit  then
+    oc-y f!  oc-x f!  screen-size                                         ( w h )
+    oc-y f@ f0< 0=  swap s>f oc-y f@ f> and                               ( w flag )
+    oc-x f@ f0< 0= and  swap s>f oc-x f@ f> and ;
+: point-on-camera? ( x y z -- flag )  >r >r s>f r> s>f r> s>f on-camera? ;
+: char-unseen? ( id -- flag )
+    char-slot dup char-here 0= if  drop true exit  then  char-at vec@ on-camera? 0= ;
+
+\ the commands: to Hewie or the stalker (Fiona and the cast later)
+: char-id ( who -- id | -1 )   \ (Hewie or the stalker in the game)
+    who>cs dup 1 3 within 0= if  drop -1 exit  then  char-actor ;
+: stalker-id ( who -- id | -1 )  who>cs 2 = if  slot2 @  else  -1  then ;
+: char-set-C4 ( who v -- )  swap char-id dup 0< if  2drop exit  then  send set-cond ;      \ 0x47
+: char-full-health ( who -- )  char-id dup 0< if  drop exit  then  send full-health ;      \ 0x48
+: char-heal ( id n -- )  swap char-id dup 0< if  2drop exit  then  send heal ;            \ 0xB8
+: char-silent ( who on -- )  swap char-id dup 0< if  2drop exit  then  send silent ;      \ 0x3D
+: char-activate ( id -- )   \ 0x15 (Progress_ActivateChar: the character's Activate) - the stalker
+    dup char-slot 2 = if  drop slot2 @ dup 0< if  drop exit  then  send activate exit  then
+    s" char-activate (not the stalker)" stub-step ;
+: stalker-mode ( id mode -- )  swap stalker-id dup 0< if  2drop exit  then  send stalker-order ;   \ 0x2F
+: stalker-search-delay ( id frames -- )  swap stalker-id dup 0< if  2drop exit  then  send stalker-clock ;   \ 0x2A
+: stalker-knock-down ( id -- )  stalker-id dup 0< if  drop exit  then  send stalker-knock-out ;   \ 0x30
+: stalker-rage ( id on -- )  swap stalker-id dup 0< if  2drop exit  then  send rage ;        \ 0x31
+\ 0x7B: waits until the character's motion event keys have any of `bits`
+: char-wait-motion ( who bits -- )
+    in-slot? 0= if  2drop exit  then
+    swap who>cs dup char-here 0= if  2drop wait-frame exit  then
+    begin  wait-frame  2dup cells events-of + @ and  until  2drop ;
+
 \ ==== not written yet (generated by tools/story_stubs.py: keep below this line) ====
 : adx? ( what -- flag )  drop  s" adx?" stub-flag ;
 : avoid-prompt ( v -- )  drop  s" avoid-prompt" stub-step ;
@@ -781,18 +845,11 @@ create slot-actors  -1 , -1 , -1 , -1 , -1 , -1 ,
 : camera-setup-changed? ( -- flag )  s" camera-setup-changed?" stub-flag ;
 : camera-shake ( F: v -- )  fdrop  s" camera-shake" stub-step ;
 : camera-value ( which F: v -- )  drop  fdrop  s" camera-value" stub-step ;
-: char-C4? ( who v -- flag )  drop  drop  s" char-C4?" stub-flag ;
-: char-activate ( id -- )  drop  s" char-activate" stub-step ;
-: char-dead? ( who -- flag )  drop  s" char-dead?" stub-flag ;
 : char-file-load ( id file -- )  drop  drop  s" char-file-load" stub-step ;
 : char-file-use ( id -- )  drop  s" char-file-use" stub-step ;
 : char-find-tri ( who -- )  drop  s" char-find-tri" stub-step ;
-: char-full-health ( who -- )  drop  s" char-full-health" stub-step ;
-: char-full-health? ( who -- flag )  drop  s" char-full-health?" stub-flag ;
 : char-group-bit4? ( id group -- flag )  drop  drop  s" char-group-bit4?" stub-flag ;
 : char-hand-over ( from to -- )  drop  drop  s" char-hand-over" stub-step ;
-: char-heading-for? ( who exit -- flag )  drop  drop  s" char-heading-for?" stub-flag ;
-: char-heal ( id n -- )  drop  drop  s" char-heal" stub-step ;
 : char-in ( slot -- )  drop  s" char-in" stub-step ;
 : char-in-nav-group? ( who group -- flag )  drop  drop  s" char-in-nav-group?" stub-flag ;
 : char-layer ( who layer -- )  drop  drop  s" char-layer" stub-step ;
@@ -802,13 +859,9 @@ create slot-actors  -1 , -1 , -1 , -1 , -1 , -1 ,
 : char-no-shadow ( who on -- )  drop  drop  s" char-no-shadow" stub-step ;
 : char-not-at-door? ( who door -- flag )  drop  drop  s" char-not-at-door?" stub-flag ;
 : char-on-nav-flags? ( who flags -- flag )  drop  drop  s" char-on-nav-flags?" stub-flag ;
-: char-set-C4 ( who v -- )  drop  drop  s" char-set-C4" stub-step ;
-: char-silent ( who on -- )  drop  drop  s" char-silent" stub-step ;
 : char-tint ( who rgba on -- )  drop  drop  drop  s" char-tint" stub-step ;
 : char-touching-facing? ( a b m0 m1 within -- flag )  drop  drop  drop  drop  drop  s" char-touching-facing?" stub-flag ;
 : char-tri-free? ( who -- flag )  drop  s" char-tri-free?" stub-flag ;
-: char-unseen? ( id -- flag )  drop  s" char-unseen?" stub-flag ;
-: char-wait-motion ( who bits -- )  drop  drop  wait-frame  s" char-wait-motion" stub-step ;
 : chars-within? ( a b d -- flag )  drop  drop  drop  s" chars-within?" stub-flag ;
 : creature-action? ( v -- flag )  drop  s" creature-action?" stub-flag ;
 : creature-count ( a b -- )  drop  drop  s" creature-count" stub-step ;
@@ -880,7 +933,6 @@ create slot-actors  -1 , -1 , -1 , -1 , -1 , -1 ,
 : panic-98? ( -- flag )  s" panic-98?" stub-flag ;
 : panic-grow ( v -- )  drop  s" panic-grow" stub-step ;
 : panic-level ( level -- )  drop  s" panic-level" stub-step ;
-: point-on-camera? ( x y z -- flag )  drop  drop  drop  s" point-on-camera?" stub-flag ;
 : reward-item ( -- )  s" reward-item" stub-step ;
 : room-doors-state ( who room b -- )  drop  drop  drop  s" room-doors-state" stub-step ;
 : room-frames-set ( n -- )  drop  s" room-frames-set" stub-step ;
@@ -903,16 +955,7 @@ create slot-actors  -1 , -1 , -1 , -1 , -1 , -1 ,
 : sound-volume-scale ( F: v -- )  fdrop  s" sound-volume-scale" stub-step ;
 : splash ( a b c d0 d1 d2 d3 F: x y z -- )  drop  drop  drop  drop  drop  drop  drop  fdrop  fdrop  fdrop  s" splash" stub-step ;
 : sprites-additive ( mode -- )  drop  s" sprites-additive" stub-step ;
-: stalker-active? ( -- flag )  s" stalker-active?" stub-flag ;
-: stalker-alert? ( v -- flag )  drop  s" stalker-alert?" stub-flag ;
-: stalker-free? ( -- flag )  s" stalker-free?" stub-flag ;
 : stalker-gift ( -- )  s" stalker-gift" stub-step ;
-: stalker-kind-here? ( kind -- flag )  drop  s" stalker-kind-here?" stub-flag ;
-: stalker-kind? ( kind -- flag )  drop  s" stalker-kind?" stub-flag ;
-: stalker-knock-down ( id -- )  drop  s" stalker-knock-down" stub-step ;
-: stalker-mode ( id mode -- )  drop  drop  s" stalker-mode" stub-step ;
-: stalker-rage ( id on -- )  drop  drop  s" stalker-rage" stub-step ;
-: stalker-search-delay ( id frames -- )  drop  drop  s" stalker-search-delay" stub-step ;
 : stalker-stance-2? ( -- flag )  s" stalker-stance-2?" stub-flag ;
 : story-flag-set-var ( var -- )  drop  s" story-flag-set-var" stub-step ;
 : story-flag-var? ( var -- flag )  drop  s" story-flag-var?" stub-flag ;

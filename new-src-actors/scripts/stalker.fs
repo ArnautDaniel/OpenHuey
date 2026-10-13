@@ -31,7 +31,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     0 cond !  0 reeling !  0 hits !
     route-clear  my-path path-clear  3 mode!  0 play-now  stand  pose
     -1 came-by !  -1 making-for !  0 doors-n !  0 door-i !  0 away-search !  0 knock-t !  avoid-clear
-    out-over  -1 held-door !  -1 push-exit !  0 stun-t !  0 bitten !  0 bite-how !  0 dog-t !  0 at-dog !
+    out-over  -1 held-door !  -1 push-exit !  0 stun-t !  0 raging !  0 bitten !  0 bite-how !  0 dog-t !  0 at-dog !
     away? 0= if  search-start  then ;
 : go-out ( -- )  let-her-go  let-door-go  out-over  0 in-game !  body-off  0 him act.visible l! ;
 
@@ -68,7 +68,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     my-room
     away? if  3  else  reeling @ cond @ 2 = or bitten @ or if  4  else  leading @ if  8  else  0  then  then  then
     bitten @ if  9  else  cond @ 2 = if  $A  else  leading @ if  $18  else  0  then  then  then
-    cond @  hp @  hp-max @  my-kind @  broadcast stalker-doing ;
+    cond @  hp @ 0 max  hp-max @ 16 lshift or  my-kind @  my-mode @  came-by @  broadcast stalker-doing ;
 \ the family's setup (Pursuer_Setup): his sight 150 ahead, 60 degrees either side; Fiona and
 \ Hewie known; listening for noises above his threshold (not his own)
 : family-setup ( -- )
@@ -82,6 +82,24 @@ USING: engine game-state actors messages common facts flag-names room-names path
     rot 5 <> if  2drop exit  then
     behind-door? 0= if  drop exit  then
     hp @ swap - 1 max hp !  0 mode! ;
+\ ---- the story's orders (the scripts' 0x2F, 0x30, 0x15: Pursuer_GoForFionaStance0 /
+\ ChaseFionaHere / StartSearch, Pursuer_KnockedDown, Pursuer_Activate) - not while struck,
+\ bitten or leading her: then his mode only ----
+: up-again ( -- )  cond @ 2 = if  0 cond !  0 down-t !  then ;
+: busy? ( -- flag )  reeling @ bitten @ or leading @ or ;
+: ordered ( mode -- )
+    case
+        0 of  up-again  0 mode!  avoid-clear  busy? if  exit  then
+              played? if  sees-fiona @ if  chase-now  else  chase-start  then  else  head-for-her  then  endof
+        2 of  up-again  played? if  busy? if  2 mode!  else  search-again  then
+              else  1 mode!  avoid-clear  head-for-her  then  endof
+        3 of  up-again  played? if  busy? if  2 mode!  else  search-again  then
+              else  3 mode!  route-clear  then  endof
+    endcase ;
+: knocked-out ( -- )  played? 0= if  exit  then  let-door-go  out-over  0 hp !  knock-down ;
+: activated ( -- )
+    -1 making-for !  0 down-t !  3 mode!  900 mode-t !  0 raging !
+    hp @ 0> 0= if  hp-max @ hp !  then ;
 : unload ( -- )  0 loaded !  in-game @ if  go-out  then  my-kind @ -1 cast-as ;
 behaviour stalking
   on stalker-load ( -- )  load ;
@@ -96,6 +114,18 @@ behaviour stalking
   on shaken-off ( -- )  bitten @ bite-how @ 0= and if  2 bite-how !  then ;
   on bite ( damage hard -- )  bitten @ if  bitten-by  else  2drop  then ;
   on snap ( -- )  in-game @ if  snapped  then ;
+  \ the story's orders (P4)
+  on stalker-order ( mode -- )  in-game @ if  ordered  else  drop  then ;
+  on stalker-clock ( frames -- )  mode-t ! ;
+  on stalker-knock-out ( -- )  in-game @ if  knocked-out  then ;
+  on rage ( on -- )  0<> raging ! ;
+  on activate ( -- )  in-game @ if  activated  then ;
+  on set-cond ( v -- )  cond ! ;
+  on full-health ( -- )  hp-max @ hp ! ;
+  on heal ( n -- )  abs hp @ + hp-max @ min hp ! ;
+  on silent ( on -- )  0<> hushed ! ;
+  \ his move and animation for the story's waits (the scripts' 0x7B, 0x9E): as Fiona's and Hewie's
+  on frame-end ( -- )  in-game @ if  -1 ended? my-model @ 0 0 1 motion-events broadcast moving  then ;
   on stalker-summoned ( room exit found plan -- )  summoned ;
   on heard ( loud room tri door source -- )  2drop hear ;
   on heard-nothing ( -- )  heard-none ;
@@ -126,7 +156,7 @@ behaviour debilitas
       4500 away-base !  90 cool-secs !  $20 own-a !  $02 own-b !   \ (Debilitas_Setup; his rooms D_0041BE40)
       20 tolerance !  10e throw-k f!  0 temper !                \ (his temper with Hewie)
       5e 20e body-size  debilitas-floor body-mask!  body-off  0 in-game !
-      self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic ;
+      self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
 end-behaviour
 
 : debilitas-spawn ( -- id )  debilitas stalker-state s" debilitas" spawn ;
@@ -145,6 +175,6 @@ behaviour daniella
       hard? if  6000 100  else  3600 140  then  cool-secs !  away-base !  -1 own-a !  -1 own-b !   \ (Daniella_Setup's first)
       hard? if  80 25e  else  200 10e  then  throw-k f!  tolerance !  0 temper !   \ (her temper: Debilitas's table for now)
       3e 17e body-size  pursuer-floor body-mask!  body-off  0 in-game !
-      self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic ;
+      self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
 end-behaviour
 : daniella-spawn ( -- id )  daniella stalker-state s" daniella" spawn ;

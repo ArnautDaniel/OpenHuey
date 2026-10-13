@@ -104,4 +104,6 @@ state: stalker-state
   cell field dog-t
   cell field dog-sent            \ his blow this move has struck Hewie (stalker/attack.fs)
   cell field at-dog              \ his combo is at Hewie (after him, his temper up), not her
+  cell field raging              \ +0x16B8 2: in a rage (the story's 0x31) - his stance and walk
+  cell field hushed              \ +0x2C: his own sounds don't play (the story's 0x3D)
 end-state

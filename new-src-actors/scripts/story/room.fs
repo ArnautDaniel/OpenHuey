@@ -66,6 +66,7 @@ behaviour playing-room
       dup came-by !  exit-taken !  this-room !  $FF camera-char !
       self subscribe tick  self subscribe frame-end
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing  self subscribe moving
+      self subscribe stalker-doing  100 st-age !
       0 phase
       #chars 0 do  i char-enter  loop
       remember-chars
@@ -82,6 +83,7 @@ behaviour playing-room
   on fade-done ( -- )  0 fading ! ;
   on text-closed ( msg answer -- )  answer !  msg @ = if  -1 msg !  then ;
   on frame-end ( -- )
+      st-age @ 100 < if  1 st-age +!  then
       3 phase  remember-chars  draw-scene
       going @ 0< 0= if  going @  -1 going !  -1 leaving !  rooms-id send go-through  then ;
   on room-leave ( -- )  4 phase ;
@@ -89,8 +91,10 @@ behaviour playing-room
   on story-stop ( -- )  free-slots  release-all  scene-gone  effects-off  story-id send room-done ;
   on danger ( level -- )  the-danger ! ;
   on panic ( stage level -- )  drop the-panic ! ;
-  on fiona-doing ( mode sub cond cmd -- )  fiona-cmd !  drop  fiona-sub !  fiona-mode ! ;
-  on hewie-doing ( here action mode sub cond mood group -- )  2drop 2drop  hewie-move-mode !  hewie-act !  hewie-here ! ;
+  on fiona-doing ( mode sub cond cmd -- )  fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode ! ;
+  on hewie-doing ( here action mode sub cond mood group -- )  2drop hewie-cond !  drop  hewie-move-mode !  hewie-act !  hewie-here ! ;
+  on stalker-doing ( room mode sub cond health kind alert came -- )
+      st-came !  st-alert !  drop  health> st-hp-max !  st-hp !  st-cond !  st-sub !  st-mode !  st-room !  0 st-age ! ;
 end-behaviour
 
 \ a room's actor, named for the room
