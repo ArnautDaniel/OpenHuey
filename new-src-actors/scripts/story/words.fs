@@ -529,7 +529,7 @@ fvariable mx  fvariable mz
 \ ---- the screen fade (the screen actor's; it tells the room when it is over) ----
 : screen-id ( -- id )  s" screen" actor-named ;
 : music-id ( -- id )  s" music" actor-named ;
-\ 0x5C: over `frames` frames; kind & 0xF: 0 / 1 in, else out. (Bits 0xC0 / 0x30 fade the music
+\ 0x5C: over `frames` frames; kind & 0xF: even out, odd in (screen.fs: 6 / 7 half dark, 2 / 3 white). (Bits 0xC0 / 0x30 fade the music
 \ with it in the original: not yet.)
 \ The original drives a fade by a step script it starts for the fade's kind (Event_StartStep in
 \ slot $FA: D_003D6A40 - kinds 0 2 6 the shared $B8, 1 3 7 $B9, 4 $BC, 5 $BD); the screen actor

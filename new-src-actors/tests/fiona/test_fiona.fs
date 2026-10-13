@@ -68,4 +68,10 @@ door0 doors send unlock  deliver
 
 \ (going out by an exit: the story's room scripts take it - tests/story/test_story.fs)
 
+testing arriving by an exit while walking: she keeps her stride (Fiona_Vt34); standing, she stands
+key: W hold  30 frames
+T{ sub  room-id 0 fiona send arrived  1 frames  sub anim -> 1 1 $200 }T
+key: W release  25 frames
+T{ room-id 0 fiona send arrived  1 frames  sub anim -> 0 0 }T
+
 test-summary
