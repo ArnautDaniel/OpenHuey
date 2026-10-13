@@ -3,7 +3,7 @@
 \ (Debilitas: `debilitas`). P1: in the house - placed, standing, growling, telling the danger
 \ he is about; searching the room (stalker/search.fs: his modes, his route of stops, walking).
 IN: stalker
-USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.pursue stalker.grab stalker.struck stalker.bitten stalker.riccardo ;
+USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.pursue stalker.grab stalker.struck stalker.bitten stalker.riccardo stalker.lorenzo2 ;
 
 : me ( -- id )  self ;
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
@@ -14,7 +14,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
 : pose ( -- )
     my-at sf@ him act.x sf!  my-at 4 + sf@ him act.y sf!  my-at 8 + sf@ him act.z sf!
     self body-yaw him act.yaw sf!
-    played? 0<> 1 and him act.visible l! ;
+    played? under-t @ 0= and 0<> 1 and him act.visible l! ;   \ (under the floor: Lorenzo's other class)
 
 \ ---- in the game and out (Pursuer_Activate: waiting about, his first animation) ----
 \ in the story's character slot 2 (CharLoad_Partner: loaded and started, not yet anywhere) and
@@ -218,3 +218,40 @@ behaviour lorenzo
       self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
 end-behaviour
 : lorenzo-spawn ( -- id )  lorenzo stalker-state s" lorenzo" spawn ;
+
+\ ---- Lorenzo's other class (lorenzo.c Lorenzo2_Setup; kind 10): 250 health (hard: 400), 4 across,
+\ 18 tall; his model O_LRY/LRY_000 (motion table $424490); the Pursuer's chase with his kit (his
+\ moves by the hard setting), his own actions under the floor (stalker/lorenzo2.fs) ----
+behaviour lorenzo2
+  extends stalking
+  on spawned ( -- )
+      -1 her-came !
+      hard? if  lorenzo2h-kit  else  lorenzo2-kit  then  kit !  -1 base-chase !  -1 gives-up !  0.06981317e turn-k f!
+      lorenzo2-acts own-acts !  ['] lorenzo2-frame own-frame !  70e attack-range f!  60e reach-k f!
+      s" O_LRY/LRY_000" 2dup file!  actor-load dup my-model !  $424490 motion-table
+      0 him act.visible l!
+      hard? if  400  else  250  then  dup hp-max !  hp !  10 my-kind !  0 growls !  12 hear-threshold !  family-setup
+      9000 150  cool-secs !  away-base !  -1 own-a !  -1 own-b !   \ (Lorenzo2_Setup)
+      hard? if  25e  else  50e  then  throw-k f!  100 tolerance !  0 temper !
+      4e 18e body-size  pursuer-floor body-mask!  body-off  0 in-game !
+      self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
+end-behaviour
+: lorenzo2-spawn ( -- id )  lorenzo2 stalker-state s" lorenzo2" spawn ;
+
+\ ---- kind 39 (lorenzo.c Kind39_Setup): Lorenzo's other class again - its own tables, 250 health
+\ (hard: 300), no "rage" (its reach 18, for Hewie 12), its sweep at whoever it sees ----
+behaviour kind39
+  extends stalking
+  on spawned ( -- )
+      -1 her-came !
+      hard? if  kind39h-kit  else  kind39-kit  then  kit !  -1 base-chase !  -1 gives-up !  0.06981317e turn-k f!
+      lorenzo2-acts own-acts !  18e attack-range f!  12e reach-k f!
+      s" O_LRY/LRY_000" 2dup file!  actor-load dup my-model !  $424490 motion-table
+      0 him act.visible l!
+      hard? if  300  else  250  then  dup hp-max !  hp !  39 my-kind !  0 growls !  12 hear-threshold !  family-setup
+      9000 150  cool-secs !  away-base !  -1 own-a !  -1 own-b !   \ (Kind39_Setup)
+      hard? if  65e 75  else  30e 40  then  tolerance !  throw-k f!  0 temper !
+      4e 18e body-size  pursuer-floor body-mask!  body-off  0 in-game !
+      self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
+end-behaviour
+: kind39-spawn ( -- id )  kind39 stalker-state s" kind39" spawn ;

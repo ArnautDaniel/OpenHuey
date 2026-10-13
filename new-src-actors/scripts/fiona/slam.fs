@@ -19,6 +19,8 @@ USING: engine game-state actors messages common doors fiona.state fiona.model ;
     s" daniella" actor-named dup 0< 0= if  dup body? if  exit  then  then  drop
     s" riccardo" actor-named dup 0< 0= if  dup body? if  exit  then  then  drop
     s" lorenzo" actor-named dup 0< 0= if  dup body? if  exit  then  then  drop
+    s" lorenzo2" actor-named dup 0< 0= if  dup body? if  exit  then  then  drop
+    s" kind39" actor-named dup 0< 0= if  dup body? if  exit  then  then  drop
     -1 ;
 : stalker-in-room ( -- id | -1 )
     stalker-in-game dup 0< if  exit  then  dup body-room room-id <> if  drop -1  then ;

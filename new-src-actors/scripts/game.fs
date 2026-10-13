@@ -20,6 +20,8 @@ debilitas-spawn constant debilitas
 daniella-spawn constant daniella
 riccardo-spawn constant riccardo
 lorenzo-spawn constant lorenzo
+lorenzo2-spawn constant lorenzo2
+kind39-spawn constant kind39
 summoner-spawn constant summoner
 story-spawn constant story
 gameover-spawn constant gameover

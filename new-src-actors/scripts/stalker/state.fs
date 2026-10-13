@@ -123,4 +123,6 @@ state: stalker-state
   cell field own-frame          \ his own each frame (Riccardo's rage, snort, impact)
   cell field comings             \ +0x1630: the times he comes on, seen by her, before backing off
   cell field blows  cell field blow-move  cell field blow-aim   \ (Riccardo's flurry: blows left, the move, his aim)
+  \ (Lorenzo's other class: under the floor - frames left, where he comes up, how; whom his sweep struck)
+  cell field under-t  12 field goal  cell field goal-tri  cell field rise-anim  cell field rise-xt  cell field swept
 end-state

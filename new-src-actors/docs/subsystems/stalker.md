@@ -332,9 +332,23 @@ across, 20 tall, his model O_LRO/LRO_000 (motion table $4246C0), turning 2 degre
 reach 18, reach for Hewie 12; no temper with Hewie in his tables (the game fills them at run
 time), no throws of Hewie.
 
-The story's kinds: 4 Riccardo, 11 Lorenzo. Checked by `tests/stalker/test_riccardo.fs` (13) and
-`tests/stalker/test_lorenzo.fs` (6). *Not yet*: Riccardo's cry hits and his hammer's debris and
+**Lorenzo's other class** (kind 10; lorenzo.c Lorenzo2_*, `scripts/stalker/lorenzo2.fs`): 250
+health (hard 400), 4 across, 18 tall, his model O_LRY/LRY_000 (motion table $424490); the
+Pursuer's chase with his kit (his moves by the hard setting: a kit each). From the panic's first
+stage his "rage" (mode 2: his rage tables, his reach 18, for Hewie 12); else reach 70 (hard 40),
+for Hewie 60 (30) - his attacks from afar. His own actions: `$1000` sinking ($1303) to come up 10
+short of her ($1305; nearer than 30, his move 1, or with no way to her a look about), `$1001`
+sinking ($1304) to come up by her (5 short) in his sweep ($E02: at its key she and Hewie within
+its reach, over his floor, are struck once each - a stumble by its chance), `$1002` his reach
+from afar ($E01: aimed where she is at its 12th frame; at its key whoever is within its reach
+of there). Under the floor 15 frames, unseen. **Kind 39** (lorenzo.c Kind39_*): the same class
+with its own tables, 250 health (hard 300), no "rage" (reach 18, for Hewie 12); its sweep
+strikes whoever it sees.
+
+The story's kinds: 4 Riccardo, 11 Lorenzo, 10 Lorenzo's other class, 39. Checked by `tests/stalker/test_riccardo.fs` (13) and
+`tests/stalker/test_lorenzo.fs` (6), `tests/stalker/test_lorenzo2.fs` (12). *Not yet*: Riccardo's cry hits and his hammer's debris and
 jolt (effects), his blow at a room object (gEvents +0x68), going to the door she hides behind;
-Lorenzo's footsteps only in his walks (the stalkers' steps on screen aren't written yet); Riccardo's
-other class (kind 37, his tint), the TintStalker (23), Lorenzo's other class (10, under the floor),
-kinds 12 and 39; the cutscenes' cast beyond slot 2.
+Lorenzo's footsteps only in his walks (the stalkers' steps on screen aren't written yet); the sparks, dust,
+the sink's rings and the burst of Lorenzo's other class (effects), his travel under the floor
+(he comes up at once after 15 frames); Riccardo's other class (kind 37, his tint), the
+TintStalker (23), kind 12; the cutscenes' cast beyond slot 2.

@@ -60,6 +60,25 @@ RIC_TABLES = (dan(['Riccardo_Attack0_%02d' % i for i in range(15)] + ['str_r_5',
               dan(['Riccardo_Attack1_%02d' % i for i in range(15)] + ['str_r_6', 'str_t_8']))
 LOR_TABLES = (dan(['Lorenzo_Attack0_%02d' % i for i in range(16)] + ['str_t_9']) +
               dan(['Lorenzo_Attack1_%02d' % i for i in range(16)] + ['str_t_10']))
+def ly(h, r):   # Lorenzo2's attack tables [hard][rage] (lorenzo.c sAttackTables2: the rage sets share some)
+    base = 'Lorenzo2_Attack%d0_%02d' % (h, 0)
+    names = []
+    for i in range(17):
+        own = 'Lorenzo2_Attack%d%d_%02d' % (h, r, i)
+        names.append(own if (r == 0 or i not in (4, 5, 7, 14, 15)) else 'Lorenzo2_Attack%d0_%02d' % (h, i))
+    return dan(names)
+
+
+LY_TABLES = ly(0, 0) + ly(0, 1) + ly(1, 0) + ly(1, 1)
+LY_COMMON = dict(tables=LY_TABLES, combos=(0x422A40, 12), gestures=(0x422A10, 6), chase=0x3AFB70, lunge=0x3AF4B0,
+                 temper=(0x4230E0, 0x423990), pursue=(0x423020, 0x423070, 0x4238B0, 0x423900), throws=(9, 10),
+                 grips=((1.1771, 9.8175), (1.1771, 9.8175), (0.9538, 13.3707), (0.9538, 13.3707),
+                        (-1.1471, -2.5207), (-0.1481, -3.9775)))
+K39_TABLES = (dan(['Kind39_Attack0_%02d' % i for i in range(17)]) * 2 +
+              dan(['Kind39_Attack1_%02d' % i for i in range(17)]) * 2)
+K39_COMMON = dict(tables=K39_TABLES, combos=(0x445090, 12), gestures=(0x445060, 6), chase=0x3AFB70, lunge=0x3AF4B0,
+                  temper=(0x445550, 0x445A00), pursue=(0x4454E0, 0x4454E0, 0x445990, 0x445990), throws=(9, 10),
+                  grips=LY_COMMON['grips'])
 STALKERS = [
     # name, prefix, attack tables [hard][rage][17] (Debilitas: his rage the same), moves, combos,
     # gestures, chase, lunge, temper (normal, hard), base chase [hard][rage], throws, grip offsets
@@ -81,6 +100,12 @@ STALKERS = [
          temper=(None, None), pursue=(0x41ABD0, 0x41ABD0, 0x41AFC0, 0x41AFC0), throws=(-1, -1),
          grips=((-1.2219, -15.9398), (-1.2219, -15.9398), (0.2996, 14.3695), (0.2996, 14.3695),
                 (-0.396, -1.3011), (-0.3379, -0.706))),
+    # Lorenzo's other class (kind 10): his moves by the hard setting - a kit each
+    dict(name='Lorenzo2', p='ly0', moves=(0x4226F0, 11), **LY_COMMON),
+    dict(name='Lorenzo2H', p='ly1', moves=(0x422880, 11), **LY_COMMON),
+    # kind 39 (lorenzo.c Kind39_*): Lorenzo's other class again with its own tables, no "rage"
+    dict(name='Kind39', p='k39', moves=(0x444D40, 11), **K39_COMMON),
+    dict(name='Kind39H', p='k39h', moves=(0x444ED0, 11), **K39_COMMON),
     dict(name='Daniella', p='dan', tables=DAN_TABLES,
          moves=(0x3D7550, 13), combos=(0x3D7760, 18), gestures=(0x3D7730, 6), chase=0x3AFB70, lunge=0x3AF4B0,
          temper=(0x3D7F40, 0x3D8890), pursue=(0x3D7E60, 0x3D7EB0, 0x3D87B0, 0x3D8800), throws=(11, 12),

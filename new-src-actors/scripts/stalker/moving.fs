@@ -24,6 +24,7 @@ USING: engine game-state actors facts flag-names paths stalker.state stalker.sen
 : walk-fast ( -- a )  cond @ 1 = if  $202  else  raging @ riccardo? 0= and if  $204  else  $200  then  then ;   \ (+0x324: in a rage $204)
 : walk-slow ( -- a )   \ (Pursuer_SlowWalkAnim: in a rage $205; Debilitas's held off $203)
     my-mode @ 4 = base-chase @ 0= and riccardo? 0= and  cond @ 1 = or if  $203 exit  then
+    my-kind @ 10 =  progress pr.vars $27 + c@ 1 = and if  $205 exit  then   \ (Lorenzo2_SlowWalkAnim: hard, $205)
     riccardo? if  sees-fiona @ d-fiona f@ 100e f< and d-fiona f@ f0> and if  $206  else  $201  then  exit  then   \ (Riccardo_SlowWalkAnim)
     raging @ if  $205 exit  then
     my-mode @ if  $201  else  $206  then ;
