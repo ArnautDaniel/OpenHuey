@@ -1,7 +1,8 @@
 /* Native entry point: what the PS2 main (0x0020D860) does, minus the PS2 runtime setup. */
-#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "disc.h"
 
 typedef void (*Ctor)(void);
 
@@ -11,32 +12,20 @@ extern Ctor Sinit_Table[];
 extern Ctor D_0046969C[];
 
 extern char gGame[];
-extern const char *hg_data_dir;   /* crifs.c */
 extern void Game_Run(void *game);
+extern int hg_slus_load(void);   /* slus.c */
 
 int main(int argc, char **argv) {
     Ctor *c;
 
-    /* the extracted DATA.CVM folder: argument, $HG_DATA, or the one next to the repository */
-    if (argc > 1) {
-        hg_data_dir = argv[1];
-    } else if (getenv("HG_DATA") != NULL) {
-        hg_data_dir = getenv("HG_DATA");
+    /* the game data: the argument, $HG_DATA, the disc chosen last time, the extracted folder next
+       to the repository, or one the player picks */
+    if (!hg_disc_choose(argc > 1 ? argv[1] : getenv("HG_DATA"), HG_DEFAULT_DATA)) {
+        return 1;
     }
-    {
-        char probe[1024];
-        DIR *d;
-
-        snprintf(probe, sizeof(probe), "%s/SYSTEM", hg_data_dir);
-        d = opendir(probe);
-        if (d == NULL) {
-            fprintf(stderr,
-                    "hg: no game data in \"%s\" (expected the extracted DATA.CVM folder, with SYSTEM/ in it).\n"
-                    "Pass the folder as the first argument or set HG_DATA.\n",
-                    hg_data_dir);
-            return 1;
-        }
-        closedir(d);
+    /* the game's data from the disc's SLUS_210.75 (unless the build has it) */
+    if (!hg_slus_load()) {
+        return 1;
     }
     for (c = Sinit_Table; c < D_0046969C; c++) {
         if (*c != NULL) {

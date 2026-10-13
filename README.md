@@ -73,9 +73,11 @@ An earlier rewrite, `new-src/` (`hg2`), is retired. It is kept at the git tag `n
 You need:
 - the US executable `SLUS_210.75` (sha1 `e0867d2ec83e6e2fccf147ad9e645a9a662d1c15`), in
   `baserom/`;
-- the game's data, extracted from the disc's `DATA.CVM` into a folder. By default `hg` and
-  `hga` look for it in `../Haunting Ground (USA)/data` next to this repository. Pass the folder
-  as an argument (or set `HG_DATA` for `hg`) to use another.
+- the game's data: for `hg`, the disc image (`.iso`) itself, its `DATA.CVM`, or a folder
+  `DATA.CVM` was extracted to. `hg` takes it as an argument or in `HG_DATA`; else it uses the
+  disc chosen last time, then `../Haunting Ground (USA)/data` next to this repository, and if
+  none of those is there it asks for the disc image with a file dialog (and remembers it).
+  `hga` needs the extracted folder (default `../Haunting Ground (USA)/data`, or an argument).
 
 Building needs CMake, a C compiler and SDL3. Movies need libavcodec (loaded at run time; without
 it, movies are skipped). The PS2 build of the decompilation also needs the ps2dev toolchain:

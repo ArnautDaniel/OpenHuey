@@ -10,7 +10,7 @@
  * +0x20 status, +0x28 pause, +0x2C volume. The frame object it reads (MwsfdFrmObj) is the
  * movie's +0x18: +0x0 the image, +0x8 width, +0xC height, +0x20 the frame number. */
 #include <SDL3/SDL.h>
-#include <dlfcn.h>
+#include "port.h"
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -61,10 +61,27 @@ static struct {
     void (*av_free)(void *ptr);
 } av;
 
+/* a symbol of libavcodec (on Windows also avutil's) */
+static void *av_util;
+static void *av_sym(void *h, const char *name) {
+    void *p = hg_dlsym(h, name);
+
+    return p != NULL || av_util == NULL ? p : hg_dlsym(av_util, name);
+}
+
 static int av_load(void) {
+#ifdef _WIN32
+    /* FFmpeg's DLLs next to hg.exe: av_malloc and the frame functions are in avutil */
+    static const char *const names[] = {"avcodec-62.dll", "avcodec-61.dll", "avcodec-60.dll", "avcodec-59.dll",
+                                        "avcodec-58.dll"};
+    static const char *const util[] = {"avutil-60.dll", "avutil-59.dll", "avutil-58.dll", "avutil-57.dll",
+                                       "avutil-56.dll"};
+    void *u = NULL;
+#else
     static const char *const names[] = {"libavcodec.so",    "libavcodec.so.63", "libavcodec.so.62",
                                         "libavcodec.so.61", "libavcodec.so.60", "libavcodec.so.59",
                                         "libavcodec.so.58"};
+#endif
     void *h = NULL;
     size_t i;
 
@@ -73,14 +90,22 @@ static int av_load(void) {
     }
     av.tried = 1;
     for (i = 0; i < sizeof(names) / sizeof(names[0]) && h == NULL; i++) {
-        h = dlopen(names[i], RTLD_NOW | RTLD_GLOBAL);
+        h = hg_dlopen(names[i]);
     }
+#ifdef _WIN32
+    for (i = 0; i < sizeof(util) / sizeof(util[0]) && u == NULL; i++) {
+        u = hg_dlopen(util[i]);
+    }
+#endif
+#ifdef _WIN32
+    av_util = u;
+#endif
     if (h == NULL) {
         fprintf(stderr, "sofdec: no libavcodec, movies are skipped\n");
         return 0;
     }
 #define SYM(field, name)                                                       \
-    if ((*(void **)&av.field = dlsym(h, name)) == NULL) {                     \
+    if ((*(void **)&av.field = av_sym(h, name)) == NULL) {                    \
         fprintf(stderr, "sofdec: libavcodec has no %s, movies are skipped\n", name); \
         return 0;                                                              \
     }
@@ -119,7 +144,7 @@ typedef struct Ply {
     int compo, keyLo, keyHi;   /* the compo mode (creation parameter +0x20: 0x31 a luminance key) and
                                 * the keys (Sofdec_SetParam; kept by ply_start) */
     int vol;          /* 0.1 dB */
-    FILE *f;
+    HgFile *f;
     int eof;          /* the file is read to its end (2: and the parser flushed) */
     int drained;      /* the decoder gave its last frame */
     /* reading */
@@ -161,7 +186,7 @@ static int rd_fill(Ply *p) {
     if (p->bufPos < p->bufLen) {
         return 1;
     }
-    p->bufLen = (int)fread(p->buf, 1, sizeof(p->buf), p->f);
+    p->bufLen = (int)hg_file_read(p->f, p->buf, sizeof(p->buf));
     p->bufPos = 0;
     return p->bufLen > 0;
 }
@@ -559,7 +584,7 @@ static void ply_close(Ply *p) {
     }
     snd_unlock();
     if (p->f != NULL) {
-        fclose(p->f);
+        hg_file_close(p->f);
         p->f = NULL;
     }
     if (p->parser != NULL) {

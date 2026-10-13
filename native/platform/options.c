@@ -1,6 +1,6 @@
 /* The PC options menu: ` (the key left of 1) opens it over the game, which gets no pad input
  * while it is open. Up / down pick a line, left / right (or Enter) change it, ` or Escape
- * close it. The settings are kept in <save dir>/options.cfg (HG_SAVE, else "save").
+ * close it. The settings are kept in <save dir>/options.cfg (disc.c hg_save_dir).
  *
  *   render scale  the scene drawn at 640 x 448 times 1..4, or fitted to the window
  *   display       a window or full screen
@@ -12,6 +12,7 @@
 #include <SDL3/SDL.h>
 
 #include "glr.h"
+#include "disc.h"
 
 enum { OPT_SCALE, OPT_DISPLAY, OPT_SLOT, OPT_SAVE, OPT_LOAD, OPT_CLOSE, OPT_COUNT };
 
@@ -25,9 +26,9 @@ static int sSlot = 1;     /* 1..9 */
 
 static const char *cfg_path(void) {
     static char path[1024];
-    const char *dir = getenv("HG_SAVE");
+    const char *dir = hg_save_dir();
 
-    snprintf(path, sizeof(path), "%s/options.cfg", dir ? dir : "save");
+    snprintf(path, sizeof(path), "%s/options.cfg", dir);
     return path;
 }
 

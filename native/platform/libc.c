@@ -32,20 +32,20 @@ int msl_snprintf(char *buf, int size, const char *fmt, ...) {
 
 #include <stdlib.h>
 
+#include "port.h"
+
 /* memalign / free (Sony libc) */
 void *msl_memalign(unsigned align, unsigned size) {
-    void *p = NULL;
-
     if (align < sizeof(void *)) {
         align = sizeof(void *);
     }
-    return posix_memalign(&p, align, size ? size : 1) == 0 ? p : NULL;
+    return hg_aligned_alloc(align, size ? size : 1);
 }
 
-void msl_free(void *p) { free(p); }
+void msl_free(void *p) { hg_aligned_free(p); }
 
-/* malloc (Sony libc: _malloc_r on the global reent) */
-void *msl_malloc(unsigned size) { return malloc(size ? size : 1); }
+/* malloc (Sony libc: _malloc_r on the global reent; aligned too, so msl_free fits both) */
+void *msl_malloc(unsigned size) { return hg_aligned_alloc(16, size ? size : 1); }
 
 /* exit (Sony libc) */
 void msl_exit(int status) {

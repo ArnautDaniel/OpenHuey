@@ -5,9 +5,15 @@ Last updated 2026-10-02.
 ## Native PC build (the "slice to the menu")
 
 `cmake -S native -B build/native/cmake && cmake --build build/native/cmake -j4`, then
-`build/native/cmake/hg [extracted DATA.CVM folder]` from any directory (default: the absolute
-path of `../Haunting Ground (USA)/data` next to the repository, fixed at configure time; or
-`$HG_DATA`). Without the data it exits with a message.
+`build/native/cmake/hg [disc image | DATA.CVM | extracted DATA.CVM folder]` from any directory
+(or `$HG_DATA`; else the disc chosen last time, `<save dir>/disc.txt`; else the absolute path of
+`../Haunting Ground (USA)/data` next to the repository, fixed at configure time; else a file
+dialog asks for the disc image). The disc image is read in place (native/platform/disc.c: ISO
+9660, DATA.CVM at +0x1800 inside it).
+A build for others (`-DHG_STRIP_DATA=ON`) leaves the game's own data out of `hg` and copies it
+from the disc's `SLUS_210.75` at startup (native/platform/slus.c; found on the disc image, else
+next to the DATA.CVM / folder or in the folder above, or `$HG_SLUS`; checked by size and hash).
+`HG_SLUS_CHECK=1` in a normal build compares its data with the disc's byte by byte.
 It boots through the controller check, the memory card check, the Dolby logo (the Capcom movie
 ends at once: no Sofdec yet), the caution screen, the title (fade in, PRESS START) and the main
 menu (New Game / Load Game / Options with their descriptions), at 60 fps with the software GS.
@@ -21,7 +27,8 @@ Screenshots: `docs/img/native_*.png`.
   `HG_MAXFRAMES=n` (exit after n frames), `HG_AUTOCROSS=1` (press cross every 2 s),
   `HG_INPUT="frame:button,..."` (scripted presses held for 6 video frames, e.g.
   `1700:start,1900:down,1960:down,2020:cross` opens Options; with a save on the card the menu
-  starts on Load Game), `HG_SAVE=dir` (the memory card in slot 1, default `./save`),
+  starts on Load Game), `HG_SAVE=dir` (the memory card in slot 1, default `./save` if it exists, else the
+  user's folder from SDL_GetPrefPath, e.g. `%APPDATA%\OpenHuey\hg`),
   `HG_GSDEBUG=1`.
 - Saves: the file `BASLUS-21075HG/BASLUS-21075HG` (0x12D70 bytes: system data, 12 save headers,
   12 saves) from a PCSX2 folder memory card can be copied into `$HG_SAVE` as is.

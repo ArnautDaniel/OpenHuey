@@ -37,3 +37,4 @@ save/
 *.log
 *.raw
 screenshot*.png
+tools/win/

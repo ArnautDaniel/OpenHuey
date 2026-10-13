@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 
+#include "disc.h"
+
 #define SND_RATE 48000
 
 int snd_init(void);
@@ -19,6 +21,6 @@ void sfd_render(float *out, int frames);   /* a movie's sound (sofdec.c) */
 /* the folder (under the data folder) of a CRI directory listing (crifs.c), "" for the root */
 const char *crifs_folder(const void *list);
 /* open `name` in `folder` case-insensitively */
-FILE *crifs_open(const char *folder, const char *name);
+HgFile *crifs_open(const char *folder, const char *name);
 
 #endif
