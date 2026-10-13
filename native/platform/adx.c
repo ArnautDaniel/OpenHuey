@@ -24,7 +24,7 @@ typedef struct Adxt {
     int loop;
     int paused;
     /* the stream */
-    FILE *f;
+    HgFile *f;
     int stat;
     int ch, rate;
     unsigned total;             /* samples */
@@ -55,7 +55,7 @@ static int adx_open(Adxt *a) {
     double x, y, z;
 
     memset(h, 0, sizeof(h));
-    if (fread(h, 1, sizeof(h), a->f) < 0x20 || be16(h) != 0x8000) {
+    if (hg_file_read(a->f, h, sizeof(h)) < 0x20 || be16(h) != 0x8000) {
         return 0;
     }
     off = be16(h + 2);
@@ -101,8 +101,8 @@ static int adx_decode(Adxt *a, unsigned s) {
     unsigned fr = s / FRAME;
     int c, i;
 
-    if (fseek(a->f, a->data + (long)fr * BLOCK * a->ch, SEEK_SET) != 0
-        || fread(buf, 1, (size_t)BLOCK * a->ch, a->f) != (size_t)BLOCK * a->ch) {
+    if (hg_file_seek(a->f, a->data + (long)fr * BLOCK * a->ch) != 0
+        || hg_file_read(a->f, buf, (size_t)BLOCK * a->ch) != (size_t)BLOCK * a->ch) {
         return 0;
     }
     for (c = 0; c < a->ch; c++) {
@@ -166,7 +166,7 @@ static int adx_next(Adxt *a) {
 
 static void adx_close(Adxt *a) {
     if (a->f != NULL) {
-        fclose(a->f);
+        hg_file_close(a->f);
         a->f = NULL;
     }
 }
@@ -262,7 +262,7 @@ void ADXT_Destroy(void *h) {
 /* ADXT_StartFname: play `name` from the current folder (CriFs_SetDir) */
 void ADXT_StartFname(void *h, char *name) {
     Adxt *a = h;
-    FILE *f;
+    HgFile *f;
 
     if (a == NULL) {
         return;

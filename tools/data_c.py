@@ -189,8 +189,7 @@ def main():
         for i in range(0, n_words, 4):
             body.append("    " + ", ".join(items[i:i + 4]) + ",")
         body.append("};")
-        sets = "".join(f'".globl {n}\\n.type {n}, @object\\n.set {n}, {arr} + 0x{labs[n][0] - start4:X}\\n"'
-                       for n in names)
+        sets = " ".join(f'G1_ALIAS("{n}", "{arr}", "0x{labs[n][0] - start4:X}")' for n in names)
         body.append(f"__asm__({sets});")
         body.append("")
     head = [
@@ -199,6 +198,15 @@ def main():
         " * tools/data_c.py from the split executable. Each run is the words of a stretch of adjacent",
         " * labels at their PS2 offsets; each label is an alias into it (see tools/data_c.py). Not",
         " * compiled into the PS2 build, which keeps the disassembly. */",
+        "",
+    ]
+    head += [
+        "/* label `n` at offset `o` of run `a` (C names are \"_name\" in 32-bit Windows objects; COFF has no .type) */",
+        "#ifdef _WIN32",
+        '#define G1_ALIAS(n, a, o) ".globl _" n "\\n.set _" n ", _" a " + " o "\\n"',
+        "#else",
+        '#define G1_ALIAS(n, a, o) ".globl " n "\\n.type " n ", @object\\n.set " n ", " a " + " o "\\n"',
+        "#endif",
         "",
     ]
     head += [f"extern char {s}[];" for s in sorted(externs)]

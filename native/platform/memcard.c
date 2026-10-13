@@ -1,13 +1,14 @@
 /* Memory card: the PC build keeps saves as host files. The game's card manager
  * (src/game/memcard.c) runs a state per request; its libmc states are replaced here.
  *
- * Slot 1 is the directory $HG_SAVE (default ./save), holding the game data file as
- * BASLUS-21075HG/BASLUS-21075HG like on the card; slot 2 is empty. Every state finishes in
+ * Slot 1 is the save directory (disc.c hg_save_dir: $HG_SAVE, ./save or the user's folder),
+ * holding the game data file as BASLUS-21075HG/BASLUS-21075HG like on the card; slot 2 is empty. Every state finishes in
  * one frame. */
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "disc.h"
 
 #define AT(p, off, type) (*(type *)((uint8_t *)(p) + (off)))
 
@@ -26,9 +27,9 @@ static void finish(void *mc, int32_t status) {
 
 static const char *save_path(void) {
     static char path[1024];
-    const char *dir = getenv("HG_SAVE");
+    const char *dir = hg_save_dir();
 
-    snprintf(path, sizeof(path), "%s/BASLUS-21075HG/BASLUS-21075HG", dir ? dir : "save");
+    snprintf(path, sizeof(path), "%s/BASLUS-21075HG/BASLUS-21075HG", dir);
     return path;
 }
 
@@ -69,20 +70,19 @@ void func_00225770(void *mc) {
     finish(mc, 0);
 }
 
-#include <sys/stat.h>
-#include <sys/types.h>
+#include "port.h"
 
 #define MC_NAME(mc) AT(mc, 0x38, const char *)
 
 /* the save's directory (slot 1), made if it isn't there yet */
 static const char *save_dir(void) {
     static char path[1024];
-    const char *dir = getenv("HG_SAVE");
+    const char *dir = hg_save_dir();
 
-    snprintf(path, sizeof(path), "%s", dir ? dir : "save");
-    mkdir(path, 0777);
-    snprintf(path, sizeof(path), "%s/BASLUS-21075HG", dir ? dir : "save");
-    mkdir(path, 0777);
+    snprintf(path, sizeof(path), "%s", dir);
+    hg_mkdir(path);
+    snprintf(path, sizeof(path), "%s/BASLUS-21075HG", dir);
+    hg_mkdir(path);
     return path;
 }
 

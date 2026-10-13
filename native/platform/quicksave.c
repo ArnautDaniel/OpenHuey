@@ -2,7 +2,7 @@
  *
  *   F5   quicksave: the game's own save (SceneGame_Save: room, entry, Fiona's place and heading,
  *        the characters, the progress, the sub screen) taken in play and written to
- *        <save dir>/quicksave.bin (HG_SAVE, else "save"). The resident save the game keeps
+ *        <save dir>/quicksave.bin (disc.c hg_save_dir). The resident save the game keeps
  *        for continuing (gGamePtr +0x70 headers, +0x190 save) is left as it was.
  *   F9   quickload: the scenes end as on a soft reset and the game scene starts from the
  *        quicksave as from Load Game. Works in play and on the title.
@@ -21,6 +21,7 @@
 #include <SDL3/SDL.h>
 
 #include "glr.h"
+#include "disc.h"
 
 #define AT(p, off, type) (*(type *)((uint8_t *)(p) + (off)))
 #define VCALL(o, off, type) ((type)(AT(*(void ***)(o), off, void *)))
@@ -44,12 +45,12 @@ extern unsigned hg_video_frame;   /* video.c */
 
 static const char *quick_path(int slot) {
     static char path[1024];
-    const char *dir = getenv("HG_SAVE");
+    const char *dir = hg_save_dir();
 
     if (slot == 0) {
-        snprintf(path, sizeof(path), "%s/quicksave.bin", dir ? dir : "save");
+        snprintf(path, sizeof(path), "%s/quicksave.bin", dir);
     } else {
-        snprintf(path, sizeof(path), "%s/slot_%d.bin", dir ? dir : "save", slot);
+        snprintf(path, sizeof(path), "%s/slot_%d.bin", dir, slot);
     }
     return path;
 }
@@ -132,9 +133,9 @@ static void quicksave(void *g, int slot) {
     SceneGame_Save(g, 0);
     {
         char dir[1024];
-        const char *d = getenv("HG_SAVE");
+        const char *d = hg_save_dir();
 
-        snprintf(dir, sizeof(dir), "%s", d ? d : "save");
+        snprintf(dir, sizeof(dir), "%s", d);
         SDL_CreateDirectory(dir);
     }
     if ((f = fopen(quick_path(slot), "wb")) != NULL) {

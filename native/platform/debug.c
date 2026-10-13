@@ -113,7 +113,8 @@ void hg_debug_flaglog(int32_t flag, int32_t on) {
 
 /* HG_WATCHDOG=<seconds>: after that long print where the game is (a backtrace) and stop - for
  * finding endless loops */
-#include <execinfo.h>
+#include "port.h"
+#ifndef _WIN32
 #include <signal.h>
 #include <unistd.h>
 
@@ -135,6 +136,55 @@ __attribute__((constructor)) static void watchdog_init(void) {
         alarm((unsigned)atoi(s));
     }
 }
+#endif
+
+#ifdef _WIN32
+/* Windows: on a crash, the exception, where it happened and the code addresses on the stack
+ * (i686-w64-mingw32-addr2line -fe hg.exe <address> names them) */
+static LONG WINAPI crash_report(EXCEPTION_POINTERS *e) {
+    MEMORY_BASIC_INFORMATION mi;
+    DWORD *sp = (DWORD *)e->ContextRecord->Esp;
+    HMODULE self = GetModuleHandleA(NULL);
+    int i, n = 0;
+
+    fprintf(stderr, "\nhg crashed: exception 0x%08lX at 0x%08lX (data 0x%08lX)\ncode addresses on the stack:\n",
+            e->ExceptionRecord->ExceptionCode, e->ContextRecord->Eip,
+            e->ExceptionRecord->NumberParameters > 1 ? (unsigned long)e->ExceptionRecord->ExceptionInformation[1] : 0UL);
+    for (i = 0; i < 2048 && n < 24; i++) {
+        if (VirtualQuery(sp + i, &mi, sizeof(mi)) == 0 || !(mi.Protect & (PAGE_READWRITE | PAGE_READONLY))) {
+            break;
+        }
+        if (VirtualQuery((void *)(uintptr_t)sp[i], &mi, sizeof(mi)) != 0 && mi.AllocationBase == (void *)self &&
+            (mi.Protect & (PAGE_EXECUTE_READ | PAGE_EXECUTE | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY))) {
+            fprintf(stderr, "  0x%08lX\n", sp[i]);
+            n++;
+        }
+    }
+    fprintf(stderr, "top of the stack:");
+    for (i = 0; i < 8; i++) {
+        char mod[260] = "?";
+        HMODULE h = NULL;
+
+        if (VirtualQuery(sp + i, &mi, sizeof(mi)) == 0) {
+            break;
+        }
+        if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                               (LPCSTR)(uintptr_t)sp[i], &h) && h != NULL) {
+            GetModuleFileNameA(h, mod, sizeof(mod));
+        } else {
+            mod[0] = 0;
+        }
+        fprintf(stderr, "\n  [esp+%d] 0x%08lX %s", i * 4, sp[i], mod);
+    }
+    fputc('\n', stderr);
+    fflush(stderr);
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+
+__attribute__((constructor)) static void crash_report_init(void) {
+    SetUnhandledExceptionFilter(crash_report);
+}
+#endif
 
 /* HG_ROOMLOG=1: room changes and character placements (include/common.h ROOMLOG) */
 #include <stdarg.h>
@@ -183,18 +233,20 @@ void hg_evlog(const char *fmt, ...) {
  * first page - is a wrong pointer somewhere: say which file and who asked, and refuse it (the
  * PS2 would have overwritten whatever was there; here it is a crash a frame later) */
 s32 hg_loader_check(const char *path, unsigned to) {
+#ifdef _WIN32
+    MEMORY_BASIC_INFORMATION mi;
+    int code = VirtualQuery((void *)(uintptr_t)to, &mi, sizeof(mi)) != 0 &&
+               (mi.Protect & (PAGE_EXECUTE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY));
+#else
     extern char __executable_start[], etext[];
+    int code = to >= (unsigned)__executable_start && to < (unsigned)etext;
+#endif
 
-    if (to >= 0x1000 && !(to >= (unsigned)__executable_start && to < (unsigned)etext)) {
+    if (to >= 0x1000 && !code) {
         return 1;
     }
     fprintf(stderr, "loader: \"%s\" queued into %s at 0x%08X, refused; asked from:\n", path,
             to < 0x1000 ? "nowhere" : "the code", to);
-    {
-        void *frames[16];
-        int n = backtrace(frames, 16);
-
-        backtrace_symbols_fd(frames, n, 2);
-    }
+    hg_backtrace(0, 16);
     return 0;
 }
