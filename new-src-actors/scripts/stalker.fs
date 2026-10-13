@@ -38,7 +38,6 @@ USING: engine game-state actors messages common facts flag-names room-names path
 \ ---- the summoner (summoner.fs): told where he is each frame while in slot 2; brought in by it
 \ out of sight (Pursuer_IntoRoomByEvent): by a noise after her, else waiting about - with a plan
 \ heading for her, without one off by an exit at random ----
-: own-room? ( -- flag )  my-room dup own-a @ =  swap own-b @ =  or  own-a @ 0< 0= and ;
 : status ( -- )
     in-game @ if  my-room  else  -1  then  my-mode @  in-game @ 0<>  in-game @ if  own-room?  else  false  then
     away-base @  cool-secs @  s" summoner" actor-named send stalker-status ;
@@ -154,7 +153,8 @@ behaviour debilitas
       s" O_DB0/DB0_000" 2dup file!  actor-load dup my-model !  $3D89A0 motion-table
       0 him act.visible l!
       hard? if  110  else  70  then  dup hp-max !  hp !  2 my-kind !  -1 growls !  0 hear-threshold !  family-setup
-      4500 away-base !  90 cool-secs !  $20 own-a !  $02 own-b !   \ (Debilitas_Setup; his rooms D_0041BE40)
+      4500 away-base !  90 cool-secs !  $20 own-a !  $02 own-b !   \ (Debilitas_Setup; his rooms D_0041BE40,
+      796 own-a-tri !  794 own-b-tri !                             \ and their spots)
       20 tolerance !  10e throw-k f!  0 temper !                \ (his temper with Hewie)
       5e 20e body-size  debilitas-floor body-mask!  body-off  0 in-game !
       self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;

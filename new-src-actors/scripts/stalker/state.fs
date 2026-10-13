@@ -90,6 +90,11 @@ state: stalker-state
   \ for the summoner (summoner.fs): his time away's base (+0x16E0, frames), his cooldown (+0x16E4,
   \ seconds: vtable +0x2D4), the rooms he keeps to (vtable +0x314: two, -1 none)
   cell field away-base  cell field cool-secs  cell field own-a  cell field own-b
+  \ his own rooms' spots (the +0x314 list's triangles: where he rests in them); his footsteps
+  \ heard through the walls (+0x1530 how far closed in since the last, +0x1534 / +0x1538 his
+  \ way left now and before, +0x16A4 his foot)
+  cell field own-a-tri  cell field own-b-tri
+  1 floats field step-acc  1 floats field step-last  cell field step-foot
   \ the doors of the room being played (stalker/doorway.fs): on his way out by an exit (+0x17B0:
   \ making-for; the room's modes wait meanwhile), his animation's kind at its door (+0x104: 0 / 2
   \ opening it from behind / in front; -1 none), the door asked for and the one held, frames

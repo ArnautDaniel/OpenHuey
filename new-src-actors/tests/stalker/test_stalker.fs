@@ -93,8 +93,18 @@ testing at a shut door into her room he knocks, waits, then comes in and it swin
 castle-1f-2 room!  10 frames
 castle-1f-10 debug:debilitas-hunt  2 frames
 T{ [: knock-t @ 0> ;] 900 wait-for  [: away? ;] his -> -1 -1 }T
+testing ... coming up to it his footsteps were heard through the wall (P4b)
+T{ [: step-foot @ 0> ;] his -> -1 }T
 T{ [: my-room castle-1f-2 = ;] 200 wait-for  game:debilitas body-tri 0< 0= -> -1 -1 }T
 T{ 30 frames  32 state@ opened-bit and 0<> -> -1 }T
+debug:debilitas-out  2 frames
+
+testing held off out of sight (P4b): to the nearer of his own rooms ($20, $02), and there he stays
+front-garden-2 room!  10 frames   \ (the summoner takes him after 5 s held off: checked within it)
+castle-1f-10 0 game:debilitas send stalker-in  2 frames
+[: 4 mode!  900 mode-t !  0 doors-n !  0 door-i ! ;] his
+T{ [: own-room? ;] 1500 wait-for  [: my-room ;] his -> -1 castle-1f-2 }T
+T{ 40 frames  [: own-room?  my-mode @  route-over? ;] his -> -1 4 -1 }T
 debug:debilitas-out  2 frames
 
 testing after her (P2a): seeing her he chases her; his blows knock her down, a hard one throws her, a hold catches her
