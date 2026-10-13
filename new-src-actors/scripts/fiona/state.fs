@@ -76,6 +76,8 @@ state: fiona-state
   1 floats field her-wk-step   1 floats field her-wk-turn   1 floats field her-wk-speed
   \ at a door
   cell field her-door-exit      \ the exit (-1 none)
+  cell field her-ladder         \ the ladder she uses (+0x100: the room's nav link; -1 none)
+  cell field her-ladder-side    \ +0x104: the side she came at it from (0 the foot, 1 the top)
   cell field her-door-side      \ the side she came from (1 in front)
   cell field her-door-kind      \ its animation (0..7 of FIN_D000.MTN)
   cell field her-door-anim      \ hers (0x600 + kind; 0x608.. trying a locked one)

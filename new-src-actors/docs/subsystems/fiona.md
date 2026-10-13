@@ -252,3 +252,30 @@ burst open, the stalker decides (`blow` all the same: struck only when he is rig
 Any shut out: the kick's and the shove's blow is spent. Checked by `tests/stalker/test_stalker.fs`
 (a slam on him in the doorway). Not yet: the rumble; the PursuerGroup bit 8 ("may pass") is
 taken as standing on the door's passage triangles.
+## F5: ladders (`scripts/fiona/ladder.fs`)
+
+A ladder is a nav link of the room (NavMesh_FindDoorRegions: two triangles sharing a link group,
+bits 9..13; `nav-link-*`): side 0 its foot (the lower triangle), side 1 its top, each with a spot
+(the edge toward the other) and a facing (across it, toward the ladder). Free (her mode 0, her
+action 0, the panic below stage 4), in its region on one side (`nav-link-at?`, `nav-link-side`),
+facing along that side (Actor_FacingDoor), the stalker not in the region nor touching her - the
+action button (Fiona_StateLadder): she walks to its end's spot (Actor_DoorFront with
+kFionaMeetOffsets - 12-byte entries x, z, degrees: the top 1.7 back from it, the foot 2.1 out),
+facing along it, and gets on ($700 from the top, $704 from the foot; her mode 3, sub 7). On it
+(Fiona_StateOnLadder), when a move has come round (the motion's flag $20 - Motion's
+`MOTION_EVENTS` are the slot's flags, not the key events) or while holding, the stick (W / S):
+down - the next rung ($701, its end $702), off at the foot within 18 of it ($703); up - the
+next rung ($705, its end $706), off at the top within 3 of it ($707); let go - holding ($708 /
+$709). After each move her triangle is the end's. The stalker in the region at its foot keeps
+her from getting off there (she holds on); at its top, within his height above her, from going
+up (Progress_WhoIsWhere's region bits: 4 side 0, 2 side 1). Off (Fiona_StateLadderOff): at the
+move's flag $20 she is put by that end (the foot 2.1 out, the top 1.7 back) and free. She is
+moved by her animations' root motion, up and down too, off the floor. Rooms with ladders:
+castle-1f-2 (two), room 3 (two), 29, 37, 40, 47, 48, 84. Checked by
+`tests/fiona/test_ladder.fs` (11): on from the top and down, off on the ground floor; turned
+from it nothing; on from the foot and up, off on the floor above; the stalker at its foot - she
+holds on. Not yet: knocked off it (FI 0x1AD584 bit 2: Fiona_StateCaughtCrawling), the region's
+slot bits for Hewie.
+
+Also fixed with it: `walk-anim` (Fiona_StateCmdWalkAnim) read the animation's key events for
+`MOTION_EVENTS` $20; it is the motion's come-round flag (`ended?`).
