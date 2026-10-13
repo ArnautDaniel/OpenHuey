@@ -2042,6 +2042,24 @@ PRIM(p_cast_as) {   /* ( id model -- ) the character with script id `id` (0 Fion
     gEvents.chars[i].id = (int32_t)id;
     gEvents.chars[i].actor = (int32_t)model;
 }
+PRIM(p_cast_model) {   /* ( id -- model | -1 ) the model cast as script id `id` (cast-as) */
+    Cell id = POP();
+    int i;
+
+    for (i = 0; i < CHARACTERS; i++) {
+        if (gEvents.chars[i].present && gEvents.chars[i].id == id) {
+            PUSH(gEvents.chars[i].actor);
+            return;
+        }
+    }
+    PUSH(-1);
+}
+PRIM(p_model_file) {   /* ( model -- addr len ) the files it was loaded from (no extension) */
+    Actor *a = actor_arg(f, POP());
+
+    PUSH((Cell)a->name);
+    PUSH((Cell)strnlen(a->name, sizeof(a->name)));
+}
 PRIM(p_ui_clear) { sUiN[ui_layer(f, POP())] = 0; }   /* ( layer -- ) */
 PRIM(p_ui_rect) {   /* ( layer x y w h rgba -- ) */
     Cell rgba = POP(), height = POP(), width = POP(), y = POP(), x = POP();
@@ -2135,7 +2153,7 @@ void bind_engine(Forth *f) {
         {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-sides", p_route_sides}, {"exit-way", p_exit_way}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"world-exits-rebuild", p_exits_rebuild}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
         {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"look-on?", p_look_on}, {"sprites", p_sprites_new}, {"sprites-free", p_sprites_free}, {"sprites-free-all", p_sprites_free_all}, {"sprites-texture", p_sprites_texture}, {"sprites-cells", p_sprites_cells}, {"sprites-flags", p_sprites_flags}, {"sprites-offset", p_sprites_offset}, {"sprites-corner", p_sprites_corner}, {"sprites-count", p_sprites_count}, {"sprite!", p_sprite_store}, {"sprites-uv", p_sprites_uv}, {"sprite-quad!", p_sprite_quad}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
-        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"ui-movie", p_ui_movie}, {"cast-as", p_cast_as}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
+        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"ui-movie", p_ui_movie}, {"cast-as", p_cast_as}, {"cast-model", p_cast_model}, {"model-file", p_model_file}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-follow", p_cam_follow}, {"cam-target!", p_cam_target}, {"cam-ease", p_cam_ease}, {"cam-event?", p_cam_event}, {"cam-track", p_cam_track},
