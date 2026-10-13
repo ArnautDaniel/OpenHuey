@@ -113,7 +113,7 @@ behaviour free
   on tick ( -- )  self body? if  frame  then ;
   on frame-end ( -- )   \ what she is doing, as the frame left her; her move
       self body? 0= if  exit  then
-      her-mode @ her-sub @ her-cond @ her-cmd @ broadcast fiona-doing
+      her-mode @ her-sub @ her-cond @ her-cmd @ her-doing @ broadcast fiona-doing
       plight broadcast fiona-plight
       tell-head
       her-move-done @  ended?  her-model @ 0 0 1 motion-events  broadcast moving ;
@@ -124,9 +124,13 @@ behaviour free
   on hold-anim ( anim blend -- )   \ (the scripts' 0x9D: in it, held)
       -1 play-blend  2 her-mode !  $11 her-doing !  ['] root-move her-act !  done ;
   on show ( on -- )  0<> 1 and her act.visible l! ;
+  \ the story's (F5): calmer (Fiona_CalmDown: n / 30 off her fear), her recovery shorter
+  \ (Fiona_LowerRecovery: 60 / n frames)
+  on fear-less ( n -- )  s>f 30e f/ fnegate her-fear f@ f+ 0e fmax her-fear f! ;
+  on recovery-less ( n -- )  1 max 60 swap / negate her-recovery +!  her-recovery @ 0 max her-recovery ! ;
   \ Hewie (F3)
-  on hewie-doing ( here action mode sub cond mood group -- )
-      dog-group !  dog-mood !  dog-cond !  dog-sub !  dog-mode !  dog-action !  dog-here ! ;
+  on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
+      2drop 2drop 2drop  dog-group !  dog-mood !  dog-cond !  dog-sub !  dog-mode !  dog-action !  dog-here ! ;
   on meet-at ( tri x y z face -- )
       asked? 0= if  2drop 2drop drop  hewie-id send meet-off exit  then
       >r >r >r cell>f  r> cell>f  r> cell>f  r> cell>f  meet-placed ;

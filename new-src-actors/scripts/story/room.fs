@@ -91,8 +91,10 @@ behaviour playing-room
   on story-stop ( -- )  free-slots  release-all  scene-gone  effects-off  story-id send room-done ;
   on danger ( level -- )  the-danger ! ;
   on panic ( stage level -- )  drop the-panic ! ;
-  on fiona-doing ( mode sub cond cmd -- )  fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode ! ;
-  on hewie-doing ( here action mode sub cond mood group -- )  2drop hewie-cond !  drop  hewie-move-mode !  hewie-act !  hewie-here ! ;
+  on fiona-doing ( mode sub cond cmd doing -- )  fiona-act !  fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode ! ;
+  on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
+      hewie-trust-lv !  hewie-way !  hewie-breakable !  hewie-reach !  hewie-near !  hewie-cmdable !
+      2drop hewie-cond !  drop  hewie-move-mode !  hewie-act !  hewie-here ! ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
       st-came !  st-alert !  drop  st-hp-max !  st-hp !  st-cond !  st-sub !  st-mode !  st-room !  0 st-age ! ;
 end-behaviour

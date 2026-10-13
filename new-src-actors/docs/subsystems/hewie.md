@@ -174,6 +174,22 @@ growling at the stalker (0x7B and its flight, Hewie_FleeExit), the bite's hit ef
 feeling's mood (Hewie_FeelPursuer), held by the stalker's grab (`hit` 6), the door through
 which he is pushed (0x6C), the creatures.
 
+**H4: the story's words about him** (`scripts/story/words.fs`; EventCmd_Hewie, event.c's
+conditions). He tells each frame, in `hewie-doing`, besides what he does: whether she may command
+him (Hewie_FionaCanCommand: with her, not scripted, idle, not angry, a command word that takes
+one, no meeting), near enough for it (Hewie_FionaNearCommand: within 150 - straight, not by his
+way), whether he can reach her (Hewie_FionaReachable: only while scripted, a way planned apart -
+`his-probe`), whether he may be broken off (Hewie_MayBreakOff, not `once`: its mark not kept),
+his half of the room, his trust level. Conditions 0x24 his action, 0x4C, 0x0F, 0x5A, 0x31 (the
+converter's `hewie-stays?`: he *may* be broken off), 0x33, 0x61. Orders: 0x39 his action
+(`do-action`), 0x85 trust, 0xC4 his mood, 0xD0 his half, 0xBD his-pet-time 300, 0x3F his place
+(`hewie-place`: in a room on a triangle, on its half; in the played room his default action),
+0xC5 / 0xC6 a point to look to if he has none (a zone's - in a script variable - or a
+character's place, raised: `scent-at`), his moves 0x78 bark, 0x7A / 0xB0 to a point (Hewie_Requests
+0x12, 0x13, 0x14, 0x0D), and as the script's own 0x20 through blocked floor (`his-2b`), 0x21 left
+alone (`his-2d`). Checked by `tests/story/test_hewie_fiona_words.fs`. Not yet: his model swapped
+(0xB7), 0xBB's forced action, his animations (0x77, 0xC3), 0x63's turn.
+
 **H4 begun** (with the story's S3): the story's moves (`scripted-move` → his actions 0x3B..0x47,
 0x7F; `scripted` on / off: Hewie_Think while a script has him; `hold-anim`, `show`; `moving`
 reported each frame). Left for H4: fetching (0x78), the Hewie-controlled sections, behind Fiona

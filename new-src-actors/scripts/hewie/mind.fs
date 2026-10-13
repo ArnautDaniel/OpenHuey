@@ -376,9 +376,22 @@ variable feet-new
     his-yaw him-model act.yaw sf!
     his-away @ 0= 1 and him-model act.visible l!
     model his-away @ 0= dog-legs ;
-: tell-doing ( -- )   \ what he is doing, for Fiona
-    self body? 0= if  0 0 0 0 0 0 0
-    else  his-away @ if  1  else  2  then  his-action @ his-mode @ his-sub @ his-cond @ his-mood @ anim-group  then
+: free-for-command? ( -- flag )   \ (Hewie_FreeForCommand: idle, a command queued, nothing linked)
+    his-busy @ 0=  his-mode @ 0= and  his-cmd @ 0<> and  his-cmd @ $80000000 and 0= and  his-meet @ 0< and ;
+: commandable? ( -- flag )  her-with?  his-mood @ 3 <> and  free-for-command? and ;   \ Hewie_FionaCanCommand
+: near-command? ( -- flag )   \ Hewie_FionaNearCommand (by the straight distance: his way's length not planned here)
+    commandable? if  her-dist 150e f<=  else  false  then ;
+: reachable? ( -- flag )   \ Hewie_FionaReachable (only while a script has him: a way to her, planned apart)
+    his-busy @ 0=  his-away @ or if  true exit  then
+    his-2d @ his-2b @ or if  false exit  then
+    her-with? 0= if  true exit  then
+    his-probe his-tri his-at her body-tri fiona-at self body-mask path-plan 0> ;
+: breakable? ( -- flag )   \ Hewie_MayBreakOff (not `once`): scripted or his command word lets it, not angry
+    his-busy @  his-cmd @ $80000008 and 8 = or  his-mood @ 3 <> and ;
+: tell-doing ( -- )   \ what he is doing, for Fiona and the story
+    self body? 0= if  0 0 0 0 0 0 0  0 0 -1 0 -1 his-trust @
+    else  his-away @ if  1  else  2  then  his-action @ his-mode @ his-sub @ his-cond @ his-mood @ anim-group
+          commandable? near-command? reachable? breakable? his-way @ his-trust @  then
     broadcast hewie-doing ;
 : full-stop ( -- )   \ Hewie_FullStop: what a script's letting go clears
     0 his-broke !  0 his-hits !  -1 his-look-char !  0 his-scene-req !  0 his-look-pt? !

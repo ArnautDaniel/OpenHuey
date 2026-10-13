@@ -28,6 +28,7 @@ state: hewie-state
   cell field his-busy           \ a script has him (+0xE0; H4)
   cell field his-done           \ the script's move is done (+0xE1; H4)
   /path field his-path
+  /path field his-probe          \ a way planned only to see if there is one (Hewie_FionaReachable)
   \ how he feels and obeys
   cell field his-mood   cell field his-mood-time   \ 0 normal, 1 pleased, 2 upset, 3 angry
   cell field his-waiting        \ waiting (1: does as he likes) or obeying (0)

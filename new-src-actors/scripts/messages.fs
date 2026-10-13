@@ -64,8 +64,9 @@ message panic-level! ( level -- )
 message panic ( stage level -- )             \ broadcast each frame
 
 \ ---- Fiona (docs/subsystems/fiona.md) ----
-message fiona-doing ( mode sub cond cmd -- ) \ broadcast each frame: her move mode, what she does, her condition,
-                                             \ her command this frame (-1 none; 3 the praise held)
+message fiona-doing ( mode sub cond cmd doing -- ) \ broadcast each frame: her move mode, what she does, her
+                                             \ condition, her command this frame (-1 none; 3 the praise held), her
+                                             \ action (+0x1AD580: her-doing)
 message fiona-plight ( state -- )            \ broadcast each frame: how she stands for a stalker's attack
                                              \ (Pursuer_FionaState): 0 calm, 1 fleeing, 2 panicking, 3 out
                                              \ of reach (hidden, already struck), 4 / 5 the panic's stages 4 / 5
@@ -92,9 +93,13 @@ message unhand ( -- )                        \ to Fiona: the stalker leading her
 \ ---- Hewie (docs/subsystems/hewie.md) ----
 message join-fiona ( -- )                    \ he comes into the game at her heel (the story; the console)
 message part-from-fiona ( -- )               \ he leaves the game
-message hewie-doing ( here action mode sub cond mood group -- )   \ broadcast each frame: here 0 out of the
-                                             \ game, 1 in another room, 2 with her; his action, move mode and
-                                             \ its part, condition, mood, his pose's group
+message hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
+                                             \ broadcast each frame: here 0 out of the game, 1 in another room, 2
+                                             \ with her; his action, move mode and its part, condition, mood, his
+                                             \ pose's group; for the story: she may command him (Hewie_FionaCanCommand),
+                                             \ near enough for it (Hewie_FionaNearCommand), he can reach her
+                                             \ (Hewie_FionaReachable), he may be broken off (Hewie_MayBreakOff), his
+                                             \ half of the room (+0xF3668), his trust level
 message command ( code tri yaw x z -- )      \ Fiona's command (0x23 go there: the spot; floats f>cell)
 message reaction ( n -- )                    \ how her doing strikes him (Fiona_HewieReact's row)
 \ a joint action by his side: she asks (type 0 scold, 2 praise, 4 stay); he finds her place by
@@ -168,6 +173,22 @@ message stalker-doing ( room mode sub cond hp hp-max kind alert came -- )   \ br
                                              \ game: his room, how he moves (0 his own, 3 off screen, 4 struck, 8 taking her),
                                              \ what (9 Hewie on him, $A down, $18 leading her), condition, health, his kind,
                                              \ his alert (his mode: Progress_StalkerAlert), the exit he came in by (-1 none)
+\ ---- the story's orders to Hewie, Fiona and the panic (the scripts' commands; H4 / F5) ----
+message do-action ( action arg -- )          \ 0x39: his action (Hewie_SetAction)
+message trust+ ( n -- )                      \ 0x85: his trust (Hewie_AddTrust)
+message mood! ( mood -- )                    \ 0xC4: his mood (Hewie_SetMode, its own time)
+message scent-at ( x y z -- )                \ 0xC5 / 0xC6: a point to look to, if he has none (floats f>cell)
+message hewie-place ( room tri side -- )     \ 0x3F: put in a room on a triangle, on its half (his +0x64)
+message hewie-side! ( side -- )              \ 0xD0: his half of the room (0..2, else none)
+message hewie-stay ( -- )                    \ 0xBD: +0xF3688 300 frames
+message noclip ( on -- )                     \ 0x20: through blocked floor (+0x2B)
+message aside ( on -- )                      \ 0x21: left alone (+0x2D)
+message fear-less ( n -- )                   \ 0x94: Fiona calmer by n / 30 (Fiona_CalmDown)
+message recovery-less ( n -- )               \ 0x95: her recovery less 60 / n frames (Fiona_LowerRecovery)
+message threat ( amount -- )                 \ 0x43: the panic's threat (Threat_Raise; f>cell)
+message threat-acc ( amount -- )             \ 0xC0: the threat's accumulator (+0x7DC; f>cell)
+message calm-in ( v -- )                     \ 0x93: calming (bit $80: 128 at once, else v / 30)
+message panic-reach ( level -- )             \ 0xC9: the level set to it if not above it (Panic_SetLevel)
 \ ---- the story's orders to a character (the scripts' commands; P4) ----
 message stalker-order ( mode -- )            \ 0x2F: 0 after her, 2 to her room / searching here, 3 searching
 message stalker-clock ( frames -- )          \ 0x2A: his mode's clock (+0x1660)

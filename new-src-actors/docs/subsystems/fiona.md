@@ -227,6 +227,17 @@ rolled by him); at its end her fear up 10. Each reaches the stalker and Hewie on
 struck home (`blow-taken`) she's held still 5 frames ($90 kicked, $8F shoved). Hewie is told
 (`reaction` 10 / 11) when she shoves or kicks without striking him.
 
+## F5: the story's words about her (`scripts/story/words.fs`)
+
+She tells, in `fiona-doing`, her action too (+0x1AD580: `her-doing`). Conditions 0x3F her action,
+0x3D free (Fiona_IsIdle: her mode 0, not 1 / $E / $F; the panic's stage below 4), 0x26 the action
+she started this frame (Fiona_MarkActionStart: her command to Hewie, cleared each frame - hga's
+`cmd`). Orders: 0x94 calmer by n / 30 (Fiona_CalmDown: off her fear), 0x95 her recovery shorter by
+60 / n frames (Fiona_LowerRecovery). The panic's (`docs/subsystems/panic.md`): 0x43 the threat
+(Threat_Raise - as a fright, into the weighted parts; `threat`), 0xC0 its accumulator, 0x93
+calming (the converter's `panic-grow`: bit $80 128 at once, else v / 30), 0xC9 the level set to
+one it hasn't passed. Checked by `tests/story/test_hewie_fiona_words.fs` (13, with Hewie's).
+
 ## F4d: slamming a door (`scripts/fiona/slam.fs`)
 
 Fiona_SlamDoor, tried by her flee turn (at its event $20, her radius behind her, looking back),

@@ -44,7 +44,21 @@ behaviour hewie-own
       his-joining @ if  s" fiona" actor-named his-fiona !  join  then ;   \ (he comes in by himself: Hewie_Arrive, the doors off screen)
   on danger ( level -- )  his-danger ! ;
   on panic ( stage level -- )  drop his-panic ! ;
-  on fiona-doing ( mode sub cond cmd -- )  fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode ! ;
+  on fiona-doing ( mode sub cond cmd doing -- )  drop fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode ! ;
+  \ the story's (H4: EventCmd_Hewie) - his action, trust, mood, a point to look to, his place and
+  \ half of the room, a wait; through blocked floor, left alone
+  on do-action ( action arg -- )  along? if  set-action  else  2drop  then ;
+  on trust+ ( n -- )  add-trust ;
+  on mood! ( mood -- )  along? if  -1 set-mood  else  drop  then ;
+  on scent-at ( x y z -- )
+      his-smells @ along? 0= or if  2drop drop exit  then
+      >r >r cell>f r> cell>f r> cell>f  his-scent vec!  1 his-smells ! ;
+  on hewie-place ( room tri side -- )   \ (his +0x64, Hewie_PlaceInRoom)
+      his-way !  over room-id = if  dup tri-center body-place  to-default  else  dup tri-center body-place  then ;
+  on hewie-side! ( side -- )  dup 3 u< 0= if  drop -1  then  his-way ! ;
+  on hewie-stay ( -- )  300 his-pet-time ! ;
+  on noclip ( on -- )  0<> 1 and his-2b ! ;
+  on aside ( on -- )  0<> 1 and his-2d ! ;
   on tick ( -- )  along? if  frame  else  tell-doing  then ;
   \ her commands (H2)
   on command ( code tri yaw x z -- )   \ (Hewie_StateBlock's 13)
