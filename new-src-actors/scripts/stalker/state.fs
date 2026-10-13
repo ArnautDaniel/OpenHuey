@@ -4,6 +4,12 @@ IN: stalker.state
 USING: actors paths ;
 
 state: stalker-state
+  cell field kit                \ his tables (stalker/tables.fs: debilitas-kit, daniella-kit)
+  \ his own ways and numbers (his vtable): the Pursuer's chase (Pursuer_ChaseDecision /
+  \ BehaviourStalk: Daniella) or Debilitas's own (Debilitas_Behaviour), giving up after enough
+  \ damage (Debilitas_GivesUp; the Pursuer's never), his turn a frame (+0xA0), his reach in
+  \ the ground he gains (+0x2F0: Debilitas 16, Daniella 12)
+  cell field base-chase  cell field gives-up  1 floats field turn-k  1 floats field reach-k
   cell field my-model           \ its model (an Actor)
   cell field in-game            \ in the game (stalker-in .. stalker-out)
   cell field my-mode            \ +0x16C8: 0 after Fiona, 1 heading for her room, 2 searching it, 3 waiting about, 4 held off

@@ -16,12 +16,10 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
 : temper# ( cell -- n )  cells temper-table + @ ;
 : hot? ( -- flag )  temper @ tolerance @ > ;
 
-\ ---- the spot by him for Hewie's attack (Pursuer_GrabHewieSpot; Debilitas_ActionOffsets): the
+\ ---- the spot by him for Hewie's attack (Pursuer_GrabHewieSpot; his ActionOffsets: his kit): the
 \ offset in his frame by kind, round him from Hewie's side (head on and the leg: from the other
 \ side) 10 degrees at a time either way until one is on the floor and Hewie can run straight
 \ there ----
-create grip-offsets   0.9433e f, 11.2509e f,  0.9433e f, 11.2509e f,  2.1745e f, 15.0419e f,
-                      2.1745e f, 15.0419e f,  -1.6117e f, -4.3418e f,  0.0182e f, -1.0008e f,
 create gs-at 12 allot  fvariable gs-h  fvariable gs-r  fvariable gs-x  fvariable gs-z
 : try-heading ( F: r -- ) ( -- tri | -1 )   \ the offset turned by r from where he stands
     gs-r f!
@@ -46,7 +44,7 @@ create bite-cells  8 , 9 , 6 , 7 , 10 , 11 ,      \ (temper-table: on the bite)
 create hold-cells  14 , 15 , 12 , 13 , 16 , 17 ,  \ (... each hold on)
 : k# ( table -- n )  bitten @ 10 - cells + @ ;
 defer bitten-over ( -- )
-: throw-move ( -- n )  bite-anim @ $1700 = if  13  else  14  then ;   \ (Debilitas_AttackAnimA / B)
+: throw-move ( -- n )  throw-moves  bite-anim @ $1700 = if  drop  else  nip  then ;   \ (his AttackAnimA / B)
 : throw-damage ( -- n )  throw-move /move * moves + 5 cells + @ ;
 : holding-on ( -- )   \ (Pursuer_StateHewieHolds)
     ended? if

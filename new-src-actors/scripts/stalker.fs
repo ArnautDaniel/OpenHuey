@@ -3,7 +3,7 @@
 \ (Debilitas: `debilitas`). P1: in the house - placed, standing, growling, telling the danger
 \ he is about; searching the room (stalker/search.fs: his modes, his route of stops, walking).
 IN: stalker
-USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.grab stalker.struck stalker.bitten ;
+USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.pursue stalker.grab stalker.struck stalker.bitten ;
 
 : me ( -- id )  self ;
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
@@ -90,7 +90,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
 : ordered ( mode -- )
     case
         0 of  up-again  0 mode!  avoid-clear  busy? if  exit  then
-              played? if  sees-fiona @ if  chase-now  else  chase-start  then  else  head-for-her  then  endof
+              played? if  sees-fiona @ if  chase-begin  else  chase-start  then  else  head-for-her  then  endof
         2 of  up-again  played? if  busy? if  2 mode!  else  search-again  then
               else  1 mode!  avoid-clear  head-for-her  then  endof
         3 of  up-again  played? if  busy? if  2 mode!  else  search-again  then
@@ -150,6 +150,7 @@ behaviour debilitas
   extends stalking
   on spawned ( -- )
       -1 her-came !
+      debilitas-kit kit !  0 base-chase !  -1 gives-up !  0.052359879e turn-k f!  16e reach-k f!   \ (3 degrees)
       s" O_DB0/DB0_000" 2dup file!  actor-load dup my-model !  $3D89A0 motion-table
       0 him act.visible l!
       hard? if  110  else  70  then  dup hp-max !  hp !  2 my-kind !  -1 growls !  0 hear-threshold !  family-setup
@@ -169,11 +170,12 @@ behaviour daniella
   extends stalking
   on spawned ( -- )
       -1 her-came !
+      daniella-kit kit !  -1 base-chase !  0 gives-up !  0.06981317e turn-k f!  12e reach-k f!   \ (4 degrees)
       hard? if  s" O_DNL/DNL_001"  else  s" O_DNL/DNL_000"  then  2dup file!  actor-load dup my-model !  $419E60 motion-table
       0 him act.visible l!
       hard? if  100  else  120  then  dup hp-max !  hp !  3 my-kind !  0 growls !  12 hear-threshold !  family-setup
       hard? if  6000 100  else  3600 140  then  cool-secs !  away-base !  -1 own-a !  -1 own-b !   \ (Daniella_Setup's first)
-      hard? if  80 25e  else  200 10e  then  throw-k f!  tolerance !  0 temper !   \ (her temper: Debilitas's table for now)
+      hard? if  80 25e  else  200 10e  then  throw-k f!  tolerance !  0 temper !   \ (her temper with Hewie)
       3e 17e body-size  pursuer-floor body-mask!  body-off  0 in-game !
       self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
 end-behaviour

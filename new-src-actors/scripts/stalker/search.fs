@@ -57,7 +57,7 @@ variable spots  variable spots-n  variable spots-used
 \ she isn't hiding, $200, else $206; waiting $200; searching or heading for her room $201
 : walk-anim ( -- anim )
     my-mode @ case
-        0 of  d-fiona f@ 80e f<= d-fiona f@ f0< 0= and  fiona-hidden state-flag? 0= and if  walk-fast  else  walk-slow  then  endof
+        0 of  base-chase @ 0=  d-fiona f@ 80e f<= and d-fiona f@ f0< 0= and  fiona-hidden state-flag? 0= and if  walk-fast  else  walk-slow  then  endof
         3 of  walk-fast  endof
         >r walk-slow r>
     endcase ;

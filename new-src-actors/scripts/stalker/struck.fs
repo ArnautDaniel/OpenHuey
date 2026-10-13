@@ -25,7 +25,8 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
     loop  -1 ;
 : leave-by ( exit -- )   \ (out by the door he made for: stalker/doorway.fs)
     out-by 0= if  stand  then ;
-: give-up? ( -- flag )   \ (Debilitas_GivesUp: 20 damage, not held off already, not in a doorway, a way out)
+: give-up? ( -- flag )   \ (Debilitas_GivesUp: 20 damage, not held off already, not in a doorway, a way out;
+    gives-up @ 0= if  false exit  then   \ the Pursuer's: never)
     hits @ 20 <  my-mode @ 4 = or  at-door? or if  false exit  then
     way-out dup 0< if  drop false exit  then  making-for !  true ;
 : give-up ( -- )
@@ -38,7 +39,7 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
     my-mode @ 4 = if   \ (held off already: on out)
         way-out dup 0< if  drop stand exit  then  leave-by exit
     then
-    sees-fiona @ if  chase-now  else  my-mode @ 0= if  chase-start  else  search-again  then  then ;
+    sees-fiona @ if  chase-begin  else  my-mode @ 0= if  chase-start  else  search-again  then  then ;
 
 \ ---- flinching (Pursuer_StateFlinch: by the side and height - 0 in front, 1 behind, +2 a low
 \ one; in a doorway the short ones); her blow: at its key he may strike back ----

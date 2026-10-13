@@ -36,7 +36,7 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
 \ ---- how much nearer he'll be in 5 frames (Pursuer_GroundGained: his strides; his reach for
 \ Hewie, Debilitas 16; in the panic's stage 5, 10 more) ----
 : ground-gained ( F: -- d )
-    stride 5e f*  her-stage @ 5 = if  10e  else  16e  then  f+ ;
+    stride 5e f*  her-stage @ 5 = if  10e  else  reach-k f@  then  f+ ;
 
 \ ---- whom a blow at a point reaches (Npc_WhoReachable, Progress_CharNear): her body within its
 \ height and radius, widened by the reach, and in front of him (90 degrees) ----
