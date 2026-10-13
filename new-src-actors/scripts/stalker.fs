@@ -3,7 +3,7 @@
 \ (Debilitas: `debilitas`). P1: in the house - placed, standing, growling, telling the danger
 \ he is about; searching the room (stalker/search.fs: his modes, his route of stops, walking).
 IN: stalker
-USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.pursue stalker.grab stalker.struck stalker.bitten ;
+USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.pursue stalker.grab stalker.struck stalker.bitten stalker.riccardo ;
 
 : me ( -- id )  self ;
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
@@ -107,7 +107,7 @@ behaviour stalking
   on stalker-out ( -- )  go-out ;
   on stalker-hunt ( -- )  in-game @ if  1 mode!  away? 0= if  search-again  then  then ;
   on entered-room ( room exit -- )  her-came !  room-changed  in-game @ if  pose  then ;
-  on tick ( -- )  in-game @ if  frame  tell-doing  then  loaded @ if  status  then ;
+  on tick ( -- )  in-game @ if  frame  own-frame @ ?dup if  execute  then  tell-doing  then  loaded @ if  status  then ;
   \ Hewie (P3c): his attack asked, his letting go, his bites, his growls
   on dog-attack ( kind -- )  dog-attacked ;
   on shaken-off ( -- )  bitten @ bite-how @ 0= and if  2 bite-how !  then ;
@@ -180,3 +180,41 @@ behaviour daniella
       self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
 end-behaviour
 : daniella-spawn ( -- id )  daniella stalker-state s" daniella" spawn ;
+
+\ ---- Riccardo (riccardo.c Riccardo_Setup, RiccardoModel; kind 4): 100 health (hard: 125), 3
+\ across, 17 tall; his model O_RCG/RCG_000, its motion table $41A2C0, his sounds (bank 7); the
+\ Pursuer's floor; his own chase, flurry and lunge (stalker/riccardo.fs), his reach 20 ----
+behaviour riccardo
+  extends stalking
+  on spawned ( -- )
+      -1 her-came !
+      riccardo-kit kit !  0 base-chase !  -1 gives-up !  0.06981317e turn-k f!  12e reach-k f!   \ (4 degrees)
+      ['] ric-begin own-chase !  ['] ric-run own-run !  riccardo-acts own-acts !  20e attack-range f!
+      ['] riccardo-frame own-frame !
+      s" O_RCG/RCG_000" 2dup file!  actor-load dup my-model !  $41A2C0 motion-table
+      0 him act.visible l!
+      hard? if  125  else  100  then  dup hp-max !  hp !  4 my-kind !  0 growls !  12 hear-threshold !  family-setup
+      9000 90  cool-secs !  away-base !  -1 own-a !  -1 own-b !   \ (Riccardo_Setup)
+      hard? if  10e  else  15e  then  throw-k f!  50 tolerance !  0 temper !   \ (his temper with Hewie)
+      3e 17e body-size  pursuer-floor body-mask!  body-off  0 in-game !
+      self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
+end-behaviour
+: riccardo-spawn ( -- id )  riccardo stalker-state s" riccardo" spawn ;
+
+\ ---- Lorenzo (lorenzo.c Lorenzo_Setup, LorenzoModel; kind 11): 50 health (hard: 75), 5 across,
+\ 20 tall; his model O_LRO/LRO_000, its motion table $4246C0; the Pursuer's chase with his
+\ tables, turning 2 degrees a frame, his reach 18; no temper with Hewie in his tables ----
+behaviour lorenzo
+  extends stalking
+  on spawned ( -- )
+      -1 her-came !
+      lorenzo-kit kit !  -1 base-chase !  -1 gives-up !  0.03490659e turn-k f!  12e reach-k f!  18e attack-range f!
+      s" O_LRO/LRO_000" 2dup file!  actor-load dup my-model !  $4246C0 motion-table
+      0 him act.visible l!
+      hard? if  75  else  50  then  dup hp-max !  hp !  11 my-kind !  0 growls !  12 hear-threshold !  family-setup
+      3600 100  cool-secs !  away-base !  -1 own-a !  -1 own-b !   \ (Lorenzo_Setup)
+      0e throw-k f!  100 tolerance !  0 temper !
+      5e 20e body-size  pursuer-floor body-mask!  body-off  0 in-game !
+      self subscribe tick  self subscribe entered-room  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
+end-behaviour
+: lorenzo-spawn ( -- id )  lorenzo stalker-state s" lorenzo" spawn ;

@@ -55,5 +55,6 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
     pick-pace ;
 
 \ the chase begins by his own: Debilitas's, or the Pursuer's
-:noname ( -- )  base-chase @ if  pursue-now  else  chase-now  then ; is chase-begin
-:noname ( -- flag )  step @ dup ['] chase-run =  swap ['] pursue-run = or ; is chasing?
+:noname ( -- )   \ (his own: Riccardo's)
+    own-chase @ ?dup if  execute exit  then  base-chase @ if  pursue-now  else  chase-now  then ; is chase-begin
+:noname ( -- flag )  step @ dup ['] chase-run =  over ['] pursue-run = or  swap own-run @ = own-run @ 0<> and or ; is chasing?

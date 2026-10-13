@@ -68,16 +68,21 @@ defer pick-attack ( -- )
 defer take-her ( type -- )   defer lunge ( -- )   defer grab-dog ( -- )   \ (stalker.grab)
 : row ( table -- addr )   \ (the row the roll falls in)
     rnd 100e f*  begin  dup 2 cells + f@ fover f< while  /row +  repeat  fdrop ;
+\ his own actions ($1000.. of his tables): his `own-acts` table, else the family's (Debilitas's:
+\ $1000 his wander, $1001 his turn to her - standing for now -, $1002 his lunge, $1003 his grab
+\ at Hewie)
+create family-acts  ' stand-watch , ' stand-watch , ' lunge , ' grab-dog ,
+: own-act ( arg n -- )
+    nip $FFF and  own-acts @ ?dup 0= if  family-acts  then  swap cells + @ execute ;
 : do-row ( kind arg -- )
+    over $1000 $1010 within if  swap own-act exit  then
     swap case
         1 of  drop  endof                                    \ (nothing new)
         $13 of  combo-start  endof
         $17 of  gesture!  endof   $18 of  gesture!  endof   $19 of  gesture!  endof   2 of  gesture!  endof
         $1A of  drop round-her  endof   $1B of  drop round-her  endof
-        \ $14 / $15: taking her (by the hand, walking: stalker/grab.fs), $1002 his lunge,
-        \ $1003 his grab (at Hewie)
+        \ $14 / $15: taking her (by the hand, walking: stalker/grab.fs)
         $14 of  drop 6 take-her  endof   $15 of  drop 8 take-her  endof
-        $1002 of  drop lunge  endof   $1003 of  drop grab-dog  endof
         >r drop stand-watch r>
     endcase ;
 : choose ( situation -- )  hard? table row  dup @ swap cell+ @ do-row ;   \ (Pursuer_PickFromTable)
@@ -119,9 +124,10 @@ defer take-her ( type -- )   defer lunge ( -- )   defer grab-dog ( -- )   \ (sta
 \ within reach, facing her on her floor: his attack (his table for how she stands)
 : same-floor? ( -- flag )
     fiona body-at 4 + sf@  my-at 4 + sf@  fover fover 15e f+ f<=  10e f- f>= and ;
+: range ( F: -- r )  attack-range f@ fdup f0= if  fdrop 24e  then ;   \ (vtable +0x2F4)
 : in-reach? ( -- flag )
     hold-off @ if  false exit  then
-    d-her fdup 24e f< 0=  fdup f0< or if  fdrop false exit  then
+    d-her fdup range f< 0=  fdup f0< or if  fdrop false exit  then
     fdup ground-gained f<  10e f< or 0= if  false exit  then
     fiona body-at heading-to yaw f- angle-wrap fabs 20e deg>rad f<  same-floor? and ;
 : attack! ( -- )

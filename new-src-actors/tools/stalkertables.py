@@ -56,6 +56,10 @@ DAN_TABLES = (dan(['Daniella_Attack00_%02d' % i for i in range(15)] + ['str_r_2'
               dan(['Daniella_Attack01_%02d' % i for i in range(17)]) +
               dan(['Daniella_Attack10_%02d' % i for i in range(14)] + ['str_r_3', 'str_r_4', 'str_t_4']) +
               dan(['Daniella_Attack11_%02d' % i for i in range(17)]))
+RIC_TABLES = (dan(['Riccardo_Attack0_%02d' % i for i in range(15)] + ['str_r_5', 'str_t_7']) +
+              dan(['Riccardo_Attack1_%02d' % i for i in range(15)] + ['str_r_6', 'str_t_8']))
+LOR_TABLES = (dan(['Lorenzo_Attack0_%02d' % i for i in range(16)] + ['str_t_9']) +
+              dan(['Lorenzo_Attack1_%02d' % i for i in range(16)] + ['str_t_10']))
 STALKERS = [
     # name, prefix, attack tables [hard][rage][17] (Debilitas: his rage the same), moves, combos,
     # gestures, chase, lunge, temper (normal, hard), base chase [hard][rage], throws, grip offsets
@@ -64,6 +68,19 @@ STALKERS = [
          temper=(0x3AFB10, 0x3AFB10), pursue=(0x3AFA90, 0x3AFA90, 0x3AFA90, 0x3AFA90), throws=(13, 14),
          grips=((0.9433, 11.2509), (0.9433, 11.2509), (2.1745, 15.0419), (2.1745, 15.0419),
                 (-1.6117, -4.3418), (0.0182, -1.0008))),
+    dict(name='Riccardo', p='ric', tables=RIC_TABLES[:17] * 2 + RIC_TABLES[17:] * 2,
+         moves=(0x414A40, 18), combos=(0x414D00, 20), gestures=(0x414CD0, 6), chase=0x3AFB70, lunge=0x47AC38,
+         temper=(0x4150D0, 0x4150D0), pursue=(0x415060, 0x415060, 0x4155E0, 0x4155E0), throws=(16, 17),
+         grips=((-0.0389, 10.4049), (-0.0389, 10.4049), (0.7311, 13.251), (0.7311, 13.251),
+                (-1.1471, -2.5207), (-0.328, -2.3929)),
+         waits=0x415130, flurry=(0x4156C0, 0x4156E0), lunge_n=1),
+    # Lorenzo: his temper with Hewie (+0x173C, 0x01990F90) is in memory the game fills - none here
+    # (0: he never goes for Hewie); no throws of Hewie (AttackAnimA / B: the Pursuer's -1)
+    dict(name='Lorenzo', p='lor', tables=LOR_TABLES[:17] * 2 + LOR_TABLES[17:] * 2,
+         moves=(0x41A770, 5), combos=(0x41A850, 8), gestures=(0x41A830, 4), chase=0x3AFB70, lunge=0x3AF4B0,
+         temper=(None, None), pursue=(0x41ABD0, 0x41ABD0, 0x41AFC0, 0x41AFC0), throws=(-1, -1),
+         grips=((-1.2219, -15.9398), (-1.2219, -15.9398), (0.2996, 14.3695), (0.2996, 14.3695),
+                (-0.396, -1.3011), (-0.3379, -0.706))),
     dict(name='Daniella', p='dan', tables=DAN_TABLES,
          moves=(0x3D7550, 13), combos=(0x3D7760, 18), gestures=(0x3D7730, 6), chase=0x3AFB70, lunge=0x3AF4B0,
          temper=(0x3D7F40, 0x3D8890), pursue=(0x3D7E60, 0x3D7EB0, 0x3D87B0, 0x3D8800), throws=(11, 12),
@@ -117,17 +134,24 @@ for s in STALKERS:
     out.append('create %s-gestures  ' % p + '  '.join('$%X , %d ,' % rd(va + 8 * g, '<iI') for g in range(ng)))
     out.append('create %s-chase-frames  ' % p + ' '.join('%d ,' % rd(s['chase'] + 4 * i, '<i')[0] for i in range(9)))
     out.append('create %s-chase-chances  ' % p + ' '.join('%s f,' % f(rd(s['chase'] + 0x24 + 4 * i, '<f')[0]) for i in range(3)))
-    out.append('create %s-lunge-chances  ' % p + '  '.join('%s f, %d ,' % (f(a), b) for a, b in (rd(s['lunge'] + 8 * i, '<fi') for i in range(3))))
+    ln = s.get('lunge_n', 3)   # (Riccardo's table has one entry: the rest never met)
+    out.append('create %s-lunge-chances  ' % p + '  '.join('%s f, %d ,' % (f(a), b) for a, b in
+               [rd(s['lunge'] + 8 * i, '<fi') for i in range(ln)] + [(-1.0, 0)] * (3 - ln)))
     for k, t in enumerate(s['temper']):
-        out.append('create %s-temper-%d  ' % (p, k) + ' '.join('%d ,' % v for v in rd(t, '<18i')))
+        out.append('create %s-temper-%d  ' % (p, k) + ' '.join('%d ,' % v for v in (rd(t, '<18i') if t else [0] * 18)))
     for k, t in enumerate(s['pursue']):
         out.append('create %s-pursue-%d  ' % (p, k) + '  '.join('%s f, %d , %d ,' % (f(a), b, c) for a, b, c in (rd(t + 12 * i, '<fii') for i in range(6))))
     out.append('create %s-grips  ' % p + '  '.join('%se f, %se f,' % (repr(x), repr(z)) for x, z in s['grips']))
+    if 'waits' in s:   # (his own chase's waits, +0x1824: back off, hold off, back off seen, hold off far, comings-on, the chance)
+        out.append('create %s-waits  ' % p + ' '.join('%d ,' % v for v in rd(s['waits'], '<5i')) + ' %s f,' % f(rd(s['waits'] + 20, '<f')[0]))
+        for k, t in enumerate(s['flurry']):   # (his flurry's blows, 1..7: running chances)
+            out.append('create %s-flurry-%d  ' % (p, k) + ' '.join('%s f,' % f(v) for v in rd(t, '<6f')))
     out.append('create %s-kit  %s-tables , %s-moves , %s-combos , %s-gestures , %s-chase-frames , %s-chase-chances ,'
                % ((s['name'].lower(),) + (p,) * 6))
     out.append('    %s-lunge-chances , %s-temper-0 , %s-temper-1 , %s-pursue-0 , %s-pursue-1 , %s-pursue-2 , %s-pursue-3 ,'
                % ((p,) * 7))
     out.append('    %d , %d , %s-grips ,' % (s['throws'][0], s['throws'][1], p))
+    out.append(('    %s-waits , %s-flurry-0 , %s-flurry-1 ,' % (p, p, p)) if 'waits' in s else '    0 , 0 , 0 ,')
     out.append('')
 out += [
     '\\ ---- through his kit (his `kit` field) ----',
@@ -147,6 +171,9 @@ out += [
     '    hard-set? if  2  else  0  then  raging @ if  1+  then  9 + kit#  swap 0 5 clamp 3 cells * + ;',
     ': throw-moves ( -- a b )  13 kit#  14 kit# ;',
     ': grip-offsets ( -- addr )  15 kit# ;',
+    '\\ his own chase\'s waits (Riccardo: +0x1824) and his flurry\'s chances, by the hard setting (0: none)',
+    ': waits ( -- addr )  16 kit# ;',
+    ': flurry-chances ( -- addr )  hard-set? if  18  else  17  then  kit# ;',
 ]
 open(os.path.join(here, '..', 'scripts', 'stalker', 'tables.fs'), 'w').write('\n'.join(out) + '\n')
 print('written')

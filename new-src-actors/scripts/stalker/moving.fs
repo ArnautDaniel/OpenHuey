@@ -16,13 +16,15 @@ USING: engine game-state actors facts flag-names paths stalker.state stalker.sen
 : play-now ( anim -- )   \ (Motion_PlayTable)
     dup anim !  my-model @ swap  2dup motion-entry nip  motion-play ;
 : play ( anim -- )  dup anim @ = if  drop exit  then  play-now ;
-: stand-anim ( -- a )   \ (vtable +0x320 Pursuer_WalkAnim: hurt 2, in a rage 3)
-    cond @ 1 = if  2  else  raging @ if  3  else  0  then  then ;
+: riccardo? ( -- flag )  my-kind @ 4 = ;
+: stand-anim ( -- a )   \ (vtable +0x320 Pursuer_WalkAnim: hurt 2, in a rage 3; Riccardo 1 for 0 / 3)
+    cond @ 1 = if  2  else  riccardo? if  1  else  raging @ if  3  else  0  then  then  then ;
 \ his walks (vtable +0x324 / +0x328): hurt $202 / $203; else $200, and the slow one - held off
 \ $203, searching or heading $201, after her $206
-: walk-fast ( -- a )  cond @ 1 = if  $202  else  raging @ if  $204  else  $200  then  then ;   \ (+0x324: in a rage $204)
+: walk-fast ( -- a )  cond @ 1 = if  $202  else  raging @ riccardo? 0= and if  $204  else  $200  then  then ;   \ (+0x324: in a rage $204)
 : walk-slow ( -- a )   \ (Pursuer_SlowWalkAnim: in a rage $205; Debilitas's held off $203)
-    my-mode @ 4 = base-chase @ 0= and  cond @ 1 = or if  $203 exit  then
+    my-mode @ 4 = base-chase @ 0= and riccardo? 0= and  cond @ 1 = or if  $203 exit  then
+    riccardo? if  sees-fiona @ d-fiona f@ 100e f< and d-fiona f@ f0> and if  $206  else  $201  then  exit  then   \ (Riccardo_SlowWalkAnim)
     raging @ if  $205 exit  then
     my-mode @ if  $201  else  $206  then ;
 : turn-base ( -- a )  cond @ 1 = if  $405  else  $400  then ;   \ (Pursuer_TurnOnSpot: hurt, $405..)

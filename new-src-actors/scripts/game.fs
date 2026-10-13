@@ -18,6 +18,8 @@ fiona-spawn constant fiona
 hewie-spawn constant hewie
 debilitas-spawn constant debilitas
 daniella-spawn constant daniella
+riccardo-spawn constant riccardo
+lorenzo-spawn constant lorenzo
 summoner-spawn constant summoner
 story-spawn constant story
 gameover-spawn constant gameover
