@@ -53,15 +53,21 @@ converted to Forth.
 
 Where it stands:
 - **Working:**
-  - the title, the opening movie and the start of the story, with the first rooms' scripts and
-    cutscenes;
-  - Fiona: moving, doors, fear and panic, shoving and kicking, being struck, grabbed and dragged;
-  - Hewie: following her, his own mind, her commands;
-  - Debilitas and Daniella: searching, travelling between rooms, chasing, attacking, grabbing,
-    being struck;
-  - the game over.
-- **Not yet:** much of the story's script library (unwritten commands print "not written yet"),
-  Hewie's attacks, items and the menu, the later stalkers.
+  - the title (new game, load, options; hard mode and the extras after a clear), the opening
+    movie and the story's rooms, with their scripts and cutscenes (skip a movie: Start, then
+    Triangle);
+  - Fiona: moving, doors, ladders, crouching, fear and panic, shoving and kicking, throwing,
+    being struck, grabbed and dragged;
+  - Hewie: following her, his own mind, her commands, his attacks;
+  - the stalkers: searching, travelling between rooms, chasing, attacking, grabbing, being struck;
+  - items and the menu (items, files, the map, her comments, options, costumes), saving and
+    loading (8 slots);
+  - the message window, the tutorials and the pause screen, scaled to the window;
+  - the game over and the endings.
+- **Not yet:** about 20 of the story's script commands (they print "not written yet" when
+  reached), and the game mode where you play as Hewie.
+- **For fun:** `dance-party` in the console lines the golems up dancing; **F3** frees the camera
+  (arrows move it, Page Up / Down raise and lower it, the right mouse button turns it).
 
 Design and progress: [`new-src-actors/README.md`](new-src-actors/README.md) and
 [`new-src-actors/docs/`](new-src-actors/docs/), one page per subsystem.
@@ -150,13 +156,13 @@ Tests run headless: `ctest --test-dir build/new-src-actors`, or one suite:
 | X / Space | Cross | Hold to run | Confirm, read on |
 | C / Backspace | Circle | Act: examine, doors | |
 | Z | Square | Shove / kick | |
-| V | Triangle | Items | Cancel |
-| Q / E | L1 / R1 | E: flee | |
+| V | Triangle | Throw / set down what she holds | Cancel; skip a paused movie |
+| Q / E | L1 / R1 | Q: hold to crouch; E: flee | Turn the menu's pages |
 | 1 / 3 | L2 / R2 | | |
 | I J K L | Right stick | Hewie's commands | |
 | F | R3 | Hewie's command | |
-| Return | Start | Pause | Start; skip a movie |
-| Tab | Select | | |
+| Return | Start | Pause | Start; pause a movie |
+| Tab | Select | The menu | Close the menu |
 
 ## Repository layout
 
