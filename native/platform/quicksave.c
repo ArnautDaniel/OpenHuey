@@ -12,7 +12,8 @@
  *                HG_QUICKLOAD=s3 from slot 3
  *   HG_QUICKSAVE_AT=n / HG_QUICKLOAD_AT=n   (tests) F5 / F9 at video frame n
  *
- * In play the room (hex, as HG_ROOM takes it) is shown in the top right corner. */
+ * In play the room (hex, as HG_ROOM takes it) is shown in the top right corner (not in a release
+ * build - HG_RELEASE - unless HG_SHOW_ROOM=1). */
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -276,7 +277,16 @@ void hg_quick_draw(void) {
     static const char *lines[2];
     int n = 0;
 
-    if (sRoom >= 0) {
+#ifdef HG_RELEASE
+    static int show = -1;
+
+    if (show < 0) {
+        show = getenv("HG_SHOW_ROOM") != NULL;
+    }
+#else
+    const int show = 1;
+#endif
+    if (sRoom >= 0 && show) {
         snprintf(room, sizeof(room), "ROOM %02X", sRoom);
         lines[n++] = room;
     }
