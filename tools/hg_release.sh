@@ -15,7 +15,7 @@ B="$ROOT/build/native/win-release"
 
 [ -d tools/win/SDL3-$SDL ] && [ -f tools/win/ffmpeg-$FFMPEG-i686/bin/avcodec-62.dll ] || tools/win_deps.sh
 cmake -S native -B "$B" -G Ninja -DCMAKE_TOOLCHAIN_FILE="$ROOT/native/cmake/mingw-i686.cmake" \
-    -DHG_STRIP_DATA=ON -DCMAKE_BUILD_TYPE=Release
+    -DHG_STRIP_DATA=ON -DHG_RELEASE=ON -DCMAKE_BUILD_TYPE=Release
 nice -n 10 cmake --build "$B" -j"$JOBS"
 
 P="dist/hg-$VERSION-windows-x86"

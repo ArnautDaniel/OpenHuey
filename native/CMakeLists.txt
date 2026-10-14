@@ -51,6 +51,8 @@ set(DATA_S
 # HG_STRIP_DATA: the game's own data left out of hg, copied from the player's disc at startup
 # (native/platform/slus.c) - for builds given to others. Default: in the build.
 option(HG_STRIP_DATA "leave the game's data out of hg (read from SLUS_210.75 on the disc)" OFF)
+# HG_RELEASE: a build for players - no debugging shown (the room in the corner: HG_SHOW_ROOM=1 shows it)
+option(HG_RELEASE "a build for players: no debugging shown" OFF)
 if(HG_STRIP_DATA)
     list(APPEND NATIVE_GEN_FLAGS --strip)
 endif()
@@ -73,6 +75,9 @@ target_include_directories(hg PRIVATE ${ROOT}/include ${ROOT}/src ${CMAKE_CURREN
 # the decompiled code type-puns freely and relies on wrapping arithmetic like the original
 target_compile_options(hg PRIVATE $<$<COMPILE_LANGUAGE:C>:-g -O2 -fno-strict-aliasing -fwrapv -Wno-int-conversion>)
 target_compile_definitions(hg PRIVATE HG_NATIVE)
+if(HG_RELEASE)
+    target_compile_definitions(hg PRIVATE HG_RELEASE)
+endif()
 if(WIN32)
     # the data folder from the argument or $HG_DATA; else "data" next to hg.exe
     target_compile_definitions(hg PRIVATE "HG_DEFAULT_DATA=\"data\"")
