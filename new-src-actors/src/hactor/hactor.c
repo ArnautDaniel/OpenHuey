@@ -269,6 +269,14 @@ int hactor_self(void) {
     return sSelf;
 }
 
+int hactor_kind(const char *name) {
+    return kind_find(name, strlen(name));
+}
+
+const char *hactor_name(int id) {
+    return id >= 0 && id < HACTOR_MAX && sActors[id].used ? sActors[id].name : "";
+}
+
 void hactor_reset(void) {
     int id;
 

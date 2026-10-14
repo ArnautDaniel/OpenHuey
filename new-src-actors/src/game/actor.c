@@ -529,6 +529,50 @@ static void legs_contact(Actor *a) {
     }
 }
 
+int actor_drive_place(Actor *a, const uint8_t *drive, size_t size, float frame, Vec3 *pos, float *yaw) {
+    static Mat4 skin_m[MODEL_MAX_BONES];
+    Model *m = &a->model;
+    const uint8_t *own = m->motions, *second = m->motions2;
+    size_t own_size = m->motions_size;
+    Vec3 root = a->pos, end, bind;
+    const Mat4 *inv;
+    int r, k, best = 0, index;
+
+    if (drive == NULL || m->nbones <= 0) {
+        return 0;
+    }
+    m->motions = drive;
+    m->motions_size = size;
+    m->motions2 = NULL;
+    index = model_motion_find(m, 0x8000);
+    if (index >= 0) {
+        model_pose_root(m, index, frame, skin_m, &root);
+    }
+    m->motions = own;
+    m->motions_size = own_size;
+    m->motions2 = second;
+    if (index < 0) {
+        return 0;
+    }
+    for (r = 0; r < m->nbones && m->bones[r].parent >= 0; r++) {
+    }
+    if (r == m->nbones) {
+        return 0;
+    }
+    *pos = vec3(root.x, root.y - m->bones[r].rest_pos[1], root.z);
+    inv = &m->bones[r].inv_bind;   /* (its rotation's rows: the bind pose's axes) */
+    for (k = 1; k < 3; k++) {   /* the root's most level axis */
+        if (fabsf(inv->m[4 + k]) < fabsf(inv->m[4 + best])) {
+            best = k;
+        }
+    }
+    bind = vec3(inv->m[best], inv->m[4 + best], inv->m[8 + best]);
+    end = model_pose_axes()[r][best];
+    *yaw = atan2f(end.x, end.z) - atan2f(bind.x, bind.z);
+    *yaw = atan2f(sinf(*yaw), cosf(*yaw));
+    return 1;
+}
+
 /* the posed vertices and normals, in room space (the shader lights them) */
 static void skin(Actor *a) {
     static Mat4 skin_m[MODEL_MAX_BONES];

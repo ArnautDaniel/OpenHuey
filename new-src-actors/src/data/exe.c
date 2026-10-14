@@ -1,29 +1,15 @@
 #include "exe.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-int exe_load(Exe *e, const char *path) {
-    FILE *fp = fopen(path, "rb");
-    long n;
-
-    memset(e, 0, sizeof(*e));
-    if (fp == NULL) {
-        return 0;
-    }
-    fseek(fp, 0, SEEK_END);
-    n = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-    e->data = malloc((size_t)n);
-    if (e->data == NULL || fread(e->data, 1, (size_t)n, fp) != (size_t)n || n < 0x34 ||
-        memcmp(e->data, "\x7f" "ELF", 4) != 0) {
-        fclose(fp);
+int exe_take(Exe *e, uint8_t *data, size_t size) {
+    e->data = data;
+    e->size = size;
+    if (data == NULL || size < 0x34 || memcmp(data, "\x7f" "ELF", 4) != 0) {
         exe_free(e);
         return 0;
     }
-    fclose(fp);
-    e->size = (size_t)n;
     return 1;
 }
 

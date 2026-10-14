@@ -18,6 +18,7 @@
 #include "game/areas.h"
 #include "game/exits.h"
 #include "hactor/hactor.h"
+#include "platform/disc.h"
 #include "platform/snddrv.h"
 #include "platform/sound.h"
 #include "platform/platform.h"
@@ -49,7 +50,7 @@ static int parse_options(int argc, char **argv, Options *o) {
     int i;
 
     memset(o, 0, sizeof(*o));
-    o->data = getenv("HG_DATA") != NULL ? getenv("HG_DATA") : HG2_DEFAULT_DATA;
+    o->data = getenv("HG_DATA");   /* (none: the disc chosen before, or ask) */
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--hidden") == 0) {
             o->hidden = 1;
@@ -61,7 +62,7 @@ static int parse_options(int argc, char **argv, Options *o) {
             o->test = argv[++i];
             o->hidden = 1;
         } else if (argv[i][0] == '-') {
-            fprintf(stderr, "usage: hga [--hidden] [--frames N] [--eval code] [--test file.fs] [data-dir]\n");
+            fprintf(stderr, "usage: hga [--hidden] [--frames N] [--eval code] [--test file.fs] [disc.iso | data folder]\n");
             return 0;
         } else {
             o->data = argv[i];
@@ -70,28 +71,49 @@ static int parse_options(int argc, char **argv, Options *o) {
     return 1;
 }
 
-/* the game's executable, for the tables only it has: $HG_EXE, next to the data folder, in it,
- * or the repository's baserom */
-static void load_world(World *w, const char *data) {
-    char path[1200];
-    const char *env = getenv("HG_EXE");
+/* the game's executable, for the tables only it has: on the disc ($HG_EXE, or beside the data
+ * folder), else the repository's baserom (the developers') */
+static void load_world(World *w) {
+    DiscFile *f = disc_exe();
+    uint8_t *data = NULL;
+    size_t n = 0;
 
-    if (env != NULL && world_load(w, env)) {
-        return;
+    if (f != NULL) {
+        n = (size_t)disc_file_size(f);
+        data = malloc(n);
+        if (data != NULL && disc_file_read(f, data, n) != n) {
+            free(data);
+            data = NULL;
+        }
+        disc_file_close(f);
     }
-    snprintf(path, sizeof(path), "%s/../SLUS_210.75", data);
-    if (world_load(w, path)) {
-        return;
+    if (data == NULL && HG2_DEFAULT_EXE[0] != 0) {
+        data = SDL_LoadFile(HG2_DEFAULT_EXE, &n);
     }
-    snprintf(path, sizeof(path), "%s/SLUS_210.75", data);
-    if (world_load(w, path) || world_load(w, HG2_DEFAULT_EXE)) {
-        return;
+    if (!world_load(w, data, n)) {
+        fprintf(stderr, "hga: no SLUS_210.75 found (set HG_EXE): rooms won't connect\n");
     }
-    fprintf(stderr, "hg2: no SLUS_210.75 found (set HG_EXE): rooms won't connect\n");
+}
+
+/* the scripts: $HG2_SCRIPTS, the repository's (a developer's build), or beside the executable (a
+ * release: scripts/ next to it) */
+static const char *script_dir(void) {
+    static char dir[1024];
+    char probe[1100];
+
+    if (getenv("HG2_SCRIPTS") != NULL) {
+        return getenv("HG2_SCRIPTS");
+    }
+    snprintf(probe, sizeof(probe), "%s/prelude.fs", HG2_SCRIPT_DIR);
+    if (HG2_SCRIPT_DIR[0] != 0 && SDL_GetPathInfo(probe, NULL)) {
+        return HG2_SCRIPT_DIR;
+    }
+    snprintf(dir, sizeof(dir), "%sscripts", SDL_GetBasePath() != NULL ? SDL_GetBasePath() : "./");
+    return dir;
 }
 
 static int load_scripts(Forth *f) {
-    const char *dir = getenv("HG2_SCRIPTS") != NULL ? getenv("HG2_SCRIPTS") : HG2_SCRIPT_DIR;
+    const char *dir = script_dir();
     char path[1024];
 
     snprintf(path, sizeof(path), "%s/prelude.fs", dir);
@@ -508,10 +530,8 @@ int main(int argc, char **argv) {
     if (!parse_options(argc, argv, &opt)) {
         return 2;
     }
-    files_set_root(opt.data);
-    if (!files_exist("SYSTEM") && !files_exist("ST_000/ST_000.PAC")) {
-        fprintf(stderr, "hg2: no game data in \"%s\" (the extracted DATA.CVM folder). Pass it as an argument "
-                        "or set HG_DATA.\n", opt.data);
+    if (!disc_choose(opt.data, HG2_DEFAULT_DATA, opt.hidden)) {
+        return 1;
     }
     if (!platform_open("Haunting Ground (new-src)", 1280, 720, opt.hidden) || !render_init()) {
         return 1;
@@ -522,7 +542,7 @@ int main(int argc, char **argv) {
     platform_size(&e->width, &e->height);   /* (frames ticked before the first draw - tests, --eval - see it) */
     e->room.id = -1;
     e->camera = (Camera){vec3(0, 0, 0), 0, 0, 1.0f, 5.0f, 20000.0f, 1.0f};
-    load_world(&e->world, opt.data);
+    load_world(&e->world);
     if (!sound_open()) {   /* (none: the game is silent) */
         fprintf(stderr, "hg2: no sound (%s)\n", SDL_GetError());
     }
@@ -531,7 +551,7 @@ int main(int argc, char **argv) {
         uint8_t *libsd = files_read("../MODULES/LIBSD.IRX", &n);
 
         if (!snddrv_reverb_setup(libsd, n)) {
-            fprintf(stderr, "hg2: no MODULES/LIBSD.IRX beside the data: no reverb\n");
+            fprintf(stderr, "hga: no MODULES/LIBSD.IRX on the disc: no reverb\n");
         }
         free(libsd);
     }

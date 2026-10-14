@@ -2,11 +2,10 @@
  * the ADX sound, the libavcodec video), with new-src's mixer and files. */
 #include "movie.h"
 
-#include "../core/files.h"
+#include "disc.h"
 #include "sound.h"
 
 #include <SDL3/SDL.h>
-#include <dlfcn.h>
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -62,26 +61,62 @@ static struct {
 
 static void av_free_data(void *ptr) { av.av_free(ptr); }
 
-static int av_load(void) {
-    static const char *const names[] = {"libavcodec.so",    "libavcodec.so.63", "libavcodec.so.62",
-                                        "libavcodec.so.61", "libavcodec.so.60", "libavcodec.so.59",
-                                        "libavcodec.so.58"};
+/* a library: the release's own copy (beside the executable, or in its lib/), else the system's */
+static void *lib_open(const char *const *names, size_t n) {
+    const char *base = SDL_GetBasePath();
+    char path[1200];
     void *h = NULL;
     size_t i;
+
+    for (i = 0; i < n && h == NULL; i++) {
+        if (base != NULL) {
+            snprintf(path, sizeof(path), "%s%s", base, names[i]);
+            h = SDL_LoadObject(path);
+            if (h == NULL) {
+                snprintf(path, sizeof(path), "%slib/%s", base, names[i]);
+                h = SDL_LoadObject(path);
+            }
+        }
+        if (h == NULL) {
+            h = SDL_LoadObject(names[i]);
+        }
+    }
+    return h;
+}
+
+static void *sAvUtil;
+static void *av_sym(void *codec, const char *name) {   /* (av_malloc and the frames are avutil's) */
+    void *p = (void *)SDL_LoadFunction(codec, name);
+
+    return p != NULL || sAvUtil == NULL ? p : (void *)SDL_LoadFunction(sAvUtil, name);
+}
+
+static int av_load(void) {
+#ifdef _WIN32
+    static const char *const names[] = {"avcodec-62.dll", "avcodec-61.dll", "avcodec-60.dll", "avcodec-59.dll",
+                                        "avcodec-58.dll"};
+    static const char *const util[] = {"avutil-60.dll", "avutil-59.dll", "avutil-58.dll", "avutil-57.dll",
+                                       "avutil-56.dll"};
+#else
+    static const char *const names[] = {"libavcodec.so.62", "libavcodec.so.63", "libavcodec.so.61",
+                                        "libavcodec.so.60", "libavcodec.so.59", "libavcodec.so.58", "libavcodec.so"};
+    static const char *const util[] = {"libavutil.so.60", "libavutil.so.61", "libavutil.so.59",
+                                       "libavutil.so.58", "libavutil.so.57", "libavutil.so.56", "libavutil.so"};
+#endif
+    void *h;
 
     if (av.tried) {
         return av.ok;
     }
     av.tried = 1;
-    for (i = 0; i < sizeof(names) / sizeof(names[0]) && h == NULL; i++) {
-        h = dlopen(names[i], RTLD_NOW | RTLD_GLOBAL);
-    }
+    sAvUtil = lib_open(util, sizeof(util) / sizeof(util[0]));   /* (first: avcodec needs it) */
+    h = lib_open(names, sizeof(names) / sizeof(names[0]));
     if (h == NULL) {
         fprintf(stderr, "sofdec: no libavcodec, movies are skipped\n");
         return 0;
     }
 #define SYM(field, name)                                                       \
-    if ((*(void **)&av.field = dlsym(h, name)) == NULL) {                     \
+    if ((*(void **)&av.field = av_sym(h, name)) == NULL) {                    \
         fprintf(stderr, "sofdec: libavcodec has no %s, movies are skipped\n", name); \
         return 0;                                                              \
     }
@@ -117,7 +152,7 @@ typedef struct Ply {
     int stat;
     int paused;
     int vol;          /* 0.1 dB */
-    FILE *f;
+    DiscFile *f;
     int eof;          /* the file is read to its end (2: and the parser flushed) */
     int drained;      /* the decoder gave its last frame */
     /* reading */
@@ -158,7 +193,7 @@ static int rd_fill(Ply *p) {
     if (p->bufPos < p->bufLen) {
         return 1;
     }
-    p->bufLen = (int)fread(p->buf, 1, sizeof(p->buf), p->f);
+    p->bufLen = (int)disc_file_read(p->f, p->buf, sizeof(p->buf));
     p->bufPos = 0;
     return p->bufLen > 0;
 }
@@ -557,7 +592,7 @@ static void ply_close(Ply *p) {
     }
     snd_unlock();
     if (p->f != NULL) {
-        fclose(p->f);
+        disc_file_close(p->f);
         p->f = NULL;
     }
     if (p->parser != NULL) {
@@ -649,7 +684,6 @@ static void mix(int16_t *out, int frames) {   /* (sound.c's stream hook, its loc
 }
 
 int movie_open(const char *path) {
-    char full[1024];
 
     movie_close();
     if (!av_load()) {
@@ -663,15 +697,9 @@ int movie_open(const char *path) {
         return 0;
     }
     sPly->shownNo = -1;
-    snprintf(full, sizeof(full), "%s/%s", files_root(), path);
-    for (char *c = full; *c != 0; c++) {   /* (the game writes DOS paths) */
-        if (*c == '\\') {
-            *c = '/';
-        }
-    }
-    sPly->f = fopen(full, "rb");
+    sPly->f = disc_file_open(path);
     if (sPly->f == NULL) {
-        fprintf(stderr, "movie: can't open %s\n", full);
+        fprintf(stderr, "movie: can't open %s\n", path);
         movie_close();
         return 0;
     }

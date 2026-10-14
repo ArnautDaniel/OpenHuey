@@ -20,6 +20,9 @@ void cutscene_start_when_ready(void);   /* (Cutscene_SetNoEnd: +0x205) */
 void cutscene_set_frame(int frame);     /* (Cutscene_PushC) */
 void cutscene_update(void);             /* this frame's camera and actors (Cutscene_Update) */
 void cutscene_end(void);                /* the actors given back (Cutscene_End) */
+/* told, as the actors are given back, where the scene leaves each it moved - at the end of the
+ * last shot it is in, played out or skipped (hga's: the original leaves them where the scene was) */
+void cutscene_on_place(void (*fn)(int actor, Vec3 pos, float yaw));
 int cutscene_status(void);
 int cutscene_playing_shot(void);        /* the playing buffer's shot is in (EntryDone) */
 int cutscene_frame(void);

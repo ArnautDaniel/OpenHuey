@@ -77,7 +77,7 @@ front-garden-2 0 game:debilitas send stalker-in  2 frames
 T{ game:debilitas body-room  game:debilitas body-tri  shown? -> front-garden-2 -1 0 }T
 [: 1 mode! ;] his
 T{ [: my-room front-garden-3 = ;] 900 wait-for  game:debilitas body-tri 0< 0=  shown? -> -1 -1 -1 }T
-T{ [: my-mode @ dup 0= swap 2 = or ;] his -> -1 }T
+T{ [: my-mode @ dup 0= swap 2 = or ;] 120 wait-for -> -1 }T   \ (once he has walked in from the doorway)
 testing she leaves his room: out of sight, after her he follows her into the next
 [: 0 mode! ;] his  front-garden-2 room!  2 frames
 T{ game:debilitas body-tri  shown?  [: goal-room @ ;] his -> -1 0 front-garden-2 }T
