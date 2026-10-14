@@ -67,7 +67,7 @@ create acts 4 cells allot   variable #acts
     under-cursor name  $38 $49 false text
     under-cursor item-held 1 = if  list cursor @ held-at n@ count$  $D2 $49 false text  then
     $100 $16E $19C $66 shade
-    note dup message-layout 0> if  0 message-lines 0 ?do  dup 0 i line-of  $32  $142 i 18 * +  false text  loop  then  drop
+    note dup message-layout 0> if  0 message-lines 0 ?do  dup 0 i line-of  $32  $142 i 22 * +  false text  loop  then  drop
     $1A9  #acts @ 10 * $DD +  $46  #acts @ 20 *  shade
     #acts @ 0 ?do  i act@ act-word menu-line  $190  $D8 i $14 * +  i action @ =  text  loop
     s" >"  $17C  action @ 20 * $D8 +  true text ;
@@ -143,8 +143,8 @@ create acts 4 cells allot   variable #acts
     file-pages 1 > if  $180 arrows-at  then
     2 0 do
         file-page @ 2* i +  dup files < if
-            file@ dup message-layout 0> if
-                0 message-lines 0 ?do  dup 0 i line-of  $2D  j $A0 * $54 + i 18 * +  false text  loop
+            file@ $4000 or  dup message-layout 0> if   \ (its text in MSG_SUB, as the items' notes)
+                0 message-lines 0 ?do  dup 0 i line-of  $2D  j $A0 * $54 + i 22 * +  false text  loop
             then
         then  drop
     loop ;

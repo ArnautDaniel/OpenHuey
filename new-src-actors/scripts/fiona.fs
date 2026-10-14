@@ -223,7 +223,8 @@ behaviour free
       unseen-frame
       her-mode @ her-sub @ her-cond @ her-cmd @ her-doing @ broadcast fiona-doing
       her-hit-who @ broadcast fiona-struck-by
-      her-shake-count @ 0< 0= if  shakes-now her-shake-count +!  her-shake-count @ broadcast fiona-shakes  then
+      shakes-now  dup broadcast fiona-shaking
+      her-shake-count @ 0< if  drop  else  her-shake-count +!  her-shake-count @ broadcast fiona-shakes  then
       plight  her-mode @ 3 = if  her-ladder @  else  -1  then  broadcast fiona-plight
       tell-head
       her-move-done @  ended?  her-model @ 0 0 1 motion-events  broadcast moving ;

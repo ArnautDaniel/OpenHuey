@@ -41,7 +41,7 @@ T{ 90 [: bgm-playing $FF = ;] within -> -1 }T   \ (faded out with the scene's fa
 
 testing the movie pause: Start opens it, Cancel skips - the scene's script ends it
 T{ start-button press  10 frames  pause-stage -> 2 }T
-T{ cross press  10 frames  movie-skipped state-flag? -> -1 }T
+T{ triangle press  10 frames  movie-skipped state-flag? -> -1 }T   \ (Cancel skips)
 T{ 30 [: cutscene-active? 0= ;] within  movie-status  pause-stage -> -1 0 0 }T
 T{ 300 [: in-scene? 0= ;] within  200 [: bgm-playing $16 = ;] within -> -1 -1 }T
 

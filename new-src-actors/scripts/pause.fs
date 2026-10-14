@@ -85,7 +85,7 @@ end-state
     stage @ case
         movie-opening of  0.2e t+  opened? if  movie-open stage !  then  endof
         movie-open of
-            cross button-pressed? if  0e t f!  skipping stage !  $97 sound  exit  then
+            triangle button-pressed? if  0e t f!  skipping stage !  $97 sound  exit  then   \ (Cancel: MoviePause_StateOpen)
             start-button button-pressed? if  0 movie-pause  movie-closing stage !  $97 sound  then  endof
         skipping of  0.2e t+  opened? if  movie-skipped flag-on  then  endof
         movie-closing of  -0.2e t+  shut? if  shut  then  endof
@@ -100,36 +100,36 @@ end-state
     in-movie? if  movie-frame  else  play-frame  then ;
 
 \ ---- drawing: the dimming (alpha 63 of 128 open; darkening to 255 skipping or quitting - here
-\ twice the PS2's 128 scale), the lines centred on 256 of 512 x 448 at the PS2's places, a
-\ box round the chosen one; all fading with it ----
+\ twice the PS2's 128 scale), the lines centred at the PS2's heights (of 448), the chosen one
+\ lit; all fading with it. The words scale with the screen's height (a pen of height / 224) ----
 : darkening? ( -- flag )  stage @ skipping =  stage @ quitting = or ;
 : dim ( -- a )  darkening? if  63e 192e t f@ f* f+  else  63e t f@ f*  then  f>s 2* 255 min ;
 : alpha ( -- a )   \ the words' (fading out as it darkens)
     darkening? if  1e t f@ f-  else  t f@  then  255e f* f>s ;
+variable pen
+$D8D0C400 constant plain-colour  $F0C87800 constant lit-colour  $F0EBE000 constant title-colour
 : text-of ( msg -- addr len )  message-layout drop  0 0 message-line ;
-: wide ( msg -- px )  text-of nip  char-size drop *  2 * ;   \ (drawn twice the font's size)
-: centred ( msg y -- )   \ a line centred on the screen's middle (256 of 512)
-    {: msg y :}  pause-layer msg text-of  256 sx msg wide 2/ -  y sy  alpha $FFFFFF00 or  2 ui-text ;
-: line-at ( msg x y -- )  {: msg x y :}  pause-layer msg text-of  x sx  y sy  alpha $FFFFFF00 or  2 ui-text ;
-: box ( msg y -- )   \ (the highlight: twice the line's width, centred, 32 high)
-    {: msg y :}  pause-layer  256 sx msg wide -  y sy  msg wide 2*  32 sy  alpha 4 / $FFFFFF00 or  ui-rect ;
+: words ( addr len x y rgb -- )  alpha or >r >r >r >r >r  pause-layer r> r> r> r> r> pen @ ui-text ;
+: line ( msg y rgb -- )   \ a line centred on the screen's middle (256 of 512)
+    {: msg y rgb :}  msg text-of  2dup pen @ text-width 2/ 256 sx swap -  y sy  rgb words ;
+: centred ( msg y -- )  plain-colour line ;
+: option ( msg y lit? -- )  if  lit-colour  else  plain-colour  then  line ;
+: title ( msg y -- )  pen @ >r  r@ 2* pen !  title-colour line  r> pen ! ;
 : play-lines ( -- )
     stage @ case
-        opening of  $8088 $D2 box  $8088 $D6 centred  endof
-        open of  $8088 $D2 box  $8088 $D6 centred  endof
-        closing of  $8088 $D2 box  $8088 $D6 centred  endof
-        on-menu of  choice @ if  $8082  else  $8081  then  $C4 choice @ 32 * + box
-                    $8081 $C8 centred  $8082 $E8 centred  endof
+        opening of  $8088 $D0 title  endof
+        open of  $8088 $D0 title  endof
+        closing of  $8088 $D0 title  endof
+        on-menu of  $8081 $C8 choice @ 0= option  $8082 $E8 choice @ 0<> option  endof
         menu-closing of  $8081 $C8 centred  $8082 $E8 centred  endof
-        >r  $8083 $C8 centred  choice @ if  $8085  else  $8084  then  $E4 choice @ 20 * + box
-            $8084 $E8 centred  $8085 $FC centred  r>
+        >r  $8083 $BC centred  $8084 $E0 choice @ 0= option  $8085 $F8 choice @ 0<> option  r>
     endcase ;
 : draw ( -- )
     pause-layer ui-clear
     stage @ closed = if  exit  then
-    frame!  2 pen-scale
+    frame!  screen-size nip 224 / 1 max pen !
     pause-layer  0 0 screen-size  dim  ui-rect
-    in-movie? if  $8089 320 400 line-at  $808A 320 420 line-at  else  play-lines  then ;
+    in-movie? if  $8089 $180 centred  $808A $194 centred  else  play-lines  then ;
 
 behaviour pausing
   on spawned ( -- )  closed stage !  self subscribe tick  self subscribe held-tick  self subscribe frame-end ;

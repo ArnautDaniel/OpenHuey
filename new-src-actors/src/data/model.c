@@ -477,6 +477,70 @@ static float lerp_angle(float a, float b, float t) {
     return a + d * t;
 }
 
+
+/* a bone's rotation (angles about X, then Y, then Z: bone_local's order) faded `w` of the way to
+ * another, as a rotation - the shortest turn between the two - and back to angles: angle by
+ * angle, two poses whose angles lie far apart (though the poses don't) swing a limb right round
+ * on the way (her arm over her head, fading from what she held into her idle) */
+static void euler_quat(const float *e, float *q) {
+    float cx = cosf(e[0] * 0.5f), sx = sinf(e[0] * 0.5f), cy = cosf(e[1] * 0.5f), sy = sinf(e[1] * 0.5f);
+    float cz = cosf(e[2] * 0.5f), sz = sinf(e[2] * 0.5f);
+
+    /* q = qz * qy * qx (w, x, y, z) */
+    q[0] = cz * cy * cx + sz * sy * sx;
+    q[1] = cz * cy * sx - sz * sy * cx;
+    q[2] = cz * sy * cx + sz * cy * sx;
+    q[3] = sz * cy * cx - cz * sy * sx;
+}
+static void quat_euler(const float *q, float *e) {
+    float w = q[0], x = q[1], y = q[2], z = q[3];
+    float r20 = 2.0f * (x * z - w * y), r21 = 2.0f * (y * z + w * x), r22 = 1.0f - 2.0f * (x * x + y * y);
+    float r10 = 2.0f * (x * y + w * z), r00 = 1.0f - 2.0f * (y * y + z * z);
+
+    e[1] = asinf(fmaxf(-1.0f, fminf(1.0f, -r20)));
+    e[0] = atan2f(r21, r22);
+    e[2] = atan2f(r10, r00);
+}
+static void blend_rotation(float *a, const float *b, float w) {
+    float qa[4], qb[4], q[4], d, len;
+    int k;
+
+    if (w <= 0.0f) {
+        return;
+    }
+    if (w >= 1.0f) {
+        a[0] = b[0];
+        a[1] = b[1];
+        a[2] = b[2];
+        return;
+    }
+    euler_quat(a, qa);
+    euler_quat(b, qb);
+    d = qa[0] * qb[0] + qa[1] * qb[1] + qa[2] * qb[2] + qa[3] * qb[3];
+    if (d < 0.0f) {   /* (the shorter way round) */
+        for (k = 0; k < 4; k++) {
+            qb[k] = -qb[k];
+        }
+        d = -d;
+    }
+    if (d > 0.9995f) {   /* (nearly the same: straight across) */
+        for (k = 0; k < 4; k++) {
+            q[k] = qa[k] + (qb[k] - qa[k]) * w;
+        }
+    } else {
+        float th = acosf(d), s = sinf(th), ka = sinf((1.0f - w) * th) / s, kb = sinf(w * th) / s;
+
+        for (k = 0; k < 4; k++) {
+            q[k] = qa[k] * ka + qb[k] * kb;
+        }
+    }
+    len = sqrtf(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
+    for (k = 0; k < 4; k++) {
+        q[k] /= len;
+    }
+    quat_euler(q, a);
+}
+
 /* one track's values at a frame into the bone's rotation and/or translation */
 static void sample_track(Reader *r, size_t track, int frames, float frame, float *rot, float *pos) {
     uint32_t type = u32(r, track + 4), kind = type & 0xFFFF;
@@ -774,13 +838,14 @@ void model_pose_layers(const Model *m, const ModelLayer *layers, int nlayers, Ma
         memcpy(rot1, rot, sizeof(float) * 3 * (size_t)m->nbones);
         memcpy(pos1, pos, sizeof(float) * 3 * (size_t)m->nbones);
         local_pose_parts(m, l->index, l->frame, rot1, pos1, l->mask, 0);
+        /* (motions and their variants faded as rotations: blend_rotation) */
         if (l->var_w > 0.0f && l->var >= 0) {   /* its variant: this x (1 - share) + variant x share */
             memcpy(rot3, rot, sizeof(float) * 3 * (size_t)m->nbones);
             memcpy(pos3, pos, sizeof(float) * 3 * (size_t)m->nbones);
             local_pose_parts(m, l->var, l->var_frame, rot3, pos3, l->mask, 0);
             for (i = 0; i < m->nbones; i++) {
+                blend_rotation(rot1[i], rot3[i], l->var_w);
                 for (j = 0; j < 3; j++) {
-                    rot1[i][j] = lerp_angle(rot1[i][j], rot3[i][j], l->var_w);
                     pos1[i][j] += (pos3[i][j] - pos1[i][j]) * l->var_w;
                 }
             }
@@ -794,15 +859,15 @@ void model_pose_layers(const Model *m, const ModelLayer *layers, int nlayers, Ma
                 memcpy(pos3, pos, sizeof(float) * 3 * (size_t)m->nbones);
                 local_pose_parts(m, l->prev_var, l->prev_var_frame, rot3, pos3, l->mask, 0);
                 for (i = 0; i < m->nbones; i++) {
+                    blend_rotation(rot2[i], rot3[i], l->prev_var_w);
                     for (j = 0; j < 3; j++) {
-                        rot2[i][j] = lerp_angle(rot2[i][j], rot3[i][j], l->prev_var_w);
                         pos2[i][j] += (pos3[i][j] - pos2[i][j]) * l->prev_var_w;
                     }
                 }
             }
             for (i = 0; i < m->nbones; i++) {
+                blend_rotation(rot1[i], rot2[i], l->w);
                 for (j = 0; j < 3; j++) {
-                    rot1[i][j] = lerp_angle(rot1[i][j], rot2[i][j], l->w);
                     pos1[i][j] += (pos2[i][j] - pos1[i][j]) * l->w;
                 }
             }
