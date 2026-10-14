@@ -40,6 +40,8 @@ typedef struct HBody {
 /* actor `id`'s body (NULL: no such actor); the actor being run (-1: none) */
 HBody *hactor_body(int id);
 int hactor_self(void);
+const char *hactor_name(int id);   /* its name, "" if none */
+int hactor_kind(const char *name);   /* a message kind by name, -1 if there is none */
 
 /* the words (vocabulary `actors`) */
 void bind_hactor(Forth *f);

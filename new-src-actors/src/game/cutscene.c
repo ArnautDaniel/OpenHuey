@@ -654,6 +654,40 @@ int cutscene_signal_total(int bit) {
     return bit >= 0 && bit < 16 ? C.counts[bit] - 1 : -1;
 }
 
+static void (*sOnPlace)(int actor, Vec3 pos, float yaw);
+
+void cutscene_on_place(void (*fn)(int actor, Vec3 pos, float yaw)) {
+    sOnPlace = fn;
+}
+
+/* each actor it moved where its last shot leaves it */
+static void place_at_end(void) {
+    int i, r;
+
+    for (i = 1; i < SLOTS && i <= 25; i++) {
+        Actor *a = slot_actor(&C.slots[i]);
+        Vec3 pos;
+        float yaw;
+
+        if (a == NULL) {
+            continue;
+        }
+        for (r = records() - 1; r >= 0 && !(rd32(record(r)) & (1u << i)); r--) {
+        }
+        if (r >= 0 && r < MAX_SHOTS) {
+            size_t size = 0;
+            const uint8_t *drive = shot_part(r, i * 4, &size);
+
+            if (drive != NULL && actor_drive_place(a, drive, size, (float)(rd16(record(r) + 0xA) - rd16(record(r) + 8)),
+                                                   &pos, &yaw)) {
+                a->pos = pos;
+                a->yaw = yaw;
+                sOnPlace(C.slots[i].actor, pos, yaw);
+            }
+        }
+    }
+}
+
 void cutscene_end(void) {
     rumble_buzz(RUMBLE_SCENE, 0, 1);   /* (its rumble off) */
     rumble_jolt(RUMBLE_SCENE, 0, 1);
@@ -667,6 +701,9 @@ void cutscene_end(void) {
         memcpy(gRoomLook.dof, C.look.dof, sizeof(gRoomLook.dof));
         memset(&gEngine.extra, 0, sizeof(gEngine.extra));
         restore_groups();
+        if (sOnPlace != NULL && C.cast) {
+            place_at_end();
+        }
     }
     release();
     C.state = STATE_IDLE;

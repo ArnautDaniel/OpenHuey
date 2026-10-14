@@ -38,3 +38,4 @@ save/
 *.raw
 screenshot*.png
 tools/win/
+dist/

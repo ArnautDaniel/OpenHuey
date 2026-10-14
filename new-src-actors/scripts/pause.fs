@@ -34,7 +34,9 @@ end-state
 : in-movie? ( -- flag )  stage @ movie-opening skipping 1+ within  stage @ movie-closing = or ;
 
 \ ---- opening (SceneGame_SubPlay: Start, the world not held, pausing allowed) ----
-: may-pause? ( -- flag )  start-button button-pressed?  world-held flag? 0= and  no-pause flag? 0= and ;
+: on-title? ( -- flag )  s" opening" actor-named 0< 0= ;   \ (the title and the opening: their own Start)
+: may-pause? ( -- flag )
+    start-button button-pressed?  on-title? 0= and  world-held flag? 0= and  no-pause flag? 0= and ;
 : movie-wanted? ( -- flag )  cutscene-active? movie-status 1 = and ;
 : play-wanted? ( -- flag )  cutscene-active? 0=  movie-status 1 <> and ;
 : open-movie ( -- )  0e t f!  movie-opening stage !  1 movie-pause  $96 sound ;   \ Pause_Open, mode 1

@@ -81,6 +81,14 @@ create in-at 12 allot  create out-at 12 allot
     >r in-at vec!  0 exit-spot drop out-at vec!
     room-id r> in-at vec@ body-place
     r> if  out-at in-at  else  in-at out-at  then  vec-heading body-turn  true ;
+variable in-tri
+\ through a door into her room he comes from its doorway - the exit's spot 12 beyond it - turned
+\ in, and walks in (Pursuer_EnterRoom: Rooms_ExitTriIn, the exit's heading turned round)
+: come-through ( exit -- ok? )
+    dup 1 exit-spot dup 0< if  2drop fdrop fdrop fdrop false exit  then
+    >r out-at vec!  2 exit-spot in-tri !  in-at vec!
+    room-id r> out-at vec@ body-place
+    out-at in-at vec-heading body-turn  true ;
 : placed-anywhere ( -- )   \ (Actor_TeleportRandom: no exit to stand at)
     random-tri dup 0< if  drop fiona body-tri  then
     dup 0< if  drop exit  then  room-id swap dup tri-center body-place ;
@@ -92,6 +100,15 @@ create in-at 12 allot  create out-at 12 allot
     my-mode @ 0= if  chase-start exit  then
     my-mode @ 1 = if  2 mode!  then
     search-again ;
+
+\ from the doorway on in to the spot 12 inside (Pursuer_SearchRouteIn), then as in-play has it
+: walking-in ( -- )  walking  step-done @ if  0 step-done !  in-play  then ;
+: walk-in ( -- )
+    in-tri @ 0< if  in-play exit  then
+    goal-at in-at vec-copy  in-tri @ goal-at plan 0> 0= if   \ (no way in yet - the door still
+        room-id in-tri @ in-at vec@ body-place  in-play exit   \ swinging open: inside at once)
+    then
+    walk-anim play  ['] walking-in step! ;
 
 \ ---- through the next door (Pursuer_ThroughDoor) into the room beyond: into hers he comes
 \ in; elsewhere on to the next door, or - the route over - his search there out of sight ----
@@ -127,8 +144,8 @@ create in-at 12 allot  create out-at 12 allot
     my-room room-id = if
         room-id came-by @ room-exit-door door-kind 5 = if  came-by @ open-for-me  then
         came-by @ came-in-by
-        came-by @ true place-at-exit 0= if  placed-anywhere  then
-        in-play exit
+        came-by @ come-through 0= if  placed-anywhere  in-play exit  then
+        walk-in exit
     then
     route-over? if
         my-mode @ 1 = my-room goal-room @ = and if  2 mode!  then

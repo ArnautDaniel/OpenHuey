@@ -138,6 +138,9 @@ int actor_event_flags(const Actor *a, int layer, int dt, int loop);
 int actor_load_motions(Actor *a, const char *path);
 /* the model takes the loaded motion file as its second bank (NULL: back to its own alone) */
 void actor_use_motions(Actor *a, int on);
+/* where a cutscene's motion (its bank `drive`, animation 0x8000) leaves the actor at `frame`: its
+ * place in the room and its heading (its root bone turned from the bind pose); 0 if it can't say */
+int actor_drive_place(Actor *a, const uint8_t *drive, size_t size, float frame, Vec3 *pos, float *yaw);
 /* where bone `b` is in the room (as last posed), its position if there is no such bone */
 Vec3 actor_bone(const Actor *a, int b);
 /* a point `off` in bone b's own axes, in the room (as last drawn) */

@@ -338,17 +338,13 @@ void model_free(Model *m) {
  * Bank: u32 records, u32 ?, u32 ?, u32 id map; records of 0x14 bytes at +0x10 (five part offsets
  * from the record). Id map: u32 count, then (id, record) pairs at +0x10. Part: u32 tracks,
  * u32 frames, u32 track table (from the part); track: s32 code (< 0 special channels; else the
- * bone is bone_table[code + 1]), u32 type (bit 16: one key only), u32 keys (from the track). */
+ * bone is bone_table[code + 1]), u32 type (bit 16: one key only), u32 keys (from the track).
+ * A motion is numbered by its place in the id map (Motion_AnimIndex), not by its record: some
+ * ids share a record (Debilitas's $201 and $206, the turns $400.. and $405..), and the tables
+ * keyed by motion - its sounds, events, blend - have a row for each id. */
 
-static Reader bank(const Model *m) {
-    Reader r = {m->motions, m->motions_size, 0};
-
-    return r;
-}
-
-/* motion `index`'s bank (its own, or from MODEL_SECOND the second) and its record there; 0 if
- * there is no such motion */
-static int motion_at(const Model *m, int index, Reader *r, size_t *rec) {
+/* motion `index`'s bank (its own, or from MODEL_SECOND the second) and its place in the id map */
+static int bank_of(const Model *m, int index, Reader *r, int *at) {
     const uint8_t *b = m->motions;
     size_t size = m->motions_size;
 
@@ -361,61 +357,53 @@ static int motion_at(const Model *m, int index, Reader *r, size_t *rec) {
         return 0;
     }
     *r = (Reader){b, size, 0};
-    if ((uint32_t)index >= u32(r, 0)) {
+    *at = index;
+    return (uint32_t)index < u32(r, u32(r, 12));
+}
+
+static Reader bank(const Model *m) {
+    Reader r = {m->motions, m->motions_size, 0};
+
+    return r;
+}
+
+/* motion `index`'s bank and its record there; 0 if there is no such motion */
+static int motion_at(const Model *m, int index, Reader *r, size_t *rec) {
+    int at;
+    uint32_t record;
+
+    if (!bank_of(m, index, r, &at)) {
         return 0;
     }
-    *rec = 0x10 + (size_t)index * 0x14;
+    record = u32(r, u32(r, 12) + 0x10 + (size_t)at * 8 + 4);
+    if (record >= u32(r, 0)) {
+        return 0;
+    }
+    *rec = 0x10 + (size_t)record * 0x14;
     return 1;
 }
 
 int model_motion_count(const Model *m) {
     Reader r = bank(m);
 
-    return m->motions != NULL ? (int)u32(&r, 0) : 0;
+    return m->motions != NULL ? (int)u32(&r, u32(&r, 12)) : 0;
 }
 
 int model_motion_id(const Model *m, int index) {
-    Reader r = bank(m);
-    int at = index;
-    size_t map;
-    uint32_t n, i;
+    Reader r;
+    int at;
 
-    if (index >= MODEL_SECOND) {
-        r = (Reader){m->motions2, m->motions2_size, 0};
-        at -= MODEL_SECOND;
-    }
-    if (r.base == NULL) {
+    if (!bank_of(m, index, &r, &at)) {
         return index;
     }
-    map = u32(&r, 12);
-    n = u32(&r, map);
-    for (i = 0; i < n && !r.bad; i++) {
-        if ((int)u32(&r, map + 0x10 + i * 8 + 4) == at) {
-            return (int)u32(&r, map + 0x10 + i * 8);
-        }
-    }
-    return index;
+    return (int)u32(&r, u32(&r, 12) + 0x10 + (size_t)at * 8);
 }
 
-int model_motion_pos(const Model *m, int index) {
-    Reader r = bank(m);
-    size_t map;
-    uint32_t n, i;
-
-    if (m->motions == NULL) {
-        return -1;
-    }
-    map = u32(&r, 12);
-    n = u32(&r, map);
-    for (i = 0; i < n && !r.bad; i++) {
-        if ((int)u32(&r, map + 0x10 + i * 8 + 4) == index) {
-            return (int)i;
-        }
-    }
-    return -1;
+int model_motion_pos(const Model *m, int index) {   /* (motions are numbered so already) */
+    return m->motions != NULL && index >= 0 && index < model_motion_count(m) ? index : -1;
 }
 
-/* in a bank's id list: the last match (as Motion_AnimEntry), -1 none */
+/* in a bank's id map: its place (the last match, as Motion_AnimEntry), -1 none */
 static int find_in(const uint8_t *b, size_t size, int id) {
     Reader r = {b, size, 0};
     size_t map;
@@ -429,7 +417,7 @@ static int find_in(const uint8_t *b, size_t size, int id) {
     n = u32(&r, map);
     for (i = 0; i < n && !r.bad; i++) {
         if ((int)u32(&r, map + 0x10 + i * 8) == id) {
-            found = (int)u32(&r, map + 0x10 + i * 8 + 4);
+            found = (int)i;
         }
     }
     return found;

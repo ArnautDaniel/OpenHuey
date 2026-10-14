@@ -26,13 +26,13 @@ const uint8_t *world_exe(const World *w, uint32_t vaddr, size_t n) {
     return w->exe.data != NULL ? exe_at(&w->exe, vaddr, n) : NULL;
 }
 
-int world_load(World *w, const char *exe_path) {
+int world_load(World *w, uint8_t *exe_data, size_t exe_size) {
     Exe e;
     const uint8_t *doors, *rooms;
     int i, k, s;
 
     memset(w, 0, sizeof(*w));
-    if (!exe_load(&e, exe_path)) {
+    if (!exe_take(&e, exe_data, exe_size)) {
         return 0;
     }
     doors = exe_at(&e, DOOR_TABLE, WORLD_DOORS * 16);

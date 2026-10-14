@@ -9,6 +9,7 @@
 #include "../game/cutscene.h"
 #include "../game/exits.h"
 #include "../game/messages.h"
+#include "../platform/disc.h"
 #include "../game/progress.h"
 #include "../game/sprites.h"
 #include "../game/particles.h"
@@ -1730,6 +1731,24 @@ static void sound_ready(void) {   /* the executable's tables, once */
         done = 1;
     }
 }
+/* HGA_SOUNDLOG=1: each sound said as it is played - the frame, who, the bank's file, the id */
+static char sBankFile[8][128];
+static void bank_named(int k, const char *name) {
+    if (k >= 0 && k < 8) {
+        snprintf(sBankFile[k], sizeof(sBankFile[k]), "%s", name);
+    }
+}
+static void sound_log(uint32_t id, int bank) {
+    static int on = -1;
+
+    if (on < 0) {
+        on = getenv("HGA_SOUNDLOG") != NULL;
+    }
+    if (on) {
+        fprintf(stderr, "sound %6ld %-12s bank %d (%s) id $%X\n", (long)gEngine.ticks, hactor_name(hactor_self()), bank,
+                bank >= 0 && bank < 8 ? sBankFile[bank] : "?", (unsigned)id);
+    }
+}
 static void bank_want(int bank) {
     char name[64];
 
@@ -1738,14 +1757,17 @@ static void bank_want(int bank) {
     case 4:
         snprintf(name, sizeof(name), "D_%01X000", sWantSet & 0xF);
         snddrv_bank(4, name);
+        bank_named(4, name);
         break;
     case 5:
         snddrv_bank(5, "C_0000");
+        bank_named(5, "C_0000");
         break;
     case 6:
         if (gEngine.room.id >= 0) {
             snprintf(name, sizeof(name), "ST_%03X/ST1_%03X", gEngine.room.id & ~7, gEngine.room.id);
             snddrv_bank(6, name);
+            bank_named(6, name);
         }
         break;
     }
@@ -1766,6 +1788,7 @@ PRIM(p_bank_sound) {   /* ( id bank -- ) a sound heard plainly (SndDriver_Play) 
     Cell bank = POP(), id = POP();
 
     bank_want((int)bank);
+    sound_log((uint32_t)id, (int)bank);
     snddrv_play((uint32_t)id, (int)bank);
 }
 PRIM(p_sound_at) {   /* ( id bank vol pitch -- ) ( F: x y z -- ) a sound at a point of the room
@@ -1775,6 +1798,7 @@ PRIM(p_sound_at) {   /* ( id bank vol pitch -- ) ( F: x y z -- ) a sound at a po
 
     bank_want((int)bank);
     view_point(x, y, z, at, ahead);
+    sound_log((uint32_t)id, (int)bank);
     snddrv_play_placed((uint32_t)id, (int)bank, (int)vol, (int)pitch, at, ahead);
 }
 /* a sound at a point of the room, as it is (for the engine's own: the effects') */
@@ -1783,6 +1807,7 @@ void engine_sound_at(uint32_t id, int bank, Vec3 at) {
 
     bank_want(bank);
     view_point(at.x, at.y, at.z, a, ahead);
+    sound_log(id, bank);
     snddrv_play_placed(id, bank, 0, 0, a, ahead);
 }
 PRIM(p_bank_sound_at) {   /* ( id bank -- ) ( F: x y z -- ) a sound at a point, as it is */
@@ -1791,6 +1816,7 @@ PRIM(p_bank_sound_at) {   /* ( id bank -- ) ( F: x y z -- ) a sound at a point, 
 
     bank_want((int)bank);
     view_point(x, y, z, at, ahead);
+    sound_log((uint32_t)id, (int)bank);
     snddrv_play_placed((uint32_t)id, (int)bank, 0, 0, at, ahead);
 }
 PRIM(p_sound_reverb) {   /* ( core v -- ) core 0 (music) / 1 (effects)'s reverb level, 0..0x3FFF */
@@ -1826,6 +1852,7 @@ PRIM(p_sound_bank) {   /* ( k addr len -- flag ) bank k holds NAME ("" none) */
     path_arg(f, name, sizeof(name));
     k = POP();
     sound_ready();
+    bank_named((int)k, name);
     PUSH(snddrv_bank((int)k, name) ? -1 : 0);
 }
 PRIM(p_sound_set) {   /* ( set -- ) the sound set bank 4 holds (Progress_LoadSoundSet) */
@@ -1836,6 +1863,7 @@ PRIM(p_common_sound) {   /* ( id -- ) play sound `id` of the common bank */
     Cell id = POP();
 
     bank_want(5);
+    sound_log((uint32_t)id, 5);
     snddrv_play((uint32_t)id, 5);
 }
 PRIM(p_dot_voices) {   /* ( -- ) the effects' voices sounding: voice, bank, sound's entry, priority,
@@ -2478,14 +2506,8 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its skinned parts sho
 }
 PRIM(p_testing) { PUSH(gEngine.testing ? -1 : 0); }   /* ( -- flag ) run by --test (nothing kept on disk) */
 PRIM(p_user_dir) {   /* ( -- addr len ) where settings are kept (made if needed; ends with /) */
-    static char *dir;
+    const char *dir = disc_user_dir();
 
-    if (dir == NULL) {
-        dir = SDL_GetPrefPath("hg2", "new-src");
-    }
-    if (dir == NULL) {
-        forth_error(f, "user-dir: %s", SDL_GetError());
-    }
     PUSH(dir);
     PUSH(strlen(dir));
 }
@@ -2552,7 +2574,6 @@ PRIM(p_screenshot) {   /* ( addr len -- ) save the frame as a PNG once drawn */
     snprintf(gEngine.screenshot, sizeof(gEngine.screenshot), "%.*s", (int)n, (const char *)a);
 }
 PRIM(p_console) { gEngine.console.open = (int)POP() != 0; }   /* ( flag -- ) */
-PRIM(p_data_dir) { PUSH(files_root()); PUSH(strlen(files_root())); }
 
 /* ---- the free camera (hga's own, for looking about and filming): F3 takes the camera from
  * wherever it is and gives it back; while it is free the arrows move it along the floor (up /
@@ -2688,6 +2709,26 @@ static UiItem *ui_add(Forth *f, Cell layer) {
 
     return sUiN[l] < UI_ITEMS ? &sUi[l][sUiN[l]++] : NULL;
 }
+/* who each cast model belongs to (the actor that cast it), told where a cutscene leaves it */
+static int sCastOwner[CHARACTERS];
+static Cell float_cell(float x) {
+    double d = x;
+    Cell c;
+
+    memcpy(&c, &d, sizeof(c));
+    return c;
+}
+static void cast_placed(int actor, Vec3 pos, float yaw) {
+    int i, kind = hactor_kind("place");
+
+    for (i = 0; i < CHARACTERS && kind >= 0; i++) {
+        if (gEvents.chars[i].present && gEvents.chars[i].actor == actor && sCastOwner[i] >= 0) {
+            Cell args[4] = {float_cell(pos.x), float_cell(pos.y), float_cell(pos.z), float_cell(yaw)};
+
+            hactor_send(-1, sCastOwner[i], kind, args, 4);
+        }
+    }
+}
 PRIM(p_cast_as) {   /* ( id model -- ) the character with script id `id` (0 Fiona, 1 Hewie..) has
                      * that model (-1: none): the cutscenes' cast finds it (gEvents.chars) */
     Cell model = POP(), id = POP();
@@ -2712,6 +2753,8 @@ PRIM(p_cast_as) {   /* ( id model -- ) the character with script id `id` (0 Fion
     gEvents.chars[i].present = model >= 0;
     gEvents.chars[i].id = (int32_t)id;
     gEvents.chars[i].actor = (int32_t)model;
+    sCastOwner[i] = hactor_self();
+    cutscene_on_place(cast_placed);
 }
 PRIM(p_cast_model) {   /* ( id -- model | -1 ) the model cast as script id `id` (cast-as) */
     Cell id = POP();
@@ -2983,7 +3026,7 @@ void bind_engine(Forth *f) {
         {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"look@", p_look_get}, {"user-dir", p_user_dir}, {"testing?", p_testing}, {"actor-part-show", p_actor_part_show}, {"doorway-faded", p_doorway_faded}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
         {"end-file", p_end_file}, {"xt>name", p_xt_to_name},
         {"clear-color", p_clear_color}, {"out-of-view?", p_out_of_view}, {"screenshot", p_screenshot}, {"console!", p_console},
-        {"data-dir", p_data_dir},
+
     };
     size_t i;
 

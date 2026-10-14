@@ -2,7 +2,7 @@
 \ controls, standing, walking, running and turning, her footsteps, going out by exits; F4: struck
 \ and caught (fiona/hurt.fs).
 IN: fiona
-USING: engine game-state facts actors messages common paths doors saves fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.slam fiona.ladder fiona.push fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend fiona.voice fiona.letgo ;
+USING: engine game-state facts actors messages common paths doors saves fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.slam fiona.ladder fiona.push fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend fiona.voice fiona.letgo flag-names ;
 
 : rooms-id ( -- id )  s" rooms" actor-named ;
 : camera-id ( -- id )  s" camera" actor-named ;
@@ -170,6 +170,10 @@ $1C constant softened-layer
     her-unseen @ if  bumped exit  then
     1 her-still-t +!  her-still-t @ 60 >= if  true unseen!  then ;
 
+\ a script letting go of her (its end, or cut off: the room left) - no longer crouched where she
+\ was hiding (Fiona_FullStop: its flags 9 and $A cleared; only the crouch sets $A)
+: crouch-over ( -- )  fiona-half-hidden state-flag-clear ;
+
 behaviour free
   on spawned ( -- )
       -1 her-model !  -1 her-hit-who !  -1 her-shake-count !  her-creatures 10 cells -1 fill  progress pr.vars $26 + c@ wear  2e 15e body-size
@@ -183,7 +187,7 @@ behaviour free
   on offer ( scene arg -- )
       her-mode @ 0= her-doing @ 0= and  hands-off? 0= and  action-button? and
       sender alive? and  if  sender send take-offer  else  2drop  then ;   \ (its room gone meanwhile: nobody to answer)
-  on scripted ( on -- )  idle  her-scripted ! ;
+  on scripted ( on -- )  idle  dup 0= her-scripted @ 0<> and if  crouch-over  then  her-scripted ! ;
   on noclip ( on -- )  her-noclip ! ;   \ (the story's 0x20)
   on aside ( on -- )  her-aside ! ;     \ (0x21: out of reach of attacks)
   on activate ( -- )  0 her-noclip !  0 her-aside !  idle ;   \ (the story's 0x15, Fiona_Activate: afresh, standing)

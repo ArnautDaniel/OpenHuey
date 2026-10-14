@@ -121,10 +121,15 @@ USING: engine game-state actors messages common facts flag-names room-names path
     forget-leads  0 beaten !  -1 making-for !  0 down-t !  3 mode!  900 mode-t !  0 raging !
     hp @ 0> 0= if  hp-max @ hp !  then ;
 : unload ( -- )  0 loaded !  in-game @ if  go-out  then  my-kind @ -1 cast-as ;
+create place-at 12 allot  fvariable place-yaw
 behaviour stalking
   on stalker-load ( -- )  load ;
   on stalker-unload ( -- )  unload ;
   on stalker-in ( room tri -- )  come-in ;
+  on place ( x y z yaw -- )   \ (put there, facing so: where a cutscene left him)
+      in-game @ 0= if  2drop 2drop exit  then
+      cell>f place-yaw f!  >r >r cell>f r> cell>f r> cell>f place-at vec!
+      room-id  place-at my-floor @ v-tri-in  place-at vec@ body-place  place-yaw f@ body-turn ;
   on stalker-out ( -- )  go-out ;
   on write-save ( -- )   \ (saves.fs) loaded: his kind, in the game or not, his place, health and mode
       loaded @ 0= if  exit  then
