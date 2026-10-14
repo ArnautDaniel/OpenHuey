@@ -2797,16 +2797,44 @@ static const uint8_t kGlyphShape[96] = {
 #define FONT_GROUP 0x14
 #define FONT_TEXTURE 0
 
-static int game_text(float x, float y, float scale, uint32_t rgba, const char *s) {
+static unsigned game_font(int *tw, int *th) {
     static int loaded;
-    int tw, th, i;
-    unsigned t;
 
     if (!loaded) {   /* (as SceneBoot loads it: once) */
         loaded = 1;
         sprites_group_file(FONT_GROUP, "SUBSCR/MSG_BASE.TEX");
     }
-    t = sprites_texture_of(FONT_GROUP, FONT_TEXTURE, 0, &tw, &th);
+    return gRender.game_font ? sprites_texture_of(FONT_GROUP, FONT_TEXTURE, 0, tw, th) : 0;
+}
+
+/* how wide a line is drawn at `scale`, in whichever font draws it */
+static float text_width(const char *s, int n, float scale) {
+    int tw, th, i;
+    float w = 0.0f;
+
+    if (game_font(&tw, &th) == 0 || tw <= 0 || th <= 0) {
+        return render_text_width(scale, n);
+    }
+    for (i = 0; i < n; i++) {
+        int g = (unsigned char)s[i] - 0x20;
+
+        if (g >= 0 && g < 96) {
+            w += (float)(16 - (kGlyphShape[g] >> 4)) * scale / 2.0f + scale * 0.5f;
+        } else if (g >= 96) {
+            w += 8.0f * scale + scale * 0.5f;
+        }
+    }
+    return w;
+}
+PRIM(p_text_width) {   /* ( addr len scale -- px ) */
+    Cell scale = POP(), n = POP(), a = POP();
+
+    PUSH((Cell)text_width((const char *)a, n > 0 ? (int)n : 0, (float)(scale < 1 ? 1 : scale)));
+}
+
+static int game_text(float x, float y, float scale, uint32_t rgba, const char *s) {
+    int tw, th, i;
+    unsigned t = game_font(&tw, &th);
     float cell = 8.0f * scale, tall = cell * 21.0f / 16.0f;   /* (a glyph 16 x 21, as the message window's: Task glyphW / glyphH) */
 
     if (t == 0 || tw <= 0 || th <= 0) {
@@ -2816,6 +2844,13 @@ static int game_text(float x, float y, float scale, uint32_t rgba, const char *s
         int c = (unsigned char)s[i], g = c - 0x20;
         float u, v, drop;
 
+        if (g >= 96) {   /* past the letters (the pad's buttons, 0xC0 on): a whole cell */
+            u = (float)((g & 0xF) * 16);
+            v = (float)((g >> 4) * 16);
+            render_image_uv(t, x, y, cell, tall, u / tw, v / th, (u + 16.0f) / tw, (v + 16.0f) / th, rgba);
+            x += cell + scale * 0.5f;
+            continue;
+        }
         if (g < 0 || g >= 96) {
             continue;
         }
@@ -2907,7 +2942,7 @@ void bind_engine(Forth *f) {
         {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-sides", p_route_sides}, {"exit-way", p_exit_way}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"world-exits-rebuild", p_exits_rebuild}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
         {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"look-on?", p_look_on}, {"sprites", p_sprites_new}, {"sprites-free", p_sprites_free}, {"sprites-free-all", p_sprites_free_all}, {"sprites-texture", p_sprites_texture}, {"sprites-cells", p_sprites_cells}, {"sprites-flags", p_sprites_flags}, {"sprites-offset", p_sprites_offset}, {"sprites-corner", p_sprites_corner}, {"sprites-count", p_sprites_count}, {"sprite!", p_sprite_store}, {"sprites-uv", p_sprites_uv}, {"sprite-quad!", p_sprite_quad}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
-        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-image", p_ui_image}, {"tex-bank", p_tex_bank}, {"tex-info", p_tex_info}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"ui-movie", p_ui_movie}, {"cast-as", p_cast_as}, {"cast-model", p_cast_model}, {"model-file", p_model_file}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
+        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-image", p_ui_image}, {"tex-bank", p_tex_bank}, {"tex-info", p_tex_info}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"text-width", p_text_width}, {"ui-movie", p_ui_movie}, {"cast-as", p_cast_as}, {"cast-model", p_cast_model}, {"model-file", p_model_file}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-follow", p_cam_follow}, {"cam-target!", p_cam_target}, {"cam-ease", p_cam_ease}, {"cam-event?", p_cam_event}, {"cam-event!", p_cam_event_set}, {"cam-track", p_cam_track},

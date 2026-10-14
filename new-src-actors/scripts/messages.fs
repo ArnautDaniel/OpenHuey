@@ -95,6 +95,7 @@ message panic ( stage level -- )             \ broadcast each frame
 message flinch ( -- )                       \ (Fiona) flinching as if caught, nobody holding her (a room's command: action $B / $21)
 message count-shakes ( on? -- )             \ (Fiona) her shakes counted from now (Fiona_Shakes: the story's old-mansion-b1-3), or not
 message fiona-shakes ( n -- )               \ broadcast each frame while counting: her shakes so far
+message fiona-shaking ( n -- )              \ broadcast each frame: her shakes this frame (the stick swung, a button - Fiona_Shakes)
 message fiona-struck-by ( who -- )           \ broadcast each frame after fiona-doing: who struck or caught her (+0x100; -1 nobody)
 message fiona-doing ( mode sub cond cmd doing -- ) \ broadcast each frame: her move mode, what she does, her
                                              \ condition, her command this frame (-1 none; 3 the praise held), her

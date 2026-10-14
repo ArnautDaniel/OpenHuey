@@ -14,7 +14,7 @@
 #include <stdint.h>
 
 #define MESSAGE_PAGES 16
-#define MESSAGE_LINES 8
+#define MESSAGE_LINES 16
 #define MESSAGE_LINE_CHARS 96
 #define MESSAGE_OPTIONS 8
 

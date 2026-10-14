@@ -380,8 +380,8 @@ create effect-bytes 64 allot  variable #effect-bytes
 
 \ ---- the message window (the window actor shows it; its closing comes back as text-closed) ----
 : window-id ( -- id )  s" window" actor-named ;
-: message ( msg -- )   \ (bit 0x4000: the second language table - not this one's)
-    $4000 invert and  dup msg !  self-char msg-owner !  window-id send show-text ;
+: message ( msg -- )   \ (bit 0x4000: from MSG_SUB - the tutorials, the original's language 2 table)
+    dup msg !  self-char msg-owner !  window-id send show-text ;
 : wait-message ( -- )   \ (an action script waits while it is open)
     in-slot? 0= if  exit  then  begin  msg @ 0< 0= while  yield  repeat ;
 : message-close ( msg -- )
@@ -392,8 +392,9 @@ create effect-bytes 64 allot  variable #effect-bytes
 
 \ ---- what she does with the pad (the scripts' 0x21: her command; 0x15: a button) ----
 : control-action? ( v -- flag )  fiona-cmd @ = ;   \ (her gesture this frame: 0 up .. 4 left)
-: pad? ( button how -- flag )   \ (how: 1 held, 2 just pressed; button bit 7 - her shake - not kept yet)
-    swap $7F and swap  2 and if  button-pressed?  else  button-down?  then ;
+: pad? ( button how -- flag )   \ (how: 1 held, 2 just pressed; button bit 7: she shook - the stick
+    over $80 and if  2drop  fiona-shakes-now @ 0<> exit  then   \ swung or a button: Fiona_Shakes)
+    2 and if  button-pressed?  else  button-down?  then ;
 
 \ ---- facing (cond_deg: how far a character turns from its heading to face a point) ----
 fvariable fx  fvariable fz

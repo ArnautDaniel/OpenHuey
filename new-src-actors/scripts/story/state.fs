@@ -68,6 +68,7 @@ state: room-state
   cell field hewie-hp            \ his health (hewie-health)
   cell field keri-fallen         \ the story's debris fallen through since last counted (keri-fell)
   cell field fiona-shook         \ her shakes counted (count-shakes)
+  cell field fiona-shakes-now    \ her shakes this frame (fiona-shaking)
   cell field summoner-secs       \ the summoner's cooldown left (seconds)
   cell field loud-here           \ a noise of $20 or more made in this room lately (frames left)
   cell field fiona-unseen         \ she can't be seen (fiona-unseen: item $89, still)

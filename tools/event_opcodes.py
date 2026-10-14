@@ -272,7 +272,7 @@ CMD = {
     0xA2: ('door-flag-82', 'door:u8 on:u8', 'Door `door`\'s second flag (+0x82; Doors_SetFlag82). Nothing in the C reads it yet.'),
     0xA3: ('panic-stage', 'stage:u8', 'The panic\'s stage = `stage` (Panic_SetStage).'),
     0xA4: ('self-anim-9', 'anim:u16 b:u16', 'self: animation `anim` with b (character move 9).'),
-    0xA5: ('scene-ending', 'id:u16', 'Requests scene 5 (an ending / the results, id `id`) unless state flag 0x12 or Fiona is busy.'),
+    0xA5: ('examine-message', 'id:u16', 'Offers message `id` on her action button (Progress +0x1134 = 0x80000005: she looks at character 2 and the message opens) unless state flag 0x12 or Fiona is busy.'),
     0xA6: ('char-file-load', 'id:u8 file:u8', 'Loads the room\'s file named by string `file` into character `id`\'s model buffer (slots 0..3).'),
     0xA7: ('char-file-use', 'id:u8', 'Character `id`\'s model takes its loaded buffer (0xA6); waits while the loader is busy.'),
     0xA8: ('room-sounds', '', 'Loads the current room\'s sound set.'),

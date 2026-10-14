@@ -249,14 +249,20 @@ static const char *k2dFs =   /* the font is a coverage mask */
     "    o_color = vec4(v_col.rgb, v_col.a * texture(u_font, v_uv).r);\n"
     "}\n";
 
-static const char *k2dImageFs =   /* a picture (a movie's frame), times the colour */
+static const char *k2dImageFs =   /* a picture (a movie's frame), times the colour - its texture's
+                                   * sRGB (linear when sampled) encoded again: the 2D is drawn after
+                                   * the post pass, straight to the screen */
     "#version 460 core\n"
     "in vec2 v_uv;\n"
     "in vec4 v_col;\n"
     "layout(binding = 0) uniform sampler2D u_image;\n"
     "out vec4 o_color;\n"
+    "vec3 to_srgb(vec3 c) {\n"
+    "    return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c));\n"
+    "}\n"
     "void main() {\n"
-    "    o_color = texture(u_image, v_uv) * v_col;\n"
+    "    vec4 t = texture(u_image, v_uv);\n"
+    "    o_color = vec4(to_srgb(t.rgb), t.a) * v_col;\n"
     "}\n";
 
 static void attribute(GLuint vao, GLuint index, GLint size, GLenum type, GLboolean normalized, GLuint offset) {

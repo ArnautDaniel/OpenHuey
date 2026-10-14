@@ -346,6 +346,9 @@ static int model_motion_entry_flags(const Actor *a, int index) {
 
 void actor_body_start(Actor *a, int index, int flags, float blend) {
     int frames = model_motion_frames(&a->model, index);
+    /* the motion before had come to its end, not looping: it fades out held at its last frame
+     * (stepped on, it would wrap to its first - a crouch's end back to standing) */
+    int ended = a->motion >= 0 && !(a->loop || (a->mflags & 1)) && (a->mflags & 0x400);
 
     if (a->motion >= 0 && blend > 0.0f) {
         a->prev_motion = a->motion;
@@ -369,7 +372,7 @@ void actor_body_start(Actor *a, int index, int flags, float blend) {
     }
     a->motion = index;
     a->mflags = (flags & 0xFFFF) | (flags & 8 ? 0x10 : 0);
-    a->prev_frozen = (flags & 8) != 0;
+    a->prev_frozen = (flags & 8) != 0 || ended;
     a->loop = flags & 1;
 }
 

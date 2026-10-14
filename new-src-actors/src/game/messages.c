@@ -128,6 +128,8 @@ static void put_text(const char *s) {
     }
 }
 
+#define BUTTON_NAMES 0x801C
+
 const MessageLayout *message_layout(int id) {
     const uint8_t *p = message_text(id), *stack[4];
     int depth = 0, steps = 0, hidden = 0, table_bits = id & 0xC000;
@@ -182,8 +184,10 @@ const MessageLayout *message_layout(int id) {
             p += 3;
             continue;
         case 0x08:   /* a parameter (a system message the scripts chose) */
-        case 0x13: { /* a name (not kept yet) */
-            const uint8_t *s = c == 0x08 && p[1] < 4 ? sParams[p[1]] : NULL;
+        case 0x13: { /* a button's name: slot n is system message $801C + n (the first controller
+                      * layout's: SubScreen_SetLayout) */
+            const uint8_t *s = c == 0x08 ? (p[1] < 4 ? sParams[p[1]] : NULL)
+                             : p[1] < 6 ? message_text(BUTTON_NAMES + p[1]) : NULL;
 
             if (s != NULL && depth < 4) {
                 stack[depth++] = p + 2;
@@ -225,7 +229,7 @@ const MessageLayout *message_layout(int id) {
         case 0x04: case 0x0D: case 0x12: case 0x14: case 0x16: case 0x05: case 0x06:
             p++;
             continue;
-        case 0x1A: case 0x1B: case 0x1C: case 0x1D:   /* a glyph of another font */
+        case 0x1A: case 0x1B: case 0x1C: case 0x1D:   /* a glyph of another font, or past 0xFF */
             if (!hidden) {
                 put('?');
             }
@@ -233,7 +237,7 @@ const MessageLayout *message_layout(int id) {
             continue;
         default:
             if (!hidden) {
-                put(c >= 0x20 && c < 0x7F ? (char)c : '?');
+                put(c >= 0x20 ? (char)c : '?');   /* (0x80 on: the font's own glyphs - the pad's buttons at 0xC0) */
             }
             p++;
         }

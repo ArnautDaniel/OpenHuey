@@ -37,7 +37,7 @@ variable piece
     art-layer  cx w 2/ - sx  cy h 2/ - sy  w sw  h sy  $C0 openness @ * 128 / $10100C00 or  ui-rect ;
 
 \ ---- words ----
-: scale ( -- n )  448 sy 300 / 1 max ;
+: scale ( -- n )  448 sy 224 / 1 max ;   \ (the PS2's glyph 16 x 21 of 448 lines)
 : ink ( light? -- rgba )   \ the gold of a choice, or plain; faded in with the menu
     if  $FFD87800  else  $E8E0D000  then  openness @ 2* 255 min or ;
 : text ( addr len x y light? -- )   \ a line at x y

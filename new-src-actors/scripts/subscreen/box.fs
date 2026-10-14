@@ -14,7 +14,7 @@ USING: engine messages keys ps2-screen subscreen.state subscreen.art subscreen.i
 : box-view ( -- )
     $100 $E0 $1A0 $A0 shade
     shown @ message-layout drop
-    shown-page @ message-lines 0 ?do  shown @ shown-page @ i line-of  $40  $B0 i 18 * +  false text  loop
+    shown-page @ message-lines 0 ?do  shown @ shown-page @ i line-of  $40  $B0 i 22 * +  false text  loop
     choosing? if  marker  then ;
 : box-keys ( -- )
     choosing? if

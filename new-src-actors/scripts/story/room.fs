@@ -67,7 +67,7 @@ behaviour playing-room
       self subscribe tick  self subscribe frame-end
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing  self subscribe moving
       self subscribe stalker-doing  self subscribe stalker-blow  self subscribe item-event  self subscribe item-var  self subscribe item-event-bit  100 st-age !  -1 st-blow !
-      self subscribe creature-doing  self subscribe noise-was  self subscribe summoner-cooldown-is  self subscribe fiona-struck-by  self subscribe fiona-shakes  self subscribe hewie-health  self subscribe keri-fell  self subscribe fiona-unseen  self subscribe fiona-message  10 0 do  100 i cells cr-ages + !  loop
+      self subscribe creature-doing  self subscribe noise-was  self subscribe summoner-cooldown-is  self subscribe fiona-struck-by  self subscribe fiona-shakes  self subscribe fiona-shaking  self subscribe hewie-health  self subscribe keri-fell  self subscribe fiona-unseen  self subscribe fiona-message  10 0 do  100 i cells cr-ages + !  loop
       0 phase
       #chars 0 do  i char-enter  loop
       remember-chars
@@ -118,6 +118,7 @@ behaviour playing-room
   on summoner-cooldown-is ( secs -- )  summoner-secs ! ;
   on fiona-struck-by ( who -- )  fiona-hit-by ! ;
   on fiona-shakes ( n -- )  fiona-shook ! ;
+  on fiona-shaking ( n -- )  fiona-shakes-now ! ;
   on hewie-health ( hp -- )  hewie-hp ! ;
   on keri-fell ( k -- )  drop  1 keri-fallen +! ;
   on grab-answer ( ok -- )  grab-ok !  0 grab-asked ! ;

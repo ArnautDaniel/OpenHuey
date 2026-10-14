@@ -56,8 +56,8 @@ defer shared.act97
     fiona-half-hidden state-flag-set
     fiona-hewie-react
     $801 self-anim
-    begin
-        $FF $FF pad? not if
+    begin   \ (crouched till she shakes - Fiona_Shakes - or L1 is let go, as the PS2 plays it)
+        $FF $FF pad?  2 1 pad? not or  not if
             fiona-caught? if
                 $FE self-touching? $FE 2 char-C4? not and if
                     ['] shared.act82 goto
