@@ -60,25 +60,25 @@ void hg_hw_write32(unsigned addr, unsigned value) {
 
 /* The PC vblank clock: one tick = one PS2 field (59.94 Hz): present the frame and pump input
  * (video.c), wait for the tick's time, then run the game's vblank handlers (start + end). */
-#include <time.h>
+#include <SDL3/SDL.h>
 
 extern void hg_frame(void);   /* video.c */
 
+/* (SDL's clock and delay: MinGW's clock_nanosleep doesn't take an absolute time as Linux does -
+ * on Windows the frames ran unpaced, or stalled) */
 static void hg_vblank_tick(void) {
-    static struct timespec next;
-    struct timespec now;
+    static Uint64 next;
+    Uint64 now;
 
     hg_frame();
-    clock_gettime(CLOCK_MONOTONIC, &now);
-    if (next.tv_sec == 0 || now.tv_sec > next.tv_sec + 1) {
+    now = SDL_GetTicksNS();
+    if (next == 0 || now > next + 1000000000ull) {
         next = now;
     }
-    next.tv_nsec += 16683333;
-    if (next.tv_nsec >= 1000000000) {
-        next.tv_nsec -= 1000000000;
-        next.tv_sec++;
+    next += 16683333;
+    if (next > now) {
+        SDL_DelayPrecise(next - now);
     }
-    clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL);
     hg_vblank();
 }
 
