@@ -31,4 +31,30 @@ T{ [: 25 hits !  give-up? ;] hers -> 0 }T
 testing her temper with Hewie: her own table (growled at 2, while she hides 3; a bite head on 5)
 T{ [: 4 temper#  5 temper#  10 temper# ;] hers -> 2 3 5 }T
 dan send stalker-out  3 frames
+testing her hanging parts (DaniellaModel_Springs): her hair down from her head ($B over $F), each point by the one beside it in the other strand; what hangs from her waist down ($22 over $24)
+room-id game:fiona body-tri dan send stalker-in  [: 3 mode! ;] hers  40 frames
+: y-of ( b -- ) ( F: -- y )  [: my-model @ ;] hers swap bone-pos fdrop fswap fdrop ;
+create b-at 12 allot  create b2-at 12 allot
+: apart ( b1 b2 -- ) ( F: -- d )
+    [: my-model @ ;] hers swap bone-pos b2-at vec!  [: my-model @ ;] hers swap bone-pos b-at vec!  b-at b2-at vec-dist ;
+T{ $B y-of  $F y-of  f>  $22 y-of  $24 y-of  f>  $D $12 apart  1.5e f< -> -1 -1 -1 }T
+dan send stalker-out  3 frames
+testing held off out of sight, no rooms of her own (Npc_HeadRandomRoom): on by a way out to another room, not hers
+front-garden-3 0 dan send stalker-in  3 frames
+T{ [: 4 mode!  front-garden-3 goal-room ! ;] hers  [: [: goal-room @ dup front-garden-2 <>  swap front-garden-3 <> and ;] hers ;] 120 soon -> -1 }T
+dan send stalker-out  3 frames
+
+testing her later kinds (34..36): each its own actor, kit and numbers; her look (34 and 36 the model DNL_001)
+: later ( kind -- id )  case  34 of  s" kind34"  endof  35 of  s" kind35"  endof  >r s" kind36" r>  endcase  actor-named ;
+: numbers ( -- kind hp tolerance limit )  my-kind @  hp-max @  tolerance @  dog-limit @ ;
+T{ 34 later enter  kit @ kind34-kit =  numbers  my-model @ $E00 has-motion?  leave-actor -> -1 34 120 200 6000 -1 }T
+T{ 35 later enter  kit @ kind35-kit =  numbers  leave-actor -> -1 35 65 120 3000 }T
+T{ 36 later enter  kit @ kind36-kit =  numbers  leave-actor -> -1 36 65 120 3000 }T
+T{ 34 later enter  stalker:file s" O_DNL/DNL_001" s=  leave-actor  35 later enter  stalker:file s" O_DNL/DNL_000" s=  leave-actor -> -1 -1 }T
+testing ... the story's slot 2 holds her own for each (`stalker-actor`)
+T{ 34 story.words:stalker-actor 34 later =  36 story.words:stalker-actor 36 later = -> -1 -1 }T
+testing ... in her room (kind 34): the Pursuer's chase, as hers
+room-id game:fiona body-tri 34 later send stalker-in  3 frames
+T{ [: [: step @ ['] pursue-run = ;] 34 later enter execute leave-actor ;] 30 soon -> -1 }T
+34 later send stalker-out  3 frames
 test-summary

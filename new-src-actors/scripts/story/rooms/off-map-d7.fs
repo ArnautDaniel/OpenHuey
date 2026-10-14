@@ -11,8 +11,8 @@ USING: room-names story.words story.shared ;
 : off-map-d7.cmd01 ( -- )  s" off-map-d7.cmd01" stub-step ;
 \ as Room107_Cmd01
 : off-map-d7.cmd02 ( -- )  s" off-map-d7.cmd02" stub-step ;
-\ the progress object's +0x7C with the caller's arguments
-: off-map-d7.cond01? ( -- flag )  s" off-map-d7.cond01?" stub-flag ;
+\ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
+: off-map-d7.cond01? ( -- flag )  true ;
 
 : off-map-d7.enter ( -- )   \ 00447A70
     room-sounds

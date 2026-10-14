@@ -20,27 +20,27 @@ IN: forth
 \ begin ... until                ( -- flag ) at the end
 \ begin ... while ... repeat     ( -- flag ) in the middle
 
-: if     postpone 0branch here 0 , ; immediate
-: then   here swap ! ; immediate
-: else   postpone branch here 0 , swap postpone then ; immediate
-: begin  here ; immediate
-: again  postpone branch , ; immediate
-: until  postpone 0branch , ; immediate
-: while  postpone if swap ; immediate
-: repeat postpone again postpone then ; immediate
+: if     inside-definition postpone 0branch here 0 , ; immediate
+: then   inside-definition here swap ! ; immediate
+: else   inside-definition postpone branch here 0 , swap postpone then ; immediate
+: begin  inside-definition here ; immediate
+: again  inside-definition postpone branch , ; immediate
+: until  inside-definition postpone 0branch , ; immediate
+: while  inside-definition postpone if swap ; immediate
+: repeat inside-definition postpone again postpone then ; immediate
 
 \ do ... loop / +loop, ?do (skips when limit = start). (do) keeps the exit address, so
 \ `leave` needs no patching: `do` leaves ( exit-slot loop-start ) for `loop` to finish.
-: do     postpone (do) here 0 , here ; immediate
-: ?do    postpone (?do) here 0 , here ; immediate
-: loop   postpone (loop) , here swap ! ; immediate
-: +loop  postpone (+loop) , here swap ! ; immediate
+: do     inside-definition postpone (do) here 0 , here ; immediate
+: ?do    inside-definition postpone (?do) here 0 , here ; immediate
+: loop   inside-definition postpone (loop) , here swap ! ; immediate
+: +loop  inside-definition postpone (+loop) , here swap ! ; immediate
 
 \ case ... of ... endof ... endcase   ( x -- )
-: case    0 ; immediate
-: of      postpone over postpone = postpone if postpone drop ; immediate
-: endof   postpone else ; immediate
-: endcase postpone drop begin ?dup while postpone then repeat ; immediate
+: case    inside-definition 0 ; immediate
+: of      inside-definition postpone over postpone = postpone if postpone drop ; immediate
+: endof   inside-definition postpone else ; immediate
+: endcase inside-definition postpone drop begin ?dup while postpone then repeat ; immediate
 
 \ ---- defining words ----
 : variable   create 0 , ;
@@ -74,6 +74,7 @@ IN: forth
 : f2*  2e f* ;
 : f2/  0.5e f* ;
 : fsq  fdup f* ;
+: float+ ( addr -- addr' )  1 floats + ;
 : f0> ( F: x -- ) ( -- flag )  0e f> ;
 : fclamp ( F: x lo hi -- x' ) frot fmin fmax ;
 : deg>rad  pi 180e f/ f* ;

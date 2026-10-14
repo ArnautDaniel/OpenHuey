@@ -150,6 +150,7 @@ s" Texture filter"  ' gfx.anisotropy number 1000 16000 1000 item
 s" Room's own fog"   ' gfx.room-fog flag 0 1 0 item
 s" Room's own tint"  ' gfx.room-tint flag 0 1 0 item
 s" Room's own bloom" ' gfx.room-bloom flag 0 1 0 item
+s" The game's own font" ' gfx.game-font flag 0 1 0 item
 s" Room's depth of field" ' gfx.room-dof flag 0 1 0 item
 s" Ambient occlusion" ' gfx.ssao flag 0 1 0 item
 s"   strength"      ' gfx.ssao-strength number 0 1000 100 item

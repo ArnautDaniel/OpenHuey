@@ -15,7 +15,13 @@ USING: engine game-state actors messages common facts paths flag-names hewie.sta
         3 of  1  endof  4 of  3  endof  10 of  2  endof  11 of  2  endof  12 of  2  endof
         >r 0 r>
     endcase  cells his-feel + ;
-: feel+ ( n -- )  feel @ + -10 10 clamp feel ! ;
+\ Hewie_FeelPursuer: his mood normal, a stalker about - the more he dislikes him, the likelier he
+\ is upset (mood 2): a 1-in-16 roll under 14 at -10, falling by one a step to 1 at 0, none above
+create upset-chance  14 , 10 , 9 , 8 , 7 , 6 , 5 , 4 , 3 , 2 , 1 ,
+: feel-pursuer ( -- )
+    his-mood @  pursuer active? 0= or  feel @ 0> or if  exit  then
+    feel @ 10 + cells upset-chance + @  16 roll > if  2 -1 set-mood  then ;
+: feel+ ( n -- )  feel @ + -10 10 clamp feel !  feel-pursuer ;
 \ Hewie_Dares: from trust 2, a 1-in-16 roll under his level + 1 + his feeling / 5 (at most 8)
 : dares? ( -- flag )
     his-trust @ 2 < if  false exit  then
@@ -29,8 +35,15 @@ USING: engine game-state actors messages common facts paths flag-names hewie.sta
     fdup 0.4e f< if  fdrop 3 exit  then  fdup 0.6e f< if  fdrop 2 exit  then
     0.8e f< if  1  else  0  then ;
 : hard-bite? ( kind -- flag )  6 * band + cells hard-bite-chance + @  100 roll > ;
+\ (Hewie_BiteEffect: a mark at his mouth, bone $25 - a big one with it while his grip holds)
+$25 constant his-mouth
+create mouth-at 12 allot
+: bite-mark ( -- )
+    his-model @ his-mouth bone-pos mouth-at vec!
+    his-mode @ 8 = if  his-tri -1 mouth-at vec@ spray  then
+    his-tri 0 mouth-at vec@ spray ;
 : bite-him ( kind base -- )
-    hard? if  2*  then  swap hard-bite? pursuer send bite ;
+    black-shepherd? if  2*  then  swap hard-bite? pursuer send bite  bite-mark ;
 
 \ ---- which side he comes at him from (Hewie_AttackSide): from behind, facing the stalker's
 \ back - 0 (not while he is timid); else a flank (1 near, 2 far: Daniella the other way) ----
@@ -206,14 +219,38 @@ USING: engine game-state actors messages common facts paths flag-names hewie.sta
     8 his-mode !  $18 his-sub !  pursuer his-target !  -1 his-grip !  0 his-biting !  8 his-cmd !
     his-path path-clear  ['] st-run-at-pursuer behave ;
 
-\ Hewie_PickTarget: whom he goes for - the stalker in his room that he can get to (not off screen)
+\ a homunculus bitten (bite_landed): his temper with her easing (one fewer of her hits held
+\ against him, for 300 frames more), his sound
+: bite-landed ( -- )
+    his-angry-n @ if  -1 his-angry-n +!  300 his-angry-t !  then  $6C make-sound ;
+
+\ Hewie_PickTarget: whom he goes for - the stalker when he has hold of her; a homunculus holding
+\ her down; the stalker; else the nearest creature up and after her, not struck or going -
+\ each in his room, one he can get to (the stalker not off screen)
+: reachable? ( id -- flag )  dup with? 0= if  drop false exit  then  dup body-tri swap body-at plan-to ;
+: chase? ( -- flag )  pursuer dup with? if  dup mode-of 3 <> swap reachable? and  else  drop false  then ;
+: her-held? ( sub -- flag )  her with? fiona-mode @ 4 = and  swap fiona-sub @ = and ;
+4 constant creature-struck   8 constant creature-holding
+: holding-her ( -- id | -1 )   \ (a homunculus, slots 7..9)
+    10 7 do  i creature dup mode-of creature-holding = over reachable? and if  unloop exit  then  drop  loop  -1 ;
+variable nearest  fvariable nearest-d
+: closer? ( id -- flag ) ( F: -- )   \ (nearer than the nearest yet)
+    body-at his-at vec-dist  nearest @ 0< fdup nearest-d f@ f< or  if  nearest-d f!  true  else  fdrop false  then ;
+: nearest-creature ( -- id | -1 )
+    -1 nearest !
+    10 0 do
+        i creature  dup with?  i creature-up? and  over mode-of creature-struck <> and
+        over reachable? and  if  dup closer? if  dup nearest !  then  then  drop
+    loop  nearest @ ;
 : pick-target ( -- id | -1 )
-    pursuer dup with? 0= if  drop -1 exit  then
-    dup mode-of 3 = if  drop -1 exit  then
-    dup body-tri over body-at plan-to 0= if  drop -1  then ;
+    chase?  9 her-held? and if  pursuer exit  then
+    $12 her-held? if  holding-her dup 0< 0= if  exit  then  drop  then
+    chase? if  pursuer exit  then
+    nearest-creature ;
 
 \ ---- harrying (0x59 / 0x5A, 0x53 then 0x23: Hewie_StateCloseOnTarget): near him a while, then
 \ at him and off again his-wanted times (0x5A: 3) ----
+defer close-by ( F: rest -- done? )   :noname fdrop false ; is close-by   \ (hewie/pounce.fs: the pounce, or closing in)
 : st-close-on ( -- )
     his-target @ with? 0= if  to-default exit  then
     -1 his-t1 +!  his-t1 @ 0= if  to-default exit  then
@@ -225,6 +262,7 @@ USING: engine game-state actors messages common facts paths flag-names hewie.sta
         his-wanted @ 0= if  to-default exit  then
         his-target @ her = if  $61  else  $59  then  0 want exit
     then
+    rest fdup 30e f< if  close-by if  exit  then  else  fdrop  then
     stride drop ;
 : close-on ( -- )   \ (0x23)
     his-target @ dup with? 0= if  drop 6 0 want exit  then
@@ -243,8 +281,9 @@ USING: engine game-state actors messages common facts paths flag-names hewie.sta
 \ 0.5 a frame; a door 0x6B: 5 less 1), then at its event down (out of health) or on ----
 variable tb-from  variable tb-how
 : yelped ( -- )   \ (Hewie_AfterYelp)
-    his-hp @ 0= if
+    his-hp @ 0= if   \ (down: counted for the dog's level at the end - not in a hard game)
         his-by @ pursuer? if  -3 feel+  then
+        hard-mode? 0= if  progress pr.hewie-downs dup l@ 1+ 9999 min swap l!  then
         $52 0 want exit
     then
     0 his-2d !
@@ -290,3 +329,39 @@ variable tb-from  variable tb-how
 : angry-down ( -- )
     his-mood @ 3 = his-angry-t @ 0= or if  exit  then
     -1 his-angry-t +!  his-angry-t @ 0= his-angry-n @ 0<> and if  -1 his-angry-n +!  300 his-angry-t !  then ;
+
+\ ---- his scuffles off screen (Hewie_Scuffle): the stalker hunting in his room (its mode 1..3),
+\ once a meeting and not within 900 frames of the last, him neither hurt nor down. By chance:
+\ 15 in 100 both hurt, 45 him only, 15 the stalker only, 25 nothing. Him hurt: a tenth of his
+\ health (not below 1), a grudge one time in four. Heard next door: his yelp ($66; $69 when he
+\ was not hurt). The stalker held 30 .. 180 frames, hurt a tenth of its health (twice on hard)
+\ unless it was him only or he may not attack - a liking one time in three. Then he waits it
+\ out ($30) ----
+0 constant both-hurt   1 constant he-is-hurt   2 constant it-is-hurt   3 constant nothing-came
+create scuffle-chances  both-hurt , 15 ,  he-is-hurt , 45 ,  it-is-hurt , 15 ,  nothing-came , 25 ,
+: scuffle-outcome ( -- outcome )
+    100 roll  0  scuffle-chances  begin  dup cell+ @ rot + >r  over r@ < 0= while  r> swap 2 cells +  repeat
+    r> drop nip @ ;
+: stalker-by-him? ( -- flag )
+    pursuer active?  st-room @ his-room = and ;
+: next-door? ( -- flag )   \ (his room is through an exit of hers)
+    8 0 do  room-id i room-exit-leads drop his-room = if  true unloop exit  then  loop  false ;
+: scuffle-heard ( outcome -- )
+    next-door? 0= if  drop exit  then
+    it-is-hurt = if  $69  else  $66  then  5 0 0  his-at vec@ his-sound ;
+: scuffle ( -- )
+    his-scuffle-t @ if  -1 his-scuffle-t +!  then
+    stalker-by-him? 0= if  0 his-scuffled !  then
+    his-cond @ 1 3 within  his-scuffle-t @ or  his-scuffled @ or if  exit  then
+    stalker-by-him?  st-alert @ 1 4 within and 0= if  exit  then
+    -1 his-scuffled !  900 his-scuffle-t !
+    scuffle-outcome  dup nothing-came = if  drop exit  then
+    6 roll 30 * 30 +  his-wanted !
+    dup it-is-hurt <> if
+        his-hp @ 10 - 1 max hp!  rnd 0.25e f< if  -1 feel+  then
+    then
+    dup scuffle-heard
+    he-is-hurt =  hewie-no-attack state-flag? or  fiona-occupied state-flag? or if  0
+    else  st-hp-max @ 10 /  black-shepherd? if  2*  then  rnd 0.33333e f< if  1 feel+  then  then
+    8 swap his-wanted @  pursuer send blow
+    $30 0 want ;

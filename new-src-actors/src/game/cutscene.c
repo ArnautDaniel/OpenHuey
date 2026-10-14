@@ -7,6 +7,7 @@
 #include "engine.h"
 #include "progress.h"
 #include "room.h"
+#include "rumble.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,7 +43,37 @@ static struct {
     Slot slots[SLOTS];
     int counts[16];         /* each signal's count so far (+0x206) */
     int cast;               /* Cutscene_Cast ran: the actors are taken */
+    uint8_t alone[SLOTS];   /* actors the cast leaves to their own motion (+0x82: Cutscene_Mark82) */
+    uint8_t keep_model[SLOTS];   /* actors whose model the cast leaves as it is (+0x83: Cutscene_Mark83) */
+    int rumble_small, rumble_large;   /* the scene's rumble as last set (+0x298 / +0x299) */
 } C;
+
+/* a model's own answer to being taken by a scene and given back (its vtable +0x2C / +0x30): only
+ * Daniella's - two of her parts hidden when taken, the first shown again when given back */
+#define DANIELLA_PART_A 17
+#define DANIELLA_PART_B 31
+static void part_shown(Actor *a, int part, int on) {
+    unsigned g = (unsigned)part + 1;
+
+    if (on) {
+        a->parts_shown[g >> 5] |= 1u << (g & 31);
+    } else {
+        a->parts_shown[g >> 5] &= ~(1u << (g & 31));
+    }
+}
+static int daniellas(const Actor *a) { return strncmp(a->name, "O_DNL", 5) == 0; }
+static void model_taken(Actor *a) {   /* (DaniellaModel_Vt2C) */
+    if (daniellas(a)) {
+        part_shown(a, DANIELLA_PART_A, 0);
+        part_shown(a, DANIELLA_PART_B, 0);
+    }
+}
+static void model_given_back(Actor *a) {   /* (DaniellaModel_Vt30) */
+    if (daniellas(a)) {
+        model_taken(a);
+        part_shown(a, DANIELLA_PART_A, 1);
+    }
+}
 
 /* actor i -> the character's script id (Cutscene_MapId) */
 static const int8_t kMap[26] = {
@@ -210,12 +241,18 @@ static void cast(void) {
         if (!(actors & (1u << i)) || i >= 26) {
             continue;
         }
+        if (C.alone[i]) {   /* (left alone: not taken - Progress_CutsceneSlotDone) */
+            continue;
+        }
         s->actor = kind_actor(kMap[i]);
         if (s->actor < 0) {
             continue;
         }
         s->in = 1;
         s->was_visible = gEngine.actors[s->actor].visible;
+        if (!C.keep_model[i]) {
+            model_taken(&gEngine.actors[s->actor]);
+        }
     }
     if (getenv("HG_CASTLOG")) {
         fprintf(stderr, "cast: actors %08x:", actors);
@@ -239,6 +276,10 @@ static void release(void) {
         if (a != NULL) {
             a->drive = NULL;
             a->visible = C.slots[i].was_visible;
+            if (C.keep_model[i]) {   /* (as the original: the given-back hook only for these) */
+                model_given_back(a);
+            }
+            actor_use_motions(a, 0);   /* (and the story's motions: Cutscene_ReleaseActors' +0x4C8) */
         }
         memset(&C.slots[i], 0, sizeof(C.slots[i]));
         C.slots[i].actor = -1;
@@ -570,8 +611,42 @@ void cutscene_update(void) {
     }
     group_door_keys(t);
     cues();
+    {   /* the scene's rumble (Cutscene_Update): its marks' bit 2 the small motor, bits 3..4 the
+         * large one's strength - set as they change on a new frame (for 0x2D0 frames), off on a
+         * held one */
+        static const int kStrength[4] = {0, 0x55, 0xAA, 0xFF};
+        int small = 0, large = 0;
+
+        if (C.last != C.frame) {
+            small = (signals(C.frame) & 4) != 0;
+            large = signals(C.frame) >> 3 & 3;
+            if (small != C.rumble_small) {
+                rumble_buzz(RUMBLE_SCENE, small, 0x2D0);
+            }
+            if (large != C.rumble_large) {
+                rumble_jolt(RUMBLE_SCENE, kStrength[large], 0x2D0);
+            }
+        } else {
+            rumble_buzz(RUMBLE_SCENE, 0, 1);
+            rumble_jolt(RUMBLE_SCENE, 0, 1);
+        }
+        C.rumble_small = small;
+        C.rumble_large = large;
+    }
     for (i = 0; i < 16; i++) {
         C.counts[i] += cutscene_signal_count(i);
+    }
+}
+
+void cutscene_keep_model(int i) {
+    if (i > 0 && i < SLOTS) {
+        C.keep_model[i] = 1;
+    }
+}
+
+void cutscene_leave_alone(int i) {
+    if (i > 0 && i < SLOTS) {
+        C.alone[i] = 1;
     }
 }
 
@@ -580,6 +655,8 @@ int cutscene_signal_total(int bit) {
 }
 
 void cutscene_end(void) {
+    rumble_buzz(RUMBLE_SCENE, 0, 1);   /* (its rumble off) */
+    rumble_jolt(RUMBLE_SCENE, 0, 1);
     if (C.state == STATE_PLAYING) {   /* the fog and depth range as at the start, the lights' extra off */
         gRoomLook.has_fog = C.look.has_fog;
         memcpy(gRoomLook.fog_near_color, C.look.fog_near_color, sizeof(gRoomLook.fog_near_color));

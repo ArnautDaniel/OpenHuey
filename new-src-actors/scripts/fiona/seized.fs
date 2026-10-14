@@ -5,7 +5,7 @@
 \ dragged off) or walking (8: carried off); grabbed outright (Fiona_StateGrabbed /
 \ Fiona_StateHeld: held, at its end the game's over). The game's end is the `caught` flag.
 IN: fiona.seized
-USING: engine game-state actors messages common facts flag-names keys paths fiona.state fiona.model fiona.moving fiona.fear fiona.doors fiona.hurt ;
+USING: engine game-state actors messages common facts flag-names keys paths rumble fiona.state fiona.model fiona.moving fiona.fear fiona.doors fiona.hurt ;
 
 defer to-idle ( -- )
 : leader ( -- id )  her-hit-who @ ;
@@ -66,6 +66,8 @@ create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
         else  fdup her-shake-a f@ f- angle-wrap fabs 2.0943952e f> if  1+  her-shake-a f!  else  fdrop  then  then
     then
     6 0 do  i start-button <> if  i button-pressed? if  1+  then  then  loop ;
+: tugged ( -- )   \ (each of his steps leading her by the hand, or dragging her: a tug felt)
+    her-model @ 0 0 1 motion-events 2 and if  $60 8 fiona-jolt  then ;
 : pulled-up ( -- )  ended? if  free! to-idle exit  then  root-move ;
 : pulled-free ( -- )  $F02 -1 play-table  ['] pulled-up her-act ! ;
 : dragged-off ( -- )
@@ -73,7 +75,7 @@ create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
     ended? anim@ $1404 = and if  caught-for-good  then
     root-move ;
 : dragged ( -- )
-    leader-gone? if  pulled-free exit  then
+    leader-gone? if  pulled-free exit  then  tugged
     her-shakes @ -1 <> if  shakes-now her-shakes +!  her-drags @ 1+ 10 *  her-shakes @ min her-shakes !  then
     ended? if
         her-free @ if  $1403 -1 play-table  ['] pulled-up her-act ! exit  then
@@ -87,11 +89,11 @@ create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
     then then
     root-move ;
 : at-his-hand ( -- )
-    leader-gone? if  pulled-free exit  then
+    leader-gone? if  pulled-free exit  then  tugged
     ended? if  $1401 -1 play-table  ['] dragged her-act !  then
     root-move ;
 : led-by-hand ( -- )
-    leader-gone? if  free! to-idle exit  then
+    leader-gone? if  free! to-idle exit  then  tugged
     settled? if
         led-arrive  0 her-free !  0 her-shakes !  0 her-drags !  -1 her-shake-rest !
         ['] at-his-hand her-act !
@@ -138,3 +140,22 @@ create gb-at 12 allot
     her-tri @ dup 0< if  drop -1  else  her-at gb-at $80001 v-walk  then
     0< if  $1100  else  0 her-fall-turn !  $1101  then  -1 play-table
     ['] held her-act ! ; is grabbed
+
+\ ---- held by homunculi (Fiona_StateHold / StateStruggle: reaction $12): down under them ($1405,
+\ then $1406), struggling - each shake takes a frame off the hold (180) while shakes count (60) -
+\ until the hold runs out or none in her room is holding her (move 8); then up ($1407) ----
+: struggle ( -- )
+    -1 her-hold +!
+    her-hold @ 0> her-hold-k @ 0> and if  shakes-now  dup negate her-hold +!  negate her-hold-k +!  then
+    anim@ case
+        $1407 of  ended? if  to-idle  then  endof
+        $1406 of
+            settled? if  her-hold @ 0> her-carried-t @ 0> and 0= if  0 her-mode !  $1407 -1 play-table  then  then
+        endof
+        $1405 of  ended? if  $1406 -1 play-table  then  endof
+    endcase ;
+: holding ( -- )
+    settled? 0= if  exit  then
+    anim@ dup $1405 <> swap $1406 <> and if  $1405 -1 play-table  then
+    ['] struggle her-act ! ;
+:noname ( -- )  180 her-hold !  60 her-hold-k !  ['] holding her-act ! ; is held-down

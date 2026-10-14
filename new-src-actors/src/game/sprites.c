@@ -32,10 +32,12 @@ typedef struct Batch {
     float cx, cy;
     float corner[4][3];
     int uv;                 /* its cell given in texture coordinates */
+    GpuTexture raw;         /* a texture of its own (sprites_raw_texture), 0 none */
     float u0, v0, u1, v1;
     int n;
     Sprite s[SPRITES_PER_BATCH];
     GpuMesh gpu;
+    int nv;                 /* the vertices made this frame (the glow pass draws them again) */
 } Batch;
 
 static Group sGroups[CACHE];   /* by the group's first index */
@@ -106,6 +108,60 @@ static GpuTexture texture(int group, int id, int csa) {
     sDecoded[free_i] = (Decoded){gr->bank, idx - g, csa, render_texture(rgba, t->w, t->h)};
     free(rgba);
     return sDecoded[free_i].tex;
+}
+
+int sprites_texture_size(int group, int id, int *w, int *h) {
+    int idx = group + id, g;
+
+    for (g = idx < CACHE - 1 ? idx : CACHE - 1; g >= 0 && idx < CACHE; g--) {
+        if (sGroups[g].bank != NULL && idx - g < sGroups[g].count) {
+            const TexEntry *t = tex_entry(sGroups[g].bank, idx - g);
+
+            if (t == NULL) {
+                return 0;
+            }
+            *w = t->w;
+            *h = t->h;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static uint8_t *sOwned[CACHE];   /* the banks loaded from files (sprites_group_file) */
+
+int sprites_group_file(int group, const char *path) {
+    size_t size;
+    uint8_t *bank;
+
+    if (group < 0 || group >= CACHE) {
+        return 0;
+    }
+    bank = files_read(path, &size);
+    if (bank == NULL || tex_count(bank, size) == 0) {
+        free(bank);
+        return 0;
+    }
+    sprites_group(group, bank, size);   /* (its old textures gone from the GPU) */
+    free(sOwned[group]);
+    sOwned[group] = bank;
+    return 1;
+}
+
+unsigned sprites_texture_of(int group, int id, int csa, int *w, int *h) {
+    int idx = group + id, g;
+
+    for (g = idx < CACHE - 1 ? idx : CACHE - 1; g >= 0 && idx < CACHE; g--) {
+        if (sGroups[g].bank != NULL && idx - g < sGroups[g].count) {
+            const TexEntry *t = tex_entry(sGroups[g].bank, idx - g);
+
+            *w = t != NULL ? t->w : 0;
+            *h = t != NULL ? t->h : 0;
+            return texture(group, id, csa < 0 ? 0 : csa & 0x1F);
+        }
+    }
+    *w = *h = 0;
+    return 0;
 }
 
 int sprites_new(void) {
@@ -202,6 +258,14 @@ void sprites_corner(int b, int k, float cx, float cy, float cz) {
     }
 }
 
+void sprites_raw_texture(int b, unsigned int tex) {
+    Batch *x = batch(b);
+
+    if (x != NULL) {
+        x->raw = tex;
+    }
+}
+
 void sprites_uv(int b, float u0, float v0, float u1, float v1) {
     Batch *x = batch(b);
 
@@ -249,12 +313,28 @@ static Vec3 rot_y_quarter(Vec3 v) {   /* sceVu0RotMatrixY by pi / 2 */
     return vec3(v.z, v.y, -v.x);
 }
 
+static GpuTexture white(void) {   /* (an untextured batch's: group -1) */
+    static GpuTexture t;
+    static const uint8_t kWhite[4] = {255, 255, 255, 255};
+
+    if (t == 0) {
+        t = render_texture(kWhite, 1, 1);
+    }
+    return t;
+}
+
+static GpuTexture batch_texture(const Batch *x) {
+    return x->raw != 0 ? x->raw : x->group < 0 ? white() : texture(x->group, x->id, x->palette < 0 ? 0 : x->palette & 0x1F);
+}
+
+static void draw_made(Batch *x, const Mat4 *view_proj, GpuTexture tex);
+
 static int draw_batch(Batch *x, const Mat4 *view_proj, const Mat4 *view) {
     Vec3 right, down, fwd;
-    GpuTexture tex = texture(x->group, x->id, x->palette < 0 ? 0 : x->palette & 0x1F);
-    MeshDraw d;
+    GpuTexture tex = batch_texture(x);
     int i, k, nv = 0;
 
+    x->nv = 0;
     if (tex == 0 || x->n == 0) {
         return 0;
     }
@@ -311,8 +391,8 @@ static int draw_batch(Batch *x, const Mat4 *view_proj, const Mat4 *view) {
             } else {
                 q[k] = vec3_add(vec3(s->x, s->y, s->z), vec3_add(vec3_scale(right, rx), vec3_scale(down, ry)));
             }
-            st[k][0] = k & 1 ? u1 : u0;
-            st[k][1] = k & 2 ? v1 : v0;
+            st[k][0] = s->mapped ? s->cst[k][0] : k & 1 ? u1 : u0;
+            st[k][1] = s->mapped ? s->cst[k][1] : k & 2 ? v1 : v0;
         }
         for (k = 0; k < 6; k++) {
             MeshVertex *v = &sVerts[nv++];
@@ -324,18 +404,27 @@ static int draw_batch(Batch *x, const Mat4 *view_proj, const Mat4 *view) {
             v->z = q[j].z;
             v->s = st[j][0];
             v->t = st[j][1];
-            memcpy(v->rgba, s->rgba, 4);
+            memcpy(v->rgba, s->shaded ? s->crgba[j] : s->rgba, 4);
         }
     }
     render_mesh_update(&x->gpu, sVerts, nv);   /* (replaceable storage: rebuilt each frame) */
+    x->nv = nv;
+    draw_made(x, view_proj, tex);
+    return 1;
+}
+
+static void draw_made(Batch *x, const Mat4 *view_proj, GpuTexture tex) {
+    MeshDraw d;
+
     memset(&d, 0, sizeof(d));
     d.first = 0;
-    d.count = nv;
+    d.count = x->nv;
     d.texture = 0;
     d.part = MESH_SEE_THROUGH;
     d.blend = !(x->flags & SPRITE_ADD);
     d.additive = (x->flags & SPRITE_ADD) != 0;
     d.no_zwrite = 1;
+    d.mask = (x->flags & SPRITE_MASK) != 0;
     if (x->flags & SPRITE_OPAQUE) {
         d.blend = d.additive = 0;
         d.no_zwrite = 0;
@@ -345,7 +434,6 @@ static int draw_batch(Batch *x, const Mat4 *view_proj, const Mat4 *view) {
 
         render_mesh(&x->gpu, view_proj, &d, 1, &tex, 1, kAll);
     }
-    return 1;
 }
 
 static int by_layer(const void *a, const void *b) {
@@ -366,5 +454,28 @@ void sprites_draw(const Mat4 *view_proj, const Mat4 *view) {
     qsort(order, (size_t)n, sizeof(order[0]), by_layer);
     for (b = 0; b < n; b++) {
         draw_batch(order[b], view_proj, view);
+    }
+}
+
+int sprites_glowing(void) {
+    int b;
+
+    for (b = 0; b < SPRITE_BATCHES; b++) {
+        if (batch(b) != NULL && sBatch[b]->n > 0 && sBatch[b]->nv > 0 && (sBatch[b]->flags & SPRITE_GLOW)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void sprites_draw_glow(const Mat4 *view_proj) {
+    int b;
+
+    for (b = 0; b < SPRITE_BATCHES; b++) {
+        Batch *x = batch(b);
+
+        if (x != NULL && x->n > 0 && x->nv > 0 && (x->flags & SPRITE_GLOW) && !(x->flags & SPRITE_MASK)) {
+            draw_made(x, view_proj, batch_texture(x));
+        }
     }
 }

@@ -11,6 +11,7 @@ typedef struct Input {
     unsigned mouse_buttons;      /* held now: SDL_BUTTON_MASK(n) */
     char text[64];               /* text typed this frame (UTF-8) */
     int quit;                    /* the window was closed */
+    float stick_x, stick_y;      /* a gamepad's left stick (-1..1, right / down; 0 within its dead zone) */
 } Input;
 
 /* open the window (hidden: nothing shown, for tests and screenshots); 0 on failure */
@@ -23,5 +24,7 @@ void platform_size(int *w, int *h);
 void platform_swap(void);
 /* text input on (the console) or off */
 void platform_text_input(int on);
+/* a gamepad's motors: the small one on or off, the large one's strength (0..1); none: nothing */
+void platform_rumble(int small_on, float large);
 
 #endif

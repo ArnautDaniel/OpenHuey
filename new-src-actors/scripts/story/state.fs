@@ -18,6 +18,7 @@ state: room-state
   #vars cells field vars        \ the script variables (+0x810), cleared on entering
   cell field ebits              \ the event bits (+0x890)
   cell field counter            \ the event counter (+0x703)
+  cell field tab-waiting        \ the item's tab moving (the scripts' 0xBE waits for the sub screen)
   cell field exit-taken         \ the exit taken, or arrived by (+0x702)
   cell field room-frames        \ phase 1 calls in this room (+0x704)
   cell field result             \ the event result (+0x934)
@@ -50,7 +51,7 @@ state: room-state
   \ what the others tell (fiona-doing, hewie-doing, danger, panic)
   cell field fiona-busy  cell field fiona-mode  cell field fiona-sub
   cell field fiona-cmd  cell field hewie-here  cell field hewie-act  cell field hewie-move-mode
-  cell field the-danger  cell field the-panic
+  cell field the-danger  cell field the-panic  cell field the-panic-level
   \ their conditions (the original's +0xC4 each: 0 well, 1 hurt, 2 down), and the stalker as he
   \ tells it (stalker-doing: his room, how he moves and what, condition, health, his alert - his
   \ mode, +0x16C8 - and the exit he came in by, +0x14D4; frames since he told: in the game)
@@ -59,4 +60,16 @@ state: room-state
   cell field hewie-way  cell field hewie-trust-lv
   cell field st-room  cell field st-mode  cell field st-sub  cell field st-cond  cell field st-hp
   cell field st-hp-max  cell field st-alert  cell field st-came  cell field st-age
+  cell field st-blow   \ (his attack's blow under way, -1 none: stalker-blow)
+  \ the creatures tell it (creature-doing, each frame): each slot's room and move mode, and frames since
+  4 cells field arrows-held     \ the menu arrows held (frames: the pad's repeat, for the rooms' dials)
+  cell field grab-asked  cell field grab-ok   \ a grab of Hewie from behind asked of the stalker; his answer
+  cell field fiona-hit-by        \ who struck or caught her (-1 nobody)
+  cell field hewie-hp            \ his health (hewie-health)
+  cell field keri-fallen         \ the story's debris fallen through since last counted (keri-fell)
+  cell field fiona-shook         \ her shakes counted (count-shakes)
+  cell field summoner-secs       \ the summoner's cooldown left (seconds)
+  cell field loud-here           \ a noise of $20 or more made in this room lately (frames left)
+  cell field fiona-unseen         \ she can't be seen (fiona-unseen: item $89, still)
+  10 cells field cr-rooms  10 cells field cr-modes  10 cells field cr-ages  10 cells field cr-ids
 end-state

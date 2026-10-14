@@ -1,7 +1,7 @@
 \ fiona/controls.fs - the stick as a direction in the room (Fiona_MoveInput). Camera-relative;
 \ after a camera cut the old camera keeps steering while the stick is held (3 frames for
 \ sure, then until it moves), then she turns toward the old camera's heading while the stick
-\ holds within 15 degrees. On the keyboard: W A S D the stick, Shift the run button.
+\ holds within 15 degrees. On the keyboard: W A S D the stick, Shift the run button; a gamepad's left stick as it is pushed.
 IN: fiona.controls
 USING: engine keys common fiona.state ;
 
@@ -11,7 +11,9 @@ fvariable sx  fvariable sz         \ the stick: x right, z down (as the pad's)
     0e sx f!  0e sz f!
     hands-off? if  exit  then
     key: D held? if  1e sx f!  then  key: A held? if  sx f@ 1e f- sx f!  then
-    key: S held? if  1e sz f!  then  key: W held? if  sz f@ 1e f- sz f!  then ;
+    key: S held? if  1e sz f!  then  key: W held? if  sz f@ 1e f- sz f!  then
+    pad-stick  fover f0= fdup f0= and if  fdrop fdrop exit  then   \ (a gamepad's stick: as far as it is pushed)
+    sz f!  sx f! ;
 : run-held? ( -- flag )  hands-off? 0=  cross button-down? and ;   \ (Fiona_Move: cross held)
 : cam-yaw ( F: -- a )  camera cam.yaw sf@ ;
 \ a stick direction turned into the room by a camera heading (0 looks along -z)

@@ -11,7 +11,7 @@
 \ event $20 she is put by that end and free. Her moves on it are her animations' own,
 \ up and down too.
 IN: fiona.ladder
-USING: engine game-state actors messages common keys facts flag-names fiona.state fiona.model fiona.moving fiona.spots fiona.controls fiona.slam ;
+USING: engine game-state actors messages common keys facts flag-names rumble fiona.state fiona.model fiona.moving fiona.spots fiona.controls fiona.slam fiona.fear fiona.voice ;
 
 defer to-idle   ' noop is to-idle        \ (fiona.fs)
 : events ( -- bits )  her act.mflags l@ ;   \ (MOTION_EVENTS: the motion's flags; $20 come round)
@@ -128,3 +128,41 @@ defer to-idle   ' noop is to-idle        \ (fiona.fs)
     stalker-in-room dup 0< 0= if  self swap 0e 0e bodies-touching? if  2drop exit  then  else  drop  then
     her-ladder-side !  her-ladder !
     6 her-sub !  2 her-doing !  3 her-mode !  ladder-start ;
+
+\ ---- knocked off it (a blow while on it, Fiona_Reaction 8: Fiona_StateCaughtCrawling): to the
+\ spot 10 out from its top - near it (under 20 below) pulled off ($F02), else dropped there
+\ ($70A, then $70B as it comes round), falling 0.5 faster each frame over as many frames as that
+\ takes; there her cry ($7D pulled, $81 fallen); fallen, down ($70C) and up ($100D) - her
+\ recovery reset (CrawlDrop / CrawlPull / CrawlFall / CrawlDown) ----
+create drop-at 12 allot  variable drop-tri  variable drop-n  variable drop-far
+fvariable drop-dx  fvariable drop-dy  fvariable drop-dz  fvariable ff-y  fvariable ff-step
+: crawl-up ( -- )   \ (standing again: out of the ladder)
+    ended? if  drop-far @ if  reset-recovery  then  0 her-mode !  off-ladder exit  then  root-move ;
+: crawl-down ( -- )  ended? if  $100D play-cut  ['] crawl-up her-act !  then  root-move ;
+: crawl-fall ( -- )  settled? if  $70C -1 play-table  ['] crawl-down her-act !  then ;
+: crawl-drop ( -- )
+    -1 drop-n +!
+    drop-n @ if
+        drop-far @  anim@ $70B <> and  ended? and if  $70B -1 play-table  then
+        her-at sf@ drop-dx f@ f- her-at sf!
+        her-at 4 + sf@ drop-dy f@ f- her-at 4 + sf!
+        her-at 8 + sf@ drop-dz f@ f- her-at 8 + sf!
+        drop-dy f@ 0.5e f+ drop-dy f!  exit
+    then
+    her-at drop-at vec-copy  drop-tri @ dup 0< if  drop  else  her-tri !  then
+    $D0 12 fiona-jolt   \ (landed)
+    drop-far @ if  $81 voice  ['] crawl-fall  else  $7D voice  ['] crawl-up  then  her-act ! ;
+: frames-to-fall ( F: h -- ) ( -- n )   \ (0, 0.5, 1 ... a frame: how many frames to fall h)
+    ff-y f!  0e ff-step f!  1
+    begin  ff-y f@ ff-step f@ f- fdup ff-y f!  f0< 0= while  ff-step f@ 0.5e f+ ff-step f!  1+  repeat ;
+: knocked-off ( -- )
+    her-ladder @ 1 0e 10e nav-link-front drop-tri !  drop-at vec!
+    her-at 4 + sf@ drop-at 4 + sf@ f- fdup 20e f< if
+        0 drop-far !  $B her-mode !  $F02 -1 play-table  $3F 0 her-sound
+    else
+        -1 drop-far !  $70A -1 play-table  $40 0 her-sound
+    then
+    frames-to-fall dup drop-n !  s>f                                     ( F: n )
+    her-at sf@ drop-at sf@ f- fover f/ drop-dx f!
+    her-at 8 + sf@ drop-at 8 + sf@ f- fswap f/ drop-dz f!
+    0e drop-dy f!  ['] crawl-drop her-act ! ;

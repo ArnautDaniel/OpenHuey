@@ -2,15 +2,22 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-2f-1
-USING: room-names story.words story.shared flag-names ;
+USING: engine actors messages room-names story.words story.shared flag-names ;
 
 \ byte 3 0 / 1: shut / open (pi/2); 2 / 3 opening / shutting by script variable 0 (0..120
 \ frames, eased by a sine)
-: water-tower-2f-1.cmd00 ( b0 -- )  drop s" water-tower-2f-1.cmd00" stub-step ;
+: water-tower-2f-1.cmd00 ( b0 -- )   \ (the hatch "move00" turned about y by event variable 0 - 0..120 frames eased by
+    \ a sine: b0 0 / 1 shut / open (90 degrees), 2 opening, 3 shutting; its sound 2 where its edge is)
+    {: b0 :}  s" move00" object-here? 0= if  exit  then
+    b0 0= if  0e s" move00" turn-y object!  exit  then
+    b0 1 = if  pi f2/ s" move00" turn-y object!  exit  then
+    b0 2 = if  45e var0-ease f*  else  b0 3 = if  90e  45e var0-ease f*  f-  else  exit  then  then
+    deg>rad fdup s" move00" turn-y object!
+    $80000002 6 0 0  fdup fcos -45e f*  152e  frot fsin 45e f*  sound-at ;
 \ byte 3 to the player's Character_ChooseExit while she's active
-: water-tower-2f-1.cmd01 ( b0 -- )  drop s" water-tower-2f-1.cmd01" stub-step ;
+: water-tower-2f-1.cmd01 ( b0 -- )  0 swap char-to-exit ;   \ (Fiona to that exit: Character_ChooseExit)
 \ room 0xC2: the summoner's countdown (progress +0x764) has run out.
-: water-tower-2f-1.cond00? ( -- flag )  s" water-tower-2f-1.cond00?" stub-flag ;
+: water-tower-2f-1.cond00? ( -- flag )  summoner-done? ;
 
 : water-tower-2f-1.enter ( -- )   \ 0043F0C0
     room-sounds
@@ -21,10 +28,10 @@ USING: room-names story.words story.shared flag-names ;
     then then
     2 0 $14 door-bits
     3 0 $14 door-bits
-    0 0 object-show
-    1 1 object-show
-    2 1 object-show
-    3 1 object-show
+    0 0 object-hidden
+    1 1 object-hidden
+    2 1 object-hidden
+    3 1 object-hidden
     0 2 $20000 nav-group
     $341 story-flag? not if
         0 water-tower-2f-1.cmd00
@@ -337,8 +344,8 @@ USING: room-names story.words story.shared flag-names ;
         5 self-wait-frames
         0 0 $14 door-bits
         1 0 $14 door-bits
-        2 1 object-show
-        3 0 object-show
+        2 1 object-hidden
+        3 0 object-hidden
         3 0 object-anim
         self-frames-reset
         $19 self-wait-frames
@@ -349,8 +356,8 @@ USING: room-names story.words story.shared flag-names ;
         self-wait-anim
         0 $F3 3 action
         $341 story-flag-set
-        2 1 object-show
-        3 1 object-show
+        2 1 object-hidden
+        3 1 object-hidden
         0 0 $14 door-bits
         1 1 $14 door-bits
         $34C story-flag-set
@@ -361,8 +368,8 @@ USING: room-names story.words story.shared flag-names ;
         5 self-wait-frames
         0 0 $14 door-bits
         1 0 $14 door-bits
-        2 0 object-show
-        3 1 object-show
+        2 0 object-hidden
+        3 1 object-hidden
         2 0 object-anim
         self-frames-reset
         $19 self-wait-frames
@@ -373,8 +380,8 @@ USING: room-names story.words story.shared flag-names ;
         self-wait-anim
         0 $F3 3 action
         $341 story-flag-clear
-        2 1 object-show
-        3 1 object-show
+        2 1 object-hidden
+        3 1 object-hidden
         0 1 $14 door-bits
         1 0 $14 door-bits
     then

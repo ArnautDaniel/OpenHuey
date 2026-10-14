@@ -5,7 +5,10 @@ IN: story.rooms.castle-b1-5
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x0B (Room0B_Cond00_ptmf): the player is 20 .. 120 from (x, z) = s16 bytes 3..4, 5..6
-: castle-b1-5.cond00? ( b0 b1 b2 b3 -- flag )  drop drop drop drop s" castle-b1-5.cond00?" stub-flag ;
+: castle-b1-5.cond00? ( b0 b1 b2 b3 -- flag )   \ (x, z: s16 bytes 3..4, 5..6)
+    swap 8 lshift or s16>  >r  swap 8 lshift or s16>  r>
+    s>f fiona-at 8 + sf@ f-  s>f fiona-at sf@ f-  fdup f* fswap fdup f* f+ fsqrt
+    fdup 20e f< 0=  120e f<= and ;
 
 : castle-b1-5.enter ( -- )   \ 003F43C0
     room-sounds

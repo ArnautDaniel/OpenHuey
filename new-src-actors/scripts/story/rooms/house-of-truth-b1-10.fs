@@ -5,7 +5,7 @@ IN: story.rooms.house-of-truth-b1-10
 USING: room-names story.words story.shared ;
 
 \ Room98_Cmd00
-: house-of-truth-b1-10.cmd00 ( -- )  s" house-of-truth-b1-10.cmd00" stub-step ;
+: house-of-truth-b1-10.cmd00 ( -- )  slam-shake ;
 
 : house-of-truth-b1-10.char-enter ( -- )   \ 00442F60
     hewie-controlled? not if

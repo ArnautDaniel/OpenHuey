@@ -6,15 +6,20 @@ USING: room-names story.words story.shared flag-names ;
 
 \ two dials (byte 3: pstr_syuukouki2 on var 0, pstr_syuukouki1 on var 1, from -90 degrees), byte
 \ 4 the step
-: castle-1f-12.cmd00 ( b0 b1 -- )  drop drop s" castle-1f-12.cmd00" stub-step ;
+: castle-1f-12.cmd00 ( b0 b1 -- )   \ (the two dials: b0 0 "syuukouki2" on progress variable 0, else "syuukouki1" on 1; b1 the step)
+    swap if  s" syuukouki1" 1  else  s" syuukouki2" 0  then  -90 1 dial-step ;
 \ room 0x04 (Room04_Cmd01_ptmf): five objects turned -75 / 75 degrees in turn
-: castle-1f-12.cmd01 ( -- )  s" castle-1f-12.cmd01" stub-step ;
+: castle-1f-12.cmd01 ( -- )   \ (the five doors turned -75 / 75 degrees in turn: open)
+    -75e deg>rad s" autodoor0" turn-y object!  75e deg>rad s" autodoor1" turn-y object!
+    -75e deg>rad s" autodoor2" turn-y object!  75e deg>rad s" autodoor3" turn-y object!
+    -75e deg>rad s" autodoor4" turn-y object! ;
 \ room 0x04 (Room04_Cmd02_ptmf): byte 3 0: room effect 0x1B (MirrorFragment_vtable) on its
 \ object, a box (640, -560, 1000, 0, 0x60); else the effect gone
-: castle-1f-12.cmd02 ( b0 -- )  drop s" castle-1f-12.cmd02" stub-step ;
+: castle-1f-12.cmd02 ( b0 -- )  $1B s" lens" $60 0  640e -560e 1000e  mirror-fragment ;   \ (the lens reflecting: b0 0 made, else gone)
 \ room 0x04 (Room04_Cmd03_ptmf): an effect on one object (byte 3 0: at 90 degrees) or the other
 \ (0)
-: castle-1f-12.cmd03 ( b0 -- )  drop s" castle-1f-12.cmd03" stub-step ;
+: castle-1f-12.cmd03 ( b0 -- )   \ (a dial's lens catching the light: b0 0 "syuukouki2", turned 90 degrees more, else "syuukouki1")
+    0= if  s" syuukouki2" pi f2/  else  s" syuukouki1" 0e  then  lens-flash ;
 
 : castle-1f-12.enter ( -- )   \ 003F0DF0
     $26 story-flag? not if
@@ -26,7 +31,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     $30 story-flag? not if
         2 1 $14 door-bits
-        2 1 object-show
+        2 1 object-hidden
     else
         2 0 $14 door-bits
         0 0 castle-1f-12.cmd00
@@ -431,8 +436,8 @@ USING: room-names story.words story.shared flag-names ;
     then
     1 castle-1f-12.cmd02
     2 0 $14 door-bits
-    1 1 object-show
-    2 0 object-show
+    1 1 object-hidden
+    2 0 object-hidden
     0 self-move-16
     0 $73 63.3 50.28 -68 char-to-xz
     1 0 char-visible
@@ -645,7 +650,7 @@ USING: room-names story.words story.shared flag-names ;
 : castle-1f-12.act0A ( -- )   \ 003F1610
     self-wait-done
     2 1 $14 door-bits
-    2 1 object-show
+    2 1 object-hidden
     3 1 movie-play
     0 cutscene-start
     yield

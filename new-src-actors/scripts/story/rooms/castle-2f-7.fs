@@ -2,16 +2,19 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-7
-USING: room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names ;
 
 \ room 0x23 (Room23_Cmd00_ptmf): Fiona's model +0x9A0 / +0x9A8: 0 (byte 3 1) or 0.12 / 0.2
-: castle-2f-7.cmd00 ( b0 -- )  drop s" castle-2f-7.cmd00" stub-step ;
+: castle-2f-7.cmd00 ( b0 -- )  drop ;   \ (Daniella's hair force (her model's springs: not simulated here yet))
 \ room 0x23 (Room23_Cmd01_ptmf): byte 3 0 a progress name, 1 wait for character 3 (2 while not),
 \ else done
-: castle-2f-7.cmd01 ( b0 -- )  drop s" castle-2f-7.cmd01" stub-step ;
+: castle-2f-7.cmd01 ( b0 -- )   \ (Daniella's face: 0 loaded, 1 shown, else done)
+    case  0 of  s" O_DNL\DNL_201.TEX" speech-load  endof  1 of  3 0 speak  endof  >r speech-done r>  endcase ;
 \ room 0x23 (Room23_Cond00_ptmf): none of the six slots' PursuerGroup_Fields bits 0..3, and the
 \ stalker is about but not active, in mode 2, 6 or 7
-: castle-2f-7.cond00? ( -- flag )  s" castle-2f-7.cond00?" stub-flag ;
+: castle-2f-7.cond00? ( -- flag )   \ (PursuerGroup_Fields bits 0..3 of exit 0 for all: here, nobody in its area)
+    0 0 exit-area char-in-area  1 0 exit-area char-in-area or if  false exit  then
+    stalker-there? stalker-told? 0= and debilitas? and ;
 
 : castle-2f-7.enter ( -- )   \ 004010A0
     room-sounds
@@ -19,7 +22,7 @@ USING: room-names story.words story.shared flag-names ;
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
     0 0 -39.0 6.0 31.0 3.0 3.0 0.0 0.0 -60.0 scene-effect-71000
-    6 1 object-show
+    6 1 object-hidden
 ;
 
 : castle-2f-7.char-enter ( -- )   \ 004010E0
@@ -237,7 +240,7 @@ USING: room-names story.words story.shared flag-names ;
             8 cutscene-control
         then
         world-held state-flag-set
-        6 1 object-show
+        6 1 object-hidden
     then
     0 $7A 31.61 18.93 33 char-to-xz
     0 self-move-16
@@ -402,7 +405,7 @@ USING: room-names story.words story.shared flag-names ;
                 0 $7A 31.61 18.93 33 char-to-xz
                 0 self-move-16
                 camera-restart
-                6 1 object-show
+                6 1 object-hidden
                 $F 1 fade
                 wait-fade
                 $3F message-param-room
@@ -542,7 +545,7 @@ USING: room-names story.words story.shared flag-names ;
         yield
     repeat
     self-wait-done
-    6 1 object-show
+    6 1 object-hidden
     $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     0 0 -39.0 6.0 31.0 3.0 3.0 0.0 0.0 -60.0 scene-effect-71000
     2 0 movie-play
@@ -676,7 +679,7 @@ USING: room-names story.words story.shared flag-names ;
 : castle-2f-7.act09 ( -- )   \ 00401720
     self-wait-done
     0 0 -39.0 6.0 31.0 3.0 3.0 0.0 0.0 -60.0 scene-effect-71000
-    6 1 object-show
+    6 1 object-hidden
     $FF 1 char-visible
     0 1 $14 door-bits
     1 0 $14 door-bits

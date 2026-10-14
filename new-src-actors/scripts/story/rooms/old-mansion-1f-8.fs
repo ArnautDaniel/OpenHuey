@@ -8,19 +8,41 @@ USING: room-names story.words story.shared flag-names ;
 \ 0 sets them still; 1: while slower than 5, Hewie's movement (the squared length of his last
 \ step, +0x3C) past 1 makes them swing for 20 frames (the first also creaks: sounds 4 / 5 by
 \ turns, event bit 0x11); the tilt (+0x10) 1 + sin(phase) degrees, the phase (+0x30) on by 36
-: old-mansion-1f-8.cmd00 ( b0 -- )  drop s" old-mansion-1f-8.cmd00" stub-step ;
+: old-mansion-1f-8.cmd00 ( b0 -- )   \ (the room's things 2 and 3, 60 degrees apart, swinging as Hewie brushes past: 0 still; 1
+    \ while slower than 5, his step's square past 1 swings them 20 frames, the first creaking - her
+    \ sounds 4 / 5 by turns, event flag $11)
+    {: op | a n :}
+    2 0 do  i 2 + room-object to n to a  a n object-here? if
+        op 0= if  0e a n $30 object!  60e i s>f f* a n $34 object!  0e a n $38 object!  0e a n $3C object!  then
+        op 1 = if
+            a n $38 object@ 5e f< if
+                1 char-step fdup f* a n $3C object+!
+                a n $3C object@ 1e f> if
+                    20e a n $38 object!  0e a n $3C object!
+                    i 0= if  $11 ebit? if  $11 ebit-clear  0 4 6 char-sound  else  $11 ebit-set  0 5 6 char-sound  then  then
+                then
+            then
+            a n $38 object@ f0> if
+                a n $38 object@ 1e f- 0e fmax a n $38 object!
+                36e a n $30 object+!
+                a n $30 object@ a n $34 object@ f+ 360e f< 0= if  -360e a n $30 object+!  then
+                a n $30 object@ a n $34 object@ f+ deg>rad fsin 1e f+ deg>rad
+                fdup pi f> if  2e pi f* f-  then  a n turn-x object!
+            then
+        then
+    then  loop ;
 \ room 0x48 (Room48_Cmd01_ptmf): character 0x26's +0xE4 cleared
-: old-mansion-1f-8.cmd01 ( -- )  s" old-mansion-1f-8.cmd01" stub-step ;
+: old-mansion-1f-8.cmd01 ( -- )  $26 false doorway-fade! ;   \ (character $26 no longer fading in doorways)
 \ room 0x48 (D_00426818): byte 3 0 starts the wall shadow (WallShadow_vtable, its slot in event
 \ variable 2); else that one is ended
-: old-mansion-1f-8.cmd02 ( b0 -- )  drop s" old-mansion-1f-8.cmd02" stub-step ;
+: old-mansion-1f-8.cmd02 ( b0 -- )  2 ['] effects:wall-shadow effect-in-var ;   \ (a shadow on the wall: b0 0 cast - kept in variable 2 - else gone)
 \ room 0x48 (Room48_Cmd03_ptmf): character 0xFE's model +0x9E8 = -0.15 (byte 3 0) or 0
-: old-mansion-1f-8.cmd03 ( b0 -- )  drop s" old-mansion-1f-8.cmd03" stub-step ;
+: old-mansion-1f-8.cmd03 ( b0 -- )  drop ;   \ (the stalker's model's springs (+0x9E8): not simulated here yet)
 \ room 0x48 (Room48_Cmd05_ptmf): the creatures (10) in play in the current room: the list's
 \ +0x2C
-: old-mansion-1f-8.cmd05 ( -- )  s" old-mansion-1f-8.cmd05" stub-step ;
+: old-mansion-1f-8.cmd05 ( -- )  creatures-here-level0 ;
 \ room 0x48 (Room48_Cond00_ptmf): door 0 of room 0x48 (Progress_CurRoomFlag)
-: old-mansion-1f-8.cond00? ( -- flag )  s" old-mansion-1f-8.cond00?" stub-flag ;
+: old-mansion-1f-8.cond00? ( -- flag )  $48 0 room-door-flag? ;
 
 : old-mansion-1f-8.enter ( -- )   \ 004252D0
     room-sounds

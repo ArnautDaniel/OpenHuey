@@ -9,7 +9,7 @@
 \ frames of its move (OBSTACLE.MTN), its scrape heard at the sixth. The table is a fact for all
 \ (the queries below: Fiona's and the story's); only this actor changes it.
 IN: obstacles
-USING: engine game-state actors messages ;
+USING: engine game-state actors messages stalker-names ;
 
 5 constant #obstacles
 <PRIVATE
@@ -137,14 +137,12 @@ PRIVATE>
 \ but her on the ring round it moved two or one squares along (Obstacle_RingClear); and the
 \ place two squares along, its own blocks lifted, the walkable floor ($100) without $440080
 create others 12 cells allot  variable #others
-: other-tris ( -- )   \ (the other characters in the room: their triangles)
-    0 #others !
-    s" hewie" actor-named  s" debilitas" actor-named  s" daniella" actor-named  s" riccardo" actor-named  s" lorenzo" actor-named  s" lorenzo2" actor-named  s" kind39" actor-named  s" kind37" actor-named  s" tintstalker" actor-named  s" kind12" actor-named
-    10 0 do
-        dup 0< 0= if  dup body? if  dup body-room room-id = if
-            dup body-tri  #others @ cells others + !  1 #others +!
-        then  then  then  drop
-    loop ;
+: other-tri ( id -- )
+    dup 0< 0= if  dup body? if  dup body-room room-id = if
+        dup body-tri  #others @ cells others + !  1 #others +!
+    then  then  then  drop ;
+: other-tris ( -- )   \ (the other characters in the room: their triangles - Hewie, the stalker)
+    0 #others !  s" hewie" actor-named other-tri  stalker-in-game other-tri ;
 : someone-sq ( a b corner? -- stop? )
     drop  #others @ 0 ?do
         i cells others + @  dup 3 pick =  swap 2 pick = or if  2drop true unloop exit  then

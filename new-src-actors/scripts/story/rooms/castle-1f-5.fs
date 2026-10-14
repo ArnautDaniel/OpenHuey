@@ -5,7 +5,7 @@ IN: story.rooms.castle-1f-5
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x10 (Room10_Cond00_ptmf): the stalker is there, not about, in mode 2, 6 or 7
-: castle-1f-5.cond00? ( -- flag )  s" castle-1f-5.cond00?" stub-flag ;
+: castle-1f-5.cond00? ( -- flag )  stalker-there? stalker-told? 0= and debilitas? and ;
 
 : castle-1f-5.enter ( -- )   \ 003F6F80
     room-sounds

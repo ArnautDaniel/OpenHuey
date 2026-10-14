@@ -54,4 +54,13 @@ variable expected  far? 0= expected !
 [: 4 my-mode ! ;] his  155 frames
 T{ in-game? -> expected @ }T
 
+testing in play: beaten (knocked out of health: +0xC4 2) away from her for 5 s, taken as beaten (kind 2)
+0 story.words:summon-take  2 frames
+[: 1 away ! ;] its  3 frames
+far? 0= expected !
+[: 3 my-mode !  -1 beaten ! ;] his  155 frames
+T{ in-game?  expected @ = -> -1 }T
+: taken-as ( -- kind )  expected @ if  2  else  [: took-kind @ ;] its  then ;   \ (still in: nothing to check)
+T{ taken-as -> 2 }T   \ (taken: as beaten)
+
 test-summary

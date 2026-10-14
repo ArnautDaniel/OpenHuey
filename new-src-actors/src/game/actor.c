@@ -9,13 +9,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void load_textures(Actor *a) {
+static void load_textures(Actor *a, const char *name) {
     char path[96];
     size_t size;
     uint8_t *bank;
     int n, i;
 
-    snprintf(path, sizeof(path), "%s.TEX", a->name);
+    snprintf(path, sizeof(path), "%s.TEX", name);
     bank = files_read(path, &size);
     n = tex_count(bank, size);
     for (i = 0; i < n && i < ACTOR_MAX_TEXTURES; i++) {
@@ -31,7 +31,45 @@ static void load_textures(Actor *a) {
     free(bank);
 }
 
-int actor_load(Actor *actors, const char *name) {
+int actor_load(Actor *actors, const char *name) { return actor_load_textured(actors, name, name); }
+
+void actor_texture_restore(Actor *a) {
+    if (a->swap_sel < 0) {
+        return;
+    }
+    render_texture_free(a->textures[a->swap_sel]);
+    a->textures[a->swap_sel] = a->swap_orig;
+    a->swap_sel = -1;
+}
+
+int actor_texture_swap(Actor *a, int sel, const char *file) {
+    size_t size;
+    uint8_t *bank = files_read(file, &size), *rgba;
+    const TexEntry *t;
+    int ok = 0;
+
+    if (bank == NULL || sel < 0 || sel >= ACTOR_MAX_TEXTURES || tex_count(bank, size) < 1) {
+        free(bank);
+        return 0;
+    }
+    t = tex_entry(bank, 0);
+    rgba = t->w > 0 && t->h > 0 ? malloc((size_t)t->w * t->h * 4 + 4) : NULL;
+    if (rgba != NULL && tex_decode(bank, size, 0, rgba)) {
+        actor_texture_restore(a);
+        a->swap_orig = a->textures[sel];
+        a->swap_sel = sel;
+        a->textures[sel] = render_texture(rgba, t->w, t->h);
+        if (sel >= a->ntextures) {
+            a->ntextures = sel + 1;
+        }
+        ok = 1;
+    }
+    free(rgba);
+    free(bank);
+    return ok;
+}
+
+int actor_load_textured(Actor *actors, const char *name, const char *tex) {
     char path[96];
     size_t size;
     uint8_t *pck;
@@ -55,7 +93,7 @@ int actor_load(Actor *actors, const char *name) {
     }
     a->used = 1;
     snprintf(a->name, sizeof(a->name), "%s", name);
-    load_textures(a);
+    load_textures(a, tex);
     a->cloth = cloth_for(name);
     a->posed = malloc((size_t)a->model.nv * sizeof(MeshVertex));
     a->scale = 1.0f;
@@ -63,6 +101,7 @@ int actor_load(Actor *actors, const char *name) {
     a->motion = -1;
     a->prev_motion = -1;
     a->variant = a->prev_variant = -1;
+    a->swap_sel = -1;
     a->vweight = a->prev_vweight = 1.0f;
     for (i = 0; i < 3; i++) {
         a->parts[i].motion = a->parts[i].own = a->parts[i].prev = a->parts[i].pending = -1;
@@ -70,6 +109,10 @@ int actor_load(Actor *actors, const char *name) {
     a->loop = 1;
     a->visible = 1;
     a->shadow_size = 7.0f;
+    a->alpha = 1.0f;
+    a->tint = 0x80808080u;
+    a->doorway_fade = 1;
+    memset(a->parts_shown, 0xFF, sizeof(a->parts_shown));
     snprintf(path, sizeof(path), "%s.MRK", name);
     a->events = files_exist(path) ? files_read(path, &a->events_size) : NULL;
     a->lo = vec3(1e30f, 1e30f, 1e30f);
@@ -81,9 +124,35 @@ int actor_load(Actor *actors, const char *name) {
     return (int)(a - actors);
 }
 
+int actor_load_motions(Actor *a, const char *path) {
+    size_t size;
+    uint8_t *b = files_read(path, &size);
+    int in_use = a->model.motions2 != NULL && a->model.motions2 == a->loaded_motions;
+
+    if (b == NULL) {
+        return 0;
+    }
+    free(a->loaded_motions);
+    a->loaded_motions = b;
+    a->loaded_motions_size = size;
+    if (in_use) {
+        actor_use_motions(a, 1);
+    }
+    return 1;
+}
+
+void actor_use_motions(Actor *a, int on) {
+    a->model.motions2 = on ? a->loaded_motions : NULL;
+    a->model.motions2_size = on ? a->loaded_motions_size : 0;
+}
+
 void actor_free(Actor *a) {
     int i;
 
+    if (a->swap_sel >= 0) {
+        render_texture_free(a->swap_orig);
+        a->swap_sel = -1;
+    }
     for (i = 0; i < a->ntextures; i++) {
         render_texture_free(a->textures[i]);
     }
@@ -93,6 +162,7 @@ void actor_free(Actor *a) {
     free(a->posed);
     free(a->events);
     free(a->cloth);
+    free(a->loaded_motions);
     memset(a, 0, sizeof(*a));
 }
 
@@ -388,6 +458,16 @@ Vec3 actor_bone(const Actor *a, int b) {
     return b >= 0 && b < a->model.nbones ? a->bones[b] : a->pos;
 }
 
+Vec3 actor_bone_point(const Actor *a, int b, Vec3 off) {
+    const Vec3 *ax;
+
+    if (b < 0 || b >= a->model.nbones) {
+        return a->pos;
+    }
+    ax = a->bone_axes[b];
+    return vec3_add(a->bones[b], vec3_add(vec3_add(vec3_scale(ax[0], off.x), vec3_scale(ax[1], off.y)), vec3_scale(ax[2], off.z)));
+}
+
 int actor_motion_entry(const Actor *a, int index, int *blend, int *pose, int *flags) {
     const uint8_t *e;
 
@@ -455,13 +535,14 @@ static void skin(Actor *a) {
     int i, j;
 
     if (a->drive != NULL) {   /* a cutscene's motion: placed in the room by its root bone */
-        const uint8_t *own = m->motions;
+        const uint8_t *own = m->motions, *second = m->motions2;
         size_t own_size = m->motions_size;
         Vec3 root = a->pos;
         int root_bone;
 
         m->motions = a->drive;
         m->motions_size = a->drive_size;
+        m->motions2 = NULL;   /* (the scene's motion alone) */
         if (a->cloth != NULL) {   /* (its root in the room: the bones are there but for the scale) */
             float k = a->scale != 0.0f ? 1.0f / a->scale : 1.0f;
 
@@ -475,6 +556,7 @@ static void skin(Actor *a) {
         model_pose_hook(NULL, NULL);
         m->motions = own;
         m->motions_size = own_size;
+        m->motions2 = second;
         for (root_bone = 0; root_bone < m->nbones && m->bones[root_bone].parent >= 0; root_bone++) {
         }
         a->pos = vec3(root.x, root.y - (root_bone < m->nbones ? m->bones[root_bone].rest_pos[1] : 0.0f), root.z);
@@ -519,8 +601,14 @@ static void skin(Actor *a) {
         model_pose_hook(NULL, NULL);
         model_pose_turns(NULL, 0);
     }
-    for (i = 0; i < m->nbones; i++) {   /* the bones' origins, placed */
+    for (i = 0; i < m->nbones; i++) {   /* the bones' origins and axes, placed */
+        Vec3 o = mat4_point(&place, vec3(0.0f, 0.0f, 0.0f));
+        int k;
+
         a->bones[i] = mat4_point(&place, model_pose_origins()[i]);
+        for (k = 0; k < 3; k++) {
+            a->bone_axes[i][k] = vec3_sub(mat4_point(&place, model_pose_axes()[i][k]), o);
+        }
     }
     for (i = 0; i < m->nv; i++) {
         const SkinVertex *v = &m->v[i];
@@ -602,13 +690,21 @@ float actor_radius(const Actor *a) {
 }
 
 void actor_draw(Actor *a, const Mat4 *view_proj) {
-    static const uint32_t kAllGroups[8] = {~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u};
 
     if (!a->used || !a->visible || a->model.nv == 0) {
         return;
     }
-    if (gRender.shadows && a->shadow_size > 0.0f) {
-        draw_shadow(a, view_proj);
+    {
+        float k = 1.0f / 128.0f, alpha = a->alpha * (float)(a->tint & 0xFF) * k;
+
+        if (alpha <= 0.0f) {
+            return;
+        }
+        if (gRender.shadows && a->shadow_size > 0.0f && !a->shadow_off && alpha >= 1.0f) {
+            draw_shadow(a, view_proj);
+        }
+        render_mesh_tint((float)(a->tint >> 24) * k, (float)(a->tint >> 16 & 0xFF) * k, (float)(a->tint >> 8 & 0xFF) * k, alpha);
+        render_mesh(&a->gpu, view_proj, a->model.d, a->model.nd, a->textures, a->ntextures, a->parts_shown);
+        render_mesh_tint(1.0f, 1.0f, 1.0f, 1.0f);
     }
-    render_mesh(&a->gpu, view_proj, a->model.d, a->model.nd, a->textures, a->ntextures, kAllGroups);
 }

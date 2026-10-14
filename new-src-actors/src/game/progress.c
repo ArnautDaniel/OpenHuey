@@ -17,7 +17,28 @@ static void field(Forth *f, const char *name, size_t offset) {
 
 static void p_progress(Forth *f, Word *w) { (void)w; forth_push(f, (Cell)&gProgress); }
 static void p_event_state(Forth *f, Word *w) { (void)w; forth_push(f, (Cell)&gEvents); }
-static void p_progress_reset(Forth *f, Word *w) { (void)f; (void)w; memset(&gProgress, 0, sizeof(gProgress)); }
+void progress_clear(void) {   /* all of it but the resident flags: the system data's, kept across games */
+    uint32_t resident[RESIDENT_FLAGS / 32];
+
+    memcpy(resident, gProgress.resident, sizeof(resident));
+    memset(&gProgress, 0, sizeof(gProgress));
+    memcpy(gProgress.resident, resident, sizeof(resident));
+}
+static void p_progress_reset(Forth *f, Word *w) {
+    int l, i;
+
+    (void)f;
+    (void)w;
+    progress_clear();
+    for (l = 0; l < 3; l++) {   /* (the inventory's places empty) */
+        for (i = 0; i < 64; i++) {
+            gProgress.item_lists[l][i].id = -1;
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        gProgress.equipped[i] = -1;
+    }
+}
 
 void bind_state(Forth *f) {
     Vocab *saved = f->m.current, *v = forth_vocab(f, "game-state");
@@ -28,6 +49,7 @@ void bind_state(Forth *f) {
     forth_prim(f, "event-state", p_event_state);
     forth_prim(f, "progress-reset", p_progress_reset);   /* ( -- ) a new game's (Progress_Reset) */
     /* sizes */
+    forth_constant(f, "progress-size", (Cell)sizeof(Progress));   /* bytes (a save writes them) */
     forth_constant(f, "story-flags", STORY_FLAGS);
     forth_constant(f, "state-flags", STATE_FLAGS);
     forth_constant(f, "progress-vars", PROGRESS_VARS);
@@ -46,12 +68,32 @@ void bind_state(Forth *f) {
     field(f, "pr.visited", offsetof(Progress, visited));
     field(f, "pr.doors", offsetof(Progress, doors));
     field(f, "pr.closed-off", offsetof(Progress, closed_off));
-    field(f, "pr.items", offsetof(Progress, items));
+    field(f, "pr.item-lists", offsetof(Progress, item_lists));
+    field(f, "pr.equipped", offsetof(Progress, equipped));
+    field(f, "pr.item-bits", offsetof(Progress, item_bits));
+    field(f, "pr.boosts", offsetof(Progress, boosts));
     field(f, "pr.files", offsetof(Progress, files));
     field(f, "pr.items-counted", offsetof(Progress, items_counted));
+    field(f, "pr.gifts", offsetof(Progress, gifts));
+    field(f, "pr.gift-next", offsetof(Progress, gift_next));
     field(f, "pr.hewie-mistreated", offsetof(Progress, hewie_mistreated));
     field(f, "pr.hewie-pleased", offsetof(Progress, hewie_pleased));
     field(f, "pr.hewie-downs", offsetof(Progress, hewie_downs));
+    field(f, "pr.creatures", offsetof(Progress, creatures));
+    field(f, "pr.hewie-trust", offsetof(Progress, hewie_trust));
+    field(f, "pr.knockouts", offsetof(Progress, knockouts));
+    field(f, "pr.panics", offsetof(Progress, panics));
+    field(f, "pr.play-frames", offsetof(Progress, play_frames));
+    forth_constant(f, "/kept-creature", (Cell)sizeof(struct KeptCreature));
+    field(f, "kc.used", offsetof(struct KeptCreature, used));
+    field(f, "kc.kind", offsetof(struct KeptCreature, kind));
+    field(f, "kc.reach", offsetof(struct KeptCreature, reach));
+    field(f, "kc.level", offsetof(struct KeptCreature, level));
+    field(f, "kc.room", offsetof(struct KeptCreature, room));
+    field(f, "kc.tri", offsetof(struct KeptCreature, tri));
+    field(f, "kc.time", offsetof(struct KeptCreature, time));
+    field(f, "kc.out", offsetof(struct KeptCreature, out));
+    field(f, "kc.come", offsetof(struct KeptCreature, come));
     forth_constant(f, "door-count", DOORS);
     /* EventState: 32-bit (sl@ l!) */
     field(f, "ev.room", offsetof(EventState, room));

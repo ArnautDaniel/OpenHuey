@@ -6,16 +6,29 @@ USING: room-names story.words story.shared flag-names ;
 
 \ room 0x4F (Room4F_Cmd00_ptmf): object byte 3 by byte 4: 0 up (+0x10 0), 1 down (-0.65), 2
 \ lowered a step (0.02, not during a movie); once down, events bit 3
-: old-mansion-1f-12.cmd00 ( b0 b1 -- )  drop drop s" old-mansion-1f-12.cmd00" stub-step ;
+: old-mansion-1f-12.cmd00 ( b0 b1 -- )   \ (object b0 - the room's string - tipped by b1: 0 up, 1 down (-0.65), 2 lowered a step
+    \ (0.02; not while a movie plays), down - event flag 3)
+    {: k op | a n :}  k room-object to n to a  a n object-here? 0= if  exit  then
+    op case
+        0 of  0e a n turn-x object!  endof
+        1 of  -0.65e a n turn-x object!  endof
+        2 of  movie-playing? 0= if
+                  -0.02e a n turn-x object+!
+                  a n turn-x object@ -0.65e f<= if  -0.65e a n turn-x object!  3 ebit-set  then
+              then  endof
+    endcase ;
 \ room 0x4F (Room4F_Cmd01_ptmf): an effect (DustShaft_vtable, 0x7460 bytes), not started
-: old-mansion-1f-12.cmd01 ( -- )  s" old-mansion-1f-12.cmd01" stub-step ;
+: old-mansion-1f-12.cmd01 ( -- )  effects:dust-shaft ;   \ (dust drifting down the shaft of light)
 \ byte 3 0: a SpiralSmoke_vtable effect (0x36C0 bytes) spawned, its slot kept in event var 0;
 \ else that slot's effect removed
-: old-mansion-1f-12.cmd02 ( b0 -- )  drop s" old-mansion-1f-12.cmd02" stub-step ;
+: old-mansion-1f-12.cmd02 ( b0 -- )  0 ['] effects:spiral-smoke effect-in-var ;   \ (the smoke spiralling up the fire: b0 0 lit, else out)
 \ lower the object (pstr_sikakebox)'s +0x14 by 0.025 a frame down to -0.78, then event 6 (+0x5C)
-: old-mansion-1f-12.cmd03 ( -- )  s" old-mansion-1f-12.cmd03" stub-step ;
+: old-mansion-1f-12.cmd03 ( -- )   \ (the box, "sikakebox", lowered 0.025 a frame to -0.78; there event flag 6)
+    s" sikakebox" object-here? 0= if  exit  then
+    -0.025e s" sikakebox" turn-y object+!
+    s" sikakebox" turn-y object@ -0.78e f<= if  -0.78e s" sikakebox" turn-y object!  6 ebit-set  then ;
 \ Room4F_Cond00
-: old-mansion-1f-12.cond00? ( -- flag )  s" old-mansion-1f-12.cond00?" stub-flag ;
+: old-mansion-1f-12.cond00? ( -- flag )  -35.7e -7.5e 4e put-away-near ;   \ (Room4F_CreatureVanish: one within 4 put away)
 
 : old-mansion-1f-12.enter ( -- )   \ 0040B520
     room-sounds
@@ -31,11 +44,11 @@ USING: room-names story.words story.shared flag-names ;
     $70 story-flag? if
         0 1 $14 door-bits
         3 1 $14 door-bits
-        8 1 object-show
+        8 1 object-hidden
     else
         0 0 $14 door-bits
         3 0 $14 door-bits
-        8 0 object-show
+        8 0 object-hidden
     then
     $4C story-flag? if
         4 0 $14 door-bits

@@ -6,7 +6,7 @@ USING: room-names story.words story.shared flag-names ;
 
 \ room 0x97: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: house-of-truth-b1-9.cmd00 ( -- )  s" house-of-truth-b1-9.cmd00" stub-step ;
+: house-of-truth-b1-9.cmd00 ( -- )  slam-shake ;
 
 : house-of-truth-b1-9.enter ( -- )   \ 00437D60
     1 0 8 nav-group

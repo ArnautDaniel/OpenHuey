@@ -2,15 +2,18 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-1
-USING: room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names ;
 
 \ a lit quad at x -15.96, z -2 .. 6, height 111 / 91
-: old-mansion-1f-1.cmd00 ( b0 -- )  drop s" old-mansion-1f-1.cmd00" stub-step ;
+: old-mansion-1f-1.cmd00 ( b0 -- )  $1B $80  -15.959e 111.0e -2.0e  -15.959e 111.0e 6.0e  -15.959e 91.0e -2.0e  -15.959e 91.0e 6.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
 \ the depth range (effect 0x1C) opening out with the cutscene from its frame 1260: 1 / 21 / 40 /
 \ 80 on by 0.4 a frame, up to 41 / 61 / 80 / 120
-: old-mansion-1f-1.cmd03 ( -- )  s" old-mansion-1f-1.cmd03" stub-step ;
+: old-mansion-1f-1.cmd03 ( -- )   \ (opening out with the scene from its frame 1260: 1 / 21 / 40 / 80 on 0.4 a frame, up to
+    \ 41 / 61 / 80 / 120)
+    cutscene-frame 1260 - s>f 0.4e f*
+    fdup 1e f+ 41e fmin  fover 21e f+ 61e fmin  frot fdup 40e f+ 80e fmin  fswap 80e f+ 120e fmin  depth-range ;
 \ the pursuer's model's +0x9E8 by byte 3: 0 0.15, 1 0, else 0.05
-: old-mansion-1f-1.cmd04 ( b0 -- )  drop s" old-mansion-1f-1.cmd04" stub-step ;
+: old-mansion-1f-1.cmd04 ( b0 -- )  drop ;   \ (the stalker's model's springs (+0x9E8): not simulated here yet)
 
 : old-mansion-1f-1.enter ( -- )   \ 0041D2E0
     room-sounds

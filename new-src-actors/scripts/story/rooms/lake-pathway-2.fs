@@ -5,7 +5,8 @@ IN: story.rooms.lake-pathway-2
 USING: room-names story.words story.shared ;
 
 \ (as Room2A_Cmd03) the 0x14-byte effect BackdropModel2_vtable started with byte 3 as a word
-: lake-pathway-2.cmd00 ( b0 -- )  drop s" lake-pathway-2.cmd00" stub-step ;
+: lake-pathway-2.cmd00 ( b0 -- )   \ (the water's light: BackdropModel2 - b0 nonzero 500 across at (0, 50) turning, else 1500 at (775, -420))
+    >r 0 $40404040 r> if  0e 27.1e 50e 500e 0.1e 0.05e  else  775e 27.1e -420e 1500e 0.1e 0e  then  effects:caustic drop ;
 
 : lake-pathway-2.enter ( -- )   \ 0043EA90
     $18 1.0 0 bgm

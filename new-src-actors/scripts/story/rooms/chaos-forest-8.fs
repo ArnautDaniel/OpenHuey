@@ -5,7 +5,7 @@ IN: story.rooms.chaos-forest-8
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x106: starts a water drip effect (OneDrip, 0xC0 bytes).
-: chaos-forest-8.cmd00 ( -- )  s" chaos-forest-8.cmd00" stub-step ;
+: chaos-forest-8.cmd00 ( -- )  effects:one-drip ;   \ (a drop falling now and then)
 
 : chaos-forest-8.enter ( -- )   \ 004182D0
     $86 story-flag? if

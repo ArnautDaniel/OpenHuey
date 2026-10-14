@@ -3,6 +3,7 @@
 #include "../core/files.h"
 #include "../data/tex.h"
 #include "sprites.h"
+#include "../render/post.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -135,6 +136,7 @@ static void load_look(Room *r) {
     const uint8_t *sec = pac_section(&r->pac, PAC_EFFECTS, &size);
 
     memset(&gRoomLook, 0, sizeof(gRoomLook));
+    post_glow_clear();   /* (a new room: the glow pass's buffer black) */
     if (sec == NULL || size < 0x18) {
         return;
     }

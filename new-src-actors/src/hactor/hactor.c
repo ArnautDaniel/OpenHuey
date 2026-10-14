@@ -253,6 +253,14 @@ void hactor_frame(Forth *f) {
     sFrame++;
 }
 
+void hactor_held_frame(Forth *f) {
+    if (sDelivering) {
+        return;
+    }
+    hactor_broadcast(-1, HK_HELD_TICK, NULL, 0);
+    deliver(f);
+}
+
 HBody *hactor_body(int id) {
     return id >= 0 && id < HACTOR_MAX && sActors[id].used ? &sActors[id].body : NULL;
 }
@@ -688,6 +696,25 @@ PRIM(p_body_head_store) {   /* ( F: x y z -- ) my head is there */
     a->body.head[0] = (float)forth_fpop(f);
     a->body.has_head = 1;
 }
+PRIM(p_body_point) {   /* ( id -- v true | false ) its point of interest, if it has one now */
+    HActor *a = bodied(f, POP(), "body-point");
+
+    if (a->body.has_point) {
+        PUSH(a->body.point);
+        PUSH(-1);
+    } else {
+        PUSH(0);
+    }
+}
+PRIM(p_body_point_store) {   /* ( F: x y z -- ) my point of interest is there (until body-point-off) */
+    HActor *a = me(f, "body-point! (no actor is being run)");
+
+    a->body.point[2] = (float)forth_fpop(f);
+    a->body.point[1] = (float)forth_fpop(f);
+    a->body.point[0] = (float)forth_fpop(f);
+    a->body.has_point = 1;
+}
+PRIM(p_body_point_off) { me(f, "body-point-off (no actor is being run)")->body.has_point = 0; }   /* ( -- ) none */
 PRIM(p_body_mask) { PUSH(bodied(f, POP(), "body-mask")->body.mask); }
 PRIM(p_body_mask_store) { me(f, "body-mask! (no actor is being run)")->body.mask = (uint32_t)POP(); }   /* ( mask -- ) */
 PRIM(p_body_tri_store) { me(f, "body-tri! (no actor is being run)")->body.tri = (int)POP(); }   /* ( tri -- ) */
@@ -775,7 +802,7 @@ void bind_hactor(Forth *f) {
         {"body-place", p_body_place, 0}, {"body-turn", p_body_turn, 0}, {"body-size", p_body_size, 0},
         {"body-off", p_body_off, 0}, {"body?", p_has_body, 0}, {"body-room", p_body_room, 0},
         {"body-tri", p_body_tri, 0}, {"body-pos", p_body_pos, 0}, {"body-yaw", p_body_yaw, 0},
-        {"body-dims", p_body_dims, 0}, {"body-at", p_body_at, 0}, {"body-head", p_body_head, 0}, {"body-head!", p_body_head_store, 0}, {"body-mask", p_body_mask, 0},
+        {"body-dims", p_body_dims, 0}, {"body-at", p_body_at, 0}, {"body-head", p_body_head, 0}, {"body-head!", p_body_head_store, 0}, {"body-point", p_body_point, 0}, {"body-point!", p_body_point_store, 0}, {"body-point-off", p_body_point_off, 0}, {"body-mask", p_body_mask, 0},
         {"body-mask!", p_body_mask_store, 0}, {"body-tri!", p_body_tri_store, 0}, {"body-room!", p_body_room_store, 0},
     };
     Vocab *saved = f->m.current, *v = forth_vocab(f, "actors");
@@ -796,10 +823,12 @@ void bind_hactor(Forth *f) {
         kind_new("frame-end", 9, 0);
         kind_new("spawned", 7, 0);
         kind_new("killed", 6, 0);
+        kind_new("held-tick", 9, 0);
     }
     forth_constant(f, "tick", HK_TICK);
     forth_constant(f, "frame-end", HK_FRAME_END);
     forth_constant(f, "spawned", HK_SPAWNED);
     forth_constant(f, "killed", HK_KILLED);
+    forth_constant(f, "held-tick", HK_HELD_TICK);
     forth_set_current(f, saved);
 }

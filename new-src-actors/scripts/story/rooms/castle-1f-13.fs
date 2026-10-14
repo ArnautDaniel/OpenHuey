@@ -2,19 +2,23 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-13
-USING: room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names ;
 
 \ room 0x08 (Room08_Cmd00_ptmf): the cutscene director's +0x6C 3 (byte 3 0) or 2
-: castle-1f-13.cmd00 ( b0 -- )  drop s" castle-1f-13.cmd00" stub-step ;
+: castle-1f-13.cmd00 ( b0 -- )   \ (the scene's cast leaves actor 3 (b0 0) or 2 be: Cutscene_Mark82)
+    if  2  else  3  then  cutscene-leave-alone ;
 \ room 0x08 (D_003F31D8): the hanging object named by the handler's string 0xA - byte 3 0 sets
 \ it still (+0x30 / +0x38 0, travel +0x3C 0.9); 1: the player's travel (+0x3C, its last move's
 \ length) past 5 makes it creak (sounds 4 / 5 by turns, event bit 7) and swing for 20 frames:
 \ its tilt (+0x10) 1 + sin(phase) degrees, the phase (+0x30) on by 36 a frame
-: castle-1f-13.cmd01 ( b0 -- )  drop s" castle-1f-13.cmd01" stub-step ;
+: castle-1f-13.cmd01 ( b0 -- )   \ (the hanging thing, the room's string $A: 0 still (resting at 0.9 of a push); 1 her steps
+    \ push it - past 5 it creaks and swings 20 frames, event flag 7 toggled with her sound 4 / 5)
+    dup 0= if  drop  0e $A room-object $30 object!  0e $A room-object $38 object!  0.9e $A room-object $3C object!  exit  then
+    1 = if  0 $A 1 1 7 4 5 5e hangers-swing-one  then ;
 \ door be16 cmd[3..4]: Progress_DoorOpen
-: castle-1f-13.cond00? ( b0 b1 -- flag )  drop drop s" castle-1f-13.cond00?" stub-flag ;
+: castle-1f-13.cond00? ( b0 b1 -- flag )  swap 8 lshift or door-open? ;
 \ room 0x08 (Room08_Cond01_ptmf): the stalker is there but not about
-: castle-1f-13.cond01? ( -- flag )  s" castle-1f-13.cond01?" stub-flag ;
+: castle-1f-13.cond01? ( -- flag )  stalker-there? stalker-told? 0= and ;
 
 : castle-1f-13.enter ( -- )   \ 003F2500
     0 $35 castle-1f-13.cond00? if
@@ -27,21 +31,21 @@ USING: room-names story.words story.shared flag-names ;
             $2D story-flag-set
             8 0 248 4 15 -1 0 0.0 creature-place
         then
-        4 1 object-show
-        5 1 object-show
-        6 1 object-show
-        7 1 object-show
-        8 1 object-show
-        9 1 object-show
+        4 1 object-hidden
+        5 1 object-hidden
+        6 1 object-hidden
+        7 1 object-hidden
+        8 1 object-hidden
+        9 1 object-hidden
         room-sounds
         $1A 1.0 0 bgm
     else
-        4 0 object-show
-        5 0 object-show
-        6 0 object-show
-        7 0 object-show
-        8 0 object-show
-        9 0 object-show
+        4 0 object-hidden
+        5 0 object-hidden
+        6 0 object-hidden
+        7 0 object-hidden
+        8 0 object-hidden
+        9 0 object-hidden
     then
     7 story-flag? if
         $38 story-flag? not if
@@ -307,7 +311,7 @@ USING: room-names story.words story.shared flag-names ;
         $FE char-here? not if
             5 7 5 scene-change
         else
-            $8016 scene-ending
+            $8016 examine-message
         then
     then
     0 $10 $32 char-faces-area? if
@@ -412,12 +416,12 @@ USING: room-names story.words story.shared flag-names ;
             pause-wanted state-flag-set
             8 cutscene-control
         then
-        4 1 object-show
-        5 1 object-show
-        6 1 object-show
-        7 1 object-show
-        8 1 object-show
-        9 1 object-show
+        4 1 object-hidden
+        5 1 object-hidden
+        6 1 object-hidden
+        7 1 object-hidden
+        8 1 object-hidden
+        9 1 object-hidden
         0 $1D0 -80 char-to-tri-facing
         hewie-controlled? not if
             0 0 0 char-camera

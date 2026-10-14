@@ -41,7 +41,8 @@ USING: engine keys vectors views state ;
 - A file sees only its own words, the vocabularies it lists, and the core (`forth`: the
   language itself, from forth.c and prelude.fs). Nothing leaks in from files it didn't ask for.
 - Its own definitions win over everything; a used vocabulary's win over the core. If two used
-  vocabularies define the same name, using it is an error: say which, `vocab:name`.
+  vocabularies define the same name, the one later in `USING:` wins (list the general ones -
+  `engine messages` - first, your own nearest last); `vocab:name` reaches the other.
 - `<PRIVATE ... PRIVATE>` puts helpers in `name.private`: visible in the file, not to its users
   (`name.private:word` still reaches one, for debugging).
 - Vocabularies loading each other (a cycle of USING:s) is an error.
@@ -64,6 +65,13 @@ defer on-hit   ' noop is on-hit
 
 Control: `if else then`, `begin until`, `begin while repeat`, `begin again`,
 `do loop`, `?do loop`, `+loop`, `i j leave unloop`, `case of endof endcase`, `exit`, `recurse`.
+
+Locals (Forth-2012's): `{: a b | c -- comment :}` inside a definition names its values - `a` and
+`b` taken from the stack (`b` from the top), `c` starting at 0, the rest a comment. A name gives
+its value; `to name` stores into it. They last until the word returns (`exit` too), the return
+stack still free for `>r` and loops; a quotation has its own. Prefer them to stack juggling
+(`2 pick`, `rot`) and to scratch variables:
+`: centred ( addr len x y -- )  {: addr len x y :}  ... ;`. Cells only (floats: `fvariable`).
 
 Quotations: `[: ... ;]` leaves anonymous code as an execution token, inside definitions or at
 the prompt (Factor's `[ ... ]`): `{ 1 2 3 } [: dup * ;] map`.

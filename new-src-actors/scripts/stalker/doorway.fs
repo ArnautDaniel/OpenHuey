@@ -13,7 +13,7 @@
 \ its way - knocked on through it ($1004), out of the room where it leads out (stunned there 150
 \ frames); else staggered back from it ($1005).
 IN: stalker.doorway
-USING: engine game-state actors messages common facts flag-names paths doors stalker.state stalker.senses stalker.moving stalker.search stalker.travel ;
+USING: engine game-state actors messages common facts flag-names paths doors stalker.state stalker.senses stalker.moving stalker.search stalker.travel rumble ;
 
 : doors-actor ( -- id )  s" doors" actor-named ;
 defer door-done ( -- )   ' stand is door-done          \ given up on the way out (struck.fs: on again)
@@ -75,7 +75,15 @@ fvariable spot-yaw
 \ ---- by a door held shut (Pursuer_DoorWait): he waits, looking again every half second; 10
 \ seconds and he gives up on it ----
 defer at-exit ( -- )
+\ while he waits, the door swinging toward him (between 10 and 80 open) and her behind it (its
+\ area 2) or holding it: it is pushed into her (her request 5: thrown by the door)
+: door-on-her? ( -- flag )
+    making-for @ door-angle fdup -80e f> fswap -10e f< and 0= if  false exit  then
+    making-for @ 2 fiona body-at vec@ door-in-area?
+    my-room making-for @ room-exit-door door-held? or ;
+: push-door ( -- )  door-on-her? if  5 making-for @ 20e f>cell fiona send hit  then ;
 : waiting-door ( -- )
+    my-room room-id = if  push-door  then
     1 door-wait +!
     door-wait @ 300 > if  my-room making-for @ room-exit-door avoid-door  give-up-door exit  then
     door-wait @ 15 mod 0= if  at-exit  then ;
@@ -100,8 +108,8 @@ defer at-exit ( -- )
 \ ---- the doors' answers to his asking ----
 : held-answer ( exit -- )   \ (`door-held`: his to open; else the door he came in by - swung open)
     dup asked @ = if  drop got-door exit  then  swing-open ;
-: refused-answer ( exit -- )   \ (`door-refused`: as he finds it now)
-    asked @ <> if  exit  then  -1 asked !  at-exit ;
+: refused-answer ( exit -- )   \ (`door-refused`: as he finds it now - shaken, it won't give)
+    asked @ <> if  exit  then  -1 asked !  $80 15 stalker-jolt  at-exit ;
 
 \ ---- round to her across his own room ----
 : her-way ( -- way )  her-came @ dup 0< if  exit  then  room-id swap 1 exit-way ;

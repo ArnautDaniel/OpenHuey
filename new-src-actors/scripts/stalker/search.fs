@@ -39,8 +39,7 @@ variable spots  variable spots-n  variable spots-used
 
 \ ---- his mode's clock (vtable +0x2BC .. +0x2C4: Debilitas after her 300 frames (hard 540),
 \ searching 600, waiting 900) ----
-: hard? ( -- flag )  progress pr.vars $27 + c@ 1 = ;
-: after-t ( -- )  hard? if  540  else  300  then  mode-t ! ;
+: after-t ( -- )  hard-mode? if  540  else  300  then  mode-t ! ;
 : mode! ( m -- )
     dup my-mode !  case
         0 of  after-t  endof
@@ -148,15 +147,30 @@ defer lost-her ( -- )   ' chase-start is lost-her
 \ (mode 3, 900 frames), then searches again; heading for her room (1) he searches it once in;
 \ held off (4) he's after her again when it runs out ----
 : tick-down ( -- out? )  mode-t @ 0> if  -1 mode-t +!  then  mode-t @ 0= ;
-: search-again ( -- )  2 mode!  route-clear  search-stops add-stops  search-start ;
+defer lead-taken? ( -- flag )   ' false is lead-taken?   \ (a lead he heard: stalker/leads.fs)
+defer starting? ( -- flag )   ' false is starting?      \ (starting at one)
+defer leads-forgotten ( -- )   ' noop is leads-forgotten
+: search-again ( -- )  leads-forgotten  -1 drawn-tri !  2 mode!  route-clear  search-stops add-stops  search-start ;
+\ the doll (Thing03_StalkerCheck): searching the room being played, he sees it and has a way
+\ there - it is his one stop, his search going on from it
+create drawn-at 12 allot
+: go-for-doll ( tri -- )
+    here-played? 0=  my-mode @ 1 4 within 0= or  over drawn-tri @ = or if  drop exit  then
+    dup tri-center drawn-at vec!
+    drawn-at in-view? 0= if  drop exit  then
+    dup drawn-at plan 0> 0= if  drop exit  then
+    dup drawn-tri !  2 mode!  route-clear  0 route-add  search-start ;
 : modes ( -- )
     here-played? 0= if  exit  then
     reeling @ out-going @ or at-dog @ or if  exit  then   \ (struck: his reaction first; on his way out by a door; after Hewie)
+    start-t @ 0> if  starting? if  exit  then  0 start-t !  then   \ (starting at something he heard or saw: that
+    \ first - unless something else has him now)
     sees-fiona @  my-mode @ 4 <> and if   \ (held off: going away, not after her)
         my-mode @ if  0 mode!  route-clear  then
         chasing? 0= if  chase-begin  then  after-t exit
     then
     chasing? if  lost-her  then   \ (lost sight of her: to where she is)
+    lead-taken? if  exit  then
     my-mode @ case
         0 of  tick-down if  search-again  then  endof
         1 of  search-again  endof

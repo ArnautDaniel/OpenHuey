@@ -2,29 +2,68 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-5
-USING: room-names story.words story.shared flag-names ;
+USING: actors messages room-names story.words story.shared flag-names ;
 
 \ a hanging thing (the room's +0x34 (byte 3 + 2) object) swinging, by byte 4: 0 / 2 set going
 \ (12 degrees) away from the partner / Fiona; 1 a step (22.5 degrees of its swing, shrinking to
 \ 0.4 at each end; under half a degree it stops) - 2 while it swings
-: front-garden-5.cmd00 ( b0 b1 -- )  drop drop s" front-garden-5.cmd00" stub-step ;
+: swing-step ( a n -- settled? )   \ (on 22.5 degrees of its swing, shrinking near the middle)
+    {: a n :}
+    a n 4 object-n@ if  -22.5e  else  22.5e  then  deg>rad a n $30 object+!
+    a n $30 object@ fabs 1e deg>rad f< if  a n $34 object@ 0.4e f* a n $34 object!  then
+    a n 4 object-n@ if
+        a n $30 object@ pi f2/ fnegate f< if  0 a n 4 object-n!  then
+    else
+        a n $30 object@ pi f2/ f> if  1 a n 4 object-n!  then
+    then
+    a n $34 object@ 0.5e deg>rad f<= if  0e a n turn-x object!  0e a n turn-z object!  true exit  then
+    a n $38 object@ a n $34 object@ f* a n $30 object@ fsin f*  a n turn-x object!
+    a n $3C object@ a n $34 object@ f* a n $30 object@ fsin f*  a n turn-z object!  false ;
+fvariable sw-dx  fvariable sw-dz
+: swing-start ( a n who -- )   \ (12 degrees, swinging away from the character: across the way to it)
+    {: a n who :}
+    0 a n 4 object-n!  0e a n $30 object!  12e deg>rad a n $34 object!
+    a n place-x object@ who char-at sf@ f- sw-dx f!
+    a n place-z object@ who char-at 8 + sf@ f- sw-dz f!
+    sw-dx f@ fdup f* sw-dz f@ fdup f* f+ fsqrt  fdup f0= if  fdrop exit  then
+    sw-dz f@ fover f/ a n $38 object!  sw-dx f@ fswap f/ fnegate a n $3C object! ;
+: front-garden-5.cmd00 ( b0 b1 -- )   \ (the room's string b0 + 2; b1: 0 / 2 set going away from Hewie /
+    \ Fiona, 1 swinging till it settles)
+    {: obj op | a n :}  obj 2 + room-object to n to a  a n object-here? 0= if  exit  then
+    op 1 = if  begin  a n swing-step 0= while  yield  repeat  exit  then
+    a n  op 0= if  1  else  0  then  swing-start ;
 \ something dropped (effect LoopingSprite_vtable, its slot in event var 1) from (-276.5, 3,
 \ 160), by byte 3: 0 started (event var 0 the frame count); 1 a frame (2 while falling): it
 \ drifts 0.5 a frame in x and falls 0.05 x n(n+1)/2, gone below -10
-: front-garden-5.cmd01 ( b0 -- )  drop s" front-garden-5.cmd01" stub-step ;
+: front-garden-5.cmd01 ( b0 -- )   \ (something dropped from (-276.5, 3, 160): b0 0 made - kept in variable 1, the frames in
+    \ variable 0; 1 falls a frame at a time - on 0.5 in x, down 0.05 more each frame - till below
+    \ -10, where it is gone)
+    0= if  0 0 var-set  1  -276.5e 3e 160e effects:loop-sprite  var-set  exit  then
+    begin
+        0 var @ 1+ {: n :}
+        3e  0.05e n n 1+ * 2/ s>f f*  f-  fdup -10e f> 0= if
+            fdrop  1 var @ dup alive? if  kill  else  drop  then  exit
+        then
+        -276.5e 0.5e n s>f f* f+ f>cell  f>cell  160e f>cell  1 var @ dup alive? if  send effect-place  else  drop 2drop drop  then
+        0 n var-set  yield
+    again ;
 \ room 0x2D: two hanging things (the room's objects 4 and 5) that Fiona pushes as she walks by:
 \ past a step total of 5 they swing for 20 frames and the first toggles event flag 3 with a
 \ sound (hangers_swing).
-: front-garden-5.cmd02 ( b0 -- )  drop s" front-garden-5.cmd02" stub-step ;
+: front-garden-5.cmd02 ( b0 -- )  4 2 1 3 1 2  5e hangers-swing ;   \ (Fiona's step's length past 5; event flag 3)
 \ Hewie (in state 0x7F, +0xF3564) within 5 of the spot by byte 3: 0 (-259.5, 190), 1 (-276, 160)
 \ (others: what the caller left)
-: front-garden-5.cond00? ( b0 -- flag )  drop s" front-garden-5.cond00?" stub-flag ;
+: front-garden-5.cond00? ( b0 -- flag )   \ (the spot: 0 (-259.5, 190), 1 (-276, 160))
+    1 char-here 0=  hewie-action $7F <> or if  drop false exit  then
+    dup 1 u> if  drop true exit  then   \ (others: no distance - the original's zeros)
+    0= if  -259.5e 190e  else  -276e 160e  then
+    1 char-at 8 + sf@ f- fdup f*  fswap 1 char-at sf@ f- fdup f* f+ fsqrt 5e f< ;
 
 : front-garden-5.enter ( -- )   \ 00405AC0
     room-sounds
     $16 1.0 0 bgm
-    0 1 object-show
-    1 1 object-show
+    0 1 object-hidden
+    1 1 object-hidden
     2 1 $14 door-bits
     2 story-flag? not if
         $1F $AC $60 $26 $50 $19 $1F $12 $80 0 9 effect-string
@@ -265,7 +304,7 @@ USING: room-names story.words story.shared flag-names ;
             $FE char-here? not if
                 5 7 5 scene-change
             else
-                $8016 scene-ending
+                $8016 examine-message
             then
         then
     then

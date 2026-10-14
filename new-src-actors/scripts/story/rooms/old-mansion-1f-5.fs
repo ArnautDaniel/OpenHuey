@@ -5,7 +5,7 @@ IN: story.rooms.old-mansion-1f-5
 USING: room-names story.words story.shared ;
 
 \ the effect BigFire_vtable (three quad drawers) started with parameter 0
-: old-mansion-1f-5.cmd00 ( -- )  s" old-mansion-1f-5.cmd00" stub-step ;
+: old-mansion-1f-5.cmd00 ( -- )  effects:big-fire ;   \ (the fire: smoke, flames, glow)
 
 : old-mansion-1f-5.enter ( -- )   \ 00407AE0
     room-sounds

@@ -2,20 +2,56 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-12
-USING: room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names ;
 
 \ the two doors ("left", "right") opening: byte 3 0 at once (2.25), else a step (0.075)
-: castle-2f-12.cmd00 ( b0 -- )  drop s" castle-2f-12.cmd00" stub-step ;
+: castle-2f-12.cmd00 ( b0 -- )   \ (the two doors opening: 0 at once - 2.25 - else a step of 0.075)
+    if  0.075e  else  2.25e  then  fdup fnegate s" left" turn-y object+!  s" right" turn-y object+! ;
 \ the three rocking chairs ("movechair_1..3"; +0x30 the rock's phase in degrees, +0x34 its size,
 \ +0x38 how fast it dies down; +0x10 the tilt), by byte 3: 0 all still; 1 a rocking step (6
 \ degrees; each swing smaller, the first chair creaking at a volume by its size); 2 / 3 set
+fvariable tip  fvariable tip-yaw  fvariable reach
+\ ---- the three rocking chairs ("movechair_1..3": +$30 the rock's phase in degrees, +$34 its size,
+\ +$38 how fast it dies down; the tilt +$10) ----
+: chair ( k -- addr len )  case  0 of  s" movechair_1"  endof  1 of  s" movechair_2"  endof  >r s" movechair_3" r>  endcase ;
+: creak ( id vol -- )  6 swap 0  2.0866e 0.3e -2.0861e  sound ;   \ (chair_creak: at the first chair)
+: chair-rock ( k -- )   \ (a step: on 6 degrees; each swing smaller, the first creaking by its size)
+    {: k | a n :}  k chair to n to a  a n object-here? 0= if  exit  then
+    a n $34 object@ f0> 0= if  exit  then
+    6e a n $30 object+!
+    a n $30 object@ 360e f< 0= if
+        -360e a n $30 object+!  a n $38 object@ fnegate a n $34 object+!
+        a n $34 object@ f0< if  0e a n $34 object!  then
+        k 0= if  2  -100e 1e a n $34 object@ f- f* f>s  creak  then
+    then
+    a n $30 object@ deg>rad fsin a n $34 object@ f* 10e f* deg>rad
+    fdup pi f> if  2e pi f* f-  then  a n turn-x object! ;
+: chair-set ( back? k -- )   \ (rocking at full size from its tilt now, forward or back)
+    {: back k | a n :}  k chair to n to a  a n object-here? 0= if  exit  then
+    a n turn-x object@ rad>deg 10e f/ deg>rad fasin rad>deg             ( F: a )
+    back if  180e fswap f-  then  a n $30 object!
+    1e a n $34 object!  0.05e a n $38 object!  0 a n $3C object-n!  5 0 creak ;
 \ rocking at full size from their tilt now (swinging forward / back), with a creak
-: castle-2f-12.cmd01 ( b0 -- )  drop s" castle-2f-12.cmd01" stub-step ;
+: castle-2f-12.cmd01 ( b0 -- )   \ (0 all still; 1 a rocking step; 2 / 3 set rocking forward / back)
+    case
+        0 of  3 0 do  0 i chair $3C object-n!  0 i chair $38 object-n!  0 i chair $34 object-n!  0 i chair $30 object-n!  loop  endof
+        1 of  3 0 do  i chair-rock  loop  endof
+        2 of  3 0 do  false i chair-set  loop  endof
+        3 of  3 0 do  true i chair-set  loop  endof
+    endcase ;
 \ the partner's target (+0xF35E0 on, +0xF35F0) 3 above the rocking chair (movechair_2): its seat
 \ 6 ahead, tipped by its rock (90 x +0x34 x sin +0x30 degrees) and turned with it
-: castle-2f-12.cmd02 ( -- )  s" castle-2f-12.cmd02" stub-step ;
+: castle-2f-12.cmd02 ( -- )   \ (Hewie's look: 3 above the second chair's seat - 6 up its back, tipped by
+    \ its rock (90 x size x sin phase degrees about x) and turned with it)
+    s" movechair_2" object-here? 0= if  exit  then
+    s" movechair_2" $30 object@ deg>rad fsin s" movechair_2" $34 object@ f* 90e f* deg>rad tip f!
+    s" movechair_2" turn-y object@ tip-yaw f!
+    tip f@ fsin 6e f* reach f!                                          \ (out along its heading)
+    s" movechair_2" place-x object@  reach f@ tip-yaw f@ fsin f* f+
+    s" movechair_2" place-y object@  tip f@ fcos 6e f* f+ 3e f+
+    s" movechair_2" place-z object@  reach f@ tip-yaw f@ fcos f* f+  hewie-look-at ;
 \ the first rocking chair still rocking (+0x34 over 0.3)
-: castle-2f-12.cond00? ( -- flag )  s" castle-2f-12.cond00?" stub-flag ;
+: castle-2f-12.cond00? ( -- flag )  s" movechair_1" $34 placed-f@ 0.3e f> ;
 
 : castle-2f-12.enter ( -- )   \ 00402D50
     room-sounds
@@ -24,13 +60,13 @@ USING: room-names story.words story.shared flag-names ;
     $305 story-flag? if
         0 1 $14 door-bits
         1 1 $20000 nav-group
-        0 1 object-show
-        1 1 object-show
+        0 1 object-hidden
+        1 1 object-hidden
     else
         0 0 $14 door-bits
         0 1 $20000 nav-group
-        0 0 object-show
-        1 0 object-show
+        0 0 object-hidden
+        1 0 object-hidden
     then
     0 castle-2f-12.cmd01
     0 $F1 $13 action
@@ -230,7 +266,7 @@ USING: room-names story.words story.shared flag-names ;
         $FE char-here? not if
             5 0 5 scene-change
         else
-            $8016 scene-ending
+            $8016 examine-message
         then
     then
     0 7 $3C char-faces-area? if
@@ -400,8 +436,8 @@ USING: room-names story.words story.shared flag-names ;
         self-frames-reset
         5 self-wait-frames
         0 0 $14 door-bits
-        0 0 object-show
-        1 0 object-show
+        0 0 object-hidden
+        1 0 object-hidden
         0 0 object-anim
         1 0 object-anim
         self-frames-reset
@@ -413,8 +449,8 @@ USING: room-names story.words story.shared flag-names ;
         self-frames-reset
         5 self-wait-frames
         0 0 $14 door-bits
-        0 0 object-show
-        1 0 object-show
+        0 0 object-hidden
+        1 0 object-hidden
         0 1 object-anim
         1 1 object-anim
         self-frames-reset

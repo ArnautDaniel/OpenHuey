@@ -2,15 +2,37 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-6
-USING: room-names story.words story.shared flag-names ;
+USING: engine common actors messages room-names story.words story.shared flag-names ;
 
 \ door 0 swung by script variable 0: byte 3 0 sets it to -90; 1 opens it 10 degrees a step to 0
 \ (doors +0x74), waiting (2) until there
-: house-of-truth-1f-6.cmd00 ( b0 -- )  drop s" house-of-truth-1f-6.cmd00" stub-step ;
+: house-of-truth-1f-6.cmd00 ( b0 -- )   \ (door 0 by variable 0: b0 0 it to -90; 1 opened 10 degrees a frame from there to 0)
+    case
+        0 of  0 -90 var-set  endof
+        1 of  begin
+                  0 var @ 10 + 0 min  dup 0 swap var-set
+                  dup s>f  0 true door-swing
+                  0< while  yield
+              repeat  endof
+    endcase ;
 \ the room object named pstr_tana falling over: byte 3 0 starts it (angle +0x30, speed +0x34 and
 \ acceleration +0x38 0, jerk +0x3C 0.005); 1 steps them, its tilt +0x10 = (1 - sin(90 - angle))
 \ * pi/2, waiting (2) until the angle reaches 90; 2 puts it down (sin(pi/2))
-: house-of-truth-1f-6.cmd01 ( b0 -- )  drop s" house-of-truth-1f-6.cmd01" stub-step ;
+: house-of-truth-1f-6.cmd01 ( b0 -- )   \ ("tana", the shelf, falling over: b0 0 starts it - angle (+0x30), speed,
+    \ acceleration 0, jerk 0.005; 1 a step each frame, its tilt (1 - sin(90 - angle)) x pi/2,
+    \ till the angle reaches 90; 2 put down)
+    {: b0 :}  s" tana" object-here? 0= if  exit  then
+    b0 case
+        0 of  0e s" tana" $30 object!  0e s" tana" $34 object!  0e s" tana" $38 object!  0.005e s" tana" $3C object!  endof
+        1 of  begin
+                  s" tana" $3C object@ s" tana" $38 object+!
+                  s" tana" $38 object@ s" tana" $34 object+!
+                  s" tana" $34 object@ s" tana" $30 object+!
+                  90e  s" tana" $30 object@ 90e fmin  f- deg>rad fsin  1e fswap f-  pi f2/ f*  s" tana" turn-x object!
+                  s" tana" $30 object@ 90e f< while  yield
+              repeat  endof
+        2 of  pi f2/ fsin s" tana" turn-x object!  endof
+    endcase ;
 
 defer house-of-truth-1f-6.act02
 : house-of-truth-1f-6.enter ( -- )   \ 00435050
@@ -153,7 +175,7 @@ defer house-of-truth-1f-6.act02
         $FE char-here? not if
             5 8 5 scene-change
         else
-            $8016 scene-ending
+            $8016 examine-message
         then
     then
     -2147483646 scene-request? if
@@ -568,8 +590,8 @@ defer house-of-truth-1f-6.act02
     self-frames-reset
     5 self-wait-frames
     0 0 $14 door-bits
-    3 0 object-show
-    4 0 object-show
+    3 0 object-hidden
+    4 0 object-hidden
     3 1 object-anim
     4 1 object-anim
     self-frames-reset

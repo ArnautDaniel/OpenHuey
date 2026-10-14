@@ -128,9 +128,19 @@ defer next-move ( -- )
     combo-over ; is next-move
 : combo-start ( n -- )  combo !  0 combo-step !  0 took !  0 step-done !  $13 chase-act !  next-move ;
 
-\ ---- his blow struck home (`hit-taken`): his cry, held still 5 frames ----
+\ ---- a blow's mark (HitEffect_Spawn: `spray`) on someone, that much of their height up them;
+\ his animation's effect key ($20: where his blows land) ----
+fvariable mark-h
+: mark-on ( who heavy -- ) ( F: height -- )
+    mark-h f!  over body-tri swap  rot                               ( tri heavy who )
+    dup body-at vec@ fswap  body-dims fswap fdrop  mark-h f@ f* f+  fswap  spray ;
+: effect-key? ( -- flag )  my-model @ 0 -1 1 motion-events $20 and 0<> ;
+
+\ ---- his blow struck home (`hit-taken`): his cry, held still 5 frames; his blow's mark on the
+\ one struck, as they cry out (his own: Riccardo_CryHit, Daniella_BlowEffect) ----
 : struck-home ( kind -- )
     drop  1 took !  90 hold-off !
+    own-mark @ ?dup if  sender swap execute  then
     cry @ dup 0< 0= if  7 sound  else  drop  then  -1 cry !
     5 freeze-t !  model act.mflags dup l@ $40 or swap l! ;
 : thaw ( -- )   \ (each frame: the hold counted down)

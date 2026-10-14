@@ -224,7 +224,7 @@ So `F0 c1 F2 c2 F4 c3 <commands> F8` runs the commands when ((c1 and c2) or c3).
 | A2 | 3 | `door-flag-82` | `door:u8` `on:u8` | Door `door`'s second flag (+0x82; Doors_SetFlag82). Nothing in the C reads it yet. |
 | A3 | 2 | `panic-stage` | `stage:u8` | The panic's stage = `stage` (Panic_SetStage). |
 | A4 | 5 | `self-anim-9` | `anim:u16` `b:u16` | self: animation `anim` with b (character move 9). |
-| A5 | 3 | `scene-ending` | `id:u16` | Requests scene 5 (an ending / the results, id `id`) unless state flag 0x12 or Fiona is busy. |
+| A5 | 3 | `examine-message` | `id:u16` | Offers message `id` on her action button (Progress +0x1134 = 0x80000005: she looks at character 2 and the message opens) unless state flag 0x12 or Fiona is busy. |
 | A6 | 3 | `char-file-load` | `id:u8` `file:u8` | Loads the room's file named by string `file` into character `id`'s model buffer (slots 0..3). |
 | A7 | 2 | `char-file-use` | `id:u8` | Character `id`'s model takes its loaded buffer (0xA6); waits while the loader is busy. |
 | A8 | 1 | `room-sounds` | - | Loads the current room's sound set. |

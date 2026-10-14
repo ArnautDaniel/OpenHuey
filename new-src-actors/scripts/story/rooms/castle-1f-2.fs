@@ -2,25 +2,61 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-2
-USING: room-names story.words story.shared flag-names ;
+USING: actors messages room-names story.words story.shared flag-names ;
 
 \ the room object pstr_ori's +0x24 by byte 3: 0 set (37.978 with progress flag 0x12, else 11), 1
 \ up 0.25 to 37.978 (then event +0x5C (2)), 2 up 0.25, else down 0.25
-: castle-1f-2.cmd00 ( b0 -- )  drop s" castle-1f-2.cmd00" stub-step ;
+: castle-1f-2.cmd00 ( b0 -- )   \ (the cage, "ori": 0 set - up (37.978) once story flag $12, else 11; 1 up 0.25 to the
+    \ top, there event flag 2; 2 up 0.25; else down 0.25)
+    s" ori" object-here? 0= if  drop exit  then
+    case
+        0 of  $12 story-flag? if  37.978e  else  11e  then  s" ori" place-y object!  endof
+        1 of  0.25e s" ori" place-y object+!
+              s" ori" place-y object@ 37.978e f< 0= if  2 ebit-set  37.978e s" ori" place-y object!  then  endof
+        2 of  0.25e s" ori" place-y object+!  endof
+        >r -0.25e s" ori" place-y object+! r>
+    endcase ;
 \ room 0x02 (Room02_Cmd01_ptmf): the panic (progress +0x7B8) raised to 80
-: castle-1f-2.cmd01 ( -- )  s" castle-1f-2.cmd01" stub-step ;
+: castle-1f-2.cmd01 ( -- )  80 panic-raise-to ;   \ (her panic up to 80: Panic_FrightRaw)
 \ room 0x02 (D_003F03A0): the 0xE60-byte effect OrangeSparks_vtable by byte 3 - 0 made (its slot
 \ kept in event variable 0), 1 that one sent 0 (stop), else one more made and sent 1
-: castle-1f-2.cmd02 ( b0 -- )  drop s" castle-1f-2.cmd02" stub-step ;
+: castle-1f-2.cmd02 ( b0 -- )   \ (the fireplace's embers: b0 0 lit - kept in variable 0; 1 a gust blows them back;
+    \ 2 another lot flung away as it goes out)
+    case
+        0 of  0  -1 effects:embers  var-set  endof
+        1 of  0 var @ dup alive? if  0 swap send effect-command  else  drop  then  endof
+        >r  1 effects:embers drop  r>
+    endcase ;
 \ room 0x02 (D_003F03B0): the drum can's wobble by byte 3 - 0 still (rest height +0x38 = its
 \ height), 2 struck (+0x34 strength 1), 1 each frame: the strength fades by 0.2 while it bobs
 \ 0.2 x strength x sin(phase +0x30, on by 90 degrees) about the rest height
-: castle-1f-2.cmd03 ( b0 -- )  drop s" castle-1f-2.cmd03" stub-step ;
+: castle-1f-2.cmd03 ( b0 -- )   \ (the drum can, "doramukan": 0 still, its rest height kept (+$38); 2 struck (strength 1);
+    \ 1 a frame of its wobble - strength down 0.2, phase on 90 degrees, height rest + 0.2 x strength x sin)
+    s" doramukan" object-here? 0= if  drop exit  then
+    case
+        2 of  0 s" doramukan" $30 object-n!  1e s" doramukan" $34 object!  endof
+        1 of
+            -0.2e s" doramukan" $34 object+!
+            s" doramukan" $34 object@ f0> 0= if
+                0e s" doramukan" $34 object!  0e s" doramukan" $30 object!
+                s" doramukan" $38 object@ s" doramukan" place-y object!
+            else
+                90e s" doramukan" $30 object+!
+                s" doramukan" $30 object@ 360e f< 0= if  -360e s" doramukan" $30 object+!  then
+                s" doramukan" $34 object@ s" doramukan" $30 object@ deg>rad fsin f* 0.2e f*
+                s" doramukan" $38 object@ f+ s" doramukan" place-y object!
+            then  endof
+        0 of  0 s" doramukan" $34 object-n!  0 s" doramukan" $30 object-n!
+              s" doramukan" place-y object@ s" doramukan" $38 object!  endof
+    endcase ;
 \ room 0x02 (D_003F03C0): the player is about and down at floor level (y <= 0)
-: castle-1f-2.cond00? ( -- flag )  s" castle-1f-2.cond00?" stub-flag ;
+: castle-1f-2.cond00? ( -- flag )  fiona-at 4 + sf@ 0e f<= ;
 \ room 0x02 (Room02_Cond01_ptmf): the pursuer is about, in a mode other than 0, 1 or 5, and
 \ progress +0x1130 isn't 0xFE
-: castle-1f-2.cond01? ( -- flag )  s" castle-1f-2.cond01?" stub-flag ;
+: castle-1f-2.cond01? ( -- flag )
+    stalker-about? 0= if  false exit  then
+    stalker-mode dup 0= over 1 = or swap 5 = or if  false exit  then
+    camera-on $FE <> ;
 
 : castle-1f-2.enter ( -- )   \ 003EEDF0
     room-sounds
@@ -30,10 +66,10 @@ USING: room-names story.words story.shared flag-names ;
     0 castle-1f-2.cmd00
     $12 story-flag? not if
         1 4 8 nav-group
-        2 0 object-show
+        2 0 object-hidden
         6 0 $14 door-bits
     else
-        2 1 object-show
+        2 1 object-hidden
         6 1 $14 door-bits
     then
     $20A story-flag? not if
@@ -517,7 +553,7 @@ USING: room-names story.words story.shared flag-names ;
         else $FE char-unseen? if
             5 $C 5 scene-change
         else
-            $8016 scene-ending
+            $8016 examine-message
         then then
     then
     $12 story-flag? not if
@@ -542,7 +578,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     0 exit-door-open? not 5 ebit? and if
         0 0 char-group-bit4? if
-            7 scene-ending
+            7 examine-message
         then
     then
     $24E story-flag? $24F story-flag? not and if
@@ -878,7 +914,7 @@ USING: room-names story.words story.shared flag-names ;
             1 0 char-visible
             1 action-end
             3 0 char-remove
-            1 1 object-show
+            1 1 object-hidden
             castle-1f-2.cmd01
             $F $41 fade
             wait-fade

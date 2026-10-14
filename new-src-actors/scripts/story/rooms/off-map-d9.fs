@@ -12,8 +12,8 @@ USING: room-names story.words story.shared flag-names ;
 : off-map-d9.cmd01 ( -- )  s" off-map-d9.cmd01" stub-step ;
 \ (as Room48_Cmd04) room 0x48 (Room48_Cmd04_ptmf): the player's Character_ChooseExit(0)
 : off-map-d9.cmd02 ( -- )  s" off-map-d9.cmd02" stub-step ;
-\ the progress object's +0x7C with the caller's arguments
-: off-map-d9.cond00? ( -- flag )  s" off-map-d9.cond00?" stub-flag ;
+\ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
+: off-map-d9.cond00? ( -- flag )  true ;
 
 : off-map-d9.enter ( -- )   \ 00447E80
     $19 1.0 0 bgm

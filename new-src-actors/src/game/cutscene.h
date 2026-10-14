@@ -33,5 +33,7 @@ int cutscene_camera(Camera *c);
 int cutscene_active(void);              /* playing (cast, not over or ended) */
 int cutscene_letterbox(void);           /* bars at the top and bottom */
 void cutscene_set_letterbox_off(int off);
+void cutscene_leave_alone(int i);       /* actor i left to its own motion by the cast (Cutscene_Mark82) */
+void cutscene_keep_model(int i);        /* actor i's model left as it is when taken (Cutscene_Mark83) */
 
 #endif

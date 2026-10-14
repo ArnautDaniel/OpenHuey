@@ -11,6 +11,11 @@
 #include "../game/messages.h"
 #include "../game/progress.h"
 #include "../game/sprites.h"
+#include "../game/particles.h"
+#include "../game/rumble.h"
+#include "../game/swimpath.h"
+#include "../game/things.h"
+#include "../render/post.h"
 #include "../platform/snddrv.h"
 #include "../platform/sound.h"
 #include "../platform/movie.h"
@@ -50,6 +55,7 @@ PRIM(p_room) {   /* ( id -- ) load a room */
     if (!room_load(&gEngine.room, (int)id)) {
         forth_error(f, "room: no room %lX", (long)id);
     }
+    particles_new_room();   /* (the engine's own sparks and motes go with the room) */
 }
 PRIM(p_room_id) { PUSH(gEngine.room.id); }
 PRIM(p_room_exists) { PUSH(room_exists((int)POP()) ? -1 : 0); }
@@ -205,7 +211,7 @@ PRIM(p_sprite_store) {   /* ( b i rgba frame -- ) ( F: x y z w h rot -- ) record
 
     if (s != NULL && i >= 0 && i < SPRITES_PER_BATCH) {
         s[i] = (Sprite){x, y, z, half_w, half_h, rot, {(uint8_t)(rgba >> 24), (uint8_t)(rgba >> 16), (uint8_t)(rgba >> 8), (uint8_t)rgba},
-                        (int)frame, 0, {{0}}};
+                        (int)frame, 0, {{0}}, 0, {{0}}, 0, {{0}}};
     }
 }
 PRIM(p_floor_below) {   /* ( F: x y z -- y' ) ( -- flag ) the solid surface under a point */
@@ -357,6 +363,20 @@ PRIM(p_body_move) {   /* ( F: dx dz -- ) by (dx, dz) as far as its mask allows, 
 
     body_move(b, b->mask, dx, dz);
 }
+PRIM(p_body_advance) {   /* ( F: x z speed -- ) ( -- there? ) straight toward (x, z) by at most speed, as
+                          * far as its mask allows; there (within the step) - put on it */
+    HBody *b = own_body(f, "body-advance");
+    float speed = (float)FPOP(), z = (float)FPOP(), x = (float)FPOP();
+    float dx = x - b->pos[0], dz = z - b->pos[2], d = sqrtf(dx * dx + dz * dz);
+
+    if (d <= speed) {
+        body_move(b, b->mask, dx, dz);
+        PUSH(-1);
+        return;
+    }
+    body_move(b, b->mask, dx / d * speed, dz / d * speed);
+    PUSH(0);
+}
 PRIM(p_body_move_any) {   /* ( F: dx dz -- ) the same over any triangle */
     HBody *b = own_body(f, "body-move-any");
     float dz = (float)FPOP(), dx = (float)FPOP();
@@ -452,6 +472,14 @@ PRIM(p_v_walk) {   /* ( tri a b mask -- tri' ) straight from a (on tri) to b wit
 
     PUSH(navmesh_walk(n, (int)tri, vec3(a[0], a[1], a[2]), vec3(b[0], b[1], b[2]), NULL));
     n->block = 0;
+}
+PRIM(p_nav_crosses) {   /* ( tri a b mask -- flag ) a straight line from a (on tri) toward b crosses
+                         * a triangle with all of mask's flags (to b's, or a wall) */
+    uint32_t mask = (uint32_t)POP();
+    float *b = vec_arg(f), *a = vec_arg(f);
+    Cell tri = POP();
+
+    PUSH(navmesh_crosses(&gEngine.room.nav, (int)tri, vec3(a[0], a[1], a[2]), vec3(b[0], b[1], b[2]), mask) ? -1 : 0);
 }
 PRIM(p_v_wall) {   /* ( tri a b mask -- flag ) ( F: -- yaw ) the wall a straight walk from a toward b
                     * meets: its edge's heading (Fiona_AlongWall); false: none */
@@ -550,6 +578,21 @@ PRIM(p_v_path) {   /* ( from a to b mask -- n ) a way from a (on tri from) to b 
     NavMesh *n = nav_masked(mask);
 
     sPathN = navmesh_path(n, (int)from, vec3(a[0], a[1], a[2]), (int)to, vec3(b[0], b[1], b[2]), sPath, PATH_MAX_POINTS);
+    n->block = 0;
+    PUSH(sPathN);
+}
+PRIM(p_v_path_curved) {   /* ( from a to b mask -- n ) as v-path, its corners rounded as the original's
+                           * curved paths are (navmesh_curve) */
+    uint32_t mask = (uint32_t)POP();
+    float *b = vec_arg(f);
+    Cell to = POP();
+    float *a = vec_arg(f);
+    Cell from = POP();
+    NavMesh *n = nav_masked(mask);
+    Vec3 straight[PATH_MAX_POINTS];
+    int k = navmesh_path(n, (int)from, vec3(a[0], a[1], a[2]), (int)to, vec3(b[0], b[1], b[2]), straight, PATH_MAX_POINTS);
+
+    sPathN = navmesh_curve(n, (int)from, vec3(a[0], a[1], a[2]), straight, k, sPath, PATH_MAX_POINTS);
     n->block = 0;
     PUSH(sPathN);
 }
@@ -765,13 +808,369 @@ PRIM(p_cam_follow) {   /* ( id -- ) follow someone (10 units up; cam-target! say
     camdir_follow(&gCamDir, (int)a, a < 0 ? vec3(0, 0, 0) : vec3(0, 10, 0));
 }
 PRIM(p_cam_ease) { camdir_ease(&gCamDir); }
-PRIM(p_cam_event) { PUSH(gCamDir.event ? -1 : 0); }   /* ( -- flag ) an event drives the camera (CamDirector +0x6C) */
+PRIM(p_cam_event) { PUSH(gCamDir.event ? -1 : 0); }   /* ( -- flag ) an event's shot has the camera (the director idle) */
+PRIM(p_cam_event_set) { gCamDir.event = POP() != 0; }  /* ( flag -- ) an event's shot takes the camera, or gives it back */
 PRIM(p_cam_track) { camdir_track(&gCamDir); }
 PRIM(p_cam_update) {   /* ( -- ) the camera placed, and the engine's camera made the director's */
     camdir_update(&gCamDir);
     camdir_apply(&gCamDir, &gEngine.camera);
 }
 PRIM(p_cam_restart) { camdir_restart(&gCamDir); }
+PRIM(p_cam_place) {   /* ( F: ex ey ez lx ly lz -- ) the camera put here, looking there, a 60 degree view (an event's shot) */
+    float lz = (float)FPOP(), ly = (float)FPOP(), lx = (float)FPOP();
+    float ez = (float)FPOP(), ey = (float)FPOP(), ex = (float)FPOP();
+
+    gCamDir.eye = vec3(ex, ey, ez);
+    gCamDir.look = vec3(lx, ly, lz);
+    gCamDir.fov = 1.0471976f;
+    camdir_apply(&gCamDir, &gEngine.camera);
+}
+/* ---- the effects' particles (game/particles.h): made here, moved by the engine's tick ---- */
+static Vec3 fpop3(Forth *f) {
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+
+    return vec3(x, y, z);
+}
+PRIM(p_flicker_new) {   /* ( slow F: x y z -- p ) a flickering sprite (-1: none) */
+    Vec3 at = fpop3(f);
+
+    PUSH(particles_flicker(at, (int)POP()));
+}
+PRIM(p_flame_new) {   /* ( kind F: x y z -- p ) a flame */
+    Vec3 at = fpop3(f);
+
+    PUSH(particles_flame(at, (int)POP()));
+}
+PRIM(p_swarm_new) {   /* ( count spread rgba F: x y z -- p ) specks about the point ($RRGGBBAA) */
+    Cell rgba = POP(), spread = POP(), count = POP();
+    Vec3 at = fpop3(f);
+
+    PUSH(particles_swarm(at, (int)count, (float)spread, (uint32_t)rgba));
+}
+PRIM(p_splash_new) {   /* ( count spread rgba F: x y z from-x from-y from-z -- p ) a splash, away from `from` */
+    Cell rgba = POP(), spread = POP(), count = POP();
+    Vec3 from = fpop3(f), at = fpop3(f);
+
+    PUSH(particles_splash(at, from, (int)count, (float)spread, (uint32_t)rgba));
+}
+PRIM(p_burst_new) {   /* ( kind r g b top F: x y z -- p ) a burst of dust */
+    Cell top = POP(), b = POP(), g = POP(), r = POP(), kind = POP();
+    Vec3 at = fpop3(f);
+
+    PUSH(particles_burst(at, (int)kind, (int)r, (int)g, (int)b, (int)top));
+}
+/* ---- the things lying about (game/things.c; scripts/things.fs) ---- */
+PRIM(p_thing_new) {   /* ( kind room tri F: x y z vx vy vz -- i | -1 ) a thing, flying */
+    Vec3 v = fpop3(f), at = fpop3(f);
+    Cell tri = POP(), room = POP(), kind = POP();
+
+    PUSH(things_new((int)kind, (int)room, (int)tri, at, v));
+}
+PRIM(p_thing_free) { things_free((int)POP()); }   /* ( i -- ) */
+PRIM(p_things_clear) { things_clear(); }
+PRIM(p_thing_used) { PUSH(things_used((int)POP()) ? -1 : 0); }   /* ( i -- flag ) */
+PRIM(p_thing_info) {   /* ( i -- kind room tri state age ) */
+    int i = (int)POP();
+
+    PUSH(things_kind(i));
+    PUSH(things_room(i));
+    PUSH(things_tri(i));
+    PUSH(things_state(i));
+    PUSH(things_age(i));
+}
+PRIM(p_thing_at) {   /* ( i -- v ) its place (a vector: read it, don't write it) */
+    Vec3 *p = things_at((int)POP());
+    static float none[3];
+
+    PUSH(p != NULL ? (Cell)p : (Cell)none);
+}
+PRIM(p_thing_speed) {   /* ( i -- ) ( F: -- s ) how fast it moves (its velocity's length; 0 lying still) */
+    Vec3 *v = things_v((int)POP());
+
+    FPUSH(v != NULL ? sqrtf(v->x * v->x + v->y * v->y + v->z * v->z) : 0.0f);
+}
+PRIM(p_thing_age_store) { int i = (int)POP(); things_set_age(i, (int)POP()); }   /* ( age i -- ) */
+PRIM(p_thing_place) {   /* ( i room tri F: x y z -- ) lying there (a save's) */
+    Vec3 at = fpop3(f);
+    Cell tri = POP(), room = POP();
+
+    things_place((int)POP(), (int)room, (int)tri, at);
+}
+PRIM(p_thing_kick) {   /* ( i F: dx dy dz -- ) */
+    Vec3 dv = fpop3(f);
+
+    things_kick((int)POP(), dv);
+}
+PRIM(p_thing_fade) { things_fade((int)POP()); }   /* ( i -- ) */
+PRIM(p_thing_events) { PUSH(things_events((int)POP())); }   /* ( i -- bits ) 1 burst, 2 bounced, 4 gone, 8 a puff */
+PRIM(p_thing_turn) { PUSH(things_turn((int)POP())); }   /* ( i -- 0..255 ) */
+PRIM(p_thing_reaches) {   /* ( body i F: across high -- flag ) the body and thing i meet (thing_spans,
+                          * thing_near): the body's feet to its top against the thing's place up
+                          * to `high` above it, and its place within `across` of the thing's */
+    float high = (float)FPOP(), across = (float)FPOP();
+    int i = (int)POP();
+    HBody *b = hactor_body((int)POP());
+    Vec3 *at = things_at(i);
+    float cy, ctop, oy, otop, dx, dz;
+    int spans;
+
+    if (b == NULL || !b->has || at == NULL) {
+        PUSH(0);
+        return;
+    }
+    cy = b->pos[1];
+    ctop = cy + b->height;
+    oy = at->y;
+    otop = oy + high;
+    spans = (ctop < otop && !(ctop <= oy)) || (otop < ctop && !(otop <= cy));
+    dx = b->pos[0] - at->x;
+    dz = b->pos[2] - at->z;
+    PUSH(spans && sqrtf(dx * dx + dz * dz) < across ? -1 : 0);
+}
+PRIM(p_things_step) { Cell running = POP(); things_step((int)POP(), running != 0); }   /* ( room running -- ) */
+PRIM(p_spray) {   /* ( tri heavy F: x y z -- ) blood where a blow lands (the engine's: it goes by itself) */
+    Cell heavy = POP(), tri = POP();
+    Vec3 at = fpop3(f);
+
+    particles_spray(at, (int)tri, heavy != 0);
+}
+PRIM(p_debris_cloud) {   /* ( r g b F: x y z -- ) droplets flung where a shot strikes (DropletFlash;
+                           * the engine's: it goes by itself) */
+    Cell b = POP(), g = POP(), r = POP();
+    Vec3 at = fpop3(f);
+
+    particles_drop_flash(at, (int)r, (int)g, (int)b);
+}
+PRIM(p_gun_smoke) {   /* ( F: x y z -- ) smoke rising from a gun as it fires (BoneSmoke; the engine's) */
+    particles_bone_smoke(fpop3(f));
+}
+PRIM(p_spark) {   /* ( life F: x y z rise size growth -- ) a spark that grows and fades (LorenzoSpark; the engine's) */
+    float growth = (float)FPOP(), size = (float)FPOP(), rise = (float)FPOP();
+    Vec3 at = fpop3(f);
+
+    particles_spark2(at, rise, size, growth, (int)POP());
+}
+PRIM(p_welling) {   /* ( tri F: x y z -- ) bubbles welling up where the leaving homunculus sinks away, then a stain (Cr19Bubbles; the engine's) */
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+
+    particles_welling(vec3(x, y, z), (int)POP());
+}
+PRIM(p_sink_ring) {   /* ( rising F: x y z -- ) a ring of light and sparks where someone sinks away (LightRing; the engine's) */
+    Vec3 at = fpop3(f);
+
+    particles_sink_ring(at, (int)POP());
+}
+PRIM(p_particles_engines) { particles_engines((int)POP()); }   /* ( p -- ) it goes by itself once ended */
+PRIM(p_puffs) {   /* ( F: x y z -- ) the burst of a shove or a thing breaking (the engine's) */
+    Vec3 at = fpop3(f);
+
+    particles_puffs(at);
+}
+PRIM(p_shards_new) {   /* ( gs kind tex F: x y z u v du dv floor -- p ) shards textured by a cell of the room's */
+    float floor = (float)FPOP(), dv = (float)FPOP(), du = (float)FPOP(), v = (float)FPOP(), u = (float)FPOP();
+    Vec3 at = fpop3(f);
+    Cell tex = POP(), kind = POP(), gs = POP();
+
+    PUSH(particles_shards(at, (uint32_t)gs, (int)kind, (int)tex, u, v, du, dv, floor));
+}
+PRIM(p_stones_new) {   /* ( gs tex F: height u v du dv -- p ) falling stones (Effect79B00), the room's texture's part */
+    float dv = (float)FPOP(), du = (float)FPOP(), v = (float)FPOP(), u = (float)FPOP(), height = (float)FPOP();
+    Cell tex = POP(), gs = POP();
+
+    PUSH(particles_stones(height, (uint32_t)gs, (int)tex, u, v, du, dv));
+}
+PRIM(p_debris_new) { PUSH(particles_debris((int)POP())); }   /* ( kind -- p ) debris falling down the water tower */
+PRIM(p_reflect_set) {   /* ( slot screen strength F: x0 y0 z0 .. x3 y3 z3 -- ) a reflecting quad (Reflection);
+                         * the strength's top bits its side panels ($10000000 a window's, $20000000 a door's) */
+    Vec3 q[4];
+    Cell strength = POP(), screen = POP(), slot = POP();
+    int k;
+
+    for (k = 3; k >= 0; k--) {
+        q[k] = fpop3(f);
+    }
+    if (slot < 0 || slot >= 4) {
+        return;
+    }
+    memcpy(gEngine.refl[slot].q, q, sizeof(q));
+    gEngine.refl[slot].screen = screen != 0;
+    gEngine.refl[slot].strength = (int)(strength & 0xFF);
+    gEngine.refl[slot].panels = (int)((uint32_t)strength >> 28 & 0xF);
+    gEngine.refl[slot].only = -1;
+}
+PRIM(p_reflect_only) {   /* ( slot model -- ) the reflection shows that one only (MirrorFragment: its character) */
+    Cell model = POP(), slot = POP();
+
+    if (slot >= 0 && slot < 4) {
+        gEngine.refl[slot].only = (int)model;
+    }
+}
+PRIM(p_reflect_off) {   /* ( slot -- ) */
+    Cell slot = POP();
+
+    if (slot >= 0 && slot < 4) {
+        gEngine.refl[slot].strength = 0;
+    }
+}
+PRIM(p_rising_smoke_new) { PUSH(particles_rising_smoke()); }   /* ( -- p ) the smoke rising from castle 2F's kiln */
+PRIM(p_dust_shaft_new) { PUSH(particles_dust_shaft()); }   /* ( -- p ) dust down the old mansion's shaft of light */
+PRIM(p_spiral_smoke_new) { PUSH(particles_spiral_smoke()); }   /* ( -- p ) smoke spiralling up the old mansion's fire */
+PRIM(p_drips_new) { PUSH(particles_drips()); }   /* ( -- p ) water dripping in the old mansion's flooded room */
+PRIM(p_one_drip_new) { PUSH(particles_one_drip()); }   /* ( -- p ) a drop now and then in the Chaos Forest */
+PRIM(p_rising_motes_new) { PUSH(particles_rising_motes()); }   /* ( -- p ) motes rising in castle 1F's hall */
+PRIM(p_embers_new) { PUSH(particles_embers((int)POP())); }   /* ( ending -- p ) embers up castle 1F's fireplace (-1 just lit) */
+PRIM(p_flecks_new) {   /* ( F: x y z half-w depth tx ty tz -- ) ( -- p ) flecks drifting across an area */
+    Vec3 turn = fpop3(f);
+    float depth = (float)FPOP(), half_w = (float)FPOP();
+    Vec3 at = fpop3(f);
+
+    PUSH(particles_flecks(at, half_w, depth, turn));
+}
+PRIM(p_smoke_puffs_new) { PUSH(particles_smoke_puffs()); }   /* ( -- p ) smoke puffs rising in castle B1 */
+PRIM(p_wall_shadow_new) { PUSH(particles_wall_shadow()); }   /* ( -- p ) a soft shadow on the old mansion's wall */
+PRIM(p_fire_new) { Cell big = POP(); PUSH(particles_fire((int)POP(), big != 0)); }   /* ( spot big -- p ) a fire in the old mansion's B1 */
+PRIM(p_steam_new) { PUSH(particles_steam((int)POP())); }   /* ( spot -- p ) puffs and a glow at an old mansion B1 spot */
+PRIM(p_floor_glow_new) { PUSH(particles_floor_glow()); }   /* ( -- p ) the old mansion 3F's floor light's glow */
+PRIM(p_tv_new) { PUSH(particles_tv((int)POP())); }   /* ( which -- p ) a TV in castle 2F showing the screen */
+PRIM(p_particles_place) { Vec3 at = fpop3(f); particles_place((int)POP(), at); }   /* ( p F: x y z -- ) moved there */
+PRIM(p_particles_rest) { Cell n = POP(); particles_rest((int)POP(), (int)n); }   /* ( p frames -- ) a flicker's rest */
+PRIM(p_big_fire_new) { PUSH(particles_big_fire()); }   /* ( -- p ) the old mansion 1F's fire */
+PRIM(p_light_shaft_new) { PUSH(particles_light_shaft()); }   /* ( -- p ) the old mansion B1's beam of light */
+PRIM(p_glint_new) { PUSH(particles_glint((int)POP())); }   /* ( model -- p ) a glint on its bone 6 */
+/* ( F: nx ny nz tx ty tz x y z -- x0 y0 z0 .. x3 y3 z3 ) a mirror fragment's reflecting square
+ * (MirrorFragment_Draw's mask): 8 across in the plane of normal n - turned as its object is (x,
+ * then y, then z) - through the object's place (x y z) */
+static Vec3 turned_xyz(Vec3 p, Vec3 t) {   /* (turned about x, then y, then z) */
+    Vec3 q = vec3(p.x, p.y * cosf(t.x) - p.z * sinf(t.x), p.z * cosf(t.x) + p.y * sinf(t.x));
+
+    q = vec3(q.x * cosf(t.y) + q.z * sinf(t.y), q.y, q.z * cosf(t.y) - q.x * sinf(t.y));
+    return vec3(q.x * cosf(t.z) - q.y * sinf(t.z), q.x * sinf(t.z) + q.y * cosf(t.z), q.z);
+}
+PRIM(p_mirror_square) {
+    Vec3 at = fpop3(f), t = fpop3(f), n = vec3_norm(turned_xyz(fpop3(f), t)), u, v;
+    int k;
+
+    u = fabsf(n.y) > 0.9f ? vec3(1, 0, 0) : vec3(0, 1, 0);
+    v = vec3_norm(vec3_cross(n, u));
+    u = vec3_cross(v, n);
+    for (k = 0; k < 4; k++) {
+        Vec3 q = vec3_add(at, vec3_add(vec3_scale(v, k & 1 ? 4.0f : -4.0f), vec3_scale(u, k & 2 ? 4.0f : -4.0f)));
+
+        FPUSH(q.x); FPUSH(q.y); FPUSH(q.z);
+    }
+}
+PRIM(p_mag_burst_new) {   /* ( prima? F: x y z nx ny nz -- p ) a magnesia going off there, on that floor */
+    Vec3 up = fpop3(f), at = fpop3(f);
+
+    PUSH(particles_mag_burst(at, POP() != 0, up));
+}
+PRIM(p_smoke_trail_new) { PUSH(particles_smoke_trail((int)POP())); }   /* ( thing -- p ) smoke rising from a thing */
+PRIM(p_window_flash_new) {   /* ( F: x y z turn -- p ) a dial's lens catching the light */
+    float turn = (float)FPOP();
+    Vec3 at = fpop3(f);
+
+    PUSH(particles_window_flash(at, turn));
+}
+PRIM(p_marker_new) {   /* ( model other second? F: size -- p ) a stalker's glow and sparks */
+    int second = POP() != 0, other = (int)POP(), model = (int)POP();
+
+    PUSH(particles_marker(model, other, (float)FPOP(), second));
+}
+PRIM(p_haze_new) { PUSH(particles_haze()); }   /* ( -- p ) the old mansion 1F's haze */
+PRIM(p_caustic_new) {   /* ( tex rgba F: x y z size step turn -- p ) a caustic laid flat there */
+    float turn = (float)FPOP(), step = (float)FPOP(), size = (float)FPOP();
+    Vec3 at = fpop3(f);
+    Cell rgba = POP(), tex = POP();
+
+    PUSH(particles_caustic(at, (int)tex, size, (uint32_t)rgba, step, turn));
+}
+PRIM(p_glow_new) {   /* ( rgba F: x y z size -- p ) a glow standing there */
+    float size = (float)FPOP();
+    Vec3 at = fpop3(f);
+
+    PUSH(particles_glow(at, (uint32_t)POP(), size));
+}
+PRIM(p_wisp_column_new) { PUSH(particles_wisp_column()); }   /* ( -- p ) wisps rising up the House of Truth */
+PRIM(p_spark_spray_new) { PUSH(particles_spark_spray((int)POP())); }   /* ( side -- p ) sparks sprayed across the House of Truth */
+PRIM(p_heat_haze_new) { PUSH(particles_heat_haze()); }   /* ( -- p ) a heat haze over the House of Truth */
+PRIM(p_pit_embers_new) { PUSH(particles_pit_embers((int)POP())); }   /* ( flames? -- p ) embers from the House of Truth's pit */
+PRIM(p_leaves_new) { PUSH(particles_leaves()); }   /* ( -- p ) leaves blowing across the front garden */
+PRIM(p_loop_sprite_new) { Vec3 at = fpop3(f); PUSH(particles_loop_sprite(at)); }   /* ( F: x y z -- p ) a looping sprite there */
+PRIM(p_object_glow_new) { Vec3 at = fpop3(f); PUSH(particles_object_glow(at, (int)POP())); }   /* ( idx F: x y z -- p ) a glow under a planet */
+PRIM(p_rain_new) { PUSH(particles_rain()); }   /* ( -- p ) drops falling and splashing */
+PRIM(p_ash_new) { PUSH(particles_ash()); }   /* ( -- p ) ash flakes rising in the Chaos Forest */
+PRIM(p_butterflies_new) {   /* ( count F: x y z -- p ) butterflies making for the point (their colours: the executable's) */
+    Vec3 at = fpop3(f);
+
+    PUSH(particles_butterflies(at, (int)POP(), world_exe(&gEngine.world, 0x412710, 32)));
+}
+PRIM(p_butterflies_to) {   /* ( p count F: x y z -- ) somewhere new, and how many (0: as they are) */
+    Vec3 at = fpop3(f);
+    Cell count = POP();
+
+    particles_butterflies_to((int)POP(), at, (int)count);
+}
+PRIM(p_wander_new) {   /* ( F: x y z rx rz tx ty tz -- p ) a quad wandering about the point (degrees) */
+    float tz = (float)FPOP(), ty = (float)FPOP(), tx = (float)FPOP(), rz = (float)FPOP(), rx = (float)FPOP();
+    Vec3 at = fpop3(f);
+
+    PUSH(particles_wander(at, rx, rz, vec3(tx * 0.017453293f, ty * 0.017453293f, tz * 0.017453293f)));
+}
+PRIM(p_spirit_new) {   /* ( red F: x y z bob -- p ) a spirit's glow (creatures) */
+    float bob = (float)FPOP();
+    Vec3 at = fpop3(f);
+
+    PUSH(particles_spirit(at, POP() != 0, bob));
+}
+PRIM(p_spirit_at) {   /* ( p shown F: x y z -- ) where it is now, and whether it shows */
+    Vec3 at = fpop3(f);
+    Cell shown = POP();
+
+    particles_spirit_at((int)POP(), at, shown != 0);
+}
+PRIM(p_swim_path) {   /* ( i nx ny nz frames -- ) ( F: x y z -- ) swim path i set up from there (SwimPath_Setup) */
+    Vec3 o = fpop3(f);
+    Cell frames = POP(), nz = POP(), ny = POP(), nx = POP();
+
+    swimpath_setup((int)POP(), (int)nx, (int)ny, (int)nz, (int)frames, o);
+}
+PRIM(p_swim_step) {   /* ( i -- ) ( F: x y z yaw -- x y z yaw ) a frame along swim path i (SwimPath_Step) */
+    float yaw = (float)FPOP();
+    Vec3 at = fpop3(f);
+
+    swimpath_step((int)POP(), &at, &yaw);
+    FPUSH(at.x); FPUSH(at.y); FPUSH(at.z); FPUSH(yaw);
+}
+PRIM(p_vanish_new) {   /* ( r g b a -- p ) ( F: x y z -- ) a creature's vanishing there (CreatureVanish) */
+    Vec3 at = fpop3(f);
+    Cell a = POP(), b = POP(), g = POP(), r = POP();
+
+    PUSH(particles_vanish(at, (int)r, (int)g, (int)b, (int)a));
+}
+PRIM(p_spirit_vanish) { Cell seen = POP(); particles_spirit_vanish((int)POP(), seen != 0); }   /* ( p seen -- ) */
+PRIM(p_particles_command) { Cell v = POP(); particles_command((int)POP(), (int)v); }   /* ( p v -- ) */
+PRIM(p_particles_alive) { PUSH(particles_alive((int)POP()) ? -1 : 0); }             /* ( p -- flag ) */
+PRIM(p_particles_children) { PUSH(particles_children((int)POP())); }                /* ( p -- n ) */
+PRIM(p_particles_info) {   /* ( p -- kind frame rest ) (tests) its kind, its frame, frames left resting */
+    int kind = 0, frame = 0, rest = 0;
+
+    particles_info((int)POP(), &kind, &frame, &rest);
+    PUSH(kind);
+    PUSH(frame);
+    PUSH(rest);
+}
+PRIM(p_particles_free) { particles_free((int)POP()); }                              /* ( p -- ) */
+PRIM(p_cam_nudge) {   /* ( F: dx dy dz -- ) the engine's camera moved by this, this frame (a shake) */
+    float dz = (float)FPOP(), dy = (float)FPOP(), dx = (float)FPOP();
+
+    gEngine.camera.pos = vec3_add(gEngine.camera.pos, vec3(dx, dy, dz));
+}
+PRIM(p_frame_blend) { post_trail((float)POP() / 128.0f); }   /* ( a -- ) this frame over the last at a / 128 (0x80 all; one frame) */
+PRIM(p_cam_retake) {   /* ( -- ) the setup taken anew, as if it had changed (back from an event's shot) */
+    gCamDir.last_set = gCamDir.last_path = -1;
+    camdir_track(&gCamDir);
+}
+PRIM(p_cam_set) { PUSH(gCamDir.last_set); }   /* ( -- set ) the camera setup taken now (CamDirector +0x24) */
 PRIM(p_cam_changed) { PUSH(camdir_setup_changed(&gCamDir) ? -1 : 0); }
 PRIM(p_cam_info) {   /* ( -- ) for the console */
     forth_printf(f, "set %d path %d (of %d) following %d, t %.1f of %d..%d, fov %.1f deg\n", gCamDir.set,
@@ -789,8 +1188,9 @@ PRIM(p_area_in) {   /* ( area -- flag ) ( F: x y z -- ) */
 
     PUSH(area_inside(&gEngine.room, (int)area, vec3(x, y, z)) ? -1 : 0);
 }
-PRIM(p_placed_op) {   /* ( addr len op arg -- ) the room's object by name: 0 shown (arg), 1 / 2 animation
-                         * arg once / looped, 3 animation stopped, 4 hidden and back as defined */
+PRIM(p_placed_op) {   /* ( addr len op arg -- ) the room's object by name: 0 hidden or not (arg: the
+                         * original's +0 byte - PlacedObjects_Draw draws only while it is 0), 1 / 2
+                         * animation arg once / looped, 3 animation stopped, 4 shown and back as defined */
     Cell arg = POP(), op = POP(), n = POP(), a = POP();
     char name[32];
     Placed *p;
@@ -802,7 +1202,7 @@ PRIM(p_placed_op) {   /* ( addr len op arg -- ) the room's object by name: 0 sho
     }
     switch (op) {
     case 0:
-        p->shown = arg != 0;
+        p->shown = arg == 0;
         break;
     case 1:
     case 2:
@@ -813,11 +1213,68 @@ PRIM(p_placed_op) {   /* ( addr len op arg -- ) the room's object by name: 0 sho
         p->frames = p->frame = 0;
         break;
     case 4:
-        p->shown = 0;
+        p->shown = 1;
         p->rot = p->def_rot;
         p->pos = p->def_pos;
         break;
     }
+}
+static uint32_t *placed_arg(Forth *f) {   /* ( addr len off -- ) the named object's word */
+    Cell off = POP(), n = POP(), a = POP();
+    char name[32];
+    Placed *p;
+
+    snprintf(name, sizeof(name), "%.*s", (int)n, (const char *)a);
+    p = placed_named(&gEngine.room.placed, name);
+    return p != NULL ? placed_word(p, (int)off) : NULL;
+}
+PRIM(p_placed_f_fetch) {   /* ( addr len off -- ) ( F: -- v ) a float of the room's object by name
+                            * (its offset as the original's: +0x10 the turn, +0x20 the place;
+                            * 0 when there is no such object) */
+    uint32_t *word = placed_arg(f);
+    float v = 0.0f;
+
+    if (word != NULL) {
+        memcpy(&v, word, 4);
+    }
+    FPUSH(v);
+}
+PRIM(p_placed_f_store) {   /* ( addr len off -- ) ( F: v -- ) */
+    uint32_t *word = placed_arg(f);
+    float v = (float)FPOP();
+
+    if (word != NULL) {
+        memcpy(word, &v, 4);
+    }
+}
+PRIM(p_placed_l_fetch) {   /* ( addr len off -- n ) a word of it as an integer */
+    uint32_t *word = placed_arg(f);
+
+    PUSH(word != NULL ? (Cell)(int32_t)*word : 0);
+}
+PRIM(p_placed_l_store) {   /* ( n addr len off -- ) */
+    uint32_t *word = placed_arg(f);
+    Cell v = POP();
+
+    if (word != NULL) {
+        *word = (uint32_t)v;
+    }
+}
+PRIM(p_placed_here) {   /* ( addr len -- flag ) the room has an object of that name */
+    Cell n = POP(), a = POP();
+    char name[32];
+
+    snprintf(name, sizeof(name), "%.*s", (int)n, (const char *)a);
+    PUSH(placed_named(&gEngine.room.placed, name) != NULL ? -1 : 0);
+}
+PRIM(p_placed_shown) {   /* ( addr len -- flag ) the room's object of that name is drawn (its +0 0) */
+    Cell n = POP(), a = POP();
+    char name[32];
+    const Placed *p;
+
+    snprintf(name, sizeof(name), "%.*s", (int)n, (const char *)a);
+    p = placed_named(&gEngine.room.placed, name);
+    PUSH(p != NULL && p->shown ? -1 : 0);
 }
 PRIM(p_placed_at) {   /* ( addr len -- ) ( F: x y z -- ) the room's object by name moved there */
     float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
@@ -912,6 +1369,17 @@ PRIM(p_door_at) {   /* ( exit -- flag ) ( F: -- x y z ) where the room's door at
     FPUSH(d->pos.z);
     PUSH(-1);
 }
+PRIM(p_out_of_view) {   /* ( -- flag ) ( F: x y z -- ) outside the camera's view volume (Camera_OutOfView:
+                         * any of |x|, |y|, |z| in clip space beyond |cw|) */
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+    Mat4 vp = mat4_mul(camera_proj(&gEngine.camera, render_aspect()), camera_view(&gEngine.camera));
+    float cx = vp.m[0] * x + vp.m[4] * y + vp.m[8] * z + vp.m[12];
+    float cy = vp.m[1] * x + vp.m[5] * y + vp.m[9] * z + vp.m[13];
+    float cz = vp.m[2] * x + vp.m[6] * y + vp.m[10] * z + vp.m[14];
+    float cw = fabsf(vp.m[3] * x + vp.m[7] * y + vp.m[11] * z + vp.m[15]);
+
+    PUSH(!(cx <= cw) || cx < -cw || !(cy <= cw) || cy < -cw || !(cz <= cw) || cz < -cw ? -1 : 0);
+}
 PRIM(p_to_screen) {   /* ( -- flag ) ( F: x y z -- sx sy ) a point of the room on the window (pixels;
                        * false: behind the camera) */
     float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
@@ -997,6 +1465,12 @@ PRIM(p_door_turn) {   /* ( exit -- ) ( F: -- a ) the played room's door's turn a
 
     FPUSH(e >= 0 && e < ROOM_DOORS && gEngine.room.doors[e].present ? gEngine.room.doors[e].rot.y : 0.0);
 }
+PRIM(p_door_angle) {   /* ( exit -- ) ( F: -- degrees ) the played room's door's opening now (Doors_GetOpenAngle:
+                       * -90 open; 0 no door) */
+    Cell e = POP();
+
+    FPUSH(e >= 0 && e < ROOM_DOORS && gEngine.room.doors[e].present ? gEngine.room.doors[e].swing : 0.0);
+}
 PRIM(p_door_present) { Cell e = POP(); PUSH(e >= 0 && e < ROOM_DOORS && gEngine.room.doors[e].present ? -1 : 0); }   /* ( exit -- flag ) */
 PRIM(p_door_passage) {   /* ( exit open? locks -- ) the door's passage flags on the nav mesh */
     Cell locks = POP(), open = POP(), exit = POP();
@@ -1037,6 +1511,13 @@ PRIM(p_message_layout) {   /* ( id -- pages ) lay message `id` out (bit 15 syste
     sMsg = message_layout((int)POP());
     PUSH(sMsg->npages);
 }
+PRIM(p_message_file) {   /* ( addr len -- flag ) a scene's own messages from a file: ids $2000.. */
+    Cell n = POP(), a = POP();
+    char path[128];
+
+    snprintf(path, sizeof(path), "%.*s", (int)(n > 0 ? n : 0), n > 0 ? (const char *)a : "");
+    PUSH(message_file(n > 0 ? path : NULL) ? -1 : 0);   /* (none: the table let go) */
+}
 PRIM(p_message_lines) {   /* ( page -- n ) */
     Cell pg = POP();
 
@@ -1064,6 +1545,11 @@ PRIM(p_message_option) {   /* ( i -- page line col leads-to ) */
     PUSH(o ? o->leads_to : 0xFFFF);
 }
 PRIM(p_message_choice_flags) { PUSH(sMsg != NULL ? sMsg->choice_flags : 0); }
+PRIM(p_message_param_text) {   /* ( slot addr len -- ) parameter `slot` shows this text */
+    Cell n = POP(), a = POP(), slot = POP();
+
+    message_set_param_text((int)slot, (const char *)a, (int)n);
+}
 PRIM(p_message_param) {   /* ( slot id -- ) parameter `slot` shows system message `id` */
     Cell id = POP(), slot = POP();
 
@@ -1291,6 +1777,14 @@ PRIM(p_sound_at) {   /* ( id bank vol pitch -- ) ( F: x y z -- ) a sound at a po
     view_point(x, y, z, at, ahead);
     snddrv_play_placed((uint32_t)id, (int)bank, (int)vol, (int)pitch, at, ahead);
 }
+/* a sound at a point of the room, as it is (for the engine's own: the effects') */
+void engine_sound_at(uint32_t id, int bank, Vec3 at) {
+    float a[3], ahead[3];
+
+    bank_want(bank);
+    view_point(at.x, at.y, at.z, a, ahead);
+    snddrv_play_placed(id, bank, 0, 0, a, ahead);
+}
 PRIM(p_bank_sound_at) {   /* ( id bank -- ) ( F: x y z -- ) a sound at a point, as it is */
     Cell bank = POP(), id = POP();
     float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP(), at[3], ahead[3];
@@ -1319,6 +1813,7 @@ PRIM(p_sound_stop_voices) {   /* ( core0 core1 -- ) the voices in the masks off 
 }
 PRIM(p_sound_stop_all) { snddrv_stop_all(); }   /* ( -- ) */
 PRIM(p_sound_fade) { snddrv_placed_volume((int)POP()); }   /* ( 0..255 -- ) the positioned sounds' volume */
+PRIM(p_stage_music_volume) { seq_master_volume((float)FPOP()); }   /* ( F: v -- ) the stage music's (the sequences') volume, 0..1 */
 PRIM(p_sound_volume) {   /* ( F: sound master -- ) the effects' volume, 0..1 each */
     float m = (float)FPOP(), v = (float)FPOP();
 
@@ -1426,6 +1921,8 @@ PRIM(p_cs_go) { cutscene_start_when_ready(); }        /* ( -- ) start when ready
 PRIM(p_cs_frame_set) { cutscene_set_frame((int)POP()); }   /* ( n -- ) */
 PRIM(p_cs_frame) { PUSH(cutscene_frame()); }
 PRIM(p_cs_update) { cutscene_update(); }
+PRIM(p_cutscene_leave_alone) { cutscene_leave_alone((int)POP()); }   /* ( actor -- ) the cast leaves it be (Cutscene_Mark82) */
+PRIM(p_cutscene_keep_model) { cutscene_keep_model((int)POP()); }   /* ( actor -- ) its model left as it is (Cutscene_Mark83) */
 PRIM(p_cs_end) { cutscene_end(); }
 PRIM(p_cs_status) { PUSH(cutscene_status()); }        /* ( -- n ) 1 loading 2 ready 3 playing 5 over */
 PRIM(p_cs_in_shot) { PUSH(cutscene_playing_shot() ? -1 : 0); }
@@ -1495,6 +1992,25 @@ static Actor *actor_arg(Forth *f, Cell id) {
     }
     return &gEngine.actors[id];
 }
+PRIM(p_motions_load) {   /* ( addr len model -- flag ) a motion file (a room's .MTN, "\\" or "/") loaded for it */
+    Actor *a = actor_arg(f, POP());
+    Cell n = POP(), at = POP();
+    char path[128];
+    int i;
+
+    snprintf(path, sizeof(path), "%.*s", (int)n, (const char *)at);
+    for (i = 0; path[i] != 0; i++) {
+        if (path[i] == '\\') {
+            path[i] = '/';
+        }
+    }
+    PUSH(actor_load_motions(a, path) ? -1 : 0);
+}
+PRIM(p_motions_use) {   /* ( on model -- ) its model plays the loaded motions too (after its own), or not */
+    Actor *a = actor_arg(f, POP());
+
+    actor_use_motions(a, POP() != 0);
+}
 PRIM(p_actor_load) {   /* ( addr len -- id ) s" O_FIN/FIN_000" actor-load */
     Cell n = POP(), a = POP();
     char name[64];
@@ -1507,7 +2023,47 @@ PRIM(p_actor_load) {   /* ( addr len -- id ) s" O_FIN/FIN_000" actor-load */
     }
     PUSH(id);
 }
+PRIM(p_actor_load_textured) {   /* ( addr len tex-addr tex-len -- id ) its model, and another's textures */
+    Cell tn = POP(), ta = POP(), n = POP(), a = POP();
+    char name[64], tex[64];
+    int id;
+
+    snprintf(name, sizeof(name), "%.*s", (int)n, (const char *)a);
+    snprintf(tex, sizeof(tex), "%.*s", (int)tn, (const char *)ta);
+    id = actor_load_textured(gEngine.actors, name, tex);
+    if (id < 0) {
+        forth_error(f, "actor-load-textured: can't load %s", name);
+    }
+    PUSH(id);
+}
 PRIM(p_actor_free) { actor_free(actor_arg(f, POP())); }
+PRIM(p_actor_texture_swap) {   /* ( model sel addr len -- flag ) its texture sel shown as that file's first */
+    char name[96];
+    Cell n = POP(), a = POP(), sel = POP();
+    Actor *ac = actor_arg(f, POP());
+
+    snprintf(name, sizeof(name), "%.*s", (int)n, (const char *)a);
+    PUSH(actor_texture_swap(ac, (int)sel, name) ? -1 : 0);
+}
+PRIM(p_actor_texture_restore) { actor_texture_restore(actor_arg(f, POP())); }   /* ( model -- ) */
+PRIM(p_cloth_force) {   /* ( model set -- ) ( F: x y z -- ) a hanging set's force (SpringSet +0x0:
+                         * Fiona's hair is set 2 - FionaModel_SetVector, the model's +0xC8) */
+    Vec3 v = fpop3(f);
+    Cell set = POP();
+    Actor *a = actor_arg(f, POP());
+
+    if (a->cloth != NULL && set >= 0 && set < a->cloth->nsets) {
+        a->cloth->sets[set].force = v;
+    }
+}
+PRIM(p_cloth_crawl) {   /* ( model on -- ) ( F: yaw -- ) Daniella crawling: her back bent and her hair
+                         * falling forward along her facing, or standing again (DaniellaModel_Vt3C) */
+    float yaw = (float)FPOP();
+    Cell on = POP();
+    Actor *a = actor_arg(f, POP());
+
+    cloth_crawl(a->cloth, (int)on, sinf(yaw), cosf(yaw));
+}
 PRIM(p_actor_markers) {   /* ( id addr len -- ) its motions' event keys from that marker file (NAME, ".MRK" added):
                            * a model whose markers are another's (the slip's: O_FIN/FIN_000) */
     char name[128], path[160];
@@ -1603,6 +2159,13 @@ PRIM(p_root_delta) {   /* ( id -- ) ( F: -- turn dx dy dz ) its motion's root mo
 PRIM(p_bone_pos) {   /* ( id bone -- ) ( F: -- x y z ) where the bone is in the room (as last drawn) */
     Cell b = POP();
     Vec3 p = actor_bone(actor_arg(f, POP()), (int)b);
+
+    FPUSH(p.x); FPUSH(p.y); FPUSH(p.z);
+}
+PRIM(p_bone_point) {   /* ( id bone -- ) ( F: ox oy oz -- x y z ) a point in the bone's own axes, in the room */
+    Vec3 off = fpop3(f);
+    Cell b = POP();
+    Vec3 p = actor_bone_point(actor_arg(f, POP()), (int)b, off);
 
     FPUSH(p.x); FPUSH(p.y); FPUSH(p.z);
 }
@@ -1713,6 +2276,29 @@ static Cell scancode(Forth *f) {
     }
     return k;
 }
+PRIM(p_rumble) { Cell frames = POP(), strength = POP(); rumble_jolt((int)POP(), (int)strength, (int)frames); }   /* ( channel strength frames -- ) the large motor */
+PRIM(p_rumble_buzz) { Cell frames = POP(), on = POP(); rumble_buzz((int)POP(), on != 0, (int)frames); }      /* ( channel on frames -- ) the small motor */
+PRIM(p_rumble_swell) {   /* ( channel from to frames -- ) the large motor going from one strength to another */
+    Cell frames = POP(), to = POP(), from = POP();
+
+    rumble_swell((int)POP(), (int)from, (int)to, (int)frames);
+}
+PRIM(p_rumble_allow) { rumble_allow(POP() != 0); }   /* ( flag -- ) the vibration allowed (the options) */
+PRIM(p_game_volume) { sound_gain((float)FPOP()); }   /* ( F: v -- ) everything heard, 0..1 (the options' volume) */
+PRIM(p_rumble_seq_clear) { rumble_sequence_clear(); }   /* ( -- ) the sequence emptied */
+PRIM(p_rumble_seq_add) {   /* ( small? from to frames -- ) a step added to the sequence */
+    Cell frames = POP(), to = POP(), from = POP();
+
+    rumble_sequence_add(POP() != 0, (int)from, (int)to, (int)frames);
+}
+PRIM(p_rumble_now) {   /* ( -- small? large ) (tests) what goes to the pad now */
+    int s, l;
+
+    rumble_now(&s, &l);
+    PUSH(s ? -1 : 0);
+    PUSH(l);
+}
+PRIM(p_pad_stick) { FPUSH(gEngine.input.stick_x); FPUSH(gEngine.input.stick_y); }   /* ( F: -- x y ) a gamepad's left stick (0 0 none) */
 PRIM(p_key_down) {
     Cell k = scancode(f);
 
@@ -1871,6 +2457,26 @@ PRIM(p_look_set) {   /* ( slot addr n -- ) a look effect's parameters (addr 0: r
 
 /* ---- files: the player's own folder, and writing Forth's output into a file ---- */
 
+PRIM(p_doorway_faded) {   /* ( model -- ) ( F: -- f ) how far it has faded going out through a doorway (0..1) */
+    Cell id = POP();
+
+    FPUSH(id >= 0 && id < MAX_ACTORS && gEngine.actors[id].used ? doorway_faded(&gEngine, &gEngine.actors[id]) : 0.0f);
+}
+PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its skinned parts shown or hidden */
+    Cell on = POP(), part = POP(), id = POP();
+    Actor *a = id >= 0 && id < MAX_ACTORS ? &gEngine.actors[id] : NULL;
+    unsigned g = (unsigned)part + 1;
+
+    if (a == NULL || part < 0 || g >= 256) {
+        return;
+    }
+    if (on) {
+        a->parts_shown[g >> 5] |= 1u << (g & 31);
+    } else {
+        a->parts_shown[g >> 5] &= ~(1u << (g & 31));
+    }
+}
+PRIM(p_testing) { PUSH(gEngine.testing ? -1 : 0); }   /* ( -- flag ) run by --test (nothing kept on disk) */
 PRIM(p_user_dir) {   /* ( -- addr len ) where settings are kept (made if needed; ends with /) */
     static char *dir;
 
@@ -1953,6 +2559,14 @@ void engine_tick(Engine *e) {
 
     e->ticks++;
     movie_update();
+    {   /* (the pad's rumble stops while the game is paused: a menu up) */
+        static int was_paused;
+
+        if (e->paused != was_paused) {
+            rumble_enable(!e->paused);
+            was_paused = e->paused;
+        }
+    }
     for (i = 0; i < SDL_SCANCODE_COUNT; i++) {   /* keys scripts put down count as pressed once */
         e->held_pressed[i] = e->held[i] && !e->held_last[i];
         e->held_last[i] = e->held[i];
@@ -1966,7 +2580,8 @@ void engine_tick(Engine *e) {
             i--;
         }
     }
-    if (e->paused) {
+    if (e->paused) {   /* (a menu up: only its actors have a frame) */
+        hactor_held_frame(e->forth);
         render_look_tick();
         return;
     }
@@ -1978,6 +2593,8 @@ void engine_tick(Engine *e) {
     for (i = 0; i < MAX_ACTORS; i++) {
         actor_tick(&e->actors[i]);
     }
+    particles_tick(e->camera.pos);   /* (the effects' sprites move) */
+    rumble_tick();
     cutscene_camera(&e->camera);   /* a cutscene's shot with the camera in it has it */
     room_tick(&e->room);
     for (i = 0; i < ROOM_DOORS; i++) {   /* (Door_PlaySound: at the door, common sounds) */
@@ -1996,13 +2613,15 @@ void engine_tick(Engine *e) {
 
 /* ---- the retained 2D layer: what actors put on the screen (the message window, prompts),
  * kept until they change it and drawn each frame, layer by layer over the picture ---- */
-#define UI_LAYERS 10
-#define UI_ITEMS 64
+#define UI_LAYERS 18
+#define UI_ITEMS 256
 typedef struct UiItem {
-    int text;                 /* 0 a rectangle, 1 text, 2 the movie's picture */
+    int text;                 /* 0 a rectangle, 1 text, 2 the movie's picture, 3 a texture's part */
     float x, y, w, h;         /* (text: w the scale) */
     uint32_t rgba;
     char s[96];
+    int group, id, csa;       /* (3) the texture cache's group + id, its palette */
+    float u, v, uw, vh;       /* (3) the part of it, in texels */
 } UiItem;
 static UiItem sUi[UI_LAYERS][UI_ITEMS];
 static int sUiN[UI_LAYERS];
@@ -2066,7 +2685,7 @@ PRIM(p_ui_rect) {   /* ( layer x y w h rgba -- ) */
     UiItem *u = ui_add(f, POP());
 
     if (u != NULL) {
-        *u = (UiItem){0, (float)x, (float)y, (float)width, (float)height, (uint32_t)rgba, ""};
+        *u = (UiItem){.text = 0, .x = (float)x, .y = (float)y, .w = (float)width, .h = (float)height, .rgba = (uint32_t)rgba};
     }
 }
 PRIM(p_ui_movie) {   /* ( layer x y w h -- ) the playing movie's picture */
@@ -2074,7 +2693,7 @@ PRIM(p_ui_movie) {   /* ( layer x y w h -- ) the playing movie's picture */
     UiItem *u = ui_add(f, POP());
 
     if (u != NULL) {
-        *u = (UiItem){2, (float)x, (float)y, (float)width, (float)height, 0, ""};
+        *u = (UiItem){.text = 2, .x = (float)x, .y = (float)y, .w = (float)width, .h = (float)height};
     }
 }
 PRIM(p_ui_text) {   /* ( layer addr len x y rgba scale -- ) */
@@ -2082,10 +2701,83 @@ PRIM(p_ui_text) {   /* ( layer addr len x y rgba scale -- ) */
     UiItem *u = ui_add(f, POP());
 
     if (u != NULL) {
-        *u = (UiItem){1, (float)x, (float)y, (float)(scale < 1 ? 1 : scale), 0.0f, (uint32_t)rgba, ""};
+        *u = (UiItem){.text = 1, .x = (float)x, .y = (float)y, .w = (float)(scale < 1 ? 1 : scale), .rgba = (uint32_t)rgba};
         snprintf(u->s, sizeof(u->s), "%.*s", (int)(n > 0 ? n : 0), n > 0 ? (const char *)a : "");
     }
 }
+PRIM(p_ui_image) {   /* ( layer x y w h group id csa u v uw vh rgba -- ) part of a cache texture */
+    Cell rgba = POP(), vh = POP(), uw = POP(), v = POP(), u = POP(), csa = POP(), id = POP(), group = POP();
+    Cell height = POP(), width = POP(), y = POP(), x = POP();
+    UiItem *it = ui_add(f, POP());
+
+    if (it != NULL) {
+        *it = (UiItem){3, (float)x, (float)y, (float)width, (float)height, (uint32_t)rgba, "", (int)group, (int)id,
+                       (int)csa, (float)u, (float)v, (float)uw, (float)vh};
+    }
+}
+PRIM(p_tex_info) {   /* ( group id -- w h tex ) a cache texture's size and GPU name (0: none) */
+    Cell id = POP(), group = POP();
+    int tw, th;
+    unsigned t = sprites_texture_of((int)group, (int)id, -1, &tw, &th);
+
+    PUSH(tw);
+    PUSH(th);
+    PUSH(t);
+}
+PRIM(p_tex_bank) {   /* ( addr len group -- flag ) a .TEX file into the texture cache's group (the menus) */
+    Cell group = POP(), n = POP(), a = POP();
+    char path[128];
+
+    snprintf(path, sizeof(path), "%.*s", (int)(n > 0 ? n : 0), n > 0 ? (const char *)a : "");
+    PUSH(sprites_group_file((int)group, path) ? -1 : 0);
+}
+/* ---- the game's own font (SUBSCR/MSG_BASE.TEX, the cache's group $14: 16 x 16 cells, 16 a row
+ * from ' ') - each glyph its own width and drop (D_0044AD00: high nibble the blank columns at its
+ * right, low nibble how far it sits down, of 16); not there: the built-in font ---- */
+static const uint8_t kGlyphShape[96] = {
+    0x70, 0x80, 0x80, 0x80, 0x80, 0x60, 0x70, 0xC0, 0xB0, 0xA0, 0x10, 0x40, 0x80, 0x60, 0x80, 0x80,
+    0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x80, 0x80, 0x90, 0x90, 0x70, 0x60,
+    0x80, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0xB0, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70,
+    0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x00, 0x90, 0x20, 0x80, 0x70,
+    0x00, 0x70, 0x80, 0x80, 0x80, 0x80, 0x80, 0x81, 0x80, 0xC0, 0xA0, 0x90, 0xC0, 0x70, 0x70, 0x70,
+    0x81, 0x81, 0x90, 0x80, 0x80, 0x80, 0x80, 0x70, 0x70, 0x71, 0x70, 0x20, 0x00, 0x00, 0x00, 0x00,
+};
+#define FONT_GROUP 0x14
+#define FONT_TEXTURE 0
+
+static int game_text(float x, float y, float scale, uint32_t rgba, const char *s) {
+    static int loaded;
+    int tw, th, i;
+    unsigned t;
+
+    if (!loaded) {   /* (as SceneBoot loads it: once) */
+        loaded = 1;
+        sprites_group_file(FONT_GROUP, "SUBSCR/MSG_BASE.TEX");
+    }
+    t = sprites_texture_of(FONT_GROUP, FONT_TEXTURE, 0, &tw, &th);
+    float cell = 8.0f * scale, tall = cell * 21.0f / 16.0f;   /* (a glyph 16 x 21, as the message window's: Task glyphW / glyphH) */
+
+    if (t == 0 || tw <= 0 || th <= 0) {
+        return 0;
+    }
+    for (i = 0; s[i] != 0; i++) {
+        int c = (unsigned char)s[i], g = c - 0x20;
+        float u, v, drop;
+
+        if (g < 0 || g >= 96) {
+            continue;
+        }
+        u = (float)((g & 0xF) * 16);
+        v = (float)((g >> 4) * 16);
+        drop = (float)(kGlyphShape[g] & 0xF) * cell / 16.0f;
+        if (c != ' ') {
+            render_image_uv(t, x, y + drop, cell, tall, u / tw, v / th, (u + 16.0f) / tw, (v + 16.0f) / th, rgba);
+        }
+        x += (float)(16 - (kGlyphShape[g] >> 4)) * cell / 16.0f + scale * 0.5f;
+    }
+    return 1;
+}
+
 static void ui_draw(void) {
     int l, i;
 
@@ -2093,10 +2785,20 @@ static void ui_draw(void) {
         for (i = 0; i < sUiN[l]; i++) {
             const UiItem *u = &sUi[l][i];
 
-            if (u->text == 2) {
+            if (u->text == 3) {
+                int tw, th;
+                unsigned t = sprites_texture_of(u->group, u->id, u->csa, &tw, &th);
+
+                if (t != 0 && tw > 0 && th > 0) {
+                    render_image_uv(t, u->x, u->y, u->w, u->h, u->u / tw, u->v / th, (u->u + u->uw) / tw,
+                                    (u->v + u->vh) / th, u->rgba);
+                }
+            } else if (u->text == 2) {
                 movie_draw_at(u->x, u->y, u->w, u->h);
             } else if (u->text) {
-                render_text(u->x, u->y, u->w, u->rgba, u->s, (int)strlen(u->s));
+                if (!gRender.game_font || !game_text(u->x, u->y, u->w, u->rgba, u->s)) {
+                    render_text(u->x, u->y, u->w, u->rgba, u->s, (int)strlen(u->s));
+                }
             } else {
                 render_rect(u->x, u->y, u->w, u->h, u->rgba);
             }
@@ -2153,19 +2855,19 @@ void bind_engine(Forth *f) {
         {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-sides", p_route_sides}, {"exit-way", p_exit_way}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"world-exits-rebuild", p_exits_rebuild}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
         {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"look-on?", p_look_on}, {"sprites", p_sprites_new}, {"sprites-free", p_sprites_free}, {"sprites-free-all", p_sprites_free_all}, {"sprites-texture", p_sprites_texture}, {"sprites-cells", p_sprites_cells}, {"sprites-flags", p_sprites_flags}, {"sprites-offset", p_sprites_offset}, {"sprites-corner", p_sprites_corner}, {"sprites-count", p_sprites_count}, {"sprite!", p_sprite_store}, {"sprites-uv", p_sprites_uv}, {"sprite-quad!", p_sprite_quad}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
-        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"ui-movie", p_ui_movie}, {"cast-as", p_cast_as}, {"cast-model", p_cast_model}, {"model-file", p_model_file}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
+        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-image", p_ui_image}, {"tex-bank", p_tex_bank}, {"tex-info", p_tex_info}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"ui-movie", p_ui_movie}, {"cast-as", p_cast_as}, {"cast-model", p_cast_model}, {"model-file", p_model_file}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
-        {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-follow", p_cam_follow}, {"cam-target!", p_cam_target}, {"cam-ease", p_cam_ease}, {"cam-event?", p_cam_event}, {"cam-track", p_cam_track},
-        {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed},
+        {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-follow", p_cam_follow}, {"cam-target!", p_cam_target}, {"cam-ease", p_cam_ease}, {"cam-event?", p_cam_event}, {"cam-event!", p_cam_event_set}, {"cam-track", p_cam_track},
+        {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed}, {"cam-set@", p_cam_set}, {"actor-load-textured", p_actor_load_textured}, {"motions-load", p_motions_load}, {"motions-use", p_motions_use}, {"cam-place", p_cam_place}, {"cam-retake", p_cam_retake}, {"frame-blend", p_frame_blend}, {"cam-nudge", p_cam_nudge}, {"flicker-new", p_flicker_new}, {"flame-new", p_flame_new}, {"swarm-new", p_swarm_new}, {"splash-new", p_splash_new}, {"burst-new", p_burst_new}, {"spray", p_spray}, {"thing-new", p_thing_new}, {"thing-free", p_thing_free}, {"things-clear", p_things_clear}, {"thing-used?", p_thing_used}, {"thing-info", p_thing_info}, {"thing-at", p_thing_at}, {"thing-speed", p_thing_speed}, {"thing-age!", p_thing_age_store}, {"thing-place", p_thing_place}, {"thing-kick", p_thing_kick}, {"thing-fade", p_thing_fade}, {"thing-events", p_thing_events}, {"thing-turn", p_thing_turn}, {"things-step", p_things_step}, {"thing-reaches?", p_thing_reaches}, {"puffs", p_puffs}, {"debris-cloud", p_debris_cloud}, {"gun-smoke", p_gun_smoke}, {"spark", p_spark}, {"particles-engines", p_particles_engines}, {"sink-ring", p_sink_ring}, {"welling", p_welling}, {"shards-new", p_shards_new}, {"butterflies-new", p_butterflies_new}, {"butterflies-to", p_butterflies_to}, {"wander-new", p_wander_new}, {"spirit-new", p_spirit_new}, {"spirit-at", p_spirit_at}, {"spirit-vanish", p_spirit_vanish}, {"vanish-new", p_vanish_new}, {"stones-new", p_stones_new}, {"reflect!", p_reflect_set}, {"reflect-off", p_reflect_off}, {"reflect-only", p_reflect_only}, {"debris-new", p_debris_new}, {"rising-smoke-new", p_rising_smoke_new}, {"dust-shaft-new", p_dust_shaft_new}, {"spiral-smoke-new", p_spiral_smoke_new}, {"drips-new", p_drips_new}, {"one-drip-new", p_one_drip_new}, {"rising-motes-new", p_rising_motes_new}, {"embers-new", p_embers_new}, {"flecks-new", p_flecks_new}, {"smoke-puffs-new", p_smoke_puffs_new}, {"wall-shadow-new", p_wall_shadow_new}, {"fire-new", p_fire_new}, {"steam-new", p_steam_new}, {"floor-glow-new", p_floor_glow_new}, {"tv-new", p_tv_new}, {"big-fire-new", p_big_fire_new}, {"light-shaft-new", p_light_shaft_new}, {"glint-new", p_glint_new}, {"marker-new", p_marker_new}, {"window-flash-new", p_window_flash_new}, {"smoke-trail-new", p_smoke_trail_new}, {"mag-burst-new", p_mag_burst_new}, {"mirror-square", p_mirror_square}, {"haze-new", p_haze_new}, {"caustic-new", p_caustic_new}, {"glow-new", p_glow_new}, {"wisp-column-new", p_wisp_column_new}, {"spark-spray-new", p_spark_spray_new}, {"heat-haze-new", p_heat_haze_new}, {"leaves-new", p_leaves_new}, {"loop-sprite-new", p_loop_sprite_new}, {"object-glow-new", p_object_glow_new}, {"rain-new", p_rain_new}, {"ash-new", p_ash_new}, {"pit-embers-new", p_pit_embers_new}, {"particles-place", p_particles_place}, {"particles-rest!", p_particles_rest}, {"swim-path", p_swim_path}, {"swim-step", p_swim_step}, {"body-advance", p_body_advance}, {"particles-command", p_particles_command}, {"particles-alive?", p_particles_alive}, {"particles-children", p_particles_children}, {"particles-free", p_particles_free}, {"particles-info", p_particles_info},
         {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-wall", p_v_wall}, {"nav-links", p_nav_links}, {"nav-next", p_nav_next}, {"nav-link-tri", p_nav_link_tri}, {"nav-link-yaw", p_nav_link_yaw}, {"nav-link-spot", p_nav_link_spot}, {"nav-link-at?", p_nav_link_at}, {"nav-link-side", p_nav_link_side}, {"nav-link-front", p_nav_link_front}, {"v-free", p_v_free},
-        {"v-path", p_v_path}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
+        {"v-path", p_v_path}, {"v-path-curved", p_v_path_curved}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
-        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {"placed-at", p_placed_at}, {"nav-square-step", p_nav_square_step}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
+        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-crosses?", p_nav_crosses}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {"placed-at", p_placed_at}, {"placed-f@", p_placed_f_fetch}, {"placed-f!", p_placed_f_store}, {"placed-l@", p_placed_l_fetch}, {"placed-l!", p_placed_l_store}, {"placed-here?", p_placed_here}, {"placed-shown?", p_placed_shown}, {"nav-square-step", p_nav_square_step}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
         {"door-anim", p_door_anim}, {"door-side", p_door_side}, {"door-near?", p_door_near}, {"door-in-area?", p_door_in_area},
-        {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"door-move", p_door_move}, {"game-tick", p_game_tick}, {"door-events", p_door_events}, {"door-here?", p_door_present}, {"door-turn", p_door_turn}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
+        {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"door-move", p_door_move}, {"game-tick", p_game_tick}, {"door-events", p_door_events}, {"door-here?", p_door_present}, {"door-turn", p_door_turn}, {"door-angle", p_door_angle}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
-        {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end}, {"soft-reset", p_soft_reset},
+        {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end}, {"cutscene-leave-alone", p_cutscene_leave_alone}, {"cutscene-keep-model", p_cutscene_keep_model}, {"soft-reset", p_soft_reset},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},
         {"cutscene-signals", p_cs_signals}, {"cutscene-active?", p_cs_active}, {"pause!", p_pause}, {"still!", p_still}, {"seq-bank", p_seq_bank}, {"seq-load", p_seq_load}, {"seq-play", p_seq_play},
         {"seq-playing?", p_seq_playing}, {"seq-volume", p_seq_volume}, {"seq-port-volume", p_seq_port_volume},
@@ -2175,25 +2877,25 @@ void bind_engine(Forth *f) {
         {"stage-ambient", p_stage_ambient}, {"room-clear", p_room_clear}, {"common-sound", p_common_sound},
         {"bank-sound", p_bank_sound}, {"bank-sound-at", p_bank_sound_at}, {"sound-set!", p_sound_set}, {"sound-at", p_sound_at},
         {"stop-sound", p_sound_stop}, {"sound-load", p_sound_load}, {"sound-reverb!", p_sound_reverb}, {"sound-loaded?", p_sound_loaded}, {"sound-scale!", p_sound_scale}, {"sound-stop-voices", p_sound_stop_voices}, {"sound-stop-all", p_sound_stop_all}, {"sound-fade", p_sound_fade},
-        {"sound-volume!", p_sound_volume}, {"sound-bank", p_sound_bank}, {".voices", p_dot_voices}, {"exit-door", p_exit_door}, {"door-flags", p_door_flags},
+        {"sound-volume!", p_sound_volume}, {"stage-music-volume!", p_stage_music_volume}, {"sound-bank", p_sound_bank}, {".voices", p_dot_voices}, {"exit-door", p_exit_door}, {"door-flags", p_door_flags},
         {"nav-block!", p_nav_block}, {"nav-group!", p_nav_group}, {"nav-tri-flags!", p_nav_tri_flags},
         {"nav-in-group?", p_nav_in_group}, {"nav-flags", p_nav_flags},
-        {"message-layout", p_message_layout}, {"message-lines", p_message_lines}, {"message-line", p_message_line},
+        {"message-layout", p_message_layout}, {"message-file", p_message_file}, {"message-lines", p_message_lines}, {"message-line", p_message_line},
         {"message-options", p_message_options}, {"message-option", p_message_option},
-        {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"exit-spot", p_exit_spot},
-        {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"actor-markers", p_actor_markers}, {"actor", p_actor},
+        {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
+        {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"cloth-force!", p_cloth_force}, {"cloth-crawl!", p_cloth_crawl}, {"actor-texture-swap", p_actor_texture_swap}, {"actor-texture-restore", p_actor_texture_restore}, {"actor-markers", p_actor_markers}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
-        {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
+        {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
-        {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
+        {"rumble", p_rumble}, {"rumble-buzz", p_rumble_buzz}, {"rumble-swell", p_rumble_swell}, {"rumble-sequence-clear", p_rumble_seq_clear}, {"rumble-step", p_rumble_seq_add}, {"rumble-now", p_rumble_now}, {"rumble-allowed!", p_rumble_allow}, {"game-volume!", p_game_volume}, {"pad-stick", p_pad_stick}, {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"mouse-down?", p_mouse_down},
         {"on-tick", p_on_tick}, {"off-tick", p_off_tick}, {"ticks", p_ticks}, {"dt", p_dt},
         {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},
         {"pen-scale", p_pen_scale}, {"draw-text", p_draw_text}, {"draw-rect", p_draw_rect},
         {"screen-size", p_screen_size}, {"char-size", p_char_size}, {"n>s", p_n_to_s}, {"h>s", p_h_to_s}, {"f>s$", p_f_to_s},
-        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"look@", p_look_get}, {"user-dir", p_user_dir}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
+        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"look@", p_look_get}, {"user-dir", p_user_dir}, {"testing?", p_testing}, {"actor-part-show", p_actor_part_show}, {"doorway-faded", p_doorway_faded}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
         {"end-file", p_end_file}, {"xt>name", p_xt_to_name},
-        {"clear-color", p_clear_color}, {"screenshot", p_screenshot}, {"console!", p_console},
+        {"clear-color", p_clear_color}, {"out-of-view?", p_out_of_view}, {"screenshot", p_screenshot}, {"console!", p_console},
         {"data-dir", p_data_dir},
     };
     size_t i;
@@ -2224,10 +2926,16 @@ void bind_engine(Forth *f) {
     field(f, "act.loop", offsetof(Actor, loop));        /* 32-bit: l@ l! */
     field(f, "act.mflags", offsetof(Actor, mflags));    /* 32-bit: the motion's flags (0x20 wrapped this tick) */
     field(f, "act.fade", offsetof(Actor, fade));        /* sf@: ticks of cross-fade left (0: settled) */
+    field(f, "act.alpha", offsetof(Actor, alpha));      /* sf@: drawn faded (1 as it is, 0 unseen) */
+    field(f, "act.tint", offsetof(Actor, tint));        /* 32-bit: drawn tinted, $RRGGBBAA ($80 = 1.0) */
     field(f, "act.vweight", offsetof(Actor, vweight));  /* sf@: the motion against its variant (1: alone) */
     field(f, "act.variant", offsetof(Actor, variant));  /* 32-bit: the variant's index, -1 none */
     field(f, "act.visible", offsetof(Actor, visible));  /* 32-bit: l@ l! */
     field(f, "act.shadow", offsetof(Actor, shadow_size));
+    field(f, "act.shadow-off", offsetof(Actor, shadow_off));   /* 32-bit: l@ l! */
+    field(f, "act.layer", offsetof(Actor, layer));      /* 32-bit: its draw layer (0: $A) */
+    field(f, "act.doorway-fade", offsetof(Actor, doorway_fade));   /* 32-bit: fades going through a doorway (on) */
+    field(f, "act.parts-shown", offsetof(Actor, parts_shown));   /* 8 x 32-bit: its parts shown (bit: part + 1) */
     /* the picture's settings (render.h RenderSettings): flags and counts are 32-bit (l@ l!),
      * the rest floats (sf@ sf!) */
     field(f, "gfx.msaa", offsetof(RenderSettings, msaa));
@@ -2286,5 +2994,6 @@ void bind_engine(Forth *f) {
     field(f, "gfx.shadow-strength", offsetof(RenderSettings, shadow_strength));
     field(f, "gfx.room-tint", offsetof(RenderSettings, room_tint));
     field(f, "gfx.room-bloom", offsetof(RenderSettings, room_bloom));
+    field(f, "gfx.game-font", offsetof(RenderSettings, game_font));
     f->m.current = saved;
 }

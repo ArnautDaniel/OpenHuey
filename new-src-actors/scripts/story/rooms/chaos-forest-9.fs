@@ -6,13 +6,13 @@ USING: room-names story.words story.shared ;
 
 \ room 0x107: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
 \ sideways 2 a frame (room_nudge).
-: chaos-forest-9.cmd00 ( b0 -- )  drop s" chaos-forest-9.cmd00" stub-step ;
+: chaos-forest-9.cmd00 ( b0 -- )  2e room-nudge ;
 \ room 0x107: starts the slowly turning backdrop model (Effect7A3D0: model 0x30 far off at
 \ (-225, -64, -1125)).
-: chaos-forest-9.cmd01 ( -- )  s" chaos-forest-9.cmd01" stub-step ;
+: chaos-forest-9.cmd01 ( -- )  $C $80808080  -225e -63.62e -1125e  1400e 0.5e 0.1e  effects:caustic drop ;   \ (light rippling far off: Effect7A3D0)
 \ room 0x107: a noise of loudness 0x20 or more was made in this room last frame (the progress'
 \ noise requests kept at +0x10D4).
-: chaos-forest-9.cond00? ( -- flag )  s" chaos-forest-9.cond00?" stub-flag ;
+: chaos-forest-9.cond00? ( -- flag )  loud-here? ;
 
 : chaos-forest-9.enter ( -- )   \ 00418AF0
     room-sounds

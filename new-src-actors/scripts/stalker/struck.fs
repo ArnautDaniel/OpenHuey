@@ -57,7 +57,7 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
     play-now  -1 reeling !  ['] flinching step! ;
 
 \ ---- knocked down (Pursuer_StateKnockedDown, StateHurt): forward ($1804) with floor ahead,
-\ else back ($1800); lying ($1806 / $1802) while he's down for good, a blow then a twitch (one
+\ else back ($1800); Hewie letting go of his leg, on his front ($1709); lying ($1806 / $1802) while he's down for good, a blow then a twitch (one
 \ before); up ($1807 / $1803) ----
 create ahead-at 12 allot
 : floor-ahead? ( -- flag )
@@ -74,12 +74,16 @@ create ahead-at 12 allot
         2 of  ended? if  lie-anim @ play-now  1 down-stage !  then  endof
         3 of  ended? if  0 cond !  stand-anim play-now  recovered  then  endof
     endcase ;
-: knock-down ( -- )
-    floor-ahead? if  $1804  else  $1800  then  dup play-now  2 + lie-anim !  0 down-stage !
+$1709 constant leg-fall      \ (Hewie let go of his leg: down on his front, as from $1804)
+$1806 constant lying-front
+: fall ( anim lie -- )
+    lie-anim !  play-now  0 down-stage !
     hp @ 0> 0= if
-        hard? if  1350  else  1800  then  down-t !  2 cond !  1 knockouts +!
+        hard-mode? if  1350  else  1800  then  down-t !  2 cond !  -1 beaten !  1 knockouts +!  down-for-good
     else  0 down-t !  then
     let-her-go  0 sees-fiona !  0 sees-hewie !  -1 reeling !  ['] downed step! ;
+: knock-down ( -- )  floor-ahead? if  $1804  else  $1800  then  dup 2 +  fall ;
+: leg-down ( -- )  leg-fall lying-front fall ;
 
 \ ---- a stumble by how worn he is (Fiona_ChaseRoll: his health over its most - over 0.8 none,
 \ 0.6 2 in 100, 0.4 5, else 10) ----
@@ -87,6 +91,13 @@ create ahead-at 12 allot
     hp @ s>f hp-max @ 1 max s>f f/
     fdup 0.8e f> if  fdrop 0  else  fdup 0.6e f> if  fdrop 2  else  0.4e f> if  5  else  10  then  then  then
     rnd 100e f* f>s swap < ;
+
+\ ---- Hewie's tackles (Pursuer_AddBiteDamage): his temper up by where it caught him - its table's
+\ first four: in front, in front low, behind, behind low ----
+create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir: bit 0 behind, bit 1 low)
+: tackled ( kind how dir -- kind how dir )
+    striker @ hewie <>  3 pick dup $A = swap $B = or  or if  exit  then
+    dup cells tackle-cells + @ cells temper-table + @  temper @ + 1000 min temper ! ;
 
 \ ---- Pursuer_Hit ----
 : struck ( kind damage how -- )
@@ -98,6 +109,7 @@ create ahead-at 12 allot
     striker @ dup 0< 0= if  dup body? if  body-at heading-to  else  drop yaw  then  else  drop yaw  then
     yaw f- angle-wrap fabs pi f2/ f< if  0  else  1  then
     2 pick dup 2 = swap 4 = or if  2 or  then                      ( kind how dir )
+    tackled
     unshaken @  3 pick 1 = and  hp @ 0> and if  drop 2drop  $1C 7 sound exit  then
     striker @ fiona = if  -1 by-her !  then
     2 pick 5 = if  drop nip  let-her-go combo-over 0 hold-off !  door-struck exit  then   \ (a door slammed on him: how is its exit)

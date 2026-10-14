@@ -5,15 +5,15 @@ IN: story.rooms.old-mansion-2f-6
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x59 (Room59_Cmd00_ptmf): character 0xFE's model +0x9E0 = 0.1 (byte 3 0) or 0
-: old-mansion-2f-6.cmd00 ( b0 -- )  drop s" old-mansion-2f-6.cmd00" stub-step ;
+: old-mansion-2f-6.cmd00 ( b0 -- )  drop ;   \ (the stalker's model's springs (+0x9E0): not simulated here yet)
 
 : old-mansion-2f-6.enter ( -- )   \ 00410070
     room-sounds
     $324 story-flag? if
-        8 1 object-show
+        8 1 object-hidden
     then
     $323 story-flag? if
-        9 1 object-show
+        9 1 object-hidden
     then
     0 0 $14 door-bits
     $88 story-flag? $89 story-flag? not and if
@@ -81,7 +81,7 @@ USING: room-names story.words story.shared flag-names ;
         0 7 char-in-area? 0 45 $32 char-heading? and if
             3 stalker-kind? $22 stalker-kind? or 4 stalker-kind? or 2 game-mode? and $FF panic-stage? not and $FE 2 char-C4? not and if
                 $FE char-here? if
-                    $8016 scene-ending
+                    $8016 examine-message
                 else
                     5 1 6 scene-change
                 then
@@ -94,7 +94,7 @@ USING: room-names story.words story.shared flag-names ;
         0 8 char-in-area? 0 -45 $32 char-heading? and if
             3 stalker-kind? $22 stalker-kind? or 4 stalker-kind? or 2 game-mode? and $FF panic-stage? not and $FE 2 char-C4? not and if
                 $FE char-here? if
-                    $8016 scene-ending
+                    $8016 examine-message
                 else
                     5 2 6 scene-change
                 then
@@ -285,7 +285,7 @@ USING: room-names story.words story.shared flag-names ;
         1 old-mansion-2f-6.cmd00
     then
     wait-fade
-    8 1 object-show
+    8 1 object-hidden
     0 self-move-16
     3 stalker-kind? $22 stalker-kind? or if
         0 $4A -7.575 18.619 90 char-to-xz
@@ -428,7 +428,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     wait-fade
     world-held state-flag-set
-    9 1 object-show
+    9 1 object-hidden
     0 self-move-16
     3 ebit? not if
         1 2 char-C4? if
@@ -786,7 +786,7 @@ USING: room-names story.words story.shared flag-names ;
         pause-wanted state-flag-set
         8 cutscene-control
     then
-    9 1 object-show
+    9 1 object-hidden
     2 0 char-remove
     $80 exit-check
     events-held state-flag-clear
@@ -864,7 +864,7 @@ USING: room-names story.words story.shared flag-names ;
         8 cutscene-control
     then
     1 old-mansion-2f-6.cmd00
-    8 1 object-show
+    8 1 object-hidden
     2 0 char-remove
     $80 exit-check
     events-held state-flag-clear
@@ -941,7 +941,7 @@ USING: room-names story.words story.shared flag-names ;
         pause-wanted state-flag-set
         8 cutscene-control
     then
-    9 1 object-show
+    9 1 object-hidden
     2 0 char-remove
     $80 exit-check
     events-held state-flag-clear
@@ -1018,7 +1018,7 @@ USING: room-names story.words story.shared flag-names ;
         pause-wanted state-flag-set
         8 cutscene-control
     then
-    8 1 object-show
+    8 1 object-hidden
     2 0 char-remove
     $80 exit-check
     events-held state-flag-clear

@@ -5,9 +5,9 @@ IN: story.rooms.castle-2f-1
 USING: room-names story.words story.shared flag-names ;
 
 \ the dial pstr_syuukouki on progress var 3
-: castle-2f-1.cmd00 ( b0 -- )  drop s" castle-2f-1.cmd00" stub-step ;
+: castle-2f-1.cmd00 ( b0 -- )  s" syuukouki" 3 0 0 dial-step ;   \ (the dial on progress variable 3, from 0 degrees)
 \ room 0x0A (Room0A_Cmd01_ptmf): an effect on its object at -2.88
-: castle-2f-1.cmd01 ( -- )  s" castle-2f-1.cmd01" stub-step ;
+: castle-2f-1.cmd01 ( -- )  s" syuukouki" -2.88e lens-flash ;   \ (the dial's lens catching the light)
 
 : castle-2f-1.enter ( -- )   \ 003F3C90
     $26 story-flag? not if

@@ -6,7 +6,7 @@ USING: room-names story.words story.shared flag-names ;
 
 \ (as Room2D_Cmd02) three hanging things (+0x34 0..2), pushed by the square of Fiona's step past
 \ 1, event flag 4 with sounds 4 / 5
-: house-of-truth-1f-10.cmd00 ( b0 -- )  drop s" house-of-truth-1f-10.cmd00" stub-step ;
+: house-of-truth-1f-10.cmd00 ( b0 -- )  0 3 0 4 4 5  1e hangers-swing ;   \ (her step's square past 1; event flag 4)
 
 : house-of-truth-1f-10.enter ( -- )   \ 00443870
     room-sounds
@@ -182,7 +182,7 @@ USING: room-names story.words story.shared flag-names ;
         $FE char-here? not if
             5 2 5 scene-change
         else
-            $8016 scene-ending
+            $8016 examine-message
         then
     then
     0 3 char-in-area? 0 90 $32 char-heading? and if

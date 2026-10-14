@@ -5,7 +5,7 @@ IN: story.rooms.off-map-37
 USING: room-names story.words story.shared flag-names ;
 
 \ Room37_Cmd00
-: off-map-37.cmd00 ( -- )  s" off-map-37.cmd00" stub-step ;
+: off-map-37.cmd00 ( -- )  fan-turn ;
 
 defer off-map-37.act00
 : off-map-37.enter ( -- )   \ 00445BC0

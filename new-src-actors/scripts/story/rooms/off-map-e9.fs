@@ -14,8 +14,8 @@ USING: room-names story.words story.shared flag-names ;
 \ room 0xE9: draws the countdown clock, frozen at the saved time while event flag 1 is set
 \ (clock_draw_saved; a frame hook).
 : off-map-e9.cmd03 ( -- )  s" off-map-e9.cmd03" stub-step ;
-\ the progress object's +0x7C with the caller's arguments
-: off-map-e9.cond00? ( -- flag )  s" off-map-e9.cond00?" stub-flag ;
+\ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
+: off-map-e9.cond00? ( -- flag )  true ;
 
 : off-map-e9.enter ( -- )   \ 0044A2C0
     $2E 1 pvar? if

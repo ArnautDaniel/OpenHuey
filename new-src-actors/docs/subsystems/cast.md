@@ -35,7 +35,26 @@ Engine words: `cast-model ( id -- model )` (the model cast as a script id), `mod
 
 8 O_GLM, 9 O_LRM, 13 O_FIN (FIN_200), 14 / 15 O_CRW (the crows), 16 O_WHC, 17 O_SGM, 18 O_FIW
 (FIW_200), 19 O_FS0, 20 O_FS1, 21 / 22 O_FS2, 24 O_SHT, 25 O_WIR, 26 O_RBT, 28 O_HMA, 29 O_DNT,
-30 O_LRC, 31 O_LRH, 32 O_FIM (FIM_200), 33 O_HMB, 38 O_HND (their ModelFiles' first file).
+30 O_LRC, 31 O_LRH, 32 O_FIM (FIM_200), 33 O_HMB, 38 O_HND (their ModelFiles' first file). Kind 9 (Lorenzo's hanging figure) takes LRM_000H's
+textures on the hard setting (Kind09_ModelFiles).
+
+## The kinds' own ways
+
+hg's classes for these kinds are thin: each is put back on the floor as its room comes into play,
+takes the story's moves (action 5, its kind's step table) and lets its slot's joint command go.
+Kind 9 stands in its idle when it shows up. What sets them apart is their models:
+
+- **Motion tables** (their fades; the model classes' SecondaryMotion): Fiona's doubles (13, 18)
+  use hers ($3D5CC0), the crows (14, 15) $429C10, kind 9 $424250, kind 33 $42C730; the plain
+  model's kinds have none.
+- **The crows' parts** (Kind14Model_Draw): in $9000 / $9001 part 5 shown, 3 and 4 hidden; in
+  anything else the other way round. (The draw-form flags set with them are not kept.)
+- **The rabbits** (kind 26, Kind26_Behaviour): the story's `animal-go` - grazing, alert, running
+  off (`tests/cast/test_animal.fs`).
+
+No sounds of their own: only the stalkers' classes play their animations' sounds
+(Pursuer_AnimSounds). Their shadows are the engine's, as everyone's (`char-no-shadow` turns one
+off). The hand-over (0xBA) waits in hg while the other's files load; hga loads them at once.
 
 ## Moves
 
@@ -47,7 +66,6 @@ heading; 1 standing; the looks and the doors' uses: done. `hold-anim`: in it, do
 
 ## Status
 
-**Built** (`scripts/cast.fs`). Checked by `tests/cast/test_cast.fs` (10). *Not yet*: the
-classes' own behaviours (some of these kinds are Pursuers with tables of their own: the figures
-here only do what the story says), their motion tables (their fades), the hand-over's wait while
-the other loads, their shadows and sounds.
+**Built** (`scripts/cast.fs`). Checked by `tests/cast/test_cast.fs` (14) and
+`tests/cast/test_animal.fs` (4). *Not kept*: the models' own cloth (kind 9's strands, Fiona's
+doubles' springs, kind 18's per-part draw settings) and kind 33's raised body frames.

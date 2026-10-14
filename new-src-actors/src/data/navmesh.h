@@ -63,6 +63,12 @@ Vec3 navmesh_move(const NavMesh *n, Vec3 p, float dx, float dz, float climb, flo
  * number, 0 if there is no way. (The original's planner, src/game/navmesh.c PathPlan_*, runs
  * several searches and curves its paths; this keeps to the shortest.) */
 int navmesh_path(const NavMesh *n, int from, Vec3 a, int to, Vec3 b, Vec3 *out, int max);
+/* the way through `pts` (npts turning points, from a on triangle `from`) rounded off as the
+ * original's curved paths are (PathPlan_Curve, Character_WaypointsCurve): each stretch a cubic
+ * Hermite piece of 8 steps, its tangents the chords about its ends (no longer than the stretch),
+ * halved until every step walks straight over the mesh (else, after 10 tries, the stretch
+ * straight). Into out: the count (the points as they were if the curve wouldn't fit in max) */
+int navmesh_curve(const NavMesh *n, int from, Vec3 a, const Vec3 *pts, int npts, Vec3 *out, int max);
 /* walking straight from a (on triangle `from`) toward b over the mesh, kept off the `block`
  * flags (the start excepted): the triangle b is on, or -1 if a wall comes first (the original's
  * Actor_TriTo / NavMesh_Walk). *reach (if given): how far along it got */
@@ -70,6 +76,18 @@ int navmesh_path(const NavMesh *n, int from, Vec3 a, int to, Vec3 b, Vec3 *out, 
  * blocked triangle): its direction as a heading; 0 if b is reached first */
 int navmesh_wall(const NavMesh *n, int from, Vec3 a, Vec3 b, float *yaw);
 int navmesh_walk(const NavMesh *n, int from, Vec3 a, Vec3 b, float *reach);
+/* from a (on `from`) straight toward b: whether a triangle on the way (from's too, up to b's or
+ * a wall) has all of `mask`'s flags (Fiona_Voice: her mouth behind the water's surface) */
+int navmesh_crosses(const NavMesh *n, int from, Vec3 a, Vec3 b, uint32_t mask);
+/* triangle t's surface height at (x, z) (its plane), and its up-facing normal */
+float navmesh_height(const NavMesh *n, int t, float x, float z);
+Vec3 navmesh_normal(const NavMesh *n, int t);
+/* a thing's straight flight from a (on `from`) to b (NavMesh_Step): *what NAV_REACHED - b's
+ * triangle (b may be under its floor: landing is the caller's); NAV_WALL - the edge it met (none
+ * beyond, one of `mask`'s, or a floor too high to pass over): this triangle, *out by the edge,
+ * *normal its level inward normal; NAV_HOLE - onto a hole (flags 0x10000000): that one, *out */
+enum { NAV_REACHED, NAV_WALL, NAV_HOLE };
+int navmesh_fly(const NavMesh *n, int from, Vec3 a, Vec3 b, uint32_t mask, Vec3 *out, Vec3 *normal, int *what);
 /* a square of the pushable floor (triangles a, b) one square along (dx, dz): from its middle 5
  * along over the mesh until two new triangles are crossed (Obstacle_StepSquare); 0, or -1 (a, b
  * unchanged) at an edge of the mesh */

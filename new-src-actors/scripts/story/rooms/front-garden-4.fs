@@ -6,7 +6,8 @@ USING: room-names story.words story.shared flag-names ;
 
 \ character kind 0x1A: byte 3 0 starts Kind26_MoveToB(2, -290, 42); else waits (2) until
 \ Kind26_MoveDoneB says done
-: front-garden-4.cmd00 ( b0 -- )  drop s" front-garden-4.cmd00" stub-step ;
+: front-garden-4.cmd00 ( b0 -- )
+    if  $1A char-wait-done  else  $1A 2 -290e 42e char-animal-go  then ;
 
 : front-garden-4.enter ( -- )   \ 00405640
     room-sounds

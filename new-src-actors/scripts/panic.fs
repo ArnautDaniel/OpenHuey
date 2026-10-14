@@ -2,7 +2,7 @@
 \ a lasting and a passing part, its stage, Fiona's breath and scream. Frights and fear come in
 \ as messages; each frame's end it updates and tells everyone its stage and level.
 IN: panic
-USING: engine actors messages facts flag-names ;
+USING: engine actors messages facts flag-names items items.names ;
 
 state: panic-state
   cell field stage           \ 0 calm, 1..3 at 60 / 75 / 90, 4 panicking, 5 calming down
@@ -44,17 +44,25 @@ create stage-levels  0 , 60 , 75 , 90 , 100 , 100 ,
     fdup 10e f< if  fear-d f@ f+ fear-d f!  exit  then
     0.5e f*  30 hold !  fdup fear-d f@ f+ fear-d f!  fright-a f@ f+ fright-a f! ;
 
-\ ---- her breath (Panic_Breath: 0x29, softer at the lower stages) ----
+\ ---- her breath (Panic_Breath: 0x29, softer at the lower stages) and the pad's beat with it: a
+\ swell over 3 frames, harder by the stage; at stage 4 then full a moment, at 5 the small motor
+\ with the swell ----
 create breath-vol  -56 , -40 , -16 , 0 , 0 ,
+create rumble-strength  96 , 144 , 192 , 224 , 224 ,
+: breath-rumble ( stage -- )
+    rumble-sequence-clear
+    dup 5 =  0  rot 1- cells rumble-strength + @  3 rumble-step
+    stage @ 4 = if  0 255 255 3 rumble-step  then ;
 : breath ( -- )   \ (not while the screen's effect is off: with effects)
     stage @ dup 1 6 within 0= if  drop exit  then
+    dup breath-rumble
     1- cells breath-vol + @  $29 swap her-sound ;
 
 \ ---- Panic_Stage ----
 : by-level ( -- )
     level f@ 100e f< 0= if   \ she panics (on her feet: her scream)
         100e level f!  100e lasting f!  0e passing f!
-        her-mode @ dup 0= swap 3 = or if  $42 $40 her-sound  4 stage !  -30 length !  0 beat !  then
+        her-mode @ dup 0= swap 3 = or if  $42 $40 her-sound  4 stage !  -30 length !  0 beat !  panicked  then
         exit
     then
     level f@ 90e f< 0= if  3  else level f@ 75e f< 0= if  2  else level f@ 60e f< 0= if  1  else  0  then then then
@@ -92,6 +100,14 @@ create breath-vol  -56 , -40 , -16 , 0 , 0 ,
 fvariable u-a  fvariable u-b  fvariable u-c  fvariable u-d
 : weigh ( F: ka kd kb -- )   \ this frame's frights, fear and calming from time, weighed
     calm-b2 f@ f* u-b f@ f+ u-b f!  fear-d2 f@ f* u-d f@ f+ u-d f!  fright-a2 f@ f* u-a f@ f+ u-a f! ;
+\ the fear's scale: Torva's doubling while it lasts (the progress' +0x9E8); the calming by her
+\ earrings (Panic_Update: the Inquisitor's and the Philosopher's 1.25, the Alchemist's 2)
+: fear-scale ( F: -- k )  fear-boost boost-on? if  fear-boost boost-value  else  scale f@  then ;
+: earrings ( F: -- k )
+    1 equipped case
+        inquisitor-earrings of  1.25e  endof   philosopher-earrings of  1.25e  endof
+        alchemist-earrings of  2e  endof   >r 1e r>
+    endcase ;
 : update ( -- )
     staging
     hold @ if  -1 hold +!  then
@@ -104,7 +120,7 @@ fvariable u-a  fvariable u-b  fvariable u-c  fvariable u-d
             2 of  0.8e 0.8e 1.6e weigh  endof
             3 of  0.9e 0.9e 1.5e weigh  endof
         endcase
-        u-d f@ scale f@ f* u-d f!  u-a f@ scale f@ f* u-a f!
+        u-d f@ fear-scale f* u-d f!  u-a f@ fear-scale f* u-a f!  u-b f@ earrings f* u-b f!
         passing f@ u-c f@ f- 0e fmax passing f!
         lasting f@ u-b f@ f- 0e fmax u-d f@ f+ lasting f!
         u-a f@ f0> 0= if
@@ -139,6 +155,11 @@ behaviour panicking
       cell>f fdup f0< if  fdrop 30 hold !  fear-d f@ 50e f+ fear-d f!  fright-a f@ 50e f+ fright-a f!  exit  then
       0.0333333e f* fear-d2 f@ f+ fear-d2 f! ;
   on panic-stage! ( stage -- )  set-stage ;
+  \ the items' remedies (b5_add_7E0, the progress' +0x7D8): calming at once - past the lasting
+  \ part it eases the recovering too - and fear
+  on soothe ( calm fear -- )
+      s>f fear-d f@ f+ fear-d f!
+      s>f fdup calm-b f@ f+ calm-b f!  lasting f@ f-  fdup f0< if  fdrop  else  recovering f@ f+ recovering f!  then ;
   on panic-level! ( level -- )  set-level ;
   on frame-end ( -- )  update  stage @ level f@ f>cell broadcast panic ;
 end-behaviour

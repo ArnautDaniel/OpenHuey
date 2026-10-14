@@ -5,10 +5,17 @@ IN: story.rooms.castle-1f-11
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x03 (Room03_Cmd00_ptmf): three objects turned (-60, -60 degrees about x; -90 about z)
-: castle-1f-11.cmd00 ( -- )  s" castle-1f-11.cmd00" stub-step ;
+: castle-1f-11.cmd00 ( -- )   \ (the drawbridge's two halves -60 degrees about x, the lever -90 about z)
+    -60e deg>rad s" hanebasi1" turn-x object!  -60e deg>rad s" hanebasi2" turn-x object!
+    -90e deg>rad s" kanagu" turn-z object! ;
 \ a lever (pstr_kanagu, tilt +0x18 between -10 and 0 degrees): byte 3 0 back 2 degrees, 1 pulled
 \ (-10) with a puff of grey dust at it
-: castle-1f-11.cmd01 ( b0 -- )  drop s" castle-1f-11.cmd01" stub-step ;
+: castle-1f-11.cmd01 ( b0 -- )   \ (the lever's tilt, -10..0 degrees: 0 back 2; 1 pulled to -10 with a grey puff)
+    s" kanagu" object-here? 0= if  drop exit  then
+    s" kanagu" turn-z object@ rad>deg                                  ( b0 ) ( F: deg )
+    dup 0= if  2e f+  then  dup 1 = if  fdrop -10e  then
+    0e fmin -10e fmax deg>rad s" kanagu" turn-z object!
+    1 = if  0 $80 $80 $80 1  s" kanagu" place-x object@ s" kanagu" place-y object@ s" kanagu" place-z object@  dust  then ;
 
 : castle-1f-11.enter ( -- )   \ 003F0450
     room-sounds

@@ -44,9 +44,12 @@ state: hewie-state
   cell field his-pet-time
   cell field his-praise-a  cell field his-praise-b
   cell field his-did  cell field his-did-was  cell field his-did-2   \ what he did, for praise
-  cell field his-follows
-  3 cells field his-skill       \ his skills after fetching (out of 32), the rolls and how they came out
-  8 cells field his-rolls   3 cells field his-rolled   cell field his-roll-n
+  cell field his-follows        \ the thing he fetches (its index; -1 none)
+  \ his skills at fetching (out of 32: 0 going after it, 1 following it with his eyes, 2 eager,
+  \ 3 picking it up, 4 bringing word of it, 5 coming back when it's lost), the rolls made and
+  \ how they came out (Hewie_RollReaction)
+  6 cells field his-skill
+  8 cells field his-rolls   6 cells field his-rolled   cell field his-roll-n
   \ what he notices
   cell field his-alert  cell field his-alert-was  cell field his-alert-what
   cell field his-held           \ Fiona was held
@@ -66,6 +69,10 @@ state: hewie-state
   cell field his-t1  cell field his-t2  cell field his-t3
   1 floats field his-heading  1 floats field his-turn  1 floats field his-f36cc
   12 field his-spot
+  cell field his-hushed         \ his own sounds don't play (the scripts' 0x3D)
+  cell field his-creature-t     \ a creature about in his room lately (frames left)
+  cell field his-exit           \ the exit he makes for (hewie/exits.fs)
+  12 field his-cut  cell field his-cut-tri   \ the spot on the stalker's way he makes for first
   cell field his-wanted         \ how many times, or a wait
   \ where he looks (Hewie_TurnHead)
   cell field his-look-now  cell field his-look-t
@@ -116,6 +123,11 @@ state: hewie-state
   \ since he last told (the original reads them off his character)
   cell field st-id  cell field st-room  cell field st-mode  cell field st-sub  cell field st-cond
   cell field st-hp  cell field st-hp-max  cell field st-kind  cell field st-age
+  cell field st-alert            \ the stalker's alert: his mode (+0x16C8; 1..3 hunting)
+  \ the creatures, as each tells (creature-doing): its actor, move mode (8 holding her down, 4
+  \ struck or going), up (after her), frames since (by slot: spirits 0..6, homunculi 7..9)
+  10 cells field cr-ids  10 cells field cr-modes  10 cells field cr-ups  10 cells field cr-ages
+  cell field his-scuffled  cell field his-scuffle-t   \ scuffled with him this meeting (+0xF368A); frames till another (+0xF35B0)
   \ at the stalker (hewie/fight.fs): the grip (+0x104: 0 head on, 1 / 2 a flank, -1 none yet),
   \ biting (+0xF36B4: 0 / 1 biting, 2 let go, 3 thrown), bites left (+0xF36B8), the chance to
   \ hold on (+0xF36BC), his feelings about each stalker (+0xF367C: Debilitas, Daniella, Lorenzo,

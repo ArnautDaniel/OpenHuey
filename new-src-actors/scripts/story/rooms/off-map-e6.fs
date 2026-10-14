@@ -9,13 +9,13 @@ USING: room-names story.words story.shared ;
 \ room 0xE6: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
 : off-map-e6.cmd01 ( -- )  s" off-map-e6.cmd01" stub-step ;
-\ the progress object's +0x7C with the caller's arguments
-: off-map-e6.cond00? ( -- flag )  s" off-map-e6.cond00?" stub-flag ;
+\ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
+: off-map-e6.cond00? ( -- flag )  true ;
 
 : off-map-e6.enter ( -- )   \ 004498F0
     1 0 $20000 nav-group
     off-map-e6.cmd00
-    1 1 object-show
+    1 1 object-hidden
     0 1 $14 door-bits
     1 0 $14 door-bits
 ;

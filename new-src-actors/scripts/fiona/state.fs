@@ -42,7 +42,7 @@ state: fiona-state
   cell field her-cond              \ her condition: 0 well, 1 hurt, 2 down (F4)
   \ her feelings (F2: fear and panic - zero until then)
   1 floats field her-fear       \ 0..99
-  cell field her-recovery       \ frames since a fright
+  cell field her-recovery       \ frames still to calm after a fright (1800 at one; under 360 she may flee)
   cell field her-fear-bits      \ 1 out of breath, 2 panicking
   1 floats field her-tired-w
   cell field her-panic-t      \ frames her panic run (or being out of breath) lasts
@@ -60,6 +60,7 @@ state: fiona-state
   1 floats field her-led-step  1 floats field her-led-turn
   cell field her-drags  cell field her-shakes  cell field her-free
   1 floats field her-shake-a  cell field her-shake-rest
+  cell field her-shake-count  \ (the story's count of her shakes - old-mansion-b1-3: -1 not counting)
   cell field her-cried  cell field her-ended
   \ defending (F4: fiona/defend.fs): whom her blow struck so far (1 the stalker, 2 Hewie), held
   \ still a moment by it (+0x14D0)
@@ -76,6 +77,13 @@ state: fiona-state
   1 floats field her-wk-step   1 floats field her-wk-turn   1 floats field her-wk-speed
   \ at a door
   cell field her-door-exit      \ the exit (-1 none)
+  cell field her-door-hit       \ the door (exit) that threw her last (her request 5)
+  1 floats field her-letgo-yaw  \ letting go of a thing: the way she turns to (FI 0x1AD6D0), aimed at him, gone from her hand
+  cell field her-aimed  cell field her-let-gone
+  cell field her-st-cond        \ the stalker's condition and mode, as he last told (stalker-doing): 2 down
+  cell field her-st-mode
+  cell field her-noclip         \ the story's 0x20: through blocked floor (+0x2B)
+  cell field her-aside          \ the story's 0x21: left alone - nobody attacks her (+0x2D)
   cell field her-ladder         \ the ladder she uses (+0x100: the room's nav link; -1 none)
   cell field her-push           \ +0x1AD560: the obstacle she pushes (-1 none)
   12 field her-push-dir         \ +0x1AD570: the push (x 0 z)
@@ -106,4 +114,11 @@ state: fiona-state
   \ as eased (the motion's +0x854 pitch, +0x858 turn)
   cell field her-look-on  cell field her-look-who  12 field her-look-pt  cell field her-look-hold
   cell field her-look-after  1 floats field her-head-pitch  1 floats field her-head-yaw          \ (the stand-in exit check: she has been out of every exit's area since arriving)
+  \ out of sight: item $89 worn (the equipment's slot 1), standing still 60 frames (Fiona_Frame's area fade)
+  cell field her-unseen  cell field her-still-t
+  cell field her-fade           \ 0..$80: how much of her shows (fading out while unseen, back in after)
+  cell field her-hold  cell field her-hold-k   \ held by homunculi: the hold's frames, the shakes that may still count
+  cell field her-carried-t      \ frames since a homunculus in her room said it was holding (move 8)
+  10 cells field her-creatures    \ each creature slot's actor, as it last told her (creature-doing; -1 none)
+  cell field her-blow-n        \ her blows, numbered (a creature takes each once: Fiona_BlowCreatures' skip)
 end-state

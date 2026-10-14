@@ -5,15 +5,15 @@ IN: story.rooms.old-mansion-2f-13
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x6A (D_00438CE0): a lit quad at x 120, z 47 .. 39, from 4 to 21
-: old-mansion-2f-13.cmd00 ( b0 -- )  drop s" old-mansion-2f-13.cmd00" stub-step ;
+: old-mansion-2f-13.cmd00 ( b0 -- )  $1B $80  120.0e 21.0e 47.0e  120.0e 21.0e 39.0e  120.0e 4.0e 47.0e  120.0e 4.0e 39.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
 \ room 0x6A (D_00438CF0): its object's animation (+0x74 forward, +0x78 back) at a point +0x7C
 \ (0..1) by byte 3 - 0 / 1 from event variable 0 (12..30 over 18, 12..28 over 16), 2 / 3 at the
 \ start / end
-: old-mansion-2f-13.cmd01 ( b0 -- )  drop s" old-mansion-2f-13.cmd01" stub-step ;
+: old-mansion-2f-13.cmd01 ( b0 -- )  s" Curtain" var0-anim ;
 
 : old-mansion-2f-13.enter ( -- )   \ 00438730
     room-sounds
-    2 0 object-show
+    2 0 object-hidden
     $32D story-flag? not if
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -229,7 +229,7 @@ USING: room-names story.words story.shared flag-names ;
 : old-mansion-2f-13.phase2 ( -- )   \ 004389F0
     0 exit-door-open? not 0 ebit? and if
         0 0 char-group-bit4? if
-            0 scene-ending
+            0 examine-message
         then
     then
     2 ebit? not if
@@ -238,7 +238,7 @@ USING: room-names story.words story.shared flag-names ;
                 $FE char-here? not if
                     5 1 5 scene-change
                 else $FE $E char-in-area? $FE 0 40 chars-within? or if
-                    $8016 scene-ending
+                    $8016 examine-message
                 else
                     5 1 5 scene-change
                 then then

@@ -2,50 +2,130 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-9
-USING: room-names story.words story.shared flag-names ;
+USING: engine common actors messages story.state room-names story.words story.shared flag-names ;
 
+\ ---- the debris falling from above ("keri0".."keri5", each carried by a kind-9 thing: free
+\ while hidden) and the traps set round the middle (kind 10) - the things actor's ----
+: keri$ ( k -- addr len )
+    case  0 of  s" keri0"  endof  1 of  s" keri1"  endof  2 of  s" keri2"  endof
+          3 of  s" keri3"  endof  4 of  s" keri4"  endof  >r s" keri5" r>  endcase ;
+: free-keri ( -- k | -1 )  6 0 do  i keri$ placed-shown? 0= if  i unloop exit  then  loop  -1 ;
+fvariable dx  fvariable dz  fvariable dy
+: drop-spot ( -- tri ) ( F: -- x y z )   \ (40..50 up, 25..40 out in any direction, over the floor)
+    begin
+        pi 2e pi f* rnd f* f-  ( F: ang )  40e 10e rnd f* f+ dy f!
+        25e 15e rnd f* f+  fover fsin fover f* dx f!  fswap fcos f* dz f!
+        dx f@ 0e dz f@ nav-tri  dup 0< while  drop
+    repeat  dx f@ dy f@ dz f@ ;
+: things-id ( -- id )  s" things" actor-named ;
 \ room objects 4 / 5 spinning (+0x10) at a speed (+0x30) eased by script variable 4 / 5: byte 3
 \ 0 sets them up (speed and base 4 degrees, top 20); else each frame (unless the progress' +0x54
 \ says no): state 0 slows by 5% of the base to 0, 1 speeds by 2% up to the base, 2 by 10% up to
 \ the top, 3 jumps to the base
-: house-of-truth-1f-9.cmd00 ( b0 -- )  drop s" house-of-truth-1f-9.cmd00" stub-step ;
+: house-of-truth-1f-9.cmd00 ( b0 -- )   \ (the fans "fan0" / "fan1" turning (+0x10) at their speed (+0x30), by variables
+    \ 4 / 5: 0 slowing by 5% of the base (+0x34) to a stop, 1 speeding up by 2% to the base, 2 by
+    \ 10% to the top (+0x38), 3 at the base. b0 0 sets them up: speed and base 4 degrees, top 20)
+    {: b0 | a n :}
+    2 0 do
+        i if  s" fan1"  else  s" fan0"  then  to n to a
+        a n object-here? if
+            b0 0= if
+                4e deg>rad fdup a n $30 object!  a n $34 object!  20e deg>rad a n $38 object!
+            else
+                a n $30 object@  a n $34 object@                       ( F: speed base )
+                4 i + var @ case
+                    0 of  0.05e f* f-  0e fmax  endof
+                    1 of  0.02e f* f+  a n $34 object@ fmin  endof
+                    2 of  0.1e f* f+  a n $38 object@ fmin  endof
+                    3 of  fswap fdrop  endof
+                    >r fdrop r>
+                endcase
+                fdup a n $30 object!
+                a n turn-x object@ f+  fdup pi f> if  2e pi f* f-  then  a n turn-x object!
+            then
+        then
+    loop ;
 \ room 0x92: three grey smoke effects (Effect79B00, size 50) at the room's spots 2, 7, 5
 \ (grey_three).
-: house-of-truth-1f-9.cmd01 ( -- )  s" house-of-truth-1f-9.cmd01" stub-step ;
+: house-of-truth-1f-9.cmd01 ( -- )   \ (the ceiling coming down: stones of three kinds falling from 50)
+    2 50e 0e 0e 0.5e stones-falling  7 50e 0e 0e 0.5e stones-falling  5 50e 0.5e 0e 0.5e stones-falling ;
 \ up to 6 things out (script variable 6 counts them): 1..3 more placed things of kind 9 (+0x8),
 \ each tied to the first room object 10..15 flagged (+0 = 1) (+0x122 its index), set up (+0xC,
 \ +0x28 on) and dropped at a random spot 40..50 out and 25..40 up in any direction that lands on
 \ the nav mesh (+0x3C)
-: house-of-truth-1f-9.cmd02 ( -- )  s" house-of-truth-1f-9.cmd02" stub-step ;
+: house-of-truth-1f-9.cmd02 ( -- )   \ (more debris falling: 1..3 more, 6 out at most - variable 6 counts them - each
+    \ carrying the first "keri" free)
+    6 var @ 6 >= if  exit  then
+    3 random 1+  6 6 var @ - min  0 ?do
+        free-keri dup 0< if  drop leave  then
+        6 var-inc
+        drop-spot  f>cell >r f>cell >r f>cell r> r>  things-id send keri-drop
+    loop ;
 \ the placed thing 10 brought back (list +0x14 / +0x8, its +0xC, +0x28 on) and put on one of
 \ five spots round a circle (script variable 1, then on by 2 of 5): turned to the spot's angle
 \ (with a little random), 2.1 up and 1.5..2 out on triangle 0x3B; then effect SmokeTrail_vtable
 \ on it
-: house-of-truth-1f-9.cmd03 ( -- )  s" house-of-truth-1f-9.cmd03" stub-step ;
+: house-of-truth-1f-9.cmd03 ( -- )   \ (a trap set down on one of five spots round the middle - variable 1, then on by
+    \ 2 of 5: 72 degrees a spot, with a little random - 1.5..2 out, 2.1 up, on triangle $3B, smoke
+    \ rising from it)
+    1.0053e rnd f*  1.2566e 1 var @ s>f f* f+  0.5027e f-  angle-wrap  ( F: a )
+    1.5e 0.5e rnd f* f+  fover fsin fover f* dx f!  fswap fcos f* dz f!
+    $3B  dx f@ f>cell  2.1e f>cell  dz f@ f>cell  things-id send trap-place
+    1  1 var @ 2 + 5 mod  var-set ;
 \ (as Room49_Cmd02) byte 3 0: the effect WispColumn_vtable spawned (told 1), its slot in event
 \ var 0; 1: it is told 0
-: house-of-truth-1f-9.cmd04 ( b0 -- )  drop s" house-of-truth-1f-9.cmd04" stub-step ;
+: house-of-truth-1f-9.cmd04 ( b0 -- )   \ (the column of wisps: b0 0 made - kept in variable 0; 1 fading out)
+    0= if  0 effects:wisp-column var-set  else  0 var @ dup alive? if  0 swap send effect-command  else  drop  then  then ;
 \ the things that fell below -30: placed things of kind 9 are reset (+0x28) and each counts down
 \ script variable 6 (and the event manager's +0x5C); room objects 10..15 that did get +0 set
-: house-of-truth-1f-9.cmd05 ( -- )  s" house-of-truth-1f-9.cmd05" stub-step ;
+: house-of-truth-1f-9.cmd05 ( -- )   \ (the debris fallen through since: each counts variable 6 down, event bit 9)
+    keri-fallen @ 0 ?do  6 var-dec  9 ebit-set  loop  0 keri-fallen ! ;
 \ the 0x20E0-byte effect SparkSpray_vtable (sent byte 3): byte 3 0 / 1 one made, its slot in
 \ script variable 2 / 3; 2 / 3 the one in variable 2 / 3 (if any) sent nothing
-: house-of-truth-1f-9.cmd06 ( b0 -- )  drop s" house-of-truth-1f-9.cmd06" stub-step ;
+: house-of-truth-1f-9.cmd06 ( b0 -- )   \ (the sparks sprayed across: b0 0 / 1 from the left / right - kept in variable 2 / 3;
+    \ 2 / 3 that one off)
+    dup 2 < if  dup 2 +  swap effects:spark-spray  var-set  exit  then
+    var @ dup alive? if  0 swap send effect-command  else  drop  then ;
 \ (as slam_shake, both of Lorenzo's forms: 0xA and 0x27)
-: house-of-truth-1f-9.cmd07 ( -- )  s" house-of-truth-1f-9.cmd07" stub-step ;
+: house-of-truth-1f-9.cmd07 ( -- )  $A slam-landed?  $27 slam-landed? or if  0.5e camera-shake  then ;
 \ room objects 8 / 9 raised (+0x24 down 0.2 a call to 0) while the event manager's +0x58 test 4
 \ / 5 holds, else lowered back (up 0.4 a call to 0.7)
-: house-of-truth-1f-9.cmd08 ( -- )  s" house-of-truth-1f-9.cmd08" stub-step ;
+: house-of-truth-1f-9.cmd08 ( -- )   \ (the plates "fumi0" / "fumi1" up - +0x24 down 0.2 a call to 0 - while event
+    \ bits 4 / 5 are set, else back down - up 0.4 a call to 0.7)
+    {: | a n :}
+    2 0 do
+        i if  s" fumi1"  else  s" fumi0"  then  to n to a
+        a n object-here? if
+            4 i + ebit? if
+                a n place-y object@ f0> if  -0.2e a n place-y object+!  a n place-y object@ 0e fmax a n place-y object!  then
+            else
+                a n place-y object@ 0.7e f< if  0.4e a n place-y object+!  a n place-y object@ 0.7e fmin a n place-y object!  then
+            then
+        then
+    loop ;
 \ a noise at (-70 or 70 by byte 3, 14, 0): byte 4 0 / 1 / 2 kind 1 / 2 / 4
-: house-of-truth-1f-9.cmd09 ( b0 b1 -- )  drop drop s" house-of-truth-1f-9.cmd09" stub-step ;
+: house-of-truth-1f-9.cmd09 ( b0 b1 -- )   \ (a blow of kind 2 from (-70 or 70 by b0, 14, 0) at b1 0 Fiona, 1 Hewie,
+    \ 2 the stalker - Progress_Noise's requests: hers taken; Hewie's and the stalker's: not yet)
+    0= if
+        2 swap if  70e  else  -70e  then  f>cell  14e f>cell  0e f>cell  fiona-id send fiona-request
+    else  drop  then ;
 \ Room92_Cmd0A
-: house-of-truth-1f-9.cmd0A ( -- )  s" house-of-truth-1f-9.cmd0A" stub-step ;
+: house-of-truth-1f-9.cmd0A ( -- )  things-id send story-things-off ;   \ (the debris and the traps all gone)
 \ Room92_Cmd0B
-: house-of-truth-1f-9.cmd0B ( -- )  s" house-of-truth-1f-9.cmd0B" stub-step ;
+: house-of-truth-1f-9.cmd0B ( -- )   \ (from the scene's frame 825: 1 / 1 on 0.3 a frame to 21 / 80 on 0.7 a frame to 120 / 160)
+    cutscene-frame 825 - s>f  1e  fover 0.3e f* 1e f+ 21e fmin  frot 0.7e f* 80e f+ 120e fmin  160e  depth-range ;
 \ Room92_Cmd0C
-: house-of-truth-1f-9.cmd0C ( b0 b1 -- )  drop drop s" house-of-truth-1f-9.cmd0C" stub-step ;
+: house-of-truth-1f-9.cmd0C ( b0 b1 -- )   \ (the heat haze: b0 0 made - kept in variable 10; 1 its wave easing to b1, 2 at once)
+    swap case
+        0 of  drop  10 effects:heat-haze var-set  endof
+        1 of  10 var @ dup alive? if  send effect-command  else  2drop  then  endof
+        2 of  256 +  10 var @ dup alive? if  send effect-command  else  2drop  then  endof
+        >r drop r>
+    endcase ;
 \ Room92_Cmd0D
-: house-of-truth-1f-9.cmd0D ( b0 -- )  drop s" house-of-truth-1f-9.cmd0D" stub-step ;
+: house-of-truth-1f-9.cmd0D ( b0 -- )   \ (the pit's embers: b0 0 with flames, 1 without - kept in variable 11; 2 off)
+    dup 2 < if  11 swap 0= effects:pit-embers var-set  exit  then
+    drop  11 var @ dup alive? if  0 swap send effect-command  else  drop  then ;
 
 defer house-of-truth-1f-9.act0F
 : house-of-truth-1f-9.enter ( -- )   \ 00436CF0
@@ -72,12 +152,12 @@ defer house-of-truth-1f-9.act0F
         $B ebit-set
     then
     1 0 $18000020 nav-group
-    $A 1 object-show
-    $B 1 object-show
-    $C 1 object-show
-    $D 1 object-show
-    $E 1 object-show
-    $F 1 object-show
+    $A 1 object-hidden
+    $B 1 object-hidden
+    $C 1 object-hidden
+    $D 1 object-hidden
+    $E 1 object-hidden
+    $F 1 object-hidden
 ;
 
 : house-of-truth-1f-9.char-enter ( -- )   \ 00436D70
@@ -526,8 +606,8 @@ defer house-of-truth-1f-9.act0F
     $FE 0 0 char-camera
     $92 0 151 hewie-to-room
     1 $97 180 char-to-tri-facing
-    4 0 object-show
-    5 0 object-show
+    4 0 object-hidden
+    5 0 object-hidden
     0 $F1 9 action
     4 3 var-set
     5 3 var-set
@@ -584,12 +664,12 @@ defer house-of-truth-1f-9.act0F
     1 action-end
     1 char-done
     house-of-truth-1f-9.cmd0A
-    $A 1 object-show
-    $B 1 object-show
-    $C 1 object-show
-    $D 1 object-show
-    $E 1 object-show
-    $F 1 object-show
+    $A 1 object-hidden
+    $B 1 object-hidden
+    $C 1 object-hidden
+    $D 1 object-hidden
+    $E 1 object-hidden
+    $F 1 object-hidden
     4 3 var-set
     5 3 var-set
     2 house-of-truth-1f-9.cmd0D
@@ -657,8 +737,8 @@ defer house-of-truth-1f-9.act0F
     $C partner-load
     2 char-unload
     $ED door-unlock
-    4 0 object-show
-    5 0 object-show
+    4 0 object-hidden
+    5 0 object-hidden
     $E6 door-lock
     $E7 door-lock
     $EB door-open-clear
@@ -1088,12 +1168,12 @@ defer house-of-truth-1f-9.act0F
         2 cutscene-mode? not while
         yield
     repeat
-    $A 1 object-show
-    $B 1 object-show
-    $C 1 object-show
-    $D 1 object-show
-    $E 1 object-show
-    $F 1 object-show
+    $A 1 object-hidden
+    $B 1 object-hidden
+    $C 1 object-hidden
+    $D 1 object-hidden
+    $E 1 object-hidden
+    $F 1 object-hidden
     $10 $C8 movie-param
     $FF panic-stage? if
         3 panic-stage
@@ -1157,12 +1237,12 @@ defer house-of-truth-1f-9.act0F
     self-wait-done
     0 -36.4 13.4 54.4 1 effect-86
     1 58.7 10.0 -29.9 1 effect-86
-    $A 1 object-show
-    $B 1 object-show
-    $C 1 object-show
-    $D 1 object-show
-    $E 1 object-show
-    $F 1 object-show
+    $A 1 object-hidden
+    $B 1 object-hidden
+    $C 1 object-hidden
+    $D 1 object-hidden
+    $E 1 object-hidden
+    $F 1 object-hidden
     $FF 1 char-visible
     house-of-truth-1f-9.cmd01
     0 0 house-of-truth-1f-9.cmd0C

@@ -80,8 +80,19 @@ create ch-at 12 allot
 
 \ ---- Fiona_HewieCommandAction: the code for a gesture (0 up, 1 down, 2 R3, 3 right, 4 left) ----
 : facing-diff ( F: a -- d )  her-yaw f@ f- angle-wrap fabs ;
-: call-action ( -- code )   \ up: go there (calm), go for it (chased); (followed: a creature ahead - later)
+\ a creature ahead (Fiona_CallAction, followed): in her room, within 10, reached straight from her,
+\ within 45 degrees of her heading
+: creature-ahead? ( id -- flag )
+    dup alive? 0= if  drop false exit  then  dup body? 0= if  drop false exit  then
+    dup body-room room-id <> if  drop false exit  then
+    dup body-at her-at vec-dist 10e f< 0= if  drop false exit  then
+    her-tri @ her-at 2 pick body-at 0 v-walk  over body-tri <> if  drop false exit  then
+    her-at swap body-at vec-heading facing-diff 45e deg>rad f< ;
+: any-creature-ahead? ( -- flag )
+    10 0 do  i cells her-creatures + @ creature-ahead? if  true unloop exit  then  loop  false ;
+: call-action ( -- code )   \ up: go there (calm), go for it (chased, or a creature ahead while followed)
     her-danger @ 2 = if  dog-ok? dog-mode @ 8 = and if  $2E  else  $2D  then  exit  then
+    her-danger @ 1 = any-creature-ahead? and if  $2D exit  then
     $23 ;
 : command-code ( cmd -- code )
     case
@@ -210,7 +221,9 @@ create ch-at 12 allot
     her-doing @ dup $E = over 1 = or swap $F = or if  drop exit  then
     command-code dup -1 = if  drop exit  then
     dup $2C = over $2D = or  her-sub @ 0<> and  over $2D = her-danger @ 1 = and 0= and if
-        mark-action-start  command-hewie  order-line  60 her-busy-t !  exit
+        mark-action-start  command-hewie  order-line  60 her-busy-t !
+        plain-commands state-flag? 0= if  hewie-id her-look-who !  30 her-look-hold !  then   \ (a glance at him)
+        exit
     then
     $D her-mode !  $C her-doing !  mark-action-start  ['] action-over her-act ! ;
 

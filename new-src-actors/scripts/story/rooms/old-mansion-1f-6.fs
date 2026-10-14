@@ -2,12 +2,25 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-6
-USING: room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names ;
 
 \ Room46_Cmd00
-: old-mansion-1f-6.cmd00 ( b0 -- )  drop s" old-mansion-1f-6.cmd00" stub-step ;
+: old-mansion-1f-6.cmd00 ( b0 -- )   \ (Room46_CharHook, for the script's character ($21): b0 1 turned from pi by
+    \ 0.1 for each of variable 2 (on by 2 a call), to 1.57 at least - event bit 3 there; 2 moved by
+    \ its animation - the cast's own; 0 its move stopped. Then while $21 is right of x -84,
+    \ variable 1 is 1)
+    1 = if
+        self-char dup char-here if
+            dup char-at vec@  pi 2 var @ s>f 0.1e f* f-
+            fdup 1.57e f<= if  fdrop 1.57e  3 ebit-set  then  angle-wrap  place-char
+        else  drop  then
+        2  2 var @ 2 +  var-set
+    then
+    $21 who>cs dup 0< if  drop exit  then  dup char-here 0= if  drop exit  then
+    char-at sf@ -84e f> if  1 1 var-set  then ;
 \ Room46_Cond00
-: old-mansion-1f-6.cond00? ( -- flag )  s" old-mansion-1f-6.cond00?" stub-flag ;
+: old-mansion-1f-6.cond00? ( -- flag )   \ (Room46_PursuerBusy: about, and moving on his own (0 / 1) or in view)
+    stalker-about? 0= if  false exit  then  stalker-mode 2 u< stalker-in-view? or ;
 
 : old-mansion-1f-6.enter ( -- )   \ 00416A50
     room-sounds
@@ -265,7 +278,7 @@ USING: room-names story.words story.shared flag-names ;
         else old-mansion-1f-6.cond00? not if
             5 5 5 scene-change
         else
-            $8016 scene-ending
+            $8016 examine-message
         then then
     then
     0 $C $3C char-faces-area? if

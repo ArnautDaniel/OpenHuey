@@ -235,6 +235,8 @@ static void order_add(Manifest *m, Vocab *v) {
     }
     if (m->norder < ORDER_MAX) {
         m->order[m->norder++] = v;
+    } else {
+        fprintf(stderr, "forth: a file uses more than %d vocabularies - %s left out (ORDER_MAX)\n", ORDER_MAX, v->name);
     }
 }
 
@@ -280,8 +282,9 @@ static Word *unique(Forth *f, Word *found, Word *w, const char *name, size_t len
     return found != NULL ? found : w;
 }
 
-/* Lookup: `vocab:name` exactly; else the source's own vocabulary, then the ones it uses
- * (exactly one may have the name), then - at the prompt - every loaded one, then the core */
+/* Lookup: `vocab:name` exactly; else the source's own vocabulary, then the ones it uses - the
+ * last in its USING: first, so a source's nearer vocabularies hide the general ones' names -
+ * then (at the prompt) every loaded one (exactly one may have the name), then the core */
 Word *forth_find(Forth *f, const char *name, size_t len) {
     Word *found = NULL, *w;
     Vocab *v;
@@ -300,9 +303,10 @@ Word *forth_find(Forth *f, const char *name, size_t len) {
     if ((w = in_vocab(f->m.current, name, len)) != NULL) {
         return w;
     }
-    for (k = 0; k < f->m.norder; k++) {
-        if (f->m.order[k] != f->core && f->m.order[k] != f->m.current) {
-            found = unique(f, found, in_vocab(f->m.order[k], name, len), name, len);
+    for (k = f->m.norder - 1; k >= 0; k--) {   /* (no ambiguity: the nearest wins) */
+        if (f->m.order[k] != f->core && f->m.order[k] != f->m.current &&
+            (w = in_vocab(f->m.order[k], name, len)) != NULL) {
+            return w;
         }
     }
     if (found == NULL && f->m.listener) {
@@ -429,6 +433,40 @@ PRIM(p_litstring) {   /* ( -- addr len ): the length, then the bytes */
     IP += CELLS_FOR((size_t)n);
 }
 PRIM(p_exit) { IP = (Cell *)rpop(f); }
+
+/* ---- locals ({: a b -- :}): a frame on the return stack, made as the word starts and dropped
+ * as it leaves; the names compile to fetches from it, `to name` to a store ---- */
+PRIM(p_locals) {   /* (locals) n k: a frame of n, its first k from the data stack (the first deepest) */
+    Cell n = *IP++, k = *IP++, j;
+    Task *t = f->t;
+
+    rpush(f, t->lp);
+    t->lp = t->rp;
+    for (j = 0; j < n; j++) {
+        rpush(f, 0);
+    }
+    for (j = k - 1; j >= 0; j--) {
+        t->rs[t->lp + j] = POP();
+    }
+}
+PRIM(p_unlocals) {   /* the frame dropped (before the word returns) */
+    Task *t = f->t;
+
+    t->rp = t->lp;
+    t->lp = (int)rpop(f);
+}
+PRIM(p_local_fetch) { Cell i = *IP++; PUSH(f->t->rs[f->t->lp + i]); }
+PRIM(p_local_store) { Cell i = *IP++; f->t->rs[f->t->lp + i] = POP(); }
+static int local_index(Forth *f, const char *s, size_t n) {
+    int i;
+
+    for (i = 0; i < f->locals.n; i++) {
+        if (strlen(f->locals.names[i]) == n && strncasecmp(f->locals.names[i], s, n) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
 PRIM(p_halt) { IP = NULL; }
 PRIM(p_branch) { IP = (Cell *)*IP; }
 PRIM(p_0branch) {
@@ -920,8 +958,33 @@ static void interpret(Forth *f) {
         if (n == 0) {
             return;
         }
+        if (f->compiling && f->locals.n > 0) {   /* a local, or `to` one */
+            int k = local_index(f, s, n);
+
+            if (k >= 0) {
+                comma(f, (Cell)f->w_local_fetch);
+                comma(f, k);
+                continue;
+            }
+            if (n == 2 && strncasecmp(s, "to", 2) == 0) {
+                Source *src = source(f);
+                size_t pos = src->pos, m;
+                const char *t = parse_word(f, &m);
+
+                k = local_index(f, t, m);
+                if (k >= 0) {
+                    comma(f, (Cell)f->w_local_store);
+                    comma(f, k);
+                    continue;
+                }
+                src->pos = pos;   /* (a value's `to`) */
+            }
+        }
         w = forth_find(f, s, n);
         if (w != NULL) {
+            if (w == f->w_exit && f->compiling && f->locals.n > 0) {   /* (leaving: the frame first) */
+                comma(f, (Cell)f->w_unlocals);
+            }
             if (f->compiling && !(w->flags & WORD_IMMEDIATE)) {
                 comma(f, (Cell)w);
             } else {
@@ -1108,8 +1171,58 @@ PRIM(p_colon) {
 
     def->flags = WORD_HIDDEN;   /* found again once complete */
     f->compiling = -1;
+    f->locals.n = 0;
+    f->nlocals_saved = 0;
+}
+/* {: a b | c -- comment :} the definition's locals: a and b taken from the stack (b from the
+ * top), c starting at 0; what follows -- is a comment */
+PRIM(p_locals_begin) {
+    int k = -1, comment = 0;
+
+    if (!f->compiling) {
+        forth_error(f, "{: only inside a definition");
+    }
+    if (f->locals.n > 0) {
+        forth_error(f, "{: once in a definition");
+    }
+    for (;;) {
+        size_t n;
+        const char *s = parse_word(f, &n);
+
+        if (n == 0) {
+            forth_error(f, "{: without :}");
+        }
+        if (n == 2 && strncmp(s, ":}", 2) == 0) {
+            break;
+        }
+        if (comment) {
+            continue;
+        }
+        if (n == 2 && strncmp(s, "--", 2) == 0) {
+            comment = 1;
+            continue;
+        }
+        if (n == 1 && s[0] == '|') {
+            k = f->locals.n;
+            continue;
+        }
+        if (f->locals.n == 16 || n > WORD_NAME_MAX) {
+            forth_error(f, "{: too many locals, or a name too long");
+        }
+        if (n == 4 && strncasecmp(s, "exit", 4) == 0) {   /* (it would hide EXIT: `exit` would push it) */
+            forth_error(f, "{: a local can't be called exit");
+        }
+        snprintf(f->locals.names[f->locals.n++], WORD_NAME_MAX + 1, "%.*s", (int)n, s);
+    }
+    comma(f, (Cell)f->w_locals);
+    comma(f, f->locals.n);
+    comma(f, k < 0 ? f->locals.n : k);
 }
 PRIM(p_semicolon) {
+    if (f->locals.n > 0) {
+        comma(f, (Cell)f->w_unlocals);
+        f->locals.n = 0;
+    }
     comma(f, (Cell)f->w_exit);
     f->latest->flags &= (uint8_t)~WORD_HIDDEN;
     f->compiling = 0;
@@ -1124,6 +1237,12 @@ PRIM(p_noname) {   /* :noname ( -- xt ) a definition without a name */
 PRIM(p_immediate) { f->latest->flags |= WORD_IMMEDIATE; }
 PRIM(p_lbracket) { f->compiling = 0; }
 PRIM(p_rbracket) { f->compiling = -1; }
+/* a control word outside a definition: an error, not a branch patched into whatever is on the stack */
+PRIM(p_inside_definition) {
+    if (!f->compiling) {
+        forth_error(f, "only inside a definition");
+    }
+}
 PRIM(p_tick) { PUSH(parse_find(f, "'")); }
 PRIM(p_brackettick) {
     comma(f, (Cell)f->w_lit);
@@ -1512,12 +1631,23 @@ PRIM(p_quote_begin) {
     PUSH(slot);
     PUSH(q);
     f->compiling = -1;
+    if (f->nlocals_saved == 4) {
+        forth_error(f, "[: nested too deep");
+    }
+    f->locals_saved[f->nlocals_saved++] = f->locals;   /* (the word's locals aren't the quotation's) */
+    f->locals.n = 0;
 }
 PRIM(p_quote_end) {
     Word *q = (Word *)POP();
     Cell *slot = (Cell *)POP();
 
+    if (f->locals.n > 0) {
+        comma(f, (Cell)f->w_unlocals);
+    }
     comma(f, (Cell)f->w_exit);
+    if (f->nlocals_saved > 0) {
+        f->locals = f->locals_saved[--f->nlocals_saved];
+    }
     if (slot != NULL) {   /* inside a definition: jump here, then the token as a literal */
         *slot = (Cell)f->here;
         comma(f, (Cell)f->w_lit);
@@ -1612,7 +1742,7 @@ PRIM(p_catch) {
     Word *x = (Word *)POP();
     jmp_buf jb, *prev = f->catch;
     Task *t = f->t;
-    int sp = t->sp, rp = t->rp, fp = t->fp, depth = f->depth, nsrc = f->nsrc, silent = f->silent;
+    int sp = t->sp, rp = t->rp, fp = t->fp, lp = t->lp, depth = f->depth, nsrc = f->nsrc, silent = f->silent;
     Cell *ip = IP, compiling = f->compiling;
     Manifest saved = f->m;
 
@@ -1623,6 +1753,7 @@ PRIM(p_catch) {
         t->sp = sp;
         t->rp = rp;
         t->fp = fp;
+        t->lp = lp;
         f->depth = depth;
         f->silent = silent;
         while (f->nsrc > nsrc) {
@@ -1834,6 +1965,7 @@ static void define_core(Forth *f) {
         {"type", p_type}, {"cr", p_cr}, {"space", p_space}, {"spaces", p_spaces}, {"base", p_base},
         {"state", p_state},
         {":", p_colon}, {":noname", p_noname}, {"immediate", p_immediate}, {"]", p_rbracket},
+        {"inside-definition", p_inside_definition},
         {"'", p_tick}, {"create", p_create}, {">body", p_tobody}, {"latest", p_latest},
         {"find", p_find}, {"parse-name", p_parse_name}, {"parse-line", p_parse_line}, {"char", p_char}, {"include", p_include},
         {"included", p_included}, {"evaluate", p_evaluate}, {"execute", p_execute},
@@ -1855,7 +1987,7 @@ static void define_core(Forth *f) {
         {";", p_semicolon}, {"[", p_lbracket}, {"[']", p_brackettick}, {"literal", p_literal},
         {"fliteral", p_fliteral}, {"postpone", p_postpone}, {"recurse", p_recurse},
         {"does>", p_docompile}, {"s\"", p_squote}, {".\"", p_dotquote}, {".(", p_dotparen},
-        {"(", p_paren}, {"\\", p_backslash}, {"[char]", p_bracketchar}, {"[:", p_quote_begin},
+        {"(", p_paren}, {"\\", p_backslash}, {"[char]", p_bracketchar}, {"[:", p_quote_begin}, {"{:", p_locals_begin},
         {";]", p_quote_end},
     };
     size_t i;
@@ -1865,6 +1997,10 @@ static void define_core(Forth *f) {
     f->w_flit = prim_word(f, "(flit)", p_flit, 0, 0);
     f->w_litstring = prim_word(f, "(litstring)", p_litstring, 0, 0xFF);
     f->w_exit = prim_word(f, "exit", p_exit, 0, 0);
+    f->w_locals = prim_word(f, "(locals)", p_locals, 0, 2);
+    f->w_unlocals = prim_word(f, "(unlocals)", p_unlocals, 0, 0);
+    f->w_local_fetch = prim_word(f, "(local@)", p_local_fetch, 0, 1);
+    f->w_local_store = prim_word(f, "(local!)", p_local_store, 0, 1);
     f->w_halt = prim_word(f, "(halt)", p_halt, 0, 0);
     f->w_does = prim_word(f, "(does>)", p_does, 0, 0);
     prim_word(f, "branch", p_branch, 0, 1);

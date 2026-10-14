@@ -3,7 +3,7 @@
 \ carries it out. Actions of the later phases fall back as noted (H2 her commands, H3 the
 \ stalkers, H4 the story).
 IN: hewie.actions
-USING: engine game-state actors common facts paths hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen hewie.scripted hewie.fight flag-names ;
+USING: engine game-state actors common facts paths hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen hewie.scripted hewie.fight hewie.more hewie.pounce hewie.fetch hewie.exits flag-names ;
 
 : mode! ( n -- )  his-mode ! ;
 : give-up ( -- )  6 0 want ;            \ nothing to do: sniffing about (steered: the default - H4)
@@ -121,8 +121,8 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
     $1F of  at-pursuer  endof  $20 of  at-pursuer  endof  $21 of  at-pursuer  endof  $22 of  at-pursuer  endof
     $23 of  close-on  endof
     \ out of the room away from her (0x24 / 0x25): with the doors he may use (later)
-    $24 of  to-default  endof
-    $25 of  $10 0 want  endof
+    $24 of  away-from-her  endof
+    $25 of  away  endof
     $26 of  4 $7AF ['] st-after-27 holding  endof
     $27 of  4 $7AF ['] st-after-27 holding  endof
     $28 of  low-floor? if  to-default  else  4 $7AF ['] st-after-29 holding  then  endof
@@ -133,6 +133,8 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
     $2C of  route-played  endof
     $2D of  route-played  endof
     $39 of  route-played  endof
+    $65 of  squeeze  endof
+    $66 of  walk-out  endof
     $2E of  6 mode!  $DF his-cmd !  idle-wait trust-of his-wait !  ['] st-nothing behave  endof
     $2F of  6 mode!  $88 his-cmd !  his-wanted @ his-wait !  ['] st-nothing behave  endof
     $30 of  6 mode!  $80 his-cmd !  his-wanted @ his-wait !  ['] st-nothing behave  endof
@@ -196,7 +198,25 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
     $46 of  0 mode!  0 his-cmd !  ['] st-head-for-spot behave  endof
     $7F of  his-to 4 + sf@ lp-rise f!  his-2d @ 1 = if  1  else  0  then  his-t2 !
             0 mode!  0 his-cmd !  ['] st-run-for-spot behave  endof
-    \ the rest (her commands H2, the stalkers H3): the default
+    \ (hewie/more.fs)
+    $80 of  his-next @ sit-then  endof
+    $72 of  keep-behind  endof
+    $74 of  go-limp  endof
+    $79 of  scene-pose  endof
+    $86 of  back-on-mesh  endof
+    $38 of  after-attack  endof
+    $82 of  step-away-target  endof
+    $68 of  pushed-back  endof
+    $6C of  pushed-out  endof
+    $5B of  $5B at-cast  endof  $5C of  $5C at-cast  endof  $5D of  $5D at-cast  endof
+    $5E of  $5E at-cast  endof  $5F of  $5F at-cast  endof  $60 of  $60 at-cast  endof
+    $7C of  near-target  endof
+    $12 of  flank  endof
+    $78 of  fetch  endof
+    $7B of  draw-off  endof
+    $6D of  close-in  endof
+    $75 of  at-pursuer  endof   \ (the story's tackle: Hewie_StateTargetPursuer - at him, as 0x1F)
+    \ the rest: the default
     >r  r@ if  to-default  then  r>
     endcase ;
 : set-action-now ( act arg -- )   \ Hewie_SetAction

@@ -2,19 +2,41 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-6
-USING: room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names ;
 
 \ room 0x0C (Room0C_Cmd01_ptmf): script variable byte 3 down by the player's hit (byte 4: 1 from
 \ the weak blow 0x1A, else 5) or the pursuer's (+0x108), not below 0
-: castle-b1-6.cmd01 ( b0 b1 -- )  drop drop s" castle-b1-6.cmd01" stub-step ;
+: castle-b1-6.cmd01 ( b0 b1 -- )   \ (script variable b0 down by the hit: b1 Fiona's - 1 from her weak blow ($1A), else 5;
+    \ else the stalker's - his attack's blow under way, if any - not below 0)
+    if  fiona-move-sub $1A = if  1  else  5  then  else  stalker-blow?  then        ( var k )
+    dup 0> if  over var @ swap - 0 max var-set  else  2drop  then ;
 \ room 0x0C (Room0C_Cmd02_ptmf): the screen darkened as the cutscene runs past frame 0x4AE (32 a
 \ frame, up to 0x80)
-: castle-b1-6.cmd02 ( -- )  s" castle-b1-6.cmd02" stub-step ;
+: castle-b1-6.cmd02 ( -- )   \ (the screen darkened as the scene runs past frame $4AE: 32 a frame, to $80 - full
+    \ before it, as the original's unsigned count gives)
+    cutscene-frame $4AE - dup 0< if  drop $80  else  5 lshift $80 min  then  screen-fill ;
 \ room 0x0C (Room0C_Cmd03_ptmf): three objects (pair byte 4) swing: byte 3 0 set up (rest +0x30,
 \ phase +0x34 half a turn apart, swing +0x3C 0.75 / 0.5), 1 a step (phase on 60 degrees, the
 \ swing down 0.1, x = rest + swing x sin(phase); 2 once still), 2 all to x 10. 2 while any
+: swings-step ( pair -- still? )   \ (Room0C_Cmd03 1: each on 60 degrees, its swing down 0.1; still - to x 10)
+    {: pair | moving a n :}  0 to moving
+    3 0 do  pair i 2* + 13 + room-object to n to a  a n object-here? if
+        60e deg>rad a n $34 object+!  a n $34 object@ pi f> if  -2e pi f* a n $34 object+!  then
+        -0.1e a n $3C object+!
+        a n $30 object@ a n $3C object@ a n $34 object@ fsin f* f+ a n place-x object!
+        a n $3C object@ f0> if  -1 to moving  else  10e a n place-x object!  then
+    then  loop  moving 0= ;
 \ swings
-: castle-b1-6.cmd03 ( b0 b1 -- )  drop drop s" castle-b1-6.cmd03" stub-step ;
+: castle-b1-6.cmd03 ( b0 b1 -- )   \ (three things - the room's strings b1 + 2i + 13 - swinging: 0 set up (rest, half a turn
+    \ apart, swings 0.75 / 0.75 / 0.5); 1 swinging till all are still; 2 all to x 10)
+    {: op pair :}
+    op 1 = if  begin  pair swings-step 0= while  yield  repeat  exit  then
+    3 0 do  pair i 2* + 13 + room-object 2dup object-here? if
+        op 0= if
+            2dup place-x object@ 2dup $30 object!  0.5e i s>f f* 2dup $34 object!
+            i 2 <> if  0.75e  else  0.5e  then  $3C object!
+        else  op 2 = if  10e place-x object!  else  2drop  then  then
+    else  2drop  then  loop ;
 
 : castle-b1-6.enter ( -- )   \ 003F4650
     room-sounds
@@ -23,29 +45,29 @@ USING: room-names story.words story.shared flag-names ;
         0 1 $14 door-bits
     then
     1 1 $14 door-bits
-    6 1 object-show
+    6 1 object-hidden
     $35 story-flag? not if
         0 25 var-set
     else
-        $D 1 object-show
+        $D 1 object-hidden
         5 1 $14 door-bits
     then
     $36 story-flag? not if
         1 25 var-set
     else
-        $E 1 object-show
+        $E 1 object-hidden
         3 1 $14 door-bits
     then
     $34 story-flag? not if
-        9 0 object-show
-        $A 1 object-show
+        9 0 object-hidden
+        $A 1 object-hidden
         $16 story-flag? if
             7 1 $14 door-bits
             1 0 8 nav-group
         then
     else
-        9 1 object-show
-        $A 0 object-show
+        9 1 object-hidden
+        $A 0 object-hidden
         1 0 8 nav-group
     then
     0 8 0.0 0.0 0.25 0.25 zone-rect
@@ -265,7 +287,7 @@ USING: room-names story.words story.shared flag-names ;
     6 story-flag-set
     $11 door-unlock
     1 1 $14 door-bits
-    6 1 object-show
+    6 1 object-hidden
     $28 door-open-clear
     $28 door-lock
     doors-room-in
@@ -476,11 +498,11 @@ USING: room-names story.words story.shared flag-names ;
     wait-fade
     $26 resident-flag-set
     world-held state-flag-set
-    9 1 object-show
-    $F 0 object-show
-    $10 0 object-show
-    $11 0 object-show
-    $12 0 object-show
+    9 1 object-hidden
+    $F 0 object-hidden
+    $10 0 object-hidden
+    $11 0 object-hidden
+    $12 0 object-hidden
     1 action-end
     1 char-done
     $FE action-end
@@ -569,7 +591,7 @@ USING: room-names story.words story.shared flag-names ;
     $28 door-open-clear
     $28 door-unlock
     doors-room-in
-    $A 0 object-show
+    $A 0 object-hidden
     1 0 8 nav-group
     $34 story-flag-set
     0 panic-stage
@@ -788,7 +810,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     0 0 var? if
         10.0 10.0 -35.0 0 -2144325584 3 -9.0 scene-effect-8C
-        $D 1 object-show
+        $D 1 object-hidden
         5 1 $14 door-bits
         $35 story-flag-set
         1 6 10.0 10.0 -40.0 0 0 sound
@@ -812,7 +834,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     1 0 var? if
         10.0 10.0 35.0 0 -2144325584 3 -9.0 scene-effect-8C
-        $E 1 object-show
+        $E 1 object-hidden
         3 1 $14 door-bits
         $36 story-flag-set
         1 6 10.0 10.0 40.0 0 0 sound
@@ -853,9 +875,9 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     0 1 $14 door-bits
     1 1 $14 door-bits
-    6 1 object-show
-    9 0 object-show
-    $A 1 object-show
+    6 1 object-hidden
+    9 0 object-hidden
+    $A 1 object-hidden
     0 8 0.0 0.0 0.25 0.25 zone-rect
     6 0 $14 door-bits
     $A00 self-anim
@@ -932,8 +954,8 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-b1-6.act0D ( -- )   \ 003F50A0
     self-wait-done
-    9 0 object-show
-    $A 1 object-show
+    9 0 object-hidden
+    $A 1 object-hidden
     0 8 0.0 0.0 0.25 0.25 zone-rect
     6 0 $14 door-bits
     -1 self-move-16
@@ -1008,7 +1030,7 @@ USING: room-names story.words story.shared flag-names ;
     $FE 0 char-no-shadow
     2 0 char-remove
     1 1 $14 door-bits
-    6 1 object-show
+    6 1 object-hidden
     $80 exit-check
     events-held state-flag-clear
     1 action-end
@@ -1018,12 +1040,12 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-b1-6.act0E ( -- )   \ 003F5170
     self-wait-done
-    $D 1 object-show
+    $D 1 object-hidden
     5 1 $14 door-bits
-    $E 1 object-show
+    $E 1 object-hidden
     3 1 $14 door-bits
-    9 0 object-show
-    $A 1 object-show
+    9 0 object-hidden
+    $A 1 object-hidden
     0 8 0.0 0.0 0.25 0.25 zone-rect
     6 0 $14 door-bits
     $1B partner-load
@@ -1103,11 +1125,11 @@ USING: room-names story.words story.shared flag-names ;
     6 0 $14 door-bits
     $1B partner-load
     2 char-unload
-    9 1 object-show
-    $F 0 object-show
-    $10 0 object-show
-    $11 0 object-show
-    $12 0 object-show
+    9 1 object-hidden
+    $F 0 object-hidden
+    $10 0 object-hidden
+    $11 0 object-hidden
+    $12 0 object-hidden
     1 0 char-visible
     1 action-end
     1 action-end
@@ -1188,8 +1210,8 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-b1-6.act10 ( -- )   \ 003F5300
     self-wait-done
-    9 0 object-show
-    $A 1 object-show
+    9 0 object-hidden
+    $A 1 object-hidden
     0 8 0.0 0.0 0.25 0.25 zone-rect
     6 0 $14 door-bits
     $1B partner-load

@@ -64,6 +64,7 @@ typedef struct RenderSettings {
     int32_t room_tint;
     int32_t room_bloom;
     int32_t room_dof;        /* the room's depth of field */
+    int32_t game_font;       /* text in the game's own font (the room's), not the built-in one */
     int32_t debug;           /* show a buffer instead: 1 occlusion, 2 bloom, 3 depth (white 1500 away),
                               * 4 the bloom mask */
 } RenderSettings;
@@ -116,6 +117,9 @@ void render_mesh_upload(GpuMesh *g, const MeshVertex *v, int n);
 /* replace a mesh's vertices (meshes that change every frame: skinned characters) */
 void render_mesh_update(GpuMesh *g, const MeshVertex *v, int n);
 void render_mesh_free(GpuMesh *g);
+/* the next meshes drawn tinted and faded (1 1 1 1: as they are; a character fading out of sight,
+ * a silhouette) */
+void render_mesh_tint(float r, float g, float b, float a);
 /* draw a mesh's draws; textures[i] for texture index i; groups: bit g shows group g (0 always) */
 void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, const GpuTexture *textures,
                  int ntextures, const uint32_t groups[8]);
@@ -132,6 +136,10 @@ void render_draw_lights(Vec3 ambient, const DrawLight *lights, int n);
 /* shadows: each frame, before render_begin, casters are drawn from their light into a shadow
  * map; the room's draws then darken where a caster hides the light */
 #define RENDER_MAX_SHADOWS 4
+/* a reflection on the quad q (corners 0 1 2 3): between these two, what is drawn shows only on
+ * the quad, in front of what was there (its depth pushed back), which is put back after */
+void render_reflect_begin(const Mat4 *vp, const Vec3 q[4]);
+void render_reflect_end(const Mat4 *vp, const Vec3 q[4]);
 void render_shadows_begin(void);
 /* a new shadow: the light's view-projection, the caster's middle and size (shadows fade past a
  * few sizes), the darkening; -1 if there is no room left. Then render_shadow_mesh draws into it */
@@ -146,6 +154,9 @@ GpuTexture render_blob_texture(void);
 void render_rect(float x, float y, float w, float h, uint32_t rgba);
 /* a picture over the screen (window pixels from the top left), times a colour (0xRRGGBBAA) */
 void render_image(GpuTexture t, float x, float y, float w, float h, uint32_t rgba);
+/* ... a part of it: texture coordinates u0, v0 .. u1, v1 (0..1) */
+void render_image_uv(GpuTexture t, float x, float y, float w, float h, float u0, float v0, float u1, float v1,
+                     uint32_t rgba);
 /* a texture (re)filled with a w x h RGBA picture each time (a movie); made anew when the size
  * changes (*tw / *th: its size) */
 GpuTexture render_texture_stream(GpuTexture t, const uint8_t *rgba, int w, int h, int *tw, int *th);

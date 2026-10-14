@@ -6,7 +6,7 @@ USING: room-names story.words story.shared flag-names ;
 
 \ room 0x63: the script's character walks to Fiona's nav triangle (character move 6, with
 \ 0x204).
-: old-mansion-3f-2.cmd00 ( -- )  s" old-mansion-3f-2.cmd00" stub-step ;
+: old-mansion-3f-2.cmd00 ( -- )  0 char-tri dup 0< if  drop exit  then  $204 6 self-move-tri ;   \ (to Fiona's triangle)
 
 defer old-mansion-3f-2.act05
 defer old-mansion-3f-2.act06
@@ -309,21 +309,21 @@ defer old-mansion-3f-2.act07
 ;
 
 : old-mansion-3f-2.act04 ( -- )   \ 00421700
-    8 1 object-show
-    9 1 object-show
-    $A 1 object-show
-    $B 1 object-show
-    $C 1 object-show
-    $D 1 object-show
-    $E 1 object-show
-    $F 1 object-show
-    $10 1 object-show
-    $11 1 object-show
-    $12 1 object-show
-    $13 1 object-show
-    $14 1 object-show
-    $15 1 object-show
-    $16 1 object-show
+    8 1 object-hidden
+    9 1 object-hidden
+    $A 1 object-hidden
+    $B 1 object-hidden
+    $C 1 object-hidden
+    $D 1 object-hidden
+    $E 1 object-hidden
+    $F 1 object-hidden
+    $10 1 object-hidden
+    $11 1 object-hidden
+    $12 1 object-hidden
+    $13 1 object-hidden
+    $14 1 object-hidden
+    $15 1 object-hidden
+    $16 1 object-hidden
     0 1 $14 door-bits
     exit
 ;

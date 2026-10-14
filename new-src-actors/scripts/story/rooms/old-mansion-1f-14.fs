@@ -13,8 +13,8 @@ USING: room-names story.words story.shared flag-names ;
         0 0 $14 door-bits
         1 1 $14 door-bits
     then
-    8 0 object-show
-    9 0 object-show
+    8 0 object-hidden
+    9 0 object-hidden
     $26D story-flag? not if
         0 15.82 1.0 20.96 flicker-sprite
     then
@@ -235,8 +235,8 @@ USING: room-names story.words story.shared flag-names ;
         camera-restart
         stalkers-stay state-flag-clear
     then
-    8 0 object-show
-    9 0 object-show
+    8 0 object-hidden
+    9 0 object-hidden
     $F $41 fade
     wait-fade
     $33 resident-flag-set
@@ -360,8 +360,8 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-14.act08 ( -- )   \ 00426C60
     self-wait-done
-    8 0 object-show
-    9 0 object-show
+    8 0 object-hidden
+    9 0 object-hidden
     3 partner-load
     2 char-unload
     0 0 $14 door-bits
@@ -431,8 +431,8 @@ USING: room-names story.words story.shared flag-names ;
         pause-wanted state-flag-set
         8 cutscene-control
     then
-    8 0 object-show
-    9 0 object-show
+    8 0 object-hidden
+    9 0 object-hidden
     2 0 char-remove
     $80 exit-check
     events-held state-flag-clear

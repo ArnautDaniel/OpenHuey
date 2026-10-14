@@ -5,10 +5,10 @@ IN: story.rooms.castle-1f-9
 USING: room-names story.words story.shared flag-names ;
 
 \ the rising motes started
-: castle-1f-9.cmd00 ( -- )  s" castle-1f-9.cmd00" stub-step ;
+: castle-1f-9.cmd00 ( -- )  effects:rising-motes ;
 \ room 0x25: Fiona is active and in a reaction (action 4) with no character behind it (+0x100
 \ 0xFF).
-: castle-1f-9.cond00? ( -- flag )  s" castle-1f-9.cond00?" stub-flag ;
+: castle-1f-9.cond00? ( -- flag )  fiona-move 4 =  fiona-struck? 0= and ;
 
 : castle-1f-9.enter ( -- )   \ 00402330
     room-sounds

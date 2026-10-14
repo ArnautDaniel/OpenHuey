@@ -5,7 +5,7 @@ IN: story.rooms.castle-2f-15
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x30 (Room30_Cond00_ptmf): the pursuer's Pursuer_GrabHewieBehind
-: castle-2f-15.cond00? ( b0 -- flag )  drop s" castle-2f-15.cond00?" stub-flag ;
+: castle-2f-15.cond00? ( b0 -- flag )  drop grab-hewie-behind? ;   \ (the stalker's Pursuer_GrabHewieBehind)
 
 : castle-2f-15.enter ( -- )   \ 00412EA0
     room-sounds

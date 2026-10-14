@@ -5,7 +5,7 @@ IN: story.rooms.chaos-forest-7
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x105: three hanging things that Fiona pushes as she walks by, swinging (swing_three).
-: chaos-forest-7.cmd00 ( b0 -- )  drop s" chaos-forest-7.cmd00" stub-step ;
+: chaos-forest-7.cmd00 ( b0 -- )  swing-three ;
 
 : chaos-forest-7.enter ( -- )   \ 00417F40
     room-sounds
@@ -207,7 +207,7 @@ USING: room-names story.words story.shared flag-names ;
             $FE char-here? not if
                 5 0 5 scene-change
             else $FE 0 char-heading-for? if
-                $8016 scene-ending
+                $8016 examine-message
             else
                 5 0 5 scene-change
             then then

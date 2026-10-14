@@ -9,7 +9,7 @@
 \ Pushing on, the floor 2.2 ahead pushable: again, else strain. The stick let go: straining she
 \ lets go ($1202), else free. The stalker touching her: free at once.
 IN: fiona.push
-USING: engine game-state actors messages common obstacles fiona.state fiona.model fiona.moving fiona.slam ;
+USING: engine game-state actors messages common obstacles rumble fiona.state fiona.model fiona.moving fiona.slam ;
 
 defer to-idle   ' noop is to-idle        \ (fiona.fs)
 <PRIVATE
@@ -46,7 +46,9 @@ PRIVATE>
 : stick-along ( F: -- dot )   \ the stick against the push
     her-push-dir sf@ her-dir sf@ f*  her-push-dir 8 + sf@ her-dir 8 + sf@ f* f+ ;
 : let-go? ( -- flag )  stick-along 0.6e f<= ;
-: held? ( -- flag )  stalker-in-room dup 0< if  drop false exit  then  self swap 0e 0e bodies-touching? ;
+: held? ( -- flag )   \ (Fiona_PushBlocked: her panic attack on her, or the stalker touching her - she lets go)
+    her-fear-bits @ 2 and if  true exit  then
+    stalker-in-room dup 0< if  drop false exit  then  self swap 0e 0e bodies-touching? ;
 : can-go? ( -- flag )  her-push @  her-push-dir sf@ her-push-dir 8 + sf@  can-push? ;
 \ the floor 2.2 ahead of where she was pushable, she pushing (Fiona_StatePushStep)
 : floor-ahead? ( -- flag )
@@ -62,8 +64,10 @@ PRIVATE>
 : letting-go ( -- )  held? if  to-idle exit  then  root-move  ended? if  to-idle  then ;
 : let-go ( -- )  $1202 play-cut  ['] letting-go her-act ! ;
 \ ---- pushing on (Fiona_StatePushStep) ----
+: push-key? ( -- flag )  her-model @ 0 0 1 motion-events 2 and 0<> ;   \ (a push's step: its key)
 : pushing-on ( -- )
     held? if  to-idle exit  then
+    push-key? if  $40 16 fiona-jolt  then
     root-move
     ended? 0= if  exit  then
     anim@ $1201 = if  her-push @ obstacles-id send obstacle-moved  then

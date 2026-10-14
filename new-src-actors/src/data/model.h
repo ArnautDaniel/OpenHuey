@@ -41,7 +41,12 @@ typedef struct Model {
     int nd;
     const uint8_t *motions;  /* the motion bank (resource 3), or NULL */
     size_t motions_size;
+    /* a second bank, looked in after its own (the original's +0x4C8: a room's motions for a
+     * scene, the story's 0xA6 / 0xA7), or NULL; its motions are numbered from MODEL_SECOND */
+    const uint8_t *motions2;
+    size_t motions2_size;
 } Model;
+#define MODEL_SECOND 0x10000
 
 /* build from a .PCK (takes ownership of the buffer); 0 if malformed */
 int model_build(Model *m, uint8_t *pck, size_t size);
@@ -52,7 +57,7 @@ int model_motion_count(const Model *m);
 int model_motion_id(const Model *m, int index);
 /* where motion `index` is in the bank's id list (Motion_AnimIndex: what the motion tables go by) */
 int model_motion_pos(const Model *m, int index);
-int model_motion_find(const Model *m, int id);   /* the index, -1 if none */
+int model_motion_find(const Model *m, int id);   /* the index (its own bank, then the second), -1 if none */
 int model_motion_frames(const Model *m, int index);
 
 /* the skin matrices (model space) for a motion at a time in frames (fractions blend), or the
@@ -72,6 +77,7 @@ void model_pose_blend(const Model *m, int index, float frame, int prev, float pr
 int model_track_raw(const Model *m, int index, int code, float frame, float out[3]);
 /* the bones' origins (model space) of the last pose model_pose_blend / model_pose_root made */
 const Vec3 *model_pose_origins(void);
+const Vec3 (*model_pose_axes(void))[3];   /* the last pose's bones' axes (x, y, z; model space) */
 /* which of a motion's five parts it has (bit p: part p - 0 the special channels, 1 the body,
  * 2..4 parts that can play motions of their own: Hewie's ears, tail, jaw) */
 int model_motion_parts(const Model *m, int index);

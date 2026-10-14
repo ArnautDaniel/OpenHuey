@@ -3,13 +3,37 @@
 \ and stepped onto it), turning on the spot ($400..$403) when the way goes off to one side,
 \ his walk for his mode, standing.
 IN: stalker.moving
-USING: engine game-state actors facts flag-names paths stalker.state stalker.senses ;
+USING: engine game-state actors facts flag-names paths stalker.state stalker.senses stalker.tables ;
 
 : model ( -- a )  my-model @ actor ;
 : sound ( id bank -- )   \ Pursuer_Sound: at him (not while the world is held, nor silenced)
     world-held state-flag? hushed @ or if  2drop exit  then  >r >r  my-at vec@  r> r>  bank-sound-at ;
 : yaw ( F: -- a )  self body-yaw ;
 : yaw! ( F: a -- )  body-turn ;
+
+\ ---- his animations' sounds (Pursuer_AnimSounds): at its sound keys (event $1 the first, $10
+\ the second) the sound his kit gives that motion for it (bank 7) - a blow's swish, a fall's
+\ thud; a fall ($1709 / $1800 / $1804) onto water - his triangle's water bits - a splash instead
+\ ($1D, bank 6) ----
+$1 constant first-key   $10 constant second-key
+$2008000 constant water-floor
+: key-sound ( key -- n | -1 )   \ (0 the first, 1 the second)
+    my-model @ anim @ motion-index                                ( key i )
+    dup 0<  over anim-sounds @ < 0= or if  2drop -1 exit  then
+    2* +  1+ cells anim-sounds + @ ;
+: falling? ( -- flag )  anim @ dup $1709 = over $1800 = or  swap $1804 = or ;
+: on-water? ( -- flag )
+    self body-tri dup 0< if  drop false exit  then  nav-flags water-floor and water-floor = ;
+: thud? ( n -- flag )  $11 - 2 u< ;   \ (his falls' sounds)
+: key-sound-play ( n -- )
+    dup 0< if  drop exit  then
+    dup thud? falling? and on-water? and if  drop $1D 6 sound exit  then
+    7 sound ;
+: anim-sounds-play ( -- )   \ (in the room being played)
+    anim @ $8000 and if  exit  then
+    my-model @ 0 0 1 motion-events
+    dup first-key and if  0 key-sound key-sound-play  then
+    second-key and if  1 key-sound key-sound-play  then ;
 
 \ ---- his animations (Pursuer_PlayAnim: blended as its table says, not restarted while it
 \ plays) ----
@@ -26,7 +50,7 @@ USING: engine game-state actors facts flag-names paths stalker.state stalker.sen
 : walk-fast ( -- a )  cond @ 1 = if  $202  else  raging @ riccardo? 0= and if  $204  else  $200  then  then ;   \ (+0x324: in a rage $204)
 : walk-slow ( -- a )   \ (Pursuer_SlowWalkAnim: in a rage $205; Debilitas's held off $203)
     my-mode @ 4 = base-chase @ 0= and riccardo-like? 0= and  cond @ 1 = or if  $203 exit  then
-    my-kind @ 10 =  progress pr.vars $27 + c@ 1 = and if  $205 exit  then   \ (Lorenzo2_SlowWalkAnim: hard, $205)
+    my-kind @ 10 =  hard-mode? and if  $205 exit  then   \ (Lorenzo2_SlowWalkAnim: hard, $205)
     riccardo? if  near-seen-walk exit  then   \ (Riccardo_SlowWalkAnim)
     raging @ if  $205 exit  then
     my-kind @ dup 37 = swap 23 = or if  near-seen-walk exit  then   \ (Kind37 / TintStalker_SlowWalkAnim)

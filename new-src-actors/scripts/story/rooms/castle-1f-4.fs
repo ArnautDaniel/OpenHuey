@@ -6,29 +6,30 @@ USING: room-names story.words story.shared flag-names ;
 
 \ room 0x0F: the floor plate ("fumi_yuka") fading: its +0x24 toward 1 while event variable 0 is
 \ unset, toward 0 once set; byte 3 0 at once, else by 0.2 a step (var_fade).
-: castle-1f-4.cmd00 ( b0 -- )  drop s" castle-1f-4.cmd00" stub-step ;
+: castle-1f-4.cmd00 ( b0 -- )  s" fumi_yuka" 0 var-fade ;   \ (the floor plate fading with event variable 0)
 \ room 0x0F (Room0F_Cmd01_ptmf): three objects' +0x14 back to 0
-: castle-1f-4.cmd01 ( -- )  s" castle-1f-4.cmd01" stub-step ;
+: castle-1f-4.cmd01 ( -- )   \ (the hook, the puppet and its door turned back)
+    0 s" hook" turn-y object-n!  0 s" a_Puppet" turn-y object-n!  0 s" Puppetdoor" turn-y object-n! ;
 \ room 0x0F (Room0F_Cmd02_ptmf): an effect (DriftingFlecks_vtable, 0x840 bytes) with its box
-: castle-1f-4.cmd02 ( -- )  s" castle-1f-4.cmd02" stub-step ;
+: castle-1f-4.cmd02 ( -- )  140e -9.5e 90e  18e 110e  0e -90e 0e  effects:flecks ;   \ (flecks drifting through the hall)
 \ room 0x0F (Room0F_Cmd03_ptmf): the player's model +0xBC (1, 0.25) or (0, 0) by byte 3
-: castle-1f-4.cmd03 ( b0 -- )  drop s" castle-1f-4.cmd03" stub-step ;
+: castle-1f-4.cmd03 ( b0 -- )  drop ;   \ (the model hooks it calls are empty on PC and PS2 alike: CharModel_SetFlag / _VtCC / _VtD0)
 \ room 0x0F (Room0F_Cmd04_ptmf): the player's model +0xD0 (0, 1.5, -2 / -1.5 by byte 3) and
 \ +0xCC
-: castle-1f-4.cmd04 ( b0 -- )  drop s" castle-1f-4.cmd04" stub-step ;
+: castle-1f-4.cmd04 ( b0 -- )  drop ;   \ (the model hooks it calls are empty on PC and PS2 alike: CharModel_SetFlag / _VtCC / _VtD0)
 
 : castle-1f-4.enter ( -- )   \ 003F5EC0
     room-sounds
     $11 story-flag? if
         0 0 $14 door-bits
-        2 0 object-show
-        3 0 object-show
-        4 0 object-show
+        2 0 object-hidden
+        3 0 object-hidden
+        4 0 object-hidden
     else
         0 1 $14 door-bits
-        2 0 object-show
-        3 0 object-show
-        4 0 object-show
+        2 0 object-hidden
+        3 0 object-hidden
+        4 0 object-hidden
     then
     7 door-locked? if
         1 0 $800008 nav-group
@@ -180,12 +181,12 @@ USING: room-names story.words story.shared flag-names ;
             world-held state-flag-set
             0 0 0 action
             3 0 $14 door-bits
-            7 0 object-show
-            8 0 object-show
+            7 0 object-hidden
+            8 0 object-hidden
         else
             3 1 $14 door-bits
-            7 1 object-show
-            8 1 object-show
+            7 1 object-hidden
+            8 1 object-hidden
         then
         $80 exit-taken? if
             0 $221 -90 char-to-tri-facing
@@ -585,9 +586,9 @@ USING: room-names story.words story.shared flag-names ;
     repeat
     wait-fade
     0 0 $14 door-bits
-    2 0 object-show
-    3 0 object-show
-    4 0 object-show
+    2 0 object-hidden
+    3 0 object-hidden
+    4 0 object-hidden
     1 char-here? 1 2 char-C4? and if
         0 1 $86 action
     then
@@ -1047,9 +1048,9 @@ USING: room-names story.words story.shared flag-names ;
 : castle-1f-4.act19 ( -- )   \ 003F6C20
     self-wait-done
     0 1 $14 door-bits
-    2 0 object-show
-    3 0 object-show
-    4 0 object-show
+    2 0 object-hidden
+    3 0 object-hidden
+    4 0 object-hidden
     1 1 $14 door-bits
     $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     0 22.8 14.65 68.75 0 effect-86
@@ -1141,9 +1142,9 @@ USING: room-names story.words story.shared flag-names ;
         yield
     repeat
     0 0 $14 door-bits
-    2 0 object-show
-    3 0 object-show
-    4 0 object-show
+    2 0 object-hidden
+    3 0 object-hidden
+    4 0 object-hidden
     0 22.8 14.65 68.75 0 effect-86
     0 $F9 $18 action
     $FF panic-stage? if

@@ -11,7 +11,8 @@ USING: engine game-state actors messages keys facts flag-names story-names ;
 6 constant movie-layer   9 constant black-layer
 
 state: gameover-state
-  cell field kind          \ how it goes (`game-over-kind`; progress +0x73EB00): 1 faded out
+  cell field kind          \ how it goes (`game-over-kind`; progress +0x73EB00): 1 faded out, 2 the
+                           \ story's end - over at once, the ending follows (ending.fs)
   cell field step          \ -1 not running; the sequence's step (0..11), 12 done
   cell field timer
   12 field tint-from  12 field tint-to   \ the tint's two colour words and its sharp byte; to
@@ -75,8 +76,9 @@ variable tt  variable tn
     step @ case
         0 of  0 0 30 music-id send music-op  movie-close  1 step !  endof
         1 of  freeze  2 step !  endof
-        2 of  movie-status 1 <> if  64 timer !  3 step !  then  endof
-        3 of  -1 timer +!  timer @ 0= if  track bgm  60 timer !  4 step !  then  endof
+        2 of  0 frame-blend  movie-status 1 <> if  64 timer !  3 step !  then  endof
+        3 of  64 timer @ - frame-blend   \ (the afterimage: each frame blended with the last, rising)
+              -1 timer +!  timer @ 0= if  track bgm  60 timer !  4 step !  then  endof
         4 of  -1 timer +!  timer @ 0= if
                   kind @ 3 = if  $39 5 bank-sound  then
                   tints-start  60 timer !  5 step !
@@ -108,7 +110,7 @@ behaviour ending-the-game
   on game-over-kind ( kind -- )  kind ! ;
   on tick ( -- )
       step @ 0< if
-          caught state-flag? if  caught state-flag-clear  kind @ 2 = if  12 step !  soft-reset  else  0 step !  then  then
+          caught state-flag? if  caught state-flag-clear  kind @ 2 = if  12 step !  broadcast the-ending  else  0 step !  then  then
           exit
       then
       run ;

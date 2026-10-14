@@ -6,11 +6,18 @@ USING: room-names story.words story.shared flag-names ;
 
 \ room 0x5C (Room5C_Cmd00_ptmf): the dial (+0x7C, 0..1) from script variable 0 by byte 3: 0
 \ 0x2B..0x38 (/ 13, +0x74 0 / +0x78 1), 1 0xC..0x20 (/ 20), 2 7..0x12 (/ 11) (+0x74 1 / +0x78 0)
-: old-mansion-2f-8.cmd00 ( b0 -- )  drop s" old-mansion-2f-8.cmd00" stub-step ;
+: old-mansion-2f-8.cmd00 ( b0 -- )   \ (the curtain ("Curtain") by event variable 0 in b0's range:
+    \ 0 opening over $2B..$38, 1 closing over $C..$20, 2 over 7..$12)
+    {: b0 | v :}  s" Curtain" object-here? 0= if  exit  then  0 var @ to v
+    b0 case
+        0 of  v $2B max $38 min $2B - s>f 13e f/  0 1 s" Curtain" morph!  endof
+        1 of  v $C max $20 min $C - s>f 20e f/  1 0 s" Curtain" morph!  endof
+        2 of  v 7 max $12 min 7 - s>f 11e f/  1 0 s" Curtain" morph!  endof
+    endcase ;
 \ room 0x5C (Room5C_Cond00_ptmf): the first creature within 3 of (59.1, 1.43) is put away with
 \ an effect (CreatureVanish_vtable) above it - blue (+0x1571 below 0x12) or red - and its action
 \ 0x8B
-: old-mansion-2f-8.cond00? ( -- flag )  s" old-mansion-2f-8.cond00?" stub-flag ;
+: old-mansion-2f-8.cond00? ( -- flag )  59.1e 1.43e 3e put-away-near ;   \ (Room5C_Cond00: one within 3 put away)
 
 : old-mansion-2f-8.enter ( -- )   \ 00410F70
     room-sounds
@@ -371,7 +378,7 @@ USING: room-names story.words story.shared flag-names ;
         $FE char-here? not if
             5 6 5 scene-change
         else
-            $8016 scene-ending
+            $8016 examine-message
         then
     then
     0 $19 char-in-area? 0 -15 $32 char-heading? and if

@@ -3,7 +3,7 @@
 \ (Fiona_HewieReact: his patience and the praise he's due), and the meeting by his side for a
 \ praise, a scolding or "stay" (Hewie_JointAction, Hewie_FindSpot, his calls 12: Hewie_StateBlock).
 IN: hewie.commands
-USING: engine actors common facts paths messages hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.actions ;
+USING: engine actors common facts paths messages hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.actions hewie.fetch ;
 
 \ ---- how her doing strikes him (Fiona_HewieReact; D_003B2520: the patience it costs while he
 \ waits, and 1 in n that he's due a praise when she is near) ----
@@ -65,12 +65,17 @@ create reactions  300 , 1 , 300 , 1 , 300 , 1 , 750 , 1 , 150 , 1 , 1500 , 1 , 6
         >r false r>
     endcase ;
 
+\ (Actor_CanWalkBetween: straight from him to her, past nothing she couldn't step over)
+: can-get-to-her? ( -- flag )  his-tri his-at fiona-at $40080 v-walk  her body-tri = ;
 \ Hewie_FionaCommand: her command; true if he acts on it
 : fiona-command ( code -- flag )
     his-cmd-was !
     his-busy @ 0= his-broke @ 1 = and if  false exit  then
     his-action @ $7D = his-cmd-was @ $30 <> and if  obeys  then
     his-cmd-was @ dup $2B <> swap $2F <> and if  0 his-praise-b !  0 his-praise-a !  then
+    his-cmd-was @ $23 = his-waiting @ 0= and  his-danger @ 0= and  ball 0< and  can-get-to-her? and if
+        nearest-ball dup his-follows !  0< 0= if  $1D $78 want  true exit  then   \ (fetch: the ball nearest her)
+    then
     his-cmd-was @ $29 = if
         his-action @ his-did-was !
         1 3 praise-scold if  60 his-cooldown !  $1D 0 want  true exit  then

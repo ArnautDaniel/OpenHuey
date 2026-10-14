@@ -10,7 +10,7 @@
 \ at once). Hewie's bites (`bite`) take his health; a hard one makes him stumble. Growled and
 \ barked at (`snap`) his temper rises too; past what he stands he goes for Hewie a while.
 IN: stalker.bitten
-USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.tables stalker.attack stalker.chase stalker.struck ;
+USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.tables stalker.attack stalker.chase stalker.struck stalker.doorway ;
 
 : temper+ ( n -- )  temper @ + 1000 min temper ! ;
 : temper# ( cell -- n )  cells temper-table + @ ;
@@ -54,7 +54,7 @@ defer bitten-over ( -- )
                 bite-anim @ 2 + play-now  $B throw-damage 0 hewie send blow
             endof
             2 of   \ (he let go: back on his feet; the leg - down)
-                bitten @ 15 = if  0 bitten !  knock-down exit  then
+                bitten @ 15 = if  0 bitten !  leg-down exit  then
                 anim @ bite-anim @ 1+ = if  bitten-over exit  then
                 hp @ 0> 0= if  0 bitten !  knock-down exit  then
                 bite-anim @ 1+ play-now
@@ -96,6 +96,15 @@ defer bitten-over ( -- )
     gs-at sf@ f>cell  gs-at 4 + sf@ f>cell  gs-at 8 + sf@ f>cell  f>cell
     hewie send dog-grip ;
 
+\ ---- a room's grab of Hewie from behind (Pursuer_GrabHewieBehind: kind $F): the spot found and
+\ straight to him from where he stands - Hewie told where he is held (his to-spot); the room's
+\ scene takes them both on ----
+: grab-hewie-behind ( -- ok? )
+    $F grip? dup 0< if  drop false exit  then                          ( tri ) ( F: yaw )
+    self body-tri my-at gs-at $28020028 v-walk over <> if  drop fdrop false exit  then
+    gs-at sf@ f>cell  gs-at 4 + sf@ f>cell  gs-at 8 + sf@ f>cell  f>cell
+    hewie send hold-spot  true ;
+
 \ ---- his bites (Pursuer_Hit kind $B: bitten - the damage, a hard one a stumble, his cry) ----
 : bitten-by ( damage hard -- )
     swap  dup hits @ + 999 min hits !  hp @ swap - 0 max hp !
@@ -109,27 +118,48 @@ defer bitten-over ( -- )
     reeling @  bitten @ or  my-mode @ 0= or  my-mode @ 4 = or if  exit  then
     fiona-hidden state-flag? fiona-half-hidden state-flag? or if  5  else  4  then  temper# temper+ ;
 
-\ ---- after Hewie, his temper past what he stands (Pursuer_BehaviourHewie): toward him, and
-\ within reach a blow ($E00 or $E01); 300 frames, Hewie gone or the blow over - his temper back
-\ to 0 and on as before ----
-: dog-over ( -- )  0 temper !  0 dog-t !  0 at-dog !  combo-over  recovered ;
+\ ---- after Hewie, his temper past what he stands (Pursuer_GoForHewie, Pursuer_BehaviourHewie):
+\ toward him; within reach facing him, an attack from his table for Hewie (a blow, or a hold of
+\ him); that over - or his time for it (`dog-limit`) up - his taunt ($1602), his temper back to 0,
+\ and on as before. Hewie gone from the room: out after him by the exit to his (heading for her
+\ room after it - Pursuer_ThroughDoor); none open to it, on as before ----
+0 constant closing-in   1 constant attacking   2 constant taunting
+$B constant at-hewie        \ (his tables' situation)
+$1602 constant taunt-anim
+: dog-over ( -- )  0 temper !  0 dog-t !  0 at-dog !  closing-in dog-phase !  combo-over  recovered ;
 : dog-reach? ( -- flag )
     hold-off @ if  false exit  then
     d-hewie f@ fdup 24e f< 0=  fdup f0< or if  fdrop false exit  then
     fdup ground-gained f<  10e f< or 0= if  false exit  then
     hewie body-at heading-to yaw f- angle-wrap fabs 20e deg>rad f< ;
+: taunt ( -- )  0 temper !  taunting dog-phase !  taunt-anim play-now  ['] gesturing-at $17 act! ;
+: attack-dog ( -- )  attacking dog-phase !  at-hewie choose  chase-act @ 1 = if  -1 step-done !  then ;
+: close-in-on-dog ( -- )
+    dog-t @ 15 mod 1 = if  hewie body-tri dup 0< if  drop  else  hewie body-at plan drop  then  then
+    walk-fast play  walk-stride drop ;
+: exit-to ( room -- exit | -1 )
+    8 0 do  my-room i room-exit-leads drop over = if  drop i unloop exit  then  loop  drop -1 ;
+: follow-dog ( -- )
+    hewie dup body? if  body-room exit-to  else  drop -1  then
+    dup 0< if  drop dog-over exit  then
+    0 temper !  0 at-dog !  closing-in dog-phase !  combo-over  1 mode!
+    out-by 0= if  recovered  then ;
 : after-dog ( -- )
-    1 dog-t +!
-    dog-t @ 300 >  hewie here? 0= or if  dog-over exit  then
+    dog-t @ 0> if  -1 dog-t +!  then
+    hewie here? 0= if  follow-dog exit  then
     hold-off @ if  -1 hold-off +!  then
     act-xt @ execute
-    chase-act @ $13 = if  step-done @ if  dog-over  then  exit  then
-    dog-t @ 15 mod 1 = if  hewie body-tri dup 0< if  drop  else  hewie body-at plan drop  then  then
-    walk-fast play  walk-stride drop
-    dog-reach? if  rnd 0.5e f< if  0  else  1  then  combo-start  then ;
+    dog-phase @ closing-in <> if
+        step-done @ 0= if  exit  then
+        dog-phase @ taunting = if  dog-over exit  then
+        0 dog-t !  closing-in dog-phase !  ['] watching 1 act!   \ (his attack over: the taunt)
+    then
+    dog-t @ 0> 0= if  temper @ if  taunt  else  dog-over  then  exit  then
+    close-in-on-dog
+    dog-reach? if  attack-dog  then ;
 : go-for-dog ( -- )
-    0 search-phase !  0 dog-t !  0 hold-off !  -1 combo !  -1 at-dog !  ['] watching 1 act!
-    ['] after-dog step! ;
+    0 search-phase !  dog-limit @ dog-t !  0 hold-off !  -1 combo !  -1 at-dog !  closing-in dog-phase !
+    ['] watching 1 act!  ['] after-dog step! ;
 \ his temper past what he stands, free to go (not bitten, reeling, leading her)
 : dog-temper ( -- )
     hot? 0= bitten @ or reeling @ or leading @ or  stalkers-blind state-flag? or if  exit  then

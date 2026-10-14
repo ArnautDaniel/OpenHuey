@@ -2,13 +2,24 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-7f-1
-USING: room-names story.words story.shared flag-names ;
+USING: actors messages room-names story.words story.shared flag-names ;
 
 \ the 0x10-byte effect ObjectGlow_vtable on room object k + 1 (byte 4 = k, 1..8; script variable
 \ 11 - k keeps its slot): made on first use when byte 3 is set, then sent (on byte 3, index 8 -
 \ k, the variable, the object), with sound 1 at the object when on and the camera director's
 \ +0x38 is clear
-: water-tower-7f-1.cmd00 ( b0 b1 -- )  drop drop s" water-tower-7f-1.cmd00" stub-step ;
+: glow-of ( k -- id | -1 )   \ (the glow under planet k, kept in variable 11 - k; none alive: -1)
+    11 swap - var @  dup alive? if  dup actor-name s" object-glow" compare 0= if  exit  then  then  drop -1 ;
+: water-tower-7f-1.cmd00 ( b0 b1 -- )   \ (the glow under planet b1 (1..8: "earth".."saturn"): b0 1 on - made the first time,
+    \ kept in variable 11 - b1 - with its sound 1; 0 off, fading)
+    {: on k | a n :}
+    k 1+ room-object to n to a  a n object-here? 0= if  exit  then
+    k glow-of 0< if
+        on 0= if  exit  then
+        11 k -  8 k -  a n place-x object@ 0e a n place-z object@  effects:object-glow  var-set
+    then
+    on  k glow-of  send effect-command
+    on if  1 6 0 0  a n place-x object@ a n place-y object@ a n place-z object@  sound  then ;
 
 : water-tower-7f-1.enter ( -- )   \ 004401B0
     room-sounds

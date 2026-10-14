@@ -2,62 +2,100 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-4
-USING: room-names story.words story.shared flag-names ;
+USING: engine common actors messages story.state room-names story.words story.shared flag-names ;
 
 \ (as RoomC7_Cmd01)
-: house-of-truth-1f-4.cmd00 ( b0 -- )  drop s" house-of-truth-1f-4.cmd00" stub-step ;
+: house-of-truth-1f-4.cmd00 ( b0 -- )  var-down-by-hit ;
 \ the room object named pstr_dynamo swung: byte 3 0 starts it (rest +0x30 from +0x20, phase
 \ +0x34 0, amplitude +0x3C 1); 1 steps the phase back 60 degrees and the amplitude down 0.25,
 \ height +0x28 = +0x38 + amplitude * sin, waiting (2) until it has died out
-: house-of-truth-1f-4.cmd01 ( b0 -- )  drop s" house-of-truth-1f-4.cmd01" stub-step ;
+: house-of-truth-1f-4.cmd01 ( b0 -- )   \ ("dynamo" shaken in z: b0 0 starts it - rest where it is (+0x38), phase
+    \ (+0x34) 0, size (+0x3C) 1; 1 a step each frame - the phase back 60 degrees, the size down
+    \ 0.25, z the rest's + size x sin - till it dies out)
+    {: b0 :}  s" dynamo" object-here? 0= if  exit  then
+    b0 0= if
+        s" dynamo" place-z object@ s" dynamo" $38 object!  0e s" dynamo" $34 object!  1e s" dynamo" $3C object!  exit
+    then
+    b0 1 <> if  exit  then
+    begin
+        s" dynamo" $34 object@ 60e deg>rad f-  fdup pi fnegate f< if  2e pi f* f+  then  s" dynamo" $34 object!
+        -0.25e s" dynamo" $3C object+!
+        s" dynamo" $38 object@  s" dynamo" $3C object@ s" dynamo" $34 object@ fsin f* f+  s" dynamo" place-z object!
+        s" dynamo" $3C object@ f0> while  yield
+    repeat ;
 \ a turning machine: the wheel pstr_roller (angle +0x18, height +0x24 5.1) driven by the belt
 \ pstr_belt (offset +0x20 wrapping at 10, height +0x24 -3, speed +0x30). Byte 3 0 sets it up
 \ (speed 0.4); 1 runs it a frame (both shaking by up to 0.05); 2 also slows it by 0.01, waiting
 \ (2) until it stops. (The wheel's wrap steps +0x10, not the angle.)
-: house-of-truth-1f-4.cmd02 ( b0 -- )  drop s" house-of-truth-1f-4.cmd02" stub-step ;
+: house-of-truth-1f-4.cmd02 ( b0 -- )   \ (the machine: the wheel "roller" turned by the belt "belt" at its speed
+    \ (+0x30) - b0 0 sets it up (speed 0.4); 1 runs it a frame, both shaking by up to 0.05; 2 slows
+    \ it by 0.01 a frame till it stops. The original's wrap of the wheel's turn steps x, not the
+    \ angle: no wrap here)
+    {: b0 :}
+    s" roller" object-here?  s" belt" object-here? and 0= if  exit  then
+    b0 0= if
+        0e s" roller" turn-y object!  5.1e s" roller" place-y object!
+        0e s" belt" place-x object!  -3e s" belt" place-y object!  0.4e s" belt" $30 object!  exit
+    then
+    b0 2 > if  exit  then
+    begin
+        s" belt" $30 object@ 8e f/ s" roller" turn-y object+!   \ (2 pi x speed / 16 pi)
+        rnd 0.5e f- 0.1e f* 5.1e f+ s" roller" place-y object!
+        s" belt" $30 object@ s" belt" place-x object+!
+        begin  s" belt" place-x object@ 10e f< 0= while  -10e s" belt" place-x object+!  repeat
+        rnd 0.5e f- 0.1e f* 3e f- s" belt" place-y object!
+        b0 1 = if  exit  then
+        -0.01e s" belt" $30 object+!
+        s" belt" $30 object@ f0> while  yield
+    repeat
+    0e s" belt" $30 object! ;
 \ Hewie's +0x14C8 to script variable 2 (byte 3 0), or back from it (1; 0 there gives 10)
-: house-of-truth-1f-4.cmd03 ( b0 -- )  drop s" house-of-truth-1f-4.cmd03" stub-step ;
+: house-of-truth-1f-4.cmd03 ( b0 -- )   \ (Hewie's health kept in variable 2 - b0 0 - or put back from it: 1, 0 there gives 10)
+    case
+        0 of  2 hewie-hp @ var-set  endof
+        1 of  2 var @ ?dup 0= if  10  then  hewie-id send set-hp  endof
+    endcase ;
 \ the placed things of kinds 0, 2, 3, 5, 7 and 8 the event manager finds in area 0xB (+0x10):
 \ their timer (+0xE4) to 300000
-: house-of-truth-1f-4.cmd04 ( -- )  s" house-of-truth-1f-4.cmd04" stub-step ;
+: house-of-truth-1f-4.cmd04 ( -- )  $B things-age-out-in ;
 
 : house-of-truth-1f-4.enter ( -- )   \ 00433CC0
     room-sounds
     $9A story-flag? not $9B story-flag? not and if
         0 3 var-set
-        7 1 object-show
-        8 0 object-show
-        9 0 object-show
-        $A 1 object-show
-        $B 1 object-show
-        $C 0 object-show
-        $D 0 object-show
-        $E 0 object-show
-        $F 0 object-show
-        $10 0 object-show
-        $11 0 object-show
-        $12 0 object-show
-        $13 0 object-show
-        $14 0 object-show
-        $15 0 object-show
-        $16 0 object-show
+        7 1 object-hidden
+        8 0 object-hidden
+        9 0 object-hidden
+        $A 1 object-hidden
+        $B 1 object-hidden
+        $C 0 object-hidden
+        $D 0 object-hidden
+        $E 0 object-hidden
+        $F 0 object-hidden
+        $10 0 object-hidden
+        $11 0 object-hidden
+        $12 0 object-hidden
+        $13 0 object-hidden
+        $14 0 object-hidden
+        $15 0 object-hidden
+        $16 0 object-hidden
     else
-        7 1 object-show
-        8 0 object-show
-        9 0 object-show
-        $A 1 object-show
-        $B 1 object-show
-        $C 1 object-show
-        $D 1 object-show
-        $E 1 object-show
-        $F 1 object-show
-        $10 1 object-show
-        $11 1 object-show
-        $12 1 object-show
-        $13 1 object-show
-        $14 1 object-show
-        $15 1 object-show
-        $16 1 object-show
+        7 1 object-hidden
+        8 0 object-hidden
+        9 0 object-hidden
+        $A 1 object-hidden
+        $B 1 object-hidden
+        $C 1 object-hidden
+        $D 1 object-hidden
+        $E 1 object-hidden
+        $F 1 object-hidden
+        $10 1 object-hidden
+        $11 1 object-hidden
+        $12 1 object-hidden
+        $13 1 object-hidden
+        $14 1 object-hidden
+        $15 1 object-hidden
+        $16 1 object-hidden
         $9C story-flag? not if
             0 0.0 -2.2 65.0 flicker-sprite
         then
@@ -372,23 +410,23 @@ USING: room-names story.words story.shared flag-names ;
     $E5 door-lock
     scene-5-pending state-flag-set
     $FE char-full-health
-    6 0 object-show
-    7 1 object-show
-    8 0 object-show
-    9 0 object-show
-    $A 1 object-show
-    $B 1 object-show
-    $C 1 object-show
-    $D 1 object-show
-    $E 1 object-show
-    $F 1 object-show
-    $10 1 object-show
-    $11 1 object-show
-    $12 1 object-show
-    $13 1 object-show
-    $14 1 object-show
-    $15 1 object-show
-    $16 1 object-show
+    6 0 object-hidden
+    7 1 object-hidden
+    8 0 object-hidden
+    9 0 object-hidden
+    $A 1 object-hidden
+    $B 1 object-hidden
+    $C 1 object-hidden
+    $D 1 object-hidden
+    $E 1 object-hidden
+    $F 1 object-hidden
+    $10 1 object-hidden
+    $11 1 object-hidden
+    $12 1 object-hidden
+    $13 1 object-hidden
+    $14 1 object-hidden
+    $15 1 object-hidden
+    $16 1 object-hidden
     hewie-controlled? not if
         0 2 2 char-camera
         0 camera-follow
@@ -564,23 +602,23 @@ USING: room-names story.words story.shared flag-names ;
         1 camera-follow
     then
     camera-restart
-    6 0 object-show
-    7 1 object-show
-    8 0 object-show
-    9 0 object-show
-    $A 1 object-show
-    $B 1 object-show
-    $C 1 object-show
-    $D 1 object-show
-    $E 1 object-show
-    $F 1 object-show
-    $10 1 object-show
-    $11 1 object-show
-    $12 1 object-show
-    $13 1 object-show
-    $14 1 object-show
-    $15 1 object-show
-    $16 1 object-show
+    6 0 object-hidden
+    7 1 object-hidden
+    8 0 object-hidden
+    9 0 object-hidden
+    $A 1 object-hidden
+    $B 1 object-hidden
+    $C 1 object-hidden
+    $D 1 object-hidden
+    $E 1 object-hidden
+    $F 1 object-hidden
+    $10 1 object-hidden
+    $11 1 object-hidden
+    $12 1 object-hidden
+    $13 1 object-hidden
+    $14 1 object-hidden
+    $15 1 object-hidden
+    $16 1 object-hidden
     0 0.0 -2.2 65.0 flicker-sprite
     0 0 $14 door-bits
     1 exit-prepare
@@ -845,9 +883,9 @@ USING: room-names story.words story.shared flag-names ;
 
 : house-of-truth-1f-4.act0B ( -- )   \ 00434620
     self-wait-done
-    7 1 object-show
-    $A 1 object-show
-    $B 1 object-show
+    7 1 object-hidden
+    $A 1 object-hidden
+    $B 1 object-hidden
     1 0 movie-play
     0 cutscene-start
     yield
@@ -918,9 +956,9 @@ USING: room-names story.words story.shared flag-names ;
 
 : house-of-truth-1f-4.act0C ( -- )   \ 004346B0
     self-wait-done
-    7 1 object-show
-    $A 1 object-show
-    $B 1 object-show
+    7 1 object-hidden
+    $A 1 object-hidden
+    $B 1 object-hidden
     3 0 movie-play
     2 cutscene-start
     yield
@@ -990,9 +1028,9 @@ USING: room-names story.words story.shared flag-names ;
 
 : house-of-truth-1f-4.act0D ( -- )   \ 00434740
     self-wait-done
-    7 1 object-show
-    $A 1 object-show
-    $B 1 object-show
+    7 1 object-hidden
+    $A 1 object-hidden
+    $B 1 object-hidden
     $B 3 $FF char-load
     3 char-unload
     5 1 movie-play

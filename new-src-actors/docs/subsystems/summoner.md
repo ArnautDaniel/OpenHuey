@@ -59,7 +59,8 @@ one off by an exit at random.
 
 **In play** (Summoner_InPlay): the cooldown runs down. His mode changed: the wait restarts.
 Fiona in his room, or he next to hers where he isn't hunting her (not mode 4, or not in his own
-rooms): likewise. Else the wait counts up; after 5 s held off (mode 4: kind 1), or with the
+rooms): likewise. Else the wait counts up; after 5 s beaten (knocked out of health: kind 2), after 5 s held
+off (mode 4: kind 1), or with the
 cooldown over and 3 s waiting about (mode 3: kind 0), he is taken.
 
 **At the start of play in a room** (Summoner_RoomStart), with a stalker loaded, not while the
@@ -85,16 +86,16 @@ signal 6), as does any chance at all while the danger is 1 (followed).
   acoustics tells it at the frame's end, so a noise's call brings him in a frame later.
 - The progress' second room bit set (+0x100), which the way in requires clear: nothing in the
   decompilation writes it; taken as clear.
-- The ending's replay (+0x1FBEC1): not built.
-- Beaten (his +0xC4 = 2, out of health and leaving by a door; kind 2 after 5 s): hga's stalker
-  gives up with his health restored (stalker.md P3a), and is taken as held off (mode 4).
-- The camera driven by an event (CamDirector +0x6C, `cam-event?`): read, but nothing sets it yet.
+- The Hewie-controlled mode (+0x1FBEC1; docs/subsystems/hewie.md): its summoner's ways are left
+  with that mode - taken as off.
+- The camera driven by an event (`cam-event?`): the camera actor sets it (`cam-event!`) while an
+  event's shot has the camera (the story's 0x82) - no summons meanwhile.
 
 ## Status
 
 Built: `scripts/summoner.fs`; the stalker's status and summons (`stalker.fs`), the story's
 words (0x11, 0x14, 0x5A, 0x5B, 0x84), acoustics' `noise-made`. Tests:
-`tests/summoner/test_summoner.fs` (14): a noise's level, the rooms near hers, off stage (time
+`tests/summoner/test_summoner.fs` (16): a noise's level, the rooms near hers, off stage (time
 away rolled and counted down), coming in out of sight and waiting about, taken by the story,
-the cooldowns, a loud noise calling him in after her, held off in play. Not tested yet: the
+the cooldowns, a loud noise calling him in after her, held off and beaten in play. Not tested yet: the
 hunt's chance (random), a room closed to stalkers.

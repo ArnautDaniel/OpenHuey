@@ -60,11 +60,23 @@ T{ 120 frames  state0  doing -> 2 0 }T            \ let go open; free again
 \ (her animation takes her into the exit's area; the story takes the exit: tests/story/test_story.fs)
 front-garden-2 -1 rooms send go-to-room  5 frames
 
-testing a locked door: she tries it, and gives up
+testing a locked door: she tries it, and gives up (no story here: no message to wait on - test_examine)
 clean0  door0 doors send lock  deliver  at-door
 T{ key: C press  60 $609 watch-anim -> -1 }T
 T{ 90 frames  doing  state0 -> 0 8 }T             \ free; still locked, never held
 door0 doors send unlock  deliver
+
+testing struck while she opens a door: it is let go (left open, as she meant), not held
+clean0  front-garden-2 -1 rooms send go-to-room  5 frames  at-door
+T{ key: C press  30 $600 watch-anim  state0 1 and -> -1 1 }T
+T{ 1 0 10e f>cell fiona send hit  deliver  2 frames  state0 1 and  [: her-door-exit @ ;] her@ -> 0 -1 }T
+120 frames
+
+testing the story's door use (its move 3: through the door at exit 0, opening it): to the door, open by hand, done
+clean0  front-garden-2 -1 rooms send go-to-room  5 frames  at-door
+: move-done? ( -- flag )  [: her-move-done @ ;] her@ ;
+T{ 3 0 -1 0 0 0 0 fiona send scripted-move  deliver  30 $600 watch-anim -> -1 }T
+T{ 200 frames  state0 2 and  move-done? -> 2 -1 }T
 
 \ (going out by an exit: the story's room scripts take it - tests/story/test_story.fs)
 

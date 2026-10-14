@@ -79,5 +79,5 @@ create round-pt 12 allot  fvariable round-a  fvariable round-r  variable sc-who 
     fiona here? if  fiona-in-reach?  else  false  then  sees-fiona !
     hewie here? if  hewie-in-reach?  else  false  then  sees-hewie ! ;
 \ a noise heard this frame (the acoustics actor: its heard / heard-nothing) - NPC_HearNoise
-: hear ( loud room tri -- )  heard-tri !  heard-room !  heard-loud !  -1 did-hear ! ;
+: hear ( loud room tri source -- )  heard-source !  heard-tri !  heard-room !  heard-loud !  -1 did-hear ! ;
 : heard-none ( -- )  0 did-hear ! ;

@@ -13,12 +13,16 @@
 #include "forth/forth.h"
 #include "game/engine.h"
 #include "game/progress.h"
+#include "game/things.h"
 #include "game/sprites.h"
+#include "game/areas.h"
+#include "game/exits.h"
 #include "hactor/hactor.h"
 #include "platform/snddrv.h"
 #include "platform/sound.h"
 #include "platform/platform.h"
 #include "render/render.h"
+#include "render/post.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -139,7 +143,7 @@ static void light_actor(Engine *e, Actor *a) {
     vp = mat4_mul(proj, view);
     slot = render_shadow_add(&vp, center, radius, gRender.shadow_strength * fminf(1.0f, fmaxf(0.6f, lum * fall * 4.0f)) *
                                                       (e->extra.on ? fminf(1.0f, e->extra.scale) : 1.0f));   /* (a scene's dimmed lights cast less) */
-    if (slot >= 0) {
+    if (slot >= 0 && !a->shadow_off) {
         render_shadow_mesh(&a->gpu, a->model.d, a->model.nd);
     }
 }
@@ -203,6 +207,165 @@ static void use_lights(Engine *e, const Actor *a) {
     }
 }
 
+/* the characters again, mirrored in each reflecting quad's plane (Reflection_Draw: those on the
+ * eye's side of it; drawn faded by its strength, without their contact shadows) */
+/* the side panels of castle 2F's reflecting door and window (Reflection_SidePanels): by kind (the
+ * door's, the window's), the one each side */
+static const Vec3 kReflPanels[4][4] = {
+    {{50.0f, 30.0f, -21.3043f}, {50.0f, 30.0f, -28.75f}, {50.0f, 1.25f, -21.3043f}, {50.0f, 1.25f, -28.75f}},
+    {{31.3043f, 30.0f, -10.0f}, {38.75f, 30.0f, -10.0f}, {31.3043f, 1.5f, -10.0f}, {38.75f, 1.5f, -10.0f}},
+    {{10.0f, 22.0f, 58.6957f}, {10.0f, 22.0f, 51.25f}, {10.0f, 0.0f, 58.6957f}, {10.0f, 0.0f, 51.25f}},
+    {{-8.6957f, 22.0f, 70.0f}, {-1.25f, 22.0f, 70.0f}, {-8.6957f, 0.0f, 70.0f}, {-1.25f, 0.0f, 70.0f}},
+};
+
+/* the characters on the eye's side drawn mirrored (`mvp`), faded by k, only on quad q (unless
+ * over the whole picture) */
+static void reflect_into(Engine *e, const Mat4 *proj, const Mat4 *view, const Mat4 *vp, const Mat4 *mvp, Vec3 eye,
+                         Vec3 n, float d, float side, float k, const Vec3 *q, int only) {
+    int i;
+
+    if (q != NULL) {
+        render_reflect_begin(vp, q);
+    }
+    render_camera(proj, view, eye, e->camera.znear, e->camera.zfar);
+    for (i = 0; i < MAX_ACTORS; i++) {
+        Actor *a = &e->actors[i];
+        float alpha = a->alpha;
+        int off = a->shadow_off;
+
+        if (!a->used || !a->visible || (vec3_dot(n, a->pos) - d) * side <= 0.0f || (only >= 0 && i != only)) {
+            continue;
+        }
+        a->alpha = alpha * fminf(k, 1.0f);
+        a->shadow_off = 1;
+        use_lights(e, a);
+        actor_draw(a, mvp);
+        a->alpha = alpha;
+        a->shadow_off = off;
+    }
+    render_camera(proj, view, e->camera.pos, e->camera.znear, e->camera.zfar);
+    if (q != NULL) {
+        render_reflect_end(vp, q);
+    }
+}
+
+/* a point's screen x in the game's pixels (512 across); 0 if behind the eye */
+static float screen_x(const Mat4 *vp, Vec3 p) {
+    const float *m = vp->m;
+    float x = m[0] * p.x + m[4] * p.y + m[8] * p.z + m[12], w = m[3] * p.x + m[7] * p.y + m[11] * p.z + m[15];
+
+    return w > 0.0f ? 256.0f * (x / w + 1.0f) : 0.0f;
+}
+
+static int in_view(const Mat4 *vp, const Vec3 *q) {   /* (all four corners) */
+    const float *m = vp->m;
+    int k;
+
+    for (k = 0; k < 4; k++) {
+        float x = m[0] * q[k].x + m[4] * q[k].y + m[8] * q[k].z + m[12], y = m[1] * q[k].x + m[5] * q[k].y + m[9] * q[k].z + m[13];
+        float z = m[2] * q[k].x + m[6] * q[k].y + m[10] * q[k].z + m[14], w = m[3] * q[k].x + m[7] * q[k].y + m[11] * q[k].z + m[15];
+
+        if (x > w || x < -w || y > w || y < -w || z > w || z < -w) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static void draw_reflections(Engine *e, const Mat4 *proj, const Mat4 *view, const Mat4 *vp) {
+    int r;
+
+    for (r = 0; r < 4; r++) {
+        const Vec3 *q = e->refl[r].q;
+        Vec3 n = vec3_norm(vec3_cross(vec3_sub(q[1], q[0]), vec3_sub(q[2], q[0])));
+        float d = vec3_dot(n, q[0]), side = vec3_dot(n, e->camera.pos) - d, k = (float)e->refl[r].strength / 128.0f;
+        Mat4 m = mat4_identity(), mvp;
+        Vec3 eye;
+        int c, w;
+
+        if (e->refl[r].strength <= 0 || side == 0.0f) {
+            continue;
+        }
+        for (c = 0; c < 3; c++) {   /* p' = p - 2 (n.p - d) n */
+            const float nc[3] = {n.x, n.y, n.z};
+
+            for (w = 0; w < 3; w++) {
+                m.m[c * 4 + w] -= 2.0f * nc[w] * nc[c];
+            }
+            m.m[12 + c] = 2.0f * d * nc[c];
+        }
+        mvp = mat4_mul(*vp, m);
+        eye = vec3_sub(e->camera.pos, vec3_scale(n, 2.0f * side));
+        reflect_into(e, proj, view, vp, &mvp, eye, n, d, side, k, e->refl[r].screen ? NULL : q, e->refl[r].only);
+        if (e->refl[r].panels != 0 && !e->refl[r].screen) {
+            /* the panels: the reflection again at half, moved by the quad's width on screen */
+            float dx = (float)((int)(screen_x(vp, q[1]) * 16.0f) - (int)(screen_x(vp, q[0]) * 16.0f)) / 16.0f;
+            int s;
+
+            for (s = 0; s < 2 && dx != 0.0f; s++) {
+                float sx = s == 0 ? dx : -dx, t = sx / 256.0f;   /* (in clip x, times w) */
+                const Vec3 *p = kReflPanels[(e->refl[r].panels == 2 ? 0 : 2) + (sx < 0.0f ? 0 : 1)];
+                Mat4 moved = mvp;
+
+                if (!in_view(vp, p)) {
+                    continue;
+                }
+                for (c = 0; c < 4; c++) {   /* (row 0 += t x row 3) */
+                    moved.m[c * 4] += t * moved.m[c * 4 + 3];
+                }
+                reflect_into(e, proj, view, vp, &moved, eye, n, d, side, k * 0.5f, p, e->refl[r].only);
+            }
+        }
+    }
+}
+
+/* how far a character has faded going out through a doorway (Character_RegionFade): in an
+ * exit's area, by how far past its middle toward the outside it stands - none on the room's side
+ * of the middle, all at the area's outer edge (its depth along the exit's way through) */
+float doorway_faded(const Engine *e, const Actor *a) {
+    int exit;
+
+    if (!a->doorway_fade || e->room.id < 0 || e->room.id >= WORLD_ROOMS) {
+        return 0.0f;
+    }
+    for (exit = 0; exit < ROOM_EXITS; exit++) {
+        int area = e->world.exits[e->room.id][exit].camera & 0xFFFF;
+        Vec3 out, in, way, c0, c1, c2, edge, middle;
+        float half, past;
+
+        if (area == 0xFFFF || !area_inside(&e->room, area, a->pos)) {
+            continue;
+        }
+        if (exit_spot(&e->room, &e->world, exit, 0, &out) < 0 || exit_spot(&e->room, &e->world, exit, 1, &in) < 0 ||
+            !area_corner(&e->room, area, 0, &c0) || !area_corner(&e->room, area, 1, &c1) ||
+            !area_corner(&e->room, area, 2, &c2) || !area_middle(&e->room, area, &middle)) {
+            continue;
+        }
+        way = vec3_norm(vec3(in.x - out.x, 0.0f, in.z - out.z));   /* (from outside in) */
+        edge = vec3(c1.x - c0.x, 0.0f, c1.z - c0.z);               /* (the area's side along the way) */
+        if (fabsf(vec3_dot(way, vec3_norm(edge))) < 0.70710677f) {
+            edge = vec3(c1.x - c2.x, 0.0f, c1.z - c2.z);
+        }
+        half = 0.5f * vec3_len(edge);
+        edge = vec3_norm(edge);
+        if (vec3_dot(way, edge) < 0.0f) {
+            edge = vec3_scale(edge, -1.0f);
+        }
+        past = vec3_dot(vec3_sub(middle, a->pos), edge);   /* (how far outward of the middle) */
+        return half > 0.0f ? fminf(fmaxf(past / half, 0.0f), 1.0f) : 0.0f;
+    }
+    return 0.0f;
+}
+
+static void draw_actor(Engine *e, Actor *a, const Mat4 *vp) {
+    float alpha = a->alpha, faded = doorway_faded(e, a);
+
+    a->alpha = alpha * (1.0f - faded);
+    use_lights(e, a);
+    actor_draw(a, vp);
+    a->alpha = alpha;
+}
+
 static void draw(Engine *e) {
     Mat4 proj, view, vp;
     int i;
@@ -226,12 +389,45 @@ static void draw(Engine *e) {
     render_camera(&proj, &view, e->camera.pos, e->camera.znear, e->camera.zfar);
     room_draw(&e->room, &vp, e->camera.pos, camera_forward(&e->camera));
     for (i = 0; i < MAX_ACTORS; i++) {
-        if (e->actors[i].used) {
-            use_lights(e, &e->actors[i]);
-            actor_draw(&e->actors[i], &vp);
+        if (e->actors[i].used && e->actors[i].layer < 0x1E && e->actors[i].layer != 0x1C) {
+            draw_actor(e, &e->actors[i], &vp);
         }
     }
+    for (i = 0; i < MAX_ACTORS && !(e->actors[i].used && e->actors[i].layer == 0x1C); i++) {
+    }
+    if (i < MAX_ACTORS && post_soft_begin()) {   /* layer $1C: drawn softened (at half size) */
+        for (i = 0; i < MAX_ACTORS; i++) {
+            if (e->actors[i].used && e->actors[i].layer == 0x1C) {
+                int off = e->actors[i].shadow_off;
+
+                e->actors[i].shadow_off = 1;   /* (its shadow stays in the scene: not softened) */
+                draw_actor(e, &e->actors[i], &vp);
+                e->actors[i].shadow_off = off;
+            }
+        }
+        post_soft_end();
+    }
+    draw_reflections(e, &proj, &view, &vp);
+    for (i = 0; i < MAX_ACTORS; i++) {   /* (the later layers: in front of a reflection over everything) */
+        if (e->actors[i].used && e->actors[i].layer >= 0x1E) {
+            draw_actor(e, &e->actors[i], &vp);
+        }
+    }
+    things_draw(e->room.id, &vp);   /* the things lying about (their sprites written for the next) */
     sprites_draw(&vp, &view);   /* the effects (after the opaque scene: they don't write depth) */
+    if (sprites_glowing() && post_glow_begin()) {   /* the glow pass: the glowing ones again */
+        sprites_draw_glow(&vp);
+        post_glow_end();
+    }
+    if (post_shine_begin()) {   /* layer $14 again, for its shine */
+        for (i = 0; i < MAX_ACTORS; i++) {
+            if (e->actors[i].used && e->actors[i].layer == 0x14) {
+                use_lights(e, &e->actors[i]);
+                actor_draw(&e->actors[i], &vp);
+            }
+        }
+        post_shine_end();
+    }
     render_post();
     engine_draw_2d(e);   /* scripts' 2D (on-draw hooks) */
     if (e->hud[0] != 0) {
@@ -269,7 +465,7 @@ static void start_scripts(Engine *e, int hidden) {
 
 /* a fresh game (`soft-reset`: the game over's return to the title, as the original makes its
  * title scene anew): everything the scripts made let go - the actors and their models, the
- * room, the effects, the 2D, sounds, music, movie; the progress cleared - and the scripts
+ * room, the effects, the 2D, sounds, music, movie; the progress cleared but for its unlocks - and the scripts
  * started again */
 static void soft_reset(Engine *e, int hidden) {
     int i;
@@ -285,7 +481,8 @@ static void soft_reset(Engine *e, int hidden) {
     e->room.id = -1;
     sprites_free_all();
     bind_engine_reset();
-    memset(&gProgress, 0, sizeof(gProgress));
+    progress_clear();   /* (the unlocks kept) */
+    things_clear();
     e->nhooks = e->ndraw_hooks = 0;
     e->nstage = 0;
     memset(&e->extra, 0, sizeof(e->extra));
@@ -338,6 +535,7 @@ int main(int argc, char **argv) {
         }
         free(libsd);
     }
+    e->testing = opt.test != NULL;
     start_scripts(e, opt.hidden);
     for (i = 0; i < opt.nevals; i++) {
         forth_eval(e->forth, opt.evals[i], strlen(opt.evals[i]), "--eval");

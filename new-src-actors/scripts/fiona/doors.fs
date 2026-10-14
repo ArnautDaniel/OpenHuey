@@ -4,10 +4,11 @@
 \ of the door, opens or shuts it by hand (her animation 0x600 + its kind, the door swinging with
 \ her) and lets it go as she steps out. A locked door she tries, and gives up.
 IN: fiona.doors
-USING: engine keys actors messages common doors fiona.state fiona.model fiona.moving fiona.spots ;
+USING: engine keys actors messages common paths doors fiona.state fiona.model fiona.moving fiona.spots ;
 
 : doors-id ( -- id )  s" doors" actor-named ;
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
+: door-over ( -- )  -1 her-move-done !  to-idle ;   \ (a use from the scripts: their move done)
 : door-of-exit ( exit -- door | -1 )  room-id swap room-exit-door ;
 
 \ ---- the exit she may use: the first whose door area she stands in (Progress_WhoIsWhere: the
@@ -31,7 +32,7 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
 
 \ stepping out: free again at her animation's end, the door let go
 : stepping-out ( -- )
-    ended? if  let-go  -1 her-door-exit !  to-idle exit  then
+    ended? if  let-go  -1 her-door-exit !  door-over exit  then
     root-move ;
 \ her animation fading in: then the door swings with her
 : door-anim ( -- )
@@ -42,23 +43,48 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
 : holding ( -- ) ;
 \ walking to her spot; there, she takes hold of it (if it is still as it was)
 : to-the-door ( -- )
-    walk-to-spot dup 0< if  drop to-idle exit  then  if  exit  then
-    her-door-exit @ door-of-exit door-open?  her-door-opens @ = if  to-idle exit  then
+    walk-to-spot dup 0< if  drop door-over exit  then  if  exit  then
+    her-door-exit @ door-of-exit door-open?  her-door-opens @ = if  door-over exit  then
     room-id her-door-exit @ fiona-kind doors-id send hold-door
     ['] holding her-act ! ;
 : got-hold ( -- )   \ (the answer: hers) her animation, the door with it
     her-door-anim @ play-own  ['] door-anim her-act ! ;
 
-\ a locked door: walking to the spot, then trying it (her rattle), and back to standing
-: rattled ( -- )  1 her-rattle +!  her-rattle @ 7 >= if  to-idle  then ;
-: rattling ( -- )  ended? if  -1 idle-anim  0 her-rattle !  ['] rattled her-act !  exit  then  root-move ;
-: to-try ( -- )
-    walk-to-spot dup 0< if  drop to-idle exit  then  if  exit  then
-    6 her-still !  her-door-anim @ -1 play-table  ['] rattling her-act ! ;
+\ a locked door. Quick: at her spot she tries it, and as the built-in script has it (D_003B2450:
+\ the try, 7 frames, then - not while Hewie is the one played - "locked from the other side",
+\ system message $8001) she stands again once the message is read and the try played out.
+\ Slow (chased): from the spot, no message; worn out (panicking: her fear's bit 2) from where she
+\ stands - sliding to the spot a seventh of the way a frame as the try fades in
+\ (Fiona_StateLockedSlow / LockedTry / LockedSpot / LockedQuick).
+: try-over ( -- )  ended? if  door-over exit  then  root-move ;   \ (Fiona_StateIdleAtEvent2)
+: quick-trying ( -- )
+    1 her-rattle +!
+    her-rattle @ 7 = if  $8001 broadcast fiona-message  then
+    ended? if  -1 idle-anim  then
+    her-rattle @ 7 > her-reading @ 0= and  anim@ her-door-anim @ <> and if  0 her-rattle !  door-over exit  then
+    anim@ her-door-anim @ = if  root-move  then ;
+: to-try ( -- )   \ (quick)
+    walk-to-spot dup 0< if  drop door-over exit  then  if  exit  then
+    6 her-still !  0 her-rattle !  her-door-anim @ play-own  ['] quick-trying her-act ! ;
+: to-try-slow ( -- )
+    walk-to-spot dup 0< if  drop door-over exit  then  if  exit  then
+    her-door-anim @ play-own  ['] try-over her-act ! ;
+fvariable try-step  fvariable try-turn
+: sliding ( -- )   \ (as the try fades in: along the way and round to the door; then on the spot)
+    settled? if  arrive-spot drop  ['] try-over her-act !  exit  then
+    her-yaw f@ her-heading f@ try-turn f@ turn-toward fdrop her-yaw f!
+    her-path her-at try-step f@ path-ahead drop  her-at ahead vec-copy
+    her-at blocked-floor v-tri-in dup 0< if  drop  else  her-tri !  then ;
+: slide-to-try ( -- )   \ (once what she was doing has faded in: the way to the spot, none - she gives up)
+    settled? 0= if  exit  then
+    plan 0= if  door-over exit  then
+    rest-of-way 7e f/ try-step f!
+    her-heading f@ her-yaw f@ f- angle-wrap fabs 7e f/ try-turn f!
+    her-door-anim @ play-own  ['] sliding her-act ! ;
 
 \ Fiona_StateDoorStart: which animation (by the side she is on, quick or slow), then to the spot
 : walk-or-stop ( next -- )
-    >r door-spot dup 0< if  r> 2drop fdrop fdrop fdrop fdrop to-idle exit  then
+    >r door-spot dup 0< if  r> 2drop fdrop fdrop fdrop fdrop door-over exit  then
     walk-spot  r> her-act ! ;
 : door-start ( -- )
     her-door-opens @ 0= if   \ shutting it
@@ -71,10 +97,25 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
         else  quick? if  2 $602  else  6 $606  then  then  kind!
         ['] to-the-door walk-or-stop exit
     then
-    \ locked: she tries it (the slow try - a seventh of the way a frame - with the panic: F2)
-    quick? if  her-door-side @ 0= if  0 $609  else  2 $608  then
-    else  her-door-side @ 0= if  4 $60B  else  6 $60A  then  then  kind!
-    ['] to-try walk-or-stop ;
+    \ locked: she tries it
+    quick? if
+        her-door-side @ 0= if  0 $609  else  2 $608  then  kind!  ['] to-try walk-or-stop exit
+    then
+    her-door-side @ 0= if  4 $60B  else  6 $60A  then  kind!
+    her-fear-bits @ 2 and if  ['] slide-to-try  else  ['] to-try-slow  then  walk-or-stop ;
+
+\ struck while using a door (Fiona_StartInDoor): a door she holds is let go as she meant it -
+\ open, or shut
+: drop-door ( -- )
+    her-door-exit @ dup 0< if  drop exit  then
+    door-of-exit door-held? 0= if  -1 her-door-exit !  exit  then
+    let-go  -1 her-door-exit ! ;
+
+\ the story's door use (its move 3 / 4: Fiona_Requests): through the door at `exit`, opening it or
+\ shutting it, whatever its state
+: scripted-door ( exit opens? -- )
+    her-door-opens !  dup her-door-exit !  her-pos door-side 1 = 1 and her-door-side !
+    3 her-doing !  2 her-mode !  door-start ;
 
 \ the action button at a door (Fiona_StateBlock 2: her request taken)
 : use ( exit -- )

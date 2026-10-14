@@ -728,6 +728,39 @@ USING: room-names ;
     off-map-e7 of  case
         0 of  s" O_FIN_M\FIN_101.MTN" endof
         >r s" " r>  endcase  endof
+    \ (the rooms past $FF: added by hand - the generator's table stopped at $FF)
+    chaos-forest-4 of  case
+        0 of  s" uekomi1" endof
+        1 of  s" uekomi2" endof
+        2 of  s" uekomi3" endof
+        >r s" " r>  endcase  endof
+    chaos-forest-5 of  case
+        0 of  s" uekomi1" endof
+        1 of  s" uekomi2" endof
+        2 of  s" uekomi3" endof
+        >r s" " r>  endcase  endof
+    chaos-forest-6 of  case
+        0 of  s" uekomi1" endof
+        1 of  s" uekomi2" endof
+        2 of  s" uekomi3" endof
+        >r s" " r>  endcase  endof
+    chaos-forest-7 of  case
+        0 of  s" uekomi1" endof
+        1 of  s" uekomi2" endof
+        2 of  s" uekomi3" endof
+        >r s" " r>  endcase  endof
+    chaos-forest-8 of  case
+        0 of  s" DE002A" endof
+        1 of  s" DE002A\DE002A.SFD" endof
+        >r s" " r>  endcase  endof
+    chaos-forest-10 of  case
+        0 of  s" EV0020" endof
+        1 of  s" EV0020\EV0020.SFD" endof
+        >r s" " r>  endcase  endof
+    chaos-forest-13 of  case
+        0 of  s" EV0021" endof
+        1 of  s" EV0021\EV0021.SFD" endof
+        >r s" " r>  endcase  endof
     >r drop s" " r>  endcase ;
 
 \ the background music's tracks (pstr_ADX00_AD_01_ADX): the file and whether it loops

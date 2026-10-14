@@ -9,7 +9,7 @@ cry), his gestures (animation, a flag), Debilitas's chase table (frames and chan
 chances of a lunge by how near she is, the base chase's table by the panic's stage (+0x1730:
 the chance to walk at her, frames walking, frames stalking), his temper with Hewie (+0x173C),
 his throws off Hewie (Pursuer_ShakeOffEntry's moves) and Hewie's grip spots by him
-(the ActionOffsets). Each set is gathered into a kit (`debilitas-kit`, `daniella-kit`): a
+(the ActionOffsets), his animations' sounds (+0x16AC) and his knocks (+0x16B0). Each set is gathered into a kit (`debilitas-kit`, `daniella-kit`): a
 stalker's `kit` field points at his, and the words below read through it.
 
 usage: stalkertables.py [repo root]"""
@@ -36,6 +36,10 @@ def rd(va, fmt):
         if vaddr <= va < vaddr + size:
             return struct.unpack_from(fmt, elf, off + va - vaddr)
     raise ValueError(hex(va))
+
+
+def sound_num(x):   # a sound number, or -1 none
+    return '$%X' % x if x >= 0 else '-1'
 
 
 def f(x):
@@ -70,13 +74,13 @@ def ly(h, r):   # Lorenzo2's attack tables [hard][rage] (lorenzo.c sAttackTables
 
 
 LY_TABLES = ly(0, 0) + ly(0, 1) + ly(1, 0) + ly(1, 1)
-LY_COMMON = dict(tables=LY_TABLES, combos=(0x422A40, 12), gestures=(0x422A10, 6), chase=0x3AFB70, lunge=0x3AF4B0,
+LY_COMMON = dict(steps=(0x422500, 0x422650), knocks=0x422650, tables=LY_TABLES, combos=(0x422A40, 12), gestures=(0x422A10, 6), chase=0x3AFB70, lunge=0x3AF4B0,
                  temper=(0x4230E0, 0x423990), pursue=(0x423020, 0x423070, 0x4238B0, 0x423900), throws=(9, 10),
                  grips=((1.1771, 9.8175), (1.1771, 9.8175), (0.9538, 13.3707), (0.9538, 13.3707),
                         (-1.1471, -2.5207), (-0.1481, -3.9775)))
 K39_TABLES = (dan(['Kind39_Attack0_%02d' % i for i in range(17)]) * 2 +
               dan(['Kind39_Attack1_%02d' % i for i in range(17)]) * 2)
-K39_COMMON = dict(tables=K39_TABLES, combos=(0x445090, 12), gestures=(0x445060, 6), chase=0x3AFB70, lunge=0x3AF4B0,
+K39_COMMON = dict(steps=(0x444B50, 0x444CA0), knocks=0x444CA0, tables=K39_TABLES, combos=(0x445090, 12), gestures=(0x445060, 6), chase=0x3AFB70, lunge=0x3AF4B0,
                   temper=(0x445550, 0x445A00), pursue=(0x4454E0, 0x4454E0, 0x445990, 0x445990), throws=(9, 10),
                   grips=LY_COMMON['grips'])
 def k37(h, a):   # kind 37's attack tables [hard][alerted] (riccardo.c sAttackTables2)
@@ -85,17 +89,26 @@ def k37(h, a):   # kind 37's attack tables [hard][alerted] (riccardo.c sAttackTa
     return dan(names)
 
 
+def c_tables(array):   # an attack-table array of daniella.c, its names in order ([hard][rage][17] or [hard][17])
+    src = open(os.path.join(root, 'src', 'game', 'daniella.c')).read()
+    body = src[src.index('static u8 *const %s[' % array):]
+    body = body[body.index('{'):body.index('};')]
+    return dan(re.findall(r'\b(\w+)\b', body))
+
+
 TS_TABLES = (dan(['TintStalker_Attack0_%02d' % i for i in range(15)] + ['str_r_8', 'str_t_13']) +
              dan(['TintStalker_Attack1_%02d' % i for i in range(15)] + ['str_r_9', 'str_t_14']))
+DAN_GRIPS = ((0.2576, 10.7031), (0.2576, 10.7031), (1.6432, 10.9092), (1.6432, 10.9092),
+             (-0.1714, -3.1206), (0.4004, -2.9467))   # (Daniella_ActionOffsets; her later kinds' the same)
 STALKERS = [
     # name, prefix, attack tables [hard][rage][17] (Debilitas: his rage the same), moves, combos,
     # gestures, chase, lunge, temper (normal, hard), base chase [hard][rage], throws, grip offsets
-    dict(name='Debilitas', p='deb', tables=DEB_TABLES[:17] * 2 + DEB_TABLES[17:] * 2,
+    dict(name='Debilitas', steps=(0x3AF340, 0x3AF4A0), knocks=0x3AF4A0, p='deb', tables=DEB_TABLES[:17] * 2 + DEB_TABLES[17:] * 2,
          moves=(0x3AF4D0, 15), combos=(0x3AF730, 16), gestures=(0x3AF6F0, 8), chase=0x3AFB70, lunge=0x3AF4B0,
          temper=(0x3AFB10, 0x3AFB10), pursue=(0x3AFA90, 0x3AFA90, 0x3AFA90, 0x3AFA90), throws=(13, 14),
          grips=((0.9433, 11.2509), (0.9433, 11.2509), (2.1745, 15.0419), (2.1745, 15.0419),
                 (-1.6117, -4.3418), (0.0182, -1.0008))),
-    dict(name='Riccardo', p='ric', tables=RIC_TABLES[:17] * 2 + RIC_TABLES[17:] * 2,
+    dict(name='Riccardo', steps=(0x4148E0, 0x414A30), knocks=0x414A30, p='ric', tables=RIC_TABLES[:17] * 2 + RIC_TABLES[17:] * 2,
          moves=(0x414A40, 18), combos=(0x414D00, 20), gestures=(0x414CD0, 6), chase=0x3AFB70, lunge=0x47AC38,
          temper=(0x4150D0, 0x4150D0), pursue=(0x415060, 0x415060, 0x4155E0, 0x4155E0), throws=(16, 17),
          grips=((-0.0389, 10.4049), (-0.0389, 10.4049), (0.7311, 13.251), (0.7311, 13.251),
@@ -103,7 +116,7 @@ STALKERS = [
          waits=0x415130, flurry=(0x4156C0, 0x4156E0), lunge_n=1),
     # Lorenzo: his temper with Hewie (+0x173C, 0x01990F90) is in memory the game fills - none here
     # (0: he never goes for Hewie); no throws of Hewie (AttackAnimA / B: the Pursuer's -1)
-    dict(name='Lorenzo', p='lor', tables=LOR_TABLES[:17] * 2 + LOR_TABLES[17:] * 2,
+    dict(name='Lorenzo', steps=(0x41A630, 0x41A760), knocks=0x41A760, p='lor', tables=LOR_TABLES[:17] * 2 + LOR_TABLES[17:] * 2,
          moves=(0x41A770, 5), combos=(0x41A850, 8), gestures=(0x41A830, 4), chase=0x3AFB70, lunge=0x3AF4B0,
          temper=(None, None), pursue=(0x41ABD0, 0x41ABD0, 0x41AFC0, 0x41AFC0), throws=(-1, -1),
          grips=((-1.2219, -15.9398), (-1.2219, -15.9398), (0.2996, 14.3695), (0.2996, 14.3695),
@@ -116,21 +129,21 @@ STALKERS = [
     dict(name='Kind39H', p='k39h', moves=(0x444ED0, 11), **K39_COMMON),
     # Riccardo's other class (kind 37; riccardo.c Kind37_*): his chase with its own tables; alerted
     # (struck enough: hurt) its alert tables and waits
-    dict(name='Kind37', p='k37', tables=k37(0, 0) + k37(0, 1) + k37(1, 0) + k37(1, 1),
+    dict(name='Kind37', steps=(0x441890, 0x4419E0), knocks=None, p='k37', tables=k37(0, 0) + k37(0, 1) + k37(1, 0) + k37(1, 1),
          moves=(0x4419E0, 18), combos=(0x441CA0, 20), gestures=(0x441C70, 6), chase=0x3AFB70, lunge=0x47AF50,
          temper=(0x442230, 0x442230), pursue=(0x4421A0, 0x4421A0, 0x4421A0, 0x4421A0), throws=(16, 17),
          grips=((-0.0389, 10.4049), (-0.0389, 10.4049), (0.7311, 13.251), (0.7311, 13.251),
                 (-1.1471, -2.5207), (-0.328, -2.3929)),
          waits=(0x442290, 0x4428C0, 0x4422B0, 0x4428E0), flurry=(0x4156C0, 0x4156E0), lunge_n=1),
     # the TintStalker (kind 23; tintstalker.c): the Pursuer's chase with its tables, Riccardo's look
-    dict(name='TintStalker', p='ts', tables=TS_TABLES[:17] * 2 + TS_TABLES[17:] * 2,
+    dict(name='TintStalker', steps=(0x42A380, 0x42A4D0), knocks=0x42A4D0, p='ts', tables=TS_TABLES[:17] * 2 + TS_TABLES[17:] * 2,
          moves=(0x42A4E0, 18), combos=(0x42A7A0, 20), gestures=(0x42A770, 6), chase=0x3AFB70, lunge=0x3AF4B0,
          temper=(0x42AB40, 0x42AB40), pursue=(0x42AAD0, 0x42AAD0, 0x42AAD0, 0x42AAD0), throws=(16, 17),
          grips=((-0.0389, 10.4049), (-0.0389, 10.4049), (0.7311, 13.251), (0.7311, 13.251),
                 (-1.1471, -2.5207), (-0.328, -2.3929))),
     # kind 12 (lorenzo.c Kind12_*): unkillable, it seizes her seeing her; its temper with Hewie is in
     # memory the game fills (none), no throws, no grips of its own
-    dict(name='Kind12', p='k12',
+    dict(name='Kind12', steps=(0x423BB0, 0x423CE0), knocks=0x423CE0, p='k12',
          tables=[0x423D90, 0x423DE0, 0x423DB0, 0x423DF8, 0x423E10, 0x423E38, 0x423E50, 0x423E70, 0x423E88,
                  0x423E98, 0x423EB0, 0x423EC8, 0x423EE0, 0x423F00, 0x423F38, 0x423F48, 0x423F20] * 2 +
                 [0x423FE0, 0x424040, 0x424010, 0x424060, 0x424080, 0x4240B0, 0x4240C0, 0x4240F0, 0x424108,
@@ -138,11 +151,25 @@ STALKERS = [
          moves=(0x423CF0, 3), combos=(0x423D80, 4), gestures=(0x423D60, 4), chase=0x3AFB70, lunge=0x3AF4B0,
          temper=(None, None), pursue=(0x423F60, 0x423F60, 0x4241F0, 0x4241F0), throws=(-1, -1),
          grips=((0.0, 0.0),) * 6),
-    dict(name='Daniella', p='dan', tables=DAN_TABLES,
+    # Daniella's later kinds (daniella.c Kind34_* / Kind35_* / Kind36_*): her moves, gestures and
+    # combos of their own, her grips; 34 has her rage, 35 and 36 none (their sets by the hard
+    # setting only)
+    dict(name='Kind34', steps=(0x43B700, 0x43B840), knocks=0x43B840, p='k34', tables=c_tables('sAttackTables1'),
+         moves=(0x43B860, 13), combos=(0x43BA70, 20), gestures=(0x43BA40, 6), chase=0x3AFB70, lunge=0x3AF4B0,
+         temper=(0x43C2F0, 0x43CCB0), pursue=(0x43C210, 0x43C260, 0x43CBD0, 0x43CC20), throws=(11, 12),
+         grips=DAN_GRIPS),
+    dict(name='Kind35', steps=(0x43CDE0, 0x43CF20), knocks=None, p='k35', tables=(lambda t: t[:17] * 2 + t[17:] * 2)(c_tables('sAttackTables2')),
+         moves=(0x43CF20, 13), combos=(0x43D130, 20), gestures=(0x43D100, 6), chase=0x3AFB70, lunge=0x3AF4B0,
+         temper=(0x43D650, 0x43DB50), pursue=(0x43D5E0, 0x43D5E0, 0x43DAE0, 0x43DAE0), throws=(11, 12),
+         grips=DAN_GRIPS),
+    dict(name='Kind36', steps=(0x43DC70, 0x43DDB0), knocks=None, p='k36', tables=(lambda t: t[:17] * 2 + t[17:] * 2)(c_tables('sAttackTables3')),
+         moves=(0x43DDB0, 13), combos=(0x43DFC0, 20), gestures=(0x43DF90, 6), chase=0x3AFB70, lunge=0x3AF4B0,
+         temper=(0x43E4E0, 0x43EA00), pursue=(0x43E470, 0x43E470, 0x43E990, 0x43E990), throws=(11, 12),
+         grips=DAN_GRIPS),
+    dict(name='Daniella', steps=(0x3D73F0, 0x3D7530), knocks=0x3D7530, p='dan', tables=DAN_TABLES,
          moves=(0x3D7550, 13), combos=(0x3D7760, 18), gestures=(0x3D7730, 6), chase=0x3AFB70, lunge=0x3AF4B0,
          temper=(0x3D7F40, 0x3D8890), pursue=(0x3D7E60, 0x3D7EB0, 0x3D87B0, 0x3D8800), throws=(11, 12),
-         grips=((0.2576, 10.7031), (0.2576, 10.7031), (1.6432, 10.9092), (1.6432, 10.9092),
-                (-0.1714, -3.1206), (0.4004, -2.9467))),
+         grips=DAN_GRIPS),
 ]
 
 out = ['\\ stalker/tables.fs - generated by tools/stalkertables.py: the stalkers\' tables from the',
@@ -206,6 +233,18 @@ for s in STALKERS:
             out.append('create %s-waits-%d  ' % (p, k) + ' '.join('%d ,' % v for v in rd(t, '<5i')) + ' %s f,' % f(rd(t + 20, '<f')[0]))
         for k, t in enumerate(s['flurry']):   # (his flurry's blows, 1..7: running chances)
             out.append('create %s-flurry-%d  ' % (p, k) + ' '.join('%s f,' % f(v) for v in rd(t, '<6f')))
+    a, z = s['steps']   # (his animations' sounds at their two sound keys, by his motions' order; -1 none)
+    out.append('create %s-anim-sounds  %d ,  ' % (p, (z - a) // 4) + '  '.join('%s , %s ,' % tuple(sound_num(x) for x in rd(a + 4 * i, '<hh')) for i in range((z - a) // 4)))
+    if s['knocks']:   # (his knocks at a shut door into her room: sound, running chance)
+        rows = []
+        while True:
+            snd, pc = rd(s['knocks'] + 8 * len(rows), '<hxxf')
+            rows.append('$%X , %s f,' % (snd, f(pc)))
+            if pc >= 100:
+                break
+        out.append('create %s-knocks  ' % p + '  '.join(rows))
+    else:
+        out.append('create %s-knocks  $21 , 100e f,   \\ (none of his own: the Pursuer\'s)' % p)
     out.append('create %s-kit  %s-tables , %s-moves , %s-combos , %s-gestures , %s-chase-frames , %s-chase-chances ,'
                % ((s['name'].lower(),) + (p,) * 6))
     out.append('    %s-lunge-chances , %s-temper-0 , %s-temper-1 , %s-pursue-0 , %s-pursue-1 , %s-pursue-2 , %s-pursue-3 ,'
@@ -213,6 +252,7 @@ for s in STALKERS:
     out.append('    %d , %d , %s-grips ,' % (s['throws'][0], s['throws'][1], p))
     out.append(('    %s-waits-0 , %s-flurry-0 , %s-flurry-1 , %s-waits-1 , %s-waits-2 , %s-waits-3 ,' % ((p,) * 6))
                if 'waits' in s else '    0 , 0 , 0 , 0 , 0 , 0 ,')
+    out.append('    %s-knocks , %s-anim-sounds ,' % (p, p))
     out.append('')
 out += [
     '\\ ---- through his kit (his `kit` field) ----',
@@ -236,6 +276,10 @@ out += [
     ': waits ( -- addr )   \\ (by the hard setting; alerted - hurt - kind 37\'s own)',
     '    hard-set? if  19  else  16  then  cond @ 1 = if  hard-set? if  2 +  else  4 +  then  then  kit# ;',
     ': flurry-chances ( -- addr )  hard-set? if  18  else  17  then  kit# ;',
+    '\\ his knocks at a shut door (sound, running chance) and his animations\' sounds (a count, then',
+    '\\ the first and second sound key\'s by his motions\' order)',
+    ': knocks ( -- addr )  22 kit# ;',
+    ': anim-sounds ( -- addr )  23 kit# ;',
 ]
 open(os.path.join(here, '..', 'scripts', 'stalker', 'tables.fs'), 'w').write('\n'.join(out) + '\n')
 print('written')

@@ -18,11 +18,11 @@ variable want-n  variable want-a
 
 3 frames
 castle-b1-6 room!  5 frames
-testing entering castle-b1-6: its door shows its part (group 22), its object 6 is shown
+testing entering castle-b1-6: its door shows its part (group 22), its object 6 (the scenes' door) is hidden
 T{ 0 22 door-group?  0 0 door-group?  0 23 door-group? -> -1 -1 0 }T
-T{ 6 object-shown? -> -1 }T
-testing the scripts' words: an object hidden, a door part off
-T{ [: 6 0 object-show  1 0 $14 door-bits ;] in-room  6 object-shown?  0 22 door-group? -> 0 0 }T
+T{ 6 object-shown? -> 0 }T
+testing the scripts' words: an object shown (its +0 0), a door part off
+T{ [: 6 0 object-hidden  1 0 $14 door-bits ;] in-room  6 object-shown?  0 22 door-group? -> -1 0 }T
 
 testing a light scaled and back to the room's own
 T{ 0 light@ fswap f0> -> -1 }T   fdrop

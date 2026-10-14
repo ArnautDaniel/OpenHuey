@@ -2,7 +2,7 @@
 \ (docs/subsystems/story.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/story/test_moves.fs
 IN: test-moves
-USING: tester engine game-state actors messages keys room-names game debug fiona.state fiona.model hewie.state ;
+USING: tester engine game-state actors messages keys room-names game debug fiona.state fiona.model hewie.state paths ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : hers ( xt -- x )  game:fiona enter  execute  leave-actor ;
@@ -46,5 +46,30 @@ T{ 5 spot-tri -1 game:hewie  spot 0e give  400 [: [: his-done @ ;] his ;] within
 T{ game:hewie 3e near -> -1 }T
 testing let go, he's his own dog again
 T{ 0 game:hewie send scripted  10 frames  [: his-busy @ ;] his -> 0 }T
+
+testing a curved way (Character_WaypointsCurve): its corners rounded (8 steps a stretch), each step walked straight over the floor, ending at the spot
+create way /path allot  create a0 12 allot  create b0 12 allot
+: her-tri ( -- tri )  game:fiona body-tri ;
+variable best  fvariable best-d
+: farther? ( tri -- flag ) ( F: -- )   \ (a way to it with a turn, farther than the best yet)
+    dup tri-center b0 vec!
+    >r  way her-tri a0 r> b0 0 path-plan  dup 2 < swap 7 > or  if  false exit  then   \ (2..7: the curve fits)
+    b0 a0 vec-dist-xz  fdup best-d f@ f> if  best-d f!  true  else  fdrop false  then ;
+: far-tri ( -- tri )   \ (the farthest triangle a way of 2..7 turns reaches)
+    a0 game:fiona body-at vec-copy  -1 best !  0e best-d f!
+    nav-tris 0 do  i dup farther? if  best !  else  drop  then  loop  best @ ;
+far-tri constant to-tri
+to-tri tri-center b0 vec!  a0 game:fiona body-at vec-copy
+way her-tri a0 to-tri b0 0 path-plan constant straight-n
+way her-tri a0 to-tri b0 0 path-plan-curved constant curved-n
+create from 12 allot  variable at-tri
+: walked? ( -- flag )   \ (each step straight from the last over the floor, as one walks it)
+    from a0 vec-copy  her-tri at-tri !
+    curved-n 0 do
+        at-tri @ from way i path-point 0 v-walk  dup 0< if  drop false unloop exit  then  at-tri !
+        from way i path-point vec-copy
+    loop  true ;
+T{ straight-n 2 >=  curved-n straight-n >  to-tri tri-center b0 vec!  way curved-n 1- path-point b0 vec-dist-xz 0.01e f< -> -1 -1 -1 }T
+T{ walked? -> -1 }T
 
 test-summary

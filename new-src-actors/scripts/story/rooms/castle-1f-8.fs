@@ -5,7 +5,11 @@ IN: story.rooms.castle-1f-8
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x18 (Room18_Cmd00_ptmf): object byte 3's PlacedObject_ToDef
-: castle-1f-8.cmd00 ( b0 -- )  drop s" castle-1f-8.cmd00" stub-step ;
+: castle-1f-8.cmd00 ( b0 -- )   \ (Room18_ObjectNames[b0] back as defined: the telephones' receivers, 4 / 5)
+    case
+        4 of  s" telephone_a" object-to-def  endof
+        5 of  s" telephone_b" object-to-def  endof
+    endcase ;
 
 : castle-1f-8.enter ( -- )   \ 003FAA20
     5 story-flag? not if
@@ -215,7 +219,7 @@ USING: room-names story.words story.shared flag-names ;
         $FE char-here? not if
             5 5 5 scene-change
         else
-            $8016 scene-ending
+            $8016 examine-message
         then
     then
     5 story-flag? if
@@ -339,8 +343,8 @@ USING: room-names story.words story.shared flag-names ;
     0 0 char-no-shadow
     3 0 char-remove
     0 1 $14 door-bits
-    4 0 object-show
-    5 0 object-show
+    4 0 object-hidden
+    5 0 object-hidden
     4 castle-1f-8.cmd00
     5 castle-1f-8.cmd00
     3 ebit? not if

@@ -2,13 +2,17 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-18
-USING: room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names ;
 
 \ room 0x1C (Room1C_Cmd00_ptmf): room effect 0x1C (a depth range) with the cutscene from frame
 \ 0x14A: near 1 .. 1 + 1.4 t (at most 67.6), far 48.6 + 4 t (at most 230)
-: castle-1f-18.cmd00 ( -- )  s" castle-1f-18.cmd00" stub-step ;
+: castle-1f-18.cmd00 ( -- )   \ (the depth range widening with the scene from its frame $14A: near 1 .. 1 + 1.4 t (at most
+    \ 67.6), far 48.6 + 4 t (at most 230))
+    cutscene-frame $14A - s>f  {: | t :}  fdup 1.4e f* 1e f+ 67.6e fmin  fswap 4e f* 48.6e f+ 230e fmin
+    1e frot fdup frot  depth-range ;
 \ room 0x1C (D_003FD350): a sound (0xC0000000, bank 6) at the room's effect 1
-: castle-1f-18.cmd01 ( -- )  s" castle-1f-18.cmd01" stub-step ;
+: castle-1f-18.cmd01 ( -- )   \ (its sound 0, kept on, at room effect 1's place)
+    $C0000000 6 0 0  1 fx-place dup f@  dup float+ f@  2 floats + f@  sound-at ;
 
 : castle-1f-18.act06 ( -- )   \ 003FD070
     0 $FF $E2 0 $D $FF $D8 1 butterflies

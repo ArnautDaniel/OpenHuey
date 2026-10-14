@@ -56,8 +56,8 @@ USING: engine game-state actors messages common room-names story.state story.wor
 \ the action prepared this frame, offered to her (Progress_PlayerButtons reads her button) and
 \ shown as the action prompt - not while a message is open
 : offer-it ( -- )
-    prep-scene @ 5 <> msg @ 0< 0= or if  exit  then
-    0 char-actor dup 0< if  drop exit  then  >r  5 prep-arg @ r> send offer
+    prep-scene @ dup 5 <> swap read-message <> and  msg @ 0< 0= or if  exit  then
+    0 char-actor dup 0< if  drop exit  then  >r  prep-scene @ prep-arg @ r> send offer
     1 window-id send prompt ;
 : story-id ( -- id )  s" story" actor-named ;
 
@@ -66,7 +66,8 @@ behaviour playing-room
       dup came-by !  exit-taken !  this-room !  $FF camera-char !
       self subscribe tick  self subscribe frame-end
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing  self subscribe moving
-      self subscribe stalker-doing  100 st-age !
+      self subscribe stalker-doing  self subscribe stalker-blow  self subscribe item-event  self subscribe item-var  self subscribe item-event-bit  100 st-age !  -1 st-blow !
+      self subscribe creature-doing  self subscribe noise-was  self subscribe summoner-cooldown-is  self subscribe fiona-struck-by  self subscribe fiona-shakes  self subscribe hewie-health  self subscribe keri-fell  self subscribe fiona-unseen  self subscribe fiona-message  10 0 do  100 i cells cr-ages + !  loop
       0 phase
       #chars 0 do  i char-enter  loop
       remember-chars
@@ -74,29 +75,58 @@ behaviour playing-room
   on tick ( -- )
       1 phase  -1 prep-scene !   \ (Progress_CharRequests: the actions prepared afresh)
       2 phase  offer-it  run-slots ;
-  on take-offer ( scene arg -- )   \ (she took it: scene 5, her action script `arg`)
-      swap 5 <> leaving @ or msg @ 0< 0= or if  drop exit  then
-      0 0 rot action ;
+  on fiona-message ( msg -- )   \ (her locked door's script: not while Hewie is the one played)
+      leaving @ msg @ 0< 0= or  hewie-controlled? or if  drop exit  then
+      message  -1 msg-owner ! ;
+  on take-offer ( scene arg -- )   \ (she took it: scene 5, her action script `arg`; or a message
+      leaving @ msg @ 0< 0= or if  2drop exit  then                \ to read, looking at character 2)
+      swap case
+          5 of  0 0 rot action  endof
+          read-message of  2 fiona-look-at  message  -1 msg-owner !  endof
+          nip
+      endcase ;
+  \ an item used here (items.fs; item_event): character slot `who`'s action script `ev`, a script
+  \ variable given the item first (Events_SetVar; -1 none)
+  on item-var ( var value -- )  swap cells vars + ! ;
+  on item-event-bit ( n on -- )  if  ebit-set  else  ebit-clear  then ;
+  on item-event ( who ev var value -- )
+      leaving @ if  2drop 2drop exit  then
+      over 0< if  2drop  else  swap cells vars + !  then
+      0 -rot action ;
   on moving ( done ended events -- )   \ (a character's move: done, its animation come round, its event keys)
       sender cs>who dup 0< if  drop 2drop drop exit  then
       tuck cells events-of + !  tuck cells anim-ended-of + !  cells move-done-of + ! ;
   on fade-done ( -- )  0 fading ! ;
+  on tab-done ( -- )  0 tab-waiting ! ;
   on text-closed ( msg answer -- )  answer !  msg @ = if  -1 msg !  then ;
   on frame-end ( -- )
       st-age @ 100 < if  1 st-age +!  then
+      loud-here @ if  -1 loud-here +!  then  count-arrows  fill-frame
+      10 0 do  i cells cr-ages +  dup @ 100 < if  1 swap +!  else  drop  then  loop
       3 phase  remember-chars  draw-scene
       going @ 0< 0= if  going @  -1 going !  -1 leaving !  rooms-id send go-through  then ;
   on room-leave ( -- )  4 phase ;
   on room-left ( -- )  5 phase  free-slots  release-all  scene-gone  effects-off  story-id send room-done ;
   on story-stop ( -- )  free-slots  release-all  scene-gone  effects-off  story-id send room-done ;
   on danger ( level -- )  the-danger ! ;
-  on panic ( stage level -- )  drop the-panic ! ;
+  on panic ( stage level -- )  cell>f f>s the-panic-level !  the-panic ! ;
   on fiona-doing ( mode sub cond cmd doing -- )  fiona-act !  fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode ! ;
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
       hewie-trust-lv !  hewie-way !  hewie-breakable !  hewie-reach !  hewie-near !  hewie-cmdable !
       2drop hewie-cond !  drop  hewie-move-mode !  hewie-act !  hewie-here ! ;
+  on fiona-unseen ( on -- )  fiona-unseen ! ;
+  on summoner-cooldown-is ( secs -- )  summoner-secs ! ;
+  on fiona-struck-by ( who -- )  fiona-hit-by ! ;
+  on fiona-shakes ( n -- )  fiona-shook ! ;
+  on hewie-health ( hp -- )  hewie-hp ! ;
+  on keri-fell ( k -- )  drop  1 keri-fallen +! ;
+  on grab-answer ( ok -- )  grab-ok !  0 grab-asked ! ;
+  on noise-was ( loud room -- )  this-room @ =  swap $20 >= and if  2 loud-here !  then ;
+  on creature-doing ( slot room mode up -- )
+      drop rot cells  tuck cr-modes + !  tuck cr-rooms + !  sender over cr-ids + !  0 swap cr-ages + ! ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
       st-came !  st-alert !  drop  st-hp-max !  st-hp !  st-cond !  st-sub !  st-mode !  st-room !  0 st-age ! ;
+  on stalker-blow ( n -- )  st-blow ! ;
 end-behaviour
 
 \ a room's actor, named for the room

@@ -5,7 +5,7 @@ IN: story.rooms.lake-pathway-1
 USING: room-names story.words story.shared ;
 
 \ an effect TurningModel_vtable (8 bytes), not started
-: lake-pathway-1.cmd00 ( -- )  s" lake-pathway-1.cmd00" stub-step ;
+: lake-pathway-1.cmd00 ( -- )  0 $40404040  400e 27.1e -125e  1000e 0.5e 0e  effects:caustic drop ;   \ (the water's light, turning: TurningModel)
 
 : lake-pathway-1.enter ( -- )   \ 00441520
     $18 1.0 0 bgm

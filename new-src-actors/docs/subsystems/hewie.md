@@ -132,8 +132,8 @@ reading his broadcast; come back (0x2C → 0x1D → 0xD); go there (0x23 → 0x6
 the meeting (praise close: 0x48, sits, 0x4A petted, her 0xC07); her cry for help (0x30); a
 reaction spending his patience.
 
-Not yet: her head turned to him after a command (Fiona's looks, later), the scripts' "can she
-command him" (H4).
+Her head turns to him after a command (her looks: `fiona/looks.fs`, the look held a while); the
+scripts' "can she command him" is the story's cond 0x4C (`hewie-can-command?`).
 
 **H3 built** (`scripts/hewie/fight.fs`; the stalker's side `scripts/stalker/bitten.fs`, P3c).
 The stalker as he tells it (`stalker-doing`: `pursuer`, his mode and condition) - Hewie_Alert,
@@ -149,7 +149,7 @@ Taken (`dog-grip`): the leap (StateLeapGrip: his bites by action, grip and trust
 generated `bites-*` tables; his angry count eased; a third of the time his feeling for him up;
 $2217 / $2200 / $2209 turned about / $2214, his way and the turn covered in 8 frames - the leg
 12 - at the stalker's height, $68). Landed (StateLeapLands): the first bite (the leg 5 / 30, a
-flank kind 2 or 3 / 5 or 10 readied, 1 or 3 the far one, head on 4 / 10; doubled on hard; hard
+flank kind 2 or 3 / 5 or 10 readied, 1 or 3 the far one, head on 4 / 10; doubled in his black German Shepherd costume (variable $27 = 1); hard
 by chance - `hard-bite-chance` by the stalker's health band - Hewie_ReactionRoll), $6B, on the
 spot, the bite animation, the chance to hold on (his feeling + 10) x 5. Holding on
 (StateBiteHold): each time round a shake roll (his bites left; the chance, -10 each time held)
@@ -169,10 +169,18 @@ struck him 1.5 less 0.5 a frame (0x69, StateMoveAlong); a door, from her side of
 her blow, by her, hit lately - cowering (9 the first time, 0xB), else on. Her blows struck home
 are answered `blow-taken`. Checked by `tests/hewie/test_fight.fs` (19 tests).
 
-Not yet (H3): his scuffles off screen (Hewie_Scuffle), his tackles (0x75; Hewie_StateTackle),
-growling at the stalker (0x7B and its flight, Hewie_FleeExit), the bite's hit effect, his
-feeling's mood (Hewie_FeelPursuer), held by the stalker's grab (`hit` 6), the door through
-which he is pushed (0x6C), the creatures.
+His scuffles off screen (Hewie_Scuffle): the stalker hunting (its mode 1..3) in the room he is
+left in, once a meeting and not within 900 frames - by chance (15 / 45 / 15 / 25 in 100) both
+hurt, him only, the stalker only, or nothing: him a tenth of his health (not below 1); his yelp
+($66, $69 unhurt) heard if his room is next to hers; the stalker held 30..180 frames (`blow` 8:
+its `stun-t`, its cry $1D from the door it would come in by) and hurt a tenth of its health
+(twice in the black shepherd costume) unless he may not attack; then he waits it out ($30). His feeling about the
+stalker (Hewie_FeelPursuer): calm, a stalker about, the more he dislikes him the likelier he is
+upset (mood 2: 14 in 16 at -10 down to 1 at 0) - as his feeling changes and as the danger turns
+wary or tense. A bite's mark at his mouth (Hewie_BiteEffect: bone $25, a big one too while his
+grip holds). Held by the stalker's grab (`hit` 6): its damage, not taken as a blow - as the
+original. (The tackles, growling at the
+stalker, the door pushing him out and the creatures came with H5, below.)
 
 **H4: the story's words about him** (`scripts/story/words.fs`; EventCmd_Hewie, event.c's
 conditions). He tells each frame, in `hewie-doing`, besides what he does: whether she may command
@@ -187,10 +195,81 @@ converter's `hewie-stays?`: he *may* be broken off), 0x33, 0x61. Orders: 0x39 hi
 0xC5 / 0xC6 a point to look to if he has none (a zone's - in a script variable - or a
 character's place, raised: `scent-at`), his moves 0x78 bark, 0x7A / 0xB0 to a point (Hewie_Requests
 0x12, 0x13, 0x14, 0x0D), and as the script's own 0x20 through blocked floor (`his-2b`), 0x21 left
-alone (`his-2d`). Checked by `tests/story/test_hewie_fiona_words.fs`. Not yet: his model swapped
-(0xB7), 0xBB's forced action, his animations (0x77, 0xC3), 0x63's turn.
+alone (`his-2d`). Checked by `tests/story/test_hewie_fiona_words.fs`. His model swapped (0xB7
+`hewie-model`), 0xBB's forced choice (`hewie-wait-5`), his animations (0x77 `hewie-anim`, 0xC3
+`hewie-anim-root`) are built; 0x63 (his heading, then action $72) is used by no room's script.
 
 **H4 begun** (with the story's S3): the story's moves (`scripted-move` → his actions 0x3B..0x47,
 0x7F; `scripted` on / off: Hewie_Think while a script has him; `hold-anim`, `show`; `moving`
-reported each frame). Left for H4: fetching (0x78), the Hewie-controlled sections, behind Fiona
-(0x72), the scripts' other Hewie commands (`hewie-action`, `hewie-to-room`...).
+reported each frame). Behind Fiona (0x72) and fetching came with H5; the Hewie-controlled
+mode is still to come (below).
+
+**H5: the rest of his actions.**
+- `hewie/more.fs`: the story's sit-then-on (0x80), behind her (0x72), limp (0x74), a scene's
+  pose (0x79), back on his floor (0x86), waiting after an attack (0x38), stepping away from his
+  target (0x82), pushed back (0x68) or out by a door (0x6C), at one of the cast (0x5B..0x60),
+  near his target (0x7C), and round to its flank (0x12, Hewie_StateFlank: behind it and facing
+  its way he lines up with it, within 40 settled; else the side picked once on its triangle,
+  and for the point 45 degrees round from straight out, 20 out - up to 40 the more squarely
+  behind - as far as is free).
+- `hewie/pounce.fs`: harrying (st-close-on) within 30 - on a step (floor flag 1) he closes in
+  (0x6D), on open floor facing it (60 degrees) and on its triangle he pounces: the leap
+  ($1E01, 2.8 a frame, up to 5 above it then falling 0.5 faster a frame, landing $1E03), and
+  whoever his mouth (bone $1F) reaches on the way is bitten - the stalker a blow (5 / 8 from
+  behind, charged 10 / 16; the black shepherd costume doubles, the boost half again), else Fiona knocked down; the
+  homunculi it reaches as a blow there. 0x6D: running at it, the bite once his mouth reaches.
+- `hewie/fetch.fs`: fetching (0x78). Her ball thrown while all is calm is his to fetch (the
+  things actor tells him, `fetch-this`); her command 0x23 sends him for the ball nearest in
+  front of her he can get to (Hewie_NearestThing). His six skills (out of 32, 16 to start,
+  kept in the save's `hewie-skills` line) are rolled against: going after it (else watching it
+  go, his eyes on it), eager (his gait), at it picking it up (`thing-taken`: gone, hers again if
+  she has none) and bringing it, else telling her (a bark by her), else leaving it; lost (gone,
+  or lying where he can't get) coming back to her. Sat by her after, his doing counts as
+  praised by 1; her praise or scolding moves the skills he used. His own decisions take it up
+  when a ball he follows is going, ahead of his head's way and straight to him.
+- `hewie/exits.fs`: out by an exit on screen (0x24 away from her, 0x25 anywhere:
+  Hewie_FleeExit - the open exits nearest first, those within 20 of whom he leaves last, the
+  first he can plan a way to; StateGoToExit). While she hides (fiona-hidden / -half-hidden)
+  and the stalker is here, by chance (`growl-chance`) he draws it off (0x7B): the spot 80 along
+  the stalker's own way to an exit, there first (RunSpot), squared up to it (PursuerNear), on
+  guard barking while it is 60..100 away by foot (Guard), re-planned when it isn't; the second
+  time round out by the exit and a wait (0x31, `flee-wait` by trust).
+- `what-next` (Hewie_WhatNext): the growl first; a creature up and about in his room
+  (`creature-doing`, as Character +0x3C) takes the chase lists; the chase's situation counts
+  the stalker hurt or held off (1), within 30 of him (2) or of her (3).
+- `blow-taken` / `hit-taken` replies are taken quietly; `silent` (the scripts' 0x3D) hushes his
+  own sounds (Actor_PlaySound's +0x2C), as the stalker's.
+Checked by `tests/hewie/test_more.fs`, `test_pounce.fs` (the pounce, the rush, the flank),
+`test_fetch.fs`, `test_exits.fs`, and the save's skills in `tests/saves/test_saves.fs`.
+
+Found on the way: the ball rolled with no friction on level floor (things.c had the slope's
+sine and cosine the wrong way round - NavTri_Slope gives the sine); fixed.
+
+**In a door's way** (`hewie/exits.fs`; Hewie_FirstDoor, by Progress_WhoIsWhere's bits for him
+at each exit - asked of the doors as he needs them: on the exit's own area, at the door, on its
+sides' triangles, in its gap's area, in front of it): on the exit's area at a door he may pass
+(not locked against him; at rest, shut) he is out through it ($66 - the original walks the step
+there first); in its gap, or in front of it while it swings, he squeezes out to 24 from where it
+stands on his side ($65, Hewie_StateSqueeze: 90 frames at most, done once off the gap or away
+from the door). `tests/hewie/test_exits.fs` (9).
+
+Not yet:
+- The Hewie-controlled mode (progress +0x1FBEC1, switched on by the off-map rooms 0xD9 /
+  0xE0's native commands, still stubs): the countdown clock, Hewie steered by the stick and
+  her gestures (0x83 Hewie_StateSteered, 0x84, 0x87 the run-up jump, Hewie_Think's gestures),
+  the camera on him, Fiona's own AI meanwhile.
+- In tests, front-garden-2's floor is mostly closed to him (flag 8) till its room script is
+  written; tests that need him to plan their way use castle-1f-1 / castle-1f-2.
+
+## Hard mode and his costume
+
+hg reads progress variable $27 - his costume (0 the white German Shepherd, 1 the black, 2 the
+stuffed toy) - for his harder bites, his obeying and waiting times and his lists when tense
+(`black-shepherd?`; the tables `obey-time-shepherd`, `wait-time-shepherd`,
+`tense-wait-shepherd-lists`). These were named "hard" before; the real hard mode is the story's
+flag $AF (`hard-mode?`, facts.fs: the original's progress +0x30 bit 15), which the stalkers and
+the cast read. In a hard game (Hewie_StateKnockedDown) once he lies down the game is over (game
+over kind 3) - unless a scene has them or the story keeps the game from ending (`capture-no-end`:
+then he is left at 1 health). Each time he is knocked down (Hewie_AfterYelp) it is counted for
+the dog's level at the end (`pr.hewie-downs`, progress +0xFBA, to 9999) - not in a hard game.
+Checked in `tests/hewie/test_fight.fs` (27).

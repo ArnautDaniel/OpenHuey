@@ -2,15 +2,21 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-1
-USING: room-names story.words story.shared flag-names ;
+USING: actors room-names story.words story.shared flag-names ;
 
 \ room 0x00: a grey glow (Effect737D0, size 30) at one of four spots picked by byte 3
 \ (glow4_spot from spot 0): byte 4 0 starts it, its slot kept in event variable byte 3; else it
 \ is removed.
-: front-garden-1.cmd00 ( b0 b1 -- )  drop drop s" front-garden-1.cmd00" stub-step ;
+: front-garden-1.cmd00 ( b0 b1 -- )   \ (a grey glow 30 across at spot b0 - (-332, -12), (-368, 55), (-368, 165), (-332, 165),
+    \ 100.8 up: b1 0 lit - kept in variable b0 - else out)
+    swap {: k :}
+    0= if
+        k  $80808018  k case  0 of  -332e -12e  endof  1 of  -368e 55e  endof  2 of  -368e 165e  endof  >r -332e 165e r>  endcase
+        100.8e fswap  30e  effects:glow  var-set
+    else  k var @ dup alive? if  kill  else  drop  then  then ;
 \ Fiona's model +0xD0 (0, 1.5, -2.5) and +0xCC(1) when byte 3 is 0, else (0, 1.5, -1.5) and
 \ +0xCC(0)
-: front-garden-1.cmd01 ( b0 -- )  drop s" front-garden-1.cmd01" stub-step ;
+: front-garden-1.cmd01 ( b0 -- )  drop ;   \ (the model hooks it calls are empty on PC and PS2 alike: CharModel_SetFlag / _VtCC / _VtD0)
 
 : front-garden-1.enter ( -- )   \ 003ED800
     2 story-flag? not if

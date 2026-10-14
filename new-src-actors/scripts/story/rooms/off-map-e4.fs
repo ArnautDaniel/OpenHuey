@@ -9,17 +9,17 @@ USING: room-names story.words story.shared ;
 \ room 0xE4: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
 : off-map-e4.cmd01 ( -- )  s" off-map-e4.cmd01" stub-step ;
-\ the progress object's +0x7C with the caller's arguments
-: off-map-e4.cond00? ( -- flag )  s" off-map-e4.cond00?" stub-flag ;
+\ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
+: off-map-e4.cond00? ( -- flag )  true ;
 
 : off-map-e4.enter ( -- )   \ 00449250
     room-sounds
     0 0 $14 door-bits
-    1 0 object-show
-    2 0 object-show
-    3 0 object-show
-    4 1 object-show
-    5 1 object-show
+    1 0 object-hidden
+    2 0 object-hidden
+    3 0 object-hidden
+    4 1 object-hidden
+    5 1 object-hidden
     $2E 1 pvar? if
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then

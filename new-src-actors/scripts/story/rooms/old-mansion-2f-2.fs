@@ -14,7 +14,7 @@ USING: room-names story.words story.shared flag-names ;
         then
     else
         0 1 $14 door-bits
-        2 1 object-show
+        2 1 object-hidden
     then
     $27C story-flag? not if
         0 5.64 9.5 5.58 flicker-sprite
@@ -218,7 +218,7 @@ USING: room-names story.words story.shared flag-names ;
     world-held state-flag-set
     50 hewie-trust
     0 1 $14 door-bits
-    2 1 object-show
+    2 1 object-hidden
     0 self-move-16
     0 $CB -38.75 -31.7 0 char-to-xz
     camera-restart

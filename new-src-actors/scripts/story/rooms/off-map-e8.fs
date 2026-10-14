@@ -7,8 +7,8 @@ USING: room-names story.words story.shared ;
 \ room 0xE8: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
 : off-map-e8.cmd00 ( -- )  s" off-map-e8.cmd00" stub-step ;
-\ the progress object's +0x7C with the caller's arguments
-: off-map-e8.cond00? ( -- flag )  s" off-map-e8.cond00?" stub-flag ;
+\ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
+: off-map-e8.cond00? ( -- flag )  true ;
 
 : off-map-e8.char-enter ( -- )   \ 00449EE0
     hewie-controlled? not if

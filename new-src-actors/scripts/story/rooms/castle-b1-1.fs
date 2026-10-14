@@ -6,7 +6,7 @@ USING: room-names story.words story.shared flag-names ;
 
 \ room 0x12 (Room12_Cmd00_ptmf): byte 3 0: the smoke puffs (SmokePuffs_vtable), their slot in
 \ script variable 0; else that slot started
-: castle-b1-1.cmd00 ( b0 -- )  drop s" castle-b1-1.cmd00" stub-step ;
+: castle-b1-1.cmd00 ( b0 -- )  0 ['] effects:smoke-puffs effect-in-var ;   \ (the smoke puffs: b0 0 going - kept in variable 0 - else stopped)
 
 : castle-b1-1.enter ( -- )   \ 003F8200
     room-sounds
@@ -374,7 +374,7 @@ USING: room-names story.words story.shared flag-names ;
                 3 ebit-clear
                 5 $E 5 scene-change
             else
-                $8016 scene-ending
+                $8016 examine-message
             then then then
         then
         0 45 $3C char-heading? if
@@ -389,7 +389,7 @@ USING: room-names story.words story.shared flag-names ;
                 3 ebit-set
                 5 $E 5 scene-change
             else
-                $8016 scene-ending
+                $8016 examine-message
             then then then
         then
     then
@@ -514,7 +514,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     3 $9000 1 0 char-anim-hold
     4 0 object-anim-loop
-    4 0 object-show
+    4 0 object-hidden
     3 $2A 14.85 17.65 0 char-to-xz
     0 3 0 char-model-op
     1 0 char-visible

@@ -155,6 +155,8 @@ create pose-into  0 , $101 , $103 ,  $100 , 0 , $105 ,  $102 , $104 , 0 ,  $1001
 
 \ ---- his voice (Hewie_MakeSound): not within 10 frames of the last; some only after 40..60;
 \ his loud barks (0x65 / 0x66) and growls (0x5D / 0x5E) heard by the others ----
+: his-sound ( id bank vol pitch -- ) ( F: x y z -- )   \ (Actor_PlaySound: not while hushed)
+    his-hushed @ if  2drop 2drop fdrop fdrop fdrop exit  then  sound-at ;
 : soon-after? ( snd t -- flag )  his-snd @ rot = his-snd-t @ rot < and ;
 : too-soon? ( snd -- flag )
     case
@@ -171,7 +173,7 @@ create pose-into  0 , $101 , $103 ,  $100 , 0 , $105 ,  $102 , $104 , 0 ,  $1001
     dup $65 = over $66 = or if  $80 his-tri noise-make  then
     dup $5D = over $5E = or if  $1B his-tri noise-make  then
     dup too-soon? if  drop exit  then
-    dup 5 0 0 his-at vec@ sound-at  his-snd !  0 his-snd-t ! ;
+    dup 5 0 0 his-at vec@ his-sound  his-snd !  0 his-snd-t ! ;
 
 \ Hewie_Bark: by his pose when calm (standing 0x1B00, sitting 0x1B01, lying 0x1B02, limping
 \ 0x1B05), else by his mood (2: 0x1B04, else 0x1B03); restarted when already barking

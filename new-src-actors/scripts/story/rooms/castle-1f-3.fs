@@ -6,7 +6,7 @@ USING: room-names story.words story.shared flag-names ;
 
 \ room 0x09 (Room09_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) is in
 \ another room than 9 (the player about too)
-: castle-1f-3.cond00? ( -- flag )  s" castle-1f-3.cond00?" stub-flag ;
+: castle-1f-3.cond00? ( -- flag )  hunting-debilitas? stalker-room 9 <> and ;
 
 : castle-1f-3.enter ( -- )   \ 003F3240
     $3B story-flag? not if
@@ -17,7 +17,7 @@ USING: room-names story.words story.shared flag-names ;
         1 0 $800088 nav-group
         1 1 $40 nav-group
     else
-        2 1 object-show
+        2 1 object-hidden
         0 0 $800088 nav-group
         0 1 $40 nav-group
         0 1 $14 door-bits
@@ -421,7 +421,7 @@ USING: room-names story.words story.shared flag-names ;
         $F2 action-end
         1 0 $14 door-bits
         2 1 $14 door-bits
-        2 0 object-show
+        2 0 object-hidden
         0 self-move-16
         0 $13C 23.771 -27.607 -73 char-to-xz
         hewie-controlled? not if

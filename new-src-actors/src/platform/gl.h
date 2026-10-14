@@ -57,12 +57,17 @@
     X(PFNGLCHECKNAMEDFRAMEBUFFERSTATUSPROC, glCheckNamedFramebufferStatus)     \
     X(PFNGLBINDFRAMEBUFFERPROC, glBindFramebuffer)                             \
     X(PFNGLBLITNAMEDFRAMEBUFFERPROC, glBlitNamedFramebuffer)                   \
+    X(PFNGLCOPYTEXTURESUBIMAGE2DPROC, glCopyTextureSubImage2D)                 \
     X(PFNGLDELETEFRAMEBUFFERSPROC, glDeleteFramebuffers)                       \
     X(PFNGLNAMEDFRAMEBUFFERDRAWBUFFERPROC, glNamedFramebufferDrawBuffer)       \
     X(PFNGLCREATERENDERBUFFERSPROC, glCreateRenderbuffers)                     \
     X(PFNGLNAMEDRENDERBUFFERSTORAGEMULTISAMPLEPROC, glNamedRenderbufferStorageMultisample) \
     X(PFNGLDELETERENDERBUFFERSPROC, glDeleteRenderbuffers)                     \
     X(PFNGLCLEARNAMEDFRAMEBUFFERFVPROC, glClearNamedFramebufferfv)             \
+    X(PFNGLCLEARNAMEDFRAMEBUFFERFIPROC, glClearNamedFramebufferfi)             \
+    X(PFNGLCLEARBUFFERIVPROC, glClearBufferiv)                                 \
+    X(PFNGLNAMEDBUFFERSUBDATAPROC, glNamedBufferSubData)                       \
+    X(PFNGLCOPYIMAGESUBDATAPROC, glCopyImageSubData)                           \
     X(PFNGLREADNPIXELSPROC, glReadnPixels)                                     \
     X(PFNGLDEBUGMESSAGECALLBACKPROC, glDebugMessageCallback)                   \
     X(PFNGLBLENDFUNCIPROC, glBlendFunci) \
@@ -129,12 +134,17 @@ GL_FUNCTIONS(GL_DECLARE)
 #define glCheckNamedFramebufferStatus p_glCheckNamedFramebufferStatus
 #define glBindFramebuffer p_glBindFramebuffer
 #define glBlitNamedFramebuffer p_glBlitNamedFramebuffer
+#define glCopyTextureSubImage2D p_glCopyTextureSubImage2D
 #define glDeleteFramebuffers p_glDeleteFramebuffers
 #define glNamedFramebufferDrawBuffer p_glNamedFramebufferDrawBuffer
 #define glCreateRenderbuffers p_glCreateRenderbuffers
 #define glNamedRenderbufferStorageMultisample p_glNamedRenderbufferStorageMultisample
 #define glDeleteRenderbuffers p_glDeleteRenderbuffers
 #define glClearNamedFramebufferfv p_glClearNamedFramebufferfv
+#define glClearNamedFramebufferfi p_glClearNamedFramebufferfi
+#define glClearBufferiv p_glClearBufferiv
+#define glNamedBufferSubData p_glNamedBufferSubData
+#define glCopyImageSubData p_glCopyImageSubData
 #define glReadnPixels p_glReadnPixels
 #define glDebugMessageCallback p_glDebugMessageCallback
 #define glBlendFunci p_glBlendFunci
