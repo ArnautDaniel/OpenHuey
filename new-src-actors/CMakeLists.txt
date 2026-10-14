@@ -48,7 +48,6 @@ endforeach()
 
 # ---- the game ----
 find_package(SDL3 REQUIRED CONFIG)
-find_package(OpenGL REQUIRED)
 add_executable(hga
     src/main.c
     src/core/files.c
@@ -58,7 +57,7 @@ add_executable(hga
     src/game/room.c src/game/console.c src/game/actor.c src/game/doglegs.c src/game/cloth.c src/game/world.c
     src/game/camdirector.c src/game/areas.c src/game/exits.c src/game/messages.c src/game/cutscene.c src/game/placed.c src/game/sprites.c src/game/particles.c src/game/things.c src/game/swimpath.c src/game/rumble.c
     src/forth/bind_engine.c)
-target_link_libraries(hga PRIVATE forth gamestate hactor SDL3::SDL3 OpenGL::GL)
+target_link_libraries(hga PRIVATE forth gamestate hactor SDL3::SDL3)   # (GL through SDL_GL_GetProcAddress: platform/gl.c)
 target_compile_definitions(hga PRIVATE "HG2_SCRIPT_DIR=\"${SCRIPT_DIR}\"" "HG2_DEFAULT_DATA=\"${DEFAULT_DATA}\""
     "HG2_DEFAULT_EXE=\"${DEFAULT_EXE}\"")
 if(HGA_RELEASE)

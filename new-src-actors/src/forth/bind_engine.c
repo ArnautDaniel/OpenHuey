@@ -1732,7 +1732,7 @@ static void sound_ready(void) {   /* the executable's tables, once */
     }
 }
 /* HGA_SOUNDLOG=1: each sound said as it is played - the frame, who, the bank's file, the id */
-static char sBankFile[8][64];
+static char sBankFile[8][128];
 static void bank_named(int k, const char *name) {
     if (k >= 0 && k < 8) {
         snprintf(sBankFile[k], sizeof(sBankFile[k]), "%s", name);

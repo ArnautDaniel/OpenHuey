@@ -5,8 +5,22 @@
 
 #include <SDL3/SDL_opengl.h>
 
-/* every GL function used beyond 1.1 (the rest - glEnable, glDrawArrays, glDepthMask... - come
- * from libGL itself): X(type, name). The objects are made and changed by name, OpenGL 4.5 style
+/* GL 1.0 / 1.1's, loaded too (nothing linked against libGL: SDL finds the driver's) */
+typedef void (APIENTRY *HGA_GLBLENDFUNC)(GLenum, GLenum);
+typedef void (APIENTRY *HGA_GLDELETETEXTURES)(GLsizei, const GLuint *);
+typedef void (APIENTRY *HGA_GLDEPTHFUNC)(GLenum);
+typedef void (APIENTRY *HGA_GLDEPTHMASK)(GLboolean);
+typedef void (APIENTRY *HGA_GLDEPTHRANGE)(GLdouble, GLdouble);
+typedef void (APIENTRY *HGA_GLDISABLE)(GLenum);
+typedef void (APIENTRY *HGA_GLDRAWARRAYS)(GLenum, GLint, GLsizei);
+typedef void (APIENTRY *HGA_GLENABLE)(GLenum);
+typedef const GLubyte * (APIENTRY *HGA_GLGETSTRING)(GLenum);
+typedef void (APIENTRY *HGA_GLPOLYGONOFFSET)(GLfloat, GLfloat);
+typedef void (APIENTRY *HGA_GLSTENCILFUNC)(GLenum, GLint, GLuint);
+typedef void (APIENTRY *HGA_GLSTENCILOP)(GLenum, GLenum, GLenum);
+typedef void (APIENTRY *HGA_GLVIEWPORT)(GLint, GLint, GLsizei, GLsizei);
+
+/* every GL function used: X(type, name). The objects are made and changed by name, OpenGL 4.5 style
  * (direct state access): glCreate*, glNamed*, glTexture*, glVertexArray*, glProgramUniform*. */
 #define GL_FUNCTIONS(X) \
     X(PFNGLCREATESHADERPROC, glCreateShader)                                   \
@@ -80,12 +94,38 @@
     X(PFNGLPROGRAMUNIFORM4FVPROC, glProgramUniform4fv) \
     X(PFNGLNAMEDFRAMEBUFFERTEXTURELAYERPROC, glNamedFramebufferTextureLayer) \
     X(PFNGLTEXTURESTORAGE3DPROC, glTextureStorage3D) \
-    X(PFNGLPROGRAMUNIFORM1FVPROC, glProgramUniform1fv)
+    X(PFNGLPROGRAMUNIFORM1FVPROC, glProgramUniform1fv) \
+    X(HGA_GLBLENDFUNC, glBlendFunc) \
+    X(HGA_GLDELETETEXTURES, glDeleteTextures) \
+    X(HGA_GLDEPTHFUNC, glDepthFunc) \
+    X(HGA_GLDEPTHMASK, glDepthMask) \
+    X(HGA_GLDEPTHRANGE, glDepthRange) \
+    X(HGA_GLDISABLE, glDisable) \
+    X(HGA_GLDRAWARRAYS, glDrawArrays) \
+    X(HGA_GLENABLE, glEnable) \
+    X(HGA_GLGETSTRING, glGetString) \
+    X(HGA_GLPOLYGONOFFSET, glPolygonOffset) \
+    X(HGA_GLSTENCILFUNC, glStencilFunc) \
+    X(HGA_GLSTENCILOP, glStencilOp) \
+    X(HGA_GLVIEWPORT, glViewport)
 
 #define GL_DECLARE(type, name) extern type p_##name;
 GL_FUNCTIONS(GL_DECLARE)
 #undef GL_DECLARE
 
+#define glBlendFunc p_glBlendFunc
+#define glDeleteTextures p_glDeleteTextures
+#define glDepthFunc p_glDepthFunc
+#define glDepthMask p_glDepthMask
+#define glDepthRange p_glDepthRange
+#define glDisable p_glDisable
+#define glDrawArrays p_glDrawArrays
+#define glEnable p_glEnable
+#define glGetString p_glGetString
+#define glPolygonOffset p_glPolygonOffset
+#define glStencilFunc p_glStencilFunc
+#define glStencilOp p_glStencilOp
+#define glViewport p_glViewport
 #define glCreateShader p_glCreateShader
 #define glShaderSource p_glShaderSource
 #define glCompileShader p_glCompileShader
