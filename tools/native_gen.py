@@ -122,6 +122,7 @@ def convert(src: Path, skip=frozenset(), strip=False) -> str:
     at = 0          # bytes emitted since then
     relocs = []
     check = False   # a label was just defined: check its offset on the next content line
+    label_at = None   # where in `out` that label's line is: a gap before its first content goes before it
     bss = False
     for line in src.read_text().splitlines():
         if line.startswith(".include"):
@@ -130,6 +131,7 @@ def convert(src: Path, skip=frozenset(), strip=False) -> str:
         if m and m.group(1) == "dlabel":
             hidden = m.group(2) if m.group(2) in skip else None   # (not every label has an enddlabel)
             check = True
+            label_at = len(out)
         if m and m.group(2) in skip:
             continue
         if line.startswith("enddlabel"):
@@ -171,12 +173,19 @@ def convert(src: Path, skip=frozenset(), strip=False) -> str:
             gap = addr - start[1] - at
             if gap < 0:
                 raise SystemExit(f"{src.name}: 0x{c.group(2)} overlaps the line before")
-            if gap:
-                out.append(f"    .space {gap}")
+            if gap:   # (the PS2's alignment: before a label just defined, so the label is its data's)
+                if check and label_at is not None:
+                    out.insert(label_at, f"    .space {gap}")
+                else:
+                    out.append(f"    .space {gap}")
                 at += gap
-            if check:   # (the sizes below are the assembler's too)
-                out.append(f'.ifne (. - {sym(name)}) - {at}\n.error "{src.name}: 0x{c.group(2)} is not at its PS2 offset"\n.endif')
+            if check:   # (the sizes below are the assembler's too; the label is checked, not just the line)
+                i = label_at + (1 if gap else 0) if label_at is not None else len(out)
+                lbl = re.match(r"dlabel (\S+)", out[i]) if i < len(out) else None
+                here = sym(lbl.group(1)) if lbl and lbl.group(1) not in skip else "."
+                out.append(f'.ifne ({here} - {sym(name)}) - {at}\n.error "{src.name}: 0x{c.group(2)} is not at its PS2 offset"\n.endif')
                 check = False
+                label_at = None
         elif start is None:
             raise SystemExit(f"{src.name}: data before the first address")
         pre = line[:line.index("*/") + 2] if "*/" in line else "   "
