@@ -6,9 +6,9 @@ USING: room-names story.words story.shared flag-names ;
 
 : house-of-truth-2f-2.enter ( -- )   \ 00431DE0
     0 1 $14 door-bits
-    0 1 object-show
-    1 1 object-show
-    2 1 object-show
+    0 1 object-hidden
+    1 1 object-hidden
+    2 1 object-hidden
     $343 story-flag? not if
         1 1 $14 door-bits
     then

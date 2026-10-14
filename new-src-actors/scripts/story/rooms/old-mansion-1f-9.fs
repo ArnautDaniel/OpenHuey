@@ -2,15 +2,16 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-9
-USING: room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names ;
 
 \ a lit quad at x -43, z -15.12 .. 5.07, height 30.05 / 10.05
-: old-mansion-1f-9.cmd00 ( b0 -- )  drop s" old-mansion-1f-9.cmd00" stub-step ;
+: old-mansion-1f-9.cmd00 ( b0 -- )  $1B $40  -43.0e 30.053e -15.124e  -43.0e 30.053e 5.068e  -43.0e 10.053e -15.124e  -43.0e 10.053e 5.068e  lit-quad ;   \ (a reflecting window: b0 1 removed, 2 over the whole picture)
 \ the depth range (effect 0x1C) opening with the cutscene from its frame 1156: 1 / 1 / 40 / 100,
 \ the far two on by 1 a frame up to 80 / 140
-: old-mansion-1f-9.cmd01 ( -- )  s" old-mansion-1f-9.cmd01" stub-step ;
+: old-mansion-1f-9.cmd01 ( -- )   \ (opening with the scene from its frame 1156: 1 / 1 / 40 / 100, the far two on 1 a frame to 80 / 140)
+    cutscene-frame 1156 - s>f  1e 1e  frot fdup 40e f+ 80e fmin  fswap 100e f+ 140e fmin  depth-range ;
 \ byte 3 0: the effect Room49Effect_vtable spawned, its slot in event var 0; 1: removed
-: old-mansion-1f-9.cmd02 ( b0 -- )  drop s" old-mansion-1f-9.cmd02" stub-step ;
+: old-mansion-1f-9.cmd02 ( b0 -- )  0 ['] effects:haze effect-in-var ;   \ (the haze: b0 0 made - kept in variable 0 - else gone)
 
 : old-mansion-1f-9.enter ( -- )   \ 00407F30
     room-sounds
@@ -51,10 +52,10 @@ USING: room-names story.words story.shared flag-names ;
     then then
     0 0 -1 area-camera
     $58 story-flag? if
-        2 1 object-show
-        3 1 object-show
-        4 1 object-show
-        5 1 object-show
+        2 1 object-hidden
+        3 1 object-hidden
+        4 1 object-hidden
+        5 1 object-hidden
         0 1 $14 door-bits
     then
 ;
@@ -263,10 +264,10 @@ USING: room-names story.words story.shared flag-names ;
             camera-restart
             3 0 char-remove
             0 $A char-layer
-            2 1 object-show
-            3 1 object-show
-            4 1 object-show
-            5 1 object-show
+            2 1 object-hidden
+            3 1 object-hidden
+            4 1 object-hidden
+            5 1 object-hidden
             0 1 $14 door-bits
             4 ebit? if
                 1 old-mansion-1f-9.cmd02
@@ -575,10 +576,10 @@ USING: room-names story.words story.shared flag-names ;
     camera-restart
     3 0 char-remove
     0 $A char-layer
-    2 1 object-show
-    3 1 object-show
-    4 1 object-show
-    5 1 object-show
+    2 1 object-hidden
+    3 1 object-hidden
+    4 1 object-hidden
+    5 1 object-hidden
     0 1 $14 door-bits
     2 0 char-remove
     $80 exit-check

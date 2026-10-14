@@ -2,16 +2,47 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-11
-USING: room-names story.words story.shared flag-names ;
+USING: engine actors messages story.state room-names story.words story.shared flag-names ;
 
 \ room 0x62 (Room62_Cmd00_ptmf): object byte 4 swings: byte 3 0 starts it (phase +0x30 0, size
 \ +0x34 0.01; object 0 with sound 7), else a step (+0x10 = size x sin(phase), phase on 60
 \ degrees, the size down 0.001); 2 until it is still
-: old-mansion-2f-11.cmd00 ( b0 b1 -- )  drop drop s" old-mansion-2f-11.cmd00" stub-step ;
+: old-mansion-2f-11.cmd00 ( b0 b1 -- )   \ (object b1 - the room's string - swinging: b0 0 starts it (size 0.01; the first with its
+    \ sound 7), else a step each frame till it is still)
+    {: op k | a n :}  k room-object to n to a  a n object-here? 0= if  exit  then
+    op 0= if
+        0e a n $30 object!  0.01e a n $34 object!
+        k 0= if  7 6 0 0  a n place-x object@ a n place-y object@ a n place-z object@  sound  then  exit
+    then
+    begin
+        a n $34 object@ a n $30 object@ deg>rad fsin f* a n turn-x object!
+        60e a n $30 object+!  -0.001e a n $34 object+!
+        a n $34 object@ f0> while  yield
+    repeat ;
+fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
 \ room 0x62 (D_00422318): the room's effect 0 dropped by byte 3 - 0 at rest (speed 0), 1 raised
 \ by 0.5; else it falls (gravity 0.5 a frame, turning 0.16) and bounces off 0.7 losing 70% (a
 \ sound each bounce) until slower than 0.2 (+0x74 set: landed; 1), else still going (2)
-: old-mansion-2f-11.cmd01 ( b0 -- )  drop s" old-mansion-2f-11.cmd01" stub-step ;
+: old-mansion-2f-11.cmd01 ( b0 -- )   \ (room effect 0, the flickering light, dropped: b0 0 at rest, 1 raised 0.5;
+    \ else it falls - 0.5 a frame faster, drifting 0.16 - and bounces off 0.7 keeping 30% (its sound
+    \ 0 each bounce) till slower than 0.2, unresting as it goes and resting a frame there)
+    {: b0 | e :}  0 fx-place to e
+    b0 0= if  0e drop-v f!  exit  then
+    b0 1 = if  e 2 floats + dup f@ 0.5e f+ f!  0 effect-moved  exit  then
+    begin
+        0 fx-id @ dup alive? if  0 swap send effect-rest  else  drop  then
+        e 2 floats + dup f@ 0.16e f+ f!
+        drop-v f@ 0.5e f- drop-v f!
+        e float+ dup f@ drop-v f@ f+ f!
+        e float+ f@ 0.7e f< if
+            0.7e e float+ f!  drop-v f@ -0.3e f* drop-v f!
+            0 6 0 0  e f@  e float+ f@  e 2 floats + f@  sound-at
+            drop-v f@ 0.2e f< if
+                0 effect-moved  0 fx-id @ dup alive? if  1 swap send effect-rest  else  drop  then  exit
+            then
+        then
+        0 effect-moved  yield
+    again ;
 
 : old-mansion-2f-11.enter ( -- )   \ 00421C60
     room-sounds

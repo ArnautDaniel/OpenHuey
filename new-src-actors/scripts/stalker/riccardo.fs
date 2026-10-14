@@ -1,8 +1,8 @@
 \ stalker/riccardo.fs - Riccardo's own (P4c; src/game/riccardo.c): his behaviour and chase
-\ (Riccardo_StateBehaviour / Riccardo_Chase), his flurry of hammer blows (Riccardo_StartFlurry,
+\ (Riccardo_StateBehaviour / Riccardo_Chase), his flurry of blows with his gun (Riccardo_StartFlurry,
 \ FlurryBlow, StateBlow / StateBlowFiona / StateBlowHewie, StateAfterBlow), his lunge
 \ (Riccardo_StartLunge), his attack by how near (Riccardo_AttackForDistance) and the impact of his
-\ hammer (Riccardo_Impact). At the panic's stage 5 he chases as the Pursuer does (stalker/pursue.fs).
+\ gun's shots (Riccardo_Impact). At the panic's stage 5 he chases as the Pursuer does (stalker/pursue.fs).
 \ Seeing her: further than 100 he holds off; near (60) and seen by her he stands to her, coming on
 \ a few times (his waits' count) before walking at her; else by a roll he walks at her or stalks
 \ her for his waits' frames, and when they run out within 100 lunges (by his lunge table) or
@@ -13,7 +13,7 @@
 \ 10, 6 caught - stage below 4 - or 4 a hard blow; crouched under it, it passes over) - and else
 \ its debris where it lands. Its impact: a noise ($40) where he stands.
 IN: stalker.riccardo
-USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.chase stalker.pursue ;
+USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.chase stalker.pursue effects ;
 
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
 : wait# ( i -- n )  cells waits + @ ;              \ (his waits: 0 walking, 1 stalking, 2 walking once
@@ -94,13 +94,38 @@ fvariable lx  fvariable lz  fvariable px  fvariable pz  variable la
     px f@ la @ sf@ f- px f!  pz f@ la @ 8 + sf@ f- pz f!
     lx f@ pz f@ f*  lz f@ px f@ f* f- fabs
     lx f@ fdup f*  lz f@ fdup f* f+ fsqrt  fdup f0= if  fdrop  else  f/  then ;
-: debris ( -- ) ;   \ (its debris where it lands: the effect isn't written yet)
-: impact? ( -- flag )  my-model @ 0 -1 1 motion-events $20 and 0<> ;
-\ the impact (Riccardo_Impact): a noise where he stands (and its debris)
+\ ---- where his shot strikes (Riccardo_BlowFloorPoint): aimed down ($2301 / $2303 / $E06 / $1602)
+\ 10 out along his gun (bone $31), on the floor there; aimed level ($E00 / $E04) straight ahead to
+\ where the floor gives out, 15 up - none against a wall. Its debris there: a brown cloud
+\ (Riccardo_Debris) ----
+$31 constant gun-bone
+$80 constant floor-edge   $4000 constant wall-floor
+create hit-at 12 allot   create probe 12 allot
+: slam? ( -- flag )  anim @ dup $2301 = over $2303 = or over $E06 = or  swap $1602 = or ;
+: swing? ( -- flag )  anim @ dup $E00 = swap $E04 = or ;
+: down-the-gun ( -- ok? )
+    my-model @ gun-bone -10e 0e 0e bone-point hit-at vec!
+    hit-at vec@ nav-floor if  hit-at 4 + sf!  true  else  fdrop false  then ;
+: floor-ahead ( -- ok? )   \ (2 at a time, 200 at most)
+    hit-at my-at vec-copy
+    100 1 do
+        probe my-at  yaw i 2* s>f vec-ahead
+        probe floor-edge v-tri-in  dup 0< if  drop  hit-at 4 + dup sf@ 15e f+ sf!  true unloop exit  then
+        nav-flags wall-floor and if  false unloop exit  then
+        hit-at probe vec-copy
+    loop  false ;
+: floor-hit ( -- ok? )
+    slam? if  down-the-gun exit  then  swing? if  floor-ahead exit  then  false ;
+: debris ( -- )  floor-hit if  $80 $50 $40 hit-at vec@ debris-cloud  then ;
+\ his shot (Riccardo_Impact: at his animation's key $20): smoke off his gun (its strike mark), a
+\ noise ($40) where he stands, its debris from one aimed down; his grab ($1A01) marks her
+defer cry-hit ( who -- )
 : impact ( -- )
-    impact? 0= if  exit  then
+    effect-key? 0= if  exit  then
+    my-model @ gun-bone bone-pos gun-smoke
     $40 room-id self body-tri -1 stalker-noise acoustics-id send noise
-    anim @ dup $2301 = over $2303 = or swap $1602 = or if  debris  then ;
+    anim @ dup $2301 = over $2303 = or swap $1602 = or if  debris  then
+    anim @ $1A01 = if  fiona cry-hit  then ;
 \ Hewie struck: the move's kind and damage
 : strike-hewie ( -- )  blow-entry 4 cells + @  blow-entry 5 cells + @  0  hewie send blow ;
 \ her struck by k (6: the heavy move with its stun - from his swing $E00 the move 6, $E04 the
@@ -164,11 +189,42 @@ defer flurry-blow ( -- )
     blow-aim @ if  hewie body-at turn-rate turn-to fdrop  then
     ended? if  after-blow exit  then
     $15 grunt  root-move ;
-\ at her (Riccardo_StateBlowFiona): Hewie in the way takes it; crouched under it, it passes over
+\ a target of the story's by her (Events_NearestPoint: a zone of a kind with bit 1) his shot
+\ strikes instead - within 50 of her, further than 20 from him, about his height (10 under him to
+\ 15 over), a straight way to it, she and Hewie off the line to it or beyond it. Struck, it is his
+\ point (Pursuer_AttackPoint) a few frames: the story's zones see it there
+create shot-at 12 allot
+fvariable best-d  variable best-i
+: target# ( i -- v )  3 * floats target-at + ;
+: nearest-target ( -- i | -1 )
+    -1 best-i !
+    #targets 0 do
+        i cells target-on + @ if
+            i target# fiona body-at vec-dist
+            best-i @ 0<  fdup best-d f@ f< or if  best-d f!  i best-i !  else  fdrop  then
+        then
+    loop  best-i @ ;
+: off-line? ( id -- flag )   \ (Riccardo_OutOfLine: off the line to the target, or beyond it)
+    >r  my-at shot-at r@ body-at line-dist 4e f>  my-at shot-at vec-dist  my-at r> body-at vec-dist f< or ;
+: target-shot? ( -- flag )
+    nearest-target dup 0< if  drop false exit  then  target# shot-at swap vec-copy
+    shot-at fiona body-at vec-dist 50e f<  my-at shot-at vec-dist 20e f> and 0= if  false exit  then
+    my-at 4 + sf@ shot-at 4 + sf@ f-  fdup 10e f<  -15e f> and 0= if  false exit  then
+    self body-tri my-at shot-at 0 v-walk 0< if  false exit  then
+    fiona off-line? 0= if  false exit  then
+    hewie here? if  hewie off-line? 0= if  false exit  then  then
+    true ;
+: shoot-target ( -- )  shot-at vec@ body-point!  3 shot-t ! ;
+: shot-fades ( -- )   \ (his point gone again)
+    shot-t @ 0= if  exit  then  -1 shot-t +!  shot-t @ 0= if  body-point-off  then ;
+\ at her (Riccardo_StateBlowFiona): a target by her takes it; Hewie in the way takes it; crouched
+\ under it, it passes over
 : blowing-her ( -- )
     blow-key? if
         0 blow-aim !
-        sees-fiona @ same-floor? and  fiona 30e deg>rad in-front? and if
+        sees-fiona @ same-floor? and  fiona 30e deg>rad in-front? and  target-shot? and if
+            shoot-target
+        else  sees-fiona @ same-floor? and  fiona 30e deg>rad in-front? and if
             hewie here?  fiona body-at hewie body-at vec-dist 50e f< and  d-hewie f@ 20e f> and
             dog-floor? and  her-clear? and if
                 d-hewie f@ attack-for if  strike-hewie  else  debris  then
@@ -176,7 +232,7 @@ defer flurry-blow ( -- )
                 d-her 20e f<  fiona body-at 4 + sf@ fiona body-dims fswap fdrop f+  my-at 4 + sf@ 5e f+ f< and if  debris
                 else  d-her attack-for strike-her  then
             then
-        then
+        then  then
     then
     blow-aim @ if  fiona body-at turn-rate turn-to fdrop  then
     ended? if  after-blow exit  then
@@ -197,6 +253,16 @@ defer flurry-blow ( -- )
     world-held state-flag?  stalkers-blind state-flag? or if  stand-watch exit  then
     rnd 100e f*  0  begin  more?  while  1+  repeat  fdrop  1+ blows !  flurry-blow ;
 
+\ ---- the one he struck cries out (Riccardo_CryHit): in his flurry ($1000; not a hold) a mark at
+\ a height on them at random; his heavy blows ($E05, $1A01) a big one high on them ----
+:noname ( who -- )
+    dup body? 0= if  drop exit  then
+    chase-act @ $1000 = if
+        blow-entry 4 cells + @ 6 = if  drop exit  then
+        0  0.4e rnd 0.5e f* f+  mark-on exit
+    then
+    anim @ dup $E05 = swap $1A01 = or if  -1 0.9e mark-on  else  drop  then ; is cry-hit
+
 \ ---- his lunge (Riccardo_StartLunge: $1300; at the panic's stage 5 into his move 5) ----
 : lunging ( -- )
     root-move
@@ -206,8 +272,9 @@ defer flurry-blow ( -- )
 create riccardo-acts  ' flurry-start , ' lunge-start ,
 
 \ ---- his frame's own (Riccardo_Update): his rage at the panic's stage 5 (a roar, $26), his
-\ snort at $600's key, the impact of his hammer ----
+\ snort at $600's key, his gun's shots ----
 : riccardo-frame ( -- )
+    shot-fades
     raging @ if  stage5? 0= if  0 raging !  then
     else  stage5? reeling @ 0= and  my-mode @ 0= and if  -1 raging !  $26 7 sound  then  then
     anim @ $600 =  my-model @ 0 0 1 motion-events 1 and and if  $24 5 sound  then
@@ -215,21 +282,69 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
 
 \ ---- his other class (kind 37; riccardo.c Kind37_Update): struck enough (100 damage) he is
 \ alerted - hurt, his alert tables and waits - and calms again below ----
+\ its tint (Kind37_Update; the renderer's layer $11, drawn over the room by 80 + 80 sin of its
+\ pulse, out of 128): whole for 150 frames after each turn of what it does (counted while it is
+\ free), then pulsing - its phase on by 4 cos of it and up to 10 more, degrees a frame
+: kind37-tint ( -- )
+    my-mode @ tint-was @ <> if  150 tint-t !  my-mode @ tint-was !  then
+    tint-phase f@ fsin 80e f* 80e f+  128e fmin 128e f/  my-model @ actor act.alpha sf!
+    tint-t @ if
+        pi f2/ tint-phase f!  cond @ 1 3 within 0= if  -1 tint-t +!  then
+    else
+        tint-phase f@ fcos 4e f*  rnd 10e f* f+  deg>rad  tint-phase f@ f+ angle-wrap tint-phase f!
+    then ;
 : kind37-frame ( -- )
     hits @ 100 < if  cond @ 1 = if  0 cond !  then
     else  cond @ 1 2 within 0= cond @ 2 <> and if  1 cond !  then  then
-    cond @ 1 = alt-tables ! ;
+    cond @ 1 = alt-tables !
+    kind37-tint ;
 
-\ ---- the TintStalker (kind 23; tintstalker.c TintStalker_Tint / SetDelay): seen only a while
-\ (150 frames) after each turn of what it does - counting while it is free - then gone ----
+\ ---- the TintStalker (kind 23; tintstalker.c TintStalker_Tint / Fade / SetDelay): seen only a
+\ while (150 frames) after each turn of what it does - counting while it is free. Its tint (the
+\ renderer's layer $11, drawn over the room by its alpha out of 128): shown, fading in to 112 -
+\ held whole (130) while beaten -; its while over, fading out by 4 a frame, then gone ----
+0 constant tint-still   1 constant tint-in   2 constant tint-out   3 constant tint-whole
+: beaten-now? ( -- flag )  cond @ 2 = ;
+: in-her-room? ( -- flag )  in-game @ if  self body-room room-id =  else  false  then ;   \ (Npc_InPlayedRoom)
+: tint-show ( -- )
+    in-her-room? 0= if  exit  then
+    -1 tint-shown !  beaten-now? if  tint-whole  else  tint-in  then  tint-fade ! ;
+: tint-fading ( -- )   \ (TintStalker_Fade)
+    tint-fade @ case
+        tint-in of
+            tint-alpha f@ 116e f< if  112e tint-alpha f!  tint-still tint-fade !
+            else  tint-alpha f@ 4e f- tint-alpha f!  then
+        endof
+        tint-whole of  130e tint-alpha f!  endof
+        tint-out of
+            tint-alpha f@ 4e f-  fdup tint-alpha f!
+            f0> 0= if  0e tint-alpha f!  tint-still tint-fade !  0 tint-shown !  then
+        endof
+    endcase ;
 : tint-frame ( -- )
     my-mode @ tint-was @ <> if  150 tint-t !  my-mode @ tint-was !  then
-    tint-t @ if  cond @ 1 3 within 0= if  -1 tint-t +!  then  then
-    tint-t @ 0= unseen ! ;
+    tint-t @ if
+        tint-shown @ 0=  beaten-now? tint-fade @ tint-whole <> and  or
+        beaten-now? 0= tint-fade @ tint-whole = and  or if  tint-show  then
+        cond @ 1 3 within 0= if  -1 tint-t +!  then
+    then
+    tint-t @ 0=  in-her-room? and  tint-shown @ and  tint-fade @ tint-out <> and if  tint-out tint-fade !  then
+    tint-fading
+    tint-shown @ 0= unseen !
+    tint-alpha f@ 128e fmin 128e f/  my-model @ actor act.alpha sf! ;
 
 \ ---- kind 12 (lorenzo.c Kind12_Update / EventState): never hurt (its health back each frame); in
 \ her room, free to go for her, it seizes her (her fright 100) - not in costumes 6 / 7 ----
+\ its marker (Kind12_ShowUp / EnterRoom: the Marker on it - the first kind, size 1 - as it comes
+\ into her room; done once it has gone from there: Marker_Draw)
+: kind12-marker ( -- )
+    in-her-room? if
+        mark-id @ dup 0< 0= swap alive? and if  exit  then
+        my-model @ -1 0 1e marker mark-id !  exit
+    then
+    mark-id @ dup 0< 0= over alive? and if  -1 swap send effect-command  else  drop  then  -1 mark-id ! ;
 : kind12-frame ( -- )
+    kind12-marker
     hp-max @ hp !
     world-held state-flag?  stalkers-blind state-flag? or if  exit  then
     $26 progress pr.vars + c@ dup 6 = swap 7 = or if  exit  then

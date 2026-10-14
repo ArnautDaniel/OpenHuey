@@ -6,7 +6,7 @@
 \ (Pursuer_ModesSearching off screen, Pursuer_SearchRouteIn) and coming into the room being
 \ played (Pursuer_EnterRoom; Pursuer_BackOnMesh when she comes into his).
 IN: stalker.travel
-USING: engine game-state actors messages common facts flag-names paths doors stalker.state stalker.senses stalker.moving stalker.search ;
+USING: engine game-state actors messages common facts flag-names paths doors stalker.state stalker.senses stalker.moving stalker.search stalker.tables ;
 
 : my-room ( -- room )  self body-room ;
 : away? ( -- flag )  in-game @ if  my-room room-id <>  else  false  then ;
@@ -99,6 +99,26 @@ create in-at 12 allot  create out-at 12 allot
 : open-for-me ( exit -- )   \ (the shut door into her room taken - DoorHold_Take - and swung open: `door-held`)
     room-id swap stalker-kind doors-id send hold-door ;
 : swing-open ( exit -- )  true self doors-id send swing-door ;
+\ ---- the door he came into her room by, shut behind him once he is clear of it and it stands
+\ open (Riccardo_DoorBreak, Daniella_DoorBreak, TintStalker_BreakDoor: DoorHold_Take then
+\ DoorHold_Shut); Daniella in her rage leaves it open (Daniella_ExitArg). Debilitas, Lorenzo and
+\ the rest leave doors as they are ----
+0 constant leaves-doors   1 constant shuts-doors   2 constant shuts-doors-calm
+: shuts? ( -- flag )
+    door-manner @ case
+        shuts-doors of  true  endof
+        shuts-doors-calm of  raging @ 0=  endof
+        >r false r>
+    endcase ;
+: came-in-by ( exit -- )  shuts? if  to-shut !  else  drop  then ;
+: clear-of? ( exit -- flag )  0 my-at vec@ door-in-area? 0= ;
+: shut-behind ( -- )
+    to-shut @ dup 0< if  drop exit  then
+    my-room room-id <> if  drop -1 to-shut !  exit  then
+    dup clear-of? 0= if  drop exit  then
+    room-id over room-exit-door door-open? 0= if  drop exit  then
+    self doors-id send pull-shut  -1 to-shut ! ;
+
 : through ( exit -- )
     my-room over room-exit-leads                                     ( exit room' exit' )
     over 0< if  2drop  my-room swap room-exit-door avoid-door  goal-room @ route! drop  exit  then
@@ -106,6 +126,7 @@ create in-at 12 allot  create out-at 12 allot
     1 door-i +!  -1 making-for !  0 knock-t !
     my-room room-id = if
         room-id came-by @ room-exit-door door-kind 5 = if  came-by @ open-for-me  then
+        came-by @ came-in-by
         came-by @ true place-at-exit 0= if  placed-anywhere  then
         in-play exit
     then
@@ -115,12 +136,16 @@ create in-at 12 allot  create out-at 12 allot
     then
     next-door door-exit making-for !  stretch to-door f! ;
 
-\ ---- a knock at a shut door into her room (Pursuer_KnockAtDoor: his sounds $28 or $23, bank
-\ 7, at the door on her side), then 60..120 frames' wait - longer while she holds it ----
+\ ---- a knock at a shut door into her room (Pursuer_KnockAtDoor: a sound by his kit's knocks -
+\ Debilitas $28 or $23 -, bank 7, at the door on her side), then 60..120 frames' wait - longer
+\ while she holds it ----
+1 cells 1 floats + constant /knock
+: knock-sound ( -- n )   \ (a roll against the knocks' running chances)
+    rnd 100e f*  knocks  begin  dup cell+ f@ fover f< while  /knock +  repeat  fdrop @ ;
 : knock ( exit -- )
     my-room swap room-exit-leads nip                                 ( exit' )
     dup 0< if  drop exit  then
-    0 exit-spot drop  rnd 0.5e f< if  $28  else  $23  then  7 bank-sound-at
+    0 exit-spot drop  knock-sound 7 bank-sound-at
     rnd 60e f* 60e f+ f>s knock-t ! ;
 
 \ ---- each frame out of sight on his route (Pursuer_TravelOffscreen) ----
@@ -185,10 +210,20 @@ create seen-exits 8 cells allot
             my-room swap room-exit-leads drop  route! drop  unloop exit
         then  else  drop  then  drop
     loop ;
-\ held off: to the nearer of his own rooms (Debilitas_PickDestination: the shorter route)
+\ held off: to the nearer of his own rooms (Debilitas_PickDestination: the shorter route); none
+\ of his own (Daniella, Riccardo, ...: NPC_PickDestination's Npc_HeadRandomRoom - a room at
+\ random, not hers), on by a random way out
 variable ha-n
+: usable? ( exit -- flag )  my-room swap room-exit-door  dup 0< if  drop false exit  then  door-kind dup 4 =  swap 5 = or ;
+: wander-off ( -- )   \ (a way out at random he can go by, not into hers)
+    8 0 do
+        8 s>f rnd f* f>s 7 min                                         ( e )
+        dup usable?  my-room 2 pick room-exit-leads drop  room-id <> and if
+            my-room swap room-exit-leads drop  route! drop  unloop exit
+        then  drop
+    loop ;
 : head-home ( -- )
-    own-a @ 0< if  exit  then  avoid-clear
+    own-a @ 0< if  wander-off exit  then  avoid-clear
     own-a @ route! ha-n !
     own-b @ 0< if  ha-n @ 0> if  own-a @ route! drop  then  exit  then
     own-b @ route!                                                ( nb: his route there now )

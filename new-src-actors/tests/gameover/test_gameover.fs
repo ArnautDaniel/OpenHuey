@@ -21,7 +21,7 @@ testing a face button cuts the blue drift short; then black, and the game is ove
 : done? ( -- flag )  step? 12 = ;
 : press-on ( -- flag )  cross debug:press  done? ;
 T{ ' press-on 3000 soon -> -1 }T
-testing a continue (kind 2): over at once
+testing the story's end (kind 2): over at once - the ending follows (ending.fs)
 game:gameover enter  -1 gameover:step !  leave-actor  0 still!  panic-held state-flag-clear  world-held state-flag-clear
 2 game:gameover send game-over-kind  2 frames  caught state-flag-set  2 frames
 T{ step? -> 12 }T

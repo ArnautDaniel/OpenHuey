@@ -48,7 +48,8 @@ static struct {
     Voice voice[NVOICE];
     unsigned age;
     int hooked;
-} S;
+    int master;   /* all of the sequences' volume (0..256: the pause turns them down) */
+} S = {.master = 256};
 
 static unsigned rd32(const uint8_t *p) { return p[0] | p[1] << 8 | p[2] << 16 | (unsigned)p[3] << 24; }
 static unsigned rd16(const uint8_t *p) { return p[0] | p[1] << 8; }
@@ -105,7 +106,7 @@ static void voice_volume(int v) {
     Voice *sv = &S.voice[v];
     Port *p = &S.port[sv->port];
     Chan *c = &p->ch[sv->ch];
-    int x = sv->vol14 * c->vol / 127 * c->expr / 127 * p->vol / 128 * p->port_vol / 255 * c->scale / 127;
+    int x = sv->vol14 * c->vol / 127 * c->expr / 127 * p->vol / 128 * p->port_vol / 255 * c->scale / 127 * S.master / 256;
     int pan = sv->pan + (c->pan - 64), l, r;
 
     pan = pan < 0 ? 0 : pan > 127 ? 127 : pan;
@@ -531,6 +532,17 @@ void seq_port_volume(int k, int v) {
         port_voices(&S.port[k], -1, voice_volume);
         unlock();
     }
+}
+
+void seq_master_volume(float v) {
+    int k;
+
+    lock();
+    S.master = v < 0.0f ? 0 : v > 1.0f ? 256 : (int)(256.0f * v);
+    for (k = 0; k < NPORT; k++) {
+        port_voices(&S.port[k], -1, voice_volume);
+    }
+    unlock();
 }
 
 void seq_chan_volume(int k, int ch, int v) {

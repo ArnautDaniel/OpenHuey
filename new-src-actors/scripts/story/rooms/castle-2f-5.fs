@@ -5,19 +5,22 @@ IN: story.rooms.castle-2f-5
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x32: room effect slot 1 made anew as the first TV screen (TvScreenA).
-: castle-2f-5.cmd00 ( -- )  s" castle-2f-5.cmd00" stub-step ;
+: castle-2f-5.cmd00 ( -- )  1 0 tv-in ;   \ (room effect 1 the TV showing the screen)
 \ room 0x32 (D_0042C2A8): the fan turns, except while a movie plays
-: castle-2f-5.cmd01 ( -- )  s" castle-2f-5.cmd01" stub-step ;
+: castle-2f-5.cmd01 ( -- )  fan-turn ;
 \ room 0x32 (D_0042C2B8)
-: castle-2f-5.cmd02 ( b0 -- )  drop s" castle-2f-5.cmd02" stub-step ;
+: castle-2f-5.cmd02 ( b0 -- )  $1B $10000040  0.491e 22.0e 69.502e  9.502e 22.0e 60.491e  0.491e 0.0e 69.502e  9.502e 0.0e 60.491e  lit-quad ;   \ (a reflecting window: b0 1 removed, 2 over the whole picture)
 \ a room callback: byte 3 0 a progress name, 1 wait for character 3 (2 while not), else done
-: castle-2f-5.cmd03 ( b0 -- )  drop s" castle-2f-5.cmd03" stub-step ;
+: castle-2f-5.cmd03 ( b0 -- )   \ (Daniella's face: 0 loaded, 1 shown, else done)
+    case  0 of  s" O_DNL\DNL_202.TEX" speech-load  endof  1 of  3 0 speak  endof  >r speech-done r>  endcase ;
 \ room 0x32 (D_0042C2D8): byte 3 0..3 the lit quad (room effect 0x1A) as room 0x21's; 4 and up
 \ the mirror fragment's reflection (room effect 0x1A, MirrorFragment_vtable) on the object
 \ "a_fragment0": 1.8 across, -0.1 down, strength 1, kind 2, alpha 0xFF
-: castle-2f-5.cmd04 ( b0 -- )  drop s" castle-2f-5.cmd04" stub-step ;
+: castle-2f-5.cmd04 ( b0 -- )   \ (b0 0..3 the door's reflecting quad, as castle-2f-3's; 4 and up the fragment reflecting)
+    dup 4 < if  $1A $20000040  40.491e 30.0e -10.498e  49.502e 30.0e -19.509e  40.491e 1.5e -10.498e  49.502e 1.5e -19.509e  lit-quad exit  then
+    drop  0 $1A s" a_fragment0" $FF 2  1.8e -0.1e 1e  mirror-fragment ;
 \ the player's model tint: white (byte 3 0) or blue halved
-: castle-2f-5.cmd05 ( b0 -- )  drop s" castle-2f-5.cmd05" stub-step ;
+: castle-2f-5.cmd05 ( b0 -- )  drop ;   \ (the player model tint (+0xC0: CharModel_SetPoint, empty))
 
 : castle-2f-5.enter ( -- )   \ 0042B0B0
     room-sounds
@@ -53,17 +56,17 @@ USING: room-names story.words story.shared flag-names ;
         5 1 $14 door-bits
         6 1 $14 door-bits
     then
-    $E 1 object-show
-    $F 1 object-show
-    $10 1 object-show
-    $11 1 object-show
-    $12 1 object-show
-    $13 1 object-show
-    $14 1 object-show
-    $15 1 object-show
-    $16 1 object-show
-    $17 1 object-show
-    $18 1 object-show
+    $E 1 object-hidden
+    $F 1 object-hidden
+    $10 1 object-hidden
+    $11 1 object-hidden
+    $12 1 object-hidden
+    $13 1 object-hidden
+    $14 1 object-hidden
+    $15 1 object-hidden
+    $16 1 object-hidden
+    $17 1 object-hidden
+    $18 1 object-hidden
 ;
 
 : castle-2f-5.act04 ( -- )   \ 0042B850
@@ -310,7 +313,7 @@ USING: room-names story.words story.shared flag-names ;
         else $FE char-here? not if
             5 1 5 scene-change
         else
-            $8016 scene-ending
+            $8016 examine-message
         then then
     then
     0 $B char-in-area? 0 -67 $3C char-heading? and if
@@ -618,17 +621,17 @@ USING: room-names story.words story.shared flag-names ;
     4 0 $14 door-bits
     5 0 $14 door-bits
     6 0 $14 door-bits
-    $E 1 object-show
-    $F 1 object-show
-    $10 1 object-show
-    $11 1 object-show
-    $12 1 object-show
-    $13 1 object-show
-    $14 1 object-show
-    $15 1 object-show
-    $16 1 object-show
-    $17 1 object-show
-    $18 1 object-show
+    $E 1 object-hidden
+    $F 1 object-hidden
+    $10 1 object-hidden
+    $11 1 object-hidden
+    $12 1 object-hidden
+    $13 1 object-hidden
+    $14 1 object-hidden
+    $15 1 object-hidden
+    $16 1 object-hidden
+    $17 1 object-hidden
+    $18 1 object-hidden
     1 castle-2f-5.cmd05
     begin
         2 cutscene-shot? not while
@@ -660,17 +663,17 @@ USING: room-names story.words story.shared flag-names ;
         $A67 cutscene-cue-reached? not while
         yield
     repeat
-    $E 1 object-show
-    $F 1 object-show
-    $10 1 object-show
-    $11 1 object-show
-    $12 1 object-show
-    $13 1 object-show
-    $14 1 object-show
-    $15 1 object-show
-    $16 1 object-show
-    $17 1 object-show
-    $18 1 object-show
+    $E 1 object-hidden
+    $F 1 object-hidden
+    $10 1 object-hidden
+    $11 1 object-hidden
+    $12 1 object-hidden
+    $13 1 object-hidden
+    $14 1 object-hidden
+    $15 1 object-hidden
+    $16 1 object-hidden
+    $17 1 object-hidden
+    $18 1 object-hidden
     begin
         $A70 cutscene-cue-reached? not while
         yield
@@ -701,32 +704,32 @@ USING: room-names story.words story.shared flag-names ;
     4 0 $14 door-bits
     5 1 $14 door-bits
     6 1 $14 door-bits
-    $E 0 object-show
-    $F 0 object-show
-    $10 0 object-show
-    $11 0 object-show
-    $12 0 object-show
-    $13 0 object-show
-    $14 0 object-show
-    $15 0 object-show
-    $16 0 object-show
-    $17 0 object-show
-    $18 0 object-show
+    $E 0 object-hidden
+    $F 0 object-hidden
+    $10 0 object-hidden
+    $11 0 object-hidden
+    $12 0 object-hidden
+    $13 0 object-hidden
+    $14 0 object-hidden
+    $15 0 object-hidden
+    $16 0 object-hidden
+    $17 0 object-hidden
+    $18 0 object-hidden
     begin
         $AE7 cutscene-cue-reached? not while
         yield
     repeat
-    $E 1 object-show
-    $F 1 object-show
-    $10 1 object-show
-    $11 1 object-show
-    $12 1 object-show
-    $13 1 object-show
-    $14 1 object-show
-    $15 1 object-show
-    $16 1 object-show
-    $17 1 object-show
-    $18 1 object-show
+    $E 1 object-hidden
+    $F 1 object-hidden
+    $10 1 object-hidden
+    $11 1 object-hidden
+    $12 1 object-hidden
+    $13 1 object-hidden
+    $14 1 object-hidden
+    $15 1 object-hidden
+    $16 1 object-hidden
+    $17 1 object-hidden
+    $18 1 object-hidden
     2 castle-2f-5.cmd04
     begin
         $BF3 cutscene-cue-reached? not while
@@ -1298,17 +1301,17 @@ USING: room-names story.words story.shared flag-names ;
     4 0 $14 door-bits
     5 0 $14 door-bits
     6 0 $14 door-bits
-    $E 1 object-show
-    $F 1 object-show
-    $10 1 object-show
-    $11 1 object-show
-    $12 1 object-show
-    $13 1 object-show
-    $14 1 object-show
-    $15 1 object-show
-    $16 1 object-show
-    $17 1 object-show
-    $18 1 object-show
+    $E 1 object-hidden
+    $F 1 object-hidden
+    $10 1 object-hidden
+    $11 1 object-hidden
+    $12 1 object-hidden
+    $13 1 object-hidden
+    $14 1 object-hidden
+    $15 1 object-hidden
+    $16 1 object-hidden
+    $17 1 object-hidden
+    $18 1 object-hidden
     3 partner-load
     2 char-unload
     $D 0 movie-play

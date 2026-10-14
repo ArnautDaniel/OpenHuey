@@ -8,7 +8,7 @@ $29020008 constant his-floor   \ the nav triangles he can't stand on (through bl
 
 \ ---- chance (the original's gRandom: 0 <= r < 1) ----
 : roll ( n -- i )  s>f rnd f* f>s ;   \ (s32)(n x r)
-: hard? ( -- flag )  progress pr.vars $27 + c@ 1 = ;   \ the hard difficulty
+: black-shepherd? ( -- flag )  progress pr.vars $27 + c@ 1 = ;   \ his costume (variable $27) the black German Shepherd: harder bites, his own times and lists
 
 \ ---- himself ----
 : his-at ( -- v )  self body-at ;
@@ -30,10 +30,18 @@ $29020008 constant his-floor   \ the nav triangles he can't stand on (through bl
 \ the stalker in the game, as he last told (H3: `stalker-doing` each frame; -1 none)
 : pursuer ( -- id )  st-age @ 2 < if  st-id @  else  -1  then ;
 : pursuer? ( id -- flag )  dup 0< if  drop false exit  then  pursuer = ;
+\ the creature in a slot, as it last told (-1 none); which slot an actor is in (-1 none)
+: creature ( slot -- id )  dup cells cr-ages + @ 2 < if  cells cr-ids + @  else  drop -1  then ;
+: creature-slot ( id -- slot | -1 )
+    dup 0< if  drop -1 exit  then
+    10 0 do  dup i creature = if  drop i unloop exit  then  loop  drop -1 ;
+: creature-up? ( slot -- flag )  cells cr-ups + @ 0<> ;
 : cond-of ( id -- n )
     dup her = if  drop fiona-cond @ exit  then  pursuer? if  st-cond @  else  0  then ;
 : mode-of ( id -- n )
-    dup her = if  drop fiona-mode @ exit  then  pursuer? if  st-mode @  else  0  then ;
+    dup her = if  drop fiona-mode @ exit  then
+    dup pursuer? if  drop st-mode @ exit  then
+    creature-slot dup 0< if  drop 0  else  cells cr-modes + @  then ;
 \ in_his_room / Hewie_WithChar: active, not down, in his room - and on the floor of the room
 \ being played if that's his
 : with? ( id -- flag )

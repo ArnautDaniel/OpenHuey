@@ -11,6 +11,8 @@
 
 static uint8_t *sBase, *sSub;   /* SUBSCR/MSG_BASE.BIN, MSG_SUB.BIN */
 static size_t sBaseSize, sSubSize;
+static uint8_t *sExtra;         /* a scene's own table (message_file: the ending's MSG_END.BIN) */
+static size_t sExtraSize;
 static MessageLayout sLayout;
 static uint8_t sParams[4][64];   /* gMessageParams: copied text, NUL-ended */
 
@@ -49,8 +51,18 @@ const uint8_t *message_text(int id) {
     if (id & 0x4000) {
         return text_in(sSub, sSubSize, id & 0x3FFF);
     }
+    if (id & 0x2000) {
+        return text_in(sExtra, sExtraSize, id & 0x1FFF);
+    }
     room = pac_section(&gEngine.room.pac, PAC_TEXT, &size);
     return text_in(room, size, id);
+}
+
+int message_file(const char *path) {
+    free(sExtra);
+    sExtraSize = 0;
+    sExtra = path != NULL ? files_read(path, &sExtraSize) : NULL;
+    return sExtra != NULL;
 }
 
 void message_set_param(int slot, int id) {   /* Msg_SetParamSystem: system message 0x100 + id's first line */
@@ -63,6 +75,18 @@ void message_set_param(int slot, int id) {   /* Msg_SetParamSystem: system messa
     while (src != NULL && i < 63 && src[i] != 0 && src[i] != 1) {
         sParams[slot][i] = src[i];
         i++;
+    }
+    sParams[slot][i] = 0;
+}
+
+void message_set_param_text(int slot, const char *text, int len) {   /* Msg_PrintfParam: the text itself */
+    int i;
+
+    if (slot < 0 || slot >= 4) {
+        return;
+    }
+    for (i = 0; i < len && i < 63 && text[i] != 0; i++) {
+        sParams[slot][i] = (uint8_t)text[i];
     }
     sParams[slot][i] = 0;
 }

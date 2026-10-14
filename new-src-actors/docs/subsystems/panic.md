@@ -41,7 +41,9 @@ From `Panic_Update`, `Panic_Stage`, `Panic_FearInputs`, `Panic_SetLevel`, `Panic
 
 ## Status
 
-**Built** (`scripts/panic.fs`). Checked by `tests/panic/test_panic.fs` (with Fiona's side,
+**Built** (`scripts/panic.fs`). With each breath the pad beats (Panic_Breath's lists, `breath-rumble`:
+a swell over 3 frames to 96 / 144 / 192 / 224 by the stage, at stage 4 then full a moment, at 5
+the small motor with it - `rumble-step`, the rumble's sequence). Checked by `tests/panic/test_panic.fs` (with Fiona's side,
 17 tests): a level set by the story and its stage; calming 0.1 a frame when calm; a fright
 (half lasting, half passing); out of breath from stage 2; panicking (stage 4: her scream, the
 panic run, running on blindly); stumbles, and a fall (the dice loaded) that ends it early

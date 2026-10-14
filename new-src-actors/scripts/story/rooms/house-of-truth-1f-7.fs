@@ -2,24 +2,38 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-7
-USING: room-names story.words story.shared flag-names ;
+USING: engine common actors messages room-names story.words story.shared flag-names ;
 
 \ a struggle: byte 3 0 resets Fiona's shake tracking (+0x1AD710 / +0x1AD714); 1 adds her shakes
 \ to script variable byte 4, with a grunt (voice 0x3D or 0x45 at random) when the cool-down
 \ variable byte 6 is out (it then runs 45 / 60), and at 100 the event byte 5 (+0x5C)
-: house-of-truth-1f-7.cmd00 ( bytes.. n -- )  0 ?do drop loop s" house-of-truth-1f-7.cmd00" stub-step ;
+: house-of-truth-1f-7.cmd00 ( bytes.. n -- )   \ (her struggle: b0 0 her shakes counted from now; 1 this frame's added
+    \ to variable b1 - with a grunt ($3D or $45 at random) when variable b3, the cool-down, is out:
+    \ it then runs 45 / 60 - and at 100 event bit b2)
+    dup 4 <> if  1- 0 ?do  drop  loop  0 0 0  else  drop  then
+    {: b0 v bit cool | n :}
+    b0 0= if  shakes-count  exit  then
+    b0 1 <> if  exit  then
+    shakes-new to n
+    n 0<>  cool var @ 0= and if
+        2 random if  0 $3D 5 char-sound  cool 45 var-set  else  0 $45 5 char-sound  cool 60 var-set  then
+    then
+    v var @ n +  dup  v swap var-set  100 >= if  bit ebit-set  then ;
 \ byte 3: 0 / 1 a named progress call; 2 waits (2) for Progress_Speak(0, 0); else
 \ Progress_SpeechCall
-: house-of-truth-1f-7.cmd01 ( b0 -- )  drop s" house-of-truth-1f-7.cmd01" stub-step ;
+: house-of-truth-1f-7.cmd01 ( b0 -- )   \ (Fiona's face: 0 / 1 loaded - her two costumes' - 2 shown, else done)
+    case  0 of  s" O_FIO\FIO_201.TEX" speech-load  endof  1 of  s" O_FIH\FIH_201.TEX" speech-load  endof
+          2 of  0 0 speak  endof  >r speech-done r>  endcase ;
 \ room 0x8F: three grey smoke effects (Effect79B00, size 50) at the room's spots 0, 1, 6
 \ (grey_three).
-: house-of-truth-1f-7.cmd02 ( -- )  s" house-of-truth-1f-7.cmd02" stub-step ;
+: house-of-truth-1f-7.cmd02 ( -- )   \ (the ceiling coming down: stones of three kinds falling from 50)
+    0 50e 0e 0e 1e stones-falling  1 50e 0e 0e 1e stones-falling  6 50e 0e 0e 1e stones-falling ;
 \ room 0x8F: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: house-of-truth-1f-7.cmd03 ( -- )  s" house-of-truth-1f-7.cmd03" stub-step ;
+: house-of-truth-1f-7.cmd03 ( -- )  slam-shake ;
 \ the pursuer is active and out of view: state 3 (+0xE8), or the camera's on-screen test (+0xD4)
 \ fails
-: house-of-truth-1f-7.cond00? ( -- flag )  s" house-of-truth-1f-7.cond00?" stub-flag ;
+: house-of-truth-1f-7.cond00? ( -- flag )  stalker-about? 0= if  false exit  then  stalker-mode 3 = stalker-in-view? or ;
 
 : house-of-truth-1f-7.enter ( -- )   \ 00435990
     room-sounds
@@ -29,14 +43,14 @@ USING: room-names story.words story.shared flag-names ;
         0 0 $14 door-bits
     then
     $9F story-flag? not if
-        2 0 object-show
-        3 0 object-show
+        2 0 object-hidden
+        3 0 object-hidden
         1 0 8 nav-group
     else
-        2 1 object-show
-        3 1 object-show
+        2 1 object-hidden
+        3 1 object-hidden
     then
-    4 0 object-show
+    4 0 object-hidden
     $A4 story-flag? not if
         1 0 $14 door-bits
         2 1 $14 door-bits
@@ -253,7 +267,7 @@ USING: room-names story.words story.shared flag-names ;
             else house-of-truth-1f-7.cond00? not if
                 5 6 5 scene-change
             else
-                $8016 scene-ending
+                $8016 examine-message
             then then
         then
     then
@@ -373,8 +387,8 @@ USING: room-names story.words story.shared flag-names ;
         pause-wanted state-flag-set
         8 cutscene-control
     then
-    2 1 object-show
-    3 1 object-show
+    2 1 object-hidden
+    3 1 object-hidden
     0 0 8 nav-group
     $9F story-flag-set
     0 $B3 -74.86 74.73 -91 char-to-xz
@@ -518,7 +532,7 @@ USING: room-names story.words story.shared flag-names ;
         8 cutscene-control
     then
     $50 resident-flag-set
-    4 0 object-show
+    4 0 object-hidden
     1 1 8 nav-group
     $A0 story-flag-set
     0 5 char-file-load
@@ -909,8 +923,8 @@ USING: room-names story.words story.shared flag-names ;
 
 : house-of-truth-1f-7.act10 ( -- )   \ 00436440
     self-wait-done
-    2 1 object-show
-    3 1 object-show
+    2 1 object-hidden
+    3 1 object-hidden
     1 1 $14 door-bits
     0 -59.1 18.5 -16.0 1 effect-86
     1 -10.4 17.5 -26.3 1 effect-86

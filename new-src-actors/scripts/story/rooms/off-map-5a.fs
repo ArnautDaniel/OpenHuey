@@ -166,7 +166,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     1 exit-door-open? not 0 ebit? and if
         0 1 char-group-bit4? if
-            0 scene-ending
+            0 examine-message
         then
     then
     0 $17 char-in-area? 0 -45 $32 char-heading? and if

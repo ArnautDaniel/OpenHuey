@@ -2,7 +2,7 @@
 \ the message window, items, zones (docs/subsystems/story.md, window.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/story/test_examine.fs
 IN: test-examine
-USING: tester engine game-state actors messages keys room-names game debug fiona.state fiona.model story.state story.words ;
+USING: tester engine game-state actors messages keys room-names game debug flag-names fiona.state fiona.model story.state story.words ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
@@ -27,13 +27,23 @@ testing the button closes it; she gets up (0x802), her script goes on to its end
 T{ cross press  5 frames  [: msg @ ;] in-room  shown  [: fiona.model:anim@ ;] hers -> -1 -1 $802 }T
 T{ 120 [: [: her-scripted @ ;] hers 0= ;] within  [: her-reading @ ;] hers -> -1 0 }T
 
+testing 0xA5: a message offered on the action button; taken, it opens and she looks at character 2
+T{ [: -1 prep-scene !  $8016 examine-message  prep-scene @ prep-arg @ ;] in-room -> read-message $8016 }T
+T{ [: -1 prep-scene !  scene-locked state-flag-set  $8016 examine-message  scene-locked state-flag-clear  prep-scene @ ;] in-room -> -1 }T
+T{ read-message $8016 room-actor send take-offer  deliver  [: msg @ ;] in-room  [: her-look-hold @ ;] hers -> $8016 30 }T
+T{ cross press  5 frames  [: msg @ ;] in-room -> -1 }T
+
+testing a locked door's script: the room shows "locked from the other side" for her
+T{ $8001 broadcast fiona-message  deliver  2 frames  shown -> $8001 }T
+T{ cross press  5 frames  [: msg @ ;] in-room  shown -> -1 -1 }T
+
 testing a message with a choice: the answer chosen comes back (answer?)
 : show ( msg -- )  [: story.words:message ;] in-room  deliver ;
 T{ [: 42 answer ! ;] in-room  10 show  2 frames  cross press  3 frames  [: answer @ ;] in-room -> -1 }T   \ (no choice: -1)
 
-testing items: given with the pickup (a file), counted
-T{ [: $205 item-give  $205 item-give ;] in-room  progress pr.files w@ -> $205 }T
-T{ [: $30 2 item-give-count  $30 2 item-count?  $30 3 item-count? ;] in-room -> -1 0 }T
+testing items: a file given with the pickup (once), an item counted and given (items.fs: at the next delivery)
+T{ [: $205 item-give  $205 item-give ;] in-room  deliver  progress pr.files w@  progress pr.files 2 + w@ -> $205 0 }T
+T{ [: $40 2 item-give-count ;] in-room  deliver  [: $40 2 item-count?  $40 3 item-count? ;] in-room -> -1 0 }T
 
 testing zones: a cylinder set this frame, her body against it
 : zone-here ( -- )   \ zone 3 around her: radius 10, height 30
@@ -41,5 +51,11 @@ testing zones: a cylinder set this frame, her body against it
 T{ zone-here -> -1 }T
 T{ [: 0 3 3 char-zone-bits? ;] in-room -> -1 }T
 T{ [: zones-off  0 3 3 char-zone-bits? ;] in-room -> 0 }T
+testing her blow's point in a zone (cond 0x37): her kick's (10 up, her radius ahead); none when not striking
+: kick-point ( -- )  game:fiona enter  8 her-mode !  $1B her-sub !  fiona.defend:tell-point  0 her-mode !  0 her-sub !  leave-actor ;
+: no-point ( -- )  game:fiona enter  fiona.defend:tell-point  leave-actor ;
+zone-here
+T{ kick-point  [: 0 3 char-in-zone?  $FF 3 char-in-zone? ;] in-room -> -1 -1 }T
+T{ no-point  [: 0 3 char-in-zone? ;] in-room -> 0 }T
 
 test-summary

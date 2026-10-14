@@ -51,7 +51,7 @@ Owns: the room's camera setups, who it follows, cuts and eases.
 Takes: `follow`, `use-setup`, `event-camera`, `release`.
 Original: `camera.c`, `camdirector.c`.
 
-### Fiona (`fiona`)  — **F1, F2, F3 built; F4 but her strike and falls** (`subsystems/fiona.md`)
+### Fiona (`fiona`)  — **F1, F2, F3, F4 built** (her falls: the creatures' $13, held by homunculi $12; the ladder falls with F5) (`subsystems/fiona.md`)
 Owns: her moves, her actions (doors, ladders, items, pushing), her health, fear and panic.
 Takes: `input`, `hit`, `seize`, `lead`, `let-go`, `frighten`, `heal`, `place`, `play-motion`.
 Sends: `noise` (steps, screams, falls), `kick`/`shove` (as `hit` to whoever she struck),
@@ -109,11 +109,11 @@ Original: `music.c`, `BgmCtl`, `MusicDir_*`.
 Owns: the fade to and from black. Takes: `fade`, `fade-finish`. Answers `fade-done`.
 Original: the event's fade (+0x20, `Events_Fade`).
 
-### The pause (`pause`)  — **movie pause built** (`subsystems/pause.md`)
+### The pause (`pause`)  — **built: play and movie pauses** (`subsystems/pause.md`)
 Owns: the pause screen. Start during a scene's movie: back to it, or skip it (`movie-skipped`).
 Original: `pause.c`.
 
-### Items and the sub screen (`items`, `subscreen`)
+### Items and the sub screen (`items`, `subscreen`)  — **I1-I3 built** (`subsystems/items.md`; saving not yet)
 Owns: the inventory, item use, the files, the map.
 Original: `items.c`, `subscreen.c`.
 
@@ -127,8 +127,25 @@ Owns: the text window and the choices.
 Takes: `say`, `ask`. Sends `answered`, `closed`.
 Original: `text.c`, messages.
 
-### Game over, title, ending (`scenes`)  — **game over built** (`subsystems/gameover.md`); the title in `opening`
-Original: `gameover.c`, `title.c`, the ending scene.
+### Creatures (`creatures`, a `spirit` or `homunculus` each)  — **C1-C3 built** (`subsystems/creatures.md`)
+The house's lesser creatures: spirits (glows that come after her, vanish touching her or at
+their time) and homunculi (small figures that watch, follow and grab her; struck, they leave).
+Placed and cleared by the story, kept in the progress.
+
+### Saving (`saves`)  — **quick save built** (`scripts/saves.fs`)
+F5 saves, F9 loads (`<user-dir>hga-quick-save.fs`). As the original's save (SceneGame_Save): the
+progress, the room, Fiona's place and costume, Hewie with her (his trust, health, place); loading
+plays the room again and puts them back. The file is Forth: `saves` writes the progress, then
+broadcasts `write-save` and each actor prints its own line. Not yet: the stalker's and the
+placed things' state, the memory card screens (the sub screen's save mode).
+
+### Things lying about (`things`)  — **built** (`subsystems/things.md`)
+Owns: what Fiona throws, drops or sets down, and what they do. Motion and drawing in C
+(`game/things.c`). Original: `placed.c` (PlacedThings, Ball, Thing01..10).
+
+### Game over, title, ending (`scenes`)  — **game over and ending built** (`subsystems/gameover.md`, `subsystems/ending.md`); the title in `opening`
+Original: `gameover.c`, `title.c`, `scene_ending.c`. The ending: the staff roll, the results
+(the play record, the dog level, the TYPE), the unlocks; the clear-data save not built.
 
 ## Order
 

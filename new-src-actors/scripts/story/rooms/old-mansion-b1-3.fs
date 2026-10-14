@@ -2,17 +2,36 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-3
-USING: room-names story.words story.shared flag-names ;
+USING: engine actors messages story.state room-names story.words story.shared flag-names ;
 
 \ four room objects (Room4C_ObjectNames) pressed in (+0x24 down 0.2 to -0.7, a sound as each
 \ starts) while event flag i is set, else back up 0.2 to 0; byte 3 0 all reset
-: old-mansion-b1-3.cmd00 ( b0 -- )  drop s" old-mansion-b1-3.cmd00" stub-step ;
+: old-mansion-b1-3.cmd00 ( b0 -- )   \ (the plates "fumi0".."fumi3": each pressed down to -0.7 while its event bit
+    \ is set - a sound as it starts - else back up to 0; b0 0 all up at once)
+    {: b0 | a n :}
+    4 0 do
+        i room-object to n to a
+        a n object-here? if
+            b0 0= if  0e a n place-y object!
+            else i ebit? if
+                a n place-y object@ f0= if  6 6 0 0  a n place-x object@ a n place-y object@ a n place-z object@  sound  then
+                -0.2e a n place-y object+!  a n place-y object@ -0.7e fmax a n place-y object!
+            else
+                0.2e a n place-y object+!  a n place-y object@ 0e fmin a n place-y object!
+            then then
+        then
+    loop ;
 \ room 0x4C (Room4C_Cmd01_ptmf): byte 3 0 starts counting what the player does (her +0x1AD710
 \ on), 1 adds this frame's (Fiona_Shakes); at 35 events bit 0x13
-: old-mansion-b1-3.cmd01 ( b0 -- )  drop s" old-mansion-b1-3.cmd01" stub-step ;
+: old-mansion-b1-3.cmd01 ( b0 -- )   \ (her shakes counted: b0 0 from now; 1 at 35 of them, event bit $13)
+    case
+        0 of  0 fiona-shook !  true fiona-id send count-shakes  endof
+        1 of  fiona-shook @ 35 >= if  $13 ebit-set  false fiona-id send count-shakes  then  endof
+    endcase ;
 \ room 0x4C (D_0040AC08): character 0x11's model parts 0xA2 / 0xA4 / 0xAC get bit 2 when byte 3
 \ is 0, else lose it
-: old-mansion-b1-3.cmd02 ( b0 -- )  drop s" old-mansion-b1-3.cmd02" stub-step ;
+: old-mansion-b1-3.cmd02 ( b0 -- )   \ (character $11's model parts 5, 6 and 10 hidden (b0 0) or shown - the original's +$A2 / +$A4 / +$AC)
+    0<> {: on :}  $11 5 on show-part  $11 6 on show-part  $11 10 on show-part ;
 
 : old-mansion-b1-3.enter ( -- )   \ 00409980
     room-sounds
@@ -38,18 +57,18 @@ USING: room-names story.words story.shared flag-names ;
     $11 $9005 1 0 char-anim-hold
     $11 9.97 0.0 -0.59 0 char-to-xyz
     $330 story-flag? not if
-        $A 1 object-show
-        $B 0 object-show
-        $F 1 object-show
-        $10 0 object-show
+        $A 1 object-hidden
+        $B 0 object-hidden
+        $F 1 object-hidden
+        $10 0 object-hidden
     else
-        $A 0 object-show
-        $B 1 object-show
-        $F 0 object-show
-        $10 1 object-show
+        $A 0 object-hidden
+        $B 1 object-hidden
+        $F 0 object-hidden
+        $10 1 object-hidden
     then
     2 1 $14 door-bits
-    $E 1 object-show
+    $E 1 object-hidden
     5 0 $14 door-bits
     $26A story-flag? not if
         5 -20.96 8.5 5.57 flicker-sprite
@@ -430,7 +449,7 @@ USING: room-names story.words story.shared flag-names ;
         else $FE char-here? not if
             5 6 5 scene-change
         else
-            $8016 scene-ending
+            $8016 examine-message
         then then
     then
     0 6 char-in-area? 0 0 $32 char-heading? and if
@@ -874,7 +893,7 @@ USING: room-names story.words story.shared flag-names ;
         self-frames-reset
         5 self-wait-frames
         2 0 $14 door-bits
-        $E 0 object-show
+        $E 0 object-hidden
         $E 0 object-anim
         self-frames-reset
         $24 self-wait-frames
@@ -942,10 +961,10 @@ USING: room-names story.words story.shared flag-names ;
         $8004 5 self-anim-9
         self-frames-reset
         5 self-wait-frames
-        $A 1 object-show
-        $B 0 object-show
-        $F 1 object-show
-        $10 0 object-show
+        $A 1 object-hidden
+        $B 0 object-hidden
+        $F 1 object-hidden
+        $10 0 object-hidden
         $B 0 object-anim
         $10 0 object-anim
         self-frames-reset
@@ -960,10 +979,10 @@ USING: room-names story.words story.shared flag-names ;
         $8003 5 self-anim-9
         self-frames-reset
         5 self-wait-frames
-        $A 0 object-show
-        $B 1 object-show
-        $F 0 object-show
-        $10 1 object-show
+        $A 0 object-hidden
+        $B 1 object-hidden
+        $F 0 object-hidden
+        $10 1 object-hidden
         $A 0 object-anim
         $F 0 object-anim
         self-frames-reset
@@ -1118,8 +1137,8 @@ USING: room-names story.words story.shared flag-names ;
     wait-fade
     1 action-end
     1 char-done
-    $A 1 object-show
-    $B 1 object-show
+    $A 1 object-hidden
+    $B 1 object-hidden
     3 stalker-kind? $22 stalker-kind? or if
         3 4 0 char-model-op
     then
@@ -1213,11 +1232,11 @@ USING: room-names story.words story.shared flag-names ;
         2 cutscene-mode? not while
         yield
     repeat
-    $A 1 object-show
-    $B 1 object-show
-    $F 0 object-show
-    $10 1 object-show
-    $E 1 object-show
+    $A 1 object-hidden
+    $B 1 object-hidden
+    $F 0 object-hidden
+    $10 1 object-hidden
+    $E 1 object-hidden
     3 4 0 char-model-op
     $10 $50 movie-param
     0 1 char-visible
@@ -1282,11 +1301,11 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-b1-3.act15 ( -- )   \ 0040AA30
     self-wait-done
-    $A 1 object-show
-    $B 0 object-show
-    $F 1 object-show
-    $10 0 object-show
-    $E 1 object-show
+    $A 1 object-hidden
+    $B 0 object-hidden
+    $F 1 object-hidden
+    $10 0 object-hidden
+    $E 1 object-hidden
     $11 3 $FF char-load
     3 char-unload
     $F $44 fade
@@ -1360,11 +1379,11 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-b1-3.act16 ( -- )   \ 0040AAD0
     self-wait-done
-    $A 1 object-show
-    $B 0 object-show
-    $F 1 object-show
-    $10 0 object-show
-    $E 1 object-show
+    $A 1 object-hidden
+    $B 0 object-hidden
+    $F 1 object-hidden
+    $10 0 object-hidden
+    $E 1 object-hidden
     $11 3 $FF char-load
     3 char-unload
     7 1 movie-play

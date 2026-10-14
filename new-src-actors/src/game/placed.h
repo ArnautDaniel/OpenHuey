@@ -9,7 +9,7 @@
  * Model kinds: 0 rigid (s16 steps from an s32 start / 4096, scale 32), 2 the room's batch
  * layout (floats, its own colours), 1 / 3 two-frame morphs (s16 / 4096, scale 32; 1 lit, 3
  * coloured) - here their first frame. A name "a_..." is see-through, "g_..." a glow.
- * They start hidden: the scripts show them (event 0x50). */
+ * They start shown: the scripts hide them (event 0x50 - the original's +0 byte, 1 hidden). */
 #ifndef PLACED_H
 #define PLACED_H
 
@@ -30,7 +30,18 @@ typedef struct Placed {
     /* the animation playing: its keys, format (8: the turn, 9: the place - xyz floats), frames */
     const uint8_t *keys;
     int format, frames, frame;
+    /* the rooms' own values kept on the object (the original's object words at +0x30..+0x7C:
+     * a lid's speed, a chair's rock; read and written by their offset, `placed-word`) */
+    uint32_t words[0x80 / 4];
+    /* a morph (kinds 1 / 3): its definition (in the room's data), the frames shown and their blend
+     * (the original's +0x74 / +0x78 / +0x7C: the model's +0x34 / +0x38 / +0x3C) */
+    const uint8_t *def, *def_end;
+    int morph_a, morph_b;
+    float morph_t;
 } Placed;
+/* the object's 32-bit word at the original's offset `off` (+0x10..+0x18 its turn, +0x20..+0x28
+ * its place, the rest its own words); NULL past +0x7C */
+uint32_t *placed_word(Placed *p, int off);
 
 typedef struct PlacedSet {
     Placed p[PLACED_MAX];

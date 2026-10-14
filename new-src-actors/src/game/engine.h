@@ -47,7 +47,17 @@ typedef struct Engine {
             float up, about;
         } cam[2];
     } extra;
+    /* reflecting quads (the room effect Reflection: `reflect!`): the characters drawn again,
+     * mirrored in its plane, at its strength (0..0x80); `screen`: over the whole picture;
+     * `panels` (the strength word's top bits: 1 the window's, 2 the door's - castle 2F) the
+     * reflection again on the panels either side, moved by the quad's width on screen */
+    struct {
+        int strength, screen, panels;
+        int only;   /* (a mirror fragment's) the one actor it reflects, -1 all on the eye's side */
+        Vec3 q[4];
+    } refl[4];
     long ticks;
+    int testing;      /* run by --test: nothing kept on disk (the system data) */
     int paused;            /* a menu is up: actors and the room stand still (`pause!`) */
     int still;             /* the models and the room stand still, the actors run (`still!`: the game over) */
     char hud[128];         /* a line of text at the bottom of the screen ("" none) */
@@ -63,6 +73,10 @@ void bind_engine_reset(void);       /* the 2D, movie, music, sounds, cutscene as
 int bind_engine_reset_wanted(void); /* `soft-reset` asked for (once) */
 /* one game tick: tasks, then the per-tick hooks */
 void engine_tick(Engine *e);
+/* how far a character has faded going out through a doorway (0 none .. 1 gone: main.c) */
+float doorway_faded(const Engine *e, const Actor *a);
+/* a sound at a point of the room, as it is (Sound_PlayBankAt: the effects' own) */
+void engine_sound_at(uint32_t id, int bank, Vec3 at);
 /* the scripts' 2D drawing for this frame (the on-draw hooks) */
 void engine_draw_2d(Engine *e);
 

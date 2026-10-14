@@ -11,13 +11,13 @@ USING: room-names story.words story.shared flag-names ;
     $325 story-flag? if
         0 1 $14 door-bits
         1 0 $20000 nav-group
-        0 1 object-show
-        1 1 object-show
+        0 1 object-hidden
+        1 1 object-hidden
     else
         0 0 $14 door-bits
         0 0 $20000 nav-group
-        0 0 object-show
-        1 0 object-show
+        0 0 object-hidden
+        1 0 object-hidden
     then
     $27F story-flag? not if
         0 147.17 11.0 86.89 flicker-sprite
@@ -167,7 +167,7 @@ USING: room-names story.words story.shared flag-names ;
         $FE char-here? not if
             5 1 5 scene-change
         else
-            $8016 scene-ending
+            $8016 examine-message
         then
     then
     $27F story-flag? not if
@@ -314,8 +314,8 @@ USING: room-names story.words story.shared flag-names ;
         self-frames-reset
         5 self-wait-frames
         0 0 $14 door-bits
-        0 0 object-show
-        1 0 object-show
+        0 0 object-hidden
+        1 0 object-hidden
         0 0 object-anim
         1 0 object-anim
         self-frames-reset
@@ -327,8 +327,8 @@ USING: room-names story.words story.shared flag-names ;
         self-frames-reset
         5 self-wait-frames
         0 0 $14 door-bits
-        0 0 object-show
-        1 0 object-show
+        0 0 object-hidden
+        1 0 object-hidden
         0 1 object-anim
         1 1 object-anim
         self-frames-reset

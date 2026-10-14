@@ -66,7 +66,7 @@ struct Vocab {
     Vocab *next;        /* all vocabularies, newest first */
 };
 
-#define ORDER_MAX 32
+#define ORDER_MAX 512
 
 /* what a piece of source sees: where definitions go, and the vocabularies it uses */
 typedef struct Manifest {
@@ -86,6 +86,7 @@ struct Task {
     Cell rs[STACK_CELLS];   /* return stack */
     Float fs[FSTACK_CELLS]; /* float stack */
     int sp, rp, fp;
+    int lp;                 /* the running word's locals: their frame on the return stack */
     int marks[16], nmarks;  /* `{`: where each list being gathered starts on the data stack */
     Cell *ip;               /* the next cell of threaded code to run; NULL when stopped */
     Cell boot[2];           /* a task's first code: its word, then halt */
@@ -121,6 +122,13 @@ struct Forth {
     char roots[4][512];     /* where vocabularies' files are looked for */
     int nroots;
     Cell compiling;         /* STATE: 0 interpreting, -1 compiling */
+    /* the definition being compiled: its locals' names ({: ... :}); a quotation saves them */
+    struct ForthLocals {
+        char names[16][WORD_NAME_MAX + 1];
+        int n;
+    } locals, locals_saved[4];
+    int nlocals_saved;
+    Word *w_locals, *w_unlocals, *w_local_fetch, *w_local_store;
     Cell base;              /* number base */
     int bye;                /* `bye` was run: the host should stop */
 

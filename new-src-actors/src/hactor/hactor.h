@@ -20,7 +20,7 @@
 #define HNAME_MAX 31
 
 /* the kernel's own message kinds */
-enum { HK_TICK, HK_FRAME_END, HK_SPAWNED, HK_KILLED, HK_KERNEL_KINDS };
+enum { HK_TICK, HK_FRAME_END, HK_SPAWNED, HK_KILLED, HK_HELD_TICK, HK_KERNEL_KINDS };
 
 typedef struct HBehaviour HBehaviour;
 
@@ -33,6 +33,8 @@ typedef struct HBody {
     uint32_t mask;          /* the nav triangles it can't stand on */
     int has_head;           /* its head is told (body-head!): where others look at it */
     float head[3];          /* (the model's head bone; else its top: pos + height) */
+    int has_point;          /* its point of interest this frame (body-point!; Character +0x6C: her blow, his bite) */
+    float point[3];
 } HBody;
 
 /* actor `id`'s body (NULL: no such actor); the actor being run (-1: none) */
@@ -43,6 +45,9 @@ int hactor_self(void);
 void bind_hactor(Forth *f);
 /* one frame of the actors (the engine calls it each tick) */
 void hactor_frame(Forth *f);
+/* a frame while the world is held (`pause!`: a menu up): `held-tick` to its subscribers only,
+ * then deliver - messages still go to everyone */
+void hactor_held_frame(Forth *f);
 /* forget every actor and queued message (behaviours, kinds and state types stay) */
 void hactor_reset(void);
 /* from C: queue a message (from -1: the engine) / to every subscriber */

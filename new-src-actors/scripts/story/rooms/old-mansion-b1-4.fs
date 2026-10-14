@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-b1-4
 USING: room-names story.words story.shared flag-names ;
 
-: old-mansion-b1-4.cmd00 ( -- )  s" old-mansion-b1-4.cmd00" stub-step ;
+: old-mansion-b1-4.cmd00 ( -- )  $651 $238 file-once-flag ;
 
 : old-mansion-b1-4.enter ( -- )   \ 0040C190
     room-sounds
@@ -13,13 +13,13 @@ USING: room-names story.words story.shared flag-names ;
     $326 story-flag? if
         0 1 $14 door-bits
         1 0 $20000 nav-group
-        0 1 object-show
-        1 1 object-show
+        0 1 object-hidden
+        1 1 object-hidden
     else
         0 0 $14 door-bits
         0 0 $20000 nav-group
-        0 0 object-show
-        1 0 object-show
+        0 0 object-hidden
+        1 0 object-hidden
     then
     $6F story-flag? not if
         3 stalker-kind? $22 stalker-kind? or if
@@ -239,7 +239,7 @@ USING: room-names story.words story.shared flag-names ;
         else $FE char-here? not if
             5 7 5 scene-change
         else
-            $8016 scene-ending
+            $8016 examine-message
         then then
     then
     6 ebit? if
@@ -541,8 +541,8 @@ USING: room-names story.words story.shared flag-names ;
         self-frames-reset
         5 self-wait-frames
         0 0 $14 door-bits
-        0 0 object-show
-        1 0 object-show
+        0 0 object-hidden
+        1 0 object-hidden
         0 0 object-anim
         1 0 object-anim
         self-frames-reset
@@ -554,8 +554,8 @@ USING: room-names story.words story.shared flag-names ;
         self-frames-reset
         5 self-wait-frames
         0 0 $14 door-bits
-        0 0 object-show
-        1 0 object-show
+        0 0 object-hidden
+        1 0 object-hidden
         0 1 object-anim
         1 1 object-anim
         self-frames-reset

@@ -2,21 +2,57 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-12
-USING: room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names ;
 
 \ room 0x69 (D_004386F8): the three-dial lock by byte 3 - 0 the dials (and their lit twins) set
 \ to their settings; 1 the player at it: up / down pick the dial (event variable 0; its lit twin
 \ shown), left / right turn it (its setting, sound bit 3), cancel leaves (event bit 2); 2 the
 \ picked dial turns 4 degrees a frame to its setting, then - 1, 0, 2 - the lock opens (event
+\ ---- the three-dial lock (Room69): dials 0..2 and their lit twins 3..5, on
+\ progress variables $18..$1A, 90 degrees a notch; 1, 0, 2 opens it ----
+: dial-var ( k -- pv )  $18 + ;
+: dial-angle ( k -- ) ( F: -- a )  dial-var progress-var@ 90 * s>f deg>rad angle-wrap ;
+: dial ( k -- addr len )   \ (kDialNames: "dial0".."dial5" - the code's own table, not the room's strings)
+    case  0 of  s" dial0"  endof  1 of  s" dial1"  endof  2 of  s" dial2"  endof
+          3 of  s" dial3"  endof  4 of  s" dial4"  endof  >r s" dial5" r>  endcase ;
+: pick-dial ( old sel -- )   \ (the lit twin of the picked one shown instead)
+    {: old sel :}  0 old dial object-hidden!  1 old 3 + dial object-hidden!
+    1 sel dial object-hidden!  0 sel 3 + dial object-hidden!
+    0 sel var-set  6 ebit-set ;
+: turn-dial ( sel -- )   \ (left / right: its setting 0..3 round, sound bit 3)
+    {: sel | v :}  sel dial-var progress-var@ to v
+    3 menu-repeat? if  v 0= if  3  else  v 1-  then  to v
+    else  1 menu-repeat? if  v 3 < if  v 1+  else  0  then  to v  then  then
+    v sel dial-var progress-var@ <> if  sel dial-var v progress-var!  3 ebit-set  then
+    6 ebit-clear ;
+: dials-step ( -- )   \ (2: the picked dial turning 4 degrees a frame to its setting; there, opened if 1 0 2)
+    {: | sel :}  0 var @ to sel
+    sel dial object-here? 0= sel 3 + dial object-here? 0= or if  exit  then
+    sel dial turn-y object@ sel dial-angle f- angle-wrap                ( F: d )
+    fdup 4e deg>rad f> if  fdrop  -4e deg>rad sel dial turn-y object+!  -4e deg>rad sel 3 + dial turn-y object+!  exit  then
+    -4e deg>rad f< if  4e deg>rad sel dial turn-y object+!  4e deg>rad sel 3 + dial turn-y object+!  exit  then
+    sel dial-angle sel dial turn-y object!  sel dial-angle sel 3 + dial turn-y object!
+    0 dial-var progress-var@ 1 =  1 dial-var progress-var@ 0= and  2 dial-var progress-var@ 2 = and if
+        2 ebit-clear  4 ebit-set
+    else  3 ebit-clear  then ;
 \ bits 2 off, 4)
-: old-mansion-2f-12.cmd00 ( b0 -- )  drop s" old-mansion-2f-12.cmd00" stub-step ;
+: old-mansion-2f-12.cmd00 ( b0 -- )   \ (0 the dials set; 1 the player at it: up / down pick, left / right turn, cancel leaves
+    \ (event flag 2 off); 2 the picked one turning to its setting)
+    case
+        0 of  6 0 do  i dial object-here? if  i 3 mod dial-angle i dial turn-y object!  then  loop  endof
+        1 of  menu-cancel? if  2 ebit-clear  exit  then
+              0 var @  dup  0 menu-pressed? if  dup 0= if  drop 2  else  1-  then
+              else  2 menu-pressed? if  dup 2 < if  1+  else  drop 0  then  then  then   ( old sel )
+              2dup <> if  pick-dial  else  nip turn-dial  then  endof
+        2 of  dials-step  endof
+    endcase ;
 
 : old-mansion-2f-12.enter ( -- )   \ 00437E50
     room-sounds
     0 old-mansion-2f-12.cmd00
-    3 1 object-show
-    4 1 object-show
-    5 1 object-show
+    3 1 object-hidden
+    4 1 object-hidden
+    5 1 object-hidden
     $2AF story-flag? $2B0 story-flag? not and if
         0 82.73 31.0 -85.2 flicker-sprite
     then
@@ -307,8 +343,8 @@ USING: room-names story.words story.shared flag-names ;
             2 message
             2 ebit-set
             0 0 var-set
-            0 1 object-show
-            3 0 object-show
+            0 1 object-hidden
+            3 0 object-hidden
             begin
                 3 ebit? not if
                     1 old-mansion-2f-12.cmd00
@@ -327,12 +363,12 @@ USING: room-names story.words story.shared flag-names ;
             2 message-close
             world-frozen state-flag-clear
             0 0.0 0.0 0.0 0.0 event-camera
-            0 0 object-show
-            1 0 object-show
-            2 0 object-show
-            3 1 object-show
-            4 1 object-show
-            5 1 object-show
+            0 0 object-hidden
+            1 0 object-hidden
+            2 0 object-hidden
+            3 1 object-hidden
+            4 1 object-hidden
+            5 1 object-hidden
             4 ebit? if
                 2 6 318.0 12.0 -80.0 0 0 sound
                 1 $FF $D2 rumble

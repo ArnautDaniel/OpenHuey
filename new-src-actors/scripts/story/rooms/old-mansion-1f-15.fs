@@ -2,12 +2,49 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-15
-USING: room-names story.words story.shared flag-names ;
+USING: engine actors messages room-names story.words story.shared flag-names ;
 
+\ the moving bookshelves (Room54_GroupStep): group g's four (the colour's book and its three
+\ shelves) - op 0 at their stop; 1 / 2 back 0.25 a frame in x / z to it (event bit 0 cleared
+\ there); 3 / 4 their sound $C at the first (4 the kept-on kind); 5 the things lying on a
+\ triangle of nav group g gone. (The dust they raise: not drawn yet)
+: shelf ( i -- addr len )
+    case
+        0 of  s" movebook_blue"  endof    1 of  s" hondana_a0"  endof   2 of  s" hondana_a1"  endof   3 of  s" hondana_a2"  endof
+        4 of  s" movebook_yellow"  endof  5 of  s" hondana_b0"  endof   6 of  s" hondana_b1"  endof   7 of  s" hondana_b2"  endof
+        8 of  s" movebook_red"  endof     9 of  s" hondana_c0"  endof  10 of  s" hondana_c1"  endof  11 of  s" hondana_c2"  endof
+        >r s" " r>
+    endcase ;
+create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by group)
+: shelf-stop ( g off -- ) ( F: -- v )  place-z = 1 and  swap 2* +  floats shelf-stops + f@ ;
+: shelves-back ( g off -- )
+    {: g off | a n :}
+    4 0 do
+        g 4 * i + shelf to n to a
+        a n object-here? if
+            -0.25e a n off object+!
+            a n off object@  g off shelf-stop  f< if  g off shelf-stop a n off object!  0 ebit-clear  then
+        then
+    loop ;
+: shelves-at-stop ( g -- )
+    {: g | a n :}
+    4 0 do
+        g 4 * i + shelf to n to a
+        a n object-here? if  g place-x shelf-stop a n place-x object!  g place-z shelf-stop a n place-z object!  then
+    loop ;
 \ Room54_Cmd00
-: old-mansion-1f-15.cmd00 ( b0 b1 -- )  drop drop s" old-mansion-1f-15.cmd00" stub-step ;
+: old-mansion-1f-15.cmd00 ( b0 b1 -- )   \ (group b0, op b1: as the shelves' words above)
+    {: g op | a n :}
+    op case
+        0 of  g 3 < if  g shelves-at-stop  then  endof
+        1 of  g 3 < if  g place-x shelves-back  then  endof
+        2 of  g 3 < if  g place-z shelves-back  then  endof
+        3 of  4 g * shelf to n to a  a n object-here? if  $C 6 0 0  a n place-x object@ a n place-y object@ a n place-z object@  sound-at  then  endof
+        4 of  4 g * shelf to n to a  a n object-here? if  $8000000C 6 0 0  a n place-x object@ a n place-y object@ a n place-z object@  sound-at  then  endof
+        5 of  g things-off-group  endof
+    endcase ;
 \ Room54_Cmd01
-: old-mansion-1f-15.cmd01 ( -- )  s" old-mansion-1f-15.cmd01" stub-step ;
+: old-mansion-1f-15.cmd01 ( -- )  doors-id send rebuild-exits ;   \ (NavMesh_FindDoorRegions: the doorways found again, the shelves moved)
 
 : old-mansion-1f-15.enter ( -- )   \ 00426D80
     room-sounds
@@ -25,7 +62,7 @@ USING: room-names story.words story.shared flag-names ;
     $66 story-flag? not if
         1 4 $20000 nav-group
         1 5 $1000000 nav-group
-        8 1 object-show
+        8 1 object-hidden
     else
         1 5 $20000 nav-group
         2 0 old-mansion-1f-15.cmd00
@@ -44,7 +81,7 @@ USING: room-names story.words story.shared flag-names ;
         1 3 $1000000 nav-group
         1 $18A $10000000 nav-tri-flags
         1 $1D3 $10000000 nav-tri-flags
-        4 1 object-show
+        4 1 object-hidden
     else
         1 3 $20000 nav-group
         1 $187 $10000000 nav-tri-flags
@@ -65,7 +102,7 @@ USING: room-names story.words story.shared flag-names ;
     $6E story-flag? not if
         1 0 $20000 nav-group
         1 1 $1000000 nav-group
-        0 1 object-show
+        0 1 object-hidden
         0 6 $200 nav-group
         old-mansion-1f-15.cmd01
     else
@@ -459,7 +496,7 @@ USING: room-names story.words story.shared flag-names ;
     $904 self-anim
     self-wait-anim
     0 $E 6 char-sound
-    8 0 object-show
+    8 0 object-hidden
     $66 story-flag-set
     $15 item-use
     $905 self-anim
@@ -591,7 +628,7 @@ USING: room-names story.words story.shared flag-names ;
     $904 self-anim
     self-wait-anim
     0 $E 6 char-sound
-    4 0 object-show
+    4 0 object-hidden
     $6A story-flag-set
     $16 item-use
     $905 self-anim
@@ -720,7 +757,7 @@ USING: room-names story.words story.shared flag-names ;
     $904 self-anim
     self-wait-anim
     0 $E 6 char-sound
-    0 0 object-show
+    0 0 object-hidden
     $6E story-flag-set
     $17 item-use
     $905 self-anim

@@ -7,10 +7,12 @@ USING: tester engine game-state actors messages room-names game debug flag-names
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
 : slot ( k -- id )  [: fx-id @ ;] in-room ;
-: frame-of ( id -- n )  enter  0 p-frame pc @  leave-actor ;
-: kind-of ( id -- n )  enter  kind @  leave-actor ;
-: sparks# ( -- n )   \ (sparks alive)
-    0  256 0 do  i alive? if  i actor-name s" sparks" compare 0= if  1+  then  then  loop ;
+: system ( id -- p )  enter  effects:particles @  leave-actor ;   \ (its particle system)
+: kind-of ( id -- n )  system particles-info 2drop ;
+: frame-of ( id -- n )  system particles-info drop nip ;
+: rests ( -- n )  9 slot system particles-info nip nip ;
+: sparks# ( -- n )   \ (the torches' sparks going: the engine's, theirs)
+    0  4 0 do  i slot dup alive? if  system particles-children +  else  drop  then  loop ;
 
 free-play  20 frames
 castle-1f-8 room!  10 frames
@@ -33,13 +35,18 @@ T{ [: 0 effect-remove ;] in-room  torch0 alive?  0 slot -> 0 -1 }T
 testing a flickering sprite: made in a slot, its 16 frames, resting between runs
 [: 9 0e 10e 0e flicker-sprite ;] in-room  1 frames
 T{ 9 slot alive?  9 slot kind-of -> -1 0 }T
-: rests ( -- n )  9 slot enter  effects:rest @  leave-actor ;
 : plays? ( -- flag )  false  150 0 do  game-tick  rests 0= or  loop ;   \ (rests 0.5 .. 1.2 s, then plays)
 T{ rests 0>  plays? -> -1 -1 }T
+
+testing a thing wandering about its place (0xA9), kept in a variable; it doesn't end by itself
+[: 3 0  0e 10e 0e  4e 4e  0e 0e 0e  scene-effect-71000 ;] in-room  60 frames
+: wanderer ( -- id )  [: 3 var @ ;] in-room ;
+T{ wanderer alive?  wanderer system particles-alive? -> -1 -1 }T
+wanderer constant the-wanderer
 
 testing leaving the room: its effects go with it
 1 slot constant torch1  9 slot constant flick
 front-garden-2 room!  10 frames
-T{ torch1 alive?  flick alive?  sparks# -> 0 0 0 }T
+T{ torch1 alive?  flick alive?  sparks#  the-wanderer alive? -> 0 0 0 0 }T
 
 test-summary

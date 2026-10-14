@@ -6,6 +6,12 @@
  *   the room's look    (the game's own, per room: render.h RoomLook) - a blurred half-size copy
  *                      of the screen for the tint's glow and contrast, and the areas the room's
  *                      bloom mask marks (the second colour target) blurred for its bloom
+ *   the glow pass      (the original's renderer +0x58) the glowing sprites drawn again into a
+ *                      quarter-size buffer kept between frames (against the scene's depth at
+ *                      that size), which fades to 3/4 each glowing frame and is added over the
+ *                      screen at half: moving glows leave trails
+ *   the shine          (layer $14's) the characters in it drawn again at half size, their
+ *                      bright parts blurred and added in the colour asked for
  *   bloom              bright parts downsampled into a chain of smaller targets and added back up
  *                      (each step a small blur): glows spread wider the brighter they are
  *   composite          occlusion, fog by distance, bloom, exposure, tone mapping, saturation and
@@ -37,6 +43,7 @@ typedef struct Targets {
 
 static Targets T;
 static GLuint sEmptyVao, sLinear, sAoProg, sBlurProg, sDownProg, sUpProg, sCompositeProg;
+static GLuint sTrailProg;
 
 /* ---- shaders ---- */
 
@@ -132,6 +139,16 @@ static const char *kDownFs =
     "    o_color = vec4(c, 1.0);\n"
     "}\n";
 
+static const char *kTrailFs =   /* the last frame over this one, at u_a (the original's frame blend) */
+    "#version 460 core\n"
+    "in vec2 v_uv;\n"
+    "layout(binding = 0) uniform sampler2D u_src;\n"
+    "layout(location = 0) uniform float u_a;\n"
+    "out vec4 o_color;\n"
+    "void main() {\n"
+    "    o_color = vec4(texture(u_src, v_uv).rgb, u_a);\n"
+    "}\n";
+
 static const char *kUpFs =   /* a 3 x 3 tent of the smaller level, added onto the larger */
     "#version 460 core\n"
     "in vec2 v_uv;\n"
@@ -179,6 +196,10 @@ static const char *kCompositeFs =
     "layout(location = 19) uniform vec4 u_room_bloom;\n"   /* the room's bloom (a: signed strength) */
     "layout(location = 20) uniform vec4 u_dof;\n"   /* the room's depth of field (x > y: off) */
     "layout(binding = 7) uniform sampler2D u_dof_blur;\n"
+    "layout(binding = 8) uniform sampler2D u_glow_trail;\n"   /* the glow pass's buffer */
+    "layout(location = 21) uniform float u_glow_k;\n"          /* its strength this frame (0: none) */
+    "layout(binding = 9) uniform sampler2D u_shine;\n"         /* layer $14's bright parts, blurred */
+    "layout(location = 22) uniform vec3 u_shine_col;\n"        /* in this colour (0: none) */
     "out vec4 o_color;\n"
     "vec3 soft_shoulder(vec3 x) {\n"   /* the identity up to 0.8, then easing into 1 */
     "    vec3 over = max(x - 0.8, 0.0);\n"
@@ -207,6 +228,7 @@ static const char *kCompositeFs =
     "    }\n"
     /* the room's own look, on display values as the PS2 had them: tint, fog, bloom */
     "    vec3 s = pow(max(c, 0.0), vec3(1.0 / 2.2));\n"
+
     "    vec3 soft = 3.0 * pow(max(texture(u_soft, v_uv).rgb, 0.0), vec3(1.0 / 2.2));\n"
     "    s += soft * u_tint_glow.rgb * u_tint_glow.a;\n"
     /* (the second colour sees the screen after the first: its blurred copy has the glow too) */
@@ -219,6 +241,9 @@ static const char *kCompositeFs =
     "        s = mix(s, fc.rgb, clamp(fc.a, 0.0, 1.0));\n"
     "    }\n"
     "    s += 5.0 * pow(max(texture(u_glow, v_uv).rgb, 0.0), vec3(1.0 / 2.2)) * u_room_bloom.rgb * u_room_bloom.a;\n"
+    "    s += u_glow_k * pow(max(texture(u_glow_trail, v_uv).rgb, 0.0), vec3(1.0 / 2.2));\n"
+
+    "    s += 0.5 * texture(u_shine, v_uv).rgb * u_shine_col;\n"
     "    c = pow(max(s, 0.0), vec3(2.2));\n"
     /* the modern additions: haze, bloom, grading */
     "    if (u_fog_density > 0.0 && d < 1.0) {\n"
@@ -263,7 +288,7 @@ static GLuint framebuffer2(GLuint color, GLuint color2, GLuint depth) {
         glNamedFramebufferDrawBuffers(f, 2, kBoth);
     }
     if (depth != 0) {
-        glNamedFramebufferTexture(f, GL_DEPTH_ATTACHMENT, depth, 0);
+        glNamedFramebufferTexture(f, depth == T.depth ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, depth, 0);
     }
     if (glCheckNamedFramebufferStatus(f, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         fprintf(stderr, "post: a framebuffer is incomplete\n");
@@ -311,7 +336,7 @@ static void make_targets(int w, int h, int msaa) {
     T.msaa = msaa;
     T.color = texture2d(GL_RGBA16F, w, h);
     T.mask = texture2d(GL_R8, w, h);
-    T.depth = texture2d(GL_DEPTH_COMPONENT32F, w, h);
+    T.depth = texture2d(GL_DEPTH32F_STENCIL8, w, h);   /* (the stencil: the reflections' quads) */
     glTextureParameteri(T.depth, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTextureParameteri(T.depth, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     T.fbo = framebuffer2(T.color, T.mask, T.depth);
@@ -323,11 +348,11 @@ static void make_targets(int w, int h, int msaa) {
         glCreateRenderbuffers(1, &T.ms_mask);
         glNamedRenderbufferStorageMultisample(T.ms_mask, msaa, GL_R8, w, h);
         glCreateRenderbuffers(1, &T.ms_depth);
-        glNamedRenderbufferStorageMultisample(T.ms_depth, msaa, GL_DEPTH_COMPONENT32F, w, h);
+        glNamedRenderbufferStorageMultisample(T.ms_depth, msaa, GL_DEPTH32F_STENCIL8, w, h);
         glCreateFramebuffers(1, &T.ms_fbo);
         glNamedFramebufferRenderbuffer(T.ms_fbo, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, T.ms_color);
         glNamedFramebufferRenderbuffer(T.ms_fbo, GL_COLOR_ATTACHMENT1, GL_RENDERBUFFER, T.ms_mask);
-        glNamedFramebufferRenderbuffer(T.ms_fbo, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, T.ms_depth);
+        glNamedFramebufferRenderbuffer(T.ms_fbo, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, T.ms_depth);
         glNamedFramebufferDrawBuffers(T.ms_fbo, 2, kBoth);
         if (glCheckNamedFramebufferStatus(T.ms_fbo, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             fprintf(stderr, "post: the multisampled framebuffer is incomplete\n");
@@ -361,6 +386,109 @@ static void make_targets(int w, int h, int msaa) {
 
 /* ---- passes ---- */
 
+/* ---- the screen as a TV shows it (TvScreenA / B: the original copies the screen so far at half
+ * size through a grey palette): last frame's picture, grey, at half size - made only while asked
+ * for (post_tv_want, each frame) ---- */
+static const char *kGreyFs =
+    "#version 460 core\n"
+    "in vec2 v_uv;\n"
+    "layout(binding = 0) uniform sampler2D u_src;\n"
+    "out vec4 o_color;\n"
+    "void main() {\n"
+    "    vec3 c = texture(u_src, v_uv).rgb;\n"
+    "    float l = sqrt(clamp(dot(c, vec3(0.299, 0.587, 0.114)), 0.0, 1.0));\n"   /* (as the screen shows it) */
+    "    o_color = vec4(vec3(l), 1.0);\n"
+    "}\n";
+/* the haze (LightShaft / Room49Effect: the screen at half size blended half with itself drawn in
+ * 33 columns 8 apart, each moved down sin(a) (2 + (1 + cos a) / 2) - a the phase + 90 degrees a
+ * column - and all of it 2 sin(phase 2) right; that blended back over the screen at its strength,
+ * 0x48 / 128 the light shaft's, 0x60 Room49Effect's) */
+static const char *kHazeFs =
+    "#version 460 core\n"
+    "in vec2 v_uv;\n"
+    "layout(binding = 0) uniform sampler2D u_src;\n"
+    "layout(location = 0) uniform vec2 u_phase;\n"      /* the columns' phase; the sideways shift (texels of 256) */
+    "layout(location = 1) uniform vec3 u_k;\n"          /* the wave's height; the strength in the middle, at the edges */
+    "out vec4 o_color;\n"
+    "void main() {\n"
+    "    float col = floor(v_uv.x * 256.0 / 8.0);\n"
+    "    float a = u_phase.x + 1.5707963 * col;\n"
+    "    float dy = sin(a) * (u_k.x + 0.5 * (1.0 + cos(a))) / 224.0;\n"
+    "    float dx = u_phase.y / 256.0;\n"
+    "    float k = mix(u_k.z, u_k.y, 1.0 - abs(2.0 * v_uv.x - 1.0));\n"
+    "    vec3 c = texture(u_src, v_uv).rgb;\n"
+    "    vec3 m = texture(u_src, v_uv + vec2(-dx, dy)).rgb;\n"
+    "    o_color = vec4(mix(c, 0.5 * (c + m), k), 1.0);\n"
+    "}\n";
+static GLuint sHazeProg, sHazeTex, sHazeFbo;
+static int sHazeW, sHazeH, sHazeWanted;
+static float sHazePhase[2], sHazeK[3];
+
+/* the glow pass's step: the buffer faded to 3/4 (the original: B + (B / 2 - B) / 2), kept to
+ * what its 8 bits hold (0xFF: 2 x 0x80) */
+static const char *kGlowStepFs =
+    "#version 460 core\n"
+    "in vec2 v_uv;\n"
+    "layout(binding = 0) uniform sampler2D u_src;\n"
+    "out vec4 o_color;\n"
+    "void main() {\n"
+    "    o_color = vec4(0.75 * clamp(texture(u_src, v_uv).rgb, 0.0, 2.0), 1.0);\n"
+    "}\n";
+static GLuint sGlowStepProg;
+static GLuint sGlowFbo[2], sGlowTrail[2], sGlowDepth;   /* the buffer (two to step between), its depth */
+static GLuint sGlowOf;                                  /* the scene depth it was made for */
+static int sGlowW, sGlowH, sGlowCur, sGlowUsed, sGlowClear = 1;
+static float sBloomAdd[3];   /* the effects' blooms this frame (Bloom_Start): r g b x strength, signed */
+
+/* the shine (layer $14's end): its pixels drawn and bright enough (green 0x40 and up, of the
+ * frame's 0xFF) halved, then each with half of eight round it added */
+static const char *kShineFs =
+    "#version 460 core\n"
+    "in vec2 v_uv;\n"
+    "layout(binding = 0) uniform sampler2D u_src;\n"
+    "out vec4 o_color;\n"
+    "vec3 bright(vec2 uv) {\n"
+    "    vec4 c = texture(u_src, uv);\n"
+    "    vec3 d = pow(max(c.rgb, 0.0), vec3(1.0 / 2.2));\n"
+    "    return c.a > 0.01 && d.g >= 0.25 ? d : vec3(0.0);\n"
+    "}\n"
+    "void main() {\n"
+    "    vec2 t = 1.0 / vec2(textureSize(u_src, 0));\n"
+    "    vec3 c = bright(v_uv);\n"
+    "    c += 0.5 * (bright(v_uv + t * vec2(-1, -1)) + bright(v_uv + t * vec2(1, -1)) + bright(v_uv + t * vec2(-1, 1)) +\n"
+    "                bright(v_uv + t * vec2(1, 1)) + bright(v_uv + t * vec2(-2, 0)) + bright(v_uv + t * vec2(2, 0)) +\n"
+    "                bright(v_uv + t * vec2(0, -2)) + bright(v_uv + t * vec2(0, 2)));\n"
+    "    o_color = vec4(c, 1.0);\n"
+    "}\n";
+/* the softened layer ($1C): its pixels drawn, premultiplied by a coverage of 0 or 1 (blended
+ * back stretched: its edges soft) */
+static const char *kSoftPrepFs =
+    "#version 460 core\n"
+    "in vec2 v_uv;\n"
+    "layout(binding = 0) uniform sampler2D u_src;\n"
+    "out vec4 o_color;\n"
+    "void main() {\n"
+    "    vec4 c = texelFetch(u_src, ivec2(gl_FragCoord.xy), 0);\n"
+    "    float k = c.a > 0.01 ? 1.0 : 0.0;\n"
+    "    o_color = vec4(c.rgb * k, k);\n"
+    "}\n";
+/* ... laid over the scene, stretched (premultiplied: blended ONE, ONE_MINUS_SRC_ALPHA) */
+static const char *kSoftOverFs =
+    "#version 460 core\n"
+    "in vec2 v_uv;\n"
+    "layout(binding = 0) uniform sampler2D u_src;\n"
+    "out vec4 o_color;\n"
+    "void main() {\n"
+    "    o_color = texture(u_src, v_uv);\n"
+    "}\n";
+static GLuint sSoftOverProg;
+static GLuint sShineProg, sSoftPrepProg;
+static int sShineWanted;
+static float sShineCol[3];
+
+static GLuint sGreyProg, sTvTex, sTvFbo;
+static int sTvW, sTvH, sTvWanted;
+
 void post_init(void) {
     glCreateVertexArrays(1, &sEmptyVao);
     sAoProg = gl_program(kFullscreenVs, kAoFs, "ssao");
@@ -368,6 +496,13 @@ void post_init(void) {
     sDownProg = gl_program(kFullscreenVs, kDownFs, "bloom down");
     sUpProg = gl_program(kFullscreenVs, kUpFs, "bloom up");
     sCompositeProg = gl_program(kFullscreenVs, kCompositeFs, "composite");
+    sTrailProg = gl_program(kFullscreenVs, kTrailFs, "frame blend");
+    sGreyProg = gl_program(kFullscreenVs, kGreyFs, "tv grey");
+    sHazeProg = gl_program(kFullscreenVs, kHazeFs, "haze");
+    sGlowStepProg = gl_program(kFullscreenVs, kGlowStepFs, "glow step");
+    sShineProg = gl_program(kFullscreenVs, kShineFs, "shine");
+    sSoftPrepProg = gl_program(kFullscreenVs, kSoftPrepFs, "soft layer");
+    sSoftOverProg = gl_program(kFullscreenVs, kSoftOverFs, "soft layer over");
     glCreateSamplers(1, &sLinear);   /* for the passes' inputs: bilinear, clamped */
     glSamplerParameteri(sLinear, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glSamplerParameteri(sLinear, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -389,7 +524,7 @@ void post_begin(int w, int h, int msaa, Vec3 clear) {
     glDepthMask(GL_TRUE);
     glClearNamedFramebufferfv(target, GL_COLOR, 0, colour);
     glClearNamedFramebufferfv(target, GL_COLOR, 1, kNoMask);
-    glClearNamedFramebufferfv(target, GL_DEPTH, 0, &depth);
+    glClearNamedFramebufferfi(target, GL_DEPTH_STENCIL, 0, depth, 0);
     if (T.ms_fbo != 0) {
         glEnable(GL_MULTISAMPLE);
     }
@@ -405,6 +540,265 @@ static void fullscreen(GLuint fbo, int w, int h, GLuint prog) {
 static void bind(GLuint unit, GLuint texture, GLuint sampler) {
     glBindTextureUnit(unit, texture);
     glBindSampler(unit, sampler);
+}
+
+/* the frame blend (Renderer_Additive: the scripts' 0xCD): this frame's picture with the last at
+ * sTrail, for one frame; the last frame kept while it is wanted */
+static GLuint sTrailTex;
+static int sTrailW, sTrailH, sTrailValid;
+static float sTrail;
+
+void post_trail(float a) { sTrail = a < 0.0f ? 0.0f : a > 1.0f ? 1.0f : a; }
+
+static void trail(int x, int y, int w, int h) {
+    if (sTrail <= 0.0f) {
+        sTrailValid = 0;
+        return;
+    }
+    if (sTrailTex == 0 || sTrailW != w || sTrailH != h) {
+        if (sTrailTex != 0) {
+            glDeleteTextures(1, &sTrailTex);
+        }
+        glCreateTextures(GL_TEXTURE_2D, 1, &sTrailTex);
+        glTextureStorage2D(sTrailTex, 1, GL_RGBA8, w, h);
+        sTrailW = w;
+        sTrailH = h;
+        sTrailValid = 0;
+    }
+    if (sTrailValid) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glProgramUniform1f(sTrailProg, 0, sTrail);
+        bind(0, sTrailTex, sLinear);
+        glUseProgram(sTrailProg);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDisable(GL_BLEND);
+    }
+    glCopyTextureSubImage2D(sTrailTex, 0, 0, 0, x, y, w, h);
+    sTrailValid = 1;
+    sTrail = 0.0f;
+}
+
+void post_tv_want(void) { sTvWanted = 1; }
+void post_haze(float phase, float shift, float height, int middle, int edge) {
+    sHazeWanted = 1;
+    sHazePhase[0] = phase;
+    sHazePhase[1] = shift;
+    sHazeK[0] = height;
+    sHazeK[1] = (float)middle / 128.0f;
+    sHazeK[2] = (float)edge / 128.0f;
+}
+
+void post_glow_clear(void) { sGlowClear = 1; }
+
+void post_bloom(uint32_t rgba, int subtract) {
+    float a = (float)(rgba >> 24) / 256.0f * (subtract ? -1.0f : 1.0f);
+
+    sBloomAdd[0] += (float)(rgba & 0xFF) / 128.0f * a;
+    sBloomAdd[1] += (float)(rgba >> 8 & 0xFF) / 128.0f * a;
+    sBloomAdd[2] += (float)(rgba >> 16 & 0xFF) / 128.0f * a;
+    sGlowUsed = 1;   /* (Bloom_Start runs the glow pass too) */
+}
+
+int post_glow_begin(void) {
+    int i;
+
+    if (T.fbo == 0) {
+        return 0;
+    }
+    if (sGlowTrail[0] == 0 || sGlowOf != T.depth) {
+        if (sGlowTrail[0] != 0) {
+            glDeleteFramebuffers(2, sGlowFbo);
+            glDeleteTextures(2, sGlowTrail);
+            glDeleteTextures(1, &sGlowDepth);
+        }
+        sGlowW = T.w / 4 > 0 ? T.w / 4 : 1;
+        sGlowH = T.h / 4 > 0 ? T.h / 4 : 1;
+        sGlowDepth = texture2d(GL_DEPTH32F_STENCIL8, sGlowW, sGlowH);
+        for (i = 0; i < 2; i++) {
+            sGlowTrail[i] = texture2d(GL_RGBA16F, sGlowW, sGlowH);
+            glCreateFramebuffers(1, &sGlowFbo[i]);
+            glNamedFramebufferTexture(sGlowFbo[i], GL_COLOR_ATTACHMENT0, sGlowTrail[i], 0);
+            glNamedFramebufferTexture(sGlowFbo[i], GL_DEPTH_STENCIL_ATTACHMENT, sGlowDepth, 0);
+        }
+        sGlowOf = T.depth;
+        sGlowClear = 1;
+    }
+    if (sGlowClear) {
+        static const float kNone[4] = {0, 0, 0, 0};
+
+        glClearNamedFramebufferfv(sGlowFbo[0], GL_COLOR, 0, kNone);
+        glClearNamedFramebufferfv(sGlowFbo[1], GL_COLOR, 0, kNone);
+        sGlowClear = 0;
+    }
+    /* the scene's depth so far, at the buffer's size (the original copies its Z buffer down) */
+    if (T.ms_fbo != 0) {   /* (resolved first: a multisampled one can't be scaled) */
+        glBlitNamedFramebuffer(T.ms_fbo, T.fbo, 0, 0, T.w, T.h, 0, 0, T.w, T.h, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    }
+    glBlitNamedFramebuffer(T.fbo, sGlowFbo[sGlowCur], 0, 0, T.w, T.h, 0, 0, sGlowW, sGlowH, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glBindFramebuffer(GL_FRAMEBUFFER, sGlowFbo[sGlowCur]);
+    glViewport(0, 0, sGlowW, sGlowH);
+    sGlowUsed = 1;
+    return 1;
+}
+
+void post_glow_end(void) {
+    glBindFramebuffer(GL_FRAMEBUFFER, T.ms_fbo != 0 ? T.ms_fbo : T.fbo);
+    glViewport(0, 0, T.w, T.h);
+}
+
+void post_shine(uint32_t rgba) {
+    sShineWanted = 1;
+    sShineCol[0] = (float)(rgba >> 24) / 128.0f;
+    sShineCol[1] = (float)(rgba >> 16 & 0xFF) / 128.0f;
+    sShineCol[2] = (float)(rgba >> 8 & 0xFF) / 128.0f;
+}
+
+/* a half-size target that characters are drawn again into, against the scene's depth (the shine,
+ * the softened layer), and the pass made from it */
+typedef struct Redraw {
+    GLuint fbo, tex, depth, out_fbo, out, of;
+    int w, h, drawn;
+} Redraw;
+
+static void redraw_make(Redraw *r) {
+    if (r->tex != 0 && r->of == T.depth) {
+        return;
+    }
+    if (r->tex != 0) {
+        glDeleteFramebuffers(1, &r->fbo);
+        glDeleteFramebuffers(1, &r->out_fbo);
+        glDeleteTextures(1, &r->tex);
+        glDeleteTextures(1, &r->out);
+        glDeleteTextures(1, &r->depth);
+    }
+    r->w = T.half_w;
+    r->h = T.half_h;
+    r->tex = texture2d(GL_RGBA16F, r->w, r->h);
+    r->out = texture2d(GL_RGBA16F, r->w, r->h);
+    r->depth = texture2d(GL_DEPTH32F_STENCIL8, r->w, r->h);
+    glCreateFramebuffers(1, &r->fbo);
+    glNamedFramebufferTexture(r->fbo, GL_COLOR_ATTACHMENT0, r->tex, 0);
+    glNamedFramebufferTexture(r->fbo, GL_DEPTH_STENCIL_ATTACHMENT, r->depth, 0);
+    r->out_fbo = framebuffer(r->out, 0);
+    r->of = T.depth;
+}
+
+static int redraw_begin(Redraw *r) {
+    static const float kNone[4] = {0, 0, 0, 0};
+
+    if (T.fbo == 0) {
+        return 0;
+    }
+    redraw_make(r);
+    if (T.ms_fbo != 0) {
+        glBlitNamedFramebuffer(T.ms_fbo, T.fbo, 0, 0, T.w, T.h, 0, 0, T.w, T.h, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    }
+    glBlitNamedFramebuffer(T.fbo, r->fbo, 0, 0, T.w, T.h, 0, 0, r->w, r->h, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glClearNamedFramebufferfv(r->fbo, GL_COLOR, 0, kNone);
+    glBindFramebuffer(GL_FRAMEBUFFER, r->fbo);
+    glViewport(0, 0, r->w, r->h);
+    glDepthMask(GL_TRUE);
+    glEnable(GL_POLYGON_OFFSET_FILL);   /* (the scene's depth, halved, may have these characters in it already) */
+    glPolygonOffset(-2.0f, -16.0f);
+    r->drawn = 1;
+    return 1;
+}
+
+static void redraw_end(void) {
+    glDisable(GL_POLYGON_OFFSET_FILL);
+    post_glow_end();
+}
+
+static Redraw sShine, sSoftLayer;
+
+int post_shine_begin(void) {
+    return sShineWanted && redraw_begin(&sShine);
+}
+
+void post_shine_end(void) {
+    redraw_end();
+}
+
+int post_soft_begin(void) {
+    return redraw_begin(&sSoftLayer);
+}
+
+void post_soft_end(void) {
+    redraw_end();
+}
+
+static void shine(void) {
+    if (sShine.drawn) {
+        bind(0, sShine.tex, sLinear);
+        fullscreen(sShine.out_fbo, sShine.w, sShine.h, sShineProg);
+    }
+    if (sSoftLayer.drawn) {   /* (layer $1C: what it drew, premultiplied by where it drew, laid over
+                               * the scene before the rest - the room's look sees it as any) */
+        bind(0, sSoftLayer.tex, 0);
+        fullscreen(sSoftLayer.out_fbo, sSoftLayer.w, sSoftLayer.h, sSoftPrepProg);
+        bind(0, sSoftLayer.out, sLinear);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        glColorMaski(1, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);   /* (the bloom mask left be) */
+        fullscreen(T.fbo, T.w, T.h, sSoftOverProg);
+        glColorMaski(1, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        glDisable(GL_BLEND);
+    }
+}
+
+static void glow_step(void) {
+    if (sGlowTrail[0] == 0 || !sGlowUsed) {
+        return;
+    }
+    bind(0, sGlowTrail[sGlowCur], 0);
+    fullscreen(sGlowFbo[sGlowCur ^ 1], sGlowW, sGlowH, sGlowStepProg);
+    sGlowCur ^= 1;
+}
+
+static void haze(void) {   /* (the scene's colour wavered in place) */
+    if (!sHazeWanted) {
+        return;
+    }
+    sHazeWanted = 0;
+    if (sHazeTex == 0 || sHazeW != T.w || sHazeH != T.h) {
+        if (sHazeTex != 0) {
+            glDeleteFramebuffers(1, &sHazeFbo);
+            glDeleteTextures(1, &sHazeTex);
+        }
+        sHazeTex = texture2d(GL_RGBA16F, T.w, T.h);
+        sHazeFbo = framebuffer(sHazeTex, 0);
+        sHazeW = T.w;
+        sHazeH = T.h;
+    }
+    glProgramUniform2f(sHazeProg, 0, sHazePhase[0], sHazePhase[1]);
+    glProgramUniform3f(sHazeProg, 1, sHazeK[0], sHazeK[1], sHazeK[2]);
+    bind(0, T.color, sLinear);
+    fullscreen(sHazeFbo, T.w, T.h, sHazeProg);
+    glCopyImageSubData(sHazeTex, GL_TEXTURE_2D, 0, 0, 0, 0, T.color, GL_TEXTURE_2D, 0, 0, 0, 0, T.w, T.h, 1);
+}
+
+unsigned int post_tv_texture(void) { return sTvTex; }
+
+static void tv_copy(void) {
+    int w = T.w / 2 > 0 ? T.w / 2 : 1, h = T.h / 2 > 0 ? T.h / 2 : 1;
+
+    if (!sTvWanted) {
+        return;
+    }
+    sTvWanted = 0;
+    if (sTvTex == 0 || sTvW != w || sTvH != h) {
+        if (sTvTex != 0) {
+            glDeleteFramebuffers(1, &sTvFbo);
+            glDeleteTextures(1, &sTvTex);
+        }
+        sTvTex = texture2d(GL_RGBA8, w, h);
+        sTvFbo = framebuffer(sTvTex, 0);
+        sTvW = w;
+        sTvH = h;
+    }
+    bind(0, T.color, sLinear);
+    fullscreen(sTvFbo, w, h, sGreyProg);
 }
 
 void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, int w, int h, float time) {
@@ -431,6 +825,10 @@ void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, i
     glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
     glDepthMask(GL_FALSE);
     glBindVertexArray(sEmptyVao);
+    haze();
+    tv_copy();
+    glow_step();
+    shine();
 
     if (s->ssao) {
         glProgramUniform4f(sAoProg, 0, P[0], P[5], P[10], P[14]);
@@ -507,6 +905,14 @@ void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, i
     bind(5, T.glow[0], sLinear);
     bind(6, T.mask, sLinear);
     bind(7, T.dof, sLinear);
+    bind(8, sGlowTrail[sGlowCur], sLinear);
+    glProgramUniform1f(sCompositeProg, 21, sGlowUsed && sGlowTrail[0] != 0 ? 0.5f : 0.0f);
+    bind(9, sShine.out, sLinear);
+    if (sShine.drawn) {
+        glProgramUniform3f(sCompositeProg, 22, sShineCol[0], sShineCol[1], sShineCol[2]);
+    } else {
+        glProgramUniform3f(sCompositeProg, 22, 0.0f, 0.0f, 0.0f);
+    }
     if (s->room_dof && gRoomLook.has_dof) {
         glProgramUniform4f(sCompositeProg, 20, gRoomLook.dof[0], gRoomLook.dof[1], gRoomLook.dof[2], gRoomLook.dof[3]);
     } else {
@@ -524,14 +930,20 @@ void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, i
         glProgramUniform4f(sCompositeProg, 17, l->tint_glow[0], l->tint_glow[1], l->tint_glow[2], tint ? l->tint_glow[3] : 0.0f);
         glProgramUniform4f(sCompositeProg, 18, l->tint_contrast[0], l->tint_contrast[1], l->tint_contrast[2],
                            tint ? l->tint_contrast[3] : 0.0f);
-        glProgramUniform4f(sCompositeProg, 19, l->bloom[0], l->bloom[1], l->bloom[2],
-                           bloom ? (l->bloom_subtract ? -l->bloom[3] : l->bloom[3]) : 0.0f);
+        float k = bloom ? (l->bloom_subtract ? -l->bloom[3] : l->bloom[3]) : 0.0f;
+
+        glProgramUniform4f(sCompositeProg, 19, l->bloom[0] * k + sBloomAdd[0], l->bloom[1] * k + sBloomAdd[1],
+                           l->bloom[2] * k + sBloomAdd[2], 1.0f);   /* (the room's and the effects') */
     }
     glUseProgram(sCompositeProg);
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    for (i = 0; i < 8; i++) {
+    trail(x, y, w, h);
+    for (i = 0; i < 10; i++) {
         bind((GLuint)i, 0, 0);
     }
+    sGlowUsed = 0;
+    sShineWanted = sShine.drawn = sSoftLayer.drawn = 0;
+    sBloomAdd[0] = sBloomAdd[1] = sBloomAdd[2] = 0.0f;
     glBindVertexArray(0);
     (void)cam->znear;
 }

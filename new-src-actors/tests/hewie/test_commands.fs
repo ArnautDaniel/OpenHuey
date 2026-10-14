@@ -40,6 +40,12 @@ T{ [: his-cmd-was @ ;] his@ -> $2C }T
 T{ 200 $D takes? -> -1 }T
 120 frames
 
+testing "come back" on the move (walking): no stop for a gesture; she glances at him (30 frames)
+ready
+key: W true key-hold  10 frames
+T{ key: K press  [: her-mode @  her-look-who @ game:hewie =  her-look-hold @ 0> ;] her@ -> 0 -1 -1 }T
+key: W false key-hold  60 frames
+
 testing "go there" (up): 0x23, he answers and makes for the spot she showed (0x63)
 ready
 T{ key: I press  [: her-sub @ ;] her@ -> $23 }T

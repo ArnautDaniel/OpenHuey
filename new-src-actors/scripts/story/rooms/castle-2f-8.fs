@@ -5,11 +5,23 @@ IN: story.rooms.castle-2f-8
 USING: room-names story.words story.shared flag-names ;
 
 \ Room24_Cmd00
-: castle-2f-8.cmd00 ( b0 -- )  drop s" castle-2f-8.cmd00" stub-step ;
+: castle-2f-8.cmd00 ( b0 -- )   \ (the kiln's glow - "jimen", "kama", "sumi" - pulsing: their blend 0.5 + 0.5 cos(phase),
+    \ the phase on 12.3 degrees a call; b0 0 at its start, -pi)
+    {: b0 | a n :}
+    3 0 do
+        i case  0 of  s" jimen"  endof  1 of  s" kama"  endof  >r s" sumi" r>  endcase  to n to a
+        a n object-here? if
+            b0 0= if  pi fnegate a n $30 object!  0e 0 1 a n morph!
+            else
+                a n $30 object@ fcos 0.5e f* 0.5e f+  0 1 a n morph!
+                a n $30 object@ 0.20944e f+  fdup pi f> if  2e pi f* f-  then  a n $30 object!
+            then
+        then
+    loop ;
 \ Room24_Cmd01
-: castle-2f-8.cmd01 ( -- )  s" castle-2f-8.cmd01" stub-step ;
+: castle-2f-8.cmd01 ( -- )  effects:rising-smoke ;
 \ Room24_Cmd02
-: castle-2f-8.cmd02 ( -- )  s" castle-2f-8.cmd02" stub-step ;
+: castle-2f-8.cmd02 ( -- )  0 $50 $24 $2A $2A $46 colour-pulse ;
 
 : castle-2f-8.enter ( -- )   \ 00401890
     room-sounds
@@ -462,7 +474,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     world-held state-flag-set
     2 char-unload
-    $A 1 object-show
+    $A 1 object-hidden
     3 0 char-remove
     0 $A8 -160 char-to-tri-facing
     camera-restart
@@ -559,13 +571,13 @@ USING: room-names story.words story.shared flag-names ;
     then
     world-held state-flag-set
     2 char-unload
-    4 1 object-show
-    5 1 object-show
-    6 1 object-show
-    7 1 object-show
-    8 1 object-show
-    9 1 object-show
-    $A 1 object-show
+    4 1 object-hidden
+    5 1 object-hidden
+    6 1 object-hidden
+    7 1 object-hidden
+    8 1 object-hidden
+    9 1 object-hidden
+    $A 1 object-hidden
     0 $A8 -160 char-to-tri-facing
     camera-restart
     $13 door-unlock

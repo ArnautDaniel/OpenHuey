@@ -5,7 +5,14 @@ IN: story.rooms.old-mansion-1f-16
 USING: room-names story.words story.shared flag-names ;
 
 \ Room55_Cmd00
-: old-mansion-1f-16.cmd00 ( b0 -- )  drop s" old-mansion-1f-16.cmd00" stub-step ;
+: old-mansion-1f-16.cmd00 ( b0 -- )   \ (Room55: b0 0 the ceiling's glass reflecting (60 x 60 at 45) and the light rippling
+    \ up there; else the light rippling low down and drops falling)
+    0= if
+        0 $1B $80  30e 45e -30e  -30e 45e -30e  30e 45e 30e  -30e 45e 30e  lit-quad
+        3 $80808080  0e 45.1e 0e  160e 0.5e 0.1e  effects:caustic drop
+    else
+        3 $80808080  0e -5.9e 0e  160e 0.5e 0.1e  effects:caustic drop  effects:rain
+    then ;
 
 : old-mansion-1f-16.enter ( -- )   \ 00420B40
     room-sounds

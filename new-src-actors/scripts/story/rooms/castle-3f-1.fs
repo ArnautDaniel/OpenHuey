@@ -6,7 +6,9 @@ USING: room-names story.words story.shared flag-names ;
 
 \ room 0x06 (Room06_Cmd00_ptmf): its four objects (the name's 6th letter counting) to their
 \ places
-: castle-3f-1.cmd00 ( -- )  s" castle-3f-1.cmd00" stub-step ;
+: castle-3f-1.cmd00 ( -- )   \ (its four objects, "oshi00".."oshi03", to their places)
+    -35e -46e -55e s" oshi00" place-to   -25e -46e -55e s" oshi01" place-to
+    -25e -46e 55e s" oshi02" place-to    75e -46e 35e s" oshi03" place-to ;
 
 : castle-3f-1.enter ( -- )   \ 003F1B60
     room-sounds

@@ -16,6 +16,7 @@ state: summoner-state
   \ while loaded: 0 this frame, 1 the last - for the messages between frames; more: none loaded)
   cell field s-id  cell field s-room  cell field s-mode  cell field s-in  cell field s-own
   cell field s-away  cell field s-cool  cell field s-age
+  cell field s-beaten   \ (his +0xC4 2: knocked out of health)
   \ Fiona's room and the exit she came in by; the danger
   cell field her-room  cell field her-exit  cell field the-danger
 end-state
@@ -155,6 +156,7 @@ variable v-near  variable v-plan
         her-room @ s-room @ =  near-her? or if  0 waited !  false exit  then
     then
     1 waited +!
+    s-beaten @ waited @ 151 >= and if  2 take  true exit  then   \ (beaten: away from her 5 s - longer away)
     s-mode @ 4 = waited @ 151 >= and if  1 take  true exit  then
     cooldown @ if  false exit  then
     s-mode @ 3 = waited @ 91 >= and if  0 take  true exit  then
@@ -203,8 +205,8 @@ behaviour summoning
   on spawned ( -- )
       reset  100 s-age !  -1 her-room !  -1 her-exit !  0 the-danger !
       self subscribe frame-end  self subscribe entered-room  self subscribe danger  self subscribe noise-made ;
-  on stalker-status ( room mode in-game own away cool -- )
-      s-cool !  s-away !  s-own !  s-in !  s-mode !  s-room !  sender s-id !  0 s-age ! ;
+  on stalker-status ( room mode in-game own away cool beaten -- )
+      s-beaten !  s-cool !  s-away !  s-own !  s-in !  s-mode !  s-room !  sender s-id !  0 s-age ! ;
   on entered-room ( room exit -- )  her-exit !  her-room ! ;
   on danger ( level -- )  the-danger ! ;
   on noise-made ( loud room door -- )  noise ;
@@ -212,7 +214,9 @@ behaviour summoning
   on summoner-cooldown ( secs -- )  dup 0< if  drop s-cool @  then  30 * cooldown ! ;
   on summoner-cooldown-less ( secs -- )  30 * cooldown @ swap - 0 max cooldown ! ;
   on summoner-reset ( -- )  reset ;
-  on frame-end ( -- )  decide  s-age @ 100 < if  1 s-age +!  then ;
+  on frame-end ( -- )  decide  s-age @ 100 < if  1 s-age +!  then
+      cooldown @ dup 30 /  swap 0<> over 0= and if  drop 1  then   \ (Countdown_Seconds: at least 1 while it runs)
+      broadcast summoner-cooldown-is ;
 end-behaviour
 
 : summoner-spawn ( -- id )  summoning summoner-state s" summoner" spawn ;

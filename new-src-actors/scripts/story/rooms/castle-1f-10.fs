@@ -6,13 +6,15 @@ USING: room-names story.words story.shared flag-names ;
 
 \ the stalker in play is chasing (+0x153C 2, 6 or 7, not +0xC4 2) with the progress state 2: in
 \ this room, whether the camera sees it; elsewhere 1
-: castle-1f-10.cond00? ( -- flag )  s" castle-1f-10.cond00?" stub-flag ;
+: castle-1f-10.cond00? ( -- flag )   \ (out of view: Camera_OutOfView)
+    hunting-debilitas? 0= if  false exit  then  2 game-mode? 0= if  false exit  then
+    stalker-in-this-room? if  stalker-in-view? 0=  else  true  then ;
 \ no thing of kind 3 lies about
-: castle-1f-10.cond01? ( -- flag )  s" castle-1f-10.cond01?" stub-flag ;
+: castle-1f-10.cond01? ( -- flag )  3 thing-lying? 0= ;
 
 : castle-1f-10.enter ( -- )   \ 00403F90
     $31D story-flag? if
-        2 1 object-show
+        2 1 object-hidden
     then
     0 24.35 9.0 19.7 0 effect-86
     $228 story-flag? not if
@@ -99,7 +101,7 @@ USING: room-names story.words story.shared flag-names ;
                 castle-1f-10.cond00? if
                     5 0 6 scene-change
                 else
-                    $8016 scene-ending
+                    $8016 examine-message
                 then
             else
                 5 1 0 scene-change

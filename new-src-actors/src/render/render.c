@@ -19,7 +19,7 @@ RenderSettings gRender = {
     .shadows = 1,
     .light_dir = {0.35f, 0.85f, 0.4f}, .light_color = {0.55f, 0.52f, 0.48f}, .ambient = {0.16f, 0.17f, 0.2f},
     .rim = 0.35f,
-    .room_fog = 1, .room_tint = 1, .room_bloom = 1, .room_dof = 1,
+    .room_fog = 1, .room_tint = 1, .room_bloom = 1, .room_dof = 1, .game_font = 1,
     .room_lights = 1, .character_light = 2.0f, .shadow_maps = 1, .shadow_strength = 0.7f,
 };
 
@@ -65,7 +65,7 @@ void render_look_tick(void) {
 
 enum { U_MVP, U_USE_TEX, U_SOLID_TEX, U_LIT, U_COVERAGE, U_LIGHT_DIR, U_LIGHT_COLOR, U_AMBIENT, U_EYE, U_RIM, U_MASK,
        U_ROOM_LIT, U_LPOS = 12, U_LCOL = 15, U_LRANGE = 18, U_AMBIENT128 = 21, U_NSHADOWS = 22, U_SHADOW_VP = 23,
-       U_SHADOW_INFO = 27, U_SHADOW_STRENGTH = 31, U_RECEIVE = 35, U_CHAR_LIGHT = 36 };
+       U_SHADOW_INFO = 27, U_SHADOW_STRENGTH = 31, U_RECEIVE = 35, U_CHAR_LIGHT = 36, U_ALPHA = 37 };
 
 static const char *kMeshVs =
     "#version 460 core\n"
@@ -116,6 +116,7 @@ static const char *kMeshFs =
     "layout(location = 31) uniform float u_shadow_strength[4];\n"
     "layout(location = 35) uniform int u_receive;\n"
     "layout(location = 36) uniform float u_char_light;\n"
+    "layout(location = 37) uniform vec4 u_tint;\n"   /* the whole draw tinted and faded (a character: 1 1 1 1 as it is) */
     "layout(binding = 1) uniform sampler2DArrayShadow u_shadow;\n"
     "layout(location = 0) out vec4 o_color;\n"
     "layout(location = 1) out float o_mask;\n"
@@ -175,6 +176,7 @@ static const char *kMeshFs =
     "            discard;\n"
     "        }\n"
     "    }\n"
+    "    c *= u_tint;\n"
     "    o_color = c;\n"
     "    o_mask = u_mask;\n"
     "}\n";
@@ -433,6 +435,77 @@ void render_draw_lights(Vec3 ambient, const DrawLight *lights, int n) {
     glProgramUniform1f(R.mesh_prog, U_CHAR_LIGHT, gRender.character_light);
 }
 
+/* ---- reflections (the original's Reflection effect): its quad marked in the stencil and its
+ * depth pushed back, the characters drawn again mirrored there, then its depth put back ---- */
+
+static GLuint sQuadVao, sQuadVbo;
+
+static void quad_draw(const Mat4 *vp, const Vec3 q[4]) {   /* (corners 0 1 2 3: triangles 0 1 2, 2 1 3) */
+    static const int kOrder[6] = {0, 1, 2, 2, 1, 3};
+    float v[18];
+    int i;
+
+    if (sQuadVao == 0) {
+        glCreateVertexArrays(1, &sQuadVao);
+        glCreateBuffers(1, &sQuadVbo);
+        glNamedBufferStorage(sQuadVbo, sizeof(v), NULL, GL_DYNAMIC_STORAGE_BIT);
+        glVertexArrayVertexBuffer(sQuadVao, 0, sQuadVbo, 0, 3 * sizeof(float));
+        glEnableVertexArrayAttrib(sQuadVao, 0);
+        glVertexArrayAttribFormat(sQuadVao, 0, 3, GL_FLOAT, GL_FALSE, 0);
+        glVertexArrayAttribBinding(sQuadVao, 0, 0);
+    }
+    for (i = 0; i < 6; i++) {
+        v[i * 3] = q[kOrder[i]].x;
+        v[i * 3 + 1] = q[kOrder[i]].y;
+        v[i * 3 + 2] = q[kOrder[i]].z;
+    }
+    glNamedBufferSubData(sQuadVbo, 0, sizeof(v), v);
+    glProgramUniformMatrix4fv(R.shadow_prog, 0, 1, GL_FALSE, vp->m);
+    glUseProgram(R.shadow_prog);
+    glBindVertexArray(sQuadVao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+}
+
+static void colour_writes(GLboolean on) {
+    glColorMaski(0, on, on, on, on);
+    glColorMaski(1, on, on, on, on);
+}
+
+void render_reflect_begin(const Mat4 *vp, const Vec3 q[4]) {
+    static const GLint kZero = 0;
+
+    glDisable(GL_BLEND);
+    glClearBufferiv(GL_STENCIL, 0, &kZero);
+    glEnable(GL_STENCIL_TEST);
+    colour_writes(GL_FALSE);
+    glStencilFunc(GL_ALWAYS, 1, 0xFF);   /* where the quad shows */
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    glDepthMask(GL_FALSE);
+    glDepthFunc(GL_LEQUAL);
+    quad_draw(vp, q);
+    glStencilFunc(GL_EQUAL, 1, 0xFF);   /* its depth pushed to the back there */
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    glDepthFunc(GL_ALWAYS);
+    glDepthMask(GL_TRUE);
+    glDepthRange(1.0, 1.0);
+    quad_draw(vp, q);
+    glDepthRange(0.0, 1.0);
+    glDepthFunc(GL_LEQUAL);
+    colour_writes(GL_TRUE);
+}
+
+void render_reflect_end(const Mat4 *vp, const Vec3 q[4]) {
+    colour_writes(GL_FALSE);
+    glDisable(GL_BLEND);
+    glDepthFunc(GL_ALWAYS);
+    glDepthMask(GL_TRUE);
+    quad_draw(vp, q);
+    glDepthFunc(GL_LEQUAL);
+    colour_writes(GL_TRUE);
+    glDisable(GL_STENCIL_TEST);
+}
+
 void render_shadows_begin(void) {
     R.nshadows = 0;
 }
@@ -596,14 +669,24 @@ void render_mesh_free(GpuMesh *g) {
     memset(g, 0, sizeof(*g));
 }
 
+static float sTint[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+
+void render_mesh_tint(float r, float g, float b, float a) {
+    sTint[0] = r;
+    sTint[1] = g;
+    sTint[2] = b;
+    sTint[3] = a < 0.0f ? 0.0f : a > 1.0f ? 1.0f : a;
+}
+
 void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, const GpuTexture *textures,
                  int ntextures, const uint32_t groups[8]) {
-    int i, multisampled = gRender.msaa > 1;
+    int i, multisampled = gRender.msaa > 1, faded = sTint[3] < 1.0f;
 
     if (g->vao == 0) {
         return;
     }
     glProgramUniformMatrix4fv(R.mesh_prog, U_MVP, 1, GL_FALSE, mvp->m);
+    glProgramUniform4f(R.mesh_prog, U_ALPHA, sTint[0], sTint[1], sTint[2], sTint[3]);
     glUseProgram(R.mesh_prog);
     glDisable(GL_BLEND);   /* (for both targets: only the colour one ever blends) */
     glBindSampler(0, R.sampler);
@@ -612,7 +695,7 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
     for (i = 0; i < nd; i++) {
         const MeshDraw *x = &d[i];
         GLuint tex = x->texture >= 0 && x->texture < ntextures ? textures[x->texture] : 0;
-        int coverage = multisampled && tex != 0 && !x->blend && !x->additive;
+        int coverage = multisampled && tex != 0 && !x->blend && !x->additive && !faded;
 
         if (x->group != 0 && !(groups[x->group >> 5] >> (x->group & 31) & 1)) {
             continue;
@@ -620,7 +703,7 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
         if (x->mask) {   /* the bloom mask: marks where it shows, draws no colour */
             glDisable(GL_BLEND);
             glColorMaski(0, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-        } else if (x->blend || x->additive) {
+        } else if (x->blend || x->additive || faded) {
             glEnablei(GL_BLEND, 0);
             glBlendFunc(GL_SRC_ALPHA, x->additive ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
         } else {
@@ -684,10 +767,15 @@ void render_rect(float x, float y, float w, float h, uint32_t rgba) {
 }
 
 void render_image(GpuTexture t, float x, float y, float w, float h, uint32_t rgba) {
+    render_image_uv(t, x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f, rgba);
+}
+
+void render_image_uv(GpuTexture t, float x, float y, float w, float h, float u0, float v0, float u1, float v1,
+                     uint32_t rgba) {
     Mat4 proj = mat4_ortho2d((float)R.w, (float)R.h);
 
     flush_2d();   /* (what was drawn before stays under it) */
-    quad(x, y, x + w, y + h, 0.0f, 0.0f, 1.0f, 1.0f, rgba);
+    quad(x, y, x + w, y + h, u0, v0, u1, v1, rgba);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, R.w, R.h);
     glNamedBufferData(R.vbo2d, (GLsizeiptr)(R.n2d * sizeof(Vertex2d)), R.v2d, GL_STREAM_DRAW);

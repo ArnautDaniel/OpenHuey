@@ -17,7 +17,7 @@ USING: room-names story.words story.shared flag-names ;
 \ RoomE0_Cmd05
 : off-map-e0.cmd05 ( -- )  s" off-map-e0.cmd05" stub-step ;
 \ RoomE0_Cond00
-: off-map-e0.cond00? ( -- flag )  s" off-map-e0.cond00?" stub-flag ;
+: off-map-e0.cond00? ( -- flag )  true ;   \ (the progress object's +0x7C: ProgressBase_Slot7C, always 1)
 
 : off-map-e0.enter ( -- )   \ 004480B0
     room-sounds

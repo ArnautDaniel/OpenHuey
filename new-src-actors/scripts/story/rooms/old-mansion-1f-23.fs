@@ -247,7 +247,7 @@ USING: room-names story.words story.shared flag-names ;
         $FE char-here? not if
             5 0 5 scene-change
         else
-            $8016 scene-ending
+            $8016 examine-message
         then
     then
     $335 story-flag? not if

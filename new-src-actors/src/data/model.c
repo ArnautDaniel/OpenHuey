@@ -188,7 +188,14 @@ static void read_skinned(Reader *r, Builder *b, size_t table) {
             }
             b->no_tri[k] = u8(r, fl + k) != 0;
         }
-        strip_flush(b, (int)texture, flags & 1);
+        {   /* (its draw keeps its part number - from 1 - as its group: a model shows or hides parts) */
+            int before = b->m->nd;
+
+            strip_flush(b, (int)texture, flags & 1);
+            if (b->m->nd > before && i < 255) {
+                b->m->d[b->m->nd - 1].group = (uint8_t)(i + 1);
+            }
+        }
     }
 }
 
@@ -339,6 +346,28 @@ static Reader bank(const Model *m) {
     return r;
 }
 
+/* motion `index`'s bank (its own, or from MODEL_SECOND the second) and its record there; 0 if
+ * there is no such motion */
+static int motion_at(const Model *m, int index, Reader *r, size_t *rec) {
+    const uint8_t *b = m->motions;
+    size_t size = m->motions_size;
+
+    if (index >= MODEL_SECOND) {
+        b = m->motions2;
+        size = m->motions2_size;
+        index -= MODEL_SECOND;
+    }
+    if (b == NULL || index < 0) {
+        return 0;
+    }
+    *r = (Reader){b, size, 0};
+    if ((uint32_t)index >= u32(r, 0)) {
+        return 0;
+    }
+    *rec = 0x10 + (size_t)index * 0x14;
+    return 1;
+}
+
 int model_motion_count(const Model *m) {
     Reader r = bank(m);
 
@@ -347,11 +376,21 @@ int model_motion_count(const Model *m) {
 
 int model_motion_id(const Model *m, int index) {
     Reader r = bank(m);
-    size_t map = u32(&r, 12);
-    uint32_t n = u32(&r, map), i;
+    int at = index;
+    size_t map;
+    uint32_t n, i;
 
+    if (index >= MODEL_SECOND) {
+        r = (Reader){m->motions2, m->motions2_size, 0};
+        at -= MODEL_SECOND;
+    }
+    if (r.base == NULL) {
+        return index;
+    }
+    map = u32(&r, 12);
+    n = u32(&r, map);
     for (i = 0; i < n && !r.bad; i++) {
-        if ((int)u32(&r, map + 0x10 + i * 8 + 4) == index) {
+        if ((int)u32(&r, map + 0x10 + i * 8 + 4) == at) {
             return (int)u32(&r, map + 0x10 + i * 8);
         }
     }
@@ -376,30 +415,44 @@ int model_motion_pos(const Model *m, int index) {
     return -1;
 }
 
-int model_motion_find(const Model *m, int id) {
-    Reader r = bank(m);
+/* in a bank's id list: the last match (as Motion_AnimEntry), -1 none */
+static int find_in(const uint8_t *b, size_t size, int id) {
+    Reader r = {b, size, 0};
     size_t map;
     uint32_t n, i;
+    int found = -1;
 
-    if (m->motions == NULL) {
+    if (b == NULL) {
         return -1;
     }
     map = u32(&r, 12);
     n = u32(&r, map);
     for (i = 0; i < n && !r.bad; i++) {
         if ((int)u32(&r, map + 0x10 + i * 8) == id) {
-            return (int)u32(&r, map + 0x10 + i * 8 + 4);
+            found = (int)u32(&r, map + 0x10 + i * 8 + 4);
         }
     }
-    return -1;
+    return found;
+}
+
+int model_motion_find(const Model *m, int id) {
+    int i = find_in(m->motions, m->motions_size, id);
+
+    if (i < 0) {
+        i = find_in(m->motions2, m->motions2_size, id);
+        if (i >= 0) {
+            i += MODEL_SECOND;
+        }
+    }
+    return i;
 }
 
 int model_motion_frames(const Model *m, int index) {
-    Reader r = bank(m);
-    size_t rec = 0x10 + (size_t)index * 0x14;
+    Reader r;
+    size_t rec;
     int p, frames = 1;
 
-    if (index < 0 || index >= model_motion_count(m)) {
+    if (!motion_at(m, index, &r, &rec)) {
         return 1;
     }
     for (p = 0; p < 5; p++) {
@@ -489,13 +542,13 @@ static Mat4 bone_local(const float *rot, const float *pos) {
 }
 
 int model_root_delta(const Model *m, int index, float frame, float *turn, Vec3 *step) {
-    Reader r = bank(m);
-    size_t rec = 0x10 + (size_t)index * 0x14;
+    Reader r;
+    size_t rec;
     int p;
 
     *turn = 0.0f;
     *step = vec3(0, 0, 0);
-    if (index < 0 || index >= model_motion_count(m)) {
+    if (!motion_at(m, index, &r, &rec)) {
         return 0;
     }
     for (p = 0; p < 5; p++) {
@@ -525,12 +578,12 @@ int model_root_delta(const Model *m, int index, float frame, float *turn, Vec3 *
 }
 
 int model_track_raw(const Model *m, int index, int code, float frame, float out[3]) {
-    Reader r = bank(m);
-    size_t rec = 0x10 + (size_t)index * 0x14;
+    Reader r;
+    size_t rec;
     int p;
 
     out[0] = out[1] = out[2] = 0.0f;
-    if (index < 0 || index >= model_motion_count(m)) {
+    if (!motion_at(m, index, &r, &rec)) {
         return 0;
     }
     for (p = 0; p < 5; p++) {
@@ -590,11 +643,11 @@ void model_pose(const Model *m, int index, float frame, Mat4 *skin) {
 
 /* the bones' local turns and places for a motion at a time (the rest pose for index -1) */
 int model_motion_parts(const Model *m, int index) {
-    Reader r = bank(m);
-    size_t rec = 0x10 + (size_t)index * 0x14;
+    Reader r;
+    size_t rec;
     int p, mask = 0;
 
-    if (index < 0 || index >= model_motion_count(m)) {
+    if (!motion_at(m, index, &r, &rec)) {
         return 0;
     }
     for (p = 0; p < 5; p++) {
@@ -616,9 +669,10 @@ static void local_pose_parts(const Model *m, int index, float frame, float (*rot
             memcpy(pos[i], m->bones[i].rest_pos, sizeof(pos[i]));
         }
     }
-    if (index >= 0 && index < model_motion_count(m) && m->bone_table != NULL) {
-        Reader r = bank(m);
-        size_t rec = 0x10 + (size_t)index * 0x14;
+    Reader r;
+    size_t rec;
+
+    if (m->bone_table != NULL && motion_at(m, index, &r, &rec)) {
 
         for (p = 0; p < 5; p++) {
             size_t part = rec + u32(&r, rec + p * 4);
@@ -652,8 +706,10 @@ void model_pose_root(const Model *m, int index, float frame, Mat4 *skin, Vec3 *r
 }
 
 static Vec3 sOrigins[MODEL_MAX_BONES];   /* the last pose's bone origins (model space) */
+static Vec3 sAxes[MODEL_MAX_BONES][3];   /* and their axes */
 
 const Vec3 *model_pose_origins(void) { return sOrigins; }
+const Vec3 (*model_pose_axes(void))[3] { return (const Vec3 (*)[3])sAxes; }
 
 static ModelTurn sTurns[8];
 static int sNTurns;
@@ -786,6 +842,9 @@ void model_pose_layers(const Model *m, const ModelLayer *layers, int nlayers, Ma
     for (i = 0; i < m->nbones; i++) {
         skin[i] = done[i] ? mat4_mul(world[i], m->bones[i].inv_bind) : mat4_identity();
         sOrigins[i] = done[i] ? vec3(world[i].m[12], world[i].m[13], world[i].m[14]) : vec3(0.0f, 0.0f, 0.0f);
+        sAxes[i][0] = vec3(world[i].m[0], world[i].m[1], world[i].m[2]);
+        sAxes[i][1] = vec3(world[i].m[4], world[i].m[5], world[i].m[6]);
+        sAxes[i][2] = vec3(world[i].m[8], world[i].m[9], world[i].m[10]);
         if (root != NULL && m->bones[i].parent < 0 && done[i]) {
             *root = vec3(world[i].m[12], world[i].m[13], world[i].m[14]);
             root = NULL;

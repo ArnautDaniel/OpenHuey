@@ -5,24 +5,38 @@ IN: story.rooms.old-mansion-1f-2
 USING: room-names story.words story.shared flag-names ;
 
 \ the scales ("tenbin") and their pans ("sara_l", "sara_r"): level (byte 3 0) or tipped
-: old-mansion-1f-2.cmd00 ( b0 -- )  drop s" old-mansion-1f-2.cmd00" stub-step ;
+: old-mansion-1f-2.cmd00 ( b0 -- )   \ (the scales, "tenbin", and their pans: level (0) or tipped 25 degrees)
+    {: tipped :}
+    s" sara_l" object-here? if
+        0e s" sara_l" turn-x object!  0e s" sara_l" turn-y object!  0e s" sara_l" turn-z object!
+        tipped if  6.3504e 20.6e  else  6.2004e 19.8e  then  17.1e  s" sara_l" place-to
+    then
+    s" sara_r" object-here? if
+        0e s" sara_r" turn-x object!  0e s" sara_r" turn-y object!  0e s" sara_r" turn-z object!
+        tipped if  3.594e 19.25e  else  3.049e 19.8e  then  17.1e  s" sara_r" place-to
+    then
+    s" tenbin" object-here? if
+        0e s" tenbin" turn-x object!  0e s" tenbin" turn-y object!
+        tipped if  25e deg>rad  else  0e  then  s" tenbin" turn-z object!
+        4.6193e 20.6e 17.082e s" tenbin" place-to
+    then ;
 
 : old-mansion-1f-2.enter ( -- )   \ 00406550
     room-sounds
     1 0 var-set
     2 0 var-set
     1 old-mansion-1f-2.cmd00
-    4 1 object-show
-    5 1 object-show
-    6 1 object-show
-    7 1 object-show
-    8 1 object-show
+    4 1 object-hidden
+    5 1 object-hidden
+    6 1 object-hidden
+    7 1 object-hidden
+    8 1 object-hidden
     $85 story-flag? not if
         1 0 $20000 nav-group
     else
         0 1 $14 door-bits
-        9 1 object-show
-        $A 1 object-show
+        9 1 object-hidden
+        $A 1 object-hidden
     then
     $27A story-flag? not if
         0 -72.34 59.0 -34.25 flicker-sprite
@@ -361,27 +375,27 @@ USING: room-names story.words story.shared flag-names ;
         then
     then
     $F9 action-end
-    4 1 object-show
-    5 1 object-show
-    6 1 object-show
+    4 1 object-hidden
+    5 1 object-hidden
+    6 1 object-hidden
     0 11 var? if
-        7 0 object-show
-        8 1 object-show
+        7 0 object-hidden
+        8 1 object-hidden
         $B item-use
     else
-        7 1 object-show
-        8 0 object-show
+        7 1 object-hidden
+        8 0 object-hidden
         $C item-use
     then
-    $B 0 object-show
-    $C 0 object-show
-    $D 0 object-show
-    $E 0 object-show
+    $B 0 object-hidden
+    $C 0 object-hidden
+    $D 0 object-hidden
+    $E 0 object-hidden
     0 old-mansion-1f-2.cmd00
     0 0 $20000 nav-group
     0 1 $14 door-bits
-    9 1 object-show
-    $A 1 object-show
+    9 1 object-hidden
+    $A 1 object-hidden
     0 ebit-set
     1 6.2 18.0 17.1 flicker-sprite
     $85 story-flag-set
@@ -473,15 +487,15 @@ USING: room-names story.words story.shared flag-names ;
     else 0 10 var? if
         $A item-use
     then then then
-    4 1 object-show
-    5 1 object-show
-    6 1 object-show
-    7 1 object-show
-    8 1 object-show
-    $B 0 object-show
-    $C 0 object-show
-    $D 0 object-show
-    $E 0 object-show
+    4 1 object-hidden
+    5 1 object-hidden
+    6 1 object-hidden
+    7 1 object-hidden
+    8 1 object-hidden
+    $B 0 object-hidden
+    $C 0 object-hidden
+    $D 0 object-hidden
+    $E 0 object-hidden
     1 old-mansion-1f-2.cmd00
     0 self-move-16
     0 $158 5.733 23.039 180 char-to-xz
@@ -510,15 +524,15 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-2.act02 ( -- )   \ 00406C30
     begin
-        4 1 object-show
-        5 1 object-show
-        6 1 object-show
+        4 1 object-hidden
+        5 1 object-hidden
+        6 1 object-hidden
         0 11 var? if
-            7 0 object-show
-            8 1 object-show
+            7 0 object-hidden
+            8 1 object-hidden
         else
-            7 1 object-show
-            8 0 object-show
+            7 1 object-hidden
+            8 0 object-hidden
         then
         yield
     again
@@ -527,25 +541,25 @@ USING: room-names story.words story.shared flag-names ;
 : old-mansion-1f-2.act03 ( -- )   \ 00406C60
     begin
         $1CC cutscene-cue-reached? not while
-        4 1 object-show
-        5 1 object-show
-        6 1 object-show
-        7 1 object-show
-        8 1 object-show
+        4 1 object-hidden
+        5 1 object-hidden
+        6 1 object-hidden
+        7 1 object-hidden
+        8 1 object-hidden
         0 8 var? if
-            4 0 object-show
+            4 0 object-hidden
         else 0 9 var? if
-            5 0 object-show
+            5 0 object-hidden
         else 0 10 var? if
-            6 0 object-show
+            6 0 object-hidden
         then then then
         yield
     repeat
-    4 1 object-show
-    5 1 object-show
-    6 1 object-show
-    7 1 object-show
-    8 1 object-show
+    4 1 object-hidden
+    5 1 object-hidden
+    6 1 object-hidden
+    7 1 object-hidden
+    8 1 object-hidden
     self-idle-or-end
 ;
 
@@ -576,7 +590,7 @@ USING: room-names story.words story.shared flag-names ;
             1 effect-remove
             1 old-mansion-1f-2.cmd00
             0 11 var? if
-                7 1 object-show
+                7 1 object-hidden
                 $B message-param-room
                 $B 1 item-give-count
                 0 $B item-tab
@@ -585,7 +599,7 @@ USING: room-names story.words story.shared flag-names ;
                 $8012 message
                 wait-message
             else
-                8 1 object-show
+                8 1 object-hidden
                 $C message-param-room
                 $C 1 item-give-count
                 0 $C item-tab

@@ -6,7 +6,9 @@ USING: room-names story.words story.shared flag-names ;
 
 \ byte 3: 0 / 1 a named progress call; 2 waits (2) for Progress_Speak(1, 0), then the partner's
 \ message slot shows progress +0x73EDC0; else Progress_SpeechCall and the slot is closed
-: chaos-forest-10.cmd00 ( b0 -- )  drop s" chaos-forest-10.cmd00" stub-step ;
+: chaos-forest-10.cmd00 ( b0 -- )   \ (Hewie's face: 0 / 1 loaded, 2 shown - his texture 1 - else done and his own again)
+    case  0 of  s" O_HEW\HEW_201.TEX" speech-load  endof  1 of  s" O_HEW\HEW_202.TEX" speech-load  endof
+          2 of  1 0 speak  1 1 speak  endof  >r speech-done  1 speech-off r>  endcase ;
 
 : chaos-forest-10.enter ( -- )   \ 00418DC0
     room-sounds

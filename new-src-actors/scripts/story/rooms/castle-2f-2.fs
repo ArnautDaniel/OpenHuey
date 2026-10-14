@@ -2,26 +2,74 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-2
-USING: room-names story.words story.shared flag-names ;
+USING: engine actors room-names story.words story.shared flag-names ;
 
+\ ---- the doll ("dool") that falls: +$30 its velocity, +$3C its triangle ($80000000: landed; -1
+\ none) ----
+: dool ( -- addr len )  s" dool" ;
+create dl-at 12 allot
+: dool-at ( -- v )  dool place-x object@ dool place-y object@ dool place-z object@ dl-at vec!  dl-at ;
+: open-floor? ( tri -- flag )   \ (on the mesh, not blocked for it: $20020008)
+    dup 0< if  drop false exit  then  nav-flags $20020008 and 0= ;
+: dool-dust ( -- )  2 $50 $50 $50 1  dool-at vec@  dust ;   \ (Room20_Cmd04: a grey cloud)
+: dool-lands ( tri -- )
+    7 ebit-clear  0e dool $30 object!  0e dool $34 object!  0e dool $38 object!
+    dup open-floor? 0= if  1 ebit-clear  then
+    dup 0< 0= if  dup nav-flags $2018000 and $10000 <> if  dool-dust  then  then
+    $80000000 or dool $3C object-n!  1 ebit-set ;
+: dool-falls ( -- )   \ (gravity 0.2 a frame; along the floor as it slides; spinning a degree a frame)
+    dool $3C object-n@ dup -1 = if  drop exit  then
+    dup $80000000 and if  $7FFFFFFF and open-floor? 0= if  1 ebit-clear  then  exit  then  drop
+    -0.2e dool $34 object+!  1 ebit-clear
+    dool place-y object@ dool $34 object@ f+                           ( F: y )
+    dool $30 object@ dool $38 object@  dool-at $20020008 v-nav-move     ( tri ) ( F: y )
+    dl-at vec@ dool place-z object! dool place-y object! dool place-x object!
+    dup dool $3C object-n!
+    dup -1 = if  drop fdrop exit  then
+    fdup dl-at 4 + sf@ f> if
+        drop dool place-y object!  1e deg>rad dool turn-y object+!
+        dool turn-y object@ pi f> if  -2e pi f* dool turn-y object+!  then  exit
+    then  fdrop  dool-lands ;
 \ room 0x20 (Room20_Cmd01_ptmf): the falling object back up in place
-: castle-2f-2.cmd01 ( -- )  s" castle-2f-2.cmd01" stub-step ;
+: castle-2f-2.cmd01 ( -- )   \ (the doll back up in place, shown)
+    dool object-here? 0= if  exit  then  dool 0 0 placed-op
+    9.66e dool place-x object!  0.51e dool place-y object!  93.4e dool place-z object!
+    1.57e dool turn-x object!  0.79e dool turn-y object!  -3.14e dool turn-z object! ;
 \ a pendulum (room object Room20_ObjectNames[byte 3]): byte 4 0 still; 1 its phase +0x30 on by 2
 \ degrees (a tick sound at (-85, 30, 90) each turn), swinging 15 degrees (+0x14)
-: castle-2f-2.cmd02 ( b0 b1 -- )  drop drop s" castle-2f-2.cmd02" stub-step ;
+: castle-2f-2.cmd02 ( b0 b1 -- )   \ (the pendulum, the room's string b0: b1 0 still; 1 on 2 degrees, a tick each turn,
+    \ swinging 15 degrees)
+    {: k op | a n :}  k room-object to n to a  a n object-here? 0= if  exit  then
+    op 0= if  0e a n $30 object!  exit  then
+    op 1 <> if  exit  then
+    2e a n $30 object+!
+    a n $30 object@ 360e f< 0= if  -360e a n $30 object+!  1 6 0 0  -85e 30e 90e sound  then
+    a n $30 object@ deg>rad fsin 15e f* deg>rad
+    fdup pi f> if  2e pi f* f-  then  a n turn-y object! ;
 \ room 0x20 (Room20_Cmd03_ptmf): the falling object falls (gravity 0.2 a frame on its velocity
 \ +0x30, spinning 1 degree a frame) along the nav mesh, events bit 1 set while it lies on open
 \ floor; landing on floor that isn't 0x10000 raises dust
-: castle-2f-2.cmd03 ( -- )  s" castle-2f-2.cmd03" stub-step ;
+: castle-2f-2.cmd03 ( -- )  dool-falls ;
 \ room 0x20 (Room20_Cmd05_ptmf): the character turns to face object byte 3
-: castle-2f-2.cmd05 ( b0 -- )  drop s" castle-2f-2.cmd05" stub-step ;
+: castle-2f-2.cmd05 ( b0 -- )   \ (the script's character turned to face object b0)
+    room-object 2dup object-here? 0= if  2drop exit  then
+    2dup place-x object@ place-z object@  self-turn-to-xz ;
 \ room 0x20 (Room20_Cond00_ptmf): the player, free and within 5 of the falling object, knocks it
 \ - it gets a push (0, 1, 1) turned by her facing, and its nav triangle
-: castle-2f-2.cond00? ( -- flag )  s" castle-2f-2.cond00?" stub-flag ;
+: castle-2f-2.cond00? ( -- flag )   \ (her blow within 5 of the doll knocks it: a push (0, 1, 1) by her heading, its triangle)
+    dool object-here? 0= if  false exit  then
+    0 char-actor body-point 0= if  false exit  then                    ( v )
+    dool-at vec-dist 5e f> if  false exit  then
+    0 char-actor body-yaw fdup fsin dool $30 object!  1e dool $34 object!  fcos dool $38 object!
+    dool-at v-tri dool $3C object-n!  true ;
 \ room 0x20 (Room20_Cond01_ptmf): the character's script value is at least be32 bytes 3..6
-: castle-2f-2.cond01? ( b0 b1 b2 b3 -- flag )  drop drop drop drop s" castle-2f-2.cond01?" stub-flag ;
+: castle-2f-2.cond01? ( b0 b1 b2 b3 -- flag )   \ (the script's own count at least be32 bytes 3..6)
+    >r >r >r 24 lshift r> 16 lshift or r> 8 lshift or r> or
+    self-frames @ $FFFF and swap >= ;
 \ room 0x20 (Room20_Cond02_ptmf): object byte 3 becomes event point byte 4 (radii 5)
-: castle-2f-2.cond02? ( b0 b1 -- flag )  drop drop s" castle-2f-2.cond02?" stub-flag ;
+: castle-2f-2.cond02? ( b0 b1 -- flag )   \ (object b0's place becomes zone b1, radius and height 5)
+    swap room-object 2dup object-here? 0= if  2drop drop false exit  then
+    {: z a n :}  z 5 5 0  a n place-x object@ a n place-y object@ a n place-z object@  zone  true ;
 
 : castle-2f-2.enter ( -- )   \ 003FE460
     room-sounds
@@ -52,11 +100,11 @@ USING: room-names story.words story.shared flag-names ;
     3 0 castle-2f-2.cmd02
     4 0 castle-2f-2.cmd02
     0 $F4 $11 action
-    5 1 object-show
+    5 1 object-hidden
     $349 story-flag? not if
         1 ebit-clear
         $D story-flag? $31C story-flag? not and if
-            5 0 object-show
+            5 0 object-hidden
             castle-2f-2.cmd01
             1 ebit-set
             7 ebit-set
@@ -837,7 +885,7 @@ USING: room-names story.words story.shared flag-names ;
     else
         $93 1 item-give-count
         $349 story-flag-set
-        5 1 object-show
+        5 1 object-hidden
         0 $93 item-tab
         0 $F9 $8C action-force
         $83 $85 0.0 0.0 0.0 0 0 sound

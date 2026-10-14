@@ -5,12 +5,12 @@ IN: story.rooms.old-mansion-b1-2
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x4B (D_00409910): a lit quad at x -63.65 .. -55.65, z 104.5, from 4 to 21
-: old-mansion-b1-2.cmd00 ( b0 -- )  drop s" old-mansion-b1-2.cmd00" stub-step ;
+: old-mansion-b1-2.cmd00 ( b0 -- )  $1B $80  -63.65e 21.0e 104.5e  -55.65e 21.0e 104.5e  -63.65e 4.0e 104.5e  -55.65e 4.0e 104.5e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
 \ room 0x4B: the curtain ("Curtain") animated by event variable 0 (var0_anim: byte 3 0 forward,
 \ 1 back, 2 / 3 back at rest).
-: old-mansion-b1-2.cmd01 ( b0 -- )  drop s" old-mansion-b1-2.cmd01" stub-step ;
+: old-mansion-b1-2.cmd01 ( b0 -- )  s" Curtain" var0-anim ;
 \ 1 unless the object at +0x18 exists and its byte +0x28 is 1.
-: old-mansion-b1-2.cond00? ( -- flag )  s" old-mansion-b1-2.cond00?" stub-flag ;
+: old-mansion-b1-2.cond00? ( -- flag )  6 creature-up? 0= ;
 
 : old-mansion-b1-2.enter ( -- )   \ 00408B90
     room-sounds
@@ -392,7 +392,7 @@ USING: room-names story.words story.shared flag-names ;
                 $FE char-here? not if
                     5 6 5 scene-change
                 else $FE $1A char-in-area? $FE 0 40 chars-within? or if
-                    $8016 scene-ending
+                    $8016 examine-message
                 else
                     5 6 5 scene-change
                 then then

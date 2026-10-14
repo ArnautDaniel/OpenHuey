@@ -2,26 +2,37 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-3f-1
-USING: room-names story.words story.shared flag-names ;
+USING: actors messages room-names story.words story.shared flag-names ;
 
 \ room 0x60 (D_00429148): the floor light (room effect 0x1B, 20 x 20 at y -0.2) by byte 3 - 1
 \ removed with its glow effect (event variable 1); 0 made, with the glow (FloorGlow_vtable);
 \ then (and for other values) its strength from event variable 0 (0..4: 0, 30, 60, 90, 128),
 \ also sent to the glow
-: old-mansion-3f-1.cmd00 ( b0 -- )  drop s" old-mansion-3f-1.cmd00" stub-step ;
+: old-mansion-3f-1.cmd00 ( b0 -- )   \ (the floor light: a reflecting floor 20 x 20 at y -0.2 with its glow (FloorGlow)
+    \ - b0 1 both gone; 0 made, the glow kept in variable 1; then for any but 1 their strength
+    \ by variable 0: 0..4 for 0, 30, 60, 90, 128)
+    {: b0 | k :}
+    b0 1 = if  1 $1B 0  12 0 do  0e  loop  lit-quad  1 var @ dup alive? if  kill  else  drop  then  exit  then
+    b0 0= if  1 effects:floor-glow var-set  then
+    0 var @ case  1 of $1E endof  2 of $3C endof  3 of $5A endof  4 of $80 endof  >r 0 r>  endcase  to k
+    0 $1B k  10e -0.2e -10e  -10e -0.2e -10e  10e -0.2e 10e  -10e -0.2e 10e  lit-quad
+    k if  k 1 var @ dup alive? if  send effect-command  else  2drop  then  then ;
 \ room 0x60 (as Room23_Cmd01, for character 0xFE): byte 3 0 a progress name, 1 wait for
 \ character 0xFE (2 while not), else done
-: old-mansion-3f-1.cmd01 ( b0 -- )  drop s" old-mansion-3f-1.cmd01" stub-step ;
+: old-mansion-3f-1.cmd01 ( b0 -- )   \ (the stalker's face - character $FE: 0 loaded, 1 shown, else done)
+    case  0 of  s" O_DNL\DNL_203.TEX" speech-load  endof  1 of  $FE 0 speak  endof  >r speech-done r>  endcase ;
 \ (as Room66_Effect) byte 4 0 starts the 8-byte effect Room60Effect_vtable (parameters from byte
 \ 3), its slot kept in event variable byte 3 + 2; else that effect is ended
-: old-mansion-3f-1.cmd02 ( b0 b1 -- )  drop drop s" old-mansion-3f-1.cmd02" stub-step ;
+: old-mansion-3f-1.cmd02 ( b0 b1 -- )  2drop ;   \ (a cone of light at a corner, Room60Effect: drawn only into the bloom's mask - not here)
 \ room 0x60 (Room60_Cmd03_ptmf): character 0xFE's model +0x9FC 0.4 / +0xA00 1 (byte 3 0), or 0
-: old-mansion-3f-1.cmd03 ( b0 -- )  drop s" old-mansion-3f-1.cmd03" stub-step ;
+: old-mansion-3f-1.cmd03 ( b0 -- )  drop ;   \ (the stalker's model's springs (+0x9FC / +0xA00): not simulated here yet)
 \ character 0xFE's model +0x9E0 / +0x9E4 / +0x9E8: byte 3 0 -0.2 / 0.2 / -0.2; 1 eases them by
 \ script variable 6 (a step a call, waiting (2) for 60) to 0 / 0.3 / 0; else 0 / 0.3 / 0
-: old-mansion-3f-1.cmd04 ( b0 -- )  drop s" old-mansion-3f-1.cmd04" stub-step ;
+: old-mansion-3f-1.cmd04 ( b0 -- )   \ (the stalker's springs eased by variable 6 over 60 frames: the springs
+    \ aren't simulated here yet - the wait is kept)
+    1 = if  begin  6 var-inc  6 var @ 61 < while  yield  repeat  then ;
 \ room 0x60 (Room60_Cmd05_ptmf): the player's model +0xCC 0 (byte 3 0) or 1
-: old-mansion-3f-1.cmd05 ( b0 -- )  drop s" old-mansion-3f-1.cmd05" stub-step ;
+: old-mansion-3f-1.cmd05 ( b0 -- )  drop ;   \ (the model hooks it calls are empty on PC and PS2 alike: CharModel_SetFlag / _VtCC / _VtD0)
 
 : old-mansion-3f-1.enter ( -- )   \ 004280A0
     room-sounds
@@ -75,30 +86,30 @@ USING: room-names story.words story.shared flag-names ;
     6 0 $14 door-bits
     8 1 $14 door-bits
     2 0 $14 door-bits
-    4 1 object-show
-    5 1 object-show
-    6 1 object-show
-    7 1 object-show
-    8 1 object-show
-    9 1 object-show
-    $A 1 object-show
-    $B 1 object-show
-    $C 1 object-show
-    $D 1 object-show
-    $E 1 object-show
-    $F 1 object-show
-    $10 1 object-show
-    $11 1 object-show
-    $12 1 object-show
-    $13 1 object-show
-    $14 1 object-show
-    $15 1 object-show
-    $16 1 object-show
-    $17 1 object-show
-    $18 1 object-show
-    $19 1 object-show
-    $1A 1 object-show
-    $1B 1 object-show
+    4 1 object-hidden
+    5 1 object-hidden
+    6 1 object-hidden
+    7 1 object-hidden
+    8 1 object-hidden
+    9 1 object-hidden
+    $A 1 object-hidden
+    $B 1 object-hidden
+    $C 1 object-hidden
+    $D 1 object-hidden
+    $E 1 object-hidden
+    $F 1 object-hidden
+    $10 1 object-hidden
+    $11 1 object-hidden
+    $12 1 object-hidden
+    $13 1 object-hidden
+    $14 1 object-hidden
+    $15 1 object-hidden
+    $16 1 object-hidden
+    $17 1 object-hidden
+    $18 1 object-hidden
+    $19 1 object-hidden
+    $1A 1 object-hidden
+    $1B 1 object-hidden
     0 old-mansion-3f-1.cmd00
     1 $2300 sound-volume
 ;
@@ -546,7 +557,7 @@ USING: room-names story.words story.shared flag-names ;
     0 0 $14 door-bits
     1 1 $14 door-bits
     0 $F9 3 action
-    $1E 1 object-show
+    $1E 1 object-hidden
     $338 story-flag? not if
         9 1 $14 door-bits
     else
@@ -604,7 +615,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     wait-fade
     2 6 sound-stop
-    $1E 1 object-show
+    $1E 1 object-hidden
     scene-5-pending state-flag-clear
     hewie-no-attack state-flag-clear
     stalkers-blind state-flag-clear
@@ -617,30 +628,30 @@ USING: room-names story.words story.shared flag-names ;
     5 0 $14 door-bits
     6 0 $14 door-bits
     8 1 $14 door-bits
-    4 1 object-show
-    5 1 object-show
-    6 1 object-show
-    7 1 object-show
-    8 1 object-show
-    9 1 object-show
-    $A 1 object-show
-    $B 1 object-show
-    $C 1 object-show
-    $D 1 object-show
-    $E 1 object-show
-    $F 1 object-show
-    $10 1 object-show
-    $11 1 object-show
-    $12 1 object-show
-    $13 1 object-show
-    $14 1 object-show
-    $15 1 object-show
-    $16 1 object-show
-    $17 1 object-show
-    $18 1 object-show
-    $19 1 object-show
-    $1A 1 object-show
-    $1B 1 object-show
+    4 1 object-hidden
+    5 1 object-hidden
+    6 1 object-hidden
+    7 1 object-hidden
+    8 1 object-hidden
+    9 1 object-hidden
+    $A 1 object-hidden
+    $B 1 object-hidden
+    $C 1 object-hidden
+    $D 1 object-hidden
+    $E 1 object-hidden
+    $F 1 object-hidden
+    $10 1 object-hidden
+    $11 1 object-hidden
+    $12 1 object-hidden
+    $13 1 object-hidden
+    $14 1 object-hidden
+    $15 1 object-hidden
+    $16 1 object-hidden
+    $17 1 object-hidden
+    $18 1 object-hidden
+    $19 1 object-hidden
+    $1A 1 object-hidden
+    $1B 1 object-hidden
     0 self-scripted
     0 panic-stage
     $7F story-flag? not if
@@ -681,12 +692,12 @@ USING: room-names story.words story.shared flag-names ;
         2 cutscene-shot? not while
         yield
     repeat
-    $1E 1 object-show
+    $1E 1 object-hidden
     begin
         4 cutscene-shot? not while
         yield
     repeat
-    $1E 1 object-show
+    $1E 1 object-hidden
     begin
         5 cutscene-shot? not while
         yield
@@ -705,7 +716,7 @@ USING: room-names story.words story.shared flag-names ;
         6 cutscene-shot? not while
         yield
     repeat
-    $1E 1 object-show
+    $1E 1 object-hidden
     0 0 old-mansion-3f-1.cmd02
     1 0 old-mansion-3f-1.cmd02
     2 0 old-mansion-3f-1.cmd02
@@ -734,7 +745,7 @@ USING: room-names story.words story.shared flag-names ;
             $A cutscene-shot? not if
                 yield
             else
-                $1E 1 object-show
+                $1E 1 object-hidden
                 begin
                     0 cutscene-cue-reached? while
                     yield
@@ -847,7 +858,7 @@ USING: room-names story.words story.shared flag-names ;
     0 0 $14 door-bits
     1 1 $14 door-bits
     0 $F9 3 action
-    $1E 1 object-show
+    $1E 1 object-hidden
     $338 story-flag? not if
         9 1 $14 door-bits
     else
@@ -906,7 +917,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     wait-fade
     2 6 sound-stop
-    $1E 1 object-show
+    $1E 1 object-hidden
     0 0 char-visible
     scene-5-pending state-flag-clear
     hewie-no-attack state-flag-clear
@@ -920,30 +931,30 @@ USING: room-names story.words story.shared flag-names ;
     5 0 $14 door-bits
     6 0 $14 door-bits
     8 1 $14 door-bits
-    4 1 object-show
-    5 1 object-show
-    6 1 object-show
-    7 1 object-show
-    8 1 object-show
-    9 1 object-show
-    $A 1 object-show
-    $B 1 object-show
-    $C 1 object-show
-    $D 1 object-show
-    $E 1 object-show
-    $F 1 object-show
-    $10 1 object-show
-    $11 1 object-show
-    $12 1 object-show
-    $13 1 object-show
-    $14 1 object-show
-    $15 1 object-show
-    $16 1 object-show
-    $17 1 object-show
-    $18 1 object-show
-    $19 1 object-show
-    $1A 1 object-show
-    $1B 1 object-show
+    4 1 object-hidden
+    5 1 object-hidden
+    6 1 object-hidden
+    7 1 object-hidden
+    8 1 object-hidden
+    9 1 object-hidden
+    $A 1 object-hidden
+    $B 1 object-hidden
+    $C 1 object-hidden
+    $D 1 object-hidden
+    $E 1 object-hidden
+    $F 1 object-hidden
+    $10 1 object-hidden
+    $11 1 object-hidden
+    $12 1 object-hidden
+    $13 1 object-hidden
+    $14 1 object-hidden
+    $15 1 object-hidden
+    $16 1 object-hidden
+    $17 1 object-hidden
+    $18 1 object-hidden
+    $19 1 object-hidden
+    $1A 1 object-hidden
+    $1B 1 object-hidden
     0 self-scripted
     0 panic-stage
     $7F story-flag? not if
@@ -1020,30 +1031,30 @@ USING: room-names story.words story.shared flag-names ;
     2 ebit-clear
     3 ebit-clear
     7 0 $14 door-bits
-    4 1 object-show
-    5 1 object-show
-    6 1 object-show
-    7 1 object-show
-    8 1 object-show
-    9 1 object-show
-    $A 1 object-show
-    $B 1 object-show
-    $C 1 object-show
-    $D 1 object-show
-    $E 1 object-show
-    $F 1 object-show
-    $10 1 object-show
-    $11 1 object-show
-    $12 1 object-show
-    $13 1 object-show
-    $14 1 object-show
-    $15 1 object-show
-    $16 1 object-show
-    $17 1 object-show
-    $18 1 object-show
-    $19 1 object-show
-    $1A 1 object-show
-    $1B 1 object-show
+    4 1 object-hidden
+    5 1 object-hidden
+    6 1 object-hidden
+    7 1 object-hidden
+    8 1 object-hidden
+    9 1 object-hidden
+    $A 1 object-hidden
+    $B 1 object-hidden
+    $C 1 object-hidden
+    $D 1 object-hidden
+    $E 1 object-hidden
+    $F 1 object-hidden
+    $10 1 object-hidden
+    $11 1 object-hidden
+    $12 1 object-hidden
+    $13 1 object-hidden
+    $14 1 object-hidden
+    $15 1 object-hidden
+    $16 1 object-hidden
+    $17 1 object-hidden
+    $18 1 object-hidden
+    $19 1 object-hidden
+    $1A 1 object-hidden
+    $1B 1 object-hidden
     0 old-mansion-3f-1.cmd00
     $23 partner-load
     2 char-unload
@@ -1152,30 +1163,30 @@ USING: room-names story.words story.shared flag-names ;
     6 1 $14 door-bits
     8 0 $14 door-bits
     2 0 $14 door-bits
-    4 1 object-show
-    5 1 object-show
-    6 1 object-show
-    7 1 object-show
-    8 1 object-show
-    9 1 object-show
-    $A 1 object-show
-    $B 1 object-show
-    $C 1 object-show
-    $D 1 object-show
-    $E 1 object-show
-    $F 1 object-show
-    $10 1 object-show
-    $11 1 object-show
-    $12 1 object-show
-    $13 1 object-show
-    $14 1 object-show
-    $15 1 object-show
-    $16 1 object-show
-    $17 1 object-show
-    $18 1 object-show
-    $19 1 object-show
-    $1A 1 object-show
-    $1B 1 object-show
+    4 1 object-hidden
+    5 1 object-hidden
+    6 1 object-hidden
+    7 1 object-hidden
+    8 1 object-hidden
+    9 1 object-hidden
+    $A 1 object-hidden
+    $B 1 object-hidden
+    $C 1 object-hidden
+    $D 1 object-hidden
+    $E 1 object-hidden
+    $F 1 object-hidden
+    $10 1 object-hidden
+    $11 1 object-hidden
+    $12 1 object-hidden
+    $13 1 object-hidden
+    $14 1 object-hidden
+    $15 1 object-hidden
+    $16 1 object-hidden
+    $17 1 object-hidden
+    $18 1 object-hidden
+    $19 1 object-hidden
+    $1A 1 object-hidden
+    $1B 1 object-hidden
     0 4 var-set
     0 old-mansion-3f-1.cmd00
     0 0 old-mansion-3f-1.cmd02
@@ -1199,7 +1210,7 @@ USING: room-names story.words story.shared flag-names ;
     0 0 $14 door-bits
     1 1 $14 door-bits
     0 $F9 3 action
-    $1E 1 object-show
+    $1E 1 object-hidden
     9 1 $14 door-bits
     $1E $C8 movie-param
     $FF panic-stage? if
@@ -1253,7 +1264,7 @@ USING: room-names story.words story.shared flag-names ;
         8 cutscene-control
     then
     2 6 sound-stop
-    $1E 1 object-show
+    $1E 1 object-hidden
     2 0 char-remove
     7 1 $14 door-bits
     3 0 $14 door-bits
@@ -1261,30 +1272,30 @@ USING: room-names story.words story.shared flag-names ;
     5 0 $14 door-bits
     6 0 $14 door-bits
     8 1 $14 door-bits
-    4 1 object-show
-    5 1 object-show
-    6 1 object-show
-    7 1 object-show
-    8 1 object-show
-    9 1 object-show
-    $A 1 object-show
-    $B 1 object-show
-    $C 1 object-show
-    $D 1 object-show
-    $E 1 object-show
-    $F 1 object-show
-    $10 1 object-show
-    $11 1 object-show
-    $12 1 object-show
-    $13 1 object-show
-    $14 1 object-show
-    $15 1 object-show
-    $16 1 object-show
-    $17 1 object-show
-    $18 1 object-show
-    $19 1 object-show
-    $1A 1 object-show
-    $1B 1 object-show
+    4 1 object-hidden
+    5 1 object-hidden
+    6 1 object-hidden
+    7 1 object-hidden
+    8 1 object-hidden
+    9 1 object-hidden
+    $A 1 object-hidden
+    $B 1 object-hidden
+    $C 1 object-hidden
+    $D 1 object-hidden
+    $E 1 object-hidden
+    $F 1 object-hidden
+    $10 1 object-hidden
+    $11 1 object-hidden
+    $12 1 object-hidden
+    $13 1 object-hidden
+    $14 1 object-hidden
+    $15 1 object-hidden
+    $16 1 object-hidden
+    $17 1 object-hidden
+    $18 1 object-hidden
+    $19 1 object-hidden
+    $1A 1 object-hidden
+    $1B 1 object-hidden
     1 old-mansion-3f-1.cmd00
     0 1 old-mansion-3f-1.cmd02
     1 1 old-mansion-3f-1.cmd02

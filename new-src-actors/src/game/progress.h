@@ -32,16 +32,40 @@ typedef struct Progress {
      * the sides it is locked from */
     uint32_t doors[DOORS];
     uint32_t closed_off[(DOORS + 31) / 32];      /* doors closed off for good (the rooms' +0x4) */
-    /* the inventory (the item manager, gSubScreen +0x8): how many of each item (ids under 0xAD:
-     * Items_Give / Items_Count / Items_UseId) */
-    uint8_t items[0x100];
+    /* the inventory (the item manager, gSubScreen +0x8; changed only by the items actor): three
+     * lists (ids under 0x40, under 0xA0, the rest) of 64 places, filled from the front; each
+     * place an item: its id (-1 empty), how many (a stack: 1..99; a counter: its frames), and
+     * its 8 letters (item 0x3F, the word plate's) */
+    struct HeldItem {
+        int32_t id;
+        int32_t n;
+        uint8_t word[8];
+    } item_lists[3][64];
+    int32_t equipped[4];                    /* the equipment slots' items (+0x15E0): ids, -1 none */
+    uint32_t item_bits[9];                  /* the items used / seen (the sub screen's +0x97740) */
+    /* the items' timed effects (the progress' +0x9E0..+0xA10): a value and its frames left */
+    struct ItemBoost {
+        float v;
+        int32_t frames;
+    } boosts[8];
     /* the files: key things and documents found (ids 0x2xx; SubScreen_AddFile, its list at
      * +0x15F8: 128, 0-terminated, in the order found) */
     uint16_t files[128];
     int32_t items_counted;                  /* items given by the scripts' 0x83 (+0xFBE) */
+    int32_t gifts, gift_next;               /* the stalkers' gifts: how many given (to 8), the next in their row (+0x874, +0x875) */
     /* how Hewie has been treated, for the dog's level at the end (0..10000; Hewie keeps them):
      * mistreated (+0xFB6: kicked, knocked down, upset), pleased (+0xFB8), knocked down (+0xFBA) */
     int32_t hewie_mistreated, hewie_pleased, hewie_downs;
+    /* the creatures, kept across rooms (+0x878: 36 bytes a slot, CreatureA_Save; written by each
+     * creature, slots 0..9): in use, its kind, reach, level, room, triangle, time, out (sent
+     * after her off screen), come (after her) */
+    struct KeptCreature {
+        int32_t used, kind, reach, level, room, tri, time, out, come;
+    } creatures[10];
+    /* the play record, for the results at the end (the original's +0xFB4..+0xFC7): Hewie's trust
+     * as the game ended (+0xFB4), the stalkers knocked out for good (+0xFBC), the times she
+     * panicked (+0xFC2), the frames played (+0xFC4: h:m:s, 30 a second; 99:59:59 at most) */
+    int32_t hewie_trust, knockouts, panics, play_frames;
 } Progress;
 
 /* a character as the scripts see it (the original's character object: +0x30 its room, +0xE0
@@ -108,6 +132,9 @@ typedef struct EventState {
 
 extern Progress gProgress;
 extern EventState gEvents;
+
+/* the progress cleared for a new game, its resident flags (the unlocks) kept */
+void progress_clear(void);
 
 /* `progress`, `event-state` and their fields, in the vocabulary `game-state` */
 void bind_state(Forth *f);

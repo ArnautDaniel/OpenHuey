@@ -3,7 +3,8 @@
 IN: fiona.moving
 USING: engine game-state actors messages common facts fiona.state fiona.model fiona.controls flag-names ;
 
-$28020018 constant blocked-floor   \ the nav triangles she can't stand on (the game's mask)
+: blocked-floor ( -- mask )   \ the nav triangles she can't stand on (the game's mask; none - the story's 0x20)
+    her-noclip @ if  0  else  $28020018  then ;
 
 \ ---- her animation's root motion (Motion_RootMovement / Motion_RootRotation) ----
 fvariable rm-turn  fvariable rm-x  fvariable rm-y  fvariable rm-z
@@ -91,6 +92,28 @@ defer push-check ( F: reach -- )   ' fdrop is push-check   \ (something to push 
     then
     mv-dz f@ push-check ;
 
+\ ---- what she wears (the equipment): her boots (slot 0), her choker (slot 3) ----
+: worn ( slot -- item )  4 * progress pr.equipped + sl@ ;
+: her-boots ( -- item )  0 worn ;
+: her-choker ( -- item )  3 worn ;
+$80 constant soft-boots
+\ the chokers against the panic (Fiona_AddPanic, Fiona_ResetRecovery): $8A takes a quarter off
+\ each fright; $8B a quarter off, her calming half again; $8C half off, her calming doubled
+: choker-fear ( F: amount -- amount' )
+    fdup f0> if
+        her-choker case  $8A of  0.75e f*  endof  $8B of  0.75e f*  endof  $8C of  0.5e f*  endof  endcase
+    else
+        her-choker case  $8B of  1.5e f*  endof  $8C of  2e f*  endof  endcase
+    then ;
+\ her recovery's count back to 1800 frames after a fright - never with $8C, half the time with
+\ $8B, three times in four with $8A
+: reset-recovery ( -- )
+    her-choker case
+        $8C of  exit  endof
+        $8B of  rnd 0.5e f< 0= if  exit  then  endof
+        $8A of  rnd 0.75e f< 0= if  exit  then  endof
+    endcase  1800 her-recovery ! ;
+
 \ ---- her footsteps (Fiona_Footsteps): as a foot comes down, its floor's sound (the sound set,
 \ bank 4: by the triangle's material, a variant a step), louder running; heard as a noise ----
 : contact ( prev? -- l r )   \ the motion's contact track: left, right down
@@ -123,6 +146,7 @@ variable st-l  variable st-r  variable st-step  variable ft-base  variable ft-ba
     endcase
     ft-base @ her-steps @ 3 and +  ft-bank @  1 her-steps +!               ( id bank )
     root@ rm-z f@ 0.4e f- 0.7e f/ 0e fmax 1e fmin 2e f* f>s $7F and         ( id bank pitch )
-    0 swap her-pos sound-at
-    her-mode @ 0= her-sub @ 2 = and if  $14  else  4  then                 ( loud )
+    her-boots soft-boots = if  -48  else  0  then  swap her-pos sound-at   \ (soft boots: softer, heard less)
+    her-mode @ 0= her-sub @ 2 = and                                        ( running? )
+    her-boots soft-boots = if  if  5  else  1  then  else  if  $14  else  4  then  then   ( loud )
     room-id her-tri @ -1 fiona-noise acoustics-id send noise ;

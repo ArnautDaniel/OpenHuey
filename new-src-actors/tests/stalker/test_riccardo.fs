@@ -1,5 +1,5 @@
 \ Riccardo (P4c): his kit, his own chase (Riccardo_StateBehaviour / Riccardo_Chase), his flurry of
-\ hammer blows and his lunge, his attack by how near, his rage at the panic's stage 5
+\ blows with his gun and his lunge, his attack by how near, his rage at the panic's stage 5
 \ (docs/subsystems/stalker.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/stalker/test_riccardo.fs
 IN: test-riccardo
@@ -43,8 +43,13 @@ testing his flurry: 1..7 blows; on her floor a swing ($E00 / $E04)
 10e 160 her-ahead  2 frames
 [: flurry-start ;] his
 T{ [: chase-act @  blows @ 1 8 within  anim @ dup $E00 = swap $E04 = or ;] his -> $1000 -1 -1 }T
-testing ... at its key it strikes her: within 10 his grab (3) - she is seized ($10)
+testing ... a barrier by her (the story's zone of a kind with bit 1: Events_NearestPoint) - his shot strikes it instead, and it breaks ($210)
+ric story.words:slot2 !   \ (the story's slot 2 holds him, as partner-load does: its zones see his point)
+T{ [: $210 story.words:story-flag? ;] 200 soon  [: [: her-mode @ 4 = ;] fiona@ ;] 1 soon -> -1 0 }T
+testing ... the barrier gone, at its key it strikes her: within 10 his grab (3) - she is seized ($10)
+[: 0 blows !  flurry-start ;] his
 T{ [: [: her-mode @ 4 = ;] fiona@ ;] 200 soon  [: her-sub @ ;] fiona@ -> -1 $10 }T
+-1 story.words:slot2 !
 
 testing his lunge ($1300), and his tables' own actions ($1000 the flurry, $1001 the lunge)
 [: lunge-start ;] his 
@@ -67,6 +72,10 @@ testing ... struck to 100 alerted (hurt): its alert tables and waits; calmer bel
 T{ k37 enter  120 hits !  0 cond !  kind37-frame  cond @  alt-tables @  0 wait#  leave-actor -> 1 -1 150 }T
 T{ k37 enter  0 hits !  kind37-frame  cond @  alt-tables @  0 wait#  leave-actor -> 0 0 60 }T
 T{ 37 story.words:stalker-actor  k37 = -> -1 }T
+testing ... its tint (Kind37_Update): whole while its hold runs (150 frames), then pulsing in and out
+: k37-pulse ( -- flag )   \ (its hold over: within 400 frames below half)
+    0 tint-t !  false  400 0 do  kind37-frame  my-model @ actor act.alpha sf@ 0.5e f< if  drop true leave  then  loop ;
+T{ k37 enter  3 my-mode !  -1 tint-was !  kind37-frame kind37-frame  tint-t @ 0>  my-model @ actor act.alpha sf@ 1e f=  k37-pulse  leave-actor -> -1 -1 -1 }T
 
 \ ---- the TintStalker (kind 23): the Pursuer's chase, seen only a while after each turn ----
 : ts ( -- id )  s" tintstalker" actor-named ;
@@ -75,7 +84,22 @@ T{ ts enter  kit @ tintstalker-kit =  base-chase @  hp @  unseen @  leave-actor 
 room-id game:fiona body-tri ts send stalker-in  3 frames
 testing ... in her room: seen a while (150 frames), then gone
 T{ ts enter  unseen @  tint-t @ 0>  my-model @ actor act.visible l@  leave-actor -> 0 -1 1 }T
+testing ... its tint (TintStalker_Fade): shown at 112 of 128; its while over, fading out by 4 a frame, then gone
+T{ ts enter  tint-alpha f@ f>s  my-model @ actor act.alpha sf@ 0.875e f- fabs 0.01e f<  leave-actor -> 112 -1 }T
+T{ [: ts enter  tint-fade @ tint-out =  leave-actor ;] 200 soon  ts enter tint-alpha f@ f>s leave-actor  1 frames  ts enter tint-alpha f@ f>s leave-actor - -> -1 4 }T
 T{ [: ts enter  unseen @  leave-actor ;] 200 soon -> -1 }T
 T{ 23 story.words:stalker-actor  ts = -> -1 }T
 ts send stalker-out  3 frames
+
+testing his hanging parts (RiccardoModel_Springs): as drawn, his coat's pairs at their length ($A to $B 1.1), those drawn along their bones too ($26 to $27 0.67)
+castle-1f-3 room!  20 frames   \ (a room whose camera has him in view: posed as drawn)
+room-id game:fiona body-tri ric send stalker-in  [: 3 my-mode ! ;] his  40 frames
+create b1-at 12 allot  create b2-at 12 allot
+: apart ( b1 b2 -- ) ( F: -- d )
+    [: my-model @ ;] his swap bone-pos b2-at vec!  [: my-model @ ;] his swap bone-pos b1-at vec!  b1-at b2-at vec-dist ;
+: ~ ( F: a b -- flag )  f- fabs 0.05e f< ;
+T{ [: $A $B apart 1.1e ~  $26 $27 apart 0.67e ~ and ;] 10 soon -> -1 }T
+testing his shot's debris (Riccardo_BlowFloorPoint): aimed down ($2301) - 10 out along his gun, on the floor about his feet's height
+T{ [: $2301 play-now ;] his  [: [: floor-hit  hit-at 4 + sf@ my-at 4 + sf@ f- fabs 3e f< and ;] his ;] 10 soon -> -1 }T
+ric send stalker-out  3 frames
 test-summary

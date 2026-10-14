@@ -2,14 +2,17 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-7
-USING: room-names story.words story.shared flag-names ;
+USING: engine common room-names story.words story.shared flag-names ;
 
 \ room 0x1D (Room1D_Cmd00_ptmf): script variable 0 = 2 .. 5 at random
-: castle-b1-7.cmd00 ( -- )  s" castle-b1-7.cmd00" stub-step ;
+: castle-b1-7.cmd00 ( -- )  0  4 random 2 +  var-set ;   \ (script variable 0: 2 .. 5 at random)
 \ room 0x1D (Room1D_Cmd01_ptmf): door 0's +0x74 (0, or -0.08 by byte 3)
-: castle-b1-7.cmd01 ( b0 -- )  drop s" castle-b1-7.cmd01" stub-step ;
+: castle-b1-7.cmd01 ( b0 -- )   \ (door 0 turned from rest: 0, or -0.08 - a crack open)
+    if  -0.08e  else  0e  then  rad>deg  0 true door-swing ;
 \ Fiona in move 5, room 0x1D's flag 0 not set and its exit 0's door shut
-: castle-b1-7.cond00? ( -- flag )  s" castle-b1-7.cond00?" stub-flag ;
+: castle-b1-7.cond00? ( -- flag )
+    fiona-move-sub 5 <> if  false exit  then
+    $1D 0 room-door-flag? if  false exit  then  $1D 0 room-exit-open? 0= ;
 
 : castle-b1-7.act04 ( -- )   \ 003FD720
     room-flag-2d state-flag-clear

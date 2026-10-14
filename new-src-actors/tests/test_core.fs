@@ -178,4 +178,19 @@ T{ error-message s" unknown word nosuchword" s= -> true }T
 : good 5 ;
 T{ ' good catch -> 5 0 }T
 
+testing locals: {: a b -- :} take from the stack (the last name the top), | starts one at 0, to stores
+: l-sub ( a b -- a-b )  {: a b -- difference :}  a b - ;
+T{ 10 3 l-sub -> 7 }T
+: l-swap3 ( a b c -- c b a )  {: a b c :}  c b a ;
+T{ 1 2 3 l-swap3 -> 3 2 1 }T
+: l-acc ( n -- sum )  {: n | sum :}  n 0 ?do  sum i + to sum  loop  sum ;
+T{ 5 l-acc -> 10 }T
+: l-early ( n -- x )  {: n :}  n 0< if  0 exit  then  n 2 * ;
+T{ -4 l-early  6 l-early -> 0 12 }T
+: l-nested ( a -- b )  {: a :}  a 1+  a l-sub ;   \ (a word with locals calling another)
+T{ 5 l-nested -> 1 }T
+: l-quote ( a -- b )  {: a :}  [: {: x :} x 100 * ;] a swap execute  a + ;
+T{ 3 l-quote -> 303 }T
+: l-r ( a -- a )  {: a :}  a >r  r>  a + ;   \ (the return stack still free to use)
+T{ 4 l-r -> 8 }T
 test-summary

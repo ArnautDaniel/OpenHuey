@@ -5,9 +5,9 @@ IN: story.rooms.castle-1f-16
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x1A (D_003FC660): the fan turns
-: castle-1f-16.cmd00 ( -- )  s" castle-1f-16.cmd00" stub-step ;
+: castle-1f-16.cmd00 ( -- )  fan-turn ;
 \ room 0x1A: room effect slot 0 made anew as the second TV screen (TvScreenB).
-: castle-1f-16.cmd01 ( -- )  s" castle-1f-16.cmd01" stub-step ;
+: castle-1f-16.cmd01 ( -- )  0 1 tv-in ;   \ (room effect 0 the TV showing the screen)
 
 : castle-1f-16.enter ( -- )   \ 003FC060
     room-sounds
@@ -165,7 +165,7 @@ USING: room-names story.words story.shared flag-names ;
         $FE char-here? not if
             5 3 5 scene-change
         else
-            $8016 scene-ending
+            $8016 examine-message
         then
     then
     0 $B char-in-area? 0 -72 $32 char-heading? and if

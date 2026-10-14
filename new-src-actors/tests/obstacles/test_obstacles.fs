@@ -60,5 +60,13 @@ testing the story's words: castle-b1-7's script's placing, its question
 castle-b1-7 room!  5 frames
 0 0 0 $1ED $245 story.words:obstacle-place  2 frames
 T{ 0 $1ED story.words:obstacle-on?  0 $245 story.words:obstacle-on? -> -1 -1 }T
+testing a model put back at the kept spot (the story's obstacle-model-back: Obstacles_ModelBack)
+: model-x ( -- n )  s" oshi00" story.words:place-x story.words:object@ f>s ;
+: model-z ( -- n )  s" oshi00" story.words:place-z story.words:object@ f>s ;
+0 story.words:obstacle-keep-spot  1 frames
+s" oshi00" 0e 0e 0e placed-at   \ (the model taken elsewhere)
+T{ model-x model-z -> 0 0 }T
+0 0 story.words:obstacle-model-back  1 frames
+T{ model-x model-z  obst-x obst-z -> -32 -6 -32 -6 }T
 
 test-summary

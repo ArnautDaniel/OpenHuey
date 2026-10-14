@@ -51,4 +51,14 @@ ly send stalker-out  3 frames
 testing kind 39: its kit, his own actions, his reach 18 whatever the panic
 T{ k39 enter  kit @ kind39-kit =  own-acts @ lorenzo2-acts =  hp @  my-kind @  attack-range f@ f>s  leave-actor -> -1 -1 250 39 18 }T
 T{ 39 story.words:stalker-actor  k39 = -> -1 }T
+
+testing his swaying points (Lorenzo2Model_SwayPoints): as drawn, each hanging 2.125 from the one before (bones 6 to 7, $16 to $17)
+castle-1f-3 room!  20 frames   \ (a room whose camera has him in view: posed as drawn)
+room-id game:fiona body-tri ly send stalker-in  [: 3 my-mode ! ;] his  40 frames
+create b1-at 12 allot  create b2-at 12 allot
+: apart ( b1 b2 -- ) ( F: -- d )
+    [: my-model @ ;] his swap bone-pos b2-at vec!  [: my-model @ ;] his swap bone-pos b1-at vec!  b1-at b2-at vec-dist ;
+: ~ ( F: a b -- flag )  f- fabs 0.05e f< ;
+T{ [: 6 7 apart 2.125e ~  $16 $17 apart 2.125e ~ and ;] 10 soon -> -1 }T
+ly send stalker-out  3 frames
 test-summary

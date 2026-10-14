@@ -72,8 +72,8 @@ of 30, the push). The places and spots kept. Its kinds come from the executable
 `tests/obstacles/test_obstacles.fs` (13): placed in castle-b1-7 (its square, its place, the floor
 blocked, its ring marked); which ways it can go; Fiona walking into it, leaning on it and
 pushing it twice, straining at the end, letting go; its square after; stopped; its place kept
-across a visit; gone with the room; the story's words. Not yet: the rumble; a model put back
-by `obstacle-model-to-spot` isn't checked.
+across a visit; gone with the room; the story's words; each push felt on the pad (Fiona's `fiona-jolt`); a model put back at the kept
+spot (`obstacle-model-back`).
 
 With it, two fixes to the engine's moving over the floor (`navmesh_move`): a step may go no
 more than its climb up as well as down (the game's y runs down: blocked under her, she used to

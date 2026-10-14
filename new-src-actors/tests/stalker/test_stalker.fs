@@ -98,6 +98,12 @@ T{ [: step-foot @ 0> ;] his -> -1 }T
 T{ [: my-room castle-1f-2 = ;] 200 wait-for  game:debilitas body-tri 0< 0= -> -1 -1 }T
 T{ 30 frames  32 state@ opened-bit and 0<> -> -1 }T
 debug:debilitas-out  2 frames
+testing ... one who shuts the doors he comes in by (Riccardo, Daniella: DoorBreak): shut again once he is clear of it
+32 opened-bit clear-bits  32 changed  2 frames
+castle-1f-10 debug:debilitas-hunt  [: shuts-doors door-manner ! ;] his  2 frames
+T{ [: 32 state@ opened-bit and 0<> ;] 1200 wait-for -> -1 }T
+T{ [: 32 state@ opened-bit and 0=  to-shut @ 0< and ;] 600 wait-for  [: my-room ;] his -> -1 castle-1f-2 }T
+[: leaves-doors door-manner ! ;] his  debug:debilitas-out  2 frames
 
 testing held off out of sight (P4b): to the nearer of his own rooms ($20, $02), and there he stays
 front-garden-2 room!  10 frames   \ (the summoner takes him after 5 s held off: checked within it)
@@ -174,6 +180,14 @@ face-off  [: 4 her-mode ! ;] hers  [: chase-now 6 take-her ;] his  10 frames
 T{ [: leading @  chase-act @ $14 = ;] his -> 0 0 }T
 [: 0 her-mode ! ;] hers  debug:debilitas-out  2 frames
 
+testing faded from sight (item $89 worn, still), he walks into her: he has her (a hold, reaction $20)
+: wear-89 ( id -- )  progress pr.equipped 4 + l! ;
+$89 wear-89  true blind  face-off  true blind
+[: 1 her-unseen !  0 her-fade !  0 her-mode !  0 her-sub ! ;] hers
+s" fiona" actor-named body-tri debug:debilitas-tri
+T{ 10 reacted  [: her-unseen @ ;] hers -> $20 0 }T
+-1 wear-89  false blind  60 frames  debug:debilitas-out  10 frames  [: free! 0 her-mode ! ;] hers
+
 testing struck (P3a): her shove makes him flinch, her kick takes 5; out of health he's down a while, then up
 : close-up ( -- )   \ (face to face 7 apart, his attacks held)
     true blind  140.64e her-y -217.33e 0e tp-facing  2 frames
@@ -182,7 +196,7 @@ testing struck (P3a): her shove makes him flinch, her kick takes 5; out of healt
     game:debilitas body-pos dz f! dy f! dx f!
     340e deg>rad fsin 7e f* dx f@ f+  dy f@  340e deg>rad fcos 7e f* dz f@ f+  160e tp-facing  3 frames ;
 : flinching? ( -- flag )  [: anim @ $1000 $1006 within ;] his ;
-close-up  [: 70 hp !  0 hits ! ;] his  square debug:press
+close-up  [: 70 hp !  0 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press   \ (not mid-move: in an unshaken move a shove only gets a grunt)
 T{ ' flinching? 60 soon  [: hp @ hits @ ;] his -> -1 69 1 }T
 : kick ( -- )  [: 6 her-doing !  8 her-mode !  $1B her-sub !  ['] kick-start her-act ! ;] hers ;
 : settled ( -- )  [: [: reeling @ 0= ;] his  [: her-mode @ 0= ;] hers and ;] 300 soon drop ;

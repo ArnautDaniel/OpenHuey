@@ -2,11 +2,14 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-15
-USING: room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names ;
 
 \ room 0x19 (Room19_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) while
 \ Hewie is controlled: in another room, or 30 or more from the player
-: castle-1f-15.cond00? ( -- flag )  s" castle-1f-15.cond00?" stub-flag ;
+: castle-1f-15.cond00? ( -- flag )
+    hunting-debilitas? 0= if  false exit  then  2 game-mode? 0= if  false exit  then
+    stalker-in-this-room? 0= if  true exit  then
+    stalker-at fiona-at vec-dist 30e f< 0= ;
 
 : castle-1f-15.enter ( -- )   \ 003FB3B0
     room-sounds

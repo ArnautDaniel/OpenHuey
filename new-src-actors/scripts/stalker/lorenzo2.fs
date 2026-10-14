@@ -22,11 +22,15 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
 : goal-along ( F: d -- )   \ the point that far along his way (planned by way-to-her)
     my-path my-at path-ahead drop  goal ahead vec-copy  goal self body-mask v-tri-in dup 0< if  drop self body-tri  then  goal-tri ! ;
 \ ---- under the floor and up again ----
+\ (where he sinks away and comes up: a ring of light - LightRing)
+0 constant sinking   1 constant rising
 : go-under ( rise-anim rise-xt -- )   \ (Lorenzo2_Sink: out of sight, 15 frames)
-    rise-xt !  rise-anim !  0 my-model @ actor act.visible l!  15 under-t ! ;
+    rise-xt !  rise-anim !  0 my-model @ actor act.visible l!  15 under-t !
+    sinking my-at vec@ sink-ring ;
 : up-again ( -- )   \ at his goal, facing her, seen again
     room-id goal-tri @ goal vec@ body-place
     quarry body-at heading-to yaw!  -1 my-model @ actor act.visible l!
+    rising my-at vec@ sink-ring
     rise-anim @ play-now  0 swept !  rise-xt @ $1000 act! ;
 : under ( -- )  -1 under-t +!  under-t @ 0> 0= if  up-again  then ;
 : playing-out ( -- )  root-move  ended? if  -1 step-done !  then ;
@@ -78,14 +82,42 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
         then
         r@ 3 cells + f@ goal reaches-dog? if  r@ 4 cells + @  r@ 5 cells + @  r@ stumble?  hewie send blow  then
         r> drop
+        0  goal vec@ 0e 1e 0e mag-burst-new particles-engines   \ (its burst there: BurstA)
     then
     ended? if  -1 step-done !  then ;
 : grab-start ( -- )  goal quarry body-at vec-copy  $E01 play-now  ['] grabbing $1000 act! ;
 create lorenzo2-acts  ' sink-start , ' below-start , ' grab-start ,
 
+\ ---- his blows' effects (Lorenzo2_SlamDust, Lorenzo2_BlowSparks): his slam ($2301) at its key,
+\ eight grey dust clouds at his hand (bone $32), 320..640 big; his blows ($1904 / $E00 / $E04 /
+\ $E05 at his hand, $E06 at bone $28) at their effect key ($20), seven sparks about it ----
+$32 constant his-hand   $28 constant his-arm
+create spark-offsets  0.866e f, 0.866e f, 0e f,   -0.866e f, -0.866e f, 0e f,   0.866e f, -0.866e f, 0e f,
+    -0.866e f, 0.866e f, 0e f,   0e f, 0e f, 1e f,   0e f, 0e f, -1e f,   0e f, 0e f, 0e f,
+create at-bone 12 allot
+: slam-dust ( -- )
+    anim @ $2301 <>  0 key? 0= or if  exit  then
+    my-model @ his-hand bone-pos at-bone vec!
+    8 0 do  2 $50 $50 $50  rnd 320e f* f>s 320 +  at-bone vec@ burst-new particles-engines  loop ;
+: spark-bone ( -- bone | -1 )
+    anim @ case
+        $1904 of  his-hand  endof   $E00 of  his-hand  endof   $E04 of  his-hand  endof
+        $E05 of  his-hand  endof    $E06 of  his-arm  endof
+        >r -1 r>
+    endcase ;
+: blow-sparks ( -- )
+    spark-bone dup 0<  effect-key? 0= or if  drop exit  then
+    my-model @ swap bone-pos at-bone vec!
+    7 0 do
+        rnd 6e f* f>s 12 +
+        i 3 * floats spark-offsets +  dup f@ at-bone sf@ f+  dup float+ f@ at-bone 4 + sf@ f+  2 floats + f@ at-bone 8 + sf@ f+
+        1e  0.5e rnd 0.5e f* f+  1.1e rnd 0.05e f* f+  spark
+    loop ;
+
 \ ---- his frame (Lorenzo2_Update): his "rage" from the panic's first stage, out of it at 0; his
-\ reaches by it ----
+\ reaches by it; his blows' effects ----
 : lorenzo2-frame ( -- )
+    slam-dust  blow-sparks
     her-stage @ 0= if  0 raging !
     else  raging @ 0=  reeling @ 0= and  my-mode @ 0= and if  -1 raging !  then  then
-    raging @ if  18e 12e  else  hard? if  40e 30e  else  70e 60e  then  then  reach-k f!  attack-range f! ;
+    raging @ if  18e 12e  else  hard-mode? if  40e 30e  else  70e 60e  then  then  reach-k f!  attack-range f! ;

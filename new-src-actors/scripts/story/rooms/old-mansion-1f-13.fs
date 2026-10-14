@@ -4,9 +4,9 @@
 IN: story.rooms.old-mansion-1f-13
 USING: room-names story.words story.shared flag-names ;
 
-: old-mansion-1f-13.cmd00 ( -- )  s" old-mansion-1f-13.cmd00" stub-step ;
+: old-mansion-1f-13.cmd00 ( -- )  effects:drips ;   \ (water dripping, rippling)
 \ 1 unless the object at +0x18 exists and its byte +0x28 is 1.
-: old-mansion-1f-13.cond00? ( -- flag )  s" old-mansion-1f-13.cond00?" stub-flag ;
+: old-mansion-1f-13.cond00? ( -- flag )  6 creature-up? 0= ;
 
 : old-mansion-1f-13.enter ( -- )   \ 0040E3B0
     room-sounds
@@ -18,24 +18,24 @@ USING: room-names story.words story.shared flag-names ;
     then
     old-mansion-1f-13.cmd00
     $75 story-flag? not if
-        2 0 object-show
-        3 0 object-show
-        4 0 object-show
-        5 0 object-show
-        6 0 object-show
-        7 0 object-show
-        8 0 object-show
-        9 0 object-show
+        2 0 object-hidden
+        3 0 object-hidden
+        4 0 object-hidden
+        5 0 object-hidden
+        6 0 object-hidden
+        7 0 object-hidden
+        8 0 object-hidden
+        9 0 object-hidden
         0 0 $14 door-bits
     else
-        2 1 object-show
-        3 1 object-show
-        4 1 object-show
-        5 1 object-show
-        6 1 object-show
-        7 1 object-show
-        8 1 object-show
-        9 1 object-show
+        2 1 object-hidden
+        3 1 object-hidden
+        4 1 object-hidden
+        5 1 object-hidden
+        6 1 object-hidden
+        7 1 object-hidden
+        8 1 object-hidden
+        9 1 object-hidden
         0 1 $14 door-bits
     then
     $10 -54.6 28.6 -20.0 $E $80 $80 $80 $40 specks
@@ -353,14 +353,14 @@ USING: room-names story.words story.shared flag-names ;
     then
     world-held state-flag-set
     0 0 char-no-shadow
-    2 1 object-show
-    3 1 object-show
-    4 1 object-show
-    5 1 object-show
-    6 1 object-show
-    7 1 object-show
-    8 1 object-show
-    9 1 object-show
+    2 1 object-hidden
+    3 1 object-hidden
+    4 1 object-hidden
+    5 1 object-hidden
+    6 1 object-hidden
+    7 1 object-hidden
+    8 1 object-hidden
+    9 1 object-hidden
     0 1 $14 door-bits
     0 ebit? not if
         1 2 char-C4? if

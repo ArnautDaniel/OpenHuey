@@ -2,14 +2,14 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-13
-USING: room-names story.words story.shared flag-names ;
+USING: actors room-names story.words story.shared flag-names ;
 
 \ byte 3 0: a 0x4480 effect is spawned and its slot kept in event var 0; else that slot's effect
 \ is removed
-: chaos-forest-13.cmd00 ( b0 -- )  drop s" chaos-forest-13.cmd00" stub-step ;
+: chaos-forest-13.cmd00 ( b0 -- )  0 ['] effects:ash effect-in-var ;   \ (ash flakes rising: b0 0 made - kept in variable 0 - else gone)
 \ room 0x10B: the progress' +0xFB6 count (it rises while Hewie is down, Hewie_AdjustAction) has
 \ reached 100.
-: chaos-forest-13.cond00? ( -- flag )  s" chaos-forest-13.cond00?" stub-flag ;
+: chaos-forest-13.cond00? ( -- flag )  hewie-mistreated 100 >= ;
 
 : chaos-forest-13.enter ( -- )   \ 00419A80
     $19 1.0 0 bgm

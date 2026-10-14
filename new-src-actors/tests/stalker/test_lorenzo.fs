@@ -39,5 +39,8 @@ testing ... in her room: it seizes her ($10), and is never hurt
 T{ [: [: her-mode @ 4 =  her-sub @ $10 = and ;] fiona@ ;] 30 soon -> -1 }T
 T{ k12 enter  100 hp !  kind12-frame  hp @  leave-actor -> 9999 }T
 T{ 12 story.words:stalker-actor  k12 = -> -1 }T
+testing ... its marker (Kind12_ShowUp: the Marker on it) while in her room; gone as it leaves
+T{ k12 enter  mark-id @ dup 0< 0= swap alive? and  leave-actor -> -1 }T
 k12 send stalker-out  3 frames
+T{ k12 enter  kind12-marker  mark-id @  leave-actor -> -1 }T
 test-summary

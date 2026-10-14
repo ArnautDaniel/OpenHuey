@@ -2,15 +2,38 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-7
-USING: room-names story.words story.shared ;
+USING: engine common actors messages room-names story.words story.shared ;
 
+\ one of the fish swimming its way (swim path k), on and on
+: swim ( id k -- )
+    {: id k :}
+    begin
+        id who>cs dup 0< 0= if
+            dup char-here if  dup char-at vec@  dup char-actor body-yaw  k swim-step  place-char  else  drop  then
+        else  drop  then
+        yield
+    again ;
 \ room 0x61 (byte 3): 0 / 2 / 4 set up the paths of characters 0x14 (2 x 3 x 7 cells from (25,
 \ 0, 40), 480 frames a stretch; with the glint Glint_vtable) / 0x15 (2 x 3 x 5 from (30, 0, 50),
 \ 240) / 0x16 (the same box, 280); 1 / 3 / 5 move them a frame (returning 2: again next frame)
-: old-mansion-b1-7.cmd00 ( b0 -- )  drop s" old-mansion-b1-7.cmd00" stub-step ;
+: old-mansion-b1-7.cmd00 ( b0 -- )   \ (the fish $14 / $15 / $16 in the pool: b0 0 / 2 / 4 their ways set up - the glint on
+    \ the first; 1 / 3 / 5 one swims on)
+    case
+        0 of  0 2 3 7 480  25e 0e 40e  swim-path  $14 char-model dup 0< if  drop  else  effects:glint  then  endof
+        2 of  1 2 3 5 240  30e 0e 50e  swim-path  endof
+        4 of  2 2 3 5 280  30e 0e 50e  swim-path  endof
+        1 of  $14 0 swim  endof
+        3 of  $15 1 swim  endof
+        5 of  $16 2 swim  endof
+    endcase ;
 \ room 0x61: the light shaft: byte 3 0 starts it (LightShaft, with its motes from (30, 0, 70)),
 \ its slot in event variable 3; 1 its haze on; 2 off.
-: old-mansion-b1-7.cmd01 ( b0 -- )  drop s" old-mansion-b1-7.cmd01" stub-step ;
+: old-mansion-b1-7.cmd01 ( b0 -- )   \ (the beam of light: b0 0 made - kept in variable 3; 1 its haze on, 2 off)
+    case
+        0 of  3 effects:light-shaft var-set  endof
+        1 of  3 var @ dup alive? if  1 swap send effect-command  else  drop  then  endof
+        2 of  3 var @ dup alive? if  2 swap send effect-command  else  drop  then  endof
+    endcase ;
 
 : old-mansion-b1-7.enter ( -- )   \ 004291C0
     0 $F1 0 action

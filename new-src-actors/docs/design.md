@@ -82,6 +82,16 @@ For each subsystem:
    traces from the decomp build (positions, states, messages per frame for a scripted scene)
    compared with ours.
 
+## Input
+
+The keyboard, and a gamepad played as the keyboard (src/platform/platform.c, as hg's
+native/platform/input.c lays it out): its buttons hold the keys the scripts read for the pad's
+(scripts/keys.fs - circle C, square Z, triangle V, cross X, L1 Q, R1 E, start Return, select
+Tab), the d-pad the arrows, the left stick W A S D past half way - and its own reading, `pad-stick`,
+for Fiona's walk as far as it is pushed. Its motors take the rumble (src/game/rumble.c, the
+original's gRumble: a channel for each who asks - Fiona, the story, a scene, the stalker, and a
+sequence for the panic's beat - the strongest felt; off while paused or by the options).
+
 ## Conventions
 
 - One subsystem per vocabulary (`IN: noise`), in its own file (`scripts/noise.fs`).

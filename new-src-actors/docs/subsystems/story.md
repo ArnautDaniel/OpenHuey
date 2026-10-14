@@ -132,15 +132,20 @@ command. The new game stays the default start.
   action button pressed that frame, free, she takes it (`take-offer`): her action script starts
   and she is scripted (`scripted` on) until it ends (`scripted` off) - every script that takes a
   character tells it so, and a room releases its characters as it stops or is left. Other
-  scenes (changes of scene, endings): S4.
+  scenes (changes of scene, endings): S4. The scripts' 0xA5 (`examine-message`; the old
+  opcode table called it `scene-ending`, wrongly) prepares a message instead (`read-message`,
+  the original's 0x80000005): taken, the message opens and she looks at character slot 2 for
+  30 frames (`Events_OpenMessage`, `Fiona_SetTarget`).
 - **Messages:** `message` (the window shows it; `text-closed` answers), `wait-message`,
   `message-close`, `answer?`, `message-prepare` (S4's subtitles), `message-param-room`.
 - **Her pad:** `control-action?` (her gesture this frame, from `fiona-doing`), `pad?` (the
   buttons, `keys.fs`).
 - **Facing:** `char-faces-xz?`, `char-faces-area?`; **move modes:** `char-action?`.
 - **Zones:** `zone`, `zone-rect`, `char-zone-bits?`, `char-zone-bits-before?` (all off as phase
-  1 starts). `char-in-zone?` is about attack points (her kick, his bite): false until the kicks
-  (F4) and his bites (H3).
+  1 starts). `char-in-zone?` is about attack points (her kick, his bite, Riccardo's shot). A zone
+  of a kind with bit 1 is a target (Events_NearestPoint: the front garden's barriers, ...): told
+  to the stalkers as it is set (`zone-target`; `zone-targets-off` as they all go) - Riccardo's
+  shot takes the one by her.
 - **Items:** `item-give` (a file, with the pickup sound), `item-add`, `item-count?`,
   `item-give-count`, `item-use`; `script-item` (Events_ScriptRoom: `items-40-as-70`). The story
   writes the inventory in the progress until the items subsystem owns it.
@@ -160,18 +165,22 @@ its animation's end), which the room keeps for `self-wait-done` / `self-wait-ani
 - Fiona (`scripts/fiona/moves.fs`, from Fiona_Requests and the Fiona_StateCmd* states): straight
   to a spot (her door walk), along a path turning 10 degrees a frame and stepping by her root
   motion, turning on the spot (0x400 / 0x401), animations, her idle, the walk with an
-  animation arriving at its event. Not yet: the paths' curve smoothing (Character_WaypointsCurve),
-  her looks (12 / 13 do nothing yet), a door's use from a script (3 / 4).
+  animation arriving at its event; her looks (12 at a character, 13 at a point: `fiona/looks.fs`).
+  Her scripted paths are curved as the original's (Character_WaypointsCurve; the engine's
+  `v-path-curved`, `path-plan-curved`): the turning points moved 2 off the corners they turn round
+  (where the way still walks), each stretch a Hermite piece of 8 steps whose tangents halve until
+  every step walks straight over the floor (else the stretch straight; a way too long for the
+  record stays straight). A door's use from a script (3 opening, 4 shutting: `scripted-door`).
 - Hewie (`scripts/hewie/scripted.fs`, Hewie_Requests): the moves become his actions 0x3B..0x47
   and 0x7F (root-motion animations, walking a path, turning on the spot, heading for a spot and
   milling about, the scripts' bark, the leap); his looks at a character or a point. While a
   script has him (`scripted`) his frame is Hewie_Think; let go, his full stop and the default.
-Checked by `tests/story/test_moves.fs` (11 tests) and `test_examine.fs` (her walk to the spot
+Checked by `tests/story/test_moves.fs` (13 tests) and `test_examine.fs` (her walk to the spot
 and the kneel around the message).
 
 **S4 built** (2026-10-08): fades, movies, cutscenes, music, motion events.
 - **Fades** go to the `screen` actor (`fade`, `fade-finish`, `fade-over`); it answers `fade-done`,
-  and `wait-fade` waits on the room's `fading`. (The kinds' music bits 0xC0 / 0x30: not yet.)
+  and `wait-fade` waits on the room's `fading`. (The kinds' music bits fade the stage music with it: `fade-music`.)
 - **Movies** are the engine's (one at a time): `movie-play` opens the room's string paused (its
   class picks the compositing and whether it is drawn), `movie-volume` starts it, `movie-param`,
   `movie-playing?`. The room draws a drawn class's picture on UI layer 0 (`ui-movie`).
@@ -193,7 +202,7 @@ its end (Fiona free, the track back). Seen on screen: the scene's camera and let
 subtitles, the pause and the skip's darkening.
 
 **S5a built** (2026-10-08): the room's things.
-- **Placed objects** by the room's string naming them (`object-show`, `object-anim`,
+- **Placed objects** by the room's string naming them (`object-hidden`, `object-anim`,
   `-anim-loop`, `-anim-reset`: the engine's `placed-op`).
 - **The doors' parts:** each door's model has a group mask (`door-group!`, as Doors_SetBits sets
   door +0x120 on every present door); a batch shows while its group's bit is on (0 always).
@@ -213,7 +222,9 @@ going with the room; scene effects ending by themselves or with the next room (`
 Checked by `tests/story/test_effects.fs` (10 tests).
 
 **The start of a game** (`scripts/opening.fs`, 2026-10-08): the title (from new-src: Hewie lying
-in the warm light, NEW GAME / QUIT; New Game: he gets up and barks), the opening movie
+in the warm light, NEW GAME / LOAD GAME / OPTIONS - and once a game has been cleared HARD MODE
+(story flag $AF) and EXTRAS (room $37 straight) - / QUIT; a new game: he gets up and barks;
+`tests/story/test_title.fs`), the opening movie
 (OPENING.SFD, as the original's title plays it; the action or start button skips it), then the
 new game's entry as SceneGame_StateEntry makes it for entry $2A: state flags `new-game-sounds`,
 `world-held`, `in-play`; costume variable $26 = 1 (Fiona in the slip she wakes in, `O_FIS` with
@@ -221,10 +232,129 @@ her clothes' markers `O_FIN/FIN_000.MRK`), Hewie's $27 = 0; room $2A, whose scri
 Without a window (tests, screenshots) the new game starts at once. `free-play` cuts the title
 short. Fiona's model follows the costume (`costume` message: 0 her clothes, 1 the slip; the
 others later); her head's bones with it. The slip's own animations are fewer: the scripts load
-more with event $A7 (a second motion set: not yet) - the mechanics tests put her in her clothes.
+more with event $A6 and use them with $A7 (`char-file-use`: a second motion set) - the mechanics tests put her in her clothes.
 
 **Debugging** (`scripts/debug.fs`, at the console and in tests): `act` (a room action script as Fiona's), `room!`, `room-by!`, `tp`,
 `tp-facing`, `tp-area`, `tp-area-facing`, `tp-exit`, `tp-tri`, `walk`, `press`, `.here`.
+
+**S5c begun** (2026-10-13): the rooms' own commands and conditions (`src/game/rooms/room_*.c`;
+the stubs' `cmdNN` follow each room's command table in `src/game/sinit.c`). Every room was
+entered in free play and run 300 frames: no errors, no stack left over. 96 of 311 stubs done:
+- **Conditions** (34 of 43): the stalker in the game or only loaded, his kind (Debilitas: 2 / 6 /
+  7), down, his mode, out of the camera's view (`out-of-view?`: Camera_OutOfView, the camera's
+  +0xD4 - true when outside, whatever the decomp's comments say); a loud noise ($20+) made here
+  last frame (acoustics' `noise-was`); the summoner's countdown run out (`summoner-cooldown-is`);
+  who struck Fiona (`fiona-struck-by`); the things lying about; doors' states; her place; the
+  script variables. The 18 off-map rooms' "progress +0x7C" is ProgressBase_Slot7C: always true.
+- **Room objects by name** (`object@`, `object!`, `object+!`, `object-n@`/`!`, `object-here?`,
+  `object-to-def`, `place-to`, `room-object`: the engine's `placed-f@` / `placed-f!` /
+  `placed-l@` / `placed-l!` - an object's turn (+$10), place (+$20) and the rooms' own values on
+  it (+$30..+$7C)): the grate, the box, the cage, the drum can, the lid, levers, dials
+  (`dial-step`: the menu arrows with the pad's repeat), the floor plate (`var-fade`), pendulums,
+  hanging things pushed as she or Hewie walks by (`hangers-swing`, `char-step`), rocking chairs,
+  the scales, the falling doll (along the walk mesh), the swinging things of castle-b1-6.
+- **Characters:** a figure moved by a room (`char-shift`); the rabbit (cast kind 26: grazing,
+  alert within 30, off to its spot within 20 - `animal-go`, `char-wait-done`); Hewie's look at a
+  point, forced (`scent-now`); her hair's force (`cloth-force!`: her model's +0xC8).
+- **The scenes:** an actor the cast leaves be (`cutscene-leave-alone`: Cutscene_Mark82); the depth
+  range following the scene's frame.
+- No-ops in the original too: the model hooks +0xBC / +0xC0 / +0xCC / +0xD0 are empty.
+Checked by `tests/story/test_room_conds.fs` (16), `test_room_cmds.fs` (22), `tests/cast/test_animal.fs` (4).
+
+**S5c, the second round** (2026-10-13): 206 of 311 stubs done; what is left is the rooms'
+effects and the Hewie-controlled clock rooms ($D0..$E9, 42 stubs).
+- **Room objects shown and hidden - fixed:** the original draws a room object only while its +0
+  byte is 0 (PlacedObjects_Draw); they start drawn and event 0x50's op 0 with 1 hides one. hga had
+  it the other way round (start hidden, 1 shows) - the hanging chandelier of castle-b1-6 hidden
+  and the fallen one shown before it fell. Now `placed-op` 0 takes the original's byte, op 4 shows
+  (PlacedObject_ToDef), and the words say so: `object-hidden` ( obj hide? ), `object-hidden!`,
+  `placed-shown?`.
+- **Morphs:** the curtains (`var0-anim`, `var0-frame`) and old-mansion-2f-8's (variable 0 in a
+  range); the three-dial lock of old-mansion-2f-12.
+- **Speech:** the faces' textures (`speech-load`, `speak`, `speech-done`: Progress_LoadSpeech /
+  Speak - a character's texture swapped for a .TEX file's first).
+- **Gameplay pieces:** the floor plates (old-mansion-b1-3, house-of-truth-1f-9); her shakes
+  counted (`count-shakes` to Fiona, `fiona-shakes` back: old-mansion-b1-3's 35, house-of-truth-
+  1f-7's struggle to 100 with its grunts); a door swung by a variable or along its animation
+  (`door-play`, `door-wait`); a file found once a flag is set (`file-once-flag`: item238_sound);
+  the moving bookshelves (old-mansion-1f-15: three groups back to their stops, the things on
+  their floor gone, the doorways found again); the shelf falling over, the dynamo and the belt
+  machine (house-of-truth 1f-6 / 1f-4); a variable down by her hit (`var-down-by-hit`); things in
+  an area aged out (`things-age-out-in`); the hatches of the water tower (`var0-ease`, with their
+  sound kept on - id bit 31); the aiming cursor of water-tower-8f-1 (`cursor-step`,
+  `cursor-draw`: the room's texture $C on UI layer 15); a blow request at Fiona (Progress_Noise:
+  `fiona-request` kind 2 - Hewie's and the stalker's not taken yet); Fiona's flinch with nobody
+  holding her (`flinch`: action $B / $21); the screen darkened a frame at a time (`screen-fill`,
+  UI layer 16 - now 18 layers).
+- **The falling debris and the traps** of house-of-truth-1f-9: kind-9 things carrying a room
+  object "keri0".."keri5" (free while hidden; `keri-drop`, and `keri-fell` once one drops
+  through, counted by cmd05), kind-10 traps round the middle (`trap-place`: the stalker treading
+  on one is knocked down - a blow of kind 2, $28), all gone (`story-things-off`).
+- **Creatures:** the homunculi on a nav group put away (`creature-clear`: Creatures_Remove); the
+  creatures here on level 0 (`set-level`: CreatureA_SetSaveSlot - their floor of a split room).
+- **Characters:** Hewie's health seen by the story (`hewie-health` each frame; `char-dead?` and
+  `char-full-health?` for him too) and set (`set-hp`, `full-health`, `heal` - he had no handlers
+  for 0x48 / 0xB8); the wading character's steps (`foot-down?`) and its sinking (old-mansion-
+  b1-6); the fish of old-mansion-b1-7 swimming their ways (`swim-path` / `swim-step`:
+  src/game/swimpath.c, SwimPath_*); the drift of character $E (`room-nudge`); a character turned
+  by a variable (old-mansion-1f-6); walking to Fiona's triangle (old-mansion-3f-2); characters
+  tinted by a fading colour (`char-tint`: water-tower-8f-1's Hewie and stalker).
+- **Shared:** Lorenzo's slam shaking the camera in 13 rooms (`slam-shake`, `slam-landed?`); the
+  hanging things brushed by her (`swing-three`) and pushed (`hangers-swing`); the fans
+  (`fan-turn`).
+- **Room strings:** chaos-forest 4..8, 10 and 13 were missing from story/strings.fs (the table
+  stopped at $FF) - their hanging things and their movies (DE002A, EV0020, EV0021).
+- **Not simulated here yet, kept as no-ops:** the stalker's and character $B's model springs
+  (+0x9E0.., +0xCC8: the waits kept), model parts hidden by their flag 2 (old-mansion-b1-3,
+  castle-2f-3), a character's doorway fade (+0xE4).
+Checked by `tests/story/test_old_mansion.fs` (17), `test_house_of_truth.fs` (18),
+`test_water_tower.fs` (9), with `test_dial_lock.fs`, `test_curtain.fs`, `test_speech.fs`.
+
+**S5c, the third round** (2026-10-13): 243 of 311 stubs done. The rooms' effects, as particle
+classes (`docs/subsystems/effects.md`): the falling stones of the House of Truth, the water
+tower's debris, the smokes, motes, embers, flecks, drips, fires and glows, the TVs showing the
+screen, the reflecting windows and floor (the lit quads); the kiln's glow and the rooms' colour
+pulse (the tint, slot $1F); the fish of the old mansion's pool (`swim-path`); the sprite dropped
+in old-mansion-2f-11 (`effect-moved`); off-map-27's items topped up. Also fixed: a morph object's
+mesh was made immutable and then refilled (old-mansion-2f-13's curtain: a GL error).
+
+**S5c, the fourth round** (2026-10-13): 268 of 311 stubs done - all but the Hewie-controlled
+clock rooms ($D0..$E9, 42 stubs) and off-map-5a (its dials' table of variables is zero in the
+original: an unused room). The rest of the rooms' effects as particle classes
+(`docs/subsystems/effects.md`): the old mansion 1F's big fire and haze, B1's light shaft and the
+glint on the pool's fish, the caustics (the rooms' "ModelDraw" effects: water light on the lake
+pathway, the front garden, the old mansion), the front garden's glow, leaves and falling arc,
+the House of Truth's wisp column, spark spray, heat haze and pit embers, the water tower's
+planet glows, the Chaos Forest's rain and ash; Lorenzo's marker (house-of-truth-1f-5: `marker`),
+the dials' lens flashes (castle-1f-12, castle-2f-1: `lens-flash`), the mirror fragments
+(castle-1f-12's lens, castle-2f-5's fragment: `mirror-fragment`) and the traps' smoke
+(house-of-truth-1f-9: started by the things actor's `trap-place`).
+Checked by `tests/story/test_marker.fs` (3), `test_mirror.fs` (8), `test_house_of_truth.fs` (22).
+
+**S5c, the renderer's part** (2026-10-13): a character's draw layer (`char-layer`, the scripts'
+0xB5: `act.layer`) - $14 shines in the colour the marker gives (`post_shine`), $1E and up are
+drawn after the reflections (Fiona in front of castle 2F's whole-picture reflection); the glow
+pass and the effects' blooms (`docs/subsystems/effects.md`); the reflecting door's and window's
+side panels (castle-2f-3, castle-2f-5: the colour word's top bits, as the original's); the
+stalker's blow under way (`stalker-blow`, broadcast after `stalker-doing`; `stalker-blow?`) for
+castle-b1-6's cmd01 - hg names it Pursuer_PathNodeSound, but it is his attack move's damage.
+Checked by `tests/story/test_stalker_blow.fs` (5).
+
+**The last story words** (2026-10-13): `movie-loop` (0x52: the movie held on its last frame at its
+end), `char-model-op` (0xCC: 3 a cutscene actor's model left as it is; Daniella's model parts 17 /
+31 by 0 / 1 - `actor-part-show`, the models' skinned parts shown or hidden by number),
+`self-doorway-fade` (0xAC: a character fading out through a doorway - `doorway_faded`, by its depth
+past the exit area's middle; Fiona never), `self-noclip` for the stalker and the figures (their
+floor mask), `char-activate` for Fiona and Hewie (`activate`: afresh); the hidden model parts of
+old-mansion-b1-3 and castle-2f-3; the story's rumble (0x71). Checked by
+`tests/story/test_finishing.fs` (23).
+
+The cutscenes' own rumble (their marks' bits 2 and 3..4: the small motor, the large one's
+strength $55 / $AA / $FF - Cutscene_Signal2 / Signals34) and op 0xCC's 3 corrected: the director's
++0x78 is Cutscene_Mark83 - the model left as it is when the scene takes it (`cutscene-keep-model`;
+the cast runs the models' own hooks, Daniella's parts, as the original).
+
+Not yet: the Hewie-controlled clock rooms.
 
 Next, by how much the scripts use them:
 

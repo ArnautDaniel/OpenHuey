@@ -2,22 +2,53 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-6
-USING: room-names story.words story.shared flag-names ;
+USING: engine actors messages room-names story.words story.shared flag-names ;
 
 \ Room66_Cmd00
-: old-mansion-b1-6.cmd00 ( b0 -- )  drop s" old-mansion-b1-6.cmd00" stub-step ;
+: old-mansion-b1-6.cmd00 ( b0 -- )   \ (character 8 wading, moved by its animation - the cast does that; as a
+    \ foot comes down, a step: 4 wading on (event bit 1), else 3; event bits 5 / 6 keep which
+    \ feet are down. b0 0 its move stopped: the cast's own. The mud's puffs: not drawn yet)
+    0= if  exit  then
+    8 char-model dup 0< if  drop exit  then
+    dup 1 foot-down?  swap 0 foot-down?  {: l r :}
+    l 5 ebit? 0= and  r 6 ebit? 0= and  or if  8  1 ebit? if  4  else  3  then  6 char-sound  then
+    l if  5 ebit-set  else  5 ebit-clear  then
+    r if  6 ebit-set  else  6 ebit-clear  then ;
 \ Room66_Cmd01
-: old-mansion-b1-6.cmd01 ( b0 b1 -- )  drop drop s" old-mansion-b1-6.cmd01" stub-step ;
+: old-mansion-b1-6.cmd01 ( b0 b1 -- )   \ (puffs and a glow at spot b0: b1 0 started - kept in variable b0 + 3 - else
+    \ dying down)
+    swap {: k :}  0= if  k 3 +  k effects:steam  var-set  else  k 3 + effect-out  then ;
 \ Room66_Cmd02
-: old-mansion-b1-6.cmd02 ( b0 -- )  drop s" old-mansion-b1-6.cmd02" stub-step ;
+fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame behind)
+: old-mansion-b1-6.cmd02 ( b0 -- )   \ (character 8 sinks 0.1 a frame till below -25: a small fire at
+    \ spot b0 as it starts - kept in variable 7 - put out below -24)
+    {: spot | cs :}  8 who>cs to cs  cs 0< if  exit  then  cs char-here 0= if  exit  then
+    cs char-at 4 + sf@ sink-y f!
+    begin
+        cs char-here 0= if  exit  then
+        8 0e -0.1e 0e char-shift
+        sink-y f@ 0.1e f-  fdup sink-y f!
+        fdup -0.2e f> if  7  spot 0 effects:fire  var-set  then
+        fdup -24e f< if  7 effect-out  then
+        -25e f< 0= while  yield
+    repeat ;
 \ Room66_Cmd03
-: old-mansion-b1-6.cmd03 ( b0 b1 -- )  drop drop s" old-mansion-b1-6.cmd03" stub-step ;
+: old-mansion-b1-6.cmd03 ( b0 b1 -- )   \ (a big fire at spot b0: b1 0 lit - kept in variable 8 - else put out)
+    0= if  8 swap 1 effects:fire  var-set  else  drop  8 effect-out  then ;
 \ Room66_Cmd04
-: old-mansion-b1-6.cmd04 ( -- )  s" old-mansion-b1-6.cmd04" stub-step ;
+: old-mansion-b1-6.cmd04 ( -- )  9 $5A $44 $46 $52 $4B colour-pulse ;
+\ the letters of script variables 0 and 1, eight in a row (byte i, as the original reads them)
+: letter-at ( i -- c )  dup 4 < if  0 var @  else  4 -  1 var @  then  swap 8 * rshift $FF and ;
 \ Room66_Cond00
-: old-mansion-b1-6.cond00? ( b0 -- flag )  drop s" old-mansion-b1-6.cond00?" stub-flag ;
+: old-mansion-b1-6.cond00? ( b0 -- flag )   \ (Room66_Letters: in the eight letters of vars 0 and 1 from the place in var 2, the next L / R)
+    {: lr | at hit :}  2 var @ to at  0 to hit
+    begin  at 8 <  if  at letter-at dup [char] L <> swap [char] R <> and  else  false  then  while  at 1+ to at  repeat
+    at 8 < if  at letter-at  lr if  [char] R  else  [char] L  then  = if  at 1+ to at  -1 to hit  then  then
+    2 at var-set  hit ;
 \ Room66_Cond01
-: old-mansion-b1-6.cond01? ( b0 b1 b2 b3 b4 -- flag )  drop drop drop drop drop s" old-mansion-b1-6.cond01?" stub-flag ;
+: old-mansion-b1-6.cond01? ( b0 b1 b2 b3 b4 -- flag )   \ (Room66_CharPast: its x (byte 3 0) or z at least be32 bytes 4..7 / 1000)
+    >r >r >r >r  r> 24 lshift r> 16 lshift or r> 8 lshift or r> or  l>s s>f 1000e f/
+    self-char char-at  swap if  8 +  then  sf@ f<= ;
 
 : old-mansion-b1-6.enter ( -- )   \ 0041E110
     room-sounds

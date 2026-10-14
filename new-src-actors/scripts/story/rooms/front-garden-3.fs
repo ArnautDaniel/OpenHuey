@@ -6,13 +6,25 @@ USING: room-names story.words story.shared flag-names ;
 
 \ the box and the grate, by byte 3: 0 the box's +0x28 on by 0.4; the grate's +0x14 (an angle) 1
 \ back 1.5 degrees, 2 on 0.5, 3 back 0.5
-: front-garden-3.cmd00 ( b0 -- )  drop s" front-garden-3.cmd00" stub-step ;
+: front-garden-3.cmd00 ( b0 -- )
+    case
+        0 of  0.4e s" kibako" place-z object+!  endof
+        1 of  1.5e deg>rad fnegate s" a_koushi" turn-y object+!  endof
+        2 of  0.5e deg>rad s" a_koushi" turn-y object+!  endof
+        3 of  0.5e deg>rad fnegate s" a_koushi" turn-y object+!  endof
+    endcase ;
 \ Room2A_Cmd01
-: front-garden-3.cmd01 ( b0 -- )  drop s" front-garden-3.cmd01" stub-step ;
+variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
+: front-garden-3.cmd01 ( b0 -- )   \ (Room2A_HandlerStep: 0 set going, 90 frames; else each frame the
+    \ event character $F up 0.5 and on 2 along z till they are up)
+    0= if  90 hs-left !  exit  then
+    begin  -1 hs-left +!  hs-left @ 0> while
+        $F 0e 0.5e 2e char-shift  yield
+    repeat ;
 \ room 0x2A: its effect (Room2AWisps_vtable) started at (220, 0, -100)
-: front-garden-3.cmd02 ( -- )  s" front-garden-3.cmd02" stub-step ;
+: front-garden-3.cmd02 ( -- )  effects:leaves ;   \ (leaves blowing across)
 \ the 0x14-byte effect (Effect78BC0_vtable) started with the command's parameters (from byte 3)
-: front-garden-3.cmd03 ( b0 -- )  drop s" front-garden-3.cmd03" stub-step ;
+: front-garden-3.cmd03 ( b0 -- )  drop  $F $80808080  65.6387e 6.1e 70.9417e  39.8e 0.5e 0.1e  effects:caustic drop ;   \ (light rippling: Effect78BC0 - b0 its glow's threshold, not drawn)
 
 : front-garden-3.enter ( -- )   \ 00404740
     room-sounds
@@ -99,8 +111,8 @@ USING: room-names story.words story.shared flag-names ;
     $33 story-flag? not if
         1 2 $20000 nav-group
     else
-        2 1 object-show
-        3 1 object-show
+        2 1 object-hidden
+        3 1 object-hidden
         2 1 $14 door-bits
     then
     0 $A 0.812 0.687 0.187 0.312 zone-rect

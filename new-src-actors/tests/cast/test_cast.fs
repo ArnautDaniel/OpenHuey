@@ -42,10 +42,22 @@ T{ 3 char-actor  3 $1C char-loaded? -> -1 -1 }T
 testing 0xB9 / 0xBA: the crow ($F) into slot 4, then it wears slot 3's figure
 $F 4 char-load-2  2 frames
 T{ 4 $F char-loaded?  [: cast.private:model @ model-file s" O_CRW/CRW_000" compare ;] c4 -> -1 0 }T
+testing the crow's own: its motion table (its fades); in $9000 / $9001 part 5 shown, 3 and 4 hidden
+: model4 ( -- m )  [: cast.private:model @ ;] c4 ;
+: part? ( n -- flag )  1+ 1 swap lshift  model4 actor act.parts-shown l@ and 0<> ;
+T{ model4 $9000 motion-entry -> 10 0 1 }T   \ (a 10-frame fade; the plain model has none: 0 0 0)
+T{ [: $9000 cast.private:play-now ;] c4  2 frames  5 part?  3 part?  4 part? -> -1 0 0 }T
+T{ [: $9002 cast.private:play-now ;] c4  2 frames  5 part?  3 part?  4 part? -> 0 -1 -1 }T
 4 3 char-hand-over  2 frames
 T{ [: cast.private:model @ model-file s" O_HMA/HMA_000" compare  cast.private:who @ ;] c4 -> 0 $F }T
 
 testing the scripts' 0x40: removed - its slot empty, its figure let go
 3 0 char-remove  4 0 char-remove  2 frames
 T{ 3 $1C char-loaded?  $1C char-slot  $1C cast-model  model3 -> 0 -1 -1 -1 }T
+
+testing Lorenzo's hanging figure (kind 9) on the hard setting: its own textures (LRM_000H), its motion table
+$AF story-flag-set   \ (a hard game)
+9 5 char-load-2  2 frames
+T{ 5 9 char-loaded?  9 cast-model 0< 0=  9 cast-model 0 motion-entry 2drop 0<> -> -1 -1 -1 }T
+5 0 char-remove  $AF story-flag-clear  2 frames
 test-summary

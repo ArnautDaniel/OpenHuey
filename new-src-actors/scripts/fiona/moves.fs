@@ -6,6 +6,7 @@ IN: fiona.moves
 USING: engine common paths fiona.state fiona.model fiona.moving fiona.spots ;
 
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
+defer door-use ( exit opens? -- )   ' 2drop is door-use   \ (fiona/doors.fs scripted-door)
 : done ( -- )  -1 her-move-done ! ;
 create there 12 allot
 
@@ -21,7 +22,8 @@ create there 12 allot
 \ motion - the less the sharper the turn (Fiona_StateCmdPath / CmdPathTurn) ----
 : spot-tri ( -- tri )   \ (the spot's triangle: the one given, else under the point)
     her-move @ 17 = her-move-a @ 0< or if  her-move-at blocked-floor v-tri-in  else  her-move-a @  then ;
-: plan ( -- ok? )  her-path her-tri @ her-at spot-tri her-move-at blocked-floor path-plan 0> ;
+: plan ( -- ok? )   \ (curved, as the original's: Character_WaypointsCurve)
+    her-path her-tri @ her-at spot-tri her-move-at blocked-floor path-plan-curved 0> ;
 fvariable turn-left  fvariable stepping
 : path-step ( -- arrived? )
     root@
@@ -103,5 +105,7 @@ fvariable turn-left  fvariable stepping
                    her-move-yaw f@ her-yaw f@ f- angle-wrap fabs fswap f/ 0.1e deg>rad f+ her-move-turn f!
                    $18 her-doing !  ['] walk-anim her-act !
                else  done  then  endof
-        >r done r>   \ (3 / 4 a door's use from the scripts: with the doors' story)
+        3 of  her-move-a @ true door-use  endof    \ (through the door at exit a, opening it: Fiona_StateDoorStart, sub $14;
+        4 of  her-move-a @ false door-use  endof   \ shutting it, $15 - done as the door's use ends)
+        >r done r>
     endcase ;

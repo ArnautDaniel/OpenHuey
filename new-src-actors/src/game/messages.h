@@ -1,6 +1,7 @@
 /* The game's messages (include/text.h in the decomp has the byte code). Three tables of u16
  * offsets then text: the system messages (SUBSCR/MSG_BASE.BIN; ids with bit 15), the second
- * table (SUBSCR/MSG_SUB.BIN; bit 14) and the room's own (PAC section 10). A message is ASCII
+ * table (SUBSCR/MSG_SUB.BIN; bit 14), a scene's own (message_file; bit 13) and the room's own
+ * (PAC section 10). A message is ASCII
  * with control codes: 0x01 new line, 0x02 page, 0x0E a choice whose options (0x0F hi lo) each
  * lead to another message, 0x11 hi lo go on with another, 0x15 hi lo a system message inserted,
  * 0x08 n a parameter, colours, speeds, waits.
@@ -40,7 +41,11 @@ typedef struct MessageLayout {
 const uint8_t *message_text(int id);
 /* laid out (the one layout: valid until the next call) */
 const MessageLayout *message_layout(int id);
+/* a table of a scene's own from a file (ids with bit 13; NULL: none): 1 loaded */
+int message_file(const char *path);
 /* parameter `slot` shows system message `id` (Msg_SetParamSystem) */
 void message_set_param(int slot, int id);
+/* parameter `slot` shows this text (Msg_PrintfParam) */
+void message_set_param_text(int slot, const char *text, int len);
 
 #endif

@@ -10,6 +10,8 @@
 /* open the audio device; 0 if there is none (the game goes on silent) */
 int sound_open(void);
 void sound_close(void);
+/* everything heard turned down (0..1: the options' volume) */
+void sound_gain(float g);
 /* a stream mixed in as well (a movie's sound): it adds `frames` stereo frames into `out`;
  * NULL none */
 void sound_stream(void (*mix)(int16_t *out, int frames));

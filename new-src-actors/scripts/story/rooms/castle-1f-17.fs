@@ -6,7 +6,17 @@ USING: room-names story.words story.shared ;
 
 \ five pendulums (Room1B_ObjectNames[byte 3]) of their own periods and swings: byte 4 0 still at
 \ a phase offset (+0x34) 60 x the index, 1 swinging on (+0x30, +0x14)
-: castle-1f-17.cmd00 ( b0 b1 -- )  drop drop s" castle-1f-17.cmd00" stub-step ;
+: castle-1f-17.cmd00 ( b0 b1 -- )   \ (pendulum b0 - the room's string b0 - by b1: 0 still at its phase offset (+$34: 60 x b0);
+    \ 1 a frame on: its period (frames) and swing (degrees) its own)
+    {: k op | a n :}  k room-object to n to a  a n object-here? 0= if  exit  then
+    k case  0 of  180e 5e  endof  1 of  210e 5e  endof  3 of  180e 10e  endof
+            4 of  240e 15e  endof  >r 360e 15e r>  endcase                ( F: period swing )
+    op 0= if  fdrop fdrop  0e a n $30 object!  60e k s>f f* a n $34 object!  exit  then
+    op 1 <> if  fdrop fdrop exit  then
+    fswap 360e fswap f/ a n $30 object+!                               ( F: swing )
+    a n $30 object@ a n $34 object@ f+ 360e f< 0= if  -360e a n $30 object+!  then
+    a n $30 object@ a n $34 object@ f+ deg>rad fsin f* deg>rad
+    fdup pi f> if  2e pi f* f-  then  a n turn-y object! ;
 
 : castle-1f-17.enter ( -- )   \ 003FC6A0
     $14 1.0 0 bgm

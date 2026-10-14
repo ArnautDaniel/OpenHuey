@@ -98,6 +98,8 @@ behaviour hearing
               listeners @ i 1+ swap nth  listeners @ i 2 + swap nth  tell
           else  drop  then
       3 +loop
+      \ (each source's noise this frame, for the rooms' scripts: the original's +0x10D4, kept a frame)
+      #noise-sources 0 do  i noise-louds nth-of @ ?dup if  i noise-rooms nth-of @  broadcast noise-was  then  loop
       forget-noises ;
 end-behaviour
 

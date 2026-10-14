@@ -96,8 +96,9 @@ on his side (plus the one he came in by - the original's own measure, Npc_NodeDi
 counted down at his pace: after her 1.6..1.8 a frame, searching or waiting 0.6, heading for her
 room or held off 1, while she hides 2. A door as he finds it (Npc_ExitKind): held shut - he
 waits; locked against him, locked or stuck - not that way again (a fresh route avoiding it);
-a doorway or open - through; shut - through, but into her room he first knocks (his sound
-$28 or $23, bank 7, at the door on her side) and waits 60..120 frames. Into her room he comes
+a doorway or open - through; shut - through, but into her room he first knocks (a sound by
+his kit's knocks, +0x16B0: Debilitas $28 or $23, Daniella $21 / $19 / $1A, ...; none of his
+own the Pursuer's $21; bank 7, at the door on her side) and waits 60..120 frames. Into her room he comes
 just inside the exit, facing in; a shut door he came by is taken (`hold-door`) and swung open.
 His modes out there: after her he heads for her room (a new route as she moves on), his
 clock out - heading for it (1); come to the room he heads for he searches it (its stops x 150
@@ -142,7 +143,7 @@ and adds it to the damage he's had (to 999); a killing one (3) all of it. Its si
 or behind him, +2 a kick or hard one - picks his flinch ($1001 / $1000 / $1004 / $1003; in a
 doorway $1002 / $1005); in a move that leaves him unshaken (his move table's byte $1D) a shove
 only gets a grunt ($1C). Out of health he falls (forward $1804 with floor ahead, else back
-$1800), lies there 1800 frames (hard 1350) - a blow then a twitch - and gets up ($1807 /
+$1800), lies there 1800 frames (hard 1350; "hard" throughout is the hard mode, `hard-mode?`: story flag $AF) - a blow then a twitch - and gets up ($1807 /
 $1803) with his health back; in a doorway he's left at 1. A stumble ($8000, or her kick's
 roll by how worn he is: his health over its most above 0.8 none, 0.6 2 in 100, 0.4 5, else 10)
 hurts him 900 frames: he stands 2, walks $202 / $203, turns $405.., and growls ($1F) after
@@ -176,6 +177,19 @@ seized outright). His grab ($E06): at its key, Hewie by his hand (bone $1E, with
 
 ## Status
 
+Also (2026-10-13): the doll draws him (`drawn-to`: searching the room being played, seeing it and
+with a way there - his search's one stop, `go-for-doll`); the story's 0x20 through blocked floor
+at doors (`noclip`: his floor mask, `my-floor`, to 0 and back); his blow under way told
+(`stalker-blow`, after `stalker-doing`); a door that won't open for him shakes the pad ($80, 15).
+Leads (`stalker/leads.fs`; the original's +0x16C9..+0x16CC): a noise heard in the room being
+played pulls him to it when it pulls at least as hard as the lead he follows (`pull-fiona` 5,
+`pull-noise` 4, `pull-hewie` 1); a noise already in view is ignored; his alarm is kept at its
+highest (`saw-her` 7 .. `heard-hewie` 1). A new lead starts him: a jolt and his start animation
+played out (or 90 frames standing, crying $21), then on to it; seeing her, the $1601 gesture
+before the chase. Forgotten as he comes in, goes out or is set going. Beaten (+0xC4 2: knocked
+out of health) is told to the summoner in `stalker-status`; away from her 5 s, it takes him as
+beaten (kind 2).
+
 P1 done: P1a (in/out, shown, growl, `stalker-here`), P1b (senses), P1c (modes, search route,
 walking), P1d (out of sight from room to room, knocking, coming in). P2a done: the chase and his
 attacks, with Fiona's F4a reactions. P2b done: taking her (by the hand, walking), his lunge
@@ -189,9 +203,9 @@ title. P3a done: struck by her
 the doors in her room, round to her across his own room, slammed doors; also the coming-in
 spot fixed (below). P3c done (`stalker/bitten.fs`, with Hewie's H3): Hewie's attacks taken or
 refused, bitten, throwing him off, his temper and going for Hewie; his blows reach Hewie too.
-`tests/stalker/test_stalker.fs` (58), `tests/hewie/test_fight.fs` (19). P4a done (below;
+`tests/stalker/test_stalker.fs` (64), `tests/hewie/test_fight.fs` (22), `tests/stalker/test_leads.fs` (7), `tests/stalker/test_tackles.fs` (9). P4a done (below;
 `tests/story/test_stalker_words.fs`, 13). P4b begun: Daniella (below;
-`tests/stalker/test_daniella.fs`, 7), his footsteps through the walls and his lair (below; 3
+`tests/stalker/test_daniella.fs`, 15), his footsteps through the walls and his lair (below; 3
 more in `tests/stalker/test_stalker.fs`, 61). Next: P4c.
 
 **His footsteps through the walls** (Pursuer_FootstepsThroughWalls, Character_RouteExitPoint):
@@ -223,9 +237,43 @@ its frames; walking, her time out or Fiona past 100 - stalking; stalking, her ti
 100 - her table 10; touching - a step back facing her ($404), and the row again once 5 further
 off; standing - turned to her, the row again out of the ground she gains or out of 20 degrees; a
 combo, a taunt or her way round over - the row again; within reach in front on her floor - her
-attack by Fiona's plight. Not yet: her model's own parts (hair, the hanging parts: DaniellaModel),
-her door behaviour (Daniella_DoorBreak), her later kinds (34..36) and their files, her own
-search spots and own rooms.
+attack by Fiona's plight. *The door she comes into Fiona's room by* (Daniella_DoorBreak /
+ExitArg; Riccardo's and the TintStalker's alike): pulled shut behind her once she is clear of
+its area and it stands open (`shut-behind`, the doors' `pull-shut`); in her rage left open
+(`door-manner`: Riccardo, the TintStalker `shuts-doors`; Daniella `shuts-doors-calm`; the rest
+`leaves-doors`). Her look: the model O_DNL/DNL_000, its textures DNL_000 (hard: DNL_000H -
+`daniella-model`). *Her later kinds* (Kind34_* / Kind35_* / Kind36_*; actors `kind34`..`kind36`,
+the story's slot 2 mapping each to its own): her chase and look (34 and 36 the model DNL_001,
+its sounds too), each its own tables (`kind34-kit`..: tools/stalkertables.py reads their attack
+tables from daniella.c's arrays) and numbers - health 120 / 65 / 65 (hard 200 / 80 / 80), what
+she stands of Hewie 200 / 120 / 120 (hard 65 / 75 / 65), her time after him 6000 / 3000 / 3000
+(hard 6000 / 600 / 600), her time away and cooldown. 34 has her rage and pulls the doors she
+comes in by shut while calm (open on the hard setting); 35 and 36 have no rage (their tables by
+the hard setting only) and leave doors be. Held off she has no rooms of her own (nor Riccardo and the rest: NPC_PickDestination's
+Npc_HeadRandomRoom): out of sight she goes on by a way out at random, not into Fiona's room
+(`wander-off`; the original picks a room at random among those near). Her search spots are the
+rooms' own, as everyone's. *Her hanging parts* (DaniellaModel_Springs; `src/game/cloth.c`, her
+model and her later kinds' - O_DNL/ - alike): her hair, two strands of five side by side
+(HairPoint: each follows its root's moves by its stiffness, 0.8 at the root to 0, kept about
+0.44 from the one beside it, off her back's five capsules); what hangs from her waist, two
+strands of three drawn along bone $1F (HangingPart, off two capsules and two spheres); a part
+sprung to bone $17; two bones hanging ($2F, $30); 50 steps to settle afresh. Down on her back
+($1800..$1803) her back's capsules bend and her hair falls forward (`cloth-crawl!`;
+DaniellaModel_Vt3C). The others' hanging parts likewise (by their model files): Debilitas
+(O_DB0: four from bone 10, the last three from the first's end, off two spheres on bone 2);
+Riccardo (O_RCG: four in pairs off four spheres; his coat, twelve in pairs following their
+anchors and tied about 1.9 to the first pair of their six, off five capsules down his back -
+Part60; four more drawn along their bones - Part50); his look (O_RCT: kind 37, the TintStalker)
+the same without those last four; Lorenzo (O_LRO: six in threes off eight spheres); his other
+class (O_LRY: 24 swaying points, six groups of four, each pair swinging from bone 2 / 3 - $12 /
+$13 the odd groups - out to its group's side, 5 .. 20 degrees freer down it: SwayPointB).
+
+**Her on a ladder** (`stalker/ladder.fs`; Npc_OpenDoorFionaHides - for all its name, the
+ladder she is on -, Pursuer_DoorApproach, Npc_PlanBesideDoor): while he is after her and free
+in her room, she on one of its ladders (`fiona-plight` tells which), he makes for beside its foot,
+else its top - out from that end by his family's offsets (vtable +0x9C: the Pursuer's -6 / 10.4,
+Debilitas's, Daniella's, Riccardo's) - and there stands facing her; she off it, after her again.
+`tests/fiona/test_ladder.fs` (19).
 
 **P4a - the story's words about him** (`scripts/story/words.fs`, src/game/event.c). He tells
 each frame (`stalker-doing`) his room, move mode and part, condition, health and its most, kind, his alert (his mode: Progress_StalkerAlert) and the exit he
@@ -242,9 +290,11 @@ waiting about away (StartSearch) - up from down; while struck, bitten or leading
 only; 0x2A his mode's clock; 0x30 knocked down out of health (Pursuer_KnockedDown: in her room);
 0x31 rage (stance 3, walk $204); 0x15 started again (Pursuer_Activate: waiting about, 900, no
 rage, health back if none); 0x47 his condition (Hewie too); 0x48 / 0xB8 health; 0x3D silent (his
-own sounds). The stalkers' kinds map to their actors: Debilitas 2 6 7 27, Daniella 3 34 35 36.
+own sounds). The stalkers' kinds map to their actors: Debilitas 2 6 7 27, Daniella 3, her later kinds 34 35 36 their own (`kind34`..`kind36`).
 He broadcasts `moving` at each frame's end (0x7B `char-wait-motion` waits on its event keys).
-Not yet: `char-activate` for Hewie and the cast, `char-in`, the cast's words.
+`char-activate` (0x15) starts Fiona, Hewie or the stalker afresh (a figure of the cast is in once
+the story places it); `char-in` (0x98) - hga loads characters at once - only waits a frame. The
+cast's own words are the event characters' (`docs/subsystems/cast.md`).
 
 **P3b - the doors in her room** (`stalker/doorway.fs`; Pursuer_BehaviourDoors' steps:
 Pursuer_NextPathExit, Door1C8, DoorLineUp, DoorGoThrough, DoorFace, DoorOpen, DoorThrough,
@@ -273,7 +323,7 @@ passage) and it not locked against him: knocked on through it ($1004), pushed 3 
 from her side until clear of it; where it leads out of the room, out (Pursuer_ThroughDoor),
 stunned there 150 frames (+0x1664); between his room's halves, on. Else staggered back from it
 ($1005) and on. Out of health: not below 1 (knocked out of the room: as he gives up, health
-back, held off - his beaten state not modelled). Off screen, the door he makes for slammed
+back, `beaten` set: the summoner takes him as beaten). Off screen, the door he makes for slammed
 with him within 15 of it: its damage (not below 1), after her.
 
 **P3c - Hewie** (`stalker/bitten.fs`; Pursuer_EventConcerns kind 9, Pursuer_GrabOrder /
@@ -292,12 +342,21 @@ move's damage 15). Hewie letting go (`shaken-off`): back on his feet (+1), down 
 (the leg: down at once), then on as after a blow. Hewie's bites (`bite`): their damage, a hard
 one a stumble (hurt 900), his cry $1D. Growled or barked at (`snap`; within 100 of Hewie, not
 struck, searching or waiting about): temper +1 (+3 while she hides). His temper past what he
-stands (Debilitas 20; Daniella 200, hard 80) and free: after Hewie - toward him, a blow ($E00 or
-$E01, his combo at Hewie: `at-dog`) within reach facing him; the blow over, Hewie gone, or 300
-frames - his temper back to 0, on. His blows reach Hewie as they reach her (a `blow` with the
-move's kind, damage and stumble). *Not yet*: his attack tables at Hewie (his `$1602` taunt, the
-holds), Daniella's own temper table (Debilitas's for now), Hewie's tackles adding to his temper
-(Pursuer_AddBiteDamage), the leg's down animation ($1709: his fall instead).
+stands (Debilitas 20; Daniella 200, hard 80) and free: after Hewie (Pursuer_GoForHewie,
+BehaviourHewie) - toward him, and within reach facing him an attack from his table for Hewie
+(situation $B: a blow at him, or his grab, a hold of him; his combo at Hewie: `at-dog`); that
+over, or his time for it up (`dog-limit`, +0x16D8: Debilitas and Riccardo 1800, Daniella 6000,
+Lorenzo2 600, kind 39 300 - hard 360 -, kind 37 900, else none), his taunt ($1602) and his
+temper back to 0, on as before. Hewie gone from the room: out after him by the exit to his
+(`follow-dog`; his temper back to 0, heading for her room after it); none, on as before. His blows reach Hewie
+as they reach her (a `blow` with the move's kind, damage and stumble). Hewie's tackles (a `blow`
+from him, not a bite or a hold: Pursuer_AddBiteDamage) put his temper up by where they caught
+him (`tackled`: his temper table's in front, in front low, behind, behind low). Each stalker's
+temper table is his own (`temper-table`: his kit's, hard its second). His animations' sounds
+(Pursuer_AnimSounds; his kit's, +0x16AC, by motion): at a sound key ($1 the first, $10 the
+second) in the room being played - a blow's swish, a fall's thud; a fall onto water a splash
+($1D, bank 6). Hewie letting go of his
+leg drops him on his front (`leg-down`: $1709, lying as $1806, up by $1807).
 
 ## P4c: Riccardo and Lorenzo (`scripts/stalker/riccardo.fs`, `scripts/stalker.fs`)
 
@@ -325,7 +384,12 @@ table of xts - 0 Debilitas's), `attack-range` (vtable +0x2F4; 0 the family's 24)
   6 the heavy move with its stun); crouched under it, it passes over; after it another while
   she's in front. `$1001` his lunge ($1300; at stage 5 into his move 5).
 - His frame (Riccardo_Update): his rage at the panic's stage 5 (his roar $26), out of it below;
-  his snort ($24) at $600's key; his hammer's impact (key $20): a noise ($40) where he stands.
+  his snort ($24) at $600's key; his gun's shot (key $20): smoke off his gun (BoneSmoke, `gun-smoke`), a
+  noise ($40) where he stands, and where a shot aimed down strikes - 10 out along his gun (bone $31),
+  on the floor - its debris, a brown cloud (DropletFlash, `debris-cloud`); aimed level, where the floor
+  ahead gives out. The one his blow strikes, crying out, gets its mark (Riccardo_CryHit: `spray` at a
+  height on them, big for $E05 / $1A01); Daniella's at her hand (Daniella_BlowEffect: bone $2D, 1.5
+  or 3.5 out) as they cry or at her blow's key, on Fiona for her grabs.
 
 **Lorenzo** (kind 11; lorenzo.c): the Pursuer's chase with his tables; 50 health (hard 75), 5
 across, 20 tall, his model O_LRO/LRO_000 (motion table $4246C0), turning 2 degrees a frame,
@@ -350,16 +414,27 @@ him at 30 (Riccardo 60), its model O_RCT/RCT_000 (motion table $42AED0), 100 hea
 struck to 100 damage it is alerted - hurt, its alert tables and waits (the kit's waits by the hard
 setting and alerted) - and calms below. **The TintStalker** (kind 23; tintstalker.c): the
 Pursuer's chase with its tables, the same look, seen only a while (150 frames) after each turn of
-what it does, then gone (`unseen`). **Kind 12** (lorenzo.c Kind12_*): the Pursuer's chase with
+what it does (`unseen`), drawn by its tint (TintStalker_Tint / Fade: the renderer's layer $11 over
+the room by its alpha out of 128 - `act.alpha`): shown, fading in to 112 (held whole, 130, while
+beaten); its while over, fading out by 4 a frame, then gone. Kind 37's tint (Kind37_Update) pulses:
+80 + 80 sin of its phase - whole for 150 frames after each turn of what it does, then its phase on
+by 4 cos of it and up to 10 more degrees a frame. **Kind 12** (lorenzo.c Kind12_*): the Pursuer's chase with
 its tables, its model O_LRF/LRF_000 (motion table $443FB0), 9999 health and never hurt; in her
-room, free to go for her (not in costumes 6 / 7), it seizes her (her fright 100).
+room, free to go for her (not in costumes 6 / 7), it seizes her (her fright 100). While it is in
+her room the Marker glows on it (Kind12_ShowUp / EnterRoom: the first kind, size 1; `mark-id`),
+done once it has gone.
 
-The story's kinds: 4 Riccardo, 37, 23, 11 Lorenzo, 10 Lorenzo's other class, 39, 12. Checked by `tests/stalker/test_riccardo.fs` (21 with kinds 37 and 23), `tests/stalker/test_lorenzo.fs` (10 with
-kind 12), `tests/stalker/test_lorenzo2.fs` (12 with kind 39). *Not yet*: Riccardo's cry hits and his hammer's debris and
-jolt (effects), his blow at a room object (gEvents +0x68), going to the door she hides behind;
-Lorenzo's footsteps only in his walks (the stalkers' steps on screen aren't written yet); the sparks, dust,
-the sink's rings and the burst of Lorenzo's other class (effects), his travel under the floor
-(he comes up at once after 15 frames); the screen tints of kinds 37 and 23 (the TintStalker's
-fade in and out: shown or not), kind 12's marker; the situations of the ending (the TintStalker's
-table 15, its doors). The cutscenes' cast beyond slot 2 (`char-load-2`, `char-hand-over`,
+The story's kinds: 4 Riccardo, 37, 23, 11 Lorenzo, 10 Lorenzo's other class, 39, 12. Checked by `tests/stalker/test_riccardo.fs` (27 with kinds 37 and 23), `tests/stalker/test_lorenzo.fs` (12 with
+kind 12), `tests/stalker/test_lorenzo2.fs` (13 with kind 39). Lorenzo's other class's effects (Lorenzo2_SlamDust / BlowSparks, LightRing, BurstA): his slam
+($2301) eight grey dust clouds at his hand; his blows seven sparks about it (`spark`); where he
+sinks away and comes up a ring of light (`sink-ring`); his reach from afar a burst where it lands.
+Under the floor he is 15 frames, then up at his goal - as the original (no travel there).
+Riccardo's shot at a target (Riccardo_StateBlowFiona with Events_NearestPoint): the story tells
+its zones of a kind with bit 1 (`zone-target`: the barriers in the front garden, ...); the one
+nearest her - within 50 of her, further than 20 from him, about his height, a straight way to it,
+she and Hewie off the line to it - takes his shot instead of her: his point (Pursuer_AttackPoint,
+`body-point!`) there 3 frames, where the story's zones see it (it breaks).
+*Not yet*: the tints' flares (the renderer's layer
+$11 sprites drifting about them: the PC port of the original draws none either); the Hewie-controlled mode's ways (+0x1FBEC1: kind 34's tables 14 / 15 and its tolerance 80,
+the TintStalker's table 15 and doors, the summoner's) - left with that mode. The cutscenes' cast beyond slot 2 (`char-load-2`, `char-hand-over`,
 `char-loaded?`) is the event characters' (`docs/subsystems/cast.md`).

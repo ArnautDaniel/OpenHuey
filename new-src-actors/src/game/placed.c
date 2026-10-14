@@ -48,6 +48,70 @@ static void strip_to_mesh(RoomMesh *m, const MeshVertex *v, const uint8_t *no_tr
     m->nd = m->nv > 0;
 }
 
+/* a morph's n vertices, frames a and b blended by t (gl_morph: the frame table at the model's
+ * +0x70, 8 bytes a frame - +0x4 its s16 positions / 4096, +0x0 its RGBA colours; the lit kind
+ * (1) always 0x80); 0 if they fall outside the section */
+static int morph_fill(Placed *p, const uint8_t *def, const uint8_t *end, MeshVertex *v, int n, int a, int b, float t) {
+    const uint8_t *pa = def + rd32(def + 0x74 + a * 8), *pb = def + rd32(def + 0x74 + b * 8);
+    const uint8_t *ca = def + rd32(def + 0x70 + a * 8), *cb = def + rd32(def + 0x70 + b * 8);
+    const uint8_t *uv = def + rd32(def + 0x4C);
+    float w = 1.0f - t;
+    int i, c;
+
+    if (a < 0 || b < 0 || a > 255 || b > 255 || def + 0x78 + (a > b ? a : b) * 8 > end) {
+        return 0;
+    }
+    if (pa + n * 6 > end || pb + n * 6 > end || uv + n * 4 > end ||
+        (p->kind == 3 && (ca + n * 4 > end || cb + n * 4 > end))) {
+        return 0;
+    }
+    for (i = 0; i < n; i++) {
+        v[i].x = rd16(pa + i * 6) / 4096.0f * w + rd16(pb + i * 6) / 4096.0f * t;
+        v[i].y = rd16(pa + i * 6 + 2) / 4096.0f * w + rd16(pb + i * 6 + 2) / 4096.0f * t;
+        v[i].z = rd16(pa + i * 6 + 4) / 4096.0f * w + rd16(pb + i * 6 + 4) / 4096.0f * t;
+        v[i].s = (uint16_t)rd16(uv + i * 4) / 32768.0f;
+        v[i].t = (uint16_t)rd16(uv + i * 4 + 2) / 32768.0f;
+        for (c = 0; c < 4; c++) {
+            v[i].rgba[c] = p->kind == 3 ? (uint8_t)(int)((float)ca[i * 4 + c] * w + (float)cb[i * 4 + c] * t)
+                                        : (uint8_t)(c < 3 ? 0x80 : 0x7F);
+        }
+    }
+    return 1;
+}
+
+/* a morph shown again by its frames and blend: the strip's vertices refilled, the triangles redone */
+static void morph_update(Placed *p, int a, int b, float t) {
+    int n = rd32(p->def + 0x40), i, k, j = 0;
+    const uint8_t *strip = p->def + rd32(p->def + 0x50);
+    MeshVertex *v;
+
+    p->morph_a = a;
+    p->morph_b = b;
+    p->morph_t = t;
+    if (n <= 0 || n > 0x10000 || p->mesh.v == NULL || strip + n > p->def_end) {
+        return;
+    }
+    v = malloc((size_t)n * sizeof(MeshVertex));
+    if (v == NULL) {
+        return;
+    }
+    if (morph_fill(p, p->def, p->def_end, v, n, a, b, t)) {
+        for (i = 2; i < n; i++) {   /* (as strip_to_mesh) */
+            if (strip[i] & 1) {
+                continue;
+            }
+            for (k = i - 2; k <= i && j < p->mesh.nv; k++) {
+                p->mesh.v[j++] = v[k];
+            }
+        }
+        render_mesh_update(&p->gpu, p->mesh.v, p->mesh.nv);
+    }
+    p->morph_a = a;   /* (tried: not again till they change) */
+    p->morph_b = b;
+    p->morph_t = t;
+    free(v);
+}
+
 /* the model of definition `def` (end: the section's end) as triangles in model space */
 static void build_model(Placed *p, const uint8_t *def, const uint8_t *end) {
     int n = rd32(def + 0x40), tex = rd32(def + 0x44), i;
@@ -107,33 +171,23 @@ static void build_model(Placed *p, const uint8_t *def, const uint8_t *end) {
         p->scale = 32.0f;
         break;
     }
-    default: {   /* 1 / 3: a morph, its first frame */
-        const uint8_t *pos = def + rd32(def + 0x74), *col = def + rd32(def + 0x70);
-        const uint8_t *uv = def + rd32(def + 0x4C), *strip = def + rd32(def + 0x50);
+    default: {   /* 1 / 3: a morph, its first frame (others: placed_tick, by its frames and blend) */
+        const uint8_t *strip = def + rd32(def + 0x50);
 
-        if (pos + n * 6 > end || uv + n * 4 > end || strip + n > end || (p->kind == 3 && col + n * 4 > end)) {
+        if (strip + n > end || !morph_fill(p, def, end, v, n, 0, 0, 0.0f)) {
             break;
         }
         for (i = 0; i < n; i++) {
-            v[i].x = rd16(pos + i * 6) / 4096.0f;
-            v[i].y = rd16(pos + i * 6 + 2) / 4096.0f;
-            v[i].z = rd16(pos + i * 6 + 4) / 4096.0f;
             no_tri[i] = strip[i] & 1;
-            v[i].s = (uint16_t)rd16(uv + i * 4) / 32768.0f;
-            v[i].t = (uint16_t)rd16(uv + i * 4 + 2) / 32768.0f;
-            if (p->kind == 3) {
-                memcpy(v[i].rgba, col + i * 4, 4);
-            } else {
-                v[i].rgba[0] = v[i].rgba[1] = v[i].rgba[2] = 0x80;
-                v[i].rgba[3] = 0x7F;
-            }
         }
         p->scale = 32.0f;
         break;
     }
     }
     strip_to_mesh(&p->mesh, v, no_tri, n, tex, blend, glow);
-    if (p->mesh.nv > 0) {
+    if (p->mesh.nv > 0 && (p->kind == 1 || p->kind == 3)) {
+        render_mesh_update(&p->gpu, p->mesh.v, p->mesh.nv);   /* (a morph: refilled as its frames change) */
+    } else if (p->mesh.nv > 0) {
         render_mesh_upload(&p->gpu, p->mesh.v, p->mesh.nv);
     }
     free(v);
@@ -162,10 +216,13 @@ void placed_load(PlacedSet *s, const uint8_t *defs, size_t defs_size, const uint
             continue;
         }
         memset(p, 0, sizeof(*p));
+        p->shown = 1;   /* (drawn until a script hides it: the original's +0 starts 0) */
         memcpy(p->name, def, 15);
         p->kind = i < counts[0] ? 0 : i < counts[0] + counts[1] ? 1 : i < counts[0] + counts[1] + counts[2] ? 2 : 3;
         p->def_rot = p->rot = vec3(rdf(def + 0x10), rdf(def + 0x14), rdf(def + 0x18));
         p->def_pos = p->pos = vec3(rdf(def + 0x20), rdf(def + 0x24), rdf(def + 0x28));
+        p->def = def;
+        p->def_end = defs + defs_size;
         build_model(p, def, defs + defs_size);
         s->n++;
     }
@@ -179,6 +236,19 @@ void placed_free(PlacedSet *s) {
         roommesh_free(&s->p[i].mesh);
     }
     memset(s, 0, sizeof(*s));
+}
+
+uint32_t *placed_word(Placed *p, int off) {
+    if (off < 0 || off >= 0x80 || (off & 3)) {
+        return NULL;
+    }
+    if (off >= 0x10 && off < 0x1C) {
+        return (uint32_t *)&(&p->rot.x)[(off - 0x10) / 4];
+    }
+    if (off >= 0x20 && off < 0x2C) {
+        return (uint32_t *)&(&p->pos.x)[(off - 0x20) / 4];
+    }
+    return &p->words[off / 4];
 }
 
 Placed *placed_named(PlacedSet *s, const char *name) {
@@ -233,6 +303,16 @@ void placed_tick(PlacedSet *s) {
     for (i = 0; i < s->n; i++) {
         Placed *p = &s->p[i];
         Vec3 v;
+
+        if (p->kind == 1 || p->kind == 3) {   /* (a morph: the frames the rooms' commands set) */
+            int a = (int)p->words[0x74 / 4], b = (int)p->words[0x78 / 4];
+            float t;
+
+            memcpy(&t, &p->words[0x7C / 4], 4);
+            if (a != p->morph_a || b != p->morph_b || t != p->morph_t) {
+                morph_update(p, a, b, t);
+            }
+        }
 
         if (p->keys == NULL || p->frames <= 0) {
             continue;

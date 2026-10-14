@@ -11,7 +11,7 @@ USING: room-names story.words story.shared flag-names ;
 \ RoomD0_Cmd02
 : off-map-d0.cmd02 ( -- )  s" off-map-d0.cmd02" stub-step ;
 \ RoomD0_Cond00
-: off-map-d0.cond00? ( -- flag )  s" off-map-d0.cond00?" stub-flag ;
+: off-map-d0.cond00? ( -- flag )  true ;   \ (the progress object's +0x7C: ProgressBase_Slot7C, always 1)
 
 : off-map-d0.enter ( -- )   \ 004469C0
     0 $16F 8 nav-tri-flags

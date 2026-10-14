@@ -49,6 +49,12 @@ int sound_open(void) {
     return 1;
 }
 
+void sound_gain(float g) {   /* (everything heard: the options' volume) */
+    if (sStream != NULL) {
+        SDL_SetAudioStreamGain(sStream, g < 0.0f ? 0.0f : g > 1.0f ? 1.0f : g);
+    }
+}
+
 void sound_close(void) {
     if (sStream != NULL) {
         SDL_DestroyAudioStream(sStream);

@@ -5,7 +5,7 @@ IN: story.rooms.house-of-truth-b1-5
 USING: room-names story.words story.shared flag-names ;
 
 \ Room93_Cmd00
-: house-of-truth-b1-5.cmd00 ( -- )  s" house-of-truth-b1-5.cmd00" stub-step ;
+: house-of-truth-b1-5.cmd00 ( -- )  slam-shake ;
 
 : house-of-truth-b1-5.enter ( -- )   \ 00444170
     $345 story-flag-set

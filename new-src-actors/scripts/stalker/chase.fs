@@ -8,7 +8,7 @@
 IN: stalker.chase
 USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack ;
 
-: close-reach ( F: -- d )  hard? if  40e  else  50e  then ;   \ (+0x17E4)
+: close-reach ( F: -- d )  hard-mode? if  40e  else  50e  then ;   \ (+0x17E4)
 : frames# ( off -- n )  2 rshift cells chase-frames + @ ;     \ (his chase table by its offset)
 : chance# ( i -- ) ( F: -- c )  floats chase-chances + f@ ;
 : d-her ( F: -- d )  d-fiona f@ ;
@@ -85,7 +85,7 @@ create family-acts  ' stand-watch , ' stand-watch , ' lunge , ' grab-dog ,
         $14 of  drop 6 take-her  endof   $15 of  drop 8 take-her  endof
         >r drop stand-watch r>
     endcase ;
-: choose ( situation -- )  hard? table row  dup @ swap cell+ @ do-row ;   \ (Pursuer_PickFromTable)
+: choose ( situation -- )  hard-mode? table row  dup @ swap cell+ @ do-row ;   \ (Pursuer_PickFromTable)
 \ Pursuer_PickAttack: his tables 6 / 7 (the panic's stage 4 on)
 :noname ( -- )  her-stage @ 4 >= if  7  else  6  then  choose ; is pick-attack
 

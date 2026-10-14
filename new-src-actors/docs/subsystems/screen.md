@@ -24,5 +24,7 @@ scene or a change and in after it, and wait for the fade. The original's event f
 
 ## Status
 
-**Built** (`scripts/screen.fs`), with the story's S4. Not yet: the kinds' bits 0xC0 (the music
-faded with it: 0x80 at once, 0x40 over 90 frames) and 0x30 (the volume ramped).
+**Built** (`scripts/screen.fs`), with the story's S4. The kinds' bits $C0 fade the stage music
+with it (the story's `fade-music`: `music-cut` at once, `music-eased` over 90 frames - silent going
+to black, full coming back). Bits $30 set a volume ramp (Progress +0x1120) that nothing in the
+original reads: left out. Checked by `tests/story/test_finishing.fs`.

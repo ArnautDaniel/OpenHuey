@@ -2,18 +2,33 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-5
-USING: room-names story.words story.shared flag-names ;
+USING: engine actors messages room-names story.words story.shared flag-names ;
 
 \ room 0x8D: three grey smoke effects (Effect79B00, size 60) at the room's spots 7, 4, 3
 \ (grey_three).
-: house-of-truth-1f-5.cmd00 ( -- )  s" house-of-truth-1f-5.cmd00" stub-step ;
+: house-of-truth-1f-5.cmd00 ( -- )   \ (the ceiling coming down: stones of three kinds falling from 60)
+    7 60e 0e 0.5e 0.5e stones-falling  4 60e 0e 0e 0.5e stones-falling  3 60e 0e 0e 1e stones-falling ;
 \ byte 3: 0 made (lights 0x14 on characters 3 and 0) and 1 lit on character 3 (second kind, size
 \ 1, sparks from its own slot); 2 ending, 3 ended; 4 / 6 sized 1 / 0.5; 5 / 7 shrinking with
 \ variable 1 (a step a call, to 0.5 + v / 200 or v / 334)
-: house-of-truth-1f-5.cmd01 ( b0 -- )  drop s" house-of-truth-1f-5.cmd01" stub-step ;
+: marker! ( v -- )   \ (the marker kept in variable 0 told: -1 done, -2 a pause, else its size x 1000)
+    0 var @ dup alive? if  send effect-command  else  2drop  then ;
+: shrunk ( -- v )  1 var @ 1- 0 max  dup 1 swap var-set ;   \ (variable 1 down a step)
+: house-of-truth-1f-5.cmd01 ( b0 -- )
+    case
+        0 of  3 $14 char-layer  0 $14 char-layer
+              3 char-model 0 char-model 1  1e effects:marker  0 swap var-set  endof
+        1 of  1000 marker!  endof
+        2 of  -1 marker!  endof
+        3 of  -2 marker!  endof
+        4 of  1000 marker!  endof
+        5 of  shrunk  5 *  500 +  marker!  endof
+        6 of  500 marker!  endof
+        7 of  shrunk  1000 334 */  marker!  endof
+    endcase ;
 \ room 0x8D: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: house-of-truth-1f-5.cmd02 ( -- )  s" house-of-truth-1f-5.cmd02" stub-step ;
+: house-of-truth-1f-5.cmd02 ( -- )  slam-shake ;
 
 : house-of-truth-1f-5.enter ( -- )   \ 004348E0
     room-sounds

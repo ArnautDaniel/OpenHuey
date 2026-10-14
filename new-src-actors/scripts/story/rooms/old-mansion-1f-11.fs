@@ -5,12 +5,12 @@ IN: story.rooms.old-mansion-1f-11
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x4E (D_0040B4D8): a lit quad at x -44 .. -36, z 60, from 54 to 71
-: old-mansion-1f-11.cmd00 ( b0 -- )  drop s" old-mansion-1f-11.cmd00" stub-step ;
+: old-mansion-1f-11.cmd00 ( b0 -- )  $1B $80  -44.0e 71.0e 60.0e  -36.0e 71.0e 60.0e  -44.0e 54.0e 60.0e  -36.0e 54.0e 60.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
 \ room 0x4E: the curtain ("Curtain_2") animated by event variable 0 (var0_anim: byte 3 0
 \ forward, 1 back, 2 / 3 back at rest).
-: old-mansion-1f-11.cmd01 ( b0 -- )  drop s" old-mansion-1f-11.cmd01" stub-step ;
+: old-mansion-1f-11.cmd01 ( b0 -- )  s" Curtain" var0-anim ;
 \ room 0x4E (D_0040B4F8): the 0x10-byte effect Room4EEffect_vtable made
-: old-mansion-1f-11.cmd02 ( -- )  s" old-mansion-1f-11.cmd02" stub-step ;
+: old-mansion-1f-11.cmd02 ( -- )  8 $80808080  -8.7654e -7.4e -0.0072e  120e 0.5e 0.1e  effects:caustic drop ;   \ (light rippling: Room4EEffect)
 
 : old-mansion-1f-11.enter ( -- )   \ 0040AE90
     room-sounds
@@ -242,7 +242,7 @@ USING: room-names story.words story.shared flag-names ;
                 $FE char-here? not if
                     5 3 5 scene-change
                 else $FE $13 char-in-area? $FE 0 40 chars-within? or if
-                    $8016 scene-ending
+                    $8016 examine-message
                 else
                     5 3 5 scene-change
                 then then

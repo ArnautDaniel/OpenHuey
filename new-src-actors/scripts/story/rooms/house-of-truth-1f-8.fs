@@ -2,18 +2,19 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-8
-USING: room-names story.words story.shared flag-names ;
+USING: engine common actors messages room-names story.words story.shared flag-names ;
 
 \ room 0x91 (Room91_Cmd00_ptmf): door 0's +0x68 (0)
-: house-of-truth-1f-8.cmd00 ( -- )  s" house-of-truth-1f-8.cmd00" stub-step ;
+: house-of-truth-1f-8.cmd00 ( -- )  0 true -1 doors-id send swing-door ;   \ (door 0 set opening, Doors_SetOpened: swung open here)
 \ script variable 0 down by the player's hit (1 from the weak blow 0x1A, else 5), not below 0
-: house-of-truth-1f-8.cmd01 ( -- )  s" house-of-truth-1f-8.cmd01" stub-step ;
+: house-of-truth-1f-8.cmd01 ( -- )  0 var-down-by-hit ;
 \ room 0x91: three grey smoke effects (Effect79B00, size 70) at the room's spots 1, 3, 0xB
 \ (grey_three).
-: house-of-truth-1f-8.cmd02 ( -- )  s" house-of-truth-1f-8.cmd02" stub-step ;
+: house-of-truth-1f-8.cmd02 ( -- )   \ (the ceiling coming down: stones of three kinds falling from 70)
+    1 70e 0e 0e 0.5e stones-falling  3 70e 0e 0e 0.5e stones-falling  11 70e 0e 0.5e 0.5e stones-falling ;
 \ room 0x91: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: house-of-truth-1f-8.cmd03 ( -- )  s" house-of-truth-1f-8.cmd03" stub-step ;
+: house-of-truth-1f-8.cmd03 ( -- )  slam-shake ;
 
 : house-of-truth-1f-8.enter ( -- )   \ 00436600
     room-sounds

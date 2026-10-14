@@ -344,6 +344,128 @@ int navmesh_path(const NavMesh *n, int from, Vec3 a, int to, Vec3 b, Vec3 *out, 
     return npts;
 }
 
+/* ---- curved paths ---- */
+
+static Vec3 scaled_to(Vec3 v, float len) {   /* v made `len` long (on the level) */
+    float l = sqrtf(v.x * v.x + v.z * v.z);
+
+    return l > 0.0f ? vec3(v.x * len / l, 0.0f, v.z * len / l) : v;
+}
+static float len2(Vec3 v) { return v.x * v.x + v.z * v.z; }
+
+/* a turning point moved `by` away from the corner it turns round (out of the turn), when that
+ * is on the floor: the funnel's corners sit on the walls' corners, the original's curve went by
+ * the triangles' centres */
+static Vec3 off_the_corner(const NavMesh *n, Vec3 prev, Vec3 p, Vec3 next, float by) {
+    Vec3 u = vec3_sub(prev, p), w = vec3_sub(next, p), in;
+    float lu = sqrtf(len2(u)), lw = sqrtf(len2(w)), h;
+    Vec3 q;
+
+    if (lu <= 0.0f || lw <= 0.0f) {
+        return p;
+    }
+    in = vec3(u.x / lu + w.x / lw, 0.0f, u.z / lu + w.z / lw);   /* (into the turn) */
+    if (len2(in) < 1e-6f) {
+        return p;
+    }
+    in = scaled_to(in, by);
+    q = vec3(p.x - in.x, p.y, p.z - in.z);
+    {   /* (only where the way still walks straight from the last point to it and on to the next) */
+        int tp = navmesh_find(n, prev, 4.0f, &h), tq = navmesh_find(n, q, 4.0f, &h);
+
+        if (tp < 0 || tq < 0 || navmesh_walk(n, tp, prev, q, NULL) < 0 || navmesh_walk(n, tq, q, next, NULL) < 0) {
+            return p;
+        }
+    }
+    return q;
+}
+
+int navmesh_curve(const NavMesh *n, int from, Vec3 a, const Vec3 *given, int npts, Vec3 *out, int max) {
+    Vec3 pts[64];
+    int i, j, k = 0, tri = from;
+
+    if (npts * 8 > max || npts < 2 || from < 0 || npts > 64) {   /* (nothing to round, or too long: as it is) */
+        for (i = 0; i < npts && i < max; i++) {
+            out[i] = given[i];
+        }
+        return npts < max ? npts : max;
+    }
+    for (i = 0; i < npts; i++) {   /* (each from the one before it as moved) */
+        pts[i] = i + 1 < npts ? off_the_corner(n, i == 0 ? a : pts[i - 1], given[i], given[i + 1], 2.0f) : given[i];
+    }
+    for (i = 0; i < npts; i++) {
+        Vec3 s = i == 0 ? a : pts[i - 1], e = pts[i];
+        Vec3 before = i <= 1 ? a : pts[i - 2], after = i + 1 < npts ? pts[i + 1] : e;
+        Vec3 d1 = vec3_sub(e, i == 0 ? s : before), d2 = vec3_sub(after, s);
+        float l1 = len2(d1), l2 = len2(d2), l3 = 2.0f * len2(vec3_sub(e, s));
+        Vec3 piece[8];
+        int tries, ok = 0, t;
+        float h;
+
+        if (len2(vec3_sub(e, s)) < 1e-4f) {   /* (the same point twice: nothing to walk) */
+            continue;
+        }
+        if (i > 0) {   /* (the stretch's start found afresh: moved off its corner) */
+            int found = navmesh_find(n, s, 4.0f, &h);
+
+            tri = found >= 0 ? found : tri;
+        }
+        t = tri;
+
+        if (i + 1 == npts) {   /* (the last: toward its end) */
+            d2 = vec3_sub(e, s);
+            l2 = len2(d2);
+        }
+        if (l1 < l3) {   /* (the tangents no longer than the stretch allows: as the original) */
+            if (l1 < l2) {
+                d2 = scaled_to(d2, sqrtf(l1));
+            } else {
+                d1 = scaled_to(d1, sqrtf(l2));
+            }
+        } else if (l2 < l3) {
+            d1 = scaled_to(d1, sqrtf(l2));
+        } else {
+            d1 = scaled_to(d1, sqrtf(l3));
+            d2 = scaled_to(d2, sqrtf(l3));
+        }
+        for (tries = 0; tries < 10 && !ok; tries++) {
+            Vec3 at = s;
+
+            d1 = vec3(0.5f * d1.x, 0.0f, 0.5f * d1.z);
+            d2 = vec3(0.5f * d2.x, 0.0f, 0.5f * d2.z);
+            t = tri;
+            ok = 1;
+            for (j = 1; j <= 8 && ok; j++) {
+                float u = (float)j / 8.0f, u2 = u * u, u3 = u2 * u;
+                float h00 = 1.0f + 2.0f * u3 - 3.0f * u2, h01 = 3.0f * u2 - 2.0f * u3;
+                float h10 = u + u3 - 2.0f * u2, h11 = u3 - u2;
+                Vec3 q = j == 8 ? e
+                                : vec3(h00 * s.x + h01 * e.x + h10 * d1.x + h11 * d2.x, s.y + u * (e.y - s.y),
+                                       h00 * s.z + h01 * e.z + h10 * d1.z + h11 * d2.z);
+
+                t = navmesh_walk(n, t, at, q, NULL);   /* (each step straight over the floor) */
+                if (t < 0) {
+                    ok = 0;
+                    break;
+                }
+                piece[j - 1] = q;
+                at = q;
+            }
+        }
+        if (ok) {
+            for (j = 0; j < 8; j++) {
+                out[k++] = piece[j];
+            }
+            tri = t;
+        } else {   /* (straight) */
+            out[k++] = e;
+            t = navmesh_walk(n, tri, s, e, NULL);
+            tri = t >= 0 ? t : tri;
+        }
+    }
+    return k;
+}
+
 /* ---- walking straight ---- */
 
 /* where segment p-q (x, z) crosses segment a-b: its fraction along p-q, -1 if it doesn't */
@@ -446,6 +568,138 @@ int navmesh_walk(const NavMesh *n, int from, Vec3 a, Vec3 b, float *reach) {
         t = tr->next[cross];
     }
     return -1;
+}
+
+float navmesh_height(const NavMesh *n, int t, float x, float z) {
+    const NavTri *tr;
+    float w[3];
+
+    if (t < 0 || t >= n->ntris) {
+        return 0.0f;
+    }
+    tr = &n->tris[t];
+    inside(tr, x, z, w);   /* (outside it: its plane carried on) */
+    return w[0] * tr->v[0].y + w[1] * tr->v[1].y + w[2] * tr->v[2].y;
+}
+
+Vec3 navmesh_normal(const NavMesh *n, int t) {
+    const NavTri *tr;
+    Vec3 a, b, c;
+    float l;
+
+    if (t < 0 || t >= n->ntris) {
+        return vec3(0, 1, 0);
+    }
+    tr = &n->tris[t];
+    a = vec3(tr->v[1].x - tr->v[0].x, tr->v[1].y - tr->v[0].y, tr->v[1].z - tr->v[0].z);
+    b = vec3(tr->v[2].x - tr->v[0].x, tr->v[2].y - tr->v[0].y, tr->v[2].z - tr->v[0].z);
+    c = vec3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
+    l = sqrtf(c.x * c.x + c.y * c.y + c.z * c.z);
+    if (l <= 0.0f) {
+        return vec3(0, 1, 0);
+    }
+    if (c.y < 0.0f) {
+        l = -l;
+    }
+    return vec3(c.x / l, c.y / l, c.z / l);
+}
+
+int navmesh_fly(const NavMesh *n, int from, Vec3 a, Vec3 b, uint32_t mask, Vec3 *out, Vec3 *normal, int *what) {
+    int t = from, came = -1, steps;
+
+    *out = b;
+    *normal = vec3(0, 1, 0);
+    *what = NAV_REACHED;
+    if (t < 0 || t >= n->ntris) {
+        return -1;
+    }
+    for (steps = 0; steps < n->ntris + 2; steps++) {
+        const NavTri *tr = &n->tris[t];
+        float best = -1.0f, w[3];
+        int e, cross = -1, next;
+        Vec3 c;
+
+        if (inside(tr, b.x, b.z, w)) {
+            return t;
+        }
+        for (e = 0; e < 3; e++) {
+            float f = seg_cross(a, b, tr->v[e], tr->v[(e + 1) % 3]);
+
+            if (f < 0.0f || f > 1.0f || (came >= 0 && tr->next[e] == came)) {
+                continue;
+            }
+            if (cross < 0 || f > best) {
+                best = f;
+                cross = e;
+            }
+        }
+        if (cross < 0) {
+            return t;   /* (on its edge: as reached) */
+        }
+        c = vec3(a.x + (b.x - a.x) * best, a.y + (b.y - a.y) * best, a.z + (b.z - a.z) * best);
+        next = tr->next[cross];
+        if (next >= 0 && (n->tris[next].flags & 0x10000000)) {   /* a hole */
+            *out = c;
+            *what = NAV_HOLE;
+            return next;
+        }
+        if (next < 0 || (n->tris[next].flags & mask) || navmesh_height(n, next, c.x, c.z) > c.y + 0.5f) {
+            Vec3 e0 = tr->v[cross], e1 = tr->v[(cross + 1) % 3], mid;
+            float dx = e1.x - e0.x, dz = e1.z - e0.z, l = sqrtf(dx * dx + dz * dz), nx, nz;
+
+            mid = vec3((tr->v[0].x + tr->v[1].x + tr->v[2].x) / 3.0f, 0.0f, (tr->v[0].z + tr->v[1].z + tr->v[2].z) / 3.0f);
+            nx = l > 0.0f ? dz / l : 0.0f;
+            nz = l > 0.0f ? -dx / l : 0.0f;
+            if (nx * (mid.x - e0.x) + nz * (mid.z - e0.z) < 0.0f) {   /* (inward) */
+                nx = -nx;
+                nz = -nz;
+            }
+            *out = vec3(c.x + nx * 0.01f, c.y, c.z + nz * 0.01f);
+            *normal = vec3(nx, 0.0f, nz);
+            *what = NAV_WALL;
+            return t;
+        }
+        came = t;
+        t = next;
+    }
+    return t;
+}
+
+int navmesh_crosses(const NavMesh *n, int from, Vec3 a, Vec3 b, uint32_t mask) {
+    int t = from, came = -1, steps;
+
+    if (t < 0 || t >= n->ntris) {
+        return 0;
+    }
+    for (steps = 0; steps < n->ntris + 2; steps++) {
+        const NavTri *tr = &n->tris[t];
+        float best = -1.0f, w[3];
+        int e, cross = -1;
+
+        if ((tr->flags & mask) == mask) {
+            return 1;
+        }
+        if (inside(tr, b.x, b.z, w)) {
+            return 0;
+        }
+        for (e = 0; e < 3; e++) {
+            float f = seg_cross(a, b, tr->v[e], tr->v[(e + 1) % 3]);
+
+            if (f < 0.0f || f > 1.0f || (came >= 0 && tr->next[e] == came)) {
+                continue;
+            }
+            if (cross < 0 || f > best) {
+                best = f;
+                cross = e;
+            }
+        }
+        if (cross < 0 || tr->next[cross] < 0) {
+            return 0;
+        }
+        came = t;
+        t = tr->next[cross];
+    }
+    return 0;
 }
 
 /* ---- the pushed objects' squares (pairs of triangles of the pushable floor's grid) ---- */

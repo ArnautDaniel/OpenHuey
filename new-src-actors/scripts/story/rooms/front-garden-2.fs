@@ -5,7 +5,7 @@ IN: story.rooms.front-garden-2
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x13: the grate ("kousi"): byte 3 0 shut (turn 0), else swung open a quarter turn.
-: front-garden-2.cmd00 ( b0 -- )  drop s" front-garden-2.cmd00" stub-step ;
+: front-garden-2.cmd00 ( b0 -- )  if  pi f2/ fnegate  else  0e  then  s" kousi" turn-y object! ;
 
 : front-garden-2.enter ( -- )   \ 003F91A0
     room-sounds

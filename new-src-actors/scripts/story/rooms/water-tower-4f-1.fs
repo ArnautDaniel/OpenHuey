@@ -2,17 +2,25 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-4f-1
-USING: room-names story.words story.shared flag-names ;
+USING: engine actors messages room-names story.words story.shared flag-names ;
 
 \ (as RoomC2_Cmd00, the room object named RoomC3_ObjectNames, opening to -pi/2)
-: water-tower-4f-1.cmd00 ( b0 -- )  drop s" water-tower-4f-1.cmd00" stub-step ;
+: water-tower-4f-1.cmd00 ( b0 -- )   \ (as water-tower-2f-1's, opening the other way: -90 degrees)
+    {: b0 :}  s" move00" object-here? 0= if  exit  then
+    b0 0= if  0e s" move00" turn-y object!  exit  then
+    b0 1 = if  pi f2/ fnegate s" move00" turn-y object!  exit  then
+    b0 2 = if  -45e var0-ease f*  else  b0 3 = if  -90e  45e var0-ease f*  f+  else  exit  then  then
+    deg>rad fdup s" move00" turn-y object!
+    $80000002 6 0 0  fdup fsin 45e f*  142e  frot fcos 45e f*  sound-at ;
 \ the player (active, +0xE0 clear) put in action 0xB / 0x21 / 0xFF unless held (7); then
 \ progress +0x7B8 gets 50
-: water-tower-4f-1.cmd01 ( -- )  s" water-tower-4f-1.cmd01" stub-step ;
+: water-tower-4f-1.cmd01 ( -- )  fiona-id send flinch  50 threat-raise ;
 \ sound 3 (bank 6) at the room object named pstr_doramukan_2[0]
-: water-tower-4f-1.cmd02 ( -- )  s" water-tower-4f-1.cmd02" stub-step ;
+: water-tower-4f-1.cmd02 ( -- )   \ (sound 3 at "doramukan")
+    s" doramukan" object-here? 0= if  exit  then
+    3 6 0 0  s" doramukan" place-x object@  s" doramukan" place-y object@  s" doramukan" place-z object@  sound ;
 \ room 0xC3: the summoner's countdown (progress +0x764) has run out.
-: water-tower-4f-1.cond00? ( -- flag )  s" water-tower-4f-1.cond00?" stub-flag ;
+: water-tower-4f-1.cond00? ( -- flag )  summoner-done? ;
 
 : water-tower-4f-1.enter ( -- )   \ 0043F8F0
     room-sounds
@@ -31,10 +39,10 @@ USING: room-names story.words story.shared flag-names ;
     then then
     2 0 $14 door-bits
     3 0 $14 door-bits
-    0 0 object-show
-    1 1 object-show
-    2 1 object-show
-    3 1 object-show
+    0 0 object-hidden
+    1 1 object-hidden
+    2 1 object-hidden
+    3 1 object-hidden
     $342 story-flag? not if
         0 water-tower-4f-1.cmd00
         0 1 $14 door-bits
@@ -49,9 +57,9 @@ USING: room-names story.words story.shared flag-names ;
         0 0 $10020000 nav-group
     then
     $33A story-flag? if
-        4 1 object-show
+        4 1 object-hidden
     else
-        4 0 object-show
+        4 0 object-hidden
     then
     $17 stalker-kind? if
         no-stalker-camera state-flag-set
@@ -315,8 +323,8 @@ USING: room-names story.words story.shared flag-names ;
         5 self-wait-frames
         0 0 $14 door-bits
         1 0 $14 door-bits
-        2 1 object-show
-        3 0 object-show
+        2 1 object-hidden
+        3 0 object-hidden
         3 0 object-anim
         self-frames-reset
         $19 self-wait-frames
@@ -327,8 +335,8 @@ USING: room-names story.words story.shared flag-names ;
         self-wait-anim
         0 $F3 3 action
         $342 story-flag-set
-        2 1 object-show
-        3 1 object-show
+        2 1 object-hidden
+        3 1 object-hidden
         0 0 $14 door-bits
         1 1 $14 door-bits
         $C3 0 1055 $A 4 -1 0 0.0 creature-place
@@ -344,8 +352,8 @@ USING: room-names story.words story.shared flag-names ;
         5 self-wait-frames
         0 0 $14 door-bits
         1 0 $14 door-bits
-        2 0 object-show
-        3 1 object-show
+        2 0 object-hidden
+        3 1 object-hidden
         2 0 object-anim
         self-frames-reset
         $19 self-wait-frames
@@ -356,8 +364,8 @@ USING: room-names story.words story.shared flag-names ;
         self-wait-anim
         0 $F3 3 action
         $342 story-flag-clear
-        2 1 object-show
-        3 1 object-show
+        2 1 object-hidden
+        3 1 object-hidden
         0 1 $14 door-bits
         1 0 $14 door-bits
     then

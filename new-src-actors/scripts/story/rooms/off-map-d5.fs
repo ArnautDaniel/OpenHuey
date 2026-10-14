@@ -12,8 +12,8 @@ USING: room-names story.words story.shared ;
 \ room 0xD5: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
 : off-map-d5.cmd02 ( -- )  s" off-map-d5.cmd02" stub-step ;
-\ the progress object's +0x7C with the caller's arguments
-: off-map-d5.cond00? ( -- flag )  s" off-map-d5.cond00?" stub-flag ;
+\ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
+: off-map-d5.cond00? ( -- flag )  true ;
 
 : off-map-d5.enter ( -- )   \ 00447300
     room-sounds

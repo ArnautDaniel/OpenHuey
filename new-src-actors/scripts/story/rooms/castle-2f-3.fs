@@ -2,24 +2,31 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-3
-USING: room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names ;
 
-: castle-2f-3.cmd00 ( -- )  s" castle-2f-3.cmd00" stub-step ;
+: castle-2f-3.cmd00 ( -- )  1 0 tv-in ;   \ (room effect 1 the TV showing the screen)
 \ room 0x21 (D_00400B98): the fan turns, except while a movie plays
-: castle-2f-3.cmd01 ( -- )  s" castle-2f-3.cmd01" stub-step ;
+: castle-2f-3.cmd01 ( -- )  fan-turn ;
 \ room 0x21 (D_00400BA8)
-: castle-2f-3.cmd02 ( b0 -- )  drop s" castle-2f-3.cmd02" stub-step ;
+: castle-2f-3.cmd02 ( b0 -- )  $1B $10000040  0.491e 22.0e 69.502e  9.502e 22.0e 60.491e  0.491e 0.0e 69.502e  9.502e 0.0e 60.491e  lit-quad ;   \ (a reflecting window: b0 1 removed, 2 over the whole picture)
 \ Sets bit 1 of the flag byte three times (inlined setter calls); returns 1.
-: castle-2f-3.cmd03 ( -- )  s" castle-2f-3.cmd03" stub-step ;
+: castle-2f-3.cmd03 ( -- )  0 10 hide-part ;   \ (Fiona's model part 10 hidden - the original's flag 2 at +$AC)
 \ room 0x21 (D_00400BC8)
-: castle-2f-3.cmd04 ( b0 -- )  drop s" castle-2f-3.cmd04" stub-step ;
+: castle-2f-3.cmd04 ( b0 -- )  $1A $20000040  40.491e 30.0e -10.498e  49.502e 30.0e -19.509e  40.491e 1.5e -10.498e  49.502e 1.5e -19.509e  lit-quad ;   \ (a reflecting window: b0 1 removed, 2 over the whole picture)
 \ room 0x21 (Room21_Cmd05_ptmf): the player's model +0xC8 vector by byte 3
-: castle-2f-3.cmd05 ( b0 -- )  drop s" castle-2f-3.cmd05" stub-step ;
+: castle-2f-3.cmd05 ( b0 -- )   \ (Fiona's hair's force (FionaModel_SetVector): 0 back 0.01, 1 aside 0.02, else straight; 0.1 down)
+    case
+        0 of  0e 0.1e -0.01e  endof
+        1 of  0.02e 0.1e 0e  endof
+        >r 0e 0.1e 0e r>
+    endcase
+    0 char-model dup 0< if  drop fdrop fdrop fdrop exit  then  2 cloth-force! ;
 \ room 0x21 (Room21_Cmd06_ptmf): Fiona's model +0x1570 (byte 3 0) / +0x1574 (1) = byte 4
-: castle-2f-3.cmd06 ( b0 b1 -- )  drop drop s" castle-2f-3.cmd06" stub-step ;
+: castle-2f-3.cmd06 ( b0 b1 -- )  drop drop ;   \ (Daniella's hair settling steps (her model's springs: not simulated here yet))
 \ room 0x21 (Room21_Cond00_ptmf): the pursuer, about and not in state 2, is in its mode 2 but in
 \ another room than the current one (the player about too)
-: castle-2f-3.cond00? ( -- flag )  s" castle-2f-3.cond00?" stub-flag ;
+: castle-2f-3.cond00? ( -- flag )
+    stalker-about? stalker-down? 0= and slot2-kind @ 2 = and  stalker-in-this-room? 0= and ;
 
 : castle-2f-3.enter ( -- )   \ 003FF170
     room-sounds
@@ -384,7 +391,7 @@ USING: room-names story.words story.shared flag-names ;
         else $FE char-here? not if
             5 1 5 scene-change
         else
-            $8016 scene-ending
+            $8016 examine-message
         then then
     then then then
     0 $B char-in-area? 0 -67 $3C char-heading? and if

@@ -15,10 +15,12 @@ USING: engine ;
 : path-clear ( path -- )  0 over !  0 swap path-i! ;
 : path-end ( path -- )  dup path-i swap ! ;   \ nothing left to follow
 \ a way from (from-tri, a) to (to-tri, b), off the mask's triangles: its turning points
-: path-plan ( path from-tri a to-tri b mask -- n )
-    v-path  path-points min                                           ( path n )
-    dup 0 ?do  over i path-point  i nav-path-point  vec!  loop
+: path-keep ( path n -- n )   \ (the engine's last way into the record)
+    path-points min  dup 0 ?do  over i path-point  i nav-path-point  vec!  loop
     over !  0 over path-i!  path-n ;
+: path-plan ( path from-tri a to-tri b mask -- n )  v-path path-keep ;
+\ the same with its corners rounded off (the original's curved paths: Character_WaypointsCurve)
+: path-plan-curved ( path from-tri a to-tri b mask -- n )  v-path-curved path-keep ;
 
 \ the point `d` along the rest of the way from `at`, into `ahead`; the index of the next
 \ turning point there (Character_WaypointAhead)

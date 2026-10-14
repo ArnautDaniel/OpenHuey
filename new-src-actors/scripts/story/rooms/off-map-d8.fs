@@ -11,9 +11,9 @@ USING: room-names story.words story.shared ;
 : off-map-d8.cmd01 ( -- )  s" off-map-d8.cmd01" stub-step ;
 \ (as Room10A_Cond00) last frame's noise requests (gProgress +0x10D4) of kind 0xD8 / 0xD7 and
 \ loudness 0x20 or more
-: off-map-d8.cond00? ( -- flag )  s" off-map-d8.cond00?" stub-flag ;
-\ the progress object's +0x7C with the caller's arguments
-: off-map-d8.cond01? ( -- flag )  s" off-map-d8.cond01?" stub-flag ;
+: off-map-d8.cond00? ( -- flag )  loud-here? ;
+\ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
+: off-map-d8.cond01? ( -- flag )  true ;
 
 : off-map-d8.enter ( -- )   \ 00447BD0
     room-sounds

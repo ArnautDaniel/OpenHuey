@@ -6,10 +6,11 @@ USING: room-names story.words story.shared ;
 
 \ character kind 0x1A: byte 3 0 starts Kind26_MoveTo(2, -6, 257); else waits (2) until
 \ Kind26_MoveDone says done
-: chaos-forest-11.cmd00 ( b0 -- )  drop s" chaos-forest-11.cmd00" stub-step ;
+: chaos-forest-11.cmd00 ( b0 -- )
+    if  $1A char-wait-done  else  $1A 2 -6e 257e char-animal-go  then ;
 \ room 0x109: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
 \ sideways 1 a frame (room_nudge).
-: chaos-forest-11.cmd01 ( b0 -- )  drop s" chaos-forest-11.cmd01" stub-step ;
+: chaos-forest-11.cmd01 ( b0 -- )  1e room-nudge ;
 
 : chaos-forest-11.enter ( -- )   \ 004193D0
     room-sounds

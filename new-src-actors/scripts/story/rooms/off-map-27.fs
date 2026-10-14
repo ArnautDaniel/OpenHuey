@@ -2,12 +2,20 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-27
-USING: room-names story.words story.shared flag-names ;
+USING: actors messages items room-names story.words story.shared flag-names ;
 
 \ the items 0x91 / 0x92, by byte 3: 0 which of them Fiona lacks (one each) kept in event var 0
 \ (0x91 low byte, 0x92 the next), and event +0x5C(3) when any; 1 they are given back, event
 \ +0x5C(0) / (1)
-: off-map-27.cmd00 ( b0 -- )  drop s" off-map-27.cmd00" stub-step ;
+: lacking ( item -- n )  1 swap items-of - 0 max ;   \ (short of one)
+: lacks-kept ( -- )   \ (those she lacks into variable 0: $91 the low byte, $92 the next; event bit 3)
+    $91 lacking  $92 lacking 8 lshift or  ?dup if  0 swap var-set  3 ebit-set  then ;
+: lacks-given ( -- )   \ (and given: event bits 0 / 1)
+    0 var @
+    dup $FF and ?dup if  $91 swap items-id send give-item  0 ebit-set  then
+    8 rshift $FF and ?dup if  $92 swap items-id send give-item  1 ebit-set  then ;
+: off-map-27.cmd00 ( b0 -- )   \ (items $91 / $92 topped up to one each: b0 0 those she lacks kept, 1 given)
+    case  0 of  lacks-kept  endof  1 of  lacks-given  endof  endcase ;
 
 : off-map-27.enter ( -- )   \ 0041C390
     room-sounds

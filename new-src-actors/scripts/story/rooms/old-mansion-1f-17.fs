@@ -5,9 +5,11 @@ IN: story.rooms.old-mansion-1f-17
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x5D (Room5D_Cmd00_ptmf): four objects 60 to the left
-: old-mansion-1f-17.cmd00 ( -- )  s" old-mansion-1f-17.cmd00" stub-step ;
+: old-mansion-1f-17.cmd00 ( -- )   \ (four objects - the room's strings 2..5 - 60 to the left)
+    6 2 do  i room-object 2dup object-here? if  -60e place-x object+!  else  2drop  then  loop ;
 \ room 0x5D (Room5D_Cmd01_ptmf): the lever at -60 / 0 / 60 degrees by byte 3
-: old-mansion-1f-17.cmd01 ( b0 -- )  drop s" old-mansion-1f-17.cmd01" stub-step ;
+: old-mansion-1f-17.cmd01 ( b0 -- )   \ (the lever, "doll": 0 -60 degrees, 2 60, else 0)
+    case  0 of  -60e  endof  2 of  60e  endof  >r 0e r>  endcase  deg>rad s" doll" turn-y object! ;
 
 : old-mansion-1f-17.enter ( -- )   \ 00411B80
     room-sounds

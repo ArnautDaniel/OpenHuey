@@ -6,7 +6,7 @@ USING: room-names story.words story.shared flag-names ;
 
 \ room 0x56 (Room56_Cmd00_ptmf): creatures 7..9 in the current room on a live triangle
 \ gRoomEventObj says yes to: +0x10, then the creature list's +0x28
-: old-mansion-2f-3.cmd00 ( -- )  s" old-mansion-2f-3.cmd00" stub-step ;
+: old-mansion-2f-3.cmd00 ( -- )  homunculi-off-group0 ;
 
 : old-mansion-2f-3.enter ( -- )   \ 0040ED10
     room-sounds

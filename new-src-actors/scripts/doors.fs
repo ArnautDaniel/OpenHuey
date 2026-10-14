@@ -41,6 +41,9 @@ USING: engine game-state actors messages ;
 : reopened! ( door -- )
     dup 32 / 4 * progress pr.closed-off +  swap 32 mod 1 swap lshift invert  over l@ and  swap l! ;
 : changed ( door -- )  dup refresh-door  broadcast door-changed ;
+: lock-against ( door kind on -- )   \ locked against a kind of character, or not
+    >r kind-bit 4 lshift  over swap  r> if  set-bits  else  clear-bits  then  changed ;
+: door-rooms ( door -- room0 room1 )  door-sides {: r0 e0 t0 r1 e1 t1 :}  r0 r1 ;
 : grab ( exit -- )   \ (held by the slammer: not a doorway)
     room-id swap door-of dup 0< if  drop exit  then  dup fixed? if  drop exit  then  held-bit set-bits ;
 
@@ -83,10 +86,24 @@ variable ev-exit
 behaviour keeping
   on spawned ( -- )  self subscribe tick  self subscribe entered-room  users 8 cells -1 fill ;
   on entered-room ( room exit -- )  2drop  room-in  users 8 cells -1 fill ;
+  on redo-doors ( -- )  room-in ;   \ (Doors_RoomIn, for the story)
   on lock ( door -- )  dup locked-bit set-bits  changed ;
+  on door-opened ( door on -- )  if  dup opened-bit set-bits  else  dup opened-bit clear-bits  then  changed ;
   on unlock ( door -- )  dup locked-bit clear-bits  changed ;
-  on lock-for ( door kind on -- )
-      >r kind-bit 4 lshift  over swap  r> if  set-bits  else  clear-bits  then  changed ;
+  on lock-for ( door kind on -- )  lock-against ;
+  on lock-room-for ( room kind on -- )   \ every door into a room (SceneGame_SetRoomDoors)
+      {: room kind on :}
+      400 0 do
+          i door-rooms  over 0< if  2drop leave  then        \ (the doors end at one with no sides)
+          room =  swap room =  or if  i kind on lock-against  then
+      loop ;
+  on copy-door ( door from -- )   \ (the story's 0x4D) its open bit, lock and closed-off as from's
+      {: door from :}
+      door opened-bit clear-bits  door locked-bit clear-bits  door reopened!
+      from state@ opened-bit and if  door opened-bit set-bits  then
+      from state@ locked-bit and if  door locked-bit set-bits  then
+      from 32 / 4 * progress pr.closed-off + l@  from 32 mod rshift 1 and if  door closed-off!  then
+      door changed ;
   on close-off ( door -- )  dup closed-off!  changed ;
   on reopen ( door -- )  dup reopened!  changed ;
   on rebuild-exits ( -- )  world-exits-rebuild ;
@@ -98,6 +115,8 @@ behaviour keeping
   \ open or shut at rest by its user, as a swing along an animation is)
   on slam ( exit source -- )  over user !  dup grab  false true door-move ;
   on barge ( exit source -- )  over user !  dup grab  true true door-move ;
+  \ pulled shut behind a stalker come in by it (his DoorBreak): held, swung shut, let go shut at rest
+  on pull-shut ( exit source -- )  over user !  dup grab  false false door-move ;
   on hold-door ( room exit kind -- )
       >r 2dup r> take  if  sender send door-held  else  sender send door-refused  then ;
   on let-go-open ( room exit source -- )  true let-go ;

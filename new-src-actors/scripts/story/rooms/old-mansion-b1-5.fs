@@ -5,8 +5,8 @@ IN: story.rooms.old-mansion-b1-5
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0x51 (Room51_Cmd00_ptmf): byte 3 0 door 0 set going (+0xC); else wait (2) while it moves
-: old-mansion-b1-5.cmd00 ( b0 -- )  drop s" old-mansion-b1-5.cmd00" stub-step ;
-: old-mansion-b1-5.cmd01 ( -- )  s" old-mansion-b1-5.cmd01" stub-step ;
+: old-mansion-b1-5.cmd00 ( b0 -- )  0= if  0 1 door-play  else  0 door-wait  then ;   \ (door 0: b0 0 swung, else waited for)
+: old-mansion-b1-5.cmd01 ( -- )  $650 $238 file-once-flag ;
 
 : old-mansion-b1-5.enter ( -- )   \ 0040CF40
     room-sounds
@@ -15,13 +15,13 @@ USING: room-names story.words story.shared flag-names ;
     $327 story-flag? if
         0 1 $14 door-bits
         1 0 $20000 nav-group
-        8 1 object-show
-        9 1 object-show
+        8 1 object-hidden
+        9 1 object-hidden
     else
         0 0 $14 door-bits
         0 0 $20000 nav-group
-        8 0 object-show
-        9 0 object-show
+        8 0 object-hidden
+        9 0 object-hidden
     then
     $328 story-flag? not $327 story-flag? not and if
         3 stalker-kind? $22 stalker-kind? or if
@@ -247,7 +247,7 @@ USING: room-names story.words story.shared flag-names ;
                 5 9 5 scene-change
             then
         else
-            $8016 scene-ending
+            $8016 examine-message
         then
     then
 ;
@@ -959,8 +959,8 @@ USING: room-names story.words story.shared flag-names ;
         self-frames-reset
         5 self-wait-frames
         0 0 $14 door-bits
-        8 0 object-show
-        9 0 object-show
+        8 0 object-hidden
+        9 0 object-hidden
         8 0 object-anim
         9 0 object-anim
         self-frames-reset
@@ -972,8 +972,8 @@ USING: room-names story.words story.shared flag-names ;
         self-frames-reset
         5 self-wait-frames
         0 0 $14 door-bits
-        8 0 object-show
-        9 0 object-show
+        8 0 object-hidden
+        9 0 object-hidden
         8 1 object-anim
         9 1 object-anim
         self-frames-reset
@@ -1247,8 +1247,8 @@ USING: room-names story.words story.shared flag-names ;
     $327 story-flag-set
     1 0 $20000 nav-group
     counter-inc
-    8 0 object-show
-    9 0 object-show
+    8 0 object-hidden
+    9 0 object-hidden
     8 6 object-anim
     9 6 object-anim
     $8003 self-anim

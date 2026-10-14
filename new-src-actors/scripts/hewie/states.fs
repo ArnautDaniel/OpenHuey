@@ -6,14 +6,14 @@
 \ away, dashing, the stance, barking, being down). Later: praise and commands (H2), the stalkers
 \ (H3), the story's moves (H4).
 IN: hewie.states
-USING: engine game-state actors common facts paths hewie.state hewie.body hewie.tables hewie.model hewie.moving flag-names ;
+USING: engine game-state actors messages common facts paths hewie.state hewie.body hewie.tables hewie.model hewie.moving flag-names ;
 
 \ ---- how he is treated: the progress's counters (for the dog's level at the end) ----
 : counter+ ( n addr -- )  tuck l@ + 0 10000 clamp swap l! ;
 : mistreated+ ( n -- )  progress pr.hewie-mistreated counter+ ;
 : pleased+ ( n -- )  progress pr.hewie-pleased counter+ ;
 \ obey_time: how long he obeys, by his trust; obeys: he heard her - obeying for a while
-: obey-time! ( -- )  hard? if  obey-time-hard  else  obey-time  then  trust-of his-obey ! ;
+: obey-time! ( -- )  black-shepherd? if  obey-time-shepherd  else  obey-time  then  trust-of his-obey ! ;
 : obeys ( -- )  0 his-waiting !  obey-time!  0 his-praise-due ! ;
 
 \ Hewie_SetMode: his mood (0 normal, 1 pleased - praised from afar, 2 upset - scolded too often,
@@ -52,7 +52,7 @@ create trust-bounds  100 , 280 , 450 , 600 , 750 , 900 , 1000 ,
 \ Hewie_RandomLevel: a gait at random (0 walk, 1 trot, 2 run; brisker on hard or when not calm)
 : random-level ( -- n )
     16 roll
-    hard? if
+    black-shepherd? if
         his-danger @ 0= if  dup 8 < if  drop 0  else  13 < if  1  else  2  then  then
         else  dup 5 < if  drop 0  else  13 < if  1  else  2  then  then  then
     else
@@ -91,7 +91,7 @@ create tt-at 12 allot
 : st-run-to-fiona ( -- )
     her-with? 0= if  to-default exit  then
     3 step-to-pose if  exit  then
-    $60 5 0 0 his-at vec@ sound-at
+    $60 5 0 0 his-at vec@ his-sound
     0 look!  her his-target !  3 keep-pose  30 his-t1 !  ['] st-1990 behave ;
 
 \ ---- idle ----
@@ -354,11 +354,17 @@ create kn-at 12 allot
 
 \ ---- hurt, down ----
 : st-1d18 ( -- )  0 step-to-pose 0= if  0 his-2d !  0 keep-pose  to-default  then ;   \ back up
-\ Hewie_StateKnockedDown (action 0x52): lying down (pose 10) until he has health again
+\ Hewie_StateKnockedDown (action 0x52): lying down (pose 10) until he has health again; in a hard
+\ game, once he is down, the game is over (game over kind 3)
+: dies-in-hard-mode ( -- )   \ (a hard game: his end is hers - unless a scene has them, or the story keeps it from ending)
+    caught state-flag? if  exit  then
+    cutscene-active?  capture-no-end state-flag? or if  1 hp!  1 cond!  exit  then
+    3 s" gameover" actor-named send game-over-kind  caught state-flag-set ;
 : st-knocked-down ( -- )
     his-wait @ 0= if  1 hp!  1 cond!  then
     4 look!
     10 step-to-pose 0= if
+        hard-mode? if  dies-in-hard-mode  then
         anim@ $1002 = if  0 his-2d !  else  10 keep-pose  then
     then
     his-hp @ if  1 his-2d !  ['] st-1d18 behave  then ;
@@ -384,7 +390,7 @@ create kn-at 12 allot
             r> cells his-skill + dup @ 0 31 clamp swap !
         loop
     then
-    2drop  0 his-follows !  0 his-did-2 !  0 his-did !  true ;
+    2drop  -1 his-follows !  0 his-did-2 !  0 his-did !  true ;
 
 \ ---- scolded from afar (action 0x71): sitting, the ears down (0x1C04); three times within 600
 \ frames upsets him ----

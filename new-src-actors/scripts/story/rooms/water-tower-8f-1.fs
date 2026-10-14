@@ -2,33 +2,69 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-8f-1
-USING: room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names ;
 
 \ the screen fade (renderer +0x70) by script variable 1 with Hewie's light 0xF: byte 3 0 clear
 \ (0x808080), 2 full (0x80808080); 1 fades in by 0x10 a call and 3 back out, waiting (2),
 \ Hewie's +0xE4 set once there
-: water-tower-8f-1.cmd00 ( b0 -- )  drop s" water-tower-8f-1.cmd00" stub-step ;
+: water-tower-8f-1.cmd00 ( b0 -- )   \ (Hewie drawn in a colour fading by event variable 1 ($RRGGBBAA as the GS has
+    \ it, alpha on top): b0 0 clear, 2 full; 1 fading in by $10 a frame, 3 back out - then drawn as
+    \ he is; the colour: char-tint's, as the original's renderer +0x70 with his layer $F)
+    case
+        0 of  1 $808080 var-set  1 $808080 true char-tint  endof
+        2 of  1 $80808080 var-set  1 $80808080 true char-tint  endof
+        1 of  begin  1 var @  1 over true char-tint  $80808080 <> while
+                  1  1 var @ $10000000 +  var-set  yield
+              repeat  1 0 false char-tint  endof
+        3 of  begin  1 var @  1 over true char-tint  $808080 <> while
+                  1  1 var @ $10000000 -  var-set  yield
+              repeat  1 0 false char-tint  endof
+    endcase ;
 \ (as Room0C_Cmd01, the player only)
-: water-tower-8f-1.cmd01 ( b0 -- )  drop s" water-tower-8f-1.cmd01" stub-step ;
+: water-tower-8f-1.cmd01 ( b0 -- )  var-down-by-hit ;
 \ a cursor effect (RoomC7Cursor_vtable) at (x, y) kept in script variables 7 / 8, its slot in 6:
 \ byte 3 0 puts it at (246, 242); 1 moves it 4 a frame by the stick or the d-pad (x 0..492, y
 \ 0..420), waiting (2) until confirm (event 4 +0x5C) or cancel (+0x60); 2 ends it
-: water-tower-8f-1.cmd02 ( b0 -- )  drop s" water-tower-8f-1.cmd02" stub-step ;
+: water-tower-8f-1.cmd02 ( b0 -- )   \ (the aiming cursor at variables 7 / 8: b0 0 shown at (246, 242); 1 moved 4 a
+    \ frame by the arrows till confirm (event bit 4 set) or cancel (cleared); 2 gone)
+    case
+        0 of  7 246 var-set  8 242 var-set  cursor-draw  endof
+        1 of  begin
+                  cursor-step  cursor-draw
+                  menu-confirm? if  4 ebit-set  exit  then
+                  menu-cancel? if  4 ebit-clear  exit  then
+                  yield
+              again  endof
+        2 of  cursor-off  endof
+    endcase ;
 \ (as RoomC0_Cmd01) byte 3 2 up from frame 1268 (2.79 a frame, light 0x23) and 3 from frame 25
 \ (4.27, light 0xF), held at 0x80; 1 the fade fully on with light 0xA, else off with light 0x11
 \ (+0x64)
-: water-tower-8f-1.cmd03 ( b0 -- )  drop s" water-tower-8f-1.cmd03" stub-step ;
+: water-tower-8f-1.cmd03 ( b0 -- )   \ (the stalker drawn in a colour: b0 2 its alpha up 2.79 a frame from the scene's
+    \ frame 1268, 3 up 4.27 a frame from frame 25 - held at $80, full before them, as the
+    \ original's unsigned count gives; 1 full; else as he is. The colour: char-tint's, for the
+    \ original's renderer +0x70 / +0x64 and his layers $23 / $F / $A / $11)
+    case
+        2 of  cutscene-frame dup 1268 < if  drop $80  else  1268 - s>f 2.79e f* f>s $80 min  then
+              24 lshift $808080 or  $FE swap true char-tint  endof
+        3 of  cutscene-frame dup 25 < if  drop $80  else  25 - s>f 4.27e f* f>s $80 min  then
+              24 lshift $808080 or  $FE swap true char-tint  endof
+        1 of  $FE $FF808080 true char-tint  endof
+        >r  $FE 0 false char-tint  r>
+    endcase ;
 \ (as Room2A_Cmd03) the 0xD40-byte effect Debris_vtable started with byte 3
-: water-tower-8f-1.cmd04 ( b0 -- )  drop s" water-tower-8f-1.cmd04" stub-step ;
+: water-tower-8f-1.cmd04 ( b0 -- )  effects:debris ;   \ (debris falling from up the tower: b0 the spot, 3..5 in small pieces)
 \ (as Room23_Cmd00) the kind-0xB character's model +0xCC8: 0 (byte 3 1) or -0.02
-: water-tower-8f-1.cmd05 ( b0 -- )  drop s" water-tower-8f-1.cmd05" stub-step ;
+: water-tower-8f-1.cmd05 ( b0 -- )  drop ;   \ (character $B's model +0xCC8: 0 (b0 1) or -0.02 - its springs: not simulated here yet)
 \ (as Room48_Cmd02) byte 3 0 starts the effect BackdropModel_vtable (its slot in event variable
 \ 9); else that one is ended (EffectMgr_Remove)
-: water-tower-8f-1.cmd06 ( b0 -- )  drop s" water-tower-8f-1.cmd06" stub-step ;
+: water-light ( -- id )  0 $40404040  0e 30.1e 0e  3750e 0.05e 0.01e  effects:caustic ;   \ (BackdropModel)
+: water-tower-8f-1.cmd06 ( b0 -- )  9 ['] water-light effect-in-var ;   \ (the light on the water below: b0 0 made - kept in variable 9 - else gone)
 \ script variables 7 / 8 (the player's spot) in 151..269 / 171..219
-: water-tower-8f-1.cond00? ( -- flag )  s" water-tower-8f-1.cond00?" stub-flag ;
+: water-tower-8f-1.cond00? ( -- flag )   \ (vars 7 / 8, the player's spot, in 151..269 / 171..219)
+    7 var @ $FFFF and $97 $10E within  8 var @ $FFFF and $AB $DC within and ;
 \ a room callback: the pursuer's Pursuer_GrabHewieBehind
-: water-tower-8f-1.cond01? ( -- flag )  s" water-tower-8f-1.cond01?" stub-flag ;
+: water-tower-8f-1.cond01? ( -- flag )  grab-hewie-behind? ;   \ (the stalker's Pursuer_GrabHewieBehind)
 
 : water-tower-8f-1.enter ( -- )   \ 0042F500
     room-sounds
@@ -36,9 +72,9 @@ USING: room-names story.words story.shared flag-names ;
     $8E story-flag? not if
         0 0 $14 door-bits
         1 0 $14 door-bits
-        8 1 object-show
-        9 1 object-show
-        $A 1 object-show
+        8 1 object-hidden
+        9 1 object-hidden
+        $A 1 object-hidden
     else
         0 1 $14 door-bits
         1 1 $14 door-bits

@@ -43,7 +43,7 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
         her-mode @ 0=  her-doing @ $E <> and if
             group case
                 3 of  endof
-                2 of  her-danger @ 2 = if  0.0666667e  else  0.0466767e  then  change-fear  endof   \ running frightens
+                2 of  her-choker $8C <> if  her-danger @ 2 = if  0.0666667e  else  0.0466767e  then  change-fear  then  endof   \ running frightens (not with $8C)
                 1 of  fear-down  endof
                 >r  her-fear-bits @ 2 and 0= if  fear-down  then  r>
             endcase
@@ -128,13 +128,13 @@ create next-at 12 allot
 \ ---- turning to flee (R1 - Q on the keyboard: Fiona_StateFleeStart / FleeTurn): she whips round
 \ (0x403) and runs; as she turns her fear rises 10 (not in costume 8), and a door she turns from
 \ is slammed (fiona/slam.fs); Hewie's reaction: with him ----
-: add-fear ( F: amount -- )  her-fear f@ f+ 0e fmax 100e fmin her-fear f! ;   \ Fiona_AddPanic (charms: with items)
+: add-fear ( F: amount -- )  choker-fear her-fear f@ f+ 0e fmax 100e fmin her-fear f! ;   \ Fiona_AddPanic
 : events ( -- bits )  her-model @ 0 0 1 motion-events ;
 : costume ( -- n )  $26 progress pr.vars + c@ ;
 create behind-pt 12 allot   \ (her radius behind her: a door slammed as she turns from it)
 : flee-turn ( -- )
     recoil-down
-    ended? if  to-idle exit  then
+    ended? if  9 s" hewie" actor-named send reaction  to-idle exit  then   \ (Hewie told: Fiona_HewieReact 9)
     events $20 and if
         her-yaw f@ pi f+ angle-wrap self body-dims fdrop behind-pt her-at vec-ahead  behind-pt false slam-door drop
     then
@@ -144,7 +144,10 @@ create behind-pt 12 allot   \ (her radius behind her: a door slammed as she turn
 : flee-start ( -- )
     root-move
     settled? 0= if  exit  then
-    her-yaw f@ her-heading f!                          \ (the stalker within 30: toward him - with them)
+    her-yaw f@ her-heading f!                          \ (the stalker within 30: toward him - the turn spins her from him)
+    stalker-in-room dup 0< 0= if
+        dup body-at her-at vec-dist 30e f< if  her-at swap body-at vec-heading her-heading f!  else  drop  then
+    else  drop  then
     $403 -1 play-table  ['] flee-turn her-act ! ;
 : flee-button? ( -- flag )  r1 button-pressed? ;   \ (Progress_PlayerButtons: R1)
 : try-flee ( -- )   \ (free, not under flag 0x14, recovered, not panicking)

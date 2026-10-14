@@ -5,11 +5,11 @@ IN: story.rooms.castle-2f-4
 USING: room-names story.words story.shared flag-names ;
 
 \ Room31_Cmd00
-: castle-2f-4.cmd00 ( -- )  s" castle-2f-4.cmd00" stub-step ;
+: castle-2f-4.cmd00 ( -- )  1 0 tv-in ;   \ (room effect 1 the TV showing the screen)
 \ Room31_Cmd01
-: castle-2f-4.cmd01 ( -- )  s" castle-2f-4.cmd01" stub-step ;
+: castle-2f-4.cmd01 ( -- )  fan-turn ;
 \ Room31_Cmd02
-: castle-2f-4.cmd02 ( b0 -- )  drop s" castle-2f-4.cmd02" stub-step ;
+: castle-2f-4.cmd02 ( b0 -- )  $1B $40  0.491e 22.0e 69.502e  9.502e 22.0e 60.491e  0.491e 0.0e 69.502e  9.502e 0.0e 60.491e  lit-quad ;   \ (a reflecting window: b0 1 removed, 2 over the whole picture)
 
 : castle-2f-4.enter ( -- )   \ 00429E40
     castle-2f-4.cmd00

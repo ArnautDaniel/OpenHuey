@@ -6,9 +6,9 @@ USING: engine ;
 : pressed? ( scancode -- flag ) key-pressed? ;
 
 \ ---- the pad's buttons on the keyboard (the scripts' pad?: 0 circle, 1 square, 2 L1, 3 triangle,
-\ 4 R1, 5 cross, 6 start). Circle - the action button - is Space or Return. ----
+\ 4 R1, 5 cross, 6 start; 7 select, the menu). Circle - the action button - is Space or Return. ----
 0 constant circle   1 constant square   2 constant l1   3 constant triangle
-4 constant r1       5 constant cross    6 constant start-button
+4 constant r1       5 constant cross    6 constant start-button   7 constant select-button
 : button-keys ( b -- key1 key2 )   \ (0: none)
     case
         circle of  key: C key: Backspace  endof   \ (as hg: native/platform/input.c)
@@ -18,6 +18,7 @@ USING: engine ;
         r1 of  key: E 0  endof
         cross of  key: X key: Space  endof
         start-button of  key: Return 0  endof
+        select-button of  key: Tab 0  endof   \ (as hg)
         >r 0 0 r>
     endcase ;
 : either ( k1 k2 xt -- flag )   \ (either key so)

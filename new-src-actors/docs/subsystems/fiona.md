@@ -172,7 +172,7 @@ examining (`offer` / `take-offer`), messages on screen (`text-shown`: she stands
 |---|---|---|---|
 | `hit` | `( kind how fright -- )` | in (a stalker) | A blow or hold from the sender: kind 1 / 2 a blow, 4 a hard one, 6 a hold (how: the grip; 5 thrown off); `$8000` in how a stumble; fright a float cell. |
 | `hit-taken` | `( kind -- )` | out, to the sender | It struck home. |
-| `fiona-plight` | `( state -- )` | broadcast each frame | How she stands for an attack (Pursuer_FionaState): 0 calm, 1 fleeing, 2 panicking (fear over 90, the panic attack), 3 out of reach (struck, seized), 4 / 5 the panic's stages. |
+| `fiona-plight` | `( state ladder -- )` | broadcast each frame | The ladder she is on (-1 none: the stalker goes to beside it). How she stands for an attack (Pursuer_FionaState): 0 calm, 1 fleeing, 2 panicking (fear over 90, the panic attack), 3 out of reach (struck, seized), 4 / 5 the panic's stages. |
 
 Fiona_Reaction / Fiona_React: none while a reaction is under way (mode 4, floored $A), on a
 ladder (her fall from it: with the ladders) or with the world held. A blow knocks her down -
@@ -184,7 +184,8 @@ frames before she may fall again. A hard blow throws her: facing him back along 
 motion turned toward him, 20 degrees a frame. A hold catches her: her gasp $43, a flinch by
 his grip ($F02 by the arm looking at him - only facing him on open floor -, $F04, $F03 from
 behind, $F05), then free. Each takes its fright to her panic; a blow tells the danger she was
-struck (`danger-signal` 1); a stumble resets her recovery.
+struck (`danger-signal` 1); a stumble resets her recovery (`reset-recovery`: 1800 frames to calm
+again - it had been set to 0, as if she had calmed at once; the chokers spare her).
 Her costume 1 (the slip) lacks these animations - they come with the story's second motion set
 (event $A7); her clothes (costume 0) have them.
 
@@ -250,8 +251,8 @@ stalker at its front (area 0) on its far side (Doors_Side 1; slammed shut, or in
 passage) - each a `blow` 5, 3 damage, how: the exit. Off screen, she being chased and the door
 burst open, the stalker decides (`blow` all the same: struck only when he is right behind it).
 Any shut out: the kick's and the shove's blow is spent. Checked by `tests/stalker/test_stalker.fs`
-(a slam on him in the doorway). Not yet: the rumble; the PursuerGroup bit 8 ("may pass") is
-taken as standing on the door's passage triangles.
+(a slam on him in the doorway). The PursuerGroup bit 8 ("may pass") is taken as standing on the
+door's passage triangles.
 ## F5: ladders (`scripts/fiona/ladder.fs`)
 
 A ladder is a nav link of the room (NavMesh_FindDoorRegions: two triangles sharing a link group,
@@ -274,8 +275,8 @@ moved by her animations' root motion, up and down too, off the floor. Rooms with
 castle-1f-2 (two), room 3 (two), 29, 37, 40, 47, 48, 84. Checked by
 `tests/fiona/test_ladder.fs` (11): on from the top and down, off on the ground floor; turned
 from it nothing; on from the foot and up, off on the floor above; the stalker at its foot - she
-holds on. Not yet: knocked off it (FI 0x1AD584 bit 2: Fiona_StateCaughtCrawling), the region's
-slot bits for Hewie.
+holds on; struck on it, knocked off (`knocked-off`, Fiona_StateCaughtCrawling). Not yet: the
+region's slot bits for Hewie.
 
 Also fixed with it: `walk-anim` (Fiona_StateCmdWalkAnim) read the animation's key events for
 `MOTION_EVENTS` $20; it is the motion's come-round flag (`ended?`).
@@ -292,8 +293,8 @@ pushed if it can go - `push-obstacle`, her push ($1201: 5 on, her sound $45; Fio
 - else she strains ($1203). Pushing on, each push come round: `obstacle-moved`; the stick still
 that way and the floor 2.2 ahead pushable, pushed again, else she strains. The stick let go:
 straining she lets go ($1202, then free), else free. The stalker touching her: free at once.
-Checked by `tests/obstacles/test_obstacles.fs`. Not yet: knocked while pushing (FI 0x1AD584
-bit 2), the push's rumble.
+She lets go when the stalker touches her or her panic attack takes her (Fiona_PushBlocked: FI
+0x1AD584 bit 2). Checked by `tests/obstacles/test_obstacles.fs`.
 
 ## Her hanging parts (`src/game/cloth.c`)
 
@@ -312,4 +313,97 @@ bone is aimed at it before the model is skinned (the pose hook, as Hewie's legs)
 
 Settled afresh (30 steps) when the model is loaded and when it is put somewhere more than 30
 away (hga's own: the original's points start at the origin and settle from there).
-Not yet: her other costumes' sets (`costume_hang16` / `costume_hang3`), the stalkers' and the cast's.
+Her other costumes' sets are there too (`costume_hang16` / `costume_hang3`: O_FIH, O_FIO; O_FIB,
+O_FIC), and the stalkers' (Daniella, Debilitas, Riccardo, Lorenzo's two). Not yet: the cast's
+(Lorenzo's hanging figure's strands, her doubles' springs).
+
+## F4e: the creatures' requests (`fiona/hurt.fs`, `fiona/seized.fs`)
+
+`fiona-request ( kind x y z )` from a creature (Progress_Noise; the point it came from):
+- **$D** a spirit touched her: **falls** ($13, Fiona_StateFall13) away from the point - on open
+  floor by the side it came from ($1004 ahead, $1005 behind, $1006 / $1007 the sides), on a step
+  or in a doorway straight down ($100F); her cry ($3F), a noise ($5F); at the fall's last frame
+  the threat up 75; up at its end.
+- **3** a red one's going: **grabbed** ($10), as a stalker's grab.
+- **$C** homunculi: **held down** ($12, Fiona_StateHold / StateStruggle): $1405, $1406; each shake
+  takes a frame off the hold (180) while shakes count (60); up ($1407) when the hold runs out or no
+  homunculus in her room is holding (move 8, from `creature-doing`).
+Not while a reaction is under way, on a ladder or floored (but held again by them while held).
+**Unseen** (+0x1AD630): item $89 in the equipment's slot 1, standing still 60 frames - she fades
+out of sight (8 a frame; back in when she moves) and `fiona-unseen` is told. Her motion flags
+($20 come round, $400 at its last frame) are the original's MOTION_EVENTS. The story's 0xB2
+(`throw-down`: thrown by a script), 0x96 (`look-hold`), 0xBC, cond 0x59.
+
+
+## F6: the rest of her (2026-10-13)
+
+- **Her voice and motion sounds** (`fiona/voice.fs`; Fiona_Voice, Fiona_MotionSounds): on her
+  motions' key events - letting go ($3C), the shove's grunt and noise ($1F; the special costumes'
+  own), the flee turn ($F), pulling free / dragged / carried ($7D), the panic fall's slide ($7E),
+  falls ($80), a locked door's rattle ($71). Her cries go through `voice`: muffled ($1C, bank 6)
+  when a water triangle ($2008000) lies between her feet and her head (`nav-crosses?`).
+- **Locked doors** (`fiona/doors.fs`; Fiona_StateLockedQuick / Slow / Spot / Try): quick - at her
+  spot the try, then the built-in script's message, "The door is locked from the other side..."
+  (system message $8001, through the room: `fiona-message`), standing again once it is read; chased
+  - from the spot, no message; panicking (her fear's bit 2) - from where she stands, sliding to the
+  spot a seventh of the way a frame as the try fades in.
+- **Struck while using a door** (Fiona_StartInDoor): the door she holds is let go as she meant it.
+- **The story's door use** (moves 3 / 4 of `self-move-slot`, Fiona_Requests): through the door at
+  that exit, opening or shutting it; her move done as the use ends.
+- **Hit by a door** (request 5, Fiona_StateHitByDoor): the stalker waiting at a door she is behind
+  (its area 2) or holds, the door 10..80 open, pushes it into her - thrown along its swing,
+  forward ($1008) or back ($100B; panicking flung down, $B04, her panic full).
+- **Knocked off a ladder** (reaction 8, Fiona_StateCaughtCrawling / CrawlDrop / Pull / Fall / Down):
+  to the spot 10 out from its top - within 20 of it pulled off ($F02), else dropped there ($70A /
+  $70B, then down $70C and up $100D), falling 0.5 faster a frame; her cry ($7D / $81).
+- **The charm** (item $88 in slot 1): a hold doesn't take her (the fright still does).
+- **The short falls** on a step, in a doorway's triangles, within 20 of a door, or in a ladder's
+  region (Progress_WhoIsWhere's bits).
+- **Keeping out of the others** (Fiona_KeepApart): free, overlapping the stalker she is pushed out
+  to their radii apart (along his heading when he comes at her); overlapping Hewie, back to where
+  she was.
+- **Her costumes** (`wear`; the story's 0x97, event.c fiona_model): 0 O_FIN (her clothes), 1 O_FIS
+  (the slip), 2 O_FIH, 3 O_FIO, 6 O_FIB, 7 O_FIC, 8 O_FIF; worn by the story - variants 1..6 by the
+  last of story flags $41, $6F, $82, $88, $94, $95 (Fiona_LoadFiles); textures their _000's; the
+  markers their own (0, 6, 7) or her clothes'. (Equipment isn't shown on her model in this build:
+  CharModel_ShowParts is empty.)
+- **Her shove and the special strikes** (Fiona_StateStrike): costume 6's strike 6 ahead of bone
+  $21 (reach 3, damage 5, its own sound $22), costume 7's 10 aside of bone $23 (reach 10, a hard
+  blow of 10, a blood spray on whom it meets); her boots in slot 0 - metal ($81: 1 in 10 a
+  stumble, damage 2), silver ($82: a hard blow of 5, 1 in 5 a stumble), burst shoes ($83: 1 in 10
+  a hard blow of 50 with a burst on him); Fortis's boost x3. (The strike's offsets are turned by her
+  heading from the bone - the engine keeps bone positions, not their frames.)
+- **Her blow's point** (Fiona_PointOfInterest, `body-point!`): her kick's (10 up, her radius
+  ahead) or her shove's at its key - the story's zones test it (cond 0x37 `char-in-zone?`), and
+  the things she kicks.
+- **Her call while followed** (Fiona_CallAction): a creature within 10 ahead (45 degrees), reached
+  straight from her - "go for it" ($2D).
+- **The story's 0x20 / 0x21 for her**: through blocked floor (`noclip`), left alone - out of reach
+  of attacks (`aside`: her plight 3).
+- **Unseen, the stalker walks into her**: he has her (a hold, how 3).
+- **The flee turn**: toward the stalker within 30 (the turn spins her from him); at its end Hewie
+  told (reaction 9).
+- **Letting go of things** (`fiona/letgo.fs`; Fiona_StateLetGoStart / LetGo): the triangle with a
+  throwable in slot 2 - thrown ($D00), aimed at the stalker within 80 and 60 degrees ($D01), set
+  down ($D02); at the key the thing leaves her hand (4 / 6 / still) unless her hand is past a wall;
+  one of the item used; a throw tells Hewie (12). What becomes of them: `docs/subsystems/things.md`.
+
+**The rumble** (`scripts/rumble.fs`, the engine's src/game/rumble.c): her jolts - the pad's
+large motor for some frames - as the original's: knocked down ($80 / $A0, 8), thrown or a door
+into her ($D0, 12), seized ($FF, 16), caught ($80, 8), a spirit's fall ($A0, 8), off a ladder
+($D0, 12), a door slammed ($90, 8), her kick landing ($C0, 12), each push ($40, 16), each tug led
+or dragged ($60, 8). The creatures leave her be while she is out of reach (`fiona-plight` 3:
+struck, seized, set aside by the story's 0x21). She never fades in doorways (Fiona_LightChange
+keeps her layer; the others do: `doorway_faded`).
+
+**Her other costumes' hanging parts** (Costume2 / 3 / 6 / 7 Model_Setup; src/game/cloth.c): O_FIH and
+O_FIO - a skirt (as her clothes'), a bone hanging, her chest, another bone hanging, sixteen hanging
+points (`CLOTH_COSTUME`: those on a bone swing within 30 / 35 degrees, the rest 60, some going on
+straight from the one before) and three blown by a wind off a bone (`CLOTH_WIND`); O_FIB - a bone
+hanging, her hair, her chest; O_FIC - five bones hanging, two sprung, one more hanging. (O_FIF has
+none.) **Unseen in her camouflage** (item $89 in the equipment's slot 1; Fiona_LightChange): she
+fades out, and once gone shows softened - layer $1C, drawn at half size and laid over the scene
+before the room's look (`post_soft_*`).
+
+Not yet: her own mind while Hewie is the one played (Fiona_MoodAI, Fiona_OffscreenFrame,
+Fiona_Timers - with Hewie's played section, H4).

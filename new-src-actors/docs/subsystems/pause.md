@@ -2,7 +2,11 @@
 
 ## Purpose
 
-The pause screen (`src/game/pause.c`, SceneGame +0x73EBA0). Its movie half is built: Start
+The pause screen (`src/game/pause.c`, SceneGame +0x73EBA0). In play, Start holds the world
+(`pause!`: its own `held-tick` frames) under a dimmed screen with "PAUSE"; Start goes back,
+Select the menu - "Return to game" / "Exit to title screen", quitting asked ("yes / no", no
+first; Cancel back too), then darkening to the title (`soft-reset`). The sound is turned down as
+far as it is open (the effects' master and the stream). Its movie half: Start
 while a scene's movie plays pauses it and dims the screen with "Unpause game" / "Skip". Start
 goes back to it; Cancel skips it - the screen darkens to black and `movie-skipped` is set, which
 the scene's script reads to end the scene; the script then sets `pause-wanted`, which closes it.
@@ -25,6 +29,8 @@ skipping) and the two lines at (320, 400) / (320, 420) of the PS2's 512 x 448.
 
 ## Status
 
-**Movie pause built** (`scripts/pause.fs`), with the story's S4. Not yet: the play pause ("back"
-/ "quit", the confirmation), the sound turned down while open (`duck`), the message-only mode
-(no pad).
+**Built** (`scripts/pause.fs`): the play pause and the movie pause. Checked by
+`tests/pause/test_pause.fs` (10) and the story's test; seen on screen. The stage music turned down
+with the rest (`stage-music-volume!`: the sequences' master); the pad's rumble stopped while the
+game is paused. The options' volume scales everything heard (`game-volume!`). The message-only
+mode (the PS2's controller unplugged): not applicable.

@@ -7,8 +7,8 @@ USING: room-names story.words story.shared flag-names ;
 \ room 0xE3: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
 : off-map-e3.cmd00 ( -- )  s" off-map-e3.cmd00" stub-step ;
-\ the progress object's +0x7C with the caller's arguments
-: off-map-e3.cond00? ( -- flag )  s" off-map-e3.cond00?" stub-flag ;
+\ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
+: off-map-e3.cond00? ( -- flag )  true ;
 
 : off-map-e3.enter ( -- )   \ 00448D20
     0 -35.8 -50.5 -27.25 0 effect-86

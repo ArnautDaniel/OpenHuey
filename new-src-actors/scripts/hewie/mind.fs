@@ -2,7 +2,7 @@
 \ notices, his own decisions, his mode's behaviour (calm / wary / tense), what he does next by
 \ his trust (the weighted lists), and his body as it is shown (overlays, neck, feet, sounds).
 IN: hewie.mind
-USING: engine actors common facts paths messages hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen hewie.actions hewie.commands flag-names ;
+USING: engine actors common facts paths messages hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.fetch hewie.exits flag-names ;
 
 \ report_fiona_near: how near she is, for the story (1 within 20, 2 within 50, 3 further)
 : report-near ( -- )
@@ -49,6 +49,7 @@ USING: engine actors common facts paths messages hewie.state hewie.body hewie.ta
     then
     his-mode @ 8 <> his-action @ $7A <> and if  0 his-ready !  then
     his-yelp @ if  -1 his-yelp +!  then
+    his-creature-t @ if  -1 his-creature-t +!  then
     1 his-snd-t +!  his-snd-t @ 3000 > if  3000 his-snd-t !  then
     his-mood @ if
         -1 his-mood-time +!  his-mood-time @ 0<= if  calm-down  then
@@ -60,7 +61,7 @@ USING: engine actors common facts paths messages hewie.state hewie.body hewie.ta
     his-hold-call @ if  -1 his-hold-call +!  then ;
 
 \ ---- Hewie_Obedience: obeying her for a while, then waiting (doing as he likes) for a while ----
-: wait-time! ( -- )  hard? if  wait-time-hard  else  wait-time  then  trust-of his-obey ! ;
+: wait-time! ( -- )  black-shepherd? if  wait-time-shepherd  else  wait-time  then  trust-of his-obey ! ;
 : obedience ( -- )
     -1 his-obey +!
     his-waiting @ 1 =  her-with? and if
@@ -97,11 +98,19 @@ USING: engine actors common facts paths messages hewie.state hewie.body hewie.ta
     fdup 40e f< if  fdrop 2 exit  then  fdup 60e f< if  fdrop 3 exit  then
     fdup 80e f< if  fdrop 4 exit  then  100e f< if  5  else  6  then ;
 \ Hewie_SituationList: the list of a table that fits (calm or followed: her distance; chased:
-\ 0 while she panics, else 4 + her distance - the stalker's doings with H3)
-: situation ( -- n )
-    his-danger @ 2 <> if  her-band exit  then
+\ 0 while she panics; the stalker here hurt or held off 1, within 30 of him 2, of her 3; else
+\ 4 + her distance)
+: stalker-near? ( v -- flag )  pursuer body-at vec-dist 30e f< ;
+: situation-for ( kind -- n )
+    2 <> if  her-band exit  then
     his-panic @ 4 >= if  0 exit  then
+    pursuer with? if
+        st-cond @ 1 =  pursuer mode-of 4 = or if  1 exit  then
+        his-at stalker-near? if  2 exit  then
+        her-with? if  fiona-at stalker-near? if  3 exit  then  then
+    then
     4 her-band + ;
+: situation ( -- n )  his-danger @ situation-for ;
 \ a weighted pick by his trust from a list (count, then an action and 8 weights an entry); an
 \ action that `favoured` names weighs 20 more
 variable pk-roll  variable pk-sum
@@ -115,12 +124,22 @@ variable pk-roll  variable pk-sum
     loop  drop r> drop 0 ;
 : list-of ( table i -- list )  1+ cells + @ ;
 \ Hewie_WhatNext: by the danger, obeying or waiting (H3: growling at the stalker, the creatures)
+: growl? ( -- flag )   \ (she hides from the stalker here, not caught: by chance he draws it off)
+    pursuer with? hiding? and 0= if  false exit  then
+    pursuer mode-of dup 3 = swap 4 = or if  false exit  then
+    growl-chance by-chance ;
+: hostile? ( -- flag )  his-creature-t @ 0> ;   \ (a creature up and about in his room)
 : what-next ( -- )
+    growl? if  $7B 0 want exit  then
+    hostile? if
+        his-waiting @ 0= if  tense-lists  else  black-shepherd? if  tense-wait-shepherd-lists  else  tense-wait-lists  then  then
+        2 situation-for list-of -1 pick-from 0 want exit
+    then
     his-waiting @ 0= if
         his-danger @ case  0 of  calm-lists  endof  1 of  followed-lists  endof  >r tense-lists r>  endcase
     else
         his-danger @ case  0 of  calm-wait-lists  endof  1 of  followed-wait-lists  endof
-            >r hard? if  tense-wait-hard-lists  else  tense-wait-lists  then  r>  endcase
+            >r black-shepherd? if  tense-wait-shepherd-lists  else  tense-wait-lists  then  r>  endcase
     then
     situation list-of -1 pick-from 0 want ;
 \ Hewie_WhenIdle (out of the room being played): waiting a while hurt; else from the idle list,
@@ -156,10 +175,22 @@ fvariable sl-x  fvariable sl-z
     else his-panic-seen @ 1 and 0= his-panic @ 4 = and if
         his-panic-seen @ 1 or his-panic-seen !  his-mood @ 3 <> if  drop panic4-chance by-chance  then
     then then ;
+\ the ball he follows: lost once it lies still; going (not hidden) ahead of him (within 120
+\ degrees of his head's way) where he can get straight to: after it (0x78)
+: ball-ahead? ( -- flag )
+    ball-there? 0= his-action @ dup $78 = swap $76 = or or if  false exit  then
+    ball-speed 0.5e f< if  forget-ball false exit  then
+    ball-at heading-to  his-yaw his-head-yaw f@ f+ angle-wrap f- angle-wrap fabs  120e deg>rad f< 0= if  false exit  then
+    self body-mask on-ball-line? 0= if  false exit  then
+    his-action @ $7D = if  obeys  then  true ;
 : own-decisions ( -- )
     his-mode @ if  0 his-scene-req !  exit  then
     his-cond @ 2 = if  his-action @ dup $52 <> swap $74 <> and if  $52 0 want  then  exit  then
     his-yelp @ 0> his-action @ $76 <> and if  $76 0 want  exit  then
+    first-door case   \ (in a door's way: Hewie_FirstDoor)
+        0 of  his-action @ $65 <> if  $65 0 want  then  exit  endof
+        1 of  his-action @ dup $66 <> swap $65 <> and if  $66 0 want  then  exit  endof
+    endcase
     his-cmd @ 0= his-cmd @ $80000000 and or if  exit  then
     her-with? if
         his-panic-seen @ 2 and 0= if  panic-brings? if  $4F 0 want  exit  then  then
@@ -173,6 +204,7 @@ fvariable sl-x  fvariable sl-z
     then  his-held !
     his-danger @ 2 <> his-alert-was @ 0= and his-alert @ 0<> and his-action @ $76 <> and if  $14 0 want  exit  then
     his-scene-req @ 1 = if  0 his-scene-req !  his-action @ $79 <> if  $79 0 want  exit  then  then
+    his-danger @ if  forget-ball  else  ball-ahead? if  $78 0 want  exit  then  then
     anim-group 4 < his-action @ $6E <> and facing-down-slope? and if  $6E 0 want  exit  then
     his-cmd @ $80000020 and $20 =  anim-group dup 10 = swap 4 < or and if
         his-action @ $6A <> if
@@ -207,11 +239,15 @@ create mood-acts  3 cells allot
         0 of  drop  0 his-hits !  0 his-did-2 !  0 his-did !  0 his-alert !  endof
         1 of  0 his-hits !  0 his-did-2 !  0 his-did !
               0= his-away @ 0= and if
+                  his-alert @ if  feel-pursuer  then
                   his-cmd @ $80000200 and $200 = if  $14 0 want  then
                   1 cells mood-acts + @ his-mood-act !  exit
               then  endof
         2 of  drop  0 his-hits !  0 his-did-2 !  0 his-did !
-              his-away @ 0= if  pursuer dup with? if  his-alert-what !  3 his-alert !  else  drop  then  then  endof
+              his-away @ 0= if
+                  pursuer dup with? if  his-alert-what !  3 his-alert !  else  drop  then
+                  his-alert @ dup 3 = swap 1 = or if  feel-pursuer  then
+              then  endof
         >r 2drop r> drop exit
     endcase
     his-danger @ 0 max 2 min cells mood-acts + @ his-mood-act !
@@ -340,7 +376,7 @@ variable feet-new
         $2008000 of  6 sound-loaded? if  $18 6  else  $10 5  then  endof
         >r $10 5 r>
     endcase                                                    ( snd bank )
-    swap his-feet-n @ 3 and +  swap  0 step-pitch  his-at vec@ sound-at  1 his-feet-n +! ;
+    swap his-feet-n @ 3 and +  swap  0 step-pitch  his-at vec@ his-sound  1 his-feet-n +! ;
 
 \ Hewie_MoveSubMode: what he is doing, for the story
 : move-sub ( -- )
@@ -392,7 +428,8 @@ variable feet-new
     self body? 0= if  0 0 0 0 0 0 0  0 0 -1 0 -1 his-trust @
     else  his-away @ if  1  else  2  then  his-action @ his-mode @ his-sub @ his-cond @ his-mood @ anim-group
           commandable? near-command? reachable? breakable? his-way @ his-trust @  then
-    broadcast hewie-doing ;
+    broadcast hewie-doing
+    his-hp @ broadcast hewie-health ;
 : full-stop ( -- )   \ Hewie_FullStop: what a script's letting go clears
     0 his-broke !  0 his-hits !  -1 his-look-char !  0 his-scene-req !  0 his-look-pt? !
     hewie-hidden state-flag-clear ;
@@ -412,7 +449,7 @@ variable feet-new
     upkeep  alert  his-cond @ 2 <> if  report-near  then  obedience
     his-away @ if   \ out of the room being played
         arrive 0= if
-            hidden-frame
+            hidden-frame  scuffle
             his-mood-act @ ?dup if  execute  then
             his-act @ ?dup if  execute  then
             show-him  tell-doing exit
@@ -435,7 +472,7 @@ variable feet-new
     -1 his-done !  0 his-busy !  -1 his-meet !  -1 his-target !  -1 his-target2 !  -1 his-look-char !  -1 his-door !  -1 his-noise-room !
     2 his-way !   \ (Hewie_Activate: either half)
     $FF his-call !  $FF his-by !  -1 his-yelp !  -1 his-snd-anim !  1e his-floor-k f!
-    16 his-skill !  16 his-skill cell+ !  16 his-skill 2 cells + !
+    -1 his-follows !
     0 -1 set-mood  0 add-trust
     obeys  1 his-pending !
     100 hp!  0 cond!  300 his-hurt-t !

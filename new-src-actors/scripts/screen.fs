@@ -26,7 +26,8 @@ create kind-levels   \ (from, to)
     frames @ 0= if  to @ level !  then ;
 : finish ( -- )   \ it counts as over
     frames @ t !  to @ level !
-    asked-by @ dup 0< if  drop exit  then  -1 asked-by !  send fade-done ;
+    asked-by @ dup 0< if  drop exit  then  -1 asked-by !
+    dup alive? if  send fade-done  else  drop  then ;   \ (who asked may be gone - the story stopped)
 : step ( -- )
     fading? 0= if  exit  then
     1 t +!  to @ from @ - t @ * frames @ / from @ + level !

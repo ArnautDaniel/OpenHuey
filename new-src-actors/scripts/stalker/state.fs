@@ -13,6 +13,10 @@ state: stalker-state
   cell field my-model           \ its model (an Actor)
   cell field in-game            \ in the game (stalker-in .. stalker-out)
   cell field my-mode            \ +0x16C8: 0 after Fiona, 1 heading for her room, 2 searching it, 3 waiting about, 4 held off
+  cell field beaten             \ (+0xC4 2) knocked out of health this time in the game: the summoner takes
+                                \ him for longer
+  cell field my-floor           \ the floor he may walk (his kind's mask; 0 while the story's 0x20 has him through anything)
+  cell field drawn-tri          \ the doll's triangle he is drawn to (its search stop; -1 none)
   cell field hp  cell field hp-max
   cell field hard               \ the hard setting (progress +0x30 bit 0x8000: his numbers differ)
   cell field growl-t            \ +0x17EC: frames since his last growl
@@ -28,6 +32,12 @@ state: stalker-state
   1 floats field d-fiona  1 floats field d-hewie
   cell field sees-fiona  cell field sees-hewie
   cell field did-hear  cell field heard-loud  cell field heard-room  cell field heard-tri
+  cell field heard-source       \ (whose: fiona-noise, hewie-noise, world-noise)
+  \ his lead (Pursuer_PickTarget: +0x16C9 its pull - 5 Fiona, 4 a noise, 1 Hewie, 0 none - and
+  \ +0x16CA how alarming it was - 7 seeing her, 6 hearing her, 5 a noise, 2 seeing Hewie, 1 hearing
+  \ him); his start at a more alarming one (Pursuer_ReactToEvent): its frames, where, then what
+  cell field lead  cell field lead-alarm
+  cell field start-t  12 field start-at  cell field start-then
   cell field sense-turn
   1 floats field view-range  1 floats field view-half  1 floats field view-heading
   cell field hear-threshold     \ (+0x14B8: noises louder than this)
@@ -73,6 +83,9 @@ state: stalker-state
   cell field combo  cell field combo-step  cell field swung  cell field sent  cell field took
   cell field cry  cell field hold-off  cell field freeze-t
   cell field her-plight  cell field her-stage
+  cell field her-ladder-on      \ the ladder she is on (the room's nav link; -1 none: `fiona-plight`)
+  cell field at-ladder          \ the ladder he makes for or stands by (stalker/ladder.fs; -1 none)
+  cell field ladder-offsets     \ out from a ladder's ends: his family's (vtable +0x9C)
   cell field round-dir  1 floats field round-gone
   \ taking her (stalker/grab.fs): leading her (his mode 8 while she's his; 1 asked, -1 holding), how (6 by the hand,
   \ 8 walking), her answer (0 none yet, 1 taken, 2 refused, 3 broke free), his taunts so far
@@ -104,15 +117,20 @@ state: stalker-state
   cell field out-going  cell field door-use  cell field asked  cell field held-door  cell field door-wait
   cell field push-exit  1 floats field push-way  cell field stun-t
   cell field her-came
+  cell field own-mark           \ ( who -- ) his blow's mark on the one it struck, as they cry out (0 none)
+  \ the door he came into her room by, to shut behind him once clear of it (-1 none), and his
+  \ way with such doors (stalker/doorway.fs `shut-behind`: his DoorBreak)
+  cell field to-shut  cell field door-manner
   \ Hewie (stalker/bitten.fs; Pursuer_StateHewieBites / HewieHolds, P3c): his temper with Hewie
   \ (+0x16BC, to 1000) and how much he stands (+0x16DC), the throw's chance a hold (+0x16E8);
   \ Hewie on him - the attack's kind (10..15; 0 none: +0x104), its animation (+0x1624), how it
   \ goes (+0x1628: 0 held, 1 throwing him off, 2 let go), the holds so far (+0x1634), the heading
-  \ he turns to and by how much a frame; after Hewie (his temper up): frames of it
+  \ he turns to and by how much a frame; after Hewie (his temper up): frames left for it (+0x1630,
+  \ from +0x16D8 `dog-limit`), and closing in, attacking or taunting
   cell field temper  cell field tolerance  1 floats field throw-k
   cell field bitten  cell field bite-anim  cell field bite-how  1 floats field holds
   1 floats field bite-yaw  1 floats field bite-turn
-  cell field dog-t
+  cell field dog-t  cell field dog-limit  cell field dog-phase
   cell field dog-sent            \ his blow this move has struck Hewie (stalker/attack.fs)
   cell field at-dog              \ his combo is at Hewie (after him, his temper up), not her
   cell field raging              \ +0x16B8 2: in a rage (the story's 0x31) - his stance and walk
@@ -122,7 +140,14 @@ state: stalker-state
   cell field own-chase  cell field own-run  cell field own-acts  1 floats field attack-range
   cell field own-frame          \ his own each frame (Riccardo's rage, snort, impact)
   cell field alt-tables         \ his tables' second set (kind 37 alerted; else his rage)
-  cell field tint-t  cell field tint-was  cell field unseen   \ (the TintStalker: shown a while)
+  cell field tint-t  cell field tint-was  cell field unseen   \ (the TintStalker: shown a while,
+  1 floats field tint-alpha  cell field tint-fade  cell field tint-shown   \ how faded: its tint;
+  1 floats field tint-phase                                               \ kind 37's: its pulse)
+  cell field mark-id            \ (kind 12) its marker's effect actor (-1 none)
+  \ the story's zones a blow may strike instead of her (Events_NearestPoint: their kind's bit 1),
+  \ this frame: on, and their centres; Riccardo's shot at one shown as his point for a while
+  32 constant #targets
+  #targets cells field target-on   #targets 3 * floats field target-at   cell field shot-t
   cell field comings             \ +0x1630: the times he comes on, seen by her, before backing off
   cell field blows  cell field blow-move  cell field blow-aim   \ (Riccardo's flurry: blows left, the move, his aim)
   \ (Lorenzo's other class: under the floor - frames left, where he comes up, how; whom his sweep struck)

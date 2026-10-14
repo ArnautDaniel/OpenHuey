@@ -26,5 +26,7 @@ void seq_chan_volume(int k, int ch, int v);
 void seq_midi(int k, int status, int d1, int d2);
 /* everything stopped, the bank and sequences dropped */
 void seq_reset(void);
+/* all the sequences' volume (0..1; the pause turns the stage music down) */
+void seq_master_volume(float v);
 
 #endif

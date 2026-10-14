@@ -9,7 +9,7 @@ USING: room-names story.words story.shared flag-names ;
     1 0 $300000 nav-group
     $84 story-flag? if
         0 1 $14 door-bits
-        2 1 object-show
+        2 1 object-hidden
     then
     $27C story-flag? not if
         0 5.64 9.5 5.58 flicker-sprite

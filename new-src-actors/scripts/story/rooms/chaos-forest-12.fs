@@ -6,10 +6,10 @@ USING: room-names story.words story.shared ;
 
 \ room 0x10A: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
 \ sideways 1 a frame (room_nudge).
-: chaos-forest-12.cmd00 ( b0 -- )  drop s" chaos-forest-12.cmd00" stub-step ;
+: chaos-forest-12.cmd00 ( b0 -- )  1e room-nudge ;
 \ room 0x10A: a noise of loudness 0x20 or more was made in this room last frame (the progress'
 \ noise requests kept at +0x10D4).
-: chaos-forest-12.cond00? ( -- flag )  s" chaos-forest-12.cond00?" stub-flag ;
+: chaos-forest-12.cond00? ( -- flag )  loud-here? ;
 
 : chaos-forest-12.enter ( -- )   \ 00419730
     room-sounds

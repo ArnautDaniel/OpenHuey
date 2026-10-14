@@ -5,7 +5,7 @@ IN: story.rooms.water-tower-1f-1
 USING: room-names story.words story.shared flag-names ;
 
 \ room 0xC1: the summoner's countdown (progress +0x764) has run out.
-: water-tower-1f-1.cond00? ( -- flag )  s" water-tower-1f-1.cond00?" stub-flag ;
+: water-tower-1f-1.cond00? ( -- flag )  summoner-done? ;
 
 : water-tower-1f-1.enter ( -- )   \ 0043EC80
     room-sounds

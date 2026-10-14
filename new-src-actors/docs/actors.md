@@ -46,7 +46,7 @@ A handler runs with its message's arguments on the stack, and must consume them.
 doesn't, or it fails, the kernel names the actor and handler, and puts the stacks (data,
 return, float) back as they were. A message the behaviour (and its parents) doesn't handle is
 dropped, and the kernel counts it and reports it once per behaviour and kind (`.unhandled`).
-The kernel's own messages (`tick`, `frame-end`, `spawned`, `killed`) are dropped quietly.
+The kernel's own messages (`tick`, `frame-end`, `spawned`, `killed`, `held-tick`) are dropped quietly.
 
 `become ( behaviour -- )` switches the current actor to another behaviour from the next
 message on.
@@ -78,6 +78,9 @@ sender  ( -- id )          \ who sent the message being handled (-1: the kernel)
 
 - `actors-frame ( -- )`: one frame (tick, deliver, frame-end, deliver). The engine calls it
   each tick, and tests call it directly.
+- While the world is held (`pause!`: a menu is up) the engine runs a held frame instead:
+  `held-tick` to its subscribers only, then deliver. Messages still reach every actor; only the
+  frames stop (the sub screen subscribes to it, so it runs while Fiona and the rest stand still).
 - `deliver ( -- )`: deliver what is queued now (tests).
 - `trace-on` / `trace-off`: print every message as it is delivered (`frame  from -> to  kind
   args`).
@@ -92,6 +95,7 @@ sender  ( -- id )          \ who sent the message being handled (-1: the kernel)
 ```c
 void bind_hactor(Forth *f);                 /* the words (vocabulary `actors`) */
 void hactor_frame(Forth *f);                /* one frame: the engine calls it each tick */
+void hactor_held_frame(Forth *f);           /* the world held: `held-tick`, then deliver */
 void hactor_send(int from, int to, int kind, const Cell *args, int n);
 void hactor_broadcast(int from, int kind, const Cell *args, int n);
 void hactor_reset(void);

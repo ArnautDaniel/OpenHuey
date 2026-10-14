@@ -6,13 +6,13 @@ USING: room-names story.words story.shared flag-names ;
 
 \ room 0x84: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
-: house-of-truth-b1-1.cmd00 ( -- )  s" house-of-truth-b1-1.cmd00" stub-step ;
+: house-of-truth-b1-1.cmd00 ( -- )  slam-shake ;
 
 : house-of-truth-b1-1.enter ( -- )   \ 00432420
     0 1 $14 door-bits
-    0 1 object-show
-    1 1 object-show
-    2 1 object-show
+    0 1 object-hidden
+    1 1 object-hidden
+    2 1 object-hidden
 ;
 
 : house-of-truth-b1-1.char-enter ( -- )   \ 00432440
@@ -193,9 +193,9 @@ USING: room-names story.words story.shared flag-names ;
     1 char-activate
     $85 0 82 hewie-to-room
     0 1 $14 door-bits
-    0 1 object-show
-    1 1 object-show
-    2 1 object-show
+    0 1 object-hidden
+    1 1 object-hidden
+    2 1 object-hidden
     $F $51 fade
     wait-fade
     $4B resident-flag-set

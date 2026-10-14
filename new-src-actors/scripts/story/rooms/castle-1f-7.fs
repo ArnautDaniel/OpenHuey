@@ -2,14 +2,41 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-7
-USING: room-names story.words story.shared flag-names ;
+USING: engine common room-names story.words story.shared flag-names ;
 
 \ a lid (pstr_kousi_2, +0x24 its height, +0x34 its speed): byte 3 0 up, 1 shut; 2 falling and
 \ bouncing shut (the first landing clears progress flag 0x50 and, unless the director says no,
+\ the lid falling shut: faster by 0.1 a frame; landed, it bounces back a fifth as fast - the first
+\ time story flag $310 cleared and (the camera not in its free mode) a thud; settled below 0.02
+: lid-y ( F: -- y )  s" kousi" place-y object@ ;
+: lid-falls ( -- settled? )
+    -0.1e s" kousi" $34 object+!  s" kousi" $34 object@ s" kousi" place-y object+!
+    lid-y -25.3e f< if
+        s" kousi" $30 object@ f0> if
+            -1e s" kousi" $30 object!  $310 story-flag-clear
+            cam-event? 0= if  2 6 0 0  0e 30e 30e sound  then
+        then
+        -25.3e s" kousi" place-y object!  s" kousi" $34 object@ -0.2e f* s" kousi" $34 object!
+    then
+    s" kousi" $34 object@ fabs 0.02e f< dup if  -25.3e s" kousi" place-y object!  then ;
+\ a rattle: up 0.4 and down again by turns, a little more each time, till it is above 0
+: lid-rattles ( -- done? )
+    s" kousi" $34 object@ f0< if  1e 0.4e  else  -1e 0.1e  then
+    s" kousi" place-y object+!  s" kousi" $34 object!
+    rnd 0.1e f* s" kousi" place-y object+!
+    lid-y f0> dup if  0e s" kousi" place-y object!  then ;
 \ thuds), 2 while moving; 3 a random rattle up, 2 while it stays below
-: castle-1f-7.cmd00 ( b0 -- )  drop s" castle-1f-7.cmd00" stub-step ;
+: castle-1f-7.cmd00 ( b0 -- )   \ (the lid, "kousi": +$24 its height, +$34 its speed, +$30 1 till it first lands)
+    s" kousi" object-here? 0= if  drop exit  then
+    case
+        0 of  0e s" kousi" place-y object!  1e s" kousi" $30 object!  0e s" kousi" $34 object!  endof
+        1 of  -25.3e s" kousi" place-y object!  0e s" kousi" $34 object!  endof
+        2 of  begin  lid-falls 0= while  yield  repeat  endof
+        3 of  begin  lid-rattles 0= while  yield  repeat  endof
+    endcase ;
 \ room 0x15 (Room15_Cond00_ptmf): Hewie is about in room 0xF in state 0x2F or 0x52
-: castle-1f-7.cond00? ( -- flag )  s" castle-1f-7.cond00?" stub-flag ;
+: castle-1f-7.cond00? ( -- flag )
+    1 $F char-in-room? 0= if  false exit  then  hewie-action dup $2F = swap $52 = or ;
 
 : castle-1f-7.enter ( -- )   \ 003FA090
     room-sounds
@@ -37,12 +64,12 @@ USING: room-names story.words story.shared flag-names ;
         then
     then
     $14 story-flag? not if
-        2 0 object-show
+        2 0 object-hidden
         0 0 $14 door-bits
         1 1 $14 door-bits
         1 1 $1000000 nav-group
     else
-        2 1 object-show
+        2 1 object-hidden
         0 1 $14 door-bits
         1 0 $14 door-bits
     then
@@ -433,7 +460,7 @@ USING: room-names story.words story.shared flag-names ;
 : castle-1f-7.act09 ( -- )   \ 003FA660
     self-wait-done
     1 castle-1f-7.cmd00
-    2 0 object-show
+    2 0 object-hidden
     0 0 $14 door-bits
     1 1 $14 door-bits
     1 1 movie-play

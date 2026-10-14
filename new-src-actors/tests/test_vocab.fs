@@ -1,4 +1,4 @@
-\ vocabularies: IN:, USING:, USE:, <PRIVATE PRIVATE>, vocab:name, ambiguity, cycles
+\ vocabularies: IN:, USING:, USE:, <PRIVATE PRIVATE>, vocab:name, shadowing, cycles
 IN: test-vocab
 USING: tester vocabs.va ;
 
@@ -17,10 +17,8 @@ T{ greet2 loads @ -> 2 1 }T
 testing qualified names
 T{ vocabs.vb:shared vocabs.va:shared -> 20 10 }T
 
-testing two vocabularies with one name
-: try-shared s" shared" evaluate ;
-T{ ' try-shared catch -> -1 }T
-T{ error-message drop 6 s" shared" s= -> true }T
+testing two vocabularies with one name: the one used later wins
+T{ shared -> 20 }T
 
 testing our own definitions win
 : shared 30 ;

@@ -18,6 +18,8 @@ typedef struct Actor {
     Model model;
     GpuTexture textures[ACTOR_MAX_TEXTURES];
     int ntextures;
+    int swap_sel;           /* a texture shown from another file (Message_Show: a face), -1 none */
+    GpuTexture swap_orig;   /* ... and its own, to show again */
     GpuMesh gpu;
     MeshVertex *posed;      /* this frame's skinned vertices */
     GpuMesh shadow;         /* the contact shadow: a soft blob on the floor under it */
@@ -52,6 +54,14 @@ typedef struct Actor {
     int ntable;
     int32_t visible;
     float shadow_size;      /* the contact shadow's radius (room units; 0: none) */
+    int32_t shadow_off;     /* casts no shadow and has no contact shadow (the scripts' 0x8F) */
+    float alpha;            /* drawn faded (1 as it is; 0 unseen) */
+    uint32_t tint;          /* drawn tinted: $RRGGBBAA, $80 = 1.0 ($80808080 as it is; the scripts' 0xAE) */
+    uint32_t parts_shown[8];   /* its skinned parts shown (bit: the part's number + 1; the original's
+                                * part flag 2 hides) */
+    int32_t doorway_fade;   /* fades out going through a doorway (the scripts' 0xAC; +0xE4, on by default) */
+    int32_t layer;          /* the original's draw layer (the scripts' 0xB5; 0 as $A, the usual): $14
+                             * shines (post_shine), $1E and up drawn after the reflections */
     Vec3 lo, hi;            /* the model's bounds (bind pose, model units) */
     int lights[3];          /* this frame: the room lights on it */
     /* a cutscene's motion file driving it (NULL: its own motion): its animation 0x8000 at
@@ -59,7 +69,12 @@ typedef struct Actor {
     const uint8_t *drive;
     size_t drive_size;
     float drive_frame;
+    /* a motion file loaded for it (the story's 0xA6: a room's .MTN), which its model takes as
+     * its second bank when told (0xA7); NULL none */
+    uint8_t *loaded_motions;
+    size_t loaded_motions_size;
     Vec3 bones[MODEL_MAX_BONES];   /* where each bone is, in the room (as last drawn) */
+    Vec3 bone_axes[MODEL_MAX_BONES][3];   /* and which way its axes point */
     /* the parts that play motions of their own (motion parts 2..4; the original's three blend
      * channels): a body motion with data for a part plays it there too, else the part goes back
      * to its own motion (a motion with no body: Hewie's ears, tail and jaw overlays) */
@@ -80,6 +95,12 @@ typedef struct Actor {
 
 /* load O_FIN/FIN_000 (.PCK + .TEX): the actor's number, or -1 */
 int actor_load(Actor *actors, const char *name);
+/* the same with the textures of another (`tex`.TEX: costumes that share one, as Hewie's) */
+int actor_load_textured(Actor *actors, const char *name, const char *tex);
+/* its texture `sel` drawn as the first of `file` (.TEX) instead (Progress_Speak: a face changed -
+ * the message slot's shown texture); 0 if that can't be read */
+int actor_texture_swap(Actor *a, int sel, const char *file);
+void actor_texture_restore(Actor *a);   /* its own again (Message_ShowNothing) */
 void actor_free(Actor *a);
 /* a tick: the motion moves on */
 void actor_tick(Actor *a);
@@ -112,7 +133,14 @@ int actor_motion_entry(const Actor *a, int index, int *blend, int *pose, int *fl
 /* Motion_EventFlags: the event key byte of the body motion (layer 0) or its variant (1) at its
  * time + dt frames; `loop` 1: a looping motion's time wraps (else outside it: 0) */
 int actor_event_flags(const Actor *a, int layer, int dt, int loop);
+/* a motion file loaded for it (replacing the one before: if the model was using that, it uses
+ * this); 0 if it can't be read */
+int actor_load_motions(Actor *a, const char *path);
+/* the model takes the loaded motion file as its second bank (NULL: back to its own alone) */
+void actor_use_motions(Actor *a, int on);
 /* where bone `b` is in the room (as last posed), its position if there is no such bone */
 Vec3 actor_bone(const Actor *a, int b);
+/* a point `off` in bone b's own axes, in the room (as last drawn) */
+Vec3 actor_bone_point(const Actor *a, int b, Vec3 off);
 
 #endif
