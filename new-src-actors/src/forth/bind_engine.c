@@ -2554,6 +2554,55 @@ PRIM(p_screenshot) {   /* ( addr len -- ) save the frame as a PNG once drawn */
 PRIM(p_console) { gEngine.console.open = (int)POP() != 0; }   /* ( flag -- ) */
 PRIM(p_data_dir) { PUSH(files_root()); PUSH(strlen(files_root())); }
 
+/* ---- the free camera (hga's own, for looking about and filming): F3 takes the camera from
+ * wherever it is and gives it back; while it is free the arrows move it along the floor (up /
+ * down ahead and back, left / right to the side), Page Up / Page Down raise and lower it, the
+ * right mouse button held turns it with the mouse, Shift faster. Nothing else in the game is
+ * told: the shots, the cutscenes and Fiona go on as they were. ---- */
+static struct {
+    int on, was_down;
+    Camera cam;
+} sFree;
+static void freecam_tick(Engine *e) {
+    const bool *k = keys();
+    int down = k[SDL_SCANCODE_F3];
+
+    if (down && !sFree.was_down) {
+        sFree.on = !sFree.on;
+        if (sFree.on) {
+            sFree.cam = e->camera;
+        }
+    }
+    sFree.was_down = down;
+    if (!sFree.on) {
+        return;
+    }
+    {
+        float speed = (k[SDL_SCANCODE_LSHIFT] || k[SDL_SCANCODE_RSHIFT]) ? 4.0f : 1.0f;
+        float fwd = (float)(k[SDL_SCANCODE_UP] - k[SDL_SCANCODE_DOWN]) * speed;
+        float side = (float)(k[SDL_SCANCODE_RIGHT] - k[SDL_SCANCODE_LEFT]) * speed;
+        float rise = (float)(k[SDL_SCANCODE_PAGEUP] - k[SDL_SCANCODE_PAGEDOWN]) * speed;
+        Camera *c = &sFree.cam;
+
+        if (e->input.mouse_buttons & SDL_BUTTON_MASK(3)) {   /* (right button held: look) */
+            c->yaw += 0.005f * e->input.mouse_dx;
+            c->pitch -= 0.005f * e->input.mouse_dy * c->up;
+            c->pitch = fmaxf(-1.5f, fminf(1.5f, c->pitch));
+        }
+        c->pos.x += fwd * sinf(c->yaw) + side * cosf(c->yaw);
+        c->pos.z += -fwd * cosf(c->yaw) + side * sinf(c->yaw);
+        c->pos.y += rise * c->up;
+        e->camera.pos = c->pos;
+        e->camera.yaw = c->yaw;
+        e->camera.pitch = c->pitch;
+    }
+}
+PRIM(p_freecam) { PUSH(sFree.on ? -1 : 0); }   /* ( -- flag ) the free camera has the camera */
+PRIM(p_freecam_set) {   /* ( on -- ) the free camera on (from the camera as it is now: set it first) or off */
+    sFree.on = POP() != 0;
+    sFree.cam = gEngine.camera;
+}
+
 void engine_tick(Engine *e) {
     int i;
 
@@ -2582,11 +2631,13 @@ void engine_tick(Engine *e) {
     }
     if (e->paused) {   /* (a menu up: only its actors have a frame) */
         hactor_held_frame(e->forth);
+        freecam_tick(e);
         render_look_tick();
         return;
     }
     hactor_frame(e->forth);   /* the actors' frame, then their models move on */
     if (e->still) {   /* (the game over: the world stands still behind it, its actors running) */
+        freecam_tick(e);
         render_look_tick();
         return;
     }
@@ -2608,6 +2659,7 @@ void engine_tick(Engine *e) {
             snddrv_play_placed((uint32_t)d->sound, 5, 0, 0, at, ahead);
         }
     }
+    freecam_tick(e);   /* (last: over the shots and the cutscenes) */
     render_look_tick();
 }
 
@@ -2888,7 +2940,7 @@ void bind_engine(Forth *f) {
         {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
         {"rumble", p_rumble}, {"rumble-buzz", p_rumble_buzz}, {"rumble-swell", p_rumble_swell}, {"rumble-sequence-clear", p_rumble_seq_clear}, {"rumble-step", p_rumble_seq_add}, {"rumble-now", p_rumble_now}, {"rumble-allowed!", p_rumble_allow}, {"game-volume!", p_game_volume}, {"pad-stick", p_pad_stick}, {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
-        {"mouse-dy", p_mouse_dy}, {"mouse-down?", p_mouse_down},
+        {"mouse-dy", p_mouse_dy}, {"freecam?", p_freecam}, {"freecam!", p_freecam_set}, {"mouse-down?", p_mouse_down},
         {"on-tick", p_on_tick}, {"off-tick", p_off_tick}, {"ticks", p_ticks}, {"dt", p_dt},
         {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},
         {"pen-scale", p_pen_scale}, {"draw-text", p_draw_text}, {"draw-rect", p_draw_rect},

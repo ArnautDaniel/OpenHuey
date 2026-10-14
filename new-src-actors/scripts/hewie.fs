@@ -129,7 +129,7 @@ behaviour hewie-own
       dup 13 = if  drop his-look-pt his-to vec-copy  1 his-look-pt? !  done! exit  then
       dup 1 = if  full-stop  then
       move-action dup 0< if  drop done! exit  then  0 want ;
-  on hold-anim ( anim blend -- )  along? 0= if  2drop exit  then  his-to-anim !  his-to-tri !  $3C 0 want ;
+  on hold-anim ( anim flags blend -- )  nip  along? 0= if  2drop exit  then  his-to-anim !  his-to-tri !  $3C 0 want ;
   on show ( on -- )  along? 0= if  drop exit  then  0<> 1 and him-model act.visible l! ;
   on frame-end ( -- )
       along? if  his-done @  anim-done?  his-model @ 0 0 1 motion-events  broadcast moving  angry-down  then

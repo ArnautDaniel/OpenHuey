@@ -45,7 +45,7 @@ variable hard   \ the new game chosen is a hard one (the title's HARD MODE)
 $002 constant m-lie          \ lying, settled (Hewie_StepToPose's pose 2)
 $103 constant m-get-up       \ lying to standing (sPoseInto[0][2])
 $1B00 constant m-bark        \ a bark, standing (Hewie_Bark)
-$65 constant bark-sound      \ the common bank's loud bark (Hewie_MakeSound)
+$5A constant bark-sound       \ his calm bark, standing (Hewie_Bark's $1B00 at its key: Hewie_MakeSound $5A; $65 was his yelp)
 : him ( -- a )  dog @ actor ;
 : play ( anim loop? -- )   \ as new-src's title: the motion from its start, looped or once, nothing else
     0<> 1 and him act.loop l!  dog @ swap motion! ;

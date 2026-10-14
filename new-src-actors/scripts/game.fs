@@ -1,7 +1,7 @@
 \ game.fs - where the game starts (after prelude.fs): the actors that make up the game are
 \ spawned here. (docs/subsystems.md: the map and the order.)
 IN: game
-USING: engine actors messages room-names acoustics rooms doors obstacles items subscreen avoid saves creatures cast camera danger panic window screen music pause fiona hewie stalker summoner gameover ending things opening story story.words flag-names story-names debug graphics ;
+USING: engine actors messages room-names acoustics rooms doors obstacles items subscreen avoid saves creatures cast camera danger panic window screen music pause fiona hewie stalker summoner gameover ending things opening story story.words flag-names story-names debug graphics party ;
 
 acoustics-spawn constant acoustics
 rooms-spawn constant rooms
@@ -55,3 +55,8 @@ start-headless                                                 \ new game at onc
     opening-done story-flag-set  grate-open story-flag-set  world-held state-flag-clear  hewie-commandable state-flag-set
     front-garden-3 -1 rooms send go-to-room
     hewie send join-fiona ;
+
+\ the dance party (party.fs: golems dancing in a row, Fiona and Hewie in front; for fun) - F3 frees
+\ the camera to film it
+: dance-party ( -- )  party-spawn ;
+: party-over ( -- )  party:party-over ;

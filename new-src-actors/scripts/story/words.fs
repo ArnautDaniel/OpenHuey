@@ -620,8 +620,9 @@ fvariable mx  fvariable mz
 : wait-char-anim ( id -- )   \ 0x9E
     char-slot dup char-here 0= if  drop wait-frame exit  then
     begin  wait-frame  dup anim-ended-of char-flag  until  drop ;
-: char-anim-hold ( id anim blend speed -- )   \ 0x9D: playing it, held (the speed: later)
-    drop  rot char-slot char-actor dup 0< if  drop 2drop exit  then  send hold-anim ;
+: char-anim-hold ( id anim flags blend -- )   \ 0x9D: playing it, held (Motion_PlayWith: its flags - 1 loops -
+    {: id a fl bl :}                            \ and the frames it fades in over)
+    id char-slot char-actor dup 0< if  drop exit  then  >r  a fl bl  r> send hold-anim ;
 : char-visible ( who on -- )   \ 0x1F: shown or hidden, if in this room
     swap who>cs dup char-here 0= if  2drop exit  then  char-actor send show ;
 

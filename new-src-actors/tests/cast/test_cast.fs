@@ -48,6 +48,9 @@ testing the crow's own: its motion table (its fades); in $9000 / $9001 part 5 sh
 T{ model4 $9000 motion-entry -> 10 0 1 }T   \ (a 10-frame fade; the plain model has none: 0 0 0)
 T{ [: $9000 cast.private:play-now ;] c4  2 frames  5 part?  3 part?  4 part? -> -1 0 0 }T
 T{ [: $9002 cast.private:play-now ;] c4  2 frames  5 part?  3 part?  4 part? -> 0 -1 -1 }T
+testing the scripts' 0x9D on the crow: its take-off ($9002, looping, faded in over 0 frames) at once - not over its table's 10
+$9002 1 0 game:cast4 send hold-anim  deliver  1 frames
+T{ [: cast.private:anim @ ;] c4  model4 actor act.fade sf@ 0e f<=  model4 actor act.loop l@ -> $9002 -1 1 }T
 4 3 char-hand-over  2 frames
 T{ [: cast.private:model @ model-file s" O_HMA/HMA_000" compare  cast.private:who @ ;] c4 -> 0 $F }T
 
