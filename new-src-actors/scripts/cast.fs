@@ -209,7 +209,9 @@ behaviour figure
   on scripted-move ( kind a b x y z yaw -- )
       cell>f mv-yaw f!  >r >r cell>f r> cell>f r> cell>f mv-at vec!
       mv-b !  mv-a !  start-move ;
-  on hold-anim ( anim blend -- )  drop play-now  done  ['] root-move act ! ;
+  on hold-anim ( anim flags blend -- )   \ (as asked: a take-off at once, not over its motion table's fade)
+      {: a fl bl :}  model @ a has-motion? if  a anim !  model @ a bl fl motion-play  then
+      done  ['] root-move act ! ;
   on animal-go ( sound x z -- )  >r cell>f r> cell>f  animal-go ;   \ (the rooms' commands: the rabbits)
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
       2drop 2drop 2drop 2drop  st-room-is !  sender st-actor ! ;

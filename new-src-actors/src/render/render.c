@@ -129,6 +129,9 @@ static const char *kMeshFs =
     "    }\n"
     "    if (u_lit != 0) {\n"
     "        vec3 n = normalize(v_normal), v = normalize(u_eye - v_pos), light;\n"
+    /* (a surface seen from its back - a wing's underside, a hem - lit as the side in view: its
+     * normal turned toward the eye, else the rim light floods it and the lights miss it) */
+    "        if (dot(n, v) < 0.0) n = -n;\n"
     "        float rim = pow(1.0 - max(dot(n, v), 0.0), 3.0) * u_rim;\n"
     "        if (u_room_lit != 0) {\n"   /* the game's: ambient + 3 point lights, 0x80 = 1.0 */
     "            vec3 l = u_ambient128;\n"
@@ -144,7 +147,9 @@ static const char *kMeshFs =
     "            light = u_ambient * 2.0 + u_light_color * key * 2.0;\n"
     "        }\n"
     "        c.rgb *= light;\n"
-    "        c.rgb += rim * max(light, u_ambient) * c.a;\n"
+    /* (the rim by the surface's own colour: a light one rimmed as it was, a dark one - a crow's
+     * feathers seen edge on - barely, not washed pale) */
+    "        c.rgb += rim * max(light, u_ambient) * clamp(c.rgb * 2.0, 0.0, 1.0) * c.a;\n"
     "    }\n"
     "    if (u_receive != 0) {\n"   /* characters' shadows: PCF over 3 x 3, fading with distance */
     "        vec2 texel = 1.0 / vec2(textureSize(u_shadow, 0).xy);\n"

@@ -195,7 +195,7 @@ message scripted ( on -- )                   \ (room -> a character) a script of
 \ the spot with animation a (blend b), arriving as it ends
 message scripted-move ( kind a b x y z yaw -- )   \ (to a character; floats f>cell; a / b: as the kind says)
 message moving ( done ended events -- )      \ broadcast at each frame's end by a character: its move done, its animation ended, its motion's event keys
-message hold-anim ( anim blend -- )          \ (to a character) play this animation and stay in it (the scripts' 0x9D)
+message hold-anim ( anim flags blend -- )    \ (to a character) play this animation and stay in it (the scripts' 0x9D: its flags - 1 loops - and frames faded in)
 message show ( on -- )                       \ (to a character) shown or hidden (the scripts' 0x1F)
 
 \ ---- the screen and the music (docs/subsystems/screen.md, music.md) ----

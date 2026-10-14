@@ -231,8 +231,8 @@ behaviour free
   on scripted-move ( kind a b x y z yaw -- )
       cell>f her-move-yaw f!  >r >r cell>f r> cell>f r> cell>f her-move-at vec!
       her-move-b !  her-move-a !  dup her-move !  start-move ;
-  on hold-anim ( anim blend -- )   \ (the scripts' 0x9D: in it, held)
-      -1 play-blend  2 her-mode !  $11 her-doing !  ['] root-move her-act !  done ;
+  on hold-anim ( anim flags blend -- )   \ (the scripts' 0x9D: in it, held - its flags hers)
+      nip -1 play-blend  2 her-mode !  $11 her-doing !  ['] root-move her-act !  done ;
   on show ( on -- )  0<> 1 and her act.visible l! ;
   \ the story's (F5): calmer (Fiona_CalmDown: n / 30 off her fear), her recovery shorter
   \ (Fiona_LowerRecovery: 60 / n frames)
