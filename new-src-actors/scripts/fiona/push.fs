@@ -93,6 +93,6 @@ PRIVATE>
 PRIVATE>
 \ walking or running into it (Fiona_StateIdleMove: her step's reach ahead): she turns to push
 : try-push ( F: reach -- )
-    her-doing @ $F =  settled? 0= or if  fdrop exit  then
+    her-doing @ $F =  settled? 0= or  her-fear-bits @ 2 and or if  fdrop exit  then   \ (not panicking)
     false find-pushable 0= if  exit  then
     1 her-doing !  5 her-sub !  ['] turning-to her-act ! ;

@@ -21,11 +21,13 @@ create kinds   0 c, 1 c, 2 c, 3 c, 4 c, 5 c, -1 c, 6 c, 7 c, -1 c, -1 c, 8 c,
 : thing-kind ( item -- kind )  slot dup 0< if  exit  then  kinds + c@ dup $FF = if  drop -1  then ;
 
 \ ---- the aim: the stalker within 80 and 60 degrees of her facing (an aimed one only) ----
+create aim-at 12 allot   \ (aimed: where he stood as she began)
 : aim ( -- )   \ (her-letgo-yaw: the way she turns to; aimed: at him)
     her-yaw f@ her-letgo-yaw f!  0 her-aimed !
     her-sub @ $32 <> if  exit  then
     stalker-in-room dup 0< if  drop exit  then
     dup body-at her-at vec-dist 80e f< 0= if  drop exit  then
+    aim-at over body-at vec-copy
     her-at swap body-at vec-heading  fdup her-yaw f@ f- angle-wrap fabs 60e deg>rad f< if
         her-letgo-yaw f!  -1 her-aimed !
     else  fdrop  then ;
@@ -33,8 +35,8 @@ create kinds   0 c, 1 c, 2 c, 3 c, 4 c, 5 c, -1 c, 6 c, 7 c, -1 c, -1 c, 8 c,
 \ ---- at the key: the thing made at her hand ----
 create hand 12 allot   create step-at 12 allot
 : speed ( -- ) ( F: -- s )  her-sub @ case  $31 of 4e endof  $32 of 6e endof  >r 0e r>  endcase ;
-: way ( -- ) ( F: -- vx vy vz )   \ (her aim, at that speed, level)
-    0e speed her-letgo-yaw f@ rotate-by  0e fswap ;
+: way ( -- ) ( F: -- vx vy vz )   \ (at that speed, level: her facing - aimed, from her hand at where he stood)
+    0e speed  her-aimed @ if  hand aim-at vec-heading  else  her-letgo-yaw f@  then  rotate-by  0e fswap ;
 : hand-reached ( -- tri | -1 )   \ (her hand not past a wall: from where she stands at its height)
     step-at her-at vec-copy  hand 4 + sf@ step-at 4 + sf!
     her-tri @ step-at hand $20020008 v-walk ;

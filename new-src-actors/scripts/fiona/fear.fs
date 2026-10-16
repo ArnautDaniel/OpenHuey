@@ -89,9 +89,9 @@ create probe 12 allot  create up-was 12 allot  variable up-tri
         probe-ok? if  fdrop  else  her-yaw f!  then
     then
     root-turn  her-yaw f@ her-heading f!
-    her-at up-was vec-copy  her-tri @ up-tri !
+    up-was her-at vec-copy  her-tri @ up-tri !
     rm-x f@ rm-z f@ her-yaw f@ rotate-by  her-at blocked-floor 1 or v-nav-move  dup 0< if  drop  else  her-tri !  then
-    if  probe-ok? 0= if  up-was her-at vec-copy  up-tri @ her-tri !  then  then   \ (moved off: back)
+    if  probe-ok? 0= if  her-at up-was vec-copy  up-tri @ her-tri !  then  then   \ (moved off: back)
     her-attack-t @ $97 < if  shakes-now if  2 panic-id send panic-shorten  2 her-attack-t +!  then  then ;
 : fallen ( -- )
     ended? if  0 her-attack-t !  $B01 -1 play-table  $A her-mode !  $B her-doing !  -1 her-shake-rest !  0e her-shake-a f!
