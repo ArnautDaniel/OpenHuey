@@ -18,7 +18,7 @@ USING: engine game-state actors messages keys facts flag-names items items.table
 : may-open? ( -- flag )   \ Select, she free, the panic below 4, no scene, nothing held
     select-button button-pressed?
     subscreen-locked state-flag? 0= and  world-held state-flag? 0= and
-    her-doing @ 0= and  her-mode @ 0= and  the-panic @ 4 < and  cutscene-active? 0= and ;
+    her-mode @ 0= and  the-panic @ 4 < and  cutscene-active? 0= and ;   \ (her mode only: out of breath, pushing - it opens)
 : open-menu ( -- )
     menu-art  opening stage !  0 openness !  back-to-page  0 quiet !  0 opt-editing !  back-to-her
     se-open  1 pause! ;
