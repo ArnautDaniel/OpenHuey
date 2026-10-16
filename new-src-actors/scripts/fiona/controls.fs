@@ -75,3 +75,19 @@ defer settled-for-stand ( -- how )   \ (2 once her animation has faded in, else 
     her-turn-mode @ 0= if  cam-yaw her-cam-yaw f!  then
     her-turn-mode @ 2 <> if  nx f@ her-last sf!  0e her-last 4 + sf!  nz f@ her-last 8 + sf!  then
     run-held? her-run? ! ;
+
+\ ---- her struggling (Fiona_Shakes): this frame's shakes - the stick swung past 120 degrees, or out
+\ from rest; the buttons pressed ----
+: buttons-pressed ( -- n )  0  6 0 do  i start-button <> if  i button-pressed? if  1+  then  then  loop ;
+: shakes-now ( -- n )   \ (Fiona_Shakes: the stick swung past 120 degrees, or out from rest; the buttons)
+    0  her-stick sf@ her-stick 8 + sf@ vlen                                   ( n ) ( F: len )
+    fdup 0.8e f<= if  0.2e f< if  -1 her-shake-rest !  then
+    else
+        fdrop  her-stick sf@ her-stick 8 + sf@ fatan2
+        her-shake-rest @ if  1+  0 her-shake-rest !  her-shake-a f!
+        else  fdup her-shake-a f@ f- angle-wrap fabs 2.0943952e f> if  1+  her-shake-a f!  else  fdrop  then  then
+    then
+    buttons-pressed + ;
+\ the story's test of her shaking (Progress_FionaFlag: Fiona_Shakes as from rest) - the stick out
+\ past 0.8, or a button; her own count left as it is
+: shook-from-rest ( -- n )  her-stick sf@ her-stick 8 + sf@ vlen 0.8e f> 1 and  buttons-pressed + ;

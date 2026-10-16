@@ -87,6 +87,7 @@ message danger ( level -- )                  \ broadcast: 0 calm, 1 followed, 2 
 \ ---- panic (docs/subsystems/panic.md); amounts and levels are floats (f>cell) ----
 message fright ( amount -- )                 \ (Panic_Fright: less with earrings $87 / $88 worn; f>cell)
 message fright-raw ( amount -- )             \ (Panic_FrightRaw: as it is)
+message panic-shorten ( frames -- )          \ (the panic) its time left shortened (the progress' +0x7BA: her shaking as she gets up)
 message fear-set ( amount -- )               \ the fear this frame set outright (the progress' +0x7D8 =: f>cell)
 message fear-in ( amount -- )
 message panic-stage! ( stage -- )

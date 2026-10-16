@@ -5,7 +5,7 @@
 \ dragged off) or walking (8: carried off); grabbed outright (Fiona_StateGrabbed /
 \ Fiona_StateHeld: held, at its end the game's over). The game's end is the `caught` flag.
 IN: fiona.seized
-USING: engine game-state actors messages common facts flag-names keys paths rumble fiona.state fiona.model fiona.moving fiona.fear fiona.doors fiona.hurt ;
+USING: engine game-state actors messages common facts flag-names keys paths rumble fiona.state fiona.model fiona.controls fiona.moving fiona.fear fiona.doors fiona.hurt ;
 
 defer to-idle ( -- )
 : leader ( -- id )  her-hit-who @ ;
@@ -57,15 +57,6 @@ create mt-at 12 allot  fvariable sdx  fvariable sdz
 \ ($1403) and he's told; the sixth drag she's dragged off ($1404: at its end the game's over).
 \ He lets go: she pulls free ($F02) ----
 create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
-: shakes-now ( -- n )   \ (Fiona_Shakes: the stick swung past 120 degrees, or out from rest; the buttons)
-    0  her-stick sf@ her-stick 8 + sf@ vlen                                   ( n ) ( F: len )
-    fdup 0.8e f<= if  0.2e f< if  -1 her-shake-rest !  then
-    else
-        fdrop  her-stick sf@ her-stick 8 + sf@ fatan2
-        her-shake-rest @ if  1+  0 her-shake-rest !  her-shake-a f!
-        else  fdup her-shake-a f@ f- angle-wrap fabs 2.0943952e f> if  1+  her-shake-a f!  else  fdrop  then  then
-    then
-    6 0 do  i start-button <> if  i button-pressed? if  1+  then  then  loop ;
 : tugged ( -- )   \ (each of his steps leading her by the hand, or dragging her: a tug felt)
     her-model @ 0 0 1 motion-events 2 and if  $60 8 fiona-jolt  then ;
 : pulled-up ( -- )  ended? if  free! to-idle exit  then  root-move ;

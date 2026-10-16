@@ -154,6 +154,7 @@ behaviour panicking
   on panic-reach ( level -- )  dup s>f level f@ f< if  drop  else  set-level  then ;
   on fright ( amount -- )  cell>f charmed f*  add-fright ;   \ Panic_Fright
   on fright-raw ( amount -- )  cell>f add-fright ;            \ Panic_FrightRaw
+  on panic-shorten ( frames -- )  negate length +! ;           \ (+0x7BA: her shaking as she gets up)
   on fear-set ( amount -- )  cell>f fear-d f! ;               \ (+0x7D8 = 1000: running into a wall, flung down panicking)
   on fear-in ( amount -- )   \ (a negative one is a fright: held 30, 50 lasting and passing)
       cell>f fdup f0< if  fdrop 30 hold !  fear-d f@ 50e f+ fear-d f!  fright-a f@ 50e f+ fright-a f!  exit  then
