@@ -72,6 +72,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     away? if  3  else  reeling @ cond @ 2 = or bitten @ or if  4  else  leading @ if  8  else  0  then  then  then
     bitten @ if  9  else  cond @ 2 = if  $A  else  leading @ if  $18  else  0  then  then  then
     cond @  hp @  hp-max @  my-kind @  my-mode @  came-by @  broadcast stalker-doing
+    d-fiona f@ f>cell broadcast stalker-reach
     away? 0=  combo @ 0< 0= and if  mv-damage  else  -1  then  broadcast stalker-blow ;
 \ the family's setup (Pursuer_Setup): his sight 150 ahead, 60 degrees either side; Fiona and
 \ Hewie known; listening for noises above his threshold (not his own)

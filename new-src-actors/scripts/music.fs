@@ -22,6 +22,7 @@ state: music-state
   \ what it follows: the danger (0 calm, 1 followed, 2 chased), the panic's stage, the stalker
   \ after her (his alert 0: he sees her), him and his room (-1: none in the game)
   cell field sm-danger  cell field sm-panic  cell field sm-seen  cell field sm-st  cell field sm-st-room
+  1 floats field sm-st-reach   \ (how far she is from him on foot: -1 no way)
 end-state
 
 \ ---- the background music: a new track starts at once (paused if asked); none fades the
@@ -65,10 +66,13 @@ end-state
 8 constant sm-panicking  9 constant sm-after-panic
 \ each sequence's volume fading (MusicDir_TrackVolumeTo / Rate)
 : sm-vol# ( k -- addr )  floats sm-vol + ;
+: same-volume? ( k v -- k v flag )  2dup swap sm-vol# f@ f>s = ;   \ (already there: any fade going on goes on)
 : track-to ( k frames v -- )   \ (MusicDir_TrackVolumeTo)
+    rot swap same-volume? if  drop 2drop exit  then  rot swap        ( k frames v )
     s>f  swap >r  fdup r@ floats sm-goal + f!                             ( frames ) ( F: v )
     r@ sm-vol# f@ f-  1 max s>f f/  r> floats sm-by + f! ;
 : track-rate ( k v -- ) ( F: rate -- )   \ (MusicDir_TrackVolumeRate: toward v at that rate)
+    same-volume? if  2drop fdrop exit  then
     s>f  >r  fdup r@ floats sm-goal + f!                                  ( F: rate v )
     r@ sm-vol# f@ f-  f0< if  fnegate  then  r> floats sm-by + f! ;
 defer stage-chans ( -- )   \ (below)
@@ -80,7 +84,8 @@ defer stage-chans ( -- )   \ (below)
         2 of  2drop -1 sm-hold !  endof
         3 of  2drop  endof               \ (waiting for the banks: loaded at once here)
         4 of  2drop 0 sm-hold !  endof
-        5 of  2drop  4 0 do  i 1 0 track-to  loop  sm-fading sm-state !  endof   \ (MusicDir_Silence)
+        5 of  2drop  4 0 do  0e i sm-vol# f!  0e i floats sm-by + f!  0 i cells sm-track + !  loop   \ (MusicDir_Silence:
+              sm-fading sm-state !  endof                                                            \ silent at once)
         >r 2drop r>
     endcase ;
 defer chase-init ( -- )   \ (the chase's bends and sequence volume as the stage's: below)
@@ -97,6 +102,7 @@ defer chase-init ( -- )   \ (the chase's bends and sequence volume as the stage'
     4 0 do  i cells sm-track + @ s>f  fdup i sm-vol# f!  i floats sm-goal + f!  0e i floats sm-by + f!  loop
     chase-init
     sm-quiet sm-state !
+    stage-chans   \ (the chase's channel sets by the story's flags)
     sm-to f@ f>s 90 sm-volume-to ;
 \ ---- the stage music following the danger (MusicDir_StateFrame): calm - the calm parts; being
 \ followed - they fade out; chased - the chase (its start from the top), loud while he sees her,
@@ -122,8 +128,10 @@ create chase-steps  30 , 210 , 111 ,  40 , 202 , 106 ,  50 , 194 , 100 ,  60 , 1
 \ the chase's channels' bends and its sequence volume, fading (MusicDir_BendTo, SeqVolumeTo)
 : bend# ( ch -- addr )  floats ch-bend + ;
 : send-bend ( ch -- )  chase-track over $E0 or 0  rot bend# f@ f>s 0 127 clamp  seq-midi ;
-: bend-to ( ch frames v -- )
-    s>f  swap >r  fdup r@ floats ch-bend-goal + f!  r@ bend# f@ f-  1 max s>f f/  r> floats ch-bend-by + f! ;
+: bend-to ( ch frames v -- )   \ (MusicDir_BendTo: the whole range over those frames, either way)
+    s>f  swap >r  fdup r@ floats ch-bend-goal + f!                        ( frames ) ( F: v )
+    127e  1 max s>f f/  fswap                                             ( F: step v )
+    r@ bend# f@ f>s s>f f< if  fnegate  then  r> floats ch-bend-by + f! ;
 : bend-now ( ch v -- )  s>f  dup bend# f!  0e dup floats ch-bend-by + f!  send-bend ;
 : bends-fade ( -- )
     16 0 do
@@ -134,7 +142,9 @@ create chase-steps  30 , 210 , 111 ,  40 , 202 , 106 ,  50 , 194 , 100 ,  60 , 1
             i send-bend
         then
     loop ;
-: seq3-to ( frames v -- )  s>f fdup seq3-goal f!  seq3 f@ f-  1 max s>f f/  seq3-by f! ;
+: seq3-to ( frames v -- )   \ (MusicDir_SeqVolumeTo: 20..255; already there, nothing)
+    20 max 255 min  dup seq3 f@ f>s = if  2drop exit  then
+    s>f fdup seq3-goal f!  seq3 f@ f-  1 max s>f f/  seq3-by f! ;
 : seq3-fade ( -- )
     seq3-by f@ f0= if  exit  then
     seq3 f@ seq3-by f@ f+  seq3-by f@ f0< if  seq3-goal f@ fmax  else  seq3-goal f@ fmin  then
@@ -177,9 +187,10 @@ create seen-4  6 , 0 , 1 , 2 , 3 , 5 , 6 ,        create lost-4  6 , 0 , 1 , 2 ,
         3 of  $95 story-flag?  dup 0= 3 4 2 channels  5 6 7 3 channels  endof
     endcase ; is stage-chans
 : stalker-in? ( -- flag )  sm-st @ dup 0< if  drop false exit  then  dup alive? if  body?  else  drop false  then ;
-: st-dist ( F: -- d | -1 )   \ (how far the stalker is from her; not in her room: -1)
+: st-dist ( F: -- d | -1 )   \ (how far she is on foot - else straight - from him; not in her room: -1)
     stalker-in? 0= if  -1e exit  then  sm-st @
     sm-st-room @ room-id <> if  drop -1e exit  then
+    sm-st-reach f@ f0< 0= if  drop sm-st-reach f@ exit  then
     body-at  s" fiona" actor-named body-at vec-dist ;
 : chase-step ( -- addr | 0 )   \ (MusicDir_ChaseStep: 0 with no stalker in the game; not in her
     stalker-in? 0= if  0 exit  then                                        \ room: the last)
@@ -189,9 +200,10 @@ create seen-4  6 , 0 , 1 , 2 , 3 , 5 , 6 ,        create lost-4  6 , 0 , 1 , 2 ,
     chase-step ?dup 0= if  exit  then
     chase-track over cell+ @  2.5e track-rate
     2 cells + @  16 0 do  i bent-channel? if  i 90 2 pick bend-to  then  loop  drop ;
-: to-calm ( -- )  sm-calm sm-state ! ;
-: to-panic ( -- )  sm-panic-now sm-state ! ;
-: to-chase ( s -- )  sm-state ! ;
+: stop-fade ( k -- )  0e floats sm-by + f! ;   \ (its volume fade dropped)
+: to-calm ( -- )  sm-calm sm-state !  calm-a stop-fade  calm-b stop-fade ;
+: to-panic ( -- )  sm-panic-now sm-state !  panic-track stop-fade ;
+: to-chase ( s -- )  sm-state !  chase-track stop-fade ;
 : followed ( -- )  sm-fading sm-state ! ;
 : restart ( k -- )  dup 0 seq-play  -1 seq-play ;
 variable cb-v  variable cb-b   \ (the chase's volume and bend as it begins)
@@ -211,8 +223,15 @@ variable cb-v  variable cb-b   \ (the chase's volume and bend as it begins)
     sm-panicking sm-state !  panic-track restart
     calm-a 1 0 track-to  calm-b 1 0 track-to  chase-track 1 0 track-to  panic-track 1 255 track-to
     false panic-channels ;
+: after-panic ( -- )
+    sm-panic @ 4 < 0= if  exit  then
+    sm-danger @ 0= if  to-calm
+    else sm-danger @ 2 = if  sm-chase-soon to-chase
+    else  followed  panic-track 90 0 track-to  then then ;
+\ (not while the world is held - flag 8; the original also skips the frame after a script's
+\ fade-finish: Events_ScenePlaying)
 : follow-danger ( -- )
-    cutscene-active? world-held state-flag? or if  exit  then
+    world-held state-flag? if  exit  then
     sm-state @ case
         sm-calm of  sm-quiet sm-state !
             chase-track 90 0 track-to  panic-track 90 0 track-to  calm-a 90 255 track-to  calm-b 90 255 track-to  endof
@@ -238,15 +257,9 @@ variable cb-v  variable cb-b   \ (the chase's volume and bend as it begins)
             else sm-seen @ 0= if  false stage-lost
             else sm-panic @ 4 = if  to-panic  then then then then  endof
         sm-panic-now of  panic-now  endof
-        sm-panicking of
-            sm-panic @ 5 = if  sm-after-panic sm-state !  true panic-channels  then
-            sm-panic @ 4 < if  sm-after-panic sm-state !  then  endof
-        sm-after-panic of
-            sm-panic @ 4 < if
-                sm-danger @ 0= if  to-calm
-                else sm-danger @ 2 = if  sm-chase-soon to-chase
-                else  followed  panic-track 90 0 track-to  then then
-            then  endof
+        sm-panicking of   \ (over at its stage 5: the channels back; then on as after it, the same frame)
+            sm-panic @ 5 = if  sm-after-panic sm-state !  true panic-channels  then  after-panic  endof
+        sm-after-panic of  after-panic  endof
     endcase ;
 : sm-tick ( -- )   \ MusicDir_Update
     sm-stage @ 0< if  exit  then
@@ -268,7 +281,7 @@ variable cb-v  variable cb-b   \ (the chase's volume and bend as it begins)
 behaviour playing-music
   on spawned ( -- )
       $FF bgm-cur !  $FF bgm-req !  1e bgm-level f!  -1 sm-stage !  255e sm-to f!  -1 sm-st !
-      self subscribe tick  self subscribe danger  self subscribe panic  self subscribe stalker-doing ;
+      self subscribe tick  self subscribe danger  self subscribe panic  self subscribe stalker-doing  self subscribe stalker-reach ;
   on bgm-want ( track pause level -- )   \ (BgmCtl_Want: track $FF none - the playing one fades out)
       cell>f  bgm-pause !  dup bgm-req !  $FF <> if  bgm-level f!  else  fdrop  then ;
   on bgm-resume ( -- )  0 music-pause ;          \ (the ADX stream resumed)
@@ -276,6 +289,7 @@ behaviour playing-music
   on music-stage ( stage -- )  sm-load ;            \ (0x6B; -1: the stage music ended, 0x6C)
   on danger ( level -- )  sm-danger ! ;
   on panic ( stage level -- )  drop sm-panic ! ;
+  on stalker-reach ( d -- )  cell>f sm-st-reach f! ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )   \ (his alert 0: after her, he sees her)
       drop 0= sm-seen !  2drop 2drop 2drop  sm-st-room !  sender sm-st ! ;
   on tick ( -- )  bgm-tick  sm-tick ;

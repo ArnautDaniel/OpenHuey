@@ -60,6 +60,7 @@ typedef struct Engine {
     int testing;      /* run by --test: nothing kept on disk (the system data) */
     int paused;            /* a menu is up: actors and the room stand still (`pause!`) */
     int still;             /* the models and the room stand still, the actors run (`still!`: the game over) */
+    int black_frame;       /* the next picture black under the 2D (a scene's end: the scripts' 0x62 op 11) */
     char hud[128];         /* a line of text at the bottom of the screen ("" none) */
     char screenshot[256];  /* a screenshot to save after this frame ("" none) */
     int width, height;     /* the window, in pixels */

@@ -12,6 +12,9 @@ typedef struct Camera {
                     * screen) */
     float znear, zfar;
     float up;      /* +1, or -1 for a world whose y points down */
+    float roll;    /* radians, a cutscene's: the original's Camera +0x30 - its up (0, -1, 0) on the
+                    * PS2's downward screen turned about the view by it, through a transposed
+                    * matrix (Camera_ViewMatrix); ours, +1 on an upward one, turned by -roll */
 } Camera;
 
 static inline Vec3 camera_forward(const Camera *c) {
@@ -23,7 +26,15 @@ static inline Mat4 camera_proj(const Camera *c, float aspect) {
 }
 
 static inline Mat4 camera_view(const Camera *c) {
-    return mat4_look(c->pos, camera_forward(c), vec3(0.0f, c->up, 0.0f));
+    Vec3 f = camera_forward(c), up = vec3(0.0f, c->up, 0.0f);
+
+    if (c->roll != 0.0f) {   /* (Rodrigues: about the unit view direction) */
+        float co = cosf(-c->roll), si = sinf(-c->roll);
+
+        up = vec3_add(vec3_add(vec3_scale(up, co), vec3_scale(vec3_cross(f, up), si)),
+                      vec3_scale(f, vec3_dot(f, up) * (1.0f - co)));
+    }
+    return mat4_look(c->pos, f, up);
 }
 
 #endif
