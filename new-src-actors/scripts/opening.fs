@@ -1,6 +1,6 @@
 \ opening.fs - the start of a game (docs/subsystems/story.md): the title, then the opening
 \ movie, then the new game.
-\ - The title (from new-src's title.fs): Hewie lying in the dark, close up and warmly lit, by
+\ - The title: Hewie lying on the stone circle in the front garden (room $2D, its scenery only), by
 \   the menu - NEW GAME / LOAD GAME / OPTIONS, and once a game has been cleared HARD MODE (a new
 \   game in hard mode: story flag $AF) and EXTRAS (straight into the extras room, $37); QUIT
 \   (Up / Down, the cross; SceneTitle_SeqMenu). A new game: he gets up and barks.
@@ -40,8 +40,9 @@ variable hard   \ the new game chosen is a hard one (the title's HARD MODE)
     0 s" fiona" actor-named send costume
     off-map-37 -1 s" rooms" actor-named send go-to-room ;
 
-\ ---- the title: no room, just him in the dark, warm lights on him; the camera close, at an
-\ angle round him, him a little right of centre (the menu on the left) ----
+\ ---- the title: Hewie lying on the stone circle in the front garden ($2D - only its scenery: no
+\ story, nobody else) in its own light; the camera back far enough for all of him, the scarecrows
+\ behind him, him three-quarters to it a little right of centre (the menu on the left) ----
 $002 constant m-lie          \ lying, settled (Hewie_StepToPose's pose 2)
 $103 constant m-get-up       \ lying to standing (sPoseInto[0][2])
 $1B00 constant m-bark        \ a bark, standing (Hewie_Bark)
@@ -49,27 +50,19 @@ $5A constant bark-sound       \ his calm bark, standing (Hewie_Bark's $1B00 at i
 : him ( -- a )  dog @ actor ;
 : play ( anim loop? -- )   \ as new-src's title: the motion from its start, looped or once, nothing else
     0<> 1 and him act.loop l!  dog @ swap motion! ;
-: warm-lights ( -- )
-    \ the key: a warm lamp-light, high in front of him to the side; behind, a low orange glow
-    -10e 22e 26e   170e 115e 65e   160e  0 stage-light
-     24e 18e -20e   60e 35e 18e    120e  1 stage-light
-    2 stage-lights  10e 8e 6e stage-ambient ;
-fvariable tx  fvariable ty  fvariable tz
-: look-at ( F: x y z -- )   \ (the camera turned to look there)
-    tz f! ty f! tx f!
-    tx f@ camera cam.x sf@ f-  tz f@ camera cam.z sf@ f- fnegate
-    fover fover fatan2 camera cam.yaw sf!
-    fsq fswap fsq f+ fsqrt  ty f@ camera cam.y sf@ f- fswap fatan2 camera cam.pitch sf! ;
-: frame-him ( -- )   \ the camera 20 away, 0.9 round from his front, 7 up, looking at his chest
-    0.9e fdup fsin 20e f*  fswap fcos 20e f*                  ( F: cx cz )
-    fswap 7e frot cam-at
-    0e 3e 0e look-at
-    camera cam.yaw sf@ -0.25e f+ camera cam.yaw sf!  0.55e camera cam.fov sf! ;
+create spot  -258e f, -10e f, 174e f,   \ (on the circle, between the scarecrows)
+: spot@ ( F: -- x y z )  spot f@  spot float+ f@  spot 2 floats + f@ ;
+1.75e fconstant round   \ (from his front: the scarecrows behind him)
+: frame-him ( -- )   \ the camera 36 away, 13 up, looking a little over his back; turned so he
+    \ sits right of centre
+    spot@ frot round fsin 36e f* f+  frot 13e f+  frot round fcos 36e f* f+   ( F: eye )
+    spot@ fswap 4e f+ fswap  cam-place
+    camera cam.yaw sf@ -0.22e f+ camera cam.yaw sf! ;
 : title-start ( -- )
     0 stage !  0 picked !  -1 titled !
-    0e 0e 0e clear-color  warm-lights
+    front-garden-5 room  cam-new-room  cam-room-start   \ (the scenery: no `arrived` - no story, nobody else)
     s" O_HEW/HEW_000" actor-load dog !   \ (no motion table: as new-src's title, the motions played as they are)
-    0e him act.x sf!  0e him act.y sf!  0e him act.z sf!  0e him act.yaw sf!  0e him act.shadow sf!
+    spot@ him act.z sf!  him act.y sf!  him act.x sf!  round 0.65e f- him act.yaw sf!  1e him act.shadow sf!   \ (three-quarters to the camera)
     1 him act.visible l!  m-lie -1 play  frame-him ;
 : title-end ( -- )   \ (his model gone, the room's lights back)
     titled @ 0= if  exit  then  0 titled !

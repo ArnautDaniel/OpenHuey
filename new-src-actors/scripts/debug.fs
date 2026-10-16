@@ -52,7 +52,7 @@ behaviour labelling
   on spawned ( -- )  self subscribe frame-end ;
   on frame-end ( -- )
       label-layer ui-clear
-      label? @ 0= room-id 0< or if  exit  then
+      label? @ 0= room-id 0< or  in-play state-flag? 0= or if  exit  then   \ (not over the title)
       2 pen-scale
       label-layer  room-id room-name  screen-size drop  room-id room-name nip 7 + char-size drop * -  12  $E8E0C8FF 2 ui-text
       label-layer  room-id h>s  screen-size drop 5 char-size drop * -  12  $A09880FF 2 ui-text ;
