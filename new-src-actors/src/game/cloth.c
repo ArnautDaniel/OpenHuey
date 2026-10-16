@@ -709,17 +709,19 @@ static ClothSphere *add_capsule(Cloth *c, int b1, int b2, Vec3 p1, float r, Vec3
     *cp = (ClothSphere){.bone = b1, .off = p1, .r = r, .capsule = 1, .bone2 = b2, .off2 = p2};
     return cp;
 }
-/* her back's five capsules (bone 2 to bone 6), standing or bent as she crawls
+/* her back's five capsules (bone 2 to bone 6) - standing, flat, bent as she crawls
  * (DaniellaModel_BackCapsules: x1 y1 z1 r x2 y2 z2 each) */
-static const float kBack[2][5][7] = {
+static const float kBack[3][5][7] = {
     {{0, 1, 1, 1.6f, 0, 1, -1}, {1, 1, 1, 1.7f, 1, 1, -1}, {2, 1, 1, 1.8f, 2, 1, -1}, {3, 1, 1, 1.9f, 3, 1, -1}, {4, 1, 1, 2, 4, 1, -1}},
+    {{0, 0, 0, 1, 0, 0, 0}, {1, 0, 0, 1, 1, 0, 0}, {2, 0, 0, 1, 2, 0, 0}, {3, 0, 0, 1, 3, 0, 0}, {4, 0, 0, 1, 4, 0, 0}},
     {{0, 1, -1, 2, 0, 1, 1}, {1, 1, -1, 2, 1, 1, 1}, {2, 1, -1, 2, 2, 1, 1}, {3, 1, -1, 2, 3, 1, 1}, {4, 1, -1, 2, 4, 1, 1}},
 };
-static void back_capsules(Cloth *c, int bent) {
+static void back_capsules(Cloth *c, int pose) {
     int k;
 
+    c->back_pose = pose;
     for (k = 0; k < 5; k++) {
-        const float *b = kBack[bent ? 1 : 0][k];
+        const float *b = kBack[pose == 1 || pose == 2 ? pose : 0][k];
         ClothSphere *cp = &c->spheres[c->back + k];
 
         cp->off = vec3(b[0], b[1], b[2]);
@@ -882,17 +884,30 @@ static void lorenzo_other(Cloth *c) {
     }
 }
 
-void cloth_crawl(Cloth *c, int on, float fx, float fz) {
+void cloth_back(Cloth *c, int pose) {
+    if (c != NULL && c->crawl_set >= 0) {
+        back_capsules(c, pose);
+    }
+}
+
+void cloth_watch(Cloth *c, int anim, float yaw) {
     ClothSet *hair;
 
-    if (c == NULL || c->crawl_set < 0 || (on != 0) == c->crawling) {
+    if (c == NULL || c->crawl_set < 0) {
         return;
     }
-    c->crawling = on != 0;
-    back_capsules(c, on);
     hair = &c->sets[c->crawl_set];
-    hair->force.x = on ? -0.4f * fx : 0.0f;
-    hair->force.z = on ? -0.4f * fz : 0.0f;
+    if ((unsigned)(anim - 0x1800) < 4) {
+        if (c->back_pose != 2) {
+            back_capsules(c, 2);
+            hair->force.x = -0.4f * sinf(yaw);
+            hair->force.z = -0.4f * cosf(yaw);
+        }
+    } else if (c->back_pose == 2) {
+        back_capsules(c, 0);
+        hair->force.x = 0.0f;
+        hair->force.z = 0.0f;
+    }
 }
 
 Cloth *cloth_for(const char *name) {

@@ -2114,13 +2114,12 @@ PRIM(p_cloth_force) {   /* ( model set -- ) ( F: x y z -- ) a hanging set's forc
         a->cloth->sets[set].force = v;
     }
 }
-PRIM(p_cloth_crawl) {   /* ( model on -- ) ( F: yaw -- ) Daniella crawling: her back bent and her hair
-                         * falling forward along her facing, or standing again (DaniellaModel_Vt3C) */
-    float yaw = (float)FPOP();
-    Cell on = POP();
+PRIM(p_cloth_back) {   /* ( model pose -- ) Daniella's back as the story sets it (its 0xCC op 4): 0 standing,
+                       * 1 flat, 2 bent (DaniellaModel_BackCapsules) */
+    Cell pose = POP();
     Actor *a = actor_arg(f, POP());
 
-    cloth_crawl(a->cloth, (int)on, sinf(yaw), cosf(yaw));
+    cloth_back(a->cloth, (int)pose);
 }
 PRIM(p_actor_markers) {   /* ( id addr len -- ) its motions' event keys from that marker file (NAME, ".MRK" added):
                            * a model whose markers are another's (the slip's: O_FIN/FIN_000) */
@@ -3104,7 +3103,7 @@ void bind_engine(Forth *f) {
         {"message-layout", p_message_layout}, {"message-file", p_message_file}, {"message-lines", p_message_lines}, {"message-line", p_message_line},
         {"message-options", p_message_options}, {"message-option", p_message_option},
         {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
-        {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"cloth-force!", p_cloth_force}, {"cloth-crawl!", p_cloth_crawl}, {"actor-texture-swap", p_actor_texture_swap}, {"actor-texture-restore", p_actor_texture_restore}, {"actor-markers", p_actor_markers}, {"actor", p_actor},
+        {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"cloth-force!", p_cloth_force}, {"cloth-back!", p_cloth_back}, {"actor-texture-swap", p_actor_texture_swap}, {"actor-texture-restore", p_actor_texture_restore}, {"actor-markers", p_actor_markers}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
         {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-track-by", p_motion_track_by}, {"foot-at", p_foot_at}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},

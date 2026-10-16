@@ -254,6 +254,9 @@ void actor_tick(Actor *a) {
     for (i = 0; i < 3; i++) {
         part_tick(a, &a->parts[i]);
     }
+    if (a->cloth != NULL) {
+        cloth_watch(a->cloth, a->motion >= 0 ? model_motion_id(&a->model, a->motion) : -1, a->yaw);
+    }
     cloth_tick(a->cloth);
     if (a->legs.on) {
         legs_contact(a);

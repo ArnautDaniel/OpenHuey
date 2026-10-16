@@ -1612,8 +1612,9 @@ fvariable sx  fvariable sy  fvariable sz
 \ 0xCC: op 3 the cutscene leaves actor `id`'s model as it is (the director's +0x78, Cutscene_Mark83); else
 \ `id`'s model told - only Daniella's model answers (DaniellaModel_Vt2C / Vt30, Model_Set878): 0 two
 \ of her parts (17 and 31) hidden, 1 one of them shown again - the first, or the second once op 2
-\ chose it (v not 0: her model's +0x878), 2 that choice made and shown; 4 (her back's capsules,
-\ for the hanging parts hga doesn't give her) nothing here
+\ chose it (v not 0: her model's +0x878), 2 that choice made and shown; 4 her back's colliders
+\ for her hair (DaniellaModel_BackCapsules: v 0 standing, 1 flat, 2 bent - until she is next off
+\ her back)
 17 constant daniella-part-a   31 constant daniella-part-b
 : show-part ( who part on? -- )   \ (a character's model part shown or hidden: the original's part flag 2)
     {: who part on :}  who char-model dup 0< if  drop exit  then  part on actor-part-show ;
@@ -1631,6 +1632,7 @@ variable daniella-second   \ (her model's +0x878: op 1 shows her second part, no
         0 of  false false daniella-parts  endof
         1 of  daniella-one  endof
         2 of  v daniella-second !  daniella-one  endof
+        4 of  v cloth-back!  endof   \ (her back's colliders for her hair: DaniellaModel_BackCapsules)
         >r drop r>
     endcase ;
 : obstacles-id ( -- id )  s" obstacles" actor-named ;

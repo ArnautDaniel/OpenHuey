@@ -10,14 +10,11 @@ USING: engine game-state actors messages common facts flag-names room-names path
 : played? ( -- flag )  in-game @ if  my-room room-id =  else  false  then ;   \ (Npc_InPlayedRoom)
 : danger-id ( -- id )  s" danger" actor-named ;
 
-\ his model where his body is, shown in the room being played
-\ down on his back ($1800 falling, $1801 / $1802 lying, $1803 up): Daniella's hair falls forward
-\ and her back's colliders bend (DaniellaModel_Vt3C; the others have no such parts)
-: on-his-back? ( -- flag )  anim @ $1800 $1804 within ;
+\ his model where his body is, shown in the room being played (Daniella on her back: her hair
+\ and back by her animation - the engine's, DaniellaModel_Vt3C)
 : pose ( -- )
     my-at sf@ him act.x sf!  my-at 4 + sf@ him act.y sf!  my-at 8 + sf@ him act.z sf!
     self body-yaw him act.yaw sf!
-    my-model @ on-his-back? self body-yaw cloth-crawl!
     played? under-t @ 0= and unseen @ 0= and 0<> 1 and him act.visible l! ;   \ (under the floor: Lorenzo's other class)
 
 \ ---- in the game and out (Pursuer_Activate: waiting about, his first animation) ----
