@@ -200,6 +200,31 @@ static void part_start(struct ActorPart *p, int index, int flags, float blend);
 static int model_motion_entry_flags(const Actor *a, int index);
 static void legs_contact(Actor *a);
 
+/* a motion and its variant kept in step (Motion_KeepInStep): the variant at the motion's phase,
+ * their speeds meeting by the weight `w` (the motion's share) - the motion at w + (l0 / l1) (1 - w)
+ * of its own, the variant at (1 - w) + (l1 / l0) w - so the two run as one cycle of the blended
+ * length; their root movements are scaled by the same speeds (motion_root). No variant: 1, 1 */
+static void step_speeds(const Actor *a, int motion, int var, float w, float *s0, float *s1) {
+    float l0, l1;
+
+    *s0 = *s1 = 1.0f;
+    if (motion < 0 || var < 0) {
+        return;
+    }
+    l0 = (float)model_motion_frames(&a->model, motion);
+    l1 = (float)model_motion_frames(&a->model, var);
+    if (l0 <= 0.0f || l1 <= 0.0f) {
+        return;
+    }
+    *s0 = w + (l0 / l1) * (1.0f - w);
+    *s1 = (1.0f - w) + (l1 / l0) * w;
+}
+static void keep_in_step(const Actor *a, int motion, float frame, int var, float *vframe) {
+    if (motion >= 0 && var >= 0 && model_motion_frames(&a->model, motion) > 0) {
+        *vframe = (float)model_motion_frames(&a->model, var) * (frame / (float)model_motion_frames(&a->model, motion));
+    }
+}
+
 static void part_tick(Actor *a, struct ActorPart *p) {
     if (p->motion >= 0 && !(p->flags & 0x10)) {
         step_time(&p->frame, 1.0f, model_motion_frames(&a->model, p->motion), p->flags & 1);
@@ -221,6 +246,7 @@ static void part_tick(Actor *a, struct ActorPart *p) {
 
 void actor_tick(Actor *a) {
     int frames, loop, i;
+    float s0, s1;
 
     if (!a->used) {
         return;
@@ -237,8 +263,10 @@ void actor_tick(Actor *a) {
     }
     frames = model_motion_frames(&a->model, a->motion);
     loop = a->loop || (a->mflags & 1);
+    keep_in_step(a, a->motion, a->frame, a->variant, &a->vframe);
+    step_speeds(a, a->motion, a->variant, a->vweight, &s0, &s1);
     if (!(a->mflags & 0x10)) {
-        if (step_time(&a->frame, a->rate, frames, loop)) {
+        if (step_time(&a->frame, a->rate * s0, frames, loop)) {
             a->mflags |= 0x20;
         } else {
             a->mflags &= ~0x20;
@@ -250,14 +278,16 @@ void actor_tick(Actor *a) {
         }
     }
     if (a->variant >= 0 && !(a->mflags & 0x10)) {
-        step_time(&a->vframe, a->rate, model_motion_frames(&a->model, a->variant), loop);
+        step_time(&a->vframe, a->rate * s1, model_motion_frames(&a->model, a->variant), loop);
     }
     if (a->fade > 0.0f) {   /* the motion before goes on while it fades out (not with flag 8) */
+        keep_in_step(a, a->prev_motion, a->prev_frame, a->prev_variant, &a->prev_vframe);
+        step_speeds(a, a->prev_motion, a->prev_variant, a->prev_vweight, &s0, &s1);
         if (a->prev_motion >= 0 && !a->prev_frozen) {
-            step_time(&a->prev_frame, a->rate, model_motion_frames(&a->model, a->prev_motion), 1);
+            step_time(&a->prev_frame, a->rate * s0, model_motion_frames(&a->model, a->prev_motion), 1);
         }
         if (a->prev_variant >= 0 && !a->prev_frozen) {
-            step_time(&a->prev_vframe, a->rate, model_motion_frames(&a->model, a->prev_variant), 1);
+            step_time(&a->prev_vframe, a->rate * s1, model_motion_frames(&a->model, a->prev_variant), 1);
         }
         a->fade -= 1.0f;
     }
@@ -393,14 +423,18 @@ void actor_body_variant(Actor *a, int index) {
 }
 
 /* one slot's root step: the motion and its variant by the weight (motion_root, layer 1) */
+/* the root's step (Motion_RootMovement's motion_root: each animation's at its speed, the variant
+ * blended by the weight) and turn (Motion_RootRotation: the motion's own alone, at its speed) */
 static void root_of(const Actor *a, int index, float frame, int var, float vframe, float w, float *turn, Vec3 *step) {
-    float t2;
+    float t2, s0, s1;
     Vec3 s2;
 
+    step_speeds(a, index, var, w, &s0, &s1);
     model_root_delta(&a->model, index, frame, turn, step);
+    *turn *= s0;
+    *step = vec3_scale(*step, s0);
     if (var >= 0 && model_root_delta(&a->model, var, vframe, &t2, &s2)) {
-        *turn = *turn * w + t2 * (1.0f - w);
-        *step = vec3_add(vec3_scale(*step, w), vec3_scale(s2, 1.0f - w));
+        *step = vec3_add(vec3_scale(*step, w), vec3_scale(s2, s1 * (1.0f - w)));
     }
 }
 
@@ -418,7 +452,7 @@ void actor_root_delta(const Actor *a, float *turn, Vec3 *step) {
         if (!a->prev_frozen) {   /* (held still: none of its own) */
             root_of(a, a->prev_motion, a->prev_frame, a->prev_variant, a->prev_vframe, a->prev_vweight, &t2, &s2);
         }
-        *turn = t2 * w + *turn * (1.0f - w);
+        (void)t2;   /* (the turn: the current motion's alone - Motion_RootRotation) */
         *step = vec3_add(vec3_scale(s2, w), vec3_scale(*step, 1.0f - w));
     }
 }
