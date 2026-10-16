@@ -122,6 +122,27 @@ $80 constant soft-boots
 create foot-at 12 allot
 : foot-place ( left? -- )   \ where the foot is in the room (Motion_FootPos: its place track, as she is)
     her-model @ swap 0e engine:foot-at drop  foot-at vec! ;
+\ on a ladder (her mode 3): the rungs' sound ($14) - but getting on or off at its foot ($704 /
+\ $703) with the foot over the floor out from it, the floor's (off there: under the foot from the
+\ foot's spot); off at its top ($707) the floor's from the top's spot. -1: the floor under the foot
+-2 constant rungs
+create lf-at 12 allot
+: from-end ( v side -- flags | -1 )   \ (Actor_TriFrom: walked straight to the foot from that end's spot)
+    her-ladder @ over nav-link-tri  swap her-ladder @ swap nav-link-spot lf-at vec!   ( v tri )
+    swap >r lf-at r> 0 v-walk  dup 0< if  exit  then  nav-flags ;
+: over-foot-floor? ( v -- flag )   \ (out from its foot as she gets off there: Actor_DoorFront)
+    her-ladder @ 0  0e -7.1132e nav-link-front  dup 0< if  2drop fdrop fdrop fdrop false exit  then
+    lf-at vec!  swap >r lf-at r> 0 v-walk 0< 0= ;
+: ladder-floor ( v -- flags | -1 | rungs )
+    anim@ case
+        $700 of  drop settled? if  rungs  else  -1  then  endof
+        $701 of  drop rungs  endof   $702 of  drop rungs  endof   $705 of  drop rungs  endof
+        $706 of  drop rungs  endof   $708 of  drop rungs  endof   $709 of  drop rungs  endof
+        $703 of  dup over-foot-floor? if  0 from-end  else  drop rungs  then  endof
+        $704 of  over-foot-floor? if  -1  else  rungs  then  endof
+        $707 of  1 from-end  endof
+        >r drop -1 r>
+    endcase ;
 variable st-l  variable st-r  variable st-step  variable ft-base  variable ft-bank
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
 : footsteps ( -- )
@@ -135,7 +156,9 @@ variable st-l  variable st-r  variable st-step  variable ft-base  variable ft-ba
     st-step @ 1 = foot-place
     wading? if  her-mode @ 0= her-sub @ 2 = and  foot-at water-step  then   \ (running: the bigger ripple)
     0 ft-base !  4 ft-bank !
-    foot-at blocked-floor v-tri-in dup 0< if  drop her-tri @  then  nav-flags
+    her-mode @ 3 = if  foot-at ladder-floor  else  -1  then
+    dup rungs = if  drop  $14 4 0 0 her-pos sound-at  4 room-id her-tri @ -1 fiona-noise acoustics-id send noise  exit  then
+    dup 0< if  drop  foot-at blocked-floor v-tri-in dup 0< if  drop her-tri @  then  nav-flags  then
     $2018000 and case
         $2008000 of  6 sound-loaded? if  $10 ft-base !  6 ft-bank !  else  $15 ft-base !  then  endof
         $2000000 of  $10 ft-base !  endof
