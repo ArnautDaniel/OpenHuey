@@ -33,10 +33,17 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
     then then then
     f>cell panic-id send fright ;
 
-\ ---- how much nearer he'll be in 5 frames (Pursuer_GroundGained: his strides; his reach for
-\ Hewie, Debilitas 16; in the panic's stage 5, 10 more) ----
+\ ---- how much nearer he'll be in 5 frames (Pursuer_GroundGained: his strides, less hers
+\ while she isn't facing him - running from him; his reach for Hewie, Debilitas 16; in the
+\ panic's stage 5, 10 more) ----
+: her-back-to-me? ( -- flag )   \ (Eye_ActorSees from her: not within 150 and 90 degrees of her heading)
+    fiona here? 0= if  false exit  then
+    fiona body-at my-at vec-dist 150e f> if  true exit  then
+    fiona body-at my-at vec-heading fiona body-yaw f- angle-wrap fabs pi f2/ f> ;
+: her-stride ( F: -- d )  0 cast-model dup 0< if  drop 0e exit  then  root-delta  frot fdrop frot fdrop fswap fdrop ;
 : ground-gained ( F: -- d )
-    stride 5e f*  her-stage @ 5 = if  10e  else  reach-k f@  then  f+ ;
+    stride 5e f*  her-back-to-me? if  her-stride 5e f* f-  then
+    her-stage @ 5 = if  10e  else  reach-k f@  then  f+ ;
 
 \ ---- whom a blow at a point reaches (Npc_WhoReachable, Progress_CharNear): her body within its
 \ height and radius, widened by the reach, and in front of him (90 degrees) ----

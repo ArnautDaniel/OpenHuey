@@ -57,6 +57,7 @@ create round-pt 12 allot  fvariable round-a  fvariable round-r  variable sc-who 
     f< 0= if  drop false exit  then
     $40080 straight? ;
 : fiona-in-reach? ( -- flag )   \ NPC_FionaInReach (her hiding place: with the hiding, F5)
+    her-unseen @ if  false exit  then   \ (camouflaged and still: not there to him)
     fiona sees? if  true exit  then
     fiona-hidden state-flag? if  false exit  then
     d-fiona f@ f0> 0= if  false exit  then

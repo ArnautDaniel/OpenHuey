@@ -84,6 +84,7 @@ state: stalker-state
   cell field combo  cell field combo-step  cell field swung  cell field sent  cell field took
   cell field cry  cell field hold-off  cell field freeze-t
   cell field her-plight  cell field her-stage
+  cell field her-unseen          \ she can't be seen: item $89 worn, still (Fiona +0x1AD630; fiona-unseen)
   cell field her-ladder-on      \ the ladder she is on (the room's nav link; -1 none: `fiona-plight`)
   cell field at-ladder          \ the ladder he makes for or stands by (stalker/ladder.fs; -1 none)
   cell field ladder-offsets     \ out from a ladder's ends: his family's (vtable +0x9C)

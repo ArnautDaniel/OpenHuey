@@ -101,9 +101,9 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir: bit 0 behind, bit 1 low)
 
 \ ---- Pursuer_Hit ----
 : struck ( kind damage how -- )
-    anim @ $FF00 and $700 = if  drop 2drop exit  then          \ (on a ladder: nothing)
     cond @ 2 = if  drop drop  5 <> if  -1 twitch !  then  exit  then   \ (down: a twitch)
     over hp @ swap abs - 0 max hp !  over hits @ + 999 min hits !     \ (his health, the damage he's had)
+    anim @ $FF00 and $700 = if  drop 2drop  hp @ 1 max hp ! exit  then   \ (on a ladder: hurt, but no fall)
     >r drop r>                                                    ( kind how )
     over 3 = if  0 hp !  then
     striker @ dup 0< 0= if  dup body? if  body-at heading-to  else  drop yaw  then  else  drop yaw  then

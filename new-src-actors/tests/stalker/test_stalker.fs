@@ -42,6 +42,11 @@ fvariable dd
 T{ 40e there  on-floor?  seen  [: d-fiona f@ ;] his 40e f- fabs 1e f< -> -1 -1 -1 }T
 T{ -15e there  on-floor?  seen -> -1 -1 }T
 T{ -30e there  on-floor?  seen -> -1 0 }T
+testing ... camouflaged and still (fiona-unseen): not seen ahead, nor in reach behind; seen again after
+-1 broadcast fiona-unseen  deliver
+T{ 40e there  seen  -15e there  seen -> 0 0 }T
+0 broadcast fiona-unseen  deliver  face   \ (him turned back as he was: searching for her meanwhile)
+T{ 40e there  seen -> -1 }T
 : heard-any ( -- flag )   \ (a noise each frame; heard on the frame after its end)
     0 10 0 do  $14 room-id s" fiona" actor-named body-tri -1 0 game:acoustics send noise  game-tick  [: did-hear @ ;] his or  loop ;
 T{ heard-any -> -1 }T

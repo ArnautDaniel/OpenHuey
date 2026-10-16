@@ -132,7 +132,8 @@ defer round-to-her ( -- went? )   ' false is round-to-her   \ (she across his ro
     -1 step-t +!  step-t @ 0> if  exit  then  30 step-t !
     round-to-her if  exit  then
     fiona body-tri dup 0< if  drop exit  then  fiona body-at plan 0> 0= if  exit  then
-    d-fiona f@ 15e f< d-fiona f@ f0< 0= and if  stand-anim play  my-path path-clear  else  walk-anim play  then ;
+    d-fiona f@ 15e f< d-fiona f@ f0< 0= and if  stand-anim play  my-path path-clear  else  walk-anim play  then
+    her-unseen @  d-fiona f@ 10e f<  d-fiona f@ f0< 0= and and  my-mode @ 0= and if  0 mode-t !  then ;   \ (there, and she's not: Pursuer_BehaviourRun)
 : chase-step ( -- )   \ (the step while after her)
     my-path path-left? if  walk-stride drop  else  fiona body-at turn-rate turn-to fdrop  then
     after-her ;

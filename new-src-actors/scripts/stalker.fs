@@ -83,7 +83,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     s" fiona" actor-named fiona-id !  s" hewie" actor-named hewie-id !
     hear-threshold @ stalker-noise s" acoustics" actor-named send listen
     pursuer-ladder ladder-offsets !  -1 her-ladder-on !  -1 at-ladder !
-    self subscribe zone-target  self subscribe zone-targets-off ;
+    self subscribe zone-target  self subscribe zone-targets-off  self subscribe fiona-unseen ;
 
 \ a door slammed off screen, the one he makes for: right behind it, its damage (not below 1) and
 \ he is after her
@@ -180,6 +180,7 @@ behaviour stalking
       >r >r >r  dup 3 * floats target-at +  r> cell>f dup sf!  r> cell>f dup 4 + sf!  r> cell>f 8 + sf!
       cells target-on +  -1 swap ! ;
   on panic ( stage level -- )  drop her-stage ! ;     \ (the door he came in by: swung open)
+  on fiona-unseen ( on -- )  her-unseen ! ;
   on door-refused ( room exit -- )  nip refused-answer ;
 end-behaviour
 
