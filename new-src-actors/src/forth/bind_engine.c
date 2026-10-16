@@ -1855,6 +1855,13 @@ PRIM(p_sound_bank) {   /* ( k addr len -- flag ) bank k holds NAME ("" none) */
     bank_named((int)k, name);
     PUSH(snddrv_bank((int)k, name) ? -1 : 0);
 }
+PRIM(p_sound_bank_file) {   /* ( k -- addr len ) the file bank k was last given ("" none) */
+    Cell k = POP();
+    const char *s = k >= 0 && k < 8 ? sBankFile[k] : "";
+
+    PUSH((Cell)s);
+    PUSH((Cell)strlen(s));
+}
 PRIM(p_sound_set) {   /* ( set -- ) the sound set bank 4 holds (Progress_LoadSoundSet) */
     sWantSet = (int)POP();
     bank_want(4);
@@ -3007,7 +3014,7 @@ void bind_engine(Forth *f) {
         {"stage-ambient", p_stage_ambient}, {"room-clear", p_room_clear}, {"common-sound", p_common_sound},
         {"bank-sound", p_bank_sound}, {"bank-sound-at", p_bank_sound_at}, {"sound-set!", p_sound_set}, {"sound-at", p_sound_at},
         {"stop-sound", p_sound_stop}, {"sound-load", p_sound_load}, {"sound-reverb!", p_sound_reverb}, {"sound-loaded?", p_sound_loaded}, {"sound-scale!", p_sound_scale}, {"sound-stop-voices", p_sound_stop_voices}, {"sound-stop-all", p_sound_stop_all}, {"sound-fade", p_sound_fade},
-        {"sound-volume!", p_sound_volume}, {"stage-music-volume!", p_stage_music_volume}, {"sound-bank", p_sound_bank}, {".voices", p_dot_voices}, {"exit-door", p_exit_door}, {"door-flags", p_door_flags},
+        {"sound-volume!", p_sound_volume}, {"stage-music-volume!", p_stage_music_volume}, {"sound-bank", p_sound_bank}, {"sound-bank-file", p_sound_bank_file}, {".voices", p_dot_voices}, {"exit-door", p_exit_door}, {"door-flags", p_door_flags},
         {"nav-block!", p_nav_block}, {"nav-group!", p_nav_group}, {"nav-tri-flags!", p_nav_tri_flags},
         {"nav-in-group?", p_nav_in_group}, {"nav-flags", p_nav_flags},
         {"message-layout", p_message_layout}, {"message-file", p_message_file}, {"message-lines", p_message_lines}, {"message-line", p_message_line},

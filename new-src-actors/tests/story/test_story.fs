@@ -61,10 +61,10 @@ T{ world-held state-flag? -> 0 }T   \ (the opening's fade-in let go of the world
 T{ ' scene? 120 soon -> -1 }T
 testing ... Daniella is in it: loaded into the story's slot 3 (char-load) and cast for the scene
 T{ game:daniella enter  stalker.state:loaded @  leave-actor -> -1 }T
-testing ... the scene pauses (Start) and skips (Cross): over, the world let go
+testing ... the scene pauses (Start) and skips (Triangle): over, the world let go
 60 frames  start-button debug:press  10 frames
 T{ game:pause enter  pause:stage @  leave-actor -> 2 }T
-cross debug:press
+triangle debug:press
 : over? ( -- flag )  cutscene-active? 0=  movie-status 1 <> and ;
 T{ ' over? 600 soon  world-held state-flag? -> -1 0 }T
 test-summary

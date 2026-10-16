@@ -1173,6 +1173,7 @@ PRIM(p_colon) {
     f->compiling = -1;
     f->locals.n = 0;
     f->nlocals_saved = 0;
+    f->top_sp = f->t->sp;
 }
 /* {: a b | c -- comment :} the definition's locals: a and b taken from the stack (b from the
  * top), c starting at 0; what follows -- is a comment */
@@ -1184,6 +1185,9 @@ PRIM(p_locals_begin) {
     }
     if (f->locals.n > 0) {
         forth_error(f, "{: once in a definition");
+    }
+    if (f->t->sp != f->top_sp) {
+        forth_error(f, "{: inside a do loop or an if: only at the start of a definition (or a word of its own)");
     }
     for (;;) {
         size_t n;
@@ -1233,6 +1237,7 @@ PRIM(p_noname) {   /* :noname ( -- xt ) a definition without a name */
     def->flags = WORD_HIDDEN;
     PUSH(def);
     f->compiling = -1;
+    f->top_sp = f->t->sp;
 }
 PRIM(p_immediate) { f->latest->flags |= WORD_IMMEDIATE; }
 PRIM(p_lbracket) { f->compiling = 0; }
@@ -1634,8 +1639,10 @@ PRIM(p_quote_begin) {
     if (f->nlocals_saved == 4) {
         forth_error(f, "[: nested too deep");
     }
+    f->top_sp_saved[f->nlocals_saved] = f->top_sp;
     f->locals_saved[f->nlocals_saved++] = f->locals;   /* (the word's locals aren't the quotation's) */
     f->locals.n = 0;
+    f->top_sp = f->t->sp;
 }
 PRIM(p_quote_end) {
     Word *q = (Word *)POP();
@@ -1647,6 +1654,7 @@ PRIM(p_quote_end) {
     comma(f, (Cell)f->w_exit);
     if (f->nlocals_saved > 0) {
         f->locals = f->locals_saved[--f->nlocals_saved];
+        f->top_sp = f->top_sp_saved[f->nlocals_saved];
     }
     if (slot != NULL) {   /* inside a definition: jump here, then the token as a literal */
         *slot = (Cell)f->here;

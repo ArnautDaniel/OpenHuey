@@ -87,20 +87,20 @@ fvariable tx  fvariable ty  fvariable tz
 variable sw  variable sh
 \ the save slots, to load one: each its number, place and time played
 : slot-colour ( i -- rgba )  dup slot-at @ = if  drop $FFFFFFFF  else  slot-used? if  $B0A8A0FF  else  $605C58FF  then  then ;
+: slot-draw ( n -- )   \ (a word of its own: a local inside a do loop would hide the loop's index)
+    dup sh @ 4 / swap char-size nip 2* * +  {: n y :}
+    menu-layer  n 1+ n>s  sw @ 10 /  y  n slot-colour 2 ui-text
+    n slot-used? if
+        menu-layer  n slot-place@ menu-line  sw @ 10 / 3 char-size drop * 2* +  y  n slot-colour 2 ui-text
+        menu-layer  n slot-frames@ clock$  sw @ 6 * 10 /  y  n slot-colour 2 ui-text
+    else
+        menu-layer  s" - empty -"  sw @ 10 / 3 char-size drop * 2* +  y  n slot-colour 2 ui-text
+    then ;
 : slots-draw ( -- )
     screen-size sh ! sw !  3 pen-scale
     menu-layer  s" LOAD GAME"  sw @ 10 /  sh @ 8 /  $D8D0C8FF 3 ui-text
     2 pen-scale
-    #slots 0 do
-        sh @ 4 / i char-size nip 2* * +  {: y :}
-        menu-layer  i 1+ n>s  sw @ 10 /  y  i slot-colour 2 ui-text
-        i slot-used? if
-            menu-layer  i slot-place@ menu-line  sw @ 10 / 3 char-size drop * 2* +  y  i slot-colour 2 ui-text
-            menu-layer  i slot-frames@ clock$  sw @ 6 * 10 /  y  i slot-colour 2 ui-text
-        else
-            menu-layer  s" - empty -"  sw @ 10 / 3 char-size drop * 2* +  y  i slot-colour 2 ui-text
-        then
-    loop
+    #slots 0 do  i slot-draw  loop
     menu-layer  s" >"  sw @ 10 / char-size drop 2* 2* -  sh @ 4 / slot-at @ char-size nip 2* * +  $FFFFFFFF 2 ui-text ;
 : menu-draw ( -- )
     menu-layer ui-clear

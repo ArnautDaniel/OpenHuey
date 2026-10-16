@@ -24,7 +24,8 @@ state: stalker-state
   cell field fiona-id  cell field hewie-id
   cell field my-kind            \ +0x153C: which character (2 Debilitas, 3 Daniella: the cutscenes' cast id)
   cell field growls             \ his frame growls (Debilitas_Update; Daniella's doesn't)
-  cell field loaded             \ in the story's character slot 2 (partner-load .. char-unload)
+  cell field loaded             \ in one of the story's character slots (partner-load / char-load .. char-unload)
+  cell field my-slot            \ ... which: 2 the one in play (his sounds in bank 7, saved), 3..5 a scene's figure
   \ his senses (Npc_Senses, Npc_WhoAround): how far Fiona and Hewie are on foot (-1: not in his
   \ room / no way; +0x1588, +0x158C), whom he sees or can reach (+0x1544, +0x1545), a noise
   \ heard this frame (+0x1546: its loudness, room, triangle), the frame's turn (+0x15A0), his

@@ -128,6 +128,9 @@ struct Forth {
         int n;
     } locals, locals_saved[4];
     int nlocals_saved;
+    int top_sp, top_sp_saved[4];   /* the data stack's depth at the definition's (quotation's) start:
+                                    * {: only there, not inside a do loop or an if (their frame
+                                    * would hide the loop's index, or be dropped unmade) */
     Word *w_locals, *w_unlocals, *w_local_fetch, *w_local_store;
     Cell base;              /* number base */
     int bye;                /* `bye` was run: the host should stop */

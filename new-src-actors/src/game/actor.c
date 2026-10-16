@@ -346,8 +346,9 @@ static int model_motion_entry_flags(const Actor *a, int index) {
 
 void actor_body_start(Actor *a, int index, int flags, float blend) {
     int frames = model_motion_frames(&a->model, index);
-    /* the motion before had come to its end, not looping: it fades out held at its last frame
-     * (stepped on, it would wrap to its first - a crouch's end back to standing) */
+    /* the motion before had come to its end, not looping: it fades out posed at its last frame
+     * (stepped on, it would wrap to its first - a crouch's end back to standing); only its pose:
+     * its root goes on as it did (Hewie's turns while fading rest on it) */
     int ended = a->motion >= 0 && !(a->loop || (a->mflags & 1)) && (a->mflags & 0x400);
 
     if (a->motion >= 0 && blend > 0.0f) {
@@ -372,7 +373,8 @@ void actor_body_start(Actor *a, int index, int flags, float blend) {
     }
     a->motion = index;
     a->mflags = (flags & 0xFFFF) | (flags & 8 ? 0x10 : 0);
-    a->prev_frozen = (flags & 8) != 0 || ended;
+    a->prev_frozen = (flags & 8) != 0;
+    a->prev_held = ended;
     a->loop = flags & 1;
 }
 
@@ -612,6 +614,8 @@ static void skin(Actor *a) {
         place.m[0] = place.m[5] = place.m[10] = a->scale;
     } else {
         float x = a->fade_len > 0.0f && a->fade > 0.0f ? a->fade / a->fade_len : 0.0f;   /* (fade_weight) */
+        /* (a motion come to its end fades out from its last frame: prev_held) */
+        float prev_at = a->prev_held ? (float)(model_motion_frames(&a->model, a->prev_motion) - 1) : a->prev_frame;
         ModelLayer l[4];
         int nl = 0, k, body = 0x03;
 
@@ -620,7 +624,7 @@ static void skin(Actor *a) {
                 body |= 4 << k;
             }
         }
-        l[nl++] = (ModelLayer){a->motion, a->frame, a->prev_motion, a->prev_frame, x * x * (3.0f - 2.0f * x), body,
+        l[nl++] = (ModelLayer){a->motion, a->frame, a->prev_motion, prev_at, x * x * (3.0f - 2.0f * x), body,
                                a->variant, a->vframe, 1.0f - a->vweight, a->prev_variant, a->prev_vframe,
                                1.0f - a->prev_vweight};
         for (k = 0; k < 3; k++) {

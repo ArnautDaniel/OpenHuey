@@ -15,6 +15,11 @@ stalkers-blind state-flag-set
 testing loaded (0x11) but not in the game: his kind (0x54), not active (0x55), no alert ($FF)
 2 partner-load  2 frames
 T{ [: 2 stalker-kind?  $22 stalker-kind?  stalker-active?  $FF stalker-alert? ;] in-room -> -1 0 0 -1 }T
+testing Daniella as a scene's figure (char-load into slot 3) leaves his sounds: bank 7 stays his
+3 3 $FF char-load  deliver  2 frames
+T{ 7 sound-bank-file s" O_DB0/DB0_000" compare  game:daniella body?  -> 0 0 }T
+[: stalker.state:my-slot @ ;] game:daniella enter execute leave-actor  constant her-slot
+T{ her-slot -> 3 }T
 testing in her room: active, his kind here (0x3C), waiting about (alert 3), free (0x65), well (0x41)
 s" fiona" actor-named body-tri constant her-tri
 -500e 124e -500e 0e tp-facing  3 frames   \ (her well out of his sight)

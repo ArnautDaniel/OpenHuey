@@ -176,8 +176,8 @@ create who-at 12 allot
 : pose ( -- )
     model @ 0< if  exit  then
     crow-parts
+    in-scene @ if  exit  then   \ (a cutscene's: shown by its shots, body or none - the golem has none)
     self body? 0= if  0 him act.visible l!  exit  then
-    in-scene @ if  exit  then
     my-at sf@ him act.x sf!  my-at 4 + sf@ him act.y sf!  my-at 8 + sf@ him act.z sf!
     yaw him act.yaw sf!
     self body-room room-id =  shown @ and  0<> 1 and  him act.visible l! ;
