@@ -1225,7 +1225,8 @@ PRIM(p_area_in) {   /* ( area -- flag ) ( F: x y z -- ) */
 }
 PRIM(p_placed_op) {   /* ( addr len op arg -- ) the room's object by name: 0 hidden or not (arg: the
                          * original's +0 byte - PlacedObjects_Draw draws only while it is 0), 1 / 2
-                         * animation arg once / looped, 3 animation stopped, 4 shown and back as defined */
+                         * animation arg once / looped, 3 animation stopped, 4 shown and back as defined,
+                         * 5 its place and turn now kept as its defined ones (arg unused) */
     Cell arg = POP(), op = POP(), n = POP(), a = POP();
     char name[32];
     Placed *p;
@@ -1251,6 +1252,10 @@ PRIM(p_placed_op) {   /* ( addr len op arg -- ) the room's object by name: 0 hid
         p->shown = 1;
         p->rot = p->def_rot;
         p->pos = p->def_pos;
+        break;
+    case 5:
+        p->def_rot = p->rot;
+        p->def_pos = p->pos;
         break;
     }
 }
@@ -2620,6 +2625,12 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its skinned parts sho
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
+PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.0.1") */
+    static const char v[] = HGA_VERSION;
+
+    PUSH((Cell)v);
+    PUSH((Cell)(sizeof(v) - 1));
+}
 PRIM(p_testing) { PUSH(gEngine.testing ? -1 : 0); }   /* ( -- flag ) run by --test (nothing kept on disk) */
 PRIM(p_user_dir) {   /* ( -- addr len ) where settings are kept (made if needed; ends with /) */
     const char *dir = disc_user_dir();
@@ -3184,7 +3195,7 @@ void bind_engine(Forth *f) {
         {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},
         {"pen-scale", p_pen_scale}, {"draw-text", p_draw_text}, {"draw-rect", p_draw_rect},
         {"screen-size", p_screen_size}, {"char-size", p_char_size}, {"n>s", p_n_to_s}, {"h>s", p_h_to_s}, {"f>s$", p_f_to_s},
-        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"look@", p_look_get}, {"user-dir", p_user_dir}, {"testing?", p_testing}, {"actor-part-show", p_actor_part_show}, {"doorway-faded", p_doorway_faded}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
+        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"look@", p_look_get}, {"user-dir", p_user_dir}, {"testing?", p_testing}, {"hga-version", p_hga_version}, {"actor-part-show", p_actor_part_show}, {"doorway-faded", p_doorway_faded}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
         {"end-file", p_end_file}, {"xt>name", p_xt_to_name},
         {"clear-color", p_clear_color}, {"out-of-view?", p_out_of_view}, {"screenshot", p_screenshot}, {"console!", p_console},
 

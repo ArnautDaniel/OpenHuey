@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hga C)
+project(hga VERSION 0.0.1 LANGUAGES C)   # the version: shown with the debug mode (F2)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -58,7 +58,7 @@ add_executable(hga
     src/game/camdirector.c src/game/areas.c src/game/exits.c src/game/messages.c src/game/cutscene.c src/game/placed.c src/game/sprites.c src/game/particles.c src/game/things.c src/game/swimpath.c src/game/rumble.c
     src/forth/bind_engine.c)
 target_link_libraries(hga PRIVATE forth gamestate hactor SDL3::SDL3)   # (GL through SDL_GL_GetProcAddress: platform/gl.c)
-target_compile_definitions(hga PRIVATE "HG2_SCRIPT_DIR=\"${SCRIPT_DIR}\"" "HG2_DEFAULT_DATA=\"${DEFAULT_DATA}\""
+target_compile_definitions(hga PRIVATE "HGA_VERSION=\"${PROJECT_VERSION}\"" "HG2_SCRIPT_DIR=\"${SCRIPT_DIR}\"" "HG2_DEFAULT_DATA=\"${DEFAULT_DATA}\""
     "HG2_DEFAULT_EXE=\"${DEFAULT_EXE}\"")
 if(HGA_RELEASE)
     if(WIN32)

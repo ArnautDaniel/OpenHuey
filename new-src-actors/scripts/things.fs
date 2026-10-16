@@ -12,7 +12,7 @@
 \ - the stone (8): after 15 s a noise that draws the stalker, and gone.
 \ The kinds 0, 2, 3, 5, 7, 8 are kept in the save; ten of a kind at most (the oldest goes).
 IN: things
-USING: engine game-state actors messages common facts flag-names items effects fiona.slam ;
+USING: engine game-state actors messages common facts flag-names items effects fiona.slam stalker-names ;
 
 128 constant #things
 
@@ -40,8 +40,8 @@ variable it
     balls 0=  $90 items-of 0= and if  $90 1 s" items" actor-named send give-item  then ;
 : gone ( -- )  kind  it @ thing-free  0= if  ball-back  then ;
 : thing-sound ( id -- )  5 0 0 at vec@ sound-at ;
-: running? ( -- flag )   \ (Thing_Frame: the game going - no scene, the world not held)
-    cutscene-active? 0=  world-held state-flag? 0= and ;
+: running? ( -- flag )   \ (Thing_Frame: the game going - no scene has the camera, the world not held)
+    cam-scene? 0=  world-held state-flag? 0= and ;
 
 \ ---- by kind ----
 : kept? ( k -- flag )  dup 0= over 2 = or over 3 = or over 5 = or over 7 = or swap 8 = or ;
@@ -49,6 +49,7 @@ variable it
 : magnesia? ( k -- flag )  dup 2 = over 5 = or swap 7 = or ;
 : lasts ( k -- frames )  case  0 of 5400 endof  3 of 9000 endof  10 of 450 endof  >r 0 r>  endcase ;   \ (0: no end)
 : powder-damage ( k -- n )  case  1 of 5 endof  4 of 10 endof  >r 20 r>  endcase ;
+: powder-stun ( k -- n )  case  1 of 4 endof  4 of 6 endof  >r 8 r>  endcase ;   \ (how long he's held: the stun's loops - thing_stomped's b)
 : powder-colour ( k -- rgba )  case  1 of $402080FF endof  4 of $806400FF endof  >r $808080FF r>  endcase ;
 \ the magnesias' settings (thing_setup): startle %, damage, armed at, reach across
 : startle ( k -- % )  case  2 of 20 endof  5 of 50 endof  >r 100 r>  endcase ;
@@ -77,9 +78,10 @@ variable it
 : dust ( -- )  2 $50 $50 $50 16  at vec@  burst ;   \ (the doll glancing off a wall: a grey puff)
 : heard ( loud -- )   \ (a noise at it the stalker hears: Noise_Make)
     its-room its-tri -1 world-noise  s" acoustics" actor-named send noise ;
-: blow-stalker ( kind damage startle% -- )   \ (Progress_Noise to him: his request 4)
-    stalker dup 0< if  drop 2drop drop exit  then  >r
-    rnd 100e f* f>s > if  $8000  else  0  then  r> send blow ;
+: blow-him ( id kind damage startle% -- )   \ (Progress_Noise to him: his request 4 from where it lies - in whatever room)
+    {: id k d pct :}  id 0< if  exit  then
+    k d  rnd 100e f* f>s pct < if  $8000  else  0  then  at vec@ xyz>cells  id send blow-from ;
+: blow-stalker ( kind damage startle% -- )  >r >r >r  stalker r> r> r> blow-him ;   \ (the one in her room)
 variable blow-n   -1000 blow-n !   \ (its blows to the homunculi: their own numbers)
 : blow-homunculi ( damage reach -- )   \ (ThingShared_ReachStalkers: as one of her blows there)
     {: d r :}  blow-n @  d  at sf@ f>cell  at 4 + sf@ f>cell  at 8 + sf@ f>cell  r s>f f>cell
@@ -116,21 +118,30 @@ variable blow-n   -1000 blow-n !   \ (its blows to the homunculi: their own numb
 
 \ ---- each kind's frame ----
 : quiet? ( -- flag )  $20 state-flag? ;   \ (progress flag $20: nothing set off)
-: powder-frame ( -- )   \ (thing_stomped: the stalker treading on it - a blow, kind 1 as his flinch)
-    quiet? if  kick exit  then
+: powder-frame ( -- )   \ (thing_stomped: the stalker treading on it - kind 7, its damage and his stun's loops; under flag $20 nothing, no kick)
+    quiet? if  exit  then
     stalker 1 treads? if
-        1 kind powder-damage 0 blow-stalker  powder-splash  gone exit
+        7 kind powder-damage kind powder-stun at vec@ xyz>cells  stalker send blow-from
+        powder-splash  gone exit
     then  kick ;
 : go-off ( -- )  $8E thing-sound  go-burst  gone ;
+\ armed, it goes off wherever it lies (ThingShared_Armed): the stalker in its room - in her room
+\ within its reach, elsewhere always (+0x122: 100) - has its blow (not under flag $20)
+: him-in-its-room ( -- id | -1 )  stalker-in-game dup 0< if  exit  then  dup body-room its-room <> if  drop -1  then ;
+: sets-him-off? ( -- flag )
+    him-in-its-room dup 0< if  drop false exit  then
+    here? if  in-reach?  else  drop true  then ;
 : magnesia-frame ( -- )   \ (thing_watch)
     age kind armed-at >= if
-        kind damage kind reach blow-homunculi
-        stalker in-reach? if  2 kind damage kind startle blow-stalker  then
+        here? if  kind damage kind reach blow-homunculi  then   \ (ThingShared_ReachStalkers)
+        sets-him-off? quiet? 0= and if  him-in-its-room 2 kind damage kind startle blow-him  then
         here? if  go-off  else  gone  then  exit
     then
+    here? 0= if  exit  then
     quiet? if  exit  then
     homunculi-tread?  stalker 0 treads?  2dup or 0= if  2drop kick exit  then
-    if  2 kind damage kind startle blow-stalker  then  drop
+    if  2 kind damage kind startle blow-stalker  then
+    if  kind damage 0 blow-homunculi  then   \ (those standing on it struck: ThingShared_StompStalkers)
     go-off ;
 : stone-frame ( -- )   \ (Thing08_Frame: armed, a noise the stalker hears - $4F at it - and gone)
     age 450 < if  kick exit  then
@@ -166,6 +177,7 @@ $1F constant doll-noise
     events 8 and if  dust  then
     kind lasts ?dup if  age <= if  gone exit  then  then
     kind 3 = if  doll-frame exit  then   \ (in any room: he may come upon it away from her)
+    kind magnesia? if  magnesia-frame exit  then   \ (in any room: armed, it goes off there)
     here? 0= if  exit  then
     kind powder? if  powder-frame exit  then
     kind magnesia? if  magnesia-frame exit  then

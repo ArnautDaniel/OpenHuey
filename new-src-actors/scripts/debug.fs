@@ -71,7 +71,7 @@ variable label?  -1 label? !
 
 \ ---- the debug mode (F2, or `debug-on` / `debug-off` at the console), on the same layer:
 \ Fiona's meters top left - her panic (0..100) and its stage, her fear (0..99) and, while she is
-\ out of breath, the running she has left; down the right, the actors alive with their ids
+\ out of breath, the running she has left, and hga's version; down the right, the actors alive with their ids
 \ (`<id> enter` at the console works inside one, `leave-actor` back) ----
 variable debug?
 : debug-on ( -- )  -1 debug? ! ;
@@ -112,6 +112,9 @@ variable m-stage  variable m-level  variable m-fear  variable m-breathless  vari
         then
     loop  drop ;
 
+\ which hga this is, under the meters
+: version-line ( -- )  s" hga " 12 118 dim-colour say  hga-version 56 118 dim-colour say ;
+
 state: label-state  cell field label-unused  end-state
 behaviour labelling
   on spawned ( -- )  self subscribe frame-end  self subscribe panic  self subscribe entered-room ;
@@ -121,7 +124,7 @@ behaviour labelling
   on frame-end ( -- )
       label-layer ui-clear
       key: F2 key-pressed? if  debug? @ 0= debug? !  then
-      debug? @ if  meters  actors-list  then   \ (asked for: anywhere)
+      debug? @ if  meters  actors-list  version-line  then   \ (asked for: anywhere)
       room-id 0< in-play state-flag? 0= or if  exit  then   \ (the label: not over the title)
       label? @ if  room-label  then ;
 end-behaviour

@@ -75,7 +75,7 @@ variable blow-kind  variable blow-dmg  variable blow-how  variable blow-big  fva
     events 2 and 0= if  exit  then
     blow-point
     hand true slam-door if  exit  then                     \ (a door there slammed)
-    special? 0=  hand blocked-floor v-tri-in 0< and if  $101 10 -1 play-blend  ['] shove-end her-act ! exit  then
+    special? 0=  hand $20018 body-tri-to 0< and if  $101 10 -1 play-blend  ['] shove-end her-act ! exit  then   \ (a wall before her hand)
     blow-power  blow-dmg @ boosted blow-dmg !
     0  hand stalker-in-room blow-reach f@ near-point? 1 and or  hand dog-in-room blow-reach f@ near-point? 2 and or
     ?dup if  >r blow-kind @ blow-dmg @ blow-how @ r> strike  then

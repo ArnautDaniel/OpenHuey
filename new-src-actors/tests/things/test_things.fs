@@ -2,7 +2,7 @@
 \ slot 2 - thrown, aimed, set down - and what becomes of each. Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/things/test_things.fs
 IN: test-things
-USING: tester engine game-state actors messages room-names game debug keys facts items fiona.state fiona.model ;
+USING: tester engine game-state actors messages room-names game debug keys facts items fiona.state fiona.model flag-names ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : hers ( xt -- x )  game:fiona enter  execute  leave-actor ;
@@ -34,6 +34,14 @@ testing a powder (antimony, aimed): it bursts on what it hits, and is gone
 -1 equip  $91 2 have  $91 equip  20 frames
 T{ let-go  ' things 60 soon  first kind@ -> -1 1 }T
 T{ [: things 0= ;] 300 soon  $91 count-of -> -1 1 }T
+testing a powder flying into a stalker: its splash, and he is held - hands to his face ($1006) for its loops
+: his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
+stalkers-blind state-flag-set  game:fiona body-tri debug:debilitas-tri  10 frames
+: at-him ( -- tri ) ( F: -- x y z )  game:debilitas body-tri  game:debilitas body-pos  fswap 5e f+ fswap ;   \ (5 above his feet)
+1 room-id  at-him  0e 0e 0e  thing-new drop  5 frames
+T{ [: stalker.state:anim @ ;] his  things -> $1006 0 }T
+T{ [: [: stalker.state:anim @ ;] his $1006 <> ;] 600 soon -> -1 }T   \ (four loops, then on)
+debug:debilitas-out  stalkers-blind state-flag-clear  5 frames
 testing a magnesia (set down): there till armed (30 s), then it goes off
 -1 equip  $92 1 have  $92 equip  20 frames
 T{ let-go  ' things 60 soon  first kind@ -> -1 2 }T

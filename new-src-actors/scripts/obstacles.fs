@@ -39,10 +39,11 @@ create spots  #obstacles 3 * floats allot            \ +0x5B0: the spots kept (x
 
 \ the move (OBSTACLE.MTN's one: 30 frames, 5 in all)
 30 constant move-frames
-create move-steps
-  0e f, 0e f, 0e f, 0e f, 0e f, 0.070092e f, 0.095197e f, 0.142290e f, 0.211369e f, 0.285178e f,
-  0.347676e f, 0.408945e f, 0.466564e f, 0.567652e f, 0.655631e f, 0.769039e f, 0.576050e f,
-  0.290233e f, 0.093540e f, 0.021064e f, 0e f, 0e f, 0e f, 0e f, 0e f, 0e f, 0e f, 0e f, 0e f, 0e f,
+create move-steps   \ (as the file has them: they come to 5, two squares)
+  0e f, 0e f, 0e f, 0e f, 0e f, 0.0700918138e f, 0.0951969326e f, 0.142289117e f, 0.211368367e f,
+  0.285176992e f, 0.347637147e f, 0.407967538e f, 0.466168225e f, 0.567985892e f, 0.656211078e f,
+  0.769031882e f, 0.576050103e f, 0.290232599e f, 0.0935284644e f, 0.0210638456e f,
+  0e f, 0e f, 0e f, 0e f, 0e f, 0e f, 0e f, 0e f, 0e f, 0e f,
 
 \ its kinds (ObstacleKinds, in the executable: the model's offset x, z, the number of parts,
 \ then each part's dx, dz, w, d)
@@ -141,8 +142,9 @@ create others 12 cells allot  variable #others
     dup 0< 0= if  dup body? if  dup body-room room-id = if
         dup body-tri  #others @ cells others + !  1 #others +!
     then  then  then  drop ;
-: other-tris ( -- )   \ (the other characters in the room: their triangles - Hewie, the stalker)
-    0 #others !  s" hewie" actor-named other-tri  stalker-in-game other-tri ;
+: other-tris ( -- )   \ (the other characters in the room: their triangles - Hewie, the stalker, the story's figures)
+    0 #others !  s" hewie" actor-named other-tri  stalker-in-game other-tri
+    s" cast3" actor-named other-tri  s" cast4" actor-named other-tri  s" cast5" actor-named other-tri ;
 : someone-sq ( a b corner? -- stop? )
     drop  #others @ 0 ?do
         i cells others + @  dup 3 pick =  swap 2 pick = or if  2drop true unloop exit  then
@@ -192,14 +194,16 @@ variable mo  variable ma  variable mb  variable mdef
     mb ! ma !  kind@ dup 0= if  drop 2drop exit  then  mdef !                  ( i n )
     mdef @ 8 + l@ 1 4 within 0= if  2drop exit  then
     dup model? 0= if  2drop exit  then
-    swap obst dup reset mo !  mo @ o.model + !
+    swap obst mo !  mo @ o.model + !   \ (placed again: its stop and any move kept - the room's entry resets them)
     mdef @ sf@ mo @ o.ox + f!  mdef @ 4 + sf@ mo @ o.oz + f!
     ma @ mo @ o.a + !  mb @ mo @ o.b + !
-    mdef @ 8 + l@ 0 ?do
-        mdef @ 12 + i 16 * +  mo @ i part                                     ( src p )
-        over s32@ over 2 cells + !  over 4 + s32@ over 3 cells + !
-        over 8 + l@ over 4 cells + !  swap 12 + l@ swap 5 cells + !
-        1 mo @ o.nparts + +!
+    mdef @ 8 + l@ 0 ?do   \ (its parts added to any it has, 3 at most: Obstacle_AddPart)
+        mo @ o.nparts + @ 3 < if
+            mdef @ 12 + i 16 * +  mo @ dup o.nparts + @ part                   ( src p )
+            over s32@ over 2 cells + !  over 4 + s32@ over 3 cells + !
+            over 8 + l@ over 4 cells + !  swap 12 + l@ swap 5 cells + !
+            1 mo @ o.nparts + +!
+        then
     loop
     -1 mo @ o.on + !  mo @ placed  mo @ follow ;
 : moved ( o -- )   \ the move done: the square it went to its reference (Obstacle_Moved)
