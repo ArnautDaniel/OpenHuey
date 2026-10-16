@@ -106,7 +106,8 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir: bit 0 behind, bit 1 low)
     anim @ $FF00 and $700 = if  drop 2drop  hp @ 1 max hp ! exit  then   \ (on a ladder: hurt, but no fall)
     >r drop r>                                                    ( kind how )
     over 3 = if  0 hp !  then
-    striker @ dup 0< 0= if  dup body? if  body-at heading-to  else  drop yaw  then  else  drop yaw  then
+    striker @ dup -2 = if  drop strike-pt heading-to
+    else dup 0< 0= if  dup body? if  body-at heading-to  else  drop yaw  then  else  drop yaw  then then
     yaw f- angle-wrap fabs pi f2/ f< if  0  else  1  then
     2 pick dup 2 = swap 4 = or if  2 or  then                      ( kind how dir )
     tackled

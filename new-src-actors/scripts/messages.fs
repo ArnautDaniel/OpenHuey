@@ -49,7 +49,7 @@ message spirit-sent ( slot room company -- )  \ (a spirit) new in that room, sen
 message spirit-kept ( slot -- )              \ (a spirit) as its progress record says (a loaded game)
 message creature-gone ( slot -- )            \ (creatures) it has vanished: its slot is free
 message creature-doing ( slot room mode up -- )  \ broadcast each frame by each creature: where, how it moves (2: about her), up (after her: what Hewie goes for)
-message fiona-request ( kind x y z -- )      \ (Fiona) a creature's request from there (f>cell): $D a spirit touched her (she falls), 3 a red one's going (grabbed), $C homunculi (held down)
+message fiona-request ( kind x y z threat -- )   \ (Fiona) a request from there (Progress_Noise; xyz>cells, threat f>cell): $D a spirit touched her (she falls), 3 a red one's going (grabbed), $C homunculi (held down), 2 a blow
 message game-loaded ( -- )                   \ broadcast: a save's progress is back (saves.fs) - rebuild from it
 
 \ ---- doors (docs/subsystems/doors.md) ----
@@ -121,6 +121,7 @@ message seize-taken ( -- )                   \ her answer: she's being led
 message seize-refused ( -- )                 \ her answer: no spot by him she can be led to (or she isn't free)
 message broke-free ( -- )                    \ to the stalker leading her: she shook free
 \ ---- her blows on him (F4, the stalkers' P3: Relation_Request kinds 1 / 2 from Fiona; 5 a door) ----
+message blow-from ( kind damage how x y z -- )   \ a blow from a point, not from anyone (Progress_Noise: the slot's +0x1060; xyz>cells)
 message blow ( kind damage how -- )          \ to a stalker (or Hewie): kind 1 a shove, 2 a kick, 3 a killing one, 4 a
                                              \ hard one, 5 a door; how: $8000 he stumbles, 1 he may (her kick: by
                                              \ how worn he is - Fiona_ChaseRoll, rolled by him)

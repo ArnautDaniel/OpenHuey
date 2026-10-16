@@ -299,7 +299,8 @@ variable tb-from  variable tb-how
     ['] st-on-event20 behave ;
 : yelp ( kind -- )   \ (0x69)
     4 his-mode !  0 his-cmd !  1.5e his-push f!  0.5e his-push-less f!
-    tb-from @ dup 0< 0= if  dup his-target !  body-at heading-to pi f+ angle-wrap  else  drop his-yaw  then  his-push-yaw f!
+    tb-from @ dup -2 = if  drop his-blow-pt heading-to pi f+ angle-wrap
+    else dup 0< 0= if  dup his-target !  body-at heading-to pi f+ angle-wrap  else  drop his-yaw  then then  his-push-yaw f!
     $1000 play  1 = if  $65  else  $66  then  make-sound
     $69 his-action !  ['] st-move-along behave ;
 : door-yelp ( exit -- )   \ (0x6B: back from the door's swing, away from her side of it)

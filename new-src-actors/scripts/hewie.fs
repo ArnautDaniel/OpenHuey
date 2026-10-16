@@ -157,6 +157,8 @@ behaviour hewie-own
   on fetch-this ( thing -- )   \ (Fiona_StateLetGo: her ball thrown, while all's calm)
       along? his-danger @ 0= and his-action @ $78 <> and if  his-follows !  else  drop  then ;
   on shaken-off ( -- )  along? if  his-biting @ 2 < if  3 his-biting !  then  then ;
+  on blow-from ( kind damage how x y z -- )   \ (from a point: Progress_Noise)
+      cells>xyz his-blow-pt vec!  along? 0= if  2drop drop exit  then  -2 take-blow drop ;
   on blow ( kind damage how -- )
       along? 0= if  2drop drop exit  then
       sender take-blow  sender her = and if  sender send blow-taken  then ;

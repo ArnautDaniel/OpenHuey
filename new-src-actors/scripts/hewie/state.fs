@@ -140,4 +140,5 @@ state: hewie-state
   1 floats field his-leap-k  1 floats field his-leap-turn  1 floats field his-leap-yaw
   1 floats field his-fly-x  1 floats field his-fly-y  1 floats field his-fly-z  1 floats field his-fly-h
   1 floats field his-push  1 floats field his-push-less  1 floats field his-push-yaw
+  12 field his-blow-pt   \ where a blow from no one came from (blow-from: from -2)
 end-state

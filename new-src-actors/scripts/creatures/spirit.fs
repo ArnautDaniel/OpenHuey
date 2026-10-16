@@ -106,13 +106,13 @@ create spot 12 allot   fvariable turn   fvariable off
 \ ---- its end: touching her, or its time out ----
 : sound ( id -- )  in-play? 0= if  drop exit  then  5 0 0  my-at vec@ sound-at ;
 : touched ( -- )   \ (_Seen) she falls; it bursts and sinks away
-    $D my-at vec@ xyz>cells  her send fiona-request
+    $D my-at vec@ xyz>cells 0  her send fiona-request
     glow @ true spirit-vanish  cutscene-active? 0= if  $8B sound  then
     true vanishing !  true seen ! ;
 : fade-away ( -- )  $8C sound  glow @ false spirit-vanish  true vanishing ! ;
 : gone ( -- )   \ (_StateVanish's end) a red one shakes her; a blue one is heard in its room
     seen @ if
-        red? if  3 my-at vec@ xyz>cells  her send fiona-request
+        red? if  3 my-at vec@ xyz>cells 0  her send fiona-request
         else  $80 my-room @ my-tri @ -1 world-noise  s" acoustics" actor-named send noise  then
     then
     unkeep  slot @ s" creatures" actor-named send creature-gone  self kill ;

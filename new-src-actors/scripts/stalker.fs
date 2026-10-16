@@ -168,6 +168,8 @@ behaviour stalking
   on heard-nothing ( -- )  heard-none ;
   on door-held ( room exit -- )  nip held-answer ;   \ (his to open, or the door he came in by)
   on hit-taken ( kind -- )  struck-home ;
+  on blow-from ( kind damage how x y z -- )   \ (from a point: Progress_Noise)
+      cells>xyz strike-pt vec!  away? if  blow-away exit  then  -2 striker !  struck ;
   on blow ( kind damage how -- )   \ (her shove or kick; a door she slammed: no answer)
       away? if  blow-away exit  then
       sender striker !  2 pick 5 = >r  struck  r> 0= if  sender send blow-taken  then ;
