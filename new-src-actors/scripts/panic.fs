@@ -108,6 +108,8 @@ fvariable u-a  fvariable u-b  fvariable u-c  fvariable u-d
         inquisitor-earrings of  1.25e  endof   philosopher-earrings of  1.25e  endof
         alchemist-earrings of  2e  endof   >r 1e r>
     endcase ;
+: charmed ( F: -- k )   \ (Panic_Fright: the Philosopher's earrings three quarters, the Alchemist's half)
+    1 equipped case  philosopher-earrings of  0.75e  endof  alchemist-earrings of  0.5e  endof  >r 1e r>  endcase ;
 : update ( -- )
     staging
     hold @ if  -1 hold +!  then
@@ -150,7 +152,9 @@ behaviour panicking
   on calm-in ( v -- )
       dup $80 and if  drop 128e calm-b f@ f+ calm-b f!  else  s>f 30e f/ calm-b2 f@ f+ calm-b2 f!  then ;
   on panic-reach ( level -- )  dup s>f level f@ f< if  drop  else  set-level  then ;
-  on fright ( amount -- )  cell>f add-fright ;
+  on fright ( amount -- )  cell>f charmed f*  add-fright ;   \ Panic_Fright
+  on fright-raw ( amount -- )  cell>f add-fright ;            \ Panic_FrightRaw
+  on fear-set ( amount -- )  cell>f fear-d f! ;               \ (+0x7D8 = 1000: running into a wall, flung down panicking)
   on fear-in ( amount -- )   \ (a negative one is a fright: held 30, 50 lasting and passing)
       cell>f fdup f0< if  fdrop 30 hold !  fear-d f@ 50e f+ fear-d f!  fright-a f@ 50e f+ fright-a f!  exit  then
       0.0333333e f* fear-d2 f@ f+ fear-d2 f! ;

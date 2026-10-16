@@ -121,7 +121,8 @@ fvariable side
             her-fear-bits @ 2 and if  -1 her-fall-turn !  her-fall-yaw f@ her-yaw f!  $B04  else  $100B  then
             -1 play-table
         then
-        her-fear-bits @ 2 and if  $42 0 her-sound  $6F noise-here  else  $40 0 her-sound  $5F noise-here  then
+        her-fear-bits @ 2 and if  $42 0 her-sound  $6F noise-here  1000e f>cell s" panic" actor-named send fear-set
+        else  $40 0 her-sound  $5F noise-here  then
         ['] after-throw her-act !
     then
     pull-back ;
@@ -187,7 +188,7 @@ create door-pt 12 allot
         her-fear-bits @ 2 and if  her-fall-yaw f@ her-yaw f!  $B04  else  $100B  then  -1 play-table
     then
     her-fear-bits @ 2 and if
-        $42 0 her-sound  $6F noise-here  1000e f>cell s" panic" actor-named send fright
+        $42 0 her-sound  $6F noise-here  1000e f>cell s" panic" actor-named send fear-set
     else  $40 0 her-sound  $5F noise-here  then
     ['] after-throw her-act ! ;
 \ the charm (item $88) worn in the equipment's slot 1: no hold takes her

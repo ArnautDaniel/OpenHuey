@@ -85,7 +85,9 @@ message stalker-here ( room alert chasing -- )   \ the stalker in play this fram
 message danger ( level -- )                  \ broadcast: 0 calm, 1 followed, 2 chased
 
 \ ---- panic (docs/subsystems/panic.md); amounts and levels are floats (f>cell) ----
-message fright ( amount -- )
+message fright ( amount -- )                 \ (Panic_Fright: less with earrings $87 / $88 worn; f>cell)
+message fright-raw ( amount -- )             \ (Panic_FrightRaw: as it is)
+message fear-set ( amount -- )               \ the fear this frame set outright (the progress' +0x7D8 =: f>cell)
 message fear-in ( amount -- )
 message panic-stage! ( stage -- )
 message panic-level! ( level -- )

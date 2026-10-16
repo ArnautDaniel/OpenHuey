@@ -114,7 +114,7 @@ create next-at 12 allot
         her-stumble-t @ 0= if
             30 her-stumble-t !
             rnd 0.2e f< if
-                1000e f>cell panic-id send fright   \ (the original puts 1000 into the panic's fear)
+                1000e f>cell panic-id send fear-set   \ (the original sets the panic's fear to 1000)
                 4 her-mode !  $A her-doing !  ['] falling her-act !  true exit
             then
         then

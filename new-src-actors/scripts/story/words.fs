@@ -848,7 +848,7 @@ variable fill-alpha
             else  -1e f< if  1e deg>rad a n turn-y object+!  else  1 ebit-set  then  then  endof
     endcase ;
 : panic-raise-to ( n -- )   \ (Panic_FrightRaw by what is short of n)
-    the-panic-level @ - dup 0< if  drop exit  then  s>f f>cell s" panic" actor-named send fright ;
+    the-panic-level @ - dup 0< if  drop exit  then  s>f f>cell s" panic" actor-named send fright-raw ;
 \ an object's height (+$24) fading with event variable `var` (var_fade): byte 3 0 at once - 1
 \ while unset, 0 once set; else a step of 0.2 that way
 : var-fade ( b0 addr len v -- )

@@ -31,7 +31,7 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
     fswap 0.75e f* fswap  fdup 30e f< if  fdrop  else
     fswap 0.75e f* fswap  40e f< 0= if  fdrop exit  then  0.75e f*
     then then then
-    f>cell panic-id send fright ;
+    f>cell panic-id send threat ;   \ (Threat_Raise)
 
 \ ---- how much nearer he'll be in 5 frames (Pursuer_GroundGained: his strides, less hers
 \ while she isn't facing him - running from him; his reach for Hewie, Debilitas 16; in the
