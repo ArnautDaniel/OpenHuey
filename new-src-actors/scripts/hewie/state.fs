@@ -57,7 +57,7 @@ state: hewie-state
   cell field his-scene-req
   cell field his-call           \ who called him ($FF none; 0 Fiona)
   cell field his-hits  cell field his-hit-t   \ how often Fiona hit him lately
-  cell field his-hold-call
+  cell field his-hold-call   \ (+0xF35B0) 900 frames after a call while waiting, or a scuffle: no 0x4F / 0x50, no scuffle
   cell field his-ready
   cell field his-no-root        \ the behaviour moved him this frame
   cell field his-root-ok
@@ -86,6 +86,7 @@ state: hewie-state
   1 floats field his-side  cell field his-side-dir
   cell field his-last-idle
   cell field his-cmd-was  cell field his-cmd-act
+  cell field his-heard          \ her command this frame (+0xF3578 within a frame; else -1)
   \ a spot to go to: its triangle, an animation, the heading, the point
   cell field his-to-tri  cell field his-to-anim  1 floats field his-to-yaw  12 field his-to
   cell field his-pet
@@ -127,7 +128,7 @@ state: hewie-state
   \ the creatures, as each tells (creature-doing): its actor, move mode (8 holding her down, 4
   \ struck or going), up (after her), frames since (by slot: spirits 0..6, homunculi 7..9)
   10 cells field cr-ids  10 cells field cr-modes  10 cells field cr-ups  10 cells field cr-ages
-  cell field his-scuffled  cell field his-scuffle-t   \ scuffled with him this meeting (+0xF368A); frames till another (+0xF35B0)
+  cell field his-scuffled   \ scuffled with him this meeting (+0xF368A; till another his-hold-call)
   \ at the stalker (hewie/fight.fs): the grip (+0x104: 0 head on, 1 / 2 a flank, -1 none yet),
   \ biting (+0xF36B4: 0 / 1 biting, 2 let go, 3 thrown), bites left (+0xF36B8), the chance to
   \ hold on (+0xF36BC), his feelings about each stalker (+0xF367C: Debilitas, Daniella, Lorenzo,
@@ -136,8 +137,8 @@ state: hewie-state
   \ push (+0xF36C8 less +0xF36CC a frame, along +0xF36C4)
   cell field his-grip  cell field his-biting  cell field his-bites  cell field his-hold
   4 cells field his-feel
-  cell field his-angry-n  cell field his-angry-t
   1 floats field his-leap-k  1 floats field his-leap-turn  1 floats field his-leap-yaw
   1 floats field his-fly-x  1 floats field his-fly-y  1 floats field his-fly-z  1 floats field his-fly-h
   1 floats field his-push  1 floats field his-push-less  1 floats field his-push-yaw
+  12 field his-blow-pt   \ where a blow from no one came from (blow-from: from -2)
 end-state

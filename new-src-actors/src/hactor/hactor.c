@@ -792,6 +792,39 @@ PRIM(p_cell_to_f) {
     forth_fpush(f, d);
 }
 
+/* a point (and a heading) to travel in a message and back: n floats to n cells in the same
+ * order (x y z [yaw]), and back */
+static void floats_to_cells(Forth *f, int n) {
+    double d[4];
+    Cell c;
+    int i;
+
+    for (i = n - 1; i >= 0; i--) {
+        d[i] = forth_fpop(f);
+    }
+    for (i = 0; i < n; i++) {
+        memcpy(&c, &d[i], sizeof(c));
+        PUSH(c);
+    }
+}
+static void cells_to_floats(Forth *f, int n) {
+    Cell c[4];
+    double d;
+    int i;
+
+    for (i = n - 1; i >= 0; i--) {
+        c[i] = POP();
+    }
+    for (i = 0; i < n; i++) {
+        memcpy(&d, &c[i], sizeof(d));
+        forth_fpush(f, d);
+    }
+}
+PRIM(p_xyz_to_cells) { floats_to_cells(f, 3); }      /* xyz>cells ( F: x y z -- ) ( -- x y z ) */
+PRIM(p_cells_to_xyz) { cells_to_floats(f, 3); }      /* cells>xyz ( x y z -- ) ( F: -- x y z ) */
+PRIM(p_xyzw_to_cells) { floats_to_cells(f, 4); }     /* xyzw>cells ( F: x y z w -- ) ( -- x y z w ) */
+PRIM(p_cells_to_xyzw) { cells_to_floats(f, 4); }     /* cells>xyzw ( x y z w -- ) ( F: -- x y z w ) */
+
 void bind_hactor(Forth *f) {
     static const struct { const char *name; Code code; int immediate; } words[] = {
         {"message", p_message, 0}, {"(send)", p_send_rt, 0}, {"(broadcast)", p_broadcast_rt, 0},
@@ -807,6 +840,7 @@ void bind_hactor(Forth *f) {
         {"trace-on", p_trace_on, 0}, {"trace-off", p_trace_off, 0}, {"queued", p_queued, 0},
         {"actors-frames", p_actor_frame, 0}, {".actors", p_dot_actors, 0}, {".unhandled", p_dot_unhandled, 0},
         {"f>cell", p_f_to_cell, 0}, {"cell>f", p_cell_to_f, 0},
+        {"xyz>cells", p_xyz_to_cells, 0}, {"cells>xyz", p_cells_to_xyz, 0}, {"xyzw>cells", p_xyzw_to_cells, 0}, {"cells>xyzw", p_cells_to_xyzw, 0},
         {"body-place", p_body_place, 0}, {"body-turn", p_body_turn, 0}, {"body-size", p_body_size, 0},
         {"body-off", p_body_off, 0}, {"body?", p_has_body, 0}, {"body-room", p_body_room, 0},
         {"body-tri", p_body_tri, 0}, {"body-pos", p_body_pos, 0}, {"body-yaw", p_body_yaw, 0},

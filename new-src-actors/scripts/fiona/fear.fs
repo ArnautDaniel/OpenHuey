@@ -43,7 +43,7 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
         her-mode @ 0=  her-doing @ $E <> and if
             group case
                 3 of  endof
-                2 of  her-choker $8C <> if  her-danger @ 2 = if  0.0666667e  else  0.0466767e  then  change-fear  then  endof   \ running frightens (not with $8C)
+                2 of  her-choker $8C <> if  her-danger @ 2 = if  0.0666667e  else  0.0466667e  then  change-fear  then  endof   \ running frightens (not with $8C)
                 1 of  fear-down  endof
                 >r  her-fear-bits @ 2 and 0= if  fear-down  then  r>
             endcase
@@ -114,7 +114,7 @@ create next-at 12 allot
         her-stumble-t @ 0= if
             30 her-stumble-t !
             rnd 0.2e f< if
-                1000e f>cell panic-id send fright   \ (the original puts 1000 into the panic's fear)
+                1000e f>cell panic-id send fear-set   \ (the original sets the panic's fear to 1000)
                 4 her-mode !  $A her-doing !  ['] falling her-act !  true exit
             then
         then

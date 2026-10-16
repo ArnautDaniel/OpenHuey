@@ -138,7 +138,7 @@ create lp-dir 12 allot  fvariable lp-y  fvariable lp-fall  fvariable lp-rise
     case
         1 of  0  endof  2 of  0  endof  3 of  0  endof  4 of  0  endof
         5 of  $3F  endof  6 of  $41  endof  7 of  $3B  endof  8 of  $3C  endof  9 of  $3D  endof
-        10 of  $40  endof  11 of  $42  endof  14 of  $44  endof  15 of  $44  endof  16 of  $3E  endof
+        10 of  $40  endof  11 of  $42  endof  14 of  $43  endof  15 of  $44  endof  16 of  $3E  endof
         18 of  $45  endof  19 of  $7F  endof  20 of  $46  endof  21 of  $47  endof
         >r -1 r>
     endcase ;

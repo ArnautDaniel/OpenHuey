@@ -45,7 +45,7 @@ create hold-cells  14 , 15 , 12 , 13 , 16 , 17 ,  \ (... each hold on)
 : k# ( table -- n )  bitten @ 10 - cells + @ ;
 defer bitten-over ( -- )
 : throw-move ( -- n )  throw-moves  bite-anim @ $1700 = if  drop  else  nip  then ;   \ (his AttackAnimA / B)
-: throw-damage ( -- n )  throw-move /move * moves + 5 cells + @ ;
+: throw-damage ( -- n )  throw-move move-of m.damage @ ;
 : holding-on ( -- )   \ (Pursuer_StateHewieHolds)
     ended? if
         bite-how @ case

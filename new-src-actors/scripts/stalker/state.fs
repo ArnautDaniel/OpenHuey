@@ -84,8 +84,16 @@ state: stalker-state
   cell field combo  cell field combo-step  cell field swung  cell field sent  cell field took
   cell field cry  cell field hold-off  cell field freeze-t
   cell field her-plight  cell field her-stage
+  cell field her-unseen          \ she can't be seen: item $89 worn, still (Fiona +0x1AD630; fiona-unseen)
+  12 field strike-pt  \ where a blow from no one came from (blow-from: striker -2)
+  cell field noclipped           \ through blocked floor (the story's 0x20: +0x2B) - no reach test by distance
+  cell field look-mode           \ where his head looks (+0x1710): 1 her, 2 Hewie, 3 his goal, 4 ahead; 0 as it was
+  1 floats field head-yaw  1 floats field head-pitch   \ his head's turn and tilt (the model's +0x858 / +0x854)
+  cell field head-bone  cell field neck-bone            \ (+0x8B0 / +0x8B4; -1 none)
   cell field her-ladder-on      \ the ladder she is on (the room's nav link; -1 none: `fiona-plight`)
-  cell field at-ladder          \ the ladder he makes for or stands by (stalker/ladder.fs; -1 none)
+  cell field at-ladder          \ the ladder he makes for or climbs (stalker/ladder.fs; -1 none)
+  cell field no-way             \ his last way to her planned none (+0x1590 -1: Pursuer_ChaseTarget)
+  cell field ladder-side        \ the end he gets on at (+0x104: 0 its foot, going up; 1 its top, going down)
   cell field ladder-offsets     \ out from a ladder's ends: his family's (vtable +0x9C)
   cell field round-dir  1 floats field round-gone
   \ taking her (stalker/grab.fs): leading her (his mode 8 while she's his; 1 asked, -1 holding), how (6 by the hand,
@@ -109,12 +117,14 @@ state: stalker-state
   \ way left now and before, +0x16A4 his foot)
   cell field own-a-tri  cell field own-b-tri
   1 floats field step-acc  1 floats field step-last  cell field step-foot
+  cell field foot-l-was  cell field foot-r-was   \ his feet down last frame (+0x16A8 / +0x16A9)
   \ the doors of the room being played (stalker/doorway.fs): on his way out by an exit (+0x17B0:
   \ making-for; the room's modes wait meanwhile), his animation's kind at its door (+0x104: 0 / 2
   \ opening it from behind / in front; -1 none), the door asked for and the one held, frames
   \ waited at one held shut; a door slammed on him - the exit (-1 none: staggered back), the
   \ heading he is pushed along; frames stunned off screen after being knocked out of the room
   \ (+0x1664: 150); the exit Fiona came in by (the half of the room she is on)
+  cell field wandering-out      \ out by an exit at random (his search over): sight or a lead turns him back
   cell field out-going  cell field door-use  cell field asked  cell field held-door  cell field door-wait
   cell field push-exit  1 floats field push-way  cell field stun-t
   cell field her-came

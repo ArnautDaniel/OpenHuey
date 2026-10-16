@@ -15,7 +15,7 @@ USING: engine actors messages keys room-names flag-names story.words ;
 : room! ( room -- )  -1 rooms-id send go-to-room ;
 : room-by! ( room exit -- )  rooms-id send go-to-room ;
 : tp-facing ( F: x y z deg -- )
-    deg>rad  f>cell >r  f>cell >r  f>cell >r  f>cell  r> r> r>  fiona-id send place  deliver ;
+    deg>rad  xyzw>cells  fiona-id send place  deliver ;
 : tp ( F: x y z -- )  fiona-id body-yaw  180e f* pi f/  tp-facing ;   \ (her heading kept)
 create spot 12 allot
 : tp-area-facing ( area deg -- )   \ (its middle)
@@ -24,7 +24,7 @@ create spot 12 allot
 : tp-exit ( exit -- )  exit-area tp-area ;
 : tp-tri ( tri -- )  tri-center tp ;
 : walk ( F: x y z -- )   \ (over the nav mesh, then she stands)
-    f>cell >r  f>cell >r  f>cell  r> r>  fiona-id send go-to ;
+    xyz>cells  fiona-id send go-to ;
 : press ( button -- )   \ (pressed for a frame: its key down, then up)
     button-keys drop  dup true key-hold  game-tick  false key-hold ;
 : .here ( -- )

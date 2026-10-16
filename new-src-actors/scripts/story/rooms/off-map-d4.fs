@@ -2,11 +2,11 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d4
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story.clock ;
 
 \ room 0xD4: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: off-map-d4.cmd00 ( -- )  s" off-map-d4.cmd00" stub-step ;
+: off-map-d4.cmd00 ( -- )  clock-draw ;   \ (each frame: the clock)
 \ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
 : off-map-d4.cond00? ( -- flag )  true ;
 

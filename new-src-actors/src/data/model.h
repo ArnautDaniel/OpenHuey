@@ -75,6 +75,8 @@ void model_pose_blend(const Model *m, int index, float frame, int prev, float pr
 /* a special track (`code` < 0: -1 the root's movement, -5 / -6 the front / hind feet's contact,
  * ...) of a motion at a time: its three values (raw); 0 if the motion hasn't it */
 int model_track_raw(const Model *m, int index, int code, float frame, float out[3]);
+/* ... converted as the original's Track_Sample (a place track's keys / 256) */
+int model_track(const Model *m, int index, int code, float frame, float out[3]);
 /* the bones' origins (model space) of the last pose model_pose_blend / model_pose_root made */
 const Vec3 *model_pose_origins(void);
 const Vec3 (*model_pose_axes(void))[3];   /* the last pose's bones' axes (x, y, z; model space) */

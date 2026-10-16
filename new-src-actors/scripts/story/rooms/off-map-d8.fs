@@ -2,13 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d8
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story.clock ;
 
 \ as Room109_Cmd01
-: off-map-d8.cmd00 ( b0 -- )  drop s" off-map-d8.cmd00" stub-step ;
+: off-map-d8.cmd00 ( b0 -- )  1e room-nudge ;   \ (as chaos-forest-11's)
 \ room 0xD8: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: off-map-d8.cmd01 ( -- )  s" off-map-d8.cmd01" stub-step ;
+: off-map-d8.cmd01 ( -- )  clock-draw ;   \ (each frame: the clock)
 \ (as Room10A_Cond00) last frame's noise requests (gProgress +0x10D4) of kind 0xD8 / 0xD7 and
 \ loudness 0x20 or more
 : off-map-d8.cond00? ( -- flag )  loud-here? ;

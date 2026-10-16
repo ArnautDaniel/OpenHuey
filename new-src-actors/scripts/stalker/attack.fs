@@ -6,7 +6,7 @@
 \ (a hold: whoever is within its reach at its key is held) - and the threat of it on her
 \ (Pursuer_Threat).
 IN: stalker.attack
-USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.tables ;
+USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.tables stalker.head ;
 
 : panic-id ( -- id )  s" panic" actor-named ;
 
@@ -14,13 +14,19 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
 : move-at ( k -- n )   \ (the combo's k-th move number, -1 none)
     dup 4 < 0= if  drop -1 exit  then  combo @ 4 * + cells combos + @ ;
 : move-no ( -- n )  combo-step @ move-at ;
-: mv ( -- addr )  move-no /move * moves + ;
-: mv-anim ( -- a )  mv @ ;              : mv-bone ( -- b )  mv cell+ @ ;
-: mv-bone2 ( -- b )  mv 2 cells + @ ;   : mv-reach ( F: -- r )  mv 3 cells + f@ ;
-: mv-kind ( -- k )  mv 4 cells + @ ;    : mv-threat ( F: -- t )  mv 6 cells + f@ ;
-: mv-stumble ( F: -- c )  mv 7 cells + f@ ;
-: mv-turns? ( -- flag )  mv 8 cells + @ 0<> ;   : mv-cry ( -- id )  mv 9 cells + @ ;
-: mv-unshaken? ( -- flag )  mv 10 cells + @ 0<> ;   : mv-damage ( -- n )  mv 5 cells + @ ;
+\ a move of his move table (stalker/tables.fs: /move each)
+begin-structure /a-move
+    field: m.anim  field: m.bone  field: m.bone2  ffield: m.reach  field: m.kind  field: m.damage
+    ffield: m.threat  ffield: m.stumble  field: m.turns  field: m.cry  field: m.unshaken
+end-structure
+: move-of ( n -- addr )  /move * moves + ;
+: mv ( -- addr )  move-no move-of ;
+: mv-anim ( -- a )  mv m.anim @ ;          : mv-bone ( -- b )  mv m.bone @ ;
+: mv-bone2 ( -- b )  mv m.bone2 @ ;        : mv-reach ( F: -- r )  mv m.reach f@ ;
+: mv-kind ( -- k )  mv m.kind @ ;          : mv-threat ( F: -- t )  mv m.threat f@ ;
+: mv-stumble ( F: -- c )  mv m.stumble f@ ;
+: mv-turns? ( -- flag )  mv m.turns @ 0<> ;   : mv-cry ( -- id )  mv m.cry @ ;
+: mv-unshaken? ( -- flag )  mv m.unshaken @ 0<> ;   : mv-damage ( -- n )  mv m.damage @ ;
 
 \ ---- the threat on her (Pursuer_Threat): the fright, less with each 10 further off (x 0.75),
 \ none beyond 40 ----
@@ -31,12 +37,19 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
     fswap 0.75e f* fswap  fdup 30e f< if  fdrop  else
     fswap 0.75e f* fswap  40e f< 0= if  fdrop exit  then  0.75e f*
     then then then
-    f>cell panic-id send fright ;
+    f>cell panic-id send threat ;   \ (Threat_Raise)
 
-\ ---- how much nearer he'll be in 5 frames (Pursuer_GroundGained: his strides; his reach for
-\ Hewie, Debilitas 16; in the panic's stage 5, 10 more) ----
+\ ---- how much nearer he'll be in 5 frames (Pursuer_GroundGained: his strides, less hers
+\ while she isn't facing him - running from him; his reach for Hewie, Debilitas 16; in the
+\ panic's stage 5, 10 more) ----
+: her-back-to-me? ( -- flag )   \ (Eye_ActorSees from her: not within 150 and 90 degrees of her heading)
+    fiona here? 0= if  false exit  then
+    fiona body-at my-at vec-dist 150e f> if  true exit  then
+    fiona body-at my-at vec-heading fiona body-yaw f- angle-wrap fabs pi f2/ f> ;
+: her-stride ( F: -- d )  0 cast-model dup 0< if  drop 0e exit  then  root-delta  frot fdrop frot fdrop fswap fdrop ;
 : ground-gained ( F: -- d )
-    stride 5e f*  her-stage @ 5 = if  10e  else  reach-k f@  then  f+ ;
+    stride 5e f*  her-back-to-me? if  her-stride 5e f* f-  then
+    her-stage @ 5 = if  10e  else  reach-k f@  then  f+ ;
 
 \ ---- whom a blow at a point reaches (Npc_WhoReachable, Progress_CharNear): her body within its
 \ height and radius, widened by the reach, and in front of him (90 degrees) ----
@@ -126,7 +139,7 @@ defer next-move ( -- )
         then
     then
     combo-over ; is next-move
-: combo-start ( n -- )  combo !  0 combo-step !  0 took !  0 step-done !  $13 chase-act !  next-move ;
+: combo-start ( n -- )  combo !  0 combo-step !  0 took !  0 step-done !  $13 chase-act !  $13 action-look!  next-move ;
 
 \ ---- a blow's mark (HitEffect_Spawn: `spray`) on someone, that much of their height up them;
 \ his animation's effect key ($20: where his blows land) ----

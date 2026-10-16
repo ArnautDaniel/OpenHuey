@@ -2,7 +2,7 @@
 \ side (docs/subsystems/hewie.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/hewie/test_commands.fs
 IN: test-commands
-USING: tester engine game-state actors messages common facts room-names game hewie.state hewie.body hewie.model hewie.states fiona.state fiona.model flag-names ;
+USING: tester engine game-state actors messages common facts room-names game hewie.commands hewie.state hewie.body hewie.model hewie.states fiona.state fiona.model flag-names ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : his@ ( xt -- x )  hewie enter  execute  leave-actor ;
@@ -84,5 +84,14 @@ T{ [: 2 her-fear-bits !  0 her-cmd ! ;] fiona enter execute leave-actor  2 frame
 
 testing a reaction: while he waits (does as he likes) her doings cost his patience
 T{ [: 1 his-waiting !  1000 his-obey ! ;] his!  5 hewie send reaction  deliver  [: his-obey @ ;] his@ 1000 < -> -1 }T
+
+testing from another room: her cry for help brings him to her ($39), "come back" too ($2D)
+: next-room ( -- room )  room-id 0 room-exit-leads drop ;
+: away-cmd ( code -- )
+    next-room -1 0 hewie send hewie-place  deliver  2 frames
+    [: 0 his-cooldown !  $DF his-cmd ! ;] his!   \ (as waiting off screen: 0x2E)
+    -1 0 0 0 hewie send command  deliver ;   \ (code tri yaw x z)
+T{ $30 away-cmd  [: his-away @ 0<>  his-action @ ;] his@ -> -1 $39 }T
+T{ [: 0 0 set-action ;] his!  $2C away-cmd  [: his-action @ ;] his@ -> $2D }T
 
 test-summary

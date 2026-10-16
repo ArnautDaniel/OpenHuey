@@ -32,7 +32,15 @@ T{ [: [: anim@ $2215 = ;] his@ ;] 60 soon  [: hp @ ;] deb@ -> -1 60 }T
 T{ [: temper @ 10 >= ;] deb@ -> -1 }T
 testing ... let go: both on again, the stalker after his reaction's end ($1707)
 T{ [: [: bitten @ 0= ;] deb@ ;] 600 soon  [: reeling @ ;] deb@ -> -1 0 }T
-T{ [: [: his-biting @ 0= his-action @ $1F <> and ;] his@ ;] 300 soon -> -1 }T
+T{ [: [: his-act @ ['] st-clamped <> his-action @ $1F <> and ;] his@ ;] 300 soon -> -1 }T
+debug:debilitas-out  5 frames
+
+testing the stalker's footsteps (Pursuer_Footsteps): walking ($200), a step as each foot comes down, heard
+0 deb-in
+: walking ( -- )  [: ['] noop step !  $200 play ;] deb! ;
+: steps ( -- n )  [: step-foot @ ;] deb@ ;
+: walked ( n -- steps )  steps swap  0 do  walking  game-tick  loop  steps swap - ;
+T{ 60 walked 2 > -> -1 }T
 debug:debilitas-out  5 frames
 
 testing refused when the stalker can't take it (not in the room): he goes again later (0x5A)
@@ -75,9 +83,9 @@ true blind  debug:debilitas-out  5 frames
 [: room-id s" fiona" actor-named body-tri dup tri-center body-place ;] his!  game:hewie send join-fiona  20 frames
 
 testing her kick on him: struck home (her answer), he yelps; hit by her often - angry by chance
-[: 100 hp!  0 cond!  0 0 set-action  0 his-angry-n ! ;] his!  5 frames
+[: 100 hp!  0 cond!  0 0 set-action  0 his-hits ! ;] his!  5 frames
 2 5 0 game:hewie [: send blow ;] game:fiona enter execute leave-actor  3 frames
-T{ [: his-hp @  his-action @  his-angry-n @ ;] his@ -> 90 $69 1 }T
+T{ [: his-hp @  his-action @  his-hits @ ;] his@ -> 90 $69 1 }T
 
 testing a door slammed on him (kind 5): its damage, pushed back from it ($6B)
 [: 100 hp!  0 cond!  0 0 set-action ;] his!  5 frames
@@ -108,6 +116,19 @@ T{ [: 0 his-mood !  5 feel !  20 0 do  feel-pursuer  loop  his-mood @ ;] his@ ->
 [: 0 feel ! ;] his!
 debug:debilitas-out  5 frames
 false blind
+testing his bites' damage: as it is; Sylvesta Esca's half again (+0xA10); the black shepherd twice, then half again
+: sylvesta ( frames -- )  progress pr.boosts 6 8 * + 4 + l! ;
+: shepherd ( n -- )  progress pr.vars $27 + c! ;
+T{ [: 10 bite-damage ;] his@ -> 10 }T
+T{ 450 sylvesta  [: 10 bite-damage  5 bite-damage ;] his@ -> 15 7 }T
+T{ 1 shepherd  [: 10 bite-damage ;] his@  0 sylvesta  [: 10 bite-damage ;] his@  0 shepherd -> 30 20 }T
+testing his damage (Hewie_TakeDamage): down to 0; in his third costume ($27 2) never below 1
+T{ [: 5 hp!  50 hurt-by  his-hp @ ;] his@ -> 0 }T
+T{ 2 shepherd  [: 5 hp!  50 hurt-by  his-hp @ ;] his@  0 shepherd -> 1 }T
+[: 100 hp! ;] his!
+testing struck by her: counted (Fiona's hits, eased 300 frames on) - one counter, read when he cowers after
+T{ [: 0 his-hits !  0 his-hit-t !  1 0 0 her take-blow drop  his-hits @ his-hit-t @ ;] his@ -> 1 300 }T
+T{ [: 0 -1 set-mood  0 his-hits !  0 his-hit-t ! ;] his! -> }T
 testing down in a hard game (last: the game ends): the game is over (game over kind 3)
 $AF story-flag-set  [: dies-in-hard-mode ;] his!   \ (as his down state does once he lies there)
 : over ( -- step kind )  game:gameover enter  gameover:step @  gameover:kind @  leave-actor ;

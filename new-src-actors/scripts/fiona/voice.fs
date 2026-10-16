@@ -12,7 +12,7 @@ create mouth 12 allot
     self body-head mouth 12 move   \ (her head, as she was posed: looks.fs tell-head)
     her-tri @ her-at mouth water nav-crosses? ;
 : voice ( id -- )
-    under-water? if  drop  $1C 6 0 0 her-pos sound-at exit  then
+    under-water? if  drop  $1C 6 0 0 her-pos sound-at  flooded? if  1 her-at water-step  then  exit  then
     0 her-sound ;
 
 \ ---- Fiona_MotionSounds: the key frames (event 1, event $10) ----

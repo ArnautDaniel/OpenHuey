@@ -2,16 +2,16 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d9
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story.clock ;
 
 \ room 0xD9: starts the countdown clock (clock_start: progress +0x1FBEC1 on, Hewie restarted,
 \ the camera director +0x40 14, the time zeroed).
-: off-map-d9.cmd00 ( -- )  s" off-map-d9.cmd00" stub-step ;
+: off-map-d9.cmd00 ( -- )  clock-start ;
 \ room 0xD9: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: off-map-d9.cmd01 ( -- )  s" off-map-d9.cmd01" stub-step ;
+: off-map-d9.cmd01 ( -- )  clock-draw ;   \ (each frame: the clock)
 \ (as Room48_Cmd04) room 0x48 (Room48_Cmd04_ptmf): the player's Character_ChooseExit(0)
-: off-map-d9.cmd02 ( -- )  s" off-map-d9.cmd02" stub-step ;
+: off-map-d9.cmd02 ( -- )  0 0 char-to-exit ;   \ (Fiona to exit 0: Character_ChooseExit)
 \ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
 : off-map-d9.cond00? ( -- flag )  true ;
 

@@ -2,20 +2,20 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e0
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story.clock ;
 
 \ RoomE0_Cmd00
-: off-map-e0.cmd00 ( -- )  s" off-map-e0.cmd00" stub-step ;
+: off-map-e0.cmd00 ( -- )  0 0 char-to-exit ;   \ (Fiona to exit 0: Character_ChooseExit)
 \ RoomE0_Cmd01
-: off-map-e0.cmd01 ( -- )  s" off-map-e0.cmd01" stub-step ;
+: off-map-e0.cmd01 ( -- )  fan-turn ;   \ (as off-map-37's)
 \ RoomE0_Cmd02
-: off-map-e0.cmd02 ( b0 -- )  drop s" off-map-e0.cmd02" stub-step ;
+: off-map-e0.cmd02 ( b0 -- )  $1A $20000040  40.491e 30.0e -10.498e  49.502e 30.0e -19.509e  40.491e 1.5e -10.498e  49.502e 1.5e -19.509e  lit-quad ;   \ (the door's reflection, as castle-2f-3's)
 \ RoomE0_Cmd03
-: off-map-e0.cmd03 ( b0 -- )  drop s" off-map-e0.cmd03" stub-step ;
+: off-map-e0.cmd03 ( b0 -- )  $1B $10000040  0.491e 22.0e 69.502e  9.502e 22.0e 60.491e  0.491e 0.0e 69.502e  9.502e 0.0e 60.491e  lit-quad ;   \ (the window's, as castle-2f-3's)
 \ RoomE0_Cmd04
-: off-map-e0.cmd04 ( -- )  s" off-map-e0.cmd04" stub-step ;
+: off-map-e0.cmd04 ( -- )  clock-draw ;   \ (each frame: the clock)
 \ RoomE0_Cmd05
-: off-map-e0.cmd05 ( -- )  s" off-map-e0.cmd05" stub-step ;
+: off-map-e0.cmd05 ( -- )  clock-start ;
 \ RoomE0_Cond00
 : off-map-e0.cond00? ( -- flag )  true ;   \ (the progress object's +0x7C: ProgressBase_Slot7C, always 1)
 

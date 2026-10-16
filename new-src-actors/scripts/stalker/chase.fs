@@ -6,7 +6,7 @@
 \ her on her floor, he attacks - his table for how she stands (`fiona-plight`): a combo
 \ (stalker/attack.fs), a taunt, a step round her. Losing sight of her he goes to where she is.
 IN: stalker.chase
-USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack ;
+USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.head ;
 
 : close-reach ( F: -- d )  hard-mode? if  40e  else  50e  then ;   \ (+0x17E4)
 : frames# ( off -- n )  2 rshift cells chase-frames + @ ;     \ (his chase table by its offset)
@@ -20,20 +20,21 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
 
 \ ---- what he does (the actions) ----
 : let-her-go ( -- )  leading @ if  0 leading !  fiona send unhand  then ;
-: act! ( xt id -- )  let-her-go  chase-act !  act-xt !  0 step-done !  0 step-t ! ;
+: act! ( xt id -- )  let-her-go  dup action-look!  chase-act !  act-xt !  0 step-done !  0 step-t ! ;
 : watching ( -- )  freeze-t @ 0= if  root-move  then ;      \ (Pursuer_Move180)
 : stand-watch ( -- )  stand-anim play  ['] watching 1 act! ;           \ 1: standing (Pursuer_Move17C)
 ' stand-watch is to-stand
 \ walking or stalking at her (Pursuer_CloseIn + Debilitas_ChaseTarget): his way to her re-planned
 \ every 15 frames; straight at her once nothing is in the way
+: replan ( -- )  15 step-t !  fiona body-tri dup 0< if  drop  else  fiona body-at plan 0> 0= no-way !  then ;
 : at-her ( -- )
-    -1 step-t +!  step-t @ 0> 0= if
-        15 step-t !  fiona body-tri dup 0< if  drop  else  fiona body-at plan drop  then
-    then
+    -1 step-t +!  step-t @ 0< >r  step-t @ 0> 0= if  replan  then
+    no-way @  r> base-chase @ or  and if  out-of-reach if  exit  then  then   \ (no way to her: round by a ladder -
+    \ Pursuer_CloseIn as he sets off, the Pursuer's ChaseTarget all the way)
     fiona self body-mask straight? if  fiona body-at step-toward exit  then
     walk-stride drop ;
 : walk-at ( id -- )   \ 5: walking ($200), 6: stalking ($201)
-    dup 5 = if  walk-fast  else  walk-slow  then  play  ['] at-her swap act! ;
+    0 no-way !  dup 5 = if  walk-fast  else  walk-slow  then  play  ['] at-her swap act! ;
 : keep ( id frames -- )  hold-t !  walk-at ;
 \ 3: turned on the spot toward her
 : turning-to ( -- )  root-move  ended? if  -1 step-done !  then ;
@@ -68,10 +69,61 @@ defer pick-attack ( -- )
 defer take-her ( type -- )   defer lunge ( -- )   defer grab-dog ( -- )   \ (stalker.grab)
 : row ( table -- addr )   \ (the row the roll falls in)
     rnd 100e f*  begin  dup 2 cells + f@ fover f< while  /row +  repeat  fdrop ;
+\ ---- Debilitas's own: his wander ($1000) and his turn to her ($1001) ----
+\ touching whom (Npc_WhoSeen: Fiona 1, Hewie 2 - within 1 of his body)
+: touching-bits ( -- bits )
+    0  fiona here? if  self fiona 1e 0e bodies-touching? 1 and or  then
+       hewie here? if  self hewie 1e 0e bodies-touching? 2 and or  then ;
+\ Debilitas_StartWander / StateLookWalk: a triangle at random on his own floor's level (not
+\ blocked to him; not both $100000 and $200000) at least 20 away on foot, walked to in his slow
+\ walk for at most 60 frames; whom he bumps into on the way a light blow (Pursuer_RaiseThreat:
+\ kind 4, damage 5, threat 10). None to go to: nothing new
+create wd-at 12 allot
+: my-level ( -- bits )  self body-tri nav-flags $300000 and ;
+: wander-tri ( -- tri | -1 )
+    nav-tris 0 ?do
+        rnd nav-tris s>f f* f>s  nav-tris 1- min                            ( t )
+        dup nav-flags  dup self body-mask and 0=  over $300000 and my-level = and
+        swap $300000 and $300000 <> and if
+            dup tri-center wd-at vec!  dup wd-at plan 0> if
+                my-path my-at path-rest 20e f< 0= if  unloop exit  then
+            then
+        then  drop
+    loop  -1 ;
+: bump ( -- )   \ (Pursuer_RaiseThreat)
+    touching-bits sent @ invert and  dup 1 and if  4 0 10e f>cell fiona send hit  then
+    2 and if  4 5 0 hewie send blow  then  touching-bits sent @ or sent ! ;
+: wandering ( -- )
+    bump  -1 step-t +!
+    walk-stride  step-t @ 0> 0= or if  -1 step-done !  then ;
+: wander ( -- )
+    wander-tri dup 0< if  drop stand-watch exit  then
+    goal-tri !  0 sent !  walk-slow play  ['] wandering $1000 act!  60 step-t ! ;
+\ Debilitas_StartTurnToFiona / StateTurnToFiona / StateBlow / StateStun: $1304 unshaken, turned
+\ to her at his rate; at its end his charge ($205) - his move 4's bone: into a wall, a stun
+\ ($1004); whom it reaches (move 4's reach) or touches struck by move 4 (a stumble by its
+\ chance); then the stun ($1004) to its end
+: move4 ( -- addr )  4 move-of ;
+: stunned ( -- )   \ (Debilitas_StateStun)
+    freeze-t @ 0= if  root-move  then  ended? if  0 unshaken !  -1 step-done !  then ;
+: stun ( -- )  $1004 play-now  ['] stunned act-xt ! ;
+: charging ( -- )
+    my-model @ move4 m.bone @ bone-pos blow-at vec!
+    blow-at walled? if  stun exit  then
+    0  blow-at move4 m.reach f@ reaches? 1 and or  blow-at move4 m.reach f@ reaches-dog? 2 and or
+    touching-bits or  sent @ invert and
+    ?dup 0= if  root-move exit  then
+    rnd 100e f* move4 m.stumble f@ f< if  $8000  else  0  then  >r      ( bits ) ( r: how )
+    dup 1 and if  move4 m.kind @ r@ move4 m.threat f@ f>cell fiona send hit  then
+    2 and if  move4 m.kind @ move4 m.damage @ r@ hewie send blow  then  r> drop
+    -1 sent !  stun ;
+: turning-in ( -- )
+    root-move  fiona body-at turn-rate turn-to fdrop
+    ended? if  $205 play-now  ['] charging act-xt !  then ;
+: turn-at-her ( -- )  $1304 play-now  -1 unshaken !  0 sent !  ['] turning-in $1001 act! ;
 \ his own actions ($1000.. of his tables): his `own-acts` table, else the family's (Debilitas's:
-\ $1000 his wander, $1001 his turn to her - standing for now -, $1002 his lunge, $1003 his grab
-\ at Hewie)
-create family-acts  ' stand-watch , ' stand-watch , ' lunge , ' grab-dog ,
+\ $1000 his wander, $1001 his turn to her, $1002 his lunge, $1003 his grab at Hewie)
+create family-acts  ' wander , ' turn-at-her , ' lunge , ' grab-dog ,
 : own-act ( arg n -- )
     nip $FFF and  own-acts @ ?dup 0= if  family-acts  then  swap cells + @ execute ;
 : do-row ( kind arg -- )
@@ -103,8 +155,9 @@ create family-acts  ' stand-watch , ' stand-watch , ' lunge , ' grab-dog ,
     chase-t @ 90 mod 0= chase-t @ 0> and if
         rnd 100e f* lunge-chance s>f f<= if  10 choose exit  then
     then
-    settled? if  fiona body-at 1.0471976e 2.6179939e way-past dup $FF <> if  turn-to-her exit  then  drop  then
+    settled? if  fiona body-at 1.0471976e 2.6179939e way-past dup $FF <> if  turn-to-her  else  drop  then  then
     rnd 100e f*
+    d-her f0< if  fdrop  out-of-reach 0= if  search-again  then  exit  then   \ (no way to her: Pursuer_ChaseFionaHere)
     faces-me? 0= if  1 back-or-hold exit  then
     d-her close-reach 20e f+ f> if  2 back-or-hold exit  then
     fdrop  watch-t @ if  -1 watch-t +!  else  5 $18 frames# keep  then ;

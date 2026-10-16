@@ -16,6 +16,10 @@ fvariable tt-target  fvariable tt-step
     fdup fabs tt-step f@ f<= if  fdrop fdrop tt-target f@ 0e exit  then
     f0< if  tt-step f@ f-  else  tt-step f@ f+  then  angle-wrap
     fdup tt-target f@ fswap f- angle-wrap fabs ;
+\ the rooms whose water the characters' steps ripple (Character_WaterStep's callers: rooms 7 and
+\ $106; Fiona's and Hewie's steps, and a stalker's fall, also in $D1)
+: flooded? ( -- flag )  room-id dup 7 = swap $106 = or ;
+: wading? ( -- flag )  flooded? room-id $D1 = or ;
 \ a step (x, z) in something's own frame turned into the room by its heading
 fvariable ry-x  fvariable ry-z  fvariable ry-a
 : rotate-by ( F: x z yaw -- x' z' )

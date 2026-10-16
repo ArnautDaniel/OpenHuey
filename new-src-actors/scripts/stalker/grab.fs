@@ -28,9 +28,8 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
     answer @ 3 = if  $1903 play-now  ['] let-go-end act-xt ! exit  then
     taunts @ 6 >= if  $1904 play-now  ['] holding-on act-xt ! exit  then
     $1901 play-now ;
-: taunt-start ( -- )
+: taunt-start ( -- )   \ (Pursuer_StateTaunt: a break free waits for the next $1901's end)
     root-move
-    answer @ 3 = if  $1903 play-now  ['] let-go-end act-xt ! exit  then
     ended? if  $1901 play-now  10e fright  0 taunts !  ['] taunting act-xt !  then ;
 \ ---- taken walking: his grab ($1A01), holding on ----
 : carrying ( -- )  root-move ;

@@ -10,7 +10,7 @@ IN: stalker.leads
 USING: engine game-state actors messages common facts flag-names paths rumble stalker.state stalker.senses stalker.moving stalker.search stalker.chase ;
 
 5 constant pull-fiona   4 constant pull-noise   1 constant pull-hewie
-7 constant saw-her   6 constant heard-her   5 constant heard-noise   1 constant heard-hewie
+7 constant saw-her   6 constant heard-her   5 constant heard-noise   2 constant saw-hewie   1 constant heard-hewie
 90 constant start-frames
 
 : lead-heard ( -- pull alarm | 0 0 )   \ (the noise heard this frame, by whose)
@@ -66,6 +66,17 @@ variable go-pull
         heard-tri @ dup 0< if  drop my-at vec@  else  tri-center  then  start  true exit
     then
     pull go-after  true ;
+\ seeing Hewie (pull 1, alarm 2 - Pursuer_PickTarget each frame): to where he is, his search's one
+\ stop; seen still once he is past it, there again (Pursuer_ModesSearching: a new lead with his
+\ route under way searches anew)
+: follow-seen-dog ( -- took? )
+    sees-hewie @ 0=  pull-hewie lead @ <  or if  false exit  then
+    lead @ pull-hewie =  route-next @ 0= and  my-mode @ 2 = and if  false exit  then   \ (on his way to it)
+    saw-hewie lead-alarm @ >  pull-hewie lead !  saw-hewie lead-alarm @ max lead-alarm !  if
+        pull-hewie go-pull !  ['] go-after-it 0  hewie body-at vec@  start  true exit
+    then
+    pull-hewie go-after  true ;
+: lead-now ( -- took? )  follow-heard dup if  exit  then  drop  follow-seen-dog ;
 \ seeing her anew (alarm 7 over what he had): his "there" before the chase
 : chase-seen ( -- )
     lead-alarm @ saw-her < if
@@ -74,6 +85,6 @@ variable go-pull
     then
     chase-now ;
 ' chase-seen is chase-begin
-' follow-heard is lead-taken?
+' lead-now is lead-taken?
 :noname ( -- flag )  step @ ['] starting = ; is starting?
 ' forget-leads is leads-forgotten

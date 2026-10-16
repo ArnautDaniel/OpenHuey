@@ -7,7 +7,7 @@
 \ Events_CharEnter, Events_RunCharScripts; the order: src/game/scene_game.c).
 \ Under state flag 0x26 only phase 3 runs, and a shared script for characters entering.
 IN: story.room
-USING: engine game-state actors messages common room-names story.state story.words story.shared flag-names ;
+USING: engine game-state actors messages common room-names story.state story.words story.shared flag-names story.clock ;
 
 : phase-context ( -- )  -1 ctx-slot !  -1 ctx-who !  $FF ctx-id !  0 phase-frames ! ;
 : run ( xt | 0 -- )  ?dup if  execute  then ;
@@ -73,6 +73,7 @@ behaviour playing-room
       remember-chars
       3 phase ;
   on tick ( -- )
+      clock-off   \ (drawn again by the rooms that show it, each frame)
       1 phase  -1 prep-scene !   \ (Progress_CharRequests: the actions prepared afresh)
       2 phase  offer-it  run-slots ;
   on fiona-message ( msg -- )   \ (her locked door's script: not while Hewie is the one played)
@@ -106,7 +107,7 @@ behaviour playing-room
       3 phase  remember-chars  draw-scene
       going @ 0< 0= if  going @  -1 going !  -1 leaving !  rooms-id send go-through  then ;
   on room-leave ( -- )  4 phase ;
-  on room-left ( -- )  5 phase  free-slots  release-all  scene-gone  effects-off  story-id send room-done ;
+  on room-left ( -- )  5 phase  clock-off  free-slots  release-all  scene-gone  effects-off  story-id send room-done ;
   on story-stop ( -- )  free-slots  release-all  scene-gone  effects-off  story-id send room-done ;
   on danger ( level -- )  the-danger ! ;
   on panic ( stage level -- )  cell>f f>s the-panic-level !  the-panic ! ;

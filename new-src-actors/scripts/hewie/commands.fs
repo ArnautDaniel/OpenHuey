@@ -41,9 +41,20 @@ create reactions  300 , 1 , 300 , 1 , 300 , 1 , 750 , 1 , 150 , 1 , 1500 , 1 , 6
     drop  his-danger @ if  -1 exit  then
     anim-group dup 5 = swap 1 = or if  -2  else  -1  then ;
 
+\ from another room (Hewie_ActOnCommand while disabled): "come back" - hidden away (the story's
+\ 0x77 time running) only that time cut short (its pending steer: with the Hewie-played sections),
+\ else back to her ($2D); her cry for help - to her ($39); the others nothing
+: act-away ( code -- flag )
+    case
+        $2C of  his-yelp @ 0> if  -1 his-yelp !  false
+                else  his-action @ $2D <> if  $2D 0 want  true  else  false  then  then  endof
+        $30 of  -1 his-yelp !  $39 0 want  true  endof
+        $2A of  10 hp!  false  endof
+        >r false r>
+    endcase ;
 \ Hewie_ActOnCommand: true if he took it up
 : act-on-command ( code -- flag )
-    his-away @ if  drop false exit  then   \ (answering from another room: with the story's doors)
+    his-away @ if  act-away exit  then
     case
         $25 of  $1D $29 want  obeys  true  endof                       \ stay
         $26 of  his-danger @ 0= dup if  $1D $2B want  then  obeys  endof
@@ -65,15 +76,18 @@ create reactions  300 , 1 , 300 , 1 , 300 , 1 , 750 , 1 , 150 , 1 , 1500 , 1 , 6
         >r false r>
     endcase ;
 
-\ (Actor_CanWalkBetween: straight from him to her, past nothing she couldn't step over)
-: can-get-to-her? ( -- flag )  his-tri his-at fiona-at $40080 v-walk  her body-tri = ;
+\ (Actor_CanWalkBetween with no mask: straight from him to her on the floor)
+: can-get-to-her? ( -- flag )  his-tri his-at fiona-at 0 v-walk  her body-tri = ;
 \ Hewie_FionaCommand: her command; true if he acts on it
 : fiona-command ( code -- flag )
-    his-cmd-was !
+    dup his-heard !  his-cmd-was !
+    his-away @ if   \ (in another room: what it makes him do, straight - Hewie_FionaCommand's disabled)
+        his-cmd-was @ command-action dup 0< if  drop false  else  act-on-command  then  exit
+    then
     his-busy @ 0= his-broke @ 1 = and if  false exit  then
     his-action @ $7D = his-cmd-was @ $30 <> and if  obeys  then
     his-cmd-was @ dup $2B <> swap $2F <> and if  0 his-praise-b !  0 his-praise-a !  then
-    his-cmd-was @ $23 = his-waiting @ 0= and  his-danger @ 0= and  ball 0< and  can-get-to-her? and if
+    his-cmd-was @ $23 = his-waiting @ 0= and  his-broke @ 1 <> and  his-danger @ 0= and  ball 0< and  can-get-to-her? and if
         nearest-ball dup his-follows !  0< 0= if  $1D $78 want  true exit  then   \ (fetch: the ball nearest her)
     then
     his-cmd-was @ $29 = if

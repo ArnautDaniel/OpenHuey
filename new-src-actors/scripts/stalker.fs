@@ -3,21 +3,18 @@
 \ (Debilitas: `debilitas`). P1: in the house - placed, standing, growling, telling the danger
 \ he is about; searching the room (stalker/search.fs: his modes, his route of stops, walking).
 IN: stalker
-USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.leads stalker.pursue stalker.grab stalker.struck stalker.bitten stalker.riccardo stalker.lorenzo2 stalker.ladder ;
+USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.leads stalker.pursue stalker.grab stalker.struck stalker.bitten stalker.riccardo stalker.lorenzo2 stalker.ladder stalker.head ;
 
 : me ( -- id )  self ;
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
 : played? ( -- flag )  in-game @ if  my-room room-id =  else  false  then ;   \ (Npc_InPlayedRoom)
 : danger-id ( -- id )  s" danger" actor-named ;
 
-\ his model where his body is, shown in the room being played
-\ down on his back ($1800 falling, $1801 / $1802 lying, $1803 up): Daniella's hair falls forward
-\ and her back's colliders bend (DaniellaModel_Vt3C; the others have no such parts)
-: on-his-back? ( -- flag )  anim @ $1800 $1804 within ;
+\ his model where his body is, shown in the room being played (Daniella on her back: her hair
+\ and back by her animation - the engine's, DaniellaModel_Vt3C)
 : pose ( -- )
     my-at sf@ him act.x sf!  my-at 4 + sf@ him act.y sf!  my-at 8 + sf@ him act.z sf!
     self body-yaw him act.yaw sf!
-    my-model @ on-his-back? self body-yaw cloth-crawl!
     played? under-t @ 0= and unseen @ 0= and 0<> 1 and him act.visible l! ;   \ (under the floor: Lorenzo's other class)
 
 \ ---- in the game and out (Pursuer_Activate: waiting about, his first animation) ----
@@ -63,9 +60,9 @@ USING: engine game-state actors messages common facts flag-names room-names path
 : frame ( -- )
     away? if  away  pose  my-room 0 my-mode @ 0= 1 and danger-id send stalker-here  exit  then
     thaw  hurt-down  senses  modes  dog-temper  shut-behind  ladder-watch
-    step @ ?dup if  execute  then  search
+    step @ ?dup if  execute  then  search  looking   \ (Pursuer_Think: the head after the behaviour)
     played? growls @ and if  growl  then
-    played? if  anim-sounds-play  then
+    played? if  stalker.moving:footsteps  anim-sounds-play  then
     pose
     my-room  sees-fiona @ 0<> 1 and  my-mode @ 0= 1 and  danger-id send stalker-here ;
 \ what he is doing, for Hewie (the original's character fields he reads: room, move mode and
@@ -83,7 +80,8 @@ USING: engine game-state actors messages common facts flag-names room-names path
     s" fiona" actor-named fiona-id !  s" hewie" actor-named hewie-id !
     hear-threshold @ stalker-noise s" acoustics" actor-named send listen
     pursuer-ladder ladder-offsets !  -1 her-ladder-on !  -1 at-ladder !
-    self subscribe zone-target  self subscribe zone-targets-off ;
+    self subscribe zone-target  self subscribe zone-targets-off  self subscribe fiona-unseen
+    my-kind @ head-bones!  4 look-mode ! ;
 
 \ a door slammed off screen, the one he makes for: right behind it, its damage (not below 1) and
 \ he is after her
@@ -109,7 +107,8 @@ USING: engine game-state actors messages common facts flag-names room-names path
 \ bitten or leading her: then his mode only ----
 : up-again ( -- )  cond @ 2 = if  0 cond !  0 down-t !  then ;
 : busy? ( -- flag )  reeling @ bitten @ or leading @ or ;
-: ordered ( mode -- )
+: ordered ( mode -- )   \ (his wandering off given up: the order is his behaviour now)
+    wandering-out @ if  let-door-go  out-over  then
     case
         0 of  up-again  0 mode!  avoid-clear  busy? if  exit  then
               played? if  sees-fiona @ if  chase-begin  else  chase-start  then  else  head-for-her  then  endof
@@ -130,7 +129,7 @@ behaviour stalking
   on stalker-in ( room tri -- )  come-in ;
   on place ( x y z yaw -- )   \ (put there, facing so: where a cutscene left him)
       in-game @ 0= if  2drop 2drop exit  then
-      cell>f place-yaw f!  >r >r cell>f r> cell>f r> cell>f place-at vec!
+      cell>f place-yaw f!  cells>xyz place-at vec!
       room-id  place-at my-floor @ v-tri-in  place-at vec@ body-place  place-yaw f@ body-turn ;
   on stalker-out ( -- )  go-out ;
   on write-save ( -- )   \ (saves.fs) loaded: his kind, in the game or not, his place, health and mode
@@ -138,7 +137,7 @@ behaviour stalking
       my-kind @ .  in-game @ 0<> .  self body? if  self body-room .  self body-tri .  else  -1 . -1 .  then
       hp @ .  my-mode @ .  ." stalker-was" cr ;
   on stalker-restore ( hp mode -- )  mode!  hp ! ;
-  on noclip ( on -- )  if  0  else  my-floor @  then  body-mask! ;   \ (the story's 0x20: through blocked floor - at doors)
+  on noclip ( on -- )  dup 0<> noclipped !  if  0  else  my-floor @  then  body-mask! ;   \ (the story's 0x20: through blocked floor - at doors)
   on drawn-to ( tri -- )  in-game @ if  go-for-doll  else  drop  then ;
   on stalker-hunt ( -- )  in-game @ if  1 mode!  away? 0= if  search-again  then  then ;
   on entered-room ( room exit -- )  her-came !  room-changed  in-game @ if  pose  then ;
@@ -166,6 +165,8 @@ behaviour stalking
   on heard-nothing ( -- )  heard-none ;
   on door-held ( room exit -- )  nip held-answer ;   \ (his to open, or the door he came in by)
   on hit-taken ( kind -- )  struck-home ;
+  on blow-from ( kind damage how x y z -- )   \ (from a point: Progress_Noise)
+      cells>xyz strike-pt vec!  away? if  blow-away exit  then  -2 striker !  struck ;
   on blow ( kind damage how -- )   \ (her shove or kick; a door she slammed: no answer)
       away? if  blow-away exit  then
       sender striker !  2 pick 5 = >r  struck  r> 0= if  sender send blow-taken  then ;
@@ -180,6 +181,7 @@ behaviour stalking
       >r >r >r  dup 3 * floats target-at +  r> cell>f dup sf!  r> cell>f dup 4 + sf!  r> cell>f 8 + sf!
       cells target-on +  -1 swap ! ;
   on panic ( stage level -- )  drop her-stage ! ;     \ (the door he came in by: swung open)
+  on fiona-unseen ( on -- )  her-unseen ! ;
   on door-refused ( room exit -- )  nip refused-answer ;
 end-behaviour
 

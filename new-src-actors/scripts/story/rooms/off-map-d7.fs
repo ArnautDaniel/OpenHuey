@@ -2,15 +2,15 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d7
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story.clock ;
 
 \ as Room107_Cmd00
-: off-map-d7.cmd00 ( b0 -- )  drop s" off-map-d7.cmd00" stub-step ;
+: off-map-d7.cmd00 ( b0 -- )  2e room-nudge ;   \ (as chaos-forest-9's)
 \ room 0xD7: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: off-map-d7.cmd01 ( -- )  s" off-map-d7.cmd01" stub-step ;
+: off-map-d7.cmd01 ( -- )  clock-draw ;   \ (each frame: the clock)
 \ as Room107_Cmd01
-: off-map-d7.cmd02 ( -- )  s" off-map-d7.cmd02" stub-step ;
+: off-map-d7.cmd02 ( -- )  $C $80808080  -225e -63.62e -1125e  1400e 0.5e 0.1e  effects:caustic drop ;   \ (as chaos-forest-9's: light rippling far off)
 \ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
 : off-map-d7.cond01? ( -- flag )  true ;
 

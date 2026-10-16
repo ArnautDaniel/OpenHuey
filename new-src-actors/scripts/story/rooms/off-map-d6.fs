@@ -2,13 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d6
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story.clock ;
 
 \ (as Room105_Cmd00) pushed by the character slot byte 4 names
-: off-map-d6.cmd00 ( b0 b1 -- )  drop drop s" off-map-d6.cmd00" stub-step ;
+: off-map-d6.cmd00 ( b0 b1 -- )  swing-three-by ;   \ (as chaos-forest-7's, pushed by character slot b1)
 \ room 0xD6: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: off-map-d6.cmd01 ( -- )  s" off-map-d6.cmd01" stub-step ;
+: off-map-d6.cmd01 ( -- )  clock-draw ;   \ (each frame: the clock)
 \ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
 : off-map-d6.cond00? ( -- flag )  true ;
 

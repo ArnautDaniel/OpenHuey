@@ -2,18 +2,18 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e9
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story.clock ;
 
 \ room 0xE9: stops the countdown clock (clock_stop: progress +0x1FBEC1 off, the camera director
 \ +0x40 -1).
-: off-map-e9.cmd00 ( -- )  s" off-map-e9.cmd00" stub-step ;
+: off-map-e9.cmd00 ( -- )  clock-stop ;
 \ room 0xE9: saves the countdown clock's time in script variables 0..2 (clock_save).
-: off-map-e9.cmd01 ( -- )  s" off-map-e9.cmd01" stub-step ;
+: off-map-e9.cmd01 ( -- )  clock-save ;
 \ (as Room00_Cmd00) the same four spots for bytes 3..6
-: off-map-e9.cmd02 ( b0 b1 -- )  drop drop s" off-map-e9.cmd02" stub-step ;
+: off-map-e9.cmd02 ( b0 b1 -- )  3 grey-glow ;   \ (as front-garden-1's: the four spots for bytes 3..6)
 \ room 0xE9: draws the countdown clock, frozen at the saved time while event flag 1 is set
 \ (clock_draw_saved; a frame hook).
-: off-map-e9.cmd03 ( -- )  s" off-map-e9.cmd03" stub-step ;
+: off-map-e9.cmd03 ( -- )  clock-draw-saved ;   \ (each frame: the clock, or the time kept)
 \ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
 : off-map-e9.cond00? ( -- flag )  true ;
 

@@ -258,8 +258,9 @@ model and her later kinds' - O_DNL/ - alike): her hair, two strands of five side
 0.44 from the one beside it, off her back's five capsules); what hangs from her waist, two
 strands of three drawn along bone $1F (HangingPart, off two capsules and two spheres); a part
 sprung to bone $17; two bones hanging ($2F, $30); 50 steps to settle afresh. Down on her back
-($1800..$1803) her back's capsules bend and her hair falls forward (`cloth-crawl!`;
-DaniellaModel_Vt3C). The others' hanging parts likewise (by their model files): Debilitas
+($1800..$1803) her back's capsules bend and her hair falls forward, each frame by her animation
+(the engine's `cloth_watch`; DaniellaModel_Vt3C); the story sets them flat or standing for its
+own moves (its 0xCC op 4, `cloth-back!`; DaniellaModel_BackCapsules). The others' hanging parts likewise (by their model files): Debilitas
 (O_DB0: four from bone 10, the last three from the first's end, off two spheres on bone 2);
 Riccardo (O_RCG: four in pairs off four spheres; his coat, twelve in pairs following their
 anchors and tied about 1.9 to the first pair of their six, off five capsules down his back -
@@ -268,12 +269,27 @@ the same without those last four; Lorenzo (O_LRO: six in threes off eight sphere
 class (O_LRY: 24 swaying points, six groups of four, each pair swinging from bone 2 / 3 - $12 /
 $13 the odd groups - out to its group's side, 5 .. 20 degrees freer down it: SwayPointB).
 
-**Her on a ladder** (`stalker/ladder.fs`; Npc_OpenDoorFionaHides - for all its name, the
-ladder she is on -, Pursuer_DoorApproach, Npc_PlanBesideDoor): while he is after her and free
-in her room, she on one of its ladders (`fiona-plight` tells which), he makes for beside its foot,
-else its top - out from that end by his family's offsets (vtable +0x9C: the Pursuer's -6 / 10.4,
-Debilitas's, Daniella's, Riccardo's) - and there stands facing her; she off it, after her again.
-`tests/fiona/test_ladder.fs` (19).
+**Ladders** (`stalker/ladder.fs`; his action $12 - Pursuer_DoorApproach, WalkToSpot, DoorArmOpen,
+Stairs, DoorAnim: for all their names, a ladder). No way to her on foot (Pursuer_TargetOutOfReach:
+from his chase's standing, as he sets off at her - Pursuer_CloseIn -, all along the Pursuer's
+ChaseTarget, and after her out of sight - WalkToGoal): round by a ladder - the first whose end on
+her level has a way to the middle of her triangle and whose end on his has a way from him
+(Npc_RoundThroughDoor); else, in a room of two ladders or more, the first he has a way to, each
+one's ends in turn, the last tried first (Npc_FindDoor); none - his chase's search of the room
+(Pursuer_ChaseFionaHere). She on a ladder while he is after her and free (Npc_OpenDoorFionaHides):
+to its foot, else its top. He walks to beside that end - out from it by his family's offsets
+(vtable +0x9C: beside its foot, beside its top, off at its top, off at its foot - the Pursuer's,
+Debilitas's, Daniella's, Riccardo's) -, turns to it at his rate (move mode 3) and gets on ($700
+at its top, $704 at its foot); climbs a rung at a time by the moves' own motion, up and down
+(`body-climb`: $701 / $702 down, off within 20 of its foot - $703; $705 / $706 up, off within 4
+of its top - $707), and is put out from that end. Whoever he touches on it is struck (kind 4, 5
+damage: Fiona on it is knocked off). Struck on it he isn't felled (1 health at least). On his
+way there - she off the ladders with a way to her on foot - he gives it up and stands. Its
+footsteps: the rungs' (10), the floor's getting on or off with the foot over it. Then his chase
+again (standing; the Pursuer by his row; the way there gone, the Pursuer searches). While he
+goes for one or climbs, his modes wait. (Not here: the original's turn back half way, when another
+behaviour re-aims him mid-climb, and its putting him at the nearer end when she leaves the room -
+hga puts him by a door when she comes back.) `tests/fiona/test_ladder.fs` (26).
 
 **P4a - the story's words about him** (`scripts/story/words.fs`, src/game/event.c). He tells
 each frame (`stalker-doing`) his room, move mode and part, condition, health and its most, kind, his alert (his mode: Progress_StalkerAlert) and the exit he

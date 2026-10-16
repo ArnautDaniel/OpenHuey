@@ -53,10 +53,11 @@ create round-pt 12 allot  fvariable round-a  fvariable round-r  variable sc-who 
         then
         round-a f@ 0.3926991e f+ round-a f!
     loop  false ;
-: near-straight? ( id F: d reach -- flag )   \ (within reach on foot, and straight there)
-    f< 0= if  drop false exit  then
+: near-straight? ( id F: d reach -- flag )   \ (within reach on foot, and straight there; not
+    f< 0=  noclipped @ or if  drop false exit  then          \ while through blocked floor: +0x2B)
     $40080 straight? ;
 : fiona-in-reach? ( -- flag )   \ NPC_FionaInReach (her hiding place: with the hiding, F5)
+    her-unseen @ if  false exit  then   \ (camouflaged and still: not there to him)
     fiona sees? if  true exit  then
     fiona-hidden state-flag? if  false exit  then
     d-fiona f@ f0> 0= if  false exit  then
@@ -75,7 +76,7 @@ create round-pt 12 allot  fvariable round-a  fvariable round-r  variable sc-who 
     then
     sense-turn @ if  fiona foot-dist d-fiona f!  else  hewie foot-dist d-hewie f!  then
     sense-turn @ 0= sense-turn !
-    self body-yaw view-heading f!          \ (his head's turn added: with his head, later)
+    self body-yaw head-yaw f@ f+ angle-wrap view-heading f!   \ (his head's turn added: Npc_WhoAround; stalker/head.fs)
     fiona here? if  fiona-in-reach?  else  false  then  sees-fiona !
     hewie here? if  hewie-in-reach?  else  false  then  sees-hewie ! ;
 \ a noise heard this frame (the acoustics actor: its heard / heard-nothing) - NPC_HearNoise

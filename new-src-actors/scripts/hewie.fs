@@ -65,7 +65,7 @@ behaviour hewie-own
   on hewie-skills ( s0 s1 s2 s3 s4 s5 -- )  0 5 do  i cells his-skill + !  -1 +loop ;
   on place ( x y z yaw -- )   \ (the story puts him)
       along? 0= if  2drop 2drop exit  then
-      >r >r >r cell>f r> cell>f r> cell>f  his-place  r> cell>f his-yaw! ;
+      >r cells>xyz  his-place  r> cell>f his-yaw! ;
   on leaving-room ( room exit -- )   \ (the old room still in)
       2dup room-exit-leads drop fiona-room !  nip  along? if  fiona-left  else  drop  then ;
   on arrived ( room exit -- )  drop fiona-room !
@@ -84,19 +84,19 @@ behaviour hewie-own
       case
           0 of  his-hp @ 20 + 100 min hp!  his-hp @ 100 = if  -1 mistreated+  then  endof
           1 of  his-hp @ 100 + 100 min hp!  -1 mistreated+  endof
-          2 of  his-hp @ 50 - 0 max hp!  3 mistreated+  endof
+          2 of  50 hurt-by  3 mistreated+  endof
           3 of  3 450 set-mood  20 mistreated+  endof
           4 of  1 hp!  3 mistreated+  endof
       endcase ;
   on mood! ( mood -- )  along? if  -1 set-mood  else  drop  then ;
   on scent-at ( x y z -- )
       his-smells @ along? 0= or if  2drop drop exit  then
-      >r >r cell>f r> cell>f r> cell>f  his-scent vec!  1 his-smells ! ;
+      cells>xyz  his-scent vec!  1 his-smells ! ;
   on hold-spot ( tri x y z yaw -- )   \ (Pursuer_GrabHewieBehind: where he is held - +0x110, +0x10C, +0x104[1])
-      cell>f his-to-yaw f!  >r >r cell>f r> cell>f r> cell>f his-to vec!  his-to-tri ! ;
+      cell>f his-to-yaw f!  cells>xyz his-to vec!  his-to-tri ! ;
   on scent-now ( x y z -- )   \ (a room's command: his point to look to, whatever he had - Room26_Cmd02)
       along? 0= if  2drop drop exit  then
-      >r >r cell>f r> cell>f r> cell>f  his-scent vec!  1 his-smells ! ;
+      cells>xyz  his-scent vec!  1 his-smells ! ;
   on hewie-place ( room tri side -- )   \ (his +0x64, Hewie_PlaceInRoom)
       his-way !  over room-id = >r  place-on  r> if  to-default  then ;
   on hewie-side! ( side -- )  dup 3 u< 0= if  drop -1  then  his-way ! ;
@@ -104,11 +104,11 @@ behaviour hewie-own
   on noclip ( on -- )  0<> 1 and his-2b ! ;
   on aside ( on -- )  0<> 1 and his-2d ! ;
   on activate ( -- )  0 his-2b !  0 his-2d !  100 hp! ;   \ (the story's 0x15, Hewie_Activate: afresh, at full health)
-  on tick ( -- )  along? if  frame  else  tell-doing  then ;
+  on tick ( -- )  along? if  frame  else  tell-doing  then  -1 his-heard ! ;
   \ her commands (H2)
   on command ( code tri yaw x z -- )   \ (Hewie_StateBlock's 13)
       along? 0= if  2drop 2drop drop exit  then
-      >r >r cell>f  r> cell>f  r> cell>f                       ( code tri ) ( F: yaw x z )
+      cells>xyz                                                ( code tri ) ( F: yaw x z )
       over $23 = if  showed  else  drop fdrop fdrop fdrop  then
       fiona-command drop  0 his-broke !  tell-doing ;
   on reaction ( n -- )  along? if  react  else  drop  then ;
@@ -125,7 +125,7 @@ behaviour hewie-own
   on scripted ( on -- )  along? if  his-busy !  else  drop  then ;
   on scripted-move ( kind a b x y z yaw -- )
       along? 0= if  2drop 2drop 2drop drop exit  then
-      cell>f his-to-yaw f!  >r >r cell>f r> cell>f r> cell>f his-to vec!
+      cell>f his-to-yaw f!  cells>xyz his-to vec!
       his-to-anim !  his-to-tri !  0 his-done !
       dup 12 = if  drop his-to-tri @ his-look-char !  0 his-look-pt? !  done! exit  then
       dup 13 = if  drop his-look-pt his-to vec-copy  1 his-look-pt? !  done! exit  then
@@ -134,7 +134,7 @@ behaviour hewie-own
   on hold-anim ( anim flags blend -- )  nip  along? 0= if  2drop exit  then  his-to-anim !  his-to-tri !  $3C 0 want ;
   on show ( on -- )  along? 0= if  drop exit  then  0<> 1 and him-model act.visible l! ;
   on frame-end ( -- )
-      along? if  his-done @  anim-done?  his-model @ 0 0 1 motion-events  broadcast moving  angry-down  then
+      along? if  his-done @  anim-done?  his-model @ 0 0 1 motion-events  broadcast moving  then
       st-age @ 100 < if  1 st-age +!  then
       10 0 do  i cells cr-ages + dup @ 100 < if  1 swap +!  else  drop  then  loop ;
   \ the stalker (H3: hewie/fight.fs): what he is doing; his answers to the attack; thrown off;
@@ -156,7 +156,9 @@ behaviour hewie-own
       along? up and if  room self body-room = if  2 his-creature-t !  then  then ;
   on fetch-this ( thing -- )   \ (Fiona_StateLetGo: her ball thrown, while all's calm)
       along? his-danger @ 0= and his-action @ $78 <> and if  his-follows !  else  drop  then ;
-  on shaken-off ( -- )  along? if  his-biting @ 2 < if  3 his-biting !  then  then ;
+  on shaken-off ( -- )  along? if  his-act @ ['] st-bite-hold = if  3 his-biting !  then  then ;   \ (thrown off: only while he holds on)
+  on blow-from ( kind damage how x y z -- )   \ (from a point: Progress_Noise)
+      cells>xyz his-blow-pt vec!  along? 0= if  2drop drop exit  then  -2 take-blow drop ;
   on blow ( kind damage how -- )
       along? 0= if  2drop drop exit  then
       sender take-blow  sender her = and if  sender send blow-taken  then ;

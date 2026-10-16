@@ -192,7 +192,7 @@ fvariable fs-d
     fs-d f@ fswap f/  fswap fover f* fs-a 8 + sf@ f+  frot frot f* fs-a sf@ f+  fswap   ( F: x z )
     fs-a 4 + sf@ fswap                                                        ( F: x y z )
     world-held state-flag? hushed @ or if  fdrop fdrop fdrop exit  then
-    step-foot @ 1 and 7 bank-sound-at  1 step-foot +! ;
+    step-foot @ 1 and 7 10 2 sound-at  1 step-foot +! ;   \ (always at its fullest: the original takes the step as 15)
 : footsteps ( -- )
     next-door dup 0< if  drop exit  then  room-id door-exit-in              ( exit | -1 )
     dup 0< if  drop  -1e step-last f!  exit  then

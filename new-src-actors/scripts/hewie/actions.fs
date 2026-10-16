@@ -120,7 +120,7 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
     \ at the stalker (0x1F..0x23: hewie/fight.fs)
     $1F of  at-pursuer  endof  $20 of  at-pursuer  endof  $21 of  at-pursuer  endof  $22 of  at-pursuer  endof
     $23 of  close-on  endof
-    \ out of the room away from her (0x24 / 0x25): with the doors he may use (later)
+    \ out of the room away from her (0x24 / 0x25: Hewie_FleeExit - open doors he may pass)
     $24 of  away-from-her  endof
     $25 of  away  endof
     $26 of  4 $7AF ['] st-after-27 holding  endof
@@ -158,7 +158,7 @@ create idle-tricks  $18 , $19 , $1C , $1A , $1B ,
     $56 of  0 mode!  60 his-wait !  30e $7AF keep-near  endof
     $57 of  0 mode!  20e $7AF keep-near  endof
     $58 of  4 $68F ['] st-pose2 holding  endof
-    \ harrying the stalker (and the creatures, later)
+    \ harrying the stalker or a creature (pick-target)
     $59 of  harry  endof
     $5A of  3 his-wanted !  harry  endof
     $53 of  his-target @ dup with? if

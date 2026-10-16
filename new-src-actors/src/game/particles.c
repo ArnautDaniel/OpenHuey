@@ -1841,6 +1841,19 @@ static void onedrip_step(int self, System *s) {   /* OneDrip_Update */
     }
 }
 
+/* ---- a footstep in water (Character_WaterStep): a ring spreading on the surface (0.1 above
+ * it) and 16 droplets thrown up round it - `big` (running, a fall) the larger. The engine's:
+ * they go by themselves ---- */
+
+void particles_water_step(Vec3 at, int big) {
+    Vec3 ring = vec3(at.x, at.y + 0.1f, at.z);
+    float s = big ? 0.25f : 0.2f, r = big ? 0.15f : 0.1f;
+    Spray sp = {at, 0x20202040u, 16, s, s, 0.1f, 0.2f, s, r, s, r, 0.1f, 0.1f};
+
+    ring_new(-1, ring, 0x30303030u, big ? 0.2f : 0.15f);
+    droplets_new(-1, &sp);
+}
+
 /* ---- RisingMotes: 128 motes rising from around (0, 70, 35) in castle 1F's hall, growing and
  * turning; renewed past 130 high or, every other frame, once faded ---- */
 

@@ -9,8 +9,10 @@ IN: fiona.defend
 USING: engine game-state actors messages common keys facts flag-names rumble fiona.state fiona.model fiona.moving fiona.slam fiona.fear fiona.controls fiona.looks ;
 
 defer to-idle ( -- )
-\ (the stalker and Hewie in her room, held still by a blow: fiona/slam.fs)
-: moving ( -- )  her-recoil @ 0= if  root-move  then ;
+\ the shove's steps move her every frame - held still by a blow that landed, its frozen frame's
+\ step goes on (Fiona_StateShoveStart / StateStrike / StateShove: Character_RootMoveMasked
+\ unconditionally; the kick stops instead)
+: moving ( -- )  root-move ;
 
 \ ---- whom a blow at a point reaches (Progress_CharNear: within their height and radius,
 \ widened by the margin) ----
@@ -82,10 +84,12 @@ fvariable pace
 : shove-start ( -- )
     moving
     settled? 0= if  exit  then
-    1e  her-recovery @ $1C3 < 0= if  fdrop 3150 her-recovery @ - s>f 1800e f/ 1.5e f*  then
-    1e  her-fear f@ 40e f> if  fdrop 160e her-fear f@ f- 120e f/  then
-    fmin 0.1e fmax pace f!
-    $E00 2 play-table  pace f@ weight!
+    special? if  $E00 -1 play-table  else   \ (the special costumes: their own, at its pace)
+        1e  her-recovery @ $1C3 < 0= if  fdrop 3150 her-recovery @ - s>f 1800e f/ 1.5e f*  then
+        1e  her-fear f@ 40e f> if  fdrop 160e her-fear f@ f- 120e f/  then
+        fmin pace f!
+        $E00 2 play-table  pace f@ weight!   \ (slower by her fright: blended with motion 2, kept in step)
+    then
     1 her-blow-n +!  0 her-struck !  ['] shoving her-act ! ;
 
 \ ---- the kick: a step ahead while it fades in; while its key is clear it meets whom it

@@ -4,7 +4,7 @@
 \ does there (Pursuer_PickFromTable over Debilitas_AttackTable's "searched": walk on, or look
 \ about), and his mode with its clock (Pursuer_ModesSearching).
 IN: stalker.search
-USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.spots ;
+USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.spots stalker.head ;
 
 : here-played? ( -- flag )  in-game @ if  self body-room room-id =  else  false  then ;
 
@@ -51,7 +51,7 @@ variable spots  variable spots-n  variable spots-used
 \ ---- the steps (one runs each frame: `step`) ----
 : step! ( xt -- )  step !  0 step-done !  0 step-t ! ;
 : stand ( -- )   \ (vtable +0x320: Debilitas stands with 0)
-    stand-anim play  ['] noop step! ;
+    stand-anim play  ['] noop step!  4 action-look! ;
 \ his walk for his mode (Debilitas_StandAnim, vtable +0x128): after her, close (80 on foot) and
 \ she isn't hiding, $200, else $206; waiting $200; searching or heading for her room $201
 : walk-anim ( -- anim )
@@ -76,7 +76,8 @@ create to-at 12 allot
         walk-anim play  ['] walking step!
     then ;
 \ Pursuer_StepBack: setting off - turned on the spot toward the way's next point, or walking
-: set-off ( -- )
+: set-off ( -- )   \ (action 8: his goal looked at)
+    8 action-look!
     0.1e my-path my-at path-ahead drop  to-at ahead vec-copy
     to-at way-to dup $FF = if  drop walk-anim play  ['] walking step!  exit  then
     turn-base + play-now  ['] turning step! ;
@@ -128,15 +129,21 @@ create to-at 12 allot
 \ her on foot, his way re-planned every 30 frames; standing facing her within 15. Seeing her,
 \ his chase (stalker/chase.fs: `chase-begin`) ----
 defer round-to-her ( -- went? )   ' false is round-to-her   \ (she across his room: stalker/doorway.fs)
+defer out-of-reach ( -- went? )   ' false is out-of-reach   \ (no way to her on foot: round by a ladder - stalker/ladder.fs)
+defer at-a-ladder? ( -- flag )   ' false is at-a-ladder?   \ (his ladder action - stalker/ladder.fs)
+defer leave-at-random ( -- )   ' noop is leave-at-random   \ (out by an exit at random: stalker/doorway.fs)
+defer out-cancelled ( -- )   ' noop is out-cancelled      \ (his way out given up: stalker/doorway.fs)
 : after-her ( -- )
     -1 step-t +!  step-t @ 0> if  exit  then  30 step-t !
     round-to-her if  exit  then
-    fiona body-tri dup 0< if  drop exit  then  fiona body-at plan 0> 0= if  exit  then
-    d-fiona f@ 15e f< d-fiona f@ f0< 0= and if  stand-anim play  my-path path-clear  else  walk-anim play  then ;
+    fiona body-tri dup 0< if  drop exit  then  fiona body-at plan 0> 0= if  out-of-reach drop exit  then   \ (none: round by a ladder -
+    \ Pursuer_WalkToGoal)
+    d-fiona f@ 15e f< d-fiona f@ f0< 0= and if  stand-anim play  my-path path-clear  else  walk-anim play  then
+    her-unseen @  d-fiona f@ 10e f<  d-fiona f@ f0< 0= and and  my-mode @ 0= and if  0 mode-t !  then ;   \ (there, and she's not: Pursuer_BehaviourRun)
 : chase-step ( -- )   \ (the step while after her)
     my-path path-left? if  walk-stride drop  else  fiona body-at turn-rate turn-to fdrop  then
     after-her ;
-: chase-start ( -- )  0 search-phase !  ['] chase-step step!  after-her ;
+: chase-start ( -- )  4 action-look!  0 search-phase !  ['] chase-step step!  after-her ;   \ (action 4)
 defer chase-begin ( -- )   ' chase-start is chase-begin   \ (seeing her: stalker.chase)
 defer chasing? ( -- flag )   ' false is chasing?
 defer lost-her ( -- )   ' chase-start is lost-her
@@ -144,8 +151,8 @@ defer lost-her ( -- )   ' chase-start is lost-her
 \ ---- Pursuer_ModesSearching, in the room being played (elsewhere: with his travel, P1d):
 \ seeing her he's after her (mode 0) and his clock (300 frames) starts again; out of sight it
 \ runs down, then he searches the room (mode 2: 2..5 stops); his route over he waits about
-\ (mode 3, 900 frames), then searches again; heading for her room (1) he searches it once in;
-\ held off (4) he's after her again when it runs out ----
+\ (mode 3, 900 frames) - out of the room by an exit at random (Pursuer_GoAfterFiona); heading
+\ for her room (1) he searches it once in; held off (4) he's after her again when it runs out ----
 : tick-down ( -- out? )  mode-t @ 0> if  -1 mode-t +!  then  mode-t @ 0= ;
 defer lead-taken? ( -- flag )   ' false is lead-taken?   \ (a lead he heard: stalker/leads.fs)
 defer starting? ( -- flag )   ' false is starting?      \ (starting at one)
@@ -162,7 +169,12 @@ create drawn-at 12 allot
     dup drawn-tri !  2 mode!  route-clear  0 route-add  search-start ;
 : modes ( -- )
     here-played? 0= if  exit  then
-    reeling @ out-going @ or at-dog @ or if  exit  then   \ (struck: his reaction first; on his way out by a door; after Hewie)
+    at-a-ladder? if  exit  then   \ (to a ladder or on it: his chase's action $12, over first)
+    reeling @ at-dog @ or if  exit  then   \ (struck: his reaction first; after Hewie)
+    out-going @ if   \ (on his way out by a door: that first - unless he's only wandering off, when the
+        wandering-out @ 0=  sees-fiona @ did-hear @ or 0=  or if  exit  then   \ sight of her or a noise
+        out-cancelled  0 wandering-out !                                     \ turns him back: Pursuer_PickTarget)
+    then
     start-t @ 0> if  starting? if  exit  then  0 start-t !  then   \ (starting at something he heard or saw: that
     \ first - unless something else has him now)
     sees-fiona @  my-mode @ 4 <> and if   \ (held off: going away, not after her)
@@ -174,7 +186,9 @@ create drawn-at 12 allot
     my-mode @ case
         0 of  tick-down if  search-again  then  endof
         1 of  search-again  endof
-        2 of  route-done @ if  3 mode!  then  endof
-        3 of  tick-down if  search-again  then  endof
+        2 of  route-done @ if  0 route-done !  3 mode!  leave-at-random  then  endof   \ (his route over:
+        \ Pursuer_GoAfterFiona - Pursuer_PlanWhere's mode 3 - out of the room by an exit at random)
+        3 of  route-done @ if  0 route-done !  leave-at-random  then  endof   \ (no clock here: a lead or
+        \ the sight of her moves him on; his route over, out as above)
         4 of  tick-down if  0 mode!  chase-start  then  endof
     endcase ;

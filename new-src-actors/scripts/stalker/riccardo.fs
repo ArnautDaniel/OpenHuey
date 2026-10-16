@@ -33,8 +33,10 @@ defer ric-begin ( -- )
 : near-seen? ( -- flag )  d-her come-reach f<=  faces-me? and ;
 : standing-step ( -- )   \ 1
     chase-t @ 60 mod 0= if  lunge? if  exit  then  then
-    settled? if  fiona body-at 1.0471976e 2.6179939e way-past dup $FF <> if  turn-to-her exit  then  drop  then
-    faces-me? 0=  d-her come-reach 20e f+ f> or if  rnd 100e f* back-or-hold exit  then
+    settled? if  fiona body-at 1.0471976e 2.6179939e way-past dup $FF <> if  turn-to-her  else  drop  then  then
+    rnd 100e f*
+    d-her f0< if  fdrop  out-of-reach 0= if  search-again  then  exit  then   \ (no way to her: Pursuer_ChaseFionaHere)
+    faces-me? 0=  d-her come-reach 20e f+ f> or if  back-or-hold exit  then  fdrop
     comings @ 0> if  -1 comings +!  else  5 2 wait# keep  then ;
 : stalking-step ( -- )   \ 6
     near-seen? if  comings @ 0> if  stand-to  else  5 2 wait# keep  then  exit  then

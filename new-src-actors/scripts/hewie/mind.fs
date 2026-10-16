@@ -34,7 +34,7 @@ USING: engine actors common facts paths messages hewie.state hewie.body hewie.ta
         else  his-action @ 0= if  $52 0 want  then  then
     else
         1 cond!  obeys
-        his-away @ if  to-default  then
+        his-away @ if  his-hide @ if  his-action @ $36 <> if  $36 0 want  then  else  to-default  then  then
     then then
     his-cond @ 2 <> if
         his-cond @ 1 <> if
@@ -142,9 +142,11 @@ variable pk-roll  variable pk-sum
             >r black-shepherd? if  tense-wait-shepherd-lists  else  tense-wait-lists  then  r>  endcase
     then
     situation list-of -1 pick-from 0 want ;
-\ Hewie_WhenIdle (out of the room being played): waiting a while hurt; else from the idle list,
-\ the one the danger favours (waiting) or going to her (0x2C) weighted more
+\ Hewie_WhenIdle (out of the room being played): staying hidden (0x36) while he hides; waiting a
+\ while hurt; else from the idle list, the one the danger favours (waiting) or going to her (0x2C)
+\ weighted more
 : idle ( -- )
+    his-hide @ if  $36 0 want exit  then
     his-cond @ 1 = rnd 0.25e f< and if  idle-wait trust-of his-wanted !  $2F 0 want exit  then
     his-waiting @ if  his-danger @ case  0 of  $32  endof  1 of  $2E  endof  2 of  $2C  endof  >r -1 r>  endcase
     else  $2C  then
@@ -154,13 +156,18 @@ variable pk-roll  variable pk-sum
 \ ---- Hewie_OwnDecisions: what he decides on his own when nothing else drives him ----
 : to-fiona ( -- )   \ to her (0x62) if he can get to her, else he stops sulking
     her body-tri fiona-at plan-to if  $62 0 want  else  0 -1 set-mood  then ;
-: staying ( -- done? )   \ angry (mood 3): a call, her having hit him, or whoever is here
+: to-stalker ( -- )   \ answers it (0x4F) if he can get to it, else forgets the call
+    pursuer body-tri pursuer body-at plan-to if  $4F 0 want  else  0 his-call !  then ;
+: nearer-her? ( -- flag )  her-dist  his-at pursuer body-at vec-dist f< ;
+: staying ( -- done? )   \ angry (mood 3): a call, her having hit him, or whoever is here (the nearer)
     0 his-hold-call !
     his-call @ $FF <> if
         his-call @ 0= her-with? and if  to-fiona  else  $4F 0 want  then  true exit
     then
     his-hits @ 0> her-with? and if  to-fiona true exit  then
+    her-with? pursuer with? and if  nearer-her? if  to-fiona  else  to-stalker  then  true exit  then
     her-with? if  to-fiona true exit  then
+    pursuer with? if  to-stalker true exit  then
     false ;
 fvariable sl-x  fvariable sl-z
 : facing-down-slope? ( -- flag )   \ on sloped ground (flag 1), facing down it
@@ -284,7 +291,8 @@ create mood-acts  3 cells allot
         then
         anim@ $1000 = if  $80 his-tri noise-make  then
     then
-    his-snd-frame f!  anim@ his-snd-anim ! ;
+    his-snd-frame f!  anim@ his-snd-anim !
+    anim@ $1001 = $10 event? and if  splash-here  then ;   \ (his splash in water)
 
 \ ---- his overlays: head, ears and tail playing their own motions by his animation and mood
 \ (Hewie_SetOverlays / OverlayAnim / IdleOverlay / TailOverlay) ----
@@ -362,8 +370,15 @@ variable feet-new
 : step-pitch ( -- n )
     model root-delta  fswap fdrop fswap fdrop fswap fdrop  his-floor-k f@ f*
     0.28e f- 2.12e f/  0e fmax 1e fmin  2e f* f>s $7F and ;
+create wet-at 12 allot
+create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind right, hind left)
+: wet-feet ( -- )   \ (in the flooded rooms each foot come down ripples the water: deeper wading)
+    wading? 0= if  exit  then
+    4 0 do  feet-new @ 1 i lshift and if
+        anim-group 8 =  his-model @ i cells foot-bones + @ bone-pos  wet-at vec!  wet-at water-step
+    then  loop ;
 : feet ( -- )
-    his-away @ his-tri 0< or if  exit  then
+    his-away @ his-tri 0< or  world-held state-flag? or if  exit  then
     0 feet-new !
     4 0 do
         model i foot-down?
@@ -371,6 +386,7 @@ variable feet-new
         i cells his-feet-was + !
     loop
     feet-new @ 0= if  exit  then
+    wet-feet
     his-tri nav-flags $2018000 and case
         $8000 of  $14 5  endof  $10000 of  $18 5  endof  $18000 of  $1C 5  endof  $2000000 of  $78 5  endof
         $2008000 of  6 sound-loaded? if  $18 6  else  $10 5  then  endof

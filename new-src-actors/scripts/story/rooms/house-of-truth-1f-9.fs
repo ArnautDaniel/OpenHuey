@@ -59,7 +59,7 @@ fvariable dx  fvariable dz  fvariable dy
     3 random 1+  6 6 var @ - min  0 ?do
         free-keri dup 0< if  drop leave  then
         6 var-inc
-        drop-spot  f>cell >r f>cell >r f>cell r> r>  things-id send keri-drop
+        drop-spot  xyz>cells  things-id send keri-drop
     loop ;
 \ the placed thing 10 brought back (list +0x14 / +0x8, its +0xC, +0x28 on) and put on one of
 \ five spots round a circle (script variable 1, then on by 2 of 5): turned to the spot's angle
@@ -105,10 +105,14 @@ fvariable dx  fvariable dz  fvariable dy
     loop ;
 \ a noise at (-70 or 70 by byte 3, 14, 0): byte 4 0 / 1 / 2 kind 1 / 2 / 4
 : house-of-truth-1f-9.cmd09 ( b0 b1 -- )   \ (a blow of kind 2 from (-70 or 70 by b0, 14, 0) at b1 0 Fiona, 1 Hewie,
-    \ 2 the stalker - Progress_Noise's requests: hers taken; Hewie's and the stalker's: not yet)
-    0= if
-        2 swap if  70e  else  -70e  then  f>cell  14e f>cell  0e f>cell  fiona-id send fiona-request
-    else  drop  then ;
+    \ 2 the stalker - Progress_Noise: kind 2, damage 5, threat 10)
+    swap if  70e  else  -70e  then  14e 0e                                  ( who ) ( F: x y z )
+    case
+        0 of  2 xyz>cells 10e f>cell  fiona-id send fiona-request  endof
+        1 of  2 5 0 xyz>cells  hewie-id send blow-from  endof
+        2 of  2 5 0 xyz>cells  slot2 @ dup 0< if  drop 2drop 2drop 2drop  else  send blow-from  then  endof
+        >r fdrop fdrop fdrop r>
+    endcase ;
 \ Room92_Cmd0A
 : house-of-truth-1f-9.cmd0A ( -- )  things-id send story-things-off ;   \ (the debris and the traps all gone)
 \ Room92_Cmd0B
