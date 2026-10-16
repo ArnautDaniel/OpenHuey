@@ -116,6 +116,9 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir: bit 0 behind, bit 1 low)
     2 pick 5 = if  drop nip  let-her-go combo-over 0 hold-off !  door-struck exit  then   \ (a door slammed on him: how is its exit)
     hp @ 0> 0= if  at-door? if  1 hp !  else  drop 2drop knock-down exit  then  then
     reeling @ if  drop 2drop exit  then                            \ (already reeling: the damage only)
+    2 pick 3 = if   \ (a killing blow kept from felling him - in a doorway: the low flinch, nothing else)
+        drop 2drop  let-her-go  combo-over  0 hold-off !  2 flinch exit
+    then
     swap dup $8000 and  swap 1 and if  worn-roll or  then  if
         1 cond !  900 hurt-t !  -1 growl-after !
     then                                                          ( kind dir )

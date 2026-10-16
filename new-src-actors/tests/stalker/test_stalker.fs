@@ -243,6 +243,14 @@ s" fiona" actor-named body-tri debug:debilitas-tri  3 frames
 T{ [: anim @  away?  my-mode @ ;] his -> $1005 0 0 }T
 T{ [: [: reeling @ 0= ;] his ;] 120 soon -> -1 }T
 debug:debilitas-out  2 frames
+testing a felling blow (Pursuer_Hit kind 3) in the doorway: kept at 1, the low flinch there ($1005)
+s" fiona" actor-named body-tri debug:debilitas-tri  3 frames
+[: 70 hp !  room-id d-at v-tri d-at vec@ body-place  0e body-turn ;] his  2 frames
+T{ [: at-door? ;] his -> -1 }T
+3 10 0 game:debilitas send blow  2 frames
+T{ [: anim @ hp @ cond @ ;] his -> $1005 1 0 }T
+T{ [: [: reeling @ 0= ;] his ;] 120 soon -> -1 }T
+debug:debilitas-out  2 frames
 
 testing round to her (P3b): she across his own room ($40: halves joined through other rooms) - out by a door on his half, back in on hers
 $40 0 room-by!  20 frames
