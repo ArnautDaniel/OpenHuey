@@ -71,7 +71,7 @@ create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
     ended? if
         her-free @ if  $1403 -1 play-table  ['] pulled-up her-act ! exit  then
         1 her-drags +!
-        her-drags @ 6 = if  $1404 -1 play-table  ['] dragged-off her-act ! exit  then
+        her-drags @ 6 = if  fiona-occupied state-flag-set  $1404 -1 play-table  ['] dragged-off her-act ! exit  then
         $1401 -1 play-table
     else her-shakes @ -1 <> if
         her-shakes @  her-panic-stage @ 0 max 5 min cells shakes-to-break + @  >= if
@@ -101,7 +101,7 @@ create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
 \ ---- taken (the request kind 9 answered): her gasp, led away by the hand ($1400) or walking
 \ ($1500) - unless she isn't free, or there's no spot by him ----
 : seized ( who type -- taken? )
-    world-held state-flag? her-mode @ 0<> or if  2drop false exit  then
+    world-held state-flag?  her-mode @ dup 3 = over 4 = or swap $A = or  or if  2drop false exit  then   \ (Fiona_Reaction $A: not on a ladder, reacting or down)
     over 0< if  2drop false exit  then  over alive? 0= if  2drop false exit  then
     2dup spot-by dup 0< if  drop 2drop false exit  then
     her-led-tri !  her-led-at mt-at vec-copy                                    ( who type )
@@ -120,15 +120,15 @@ create gb-at 12 allot
 : held ( -- )
     her-cried @ 0= if  -1 her-cried !  $41 0 her-sound  then
     ended? if  caught-for-good  then   \ (the motion's flag $20: at its end)
-    anim@ $1101 = if  pull-back  else  root-move  then ;
+    anim@ $1101 = if  pull-back along-wall  else  root-move  then ;   \ (pull_back: along any wall)
 :noname ( -- )
     0 her-cried !  0 her-ended !  -1 her-fall-turn !  her-yaw f@ her-fall-yaw f!
     anim@ $100D = events 2 and 0= and if  $1503 -1 play-table  ['] held her-act ! exit  then
     anim@ dup $100A = over $B02 = or swap $B01 = or  events 2 and 0= and if
         $B03 -1 play-table  ['] held her-act ! exit
     then
-    her-yaw f@ 17e gb-at her-at vec-ahead
-    her-tri @ dup 0< if  drop -1  else  her-at gb-at $80001 v-walk  then
+    her-yaw f@ 17e gb-at her-at vec-ahead   \ (pulled back where she's free to be and 17 ahead is clear)
+    room-to-throw? if  her-tri @ dup 0< if  drop -1  else  her-at gb-at $80001 v-walk  then  else  -1  then
     0< if  $1100  else  0 her-fall-turn !  $1101  then  -1 play-table
     ['] held her-act ! ; is grabbed
 
