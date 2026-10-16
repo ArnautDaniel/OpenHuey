@@ -282,7 +282,7 @@ create grab-spots  0 , -2 ,   0 , 2 ,   2 , 0 ,   -2 , 0 ,
         3 of  root-move  ended? if  true untouchable !  leave  then  endof
     endcase ;
 
-: gone ( -- )   \ its model let go, its slot free (the bubbles it leaves: not yet)
+: gone ( -- )   \ its model let go, its slot free (the bubbles: `going`'s welling)
     model @ actor-free  -1 model !
     slot @ s" creatures" actor-named send creature-gone  self kill ;
 
