@@ -12,7 +12,7 @@ T{ $41 music-frames  $41 music-to -> 90 255 }T
 T{ 4 music-frames  $86 music-to -> 0 -1 }T
 
 free-play  castle-1f-1 room!  20 frames
-testing an event's shot has the camera (the summoner waits meanwhile), and gives it back
+testing an event's shot has the camera, and gives it back
 T{ cam-event? -> 0 }T
 T{ -1 20000 30000 0 0 s" camera" actor-named send event-shot -> }T
 2 frames

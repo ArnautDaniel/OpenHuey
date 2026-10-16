@@ -69,11 +69,14 @@ T{ cam-off drop 20 = -> 0 }T
 testing the shot given back
 [: 0 0e 0e 0e 0e event-camera ;] in-room  deliver  2 frames
 T{ cam-off drop 20 = -> 0 }T
-testing the shake: the camera moves while nothing else does
-[: 2e camera-shake ;] in-room  deliver  1 frames
+testing the shake: a script's lasts the frame it is set in - the panic stills the camera first each frame (Panic_Stage)
 : cam-still? ( -- flag )  engine:camera cam.x sf@  1 frames  engine:camera cam.x sf@  f= ;
-T{ cam-still? -> 0 }T
-[: 0e camera-shake ;] in-room  deliver
+[: 2e camera-shake ;] in-room  deliver
+T{ cam-still? -> -1 }T
+testing her panic past its first stretch shakes it by 0.2, a frame at a time
+: jolt ( flag -- )  game:panic enter  panic:jolting !  leave-actor ;
+-1 jolt  T{ cam-still? -> 0 }T
+1 frames  T{ cam-still? -> -1 }T   \ (its frame over: still again)
 testing the avoid prompt: its art in, a row shown for 30 frames, then gone
 : prompt ( -- row )  game:avoid enter  avoid:row @  leave-actor ;
 T{ game:avoid enter  avoid:loaded @ 0<>  leave-actor -> -1 }T

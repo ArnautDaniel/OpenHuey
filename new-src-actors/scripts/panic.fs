@@ -19,6 +19,7 @@ state: panic-state
   1 floats field recovering
   cell field beat            \ frames to her next breath
   cell field shake
+  cell field jolting         \ the camera shaken by her panic (Panic_Stage: 0.2 past its first stretch)
   1 floats field scale       \ the fear's scale (1)
   cell field the-danger      \ (told: 0 calm...)
   cell field her-mode  cell field her-sub  cell field her-cond   \ (told by Fiona each frame)
@@ -68,6 +69,7 @@ create rumble-strength  96 , 144 , 192 , 224 , 224 ,
     level f@ 90e f< 0= if  3  else level f@ 75e f< 0= if  2  else level f@ 60e f< 0= if  1  else  0  then then then
     stage ! ;
 : staging ( -- )
+    0 jolting !
     beat @ if  -1 beat +!  then
     stage @ 4 < if
         stage @ 0= if  shake @ 8 - 0 max shake !  then
@@ -88,7 +90,7 @@ create rumble-strength  96 , 144 , 192 , 224 , 224 ,
     then
     -1 length +!
     length @ 0< if  0 stage !  50e level f!  50e lasting f!  0e passing f!  exit  then
-    stage @ 4 <> if  $90  else  $50  then  shake !
+    stage @ 4 <> if  $90  -1 jolting !  else  $50  then  shake !
     beat @ if  exit  then
     6 stage @ - 7 * beat !  breath ;
 
@@ -137,8 +139,10 @@ fvariable u-a  fvariable u-b  fvariable u-c  fvariable u-d
     then
     inputs-clear ;
 
+: updating? ( -- flag )  cam-scene? 0=  panic-held state-flag? 0= and ;
+
 behaviour panicking
-  on spawned ( -- )  1e scale f!  self subscribe frame-end  self subscribe danger  self subscribe fiona-doing ;
+  on spawned ( -- )  1e scale f!  self subscribe tick  self subscribe frame-end  self subscribe danger  self subscribe fiona-doing ;
   on danger ( level -- )  the-danger ! ;
   on fiona-doing ( mode sub cond cmd doing -- )  2drop her-cond !  her-sub !  her-mode ! ;
   \ the story's (the scripts' 0x43, 0xC0, 0x93, 0xC9): the threat (Threat_Raise: as a fright, into
@@ -166,7 +170,10 @@ behaviour panicking
       s>f fear-d f@ f+ fear-d f!
       s>f fdup calm-b f@ f+ calm-b f!  lasting f@ f-  fdup f0< if  fdrop  else  recovering f@ f+ recovering f!  then ;
   on panic-level! ( level -- )  set-level ;
-  on frame-end ( -- )  update  stage @ level f@ f>cell broadcast panic ;
+  \ (SceneGame_PlayStart: not while a cutscene has the camera nor under flag $F; first in the frame,
+  \ so the camera is still unless her panic - or the story, after it - shakes it)
+  on tick ( -- )  updating? if  jolting @ if  0.2e  else  0e  then  cam-shake!  then ;
+  on frame-end ( -- )  updating? if  update  then  stage @ level f@ f>cell broadcast panic ;
 end-behaviour
 
 : panic-spawn ( -- id )  panicking panic-state s" panic" spawn ;

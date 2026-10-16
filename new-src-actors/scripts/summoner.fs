@@ -172,7 +172,7 @@ variable v-near  variable v-plan
         her-room @ s-room @ = s-in @ and if  exit  then
         his-mode 4 = s-own @ and if  1 take  then  exit
     then
-    cam-event? if  exit  then
+    cam-scene? if  exit  then   \ (a cutscene has the camera)
     offstage 0= if  in-play drop  then ;
 
 \ ---- Fiona's noise (Summoner_Noise): its level; it may call him in, or have her hunted ----

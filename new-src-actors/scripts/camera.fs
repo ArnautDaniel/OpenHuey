@@ -1,84 +1,81 @@
-\ camera.fs - the game's camera (docs/subsystems/camera.md): who it follows, and each
-\ character's camera setup; the director in C does the rest (cuts, paths, easing). The story
-\ can take a shot of its own (the event camera) and shake it.
+\ camera.fs - the game's camera (docs/subsystems/camera.md). The director in C (game/camdirector.c)
+\ keeps whom it follows and each character's setup, and does the cuts, the paths and the easing;
+\ the story calls it itself where the original does (story/words.fs: cam-char-setup, cam-on,
+\ cam-shake!, cam-restart; story/room.fs: the room's start). This actor runs it each frame in the
+\ original's order (SceneGame's play frame: CamDirector_Ease first, then whom it follows and their
+\ setup, CamDirector_Track, CamDirector_Update) and takes the story's own shot of the one followed.
 IN: camera
 USING: engine actors messages common ;
 
-256 constant #ids   \ (actor ids: the kernel's HACTOR_MAX)
-
 state: camera-state
-  cell field followed                 \ an actor id (-1: nobody)
-  cell field started                  \ a room has started it (nothing to direct before)
-  #ids 2 * cells field setups         \ each actor's set and path (-1 -1: none)
-  \ the story's shot (src/game/camera.c EventCam_Frame): from `dist` away at `pitch` degrees up,
-  \ `yaw` degrees round from behind the one followed, looking at it raised by `rise`
-  cell field shot                     \ none, wanted, or taken (where it was fixed the first frame)
+  cell field held                     \ the game over: the room's next set, nobody followed, no setups taken
+  \ the story's shot (EventCam_Frame): from `dist` away at `pitch` degrees up, `yaw` degrees round
+  \ from the heading the one followed had as it started, looking at the point it started on (its
+  \ middle, raised by `rise`)
+  cell field shot                     \ none, wanted, or taken
   1 floats field dist   1 floats field pitch   1 floats field yaw   1 floats field rise
-  3 floats field eye    3 floats field look    1 floats field toward
-  1 floats field shake                \ the eye moved by up to this each way, each frame (0: still)
+  3 floats field look   1 floats field heading   1 floats field toward
+  \ the room's depth range (look slot $1C), off during the shot (CamDirector_HoldEffect1C)
+  cell field fog-held   16 field fog
 end-state
 0 constant no-shot   1 constant shot-wanted   2 constant shot-taken
-
-: setup ( who -- addr )  2 * cells setups + ;
-: forget-setups ( -- )  #ids 0 do  -1 i setup !  -1 i setup cell+ !  loop ;
-
-\ (stand-in until the story gives setups: the room's set looking nearest the one followed)
-fvariable bx  fvariable bz  fvariable best-d  variable best
-: nearest-set ( who -- set )
-    body-pos bz f! fdrop bx f!
-    -1 best !  1e30 best-d f!
-    room-cameras 0 ?do
-        i room-camera  bz f@ f- fsq  fswap fdrop  fswap bx f@ f- fsq f+   ( F: ex ey ez fov d2 )
-        fswap fdrop fswap fdrop fswap fdrop fswap fdrop
-        fdup best-d f@ f< if  best-d f!  i best !  else  fdrop  then
-    loop  best @ ;
-: wanted ( who -- set path )
-    dup setup @ 0< if  nearest-set -1 exit  then
-    dup setup @ swap setup cell+ @ ;
 
 : thousandths ( n -- ) ( F: -- r )  s>f 1000e f/ ;
 : v! ( addr -- ) ( F: x y z -- )  dup 2 floats + f!  dup float+ f!  f! ;
 : v@ ( addr -- ) ( F: -- x y z )  dup f@  dup float+ f@  2 floats + f@ ;
 
+\ ---- the shot ----
+: take-shot ( -- )   \ (its first frame: the point and the heading fixed)
+    cam-target  dup body-pos look v!
+    look float+ f@  10e f+  rise f@ f+  look float+ f!     \ (followed 10 up, then raised)
+    body-yaw heading f!  shot-taken shot ! ;
 : across ( -- ) ( F: -- d )  dist f@  pitch f@ deg>rad fcos f* ;   \ how far off, along the floor
 : above ( -- ) ( F: -- d )  dist f@  pitch f@ deg>rad fsin f* ;    \ how far up
-: take-shot ( who -- )   \ where it stands now fixes the shot: it doesn't follow after
-    dup body-pos look v!
-    look float+ f@  10e f+  rise f@ f+  look float+ f!     \ looking at its middle, raised
-    body-yaw  yaw f@ deg>rad f+  toward f!                 \ the shot's heading
-    look f@             toward f@ fsin across f* f-        \ the eye: behind, along that heading
+: shoot ( -- )   \ (each frame: dist, pitch and yaw as they are now; the eye behind along the heading)
+    heading f@  yaw f@ deg>rad f+  toward f!
+    look f@             toward f@ fsin across f* f-
     look float+ f@      above f+
     look 2 floats + f@  toward f@ fcos across f* f-
-    eye v! ;
-: shoot ( -- )  eye v@ look v@ cam-place ;
-: shaken ( -- )   \ the eye nudged at random, up to `shake` each way
-    shake f@ f0= if  exit  then
-    3 0 do  rnd 2e f* 1e f-  shake f@ f*  loop  cam-nudge ;
+    look v@ cam-place ;
+: hold-fog ( -- )   \ (kept and taken off, if the room has one)
+    fog-held @ if  exit  then
+    $1C fog look@ 0> if  -1 fog-held !  $1C 0 0 look-set  then ;
+: give-fog ( -- )  fog-held @ 0= if  exit  then  0 fog-held !  $1C fog 16 look-set ;
+: shot-over ( -- )   \ (the setup taken anew)
+    false cam-event!  shot @ no-shot <> if  no-shot shot !  cam-retake  then ;
+
+: fiona ( -- id )  s" fiona" actor-named ;
+: fresh-start ( -- )   \ (the characters made anew: their setups none - hers as the save had it)
+    fiona cam-setup-of  cam-forget-setups  fiona -rot cam-char-setup
+    cam-new-room  0e cam-shake!  no-shot shot !  0 fog-held !  fiona cam-on ;
 
 behaviour filming
-  on spawned ( -- )  -1 followed !  forget-setups
-      self subscribe tick  self subscribe frame-end  self subscribe arrived  self subscribe entered-room ;
-  on follow ( who -- )  dup followed !  cam-follow ;
-  on camera-setup ( who set path -- )  rot setup tuck cell+ !  ! ;
+  on spawned ( -- )  cam-forget-setups  self subscribe tick  self subscribe frame-end  self subscribe arrived ;
+  \ a fresh start (a new game, a load - SceneGame_RoomIn: CamDirector_NewRoom, the camera on
+  \ Fiona); from room to room the director goes on - its shake, its shot, whom it follows - and
+  \ only the characters' setups go. The room's script starts it (story/room.fs).
+  on arrived ( room exit -- )
+      nip 0 held !  cam-stop
+      0< if  fresh-start  else  cam-forget-setups  then ;
   on camera-restart ( -- )  cam-restart ;
+  \ the story's shot (0x82: EventCam_Set, CamDirector_HoldEffect1C): on - the distance and angles
+  \ (thousandths), the point fixed as it starts; again while on - the new distance and angles only
   on event-shot ( on dist pitch yaw rise -- )
       thousandths rise f!  thousandths yaw f!  thousandths pitch f!  thousandths dist f!
-      if  shot-wanted shot !  true cam-event!  exit  then   \ (the director idle meanwhile: no stalker summoned)
-      shot @ no-shot <> if  no-shot shot !  false cam-event!  cam-retake  then ;
-  on shake-camera ( amount -- )  thousandths shake f! ;
-  on arrived ( room exit -- )  2drop  forget-setups  cam-new-room  0 started !  no-shot shot !  false cam-event!  0e shake f! ;
-  on entered-room ( room exit -- )  2drop  cam-room-start  -1 started ! ;
-  on tick ( -- )  started @ if  cam-ease  then ;
-  on frame-end ( -- )   \ after everyone has moved: the director takes the setup and places the camera
-      started @ 0= if  exit  then
-      followed @ dup body? 0= if  drop exit  then
-      shot @ if
-          shot @ shot-wanted = if  dup take-shot  shot-taken shot !  then
-          drop shoot  shaken exit
-      then
-      dup body-pos cam-target!
-      wanted cam-setup  cam-track  cam-update  shaken
-      cam-changed? if  broadcast camera-cut  then ;
+      if  shot @ no-shot = if  shot-wanted shot !  then  true cam-event!  hold-fog exit  then
+      give-fog  shot-over ;
+  \ the game over (GameOver: CamDirector_NextSetup): the room's next set, from there on
+  on camera-hold ( -- )  -1 held !  cam-next-set ;
+  on tick ( -- )  cam-started? if  cam-ease  then ;
+  on frame-end ( -- )   \ (after everyone has moved)
+      cam-started? 0= if  exit  then
+      held @ 0= if  cam-take-followed  then
+      cam-track
+      cam-target 0< if  shot-over  then   \ (following nobody: no shot)
+      cam-update
+      shot @ shot-wanted = if  take-shot  then
+      shot @ if  shoot  then
+      cam-cut? if  broadcast camera-cut  then ;
 end-behaviour
 
 : camera-spawn ( -- id )  filming camera-state s" camera" spawn ;

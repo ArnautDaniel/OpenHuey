@@ -4268,8 +4268,8 @@ static void butterflies_write(int h, System *s) {   /* Butterflies_Draw (and the
         at = vec3(cx + s->c.x + ox, s->circ[1] + s->c.y + bob, cz + s->c.z + oz);
         wing(&r[n++], s->wing[i & 7], -1.0f, cosf(flap) * 0.7f, sinf(flap), s->tilt, wrap(turn + s->head), at);
         wing(&r[n++], s->wing[i & 7], 1.0f, cosf(flap) * 0.7f, sinf(flap), s->tilt, wrap(turn + s->head), at);
-        if (flap < -1.0f && rnd() < 0.1f && s->count >= 2 && s->last != s->tilt && !gCamDir.event) {   /* a mote shed
-                                                                                          * (not while an event's shot has the camera) */
+        if (flap < -1.0f && rnd() < 0.1f && s->count >= 2 && s->last != s->tilt && !gCamDir.scene) {   /* a mote shed
+                                                                                          * (not while a cutscene has the camera) */
             uint32_t rgba = (uint32_t)(irnd(32) + 0x80) << 24 | (uint32_t)irnd(32) << 16 | (uint32_t)(irnd(32) + 0x80) << 8 |
                             (uint32_t)(irnd(16) + 0x70);
 

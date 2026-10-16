@@ -2,9 +2,9 @@
 \ { hours, minutes, seconds, frames } (progress +$FC4), zeroed as the run starts (clock_start)
 \ and shown at the foot of the screen as MM:SS - "59:59" once an hour has gone - by each room's
 \ frame hook (clock_draw). At the end the time is kept in event variables 0..2 (clock_save) and
-\ shown from them while event flag 1 is set (clock_draw_saved). (The original's clock_start also
-\ hands the player Hewie - progress +$1FBEC1 - and gives the camera director its mode 14: with
-\ the Hewie-played sections, not here yet.)
+\ shown from them while event flag 1 is set (clock_draw_saved). The run's camera follows its paths
+\ quicker (the director's rate 14). (The original's clock_start also hands the player Hewie -
+\ progress +$1FBEC1: with the Hewie-played sections, not here yet.)
 IN: story.clock
 USING: engine game-state story.words ps2-screen ;   \ (ps2-screen last: its sx / sy, not the story's)
 
@@ -29,7 +29,7 @@ create clock-text 5 allot
     {: a n :}  frame!  clock-layer ui-clear  clock-layer a n  431 sx 395 sy  clock-colour pen ui-text ;
 : clock-off ( -- )  clock-layer ui-clear ;   \ (each frame before the rooms' hooks draw it again)
 
-: clock-start ( -- )  0 progress pr.play-frames l! ;            \ clock_start
+: clock-start ( -- )  0 progress pr.play-frames l!  14e cam-rate! ;   \ clock_start (the camera quicker along its paths)
 : clock-draw ( -- )  time-played time$ show ;                  \ clock_draw
 : clock-save ( -- )                                            \ clock_save
     time-played  0 over past-an-hour? 1 and var-set
@@ -38,4 +38,4 @@ create clock-text 5 allot
     1 ebit? 0= if  clock-draw exit  then
     0 var @ if  s" 59:59" show exit  then
     1 var @ 2 var @ mm:ss show ;
-: clock-stop ( -- ) ;   \ clock_stop: the Hewie-played run over (hga: nothing yet to end)
+: clock-stop ( -- )  -1e cam-rate! ;   \ clock_stop: the camera at its usual pace (the Hewie-played run over: nothing else yet)

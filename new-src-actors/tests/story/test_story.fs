@@ -6,7 +6,7 @@ USING: tester engine game-state actors messages room-names game fiona.state stor
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
-: setup-of ( id -- set path )  game:camera enter  camera:setup dup @ swap cell+ @  leave-actor ;
+: setup-of ( id -- set path )  cam-setup-of ;
 : visited? ( room -- flag )  progress pr.visited bit? ;
 
 3 frames
@@ -14,7 +14,7 @@ testing a new game: the cage room's actor, its entering script run: Fiona's came
 T{ room-actor 0< -> 0 }T
 T{ [: this-room @ came-by @ ;] in-room -> front-garden-3 -1 }T
 T{ fiona setup-of -> 2 1 }T
-T{ game:camera enter camera:followed @ leave-actor -> fiona }T
+T{ cam-followed -> fiona }T
 T{ front-garden-3 visited? -> -1 }T
 
 testing to another room: the old room's actor goes, the new one's comes

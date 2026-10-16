@@ -26,8 +26,6 @@ message arrived ( room exit -- )             \ the new room is in; arrivals come
 message entered-room ( room exit -- )        \ the room is in play
 
 \ ---- camera (docs/subsystems/camera.md) ----
-message camera-setup ( who set path -- )     \ who's camera set and path (path -1: none)
-message follow ( who -- )                    \ the camera follows who (-1: nobody)
 message camera-cut ( -- )                    \ it cut to a new set
 message hewie-yelp ( time anim -- )          \ (Hewie) hidden away, the animation he plays while `time` counts (-1: as it is) (0x77)
 message hewie-play ( anim -- )               \ (Hewie) his motion plays `anim` (0xD7)
@@ -35,7 +33,6 @@ message hewie-hold ( on -- )                 \ (Hewie) a 5-frame wait, and his n
 message hewie-costume ( kind -- )           \ (Hewie) his model swapped for kind 0..2 (the story's 0xB7)
 message show-avoid ( row -- )                 \ (the avoid prompt) its row shown for a second (the story's 0xB4)
 message event-shot ( on dist pitch yaw rise -- )   \ the story's own shot of the one followed, or back (thousandths; 0x82)
-message shake-camera ( amount -- )           \ the eye shaken by up to this each way (thousandths; 0 still; 0xD3)
 
 \ ---- creatures (docs/subsystems/creatures.md) ----
 message creature-place ( room level tri kind reach which yaw height -- )   \ (creatures) the story's 0x8A: one placed (height f>cell)
@@ -173,6 +170,7 @@ message to-exit ( exit -- )                  \ (a character) put yourself on the
 message place ( x y z yaw -- )               \ (a character) put yourself there, facing so (floats f>cell)
 message go-to ( x y z -- )                   \ (a character) walk there over the nav mesh, then stand (floats f>cell; debugging, the story's moves)
 message camera-restart ( -- )                \ (the camera) the director starts over
+message camera-hold ( -- )                   \ (the game over -> the camera) the room's next set, nobody followed, from there on
 message room-enter ( room exit -- )          \ (a room actor, from the story) the room is in: phase 0, the characters, phase 3
 message room-leave ( -- )                    \ its exit is taken: phase 4
 message room-left ( -- )                     \ the next room is in: phase 5, then it reports

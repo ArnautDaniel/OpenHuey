@@ -267,12 +267,13 @@ create slot-chars  -1 , -1 , -1 , -1 , -1 , -1 ,
 : char-cam! ( cs set path -- )   \ (a character not in this room gets none; Fiona always)
     rot dup 0< if  drop 2drop exit  then
     dup 0= over char-here or 0= if  nip nip -1 -1 rot  then
-    char-actor dup 0< if  drop 2drop exit  then  -rot camera-id send camera-setup ;
+    char-actor dup 0< if  drop 2drop exit  then  -rot cam-char-setup ;
 : char-camera ( id set path -- )  rot char-slot -rot char-cam! ;
+\ (Progress_CameraOn: a slot without its character - the director falls back on Fiona)
 : camera-follow ( id -- )
-    dup $FF = if  drop $FF camera-char !  -1 camera-id send follow exit  then
+    dup $FF = if  drop -1 cam-on exit  then
     char-slot dup 0< if  drop exit  then
-    dup camera-char !  char-actor camera-id send follow ;
+    char-actor dup 0< if  drop 256  then  cam-on ;
 \ the characters in this room inside the area of exit `exit`
 : area-camera ( exit set path -- )
     rot exit-area -rot
@@ -286,7 +287,7 @@ create slot-chars  -1 , -1 , -1 , -1 , -1 , -1 ,
             i 4 pick char-cross over = if  i 3 pick 3 pick char-cam!  then
         then
     loop  2drop 2drop ;
-: camera-restart ( -- )  camera-id send camera-restart ;
+: camera-restart ( -- )  cam-restart ;   \ 0x4A (CamDirector_Restart)
 
 \ ---- doors ----
 : door-bits ( a set b -- )  drop 2drop ;   \ (which parts of the room's door models are drawn: not drawn yet)
@@ -682,7 +683,7 @@ variable movie-held   \ (0x52: its last frame stays on at its end)
 \ ---- the cutscene (the C director: its cast is the characters' models, cast-as) ----
 : cutscene-start ( name -- )   \ 0x61: the room's scene named by string `name`; the characters told
     this-room @ room-string cutscene-load drop  -1 broadcast scene ;
-: cutscene-over ( -- )  camera-restart  cutscene-end  movie-opaque state-flag-clear  0 broadcast scene ;
+: cutscene-over ( -- )  false cam-scene!  cutscene-end  movie-opaque state-flag-clear  0 broadcast scene ;
 \ 0x62: 0 the movie's state into the result; 1 stop the movie; 2 restart it; 3 the director a step;
 \ 4 that, and its shot played; 5 / 6 / 7 the cues (the next one; off; the movie's frame - its
 \ signal 11 toggles movie-opaque); 8 the scene over (the camera back); 9 / 10 pause / resume the
@@ -1183,7 +1184,7 @@ variable cl-id  variable cl-slot  variable cl-exit
 : fiona-move ( -- n )  fiona-mode @ ;            \ (+0xF8)
 : fiona-move-sub ( -- n )  fiona-sub @ ;         \ (+0xFC)
 : fiona-struck? ( -- flag )  fiona-hit-by @ 0< 0= ;   \ (+0x100: someone behind her reaction)
-: camera-on ( -- slot )  camera-char @ ;         \ (progress +0x1130: whom the camera follows)
+: camera-on ( -- slot )  cam-followed dup 0< if  drop $FF  else  cs>who dup 0< if  drop $FF  then  then ;   \ (progress +0x1130: whom the camera follows)
 : hewie-mistreated ( -- n )  progress pr.hewie-mistreated l@ ;   \ (progress +0xFB6: up while he is down, by her hand)
 : grab-hewie-behind? ( -- flag )   \ (Pursuer_GrabHewieBehind, asked of the stalker: his answer comes a
     \ frame on - true once, as it says yes)
@@ -1272,13 +1273,9 @@ variable shook-seen
         2 of  stalker-here? swap st-came @ = and  endof
         >r drop false r>
     endcase ;
-\ out of sight (cond 0x45): not in the game, elsewhere, or off the camera (on the window)
-fvariable oc-x  fvariable oc-y
-: on-camera? ( F: x y z -- flag )
-    to-screen 0= if  fdrop fdrop false exit  then
-    oc-y f!  oc-x f!  screen-size                                         ( w h )
-    oc-y f@ f0< 0=  swap s>f oc-y f@ f> and                               ( w flag )
-    oc-x f@ f0< 0= and  swap s>f oc-x f@ f> and ;
+\ out of sight (cond 0x45): not in the game, elsewhere, or off the camera - its 4:3 picture,
+\ whatever the window's shape (Camera_OutOfView, the camera's +0xD4)
+: on-camera? ( F: x y z -- flag )  out-of-view? 0= ;
 : point-on-camera? ( x y z -- flag )  >r >r s>f r> s>f r> s>f on-camera? ;
 : char-unseen? ( id -- flag )
     char-slot dup char-here 0= if  drop true exit  then  char-at vec@ on-camera? 0= ;
@@ -1589,7 +1586,7 @@ fvariable sx  fvariable sy  fvariable sz
 : event-camera ( on F: dist pitch yaw rise -- )   \ 0x82: the story's own shot of the one followed, or back
     >thousandths >thousandths >thousandths >thousandths  {: on rise yaw pitch dist :}
     on dist pitch yaw rise  camera-id send event-shot ;
-: camera-shake ( F: v -- )  >thousandths camera-id send shake-camera ;   \ 0xD3: shaken by up to v (0 still)
+: camera-shake ( F: v -- )  cam-shake! ;   \ 0xD3: shaken by up to v (0 still) - this frame: the panic's frame stills it (Panic_Stage)
 \ the stalker of that kind here at his slam's ($2301) impact key ($20) this frame: the camera
 \ shaken by 0.5 (slam_shake: Lorenzo2_SlamImpact - kind $A, or $27 his other form)
 : slam-landed? ( kind -- flag )

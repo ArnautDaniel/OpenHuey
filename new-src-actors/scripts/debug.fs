@@ -12,8 +12,25 @@ USING: engine actors messages keys room-names flag-names story.words ;
 
 : fiona-id ( -- id )  s" fiona" actor-named ;
 : rooms-id ( -- id )  s" rooms" actor-named ;
-: room! ( room -- )  -1 rooms-id send go-to-room ;
+\ a jump (`room!`) - nothing the original can do - leaves her without a camera setup where the
+\ room's scripts give none by an exit: she gets the room's set nearest her (room-label, below)
+variable jumped
+: room! ( room -- )  fiona-id -1 -1 cam-char-setup  -1 rooms-id send go-to-room  -1 jumped ! ;   \ (hers from the room alone)
 : room-by! ( room exit -- )  rooms-id send go-to-room ;
+fvariable bx  fvariable bz  fvariable best-d  variable best
+: nearest-set ( -- set )   \ (the one looking nearest her, along the floor)
+    fiona-id body-pos bz f! fdrop bx f!
+    -1 best !  1e30 best-d f!
+    room-cameras 0 ?do
+        i room-camera                                      ( F: ex ey ez fov lx ly lz )
+        bz f@ f- fdup f*  fswap fdrop  fswap bx f@ f- fdup f* f+   ( F: ex ey ez fov d2 )
+        fswap fdrop  fswap fdrop  fswap fdrop  fswap fdrop
+        fdup best-d f@ f< if  best-d f!  i best !  else  fdrop  then
+    loop  best @ ;
+: jump-camera ( -- )
+    jumped @ 0= if  exit  then  0 jumped !
+    fiona-id cam-setup-of drop 0< 0= if  exit  then
+    fiona-id nearest-set -1 cam-char-setup  fiona-id cam-on ;
 : tp-facing ( F: x y z deg -- )
     deg>rad  xyzw>cells  fiona-id send place  deliver ;
 : tp ( F: x y z -- )  fiona-id body-yaw  180e f* pi f/  tp-facing ;   \ (her heading kept)
@@ -97,7 +114,8 @@ variable m-stage  variable m-level  variable m-fear  variable m-breathless  vari
 
 state: label-state  cell field label-unused  end-state
 behaviour labelling
-  on spawned ( -- )  self subscribe frame-end  self subscribe panic ;
+  on spawned ( -- )  self subscribe frame-end  self subscribe panic  self subscribe entered-room ;
+  on entered-room ( room exit -- )  2drop jump-camera ;
   on panic ( stage level -- )  cell>f f>s m-level !  m-stage ! ;   \ (its level a float, as a cell)
   on her-meters ( fear breathless run -- )  m-run !  m-breathless !  m-fear ! ;
   on frame-end ( -- )

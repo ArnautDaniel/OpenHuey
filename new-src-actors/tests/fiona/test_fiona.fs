@@ -20,7 +20,7 @@ game:story send story-stop  deliver  progress pr.state 8 0 fill   \ (no room scr
 testing a new game: in the cage room, standing, followed by the camera
 T{ room-id  fiona body-room -> front-garden-3 front-garden-3 }T
 T{ anim -> 0 }T
-T{ game:camera enter  camera:followed @  leave-actor -> fiona }T
+T{ cam-followed -> fiona }T
 
 testing walking, running, stopping
 moved
