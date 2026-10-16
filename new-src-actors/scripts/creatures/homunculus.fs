@@ -25,7 +25,7 @@ state: homunculus-state
   cell field grab-spot            \ which of the four spots round her next
   1 floats field her-dist  1 floats field hewie-dist
   cell field her-mode  cell field her-sub  cell field her-doing  cell field her-unseen
-  cell field blow-n  cell field blow-damage  cell field blow-pending
+  cell field blow-n  cell field blow-damage  cell field blow-pending  cell field striker   \ (+0x14F0: who struck - her, Hewie)
   cell field fade
   cell field left-down  cell field right-down   \ its feet down last frame (+0x72 / +0x73)
   cell field stalker  cell field stalker-age   \ the stalker as he tells (stalker-doing), frames since
@@ -226,8 +226,9 @@ fvariable try-turn
 : struck ( -- )   \ 2: a blow - it reels, then is up; no strength left, it leaves
     step @ 1 <> if  root-move  then
     step @ case
-        0 of  blow-damage @ negate strength +!
-              her-at 90 faces? if  $1001  else  $1000  then  play-now  3 sound  1 step !  endof
+        0 of  blow-damage @ negate strength +!   \ (reeling back facing whoever struck, else forward)
+              striker @ dup body? if  body-at  else  drop her-at  then  90 faces? if  $1001  else  $1000  then
+              play-now  3 sound  1 step !  endof
         1 of  true untouchable !
               ended? 0= if  root-move exit  then
               strength @ 0> 0= if  leave exit  then
@@ -256,9 +257,12 @@ create grab-spots  0 , -2 ,   0 , 2 ,   2 , 0 ,   -2 , 0 ,
     spot-of  her-at 4 + sf@ fswap  target 8 + sf!  target 4 + sf!  target sf!
     grab-spot @ 1+ 4 mod grab-spot ! ;
 : her-held? ( -- flag )  her-mode @ 4 =  her-sub @ $12 = and ;
+: holdable? ( -- flag )   \ (Fiona_CanInteract $C: not on a ladder or down; reacting - only to them)
+    her-mode @ 4 = if  her-sub @ $12 =  else  her-mode @ dup 3 = swap $A = or 0=  then ;
 : grabbing ( -- )
     step @ case
         0 of
+            holdable? 0= if  exit  then   \ (it waits till she can be held)
             my-path path-left? 0= if
                 next-grab-spot  target v-tri dup target-tri !
                 dup 0< if  drop exit  then
@@ -429,7 +433,7 @@ behaviour homunculus
           y cell>f  my-at 4 + sf@  reach cell>f f-  f> 0= if  exit  then
           y cell>f  my-at 4 + sf@  self body-dims fswap fdrop f+  reach cell>f f+  f< 0= if  exit  then
       then
-      n blow-n !  damage blow-damage !  true blow-pending !  sender send blow-taken ;
+      n blow-n !  damage blow-damage !  true blow-pending !  sender striker !  sender send blow-taken ;
   on leaving-room ( room exit -- )   \ she leaves: in her room and awake, it follows
       over my-room @ = awake @ and grabbed @ 0= and if  trip swap follow-out drop exit  then  2drop ;
   on arrived ( room exit -- )  2drop  in-play? if  on-the-floor  else  body-off  then ;
