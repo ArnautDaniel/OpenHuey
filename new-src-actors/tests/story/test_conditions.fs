@@ -141,6 +141,7 @@ T{ [: his-action @ ;] his -> $47 }T
 T{ [: his-stay @ ;] his -> -1 }T
 [: 0 hewie-wait-5 ;] in-room  deliver
 testing through an exit's door: she sets off to its far side (move 5); a knock heard
+0 2 exit-spot drop debug:tp  5 frames   \ (on the floor 12 inside it: the tests above left her off it)
 [: ctx-who @ >r  0 ctx-who !  0 self-through-exit  r> ctx-who ! ;] in-room  deliver  2 frames   \ (as her script)
 T{ [: fiona.state:her-doing @ ;] hers -> $12 }T
 T{ [: 0 1 self-door-knock ;] in-room -> }T
