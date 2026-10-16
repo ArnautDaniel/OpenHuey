@@ -108,7 +108,7 @@ behaviour hewie-own
   \ her commands (H2)
   on command ( code tri yaw x z -- )   \ (Hewie_StateBlock's 13)
       along? 0= if  2drop 2drop drop exit  then
-      >r >r cell>f  r> cell>f  r> cell>f                       ( code tri ) ( F: yaw x z )
+      cells>xyz                                                ( code tri ) ( F: yaw x z )
       over $23 = if  showed  else  drop fdrop fdrop fdrop  then
       fiona-command drop  0 his-broke !  tell-doing ;
   on reaction ( n -- )  along? if  react  else  drop  then ;
