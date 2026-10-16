@@ -1089,7 +1089,7 @@ fvariable sh-floor
 : summoner-id ( -- id )  s" summoner" actor-named ;
 : partner-load ( id -- )   \ 0x11: kind `id` into slot 2, loaded and started (CharLoad_Partner); the summoner afresh
     slot2 @ dup 0< 0= if  send stalker-unload  else  drop  then
-    dup slot2-kind !  stalker-actor dup slot2 !  dup 0< if  drop exit  then  send stalker-load
+    dup slot2-kind !  stalker-actor dup slot2 !  dup 0< if  drop exit  then  2 swap send stalker-load
     summoner-id send summoner-reset ;
 \ the summoner (docs/subsystems/summoner.md)
 : summon-take ( kind -- )  summoner-id send summoner-take ;          \ 0x84: take the stalker out (Summoner_Take)
@@ -1116,7 +1116,7 @@ variable cl-id  variable cl-slot  variable cl-exit
     cl-exit !  cl-slot !  cl-id !        \ travel); else a figure (cast.fs: CharLoad_EventChar) in slots 3..5,
     cl-slot @ 6 u< 0= if  exit  then     \ at that exit of this room ($FF: as it is)
     cl-id @ stalker-actor dup 0< 0= if
-        dup cl-slot @ slot-actor !  cl-id @ cl-slot @ slot-id !  send stalker-load exit
+        dup cl-slot @ slot-actor !  cl-id @ cl-slot @ slot-id !  cl-slot @ swap send stalker-load exit
     then  drop
     cl-slot @ 3 6 within 0= if  s" char-load (a figure not in slots 3..5)" stub-step exit  then
     cl-slot @ slot-clear

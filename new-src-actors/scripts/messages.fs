@@ -218,7 +218,7 @@ message stalker-restore ( hp mode -- )      \ (a stalker) as a save had him
 message stalker-out ( -- )                   \ (a stalker) out of the game
 message stalker-hunt ( -- )                  \ (a stalker) heads for Fiona's room (mode 1: the summoner, the console)
 message costume ( n -- )                     \ (Fiona) her model for costume n (0 her clothes, 1 the slip)
-message stalker-load ( -- )                  \ (a stalker) into the story's character slot 2 (the cutscenes' cast)
+message stalker-load ( slot -- )            \ (a stalker) into the story's character slot (2: the one in play; 3..5 a scene's figure) - the cutscenes' cast
 message stalker-unload ( -- )                \ (a stalker) out of slot 2 (and out of the game)
 message stalker-doing ( room mode sub cond hp hp-max kind alert came -- )   \ broadcast each frame by a stalker in the
                                              \ game: his room, how he moves (0 his own, 3 off screen, 4 struck, 8 taking her),

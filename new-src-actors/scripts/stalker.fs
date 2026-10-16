@@ -25,9 +25,11 @@ USING: engine game-state actors messages common facts flag-names room-names path
 \ out of it; while loaded the cutscenes find its model by its kind (their cast)
 : file! ( addr len -- )  31 min dup my-file c!  my-file 1+ swap move ;
 : file ( -- addr len )  my-file 1+ my-file c@ ;
-: load ( -- )  -1 loaded !  my-kind @ my-model @ cast-as  7 file sound-bank drop ;   \ (slot 2's sounds: bank 7)
+: load ( slot -- )   \ (bank 7 holds slot 2's sounds - the one in play; slots 3..5 have no bank:
+    \ Daniella as a scene's figure mid-Debilitas leaves his)
+    dup my-slot !  -1 loaded !  my-kind @ my-model @ cast-as  2 = if  7 file sound-bank drop  then ;
 : come-in ( room tri -- )
-    loaded @ 0= if  load  then  forget-leads  0 beaten !
+    loaded @ 0= if  2 load  then  forget-leads  0 beaten !
     over room-id = if  dup tri-center body-place
     else  >r -1 0e 0e 0e body-place r> drop  then                   \ (out of sight: in that room, nowhere yet)
     -1 in-game !  0 growl-t !  0 my-move-mode !  -1 anim !
@@ -123,7 +125,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
 : unload ( -- )  0 loaded !  in-game @ if  go-out  then  my-kind @ -1 cast-as ;
 create place-at 12 allot  fvariable place-yaw
 behaviour stalking
-  on stalker-load ( -- )  load ;
+  on stalker-load ( slot -- )  load ;
   on stalker-unload ( -- )  unload ;
   on stalker-in ( room tri -- )  come-in ;
   on place ( x y z yaw -- )   \ (put there, facing so: where a cutscene left him)
@@ -132,7 +134,7 @@ behaviour stalking
       room-id  place-at my-floor @ v-tri-in  place-at vec@ body-place  place-yaw f@ body-turn ;
   on stalker-out ( -- )  go-out ;
   on write-save ( -- )   \ (saves.fs) loaded: his kind, in the game or not, his place, health and mode
-      loaded @ 0= if  exit  then
+      loaded @ 0=  my-slot @ 2 <> or if  exit  then   \ (a scene's figure isn't the stalker in play)
       my-kind @ .  in-game @ 0<> .  self body? if  self body-room .  self body-tri .  else  -1 . -1 .  then
       hp @ .  my-mode @ .  ." stalker-was" cr ;
   on stalker-restore ( hp mode -- )  mode!  hp ! ;

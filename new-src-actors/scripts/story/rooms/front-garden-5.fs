@@ -35,18 +35,18 @@ fvariable sw-dx  fvariable sw-dz
 \ something dropped (effect LoopingSprite_vtable, its slot in event var 1) from (-276.5, 3,
 \ 160), by byte 3: 0 started (event var 0 the frame count); 1 a frame (2 while falling): it
 \ drifts 0.5 a frame in x and falls 0.05 x n(n+1)/2, gone below -10
+: front-garden-5.fall ( -- going? )   \ (cmd01's frame of falling: false once gone)
+    0 var @ 1+ {: n :}
+    3e  0.05e n n 1+ * 2/ s>f f*  f-  fdup -10e f> 0= if
+        fdrop  1 var @ dup alive? if  kill  else  drop  then  false exit
+    then
+    -276.5e 0.5e n s>f f* f+ f>cell  f>cell  160e f>cell  1 var @ dup alive? if  send effect-place  else  drop 2drop drop  then
+    0 n var-set  true ;
 : front-garden-5.cmd01 ( b0 -- )   \ (something dropped from (-276.5, 3, 160): b0 0 made - kept in variable 1, the frames in
     \ variable 0; 1 falls a frame at a time - on 0.5 in x, down 0.05 more each frame - till below
     \ -10, where it is gone)
     0= if  0 0 var-set  1  -276.5e 3e 160e effects:loop-sprite  var-set  exit  then
-    begin
-        0 var @ 1+ {: n :}
-        3e  0.05e n n 1+ * 2/ s>f f*  f-  fdup -10e f> 0= if
-            fdrop  1 var @ dup alive? if  kill  else  drop  then  exit
-        then
-        -276.5e 0.5e n s>f f* f+ f>cell  f>cell  160e f>cell  1 var @ dup alive? if  send effect-place  else  drop 2drop drop  then
-        0 n var-set  yield
-    again ;
+    begin  front-garden-5.fall while  yield  repeat ;
 \ room 0x2D: two hanging things (the room's objects 4 and 5) that Fiona pushes as she walks by:
 \ past a step total of 5 they swing for 20 frames and the first toggles event flag 3 with a
 \ sound (hangers_swing).
