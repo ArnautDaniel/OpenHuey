@@ -35,6 +35,8 @@ create heel-at 12 allot
     r> him-model act.visible l!
     along? if  1 model cast-as  then ;
 
+: place-on ( room tri -- )   \ (Hewie_PlaceInRoom: triangle -1 is that room, on none)
+    dup 0< if  0e 0e 0e  else  dup tri-center  then  body-place ;
 behaviour hewie-own
   on spawned ( -- )
       6 0 do  16 i cells his-skill + !  loop   \ (Hewie_LoadState: his skills at fetching, middling)
@@ -96,7 +98,7 @@ behaviour hewie-own
       along? 0= if  2drop drop exit  then
       >r >r cell>f r> cell>f r> cell>f  his-scent vec!  1 his-smells ! ;
   on hewie-place ( room tri side -- )   \ (his +0x64, Hewie_PlaceInRoom)
-      his-way !  over room-id = if  dup tri-center body-place  to-default  else  dup tri-center body-place  then ;
+      his-way !  over room-id = >r  place-on  r> if  to-default  then ;
   on hewie-side! ( side -- )  dup 3 u< 0= if  drop -1  then  his-way ! ;
   on hewie-stay ( -- )  300 his-pet-time ! ;
   on noclip ( on -- )  0<> 1 and his-2b ! ;
