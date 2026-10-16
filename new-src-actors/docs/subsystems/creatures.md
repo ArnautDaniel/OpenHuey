@@ -40,7 +40,7 @@ and trail, the vanishing burst).
 | `creature-place` | `( room level tri kind reach which yaw -- )` | in, the story (0x8A) | A creature of `kind` (bit 7: a homunculus) in `room` on `tri`, on `level` (0 / 1: which floor of a split room; 2 both), coming when Fiona is within `reach` x 10 (0: at once); `which` -1 a free slot 0..5, else slot 6. Out of the room being played: no triangle. |
 | `creatures-clear` | `( which -- )` | in, the story (0xCB) | 0 all, 1 slots 0..6, 2 slots 7..9: gone. |
 | `creature-count` | `( n other -- )` | in, the story (0x99) | How many to scatter about the next rooms (other bit 7: homunculi). |
-| `creature-state` | `( slot room mode tri -- )` | out, broadcast by each creature each frame | Where it is and its move mode (2: hanging about her) - for the story's 0x53 and 0x58. |
+| `creature-doing` | `( slot room mode up -- )` | out, broadcast by each creature each frame | Where it is and its move mode (2: hanging about her) - for the story's 0x53 and 0x58. |
 | `creature-gone` | `( slot -- )` | out, to `creatures` | It has vanished or faded: its slot is free. |
 | `exit-taken` / `entered-room` / `arrived` | | in (broadcasts) | Fiona leaving by an exit (they follow); a room coming in (back on the floor, in play or not). |
 

@@ -67,8 +67,8 @@ From `Noise_Make`, `Character_Hearing` (`src/game/actor.c`), `Progress_PursuerRe
   message, and the listener keeps what it needs.
 - Every listener gets `heard` or `heard-nothing` each frame. Stalkers act on "nothing heard"
   too: they forget what drew them.
-- The original also kept last frame's noises for the summoner (`+0x10D4`). When the summoner is
-  built, acoustics will send it a `noises-last-frame` message, or the summoner will listen.
+- The original also kept last frame's noises for the summoner (`+0x10D4`); here acoustics
+  broadcasts Fiona's loudest at the frame's end (`noise-made`).
 
 ## Status
 

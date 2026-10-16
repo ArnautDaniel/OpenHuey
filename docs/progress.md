@@ -1,6 +1,8 @@
 # Progress / where we left off
 
-Last updated 2026-10-02.
+Last updated 2026-10-02. **A dated log, not the current state:** since then `hg` plays the whole
+game, with sound, music and movies. For what works now, see the top-level `README.md`; for
+open problems, `docs/known_issues.md`.
 
 ## Native PC build (the "slice to the menu")
 

@@ -26,7 +26,7 @@ calming, recovery); the hold; the panic's length; the breath timer; the shake.
 ## Rules
 
 From `Panic_Update`, `Panic_Stage`, `Panic_FearInputs`, `Panic_SetLevel`, `Panic_Fright`,
-`Panic_Breath`. Reference: new-src's `scripts/fiona/panic.fs` (faithful).
+`Panic_Breath`. Reference: new-src's `scripts/fiona/panic.fs` (faithful; archived at the tag `new-src-final`).
 1. Calming: calm danger 0.1 a frame; otherwise 0.033 while she stands still on her own.
    Recovery: 0.167 a frame when not held by a fright.
 2. The level is a lasting part (raised by fear, lowered by calming) plus a passing part
