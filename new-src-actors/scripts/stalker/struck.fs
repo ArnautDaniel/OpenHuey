@@ -56,6 +56,23 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
     else  case  0 of $1001 endof  1 of $1000 endof  2 of $1004 endof  >r $1003 r>  endcase  then
     play-now  -1 reeling !  ['] flinching step! ;
 
+\ ---- powdered (a powder trodden on - Pursuer_Hit's kind 7 - action $24, Pursuer_StateSpecialAnim):
+\ his hands to his face ($1006) for the powder's loops (4 / 6 / 8, a loop a key $400), its cloud
+\ dripping from him; struck by one again meanwhile, its loops and a new cloud; done, on as after
+\ a blow ----
+$1006 constant powder-anim
+variable powder-loops  variable powder-how   \ (its loops as it struck)
+defer powder-cloud ( loops -- )   ' drop is powder-cloud   \ (the cloud: stalker/powder.fs)
+: powdering ( -- )
+    root-move
+    my-model @ actor act.mflags l@ $400 and 0= if  exit  then   \ (the motion's key flag $400: at its last frame)
+    -1 powder-loops +!  powder-loops @ 0> if  exit  then
+    recovered ;
+: powdered? ( -- flag )  step @ ['] powdering = ;
+: powdered ( loops -- )
+    dup powder-loops !  powder-cloud
+    powder-anim play-now  -1 reeling !  ['] powdering step! ;
+
 \ ---- knocked down (Pursuer_StateKnockedDown, StateHurt): forward ($1804) with floor ahead,
 \ else back ($1800); Hewie letting go of his leg, on his front ($1709); lying ($1806 / $1802) while he's down for good, a blow then a twitch (one
 \ before); up ($1807 / $1803) ----
@@ -101,6 +118,7 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir: bit 0 behind, bit 1 low)
 
 \ ---- Pursuer_Hit ----
 : struck ( kind damage how -- )
+    2 pick 7 = if  dup $7FFF and powder-how !  then
     cond @ 2 = if  drop drop  5 <> if  -1 twitch !  then  exit  then   \ (down: a twitch)
     over hp @ swap abs - 0 max hp !  over hits @ + 999 min hits !     \ (his health, the damage he's had)
     anim @ $FF00 and $700 = if  drop 2drop  hp @ 1 max hp ! exit  then   \ (on a ladder: hurt, but no fall)
@@ -115,6 +133,7 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir: bit 0 behind, bit 1 low)
     striker @ fiona = if  -1 by-her !  then
     2 pick 5 = if  drop nip  let-her-go combo-over 0 hold-off !  door-struck exit  then   \ (a door slammed on him: how is its exit)
     hp @ 0> 0= if  at-door? if  1 hp !  else  drop 2drop knock-down exit  then  then
+    2 pick 7 = powdered? and if  drop nip  $7FFF and dup powder-loops !  powder-cloud exit  then   \ (powdered again)
     reeling @ if  drop 2drop exit  then                            \ (already reeling: the damage only)
     2 pick 3 = if   \ (a killing blow kept from felling him - in a doorway: the low flinch, nothing else)
         drop 2drop  let-her-go  combo-over  0 hold-off !  2 flinch exit
@@ -123,6 +142,7 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir: bit 0 behind, bit 1 low)
         1 cond !  900 hurt-t !  -1 growl-after !
     then                                                          ( kind dir )
     let-her-go  combo-over  0 hold-off !
+    over 7 = if  2drop  powder-how @ powdered exit  then
     over dup 1 = over 2 = or swap 4 = or if  nip flinch  else  2drop  then ;
 \ each frame: his hurt worn off
 : hurt-down ( -- )
