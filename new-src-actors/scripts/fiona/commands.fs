@@ -86,7 +86,7 @@ create ch-at 12 allot
     dup alive? 0= if  drop false exit  then  dup body? 0= if  drop false exit  then
     dup body-room room-id <> if  drop false exit  then
     dup body-at her-at vec-dist 10e f< 0= if  drop false exit  then
-    her-tri @ her-at 2 pick body-at 0 v-walk  over body-tri <> if  drop false exit  then
+    her-tri @ her-at 2 pick body-at blocked-floor v-walk  over body-tri <> if  drop false exit  then   \ (Actor_TriTo: her own floor)
     her-at swap body-at vec-heading facing-diff 45e deg>rad f< ;
 : any-creature-ahead? ( -- flag )
     10 0 do  i cells her-creatures + @ creature-ahead? if  true unloop exit  then  loop  false ;
