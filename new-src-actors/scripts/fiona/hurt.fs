@@ -36,24 +36,24 @@ defer drop-door ( -- )   ' noop is drop-door   \ (a door she held let go: fiona.
 : on-step? ( -- flag )
     her-tri @ dup 0< 0= if  nav-flags $80003 and if  true exit  then  else  drop  then
     at-a-door?  by-a-ladder? or ;
+: mode-in? ( m1 m2 -- flag )  her-mode @ tuck = >r = r> or ;   \ (her mode is one of the two)
+: on-rungs? ( -- flag )  her-mode @ 3 =  her-sub @ 7 = and ;    \ (on the ladder itself: knocked off)
+: charmed? ( -- flag )  progress pr.equipped 4 + sl@ $88 = ;   \ (the charm, item $88, in slot 1)
+\ Fiona_Reaction: her reaction to a request by its kind (-1 none)
 : reaction ( kind -- r | -1 )
     world-held state-flag? if  drop -1 exit  then
-    dup 3 = if  drop  her-mode @ 4 = her-sub @ $10 = and if  $FF 16 fiona-jolt  -1  else  $10  then  exit  then   \ (seized: even down; again, only felt)
-    dup $C = if   \ (homunculi: not on a ladder nor floored; in a reaction only theirs again)
-        drop  her-mode @ dup 3 = swap $A = or if  -1 exit  then
-        her-mode @ 4 = her-sub @ $12 <> and if  -1  else  $12  then  exit
-    then
-    dup 5 = if   \ (a door pushed into her: not again by the door that already has)
-        drop  her-mode @ 4 = her-sub @ $B = and  her-hit-how @ her-door-hit @ = and if  -1  else  $B  then  exit
-    then
-    dup 1 = over 2 = or over 4 = or  her-mode @ 3 = and  her-sub @ 7 = and if  drop 8 exit  then   \ (on a ladder: knocked off)
-    her-mode @ dup 4 = over $A = or swap 3 = or if  drop -1 exit  then
     case
-        $D of  $13  endof   \ (a spirit)
-        1 of  on-step? if  $C  else  $E  then  endof
-        2 of  on-step? if  $D  else  $F  then  endof
-        4 of  on-step? if  $D  else  $A  then  endof
-        6 of  her-mode @ 0= her-doing @ $F = and if  -1  else  $20  then  endof   \ (not while out of breath)
+        $D of  4 $A mode-in? her-mode @ 3 = or if  -1  else  $13  then  endof   \ (a spirit)
+        1 of  4 $A mode-in? if  -1  else on-rungs? if  8  else on-step? if  $C  else  $E  then then then  endof
+        2 of  4 $A mode-in? if  -1  else on-rungs? if  8  else on-step? if  $D  else  $F  then then then  endof
+        4 of  4 $A mode-in? if  -1  else on-rungs? if  8  else on-step? if  $D  else  $A  then then then  endof
+        3 of  her-mode @ 4 = her-sub @ $10 = and if  $FF 16 fiona-jolt  -1  else  $10  then  endof   \ (seized: again, only felt)
+        5 of  her-mode @ 4 = her-sub @ $B = and  her-hit-how @ her-door-hit @ = and if  -1  else  $B  then  endof   \ (not again by the same door)
+        6 of  4 $A mode-in?  her-mode @ 0= her-doing @ $F = and  or if  -1   \ (not while out of breath)
+              else charmed? if  $20  else on-rungs? if  8  else  $20  then then then  endof
+        \ ($A, reaction 9 - led away by the hand or walking: the stalker's `seize`, fiona/seized.fs)
+        $C of  her-mode @ 4 = if  her-sub @ $12 = if  $12  else  -1  then   \ (homunculi: in a reaction only theirs again)
+               else  3 $A mode-in? if  -1  else  $12  then  then  endof
         >r -1 r>
     endcase ;
 
@@ -191,8 +191,6 @@ create door-pt 12 allot
         $42 0 her-sound  $6F noise-here  1000e f>cell s" panic" actor-named send fear-set
     else  $40 0 her-sound  $5F noise-here  then
     ['] after-throw her-act ! ;
-\ the charm (item $88) worn in the equipment's slot 1: no hold takes her
-: charmed? ( -- flag )  progress pr.equipped 4 + sl@ $88 = ;
 
 \ the jolt each reaction gives the pad (Fiona_React)
 : reaction-jolt ( r -- )

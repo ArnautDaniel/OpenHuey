@@ -43,7 +43,7 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
         her-mode @ 0=  her-doing @ $E <> and if
             group case
                 3 of  endof
-                2 of  her-choker $8C <> if  her-danger @ 2 = if  0.0666667e  else  0.0466767e  then  change-fear  then  endof   \ running frightens (not with $8C)
+                2 of  her-choker $8C <> if  her-danger @ 2 = if  0.0666667e  else  0.0466667e  then  change-fear  then  endof   \ running frightens (not with $8C)
                 1 of  fear-down  endof
                 >r  her-fear-bits @ 2 and 0= if  fear-down  then  r>
             endcase
