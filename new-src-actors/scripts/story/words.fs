@@ -290,7 +290,6 @@ create slot-chars  -1 , -1 , -1 , -1 , -1 , -1 ,
 : camera-restart ( -- )  cam-restart ;   \ 0x4A (CamDirector_Restart)
 
 \ ---- doors ----
-: door-bits ( a set b -- )  drop 2drop ;   \ (which parts of the room's door models are drawn: not drawn yet)
 : doors-id ( -- id )  s" doors" actor-named ;
 : door-lock ( door -- )  doors-id send lock ;
 : door-unlock ( door -- )  doors-id send unlock ;
@@ -625,8 +624,8 @@ fvariable mx  fvariable mz
 : char-anim-hold ( id anim flags blend -- )   \ 0x9D: playing it, held (Motion_PlayWith: its flags - 1 loops -
     {: id a fl bl :}                            \ and the frames it fades in over)
     id char-slot char-actor dup 0< if  drop exit  then  >r  a fl bl  r> send hold-anim ;
-: char-visible ( who on -- )   \ 0x1F: shown or hidden, if in this room
-    swap who>cs dup char-here 0= if  2drop exit  then  char-actor send show ;
+: char-visible ( who hidden -- )   \ 0x1F: hidden (1) or shown (0), if in this room - the character's +0x29, which
+    swap who>cs dup char-here 0= if  2drop exit  then  char-actor  swap 0= swap  send show ;   \ the draw skips when set
 
 \ ==== S4: fades, movies, cutscenes, music ====
 
@@ -782,6 +781,8 @@ variable sw  variable sh  variable lh
 : object-anim ( obj anim -- )  1 swap object ;              \ 50 01: its animation once
 : object-anim-loop ( obj anim -- )  2 swap object ;         \ 50 02: looped
 : object-anim-reset ( obj -- )  3 0 object ;                \ 50 03: back to its start
+: object-lowered ( obj -- ) ( F: dy -- )   \ (hga's own: moved down for good - a cutscene puts it back here)
+    this-room @ room-string  {: a n :}  a n $24 placed-f@ fswap f-  a n $24 placed-f!  a n 5 0 placed-op ;
 \ ---- placed objects by name, as the rooms' own commands handle them (gRoomObjects +0x18): a
 \ value of the object at the original's offset - +$10 / $14 / $18 its turn about x / y / z,
 \ +$20 / $24 / $28 its place, from +$30 the room's own values kept on it ----

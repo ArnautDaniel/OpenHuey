@@ -55,9 +55,12 @@ USING: engine game-state actors messages keys facts flag-names items items.table
             page @ case  pg-files of  files-keys  endof  pg-map of  map-keys  endof
                          pg-options of  options-keys  endof  >r list-keys r>  endcase  endof
     endcase ;
+\ the machines' pages are the whole screen (nothing of the world behind): beyond the 4:3 frame
+\ on a wider window, black - faded in with the page
+: window-black ( -- )  art-layer 0 0 screen-size  openness @ 2* 255 min  ui-rect ;
 : draw-page ( -- )
-    mode @ on-plate = if  plate-view exit  then
-    mode @ on-slots = if  slots-view exit  then
+    mode @ on-plate = if  window-black  plate-view exit  then
+    mode @ on-slots = if  window-black  slots-view exit  then
     mode @ on-saving = if  saving-view exit  then
     mode @ on-costumes = if  costumes-view exit  then
     page @ case  pg-files of  files-view  endof  pg-map of  map-view  endof

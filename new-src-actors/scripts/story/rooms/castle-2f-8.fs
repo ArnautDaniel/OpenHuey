@@ -23,7 +23,20 @@ USING: room-names story.words story.shared flag-names ;
 \ Room24_Cmd02
 : castle-2f-8.cmd02 ( -- )  0 $50 $24 $2A $2A $46 colour-pulse ;
 
+\ the golem (objects 4..9, "Golem_off_00".."05") and the plate in him ($A) are kept 50 above
+\ the room, out of sight under its ceiling: hga stands him on the floor, before the kiln where
+\ act00 has Fiona look up at him (the plate scenes key his parts themselves). Up there, what
+\ the plate scenes hid stayed out of sight; down here it stays hidden: once a plate has gone in
+\ ($1B) the plate, and after act0B's ending (not act0A's, $1A) all of him
+: golem-down ( -- )
+    $B 4 do  50e i object-lowered  loop
+    $1B story-flag? 0= if  exit  then
+    $A 1 object-hidden
+    $1A story-flag? if  exit  then
+    $A 4 do  i 1 object-hidden  loop ;
+
 : castle-2f-8.enter ( -- )   \ 00401890
+    golem-down
     room-sounds
     $1B story-flag? not if
         1 0 $20000 nav-group
