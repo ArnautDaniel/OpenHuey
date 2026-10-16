@@ -42,4 +42,11 @@ T{ 460 frames  level -> 0 }T
 testing struck while calm: hunted next frame (the quirk) - tense with no stalker? (no: no stalker wins)
 T{ 1 game:danger send danger-signal  3 frames  level -> 0 }T
 
+testing a creature up in her room: tense, and kept so while it is; gone, calm after the hold
+: creature ( up -- )  >r 0 room-id 0 r> broadcast creature-doing ;
+T{ 450 frames  -1 creature  2 frames  level -> 1 }T
+: up-a-while ( -- )  100 0 do  -1 creature  game-tick  loop ;
+T{ up-a-while  level -> 1 }T
+T{ 0 creature  460 frames  level -> 0 }T
+
 test-summary
