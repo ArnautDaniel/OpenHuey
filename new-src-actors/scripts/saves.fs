@@ -16,7 +16,8 @@ create path-buf 256 allot   variable path-len
     user-dir  dup path-len !  path-buf swap move
     dup >r  path-buf path-len @ + swap move  r> path-len +!
     path-buf path-len @ ;
-: quick-path ( -- addr len )  s" hga-quick-save.fs" in-user-dir ;
+: quick-path ( -- addr len )   \ (under --test: hga-test-quick.fs, the player's own left be)
+    testing? if  s" hga-test-quick.fs"  else  s" hga-quick-save.fs"  then  in-user-dir ;
 \ ---- the save slots (the original's memory card saves): each its own file, and an index of
 \ what each holds - where it was made (a place's name) and the time played - for the lists ----
 8 constant #slots
