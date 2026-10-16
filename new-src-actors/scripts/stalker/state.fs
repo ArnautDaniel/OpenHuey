@@ -85,6 +85,7 @@ state: stalker-state
   cell field cry  cell field hold-off  cell field freeze-t
   cell field her-plight  cell field her-stage
   cell field her-unseen          \ she can't be seen: item $89 worn, still (Fiona +0x1AD630; fiona-unseen)
+  cell field noclipped           \ through blocked floor (the story's 0x20: +0x2B) - no reach test by distance
   cell field look-mode           \ where his head looks (+0x1710): 1 her, 2 Hewie, 3 his goal, 4 ahead; 0 as it was
   1 floats field head-yaw  1 floats field head-pitch   \ his head's turn and tilt (the model's +0x858 / +0x854)
   cell field head-bone  cell field neck-bone            \ (+0x8B0 / +0x8B4; -1 none)

@@ -53,8 +53,8 @@ create round-pt 12 allot  fvariable round-a  fvariable round-r  variable sc-who 
         then
         round-a f@ 0.3926991e f+ round-a f!
     loop  false ;
-: near-straight? ( id F: d reach -- flag )   \ (within reach on foot, and straight there)
-    f< 0= if  drop false exit  then
+: near-straight? ( id F: d reach -- flag )   \ (within reach on foot, and straight there; not
+    f< 0=  noclipped @ or if  drop false exit  then          \ while through blocked floor: +0x2B)
     $40080 straight? ;
 : fiona-in-reach? ( -- flag )   \ NPC_FionaInReach (her hiding place: with the hiding, F5)
     her-unseen @ if  false exit  then   \ (camouflaged and still: not there to him)
