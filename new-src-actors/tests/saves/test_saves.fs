@@ -18,6 +18,7 @@ testing a save written
 plate-made story-flag-set
 her-x constant saved-x
 game:hewie enter  5 his-trust !  27 his-skill !  3 5 cells his-skill + !  leave-actor   \ (his skills at fetching)
+game:hewie enter  2 his-mood !  400 his-mood-time !  -4 his-feel !  6 3 cells his-feel + !  leave-actor   \ (upset; his feelings)
 ' saves:quick-save in-saves  deliver  2 frames
 T{ saves:save-path file-exists? -> -1 }T
 
@@ -33,15 +34,17 @@ T{ plate-made story-flag? -> -1 }T
 T{ her-x saved-x - abs 1 < -> -1 }T
 T{ along?  trust -> -1 5 }T
 T{ 0 skill  5 skill  1 skill -> 27 3 16 }T
+T{ game:hewie enter  his-mood @  his-mood-time @ 300 >  his-feel @  3 cells his-feel + @  leave-actor -> 2 -1 -4 6 }T
 testing the stalker kept: Debilitas in the game here, saved, let go, back where he was
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 [: 2 partner-load ;] game:story enter execute leave-actor  deliver  2 frames
 front-garden-2 0 game:debilitas send stalker-in  deliver  [: 0 stalker:ordered ;] his  5 frames   \ (after her: kept in her room)
-[: 7 hp ! ;] his
+[: 7 hp !  12 hits !  300 temper ! ;] his
 ' saves:quick-save in-saves  deliver  2 frames
 T{ saves:save-path file-exists? -> -1 }T
 [: slot-unload ;] game:story enter execute leave-actor  deliver  5 frames
 T{ [: in-game @ ;] his -> 0 }T
 ' saves:quick-load in-saves  deliver  20 frames
 T{ [: in-game @ 0<>  hp @ ;] his  game:debilitas body-room -> -1 7 front-garden-2 }T
+T{ [: hits @  temper @ ;] his -> 12 300 }T
 test-summary

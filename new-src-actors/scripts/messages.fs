@@ -137,6 +137,7 @@ message write-save ( -- )                    \ broadcast: print your line of the
 message hewie-health ( hp -- )              \ broadcast each frame with hewie-doing: his health, 0..100
 message set-hp ( n -- )                    \ (Hewie) his health set (a room's command)
 message hewie-restore ( trust points hp -- )   \ (Hewie) as a save had him
+message hewie-mood-restore ( mood time hide f0 f1 f2 f3 -- )   \ (Hewie) his mood and its time, staying put, his feelings about the stalkers, as a save had them
 message hewie-skills ( s0 s1 s2 s3 s4 s5 -- )  \ (Hewie) his skills at fetching, as a save had them
 message fetch-this ( thing -- )                \ (Hewie) Fiona threw the ball: his to fetch (things.fs)
 message effect-place ( x y z -- )           \ (a room effect) moved there (f>cell)
@@ -218,6 +219,7 @@ message particles-made ( p -- )               \ (a particles actor) the engine's
 message effect-command ( v -- )                  \ (an effect) a command later (the scripts' 0x87: 1 still, 2 moving)
 \ ---- the stalkers (docs/subsystems/stalker.md) ----
 message stalker-in ( room tri -- )           \ (a stalker) into the game, in that room on that triangle
+message stalker-restore-more ( cond hp-max rage temper hits mode-t down-t yaw -- )   \ (a stalker) the rest of how a save had him (Pursuer_LoadState)
 message stalker-restore ( hp mode -- )      \ (a stalker) as a save had him
 message stalker-out ( -- )                   \ (a stalker) out of the game
 message stalker-hunt ( -- )                  \ (a stalker) heads for Fiona's room (mode 1: the summoner, the console)
