@@ -90,6 +90,7 @@ create riccardo-ladder   0e f, -5.3136e f,  0e f, 7.572e f,     0e f, 7.9372e f,
 : on-ladder? ( -- flag )
     step @  dup ['] to-the-ladder =  over ['] lining-up = or  over ['] climbing = or  swap ['] stepping-off = or ;
 ' on-ladder? is at-a-ladder?
+' ladder-done is round-done   ' no-way-there is round-failed   \ (the same for a door opened to get at her)
 
 \ ---- no way to her on foot (Pursuer_TargetOutOfReach): round by a ladder ----
 \ Npc_RoundThroughDoor: from the middle of her triangle a way to the ladder's end on her level (his
@@ -113,6 +114,7 @@ create her-mid 12 allot   create end-at 12 allot
 :noname ( -- went? )
     fiona body-tri 0< if  false exit  then
     by-ladder if  climb-to true exit  then
+    door-to-her if  $B action-look!  door-for-her true exit  then   \ (a door between them: stalker/doorway.fs)
     nav-links 2 < if  false exit  then
     any-ladder if  climb-to true exit  then  false ; is out-of-reach
 

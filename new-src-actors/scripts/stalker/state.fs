@@ -125,6 +125,7 @@ state: stalker-state
   \ heading he is pushed along; frames stunned off screen after being knocked out of the room
   \ (+0x1664: 150); the exit Fiona came in by (the half of the room she is on)
   cell field wandering-out      \ out by an exit at random (his search over): sight or a lead turns him back
+  cell field for-her            \ that door only opened to get at her across his room (action $B: stalker/doorway.fs)
   cell field out-going  cell field door-use  cell field asked  cell field held-door  cell field door-wait
   cell field push-exit  1 floats field push-way  cell field stun-t
   cell field her-came
