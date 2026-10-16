@@ -1,0 +1,81 @@
+# hga's release builds (tools/hga_release.sh): Linux x86_64 and Windows x64, built on each push to
+# master - a merged PR - and published as the one pre-release `hga-latest`, replaced each time.
+# A PR that changes this workflow or the release script builds them too, without publishing.
+# (No tests here: they need the game's disc data.)
+name: hga release
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'new-src-actors/**'
+      - 'tools/hga_release.sh'
+      - '.github/workflows/hga-release.yml'
+  pull_request:
+    paths:
+      - 'tools/hga_release.sh'
+      - '.github/workflows/hga-release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hga-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # the release script's tools, and the headers SDL is built against for Linux (it opens
+      # X11 / Wayland / the sound servers itself at run time)
+      - name: Packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake make nasm curl xz-utils python3 pkg-config mingw-w64 \
+            libasound2-dev libpulse-dev libpipewire-0.3-dev \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
+            libxkbcommon-dev libwayland-dev wayland-protocols libdecor-0-dev \
+            libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev \
+            libdbus-1-dev libudev-dev
+
+      # SDL3, FFmpeg and Zig, built once per version (the script's SDL= FFMPEG= ZIG= GLIBC= lines)
+      - name: Dependency versions
+        id: deps
+        run: echo "key=hga-deps-$(grep -E '^(SDL|FFMPEG|ZIG|GLIBC)=' tools/hga_release.sh | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/openhuey-hga-deps
+            tools/win
+          key: ${{ steps.deps.outputs.key }}
+
+      - name: Build
+        run: JOBS=$(nproc) HGA_VERSION=latest-$(git rev-parse --short HEAD) tools/hga_release.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hga-builds
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+
+      - name: Publish hga-latest
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha=$(git rev-parse --short HEAD)
+          gh release delete hga-latest --cleanup-tag --yes || true
+          gh release create hga-latest dist/*.tar.gz dist/*.zip \
+            --prerelease --target "$GITHUB_SHA" \
+            --title "hga latest ($(date -u +%Y-%m-%d), $sha)" \
+            --notes "The latest hga build, from $sha on master - replaced on each merge.
+
+          You need your own copy of Haunting Ground (USA) for the PlayStation 2: its disc image (.iso). Start hga (Linux) or hga.exe (Windows); the first time it asks for the disc image.
+
+          Linux: x86_64, glibc 2.31 or later. Windows: 64-bit."
