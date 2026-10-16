@@ -73,12 +73,12 @@ variable tt  variable tn
     -1 timer +!  timer @ 0=  skip? or if  $FF bgm  0 timer !  10 step !  then ;
 
 \ ---- the sequence (GameOver_StateOthers / StateMode3: game_over) ----
-: freeze ( -- )   \ (the panic held - the camera still - the actors and the room still; the world still
-    panic-held state-flag-set  1 still!  0e cam-shake!     \ drawn, from the room's next camera set)
+: freeze ( -- )   \ (the panic held - the camera still - the actors and the room still; the room still
+    panic-held state-flag-set  1 still!  0e cam-shake!  chars-hide   \ drawn, without the characters, from the room's next camera set)
     s" camera" actor-named send camera-hold ;
 : run ( -- )
     step @ case
-        0 of  0 0 30 music-id send music-op  movie-close  1 step !  endof
+        0 of  0 0 30 music-id send music-op  $FF bgm  movie-close  1 step !  endof   \ (the stage music and the room's track out)
         1 of  freeze  2 step !  endof
         2 of  0 frame-blend  movie-status 1 <> if  64 timer !  3 step !  then  endof
         3 of  64 timer @ - frame-blend   \ (the afterimage: each frame blended with the last, rising)

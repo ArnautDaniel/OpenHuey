@@ -37,6 +37,7 @@ static struct {
     int start_when_ready;   /* (+0x205) */
     int letterbox_off;      /* (+0x4) */
     int frame, last;        /* (+0xC, +0x10) */
+    int next_event;         /* the frame op 5 steps to next, from 0 at the start (+0x8) */
     int shot;               /* the shot started (the playing buffer's), -1 none */
     const uint8_t *camera;  /* the shot's camera part (+0x20) */
     const uint8_t *doors[8];    /* the shot's doors' keys (+0x24) */
@@ -418,8 +419,9 @@ static void start_shot(int rec) {
             a->drive_frame = 0.0f;
             a->visible = 1;
             s->animated = a->drive != NULL;
-        } else {
+        } else {   /* (out of this shot: hidden - the character's +0x29 - and its own motion) */
             a->drive = NULL;
+            a->visible = 0;
             s->animated = 0;
         }
     }
@@ -530,6 +532,10 @@ void cutscene_set_frame(int frame) {
     C.frame = frame;
 }
 
+void cutscene_next_event(void) {
+    cutscene_set_frame(C.next_event++);
+}
+
 int cutscene_frame(void) {
     return C.frame;
 }
@@ -601,14 +607,30 @@ static void cues(void) {
     }
 }
 
+static void (*sOnFollow)(int actor, Vec3 pos);
+
+void cutscene_on_follow(void (*fn)(int actor, Vec3 pos)) {
+    sOnFollow = fn;
+}
+
 void cutscene_update(void) {
     int t = into_shot(C.frame), i;
 
     for (i = 1; i < SLOTS; i++) {
         Actor *a = slot_actor(&C.slots[i]);
+        Vec3 pos;
+        float yaw;
 
-        if (a != NULL && C.slots[i].animated) {
-            a->drive_frame = (float)(t < 0 ? 0 : t);
+        if (a == NULL || !C.slots[i].animated) {
+            continue;
+        }
+        a->drive_frame = (float)(t < 0 ? 0 : t);
+        /* on a frame the scene moved on, its characters in the shot are where their root bone is
+         * (the play frame's characters run then - Events_CueMoved - each following its
+         * animation: Fiona_FollowAnim; their heading is left) */
+        if (C.last != C.frame && sOnFollow != NULL &&
+            actor_drive_place(a, a->drive, a->drive_size, a->drive_frame, &pos, &yaw)) {
+            sOnFollow(C.slots[i].actor, pos);
         }
     }
     group_door_keys(t);
@@ -742,7 +764,8 @@ int cutscene_camera(Camera *c) {
     c->pos = eye;
     c->yaw = atan2f(v.x, -v.z);
     c->pitch = atan2f(v.y * c->up, h);
-    c->fov = 2.0f * atanf(0.75f * tanf(f[6] * 0.5f));   /* (the roll, f[7]: not yet) */
+    c->fov = 2.0f * atanf(0.75f * tanf(f[6] * 0.5f));
+    c->roll = f[7];
     return 1;
 }
 
@@ -750,8 +773,10 @@ int cutscene_active(void) {
     return C.state == STATE_PLAYING && C.status != 5;
 }
 
+/* (drawn by the camera director's mode while a scene has it - CamDirector_Remember - from the
+ * scene's start of play to its signal 8, the scene over or not) */
 int cutscene_letterbox(void) {
-    return cutscene_active() && !C.letterbox_off;
+    return gCamDir.scene && !C.letterbox_off;
 }
 
 void cutscene_set_letterbox_off(int off) {

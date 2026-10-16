@@ -682,6 +682,7 @@ void camdir_apply(const CamDirector *d, Camera *c) {
     float h = sqrtf(v.x * v.x + v.z * v.z);
 
     c->pos = d->eye;
+    c->roll = 0.0f;   /* (a set's, a path's: Camera_ApplyPreset / Restart) */
     c->yaw = atan2f(v.x, -v.z);
     c->pitch = atan2f(v.y * c->up, h);
     c->fov = 2.0f * atanf(0.75f * tanf(d->fov * 0.5f));

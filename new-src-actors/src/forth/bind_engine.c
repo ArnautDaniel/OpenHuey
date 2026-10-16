@@ -2049,6 +2049,8 @@ PRIM(p_pause) { gEngine.paused = POP() != 0; }   /* ( flag -- ) actors and the r
 PRIM(p_still) { gEngine.still = POP() != 0; }    /* ( flag -- ) the models and the room stand still (the actors run) */
 PRIM(p_cs_active) { PUSH(cutscene_active() ? -1 : 0); }
 PRIM(p_cs_total) { PUSH(cutscene_signal_total((int)POP())); }   /* ( bit -- n ) its count so far less one */
+PRIM(p_cs_next) { cutscene_next_event(); }   /* ( -- ) the scene to its next event's frame */
+PRIM(p_black_frame) { gEngine.black_frame = 1; }   /* ( -- ) the next picture black (under the 2D) */
 PRIM(p_cs_letterbox_off) { cutscene_set_letterbox_off((int)POP() != 0); }   /* ( flag -- ) */
 
 PRIM(p_exit_area) {   /* ( exit -- area ) the event area of this room's exit (the room table) */
@@ -2844,6 +2846,33 @@ static void cast_placed(int actor, Vec3 pos, float yaw) {
         }
     }
 }
+static void cast_followed(int actor, Vec3 pos) {   /* (its body: where, its room, the triangle under it) */
+    int i;
+    float h;
+
+    for (i = 0; i < CHARACTERS; i++) {
+        HBody *b;
+
+        if (!gEvents.chars[i].present || gEvents.chars[i].actor != actor || sCastOwner[i] < 0 ||
+            (b = hactor_body(sCastOwner[i])) == NULL || !b->has) {
+            continue;
+        }
+        b->pos[0] = pos.x;
+        b->pos[1] = pos.y;
+        b->pos[2] = pos.z;
+        b->room = gEngine.room.id;
+        b->tri = navmesh_find(&gEngine.room.nav, pos, 4.0f, &h);
+    }
+}
+PRIM(p_chars_hide) {   /* ( -- ) every character's model hidden (the game over: each one's +0x29) */
+    int i;
+
+    for (i = 0; i < CHARACTERS; i++) {
+        if (gEvents.chars[i].present && gEvents.chars[i].actor >= 0 && gEvents.chars[i].actor < MAX_ACTORS) {
+            gEngine.actors[gEvents.chars[i].actor].visible = 0;
+        }
+    }
+}
 PRIM(p_cast_as) {   /* ( id model -- ) the character with script id `id` (0 Fiona, 1 Hewie..) has
                      * that model (-1: none): the cutscenes' cast finds it (gEvents.chars) */
     Cell model = POP(), id = POP();
@@ -2870,6 +2899,7 @@ PRIM(p_cast_as) {   /* ( id model -- ) the character with script id `id` (0 Fion
     gEvents.chars[i].actor = (int32_t)model;
     sCastOwner[i] = hactor_self();
     cutscene_on_place(cast_placed);
+    cutscene_on_follow(cast_followed);
 }
 PRIM(p_cast_model) {   /* ( id -- model | -1 ) the model cast as script id `id` (cast-as) */
     Cell id = POP();
@@ -3072,6 +3102,10 @@ void engine_draw_2d(Engine *e) {
         render_rect(0.0f, 0.0f, (float)e->width, bar, 0x000000FFu);
         render_rect(0.0f, (float)e->height - bar, (float)e->width, bar, 0x000000FFu);
     }
+    if (e->black_frame) {   /* (the renderer's rectangle over the screen, layer 0x33: alpha 0x80 is opaque) */
+        render_rect(0.0f, 0.0f, (float)e->width, (float)e->height, 0x000000FFu);
+        e->black_frame = 0;
+    }
 
     ui_draw();
     for (i = 0; i < e->ndraw_hooks; i++) {
@@ -3112,7 +3146,7 @@ void bind_engine(Forth *f) {
         {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-sides", p_route_sides}, {"exit-way", p_exit_way}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"world-exits-rebuild", p_exits_rebuild}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
         {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"look-on?", p_look_on}, {"sprites", p_sprites_new}, {"sprites-free", p_sprites_free}, {"sprites-free-all", p_sprites_free_all}, {"sprites-texture", p_sprites_texture}, {"sprites-cells", p_sprites_cells}, {"sprites-flags", p_sprites_flags}, {"sprites-offset", p_sprites_offset}, {"sprites-corner", p_sprites_corner}, {"sprites-count", p_sprites_count}, {"sprite!", p_sprite_store}, {"sprites-uv", p_sprites_uv}, {"sprite-quad!", p_sprite_quad}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
-        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-image", p_ui_image}, {"tex-bank", p_tex_bank}, {"tex-info", p_tex_info}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"text-width", p_text_width}, {"ui-movie", p_ui_movie}, {"ui-held", p_ui_held}, {"movie-hold", p_movie_hold}, {"movie-unhold", p_movie_unhold}, {"cast-as", p_cast_as}, {"cast-model", p_cast_model}, {"model-file", p_model_file}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
+        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-image", p_ui_image}, {"tex-bank", p_tex_bank}, {"tex-info", p_tex_info}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"text-width", p_text_width}, {"ui-movie", p_ui_movie}, {"ui-held", p_ui_held}, {"movie-hold", p_movie_hold}, {"movie-unhold", p_movie_unhold}, {"cast-as", p_cast_as}, {"chars-hide", p_chars_hide}, {"cast-model", p_cast_model}, {"model-file", p_model_file}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-climb", p_body_climb}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-on", p_cam_on}, {"cam-followed", p_cam_followed}, {"cam-target", p_cam_target_id}, {"cam-player!", p_cam_player}, {"cam-char-setup", p_cam_char_setup}, {"cam-forget-setups", p_cam_forget_setups}, {"cam-setup-of", p_cam_setup_of}, {"cam-take-followed", p_cam_take_followed}, {"cam-scene!", p_cam_scene}, {"cam-scene?", p_cam_scene_q}, {"cam-next-set", p_cam_next_set}, {"cam-rate!", p_cam_rate}, {"cam-shake!", p_cam_shake}, {"cam-cut?", p_cam_cut}, {"cam-remember", p_cam_remember}, {"cam-started?", p_cam_started}, {"cam-stop", p_cam_stop}, {"cam-angle", p_cam_angle}, {"cam-ease", p_cam_ease}, {"cam-event?", p_cam_event}, {"cam-event!", p_cam_event_set}, {"cam-track", p_cam_track},
@@ -3129,7 +3163,7 @@ void bind_engine(Forth *f) {
         {"cutscene-signals", p_cs_signals}, {"cutscene-active?", p_cs_active}, {"pause!", p_pause}, {"still!", p_still}, {"seq-bank", p_seq_bank}, {"seq-load", p_seq_load}, {"seq-play", p_seq_play},
         {"seq-playing?", p_seq_playing}, {"seq-volume", p_seq_volume}, {"seq-port-volume", p_seq_port_volume},
         {"seq-chan-volume", p_seq_chan_volume}, {"seq-midi", p_seq_midi}, {"seq-reset", p_seq_reset}, {"music-play", p_music_play}, {"music-stop", p_music_stop},
-        {"music-pause", p_music_pause}, {"music-volume!", p_music_volume}, {"music-playing?", p_music_playing}, {"cutscene-signal-total", p_cs_total}, {"cutscene-letterbox-off", p_cs_letterbox_off}, {"movie-close", p_movie_close}, {"movie-pause", p_movie_pause}, {"movie-paused?", p_movie_paused}, {"movie-compose", p_movie_compose},
+        {"music-pause", p_music_pause}, {"music-volume!", p_music_volume}, {"music-playing?", p_music_playing}, {"cutscene-signal-total", p_cs_total}, {"cutscene-letterbox-off", p_cs_letterbox_off}, {"black-frame", p_black_frame}, {"cutscene-next", p_cs_next}, {"movie-close", p_movie_close}, {"movie-pause", p_movie_pause}, {"movie-paused?", p_movie_paused}, {"movie-compose", p_movie_compose},
         {"movie-volume!", p_movie_volume}, {"movie-draw", p_movie_draw}, {"stage-light", p_stage_light}, {"stage-lights", p_stage_lights},
         {"stage-ambient", p_stage_ambient}, {"room-clear", p_room_clear}, {"common-sound", p_common_sound},
         {"bank-sound", p_bank_sound}, {"bank-sound-at", p_bank_sound_at}, {"sound-set!", p_sound_set}, {"sound-at", p_sound_at},

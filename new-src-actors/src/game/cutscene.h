@@ -18,11 +18,14 @@ int cutscene_start(const char *name);   /* Cutscene_Set38 + Start: 0 if its file
 void cutscene_run_state(void);          /* the state machine a step (Cutscene_RunState) */
 void cutscene_start_when_ready(void);   /* (Cutscene_SetNoEnd: +0x205) */
 void cutscene_set_frame(int frame);     /* (Cutscene_PushC) */
+void cutscene_next_event(void);         /* to its next event's frame - 0, 1, 2.. from its start (Cutscene_NextEvent) */
 void cutscene_update(void);             /* this frame's camera and actors (Cutscene_Update) */
 void cutscene_end(void);                /* the actors given back (Cutscene_End) */
 /* told, as the actors are given back, where the scene leaves each it moved - at the end of the
  * last shot it is in, played out or skipped (hga's: the original leaves them where the scene was) */
 void cutscene_on_place(void (*fn)(int actor, Vec3 pos, float yaw));
+/* told, on each frame the scene moves on, where each character in the shot now is (its body moved) */
+void cutscene_on_follow(void (*fn)(int actor, Vec3 pos));
 int cutscene_status(void);
 int cutscene_playing_shot(void);        /* the playing buffer's shot is in (EntryDone) */
 int cutscene_frame(void);

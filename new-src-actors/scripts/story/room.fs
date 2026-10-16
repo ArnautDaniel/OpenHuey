@@ -19,7 +19,8 @@ USING: engine game-state actors messages common room-names story.state story.wor
     free-slots  -1 msg !  -1 msg-owner !  0 leaving !  -1 going !
     #chars 0 do  0 i cells char-scripted + !  -1 i cells move-done-of + !  loop
     -1 prep-scene !  -1 prepared-msg !  -1 prepared-page !  zones-off
-    0 movie-kind !  -1 cue !  -1 cue-prev !  0 fading !  effects-none ;
+    0 movie-kind !  -1 cue !  -1 cue-prev !  0 fading !  effects-none
+    $FF 0 1e bgm ;   \ (no background track wanted: the room's scripts ask again, else it fades out)
 : phase ( n -- )
     phase-context
     dup 0 = if  entering  then

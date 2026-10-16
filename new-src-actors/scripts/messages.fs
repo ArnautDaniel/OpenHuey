@@ -225,6 +225,7 @@ message costume ( n -- )                     \ (Fiona) her model for costume n (
 message stalker-load ( slot -- )            \ (a stalker) into the story's character slot (2: the one in play; 3..5 a scene's figure) - the cutscenes' cast
 message stalker-unload ( -- )                \ (a stalker) out of slot 2 (and out of the game)
 message stalker-doing ( room mode sub cond hp hp-max kind alert came -- )   \ broadcast each frame by a stalker in the
+message stalker-reach ( d -- )                 \ broadcast each frame by a stalker: how far Fiona is on foot (a float in a cell; -1 no way, elsewhere - Pursuer +0x1588)
                                              \ game: his room, how he moves (0 his own, 3 off screen, 4 struck, 8 taking her),
                                              \ what (9 Hewie on him, $A down, $18 leading her), condition, health, his kind,
                                              \ his alert (his mode: Progress_StalkerAlert), the exit he came in by (-1 none)
