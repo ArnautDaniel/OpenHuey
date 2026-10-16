@@ -340,3 +340,5 @@ message load-from-slot ( n -- )       \ (saves) the game in save slot n back
 message game-saved ( -- )             \ (saves) to who asked: the save is written
 message item-var ( var value -- )          \ (items -> the room) its script variable var set to value (an item used: the word plate)
 message item-event-bit ( n on -- )         \ (items -> the room) its event bit n set or cleared (the word plate: the word was right)
+message meters? ( -- )                       \ (debug: to Fiona) her meters, please
+message her-meters ( fear breathless run -- )  \ (debug: Fiona's reply) her fear, out of breath, the running left

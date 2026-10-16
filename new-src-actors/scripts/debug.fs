@@ -47,14 +47,64 @@ create spot 12 allot
 variable label?  -1 label? !
 : label-on ( -- )  -1 label? ! ;
 : label-off ( -- )  0 label? !  label-layer ui-clear ;
+: room-label ( -- )
+    2 pen-scale
+    label-layer  room-id room-name  screen-size drop  room-id room-name nip 7 + char-size drop * -  12  $E8E0C8FF 2 ui-text
+    label-layer  room-id h>s  screen-size drop 5 char-size drop * -  12  $A09880FF 2 ui-text ;
+
+\ ---- the debug mode (F2, or `debug-on` / `debug-off` at the console), on the same layer:
+\ Fiona's meters top left - her panic (0..100) and its stage, her fear (0..99) and, while she is
+\ out of breath, the running she has left; down the right, the actors alive with their ids
+\ (`<id> enter` at the console works inside one, `leave-actor` back) ----
+variable debug?
+: debug-on ( -- )  -1 debug? ! ;
+: debug-off ( -- )  0 debug? ! ;
+$E8E0C8FF constant text-colour   $A09880FF constant dim-colour
+: say ( addr len x y colour -- )  >r >r >r  label-layer -rot r> r> r> 2 ui-text ;
+360 constant most-run   \ (the longest out-of-breath run: stage 2's 240, and up to 4 x 30)
+200 constant bar-width
+\ a labelled bar at y: `filled` of bar-width in `colour`; after it the value (-1: none) and a note
+: bar ( value filled colour y addr len -- )
+    {: value filled colour y a n :}
+    a n 12 y text-colour say
+    label-layer 110 y bar-width 4 + 20 $000000A0 ui-rect
+    label-layer 112 y 2 + filled 0 max bar-width min 16 colour ui-rect
+    value 0< 0= if  value n>s 124 bar-width + y text-colour say  then ;
+: note ( addr len y -- )  >r  190 bar-width + r> dim-colour say ;
+: of-bar ( n most -- n filled )  over bar-width * swap / ;
+: stage$ ( stage -- addr len )
+    case  0 of s" calm" endof  4 of s" PANIC" endof  5 of s" PANIC (calming)" endof
+          >r s" uneasy" r>  endcase ;
+\ the panic's (its broadcast) and hers (asked each frame, her answer by the next)
+variable m-stage  variable m-level  variable m-fear  variable m-breathless  variable m-run
+: meters ( -- )
+    fiona-id dup 0< if  drop exit  then  dup body? 0= if  drop exit  then  send meters?
+    m-level @ 100 of-bar  $D04040FF 40 s" panic" bar   m-stage @ stage$ 40 note
+    m-fear @ 99 of-bar  $D0A040FF 66 s" fear" bar
+    m-breathless @ if
+        m-run @ 0 max most-run of-bar  $40A0D0FF 92 s" breath" bar   s" frames of running left" 92 note
+    else  -1 bar-width $40A0D0FF 92 s" breath" bar   s" full" 92 note  then ;
+\ the actors alive, two columns down the right from under the room's name
+: actor-line ( id x y -- )
+    {: id x y :}  id n>s x y dim-colour say  id actor-name x 44 + y text-colour say ;
+: actors-list ( -- )
+    0  256 0 do
+        i alive? if
+            i  screen-size drop 420 -  2 pick 1 and 210 *  +   ( n id x )
+            2 pick 2/ 22 * 44 +  actor-line  1+
+        then
+    loop  drop ;
+
 state: label-state  cell field label-unused  end-state
 behaviour labelling
-  on spawned ( -- )  self subscribe frame-end ;
+  on spawned ( -- )  self subscribe frame-end  self subscribe panic ;
+  on panic ( stage level -- )  cell>f f>s m-level !  m-stage ! ;   \ (its level a float, as a cell)
+  on her-meters ( fear breathless run -- )  m-run !  m-breathless !  m-fear ! ;
   on frame-end ( -- )
       label-layer ui-clear
-      label? @ 0= room-id 0< or  in-play state-flag? 0= or if  exit  then   \ (not over the title)
-      2 pen-scale
-      label-layer  room-id room-name  screen-size drop  room-id room-name nip 7 + char-size drop * -  12  $E8E0C8FF 2 ui-text
-      label-layer  room-id h>s  screen-size drop 5 char-size drop * -  12  $A09880FF 2 ui-text ;
+      key: F2 key-pressed? if  debug? @ 0= debug? !  then
+      debug? @ if  meters  actors-list  then   \ (asked for: anywhere)
+      room-id 0< in-play state-flag? 0= or if  exit  then   \ (the label: not over the title)
+      label? @ if  room-label  then ;
 end-behaviour
 : label-spawn ( -- id )  labelling label-state s" room-label" spawn ;

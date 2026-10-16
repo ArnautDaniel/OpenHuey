@@ -209,6 +209,7 @@ behaviour free
   on go-to ( x y z -- )  cells>xyz  go-to-point ;
   on place ( x y z yaw -- )  cells>xyzw  put  fresh ;   \ (the story puts her)   \ (the room's scripts: Rooms_ExitPointOut, facing in)
   on camera-cut ( -- )  -1 her-cut ! ;
+  on meters? ( -- )  her-fear f@ f>s  her-fear-bits @ 1 and  her-panic-t @  sender send her-meters ;   \ (the debug overlay)
   \ struck or caught (F4: fiona.hurt)
   on hit ( kind how fright -- )
       cell>f  over >r  sender struck if  r> sender send hit-taken  else  r> drop  then ;
