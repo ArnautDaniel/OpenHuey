@@ -193,7 +193,7 @@ behaviour free
   on activate ( -- )  0 her-noclip !  0 her-aside !  idle ;   \ (the story's 0x15, Fiona_Activate: afresh, standing)
   on costume ( n -- )  wear  show-her ;
   on fiona-request ( kind x y z -- )   \ (a creature's, Progress_Noise: $D a spirit - she falls; 3 a red one
-      >r >r cell>f r> cell>f r> cell>f from-pt vec!   \ going - grabbed; $C homunculi - held down)
+      cells>xyz from-pt vec!   \ going - grabbed; $C homunculi - held down)
       0 -1 0e struck drop ;
   on throw-down ( who recover -- )  thrown-down ;   \ (the story's 0xB2)
   on look-hold ( who frames -- )  her-look-hold !  her-look-who !  1 her-look-on ! ;   \ (the story's 0x96: Fiona_SetTarget)
@@ -206,8 +206,8 @@ behaviour free
   on text-shown ( on -- )  her-reading ! ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  2drop 2drop drop  her-st-cond !  drop her-st-mode !  drop ;
   on scene ( on -- )  her-in-scene ! ;   \ (a cutscene has her)
-  on go-to ( x y z -- )  >r >r cell>f r> cell>f r> cell>f  go-to-point ;
-  on place ( x y z yaw -- )  >r >r >r cell>f r> cell>f r> cell>f r> cell>f  put  fresh ;   \ (the story puts her)   \ (the room's scripts: Rooms_ExitPointOut, facing in)
+  on go-to ( x y z -- )  cells>xyz  go-to-point ;
+  on place ( x y z yaw -- )  cells>xyzw  put  fresh ;   \ (the story puts her)   \ (the room's scripts: Rooms_ExitPointOut, facing in)
   on camera-cut ( -- )  -1 her-cut ! ;
   \ struck or caught (F4: fiona.hurt)
   on hit ( kind how fright -- )
@@ -234,7 +234,7 @@ behaviour free
       her-move-done @  ended?  her-model @ 0 0 1 motion-events  broadcast moving ;
   \ the story's moves (fiona.moves)
   on scripted-move ( kind a b x y z yaw -- )
-      cell>f her-move-yaw f!  >r >r cell>f r> cell>f r> cell>f her-move-at vec!
+      cell>f her-move-yaw f!  cells>xyz her-move-at vec!
       her-move-b !  her-move-a !  dup her-move !  start-move ;
   on hold-anim ( anim flags blend -- )   \ (the scripts' 0x9D: in it, held - its flags hers)
       nip -1 play-blend  2 her-mode !  $11 her-doing !  ['] root-move her-act !  done ;

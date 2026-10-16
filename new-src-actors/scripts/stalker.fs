@@ -132,7 +132,7 @@ behaviour stalking
   on stalker-in ( room tri -- )  come-in ;
   on place ( x y z yaw -- )   \ (put there, facing so: where a cutscene left him)
       in-game @ 0= if  2drop 2drop exit  then
-      cell>f place-yaw f!  >r >r cell>f r> cell>f r> cell>f place-at vec!
+      cell>f place-yaw f!  cells>xyz place-at vec!
       room-id  place-at my-floor @ v-tri-in  place-at vec@ body-place  place-yaw f@ body-turn ;
   on stalker-out ( -- )  go-out ;
   on write-save ( -- )   \ (saves.fs) loaded: his kind, in the game or not, his place, health and mode

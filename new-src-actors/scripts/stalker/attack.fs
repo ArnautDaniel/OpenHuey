@@ -14,13 +14,19 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
 : move-at ( k -- n )   \ (the combo's k-th move number, -1 none)
     dup 4 < 0= if  drop -1 exit  then  combo @ 4 * + cells combos + @ ;
 : move-no ( -- n )  combo-step @ move-at ;
-: mv ( -- addr )  move-no /move * moves + ;
-: mv-anim ( -- a )  mv @ ;              : mv-bone ( -- b )  mv cell+ @ ;
-: mv-bone2 ( -- b )  mv 2 cells + @ ;   : mv-reach ( F: -- r )  mv 3 cells + f@ ;
-: mv-kind ( -- k )  mv 4 cells + @ ;    : mv-threat ( F: -- t )  mv 6 cells + f@ ;
-: mv-stumble ( F: -- c )  mv 7 cells + f@ ;
-: mv-turns? ( -- flag )  mv 8 cells + @ 0<> ;   : mv-cry ( -- id )  mv 9 cells + @ ;
-: mv-unshaken? ( -- flag )  mv 10 cells + @ 0<> ;   : mv-damage ( -- n )  mv 5 cells + @ ;
+\ a move of his move table (stalker/tables.fs: /move each)
+begin-structure /a-move
+    field: m.anim  field: m.bone  field: m.bone2  ffield: m.reach  field: m.kind  field: m.damage
+    ffield: m.threat  ffield: m.stumble  field: m.turns  field: m.cry  field: m.unshaken
+end-structure
+: move-of ( n -- addr )  /move * moves + ;
+: mv ( -- addr )  move-no move-of ;
+: mv-anim ( -- a )  mv m.anim @ ;          : mv-bone ( -- b )  mv m.bone @ ;
+: mv-bone2 ( -- b )  mv m.bone2 @ ;        : mv-reach ( F: -- r )  mv m.reach f@ ;
+: mv-kind ( -- k )  mv m.kind @ ;          : mv-threat ( F: -- t )  mv m.threat f@ ;
+: mv-stumble ( F: -- c )  mv m.stumble f@ ;
+: mv-turns? ( -- flag )  mv m.turns @ 0<> ;   : mv-cry ( -- id )  mv m.cry @ ;
+: mv-unshaken? ( -- flag )  mv m.unshaken @ 0<> ;   : mv-damage ( -- n )  mv m.damage @ ;
 
 \ ---- the threat on her (Pursuer_Threat): the fright, less with each 10 further off (x 0.75),
 \ none beyond 40 ----

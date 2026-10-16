@@ -266,7 +266,7 @@ create grab-spots  0 , -2 ,   0 , 2 ,   2 , 0 ,   -2 , 0 ,
                 target plan 0= if  exit  then
             then
             8 move-mode !
-            walk-path if  $C my-at vec@ f>cell >r f>cell >r f>cell r> r>  her send fiona-request exit  then   \ (on its way: her request to be held)
+            walk-path if  $C my-at vec@ xyz>cells  her send fiona-request exit  then   \ (on its way: her request to be held)
             her-held? 0= if  exit  then
             her-at heading-to body-turn  8 sound  $1900 play-now  1 step !
         endof

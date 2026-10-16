@@ -34,7 +34,7 @@ fvariable ob-back  fvariable ob-side  fvariable ob-s  fvariable ob-c
     here sf@  ob-s f@ ob-back f@ f* f-  ob-c f@ ob-side f@ f* f+  spot sf!
     here 8 + sf@  ob-c f@ ob-back f@ f* f-  ob-s f@ ob-side f@ f* f-  spot 8 + sf!
     spot sf@  here 4 + sf@  spot 8 + sf@  nav-floor drop  spot 4 + sf! ;
-: place-msg ( F: x y z yaw -- ) ( -- x y z yaw )  f>cell >r f>cell >r f>cell >r f>cell r> r> r> ;
+: place-msg ( F: x y z yaw -- ) ( -- x y z yaw )  xyzw>cells ;
 
 state: party-state
   #golems cells field golems   \ their models

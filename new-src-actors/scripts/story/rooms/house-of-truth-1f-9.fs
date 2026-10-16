@@ -59,7 +59,7 @@ fvariable dx  fvariable dz  fvariable dy
     3 random 1+  6 6 var @ - min  0 ?do
         free-keri dup 0< if  drop leave  then
         6 var-inc
-        drop-spot  f>cell >r f>cell >r f>cell r> r>  things-id send keri-drop
+        drop-spot  xyz>cells  things-id send keri-drop
     loop ;
 \ the placed thing 10 brought back (list +0x14 / +0x8, its +0xC, +0x28 on) and put on one of
 \ five spots round a circle (script variable 1, then on by 2 of 5): turned to the spot's angle

@@ -18,7 +18,7 @@ behaviour room-effect
   on spawned ( -- )  -1 particles ! ;
   on particles-made ( p -- )  particles ! ;
   on effect-command ( v -- )  particles @ swap particles-command ;   \ (the scripts' 0x87)
-  on effect-place ( x y z -- )  >r >r cell>f r> cell>f r> cell>f  particles @ particles-place ;   \ (moved by a room's command)
+  on effect-place ( x y z -- )  cells>xyz  particles @ particles-place ;   \ (moved by a room's command)
   on effect-rest ( n -- )  particles @ swap particles-rest! ;
   on killed ( -- )  particles @ particles-free ;
 end-behaviour

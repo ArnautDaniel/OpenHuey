@@ -326,7 +326,7 @@ variable snd-vol  variable snd-pitch
 \ ---- placing characters (the story puts them: a message to each) ----
 : place-char ( cs F: x y z yaw -- )   \ (a figure not yet placed too)
     dup 0< if  drop -1  else  slot-actor-of  then  dup 0< if  drop fdrop fdrop fdrop fdrop exit  then
-    >r  f>cell >r  f>cell >r  f>cell >r  f>cell  r> r> r> r>  send place ;
+    >r  xyzw>cells r>  send place ;
 fvariable at-y  fvariable keep-yaw
 : char-to-tri ( who tri -- )   \ (on the triangle's middle, its heading kept)
     swap who>cs dup 0< if  2drop exit  then

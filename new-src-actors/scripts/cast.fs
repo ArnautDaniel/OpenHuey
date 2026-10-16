@@ -199,7 +199,7 @@ behaviour figure
   on scene ( on -- )  in-scene ! ;
   \ the story's
   on place ( x y z yaw -- )
-      cell>f mv-yaw f!  >r >r cell>f r> cell>f r> cell>f mv-at vec!
+      cell>f mv-yaw f!  cells>xyz mv-at vec!
       room-id  mv-at cast-floor v-tri-in  mv-at vec@ body-place  mv-yaw f@ body-turn ;
   on to-exit ( exit -- )
       0 exit-spot dup 0< if  drop fdrop fdrop fdrop exit  then      ( tri ) ( F: x y z )
@@ -207,7 +207,7 @@ behaviour figure
   on show ( on -- )  0<> shown ! ;
   on scripted ( on -- )  drop ;
   on scripted-move ( kind a b x y z yaw -- )
-      cell>f mv-yaw f!  >r >r cell>f r> cell>f r> cell>f mv-at vec!
+      cell>f mv-yaw f!  cells>xyz mv-at vec!
       mv-b !  mv-a !  start-move ;
   on hold-anim ( anim flags blend -- )   \ (as asked: a take-off at once, not over its motion table's fade)
       {: a fl bl :}  model @ a has-motion? if  a anim !  model @ a bl fl motion-play  then

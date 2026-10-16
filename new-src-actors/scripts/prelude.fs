@@ -59,6 +59,13 @@ IN: forth
 : is     ' >body state @ if postpone literal postpone ! else ! then ; immediate
 \ a run of memory with a name: `16 cells buffer: name`
 : buffer: create allot ;
+\ records (Forth 2012's structures): a name for each field's offset, and the size -
+\   begin-structure /point  ffield: p.x  ffield: p.y  end-structure     ( addr p.y f@ )
+: begin-structure ( "name" -- addr 0 )  create here 0 ,  0  does> @ ;
+: +field ( n size "name" -- n' )  create over , +  does> @ + ;
+: field: ( n "name" -- n' )  1 cells +field ;
+: ffield: ( n "name" -- n' )  1 floats +field ;
+: end-structure ( addr n -- )  swap ! ;
 
 \ ---- numbers ----
 : within ( x lo hi -- flag ) over - >r - r> u< ;

@@ -65,7 +65,7 @@ behaviour hewie-own
   on hewie-skills ( s0 s1 s2 s3 s4 s5 -- )  0 5 do  i cells his-skill + !  -1 +loop ;
   on place ( x y z yaw -- )   \ (the story puts him)
       along? 0= if  2drop 2drop exit  then
-      >r >r >r cell>f r> cell>f r> cell>f  his-place  r> cell>f his-yaw! ;
+      >r cells>xyz  his-place  r> cell>f his-yaw! ;
   on leaving-room ( room exit -- )   \ (the old room still in)
       2dup room-exit-leads drop fiona-room !  nip  along? if  fiona-left  else  drop  then ;
   on arrived ( room exit -- )  drop fiona-room !
@@ -91,12 +91,12 @@ behaviour hewie-own
   on mood! ( mood -- )  along? if  -1 set-mood  else  drop  then ;
   on scent-at ( x y z -- )
       his-smells @ along? 0= or if  2drop drop exit  then
-      >r >r cell>f r> cell>f r> cell>f  his-scent vec!  1 his-smells ! ;
+      cells>xyz  his-scent vec!  1 his-smells ! ;
   on hold-spot ( tri x y z yaw -- )   \ (Pursuer_GrabHewieBehind: where he is held - +0x110, +0x10C, +0x104[1])
-      cell>f his-to-yaw f!  >r >r cell>f r> cell>f r> cell>f his-to vec!  his-to-tri ! ;
+      cell>f his-to-yaw f!  cells>xyz his-to vec!  his-to-tri ! ;
   on scent-now ( x y z -- )   \ (a room's command: his point to look to, whatever he had - Room26_Cmd02)
       along? 0= if  2drop drop exit  then
-      >r >r cell>f r> cell>f r> cell>f  his-scent vec!  1 his-smells ! ;
+      cells>xyz  his-scent vec!  1 his-smells ! ;
   on hewie-place ( room tri side -- )   \ (his +0x64, Hewie_PlaceInRoom)
       his-way !  over room-id = >r  place-on  r> if  to-default  then ;
   on hewie-side! ( side -- )  dup 3 u< 0= if  drop -1  then  his-way ! ;
@@ -125,7 +125,7 @@ behaviour hewie-own
   on scripted ( on -- )  along? if  his-busy !  else  drop  then ;
   on scripted-move ( kind a b x y z yaw -- )
       along? 0= if  2drop 2drop 2drop drop exit  then
-      cell>f his-to-yaw f!  >r >r cell>f r> cell>f r> cell>f his-to vec!
+      cell>f his-to-yaw f!  cells>xyz his-to vec!
       his-to-anim !  his-to-tri !  0 his-done !
       dup 12 = if  drop his-to-tri @ his-look-char !  0 his-look-pt? !  done! exit  then
       dup 13 = if  drop his-look-pt his-to vec-copy  1 his-look-pt? !  done! exit  then
