@@ -26,14 +26,15 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
 ' stand-watch is to-stand
 \ walking or stalking at her (Pursuer_CloseIn + Debilitas_ChaseTarget): his way to her re-planned
 \ every 15 frames; straight at her once nothing is in the way
+: replan ( -- )  15 step-t !  fiona body-tri dup 0< if  drop  else  fiona body-at plan 0> 0= no-way !  then ;
 : at-her ( -- )
-    -1 step-t +!  step-t @ 0> 0= if
-        15 step-t !  fiona body-tri dup 0< if  drop  else  fiona body-at plan drop  then
-    then
+    -1 step-t +!  step-t @ 0< >r  step-t @ 0> 0= if  replan  then
+    no-way @  r> base-chase @ or  and if  out-of-reach if  exit  then  then   \ (no way to her: round by a ladder -
+    \ Pursuer_CloseIn as he sets off, the Pursuer's ChaseTarget all the way)
     fiona self body-mask straight? if  fiona body-at step-toward exit  then
     walk-stride drop ;
 : walk-at ( id -- )   \ 5: walking ($200), 6: stalking ($201)
-    dup 5 = if  walk-fast  else  walk-slow  then  play  ['] at-her swap act! ;
+    0 no-way !  dup 5 = if  walk-fast  else  walk-slow  then  play  ['] at-her swap act! ;
 : keep ( id frames -- )  hold-t !  walk-at ;
 \ 3: turned on the spot toward her
 : turning-to ( -- )  root-move  ended? if  -1 step-done !  then ;
@@ -154,8 +155,9 @@ create family-acts  ' wander , ' turn-at-her , ' lunge , ' grab-dog ,
     chase-t @ 90 mod 0= chase-t @ 0> and if
         rnd 100e f* lunge-chance s>f f<= if  10 choose exit  then
     then
-    settled? if  fiona body-at 1.0471976e 2.6179939e way-past dup $FF <> if  turn-to-her exit  then  drop  then
+    settled? if  fiona body-at 1.0471976e 2.6179939e way-past dup $FF <> if  turn-to-her  else  drop  then  then
     rnd 100e f*
+    d-her f0< if  fdrop  out-of-reach 0= if  search-again  then  exit  then   \ (no way to her: Pursuer_ChaseFionaHere)
     faces-me? 0= if  1 back-or-hold exit  then
     d-her close-reach 20e f+ f> if  2 back-or-hold exit  then
     fdrop  watch-t @ if  -1 watch-t +!  else  5 $18 frames# keep  then ;

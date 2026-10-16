@@ -30,12 +30,20 @@ testing at its top facing it, the action button: on from the top ($700), then ho
 1 0 at-end
 T{ circle press  ladder  on? -> 0 1 -1 }T
 T{ [: anim $700 = ;] 30 soon  [: anim $708 = ;] 120 soon  on? -> -1 -1 -1 }T
-testing ... a stalker after her in the room (Npc_OpenDoorFionaHides, Pursuer_DoorApproach): to beside its foot (else its top), there facing her
+testing ... a stalker after her in the room (Npc_OpenDoorFionaHides, his action $12): to beside its foot, on ($704), up the rungs ($705)
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
-stalkers-blind state-flag-set  368 debug:debilitas-tri  deliver  [: 0 stalker:ordered ;] his  3 frames  stalkers-blind state-flag-clear   \ (after her at once: by its doorway he would wander off)
-T{ [: [: at-ladder @ 0 = ;] his ;] 30 soon -> -1 }T
-T{ [: [: step @ ['] by-the-ladder = ;] his ;] 600 soon -> -1 }T
+: his-anim ( -- a )  [: stalker.state:anim @ ;] his ;
+: his-height ( -- n )  [: self body-at 4 + sf@ f>s ;] his ;
+: after-her ( tri -- )   \ (after her at once: by its doorway he would wander off)
+    stalkers-blind state-flag-set  debug:debilitas-tri  deliver  [: 0 stalker:ordered ;] his  3 frames  stalkers-blind state-flag-clear ;
+368 after-her
+T{ [: [: at-ladder @ 0=  ladder-side @ 0= and ;] his ;] 30 soon -> -1 }T
+T{ [: his-anim $704 = ;] 300 soon  [: his-anim $705 = ;] 300 soon -> -1 -1 }T
+testing ... touching her, she is pulled off at its top ($F02); he gets off there ($707), on the floor above, after her again
+T{ [: anim $F02 = ;] 300 soon  [: his-anim $707 = ;] 300 soon -> -1 -1 }T
+T{ [: [: at-ladder @ 0< ;] his ;] 200 soon  his-height  [: free? ;] 200 soon -> -1 -1 -1 }T
 stalkers-blind state-flag-set  debug:debilitas-out  3 frames  stalkers-blind state-flag-clear
+1 0 at-end  circle press  [: anim $708 = ;] 200 soon drop
 testing down (S): rungs down to the foot, off there ($703) on the ground floor - free, the ladder let go
 key: S hold
 T{ [: anim $701 = ;] 60 soon  [: anim $703 = ;] 600 soon  [: free? ;] 120 soon -> -1 -1 -1 }T
@@ -76,5 +84,19 @@ T{ door-exit 0< 0= -> -1 }T
 T{ 5 door-exit strike  3 frames  [: her-sub @ ;] hers  anim dup $1008 = swap $100B = or -> $B -1 }T
 T{ [: free? ;] 300 soon -> -1 }T
 T{ 5 door-exit strike  3 frames  [: her-sub @ ;] hers -> $B }T
+
+testing no way to her on foot (Pursuer_TargetOutOfReach, Npc_RoundThroughDoor): she on the floor above, he below - round by the ladder, up from its foot
+stalkers-blind state-flag-set  debug:debilitas-out  3 frames  stalkers-blind state-flag-clear
+1 180 at-end  30 frames
+368 after-her
+T{ [: [: at-ladder @ 0=  ladder-side @ 0= and ;] his ;] 30 soon -> -1 }T
+T{ [: his-anim $704 = ;] 300 soon  [: his-anim $707 = ;] 600 soon  [: [: at-ladder @ 0< ;] his ;] 200 soon  his-height -> -1 -1 -1 -1 }T
+testing ... she below, he above: down from its top ($700, $701, off at its foot $703)
+stalkers-blind state-flag-set  debug:debilitas-out  3 frames  stalkers-blind state-flag-clear
+0 180 at-end  30 frames
+68 after-her
+T{ [: [: at-ladder @ 0=  ladder-side @ 1 = and ;] his ;] 30 soon -> -1 }T
+T{ [: his-anim $700 = ;] 300 soon  [: his-anim $701 = ;] 120 soon  [: his-anim $703 = ;] 600 soon -> -1 -1 -1 }T
+T{ [: [: at-ladder @ 0< ;] his ;] 200 soon  his-height -> -1 26 }T
 
 test-summary

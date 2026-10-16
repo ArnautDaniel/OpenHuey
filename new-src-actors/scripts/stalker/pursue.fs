@@ -37,7 +37,8 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
               d-her touch f<=  d-her f0< 0= and if  step-back  then  endof
         5 of  hold-t @ 0> 0=  d-her 100e f> or if  6  her-stage @ pursue-row 2 cells + @  keep
               else  d-her touch f<=  d-her f0< 0= and if  step-back  then  then  endof
-        1 of  d-her ground-gained f>  in-front? 0= or if  pick-pace  then  endof
+        1 of  d-her ground-gained f>  in-front? 0= or if  pick-pace
+              else  d-her f0< if  out-of-reach 0= if  search-again exit  then  then  then  endof
         $1A of  step-done @ if  5  her-stage @ pursue-row cell+ @  keep  then  endof
         $1B of  step-done @ if  5  her-stage @ pursue-row cell+ @  keep  then  endof
         >r  step-done @ if  pick-pace  then  r>

@@ -129,12 +129,15 @@ create to-at 12 allot
 \ her on foot, his way re-planned every 30 frames; standing facing her within 15. Seeing her,
 \ his chase (stalker/chase.fs: `chase-begin`) ----
 defer round-to-her ( -- went? )   ' false is round-to-her   \ (she across his room: stalker/doorway.fs)
+defer out-of-reach ( -- went? )   ' false is out-of-reach   \ (no way to her on foot: round by a ladder - stalker/ladder.fs)
+defer at-a-ladder? ( -- flag )   ' false is at-a-ladder?   \ (his ladder action - stalker/ladder.fs)
 defer leave-at-random ( -- )   ' noop is leave-at-random   \ (out by an exit at random: stalker/doorway.fs)
 defer out-cancelled ( -- )   ' noop is out-cancelled      \ (his way out given up: stalker/doorway.fs)
 : after-her ( -- )
     -1 step-t +!  step-t @ 0> if  exit  then  30 step-t !
     round-to-her if  exit  then
-    fiona body-tri dup 0< if  drop exit  then  fiona body-at plan 0> 0= if  exit  then
+    fiona body-tri dup 0< if  drop exit  then  fiona body-at plan 0> 0= if  out-of-reach drop exit  then   \ (none: round by a ladder -
+    \ Pursuer_WalkToGoal)
     d-fiona f@ 15e f< d-fiona f@ f0< 0= and if  stand-anim play  my-path path-clear  else  walk-anim play  then
     her-unseen @  d-fiona f@ 10e f<  d-fiona f@ f0< 0= and and  my-mode @ 0= and if  0 mode-t !  then ;   \ (there, and she's not: Pursuer_BehaviourRun)
 : chase-step ( -- )   \ (the step while after her)
@@ -166,6 +169,7 @@ create drawn-at 12 allot
     dup drawn-tri !  2 mode!  route-clear  0 route-add  search-start ;
 : modes ( -- )
     here-played? 0= if  exit  then
+    at-a-ladder? if  exit  then   \ (to a ladder or on it: his chase's action $12, over first)
     reeling @ at-dog @ or if  exit  then   \ (struck: his reaction first; after Hewie)
     out-going @ if   \ (on his way out by a door: that first - unless he's only wandering off, when the
         wandering-out @ 0=  sees-fiona @ did-hear @ or 0=  or if  exit  then   \ sight of her or a noise

@@ -88,6 +88,32 @@ create left-at 12 allot  create right-at 12 allot
     swap step-foot @ 1 and +  swap  1 step-foot +! ;
 : step-pace ( F: -- 0..1 )  stride 0.6e f- 0.8e f/  0e fmax 1e fmin ;
 : step-floor ( v -- flags )  v-tri dup 0< if  drop self body-tri  then  nav-flags ;
+\ on a ladder (his move mode 3: stalker/ladder.fs) the rungs' sound (10) - but getting on or off
+\ at its foot ($704 / $703) with the foot over the floor out from it, the floor's (off there: under
+\ the foot from the foot's spot); off at its top ($707) the floor's from the top's spot. -1: the
+\ floor under the foot as anywhere
+-2 constant rungs
+: ladder-offset ( i -- ) ( F: -- ox oz )  2* floats ladder-offsets @ +  dup f@  float+ f@ ;   \ (vtable +0x9C)
+create lf-at 12 allot
+: from-end ( v side -- flags | -1 )   \ (Actor_TriFrom: walked straight to the foot from that end's spot)
+    at-ladder @ over nav-link-tri  swap at-ladder @ swap nav-link-spot lf-at vec!     ( v tri )
+    swap >r lf-at r> 0 v-walk  dup 0< if  exit  then  nav-flags ;
+: over-foot-floor? ( v -- flag )   \ (out from its foot by his offset 3: Actor_DoorFront)
+    at-ladder @ 0  3 ladder-offset nav-link-front  dup 0< if  2drop fdrop fdrop fdrop false exit  then
+    lf-at vec!  swap >r lf-at r> 0 v-walk 0< 0= ;
+: ladder-floor ( v -- flags | -1 | rungs )
+    anim @ case
+        $700 of  drop settled? if  rungs  else  -1  then  endof
+        $701 of  drop rungs  endof   $702 of  drop rungs  endof   $705 of  drop rungs  endof   $706 of  drop rungs  endof
+        $703 of  dup over-foot-floor? if  0 from-end  else  drop rungs  then  endof
+        $704 of  over-foot-floor? if  -1  else  rungs  then  endof
+        $707 of  1 from-end  endof
+        >r drop -1 r>
+    endcase ;
+: step-sound ( v -- id bank )
+    my-move-mode @ 3 = if  dup ladder-floor  else  -1  then
+    dup rungs = if  2drop 10 7 exit  then
+    dup 0< if  drop step-floor  else  nip  then  floor-sound ;
 : footsteps ( -- )
     self body-tri 0< if  exit  then
     my-kind @ 11 = if  anim @ $FF00 and dup $200 = swap $400 = or 0= if  exit  then  then
@@ -95,7 +121,7 @@ create left-at 12 allot  create right-at 12 allot
     ?dup 0= if  settled? standing? and if  0 step-foot !  then  exit  then
     1 = if  left-at  else  right-at  then
     flooded? if  1 over water-step  then
-    step-floor floor-sound
+    step-sound
     world-held state-flag? hushed @ or if  2drop  else  0  step-pace 2e f* f>s $7F and  my-at vec@ sound-at  then
     step-pace 0.5e f< if  $1C  else  $1F  then  room-id self body-tri -1 stalker-noise s" acoustics" actor-named send noise ;
 

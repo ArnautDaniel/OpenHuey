@@ -91,7 +91,9 @@ state: stalker-state
   1 floats field head-yaw  1 floats field head-pitch   \ his head's turn and tilt (the model's +0x858 / +0x854)
   cell field head-bone  cell field neck-bone            \ (+0x8B0 / +0x8B4; -1 none)
   cell field her-ladder-on      \ the ladder she is on (the room's nav link; -1 none: `fiona-plight`)
-  cell field at-ladder          \ the ladder he makes for or stands by (stalker/ladder.fs; -1 none)
+  cell field at-ladder          \ the ladder he makes for or climbs (stalker/ladder.fs; -1 none)
+  cell field no-way             \ his last way to her planned none (+0x1590 -1: Pursuer_ChaseTarget)
+  cell field ladder-side        \ the end he gets on at (+0x104: 0 its foot, going up; 1 its top, going down)
   cell field ladder-offsets     \ out from a ladder's ends: his family's (vtable +0x9C)
   cell field round-dir  1 floats field round-gone
   \ taking her (stalker/grab.fs): leading her (his mode 8 while she's his; 1 asked, -1 holding), how (6 by the hand,
