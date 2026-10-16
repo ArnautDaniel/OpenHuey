@@ -3,7 +3,7 @@
 \ (Debilitas: `debilitas`). P1: in the house - placed, standing, growling, telling the danger
 \ he is about; searching the room (stalker/search.fs: his modes, his route of stops, walking).
 IN: stalker
-USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.leads stalker.pursue stalker.grab stalker.struck stalker.bitten stalker.riccardo stalker.lorenzo2 stalker.ladder ;
+USING: engine game-state actors messages common facts flag-names room-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.leads stalker.pursue stalker.grab stalker.struck stalker.bitten stalker.riccardo stalker.lorenzo2 stalker.ladder stalker.head ;
 
 : me ( -- id )  self ;
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
@@ -63,7 +63,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
 : frame ( -- )
     away? if  away  pose  my-room 0 my-mode @ 0= 1 and danger-id send stalker-here  exit  then
     thaw  hurt-down  senses  modes  dog-temper  shut-behind  ladder-watch
-    step @ ?dup if  execute  then  search
+    step @ ?dup if  execute  then  search  looking   \ (Pursuer_Think: the head after the behaviour)
     played? growls @ and if  growl  then
     played? if  anim-sounds-play  then
     pose
@@ -83,7 +83,8 @@ USING: engine game-state actors messages common facts flag-names room-names path
     s" fiona" actor-named fiona-id !  s" hewie" actor-named hewie-id !
     hear-threshold @ stalker-noise s" acoustics" actor-named send listen
     pursuer-ladder ladder-offsets !  -1 her-ladder-on !  -1 at-ladder !
-    self subscribe zone-target  self subscribe zone-targets-off  self subscribe fiona-unseen ;
+    self subscribe zone-target  self subscribe zone-targets-off  self subscribe fiona-unseen
+    my-kind @ head-bones!  4 look-mode ! ;
 
 \ a door slammed off screen, the one he makes for: right behind it, its damage (not below 1) and
 \ he is after her
@@ -109,7 +110,8 @@ USING: engine game-state actors messages common facts flag-names room-names path
 \ bitten or leading her: then his mode only ----
 : up-again ( -- )  cond @ 2 = if  0 cond !  0 down-t !  then ;
 : busy? ( -- flag )  reeling @ bitten @ or leading @ or ;
-: ordered ( mode -- )
+: ordered ( mode -- )   \ (his wandering off given up: the order is his behaviour now)
+    wandering-out @ if  let-door-go  out-over  then
     case
         0 of  up-again  0 mode!  avoid-clear  busy? if  exit  then
               played? if  sees-fiona @ if  chase-begin  else  chase-start  then  else  head-for-her  then  endof

@@ -1,7 +1,7 @@
 \ The stalkers, P1: Debilitas in the house (docs/subsystems/stalker.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/stalker/test_stalker.fs
 IN: test-stalker
-USING: tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names gameover stalker.struck stalker.doorway fiona.defend fiona.slam ;
+USING: tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.head stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names gameover stalker.struck stalker.doorway fiona.defend fiona.slam ;
 fvariable dx  fvariable dy  fvariable dz  fvariable dyaw
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
@@ -47,12 +47,15 @@ testing ... camouflaged and still (fiona-unseen): not seen ahead, nor in reach b
 T{ 40e there  seen  -15e there  seen -> 0 0 }T
 0 broadcast fiona-unseen  deliver  face   \ (him turned back as he was: searching for her meanwhile)
 T{ 40e there  seen -> -1 }T
+testing ... his head looks at her (look mode 1): turned toward her, his sight with it
+40e there  [: 0.4e yaw f+ body-turn  1 stalker.state:look-mode ! ;] his  1 frames
+T{ [: head-yaw f@ fabs 0.05e f>  view-heading f@ yaw head-yaw f@ f+ angle-wrap f- fabs 0.01e f< ;] his -> -1 -1 }T
 : heard-any ( -- flag )   \ (a noise each frame; heard on the frame after its end)
     0 10 0 do  $14 room-id s" fiona" actor-named body-tri -1 0 game:acoustics send noise  game-tick  [: did-hear @ ;] his or  loop ;
 T{ heard-any -> -1 }T
 debug:debilitas-out  2 frames
 
-testing searching (P1c): he sets off for a stop; his route over, he waits, then searches the room (2..5 stops)
+testing searching (P1c): he sets off for a stop; his route over, waiting about (mode 3) he makes for an exit at random to go
 front-garden-2 room!  10 frames
 140.64e her-y -217.33e 0e tp-facing  2 frames
 s" fiona" actor-named body-tri  -500e her-y -500e tp  2 frames   \ (her well out of his sight)
@@ -62,8 +65,9 @@ create p0 12 allot  p0 game:debilitas body-at vec-copy
 : wait-for ( xt n -- flag )   \ (up to n frames for xt, run as him, to be true)
     0 ?do  dup his if  drop true unloop exit  then  game-tick  loop  drop false ;
 T{ 120 frames  moved 3e f>  [: route-end @ 1 >= ;] his -> -1 -1 }T
-T{ [: route-done @ ;] 300 wait-for  [: my-mode @ ;] his -> -1 3 }T
-[: 1 mode-t ! ;] his  3 frames
+T{ [: out-going @ 0<> ;] 300 wait-for  [: my-mode @  making-for @ 0< 0= ;] his -> -1 3 -1 }T
+testing ... searching again (2..5 stops) when told to
+[: search-again ;] his  3 frames
 T{ [: my-mode @  route-end @ dup 2 >= swap 5 <= and  search-phase @ ;] his -> 2 -1 1 }T
 T{ [: route-next @ 1 >= ;] 900 wait-for -> -1 }T
 testing seeing her he's after her (mode 0): closer on foot

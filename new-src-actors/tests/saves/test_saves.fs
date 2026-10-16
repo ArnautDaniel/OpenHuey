@@ -36,7 +36,7 @@ T{ 0 skill  5 skill  1 skill -> 27 3 16 }T
 testing the stalker kept: Debilitas in the game here, saved, let go, back where he was
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 [: 2 partner-load ;] game:story enter execute leave-actor  deliver  2 frames
-front-garden-2 0 game:debilitas send stalker-in  deliver  5 frames
+front-garden-2 0 game:debilitas send stalker-in  deliver  [: 0 stalker:ordered ;] his  5 frames   \ (after her: kept in her room)
 [: 7 hp ! ;] his
 ' saves:quick-save in-saves  deliver  2 frames
 T{ saves:save-path file-exists? -> -1 }T

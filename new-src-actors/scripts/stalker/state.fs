@@ -85,6 +85,9 @@ state: stalker-state
   cell field cry  cell field hold-off  cell field freeze-t
   cell field her-plight  cell field her-stage
   cell field her-unseen          \ she can't be seen: item $89 worn, still (Fiona +0x1AD630; fiona-unseen)
+  cell field look-mode           \ where his head looks (+0x1710): 1 her, 2 Hewie, 3 his goal, 4 ahead; 0 as it was
+  1 floats field head-yaw  1 floats field head-pitch   \ his head's turn and tilt (the model's +0x858 / +0x854)
+  cell field head-bone  cell field neck-bone            \ (+0x8B0 / +0x8B4; -1 none)
   cell field her-ladder-on      \ the ladder she is on (the room's nav link; -1 none: `fiona-plight`)
   cell field at-ladder          \ the ladder he makes for or stands by (stalker/ladder.fs; -1 none)
   cell field ladder-offsets     \ out from a ladder's ends: his family's (vtable +0x9C)
@@ -116,6 +119,7 @@ state: stalker-state
   \ waited at one held shut; a door slammed on him - the exit (-1 none: staggered back), the
   \ heading he is pushed along; frames stunned off screen after being knocked out of the room
   \ (+0x1664: 150); the exit Fiona came in by (the half of the room she is on)
+  cell field wandering-out      \ out by an exit at random (his search over): sight or a lead turns him back
   cell field out-going  cell field door-use  cell field asked  cell field held-door  cell field door-wait
   cell field push-exit  1 floats field push-way  cell field stun-t
   cell field her-came

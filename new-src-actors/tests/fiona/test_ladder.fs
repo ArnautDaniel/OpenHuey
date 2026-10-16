@@ -32,7 +32,7 @@ T{ circle press  ladder  on? -> 0 1 -1 }T
 T{ [: anim $700 = ;] 30 soon  [: anim $708 = ;] 120 soon  on? -> -1 -1 -1 }T
 testing ... a stalker after her in the room (Npc_OpenDoorFionaHides, Pursuer_DoorApproach): to beside its foot (else its top), there facing her
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
-stalkers-blind state-flag-set  368 debug:debilitas-tri  3 frames  [: 0 mode! ;] his  stalkers-blind state-flag-clear
+stalkers-blind state-flag-set  368 debug:debilitas-tri  deliver  [: 0 stalker:ordered ;] his  3 frames  stalkers-blind state-flag-clear   \ (after her at once: by its doorway he would wander off)
 T{ [: [: at-ladder @ 0 = ;] his ;] 30 soon -> -1 }T
 T{ [: [: step @ ['] by-the-ladder = ;] his ;] 600 soon -> -1 }T
 stalkers-blind state-flag-set  debug:debilitas-out  3 frames  stalkers-blind state-flag-clear
@@ -57,7 +57,7 @@ testing the stalker at its foot: she can't get off there - she holds on ($708)
 1 0 at-end  circle press
 key: S hold
 T{ [: height 3 > ;] 600 soon -> -1 }T
-368 debug:debilitas-tri  1 frames
+368 debug:debilitas-tri  deliver  [: 0 stalker:ordered ;] his  1 frames   \ (after her: kept by its foot)
 T{ [: 0 stalker-on ;] hers  [: anim $708 = ;] 300 soon  on?  height 6 > -> -1 -1 -1 -1 }T
 key: S release
 

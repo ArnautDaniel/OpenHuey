@@ -6,7 +6,7 @@
 \ (a hold: whoever is within its reach at its key is held) - and the threat of it on her
 \ (Pursuer_Threat).
 IN: stalker.attack
-USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.tables ;
+USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.tables stalker.head ;
 
 : panic-id ( -- id )  s" panic" actor-named ;
 
@@ -133,7 +133,7 @@ defer next-move ( -- )
         then
     then
     combo-over ; is next-move
-: combo-start ( n -- )  combo !  0 combo-step !  0 took !  0 step-done !  $13 chase-act !  next-move ;
+: combo-start ( n -- )  combo !  0 combo-step !  0 took !  0 step-done !  $13 chase-act !  $13 action-look!  next-move ;
 
 \ ---- a blow's mark (HitEffect_Spawn: `spray`) on someone, that much of their height up them;
 \ his animation's effect key ($20: where his blows land) ----

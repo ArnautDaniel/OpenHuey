@@ -6,7 +6,7 @@
 \ her on her floor, he attacks - his table for how she stands (`fiona-plight`): a combo
 \ (stalker/attack.fs), a taunt, a step round her. Losing sight of her he goes to where she is.
 IN: stalker.chase
-USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack ;
+USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.head ;
 
 : close-reach ( F: -- d )  hard-mode? if  40e  else  50e  then ;   \ (+0x17E4)
 : frames# ( off -- n )  2 rshift cells chase-frames + @ ;     \ (his chase table by its offset)
@@ -20,7 +20,7 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
 
 \ ---- what he does (the actions) ----
 : let-her-go ( -- )  leading @ if  0 leading !  fiona send unhand  then ;
-: act! ( xt id -- )  let-her-go  chase-act !  act-xt !  0 step-done !  0 step-t ! ;
+: act! ( xt id -- )  let-her-go  dup action-look!  chase-act !  act-xt !  0 step-done !  0 step-t ! ;
 : watching ( -- )  freeze-t @ 0= if  root-move  then ;      \ (Pursuer_Move180)
 : stand-watch ( -- )  stand-anim play  ['] watching 1 act! ;           \ 1: standing (Pursuer_Move17C)
 ' stand-watch is to-stand

@@ -29,7 +29,7 @@ create spot-at 12 allot
 \ ---- the door he holds let go open (Npc_DoorRelease); his way out over ----
 : let-door-go ( -- )
     held-door @ dup 0< if  drop exit  then  room-id swap stalker-noise doors-actor send let-go-open  -1 held-door ! ;
-: out-over ( -- )  0 out-going !  -1 door-use !  -1 asked ! ;
+: out-over ( -- )  0 out-going !  0 wandering-out !  -1 door-use !  -1 asked ! ;
 : give-up-door ( -- )  let-door-go  out-over  door-done ;
 : out ( -- )  let-door-go  out-over  making-for @ through ;   \ (Pursuer_ThroughDoor)
 
@@ -104,6 +104,25 @@ defer at-exit ( -- )
     dup 2 exit-spot aim-at if  drop                        \ (12 inside it; else 4 inside; else at
     else  0 exit-spot aim-at 0= if  at-exit  out-going @ 0<> exit  then  then   \ its door at once)
     walk-anim play  ['] to-exit step!  true ;
+
+\ ---- out by an exit at random (Npc_RandomExit, Pursuer_PlanWhere's mode 3): one of the usable
+\ exits on his side of the room - the side of the exit he came in by - at random; the one he
+\ came in by drawn first, drawn once more ----
+create re-list 8 cells allot  variable re-n
+: my-side ( exit -- way )  my-room swap 1 exit-way ;
+: random-exit ( -- exit | -1 )
+    0 re-n !
+    8 0 do
+        came-by @ 0< if  true  else  i my-side came-by @ my-side =  then
+        i usable? and if  i re-n @ cells re-list + !  1 re-n +!  then
+    loop
+    re-n @ 0= if  -1 exit  then
+    re-n @ s>f rnd f* f>s re-n @ 1- min cells re-list + @ ;
+:noname ( -- )
+    random-exit dup came-by @ = if  drop random-exit  then
+    dup 0< if  drop stand exit  then
+    out-by if  -1 wandering-out !  else  stand  then ; is leave-at-random
+:noname ( -- )  let-door-go  out-over ; is out-cancelled
 
 \ ---- the doors' answers to his asking ----
 : held-answer ( exit -- )   \ (`door-held`: his to open; else the door he came in by - swung open)
