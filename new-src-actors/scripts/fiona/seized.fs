@@ -41,7 +41,7 @@ create mt-at 12 allot  fvariable sdx  fvariable sdz
     dup her-tri @ = if   \ (in her own triangle: straight there)
         her-path 0 path-point mt-at vec-copy  1 her-path !  0 her-path path-i!  exit
     then
-    her-path her-tri @ her-at 2 pick mt-at blocked-floor path-plan 0> 0= if  drop -1 exit  then ;
+    her-path her-tri @ her-at 2 pick mt-at blocked-floor path-plan-curved 0> 0= if  drop -1 exit  then ;   \ (curved: led_away)
 
 \ ---- led there: turned to the spot's heading a fifth at a time, along her way a fifth of it a
 \ step while the animation fades in; there, on the spot ----
