@@ -53,7 +53,7 @@ start-headless                                                 \ new game at onc
 : free-play ( -- )   \ (the title and opening left out)
     s" opening" actor-named dup 0< if  drop  else  kill  then   \ (by name: its id may be another's by now)
     opening-done story-flag-set  grate-open story-flag-set  world-held state-flag-clear  hewie-commandable state-flag-set
-    front-garden-3 -1 rooms send go-to-room
+    front-garden-3 room!   \ (a jump: debug.fs gives her a camera)
     hewie send join-fiona ;
 
 \ the dance party (party.fs: golems dancing in a row, Fiona and Hewie in front; for fun) - F3 frees

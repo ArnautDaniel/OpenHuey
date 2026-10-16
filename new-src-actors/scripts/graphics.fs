@@ -43,17 +43,18 @@ PRIVATE>
     ['] gfx.bloom on  0.9e ['] gfx.bloom-threshold float!  0.12e ['] gfx.bloom-strength float!
     ['] gfx.fog off  0.0012e ['] gfx.fog-density float!  150e ['] gfx.fog-start float!   \ (the rooms have their own)
     ['] gfx.shadows on
-    1 ['] gfx.tonemap int!  0.35e ['] gfx.vignette float!  0.025e ['] gfx.grain float!
+    1 ['] gfx.tonemap int!  0.35e ['] gfx.vignette float!  0e ['] gfx.grain float!   \ (no grain: in a game this dark it reads as dither)
     1e ['] gfx.saturation float!  1e ['] gfx.contrast float!  1e ['] gfx.exposure float! ;
 
-\ darker and moodier: film curve, heavier fog, glow, grain and vignette, colours drained
+\ a touch moodier than enhanced: the film curve, a little haze, glow and grain, colours a shade
+\ drained - kept light (the strong version buried the game's own look)
 : look-cinematic
     look-enhanced
-    2 ['] gfx.tonemap int!  1.25e ['] gfx.exposure float!
-    0.6e ['] gfx.bloom-threshold float!  0.25e ['] gfx.bloom-strength float!
-    ['] gfx.fog on  0.0025e ['] gfx.fog-density float!  80e ['] gfx.fog-start float!
-    0.55e ['] gfx.vignette float!  0.045e ['] gfx.grain float!
-    0.8e ['] gfx.saturation float!  1.08e ['] gfx.contrast float! ;
+    2 ['] gfx.tonemap int!  1.1e ['] gfx.exposure float!
+    0.8e ['] gfx.bloom-threshold float!  0.16e ['] gfx.bloom-strength float!
+    ['] gfx.fog on  0.0008e ['] gfx.fog-density float!  200e ['] gfx.fog-start float!
+    0.42e ['] gfx.vignette float!  0.015e ['] gfx.grain float!
+    0.92e ['] gfx.saturation float!  1.03e ['] gfx.contrast float! ;
 
 \ ---- the menu ----
 \ An item is a record: label (address, length), kind, the field's word, and for numbers

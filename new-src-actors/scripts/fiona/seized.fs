@@ -5,7 +5,7 @@
 \ dragged off) or walking (8: carried off); grabbed outright (Fiona_StateGrabbed /
 \ Fiona_StateHeld: held, at its end the game's over). The game's end is the `caught` flag.
 IN: fiona.seized
-USING: engine game-state actors messages common facts flag-names keys paths rumble fiona.state fiona.model fiona.moving fiona.fear fiona.doors fiona.hurt ;
+USING: engine game-state actors messages common facts flag-names keys paths rumble fiona.state fiona.model fiona.controls fiona.moving fiona.fear fiona.doors fiona.hurt ;
 
 defer to-idle ( -- )
 : leader ( -- id )  her-hit-who @ ;
@@ -41,7 +41,7 @@ create mt-at 12 allot  fvariable sdx  fvariable sdz
     dup her-tri @ = if   \ (in her own triangle: straight there)
         her-path 0 path-point mt-at vec-copy  1 her-path !  0 her-path path-i!  exit
     then
-    her-path her-tri @ her-at 2 pick mt-at blocked-floor path-plan 0> 0= if  drop -1 exit  then ;
+    her-path her-tri @ her-at 2 pick mt-at blocked-floor path-plan-curved 0> 0= if  drop -1 exit  then ;   \ (curved: led_away)
 
 \ ---- led there: turned to the spot's heading a fifth at a time, along her way a fifth of it a
 \ step while the animation fades in; there, on the spot ----
@@ -57,15 +57,6 @@ create mt-at 12 allot  fvariable sdx  fvariable sdz
 \ ($1403) and he's told; the sixth drag she's dragged off ($1404: at its end the game's over).
 \ He lets go: she pulls free ($F02) ----
 create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
-: shakes-now ( -- n )   \ (Fiona_Shakes: the stick swung past 120 degrees, or out from rest; the buttons)
-    0  her-stick sf@ her-stick 8 + sf@ vlen                                   ( n ) ( F: len )
-    fdup 0.8e f<= if  0.2e f< if  -1 her-shake-rest !  then
-    else
-        fdrop  her-stick sf@ her-stick 8 + sf@ fatan2
-        her-shake-rest @ if  1+  0 her-shake-rest !  her-shake-a f!
-        else  fdup her-shake-a f@ f- angle-wrap fabs 2.0943952e f> if  1+  her-shake-a f!  else  fdrop  then  then
-    then
-    6 0 do  i start-button <> if  i button-pressed? if  1+  then  then  loop ;
 : tugged ( -- )   \ (each of his steps leading her by the hand, or dragging her: a tug felt)
     her-model @ 0 0 1 motion-events 2 and if  $60 8 fiona-jolt  then ;
 : pulled-up ( -- )  ended? if  free! to-idle exit  then  root-move ;
@@ -80,7 +71,7 @@ create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
     ended? if
         her-free @ if  $1403 -1 play-table  ['] pulled-up her-act ! exit  then
         1 her-drags +!
-        her-drags @ 6 = if  $1404 -1 play-table  ['] dragged-off her-act ! exit  then
+        her-drags @ 6 = if  fiona-occupied state-flag-set  $1404 -1 play-table  ['] dragged-off her-act ! exit  then
         $1401 -1 play-table
     else her-shakes @ -1 <> if
         her-shakes @  her-panic-stage @ 0 max 5 min cells shakes-to-break + @  >= if
@@ -110,7 +101,7 @@ create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
 \ ---- taken (the request kind 9 answered): her gasp, led away by the hand ($1400) or walking
 \ ($1500) - unless she isn't free, or there's no spot by him ----
 : seized ( who type -- taken? )
-    world-held state-flag? her-mode @ 0<> or if  2drop false exit  then
+    world-held state-flag?  her-mode @ dup 3 = over 4 = or swap $A = or  or if  2drop false exit  then   \ (Fiona_Reaction $A: not on a ladder, reacting or down)
     over 0< if  2drop false exit  then  over alive? 0= if  2drop false exit  then
     2dup spot-by dup 0< if  drop 2drop false exit  then
     her-led-tri !  her-led-at mt-at vec-copy                                    ( who type )
@@ -129,15 +120,15 @@ create gb-at 12 allot
 : held ( -- )
     her-cried @ 0= if  -1 her-cried !  $41 0 her-sound  then
     ended? if  caught-for-good  then   \ (the motion's flag $20: at its end)
-    anim@ $1101 = if  pull-back  else  root-move  then ;
+    anim@ $1101 = if  pull-back along-wall  else  root-move  then ;   \ (pull_back: along any wall)
 :noname ( -- )
     0 her-cried !  0 her-ended !  -1 her-fall-turn !  her-yaw f@ her-fall-yaw f!
     anim@ $100D = events 2 and 0= and if  $1503 -1 play-table  ['] held her-act ! exit  then
     anim@ dup $100A = over $B02 = or swap $B01 = or  events 2 and 0= and if
         $B03 -1 play-table  ['] held her-act ! exit
     then
-    her-yaw f@ 17e gb-at her-at vec-ahead
-    her-tri @ dup 0< if  drop -1  else  her-at gb-at $80001 v-walk  then
+    her-yaw f@ 17e gb-at her-at vec-ahead   \ (pulled back where she's free to be and 17 ahead is clear)
+    room-to-throw? if  her-tri @ dup 0< if  drop -1  else  her-at gb-at $80001 v-walk  then  else  -1  then
     0< if  $1100  else  0 her-fall-turn !  $1101  then  -1 play-table
     ['] held her-act ! ; is grabbed
 

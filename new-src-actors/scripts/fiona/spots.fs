@@ -23,7 +23,7 @@ USING: engine common paths fiona.state fiona.model fiona.moving ;
 : arrive-spot ( -- 0 )
     her-spot-tri @ her-tri !  her-at her-spot vec-copy  her-heading f@ her-yaw f!  $10 wk+  0 ;
 : rest-of-way ( F: -- d )  her-path her-at path-rest ;
-: plan ( -- ok? )  her-path her-tri @ her-at her-spot-tri @ her-spot blocked-floor path-plan 0> ;
+: plan ( -- ok? )  her-path her-tri @ her-at her-spot-tri @ her-spot blocked-floor path-plan-curved 0> ;   \ (curved: Character_WaypointsCurve)
 \ settle how to come round to the heading for the last part
 : last-part ( -- )
     8 wk+

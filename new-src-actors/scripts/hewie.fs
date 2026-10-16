@@ -57,7 +57,14 @@ behaviour hewie-own
   on write-save ( -- )   \ (saves.fs) with her: how he trusts her, his health, his place
       along? 0= if  exit  then
       his-trust @ .  his-trust-points @ .  his-hp @ .  self body-pos .at  self body-yaw .f  ." hewie-was" cr
-      6 0 do  i cells his-skill + @ .  loop  ." hewie-skills" cr ;
+      6 0 do  i cells his-skill + @ .  loop  ." hewie-skills" cr
+      \ (Hewie_SaveState: his room and the half of it he is on, his mood and its time, staying put,
+      \ his feelings about each stalker)
+      self body-room .  self body-tri .  his-way @ .  his-mood @ .  his-mood-time @ .  his-hide @ .
+      4 0 do  i cells his-feel + @ .  loop  ." hewie-state" cr ;
+  on hewie-mood-restore ( mood time hide f0 f1 f2 f3 -- )
+      3 cells his-feel + !  2 cells his-feel + !  1 cells his-feel + !  his-feel !
+      his-hide !  his-mood-time !  his-mood ! ;
   on hewie-restore ( trust points hp -- )  his-hp !  his-trust-points !  his-trust ! ;
   on full-health ( -- )  100 hp! ;                       \ (the story's 0x48)
   on heal ( n -- )  abs his-hp @ + 100 min hp! ;          \ (0xB8)

@@ -120,6 +120,7 @@ static void take_set(CamDirector *d, int n) {
         float f[8];
 
         memcpy(f, sSets + n * 8, sizeof(f));
+        d->shown = n;
         d->eye = vec3(f[0], f[1], f[2]);
         d->look = vec3(f[4], f[5], f[6]);
         d->set_fov = f[3] == 0.0f ? PI_F / 3.0f : 2.0f * PI_F * f[3] / 360.0f;
@@ -168,36 +169,34 @@ static void turn_view(CamDirector *d, float pitch, float yaw) {
     }
 }
 
-/* Camera_OutOfView, from the director's own view: outside a 4:3 picture's view volume (near 1,
- * far 2000) */
-static int out_of_view(const CamDirector *d, Vec3 p) {
-    Vec3 f = vec3_sub(d->look, d->eye), r, u, q = vec3_sub(p, d->eye);
-    float n = sqrtf(f.x * f.x + f.y * f.y + f.z * f.z), z, x, y, tx = tanf(d->fov * 0.5f);
+int camera_out_of_view(const Camera *c, Vec3 p) {
+    Mat4 v = camera_view(c);
+    float x = v.m[0] * p.x + v.m[4] * p.y + v.m[8] * p.z + v.m[12];
+    float y = v.m[1] * p.x + v.m[5] * p.y + v.m[9] * p.z + v.m[13];
+    float z = -(v.m[2] * p.x + v.m[6] * p.y + v.m[10] * p.z + v.m[14]);
+    float tv = tanf(c->fov * 0.5f), th = tv * 4.0f / 3.0f;
 
-    if (n == 0.0f) {
-        return 1;
-    }
-    f = vec3(f.x / n, f.y / n, f.z / n);
-    r = vec3(f.y * kUp.z - f.z * kUp.y, f.z * kUp.x - f.x * kUp.z, f.x * kUp.y - f.y * kUp.x);
-    n = sqrtf(r.x * r.x + r.y * r.y + r.z * r.z);
-    if (n == 0.0f) {
-        return 1;
-    }
-    r = vec3(r.x / n, r.y / n, r.z / n);
-    u = vec3(r.y * f.z - r.z * f.y, r.z * f.x - r.x * f.z, r.x * f.y - r.y * f.x);
-    z = q.x * f.x + q.y * f.y + q.z * f.z;
-    x = q.x * r.x + q.y * r.y + q.z * r.z;
-    y = q.x * u.x + q.y * u.y + q.z * u.z;
-    return z < 1.0f || z > 2000.0f || fabsf(x) > z * tx || fabsf(y) > z * tx * 0.75f;
+    return z < 1.0f || z > 2000.0f || fabsf(x) > z * th || fabsf(y) > z * tv;
 }
 
 /* ---- the path (CamPath_*) ---- */
 
-static int target_point(const CamDirector *d, Vec3 *out) {
-    if (d->target < 0) {
+/* where the one followed is now (its body, as the original reads its position through a pointer) */
+static int target_at(const CamDirector *d, Vec3 *out) {
+    const HBody *b = d->target < 0 ? NULL : hactor_body(d->target);
+
+    if (b == NULL || !b->has) {
         return 0;
     }
-    *out = vec3_add(d->target_at, d->offset);
+    *out = vec3(b->pos[0], b->pos[1], b->pos[2]);
+    return 1;
+}
+
+static int target_point(const CamDirector *d, Vec3 *out) {
+    if (!target_at(d, out)) {
+        return 0;
+    }
+    *out = vec3_add(*out, d->offset);
     return 1;
 }
 
@@ -408,12 +407,25 @@ static void keep_in_view(CamDirector *d, int rate) {
     turn_view(d, 0.0f, b * (float)rate / 100.0f);
 }
 
+/* (CamDirector_NewRoom: the camera reset - its shake off, no cut to see - nothing set, nobody
+ * followed, no event's shot nor cutscene; its rate, the characters' setups and whom it falls
+ * back on kept) */
 void camdir_new_room(CamDirector *d) {
+    float rate = d->move_rate;
+    int player = d->player, shown = d->shown, followed = d->followed;
+    int setups[HACTOR_MAX][2];
+
+    memcpy(setups, d->setups, sizeof(setups));
     memset(d, 0, sizeof(*d));
+    memcpy(d->setups, setups, sizeof(setups));
+    d->player = player;
+    d->shown = shown;
+    d->followed = followed;
+    d->move_rate = rate == 0.0f ? 6.0f : rate;
     d->set = 0;
     d->path_no = d->last_path = d->last_set = -1;
     d->target = d->last_target = -1;
-    d->move_rate = 6.0f;
+    d->shown_now = d->shown_before = -1;
 }
 
 void camdir_room_start(CamDirector *d, const float *sets, int nsets, const int32_t *paths) {
@@ -421,6 +433,7 @@ void camdir_room_start(CamDirector *d, const float *sets, int nsets, const int32
 
     sSets = sets;   /* (the original's camera has the room's sets already) */
     sNsets = nsets;
+    d->started = 1;
 
     d->last_set = d->last_path = -1;
     take_set(d, d->set);
@@ -460,16 +473,97 @@ void camdir_follow(CamDirector *d, int target, Vec3 offset) {
     d->offset = offset;
 }
 
+void camdir_char_setup(CamDirector *d, int who, int set, int path) {
+    if (who >= 0 && who < HACTOR_MAX) {
+        d->setups[who][0] = set;
+        d->setups[who][1] = path;
+    }
+}
+
+void camdir_forget_setups(CamDirector *d) {
+    int i;
+
+    for (i = 0; i < HACTOR_MAX; i++) {
+        d->setups[i][0] = d->setups[i][1] = -1;
+    }
+}
+
+int camdir_follow_check(CamDirector *d, int who) {
+    const HBody *b;
+
+    if (who < 0) {
+        camdir_follow(d, -1, vec3(0.0f, 0.0f, 0.0f));
+        return -1;
+    }
+    b = who < HACTOR_MAX ? hactor_body(who) : NULL;
+    if (b != NULL && (who == d->player || (b->has && d->setups[who][0] != -1 && b->room == gEngine.room.id))) {
+        return who;
+    }
+    camdir_follow(d, d->player, vec3(0.0f, 10.0f, 0.0f));
+    return d->player;
+}
+
+void camdir_camera_on(CamDirector *d, int who) {
+    d->followed = camdir_follow_check(d, who);
+    if (d->followed < 0) {
+        return;
+    }
+    camdir_follow(d, d->followed, vec3(0.0f, 10.0f, 0.0f));
+    camdir_set_setup(d, d->setups[d->followed][0], d->setups[d->followed][1]);
+}
+
+void camdir_take_followed(CamDirector *d) {
+    d->followed = camdir_follow_check(d, d->followed);
+    if (d->followed >= 0) {
+        camdir_set_setup(d, d->setups[d->followed][0], d->setups[d->followed][1]);
+    }
+}
+
+void camdir_scene(CamDirector *d, int on) {
+    d->scene = on != 0;
+    d->last_set = d->last_path = -1;
+}
+
+void camdir_retake(CamDirector *d) {
+    d->last_set = d->last_path = -1;
+    camdir_track(d);
+}
+
+void camdir_next_set(CamDirector *d) {
+    d->set = d->set + 1 < sNsets && d->set + 1 >= 0 ? d->set + 1 : 0;
+    d->path_no = -1;
+    d->target = -1;
+}
+
+void camdir_rate(CamDirector *d, float rate) {
+    d->move_rate = rate < 0.0f ? 6.0f : rate;
+}
+
+void camdir_shake(const CamDirector *d, Camera *c) {
+    static uint32_t seed = 0x2545F491u;
+    float s[3];
+    int i;
+
+    if (d->shake == 0.0f) {
+        return;
+    }
+    for (i = 0; i < 3; i++) {
+        seed = seed * 1664525u + 1013904223u;
+        s[i] = 2.0f * ((float)(seed >> 8) / 16777216.0f - 0.5f) * d->shake;
+    }
+    c->pos = vec3_add(c->pos, vec3(s[0], s[1], s[2]));
+}
+
 void camdir_track(CamDirector *d) {
     int far = 0, changed = 0;
     Vec3 p;
 
-    if (d->event) {
+    if (d->scene) {
         return;
     }
-    if (d->target >= 0 && d->last_target != d->target && target_point(d, &p)) {
+    if (d->target >= 0 && d->last_target != d->target && target_at(d, &p)) {
         if (d->path_no == -1) {
-            far = out_of_view(d, vec3_sub(p, d->offset));
+            far = camera_out_of_view(&gEngine.camera, p);   /* (the camera as last drawn) */
         } else {
             float span = (float)d->path.tmax, cur = d->path.t, t = path_nearest(d, 2, 0.0f);
             float diff = cur / span - t / span;
@@ -510,7 +604,8 @@ void camdir_ease(CamDirector *d) {
     float fov_deg, lim_deg, deg;
     uint8_t cut = d->cut;
 
-    if (d->event) {
+    d->changed = 0;
+    if (d->scene || d->event) {
         return;
     }
     if (!(cut & 0x80)) {
@@ -541,11 +636,22 @@ void camdir_ease(CamDirector *d) {
     }
 }
 
-void camdir_update(CamDirector *d) {
+void camdir_remember(CamDirector *d) {
+    d->changed = camdir_setup_changed(d);
     d->last_set = d->set;
     d->last_path = d->path_no;
     d->last_target = d->target;
-    if (d->event) {
+}
+
+int camdir_cut(const CamDirector *d) {
+    return d->shown_before != -1 && d->shown_now != d->shown_before;
+}
+
+void camdir_update(CamDirector *d) {
+    camdir_remember(d);
+    d->shown_before = d->shown_now;
+    d->shown_now = d->shown;
+    if (d->scene || d->event) {
         return;
     }
     if (d->path_no != -1) {

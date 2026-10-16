@@ -26,8 +26,6 @@ message arrived ( room exit -- )             \ the new room is in; arrivals come
 message entered-room ( room exit -- )        \ the room is in play
 
 \ ---- camera (docs/subsystems/camera.md) ----
-message camera-setup ( who set path -- )     \ who's camera set and path (path -1: none)
-message follow ( who -- )                    \ the camera follows who (-1: nobody)
 message camera-cut ( -- )                    \ it cut to a new set
 message hewie-yelp ( time anim -- )          \ (Hewie) hidden away, the animation he plays while `time` counts (-1: as it is) (0x77)
 message hewie-play ( anim -- )               \ (Hewie) his motion plays `anim` (0xD7)
@@ -35,7 +33,6 @@ message hewie-hold ( on -- )                 \ (Hewie) a 5-frame wait, and his n
 message hewie-costume ( kind -- )           \ (Hewie) his model swapped for kind 0..2 (the story's 0xB7)
 message show-avoid ( row -- )                 \ (the avoid prompt) its row shown for a second (the story's 0xB4)
 message event-shot ( on dist pitch yaw rise -- )   \ the story's own shot of the one followed, or back (thousandths; 0x82)
-message shake-camera ( amount -- )           \ the eye shaken by up to this each way (thousandths; 0 still; 0xD3)
 
 \ ---- creatures (docs/subsystems/creatures.md) ----
 message creature-place ( room level tri kind reach which yaw height -- )   \ (creatures) the story's 0x8A: one placed (height f>cell)
@@ -87,6 +84,7 @@ message danger ( level -- )                  \ broadcast: 0 calm, 1 followed, 2 
 \ ---- panic (docs/subsystems/panic.md); amounts and levels are floats (f>cell) ----
 message fright ( amount -- )                 \ (Panic_Fright: less with earrings $87 / $88 worn; f>cell)
 message fright-raw ( amount -- )             \ (Panic_FrightRaw: as it is)
+message panic-shorten ( frames -- )          \ (the panic) its time left shortened (the progress' +0x7BA: her shaking as she gets up)
 message fear-set ( amount -- )               \ the fear this frame set outright (the progress' +0x7D8 =: f>cell)
 message fear-in ( amount -- )
 message panic-stage! ( stage -- )
@@ -136,6 +134,7 @@ message write-save ( -- )                    \ broadcast: print your line of the
 message hewie-health ( hp -- )              \ broadcast each frame with hewie-doing: his health, 0..100
 message set-hp ( n -- )                    \ (Hewie) his health set (a room's command)
 message hewie-restore ( trust points hp -- )   \ (Hewie) as a save had him
+message hewie-mood-restore ( mood time hide f0 f1 f2 f3 -- )   \ (Hewie) his mood and its time, staying put, his feelings about the stalkers, as a save had them
 message hewie-skills ( s0 s1 s2 s3 s4 s5 -- )  \ (Hewie) his skills at fetching, as a save had them
 message fetch-this ( thing -- )                \ (Hewie) Fiona threw the ball: his to fetch (things.fs)
 message effect-place ( x y z -- )           \ (a room effect) moved there (f>cell)
@@ -171,6 +170,7 @@ message to-exit ( exit -- )                  \ (a character) put yourself on the
 message place ( x y z yaw -- )               \ (a character) put yourself there, facing so (floats f>cell)
 message go-to ( x y z -- )                   \ (a character) walk there over the nav mesh, then stand (floats f>cell; debugging, the story's moves)
 message camera-restart ( -- )                \ (the camera) the director starts over
+message camera-hold ( -- )                   \ (the game over -> the camera) the room's next set, nobody followed, from there on
 message room-enter ( room exit -- )          \ (a room actor, from the story) the room is in: phase 0, the characters, phase 3
 message room-leave ( -- )                    \ its exit is taken: phase 4
 message room-left ( -- )                     \ the next room is in: phase 5, then it reports
@@ -217,6 +217,7 @@ message particles-made ( p -- )               \ (a particles actor) the engine's
 message effect-command ( v -- )                  \ (an effect) a command later (the scripts' 0x87: 1 still, 2 moving)
 \ ---- the stalkers (docs/subsystems/stalker.md) ----
 message stalker-in ( room tri -- )           \ (a stalker) into the game, in that room on that triangle
+message stalker-restore-more ( cond hp-max rage temper hits mode-t down-t yaw -- )   \ (a stalker) the rest of how a save had him (Pursuer_LoadState)
 message stalker-restore ( hp mode -- )      \ (a stalker) as a save had him
 message stalker-out ( -- )                   \ (a stalker) out of the game
 message stalker-hunt ( -- )                  \ (a stalker) heads for Fiona's room (mode 1: the summoner, the console)
@@ -337,3 +338,5 @@ message load-from-slot ( n -- )       \ (saves) the game in save slot n back
 message game-saved ( -- )             \ (saves) to who asked: the save is written
 message item-var ( var value -- )          \ (items -> the room) its script variable var set to value (an item used: the word plate)
 message item-event-bit ( n on -- )         \ (items -> the room) its event bit n set or cleared (the word plate: the word was right)
+message meters? ( -- )                       \ (debug: to Fiona) her meters, please
+message her-meters ( fear breathless run -- )  \ (debug: Fiona's reply) her fear, out of breath, the running left

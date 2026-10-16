@@ -5,6 +5,8 @@
 \ room's tint going purple and its fog clear over 60 frames, the GAMEOVER movie, the tint
 \ drifting to blue for a minute (a face button cuts it short), black over 30 frames - and a
 \ fresh game: back to the title (`soft-reset`, as the original makes its title scene anew).
+\ A death in a movie (kind 0: the story's 0x8B 0) leaves the world running: its music (6) at
+\ once, the movie stopped but its last picture kept over everything, then the tints and on.
 IN: gameover
 USING: engine game-state actors messages keys facts flag-names story-names ;
 
@@ -18,6 +20,7 @@ state: gameover-state
   12 field tint-from  12 field tint-to   \ the tint's two colour words and its sharp byte; to
   16 field fog-from        \ the fog's colours and range
   16 field look-at         \ (scratch: a look effect's parameters)
+  cell field held          \ (kind 0) the movie's last picture kept, drawn over everything
 end-state
 
 : music-id ( -- id )  s" music" actor-named ;
@@ -70,8 +73,9 @@ variable tt  variable tn
     -1 timer +!  timer @ 0=  skip? or if  $FF bgm  0 timer !  10 step !  then ;
 
 \ ---- the sequence (GameOver_StateOthers / StateMode3: game_over) ----
-: freeze ( -- )   \ (the panic held, the actors and the room still; the world still drawn)
-    panic-held state-flag-set  1 still! ;
+: freeze ( -- )   \ (the panic held - the camera still - the actors and the room still; the world still
+    panic-held state-flag-set  1 still!  0e cam-shake!     \ drawn, from the room's next camera set)
+    s" camera" actor-named send camera-hold ;
 : run ( -- )
     step @ case
         0 of  0 0 30 music-id send music-op  movie-close  1 step !  endof
@@ -89,16 +93,29 @@ variable tt  variable tn
         9 of  drift  endof
         10 of  timer @ 30 < if  1 timer +!  then
                timer @ 30 = if  world-held state-flag-set  movie-close  11 step !  then  endof
-        11 of  12 step !  soft-reset  endof   \ (to the title: a fresh game)
+        11 of  12 step !  held @ if  movie-unhold  0 held !  then  soft-reset  endof   \ (to the title: a fresh game)
+    endcase ;
+\ kind 0 - the movie's (GameOver_StateMovie: a death in a movie): no freeze, no wipe - its
+\ music at once, the movie stopped, its last picture kept over everything; the tints, then on as
+\ the others
+: run-movie ( -- )
+    step @ case
+        0 of  6 bgm  0 0 30 music-id send music-op  movie-close  60 timer !  3 step !  endof
+        3 of  -1 timer +!  timer @ 0= if  tints-start  60 timer !  5 step !  then  endof
+        >r run r>
     endcase ;
 
 \ ---- drawing: the movie (class 6: its strip across the middle), the black ----
 variable sx  variable sy  variable sw  variable sh
 : draw ( -- )
     movie-layer ui-clear  black-layer ui-clear
+    step @ 0<  step @ 12 = or if  exit  then
+    screen-size  over 3 * 4 / over min  dup sh !  4 * 3 / sw !  sh @ - 2/ sy !  sw @ - 2/ sx !
+    held @ if   \ (kind 0: the movie's last picture over everything, the game over's movie over that)
+        movie-layer  0 0 screen-size  $000000FF ui-rect  movie-layer  sx @ sy @ sw @ sh @ ui-held
+    then
     step @ 7 < if  exit  then
     movie-status 1 = if
-        screen-size  over 3 * 4 / over min  dup sh !  4 * 3 / sw !  sh @ - 2/ sy !  sw @ - 2/ sx !
         movie-layer  sx @ sw @ 64 * 512 / +  sy @ sh @ 176 * 448 / +  sw @ 384 * 512 /  sh @ 96 * 448 /  ui-movie
     then
     step @ 10 >= if
@@ -110,10 +127,15 @@ behaviour ending-the-game
   on game-over-kind ( kind -- )  kind ! ;
   on tick ( -- )
       step @ 0< if
-          caught state-flag? if  caught state-flag-clear  kind @ 2 = if  12 step !  broadcast the-ending  else  0 step !  then  then
+          caught state-flag? if
+              caught state-flag-clear  0 held !
+              kind @ 2 = if  12 step !  broadcast the-ending  exit  then
+              kind @ 0= if  movie-status 0<> if  movie-hold held !  then  then   \ (GameOver_StateStart: its last picture)
+              0 step !
+          then
           exit
       then
-      run ;
+      kind @ 0= if  run-movie  else  run  then ;
   on frame-end ( -- )  draw ;
 end-behaviour
 

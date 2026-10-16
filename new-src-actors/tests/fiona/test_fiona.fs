@@ -1,7 +1,7 @@
 \ Fiona, phase F1: moving, footsteps, doors, going out (docs/subsystems/fiona.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/fiona/test_fiona.fs
 IN: test-fiona
-USING: tester engine game-state actors messages room-names game fiona.state fiona.model fiona.moving fiona.doors ;
+USING: tester engine game-state actors messages room-names game fiona.state fiona.model fiona.moving fiona.doors fiona.hurt ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : her@ ( xt -- x )  fiona enter  execute  leave-actor ;          \ (one of her fields, read inside her)
@@ -20,7 +20,7 @@ game:story send story-stop  deliver  progress pr.state 8 0 fill   \ (no room scr
 testing a new game: in the cage room, standing, followed by the camera
 T{ room-id  fiona body-room -> front-garden-3 front-garden-3 }T
 T{ anim -> 0 }T
-T{ game:camera enter  camera:followed @  leave-actor -> fiona }T
+T{ cam-followed -> fiona }T
 
 testing walking, running, stopping
 moved
@@ -85,5 +85,12 @@ key: W hold  30 frames
 T{ sub  room-id 0 fiona send arrived  1 frames  sub anim -> 1 1 $200 }T
 key: W release  25 frames
 T{ room-id 0 fiona send arrived  1 frames  sub anim -> 0 0 }T
+
+testing down after a fall, she gets up where she fell ($B01, then $B02; Fiona_StateSpecialEntry)
+moved
+[: floored ;] her@  1 frames
+T{ [: her-mode @ ;] her@  anim -> $A $B01 }T
+: up? ( n -- flag )  0 ?do  game-tick  [: her-mode @ 0= ;] her@ if  true unloop exit  then  loop  false ;
+T{ 600 up?  since 5e f<  [: her-tri @ 0< 0= ;] her@ -> -1 -1 -1 }T
 
 test-summary

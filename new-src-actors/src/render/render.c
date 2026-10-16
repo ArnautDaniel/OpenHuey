@@ -15,7 +15,7 @@ RenderSettings gRender = {
     .bloom = 1, .bloom_threshold = 0.9f, .bloom_strength = 0.12f,
     .fog = 1, .fog_density = 0.0012f, .fog_start = 150.0f, .fog_color = {0.05f, 0.055f, 0.07f},
     .exposure = 1.0f, .tonemap = 1, .saturation = 1.0f, .contrast = 1.0f,
-    .vignette = 0.35f, .grain = 0.025f,
+    .vignette = 0.35f, .grain = 0.0f,
     .shadows = 1,
     .light_dir = {0.35f, 0.85f, 0.4f}, .light_color = {0.55f, 0.52f, 0.48f}, .ambient = {0.16f, 0.17f, 0.2f},
     .rim = 0.35f,

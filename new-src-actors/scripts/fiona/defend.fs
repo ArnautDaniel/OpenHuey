@@ -130,8 +130,14 @@ create ahead-pt 12 allot   \ (her radius ahead)
 : spray-on ( id -- )   \ (the original picks one of four of their bones; here a height on them, at random)
     dup body? 0= if  drop exit  then
     >r  r@ body-tri 0  r@ body-at vec@  fswap  r> body-dims fswap fdrop  0.4e rnd 0.5e f* f+ f* f+  fswap  spray ;
+: by-dog? ( -- flag )  sender hewie-id = ;
+: dog-mistreated ( -- )   \ (her blow on Hewie: 3 more in his treatment - the progress' +0xFB6)
+    progress pr.hewie-mistreated dup l@ 3 + 0 max 10000 min swap l! ;
 : struck-home ( -- )
-    her-sub @ $1B = if  $C0 12 fiona-jolt  $90 0 her-sound  recoil exit  then   \ (her kick landed)
+    by-dog? if  dog-mistreated  then
+    her-sub @ $1B = if   \ (her kick landed: the rumble only on the stalker or a creature)
+        by-dog? 0= if  $C0 12 fiona-jolt  then  $90 0 her-sound  recoil exit
+    then
     form 6 = if  $22 0 her-sound  else  form 7 <> if  $8F 0 her-sound  then  then
     form 7 = if  sender spray-on  then
     blow-big @ if  sender body-at vec@ puffs  then

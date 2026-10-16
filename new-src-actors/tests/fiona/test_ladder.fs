@@ -2,7 +2,7 @@
 \ foot (side 0) on the ground floor, its top (side 1) on the floor above. Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/fiona/test_ladder.fs
 IN: test-ladder
-USING: tester engine game-state actors messages room-names game debug keys facts flag-names fiona.state fiona.model fiona.ladder stalker.state stalker.search stalker.ladder ;
+USING: tester engine game-state actors messages room-names game debug keys facts flag-names fiona.state fiona.model fiona.ladder stalker.state stalker.search stalker.ladder doors ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : hers ( xt -- x )  fiona enter  execute  leave-actor ;
@@ -98,5 +98,14 @@ stalkers-blind state-flag-set  debug:debilitas-out  3 frames  stalkers-blind sta
 T{ [: [: at-ladder @ 0=  ladder-side @ 1 = and ;] his ;] 30 soon -> -1 }T
 T{ [: his-anim $700 = ;] 300 soon  [: his-anim $701 = ;] 120 soon  [: his-anim $703 = ;] 600 soon -> -1 -1 -1 }T
 T{ [: [: at-ladder @ 0< ;] his ;] 200 soon  his-height -> -1 26 }T
+
+testing a shut door between them on his floor (Npc_ExitsToTri, his action $B): to its spot on his side, opened, let go open - after her again
+stalkers-blind state-flag-set  debug:debilitas-out  3 frames  stalkers-blind state-flag-clear
+: the-door ( -- door )  0 exit-door ;
+T{ the-door state@ opened-bit and -> 0 }T
+702 tp-tri  20 frames
+68 after-her
+T{ [: [: for-her @  making-for @ ;] his  0= and ;] 60 soon -> -1 }T
+T{ [: the-door state@ opened-bit and 0<> ;] 1200 soon  [: [: for-her @ ;] his 0= ;] 120 soon -> -1 -1 }T   \ (a long way round to its spot)
 
 test-summary

@@ -57,13 +57,16 @@ defer drop-door ( -- )   ' noop is drop-door   \ (a door she held let go: fiona.
         >r -1 r>
     endcase ;
 
-\ ---- where the blow came from: the turn from her heading to whoever struck ----
+\ ---- the way the blow sends her: from whoever struck to her (nobody: from where it was asked
+\ from - her request's point), turned from her heading ----
 fvariable side
+create from-pt 12 allot
 : striker? ( -- flag )  her-hit-who @ dup 0< if  drop false exit  then  dup alive? if  body?  else  drop false  then ;
 : blow-side ( -- )
-    striker? if  her-at her-hit-who @ body-at vec-heading her-yaw f@ f- angle-wrap  else  0e  then  side f! ;
-\ a fall by side: from in front (within 60 degrees) `front`, from behind (past 120) +1, from
-\ her left +3, her right +2
+    striker? if  her-hit-who @ body-at her-at vec-heading  else  from-pt her-at vec-heading  then
+    her-yaw f@ f- angle-wrap side f! ;
+\ a fall by side: sent along her heading - struck from behind - (within 60 degrees) `front`, sent
+\ back - struck from in front - (past 120) +1, to her left +3, her right +2
 : fall-by-side ( front -- )
     side f@ fabs 60e deg>rad f< if  -1 play-table exit  then
     side f@ fabs 120e deg>rad f> if  1+ -1 play-table exit  then
@@ -85,9 +88,9 @@ fvariable side
     then
     root-move ;
 
-\ ---- thrown (Fiona_StateThrown): facing him, back along her heading ($1008); from behind,
-\ forwards ($100B; panicking she is flung down $B04). Moved by the motion turned to the way he
-\ struck from, turning there 20 degrees a frame (pull_back_move); then up ($100A / $100D), or
+\ ---- thrown (Fiona_StateThrown): away from him - her back to him, forwards ($1008); facing
+\ him, backwards ($100B; panicking she is flung down $B04, turned to him). Moved by the motion
+\ turned to that way, turning there 20 degrees a frame (pull_back_move); then up ($100A / $100D), or
 \ panicking she stays down and gets up as from a panic fall ----
 : pull-back ( -- )
     her-fall-turn @ -1 = if  root-move exit  then
@@ -112,7 +115,7 @@ fvariable side
     pull-back  along-wall ;
 : thrown ( -- )
     settled? if
-        striker? if  0 her-fall-turn !  her-at her-hit-who @ body-at vec-heading her-fall-yaw f!
+        striker? if  0 her-fall-turn !  her-hit-who @ body-at her-at vec-heading her-fall-yaw f!   \ (away from him)
         else  -1 her-fall-turn !  her-yaw f@ her-fall-yaw f!  then
         her-fall-yaw f@ her-yaw f@ f- angle-wrap fabs pi f2/ f< if
             0 her-throw-back !  $1008 -1 play-table
@@ -156,7 +159,6 @@ fvariable side
 \ point) - on open floor by the side it came from ($1004 ahead .. as a blow), on a step or in a
 \ doorway straight down ($100F); her cry, a noise; at the fall's last frame the threat up 75,
 \ then up (MOTION_EVENTS $400 / $20: the motion's own flags, act.mflags) ----
-create from-pt 12 allot
 : at-end? ( -- flag )  her-model @ actor act.mflags l@ $400 and 0<> ;   \ (its last frame: the motion's flag $400)
 : risen ( -- )  ended? if  30 her-stumble-t !  to-idle exit  then  root-move ;
 : after-fall ( -- )
@@ -203,6 +205,12 @@ create door-pt 12 allot
         >r 0 0 r>
     endcase  ?dup if  fiona-jolt  else  drop  then ;
 
+: knocked-or-thrown? ( r -- flag )  dup $A = swap $C $10 within or ;
+: by-somebody? ( -- flag )  her-hit-who @ dup 0< if  drop false exit  then  s" hewie" actor-named <> ;
+: room-to-throw? ( -- flag )   \ (Actor_TriFreeFor: not on a floor nothing stands on, nor at a door or a ladder)
+    her-tri @ dup 0< 0= if  nav-flags $80001 and if  false exit  then  else  drop  then
+    at-a-door? by-a-ladder? or 0= ;
+
 \ ---- Fiona_React: the blow taken - its fright to her panic, what she was doing dropped, the
 \ reaction started; struck, the danger is told (a stumble resets her recovery: 1800 frames to calm) ----
 : struck ( kind how who -- taken? ) ( F: fright -- )
@@ -213,16 +221,21 @@ create door-pt 12 allot
     her-doing @ 3 = if  drop-door  then
     -1 her-fall-turn !  0 her-busy-t !
     4 her-mode !  $A her-doing !  dup her-sub !
-    dup $20 <> over $10 <> and  over $13 <> and  over $12 <> and if  1 danger-id send danger-signal  then   \ (Progress_SetCondBit 1: she's been struck)
-    her-hit-how @ $8000 and if  reset-recovery  then
+    dup knocked-or-thrown? if   \ (a blow: the danger told only of one by somebody other than Hewie;
+        by-somebody? if  1 danger-id send danger-signal  then   \ a stumble resets her recovery)
+        her-hit-how @ $8000 and if  reset-recovery  then
+    then
+    dup $B = over 8 = or if  1 danger-id send danger-signal  then   \ (Progress_SetCondBit 1: she's been struck)
     dup reaction-jolt
     dup $10 = if  drop  fiona-occupied state-flag-set  grabbed  true exit  then
     dup $12 = if  drop  held-down  true exit  then
     case
         $13 of  ['] falling her-act !  endof
         $20 of
-            her-hit-how @ 5 = if  -1 her-hit-who !  $D0 12 fiona-jolt  ['] thrown her-act !
-            else  $80 8 fiona-jolt  $B her-mode !  8 her-doing !  her-hit-how @ grip her-hit-how !  ['] flinching her-act !  then
+            her-hit-how @ 5 = if   \ (the door's hold: thrown where there's room, else knocked down by him)
+                room-to-throw? if  -1 her-hit-who !  $D0 12 fiona-jolt  ['] thrown her-act !
+                else  fiona.slam:stalker-in-room her-hit-who !  $80 8 fiona-jolt  $C her-sub !  ['] knocked her-act !  then
+            else  $B her-mode !  8 her-doing !  her-hit-how @ grip her-hit-how !  ['] flinching her-act !  then   \ (its rumble as she flinches)
         endof
         $A of  ['] thrown her-act !  endof
         $B of  her-hit-how @ her-door-hit !  ['] door-thrown her-act !  endof

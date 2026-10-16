@@ -13,7 +13,14 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
 : her-sound ( id vol -- )  5 swap 0 her-pos sound-at ;
 
 \ ---- her fear meter (Fiona_ChangeFear; charms: with items) ----
-: change-fear ( F: d -- )  her-fear f@ f+ 0e fmax 99e fmin her-fear f! ;
+: worn-scaled ( F: d -- d' )   \ (Fiona_ChangeFear's chokers: $8A a quarter off a rise; $8B a quarter off
+    \ a rise, half again on a fall; $8C no rise, a fall doubled)
+    fdup f0> if
+        her-choker case  $8A of  0.75e f*  endof  $8B of  0.75e f*  endof  $8C of  fdrop 0e  endof  endcase
+    else
+        her-choker case  $8B of  1.5e f*  endof  $8C of  2e f*  endof  endcase
+    then ;
+: change-fear ( F: d -- )  worn-scaled her-fear f@ f+ 0e fmax 99e fmin her-fear f! ;
 : fear-down ( -- )  her-danger @ 2 = if  -0.1e  else  -0.15e  then  change-fear ;   \ Fiona_FearDown
 
 \ ---- out of breath, panicking (Fiona_Panic, Fiona_FullPanic, Fiona_Exhausted) ----
@@ -67,20 +74,28 @@ create mouth 12 allot
     her-heading f@ her-yaw f@ f- angle-wrap  fdup fabs 0.25e f* 0.5e deg>rad fmax        ( F: a step )
     her-wall-side @ -1 = if  fover f0< if  0  else  1  then  her-wall-side !  then
     fswap fdrop  her-wall-side @ if  her-yaw f@ f+  else  her-yaw f@ fswap f-  then  angle-wrap her-yaw f! ;
-: getting-up ( -- )
+create probe 12 allot  create up-was 12 allot  variable up-tri
+: probe-ok? ( -- flag )   \ (the point 4 ahead of her reached straight over her floor: Actor_TriTo)
+    her-yaw f@ 4e probe her-at vec-ahead  her-tri @ her-at probe blocked-floor v-walk 0< 0= ;
+: getting-up ( -- )   \ (Fiona_StateSpecialEntry)
     settled? if
         anim@ $B01 = if
             her-still @ 0= if  stick-heading her-heading f!  then
             her-fear-bits @ 1 and 0= if  $B02 -1 play-table  then
         else anim@ $B02 = ended? and if  to-idle exit  then then
     then
-    root@  rm-z f@ f0> if
-        her-yaw f@ her-heading f@ rm-z f@ 10e f* deg>rad turn-toward fdrop her-yaw f!
+    root@  rm-z f@ f0> dup if   \ (turned toward the stick - not where 4 ahead can't be got to)
+        her-yaw f@  her-yaw f@ her-heading f@ rm-z f@ 10e f* deg>rad turn-toward fdrop her-yaw f!
+        probe-ok? if  fdrop  else  her-yaw f!  then
     then
     root-turn  her-yaw f@ her-heading f!
-    rm-x f@ rm-z f@ her-yaw f@ rotate-by move-by ;
+    up-was her-at vec-copy  her-tri @ up-tri !
+    rm-x f@ rm-z f@ her-yaw f@ rotate-by  her-at blocked-floor 1 or v-nav-move  dup 0< if  drop  else  her-tri !  then
+    if  probe-ok? 0= if  her-at up-was vec-copy  up-tri @ her-tri !  then  then   \ (moved off: back)
+    her-attack-t @ $97 < if  shakes-now if  2 panic-id send panic-shorten  2 her-attack-t +!  then  then ;
 : fallen ( -- )
-    ended? if  0 her-attack-t !  $B01 -1 play-table  $A her-mode !  $B her-doing !  ['] getting-up her-act ! exit  then
+    ended? if  0 her-attack-t !  $B01 -1 play-table  $A her-mode !  $B her-doing !  -1 her-shake-rest !  0e her-shake-a f!
+        ['] getting-up her-act ! exit  then
     her-fall-turn @ -1 = if  root-move
     else
         root@ rm-x f@ rm-z f@ her-fall-yaw f@ rotate-by move-by
@@ -105,7 +120,7 @@ create next-at 12 allot
 : blocked-ahead? ( -- flag )   \ (the root motion's step ahead lands off her floor)
     root@  rm-x f@ rm-z f@  her-still @ if  her-heading f@  else  stick-heading  then  rotate-by
     her-at 8 + sf@ f+ next-at 8 + sf!  her-at sf@ f+ next-at sf!  her-at 4 + sf@ next-at 4 + sf!
-    next-at blocked-floor v-tri-in 0< ;
+    her-tri @ her-at next-at blocked-floor v-walk 0< ;   \ (not reached straight over her floor: Actor_TriTo)
 : panic-controls ( -- done? )
     her-fear-bits @ 2 and if
         her-stumble-t @ if  -1 her-stumble-t +!  then

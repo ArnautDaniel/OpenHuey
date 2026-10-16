@@ -26,4 +26,11 @@ game:gameover enter  -1 gameover:step !  leave-actor  0 still!  panic-held state
 2 game:gameover send game-over-kind  2 frames  caught state-flag-set  2 frames
 T{ step? -> 12 }T
 
+testing a death in a movie (kind 0): the world not stilled, the movie stopped; the tint purple as the others
+game:gameover enter  -1 gameover:step !  leave-actor  panic-held state-flag-clear  world-held state-flag-clear
+s" OPENING.SFD" movie-open drop  10 frames   \ (a movie on)
+0 game:gameover send game-over-kind  2 frames  caught state-flag-set  3 frames
+T{ step? 0< 0=  panic-held state-flag?  movie-status 1 = -> -1 0 0 }T
+T{ ' purple? 400 soon -> -1 }T
+
 test-summary

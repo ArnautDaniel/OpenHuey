@@ -53,20 +53,28 @@ variable was-room
 variable was-costume   fvariable was-x  fvariable was-y  fvariable was-z  fvariable was-yaw
 variable was-hewie     fvariable hw-x   fvariable hw-y   fvariable hw-z   fvariable hw-yaw
 variable was-trust  variable was-points  variable was-hp
+variable hw-room  variable hw-tri  variable hw-side  create hw-mood 7 cells allot   \ (a save without them: her room, calm)
 create was-skills  6 cells allot   \ (a save without them: 16 each, as he starts)
 variable was-stalker   \ his kind (-1: none loaded)
 variable st-in  variable st-room  variable st-tri  variable st-hp  variable st-mode
+create st-more 8 cells allot   variable st-more?   \ (a save without them: as he was)
 
 : progress-clear ( -- )  progress progress-size 0 fill ;
 : progress-word! ( v i -- )  4 * progress + l! ;
-: in-room ( room -- )  was-room !  false was-hewie !  -1 was-stalker !  6 0 do  16 i cells was-skills + !  loop ;
+: in-room ( room -- )
+    dup was-room !  hw-room !  -1 hw-tri !  2 hw-side !  hw-mood 7 cells 0 fill
+    false was-hewie !  -1 was-stalker !  6 0 do  16 i cells was-skills + !  loop ;
 : fiona-was ( costume -- ) ( F: x y z yaw -- )  was-yaw f!  was-z f!  was-y f!  was-x f!  was-costume ! ;
 : hewie-was ( trust points hp -- ) ( F: x y z yaw -- )
     hw-yaw f!  hw-z f!  hw-y f!  hw-x f!  was-hp !  was-points !  was-trust !  true was-hewie ! ;
 
 : hewie-skills ( s0 s1 s2 s3 s4 s5 -- )  0 5 do  i cells was-skills + !  -1 +loop ;
+: fiona-camera ( set path -- )  s" fiona" actor-named -rot cam-char-setup ;   \ (her camera setup: the save's +0x1A0)
+: hewie-state ( room tri side mood time hide f0 f1 f2 f3 -- )
+    0 6 do  i cells hw-mood + !  -1 +loop  hw-side !  hw-tri !  hw-room ! ;
 
-: stalker-was ( kind in room tri hp mode -- )  st-mode !  st-hp !  st-tri !  st-room !  st-in !  was-stalker ! ;
+: stalker-was ( kind in room tri hp mode -- )  st-mode !  st-hp !  st-tri !  st-room !  st-in !  was-stalker !  false st-more? ! ;
+: stalker-more ( cond hp-max rage temper hits mode-t down-t yaw -- )  0 7 do  i cells st-more + !  -1 +loop  true st-more? ! ;
 
 \ ---- writing ----
 : .f ( F: r -- )  6 f>s$ type space ;   \ (always with a point: read back as a float)
@@ -87,14 +95,18 @@ fvariable tx  fvariable ty  fvariable tz
     was-x f@ was-y f@ was-z f@ was-yaw f@ place-msg fiona-id send place
     was-hewie @ if
         hewie-id send join-fiona
-        hw-x f@ hw-y f@ hw-z f@ hw-yaw f@ place-msg hewie-id send place
+        hw-room @ was-room @ <> hw-tri @ 0< 0= and if   \ (in another room: put there - Hewie_LoadState)
+            hw-room @ hw-tri @ hw-side @ hewie-id send hewie-place
+        else  hw-x f@ hw-y f@ hw-z f@ hw-yaw f@ place-msg hewie-id send place  then
+        7 0 do  i cells hw-mood + @  loop  hewie-id send hewie-mood-restore
         was-trust @ was-points @ was-hp @ hewie-id send hewie-restore
         6 0 do  i cells was-skills + @  loop  hewie-id send hewie-skills
     else  hewie-id send part-from-fiona  then
     was-stalker @ 0< if  slot-unload exit  then   \ (the stalker's slot: as it was)
     was-stalker @ partner-load
     st-in @ if  st-room @ st-tri @  was-stalker @ stalker-actor send stalker-in  then
-    st-hp @ st-mode @  was-stalker @ stalker-actor send stalker-restore ;
+    st-hp @ st-mode @  was-stalker @ stalker-actor send stalker-restore
+    st-more? @ if  8 0 do  i cells st-more + @  loop  was-stalker @ stalker-actor send stalker-restore-more  then ;
 
 0 constant idle   1 constant writing   2 constant entering   3 constant settling
 

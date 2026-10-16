@@ -14,7 +14,7 @@ USING: engine common room-names story.words story.shared flag-names ;
     lid-y -25.3e f< if
         s" kousi" $30 object@ f0> if
             -1e s" kousi" $30 object!  $310 story-flag-clear
-            cam-event? 0= if  2 6 0 0  0e 30e 30e sound  then
+            cam-scene? 0= if  2 6 0 0  0e 30e 30e sound  then
         then
         -25.3e s" kousi" place-y object!  s" kousi" $34 object@ -0.2e f* s" kousi" $34 object!
     then

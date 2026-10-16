@@ -61,9 +61,16 @@ USING: engine game-state actors messages common room-names story.state story.wor
     1 window-id send prompt ;
 : story-id ( -- id )  s" story" actor-named ;
 
+\ the camera at the start of play in the room, between its first scripts and its phase 3
+\ (CamDirector_RoomStart): from room to room the one it follows taken again (Progress_CameraOn)
+\ and its setup taken - placed, the phase 3 scripts seeing it changed; a fresh start (a new
+\ game, a load: SceneGame_RoomIn) cuts to it on the first frame
+: from-a-room? ( -- flag )  came-by @ 0< 0= ;
+: start-camera ( -- )  cam-room-start  from-a-room? if  cam-followed cam-on  then ;
+: shot-camera ( -- )  from-a-room? if  cam-update  then ;
 behaviour playing-room
   on room-enter ( room exit -- )
-      dup came-by !  exit-taken !  this-room !  $FF camera-char !
+      dup came-by !  exit-taken !  this-room !
       self subscribe tick  self subscribe frame-end
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing  self subscribe moving
       self subscribe stalker-doing  self subscribe stalker-blow  self subscribe item-event  self subscribe item-var  self subscribe item-event-bit  100 st-age !  -1 st-blow !
@@ -71,7 +78,7 @@ behaviour playing-room
       0 phase
       #chars 0 do  i char-enter  loop
       remember-chars
-      3 phase ;
+      start-camera  3 phase  shot-camera ;
   on tick ( -- )
       clock-off   \ (drawn again by the rooms that show it, each frame)
       1 phase  -1 prep-scene !   \ (Progress_CharRequests: the actions prepared afresh)

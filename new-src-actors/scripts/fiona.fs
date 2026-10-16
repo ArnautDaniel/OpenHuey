@@ -173,21 +173,24 @@ $1C constant softened-layer
 \ a script letting go of her (its end, or cut off: the room left) - no longer crouched where she
 \ was hiding (Fiona_FullStop: its flags 9 and $A cleared; only the crouch sets $A)
 : crouch-over ( -- )  fiona-half-hidden state-flag-clear ;
+\ ... and the camera back on her, the story's shot over (Fiona_FullStop: Progress_CameraOn 0,
+\ CamDirector_HoldEffect1C 0)
+: let-go ( -- )  crouch-over  self cam-on  0 0 0 0 0 camera-id send event-shot ;
 
 behaviour free
-  on spawned ( -- )
+  on spawned ( -- )  self cam-player!
       -1 her-model !  -1 her-hit-who !  -1 her-shake-count !  her-creatures 10 cells -1 fill  progress pr.vars $26 + c@ wear  2e 15e body-size
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe camera-cut  self subscribe write-save  self subscribe creature-doing
       self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown  self subscribe scene  self subscribe stalker-doing ;
   on leaving-room ( room exit -- )  2drop  through-door ;
-  on arrived ( room exit -- )  nip arrive  1 her act.visible l!  self camera-id send follow ;   \ (the story's scripts place her too)
+  on arrived ( room exit -- )  nip arrive  1 her act.visible l! ;   \ (the story's scripts place her too)
   on to-exit ( exit -- )  arrive ;
   \ examining (Progress_PlayerButtons): an action offered here, taken with the action button
   \ while she is free; a script of the room has her, or lets go; a message on screen
   on offer ( scene arg -- )
       her-mode @ 0= her-doing @ 0= and  hands-off? 0= and  action-button? and
       sender alive? and  if  sender send take-offer  else  2drop  then ;   \ (its room gone meanwhile: nobody to answer)
-  on scripted ( on -- )  idle  dup 0= her-scripted @ 0<> and if  crouch-over  then  her-scripted ! ;
+  on scripted ( on -- )  idle  dup 0= her-scripted @ 0<> and if  let-go  then  her-scripted ! ;
   on noclip ( on -- )  her-noclip ! ;   \ (the story's 0x20)
   on aside ( on -- )  her-aside ! ;     \ (0x21: out of reach of attacks)
   on activate ( -- )  0 her-noclip !  0 her-aside !  idle ;   \ (the story's 0x15, Fiona_Activate: afresh, standing)
@@ -202,13 +205,15 @@ behaviour free
       2 pick 0 10 within if  sender  3 pick cells her-creatures + !  then
       8 =  swap self body-room =  and  swap 7 >= and if  2 her-carried-t !  then ;
   on write-save ( -- )   \ (saves.fs) her costume and place
-      her-costume @ .  self body-pos .at  self body-yaw .f  ." fiona-was" cr ;   \ (the new game; the story's 0x97)
+      her-costume @ .  self body-pos .at  self body-yaw .f  ." fiona-was" cr
+      self cam-setup-of swap . . ." fiona-camera" cr ;   \ (the new game; the story's 0x97)
   on text-shown ( on -- )  her-reading ! ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  2drop 2drop drop  her-st-cond !  drop her-st-mode !  drop ;
   on scene ( on -- )  her-in-scene ! ;   \ (a cutscene has her)
   on go-to ( x y z -- )  cells>xyz  go-to-point ;
   on place ( x y z yaw -- )  cells>xyzw  put  fresh ;   \ (the story puts her)   \ (the room's scripts: Rooms_ExitPointOut, facing in)
   on camera-cut ( -- )  -1 her-cut ! ;
+  on meters? ( -- )  her-fear f@ f>s  her-fear-bits @ 1 and  her-panic-t @  sender send her-meters ;   \ (the debug overlay)
   \ struck or caught (F4: fiona.hurt)
   on hit ( kind how fright -- )
       cell>f  over >r  sender struck if  r> sender send hit-taken  else  r> drop  then ;
@@ -227,8 +232,8 @@ behaviour free
       unseen-frame
       her-mode @ her-sub @ her-cond @ her-cmd @ her-doing @ broadcast fiona-doing
       her-hit-who @ broadcast fiona-struck-by
-      shakes-now  dup broadcast fiona-shaking
-      her-shake-count @ 0< if  drop  else  her-shake-count +!  her-shake-count @ broadcast fiona-shakes  then
+      shook-from-rest broadcast fiona-shaking
+      her-shake-count @ 0< 0= if  shakes-now her-shake-count +!  her-shake-count @ broadcast fiona-shakes  then   \ (a story counting them)
       plight  her-mode @ 3 = if  her-ladder @  else  -1  then  broadcast fiona-plight
       tell-head
       her-move-done @  ended?  her-model @ 0 0 1 motion-events  broadcast moving ;

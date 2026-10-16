@@ -5,7 +5,7 @@
 \ story's moves 12 / 13). The head bone ($35) takes the pitch and half the turn, the bone below
 \ it ($2B) the other half.
 IN: fiona.looks
-USING: engine actors common fiona.state fiona.model ;
+USING: engine actors common fiona.state fiona.model fiona.slam ;
 
 : head-bone ( -- b )  her-costume @ 1 = if  $35  else  $21  then ;   \ (FionaModel / EventHumanModel +0x8B0)
 : neck-bone ( -- b )  her-costume @ 1 = if  $2B  else  $17  then ;   \ (+0x8B4)
@@ -67,8 +67,9 @@ fvariable want-p  fvariable want-y  fvariable e-to  fvariable e-step
 : still? ( -- flag )  her-doing @ dup $E = over 1 = or swap $F = or ;
 : head ( -- )   \ (the look was cleared as her frame began: a state may have set it since)
     her-look-hold @ if  -1 her-look-hold +!  1 her-look-on !  then
-    her-look-on @ 0= her-mode @ 0= and  still? 0= and  anim@ 1 <> and if
-        dog-ok? if  hewie-id dup 50e sees? if  her-look-who !  1 her-look-on !  else  drop  then  then
+    her-look-on @ 0= her-mode @ 0= and  still? 0= and  anim@ 1 <> and  her-fear-bits @ 2 and 0= and if   \ (not panicking)
+        stalker-in-room dup 0< 0= if  dup 200e sees? if  her-look-who !  1 her-look-on !  else  drop  then  else  drop  then
+        her-look-on @ 0= dog-ok? and if  hewie-id dup 50e sees? if  her-look-who !  1 her-look-on !  else  drop  then  then
     then
     her-look-on @ if
         look-point if
@@ -79,7 +80,7 @@ fvariable want-p  fvariable want-y  fvariable e-to  fvariable e-step
         else  0e want-p f!  0e want-y f!  then
     else
         0e want-p f!
-        her-mode @ 0<> still? or if  0e  else  her-heading f@ her-yaw f@ f- angle-wrap  then  want-y f!
+        her-mode @ 0<> still? or  her-fear-bits @ 2 and or if  0e  else  her-heading f@ her-yaw f@ f- angle-wrap  then  want-y f!
     then
     her-head-pitch  want-p f@  want-p f@ her-head-pitch f@ f- fabs 0.1e f*  ease
     her-head-yaw  want-y f@

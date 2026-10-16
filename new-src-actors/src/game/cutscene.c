@@ -4,6 +4,7 @@
 #include "cutscene.h"
 
 #include "../core/files.h"
+#include "camdirector.h"
 #include "engine.h"
 #include "progress.h"
 #include "room.h"
@@ -498,6 +499,7 @@ void cutscene_run_state(void) {
         }
         C.state = STATE_PLAYING;
         cast();
+        camdir_scene(&gCamDir, 1);   /* (the camera director idle till the scene is over) */
         C.look = gRoomLook;
         C.status = 3;
         break;

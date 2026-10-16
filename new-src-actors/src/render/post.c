@@ -201,6 +201,11 @@ static const char *kCompositeFs =
     "layout(binding = 9) uniform sampler2D u_shine;\n"         /* layer $14's bright parts, blurred */
     "layout(location = 22) uniform vec3 u_shine_col;\n"        /* in this colour (0: none) */
     "out vec4 o_color;\n"
+    "uint mixu(uint x) {\n"   /* an integer hash (lowbias32): no patterns, on any GPU */
+    "    x ^= x >> 16; x *= 0x7feb352du; x ^= x >> 15; x *= 0x846ca68bu; x ^= x >> 16;\n"
+    "    return x;\n"
+    "}\n"
+    "float noise(uvec2 p, uint k) { return float(mixu(p.x + mixu(p.y + mixu(k)))) / 4294967295.0; }\n"
     "vec3 soft_shoulder(vec3 x) {\n"   /* the identity up to 0.8, then easing into 1 */
     "    vec3 over = max(x - 0.8, 0.0);\n"
     "    return min(x, 0.8) + 0.2 * (1.0 - exp(-over / 0.2));\n"
@@ -258,8 +263,17 @@ static const char *kCompositeFs =
     "    s = pow(c, vec3(1.0 / 2.2));\n"   /* to display values */
     "    s = clamp((s - 0.5) * u_contrast + 0.5, 0.0, 1.0);\n"
     "    s *= 1.0 - u_vignette * smoothstep(0.35, 0.95, length((v_uv - 0.5) * vec2(1.4, 1.0)));\n"
-    "    float n = fract(sin(dot(gl_FragCoord.xy + fract(u_time) * 97.0, vec2(12.9898, 78.233))) * 43758.5453);\n"
-    "    s += (n - 0.5) * u_grain;\n"
+    /* film grain (a setting: none by default) - a new pattern each frame, kept out of the
+     * shadows, where a dark game would show it as crawling dither */
+    "    uvec2 p = uvec2(gl_FragCoord.xy);\n"
+    "    if (u_grain > 0.0) {\n"
+    "        float n = noise(p, uint(u_time * 30.0) + 1u);\n"
+    "        s += (n - 0.5) * u_grain * smoothstep(0.02, 0.35, dot(s, vec3(0.299, 0.587, 0.114)));\n"
+    "    }\n"
+    /* against banding in the dark gradients going to 8 bits: a fixed (not moving) triangular
+     * dither of one step - below what the eye picks out */
+    "    float d1 = noise(p, 0u) , d2 = noise(p, 0x9E3779B9u);\n"
+    "    s += (d1 + d2 - 1.0) / 255.0;\n"
     "    o_color = vec4(s, 1.0);\n"
     "}\n";
 

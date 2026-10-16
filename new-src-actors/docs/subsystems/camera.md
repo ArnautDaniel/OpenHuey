@@ -10,52 +10,56 @@ staying nearest the character, or turns to keep the character in view.
 
 ## API
 
+The director is C (`src/game/camdirector.c`, the original's `CamDirector_*` with the
+progress' `Progress_Camera*`): it keeps whom it follows and each character's setup, so the story
+calls it directly, at the points the original does.
+
+| Word | Stack | Meaning |
+|---|---|---|
+| `cam-char-setup` | `( who set path -- )` | `who`'s setup from now on (path -1: none). The story's `char-camera` / `area-camera`. |
+| `cam-on` | `( who -- )` | Follow `who` and take their setup (-1: nobody; someone gone, elsewhere or without a setup: Fiona). The story's `camera-follow` (0x28). |
+| `cam-followed` | `( -- who )` | Whom it follows (the story's `camera-on`). |
+| `cam-shake!` | `( F: a -- )` | The eye shaken by up to `a` each way - for this frame: the panic stills it first each frame (0xD3). |
+| `cam-restart` | `( -- )` | Start over on the setup (0x4A). |
+| `cam-scene!` / `cam-scene?` | `( flag -- )` / `( -- flag )` | A cutscene has the camera (from its start of play to its signal 8): the director idle, `cam-set@` -1. Others wait on it (the summoner, the butterflies' motes). |
+| `cam-set@` / `cam-changed?` | `( -- set )` / `( -- flag )` | Conditions 0x25 and 0x2C (the phase 3 scripts' per-set depth ranges). |
+| `out-of-view?` | `( -- flag ) ( F: x y z -- )` | Off the camera's 4:3 picture, 1 to 2000 deep (`Camera_OutOfView`): condition 0x45, the director's own jump test. |
+
 | Message | Stack | To | Meaning |
 |---|---|---|---|
-| `camera-setup` | `( who set path -- )` | camera | `who`'s setup from now on (path -1: none). The story sends it as characters go into camera areas or arrive by exits. |
-| `follow` | `( who -- )` | camera | Follow this actor (-1: nobody; the camera stays). |
-| `event-camera` | `( on -- )` | camera | A scene drives the camera: the director stops (*to detail with cutscenes*). |
-| `camera-cut` | `( -- )` | broadcast | It cut to a new set (Fiona's controls turn with the view only after a cut). |
-
-**Facts:** the room's sets and paths (C, from the room file); the followed actor's body
-(position). The mechanics stay in C (`camdirector.c`, the original's `CamDirector_*`): easing,
-the path, the view angle dipping after a cut, the 4:3 to widescreen view.
-
-## State
-
-Who is followed; each character's setup (set, path); event mode.
+| `event-shot` | `( on dist pitch yaw rise -- )` | camera | The story's own shot of the one followed (0x82, thousandths), or back. |
+| `camera-hold` | `( -- )` | camera | The game over: the room's next set, nobody followed, from there on. |
+| `camera-cut` | `( -- )` | broadcast | It cut to another set (Fiona's controls keep the old view's directions). |
 
 ## Rules
 
-From `camera.c` (`CamDirector_*`), `Progress_CameraFollow`, `Progress_CameraSetup`, the play
-sub-state.
+From `camera.c` (`CamDirector_*`), `Progress_CameraFollow` / `CameraOn` / `CameraSetup`, the play
+sub-state and the room change.
 
-1. Each frame, after the characters have acted: the followed character's setup is given to the
-   director, which takes it if it changed (cut or new path), then places the camera (`Track`,
-   `ModeNormal`). `Ease` runs at the start of the frame.
+1. Each frame: `Ease` first (the view angle, the path toward the one followed, the turn to keep
+   them in view); after the characters have acted, whom it follows checked and their setup
+   taken, `Track` (a cut on a new set or path, or when a newly followed one is out of view),
+   `Update` (the setup remembered, the camera placed). A cut to another set is broadcast.
 2. Who may be followed (`Progress_CameraFollow`): Fiona always; another character only in the
    played room and with a setup. Otherwise the camera goes back to Fiona.
-3. A new room: no set, no path, no target (`NewRoom`). Once the room is in, its sets and paths
-   are taken (`RoomStart`). Arriving characters drop their setups, and the room's scripts give
-   new ones.
-4. While a scene drives the camera (event camera), the characters' controls freeze (the
-   frame flags 0x3F0), unless the scene says otherwise.
+3. From room to room the director goes on (its shake, its shot, whom it follows); only the
+   characters' setups go. The room starts it between its first scripts and its phase 3
+   (`RoomStart`, then `CameraOn`): the view angle from 0.6 of the set's, out to it over 60
+   frames, and the phase 3 scripts see the setup changed. A fresh start (a new game, a load:
+   `RoomIn`) resets it and cuts on the first frame; Fiona's setup is the save's.
+4. The panic stills the camera at the start of each frame and shakes it (0.2) through a panic's
+   later stretch (`Panic_Stage`), unless a cutscene has the camera or the panic is held.
+5. The story's shot: the point and heading fixed as it starts, its distance and angles as told;
+   the room's depth range off meanwhile. Following nobody ends it.
 
-## Design notes
+## Debug
 
-- The setups come from the story (the converted room scripts): `char-camera` / `area-camera`
-  become `camera-setup` messages.
-- The director follows a body (an actor's position), not a model.
-- Debug: a free camera (the old `freecam`) as a console command on the camera actor.
+- `room!` / `free-play` jump into a room with no exit to arrive by - nothing the original can do:
+  Fiona gets the room's set looking nearest her when the room's scripts give her none.
+- `.director` prints the director's state; F3 frees the camera.
 
 ## Status
 
-**Built** (`scripts/camera.fs`). The C director now follows a point (`cam-target!`), set each
-frame from the followed actor's body, not a model.
-
-The story's room scripts give the setups (`camera-setup`) and say whom to follow. A character
-the scripts give no setup gets the room's camera set whose look-at point is nearest it (no
-path): a fallback. `camera-restart` restarts the director (the scripts' 0x4A).
-
-Left: who may be followed (Fiona's rule), the event camera (with cutscenes), a debug free
-camera, a test with the room scripts' setups.
+**Built** (`scripts/camera.fs`, `src/game/camdirector.c`; `tests/camera/test_camera.fs`).
+The director reads the followed actor's body directly. Its random shake isn't the original's
+generator.

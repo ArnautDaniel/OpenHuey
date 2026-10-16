@@ -135,7 +135,17 @@ behaviour stalking
   on write-save ( -- )   \ (saves.fs) loaded: his kind, in the game or not, his place, health and mode
       loaded @ 0=  my-slot @ 2 <> or if  exit  then   \ (a scene's figure isn't the stalker in play)
       my-kind @ .  in-game @ 0<> .  self body? if  self body-room .  self body-tri .  else  -1 . -1 .  then
-      hp @ .  my-mode @ .  ." stalker-was" cr ;
+      hp @ .  my-mode @ .  ." stalker-was" cr
+      \ (Pursuer_SaveState: his condition, most health, rage, temper with Hewie, the damage he's had,
+      \ his mode's clock, his time down, his heading)
+      cond @ .  hp-max @ .  raging @ .  temper @ .  hits @ .  mode-t @ .  down-t @ .
+      self body? if  self body-yaw  else  0e  then  f>cell .  ." stalker-more" cr ;
+  on stalker-restore-more ( cond hp-max rage temper hits mode-t down-t yaw -- )   \ (Pursuer_LoadState)
+      cell>f  self body? if  body-turn  else  fdrop  then
+      down-t !  mode-t !  hits !  temper !  raging !  hp-max !  cond !
+      cond @ 2 =  in-game @ and if   \ (down: lying as he was, his time down to run - $1806)
+          lying-front lie-anim !  lie-anim @ play-now  1 down-stage !  -1 reeling !  ['] downed step!
+      then ;
   on stalker-restore ( hp mode -- )  mode!  hp ! ;
   on noclip ( on -- )  dup 0<> noclipped !  if  0  else  my-floor @  then  body-mask! ;   \ (the story's 0x20: through blocked floor - at doors)
   on drawn-to ( tri -- )  in-game @ if  go-for-doll  else  drop  then ;

@@ -17,6 +17,8 @@ USING: engine game-state actors messages common facts flag-names paths doors sta
 
 : doors-actor ( -- id )  s" doors" actor-named ;
 defer door-done ( -- )   ' stand is door-done          \ given up on the way out (struck.fs: on again)
+defer round-done ( -- )   ' stand is round-done        \ a door opened to get at her: his chase again (stalker/ladder.fs)
+defer round-failed ( -- )   ' stand is round-failed    \ ... given up (stalker/ladder.fs)
 defer door-recovered ( -- )   ' stand is door-recovered   \ a door's blow over (struck.fs)
 
 \ ---- a door as he finds it at an exit of his room (travel's door-kind: 2 held, 3 not for him,
@@ -29,14 +31,15 @@ create spot-at 12 allot
 \ ---- the door he holds let go open (Npc_DoorRelease); his way out over ----
 : let-door-go ( -- )
     held-door @ dup 0< if  drop exit  then  room-id swap stalker-noise doors-actor send let-go-open  -1 held-door ! ;
-: out-over ( -- )  0 out-going !  0 wandering-out !  -1 door-use !  -1 asked ! ;
-: give-up-door ( -- )  let-door-go  out-over  door-done ;
+: out-over ( -- )  0 out-going !  0 wandering-out !  -1 door-use !  -1 asked !  0 for-her ! ;
+: give-up-door ( -- )  let-door-go  for-her @  out-over  if  round-failed  else  door-done  then ;
 : out ( -- )  let-door-go  out-over  making-for @ through ;   \ (Pursuer_ThroughDoor)
 
 \ ---- on through an open door or a doorway (Pursuer_ExitGoTo: to its spot 12 beyond - its
 \ spots: 0 4 inside, 1 12 beyond, 2 12 inside -, or by it; then Debilitas_ExitDone: through) ----
 : going-through ( -- )  walk-stride if  out  then ;
-: on-through ( -- )
+: on-through ( -- )   \ (the door only opened to get at her: done - his chase again)
+    for-her @ if  out-over  round-done exit  then
     making-for @ 1 exit-spot aim-at 0= if
         making-for @ 0 exit-spot aim-at 0= if  out exit  then   \ (no way on: through from here)
     then
@@ -140,6 +143,48 @@ create re-list 8 cells allot  variable re-n
     avoid-clear  my-room her-way route-way! 0> 0= if  false exit  then
     next-door door-exit dup 0< if  drop false exit  then  out-by ;
 ' go-round is round-to-her
+
+\ ---- a door between him and her in his room (Npc_ExitsToTri, his action $B: Pursuer_DoorWalkTo,
+\ DoorWalking, DoorFacing, DoorGoThrough ...): of his room's exits with a door (not a doorway),
+\ neither open and free nor locked, the first whose spot her side (0, else 2) has a way to the
+\ middle of her triangle and his side a way from him, on another triangle; else one with a way
+\ from him that leads back into his room - the last of those, or the first of the others while
+\ there is none. He lines up at it and opens it (as on his way out), lets it go open and is
+\ after her again; held, he waits by it ----
+create dh-at 12 allot   create ds-at 12 allot
+: door-spot ( exit tri v -- spot-tri | -1 )   \ (Npc_PlanToDoor: its spot on side 0, else 2, with a way there)
+    {: e t v :}
+    2 0 do
+        e i 2* door-user-spot fdrop ds-at vec!
+        dup 0< 0= if  dup t v rot ds-at self body-mask v-path 0> if  unloop exit  then  then  drop
+    loop  -1 ;
+: shut-between? ( exit -- flag )   \ (a door, neither open and free nor locked)
+    my-room swap room-exit-door  dup 0< if  drop false exit  then
+    dup fixed? if  drop false exit  then
+    dup state@ dup opened-bit and 0<>  swap held-bit and 0=  and if  drop false exit  then
+    door-locked? 0= ;
+: loops? ( exit -- flag )  my-room over room-exit-leads drop my-room =  nip ;
+variable fallback
+: door-to-her ( -- exit true | false )
+    fiona body-tri dup 0< if  drop false exit  then  tri-center dh-at vec!  -1 fallback !
+    8 0 do
+        i shut-between? if
+            i fiona body-tri dh-at door-spot dup 0< if
+                drop  i loops? fallback @ 0< or if
+                    i self body-tri my-at door-spot 0< 0= if  i fallback !  then
+                then
+            else
+                i self body-tri my-at door-spot  dup 0< 0= rot rot <> and if  i true unloop exit  then
+            then
+        then
+    loop
+    fallback @ dup 0< 0= if  dup loops? if  true exit  then  then  drop false ;
+: to-her-door ( -- )  walk-stride if  line-up  then ;   \ (Pursuer_DoorWalking: there, lined up for it)
+: door-for-her ( exit -- )   \ (Pursuer_DoorWalkTo: to its spot on his side first)
+    dup making-for !  -1 out-going !  0 wandering-out !  0 door-wait !  -1 asked !  -1 door-use !  -1 for-her !
+    0 search-phase !
+    self body-tri my-at door-spot  ds-at vec@ aim-at 0= if  give-up-door exit  then
+    walk-anim play  ['] to-her-door step! ;
 
 \ ---- a door slammed on him ----
 \ away from the side Fiona is on (Npc_DoorFacingFromFiona)
