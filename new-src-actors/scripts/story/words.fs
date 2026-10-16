@@ -877,6 +877,16 @@ variable fill-alpha
     {: o n v lo hi fwd :}
     v lo = if  0 0 6 char-sound  then
     v lo max hi min lo - s>f fswap f/  fwd  fwd 0= 1 and  o n morph! ;
+: curtain ( b0 addr len -- )   \ (a curtain by event variable 0: var0_obj_anim's ranges)
+    {: b0 o n | v :}  o n object-here? 0= if  exit  then  0 var @ to v
+    b0 case
+        0 of  11e o n v $2B $36 0 var0-frame  endof
+        1 of  9e o n v $C $15 1 var0-frame  endof
+        2 of  12e o n v $10 $1C 1 var0-frame  endof
+        3 of  0e 0 1 o n morph!  endof
+        4 of  1e 0 1 o n morph!  endof
+        5 of  7e o n v $B $12 1 var0-frame  endof
+    endcase ;
 : room-object ( i -- addr len )  this-room @ room-string ;
 : object-hidden! ( hide? addr len -- )  rot 0 swap placed-op ;   \ (its +0: 1 hidden, 0 drawn)
 \ ---- the faces' textures (Progress_LoadSpeech / Speak / SpeechCall: a .TEX file's first texture
@@ -940,24 +950,32 @@ fvariable hs-push
     a n $38 object@ 1e f- 0e fmax a n $38 object!
     36e a n $30 object+!  a n $30 object@ 360e f< 0= if  -360e a n $30 object+!  then
     a n $30 object@ deg>rad fsin 1e f+ deg>rad  fdup pi f> if  2e pi f* f-  then  a n turn-x object! ;
-: swing-push ( first? addr len -- )
-    {: first? a n :}  a n $38 object@ 8e f> if  exit  then
-    fiona-step fdup f* a n $3C object+!
+: swing-push ( first? cs addr len -- )   \ (pushed by character slot cs moving through)
+    {: first? cs a n :}  a n $38 object@ 8e f> if  exit  then
+    cs char-step fdup f* a n $3C object+!
     a n $3C object@ 1e f> 0= if  exit  then
     20e a n $38 object!  0e a n $3C object!
-    first? if  3 ebit? if  3 ebit-clear  0 1 6 char-sound  else  3 ebit-set  0 2 6 char-sound  then  then ;
-: swing-three ( b0 -- )
-    {: op | a n :}
+    first? if  3 ebit? if  3 ebit-clear  cs 1 6 char-sound  else  3 ebit-set  cs 2 6 char-sound  then  then ;
+: swing-three-by ( b0 cs -- )   \ (swing_three_by: the room's three hanging things, pushed by character slot cs)
+    {: op cs | a n :}
     3 0 do
         i room-object to n to a
         a n object-here? if
             op case
                 0 of  0e a n $30 object!  0e a n $38 object!  0.9e a n $3C object!  endof
-                1 of  i 0= a n swing-push  endof
+                1 of  i 0= cs a n swing-push  endof
                 2 of  a n swing-step  endof
             endcase
         then
     loop ;
+: swing-three ( b0 -- )  0 swing-three-by ;   \ (pushed by Fiona)
+\ a grey glow 30 across at one of four spots, 100.8 up - (-332, -12), (-368, 55), (-368, 165),
+\ (-332, 165) - by k less `first`, kept in event variable k; off: that glow gone (glow4_spot)
+: grey-glow ( k off? first -- )
+    {: k off? first :}
+    off? if  k var @ dup alive? if  kill  else  drop  then  exit  then
+    k  $80808018  k first - case  0 of  -332e -12e  endof  1 of  -368e 55e  endof  2 of  -368e 165e  endof  >r -332e 165e r>  endcase
+    100.8e fswap  30e  effects:glow  var-set ;
 
 
 \ ---- the doors' models by part: bit a + 1 + b of every door's group mask (Doors_SetBits) - a

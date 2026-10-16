@@ -2,13 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e5
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story.clock ;
 
 \ (as Room14_Cmd00) the same for the room object D_0047B0FC
-: off-map-e5.cmd00 ( b0 -- )  drop s" off-map-e5.cmd00" stub-step ;
+: off-map-e5.cmd00 ( b0 -- )  s" Cartain" curtain ;   \ (as castle-b1-2's)
 \ room 0xE5: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: off-map-e5.cmd01 ( -- )  s" off-map-e5.cmd01" stub-step ;
+: off-map-e5.cmd01 ( -- )  clock-draw ;   \ (each frame: the clock)
 \ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
 : off-map-e5.cond00? ( -- flag )  true ;
 

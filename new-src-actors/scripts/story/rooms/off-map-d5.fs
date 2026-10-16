@@ -2,16 +2,16 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d5
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story.clock ;
 
 \ (as Room109_Cmd00) character kind 0x1A: byte 3 0 starts Kind26_MoveTo(2, -6, 257); else waits
 \ (2) until Kind26_MoveDone says done
-: off-map-d5.cmd00 ( b0 -- )  drop s" off-map-d5.cmd00" stub-step ;
+: off-map-d5.cmd00 ( b0 -- )  if  $1A char-wait-done  else  $1A 2 -6e 257e char-animal-go  then ;   \ (as chaos-forest-11's: the animal off to (-6, 257))
 \ as Room109_Cmd01
-: off-map-d5.cmd01 ( b0 -- )  drop s" off-map-d5.cmd01" stub-step ;
+: off-map-d5.cmd01 ( b0 -- )  1e room-nudge ;   \ (as chaos-forest-11's)
 \ room 0xD5: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: off-map-d5.cmd02 ( -- )  s" off-map-d5.cmd02" stub-step ;
+: off-map-d5.cmd02 ( -- )  clock-draw ;   \ (each frame: the clock)
 \ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
 : off-map-d5.cond00? ( -- flag )  true ;
 

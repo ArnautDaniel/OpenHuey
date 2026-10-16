@@ -2,13 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e6
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story.clock ;
 
 \ the room object named by RoomE6_ObjectNames[0]: +0x24 -25.3, +0x34 0
-: off-map-e6.cmd00 ( -- )  s" off-map-e6.cmd00" stub-step ;
+: off-map-e6.cmd00 ( -- )  s" kousi" object-here? 0= if  exit  then  -25.3e s" kousi" place-y object!  0e s" kousi" $34 object! ;   \ (the lattice down out of the way)
 \ room 0xE6: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
-: off-map-e6.cmd01 ( -- )  s" off-map-e6.cmd01" stub-step ;
+: off-map-e6.cmd01 ( -- )  clock-draw ;   \ (each frame: the clock)
 \ the progress object's +0x7C (ProgressBase_Slot7C: always 1)
 : off-map-e6.cond00? ( -- flag )  true ;
 

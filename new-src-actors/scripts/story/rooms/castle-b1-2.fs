@@ -6,16 +6,7 @@ USING: room-names story.words story.shared flag-names ;
 
 \ room 0x14: the curtain ("Cartain") animated by event variable 0 (var0_obj_anim: byte 3 picks
 \ the frame range and direction).
-: castle-b1-2.cmd00 ( b0 -- )   \ (the curtain, "Cartain", by event variable 0: var0_obj_anim's ranges)
-    {: b0 | v :}  s" Cartain" object-here? 0= if  exit  then  0 var @ to v
-    b0 case
-        0 of  11e s" Cartain" v $2B $36 0 var0-frame  endof
-        1 of  9e s" Cartain" v $C $15 1 var0-frame  endof
-        2 of  12e s" Cartain" v $10 $1C 1 var0-frame  endof
-        3 of  0e 0 1 s" Cartain" morph!  endof
-        4 of  1e 0 1 s" Cartain" morph!  endof
-        5 of  7e s" Cartain" v $B $12 1 var0-frame  endof
-    endcase ;
+: castle-b1-2.cmd00 ( b0 -- )  s" Cartain" curtain ;
 
 : castle-b1-2.enter ( -- )   \ 003F99E0
     room-sounds

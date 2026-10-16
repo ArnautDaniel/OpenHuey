@@ -2,14 +2,14 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d0
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story.clock ;
 
 \ RoomD0_Cmd00
-: off-map-d0.cmd00 ( -- )  s" off-map-d0.cmd00" stub-step ;
+: off-map-d0.cmd00 ( -- )  clock-stop ;
 \ RoomD0_Cmd01
-: off-map-d0.cmd01 ( -- )  s" off-map-d0.cmd01" stub-step ;
+: off-map-d0.cmd01 ( -- )  clock-save ;
 \ RoomD0_Cmd02
-: off-map-d0.cmd02 ( -- )  s" off-map-d0.cmd02" stub-step ;
+: off-map-d0.cmd02 ( -- )  clock-draw-saved ;   \ (each frame: the clock, or the time kept)
 \ RoomD0_Cond00
 : off-map-d0.cond00? ( -- flag )  true ;   \ (the progress object's +0x7C: ProgressBase_Slot7C, always 1)
 
