@@ -27,7 +27,7 @@ create upset-chance  14 , 10 , 9 , 8 , 7 , 6 , 5 , 4 , 3 , 2 , 1 ,
     his-trust @ 2 < if  false exit  then
     feel @ 5 / 8 min  his-trust @ + 1+  16 roll > ;
 
-\ ---- a bite (bite_pursuer): its damage (doubled on hard), hard by chance - the more hurt the
+\ ---- a bite (bite_pursuer): its damage (bite-damage), hard by chance - the more hurt the
 \ stalker, the likelier (Hewie_ReactionRoll) ----
 : band ( -- n )   \ (his health over its most: above 0.8 0, 0.6 1, 0.4 2, 0.2 3, 0.1 4, else 5)
     st-hp @ s>f st-hp-max @ 1 max s>f f/
@@ -43,7 +43,7 @@ create mouth-at 12 allot
     his-mode @ 8 = if  his-tri -1 mouth-at vec@ spray  then
     his-tri 0 mouth-at vec@ spray ;
 : bite-him ( kind base -- )
-    black-shepherd? if  2*  then  swap hard-bite? pursuer send bite  bite-mark ;
+    bite-damage  swap hard-bite? pursuer send bite  bite-mark ;
 
 \ ---- which side he comes at him from (Hewie_AttackSide): from behind, facing the stalker's
 \ back - 0 (not while he is timid); else a flank (1 near, 2 far: Daniella the other way) ----
@@ -168,7 +168,7 @@ create mouth-at 12 allot
     his-leap-yaw f!  his-to vec!  his-to-tri !
     his-to-tri @ his-to plan-to 0= if  to-default exit  then
     bites-by-trust his-bites !
-    his-angry-n @ if  -1 his-angry-n +!  300 his-angry-t !  then
+    his-hits @ if  -1 his-hits +!  300 his-hit-t !  then
     $19 his-sub !
     rnd 0.33333e f< if  1 feel+  then
     his-action @ dup $21 = swap $22 = or if  $2217
@@ -222,7 +222,7 @@ create mouth-at 12 allot
 \ a homunculus bitten (bite_landed): his temper with her easing (one fewer of her hits held
 \ against him, for 300 frames more), his sound
 : bite-landed ( -- )
-    his-angry-n @ if  -1 his-angry-n +!  300 his-angry-t !  then  $6C make-sound ;
+    his-hits @ if  -1 his-hits +!  300 his-hit-t !  then  $6C make-sound ;
 
 \ Hewie_PickTarget: whom he goes for - the stalker when he has hold of her; a homunculus holding
 \ her down; the stalker; else the nearest creature up and after her, not struck or going -
@@ -287,8 +287,8 @@ variable tb-from  variable tb-how
         $52 0 want exit
     then
     0 his-2d !
-    his-by @ her =  her-with? and  his-angry-n @ 0> and if
-        his-angry-n @ 1 = if  9  else  $B  then  0 want exit
+    his-by @ her =  her-with? and  his-hits @ 0> and if
+        his-hits @ 1 = if  9  else  $B  then  0 want exit
     then
     to-default ;
 : st-on-event20 ( -- )  model 0 0 1 motion-events $20 and  anim-done? or if  yelped  then ;
@@ -318,44 +318,37 @@ variable tb-from  variable tb-how
     case
         5 of  tb-how @ door-yelp  true  endof                     \ (a door: how is its exit)
         6 of  false  endof  $B of  false  endof
-        tb-from @ pursuer? if  rnd 0.25e f< if  -1 feel+  then  0 his-angry-n !
+        tb-from @ pursuer? if  rnd 0.25e f< if  -1 feel+  then  0 his-hits !
         else tb-from @ her = if
             0 3 praise-scold drop
-            his-angry-n @ 1+ 6 min his-angry-n !  300 his-angry-t !
-            16 roll  his-angry-n @ cells angry-chance + @ < if  3 -1 set-mood  then
+            his-hits @ 1+ 6 min his-hits !  300 his-hit-t !
+            16 roll  his-hits @ cells angry-chance + @ < if  3 -1 set-mood  then
         then then
         dup yelp  true swap
     endcase ;
-\ hit by her lately: once 300 frames go by without it, once fewer
-: angry-down ( -- )
-    his-mood @ 3 = his-angry-t @ 0= or if  exit  then
-    -1 his-angry-t +!  his-angry-t @ 0= his-angry-n @ 0<> and if  -1 his-angry-n +!  300 his-angry-t !  then ;
 
 \ ---- his scuffles off screen (Hewie_Scuffle): the stalker hunting in his room (its mode 1..3),
 \ once a meeting and not within 900 frames of the last, him neither hurt nor down. By chance:
 \ 15 in 100 both hurt, 45 him only, 15 the stalker only, 25 nothing. Him hurt: a tenth of his
 \ health (not below 1), a grudge one time in four. Heard next door: his yelp ($66; $69 when he
-\ was not hurt). The stalker held 30 .. 180 frames, hurt a tenth of its health (twice on hard)
+\ was not hurt). The stalker held 30 .. 180 frames, hurt a tenth of its health (bite-damage)
 \ unless it was him only or he may not attack - a liking one time in three. Then he waits it
 \ out ($30) ----
 0 constant both-hurt   1 constant he-is-hurt   2 constant it-is-hurt   3 constant nothing-came
 create scuffle-chances  both-hurt , 15 ,  he-is-hurt , 45 ,  it-is-hurt , 15 ,  nothing-came , 25 ,
-: scuffle-outcome ( -- outcome )
-    100 roll  0  scuffle-chances  begin  dup cell+ @ rot + >r  over r@ < 0= while  r> swap 2 cells +  repeat
-    r> drop nip @ ;
-: stalker-by-him? ( -- flag )
-    pursuer active?  st-room @ his-room = and ;
+: scuffle-outcome ( -- outcome )   \ (the first whose chances so far pass a roll of 100)
+    100 roll  {: r | sum :}
+    scuffle-chances  begin  dup cell+ @ sum + to sum  r sum < 0= while  2 cells +  repeat  @ ;
 : next-door? ( -- flag )   \ (his room is through an exit of hers)
     8 0 do  room-id i room-exit-leads drop his-room = if  true unloop exit  then  loop  false ;
 : scuffle-heard ( outcome -- )
     next-door? 0= if  drop exit  then
     it-is-hurt = if  $69  else  $66  then  5 0 0  his-at vec@ his-sound ;
 : scuffle ( -- )
-    his-scuffle-t @ if  -1 his-scuffle-t +!  then
-    stalker-by-him? 0= if  0 his-scuffled !  then
-    his-cond @ 1 3 within  his-scuffle-t @ or  his-scuffled @ or if  exit  then
-    stalker-by-him?  st-alert @ 1 4 within and 0= if  exit  then
-    -1 his-scuffled !  900 his-scuffle-t !
+    pursuer active?  pursuer with? 0= and if  0 his-scuffled !  then   \ (met again once it has been elsewhere)
+    his-cond @ 1 3 within  his-hold-call @ or  his-scuffled @ or if  exit  then
+    pursuer with?  st-alert @ 1 4 within and 0= if  exit  then
+    -1 his-scuffled !  900 his-hold-call !
     scuffle-outcome  dup nothing-came = if  drop exit  then
     6 roll 30 * 30 +  his-wanted !
     dup it-is-hurt <> if
@@ -363,6 +356,6 @@ create scuffle-chances  both-hurt , 15 ,  he-is-hurt , 45 ,  it-is-hurt , 15 ,  
     then
     dup scuffle-heard
     he-is-hurt =  hewie-no-attack state-flag? or  fiona-occupied state-flag? or if  0
-    else  st-hp-max @ 10 /  black-shepherd? if  2*  then  rnd 0.33333e f< if  1 feel+  then  then
+    else  st-hp-max @ 10 / bite-damage  rnd 0.33333e f< if  1 feel+  then  then
     8 swap his-wanted @  pursuer send blow
     $30 0 want ;

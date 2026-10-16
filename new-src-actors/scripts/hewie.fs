@@ -134,7 +134,7 @@ behaviour hewie-own
   on hold-anim ( anim flags blend -- )  nip  along? 0= if  2drop exit  then  his-to-anim !  his-to-tri !  $3C 0 want ;
   on show ( on -- )  along? 0= if  drop exit  then  0<> 1 and him-model act.visible l! ;
   on frame-end ( -- )
-      along? if  his-done @  anim-done?  his-model @ 0 0 1 motion-events  broadcast moving  angry-down  then
+      along? if  his-done @  anim-done?  his-model @ 0 0 1 motion-events  broadcast moving  then
       st-age @ 100 < if  1 st-age +!  then
       10 0 do  i cells cr-ages + dup @ 100 < if  1 swap +!  else  drop  then  loop ;
   \ the stalker (H3: hewie/fight.fs): what he is doing; his answers to the attack; thrown off;

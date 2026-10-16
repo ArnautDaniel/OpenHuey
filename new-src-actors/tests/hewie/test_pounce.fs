@@ -59,8 +59,8 @@ s" fiona" actor-named body-tri constant her-tri
 T{ [: creatures.homunculus:awake @ ;] of7 -> -1 }T
 T{ [: pick-target ;] his@ h7 = -> -1 }T
 h7 constant the-homunculus
-calm  [: 2 his-angry-n !  the-homunculus his-target !  close-in ;] his!
+calm  [: 2 his-hits !  the-homunculus his-target !  close-in ;] his!
 T{ [: [: creatures.homunculus:move-mode @ 4 = ;] of7 ;] 200 soon -> -1 }T
-T{ [: [: his-angry-n @ ;] his@ 1 = ;] 5 soon  [: creatures.homunculus:strength @ ;] of7 -> -1 0 }T   \ (5 less his bite's 5: it leaves)
+T{ [: [: his-hits @ ;] his@ 1 = ;] 5 soon  [: creatures.homunculus:strength @ ;] of7 -> -1 0 }T   \ (5 less his bite's 5: it leaves)
 
 test-summary

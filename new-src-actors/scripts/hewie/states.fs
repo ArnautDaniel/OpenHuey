@@ -380,17 +380,19 @@ create kn-at 12 allot
 
 \ Hewie_PraiseScold: praised (1) or scolded (0) for what he just did, if it is still what he
 \ did: his skills at it (after fetching) move by `by`. True if it counted
+: skill+ ( n k -- )  cells his-skill +  tuck @ + 0 31 clamp  swap ! ;   \ (0..31)
+\ one skill he used for it: praise moves it up when it went well, down when it didn't; scolding
+\ the other way
+: rate-skill ( praise? by k -- )
+    {: praise by k :}
+    k cells his-rolled + @ 0<>  praise 1 = =  if  by  else  by negate  then  k skill+ ;
 : praise-scold ( praise? by -- flag )
-    his-did @ 0=  his-did @ his-did-was @ <> or if  2drop false exit  then
-    his-did-was @ $78 = if
-        his-roll-n @ 0 ?do
-            i cells his-rolls + @ >r
-            r@ cells his-rolled + @ 0<>  2 pick 1 <> if  0=  then
-            if  dup  else  dup negate  then  r@ cells his-skill + +!
-            r> cells his-skill + dup @ 0 31 clamp swap !
-        loop
+    {: praise by :}
+    his-did @ 0=  his-did @ his-did-was @ <> or if  false exit  then
+    his-did-was @ $78 = if   \ (a fetch: the skills it used)
+        his-roll-n @ 0 ?do  praise by  i cells his-rolls + @  rate-skill  loop
     then
-    2drop  -1 his-follows !  0 his-did-2 !  0 his-did !  true ;
+    -1 his-follows !  0 his-did-2 !  0 his-did !  true ;
 
 \ ---- scolded from afar (action 0x71): sitting, the ears down (0x1C04); three times within 600
 \ frames upsets him ----

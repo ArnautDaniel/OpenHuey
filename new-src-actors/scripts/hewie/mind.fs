@@ -34,7 +34,7 @@ USING: engine actors common facts paths messages hewie.state hewie.body hewie.ta
         else  his-action @ 0= if  $52 0 want  then  then
     else
         1 cond!  obeys
-        his-away @ if  to-default  then
+        his-away @ if  his-hide @ if  his-action @ $36 <> if  $36 0 want  then  else  to-default  then  then
     then then
     his-cond @ 2 <> if
         his-cond @ 1 <> if
@@ -142,9 +142,11 @@ variable pk-roll  variable pk-sum
             >r black-shepherd? if  tense-wait-shepherd-lists  else  tense-wait-lists  then  r>  endcase
     then
     situation list-of -1 pick-from 0 want ;
-\ Hewie_WhenIdle (out of the room being played): waiting a while hurt; else from the idle list,
-\ the one the danger favours (waiting) or going to her (0x2C) weighted more
+\ Hewie_WhenIdle (out of the room being played): staying hidden (0x36) while he hides; waiting a
+\ while hurt; else from the idle list, the one the danger favours (waiting) or going to her (0x2C)
+\ weighted more
 : idle ( -- )
+    his-hide @ if  $36 0 want exit  then
     his-cond @ 1 = rnd 0.25e f< and if  idle-wait trust-of his-wanted !  $2F 0 want exit  then
     his-waiting @ if  his-danger @ case  0 of  $32  endof  1 of  $2E  endof  2 of  $2C  endof  >r -1 r>  endcase
     else  $2C  then
@@ -154,13 +156,18 @@ variable pk-roll  variable pk-sum
 \ ---- Hewie_OwnDecisions: what he decides on his own when nothing else drives him ----
 : to-fiona ( -- )   \ to her (0x62) if he can get to her, else he stops sulking
     her body-tri fiona-at plan-to if  $62 0 want  else  0 -1 set-mood  then ;
-: staying ( -- done? )   \ angry (mood 3): a call, her having hit him, or whoever is here
+: to-stalker ( -- )   \ answers it (0x4F) if he can get to it, else forgets the call
+    pursuer body-tri pursuer body-at plan-to if  $4F 0 want  else  0 his-call !  then ;
+: nearer-her? ( -- flag )  her-dist  his-at pursuer body-at vec-dist f< ;
+: staying ( -- done? )   \ angry (mood 3): a call, her having hit him, or whoever is here (the nearer)
     0 his-hold-call !
     his-call @ $FF <> if
         his-call @ 0= her-with? and if  to-fiona  else  $4F 0 want  then  true exit
     then
     his-hits @ 0> her-with? and if  to-fiona true exit  then
+    her-with? pursuer with? and if  nearer-her? if  to-fiona  else  to-stalker  then  true exit  then
     her-with? if  to-fiona true exit  then
+    pursuer with? if  to-stalker true exit  then
     false ;
 fvariable sl-x  fvariable sl-z
 : facing-down-slope? ( -- flag )   \ on sloped ground (flag 1), facing down it

@@ -9,6 +9,9 @@ $29020008 constant his-floor   \ the nav triangles he can't stand on (through bl
 \ ---- chance (the original's gRandom: 0 <= r < 1) ----
 : roll ( n -- i )  s>f rnd f* f>s ;   \ (s32)(n x r)
 : black-shepherd? ( -- flag )  progress pr.vars $27 + c@ 1 = ;   \ his costume (variable $27) the black German Shepherd: harder bites, his own times and lists
+: sylvesta? ( -- flag )  progress pr.boosts 6 8 * + 4 + sl@ 0> ;   \ Sylvesta Esca's 450 frames (+0xA10: the boosts' seventh, items.fs)
+\ his bites' and tackles' damage: twice as the black shepherd, half again with Sylvesta Esca's
+: bite-damage ( base -- n )  black-shepherd? if  2*  then  sylvesta? if  dup 2/ +  then ;
 
 \ ---- himself ----
 : his-at ( -- v )  self body-at ;

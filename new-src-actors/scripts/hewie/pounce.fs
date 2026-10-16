@@ -2,7 +2,7 @@
 \ StateLeapBite, StateLanding; Hewie_StateCloseIn, StateRush - action 0x6D): close on his target
 \ on open floor and facing it, he leaps at it - 2.8 a frame, up to 5 above it and down again - and
 \ whoever his mouth (bone $1F) reaches on the way takes it: the stalker a blow (5 from in front,
-\ 8 from behind; charged 10 / 16; doubled on hard, half again with Sylvesta Esca's boost - hard by
+\ 8 from behind; charged 10 / 16; bite-damage: black shepherd, Sylvesta Esca - hard by
 \ chance, the more hurt he is the likelier), else Fiona; the homunculi it reaches are bitten.
 \ On a step or by a ladder (floor flag 1) he can't leap: he runs at it and bites (0x6D).
 IN: hewie.pounce
@@ -18,11 +18,10 @@ create mouth 12 allot
     mouth over body-at vec-dist-xz  body-dims fdrop 3e f+  f< ;
 : behind-of? ( id -- flag )   \ (his heading within 90 degrees of theirs: at their back)
     body-yaw his-yaw f- angle-wrap fabs pi f2/ f< ;
-\ the damage: from in front / behind, charged (his-ready); hard mode doubles, the boost half again
+\ the damage: from in front / behind, charged (his-ready); bite-damage
 : tackle-damage ( behind? -- n )
     his-ready @ if  if 16 else 10 then  else  if 8 else 5 then  then
-    black-shepherd? if  2*  then
-    progress pr.boosts 6 8 * + 4 + sl@ 0> if  dup 2/ +  then ;
+    bite-damage ;
 variable hewie-blow-n   -2000 hewie-blow-n !
 : new-bite ( -- )  -1 hewie-blow-n +! ;   \ (a rush's or a leap's: each homunculus bitten once in it)
 : bite-creatures ( damage -- )   \ (Hewie_Bite: the homunculi his mouth reaches - as a blow there)
@@ -93,7 +92,7 @@ fvariable lp-speed  fvariable lp-y0  fvariable lp-top  fvariable lp-vy  fvariabl
     mouth!
     pursuer reaches?  her reaches? or if
         $68 make-sound
-        pursuer reaches? if  1 5 black-shepherd? if 2* then  10 hard-bite? if $8000 else 0 then  pursuer send blow  then
+        pursuer reaches? if  1 5 bite-damage  10 hard-bite? if $8000 else 0 then  pursuer send blow  then
         her reaches? if  1 0 20e f>cell her send hit  then
         ['] st-1980 behave exit
     then
