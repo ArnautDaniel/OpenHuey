@@ -1959,6 +1959,24 @@ static void movie_draw_at(float x, float y, float dw, float dh) {
         render_image(sMovieTex, x, y, dw, dh, 0xFFFFFFFFu);
     }
 }
+/* the last picture of a movie kept to show on its own (the game over's: GameOver_StateStart takes
+ * it from the movie, GameOver_DrawMovieFrame draws it over everything) - the movies after it get
+ * a texture of their own */
+static GpuTexture sHeldTex;
+PRIM(p_movie_hold) {   /* ( -- flag ) the picture shown now kept (none: false) */
+    if (sHeldTex != 0) {
+        render_texture_free(sHeldTex);
+    }
+    sHeldTex = sMovieTex;
+    sMovieTex = 0;
+    PUSH(sHeldTex != 0 ? -1 : 0);
+}
+PRIM(p_movie_unhold) {   /* ( -- ) the kept picture let go */
+    if (sHeldTex != 0) {
+        render_texture_free(sHeldTex);
+        sHeldTex = 0;
+    }
+}
 PRIM(p_movie_draw) {   /* ( x y w h -- ) the movie's picture there (window pixels) */
     Cell dh = POP(), dw = POP(), y = POP(), x = POP();
 
@@ -2881,6 +2899,14 @@ PRIM(p_ui_movie) {   /* ( layer x y w h -- ) the playing movie's picture */
         *u = (UiItem){.text = 2, .x = (float)x, .y = (float)y, .w = (float)width, .h = (float)height};
     }
 }
+PRIM(p_ui_held) {   /* ( layer x y w h -- ) the kept movie picture (movie-hold) */
+    Cell height = POP(), width = POP(), y = POP(), x = POP();
+    UiItem *u = ui_add(f, POP());
+
+    if (u != NULL) {
+        *u = (UiItem){.text = 3, .x = (float)x, .y = (float)y, .w = (float)width, .h = (float)height};
+    }
+}
 PRIM(p_ui_text) {   /* ( layer addr len x y rgba scale -- ) */
     Cell scale = POP(), rgba = POP(), y = POP(), x = POP(), n = POP(), a = POP();
     UiItem *u = ui_add(f, POP());
@@ -3015,6 +3041,10 @@ static void ui_draw(void) {
                 }
             } else if (u->text == 2) {
                 movie_draw_at(u->x, u->y, u->w, u->h);
+            } else if (u->text == 3) {
+                if (sHeldTex != 0) {
+                    render_image(sHeldTex, u->x, u->y, u->w, u->h, 0xFFFFFFFFu);
+                }
             } else if (u->text) {
                 if (!gRender.game_font || !game_text(u->x, u->y, u->w, u->rgba, u->s)) {
                     render_text(u->x, u->y, u->w, u->rgba, u->s, (int)strlen(u->s));
@@ -3075,7 +3105,7 @@ void bind_engine(Forth *f) {
         {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-sides", p_route_sides}, {"exit-way", p_exit_way}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"world-exits-rebuild", p_exits_rebuild}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
         {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"look-on?", p_look_on}, {"sprites", p_sprites_new}, {"sprites-free", p_sprites_free}, {"sprites-free-all", p_sprites_free_all}, {"sprites-texture", p_sprites_texture}, {"sprites-cells", p_sprites_cells}, {"sprites-flags", p_sprites_flags}, {"sprites-offset", p_sprites_offset}, {"sprites-corner", p_sprites_corner}, {"sprites-count", p_sprites_count}, {"sprite!", p_sprite_store}, {"sprites-uv", p_sprites_uv}, {"sprite-quad!", p_sprite_quad}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
-        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-image", p_ui_image}, {"tex-bank", p_tex_bank}, {"tex-info", p_tex_info}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"text-width", p_text_width}, {"ui-movie", p_ui_movie}, {"cast-as", p_cast_as}, {"cast-model", p_cast_model}, {"model-file", p_model_file}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
+        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-image", p_ui_image}, {"tex-bank", p_tex_bank}, {"tex-info", p_tex_info}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"text-width", p_text_width}, {"ui-movie", p_ui_movie}, {"ui-held", p_ui_held}, {"movie-hold", p_movie_hold}, {"movie-unhold", p_movie_unhold}, {"cast-as", p_cast_as}, {"cast-model", p_cast_model}, {"model-file", p_model_file}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-climb", p_body_climb}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-follow", p_cam_follow}, {"cam-target!", p_cam_target}, {"cam-ease", p_cam_ease}, {"cam-event?", p_cam_event}, {"cam-event!", p_cam_event_set}, {"cam-track", p_cam_track},
