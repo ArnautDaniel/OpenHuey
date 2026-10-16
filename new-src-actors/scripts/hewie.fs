@@ -84,7 +84,7 @@ behaviour hewie-own
       case
           0 of  his-hp @ 20 + 100 min hp!  his-hp @ 100 = if  -1 mistreated+  then  endof
           1 of  his-hp @ 100 + 100 min hp!  -1 mistreated+  endof
-          2 of  his-hp @ 50 - 0 max hp!  3 mistreated+  endof
+          2 of  50 hurt-by  3 mistreated+  endof
           3 of  3 450 set-mood  20 mistreated+  endof
           4 of  1 hp!  3 mistreated+  endof
       endcase ;

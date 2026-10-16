@@ -108,7 +108,7 @@ defer after-yelp ( -- )   \ (yelped, below)
     pursuer with? 0= if  to-default exit  then
     rnd 0.25e f< if  -1 feel+  then
     dares? if  0 his-biting !  his-grip @ 1 = if  $2204  else  $220D  then
-    else  1 his-biting !  his-hp @ 10 - 0 max hp!  his-grip @ 1 = if  $2207  else  $2210  then  then  play-cut
+    else  1 his-biting !  10 hurt-by  his-grip @ 1 = if  $2207  else  $2210  then  then  play-cut
     rm-x f@ his-fly-x f!  rm-y f@ his-fly-y f!  rm-z f@ his-fly-z f!
     ['] st-jump-arc behave ;
 
@@ -355,7 +355,7 @@ variable tb-from  variable tb-how
     his-cond @ 2 = if  2drop  his-action @ $74 <> if  $74 0 want  then  true exit  then
     over $B <>  his-mode @ 4 = and if  2drop false exit  then
     over $B <>  his-mode @ 8 = and  his-sub @ $18 $1A within and if  2drop false exit  then
-    tb-from @ her =  2 pick 5 <> and if  2*  then  his-hp @ swap - 0 max hp!   \ (her blows twice: not a door)
+    tb-from @ her =  2 pick 5 <> and if  2*  then  hurt-by   \ (her blows twice: not a door)
     his-hurt-t @ 0> 0= if  300 his-hurt-t !  then
     case
         5 of  tb-how @ door-yelp  true  endof                     \ (a door: how is its exit)
@@ -394,7 +394,7 @@ create scuffle-chances  both-hurt , 15 ,  he-is-hurt , 45 ,  it-is-hurt , 15 ,  
     scuffle-outcome  dup nothing-came = if  drop exit  then
     6 roll 30 * 30 +  his-wanted !
     dup it-is-hurt <> if
-        his-hp @ 10 - 1 max hp!  rnd 0.25e f< if  -1 feel+  then
+        10 hurt-by  his-hp @ 1 max hp!  rnd 0.25e f< if  -1 feel+  then
     then
     dup scuffle-heard
     he-is-hurt =  hewie-no-attack state-flag? or  fiona-occupied state-flag? or if  0

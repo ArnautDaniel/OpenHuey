@@ -122,6 +122,10 @@ testing his bites' damage: as it is; Sylvesta Esca's half again (+0xA10); the bl
 T{ [: 10 bite-damage ;] his@ -> 10 }T
 T{ 450 sylvesta  [: 10 bite-damage  5 bite-damage ;] his@ -> 15 7 }T
 T{ 1 shepherd  [: 10 bite-damage ;] his@  0 sylvesta  [: 10 bite-damage ;] his@  0 shepherd -> 30 20 }T
+testing his damage (Hewie_TakeDamage): down to 0; in his third costume ($27 2) never below 1
+T{ [: 5 hp!  50 hurt-by  his-hp @ ;] his@ -> 0 }T
+T{ 2 shepherd  [: 5 hp!  50 hurt-by  his-hp @ ;] his@  0 shepherd -> 1 }T
+[: 100 hp! ;] his!
 testing struck by her: counted (Fiona's hits, eased 300 frames on) - one counter, read when he cowers after
 T{ [: 0 his-hits !  0 his-hit-t !  1 0 0 her take-blow drop  his-hits @ his-hit-t @ ;] his@ -> 1 300 }T
 T{ [: 0 -1 set-mood  0 his-hits !  0 his-hit-t ! ;] his! -> }T

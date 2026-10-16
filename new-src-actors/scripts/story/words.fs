@@ -1610,23 +1610,27 @@ fvariable sx  fvariable sy  fvariable sz
 : char-loaded? ( slot id -- flag )   \ cond 0x63: character `id` is the one in `slot`
     swap dup 6 u< 0= if  2drop false exit  then  slot-id @ = ;
 \ 0xCC: op 3 the cutscene leaves actor `id`'s model as it is (the director's +0x78, Cutscene_Mark83); else
-\ `id`'s model told - only Daniella's model answers (DaniellaModel_Vt2C / Vt30): 0 two of her
-\ parts (17 and 31) hidden, 1 the first shown again; 2 and 4 (her back's capsules, for hanging
-\ parts hga doesn't give her) nothing here
+\ `id`'s model told - only Daniella's model answers (DaniellaModel_Vt2C / Vt30, Model_Set878): 0 two
+\ of her parts (17 and 31) hidden, 1 one of them shown again - the first, or the second once op 2
+\ chose it (v not 0: her model's +0x878), 2 that choice made and shown; 4 (her back's capsules,
+\ for the hanging parts hga doesn't give her) nothing here
 17 constant daniella-part-a   31 constant daniella-part-b
 : show-part ( who part on? -- )   \ (a character's model part shown or hidden: the original's part flag 2)
     {: who part on :}  who char-model dup 0< if  drop exit  then  part on actor-part-show ;
 : hide-part ( who part -- )  false show-part ;
 : daniella? ( who -- flag )  dup $FE = if  drop 3 stalker-kind?  else  3 =  then ;
 : daniella-parts ( model a? b? -- )  {: m a b :}  m daniella-part-a a actor-part-show  m daniella-part-b b actor-part-show ;
+variable daniella-second   \ (her model's +0x878: op 1 shows her second part, not the first)
+: daniella-one ( model -- )  daniella-second @ 0=  dup 0=  daniella-parts ;
 : char-model-op ( op id v -- )
-    drop {: op who :}
+    {: op who v :}
     op 3 = if  who cutscene-keep-model exit  then
     who daniella? 0= if  exit  then
     who char-model dup 0< if  drop exit  then
     op case
         0 of  false false daniella-parts  endof
-        1 of  true false daniella-parts  endof
+        1 of  daniella-one  endof
+        2 of  v daniella-second !  daniella-one  endof
         >r drop r>
     endcase ;
 : obstacles-id ( -- id )  s" obstacles" actor-named ;

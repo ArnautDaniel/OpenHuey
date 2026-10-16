@@ -26,6 +26,11 @@ $29020008 constant his-floor   \ the nav triangles he can't stand on (through bl
 : away! ( flag -- )  0<> his-away ! ;
 : hp! ( n -- )  his-hp ! ;
 : cond! ( n -- )  his-cond ! ;
+\ Hewie_TakeDamage: his health down by n (never below 0); in his third costume (variable $27 2)
+\ never knocked out - he keeps 1
+: hurt-by ( n -- )
+    abs his-hp @ swap - 0 max
+    dup 0= progress pr.vars $27 + c@ 2 = and if  drop 1  then  hp! ;
 
 \ ---- the others: their bodies (facts), Fiona's doings (her broadcast) ----
 : her ( -- id )  his-fiona @ ;
