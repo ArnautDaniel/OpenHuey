@@ -46,7 +46,7 @@ behaviour hewie-own
       s" fiona" actor-named his-fiona !
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe write-save
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe frame-end
-      self subscribe stalker-doing  self subscribe creature-doing  -1 st-id !  100 st-age !  -1 his-grip !
+      self subscribe stalker-doing  self subscribe creature-doing  self subscribe scene  -1 st-id !  100 st-age !  -1 his-grip !
       10 0 do  -1 i cells cr-ids + !  100 i cells cr-ages + !  loop ;
   on join-fiona ( -- )  s" fiona" actor-named his-fiona !  room-id fiona-room !  join  1 his-model @ cast-as ;
   on part-from-fiona ( -- )  part  1 -1 cast-as ;
@@ -77,6 +77,11 @@ behaviour hewie-own
       2dup room-exit-leads drop fiona-room !  nip  along? if  fiona-left  else  drop  then ;
   on arrived ( room exit -- )  drop fiona-room !
       his-joining @ if  s" fiona" actor-named his-fiona !  join  then ;   \ (he comes in by himself: Hewie_Arrive, the doors off screen)
+  \ a scene starting (the scripts' 0x61: Hewie_LeftBehind) - out of the room after an attack
+  \ (0x38): his default; his mood back to normal
+  on scene ( on -- )
+      0= if  exit  then
+      his-away @  his-action @ $38 = and if  to-default  then  0 -1 set-mood ;
   on danger ( level -- )  his-danger ! ;
   on panic ( stage level -- )  drop his-panic ! ;
   on fiona-doing ( mode sub cond cmd doing -- )  drop fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode ! ;

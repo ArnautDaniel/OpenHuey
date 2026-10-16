@@ -687,7 +687,7 @@ variable movie-held   \ (0x52: its last frame stays on at its end)
 \ 0x62: 0 the movie's state into the result; 1 stop the movie; 2 restart it; 3 the director a step;
 \ 4 that, and its shot played; 5 / 6 / 7 the cues (the next one; off; the movie's frame - its
 \ signal 11 toggles movie-opaque); 8 the scene over (the camera back); 9 / 10 pause / resume the
-\ movie; 11 a black screen over half (not drawn yet); 12 the prepared message's page turned as
+\ movie; 11 a black picture this frame; 12 the prepared message's page turned as
 \ often as the director says (its subtitles)
 : cutscene-control ( op -- )
     case
@@ -697,7 +697,7 @@ variable movie-held   \ (0x52: its last frame stays on at its end)
         3 of  cutscene-run  endof
         4 of  cutscene-run
               cutscene-status 5 <>  cutscene-in-shot? and if  cutscene-update  then  endof
-        5 of  cutscene-frame cue-prev !  cutscene-frame 1+ cutscene-frame!  cutscene-frame cue !  endof
+        5 of  cutscene-frame cue-prev !  cutscene-next  cutscene-frame cue !  endof
         6 of  -1 cue-prev !  -1 cue !  cutscene-go  cutscene-run  endof
         7 of  cue @ cue-prev !  movie-frame cue !  cue @ cutscene-frame!
               $B cutscene-signals 1 and if
@@ -706,7 +706,7 @@ variable movie-held   \ (0x52: its last frame stays on at its end)
         8 of  cutscene-over  endof
         9 of  movie-state 1 = if  1 movie-pause  then  endof
         $A of  movie-state 2 = if  0 movie-pause  then  endof
-        $B of  endof
+        $B of  black-frame  endof
         $C of  8 cutscene-signals 0 ?do  1 prepared-page +!  loop  endof
     endcase ;
 : cutscene-mode? ( mode -- flag )  cutscene-status = ;                 \ cond 0x20

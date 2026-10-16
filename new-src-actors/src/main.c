@@ -513,7 +513,7 @@ static void soft_reset(Engine *e, int hidden) {
     e->still = 0;
     e->clear = vec3(0, 0, 0);
     memset(e->held, 0, sizeof(e->held));
-    e->camera = (Camera){vec3(0, 0, 0), 0, 0, 1.0f, 5.0f, 20000.0f, 1.0f};
+    e->camera = (Camera){vec3(0, 0, 0), 0, 0, 1.0f, 5.0f, 20000.0f, 1.0f, 0.0f};
     forth_free(e->forth);
     start_scripts(e, hidden);
 }
@@ -541,7 +541,7 @@ int main(int argc, char **argv) {
     sprites_init();
     platform_size(&e->width, &e->height);   /* (frames ticked before the first draw - tests, --eval - see it) */
     e->room.id = -1;
-    e->camera = (Camera){vec3(0, 0, 0), 0, 0, 1.0f, 5.0f, 20000.0f, 1.0f};
+    e->camera = (Camera){vec3(0, 0, 0), 0, 0, 1.0f, 5.0f, 20000.0f, 1.0f, 0.0f};
     load_world(&e->world);
     if (!sound_open()) {   /* (none: the game is silent) */
         fprintf(stderr, "hg2: no sound (%s)\n", SDL_GetError());
