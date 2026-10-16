@@ -17,7 +17,7 @@
 | C | Forth |
 |---|---|
 | platform, input, timing, window | what input means |
-| **assets**: loading, parsing and keeping every file (rooms, nav meshes, models, motions, textures, sounds, movies, the executable's tables) | asking for them by name or number (`room-load`, `figure-load`, `nav-tri-center`...) |
+| **assets**: loading, parsing and keeping every file (rooms, nav meshes, models, motions, textures, sounds, movies, the executable's tables) | asking for them by name or number (`actor-load`, `room-string`, `tri-center`...) |
 | rendering, skinning, posing figures | which figure plays which motion, where |
 | geometry and world queries (floors, rays, nav triangles, the room graph and routes between rooms, door positions) | the rules that use them |
 | **the actor kernel**: actors, mailboxes, delivery, scheduling, tracing | the actors: their state, behaviours and messages |
@@ -94,7 +94,7 @@ sequence for the panic's beat - the strongest felt; off while paused or by the o
 
 ## Conventions
 
-- One subsystem per vocabulary (`IN: noise`), in its own file (`scripts/noise.fs`).
+- One subsystem per vocabulary (`IN: acoustics`), in its own file (`scripts/acoustics.fs`).
 - Messages are declared once, in `scripts/messages.fs`, with their stack comments. A message
   name is a verb or an event: `hit`, `heard`, `open`, `entered-room`.
 - Fields are declared with the actor's state (`state: ... end-state`) and named for what they

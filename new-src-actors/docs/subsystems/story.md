@@ -32,8 +32,8 @@ Files: `scripts/story.fs` (the story actor), `scripts/story/room.fs` (a room's b
 `scripts/story/shared.fs` (the shared scripts 0x80..), `scripts/story/rooms/<name>.fs` (each
 room's scripts: `<name>.enter`, `.char-enter`, `.phase1`..`.phase5`, `.act00`.., `.cmd00`..,
 registered by name), `scripts/story/rooms.fs` (all loaded). Generated once by
-`tools/story_convert.py` from new-src; edited by hand since. `tools/story_stubs.py` keeps the
-stubs of the words not written yet (below the marker in `words.fs`): run it after writing words.
+`tools/story_convert.py` from new-src; edited by hand since. A word not written yet is a stub
+(`stub-step` / `stub-flag` in `words.fs`; `.missing` lists those reached).
 
 ## API
 
@@ -49,7 +49,7 @@ Declared in `scripts/messages.fs`.
 | `danger`, `panic`, `fiona-doing`, `hewie-doing` | | in (broadcasts) | Facts the conditions read (game mode, panic stage, Fiona's mode). |
 | `go-through` | `( exit -- )` | → rooms | An exit taken (`exit-check`), after the frame. |
 | `to-exit` | `( exit -- )` | → a character | Put yourself on the exit's outside spot, facing in (`char-to-exit`). |
-| `camera-setup`, `follow`, `camera-restart` | | → camera | `char-camera`, `area-camera`, `chars-area-camera`, `camera-follow`. |
+| `cam-char-setup`, `cam-on` (C words), `camera-restart` | | → camera | `char-camera`, `area-camera`, `chars-area-camera`, `camera-follow`. |
 | `lock`, `unlock` | | → doors | `door-lock`, `door-unlock`. |
 | `noise` | | → acoustics | A noise of the room's (source `world-noise`). |
 | `panic-stage!` | | → panic | `panic-stage`. |
@@ -98,8 +98,11 @@ conditions), `scene_game.c` (the order), `progress.c`.
   (a character's fields, the camera director, a door's state) is now a message to its owner.
 - Room numbers inside the scripts (arguments of `stalker-to-room`, `hewie-to-room`, ...) are
   still numbers.
-- `door-bits` (which parts of the room's door models are drawn) does nothing until door models
-  are drawn by part.
+- `door-bits` sets which parts of the room's door models are drawn (`door-group!`).
+- Where the original's data leaves something out of sight that the game means to be seen, hga
+  may place it itself, keeping the intent: castle-2f-8's golem and his plate are stored 50 above the room, out of sight under its
+  ceiling, and its enter script stands him on the floor (`golem-down`, `object-lowered`: the
+  place kept as the defined one, so a cutscene's restore leaves him there).
 - The camera's nearest-set stand-in stays as a fallback for a character the scripts give no
   setup.
 
@@ -161,7 +164,8 @@ its animation's end), which the room keeps for `self-wait-done` / `self-wait-ani
 `wait-char-anim`. Done is true while idle (a character with no move is done). Words: `self-move-to`,
 `self-move-tri`, `self-idle`, `self-anim`, `self-anim-blend`, `self-anim-9`, `self-move-16`,
 `self-turn-angle`, `self-turn-to-xz`, `self-turn-to`, `self-look-at`, `self-look-at-point`,
-`self-move-slot`, `self-walk-anim`, `char-anim-hold` (`hold-anim`), `char-visible` (`show`).
+`self-move-slot`, `self-walk-anim`, `char-anim-hold` (`hold-anim`), `char-visible` (`show`; 0x1F's argument 1 hides, 0 shows - the
+character's +0x29).
 - Fiona (`scripts/fiona/moves.fs`, from Fiona_Requests and the Fiona_StateCmd* states): straight
   to a spot (her door walk), along a path turning 10 degrees a frame and stepping by her root
   motion, turning on the spot (0x400 / 0x401), animations, her idle, the walk with an

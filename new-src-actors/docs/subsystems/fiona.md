@@ -19,7 +19,7 @@ built in phases.
 | F4 | Defending: kick, shove (F4c, done), strike, slamming doors on someone (F4d, done). Reactions: knocked down, thrown, caught (F4a, done), grabbed, led away, dragged, shaking free (F4b, done), falls | stalkers |
 | F5 | The story's moves (walk to a spot, a path, turn, an animation, hold), ladders, pushing, points of interest, items | story, items |
 
-The debug walker (`scripts/walker.fs`) stood in for her until F1 was done.
+A debug walker stood in for her until F1 was done.
 
 ## API (F1)
 
@@ -221,8 +221,9 @@ The square button (E), while she's free (mode 0), not past the panic's stage 3 a
 off running (her recovery under way, or under $3D frames of running) - a shove; running, or
 turning to flee - a kick. The shove ($E00, its pace slower the longer she's been shaken -
 recovery past $1C3: (3150 - recovery) / 1800 x 1.5 - and the more frightened - fear past 40:
-(160 - fear) / 120) reaches 2 round her hand (bone 9) at its key: a `blow` 1, damage 1; into a
-wall it ends ($101). The kick ($E01: her cry $3D, a step of 1.0756 a frame while it fades in)
+(160 - fear) / 120) reaches 2 round her hand (bone 9) at its key: a `blow` 1, damage 1; with a
+wall between her and her hand (the walk from her triangle to it, over flags $20018: Actor_TriTo)
+it ends ($101). The kick ($E01: her cry $3D, a step of 1.0756 a frame while it fades in)
 meets whom she touches while its key is clear: a `blow` 2, damage 5, he may stumble (`how` 1:
 rolled by him); at its end her fear up 10. Each reaches the stalker and Hewie once a blow;
 struck home (`blow-taken`) she's held still 5 frames ($90 kicked, $8F shoved). Hewie is told

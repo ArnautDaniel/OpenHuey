@@ -54,8 +54,13 @@ jobs:
             tools/win
           key: ${{ steps.deps.outputs.key }}
 
+      # hga's version: CMake's `project(hga VERSION ...)`
+      - name: Version
+        id: version
+        run: echo "hga=$(sed -nE 's/^project\(hga VERSION ([0-9.]+).*/\1/p' new-src-actors/CMakeLists.txt)" >> "$GITHUB_OUTPUT"
+
       - name: Build
-        run: JOBS=$(nproc) HGA_VERSION=latest-$(git rev-parse --short HEAD) tools/hga_release.sh
+        run: JOBS=$(nproc) HGA_VERSION=${{ steps.version.outputs.hga }}-$(git rev-parse --short HEAD) tools/hga_release.sh
 
       - uses: actions/upload-artifact@v4
         with:
@@ -73,8 +78,8 @@ jobs:
           gh release delete hga-latest --cleanup-tag --yes || true
           gh release create hga-latest dist/*.tar.gz dist/*.zip \
             --prerelease --target "$GITHUB_SHA" \
-            --title "hga latest ($(date -u +%Y-%m-%d), $sha)" \
-            --notes "The latest hga build, from $sha on master - replaced on each merge.
+            --title "hga ${{ steps.version.outputs.hga }} latest ($(date -u +%Y-%m-%d), $sha)" \
+            --notes "hga ${{ steps.version.outputs.hga }}: the latest build, from $sha on master - replaced on each merge. Its version shows under the debug meters (F2).
 
           You need your own copy of Haunting Ground (USA) for the PlayStation 2: its disc image (.iso). Start hga (Linux) or hga.exe (Windows); the first time it asks for the disc image.
 

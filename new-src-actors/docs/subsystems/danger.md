@@ -47,4 +47,5 @@ the start, Fiona told; the story's flags forcing it (0x1F chased, 7 tense, 0x1B 
 the stalker in her room (chased), next door after her (chased while the hold lasts, then
 followed), gone (calm once the hold is over); `hunted` (tense, then calm after its hold).
 
-Until the stalkers are built, tests send `stalker-here` by hand. Creatures: none yet.
+The stalkers send `stalker-here` each frame (`scripts/stalker.fs`; the tests send it by hand); the
+creatures tell it when one is up in her room (`creature-here`).

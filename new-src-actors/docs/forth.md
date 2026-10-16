@@ -135,12 +135,12 @@ Comments: `( ... )` and `\ to the end of the line`.
 ## The scripts
 
 `prelude.fs` (the language, `IN: forth`), then `game.fs` (`IN: game`), whose `USING:` pulls in the
-rest; each file is a vocabulary of the same name - `state` (shared flags), `keys`, `strings`,
-`vectors.fs` (float vectors, the camera's position and angles), `freecam.fs`, `views.fs` (the
-room's camera setups), `rooms.fs` (stepping through rooms), `player.fs` (playing as Fiona),
-`doors.fs` (Space at an exit goes through to the room it leads to; `.exits` lists them),
-`look.fs` (changing a room's look: `fog-range`, `fog-colors`, `fade-fog` - a task), `hewie.fs` (Hewie keeps up with her: trots, runs, stands watching; arrives at her side in a new
-room), `graphics.fs` (presets, the F1 menu - a small menu system in Forth - and saving them).
+rest; each file is a vocabulary of the same name. Shared words: `common.fs`, `vectors.fs`,
+`keys.fs`, `facts.fs` (the progress' flags), `messages.fs` (every message, declared once). Each
+subsystem is its own file (`fiona.fs`, `stalker.fs`, ... - the map: `docs/subsystems.md`), with a
+folder of the same name when it is bigger (`fiona/`, `hewie/`, `stalker/`, `story/`). Also
+`graphics.fs` (the presets and the options menu, saved), `debug.fs` (the console's helpers, F2's
+overlay).
 
 The console (`` ` ``) evaluates whatever is typed, so any of this can be changed while the game
 runs: redefine a word and the next tick uses it (words already compiled into others keep the
@@ -169,9 +169,9 @@ share: `progress` (`pr.story pr.state pr.vars pr.resident pr.visited`: flag word
 `slot.task slot.who slot.id slot.frames`, `char.present char.id char.room char.scripted
 char.actor`), with their sizes (`story-flags`, `script-slots`, `/slot`, `/char`, ...).
 
-The rooms' event scripts are `scripts/events/` (converted from the game's bytecode: see
-`docs/events-plan.md`): `events.words` (the command and condition words, stubs for now) and one
-vocabulary per map of the castle, `events.map0`..`map4`, `events.other`, `events.builtin`.
+The rooms' event scripts are `scripts/story/rooms/` (converted once from the game's bytecode,
+edited by hand since): one vocabulary per room, `story.rooms.<name>`, on the words of
+`scripts/story/words.fs` (docs/subsystems/story.md).
 
 ## Tests
 

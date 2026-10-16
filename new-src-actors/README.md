@@ -22,11 +22,15 @@ map of the game). Each subsystem gets its own page in `docs/subsystems/` before 
 ```
 cmake -S new-src-actors -B build/new-src-actors -G Ninja
 cmake --build build/new-src-actors
-build/new-src-actors/hga                 # the game (data: ../Haunting Ground (USA)/data)
+build/new-src-actors/hga [disc.iso | data folder]   # the game (none: the disc chosen before, or ask)
 build/new-src-actors/hga --hidden --frames 300 --eval "..."   # headless, for tests
 ctest --test-dir build/new-src-actors    # all the tests
 build/new-src-actors/hga --test new-src-actors/tests/acoustics/test_hearing.fs   # one subsystem's
 ```
+
+In the game: `` ` `` opens the Forth console (`scripts/debug.fs` has its helpers), F2 the debug
+overlay (Fiona's meters, the actors alive and their ids, hga's version), F3 the free camera. The
+version is CMake's `project(hga VERSION ...)`; the release builds carry it in their names.
 
 Tests: `tests/test_*.fs` are the language and the kernel (the `forth` tool, no game data);
 `tests/<subsystem>/test_*.fs` run inside the game headless (`hga --test`), with the game's data.

@@ -102,8 +102,8 @@ void hactor_reset(void);
 ```
 
 The engine sends some messages itself. The first kinds are the kernel's: `tick`, `frame-end`,
-`spawned`, `killed`. More come with later subsystems: `input`, `room-loaded`,
-`animation-event`.
+`spawned`, `killed`. The subsystems' own are declared in `scripts/messages.fs`
+(`tick`, `frame-end`, `entered-room`, ...).
 
 Tests: `tests/test_actors.fs` (`ctest`).
 

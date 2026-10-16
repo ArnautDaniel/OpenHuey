@@ -63,6 +63,5 @@ the cage room; out by an exit - leaving / arrived / entered in order, with both 
 again; an exit to nowhere; a jump). Listeners subscribe to `leaving-room`, `arrived` and
 `entered-room`.
 
-Walked by Fiona (`scripts/fiona.fs`: WASD, Shift, Space at a door). Left:
-the sound bank swap (with the audio subsystem); the controlled character's rule (with Fiona
-and Hewie).
+The rooms' own sounds come with their scripts (`room-sounds`). Not yet: the sections where Hewie is
+the one played (`hewie-controlled?` is always false).

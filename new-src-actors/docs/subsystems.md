@@ -1,158 +1,59 @@
 # The game's subsystems
 
-A map, from what the decompilation showed. Each entry says what the subsystem owns, the
-messages it takes and sends (a first draft: the API is settled on its own page,
-`docs/subsystems/<name>.md`, before it is built) and where the original's rules are.
-
-**Status:** `spec` page written · `built` · `checked` against the C.
+A map of the game: what each part owns, where it is, and where the original's rules are. Each
+subsystem's page (`docs/subsystems/<name>.md`) has its messages, rules and status; this page
+only points there.
 
 ## Engine services (C, not actors)
 
 | Service | Provides (facts and words) | Original |
 |---|---|---|
-| assets | rooms (PAC), nav meshes, figures (models + motions + textures), sound banks, movies, the executable's tables | files, `char_load.c`, `model.c` |
+| assets | rooms (PAC), nav meshes, models with their motions and textures, sound banks, movies, the executable's tables | files, `char_load.c`, `model.c` |
 | world | the room graph: exits, doors' two sides, routes between rooms; door positions; nav triangles (centres, flags, neighbours), floors, rays | `room_map.c`, `navmesh.c`, `RoutePlanner_*` |
-| figures | a posed, animated model: motions, events, bones, visibility | `model.c` |
+| bodies and models | where each actor stands, its posed, animated model: motions, events, bones, visibility | `model.c`, `actor.c` |
 | render | the picture, the camera's view | (GS / VU) |
 | audio | voices, 3D sound, music streams, reverb | `sound.c`, SNDDRV |
-| cutscenes | scene files played back on figures and the camera | `cutscene.c` |
+| cutscenes | scene files played back on models, the room's objects and the camera | `cutscene.c` |
 
 ## Actors
 
-### The story (`story`)  — **S1-S4 built** (`subsystems/story.md`)
-Owns: story flags, script variables, the room's phase scripts and the characters' action
-scripts.
-Takes: `entered-room`, `left-room`, `exit-taken`, `action-pressed`, `area-entered`, `scene-cue`.
-Sends commands to the cast and the world: `place`, `walk-to`, `play-motion`, `say`, `lock`,
-`music`, `bring-in`, `take-out`...
-Original: `event.c` (commands, conditions), the converted room scripts.
-Note: the room scripts are data. They are converted once (as in new-src) into Forth that sends
-messages.
+| Subsystem | Owns | Script | Original | Page |
+|---|---|---|---|---|
+| Story | story flags, script variables, the rooms' phase scripts and the characters' action scripts (the original's event scripts, converted to Forth once) | `story.fs`, `story/` | `event.c` | [story](subsystems/story.md) |
+| Rooms | the room being played, going from room to room | `rooms.fs` | `scene_game.c`, `room.c` | [rooms](subsystems/rooms.md) |
+| Doors | each door's lock, open state, who holds it, its swing | `doors.fs` | `doors.c` | [doors](subsystems/doors.md) |
+| Obstacles | the things pushed about in the played room, their squares and the floor under them | `obstacles.fs` | `room_map.c` (`Obstacle_*`) | [obstacles](subsystems/obstacles.md) |
+| Things | what Fiona throws, drops or sets down, and what they do | `things.fs` | `placed.c` | [things](subsystems/things.md) |
+| Camera | the director: whom it follows, each character's setup, cuts and eases (in C), the story's shot | `camera.fs` | `camera.c`, `camdirector.c` | [camera](subsystems/camera.md) |
+| Fiona | her moves and actions (doors, ladders, items, pushing, shoving, kicking), being struck and seized, her fear | `fiona.fs`, `fiona/` | `fiona.c` | [fiona](subsystems/fiona.md) |
+| Panic | the panic meter: level, stage, her breath and scream | `panic.fs` | `Panic_*` | [panic](subsystems/panic.md) |
+| Hewie | his trust, her commands, his moods, his own mind | `hewie.fs`, `hewie/` | `hewie.c` | [hewie](subsystems/hewie.md) |
+| Stalkers | Debilitas, Daniella, Riccardo, Lorenzo: senses, search, chase, attacks, being struck | `stalker.fs`, `stalker/` | `pursuer.c`, `debilitas*.c`, `daniella.c`, `riccardo.c`, `lorenzo.c` | [stalker](subsystems/stalker.md) |
+| Summoner | bringing a stalker into play and taking him out | `summoner.fs` | `Summoner_*` | [summoner](subsystems/summoner.md) |
+| Creatures | spirits and homunculi | `creatures.fs`, `creatures/` | `creature.c` | [creatures](subsystems/creatures.md) |
+| Cast | the story's other characters: the crows, the figures in scenes | `cast.fs` | `story_chars.c`, `char_load.c` | [cast](subsystems/cast.md) |
+| Acoustics | the noises made this frame, and who hears them | `acoustics.fs` | `Noise_Make`, `Character_Hearing` | [acoustics](subsystems/acoustics.md) |
+| Danger | calm / followed / chased | `danger.fs` | `SceneGame_Danger` | [danger](subsystems/danger.md) |
+| Music | the background track, the stage music, volumes and fades | `music.fs` | `music.c`, `MusicDir_*` | [music](subsystems/music.md) |
+| Screen | the fade to and from black | `screen.fs` | `Events_Fade` | [screen](subsystems/screen.md) |
+| Window | the message window and its choices | `window.fs` | `text.c` | [window](subsystems/window.md) |
+| Pause | the play and movie pauses | `pause.fs` | `pause.c` | [pause](subsystems/pause.md) |
+| Items and the menu | the inventory, item use, the files, the map, the options, the word plate, the slot machine, the wardrobe | `items.fs`, `subscreen.fs`, `subscreen/` | `items.c`, `subscreen.c` | [items](subsystems/items.md) |
+| Effects | flames, sparks, flickering sprites, shards, butterflies; the rooms' own | `effects.fs` | `effects.c` | [effects](subsystems/effects.md) |
+| Game over | the three kinds of game over | `gameover.fs` | `gameover.c` | [gameover](subsystems/gameover.md) |
+| Ending | the staff roll, the results, the unlocks | `ending.fs` | `scene_ending.c` | [ending](subsystems/ending.md) |
+| Saving | F5 / F9 quick save, the 8 save slots (the save points), the system data (the unlocks) | `saves.fs` | `SceneGame_Save` | (below) |
 
-### Rooms (`rooms`)  — **built** (`subsystems/rooms.md`)
-Owns: the room being played, and going from room to room.
-Takes: `go-to-room`. Broadcasts `room-loaded`, `entered-room`, `left-room`.
-Original: `scene_game.c` (room change), `room.c`.
+Also: the title and the opening (`opening.fs`), the avoid prompt (`avoid.fs`), the pad's rumble
+(`rumble.fs`), the graphics options (`graphics.fs`), the debug words and overlay (`debug.fs`).
 
-### Doors (`doors`)  — **built** (`subsystems/doors.md`)
-Owns: each door's lock, open state, who holds it and its swing.
-Takes: `open`, `shut`, `slam`, `lock`, `unlock`, `hold`, `let-go`.
-Sends: `noise` (opened / shut / slammed), `hit` (slammed on someone), `door-state` broadcasts.
-Original: `doors.c`, `Progress_*Door*`.
+**Saving.** A save is a Forth file in the user's folder, read back by running it. `saves` writes
+the progress, then broadcasts `write-save` and each actor (Fiona, Hewie, the stalker) prints its
+own line. Loading puts the progress back, plays the room again and puts them where they were;
+anything else (a scene playing, the room's own script state) starts afresh, as in the original.
 
-### Obstacles (`obstacles`)  — **built** (`subsystems/obstacles.md`)
-Owns: the things pushed about in the played room, their squares and the floor's flags under them.
-Takes: `place-obstacle`, `stop-obstacle`, `keep-obstacle`, `push-obstacle` (Fiona).
-Sends: `noise` (the scrape).
-Original: `room_map.c` (`Obstacles_*`, `Obstacle_*`).
+## Not yet
 
-### Camera (`camera`)  — **built** (`subsystems/camera.md`)
-Owns: the room's camera setups, who it follows, cuts and eases.
-Takes: `follow`, `use-setup`, `event-camera`, `release`.
-Original: `camera.c`, `camdirector.c`.
-
-### Fiona (`fiona`)  — **F1, F2, F3, F4 built** (her falls: the creatures' $13, held by homunculi $12; the ladder falls with F5) (`subsystems/fiona.md`)
-Owns: her moves, her actions (doors, ladders, items, pushing), her health, fear and panic.
-Takes: `input`, `hit`, `seize`, `lead`, `let-go`, `frighten`, `heal`, `place`, `play-motion`.
-Sends: `noise` (steps, screams, falls), `kick`/`shove` (as `hit` to whoever she struck),
-commands to Hewie, `open`/`shut` to doors, `panic-stage` broadcasts.
-Original: `fiona.c`, `Panic_*`.
-
-### Hewie (`hewie`)  — **H1, H2, H3 built** (`subsystems/hewie.md`)
-Owns: his trust, his commands, his moods, his own wandering.
-Takes: `command` (from Fiona), `praise`, `scold`, `hit`, `heard`, `tick`.
-Sends: `noise` (barks), `bite` (a `hit`), `noticed` (he's alert to a stalker).
-Original: `hewie.c`.
-
-### The stalkers (`stalker`)  — **P1-P4 built** (`subsystems/stalker.md`)
-One family for Debilitas, Daniella, Riccardo and Lorenzo: the same senses, search, chase and
-attack, with each one's numbers, motions and special moves.
-Owns: its mode (searching / after her / held back / waiting), what it knows (where it saw her,
-what it heard), its route, its health.
-Takes: `tick`, `heard`, `hit`, `bitten`, `door-slammed`, `place-in-room`, `knock-down`,
-`set-mode`, `search-delay`.
-Sends: `noise` (steps), `hit`/`seize`/`lead` to Fiona, `open` to doors, `stalker-mode`
-broadcasts (for danger and the music).
-Original: `pursuer.c`, `debilitas*.c`, `daniella.c`, `riccardo.c`, `lorenzo.c`.
-
-### Event characters (`cast`)  — **built** (`subsystems/cast.md`)
-The story's other characters and things: the crows, the figures in scenes. Mostly placed and
-put in motions by the story.
-Takes: `place`, `play-motion`, `hold-motion`, `show`, `hide`.
-Original: `story_chars.c`, `char_load.c`.
-
-### Sound in the house (`acoustics`)  — **built, checked**
-Owns: the noises made this frame.
-Takes: `noise`, `listen`, `stop-listening`. Sends `heard` to each listener that hears one.
-Original: `Noise_Make`, `Character_Hearing`, `Progress_PursuerRequest`.
-Page: `docs/subsystems/acoustics.md`.
-
-### Danger (`danger`)  — **built** (`subsystems/danger.md`)
-Owns: calm / tense / chased and its hold timers.
-Takes: `stalker-mode`, `stalker-room`, `fiona-room`, `creature-near`, `hunted`, story overrides.
-Broadcasts: `danger` (music, Fiona's fear, Hewie, the scripts' conditions read it).
-Original: `SceneGame_Danger`.
-
-### Panic (`panic`)  — **built** (`subsystems/panic.md`)
-The panic meter: level, stage, Fiona's breath and scream.
-
-### The summoner (`summoner`)  — **built** (`subsystems/summoner.md`)
-Brings the stalker into play and takes him out, by the story's stage and where Fiona is.
-Original: `Summoner_*`.
-
-### Music (`music`)  — **built** (`subsystems/music.md`)
-Owns: the background track, the stage music, volumes and fades.
-Takes: `bgm-want`, `bgm-resume`, `music-op`, `music-stage` (`danger`: with the chase music).
-Original: `music.c`, `BgmCtl`, `MusicDir_*`.
-
-### The screen (`screen`)  — **built** (`subsystems/screen.md`)
-Owns: the fade to and from black. Takes: `fade`, `fade-finish`. Answers `fade-done`.
-Original: the event's fade (+0x20, `Events_Fade`).
-
-### The pause (`pause`)  — **built: play and movie pauses** (`subsystems/pause.md`)
-Owns: the pause screen. Start during a scene's movie: back to it, or skip it (`movie-skipped`).
-Original: `pause.c`.
-
-### Items and the sub screen (`items`, `subscreen`)  — **I1-I3 built** (`subsystems/items.md`; saving not yet)
-Owns: the inventory, item use, the files, the map.
-Original: `items.c`, `subscreen.c`.
-
-### Effects (`effects.fs`: an actor per effect)  — **S5b built** (`subsystems/effects.md`)
-Flames, sparks, flickering sprites, specks, shards, butterflies: the room's 32 effect slots
-(kept by the room actor) and the scene effects. Drawn with the engine's sprite batches.
-Original: `effects.c`.
-
-### Messages on screen (`window`)  — **built** (`subsystems/window.md`)
-Owns: the text window and the choices.
-Takes: `say`, `ask`. Sends `answered`, `closed`.
-Original: `text.c`, messages.
-
-### Creatures (`creatures`, a `spirit` or `homunculus` each)  — **C1-C3 built** (`subsystems/creatures.md`)
-The house's lesser creatures: spirits (glows that come after her, vanish touching her or at
-their time) and homunculi (small figures that watch, follow and grab her; struck, they leave).
-Placed and cleared by the story, kept in the progress.
-
-### Saving (`saves`)  — **quick save built** (`scripts/saves.fs`)
-F5 saves, F9 loads (`<user-dir>hga-quick-save.fs`). As the original's save (SceneGame_Save): the
-progress, the room, Fiona's place and costume, Hewie with her (his trust, health, place); loading
-plays the room again and puts them back. The file is Forth: `saves` writes the progress, then
-broadcasts `write-save` and each actor prints its own line. Not yet: the stalker's and the
-placed things' state, the memory card screens (the sub screen's save mode).
-
-### Things lying about (`things`)  — **built** (`subsystems/things.md`)
-Owns: what Fiona throws, drops or sets down, and what they do. Motion and drawing in C
-(`game/things.c`). Original: `placed.c` (PlacedThings, Ball, Thing01..10).
-
-### Game over, title, ending (`scenes`)  — **game over and ending built** (`subsystems/gameover.md`, `subsystems/ending.md`); the title in `opening`
-Original: `gameover.c`, `title.c`, `scene_ending.c`. The ending: the staff roll, the results
-(the play record, the dog level, the TYPE), the unlocks; the clear-data save not built.
-
-## Order
-
-1. The kernel and `acoustics`: the prototype.
-2. `rooms`, `doors`, `camera`: the world working with actors (walked by a debug walker until
-   Fiona's F1 replaced it).
-3. `fiona`, `hewie`: the player's side.
-4. `story` (the converted scripts sending messages).
-5. `stalker` (Debilitas first), `danger`, `summoner`, `music`.
-6. The rest.
+The sections where Hewie is the one played, and the extras' menus (the movies, the galleries).
+Two story stubs are left (they print "not written yet" when reached): a room command of the
+unused off-map-5a, and `char-load` of a figure outside slots 3..5.
