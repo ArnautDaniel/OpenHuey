@@ -2,7 +2,7 @@
 # OpenHuey
 <img width="300" height="400" alt="h" src="https://github.com/user-attachments/assets/224650eb-86ee-4886-8f7a-74fb6e9bcf45" />
 
-Another kind of Hewie
+Another kind of Hewie (Discord setup at https://discord.gg/7sMGvfBAE)
 
 This started with me really freaking wanting the Hewie model from Haunting Grounds because it's one of my favorite games.  It finally took me just getting Claude to run a decompile, about halfway through I had it make a model viewer and had my model but decided to keep going.  
 
