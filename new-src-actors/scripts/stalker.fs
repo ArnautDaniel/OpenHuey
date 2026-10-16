@@ -65,7 +65,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     thaw  hurt-down  senses  modes  dog-temper  shut-behind  ladder-watch
     step @ ?dup if  execute  then  search  looking   \ (Pursuer_Think: the head after the behaviour)
     played? growls @ and if  growl  then
-    played? if  anim-sounds-play  then
+    played? if  stalker.moving:footsteps  anim-sounds-play  then
     pose
     my-room  sees-fiona @ 0<> 1 and  my-mode @ 0= 1 and  danger-id send stalker-here ;
 \ what he is doing, for Hewie (the original's character fields he reads: room, move mode and

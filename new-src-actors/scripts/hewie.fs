@@ -104,7 +104,7 @@ behaviour hewie-own
   on noclip ( on -- )  0<> 1 and his-2b ! ;
   on aside ( on -- )  0<> 1 and his-2d ! ;
   on activate ( -- )  0 his-2b !  0 his-2d !  100 hp! ;   \ (the story's 0x15, Hewie_Activate: afresh, at full health)
-  on tick ( -- )  along? if  frame  else  tell-doing  then ;
+  on tick ( -- )  along? if  frame  else  tell-doing  then  -1 his-heard ! ;
   \ her commands (H2)
   on command ( code tri yaw x z -- )   \ (Hewie_StateBlock's 13)
       along? 0= if  2drop 2drop drop exit  then
@@ -156,7 +156,7 @@ behaviour hewie-own
       along? up and if  room self body-room = if  2 his-creature-t !  then  then ;
   on fetch-this ( thing -- )   \ (Fiona_StateLetGo: her ball thrown, while all's calm)
       along? his-danger @ 0= and his-action @ $78 <> and if  his-follows !  else  drop  then ;
-  on shaken-off ( -- )  along? if  his-biting @ 2 < if  3 his-biting !  then  then ;
+  on shaken-off ( -- )  along? if  his-act @ ['] st-bite-hold = if  3 his-biting !  then  then ;   \ (thrown off: only while he holds on)
   on blow-from ( kind damage how x y z -- )   \ (from a point: Progress_Noise)
       cells>xyz his-blow-pt vec!  along? 0= if  2drop drop exit  then  -2 take-blow drop ;
   on blow ( kind damage how -- )

@@ -291,7 +291,8 @@ create mood-acts  3 cells allot
         then
         anim@ $1000 = if  $80 his-tri noise-make  then
     then
-    his-snd-frame f!  anim@ his-snd-anim ! ;
+    his-snd-frame f!  anim@ his-snd-anim !
+    anim@ $1001 = $10 event? and if  splash-here  then ;   \ (his splash in water)
 
 \ ---- his overlays: head, ears and tail playing their own motions by his animation and mood
 \ (Hewie_SetOverlays / OverlayAnim / IdleOverlay / TailOverlay) ----
@@ -369,8 +370,15 @@ variable feet-new
 : step-pitch ( -- n )
     model root-delta  fswap fdrop fswap fdrop fswap fdrop  his-floor-k f@ f*
     0.28e f- 2.12e f/  0e fmax 1e fmin  2e f* f>s $7F and ;
+create wet-at 12 allot
+create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind right, hind left)
+: wet-feet ( -- )   \ (in the flooded rooms each foot come down ripples the water: deeper wading)
+    wading? 0= if  exit  then
+    4 0 do  feet-new @ 1 i lshift and if
+        anim-group 8 =  his-model @ i cells foot-bones + @ bone-pos  wet-at vec!  wet-at water-step
+    then  loop ;
 : feet ( -- )
-    his-away @ his-tri 0< or if  exit  then
+    his-away @ his-tri 0< or  world-held state-flag? or if  exit  then
     0 feet-new !
     4 0 do
         model i foot-down?
@@ -378,6 +386,7 @@ variable feet-new
         i cells his-feet-was + !
     loop
     feet-new @ 0= if  exit  then
+    wet-feet
     his-tri nav-flags $2018000 and case
         $8000 of  $14 5  endof  $10000 of  $18 5  endof  $18000 of  $1C 5  endof  $2000000 of  $78 5  endof
         $2008000 of  6 sound-loaded? if  $18 6  else  $10 5  then  endof

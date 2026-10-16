@@ -46,6 +46,8 @@ int particles_dust_shaft(void);
 int particles_spiral_smoke(void);
 /* water dripping into the old mansion's flooded room, ripples and sounds (Drips) */
 int particles_drips(void);
+/* a footstep in water (Character_WaterStep): a ring and a spray of droplets (`big` larger) */
+void particles_water_step(Vec3 at, int big);
 /* a drop now and then from a branch in the Chaos Forest, a ring and a droplet where it lands (OneDrip) */
 int particles_one_drip(void);
 /* motes rising in castle 1F's hall (RisingMotes) */

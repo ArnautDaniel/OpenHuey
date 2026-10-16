@@ -32,7 +32,15 @@ T{ [: [: anim@ $2215 = ;] his@ ;] 60 soon  [: hp @ ;] deb@ -> -1 60 }T
 T{ [: temper @ 10 >= ;] deb@ -> -1 }T
 testing ... let go: both on again, the stalker after his reaction's end ($1707)
 T{ [: [: bitten @ 0= ;] deb@ ;] 600 soon  [: reeling @ ;] deb@ -> -1 0 }T
-T{ [: [: his-biting @ 0= his-action @ $1F <> and ;] his@ ;] 300 soon -> -1 }T
+T{ [: [: his-act @ ['] st-clamped <> his-action @ $1F <> and ;] his@ ;] 300 soon -> -1 }T
+debug:debilitas-out  5 frames
+
+testing the stalker's footsteps (Pursuer_Footsteps): walking ($200), a step as each foot comes down, heard
+0 deb-in
+: walking ( -- )  [: ['] noop step !  $200 play ;] deb! ;
+: steps ( -- n )  [: step-foot @ ;] deb@ ;
+: walked ( n -- steps )  steps swap  0 do  walking  game-tick  loop  steps swap - ;
+T{ 60 walked 2 > -> -1 }T
 debug:debilitas-out  5 frames
 
 testing refused when the stalker can't take it (not in the room): he goes again later (0x5A)

@@ -3,7 +3,7 @@
 \ and stepped onto it), turning on the spot ($400..$403) when the way goes off to one side,
 \ his walk for his mode, standing.
 IN: stalker.moving
-USING: engine game-state actors facts flag-names paths stalker.state stalker.senses stalker.tables ;
+USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.tables ;
 
 : model ( -- a )  my-model @ actor ;
 : sound ( id bank -- )   \ Pursuer_Sound: at him (not while the world is held, nor silenced)
@@ -64,6 +64,40 @@ fvariable rm-turn  fvariable rm-x  fvariable rm-y  fvariable rm-z
 : root@ ( -- )  my-model @ root-delta  rm-z f!  rm-y f!  rm-x f!  rm-turn f! ;
 : root-move ( -- )  root@  yaw rm-turn f@ f+ angle-wrap yaw!  rm-x f@ rm-z f@ body-move-local ;
 : stride ( F: -- d )  root@ rm-z f@ ;
+
+\ ---- his footsteps (Pursuer_Footsteps; Lorenzo's - kind 11 - only walking or turning): as a
+\ foot comes down (his feet a frame back), the sound of the floor under it (bank 7, the feet by
+\ turns: wood 2, stone 4, metal 6, grass 8, wet $14 in bank 6), higher the faster he goes
+\ (0.6 .. 1.4 a frame), and a noise the others hear ($1C, $1F striding out). Standing still he
+\ is on both feet and his count starts over. In rooms 7 / $106 the water ripples ----
+create left-at 12 allot  create right-at 12 allot
+: feet ( -- l r )   \ (Motion_FootPos, a frame back)
+    my-model @ 1 -1e foot-at left-at vec!  1 and
+    my-model @ 0 -1e foot-at right-at vec!  1 and ;
+: still-feet ( -- l r )   \ standing: down - while the motion before fades out, as it had them
+    settled? if  1 1 exit  then
+    my-model @ -4 -1 -1e motion-track-by 0= if  fdrop fdrop fdrop 0 0 exit  then
+    fdrop  f0> 1 and  f0> 1 and ;
+: standing? ( -- flag )  anim @ dup 4 u<  swap $1600 $1603 within or ;   \ (motion groups 0 / $1600)
+: new-step ( l r -- step )   \ 1 the left foot, -1 the right, 0 none
+    over 1 = foot-l-was @ 0= and if  1  else  dup 1 = foot-r-was @ 0= and if  -1  else  0  then  then
+    >r  foot-r-was !  foot-l-was !  r> ;
+: floor-sound ( flags -- id bank )   \ (the feet by turns)
+    dup $2000000 and if  $8000 and if  $14 6  else  8 7  then
+    else  $18000 and case  $18000 of  6  endof  $10000 of  4  endof  $8000 of  2  endof  >r 0 r>  endcase  7  then
+    swap step-foot @ 1 and +  swap  1 step-foot +! ;
+: step-pace ( F: -- 0..1 )  stride 0.6e f- 0.8e f/  0e fmax 1e fmin ;
+: step-floor ( v -- flags )  v-tri dup 0< if  drop self body-tri  then  nav-flags ;
+: footsteps ( -- )
+    self body-tri 0< if  exit  then
+    my-kind @ 11 = if  anim @ $FF00 and dup $200 = swap $400 = or 0= if  exit  then  then
+    feet  standing? if  2drop still-feet  then  new-step
+    ?dup 0= if  settled? standing? and if  0 step-foot !  then  exit  then
+    1 = if  left-at  else  right-at  then
+    flooded? if  1 over water-step  then
+    step-floor floor-sound
+    world-held state-flag? hushed @ or if  2drop  else  0  step-pace 2e f* f>s $7F and  my-at vec@ sound-at  then
+    step-pace 0.5e f< if  $1C  else  $1F  then  room-id self body-tri -1 stalker-noise s" acoustics" actor-named send noise ;
 
 \ ---- turning (Npc_TurnTowardPos: toward a point by at most `step`; how far is left) ----
 : heading-to ( v -- ) ( F: -- a )  self swap body-heading-to ;

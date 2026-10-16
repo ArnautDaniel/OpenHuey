@@ -629,7 +629,27 @@ int model_root_delta(const Model *m, int index, float frame, float *turn, Vec3 *
     return 0;
 }
 
+static int track_read(const Model *m, int index, int code, float frame, float out[3], uint32_t *kind_out);
+
 int model_track_raw(const Model *m, int index, int code, float frame, float out[3]) {
+    return track_read(m, index, code, frame, out, NULL);
+}
+
+/* as model_track_raw, its values as Track_Sample gives them: a place track (format 1) in room
+ * units of the model (its s16 keys / 256) */
+int model_track(const Model *m, int index, int code, float frame, float out[3]) {
+    uint32_t kind = 0;
+    int has = track_read(m, index, code, frame, out, &kind), j;
+
+    if (has && kind == 1) {
+        for (j = 0; j < 3; j++) {
+            out[j] *= 0.00390625f;
+        }
+    }
+    return has;
+}
+
+static int track_read(const Model *m, int index, int code, float frame, float out[3], uint32_t *kind_out) {
     Reader r;
     size_t rec;
     int p;
@@ -659,6 +679,9 @@ int model_track_raw(const Model *m, int index, int code, float frame, float out[
             }
             type = u32(&r, track + 4);
             kind = type & 0xFFFF;
+            if (kind_out != NULL) {
+                *kind_out = kind;
+            }
             keys = track + u32(&r, track + 8);
             count = (type >> 16 & 1) ? 1 : frames;
             if (count <= 0) {

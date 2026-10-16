@@ -80,7 +80,7 @@ create reactions  300 , 1 , 300 , 1 , 300 , 1 , 750 , 1 , 150 , 1 , 1500 , 1 , 6
 : can-get-to-her? ( -- flag )  his-tri his-at fiona-at 0 v-walk  her body-tri = ;
 \ Hewie_FionaCommand: her command; true if he acts on it
 : fiona-command ( code -- flag )
-    his-cmd-was !
+    dup his-heard !  his-cmd-was !
     his-away @ if   \ (in another room: what it makes him do, straight - Hewie_FionaCommand's disabled)
         his-cmd-was @ command-action dup 0< if  drop false  else  act-on-command  then  exit
     then

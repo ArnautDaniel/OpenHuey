@@ -115,6 +115,7 @@ state: stalker-state
   \ way left now and before, +0x16A4 his foot)
   cell field own-a-tri  cell field own-b-tri
   1 floats field step-acc  1 floats field step-last  cell field step-foot
+  cell field foot-l-was  cell field foot-r-was   \ his feet down last frame (+0x16A8 / +0x16A9)
   \ the doors of the room being played (stalker/doorway.fs): on his way out by an exit (+0x17B0:
   \ making-for; the room's modes wait meanwhile), his animation's kind at its door (+0x104: 0 / 2
   \ opening it from behind / in front; -1 none), the door asked for and the one held, frames

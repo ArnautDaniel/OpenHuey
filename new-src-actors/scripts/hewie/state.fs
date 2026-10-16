@@ -86,6 +86,7 @@ state: hewie-state
   1 floats field his-side  cell field his-side-dir
   cell field his-last-idle
   cell field his-cmd-was  cell field his-cmd-act
+  cell field his-heard          \ her command this frame (+0xF3578 within a frame; else -1)
   \ a spot to go to: its triangle, an animation, the heading, the point
   cell field his-to-tri  cell field his-to-anim  1 floats field his-to-yaw  12 field his-to
   cell field his-pet

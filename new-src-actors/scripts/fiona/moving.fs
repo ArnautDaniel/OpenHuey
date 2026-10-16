@@ -119,11 +119,9 @@ $80 constant soft-boots
 : contact ( prev? -- l r )   \ the motion's contact track: left, right down
     her-model @ swap -4 swap motion-track 0= if  fdrop fdrop fdrop 0 0 exit  then
     fdrop  f0> 1 and  f0> 1 and ;
-fvariable ft-x  fvariable ft-z  create foot-at 12 allot
-: foot-place ( left? -- )   \ where the foot is in the room (its place track, turned by her)
-    her-model @ swap if  -3  else  -2  then  0 motion-track drop
-    fswap fdrop  her-yaw f@ rotate-by  her-at 8 + sf@ f+ ft-z f!  her-at sf@ f+ ft-x f!
-    ft-x f@ foot-at sf!  her-at 4 + sf@ foot-at 4 + sf!  ft-z f@ foot-at 8 + sf! ;
+create foot-at 12 allot
+: foot-place ( left? -- )   \ where the foot is in the room (Motion_FootPos: its place track, as she is)
+    her-model @ swap 0e engine:foot-at drop  foot-at vec! ;
 variable st-l  variable st-r  variable st-step  variable ft-base  variable ft-bank
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
 : footsteps ( -- )
@@ -135,6 +133,7 @@ variable st-l  variable st-r  variable st-step  variable ft-base  variable ft-ba
     st-l @ her-step-l !  st-r @ her-step-r !
     st-step @ 0= if  settled? group 0= and if  0 her-steps !  then  exit  then
     st-step @ 1 = foot-place
+    wading? if  her-mode @ 0= her-sub @ 2 = and  foot-at water-step  then   \ (running: the bigger ripple)
     0 ft-base !  4 ft-bank !
     foot-at blocked-floor v-tri-in dup 0< if  drop her-tri @  then  nav-flags
     $2018000 and case
