@@ -25,6 +25,27 @@ USING: engine game-state actors messages facts ;
 : reopened! ( door -- )  progress pr.closed-off bit-clear ;
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
 
+\ ---- the rooms within two open doors of a room (SceneGame_RoomsNear): the room first, then
+\ each room an open exit (not locked, nor locked against any of the three kinds) leads to, and
+\ each an open exit of that one leads to - each once, `max` at most ----
+: exit-open? ( room exit -- flag )
+    room-exit-door dup 0< if  drop false exit  then
+    dup door-locked? if  drop false exit  then  against 7 and 0= ;
+: in-list? ( room list n -- flag )  {: r list n :}  false  n 0 ?do  list i cells + @ r = or  loop ;
+: rooms-near ( room list max -- n )
+    {: room list max | n :}
+    room list !  1 to n
+    8 0 do
+        room i room-exit-leads drop {: r :}
+        r 0< 0=  room i exit-open? and  r list n in-list? 0= and  n max < and if
+            r list n cells + !  n 1+ to n
+            8 0 do
+                r i room-exit-leads drop {: t :}
+                t 0< 0=  r i exit-open? and  t list n in-list? 0= and  n max < and if  t list n cells + !  n 1+ to n  then
+            loop
+        then
+    loop  n ;
+
 \ ---- the played room's doors on the floor (Doors_RoomIn / Doors_Refresh) ----
 $1000000 constant hewie-barred   $4000000 constant stalker-barred   \ (the nav mesh's passage flags)
 : locks ( door -- flags )   \ the passage flags its locks put on the floor
