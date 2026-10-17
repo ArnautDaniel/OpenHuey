@@ -53,25 +53,15 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-1f-18.char-enter ( -- )   \ 003FCBC0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 0 player-camera
-    then then
+    then
     0 1 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 -1 player-camera
-    then then
+    then
     1 0 -1 area-camera
 ;
 
@@ -210,16 +200,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         -34.0 -44.0 self-turn-to-xz
         self-wait-done
     then
-    turn-round-anim self-anim
-    self-wait-anim
+    turn-round-anim play-out
     -1 self-idle-anim
     flowers-laid story-flag? not if
-        1 message   \ "Yuck! Look at all those moths! I'm not going there. Looks like they are attracted t..."
-        wait-message
+        1 say   \ "Yuck! Look at all those moths! I'm not going there. Looks like they are attracted t..."
         $229 item-give
     else
-        4 message   \ "Guess I'll have to chalk that up to another strange occurrence here. Moths that are..."
-        wait-message
+        4 say   \ "Guess I'll have to chalk that up to another strange occurrence here. Moths that are..."
     then
     self-idle-or-end
 ;
@@ -230,11 +217,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     1 30.0 10.0 0.0 0.0 event-camera
     look-low-anim $A self-anim-blend
-    0 message   \ "An empty flower vase."
-    wait-message
+    0 say   \ "An empty flower vase."
     self-wait-anim
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
 ;
@@ -262,10 +247,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     8 $FF $E5 0 $E $FF $D8 0 7 effect-string
     9 $FF $E3 0 $F $FF $D8 0 7 effect-string
     $A $FF $E5 0 $C $FF $D7 0 7 effect-string
-    begin
-        $D2 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $D2 cutscene-cue-reached? ;] wait-until
     $C0000000 6 -34.0 0.0 -44.0 0 0 sound
     begin
         $14A cutscene-cue-reached? not while
@@ -288,12 +270,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 : castle-1f-18.act05 ( -- )   \ 003FD050
     self-wait-done
     0 ebit? not if
-        2 message   \ "This picture has been ripped out and discarded. I'm no critic, but it doesn't seem..."
-        wait-message
+        2 say   \ "This picture has been ripped out and discarded. I'm no critic, but it doesn't seem..."
         0 ebit-set
     else
-        3 message   \ "Who would do such a thing?!"
-        wait-message
+        3 say   \ "Who would do such a thing?!"
         0 ebit-clear
     then
     self-idle-or-end
@@ -320,10 +300,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     scene-wait-ready
     0 part-shown
     0 cutscene-track 8 action
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
+    [: 6 sound-bank-loaded? ;] wait-until
     $40000000 6 55.0 4.0 -30.0 0 0 sound
     castle-1f-18.cmd01
     panic-eased

@@ -47,45 +47,25 @@ defer old-mansion-1f-24.act02
 ;
 
 : old-mansion-1f-24.char-enter ( -- )   \ 0043B0D0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         2 2 player-camera
-    then then
+    then
     1 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         1 1 player-camera
-    then then
+    then
     2 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         0 0 player-camera
-    then then
+    then
     3 0 0 area-camera
 ;
 
@@ -96,20 +76,12 @@ defer old-mansion-1f-24.act02
     1 exit-usable? if
         1 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
+    then
     8 0 0 1 chars-area-camera
     9 1 1 1 chars-area-camera
     fiona-who 4 char-entered-area? fiona-who 6 char-entered-area? or if
@@ -214,27 +186,22 @@ defer old-mansion-1f-24.act02
 
 : old-mansion-1f-24.act07 ( -- )   \ 0043B4E0
     self-wait-anim
-    5 room-motion 7 self-anim-blend
-    self-wait-anim
-    1 room-motion $14 self-anim-blend
-    self-wait-anim
+    5 room-motion 7 blend-out
+    1 room-motion $14 blend-out
     6 ebit-clear
     ['] old-mansion-1f-24.act02 goto
 ;
 
 : old-mansion-1f-24.act06 ( -- )   \ 0043B4C0
     self-wait-anim
-    4 room-motion $14 self-anim-blend
-    self-wait-anim
-    3 room-motion 7 self-anim-blend
-    self-wait-anim
+    4 room-motion $14 blend-out
+    3 room-motion 7 blend-out
     6 ebit-clear
     begin
         6 ebit? if
             ['] old-mansion-1f-24.act07 goto
         then
-        3 room-motion self-anim
-        self-wait-anim
+        3 room-motion play-out
     again
 ;
 
@@ -243,8 +210,7 @@ defer old-mansion-1f-24.act02
         6 ebit? if
             ['] old-mansion-1f-24.act06 goto
         then
-        1 room-motion self-anim
-        self-wait-anim
+        1 room-motion play-out
     again
 ; is old-mansion-1f-24.act02
 
@@ -253,25 +219,20 @@ defer old-mansion-1f-24.act02
     -97.5 1.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $61 message-param-room
         $61 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-24-beef-jerky story-flag-set
             0 effect-remove
             $61 1 item-give-count
             0 $61 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -295,35 +256,26 @@ defer old-mansion-1f-24.act02
     hewie-no-attack state-flag-set
     self-wait-done
     6 ebit-set
-    begin
-        6 ebit? while
-        yield
-    repeat
+    [: 6 ebit? ;] wait-while
     $1D 1 item-count? not if
         stalker-who 0 6 char-sound
         0 message   \ "Oh my. What a filthy little princess. A small present from the lord of the manor..."
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
         wait-message
         $1D message-param-room
         $1D 1 item-give-count
         0 $1D item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
         got-hebels-perfume story-flag-set
     else
         stalker-who 1 6 char-sound
         1 message   \ "Miss... It's cleaning time now."
-        self-frames-reset
-        $5A self-wait-frames
+        $5A wait-frames
         wait-message
     then
     6 ebit-set
-    begin
-        6 ebit? while
-        yield
-    repeat
+    [: 6 ebit? ;] wait-while
     0 self-scripted
     hewie-no-attack state-flag-clear
     self-idle-or-end
@@ -334,33 +286,27 @@ defer old-mansion-1f-24.act02
     -98.51 -12.98 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $73 message-param-room
         $73 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-24-rubrum-medallion story-flag-set
             1 effect-remove
             $73 1 item-give-count
             0 $73 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
 
 : old-mansion-1f-24.act09 ( -- )   \ 0047AED0
     self-wait-done
-    2 message   \ "Judging from the size and shape, there is probably a statue under there... But I probab..."
-    wait-message
+    2 say   \ "Judging from the size and shape, there is probably a statue under there... But I probab..."
     self-idle-or-end
 ;
 

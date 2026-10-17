@@ -11,35 +11,20 @@ USING: room-names story.words story.shared story-names fiona.anims ;
 ;
 
 : old-mansion-2f-9.char-enter ( -- )   \ 00412430
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         2 2 player-camera
-    then then
+    then
     1 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
     hewie-who self-is? if
         2 hewie-mood
@@ -118,25 +103,20 @@ USING: room-names story.words story.shared story-names fiona.anims ;
     42.0 6.6 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $65 message-param-room
         $65 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             got-sylvesta-esca story-flag-set
             0 effect-remove
             $65 1 item-give-count
             0 $65 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
@@ -146,10 +126,8 @@ USING: room-names story.words story.shared story-names fiona.anims ;
     50.0 9.0 self-turn-to-xz
     self-wait-done
     look-at-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    0 message   \ "A stuffed chimera is showing off its fierce gaze. Why would anyone ever decorate a room..."
-    wait-message
+    $28 wait-frames
+    0 say   \ "A stuffed chimera is showing off its fierce gaze. Why would anyone ever decorate a room..."
     self-wait-anim
     self-idle-or-end
 ;

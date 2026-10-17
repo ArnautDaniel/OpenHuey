@@ -22,35 +22,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : water-tower-1f-1.char-enter ( -- )   \ 0043ECC0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 -1 player-camera
-    then then
+    then
     0 2 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 -1 player-camera
-    then then
+    then
     1 0 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         1 1 player-camera
-    then then
+    then
     2 1 1 area-camera
 ;
 
@@ -58,20 +43,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
+    then
     7 0 -1 1 chars-area-camera
     8 1 1 1 chars-area-camera
     9 1 1 1 chars-area-camera
@@ -160,12 +137,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $32 -64.094 52.322 -45 $FFFF 5 self-move-to
         self-wait-done
         1 25.0 10.0 0.0 0.0 event-camera
-        0 message   \ "I wonder if this water is safe to drink... Guess I'll never know if I don't try."
-        wait-message
+        0 say   \ "I wonder if this water is safe to drink... Guess I'll never know if I don't try."
         fiona-who char-file-use
         4 room-motion $A self-anim-blend
-        self-frames-reset
-        $16 self-wait-frames
+        $16 wait-frames
         fiona-who 1 6 char-sound
         self-wait-anim
         $E4 panic-calm-in
@@ -173,31 +148,26 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         3 avoid-prompt
         0 ebit-set
         fiona-who $84 5 char-sound
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
         got-doc-recovery story-flag? not if
             $F 6 fade
             wait-fade
-            $40A8 message   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
-            wait-message
+            $40A8 say   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
             $F 7 fade
             wait-fade
             got-doc-recovery story-flag-set
             $A8 message-param-room
             $A8 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
-            $801B message   \ "has been saved to your file."
-            wait-message
-            self-frames-reset
-            4 self-wait-frames
+            $801B say   \ "has been saved to your file."
+            4 wait-frames
         then
         0 0.0 0.0 0.0 0.0 event-camera
         stalkers-stay state-flag-clear
         0 self-scripted
     else
         self-wait-done
-        1 message   \ "Ahh, that helped."
-        wait-message
+        1 say   \ "Ahh, that helped."
     then
     self-idle-or-end
 ;
@@ -207,25 +177,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -39.66 0.99 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             wt1f-1-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

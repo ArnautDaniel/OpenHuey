@@ -55,8 +55,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     5 part-hidden
     begin
         $547 cutscene-cue-reached? not while
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     repeat
     0 part-shown
     1 part-hidden
@@ -66,8 +65,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     5 part-hidden
     begin
         $569 cutscene-cue-reached? not while
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     repeat
     0 part-shown
     1 part-shown
@@ -77,8 +75,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     5 part-hidden
     begin
         $587 cutscene-cue-reached? not while
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     repeat
     0 part-hidden
     1 part-shown
@@ -88,8 +85,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     5 part-shown
     begin
         $592 cutscene-cue-reached? not while
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     repeat
     0 part-hidden
     1 part-hidden
@@ -99,8 +95,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     5 part-shown
     begin
         $59E cutscene-cue-reached? not while
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     repeat
     0 part-shown
     1 part-hidden
@@ -110,8 +105,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     5 part-hidden
     begin
         $5AE cutscene-cue-reached? not while
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     repeat
     0 part-shown
     1 part-hidden
@@ -121,8 +115,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     5 part-hidden
     begin
         $5D4 cutscene-cue-reached? not while
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     repeat
     0 part-hidden
     1 part-shown
@@ -132,8 +125,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     5 part-shown
     begin
         $5EE cutscene-cue-reached? not while
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     repeat
     0 part-shown
     1 part-hidden
@@ -143,8 +135,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     5 part-hidden
     begin
         $610 cutscene-cue-reached? not while
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     repeat
     0 part-shown
     1 part-shown
@@ -154,8 +145,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     5 part-hidden
     begin
         cutscene-near-end? not while
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     repeat
     self-idle-or-end
 ;
@@ -202,35 +192,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     \   then
     \   then
     0 4 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         2 2 player-camera
-    then then
+    then
     2 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            3 3 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         3 3 player-camera
-    then then
+    then
     3 3 3 area-camera
     fiona-who self-is? if
         $80 exit-taken? $81 exit-taken? or $82 exit-taken? or if

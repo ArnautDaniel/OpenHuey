@@ -17,15 +17,10 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 ;
 
 : castle-2f-6.char-enter ( -- )   \ 00400C90
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 -1 player-camera
-    then then
+    then
     0 1 -1 area-camera
 ;
 
@@ -121,26 +116,20 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 : castle-2f-6.act00 ( -- )   \ 00400E50
     2 0 char-remove
     7 partner-load
-    reach-out-anim self-anim
-    self-wait-anim
+    reach-out-anim play-out
     fiona-who 3 6 char-sound
-    reach-back-anim self-anim
-    self-wait-anim
+    reach-back-anim play-out
     3 message-param-room
-    $8019 message   \ "Used ."
-    wait-message
+    $8019 say   \ "Used ."
     fiona-who $55 3.622 32.279 0 char-to-xz
     1 -17.0 -10.0 30.0 0.0 event-camera
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     0 0 object-anim
     0 room-motion $A self-anim-blend
-    self-frames-reset
-    $14 self-wait-frames
+    $14 wait-frames
     fiona-who 0 6 char-sound
     self-wait-anim
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     2 char-start
     got-lunar-refractor story-flag-set
     3 item-use
@@ -148,15 +137,12 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     4 1 item-give-count
     0 4 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
+    $8012 say   \ "You've obtained ."
     1 0 0 music
     fiona-who 1 6 char-sound
     0 1 object-anim
-    1 room-motion 0 self-anim-blend
-    self-wait-anim
-    self-frames-reset
-    self-wait-16
+    1 room-motion 0 blend-out
+    16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     summoner-on state-flag-set
     stalkers-stay state-flag-clear
@@ -168,22 +154,18 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $C message   \ "There is something scribbled on the board..."
-    wait-message
+    $C say   \ "There is something scribbled on the board..."
     $F 6 fade
     wait-fade
-    $F message   \ "'Luminessants' Luminessants are tiny creatures that respond to the ethereal energies g..."
-    wait-message
+    $F say   \ "'Luminessants' Luminessants are tiny creatures that respond to the ethereal energies g..."
     $F 7 fade
     wait-fade
     got-doc-luminessants story-flag? not if
         hand-to-mouth-anim $A self-anim-blend
-        $D message   \ "'Luminessants'...'Azoth'... No clue what any of this means."
-        wait-message
+        $D say   \ "'Luminessants'...'Azoth'... No clue what any of this means."
         self-wait-anim
     else
-        $E message   \ "Luminessants... judging by the ring of that, I'll bet these are those lightning bu..."
-        wait-message
+        $E say   \ "Luminessants... judging by the ring of that, I'll bet these are those lightning bu..."
     then
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -193,12 +175,10 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 : castle-2f-6.act02 ( -- )   \ 00400F50
     self-wait-done
     1 ebit? not if
-        8 message   \ "Old scholarly masterpieces fill up the shelves. It's almost as if someone has been..."
-        wait-message
+        8 say   \ "Old scholarly masterpieces fill up the shelves. It's almost as if someone has been..."
         1 ebit-set
     else
-        9 message   \ "Not to state the obvious, but this is clearly the castle study."
-        wait-message
+        9 say   \ "Not to state the obvious, but this is clearly the castle study."
     then
     self-idle-or-end
 ;
@@ -212,18 +192,14 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     self-wait-done
     fiona-who char-file-use
     2 room-motion $A self-anim-blend
-    self-frames-reset
-    $16 self-wait-frames
+    $16 wait-frames
     fiona-who 2 6 char-sound
-    self-frames-reset
-    $B self-wait-frames
+    $B wait-frames
     fiona-who 2 6 char-sound
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     fiona-who 2 6 char-sound
     self-wait-anim
-    3 message   \ "The desk is locked."
-    wait-message
+    3 say   \ "The desk is locked."
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -232,13 +208,11 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 : castle-2f-6.act04 ( -- )   \ 00400FC0
     self-wait-done
     0 ebit? not if
-        $A message   \ "A massive book stands stalwart. It looks quite old. Perhaps it's an antique?"
-        wait-message
+        $A say   \ "A massive book stands stalwart. It looks quite old. Perhaps it's an antique?"
         0 ebit-set
     else
         look-low-anim $A self-anim-blend
-        $B message   \ "The script looks almost Latin in nature... But unfortunately, it's all Greek to me."
-        wait-message
+        $B say   \ "The script looks almost Latin in nature... But unfortunately, it's all Greek to me."
         self-wait-anim
     then
     self-idle-or-end
@@ -259,8 +233,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     self-wait-done
     -135 self-turn-angle
     self-wait-done
-    $10 message   \ "Various formulae and computations have been scribbled on the desktop. This goes way b..."
-    wait-message
+    $10 say   \ "Various formulae and computations have been scribbled on the desktop. This goes way b..."
     self-idle-or-end
 ;
 
@@ -269,25 +242,20 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     -22.26 -41.95 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c2f-6-lavender story-flag-set
             0 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;

@@ -49,15 +49,10 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
 ;
 
 : house-of-truth-1f-10.char-enter ( -- )   \ 00443890
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 2 player-camera
-    then then
+    then
     0 2 2 area-camera
     fiona-who self-is? if
         $FE exit-taken? if
@@ -107,13 +102,9 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
             then
         then
     then
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
+    then
     1 0 0 1 chars-area-camera
     2 1 1 1 chars-area-camera
     4 0 0 1 chars-area-camera
@@ -197,10 +188,8 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     self-wait-done
     60.0 55.0 self-turn-to-xz
     self-wait-done
-    look-close-anim $A self-anim-blend
-    self-wait-anim
-    0 message   \ "A pungent odor and chapped, dry air coming from inside the hole-floor wreak havoc on the sens..."
-    wait-message
+    look-close-anim $A blend-out
+    0 say   \ "A pungent odor and chapped, dry air coming from inside the hole-floor wreak havoc on the sens..."
     0 answer? if
         $F 0 fade
         wait-fade
@@ -236,8 +225,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     stalkers-stay state-flag-set
     $11F 32.119 -37.94 180 $207 5 self-move-to
     self-wait-done
-    4 $14 self-anim-blend
-    self-wait-anim
+    4 $14 blend-out
     0 self-scripted
     0 self-noclip
     stalkers-stay state-flag-clear
@@ -254,8 +242,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     self-wait-done
     1 self-noclip
     1 self-scripted
-    crouch-down-anim self-anim
-    self-wait-anim
+    crouch-down-anim play-out
     $28 32.119 -7.5 0 $803 5 self-move-to
     self-wait-done
     $28 32.119 -7.5 180 $803 5 self-move-to
@@ -291,8 +278,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
             stalkers-stay state-flag-set
             $11A 31.33 -24.45 180 $803 5 self-move-to
             self-wait-done
-            crouch-up-anim self-anim
-            self-wait-anim
+            crouch-up-anim play-out
             0 self-scripted
             0 self-noclip
             stalkers-stay state-flag-clear
@@ -305,14 +291,10 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     self-wait-done
     $11F 40.89 -25.76 -5 $FFFF 5 self-move-to
     self-wait-done
-    there-anim self-anim
-    self-wait-anim
+    there-anim play-out
     0 ebit-set
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;
@@ -322,25 +304,20 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     29.7 32.54 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             ht1f-10-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;

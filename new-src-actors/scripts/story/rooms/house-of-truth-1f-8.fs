@@ -43,35 +43,20 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 ;
 
 : house-of-truth-1f-8.char-enter ( -- )   \ 00436690
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         2 2 player-camera
-    then then
+    then
     2 2 2 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
@@ -259,17 +244,13 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     $F $11 fade
     wait-fade
     0 1 track 3 action
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     fiona-who seized-sound 5 char-sound
-    crouch-down-anim self-anim
-    self-wait-anim
+    crouch-down-anim play-out
     crouching-anim self-anim
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     crouch-up-anim self-anim
-    2 message   \ "Whoa! What was that? It felt like a tremor... I should crouch down during large tremors..."
-    wait-message
+    2 say   \ "Whoa! What was that? It felt like a tremor... I should crouch down during large tremors..."
     tremor-warned story-flag-set
     5 1.0 0 bgm
     tremor-warned-2 story-flag-set
@@ -286,25 +267,20 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     86.0 68.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $75 message-param-room
         $75 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             ht1f-8-magist-medallion story-flag-set
             3 effect-remove
             $75 1 item-give-count
             0 $75 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -349,8 +325,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
             $EB door-open-set
         then
     then
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     self-idle-or-end
 ;
 
@@ -361,8 +336,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     $202 -4.422 167.237 -73 $FFFF $A self-move-to
     self-wait-done
     $90 -32.0 177.5 0.5 50 hewie-go-to
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     0 exit-door-open? not if
         $EB door-unlock
         $91 5 -37.0 10.0 177.0 0 0 sound
@@ -378,15 +352,12 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     0 ebit? not if
         0 self-through-exit
         self-wait-done
-        rattle-behind-slow-anim self-anim
-        self-wait-anim
+        rattle-behind-slow-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
         0 ebit-set
     then
-    0 message   \ "Something seems to be snagged on the other side of the door, keeping it from opening. D..."
-    wait-message
+    0 say   \ "Something seems to be snagged on the other side of the door, keeping it from opening. D..."
     self-idle-or-end
 ;
 

@@ -41,45 +41,25 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-3f-1.char-enter ( -- )   \ 003F1BD0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 -1 player-camera
-    then then
+    then
     0 2 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 -1 player-camera
-    then then
+    then
     1 0 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            1 -1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         1 -1 player-camera
-    then then
+    then
     2 1 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         0 -1 player-camera
-    then then
+    then
     3 0 -1 area-camera
 ;
 
@@ -90,20 +70,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 exit-usable? if
         1 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
+    then
     8 1 -1 1 chars-area-camera
     9 0 -1 1 chars-area-camera
     $E 1 -1 1 chars-area-camera
@@ -161,34 +133,25 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     0 ebit? not 2 game-mode? or in-panic? or if
         in-panic? 2 game-mode? or if
-            rattle-behind-slow-anim self-anim
-            self-wait-anim
+            rattle-behind-slow-anim play-out
             -1 self-idle-anim
-            self-frames-reset
-            7 self-wait-frames
+            7 wait-frames
         else
-            rattle-behind-anim self-anim
-            self-wait-anim
+            rattle-behind-anim play-out
             -1 self-idle-anim
-            self-frames-reset
-            7 self-wait-frames
-            1 message   \ "The door is locked."
-            wait-message
+            7 wait-frames
+            1 say   \ "The door is locked."
         then
         0 ebit-set
     else
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         fiona-who $12E 0.0 -76.5 180 char-to-xz
         world-frozen state-flag-set
         1 self-scripted
         1 20.0 5.0 0.0 4.0 event-camera
-        self-frames-reset
-        4 self-wait-frames
-        2 message   \ "There is a strange symbol etched on the door. What could it mean?"
-        wait-message
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
+        2 say   \ "There is a strange symbol etched on the door. What could it mean?"
+        4 wait-frames
         0 0.0 0.0 0.0 0.0 event-camera
         fiona-who $12E -1.25 -75.3 180 char-to-xz
         world-frozen state-flag-clear
@@ -232,17 +195,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         0 part-hidden
     else
         $609 self-anim
-        self-frames-reset
-        $14 self-wait-frames
+        $14 wait-frames
         fiona-who 0 6 char-sound
         6 message-param-room
         6 item-use
         $34 door-unlock
         20 self-idle-anim
-        self-frames-reset
-        $14 self-wait-frames
-        $8019 message   \ "Used ."
-        wait-message
+        $14 wait-frames
+        $8019 say   \ "Used ."
     then
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -257,8 +217,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     stalker-who char-file-use
     begin
-        1 room-motion self-anim
-        self-wait-anim
+        1 room-motion play-out
     again
 ;
 

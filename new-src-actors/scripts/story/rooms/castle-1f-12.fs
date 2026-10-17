@@ -54,35 +54,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-12.char-enter ( -- )   \ 003F0E80
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            2 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         2 -1 player-camera
-    then then
+    then
     1 2 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
     fiona-who self-is? if
         $80 exit-taken? $81 exit-taken? or if
@@ -97,20 +82,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
+    then
     6 0 0 1 chars-area-camera
     7 1 1 1 chars-area-camera
     8 1 1 1 chars-area-camera
@@ -202,15 +179,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 else
                     rattle-front-anim self-anim
                 then
-                self-frames-reset
-                $14 self-wait-frames
+                $14 wait-frames
                 in-panic? not if
                     fiona-who $72 5 char-sound
                     $1E door-unlock
                     $8008 message   \ "You unlocked the door."
                     20 self-idle-anim
-                    self-frames-reset
-                    $14 self-wait-frames
+                    $14 wait-frames
                     wait-message
                 then
             then
@@ -234,24 +209,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-12.act02 ( -- )   \ 003F1190
     self-wait-done
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     fiona-who $A0 -76.0 -15.0 -90 char-to-xz
     world-frozen state-flag-set
     1 self-scripted
     1 20.0 -10.0 0.0 0.0 event-camera
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     3 ebit? not if
-        3 message   \ "This part of the wall has been designed differently from the rest of the wall."
-        wait-message
+        3 say   \ "This part of the wall has been designed differently from the rest of the wall."
         3 ebit-set
     else
-        4 message   \ "It's a picture of the moon... What could this mean?"
-        wait-message
+        4 say   \ "It's a picture of the moon... What could this mean?"
     then
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     world-frozen state-flag-clear
     0 self-scripted
     0 0.0 0.0 0.0 0.0 event-camera
@@ -263,29 +233,22 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 self-scripted
     self-wait-done
     c1f-12-flag1 story-flag? if
-        1 message   \ "A device that refracts moonlight... I've never seen anything like this before."
-        wait-message
+        1 say   \ "A device that refracts moonlight... I've never seen anything like this before."
     else lunar-refractor-used story-flag? not if
-        self-frames-reset
-        8 self-wait-frames
+        8 wait-frames
         world-frozen state-flag-set
         fiona-who $73 61.0 50.0 -90 char-to-xz
         1 13.0 0.0 0.0 0.0 event-camera
-        self-frames-reset
-        8 self-wait-frames
-        2 message   \ "I wonder what this does? Looks like there was something inserted here until just re..."
-        wait-message
-        self-frames-reset
-        8 self-wait-frames
+        8 wait-frames
+        2 say   \ "I wonder what this does? Looks like there was something inserted here until just re..."
+        8 wait-frames
         0 0.0 0.0 0.0 0.0 event-camera
         world-frozen state-flag-clear
     else
         2 ebit? not if
-            0 message   \ "Hmm, wonder what this device is for? Looks like it pivots at the base..."
-            wait-message
+            0 say   \ "Hmm, wonder what this device is for? Looks like it pivots at the base..."
             2 ebit-set
-            self-frames-reset
-            8 self-wait-frames
+            8 wait-frames
         then
         world-frozen state-flag-set
         fiona-who $73 61.0 50.0 -90 char-to-xz
@@ -412,15 +375,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 self-scripted
     self-wait-done
     c1f-12-flag1 story-flag? if
-        1 message   \ "A device that refracts moonlight... I've never seen anything like this before."
-        wait-message
+        1 say   \ "A device that refracts moonlight... I've never seen anything like this before."
     else
         2 ebit? not if
-            0 message   \ "Hmm, wonder what this device is for? Looks like it pivots at the base..."
-            wait-message
+            0 say   \ "Hmm, wonder what this device is for? Looks like it pivots at the base..."
             2 ebit-set
-            self-frames-reset
-            8 self-wait-frames
+            8 wait-frames
         then
         world-frozen state-flag-set
         fiona-who $BE 30.0 -44.0 180 char-to-xz
@@ -468,34 +428,26 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -73.5 55.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-12-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
 
 : castle-1f-12.act09 ( -- )   \ 003F15F0
-    begin
-        $64 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $64 cutscene-cue-reached? ;] wait-until
     begin
         cutscene-near-end? not while
         0 castle-1f-12.cmd02

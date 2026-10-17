@@ -58,15 +58,10 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 ;
 
 : castle-b1-7.char-enter ( -- )   \ 003FD420
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
     fiona-who self-is? if
         0 exit-taken? if
@@ -200,8 +195,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     3 1 item-give-count
     0 3 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
+    $8012 say   \ "You've obtained ."
     40 hewie-trust
     $827C item-give
     counter-inc
@@ -211,8 +205,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 
 : castle-b1-7.act01 ( -- )   \ 0047AA88
     self-wait-done
-    2 message   \ "The furniture is covered with freshly washed sheets."
-    wait-message
+    2 say   \ "The furniture is covered with freshly washed sheets."
     self-idle-or-end
 ;
 
@@ -222,8 +215,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     self-wait-done
     $92 -17.0 -30.0 45 $FFFF 5 self-move-to
     self-wait-done
-    $1C03 self-anim
-    self-wait-anim
+    $1C03 play-out
     counter-inc
     3 wait-counter
     self-idle-or-end
@@ -232,8 +224,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 : castle-b1-7.act02 ( -- )   \ 003FD6C0
     self-wait-done
     hewie-who $FC 0 char-to-tri-facing
-    sit-anim self-anim
-    self-wait-anim
+    sit-anim play-out
     fiona-who self-look-at
     yield
     begin
@@ -248,29 +239,20 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 
 : castle-b1-7.act05 ( -- )   \ 003FD740
     self-wait-done
-    look-low-anim $A self-anim-blend
-    self-wait-anim
-    0 message   \ "Looks like a key or something is lying on the ground. I can't reach it from here..."
-    wait-message
-    self-frames-reset
-    8 self-wait-frames
+    look-low-anim $A blend-out
+    0 say   \ "Looks like a key or something is lying on the ground. I can't reach it from here..."
+    8 wait-frames
     self-who 4 -1 char-camera
-    self-frames-reset
-    8 self-wait-frames
-    1 message   \ "There is a small hole-floor in the wall. That could be my way to the key..."
-    wait-message
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
+    1 say   \ "There is a small hole-floor in the wall. That could be my way to the key..."
+    8 wait-frames
     3 1 player-camera
     camera-restart
     self-idle-or-end
 ;
 
 : castle-b1-7.act06 ( -- )   \ 003FD780
-    begin
-        fiona-free? not while
-        yield
-    repeat
+    [: fiona-free? ;] wait-until
     counter-inc
     panic-eased
     0 fiona-who 0 action-force
@@ -282,25 +264,20 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     31.0 13.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             cb1-7-medallion story-flag-set
             2 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -309,16 +286,14 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     self-wait-done
     -90 self-turn-angle
     self-wait-done
-    3 message   \ "All of this stuff is blocking the door and I can't get out."
-    wait-message
+    3 say   \ "All of this stuff is blocking the door and I can't get out."
     self-idle-or-end
 ;
 
 : castle-b1-7.act09 ( -- )   \ 003FD810
     1 ebit-set
     stalkers-stay state-flag-set
-    self-frames-reset
-    $3C self-wait-frames
+    $3C wait-frames
     castle-b1-7.cmd00
     begin
         1 6 -40.0 0.0 -20.0 0 0 sound
@@ -326,23 +301,18 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         yield
         0 castle-b1-7.cmd01
         $19 chance? if
-            self-frames-reset
-            self-wait-16
+            16 wait-frames
         then
-        self-frames-reset
-        self-wait-16
+        16 wait-frames
         1 6 -40.0 0.0 -20.0 0 0 sound
         1 castle-b1-7.cmd01
         yield
         0 castle-b1-7.cmd01
         $32 chance? if
-            self-frames-reset
-            self-wait-16
-            self-frames-reset
-            self-wait-16
+            16 wait-frames
+            16 wait-frames
         then
-        self-frames-reset
-        $3C self-wait-frames
+        $3C wait-frames
         0 0 var? not while
         0 var-dec
         yield
@@ -368,25 +338,20 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     29.0 21.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             cb1-7-medallion-2 story-flag-set
             3 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -396,23 +361,19 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     cb1-7-medallion-3 story-flag? not if
         0 self-turn-angle
         self-wait-done
-        4 message   \ "Huh? There is something in the drain."
-        wait-message
+        4 say   \ "Huh? There is something in the drain."
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             cb1-7-medallion-3 story-flag-set
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
     else
-        5 message   \ "There's nothing particularly interesting here."
-        wait-message
+        5 say   \ "There's nothing particularly interesting here."
     then
     self-idle-or-end
 ;

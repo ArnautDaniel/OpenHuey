@@ -29,15 +29,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : old-mansion-1f-9.char-enter ( -- )   \ 00407F80
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
     om1f-13-flag1 story-flag? if
         2 1 object-hidden
@@ -123,32 +118,25 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     plates-under-10? if
         0 ebit? not if
-            $11 message   \ "It's a plate pressing machine."
-            wait-message
+            $11 say   \ "It's a plate pressing machine."
             0 ebit-set
         then
         plate-made story-flag-clear
         2 subscreen-open
-        begin
-            subscreen-wanted state-flag? while
-            yield
-        repeat
+        [: subscreen-wanted state-flag? ;] wait-while
         yield
         plate-made story-flag? if
             $3F message-param-room
             0 $3F item-tab
             item-fanfare
-            $8012 message   \ "You've obtained ."
-            wait-message
+            $8012 say   \ "You've obtained ."
         then
         plate-made story-flag-set
     else 0 ebit? not if
-        $F message   \ "There's a plate pressing machine here. There are no remaining plates currently so..."
-        wait-message
+        $F say   \ "There's a plate pressing machine here. There are no remaining plates currently so..."
         0 ebit-set
     else
-        $12 message   \ "There are no plates remaining. I'll have to get rid of some plate-keys before I c..."
-        wait-message
+        $12 say   \ "There are no plates remaining. I'll have to get rid of some plate-keys before I c..."
     then then
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -157,8 +145,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : old-mansion-1f-9.act01 ( -- )   \ 0047AB78
     self-wait-done
-    $10 message   \ "Returned a plate to the plate pressing machine."
-    wait-message
+    $10 say   \ "Returned a plate to the plate pressing machine."
     self-idle-or-end
 ;
 
@@ -167,8 +154,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
-        0 message   \ "I wonder what's going on outside of this steel cage I seemed to have landed myself..."
-        wait-message
+        0 say   \ "I wonder what's going on outside of this steel cage I seemed to have landed myself..."
         0 answer? if
             om1f-13-flag1 story-flag-set
             om1f-9-flag1 story-flag-set
@@ -227,17 +213,14 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         0 self-scripted
     else om1f-9-flag1 story-flag? if
         self-wait-done
-        1 message   \ "It's pitch black outside. I can't see anything. Who could possibly fathom that this..."
-        wait-message
+        1 say   \ "It's pitch black outside. I can't see anything. Who could possibly fathom that this..."
     else
         self-wait-done
         -90 self-turn-angle
         self-wait-done
         look-close-anim self-anim
-        self-frames-reset
-        $28 self-wait-frames
-        5 message   \ "Who opened these blinds? It's too dark out to see anything."
-        wait-message
+        $28 wait-frames
+        5 say   \ "Who opened these blinds? It's too dark out to see anything."
         self-wait-anim
     then then
     self-idle-or-end
@@ -252,12 +235,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         $22 18.764 15.099 30 $FFFF 5 self-move-to
         self-wait-done
         1 25.0 10.0 0.0 0.0 event-camera
-        2 message   \ "Is this water safe to drink?"
-        wait-message
+        2 say   \ "Is this water safe to drink?"
         fiona-who char-file-use
         4 room-motion $A self-anim-blend
-        self-frames-reset
-        $16 self-wait-frames
+        $16 wait-frames
         fiona-who 3 6 char-sound
         self-wait-anim
         $E4 panic-calm-in
@@ -265,31 +246,26 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         fiona-who $84 5 char-sound
         3 avoid-prompt
         2 ebit-set
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
         got-doc-recovery story-flag? not if
             $F 6 fade
             wait-fade
-            $40A8 message   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
-            wait-message
+            $40A8 say   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
             $F 7 fade
             wait-fade
             got-doc-recovery story-flag-set
             $A8 message-param-room
             $A8 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
-            $801B message   \ "has been saved to your file."
-            wait-message
-            self-frames-reset
-            4 self-wait-frames
+            $801B say   \ "has been saved to your file."
+            4 wait-frames
         then
         0 0.0 0.0 0.0 0.0 event-camera
         stalkers-stay state-flag-clear
         0 self-scripted
     else
         self-wait-done
-        3 message   \ "Ah, I feel much better now."
-        wait-message
+        3 say   \ "Ah, I feel much better now."
     then
     self-idle-or-end
 ;
@@ -298,8 +274,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     -6.0 -17.0 self-turn-to-xz
     self-wait-done
-    4 message   \ "The tub is full of stagnating reddish water. It's probably just rust discoloration. Unl..."
-    wait-message
+    4 say   \ "The tub is full of stagnating reddish water. It's probably just rust discoloration. Unl..."
     self-idle-or-end
 ;
 
@@ -308,62 +283,42 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     -7.97 21.3 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $94 message-param-room
         $94 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-9-refined-antimony story-flag-set
             0 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
 
 : old-mansion-1f-9.act06 ( -- )   \ 00408400
     depth-range-off
-    begin
-        1 cutscene-shot? not while
-        yield
-    repeat
+    [: 1 cutscene-shot? ;] wait-until
     fiona-who $1E char-layer
-    begin
-        3 cutscene-shot? not while
-        yield
-    repeat
+    [: 3 cutscene-shot? ;] wait-until
     fiona-who $A char-layer
     0 old-mansion-1f-9.cmd02
     4 ebit-set
-    begin
-        5 cutscene-shot? not while
-        yield
-    repeat
+    [: 5 cutscene-shot? ;] wait-until
     1 old-mansion-1f-9.cmd02
     4 ebit-clear
-    begin
-        6 cutscene-shot? not while
-        yield
-    repeat
+    [: 6 cutscene-shot? ;] wait-until
     begin
         $446 cutscene-cue-reached? not while
         $80808000 $404A6038 14.0 420.732 1 fog
         yield
     repeat
-    begin
-        $44E cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $44E cutscene-cue-reached? ;] wait-until
     begin
         $484 cutscene-cue-reached? not while
         1.0 1.0 40.0 100.0 depth-range
@@ -375,10 +330,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         yield
     repeat
     depth-range-off
-    begin
-        0 cutscene-cue-reached? while
-        yield
-    repeat
+    [: 0 cutscene-cue-reached? ;] wait-while
     wait-fade
     self-idle-or-end
 ;
@@ -388,25 +340,20 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     7.72 15.08 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $95 message-param-room
         $95 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-9-refined-magnesia story-flag-set
             1 effect-remove
             $95 1 item-give-count
             0 $95 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -415,20 +362,16 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     fiona-who $3A -19.0 21.0 0 char-to-xz
     world-frozen state-flag-set
     1 12.0 -10.0 0.0 7.0 event-camera
-    6 message   \ "'The Three Spiritual Substances'"
-    wait-message
+    6 say   \ "'The Three Spiritual Substances'"
     world-frozen state-flag-clear
     0 0.0 0.0 0.0 0.0 event-camera
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     hand-to-mouth-anim $A self-anim-blend
-    7 message   \ "A strange jumble of letters and numbers... I wonder if this title holds some deeper, un..."
-    wait-message
+    7 say   \ "A strange jumble of letters and numbers... I wonder if this title holds some deeper, un..."
     self-wait-anim
     stalkers-stay state-flag-clear
     0 self-scripted

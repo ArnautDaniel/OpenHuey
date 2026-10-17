@@ -115,15 +115,10 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 ;
 
 : old-mansion-3f-1.char-enter ( -- )   \ 004281E0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
 ;
 
@@ -364,90 +359,51 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 ;
 
 : old-mansion-3f-1.act01 ( -- )   \ 004286A0
-    begin
-        1 cutscene-shot? not while
-        yield
-    repeat
+    [: 1 cutscene-shot? ;] wait-until
     1 old-mansion-3f-1.cmd05
-    begin
-        2 cutscene-shot? not while
-        yield
-    repeat
+    [: 2 cutscene-shot? ;] wait-until
     0 old-mansion-3f-1.cmd05
-    begin
-        $468 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $468 cutscene-cue-reached? ;] wait-until
     begin
         $477 cutscene-cue-reached? not while
         $2D sprites-additive
         yield
     repeat
-    begin
-        $484 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $484 cutscene-cue-reached? ;] wait-until
     begin
         $499 cutscene-cue-reached? not while
         $2D sprites-additive
         yield
     repeat
-    begin
-        $49D cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $49D cutscene-cue-reached? ;] wait-until
     begin
         $4B3 cutscene-cue-reached? not while
         $2D sprites-additive
         yield
     repeat
-    begin
-        $4B4 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $4B4 cutscene-cue-reached? ;] wait-until
     begin
         $4D2 cutscene-cue-reached? not while
         $2D sprites-additive
         yield
     repeat
-    begin
-        $4D7 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $4D7 cutscene-cue-reached? ;] wait-until
     begin
         $4F2 cutscene-cue-reached? not while
         $2D sprites-additive
         yield
     repeat
-    begin
-        $E cutscene-shot? not while
-        yield
-    repeat
+    [: $E cutscene-shot? ;] wait-until
     0 old-mansion-3f-1.cmd03
-    begin
-        $11 cutscene-shot? not while
-        yield
-    repeat
+    [: $11 cutscene-shot? ;] wait-until
     0 old-mansion-3f-1.cmd04
-    begin
-        $12 cutscene-shot? not while
-        yield
-    repeat
+    [: $12 cutscene-shot? ;] wait-until
     1 old-mansion-3f-1.cmd03
-    begin
-        $B31 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $B31 cutscene-cue-reached? ;] wait-until
     1 old-mansion-3f-1.cmd04
-    begin
-        $19 cutscene-shot? not while
-        yield
-    repeat
+    [: $19 cutscene-shot? ;] wait-until
     1 old-mansion-3f-1.cmd01
-    begin
-        cutscene-near-end? not while
-        yield
-    repeat
+    [: cutscene-near-end? ;] wait-until
     self-idle-or-end
 ;
 
@@ -461,10 +417,8 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         fiona-who 5 char-in-area? if
             0.0 0.0 self-turn-to-xz
             self-wait-done
-            startled-anim $A self-anim-blend
-            self-wait-anim
-            $402 $A self-anim-blend
-            self-wait-anim
+            startled-anim $A blend-out
+            $402 $A blend-out
         then
     then
     1 wait-counter
@@ -566,52 +520,31 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 ;
 
 : old-mansion-3f-1.act03 ( -- )   \ 00428950
-    begin
-        2 cutscene-shot? not while
-        yield
-    repeat
+    [: 2 cutscene-shot? ;] wait-until
     $1E 1 object-hidden
-    begin
-        4 cutscene-shot? not while
-        yield
-    repeat
+    [: 4 cutscene-shot? ;] wait-until
     $1E 1 object-hidden
-    begin
-        5 cutscene-shot? not while
-        yield
-    repeat
+    [: 5 cutscene-shot? ;] wait-until
     1 old-mansion-3f-1.cmd00
     0 0 var-set
-    begin
-        $35A cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $35A cutscene-cue-reached? ;] wait-until
     0 1 old-mansion-3f-1.cmd02
     1 1 old-mansion-3f-1.cmd02
     2 1 old-mansion-3f-1.cmd02
     3 1 old-mansion-3f-1.cmd02
-    begin
-        6 cutscene-shot? not while
-        yield
-    repeat
+    [: 6 cutscene-shot? ;] wait-until
     $1E 1 object-hidden
     0 0 old-mansion-3f-1.cmd02
     1 0 old-mansion-3f-1.cmd02
     2 0 old-mansion-3f-1.cmd02
     3 0 old-mansion-3f-1.cmd02
-    begin
-        $369 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $369 cutscene-cue-reached? ;] wait-until
     0 1 old-mansion-3f-1.cmd02
     1 1 old-mansion-3f-1.cmd02
     2 1 old-mansion-3f-1.cmd02
     3 1 old-mansion-3f-1.cmd02
     2 6 sound-stop
-    begin
-        7 cutscene-shot? not while
-        yield
-    repeat
+    [: 7 cutscene-shot? ;] wait-until
     2 0 old-mansion-3f-1.cmd02
     3 0 old-mansion-3f-1.cmd02
     begin
@@ -624,10 +557,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
                 yield
             else
                 $1E 1 object-hidden
-                begin
-                    0 cutscene-cue-reached? while
-                    yield
-                repeat
+                [: 0 cutscene-cue-reached? ;] wait-while
                 self-idle-or-end
             then
         then
@@ -643,8 +573,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     self-wait-done
     stalker-who char-file-use
     0 room-motion 5 self-anim-blend
-    self-frames-reset
-    $18D self-wait-frames
+    $18D wait-frames
     counter-inc
     self-wait-anim
     begin
@@ -656,21 +585,17 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     self-wait-done
     0.0 -17.0 self-turn-to-xz
     self-wait-done
-    pick-up-anim self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    pick-up-anim play-out
+    4 wait-frames
     got-mars-key story-flag-set
     0 effect-remove
     $11 message-param-room
     $11 1 item-give-count
     0 $11 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
+    $8012 say   \ "You've obtained ."
     50 hewie-trust
-    up-from-pick-anim self-anim
-    self-wait-anim
+    up-from-pick-anim play-out
     self-idle-or-end
 ;
 
@@ -685,14 +610,11 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     self-wait-done
     look-close-anim self-anim
     5 ebit? not if
-        2 message   \ "A shard of glass pierces through her body and pins her to the ground. I can't belie..."
-        wait-message
+        2 say   \ "A shard of glass pierces through her body and pins her to the ground. I can't belie..."
         5 ebit-set
     else
-        look-close-anim $A self-anim-blend
-        self-wait-anim
-        3 message   \ "When she was alive, her facial expressions always seemed ice-cold and devoid of fee..."
-        wait-message
+        look-close-anim $A blend-out
+        3 say   \ "When she was alive, her facial expressions always seemed ice-cold and devoid of fee..."
         5 ebit-clear
     then
     self-idle-or-end
@@ -824,11 +746,9 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     2 wait-counter
     stalker-who $1AB 0.25 0.25 -90 char-to-xz
     0 room-motion self-anim
-    self-frames-reset
-    $96 self-wait-frames
+    $96 wait-frames
     stalker-who 3 6 char-sound
-    self-frames-reset
-    $F7 self-wait-frames
+    $F7 wait-frames
     self-wait-anim
     counter-inc
     begin

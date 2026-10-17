@@ -11,25 +11,15 @@ USING: room-names story.words story.shared fiona.anims ;
 ;
 
 : castle-b1-4.char-enter ( -- )   \ 003F21F0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
     fiona-who self-is? if
         1 exit-taken? if
@@ -48,13 +38,9 @@ USING: room-names story.words story.shared fiona.anims ;
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 0 0 1 chars-area-camera
     5 1 1 1 chars-area-camera
     fiona-who 2 char-entered-area? if
@@ -154,8 +140,7 @@ USING: room-names story.words story.shared fiona.anims ;
     35.0 10.0 self-turn-to-xz
     self-wait-done
     hand-to-mouth-anim $A self-anim-blend
-    0 message   \ "'The path beyond is the road of darkness. Go not without a guide, lest ye lose yourself..."
-    wait-message
+    0 say   \ "'The path beyond is the road of darkness. Go not without a guide, lest ye lose yourself..."
     self-wait-anim
     self-idle-or-end
 ;

@@ -123,8 +123,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $F 6 fade
     wait-fade
-    4 message   \ "All colors must, in the end, form black. This is mankind's inevitable fate."
-    wait-message
+    4 say   \ "All colors must, in the end, form black. This is mankind's inevitable fate."
     $F 7 fade
     wait-fade
     stalkers-stay state-flag-clear

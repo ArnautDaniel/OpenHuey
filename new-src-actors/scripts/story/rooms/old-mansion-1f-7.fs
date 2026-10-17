@@ -13,25 +13,15 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 ;
 
 : old-mansion-1f-7.char-enter ( -- )   \ 00424B70
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 2 player-camera
-    then then
+    then
     0 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
@@ -197,23 +187,17 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     $50 -57.0 55.0 -90 $FFFF 5 self-move-to
     self-wait-done
     fiona-who 3 6 char-sound
-    self-frames-reset
-    $78 self-wait-frames
-    look-close-anim self-anim
-    self-wait-anim
-    6 message   \ "The composition of this item has changed!"
-    wait-message
-    reach-out-anim self-anim
-    self-wait-anim
+    $78 wait-frames
+    look-close-anim play-out
+    6 say   \ "The composition of this item has changed!"
+    reach-out-anim play-out
     8 item-use
     9 message-param-room
     9 1 item-give-count
     0 9 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    reach-back-anim self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    reach-back-anim play-out
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -226,47 +210,37 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     $50 -57.0 55.0 -90 $FFFF 5 self-move-to
     self-wait-done
     fiona-who 3 6 char-sound
-    self-frames-reset
-    $78 self-wait-frames
-    look-close-anim self-anim
-    self-wait-anim
-    reach-out-anim self-anim
-    self-wait-anim
+    $78 wait-frames
+    look-close-anim play-out
+    reach-out-anim play-out
     0 9 var? if
         9 message-param-room
         0 9 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     else 0 10 var? if
         $A message-param-room
         0 $A item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     else 0 11 var? if
         $B message-param-room
         0 $B item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     else 0 12 var? if
         $C message-param-room
         0 $C item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     else 0 16 var? if
         $10 message-param-room
         0 $10 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     then then then then then
-    reach-back-anim self-anim
-    self-wait-anim
-    3 message   \ "No extraction occurred. I guess it didn't work... Maybe I should try a different item?"
-    wait-message
+    reach-back-anim play-out
+    3 say   \ "No extraction occurred. I guess it didn't work... Maybe I should try a different item?"
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -281,15 +255,13 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     0 ebit? not if
         $F 6 fade
         wait-fade
-        1 message   \ "Extractor Born from the swirling sands of chaos, the primordial element, Prima Mate..."
-        wait-message
+        1 say   \ "Extractor Born from the swirling sands of chaos, the primordial element, Prima Mate..."
         0 ebit-set
         $F 7 fade
         wait-fade
     else
         hand-to-mouth-anim $A self-anim-blend
-        2 message   \ "An extractor? This place is full of odd inventions that I've never heard of. It app..."
-        wait-message
+        2 say   \ "An extractor? This place is full of odd inventions that I've never heard of. It app..."
         self-wait-anim
         0 ebit-clear
     then
@@ -304,21 +276,17 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     0.0 0.0 self-turn-to-xz
     self-wait-done
     1 ebit? not if
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         fiona-who $BD 12.41 -5.83 -62 char-to-xz
         1 10.0 -10.0 0.0 3.0 event-camera
         world-frozen state-flag-set
-        4 message   \ "Why is this happening to me?! Dear god! If I get caught now, I'm sure they will kil..."
-        wait-message
+        4 say   \ "Why is this happening to me?! Dear god! If I get caught now, I'm sure they will kil..."
         1 ebit-set
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         world-frozen state-flag-clear
         0 0.0 0.0 0.0 0.0 event-camera
     else
-        5 message   \ "No luck. I can't see any higher than this."
-        wait-message
+        5 say   \ "No luck. I can't see any higher than this."
     then
     self-idle-or-end
 ;
@@ -328,21 +296,17 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     0.0 0.0 self-turn-to-xz
     self-wait-done
     1 ebit? not if
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         fiona-who $C0 -11.799 6.147 121 char-to-xz
         1 10.0 -10.0 0.0 3.0 event-camera
         world-frozen state-flag-set
-        4 message   \ "Why is this happening to me?! Dear god! If I get caught now, I'm sure they will kil..."
-        wait-message
+        4 say   \ "Why is this happening to me?! Dear god! If I get caught now, I'm sure they will kil..."
         1 ebit-set
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         world-frozen state-flag-clear
         0 0.0 0.0 0.0 0.0 event-camera
     else
-        5 message   \ "No luck. I can't see any higher than this."
-        wait-message
+        5 say   \ "No luck. I can't see any higher than this."
     then
     self-idle-or-end
 ;
@@ -352,25 +316,20 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     -30.81 -21.85 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $71 message-param-room
         $71 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-7-album-medallion story-flag-set
             0 effect-remove
             $71 1 item-give-count
             0 $71 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -380,15 +339,12 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     12.8 28.7 self-turn-to-xz
     self-wait-done
     look-close-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     3 ebit? not if
-        7 message   \ "It's quite a large and complicated device. It looks like nutrients are fed in throu..."
-        wait-message
+        7 say   \ "It's quite a large and complicated device. It looks like nutrients are fed in throu..."
         3 ebit-set
     else
-        8 message   \ "However, come to think of it, maybe nutrients are not fed in... Perhaps they are su..."
-        wait-message
+        8 say   \ "However, come to think of it, maybe nutrients are not fed in... Perhaps they are su..."
     then
     self-idle-or-end
 ;

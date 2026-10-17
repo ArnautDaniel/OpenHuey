@@ -22,26 +22,17 @@ USING: actors room-names story.words story.shared flag-names story-names ;
 ;
 
 : chaos-forest-13.char-enter ( -- )   \ 00419AA0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
 ;
 
 : chaos-forest-13.phase1 ( -- )   \ 00419AE0
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
+    then
     fiona-who 2 char-entered-area? if
         0 exit-prepare
     then
@@ -156,22 +147,13 @@ USING: actors room-names story.words story.shared flag-names story-names ;
 ;
 
 : chaos-forest-13.act01 ( -- )   \ 00419CB0
-    begin
-        1 cutscene-shot? not while
-        yield
-    repeat
+    [: 1 cutscene-shot? ;] wait-until
     0 chaos-forest-13.cmd00
     3 ebit-set
-    begin
-        2 cutscene-shot? not while
-        yield
-    repeat
+    [: 2 cutscene-shot? ;] wait-until
     1 chaos-forest-13.cmd00
     3 ebit-clear
-    begin
-        $18 cutscene-shot? not while
-        yield
-    repeat
+    [: $18 cutscene-shot? ;] wait-until
     2 ebit-set
     self-idle-or-end
 ;

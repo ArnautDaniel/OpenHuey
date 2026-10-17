@@ -53,45 +53,25 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-1f-11.char-enter ( -- )   \ 0040AF40
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 2 player-camera
-    then then
+    then
     0 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         1 1 player-camera
-    then then
+    then
     2 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         1 1 player-camera
-    then then
+    then
     3 1 1 area-camera
     fiona-who self-is? if
         0 exit-taken? 1 exit-taken? or if
@@ -237,8 +217,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    0 message   \ "The floor has collapsed! But I literally just crossed through here seconds ago..."
-    wait-message
+    0 say   \ "The floor has collapsed! But I literally just crossed through here seconds ago..."
     self-idle-or-end
 ;
 
@@ -246,8 +225,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    0 message   \ "The floor has collapsed! But I literally just crossed through here seconds ago..."
-    wait-message
+    0 say   \ "The floor has collapsed! But I literally just crossed through here seconds ago..."
     self-idle-or-end
 ;
 
@@ -256,8 +234,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         self-wait-done
         -90 self-turn-angle
         self-wait-done
-        1 message   \ "The path is obstructed by water. I can't get through..."
-        wait-message
+        1 say   \ "The path is obstructed by water. I can't get through..."
         0 ebit-set
     else
         stalkers-stay state-flag-set
@@ -265,13 +242,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         self-wait-done
         -90 self-turn-angle
         self-wait-done
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         4 4 player-camera
-        2 message   \ "I can see a door on the other side. Maybe that is the way out of this hellish maze..."
-        wait-message
-        self-frames-reset
-        4 self-wait-frames
+        2 say   \ "I can see a door on the other side. Maybe that is the way out of this hellish maze..."
+        4 wait-frames
         1 1 player-camera
         stalkers-stay state-flag-clear
         0 self-scripted
@@ -287,16 +261,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $56 -40.0 54.64 0 $FFFF 5 self-move-to
     self-wait-done
     fiona-who char-file-use
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
+    [: 6 sound-bank-loaded? ;] wait-until
     om1f-11-flag1 story-flag? not if
         0 old-mansion-1f-11.cmd00
         0 0 var-set
         0 room-motion 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        5 wait-frames
         begin
             0 old-mansion-1f-11.cmd01
             yield
@@ -312,8 +282,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     else
         0 0 var-set
         1 room-motion 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        5 wait-frames
         begin
             1 old-mansion-1f-11.cmd01
             yield
@@ -340,16 +309,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $56 -40.0 54.64 0 $FFFF 5 self-move-to
     self-wait-done
     stalker-who char-file-use
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
+    [: 6 sound-bank-loaded? ;] wait-until
     stalker-who 5 6 char-sound
-    0 room-motion 5 self-anim-blend
-    self-wait-anim
+    0 room-motion 5 blend-out
     $E00 5 self-anim-blend
-    self-frames-reset
-    $16 self-wait-frames
+    $16 wait-frames
     om1f-11-breakable-broken story-flag-set
     stalker-who 1 6 char-sound
     stalker-who 1 stalker-rage
@@ -372,8 +336,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    3 message   \ "The glass has been shattered. This mirror is useless."
-    wait-message
+    3 say   \ "The glass has been shattered. This mirror is useless."
     self-idle-or-end
 ;
 
@@ -382,25 +345,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     13.96 -5.34 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $71 message-param-room
         $71 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-11-album-medallion story-flag-set
             0 effect-remove
             $71 1 item-give-count
             0 $71 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

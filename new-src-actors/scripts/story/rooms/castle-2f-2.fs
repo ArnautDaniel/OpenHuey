@@ -119,55 +119,30 @@ create dl-at 12 allot
 ;
 
 : castle-2f-2.char-enter ( -- )   \ 003FE540
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 2 player-camera
-    then then
+    then
     0 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         2 2 player-camera
-    then then
+    then
     3 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 4 exit-taken? and if
-            fiona-who 4 char-to-exit
-            3 3 player-camera
-        then
-    else hewie-who self-is? 4 exit-taken? and if
-        hewie-who 4 char-to-exit
+    player-who self-is? 4 exit-taken? and if
+        player-who 4 char-to-exit
         3 3 player-camera
-    then then
+    then
     4 3 3 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
@@ -452,8 +427,7 @@ create dl-at 12 allot
 
 : castle-2f-2.act01 ( -- )   \ 0047AAC0
     self-wait-done
-    6 message   \ "This box is barring my path. I can't get in. I'll bet I could somehow push it out of th..."
-    wait-message
+    6 say   \ "This box is barring my path. I can't get in. I'll bet I could somehow push it out of th..."
     self-idle-or-end
 ;
 
@@ -463,15 +437,12 @@ create dl-at 12 allot
     self-wait-done
     $11 self-through-door
     self-wait-done
-    rattle-behind-anim self-anim
-    self-wait-anim
+    rattle-behind-anim play-out
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     3 track action-end
     look-close-anim self-anim
-    self-frames-reset
-    $16 self-wait-frames
+    $16 wait-frames
     $F $44 fade
     wait-fade
     world-held state-flag-set
@@ -527,8 +498,7 @@ create dl-at 12 allot
     world-held state-flag-clear
     5 0 0 music
     $F $91 fade
-    3 room-motion self-anim
-    self-wait-anim
+    3 room-motion play-out
     summoner-own-cooldown
     wait-fade
     $224 item-give
@@ -539,16 +509,13 @@ create dl-at 12 allot
     self-wait-done
     fiona-who self-look-at
     yield
-    $2302 $A self-anim-blend
-    self-wait-anim
+    $2302 $A blend-out
     self-frames-reset
     begin
         $19 chance? if
-            look-about-anim $A self-anim-blend
-            self-wait-anim
+            look-about-anim $A blend-out
         else $19 chance? if
-            look-about-3-anim $A self-anim-blend
-            self-wait-anim
+            look-about-3-anim $A blend-out
         then then
         4 camera-mode? not 0 0 1 $C2 castle-2f-2.cond01? or if
             self-idle-or-end
@@ -561,11 +528,9 @@ create dl-at 12 allot
 : castle-2f-2.act05 ( -- )   \ 003FECB8
     self-wait-done
     0 ebit? if
-        0 message   \ "I-I have to get out of here!"
-        wait-message
+        0 say   \ "I-I have to get out of here!"
     else
-        1 message   \ "I still sense a presence inside the room. Best to trust my instincts and not go in."
-        wait-message
+        1 say   \ "I still sense a presence inside the room. Best to trust my instincts and not go in."
     then
     self-idle-or-end
 ;
@@ -578,17 +543,14 @@ create dl-at 12 allot
         startled-anim self-anim
         $5A threat-add
         1 $FF 8 rumble
-        self-frames-reset
-        self-wait-16
+        16 wait-frames
         2 message   \ "Is this... blood?"
         self-wait-anim
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
         wait-message
     else
-        5 message   \ "Why is there blood here?"
-        wait-message
+        5 say   \ "Why is there blood here?"
     then
     self-idle-or-end
 ;
@@ -596,10 +558,8 @@ create dl-at 12 allot
 : castle-2f-2.act07 ( -- )   \ 003FED00
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    3 message   \ "Nothing unusual..."
-    wait-message
+    $28 wait-frames
+    3 say   \ "Nothing unusual..."
     self-wait-anim
     self-idle-or-end
 ;
@@ -609,16 +569,12 @@ create dl-at 12 allot
     $292 -173.0 90.0 -90 $FFFF 5 self-move-to
     self-wait-done
     1 20.0 -10.0 0.0 6.0 event-camera
-    self-frames-reset
-    $10 self-wait-frames
+    $10 wait-frames
     look-at-anim self-anim
-    self-frames-reset
-    $37 self-wait-frames
-    4 message   \ "A woman with wings protruding from her back. An angel, perhaps?"
-    wait-message
+    $37 wait-frames
+    4 say   \ "A woman with wings protruding from her back. An angel, perhaps?"
     self-wait-anim
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
 ;
@@ -643,10 +599,8 @@ create dl-at 12 allot
     0 self-turn-angle
     self-wait-done
     look-at-anim self-anim
-    self-frames-reset
-    $37 self-wait-frames
-    7 message   \ "It's dark. I can't see a thing."
-    wait-message
+    $37 wait-frames
+    7 say   \ "It's dark. I can't see a thing."
     self-wait-anim
     self-idle-or-end
 ;
@@ -664,25 +618,20 @@ create dl-at 12 allot
     -11.6 142.2 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $71 message-param-room
         $71 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c2f-2-album-medallion story-flag-set
             2 effect-remove
             $71 1 item-give-count
             0 $71 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -732,14 +681,11 @@ create dl-at 12 allot
                 5 ebit-clear
             then
             $1E chance? if
-                self-frames-reset
-                $1E self-wait-frames
+                $1E wait-frames
             else $32 chance? if
-                self-frames-reset
-                $2D self-wait-frames
+                $2D wait-frames
             else
-                self-frames-reset
-                $5A self-wait-frames
+                $5A wait-frames
             then then
         then
     again
@@ -749,25 +695,20 @@ create dl-at 12 allot
     self-wait-done
     5 castle-2f-2.cmd05
     self-wait-done
-    pick-up-anim self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    pick-up-anim play-out
+    4 wait-frames
     $93 message-param-room
     $93 $63 item-count? if
-        $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-        wait-message
+        $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
     else
         $93 1 item-give-count
         got-bisque-doll story-flag-set
         5 1 object-hidden
         0 $93 item-tab
         item-fanfare
-        $8011 message   \ "You've obtained ."
-        wait-message
+        $8011 say   \ "You've obtained ."
     then
-    up-from-pick-anim self-anim
-    self-wait-anim
+    up-from-pick-anim play-out
     self-idle-or-end
 ;
 

@@ -64,15 +64,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-16.char-enter ( -- )   \ 003FC0A0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 -1 player-camera
-    then then
+    then
     0 1 -1 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
@@ -194,25 +189,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -25.0 13.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $92 message-param-room
         $92 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-16-magnesia story-flag-set
             1 effect-remove
             $92 1 item-give-count
             0 $92 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
@@ -222,8 +212,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $E1 18.5 13.6 120 $FFFF 5 self-move-to
     self-wait-done
     1 20.0 10.0 0.0 0.0 event-camera
-    reach-out-anim self-anim
-    self-wait-anim
+    reach-out-anim play-out
     9 0 pvar? 9 1 pvar? or if
         c1f-16-flag2 story-flag? not if
             c1f-16-flag2 story-flag-set
@@ -246,25 +235,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             $5A threat-add
             1 $FF 8 rumble
             fiona-who seized-sound 5 char-sound
-            uneasy-2-anim self-anim
-            self-wait-anim
+            uneasy-2-anim play-out
             -1 self-idle-anim
-            self-frames-reset
-            7 self-wait-frames
-            reach-out-anim self-anim
-            self-wait-anim
+            7 wait-frames
+            reach-out-anim play-out
             $40000001 6 23.0 11.0 9.0 0 0 sound
-            reach-back-anim self-anim
-            self-wait-anim
+            reach-back-anim play-out
             c1f-16-flag1 story-flag-set
             0 self-scripted
         else
-            reach-back-anim self-anim
-            self-wait-anim
+            reach-back-anim play-out
         then
     else
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
@@ -279,8 +262,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-hidden state-flag-clear
     1 self-noclip
     fiona-who slide-sound 5 char-sound
-    3 room-motion $A self-anim-blend
-    self-wait-anim
+    3 room-motion $A blend-out
     0 self-noclip
     0 ebit? not if
         stalker-who action-end
@@ -335,8 +317,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             fiona-hidden state-flag-clear
             1 self-noclip
             2 room-motion 5 self-anim-blend8
-            self-frames-reset
-            5 self-wait-frames
+            5 wait-frames
             fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
@@ -357,20 +338,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 self-is? 6 self-is? or 7 self-is? or if
         stalker-who char-file-use
         0 room-motion $A self-anim-blend
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
         0 ebit-set
         self-wait-anim
     else
-        there-anim self-anim
-        self-wait-anim
+        there-anim play-out
         0 ebit-set
     then
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;
@@ -384,18 +360,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     7 14.0 18.0 120 $FFFF 5 self-move-to
     self-wait-done
     $602 self-anim
-    self-frames-reset
-    $12 self-wait-frames
+    $12 wait-frames
     stalker-who 2 6 char-sound
     1 6 sound-stop
     c1f-16-flag2 story-flag-clear
     0 noise-level
     9 pvar-inc
     stalker-who 3 stalker-command
-    stalker.anims:stand-anim self-anim
-    self-wait-anim
-    self-frames-reset
-    self-wait-16
+    stalker.anims:stand-anim play-out
+    16 wait-frames
     self-idle-or-end
 ;
 
@@ -403,8 +376,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     -145 self-turn-angle
     self-wait-done
-    0 message   \ "It would be nice to freshen up a bit... But there's a crack in this mirror and I can't..."
-    wait-message
+    0 say   \ "It would be nice to freshen up a bit... But there's a crack in this mirror and I can't..."
     self-idle-or-end
 ;
 
@@ -412,21 +384,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    turn-round-anim self-anim
-    self-wait-anim
+    turn-round-anim play-out
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     look-at-anim self-anim
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     3 ebit? not if
-        1 message   \ "A landscape painting composed entirely of the color red. It seems quite out of plac..."
-        wait-message
+        1 say   \ "A landscape painting composed entirely of the color red. It seems quite out of plac..."
         3 ebit-set
     else
-        2 message   \ "The color bears a remarkable resemblance to blood. But... surely this is just red p..."
-        wait-message
+        2 say   \ "The color bears a remarkable resemblance to blood. But... surely this is just red p..."
         3 ebit-clear
     then
     self-wait-anim

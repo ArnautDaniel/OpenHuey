@@ -25,26 +25,17 @@ USING: room-names story.words story.shared story.clock story-names ;
 ;
 
 : off-map-d7.char-enter ( -- )   \ 00447A90
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
 ;
 
 : off-map-d7.phase1 ( -- )   \ 00447AD0
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
+    then
     0 ebit? x-d7-flag1 story-flag? not and if
         off-map-d7.cond01? if
             x-d7-flag1 story-flag-set
@@ -90,8 +81,7 @@ USING: room-names story.words story.shared story.clock story-names ;
 : off-map-d7.act01 ( -- )   \ 00447B50
     $E $A 6 char-sound
     $E $9002 1 0 char-anim-hold
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     0 off-map-d7.cmd00
     1 off-map-d7.cmd00
     $E action-end

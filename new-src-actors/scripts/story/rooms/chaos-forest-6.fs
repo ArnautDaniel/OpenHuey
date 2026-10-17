@@ -40,45 +40,25 @@ USING: room-names story.words story.shared flag-names floor-flags fiona.anims fi
 ;
 
 : chaos-forest-6.char-enter ( -- )   \ 00417BD0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         1 1 player-camera
-    then then
+    then
     3 1 1 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? stalker-who 3 char-heading-for? and if
@@ -91,34 +71,18 @@ USING: room-names story.words story.shared flag-names floor-flags fiona.anims fi
 ;
 
 : chaos-forest-6.phase1 ( -- )   \ 00417CE0
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
+    then
     fiona-who 4 char-entered-area? if
         0 exit-prepare
     then
@@ -168,8 +132,7 @@ USING: room-names story.words story.shared flag-names floor-flags fiona.anims fi
     stalkers-stay state-flag-set
     stalker-who self-look-at
     yield
-    4 $14 self-anim-blend
-    self-wait-anim
+    4 $14 blend-out
     self-who self-look-at
     yield
     0 self-scripted
@@ -187,8 +150,7 @@ USING: room-names story.words story.shared flag-names floor-flags fiona.anims fi
     1 self-noclip
     0 ebit-clear
     self-wait-done
-    crouch-down-anim self-anim
-    self-wait-anim
+    crouch-down-anim play-out
     crouching-anim self-anim
     fiona-hidden state-flag-set
     stalkers-stay state-flag-clear
@@ -218,8 +180,7 @@ USING: room-names story.words story.shared flag-names floor-flags fiona.anims fi
                 ['] chaos-forest-6.act01 goto
             then
             stalkers-stay state-flag-set
-            crouch-up-anim self-anim
-            self-wait-anim
+            crouch-up-anim play-out
             0 self-scripted
             0 self-noclip
             stalkers-stay state-flag-clear
@@ -233,14 +194,10 @@ USING: room-names story.words story.shared flag-names floor-flags fiona.anims fi
     self-wait-done
     $E8 3.84 83.43 -180 $FFFF 5 self-move-to
     self-wait-done
-    there-anim self-anim
-    self-wait-anim
+    there-anim play-out
     0 ebit-set
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;

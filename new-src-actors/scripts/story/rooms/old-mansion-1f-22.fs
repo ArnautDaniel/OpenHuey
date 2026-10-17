@@ -81,25 +81,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-1f-22.char-enter ( -- )   \ 0043A1A0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
@@ -115,13 +105,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 0 0 1 chars-area-camera
     5 1 1 1 chars-area-camera
     fiona-who 2 char-entered-area? if
@@ -166,17 +152,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-22.act02 ( -- )   \ 0043A4E0
     1 self-scripted
-    begin
-        0 2 var? not while
-        yield
-    repeat
+    [: 0 2 var? ;] wait-until
     counter-inc
     2 avoid-prompt
     fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    3 room-motion 0 self-anim-blend
-    self-wait-anim
+    3 room-motion 0 blend-out
     0 self-noclip
     om1f-22-flag1 story-flag-set
     0 barred-floor floor-on
@@ -197,11 +179,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 2 object-anim
     1 2 object-anim
     2 room-motion 0 self-anim-blend
-    self-frames-reset
-    $10 self-wait-frames
+    $10 wait-frames
     fiona-who 0 6 char-sound
-    self-frames-reset
-    $38 self-wait-frames
+    $38 wait-frames
     fiona-who 1 6 char-sound
     self-wait-anim
     0 self-noclip
@@ -230,8 +210,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 4 object-anim
     1 4 object-anim
     4 room-motion 0 self-anim-blend
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     fiona-who 0 6 char-sound
     self-wait-anim
     0 self-noclip
@@ -276,10 +255,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 ebit? if
         hewie-who self-look-at
         yield
-        begin
-            3 ebit? not while
-            yield
-        repeat
+        [: 3 ebit? ;] wait-until
     then
     counter-inc
     1 self-noclip
@@ -287,31 +263,26 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     0 ebit? not if
         0 room-motion 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        5 wait-frames
         0 part-hidden
         0 0 object-hidden
         1 0 object-hidden
         0 0 object-anim
         1 0 object-anim
-        self-frames-reset
-        $28 self-wait-frames
+        $28 wait-frames
         fiona-who 1 6 char-sound
         self-wait-anim
     else
         1 room-motion 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        5 wait-frames
         0 part-hidden
         0 0 object-hidden
         1 0 object-hidden
         0 1 object-anim
         1 1 object-anim
-        self-frames-reset
-        $E self-wait-frames
+        $E wait-frames
         fiona-who 0 6 char-sound
-        self-frames-reset
-        $3C self-wait-frames
+        $3C wait-frames
         fiona-who 1 6 char-sound
         self-wait-anim
     then
@@ -358,11 +329,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             0 2 object-anim
             1 2 object-anim
             2 room-motion 0 self-anim-blend
-            self-frames-reset
-            $10 self-wait-frames
+            $10 wait-frames
             fiona-who 0 6 char-sound
-            self-frames-reset
-            $38 self-wait-frames
+            $38 wait-frames
             fiona-who 1 6 char-sound
             self-wait-anim
             0 self-noclip
@@ -407,16 +376,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 1 self-noclip
                 1 ebit? if
                     4 room-motion 0 self-anim-blend
-                    self-frames-reset
-                    7 self-wait-frames
+                    7 wait-frames
                     fiona-who 0 6 char-sound
                     self-wait-anim
                 else 0 0 var? if
-                    2 room-motion 0 self-anim-blend
-                    self-wait-anim
+                    2 room-motion 0 blend-out
                 else
-                    3 room-motion 0 self-anim-blend
-                    self-wait-anim
+                    3 room-motion 0 blend-out
                 then then
                 0 self-noclip
                 0 self-scripted
@@ -427,16 +393,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             1 self-noclip
             1 ebit? if
                 4 room-motion 0 self-anim-blend
-                self-frames-reset
-                7 self-wait-frames
+                7 wait-frames
                 fiona-who 0 6 char-sound
                 self-wait-anim
             else 0 0 var? if
-                2 room-motion 0 self-anim-blend
-                self-wait-anim
+                2 room-motion 0 blend-out
             else
-                3 room-motion 0 self-anim-blend
-                self-wait-anim
+                3 room-motion 0 blend-out
             then then
             0 self-noclip
             0 self-scripted
@@ -457,19 +420,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 self-scripted
     1 1 var-set
     2 room-motion $A self-anim-blend
-    self-frames-reset
-    $19 self-wait-frames
+    $19 wait-frames
     stalker-who 5 6 char-sound
     $28 threat-raise
-    self-frames-reset
-    9 self-wait-frames
+    9 wait-frames
     stalker-who 5 6 char-sound
     $14 threat-raise
     self-wait-anim
     1 0 var-set
     3 0 var-set
-    step-back-anim self-anim
-    self-wait-anim
+    step-back-anim play-out
     0 self-scripted
     $78 1 summoner-wait
     self-idle-or-end
@@ -497,19 +457,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         0 3 object-anim
         1 3 object-anim
         1 room-motion $A self-anim-blend
-        self-frames-reset
-        $10 self-wait-frames
+        $10 wait-frames
         0 2 var-set
-        self-frames-reset
-        $A self-wait-frames
+        $A wait-frames
         stalker-who 0 6 char-sound
         self-wait-anim
-        step-back-anim self-anim
-        self-wait-anim
+        step-back-anim play-out
         0 self-scripted
     else
-        there-anim self-anim
-        self-wait-anim
+        there-anim play-out
         fiona-hidden state-flag? if
             2 avoid-prompt
             panic-eased
@@ -520,10 +476,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;
@@ -533,25 +486,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     147.17 86.89 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $94 message-param-room
         $94 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-22-refined-antimony story-flag-set
             0 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;

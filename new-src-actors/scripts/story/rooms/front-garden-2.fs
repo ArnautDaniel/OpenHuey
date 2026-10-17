@@ -69,35 +69,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : front-garden-2.char-enter ( -- )   \ 003F92E0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 2 player-camera
-    then then
+    then
     0 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            3 -1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         3 -1 player-camera
-    then then
+    then
     2 3 -1 area-camera
     stalker-who self-is? if
     then
@@ -111,13 +96,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 exit-usable? if
         1 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
+    then
     7 0 0 1 chars-area-camera
     8 1 1 1 chars-area-camera
     9 2 2 1 chars-area-camera
@@ -225,8 +206,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : front-garden-2.act00 ( -- )   \ 003F96E8
     self-wait-done
     hands-clasped-anim $A self-anim-blend
-    0 message   \ "It is bolted shut from the other side. I'm not going to be able to open this..."
-    wait-message
+    0 say   \ "It is bolted shut from the other side. I'm not going to be able to open this..."
     self-wait-anim
     self-idle-or-end
 ;
@@ -282,8 +262,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     70.0 -160.0 self-turn-to-xz
     self-wait-done
-    1 message   \ "I wonder what kind of a room is on the other side? I can see the light flicker from can..."
-    wait-message
+    1 say   \ "I wonder what kind of a room is on the other side? I can see the light flicker from can..."
     self-idle-or-end
 ;
 
@@ -291,8 +270,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     100.0 -210.0 self-turn-to-xz
     self-wait-done
-    1 message   \ "I wonder what kind of a room is on the other side? I can see the light flicker from can..."
-    wait-message
+    1 say   \ "I wonder what kind of a room is on the other side? I can see the light flicker from can..."
     self-idle-or-end
 ;
 
@@ -301,25 +279,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     130.0 -237.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             fg-2-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

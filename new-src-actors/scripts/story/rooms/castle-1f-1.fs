@@ -33,35 +33,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-1.char-enter ( -- )   \ 003EE820
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 -1 player-camera
-    then then
+    then
     0 2 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 -1 player-camera
-    then then
+    then
     1 0 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 -1 player-camera
-    then then
+    then
     2 0 -1 area-camera
     fiona-who self-is? if
         c1f-3-bookshelf-examined story-flag? c1f-1-flag2 story-flag? not and if
@@ -86,13 +71,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 exit-usable? if
         1 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
+    then
     8 0 -1 1 chars-area-camera
     9 1 0 1 chars-area-camera
     $A 1 0 1 chars-area-camera
@@ -247,8 +228,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-1f-1.act00 ( -- )   \ 003EEC28
     self-wait-done
     hands-clasped-anim $A self-anim-blend
-    1 message   \ "The gate is closed. There's no way through. I am going to have to find another way."
-    wait-message
+    1 say   \ "The gate is closed. There's no way through. I am going to have to find another way."
     self-wait-anim
     self-idle-or-end
 ;
@@ -288,8 +268,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         fiona-who $2E 5 char-sound
         self-wait-anim
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
     else
         stalkers-stay state-flag-clear
     then
@@ -309,23 +288,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $1BE -31.549 70.055 150 $FFFF 5 self-move-to
     self-wait-done
-    sit-a-while-anim $A self-anim-blend
-    self-wait-anim
+    sit-a-while-anim $A blend-out
     fiona-half-hidden state-flag? fiona-who char-busy? not or if
         $95 $63 item-count? not if
             10 hewie-trust
         then
         $95 message-param-room
         $95 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-1-refined-magnesia story-flag-set
             $95 1 item-give-count
             0 $95 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
     then
     $1C0 -42.94 81.76 176 $FFFF 5 self-move-to
@@ -345,16 +321,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     draw-when-frozen state-flag-set
     $F 6 fade
     wait-fade
-    $40AA message   \ "'Crouch Evasion' In addition to evasion points, you can avoid enemies by pressing t..."
-    wait-message
+    $40AA say   \ "'Crouch Evasion' In addition to evasion points, you can avoid enemies by pressing t..."
     $F 7 fade
     wait-fade
     got-doc-crouch-evasion story-flag-set
     $AA message-param-room
     $AA 1 item-give-count
     $83 $85 0.0 0.0 0.0 0 0 sound
-    $801B message   \ "has been saved to your file."
-    wait-message
+    $801B say   \ "has been saved to your file."
     draw-when-frozen state-flag-clear
     world-frozen state-flag-clear
     0 self-scripted

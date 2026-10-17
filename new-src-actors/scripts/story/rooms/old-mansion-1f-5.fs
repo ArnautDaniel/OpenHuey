@@ -31,25 +31,15 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims f
 ;
 
 : old-mansion-1f-5.char-enter ( -- )   \ 00407B70
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            4 4 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         4 4 player-camera
-    then then
+    then
     3 4 4 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 4 exit-taken? and if
-            fiona-who 4 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 4 exit-taken? and if
-        hewie-who 4 char-to-exit
+    player-who self-is? 4 exit-taken? and if
+        player-who 4 char-to-exit
         2 2 player-camera
-    then then
+    then
     4 2 2 area-camera
     fiona-who self-is? if
         3 exit-taken? if
@@ -70,13 +60,9 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims f
     3 exit-usable? if
         3 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 4 char-in-area? fiona-who char-busy? not and if
-            4 exit-check
-        then
-    else hewie-who 4 char-in-area? hewie-who char-busy? not and if
+    player-who 4 char-in-area? player-who char-busy? not and if
         4 exit-check
-    then then
+    then
     om1f-5-refined-magnesia-found story-flag? not if
         3 -9.11 0.0 -21.78 $A 5 0 zone
         hewie-who 3 3 char-zone-bits? if
@@ -116,28 +102,23 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims f
     self-wait-done
     -136.0 12.0 self-turn-to-xz
     self-wait-done
-    look-close-anim $A self-anim-blend
-    self-wait-anim
+    look-close-anim $A blend-out
     $21 0 pvar? if
         $21 pvar-inc
-        $11 message   \ "Smells like burnt meat. A dreadful odor indeed... They must be cooking an animal'..."
-        wait-message
+        $11 say   \ "Smells like burnt meat. A dreadful odor indeed... They must be cooking an animal'..."
     else $21 1 pvar? if
         1 6 -138.0 5.0 5.0 0 0 sound
-        self-frames-reset
-        $10 self-wait-frames
+        $10 wait-frames
         fiona-who seized-sound 5 char-sound
         startled-anim self-anim
         $21 pvar-inc
         in-panic? not if
             3 panic-stage
         then
-        $12 message   \ "Wait a second! It's still moving in there! It's being cooked alive!"
-        wait-message
+        $12 say   \ "Wait a second! It's still moving in there! It's being cooked alive!"
     else
         $21 pvar-inc
-        $13 message   \ "The more I look, the more it seems to resemble a human child... But certainly suc..."
-        wait-message
+        $13 say   \ "The more I look, the more it seems to resemble a human child... But certainly suc..."
     then then
     self-idle-or-end
 ;
@@ -155,25 +136,20 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims f
     -107.57 10.1 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-5-lavender story-flag-set
             1 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -187,25 +163,20 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims f
     -9.11 -21.78 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $95 message-param-room
         $95 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-5-refined-magnesia story-flag-set
             4 effect-remove
             $95 1 item-give-count
             0 $95 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

@@ -45,26 +45,17 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 ;
 
 : water-tower-7f-1.char-enter ( -- )   \ 00440210
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 -1 player-camera
-    then then
+    then
     1 0 -1 area-camera
 ;
 
 : water-tower-7f-1.phase1 ( -- )   \ 00440250
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 0 -1 1 chars-area-camera
     5 1 -1 1 chars-area-camera
     6 1 -1 1 chars-area-camera
@@ -717,16 +708,12 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         self-wait-done
     then then then then then then then then
     0 $A hewie-anim-root
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     self-idle-or-end
 ;
 
 : water-tower-7f-1.act02 ( -- )   \ 00440FC0
-    begin
-        $33C cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $33C cutscene-cue-reached? ;] wait-until
     0 8 water-tower-7f-1.cmd00
     0 7 water-tower-7f-1.cmd00
     0 6 water-tower-7f-1.cmd00
@@ -745,12 +732,10 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     0.0 -105.0 self-turn-to-xz
     self-wait-done
     look-close-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     $F 6 fade
     wait-fade
-    0 message   \ "All life on the surface of the planet stretches out below the stars' radiant light. All..."
-    wait-message
+    0 say   \ "All life on the surface of the planet stretches out below the stars' radiant light. All..."
     $F 7 fade
     wait-fade
     self-wait-anim

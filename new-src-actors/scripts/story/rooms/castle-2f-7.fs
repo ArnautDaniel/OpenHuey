@@ -26,15 +26,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-2f-7.char-enter ( -- )   \ 004010E0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
@@ -110,10 +105,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     c2f-7-flag1 story-flag-set
     0 ebit-set
     2 subscreen-open
-    begin
-        subscreen-wanted state-flag? while
-        yield
-    repeat
+    [: subscreen-wanted state-flag? ;] wait-while
     yield
     plate-made story-flag? if
         3 0 movie-play
@@ -139,12 +131,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         $3F message-param-room
         0 $3F item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
-        begin
-            cutscene-track char-busy? while
-            yield
-        repeat
+        $8012 say   \ "You've obtained ."
+        [: cutscene-track char-busy? ;] wait-while
         $225 item-give
     then
     stalkers-stay state-flag-clear
@@ -158,22 +146,18 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         -36.2 33.3 self-turn-to-xz
         self-wait-done
         look-at-anim self-anim
-        self-frames-reset
-        $32 self-wait-frames
-        $D message   \ "Is this a birdcage? It looks like the remaining husk of a bird in the cage."
-        wait-message
+        $32 wait-frames
+        $D say   \ "Is this a birdcage? It looks like the remaining husk of a bird in the cage."
         0 1 var-set
     else
-        $E message   \ "The terrible things that people do to animals these days. It's just so upsetting."
-        wait-message
+        $E say   \ "The terrible things that people do to animals these days. It's just so upsetting."
     then
     self-idle-or-end
 ;
 
 : castle-2f-7.act02 ( -- )   \ 0047AB00
     self-wait-done
-    $C message   \ "It is completely ruined. What could have happened here?"
-    wait-message
+    $C say   \ "It is completely ruined. What could have happened here?"
     self-idle-or-end
 ;
 
@@ -185,44 +169,34 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         $11 door-open-clear
         doors-room-in
         0 0 self-door-knock
-        self-frames-reset
-        5 self-wait-frames
+        5 wait-frames
         fiona-who seized-sound 5 char-sound
         uneasy-2-anim 5 self-anim-blend
         1 $FF 8 rumble
-        self-frames-reset
-        $10 self-wait-frames
+        $10 wait-frames
         c2f-7-flag2 story-flag-set
         $5A threat-raise
         self-wait-anim
     else plates-under-10? if
         0 ebit? not if
-            $11 message   \ "It's a plate pressing machine."
-            wait-message
+            $11 say   \ "It's a plate pressing machine."
             0 ebit-set
         then
         plate-made story-flag? if
             plate-made story-flag-clear
             2 subscreen-open
-            begin
-                subscreen-wanted state-flag? while
-                yield
-            repeat
+            [: subscreen-wanted state-flag? ;] wait-while
             yield
             plate-made story-flag? if
                 $3F message-param-room
                 0 $3F item-tab
                 item-fanfare
-                $8012 message   \ "You've obtained ."
-                wait-message
+                $8012 say   \ "You've obtained ."
             then
             plate-made story-flag-set
         else
             2 subscreen-open
-            begin
-                subscreen-wanted state-flag? while
-                yield
-            repeat
+            [: subscreen-wanted state-flag? ;] wait-while
             yield
             plate-made story-flag? if
                 $F 4 fade
@@ -247,22 +221,16 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
                 $3F message-param-room
                 0 $3F item-tab
                 item-fanfare
-                $8012 message   \ "You've obtained ."
-                wait-message
-                begin
-                    cutscene-track char-busy? while
-                    yield
-                repeat
+                $8012 say   \ "You've obtained ."
+                [: cutscene-track char-busy? ;] wait-while
                 $225 item-give
             then
         then
     else 0 ebit? not if
-        $F message   \ "There's a plate pressing machine here. There are no remaining plates currently so..."
-        wait-message
+        $F say   \ "There's a plate pressing machine here. There are no remaining plates currently so..."
         0 ebit-set
     else
-        $12 message   \ "There are no plates remaining. I'll have to get rid of some plate-keys before I c..."
-        wait-message
+        $12 say   \ "There are no plates remaining. I'll have to get rid of some plate-keys before I c..."
     then then then
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -270,18 +238,14 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-2f-7.act04 ( -- )   \ 00401500
-    begin
-        $69 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $69 cutscene-cue-reached? ;] wait-until
     1 6 35.0 10.0 25.0 0 0 sound
     self-idle-or-end
 ;
 
 : castle-2f-7.act05 ( -- )   \ 0047AB08
     self-wait-done
-    $10 message   \ "Returned a plate to the plate pressing machine."
-    wait-message
+    $10 say   \ "Returned a plate to the plate pressing machine."
     self-idle-or-end
 ;
 
@@ -316,8 +280,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 : castle-2f-7.act07 ( -- )   \ 004015D0
     begin
         3 cutscene-shot? not while
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     repeat
     1 castle-2f-7.cmd01
     self-idle-or-end
@@ -325,10 +288,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-2f-7.act08 ( -- )   \ 004015E0
     room-sounds
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
+    [: 6 sound-bank-loaded? ;] wait-until
     self-wait-done
     6 1 object-hidden
     $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string

@@ -44,26 +44,17 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 ;
 
 : chaos-forest-9.char-enter ( -- )   \ 00418B60
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
 ;
 
 : chaos-forest-9.phase1 ( -- )   \ 00418BA0
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
+    then
     0 ebit? not if
         1 ebit? not in-panic? and if
             0 ebit-set
@@ -129,25 +120,20 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
     -298.4 -365.4 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $94 message-param-room
         $94 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             cf-9-refined-antimony story-flag-set
             0 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -155,8 +141,7 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 : chaos-forest-9.act02 ( -- )   \ 00418D30
     $E $A 6 char-sound
     $E $9002 1 0 char-anim-hold
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     0 chaos-forest-9.cmd00
     1 chaos-forest-9.cmd00
     $E action-end
@@ -167,16 +152,12 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 : chaos-forest-9.act03 ( -- )   \ 00418D50
     self-wait-done
     3 ebit? not if
-        look-close-anim 5 self-anim-blend
-        self-wait-anim
-        0 message   \ "It's... a lake, I think. Looks like there some kind of a... tower erected in the ce..."
-        wait-message
+        look-close-anim 5 blend-out
+        0 say   \ "It's... a lake, I think. Looks like there some kind of a... tower erected in the ce..."
         3 ebit-set
     else
-        hands-clasped-anim 5 self-anim-blend
-        self-wait-anim
-        1 message   \ "I'm not going to be able to go any further this way. Better go back and find a way..."
-        wait-message
+        hands-clasped-anim 5 blend-out
+        1 say   \ "I'm not going to be able to go any further this way. Better go back and find a way..."
     then
     self-idle-or-end
 ;

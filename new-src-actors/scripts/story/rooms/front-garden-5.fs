@@ -131,15 +131,10 @@ fvariable sw-dx  fvariable sw-dz
 ;
 
 : front-garden-5.char-enter ( -- )   \ 00405B80
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
@@ -152,13 +147,9 @@ fvariable sw-dx  fvariable sw-dz
 ;
 
 : front-garden-5.phase1 ( -- )   \ 00405BD0
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
+    then
     1 0 0 1 chars-area-camera
     2 1 1 1 chars-area-camera
     $A 0 0 1 chars-area-camera
@@ -440,8 +431,7 @@ fvariable sw-dx  fvariable sw-dz
     stalkers-stay state-flag-set
     $C3 -67.3 79.93 89 $207 5 self-move-to
     self-wait-done
-    4 $14 self-anim-blend
-    self-wait-anim
+    4 $14 blend-out
     0 self-scripted
     0 self-noclip
     stalkers-stay state-flag-clear
@@ -458,8 +448,7 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     1 self-noclip
     1 self-scripted
-    crouch-down-anim self-anim
-    self-wait-anim
+    crouch-down-anim play-out
     $D6 -100.488 79.931 -90 $803 5 self-move-to
     self-wait-done
     $D6 -100.488 79.931 90 $803 5 self-move-to
@@ -495,8 +484,7 @@ fvariable sw-dx  fvariable sw-dz
             stalkers-stay state-flag-set
             $E5 -74.756 82.505 90 $803 5 self-move-to
             self-wait-done
-            crouch-up-anim self-anim
-            self-wait-anim
+            crouch-up-anim play-out
             0 self-scripted
             0 self-noclip
             stalkers-stay state-flag-clear
@@ -509,23 +497,16 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     $1E6 -45.859 82.656 -90 $FFFF 5 self-move-to
     self-wait-done
-    there-anim self-anim
-    self-wait-anim
+    there-anim play-out
     0 ebit-set
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;
 
 : front-garden-5.act0B ( -- )   \ 00406200
-    begin
-        1 front-garden-5.cond00? not while
-        yield
-    repeat
+    [: 1 front-garden-5.cond00? ;] wait-until
     hewie-who snap-sound 5 char-sound
     fg-5-flag1 story-flag? not if
         0 2 track $F action
@@ -536,10 +517,7 @@ fvariable sw-dx  fvariable sw-dz
 ;
 
 : front-garden-5.act0C ( -- )   \ 00406230
-    begin
-        0 front-garden-5.cond00? not while
-        yield
-    repeat
+    [: 0 front-garden-5.cond00? ;] wait-until
     hewie-who snap-sound 5 char-sound
     0 0 front-garden-5.cmd00
     0 1 front-garden-5.cmd00
@@ -575,25 +553,20 @@ fvariable sw-dx  fvariable sw-dz
     -265.0 160.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $72 message-param-room
         $72 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             fg-5-viola-medallion story-flag-set
             0 effect-remove
             $72 1 item-give-count
             0 $72 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -603,25 +576,20 @@ fvariable sw-dx  fvariable sw-dz
     -228.4 103.2 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             fg-5-medallion story-flag-set
             1 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -630,21 +598,15 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     $41 -190.101 72.001 180 $FFFF 5 self-move-to
     self-wait-done
-    self-frames-reset
-    4 self-wait-frames
-    lean-anim self-anim
-    self-wait-anim
+    4 wait-frames
+    lean-anim play-out
     fiona-who 0 6 char-sound
     strain-anim self-anim
-    self-frames-reset
-    self-wait-16
-    let-go-push-anim self-anim
-    self-wait-anim
+    16 wait-frames
+    let-go-push-anim play-out
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
-    0 message   \ "The hinge is rusted solid. Try as I may, I can't open this door."
-    wait-message
+    7 wait-frames
+    0 say   \ "The hinge is rusted solid. Try as I may, I can't open this door."
     self-idle-or-end
 ;
 
@@ -653,25 +615,20 @@ fvariable sw-dx  fvariable sw-dz
     -14.0 97.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $61 message-param-room
         $61 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             fg-5-beef-jerky story-flag-set
             2 effect-remove
             $61 1 item-give-count
             0 $61 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -681,25 +638,20 @@ fvariable sw-dx  fvariable sw-dz
     -180.0 176.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $90 message-param-room
         $90 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             got-ball story-flag-set
             3 effect-remove
             $90 1 item-give-count
             0 $90 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

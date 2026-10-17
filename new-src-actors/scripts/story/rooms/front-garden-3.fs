@@ -125,83 +125,46 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 ;
 
 : front-garden-3.char-enter ( -- )   \ 004048E0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 0 player-camera
-    then then
+    then
     0 1 0 area-camera
     c2f-2-flag1 story-flag? not if
-        hewie-controlled? not if
-            fiona-who self-is? 1 exit-taken? and if
-                fiona-who 1 char-to-exit
-                2 1 player-camera
-            then
-        else hewie-who self-is? 1 exit-taken? and if
-            hewie-who 1 char-to-exit
+        player-who self-is? 1 exit-taken? and if
+            player-who 1 char-to-exit
             2 1 player-camera
-        then then
+        then
         1 2 1 area-camera
     else
-        hewie-controlled? not if
-            fiona-who self-is? 1 exit-taken? and if
-                fiona-who 1 char-to-exit
-                6 5 player-camera
-            then
-        else hewie-who self-is? 1 exit-taken? and if
-            hewie-who 1 char-to-exit
+        player-who self-is? 1 exit-taken? and if
+            player-who 1 char-to-exit
             6 5 player-camera
-        then then
+        then
         1 6 5 area-camera
     then
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            5 4 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         5 4 player-camera
-    then then
+    then
     2 5 4 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            3 2 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         3 2 player-camera
-    then then
+    then
     3 3 2 area-camera
 ;
 
 : front-garden-3.phase1 ( -- )   \ 00404A20
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 4 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 4 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 4 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
+    then
     fiona-who 5 char-in-area? fiona-who char-busy? not and if
         $1A 3 3 char-load
         3 exit-check
@@ -435,10 +398,8 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     228.1 77.57 self-turn-to-xz
     self-wait-done
-    tend-start-anim $A self-anim-blend
-    self-wait-anim
-    $C message   \ "Unforgivable! A wire is bound to the poor animal. It is digging deeply into the dog's..."
-    wait-message
+    tend-start-anim $A blend-out
+    $C say   \ "Unforgivable! A wire is bound to the poor animal. It is digging deeply into the dog's..."
     tend-lead-in-anim $A self-anim-blend
     1 0 movie-play
     0 cutscene-start
@@ -462,8 +423,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     $16 1.0 0 bgm
     $F $51 fade
     wait-fade
-    $B message   \ "I can't believe there are people out there that would do this to a poor helpless anima..."
-    wait-message
+    $B say   \ "I can't believe there are people out there that would do this to a poor helpless anima..."
     $205 item-give
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -506,20 +466,16 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     c2f-3-flag1 story-flag? not if
         look-at-anim self-anim
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
         0 ebit? not if
-            3 message   \ "A large tree is sprawled out here."
-            wait-message
+            3 say   \ "A large tree is sprawled out here."
             0 ebit-set
         else
-            4 message   \ "The branches are well kempt. Looks like someone has put a lot of time and energ..."
-            wait-message
+            4 say   \ "The branches are well kempt. Looks like someone has put a lot of time and energ..."
         then
         self-wait-anim
     else
-        5 message   \ "There is a thick wire encircling the trunk of the tree."
-        wait-message
+        5 say   \ "There is a thick wire encircling the trunk of the tree."
     then
     self-idle-or-end
 ;
@@ -536,12 +492,10 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 
 : front-garden-3.act04 ( -- )   \ 00404FF0
     self-wait-done
-    rest-anim self-anim
-    self-wait-anim
+    rest-anim play-out
     -1 self-idle-anim
     6 message   \ "Where am I?"
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     wait-message
     fg-3-flag1 story-flag-set
     self-idle-or-end
@@ -549,8 +503,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 
 : front-garden-3.act05 ( -- )   \ 00405008
     self-wait-done
-    7 message   \ "It's kind of cold... The air smells... funny."
-    wait-message
+    7 say   \ "It's kind of cold... The air smells... funny."
     fg-3-flag2 story-flag-set
     self-idle-or-end
 ;
@@ -559,8 +512,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     65.64 70.94 self-turn-to-xz
     self-wait-done
-    8 message   \ "A fountain... Looks like it is quite the antique."
-    wait-message
+    8 say   \ "A fountain... Looks like it is quite the antique."
     self-idle-or-end
 ;
 
@@ -568,11 +520,9 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     120 self-turn-angle
     self-wait-done
-    turn-round-anim self-anim
-    self-wait-anim
+    turn-round-anim play-out
     -1 self-idle-anim
-    2 message   \ "I just want to put the terrible things I saw back there behind me. I am not going back."
-    wait-message
+    2 say   \ "I just want to put the terrible things I saw back there behind me. I am not going back."
     self-idle-or-end
 ;
 
@@ -581,41 +531,32 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     185.7 -35.4 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $92 message-param-room
         $92 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             fg-3-magnesia story-flag-set
             0 effect-remove
             $92 1 item-give-count
             0 $92 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
 
 : front-garden-3.act0E ( -- )   \ 00405230
     1 self-scripted
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
+    [: 6 sound-bank-loaded? ;] wait-until
     counter-inc
     -90 self-turn-angle
     self-wait-done
     2 wait-counter
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     hewie-who 0 6 char-sound
     begin
         3 counter? not while
@@ -653,18 +594,14 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         2 ebit-set
         ['] front-garden-3.act0E goto
     then
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     world-frozen state-flag-set
     1 self-scripted
     fiona-who $2A7 -25.0 168.0 -80 char-to-xz
     1 13.0 20.0 0.0 0.0 event-camera
-    self-frames-reset
-    self-wait-16
-    9 message   \ "This door is being blocked by that wooden box. There's got to be something I can do..."
-    wait-message
-    self-frames-reset
-    4 self-wait-frames
+    16 wait-frames
+    9 say   \ "This door is being blocked by that wooden box. There's got to be something I can do..."
+    4 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     fiona-who $21D -21.0 168.0 -90 char-to-xz
     world-frozen state-flag-clear
@@ -676,13 +613,10 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     $DC -12.99 136.933 -90 $FFFF 5 self-move-to
     self-wait-done
-    crouch-down-anim self-anim
-    self-wait-anim
+    crouch-down-anim play-out
     crouching-anim self-anim
-    $A message   \ "There is a hole-floor here, but it's far too small for me."
-    wait-message
-    crouch-up-anim self-anim
-    self-wait-anim
+    $A say   \ "There is a hole-floor here, but it's far too small for me."
+    crouch-up-anim play-out
     -1 self-idle-anim
     self-idle-or-end
 ;
@@ -714,23 +648,18 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     counter-inc
     $194 -33.905 165.0 0 $204 5 self-move-to
     self-wait-done
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     counter-inc
     $34D $FFFF 6 self-move-tri
     self-wait-done
     counter-inc
-    self-frames-reset
-    $40 self-wait-frames
+    $40 wait-frames
     counter-inc
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     counter-inc
-    self-frames-reset
-    $10 self-wait-frames
+    $10 wait-frames
     counter-inc
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     2 barred-floor floor-off
     $2F door-unlock
     5 4 player-camera
@@ -763,10 +692,8 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     1 self-noclip
     $359 -30.0 137.0 -90 $204 5 self-move-to
     self-wait-done
-    sit-down-anim self-anim
-    self-wait-anim
-    sit-anim self-anim
-    self-wait-anim
+    sit-down-anim play-out
+    sit-anim play-out
     begin
         fiona-who $19 char-in-area? if
             44 fiona-started? if
@@ -789,10 +716,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 ;
 
 : front-garden-3.act0D ( -- )   \ 00405210
-    begin
-        fiona-free? not while
-        yield
-    repeat
+    [: fiona-free? ;] wait-until
     panic-eased
     0 fiona-who $E action-force
     self-idle-or-end
@@ -809,8 +733,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         fiona-who $2E 5 char-sound
         self-wait-anim
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
     else
         stalkers-stay state-flag-clear
     then
@@ -832,23 +755,20 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     fg-3-refined-magnesia story-flag? not if
         $37 $FFFF 6 self-move-tri
         self-wait-done
-        sit-a-while-anim self-anim
-        self-wait-anim
+        sit-a-while-anim play-out
         fiona-half-hidden state-flag? fiona-who char-busy? not or if
             $95 $63 item-count? not if
                 10 hewie-trust
             then
             $95 message-param-room
             $95 $63 item-count? if
-                $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-                wait-message
+                $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
             else
                 fg-3-refined-magnesia story-flag-set
                 $95 1 item-give-count
                 0 $95 item-tab
                 item-fanfare
-                $8011 message   \ "You've obtained ."
-                wait-message
+                $8011 say   \ "You've obtained ."
             then
         then
     then
@@ -893,8 +813,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 : front-garden-3.act14 ( -- )   \ 00405480
     $F $A 6 char-sound
     $F $9002 1 0 char-anim-hold
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     0 front-garden-3.cmd01
     1 front-garden-3.cmd01
     self-idle-or-end
@@ -904,12 +823,9 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     228.1 77.57 self-turn-to-xz
     self-wait-done
-    crouch-down-anim $A self-anim-blend
-    self-wait-anim
-    $D message   \ "The wire looks like it got snagged on something. So many wounds... So much blood... Yo..."
-    wait-message
-    crouch-up-anim $A self-anim-blend
-    self-wait-anim
+    crouch-down-anim $A blend-out
+    $D say   \ "The wire looks like it got snagged on something. So many wounds... So much blood... Yo..."
+    crouch-up-anim $A blend-out
     self-idle-or-end
 ;
 

@@ -66,25 +66,15 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
 ;
 
 : old-mansion-2f-11.char-enter ( -- )   \ 00421CD0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
 ;
 
@@ -92,13 +82,9 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 1 1 -1 chars-area-camera
     5 0 0 1 chars-area-camera
     6 2 -1 1 chars-area-camera
@@ -227,15 +213,13 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
                 else
                     rattle-front-anim self-anim
                 then
-                self-frames-reset
-                $14 self-wait-frames
+                $14 wait-frames
                 in-panic? not if
                     fiona-who $72 5 char-sound
                     $67 door-unlock
                     $8008 message   \ "You unlocked the door."
                     20 self-idle-anim
-                    self-frames-reset
-                    $14 self-wait-frames
+                    $14 wait-frames
                     wait-message
                 then
             then
@@ -248,20 +232,16 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     self-wait-done
     7.3 -28.3 self-turn-to-xz
     self-wait-done
-    pick-up-anim self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    pick-up-anim play-out
+    4 wait-frames
     got-jupiter-key story-flag-set
     0 effect-remove
     $D message-param-room
     $D 1 item-give-count
     0 $D item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    up-from-pick-anim self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    up-from-pick-anim play-out
     self-idle-or-end
 ;
 
@@ -283,14 +263,11 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     5.19 -34.0 self-turn-to-xz
     self-wait-done
     0 ebit? not om2f-11-flag1 story-flag? or if
-        0 message   \ "There is a rusty stepladder here. It really is in bad shape. If I were to try climb..."
-        wait-message
+        0 say   \ "There is a rusty stepladder here. It really is in bad shape. If I were to try climb..."
         0 ebit-set
     else
-        look-at-anim self-anim
-        self-wait-anim
-        1 message   \ "There is something on top of the stepladder... I bet if I shake it a bit, I can get..."
-        wait-message
+        look-at-anim play-out
+        1 say   \ "There is something on top of the stepladder... I bet if I shake it a bit, I can get..."
         0 ebit-clear
     then
     self-idle-or-end
@@ -303,17 +280,14 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     -20 self-turn-angle
     self-wait-done
     journals-examined story-flag? not if
-        2 message   \ "Mountains of books have been piled up here. Are these journals?"
-        wait-message
+        2 say   \ "Mountains of books have been piled up here. Are these journals?"
         journals-examined story-flag-set
     else
-        3 message   \ "The dates on these journals are just too spread out for the same man to have writte..."
-        wait-message
+        3 say   \ "The dates on these journals are just too spread out for the same man to have writte..."
     then
     $F 6 fade
     wait-fade
-    4 message   \ "February 8th, 1784 I have decided to summon that renowned master alchemist to the castl..."
-    wait-message
+    4 say   \ "February 8th, 1784 I have decided to summon that renowned master alchemist to the castl..."
     $F 7 fade
     wait-fade
     $237 item-give
@@ -327,25 +301,20 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     -6.82 -10.25 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $92 message-param-room
         $92 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om2f-11-magnesia story-flag-set
             1 effect-remove
             $92 1 item-give-count
             0 $92 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -372,19 +341,15 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
         self-wait-done
     then then then then then then
     look-close-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     1 0 var? if
-        5 message   \ "What an incredible number of books."
-        wait-message
+        5 say   \ "What an incredible number of books."
         1 var-inc
     else 1 1 var? if
-        6 message   \ "They are written in various languages. Whomever read all of these must have had a s..."
-        wait-message
+        6 say   \ "They are written in various languages. Whomever read all of these must have had a s..."
         1 var-inc
     else 1 2 var? if
-        7 message   \ "Hmpf! What am I doing? It's not like I can even read the titles or anything."
-        wait-message
+        7 say   \ "Hmpf! What am I doing? It's not like I can even read the titles or anything."
         1 0 var-set
     then then then
     self-wait-anim
@@ -403,18 +368,15 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     self-wait-done
     -90 self-turn-angle
     self-wait-done
-    8 message   \ "Something is written here..."
-    wait-message
+    8 say   \ "Something is written here..."
     $F 6 fade
     wait-fade
-    $A message   \ "Some combinations can be used to aid animals as well. Here are a few: Esca Slightly re..."
-    wait-message
+    $A say   \ "Some combinations can be used to aid animals as well. Here are a few: Esca Slightly re..."
     $F 7 fade
     wait-fade
     $63 subscreen-bit? not $65 subscreen-bit? not or if
         hand-to-mouth-anim self-anim
-        $B message   \ "I wonder what these combinations are supposed to mean?"
-        wait-message
+        $B say   \ "I wonder what these combinations are supposed to mean?"
         self-wait-anim
         $63 subscreen-bit
         $65 subscreen-bit
@@ -430,18 +392,15 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     self-wait-done
     -90 self-turn-angle
     self-wait-done
-    8 message   \ "Something is written here..."
-    wait-message
+    8 say   \ "Something is written here..."
     $F 6 fade
     wait-fade
-    9 message   \ "The grand refining process can also yield several precarious items as well. I have list..."
-    wait-message
+    9 say   \ "The grand refining process can also yield several precarious items as well. I have list..."
     $F 7 fade
     wait-fade
     $46 subscreen-bit? not $47 subscreen-bit? not or if
         hand-to-mouth-anim self-anim
-        $B message   \ "I wonder what these combinations are supposed to mean?"
-        wait-message
+        $B say   \ "I wonder what these combinations are supposed to mean?"
         self-wait-anim
         $46 subscreen-bit
         $47 subscreen-bit
@@ -460,10 +419,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     else
         1 old-mansion-2f-11.cmd01
     then
-    begin
-        fiona-free? not while
-        yield
-    repeat
+    [: fiona-free? ;] wait-until
     self-idle-or-end
 ;
 

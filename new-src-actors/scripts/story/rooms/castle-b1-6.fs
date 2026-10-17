@@ -76,15 +76,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-b1-6.char-enter ( -- )   \ 003F46E0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
 ;
 
@@ -327,8 +322,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     hewie-who char-done
     stalker-who action-end
     stalker-who char-done
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     3 0 movie-play
     2 cutscene-start
     yield
@@ -382,22 +376,17 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     160.0 0.0 self-turn-to-xz
     self-wait-done
-    look-low-anim $A self-anim-blend
-    self-wait-anim
-    6 message   \ "There are some letters engraved here..."
-    wait-message
+    look-low-anim $A blend-out
+    6 say   \ "There are some letters engraved here..."
     $F 6 fade
     wait-fade
-    7 message   \ "To the seeker of the sacred technique of Ars, Obey the will of Hermes' divine cane and..."
-    wait-message
+    7 say   \ "To the seeker of the sacred technique of Ars, Obey the will of Hermes' divine cane and..."
     $F 7 fade
     wait-fade
     look-at-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     got-saturnus-key story-flag? not if
-        8 message   \ "A cane? Hmm, curious. I'll bet this is related to that goddess statue... Search mor..."
-        wait-message
+        8 say   \ "A cane? Hmm, curious. I'll bet this is related to that goddess statue... Search mor..."
         self-wait-anim
         1 self-scripted
         0 answer? if
@@ -445,14 +434,12 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             6 1 item-give-count
             0 6 item-tab
             item-fanfare
-            $8012 message   \ "You've obtained ."
-            wait-message
+            $8012 say   \ "You've obtained ."
             30 hewie-trust
         then
         0 self-scripted
     else
-        $A message   \ "If this is the chapel... This statue must symbolize the deity worshipped here."
-        wait-message
+        $A say   \ "If this is the chapel... This statue must symbolize the deity worshipped here."
         self-wait-anim
     then
     stalkers-stay state-flag-clear
@@ -461,13 +448,11 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-b1-6.act05 ( -- )   \ 003F4E30
     1 ebit? not if
-        $F message   \ "What a fancy chandelier. It must have been quite expensive."
-        wait-message
+        $F say   \ "What a fancy chandelier. It must have been quite expensive."
         1 ebit-set
     else
         look-low-anim $A self-anim-blend
-        $10 message   \ "I-I could have been killed... I guess fate was smiling on me today... for now."
-        wait-message
+        $10 say   \ "I-I could have been killed... I guess fate was smiling on me today... for now."
         self-wait-anim
     then
     self-idle-or-end
@@ -476,34 +461,25 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 : castle-b1-6.act06 ( -- )   \ 003F4E50
     self-wait-done
     found-file-20b story-flag? if
-        $E message   \ "It's broken beyond repair..."
-        wait-message
+        $E say   \ "It's broken beyond repair..."
     else 0 ebit? not if
-        $C message   \ "A pulley system used to wind up rope... Looks like this is used to raise and lower..."
-        wait-message
+        $C say   \ "A pulley system used to wind up rope... Looks like this is used to raise and lower..."
         0 ebit-set
     else
-        $D message   \ "It is tightly fastened... Must be to make sure the chandelier doesn't accidentally..."
-        wait-message
+        $D say   \ "It is tightly fastened... Must be to make sure the chandelier doesn't accidentally..."
         0 ebit-clear
     then then
     self-idle-or-end
 ;
 
 : castle-b1-6.act07 ( -- )   \ 003F4E70
-    begin
-        3 cutscene-shot? not while
-        yield
-    repeat
+    [: 3 cutscene-shot? ;] wait-until
     begin
         4 cutscene-shot? not while
         46.0 46.0 116.5 116.5 depth-range
         yield
     repeat
-    begin
-        $4AE cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $4AE cutscene-cue-reached? ;] wait-until
     begin
         0 cutscene-cue-reached? while
         castle-b1-6.cmd02
@@ -532,8 +508,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     then
     0 0 castle-b1-6.cmd03
     1 0 castle-b1-6.cmd03
-    self-frames-reset
-    $14 self-wait-frames
+    $14 wait-frames
     self-idle-or-end
 ;
 
@@ -556,8 +531,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     then
     0 1 castle-b1-6.cmd03
     1 1 castle-b1-6.cmd03
-    self-frames-reset
-    $14 self-wait-frames
+    $14 wait-frames
     self-idle-or-end
 ;
 
@@ -578,8 +552,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 : castle-b1-6.act0B ( -- )   \ 003F4FC8
     self-wait-done
     hands-clasped-anim $A self-anim-blend
-    $11 message   \ "He's not moving... I-I think he's dead..."
-    wait-message
+    $11 say   \ "He's not moving... I-I think he's dead..."
     self-wait-anim
     self-idle-or-end
 ;
@@ -594,8 +567,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     0 8 0.0 0.0 0.25 0.25 zone-rect
     6 part-hidden
     look-at-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     1 1 movie-play
     0 cutscene-start
     yield
@@ -699,8 +671,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     hewie-who char-done
     stalker-who action-end
     stalker-who char-done
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     3 0 movie-play
     2 cutscene-start
     yield

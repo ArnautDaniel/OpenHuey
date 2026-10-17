@@ -30,25 +30,15 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 ;
 
 : castle-2f-1.char-enter ( -- )   \ 003F3CF0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
     fiona-who self-is? if
         $80 exit-taken? $81 exit-taken? or if
@@ -162,15 +152,13 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
                 else
                     rattle-front-anim self-anim
                 then
-                self-frames-reset
-                $14 self-wait-frames
+                $14 wait-frames
                 in-panic? not if
                     fiona-who $72 5 char-sound
                     $15 door-unlock
                     $8008 message   \ "You unlocked the door."
                     20 self-idle-anim
-                    self-frames-reset
-                    $14 self-wait-frames
+                    $14 wait-frames
                     wait-message
                 then
             then
@@ -219,15 +207,12 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     1 self-scripted
     self-wait-done
     c1f-12-flag1 story-flag? if
-        1 message   \ "A device that attracts moonlight? How bizarre."
-        wait-message
+        1 say   \ "A device that attracts moonlight? How bizarre."
     else
         2 ebit? not if
-            0 message   \ "Huh? What is this? Looks like it pivots at the base..."
-            wait-message
+            0 say   \ "Huh? What is this? Looks like it pivots at the base..."
             2 ebit-set
-            self-frames-reset
-            8 self-wait-frames
+            8 wait-frames
         then
         world-frozen state-flag-set
         fiona-who $E6 -43.61 1.45 62 char-to-xz
@@ -287,25 +272,20 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     39.5 -38.8 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $95 message-param-room
         $95 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c2f-1-refined-magnesia story-flag-set
             0 effect-remove
             $95 1 item-give-count
             0 $95 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -314,8 +294,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     self-wait-done
     18.0 -16.0 self-turn-to-xz
     self-wait-done
-    4 message   \ "Tinkering out a few chords may soothe my nerves a bit... But now is hardly the time or..."
-    wait-message
+    4 say   \ "Tinkering out a few chords may soothe my nerves a bit... But now is hardly the time or..."
     self-idle-or-end
 ;
 
@@ -323,8 +302,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    3 message   \ "Loads of speakers line the walls in a haphazard fashion. I can feel a piercing stare co..."
-    wait-message
+    3 say   \ "Loads of speakers line the walls in a haphazard fashion. I can feel a piercing stare co..."
     self-idle-or-end
 ;
 
@@ -340,25 +318,20 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     41.5 31.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c2f-1-lavender story-flag-set
             1 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

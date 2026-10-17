@@ -40,77 +40,41 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : chaos-forest-10.char-enter ( -- )   \ 00418E40
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 2 player-camera
-    then then
+    then
     0 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         1 1 player-camera
-    then then
+    then
     2 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            3 3 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         3 3 player-camera
-    then then
+    then
     3 3 3 area-camera
 ;
 
 : chaos-forest-10.phase1 ( -- )   \ 00418F40
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
+    then
     8 2 2 1 chars-area-camera
     9 0 0 1 chars-area-camera
     $A 0 0 1 chars-area-camera
@@ -217,8 +181,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $FF 1.0 0 bgm
     wait-fade
     hewie-who action-end
-    self-frames-reset
-    1 self-wait-frames
+    1 wait-frames
     panic-eased
     0 message-prepare   \ "You've been shot. You'll be all right. This will stop the bleeding."
     1 result? if
@@ -276,13 +239,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : chaos-forest-10.act02 ( -- )   \ 00419250
     self-wait-done
-    crouch-down-anim self-anim
-    self-wait-anim
-    1 message   \ "You'll be alright, boy. Just stay still, OK?"
-    wait-message
+    crouch-down-anim play-out
+    1 say   \ "You'll be alright, boy. Just stay still, OK?"
     hewie-who cowed-whine 5 char-sound
-    crouch-up-anim self-anim
-    self-wait-anim
+    crouch-up-anim play-out
     self-idle-or-end
 ;
 
@@ -291,25 +251,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     76.5 134.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             cf-10-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

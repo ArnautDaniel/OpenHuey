@@ -41,15 +41,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : front-garden-4.char-enter ( -- )   \ 004056D0
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
     stalker-who self-is? if
         fiona-half-hidden state-flag? fiona-who 3 char-in-area? and fg-4-flag1 story-flag? not and $37 exit-door-open? and if
@@ -59,13 +54,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : front-garden-4.phase1 ( -- )   \ 00405730
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     stalker-who char-busy? if
         fiona-half-hidden state-flag? not if
             stalker-who action-end
@@ -146,16 +137,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 exit-door-open? if
         $1F -212.0 8.0 -180 $FFFF 5 self-move-to
         self-wait-done
-        stand-about-anims self-anim
-        self-wait-anim
-        step-back-anim self-anim
-        self-wait-anim
-        step-back-anim self-anim
-        self-wait-anim
-        step-back-anim self-anim
-        self-wait-anim
-        step-back-anim self-anim
-        self-wait-anim
+        stand-about-anims play-out
+        step-back-anim play-out
+        step-back-anim play-out
+        step-back-anim play-out
+        step-back-anim play-out
         fiona-who 4 self-move-slot
         self-wait-done
         stalker-who 3 stalker-command
@@ -169,25 +155,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -202.89 -6.76 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             fg-4-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -197,25 +178,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -283.8 15.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $71 message-param-room
         $71 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             fg-4-album-medallion story-flag-set
             1 effect-remove
             $71 1 item-give-count
             0 $71 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -225,12 +201,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -140.0 0.0 self-turn-to-xz
     self-wait-done
     1 ebit? not if
-        0 message   \ "Empty cages litter the area. Maybe this was some kind of kennel for keeping animals."
-        wait-message
+        0 say   \ "Empty cages litter the area. Maybe this was some kind of kennel for keeping animals."
         1 ebit-set
     else
-        1 message   \ "There are feathers and fur in the cage. For there to be this much, it must have bee..."
-        wait-message
+        1 say   \ "There are feathers and fur in the cage. For there to be this much, it must have bee..."
     then
     self-idle-or-end
 ;
@@ -239,8 +213,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    2 message   \ "This door has been boarded up."
-    wait-message
+    2 say   \ "This door has been boarded up."
     self-idle-or-end
 ;
 
@@ -249,26 +222,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     found-file-202 story-flag? not if
         0 self-turn-angle
         self-wait-done
-        4 message   \ "Such a large door... What could be on the other side?"
-        wait-message
+        4 say   \ "Such a large door... What could be on the other side?"
     else
         $1C -190.323 61.999 0 $FFFF 5 self-move-to
         self-wait-done
-        self-frames-reset
-        4 self-wait-frames
-        lean-anim self-anim
-        self-wait-anim
+        4 wait-frames
+        lean-anim play-out
         fiona-who 0 6 char-sound
         strain-anim self-anim
-        self-frames-reset
-        self-wait-16
-        let-go-push-anim self-anim
-        self-wait-anim
+        16 wait-frames
+        let-go-push-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
-        3 message   \ "The hinge is rusted solid. Try as I may, I can't open this door."
-        wait-message
+        7 wait-frames
+        3 say   \ "The hinge is rusted solid. Try as I may, I can't open this door."
     then
     self-idle-or-end
 ;

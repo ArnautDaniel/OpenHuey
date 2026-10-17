@@ -73,25 +73,15 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 ;
 
 : water-tower-2f-1.char-enter ( -- )   \ 0043F1A0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            4 4 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         4 4 player-camera
-    then then
+    then
     1 4 4 area-camera
     fiona-who self-is? if
         1 exit-taken? if
@@ -101,20 +91,12 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 ;
 
 : water-tower-2f-1.phase1 ( -- )   \ 0043F230
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 0 0 1 chars-area-camera
     5 1 1 1 chars-area-camera
     6 1 1 1 chars-area-camera
@@ -316,18 +298,15 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     wt2f-1-flag3 story-flag? not if
         1 water-tower-2f-1.cmd01
         4 room-motion 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        5 wait-frames
         0 part-hidden
         1 part-hidden
         2 1 object-hidden
         3 0 object-hidden
         3 0 object-anim
-        self-frames-reset
-        $19 self-wait-frames
+        $19 wait-frames
         fiona-who 1 6 char-sound
-        self-frames-reset
-        $37 self-wait-frames
+        $37 wait-frames
         fiona-who 0 6 char-sound
         self-wait-anim
         0 3 track 3 action
@@ -340,18 +319,15 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     else
         0 water-tower-2f-1.cmd01
         3 room-motion 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        5 wait-frames
         0 part-hidden
         1 part-hidden
         2 0 object-hidden
         3 1 object-hidden
         2 0 object-anim
-        self-frames-reset
-        $19 self-wait-frames
+        $19 wait-frames
         fiona-who 1 6 char-sound
-        self-frames-reset
-        $37 self-wait-frames
+        $37 wait-frames
         fiona-who 0 6 char-sound
         self-wait-anim
         0 3 track 3 action
@@ -368,19 +344,16 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 
 : water-tower-2f-1.act01 ( -- )   \ 0043F620
     $27 7 54.0 112.0 -56.0 0 0 sound
-    self-frames-reset
-    $3C self-wait-frames
+    $3C wait-frames
     begin
         4 stalker-kind-here? not $17 stalker-kind-here? not and if
             0 7 54.0 112.0 -56.0 0 0 sound
         then
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
         4 stalker-kind-here? not $17 stalker-kind-here? not and if
             1 7 54.0 112.0 -56.0 0 0 sound
         then
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
     again
 ;
 
@@ -395,10 +368,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         self-wait-done
     then
     0 self-scripted
-    begin
-        3 ebit? not while
-        yield
-    repeat
+    [: 3 ebit? ;] wait-until
     self-idle-or-end
 ;
 
@@ -466,25 +436,20 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     4.12 -18.51 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             wt2f-1-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -494,25 +459,20 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     -19.9 74.61 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $94 message-param-room
         $94 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             wt2f-1-refined-antimony story-flag-set
             1 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

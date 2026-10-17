@@ -40,15 +40,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-10.char-enter ( -- )   \ 00404040
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 -1 player-camera
-    then then
+    then
     0 1 -1 area-camera
 ;
 
@@ -182,11 +177,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     1 20.0 10.0 20.0 0.0 event-camera
     look-low-anim $A self-anim-blend
-    0 message   \ "A doll lies on display here. The owner must cherish it."
-    wait-message
+    0 say   \ "A doll lies on display here. The owner must cherish it."
     self-wait-anim
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
 ;
@@ -226,8 +219,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     7 1 item-give-count
     0 7 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
+    $8012 say   \ "You've obtained ."
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -238,25 +230,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     11.0 -58.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $61 message-param-room
         $61 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-10-beef-jerky story-flag-set
             1 effect-remove
             $61 1 item-give-count
             0 $61 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
@@ -264,8 +251,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-1f-10.act04 ( -- )   \ 00404428
     self-wait-done
     look-low-anim $A self-anim-blend
-    1 message   \ "There is no way I would even consider lying down here."
-    wait-message
+    1 say   \ "There is no way I would even consider lying down here."
     self-wait-anim
     self-idle-or-end
 ;
@@ -276,12 +262,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 10.0 10.0 0.0 2.0 event-camera
     world-frozen state-flag-set
     1 self-scripted
-    self-frames-reset
-    self-wait-16
-    2 message   \ "It's sort of like a... Let's just forget it. 'Out of sight, out of mind.' Or so they say."
-    wait-message
-    self-frames-reset
-    4 self-wait-frames
+    16 wait-frames
+    2 say   \ "It's sort of like a... Let's just forget it. 'Out of sight, out of mind.' Or so they say."
+    4 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     world-frozen state-flag-clear
     0 self-scripted
@@ -302,25 +285,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     -3.61 2.23 self-turn-to-xz
     self-wait-done
-    reach-out-anim self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    reach-out-anim play-out
+    4 wait-frames
     $93 message-param-room
     $93 $63 item-count? if
-        $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-        wait-message
+        $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
     else
         $93 1 item-give-count
         2 ebit-clear
         0 part-hidden
         0 $93 item-tab
         item-fanfare
-        $8011 message   \ "You've obtained ."
-        wait-message
+        $8011 say   \ "You've obtained ."
     then
-    reach-back-anim self-anim
-    self-wait-anim
+    reach-back-anim play-out
     self-idle-or-end
 ;
 

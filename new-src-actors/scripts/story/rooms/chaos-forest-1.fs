@@ -26,47 +26,29 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : chaos-forest-1.char-enter ( -- )   \ 0041DD90
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            3 3 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         3 3 player-camera
-    then then
+    then
     0 3 3 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
 ;
 
 : chaos-forest-1.phase1 ( -- )   \ 0041DE10
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
+    then
     found-file-247 story-flag? not if
         fiona-who 1 char-in-area? if
             0 fiona-who 0 action
         then
-    else hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
+    else player-who 1 char-in-area? player-who char-busy? not and if
             1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
-        1 exit-check
-    then then then
+        then then
     2 0 0 1 chars-area-camera
     3 1 1 1 chars-area-camera
     4 1 1 1 chars-area-camera
@@ -151,10 +133,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     3 0 char-remove
     1 track action-end
     2 ebit-set
-    begin
-        loader-done? while
-        yield
-    repeat
+    [: loader-done? ;] wait-while
     $E 3 $FF char-load
     $F 4 figure-load
     $F $44 fade
@@ -215,8 +194,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         else
             1 var-inc
         then
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     again
 ;
 
@@ -224,28 +202,21 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     -324.0 322.0 self-turn-to-xz
     self-wait-done
-    reach-out-anim self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    reach-out-anim play-out
+    4 wait-frames
     got-forest-map story-flag-set
     0 part-hidden
     $1F message-param-room
     $1F 1 item-give-count
     0 $1F item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    reach-back-anim self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    reach-back-anim play-out
     self-idle-or-end
 ;
 
 : chaos-forest-1.act03 ( -- )   \ 0041E0D0
-    begin
-        3 $1C char-loaded? not while
-        yield
-    repeat
+    [: 3 $1C char-loaded? ;] wait-until
     $19 1.0 0 bgm
     self-idle-or-end
 ;

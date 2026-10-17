@@ -21,35 +21,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-2f-9.char-enter ( -- )   \ 003F1840
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         2 2 player-camera
-    then then
+    then
     1 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         1 1 player-camera
-    then then
+    then
     2 1 1 area-camera
     fiona-who self-is? if
         c2f-9-flag1 story-flag? not if
@@ -63,27 +48,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-2f-9.phase1 ( -- )   \ 003F1930
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
+    then
     7 0 0 1 chars-area-camera
     8 1 1 1 chars-area-camera
     9 0 0 1 chars-area-camera
@@ -156,8 +129,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     yield
     camera-restart
     1 exit-prepare
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     world-held state-flag-clear
     $F $41 fade
     c2f-9-flag1 story-flag-set
@@ -171,8 +143,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     hewie-no-attack state-flag-set
     0 counter-set
     stalker-who action-end
-    self-frames-reset
-    1 self-wait-frames
+    1 wait-frames
     0 stalker-who 4 action
     1 wait-counter
     0 self-scripted
@@ -183,8 +154,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 : castle-2f-9.act02 ( -- )   \ 003F1AC0
     1 self-scripted
     hewie-no-attack state-flag-set
-    1 message   \ "What?! Y-You just attacked me. How can you be so nonchalant? Could it have been... some..."
-    wait-message
+    1 say   \ "What?! Y-You just attacked me. How can you be so nonchalant? Could it have been... some..."
     0 self-scripted
     hewie-no-attack state-flag-clear
     self-idle-or-end
@@ -192,8 +162,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-2f-9.act03 ( -- )   \ 0047A998
     begin
-        1 room-motion self-anim
-        self-wait-anim
+        1 room-motion play-out
     again
 ;
 
@@ -201,21 +170,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 self-noclip
     1 self-scripted
     self-wait-done
-    4 room-motion $14 self-anim-blend
-    self-wait-anim
+    4 room-motion $14 blend-out
     3 room-motion 7 self-anim-blend
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
+    [: 6 sound-bank-loaded? ;] wait-until
     stalker-who 0 6 char-sound
-    0 message   \ "Miss... It's cleaning time now."
-    wait-message
+    0 say   \ "Miss... It's cleaning time now."
     self-wait-anim
-    5 room-motion 7 self-anim-blend
-    self-wait-anim
-    1 room-motion $14 self-anim-blend
-    self-wait-anim
+    5 room-motion 7 blend-out
+    1 room-motion $14 blend-out
     c2f-9-flag2 story-flag-set
     1 counter-set
     ['] castle-2f-9.act03 goto

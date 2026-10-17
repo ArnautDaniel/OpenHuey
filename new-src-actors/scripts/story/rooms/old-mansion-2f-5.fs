@@ -88,25 +88,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-2f-5.char-enter ( -- )   \ 0040FA20
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 6 exit-taken? and if
-            fiona-who 6 char-to-exit
-            1 -1 player-camera
-        then
-    else hewie-who self-is? 6 exit-taken? and if
-        hewie-who 6 char-to-exit
+    player-who self-is? 6 exit-taken? and if
+        player-who 6 char-to-exit
         1 -1 player-camera
-    then then
+    then
     6 1 -1 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
@@ -293,8 +283,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         else
             1 var-inc
         then
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     again
 ;
 
@@ -307,8 +296,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-hidden state-flag-clear
     1 self-noclip
     fiona-who slide-sound 5 char-sound
-    3 room-motion $A self-anim-blend
-    self-wait-anim
+    3 room-motion $A blend-out
     0 self-noclip
     1 ebit? not if
         stalker-who action-end
@@ -363,8 +351,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             fiona-hidden state-flag-clear
             1 self-noclip
             2 room-motion 5 self-anim-blend8
-            self-frames-reset
-            5 self-wait-frames
+            5 wait-frames
             fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
@@ -392,19 +379,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     3 self-is? $22 self-is? or if
         stalker-who char-file-use
         4 stalker-who 1 char-model-op
-        0 room-motion self-anim
-        self-wait-anim
+        0 room-motion play-out
         4 stalker-who 0 char-model-op
     else
-        there-anim self-anim
-        self-wait-anim
+        there-anim play-out
     then
     1 ebit-set
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;
@@ -414,25 +396,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     10.5 -28.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om2f-5-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -442,25 +419,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     7.38 20.58 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $74 message-param-room
         $74 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om2f-5-viride-medallion story-flag-set
             1 effect-remove
             $74 1 item-give-count
             0 $74 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

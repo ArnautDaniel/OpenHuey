@@ -165,15 +165,10 @@ defer house-of-truth-1f-9.act0F
 ;
 
 : house-of-truth-1f-9.char-enter ( -- )   \ 00436D70
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
@@ -366,8 +361,7 @@ defer house-of-truth-1f-9.act0F
     1 wait-counter
     found-file-255 story-flag-set
     50 hewie-trust
-    3 message   \ "Hewie? Have you picked up the scent boy?"
-    wait-message
+    3 say   \ "Hewie? Have you picked up the scent boy?"
     self-who self-look-at
     yield
     $255 item-give
@@ -384,77 +378,59 @@ defer house-of-truth-1f-9.act0F
             hewie-who char-here? hewie-who 2 char-cond? not and stalker-who char-here? not and if
                 stalkers-stay state-flag-set
                 1 self-scripted
-                self-frames-reset
-                8 self-wait-frames
+                8 wait-frames
                 fiona-who $31 0.0 58.0 0 char-to-xz
                 1 15.0 10.0 0.0 5.0 event-camera
                 world-frozen state-flag-set
-                self-frames-reset
-                8 self-wait-frames
-                2 message   \ "I wonder if there used to be something inserted here before? There is this..."
-                wait-message
-                self-frames-reset
-                8 self-wait-frames
+                8 wait-frames
+                2 say   \ "I wonder if there used to be something inserted here before? There is this..."
+                8 wait-frames
                 world-frozen state-flag-clear
                 0 0.0 0.0 0.0 0.0 event-camera
                 fiona-who $62 -10.0 54.0 140 char-to-xz
                 ['] house-of-truth-1f-9.act02 goto
             else 0 ebit? not if
-                self-frames-reset
-                8 self-wait-frames
+                8 wait-frames
                 fiona-who $31 0.0 58.0 0 char-to-xz
                 1 15.0 10.0 0.0 5.0 event-camera
                 world-frozen state-flag-set
-                self-frames-reset
-                8 self-wait-frames
-                0 message   \ "A piece of a broken branch... Looks like something can be inserted here."
-                wait-message
-                self-frames-reset
-                8 self-wait-frames
+                8 wait-frames
+                0 say   \ "A piece of a broken branch... Looks like something can be inserted here."
+                8 wait-frames
                 world-frozen state-flag-clear
                 0 0.0 0.0 0.0 0.0 event-camera
                 0 ebit-set
             else
-                1 message   \ "There is an odd smell here. I can't put my finger on it."
-                wait-message
+                1 say   \ "There is an odd smell here. I can't put my finger on it."
             then then
         else
             0.0 65.0 self-turn-to-xz
             self-wait-done
-            self-frames-reset
-            8 self-wait-frames
+            8 wait-frames
             fiona-who $31 0.0 58.0 0 char-to-xz
             1 15.0 10.0 0.0 5.0 event-camera
             world-frozen state-flag-set
-            self-frames-reset
-            8 self-wait-frames
-            4 message   \ "So there was something inserted here before. Can you sniff it out for me?"
-            wait-message
-            self-frames-reset
-            8 self-wait-frames
+            8 wait-frames
+            4 say   \ "So there was something inserted here before. Can you sniff it out for me?"
+            8 wait-frames
             world-frozen state-flag-clear
             0 0.0 0.0 0.0 0.0 event-camera
         then
     else 0 ebit? not if
-        self-frames-reset
-        8 self-wait-frames
+        8 wait-frames
         fiona-who $31 0.0 58.0 0 char-to-xz
         1 15.0 10.0 0.0 5.0 event-camera
         world-frozen state-flag-set
-        self-frames-reset
-        8 self-wait-frames
-        5 message   \ "The whole building is moaning and groaning as if it were alive. This cane acted as..."
-        wait-message
-        self-frames-reset
-        8 self-wait-frames
+        8 wait-frames
+        5 say   \ "The whole building is moaning and groaning as if it were alive. This cane acted as..."
+        8 wait-frames
         world-frozen state-flag-clear
         0 0.0 0.0 0.0 0.0 event-camera
         0 ebit-set
     else
         0.0 65.0 self-turn-to-xz
         self-wait-done
-        7 message   \ "Something just doesn't seem right here. I'd better get out of here quick."
-        wait-message
+        7 say   \ "Something just doesn't seem right here. I'd better get out of here quick."
     then then
     self-idle-or-end
 ;
@@ -466,8 +442,7 @@ defer house-of-truth-1f-9.act0F
     self-wait-done
     0.0 65.0 self-turn-to-xz
     self-wait-done
-    sit-a-while-anim self-anim
-    self-wait-anim
+    sit-a-while-anim play-out
     fiona-who self-look-at
     yield
     hewie-bark
@@ -488,8 +463,7 @@ defer house-of-truth-1f-9.act0F
     fiona-who $2E 5 char-sound
     self-wait-anim
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     ['] house-of-truth-1f-9.act02 goto
 ;
 
@@ -653,25 +627,19 @@ defer house-of-truth-1f-9.act0F
     self-wait-done
     1 ebit? not over-music-f story-flag? not and if
         look-low-anim self-anim
-        self-frames-reset
-        $1E self-wait-frames
-        6 message   \ "If I fell in from here, I would be toast... Quite literally."
-        wait-message
+        $1E wait-frames
+        6 say   \ "If I fell in from here, I would be toast... Quite literally."
         self-wait-anim
         1 ebit-set
     else
-        7 message   \ "Something just doesn't seem right here. I'd better get out of here quick."
-        wait-message
+        7 say   \ "Something just doesn't seem right here. I'd better get out of here quick."
     then
     self-idle-or-end
 ;
 
 : house-of-truth-1f-9.act08 ( -- )   \ 00437660
     depth-range-off
-    begin
-        $21C cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $21C cutscene-cue-reached? ;] wait-until
     begin
         $2ED cutscene-cue-reached? not while
         1.0 1.0 80.0 160.0 depth-range
@@ -683,42 +651,24 @@ defer house-of-truth-1f-9.act0F
         yield
     repeat
     depth-range-off
-    begin
-        4 cutscene-shot? not while
-        yield
-    repeat
+    [: 4 cutscene-shot? ;] wait-until
     depth-range-off
     $ED door-open-clear
     doors-room-in
     $1F $72 $96 $94 $6E $60 $56 $70 $3C 0 9 effect-string
     $9EEAEAFF 0 1 screen-blend
-    begin
-        5 cutscene-shot? not while
-        yield
-    repeat
+    [: 5 cutscene-shot? ;] wait-until
     $1F $7B $32 $2A $64 $24 $2C $36 $4E 0 9 effect-string
     $8080805E 0 1 screen-blend
-    begin
-        $47E cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $47E cutscene-cue-reached? ;] wait-until
     0 0 house-of-truth-1f-9.cmd0C
     $A ebit-set
     2 6 house-of-truth-1f-9.cmd0C
-    begin
-        $492 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $492 cutscene-cue-reached? ;] wait-until
     1 2 house-of-truth-1f-9.cmd0C
-    begin
-        8 cutscene-shot? not while
-        yield
-    repeat
+    [: 8 cutscene-shot? ;] wait-until
     1 0 house-of-truth-1f-9.cmd0C
-    begin
-        0 cutscene-cue-reached? while
-        yield
-    repeat
+    [: 0 cutscene-cue-reached? ;] wait-while
     self-idle-or-end
 ;
 
@@ -811,30 +761,21 @@ defer house-of-truth-1f-9.act0F
 : house-of-truth-1f-9.act0C ( -- )   \ 00437870
     $40000002 6 -70.0 15.0 0.0 0 0 sound
     4 2 var-set
-    self-frames-reset
-    $1E self-wait-frames
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
+    $1E wait-frames
     0 house-of-truth-1f-9.cmd06
-    self-frames-reset
-    $F self-wait-frames
+    $F wait-frames
     6 ebit-set
-    self-frames-reset
-    $1E self-wait-frames
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
+    $1E wait-frames
     4 0 var-set
     2 house-of-truth-1f-9.cmd06
-    self-frames-reset
-    $F self-wait-frames
+    $F wait-frames
     6 ebit-clear
-    self-frames-reset
-    $384 self-wait-frames
+    $384 wait-frames
     4 1 var-set
-    self-frames-reset
-    $1E self-wait-frames
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
+    $1E wait-frames
     4 ebit-clear
     self-idle-or-end
 ;
@@ -842,30 +783,21 @@ defer house-of-truth-1f-9.act0F
 : house-of-truth-1f-9.act0D ( -- )   \ 004378D0
     $40000006 6 70.0 15.0 0.0 0 0 sound
     5 2 var-set
-    self-frames-reset
-    $1E self-wait-frames
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
+    $1E wait-frames
     1 house-of-truth-1f-9.cmd06
-    self-frames-reset
-    $F self-wait-frames
+    $F wait-frames
     7 ebit-set
-    self-frames-reset
-    $1E self-wait-frames
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
+    $1E wait-frames
     5 0 var-set
     3 house-of-truth-1f-9.cmd06
-    self-frames-reset
-    $F self-wait-frames
+    $F wait-frames
     7 ebit-clear
-    self-frames-reset
-    $384 self-wait-frames
+    $384 wait-frames
     5 1 var-set
-    self-frames-reset
-    $1E self-wait-frames
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
+    $1E wait-frames
     5 ebit-clear
     self-idle-or-end
 ;
@@ -900,8 +832,7 @@ defer house-of-truth-1f-9.act0F
         repeat
         7 150 var-set
     then
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     7 var-dec
     7 var-dec
     $32 chance? if

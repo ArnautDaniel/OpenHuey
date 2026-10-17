@@ -60,35 +60,20 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 ;
 
 : house-of-truth-1f-5.char-enter ( -- )   \ 00434940
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
 ;
 
@@ -282,8 +267,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    2 message   \ "You feel a mystical power flowing all throughout the door. Open the door? YES NO"
-    wait-message
+    2 say   \ "You feel a mystical power flowing all throughout the door. Open the door? YES NO"
     0 answer? if
         $F $54 fade
         $35 room-preload
@@ -296,16 +280,10 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         4 6 sound-stop
         5 6 sound-stop
         6 6 sound-stop
-        begin
-            0 adx? not while
-            yield
-        repeat
+        [: 0 adx? ;] wait-until
         1.0 sound-volume-scale
         0 0.0 $FF bgm
-        begin
-            1 adx? not while
-            yield
-        repeat
+        [: 1 adx? ;] wait-until
         $81 exit-check
     then
     stalkers-stay state-flag-clear
@@ -317,20 +295,14 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     self-wait-done
     $CA 0.0 96.99 0 $FFFF 5 self-move-to
     self-wait-done
-    self-frames-reset
-    4 self-wait-frames
-    lean-anim self-anim
-    self-wait-anim
+    4 wait-frames
+    lean-anim play-out
     strain-anim self-anim
-    self-frames-reset
-    self-wait-16
-    let-go-push-anim self-anim
-    self-wait-anim
+    16 wait-frames
+    let-go-push-anim play-out
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
-    1 message   \ "This door is closed so tightly you'd think it was welded shut. It almost as if it's sea..."
-    wait-message
+    7 wait-frames
+    1 say   \ "This door is closed so tightly you'd think it was welded shut. It almost as if it's sea..."
     self-idle-or-end
 ;
 
@@ -339,19 +311,14 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     0 self-through-exit
     self-wait-done
     in-panic? 2 game-mode? or if
-        rattle-front-slow-anim self-anim
-        self-wait-anim
+        rattle-front-slow-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
     else
-        rattle-front-anim self-anim
-        self-wait-anim
+        rattle-front-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
-        4 message   \ "It's locked and won't open. How am I going to get this open?"
-        wait-message
+        7 wait-frames
+        4 say   \ "It's locked and won't open. How am I going to get this open?"
     then
     self-idle-or-end
 ;
@@ -361,99 +328,49 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     1 self-through-exit
     self-wait-done
     in-panic? 2 game-mode? or if
-        rattle-behind-slow-anim self-anim
-        self-wait-anim
+        rattle-behind-slow-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
     else
-        rattle-behind-anim self-anim
-        self-wait-anim
+        rattle-behind-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
-        4 message   \ "It's locked and won't open. How am I going to get this open?"
-        wait-message
+        7 wait-frames
+        4 say   \ "It's locked and won't open. How am I going to get this open?"
     then
     self-idle-or-end
 ;
 
 : house-of-truth-1f-5.act05 ( -- )   \ 00434E50
-    begin
-        0 cutscene-shot? not while
-        yield
-    repeat
+    [: 0 cutscene-shot? ;] wait-until
     0 house-of-truth-1f-5.cmd01
-    begin
-        2 cutscene-shot? not while
-        yield
-    repeat
+    [: 2 cutscene-shot? ;] wait-until
     2 house-of-truth-1f-5.cmd01
-    begin
-        3 cutscene-shot? not while
-        yield
-    repeat
+    [: 3 cutscene-shot? ;] wait-until
     0 house-of-truth-1f-5.cmd01
-    begin
-        4 cutscene-shot? not while
-        yield
-    repeat
+    [: 4 cutscene-shot? ;] wait-until
     3 house-of-truth-1f-5.cmd01
-    begin
-        $1E0 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $1E0 cutscene-cue-reached? ;] wait-until
     4 house-of-truth-1f-5.cmd01
-    begin
-        7 cutscene-shot? not while
-        yield
-    repeat
+    [: 7 cutscene-shot? ;] wait-until
     2 house-of-truth-1f-5.cmd01
-    begin
-        8 cutscene-shot? not while
-        yield
-    repeat
+    [: 8 cutscene-shot? ;] wait-until
     0 house-of-truth-1f-5.cmd01
-    begin
-        9 cutscene-shot? not while
-        yield
-    repeat
+    [: 9 cutscene-shot? ;] wait-until
     2 house-of-truth-1f-5.cmd01
-    begin
-        $A cutscene-shot? not while
-        yield
-    repeat
+    [: $A cutscene-shot? ;] wait-until
     0 house-of-truth-1f-5.cmd01
-    begin
-        $B cutscene-shot? not while
-        yield
-    repeat
+    [: $B cutscene-shot? ;] wait-until
     2 house-of-truth-1f-5.cmd01
-    begin
-        $C cutscene-shot? not while
-        yield
-    repeat
+    [: $C cutscene-shot? ;] wait-until
     0 house-of-truth-1f-5.cmd01
     6 house-of-truth-1f-5.cmd01
-    begin
-        $58C cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $58C cutscene-cue-reached? ;] wait-until
     4 house-of-truth-1f-5.cmd01
-    begin
-        $D cutscene-shot? not while
-        yield
-    repeat
+    [: $D cutscene-shot? ;] wait-until
     2 house-of-truth-1f-5.cmd01
-    begin
-        $E cutscene-shot? not while
-        yield
-    repeat
+    [: $E cutscene-shot? ;] wait-until
     0 house-of-truth-1f-5.cmd01
-    begin
-        $65E cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $65E cutscene-cue-reached? ;] wait-until
     1 334 var-set
     begin
         0 cutscene-cue-reached? while
@@ -466,8 +383,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 : house-of-truth-1f-5.act06 ( -- )   \ 00434F10
     self-wait-done
     rest-anim self-anim
-    5 message   \ "I have to get out of here now!"
-    wait-message
+    5 say   \ "I have to get out of here now!"
     self-wait-anim
     self-idle-or-end
 ;
@@ -504,10 +420,8 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 : house-of-truth-1f-5.act08 ( -- )   \ 00434FC8
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    self-wait-16
-    3 message   \ "This time... you really are dead. You bastard."
-    wait-message
+    16 wait-frames
+    3 say   \ "This time... you really are dead. You bastard."
     self-wait-anim
     self-idle-or-end
 ;

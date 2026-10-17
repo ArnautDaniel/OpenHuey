@@ -14,25 +14,15 @@ USING: room-names story.words story.shared flag-names fiona.anims ;
 ;
 
 : castle-2f-10.char-enter ( -- )   \ 004143B0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
 ;
 
@@ -89,20 +79,14 @@ USING: room-names story.words story.shared flag-names fiona.anims ;
 : castle-2f-10.act00 ( -- )   \ 004144C0
     stalkers-stay state-flag-set
     1 self-scripted
-    begin
-        fiona-who char-busy? not while
-        yield
-    repeat
-    let-go-push-anim 0 self-anim-blend
-    self-wait-anim
+    [: fiona-who char-busy? ;] wait-until
+    let-go-push-anim 0 blend-out
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     0.0 0.0 self-turn-to-xz
     self-wait-done
     rest-anim self-anim
-    self-frames-reset
-    $3C self-wait-frames
+    $3C wait-frames
     $F $44 fade
     1 1 movie-play
     0 cutscene-start

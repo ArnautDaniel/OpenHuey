@@ -58,15 +58,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : house-of-truth-1f-2.char-enter ( -- )   \ 00432DF0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            6 6 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         6 6 player-camera
-    then then
+    then
     0 6 6 area-camera
     fiona-who self-is? if
         $FE exit-taken? if
@@ -248,12 +243,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $117 0.0 -1.1 0 $FFFF 5 self-move-to
         self-wait-done
         1 25.0 10.0 0.0 0.0 event-camera
-        0 message   \ "I hope this water is pure..."
-        wait-message
+        0 say   \ "I hope this water is pure..."
         fiona-who char-file-use
         4 room-motion $A self-anim-blend
-        self-frames-reset
-        $16 self-wait-frames
+        $16 wait-frames
         fiona-who 1 6 char-sound
         self-wait-anim
         $E4 panic-calm-in
@@ -261,23 +254,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         3 avoid-prompt
         0 ebit-set
         fiona-who $84 5 char-sound
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
         got-doc-recovery story-flag? not if
             $F 6 fade
             wait-fade
-            $40A8 message   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
-            wait-message
+            $40A8 say   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
             $F 7 fade
             wait-fade
             got-doc-recovery story-flag-set
             $A8 message-param-room
             $A8 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
-            $801B message   \ "has been saved to your file."
-            wait-message
-            self-frames-reset
-            4 self-wait-frames
+            $801B say   \ "has been saved to your file."
+            4 wait-frames
         then
         0 0.0 0.0 0.0 0.0 event-camera
         stalkers-stay state-flag-clear
@@ -286,8 +275,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         self-wait-done
         0.0 5.0 self-turn-to-xz
         self-wait-done
-        1 message   \ "Ah, that tasted good."
-        wait-message
+        1 say   \ "Ah, that tasted good."
     then
     self-idle-or-end
 ;
@@ -298,10 +286,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     -60.0 55.0 self-turn-to-xz
     self-wait-done
-    look-close-anim $A self-anim-blend
-    self-wait-anim
-    2 message   \ "Unsettling sounds and smells waft forth from the eerie hole. Enter the hole? YES NO"
-    wait-message
+    look-close-anim $A blend-out
+    2 say   \ "Unsettling sounds and smells waft forth from the eerie hole. Enter the hole? YES NO"
     0 answer? if
         $F 0 fade
         wait-fade
@@ -345,25 +331,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -33.17 33.19 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $95 message-param-room
         $95 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             ht1f-2-refined-magnesia story-flag-set
             0 effect-remove
             $95 1 item-give-count
             0 $95 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -373,25 +354,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -0.4 -123.2 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $94 message-param-room
         $94 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             ht1f-2-refined-antimony story-flag-set
             1 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -401,25 +377,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     35.0 33.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $98 message-param-room
         $98 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             ht1f-2-prima-magnesia story-flag-set
             2 effect-remove
             $98 1 item-give-count
             0 $98 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -428,11 +399,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    turn-round-anim self-anim
-    self-wait-anim
+    turn-round-anim play-out
     -1 self-idle-anim
-    3 message   \ "If I went back I'm sure I would get lost. Better to keep moving forward."
-    wait-message
+    3 say   \ "If I went back I'm sure I would get lost. Better to keep moving forward."
     self-idle-or-end
 ;
 

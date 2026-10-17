@@ -12,45 +12,25 @@ USING: room-names story.words story.shared story-names fiona.anims ;
 ;
 
 : old-mansion-1f-18.char-enter ( -- )   \ 00424890
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         1 1 player-camera
-    then then
+    then
     2 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         1 1 player-camera
-    then then
+    then
     3 1 1 area-camera
 ;
 
@@ -167,15 +147,12 @@ USING: room-names story.words story.shared story-names fiona.anims ;
         self-wait-done
     then then then
     look-low-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     red-painting-examined story-flag? not if
         red-painting-examined story-flag-set
-        0 message   \ "Why would someone intentionally paint this completely red?"
-        wait-message
+        0 say   \ "Why would someone intentionally paint this completely red?"
     else
-        1 message   \ "Something smells... like something living. Certainly that is really just red paint..."
-        wait-message
+        1 say   \ "Something smells... like something living. Certainly that is really just red paint..."
     then
     self-idle-or-end
 ;

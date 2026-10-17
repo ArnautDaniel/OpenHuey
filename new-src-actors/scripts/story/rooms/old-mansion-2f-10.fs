@@ -29,35 +29,20 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 ;
 
 : old-mansion-2f-10.char-enter ( -- )   \ 0041B1B0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 2 player-camera
-    then then
+    then
     0 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
 ;
 
@@ -166,25 +151,20 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
     -10.5 -0.4 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $9B message-param-room
         $9B $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om2f-10-weeping-stone story-flag-set
             0 effect-remove
             $9B 1 item-give-count
             0 $9B item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -199,15 +179,12 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
         self-wait-done
     then
     look-at-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     0 ebit? not if
         0 ebit-set
-        0 message   \ "A bronze statue with a cow-like head. My Greek mythology is kind of rusty, but I th..."
-        wait-message
+        0 say   \ "A bronze statue with a cow-like head. My Greek mythology is kind of rusty, but I th..."
     else
-        1 message   \ "It looks like it could come to life at any second."
-        wait-message
+        1 say   \ "It looks like it could come to life at any second."
     then
     self-wait-anim
     self-idle-or-end

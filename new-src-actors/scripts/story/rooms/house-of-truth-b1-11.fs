@@ -8,43 +8,25 @@ USING: room-names story.words story.shared story-names floor-flags stalker.anims
 : house-of-truth-b1-11.cmd00 ( -- )  slam-shake ;
 
 : house-of-truth-b1-11.char-enter ( -- )   \ 00443560
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         1 1 player-camera
-    then then
+    then
     2 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         1 1 player-camera
-    then then
+    then
     3 1 1 area-camera
 ;
 
 : house-of-truth-b1-11.phase1 ( -- )   \ 004435E0
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
+    then
     fiona-who 6 char-entered-area? if
         2 exit-prepare
     then
@@ -95,8 +77,7 @@ USING: room-names story.words story.shared story-names floor-flags stalker.anims
 : house-of-truth-b1-11.act00 ( -- )   \ 004436B0
     1 self-scripted
     self-wait-done
-    $1304 self-anim
-    self-wait-anim
+    $1304 play-out
     htb1-11-flag1 story-flag-set
     0 ebit-clear
     stalker-who action-end
@@ -111,8 +92,7 @@ USING: room-names story.words story.shared story-names floor-flags stalker.anims
     self-who 0 char-visible
     stalker-who $136 0 char-to-tri-facing
     stalker-who 1 1 char-camera
-    look-about-3-anim 0 self-anim-blend
-    self-wait-anim
+    look-about-3-anim 0 blend-out
     stalker-who 0 stalker-command
     1 ebit-clear
     htb1-11-flag2 story-flag-set
@@ -123,8 +103,7 @@ USING: room-names story.words story.shared story-names floor-flags stalker.anims
 : house-of-truth-b1-11.act02 ( -- )   \ 004436F8
     1 self-scripted
     self-wait-done
-    $1304 self-anim
-    self-wait-anim
+    $1304 play-out
     self-who 1 char-visible
     ['] house-of-truth-b1-11.act01 goto
 ;

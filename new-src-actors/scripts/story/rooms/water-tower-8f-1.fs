@@ -108,15 +108,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : water-tower-8f-1.char-enter ( -- )   \ 0042F590
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
 ;
 
@@ -343,13 +338,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     0 water-tower-8f-1.cmd00
     1 water-tower-8f-1.cmd00
     hewie.anims:stand-anim 8 self-anim-blend
-    self-frames-reset
-    8 self-wait-frames
-    lie-down-anim self-anim
-    self-wait-anim
+    8 wait-frames
+    lie-down-anim play-out
     lie-anim $A self-anim-blend
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     0 ebit-set
     begin
         1 ebit? not 2 ebit? not and while
@@ -521,17 +513,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     c7-second-event story-flag? not if
         1 self-scripted
         1 self-noclip
-        self-frames-reset
-        8 self-wait-frames
+        8 wait-frames
         world-frozen state-flag-set
         fiona-who $36 0.0 33.0 180 char-to-xz
         1 10.0 60.0 0.0 5.0 event-camera
-        self-frames-reset
-        8 self-wait-frames
-        4 message   \ "Wow. I've never seen anything like this before... Looks like some kind of diorama o..."
-        wait-message
-        self-frames-reset
-        8 self-wait-frames
+        8 wait-frames
+        4 say   \ "Wow. I've never seen anything like this before... Looks like some kind of diorama o..."
+        8 wait-frames
         0 0.0 0.0 0.0 0.0 event-camera
         world-frozen state-flag-clear
         0 self-scripted
@@ -540,25 +528,20 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     else $A4 1 item-count? if
         1 self-scripted
         1 self-noclip
-        self-frames-reset
-        8 self-wait-frames
+        8 wait-frames
         world-frozen state-flag-set
         fiona-who $D2 -0.95 33.0 180 char-to-xz
         1 2.0 50.0 0.0 5.0 event-camera
-        self-frames-reset
-        8 self-wait-frames
-        $A message   \ "So... the 'magisterium' listed in the memo... was actually referring to this minia..."
-        wait-message
-        self-frames-reset
-        8 self-wait-frames
+        8 wait-frames
+        $A say   \ "So... the 'magisterium' listed in the memo... was actually referring to this minia..."
+        8 wait-frames
         0 0.0 0.0 0.0 0.0 event-camera
         world-frozen state-flag-clear
         0 self-scripted
         0 self-noclip
         fiona-who $9D 0.0 41.0 180 char-to-xz
     else
-        $B message   \ "So the miniature was the activation switch?"
-        wait-message
+        $B say   \ "So the miniature was the activation switch?"
     then then
     self-idle-or-end
 ;
@@ -622,13 +605,11 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     1 self-scripted
     1 self-noclip
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     world-frozen state-flag-set
     fiona-who $36 0.0 33.0 180 char-to-xz
     1 10.0 60.0 0.0 5.0 event-camera
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     0 water-tower-8f-1.cmd02
     5 message   \ "Choose a location to set the model in. ?:USE ?:CANCEL"
     begin
@@ -646,8 +627,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
                 $25 partner-load
                 5 message-close
                 2 water-tower-8f-1.cmd02
-                self-frames-reset
-                $1E self-wait-frames
+                $1E wait-frames
                 6 ebit? if
                     ['] water-tower-8f-1.act07 goto
                 then
@@ -662,8 +642,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             $2C $85 0.0 0.0 0.0 0 0 sound
             5 message-close
             2 water-tower-8f-1.cmd02
-            self-frames-reset
-            $1E self-wait-frames
+            $1E wait-frames
             6 ebit? if
                 ['] water-tower-8f-1.act07 goto
             then
@@ -726,8 +705,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             wt8f-1-flag4 story-flag-set
         then
     then then then
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     self-idle-or-end
 ;
 
@@ -741,8 +719,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     fiona-who $2F 5 char-sound
     self-wait-anim
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     ['] water-tower-8f-1.act01 goto
 ;
 
@@ -790,10 +767,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : water-tower-8f-1.act0B ( -- )   \ 00430330
     0 water-tower-8f-1.cmd03
-    begin
-        $4F5 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $4F5 cutscene-cue-reached? ;] wait-until
     begin
         $523 cutscene-cue-reached? not while
         2 water-tower-8f-1.cmd03
@@ -805,10 +779,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : water-tower-8f-1.act0C ( -- )   \ 00430350
     0 water-tower-8f-1.cmd03
-    begin
-        $1A cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $1A cutscene-cue-reached? ;] wait-until
     begin
         $38 cutscene-cue-reached? not while
         3 water-tower-8f-1.cmd03
@@ -819,19 +790,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : water-tower-8f-1.act0D ( -- )   \ 00430370
-    begin
-        0 cutscene-shot? not while
-        yield
-    repeat
+    [: 0 cutscene-shot? ;] wait-until
     begin
         $E8 cutscene-cue-reached? not while
         $3E sprites-additive
         yield
     repeat
-    begin
-        $E9 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $E9 cutscene-cue-reached? ;] wait-until
     begin
         $11C cutscene-cue-reached? not while
         $29 sprites-additive
@@ -842,24 +807,20 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : water-tower-8f-1.act0E ( -- )   \ 0047ADE8
     self-wait-done
-    6 message   \ "This wall is in really bad shape. It looks like it might break if a strong force impact..."
-    wait-message
+    6 say   \ "This wall is in really bad shape. It looks like it might break if a strong force impact..."
     self-idle-or-end
 ;
 
 : water-tower-8f-1.act0F ( -- )   \ 004303A0
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     7 ebit? not if
         7 ebit-set
-        7 message   \ "If I fell from here... it would be all over. Come on, Fiona... Best to just keep it..."
-        wait-message
+        7 say   \ "If I fell from here... it would be all over. Come on, Fiona... Best to just keep it..."
     else
         7 ebit-clear
-        8 message   \ "A path has appeared on the surface of the lake. If I can just cross over that path..."
-        wait-message
+        8 say   \ "A path has appeared on the surface of the lake. If I can just cross over that path..."
     then
     self-wait-anim
     self-idle-or-end
@@ -867,16 +828,12 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : water-tower-8f-1.act10 ( -- )   \ 0047ADF0
     self-wait-done
-    $C message   \ "If I try this out again and seal off my escape route I'd have no one to blame but myse..."
-    wait-message
+    $C say   \ "If I try this out again and seal off my escape route I'd have no one to blame but myse..."
     self-idle-or-end
 ;
 
 : water-tower-8f-1.act11 ( -- )   \ 004303C0
-    begin
-        4 cutscene-shot? not while
-        yield
-    repeat
+    [: 4 cutscene-shot? ;] wait-until
     0 water-tower-8f-1.cmd05
     self-idle-or-end
 ;
@@ -894,10 +851,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         self-wait-done
     then then then
     look-low-anim self-anim
-    self-frames-reset
-    self-wait-16
-    9 message   \ "There is a small hole... It looks just big enough for Hewie to fit in."
-    wait-message
+    16 wait-frames
+    9 say   \ "There is a small hole... It looks just big enough for Hewie to fit in."
     self-wait-anim
     self-idle-or-end
 ;

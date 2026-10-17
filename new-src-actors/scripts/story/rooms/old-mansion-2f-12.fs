@@ -87,25 +87,15 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : old-mansion-2f-12.char-enter ( -- )   \ 00437F50
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            3 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         3 -1 player-camera
-    then then
+    then
     0 3 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 -1 player-camera
-    then then
+    then
     1 1 -1 area-camera
 ;
 
@@ -113,13 +103,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 2 1 1 chars-area-camera
     5 3 -1 1 chars-area-camera
     6 0 0 1 chars-area-camera
@@ -245,23 +231,17 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     $7F -103.0 -75.0 -90 $FFFF 5 self-move-to
     self-wait-done
     fiona-who 4 6 char-sound
-    self-frames-reset
-    $78 self-wait-frames
-    look-close-anim self-anim
-    self-wait-anim
-    6 message   \ "Its composition has changed!"
-    wait-message
-    reach-out-anim self-anim
-    self-wait-anim
+    $78 wait-frames
+    look-close-anim play-out
+    6 say   \ "Its composition has changed!"
+    reach-out-anim play-out
     $A item-use
     $B message-param-room
     $B 1 item-give-count
     0 $B item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    reach-back-anim self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    reach-back-anim play-out
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -273,32 +253,23 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     5 ebit? not 2 game-mode? or in-panic? or if
         in-panic? 2 game-mode? or if
-            rattle-front-slow-anim self-anim
-            self-wait-anim
+            rattle-front-slow-anim play-out
             -1 self-idle-anim
-            self-frames-reset
-            7 self-wait-frames
+            7 wait-frames
         else
-            rattle-front-anim self-anim
-            self-wait-anim
+            rattle-front-anim play-out
             -1 self-idle-anim
-            self-frames-reset
-            7 self-wait-frames
-            9 message   \ "It's locked. I can't open it... Now how am I going to get this open?"
-            wait-message
+            7 wait-frames
+            9 say   \ "It's locked. I can't open it... Now how am I going to get this open?"
         then
         5 ebit-set
     else
-        crouch-down-anim self-anim
-        self-wait-anim
+        crouch-down-anim play-out
         crouching-anim self-anim
-        $A message   \ "Water is spilling out from the edge of the door frame. The room on the other side..."
-        wait-message
-        crouch-up-anim self-anim
-        self-wait-anim
+        $A say   \ "Water is spilling out from the edge of the door frame. The room on the other side..."
+        crouch-up-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
         5 ebit-clear
     then
     self-idle-or-end
@@ -309,8 +280,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     1 self-scripted
     self-wait-done
     om2f-12-flag1 story-flag? not if
-        1 message   \ "There's a dial connected to what looks like a water pipe... Operate the dial? YES NO"
-        wait-message
+        1 say   \ "There's a dial connected to what looks like a water pipe... Operate the dial? YES NO"
         0 answer? if
             fiona-who $4B 293.136 -95.0 180 char-to-xz
             world-frozen state-flag-set
@@ -347,22 +317,18 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             4 ebit? if
                 2 6 318.0 12.0 -80.0 0 0 sound
                 1 $FF $D2 rumble
-                rest-anim self-anim
-                self-wait-anim
+                rest-anim play-out
                 fiona.anims:stand-anim self-anim
-                self-frames-reset
-                $32 self-wait-frames
+                $32 wait-frames
                 318.0 10.0 -80.0 self-look-at-point
                 yield
                 $72 5 318.0 12.0 -80.0 0 0 sound
                 $74 door-unlock
                 $62 door-unlock
                 om2f-12-flag1 story-flag-set
-                self-frames-reset
-                $1E self-wait-frames
+                $1E wait-frames
                 fiona-who 3 6 char-sound
-                self-frames-reset
-                $5A self-wait-frames
+                $5A wait-frames
                 self-who self-look-at
                 yield
             else om1f-14-flag1 story-flag? if
@@ -372,8 +338,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             $23B item-give
         then then
     else
-        7 message   \ "There's a device for draining water here."
-        wait-message
+        7 say   \ "There's a device for draining water here."
     then
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -389,15 +354,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     1 ebit? not if
         $F 6 fade
         wait-fade
-        3 message   \ "Synthesizer By separating the platinum half-piece and then synthesizing it with the..."
-        wait-message
+        3 say   \ "Synthesizer By separating the platinum half-piece and then synthesizing it with the..."
         1 ebit-set
         $F 7 fade
         wait-fade
     else
         hand-to-mouth-anim $A self-anim-blend
-        4 message   \ "A synthesizer? What a peculiar device. It appears you can insert an item here..."
-        wait-message
+        4 say   \ "A synthesizer? What a peculiar device. It appears you can insert an item here..."
         self-wait-anim
         1 ebit-clear
     then
@@ -414,47 +377,37 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     $7F -103.0 -75.0 -90 $FFFF 5 self-move-to
     self-wait-done
     fiona-who 4 6 char-sound
-    self-frames-reset
-    $78 self-wait-frames
-    look-close-anim self-anim
-    self-wait-anim
-    reach-out-anim self-anim
-    self-wait-anim
+    $78 wait-frames
+    look-close-anim play-out
+    reach-out-anim play-out
     1 8 var? if
         8 message-param-room
         0 8 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     else 1 9 var? if
         9 message-param-room
         0 9 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     else 1 11 var? if
         $B message-param-room
         0 $B item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     else 1 12 var? if
         $C message-param-room
         0 $C item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     else 1 16 var? if
         $10 message-param-room
         0 $10 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     then then then then then
-    reach-back-anim self-anim
-    self-wait-anim
-    5 message   \ "No transformation occurred. I guess it didn't work. Maybe I should try a different item?"
-    wait-message
+    reach-back-anim play-out
+    5 say   \ "No transformation occurred. I guess it didn't work. Maybe I should try a different item?"
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -465,25 +418,20 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     82.73 -85.2 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $91 message-param-room
         $91 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om2f-12-antimony-powder story-flag-set
             0 effect-remove
             $91 1 item-give-count
             0 $91 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -493,10 +441,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     -69.5 -46.5 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    8 message   \ "There are books spread out on the table. They seem to pertain to complex formulas, but..."
-    wait-message
+    $28 wait-frames
+    8 say   \ "There are books spread out on the table. They seem to pertain to complex formulas, but..."
     self-wait-anim
     self-idle-or-end
 ;

@@ -87,45 +87,25 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-4.char-enter ( -- )   \ 003F5FC0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         0 0 player-camera
-    then then
+    then
     3 0 0 area-camera
     fiona-who self-is? if
         got-castle-sketch story-flag? c2f-3-flag1 story-flag? not and if
@@ -177,13 +157,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 exit-usable? if
         2 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
+    then
     $B 1 1 1 chars-area-camera
     $C 0 0 1 chars-area-camera
     hewie-found-in-wire story-flag? found-file-208 story-flag? not and if
@@ -420,15 +396,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 self-scripted
     1 20.0 -10.0 0.0 0.0 event-camera
     0 ebit? not if
-        $F message   \ "What? There's no knob... Now what do I do? Wait... There is a hook here... Maybe i..."
-        wait-message
+        $F say   \ "What? There's no knob... Now what do I do? Wait... There is a hook here... Maybe i..."
         0 ebit-set
     else
-        $10 message   \ "The words 'Pupa Cella' are written here... Puppet room... I believe that is what..."
-        wait-message
+        $10 say   \ "The words 'Pupa Cella' are written here... Puppet room... I believe that is what..."
     then
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     world-frozen state-flag-clear
     0 self-scripted
     0 0.0 0.0 0.0 0.0 event-camera
@@ -439,32 +412,25 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-1f-4.act03 ( -- )   \ 003F6640
     self-wait-done
     2 ebit? not if
-        $16 message   \ "Why in the world is there a chair here?"
-        wait-message
+        $16 say   \ "Why in the world is there a chair here?"
         $C1 0.0 -84.0 0 $FFFF 5 self-move-to
         self-wait-done
-        $18 message   \ "This is just a normal chair, right?"
-        wait-message
+        $18 say   \ "This is just a normal chair, right?"
         2 ebit-set
     else
-        $17 message   \ "Doesn't make much sense to me... Not that anything in this place does."
-        wait-message
+        $17 say   \ "Doesn't make much sense to me... Not that anything in this place does."
     then
     self-idle-or-end
 ;
 
 : castle-1f-4.act04 ( -- )   \ 003F6670
     self-wait-done
-    crouch-down-anim self-anim
-    self-wait-anim
+    crouch-down-anim play-out
     crouching-anim self-anim
-    self-frames-reset
-    self-wait-16
-    crouch-up-anim self-anim
-    self-wait-anim
+    16 wait-frames
+    crouch-up-anim play-out
     -1 self-idle-anim
-    $15 message   \ "There is something strange about this part of the floor."
-    wait-message
+    $15 say   \ "There is something strange about this part of the floor."
     self-idle-or-end
 ;
 
@@ -501,15 +467,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-4.act06 ( -- )   \ 003F6750
-    begin
-        fiona-who char-busy? not while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-until
     strain-anim 0 self-anim-blend
-    self-frames-reset
-    self-wait-16
-    let-go-push-anim self-anim
-    self-wait-anim
+    16 wait-frames
+    let-go-push-anim play-out
     1 ebit? not if
         $11 message   \ "It won't open. Maybe I need a key or something?"
         1 ebit-set
@@ -517,24 +478,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $12 message   \ "No luck. Could this be some strange puzzle or just another weird contraption?"
     then
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     wait-message
     self-idle-or-end
 ;
 
 : castle-1f-4.act07 ( -- )   \ 003F6780
     self-wait-done
-    self-frames-reset
-    $19 self-wait-frames
+    $19 wait-frames
     $5A threat-raise
     1 $FF 8 rumble
     fiona-who seized-sound 5 char-sound
-    startled-anim self-anim
-    self-wait-anim
+    startled-anim play-out
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     self-idle-or-end
 ;
 
@@ -544,10 +501,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who 9 6 char-sound
     0 139.0 -9.0 91.5 0 0 0 0 dust
     0 139.0 -9.0 94.5 0 0 0 0 dust
-    begin
-        fiona-free? not while
-        yield
-    repeat
+    [: fiona-free? ;] wait-until
     2 var-inc
     6 ebit-clear
     self-idle-or-end
@@ -556,11 +510,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-1f-4.act09 ( -- )   \ 003F67E0
     self-wait-done
     c1f-4-flag4 story-flag? not if
-        $13 message   \ "The wall looks weak here. Maybe if I hit it hard enough I can break through it?"
-        wait-message
+        $13 say   \ "The wall looks weak here. Maybe if I hit it hard enough I can break through it?"
     else
-        $14 message   \ "Bugs? Yuck! I hate bugs! Why me?"
-        wait-message
+        $14 say   \ "Bugs? Yuck! I hate bugs! Why me?"
     then
     self-idle-or-end
 ;
@@ -594,8 +546,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 message   \ "What's that noise? I swear I just heard something..."
     self-wait-anim
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     wait-message
     scene-locked state-flag-clear
     subscreen-locked state-flag-clear
@@ -607,21 +558,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-1f-4.act0C ( -- )   \ 003F6850
     self-wait-done
     1 ebit? not if
-        $11 message   \ "It won't open. Maybe I need a key or something?"
-        wait-message
+        $11 say   \ "It won't open. Maybe I need a key or something?"
         1 ebit-set
     else
-        $12 message   \ "No luck. Could this be some strange puzzle or just another weird contraption?"
-        wait-message
+        $12 say   \ "No luck. Could this be some strange puzzle or just another weird contraption?"
     then
     self-idle-or-end
 ;
 
 : castle-1f-4.act0D ( -- )   \ 003F6870
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
+    [: 6 sound-bank-loaded? ;] wait-until
     c1f-4-flag2 story-flag-set
     broken-marionette-used story-flag? not if
         $40000003 6 -72.0 10.0 15.0 0 0 sound
@@ -632,8 +578,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         begin
             1 0 var? not c1f-4-flag1 story-flag? not and while
             1 var-dec
-            self-frames-reset
-            1 self-wait-frames
+            1 wait-frames
         repeat
         c1f-4-flag1 story-flag? not if
             broken-marionette-used story-flag? not if
@@ -649,8 +594,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         begin
             1 24 var? not c1f-4-flag1 story-flag? and while
             1 var-inc
-            self-frames-reset
-            3 self-wait-frames
+            3 wait-frames
         repeat
         c1f-4-flag1 story-flag? if
             broken-marionette-used story-flag? not if
@@ -671,24 +615,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     65.0 107.0 self-turn-to-xz
     self-wait-done
     2 ebit? if
-        2 message   \ "The design and type are identical to the previous chair. They are probably from the..."
-        wait-message
+        2 say   \ "The design and type are identical to the previous chair. They are probably from the..."
     else
-        3 message   \ "Your average, run-of-the-mill chair. No unique markings that differentiate this fro..."
-        wait-message
+        3 say   \ "Your average, run-of-the-mill chair. No unique markings that differentiate this fro..."
     then
     self-idle-or-end
 ;
 
 : castle-1f-4.act0F ( -- )   \ 003F6980
-    self-frames-reset
-    $29 self-wait-frames
+    $29 wait-frames
     $4000000B 6 120.0 -10.0 92.0 0 0 sound
-    self-frames-reset
-    $2E self-wait-frames
+    $2E wait-frames
     $4000000B 6 120.0 -10.0 92.0 0 0 sound
-    self-frames-reset
-    $25 self-wait-frames
+    $25 wait-frames
     $4000000B 6 120.0 -10.0 92.0 0 0 sound
     c1f-4-refined-antimony story-flag? not if
         1 140.0 -9.0 94.0 flicker-sprite
@@ -702,39 +641,28 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     140.0 94.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $94 message-param-room
         $94 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-4-refined-antimony story-flag-set
             1 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
 
 : castle-1f-4.act11 ( -- )   \ 003F6A40
-    begin
-        $F cutscene-shot? not while
-        yield
-    repeat
+    [: $F cutscene-shot? ;] wait-until
     stalker-who 1 char-no-shadow
-    begin
-        $10 cutscene-shot? not while
-        yield
-    repeat
+    [: $10 cutscene-shot? ;] wait-until
     stalker-who 0 char-no-shadow
     begin
         $17 cutscene-shot? if
@@ -750,20 +678,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     131.392 147.223 self-turn-to-xz
     self-wait-done
-    pick-up-anim self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    pick-up-anim play-out
+    4 wait-frames
     got-cracked-plate-key story-flag-set
     4 part-hidden
     $12 message-param-room
     $12 1 item-give-count
     0 $12 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    up-from-pick-anim self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    up-from-pick-anim play-out
     self-idle-or-end
 ;
 
@@ -772,19 +696,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 self-through-exit
     self-wait-done
     in-panic? 2 game-mode? or if
-        rattle-behind-slow-anim self-anim
-        self-wait-anim
+        rattle-behind-slow-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
     else
-        rattle-behind-anim self-anim
-        self-wait-anim
+        rattle-behind-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
-        6 message   \ "Darn! The door is locked. Now how I am going to get this open?"
-        wait-message
+        7 wait-frames
+        6 say   \ "Darn! The door is locked. Now how I am going to get this open?"
     then
     self-idle-or-end
 ;
@@ -795,21 +714,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $10F 120.5 153.0 -90 $FFFF 5 self-move-to
     self-wait-done
-    self-frames-reset
-    4 self-wait-frames
-    reach-out-anim self-anim
-    self-wait-anim
+    4 wait-frames
+    reach-out-anim play-out
     fiona-who $C 6 char-sound
     5 part-shown
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     fiona-who $72 5 char-sound
     8 door-unlock
     reach-back-anim self-anim
     130.0 -20.0 170.0 self-look-at-point
     yield
-    self-frames-reset
-    $3C self-wait-frames
+    $3C wait-frames
     self-who self-look-at
     yield
     self-wait-anim
@@ -826,14 +741,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 self-scripted
     1 15.0 -10.0 0.0 0.0 event-camera
     8 door-locked? if
-        4 message   \ "What could this be used for? There appears to be a slot of sorts. Could this be som..."
-        wait-message
+        4 say   \ "What could this be used for? There appears to be a slot of sorts. Could this be som..."
     else
-        5 message   \ "The plate-key is locked into place."
-        wait-message
+        5 say   \ "The plate-key is locked into place."
     then
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     world-frozen state-flag-clear
     0 self-scripted
     0 0.0 0.0 0.0 0.0 event-camera
@@ -844,16 +756,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $10F 120.5 153.0 -90 $FFFF 5 self-move-to
     self-wait-done
-    self-frames-reset
-    4 self-wait-frames
-    reach-out-anim self-anim
-    self-wait-anim
-    self-frames-reset
-    self-wait-16
-    reach-back-anim self-anim
-    self-wait-anim
-    7 message   \ "Looks like this isn't enough... I will need to re-forge this plate-key to be able to us..."
-    wait-message
+    4 wait-frames
+    reach-out-anim play-out
+    16 wait-frames
+    reach-back-anim play-out
+    7 say   \ "Looks like this isn't enough... I will need to re-forge this plate-key to be able to us..."
     self-idle-or-end
 ;
 
@@ -861,28 +768,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $10F 120.5 153.0 -90 $FFFF 5 self-move-to
     self-wait-done
-    self-frames-reset
-    4 self-wait-frames
-    reach-out-anim self-anim
-    self-wait-anim
+    4 wait-frames
+    reach-out-anim play-out
     fiona-who $C 6 char-sound
-    self-frames-reset
-    self-wait-16
-    reach-back-anim self-anim
-    self-wait-anim
-    self-frames-reset
-    $1E self-wait-frames
-    8 message   \ "Nothing happened..."
-    wait-message
+    16 wait-frames
+    reach-back-anim play-out
+    $1E wait-frames
+    8 say   \ "Nothing happened..."
     self-idle-or-end
 ;
 
 : castle-1f-4.act18 ( -- )   \ 003F6C10
     0 castle-1f-4.cmd04
-    begin
-        1 cutscene-shot? not while
-        yield
-    repeat
+    [: 1 cutscene-shot? ;] wait-until
     1 castle-1f-4.cmd04
     self-idle-or-end
 ;
@@ -961,20 +859,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     137.0 -10.0 95.0 0 -2145378272 1 0.0 shards-at
     castle-1f-4.cmd02
     0 1 track $F action
-    begin
-        fiona-free? not while
-        yield
-    repeat
+    [: fiona-free? ;] wait-until
     0 fiona-who 7 action
     self-idle-or-end
 ;
 
 : castle-1f-4.act1C ( -- )   \ 003F6E50
     fiona-who slam-sound 5 char-sound
-    begin
-        fiona-free? not while
-        yield
-    repeat
+    [: fiona-free? ;] wait-until
     0 fiona-who $C action
     self-idle-or-end
 ;

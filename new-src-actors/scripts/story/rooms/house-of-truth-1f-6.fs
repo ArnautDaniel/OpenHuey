@@ -46,15 +46,10 @@ defer house-of-truth-1f-6.act02
 ;
 
 : house-of-truth-1f-6.char-enter ( -- )   \ 00435080
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
     fiona-who self-is? if
         over-music-e story-flag? not if
@@ -227,30 +222,20 @@ defer house-of-truth-1f-6.act02
     $E9 door-lock
     doors-room-in
     fiona-who seized-sound 5 char-sound
-    look-behind-anim 3 self-anim-blend
-    self-wait-anim
+    look-behind-anim 3 blend-out
     0 self-through-exit
     self-wait-done
     rattle-behind-slow-anim self-anim
-    self-frames-reset
-    self-wait-16
-    begin
-        0 adx? not while
-        yield
-    repeat
+    16 wait-frames
+    [: 0 adx? ;] wait-until
     1 message   \ "You've been very naughty, Fiona. You are causing me much grief."
     0 0.0 $FF bgm
     self-wait-anim
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
-    rest-anim $A self-anim-blend
-    self-wait-anim
+    7 wait-frames
+    rest-anim $A blend-out
     wait-message
-    begin
-        1 adx? not while
-        yield
-    repeat
+    [: 1 adx? ;] wait-until
     2 0 var-set
     4 0 var-set
     2 char-start
@@ -260,67 +245,44 @@ defer house-of-truth-1f-6.act02
 : house-of-truth-1f-6.act03 ( -- )   \ 00435570
     scene-locked state-flag-set
     yield
-    begin
-        0 adx? not while
-        yield
-    repeat
+    [: 0 adx? ;] wait-until
     0 0.0 $FF bgm
     1 2 var? if
-        2 message   \ "What are you doing, Fiona? Just where do you intend to run?"
-        wait-message
+        2 say   \ "What are you doing, Fiona? Just where do you intend to run?"
     else 1 3 var? if
-        3 message   \ "How adorable you are, Fiona."
-        wait-message
+        3 say   \ "How adorable you are, Fiona."
     else 1 4 var? if
-        4 message   \ "Damn, it's locked!"
-        wait-message
+        4 say   \ "Damn, it's locked!"
     else 1 5 var? if
-        5 message   \ "Do you really think you can hide from me there?"
-        wait-message
+        5 say   \ "Do you really think you can hide from me there?"
     else 1 6 var? if
-        6 message   \ "Aha. Looks like a dead end, dear. How unfortunate."
-        wait-message
+        6 say   \ "Aha. Looks like a dead end, dear. How unfortunate."
     else 1 7 var? if
-        7 message   \ "I can see you clearly from here, Fiona..."
-        wait-message
+        7 say   \ "I can see you clearly from here, Fiona..."
     else 1 8 var? if
-        8 message   \ "That was a close one, eh Fiona?"
-        wait-message
+        8 say   \ "That was a close one, eh Fiona?"
     else 1 9 var? if
-        9 message   \ "Oh, how I love thee, Azoth!"
-        wait-message
+        9 say   \ "Oh, how I love thee, Azoth!"
     else 1 10 var? if
-        $A message   \ "You simply cannot understand."
-        wait-message
+        $A say   \ "You simply cannot understand."
     else 1 11 var? if
-        $B message   \ "Why must you run from me?"
-        wait-message
+        $B say   \ "Why must you run from me?"
     else 1 12 var? if
-        $C message   \ "Everything I do is for the Great Truth!"
-        wait-message
+        $C say   \ "Everything I do is for the Great Truth!"
     else 1 13 var? if
-        $D message   \ "At last! You are mine, Fiona!"
-        wait-message
+        $D say   \ "At last! You are mine, Fiona!"
     else 1 14 var? if
-        $E message   \ "My dear Fiona..."
-        wait-message
+        $E say   \ "My dear Fiona..."
     else 1 15 var? if
-        $F message   \ "I will have you in my grasp soon enough."
-        wait-message
+        $F say   \ "I will have you in my grasp soon enough."
     else 1 16 var? if
-        $10 message   \ "Have you longed for me as I long for you?"
-        wait-message
+        $10 say   \ "Have you longed for me as I long for you?"
     else 1 17 var? if
-        $11 message   \ "No need to get so upset, my dear."
-        wait-message
+        $11 say   \ "No need to get so upset, my dear."
     else 1 18 var? if
-        $12 message   \ "Well? Have you given up?"
-        wait-message
+        $12 say   \ "Well? Have you given up?"
     then then then then then then then then then then then then then then then then then
-    begin
-        1 adx? not while
-        yield
-    repeat
+    [: 1 adx? ;] wait-until
     1 32768 var? not if
         1 -1 var-set
     then
@@ -438,11 +400,9 @@ defer house-of-truth-1f-6.act02
     else 3 2 var? if
         1 4 var-set
     then then then
-    rattle-behind-slow-anim self-anim
-    self-wait-anim
+    rattle-behind-slow-anim play-out
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     self-idle-or-end
 ;
 
@@ -453,17 +413,14 @@ defer house-of-truth-1f-6.act02
     self-wait-done
     0 counter-set
     0 2 track 6 action
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     $FFFF message-close
     uneasy-anim 3 self-anim-blend
     1 wait-counter
     fiona-who knocked-sound 5 char-sound
-    uneasy-2-anim $A self-anim-blend
-    self-wait-anim
+    uneasy-2-anim $A blend-out
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     self-idle-or-end
 ;
 
@@ -505,36 +462,29 @@ defer house-of-truth-1f-6.act02
     8 ebit? if
         hewie-who self-look-at
         yield
-        begin
-            9 ebit? not while
-            yield
-        repeat
+        [: 9 ebit? ;] wait-until
     then
     counter-inc
     1 self-noclip
     self-who self-look-at
     yield
     1 room-motion 5 self-anim-blend8
-    self-frames-reset
-    5 self-wait-frames
+    5 wait-frames
     0 part-hidden
     3 0 object-hidden
     4 0 object-hidden
     3 1 object-anim
     4 1 object-anim
-    self-frames-reset
-    $E self-wait-frames
+    $E wait-frames
     fiona-who 1 6 char-sound
-    self-frames-reset
-    $3C self-wait-frames
+    $3C wait-frames
     fiona-who 2 6 char-sound
     self-wait-anim
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
     0 avoid-prompt
-    self-frames-reset
-    $2D self-wait-frames
+    $2D wait-frames
     6 ebit? not if
         6 ebit-set
         1 5 var-set
@@ -553,11 +503,9 @@ defer house-of-truth-1f-6.act02
     3 2 object-anim
     4 2 object-anim
     2 room-motion 0 self-anim-blend
-    self-frames-reset
-    $10 self-wait-frames
+    $10 wait-frames
     fiona-who 1 6 char-sound
-    self-frames-reset
-    $38 self-wait-frames
+    $38 wait-frames
     fiona-who 2 6 char-sound
     self-wait-anim
     0 self-noclip
@@ -585,8 +533,7 @@ defer house-of-truth-1f-6.act02
             else
                 hewie-hidden state-flag-clear
                 1 self-noclip
-                2 room-motion 0 self-anim-blend
-                self-wait-anim
+                2 room-motion 0 blend-out
                 0 self-noclip
                 0 self-scripted
                 self-idle-or-end
@@ -594,8 +541,7 @@ defer house-of-truth-1f-6.act02
         else
             hewie-hidden state-flag-clear
             1 self-noclip
-            2 room-motion 0 self-anim-blend
-            self-wait-anim
+            2 room-motion 0 blend-out
             0 self-noclip
             0 self-scripted
             self-idle-or-end

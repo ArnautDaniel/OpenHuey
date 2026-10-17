@@ -132,8 +132,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $F 6 fade
     wait-fade
-    0 message   \ "All things begin pure of color."
-    wait-message
+    0 say   \ "All things begin pure of color."
     $F 7 fade
     wait-fade
     stalkers-stay state-flag-clear

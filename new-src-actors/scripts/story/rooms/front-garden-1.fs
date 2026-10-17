@@ -65,25 +65,15 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : front-garden-1.char-enter ( -- )   \ 003ED960
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
 ;
 
@@ -263,8 +253,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     -201.5 -121.8 self-turn-to-xz
     self-wait-done
     look-at-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     $E message   \ "It looks like there is something up there..."
     c2f-3-flag1 story-flag? not if
         4 1 movie-play
@@ -353,8 +342,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
 : front-garden-1.act04 ( -- )   \ 003EDEE0
     self-wait-done
     hands-clasped-anim $A self-anim-blend
-    $C message   \ "The gate has been shut and locked solidly. It will be impossible to open it without a..."
-    wait-message
+    $C say   \ "The gate has been shut and locked solidly. It will be impossible to open it without a..."
     self-wait-anim
     self-idle-or-end
 ;
@@ -363,8 +351,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     -201.5 -121.8 self-turn-to-xz
     self-wait-done
-    $F message   \ "It's going to be too hard for me to get up there."
-    wait-message
+    $F say   \ "It's going to be too hard for me to get up there."
     self-idle-or-end
 ;
 
@@ -373,20 +360,15 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     hewie-who self-look-at
     yield
-    begin
-        hewie-who $A char-in-area? not while
-        yield
-    repeat
+    [: hewie-who $A char-in-area? ;] wait-until
     self-who 3 -1 char-camera
     self-who self-look-at
     yield
     -201.5 -121.8 self-turn-to-xz
     self-wait-done
-    look-at-anim $A self-anim-blend
-    self-wait-anim
+    look-at-anim $A blend-out
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     hewie-who self-look-at
     yield
     1 wait-counter
@@ -401,8 +383,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     -201.5 -121.8 self-turn-to-xz
     self-wait-done
-    $D message
-    wait-message
+    $D say
     self-idle-or-end
 ;
 
@@ -416,13 +397,11 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
         yield
         3 part-hidden
         0 1 front-garden-1.cmd00
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         $32 chance? if
             3 part-shown
             0 0 front-garden-1.cmd00
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             3 part-hidden
             0 1 front-garden-1.cmd00
             yield
@@ -431,14 +410,12 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
             yield
             3 part-hidden
             0 1 front-garden-1.cmd00
-            self-frames-reset
-            8 self-wait-frames
+            8 wait-frames
         then
         $19 chance? if
             3 part-shown
             0 0 front-garden-1.cmd00
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             3 part-hidden
             0 1 front-garden-1.cmd00
             yield
@@ -447,8 +424,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
             yield
             3 part-hidden
             0 1 front-garden-1.cmd00
-            self-frames-reset
-            self-wait-16
+            16 wait-frames
         then
         5 chance? if
             3 part-shown
@@ -462,8 +438,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
             yield
             3 part-hidden
             0 1 front-garden-1.cmd00
-            self-frames-reset
-            $20 self-wait-frames
+            $20 wait-frames
         then
         3 part-shown
         0 0 front-garden-1.cmd00
@@ -482,13 +457,11 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
         yield
         4 part-hidden
         1 1 front-garden-1.cmd00
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         $32 chance? if
             4 part-shown
             1 0 front-garden-1.cmd00
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             4 part-hidden
             1 1 front-garden-1.cmd00
             yield
@@ -497,14 +470,12 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
             yield
             4 part-hidden
             1 1 front-garden-1.cmd00
-            self-frames-reset
-            8 self-wait-frames
+            8 wait-frames
         then
         $19 chance? if
             4 part-shown
             1 0 front-garden-1.cmd00
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             4 part-hidden
             1 1 front-garden-1.cmd00
             yield
@@ -513,8 +484,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
             yield
             4 part-hidden
             1 1 front-garden-1.cmd00
-            self-frames-reset
-            self-wait-16
+            16 wait-frames
         then
         5 chance? if
             4 part-shown
@@ -528,8 +498,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
             yield
             4 part-hidden
             1 1 front-garden-1.cmd00
-            self-frames-reset
-            $20 self-wait-frames
+            $20 wait-frames
         then
         4 part-shown
         1 0 front-garden-1.cmd00
@@ -548,13 +517,11 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
         yield
         5 part-hidden
         2 1 front-garden-1.cmd00
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         $32 chance? if
             5 part-shown
             2 0 front-garden-1.cmd00
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             5 part-hidden
             2 1 front-garden-1.cmd00
             yield
@@ -563,14 +530,12 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
             yield
             5 part-hidden
             2 1 front-garden-1.cmd00
-            self-frames-reset
-            8 self-wait-frames
+            8 wait-frames
         then
         $19 chance? if
             5 part-shown
             2 0 front-garden-1.cmd00
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             5 part-hidden
             2 1 front-garden-1.cmd00
             yield
@@ -579,8 +544,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
             yield
             5 part-hidden
             2 1 front-garden-1.cmd00
-            self-frames-reset
-            self-wait-16
+            16 wait-frames
         then
         5 chance? if
             5 part-shown
@@ -594,8 +558,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
             yield
             5 part-hidden
             2 1 front-garden-1.cmd00
-            self-frames-reset
-            $20 self-wait-frames
+            $20 wait-frames
         then
         5 part-shown
         2 0 front-garden-1.cmd00
@@ -614,13 +577,11 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
         yield
         6 part-hidden
         3 1 front-garden-1.cmd00
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         $32 chance? if
             6 part-shown
             3 0 front-garden-1.cmd00
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             6 part-hidden
             3 1 front-garden-1.cmd00
             yield
@@ -629,14 +590,12 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
             yield
             6 part-hidden
             3 1 front-garden-1.cmd00
-            self-frames-reset
-            8 self-wait-frames
+            8 wait-frames
         then
         $19 chance? if
             6 part-shown
             3 0 front-garden-1.cmd00
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             6 part-hidden
             3 1 front-garden-1.cmd00
             yield
@@ -645,8 +604,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
             yield
             6 part-hidden
             3 1 front-garden-1.cmd00
-            self-frames-reset
-            self-wait-16
+            16 wait-frames
         then
         5 chance? if
             6 part-shown
@@ -660,8 +618,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
             yield
             6 part-hidden
             3 1 front-garden-1.cmd00
-            self-frames-reset
-            $20 self-wait-frames
+            $20 wait-frames
         then
         6 part-shown
         3 0 front-garden-1.cmd00
@@ -703,16 +660,14 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     0 keeps-pursuers-off floor-on
     $208 -206.0 -116.0 138 $FFFF $A self-move-to
     self-wait-done
-    sit-a-while-anim self-anim
-    self-wait-anim
+    sit-a-while-anim play-out
     got-broken-marionette story-flag-set
     10 hewie-trust
     0 message-param-room
     0 1 item-give-count
     0 0 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
+    $8012 say   \ "You've obtained ."
     self-wait-done
     0 part-hidden
     40 hewie-trust
@@ -726,10 +681,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : front-garden-1.act0C ( -- )   \ 003EE340
-    begin
-        fiona-free? not while
-        yield
-    repeat
+    [: fiona-free? ;] wait-until
     panic-eased
     0 fiona-who 6 action-force
     self-idle-or-end
@@ -740,25 +692,20 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     -331.4 239.2 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             fg-1-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -768,25 +715,20 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     -366.0 26.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             fg-1-medallion-2 story-flag-set
             1 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
@@ -809,10 +751,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
 
 : front-garden-1.act10 ( -- )   \ 003EE440
     0 front-garden-1.cmd01
-    begin
-        1 cutscene-shot? not while
-        yield
-    repeat
+    [: 1 cutscene-shot? ;] wait-until
     1 front-garden-1.cmd01
     self-idle-or-end
 ;

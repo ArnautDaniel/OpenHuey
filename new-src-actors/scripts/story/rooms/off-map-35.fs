@@ -100,15 +100,9 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 : off-map-35.act03 ( -- )   \ 004432A0
-    begin
-        $11 cutscene-shot? not while
-        yield
-    repeat
+    [: $11 cutscene-shot? ;] wait-until
     fiona-who 1 char-no-shadow
-    begin
-        $12 cutscene-shot? not while
-        yield
-    repeat
+    [: $12 cutscene-shot? ;] wait-until
     fiona-who 0 char-no-shadow
     self-idle-or-end
 ;

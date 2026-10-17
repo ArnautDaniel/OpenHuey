@@ -38,25 +38,15 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : old-mansion-1f-1.char-enter ( -- )   \ 0041D330
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
     fiona-who self-is? if
         1 exit-taken? if
@@ -218,50 +208,30 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     force-followed state-flag-set
     stalker-no-fear state-flag-set
     3 char-file-use
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
+    [: 6 sound-bank-loaded? ;] wait-until
     stalker-who 0 char-silent
     0 barred-floor floor-on
     1 counter-set
     stalker-who 5 6 char-sound
     begin
-        0 room-motion self-anim
-        self-wait-anim
+        0 room-motion play-out
     again
 ;
 
 : old-mansion-1f-1.act02 ( -- )   \ 0041D670
     depth-range-off
-    begin
-        $10E cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $10E cutscene-cue-reached? ;] wait-until
     0 old-mansion-1f-1.cmd04
-    begin
-        $1E0 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $1E0 cutscene-cue-reached? ;] wait-until
     1 old-mansion-1f-1.cmd04
-    begin
-        5 cutscene-shot? not while
-        yield
-    repeat
+    [: 5 cutscene-shot? ;] wait-until
     2 old-mansion-1f-1.cmd00
     2 old-mansion-1f-1.cmd04
-    self-frames-reset
-    1 self-wait-frames
+    1 wait-frames
     1 old-mansion-1f-1.cmd04
-    begin
-        $3A2 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $3A2 cutscene-cue-reached? ;] wait-until
     0 old-mansion-1f-1.cmd00
-    begin
-        $4B0 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $4B0 cutscene-cue-reached? ;] wait-until
     begin
         $4EC cutscene-cue-reached? not while
         1.0 21.0 40.0 80.0 depth-range
@@ -282,12 +252,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    turn-round-anim self-anim
-    self-wait-anim
+    turn-round-anim play-out
     3 self-look-at
     yield
-    0 message   \ "She's gone utterly mad. Best to keep my distance..."
-    wait-message
+    0 say   \ "She's gone utterly mad. Best to keep my distance..."
     self-who self-look-at
     yield
     2 ebit-clear

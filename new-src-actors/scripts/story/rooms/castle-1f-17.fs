@@ -35,25 +35,15 @@ USING: room-names story.words story.shared story-names fiona.anims ;
 ;
 
 : castle-1f-17.char-enter ( -- )   \ 003FC6F0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 -1 player-camera
-    then then
+    then
     1 0 -1 area-camera
 ;
 
@@ -187,15 +177,13 @@ USING: room-names story.words story.shared story-names fiona.anims ;
                 else
                     rattle-front-anim self-anim
                 then
-                self-frames-reset
-                $14 self-wait-frames
+                $14 wait-frames
                 in-panic? not if
                     fiona-who $72 5 char-sound
                     $19 door-unlock
                     $8008 message   \ "You unlocked the door."
                     20 self-idle-anim
-                    self-frames-reset
-                    $14 self-wait-frames
+                    $14 wait-frames
                     wait-message
                 then
             then
@@ -207,8 +195,7 @@ USING: room-names story.words story.shared story-names fiona.anims ;
 : castle-1f-17.act01 ( -- )   \ 003FC9B0
     self-wait-done
     look-low-anim $A self-anim-blend
-    0 message   \ "Is this real? Poor little thing. Being stepped and walked on all day..."
-    wait-message
+    0 say   \ "Is this real? Poor little thing. Being stepped and walked on all day..."
     self-wait-anim
     self-idle-or-end
 ;
@@ -219,8 +206,7 @@ USING: room-names story.words story.shared story-names fiona.anims ;
     self-wait-done
     1 40.0 20.0 0.0 0.0 event-camera
     look-at-anim $A self-anim-blend
-    1 message   \ "It's an anatomically correct model of the human body. It looks so real. Almost as if it..."
-    wait-message
+    1 say   \ "It's an anatomically correct model of the human body. It looks so real. Almost as if it..."
     self-wait-anim
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
@@ -229,12 +215,10 @@ USING: room-names story.words story.shared story-names fiona.anims ;
 : castle-1f-17.act03 ( -- )   \ 003FCA00
     self-wait-done
     0 ebit? not if
-        2 message   \ "There are miniature insect models here, too."
-        wait-message
+        2 say   \ "There are miniature insect models here, too."
         0 ebit-set
     else
-        3 message   \ "What type of a person would decorate a room with these things?"
-        wait-message
+        3 say   \ "What type of a person would decorate a room with these things?"
     then
     self-idle-or-end
 ;
@@ -242,19 +226,15 @@ USING: room-names story.words story.shared story-names fiona.anims ;
 : castle-1f-17.act04 ( -- )   \ 003FCA20
     self-wait-done
     1 ebit? not if
-        4 message   \ "Looks like an ordinary pool table."
-        wait-message
-        rest-anim self-anim
-        self-wait-anim
+        4 say   \ "Looks like an ordinary pool table."
+        rest-anim play-out
         -1 self-idle-anim
         6 message   \ "Why would someone put something like this in here?"
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
         wait-message
         1 ebit-set
     else
-        5 message   \ "So maybe whoever lives here likes to play pool while looking at all of these gross..."
-        wait-message
+        5 say   \ "So maybe whoever lives here likes to play pool while looking at all of these gross..."
         1 ebit-clear
     then
     self-idle-or-end
@@ -265,25 +245,20 @@ USING: room-names story.words story.shared story-names fiona.anims ;
     -6.0 -5.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-17-lavender story-flag-set
             0 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;

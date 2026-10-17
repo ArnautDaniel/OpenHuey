@@ -22,36 +22,22 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 ;
 
 : off-map-d0.char-enter ( -- )   \ 00446A00
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            3 3 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         3 3 player-camera
-    then then
+    then
     0 3 3 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
 ;
 
 : off-map-d0.phase1 ( -- )   \ 00446A80
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     2 0 0 1 chars-area-camera
     3 1 1 1 chars-area-camera
     4 1 1 1 chars-area-camera
@@ -97,35 +83,19 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
     1 self-scripted
     off-map-d0.cmd01
     $FF 1.0 0 bgm
-    begin
-        1 adx? not while
-        yield
-    repeat
+    [: 1 adx? ;] wait-until
     $34 1.0 1 bgm
     0 $1E 0 music
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     self-wait-done
-    begin
-        0 adx? not while
-        yield
-    repeat
+    [: 0 adx? ;] wait-until
     0 0.0 $FF bgm
-    begin
-        1 adx? not while
-        yield
-    repeat
+    [: 1 adx? ;] wait-until
     $37 room-preload
     $C subscreen-open
-    begin
-        subscreen-wanted state-flag? while
-        yield
-    repeat
+    [: subscreen-wanted state-flag? ;] wait-while
     9 subscreen-open
-    begin
-        subscreen-wanted state-flag? while
-        yield
-    repeat
+    [: subscreen-wanted state-flag? ;] wait-while
     $FF 1.0 0 bgm
     $F $50 fade
     wait-fade

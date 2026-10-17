@@ -72,6 +72,12 @@ room-motion`. The variables the rooms hand Hewie for his finds and looks are `fo
 .. `hewie-zone-var`. A room's own event bits and variables 0..12 stay numbers: each means
 something only in its room.
 
+The converter's long-hand is said by words (tools/story_flow.py): `N wait-frames`, `anim
+play-out` / `anim b blend-out` (played to its end), `msg say` (shown and waited out), `[: cond ;]
+wait-until` / `wait-while`, and `player-who` - the one played, Fiona or Hewie in his sections -
+where the two branches differed only in who. The scenes' slots: `n track` ($F0..$F8),
+`cutscene-track`, `fade-track`.
+
 ## API
 
 Declared in `scripts/messages.fs`.

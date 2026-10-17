@@ -116,45 +116,25 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-1f-13.char-enter ( -- )   \ 003F2640
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            4 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         4 -1 player-camera
-    then then
+    then
     0 4 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         2 2 player-camera
-    then then
+    then
     2 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            3 3 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         3 3 player-camera
-    then then
+    then
     3 3 3 area-camera
     fiona-who self-is? if
         $80 exit-taken? $81 exit-taken? or $82 exit-taken? or if
@@ -185,20 +165,12 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     1 exit-usable? if
         1 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
+    then
     $C 0 0 1 chars-area-camera
     $D 1 1 1 chars-area-camera
     $E 1 1 1 chars-area-camera
@@ -321,10 +293,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         fiona-who $1D0 -80 char-to-tri-facing
         0 0 player-camera
         camera-restart
-        begin
-            6 sound-bank-loaded? not while
-            yield
-        repeat
+        [: 6 sound-bank-loaded? ;] wait-until
         $FE 8 383 2 stalker-to-room
         stalker-who -1 -1 char-camera
         stalker-who char-activate
@@ -338,8 +307,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         4 0 char-remove
         $1A 1.0 0 bgm
         $F $41 fade
-        fiona.anims:get-up-anim self-anim
-        self-wait-anim
+        fiona.anims:get-up-anim play-out
         found-file-227 story-flag-set
         found-file-227-2 story-flag-set
         8 0 248 4 15 -1 0 0.0 creature-place
@@ -363,15 +331,12 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 : castle-1f-13.act01 ( -- )   \ 003F2AE0
     self-wait-done
     look-at-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     0 ebit? not if
-        0 message   \ "I can't believe the balcony collapsed. It's like something out of a nightmare."
-        wait-message
+        0 say   \ "I can't believe the balcony collapsed. It's like something out of a nightmare."
         0 ebit-set
     else
-        1 message   \ "I'm not going to be able to get up there."
-        wait-message
+        1 say   \ "I'm not going to be able to get up there."
     then
     self-wait-anim
     self-idle-or-end
@@ -379,36 +344,26 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-1f-13.act02 ( -- )   \ 003F2B00
     1 ebit? not if
-        2 message   \ "A door?"
-        wait-message
-        reach-out-anim self-anim
-        self-wait-anim
-        reach-back-anim self-anim
-        self-wait-anim
-        3 message   \ "What?! It's just a wall made to look like a door."
-        wait-message
+        2 say   \ "A door?"
+        reach-out-anim play-out
+        reach-back-anim play-out
+        3 say   \ "What?! It's just a wall made to look like a door."
         1 ebit-set
     else
-        4 message   \ "Why would someone do this? Is it just some random prank?"
-        wait-message
+        4 say   \ "Why would someone do this? Is it just some random prank?"
     then
     self-idle-or-end
 ;
 
 : castle-1f-13.act03 ( -- )   \ 003F2B20
     2 ebit? not if
-        2 message   \ "A door?"
-        wait-message
-        reach-out-anim self-anim
-        self-wait-anim
-        reach-back-anim self-anim
-        self-wait-anim
-        3 message   \ "What?! It's just a wall made to look like a door."
-        wait-message
+        2 say   \ "A door?"
+        reach-out-anim play-out
+        reach-back-anim play-out
+        3 say   \ "What?! It's just a wall made to look like a door."
         2 ebit-set
     else
-        4 message   \ "Why would someone do this? Is it just some random prank?"
-        wait-message
+        4 say   \ "Why would someone do this? Is it just some random prank?"
     then
     self-idle-or-end
 ;
@@ -433,32 +388,23 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     stalker-who 0 char-visible
     stalker-who 0 char-silent
     0 7 -147.0 60.0 14.5 0 0 sound
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     1 7 -155.0 60.0 14.5 0 0 sound
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     0 7 -163.0 60.0 14.5 0 0 sound
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     1 7 -171.0 60.0 14.5 0 0 sound
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     0 7 -179.0 60.0 14.5 0 0 sound
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     1 7 -187.0 60.0 14.5 0 0 sound
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     0 7 -195.0 60.0 14.5 0 0 sound
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     1 7 -203.0 60.0 14.5 0 0 sound
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     0 7 -211.0 60.0 14.5 0 0 sound
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     1 7 -219.0 60.0 14.5 0 0 sound
     0 room-motion 5 self-anim-blend8
     0 0 var-set
@@ -524,8 +470,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     stalkers-stay state-flag-set
     $114 -258.97 -140.95 79 $207 5 self-move-to
     self-wait-done
-    4 $14 self-anim-blend
-    self-wait-anim
+    4 $14 blend-out
     0 self-scripted
     0 self-noclip
     stalkers-stay state-flag-clear
@@ -542,8 +487,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     1 self-noclip
     1 self-scripted
-    crouch-down-anim self-anim
-    self-wait-anim
+    crouch-down-anim play-out
     $122 -291.573 -146.706 -110 $803 5 self-move-to
     self-wait-done
     $122 -291.573 -146.706 80 $803 5 self-move-to
@@ -579,8 +523,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             stalkers-stay state-flag-set
             $1D4 -267.0 -140.0 70 $803 5 self-move-to
             self-wait-done
-            crouch-up-anim self-anim
-            self-wait-anim
+            crouch-up-anim play-out
             0 self-scripted
             0 self-noclip
             stalkers-stay state-flag-clear
@@ -593,14 +536,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     $1A1 -238.675 -139.193 -90 $FFFF 5 self-move-to
     self-wait-done
-    there-anim self-anim
-    self-wait-anim
+    there-anim play-out
     3 ebit-set
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;
@@ -614,25 +553,20 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     -254.5 -95.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $91 message-param-room
         $91 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-13-antimony-powder story-flag-set
             0 effect-remove
             $91 1 item-give-count
             0 $91 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -642,25 +576,20 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     -283.73 2.22 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $60 message-param-room
         $60 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-13-chicken-jerky story-flag-set
             1 effect-remove
             $60 1 item-give-count
             0 $60 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

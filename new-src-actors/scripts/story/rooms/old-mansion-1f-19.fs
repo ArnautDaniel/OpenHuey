@@ -48,25 +48,15 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
 ;
 
 : old-mansion-1f-19.char-enter ( -- )   \ 00438D60
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
     fiona-who self-is? if
         $FE exit-taken? if
@@ -89,13 +79,9 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 0 0 1 chars-area-camera
     5 1 1 1 chars-area-camera
     fiona-who 2 char-entered-area? if
@@ -164,10 +150,8 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    look-close-anim $A self-anim-blend
-    self-wait-anim
-    0 message   \ "A miasma of mold and corrosion wafts from within the hole. Enter the hole? YES NO"
-    wait-message
+    look-close-anim $A blend-out
+    0 say   \ "A miasma of mold and corrosion wafts from within the hole. Enter the hole? YES NO"
     0 answer? if
         $F 0 fade
         wait-fade
@@ -216,8 +200,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     fiona-hidden state-flag-clear
     1 self-noclip
     fiona-who slide-sound 5 char-sound
-    3 room-motion $A self-anim-blend
-    self-wait-anim
+    3 room-motion $A blend-out
     0 self-noclip
     3 ebit? not if
         stalker-who action-end
@@ -276,8 +259,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
             fiona-hidden state-flag-clear
             1 self-noclip
             2 room-motion 5 self-anim-blend8
-            self-frames-reset
-            5 self-wait-frames
+            5 wait-frames
             fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
@@ -301,19 +283,14 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     3 self-is? $22 self-is? or if
         stalker-who char-file-use
         4 stalker-who 1 char-model-op
-        0 room-motion self-anim
-        self-wait-anim
+        0 room-motion play-out
         4 stalker-who 0 char-model-op
     else
-        there-anim self-anim
-        self-wait-anim
+        there-anim play-out
     then
     3 ebit-set
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;

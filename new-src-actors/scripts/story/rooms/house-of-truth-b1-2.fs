@@ -18,25 +18,15 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 ;
 
 : house-of-truth-b1-2.char-enter ( -- )   \ 00432730
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         2 2 player-camera
-    then then
+    then
     1 2 2 area-camera
     fiona-who self-is? if
         found-file-252 story-flag? not $80 exit-taken? and if
@@ -161,25 +151,20 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     -45.77 19.99 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             htb1-2-lavender story-flag-set
             0 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
@@ -189,19 +174,14 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     0 self-through-exit
     self-wait-done
     in-panic? 2 game-mode? or if
-        rattle-front-slow-anim self-anim
-        self-wait-anim
+        rattle-front-slow-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
     else
-        rattle-front-anim self-anim
-        self-wait-anim
+        rattle-front-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
-        1 message   \ "It's locked. I can't open it. I guess they have no intention of letting me go home..."
-        wait-message
+        7 wait-frames
+        1 say   \ "It's locked. I can't open it. I guess they have no intention of letting me go home..."
     then
     self-idle-or-end
 ;

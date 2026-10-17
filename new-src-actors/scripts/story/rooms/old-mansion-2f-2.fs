@@ -25,25 +25,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-2f-2.char-enter ( -- )   \ 00408700
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            3 2 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         3 2 player-camera
-    then then
+    then
     0 3 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            4 3 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         4 3 player-camera
-    then then
+    then
     2 4 3 area-camera
 ;
 
@@ -51,13 +41,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
+    then
     $B 3 2 1 chars-area-camera
     $C 4 3 1 chars-area-camera
     fiona-who 9 char-entered-area? if
@@ -126,8 +112,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who $31 5 char-sound
     self-wait-anim
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     $F $44 fade
     1 0 movie-play
     0 cutscene-start
@@ -197,37 +182,28 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         1 ebit? not if
             0 self-through-exit
             self-wait-done
-            rattle-behind-anim self-anim
-            self-wait-anim
+            rattle-behind-anim play-out
             -1 self-idle-anim
-            self-frames-reset
-            7 self-wait-frames
-            self-frames-reset
-            8 self-wait-frames
+            7 wait-frames
+            8 wait-frames
             fiona-who $CB -38.0 -30.0 30 char-to-xz
             5 4 player-camera
-            self-frames-reset
-            4 self-wait-frames
-            0 message   \ "It won't budge. It appears to be blocked by something on the other side of the..."
-            wait-message
+            4 wait-frames
+            0 say   \ "It won't budge. It appears to be blocked by something on the other side of the..."
             1 ebit-set
         else
             $CB -38.0 -30.0 30 $FFFF 5 self-move-to
             self-wait-done
             5 4 player-camera
-            self-frames-reset
-            4 self-wait-frames
-            1 message   \ "I can just barely see inside from this tiny window... There is a huge furnace i..."
-            wait-message
+            4 wait-frames
+            1 say   \ "I can just barely see inside from this tiny window... There is a huge furnace i..."
         then
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         3 2 player-camera
     else
         $CB -38.0 -30.0 30 $FFFF 5 self-move-to
         self-wait-done
-        2 message   \ "Hey! Hewie is inside!"
-        wait-message
+        2 say   \ "Hey! Hewie is inside!"
         0 0 var-set
     then
     stalkers-stay state-flag-clear
@@ -244,25 +220,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -49.36 -47.3 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om2f-2-medallion story-flag-set
             1 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

@@ -53,15 +53,10 @@ USING: room-names story.words story.shared flag-names story.clock fiona.sounds s
 ;
 
 : off-map-e5.char-enter ( -- )   \ 00449590
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
@@ -126,8 +121,7 @@ USING: room-names story.words story.shared flag-names story.clock fiona.sounds s
         counter-inc
     then
     2 room-motion 5 self-anim-blend8
-    self-frames-reset
-    5 self-wait-frames
+    5 wait-frames
     begin
         2 off-map-e5.cmd00
         yield
@@ -157,8 +151,7 @@ USING: room-names story.words story.shared flag-names story.clock fiona.sounds s
     1 self-noclip
     0 0 var-set
     3 room-motion 5 self-anim-blend8
-    self-frames-reset
-    5 self-wait-frames
+    5 wait-frames
     begin
         5 off-map-e5.cmd00
         yield
@@ -192,8 +185,7 @@ USING: room-names story.words story.shared flag-names story.clock fiona.sounds s
     yield
     0 0 var-set
     0 room-motion 5 self-anim-blend8
-    self-frames-reset
-    5 self-wait-frames
+    5 wait-frames
     begin
         0 off-map-e5.cmd00
         yield
@@ -266,14 +258,10 @@ USING: room-names story.words story.shared flag-names story.clock fiona.sounds s
     self-wait-done
     $10 58.883 -8.841 180 $FFFF 5 self-move-to
     self-wait-done
-    there-anim self-anim
-    self-wait-anim
+    there-anim play-out
     0 ebit-set
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;

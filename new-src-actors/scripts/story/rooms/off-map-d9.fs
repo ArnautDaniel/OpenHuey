@@ -23,15 +23,10 @@ USING: room-names story.words story.shared flag-names story.clock ;
 ;
 
 : off-map-d9.char-enter ( -- )   \ 00447E90
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
     hewie-controlled? not if
         fiona-who self-is? if
@@ -64,13 +59,9 @@ USING: room-names story.words story.shared flag-names story.clock ;
 ;
 
 : off-map-d9.phase1 ( -- )   \ 00447F40
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
+    then
 ;
 
 : off-map-d9.phase3 ( -- )   \ 00447F60

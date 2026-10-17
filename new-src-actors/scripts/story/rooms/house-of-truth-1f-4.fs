@@ -108,25 +108,15 @@ USING: engine common actors messages story.state room-names story.words story.sh
 ;
 
 : house-of-truth-1f-4.char-enter ( -- )   \ 00433D80
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            3 3 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         3 3 player-camera
-    then then
+    then
     1 3 3 area-camera
 ;
 
@@ -245,20 +235,16 @@ USING: engine common actors messages story.state room-names story.words story.sh
     50.0 -32.0 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     ht1f-4-flag1 story-flag? not if
         0 ebit? not if
-            0 message   \ "Looks like a power generator. The switch is turned on, but it's not getting any..."
-            wait-message
+            0 say   \ "Looks like a power generator. The switch is turned on, but it's not getting any..."
             0 ebit-set
         else
-            1 message   \ "Maybe something is wrong with the contacts? A good jolt might knock it back int..."
-            wait-message
+            1 say   \ "Maybe something is wrong with the contacts? A good jolt might knock it back int..."
         then
     else
-        2 message   \ "It looks completely and utterly dead. I don't think physical abuse is going to make..."
-        wait-message
+        2 say   \ "It looks completely and utterly dead. I don't think physical abuse is going to make..."
     then
     self-wait-anim
     self-idle-or-end
@@ -272,10 +258,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     1 house-of-truth-1f-4.cmd01
     0 0 var? if
         found-file-250 story-flag? not if
-            begin
-                fiona-free? not while
-                yield
-            repeat
+            [: fiona-free? ;] wait-until
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 2 action-force
@@ -286,8 +269,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
             0 2 track 6 action
         then
     then
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     self-idle-or-end
 ;
 
@@ -297,8 +279,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     stalkers-stay state-flag-set
     1 self-scripted
     house-of-truth-1f-4.cmd04
-    self-frames-reset
-    1 self-wait-frames
+    1 wait-frames
     $F $54 fade
     self-wait-done
     wait-fade
@@ -367,8 +348,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     scene-locked state-flag-set
     1 self-scripted
     house-of-truth-1f-4.cmd04
-    self-frames-reset
-    1 self-wait-frames
+    1 wait-frames
     $F $54 fade
     self-wait-done
     wait-fade
@@ -399,8 +379,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     scene-locked state-flag-set
     1 self-scripted
     house-of-truth-1f-4.cmd04
-    self-frames-reset
-    1 self-wait-frames
+    1 wait-frames
     $F $54 fade
     self-wait-done
     wait-fade
@@ -467,19 +446,15 @@ USING: engine common actors messages story.state room-names story.words story.sh
     self-wait-done
     0.0 65.0 self-turn-to-xz
     self-wait-done
-    pick-up-anim self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    pick-up-anim play-out
+    4 wait-frames
     0 effect-remove
     $25 message-param-room
     $25 1 item-give-count
     0 $25 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    up-from-pick-anim self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    up-from-pick-anim play-out
     got-sol-key story-flag-set
     0 self-scripted
     self-idle-or-end
@@ -496,8 +471,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     0 house-of-truth-1f-4.cmd02
     begin
         1 house-of-truth-1f-4.cmd02
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
         1 var-inc
         1 240 var? until
     $40000001 6 24.0 5.0 65.0 0 0 sound
@@ -519,34 +493,25 @@ USING: engine common actors messages story.state room-names story.words story.sh
         self-wait-done
         4 ebit? not 2 game-mode? or in-panic? or if
             in-panic? 2 game-mode? or if
-                rattle-front-slow-anim self-anim
-                self-wait-anim
+                rattle-front-slow-anim play-out
                 -1 self-idle-anim
-                self-frames-reset
-                7 self-wait-frames
+                7 wait-frames
             else
-                rattle-front-anim self-anim
-                self-wait-anim
+                rattle-front-anim play-out
                 -1 self-idle-anim
-                self-frames-reset
-                7 self-wait-frames
-                4 message   \ "The door is locked."
-                wait-message
+                7 wait-frames
+                4 say   \ "The door is locked."
             then
             4 ebit-set
         else
-            self-frames-reset
-            4 self-wait-frames
+            4 wait-frames
             fiona-who $BF 90.5 0.0 90 char-to-xz
             world-frozen state-flag-set
             1 self-scripted
             1 20.0 0.0 0.0 2.0 event-camera
-            self-frames-reset
-            4 self-wait-frames
-            5 message   \ "A strange symbol is carved into the door. I wonder what this symbol means?"
-            wait-message
-            self-frames-reset
-            4 self-wait-frames
+            4 wait-frames
+            5 say   \ "A strange symbol is carved into the door. I wonder what this symbol means?"
+            4 wait-frames
             0 0.0 0.0 0.0 0.0 event-camera
             world-frozen state-flag-clear
             0 self-scripted
@@ -563,8 +528,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     0 self-through-exit
     self-wait-done
     $608 self-anim
-    self-frames-reset
-    $14 self-wait-frames
+    $14 wait-frames
     fiona-who 3 6 char-sound
     $25 message-param-room
     $E2 door-locked? not if
@@ -572,10 +536,8 @@ USING: engine common actors messages story.state room-names story.words story.sh
     then
     $E6 door-unlock
     20 self-idle-anim
-    self-frames-reset
-    $14 self-wait-frames
-    $8019 message   \ "Used ."
-    wait-message
+    $14 wait-frames
+    $8019 say   \ "Used ."
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -583,129 +545,60 @@ USING: engine common actors messages story.state room-names story.words story.sh
 
 : house-of-truth-1f-4.act09 ( -- )   \ 004344F0
     0 part-hidden
-    begin
-        $F cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $F cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $12 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $12 cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $13 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $13 cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $14 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $14 cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $17 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $17 cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $28 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $28 cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $29 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $29 cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $2A cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $2A cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $2B cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $2B cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $2C cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $2C cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $31 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $31 cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $37 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $37 cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $38 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $38 cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $39 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $39 cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $3A cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $3A cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $3B cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $3B cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $3C cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $3C cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $53 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $53 cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $54 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $54 cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $63 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $63 cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $64 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $64 cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        cutscene-near-end? not while
-        yield
-    repeat
+    [: cutscene-near-end? ;] wait-until
     self-idle-or-end
 ;
 
 : house-of-truth-1f-4.act0A ( -- )   \ 00434600
     self-wait-done
     6 ebit? not if
-        6 message   \ "This looks like a demolisher. These things are used to smash large rocks into bits..."
-        wait-message
+        6 say   \ "This looks like a demolisher. These things are used to smash large rocks into bits..."
         6 ebit-set
     else
-        hand-to-mouth-anim $A self-anim-blend
-        self-wait-anim
-        7 message   \ "It's not running right now... Maybe there is a power switch somewhere that needs to..."
-        wait-message
+        hand-to-mouth-anim $A blend-out
+        7 say   \ "It's not running right now... Maybe there is a power switch somewhere that needs to..."
     then
     self-idle-or-end
 ;

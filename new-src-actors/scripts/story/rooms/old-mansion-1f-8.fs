@@ -107,35 +107,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-1f-8.char-enter ( -- )   \ 00425460
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            3 3 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         3 3 player-camera
-    then then
+    then
     2 3 3 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 5 exit-taken? and if
-            fiona-who 5 char-to-exit
-            5 5 player-camera
-        then
-    else hewie-who self-is? 5 exit-taken? and if
-        hewie-who 5 char-to-exit
+    player-who self-is? 5 exit-taken? and if
+        player-who 5 char-to-exit
         5 5 player-camera
-    then then
+    then
     5 5 5 area-camera
     fiona-who self-is? if
         0 exit-taken? if
@@ -178,13 +163,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 exit-usable? if
         2 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 5 char-in-area? fiona-who char-busy? not and if
-            5 exit-check
-        then
-    else hewie-who 5 char-in-area? hewie-who char-busy? not and if
+    player-who 5 char-in-area? player-who char-busy? not and if
         5 exit-check
-    then then
+    then
     6 0 0 1 chars-area-camera
     7 1 1 1 chars-area-camera
     8 1 1 1 chars-area-camera
@@ -498,16 +479,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     else
         rattle-front-anim self-anim
     then
-    self-frames-reset
-    $14 self-wait-frames
+    $14 wait-frames
     fiona-who $72 5 char-sound
     $7D door-unlock
     $12 ebit-set
     20 self-idle-anim
-    self-frames-reset
-    $14 self-wait-frames
-    $8008 message   \ "You unlocked the door."
-    wait-message
+    $14 wait-frames
+    $8008 say   \ "You unlocked the door."
     self-idle-or-end
 ;
 
@@ -516,25 +494,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     122.09 10.26 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $61 message-param-room
         $61 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-8-beef-jerky story-flag-set
             0 effect-remove
             $61 1 item-give-count
             0 $61 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -544,25 +517,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -131.47 9.32 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-5-lavender story-flag-set
             1 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -572,25 +540,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -140.37 -25.97 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $71 message-param-room
         $71 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-8-album-medallion story-flag-set
             2 effect-remove
             $71 1 item-give-count
             0 $71 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -607,13 +570,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who $2E 5 char-sound
     self-wait-anim
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     1 wait-counter
-    self-frames-reset
-    self-wait-16
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
+    16 wait-frames
     $8284 item-give
     0 self-scripted
     self-idle-or-end
@@ -631,8 +591,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    sit-a-while-anim $A self-anim-blend
-    self-wait-anim
+    sit-a-while-anim $A blend-out
     3 effect-remove
     0 ebit-clear
     10 hewie-trust
@@ -640,8 +599,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     8 1 item-give-count
     0 8 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
+    $8012 say   \ "You've obtained ."
     counter-inc
     0 self-turn-angle
     self-wait-done
@@ -668,8 +626,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         fiona-who $2E 5 char-sound
         self-wait-anim
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
     else
         stalkers-stay state-flag-clear
     then
@@ -692,8 +649,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 self-noclip
     $66 129.619 91.48 1.7 10 hewie-go-to
     self-wait-done
-    sit-a-while-anim $A self-anim-blend
-    self-wait-anim
+    sit-a-while-anim $A blend-out
     om1f-8-antimony-tube story-flag? not if
         fiona-half-hidden state-flag? fiona-who char-busy? not or if
             $97 $63 item-count? not if
@@ -701,15 +657,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
             $97 message-param-room
             $97 $63 item-count? if
-                $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-                wait-message
+                $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
             else
                 om1f-8-antimony-tube story-flag-set
                 $97 1 item-give-count
                 0 $97 item-tab
                 item-fanfare
-                $8011 message   \ "You've obtained ."
-                wait-message
+                $8011 say   \ "You've obtained ."
             then
         then
     then
@@ -742,8 +696,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    lie-down-anim $A self-anim-blend
-    self-wait-anim
+    lie-down-anim $A blend-out
     3600 2 hewie-anim
     1 ebit-clear
     self-idle-or-end
@@ -832,14 +785,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -154.0 -28.0 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     2 ebit? 0 0 var? not and 0 1 var? not and if
-        7 message   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
-        wait-message
+        7 say   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
     else
-        1 message   \ "Aureolus Belli (1698-1763)"
-        wait-message
+        1 say   \ "Aureolus Belli (1698-1763)"
     then
     2 ebit? not if
         0 var-inc
@@ -853,14 +803,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -86.29 -39.06 self-turn-to-xz
     self-wait-done
     look-close-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     3 ebit? 0 0 var? not and 0 1 var? not and if
-        7 message   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
-        wait-message
+        7 say   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
     else
-        2 message   \ "Aureolus Belli (1537-1584)"
-        wait-message
+        2 say   \ "Aureolus Belli (1537-1584)"
     then
     3 ebit? not if
         0 var-inc
@@ -874,14 +821,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     40.56 -52.11 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     4 ebit? 0 0 var? not and 0 1 var? not and if
-        7 message   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
-        wait-message
+        7 say   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
     else
-        3 message   \ "Aureolus Belli (1870-1974)"
-        wait-message
+        3 say   \ "Aureolus Belli (1870-1974)"
     then
     4 ebit? not if
         0 var-inc
@@ -895,14 +839,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     77.34 6.2 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     5 ebit? 0 0 var? not and 0 1 var? not and if
-        7 message   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
-        wait-message
+        7 say   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
     else
-        4 message   \ "Aureolus Belli (1755-1830)"
-        wait-message
+        4 say   \ "Aureolus Belli (1755-1830)"
     then
     5 ebit? not if
         0 var-inc
@@ -916,14 +857,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     127.66 -13.38 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     6 ebit? 0 0 var? not and 0 1 var? not and if
-        7 message   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
-        wait-message
+        7 say   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
     else
-        5 message   \ "Aureolus Belli (1508-1583)"
-        wait-message
+        5 say   \ "Aureolus Belli (1508-1583)"
     then
     6 ebit? not if
         0 var-inc
@@ -937,14 +875,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     144.96 39.88 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     7 ebit? 0 0 var? not and 0 1 var? not and if
-        7 message   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
-        wait-message
+        7 say   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
     else
-        6 message   \ "Aureolus Belli (1832-1905)"
-        wait-message
+        6 say   \ "Aureolus Belli (1832-1905)"
     then
     7 ebit? not if
         0 var-inc
@@ -958,21 +893,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $47 138.0 -98.0 180 $FFFF 5 self-move-to
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     8 ebit? not if
-        8 message   \ "Looks to be a mausoleum... There are words written here."
-        wait-message
+        8 say   \ "Looks to be a mausoleum... There are words written here."
         $F 6 fade
         wait-fade
-        9 message   \ "Dead spirit craving for life, crawling back from the underworld... Sip of the fresh..."
-        wait-message
+        9 say   \ "Dead spirit craving for life, crawling back from the underworld... Sip of the fresh..."
         $F 7 fade
         wait-fade
         8 ebit-set
     else
-        $A message   \ "Spirits? Life-blood? No matter how you cut it, these don't sound like the words of..."
-        wait-message
+        $A say   \ "Spirits? Life-blood? No matter how you cut it, these don't sound like the words of..."
         8 ebit-clear
     then
     self-idle-or-end
@@ -983,14 +914,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     73.11 -9.81 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     hewie-who char-here? 118 hewie-action? and hewie-who 8 char-on-tri? and if
-        $C message   \ "Hewie's eyes flash from inside the thicket."
-        wait-message
+        $C say   \ "Hewie's eyes flash from inside the thicket."
     else
-        $B message   \ "There is an opening in the thicket... It looks just big enough for an animal to ge..."
-        wait-message
+        $B say   \ "There is an opening in the thicket... It looks just big enough for an animal to ge..."
     then
     self-idle-or-end
 ;
@@ -1005,48 +933,37 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         om1f-8-flag2 story-flag? not if
             stalkers-stay state-flag-set
             fiona-who 8 char-file-load
-            $14 message   \ "It's too dark to see... It looks like there could be something in the back. F..."
-            wait-message
+            $14 say   \ "It's too dark to see... It looks like there could be something in the back. F..."
             0 answer? if
                 fiona-who char-file-use
                 3 char-start
                 $26 char-activate
                 $26 127.567 0.0 -123.393 -90 char-to-xyz
                 old-mansion-1f-8.cmd01
-                look-close-anim self-anim
-                self-wait-anim
+                look-close-anim play-out
                 0 1 track $1E action
-                self-frames-reset
-                $F self-wait-frames
+                $F wait-frames
                 fiona-who seized-sound 5 char-sound
-                0 room-motion self-anim
-                self-wait-anim
+                0 room-motion play-out
                 3 panic-stage? not if
                     3 panic-stage
                 then
-                1 room-motion self-anim
-                self-wait-anim
-                3 room-motion self-anim
-                self-wait-anim
+                1 room-motion play-out
+                3 room-motion play-out
                 om1f-8-flag2 story-flag-set
             then
             stalkers-stay state-flag-clear
         else
             1 0 var? if
-                $D message   \ "It doesn't seem too terribly dangerous... But I get the feeling that if I..."
-                wait-message
+                $D say   \ "It doesn't seem too terribly dangerous... But I get the feeling that if I..."
             then
             1 1 var? if
-                $E message   \ "It's almost as if... it wants something..."
-                wait-message
+                $E say   \ "It's almost as if... it wants something..."
             then
             1 2 var? if
-                crouch-down-anim self-anim
-                self-wait-anim
-                $F message   \ "There are traces as if something has recently been ripped to shreds here...."
-                wait-message
-                crouch-up-anim self-anim
-                self-wait-anim
+                crouch-down-anim play-out
+                $F say   \ "There are traces as if something has recently been ripped to shreds here...."
+                crouch-up-anim play-out
             then
             1 var-inc
             1 3 var? if
@@ -1054,12 +971,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         then
     else
-        crouch-down-anim self-anim
-        self-wait-anim
-        $10 message   \ "Mandragora... So, this is used as a substitute for life-blood."
-        wait-message
-        crouch-up-anim self-anim
-        self-wait-anim
+        crouch-down-anim play-out
+        $10 say   \ "Mandragora... So, this is used as a substitute for life-blood."
+        crouch-up-anim play-out
     then
     0 self-scripted
     0 0.0 0.0 0.0 0.0 event-camera
@@ -1162,10 +1076,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -112.26 -123.08 self-turn-to-xz
     self-wait-done
     look-close-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    0 message   \ "There is something glowing from the rear of the graveyard... I just can't make it out f..."
-    wait-message
+    $28 wait-frames
+    0 say   \ "There is something glowing from the rear of the graveyard... I just can't make it out f..."
     self-idle-or-end
 ;
 
@@ -1178,10 +1090,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-8.act1F ( -- )   \ 00426430
     0 old-mansion-1f-8.cmd03
-    begin
-        2 cutscene-shot? not while
-        yield
-    repeat
+    [: 2 cutscene-shot? ;] wait-until
     1 old-mansion-1f-8.cmd03
     self-idle-or-end
 ;

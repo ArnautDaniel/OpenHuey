@@ -46,35 +46,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-1f-13.char-enter ( -- )   \ 0040E480
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         1 1 player-camera
-    then then
+    then
     2 1 1 area-camera
     fiona-who self-is? if
         1 exit-taken? 2 exit-taken? or if
@@ -224,8 +209,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-13.act00 ( -- )   \ 0047ABA0
     self-wait-done
-    4 message   \ "You can't hold any more. You must first do something with the one you are carrying."
-    wait-message
+    4 say   \ "You can't hold any more. You must first do something with the one you are carrying."
     self-idle-or-end
 ;
 
@@ -303,8 +287,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-13.act02 ( -- )   \ 0047ABA8
     self-wait-done
-    0 message   \ "It's totally dried-out. I guess it can't hurt me now... I'll never look at a plant the..."
-    wait-message
+    0 say   \ "It's totally dried-out. I guess it can't hurt me now... I'll never look at a plant the..."
     self-idle-or-end
 ;
 
@@ -312,12 +295,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 self-scripted
     stalkers-stay state-flag-set
     self-wait-done
-    1 message   \ "Is this an info sheet on the plants here? There is something written here..."
-    wait-message
+    1 say   \ "Is this an info sheet on the plants here? There is something written here..."
     $F 6 fade
     wait-fade
-    2 message   \ "In order to procure the large quantity of blood required to complete the grand process,..."
-    wait-message
+    2 say   \ "In order to procure the large quantity of blood required to complete the grand process,..."
     $F 7 fade
     wait-fade
     stalkers-stay state-flag-clear
@@ -342,23 +323,18 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-no-attack state-flag-set
     1 self-scripted
     self-wait-done
-    3 message   \ "Full-bodied flowers sprout from the bed. Pull one out? YES NO"
-    wait-message
+    3 say   \ "Full-bodied flowers sprout from the bed. Pull one out? YES NO"
     0 answer? if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $18 message-param-room
         $18 1 item-give-count
         0 $18 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
         $3C threat-add
         fiona-who 2 6 char-sound
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
         old-mansion-1f-13.act0A
     then
     stalkers-stay state-flag-clear
@@ -372,24 +348,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-no-attack state-flag-set
     1 self-scripted
     self-wait-done
-    3 message   \ "Full-bodied flowers sprout from the bed. Pull one out? YES NO"
-    wait-message
+    3 say   \ "Full-bodied flowers sprout from the bed. Pull one out? YES NO"
     0 answer? if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $19 message-param-room
         $19 1 item-give-count
         0 $19 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
         got-yellow-mandragora story-flag-set
         $3C threat-add
         fiona-who 2 6 char-sound
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
         old-mansion-1f-13.act0A
     then
     stalkers-stay state-flag-clear
@@ -403,24 +374,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-no-attack state-flag-set
     1 self-scripted
     self-wait-done
-    3 message   \ "Full-bodied flowers sprout from the bed. Pull one out? YES NO"
-    wait-message
+    3 say   \ "Full-bodied flowers sprout from the bed. Pull one out? YES NO"
     0 answer? if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $1A message-param-room
         $1A 1 item-give-count
         0 $1A item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
         got-red-mandragora story-flag-set
         $3C threat-add
         fiona-who 2 6 char-sound
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
         old-mansion-1f-13.act0A
     then
     stalkers-stay state-flag-clear
@@ -434,24 +400,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-no-attack state-flag-set
     1 self-scripted
     self-wait-done
-    3 message   \ "Full-bodied flowers sprout from the bed. Pull one out? YES NO"
-    wait-message
+    3 say   \ "Full-bodied flowers sprout from the bed. Pull one out? YES NO"
     0 answer? if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $1B message-param-room
         $1B 1 item-give-count
         0 $1B item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
         got-blue-mandragora story-flag-set
         $3C threat-add
         fiona-who 2 6 char-sound
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
         old-mansion-1f-13.act0A
     then
     stalkers-stay state-flag-clear
@@ -465,24 +426,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-no-attack state-flag-set
     1 self-scripted
     self-wait-done
-    3 message   \ "Full-bodied flowers sprout from the bed. Pull one out? YES NO"
-    wait-message
+    3 say   \ "Full-bodied flowers sprout from the bed. Pull one out? YES NO"
     0 answer? if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $1C message-param-room
         $1C 1 item-give-count
         0 $1C item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
         got-purple-mandragora story-flag-set
         $3C threat-add
         fiona-who 2 6 char-sound
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
         old-mansion-1f-13.act0A
     then
     stalkers-stay state-flag-clear
@@ -493,8 +449,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-13.act09 ( -- )   \ 0047ABB0
     self-wait-done
-    5 message   \ "No thank you. I've just about had my fill of these freakish things."
-    wait-message
+    5 say   \ "No thank you. I've just about had my fill of these freakish things."
     self-idle-or-end
 ;
 
@@ -507,11 +462,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-who self-turn-to
     self-wait-done
     1 wait-counter
-    $C06 self-anim
-    self-wait-anim
+    $C06 play-out
     0 self-anim
-    self-frames-reset
-    1 self-wait-frames
+    1 wait-frames
     hewie-who self-look-at
     yield
     2 counter-set
@@ -537,8 +490,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     hewie-bark
     self-wait-done
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     fiona-who 0 0 char-camera
     fiona-who camera-follow
     3 counter-set
@@ -551,10 +503,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -180 self-turn-angle
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    6 message   \ "The flower bed below contains various flowers stretching in every direction. This must..."
-    wait-message
+    $28 wait-frames
+    6 say   \ "The flower bed below contains various flowers stretching in every direction. This must..."
     self-wait-anim
     self-idle-or-end
 ;

@@ -56,35 +56,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-1f-17.char-enter ( -- )   \ 00411C60
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 2 player-camera
-    then then
+    then
     0 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         1 1 player-camera
-    then then
+    then
     3 1 1 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
@@ -116,13 +101,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 exit-usable? if
         1 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
+    then
     $A 0 0 1 chars-area-camera
     $B 1 1 1 chars-area-camera
     $C 0 0 1 chars-area-camera
@@ -302,12 +283,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -90 self-turn-angle
     self-wait-done
     0 ebit? not if
-        0 message   \ "'Blue Flame, Secret Ways' Strange title for a picture. Unless it could be some sort..."
-        wait-message
+        0 say   \ "'Blue Flame, Secret Ways' Strange title for a picture. Unless it could be some sort..."
         0 ebit-set
     else
-        1 message   \ "A female is raising an oil lamp. A blue flame burns brightly from its tip. It's alm..."
-        wait-message
+        1 say   \ "A female is raising an oil lamp. A blue flame burns brightly from its tip. It's alm..."
         0 ebit-clear
     then
     self-idle-or-end
@@ -318,25 +297,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -137.37 -14.57 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $60 message-param-room
         $60 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-17-chicken-jerky story-flag-set
             0 effect-remove
             $60 1 item-give-count
             0 $60 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
@@ -346,25 +320,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     43.0 -40.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $92 message-param-room
         $92 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-17-magnesia story-flag-set
             1 effect-remove
             $92 1 item-give-count
             0 $92 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -374,25 +343,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     68.99 19.99 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-17-medallion story-flag-set
             2 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -411,16 +375,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         world-frozen state-flag-set
         1 5.0 10.0 0.0 0.0 event-camera
         mummy-examined story-flag-set
-        2 message   \ "This... isn't a doll! It's a mummy!"
-        wait-message
+        2 say   \ "This... isn't a doll! It's a mummy!"
     else
         world-frozen state-flag-set
         1 5.0 10.0 0.0 0.0 event-camera
-        3 message   \ "Why in the world is this here!?"
-        wait-message
+        3 say   \ "Why in the world is this here!?"
     then
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     0 self-scripted
     world-frozen state-flag-clear
     0 0.0 0.0 0.0 0.0 event-camera

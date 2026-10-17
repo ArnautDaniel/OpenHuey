@@ -17,25 +17,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-2f-4.char-enter ( -- )   \ 0040F4C0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 -1 player-camera
-    then then
+    then
     0 2 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
 ;
 
@@ -97,23 +87,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $A4 -36.0 41.0 -35 $FFFF 5 self-move-to
     self-wait-done
     fiona-who 3 6 char-sound
-    self-frames-reset
-    $78 self-wait-frames
-    look-close-anim self-anim
-    self-wait-anim
-    6 message   \ "Oh my! It actually transformed..."
-    wait-message
-    reach-out-anim self-anim
-    self-wait-anim
+    $78 wait-frames
+    look-close-anim play-out
+    6 say   \ "Oh my! It actually transformed..."
+    reach-out-anim play-out
     9 item-use
     $A message-param-room
     $A 1 item-give-count
     0 $A item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    reach-back-anim self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    reach-back-anim play-out
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -125,18 +109,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    9 message   \ "There is something written here... I... think I can just about make it out..."
-    wait-message
+    9 say   \ "There is something written here... I... think I can just about make it out..."
     $F 6 fade
     wait-fade
-    $A message   \ "Torva Temporarily gives anxiety to those who use it, making them feel panicked. Weltig..."
-    wait-message
+    $A say   \ "Torva Temporarily gives anxiety to those who use it, making them feel panicked. Weltig..."
     $F 7 fade
     wait-fade
     $48 subscreen-bit? not $49 subscreen-bit? not or if
         hand-to-mouth-anim self-anim
-        $B message   \ "Names for chemicals or medicine or something... Looks like their effects are liste..."
-        wait-message
+        $B say   \ "Names for chemicals or medicine or something... Looks like their effects are liste..."
         self-wait-anim
         $48 subscreen-bit
         $49 subscreen-bit
@@ -155,15 +136,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 ebit? not if
         $F 6 fade
         wait-fade
-        3 message   \ "Purifier The impure yellow mass of filth will set free the shining glory of the sac..."
-        wait-message
+        3 say   \ "Purifier The impure yellow mass of filth will set free the shining glory of the sac..."
         0 ebit-set
         $F 7 fade
         wait-fade
     else
         hand-to-mouth-anim $A self-anim-blend
-        4 message   \ "A purifier? I've never heard of a device like this before. There is a space to inse..."
-        wait-message
+        4 say   \ "A purifier? I've never heard of a device like this before. There is a space to inse..."
         self-wait-anim
         0 ebit-clear
     then
@@ -180,47 +159,37 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $A4 -36.0 41.0 -35 $FFFF 5 self-move-to
     self-wait-done
     fiona-who 3 6 char-sound
-    self-frames-reset
-    $78 self-wait-frames
-    look-close-anim self-anim
-    self-wait-anim
-    reach-out-anim self-anim
-    self-wait-anim
+    $78 wait-frames
+    look-close-anim play-out
+    reach-out-anim play-out
     1 8 var? if
         8 message-param-room
         0 8 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     else 1 10 var? if
         $A message-param-room
         0 $A item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     else 1 11 var? if
         $B message-param-room
         0 $B item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     else 1 12 var? if
         $C message-param-room
         0 $C item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     else 1 16 var? if
         $10 message-param-room
         0 $10 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     then then then then then
-    reach-back-anim self-anim
-    self-wait-anim
-    5 message   \ "No transformation occurred. I guess it didn't work. Maybe I should try a different item?"
-    wait-message
+    reach-back-anim play-out
+    5 say   \ "No transformation occurred. I guess it didn't work. Maybe I should try a different item?"
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -243,25 +212,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     5.64 5.58 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $74 message-param-room
         $74 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om2f-4-viride-medallion story-flag-set
             0 effect-remove
             $74 1 item-give-count
             0 $74 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
@@ -271,8 +235,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0.6 5.2 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    7 message   \ "The desk is covered in strange research equipment. What kind of research could possibly..."
-    wait-message
+    7 say   \ "The desk is covered in strange research equipment. What kind of research could possibly..."
     self-idle-or-end
 ;
 
@@ -281,8 +244,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     46.8 0.0 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    8 message   \ "There seems to be a passage to another one here. A warm wind is blowing in from that di..."
-    wait-message
+    8 say   \ "There seems to be a passage to another one here. A warm wind is blowing in from that di..."
     self-idle-or-end
 ;
 

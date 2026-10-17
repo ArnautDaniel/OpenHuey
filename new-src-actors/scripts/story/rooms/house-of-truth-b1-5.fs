@@ -131,8 +131,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $F 6 fade
     wait-fade
-    1 message   \ "For the next step, be it red or blue, the answers will make themselves known one by one."
-    wait-message
+    1 say   \ "For the next step, be it red or blue, the answers will make themselves known one by one."
     $F 7 fade
     wait-fade
     stalkers-stay state-flag-clear
@@ -145,25 +144,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -117.05 101.81 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             htb1-5-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

@@ -103,25 +103,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-b1-1.char-enter ( -- )   \ 003F8350
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            5 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         5 -1 player-camera
-    then then
+    then
     0 5 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            2 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         2 -1 player-camera
-    then then
+    then
     1 2 -1 area-camera
     fiona-who self-is? if
         0 exit-taken? 1 exit-taken? or if
@@ -459,25 +449,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -52.5 -1.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $60 message-param-room
         $60 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             cb1-1-chicken-jerky story-flag-set
             1 effect-remove
             $60 1 item-give-count
             0 $60 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -486,8 +471,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     3 self-look-at
     yield
-    3 message   \ "She looks busy preparing dinner... Perhaps this isn't the best time to strike up a conv..."
-    wait-message
+    3 say   \ "She looks busy preparing dinner... Perhaps this isn't the best time to strike up a conv..."
     self-who self-look-at
     yield
     self-idle-or-end
@@ -505,15 +489,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 else
                     $608 self-anim
                 then
-                self-frames-reset
-                $14 self-wait-frames
+                $14 wait-frames
                 in-panic? not if
                     fiona-who $72 5 char-sound
                     4 door-unlock
                     $8008 message   \ "You unlocked the door."
                     20 self-idle-anim
-                    self-frames-reset
-                    $14 self-wait-frames
+                    $14 wait-frames
                     wait-message
                 then
             then
@@ -527,17 +509,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     -35.35 -34.5 self-turn-to-xz
     self-wait-done
-    reach-out-anim self-anim
-    self-wait-anim
+    reach-out-anim play-out
     0 part-hidden
     5 message-param-room
     5 1 item-give-count
     0 5 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    reach-back-anim self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    reach-back-anim play-out
     got-castle-sketch story-flag-set
     summoner-on state-flag-clear
     5 door-open-clear
@@ -582,8 +561,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-b1-1.act06 ( -- )   \ 0047AA00
     self-wait-done
-    $E message   \ "This plywood-paneled door is blocking my path. But it could be broken through easily e..."
-    wait-message
+    $E say   \ "This plywood-paneled door is blocking my path. But it could be broken through easily e..."
     self-idle-or-end
 ;
 
@@ -594,12 +572,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-b1-1.act08 ( -- )   \ 003F8CA0
     self-wait-done
     1 ebit? not if
-        8 message   \ "Varied ornate, high-class china lines the shelf."
-        wait-message
+        8 say   \ "Varied ornate, high-class china lines the shelf."
         1 ebit-set
     else
-        9 message   \ "They have all been polished to sparkling perfection. The building itself may be old..."
-        wait-message
+        9 say   \ "They have all been polished to sparkling perfection. The building itself may be old..."
     then
     self-idle-or-end
 ;
@@ -607,10 +583,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-b1-1.act09 ( -- )   \ 003F8CB8
     self-wait-done
     look-at-anim self-anim
-    self-frames-reset
-    self-wait-16
-    $D message   \ "The box emanates no specific odor. Looks like it is full of canned goods."
-    wait-message
+    16 wait-frames
+    $D say   \ "The box emanates no specific odor. Looks like it is full of canned goods."
     self-wait-anim
     self-idle-or-end
 ;
@@ -618,37 +592,31 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-b1-1.act0A ( -- )   \ 003F8CD0
     self-wait-done
     2 ebit? not if
-        $B message   \ "Numerous expensive spirits stretch along the wine rack."
-        wait-message
+        $B say   \ "Numerous expensive spirits stretch along the wine rack."
         2 ebit-set
     else
-        $C message   \ "Come to think of it, my father was quite the wine connoisseur."
-        wait-message
+        $C say   \ "Come to think of it, my father was quite the wine connoisseur."
     then
     self-idle-or-end
 ;
 
 : castle-b1-1.act0B ( -- )   \ 0047AA10
     self-wait-done
-    $A message   \ "The sink looks rusted in several spots... A thick, reddish-black discoloration cakes t..."
-    wait-message
+    $A say   \ "The sink looks rusted in several spots... A thick, reddish-black discoloration cakes t..."
     self-idle-or-end
 ;
 
 : castle-b1-1.act0C ( -- )   \ 0047AA18
     self-wait-done
-    5 message   \ "There is nothing in the pot..."
-    wait-message
+    5 say   \ "There is nothing in the pot..."
     self-idle-or-end
 ;
 
 : castle-b1-1.act0D ( -- )   \ 003F8CE8
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    $1E self-wait-frames
-    4 message   \ "Looks like meat is being served... It appears they still haven't finished preparing it."
-    wait-message
+    $1E wait-frames
+    4 say   \ "Looks like meat is being served... It appears they still haven't finished preparing it."
     self-wait-anim
     self-idle-or-end
 ;
@@ -662,8 +630,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-hidden state-flag-clear
     1 self-noclip
     fiona-who slide-sound 5 char-sound
-    3 room-motion $A self-anim-blend
-    self-wait-anim
+    3 room-motion $A blend-out
     0 self-noclip
     stalker-who char-busy? if
         4 ebit? not if
@@ -726,8 +693,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             fiona-hidden state-flag-clear
             1 self-noclip
             2 room-motion 5 self-anim-blend8
-            self-frames-reset
-            5 self-wait-frames
+            5 wait-frames
             fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
@@ -765,22 +731,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         self-wait-done
         stalker-who char-file-use
         0 room-motion $A self-anim-blend
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
         4 ebit-set
         self-wait-anim
     else
         $1FE -35.74 -5.079 -180 $FFFF 5 self-move-to
         self-wait-done
-        there-anim self-anim
-        self-wait-anim
+        there-anim play-out
         4 ebit-set
     then
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;
@@ -790,25 +751,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -18.1 -8.1 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             cb1-1-lavender story-flag-set
             2 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -818,25 +774,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -13.0 10.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $60 message-param-room
         $60 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             cb1-1-chicken-jerky-2 story-flag-set
             3 effect-remove
             $60 1 item-give-count
             0 $60 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
@@ -890,12 +841,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-b1-1.act16 ( -- )   \ 003F90D0
     self-wait-done
     $C ebit? not if
-        6 message   \ "The pot is filled with what look like tendrils. Wait a second, this looks like... h..."
-        wait-message
+        6 say   \ "The pot is filled with what look like tendrils. Wait a second, this looks like... h..."
         $C ebit-set
     else
-        7 message   \ "Looking at it again is going to make me nauseous."
-        wait-message
+        7 say   \ "Looking at it again is going to make me nauseous."
     then
     self-idle-or-end
 ;

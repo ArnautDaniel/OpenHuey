@@ -93,25 +93,15 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
 ;
 
 : old-mansion-1f-6.char-enter ( -- )   \ 00416AF0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            3 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         3 -1 player-camera
-    then then
+    then
     1 3 -1 area-camera
     fiona-who self-is? if
         1 exit-taken? if
@@ -132,13 +122,9 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 0 -1 1 chars-area-camera
     5 1 0 1 chars-area-camera
     6 1 0 1 chars-area-camera
@@ -321,8 +307,7 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
         else
             3 var-inc
         then
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     again
 ;
 
@@ -331,48 +316,32 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
     -119.67 151.64 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-6-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
 
 : old-mansion-1f-6.act02 ( -- )   \ 00416F10
     0 old-mansion-1f-6.cmd00
-    begin
-        2 ebit? not while
-        yield
-    repeat
+    [: 2 ebit? ;] wait-until
     $21 $200 1 4 char-anim-hold
     1 0 var-set
     2 0 var-set
-    begin
-        1 old-mansion-1f-6.cmd00
-        3 ebit? not while
-        yield
-    repeat
-    begin
-        2 old-mansion-1f-6.cmd00
-        1 0 var? while
-        yield
-    repeat
+    [: 1 old-mansion-1f-6.cmd00 3 ebit? ;] wait-until
+    [: 2 old-mansion-1f-6.cmd00 1 0 var? ;] wait-while
     self-idle-or-end
 ;
 
@@ -380,8 +349,7 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
     self-wait-done
     20.0 -120.0 self-turn-to-xz
     self-wait-done
-    0 message   \ "There's a sheet draped over this... thing. Why are they trying to hide everything away..."
-    wait-message
+    0 say   \ "There's a sheet draped over this... thing. Why are they trying to hide everything away..."
     self-idle-or-end
 ;
 
@@ -390,10 +358,8 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
     90 self-turn-angle
     self-wait-done
     look-close-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    1 message   \ "It's an enormous cage. What in the world could they have been keeping in here?"
-    wait-message
+    $28 wait-frames
+    1 say   \ "It's an enormous cage. What in the world could they have been keeping in here?"
     self-wait-anim
     self-idle-or-end
 ;
@@ -407,8 +373,7 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
     fiona-hidden state-flag-clear
     1 self-noclip
     fiona-who slide-sound 5 char-sound
-    3 room-motion $A self-anim-blend
-    self-wait-anim
+    3 room-motion $A blend-out
     0 self-noclip
     4 ebit? not if
         stalker-who action-end
@@ -466,8 +431,7 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
             fiona-hidden state-flag-clear
             1 self-noclip
             2 room-motion 5 self-anim-blend8
-            self-frames-reset
-            5 self-wait-frames
+            5 wait-frames
             fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
@@ -497,19 +461,14 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
     3 self-is? $22 self-is? or if
         stalker-who char-file-use
         4 stalker-who 1 char-model-op
-        0 room-motion self-anim
-        self-wait-anim
+        0 room-motion play-out
         4 stalker-who 0 char-model-op
     else
-        there-anim self-anim
-        self-wait-anim
+        there-anim play-out
     then
     4 ebit-set
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;

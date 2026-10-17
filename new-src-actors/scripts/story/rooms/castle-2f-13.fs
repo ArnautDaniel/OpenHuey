@@ -18,15 +18,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-2f-13.char-enter ( -- )   \ 004039B0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
     hewie-who self-is? if
         118 hewie-action? not if
@@ -188,8 +183,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-2f-13.act02 ( -- )   \ 00403D00
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     $FF 1.0 0 bgm
     $F $44 fade
     wait-fade
@@ -255,12 +249,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-2f-13.act04 ( -- )   \ 00403D30
     self-wait-done
     0 ebit? not if
-        0 message   \ "It's a suspended bridge."
-        wait-message
+        0 say   \ "It's a suspended bridge."
         0 ebit-set
     else
-        1 message   \ "If I lower the bridge somehow, I can use it to cross."
-        wait-message
+        1 say   \ "If I lower the bridge somehow, I can use it to cross."
     then
     self-idle-or-end
 ;
@@ -286,15 +278,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 then
                 $70 message-param-room
                 $70 $63 item-count? if
-                    $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-                    wait-message
+                    $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
                 else
                     c2f-13-medallion story-flag-set
                     $70 1 item-give-count
                     0 $70 item-tab
                     item-fanfare
-                    $8011 message   \ "You've obtained ."
-                    wait-message
+                    $8011 say   \ "You've obtained ."
                 then
                 c2f-13-medallion story-flag? if
                     1 effect-remove
@@ -314,10 +304,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         1 counter-set
         $1EA -149.0 -51.0 -90 $FFFF 5 self-move-to
         self-wait-done
-        lie-down-anim self-anim
-        self-wait-anim
-        lie-anim self-anim
-        self-wait-anim
+        lie-down-anim play-out
+        lie-anim play-out
         5 2 hewie-anim
     then
     self-idle-or-end
@@ -354,10 +342,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-2f-13.act08 ( -- )   \ 00403EE0
     $75 0 hewie-do
-    begin
-        117 hewie-action? while
-        yield
-    repeat
+    [: 117 hewie-action? ;] wait-while
     hewie-who $1C3 char-on-tri? hewie-who $1D0 char-on-tri? or hewie-who $1EA char-on-tri? or if
         0 hewie-who 6 action
     else
@@ -374,12 +359,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     90 self-turn-angle
     self-wait-done
     4 ebit? not if
-        3 message   \ "The body of a beast and the head of a bird... What a strange-looking statue."
-        wait-message
+        3 say   \ "The body of a beast and the head of a bird... What a strange-looking statue."
         4 ebit-set
     else
-        4 message   \ "Some ancient castles used to line their walls with gargoyles, as it was believed to..."
-        wait-message
+        4 say   \ "Some ancient castles used to line their walls with gargoyles, as it was believed to..."
         4 ebit-clear
     then
     self-idle-or-end

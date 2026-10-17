@@ -54,35 +54,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-5.char-enter ( -- )   \ 003F7060
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            3 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         3 -1 player-camera
-    then then
+    then
     0 3 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            4 3 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         4 3 player-camera
-    then then
+    then
     2 4 3 area-camera
     fiona-who self-is? if
         1 exit-taken? if
@@ -264,10 +249,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     -177 self-turn-angle
     self-wait-done
-    look-close-anim self-anim
-    self-wait-anim
-    4 message   \ "The lighting is dim making it hard to see, but... I can ever so faintly make out the sh..."
-    wait-message
+    look-close-anim play-out
+    4 say   \ "The lighting is dim making it hard to see, but... I can ever so faintly make out the sh..."
     self-idle-or-end
 ;
 
@@ -276,14 +259,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 ebit? not if
         40.0 -11.0 self-turn-to-xz
         self-wait-done
-        reach-out-anim self-anim
-        self-wait-anim
-        2 message   \ "There is nothing inside."
-        wait-message
+        reach-out-anim play-out
+        2 say   \ "There is nothing inside."
         1 ebit-set
     else
-        3 message   \ "A second, more-thorough investigation of the box reveals that there is dust inside..."
-        wait-message
+        3 say   \ "A second, more-thorough investigation of the box reveals that there is dust inside..."
     then
     self-idle-or-end
 ;
@@ -466,8 +446,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     knocked-anim self-anim
     fiona-who 0 6 char-sound
-    self-frames-reset
-    $14 self-wait-frames
+    $14 wait-frames
     3 ebit? not if
         5 message   \ "I... I don't feel so hot. It's like I have no energy all of a sudden."
         3 ebit-set
@@ -486,18 +465,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $17B 94.0 -27.5 90 $FFFF 5 self-move-to
     self-wait-done
     1 15.0 0.0 0.0 8.0 event-camera
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     4 ebit? not if
-        7 message   \ "A painting... Several people appear to be clasping their hands in prayer."
-        wait-message
+        7 say   \ "A painting... Several people appear to be clasping their hands in prayer."
         4 ebit-set
     else
-        8 message   \ "If I had the time, I'd like to spend more time taking in the painting's full beauty..."
-        wait-message
+        8 say   \ "If I had the time, I'd like to spend more time taking in the painting's full beauty..."
     then
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
 ;
@@ -507,12 +482,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $19A 94.0 27.5 90 $FFFF 5 self-move-to
     self-wait-done
     1 15.0 0.0 0.0 8.0 event-camera
-    self-frames-reset
-    4 self-wait-frames
-    9 message   \ "It seems like this and the painting hanging next to it make up a set of twin paintings."
-    wait-message
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
+    9 say   \ "It seems like this and the painting hanging next to it make up a set of twin paintings."
+    4 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
 ;
@@ -522,25 +494,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     41.0 -19.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $91 message-param-room
         $91 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-5-antimony-powder story-flag-set
             3 effect-remove
             $91 1 item-give-count
             0 $91 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

@@ -185,6 +185,11 @@ $1F constant hewie-zone-var
 : self-frames-reset ( -- )  0 self-frames ! ;
 : self-wait-frames ( n -- )
     in-slot? 0= if  drop exit  then  begin  self-frames @ over < while  yield  repeat  drop ;
+: wait-frames ( n -- )  self-frames-reset self-wait-frames ;   \ (n frames from now)
+: wait-while ( xt -- )   \ (an action script waits while it holds)
+    in-slot? 0= if  drop exit  then  begin  dup execute while  yield  repeat  drop ;
+\ the one played: Fiona, or Hewie in his sections
+: player-who ( -- who )  hewie-controlled? if  hewie-who  else  fiona-who  then ;
 : self-wait-16 ( -- )  16 self-wait-frames ;
 
 \ ---- actions: the action scripts in their slots (Event_StartAction, Events_GiveScript) ----
@@ -430,6 +435,7 @@ $1C constant depth-slot   $1D constant fog-slot   $1E constant blend-slot   $1F 
     dup msg !  self-char msg-owner !  window-id send show-text ;
 : wait-message ( -- )   \ (an action script waits while it is open)
     in-slot? 0= if  exit  then  begin  msg @ 0< 0= while  yield  repeat ;
+: say ( msg -- )  message wait-message ;   \ (shown, and waited out)
 : message-close ( msg -- )
     dup $FFFF = over msg @ = or if  window-id send close-text  -1 msg !  -1 prepared-msg !  -1 prepared-page !  else  drop  then ;
 : message-prepare ( msg -- )  dup $FFFF = if  drop -1  then  prepared-msg !  -1 prepared-page ! ;   \ (a scene's subtitles: 0x62 12 turns its pages)
@@ -693,6 +699,8 @@ variable mv-kind  variable mv-a  variable mv-b  create mv-at /vec allot  fvariab
     in-slot? 0= if  exit  then  self-char dup char-here 0= if  drop exit  then
     begin  yield  dup anim-ended-of char-flag until
     -1 swap cells move-done-of + ! ;
+: play-out ( anim -- )  self-anim self-wait-anim ;            \ (played, and waited to its end)
+: blend-out ( anim b -- )  self-anim-blend self-wait-anim ;
 : wait-char-anim ( id -- )   \ 0x9E
     char-slot dup char-here 0= if  drop wait-frame exit  then
     begin  wait-frame  dup anim-ended-of char-flag  until  drop ;

@@ -117,8 +117,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $F 6 fade
     wait-fade
-    2 message   \ "One should care not of order that ties the colors of red,blue,yellow,green together"
-    wait-message
+    2 say   \ "One should care not of order that ties the colors of red,blue,yellow,green together"
     $F 7 fade
     wait-fade
     stalkers-stay state-flag-clear

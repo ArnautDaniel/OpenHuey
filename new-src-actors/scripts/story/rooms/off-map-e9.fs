@@ -43,15 +43,10 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 ;
 
 : off-map-e9.char-enter ( -- )   \ 0044A380
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
 ;
 
@@ -149,13 +144,11 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
         yield
         3 part-hidden
         3 1 off-map-e9.cmd02
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         $32 chance? if
             3 part-shown
             3 0 off-map-e9.cmd02
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             3 part-hidden
             3 1 off-map-e9.cmd02
             yield
@@ -164,14 +157,12 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
             yield
             3 part-hidden
             3 1 off-map-e9.cmd02
-            self-frames-reset
-            8 self-wait-frames
+            8 wait-frames
         then
         $19 chance? if
             3 part-shown
             3 0 off-map-e9.cmd02
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             3 part-hidden
             3 1 off-map-e9.cmd02
             yield
@@ -180,8 +171,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
             yield
             3 part-hidden
             3 1 off-map-e9.cmd02
-            self-frames-reset
-            self-wait-16
+            16 wait-frames
         then
         5 chance? if
             3 part-shown
@@ -195,8 +185,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
             yield
             3 part-hidden
             3 1 off-map-e9.cmd02
-            self-frames-reset
-            $20 self-wait-frames
+            $20 wait-frames
         then
         3 part-shown
         3 0 off-map-e9.cmd02
@@ -215,13 +204,11 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
         yield
         4 part-hidden
         4 1 off-map-e9.cmd02
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         $32 chance? if
             4 part-shown
             4 0 off-map-e9.cmd02
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             4 part-hidden
             4 1 off-map-e9.cmd02
             yield
@@ -230,14 +217,12 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
             yield
             4 part-hidden
             4 1 off-map-e9.cmd02
-            self-frames-reset
-            8 self-wait-frames
+            8 wait-frames
         then
         $19 chance? if
             4 part-shown
             4 0 off-map-e9.cmd02
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             4 part-hidden
             4 1 off-map-e9.cmd02
             yield
@@ -246,8 +231,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
             yield
             4 part-hidden
             4 1 off-map-e9.cmd02
-            self-frames-reset
-            self-wait-16
+            16 wait-frames
         then
         5 chance? if
             4 part-shown
@@ -261,8 +245,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
             yield
             4 part-hidden
             4 1 off-map-e9.cmd02
-            self-frames-reset
-            $20 self-wait-frames
+            $20 wait-frames
         then
         4 part-shown
         4 0 off-map-e9.cmd02
@@ -281,13 +264,11 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
         yield
         5 part-hidden
         5 1 off-map-e9.cmd02
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         $32 chance? if
             5 part-shown
             5 0 off-map-e9.cmd02
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             5 part-hidden
             5 1 off-map-e9.cmd02
             yield
@@ -296,14 +277,12 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
             yield
             5 part-hidden
             5 1 off-map-e9.cmd02
-            self-frames-reset
-            8 self-wait-frames
+            8 wait-frames
         then
         $19 chance? if
             5 part-shown
             5 0 off-map-e9.cmd02
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             5 part-hidden
             5 1 off-map-e9.cmd02
             yield
@@ -312,8 +291,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
             yield
             5 part-hidden
             5 1 off-map-e9.cmd02
-            self-frames-reset
-            self-wait-16
+            16 wait-frames
         then
         5 chance? if
             5 part-shown
@@ -327,8 +305,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
             yield
             5 part-hidden
             5 1 off-map-e9.cmd02
-            self-frames-reset
-            $20 self-wait-frames
+            $20 wait-frames
         then
         5 part-shown
         5 0 off-map-e9.cmd02
@@ -347,13 +324,11 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
         yield
         6 part-hidden
         6 1 off-map-e9.cmd02
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         $32 chance? if
             6 part-shown
             6 0 off-map-e9.cmd02
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             6 part-hidden
             6 1 off-map-e9.cmd02
             yield
@@ -362,14 +337,12 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
             yield
             6 part-hidden
             6 1 off-map-e9.cmd02
-            self-frames-reset
-            8 self-wait-frames
+            8 wait-frames
         then
         $19 chance? if
             6 part-shown
             6 0 off-map-e9.cmd02
-            self-frames-reset
-            2 self-wait-frames
+            2 wait-frames
             6 part-hidden
             6 1 off-map-e9.cmd02
             yield
@@ -378,8 +351,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
             yield
             6 part-hidden
             6 1 off-map-e9.cmd02
-            self-frames-reset
-            self-wait-16
+            16 wait-frames
         then
         5 chance? if
             6 part-shown
@@ -393,8 +365,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
             yield
             6 part-hidden
             6 1 off-map-e9.cmd02
-            self-frames-reset
-            $20 self-wait-frames
+            $20 wait-frames
         then
         6 part-shown
         6 0 off-map-e9.cmd02
@@ -415,29 +386,16 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
     off-map-e9.cmd01
     $34 1.0 1 bgm
     0 $1E 0 music
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     self-wait-done
-    begin
-        0 adx? not while
-        yield
-    repeat
+    [: 0 adx? ;] wait-until
     0 0.0 $FF bgm
-    begin
-        1 adx? not while
-        yield
-    repeat
+    [: 1 adx? ;] wait-until
     $37 room-preload
     $C subscreen-open
-    begin
-        subscreen-wanted state-flag? while
-        yield
-    repeat
+    [: subscreen-wanted state-flag? ;] wait-while
     9 subscreen-open
-    begin
-        subscreen-wanted state-flag? while
-        yield
-    repeat
+    [: subscreen-wanted state-flag? ;] wait-while
     $F $50 fade
     wait-fade
     off-map-e9.cmd00

@@ -50,55 +50,30 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : house-of-truth-2f-1.char-enter ( -- )   \ 004315E0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            6 6 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         6 6 player-camera
-    then then
+    then
     3 6 6 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 4 exit-taken? and if
-            fiona-who 4 char-to-exit
-            5 5 player-camera
-        then
-    else hewie-who self-is? 4 exit-taken? and if
-        hewie-who 4 char-to-exit
+    player-who self-is? 4 exit-taken? and if
+        player-who 4 char-to-exit
         5 5 player-camera
-    then then
+    then
     4 5 5 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
@@ -125,20 +100,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 exit-usable? if
         2 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 4 char-in-area? fiona-who char-busy? not and if
-            4 exit-check
-        then
-    else hewie-who 4 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 4 char-in-area? player-who char-busy? not and if
         4 exit-check
-    then then
+    then
     8 0 0 1 chars-area-camera
     9 1 1 1 chars-area-camera
     $A 0 0 1 chars-area-camera
@@ -328,34 +295,25 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     1 ebit? not 2 game-mode? or in-panic? or if
         in-panic? 2 game-mode? or if
-            rattle-behind-slow-anim self-anim
-            self-wait-anim
+            rattle-behind-slow-anim play-out
             -1 self-idle-anim
-            self-frames-reset
-            7 self-wait-frames
+            7 wait-frames
         else
-            rattle-behind-anim self-anim
-            self-wait-anim
+            rattle-behind-anim play-out
             -1 self-idle-anim
-            self-frames-reset
-            7 self-wait-frames
-            0 message   \ "The door is locked."
-            wait-message
+            7 wait-frames
+            0 say   \ "The door is locked."
         then
         1 ebit-set
     else
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         fiona-who $26E -10.0 135.3 0 char-to-xz
         world-frozen state-flag-set
         1 self-scripted
         1 20.0 0.0 0.0 2.0 event-camera
-        self-frames-reset
-        4 self-wait-frames
-        1 message   \ "A strange symbol is carved into the door. The symbol looks like a sun."
-        wait-message
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
+        1 say   \ "A strange symbol is carved into the door. The symbol looks like a sun."
+        4 wait-frames
         0 0.0 0.0 0.0 0.0 event-camera
         1 ebit-clear
         world-frozen state-flag-clear
@@ -370,8 +328,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 self-through-exit
     self-wait-done
     $609 self-anim
-    self-frames-reset
-    $14 self-wait-frames
+    $14 wait-frames
     fiona-who 3 6 char-sound
     $25 message-param-room
     $E6 door-locked? not if
@@ -379,10 +336,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     $E2 door-unlock
     20 self-idle-anim
-    self-frames-reset
-    $14 self-wait-frames
-    $8019 message   \ "Used ."
-    wait-message
+    $14 wait-frames
+    $8019 say   \ "Used ."
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -454,10 +409,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     fiona-who $FB -34.0 99.0 90 char-to-xz
     1 46.0 10.0 150.0 0.0 event-camera
-    2 message   \ "This room connects to another corridor... But it doesn't seem like I can get through."
-    wait-message
-    self-frames-reset
-    self-wait-16
+    2 say   \ "This room connects to another corridor... But it doesn't seem like I can get through."
+    16 wait-frames
     self-idle-or-end
 ;
 
@@ -466,25 +419,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -50.0 -15.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             ht2f-1-medallion story-flag-set
             6 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -494,25 +442,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -17.0 -41.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $72 message-param-room
         $72 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             ht2f-1-viola-medallion story-flag-set
             7 effect-remove
             $72 1 item-give-count
             0 $72 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

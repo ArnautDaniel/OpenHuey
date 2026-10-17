@@ -51,25 +51,15 @@ USING: engine common actors messages room-names story.words story.shared story-n
 ;
 
 : old-mansion-b1-7.char-enter ( -- )   \ 00429210
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
     fiona-who self-is? if
         0 exit-taken? if
@@ -210,8 +200,7 @@ USING: engine common actors messages room-names story.words story.shared story-n
 : old-mansion-b1-7.act02 ( -- )   \ 00429490
     $16 5 $FF char-load
     5 char-start
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     $16 char-activate
     $16 $9000 1 0 char-anim-hold
     $16 37.5 12.5 72.5 0 char-to-xyz
@@ -226,37 +215,30 @@ USING: engine common actors messages room-names story.words story.shared story-n
     8.95 11.89 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             omb1-7-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
 
 : old-mansion-b1-7.act04 ( -- )   \ 00429520
     self-wait-done
-    rest-anim self-anim
-    self-wait-anim
+    rest-anim play-out
     -1 self-idle-anim
     0 message   \ "An aquarium? Schools of strange fish glide through the water."
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     wait-message
     self-idle-or-end
 ;

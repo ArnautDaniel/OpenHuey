@@ -151,25 +151,15 @@ fvariable tip  fvariable tip-yaw  fvariable reach
 ;
 
 : castle-2f-12.char-enter ( -- )   \ 00402E10
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 -1 player-camera
-    then then
+    then
     0 1 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 -1 player-camera
-    then then
+    then
     1 1 -1 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
@@ -288,17 +278,13 @@ fvariable tip  fvariable tip-yaw  fvariable reach
 
 : castle-2f-12.act03 ( -- )   \ 00403350
     1 self-scripted
-    begin
-        0 2 var? not while
-        yield
-    repeat
+    [: 0 2 var? ;] wait-until
     counter-inc
     2 avoid-prompt
     fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    3 room-motion 0 self-anim-blend
-    self-wait-anim
+    3 room-motion 0 blend-out
     0 self-noclip
     c2f-12-flag1 story-flag-set
     1 barred-floor floor-on
@@ -319,11 +305,9 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     0 2 object-anim
     1 2 object-anim
     2 room-motion 0 self-anim-blend
-    self-frames-reset
-    $10 self-wait-frames
+    $10 wait-frames
     fiona-who 0 6 char-sound
-    self-frames-reset
-    $38 self-wait-frames
+    $38 wait-frames
     fiona-who 1 6 char-sound
     self-wait-anim
     0 self-noclip
@@ -352,8 +336,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     0 4 object-anim
     1 4 object-anim
     4 room-motion 0 self-anim-blend
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     fiona-who 0 6 char-sound
     self-wait-anim
     0 self-noclip
@@ -398,10 +381,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     5 ebit? if
         hewie-who self-look-at
         yield
-        begin
-            6 ebit? not while
-            yield
-        repeat
+        [: 6 ebit? ;] wait-until
     then
     counter-inc
     1 self-noclip
@@ -409,31 +389,26 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     yield
     3 ebit? not if
         0 room-motion 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        5 wait-frames
         0 part-hidden
         0 0 object-hidden
         1 0 object-hidden
         0 0 object-anim
         1 0 object-anim
-        self-frames-reset
-        $28 self-wait-frames
+        $28 wait-frames
         fiona-who 1 6 char-sound
         self-wait-anim
     else
         1 room-motion 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        5 wait-frames
         0 part-hidden
         0 0 object-hidden
         1 0 object-hidden
         0 1 object-anim
         1 1 object-anim
-        self-frames-reset
-        $E self-wait-frames
+        $E wait-frames
         fiona-who 0 6 char-sound
-        self-frames-reset
-        $3C self-wait-frames
+        $3C wait-frames
         fiona-who 1 6 char-sound
         self-wait-anim
     then
@@ -478,11 +453,9 @@ fvariable tip  fvariable tip-yaw  fvariable reach
             0 2 object-anim
             1 2 object-anim
             2 room-motion 0 self-anim-blend
-            self-frames-reset
-            $10 self-wait-frames
+            $10 wait-frames
             fiona-who 0 6 char-sound
-            self-frames-reset
-            $38 self-wait-frames
+            $38 wait-frames
             fiona-who 1 6 char-sound
             self-wait-anim
             0 self-noclip
@@ -527,16 +500,13 @@ fvariable tip  fvariable tip-yaw  fvariable reach
                 1 self-noclip
                 4 ebit? if
                     4 room-motion 0 self-anim-blend
-                    self-frames-reset
-                    7 self-wait-frames
+                    7 wait-frames
                     fiona-who 0 6 char-sound
                     self-wait-anim
                 else 0 0 var? if
-                    2 room-motion 0 self-anim-blend
-                    self-wait-anim
+                    2 room-motion 0 blend-out
                 else
-                    3 room-motion 0 self-anim-blend
-                    self-wait-anim
+                    3 room-motion 0 blend-out
                 then then
                 0 self-noclip
                 0 self-scripted
@@ -547,16 +517,13 @@ fvariable tip  fvariable tip-yaw  fvariable reach
             1 self-noclip
             4 ebit? if
                 4 room-motion 0 self-anim-blend
-                self-frames-reset
-                7 self-wait-frames
+                7 wait-frames
                 fiona-who 0 6 char-sound
                 self-wait-anim
             else 0 0 var? if
-                2 room-motion 0 self-anim-blend
-                self-wait-anim
+                2 room-motion 0 blend-out
             else
-                3 room-motion 0 self-anim-blend
-                self-wait-anim
+                3 room-motion 0 blend-out
             then then
             0 self-noclip
             0 self-scripted
@@ -586,19 +553,15 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         0 3 object-anim
         1 3 object-anim
         1 room-motion $A self-anim-blend
-        self-frames-reset
-        $C self-wait-frames
+        $C wait-frames
         stalker-who 0 6 char-sound
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         0 2 var-set
         self-wait-anim
-        step-back-anim self-anim
-        self-wait-anim
+        step-back-anim play-out
         0 self-scripted
     else
-        there-anim self-anim
-        self-wait-anim
+        there-anim play-out
         fiona-hidden state-flag? if
             2 avoid-prompt
             panic-eased
@@ -609,10 +572,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         then
     then
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;
@@ -633,23 +593,19 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     1 self-scripted
     1 1 var-set
     2 room-motion $A self-anim-blend
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     stalker-who $28 5 char-sound
     $1E threat-raise
-    self-frames-reset
-    $19 self-wait-frames
+    $19 wait-frames
     stalker-who $28 5 char-sound
     $14 threat-raise
-    self-frames-reset
-    $17 self-wait-frames
+    $17 wait-frames
     stalker-who $28 5 char-sound
     $A threat-raise
     self-wait-anim
     1 0 var-set
     3 0 var-set
-    step-back-anim self-anim
-    self-wait-anim
+    step-back-anim play-out
     0 self-scripted
     $78 1 summoner-wait
     self-idle-or-end
@@ -660,15 +616,12 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     23.3 4.0 self-turn-to-xz
     self-wait-done
     look-close-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     0 ebit? not if
-        3 message   \ "Why is there a doll... in a cage? Maybe someone is just trying to keep one of their..."
-        wait-message
+        3 say   \ "Why is there a doll... in a cage? Maybe someone is just trying to keep one of their..."
         0 ebit-set
     else
-        4 message   \ "The doll is so real, it looks like it could move at any second."
-        wait-message
+        4 say   \ "The doll is so real, it looks like it could move at any second."
     then
     self-wait-anim
     self-idle-or-end
@@ -676,20 +629,17 @@ fvariable tip  fvariable tip-yaw  fvariable reach
 
 : castle-2f-12.act07 ( -- )   \ 0047AB28
     self-wait-done
-    5 message   \ "There is a doll slumped in the chair. Perhaps this is the nursery?"
-    wait-message
+    5 say   \ "There is a doll slumped in the chair. Perhaps this is the nursery?"
     self-idle-or-end
 ;
 
 : castle-2f-12.act08 ( -- )   \ 00403480
     self-wait-done
     1 ebit? not if
-        6 message   \ "It's a child's rocking horse."
-        wait-message
+        6 say   \ "It's a child's rocking horse."
         1 ebit-set
     else
-        7 message   \ "Even if I wanted to revisit my childhood with a quick ride, I don't think this will..."
-        wait-message
+        7 say   \ "Even if I wanted to revisit my childhood with a quick ride, I don't think this will..."
     then
     self-idle-or-end
 ;
@@ -703,16 +653,13 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     1 20.0 10.0 0.0 0.0 event-camera
     got-jade-choker story-flag? not if
         2 ebit? not if
-            0 message   \ "It's a box, but I can't open it."
-            wait-message
+            0 say   \ "It's a box, but I can't open it."
             2 ebit-set
         else
-            1 message   \ "There is a slot here. Don't tell me this is going to be like the last one...?"
-            wait-message
+            1 say   \ "There is a slot here. Don't tell me this is going to be like the last one...?"
         then
     else
-        2 message   \ "The box is open."
-        wait-message
+        2 say   \ "The box is open."
     then
     0 0.0 0.0 0.0 0.0 event-camera
     world-frozen state-flag-clear
@@ -733,8 +680,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     1 7.0 30.0 0.0 0.0 event-camera
     world-frozen state-flag-set
     4 6 0.0 5.0 -39.0 0 0 sound
-    self-frames-reset
-    $10 self-wait-frames
+    $10 wait-frames
     9 ebit? if
         0 0.0 3.0 -39.0 flicker-sprite
     then
@@ -745,8 +691,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         1 castle-2f-12.cmd00
         yield
     repeat
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     9 ebit? if
         $A ebit-clear
         $86 1 item-count? not if
@@ -754,30 +699,25 @@ fvariable tip  fvariable tip-yaw  fvariable reach
             $86 1 item-give-count
             0 $86 item-tab
             item-fanfare
-            $8012 message   \ "You've obtained ."
-            wait-message
+            $8012 say   \ "You've obtained ."
             $A ebit-set
         then
         $8A 1 item-count? not if
             $A ebit? if
-                self-frames-reset
-                self-wait-16
+                16 wait-frames
             then
             $8A message-param-room
             $8A 1 item-give-count
             0 $8A item-tab
             item-fanfare
-            $8012 message   \ "You've obtained ."
-            wait-message
+            $8012 say   \ "You've obtained ."
         then
         0 effect-remove
     else
-        $A message   \ "Just my luck... it's empty."
-        wait-message
+        $A say   \ "Just my luck... it's empty."
     then
     got-jade-choker story-flag-set
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     world-frozen state-flag-clear
     stalkers-stay state-flag-clear
     0 0.0 0.0 0.0 0.0 event-camera
@@ -788,10 +728,8 @@ fvariable tip  fvariable tip-yaw  fvariable reach
 : castle-2f-12.act0C ( -- )   \ 00403660
     self-wait-done
     4 6 0.0 5.0 -39.0 0 0 sound
-    self-frames-reset
-    $1E self-wait-frames
-    8 message   \ "Nothing happened. Nothing at all."
-    wait-message
+    $1E wait-frames
+    8 say   \ "Nothing happened. Nothing at all."
     self-idle-or-end
 ;
 
@@ -807,8 +745,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     then
     $3A 3.123 11.435 -165 $FFFF 5 self-move-to
     self-wait-done
-    look-about-3-anim self-anim
-    self-wait-anim
+    look-about-3-anim play-out
     stalker-who 3 stalker-command
     c2f-12-flag3 story-flag-set
     self-idle-or-end
@@ -819,25 +756,20 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     22.9 -9.7 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $94 message-param-room
         $94 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c2f-12-refined-antimony story-flag-set
             2 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -846,8 +778,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     self-wait-done
     -19.0 -19.0 self-turn-to-xz
     self-wait-done
-    9 message   \ "It's a crib for a small child. The sheets have become discolored from lack of use. I gu..."
-    wait-message
+    9 say   \ "It's a crib for a small child. The sheets have become discolored from lack of use. I gu..."
     self-idle-or-end
 ;
 
@@ -856,12 +787,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     2.0 -2.0 self-turn-to-xz
     self-wait-done
     8 ebit-set
-    begin
-        castle-2f-12.cmd02
-        4 var-inc
-        4 180 var? not while
-        yield
-    repeat
+    [: castle-2f-12.cmd02 4 var-inc 4 180 var? ;] wait-until
     self-idle-or-end
 ;
 
@@ -870,25 +796,20 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     -17.5 47.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c2f-12-medallion story-flag-set
             1 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

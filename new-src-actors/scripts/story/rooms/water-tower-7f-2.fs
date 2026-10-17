@@ -14,25 +14,15 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 ;
 
 : water-tower-7f-2.char-enter ( -- )   \ 004411A0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            3 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         3 1 player-camera
-    then then
+    then
     0 3 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 -1 player-camera
-    then then
+    then
     1 0 -1 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
@@ -66,13 +56,9 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 0 -1 1 chars-area-camera
     5 1 -1 1 chars-area-camera
     6 1 -1 1 chars-area-camera
@@ -148,8 +134,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     yield
     camera-restart
     1 exit-prepare
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     world-held state-flag-clear
     $F $51 fade
     $828A item-give
@@ -173,25 +158,20 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     -9.0 -10.23 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $73 message-param-room
         $73 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             wt7f-2-rubrum-medallion story-flag-set
             0 effect-remove
             $73 1 item-give-count
             0 $73 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -203,12 +183,10 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     0.0 -105.0 self-turn-to-xz
     self-wait-done
     look-close-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     $F 6 fade
     wait-fade
-    0 message   \ "All life on the surface of the planet stretches out below the stars' radiant light. All..."
-    wait-message
+    0 say   \ "All life on the surface of the planet stretches out below the stars' radiant light. All..."
     $F 7 fade
     wait-fade
     self-wait-anim

@@ -28,25 +28,15 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-2f-11.char-enter ( -- )   \ 003FE350
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
 ;
 
@@ -84,8 +74,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     60 self-turn-angle
     self-wait-done
-    0 message   \ "This crest... Why is it slanted like this?"
-    wait-message
+    0 say   \ "This crest... Why is it slanted like this?"
     self-idle-or-end
 ;
 

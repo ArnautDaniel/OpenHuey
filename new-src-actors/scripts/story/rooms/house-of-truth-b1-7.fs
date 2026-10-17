@@ -126,8 +126,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $F 6 fade
     wait-fade
-    3 message   \ "The colors, like the unique memories of the mind, may only come once in a lifetime."
-    wait-message
+    3 say   \ "The colors, like the unique memories of the mind, may only come once in a lifetime."
     $F 7 fade
     wait-fade
     stalkers-stay state-flag-clear
@@ -140,25 +139,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -119.22 -96.82 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $61 message-param-room
         $61 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             htb1-7-beef-jerky story-flag-set
             0 effect-remove
             $61 1 item-give-count
             0 $61 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

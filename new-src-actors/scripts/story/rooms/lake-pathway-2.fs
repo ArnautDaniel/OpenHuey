@@ -23,37 +23,22 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 
 : lake-pathway-2.char-enter ( -- )   \ 0043EAE0
     over-music-d story-flag? not if
-        hewie-controlled? not if
-            fiona-who self-is? 0 exit-taken? and if
-                fiona-who 0 char-to-exit
-                1 1 player-camera
-            then
-        else hewie-who self-is? 0 exit-taken? and if
-            hewie-who 0 char-to-exit
+        player-who self-is? 0 exit-taken? and if
+            player-who 0 char-to-exit
             1 1 player-camera
-        then then
+        then
         0 1 1 area-camera
     else
-        hewie-controlled? not if
-            fiona-who self-is? 0 exit-taken? and if
-                fiona-who 0 char-to-exit
-                2 2 player-camera
-            then
-        else hewie-who self-is? 0 exit-taken? and if
-            hewie-who 0 char-to-exit
+        player-who self-is? 0 exit-taken? and if
+            player-who 0 char-to-exit
             2 2 player-camera
-        then then
+        then
         0 2 2 area-camera
     then
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
 ;
 
@@ -61,13 +46,9 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 1 1 1 chars-area-camera
     5 0 0 1 chars-area-camera
     fiona-who 2 char-entered-area? if
@@ -108,18 +89,14 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
     self-wait-done
     0 ebit? not if
         look-low-anim self-anim
-        self-frames-reset
-        $1E self-wait-frames
-        0 message   \ "What!? The bridge is gone! It looks like it has disappeared!"
-        wait-message
+        $1E wait-frames
+        0 say   \ "What!? The bridge is gone! It looks like it has disappeared!"
         self-wait-anim
         0 ebit-set
     else
         hands-clasped-anim self-anim
-        self-frames-reset
-        self-wait-16
-        1 message   \ "There's no going back now. I'll need to find a new way out now."
-        wait-message
+        16 wait-frames
+        1 say   \ "There's no going back now. I'll need to find a new way out now."
         self-wait-anim
     then
     self-idle-or-end

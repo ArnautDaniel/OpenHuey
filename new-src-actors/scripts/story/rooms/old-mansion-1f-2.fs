@@ -54,55 +54,30 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-1f-2.char-enter ( -- )   \ 00406630
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 4 exit-taken? and if
-            fiona-who 4 char-to-exit
-            3 3 player-camera
-        then
-    else hewie-who self-is? 4 exit-taken? and if
-        hewie-who 4 char-to-exit
+    player-who self-is? 4 exit-taken? and if
+        player-who 4 char-to-exit
         3 3 player-camera
-    then then
+    then
     4 3 3 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 5 exit-taken? and if
-            fiona-who 5 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 5 exit-taken? and if
-        hewie-who 5 char-to-exit
+    player-who self-is? 5 exit-taken? and if
+        player-who 5 char-to-exit
         2 2 player-camera
-    then then
+    then
     5 2 2 area-camera
     fiona-who self-is? if
         2 exit-taken? 4 exit-taken? or if
@@ -124,13 +99,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     4 exit-usable? if
         4 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 5 char-in-area? fiona-who char-busy? not and if
-            5 exit-check
-        then
-    else hewie-who 5 char-in-area? hewie-who char-busy? not and if
+    player-who 5 char-in-area? player-who char-busy? not and if
         5 exit-check
-    then then
+    then
     $B 0 0 1 chars-area-camera
     $C 3 3 1 chars-area-camera
     $D 1 1 1 chars-area-camera
@@ -345,17 +316,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $F $51 fade
     wait-fade
     $38 resident-flag-set
-    reach-out-anim self-anim
-    self-wait-anim
+    reach-out-anim play-out
     $10 message-param-room
     $10 1 item-give-count
     0 $10 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
+    $8012 say   \ "You've obtained ."
     got-handful-of-ash story-flag-set
-    reach-back-anim self-anim
-    self-wait-anim
+    reach-back-anim play-out
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -408,23 +376,18 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         4.0 17.0 self-turn-to-xz
         self-wait-done
         1 ebit? not if
-            0 message   \ "A pair of scales hangs mysteriously from the statue's hand. One of the dishes i..."
-            wait-message
+            0 say   \ "A pair of scales hangs mysteriously from the statue's hand. One of the dishes i..."
             1 ebit-set
         else
-            1 message   \ "There is a coin of sorts resting on one of the trays."
-            wait-message
+            1 say   \ "There is a coin of sorts resting on one of the trays."
         then
     else
-        2 message   \ "I may not be able to use this anymore, but who knows... Take the Godstone? YES NO"
-        wait-message
+        2 say   \ "I may not be able to use this anymore, but who knows... Take the Godstone? YES NO"
         0 answer? if
             $158 4.619 23.5 180 $FFFF 5 self-move-to
             self-wait-done
-            reach-out-anim self-anim
-            self-wait-anim
-            self-frames-reset
-            4 self-wait-frames
+            reach-out-anim play-out
+            4 wait-frames
             0 ebit-clear
             1 effect-remove
             1 old-mansion-1f-2.cmd00
@@ -434,19 +397,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 $B 1 item-give-count
                 0 $B item-tab
                 item-fanfare
-                $8012 message   \ "You've obtained ."
-                wait-message
+                $8012 say   \ "You've obtained ."
             else
                 8 1 object-hidden
                 $C message-param-room
                 $C 1 item-give-count
                 0 $C item-tab
                 item-fanfare
-                $8012 message   \ "You've obtained ."
-                wait-message
+                $8012 say   \ "You've obtained ."
             then
-            reach-back-anim self-anim
-            self-wait-anim
+            reach-back-anim play-out
         then
     then
     self-idle-or-end
@@ -457,16 +417,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 ebit? not if
         0 self-turn-angle
         self-wait-done
-        look-at-anim self-anim
-        self-wait-anim
-        3 message   \ "A large door stands unnervingly still. Letters have been etched into the door."
-        wait-message
+        look-at-anim play-out
+        3 say   \ "A large door stands unnervingly still. Letters have been etched into the door."
         stalkers-stay state-flag-set
         1 self-scripted
         $F 6 fade
         wait-fade
-        4 message   \ "Pursuer of truths, entrust the accumulation of knowledge to the judgment of the god..."
-        wait-message
+        4 say   \ "Pursuer of truths, entrust the accumulation of knowledge to the judgment of the god..."
         2 ebit-set
         $F 7 fade
         wait-fade
@@ -476,19 +433,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     else
         $1B9 -3.806 112.773 0 $FFFF 5 self-move-to
         self-wait-done
-        lean-anim self-anim
-        self-wait-anim
-        strain-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        self-wait-16
-        let-go-push-anim self-anim
-        self-wait-anim
+        lean-anim play-out
+        strain-anim play-out
+        16 wait-frames
+        let-go-push-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
-        5 message   \ "Damn, it just won't open. This could be my way out. Open, damn you!"
-        wait-message
+        7 wait-frames
+        5 say   \ "Damn, it just won't open. This could be my way out. Open, damn you!"
         2 ebit-clear
     then
     self-idle-or-end
@@ -499,25 +450,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -72.34 -34.25 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-2-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;

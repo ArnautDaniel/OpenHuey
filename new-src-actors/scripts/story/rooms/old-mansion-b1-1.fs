@@ -47,45 +47,25 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-b1-1.char-enter ( -- )   \ 00415C90
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 2 player-camera
-    then then
+    then
     0 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            3 3 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         3 3 player-camera
-    then then
+    then
     1 3 3 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            4 4 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         4 4 player-camera
-    then then
+    then
     2 4 4 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         1 1 player-camera
-    then then
+    then
     3 1 1 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
@@ -115,13 +95,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 exit-usable? if
         2 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
+    then
     8 0 0 1 chars-area-camera
     9 1 1 1 chars-area-camera
     $A 0 0 1 chars-area-camera
@@ -326,8 +302,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             else
                 1 var-inc
             then
-            self-frames-reset
-            1 self-wait-frames
+            1 wait-frames
         again
     else
         3 $1C char-loaded? not if
@@ -379,8 +354,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             else
                 1 var-inc
             then
-            self-frames-reset
-            1 self-wait-frames
+            1 wait-frames
         again
     then
     self-idle-or-end
@@ -391,25 +365,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     60.5 -33.4 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $60 message-param-room
         $60 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             omb1-1-chicken-jerky story-flag-set
             0 effect-remove
             $60 1 item-give-count
             0 $60 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -483,8 +452,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 keeps-fiona-off keeps-pursuers-off or floor-on
     $129 -11.17 -29.06 0.3 50 hewie-go-to
     self-wait-done
-    sit-a-while-anim $A self-anim-blend
-    self-wait-anim
+    sit-a-while-anim $A blend-out
     omb1-1-album-medallion story-flag? not if
         fiona-half-hidden state-flag? fiona-who char-busy? not or if
             $71 $63 item-count? not if
@@ -492,15 +460,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
             $71 message-param-room
             $71 $63 item-count? if
-                $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-                wait-message
+                $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
             else
                 omb1-1-album-medallion story-flag-set
                 $71 1 item-give-count
                 0 $71 item-tab
                 item-fanfare
-                $8011 message   \ "You've obtained ."
-                wait-message
+                $8011 say   \ "You've obtained ."
             then
             omb1-1-album-medallion story-flag? if
                 1 effect-remove

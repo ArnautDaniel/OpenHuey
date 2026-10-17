@@ -108,15 +108,10 @@ USING: engine actors messages story.state room-names story.words story.shared fl
 ;
 
 : old-mansion-b1-3.char-enter ( -- )   \ 00409A80
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
@@ -514,10 +509,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
 ;
 
 : old-mansion-b1-3.act01 ( -- )   \ 0040A200
-    begin
-        hewie-who char-busy? not while
-        yield
-    repeat
+    [: hewie-who char-busy? ;] wait-until
     self-who 1 char-visible
     counter-inc
     2 wait-counter
@@ -532,8 +524,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     omb1-3-flag1 story-flag? not if
         $8D 9.0 10.0 180 $FFFF 5 self-move-to
         self-wait-done
-        0 message   \ "A corpse. There are traces that suggest this person was heavily tortured... There i..."
-        wait-message
+        0 say   \ "A corpse. There are traces that suggest this person was heavily tortured... There i..."
         0 answer? if
             $F $44 fade
             5 0 movie-play
@@ -576,8 +567,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
             1 self-scripted
             $11 $9000 0 0 char-anim-hold
             2 room-motion 5 self-anim-blend
-            self-frames-reset
-            $17 self-wait-frames
+            $17 wait-frames
             fiona-who 5 6 char-sound
             self-wait-anim
         else
@@ -634,12 +624,10 @@ USING: engine actors messages story.state room-names story.words story.shared fl
             then
             $16 ebit? not if
                 self-at-motion-event? not if
-                    self-frames-reset
-                    1 self-wait-frames
+                    1 wait-frames
                     false
                 else $13 ebit? not if
-                    self-frames-reset
-                    1 self-wait-frames
+                    1 wait-frames
                     false
                 else
                     true
@@ -654,8 +642,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
             0 0 hewie-do
         then
         $11 $9003 0 5 char-anim-hold
-        5 room-motion 3 self-anim-blend
-        self-wait-anim
+        5 room-motion 3 blend-out
         $11 $9005 0 5 char-anim-hold
         $14 ebit? if
             4 panic-stage
@@ -675,20 +662,16 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     world-frozen state-flag-set
     1 20.0 -15.0 0.0 0.0 event-camera
     fiona-who $97 5.0 -27.0 180 char-to-xz
-    self-frames-reset
-    4 self-wait-frames
-    3 message   \ "Is this a tool used to torture innocent victims? Tiny letters are engraved..."
-    wait-message
+    4 wait-frames
+    3 say   \ "Is this a tool used to torture innocent victims? Tiny letters are engraved..."
     $F 6 fade
     wait-fade
-    9 message   \ "Fire is essentially composed of hotness and dryness. Air differs only from fire in that..."
-    wait-message
+    9 say   \ "Fire is essentially composed of hotness and dryness. Air differs only from fire in that..."
     $F 7 fade
     wait-fade
     0 0.0 0.0 0.0 0.0 event-camera
     world-frozen state-flag-clear
-    4 message   \ "'Hotness and dryness form the element of fire' What could it mean?"
-    wait-message
+    4 say   \ "'Hotness and dryness form the element of fire' What could it mean?"
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -699,12 +682,10 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     10.0 0.0 self-turn-to-xz
     self-wait-done
     $D ebit? not if
-        1 message   \ "Any remaining life energy has been totally drained away. Did the statue suck its li..."
-        wait-message
+        1 say   \ "Any remaining life energy has been totally drained away. Did the statue suck its li..."
         $D ebit-set
     else
-        2 message   \ "Strange, but the expression on its face looks somehow... peaceful. Maybe it was her..."
-        wait-message
+        2 say   \ "Strange, but the expression on its face looks somehow... peaceful. Maybe it was her..."
         $D ebit-clear
     then
     self-idle-or-end
@@ -714,20 +695,16 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     self-wait-done
     10.0 0.0 self-turn-to-xz
     self-wait-done
-    reach-out-anim self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    reach-out-anim play-out
+    4 wait-frames
     got-venus-key story-flag-set
     0 old-mansion-b1-3.cmd02
     $F message-param-room
     $F 1 item-give-count
     0 $F item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    reach-back-anim self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    reach-back-anim play-out
     self-idle-or-end
 ;
 
@@ -741,8 +718,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     fiona-hidden state-flag-clear
     1 self-noclip
     2 room-motion 5 self-anim-blend8
-    self-frames-reset
-    5 self-wait-frames
+    5 wait-frames
     fiona-who 2 6 char-sound
     $E 2 object-anim
     self-wait-anim
@@ -762,8 +738,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         self-wait-done
         $3C 32.0 20.63 90 $FFFF 5 self-move-to
         self-wait-done
-        $13 message   \ "Huge spikes jut out from inside the iron maiden, rendering the device unusable as..."
-        wait-message
+        $13 say   \ "Huge spikes jut out from inside the iron maiden, rendering the device unusable as..."
     else
         stalkers-stay state-flag-set
         $19 ebit-clear
@@ -775,13 +750,11 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         1 self-noclip
         fiona-who char-file-use
         0 room-motion 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        5 wait-frames
         2 part-hidden
         $E 0 object-hidden
         $E 0 object-anim
-        self-frames-reset
-        $24 self-wait-frames
+        $24 wait-frames
         fiona-who 2 6 char-sound
         self-wait-anim
         -1 self-idle-anim
@@ -823,8 +796,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         fiona-hidden state-flag-clear
         1 self-noclip
         1 room-motion 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        5 wait-frames
         fiona-who 2 6 char-sound
         $E 1 object-anim
         self-wait-anim
@@ -844,40 +816,33 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     fiona-who char-file-use
     omb1-3-flag3 story-flag? not if
         4 room-motion 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        5 wait-frames
         $A 1 object-hidden
         $B 0 object-hidden
         $F 1 object-hidden
         $10 0 object-hidden
         $B 0 object-anim
         $10 0 object-anim
-        self-frames-reset
-        $19 self-wait-frames
+        $19 wait-frames
         fiona-who 1 6 char-sound
-        self-frames-reset
-        $37 self-wait-frames
+        $37 wait-frames
         fiona-who 0 6 char-sound
         self-wait-anim
         omb1-3-flag3 story-flag-set
     else
         3 room-motion 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        5 wait-frames
         $A 0 object-hidden
         $B 1 object-hidden
         $F 0 object-hidden
         $10 1 object-hidden
         $A 0 object-anim
         $F 0 object-anim
-        self-frames-reset
-        $19 self-wait-frames
+        $19 wait-frames
         fiona-who 1 6 char-sound
-        self-frames-reset
-        $37 self-wait-frames
+        $37 wait-frames
         fiona-who 0 6 char-sound
-        self-frames-reset
-        5 self-wait-frames
+        5 wait-frames
         fiona-who 7 6 char-sound
         self-wait-anim
         omb1-3-flag3 story-flag-clear
@@ -891,8 +856,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     self-wait-done
     110 self-turn-angle
     self-wait-done
-    $A message   \ "The oven burns an angry red. I'd rather not even think about the kind of things they b..."
-    wait-message
+    $A say   \ "The oven burns an angry red. I'd rather not even think about the kind of things they b..."
     self-idle-or-end
 ;
 
@@ -901,12 +865,10 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     90 self-turn-angle
     self-wait-done
     $C ebit? not if
-        $B message   \ "Is this a birdcage? It just seems too large to be a cage for birds."
-        wait-message
+        $B say   \ "Is this a birdcage? It just seems too large to be a cage for birds."
         $C ebit-set
     else
-        $C message   \ "Could it have housed a person? No. No one could fit inside it."
-        wait-message
+        $C say   \ "Could it have housed a person? No. No one could fit inside it."
         $C ebit-clear
     then
     self-idle-or-end
@@ -916,8 +878,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    $D message   \ "There's a handle that winds the attached rope up. Looks like this was used as a stretc..."
-    wait-message
+    $D say   \ "There's a handle that winds the attached rope up. Looks like this was used as a stretc..."
     self-idle-or-end
 ;
 
@@ -925,8 +886,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     self-wait-done
     -45 self-turn-angle
     self-wait-done
-    $E message   \ "Thin-bladed sabers line the wall. Several of them appear to be coated with rust and ca..."
-    wait-message
+    $E say   \ "Thin-bladed sabers line the wall. Several of them appear to be coated with rust and ca..."
     self-idle-or-end
 ;
 
@@ -935,14 +895,12 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     -90 self-turn-angle
     self-wait-done
     $12 ebit? not if
-        $F message   \ "A circuit breaker."
-        wait-message
+        $F say   \ "A circuit breaker."
         $12 ebit-set
     else
         10.0 10.0 0.0 self-look-at-point
         yield
-        $10 message   \ "The end of the cord connects to that chair... Which can mean only one thing. This..."
-        wait-message
+        $10 say   \ "The end of the cord connects to that chair... Which can mean only one thing. This..."
         self-who self-look-at
         yield
     then
@@ -954,10 +912,8 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     -90 self-turn-angle
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    self-wait-16
-    $12 message   \ "Restraints, a whip, and various surgical instruments. Dried blood covers all of the s..."
-    wait-message
+    16 wait-frames
+    $12 say   \ "Restraints, a whip, and various surgical instruments. Dried blood covers all of the s..."
     self-wait-anim
     self-idle-or-end
 ;
@@ -989,14 +945,10 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         then
         7 26.16 27.36 118 $FFFF 5 self-move-to
         self-wait-done
-        there-anim self-anim
-        self-wait-anim
+        there-anim play-out
         $17 ebit-set
         10 self-idle-anim
-        begin
-            fiona-who char-busy? while
-            yield
-        repeat
+        [: fiona-who char-busy? ;] wait-while
         stalker-who 0 stalker-command
     then
     self-idle-or-end
@@ -1039,35 +991,27 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     -20.96 5.57 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             omb1-3-camomile story-flag-set
             5 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
 
 : old-mansion-b1-3.act13 ( -- )   \ 0040A968
     $11 1 char-no-shadow
-    begin
-        2 cutscene-shot? not while
-        yield
-    repeat
+    [: 2 cutscene-shot? ;] wait-until
     $11 0 char-no-shadow
     self-idle-or-end
 ;

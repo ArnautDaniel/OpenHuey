@@ -95,45 +95,25 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
 ;
 
 : old-mansion-b1-6.char-enter ( -- )   \ 0041E260
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            6 4 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         6 4 player-camera
-    then then
+    then
     0 6 4 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            5 3 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         5 3 player-camera
-    then then
+    then
     1 5 3 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            4 2 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         4 2 player-camera
-    then then
+    then
     2 4 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            2 0 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         2 0 player-camera
-    then then
+    then
     3 2 0 area-camera
 ;
 
@@ -141,27 +121,15 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
+    then
     8 0 -1 1 chars-area-camera
     9 1 -1 1 chars-area-camera
     $A 0 -1 1 chars-area-camera
@@ -413,8 +381,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     then
     8 3 6 char-sound
     8 0 1 8 char-anim-hold
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     omb1-6-flag4 story-flag? if
         8 6 sound-stop
     then
@@ -426,8 +393,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     omb1-6-flag5 story-flag? not if
         $76 door-unlock
         6 $86 0.0 0.0 0.0 0 0 sound
-        self-frames-reset
-        $5A self-wait-frames
+        $5A wait-frames
     then
     omb1-6-flag5 story-flag-set
     3 barred-floor floor-off
@@ -534,8 +500,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     then
     8 3 6 char-sound
     8 0 1 8 char-anim-hold
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     omb1-6-flag3 story-flag? if
         7 6 sound-stop
     then
@@ -547,8 +512,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     omb1-6-flag2 story-flag? not if
         $5E door-unlock
         6 $86 0.0 0.0 0.0 0 0 sound
-        self-frames-reset
-        $5A self-wait-frames
+        $5A wait-frames
     then
     omb1-6-flag2 story-flag-set
     0 barred-floor floor-off
@@ -587,8 +551,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     then
     8 3 6 char-sound
     8 0 1 8 char-anim-hold
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     omb1-6-flag5 story-flag? if
         8 6 sound-stop
     then
@@ -600,8 +563,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     omb1-6-flag4 story-flag? not if
         $7B door-unlock
         6 $86 0.0 0.0 0.0 0 0 sound
-        self-frames-reset
-        $5A self-wait-frames
+        $5A wait-frames
     then
     omb1-6-flag4 story-flag-set
     2 barred-floor floor-off
@@ -649,8 +611,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     then
     8 3 6 char-sound
     8 0 1 8 char-anim-hold
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     omb1-6-flag2 story-flag? if
         7 6 sound-stop
     then
@@ -661,8 +622,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     1 old-mansion-b1-6.cmd02
     omb1-6-flag3 story-flag? not if
         6 $86 0.0 0.0 0.0 0 0 sound
-        self-frames-reset
-        $5A self-wait-frames
+        $5A wait-frames
     then
     omb1-6-flag3 story-flag-set
     1 barred-floor floor-off
@@ -834,32 +794,25 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     self-wait-done
     plates-under-10? if
         0 ebit? not if
-            $11 message   \ "It's a plate pressing machine."
-            wait-message
+            $11 say   \ "It's a plate pressing machine."
             0 ebit-set
         then
         plate-made story-flag-clear
         2 subscreen-open
-        begin
-            subscreen-wanted state-flag? while
-            yield
-        repeat
+        [: subscreen-wanted state-flag? ;] wait-while
         yield
         plate-made story-flag? if
             $3F message-param-room
             0 $3F item-tab
             item-fanfare
-            $8012 message   \ "You've obtained ."
-            wait-message
+            $8012 say   \ "You've obtained ."
         then
         plate-made story-flag-set
     else 0 ebit? not if
-        $F message   \ "There's a plate pressing machine here. There are no remaining plates currently so..."
-        wait-message
+        $F say   \ "There's a plate pressing machine here. There are no remaining plates currently so..."
         0 ebit-set
     else
-        $12 message   \ "There are no remaining plates left. I'll have to get rid of some plate-keys befor..."
-        wait-message
+        $12 say   \ "There are no remaining plates left. I'll have to get rid of some plate-keys befor..."
     then then
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -868,8 +821,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
 
 : old-mansion-b1-6.act09 ( -- )   \ 0047ACD0
     self-wait-done
-    $10 message   \ "Returned a plate to the plate pressing machine."
-    wait-message
+    $10 say   \ "Returned a plate to the plate pressing machine."
     self-idle-or-end
 ;
 
@@ -882,10 +834,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     5 ebit-set
     6 ebit-set
     $F $44 fade
-    begin
-        loader-done? while
-        yield
-    repeat
+    [: loader-done? ;] wait-while
     8 3 $FF char-load
     self-wait-done
     omb1-6-flag1 story-flag? not if
@@ -970,12 +919,10 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    7 message   \ "A corpse lies on the altar clutching a stone tablet in a death grip."
-    wait-message
+    7 say   \ "A corpse lies on the altar clutching a stone tablet in a death grip."
     $F 6 fade
     wait-fade
-    0 message   \ "The golem sacrifice must be offered to the ever-burning wall of Hades that hinders your..."
-    wait-message
+    0 say   \ "The golem sacrifice must be offered to the ever-burning wall of Hades that hinders your..."
     $F 7 fade
     wait-fade
     stalkers-stay state-flag-clear
@@ -986,18 +933,15 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
 : old-mansion-b1-6.act0C ( -- )   \ 0041EFB0
     self-wait-done
     look-at-anim self-anim
-    self-frames-reset
-    self-wait-16
-    5 message   \ "I wonder if this is the same type of golem statue that I saw in the main castle? Look!..."
-    wait-message
+    16 wait-frames
+    5 say   \ "I wonder if this is the same type of golem statue that I saw in the main castle? Look!..."
     self-wait-anim
     self-idle-or-end
 ;
 
 : old-mansion-b1-6.act0D ( -- )   \ 0047ACD8
     self-wait-done
-    2 message
-    wait-message
+    2 say
     self-idle-or-end
 ;
 
@@ -1006,10 +950,8 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     -170.0 20.0 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    self-wait-16
-    1 message   \ "An unusual figure has been burned into the ground... It reads: 'METH'"
-    wait-message
+    16 wait-frames
+    1 say   \ "An unusual figure has been burned into the ground... It reads: 'METH'"
     self-wait-anim
     self-idle-or-end
 ;
@@ -1028,24 +970,19 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
         doubled-over-anim self-anim
     then then then
     stalker-who char-here? not if
-        self-frames-reset
-        self-wait-16
+        16 wait-frames
         3 message   \ "A wall of flame is shooting up from the ground!"
     then
     self-wait-anim
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     0 self-scripted
     $A ebit-clear
     self-idle-or-end
 ;
 
 : old-mansion-b1-6.act10 ( -- )   \ 0041F020
-    begin
-        hewie-who char-busy? not while
-        yield
-    repeat
+    [: hewie-who char-busy? ;] wait-until
     self-who 1 char-visible
     begin
         yield
@@ -1057,10 +994,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     1 self-scripted
     self-wait-done
     $F $44 fade
-    begin
-        loader-done? while
-        yield
-    repeat
+    [: loader-done? ;] wait-while
     8 3 $FF char-load
     3 char-start
     $37 1.0 1 bgm
@@ -1076,16 +1010,12 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     4 barred-floor floor-off
     8 $196 75.0 -40.0 0 char-to-xz
     4 barred-floor floor-on
-    begin
-        0 adx? not while
-        yield
-    repeat
+    [: 0 adx? ;] wait-until
     $F 1 fade
     8 $1300 0 0 char-anim-hold
     9 0 var-set
     old-mansion-b1-6.cmd04
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     0 0.0 $FF bgm
     begin
         8 char-at-motion-event? not while
@@ -1107,19 +1037,16 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     wait-fade
     $B ebit? not if
         hand-to-mouth-anim self-anim
-        8 message   \ "...... That got my mind off things. I feel a little better now."
-        wait-message
+        8 say   \ "...... That got my mind off things. I feel a little better now."
         self-wait-anim
         $E4 panic-calm-in
         fiona-calm-reset
         3 avoid-prompt
         fiona-who $84 5 char-sound
         $B ebit-set
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
     else
-        9 message   \ "...... Just staring at this all day isn't going to get me out of this place any soo..."
-        wait-message
+        9 say   \ "...... Just staring at this all day isn't going to get me out of this place any soo..."
     then
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -1131,10 +1058,8 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     12.0 -41.0 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    self-wait-16
-    1 message   \ "An unusual figure has been burned into the ground... It reads: 'METH'"
-    wait-message
+    16 wait-frames
+    1 say   \ "An unusual figure has been burned into the ground... It reads: 'METH'"
     self-wait-anim
     self-idle-or-end
 ;
@@ -1144,10 +1069,8 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     -19.0 -6.0 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    self-wait-16
-    1 message   \ "An unusual figure has been burned into the ground... It reads: 'METH'"
-    wait-message
+    16 wait-frames
+    1 say   \ "An unusual figure has been burned into the ground... It reads: 'METH'"
     self-wait-anim
     self-idle-or-end
 ;
@@ -1157,10 +1080,8 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     -60.0 -110.0 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    self-wait-16
-    1 message   \ "An unusual figure has been burned into the ground... It reads: 'METH'"
-    wait-message
+    16 wait-frames
+    1 say   \ "An unusual figure has been burned into the ground... It reads: 'METH'"
     self-wait-anim
     self-idle-or-end
 ;
@@ -1179,14 +1100,12 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
         doubled-over-anim self-anim
     then then then
     stalker-who char-here? not if
-        self-frames-reset
-        self-wait-16
+        16 wait-frames
         3 message   \ "A wall of flame is shooting up from the ground!"
     then
     self-wait-anim
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     0 self-scripted
     $A ebit-clear
     self-idle-or-end
@@ -1206,14 +1125,12 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
         doubled-over-anim self-anim
     then then then
     stalker-who char-here? not if
-        self-frames-reset
-        self-wait-16
+        16 wait-frames
         3 message   \ "A wall of flame is shooting up from the ground!"
     then
     self-wait-anim
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     0 self-scripted
     $A ebit-clear
     self-idle-or-end
@@ -1233,14 +1150,12 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
         doubled-over-anim self-anim
     then then then
     stalker-who char-here? not if
-        self-frames-reset
-        self-wait-16
+        16 wait-frames
         3 message   \ "A wall of flame is shooting up from the ground!"
     then
     self-wait-anim
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     0 self-scripted
     $A ebit-clear
     self-idle-or-end
@@ -1251,25 +1166,20 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     2.06 -99.68 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             omb1-6-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
@@ -1279,25 +1189,20 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     -138.94 -114.31 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $72 message-param-room
         $72 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             omb1-6-viola-medallion story-flag-set
             1 effect-remove
             $72 1 item-give-count
             0 $72 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -1307,25 +1212,20 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     39.98 -40.67 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $75 message-param-room
         $75 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             omb1-6-magist-medallion story-flag-set
             2 effect-remove
             $75 1 item-give-count
             0 $75 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

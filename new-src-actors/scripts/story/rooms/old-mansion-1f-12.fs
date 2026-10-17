@@ -75,35 +75,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-1f-12.char-enter ( -- )   \ 0040B5C0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
     fiona-who self-is? if
         2 exit-taken? if
@@ -129,13 +114,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 exit-usable? if
         1 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
+    then
     fiona-who 3 char-entered-area? if
         0 exit-prepare
     then
@@ -278,34 +259,25 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         0 self-through-exit
         self-wait-done
         in-panic? 2 game-mode? or if
-            rattle-behind-slow-anim self-anim
-            self-wait-anim
+            rattle-behind-slow-anim play-out
             -1 self-idle-anim
-            self-frames-reset
-            7 self-wait-frames
+            7 wait-frames
         else
-            rattle-behind-anim self-anim
-            self-wait-anim
+            rattle-behind-anim play-out
             -1 self-idle-anim
-            self-frames-reset
-            7 self-wait-frames
-            8 message   \ "The door is locked..."
-            wait-message
+            7 wait-frames
+            8 say   \ "The door is locked..."
         then
         1 ebit-set
     else
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         fiona-who $150 -60.0 15.0 -90 char-to-xz
         world-frozen state-flag-set
         1 self-scripted
         1 20.0 5.0 0.0 4.0 event-camera
-        self-frames-reset
-        4 self-wait-frames
-        9 message   \ "A strange symbol is written on the door. I wonder what it could mean?"
-        wait-message
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
+        9 say   \ "A strange symbol is written on the door. I wonder what it could mean?"
+        4 wait-frames
         0 0.0 0.0 0.0 0.0 event-camera
         fiona-who $150 -60.3 16.25 -90 char-to-xz
         world-frozen state-flag-clear
@@ -320,17 +292,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 self-through-exit
     self-wait-done
     $609 self-anim
-    self-frames-reset
-    $14 self-wait-frames
+    $14 wait-frames
     fiona-who 3 6 char-sound
     $F message-param-room
     $F item-use
     $6C door-unlock
     20 self-idle-anim
-    self-frames-reset
-    $14 self-wait-frames
-    $8019 message   \ "Used ."
-    wait-message
+    $14 wait-frames
+    $8019 say   \ "Used ."
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -341,31 +310,25 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     om1f-12-flag4 story-flag? got-film-reel story-flag? not and if
         $14E -33.036 -2.992 -130 $FFFF 5 self-move-to
         self-wait-done
-        pick-up-anim self-anim
-        self-wait-anim
+        pick-up-anim play-out
         4 part-hidden
         got-film-reel story-flag-set
         $E message-param-room
         $E 1 item-give-count
         0 $E item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
-        up-from-pick-anim self-anim
-        self-wait-anim
+        $8012 say   \ "You've obtained ."
+        up-from-pick-anim play-out
     else
         world-frozen state-flag-set
         1 self-scripted
         fiona-who $14E -38.0 -2.5 180 char-to-xz
         1 10.0 -10.0 0.0 0.0 event-camera
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         om1f-12-flag4 story-flag? not if
-            $B message   \ "A statue grasping firmly onto an oil lamp. I know I've seen this somewhere bef..."
-            wait-message
+            $B say   \ "A statue grasping firmly onto an oil lamp. I know I've seen this somewhere bef..."
         else
-            $C message   \ "I knew there was some trick to solving it!"
-            wait-message
+            $C say   \ "I knew there was some trick to solving it!"
         then
         0 0.0 0.0 0.0 0.0 event-camera
         world-frozen state-flag-clear
@@ -381,13 +344,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     om1f-12-flag1 story-flag? not if
         38.0 -10.0 self-turn-to-xz
         self-wait-done
-        turn-round-anim self-anim
-        self-wait-anim
-        5 message   \ "A pillar of seething flame is spewing forth from the floor. There is something up a..."
-        wait-message
+        turn-round-anim play-out
+        5 say   \ "A pillar of seething flame is spewing forth from the floor. There is something up a..."
     else
-        6 message   \ "The flame has been frozen in place, creating a crystalline ice pillar. This could b..."
-        wait-message
+        6 say   \ "The flame has been frozen in place, creating a crystalline ice pillar. This could b..."
         0 answer? if
             $F 4 fade
             wait-fade
@@ -396,8 +356,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             0 0 player-camera
             camera-restart
             2 exit-prepare
-            self-frames-reset
-            $5A self-wait-frames
+            $5A wait-frames
             2 map-page
             $F 1 fade
             wait-fade
@@ -412,8 +371,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $A message   \ "I can use this to get down. Climb down the ice pillar? YES NO"
-    wait-message
+    $A say   \ "I can use this to get down. Climb down the ice pillar? YES NO"
     0 answer? if
         $F 4 fade
         wait-fade
@@ -422,8 +380,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         1 1 player-camera
         camera-restart
         1 exit-prepare
-        self-frames-reset
-        $5A self-wait-frames
+        $5A wait-frames
         1 map-page
         $F 1 fade
         wait-fade
@@ -496,10 +453,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $F $51 fade
     wait-fade
     0 ebit? not if
-        self-frames-reset
-        self-wait-16
-        3 message   \ "Nothing happened. This must not be the correct plate..."
-        wait-message
+        16 wait-frames
+        3 say   \ "Nothing happened. This must not be the correct plate..."
     then
     $827D item-give
     stalkers-stay state-flag-clear
@@ -513,28 +468,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     12.0 -24.0 self-turn-to-xz
     self-wait-done
-    reach-out-anim self-anim
-    self-wait-anim
+    reach-out-anim play-out
     2 6 12.0 10.0 -25.0 0 0 sound
-    self-frames-reset
-    self-wait-16
-    reach-back-anim self-anim
-    self-wait-anim
+    16 wait-frames
+    reach-back-anim play-out
     0 ebit? if
         0 effect-remove
         3 ebit-clear
         1 6 12.0 10.0 -25.0 0 0 sound
-        begin
-            2 2 old-mansion-1f-12.cmd00
-            3 ebit? not while
-            yield
-        repeat
+        [: 2 2 old-mansion-1f-12.cmd00 3 ebit? ;] wait-until
         om1f-12-flag2 story-flag-set
     else
-        self-frames-reset
-        $1E self-wait-frames
-        3 message   \ "Nothing happened. This must not be the correct plate..."
-        wait-message
+        $1E wait-frames
+        3 say   \ "Nothing happened. This must not be the correct plate..."
     then
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -547,27 +493,18 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     -12.0 -24.0 self-turn-to-xz
     self-wait-done
-    reach-out-anim self-anim
-    self-wait-anim
+    reach-out-anim play-out
     2 6 -12.0 10.0 -25.0 0 0 sound
-    self-frames-reset
-    self-wait-16
-    reach-back-anim self-anim
-    self-wait-anim
+    16 wait-frames
+    reach-back-anim play-out
     0 ebit? if
         3 ebit-clear
         1 6 -12.0 10.0 -25.0 0 0 sound
-        begin
-            0 2 old-mansion-1f-12.cmd00
-            3 ebit? not while
-            yield
-        repeat
+        [: 0 2 old-mansion-1f-12.cmd00 3 ebit? ;] wait-until
         om1f-12-flag3 story-flag-set
     else
-        self-frames-reset
-        $1E self-wait-frames
-        3 message   \ "Nothing happened. This must not be the correct plate..."
-        wait-message
+        $1E wait-frames
+        3 say   \ "Nothing happened. This must not be the correct plate..."
     then
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -575,17 +512,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-1f-12.act08 ( -- )   \ 0040BDF0
-    begin
-        $44C cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $44C cutscene-cue-reached? ;] wait-until
     3 ebit-clear
     1 6 0.0 30.0 -27.0 0 0 sound
-    begin
-        1 2 old-mansion-1f-12.cmd00
-        3 ebit? not while
-        yield
-    repeat
+    [: 1 2 old-mansion-1f-12.cmd00 3 ebit? ;] wait-until
     self-idle-or-end
 ;
 
@@ -593,15 +523,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     om1f-12-flag1 story-flag? not if
         om1f-12-flag3 story-flag? not om1f-12-flag2 story-flag? not or if
-            0 message   \ "A 3-headed monster. Is this some kind of dragon? Its wide-open mouth is very un..."
-            wait-message
+            0 say   \ "A 3-headed monster. Is this some kind of dragon? Its wide-open mouth is very un..."
         else
-            1 message   \ "The highest dragon head's mouth is still open. I'll need to insert one more plate."
-            wait-message
+            1 say   \ "The highest dragon head's mouth is still open. I'll need to insert one more plate."
         then
     else
-        2 message   \ "All 3 mouths are now tightly shut. Looks like I've completely solved this puzzle..."
-        wait-message
+        2 say   \ "All 3 mouths are now tightly shut. Looks like I've completely solved this puzzle..."
     then
     self-idle-or-end
 ;
@@ -611,10 +538,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0.0 -27.0 self-turn-to-xz
     self-wait-done
     look-at-anim self-anim
-    self-frames-reset
-    self-wait-16
-    4 message   \ "Darn it! I'm just not tall enough. If only Hewie were here, I bet it would be doable."
-    wait-message
+    16 wait-frames
+    4 say   \ "Darn it! I'm just not tall enough. If only Hewie were here, I bet it would be doable."
     self-wait-anim
     self-idle-or-end
 ;
@@ -623,36 +548,26 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     12.0 -24.0 self-turn-to-xz
     self-wait-done
-    $D message   \ "It's holding something in its mouth."
-    wait-message
-    reach-out-anim self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    $D say   \ "It's holding something in its mouth."
+    reach-out-anim play-out
+    4 wait-frames
     got-torn-letter story-flag-set
     0 effect-remove
     $A3 message-param-room
     $A3 1 item-give-count
     0 $A3 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    reach-back-anim self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    reach-back-anim play-out
     self-idle-or-end
 ;
 
 : old-mansion-1f-12.act0C ( -- )   \ 0040BEB0
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     0 part-shown
     0 6 -38.0 5.0 -8.0 0 0 sound
     6 ebit-clear
-    begin
-        old-mansion-1f-12.cmd03
-        6 ebit? not while
-        yield
-    repeat
+    [: old-mansion-1f-12.cmd03 6 ebit? ;] wait-until
     self-idle-or-end
 ;
 
@@ -661,25 +576,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     52.04 5.68 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $73 message-param-room
         $73 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-12-rubrum-medallion story-flag-set
             1 effect-remove
             $73 1 item-give-count
             0 $73 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -689,20 +599,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -63.0 -10.0 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    $E message   \ "Ivy has grown in through the collapsed area where the floor used to be... Looks like i..."
-    wait-message
+    $28 wait-frames
+    $E say   \ "Ivy has grown in through the collapsed area where the floor used to be... Looks like i..."
     self-wait-anim
     self-idle-or-end
 ;
 
 : old-mansion-1f-12.act0F ( -- )   \ 0040BF60
     room-sounds
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
+    [: 6 sound-bank-loaded? ;] wait-until
     self-wait-done
     0 1 old-mansion-1f-12.cmd00
     2 1 old-mansion-1f-12.cmd00

@@ -21,15 +21,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-1f-14.char-enter ( -- )   \ 004268F0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
 ;
 
@@ -84,8 +79,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         stalker-who char-done
     then
     self-wait-done
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     $F $44 fade
     wait-fade
     0 5 movie-play
@@ -110,10 +104,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         until
         movie-stop-op cutscene-control
-        begin
-            movie-playing? while
-            yield
-        repeat
+        [: movie-playing? ;] wait-while
         yield
         world-held state-flag-clear
     then
@@ -174,16 +165,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     film-reel-used-om1f-14-2 story-flag? not if
         0 ebit? not if
-            1 message   \ "There's a projector set up here. Its looks rather old, but perhaps it still works."
-            wait-message
+            1 say   \ "There's a projector set up here. Its looks rather old, but perhaps it still works."
             0 ebit-set
         else
-            2 message   \ "The screen is already set up. All I need now is a film to play."
-            wait-message
+            2 say   \ "The screen is already set up. All I need now is a film to play."
         then
     else
-        4 message   \ "The film seems to have totally played out. I've seen everything there is to see."
-        wait-message
+        4 say   \ "The film seems to have totally played out. I've seen everything there is to see."
     then
     self-idle-or-end
 ;
@@ -191,11 +179,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : old-mansion-1f-14.act02 ( -- )   \ 00426B80
     self-wait-done
     film-reel-used-om1f-14 story-flag? not if
-        3 message   \ "A screen... Has someone been watching films here recently?"
-        wait-message
+        3 say   \ "A screen... Has someone been watching films here recently?"
     else
-        5 message   \ "A slash runs along the surface of the screen. I'd best forget it. It's definitely u..."
-        wait-message
+        5 say   \ "A slash runs along the surface of the screen. I'd best forget it. It's definitely u..."
     then
     self-idle-or-end
 ;
@@ -205,33 +191,27 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     15.82 20.96 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $60 message-param-room
         $60 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-14-chicken-jerky story-flag-set
             0 effect-remove
             $60 1 item-give-count
             0 $60 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
 
 : old-mansion-1f-14.act04 ( -- )   \ 0047AD38
     self-wait-done
-    6 message   \ "Just a lifeless mannequin."
-    wait-message
+    6 say   \ "Just a lifeless mannequin."
     self-idle-or-end
 ;
 
@@ -248,10 +228,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         self-wait-done
     then then then
     look-close-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    7 message   \ "This shelf is packed full of old books, discolored from years of disuse. A majority of..."
-    wait-message
+    $28 wait-frames
+    7 say   \ "This shelf is packed full of old books, discolored from years of disuse. A majority of..."
     self-wait-anim
     self-idle-or-end
 ;
@@ -261,19 +239,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     19.0 33.0 self-turn-to-xz
     self-wait-done
     look-low-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    8 message   \ "Scattered mannequin parts are strewn about. When assembled correctly, these parts will..."
-    wait-message
+    $28 wait-frames
+    8 say   \ "Scattered mannequin parts are strewn about. When assembled correctly, these parts will..."
     self-wait-anim
     self-idle-or-end
 ;
 
 : old-mansion-1f-14.act07 ( -- )   \ 00426C40
-    begin
-        $8E8 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $8E8 cutscene-cue-reached? ;] wait-until
     begin
         0 cutscene-cue-reached? while
         $2D sprites-additive

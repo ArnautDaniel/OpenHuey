@@ -38,25 +38,15 @@ defer old-mansion-3f-2.act07
 ;
 
 : old-mansion-3f-2.char-enter ( -- )   \ 004211D0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 -1 player-camera
-    then then
+    then
     1 0 -1 area-camera
 ;
 
@@ -422,8 +412,7 @@ defer old-mansion-3f-2.act07
 
 :noname   \ old-mansion-3f-2.act07 (004217D0; deferred: used before it is defined)
     self-wait-done
-    $100 self-anim
-    self-wait-anim
+    $100 play-out
     1 self-anim
     self-wait-done
     fiona-who self-look-at
@@ -433,16 +422,14 @@ defer old-mansion-3f-2.act07
             fiona-who 0 -55 $32 char-faces-xz? fiona-who 0 -100 $32 char-faces-xz? and if
                 self-who self-look-at
                 yield
-                $101 self-anim
-                self-wait-anim
+                $101 play-out
                 -1 self-idle-anim
                 ['] old-mansion-3f-2.act05 goto
             then
             fiona-who 0 55 $32 char-faces-xz? fiona-who 0 110 $32 char-faces-xz? and if
                 self-who self-look-at
                 yield
-                $101 self-anim
-                self-wait-anim
+                $101 play-out
                 -1 self-idle-anim
                 ['] old-mansion-3f-2.act06 goto
             then
@@ -450,8 +437,7 @@ defer old-mansion-3f-2.act07
         44 fiona-started? if
             self-who self-look-at
             yield
-            $101 self-anim
-            self-wait-anim
+            $101 play-out
             -1 self-idle-anim
             ['] old-mansion-3f-2.act08 goto
         then
@@ -491,14 +477,11 @@ defer old-mansion-3f-2.act07
     self-wait-done
     armor-button-pushed story-flag? not if
         look-at-anim self-anim
-        self-frames-reset
-        self-wait-16
-        0 message   \ "There is a button located on the back of the armor. Push the button? YES NO"
-        wait-message
+        16 wait-frames
+        0 say   \ "There is a button located on the back of the armor. Push the button? YES NO"
         self-wait-anim
         0 answer? if
-            reach-up-anim self-anim
-            self-wait-anim
+            reach-up-anim play-out
             fiona-who 2 6 char-sound
             armor-button-pushed story-flag-set
             30 hewie-trust
@@ -506,12 +489,10 @@ defer old-mansion-3f-2.act07
             1 keeps-hewie-off floor-off
             2 keeps-hewie-off floor-off
             3 keeps-hewie-off floor-off
-            reach-down-anim self-anim
-            self-wait-anim
+            reach-down-anim play-out
         then
     else
-        1 message   \ "Looks like the button was the activation switch for a booby-trap."
-        wait-message
+        1 say   \ "Looks like the button was the activation switch for a booby-trap."
     then
     self-idle-or-end
 ;

@@ -67,25 +67,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-8.char-enter ( -- )   \ 003FAAA0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 0 player-camera
-    then then
+    then
     1 1 0 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
@@ -229,13 +219,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
+    [: 6 sound-bank-loaded? ;] wait-until
     0 6 22.0 10.0 -24.0 0 0 sound
-    uneasy-anim $A self-anim-blend
-    self-wait-anim
+    uneasy-anim $A blend-out
     $F $44 fade
     $19 3 $FF char-load
     3 char-start
@@ -311,10 +297,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     world-frozen state-flag-set
     1 self-scripted
     1 1.0 10.0 0.0 0.0 event-camera
-    7 message   \ "The line must have been cut... There is no dial tone."
-    wait-message
-    self-frames-reset
-    self-wait-16
+    7 say   \ "The line must have been cut... There is no dial tone."
+    16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     world-frozen state-flag-clear
     0 self-scripted
@@ -323,22 +307,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-8.act02 ( -- )   \ 0047AA48
     self-wait-done
-    8 message   \ "There is an oddly placed chair here as well. This place continues to weird me out."
-    wait-message
+    8 say   \ "There is an oddly placed chair here as well. This place continues to weird me out."
     self-idle-or-end
 ;
 
 : castle-1f-8.act03 ( -- )   \ 0047AA50
     self-wait-done
-    9 message   \ "There is nothing out of the ordinary here."
-    wait-message
+    9 say   \ "There is nothing out of the ordinary here."
     self-idle-or-end
 ;
 
 : castle-1f-8.act04 ( -- )   \ 0047AA58
     self-wait-done
-    $A message   \ "Various ornaments have been placed here. They all look quite dusty, though."
-    wait-message
+    $A say   \ "Various ornaments have been placed here. They all look quite dusty, though."
     self-idle-or-end
 ;
 
@@ -351,8 +332,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-hidden state-flag-clear
     1 self-noclip
     fiona-who slide-sound 5 char-sound
-    3 room-motion $A self-anim-blend
-    self-wait-anim
+    3 room-motion $A blend-out
     0 self-noclip
     0 ebit? not if
         stalker-who action-end
@@ -407,8 +387,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             fiona-hidden state-flag-clear
             1 self-noclip
             2 room-motion 5 self-anim-blend8
-            self-frames-reset
-            5 self-wait-frames
+            5 wait-frames
             fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
@@ -433,20 +412,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 self-is? 6 self-is? or 7 self-is? or if
         stalker-who char-file-use
         0 room-motion $A self-anim-blend
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
         0 ebit-set
         self-wait-anim
     else
-        there-anim self-anim
-        self-wait-anim
+        there-anim play-out
         0 ebit-set
     then
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;
@@ -456,25 +430,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -25.6 27.6 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $71 message-param-room
         $71 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-8-album-medallion story-flag-set
             4 effect-remove
             $71 1 item-give-count
             0 $71 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -494,34 +463,26 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0.0 25.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        reach-out-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $92 message-param-room
         $92 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-8-magnesia story-flag-set
             5 effect-remove
             $92 1 item-give-count
             0 $92 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
 
 : castle-1f-8.act0C ( -- )   \ 003FB228
-    begin
-        8 cutscene-shot? not while
-        yield
-    repeat
+    [: 8 cutscene-shot? ;] wait-until
     fiona-who 1 char-no-shadow
     self-idle-or-end
 ;

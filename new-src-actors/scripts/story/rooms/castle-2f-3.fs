@@ -107,25 +107,15 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-2f-3.char-enter ( -- )   \ 003FF200
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
     fiona-who self-is? if
         c2f-8-flag3 story-flag? not c2f-2-flag1 story-flag? and if
@@ -457,11 +447,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     1 20.0 10.0 0.0 0.0 event-camera
     c2f-3-tv-examined-2 story-flag? not if
         c2f-3-tv-examined-2 story-flag-set
-        $29 message   \ "I hope this TV works..."
-        wait-message
+        $29 say   \ "I hope this TV works..."
     then
-    reach-out-anim self-anim
-    self-wait-anim
+    reach-out-anim play-out
     5 0 pvar? 5 1 pvar? or if
         c2f-3-tv-examined story-flag? not if
             c2f-3-tv-examined story-flag-set
@@ -475,13 +463,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             1 6 sound-stop
             0 noise-level
         then
-        reach-back-anim self-anim
-        self-wait-anim
+        reach-back-anim play-out
     else
-        reach-back-anim self-anim
-        self-wait-anim
-        $28 message   \ "It won't turn on. Maybe it's broken?"
-        wait-message
+        reach-back-anim play-out
+        $28 say   \ "It won't turn on. Maybe it's broken?"
     then
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
@@ -497,8 +482,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     fiona-hidden state-flag-clear
     1 self-noclip
     fiona-who slide-sound 5 char-sound
-    3 room-motion $A self-anim-blend
-    self-wait-anim
+    3 room-motion $A blend-out
     0 self-noclip
     4 ebit? not if
         stalker-who action-end
@@ -526,17 +510,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         fiona-who char-file-use
         hewie-who self-look-at
         yield
-        begin
-            7 ebit? not while
-            yield
-        repeat
+        [: 7 ebit? ;] wait-until
         counter-inc
         1 self-noclip
         self-who self-look-at
         yield
         0 room-motion 5 self-anim-blend8
-        self-frames-reset
-        $1C self-wait-frames
+        $1C wait-frames
         fiona-who slide-sound 5 char-sound
         self-wait-anim
     else
@@ -593,8 +573,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             fiona-hidden state-flag-clear
             1 self-noclip
             2 room-motion 5 self-anim-blend8
-            self-frames-reset
-            5 self-wait-frames
+            5 wait-frames
             fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
@@ -614,8 +593,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     7 ebit-set
     1 wait-counter
     1 self-noclip
-    0 room-motion 5 self-anim-blend
-    self-wait-anim
+    0 room-motion 5 blend-out
     1 room-motion $A self-anim-blend
     0 self-noclip
     hewie-hidden state-flag-set
@@ -666,18 +644,15 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     $6A -4.0 13.0 135 $FFFF 5 self-move-to
     self-wait-done
     $602 self-anim
-    self-frames-reset
-    $12 self-wait-frames
+    $12 wait-frames
     stalker-who 2 6 char-sound
     1 6 sound-stop
     0 noise-level
     c2f-3-tv-examined story-flag-clear
     5 pvar-inc
     stalker-who 3 stalker-command
-    stalker.anims:stand-anim self-anim
-    self-wait-anim
-    self-frames-reset
-    self-wait-16
+    stalker.anims:stand-anim play-out
+    16 wait-frames
     self-idle-or-end
 ;
 
@@ -743,12 +718,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-2f-3.act11 ( -- )   \ 00400020
-    1 room-motion self-anim
-    self-wait-anim
-    begin
-        32 hewie-action? while
-        yield
-    repeat
+    1 room-motion play-out
+    [: 32 hewie-action? ;] wait-while
     hewie-no-attack state-flag-set
     $3D door-unlock
     0 counter-set
@@ -808,20 +779,17 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     $207 item-give
     $F 6 fade
     wait-fade
-    $40A7 message   \ "'Additional Dog Commands' Hewie has befriended you. Give him various commands via t..."
-    wait-message
+    $40A7 say   \ "'Additional Dog Commands' Hewie has befriended you. Give him various commands via t..."
     $F 7 fade
     wait-fade
     $A7 message-param-room
     $A7 1 item-give-count
     $83 $85 0.0 0.0 0.0 0 0 sound
-    $801B message   \ "has been saved to your file."
-    wait-message
+    $801B say   \ "has been saved to your file."
     items-40-as-70 story-flag? if
         $F 6 fade
         wait-fade
-        $32 message   \ "WARNING!! In HARD MODE, if your dog is ever 'critically wounded,' the game is ove..."
-        wait-message
+        $32 say   \ "WARNING!! In HARD MODE, if your dog is ever 'critically wounded,' the game is ove..."
         $F 7 fade
         wait-fade
     then
@@ -873,8 +841,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     fiona-who char-file-use
     fiona-who $A -39.575 -27.807 90 char-to-xz
     camera-restart
-    1 room-motion self-anim
-    self-wait-anim
+    1 room-motion play-out
     force-calm state-flag-clear
     5 0 0 music
     $F $91 fade
@@ -884,8 +851,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         $2A message   \ "Push up on the right analog stick to command the dog to attack."
         $F0 frames? 0 control-action? or if
             2 room-motion self-anim
-            self-frames-reset
-            $10 self-wait-frames
+            $10 wait-frames
             fiona-who $38 5 char-sound
             hewie-no-attack state-flag-clear
             $20 0 hewie-do
@@ -943,35 +909,28 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     2 self-is? 6 self-is? or 7 self-is? or if
         stalker-who char-file-use
         0 room-motion $A self-anim-blend
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
         4 ebit-set
         self-wait-anim
     else
-        there-anim self-anim
-        self-wait-anim
+        there-anim play-out
         4 ebit-set
     then
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;
 
 : castle-2f-3.act0C ( -- )   \ 0047AAD0
     self-wait-done
-    $20 message   \ "I can't just walk around all day holding these sheets around me. Call me old-fashione..."
-    wait-message
+    $20 say   \ "I can't just walk around all day holding these sheets around me. Call me old-fashione..."
     self-idle-or-end
 ;
 
 : castle-2f-3.act0D ( -- )   \ 003FFE90
     self-wait-done
-    $1F message   \ "There is a change of clothes that maid has apparently laid out. Change clothes? YES NO"
-    wait-message
+    $1F say   \ "There is a change of clothes that maid has apparently laid out. Change clothes? YES NO"
     0 answer? if
         $F $54 fade
         $D 3 $FF char-load
@@ -1018,33 +977,27 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         $F $51 fade
         wait-fade
         $202 item-give
-        rest-anim $A self-anim-blend
-        self-wait-anim
+        rest-anim $A blend-out
         10 self-idle-anim
-        $12 message   \ "That worked... but now what should I do? If I could just find a map of this place..."
-        wait-message
+        $12 say   \ "That worked... but now what should I do? If I could just find a map of this place..."
         $F 6 fade
         wait-fade
-        $40A6 message   \ "'Additional Actions' You are now able to perform the following new actions in t..."
-        wait-message
+        $40A6 say   \ "'Additional Actions' You are now able to perform the following new actions in t..."
         fg-3-flag3 story-flag? if
-            $40AB message   \ "'Costumes' You are now able to change costumes. Change into alternate costu..."
-            wait-message
+            $40AB say   \ "'Costumes' You are now able to change costumes. Change into alternate costu..."
         then
         $F 7 fade
         wait-fade
         $A6 message-param-room
         $A6 1 item-give-count
         $83 $85 0.0 0.0 0.0 0 0 sound
-        $801B message   \ "has been saved to your file."
-        wait-message
+        $801B say   \ "has been saved to your file."
         fg-3-flag3 story-flag? if
             got-doc-action story-flag-set
             $AB message-param-room
             $AB 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
-            $801B message   \ "has been saved to your file."
-            wait-message
+            $801B say   \ "has been saved to your file."
         then
     then
     self-wait-done
@@ -1053,16 +1006,14 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-2f-3.act0E ( -- )   \ 0047AAD8
     self-wait-done
-    $C message   \ "I wonder if that dog will be alright?"
-    wait-message
+    $C say   \ "I wonder if that dog will be alright?"
     self-wait-done
     self-idle-or-end
 ;
 
 : castle-2f-3.act0F ( -- )   \ 0047AAE0
     self-wait-done
-    $22 message   \ "I can't fall asleep. I am too worried about that dog."
-    wait-message
+    $22 say   \ "I can't fall asleep. I am too worried about that dog."
     self-wait-done
     self-idle-or-end
 ;
@@ -1071,12 +1022,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     $80 -1.546 59.728 45 $FFFF 5 self-move-to
     self-wait-done
-    reach-out-anim self-anim
-    self-wait-anim
-    $D message   \ "If I just leave it like this, it may not make it through the night."
-    wait-message
-    reach-back-anim self-anim
-    self-wait-anim
+    reach-out-anim play-out
+    $D say   \ "If I just leave it like this, it may not make it through the night."
+    reach-back-anim play-out
     self-wait-done
     self-idle-or-end
 ;
@@ -1112,8 +1060,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     -40.0 -60.0 self-turn-to-xz
     self-wait-done
-    $23 message   \ "The fire burns, emitting a red glow. The room is heated to a comfortable temperature."
-    wait-message
+    $23 say   \ "The fire burns, emitting a red glow. The room is heated to a comfortable temperature."
     self-idle-or-end
 ;
 
@@ -1123,43 +1070,32 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     1 20.0 -10.0 0.0 10.0 event-camera
     look-at-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     c2f-3-portrait-1-examined story-flag-set
     0 ebit? not if
-        $24 message   \ "I wonder whose portrait this is?"
-        wait-message
+        $24 say   \ "I wonder whose portrait this is?"
         0 ebit-set
     else
-        $25 message   \ "This sounds really weird, but for some reason, I feel like I've seen this person..."
-        wait-message
+        $25 say   \ "This sounds really weird, but for some reason, I feel like I've seen this person..."
     then
     self-wait-anim
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
 ;
 
 : castle-2f-3.act16 ( -- )   \ 00400220
     self-wait-done
-    $26 message   \ "Freshly starched and pressed sheets and bed covers now line the bed."
-    wait-message
-    turn-round-anim self-anim
-    self-wait-anim
+    $26 say   \ "Freshly starched and pressed sheets and bed covers now line the bed."
+    turn-round-anim play-out
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
-    crouch-down-anim self-anim
-    self-wait-anim
+    7 wait-frames
+    crouch-down-anim play-out
     crouching-anim self-anim
-    self-frames-reset
-    self-wait-16
-    crouch-up-anim self-anim
-    self-wait-anim
+    16 wait-frames
+    crouch-up-anim play-out
     -1 self-idle-anim
-    $27 message   \ "Oh come on, Fiona... It's not like you are going to find the Boogieman under there."
-    wait-message
+    $27 say   \ "Oh come on, Fiona... It's not like you are going to find the Boogieman under there."
     self-idle-or-end
 ;
 
@@ -1169,23 +1105,18 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     1 20.0 -5.0 0.0 10.0 event-camera
     look-at-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     c2f-3-portrait-2-examined story-flag-set
     1 ebit? not if
-        $2D message   \ "The man pictured here has a noble air about him. I wonder how long ago this portr..."
-        wait-message
+        $2D say   \ "The man pictured here has a noble air about him. I wonder how long ago this portr..."
         1 ebit-set
     else c2f-3-portrait-1-examined story-flag? c2f-3-portrait-3-examined story-flag? or if
-        $2E message   \ "In this painting, the man looks quite young. There is no mistaking that all the p..."
-        wait-message
+        $2E say   \ "In this painting, the man looks quite young. There is no mistaking that all the p..."
     else
-        $2D message   \ "The man pictured here has a noble air about him. I wonder how long ago this portr..."
-        wait-message
+        $2D say   \ "The man pictured here has a noble air about him. I wonder how long ago this portr..."
     then then
     self-wait-anim
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
 ;
@@ -1196,23 +1127,18 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     1 20.0 -5.0 0.0 10.0 event-camera
     look-at-anim self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    $28 wait-frames
     c2f-3-portrait-3-examined story-flag-set
     2 ebit? not if
-        $2B message   \ "What a powerful piece of art. The eyes really feel like they are peering deep int..."
-        wait-message
+        $2B say   \ "What a powerful piece of art. The eyes really feel like they are peering deep int..."
         2 ebit-set
     else c2f-3-portrait-1-examined story-flag? c2f-3-portrait-2-examined story-flag? and if
-        $2C message   \ "Every painting features the same person. Perhaps it's the lord of this castle?"
-        wait-message
+        $2C say   \ "Every painting features the same person. Perhaps it's the lord of this castle?"
     else
-        $2B message   \ "What a powerful piece of art. The eyes really feel like they are peering deep int..."
-        wait-message
+        $2B say   \ "What a powerful piece of art. The eyes really feel like they are peering deep int..."
     then then
     self-wait-anim
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
 ;
@@ -1222,25 +1148,20 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     -9.0 -11.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        pick-up-anim self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c2f-3-medallion story-flag-set
             2 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        up-from-pick-anim self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -1266,11 +1187,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     begin
         $19 chance? if
-            look-about-anim $A self-anim-blend
-            self-wait-anim
+            look-about-anim $A blend-out
         else $19 chance? if
-            look-about-3-anim $A self-anim-blend
-            self-wait-anim
+            look-about-3-anim $A blend-out
         then then
         yield
     again
@@ -1278,22 +1197,17 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-2f-3.act1C ( -- )   \ 004003F0
     self-wait-done
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     fiona-who $E8 -25.0 63.0 -5 char-to-xz
     1 20.0 10.0 40.0 0.0 event-camera
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     9 ebit? not if
-        1 message   \ "There's an antique doll lying here."
-        wait-message
+        1 say   \ "There's an antique doll lying here."
         9 ebit-set
     else
-        2 message   \ "They say that bisque dolls are supposedly designed with a specific model in mind......"
-        wait-message
+        2 say   \ "They say that bisque dolls are supposedly designed with a specific model in mind......"
     then
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
 ;
@@ -1302,23 +1216,18 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     5.0 40.5 self-turn-to-xz
     self-wait-done
-    3 message   \ "A birdcage... Right now there is nothing in it."
-    wait-message
+    3 say   \ "A birdcage... Right now there is nothing in it."
     self-idle-or-end
 ;
 
 : castle-2f-3.act1E ( -- )   \ 00400450
     self-wait-done
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     fiona-who $55 -40.0 12.0 -90 char-to-xz
     1 30.0 20.0 -60.0 0.0 event-camera
-    self-frames-reset
-    4 self-wait-frames
-    4 message   \ "There is a pair of scales lying here. It looks like their purpose is more one of decora..."
-    wait-message
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
+    4 say   \ "There is a pair of scales lying here. It looks like their purpose is more one of decora..."
+    4 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
 ;
@@ -1327,8 +1236,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    $40 message   \ "A chest used to store clothes."
-    wait-message
+    $40 say   \ "A chest used to store clothes."
     self-idle-or-end
 ;
 
@@ -1337,12 +1245,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     45 self-turn-angle
     self-wait-done
     $A ebit? not if
-        6 message   \ "The sun is starting to set... And with it will come night..."
-        wait-message
+        6 say   \ "The sun is starting to set... And with it will come night..."
         $A ebit-set
     else
-        7 message   \ "I should cover as much of this castle as I can while there is still some light left."
-        wait-message
+        7 say   \ "I should cover as much of this castle as I can while there is still some light left."
     then
     self-idle-or-end
 ;
@@ -1365,8 +1271,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     45 self-turn-angle
     self-wait-done
-    $31 message   \ "The sun has completely set... It's pitch black out now. I can't see 10 feet out the w..."
-    wait-message
+    $31 say   \ "The sun has completely set... It's pitch black out now. I can't see 10 feet out the w..."
     self-idle-or-end
 ;
 
@@ -1382,15 +1287,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     wait-message
     $F 6 fade
     wait-fade
-    $40A5 message   \ "'Evasion Points' Press the ? button when near closets or beds to hide and escape en..."
-    wait-message
+    $40A5 say   \ "'Evasion Points' Press the ? button when near closets or beds to hide and escape en..."
     $F 7 fade
     wait-fade
     $A5 message-param-room
     $A5 1 item-give-count
     $83 $85 0.0 0.0 0.0 0 0 sound
-    $801B message   \ "has been saved to your file."
-    wait-message
+    $801B say   \ "has been saved to your file."
     $3C door-open-clear
     $3C door-lock
     $3D door-lock
@@ -1402,31 +1305,18 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-2f-3.act24 ( -- )   \ 0047AAF0
     self-wait-done
-    $11 message   \ "I have to find a place to hide!"
-    wait-message
+    $11 say   \ "I have to find a place to hide!"
     self-idle-or-end
 ;
 
 : castle-2f-3.act25 ( -- )   \ 00400560
-    begin
-        0 cutscene-shot? not while
-        yield
-    repeat
+    [: 0 cutscene-shot? ;] wait-until
     fiona-who $1E char-layer
-    begin
-        1 cutscene-shot? not while
-        yield
-    repeat
+    [: 1 cutscene-shot? ;] wait-until
     fiona-who $A char-layer
-    begin
-        6 cutscene-shot? not while
-        yield
-    repeat
+    [: 6 cutscene-shot? ;] wait-until
     2 3 1.5 light
-    begin
-        7 cutscene-shot? not while
-        yield
-    repeat
+    [: 7 cutscene-shot? ;] wait-until
     0 3 0.0 light
     self-idle-or-end
 ;
@@ -1438,14 +1328,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     180 self-turn-angle
     self-wait-done
     1 20.0 10.0 0.0 0.0 event-camera
-    $41 message   \ "A chest used to store clothes. Change clothes? YES NO"
-    wait-message
+    $41 say   \ "A chest used to store clothes. Change clothes? YES NO"
     0 answer? if
         7 subscreen-open
-        begin
-            subscreen-wanted state-flag? while
-            yield
-        repeat
+        [: subscreen-wanted state-flag? ;] wait-while
         0 0.0 0.0 0.0 0.0 event-camera
         $26 $28 pvars-equal? not $27 $29 pvars-equal? not or if
             fiona-who $10 6 char-sound
@@ -1508,8 +1394,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
                 yield
                 4 sound-bank-loaded? until
             -1 self-idle-anim
-            self-frames-reset
-            7 self-wait-frames
+            7 wait-frames
         then
         $27 $29 pvars-equal? not if
             1 char-in
@@ -1527,8 +1412,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         $F $41 fade
         wait-fade
     else
-        self-frames-reset
-        $10 self-wait-frames
+        $10 wait-frames
         0 0.0 0.0 0.0 0.0 event-camera
     then
     0 self-scripted
