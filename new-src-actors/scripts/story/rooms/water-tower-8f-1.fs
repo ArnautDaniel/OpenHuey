@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-8f-1
-USING: engine room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ the screen fade (renderer +0x70) by script variable 1 with Hewie's light 0xF: byte 3 0 clear
 \ (0x808080), 2 full (0x80808080); 1 fades in by 0x10 a call and 3 back out, waiting (2),
@@ -69,80 +69,66 @@ USING: engine room-names story.words story.shared flag-names ;
 : water-tower-8f-1.enter ( -- )   \ 0042F500
     room-sounds
     $1B 1.0 0 bgm
-    $8E story-flag? not if
-        0 0 $14 door-bits
-        1 0 $14 door-bits
+    c7-second-event story-flag? not if
+        0 part-hidden
+        1 part-hidden
         8 1 object-hidden
         9 1 object-hidden
         $A 1 object-hidden
     else
-        0 1 $14 door-bits
-        1 1 $14 door-bits
+        0 part-shown
+        1 part-shown
     then
-    $91 story-flag? not if
+    wt8f-1-flag1 story-flag? not if
         2 3 var-set
-        2 1 $14 door-bits
-        3 0 $14 door-bits
+        2 part-shown
+        3 part-hidden
     else
-        2 0 $14 door-bits
-        3 1 $14 door-bits
+        2 part-hidden
+        3 part-shown
     then
-    $33E story-flag? not if
+    wt8f-1-flag3 story-flag? not if
         3 3 var-set
-        4 1 $14 door-bits
-        5 0 $14 door-bits
+        4 part-shown
+        5 part-hidden
     else
-        4 0 $14 door-bits
-        5 1 $14 door-bits
+        4 part-hidden
+        5 part-shown
     then
-    $33F story-flag? not if
+    wt8f-1-flag4 story-flag? not if
         4 3 var-set
-        6 1 $14 door-bits
-        7 0 $14 door-bits
+        6 part-shown
+        7 part-hidden
     else
-        6 0 $14 door-bits
-        7 1 $14 door-bits
+        6 part-hidden
+        7 part-shown
     then
-    8 1 $14 door-bits
+    8 part-shown
     0 water-tower-8f-1.cmd06
 ;
 
 : water-tower-8f-1.char-enter ( -- )   \ 0042F590
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
 ;
 
 : water-tower-8f-1.phase1 ( -- )   \ 0042F5D0
-    $AE story-flag? $8E story-flag? and $93 story-flag? not and if
-        0 0 char-entered-area? if
-            $93 story-flag-set
-            $FF panic-stage? if
-                3 panic-stage
-            then
-            0 0 char-action? if
-                0 0 $A action-force
+    fg-3-flag3 story-flag? c7-second-event story-flag? and wt8f-1-flag2 story-flag? not and if
+        fiona-who 0 char-entered-area? if
+            wt8f-1-flag2 story-flag-set
+            panic-eased
+            fiona-who 0 char-action? if
+                0 fiona-who $A action-force
             else
-                1 0 $A action-force
+                1 fiona-who $A action-force
             then
         then
     else 0 exit-usable? if
@@ -156,52 +142,50 @@ USING: engine room-names story.words story.shared flag-names ;
     1 ebit? not 2 ebit? not and if
         0 ebit? not if
             0 control-action? if
-                0 5 char-in-area? if
-                    0 -6 -12 $3C char-faces-xz? if
-                        hewie-stays? if
+                fiona-who 5 char-in-area? if
+                    fiona-who -6 -12 $3C char-faces-xz? if
+                        hewie-may-break-off? if
                             0 0 var-set
-                            0 1 0 action
+                            0 hewie-who 0 action
                         then
                     then
-                else 0 6 char-in-area? if
-                    0 -9 10 $3C char-faces-xz? if
-                        hewie-stays? if
+                else fiona-who 6 char-in-area? if
+                    fiona-who -9 10 $3C char-faces-xz? if
+                        hewie-may-break-off? if
                             0 1 var-set
-                            0 1 0 action
+                            0 hewie-who 0 action
                         then
                     then
-                else 0 7 char-in-area? if
-                    0 12 7 $3C char-faces-xz? if
-                        hewie-stays? if
+                else fiona-who 7 char-in-area? if
+                    fiona-who 12 7 $3C char-faces-xz? if
+                        hewie-may-break-off? if
                             0 2 var-set
-                            0 1 0 action
+                            0 hewie-who 0 action
                         then
                     then
                 then then then
             then
         else 45 fiona-started? if
-            $FE 2 char-C4? not if
+            stalker-who 2 char-cond? not if
                 stalker-free? if
                     0 0 var? if
-                        $FE 8 char-in-area? if
+                        stalker-who 8 char-in-area? if
                             water-tower-8f-1.cond01? if
                                 1 ebit-set
-                                $91 story-flag? if
-                                    $FF panic-stage? if
-                                        3 panic-stage
-                                    then
-                                    0 0 8 action-force
+                                wt8f-1-flag1 story-flag? if
+                                    panic-eased
+                                    0 fiona-who 8 action-force
                                 then
                             then
                         then
                     else 0 1 var? if
-                        $FE 9 char-in-area? if
+                        stalker-who 9 char-in-area? if
                             water-tower-8f-1.cond01? if
                                 1 ebit-set
                             then
                         then
                     else 0 2 var? if
-                        $FE $A char-in-area? if
+                        stalker-who $A char-in-area? if
                             water-tower-8f-1.cond01? if
                                 1 ebit-set
                             then
@@ -213,37 +197,37 @@ USING: engine room-names story.words story.shared flag-names ;
             2 ebit-set
         then then then
     then
-    $91 story-flag? not if
+    wt8f-1-flag1 story-flag? not if
         0 3.0 620.0 79.0 $A 8 0 zone
-        0 $C char-in-area? 0 0 char-in-zone? and if
+        fiona-who $C char-in-area? fiona-who 0 char-in-zone? and if
             5 0 var-set
             0 $F1 6 action
         then
     then
-    $33E story-flag? not if
+    wt8f-1-flag3 story-flag? not if
         1 -58.0 620.0 54.0 $A 8 0 zone
-        0 $D char-in-area? 0 1 char-in-zone? and if
+        fiona-who $D char-in-area? fiona-who 1 char-in-zone? and if
             5 1 var-set
             0 $F2 6 action
         then
     then
-    $33F story-flag? not if
+    wt8f-1-flag4 story-flag? not if
         2 -5.0 620.0 -78.0 $A 8 0 zone
-        0 $E char-in-area? 0 2 char-in-zone? and if
+        fiona-who $E char-in-area? fiona-who 2 char-in-zone? and if
             5 2 var-set
             0 $F3 6 action
         then
     then
-    $8E story-flag? not if
+    c7-second-event story-flag? not if
         3 0.0 620.0 41.0 $11 10 0 zone
-        8 ebit? not 1 char-here? and 1 0 char-C4? and if
+        8 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
-                    1 3 9 char-zone-bits? if
+                    hewie-who 3 9 char-zone-bits? if
                         8 ebit-set
                         $64 chance? if
                             $1F 3 var-set
-                            0 1 $88 action
+                            0 hewie-who $88 action
                         then
                     then
                 then
@@ -255,39 +239,39 @@ USING: engine room-names story.words story.shared flag-names ;
 : water-tower-8f-1.phase2 ( -- )   \ 0042F7B0
     scene-5-pending state-flag? if
         -2147483646 scene-request? if
-            5 9 1 scene-change
+            9 always offer-action
         then
     then
-    0 $B char-in-area? 0 90 $3C char-heading? and if
-        5 2 0 scene-change
+    fiona-who $B char-in-area? fiona-who 90 $3C char-heading? and if
+        2 unhurried offer-action
     then
-    $33E story-flag? not if
-        0 $D char-in-area? 0 -58 54 $32 char-faces-xz? and if
-            5 $E 0 scene-change
+    wt8f-1-flag3 story-flag? not if
+        fiona-who $D char-in-area? fiona-who -58 54 $32 char-faces-xz? and if
+            $E unhurried offer-action
         then
     then
-    $33F story-flag? not if
-        0 $E char-in-area? 0 -5 -78 $32 char-faces-xz? and if
-            5 $E 0 scene-change
+    wt8f-1-flag4 story-flag? not if
+        fiona-who $E char-in-area? fiona-who -5 -78 $32 char-faces-xz? and if
+            $E unhurried offer-action
         then
     then
-    $91 story-flag? not if
-        0 $C char-in-area? 0 3 79 $32 char-faces-xz? and if
-            5 $E 0 scene-change
+    wt8f-1-flag1 story-flag? not if
+        fiona-who $C char-in-area? fiona-who 3 79 $32 char-faces-xz? and if
+            $E unhurried offer-action
         then
-    else $8E story-flag? if
-        0 $C char-in-area? 0 3 79 $32 char-faces-xz? and if
-            5 $F 0 scene-change
+    else c7-second-event story-flag? if
+        fiona-who $C char-in-area? fiona-who 3 79 $32 char-faces-xz? and if
+            $F unhurried offer-action
         then
     then then
-    0 $F char-in-area? 0 -6 -12 $3C char-faces-xz? and if
-        5 $12 0 scene-change
+    fiona-who $F char-in-area? fiona-who -6 -12 $3C char-faces-xz? and if
+        $12 unhurried offer-action
     then
-    0 $10 char-in-area? 0 -9 10 $3C char-faces-xz? and if
-        5 $12 0 scene-change
+    fiona-who $10 char-in-area? fiona-who -9 10 $3C char-faces-xz? and if
+        $12 unhurried offer-action
     then
-    0 $11 char-in-area? 0 12 7 $3C char-faces-xz? and if
-        5 $12 0 scene-change
+    fiona-who $11 char-in-area? fiona-who 12 7 $3C char-faces-xz? and if
+        $12 unhurried offer-action
     then
 ;
 
@@ -304,14 +288,14 @@ USING: engine room-names story.words story.shared flag-names ;
 ;
 
 : water-tower-8f-1.phase5 ( -- )   \ 0042F9C0
-    1 0 char-in-nav-group? if
-        1 action-end
+    hewie-who 0 char-in-nav-group? if
+        hewie-who action-end
         0 0 var? if
-            1 $33 2.82 68.25 14 char-to-xz
+            hewie-who $33 2.82 68.25 14 char-to-xz
         else 0 1 var? if
-            1 $38 -64.059 -24.05 -107 char-to-xz
+            hewie-who $38 -64.059 -24.05 -107 char-to-xz
         else 0 2 var? if
-            1 $4C 58.05 -31.28 121 char-to-xz
+            hewie-who $4C 58.05 -31.28 121 char-to-xz
         then then then
     then
 ;
@@ -332,8 +316,8 @@ USING: engine room-names story.words story.shared flag-names ;
     then then then
     1 self-scripted
     1 self-noclip
-    0 0 8 nav-group
-    1 0 $30 nav-group
+    0 solid-floor floor-off
+    0 keeps-fiona-off keeps-pursuers-off or floor-on
     0 0 var? if
         $C4 -5.62 -11.6 20 $204 5 self-move-to
         self-wait-done
@@ -347,11 +331,11 @@ USING: engine room-names story.words story.shared flag-names ;
     2 water-tower-8f-1.cmd00
     3 water-tower-8f-1.cmd00
     0 0 var? if
-        1 $D0 -0.12 8.95 5 char-to-xz
+        hewie-who $D0 -0.12 8.95 5 char-to-xz
     else 0 1 var? if
-        1 $FF -7.73 -4.22 -125 char-to-xz
+        hewie-who $FF -7.73 -4.22 -125 char-to-xz
     else 0 2 var? if
-        1 $F9 6.6 -4.24 117 char-to-xz
+        hewie-who $F9 6.6 -4.24 117 char-to-xz
     then then then
     1 self-scripted
     0 self-noclip
@@ -370,58 +354,58 @@ USING: engine room-names story.words story.shared flag-names ;
     begin
         1 ebit? not 2 ebit? not and while
         0 0 var? if
-            $FE 8 char-in-area? if
-                $FE self-look-at
+            stalker-who 8 char-in-area? if
+                stalker-who self-look-at
                 yield
-            else 0 8 char-in-area? if
-                0 self-look-at
+            else fiona-who 8 char-in-area? if
+                fiona-who self-look-at
                 yield
             else
-                $FF self-look-at
+                self-who self-look-at
                 yield
             then then
         else 0 1 var? if
-            $FE 9 char-in-area? if
-                $FE self-look-at
+            stalker-who 9 char-in-area? if
+                stalker-who self-look-at
                 yield
-            else 0 9 char-in-area? if
-                0 self-look-at
+            else fiona-who 9 char-in-area? if
+                fiona-who self-look-at
                 yield
             else
-                $FF self-look-at
+                self-who self-look-at
                 yield
             then then
         else 0 2 var? if
-            $FE $A char-in-area? if
-                $FE self-look-at
+            stalker-who $A char-in-area? if
+                stalker-who self-look-at
                 yield
-            else 0 $A char-in-area? if
-                0 self-look-at
+            else fiona-who $A char-in-area? if
+                fiona-who self-look-at
                 yield
             else
-                $FF self-look-at
+                self-who self-look-at
                 yield
             then then
         then then then
         yield
     repeat
-    $FF self-look-at
+    self-who self-look-at
     yield
     1 ebit? if
-        $75 0 hewie-action
+        $75 0 hewie-do
         3 ebit-clear
         begin
             3 ebit? not if
-                1 $38 char-on-nav-flags? not if
+                hewie-who $38 char-on-nav-flags? not if
                     3 ebit-set
-                    0 0 $30 nav-group
-                    1 0 8 nav-group
+                    0 keeps-fiona-off keeps-pursuers-off or floor-off
+                    0 solid-floor floor-on
                 then
             then
             117 hewie-action? while
             yield
         repeat
-        1 $38 char-on-nav-flags? if
+        hewie-who $38 char-on-nav-flags? if
             0 0 var? if
                 $33 2.39 70.98 1.0 100 hewie-go-to
                 self-wait-done
@@ -432,8 +416,8 @@ USING: engine room-names story.words story.shared flag-names ;
                 $4C 61.9 -34.57 1.0 100 hewie-go-to
                 self-wait-done
             then then then
-            0 0 $30 nav-group
-            1 0 8 nav-group
+            0 keeps-fiona-off keeps-pursuers-off or floor-off
+            0 solid-floor floor-on
         then
     else
         hewie-bark
@@ -448,8 +432,8 @@ USING: engine room-names story.words story.shared flag-names ;
             $4C 61.9 -34.57 1.0 100 hewie-go-to
             self-wait-done
         then then then
-        0 0 $30 nav-group
-        1 0 8 nav-group
+        0 keeps-fiona-off keeps-pursuers-off or floor-off
+        0 solid-floor floor-on
     then
     0 ebit-clear
     1 ebit-clear
@@ -466,157 +450,57 @@ USING: engine room-names story.words story.shared flag-names ;
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     $F 4 fade
     wait-fade
-    $FE action-end
-    $FE char-done
-    1 action-end
-    1 char-done
+    stalker-who action-end
+    stalker-who char-done
+    hewie-who action-end
+    hewie-who char-done
     0 $F9 $C action
     9 ebit-set
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     9 ebit-clear
     1 water-tower-8f-1.cmd03
     scene-5-pending state-flag-clear
     no-stalker-camera state-flag-clear
-    $FE action-end
-    $FE char-done
-    1 action-end
-    1 char-done
+    stalker-who action-end
+    stalker-who char-done
+    hewie-who action-end
+    hewie-who char-done
     3 0 movie-play
     2 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     0 $F9 $D action
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    0 message-prepare
+    panic-eased
+    0 message-prepare   \ "Fiona!"
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     $40 resident-flag-set
     50 hewie-trust
-    $FE action-end
-    $FE char-done
-    $8E story-flag-set
-    0 $33 -1.38 70.2 0 char-to-xz
-    1 $33 5.0 67.76 0 char-to-xz
-    $AE story-flag? not if
+    stalker-who action-end
+    stalker-who char-done
+    c7-second-event story-flag-set
+    fiona-who $33 -1.38 70.2 0 char-to-xz
+    hewie-who $33 5.0 67.76 0 char-to-xz
+    fg-3-flag3 story-flag? not if
         2 0 char-remove
     then
     camera-restart
     $103 door-unlock
     $100 door-unlock
     $E0 door-lock
-    $FE $C5 0 room-doors-state
-    $FE $C6 0 room-doors-state
-    $FE $C7 0 room-doors-state
-    1 0 8 nav-group
+    stalker-who $C5 0 room-doors-state
+    stalker-who $C6 0 room-doors-state
+    stalker-who $C7 0 room-doors-state
+    0 solid-floor floor-on
     0 ebit-clear
     1 ebit-clear
     2 ebit-clear
@@ -634,17 +518,17 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : water-tower-8f-1.act02 ( -- )   \ 0042FE40
     self-wait-done
-    $8E story-flag? not if
+    c7-second-event story-flag? not if
         1 self-scripted
         1 self-noclip
         self-frames-reset
         8 self-wait-frames
         world-frozen state-flag-set
-        0 $36 0.0 33.0 180 char-to-xz
+        fiona-who $36 0.0 33.0 180 char-to-xz
         1 10.0 60.0 0.0 5.0 event-camera
         self-frames-reset
         8 self-wait-frames
-        4 message
+        4 message   \ "Wow. I've never seen anything like this before... Looks like some kind of diorama o..."
         wait-message
         self-frames-reset
         8 self-wait-frames
@@ -652,18 +536,18 @@ USING: engine room-names story.words story.shared flag-names ;
         world-frozen state-flag-clear
         0 self-scripted
         0 self-noclip
-        0 $9D 0.0 41.0 180 char-to-xz
+        fiona-who $9D 0.0 41.0 180 char-to-xz
     else $A4 1 item-count? if
         1 self-scripted
         1 self-noclip
         self-frames-reset
         8 self-wait-frames
         world-frozen state-flag-set
-        0 $D2 -0.95 33.0 180 char-to-xz
+        fiona-who $D2 -0.95 33.0 180 char-to-xz
         1 2.0 50.0 0.0 5.0 event-camera
         self-frames-reset
         8 self-wait-frames
-        $A message
+        $A message   \ "So... the 'magisterium' listed in the memo... was actually referring to this minia..."
         wait-message
         self-frames-reset
         8 self-wait-frames
@@ -671,9 +555,9 @@ USING: engine room-names story.words story.shared flag-names ;
         world-frozen state-flag-clear
         0 self-scripted
         0 self-noclip
-        0 $9D 0.0 41.0 180 char-to-xz
+        fiona-who $9D 0.0 41.0 180 char-to-xz
     else
-        $B message
+        $B message   \ "So the miniature was the activation switch?"
         wait-message
     then then
     self-idle-or-end
@@ -683,93 +567,43 @@ USING: engine room-names story.words story.shared flag-names ;
     $F $44 fade
     $FF 1.0 0 bgm
     wait-fade
-    8 0 $14 door-bits
+    8 part-hidden
     1 water-tower-8f-1.cmd06
     0 0.0 0.0 0.0 0.0 event-camera
     world-frozen state-flag-clear
     stalkers-stay state-flag-set
-    1 action-end
-    1 char-done
-    2 char-unload
+    hewie-who action-end
+    hewie-who char-done
+    2 char-start
     summoner-on state-flag-clear
     5 1 movie-play
     4 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     0 $F9 $B action
     $10 $50 movie-param
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    3 message-prepare
+    panic-eased
+    3 message-prepare   \ "Fiona! Why must you defy me? Why do you run? Let me into your womb!"
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
-    1 1 $14 door-bits
-    8 1 $14 door-bits
+    1 part-shown
+    8 part-shown
     0 water-tower-8f-1.cmd06
     $100 door-open-clear
     $100 door-lock
     doors-room-in
     camera-restart
-    0 $33 6.38 70.12 180 char-to-xz
-    1 char-activate
+    fiona-who $33 6.38 70.12 180 char-to-xz
+    hewie-who char-activate
     $C7 0 41 hewie-to-room
-    1 $29 -17.04 65.97 -160 char-to-xz
-    $FE char-activate
+    hewie-who $29 -17.04 65.97 -160 char-to-xz
+    stalker-who char-activate
     $FE $C7 89 2 stalker-to-room
-    $FE $59 -58.86 10.32 0 char-to-xz
+    stalker-who $59 -58.86 10.32 0 char-to-xz
     0 water-tower-8f-1.cmd03
-    1 0 8 nav-group
+    0 solid-floor floor-on
     0 ebit-clear
     1 ebit-clear
     2 ebit-clear
@@ -791,12 +625,12 @@ USING: engine room-names story.words story.shared flag-names ;
     self-frames-reset
     8 self-wait-frames
     world-frozen state-flag-set
-    0 $36 0.0 33.0 180 char-to-xz
+    fiona-who $36 0.0 33.0 180 char-to-xz
     1 10.0 60.0 0.0 5.0 event-camera
     self-frames-reset
     8 self-wait-frames
     0 water-tower-8f-1.cmd02
-    5 message
+    5 message   \ "Choose a location to set the model in. ?:USE ?:CANCEL"
     begin
         1 water-tower-8f-1.cmd02
         4 ebit? if
@@ -805,7 +639,7 @@ USING: engine room-names story.words story.shared flag-names ;
                 yield
             else
                 0 6 -1.0 632.0 31.0 0 0 sound
-                0 1 $14 door-bits
+                0 part-shown
                 $23 item-use
                 6 ebit-set
                 2 0 char-remove
@@ -821,7 +655,7 @@ USING: engine room-names story.words story.shared flag-names ;
                 world-frozen state-flag-clear
                 0 self-scripted
                 0 self-noclip
-                0 $9D 0.0 41.0 180 char-to-xz
+                fiona-who $9D 0.0 41.0 180 char-to-xz
                 self-idle-or-end
             then
         else
@@ -837,7 +671,7 @@ USING: engine room-names story.words story.shared flag-names ;
             world-frozen state-flag-clear
             0 self-scripted
             0 self-noclip
-            0 $9D 0.0 41.0 180 char-to-xz
+            fiona-who $9D 0.0 41.0 180 char-to-xz
             self-idle-or-end
         then
     again
@@ -854,42 +688,42 @@ USING: engine room-names story.words story.shared flag-names ;
 ;
 
 : water-tower-8f-1.act06 ( -- )   \ 00430000
-    0 7 6 char-sound
+    fiona-who 7 6 char-sound
     5 0 var? if
         2 water-tower-8f-1.cmd01
         0 -1.0 623.0 77.0 0 0 0 0 dust
         0 4.0 623.0 77.0 0 0 0 0 dust
         2 0 var? if
-            0 8 6 char-sound
+            fiona-who 8 6 char-sound
             0 water-tower-8f-1.cmd04
             3 water-tower-8f-1.cmd04
-            2 0 $14 door-bits
-            3 1 $14 door-bits
-            $91 story-flag-set
+            2 part-hidden
+            3 part-shown
+            wt8f-1-flag1 story-flag-set
         then
     else 5 1 var? if
         3 water-tower-8f-1.cmd01
         0 -59.0 623.0 50.0 0 0 0 0 dust
         0 -55.0 623.0 54.0 0 0 0 0 dust
         3 0 var? if
-            0 8 6 char-sound
+            fiona-who 8 6 char-sound
             1 water-tower-8f-1.cmd04
             4 water-tower-8f-1.cmd04
-            4 0 $14 door-bits
-            5 1 $14 door-bits
-            $33E story-flag-set
+            4 part-hidden
+            5 part-shown
+            wt8f-1-flag3 story-flag-set
         then
     else 5 2 var? if
         4 water-tower-8f-1.cmd01
         0 -8.0 623.0 -77.0 0 0 0 0 dust
         0 -2.0 623.0 -77.0 0 0 0 0 dust
         4 0 var? if
-            0 8 6 char-sound
+            fiona-who 8 6 char-sound
             2 water-tower-8f-1.cmd04
             5 water-tower-8f-1.cmd04
-            6 0 $14 door-bits
-            7 1 $14 door-bits
-            $33F story-flag-set
+            6 part-hidden
+            7 part-shown
+            wt8f-1-flag4 story-flag-set
         then
     then then then
     self-frames-reset
@@ -900,20 +734,20 @@ USING: engine room-names story.words story.shared flag-names ;
 : water-tower-8f-1.act08 ( -- )   \ 00430250
     1 self-scripted
     self-wait-done
-    $FE self-look-at
+    stalker-who self-look-at
     yield
     $C00 self-anim
-    0 1 char-wait-motion
-    0 $2F 5 char-sound
+    fiona-who 1 char-wait-motion
+    fiona-who $2F 5 char-sound
     self-wait-anim
-    -1 self-move-16
+    -1 self-idle-anim
     self-frames-reset
     7 self-wait-frames
     ['] water-tower-8f-1.act01 goto
 ;
 
 : water-tower-8f-1.act09 ( -- )   \ 0047ADE0
-    2 message
+    2 message   \ "It's locked!"
     self-idle-or-end
 ;
 
@@ -924,81 +758,31 @@ USING: engine room-names story.words story.shared flag-names ;
     1 self-scripted
     self-wait-done
     wait-fade
-    $FF 1 char-visible
+    self-who 1 char-visible
     $B 3 $FF char-load
     $B $1E char-layer
-    $FE $A char-layer
-    3 char-unload
-    1 action-end
-    1 char-done
+    stalker-who $A char-layer
+    3 char-start
+    hewie-who action-end
+    hewie-who char-done
     7 1 movie-play
     6 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     $2D $41 movie-param
     0 $F9 $11 action
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    1 message-prepare
+    panic-eased
+    1 message-prepare   \ "Riccardo... You were always... incomplete. But now, I will have your Azoth. You..."
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     1 water-tower-8f-1.cmd05
     2 0 char-remove
     3 0 char-remove
     world-held state-flag-set
     0 exit-prepare
-    $93 story-flag-set
+    wt8f-1-flag2 story-flag-set
     $42 resident-flag-set
     $81 exit-check
     self-idle-or-end
@@ -1058,7 +842,7 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : water-tower-8f-1.act0E ( -- )   \ 0047ADE8
     self-wait-done
-    6 message
+    6 message   \ "This wall is in really bad shape. It looks like it might break if a strong force impact..."
     wait-message
     self-idle-or-end
 ;
@@ -1070,11 +854,11 @@ USING: engine room-names story.words story.shared flag-names ;
     self-wait-16
     7 ebit? not if
         7 ebit-set
-        7 message
+        7 message   \ "If I fell from here... it would be all over. Come on, Fiona... Best to just keep it..."
         wait-message
     else
         7 ebit-clear
-        8 message
+        8 message   \ "A path has appeared on the surface of the lake. If I can just cross over that path..."
         wait-message
     then
     self-wait-anim
@@ -1083,7 +867,7 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : water-tower-8f-1.act10 ( -- )   \ 0047ADF0
     self-wait-done
-    $C message
+    $C message   \ "If I try this out again and seal off my escape route I'd have no one to blame but myse..."
     wait-message
     self-idle-or-end
 ;
@@ -1099,20 +883,20 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : water-tower-8f-1.act12 ( -- )   \ 004303D0
     self-wait-done
-    0 $F char-in-area? if
+    fiona-who $F char-in-area? if
         -6.0 -12.0 self-turn-to-xz
         self-wait-done
-    else 0 $10 char-in-area? if
+    else fiona-who $10 char-in-area? if
         -9.0 10.0 self-turn-to-xz
         self-wait-done
-    else 0 $11 char-in-area? if
+    else fiona-who $11 char-in-area? if
         12.0 7.0 self-turn-to-xz
         self-wait-done
     then then then
     $A01 self-anim
     self-frames-reset
     self-wait-16
-    9 message
+    9 message   \ "There is a small hole... It looks just big enough for Hewie to fit in."
     wait-message
     self-wait-anim
     self-idle-or-end
@@ -1120,364 +904,136 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : water-tower-8f-1.act13 ( -- )   \ 00430410
     self-wait-done
-    0 1 $14 door-bits
-    2 1 $14 door-bits
-    4 1 $14 door-bits
-    6 1 $14 door-bits
-    8 1 $14 door-bits
+    0 part-shown
+    2 part-shown
+    4 part-shown
+    6 part-shown
+    8 part-shown
     0 20000.0 camera-value
     $25 partner-load
-    2 char-unload
+    2 char-start
     5 1 movie-play
     4 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     0 $F9 $B action
     $10 $50 movie-param
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    3 message-prepare
+    panic-eased
+    3 message-prepare   \ "Fiona! Why must you defy me? Why do you run? Let me into your womb!"
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     2 0 char-remove
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
 : water-tower-8f-1.act14 ( -- )   \ 004304C0
     self-wait-done
-    0 1 $14 door-bits
-    1 1 $14 door-bits
-    3 1 $14 door-bits
-    5 1 $14 door-bits
-    7 1 $14 door-bits
-    8 1 $14 door-bits
+    0 part-shown
+    1 part-shown
+    3 part-shown
+    5 part-shown
+    7 part-shown
+    8 part-shown
     0 20000.0 camera-value
     $25 partner-load
-    2 char-unload
+    2 char-start
     1 0 movie-play
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     0 $F9 $C action
     9 ebit-set
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     9 ebit-clear
     1 water-tower-8f-1.cmd03
     2 0 char-remove
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
 : water-tower-8f-1.act15 ( -- )   \ 00430580
     self-wait-done
-    0 1 $14 door-bits
-    1 1 $14 door-bits
-    3 1 $14 door-bits
-    5 1 $14 door-bits
-    7 1 $14 door-bits
-    8 1 $14 door-bits
+    0 part-shown
+    1 part-shown
+    3 part-shown
+    5 part-shown
+    7 part-shown
+    8 part-shown
     0 20000.0 camera-value
     $17 3 $FF char-load
-    3 char-unload
+    3 char-start
     3 0 movie-play
     2 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     0 $F9 $D action
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    0 message-prepare
+    panic-eased
+    0 message-prepare   \ "Fiona!"
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     3 0 char-remove
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
 : water-tower-8f-1.act16 ( -- )   \ 00430630
     self-wait-done
-    0 1 $14 door-bits
-    1 1 $14 door-bits
-    3 1 $14 door-bits
-    5 1 $14 door-bits
-    7 1 $14 door-bits
-    8 1 $14 door-bits
+    0 part-shown
+    1 part-shown
+    3 part-shown
+    5 part-shown
+    7 part-shown
+    8 part-shown
     0 20000.0 camera-value
     $17 3 $FF char-load
     $B 4 $FF char-load
-    3 char-unload
-    4 char-unload
-    $FF 1 char-visible
+    3 char-start
+    4 char-start
+    self-who 1 char-visible
     $B $1E char-layer
-    $FE $A char-layer
+    stalker-who $A char-layer
     7 1 movie-play
     6 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     $2D $41 movie-param
     0 $F9 $11 action
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    1 message-prepare
+    panic-eased
+    1 message-prepare   \ "Riccardo... You were always... incomplete. But now, I will have your Azoth. You..."
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     1 water-tower-8f-1.cmd05
     3 0 char-remove
     4 0 char-remove
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
 \ ---- registered ----
-' water-tower-8f-1.enter water-tower-8f-1 0 room-script!
-' water-tower-8f-1.char-enter water-tower-8f-1 6 room-script!
-' water-tower-8f-1.phase1 water-tower-8f-1 1 room-script!
-' water-tower-8f-1.phase2 water-tower-8f-1 2 room-script!
-' water-tower-8f-1.phase3 water-tower-8f-1 3 room-script!
-' water-tower-8f-1.phase5 water-tower-8f-1 5 room-script!
-' water-tower-8f-1.act00 water-tower-8f-1 $00 action-script!
-' water-tower-8f-1.act01 water-tower-8f-1 $01 action-script!
-' water-tower-8f-1.act02 water-tower-8f-1 $02 action-script!
-' water-tower-8f-1.act03 water-tower-8f-1 $03 action-script!
-' water-tower-8f-1.act04 water-tower-8f-1 $04 action-script!
-' water-tower-8f-1.act05 water-tower-8f-1 $05 action-script!
-' water-tower-8f-1.act06 water-tower-8f-1 $06 action-script!
-' water-tower-8f-1.act07 water-tower-8f-1 $07 action-script!
-' water-tower-8f-1.act08 water-tower-8f-1 $08 action-script!
-' water-tower-8f-1.act09 water-tower-8f-1 $09 action-script!
-' water-tower-8f-1.act0A water-tower-8f-1 $0A action-script!
-' water-tower-8f-1.act0B water-tower-8f-1 $0B action-script!
-' water-tower-8f-1.act0C water-tower-8f-1 $0C action-script!
-' water-tower-8f-1.act0D water-tower-8f-1 $0D action-script!
-' water-tower-8f-1.act0E water-tower-8f-1 $0E action-script!
-' water-tower-8f-1.act0F water-tower-8f-1 $0F action-script!
-' water-tower-8f-1.act10 water-tower-8f-1 $10 action-script!
-' water-tower-8f-1.act11 water-tower-8f-1 $11 action-script!
-' water-tower-8f-1.act12 water-tower-8f-1 $12 action-script!
-' water-tower-8f-1.act13 water-tower-8f-1 $13 action-script!
-' water-tower-8f-1.act14 water-tower-8f-1 $14 action-script!
-' water-tower-8f-1.act15 water-tower-8f-1 $15 action-script!
-' water-tower-8f-1.act16 water-tower-8f-1 $16 action-script!
+water-tower-8f-1 register-scripts   \ (its phases and actions, by their names)

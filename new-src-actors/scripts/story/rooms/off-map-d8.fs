@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d8
-USING: room-names story.words story.shared story.clock ;
+USING: room-names story.words story.shared story.clock story-names ;
 
 \ as Room109_Cmd01
 : off-map-d8.cmd00 ( b0 -- )  1e room-nudge ;   \ (as chaos-forest-11's)
@@ -18,7 +18,7 @@ USING: room-names story.words story.shared story.clock ;
 : off-map-d8.enter ( -- )   \ 00447BD0
     room-sounds
     $19 1.0 0 bgm
-    $35C story-flag? not if
+    x-d8-flag1 story-flag? not if
         $E 5 $FF char-load
         0 $F1 0 action
     then
@@ -26,141 +26,93 @@ USING: room-names story.words story.shared story.clock ;
 
 : off-map-d8.char-enter ( -- )   \ 00447BF0
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        1 1 player-camera
     then then
     0 1 1 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        0 0 player-camera
     then then
     1 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        0 0 player-camera
     then then
     2 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 3 exit-taken? and if
-            0 3 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 3 exit-taken? and if
+            fiona-who 3 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 3 exit-taken? and if
-        1 3 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 3 exit-taken? and if
+        hewie-who 3 char-to-exit
+        0 0 player-camera
     then then
     3 0 0 area-camera
 ;
 
 : off-map-d8.phase1 ( -- )   \ 00447CF0
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             0 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
     hewie-controlled? not if
-        0 1 char-in-area? 0 char-busy? not and if
+        fiona-who 1 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 1 char-in-area? 1 char-busy? not and if
+    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then
     hewie-controlled? not if
-        0 2 char-in-area? 0 char-busy? not and if
+        fiona-who 2 char-in-area? fiona-who char-busy? not and if
             2 exit-check
         then
-    else 1 2 char-in-area? 1 char-busy? not and if
+    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
         2 exit-check
     then then
     hewie-controlled? not if
-        0 3 char-in-area? 0 char-busy? not and if
+        fiona-who 3 char-in-area? fiona-who char-busy? not and if
             3 exit-check
         then
-    else 1 3 char-in-area? 1 char-busy? not and if
+    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
         3 exit-check
     then then
     $C 0 0 1 chars-area-camera
     $D 1 1 1 chars-area-camera
-    1 4 char-entered-area? if
+    hewie-who 4 char-entered-area? if
         0 exit-prepare
     then
-    1 5 char-entered-area? 1 6 char-entered-area? or 1 8 char-entered-area? or if
+    hewie-who 5 char-entered-area? hewie-who 6 char-entered-area? or hewie-who 8 char-entered-area? or if
         1 exit-prepare
     then
-    1 7 char-entered-area? if
+    hewie-who 7 char-entered-area? if
         2 exit-prepare
     then
-    1 9 char-entered-area? if
+    hewie-who 9 char-entered-area? if
         3 exit-prepare
     then
-    0 ebit? $35C story-flag? not and if
+    0 ebit? x-d8-flag1 story-flag? not and if
         off-map-d8.cond00? if
-            $35C story-flag-set
+            x-d8-flag1 story-flag-set
             $F1 action-end
             0 $F1 1 action
         then
@@ -186,7 +138,7 @@ USING: room-names story.words story.shared story.clock ;
 ;
 
 : off-map-d8.act00 ( -- )   \ 00447DC0
-    5 char-unload
+    5 char-start
     0 ebit-set
     $E char-activate
     $E $9000 1 0 char-anim-hold
@@ -214,11 +166,4 @@ USING: room-names story.words story.shared story.clock ;
 ;
 
 \ ---- registered ----
-' off-map-d8.enter off-map-d8 0 room-script!
-' off-map-d8.char-enter off-map-d8 6 room-script!
-' off-map-d8.phase1 off-map-d8 1 room-script!
-' off-map-d8.phase3 off-map-d8 3 room-script!
-' off-map-d8.phase2 off-map-d8 2 room-script!
-' off-map-d8.phase5 off-map-d8 5 room-script!
-' off-map-d8.act00 off-map-d8 $00 action-script!
-' off-map-d8.act01 off-map-d8 $01 action-script!
+off-map-d8 register-scripts   \ (its phases and actions, by their names)

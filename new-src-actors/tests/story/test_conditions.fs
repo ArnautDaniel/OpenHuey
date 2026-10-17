@@ -42,7 +42,7 @@ T{ fiona enter her-fear f@ f>s leave-actor -> 60 }T
 T{ fiona enter her-fear f@ f>s her-recovery @ leave-actor -> 0 0 }T
 testing a story flag by script variable; the room's frames
 T{ [: $200 3 cells vars + !  3 story-flag-set-var  3 story-flag-var? ;] in-room  $200 story-flag? -> -1 -1 }T
-T{ [: 500 room-frames-set  400 event-704-reached?  600 event-704-reached? ;] in-room -> -1 0 }T
+T{ [: 500 room-frames-set  400 room-frames-reached?  600 room-frames-reached? ;] in-room -> -1 0 }T
 testing her shadows off (by her script id), and back
 : shadow-off? ( -- n )  fiona enter her-model @ leave-actor actor act.shadow-off l@ ;
 [: 0 -1 char-no-shadow ;] in-room
@@ -130,7 +130,7 @@ T{ [: fiona.state:her-mode @ fiona.state:her-sub @ ;] hers -> 4 $A }T
 T{ 400 risen? -> -1 }T
 [: 1 0 fiona-target ;] in-room  deliver  1 frames
 T{ [: her-look-who @ ;] hers -> hewie }T
-T{ [: fiona-caught? ;] in-room -> 0 }T
+T{ [: fiona-unseen? ;] in-room -> 0 }T
 T{ [: fiona-hewie-react ;] in-room  deliver -> }T
 testing the story's Hewie animations: hidden away's, played, his root-motion move, held
 : his ( xt -- x )  hewie enter  execute  leave-actor ;
@@ -140,9 +140,9 @@ T{ [: his-yelp @ his-yelp-anim @ ;] his -> 300 $D00 }T
 T{ his-model motion@ -> 4 }T
 [: $201 0 hewie-anim-root ;] in-room  deliver  2 frames
 T{ [: his-action @ ;] his -> $47 }T
-[: 1 hewie-wait-5 ;] in-room  deliver
+[: 1 hewie-pause ;] in-room  deliver
 T{ [: his-stay @ ;] his -> -1 }T
-[: 0 hewie-wait-5 ;] in-room  deliver
+[: 0 hewie-pause ;] in-room  deliver
 testing through an exit's door: she sets off to its far side (move 5); a knock heard
 0 2 exit-spot drop debug:tp  5 frames   \ (on the floor 12 inside it: the tests above left her off it)
 [: ctx-who @ >r  0 ctx-who !  0 self-through-exit  r> ctx-who ! ;] in-room  deliver  2 frames   \ (as her script)

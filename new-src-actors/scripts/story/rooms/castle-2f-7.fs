@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-7
-USING: engine room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x23 (Room23_Cmd00_ptmf): Fiona's model +0x9A0 / +0x9A8: 0 (byte 3 1) or 0.12 / 0.2
 : castle-2f-7.cmd00 ( b0 -- )  drop ;   \ (Daniella's hair force (her model's springs: not simulated here yet))
@@ -18,44 +18,32 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : castle-2f-7.enter ( -- )   \ 004010A0
     room-sounds
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
-    0 0 -39.0 6.0 31.0 3.0 3.0 0.0 0.0 -60.0 scene-effect-71000
+    0 0 -39.0 6.0 31.0 3.0 3.0 0.0 0.0 -60.0 wanderer
     6 1 object-hidden
 ;
 
 : castle-2f-7.char-enter ( -- )   \ 004010E0
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 -1 char-camera
-                0 camera-follow
-            else
-                1 0 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 -1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 -1 char-camera
-            0 camera-follow
-        else
-            1 0 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 -1 player-camera
     then then
     0 0 -1 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         $80 exit-taken? if
-            0 0 6 action
-            0 1 $14 door-bits
-            1 0 $14 door-bits
+            0 fiona-who 6 action
+            0 part-shown
+            1 part-hidden
         else
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 part-hidden
+            1 part-shown
         then
     then
 ;
@@ -67,18 +55,18 @@ USING: engine room-names story.words story.shared flag-names ;
     1 0 -1 1 chars-area-camera
     2 1 -1 1 chars-area-camera
     0 -35.84 0.0 32.47 $12 16 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 0 9 char-zone-bits? if
+            hewie-who 0 9 char-zone-bits? if
                 $1F 0 var-set
                 $1F 16.0 hewie-look-zone
             then
         then
     then
     1 36.32 0.0 24.37 $F 12 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 1 9 char-zone-bits? if
+            hewie-who 1 9 char-zone-bits? if
                 $1F 1 var-set
                 $1F 12.0 hewie-look-zone
             then
@@ -87,18 +75,18 @@ USING: engine room-names story.words story.shared flag-names ;
 ;
 
 : castle-2f-7.phase2 ( -- )   \ 004011B0
-    0 3 $2D char-faces-area? if
-        $1F story-flag? not if
-            5 0 0 scene-change
+    fiona-who 3 $2D char-faces-area? if
+        c2f-7-flag1 story-flag? not if
+            0 unhurried offer-action
         else
-            5 3 0 scene-change
+            3 unhurried offer-action
         then
     then
-    0 4 $2D char-faces-area? if
-        5 1 0 scene-change
+    fiona-who 4 $2D char-faces-area? if
+        1 unhurried offer-action
     then
-    0 5 $2D char-faces-area? if
-        5 2 0 scene-change
+    fiona-who 5 $2D char-faces-area? if
+        2 unhurried offer-action
     then
 ;
 
@@ -111,65 +99,15 @@ USING: engine room-names story.words story.shared flag-names ;
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     wait-fade
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    6 message-prepare
+    panic-eased
+    6 message-prepare   \ "It's not a computer, that's for sure... It has alphabetic keys, though."
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     world-held state-flag-set
-    $1F story-flag-set
+    c2f-7-flag1 story-flag-set
     0 ebit-set
     2 subscreen-open
     begin
@@ -177,82 +115,31 @@ USING: engine room-names story.words story.shared flag-names ;
         yield
     repeat
     yield
-    $20 story-flag? if
+    plate-made story-flag? if
         3 0 movie-play
         1 cutscene-start
         yield
         yield
-        2 cutscene-control
-        begin
-            3 cutscene-control
-            2 cutscene-mode? not while
-            yield
-        repeat
+        scene-wait-ready
         0 $F9 4 action
-        $FF panic-stage? if
-            3 panic-stage
-        then
+        panic-eased
         $FFFF message-prepare
         1 result? if
-            6 cutscene-control
-            1.0 movie-volume
-            effects-arena-flip
-            yield
-            movie-skipped state-flag-clear
-            $F 1 fade
-            $A cutscene-control
-            begin
-                movie-skipped state-flag? not if
-                    7 cutscene-control
-                    cutscene-near-end? if
-                        $F 0 fade
-                    then
-                    $C cutscene-control
-                    0 cutscene-control
-                    4 cutscene-control
-                    -1 result? not if
-                        5 cutscene-mode? not 4 cutscene-mode? not and if
-                            yield
-                            false
-                        else
-                            true
-                        then
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            until
-            $FFFF message-close
-            $F9 action-end
-            $B cutscene-control
-            wait-fade
-            1 cutscene-control
-            world-held state-flag-set
-            effects-arena-flip
-            begin
-                movie-playing? while
-                yield
-            repeat
-            yield
-            pause-wanted state-flag-set
-            8 cutscene-control
+            scene-play
         then
         world-held state-flag-set
         6 1 object-hidden
     then
-    0 $7A 31.61 18.93 33 char-to-xz
-    0 self-move-16
+    fiona-who $7A 31.61 18.93 33 char-to-xz
+    0 self-idle-anim
     camera-restart
     $F 1 fade
     wait-fade
-    $20 story-flag? if
+    plate-made story-flag? if
         $3F message-param-room
         0 $3F item-tab
-        0 $F9 $8C action-force
-        $83 $85 0.0 0.0 0.0 0 0 sound
-        $8012 message
+        item-fanfare
+        $8012 message   \ "You've obtained ."
         wait-message
         begin
             $F9 char-busy? while
@@ -273,11 +160,11 @@ USING: engine room-names story.words story.shared flag-names ;
         $A00 self-anim
         self-frames-reset
         $32 self-wait-frames
-        $D message
+        $D message   \ "Is this a birdcage? It looks like the remaining husk of a bird in the cage."
         wait-message
         0 1 var-set
     else
-        $E message
+        $E message   \ "The terrible things that people do to animals these days. It's just so upsetting."
         wait-message
     then
     self-idle-or-end
@@ -285,7 +172,7 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : castle-2f-7.act02 ( -- )   \ 0047AB00
     self-wait-done
-    $C message
+    $C message   \ "It is completely ruined. What could have happened here?"
     wait-message
     self-idle-or-end
 ;
@@ -294,43 +181,42 @@ USING: engine room-names story.words story.shared flag-names ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $1B story-flag? $307 story-flag? not and castle-2f-7.cond00? and 0 exit-door-open? and if
+    c2f-8-flag3 story-flag? c2f-7-flag2 story-flag? not and castle-2f-7.cond00? and 0 exit-door-open? and if
         $11 door-open-clear
         doors-room-in
         0 0 self-door-knock
         self-frames-reset
         5 self-wait-frames
-        0 $43 5 char-sound
+        fiona-who $43 5 char-sound
         $F04 5 self-anim-blend
         1 $FF 8 rumble
         self-frames-reset
         $10 self-wait-frames
-        $307 story-flag-set
+        c2f-7-flag2 story-flag-set
         $5A threat-raise
         self-wait-anim
-    else item-3F-under-10? if
+    else plates-under-10? if
         0 ebit? not if
-            $11 message
+            $11 message   \ "It's a plate pressing machine."
             wait-message
             0 ebit-set
         then
-        $20 story-flag? if
-            $20 story-flag-clear
+        plate-made story-flag? if
+            plate-made story-flag-clear
             2 subscreen-open
             begin
                 subscreen-wanted state-flag? while
                 yield
             repeat
             yield
-            $20 story-flag? if
+            plate-made story-flag? if
                 $3F message-param-room
                 0 $3F item-tab
-                0 $F9 $8C action-force
-                $83 $85 0.0 0.0 0.0 0 0 sound
-                $8012 message
+                item-fanfare
+                $8012 message   \ "You've obtained ."
                 wait-message
             then
-            $20 story-flag-set
+            plate-made story-flag-set
         else
             2 subscreen-open
             begin
@@ -338,81 +224,30 @@ USING: engine room-names story.words story.shared flag-names ;
                 yield
             repeat
             yield
-            $20 story-flag? if
+            plate-made story-flag? if
                 $F 4 fade
                 3 0 movie-play
                 1 cutscene-start
                 yield
                 yield
-                2 cutscene-control
-                begin
-                    3 cutscene-control
-                    2 cutscene-mode? not while
-                    yield
-                repeat
+                scene-wait-ready
                 wait-fade
                 0 $F9 4 action
-                $FF panic-stage? if
-                    3 panic-stage
-                then
+                panic-eased
                 $FFFF message-prepare
                 1 result? if
-                    6 cutscene-control
-                    1.0 movie-volume
-                    effects-arena-flip
-                    yield
-                    movie-skipped state-flag-clear
-                    $F 1 fade
-                    $A cutscene-control
-                    begin
-                        movie-skipped state-flag? not if
-                            7 cutscene-control
-                            cutscene-near-end? if
-                                $F 0 fade
-                            then
-                            $C cutscene-control
-                            0 cutscene-control
-                            4 cutscene-control
-                            -1 result? not if
-                                5 cutscene-mode? not 4 cutscene-mode? not and if
-                                    yield
-                                    false
-                                else
-                                    true
-                                then
-                            else
-                                true
-                            then
-                        else
-                            true
-                        then
-                    until
-                    $FFFF message-close
-                    $F9 action-end
-                    $B cutscene-control
-                    wait-fade
-                    1 cutscene-control
-                    world-held state-flag-set
-                    effects-arena-flip
-                    begin
-                        movie-playing? while
-                        yield
-                    repeat
-                    yield
-                    pause-wanted state-flag-set
-                    8 cutscene-control
+                    scene-play
                 then
-                0 $7A 31.61 18.93 33 char-to-xz
-                0 self-move-16
+                fiona-who $7A 31.61 18.93 33 char-to-xz
+                0 self-idle-anim
                 camera-restart
                 6 1 object-hidden
                 $F 1 fade
                 wait-fade
                 $3F message-param-room
                 0 $3F item-tab
-                0 $F9 $8C action-force
-                $83 $85 0.0 0.0 0.0 0 0 sound
-                $8012 message
+                item-fanfare
+                $8012 message   \ "You've obtained ."
                 wait-message
                 begin
                     $F9 char-busy? while
@@ -422,11 +257,11 @@ USING: engine room-names story.words story.shared flag-names ;
             then
         then
     else 0 ebit? not if
-        $F message
+        $F message   \ "There's a plate pressing machine here. There are no remaining plates currently so..."
         wait-message
         0 ebit-set
     else
-        $12 message
+        $12 message   \ "There are no plates remaining. I'll have to get rid of some plate-keys before I c..."
         wait-message
     then then then
     stalkers-stay state-flag-clear
@@ -445,82 +280,32 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : castle-2f-7.act05 ( -- )   \ 0047AB08
     self-wait-done
-    $10 message
+    $10 message   \ "Returned a plate to the plate pressing machine."
     wait-message
     self-idle-or-end
 ;
 
 : castle-2f-7.act06 ( -- )   \ 00401520
     self-wait-done
-    0 $7A 31.61 18.93 33 char-to-xz
-    0 1 char-visible
+    fiona-who $7A 31.61 18.93 33 char-to-xz
+    fiona-who 1 char-visible
     5 0 movie-play
     4 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     0 castle-2f-7.cmd01
     0 castle-2f-7.cmd00
     0 $F9 7 action
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    0 message-prepare
+    panic-eased
+    0 message-prepare   \ "Where is he?! Where is the old man? Where's he hiding? I won't let him touch he..."
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     world-held state-flag-set
     2 castle-2f-7.cmd01
     1 castle-2f-7.cmd00
-    0 0 char-visible
+    fiona-who 0 char-visible
     3 0 char-remove
     4 0 char-remove
     $25 resident-flag-set
@@ -547,234 +332,71 @@ USING: engine room-names story.words story.shared flag-names ;
     self-wait-done
     6 1 object-hidden
     $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
-    0 0 -39.0 6.0 31.0 3.0 3.0 0.0 0.0 -60.0 scene-effect-71000
+    0 0 -39.0 6.0 31.0 3.0 3.0 0.0 0.0 -60.0 wanderer
     2 0 movie-play
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    6 message-prepare
+    scene-wait-ready
+    panic-eased
+    6 message-prepare   \ "It's not a computer, that's for sure... It has alphabetic keys, though."
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     3 0 movie-play
     1 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     0 $F9 4 action
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
 : castle-2f-7.act09 ( -- )   \ 00401720
     self-wait-done
-    0 0 -39.0 6.0 31.0 3.0 3.0 0.0 0.0 -60.0 scene-effect-71000
+    0 0 -39.0 6.0 31.0 3.0 3.0 0.0 0.0 -60.0 wanderer
     6 1 object-hidden
-    $FF 1 char-visible
-    0 1 $14 door-bits
-    1 0 $14 door-bits
+    self-who 1 char-visible
+    0 part-shown
+    1 part-hidden
     3 3 $FF char-load
     4 4 $FF char-load
-    3 char-unload
-    4 char-unload
+    3 char-start
+    4 char-start
     5 0 movie-play
     4 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     0 castle-2f-7.cmd01
     0 castle-2f-7.cmd00
     0 $F9 7 action
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    0 message-prepare
+    panic-eased
+    0 message-prepare   \ "Where is he?! Where is the old man? Where's he hiding? I won't let him touch he..."
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     world-held state-flag-set
     2 castle-2f-7.cmd01
     1 castle-2f-7.cmd00
     3 0 char-remove
     4 0 char-remove
-    $FF 0 char-visible
+    self-who 0 char-visible
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
 \ ---- registered ----
-' castle-2f-7.enter castle-2f-7 0 room-script!
-' castle-2f-7.char-enter castle-2f-7 6 room-script!
-' castle-2f-7.phase1 castle-2f-7 1 room-script!
-' castle-2f-7.phase2 castle-2f-7 2 room-script!
-' castle-2f-7.act00 castle-2f-7 $00 action-script!
-' castle-2f-7.act01 castle-2f-7 $01 action-script!
-' castle-2f-7.act02 castle-2f-7 $02 action-script!
-' castle-2f-7.act03 castle-2f-7 $03 action-script!
-' castle-2f-7.act04 castle-2f-7 $04 action-script!
-' castle-2f-7.act05 castle-2f-7 $05 action-script!
-' castle-2f-7.act06 castle-2f-7 $06 action-script!
-' castle-2f-7.act07 castle-2f-7 $07 action-script!
-' castle-2f-7.act08 castle-2f-7 $08 action-script!
-' castle-2f-7.act09 castle-2f-7 $09 action-script!
+castle-2f-7 register-scripts   \ (its phases and actions, by their names)

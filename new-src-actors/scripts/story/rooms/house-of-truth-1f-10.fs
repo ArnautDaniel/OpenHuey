@@ -2,22 +2,22 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-10
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
-\ (as Room2D_Cmd02) three hanging things (+0x34 0..2), pushed by the square of Fiona's step past
+\ (as Room2D_Cmd02) three hanging things (+0x34 0..2), pushed by the square of Fiona's step-floor past
 \ 1, event flag 4 with sounds 4 / 5
 : house-of-truth-1f-10.cmd00 ( b0 -- )  0 3 0 4 4 5  1e hangers-swing ;   \ (her step's square past 1; event flag 4)
 
 : house-of-truth-1f-10.enter ( -- )   \ 00443870
     room-sounds
     0 house-of-truth-1f-10.cmd00
-    $2E1 story-flag? not if
+    ht1f-10-camomile story-flag? not if
         0 29.7 5.25 32.54 flicker-sprite
     then
 ;
 
 : house-of-truth-1f-10.act04 ( -- )   \ 00443CF0
-    $FE camera-follow
+    stalker-who camera-follow
     1 ebit-clear
     $24 0 pvar? if
         $A chance? if
@@ -40,9 +40,9 @@ USING: room-names story.words story.shared flag-names ;
         1 ebit-set
     then
     1 ebit? if
-        0 $FE 5 action
+        0 stalker-who 5 action
     else
-        $78 1 item-cooldown
+        $78 1 summoner-wait
     then
     $24 pvar-inc
     exit
@@ -50,44 +50,26 @@ USING: room-names story.words story.shared flag-names ;
 
 : house-of-truth-1f-10.char-enter ( -- )   \ 00443890
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 2 2 char-camera
-                0 camera-follow
-            else
-                1 2 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            2 2 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 2 2 char-camera
-            0 camera-follow
-        else
-            1 2 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        2 2 player-camera
     then then
     0 2 2 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         $FE exit-taken? if
-            0 $7E 60.0 45.0 180 char-to-xz
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
-            0 0 1 action
+            fiona-who $7E 60.0 45.0 180 char-to-xz
+            0 0 player-camera
+            0 fiona-who 1 action
         then
         0 exit-taken? if
             2 map-page
         then
     then
-    $FE self-is? if
+    stalker-who self-is? if
         fiona-hidden state-flag? if
             2 ebit-set
             house-of-truth-1f-10.act04
@@ -126,50 +108,50 @@ USING: room-names story.words story.shared flag-names ;
         then
     then
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             0 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
     1 0 0 1 chars-area-camera
     2 1 1 1 chars-area-camera
     4 0 0 1 chars-area-camera
     5 2 2 1 chars-area-camera
-    0 7 char-entered-area? if
+    fiona-who 7 char-entered-area? if
         0 exit-prepare
     then
-    0 8 char-entered-area? if
+    fiona-who 8 char-entered-area? if
         $27 room-preload
     then
-    0 9 char-entered-area? if
+    fiona-who 9 char-entered-area? if
         1 map-page
     then
-    0 9 char-left-area? if
+    fiona-who 9 char-left-area? if
         2 map-page
     then
     0 30.47 0.0 -9.97 $B 10 0 zone
-    0 0 8 char-zone-bits? if
+    fiona-who 0 8 char-zone-bits? if
         1 house-of-truth-1f-10.cmd00
     then
     1 60.49 0.0 45.99 $14 18 0 zone
-    3 ebit? not 1 char-here? and 1 0 char-C4? and if
+    3 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
-                1 1 9 char-zone-bits? if
+                hewie-who 1 9 char-zone-bits? if
                     3 ebit-set
                     $1E chance? if
                         $1F 1 var-set
-                        0 1 $88 action
+                        0 hewie-who $88 action
                     then
                 then
             then
         then
     then
     1 60.49 0.0 45.99 $14 18 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 1 9 char-zone-bits? if
+            hewie-who 1 9 char-zone-bits? if
                 $1F 1 var-set
                 $1F 18.0 hewie-look-zone
             then
@@ -178,23 +160,23 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : house-of-truth-1f-10.phase2 ( -- )   \ 00443AB0
-    0 $A char-in-area? 0 0 $3C char-heading? and if
-        $FE char-here? not if
-            5 2 5 scene-change
+    fiona-who $A char-in-area? fiona-who 0 $3C char-heading? and if
+        stalker-who char-here? not if
+            2 calm offer-action
         else
-            $8016 examine-message
+            $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
     then
-    0 3 char-in-area? 0 90 $32 char-heading? and if
-        5 $84 3 scene-change
+    fiona-who 3 char-in-area? fiona-who 90 $32 char-heading? and if
+        $84 calm-hewie-up offer-action
     then
-    0 6 char-in-area? 0 0 $32 char-heading? and if
-        5 0 0 scene-change
+    fiona-who 6 char-in-area? fiona-who 0 $32 char-heading? and if
+        0 unhurried offer-action
     then
-    $2E1 story-flag? not if
+    ht1f-10-camomile story-flag? not if
         2 0 5 5 0 zone-at-effect
-        0 2 3 char-zone-bits? if
-            5 6 4 scene-change
+        fiona-who 2 3 char-zone-bits? if
+            6 calm offer-action
         then
     then
 ;
@@ -217,12 +199,12 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     $A02 $A self-anim-blend
     self-wait-anim
-    0 message
+    0 message   \ "A pungent odor and chapped, dry air coming from inside the hole-floor wreak havoc on the sens..."
     wait-message
     0 answer? if
         $F 0 fade
         wait-fade
-        0 $7E 5 char-sound
+        fiona-who $7E 5 char-sound
         world-held state-flag-set
         $FE exit-check
     else
@@ -236,7 +218,7 @@ USING: room-names story.words story.shared flag-names ;
     1 self-scripted
     self-wait-done
     camera-restart
-    0 $7E 5 char-sound
+    fiona-who $7E 5 char-sound
     1 map-page
     $F 1 fade
     wait-fade
@@ -250,7 +232,7 @@ USING: room-names story.words story.shared flag-names ;
         2 avoid-prompt
     then
     fiona-hidden state-flag-clear
-    0 camera-follow
+    fiona-who camera-follow
     stalkers-stay state-flag-set
     $11F 32.119 -37.94 180 $207 5 self-move-to
     self-wait-done
@@ -284,16 +266,16 @@ USING: room-names story.words story.shared flag-names ;
     0 avoid-prompt
     begin
         0 2 pad? not if
-            $FF panic-stage? 0 ebit? or if
-                $FF panic-stage? not if
-                    0 $43 5 char-sound
+            in-panic? 0 ebit? or if
+                in-panic? not if
+                    fiona-who $43 5 char-sound
                 then
                 ['] house-of-truth-1f-10.act03 goto
             else
-                2 panic-grow
+                2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                2 ebit? $FE char-here? not and if
+                2 ebit? stalker-who char-here? not and if
                     2 ebit-clear
                     1 avoid-prompt
                 then
@@ -301,8 +283,8 @@ USING: room-names story.words story.shared flag-names ;
             then
         else
             fiona-hidden state-flag-clear
-            0 camera-follow
-            $FE action-end
+            fiona-who camera-follow
+            stalker-who action-end
             2 game-mode? if
                 ['] house-of-truth-1f-10.act03 goto
             then
@@ -326,12 +308,12 @@ USING: room-names story.words story.shared flag-names ;
     $1601 self-anim
     self-wait-anim
     0 ebit-set
-    10 self-move-16
+    10 self-idle-anim
     begin
-        0 char-busy? while
+        fiona-who char-busy? while
         yield
     repeat
-    $FE 0 stalker-mode
+    stalker-who 0 stalker-command
     self-idle-or-end
 ;
 
@@ -339,23 +321,22 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     29.7 32.54 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2E1 story-flag-set
+            ht1f-10-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $903 self-anim
@@ -365,15 +346,4 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 \ ---- registered ----
-' house-of-truth-1f-10.enter house-of-truth-1f-10 0 room-script!
-' house-of-truth-1f-10.char-enter house-of-truth-1f-10 6 room-script!
-' house-of-truth-1f-10.phase1 house-of-truth-1f-10 1 room-script!
-' house-of-truth-1f-10.phase2 house-of-truth-1f-10 2 room-script!
-' house-of-truth-1f-10.phase3 house-of-truth-1f-10 3 room-script!
-' house-of-truth-1f-10.act00 house-of-truth-1f-10 $00 action-script!
-' house-of-truth-1f-10.act01 house-of-truth-1f-10 $01 action-script!
-' house-of-truth-1f-10.act02 house-of-truth-1f-10 $02 action-script!
-' house-of-truth-1f-10.act03 house-of-truth-1f-10 $03 action-script!
-' house-of-truth-1f-10.act04 house-of-truth-1f-10 $04 action-script!
-' house-of-truth-1f-10.act05 house-of-truth-1f-10 $05 action-script!
-' house-of-truth-1f-10.act06 house-of-truth-1f-10 $06 action-script!
+house-of-truth-1f-10 register-scripts   \ (its phases and actions, by their names)

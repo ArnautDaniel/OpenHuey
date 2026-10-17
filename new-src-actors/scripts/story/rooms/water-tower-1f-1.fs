@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-1f-1
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0xC1: the summoner's countdown (progress +0x764) has run out.
 : water-tower-1f-1.cond00? ( -- flag )  summoner-done? ;
@@ -12,80 +12,44 @@ USING: room-names story.words story.shared flag-names ;
     $17 stalker-kind? if
         no-stalker-camera state-flag-set
     then
-    $2D6 story-flag? $2D7 story-flag? not and if
+    wt1f-1-medallion-found story-flag? wt1f-1-medallion story-flag? not and if
         0 -39.66 1.0 0.99 flicker-sprite
     then
     1 $2300 sound-volume
-    1 $1F $10000000 nav-tri-flags
-    1 $2F $10000000 nav-tri-flags
-    1 $89 $10000000 nav-tri-flags
+    $1F hole-floor tri-floor-on
+    $2F hole-floor tri-floor-on
+    $89 hole-floor tri-floor-on
 ;
 
 : water-tower-1f-1.char-enter ( -- )   \ 0043ECC0
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 2 -1 char-camera
-                0 camera-follow
-            else
-                1 2 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            2 -1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 2 -1 char-camera
-            0 camera-follow
-        else
-            1 2 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        2 -1 player-camera
     then then
     0 2 -1 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 0 -1 char-camera
-                0 camera-follow
-            else
-                1 0 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            0 -1 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 0 -1 char-camera
-            0 camera-follow
-        else
-            1 0 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        0 -1 player-camera
     then then
     1 0 -1 area-camera
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        1 1 player-camera
     then then
     2 1 1 area-camera
 ;
@@ -95,55 +59,55 @@ USING: room-names story.words story.shared flag-names ;
         0 exit-check
     then
     hewie-controlled? not if
-        0 1 char-in-area? 0 char-busy? not and if
+        fiona-who 1 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 1 char-in-area? 1 char-busy? not and if
+    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then
     hewie-controlled? not if
-        0 2 char-in-area? 0 char-busy? not and if
+        fiona-who 2 char-in-area? fiona-who char-busy? not and if
             2 exit-check
         then
-    else 1 2 char-in-area? 1 char-busy? not and if
+    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
         2 exit-check
     then then
     7 0 -1 1 chars-area-camera
     8 1 1 1 chars-area-camera
     9 1 1 1 chars-area-camera
     $A 2 -1 1 chars-area-camera
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         0 exit-prepare
     then
-    0 4 char-entered-area? if
+    fiona-who 4 char-entered-area? if
         1 exit-prepare
     then
-    0 5 char-entered-area? if
+    fiona-who 5 char-entered-area? if
         0 exit-prepare
     then
-    0 6 char-entered-area? if
+    fiona-who 6 char-entered-area? if
         2 exit-prepare
     then
     4 stalker-kind? $17 stalker-kind? or if
-        $FE char-here? $FE char-busy? not and stalker-active? and if
-            water-tower-1f-1.cond00? $FE char-unseen? and if
-                $FE action-end
+        stalker-who char-here? stalker-who char-busy? not and stalker-active? and if
+            water-tower-1f-1.cond00? stalker-who char-unseen? and if
+                stalker-who action-end
                 1 summon-take
             then
         then
     then
-    $2D6 story-flag? not if
+    wt1f-1-medallion-found story-flag? not if
         0 -39.66 0.0 0.99 $A 5 0 zone
-        1 0 3 char-zone-bits? if
+        hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 726 var-set
-                $1A 727 var-set
+                $19 wt1f-1-medallion-found var-set
+                $1A wt1f-1-medallion var-set
                 $1B 0 var-set
                 $1C -39660 var-set
                 $1D 1000 var-set
                 $1E 990 var-set
                 $1F 0 var-set
-                0 1 $8B action
+                0 hewie-who $8B action
             then
         then
     then
@@ -169,16 +133,16 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : water-tower-1f-1.phase2 ( -- )   \ 0043EF00
-    0 $B $32 char-faces-area? if
-        5 $84 3 scene-change
+    fiona-who $B $32 char-faces-area? if
+        $84 calm-hewie-up offer-action
     then
-    0 $C char-in-area? 0 -22 $32 char-heading? and if
-        5 0 0 scene-change
+    fiona-who $C char-in-area? fiona-who -22 $32 char-heading? and if
+        0 unhurried offer-action
     then
-    $2D6 story-flag? $2D7 story-flag? not and if
+    wt1f-1-medallion-found story-flag? wt1f-1-medallion story-flag? not and if
         0 0 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
-            5 1 4 scene-change
+        fiona-who 0 3 char-zone-bits? if
+            1 calm offer-action
         then
     then
 ;
@@ -192,37 +156,37 @@ USING: room-names story.words story.shared flag-names ;
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
-        0 0 char-file-load
+        fiona-who 0 char-file-load
         $32 -64.094 52.322 -45 $FFFF 5 self-move-to
         self-wait-done
         1 25.0 10.0 0.0 0.0 event-camera
-        0 message
+        0 message   \ "I wonder if this water is safe to drink... Guess I'll never know if I don't try."
         wait-message
-        0 char-file-use
+        fiona-who char-file-use
         $8004 $A self-anim-blend
         self-frames-reset
         $16 self-wait-frames
-        0 1 6 char-sound
+        fiona-who 1 6 char-sound
         self-wait-anim
-        $E4 panic-grow
+        $E4 panic-calm-in
         fiona-calm-reset
         3 avoid-prompt
         0 ebit-set
-        0 $84 5 char-sound
+        fiona-who $84 5 char-sound
         self-frames-reset
         $1E self-wait-frames
-        $31E story-flag? not if
+        got-doc-recovery story-flag? not if
             $F 6 fade
             wait-fade
-            $40A8 message
+            $40A8 message   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
             wait-message
             $F 7 fade
             wait-fade
-            $31E story-flag-set
+            got-doc-recovery story-flag-set
             $A8 message-param-room
             $A8 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
-            $801B message
+            $801B message   \ "has been saved to your file."
             wait-message
             self-frames-reset
             4 self-wait-frames
@@ -232,7 +196,7 @@ USING: room-names story.words story.shared flag-names ;
         0 self-scripted
     else
         self-wait-done
-        1 message
+        1 message   \ "Ahh, that helped."
         wait-message
     then
     self-idle-or-end
@@ -242,23 +206,22 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -39.66 0.99 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2D7 story-flag-set
+            wt1f-1-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -268,10 +231,4 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 \ ---- registered ----
-' water-tower-1f-1.enter water-tower-1f-1 0 room-script!
-' water-tower-1f-1.char-enter water-tower-1f-1 6 room-script!
-' water-tower-1f-1.phase1 water-tower-1f-1 1 room-script!
-' water-tower-1f-1.phase2 water-tower-1f-1 2 room-script!
-' water-tower-1f-1.phase3 water-tower-1f-1 3 room-script!
-' water-tower-1f-1.act00 water-tower-1f-1 $00 action-script!
-' water-tower-1f-1.act01 water-tower-1f-1 $01 action-script!
+water-tower-1f-1 register-scripts   \ (its phases and actions, by their names)

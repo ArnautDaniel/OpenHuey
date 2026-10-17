@@ -7,15 +7,21 @@
 \   back, Cancel skips - the screen darkens to black and movie-skipped is set for the scene's
 \   script, which ends the scene and closes it (pause-wanted).
 IN: pause
-USING: engine game-state actors messages keys flag-names ps2-screen ;
+USING: engine game-state actors messages keys facts flag-names ps2-screen ;
 
 5 constant pause-layer   \ (the UI layers: 0 the movie, 1 the fade, 2 the window, 3 the prompt, 4 subtitles, 5 this)
 
 \ its stages: closed; the movie pause's; the play pause's
-0 constant closed
-1 constant movie-opening  2 constant movie-open  3 constant skipping  4 constant movie-closing
-5 constant opening  6 constant open  7 constant closing  8 constant on-menu  9 constant menu-closing
-10 constant asking  11 constant quitting
+enum: pause-stage  closed
+    movie-opening movie-open skipping movie-closing
+    opening open closing on-menu menu-closing asking quitting ;
+
+\ its sounds (the common bank) and lines (system messages)
+$96 constant open-sound   $97 constant back-sound   $2A constant move-sound
+$8088 constant pause-msg                                  \ "PAUSE"
+$8081 constant back-to-game-msg   $8082 constant quit-msg   \ the menu
+$8083 constant exit-to-title-msg   $8084 constant yes-msg   $8085 constant no-msg
+$8089 constant unpause-msg   $808A constant skip-msg      \ the movie pause
 
 state: pause-state
   1 floats field t        \ how far open (0..1: 0.2 a frame)
@@ -23,10 +29,6 @@ state: pause-state
   cell field choice       \ 0 the first line, 1 the second
 end-state
 
-: flag-word ( n -- mask addr )  1 over 31 and lshift  swap 5 rshift 4 * progress pr.state + ;
-: flag? ( n -- flag )  flag-word l@ and 0<> ;
-: flag-on ( n -- )  flag-word dup l@ rot or swap l! ;
-: flag-off ( n -- )  flag-word dup l@ rot invert and swap l! ;
 : sound ( id -- )  5 bank-sound ;   \ (the driver's +0x14, bank 5)
 : t+ ( F: d -- )  t f@ f+ 0e fmax 1e fmin t f! ;
 : opened? ( -- flag )  t f@ 1e f>= ;
@@ -36,11 +38,11 @@ end-state
 \ ---- opening (SceneGame_SubPlay: Start, the world not held, pausing allowed) ----
 : on-title? ( -- flag )  s" opening" actor-named 0< 0= ;   \ (the title and the opening: their own Start)
 : may-pause? ( -- flag )
-    start-button button-pressed?  on-title? 0= and  world-held flag? 0= and  no-pause flag? 0= and ;
+    start-button button-pressed?  on-title? 0= and  world-held state-flag? 0= and  no-pause state-flag? 0= and ;
 : movie-wanted? ( -- flag )  cutscene-active? movie-status 1 = and ;
 : play-wanted? ( -- flag )  cutscene-active? 0=  movie-status 1 <> and ;
-: open-movie ( -- )  0e t f!  movie-opening stage !  1 movie-pause  $96 sound ;   \ Pause_Open, mode 1
-: open-play ( -- )  0e t f!  opening stage !  0 choice !  1 pause!  $96 sound ;   \ mode 0: the world held
+: open-movie ( -- )  0e t f!  movie-opening stage !  1 movie-pause  open-sound sound ;   \ Pause_Open, mode 1
+: open-play ( -- )  0e t f!  opening stage !  0 choice !  1 pause!  open-sound sound ;   \ mode 0: the world held
 : shut ( -- )   \ back to play
     in-movie? 0= if  0 pause!  then  closed stage !  0e t f! ;
 
@@ -55,30 +57,30 @@ end-state
     choice @
     key: Up key: W arrow if  0 choice !  then
     key: Down key: S arrow if  1 choice !  then
-    choice @ <> if  $2A sound  then ;
+    choice @ <> if  move-sound sound  then ;
 
 \ ---- the play pause, a frame of each stage (Pause_State*) ----
 : play-frame ( -- )
     stage @ case
         opening of  0.2e t+  duck  opened? if  open stage !  then  endof
         open of
-            start-button button-pressed? if  closing stage !  $97 sound  exit  then
-            select-button button-pressed? if  0 choice !  on-menu stage !  $96 sound  then  endof
+            start-button button-pressed? if  closing stage !  back-sound sound  exit  then
+            select-button button-pressed? if  0 choice !  on-menu stage !  open-sound sound  then  endof
         closing of  -0.2e t+  duck  shut? if  unduck shut  then  endof
         on-menu of
             choose
             cross button-pressed? if
-                choice @ 0= if  menu-closing stage !  $97 sound
-                else  1 choice !  asking stage !  $96 sound  then
+                choice @ 0= if  menu-closing stage !  back-sound sound
+                else  1 choice !  asking stage !  open-sound sound  then
             then  endof
         menu-closing of  -0.2e t+  duck  shut? if  unduck shut  then  endof
         asking of
             choose
             cross button-pressed? if
-                choice @ 0= if  0e t f!  quitting stage !  $97 sound
-                else  open stage !  $96 sound  then  exit
+                choice @ 0= if  0e t f!  quitting stage !  back-sound sound
+                else  open stage !  open-sound sound  then  exit
             then
-            triangle button-pressed? if  open stage !  $97 sound  then  endof
+            triangle button-pressed? if  open stage !  back-sound sound  then  endof
         quitting of  0.2e t+  opened? if  unduck  0 pause!  closed stage !  soft-reset  then  endof
     endcase ;
 
@@ -87,9 +89,9 @@ end-state
     stage @ case
         movie-opening of  0.2e t+  opened? if  movie-open stage !  then  endof
         movie-open of
-            triangle button-pressed? if  0e t f!  skipping stage !  $97 sound  exit  then   \ (Cancel: MoviePause_StateOpen)
-            start-button button-pressed? if  0 movie-pause  movie-closing stage !  $97 sound  then  endof
-        skipping of  0.2e t+  opened? if  movie-skipped flag-on  then  endof
+            triangle button-pressed? if  0e t f!  skipping stage !  back-sound sound  exit  then   \ (Cancel: MoviePause_StateOpen)
+            start-button button-pressed? if  0 movie-pause  movie-closing stage !  back-sound sound  then  endof
+        skipping of  0.2e t+  opened? if  movie-skipped state-flag-set  then  endof
         movie-closing of  -0.2e t+  shut? if  shut  then  endof
     endcase ;
 
@@ -111,34 +113,35 @@ end-state
 variable pen
 $D8D0C400 constant plain-colour  $F0C87800 constant lit-colour  $F0EBE000 constant title-colour
 : text-of ( msg -- addr len )  message-layout drop  0 0 message-line ;
-: words ( addr len x y rgb -- )  alpha or >r >r >r >r >r  pause-layer r> r> r> r> r> pen @ ui-text ;
+: words ( addr len x y rgb -- )  {: a n x y rgb :}  pause-layer a n x y  rgb alpha or  pen @ ui-text ;
 : line ( msg y rgb -- )   \ a line centred on the screen's middle (256 of 512)
     {: msg y rgb :}  msg text-of  2dup pen @ text-width 2/ 256 sx swap -  y sy  rgb words ;
 : centred ( msg y -- )  plain-colour line ;
 : option ( msg y lit? -- )  if  lit-colour  else  plain-colour  then  line ;
-: title ( msg y -- )  pen @ >r  r@ 2* pen !  title-colour line  r> pen ! ;
+: title ( msg y -- )   \ (twice the size)
+    pen @ {: msg y size :}  size 2* pen !  msg y title-colour line  size pen ! ;
 : play-lines ( -- )
     stage @ case
-        opening of  $8088 $D0 title  endof
-        open of  $8088 $D0 title  endof
-        closing of  $8088 $D0 title  endof
-        on-menu of  $8081 $C8 choice @ 0= option  $8082 $E8 choice @ 0<> option  endof
-        menu-closing of  $8081 $C8 centred  $8082 $E8 centred  endof
-        >r  $8083 $BC centred  $8084 $E0 choice @ 0= option  $8085 $F8 choice @ 0<> option  r>
+        opening of  pause-msg $D0 title  endof
+        open of  pause-msg $D0 title  endof
+        closing of  pause-msg $D0 title  endof
+        on-menu of  back-to-game-msg $C8 choice @ 0= option  quit-msg $E8 choice @ 0<> option  endof
+        menu-closing of  back-to-game-msg $C8 centred  quit-msg $E8 centred  endof
+        >r  exit-to-title-msg $BC centred  yes-msg $E0 choice @ 0= option  no-msg $F8 choice @ 0<> option  r>   \ (asking, quitting)
     endcase ;
 : draw ( -- )
     pause-layer ui-clear
     stage @ closed = if  exit  then
     frame!  screen-size nip 224 / 1 max pen !
     pause-layer  0 0 screen-size  dim  ui-rect
-    in-movie? if  $8089 $180 centred  $808A $194 centred  else  play-lines  then ;
+    in-movie? if  unpause-msg $180 centred  skip-msg $194 centred  else  play-lines  then ;
 
 behaviour pausing
   on spawned ( -- )  closed stage !  self subscribe tick  self subscribe held-tick  self subscribe frame-end ;
   on tick ( -- )  step ;
   on held-tick ( -- )  stage @ closed <> if  step  draw  then ;   \ (the world held: its own frames)
   on frame-end ( -- )   \ (flag 6, back to play: the scene's script sets it to close the skip; cleared each frame)
-      pause-wanted flag? stage @ skipping = and if  shut  then  pause-wanted flag-off  draw ;
+      pause-wanted state-flag? stage @ skipping = and if  shut  then  pause-wanted state-flag-clear  draw ;
 end-behaviour
 
 : pause-spawn ( -- id )  pausing pause-state s" pause" spawn ;

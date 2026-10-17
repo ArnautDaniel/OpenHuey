@@ -64,19 +64,22 @@ IN: forth
 : begin-structure ( "name" -- addr 0 )  create here 0 ,  0  does> @ ;
 : +field ( n size "name" -- n' )  create over , +  does> @ + ;
 : field: ( n "name" -- n' )  1 cells +field ;
+: cfield: ( n "name" -- n' )  1 +field ;   \ (a byte: c@ c!)
+: lfield: ( n "name" -- n' )  4 +field ;   \ (32 bits: l@ l!)
 : ffield: ( n "name" -- n' )  1 floats +field ;
+: sffield: ( n "name" -- n' )  4 +field ;   \ (a 32-bit float, as the engine's: sf@ sf!)
 : end-structure ( addr n -- )  swap ! ;
 
 \ ---- numbers ----
 : within ( x lo hi -- flag ) over - >r - r> u< ;
 : hex     16 base ! ;
 : decimal 10 base ! ;
-: ?  @ . ;
 : clamp ( x lo hi -- x' ) rot min max ;
 : 0<= ( n -- flag ) 0> 0= ;
 : 0>= ( n -- flag ) 0< 0= ;
 
 \ ---- floats ----
+: fnip ( F: a b -- b )  fswap fdrop ;
 3.14159265358979 fconstant pi
 : f2*  2e f* ;
 : f2/  0.5e f* ;
@@ -96,6 +99,25 @@ IN: forth
 \ into frames (30 a second: the game's rate).
 : seconds  30 * ;
 
+\ ---- combinators (Factor's): code run on values without shuffling them about ----
+\   x [: ... ;] dip        run it under x, x back on top          ( x xt -- x )
+\   x [: ... ;] keep       run it on x, x kept after its results  ( x xt -- .. x )
+\   x [: p ;] [: q ;] bi   p and q each on x                     ( x p q -- )
+\   x [: p ;] [: q ;] [: r ;] tri
+\   x y [: q ;] bi@        q on x, then on y                     ( x y q -- )
+\   flag [: ... ;] when / unless
+\   flag a b ?             a if the flag, else b                 ( flag a b -- a|b )
+: dip ( x xt -- x )  swap >r execute r> ;
+: 2dip ( x y xt -- x y )  -rot >r >r execute r> r> ;
+: keep ( x xt -- .. x )  over >r execute r> ;
+: 2keep ( x y xt -- .. x y )  >r 2dup r> -rot >r >r execute r> r> ;
+: bi ( x p q -- )  >r keep r> execute ;
+: tri ( x p q r -- )  >r >r keep r> keep r> execute ;
+: bi@ ( x y q -- )  tuck >r >r execute r> r> execute ;
+: when ( flag xt -- )  swap if  execute  else  drop  then ;
+: unless ( flag xt -- )  swap if  drop  else  execute  then ;
+: ? ( flag a b -- a|b )  rot if  drop  else  nip  then ;
+
 \ ---- lists and higher-order words ----
 \ Lists hold cells: `{ 1 2 3 }` makes one (also inside definitions), `list` an empty one;
 \ push pop nth nth! length list-clear list-free. The words below take a list and code -
@@ -111,6 +133,7 @@ IN: forth
     loop  nip nip ;
 : reduce ( l acc xt -- acc' )  \ xt ( acc x -- acc' )
     swap  2 pick length 0 ?do  2 pick i swap nth  2 pick execute  loop  nip nip ;
+: find-word ( addr len -- xt | 0 )  find ;   \ (the dictionary's: `find` below is the lists')
 : find ( l xt -- x true | false )  \ the first item xt ( x -- flag ) holds for
     over length 0 ?do
         over i swap nth  dup 2 pick execute if  nip nip true unloop exit  then  drop

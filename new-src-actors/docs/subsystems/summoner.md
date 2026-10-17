@@ -47,7 +47,8 @@ door (Via1), further off (Via0). Come in: the wait restarts, his mode noted, `su
 cleared and the cooldown set to his own (+0x2D4: his +0x16E4 seconds - Debilitas 90; Daniella
 140, hard 100).
 
-**A way in** (summon_via): the rooms within two open doors of Fiona's (SceneGame_RoomsNear:
+**A way in** (summon_via): the rooms within two open doors of Fiona's (SceneGame_RoomsNear, `rooms-near` in doors.fs -
+shared with the creatures:
 open - not locked, passable from all three sides), not hers; `near` 0: those not next to hers;
 else those next to hers (once per exit that leads there) with an open exit elsewhere
 (Rooms_NeighbourCount); one at random; its first exit to another room with a route from the

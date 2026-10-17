@@ -41,7 +41,7 @@ T{ [: 20e 0 room-object $38 object!  2 swing-three
       0 room-object $30 object@ 36e ~=  0 room-object $38 object@ 19e ~= ;] in-room -> -1 -1 }T
 
 house-of-truth-1f-9 room!  20 frames
-: of-kind ( k -- n )  0  128 0 do  i thing-used? if  i thing-info 2drop 2drop 2 pick = if  1+  then  then  loop  nip ;
+: of-kind ( k -- n )  0  128 0 do  i thing-used? if  i thing-kind 2 pick = if  1+  then  then  loop  nip ;
 testing house-of-truth-1f-9: debris dropped, each carrying a keri (shown); a trap set, smoke rising from it; all gone again
 T{ [: 6 0 do  i keri$ 0 1 placed-op  loop  6 0 var-set  house-of-truth-1f-9.cmd02  6 var @ ;] in-room  3 frames  9 of-kind = -> -1 }T
 T{ [: 0 keri$ placed-shown? ;] in-room -> -1 }T

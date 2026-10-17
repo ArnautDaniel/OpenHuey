@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-9
-USING: engine common actors messages story.state room-names story.words story.shared flag-names ;
+USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ ---- the debris falling from above ("keri0".."keri5", each carried by a kind-9 thing: free
 \ while hidden) and the traps set round the middle (kind 10) - the things actor's ----
@@ -134,20 +134,20 @@ fvariable dx  fvariable dz  fvariable dy
 defer house-of-truth-1f-9.act0F
 : house-of-truth-1f-9.enter ( -- )   \ 00436CF0
     room-sounds
-    0 -36.4 13.4 54.4 1 effect-86
-    1 58.7 10.0 -29.9 1 effect-86
-    $A2 story-flag? if
-        0 1 $14 door-bits
+    0 -36.4 13.4 54.4 1 flame-in
+    1 58.7 10.0 -29.9 1 flame-in
+    ht1f-9-flag1 story-flag? if
+        0 part-shown
         0 $F1 9 action
         4 3 var-set
         5 3 var-set
     then
-    $34E story-flag? if
+    tremor-warned story-flag? if
         5 1.0 0 bgm
     then
     $80 exit-taken? not if
         shared.act95
-        $A3 story-flag? if
+        ht1f-9-flag2 story-flag? if
             house-of-truth-1f-9.cmd01
             0 0 house-of-truth-1f-9.cmd0C
             0 house-of-truth-1f-9.cmd0D
@@ -155,7 +155,7 @@ defer house-of-truth-1f-9.act0F
     else
         $B ebit-set
     then
-    1 0 $18000020 nav-group
+    0 keeps-pursuers-off keeps-people-off or hole-floor or floor-on
     $A 1 object-hidden
     $B 1 object-hidden
     $C 1 object-hidden
@@ -166,45 +166,27 @@ defer house-of-truth-1f-9.act0F
 
 : house-of-truth-1f-9.char-enter ( -- )   \ 00436D70
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         $80 exit-taken? if
-            0 $85 char-to-tri
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
-            0 0 $A action
+            fiona-who $85 char-to-tri
+            0 0 player-camera
+            0 fiona-who $A action
             0.0 sound-volume-scale
         then
     then
 ;
 
 : house-of-truth-1f-9.phase1 ( -- )   \ 00436DE0
-    $A2 story-flag? if
+    ht1f-9-flag1 story-flag? if
         8 ebit? not if
             6 sound-bank-loaded? if
                 $40000000 6 0.0 50.0 0.0 0 0 sound
@@ -227,27 +209,25 @@ defer house-of-truth-1f-9.act0F
     then
     1 0 0 1 chars-area-camera
     2 1 1 1 chars-area-camera
-    $A1 story-flag? not if
-        0 control-action? 1 char-here? and 1 2 char-C4? not and $FE char-here? not and 0 4 char-in-area? and 0 0 65 $32 char-faces-xz? and if
-            hewie-stays? if
-                0 0 3 action
+    found-file-255 story-flag? not if
+        0 control-action? hewie-who char-here? and hewie-who 2 char-cond? not and stalker-who char-here? not and fiona-who 4 char-in-area? and fiona-who 0 65 $32 char-faces-xz? and if
+            hewie-may-break-off? if
+                0 fiona-who 3 action
             then
         then
     then
-    $A2 story-flag? $A3 story-flag? not and if
-        $FE 2 char-C4? if
-            $A3 story-flag-set
-            $FF panic-stage? if
-                3 panic-stage
-            then
-            0 0 char-action? if
-                0 0 5 action-force
+    ht1f-9-flag1 story-flag? ht1f-9-flag2 story-flag? not and if
+        stalker-who 2 char-cond? if
+            ht1f-9-flag2 story-flag-set
+            panic-eased
+            fiona-who 0 char-action? if
+                0 fiona-who 5 action-force
             else
-                1 0 5 action-force
+                1 fiona-who 5 action-force
             then
         then
     then
-    $A2 story-flag? $A3 story-flag? not and if
+    ht1f-9-flag1 story-flag? ht1f-9-flag2 story-flag? not and if
         house-of-truth-1f-9.cmd05
         3 ebit? not if
             9 ebit? if
@@ -256,85 +236,85 @@ defer house-of-truth-1f-9.act0F
             then
         then
         4 ebit? not if
-            0 5 char-in-area? 1 5 char-in-area? or $FE 5 char-in-area? or if
+            fiona-who 5 char-in-area? hewie-who 5 char-in-area? or stalker-who 5 char-in-area? or if
                 4 ebit-set
                 0 $F3 $C action
             then
         else 6 ebit? if
-            0 7 char-in-area? 0 0 char-action? and if
+            fiona-who 7 char-in-area? fiona-who 0 char-action? and if
                 0 0 house-of-truth-1f-9.cmd09
             then
-            1 7 char-in-area? 1 0 char-action? and if
+            hewie-who 7 char-in-area? hewie-who 0 char-action? and if
                 0 1 house-of-truth-1f-9.cmd09
             then
-            $FE 7 char-in-area? $FE 0 char-action? and if
+            stalker-who 7 char-in-area? stalker-who 0 char-action? and if
                 0 2 house-of-truth-1f-9.cmd09
             then
         then then
         5 ebit? not if
-            0 6 char-in-area? 1 6 char-in-area? or $FE 6 char-in-area? or if
+            fiona-who 6 char-in-area? hewie-who 6 char-in-area? or stalker-who 6 char-in-area? or if
                 5 ebit-set
                 0 $F4 $D action
             then
         else 7 ebit? if
-            0 8 char-in-area? 0 0 char-action? and if
+            fiona-who 8 char-in-area? fiona-who 0 char-action? and if
                 1 0 house-of-truth-1f-9.cmd09
             then
-            1 8 char-in-area? 1 0 char-action? and if
+            hewie-who 8 char-in-area? hewie-who 0 char-action? and if
                 1 1 house-of-truth-1f-9.cmd09
             then
-            $FE 8 char-in-area? $FE 0 char-action? and if
+            stalker-who 8 char-in-area? stalker-who 0 char-action? and if
                 1 2 house-of-truth-1f-9.cmd09
             then
         then then
     else
         4 ebit? not if
-            0 5 char-in-area? 1 5 char-in-area? or $FE 5 char-in-area? or if
+            fiona-who 5 char-in-area? hewie-who 5 char-in-area? or stalker-who 5 char-in-area? or if
                 5 6 -40.0 0.0 -40.0 0 0 sound
                 4 ebit-set
             then
-        else 0 5 char-in-area? not 1 5 char-in-area? not and $FE 5 char-in-area? not and if
+        else fiona-who 5 char-in-area? not hewie-who 5 char-in-area? not and stalker-who 5 char-in-area? not and if
             4 ebit-clear
         then then
         5 ebit? not if
-            0 6 char-in-area? 1 6 char-in-area? or $FE 6 char-in-area? or if
+            fiona-who 6 char-in-area? hewie-who 6 char-in-area? or stalker-who 6 char-in-area? or if
                 5 6 44.0 0.0 37.0 0 0 sound
                 5 ebit-set
             then
-        else 0 6 char-in-area? not 1 6 char-in-area? not and $FE 6 char-in-area? not and if
+        else fiona-who 6 char-in-area? not hewie-who 6 char-in-area? not and stalker-who 6 char-in-area? not and if
             5 ebit-clear
         then then
     then
     0 0 8 -4 0 zone-at-effect
-    0 0 3 char-zone-bits? 0 0 3 char-zone-bits-before? not and if
-        0 0 char-effect-moving
+    fiona-who 0 3 char-zone-bits? fiona-who 0 3 char-zone-bits-before? not and if
+        fiona-who 0 char-effect-moving
     then
-    1 0 3 char-zone-bits? 1 0 3 char-zone-bits-before? not and if
-        1 0 char-effect-moving
+    hewie-who 0 3 char-zone-bits? hewie-who 0 3 char-zone-bits-before? not and if
+        hewie-who 0 char-effect-moving
     then
-    $FE 0 3 char-zone-bits? $FE 0 3 char-zone-bits-before? not and if
-        $FE 0 char-effect-moving
+    stalker-who 0 3 char-zone-bits? stalker-who 0 3 char-zone-bits-before? not and if
+        stalker-who 0 char-effect-moving
     then
     1 1 8 -4 0 zone-at-effect
-    0 1 3 char-zone-bits? 0 1 3 char-zone-bits-before? not and if
-        0 1 char-effect-moving
+    fiona-who 1 3 char-zone-bits? fiona-who 1 3 char-zone-bits-before? not and if
+        fiona-who 1 char-effect-moving
     then
-    1 1 3 char-zone-bits? 1 1 3 char-zone-bits-before? not and if
-        1 1 char-effect-moving
+    hewie-who 1 3 char-zone-bits? hewie-who 1 3 char-zone-bits-before? not and if
+        hewie-who 1 char-effect-moving
     then
-    $FE 1 3 char-zone-bits? $FE 1 3 char-zone-bits-before? not and if
-        $FE 1 char-effect-moving
+    stalker-who 1 3 char-zone-bits? stalker-who 1 3 char-zone-bits-before? not and if
+        stalker-who 1 char-effect-moving
     then
-    $A1 story-flag? not if
+    found-file-255 story-flag? not if
         3 1.06 0.0 59.99 $1A 14 0 zone
-        2 ebit? not 1 char-here? and 1 0 char-C4? and if
+        2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
-                    1 3 9 char-zone-bits? if
+                    hewie-who 3 9 char-zone-bits? if
                         2 ebit-set
                         $64 chance? if
                             $1F 3 var-set
-                            0 1 $88 action
+                            0 hewie-who $88 action
                         then
                     then
                 then
@@ -342,9 +322,9 @@ defer house-of-truth-1f-9.act0F
         then
     then
     4 0.21 0.0 0.03 $21 10 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 4 9 char-zone-bits? if
+            hewie-who 4 9 char-zone-bits? if
                 $1F 4 var-set
                 $1F 0.0 hewie-look-zone
             then
@@ -355,40 +335,40 @@ defer house-of-truth-1f-9.act0F
 ;
 
 : house-of-truth-1f-9.phase2 ( -- )   \ 004370F0
-    0 3 char-in-area? 0 0 $32 char-heading? and if
-        5 0 0 scene-change
+    fiona-who 3 char-in-area? fiona-who 0 $32 char-heading? and if
+        0 unhurried offer-action
     then
     scene-5-pending state-flag? if
         -2147483646 scene-request? if
-            5 6 1 scene-change
+            6 always offer-action
         then
     then
-    $A3 story-flag? if
+    ht1f-9-flag2 story-flag? if
         2 0.0 0.0 0.0 $17 4 0 zone
-        0 2 3 char-zone-bits? 0 0 0 $32 char-faces-xz? and if
-            5 7 0 scene-change
+        fiona-who 2 3 char-zone-bits? fiona-who 0 0 $32 char-faces-xz? and if
+            7 unhurried offer-action
         then
     then
 ;
 
 : house-of-truth-1f-9.phase3 ( -- )   \ 00437140
-    $A3 story-flag? $B ebit? not and if
+    ht1f-9-flag2 story-flag? $B ebit? not and if
         $40000030 $47 0.0 0.0 0.0 0 0 sound
         $B ebit-set
     then
 ;
 
 : house-of-truth-1f-9.act02 ( -- )   \ 00437320
-    1 self-look-at
+    hewie-who self-look-at
     yield
     0 counter-set
-    0 1 1 action-force
+    0 hewie-who 1 action-force
     1 wait-counter
-    $A1 story-flag-set
+    found-file-255 story-flag-set
     50 hewie-trust
-    3 message
+    3 message   \ "Hewie? Have you picked up the scent boy?"
     wait-message
-    $FF self-look-at
+    self-who self-look-at
     yield
     $255 item-give
     $828C item-give
@@ -399,35 +379,35 @@ defer house-of-truth-1f-9.act0F
 
 : house-of-truth-1f-9.act00 ( -- )   \ 00437160
     self-wait-done
-    $A3 story-flag? not if
-        $A1 story-flag? not if
-            1 char-here? 1 2 char-C4? not and $FE char-here? not and if
+    ht1f-9-flag2 story-flag? not if
+        found-file-255 story-flag? not if
+            hewie-who char-here? hewie-who 2 char-cond? not and stalker-who char-here? not and if
                 stalkers-stay state-flag-set
                 1 self-scripted
                 self-frames-reset
                 8 self-wait-frames
-                0 $31 0.0 58.0 0 char-to-xz
+                fiona-who $31 0.0 58.0 0 char-to-xz
                 1 15.0 10.0 0.0 5.0 event-camera
                 world-frozen state-flag-set
                 self-frames-reset
                 8 self-wait-frames
-                2 message
+                2 message   \ "I wonder if there used to be something inserted here before? There is this..."
                 wait-message
                 self-frames-reset
                 8 self-wait-frames
                 world-frozen state-flag-clear
                 0 0.0 0.0 0.0 0.0 event-camera
-                0 $62 -10.0 54.0 140 char-to-xz
+                fiona-who $62 -10.0 54.0 140 char-to-xz
                 ['] house-of-truth-1f-9.act02 goto
             else 0 ebit? not if
                 self-frames-reset
                 8 self-wait-frames
-                0 $31 0.0 58.0 0 char-to-xz
+                fiona-who $31 0.0 58.0 0 char-to-xz
                 1 15.0 10.0 0.0 5.0 event-camera
                 world-frozen state-flag-set
                 self-frames-reset
                 8 self-wait-frames
-                0 message
+                0 message   \ "A piece of a broken branch... Looks like something can be inserted here."
                 wait-message
                 self-frames-reset
                 8 self-wait-frames
@@ -435,7 +415,7 @@ defer house-of-truth-1f-9.act0F
                 0 0.0 0.0 0.0 0.0 event-camera
                 0 ebit-set
             else
-                1 message
+                1 message   \ "There is an odd smell here. I can't put my finger on it."
                 wait-message
             then then
         else
@@ -443,12 +423,12 @@ defer house-of-truth-1f-9.act0F
             self-wait-done
             self-frames-reset
             8 self-wait-frames
-            0 $31 0.0 58.0 0 char-to-xz
+            fiona-who $31 0.0 58.0 0 char-to-xz
             1 15.0 10.0 0.0 5.0 event-camera
             world-frozen state-flag-set
             self-frames-reset
             8 self-wait-frames
-            4 message
+            4 message   \ "So there was something inserted here before. Can you sniff it out for me?"
             wait-message
             self-frames-reset
             8 self-wait-frames
@@ -458,12 +438,12 @@ defer house-of-truth-1f-9.act0F
     else 0 ebit? not if
         self-frames-reset
         8 self-wait-frames
-        0 $31 0.0 58.0 0 char-to-xz
+        fiona-who $31 0.0 58.0 0 char-to-xz
         1 15.0 10.0 0.0 5.0 event-camera
         world-frozen state-flag-set
         self-frames-reset
         8 self-wait-frames
-        5 message
+        5 message   \ "The whole building is moaning and groaning as if it were alive. This cane acted as..."
         wait-message
         self-frames-reset
         8 self-wait-frames
@@ -473,7 +453,7 @@ defer house-of-truth-1f-9.act0F
     else
         0.0 65.0 self-turn-to-xz
         self-wait-done
-        7 message
+        7 message   \ "Something just doesn't seem right here. I'd better get out of here quick."
         wait-message
     then then
     self-idle-or-end
@@ -488,12 +468,12 @@ defer house-of-truth-1f-9.act0F
     self-wait-done
     $1C03 self-anim
     self-wait-anim
-    0 self-look-at
+    fiona-who self-look-at
     yield
     hewie-bark
     self-wait-done
     counter-inc
-    $FF self-look-at
+    self-who self-look-at
     yield
     0 self-scripted
     self-idle-or-end
@@ -504,10 +484,10 @@ defer house-of-truth-1f-9.act0F
     1 self-scripted
     self-wait-done
     $C04 self-anim
-    0 1 char-wait-motion
-    0 $2E 5 char-sound
+    fiona-who 1 char-wait-motion
+    fiona-who $2E 5 char-sound
     self-wait-anim
-    -1 self-move-16
+    -1 self-idle-anim
     self-frames-reset
     7 self-wait-frames
     ['] house-of-truth-1f-9.act02 goto
@@ -515,8 +495,8 @@ defer house-of-truth-1f-9.act0F
 
 : house-of-truth-1f-9.act04 ( -- )   \ 00437370
     summoner-on state-flag-clear
-    $FE action-end
-    $FE char-done
+    stalker-who action-end
+    stalker-who char-done
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
@@ -527,89 +507,39 @@ defer house-of-truth-1f-9.act0F
     2 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     wait-fade
-    1 action-end
-    1 char-done
-    0 1 $14 door-bits
+    hewie-who action-end
+    hewie-who char-done
+    0 part-shown
     $26 item-use
     0 creatures-clear
     $A ebit-clear
     $10 $C8 movie-param
     0 $F9 8 action
     $FF 1.0 0 bgm
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    9 message-prepare
+    panic-eased
+    9 message-prepare   \ "Your effort is for naught. How long do you plan to keep this up? Let's finish t..."
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     wait-fade
     $F9 action-end
     $1F $7B $32 $2A $64 $24 $2C $36 $4E 0 9 effect-string
     $8080805E 0 1 screen-blend
-    0 self-move-16
-    0 $7E 0.023 24.438 174 char-to-xz
-    $FE action-end
-    $FE char-done
+    0 self-idle-anim
+    fiona-who $7E 0.023 24.438 174 char-to-xz
+    stalker-who action-end
+    stalker-who char-done
     2 0 char-remove
     $27 partner-load
-    2 char-unload
-    $FE char-activate
+    2 char-start
+    stalker-who char-activate
     $FE $92 133 2 stalker-to-room
-    $FE $85 -0.009 -44.982 30 char-to-xz
-    $FE 0 0 char-camera
+    stalker-who $85 -0.009 -44.982 30 char-to-xz
+    stalker-who 0 0 char-camera
     $92 0 151 hewie-to-room
-    1 $97 180 char-to-tri-facing
+    hewie-who $97 180 char-to-tri-facing
     4 0 object-hidden
     5 0 object-hidden
     0 $F1 9 action
@@ -618,7 +548,7 @@ defer house-of-truth-1f-9.act0F
     $ED door-open-clear
     doors-room-in
     $ED door-lock
-    $A2 story-flag-set
+    ht1f-9-flag1 story-flag-set
     scene-5-pending state-flag-set
     4 ebit-clear
     5 ebit-clear
@@ -658,15 +588,10 @@ defer house-of-truth-1f-9.act0F
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     wait-fade
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     house-of-truth-1f-9.cmd0A
     $A 1 object-hidden
     $B 1 object-hidden
@@ -678,68 +603,23 @@ defer house-of-truth-1f-9.act0F
     5 3 var-set
     2 house-of-truth-1f-9.cmd0D
     $10 $C8 movie-param
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     $92 0 151 hewie-to-room
-    1 $97 180 char-to-tri-facing
+    hewie-who $97 180 char-to-tri-facing
     50 hewie-trust
-    0 self-move-16
-    0 $2B 54.575 -2.153 -90 char-to-xz
+    0 self-idle-anim
+    fiona-who $2B 54.575 -2.153 -90 char-to-xz
     camera-restart
     scene-5-pending state-flag-clear
-    $FE action-end
-    $FE char-done
+    stalker-who action-end
+    stalker-who char-done
     2 0 char-remove
     $C partner-load
-    2 char-unload
+    2 char-start
     $ED door-unlock
     4 0 object-hidden
     5 0 object-hidden
@@ -763,7 +643,7 @@ defer house-of-truth-1f-9.act0F
 ;
 
 : house-of-truth-1f-9.act06 ( -- )   \ 0047AE6C
-    8 message
+    8 message   \ "Oh no! It's locked!"
     self-idle-or-end
 ;
 
@@ -771,16 +651,16 @@ defer house-of-truth-1f-9.act0F
     self-wait-done
     0.0 0.0 self-turn-to-xz
     self-wait-done
-    1 ebit? not $A4 story-flag? not and if
+    1 ebit? not over-music-f story-flag? not and if
         $A01 self-anim
         self-frames-reset
         $1E self-wait-frames
-        6 message
+        6 message   \ "If I fell in from here, I would be toast... Quite literally."
         wait-message
         self-wait-anim
         1 ebit-set
     else
-        7 message
+        7 message   \ "Something just doesn't seem right here. I'd better get out of here quick."
         wait-message
     then
     self-idle-or-end
@@ -852,79 +732,29 @@ defer house-of-truth-1f-9.act0F
 
 : house-of-truth-1f-9.act0A ( -- )   \ 00437710
     1 self-scripted
-    1 char-here? if
+    hewie-who char-here? if
         $91 0 -1 hewie-to-room
     then
     self-wait-done
-    $FF 1 char-visible
+    self-who 1 char-visible
     house-of-truth-1f-9.cmd01
     0 0 house-of-truth-1f-9.cmd0C
     7 1 movie-play
     6 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     $10 $FF movie-param
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     wait-fade
     world-held state-flag-set
-    $FE action-end
-    $FE char-done
-    $FF 0 char-visible
+    stalker-who action-end
+    stalker-who char-done
+    self-who 0 char-visible
     1 house-of-truth-1f-9.cmd04
     $4F resident-flag-set
     $80 exit-check
@@ -1082,96 +912,41 @@ defer house-of-truth-1f-9.act0F
 
 : house-of-truth-1f-9.act10 ( -- )   \ 004379B0
     self-wait-done
-    0 -36.4 13.4 54.4 1 effect-86
-    1 58.7 10.0 -29.9 1 effect-86
+    0 -36.4 13.4 54.4 1 flame-in
+    1 58.7 10.0 -29.9 1 flame-in
     $A 3 $FF char-load
-    3 char-unload
+    3 char-start
     3 1 movie-play
     2 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
-    0 1 $14 door-bits
+    scene-wait-ready
+    0 part-shown
     $10 $C8 movie-param
     0 $F9 8 action
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    9 message-prepare
+    panic-eased
+    9 message-prepare   \ "Your effort is for naught. How long do you plan to keep this up? Let's finish t..."
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     3 0 char-remove
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
 : house-of-truth-1f-9.act11 ( -- )   \ 00437A70
     self-wait-done
     $A 3 $FF char-load
-    3 char-unload
+    3 char-start
     0 0 house-of-truth-1f-9.cmd0C
     1 1 movie-play
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     $A 1 object-hidden
     $B 1 object-hidden
     $C 1 object-hidden
@@ -1179,168 +954,50 @@ defer house-of-truth-1f-9.act0F
     $E 1 object-hidden
     $F 1 object-hidden
     $10 $C8 movie-param
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     3 0 char-remove
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
 : house-of-truth-1f-9.act12 ( -- )   \ 00437B20
     self-wait-done
-    0 -36.4 13.4 54.4 1 effect-86
-    1 58.7 10.0 -29.9 1 effect-86
+    0 -36.4 13.4 54.4 1 flame-in
+    1 58.7 10.0 -29.9 1 flame-in
     $A 1 object-hidden
     $B 1 object-hidden
     $C 1 object-hidden
     $D 1 object-hidden
     $E 1 object-hidden
     $F 1 object-hidden
-    $FF 1 char-visible
+    self-who 1 char-visible
     house-of-truth-1f-9.cmd01
     0 0 house-of-truth-1f-9.cmd0C
     7 1 movie-play
     6 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     $10 $FF movie-param
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
-    $FF 0 char-visible
+    self-who 0 char-visible
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
 \ ---- registered ----
-' house-of-truth-1f-9.enter house-of-truth-1f-9 0 room-script!
-' house-of-truth-1f-9.char-enter house-of-truth-1f-9 6 room-script!
-' house-of-truth-1f-9.phase1 house-of-truth-1f-9 1 room-script!
-' house-of-truth-1f-9.phase2 house-of-truth-1f-9 2 room-script!
-' house-of-truth-1f-9.phase3 house-of-truth-1f-9 3 room-script!
-' house-of-truth-1f-9.act00 house-of-truth-1f-9 $00 action-script!
-' house-of-truth-1f-9.act01 house-of-truth-1f-9 $01 action-script!
-' house-of-truth-1f-9.act02 house-of-truth-1f-9 $02 action-script!
-' house-of-truth-1f-9.act03 house-of-truth-1f-9 $03 action-script!
-' house-of-truth-1f-9.act04 house-of-truth-1f-9 $04 action-script!
-' house-of-truth-1f-9.act05 house-of-truth-1f-9 $05 action-script!
-' house-of-truth-1f-9.act06 house-of-truth-1f-9 $06 action-script!
-' house-of-truth-1f-9.act07 house-of-truth-1f-9 $07 action-script!
-' house-of-truth-1f-9.act08 house-of-truth-1f-9 $08 action-script!
-' house-of-truth-1f-9.act09 house-of-truth-1f-9 $09 action-script!
-' house-of-truth-1f-9.act0A house-of-truth-1f-9 $0A action-script!
-' house-of-truth-1f-9.act0B house-of-truth-1f-9 $0B action-script!
-' house-of-truth-1f-9.act0C house-of-truth-1f-9 $0C action-script!
-' house-of-truth-1f-9.act0D house-of-truth-1f-9 $0D action-script!
-' house-of-truth-1f-9.act0E house-of-truth-1f-9 $0E action-script!
-' house-of-truth-1f-9.act0F house-of-truth-1f-9 $0F action-script!
-' house-of-truth-1f-9.act10 house-of-truth-1f-9 $10 action-script!
-' house-of-truth-1f-9.act11 house-of-truth-1f-9 $11 action-script!
-' house-of-truth-1f-9.act12 house-of-truth-1f-9 $12 action-script!
+house-of-truth-1f-9 register-scripts   \ (its phases and actions, by their names)

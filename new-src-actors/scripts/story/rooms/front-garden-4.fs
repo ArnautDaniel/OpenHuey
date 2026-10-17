@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-4
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ character kind 0x1A: byte 3 0 starts Kind26_MoveToB(2, -290, 42); else waits (2) until
 \ Kind26_MoveDoneB says done
@@ -13,23 +13,23 @@ USING: room-names story.words story.shared flag-names ;
     room-sounds
     $16 1.0 0 bgm
     0 ebit-clear
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $AC $60 $26 $50 $19 $1F $12 $80 0 9 effect-string
     then
-    $213 story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+    fg-4-breakable-broken story-flag? not if
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
     then
     0 5 0.812 0.687 0.187 0.312 zone-rect
-    $222 story-flag? not if
+    fg-4-camomile story-flag? not if
         0 -202.89 1.0 -6.76 flicker-sprite
     then
-    $240 story-flag? $241 story-flag? not and if
+    fg-4-album-medallion-found story-flag? fg-4-album-medallion story-flag? not and if
         1 -283.8 1.0 15.5 flicker-sprite
     then
     $1E chance? if
@@ -42,78 +42,66 @@ USING: room-names story.words story.shared flag-names ;
 
 : front-garden-4.char-enter ( -- )   \ 004056D0
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        0 0 player-camera
     then then
     1 0 0 area-camera
-    $FE self-is? if
-        fiona-half-hidden state-flag? 0 3 char-in-area? and $30B story-flag? not and $37 exit-door-open? and if
-            0 $FE 0 action
+    stalker-who self-is? if
+        fiona-half-hidden state-flag? fiona-who 3 char-in-area? and fg-4-flag1 story-flag? not and $37 exit-door-open? and if
+            0 stalker-who 0 action
         then
     then
 ;
 
 : front-garden-4.phase1 ( -- )   \ 00405730
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then
-    $FE char-busy? if
+    stalker-who char-busy? if
         fiona-half-hidden state-flag? not if
-            $FE action-end
+            stalker-who action-end
             0 ebit-clear
         then
     then
-    $213 story-flag? not if
+    fg-4-breakable-broken story-flag? not if
         0 -120.0 0.0 -13.0 5 8 1 zone
-        $FF 0 char-in-zone? if
-            $213 story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
-            -120.0 0.0 -13.0 0 -2143272896 0 0.0 scene-effect-8C
+        self-who 0 char-in-zone? if
+            fg-4-breakable-broken story-flag-set
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
+            -120.0 0.0 -13.0 0 -2143272896 0 0.0 shards-at
             $88 5 -120.0 0.0 -13.0 0 0 sound
             $40 $124 noise
         then
     then
-    $240 story-flag? not if
+    fg-4-album-medallion-found story-flag? not if
         2 -283.8 0.0 15.5 $A 5 0 zone
-        1 2 3 char-zone-bits? if
+        hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 576 var-set
-                $1A 577 var-set
+                $19 fg-4-album-medallion-found var-set
+                $1A fg-4-album-medallion var-set
                 $1B 1 var-set
                 $1C -283800 var-set
                 $1D 1000 var-set
                 $1E 15500 var-set
                 $1F 2 var-set
-                0 1 $8B action
+                0 hewie-who $8B action
             then
         then
     then
     $1A char-here? 0 game-mode? and if
-        1 char-here? if
-            $1A 1 70 chars-within? if
+        hewie-who char-here? if
+            $1A hewie-who 70 chars-within? if
                 $1A 0.0 hewie-look-char
             then
         then
@@ -128,25 +116,25 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : front-garden-4.phase2 ( -- )   \ 00405850
-    0 4 char-in-area? 0 -140 0 $3C char-faces-xz? and if
-        5 3 0 scene-change
+    fiona-who 4 char-in-area? fiona-who -140 0 $3C char-faces-xz? and if
+        3 unhurried offer-action
     then
-    0 5 char-in-area? 0 90 $3C char-heading? and if
-        5 4 0 scene-change
+    fiona-who 5 char-in-area? fiona-who 90 $3C char-heading? and if
+        4 unhurried offer-action
     then
-    0 6 char-in-area? 0 0 $3C char-heading? and if
-        5 5 0 scene-change
+    fiona-who 6 char-in-area? fiona-who 0 $3C char-heading? and if
+        5 unhurried offer-action
     then
-    $222 story-flag? not if
+    fg-4-camomile story-flag? not if
         1 0 5 5 0 zone-at-effect
-        0 1 3 char-zone-bits? if
-            5 1 4 scene-change
+        fiona-who 1 3 char-zone-bits? if
+            1 calm offer-action
         then
     then
-    $240 story-flag? $241 story-flag? not and if
+    fg-4-album-medallion-found story-flag? fg-4-album-medallion story-flag? not and if
         2 1 5 5 0 zone-at-effect
-        0 2 3 char-zone-bits? if
-            5 2 4 scene-change
+        fiona-who 2 3 char-zone-bits? if
+            2 calm offer-action
         then
     then
 ;
@@ -168,10 +156,10 @@ USING: room-names story.words story.shared flag-names ;
         self-wait-anim
         $404 self-anim
         self-wait-anim
-        0 4 self-move-slot
+        fiona-who 4 self-move-slot
         self-wait-done
-        $FE 3 stalker-mode
-        $30B story-flag-set
+        stalker-who 3 stalker-command
+        fg-4-flag1 story-flag-set
     then
     self-idle-or-end
 ;
@@ -180,23 +168,22 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -202.89 -6.76 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $222 story-flag-set
+            fg-4-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -209,23 +196,22 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -283.8 15.5 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
         $71 message-param-room
         $71 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $241 story-flag-set
+            fg-4-album-medallion story-flag-set
             1 effect-remove
             $71 1 item-give-count
             0 $71 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -239,11 +225,11 @@ USING: room-names story.words story.shared flag-names ;
     -140.0 0.0 self-turn-to-xz
     self-wait-done
     1 ebit? not if
-        0 message
+        0 message   \ "Empty cages litter the area. Maybe this was some kind of kennel for keeping animals."
         wait-message
         1 ebit-set
     else
-        1 message
+        1 message   \ "There are feathers and fur in the cage. For there to be this much, it must have bee..."
         wait-message
     then
     self-idle-or-end
@@ -253,17 +239,17 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    2 message
+    2 message   \ "This door has been boarded up."
     wait-message
     self-idle-or-end
 ;
 
 : front-garden-4.act05 ( -- )   \ 004059F0
     self-wait-done
-    0 story-flag? not if
+    found-file-202 story-flag? not if
         0 self-turn-angle
         self-wait-done
-        4 message
+        4 message   \ "Such a large door... What could be on the other side?"
         wait-message
     else
         $1C -190.323 61.999 0 $FFFF 5 self-move-to
@@ -272,23 +258,23 @@ USING: room-names story.words story.shared flag-names ;
         4 self-wait-frames
         $1200 self-anim
         self-wait-anim
-        0 0 6 char-sound
+        fiona-who 0 6 char-sound
         $1203 self-anim
         self-frames-reset
         self-wait-16
         $1202 self-anim
         self-wait-anim
-        -1 self-move-16
+        -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
-        3 message
+        3 message   \ "The hinge is rusted solid. Try as I may, I can't open this door."
         wait-message
     then
     self-idle-or-end
 ;
 
 : front-garden-4.act06 ( -- )   \ 00405A40
-    3 char-unload
+    3 char-start
     $1A char-activate
     $1A -240.0 0.0 43.0 90 char-to-xyz
     $1A $9000 1 0 char-anim-hold
@@ -299,14 +285,4 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 \ ---- registered ----
-' front-garden-4.enter front-garden-4 0 room-script!
-' front-garden-4.char-enter front-garden-4 6 room-script!
-' front-garden-4.phase1 front-garden-4 1 room-script!
-' front-garden-4.phase2 front-garden-4 2 room-script!
-' front-garden-4.act00 front-garden-4 $00 action-script!
-' front-garden-4.act01 front-garden-4 $01 action-script!
-' front-garden-4.act02 front-garden-4 $02 action-script!
-' front-garden-4.act03 front-garden-4 $03 action-script!
-' front-garden-4.act04 front-garden-4 $04 action-script!
-' front-garden-4.act05 front-garden-4 $05 action-script!
-' front-garden-4.act06 front-garden-4 $06 action-script!
+front-garden-4 register-scripts   \ (its phases and actions, by their names)

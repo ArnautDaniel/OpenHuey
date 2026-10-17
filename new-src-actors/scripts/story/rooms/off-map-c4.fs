@@ -6,35 +6,23 @@ USING: room-names story.words story.shared ;
 
 : off-map-c4.char-enter ( -- )   \ 00440100
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 5 5 char-camera
-                0 camera-follow
-            else
-                1 5 5 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            5 5 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 5 5 char-camera
-            0 camera-follow
-        else
-            1 5 5 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        5 5 player-camera
     then then
     1 5 5 area-camera
 ;
 
 : off-map-c4.phase1 ( -- )   \ 00440140
     hewie-controlled? not if
-        0 1 char-in-area? 0 char-busy? not and if
+        fiona-who 1 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 1 char-in-area? 1 char-busy? not and if
+    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then
     2 0 0 1 chars-area-camera
@@ -51,10 +39,10 @@ USING: room-names story.words story.shared ;
     $D 5 5 1 chars-area-camera
     $E 0 0 1 chars-area-camera
     $F 6 6 1 chars-area-camera
-    0 4 char-entered-area? if
+    fiona-who 4 char-entered-area? if
         0 exit-prepare
     then
-    0 5 char-entered-area? if
+    fiona-who 5 char-entered-area? if
         1 exit-prepare
     then
 ;
@@ -67,7 +55,4 @@ USING: room-names story.words story.shared ;
 ;
 
 \ ---- registered ----
-' off-map-c4.char-enter off-map-c4 6 room-script!
-' off-map-c4.phase1 off-map-c4 1 room-script!
-' off-map-c4.enter off-map-c4 0 room-script!
-' off-map-c4.act00 off-map-c4 $00 action-script!
+off-map-c4 register-scripts   \ (its phases and actions, by their names)

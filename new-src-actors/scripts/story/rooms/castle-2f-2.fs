@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-2
-USING: engine actors room-names story.words story.shared flag-names ;
+USING: engine actors room-names story.words story.shared flag-names story-names ;
 
 \ ---- the doll ("dool") that falls: +$30 its velocity, +$3C its triangle ($80000000: landed; -1
 \ none) ----
@@ -73,44 +73,44 @@ create dl-at 12 allot
 
 : castle-2f-2.enter ( -- )   \ 003FE460
     room-sounds
-    $D story-flag? not if
+    c2f-2-flag1 story-flag? not if
         0 $F2 9 action
     then
-    $1C story-flag? not if
+    c2f-2-flag2 story-flag? not if
         0 0 0 $36B $3AF obstacle-place
     else
         0 0 0 $377 $3BB obstacle-place
         0 obstacle-stop
     then
-    0 23.3 12.75 87.0 0 effect-86
-    1 25.15 12.75 86.0 0 effect-86
-    $24A story-flag? $24B story-flag? not and if
+    0 23.3 12.75 87.0 0 flame-in
+    1 25.15 12.75 86.0 0 flame-in
+    c2f-2-album-medallion-found story-flag? c2f-2-album-medallion story-flag? not and if
         2 -11.6 1.0 142.2 flicker-sprite
     then
-    $A story-flag? if
-        $2E story-flag? not if
-            $2E story-flag-set
+    got-lunar-refractor story-flag? if
+        c2f-2-flag3 story-flag? not if
+            c2f-2-flag3 story-flag-set
             $20 0 316 $D 15 -1 0 0.0 creature-place
             $20 0 361 4 15 -1 0 0.0 creature-place
         then
     then
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
     3 0 castle-2f-2.cmd02
     4 0 castle-2f-2.cmd02
     0 $F4 $11 action
     5 1 object-hidden
-    $349 story-flag? not if
+    got-bisque-doll story-flag? not if
         1 ebit-clear
-        $D story-flag? $31C story-flag? not and if
+        c2f-2-flag1 story-flag? c2f-2-flag5 story-flag? not and if
             5 0 object-hidden
             castle-2f-2.cmd01
             1 ebit-set
             7 ebit-set
         then
     then
-    5 story-flag? 6 story-flag? not and if
+    c1f-8-flag1 story-flag? found-file-209 story-flag? not and if
         $80 exit-taken? if
         else
             0 $F3 $E action
@@ -120,119 +120,59 @@ create dl-at 12 allot
 
 : castle-2f-2.char-enter ( -- )   \ 003FE540
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 2 2 char-camera
-                0 camera-follow
-            else
-                1 2 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            2 2 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 2 2 char-camera
-            0 camera-follow
-        else
-            1 2 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        2 2 player-camera
     then then
     0 2 2 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        1 1 player-camera
     then then
     1 1 1 area-camera
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        0 0 player-camera
     then then
     2 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 3 exit-taken? and if
-            0 3 char-to-exit
-            hewie-controlled? not if
-                0 2 2 char-camera
-                0 camera-follow
-            else
-                1 2 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 3 exit-taken? and if
+            fiona-who 3 char-to-exit
+            2 2 player-camera
         then
-    else 1 self-is? 3 exit-taken? and if
-        1 3 char-to-exit
-        hewie-controlled? not if
-            0 2 2 char-camera
-            0 camera-follow
-        else
-            1 2 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 3 exit-taken? and if
+        hewie-who 3 char-to-exit
+        2 2 player-camera
     then then
     3 2 2 area-camera
     hewie-controlled? not if
-        0 self-is? 4 exit-taken? and if
-            0 4 char-to-exit
-            hewie-controlled? not if
-                0 3 3 char-camera
-                0 camera-follow
-            else
-                1 3 3 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 4 exit-taken? and if
+            fiona-who 4 char-to-exit
+            3 3 player-camera
         then
-    else 1 self-is? 4 exit-taken? and if
-        1 4 char-to-exit
-        hewie-controlled? not if
-            0 3 3 char-camera
-            0 camera-follow
-        else
-            1 3 3 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 4 exit-taken? and if
+        hewie-who 4 char-to-exit
+        3 3 player-camera
     then then
     4 3 3 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         $80 exit-taken? if
-            0 $142 0 char-to-tri-facing
-            0 0 0 action
+            fiona-who $142 0 char-to-tri-facing
+            0 fiona-who 0 action
         then
     then
 ;
@@ -244,7 +184,7 @@ create dl-at 12 allot
     1 exit-usable? if
         1 exit-check
     then
-    5 story-flag? 6 story-flag? not and if
+    c1f-8-flag1 story-flag? found-file-209 story-flag? not and if
         2 exit-usable? if
             3 3 2 char-load
             4 4 2 char-load
@@ -266,92 +206,90 @@ create dl-at 12 allot
     $14 3 3 1 chars-area-camera
     $15 0 0 1 chars-area-camera
     $1A 1 1 1 chars-area-camera
-    0 5 char-entered-area? 0 $B char-entered-area? or if
+    fiona-who 5 char-entered-area? fiona-who $B char-entered-area? or if
         0 exit-prepare
     then
-    0 6 char-entered-area? 0 7 char-entered-area? or if
+    fiona-who 6 char-entered-area? fiona-who 7 char-entered-area? or if
         1 exit-prepare
     then
-    0 9 char-entered-area? if
-        5 story-flag? 6 story-flag? not and if
+    fiona-who 9 char-entered-area? if
+        c1f-8-flag1 story-flag? found-file-209 story-flag? not and if
             3 3 2 char-load
             4 4 2 char-load
         then
         2 exit-prepare
     then
-    0 $C char-entered-area? if
+    fiona-who $C char-entered-area? if
         3 exit-prepare
     then
-    0 8 char-entered-area? if
+    fiona-who 8 char-entered-area? if
         4 exit-prepare
     then
-    0 $A char-entered-area? if
-        5 story-flag? 6 story-flag? not and if
+    fiona-who $A char-entered-area? if
+        c1f-8-flag1 story-flag? found-file-209 story-flag? not and if
             3 0 char-remove
             4 0 char-remove
         then
         4 exit-prepare
     then
-    $D story-flag? not if
-        0 $17 char-entered-area? 8 ebit? not and if
+    c2f-2-flag1 story-flag? not if
+        fiona-who $17 char-entered-area? 8 ebit? not and if
             8 ebit-set
-            $FF panic-stage? if
-                3 panic-stage
-            then
-            0 0 char-action? if
-                0 0 3 action-force
+            panic-eased
+            fiona-who 0 char-action? if
+                0 fiona-who 3 action-force
             else
-                1 0 3 action-force
+                1 fiona-who 3 action-force
             then
         then
     then
-    $1C story-flag? not if
+    c2f-2-flag2 story-flag? not if
         0 $377 obstacle-on? if
-            $1C story-flag-set
+            c2f-2-flag2 story-flag-set
             0 obstacle-stop
             $12 door-unlock
-            $FE $24 0 room-doors-state
+            stalker-who $24 0 room-doors-state
         then
     then
     0 0 8 -4 0 zone-at-effect
-    0 0 3 char-zone-bits? 0 0 3 char-zone-bits-before? not and if
-        0 0 char-effect-moving
+    fiona-who 0 3 char-zone-bits? fiona-who 0 3 char-zone-bits-before? not and if
+        fiona-who 0 char-effect-moving
     then
-    1 0 3 char-zone-bits? 1 0 3 char-zone-bits-before? not and if
-        1 0 char-effect-moving
+    hewie-who 0 3 char-zone-bits? hewie-who 0 3 char-zone-bits-before? not and if
+        hewie-who 0 char-effect-moving
     then
-    $FE 0 3 char-zone-bits? $FE 0 3 char-zone-bits-before? not and if
-        $FE 0 char-effect-moving
+    stalker-who 0 3 char-zone-bits? stalker-who 0 3 char-zone-bits-before? not and if
+        stalker-who 0 char-effect-moving
     then
     1 1 8 -4 0 zone-at-effect
-    0 1 3 char-zone-bits? 0 1 3 char-zone-bits-before? not and if
-        0 1 char-effect-moving
+    fiona-who 1 3 char-zone-bits? fiona-who 1 3 char-zone-bits-before? not and if
+        fiona-who 1 char-effect-moving
     then
-    1 1 3 char-zone-bits? 1 1 3 char-zone-bits-before? not and if
-        1 1 char-effect-moving
+    hewie-who 1 3 char-zone-bits? hewie-who 1 3 char-zone-bits-before? not and if
+        hewie-who 1 char-effect-moving
     then
-    $FE 1 3 char-zone-bits? $FE 1 3 char-zone-bits-before? not and if
-        $FE 1 char-effect-moving
+    stalker-who 1 3 char-zone-bits? stalker-who 1 3 char-zone-bits-before? not and if
+        stalker-who 1 char-effect-moving
     then
-    $24A story-flag? not if
+    c2f-2-album-medallion-found story-flag? not if
         2 -11.6 0.0 142.2 $A 5 0 zone
-        1 2 3 char-zone-bits? if
+        hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 586 var-set
-                $1A 587 var-set
+                $19 c2f-2-album-medallion-found var-set
+                $1A c2f-2-album-medallion var-set
                 $1B 2 var-set
                 $1C -11600 var-set
                 $1D 1000 var-set
                 $1E 142200 var-set
                 $1F 2 var-set
-                0 1 $8B action
+                0 hewie-who $8B action
             then
         then
     then
-    $349 story-flag? not if
+    got-bisque-doll story-flag? not if
         1 ebit? if
             castle-2f-2.cond00? if
-                0 4 6 char-sound
+                fiona-who 4 6 char-sound
                 1 ebit-clear
                 7 ebit-clear
                 $F1 action-end
@@ -361,17 +299,17 @@ create dl-at 12 allot
             then
         then
     then
-    5 story-flag? 6 story-flag? not and if
-        1 2 char-in-area? not if
+    c1f-8-flag1 story-flag? found-file-209 story-flag? not and if
+        hewie-who 2 char-in-area? not if
             1 -144.0 0.0 109.0 $1E 20 0 zone
-            3 ebit? not 1 char-here? and 1 0 char-C4? and if
+            3 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                 2 game-mode? not if
                     hewie-can-command? if
-                        1 1 9 char-zone-bits? if
+                        hewie-who 1 9 char-zone-bits? if
                             3 ebit-set
                             $64 chance? if
                                 $1F 1 var-set
-                                0 1 $8A action
+                                0 hewie-who $8A action
                             then
                         then
                     then
@@ -379,56 +317,56 @@ create dl-at 12 allot
             then
         then
     then
-    $1C story-flag? 1 4 char-in-area? not and if
+    c2f-2-flag2 story-flag? hewie-who 4 char-in-area? not and if
         0 33.656 0.0 111.061 $A 20 0 zone
-        2 ebit? not 1 char-here? and 1 0 char-C4? and if
+        2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
-                    1 0 9 char-zone-bits? if
+                    hewie-who 0 9 char-zone-bits? if
                         2 ebit-set
                         $1E chance? if
                             $1F 0 var-set
-                            0 1 $89 action
+                            0 hewie-who $89 action
                         then
                     then
                 then
             then
         then
     then
-    $FE $1B char-in-area? 4 stalker-alert? and $FE 2 char-C4? not and if
+    stalker-who $1B char-in-area? 4 stalker-alert? and stalker-who 2 char-cond? not and if
         2 stalker-kind-here? 6 stalker-kind-here? or 7 stalker-kind-here? or if
-            0 $FE $D action
+            0 stalker-who $D action
         then
     then
     3 -177.49 0.0 89.35 $12 18 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 3 9 char-zone-bits? if
+            hewie-who 3 9 char-zone-bits? if
                 $1F 3 var-set
                 $1F 18.0 hewie-look-zone
             then
         then
     then
     4 55.23 0.0 -184.17 $14 14 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 4 9 char-zone-bits? if
+            hewie-who 4 9 char-zone-bits? if
                 $1F 4 var-set
                 $1F 14.0 hewie-look-zone
             then
         then
     then
     5 -84.16 0.0 90.89 $12 28 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 5 9 char-zone-bits? if
+            hewie-who 5 9 char-zone-bits? if
                 $1F 5 var-set
                 $1F 28.0 hewie-look-zone
             then
         then
     then
     6 sound-bank-loaded? if
-        $D story-flag? not if
+        c2f-2-flag1 story-flag? not if
             $C0000002 6 -82.0 0.0 92.0 0 0 sound
         then
         $C0000001 6 -85.0 30.0 90.0 0 0 sound
@@ -436,40 +374,40 @@ create dl-at 12 allot
 ;
 
 : castle-2f-2.phase2 ( -- )   \ 003FE9C0
-    0 2 char-group-bit4? if
-        5 story-flag? 6 story-flag? not and $FE char-here? not and if
-            5 2 0 scene-change
+    fiona-who 2 char-before-door? if
+        c1f-8-flag1 story-flag? found-file-209 story-flag? not and stalker-who char-here? not and if
+            2 unhurried offer-action
         then
-        6 story-flag? -2147483646 scene-request? and if
-            5 5 1 scene-change
+        found-file-209 story-flag? -2147483646 scene-request? and if
+            5 always offer-action
         then
     then
-    0 $11 $2D char-faces-area? if
-        5 6 0 scene-change
+    fiona-who $11 $2D char-faces-area? if
+        6 unhurried offer-action
     then
-    0 $12 $2D char-faces-area? if
-        5 7 0 scene-change
+    fiona-who $12 $2D char-faces-area? if
+        7 unhurried offer-action
     then
-    0 $13 $2D char-faces-area? if
-        5 8 0 scene-change
+    fiona-who $13 $2D char-faces-area? if
+        8 unhurried offer-action
     then
-    $1C story-flag? not 0 $16 char-in-area? and if
-        5 1 0 scene-change
+    c2f-2-flag2 story-flag? not fiona-who $16 char-in-area? and if
+        1 unhurried offer-action
     then
-    0 $18 char-in-area? 0 $19 char-in-area? or 0 0 $32 char-heading? and if
-        5 $A 0 scene-change
+    fiona-who $18 char-in-area? fiona-who $19 char-in-area? or fiona-who 0 $32 char-heading? and if
+        $A unhurried offer-action
     then
-    $24A story-flag? $24B story-flag? not and if
+    c2f-2-album-medallion-found story-flag? c2f-2-album-medallion story-flag? not and if
         2 2 5 5 0 zone-at-effect
-        0 2 3 char-zone-bits? if
-            5 $C 4 scene-change
+        fiona-who 2 3 char-zone-bits? if
+            $C calm offer-action
         then
     then
-    $349 story-flag? not if
+    got-bisque-doll story-flag? not if
         1 ebit? if
             5 6 castle-2f-2.cond02? if
-                0 6 3 char-zone-bits? if
-                    5 $F 0 scene-change
+                fiona-who 6 3 char-zone-bits? if
+                    $F unhurried offer-action
                 then
             then
         then
@@ -482,13 +420,13 @@ create dl-at 12 allot
 ;
 
 : castle-2f-2.phase5 ( -- )   \ 003FEAD0
-    $FE char-busy? if
+    stalker-who char-busy? if
         4 ebit? if
-            $FE action-end
+            stalker-who action-end
             0 summon-take
         then
     then
-    6 story-flag? $11 door-locked? and if
+    found-file-209 story-flag? $11 door-locked? and if
         $11 door-unlock
     then
 ;
@@ -497,15 +435,9 @@ create dl-at 12 allot
     1 self-scripted
     self-wait-done
     $F02 0 self-anim-blend
-    6 story-flag-set
+    found-file-209 story-flag-set
     world-held state-flag-clear
-    hewie-controlled? not if
-        0 0 0 char-camera
-        0 camera-follow
-    else
-        1 0 0 char-camera
-        1 camera-follow
-    then
+    0 0 player-camera
     camera-restart
     $F $41 fade
     wait-fade
@@ -520,7 +452,7 @@ create dl-at 12 allot
 
 : castle-2f-2.act01 ( -- )   \ 0047AAC0
     self-wait-done
-    6 message
+    6 message   \ "This box is barring my path. I can't get in. I'll bet I could somehow push it out of th..."
     wait-message
     self-idle-or-end
 ;
@@ -533,7 +465,7 @@ create dl-at 12 allot
     self-wait-done
     $609 self-anim
     self-wait-anim
-    -1 self-move-16
+    -1 self-idle-anim
     self-frames-reset
     7 self-wait-frames
     $F3 action-end
@@ -543,9 +475,9 @@ create dl-at 12 allot
     $F $44 fade
     wait-fade
     world-held state-flag-set
-    3 char-unload
-    4 char-unload
-    0 1 char-visible
+    3 char-start
+    4 char-start
+    fiona-who 1 char-visible
     $80 exit-check
     self-idle-or-end
 ;
@@ -556,104 +488,48 @@ create dl-at 12 allot
     $F $54 fade
     wait-fade
     $FE $20 552 2 stalker-to-room
-    $FE action-end
-    $FE char-done
-    0 1 char-no-shadow
-    $FE 1 char-no-shadow
+    stalker-who action-end
+    stalker-who char-done
+    fiona-who 1 char-no-shadow
+    stalker-who 1 char-no-shadow
     1 4 movie-play
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    scene-wait-ready
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     world-held state-flag-set
-    0 0 char-no-shadow
-    $FE 0 char-no-shadow
-    $FE action-end
-    $FE char-done
-    0 2 char-file-load
-    0 char-file-use
-    $FE char-activate
-    $FE 0 stalker-mode
-    $349 story-flag? not if
+    fiona-who 0 char-no-shadow
+    stalker-who 0 char-no-shadow
+    stalker-who action-end
+    stalker-who char-done
+    fiona-who 2 char-file-load
+    fiona-who char-file-use
+    stalker-who char-activate
+    stalker-who 0 stalker-command
+    got-bisque-doll story-flag? not if
         castle-2f-2.cmd01
         1 ebit-set
     then
-    $FE $30A -7.812 78.949 179 char-to-xz
-    $FE 3 3 char-camera
-    0 $FE 4 action
-    0 $2E9 -8.354 49.017 -10 char-to-xz
-    hewie-controlled? not if
-        0 4 4 char-camera
-        0 camera-follow
-    else
-        1 4 4 char-camera
-        1 camera-follow
-    then
+    stalker-who $30A -7.812 78.949 179 char-to-xz
+    stalker-who 3 3 char-camera
+    0 stalker-who 4 action
+    fiona-who $2E9 -8.354 49.017 -10 char-to-xz
+    4 4 player-camera
     camera-restart
     force-calm state-flag-clear
     $8001 0 self-anim-blend
-    $D story-flag-set
+    c2f-2-flag1 story-flag-set
     world-held state-flag-clear
     5 0 0 music
     $F $91 fade
     $8003 self-anim
     self-wait-anim
-    stalker-item-cooldown
+    summoner-own-cooldown
     wait-fade
     $224 item-give
     self-idle-or-end
@@ -661,7 +537,7 @@ create dl-at 12 allot
 
 : castle-2f-2.act04 ( -- )   \ 003FEC80
     self-wait-done
-    0 self-look-at
+    fiona-who self-look-at
     yield
     $2302 $A self-anim-blend
     self-wait-anim
@@ -685,10 +561,10 @@ create dl-at 12 allot
 : castle-2f-2.act05 ( -- )   \ 003FECB8
     self-wait-done
     0 ebit? if
-        0 message
+        0 message   \ "I-I have to get out of here!"
         wait-message
     else
-        1 message
+        1 message   \ "I still sense a presence inside the room. Best to trust my instincts and not go in."
         wait-message
     then
     self-idle-or-end
@@ -696,22 +572,22 @@ create dl-at 12 allot
 
 : castle-2f-2.act06 ( -- )   \ 003FECD0
     self-wait-done
-    $304 story-flag? not if
-        $304 story-flag-set
-        0 $43 5 char-sound
+    c2f-2-flag4 story-flag? not if
+        c2f-2-flag4 story-flag-set
+        fiona-who $43 5 char-sound
         $F00 self-anim
         $5A threat-add
         1 $FF 8 rumble
         self-frames-reset
         self-wait-16
-        2 message
+        2 message   \ "Is this... blood?"
         self-wait-anim
-        -1 self-move-16
+        -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
         wait-message
     else
-        5 message
+        5 message   \ "Why is there blood here?"
         wait-message
     then
     self-idle-or-end
@@ -722,7 +598,7 @@ create dl-at 12 allot
     $A01 self-anim
     self-frames-reset
     $28 self-wait-frames
-    3 message
+    3 message   \ "Nothing unusual..."
     wait-message
     self-wait-anim
     self-idle-or-end
@@ -738,7 +614,7 @@ create dl-at 12 allot
     $A00 self-anim
     self-frames-reset
     $37 self-wait-frames
-    4 message
+    4 message   \ "A woman with wings protruding from her back. An angel, perhaps?"
     wait-message
     self-wait-anim
     self-frames-reset
@@ -769,14 +645,14 @@ create dl-at 12 allot
     $A00 self-anim
     self-frames-reset
     $37 self-wait-frames
-    7 message
+    7 message   \ "It's dark. I can't see a thing."
     wait-message
     self-wait-anim
     self-idle-or-end
 ;
 
 : castle-2f-2.act0B ( -- )   \ 003FEDB8
-    $31C story-flag-set
+    c2f-2-flag5 story-flag-set
     begin
         castle-2f-2.cmd03
         yield
@@ -787,23 +663,22 @@ create dl-at 12 allot
     self-wait-done
     -11.6 142.2 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
         $71 message-param-room
         $71 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $24B story-flag-set
+            c2f-2-album-medallion story-flag-set
             2 effect-remove
             $71 1 item-give-count
             0 $71 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -815,16 +690,16 @@ create dl-at 12 allot
 : castle-2f-2.act0D ( -- )   \ 003FEE30
     4 ebit-set
     self-wait-done
-    $FE 6 char-file-load
+    stalker-who 6 char-file-load
     $1A2 77.27 -192.48 0 $FFFF $A self-move-to
     self-wait-done
-    $FE char-file-use
+    stalker-who char-file-use
     1 self-noclip
     1 self-scripted
-    $8000 5 self-anim-9
+    $8000 5 self-anim-blend8
     begin
-        0 self-touching? if
-            $FE 0 fiona-thrown
+        fiona-who self-touching? if
+            stalker-who 0 fiona-thrown
         then
         self-at-motion-event? not while
         yield
@@ -832,7 +707,7 @@ create dl-at 12 allot
     0 self-noclip
     0 self-scripted
     4 ebit-clear
-    $FE action-end
+    stalker-who action-end
     0 summon-take
     self-idle-or-end
 ;
@@ -880,16 +755,15 @@ create dl-at 12 allot
     4 self-wait-frames
     $93 message-param-room
     $93 $63 item-count? if
-        $8010 message
+        $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
         wait-message
     else
         $93 1 item-give-count
-        $349 story-flag-set
+        got-bisque-doll story-flag-set
         5 1 object-hidden
         0 $93 item-tab
-        0 $F9 $8C action-force
-        $83 $85 0.0 0.0 0.0 0 0 sound
-        $8011 message
+        item-fanfare
+        $8011 message   \ "You've obtained ."
         wait-message
     then
     $901 self-anim
@@ -900,83 +774,33 @@ create dl-at 12 allot
 : castle-2f-2.act10 ( -- )   \ 003FEF40
     self-wait-done
     2 3 $FF char-load
-    3 char-unload
+    3 char-start
     0 0 0 $36B $3AF obstacle-place
-    0 23.3 12.75 87.0 0 effect-86
-    1 25.15 12.75 86.0 0 effect-86
+    0 23.3 12.75 87.0 0 flame-in
+    1 25.15 12.75 86.0 0 flame-in
     3 0 castle-2f-2.cmd02
     4 0 castle-2f-2.cmd02
     $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
-    0 1 char-no-shadow
-    $FE 1 char-no-shadow
+    fiona-who 1 char-no-shadow
+    stalker-who 1 char-no-shadow
     1 4 movie-play
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    scene-wait-ready
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     world-held state-flag-set
-    0 0 char-no-shadow
-    $FE 0 char-no-shadow
+    fiona-who 0 char-no-shadow
+    stalker-who 0 char-no-shadow
     3 0 char-remove
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
@@ -989,27 +813,4 @@ create dl-at 12 allot
 ;
 
 \ ---- registered ----
-' castle-2f-2.enter castle-2f-2 0 room-script!
-' castle-2f-2.char-enter castle-2f-2 6 room-script!
-' castle-2f-2.phase1 castle-2f-2 1 room-script!
-' castle-2f-2.phase2 castle-2f-2 2 room-script!
-' castle-2f-2.phase3 castle-2f-2 3 room-script!
-' castle-2f-2.phase5 castle-2f-2 5 room-script!
-' castle-2f-2.act00 castle-2f-2 $00 action-script!
-' castle-2f-2.act01 castle-2f-2 $01 action-script!
-' castle-2f-2.act02 castle-2f-2 $02 action-script!
-' castle-2f-2.act03 castle-2f-2 $03 action-script!
-' castle-2f-2.act04 castle-2f-2 $04 action-script!
-' castle-2f-2.act05 castle-2f-2 $05 action-script!
-' castle-2f-2.act06 castle-2f-2 $06 action-script!
-' castle-2f-2.act07 castle-2f-2 $07 action-script!
-' castle-2f-2.act08 castle-2f-2 $08 action-script!
-' castle-2f-2.act09 castle-2f-2 $09 action-script!
-' castle-2f-2.act0A castle-2f-2 $0A action-script!
-' castle-2f-2.act0B castle-2f-2 $0B action-script!
-' castle-2f-2.act0C castle-2f-2 $0C action-script!
-' castle-2f-2.act0D castle-2f-2 $0D action-script!
-' castle-2f-2.act0E castle-2f-2 $0E action-script!
-' castle-2f-2.act0F castle-2f-2 $0F action-script!
-' castle-2f-2.act10 castle-2f-2 $10 action-script!
-' castle-2f-2.act11 castle-2f-2 $11 action-script!
+castle-2f-2 register-scripts   \ (its phases and actions, by their names)

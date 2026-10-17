@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-7f-1
-USING: actors messages room-names story.words story.shared flag-names ;
+USING: actors messages room-names story.words story.shared flag-names story-names ;
 
 \ the 0x10-byte effect ObjectGlow_vtable on room object k + 1 (byte 4 = k, 1..8; script variable
 \ 11 - k keeps its slot): made on first use when byte 3 is set, then sent (on byte 3, index 8 -
@@ -35,10 +35,10 @@ USING: actors messages room-names story.words story.shared flag-names ;
     9 -1 var-set
     $A -1 var-set
     1 8 water-tower-7f-1.cmd00
-    $FE action-end
+    stalker-who action-end
     1 summon-take
-    $34A story-flag? not if
-        $34A story-flag-set
+    wt7f-1-flag1 story-flag? not if
+        wt7f-1-flag1 story-flag-set
         1 creatures-clear
     then
     1 $2300 sound-volume
@@ -46,35 +46,23 @@ USING: actors messages room-names story.words story.shared flag-names ;
 
 : water-tower-7f-1.char-enter ( -- )   \ 00440210
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 0 -1 char-camera
-                0 camera-follow
-            else
-                1 0 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            0 -1 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 0 -1 char-camera
-            0 camera-follow
-        else
-            1 0 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        0 -1 player-camera
     then then
     1 0 -1 area-camera
 ;
 
 : water-tower-7f-1.phase1 ( -- )   \ 00440250
     hewie-controlled? not if
-        0 1 char-in-area? 0 char-busy? not and if
+        fiona-who 1 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 1 char-in-area? 1 char-busy? not and if
+    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then
     4 0 -1 1 chars-area-camera
@@ -113,120 +101,120 @@ USING: actors messages room-names story.words story.shared flag-names ;
         0 0 var-set
         1 0 var-set
         0 0.0 0.0 0.0 $A 5 0 zone
-        0 0 8 char-zone-bits? if
+        fiona-who 0 8 char-zone-bits? if
             0 1 var-set
         then
-        1 0 8 char-zone-bits? if
+        hewie-who 0 8 char-zone-bits? if
             1 1 var-set
         then
         1 -22.0 0.0 0.0 5 5 0 zone
-        0 1 8 char-zone-bits? if
+        fiona-who 1 8 char-zone-bits? if
             0 2 var-set
         then
-        1 1 8 char-zone-bits? if
+        hewie-who 1 8 char-zone-bits? if
             1 2 var-set
         then
         2 8.0 0.0 -30.0 5 5 0 zone
         0 0 var? if
-            0 2 8 char-zone-bits? if
+            fiona-who 2 8 char-zone-bits? if
                 0 3 var-set
             then
         then
         1 0 var? if
-            1 2 8 char-zone-bits? if
+            hewie-who 2 8 char-zone-bits? if
                 1 3 var-set
             then
         then
         3 34.65 0.0 20.0 5 5 0 zone
         0 0 var? if
-            0 3 8 char-zone-bits? if
+            fiona-who 3 8 char-zone-bits? if
                 0 4 var-set
             then
         then
         1 0 var? if
-            1 3 8 char-zone-bits? if
+            hewie-who 3 8 char-zone-bits? if
                 1 4 var-set
             then
         then
         4 -25.0 0.0 43.31 5 5 0 zone
         0 0 var? if
-            0 4 8 char-zone-bits? if
+            fiona-who 4 8 char-zone-bits? if
                 0 5 var-set
             then
         then
         1 0 var? if
-            1 4 8 char-zone-bits? if
+            hewie-who 4 8 char-zone-bits? if
                 1 5 var-set
             then
         then
         5 -40.37 0.0 -40.38 5 5 0 zone
         0 0 var? if
-            0 5 8 char-zone-bits? if
+            fiona-who 5 8 char-zone-bits? if
                 0 6 var-set
             then
         then
         1 0 var? if
-            1 5 8 char-zone-bits? if
+            hewie-who 5 8 char-zone-bits? if
                 1 6 var-set
             then
         then
         6 48.58 0.0 -48.58 5 5 0 zone
         0 0 var? if
-            0 6 8 char-zone-bits? if
+            fiona-who 6 8 char-zone-bits? if
                 0 7 var-set
             then
         then
         1 0 var? if
-            1 6 8 char-zone-bits? if
+            hewie-who 6 8 char-zone-bits? if
                 1 7 var-set
             then
         then
         7 57.25 0.0 57.25 5 5 0 zone
         0 0 var? if
-            0 7 8 char-zone-bits? if
+            fiona-who 7 8 char-zone-bits? if
                 0 8 var-set
             then
         then
         1 0 var? if
-            1 7 8 char-zone-bits? if
+            hewie-who 7 8 char-zone-bits? if
                 1 8 var-set
             then
         then
         9 ebit? 0 0 var? not and if
             0 1 var? if
-                0 $11 6 char-sound
+                fiona-who $11 6 char-sound
             else 0 2 var? if
-                0 $10 6 char-sound
+                fiona-who $10 6 char-sound
             else 0 3 var? if
-                0 $F 6 char-sound
+                fiona-who $F 6 char-sound
             else 0 4 var? if
-                0 $E 6 char-sound
+                fiona-who $E 6 char-sound
             else 0 5 var? if
-                0 $D 6 char-sound
+                fiona-who $D 6 char-sound
             else 0 6 var? if
-                0 $C 6 char-sound
+                fiona-who $C 6 char-sound
             else 0 7 var? if
-                0 $B 6 char-sound
+                fiona-who $B 6 char-sound
             else 0 8 var? if
-                0 $A 6 char-sound
+                fiona-who $A 6 char-sound
             then then then then then then then then
         else $A ebit? 1 0 var? not and if
             1 1 var? if
-                1 $11 6 char-sound
+                hewie-who $11 6 char-sound
             else 1 2 var? if
-                1 $10 6 char-sound
+                hewie-who $10 6 char-sound
             else 1 3 var? if
-                1 $F 6 char-sound
+                hewie-who $F 6 char-sound
             else 1 4 var? if
-                1 $E 6 char-sound
+                hewie-who $E 6 char-sound
             else 1 5 var? if
-                1 $D 6 char-sound
+                hewie-who $D 6 char-sound
             else 1 6 var? if
-                1 $C 6 char-sound
+                hewie-who $C 6 char-sound
             else 1 7 var? if
-                1 $B 6 char-sound
+                hewie-who $B 6 char-sound
             else 1 8 var? if
-                1 $A 6 char-sound
+                hewie-who $A 6 char-sound
             then then then then then then then then
         then then
         9 ebit? not 0 0 var? and if
@@ -402,13 +390,11 @@ USING: actors messages room-names story.words story.shared flag-names ;
             0 2 var? 1 2 var? or if
                 0 1 var? 1 1 var? or if
                     8 ebit-set
-                    $FF panic-stage? if
-                        3 panic-stage
-                    then
-                    0 0 char-action? if
-                        0 0 0 action-force
+                    panic-eased
+                    fiona-who 0 char-action? if
+                        0 fiona-who 0 action-force
                     else
-                        1 0 0 action-force
+                        1 fiona-who 0 action-force
                     then
                 then
             else
@@ -456,202 +442,202 @@ USING: actors messages room-names story.words story.shared flag-names ;
         then then then then then then then then
         35 fiona-started? if
             2 8 var? 0 8 var? not and if
-                0 57 57 $32 char-faces-xz? if
-                    hewie-stays? if
-                        0 1 1 action
+                fiona-who 57 57 $32 char-faces-xz? if
+                    hewie-may-break-off? if
+                        0 hewie-who 1 action
                     then
                 then
             then
             2 7 var? 0 7 var? not and if
-                0 49 -49 $32 char-faces-xz? if
-                    hewie-stays? if
-                        0 1 1 action
+                fiona-who 49 -49 $32 char-faces-xz? if
+                    hewie-may-break-off? if
+                        0 hewie-who 1 action
                     then
                 then
             then
             2 6 var? 0 6 var? not and if
-                0 -40 -40 $32 char-faces-xz? if
-                    hewie-stays? if
-                        0 1 1 action
+                fiona-who -40 -40 $32 char-faces-xz? if
+                    hewie-may-break-off? if
+                        0 hewie-who 1 action
                     then
                 then
             then
             2 5 var? 0 5 var? not and if
-                0 -25 43 $32 char-faces-xz? if
-                    hewie-stays? if
-                        0 1 1 action
+                fiona-who -25 43 $32 char-faces-xz? if
+                    hewie-may-break-off? if
+                        0 hewie-who 1 action
                     then
                 then
             then
             2 4 var? 0 4 var? not and if
-                0 35 20 $32 char-faces-xz? if
-                    hewie-stays? if
-                        0 1 1 action
+                fiona-who 35 20 $32 char-faces-xz? if
+                    hewie-may-break-off? if
+                        0 hewie-who 1 action
                     then
                 then
             then
             2 3 var? 0 3 var? not and if
-                0 8 -30 $32 char-faces-xz? if
-                    hewie-stays? if
-                        0 1 1 action
+                fiona-who 8 -30 $32 char-faces-xz? if
+                    hewie-may-break-off? if
+                        0 hewie-who 1 action
                     then
                 then
             then
             2 2 var? 0 2 var? not and if
-                0 -22 0 $32 char-faces-xz? if
-                    hewie-stays? if
-                        0 1 1 action
+                fiona-who -22 0 $32 char-faces-xz? if
+                    hewie-may-break-off? if
+                        0 hewie-who 1 action
                     then
                 then
             then
             2 1 var? if
-                0 0 0 $32 char-faces-xz? if
-                    hewie-stays? if
-                        0 1 1 action
+                fiona-who 0 0 $32 char-faces-xz? if
+                    hewie-may-break-off? if
+                        0 hewie-who 1 action
                     then
                 then
             then
         then
-        1 char-here? 1 0 char-C4? and if
+        hewie-who char-here? hewie-who 0 char-cond? and if
             7 ebit? not if
                 0 0.0 0.0 0.0 $A 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
-                        1 0 9 char-zone-bits? if
+                        hewie-who 0 9 char-zone-bits? if
                             7 ebit-set
-                            $80 0 hewie-action
+                            $80 0 hewie-do
                         then
                     then
                 then
             else
                 0 0.0 0.0 0.0 $C 5 0 zone
-                1 0 9 char-zone-bits? not if
+                hewie-who 0 9 char-zone-bits? not if
                     7 ebit-clear
                 then
             then
         then
-        1 char-here? 1 0 char-C4? and if
+        hewie-who char-here? hewie-who 0 char-cond? and if
             6 ebit? not if
                 1 -22.0 0.0 0.0 4 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
-                        1 1 9 char-zone-bits? if
+                        hewie-who 1 9 char-zone-bits? if
                             6 ebit-set
-                            $80 0 hewie-action
+                            $80 0 hewie-do
                         then
                     then
                 then
             else
                 1 -22.0 0.0 0.0 6 5 0 zone
-                1 1 9 char-zone-bits? not if
+                hewie-who 1 9 char-zone-bits? not if
                     6 ebit-clear
                 then
             then
         then
-        1 char-here? 1 0 char-C4? and if
+        hewie-who char-here? hewie-who 0 char-cond? and if
             5 ebit? not if
                 2 8.0 0.0 -30.0 4 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
-                        1 2 9 char-zone-bits? if
+                        hewie-who 2 9 char-zone-bits? if
                             5 ebit-set
-                            $80 0 hewie-action
+                            $80 0 hewie-do
                         then
                     then
                 then
             else
                 2 8.0 0.0 -30.0 6 5 0 zone
-                1 2 9 char-zone-bits? not if
+                hewie-who 2 9 char-zone-bits? not if
                     5 ebit-clear
                 then
             then
         then
-        1 char-here? 1 0 char-C4? and if
+        hewie-who char-here? hewie-who 0 char-cond? and if
             4 ebit? not if
                 3 34.65 0.0 20.0 5 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
-                        1 3 9 char-zone-bits? if
+                        hewie-who 3 9 char-zone-bits? if
                             4 ebit-set
-                            $80 0 hewie-action
+                            $80 0 hewie-do
                         then
                     then
                 then
             else
                 3 34.65 0.0 20.0 7 5 0 zone
-                1 3 9 char-zone-bits? not if
+                hewie-who 3 9 char-zone-bits? not if
                     4 ebit-clear
                 then
             then
         then
-        1 char-here? 1 0 char-C4? and if
+        hewie-who char-here? hewie-who 0 char-cond? and if
             3 ebit? not if
                 4 -25.0 0.0 43.31 5 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
-                        1 4 9 char-zone-bits? if
+                        hewie-who 4 9 char-zone-bits? if
                             3 ebit-set
-                            $80 0 hewie-action
+                            $80 0 hewie-do
                         then
                     then
                 then
             else
                 4 -25.0 0.0 43.31 7 5 0 zone
-                1 4 9 char-zone-bits? not if
+                hewie-who 4 9 char-zone-bits? not if
                     3 ebit-clear
                 then
             then
         then
-        1 char-here? 1 0 char-C4? and if
+        hewie-who char-here? hewie-who 0 char-cond? and if
             2 ebit? not if
                 5 -40.37 0.0 -40.38 4 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
-                        1 5 9 char-zone-bits? if
+                        hewie-who 5 9 char-zone-bits? if
                             2 ebit-set
-                            $80 0 hewie-action
+                            $80 0 hewie-do
                         then
                     then
                 then
             else
                 5 -40.37 0.0 -40.38 6 5 0 zone
-                1 5 9 char-zone-bits? not if
+                hewie-who 5 9 char-zone-bits? not if
                     2 ebit-clear
                 then
             then
         then
-        1 char-here? 1 0 char-C4? and if
+        hewie-who char-here? hewie-who 0 char-cond? and if
             1 ebit? not if
                 6 48.58 0.0 -48.58 4 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
-                        1 6 9 char-zone-bits? if
+                        hewie-who 6 9 char-zone-bits? if
                             1 ebit-set
-                            $80 0 hewie-action
+                            $80 0 hewie-do
                         then
                     then
                 then
             else
                 6 48.58 0.0 -48.58 6 5 0 zone
-                1 6 9 char-zone-bits? not if
+                hewie-who 6 9 char-zone-bits? not if
                     1 ebit-clear
                 then
             then
         then
-        1 char-here? 1 0 char-C4? and if
+        hewie-who char-here? hewie-who 0 char-cond? and if
             0 ebit? not if
                 7 57.25 0.0 57.25 5 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
-                        1 7 9 char-zone-bits? if
+                        hewie-who 7 9 char-zone-bits? if
                             0 ebit-set
-                            $80 0 hewie-action
+                            $80 0 hewie-do
                         then
                     then
                 then
             else
                 7 57.25 0.0 57.25 7 5 0 zone
-                1 7 9 char-zone-bits? not if
+                hewie-who 7 9 char-zone-bits? not if
                     0 ebit-clear
                 then
             then
@@ -660,11 +646,11 @@ USING: actors messages room-names story.words story.shared flag-names ;
 ;
 
 : water-tower-7f-1.phase2 ( -- )   \ 00440E00
-    0 $D $32 char-faces-area? if
-        5 $84 3 scene-change
+    fiona-who $D $32 char-faces-area? if
+        $84 calm-hewie-up offer-action
     then
-    0 $E $32 char-faces-area? if
-        5 3 0 scene-change
+    fiona-who $E $32 char-faces-area? if
+        3 unhurried offer-action
     then
 ;
 
@@ -678,67 +664,17 @@ USING: actors messages room-names story.words story.shared flag-names ;
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     wait-fade
     things-clear
-    -1 self-move-16
+    -1 self-idle-anim
     $C6 room-preload
     $10 $FF movie-param
     0 $F9 2 action
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     50 hewie-trust
     world-held state-flag-set
@@ -845,68 +781,18 @@ USING: actors messages room-names story.words story.shared flag-names ;
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     $10 $FF movie-param
     0 $F9 2 action
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
@@ -915,13 +801,4 @@ USING: actors messages room-names story.words story.shared flag-names ;
 ;
 
 \ ---- registered ----
-' water-tower-7f-1.enter water-tower-7f-1 0 room-script!
-' water-tower-7f-1.char-enter water-tower-7f-1 6 room-script!
-' water-tower-7f-1.phase1 water-tower-7f-1 1 room-script!
-' water-tower-7f-1.phase2 water-tower-7f-1 2 room-script!
-' water-tower-7f-1.act00 water-tower-7f-1 $00 action-script!
-' water-tower-7f-1.act01 water-tower-7f-1 $01 action-script!
-' water-tower-7f-1.act02 water-tower-7f-1 $02 action-script!
-' water-tower-7f-1.act03 water-tower-7f-1 $03 action-script!
-' water-tower-7f-1.act04 water-tower-7f-1 $04 action-script!
-' water-tower-7f-1.phase5 water-tower-7f-1 5 room-script!
+water-tower-7f-1 register-scripts   \ (its phases and actions, by their names)

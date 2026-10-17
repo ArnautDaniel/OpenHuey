@@ -13,7 +13,7 @@ USING: tester engine game-state actors messages common room-names game debug key
 : have ( item n -- )  game:items send give-item  deliver ;
 : equip ( item -- )  progress pr.equipped 8 + l! ;   \ (slot 2)
 : count-of ( item -- n )  game:items enter  items:items-of  leave-actor ;
-: balls ( -- n )  0  128 0 do  i thing-used? if  i thing-info 2drop 2drop 0= if  1+  then  then  loop ;
+: balls ( -- n )  0  128 0 do  i thing-used? if  i thing-kind 0= if  1+  then  then  loop ;
 : free? ( -- flag )  [: her-mode @ 0= ;] hers ;
 : throw ( -- )  ['] free? 200 soon drop  key: V true key-hold  game-tick  key: V false key-hold ;
 : skills! ( n -- )  [: 6 0 do  dup i cells his-skill + !  loop  drop ;] his! ;
@@ -42,7 +42,7 @@ T{ ball-ahead  [: [: his-follows @ 0< 0= ;] his@ ;] 5 soon -> -1 }T
 testing ... at it, he picks it up - gone; hers again (she has none)
 T{ [: balls 0= ;] 900 soon  $90 count-of -> -1 1 }T
 testing ... and back to her; sat by her a while, his doing counted as praised
-T{ [: [: his-act @ ['] st-1a60 = ;] his@ ;] 900 soon -> -1 }T
+T{ [: [: his-act @ ['] st-sat-by-her = ;] his@ ;] 900 soon -> -1 }T
 T{ [: action $78 <> ;] 200 soon  [: his-follows @ ;] his@  0 skill@ -> -1 -1 31 }T
 
 testing not going after it (going 0, watching 31): his eyes on it as it goes
@@ -50,7 +50,7 @@ testing not going after it (going 0, watching 31): his eyes on it as it goes
 0 skills!  31 1 cells [: his-skill + ! ;] his!  $90 equip
 T{ throw  [: action $78 = ;] 300 soon -> -1 }T
 T{ [: [: his-act @ ['] st-watch = ;] his@ ;] 30 soon -> -1 }T
-T{ [: [: his-act @ ['] st-1a60 = ;] his@ ;] 300 soon -> -1 }T
+T{ [: [: his-act @ ['] st-sat-by-her = ;] his@ ;] 300 soon -> -1 }T
 testing ... praised: the skills he used up (watching), the one that failed down (going)
 T{ [: action $78 <> ;] 200 soon  0 skill@ 1 skill@ -> -1 0 31 }T
 

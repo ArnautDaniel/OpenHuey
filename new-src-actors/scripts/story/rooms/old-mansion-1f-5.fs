@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-5
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names floor-flags ;
 
 \ the effect BigFire_vtable (three quad drawers) started with parameter 0
 : old-mansion-1f-5.cmd00 ( -- )  effects:big-fire ;   \ (the fire: smoke, flames, glow)
@@ -10,21 +10,21 @@ USING: room-names story.words story.shared ;
 : old-mansion-1f-5.enter ( -- )   \ 00407AE0
     room-sounds
     $19 1.0 0 bgm
-    1 1 $300000 nav-group
-    $26E story-flag? not if
+    1 both-halves floor-on
+    om1f-8-beef-jerky story-flag? not if
         0 122.09 8.28 10.26 flicker-sprite
     then
-    $26F story-flag? not if
+    om1f-5-lavender story-flag? not if
         1 -107.57 1.0 10.1 flicker-sprite
     then
-    $270 story-flag? not if
+    om1f-8-album-medallion story-flag? not if
         2 -140.37 16.0 -25.97 flicker-sprite
     then
     8 1 item-count? not 9 1 item-count? not and $A 1 item-count? not and $B 1 item-count? not and $C 1 item-count? not and if
         0 ebit-set
         3 -111.0 17.0 -115.0 flicker-sprite
     then
-    $2AB story-flag? $2AC story-flag? not and if
+    om1f-5-refined-magnesia-found story-flag? om1f-5-refined-magnesia story-flag? not and if
         4 -9.11 1.0 -21.78 flicker-sprite
     then
     old-mansion-1f-5.cmd00
@@ -32,50 +32,26 @@ USING: room-names story.words story.shared ;
 
 : old-mansion-1f-5.char-enter ( -- )   \ 00407B70
     hewie-controlled? not if
-        0 self-is? 3 exit-taken? and if
-            0 3 char-to-exit
-            hewie-controlled? not if
-                0 4 4 char-camera
-                0 camera-follow
-            else
-                1 4 4 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 3 exit-taken? and if
+            fiona-who 3 char-to-exit
+            4 4 player-camera
         then
-    else 1 self-is? 3 exit-taken? and if
-        1 3 char-to-exit
-        hewie-controlled? not if
-            0 4 4 char-camera
-            0 camera-follow
-        else
-            1 4 4 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 3 exit-taken? and if
+        hewie-who 3 char-to-exit
+        4 4 player-camera
     then then
     3 4 4 area-camera
     hewie-controlled? not if
-        0 self-is? 4 exit-taken? and if
-            0 4 char-to-exit
-            hewie-controlled? not if
-                0 2 2 char-camera
-                0 camera-follow
-            else
-                1 2 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 4 exit-taken? and if
+            fiona-who 4 char-to-exit
+            2 2 player-camera
         then
-    else 1 self-is? 4 exit-taken? and if
-        1 4 char-to-exit
-        hewie-controlled? not if
-            0 2 2 char-camera
-            0 camera-follow
-        else
-            1 2 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 4 exit-taken? and if
+        hewie-who 4 char-to-exit
+        2 2 player-camera
     then then
     4 2 2 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         3 exit-taken? if
             2 map-page
         then
@@ -95,43 +71,43 @@ USING: room-names story.words story.shared ;
         3 exit-check
     then
     hewie-controlled? not if
-        0 4 char-in-area? 0 char-busy? not and if
+        fiona-who 4 char-in-area? fiona-who char-busy? not and if
             4 exit-check
         then
-    else 1 4 char-in-area? 1 char-busy? not and if
+    else hewie-who 4 char-in-area? hewie-who char-busy? not and if
         4 exit-check
     then then
-    $2AB story-flag? not if
+    om1f-5-refined-magnesia-found story-flag? not if
         3 -9.11 0.0 -21.78 $A 5 0 zone
-        1 3 3 char-zone-bits? if
+        hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 683 var-set
-                $1A 684 var-set
+                $19 om1f-5-refined-magnesia-found var-set
+                $1A om1f-5-refined-magnesia var-set
                 $1B 4 var-set
                 $1C -9110 var-set
                 $1D 1000 var-set
                 $1E -21780 var-set
                 $1F 3 var-set
-                0 1 $8B action
+                0 hewie-who $8B action
             then
         then
     then
 ;
 
 : old-mansion-1f-5.phase2 ( -- )   \ 00407CB0
-    0 $19 char-in-area? 0 -45 $32 char-heading? and if
-        5 0 0 scene-change
+    fiona-who $19 char-in-area? fiona-who -45 $32 char-heading? and if
+        0 unhurried offer-action
     then
-    $26F story-flag? not if
+    om1f-5-lavender story-flag? not if
         1 1 5 5 0 zone-at-effect
-        0 1 3 char-zone-bits? if
-            5 3 4 scene-change
+        fiona-who 1 3 char-zone-bits? if
+            3 calm offer-action
         then
     then
-    $2AB story-flag? $2AC story-flag? not and if
+    om1f-5-refined-magnesia-found story-flag? om1f-5-refined-magnesia story-flag? not and if
         3 4 5 5 0 zone-at-effect
-        0 3 3 char-zone-bits? if
-            5 5 4 scene-change
+        fiona-who 3 3 char-zone-bits? if
+            5 calm offer-action
         then
     then
 ;
@@ -144,23 +120,23 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     $21 0 pvar? if
         $21 pvar-inc
-        $11 message
+        $11 message   \ "Smells like burnt meat. A dreadful odor indeed... They must be cooking an animal'..."
         wait-message
     else $21 1 pvar? if
         1 6 -138.0 5.0 5.0 0 0 sound
         self-frames-reset
         $10 self-wait-frames
-        0 $43 5 char-sound
+        fiona-who $43 5 char-sound
         $F00 self-anim
         $21 pvar-inc
-        $FF panic-stage? not if
+        in-panic? not if
             3 panic-stage
         then
-        $12 message
+        $12 message   \ "Wait a second! It's still moving in there! It's being cooked alive!"
         wait-message
     else
         $21 pvar-inc
-        $13 message
+        $13 message   \ "The more I look, the more it seems to resemble a human child... But certainly suc..."
         wait-message
     then then
     self-idle-or-end
@@ -178,23 +154,22 @@ USING: room-names story.words story.shared ;
     self-wait-done
     -107.57 10.1 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $26F story-flag-set
+            om1f-5-lavender story-flag-set
             1 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -211,23 +186,22 @@ USING: room-names story.words story.shared ;
     self-wait-done
     -9.11 -21.78 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
         $95 message-param-room
         $95 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2AC story-flag-set
+            om1f-5-refined-magnesia story-flag-set
             4 effect-remove
             $95 1 item-give-count
             0 $95 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -240,14 +214,4 @@ USING: room-names story.words story.shared ;
 ;
 
 \ ---- registered ----
-' old-mansion-1f-5.enter old-mansion-1f-5 0 room-script!
-' old-mansion-1f-5.char-enter old-mansion-1f-5 6 room-script!
-' old-mansion-1f-5.phase1 old-mansion-1f-5 1 room-script!
-' old-mansion-1f-5.phase2 old-mansion-1f-5 2 room-script!
-' old-mansion-1f-5.act00 old-mansion-1f-5 $00 action-script!
-' old-mansion-1f-5.act01 old-mansion-1f-5 $01 action-script!
-' old-mansion-1f-5.act02 old-mansion-1f-5 $02 action-script!
-' old-mansion-1f-5.act03 old-mansion-1f-5 $03 action-script!
-' old-mansion-1f-5.act04 old-mansion-1f-5 $04 action-script!
-' old-mansion-1f-5.act05 old-mansion-1f-5 $05 action-script!
-' old-mansion-1f-5.phase5 old-mansion-1f-5 5 room-script!
+old-mansion-1f-5 register-scripts   \ (its phases and actions, by their names)

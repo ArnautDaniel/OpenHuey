@@ -45,7 +45,7 @@ end-behaviour
 ear ear-state s" ear" spawn constant ear
 deliver  ear enter  fiona body-room fiona body-tri fiona body-pos body-place  0 fiona-noise acoustics send listen  leave-actor
 : barking ( -- )   \ (from standing: lying, he'd get up first)
-    [: -1 stand-anim ;] his!  30 frames  [: $B 0 set-action ;] his!  ;
+    [: -1 stand-still ;] his!  30 frames  [: $B 0 set-action ;] his!  ;
 T{ 0 loudest !  barking  300 frames  loudest @ -> $1B }T
 ear kill
 

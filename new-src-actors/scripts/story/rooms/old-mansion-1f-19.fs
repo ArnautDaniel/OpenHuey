@@ -2,13 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-19
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-1f-19.enter ( -- )   \ 00438D30
     room-sounds
-    $56 story-flag? if
-        $7C story-flag? not if
-            $7C story-flag-set
+    om3f-1-flag2 story-flag? if
+        om1f-19-flag1 story-flag? not if
+            om1f-19-flag1 story-flag-set
             $6B 0 109 $80 5 -1 $B4 0.0 creature-place
         then
     then
@@ -39,9 +39,9 @@ USING: room-names story.words story.shared flag-names ;
         4 ebit-set
     then
     4 ebit? if
-        0 $FE 7 action
+        0 stalker-who 7 action
     else
-        $78 1 item-cooldown
+        $78 1 summoner-wait
     then
     $13 pvar-inc
     exit
@@ -49,63 +49,33 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-19.char-enter ( -- )   \ 00438D60
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        1 1 player-camera
     then then
     0 1 1 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        0 0 player-camera
     then then
     1 0 0 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         $FE exit-taken? if
-            0 $14 0.0 -110.0 0 char-to-xz
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
-            0 0 1 action
+            fiona-who $14 0.0 -110.0 0 char-to-xz
+            0 0 player-camera
+            0 fiona-who 1 action
         then
     then
-    $FE self-is? if
+    stalker-who self-is? if
         fiona-hidden state-flag? if
             5 ebit-set
             old-mansion-1f-19.act06
@@ -120,44 +90,44 @@ USING: room-names story.words story.shared flag-names ;
         0 exit-check
     then
     hewie-controlled? not if
-        0 1 char-in-area? 0 char-busy? not and if
+        fiona-who 1 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 1 char-in-area? 1 char-busy? not and if
+    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then
     4 0 0 1 chars-area-camera
     5 1 1 1 chars-area-camera
-    0 2 char-entered-area? if
+    fiona-who 2 char-entered-area? if
         0 exit-prepare
     then
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         $1C 3 1 char-load
     then
-    0 2 char-entered-area? if
+    fiona-who 2 char-entered-area? if
         3 0 char-remove
     then
     2 0.75 0.0 -116.99 $14 10 0 zone
-    6 ebit? not 1 char-here? and 1 0 char-C4? and if
+    6 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
-                1 2 9 char-zone-bits? if
+                hewie-who 2 9 char-zone-bits? if
                     6 ebit-set
                     $1E chance? if
                         $1F 2 var-set
-                        0 1 $88 action
+                        0 hewie-who $88 action
                     then
                 then
             then
         then
     then
     2 0.75 0.0 -116.99 $14 10 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 2 9 char-zone-bits? if
+            hewie-who 2 9 char-zone-bits? if
                 $1F 2 var-set
                 $1F 10.0 hewie-look-zone
             then
@@ -174,14 +144,14 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-1f-19.phase2 ( -- )   \ 00438F10
-    0 7 char-in-area? 0 90 $32 char-heading? and if
-        5 0 0 scene-change
+    fiona-who 7 char-in-area? fiona-who 90 $32 char-heading? and if
+        0 unhurried offer-action
     then
-    0 6 char-in-area? 0 90 $3C char-heading? and if
-        $FE char-here? not if
-            5 4 5 scene-change
+    fiona-who 6 char-in-area? fiona-who 90 $3C char-heading? and if
+        stalker-who char-here? not if
+            4 calm offer-action
         else
-            $8016 examine-message
+            $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
     then
 ;
@@ -196,12 +166,12 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     $A02 $A self-anim-blend
     self-wait-anim
-    0 message
+    0 message   \ "A miasma of mold and corrosion wafts from within the hole. Enter the hole? YES NO"
     wait-message
     0 answer? if
         $F 0 fade
         wait-fade
-        0 $7E 5 char-sound
+        fiona-who $7E 5 char-sound
         world-held state-flag-set
         $FE exit-check
     else
@@ -219,7 +189,7 @@ USING: room-names story.words story.shared flag-names ;
     $1C 3 1 char-load
     self-wait-done
     camera-restart
-    0 $7E 5 char-sound
+    fiona-who $7E 5 char-sound
     $F 1 fade
     wait-fade
     world-held state-flag-clear
@@ -241,16 +211,16 @@ USING: room-names story.words story.shared flag-names ;
         2 avoid-prompt
     then
     1 self-scripted
-    0 camera-follow
-    $FF 0 char-visible
+    fiona-who camera-follow
+    self-who 0 char-visible
     fiona-hidden state-flag-clear
     1 self-noclip
-    0 $7E 5 char-sound
+    fiona-who $7E 5 char-sound
     $8003 $A self-anim-blend
     self-wait-anim
     0 self-noclip
     3 ebit? not if
-        $FE action-end
+        stalker-who action-end
     then
     0 self-scripted
     self-idle-or-end
@@ -260,15 +230,15 @@ USING: room-names story.words story.shared flag-names ;
     stalkers-stay state-flag-set
     5 ebit-clear
     1 self-scripted
-    0 0 char-file-load
+    fiona-who 0 char-file-load
     self-wait-done
-    0 char-file-use
+    fiona-who char-file-use
     $31 $8004 5 82.92 -88.12 180 self-walk-anim
     self-wait-done
     1 self-noclip
     1 self-scripted
-    0 $7E 5 char-sound
-    $8005 $A self-anim-9
+    fiona-who $7E 5 char-sound
+    $8005 $A self-anim-blend8
     self-wait-anim
     $8001 $A self-anim-blend
     0 self-noclip
@@ -276,21 +246,21 @@ USING: room-names story.words story.shared flag-names ;
     fiona-hidden state-flag-set
     3 ebit-clear
     0 avoid-prompt
-    $FF 2 -1 char-camera
-    $FF 1 char-visible
+    self-who 2 -1 char-camera
+    self-who 1 char-visible
     begin
         0 2 pad? not if
-            $FF panic-stage? 3 ebit? or if
-                $FF panic-stage? not if
-                    0 $43 5 char-sound
+            in-panic? 3 ebit? or if
+                in-panic? not if
+                    fiona-who $43 5 char-sound
                 then
                 ['] old-mansion-1f-19.act05 goto
             else
-                2 panic-grow
+                2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
                 5 ebit? if
-                    $FE char-here? not if
+                    stalker-who char-here? not if
                         5 ebit-clear
                         1 avoid-prompt
                     then
@@ -298,17 +268,17 @@ USING: room-names story.words story.shared flag-names ;
                 yield
             then
         else
-            $FE char-here? if
+            stalker-who char-here? if
                 ['] old-mansion-1f-19.act05 goto
             then
-            0 camera-follow
-            $FF 0 char-visible
+            fiona-who camera-follow
+            self-who 0 char-visible
             fiona-hidden state-flag-clear
             1 self-noclip
-            $8002 5 self-anim-9
+            $8002 5 self-anim-blend8
             self-frames-reset
             5 self-wait-frames
-            0 $7E 5 char-sound
+            fiona-who $7E 5 char-sound
             self-wait-anim
             0 self-noclip
             0 self-scripted
@@ -319,32 +289,32 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-19.act07 ( -- )   \ 004390D0
     self-wait-done
-    $FE 0 char-heading-for? 0 exit-door-open? not and if
-        0 3 self-move-slot
+    stalker-who 0 char-heading-for? 0 exit-door-open? not and if
+        fiona-who 3 self-move-slot
         self-wait-done
     then
     3 self-is? $22 self-is? or if
-        $FE 1 char-file-load
+        stalker-who 1 char-file-load
     then
     $4F 83.66 -76.9 180 $FFFF 5 self-move-to
     self-wait-done
     3 self-is? $22 self-is? or if
-        $FE char-file-use
-        4 $FE 1 char-model-op
+        stalker-who char-file-use
+        4 stalker-who 1 char-model-op
         $8000 self-anim
         self-wait-anim
-        4 $FE 0 char-model-op
+        4 stalker-who 0 char-model-op
     else
         $1601 self-anim
         self-wait-anim
     then
     3 ebit-set
-    10 self-move-16
+    10 self-idle-anim
     begin
-        0 char-busy? while
+        fiona-who char-busy? while
         yield
     repeat
-    $FE 0 stalker-mode
+    stalker-who 0 stalker-command
     self-idle-or-end
 ;
 
@@ -352,16 +322,4 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-1f-19.enter old-mansion-1f-19 0 room-script!
-' old-mansion-1f-19.char-enter old-mansion-1f-19 6 room-script!
-' old-mansion-1f-19.phase1 old-mansion-1f-19 1 room-script!
-' old-mansion-1f-19.phase2 old-mansion-1f-19 2 room-script!
-' old-mansion-1f-19.act00 old-mansion-1f-19 $00 action-script!
-' old-mansion-1f-19.act01 old-mansion-1f-19 $01 action-script!
-' old-mansion-1f-19.act02 old-mansion-1f-19 $02 action-script!
-' old-mansion-1f-19.act03 old-mansion-1f-19 $03 action-script!
-' old-mansion-1f-19.act04 old-mansion-1f-19 $04 action-script!
-' old-mansion-1f-19.act05 old-mansion-1f-19 $05 action-script!
-' old-mansion-1f-19.act06 old-mansion-1f-19 $06 action-script!
-' old-mansion-1f-19.act07 old-mansion-1f-19 $07 action-script!
-' old-mansion-1f-19.phase5 old-mansion-1f-19 5 room-script!
+old-mansion-1f-19 register-scripts   \ (its phases and actions, by their names)

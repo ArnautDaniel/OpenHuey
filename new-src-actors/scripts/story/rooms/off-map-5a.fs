@@ -13,105 +13,51 @@ USING: room-names story.words story.shared flag-names ;
 
 : off-map-5a.char-enter ( -- )   \ 00410BE0
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 6 -1 char-camera
-                0 camera-follow
-            else
-                1 6 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            6 -1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 6 -1 char-camera
-            0 camera-follow
-        else
-            1 6 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        6 -1 player-camera
     then then
     0 6 -1 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 3 2 char-camera
-                0 camera-follow
-            else
-                1 3 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            3 2 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 3 2 char-camera
-            0 camera-follow
-        else
-            1 3 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        3 2 player-camera
     then then
     1 3 2 area-camera
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 3 2 char-camera
-                0 camera-follow
-            else
-                1 3 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            3 2 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 3 2 char-camera
-            0 camera-follow
-        else
-            1 3 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        3 2 player-camera
     then then
     2 3 2 area-camera
     hewie-controlled? not if
-        0 self-is? 3 exit-taken? and if
-            0 3 char-to-exit
-            hewie-controlled? not if
-                0 2 1 char-camera
-                0 camera-follow
-            else
-                1 2 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 3 exit-taken? and if
+            fiona-who 3 char-to-exit
+            2 1 player-camera
         then
-    else 1 self-is? 3 exit-taken? and if
-        1 3 char-to-exit
-        hewie-controlled? not if
-            0 2 1 char-camera
-            0 camera-follow
-        else
-            1 2 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 3 exit-taken? and if
+        hewie-who 3 char-to-exit
+        2 1 player-camera
     then then
     3 2 1 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         $80 exit-taken? if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 3 2 char-camera
-                0 camera-follow
-            else
-                1 3 2 char-camera
-                1 camera-follow
-            then
-            0 0 1 action
-            1 $59 char-in-room? if
+            fiona-who 1 char-to-exit
+            3 2 player-camera
+            0 fiona-who 1 action
+            hewie-who $59 char-in-room? if
             then
         then
     then
@@ -128,10 +74,10 @@ USING: room-names story.words story.shared flag-names ;
         2 exit-check
     then
     hewie-controlled? not if
-        0 3 char-in-area? 0 char-busy? not and if
+        fiona-who 3 char-in-area? fiona-who char-busy? not and if
             3 exit-check
         then
-    else 1 3 char-in-area? 1 char-busy? not and if
+    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
         3 exit-check
     then then
     $A 5 4 1 chars-area-camera
@@ -146,37 +92,37 @@ USING: room-names story.words story.shared flag-names ;
     $13 3 2 1 chars-area-camera
     $14 2 1 1 chars-area-camera
     $15 3 2 1 chars-area-camera
-    0 4 char-entered-area? if
+    fiona-who 4 char-entered-area? if
         0 exit-prepare
     then
-    0 5 char-entered-area? 0 6 char-entered-area? or if
+    fiona-who 5 char-entered-area? fiona-who 6 char-entered-area? or if
         1 exit-prepare
     then
-    0 7 char-entered-area? 0 8 char-entered-area? or if
+    fiona-who 7 char-entered-area? fiona-who 8 char-entered-area? or if
         2 exit-prepare
     then
-    0 9 char-entered-area? if
+    fiona-who 9 char-entered-area? if
         3 exit-prepare
     then
 ;
 
 : off-map-5a.phase2 ( -- )   \ 00410D90
-    0 $16 $32 char-faces-area? if
-        5 2 0 scene-change
+    fiona-who $16 $32 char-faces-area? if
+        2 unhurried offer-action
     then
     1 exit-door-open? not 0 ebit? and if
-        0 1 char-group-bit4? if
+        fiona-who 1 char-before-door? if
             0 examine-message
         then
     then
-    0 $17 char-in-area? 0 -45 $32 char-heading? and if
-        5 3 0 scene-change
+    fiona-who $17 char-in-area? fiona-who -45 $32 char-heading? and if
+        3 unhurried offer-action
     then
 ;
 
 : off-map-5a.phase5 ( -- )   \ 00410DC0
-    0 ebit? $FE char-here? not and $FE 2 char-C4? and if
-        $FE action-end
+    0 ebit? stalker-who char-here? not and stalker-who 2 char-cond? and if
+        stalker-who action-end
         2 summon-take
     then
 ;
@@ -189,9 +135,8 @@ USING: room-names story.words story.shared flag-names ;
     $B message-param-room
     $B 1 item-give-count
     0 $B item-tab
-    0 $F9 $8C action-force
-    $83 $85 0.0 0.0 0.0 0 0 sound
-    $8012 message
+    item-fanfare
+    $8012 message   \ "You've obtained ."
     wait-message
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -201,7 +146,7 @@ USING: room-names story.words story.shared flag-names ;
 : off-map-5a.act01 ( -- )   \ 00410E10
     0 ebit-set
     $F $41 fade
-    0 $28 5 char-sound
+    fiona-who $28 5 char-sound
     self-wait-done
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -215,7 +160,7 @@ USING: room-names story.words story.shared flag-names ;
     1 message
     wait-message
     0 answer? if
-        0 $D2 293.136 -95.0 180 char-to-xz
+        fiona-who $D2 293.136 -95.0 180 char-to-xz
         world-frozen state-flag-set
         1 5.0 0.0 0.0 2.0 event-camera
         2 message
@@ -236,12 +181,12 @@ USING: room-names story.words story.shared flag-names ;
         4 ebit? if
             self-frames-reset
             self-wait-16
-            0 $72 5 char-sound
+            fiona-who $72 5 char-sound
             318.0 10.0 80.0 self-look-at-point
             yield
             self-frames-reset
             $3C self-wait-frames
-            $FF self-look-at
+            self-who self-look-at
             yield
         then
     then
@@ -287,13 +232,4 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 \ ---- registered ----
-' off-map-5a.char-enter off-map-5a 6 room-script!
-' off-map-5a.phase1 off-map-5a 1 room-script!
-' off-map-5a.phase2 off-map-5a 2 room-script!
-' off-map-5a.phase5 off-map-5a 5 room-script!
-' off-map-5a.act00 off-map-5a $00 action-script!
-' off-map-5a.act01 off-map-5a $01 action-script!
-' off-map-5a.act02 off-map-5a $02 action-script!
-' off-map-5a.act03 off-map-5a $03 action-script!
-' off-map-5a.act04 off-map-5a $04 action-script!
-' off-map-5a.enter off-map-5a 0 room-script!
+off-map-5a register-scripts   \ (its phases and actions, by their names)

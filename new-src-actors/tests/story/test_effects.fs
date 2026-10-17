@@ -39,7 +39,7 @@ T{ 9 slot alive?  9 slot kind-of -> -1 0 }T
 T{ rests 0>  plays? -> -1 -1 }T
 
 testing a thing wandering about its place (0xA9), kept in a variable; it doesn't end by itself
-[: 3 0  0e 10e 0e  4e 4e  0e 0e 0e  scene-effect-71000 ;] in-room  60 frames
+[: 3 0  0e 10e 0e  4e 4e  0e 0e 0e  wanderer ;] in-room  60 frames
 : wanderer ( -- id )  [: 3 var @ ;] in-room ;
 T{ wanderer alive?  wanderer system particles-alive? -> -1 -1 }T
 wanderer constant the-wanderer

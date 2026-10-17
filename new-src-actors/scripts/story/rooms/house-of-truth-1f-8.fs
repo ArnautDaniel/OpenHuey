@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-8
-USING: engine common actors messages room-names story.words story.shared flag-names ;
+USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x91 (Room91_Cmd00_ptmf): door 0's +0x68 (0)
 : house-of-truth-1f-8.cmd00 ( -- )  0 true -1 doors-id send swing-door ;   \ (door 0 set opening, Doors_SetOpened: swung open here)
@@ -18,23 +18,23 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 
 : house-of-truth-1f-8.enter ( -- )   \ 00436600
     room-sounds
-    0 72.4 17.2 117.2 1 effect-86
-    1 101.9 66.0 87.1 4 effect-86
-    2 97.6 29.5 144.8 1 effect-86
-    4 101.9 66.0 87.4 4 effect-86
-    $A3 story-flag? if
-        1 0 $20000 nav-group
-        0 1 $14 door-bits
+    0 72.4 17.2 117.2 1 flame-in
+    1 101.9 66.0 87.1 4 flame-in
+    2 97.6 29.5 144.8 1 flame-in
+    4 101.9 66.0 87.4 4 flame-in
+    ht1f-9-flag2 story-flag? if
+        0 barred-floor floor-on
+        0 part-shown
     then
-    $34E story-flag? if
+    tremor-warned story-flag? if
         5 1.0 0 bgm
     then
-    $2F3 story-flag? $2F4 story-flag? not and if
+    ht1f-8-magist-medallion-found story-flag? ht1f-8-magist-medallion story-flag? not and if
         3 86.0 1.0 68.0 flicker-sprite
     then
     $80 exit-taken? not if
         shared.act95
-        $A3 story-flag? if
+        ht1f-9-flag2 story-flag? if
             house-of-truth-1f-8.cmd02
         then
     else
@@ -44,82 +44,40 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 
 : house-of-truth-1f-8.char-enter ( -- )   \ 00436690
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        0 0 player-camera
     then then
     1 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 2 2 char-camera
-                0 camera-follow
-            else
-                1 2 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            2 2 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 2 2 char-camera
-            0 camera-follow
-        else
-            1 2 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        2 2 player-camera
     then then
     2 2 2 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         $80 exit-taken? if
-            0 $1FC 22.0 100.0 -90 char-to-xz
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
-            0 0 1 action
+            fiona-who $1FC 22.0 100.0 -90 char-to-xz
+            0 0 player-camera
+            0 fiona-who 1 action
             0.0 sound-volume-scale
         then
     then
@@ -142,88 +100,86 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     7 1 1 1 chars-area-camera
     8 1 1 1 chars-area-camera
     9 2 2 1 chars-area-camera
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         0 exit-prepare
     then
-    0 4 char-entered-area? if
+    fiona-who 4 char-entered-area? if
         1 exit-prepare
     then
-    0 5 char-entered-area? if
+    fiona-who 5 char-entered-area? if
         2 exit-prepare
     then
-    $A3 story-flag? $A4 story-flag? not and if
-        0 6 char-entered-area? 1 ebit? not and if
+    ht1f-9-flag2 story-flag? over-music-f story-flag? not and if
+        fiona-who 6 char-entered-area? 1 ebit? not and if
             1 ebit-set
-            $FF panic-stage? if
-                3 panic-stage
-            then
-            0 0 char-action? if
-                0 0 0 action-force
+            panic-eased
+            fiona-who 0 char-action? if
+                0 fiona-who 0 action-force
             else
-                1 0 0 action-force
+                1 fiona-who 0 action-force
             then
         then
     then
     $EB door-locked? if
         4 -37.0 0.0 177.0 7 20 0 zone
-        0 4 char-in-zone? if
+        fiona-who 4 char-in-zone? if
             0 $F1 4 action
         then
-        1 char-here? 1 2 char-C4? not and 0 $C char-in-area? and 1 $C char-in-area? and 0 -37 177 $3C char-faces-xz? and 0 control-action? and if
-            hewie-stays? if
-                0 1 5 action
+        hewie-who char-here? hewie-who 2 char-cond? not and fiona-who $C char-in-area? and hewie-who $C char-in-area? and fiona-who -37 177 $3C char-faces-xz? and 0 control-action? and if
+            hewie-may-break-off? if
+                0 hewie-who 5 action
             then
         then
     then
     0 0 8 -4 0 zone-at-effect
-    0 0 3 char-zone-bits? 0 0 3 char-zone-bits-before? not and if
-        0 0 char-effect-moving
+    fiona-who 0 3 char-zone-bits? fiona-who 0 3 char-zone-bits-before? not and if
+        fiona-who 0 char-effect-moving
     then
-    1 0 3 char-zone-bits? 1 0 3 char-zone-bits-before? not and if
-        1 0 char-effect-moving
+    hewie-who 0 3 char-zone-bits? hewie-who 0 3 char-zone-bits-before? not and if
+        hewie-who 0 char-effect-moving
     then
-    $FE 0 3 char-zone-bits? $FE 0 3 char-zone-bits-before? not and if
-        $FE 0 char-effect-moving
+    stalker-who 0 3 char-zone-bits? stalker-who 0 3 char-zone-bits-before? not and if
+        stalker-who 0 char-effect-moving
     then
     1 1 8 -4 0 zone-at-effect
-    0 1 3 char-zone-bits? 0 1 3 char-zone-bits-before? not and if
-        0 1 char-effect-moving
+    fiona-who 1 3 char-zone-bits? fiona-who 1 3 char-zone-bits-before? not and if
+        fiona-who 1 char-effect-moving
     then
-    1 1 3 char-zone-bits? 1 1 3 char-zone-bits-before? not and if
-        1 1 char-effect-moving
+    hewie-who 1 3 char-zone-bits? hewie-who 1 3 char-zone-bits-before? not and if
+        hewie-who 1 char-effect-moving
     then
-    $FE 1 3 char-zone-bits? $FE 1 3 char-zone-bits-before? not and if
-        $FE 1 char-effect-moving
+    stalker-who 1 3 char-zone-bits? stalker-who 1 3 char-zone-bits-before? not and if
+        stalker-who 1 char-effect-moving
     then
     2 2 8 -4 0 zone-at-effect
-    0 2 3 char-zone-bits? 0 2 3 char-zone-bits-before? not and if
-        0 2 char-effect-moving
+    fiona-who 2 3 char-zone-bits? fiona-who 2 3 char-zone-bits-before? not and if
+        fiona-who 2 char-effect-moving
     then
-    1 2 3 char-zone-bits? 1 2 3 char-zone-bits-before? not and if
-        1 2 char-effect-moving
+    hewie-who 2 3 char-zone-bits? hewie-who 2 3 char-zone-bits-before? not and if
+        hewie-who 2 char-effect-moving
     then
-    $FE 2 3 char-zone-bits? $FE 2 3 char-zone-bits-before? not and if
-        $FE 2 char-effect-moving
+    stalker-who 2 3 char-zone-bits? stalker-who 2 3 char-zone-bits-before? not and if
+        stalker-who 2 char-effect-moving
     then
-    $A6 story-flag? not if
-        0 $B char-entered-area? if
-            $A6 story-flag-set
+    ht1f-8-flag1 story-flag? not if
+        fiona-who $B char-entered-area? if
+            ht1f-8-flag1 story-flag-set
             $91 0 467 $88 0 -1 $5A 0.0 creature-place
             $91 0 131 $89 0 -1 $FFA6 0.0 creature-place
         then
     then
-    $2F3 story-flag? not if
+    ht1f-8-magist-medallion-found story-flag? not if
         3 86.0 0.0 68.0 $A 5 0 zone
-        1 3 3 char-zone-bits? if
+        hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 755 var-set
-                $1A 756 var-set
+                $19 ht1f-8-magist-medallion-found var-set
+                $1A ht1f-8-magist-medallion var-set
                 $1B 3 var-set
                 $1C 86000 var-set
                 $1D 1000 var-set
                 $1E 68000 var-set
                 $1F 3 var-set
-                0 1 $8B action
+                0 hewie-who $8B action
             then
         then
     then
@@ -250,24 +206,24 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 ;
 
 : house-of-truth-1f-8.phase2 ( -- )   \ 00436A00
-    0 $A char-in-area? 0 -22 $32 char-heading? and if
-        5 $84 3 scene-change
+    fiona-who $A char-in-area? fiona-who -22 $32 char-heading? and if
+        $84 calm-hewie-up offer-action
     then
     -2147483646 scene-request? if
-        0 0 char-group-bit4? if
-            5 6 1 scene-change
+        fiona-who 0 char-before-door? if
+            6 always offer-action
         then
     then
-    $2F3 story-flag? $2F4 story-flag? not and if
+    ht1f-8-magist-medallion-found story-flag? ht1f-8-magist-medallion story-flag? not and if
         3 3 5 5 0 zone-at-effect
-        0 3 3 char-zone-bits? if
-            5 2 4 scene-change
+        fiona-who 3 3 char-zone-bits? if
+            2 calm offer-action
         then
     then
 ;
 
 : house-of-truth-1f-8.phase3 ( -- )   \ 00436A40
-    $A3 story-flag? 2 ebit? not and if
+    ht1f-9-flag2 story-flag? 2 ebit? not and if
         $40000030 $47 0.0 0.0 0.0 0 0 sound
         2 ebit-set
     then
@@ -289,13 +245,13 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     1 self-scripted
     0 exit-prepare
     self-wait-done
-    $A4 story-flag-set
+    over-music-f story-flag-set
     $91 0 493 hewie-to-room
-    1 $1ED 45 char-to-tri-facing
-    $FE char-activate
+    hewie-who $1ED 45 char-to-tri-facing
+    stalker-who char-activate
     $FE $92 -1 2 stalker-to-room
-    $FE 0 stalker-mode
-    $FE $8D 1 room-doors-state
+    stalker-who 0 stalker-command
+    stalker-who $8D 1 room-doors-state
     hewie-no-attack state-flag-set
     camera-restart
     house-of-truth-1f-8.cmd02
@@ -305,18 +261,18 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     0 $F1 3 action
     self-frames-reset
     8 self-wait-frames
-    0 $43 5 char-sound
+    fiona-who $43 5 char-sound
     $800 self-anim
     self-wait-anim
     $801 self-anim
     self-frames-reset
     $1E self-wait-frames
     $802 self-anim
-    2 message
+    2 message   \ "Whoa! What was that? It felt like a tremor... I should crouch down during large tremors..."
     wait-message
-    $34E story-flag-set
+    tremor-warned story-flag-set
     5 1.0 0 bgm
-    $34F story-flag-set
+    tremor-warned-2 story-flag-set
     $F1 action-end
     shared.act95
     0 5 var-set
@@ -329,23 +285,22 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     self-wait-done
     86.0 68.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
         $75 message-param-room
         $75 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2F4 story-flag-set
+            ht1f-8-magist-medallion story-flag-set
             3 effect-remove
             $75 1 item-give-count
             0 $75 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -425,26 +380,15 @@ USING: engine common actors messages room-names story.words story.shared flag-na
         self-wait-done
         $60B self-anim
         self-wait-anim
-        -1 self-move-16
+        -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
         0 ebit-set
     then
-    0 message
+    0 message   \ "Something seems to be snagged on the other side of the door, keeping it from opening. D..."
     wait-message
     self-idle-or-end
 ;
 
 \ ---- registered ----
-' house-of-truth-1f-8.enter house-of-truth-1f-8 0 room-script!
-' house-of-truth-1f-8.char-enter house-of-truth-1f-8 6 room-script!
-' house-of-truth-1f-8.phase1 house-of-truth-1f-8 1 room-script!
-' house-of-truth-1f-8.phase2 house-of-truth-1f-8 2 room-script!
-' house-of-truth-1f-8.phase3 house-of-truth-1f-8 3 room-script!
-' house-of-truth-1f-8.act00 house-of-truth-1f-8 $00 action-script!
-' house-of-truth-1f-8.act01 house-of-truth-1f-8 $01 action-script!
-' house-of-truth-1f-8.act02 house-of-truth-1f-8 $02 action-script!
-' house-of-truth-1f-8.act03 house-of-truth-1f-8 $03 action-script!
-' house-of-truth-1f-8.act04 house-of-truth-1f-8 $04 action-script!
-' house-of-truth-1f-8.act05 house-of-truth-1f-8 $05 action-script!
-' house-of-truth-1f-8.act06 house-of-truth-1f-8 $06 action-script!
+house-of-truth-1f-8 register-scripts   \ (its phases and actions, by their names)

@@ -169,7 +169,7 @@ static void dispatch(Forth *f, const HMessage *m) {
     HActor *a = m->to >= 0 && m->to < HACTOR_MAX ? &sActors[m->to] : NULL;
     HBehaviour *b;
     Word *h = NULL;
-    int sp0, fp0, rp0, i, self = sSelf, sender = sSender;
+    int sp0, fp0, rp0, sfloor, ffloor, i, self = sSelf, sender = sSender;
 
     if (a == NULL || !a->used) {
         sDeadLetters++;
@@ -195,6 +195,10 @@ static void dispatch(Forth *f, const HMessage *m) {
     sp0 = f->t->sp;
     fp0 = f->t->fp;
     rp0 = f->t->rp;
+    sfloor = f->t->sfloor;   /* (the handler sees its arguments, nothing of whoever delivered) */
+    ffloor = f->t->ffloor;
+    f->t->sfloor = sp0;
+    f->t->ffloor = fp0;
     for (i = 0; i < m->n; i++) {
         forth_push(f, m->a[i]);
     }
@@ -212,6 +216,8 @@ static void dispatch(Forth *f, const HMessage *m) {
     f->t->sp = sp0;   /* (whatever happened, the stacks are as they were) */
     f->t->fp = fp0;
     f->t->rp = rp0;
+    f->t->sfloor = sfloor;
+    f->t->ffloor = ffloor;
     a->handled++;
     sSelf = self;
     sSender = sender;

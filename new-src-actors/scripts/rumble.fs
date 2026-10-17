@@ -3,10 +3,9 @@
 IN: rumble
 USING: engine ;
 
-0 constant fiona-channel     \ her falls, knocks, struggles, slams
-1 constant story-channel     \ the scripts' own (0x93)
-2 constant scene-channel     \ a cutscene's
-3 constant stalker-channel   \ the stalkers' blows landing near
+\ the channels: Fiona's falls, knocks, struggles, slams; the scripts' own (0x93); a cutscene's;
+\ the stalkers' blows landing near
+enum: rumble-channel  fiona-channel story-channel scene-channel stalker-channel ;
 
-: fiona-jolt ( strength frames -- )  >r >r fiona-channel r> r> rumble ;
-: stalker-jolt ( strength frames -- )  >r >r stalker-channel r> r> rumble ;
+: fiona-jolt ( strength frames -- )  fiona-channel -rot rumble ;
+: stalker-jolt ( strength frames -- )  stalker-channel -rot rumble ;

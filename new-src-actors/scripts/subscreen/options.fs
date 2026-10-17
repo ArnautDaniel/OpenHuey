@@ -20,7 +20,7 @@ create layouts
     vibration @ 0<> rumble-allowed!  volume @ s>f 128e f/ game-volume! ;
 : defaults ( -- )  1 vibration !  1 sound-out !  128 volume !  0 pos-x !  0 pos-y !  0 layout !  apply ;
 
-: say ( msg x y -- )  >r >r menu-line r> r> false text ;
+: say ( msg x y -- )  {: msg x y :}  msg menu-line x y false text ;
 : buttons ( -- )   \ the buttons and what they do, in two columns of four
     4 0 do
         $65 i +  $40  $74 i $20 * +  say      i 1+ action-name  $60  $74 i $20 * +  say

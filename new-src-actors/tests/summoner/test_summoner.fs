@@ -16,8 +16,8 @@ testing a noise's level: by loudness; one less away from doors with every door s
 T{ $10 -1 lvl  $20 0 lvl  $40 0 lvl  $60 0 lvl  $FF 0 lvl -> 0 1 2 3 3 }T
 
 testing the rooms near hers: hers first, then those within two open doors
-T{ room-id summoner:rooms-near  summoner:near-list @  summoner:near-n @ 1 > -> room-id -1 }T
-T{ room-id 0 room-exit-leads drop summoner:listed? -> -1 }T
+T{ [: room-id summoner:rooms-near  summoner:near-list @  summoner:near-n @ 1 > ;] its -> room-id -1 }T
+T{ [: room-id 0 room-exit-leads drop summoner:listed? ;] its -> -1 }T
 
 testing off stage: loaded, the summoner on - his time away rolled, then counted down
 2 story.words:partner-load  summoner-on state-flag-set  2 frames
@@ -26,7 +26,7 @@ T{ [: away @ ;] its  5 frames  [: away @ ;] its - -> 5 }T
 
 testing his time away over: in, out of sight, near her room (not hers), waiting about
 [: 1 away ! ;] its  3 frames
-T{ in-game?  his-room room-id <>  his-room summoner:listed?  [: my-mode @ ;] his -> -1 -1 -1 3 }T
+T{ in-game?  his-room room-id <>  [: room-id summoner:rooms-near  his-room summoner:listed? ;] its  [: my-mode @ ;] his -> -1 -1 -1 3 }T
 T{ summoner-waiting state-flag?  [: cooldown @ ;] its 2600 > -> 0 -1 }T
 
 testing the story takes him (0x84): out, his room noted, his time away rolled afresh
@@ -34,9 +34,9 @@ variable was  his-room was !  0 story.words:summon-take  2 frames
 T{ in-game?  [: took-room @ ;] its  was @ =  [: away @ 4500 >= ;] its -> 0 -1 -1 }T
 
 testing the cooldown (0x5A, 0x5B): set, less, his own
-T{ 10 0 story.words:item-cooldown 1 frames [: cooldown @ ;] its -> 300 }T
-T{ 4 1 story.words:item-cooldown 1 frames [: cooldown @ ;] its -> 180 }T
-T{ story.words:stalker-item-cooldown 1 frames [: cooldown @ ;] its -> 2700 }T
+T{ 10 0 story.words:summoner-wait 1 frames [: cooldown @ ;] its -> 300 }T
+T{ 4 1 story.words:summoner-wait 1 frames [: cooldown @ ;] its -> 180 }T
+T{ story.words:summoner-own-cooldown 1 frames [: cooldown @ ;] its -> 2700 }T
 
 testing a loud noise calls him in (3 s waited, his last taking's wait over): after her
 [: 900 waited ! 10000 away ! ;] its

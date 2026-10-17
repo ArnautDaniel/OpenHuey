@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-9
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names floor-flags ;
 
 \ room 0x107: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
 \ sideways 2 a frame (room_nudge).
@@ -20,23 +20,23 @@ USING: room-names story.words story.shared ;
     $1F 0 pvar? if
         deal-things
     then
-    $FF panic-stage? if
+    in-panic? if
         1 ebit-set
     then
-    $21C story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+    cf-9-breakable-broken story-flag? not if
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
-        $2CB story-flag? not if
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
+        cf-9-refined-antimony story-flag? not if
             0 -298.4 72.6 -365.4 flicker-sprite
         then
     then
     0 $B 0.812 0.687 0.187 0.312 zone-rect
-    $35D story-flag? not if
+    cf-9-flag1 story-flag? not if
         $E 5 $FF char-load
         0 $F1 0 action
     then
@@ -45,51 +45,39 @@ USING: room-names story.words story.shared ;
 
 : chaos-forest-9.char-enter ( -- )   \ 00418B60
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
 ;
 
 : chaos-forest-9.phase1 ( -- )   \ 00418BA0
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             0 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
     0 ebit? not if
-        1 ebit? not $FF panic-stage? and if
+        1 ebit? not in-panic? and if
             0 ebit-set
             deal-things
         then
     then
-    $FF panic-stage? if
+    in-panic? if
         1 ebit-set
     else
         1 ebit-clear
     then
-    2 ebit? $35D story-flag? not and if
+    2 ebit? cf-9-flag1 story-flag? not and if
         chaos-forest-9.cond00? if
-            $35D story-flag-set
+            cf-9-flag1 story-flag-set
             $F1 action-end
             0 $F1 2 action
         then
@@ -97,31 +85,31 @@ USING: room-names story.words story.shared ;
 ;
 
 : chaos-forest-9.phase2 ( -- )   \ 00418BF0
-    $21C story-flag? not if
+    cf-9-breakable-broken story-flag? not if
         0 -298.4 71.6 -365.4 5 8 1 zone
-        $FF 0 char-in-zone? if
-            $21C story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
-            -298.4 71.6 -365.4 0 -2144325584 0 0.0 scene-effect-8C
+        self-who 0 char-in-zone? if
+            cf-9-breakable-broken story-flag-set
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
+            -298.4 71.6 -365.4 0 -2144325584 0 0.0 shards-at
             $88 5 -298.4 71.6 -365.4 0 0 sound
             $40 $BA noise
             0 -298.4 72.6 -365.4 flicker-sprite
         then
-    else $2CB story-flag? not if
+    else cf-9-refined-antimony story-flag? not if
         0 0 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
-            5 1 4 scene-change
+        fiona-who 0 3 char-zone-bits? if
+            1 calm offer-action
         then
     then then
-    0 1 char-in-area? 0 90 $2D char-heading? and if
-        5 3 0 scene-change
+    fiona-who 1 char-in-area? fiona-who 90 $2D char-heading? and if
+        3 unhurried offer-action
     then
 ;
 
 : chaos-forest-9.act00 ( -- )   \ 00418C90
-    5 char-unload
+    5 char-start
     2 ebit-set
     $E char-activate
     $E $9000 1 0 char-anim-hold
@@ -140,23 +128,22 @@ USING: room-names story.words story.shared ;
     self-wait-done
     -298.4 -365.4 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
         $94 message-param-room
         $94 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2CB story-flag-set
+            cf-9-refined-antimony story-flag-set
             0 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -182,13 +169,13 @@ USING: room-names story.words story.shared ;
     3 ebit? not if
         $A02 5 self-anim-blend
         self-wait-anim
-        0 message
+        0 message   \ "It's... a lake, I think. Looks like there some kind of a... tower erected in the ce..."
         wait-message
         3 ebit-set
     else
         $1D02 5 self-anim-blend
         self-wait-anim
-        1 message
+        1 message   \ "I'm not going to be able to go any further this way. Better go back and find a way..."
         wait-message
     then
     self-idle-or-end
@@ -200,12 +187,4 @@ USING: room-names story.words story.shared ;
 ;
 
 \ ---- registered ----
-' chaos-forest-9.enter chaos-forest-9 0 room-script!
-' chaos-forest-9.char-enter chaos-forest-9 6 room-script!
-' chaos-forest-9.phase1 chaos-forest-9 1 room-script!
-' chaos-forest-9.phase2 chaos-forest-9 2 room-script!
-' chaos-forest-9.act00 chaos-forest-9 $00 action-script!
-' chaos-forest-9.act01 chaos-forest-9 $01 action-script!
-' chaos-forest-9.act02 chaos-forest-9 $02 action-script!
-' chaos-forest-9.act03 chaos-forest-9 $03 action-script!
-' chaos-forest-9.phase5 chaos-forest-9 5 room-script!
+chaos-forest-9 register-scripts   \ (its phases and actions, by their names)

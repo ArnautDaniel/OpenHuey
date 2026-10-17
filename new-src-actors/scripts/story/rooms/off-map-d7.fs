@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d7
-USING: room-names story.words story.shared story.clock ;
+USING: room-names story.words story.shared story.clock story-names ;
 
 \ as Room107_Cmd00
 : off-map-d7.cmd00 ( b0 -- )  2e room-nudge ;   \ (as chaos-forest-9's)
@@ -17,7 +17,7 @@ USING: room-names story.words story.shared story.clock ;
 : off-map-d7.enter ( -- )   \ 00447A70
     room-sounds
     $19 1.0 0 bgm
-    $35E story-flag? not if
+    x-d7-flag1 story-flag? not if
         $E 5 $FF char-load
         0 $F1 0 action
     then
@@ -26,40 +26,28 @@ USING: room-names story.words story.shared story.clock ;
 
 : off-map-d7.char-enter ( -- )   \ 00447A90
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
 ;
 
 : off-map-d7.phase1 ( -- )   \ 00447AD0
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             0 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
-    0 ebit? $35E story-flag? not and if
+    0 ebit? x-d7-flag1 story-flag? not and if
         off-map-d7.cond01? if
-            $35E story-flag-set
+            x-d7-flag1 story-flag-set
             $F1 action-end
             0 $F1 1 action
         then
@@ -85,7 +73,7 @@ USING: room-names story.words story.shared story.clock ;
 ;
 
 : off-map-d7.act00 ( -- )   \ 00447B20
-    5 char-unload
+    5 char-start
     $E char-activate
     $E $9000 1 0 char-anim-hold
     $E -339.86 125.95 -391.22 0 char-to-xyz
@@ -112,11 +100,4 @@ USING: room-names story.words story.shared story.clock ;
 ;
 
 \ ---- registered ----
-' off-map-d7.enter off-map-d7 0 room-script!
-' off-map-d7.char-enter off-map-d7 6 room-script!
-' off-map-d7.phase1 off-map-d7 1 room-script!
-' off-map-d7.phase3 off-map-d7 3 room-script!
-' off-map-d7.phase2 off-map-d7 2 room-script!
-' off-map-d7.phase5 off-map-d7 5 room-script!
-' off-map-d7.act00 off-map-d7 $00 action-script!
-' off-map-d7.act01 off-map-d7 $01 action-script!
+off-map-d7 register-scripts   \ (its phases and actions, by their names)

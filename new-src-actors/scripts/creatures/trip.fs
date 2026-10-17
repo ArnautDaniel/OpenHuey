@@ -4,22 +4,27 @@
 \ measure: the door's triangle number on that side); a shut door ends the trip, and isn't tried
 \ again until no way is left. Each creature keeps a trip record in its state (`/trip field`).
 IN: creatures.trip
-USING: engine game-state actors facts ;
+USING: engine game-state actors facts vectors ;
+
+\ ---- time: the game's 30 frames a second ----
+: minutes ( n -- frames )  1800 * ;
 
 \ ---- the record ----
-: t.room ( t -- a )  ;                   \ the room it is in
-: t.tri ( t -- a )  cell+ ;              \ its triangle there (-1: none known)
-: t.exit ( t -- a )  2 cells + ;         \ the exit it walks to (-1: none)
-: t.leg ( t -- a )  3 cells + ;          \ what is left of this leg (a single float)
-: t.n ( t -- a )  4 cells + ;            \ its route's doors, and the next
-: t.i ( t -- a )  5 cells + ;
-: t.doors ( t -- a )  6 cells + ;        \ 16 of them
-: t.closed ( t -- a )  22 cells + ;      \ the doors found shut: a bit each (13 cells)
-: t.door ( t -- a )  35 cells + ;        \ the exit whose door it waits by (-1: none)
-: t.at-door ( t -- a )  36 cells + ;     \ 0 not, 1 waiting by it while it swings, 2 through it
-37 cells constant /trip
+16 constant most-doors
+begin-structure /trip
+  field: t.room                          \ the room it is in
+  field: t.tri                           \ its triangle there (-1: none known)
+  field: t.exit                          \ the exit it walks to (-1: none)
+  sffield: t.leg                         \ what is left of this leg
+  field: t.n  field: t.i                 \ its route's doors, and the next
+  most-doors cells +field t.doors
+  13 cells +field t.closed               \ the doors found shut: a bit each
+  field: t.door                          \ the exit whose door it waits by (-1: none)
+  field: t.at-door                       \ off-door, by-door (waiting while it swings), through-door
+end-structure
+enum: at-door#  off-door by-door through-door ;
 
-: trip-reset ( t -- )  -1 over t.exit !  0 over t.n !  0 over t.i !  -1 over t.door !  0 swap t.at-door ! ;
+: trip-reset ( t -- )  -1 over t.exit !  0 over t.n !  0 over t.i !  -1 over t.door !  off-door swap t.at-door ! ;
 : in-play? ( t -- flag )  t.room @ room-id = ;
 : route-over? ( t -- flag )  dup t.i @ swap t.n @ < 0= ;
 : next ( t -- door )  dup t.i @ cells swap t.doors + @ ;
@@ -33,7 +38,7 @@ USING: engine game-state actors facts ;
     {: t :}
     t t.room @ room-id 0 -1 t t.closed route-avoiding
     dup 0> 0= if  drop  t t.closed 13 cells 0 fill  0 t t.n !  exit  then
-    16 min dup t t.n !  0 do  i route-door  i cells t t.doors + !  loop  0 t t.i !
+    most-doors min dup t t.n !  0 do  i route-door  i cells t t.doors + !  loop  0 t t.i !
     t next  t t.room @ door-measure  t t.leg sf! ;
 \ into the room beyond `exit`: in the room being played, on the exit's spot, facing in (true);
 \ elsewhere its next leg
@@ -60,7 +65,7 @@ USING: engine game-state actors facts ;
     t route-over? if  fdrop  t plan  false exit  then
     t leg-down if  t next-door  else  false  then ;
 \ she left by `exit`: to its spot first (the leg: how far it stands from it)
-create spot 12 allot
+create spot /vec allot
 : follow-out ( t exit -- )
     {: t ex :}  ex t t.exit !  0 t t.n !  0 t t.i !
     ex 0 exit-spot drop spot vec!  self body-at spot vec-dist-xz  t t.leg sf! ;
@@ -77,10 +82,10 @@ create spot 12 allot
 \ has gone (its body off - the caller's)
 : door-watch ( t v -- waiting? )
     {: t v :}
-    v swinging-by dup 0< 0= if  t t.door !  1 t t.at-door !  else  drop  then
-    t t.at-door @ 1 <> if  false exit  then
-    t door-way-open? 0= if  2 t t.at-door !  t  t t.door @  through drop  true exit  then
+    v swinging-by dup 0< 0= if  t t.door !  by-door t t.at-door !  else  drop  then
+    t t.at-door @ by-door <> if  false exit  then
+    t door-way-open? 0= if  through-door t t.at-door !  t  t t.door @  through drop  true exit  then
     t t.door @ door-animating? if  true exit  then
-    0 t t.at-door !  -1 t t.door !  false ;
-: gone-through? ( t -- flag )  t.at-door @ 2 = ;
+    off-door t t.at-door !  -1 t t.door !  false ;
+: gone-through? ( t -- flag )  t.at-door @ through-door = ;
 

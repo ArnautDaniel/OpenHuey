@@ -35,6 +35,36 @@ registered by name), `scripts/story/rooms.fs` (all loaded). Generated once by
 `tools/story_convert.py` from new-src; edited by hand since. A word not written yet is a stub
 (`stub-step` / `stub-flag` in `words.fs`; `.missing` lists those reached).
 
+By name: the character slots the scripts know (`char-slot#`: Fiona, Hewie, the stalker, the
+figures; `self-who`, `stalker-who`), the phases (`phase#`), the scene slots and the zones (a
+`/zone` structure) are in `story/state.fs`; the words' own numbers - door bits, look slots, the
+cutscene's ops (`scene-op`), the movie's classes, the maze's deal, the stalker's gift rows (by item
+name) - beside the words that use them. The rooms' strings and the music's files are `strings:`
+lists (story/strings.fs).
+
+The rooms (converted once from the bytecode) were then reworked by tools, each run once:
+`tools/story_rename.py` renamed the words the converter had named for opcodes and offsets
+(`char-C4?` is `char-cond?`, ...) - and two commands that shadowed facts of the same name
+(`stalker-mode`, `hewie-action`: now `stalker-command`, `hewie-do`; the facts
+`stalker-move-mode`, `hewie-act-now`); `tools/story_who.py` named the character arguments
+(`fiona-who 5 char-in-area?`); `tools/story_idioms.py` put the repeated idioms as words -
+`scene-wait-ready`, `scene-play`, `scene-play-through`, `player-camera`, `item-fanfare`,
+`panic-eased`; `tools/story_messages.py` wrote each message's text beside the line that shows
+it (it runs the game: it needs the game's data).
+
+A room registers its scripts by their names: `castle-1f-2 register-scripts` finds
+`castle-1f-2.enter`, `.phase1` .. `.phase5`, `.char-enter` and `.act00` .. `.act7F` and puts each in
+its place (`register-shared` the same for `shared.act80` ..); only a script registered under another
+name is written out. Fiona's action offered on her action button is `act when offer-action` -
+`when` the original's kind by when it may be: `unhurried` (not in a panic; chased, her "no time"
+message instead), `always`, `calm` (not in a panic), `calm-hewie-up`.
+
+The ways a room opens and closes are its nav triangles' flags, by name (scripts/floor-flags.fs:
+who each keeps off - `keeps-people-off`, `keeps-hewie-off`, `solid-floor`, ... - and what the
+floor is): `2 keeps-people-off floor-on` / `floor-off` on a group of triangles, `tri-floor-on` /
+`tri-floor-off` on one. Its own model parts - a breakable whole or broken, a leaf open or shut -
+are `3 part-shown` / `part-hidden`.
+
 ## API
 
 Declared in `scripts/messages.fs`.
@@ -162,7 +192,7 @@ closes it and frees her; an answer; items given and counted; a zone against her 
 original's do; each character broadcasts `moving ( done ended )` at each frame's end (+0xE1 and
 its animation's end), which the room keeps for `self-wait-done` / `self-wait-anim` /
 `wait-char-anim`. Done is true while idle (a character with no move is done). Words: `self-move-to`,
-`self-move-tri`, `self-idle`, `self-anim`, `self-anim-blend`, `self-anim-9`, `self-move-16`,
+`self-move-tri`, `self-idle`, `self-anim`, `self-anim-blend`, `self-anim-blend8`, `self-idle-anim`,
 `self-turn-angle`, `self-turn-to-xz`, `self-turn-to`, `self-look-at`, `self-look-at-point`,
 `self-move-slot`, `self-walk-anim`, `char-anim-hold` (`hold-anim`), `char-visible` (`show`; 0x1F's argument 1 hides, 0 shows - the
 character's +0x29).
@@ -219,10 +249,10 @@ subtitles, the pause and the skip's darkening.
 Checked by `tests/story/test_things.fs` (8 tests).
 
 **S5b built** (2026-10-08): the rooms' effects (`docs/subsystems/effects.md`) - an actor each,
-drawn with the engine's sprites. Room effects in the room's 32 slots (`effect-86`,
+drawn with the engine's sprites. Room effects in the room's 32 slots (`flame-in`,
 `flicker-sprite`, `-var`, `butterflies`, `effect-remove`, `zone-at-effect`, `char-effect-moving`),
 going with the room; scene effects ending by themselves or with the next room (`specks`,
-`scene-effect-8C`). `effects-arena-flip` is the PS2's packet memory: nothing here.
+`shards-at`). `effects-arena-flip` is the PS2's packet memory: nothing here.
 Checked by `tests/story/test_effects.fs` (10 tests).
 
 **The start of a game** (`scripts/opening.fs`, 2026-10-08): the title (from new-src: Hewie lying
@@ -365,6 +395,6 @@ Next, by how much the scripts use them:
 | Stage | Words |
 |---|---|
 | S4 | (built) The rest: scene changes (`scene-change`'s other scenes), endings, `movie-loop`, the half-black screen (op 11). |
-| S5b | Effects: a sprite batch in C, an effect as an actor per slot; the classes by use (`effect-86` flames, `flicker-sprite`, `zone-at-effect`, `char-effect-moving`, `specks`, `butterflies`, `scene-effect-8C`, `effects-arena-flip`). |
+| S5b | Effects: a sprite batch in C, an effect as an actor per slot; the classes by use (`flame-in` flames, `flicker-sprite`, `zone-at-effect`, `char-effect-moving`, `specks`, `butterflies`, `shards-at`, `effects-arena-flip`). |
 | S5c | The rooms' own commands (`<room>.cmdNN`: their effects - wisps, smoke, drips, the mirror...). |
 | S6 | The stalkers' and creatures' words, with them (the stalker's: P4a, `docs/subsystems/stalker.md`; the creatures' later). |

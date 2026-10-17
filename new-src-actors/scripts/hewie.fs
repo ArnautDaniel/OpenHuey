@@ -6,16 +6,15 @@
 \ He is spawned with the game but comes in only when told (`join-fiona`: the story, or the
 \ console); `part-from-fiona` sends him off.
 IN: hewie
-USING: engine actors messages common paths saves hewie.state hewie.body hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.mind hewie.scripted hewie.fetch ;
+USING: engine actors messages common paths vectors saves hewie-names hewie.state hewie.body hewie.anims hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.mind hewie.scripted hewie.fetch floor-flags ;
 
 \ at heel: behind her and a little to her side (where she is when that isn't floor), her way
-create heel-at 12 allot
+create heel-at /vec allot
 : heel ( -- )
-    fiona-at vec@                                                    ( F: x y z )
-    her body-yaw fcos -14e f*  her body-yaw fsin -8e f* f+ f+  frot
-    her body-yaw fsin -14e f*  her body-yaw fcos 8e f* f+ f+  frot frot heel-at vec!
-    heel-at his-floor v-tri-in dup 0< if  drop  heel-at fiona-at vec-copy  her body-tri  then
-    >r  heel-at vec@ room-id r> body-place  her body-yaw his-yaw! ;
+    her body-yaw {: F: a :}  fiona-at vec@ {: F: x y z :}
+    x  a fsin -14e f*  a fcos 8e f* f+  f+   y   z  a fcos -14e f*  a fsin -8e f* f+  f+  heel-at vec!
+    heel-at hewie-floor v-tri-in dup 0< if  drop  heel-at fiona-at vec-copy  her body-tri  then  {: tri :}
+    room-id tri heel-at vec@ body-place  a his-yaw! ;
 : along? ( -- flag )  self body? ;   \ in the game (his body in the house)
 : join ( -- )
     her active? 0= if  -1 his-joining !  exit  then   \ (she isn't in yet: when she arrives)
@@ -42,12 +41,12 @@ behaviour hewie-own
       6 0 do  16 i cells his-skill + !  loop   \ (Hewie_LoadState: his skills at fetching, middling)
       s" O_HEW/HEW_000" actor-load dup his-model !  $3D5F90 motion-table   \ (his motion table: fades and flags)
       0 him-model act.visible l!
-      2.5e 5e body-size  his-floor body-mask!  body-off
+      2.5e 5e body-size  hewie-floor body-mask!  body-off
       s" fiona" actor-named his-fiona !
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe write-save
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe frame-end
       self subscribe stalker-doing  self subscribe creature-doing  self subscribe scene  -1 st-id !  100 st-age !  -1 his-grip !
-      10 0 do  -1 i cells cr-ids + !  100 i cells cr-ages + !  loop ;
+      #creatures 0 do  -1 i cells cr-ids + !  100 i cells cr-ages + !  loop ;
   on join-fiona ( -- )  s" fiona" actor-named his-fiona !  room-id fiona-room !  join  1 his-model @ cast-as ;
   on part-from-fiona ( -- )  part  1 -1 cast-as ;
   on hewie-costume ( kind -- )  dress ;
@@ -81,7 +80,7 @@ behaviour hewie-own
   \ (0x38): his default; his mood back to normal
   on scene ( on -- )
       0= if  exit  then
-      his-away @  his-action @ $38 = and if  to-default  then  0 -1 set-mood ;
+      his-away @  his-action @ after-attack-act = and if  to-default  then  normal-mood -1 set-mood ;
   on danger ( level -- )  his-danger ! ;
   on panic ( stage level -- )  drop his-panic ! ;
   on fiona-doing ( mode sub cond cmd doing -- )  drop fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode ! ;
@@ -94,11 +93,11 @@ behaviour hewie-own
   \ him up (health 1). How each counts in his treatment (the progress' +0xFB6)
   on fed ( how -- )
       case
-          0 of  his-hp @ 20 + 100 min hp!  his-hp @ 100 = if  -1 mistreated+  then  endof
-          1 of  his-hp @ 100 + 100 min hp!  -1 mistreated+  endof
-          2 of  50 hurt-by  3 mistreated+  endof
-          3 of  3 450 set-mood  20 mistreated+  endof
-          4 of  1 hp!  3 mistreated+  endof
+          small-treat of  his-hp @ 20 + 100 min hp!  his-hp @ 100 = if  -1 mistreated+  then  endof
+          big-treat of  his-hp @ 100 + 100 min hp!  -1 mistreated+  endof
+          onion-bait of  50 hurt-by  3 mistreated+  endof
+          fury-bait of  angry-mood 450 set-mood  20 mistreated+  endof
+          rouse-bait of  1 hp!  3 mistreated+  endof
       endcase ;
   on mood! ( mood -- )  along? if  -1 set-mood  else  drop  then ;
   on scent-at ( x y z -- )
@@ -121,13 +120,13 @@ behaviour hewie-own
   on command ( code tri yaw x z -- )   \ (Hewie_StateBlock's 13)
       along? 0= if  2drop 2drop drop exit  then
       cells>xyz                                                ( code tri ) ( F: yaw x z )
-      over $23 = if  showed  else  drop fdrop fdrop fdrop  then
+      over go-there-cmd = if  showed  else  drop fdrop fdrop fdrop  then
       fiona-command drop  0 his-broke !  tell-doing ;
   on reaction ( n -- )  along? if  react  else  drop  then ;
   on meet-me ( type -- )
       along? if  meet-ask  else  drop -1  then
       dup 0< if  drop  sender send meet-refused exit  then
-      fs-at sf@ f>cell  fs-at 4 + sf@ f>cell  fs-at 8 + sf@ f>cell  fs-yaw f@ pi f+ angle-wrap f>cell
+      fs-at v.x sf@ f>cell  fs-at v.y sf@ f>cell  fs-at v.z sf@ f>cell  his-to-yaw f@ pi f+ angle-wrap f>cell   \ (facing him)
       sender send meet-at  tell-doing ;   \ (what he does now, before her next frame)
   on meet-now ( type -- )
       along? if  meet-second?  else  drop false  then
@@ -139,16 +138,16 @@ behaviour hewie-own
       along? 0= if  2drop 2drop 2drop drop exit  then
       cell>f his-to-yaw f!  cells>xyz his-to vec!
       his-to-anim !  his-to-tri !  0 his-done !
-      dup 12 = if  drop his-to-tri @ his-look-char !  0 his-look-pt? !  done! exit  then
-      dup 13 = if  drop his-look-pt his-to vec-copy  1 his-look-pt? !  done! exit  then
-      dup 1 = if  full-stop  then
+      dup look-move = if  drop his-to-tri @ his-look-char !  0 his-look-pt? !  done! exit  then
+      dup look-point-move = if  drop his-look-pt his-to vec-copy  1 his-look-pt? !  done! exit  then
+      dup stand-move = if  full-stop  then
       move-action dup 0< if  drop done! exit  then  0 want ;
-  on hold-anim ( anim flags blend -- )  nip  along? 0= if  2drop exit  then  his-to-anim !  his-to-tri !  $3C 0 want ;
+  on hold-anim ( anim flags blend -- )  nip  along? 0= if  2drop exit  then  his-to-anim !  his-to-tri !  story-blend-act 0 want ;
   on show ( on -- )  along? 0= if  drop exit  then  0<> 1 and him-model act.visible l! ;
   on frame-end ( -- )
       along? if  his-done @  anim-done?  his-model @ 0 0 1 motion-events  broadcast moving  then
       st-age @ 100 < if  1 st-age +!  then
-      10 0 do  i cells cr-ages + dup @ 100 < if  1 swap +!  else  drop  then  loop ;
+      #creatures 0 do  i cells cr-ages + dup @ 100 < if  1 swap +!  else  drop  then  loop ;
   \ the stalker (H3: hewie/fight.fs): what he is doing; his answers to the attack; thrown off;
   \ struck - by him, by her, by a door (answered `blow-taken` when it struck)
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
@@ -156,19 +155,19 @@ behaviour hewie-own
   on dog-grip ( tri x y z yaw -- )
       along? 0= if  2drop 2drop drop exit  then
       his-act @ ['] st-await-grip <> if  2drop 2drop drop  sender send shaken-off exit  then   \ (no longer at it)
-      >r >r >r >r  r> cell>f  r> cell>f  r> cell>f  r> cell>f  leap ;   \ (tri; x y z yaw)
-  on dog-refused ( -- )  along? if  his-act @ ['] st-await-grip = if  $5A start  then  then ;
+      {: x y z yaw :}  x cell>f  y cell>f  z cell>f  yaw cell>f  leap ;   \ (tri; x y z yaw)
+  on dog-refused ( -- )  along? if  his-act @ ['] st-await-grip = if  harry-stalker-act start  then  then ;
   on blow-taken ( -- )   \ (his bite struck home: on a homunculus, bite-landed)
       along? sender creature-slot 0< 0= and if  bite-landed  then ;
   on hit-taken ( kind -- )  drop ;
   on silent ( on -- )  0<> his-hushed ! ;   \ (the scripts' 0x3D)
   on creature-doing ( slot room mode up -- )   \ (each remembered; one up in his room: hostile - what-next)
       {: slot room mode up :}
-      slot 10 u< if  sender slot cells cr-ids + !  mode slot cells cr-modes + !  up slot cells cr-ups + !  0 slot cells cr-ages + !  then
+      slot #creatures u< if  sender slot cells cr-ids + !  mode slot cells cr-modes + !  up slot cells cr-ups + !  0 slot cells cr-ages + !  then
       along? up and if  room self body-room = if  2 his-creature-t !  then  then ;
   on fetch-this ( thing -- )   \ (Fiona_StateLetGo: her ball thrown, while all's calm)
-      along? his-danger @ 0= and his-action @ $78 <> and if  his-follows !  else  drop  then ;
-  on shaken-off ( -- )  along? if  his-act @ ['] st-bite-hold = if  3 his-biting !  then  then ;   \ (thrown off: only while he holds on)
+      along? his-danger @ calm = and his-action @ fetch-act <> and if  his-follows !  else  drop  then ;
+  on shaken-off ( -- )  along? if  his-act @ ['] st-bite-hold = if  thrown-off his-biting !  then  then ;   \ (thrown off: only while he holds on)
   on blow-from ( kind damage how x y z -- )   \ (from a point: Progress_Noise)
       cells>xyz his-blow-pt vec!  along? 0= if  2drop drop exit  then  -2 take-blow drop ;
   on blow ( kind damage how -- )

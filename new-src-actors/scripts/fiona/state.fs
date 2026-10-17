@@ -1,7 +1,7 @@
 \ fiona/state.fs - Fiona's state: one actor's fields (docs/subsystems/fiona.md). `fiona enter`
 \ at the console shows them.
 IN: fiona.state
-USING: actors paths ;
+USING: actors messages paths vectors ;
 
 state: fiona-state
   cell field her-model          \ her model (an Actor)
@@ -9,17 +9,19 @@ state: fiona-state
   cell field her-doing          \ what she is busy with: 0 free (see `busy-*` in fiona.fs)
   cell field her-mode           \ how she moves (0 on her own; more with the later phases)
   cell field her-sub            \ within it: 0 standing, 1 walking, 2 running, 5 pushing...
-  12 field her-at               \ where she is (3 single floats: x y z)
-  12 field her-was-at           \ and was at the frame's start
+  /vec field her-at               \ where she is (3 single floats: x y z)
+  /vec field her-was-at           \ and was at the frame's start
   cell field her-tri            \ her nav triangle (-1 none)
   cell field her-was-tri
   1 floats field her-yaw        \ her heading
   1 floats field her-yaw-was
   1 floats field her-heading    \ the heading she turns to
   \ the controls (Fiona_MoveInput)
-  12 field her-dir              \ the stick as a direction in the room (x 0 z)
-  12 field her-stick            \ the stick last frame (x 0 z)
-  12 field her-last             \ its direction, kept while the old camera steers
+  /vec field her-dir              \ the stick as a direction in the room (x 0 z)
+  /vec field her-stick            \ the stick last frame (x 0 z)
+  /vec field her-last             \ its direction, kept while the old camera steers
+  1 floats field stick-x  1 floats field stick-z   \ the stick this frame: x right, z down (as the pad's)
+  1 floats field way-x  1 floats field way-z       \ ... as a direction (length 1; 0 0 when still)
   cell field her-still          \ frames the stick has been still (6: let go)
   cell field her-turn-mode      \ 0 camera-relative, 1 the old camera steers, 2 turning to its heading
   cell field her-lock           \ frames the old camera keeps steering regardless
@@ -56,7 +58,7 @@ state: fiona-state
   \ (+0x1AD6F0 its triangle, +0x1AD700, +0x1AD6F4 its heading), the step and turn to it; the
   \ drags, the shakes (Fiona_Shakes: the stick's last way, out from rest), broken free; her cry
   \ and the game's end marked once
-  cell field her-led  cell field her-led-tri  12 field her-led-at  1 floats field her-led-face
+  cell field her-led  cell field her-led-tri  /vec field her-led-at  1 floats field her-led-face
   1 floats field her-led-step  1 floats field her-led-turn
   cell field her-drags  cell field her-shakes  cell field her-free
   1 floats field her-shake-a  cell field her-shake-rest
@@ -71,7 +73,7 @@ state: fiona-state
   cell field her-act
   \ walking to a spot (Fiona_DoorFrame): the way, the spot and how she comes round to it
   /path field her-path
-  12 field her-spot   cell field her-spot-tri
+  /vec field her-spot   cell field her-spot-tri
   cell field her-wk         \ the walk's flags (fiona/spots.fs)
   cell field her-wk-n
   1 floats field her-wk-step   1 floats field her-wk-turn   1 floats field her-wk-speed
@@ -86,13 +88,18 @@ state: fiona-state
   cell field her-aside          \ the story's 0x21: left alone - nobody attacks her (+0x2D)
   cell field her-ladder         \ the ladder she uses (+0x100: the room's nav link; -1 none)
   cell field her-push           \ +0x1AD560: the obstacle she pushes (-1 none)
-  12 field her-push-dir         \ +0x1AD570: the push (x 0 z)
+  /vec field her-push-dir         \ +0x1AD570: the push (x 0 z)
   cell field her-ladder-side    \ +0x104: the side she came at it from (0 the foot, 1 the top)
+  \ knocked off it: where she lands and on what, the frames left of the drop, from high up (a
+  \ fall, not a pull), the drop's step a frame
+  /vec field her-drop-at  cell field her-drop-tri  cell field her-drop-n  cell field her-drop-far
+  1 floats field her-drop-dx  1 floats field her-drop-dy  1 floats field her-drop-dz
   cell field her-door-side      \ the side she came from (1 in front)
   cell field her-door-kind      \ its animation (0..7 of FIN_D000.MTN)
   cell field her-door-anim      \ hers (0x600 + kind; 0x608.. trying a locked one)
   cell field her-door-opens     \ she opens it (else shuts it)
   cell field her-rattle         \ frames after trying a locked one
+  1 floats field her-try-step  1 floats field her-try-turn   \ (sliding to try it: the step and turn a frame)
   \ Hewie (F3): her command this frame (-1 none: 0 up, 1 down, 2 R3, 3 right, 4 left), the
   \ command's code and where it was given, frames the pad isn't read, the praise's repeats
   cell field her-cmd   cell field her-busy-t
@@ -103,7 +110,7 @@ state: fiona-state
   cell field her-scripted  cell field her-reading  cell field her-in-scene
   \ the story's move (kind 0: none): its numbers, the spot and heading; done; its walk's step and turn
   cell field her-move  cell field her-move-a  cell field her-move-b  cell field her-move-done
-  12 field her-move-at  1 floats field her-move-yaw
+  /vec field her-move-at  1 floats field her-move-yaw
   1 floats field her-move-step  1 floats field her-move-turn
   \ Hewie as he tells it (hewie-doing): here (0 out of the game, 1 elsewhere, 2 with her), his
   \ action, move mode and its part, condition, mood, pose group
@@ -112,13 +119,16 @@ state: fiona-state
   \ her head's look (+0x1AD5FC on, +0x1AD600 at whom - an actor, -1 a point - +0x1AD610 the point,
   \ +0x1AD620 frames to keep it, +0x1AD664 whom to face after a command), the head's angles
   \ as eased (the motion's +0x854 pitch, +0x858 turn)
-  cell field her-look-on  cell field her-look-who  12 field her-look-pt  cell field her-look-hold
+  cell field her-look-on  cell field her-look-who  /vec field her-look-pt  cell field her-look-hold
   cell field her-look-after  1 floats field her-head-pitch  1 floats field her-head-yaw          \ (the stand-in exit check: she has been out of every exit's area since arriving)
   \ out of sight: item $89 worn (the equipment's slot 1), standing still 60 frames (Fiona_Frame's area fade)
   cell field her-unseen  cell field her-still-t
   cell field her-fade           \ 0..$80: how much of her shows (fading out while unseen, back in after)
   cell field her-hold  cell field her-hold-k   \ held by homunculi: the hold's frames, the shakes that may still count
   cell field her-carried-t      \ frames since a homunculus in her room said it was holding (move 8)
-  10 cells field her-creatures    \ each creature slot's actor, as it last told her (creature-doing; -1 none)
+  #creatures cells field her-creatures    \ each creature slot's actor, as it last told her (creature-doing; -1 none)
   cell field her-blow-n        \ her blows, numbered (a creature takes each once: Fiona_BlowCreatures' skip)
 end-state
+\ her-sub's that others test: pushing (fiona/push.fs), letting go of a thing (fiona/letgo.fs: how)
+5 constant pushing-sub
+$31 constant thrown-sub   $32 constant aimed-sub   $33 constant set-down-sub

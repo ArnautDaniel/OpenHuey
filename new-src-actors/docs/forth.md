@@ -66,12 +66,37 @@ defer on-hit   ' noop is on-hit
 Control: `if else then`, `begin until`, `begin while repeat`, `begin again`,
 `do loop`, `?do loop`, `+loop`, `i j leave unloop`, `case of endof endcase`, `exit`, `recurse`.
 
-Locals (Forth-2012's): `{: a b | c -- comment :}` inside a definition names its values - `a` and
-`b` taken from the stack (`b` from the top), `c` starting at 0, the rest a comment. A name gives
-its value; `to name` stores into it. They last until the word returns (`exit` too), the return
-stack still free for `>r` and loops; a quotation has its own. Prefer them to stack juggling
-(`2 pick`, `rot`) and to scratch variables:
-`: centred ( addr len x y -- )  {: addr len x y :}  ... ;`. Cells only (floats: `fvariable`).
+Locals (Forth-2012's, with floats): `{: a b F: x | c F: y -- comment :}` inside a definition names
+its values - `a` and `b` taken from the stack (`b` from the top), `x` from the float stack (`F:`
+makes the names after it floats, until `|`), `c` and `y` starting at 0, the rest a comment. A name
+gives its value; `to name` stores into it. They last until the word returns (`exit` too), the
+return stack still free for `>r` and loops; a quotation has its own. A definition may have
+several `{: :}`: each takes its values where it stands. The first makes the frame, so it can't be
+inside an `if` or a loop; later ones can (`... do  i thing {: t :}  ... loop`). A local can't
+take the name of an immediate word (`to`, `if`, `loop` ...): it would stop meaning itself. Prefer them
+to stack juggling (`2 pick`, `rot`, `>r` chains) and to scratch variables:
+`: centred ( addr len x y -- )  {: addr len x y :}  ... ;`.
+
+Records: `begin-structure /point  ffield: p.x  ffield: p.y  end-structure` (`field:` a cell,
+`ffield:` a float, `sffield:` / `lfield:` 32 bits, `cfield:` a byte, `n +field` n bytes); `/vec`
+(vectors.fs) is the engine's three 32-bit floats (`v.x v.y v.z`).
+
+Enumerations: `enum: mood  calm wary tense angry ;` makes the constants `calm` .. `angry` (0 up; a
+number in the list sets the next: `enum: act  $36 hide  $52 lie-down ;`) and `mood>name ( n --
+addr len )`, which names a value ("?" for one not listed) - for the debug words and traces. A long
+list may run over several lines with comments (`\`, `( )`) between the names.
+
+The dictionary's `find ( addr len -- xt | 0 )` is `find-word` once the prelude is in: its `find` is
+the lists' (Factor's).
+
+String lists: `strings: files  intro.sfd  DIR\menu.sfd  8 end.sfd ;` makes `files ( i -- addr len )`,
+string i of the list - each a word as written, `\` and all - and "" for one not in it. As in
+`enum:`, a number sets the next index (those skipped are ""), and comments may come between. The
+rooms' string tables and the music's file names are written so (story/strings.fs).
+
+Combinators (Factor's), to run code on values without shuffling them: `x [: .. ;] dip` (under
+x), `x [: .. ;] keep` (x kept after), `2dip`, `2keep`, `x [: p ;] [: q ;] bi` (both on x), `tri`,
+`x y [: q ;] bi@` (q on each), `flag [: .. ;] when` / `unless`, `flag a b ?` (a if the flag, else b).
 
 Quotations: `[: ... ;]` leaves anonymous code as an execution token, inside definitions or at
 the prompt (Factor's `[ ... ]`): `{ 1 2 3 } [: dup * ;] map`.

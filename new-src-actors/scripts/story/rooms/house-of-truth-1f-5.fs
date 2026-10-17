@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-5
-USING: engine actors messages room-names story.words story.shared flag-names ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x8D: three grey smoke effects (Effect79B00, size 60) at the room's spots 7, 4, 3
 \ (grey_three).
@@ -10,13 +10,13 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     7 60e 0e 0.5e 0.5e stones-falling  4 60e 0e 0e 0.5e stones-falling  3 60e 0e 0e 1e stones-falling ;
 \ byte 3: 0 made (lights 0x14 on characters 3 and 0) and 1 lit on character 3 (second kind, size
 \ 1, sparks from its own slot); 2 ending, 3 ended; 4 / 6 sized 1 / 0.5; 5 / 7 shrinking with
-\ variable 1 (a step a call, to 0.5 + v / 200 or v / 334)
+\ variable 1 (a step-floor a call, to 0.5 + v / 200 or v / 334)
 : marker! ( v -- )   \ (the marker kept in variable 0 told: -1 done, -2 a pause, else its size x 1000)
     0 var @ dup alive? if  send effect-command  else  2drop  then ;
 : shrunk ( -- v )  1 var @ 1- 0 max  dup 1 swap var-set ;   \ (variable 1 down a step)
 : house-of-truth-1f-5.cmd01 ( b0 -- )
     case
-        0 of  3 $14 char-layer  0 $14 char-layer
+        0 of  3 $14 char-layer  fiona-who $14 char-layer
               3 char-model 0 char-model 1  1e effects:marker  0 swap var-set  endof
         1 of  1000 marker!  endof
         2 of  -1 marker!  endof
@@ -34,26 +34,26 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     room-sounds
     2 0 var-set
     3 0 var-set
-    $A4 story-flag? $96 story-flag? not and if
+    over-music-f story-flag? found-file-257 story-flag? not and if
         1 ebit-set
     then
     1 ebit? if
         stalkers-stay state-flag-set
     then
-    $A4 story-flag? if
-        1 0 $20000 nav-group
-        0 1 $14 door-bits
+    over-music-f story-flag? if
+        0 barred-floor floor-on
+        0 part-shown
     else
-        1 1 $14 door-bits
+        1 part-shown
     then
-    $96 story-flag? if
-        2 1 $14 door-bits
+    found-file-257 story-flag? if
+        2 part-shown
     then
-    $34E story-flag? if
+    tremor-warned story-flag? if
         5 1.0 0 bgm
     then
     shared.act95
-    $A3 story-flag? if
+    ht1f-9-flag2 story-flag? if
         house-of-truth-1f-5.cmd00
     then
     1 $2300 sound-volume
@@ -61,76 +61,40 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
 
 : house-of-truth-1f-5.char-enter ( -- )   \ 00434940
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        0 0 player-camera
     then then
     1 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        0 0 player-camera
     then then
     2 0 0 area-camera
 ;
 
 : house-of-truth-1f-5.phase1 ( -- )   \ 00434A00
     3 ebit? not if
-        $A4 story-flag? if
+        over-music-f story-flag? if
             2 ebit? not if
                 6 sound-bank-loaded? if
                     $40000000 6 0.0 20.0 100.0 0 0 sound
@@ -155,25 +119,23 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     then
     8 0 0 1 chars-area-camera
     9 1 1 1 chars-area-camera
-    0 5 char-entered-area? if
+    fiona-who 5 char-entered-area? if
         0 exit-prepare
     then
-    0 6 char-entered-area? if
+    fiona-who 6 char-entered-area? if
         1 exit-prepare
     then
-    0 7 char-entered-area? if
+    fiona-who 7 char-entered-area? if
         2 exit-prepare
     then
-    0 $B char-entered-area? if
+    fiona-who $B char-entered-area? if
         1 ebit? if
             1 ebit-clear
-            $FF panic-stage? if
-                3 panic-stage
-            then
-            0 0 char-action? if
-                0 0 0 action-force
+            panic-eased
+            fiona-who 0 char-action? if
+                0 fiona-who 0 action-force
             else
-                1 0 0 action-force
+                1 fiona-who 0 action-force
             then
         then
     then
@@ -202,51 +164,51 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
 ;
 
 : house-of-truth-1f-5.phase2 ( -- )   \ 00434B50
-    0 $A char-in-area? 0 67 $32 char-heading? and if
-        $96 story-flag? not if
-            5 $84 3 scene-change
+    fiona-who $A char-in-area? fiona-who 67 $32 char-heading? and if
+        found-file-257 story-flag? not if
+            $84 calm-hewie-up offer-action
         else
-            5 6 0 scene-change
+            6 unhurried offer-action
         then
     then
-    0 $C char-in-area? 0 0 $32 char-heading? and if
-        $96 story-flag? if
-            5 1 0 scene-change
+    fiona-who $C char-in-area? fiona-who 0 $32 char-heading? and if
+        found-file-257 story-flag? if
+            1 unhurried offer-action
         else
-            5 2 0 scene-change
+            2 unhurried offer-action
         then
     then
     -2147483646 scene-request? if
-        0 0 char-group-bit4? if
-            $96 story-flag? not if
-                5 3 1 scene-change
+        fiona-who 0 char-before-door? if
+            found-file-257 story-flag? not if
+                3 always offer-action
             else
-                5 6 0 scene-change
+                6 unhurried offer-action
             then
         then
-        0 1 char-group-bit4? if
-            $96 story-flag? not if
-                5 4 1 scene-change
+        fiona-who 1 char-before-door? if
+            found-file-257 story-flag? not if
+                4 always offer-action
             else
-                5 6 0 scene-change
+                6 unhurried offer-action
             then
         then
-        0 2 char-group-bit4? if
-            $96 story-flag? if
-                5 6 0 scene-change
+        fiona-who 2 char-before-door? if
+            found-file-257 story-flag? if
+                6 unhurried offer-action
             then
         then
     then
-    $96 story-flag? if
+    found-file-257 story-flag? if
         0 0.0 0.0 74.25 8 5 0 zone
-        0 0 8 char-zone-bits? if
-            5 8 0 scene-change
+        fiona-who 0 8 char-zone-bits? if
+            8 unhurried offer-action
         then
     then
 ;
 
 : house-of-truth-1f-5.phase3 ( -- )   \ 00434BE0
-    $A3 story-flag? 4 ebit? not and if
+    ht1f-9-flag2 story-flag? 4 ebit? not and if
         $40000030 $47 0.0 0.0 0.0 0 0 sound
         4 ebit-set
     then
@@ -260,100 +222,44 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
 
 : house-of-truth-1f-5.act00 ( -- )   \ 00434C10
     1 self-scripted
-    $34E story-flag-clear
+    tremor-warned story-flag-clear
     $FF 1.0 0 bgm
     $F8 action-end
     $F $14 fade
     self-wait-done
     wait-fade
-    1 action-end
-    1 char-done
-    $FE action-end
-    $FE char-done
+    hewie-who action-end
+    hewie-who char-done
+    stalker-who action-end
+    stalker-who char-done
     $1E 3 $FF char-load
     $1F 4 $FF char-load
     force-followed state-flag-set
-    3 char-unload
-    4 char-unload
-    0 1 $14 door-bits
+    3 char-start
+    4 char-start
+    0 part-shown
     1 0 movie-play
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     0 $F9 5 action
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     2 house-of-truth-1f-5.cmd01
     3 0 char-remove
     4 0 char-remove
-    0 $63 -0.61 47.71 0 char-to-xz
-    hewie-controlled? not if
-        0 1 1 char-camera
-        0 camera-follow
-    else
-        1 1 1 char-camera
-        1 camera-follow
-    then
+    fiona-who $63 -0.61 47.71 0 char-to-xz
+    1 1 player-camera
     camera-restart
-    1 char-activate
+    hewie-who char-activate
     $8D 0 123 hewie-to-room
-    1 $7B -20 char-to-tri-facing
+    hewie-who $7B -20 char-to-tri-facing
     hewie-no-attack state-flag-clear
-    2 1 $14 door-bits
+    2 part-shown
     $EA door-open-clear
     $EA door-lock
     doors-room-in
@@ -364,7 +270,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     $257 item-give
     $828E item-give
     stalkers-stay state-flag-clear
-    $96 story-flag-set
+    found-file-257 story-flag-set
     1 ebit-clear
     shared.act95
     $40000030 $47 0.0 0.0 0.0 0 0 sound
@@ -376,7 +282,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    2 message
+    2 message   \ "You feel a mystical power flowing all throughout the door. Open the door? YES NO"
     wait-message
     0 answer? if
         $F $54 fade
@@ -420,10 +326,10 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     self-wait-16
     $1202 self-anim
     self-wait-anim
-    -1 self-move-16
+    -1 self-idle-anim
     self-frames-reset
     7 self-wait-frames
-    1 message
+    1 message   \ "This door is closed so tightly you'd think it was welded shut. It almost as if it's sea..."
     wait-message
     self-idle-or-end
 ;
@@ -432,19 +338,19 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     self-wait-done
     0 self-through-exit
     self-wait-done
-    $FF panic-stage? 2 game-mode? or if
+    in-panic? 2 game-mode? or if
         $60A self-anim
         self-wait-anim
-        -1 self-move-16
+        -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
     else
         $608 self-anim
         self-wait-anim
-        -1 self-move-16
+        -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
-        4 message
+        4 message   \ "It's locked and won't open. How am I going to get this open?"
         wait-message
     then
     self-idle-or-end
@@ -454,19 +360,19 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     self-wait-done
     1 self-through-exit
     self-wait-done
-    $FF panic-stage? 2 game-mode? or if
+    in-panic? 2 game-mode? or if
         $60B self-anim
         self-wait-anim
-        -1 self-move-16
+        -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
     else
         $609 self-anim
         self-wait-anim
-        -1 self-move-16
+        -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
-        4 message
+        4 message   \ "It's locked and won't open. How am I going to get this open?"
         wait-message
     then
     self-idle-or-end
@@ -560,7 +466,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
 : house-of-truth-1f-5.act06 ( -- )   \ 00434F10
     self-wait-done
     1 self-anim
-    5 message
+    5 message   \ "I have to get out of here now!"
     wait-message
     self-wait-anim
     self-idle-or-end
@@ -571,77 +477,27 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     house-of-truth-1f-5.cmd00
     $1E 3 $FF char-load
     $1F 4 $FF char-load
-    3 char-unload
-    4 char-unload
-    0 1 $14 door-bits
+    3 char-start
+    4 char-start
+    0 part-shown
     1 0 movie-play
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     0 $F9 5 action
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     2 house-of-truth-1f-5.cmd01
     3 0 char-remove
     4 0 char-remove
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
@@ -650,25 +506,11 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     $A01 self-anim
     self-frames-reset
     self-wait-16
-    3 message
+    3 message   \ "This time... you really are dead. You bastard."
     wait-message
     self-wait-anim
     self-idle-or-end
 ;
 
 \ ---- registered ----
-' house-of-truth-1f-5.enter house-of-truth-1f-5 0 room-script!
-' house-of-truth-1f-5.char-enter house-of-truth-1f-5 6 room-script!
-' house-of-truth-1f-5.phase1 house-of-truth-1f-5 1 room-script!
-' house-of-truth-1f-5.phase2 house-of-truth-1f-5 2 room-script!
-' house-of-truth-1f-5.phase3 house-of-truth-1f-5 3 room-script!
-' house-of-truth-1f-5.phase5 house-of-truth-1f-5 5 room-script!
-' house-of-truth-1f-5.act00 house-of-truth-1f-5 $00 action-script!
-' house-of-truth-1f-5.act01 house-of-truth-1f-5 $01 action-script!
-' house-of-truth-1f-5.act02 house-of-truth-1f-5 $02 action-script!
-' house-of-truth-1f-5.act03 house-of-truth-1f-5 $03 action-script!
-' house-of-truth-1f-5.act04 house-of-truth-1f-5 $04 action-script!
-' house-of-truth-1f-5.act05 house-of-truth-1f-5 $05 action-script!
-' house-of-truth-1f-5.act06 house-of-truth-1f-5 $06 action-script!
-' house-of-truth-1f-5.act07 house-of-truth-1f-5 $07 action-script!
-' house-of-truth-1f-5.act08 house-of-truth-1f-5 $08 action-script!
+house-of-truth-1f-5 register-scripts   \ (its phases and actions, by their names)

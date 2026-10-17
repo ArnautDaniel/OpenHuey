@@ -24,29 +24,29 @@ testing in her room: active, his kind here (0x3C), waiting about (alert 3), free
 s" fiona" actor-named body-tri constant her-tri
 -500e 124e -500e 0e tp-facing  3 frames   \ (her well out of his sight)
 her-tri debug:debilitas-tri  3 frames
-T{ [: stalker-active?  2 stalker-kind-here?  3 stalker-alert?  stalker-free?  $FE 0 char-C4? ;] in-room -> -1 -1 -1 -1 -1 }T
+T{ [: stalker-active?  2 stalker-kind-here?  3 stalker-alert?  stalker-free?  $FE 0 char-cond? ;] in-room -> -1 -1 -1 -1 -1 }T
 testing the exit he came in by (0x30)
 [: 2 stalker.state:came-by ! ;] his  2 frames
 T{ [: $FE 2 char-heading-for?  $FE 1 char-heading-for? ;] in-room -> -1 0 }T
 testing ordered after her (0x2F 0): his alert 0
-[: $FE 0 stalker-mode ;] in-room  3 frames
+[: $FE 0 stalker-command ;] in-room  3 frames
 T{ [: 0 stalker-alert? ;] in-room -> -1 }T
 testing ... to search (0x2F 3): alert 2; his clock (0x2A)
-[: $FE 3 stalker-mode  $FE 300 stalker-search-delay ;] in-room  1 frames
+[: $FE 3 stalker-command  $FE 300 stalker-search-delay ;] in-room  1 frames
 T{ [: 2 stalker-alert? ;] in-room  [: mode-t @ 300 <= mode-t @ 290 > and ;] his -> -1 -1 }T
 testing in a rage (0x31): his stance; silenced (0x3D)
 [: $FE 1 stalker-rage  $FE 1 char-silent ;] in-room  2 frames
 T{ [: raging @  hushed @ ;] his -> -1 -1 }T
 testing his condition set (0x47), health (0x48, 0xB8, 0x52)
-[: $FE 1 char-set-C4 ;] in-room  2 frames
-T{ [: $FE 1 char-C4? ;] in-room  [: cond @ ;] his -> -1 1 }T
+[: $FE 1 char-cond! ;] in-room  2 frames
+T{ [: $FE 1 char-cond? ;] in-room  [: cond @ ;] his -> -1 1 }T
 [: 30 hp ! ;] his  [: $FE 5 char-heal ;] in-room  2 frames
 T{ [: hp @ ;] his  [: $FE char-full-health? ;] in-room -> 35 0 }T
 [: $FE char-full-health ;] in-room  2 frames
 T{ [: $FE char-full-health? ;] in-room -> -1 }T
 testing knocked down (0x30): out of health, down - dead (0x1E), not free
-[: $FE 0 char-set-C4  $FE stalker-knock-down ;] in-room  3 frames
-T{ [: $FE char-dead?  stalker-free?  $FE 2 char-C4? ;] in-room -> -1 0 -1 }T
+[: $FE 0 char-cond!  $FE stalker-knock-down ;] in-room  3 frames
+T{ [: $FE char-dead?  stalker-free?  $FE 2 char-cond? ;] in-room -> -1 0 -1 }T
 testing started again (0x15): waiting about, no rage, his health back
 [: $FE char-activate ;] in-room  3 frames
 T{ [: raging @  my-mode @  hp @ hp-max @ = ;] his -> 0 3 -1 }T

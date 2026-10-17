@@ -17,16 +17,12 @@ USING: engine actors messages keys room-names flag-names story.words ;
 variable jumped
 : room! ( room -- )  fiona-id -1 -1 cam-char-setup  -1 rooms-id send go-to-room  -1 jumped ! ;   \ (hers from the room alone)
 : room-by! ( room exit -- )  rooms-id send go-to-room ;
-fvariable bx  fvariable bz  fvariable best-d  variable best
 : nearest-set ( -- set )   \ (the one looking nearest her, along the floor)
-    fiona-id body-pos bz f! fdrop bx f!
-    -1 best !  1e30 best-d f!
+    fiona-id body-pos fswap fdrop  {: F: x z | best F: best-d :}  -1 to best  1e30 to best-d
     room-cameras 0 ?do
-        i room-camera                                      ( F: ex ey ez fov lx ly lz )
-        bz f@ f- fdup f*  fswap fdrop  fswap bx f@ f- fdup f* f+   ( F: ex ey ez fov d2 )
-        fswap fdrop  fswap fdrop  fswap fdrop  fswap fdrop
-        fdup best-d f@ f< if  best-d f!  i best !  else  fdrop  then
-    loop  best @ ;
+        i room-camera  {: F: ex ey ez fov lx ly lz :}
+        lx x f- fdup f*  lz z f- fdup f* f+  fdup best-d f< if  to best-d  i to best  else  fdrop  then
+    loop  best ;
 : jump-camera ( -- )
     jumped @ 0= if  exit  then  0 jumped !
     fiona-id cam-setup-of drop 0< 0= if  exit  then
@@ -34,7 +30,6 @@ fvariable bx  fvariable bz  fvariable best-d  variable best
 : tp-facing ( F: x y z deg -- )
     deg>rad  xyzw>cells  fiona-id send place  deliver ;
 : tp ( F: x y z -- )  fiona-id body-yaw  180e f* pi f/  tp-facing ;   \ (her heading kept)
-create spot 12 allot
 : tp-area-facing ( area deg -- )   \ (its middle)
     swap area-middle 0= if  drop fdrop fdrop fdrop ." no such area" cr exit  then  s>f tp-facing ;
 : tp-area ( area -- )  area-middle 0= if  fdrop fdrop fdrop ." no such area" cr exit  then  tp ;
@@ -90,7 +85,7 @@ $E8E0C8FF constant text-colour   $A09880FF constant dim-colour
 : note ( addr len y -- )  >r  190 bar-width + r> dim-colour say ;
 : of-bar ( n most -- n filled )  over bar-width * swap / ;
 : stage$ ( stage -- addr len )
-    case  0 of s" calm" endof  4 of s" PANIC" endof  5 of s" PANIC (calming)" endof
+    case  composed of s" calm" endof  panicking of s" PANIC" endof  calming-down of s" PANIC (calming)" endof
           >r s" uneasy" r>  endcase ;
 \ the panic's (its broadcast) and hers (asked each frame, her answer by the next)
 variable m-stage  variable m-level  variable m-fear  variable m-breathless  variable m-run
@@ -104,13 +99,14 @@ variable m-stage  variable m-level  variable m-fear  variable m-breathless  vari
 \ the actors alive, two columns down the right from under the room's name
 : actor-line ( id x y -- )
     {: id x y :}  id n>s x y dim-colour say  id actor-name x 44 + y text-colour say ;
+256 constant most-actors   \ (the actors' table: hactor.c)
 : actors-list ( -- )
-    0  256 0 do
+    {: | n :}
+    most-actors 0 do
         i alive? if
-            i  screen-size drop 420 -  2 pick 1 and 210 *  +   ( n id x )
-            2 pick 2/ 22 * 44 +  actor-line  1+
+            i  screen-size drop 420 -  n 1 and 210 * +  n 2/ 22 * 44 +  actor-line  n 1+ to n
         then
-    loop  drop ;
+    loop ;
 
 \ which hga this is, under the meters
 : version-line ( -- )  s" hga " 12 118 dim-colour say  hga-version 56 118 dim-colour say ;

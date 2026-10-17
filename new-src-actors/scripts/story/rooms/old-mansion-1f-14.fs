@@ -2,45 +2,33 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-14
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-1f-14.enter ( -- )   \ 004268B0
     room-sounds
-    $74 story-flag? not if
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+    film-reel-used-om1f-14 story-flag? not if
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 part-hidden
+        1 part-shown
     then
     8 0 object-hidden
     9 0 object-hidden
-    $26D story-flag? not if
+    om1f-14-chicken-jerky story-flag? not if
         0 15.82 1.0 20.96 flicker-sprite
     then
 ;
 
 : old-mansion-1f-14.char-enter ( -- )   \ 004268F0
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
 ;
@@ -54,37 +42,37 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-1f-14.phase2 ( -- )   \ 00426950
-    0 3 $32 char-faces-area? if
-        5 1 0 scene-change
+    fiona-who 3 $32 char-faces-area? if
+        1 unhurried offer-action
     then
-    0 4 char-in-area? 0 90 $32 char-heading? and if
-        5 2 0 scene-change
+    fiona-who 4 char-in-area? fiona-who 90 $32 char-heading? and if
+        2 unhurried offer-action
     then
-    0 5 char-in-area? 0 -45 $3C char-heading? and if
-        5 4 0 scene-change
+    fiona-who 5 char-in-area? fiona-who -45 $3C char-heading? and if
+        4 unhurried offer-action
     then
-    0 6 char-in-area? 0 -45 $3C char-heading? and if
-        5 4 0 scene-change
+    fiona-who 6 char-in-area? fiona-who -45 $3C char-heading? and if
+        4 unhurried offer-action
     then
-    0 7 char-in-area? 0 45 $3C char-heading? and if
-        5 4 0 scene-change
+    fiona-who 7 char-in-area? fiona-who 45 $3C char-heading? and if
+        4 unhurried offer-action
     then
-    0 8 char-in-area? 0 -45 $3C char-heading? and if
-        5 5 0 scene-change
+    fiona-who 8 char-in-area? fiona-who -45 $3C char-heading? and if
+        5 unhurried offer-action
     then
-    0 9 char-in-area? 0 -45 $3C char-heading? and if
-        5 5 0 scene-change
+    fiona-who 9 char-in-area? fiona-who -45 $3C char-heading? and if
+        5 unhurried offer-action
     then
-    0 $A char-in-area? 0 45 $3C char-heading? and if
-        5 5 0 scene-change
+    fiona-who $A char-in-area? fiona-who 45 $3C char-heading? and if
+        5 unhurried offer-action
     then
-    0 $B $3C char-faces-area? if
-        5 6 0 scene-change
+    fiona-who $B $3C char-faces-area? if
+        6 unhurried offer-action
     then
-    $26D story-flag? not if
+    om1f-14-chicken-jerky story-flag? not if
         0 0 5 -8 0 zone-at-effect
-        0 0 3 char-zone-bits? if
-            5 3 4 scene-change
+        fiona-who 0 3 char-zone-bits? if
+            3 calm offer-action
         then
     then
 ;
@@ -92,8 +80,8 @@ USING: room-names story.words story.shared flag-names ;
 : old-mansion-1f-14.act00 ( -- )   \ 004269E0
     1 self-scripted
     3 stalker-kind? $22 stalker-kind? or if
-        $FE action-end
-        $FE char-done
+        stalker-who action-end
+        stalker-who char-done
     then
     self-wait-done
     self-frames-reset
@@ -103,13 +91,13 @@ USING: room-names story.words story.shared flag-names ;
     0 5 movie-play
     yield
     yield
-    2 cutscene-control
+    movie-restart-op cutscene-control
     1 result? if
         1.0 movie-volume
         yield
         world-held state-flag-set
         begin
-            0 cutscene-control
+            movie-state-op cutscene-control
             -1 result? not if
                 6 2 pad? not if
                     yield
@@ -121,7 +109,7 @@ USING: room-names story.words story.shared flag-names ;
                 true
             then
         until
-        1 cutscene-control
+        movie-stop-op cutscene-control
         begin
             movie-playing? while
             yield
@@ -129,108 +117,46 @@ USING: room-names story.words story.shared flag-names ;
         yield
         world-held state-flag-clear
     then
-    $337 story-flag-set
+    film-reel-used-om1f-14-2 story-flag-set
     world-held state-flag-set
     $E item-use
     3 stalker-kind? $22 stalker-kind? or if
-        0 0 $14 door-bits
-        1 1 $14 door-bits
-        $74 story-flag-set
+        0 part-hidden
+        1 part-shown
+        film-reel-used-om1f-14 story-flag-set
         yield
         yield
         7 0 movie-play
         6 cutscene-start
         yield
         yield
-        2 cutscene-control
-        begin
-            3 cutscene-control
-            2 cutscene-mode? not while
-            yield
-        repeat
+        scene-wait-ready
         3 4 0 char-model-op
         $FE $53 43 2 stalker-to-room
-        $FE 0 0 char-camera
+        stalker-who 0 0 char-camera
         0 $F9 7 action
-        $FF panic-stage? if
-            3 panic-stage
-        then
-        0 message-prepare
+        panic-eased
+        0 message-prepare   \ "What is this? I was being filmed. Who's there? Why are you after me? What d..."
         1 result? if
-            6 cutscene-control
-            1.0 movie-volume
-            effects-arena-flip
-            yield
-            movie-skipped state-flag-clear
-            $F 1 fade
-            $A cutscene-control
-            begin
-                movie-skipped state-flag? not if
-                    7 cutscene-control
-                    cutscene-near-end? if
-                        $F 0 fade
-                    then
-                    $C cutscene-control
-                    0 cutscene-control
-                    4 cutscene-control
-                    -1 result? not if
-                        5 cutscene-mode? not 4 cutscene-mode? not and if
-                            yield
-                            false
-                        else
-                            true
-                        then
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            until
-            $FFFF message-close
-            $F9 action-end
-            $B cutscene-control
-            wait-fade
-            1 cutscene-control
-            world-held state-flag-set
-            effects-arena-flip
-            begin
-                movie-playing? while
-                yield
-            repeat
-            yield
-            pause-wanted state-flag-set
-            8 cutscene-control
+            scene-play
         then
         world-held state-flag-set
-        $FE $53 0 room-doors-state
-        $FE $75 0 door-lock-for
+        stalker-who $53 0 room-doors-state
+        stalker-who $75 0 door-lock-for
         $FE $53 43 2 stalker-to-room
-        $FE char-activate
-        $FE $2B 7.18 33.88 -160 char-to-xz
-        stalker-item-cooldown
+        stalker-who char-activate
+        stalker-who $2B 7.18 33.88 -160 char-to-xz
+        summoner-own-cooldown
         1 self-scripted
-        $333 story-flag-set
+        om1f-14-flag1 story-flag-set
         stalkers-stay state-flag-clear
-        0 $16 -1.36 20.03 0 char-to-xz
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+        fiona-who $16 -1.36 20.03 0 char-to-xz
+        0 0 player-camera
         yield
         camera-restart
     else
-        0 $76 -6.79 9.91 168 char-to-xz
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+        fiona-who $76 -6.79 9.91 168 char-to-xz
+        0 0 player-camera
         yield
         camera-restart
         stalkers-stay state-flag-clear
@@ -246,17 +172,17 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-14.act01 ( -- )   \ 00426B60
     self-wait-done
-    $337 story-flag? not if
+    film-reel-used-om1f-14-2 story-flag? not if
         0 ebit? not if
-            1 message
+            1 message   \ "There's a projector set up here. Its looks rather old, but perhaps it still works."
             wait-message
             0 ebit-set
         else
-            2 message
+            2 message   \ "The screen is already set up. All I need now is a film to play."
             wait-message
         then
     else
-        4 message
+        4 message   \ "The film seems to have totally played out. I've seen everything there is to see."
         wait-message
     then
     self-idle-or-end
@@ -264,11 +190,11 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-14.act02 ( -- )   \ 00426B80
     self-wait-done
-    $74 story-flag? not if
-        3 message
+    film-reel-used-om1f-14 story-flag? not if
+        3 message   \ "A screen... Has someone been watching films here recently?"
         wait-message
     else
-        5 message
+        5 message   \ "A slash runs along the surface of the screen. I'd best forget it. It's definitely u..."
         wait-message
     then
     self-idle-or-end
@@ -278,23 +204,22 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     15.82 20.96 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
         $60 message-param-room
         $60 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $26D story-flag-set
+            om1f-14-chicken-jerky story-flag-set
             0 effect-remove
             $60 1 item-give-count
             0 $60 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -305,27 +230,27 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-14.act04 ( -- )   \ 0047AD38
     self-wait-done
-    6 message
+    6 message   \ "Just a lifeless mannequin."
     wait-message
     self-idle-or-end
 ;
 
 : old-mansion-1f-14.act05 ( -- )   \ 00426BF0
     self-wait-done
-    0 8 char-in-area? if
+    fiona-who 8 char-in-area? if
         -90 self-turn-angle
         self-wait-done
-    else 0 9 char-in-area? if
+    else fiona-who 9 char-in-area? if
         -90 self-turn-angle
         self-wait-done
-    else 0 $A char-in-area? if
+    else fiona-who $A char-in-area? if
         90 self-turn-angle
         self-wait-done
     then then then
     $A02 self-anim
     self-frames-reset
     $28 self-wait-frames
-    7 message
+    7 message   \ "This shelf is packed full of old books, discolored from years of disuse. A majority of..."
     wait-message
     self-wait-anim
     self-idle-or-end
@@ -338,7 +263,7 @@ USING: room-names story.words story.shared flag-names ;
     $A01 self-anim
     self-frames-reset
     $28 self-wait-frames
-    8 message
+    8 message   \ "Scattered mannequin parts are strewn about. When assembled correctly, these parts will..."
     wait-message
     self-wait-anim
     self-idle-or-end
@@ -363,95 +288,33 @@ USING: room-names story.words story.shared flag-names ;
     8 0 object-hidden
     9 0 object-hidden
     3 partner-load
-    2 char-unload
-    0 0 $14 door-bits
-    1 1 $14 door-bits
+    2 char-start
+    0 part-hidden
+    1 part-shown
     yield
     yield
     7 0 movie-play
     6 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     3 4 0 char-model-op
     $FE $53 43 2 stalker-to-room
     0 $F9 7 action
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    0 message-prepare
+    panic-eased
+    0 message-prepare   \ "What is this? I was being filmed. Who's there? Why are you after me? What do yo..."
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     8 0 object-hidden
     9 0 object-hidden
     2 0 char-remove
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
 \ ---- registered ----
-' old-mansion-1f-14.enter old-mansion-1f-14 0 room-script!
-' old-mansion-1f-14.char-enter old-mansion-1f-14 6 room-script!
-' old-mansion-1f-14.phase1 old-mansion-1f-14 1 room-script!
-' old-mansion-1f-14.phase2 old-mansion-1f-14 2 room-script!
-' old-mansion-1f-14.act00 old-mansion-1f-14 $00 action-script!
-' old-mansion-1f-14.act01 old-mansion-1f-14 $01 action-script!
-' old-mansion-1f-14.act02 old-mansion-1f-14 $02 action-script!
-' old-mansion-1f-14.act03 old-mansion-1f-14 $03 action-script!
-' old-mansion-1f-14.act04 old-mansion-1f-14 $04 action-script!
-' old-mansion-1f-14.act05 old-mansion-1f-14 $05 action-script!
-' old-mansion-1f-14.act06 old-mansion-1f-14 $06 action-script!
-' old-mansion-1f-14.act07 old-mansion-1f-14 $07 action-script!
-' old-mansion-1f-14.act08 old-mansion-1f-14 $08 action-script!
+old-mansion-1f-14 register-scripts   \ (its phases and actions, by their names)

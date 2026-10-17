@@ -27,6 +27,8 @@ typedef intptr_t Cell;
 typedef uintptr_t UCell;
 typedef double Float;
 
+#define FORTH_LOCALS 32   /* a definition's locals, all its {: :} together */
+
 typedef struct Forth Forth;
 typedef struct Word Word;
 typedef struct Task Task;
@@ -86,6 +88,7 @@ struct Task {
     Cell rs[STACK_CELLS];   /* return stack */
     Float fs[FSTACK_CELLS]; /* float stack */
     int sp, rp, fp;
+    int sfloor, ffloor;     /* below these the stacks count as empty (a message handler's: its arguments only) */
     int lp;                 /* the running word's locals: their frame on the return stack */
     int marks[16], nmarks;  /* `{`: where each list being gathered starts on the data stack */
     Cell *ip;               /* the next cell of threaded code to run; NULL when stopped */
@@ -124,14 +127,16 @@ struct Forth {
     Cell compiling;         /* STATE: 0 interpreting, -1 compiling */
     /* the definition being compiled: its locals' names ({: ... :}); a quotation saves them */
     struct ForthLocals {
-        char names[16][WORD_NAME_MAX + 1];
+        char names[FORTH_LOCALS][WORD_NAME_MAX + 1];
+        char is_float[FORTH_LOCALS];   /* a float local (F:): fetched to the float stack */
         int n;
+        Cell *frame_size;   /* the frame's (locals) operand: a later {: grows it */
     } locals, locals_saved[4];
     int nlocals_saved;
     int top_sp, top_sp_saved[4];   /* the data stack's depth at the definition's (quotation's) start:
                                     * {: only there, not inside a do loop or an if (their frame
                                     * would hide the loop's index, or be dropped unmade) */
-    Word *w_locals, *w_unlocals, *w_local_fetch, *w_local_store;
+    Word *w_locals, *w_unlocals, *w_local_fetch, *w_local_store, *w_flocal_fetch, *w_flocal_store;
     Cell base;              /* number base */
     int bye;                /* `bye` was run: the host should stop */
 

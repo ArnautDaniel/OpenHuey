@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e6
-USING: room-names story.words story.shared story.clock ;
+USING: room-names story.words story.shared story.clock floor-flags ;
 
 \ the room object named by RoomE6_ObjectNames[0]: +0x24 -25.3, +0x34 0
 : off-map-e6.cmd00 ( -- )  s" kousi" object-here? 0= if  exit  then  -25.3e s" kousi" place-y object!  0e s" kousi" $34 object! ;   \ (the lattice down out of the way)
@@ -13,56 +13,32 @@ USING: room-names story.words story.shared story.clock ;
 : off-map-e6.cond00? ( -- flag )  true ;
 
 : off-map-e6.enter ( -- )   \ 004498F0
-    1 0 $20000 nav-group
+    0 barred-floor floor-on
     off-map-e6.cmd00
     1 1 object-hidden
-    0 1 $14 door-bits
-    1 0 $14 door-bits
+    0 part-shown
+    1 part-hidden
 ;
 
 : off-map-e6.char-enter ( -- )   \ 00449910
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        0 0 player-camera
     then then
     1 0 0 area-camera
 ;
@@ -72,20 +48,20 @@ USING: room-names story.words story.shared story.clock ;
         0 exit-check
     then
     hewie-controlled? not if
-        0 1 char-in-area? 0 char-busy? not and if
+        fiona-who 1 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 1 char-in-area? 1 char-busy? not and if
+    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then
     4 0 0 1 chars-area-camera
     5 1 -1 1 chars-area-camera
     6 1 -1 1 chars-area-camera
     7 0 0 1 chars-area-camera
-    1 2 char-left-area? if
+    hewie-who 2 char-left-area? if
         0 exit-prepare
     then
-    1 3 char-entered-area? if
+    hewie-who 3 char-entered-area? if
         1 exit-prepare
     then
 ;
@@ -111,9 +87,4 @@ USING: room-names story.words story.shared story.clock ;
 ;
 
 \ ---- registered ----
-' off-map-e6.enter off-map-e6 0 room-script!
-' off-map-e6.char-enter off-map-e6 6 room-script!
-' off-map-e6.phase1 off-map-e6 1 room-script!
-' off-map-e6.phase3 off-map-e6 3 room-script!
-' off-map-e6.phase2 off-map-e6 2 room-script!
-' off-map-e6.act00 off-map-e6 $00 action-script!
+off-map-e6 register-scripts   \ (its phases and actions, by their names)

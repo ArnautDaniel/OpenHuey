@@ -2,11 +2,11 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-12
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x4F (Room4F_Cmd00_ptmf): object byte 3 by byte 4: 0 up (+0x10 0), 1 down (-0.65), 2
-\ lowered a step (0.02, not during a movie); once down, events bit 3
-: old-mansion-1f-12.cmd00 ( b0 b1 -- )   \ (object b0 - the room's string - tipped by b1: 0 up, 1 down (-0.65), 2 lowered a step
+\ lowered a step-floor (0.02, not during a movie); once down, events bit 3
+: old-mansion-1f-12.cmd00 ( b0 b1 -- )   \ (object b0 - the room's string - tipped by b1: 0 up, 1 down (-0.65), 2 lowered a step-floor
     \ (0.02; not while a movie plays), down - event flag 3)
     {: k op | a n :}  k room-object to n to a  a n object-here? 0= if  exit  then
     op case
@@ -32,116 +32,80 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-12.enter ( -- )   \ 0040B520
     room-sounds
-    $52 story-flag? if
+    om1f-12-flag3 story-flag? if
         0 1 old-mansion-1f-12.cmd00
     then
-    $50 story-flag? if
+    om1f-12-flag1 story-flag? if
         1 1 old-mansion-1f-12.cmd00
     then
-    $51 story-flag? if
+    om1f-12-flag2 story-flag? if
         2 1 old-mansion-1f-12.cmd00
     then
-    $70 story-flag? if
-        0 1 $14 door-bits
-        3 1 $14 door-bits
+    om1f-12-flag4 story-flag? if
+        0 part-shown
+        3 part-shown
         8 1 object-hidden
     else
-        0 0 $14 door-bits
-        3 0 $14 door-bits
+        0 part-hidden
+        3 part-hidden
         8 0 object-hidden
     then
-    $4C story-flag? if
-        4 0 $14 door-bits
+    got-film-reel story-flag? if
+        4 part-hidden
     else
-        4 1 $14 door-bits
+        4 part-shown
     then
-    $50 story-flag? if
-        5 0 $14 door-bits
-        6 1 $14 door-bits
-        1 1 $14 door-bits
+    om1f-12-flag1 story-flag? if
+        5 part-hidden
+        6 part-shown
+        1 part-shown
         old-mansion-1f-12.cmd01
     else
-        5 1 $14 door-bits
-        6 0 $14 door-bits
-        2 1 $14 door-bits
+        5 part-shown
+        6 part-hidden
+        2 part-shown
         0 old-mansion-1f-12.cmd02
     then
-    $73 story-flag? not $51 story-flag? not and if
+    got-torn-letter story-flag? not om1f-12-flag2 story-flag? not and if
         0 12.0 13.0 -24.0 flicker-sprite
     then
-    $2A3 story-flag? $2A4 story-flag? not and if
+    om1f-12-rubrum-medallion-found story-flag? om1f-12-rubrum-medallion story-flag? not and if
         1 52.04 1.0 5.68 flicker-sprite
     then
 ;
 
 : old-mansion-1f-12.char-enter ( -- )   \ 0040B5C0
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        1 1 player-camera
     then then
     0 1 1 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        1 1 player-camera
     then then
     1 1 1 area-camera
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        0 0 player-camera
     then then
     2 0 0 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         2 exit-taken? if
             2 map-page
         then
@@ -149,7 +113,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-1f-12.phase1 ( -- )   \ 0040B680
-    $50 story-flag? not if
+    om1f-12-flag1 story-flag? not if
         7 ebit? not if
             6 sound-bank-loaded? if
                 $40000004 6 38.0 5.0 -10.0 0 0 sound
@@ -166,42 +130,42 @@ USING: room-names story.words story.shared flag-names ;
         1 exit-check
     then
     hewie-controlled? not if
-        0 2 char-in-area? 0 char-busy? not and if
+        fiona-who 2 char-in-area? fiona-who char-busy? not and if
             2 exit-check
         then
-    else 1 2 char-in-area? 1 char-busy? not and if
+    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
         2 exit-check
     then then
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         0 exit-prepare
     then
-    0 4 char-entered-area? if
+    fiona-who 4 char-entered-area? if
         1 exit-prepare
     then
     4 ebit? not if
-        $70 story-flag? not if
+        om1f-12-flag4 story-flag? not if
             0 camera-mode? 1 camera-mode? or if
                 old-mansion-1f-12.cond00? if
                     4 ebit-set
-                    $70 story-flag-set
+                    om1f-12-flag4 story-flag-set
                     0 $F1 $C action
                 then
             then
         then
     then
-    $73 story-flag? not $51 story-flag? not and if
+    got-torn-letter story-flag? not om1f-12-flag2 story-flag? not and if
         0 0 4 4 0 zone-at-effect
     then
-    $50 story-flag? not if
+    om1f-12-flag1 story-flag? not if
         1 0.32 0.0 -28.08 $19 31 0 zone
-        5 ebit? not 1 char-here? and 1 0 char-C4? and if
+        5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
-                    1 1 9 char-zone-bits? if
+                    hewie-who 1 9 char-zone-bits? if
                         5 ebit-set
                         $64 chance? if
                             $1F 1 var-set
-                            0 1 $92 action
+                            0 hewie-who $92 action
                         then
                     then
                 then
@@ -209,62 +173,62 @@ USING: room-names story.words story.shared flag-names ;
         then
     then
     2 -12.29 0.0 -26.2 $18 15 0 zone
-    1 char-here? 2 game-mode? not and if
+    hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
-            1 2 9 char-zone-bits? if
+            hewie-who 2 9 char-zone-bits? if
                 $1F 2 var-set
                 $1F 15.0 hewie-look-zone
             then
         then
     then
     1 0.32 0.0 -28.08 $19 31 0 zone
-    1 char-here? 2 game-mode? not and if
+    hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
-            1 1 9 char-zone-bits? if
+            hewie-who 1 9 char-zone-bits? if
                 $1F 1 var-set
                 $1F 31.0 hewie-look-zone
             then
         then
     then
     3 12.19 0.0 -23.96 $18 15 0 zone
-    1 char-here? 2 game-mode? not and if
+    hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
-            1 3 9 char-zone-bits? if
+            hewie-who 3 9 char-zone-bits? if
                 $1F 3 var-set
                 $1F 15.0 hewie-look-zone
             then
         then
     then
     4 38.13 0.0 -9.78 $1E 30 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 4 9 char-zone-bits? if
+            hewie-who 4 9 char-zone-bits? if
                 $1F 4 var-set
                 $1F 30.0 hewie-look-zone
             then
         then
     then
     5 -35.94 0.0 -7.54 $10 11 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 5 9 char-zone-bits? if
+            hewie-who 5 9 char-zone-bits? if
                 $1F 5 var-set
                 $1F 11.0 hewie-look-zone
             then
         then
     then
-    $2A3 story-flag? not if
+    om1f-12-rubrum-medallion-found story-flag? not if
         6 52.04 0.0 5.68 $A 5 0 zone
-        1 6 3 char-zone-bits? if
+        hewie-who 6 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 675 var-set
-                $1A 676 var-set
+                $19 om1f-12-rubrum-medallion-found var-set
+                $1A om1f-12-rubrum-medallion var-set
                 $1B 1 var-set
                 $1C 52040 var-set
                 $1D 1000 var-set
                 $1E 5680 var-set
                 $1F 6 var-set
-                0 1 $8B action
+                0 hewie-who $8B action
             then
         then
     then
@@ -272,78 +236,78 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-12.phase2 ( -- )   \ 0040B8A0
     -2147483646 scene-request? if
-        5 0 1 scene-change
+        0 always offer-action
     then
-    0 5 char-in-area? 0 90 $32 char-heading? and if
-        $70 story-flag? $4C story-flag? not and if
-            5 2 4 scene-change
+    fiona-who 5 char-in-area? fiona-who 90 $32 char-heading? and if
+        om1f-12-flag4 story-flag? got-film-reel story-flag? not and if
+            2 calm offer-action
         else
-            5 2 0 scene-change
+            2 unhurried offer-action
         then
     then
-    0 6 $32 char-faces-area? if
-        5 3 0 scene-change
+    fiona-who 6 $32 char-faces-area? if
+        3 unhurried offer-action
     then
-    0 7 char-in-area? 0 0 $32 char-heading? and if
-        5 4 0 scene-change
+    fiona-who 7 char-in-area? fiona-who 0 $32 char-heading? and if
+        4 unhurried offer-action
     then
-    $73 story-flag? not $51 story-flag? not and if
-        0 0 2 char-zone-bits? if
-            5 $B 4 scene-change
+    got-torn-letter story-flag? not om1f-12-flag2 story-flag? not and if
+        fiona-who 0 2 char-zone-bits? if
+            $B calm offer-action
         then
-    else 0 8 char-in-area? 0 90 $32 char-heading? and if
-        5 9 0 scene-change
+    else fiona-who 8 char-in-area? fiona-who 90 $32 char-heading? and if
+        9 unhurried offer-action
     then then
-    0 9 char-in-area? 0 90 $32 char-heading? and if
-        5 9 0 scene-change
+    fiona-who 9 char-in-area? fiona-who 90 $32 char-heading? and if
+        9 unhurried offer-action
     then
-    0 $F char-in-area? 0 -45 $3C char-heading? and if
-        5 $E 0 scene-change
+    fiona-who $F char-in-area? fiona-who -45 $3C char-heading? and if
+        $E unhurried offer-action
     then
-    $2A3 story-flag? $2A4 story-flag? not and if
+    om1f-12-rubrum-medallion-found story-flag? om1f-12-rubrum-medallion story-flag? not and if
         6 1 5 5 0 zone-at-effect
-        0 6 3 char-zone-bits? if
-            5 $D 4 scene-change
+        fiona-who 6 3 char-zone-bits? if
+            $D calm offer-action
         then
     then
 ;
 
 : old-mansion-1f-12.act00 ( -- )   \ 0040B940
     self-wait-done
-    1 ebit? not 2 game-mode? or $FF panic-stage? or if
+    1 ebit? not 2 game-mode? or in-panic? or if
         0 self-through-exit
         self-wait-done
-        $FF panic-stage? 2 game-mode? or if
+        in-panic? 2 game-mode? or if
             $60B self-anim
             self-wait-anim
-            -1 self-move-16
+            -1 self-idle-anim
             self-frames-reset
             7 self-wait-frames
         else
             $609 self-anim
             self-wait-anim
-            -1 self-move-16
+            -1 self-idle-anim
             self-frames-reset
             7 self-wait-frames
-            8 message
+            8 message   \ "The door is locked..."
             wait-message
         then
         1 ebit-set
     else
         self-frames-reset
         4 self-wait-frames
-        0 $150 -60.0 15.0 -90 char-to-xz
+        fiona-who $150 -60.0 15.0 -90 char-to-xz
         world-frozen state-flag-set
         1 self-scripted
         1 20.0 5.0 0.0 4.0 event-camera
         self-frames-reset
         4 self-wait-frames
-        9 message
+        9 message   \ "A strange symbol is written on the door. I wonder what it could mean?"
         wait-message
         self-frames-reset
         4 self-wait-frames
         0 0.0 0.0 0.0 0.0 event-camera
-        0 $150 -60.3 16.25 -90 char-to-xz
+        fiona-who $150 -60.3 16.25 -90 char-to-xz
         world-frozen state-flag-clear
         0 self-scripted
     then
@@ -358,14 +322,14 @@ USING: room-names story.words story.shared flag-names ;
     $609 self-anim
     self-frames-reset
     $14 self-wait-frames
-    0 3 6 char-sound
+    fiona-who 3 6 char-sound
     $F message-param-room
     $F item-use
     $6C door-unlock
-    20 self-move-16
+    20 self-idle-anim
     self-frames-reset
     $14 self-wait-frames
-    $8019 message
+    $8019 message   \ "Used ."
     wait-message
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -374,34 +338,33 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-12.act02 ( -- )   \ 0040BA10
     self-wait-done
-    $70 story-flag? $4C story-flag? not and if
+    om1f-12-flag4 story-flag? got-film-reel story-flag? not and if
         $14E -33.036 -2.992 -130 $FFFF 5 self-move-to
         self-wait-done
         $900 self-anim
         self-wait-anim
-        4 0 $14 door-bits
-        $4C story-flag-set
+        4 part-hidden
+        got-film-reel story-flag-set
         $E message-param-room
         $E 1 item-give-count
         0 $E item-tab
-        0 $F9 $8C action-force
-        $83 $85 0.0 0.0 0.0 0 0 sound
-        $8012 message
+        item-fanfare
+        $8012 message   \ "You've obtained ."
         wait-message
         $901 self-anim
         self-wait-anim
     else
         world-frozen state-flag-set
         1 self-scripted
-        0 $14E -38.0 -2.5 180 char-to-xz
+        fiona-who $14E -38.0 -2.5 180 char-to-xz
         1 10.0 -10.0 0.0 0.0 event-camera
         self-frames-reset
         4 self-wait-frames
-        $70 story-flag? not if
-            $B message
+        om1f-12-flag4 story-flag? not if
+            $B message   \ "A statue grasping firmly onto an oil lamp. I know I've seen this somewhere bef..."
             wait-message
         else
-            $C message
+            $C message   \ "I knew there was some trick to solving it!"
             wait-message
         then
         0 0.0 0.0 0.0 0.0 event-camera
@@ -415,28 +378,22 @@ USING: room-names story.words story.shared flag-names ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $50 story-flag? not if
+    om1f-12-flag1 story-flag? not if
         38.0 -10.0 self-turn-to-xz
         self-wait-done
         $402 self-anim
         self-wait-anim
-        5 message
+        5 message   \ "A pillar of seething flame is spewing forth from the floor. There is something up a..."
         wait-message
     else
-        6 message
+        6 message   \ "The flame has been frozen in place, creating a crystalline ice pillar. This could b..."
         wait-message
         0 answer? if
             $F 4 fade
             wait-fade
-            0 5 6 char-sound
-            0 $10C 180 char-to-tri-facing
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+            fiona-who 5 6 char-sound
+            fiona-who $10C 180 char-to-tri-facing
+            0 0 player-camera
             camera-restart
             2 exit-prepare
             self-frames-reset
@@ -455,20 +412,14 @@ USING: room-names story.words story.shared flag-names ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $A message
+    $A message   \ "I can use this to get down. Climb down the ice pillar? YES NO"
     wait-message
     0 answer? if
         $F 4 fade
         wait-fade
-        0 5 6 char-sound
-        0 $141 0 char-to-tri-facing
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+        fiona-who 5 6 char-sound
+        fiona-who $141 0 char-to-tri-facing
+        1 1 player-camera
         camera-restart
         1 exit-prepare
         self-frames-reset
@@ -491,155 +442,55 @@ USING: room-names story.words story.shared flag-names ;
     3 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     wait-fade
-    2 0 $14 door-bits
+    2 part-hidden
     1 old-mansion-1f-12.cmd02
     0 ebit? if
         0 $F9 8 action
     then
     $10 $C8 movie-param
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     wait-fade
     world-held state-flag-set
-    0 self-move-16
-    0 $11E -5.7 17.0 180 char-to-xz
-    1 $A3 -22.21 -11.73 -45 char-to-xz
+    0 self-idle-anim
+    fiona-who $11E -5.7 17.0 180 char-to-xz
+    hewie-who $A3 -22.21 -11.73 -45 char-to-xz
     camera-restart
     0 ebit? if
         1 1 old-mansion-1f-12.cmd00
-        5 0 $14 door-bits
+        5 part-hidden
         6 1 movie-play
         5 cutscene-start
         yield
         yield
-        2 cutscene-control
-        begin
-            3 cutscene-control
-            2 cutscene-mode? not while
-            yield
-        repeat
+        scene-wait-ready
         wait-fade
-        1 action-end
-        1 char-done
+        hewie-who action-end
+        hewie-who char-done
         $10 $C8 movie-param
-        $FF panic-stage? if
-            3 panic-stage
-        then
+        panic-eased
         $FFFF message-prepare
         1 result? if
-            6 cutscene-control
-            1.0 movie-volume
-            effects-arena-flip
-            yield
-            movie-skipped state-flag-clear
-            $F 1 fade
-            $A cutscene-control
-            begin
-                movie-skipped state-flag? not if
-                    7 cutscene-control
-                    cutscene-near-end? if
-                        $F 0 fade
-                    then
-                    $C cutscene-control
-                    0 cutscene-control
-                    4 cutscene-control
-                    -1 result? not if
-                        5 cutscene-mode? not 4 cutscene-mode? not and if
-                            yield
-                            false
-                        else
-                            true
-                        then
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            until
-            $FFFF message-close
-            $F9 action-end
-            $B cutscene-control
-            wait-fade
-            1 cutscene-control
-            world-held state-flag-set
-            effects-arena-flip
-            begin
-                movie-playing? while
-                yield
-            repeat
-            yield
-            pause-wanted state-flag-set
-            8 cutscene-control
+            scene-play
         then
         wait-fade
-        1 char-activate
+        hewie-who char-activate
         $4F 0 163 hewie-to-room
-        1 $A3 -22.21 -11.73 -45 char-to-xz
+        hewie-who $A3 -22.21 -11.73 -45 char-to-xz
         50 hewie-trust
-        1 1 $14 door-bits
-        6 1 $14 door-bits
+        1 part-shown
+        6 part-shown
         old-mansion-1f-12.cmd01
         4 6 sound-stop
-        $50 story-flag-set
+        om1f-12-flag1 story-flag-set
     else
-        2 1 $14 door-bits
-        5 1 $14 door-bits
+        2 part-shown
+        5 part-shown
         0 old-mansion-1f-12.cmd02
     then
     $F $51 fade
@@ -647,7 +498,7 @@ USING: room-names story.words story.shared flag-names ;
     0 ebit? not if
         self-frames-reset
         self-wait-16
-        3 message
+        3 message   \ "Nothing happened. This must not be the correct plate..."
         wait-message
     then
     $827D item-give
@@ -678,11 +529,11 @@ USING: room-names story.words story.shared flag-names ;
             3 ebit? not while
             yield
         repeat
-        $51 story-flag-set
+        om1f-12-flag2 story-flag-set
     else
         self-frames-reset
         $1E self-wait-frames
-        3 message
+        3 message   \ "Nothing happened. This must not be the correct plate..."
         wait-message
     then
     stalkers-stay state-flag-clear
@@ -711,11 +562,11 @@ USING: room-names story.words story.shared flag-names ;
             3 ebit? not while
             yield
         repeat
-        $52 story-flag-set
+        om1f-12-flag3 story-flag-set
     else
         self-frames-reset
         $1E self-wait-frames
-        3 message
+        3 message   \ "Nothing happened. This must not be the correct plate..."
         wait-message
     then
     stalkers-stay state-flag-clear
@@ -740,16 +591,16 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-12.act09 ( -- )   \ 0040BE20
     self-wait-done
-    $50 story-flag? not if
-        $52 story-flag? not $51 story-flag? not or if
-            0 message
+    om1f-12-flag1 story-flag? not if
+        om1f-12-flag3 story-flag? not om1f-12-flag2 story-flag? not or if
+            0 message   \ "A 3-headed monster. Is this some kind of dragon? Its wide-open mouth is very un..."
             wait-message
         else
-            1 message
+            1 message   \ "The highest dragon head's mouth is still open. I'll need to insert one more plate."
             wait-message
         then
     else
-        2 message
+        2 message   \ "All 3 mouths are now tightly shut. Looks like I've completely solved this puzzle..."
         wait-message
     then
     self-idle-or-end
@@ -762,7 +613,7 @@ USING: room-names story.words story.shared flag-names ;
     $A00 self-anim
     self-frames-reset
     self-wait-16
-    4 message
+    4 message   \ "Darn it! I'm just not tall enough. If only Hewie were here, I bet it would be doable."
     wait-message
     self-wait-anim
     self-idle-or-end
@@ -772,20 +623,19 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     12.0 -24.0 self-turn-to-xz
     self-wait-done
-    $D message
+    $D message   \ "It's holding something in its mouth."
     wait-message
     $902 self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
-    $73 story-flag-set
+    got-torn-letter story-flag-set
     0 effect-remove
     $A3 message-param-room
     $A3 1 item-give-count
     0 $A3 item-tab
-    0 $F9 $8C action-force
-    $83 $85 0.0 0.0 0.0 0 0 sound
-    $8012 message
+    item-fanfare
+    $8012 message   \ "You've obtained ."
     wait-message
     $903 self-anim
     self-wait-anim
@@ -795,7 +645,7 @@ USING: room-names story.words story.shared flag-names ;
 : old-mansion-1f-12.act0C ( -- )   \ 0040BEB0
     self-frames-reset
     self-wait-16
-    0 1 $14 door-bits
+    0 part-shown
     0 6 -38.0 5.0 -8.0 0 0 sound
     6 ebit-clear
     begin
@@ -810,23 +660,22 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     52.04 5.68 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
         $73 message-param-room
         $73 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2A4 story-flag-set
+            om1f-12-rubrum-medallion story-flag-set
             1 effect-remove
             $73 1 item-give-count
             0 $73 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -842,7 +691,7 @@ USING: room-names story.words story.shared flag-names ;
     $A01 self-anim
     self-frames-reset
     $28 self-wait-frames
-    $E message
+    $E message   \ "Ivy has grown in through the collapsed area where the floor used to be... Looks like i..."
     wait-message
     self-wait-anim
     self-idle-or-end
@@ -857,73 +706,23 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     0 1 old-mansion-1f-12.cmd00
     2 1 old-mansion-1f-12.cmd00
-    5 1 $14 door-bits
+    5 part-shown
     4 1 movie-play
     3 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     0 $F9 8 action
     $10 $C8 movie-param
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
@@ -935,89 +734,19 @@ USING: room-names story.words story.shared flag-names ;
     5 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     $10 $C8 movie-param
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
 \ ---- registered ----
-' old-mansion-1f-12.enter old-mansion-1f-12 0 room-script!
-' old-mansion-1f-12.char-enter old-mansion-1f-12 6 room-script!
-' old-mansion-1f-12.phase1 old-mansion-1f-12 1 room-script!
-' old-mansion-1f-12.phase2 old-mansion-1f-12 2 room-script!
-' old-mansion-1f-12.act00 old-mansion-1f-12 $00 action-script!
-' old-mansion-1f-12.act01 old-mansion-1f-12 $01 action-script!
-' old-mansion-1f-12.act02 old-mansion-1f-12 $02 action-script!
-' old-mansion-1f-12.act03 old-mansion-1f-12 $03 action-script!
-' old-mansion-1f-12.act04 old-mansion-1f-12 $04 action-script!
-' old-mansion-1f-12.act05 old-mansion-1f-12 $05 action-script!
-' old-mansion-1f-12.act06 old-mansion-1f-12 $06 action-script!
-' old-mansion-1f-12.act07 old-mansion-1f-12 $07 action-script!
-' old-mansion-1f-12.act08 old-mansion-1f-12 $08 action-script!
-' old-mansion-1f-12.act09 old-mansion-1f-12 $09 action-script!
-' old-mansion-1f-12.act0A old-mansion-1f-12 $0A action-script!
-' old-mansion-1f-12.act0B old-mansion-1f-12 $0B action-script!
-' old-mansion-1f-12.act0C old-mansion-1f-12 $0C action-script!
-' old-mansion-1f-12.act0D old-mansion-1f-12 $0D action-script!
-' old-mansion-1f-12.act0E old-mansion-1f-12 $0E action-script!
-' old-mansion-1f-12.act0F old-mansion-1f-12 $0F action-script!
-' old-mansion-1f-12.act10 old-mansion-1f-12 $10 action-script!
+old-mansion-1f-12 register-scripts   \ (its phases and actions, by their names)

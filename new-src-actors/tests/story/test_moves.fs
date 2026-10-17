@@ -41,6 +41,8 @@ testing a turn to a heading (15 -> 0x44): facing it, done
 T{ 15 0 -1 game:hewie  0e 0e 0e 45e give  300 [: [: his-done @ ;] his ;] within -> -1 }T
 T{ game:hewie body-yaw 45e deg>rad f- angle-wrap fabs 0.02e f< -> -1 }T
 testing a walk to a spot (5 -> 0x3F): there, done
+\ (from 20 behind her along x, wherever his own wanderings left him)
+game:fiona body-pos p vec!  p sf@ 20e f- p sf!  p vec@ xyz>cells 0 game:hewie send place  2 frames
 game:hewie body-pos p vec!  spot!
 T{ 5 spot-tri -1 game:hewie  spot 0e give  400 [: [: his-done @ ;] his ;] within -> -1 }T
 T{ game:hewie 3e near -> -1 }T

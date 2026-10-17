@@ -7,21 +7,27 @@ USING: engine actors messages ;
 1 constant fade-layer   \ (the UI layers: 0 the movie, 1 the fade, 2 the message window, 3 the prompt)
 
 state: screen-state
-  cell field level        \ 0 clear .. 1000 black
+  cell field level        \ no-fade .. full-fade
   cell field from  cell field to  cell field frames  cell field t
   cell field asked-by     \ who waits for it (-1 none)
   cell field white        \ in white (kinds 2 and 3), not black
 end-state
 
 : fading? ( -- flag )  t @ frames @ < ;
-\ a fade over `frames` frames, by kind and $F (ScreenFade_Step): the even kinds go out, the odd
-\ come in - 0 / 4 to black, 1 / 5 from black, 2 / 3 the same in white, 6 to half dark, 7 back from
-\ it. (Its bits $C0 / $30 fade the music and the volume with it: with the music.)
-create kind-levels   \ (from, to)
-    0 , 1000 ,   1000 , 0 ,   0 , 1000 ,   1000 , 0 ,   0 , 1000 ,   1000 , 0 ,   0 , 500 ,   500 , 0 ,
+\ a fade over `frames` frames, by kind (ScreenFade_Step; the kind's bits $C0 / $30 fade the music
+\ and the volume with it: with the music). The even kinds go out, the odd come in.
+enum: fade-kind  to-black from-black to-white from-white to-black-2 from-black-2 to-dim from-dim ;
+0 constant no-fade   500 constant half-fade   1000 constant full-fade   \ (its level)
+begin-structure /fade  field: fade-from  field: fade-to  end-structure
+create fades
+    no-fade , full-fade ,   full-fade , no-fade ,   no-fade , full-fade ,   full-fade , no-fade ,
+    no-fade , full-fade ,   full-fade , no-fade ,   no-fade , half-fade ,   half-fade , no-fade ,
+: fade-of ( kind -- addr )  /fade * fades + ;
+: white-kind? ( kind -- flag )  dup to-white = swap from-white = or ;
 : start ( frames kind -- )
-    $F and  dup 8 < 0= if  drop 4  then                     \ (8..15: no such kind - as out)
-    dup 2 4 within white !  2 cells * kind-levels +  dup @ from !  cell+ @ to !
+    $F and  dup from-dim > if  drop to-black-2  then        \ (8..15: no such kind - as out)
+    dup white-kind? white !
+    fade-of  dup fade-from @ from !  fade-to @ to !
     0 max frames !  0 t !
     frames @ 0= if  to @ level !  then ;
 : finish ( -- )   \ it counts as over
@@ -32,11 +38,12 @@ create kind-levels   \ (from, to)
     fading? 0= if  exit  then
     1 t +!  to @ from @ - t @ * frames @ / from @ + level !
     fading? 0= if  finish  then ;
-: draw ( -- )
+: opacity ( -- 0..255 )  level @ 255 * full-fade / 0 max 255 min ;
+: draw ( -- )   \ black or white, that much opaque
     fade-layer ui-clear
-    level @ dup 0> 0= if  drop exit  then
-    255 * 1000 / 0 max 255 min  white @ if  $FFFFFF00 or  then
-    >r  fade-layer 0 0 screen-size r> ui-rect ;   \ (black or white, that much opaque)
+    level @ 0> 0= if  exit  then
+    opacity  white @ if  $FFFFFF00 or  then  {: rgba :}
+    fade-layer 0 0 screen-size rgba ui-rect ;
 
 behaviour fading
   on spawned ( -- )  -1 asked-by !  self subscribe tick  self subscribe frame-end ;

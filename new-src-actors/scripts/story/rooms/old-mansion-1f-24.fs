@@ -2,45 +2,45 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-24
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 defer old-mansion-1f-24.act02
 : old-mansion-1f-24.enter ( -- )   \ 0043B020
     room-sounds
-    $263 story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+    om1f-24-breakable-broken story-flag? not if
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
-        $292 story-flag? not if
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
+        om1f-24-beef-jerky story-flag? not if
             0 -97.5 1.0 1.0 flicker-sprite
         then
     then
     0 8 0.812 0.687 0.187 0.312 zone-rect
-    $76 story-flag? not if
+    white-mandragora-used story-flag? not if
         3 stalker-kind? $22 stalker-kind? or if
             stalker-active? not if
                 4 ebit-set
             then
         then
     then
-    0 1 8 nav-group
+    1 solid-floor floor-off
     4 ebit? if
         1 exit-taken? not if
-            $FE 2 char-file-load
+            stalker-who 2 char-file-load
         then
         force-followed state-flag-set
         stalker-no-fear state-flag-set
         no-stalker-camera state-flag-set
-        $FE char-activate
-        $FE 1 char-silent
+        stalker-who char-activate
+        stalker-who 1 char-silent
         $FE $70 49 2 stalker-to-room
-        0 $FE 4 action
+        0 stalker-who 4 action
     then
-    $27D story-flag? not if
+    om1f-24-rubrum-medallion story-flag? not if
         1 -98.51 1.0 -12.98 flicker-sprite
     then
     1 $2300 sound-volume
@@ -48,91 +48,43 @@ defer old-mansion-1f-24.act02
 
 : old-mansion-1f-24.char-enter ( -- )   \ 0043B0D0
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        1 1 player-camera
     then then
     0 1 1 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 2 2 char-camera
-                0 camera-follow
-            else
-                1 2 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            2 2 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 2 2 char-camera
-            0 camera-follow
-        else
-            1 2 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        2 2 player-camera
     then then
     1 2 2 area-camera
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        1 1 player-camera
     then then
     2 1 1 area-camera
     hewie-controlled? not if
-        0 self-is? 3 exit-taken? and if
-            0 3 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 3 exit-taken? and if
+            fiona-who 3 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 3 exit-taken? and if
-        1 3 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 3 exit-taken? and if
+        hewie-who 3 char-to-exit
+        0 0 player-camera
     then then
     3 0 0 area-camera
 ;
@@ -145,49 +97,49 @@ defer old-mansion-1f-24.act02
         1 exit-check
     then
     hewie-controlled? not if
-        0 2 char-in-area? 0 char-busy? not and if
+        fiona-who 2 char-in-area? fiona-who char-busy? not and if
             2 exit-check
         then
-    else 1 2 char-in-area? 1 char-busy? not and if
+    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
         2 exit-check
     then then
     hewie-controlled? not if
-        0 3 char-in-area? 0 char-busy? not and if
+        fiona-who 3 char-in-area? fiona-who char-busy? not and if
             3 exit-check
         then
-    else 1 3 char-in-area? 1 char-busy? not and if
+    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
         3 exit-check
     then then
     8 0 0 1 chars-area-camera
     9 1 1 1 chars-area-camera
-    0 4 char-entered-area? 0 6 char-entered-area? or if
+    fiona-who 4 char-entered-area? fiona-who 6 char-entered-area? or if
         0 exit-prepare
     then
-    0 7 char-entered-area? if
+    fiona-who 7 char-entered-area? if
         2 exit-prepare
     then
-    0 5 char-entered-area? if
+    fiona-who 5 char-entered-area? if
         3 exit-prepare
     then
-    $76 story-flag? not if
+    white-mandragora-used story-flag? not if
         1 -76.01 0.0 -50.35 $46 17 0 zone
-        5 ebit? not 1 char-here? and 1 0 char-C4? and if
+        5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
-                    1 1 9 char-zone-bits? if
+                    hewie-who 1 9 char-zone-bits? if
                         5 ebit-set
                         $64 chance? if
                             $1F 1 var-set
-                            0 1 $8A action
+                            0 hewie-who $8A action
                         then
                     then
                 then
             then
         then
         1 -76.01 0.0 -50.35 $46 17 0 zone
-        1 char-here? 1 game-mode? and if
+        hewie-who char-here? 1 game-mode? and if
             hewie-can-command? if
-                1 1 9 char-zone-bits? if
+                hewie-who 1 9 char-zone-bits? if
                     $1F 1 var-set
                     $1F 17.0 hewie-look-zone
                 then
@@ -195,47 +147,47 @@ defer old-mansion-1f-24.act02
         then
     then
     6 sound-bank-loaded? if
-        $FE $80000000 6 char-sound
-        $FE $80000001 6 char-sound
+        stalker-who $80000000 6 char-sound
+        stalker-who $80000001 6 char-sound
     then
 ;
 
 : old-mansion-1f-24.phase2 ( -- )   \ 0043B2C0
     4 ebit? if
-        0 $FE $A 0 $2D char-touching-facing? if
+        fiona-who stalker-who $A 0 $2D char-touching-facing? if
             6 ebit? not if
-                5 5 0 scene-change
+                5 unhurried offer-action
             then
         then
     then
-    0 $A char-in-area? 0 -90 $1E char-heading? and if
-        5 9 0 scene-change
+    fiona-who $A char-in-area? fiona-who -90 $1E char-heading? and if
+        9 unhurried offer-action
     then
-    0 $B char-in-area? 0 -67 $3C char-heading? and if
-        5 9 0 scene-change
+    fiona-who $B char-in-area? fiona-who -67 $3C char-heading? and if
+        9 unhurried offer-action
     then
-    $27D story-flag? not if
+    om1f-24-rubrum-medallion story-flag? not if
         2 1 5 5 0 zone-at-effect
-        0 2 3 char-zone-bits? if
-            5 8 4 scene-change
+        fiona-who 2 3 char-zone-bits? if
+            8 calm offer-action
         then
     then
-    $263 story-flag? not if
+    om1f-24-breakable-broken story-flag? not if
         0 -97.5 0.0 1.0 5 8 1 zone
-        $FF 0 char-in-zone? if
-            $263 story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
-            -97.5 0.0 1.0 0 -2145378272 0 0.0 scene-effect-8C
+        self-who 0 char-in-zone? if
+            om1f-24-breakable-broken story-flag-set
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
+            -97.5 0.0 1.0 0 -2145378272 0 0.0 shards-at
             $88 5 -97.5 0.0 1.0 0 0 sound
             $40 $B4 noise
             0 -97.5 1.0 1.0 flicker-sprite
         then
-    else $292 story-flag? not if
+    else om1f-24-beef-jerky story-flag? not if
         0 0 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
-            5 3 4 scene-change
+        fiona-who 0 3 char-zone-bits? if
+            3 calm offer-action
         then
     then then
 ;
@@ -244,10 +196,10 @@ defer old-mansion-1f-24.act02
     4 ebit? if
         stalker-no-fear state-flag-clear
         no-stalker-camera state-flag-clear
-        1 $FE 0 char-model-op
-        $FE 0 char-silent
-        $FE action-end
-        $FE char-done
+        1 stalker-who 0 char-model-op
+        stalker-who 0 char-silent
+        stalker-who action-end
+        stalker-who char-done
     then
     force-followed state-flag-clear
 ;
@@ -300,23 +252,22 @@ defer old-mansion-1f-24.act02
     self-wait-done
     -97.5 1.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
         $61 message-param-room
         $61 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $292 story-flag-set
+            om1f-24-beef-jerky story-flag-set
             0 effect-remove
             $61 1 item-give-count
             0 $61 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -329,13 +280,13 @@ defer old-mansion-1f-24.act02
     1 self-noclip
     1 self-scripted
     self-wait-done
-    $FE $31 -76.0 -56.5 180 char-to-xz
-    1 1 8 nav-group
+    stalker-who $31 -76.0 -56.5 180 char-to-xz
+    1 solid-floor floor-on
     6 ebit-set
-    $FE char-file-use
+    stalker-who char-file-use
     6 ebit-clear
-    0 $FE 0 char-model-op
-    $FE 0 char-silent
+    0 stalker-who 0 char-model-op
+    stalker-who 0 char-silent
     ['] old-mansion-1f-24.act02 goto
 ;
 
@@ -349,22 +300,21 @@ defer old-mansion-1f-24.act02
         yield
     repeat
     $1D 1 item-count? not if
-        $FE 0 6 char-sound
-        0 message
+        stalker-who 0 6 char-sound
+        0 message   \ "Oh my. What a filthy little princess. A small present from the lord of the manor..."
         self-frames-reset
         $1E self-wait-frames
         wait-message
         $1D message-param-room
         $1D 1 item-give-count
         0 $1D item-tab
-        0 $F9 $8C action-force
-        $83 $85 0.0 0.0 0.0 0 0 sound
-        $8012 message
+        item-fanfare
+        $8012 message   \ "You've obtained ."
         wait-message
-        $366 story-flag-set
+        got-hebels-perfume story-flag-set
     else
-        $FE 1 6 char-sound
-        1 message
+        stalker-who 1 6 char-sound
+        1 message   \ "Miss... It's cleaning time now."
         self-frames-reset
         $5A self-wait-frames
         wait-message
@@ -383,23 +333,22 @@ defer old-mansion-1f-24.act02
     self-wait-done
     -98.51 -12.98 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
         $73 message-param-room
         $73 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $27D story-flag-set
+            om1f-24-rubrum-medallion story-flag-set
             1 effect-remove
             $73 1 item-give-count
             0 $73 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -410,24 +359,10 @@ defer old-mansion-1f-24.act02
 
 : old-mansion-1f-24.act09 ( -- )   \ 0047AED0
     self-wait-done
-    2 message
+    2 message   \ "Judging from the size and shape, there is probably a statue under there... But I probab..."
     wait-message
     self-idle-or-end
 ;
 
 \ ---- registered ----
-' old-mansion-1f-24.enter old-mansion-1f-24 0 room-script!
-' old-mansion-1f-24.char-enter old-mansion-1f-24 6 room-script!
-' old-mansion-1f-24.phase1 old-mansion-1f-24 1 room-script!
-' old-mansion-1f-24.phase2 old-mansion-1f-24 2 room-script!
-' old-mansion-1f-24.phase5 old-mansion-1f-24 5 room-script!
-' old-mansion-1f-24.act00 old-mansion-1f-24 $00 action-script!
-' old-mansion-1f-24.act01 old-mansion-1f-24 $01 action-script!
-' old-mansion-1f-24.act02 old-mansion-1f-24 $02 action-script!
-' old-mansion-1f-24.act03 old-mansion-1f-24 $03 action-script!
-' old-mansion-1f-24.act04 old-mansion-1f-24 $04 action-script!
-' old-mansion-1f-24.act05 old-mansion-1f-24 $05 action-script!
-' old-mansion-1f-24.act06 old-mansion-1f-24 $06 action-script!
-' old-mansion-1f-24.act07 old-mansion-1f-24 $07 action-script!
-' old-mansion-1f-24.act08 old-mansion-1f-24 $08 action-script!
-' old-mansion-1f-24.act09 old-mansion-1f-24 $09 action-script!
+old-mansion-1f-24 register-scripts   \ (its phases and actions, by their names)

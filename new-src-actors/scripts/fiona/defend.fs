@@ -6,7 +6,7 @@
 \ stumble). A blow is a `blow` to whom it reaches; struck home she's held still 5 frames.
 \ Hewie is told when she shoves or kicks without him being struck (Fiona_HewieReact 10 / 11).
 IN: fiona.defend
-USING: engine game-state actors messages common keys facts flag-names rumble fiona.state fiona.model fiona.moving fiona.slam fiona.fear fiona.controls fiona.looks ;
+USING: engine vectors game-state actors messages common keys facts flag-names rumble items items.names fiona.state fiona.anims fiona.sounds fiona.model fiona.moving fiona.slam fiona.fear fiona.controls fiona.looks ;
 
 defer to-idle ( -- )
 \ the shove's steps move her every frame - held still by a blow that landed, its frozen frame's
@@ -16,21 +16,20 @@ defer to-idle ( -- )
 
 \ ---- whom a blow at a point reaches (Progress_CharNear: within their height and radius,
 \ widened by the margin) ----
-fvariable cn-m  variable cn-v  variable cn-id
 : near-point? ( v id -- flag ) ( F: margin -- )
-    cn-m f!  cn-id !  cn-v !  cn-id @ 0< if  false exit  then
-    cn-v @ 4 + sf@  cn-id @ body-at 4 + sf@ cn-m f@ f-  f> 0= if  false exit  then
-    cn-v @ 4 + sf@  cn-id @ body-at 4 + sf@  cn-id @ body-dims fswap fdrop f+ cn-m f@ f+  f< 0= if  false exit  then
-    cn-v @ cn-id @ body-at vec-dist-xz  cn-id @ body-dims fdrop cn-m f@ f+  f< ;
+    {: v id F: m :}  id 0< if  false exit  then
+    v v.y sf@  id body-at v.y sf@ m f-  f> 0= if  false exit  then                               \ (above their feet)
+    v v.y sf@  id body-at v.y sf@  id body-dims fswap fdrop f+ m f+  f< 0= if  false exit  then   \ (below their top)
+    v id body-at vec-dist-xz  id body-dims fdrop m f+  f< ;                                      \ (within their radius)
 : touching? ( id -- flag )  dup 0< if  drop false exit  then  self swap 0e 0e bodies-touching? ;
 
 \ a blow sent: to the stalker (1) and Hewie (2) it reaches, each once a blow
 : blow-at ( damage -- ) ( F: x y z reach -- )   \ to the homunculi a blow reaches there (reach -1: those touching her)
-    >r  her-blow-n @  r>  f>cell >r f>cell >r f>cell >r f>cell  r> r> r>  broadcast fiona-blow ;
-: strike ( kind damage how mask -- )
-    her-struck @ invert and  dup her-struck @ or her-struck !
-    dup 1 and if  stalker-in-room >r  2over 2over drop r> send blow  then
-    2 and if  dog-in-room send blow  else  2drop drop  then ;
+    {: damage F: x y z reach :}  her-blow-n @  damage  x f>cell y f>cell z f>cell reach f>cell  broadcast fiona-blow ;
+: strike ( kind damage how mask -- )   \ (each struck once a blow: 1 the stalker, 2 Hewie)
+    her-struck @ invert and  dup her-struck @ or her-struck !  {: kind damage how mask :}
+    mask 1 and if  kind damage how stalker-in-room send blow  then
+    mask 2 and if  kind damage how dog-in-room send blow  then ;
 
 \ ---- the shove (Fiona_StateStrike): at its key, from her hand - or in the two special costumes
 \ (progress variable $26: 6, 7) their own strike - a blow to whom it reaches. Her hand reaches 2
@@ -40,123 +39,129 @@ fvariable cn-m  variable cn-v  variable cn-id
 \ (1 in 10 a hard blow of 50 - the special costumes' 1 in 10: 50 / 100 - with a burst on whom it
 \ meets); in a special costume 1 in 5 a stumble too. The damage by Fortis's boost (x3). Into
 \ a wall (not the special strikes) it ends ($101) ----
-create hand 12 allot
+create hand /vec allot
+\ her blow, as worked out (blow-power): its kind, damage, how (a stumble), a big one (a burst at
+\ them), its reach - the shove's working values, read again as it lands
 variable blow-kind  variable blow-dmg  variable blow-how  variable blow-big  fvariable blow-reach
+$8000 constant stumble-blow
 : form ( -- n )  her-costume @ ;
-: special? ( -- flag )  form dup 6 = swap 7 = or ;
+: special? ( -- flag )  form dup illegal-outfit = swap cowgirl-outfit = or ;
 : boots ( -- id )  progress pr.equipped sl@ ;
 : chance? ( F: p -- flag )  rnd f> ;
-: stumbles ( -- )  $8000 blow-how ! ;
-: boosted ( n -- n' )   \ (Fortis's: her blows x3 while it lasts - the boosts' fifth, items.fs)
-    progress pr.boosts 4 8 * + 4 + sl@ 0> if  s>f  progress pr.boosts 4 8 * + sf@ f* f>s  then ;
+: stumbles ( -- )  stumble-blow blow-how ! ;
+: boosted ( n -- n' )   \ (Fortis's: her blows x3 while it lasts - items.fs)
+    blow-boost boost-on? if  s>f  blow-boost boost-value f* f>s  then ;
 : blow-power ( -- )
     0 blow-how !  0 blow-big !
-    form 7 = if  2 blow-kind !  10 blow-dmg !
-        boots $83 = 0.1e chance? and if  100 blow-dmg !  -1 blow-big !  then  0.2e chance? if  stumbles  then  exit  then
-    form 6 = if  1 blow-kind !  5 blow-dmg !
-        boots $83 = 0.1e chance? and if  50 blow-dmg !  -1 blow-big !  then  0.2e chance? if  stumbles  then  exit  then
-    1 blow-kind !  1 blow-dmg !
+    form cowgirl-outfit = if  kick-blow blow-kind !  10 blow-dmg !
+        boots burst-shoes = 0.1e chance? and if  100 blow-dmg !  -1 blow-big !  then  0.2e chance? if  stumbles  then  exit  then
+    form illegal-outfit = if  shove-blow blow-kind !  5 blow-dmg !
+        boots burst-shoes = 0.1e chance? and if  50 blow-dmg !  -1 blow-big !  then  0.2e chance? if  stumbles  then  exit  then
+    shove-blow blow-kind !  1 blow-dmg !
     boots case
-        $83 of  0.1e chance? if  2 blow-kind !  50 blow-dmg !  -1 blow-big !  then  endof
-        $82 of  0.2e chance? if  stumbles  then  2 blow-kind !  5 blow-dmg !  endof
-        $81 of  0.1e chance? if  stumbles  then  2 blow-dmg !  endof
+        burst-shoes of  0.1e chance? if  kick-blow blow-kind !  50 blow-dmg !  -1 blow-big !  then  endof
+        silver-boots of  0.2e chance? if  stumbles  then  kick-blow blow-kind !  5 blow-dmg !  endof
+        metal-boots of  0.1e chance? if  stumbles  then  2 blow-dmg !  endof
     endcase ;
-: at-bone ( bone -- ) ( F: ox oz -- )   \ (an offset turned by her heading from a bone)
-    her-yaw f@ rotate-by  her-model @ swap bone-pos  frot f+ hand 8 + sf!  hand 4 + sf!  f+ hand sf! ;
+: at-bone ( bone -- ) ( F: ox oz -- )   \ (an offset in the bone's own axes: the original's bone matrix applied)
+    {: bone F: ox oz :}  her-model @ bone  ox 0e oz  bone-point  hand vec! ;
 : blow-point ( -- )
-    form 7 = if  -10e 0e $23 at-bone  10e blow-reach f! exit  then
-    form 6 = if  0e 6e $21 at-bone  3e blow-reach f! exit  then
+    form cowgirl-outfit = if  -10e 0e $23 at-bone  10e blow-reach f! exit  then
+    form illegal-outfit = if  0e 6e $21 at-bone  3e blow-reach f! exit  then
     her-model @ 9 bone-pos hand vec!  2e blow-reach f! ;
 : shove-end ( -- )  ended? if  0 her-run-t !  to-idle exit  then  moving ;
 : shoving ( -- )
     recoil-down
-    ended? if  her-struck @ 2 and 0= if  10 hewie-id send reaction  then  0 her-run-t !  to-idle exit  then
+    ended? if  her-struck @ 2 and 0= if  shove-reaction hewie-id send reaction  then  0 her-run-t !  to-idle exit  then
     moving
     events 2 and 0= if  exit  then
     blow-point
     hand true slam-door if  exit  then                     \ (a door there slammed)
     special? 0=  hand $20018 body-tri-to 0< and if  $101 10 -1 play-blend  ['] shove-end her-act ! exit  then   \ (a wall before her hand)
     blow-power  blow-dmg @ boosted blow-dmg !
-    0  hand stalker-in-room blow-reach f@ near-point? 1 and or  hand dog-in-room blow-reach f@ near-point? 2 and or
-    ?dup if  >r blow-kind @ blow-dmg @ blow-how @ r> strike  then
+    0  hand stalker-in-room blow-reach f@ near-point? 1 and or  hand dog-in-room blow-reach f@ near-point? 2 and or  {: mask :}
+    mask if  blow-kind @ blow-dmg @ blow-how @ mask strike  then
     blow-dmg @ hand vec@ blow-reach f@ blow-at ;
 fvariable pace
 : shove-start ( -- )
     moving
     settled? 0= if  exit  then
-    special? if  $E00 -1 play-table  else   \ (the special costumes: their own, at its pace)
+    special? if  shove-anim -1 play-table  else   \ (the special costumes: their own, at its pace)
         1e  her-recovery @ $1C3 < 0= if  fdrop 3150 her-recovery @ - s>f 1800e f/ 1.5e f*  then
         1e  her-fear f@ 40e f> if  fdrop 160e her-fear f@ f- 120e f/  then
         fmin pace f!
-        $E00 2 play-table  pace f@ weight!   \ (slower by her fright: blended with motion 2, kept in step)
+        shove-anim 2 play-table  pace f@ weight!   \ (slower by her fright: blended with motion 2, kept in step)
     then
     1 her-blow-n +!  0 her-struck !  ['] shoving her-act ! ;
 
 \ ---- the kick: a step ahead while it fades in; while its key is clear it meets whom it
 \ touches (a kick, damage 5 - x3 with Fortis's - he may stumble); at its end her fear up 10 ----
-create ahead-pt 12 allot   \ (her radius ahead)
+create ahead-pt /vec allot   \ (her radius ahead)
 : ahead-pt! ( -- )  her-yaw f@ self body-dims fdrop ahead-pt her-at vec-ahead ;
 : kicking ( -- )
     recoil-down
     her-recoil @ 0= if  settled? 0= if  0e 1.0756e her-yaw f@ rotate-by move-by  else  root-move  then  then
     ended? if
-        her-struck @ 2 and 0= if  11 hewie-id send reaction  then
+        her-struck @ 2 and 0= if  kick-reaction hewie-id send reaction  then
         10e add-fear  0 her-run-t !  to-idle exit
     then
     events 2 and if  exit  then
     ahead-pt! ahead-pt true slam-door if  exit  then                 \ (a door ahead slammed)
     0  stalker-in-room touching? 1 and or  dog-in-room touching? 2 and or
-    ?dup if  >r 2 5 boosted 1 r> strike  then   \ (Fortis's x3 too: Fiona_StateKick's 5 x +0xA04)
+    {: mask :}  mask if  kick-blow 5 boosted 1 mask strike  then   \ (Fortis's x3 too: Fiona_StateKick's 5 x +0xA04)
     5 her-at vec@ -1e blow-at ;   \ (the creatures 5 as it is)
 : kick-start ( -- )
     root-move
     settled? 0= if  exit  then
-    $3D 0 her-sound  $E01 -1 play-table  1 her-blow-n +!  0 her-struck !  ['] kicking her-act ! ;
+    kick-sound 0 her-sound  kick-anim -1 play-table  1 her-blow-n +!  0 her-struck !  ['] kicking her-act ! ;
 
 \ ---- the square button (Progress_PlayerButtons, Fiona_StateBlock 8) ----
+: shove-sub ( -- n )  $1A ;   : kick-sub ( -- n )  $1B ;   \ (her sub defending)
+: start-kick ( -- )  kick-doing her-doing !  defend-mode her-mode !  kick-sub her-sub !  ['] kick-start her-act ! ;
+: start-shove ( -- )  shove-doing her-doing !  defend-mode her-mode !  shove-sub her-sub !  ['] shove-start her-act ! ;
 : try-defend ( -- )
     square button-pressed? 0= if  exit  then
-    hands-off?  her-mode @ 0<> or  her-panic-stage @ 4 >= or  no-flee state-flag? or if  exit  then
-    her-doing @ $D = if  6 her-doing !  8 her-mode !  $1B her-sub !  ['] kick-start her-act ! exit  then
-    group dup 5 = over 1 = or over 0= or
-    over 2 = her-recovery @ 0<> her-run-t @ $3D < or and or if
-        drop  5 her-doing !  8 her-mode !  $1A her-sub !  ['] shove-start her-act ! exit
-    then
-    2 = if  6 her-doing !  8 her-mode !  $1B her-sub !  ['] kick-start her-act !  then ;
+    hands-off?  her-mode @ own-mode <> or  her-panic-stage @ panicking >= or  no-flee state-flag? or if  exit  then
+    her-doing @ flee-doing = if  start-kick exit  then   \ (fleeing: a kick)
+    group {: g :}   \ (standing, walking, resting - or just set off running, or running still frightened: a shove)
+    g resting-group =  g walking-group = or  g standing-group = or
+    g running-group =  her-recovery @ 0<> her-run-t @ $3D < or  and  or if  start-shove exit  then
+    g running-group = if  start-kick  then ;
 \ her blow struck home (`blow-taken`): held still; her sound ($90 a kick, $8F a shove; Hewie
 \ counted as kicked - with his trust, H3)
 \ her shove's: costume 6 its own ($22), costume 7 none - its sparks instead (a blood spray at
 \ one of four of their bones); a big blow a burst at them (Fiona_ShoveEffect)
 : spray-on ( id -- )   \ (the original picks one of four of their bones; here a height on them, at random)
-    dup body? 0= if  drop exit  then
-    >r  r@ body-tri 0  r@ body-at vec@  fswap  r> body-dims fswap fdrop  0.4e rnd 0.5e f* f+ f* f+  fswap  spray ;
+    {: id :}  id body? 0= if  exit  then
+    id body-tri 0  id body-at vec@  {: F: x y z :}
+    x  y  id body-dims fswap fdrop  0.4e rnd 0.5e f* f+ f* f+  z  spray ;
 : by-dog? ( -- flag )  sender hewie-id = ;
 : dog-mistreated ( -- )   \ (her blow on Hewie: 3 more in his treatment - the progress' +0xFB6)
     progress pr.hewie-mistreated dup l@ 3 + 0 max 10000 min swap l! ;
 : struck-home ( -- )
     by-dog? if  dog-mistreated  then
-    her-sub @ $1B = if   \ (her kick landed: the rumble only on the stalker or a creature)
-        by-dog? 0= if  $C0 12 fiona-jolt  then  $90 0 her-sound  recoil exit
+    her-sub @ kick-sub = if   \ (her kick landed: the rumble only on the stalker or a creature)
+        by-dog? 0= if  $C0 12 fiona-jolt  then  kick-hit-sound 0 her-sound  recoil exit
     then
-    form 6 = if  $22 0 her-sound  else  form 7 <> if  $8F 0 her-sound  then  then
-    form 7 = if  sender spray-on  then
+    form illegal-outfit = if  illegal-hit-sound 0 her-sound  else  form cowgirl-outfit <> if  shove-hit-sound 0 her-sound  then  then
+    form cowgirl-outfit = if  sender spray-on  then
     blow-big @ if  sender body-at vec@ puffs  then
     recoil ;
 
 \ ---- her point of interest (Fiona_PointOfInterest: the story's zones test it, cond 0x37): her
 \ kick outside its key window, 10 up and her radius ahead; her shove at its key - her hand,
 \ costume 6's strike 6 ahead of its bone (at 2.5 up), costume 7's 10 ahead (2.5 up); else none ----
-create poi 12 allot
+create poi /vec allot
 : point-ahead ( F: up ahead -- )   \ (from her place, turned by her heading)
-    fswap poi 4 + sf!  0e fswap her-yaw f@ rotate-by  her-at 8 + sf@ f+ poi 8 + sf!  her-at sf@ f+ poi sf!
-    her-at 4 + sf@ poi 4 + sf@ f+ poi 4 + sf! ;
+    {: F: up ahead :}  0e ahead her-yaw f@ rotate-by  {: F: dx dz :}
+    her-at v.x sf@ dx f+ poi v.x sf!  her-at v.y sf@ up f+ poi v.y sf!  her-at v.z sf@ dz f+ poi v.z sf! ;
 : tell-point ( -- )
-    her-mode @ 8 <> if  body-point-off exit  then
-    her-sub @ $1B = if
+    her-mode @ defend-mode <> if  body-point-off exit  then
+    her-sub @ kick-sub = if
         events 2 and if  body-point-off exit  then
         10e self body-dims fdrop point-ahead  poi vec@ body-point! exit
     then
-    her-sub @ $1A <>  events 2 and 0= or if  body-point-off exit  then
-    form 7 = if  2.5e 10e point-ahead  poi vec@ body-point! exit  then
-    form 6 = if  0e 6e $21 at-bone  hand vec@ fdrop her-at 4 + sf@ 2.5e f+ fswap body-point! exit  then
+    her-sub @ shove-sub <>  events 2 and 0= or if  body-point-off exit  then
+    form cowgirl-outfit = if  2.5e 10e point-ahead  poi vec@ body-point! exit  then
+    form illegal-outfit = if  0e 6e $21 at-bone  hand vec@ fdrop her-at v.y sf@ 2.5e f+ fswap body-point! exit  then
     her-model @ 9 bone-pos body-point! ;

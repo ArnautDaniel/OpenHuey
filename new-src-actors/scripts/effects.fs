@@ -30,9 +30,9 @@ behaviour scene-effect
   on arrived ( room exit -- )  2drop  self kill ;
 end-behaviour
 
-: effect-actor ( p beh name len -- id | -1 )   \ an actor keeping particle system p
-    3 pick 0< if  2drop 2drop -1 exit  then
-    fx-state -rot spawn  tuck send particles-made ;
+: effect-actor ( p beh name len -- id | -1 )   \ an actor keeping particle system p (-1: none made)
+    {: p beh a n :}  p 0< if  -1 exit  then
+    beh fx-state a n spawn  p over send particles-made ;
 
 \ ---- a reflecting quad (Reflection: the characters drawn again mirrored in its plane) - its
 \ engine slot (0..3: `reflect!`) taken while it lives, let go when it is killed (if still its) ----

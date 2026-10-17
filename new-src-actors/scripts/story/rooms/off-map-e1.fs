@@ -14,55 +14,31 @@ USING: room-names story.words story.shared story.clock ;
     $2E 1 pvar? if
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
-    0 6.0 21.8 -3.2 0 effect-86
-    1 29.0 41.8 41.9 0 effect-86
-    2 -46.8 93.8 18.5 0 effect-86
+    0 6.0 21.8 -3.2 0 flame-in
+    1 29.0 41.8 41.9 0 flame-in
+    2 -46.8 93.8 18.5 0 flame-in
     1 $2300 sound-volume
 ;
 
 : off-map-e1.char-enter ( -- )   \ 004485E0
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        0 0 player-camera
     then then
     1 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 4 3 char-camera
-                0 camera-follow
-            else
-                1 4 3 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            4 3 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 4 3 char-camera
-            0 camera-follow
-        else
-            1 4 3 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        4 3 player-camera
     then then
     2 4 3 area-camera
 ;
@@ -82,41 +58,41 @@ USING: room-names story.words story.shared story.clock ;
     $15 3 -1 1 chars-area-camera
     $16 4 3 1 chars-area-camera
     $17 3 -1 1 chars-area-camera
-    1 4 char-left-area? 1 5 char-entered-area? or if
+    hewie-who 4 char-left-area? hewie-who 5 char-entered-area? or if
         2 exit-prepare
     then
-    1 6 char-left-area? if
+    hewie-who 6 char-left-area? if
         1 exit-prepare
     then
     0 0 8 -4 0 zone-at-effect
-    0 0 3 char-zone-bits? 0 0 3 char-zone-bits-before? not and if
-        0 0 char-effect-moving
+    fiona-who 0 3 char-zone-bits? fiona-who 0 3 char-zone-bits-before? not and if
+        fiona-who 0 char-effect-moving
     then
-    1 0 3 char-zone-bits? 1 0 3 char-zone-bits-before? not and if
-        1 0 char-effect-moving
+    hewie-who 0 3 char-zone-bits? hewie-who 0 3 char-zone-bits-before? not and if
+        hewie-who 0 char-effect-moving
     then
-    $FE 0 3 char-zone-bits? $FE 0 3 char-zone-bits-before? not and if
-        $FE 0 char-effect-moving
+    stalker-who 0 3 char-zone-bits? stalker-who 0 3 char-zone-bits-before? not and if
+        stalker-who 0 char-effect-moving
     then
     1 1 8 -4 0 zone-at-effect
-    0 1 3 char-zone-bits? 0 1 3 char-zone-bits-before? not and if
-        0 1 char-effect-moving
+    fiona-who 1 3 char-zone-bits? fiona-who 1 3 char-zone-bits-before? not and if
+        fiona-who 1 char-effect-moving
     then
-    1 1 3 char-zone-bits? 1 1 3 char-zone-bits-before? not and if
-        1 1 char-effect-moving
+    hewie-who 1 3 char-zone-bits? hewie-who 1 3 char-zone-bits-before? not and if
+        hewie-who 1 char-effect-moving
     then
-    $FE 1 3 char-zone-bits? $FE 1 3 char-zone-bits-before? not and if
-        $FE 1 char-effect-moving
+    stalker-who 1 3 char-zone-bits? stalker-who 1 3 char-zone-bits-before? not and if
+        stalker-who 1 char-effect-moving
     then
     2 2 8 -4 0 zone-at-effect
-    0 2 3 char-zone-bits? 0 2 3 char-zone-bits-before? not and if
-        0 2 char-effect-moving
+    fiona-who 2 3 char-zone-bits? fiona-who 2 3 char-zone-bits-before? not and if
+        fiona-who 2 char-effect-moving
     then
-    1 2 3 char-zone-bits? 1 2 3 char-zone-bits-before? not and if
-        1 2 char-effect-moving
+    hewie-who 2 3 char-zone-bits? hewie-who 2 3 char-zone-bits-before? not and if
+        hewie-who 2 char-effect-moving
     then
-    $FE 2 3 char-zone-bits? $FE 2 3 char-zone-bits-before? not and if
-        $FE 2 char-effect-moving
+    stalker-who 2 3 char-zone-bits? stalker-who 2 3 char-zone-bits-before? not and if
+        stalker-who 2 char-effect-moving
     then
 ;
 
@@ -144,9 +120,4 @@ USING: room-names story.words story.shared story.clock ;
 ;
 
 \ ---- registered ----
-' off-map-e1.enter off-map-e1 0 room-script!
-' off-map-e1.char-enter off-map-e1 6 room-script!
-' off-map-e1.phase1 off-map-e1 1 room-script!
-' off-map-e1.phase3 off-map-e1 3 room-script!
-' off-map-e1.phase2 off-map-e1 2 room-script!
-' off-map-e1.act00 off-map-e1 $00 action-script!
+off-map-e1 register-scripts   \ (its phases and actions, by their names)
