@@ -85,6 +85,10 @@ Enumerations: `enum: mood  calm wary tense angry ;` makes the constants `calm` .
 number in the list sets the next: `enum: act  $36 hide  $52 lie-down ;`) and `mood>name ( n --
 addr len )`, which names a value ("?" for one not listed) - for the debug words and traces.
 
+Combinators (Factor's), to run code on values without shuffling them: `x [: .. ;] dip` (under
+x), `x [: .. ;] keep` (x kept after), `2dip`, `2keep`, `x [: p ;] [: q ;] bi` (both on x), `tri`,
+`x y [: q ;] bi@` (q on each), `flag [: .. ;] when` / `unless`, `flag a b ?` (a if the flag, else b).
+
 Quotations: `[: ... ;]` leaves anonymous code as an execution token, inside definitions or at
 the prompt (Factor's `[ ... ]`): `{ 1 2 3 } [: dup * ;] map`.
 

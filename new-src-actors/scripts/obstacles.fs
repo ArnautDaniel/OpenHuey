@@ -42,7 +42,7 @@ state: obstacles-state
 end-state
 : model ( i -- addr )  cells models + ;
 : kept ( i -- addr )  2 * cells kept-squares + ;
-: keep ( a b i -- )  kept tuck cell+ !  ! ;
+: keep-square ( a b i -- )  kept tuck cell+ !  ! ;
 : kept@ ( i -- a b )  kept dup @  swap cell+ @ ;
 : spot ( i -- v )  /vec * spots + ;
 : follow ( i -- )  dup model @ model$  rot obstacle-at  placed-at ;   \ (Obstacles_ModelsFollow)
@@ -62,8 +62,8 @@ behaviour pushables
   on place-obstacle-kept ( i n kind -- )
       {: i n kind :}  i valid? if  i n kind  i kept@  place  then ;
   on stop-obstacle ( i -- )  obstacle-stop ;
-  on keep-obstacle ( i -- )  dup valid? if  dup obstacle-square rot keep  else  drop  then ;
-  on keep-obstacle-at ( i a b -- )  {: i a b :}  i valid? if  a b i keep  then ;
+  on keep-obstacle ( i -- )  dup valid? if  dup obstacle-square rot keep-square  else  drop  then ;
+  on keep-obstacle-at ( i a b -- )  {: i a b :}  i valid? if  a b i keep-square  then ;
   on keep-obstacle-spot ( i -- )  dup valid? if  dup obstacle-at spot vec!  else  drop  then ;
   on obstacle-model-to-spot ( i n -- )   \ (Obstacles_ModelBack: that model at its kept spot, its model)
       {: i n :}  i valid? n model? and if  n i model !  n model$  i spot vec@  placed-at  then ;

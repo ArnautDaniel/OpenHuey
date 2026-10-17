@@ -212,6 +212,18 @@ T{ -1 l-two-early  4 1.5e l-two-early -> -1 5 1 }T
 : l-in-loop ( n -- sum )  {: n | sum :}  n 0 ?do  i 2 * {: twice :}  sum twice + to sum  loop  sum ;
 T{ 4 l-in-loop -> 12 }T
 
+testing combinators: dip keep bi tri bi@ when unless ?
+T{ 1 2 [: 10 + ;] dip -> 11 2 }T
+T{ 1 5 2 3 [: + ;] 2dip -> 6 2 3 }T
+T{ 5 [: dup * ;] keep -> 25 5 }T
+T{ 2 3 [: + ;] 2keep -> 5 2 3 }T
+T{ 4 [: 1+ ;] [: 1- ;] bi -> 5 3 }T
+T{ 4 [: 1+ ;] [: 1- ;] [: 2* ;] tri -> 5 3 8 }T
+T{ 2 3 [: 10 * ;] bi@ -> 20 30 }T
+T{ 7 true [: 1+ ;] when  7 false [: 1+ ;] when -> 8 7 }T
+T{ 7 true [: 1+ ;] unless  7 false [: 1+ ;] unless -> 7 8 }T
+T{ true 1 2 ?  false 1 2 ? -> 1 2 }T
+
 testing enum: constants from 0, a number sets the next, name>name names a value
 enum: colour  red green blue ;
 enum: act  $36 hide  $52 lie-down rise ;
