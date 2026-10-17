@@ -18,11 +18,11 @@ USING: engine actors messages common paths hewie.state hewie.body hewie.model he
 
 \ ---- the ball he fetches (his-follows) ----
 : ball ( -- i )  his-follows @ ;
-: ball-room ( -- room )  ball thing-info 2drop drop nip ;
+: ball-room ( -- room )  ball thing-room ;
 : ball-there? ( -- flag )   \ (lying about still, in his room)
     ball 0< if  false exit  then  ball thing-used? 0= if  false exit  then  ball-room self body-room = ;
 : ball-at ( -- v )  ball thing-at ;
-: ball-tri ( -- tri )  ball thing-info 2drop nip nip ;
+: ball-tri ( -- tri )  ball thing-tri ;
 : ball-speed ( F: -- s )  ball thing-speed ;
 : on-ball-line? ( mask -- flag )   \ (Actor_TriTo: straight from him onto its triangle)
     >r  his-tri his-at ball-at r> v-walk  ball-tri = ;
@@ -94,12 +94,11 @@ USING: engine actors messages common paths hewie.state hewie.body hewie.model he
 variable best  fvariable best-d
 : ahead-of-her? ( v -- flag )  fiona-at swap vec-heading  her body-yaw f- angle-wrap fabs pi f2/ f< ;
 : gettable? ( i -- flag )
-    dup thing-info 2drop nip nip >r                                  ( i ) ( R: tri )
-    his-tri his-at rot thing-at self body-mask v-walk  r> = ;
+    {: i :}  his-tri his-at i thing-at self body-mask v-walk  i thing-tri = ;
 : nearest-ball ( -- i | -1 )
     -1 best !
     128 0 do
-        i thing-used? if  i thing-info 2drop drop  room-id =  swap 0= and if   \ (kind room: a ball, here)
+        i thing-used? if  i thing-kind 0=  i thing-room room-id = and if   \ (a ball, here)
             i thing-at fiona-at vec-dist
             best @ 0<  fdup best-d f@ f< or  i thing-at ahead-of-her? and  i gettable? and if
                 best-d f!  i best !

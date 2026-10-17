@@ -13,7 +13,7 @@ USING: tester engine game-state actors messages common room-names game debug key
 : have ( item n -- )  game:items send give-item  deliver ;
 : equip ( item -- )  progress pr.equipped 8 + l! ;   \ (slot 2)
 : count-of ( item -- n )  game:items enter  items:items-of  leave-actor ;
-: balls ( -- n )  0  128 0 do  i thing-used? if  i thing-info 2drop 2drop 0= if  1+  then  then  loop ;
+: balls ( -- n )  0  128 0 do  i thing-used? if  i thing-kind 0= if  1+  then  then  loop ;
 : free? ( -- flag )  [: her-mode @ 0= ;] hers ;
 : throw ( -- )  ['] free? 200 soon drop  key: V true key-hold  game-tick  key: V false key-hold ;
 : skills! ( n -- )  [: 6 0 do  dup i cells his-skill + !  loop  drop ;] his! ;

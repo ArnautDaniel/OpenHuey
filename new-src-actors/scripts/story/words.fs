@@ -1204,14 +1204,14 @@ variable cl-id  variable cl-slot  variable cl-exit
 : hunting-debilitas? ( -- flag )   \ about, not down, Debilitas
     stalker-about? stalker-down? 0= and debilitas? and ;
 : thing-lying? ( kind -- flag )   \ (PlacedThings_FirstOfKind: in any room)
-    128 0 do  i thing-used? if  i thing-info 2drop 2drop over = if  drop true unloop exit  then  then  loop
+    128 0 do  i thing-used? if  i thing-kind over = if  drop true unloop exit  then  then  loop
     drop false ;
 \ (Room8C) the things lying here in the area, of the kinds kept in the save (0 2 3 5 7 8), aged
 \ past every time they keep (age 300000): they go, or go off
 : things-age-out-in ( area -- )
     128 0 do
         i thing-used? if
-            i thing-info 2drop drop  room-id =  swap 1 swap lshift $1AD and 0<>  and if
+            i thing-room room-id =  1 i thing-kind lshift $1AD and 0<>  and if   \ ($1AD: the kept kinds)
                 dup i thing-at vec@ area-in? if  300000 i thing-age!  then
             then
         then
@@ -1220,9 +1220,9 @@ variable cl-id  variable cl-slot  variable cl-exit
 : things-off-group ( g -- )
     128 0 do
         i thing-used? if
-            i thing-info 2drop  rot drop  swap room-id = if                     ( g tri )
-                dup 0< 0= if  over nav-in-group? if  i s" things" actor-named send thing-taken  then  else  drop  then
-            else  drop  then
+            i thing-room room-id =  i thing-tri 0< 0= and if
+                i thing-tri over nav-in-group? if  i s" things" actor-named send thing-taken  then
+            then
         then
     loop  drop ;
 : room-exit-open? ( room exit -- flag )   \ (Progress_ExitOpen)
