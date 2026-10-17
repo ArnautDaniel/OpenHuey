@@ -4,6 +4,16 @@
 IN: story.rooms.old-mansion-1f-15
 USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant shelves-moving              \ (bit 0) the shelves moving back
+1 constant books-remarked              \ (bit 1) its first remark made: "The books have been arranged by author. The books are all wr"
+2 constant hewie-zone3-noticed         \ (bit 2) Hewie has reacted to zone 3 (once a visit)
+3 constant hewie-zone4-noticed         \ (bit 3) Hewie has reacted to zone 4 (once a visit)
+4 constant hewie-away                  \ (bit 4) Hewie not here (or sent off) as the scene ends
+5 constant hewie-zone4-noticed-2       \ (bit 5) Hewie has reacted to zone 4 (once a visit)
+0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
+1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+
 \ the moving bookshelves (Room54_GroupStep): group g's four (the colour's book and its three
 \ shelves) - op 0 at their stop; 1 / 2 back 0.25 a frame in x / z to it (event bit 0 cleared
 \ there); 3 / 4 their sound $C at the first (4 the kept-on kind); 5 the things lying on a
@@ -23,7 +33,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         g 4 * i + shelf to n to a
         a n object-here? if
             -0.25e a n off object+!
-            a n off object@  g off shelf-stop  f< if  g off shelf-stop a n off object!  0 ebit-clear  then
+            a n off object@  g off shelf-stop  f< if  g off shelf-stop a n off object!  shelves-moving ebit-clear  then
         then
     loop ;
 : shelves-at-stop ( g -- )
@@ -48,8 +58,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
 
 : old-mansion-1f-15.enter ( -- )   \ 00426D80
     room-sounds
-    0 0 var-set
-    1 0 var-set
+    sound-step-var 0 var-set
+    sound-frames-var 0 var-set
     got-cathedral-secrets story-flag? not if
         1 part-shown
     then
@@ -220,11 +230,11 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     then
     got-occult-philosophy story-flag? not if
         3 -31.67 0.0 -62.5 $B 10 0 zone
-        2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone3-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 3 9 char-zone-bits? if
-                        2 ebit-set
+                        hewie-zone3-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 3 var-set
                             0 hewie-who $89 action
@@ -234,11 +244,11 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             then
         then
         4 -15.49 0.0 -61.46 $B 10 0 zone
-        3 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone4-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 4 9 char-zone-bits? if
-                        3 ebit-set
+                        hewie-zone4-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 4 var-set
                             0 hewie-who $89 action
@@ -248,11 +258,11 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             then
         then
         4 -15.49 0.0 -61.46 $B 10 0 zone
-        5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone4-noticed-2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 4 9 char-zone-bits? if
-                        5 ebit-set
+                        hewie-zone4-noticed-2 ebit-set
                         $64 chance? if
                             hewie-zone-var 4 var-set
                             0 hewie-who $88 action
@@ -263,25 +273,25 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         then
     then
     6 sound-bank-loaded? if
-        1 var-inc
-        1 30 var? if
-            1 0 var-set
-            0 0 var? if
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
                 $40000003 6 24.15 0.0 76.38 0 0 sound
                 $40000008 6 -44.0 70.0 22.0 0 0 sound
-            else 0 1 var? if
+            else sound-step-var 1 var? if
                 $40000004 6 24.15 0.0 76.38 0 0 sound
                 $40000009 6 -44.0 70.0 22.0 0 0 sound
-            else 0 2 var? if
+            else sound-step-var 2 var? if
                 $40000005 6 24.15 0.0 76.38 0 0 sound
                 $4000000A 6 -44.0 70.0 22.0 0 0 sound
-            else 0 3 var? if
+            else sound-step-var 3 var? if
                 $40000006 6 24.15 0.0 76.38 0 0 sound
                 $4000000B 6 -44.0 70.0 22.0 0 0 sound
             then then then then
-            0 var-inc
-            0 4 var? if
-                0 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
@@ -415,7 +425,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 25.0 20.0 -50.0 2.0 event-camera
     hewie-who char-here? 0 hewie-side? and if
-        4 ebit-clear
+        hewie-away ebit-clear
         hewie-who 2 char-cond? if
             0 hewie-who $86 action
         else
@@ -423,7 +433,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             hewie-who char-done
         then
     else
-        4 ebit-set
+        hewie-away ebit-set
     then
     reach-up-anim play-out
     fiona-who $E 6 char-sound
@@ -431,16 +441,16 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     books-placed story-flag-set
     $15 item-use
     reach-down-anim play-out
-    0 ebit-set
+    shelves-moving ebit-set
     2 3 old-mansion-1f-15.cmd00
-    [: 2 1 old-mansion-1f-15.cmd00 2 4 old-mansion-1f-15.cmd00 0 ebit? ;] wait-while
+    [: 2 1 old-mansion-1f-15.cmd00 2 4 old-mansion-1f-15.cmd00 shelves-moving ebit? ;] wait-while
     $C 6 sound-stop
     $D 6 0.0 -52.5 10.0 0 0 sound
     4 barred-floor floor-off
     5 barred-floor floor-on
     16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
-    4 ebit? not if
+    hewie-away ebit? not if
         hewie-who 2 char-cond? if
             hewie-who 0 char-visible
             hewie-who action-end
@@ -530,7 +540,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $1D1 hole-floor tri-floor-on
     1 25.0 20.0 50.0 2.0 event-camera
     hewie-who char-here? 0 hewie-side? and if
-        4 ebit-clear
+        hewie-away ebit-clear
         hewie-who 2 char-cond? if
             0 hewie-who $86 action
         else
@@ -538,7 +548,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             hewie-who char-done
         then
     else
-        4 ebit-set
+        hewie-away ebit-set
     then
     reach-up-anim play-out
     fiona-who $E 6 char-sound
@@ -548,16 +558,16 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     reach-down-anim play-out
     40.0 15.0 25.0 self-look-at-point
     yield
-    0 ebit-set
+    shelves-moving ebit-set
     1 3 old-mansion-1f-15.cmd00
-    [: 1 2 old-mansion-1f-15.cmd00 1 4 old-mansion-1f-15.cmd00 0 ebit? ;] wait-while
+    [: 1 2 old-mansion-1f-15.cmd00 1 4 old-mansion-1f-15.cmd00 shelves-moving ebit? ;] wait-while
     $C 6 sound-stop
     $D 6 39.0 21.0 10.0 0 0 sound
     2 barred-floor floor-off
     3 barred-floor floor-on
     16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
-    4 ebit? not if
+    hewie-away ebit? not if
         hewie-who 2 char-cond? if
             hewie-who 0 char-visible
             hewie-who action-end
@@ -642,7 +652,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 30.0 0.0 0.0 2.0 event-camera
     hewie-who char-here? 0 hewie-side? and if
-        4 ebit-clear
+        hewie-away ebit-clear
         hewie-who 2 char-cond? if
             0 hewie-who $86 action
         else
@@ -650,7 +660,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             hewie-who char-done
         then
     else
-        4 ebit-set
+        hewie-away ebit-set
     then
     reach-up-anim play-out
     fiona-who $E 6 char-sound
@@ -658,9 +668,9 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     lectern-2-book-2 story-flag-set
     $17 item-use
     reach-down-anim play-out
-    0 ebit-set
+    shelves-moving ebit-set
     0 3 old-mansion-1f-15.cmd00
-    [: 0 2 old-mansion-1f-15.cmd00 0 4 old-mansion-1f-15.cmd00 0 ebit? ;] wait-while
+    [: 0 2 old-mansion-1f-15.cmd00 0 4 old-mansion-1f-15.cmd00 shelves-moving ebit? ;] wait-while
     $C 6 sound-stop
     $D 6 0.0 0.0 10.0 0 0 sound
     0 barred-floor floor-off
@@ -669,7 +679,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     old-mansion-1f-15.cmd01
     16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
-    4 ebit? not if
+    hewie-away ebit? not if
         hewie-who 2 char-cond? if
             hewie-who 0 char-visible
             hewie-who action-end
@@ -951,18 +961,18 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
 
 : old-mansion-1f-15.act1A ( -- )   \ 00427E40
     self-wait-done
-    1 ebit? not if
+    books-remarked ebit? not if
         180 self-turn-angle
         self-wait-done
         8 say   \ "The books have been arranged by author. The books are all written by a person named..."
-        1 ebit-set
+        books-remarked ebit-set
     else
         0.0 -80.0 self-turn-to-xz
         self-wait-done
         look-at-anim self-anim
         16 wait-frames
         9 say   \ "There is a door atop this bookshelf... Why would anyone build a door of all things..."
-        1 ebit-clear
+        books-remarked ebit-clear
         self-wait-anim
     then
     self-idle-or-end

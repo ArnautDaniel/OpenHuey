@@ -4,6 +4,11 @@
 IN: story.rooms.old-mansion-1f-1
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant area8-reacted               \ (bit 0) her reaction on entering area 8 made (once a visit)
+1 constant hewie-zone0-noticed         \ (bit 1) Hewie has reacted to zone 0 (once a visit)
+2 constant mad-scene-on                \ (bit 2) "She's gone utterly mad..." (act03) under way
+
 \ a lit quad at x -15.96, z -2 .. 6, height 111 / 91
 : old-mansion-1f-1.cmd00 ( b0 -- )  $1B $80  -15.959e 111.0e -2.0e  -15.959e 111.0e 6.0e  -15.959e 91.0e -2.0e  -15.959e 91.0e 6.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
 \ the depth range (effect 0x1C) opening out with the cutscene from its frame 1260: 1 / 21 / 40 /
@@ -90,9 +95,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         then
     then
     found-file-233 story-flag? not if
-        0 ebit? not if
+        area8-reacted ebit? not if
             fiona-who 8 char-entered-area? if
-                0 ebit-set
+                area8-reacted ebit-set
                 panic-eased
                 fiona-who 0 char-action? if
                     0 fiona-who 0 action-force
@@ -102,18 +107,18 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             then
         then
     else found-file-234 story-flag? not if
-        fiona-who 9 char-entered-area? 2 ebit? not and if
+        fiona-who 9 char-entered-area? mad-scene-on ebit? not and if
             panic-eased
             0 fiona-who 3 action-force
         then
     then then
     found-file-234 story-flag? not found-file-233 story-flag? and if
         0 -3.91 90.0 3.23 $50 26 0 zone
-        1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 0 9 char-zone-bits? if
-                        1 ebit-set
+                        hewie-zone0-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 0 var-set
                             0 hewie-who $8A action
@@ -247,7 +252,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : old-mansion-1f-1.act03 ( -- )   \ 0041D6E0
-    2 ebit-set
+    mad-scene-on ebit-set
     1 self-scripted
     self-wait-done
     0 self-turn-angle
@@ -258,7 +263,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     0 say   \ "She's gone utterly mad. Best to keep my distance..."
     self-who self-look-at
     yield
-    2 ebit-clear
+    mad-scene-on ebit-clear
     0 self-scripted
     self-idle-or-end
 ;

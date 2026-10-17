@@ -4,6 +4,11 @@
 IN: story.rooms.front-garden-4
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims stalker.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant stalker-scene-on            \ (bit 0) his scene under way: at the room's end he is let go
+1 constant cages-remarked              \ (bit 1) its first remark made: "Empty cages litter the area. Maybe this was some kind of ken"
+2 constant figure-in-zone3             \ (bit 2) the figure ($1A) in zone 3: its sound made
+
 \ character kind 0x1A: byte 3 0 starts Kind26_MoveToB(2, -290, 42); else waits (2) until
 \ Kind26_MoveDoneB says done
 : front-garden-4.cmd00 ( b0 -- )
@@ -12,7 +17,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : front-garden-4.enter ( -- )   \ 00405640
     room-sounds
     $16 1.0 0 bgm
-    0 ebit-clear
+    stalker-scene-on ebit-clear
     c2f-3-flag1 story-flag? not if
         $1F $AC $60 $26 $50 $19 $1F $12 $80 0 9 effect-string
     then
@@ -60,7 +65,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     stalker-who char-busy? if
         fiona-half-hidden state-flag? not if
             stalker-who action-end
-            0 ebit-clear
+            stalker-scene-on ebit-clear
         then
     then
     fg-4-breakable-broken story-flag? not if
@@ -97,10 +102,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         then
     then
-    2 ebit? not if
+    figure-in-zone3 ebit? not if
         3 -304.86 0.0 49.5 $14 5 0 zone
         $1A 3 8 char-zone-bits? if
-            2 ebit-set
+            figure-in-zone3 ebit-set
             $1A 3 6 char-sound
         then
     then
@@ -200,9 +205,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     -140.0 0.0 self-turn-to-xz
     self-wait-done
-    1 ebit? not if
+    cages-remarked ebit? not if
         0 say   \ "Empty cages litter the area. Maybe this was some kind of kennel for keeping animals."
-        1 ebit-set
+        cages-remarked ebit-set
     else
         1 say   \ "There are feathers and fur in the cage. For there to be this much, it must have bee..."
     then

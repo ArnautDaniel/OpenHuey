@@ -4,9 +4,18 @@
 IN: story.rooms.old-mansion-1f-12
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant wrong-plate-remarked        \ (bit 0) its first remark made: "Nothing happened. This must not be the correct plate..."
+1 constant locked-remarked             \ (bit 1) its first remark made: "The door is locked..."
+3 constant lever-down                  \ (bit 3) the lever (cmd00) all the way down
+4 constant camera-scene-done           \ (bit 4) its scene (track 1: act0C) begun, once
+5 constant hewie-zone1-noticed         \ (bit 5) Hewie has reacted to zone 1 (once a visit)
+6 constant box-turned                  \ (bit 6) the box ("sikakebox") turned all the way
+7 constant sound-started               \ (bit 7) its sound started (then kept up)
+
 \ room 0x4F (Room4F_Cmd00_ptmf): object byte 3 by byte 4: 0 up (+0x10 0), 1 down (-0.65), 2
-\ lowered a step-floor (0.02, not during a movie); once down, events bit 3
-: old-mansion-1f-12.cmd00 ( b0 b1 -- )   \ (object b0 - the room's string - tipped by b1: 0 up, 1 down (-0.65), 2 lowered a step-floor
+\ lowered a step (0.02, not during a movie); once down, events bit 3
+: old-mansion-1f-12.cmd00 ( b0 b1 -- )   \ (object b0 - the room's string - tipped by b1: 0 up, 1 down (-0.65), 2 lowered a step
     \ (0.02; not while a movie plays), down - event flag 3)
     {: k op | a n :}  k room-object to n to a  a n object-here? 0= if  exit  then
     op case
@@ -14,7 +23,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         1 of  -0.65e a n turn-x object!  endof
         2 of  movie-playing? 0= if
                   -0.02e a n turn-x object+!
-                  a n turn-x object@ -0.65e f<= if  -0.65e a n turn-x object!  3 ebit-set  then
+                  a n turn-x object@ -0.65e f<= if  -0.65e a n turn-x object!  lever-down ebit-set  then
               then  endof
     endcase ;
 \ room 0x4F (Room4F_Cmd01_ptmf): an effect (DustShaft_vtable, 0x7460 bytes), not started
@@ -26,7 +35,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : old-mansion-1f-12.cmd03 ( -- )   \ (the box, "sikakebox", lowered 0.025 a frame to -0.78; there event flag 6)
     s" sikakebox" object-here? 0= if  exit  then
     -0.025e s" sikakebox" turn-y object+!
-    s" sikakebox" turn-y object@ -0.78e f<= if  -0.78e s" sikakebox" turn-y object!  6 ebit-set  then ;
+    s" sikakebox" turn-y object@ -0.78e f<= if  -0.78e s" sikakebox" turn-y object!  box-turned ebit-set  then ;
 \ Room4F_Cond00
 : old-mansion-1f-12.cond00? ( -- flag )  -35.7e -7.5e 4e put-away-near ;   \ (Room4F_CreatureVanish: one within 4 put away)
 
@@ -99,10 +108,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-12.phase1 ( -- )   \ 0040B680
     om1f-12-flag1 story-flag? not if
-        7 ebit? not if
+        sound-started ebit? not if
             6 sound-bank-loaded? if
                 $40000004 6 38.0 5.0 -10.0 0 0 sound
-                7 ebit-set
+                sound-started ebit-set
             then
         else
             $C0000004 6 38.0 5.0 -10.0 0 0 sound
@@ -123,11 +132,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who 4 char-entered-area? if
         1 exit-prepare
     then
-    4 ebit? not if
+    camera-scene-done ebit? not if
         om1f-12-flag4 story-flag? not if
             0 camera-mode? 1 camera-mode? or if
                 old-mansion-1f-12.cond00? if
-                    4 ebit-set
+                    camera-scene-done ebit-set
                     om1f-12-flag4 story-flag-set
                     0 1 track $C action
                 then
@@ -139,11 +148,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     om1f-12-flag1 story-flag? not if
         1 0.32 0.0 -28.08 $19 31 0 zone
-        5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 1 9 char-zone-bits? if
-                        5 ebit-set
+                        hewie-zone1-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 1 var-set
                             0 hewie-who $92 action
@@ -255,7 +264,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-12.act00 ( -- )   \ 0040B940
     self-wait-done
-    1 ebit? not 2 game-mode? or in-panic? or if
+    locked-remarked ebit? not 2 game-mode? or in-panic? or if
         0 self-through-exit
         self-wait-done
         in-panic? 2 game-mode? or if
@@ -268,7 +277,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             7 wait-frames
             8 say   \ "The door is locked..."
         then
-        1 ebit-set
+        locked-remarked ebit-set
     else
         4 wait-frames
         fiona-who $150 -60.0 15.0 -90 char-to-xz
@@ -403,7 +412,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     wait-fade
     2 part-hidden
     1 old-mansion-1f-12.cmd02
-    0 ebit? if
+    wrong-plate-remarked ebit? if
         0 cutscene-track 8 action
     then
     $10 $C8 movie-param
@@ -418,7 +427,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who $11E -5.7 17.0 180 char-to-xz
     hewie-who $A3 -22.21 -11.73 -45 char-to-xz
     camera-restart
-    0 ebit? if
+    wrong-plate-remarked ebit? if
         1 1 old-mansion-1f-12.cmd00
         5 part-hidden
         6 1 movie-play
@@ -452,7 +461,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     $F $51 fade
     wait-fade
-    0 ebit? not if
+    wrong-plate-remarked ebit? not if
         16 wait-frames
         3 say   \ "Nothing happened. This must not be the correct plate..."
     then
@@ -472,11 +481,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 6 12.0 10.0 -25.0 0 0 sound
     16 wait-frames
     reach-back-anim play-out
-    0 ebit? if
+    wrong-plate-remarked ebit? if
         0 effect-remove
-        3 ebit-clear
+        lever-down ebit-clear
         1 6 12.0 10.0 -25.0 0 0 sound
-        [: 2 2 old-mansion-1f-12.cmd00 3 ebit? ;] wait-until
+        [: 2 2 old-mansion-1f-12.cmd00 lever-down ebit? ;] wait-until
         om1f-12-flag2 story-flag-set
     else
         $1E wait-frames
@@ -497,10 +506,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 6 -12.0 10.0 -25.0 0 0 sound
     16 wait-frames
     reach-back-anim play-out
-    0 ebit? if
-        3 ebit-clear
+    wrong-plate-remarked ebit? if
+        lever-down ebit-clear
         1 6 -12.0 10.0 -25.0 0 0 sound
-        [: 0 2 old-mansion-1f-12.cmd00 3 ebit? ;] wait-until
+        [: 0 2 old-mansion-1f-12.cmd00 lever-down ebit? ;] wait-until
         om1f-12-flag3 story-flag-set
     else
         $1E wait-frames
@@ -513,9 +522,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-12.act08 ( -- )   \ 0040BDF0
     [: $44C cutscene-cue-reached? ;] wait-until
-    3 ebit-clear
+    lever-down ebit-clear
     1 6 0.0 30.0 -27.0 0 0 sound
-    [: 1 2 old-mansion-1f-12.cmd00 3 ebit? ;] wait-until
+    [: 1 2 old-mansion-1f-12.cmd00 lever-down ebit? ;] wait-until
     self-idle-or-end
 ;
 
@@ -566,8 +575,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     16 wait-frames
     0 part-shown
     0 6 -38.0 5.0 -8.0 0 0 sound
-    6 ebit-clear
-    [: old-mansion-1f-12.cmd03 6 ebit? ;] wait-until
+    box-turned ebit-clear
+    [: old-mansion-1f-12.cmd03 box-turned ebit? ;] wait-until
     self-idle-or-end
 ;
 

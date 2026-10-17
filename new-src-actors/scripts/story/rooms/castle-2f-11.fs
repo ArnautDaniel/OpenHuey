@@ -5,8 +5,8 @@ IN: story.rooms.castle-2f-11
 USING: room-names story.words story.shared ;
 
 \ two wheels (Room1F_ObjectNames) rocking 4 degrees (+0x18) through their phase +0x30, 6 degrees
-\ a step-floor (byte 3 1; 0 reset), the first one's creak (-366, 30, -25) at each turn
-: castle-2f-11.cmd00 ( b0 -- )   \ (the two wheels rocking 4 degrees, 6 a step-floor (1; 0 reset), the first creaking at each turn)
+\ a step (byte 3 1; 0 reset), the first one's creak (-366, 30, -25) at each turn
+: castle-2f-11.cmd00 ( b0 -- )   \ (the two wheels rocking 4 degrees, 6 a step (1; 0 reset), the first creaking at each turn)
     {: op | a n :}
     2 0 do  i room-object to n to a  a n object-here? if
         op 0= if  0e a n $30 object!  0e a n turn-z object!  i 0= if  0 6 0 0 -366e 30e -25e sound  then  then

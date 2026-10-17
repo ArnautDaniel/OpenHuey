@@ -4,11 +4,19 @@
 IN: story.rooms.chaos-forest-1
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant in-zone0                    \ (bit 0) someone in zone 0
+1 constant hewie-zone1-noticed         \ (bit 1) Hewie has reacted to zone 1 (once a visit)
+2 constant figure-scene-on             \ (bit 2) the figure's scene begun (act00)
+0 constant hops-var                    \ (var 0) the figure's hops (5: away)
+1 constant still-var                   \ (var 1) the figure still (0) or hopping
+2 constant call-frames-var             \ (var 2) frames to the figure's next call (60)
+
 : chaos-forest-1.enter ( -- )   \ 0041DD20
     room-sounds
     0 2 track 3 action
     $1C $2F char-to-tri
-    1 0 var-set
+    still-var 0 var-set
     3 $1C char-loaded? if
         $1C 3 $FF char-load
         3 char-start
@@ -70,13 +78,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     0 22.0 -16.0 145.0 5 10 1 zone
     self-who 0 char-in-zone? if
-        0 ebit-set
+        in-zone0 ebit-set
     else
-        0 ebit-clear
+        in-zone0 ebit-clear
     then
-    1 0 var? not if
-        2 var-inc
-        2 60 var? if
+    still-var 0 var? not if
+        call-frames-var var-inc
+        call-frames-var 60 var? if
             $21 chance? if
                 $1C 2 6 char-sound
             else $32 chance? if
@@ -84,15 +92,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             else
                 $1C 4 6 char-sound
             then then
-            2 0 var-set
+            call-frames-var 0 var-set
         then
     then
     1 22.39 -16.0 144.46 $15 15 0 zone
-    1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 1 9 char-zone-bits? if
-                    1 ebit-set
+                    hewie-zone1-noticed ebit-set
                     $50 chance? if
                         hewie-zone-var 1 var-set
                         0 hewie-who $8A action
@@ -113,7 +121,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : chaos-forest-1.phase5 ( -- )   \ 0041DF60
-    2 ebit? not if
+    figure-scene-on ebit? not if
         $1C action-end
         $1C char-done
     then
@@ -132,7 +140,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 self-scripted
     3 0 char-remove
     1 track action-end
-    2 ebit-set
+    figure-scene-on ebit-set
     [: loader-done? ;] wait-while
     $E 3 $FF char-load
     $F 4 figure-load
@@ -154,20 +162,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $1C 0 char-visible
     then
     begin
-        0 ebit? if
-            1 0 var-set
-            0 var-inc
-            0 3 var? if
+        in-zone0 ebit? if
+            still-var 0 var-set
+            hops-var var-inc
+            hops-var 3 var? if
                 $21 chance? if
-                    0 5 var-set
+                    hops-var 5 var-set
                 then
             then
-            0 4 var? if
+            hops-var 4 var? if
                 $32 chance? if
-                    0 5 var-set
+                    hops-var 5 var-set
                 then
             then
-            0 5 var? if
+            hops-var 5 var? if
                 0 panic-stage? if
                     1 panic-stage
                 else
@@ -182,17 +190,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             $1C $9009 0 3 char-anim-hold
             $1C wait-char-anim
             $1C $9008 0 3 char-anim-hold
-            1 0 var-set
-            0 5 var? if
+            still-var 0 var-set
+            hops-var 5 var? if
                 $1C wait-char-anim
-                0 0 var-set
+                hops-var 0 var-set
             then
         then
         $1C char-at-motion-event? if
             $1C $9008 0 0 char-anim-hold
-            1 0 var-set
+            still-var 0 var-set
         else
-            1 var-inc
+            still-var var-inc
         then
         1 wait-frames
     again

@@ -4,6 +4,15 @@
 IN: story.rooms.off-map-e3
 USING: room-names story.words story.shared flag-names story.clock floor-flags fiona.sounds stalker.anims ;
 
+\ ---- this room's own event bits and script variables ----
+3 constant alone-here                  \ (bit 3) she was free and alone here (no stalker): her own action
+4 constant found-her                   \ (bit 4) he has found her hiding: she must flee (the avoid prompt)
+5 constant will-find-her               \ (bit 5) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+6 constant searched-hiding             \ (bit 6) he has searched her hiding place
+8 constant searching                   \ (bit 8) he is searching (act02)
+11 constant search-started             \ (bit 11) his search begun (phase 1 starts act02)
+12 constant cond-was-off               \ (bit 12) the room's condition was false last frame: its hook waits a frame once it holds
+
 \ room 0xE3: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
 : off-map-e3.cmd00 ( -- )  clock-draw ;   \ (each frame: the clock)
@@ -24,37 +33,37 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
 ;
 
 : off-map-e3.act02 ( -- )   \ 00449140
-    6 ebit-set
-    8 ebit-set
-    5 ebit-clear
+    searched-hiding ebit-set
+    searching ebit-set
+    will-find-her ebit-clear
     $31 0 pvar? if
         $64 chance? if
-            5 ebit-set
+            will-find-her ebit-set
         then
     else $31 1 pvar? if
         $64 chance? if
-            5 ebit-set
+            will-find-her ebit-set
         then
     else $31 2 pvar? if
         $64 chance? if
-            5 ebit-set
+            will-find-her ebit-set
         then
     else $31 3 pvar? if
         $64 chance? if
-            5 ebit-set
+            will-find-her ebit-set
         then
     then then then then
     stalker-who char-unseen? not if
-        5 ebit-set
+        will-find-her ebit-set
     then
     2 creature-action? if
-        5 ebit-set
+        will-find-her ebit-set
     then
-    5 ebit? if
+    will-find-her ebit? if
         0 stalker-who 3 action
     else
         $78 1 summoner-wait
-        $B ebit-clear
+        search-started ebit-clear
     then
     $31 pvar-inc
     exit
@@ -75,7 +84,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
         fiona-hidden state-flag? if
             off-map-e3.act02
         else
-            8 ebit-clear
+            searching ebit-clear
         then
     then
 ;
@@ -112,8 +121,8 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
         stalker-who 0 char-effect-moving
     then
     stalker-who 2 char-cond? not if
-        fiona-hidden state-flag? 6 ebit? not and stalker-who char-here? and if
-            $B ebit-set
+        fiona-hidden state-flag? searched-hiding ebit? not and stalker-who char-here? and if
+            search-started ebit-set
             off-map-e3.act02
         then
     then
@@ -123,7 +132,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
             fiona-who char-busy? not in-panic? not and if
                 -1 control-action? not if
                     stalker-who char-here? not if
-                        3 ebit-clear
+                        alone-here ebit-clear
                         0 fiona-who 0 action
                     then
                 then
@@ -136,7 +145,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
             fiona-who char-busy? not in-panic? not and fiona-free? and if
                 -1 control-action? not if
                     stalker-who char-here? not if
-                        3 ebit-set
+                        alone-here ebit-set
                         0 fiona-who 0 action
                     then
                 then
@@ -147,9 +156,9 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
 
 : off-map-e3.phase3 ( -- )   \ 00448F30
     off-map-e3.cond00? not if
-        $C ebit-set
-    else $C ebit? if
-        $C ebit-clear
+        cond-was-off ebit-set
+    else cond-was-off ebit? if
+        cond-was-off ebit-clear
     else
         off-map-e3.cmd00
     then then
@@ -169,7 +178,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
 ;
 
 : off-map-e3.act01 ( -- )   \ 00449110
-    4 ebit? if
+    found-her ebit? if
         2 avoid-prompt
     then
     1 self-scripted
@@ -179,7 +188,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
     3 room-motion $A blend-out
     0 self-noclip
     stalker-who char-busy? if
-        4 ebit? not if
+        found-her ebit? not if
             stalker-who action-end
             stalker-who 0 stalker-command
         then
@@ -193,17 +202,17 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
     1 self-scripted
     fiona-who 0 char-file-load
     self-wait-done
-    3 ebit? not if
+    alone-here ebit? not if
         $14A -24.3 -32.94 -90 $FFFF $A self-move-to
         self-wait-done
     else
         $1FA -48.07 -31.71 90 $FFFF $A self-move-to
         self-wait-done
     then
-    8 ebit-clear
-    6 ebit-clear
+    searching ebit-clear
+    searched-hiding ebit-clear
     fiona-who char-file-use
-    3 ebit? not if
+    alone-here ebit? not if
         $14A $8004 5 -22.548 -33.225 -90 self-walk-anim
         self-wait-done
     else
@@ -218,11 +227,11 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
-    4 ebit-clear
+    found-her ebit-clear
     0 avoid-prompt
     begin
         -1 control-action? if
-            in-panic? 4 ebit? or if
+            in-panic? found-her ebit? or if
                 in-panic? not if
                     fiona-who seized-sound 5 char-sound
                 then
@@ -231,8 +240,8 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
                 2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                8 ebit? stalker-who char-here? not and if
-                    8 ebit-clear
+                searching ebit? stalker-who char-here? not and if
+                    searching ebit-clear
                     1 avoid-prompt
                 then
                 yield
@@ -256,7 +265,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
 
 : off-map-e3.act03 ( -- )   \ 004491A0
     self-wait-done
-    $B ebit? not if
+    search-started ebit? not if
         stalker-who 0 char-heading-for? 0 exit-door-open? not and if
             fiona-who 3 self-move-slot
             self-wait-done
@@ -275,11 +284,11 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
             self-wait-done
         then
     then
-    $B ebit-clear
+    search-started ebit-clear
     $1FE -35.74 -5.079 -180 $FFFF 5 self-move-to
     self-wait-done
     there-anim play-out
-    4 ebit-set
+    found-her ebit-set
     10 self-idle-anim
     [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command

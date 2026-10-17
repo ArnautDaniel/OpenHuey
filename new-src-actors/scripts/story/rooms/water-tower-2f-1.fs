@@ -4,6 +4,17 @@
 IN: story.rooms.water-tower-2f-1
 USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant left-area13                 \ (bit 0) she left area $D: the scene (track 2) begun
+1 constant lift-scene-on               \ (bit 1) the lift's scene (act00) under way
+2 constant lift-down                   \ (bit 2) the lift down (its floor the other way)
+3 constant lift-done                   \ (bit 3) the lift's move done (act02 waits for it)
+4 constant summoner-was-on             \ (bit 4) the summoner was on as she came in (back on as she leaves)
+5 constant stalker-due                 \ (bit 5) the stalker's arrival counting down (variable 1 from 1800)
+6 constant hewie-zone2-noticed         \ (bit 6) Hewie has reacted to zone 2 (once a visit)
+0 constant lift-frames-var             \ (var 0) the lift's frames (to 120)
+1 constant stalker-frames-var          \ (var 1) frames to the stalker's arrival (from 1800)
+
 \ byte 3 0 / 1: shut / open (pi/2); 2 / 3 opening / shutting by script variable 0 (0..120
 \ frames, eased by a sine)
 : water-tower-2f-1.cmd00 ( b0 -- )   \ (the hatch "move00" turned about y by event variable 0 - 0..120 frames eased by
@@ -50,7 +61,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         no-stalker-camera state-flag-set
     then
     summoner-on state-flag? if
-        4 ebit-set
+        summoner-was-on ebit-set
         summoner-on state-flag-clear
     then
     stalker-who action-end
@@ -129,9 +140,9 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     wt2f-1-flag2 story-flag? c7-second-event story-flag? not and if
         4 stalker-kind? $17 stalker-kind? or stalker-who char-here? not and if
             wt2f-1-flag1 story-flag? not if
-                0 ebit? not if
+                left-area13 ebit? not if
                     fiona-who $D char-left-area? if
-                        0 ebit-set
+                        left-area13 ebit-set
                         0 2 track 1 action
                     then
                 then
@@ -150,26 +161,26 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
                     summoner-own-cooldown
                     wt2f-1-flag1 story-flag-set
                 then
-            else 5 ebit? not if
-                1 1800 var-set
+            else stalker-due ebit? not if
+                stalker-frames-var 1800 var-set
                 stalker-active? not if
-                    5 ebit-set
+                    stalker-due ebit-set
                 then
             else stalker-active? if
-                5 ebit-clear
-            else 1 0 var? not if
-                1 var-dec
-            else 1 ebit? not stalkers-stay state-flag? not and if
+                stalker-due ebit-clear
+            else stalker-frames-var 0 var? not if
+                stalker-frames-var var-dec
+            else lift-scene-on ebit? not stalkers-stay state-flag? not and if
                 wt2f-1-flag3 story-flag? not if
                     $FE $C2 473 1 stalker-to-room
                     stalker-who 0 stalker-command
                     summoner-own-cooldown
-                    5 ebit-clear
+                    stalker-due ebit-clear
                 else
                     $FE $C2 888 0 stalker-to-room
                     stalker-who 0 stalker-command
                     summoner-own-cooldown
-                    5 ebit-clear
+                    stalker-due ebit-clear
                 then
             then then then then then
         then
@@ -213,11 +224,11 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     then
     wt2f-1-flag4 story-flag? not if
         2 1.97 152.0 46.65 $26 10 0 zone
-        6 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 2 9 char-zone-bits? if
-                        6 ebit-set
+                        hewie-zone2-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 2 var-set
                             0 hewie-who $88 action
@@ -231,7 +242,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 
 : water-tower-2f-1.phase2 ( -- )   \ 0043F480
     fiona-who $C char-in-area? fiona-who -45 $32 char-heading? and if
-        1 ebit? not if
+        lift-scene-on ebit? not if
             0 unhurried offer-action
         then
     then
@@ -260,7 +271,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         then
     then
     no-stalker-camera state-flag-clear
-    4 ebit? if
+    summoner-was-on ebit? if
         summoner-on state-flag-set
     then
 ;
@@ -268,25 +279,25 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 : water-tower-2f-1.act00 ( -- )   \ 0043F500
     stalkers-stay state-flag-set
     1 self-scripted
-    1 ebit-set
-    3 ebit-clear
+    lift-scene-on ebit-set
+    lift-done ebit-clear
     wt2f-1-flag3 story-flag? not if
-        2 ebit-clear
+        lift-down ebit-clear
         1 keeps-fiona-off keeps-pursuers-off or hole-floor or floor-on
         hewie-who char-here? hewie-who 1 char-in-nav-group? and if
             0 hewie-who 2 action-force
         else
             1 keeps-hewie-off floor-on
-            3 ebit-set
+            lift-done ebit-set
         then
     else
-        2 ebit-set
+        lift-down ebit-set
         0 keeps-fiona-off keeps-pursuers-off or hole-floor or floor-on
         hewie-who char-here? hewie-who 0 char-in-nav-group? and if
             0 hewie-who 2 action-force
         else
             0 keeps-hewie-off floor-on
-            3 ebit-set
+            lift-done ebit-set
         then
     then
     self-wait-done
@@ -360,7 +371,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 : water-tower-2f-1.act02 ( -- )   \ 0043F680
     1 self-scripted
     self-wait-done
-    2 ebit? not if
+    lift-down ebit? not if
         $3B6 -22.18 0.43 120 $FFFF $A self-move-to
         self-wait-done
     else
@@ -368,22 +379,22 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         self-wait-done
     then
     0 self-scripted
-    [: 3 ebit? ;] wait-until
+    [: lift-done ebit? ;] wait-until
     self-idle-or-end
 ;
 
 : water-tower-2f-1.act03 ( -- )   \ 0043F6C0
-    0 0 var-set
-    2 ebit? not if
+    lift-frames-var 0 var-set
+    lift-down ebit? not if
         2 6 -45.0 152.0 0.0 0 0 sound
         begin
-            0 120 var? not while
-            0 var-inc
+            lift-frames-var 120 var? not while
+            lift-frames-var var-inc
             2 water-tower-2f-1.cmd00
-            3 ebit? not if
+            lift-done ebit? not if
                 hewie-who 1 char-in-nav-group? not if
                     1 keeps-hewie-off floor-on
-                    3 ebit-set
+                    lift-done ebit-set
                 then
             then
             yield
@@ -403,13 +414,13 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     else
         2 6 0.0 152.0 45.0 0 0 sound
         begin
-            0 120 var? not while
-            0 var-inc
+            lift-frames-var 120 var? not while
+            lift-frames-var var-inc
             3 water-tower-2f-1.cmd00
-            3 ebit? not if
+            lift-done ebit? not if
                 hewie-who 1 char-in-nav-group? not if
                     0 keeps-hewie-off floor-on
-                    3 ebit-set
+                    lift-done ebit-set
                 then
             then
             yield
@@ -427,7 +438,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         0 water-tower-2f-1.cmd00
         0 water-tower-2f-1.cmd01
     then
-    1 ebit-clear
+    lift-scene-on ebit-clear
     self-idle-or-end
 ;
 

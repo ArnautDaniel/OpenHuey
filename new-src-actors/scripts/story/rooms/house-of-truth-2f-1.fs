@@ -4,6 +4,10 @@
 IN: story.rooms.house-of-truth-2f-1
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+1 constant locked-remarked             \ (bit 1) its first remark made: "The door is locked."
+2 constant area0-reacted               \ (bit 2) her reaction on entering the area made (once a visit)
+
 : house-of-truth-2f-1.enter ( -- )   \ 004314B0
     ht2f-1-breakable1-broken story-flag? not if
         0 keeps-people-off floor-on
@@ -128,8 +132,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         4 exit-prepare
     then
     over-music-d story-flag? not if
-        fiona-who 0 char-entered-area? 2 ebit? not and if
-            2 ebit-set
+        fiona-who 0 char-entered-area? area0-reacted ebit? not and if
+            area0-reacted ebit-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
@@ -293,7 +297,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     0 self-through-exit
     self-wait-done
-    1 ebit? not 2 game-mode? or in-panic? or if
+    locked-remarked ebit? not 2 game-mode? or in-panic? or if
         in-panic? 2 game-mode? or if
             rattle-behind-slow-anim play-out
             -1 self-idle-anim
@@ -304,7 +308,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             7 wait-frames
             0 say   \ "The door is locked."
         then
-        1 ebit-set
+        locked-remarked ebit-set
     else
         4 wait-frames
         fiona-who $26E -10.0 135.3 0 char-to-xz
@@ -315,7 +319,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         1 say   \ "A strange symbol is carved into the door. The symbol looks like a sun."
         4 wait-frames
         0 0.0 0.0 0.0 0.0 event-camera
-        1 ebit-clear
+        locked-remarked ebit-clear
         world-frozen state-flag-clear
         0 self-scripted
     then

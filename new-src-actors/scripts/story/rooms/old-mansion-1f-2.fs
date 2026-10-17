@@ -4,6 +4,16 @@
 IN: story.rooms.old-mansion-1f-2
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant medallion-placed            \ (bit 0) the medallion placed (act00): the door unlocked, its sparkle shown
+1 constant scales-remarked             \ (bit 1) its first remark made: "A pair of scales hangs mysteriously from the statue's hand. "
+2 constant inscription-read            \ (bit 2) the inscription read (act05: a file given)
+3 constant hewie-away                  \ (bit 3) Hewie not here (or sent off) as the scene ends
+4 constant sound-started               \ (bit 4) its sound started (then kept up)
+0 constant used-item-var               \ (var 0) the item she used (8 .. 11)
+1 constant sound-step-var              \ (var 1) which of its sounds next (0..3)
+2 constant sound-frames-var            \ (var 2) frames to the next sound (30)
+
 \ the scales ("tenbin") and their pans ("sara_l", "sara_r"): level (byte 3 0) or tipped
 : old-mansion-1f-2.cmd00 ( b0 -- )   \ (the scales, "tenbin", and their pans: level (0) or tipped 25 degrees)
     {: tipped :}
@@ -23,8 +33,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-2.enter ( -- )   \ 00406550
     room-sounds
-    1 0 var-set
-    2 0 var-set
+    sound-step-var 0 var-set
+    sound-frames-var 0 var-set
     1 old-mansion-1f-2.cmd00
     4 1 object-hidden
     5 1 object-hidden
@@ -133,35 +143,35 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     medallion-40-done story-flag? if
-        4 ebit? not if
+        sound-started ebit? not if
             6 sound-bank-loaded? if
                 $40000000 6 0.0 0.0 130.0 0 0 sound
-                4 ebit-set
+                sound-started ebit-set
             then
         else
             $C0000000 6 0.0 0.0 130.0 0 0 sound
         then
     then
     6 sound-bank-loaded? if
-        2 var-inc
-        2 30 var? if
-            2 0 var-set
-            1 0 var? if
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
                 $40000005 6 -109.95 50.0 -5.34 0 0 sound
                 $4000000A 6 -42.0 20.0 117.0 0 0 sound
-            else 1 1 var? if
+            else sound-step-var 1 var? if
                 $40000006 6 -109.95 50.0 -5.34 0 0 sound
                 $4000000B 6 -42.0 20.0 117.0 0 0 sound
-            else 1 2 var? if
+            else sound-step-var 2 var? if
                 $40000007 6 -109.95 50.0 -5.34 0 0 sound
                 $4000000C 6 -42.0 20.0 117.0 0 0 sound
-            else 1 3 var? if
+            else sound-step-var 3 var? if
                 $40000008 6 -109.95 50.0 -5.34 0 0 sound
                 $4000000D 6 -42.0 20.0 117.0 0 0 sound
             then then then then
-            1 var-inc
-            1 4 var? if
-                1 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
@@ -205,7 +215,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     scene-wait-ready
     wait-fade
     hewie-who char-here? if
-        3 ebit-clear
+        hewie-away ebit-clear
         hewie-who 2 char-cond? if
             0 hewie-who $86 action
         else
@@ -213,7 +223,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             hewie-who char-done
         then
     else
-        3 ebit-set
+        hewie-away ebit-set
     then
     0 cutscene-track 2 action
     panic-eased
@@ -225,7 +235,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 self-idle-anim
     fiona-who $158 3.0 24.0 83 char-to-xz
     camera-restart
-    3 ebit? not if
+    hewie-away ebit? not if
         hewie-who 2 char-cond? if
             hewie-who 0 char-visible
             hewie-who action-end
@@ -239,7 +249,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     4 1 object-hidden
     5 1 object-hidden
     6 1 object-hidden
-    0 11 var? if
+    used-item-var 11 var? if
         7 0 object-hidden
         8 1 object-hidden
         $B item-use
@@ -257,7 +267,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 part-shown
     9 1 object-hidden
     $A 1 object-hidden
-    0 ebit-set
+    medallion-placed ebit-set
     1 6.2 18.0 17.1 flicker-sprite
     medallion-40-done story-flag-set
     $5D door-unlock
@@ -291,11 +301,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     wait-fade
     cutscene-track action-end
-    0 8 var? if
+    used-item-var 8 var? if
         8 item-use
-    else 0 9 var? if
+    else used-item-var 9 var? if
         9 item-use
-    else 0 10 var? if
+    else used-item-var 10 var? if
         $A item-use
     then then then
     4 1 object-hidden
@@ -334,7 +344,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         4 1 object-hidden
         5 1 object-hidden
         6 1 object-hidden
-        0 11 var? if
+        used-item-var 11 var? if
             7 0 object-hidden
             8 1 object-hidden
         else
@@ -353,11 +363,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         6 1 object-hidden
         7 1 object-hidden
         8 1 object-hidden
-        0 8 var? if
+        used-item-var 8 var? if
             4 0 object-hidden
-        else 0 9 var? if
+        else used-item-var 9 var? if
             5 0 object-hidden
-        else 0 10 var? if
+        else used-item-var 10 var? if
             6 0 object-hidden
         then then then
         yield
@@ -372,12 +382,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-2.act04 ( -- )   \ 00406CC0
     self-wait-done
-    0 ebit? not if
+    medallion-placed ebit? not if
         4.0 17.0 self-turn-to-xz
         self-wait-done
-        1 ebit? not if
+        scales-remarked ebit? not if
             0 say   \ "A pair of scales hangs mysteriously from the statue's hand. One of the dishes i..."
-            1 ebit-set
+            scales-remarked ebit-set
         else
             1 say   \ "There is a coin of sorts resting on one of the trays."
         then
@@ -388,10 +398,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             self-wait-done
             reach-out-anim play-out
             4 wait-frames
-            0 ebit-clear
+            medallion-placed ebit-clear
             1 effect-remove
             1 old-mansion-1f-2.cmd00
-            0 11 var? if
+            used-item-var 11 var? if
                 7 1 object-hidden
                 $B message-param-room
                 $B 1 item-give-count
@@ -414,7 +424,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-2.act05 ( -- )   \ 00406D70
     self-wait-done
-    2 ebit? not if
+    inscription-read ebit? not if
         0 self-turn-angle
         self-wait-done
         look-at-anim play-out
@@ -424,7 +434,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $F 6 fade
         wait-fade
         4 say   \ "Pursuer of truths, entrust the accumulation of knowledge to the judgment of the god..."
-        2 ebit-set
+        inscription-read ebit-set
         $F 7 fade
         wait-fade
         $246 item-give
@@ -440,7 +450,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         -1 self-idle-anim
         7 wait-frames
         5 say   \ "Damn, it just won't open. This could be my way out. Open, damn you!"
-        2 ebit-clear
+        inscription-read ebit-clear
     then
     self-idle-or-end
 ;
@@ -483,7 +493,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     yield
     scene-wait-ready
-    0 11 var-set
+    used-item-var 11 var-set
     0 cutscene-track 2 action
     panic-eased
     $FFFF message-prepare
@@ -512,7 +522,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     yield
     scene-wait-ready
-    0 9 var-set
+    used-item-var 9 var-set
     0 cutscene-track 3 action
     $10 $FF movie-param
     panic-eased

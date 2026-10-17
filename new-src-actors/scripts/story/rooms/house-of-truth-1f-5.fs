@@ -4,20 +4,30 @@
 IN: story.rooms.house-of-truth-1f-5
 USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+1 constant stalkers-held               \ (bit 1) the stalkers held until she enters area $B
+2 constant sound-started               \ (bit 2) its sound started (then kept up)
+3 constant music-changed               \ (bit 3) the room's music changed (act01)
+4 constant drone-on                    \ (bit 4) the drone sound ($30, bank $47) going
+0 constant marker-var                  \ (var 0) the marker's effect
+1 constant shrink-var                  \ (var 1) the marker shrinking by it (334)
+2 constant sound-step-var              \ (var 2) which of its sounds next (0..3)
+3 constant sound-frames-var            \ (var 3) frames to the next sound (30)
+
 \ room 0x8D: three grey smoke effects (Effect79B00, size 60) at the room's spots 7, 4, 3
 \ (grey_three).
 : house-of-truth-1f-5.cmd00 ( -- )   \ (the ceiling coming down: stones of three kinds falling from 60)
     7 60e 0e 0.5e 0.5e stones-falling  4 60e 0e 0e 0.5e stones-falling  3 60e 0e 0e 1e stones-falling ;
 \ byte 3: 0 made (lights 0x14 on characters 3 and 0) and 1 lit on character 3 (second kind, size
 \ 1, sparks from its own slot); 2 ending, 3 ended; 4 / 6 sized 1 / 0.5; 5 / 7 shrinking with
-\ variable 1 (a step-floor a call, to 0.5 + v / 200 or v / 334)
+\ variable 1 (a step a call, to 0.5 + v / 200 or v / 334)
 : marker! ( v -- )   \ (the marker kept in variable 0 told: -1 done, -2 a pause, else its size x 1000)
-    0 var @ dup alive? if  send effect-command  else  2drop  then ;
-: shrunk ( -- v )  1 var @ 1- 0 max  dup 1 swap var-set ;   \ (variable 1 down a step)
+    marker-var var @ dup alive? if  send effect-command  else  2drop  then ;
+: shrunk ( -- v )  shrink-var var @ 1- 0 max  dup shrink-var swap var-set ;   \ (variable 1 down a step)
 : house-of-truth-1f-5.cmd01 ( b0 -- )
     case
         0 of  3 $14 char-layer  fiona-who $14 char-layer
-              3 char-model 0 char-model 1  1e effects:marker  0 swap var-set  endof
+              3 char-model 0 char-model 1  1e effects:marker  marker-var swap var-set  endof
         1 of  1000 marker!  endof
         2 of  -1 marker!  endof
         3 of  -2 marker!  endof
@@ -32,12 +42,12 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 
 : house-of-truth-1f-5.enter ( -- )   \ 004348E0
     room-sounds
-    2 0 var-set
-    3 0 var-set
+    sound-step-var 0 var-set
+    sound-frames-var 0 var-set
     over-music-f story-flag? found-file-257 story-flag? not and if
-        1 ebit-set
+        stalkers-held ebit-set
     then
-    1 ebit? if
+    stalkers-held ebit? if
         stalkers-stay state-flag-set
     then
     over-music-f story-flag? if
@@ -78,19 +88,19 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 ;
 
 : house-of-truth-1f-5.phase1 ( -- )   \ 00434A00
-    3 ebit? not if
+    music-changed ebit? not if
         over-music-f story-flag? if
-            2 ebit? not if
+            sound-started ebit? not if
                 6 sound-bank-loaded? if
                     $40000000 6 0.0 20.0 100.0 0 0 sound
-                    2 ebit-set
+                    sound-started ebit-set
                 then
             else
                 $C0000000 6 -60.0 20.0 50.0 0 0 sound
             then
         then
     then
-    4 ebit? if
+    drone-on ebit? if
         $C0000030 $47 0.0 0.0 0.0 0 0 sound
     then
     0 exit-usable? if
@@ -114,8 +124,8 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         2 exit-prepare
     then
     fiona-who $B char-entered-area? if
-        1 ebit? if
-            1 ebit-clear
+        stalkers-held ebit? if
+            stalkers-held ebit-clear
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
@@ -125,23 +135,23 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         then
     then
     house-of-truth-1f-5.cmd02
-    3 ebit? not if
+    music-changed ebit? not if
         6 sound-bank-loaded? if
-            3 var-inc
-            3 30 var? if
-                3 0 var-set
-                2 0 var? if
+            sound-frames-var var-inc
+            sound-frames-var 30 var? if
+                sound-frames-var 0 var-set
+                sound-step-var 0 var? if
                     $40000003 6 28.0 20.0 -71.0 0 0 sound
-                else 2 1 var? if
+                else sound-step-var 1 var? if
                     $40000004 6 28.0 20.0 -71.0 0 0 sound
-                else 2 2 var? if
+                else sound-step-var 2 var? if
                     $40000005 6 28.0 20.0 -71.0 0 0 sound
-                else 2 3 var? if
+                else sound-step-var 3 var? if
                     $40000006 6 28.0 20.0 -71.0 0 0 sound
                 then then then then
-                2 var-inc
-                2 4 var? if
-                    2 0 var-set
+                sound-step-var var-inc
+                sound-step-var 4 var? if
+                    sound-step-var 0 var-set
                 then
             then
         then
@@ -193,14 +203,14 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 ;
 
 : house-of-truth-1f-5.phase3 ( -- )   \ 00434BE0
-    ht1f-9-flag2 story-flag? 4 ebit? not and if
+    ht1f-9-flag2 story-flag? drone-on ebit? not and if
         $40000030 $47 0.0 0.0 0.0 0 0 sound
-        4 ebit-set
+        drone-on ebit-set
     then
 ;
 
 : house-of-truth-1f-5.phase5 ( -- )   \ 00434C00
-    1 ebit? if
+    stalkers-held ebit? if
         stalkers-stay state-flag-clear
     then
 ;
@@ -256,7 +266,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     $828E item-give
     stalkers-stay state-flag-clear
     found-file-257 story-flag-set
-    1 ebit-clear
+    stalkers-held ebit-clear
     shared.act95
     $40000030 $47 0.0 0.0 0.0 0 0 sound
     0 self-scripted
@@ -273,7 +283,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         $35 room-preload
         $1C 1.0 1 bgm
         wait-fade
-        3 ebit-set
+        music-changed ebit-set
         $30 7 sound-stop
         0 6 sound-stop
         3 6 sound-stop
@@ -371,7 +381,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     [: $E cutscene-shot? ;] wait-until
     0 house-of-truth-1f-5.cmd01
     [: $65E cutscene-cue-reached? ;] wait-until
-    1 334 var-set
+    shrink-var 334 var-set
     begin
         0 cutscene-cue-reached? while
         7 house-of-truth-1f-5.cmd01

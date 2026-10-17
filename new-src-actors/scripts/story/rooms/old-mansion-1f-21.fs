@@ -4,6 +4,9 @@
 IN: story.rooms.old-mansion-1f-21
 USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+6 constant hewie-zone1-noticed         \ (bit 6) Hewie has reacted to zone 1 (once a visit)
+
 : old-mansion-1f-21.enter ( -- )   \ 00439B10
     om1f-21-breakable1-broken story-flag? not if
         0 keeps-people-off floor-on
@@ -133,11 +136,11 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
         3 0 char-remove
     then
     1 19.93 0.0 -73.33 $D 10 0 zone
-    6 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 1 9 char-zone-bits? if
-                    6 ebit-set
+                    hewie-zone1-noticed ebit-set
                     $1E chance? if
                         hewie-zone-var 1 var-set
                         0 hewie-who $89 action

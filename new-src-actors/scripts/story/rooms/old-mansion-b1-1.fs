@@ -4,6 +4,14 @@
 IN: story.rooms.old-mansion-b1-1
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant in-zone1                    \ (bit 0) someone in zone 1 (the figure's hops count)
+1 constant hewie-zone2-noticed         \ (bit 1) Hewie has reacted to zone 2 (once a visit)
+2 constant hewie-zone3-noticed         \ (bit 2) Hewie has reacted to zone 3 (once a visit)
+0 constant hops-var                    \ (var 0) the figure's hops (5: away)
+1 constant still-var                   \ (var 1) the figure still (0) or hopping
+2 constant call-frames-var             \ (var 2) frames to the figure's next call (60)
+
 : old-mansion-b1-1.enter ( -- )   \ 00415BA0
     omb1-1-breakable-broken story-flag? not if
         0 keeps-people-off floor-on
@@ -19,7 +27,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     0 6 0.812 0.687 0.187 0.312 zone-rect
     $1C $C5 char-to-tri
-    1 0 var-set
+    still-var 0 var-set
     3 $1C char-loaded? if
         $1C 3 $FF char-load
         3 char-start
@@ -118,13 +126,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     1 39.3 0.0 50.4 5 10 1 zone
     self-who 1 char-in-zone? if
-        0 ebit-set
+        in-zone1 ebit-set
     else
-        0 ebit-clear
+        in-zone1 ebit-clear
     then
-    1 0 var? not if
-        2 var-inc
-        2 60 var? if
+    still-var 0 var? not if
+        call-frames-var var-inc
+        call-frames-var 60 var? if
             $21 chance? if
                 $1C 2 6 char-sound
             else $32 chance? if
@@ -132,7 +140,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             else
                 $1C 4 6 char-sound
             then then
-            2 0 var-set
+            call-frames-var 0 var-set
         then
     then
     fiona-who 5 char-entered-area? if
@@ -163,11 +171,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     2 38.73 0.0 50.28 $1A 16 0 zone
-    1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 2 9 char-zone-bits? if
-                    1 ebit-set
+                    hewie-zone2-noticed ebit-set
                     $50 chance? if
                         hewie-zone-var 2 var-set
                         0 hewie-who $8A action
@@ -187,11 +195,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     omb1-1-album-medallion story-flag? not if
         3 -9.31 39.5 -32.27 $32 13 0 zone
-        2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone3-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 3 9 char-zone-bits? if
-                        2 ebit-set
+                        hewie-zone3-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 3 var-set
                             0 hewie-who $88 action
@@ -262,20 +270,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             $1C 1 char-visible
         then
         begin
-            0 ebit? if
-                1 0 var-set
-                0 var-inc
-                0 3 var? if
+            in-zone1 ebit? if
+                still-var 0 var-set
+                hops-var var-inc
+                hops-var 3 var? if
                     $21 chance? if
-                        0 5 var-set
+                        hops-var 5 var-set
                     then
                 then
-                0 4 var? if
+                hops-var 4 var? if
                     $32 chance? if
-                        0 5 var-set
+                        hops-var 5 var-set
                     then
                 then
-                0 5 var? if
+                hops-var 5 var? if
                     0 panic-stage? if
                         1 panic-stage
                     else
@@ -290,17 +298,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 $1C $900B 0 3 char-anim-hold
                 $1C wait-char-anim
                 $1C $900A 0 3 char-anim-hold
-                1 0 var-set
-                0 5 var? if
+                still-var 0 var-set
+                hops-var 5 var? if
                     $1C wait-char-anim
-                    0 0 var-set
+                    hops-var 0 var-set
                 then
             then
             $1C char-at-motion-event? if
                 $1C $900A 0 0 char-anim-hold
-                1 0 var-set
+                still-var 0 var-set
             else
-                1 var-inc
+                still-var var-inc
             then
             1 wait-frames
         again
@@ -314,20 +322,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             $1C 0 char-visible
         then
         begin
-            0 ebit? if
-                1 0 var-set
-                0 var-inc
-                0 3 var? if
+            in-zone1 ebit? if
+                still-var 0 var-set
+                hops-var var-inc
+                hops-var 3 var? if
                     $21 chance? if
-                        0 5 var-set
+                        hops-var 5 var-set
                     then
                 then
-                0 4 var? if
+                hops-var 4 var? if
                     $32 chance? if
-                        0 5 var-set
+                        hops-var 5 var-set
                     then
                 then
-                0 5 var? if
+                hops-var 5 var? if
                     0 panic-stage? if
                         1 panic-stage
                     else
@@ -342,17 +350,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 $1C $900B 0 3 char-anim-hold
                 $1C wait-char-anim
                 $1C $900A 0 3 char-anim-hold
-                1 0 var-set
-                0 5 var? if
+                still-var 0 var-set
+                hops-var 5 var? if
                     $1C wait-char-anim
-                    0 0 var-set
+                    hops-var 0 var-set
                 then
             then
             $1C char-at-motion-event? if
                 $1C $900A 0 0 char-anim-hold
-                1 0 var-set
+                still-var 0 var-set
             else
-                1 var-inc
+                still-var var-inc
             then
             1 wait-frames
         again

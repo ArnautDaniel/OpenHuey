@@ -4,6 +4,11 @@
 IN: story.rooms.water-tower-1f-1
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant rested                      \ (bit 0) she has rested here (her recovery: once a visit)
+1 constant sound-step-var              \ (var 1) which of its sounds next (0..3)
+2 constant sound-frames-var            \ (var 2) frames to the next sound (30)
+
 \ room 0xC1: the summoner's countdown (progress +0x764) has run out.
 : water-tower-1f-1.cond00? ( -- flag )  summoner-done? ;
 
@@ -89,21 +94,21 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     6 sound-bank-loaded? if
-        2 var-inc
-        2 30 var? if
-            2 0 var-set
-            1 0 var? if
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
                 $40000005 6 25.0 10.0 136.5 0 0 sound
-            else 1 1 var? if
+            else sound-step-var 1 var? if
                 $40000006 6 25.0 10.0 136.5 0 0 sound
-            else 1 2 var? if
+            else sound-step-var 2 var? if
                 $40000007 6 25.0 10.0 136.5 0 0 sound
-            else 1 3 var? if
+            else sound-step-var 3 var? if
                 $40000008 6 25.0 10.0 136.5 0 0 sound
             then then then then
-            1 var-inc
-            1 4 var? if
-                1 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
@@ -129,7 +134,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : water-tower-1f-1.act00 ( -- )   \ 0043EF80
-    0 ebit? not if
+    rested ebit? not if
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
@@ -146,7 +151,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $E4 panic-calm-in
         fiona-calm-reset
         3 avoid-prompt
-        0 ebit-set
+        rested ebit-set
         fiona-who $84 5 char-sound
         $1E wait-frames
         got-doc-recovery story-flag? not if

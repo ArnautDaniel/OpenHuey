@@ -4,6 +4,10 @@
 IN: story.rooms.chaos-forest-8
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant maze-dealt                  \ (bit 0) the maze's rooms dealt (once a visit, not in a panic)
+1 constant was-panicking               \ (bit 1) she was in a panic (as she came in, then each frame)
+
 \ room 0x106: starts a water drip effect (OneDrip, 0xC0 bytes).
 : chaos-forest-8.cmd00 ( -- )  effects:one-drip ;   \ (a drop falling now and then)
 
@@ -16,7 +20,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         deal-things
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     then
     cf-8-breakable1-broken story-flag? not if
         2 keeps-people-off floor-on
@@ -196,16 +200,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             $40 $F7 noise
         then
     then
-    0 ebit? not if
-        1 ebit? not in-panic? and if
-            0 ebit-set
+    maze-dealt ebit? not if
+        was-panicking ebit? not in-panic? and if
+            maze-dealt ebit-set
             deal-things
         then
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     else
-        1 ebit-clear
+        was-panicking ebit-clear
     then
 ;
 

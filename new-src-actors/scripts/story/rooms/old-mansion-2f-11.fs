@@ -4,11 +4,19 @@
 IN: story.rooms.old-mansion-2f-11
 USING: engine actors messages vectors story.state room-names story.words story.shared flag-names story-names fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant ladder-remarked             \ (bit 0) its first remark made: "There is a rusty stepladder here..."
+1 constant hewie-zone4-noticed         \ (bit 1) Hewie has reacted to zone 4 (once a visit)
+0 constant tries-var                   \ (var 0) its tries (3: on)
+1 constant books-looks-var             \ (var 1) her remarks on the books in turn
+2 constant sound-step-var              \ (var 2) which of its sounds next (0..3)
+3 constant sound-frames-var            \ (var 3) frames to the next sound (30)
+
 \ room 0x62 (Room62_Cmd00_ptmf): object byte 4 swings: byte 3 0 starts it (phase +0x30 0, size
-\ +0x34 0.01; object 0 with sound 7), else a step-floor (+0x10 = size x sin(phase), phase on 60
+\ +0x34 0.01; object 0 with sound 7), else a step (+0x10 = size x sin(phase), phase on 60
 \ degrees, the size down 0.001); 2 until it is still
 : old-mansion-2f-11.cmd00 ( b0 b1 -- )   \ (object b1 - the room's string - swinging: b0 0 starts it (size 0.01; the first with its
-    \ sound 7), else a step-floor each frame till it is still)
+    \ sound 7), else a step each frame till it is still)
     {: op k | a n :}  k room-object to n to a  a n object-here? 0= if  exit  then
     op 0= if
         0e a n $30 object!  0.01e a n $34 object!
@@ -46,8 +54,8 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
 
 : old-mansion-2f-11.enter ( -- )   \ 00421C60
     room-sounds
-    2 0 var-set
-    3 0 var-set
+    sound-step-var 0 var-set
+    sound-frames-var 0 var-set
     om2f-11-flag1 story-flag? not if
         0 5.19 35.3 -34.0 flicker-sprite
         0 old-mansion-2f-11.cmd01
@@ -104,11 +112,11 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
         then
     then
     4 21.19 0.0 -20.13 $C 10 0 zone
-    1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone4-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 4 9 char-zone-bits? if
-                    1 ebit-set
+                    hewie-zone4-noticed ebit-set
                     $1E chance? if
                         hewie-zone-var 4 var-set
                         0 hewie-who $89 action
@@ -127,21 +135,21 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
         then
     then
     6 sound-bank-loaded? if
-        3 var-inc
-        3 30 var? if
-            3 0 var-set
-            2 0 var? if
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
                 $40000003 6 37.86 0.0 -38.87 0 0 sound
-            else 2 1 var? if
+            else sound-step-var 1 var? if
                 $40000004 6 37.86 0.0 -38.87 0 0 sound
-            else 2 2 var? if
+            else sound-step-var 2 var? if
                 $40000005 6 37.86 0.0 -38.87 0 0 sound
-            else 2 3 var? if
+            else sound-step-var 3 var? if
                 $40000006 6 37.86 0.0 -38.87 0 0 sound
             then then then then
-            2 var-inc
-            2 4 var? if
-                2 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
@@ -262,13 +270,13 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     self-wait-done
     5.19 -34.0 self-turn-to-xz
     self-wait-done
-    0 ebit? not om2f-11-flag1 story-flag? or if
+    ladder-remarked ebit? not om2f-11-flag1 story-flag? or if
         0 say   \ "There is a rusty stepladder here. It really is in bad shape. If I were to try climb..."
-        0 ebit-set
+        ladder-remarked ebit-set
     else
         look-at-anim play-out
         1 say   \ "There is something on top of the stepladder... I bet if I shake it a bit, I can get..."
-        0 ebit-clear
+        ladder-remarked ebit-clear
     then
     self-idle-or-end
 ;
@@ -342,15 +350,15 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     then then then then then then
     look-close-anim self-anim
     $28 wait-frames
-    1 0 var? if
+    books-looks-var 0 var? if
         5 say   \ "What an incredible number of books."
-        1 var-inc
-    else 1 1 var? if
+        books-looks-var var-inc
+    else books-looks-var 1 var? if
         6 say   \ "They are written in various languages. Whomever read all of these must have had a s..."
-        1 var-inc
-    else 1 2 var? if
+        books-looks-var var-inc
+    else books-looks-var 2 var? if
         7 say   \ "Hmpf! What am I doing? It's not like I can even read the titles or anything."
-        1 0 var-set
+        books-looks-var 0 var-set
     then then then
     self-wait-anim
     self-idle-or-end
@@ -413,8 +421,8 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
 : old-mansion-2f-11.act0B ( -- )   \ 004222A0
     0 2 track 3 action
     0 4 track 8 action
-    0 var-inc
-    0 3 var? if
+    tries-var var-inc
+    tries-var 3 var? if
         0 3 track 2 action
     else
         1 old-mansion-2f-11.cmd01

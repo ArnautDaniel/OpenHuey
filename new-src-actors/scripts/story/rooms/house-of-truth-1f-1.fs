@@ -4,6 +4,14 @@
 IN: story.rooms.house-of-truth-1f-1
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant rested                      \ (bit 0) she has rested here (her recovery: once a visit)
+1 constant hewie-sent-off              \ (bit 1) Hewie was here and sent off for the scene
+2 constant key-used                    \ (bit 2) the key used: the door unlocked, the summoner off
+3 constant sound-started               \ (bit 3) its sound started (then kept up)
+4 constant sound2-started              \ (bit 4) its sound started (then kept up)
+5 constant flame-lit                   \ (bit 5) the flame lit
+
 : house-of-truth-1f-1.enter ( -- )   \ 00430AB0
     room-sounds
     ht1f-1-flag1 story-flag? not if
@@ -22,7 +30,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         1 -78.0 1.0 39.0 flicker-sprite
     then
     ht1f-1-flag1 story-flag? if
-        5 ebit-set
+        flame-lit ebit-set
     then
     items-40-as-70 story-flag? if
         over-music-d story-flag? ht1f-1-flag2 story-flag? not and if
@@ -172,19 +180,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         then
     then
-    3 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             $40000002 6 -24.6 22.1 -26.4 0 0 sound
-            3 ebit-set
+            sound-started ebit-set
         then
     else
         $C0000002 6 -24.6 22.1 -26.4 0 0 sound
     then
-    5 ebit? if
-        4 ebit? not if
+    flame-lit ebit? if
+        sound2-started ebit? not if
             6 sound-bank-loaded? if
                 $40000006 6 -21.86 0.0 33.51 0 0 sound
-                4 ebit-set
+                sound2-started ebit-set
             then
         else
             $C0000006 6 -21.86 0.0 33.51 0 0 sound
@@ -203,7 +211,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         fiona-who $1B char-in-area? fiona-who 45 $32 char-heading? and if
             3 unhurried offer-action
         then
-    else fiona-who $1C char-in-area? fiona-who 30 $32 char-heading? and 2 ebit? and if
+    else fiona-who $1C char-in-area? fiona-who 30 $32 char-heading? and key-used ebit? and if
         4 unhurried offer-action
     then then
     ht1f-1-album-medallion-found story-flag? ht1f-1-album-medallion story-flag? not and if
@@ -215,7 +223,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : house-of-truth-1f-1.phase5 ( -- )   \ 00430F90
-    2 ebit? if
+    key-used ebit? if
         force-calm state-flag-clear
         stalker-who action-end
         stalker-who action-end
@@ -234,7 +242,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : house-of-truth-1f-1.act00 ( -- )   \ 004310B0
-    0 ebit? not if
+    rested ebit? not if
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
@@ -251,7 +259,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $E4 panic-calm-in
         fiona-calm-reset
         3 avoid-prompt
-        0 ebit-set
+        rested ebit-set
         fiona-who $84 5 char-sound
         $1E wait-frames
         got-doc-recovery story-flag? not if
@@ -287,7 +295,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     wait-fade
     hewie-who char-here? if
-        1 ebit-set
+        hewie-sent-off ebit-set
         hewie-who action-end
         hewie-who char-done
     then
@@ -307,10 +315,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         scene-play
     then
     fiona-who $EF -71.08 32.24 50 char-to-xz
-    1 ebit? if
+    hewie-sent-off ebit? if
         hewie-who char-activate
         hewie-who $20F -2.73 -54.08 70 char-to-xz
-        1 ebit-clear
+        hewie-sent-off ebit-clear
     then
     stalker-who action-end
     stalker-who char-done
@@ -330,11 +338,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 part-shown
     $E0 door-unlock
     $24 item-use
-    2 ebit-set
+    key-used ebit-set
     summoner-on state-flag-clear
     force-calm state-flag-set
     0 -24.6 22.1 -26.4 1 flame-in
-    5 ebit-set
+    flame-lit ebit-set
     $F $51 fade
     wait-fade
     $44 resident-flag-set

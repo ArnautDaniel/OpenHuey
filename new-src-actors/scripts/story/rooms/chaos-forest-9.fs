@@ -4,6 +4,12 @@
 IN: story.rooms.chaos-forest-9
 USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant maze-dealt                  \ (bit 0) the maze's rooms dealt (once a visit, not in a panic)
+1 constant was-panicking               \ (bit 1) she was in a panic (as she came in, then each frame)
+2 constant figure-scene-on             \ (bit 2) the figure's scene begun (act00)
+3 constant lake-remarked               \ (bit 3) its first remark made: "It's... a lake, I think. Looks like there some kind of a... "
+
 \ room 0x107: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
 \ sideways 2 a frame (room_nudge).
 : chaos-forest-9.cmd00 ( b0 -- )  2e room-nudge ;
@@ -21,7 +27,7 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
         deal-things
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     then
     cf-9-breakable-broken story-flag? not if
         0 keeps-people-off floor-on
@@ -55,18 +61,18 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
     player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
     then
-    0 ebit? not if
-        1 ebit? not in-panic? and if
-            0 ebit-set
+    maze-dealt ebit? not if
+        was-panicking ebit? not in-panic? and if
+            maze-dealt ebit-set
             deal-things
         then
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     else
-        1 ebit-clear
+        was-panicking ebit-clear
     then
-    2 ebit? cf-9-flag1 story-flag? not and if
+    figure-scene-on ebit? cf-9-flag1 story-flag? not and if
         chaos-forest-9.cond00? if
             cf-9-flag1 story-flag-set
             1 track action-end
@@ -101,7 +107,7 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 
 : chaos-forest-9.act00 ( -- )   \ 00418C90
     5 char-start
-    2 ebit-set
+    figure-scene-on ebit-set
     $E char-activate
     $E $9000 1 0 char-anim-hold
     $E -339.86 125.95 -391.22 0 char-to-xyz
@@ -151,10 +157,10 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 
 : chaos-forest-9.act03 ( -- )   \ 00418D50
     self-wait-done
-    3 ebit? not if
+    lake-remarked ebit? not if
         look-close-anim 5 blend-out
         0 say   \ "It's... a lake, I think. Looks like there some kind of a... tower erected in the ce..."
-        3 ebit-set
+        lake-remarked ebit-set
     else
         hands-clasped-anim 5 blend-out
         1 say   \ "I'm not going to be able to go any further this way. Better go back and find a way..."

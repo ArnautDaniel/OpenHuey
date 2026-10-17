@@ -4,6 +4,32 @@
 IN: story.rooms.water-tower-7f-1
 USING: actors messages room-names story.words story.shared flag-names story-names fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant gear0-turning               \ (bit 0) ? the first gear's step (cmd00 7) pending
+1 constant gear1-turning               \ (bit 1) ? the gears' step (cmd00 6 / 7)
+2 constant gear2-turning               \ (bit 2) ? the gears' step (cmd00 5 / 6)
+3 constant gear3-turning               \ (bit 3) ? the gears' step (cmd00 4 / 5)
+4 constant gear4-turning               \ (bit 4) ? the gears' step (cmd00 3 / 4); Hewie in zone 3
+5 constant gear5-turning               \ (bit 5) ? the gears' step (cmd00 2 / 3); Hewie in zone 2
+6 constant gear6-turning               \ (bit 6) ? the gears' step (cmd00 1 / 2); Hewie in zone 1
+7 constant hewie-in-zone0              \ (bit 7) Hewie in zone 0 (his action there made)
+8 constant lined-up                    \ (bit 8) the settings lined up: her reaction made
+9 constant first-idle                  \ (bit 9) the first setting at rest
+10 constant second-idle                \ (bit 10) the second setting at rest
+0 constant her-setting-var             \ (var 0) her setting (zone by zone)
+1 constant his-setting-var             \ (var 1) Hewie's setting (zone by zone)
+2 constant gear-var                    \ (var 2) the gear reached (8 down)
+3 constant gear3-var                   \ (var 3) ? a gear's state (-1 none)
+4 constant gear4-var                   \ (var 4) ? a gear's state (-1 none)
+5 constant gear5-var                   \ (var 5) ? a gear's state (-1 none)
+6 constant gear6-var                   \ (var 6) ? a gear's state (-1 none)
+7 constant gear7-var                   \ (var 7) ? a gear's state (-1 none)
+8 constant gear8-var                   \ (var 8) ? a gear's state (-1 none)
+9 constant gear9-var                   \ (var 9) ? a gear's state (-1 none)
+10 constant gear10-var                 \ (var 10) ? a gear's state (-1 none)
+11 constant sound-step-var             \ (var 11) which of its sounds next (0..3)
+12 constant sound-frames-var           \ (var 12) frames to the next sound (30)
+
 \ the 0x10-byte effect ObjectGlow_vtable on room object k + 1 (byte 4 = k, 1..8; script variable
 \ 11 - k keeps its slot): made on first use when byte 3 is set, then sent (on byte 3, index 8 -
 \ k, the variable, the object), with sound 1 at the object when on and the camera director's
@@ -25,15 +51,15 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     room-sounds
     hunted state-flag-set
     $30 1.0 0 bgm
-    2 8 var-set
-    3 -1 var-set
-    4 -1 var-set
-    5 -1 var-set
-    6 -1 var-set
-    7 -1 var-set
-    8 -1 var-set
-    9 -1 var-set
-    $A -1 var-set
+    gear-var 8 var-set
+    gear3-var -1 var-set
+    gear4-var -1 var-set
+    gear5-var -1 var-set
+    gear6-var -1 var-set
+    gear7-var -1 var-set
+    gear8-var -1 var-set
+    gear9-var -1 var-set
+    gear10-var -1 var-set
     1 8 water-tower-7f-1.cmd00
     stalker-who action-end
     1 summon-take
@@ -60,327 +86,327 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     5 1 -1 1 chars-area-camera
     6 1 -1 1 chars-area-camera
     6 sound-bank-loaded? if
-        $C var-inc
-        $C 30 var? if
-            $C 0 var-set
-            $B 0 var? if
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
                 $40000005 6 -127.0 1.7 10.0 0 0 sound
-            else $B 1 var? if
+            else sound-step-var 1 var? if
                 $40000006 6 -127.0 1.7 10.0 0 0 sound
-            else $B 2 var? if
+            else sound-step-var 2 var? if
                 $40000007 6 -127.0 1.7 10.0 0 0 sound
-            else $B 3 var? if
+            else sound-step-var 3 var? if
                 $40000008 6 -127.0 1.7 10.0 0 0 sound
             then then then then
-            $B var-inc
-            $B 4 var? if
-                $B 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
-    8 ebit? not if
-        0 0 var? if
-            9 ebit-set
+    lined-up ebit? not if
+        her-setting-var 0 var? if
+            first-idle ebit-set
         else
-            9 ebit-clear
+            first-idle ebit-clear
         then
-        1 0 var? if
-            $A ebit-set
+        his-setting-var 0 var? if
+            second-idle ebit-set
         else
-            $A ebit-clear
+            second-idle ebit-clear
         then
-        0 0 var-set
-        1 0 var-set
+        her-setting-var 0 var-set
+        his-setting-var 0 var-set
         0 0.0 0.0 0.0 $A 5 0 zone
         fiona-who 0 8 char-zone-bits? if
-            0 1 var-set
+            her-setting-var 1 var-set
         then
         hewie-who 0 8 char-zone-bits? if
-            1 1 var-set
+            his-setting-var 1 var-set
         then
         1 -22.0 0.0 0.0 5 5 0 zone
         fiona-who 1 8 char-zone-bits? if
-            0 2 var-set
+            her-setting-var 2 var-set
         then
         hewie-who 1 8 char-zone-bits? if
-            1 2 var-set
+            his-setting-var 2 var-set
         then
         2 8.0 0.0 -30.0 5 5 0 zone
-        0 0 var? if
+        her-setting-var 0 var? if
             fiona-who 2 8 char-zone-bits? if
-                0 3 var-set
+                her-setting-var 3 var-set
             then
         then
-        1 0 var? if
+        his-setting-var 0 var? if
             hewie-who 2 8 char-zone-bits? if
-                1 3 var-set
+                his-setting-var 3 var-set
             then
         then
         3 34.65 0.0 20.0 5 5 0 zone
-        0 0 var? if
+        her-setting-var 0 var? if
             fiona-who 3 8 char-zone-bits? if
-                0 4 var-set
+                her-setting-var 4 var-set
             then
         then
-        1 0 var? if
+        his-setting-var 0 var? if
             hewie-who 3 8 char-zone-bits? if
-                1 4 var-set
+                his-setting-var 4 var-set
             then
         then
         4 -25.0 0.0 43.31 5 5 0 zone
-        0 0 var? if
+        her-setting-var 0 var? if
             fiona-who 4 8 char-zone-bits? if
-                0 5 var-set
+                her-setting-var 5 var-set
             then
         then
-        1 0 var? if
+        his-setting-var 0 var? if
             hewie-who 4 8 char-zone-bits? if
-                1 5 var-set
+                his-setting-var 5 var-set
             then
         then
         5 -40.37 0.0 -40.38 5 5 0 zone
-        0 0 var? if
+        her-setting-var 0 var? if
             fiona-who 5 8 char-zone-bits? if
-                0 6 var-set
+                her-setting-var 6 var-set
             then
         then
-        1 0 var? if
+        his-setting-var 0 var? if
             hewie-who 5 8 char-zone-bits? if
-                1 6 var-set
+                his-setting-var 6 var-set
             then
         then
         6 48.58 0.0 -48.58 5 5 0 zone
-        0 0 var? if
+        her-setting-var 0 var? if
             fiona-who 6 8 char-zone-bits? if
-                0 7 var-set
+                her-setting-var 7 var-set
             then
         then
-        1 0 var? if
+        his-setting-var 0 var? if
             hewie-who 6 8 char-zone-bits? if
-                1 7 var-set
+                his-setting-var 7 var-set
             then
         then
         7 57.25 0.0 57.25 5 5 0 zone
-        0 0 var? if
+        her-setting-var 0 var? if
             fiona-who 7 8 char-zone-bits? if
-                0 8 var-set
+                her-setting-var 8 var-set
             then
         then
-        1 0 var? if
+        his-setting-var 0 var? if
             hewie-who 7 8 char-zone-bits? if
-                1 8 var-set
+                his-setting-var 8 var-set
             then
         then
-        9 ebit? 0 0 var? not and if
-            0 1 var? if
+        first-idle ebit? her-setting-var 0 var? not and if
+            her-setting-var 1 var? if
                 fiona-who $11 6 char-sound
-            else 0 2 var? if
+            else her-setting-var 2 var? if
                 fiona-who $10 6 char-sound
-            else 0 3 var? if
+            else her-setting-var 3 var? if
                 fiona-who $F 6 char-sound
-            else 0 4 var? if
+            else her-setting-var 4 var? if
                 fiona-who $E 6 char-sound
-            else 0 5 var? if
+            else her-setting-var 5 var? if
                 fiona-who $D 6 char-sound
-            else 0 6 var? if
+            else her-setting-var 6 var? if
                 fiona-who $C 6 char-sound
-            else 0 7 var? if
+            else her-setting-var 7 var? if
                 fiona-who $B 6 char-sound
-            else 0 8 var? if
+            else her-setting-var 8 var? if
                 fiona-who $A 6 char-sound
             then then then then then then then then
-        else $A ebit? 1 0 var? not and if
-            1 1 var? if
+        else second-idle ebit? his-setting-var 0 var? not and if
+            his-setting-var 1 var? if
                 hewie-who $11 6 char-sound
-            else 1 2 var? if
+            else his-setting-var 2 var? if
                 hewie-who $10 6 char-sound
-            else 1 3 var? if
+            else his-setting-var 3 var? if
                 hewie-who $F 6 char-sound
-            else 1 4 var? if
+            else his-setting-var 4 var? if
                 hewie-who $E 6 char-sound
-            else 1 5 var? if
+            else his-setting-var 5 var? if
                 hewie-who $D 6 char-sound
-            else 1 6 var? if
+            else his-setting-var 6 var? if
                 hewie-who $C 6 char-sound
-            else 1 7 var? if
+            else his-setting-var 7 var? if
                 hewie-who $B 6 char-sound
-            else 1 8 var? if
+            else his-setting-var 8 var? if
                 hewie-who $A 6 char-sound
             then then then then then then then then
         then then
-        9 ebit? not 0 0 var? and if
-        else $A ebit? not 1 0 var? and if
+        first-idle ebit? not her-setting-var 0 var? and if
+        else second-idle ebit? not his-setting-var 0 var? and if
         then then
-        2 8 var? if
-            0 8 var? 1 8 var? or if
-                2 7 var-set
+        gear-var 8 var? if
+            her-setting-var 8 var? his-setting-var 8 var? or if
+                gear-var 7 var-set
                 1 7 water-tower-7f-1.cmd00
             then
-        else 2 7 var? if
-            0 8 var? 1 8 var? or if
-                0 7 var? 1 7 var? or if
-                    2 6 var-set
+        else gear-var 7 var? if
+            her-setting-var 8 var? his-setting-var 8 var? or if
+                her-setting-var 7 var? his-setting-var 7 var? or if
+                    gear-var 6 var-set
                     1 6 water-tower-7f-1.cmd00
                 then
             else
-                2 8 var-set
+                gear-var 8 var-set
                 0 7 water-tower-7f-1.cmd00
-                0 ebit-clear
+                gear0-turning ebit-clear
             then
-        else 2 6 var? if
-            0 7 var? 1 7 var? or if
-                0 6 var? 1 6 var? or if
-                    2 5 var-set
+        else gear-var 6 var? if
+            her-setting-var 7 var? his-setting-var 7 var? or if
+                her-setting-var 6 var? his-setting-var 6 var? or if
+                    gear-var 5 var-set
                     1 5 water-tower-7f-1.cmd00
                 then
             else
                 0 6 water-tower-7f-1.cmd00
-                0 8 var? 1 8 var? or if
-                    2 7 var-set
-                    1 ebit-clear
+                her-setting-var 8 var? his-setting-var 8 var? or if
+                    gear-var 7 var-set
+                    gear1-turning ebit-clear
                 else
-                    2 8 var-set
+                    gear-var 8 var-set
                     0 7 water-tower-7f-1.cmd00
-                    1 ebit-clear
-                    0 ebit-clear
+                    gear1-turning ebit-clear
+                    gear0-turning ebit-clear
                 then
             then
-        else 2 5 var? if
-            0 6 var? 1 6 var? or if
-                0 5 var? 1 5 var? or if
-                    2 4 var-set
+        else gear-var 5 var? if
+            her-setting-var 6 var? his-setting-var 6 var? or if
+                her-setting-var 5 var? his-setting-var 5 var? or if
+                    gear-var 4 var-set
                     1 4 water-tower-7f-1.cmd00
                 then
             else
                 0 5 water-tower-7f-1.cmd00
-                0 7 var? 1 7 var? or if
-                    2 6 var-set
-                    2 ebit-clear
+                her-setting-var 7 var? his-setting-var 7 var? or if
+                    gear-var 6 var-set
+                    gear2-turning ebit-clear
                 else
                     0 6 water-tower-7f-1.cmd00
-                    0 8 var? 1 8 var? or if
-                        2 7 var-set
-                        1 ebit-clear
+                    her-setting-var 8 var? his-setting-var 8 var? or if
+                        gear-var 7 var-set
+                        gear1-turning ebit-clear
                     else
-                        2 8 var-set
+                        gear-var 8 var-set
                         0 7 water-tower-7f-1.cmd00
-                        1 ebit-clear
-                        0 ebit-clear
+                        gear1-turning ebit-clear
+                        gear0-turning ebit-clear
                     then
                 then
             then
-        else 2 4 var? if
-            0 5 var? 1 5 var? or if
-                0 4 var? 1 4 var? or if
-                    2 3 var-set
+        else gear-var 4 var? if
+            her-setting-var 5 var? his-setting-var 5 var? or if
+                her-setting-var 4 var? his-setting-var 4 var? or if
+                    gear-var 3 var-set
                     1 3 water-tower-7f-1.cmd00
                 then
             else
                 0 4 water-tower-7f-1.cmd00
-                0 6 var? 1 6 var? or if
-                    2 5 var-set
-                    3 ebit-clear
+                her-setting-var 6 var? his-setting-var 6 var? or if
+                    gear-var 5 var-set
+                    gear3-turning ebit-clear
                 else
                     0 5 water-tower-7f-1.cmd00
-                    0 7 var? 1 7 var? or if
-                        2 6 var-set
-                        2 ebit-clear
+                    her-setting-var 7 var? his-setting-var 7 var? or if
+                        gear-var 6 var-set
+                        gear2-turning ebit-clear
                     else
                         0 6 water-tower-7f-1.cmd00
-                        0 8 var? 1 8 var? or if
-                            2 7 var-set
-                            1 ebit-clear
+                        her-setting-var 8 var? his-setting-var 8 var? or if
+                            gear-var 7 var-set
+                            gear1-turning ebit-clear
                         else
-                            2 8 var-set
+                            gear-var 8 var-set
                             0 7 water-tower-7f-1.cmd00
-                            1 ebit-clear
-                            0 ebit-clear
+                            gear1-turning ebit-clear
+                            gear0-turning ebit-clear
                         then
                     then
                 then
             then
-        else 2 3 var? if
-            0 4 var? 1 4 var? or if
-                0 3 var? 1 3 var? or if
-                    2 2 var-set
+        else gear-var 3 var? if
+            her-setting-var 4 var? his-setting-var 4 var? or if
+                her-setting-var 3 var? his-setting-var 3 var? or if
+                    gear-var 2 var-set
                     1 2 water-tower-7f-1.cmd00
                 then
             else
                 0 3 water-tower-7f-1.cmd00
-                0 5 var? 1 5 var? or if
-                    2 4 var-set
-                    4 ebit-clear
+                her-setting-var 5 var? his-setting-var 5 var? or if
+                    gear-var 4 var-set
+                    gear4-turning ebit-clear
                 else
                     0 4 water-tower-7f-1.cmd00
-                    0 6 var? 1 6 var? or if
-                        2 5 var-set
-                        3 ebit-clear
+                    her-setting-var 6 var? his-setting-var 6 var? or if
+                        gear-var 5 var-set
+                        gear3-turning ebit-clear
                     else
                         0 5 water-tower-7f-1.cmd00
-                        0 7 var? 1 7 var? or if
-                            2 6 var-set
-                            2 ebit-clear
+                        her-setting-var 7 var? his-setting-var 7 var? or if
+                            gear-var 6 var-set
+                            gear2-turning ebit-clear
                         else
                             0 6 water-tower-7f-1.cmd00
-                            0 8 var? 1 8 var? or if
-                                2 7 var-set
-                                1 ebit-clear
+                            her-setting-var 8 var? his-setting-var 8 var? or if
+                                gear-var 7 var-set
+                                gear1-turning ebit-clear
                             else
-                                2 8 var-set
+                                gear-var 8 var-set
                                 0 7 water-tower-7f-1.cmd00
-                                1 ebit-clear
-                                0 ebit-clear
+                                gear1-turning ebit-clear
+                                gear0-turning ebit-clear
                             then
                         then
                     then
                 then
             then
-        else 2 2 var? if
-            0 3 var? 1 3 var? or if
-                0 2 var? 1 2 var? or if
-                    2 1 var-set
+        else gear-var 2 var? if
+            her-setting-var 3 var? his-setting-var 3 var? or if
+                her-setting-var 2 var? his-setting-var 2 var? or if
+                    gear-var 1 var-set
                     1 1 water-tower-7f-1.cmd00
                 then
             else
                 0 2 water-tower-7f-1.cmd00
-                0 4 var? 1 4 var? or if
-                    2 3 var-set
-                    5 ebit-clear
+                her-setting-var 4 var? his-setting-var 4 var? or if
+                    gear-var 3 var-set
+                    gear5-turning ebit-clear
                 else
                     0 3 water-tower-7f-1.cmd00
-                    0 5 var? 1 5 var? or if
-                        2 4 var-set
-                        4 ebit-clear
+                    her-setting-var 5 var? his-setting-var 5 var? or if
+                        gear-var 4 var-set
+                        gear4-turning ebit-clear
                     else
                         0 4 water-tower-7f-1.cmd00
-                        0 6 var? 1 6 var? or if
-                            2 5 var-set
-                            3 ebit-clear
+                        her-setting-var 6 var? his-setting-var 6 var? or if
+                            gear-var 5 var-set
+                            gear3-turning ebit-clear
                         else
                             0 5 water-tower-7f-1.cmd00
-                            0 7 var? 1 7 var? or if
-                                2 6 var-set
-                                2 ebit-clear
+                            her-setting-var 7 var? his-setting-var 7 var? or if
+                                gear-var 6 var-set
+                                gear2-turning ebit-clear
                             else
                                 0 6 water-tower-7f-1.cmd00
-                                0 8 var? 1 8 var? or if
-                                    2 7 var-set
-                                    1 ebit-clear
+                                her-setting-var 8 var? his-setting-var 8 var? or if
+                                    gear-var 7 var-set
+                                    gear1-turning ebit-clear
                                 else
-                                    2 8 var-set
+                                    gear-var 8 var-set
                                     0 7 water-tower-7f-1.cmd00
-                                    1 ebit-clear
-                                    0 ebit-clear
+                                    gear1-turning ebit-clear
+                                    gear0-turning ebit-clear
                                 then
                             then
                         then
                     then
                 then
             then
-        else 2 1 var? if
-            0 2 var? 1 2 var? or if
-                0 1 var? 1 1 var? or if
-                    8 ebit-set
+        else gear-var 1 var? if
+            her-setting-var 2 var? his-setting-var 2 var? or if
+                her-setting-var 1 var? his-setting-var 1 var? or if
+                    lined-up ebit-set
                     panic-eased
                     fiona-who 0 char-action? if
                         0 fiona-who 0 action-force
@@ -390,39 +416,39 @@ USING: actors messages room-names story.words story.shared flag-names story-name
                 then
             else
                 0 1 water-tower-7f-1.cmd00
-                0 3 var? 1 3 var? or if
-                    2 2 var-set
-                    6 ebit-clear
+                her-setting-var 3 var? his-setting-var 3 var? or if
+                    gear-var 2 var-set
+                    gear6-turning ebit-clear
                 else
                     0 2 water-tower-7f-1.cmd00
-                    0 4 var? 1 4 var? or if
-                        2 3 var-set
-                        5 ebit-clear
+                    her-setting-var 4 var? his-setting-var 4 var? or if
+                        gear-var 3 var-set
+                        gear5-turning ebit-clear
                     else
                         0 3 water-tower-7f-1.cmd00
-                        0 5 var? 1 5 var? or if
-                            2 4 var-set
-                            4 ebit-clear
+                        her-setting-var 5 var? his-setting-var 5 var? or if
+                            gear-var 4 var-set
+                            gear4-turning ebit-clear
                         else
                             0 4 water-tower-7f-1.cmd00
-                            0 6 var? 1 6 var? or if
-                                2 5 var-set
-                                3 ebit-clear
+                            her-setting-var 6 var? his-setting-var 6 var? or if
+                                gear-var 5 var-set
+                                gear3-turning ebit-clear
                             else
                                 0 5 water-tower-7f-1.cmd00
-                                0 7 var? 1 7 var? or if
-                                    2 6 var-set
-                                    2 ebit-clear
+                                her-setting-var 7 var? his-setting-var 7 var? or if
+                                    gear-var 6 var-set
+                                    gear2-turning ebit-clear
                                 else
                                     0 6 water-tower-7f-1.cmd00
-                                    0 8 var? 1 8 var? or if
-                                        2 7 var-set
-                                        1 ebit-clear
+                                    her-setting-var 8 var? his-setting-var 8 var? or if
+                                        gear-var 7 var-set
+                                        gear1-turning ebit-clear
                                     else
-                                        2 8 var-set
+                                        gear-var 8 var-set
                                         0 7 water-tower-7f-1.cmd00
-                                        1 ebit-clear
-                                        0 ebit-clear
+                                        gear1-turning ebit-clear
+                                        gear0-turning ebit-clear
                                     then
                                 then
                             then
@@ -432,56 +458,56 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             then
         then then then then then then then then
         35 fiona-started? if
-            2 8 var? 0 8 var? not and if
+            gear-var 8 var? her-setting-var 8 var? not and if
                 fiona-who 57 57 $32 char-faces-xz? if
                     hewie-may-break-off? if
                         0 hewie-who 1 action
                     then
                 then
             then
-            2 7 var? 0 7 var? not and if
+            gear-var 7 var? her-setting-var 7 var? not and if
                 fiona-who 49 -49 $32 char-faces-xz? if
                     hewie-may-break-off? if
                         0 hewie-who 1 action
                     then
                 then
             then
-            2 6 var? 0 6 var? not and if
+            gear-var 6 var? her-setting-var 6 var? not and if
                 fiona-who -40 -40 $32 char-faces-xz? if
                     hewie-may-break-off? if
                         0 hewie-who 1 action
                     then
                 then
             then
-            2 5 var? 0 5 var? not and if
+            gear-var 5 var? her-setting-var 5 var? not and if
                 fiona-who -25 43 $32 char-faces-xz? if
                     hewie-may-break-off? if
                         0 hewie-who 1 action
                     then
                 then
             then
-            2 4 var? 0 4 var? not and if
+            gear-var 4 var? her-setting-var 4 var? not and if
                 fiona-who 35 20 $32 char-faces-xz? if
                     hewie-may-break-off? if
                         0 hewie-who 1 action
                     then
                 then
             then
-            2 3 var? 0 3 var? not and if
+            gear-var 3 var? her-setting-var 3 var? not and if
                 fiona-who 8 -30 $32 char-faces-xz? if
                     hewie-may-break-off? if
                         0 hewie-who 1 action
                     then
                 then
             then
-            2 2 var? 0 2 var? not and if
+            gear-var 2 var? her-setting-var 2 var? not and if
                 fiona-who -22 0 $32 char-faces-xz? if
                     hewie-may-break-off? if
                         0 hewie-who 1 action
                     then
                 then
             then
-            2 1 var? if
+            gear-var 1 var? if
                 fiona-who 0 0 $32 char-faces-xz? if
                     hewie-may-break-off? if
                         0 hewie-who 1 action
@@ -490,12 +516,12 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             then
         then
         hewie-who char-here? hewie-who 0 char-cond? and if
-            7 ebit? not if
+            hewie-in-zone0 ebit? not if
                 0 0.0 0.0 0.0 $A 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 0 9 char-zone-bits? if
-                            7 ebit-set
+                            hewie-in-zone0 ebit-set
                             $80 0 hewie-do
                         then
                     then
@@ -503,17 +529,17 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             else
                 0 0.0 0.0 0.0 $C 5 0 zone
                 hewie-who 0 9 char-zone-bits? not if
-                    7 ebit-clear
+                    hewie-in-zone0 ebit-clear
                 then
             then
         then
         hewie-who char-here? hewie-who 0 char-cond? and if
-            6 ebit? not if
+            gear6-turning ebit? not if
                 1 -22.0 0.0 0.0 4 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 1 9 char-zone-bits? if
-                            6 ebit-set
+                            gear6-turning ebit-set
                             $80 0 hewie-do
                         then
                     then
@@ -521,17 +547,17 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             else
                 1 -22.0 0.0 0.0 6 5 0 zone
                 hewie-who 1 9 char-zone-bits? not if
-                    6 ebit-clear
+                    gear6-turning ebit-clear
                 then
             then
         then
         hewie-who char-here? hewie-who 0 char-cond? and if
-            5 ebit? not if
+            gear5-turning ebit? not if
                 2 8.0 0.0 -30.0 4 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 2 9 char-zone-bits? if
-                            5 ebit-set
+                            gear5-turning ebit-set
                             $80 0 hewie-do
                         then
                     then
@@ -539,17 +565,17 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             else
                 2 8.0 0.0 -30.0 6 5 0 zone
                 hewie-who 2 9 char-zone-bits? not if
-                    5 ebit-clear
+                    gear5-turning ebit-clear
                 then
             then
         then
         hewie-who char-here? hewie-who 0 char-cond? and if
-            4 ebit? not if
+            gear4-turning ebit? not if
                 3 34.65 0.0 20.0 5 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 3 9 char-zone-bits? if
-                            4 ebit-set
+                            gear4-turning ebit-set
                             $80 0 hewie-do
                         then
                     then
@@ -557,17 +583,17 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             else
                 3 34.65 0.0 20.0 7 5 0 zone
                 hewie-who 3 9 char-zone-bits? not if
-                    4 ebit-clear
+                    gear4-turning ebit-clear
                 then
             then
         then
         hewie-who char-here? hewie-who 0 char-cond? and if
-            3 ebit? not if
+            gear3-turning ebit? not if
                 4 -25.0 0.0 43.31 5 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 4 9 char-zone-bits? if
-                            3 ebit-set
+                            gear3-turning ebit-set
                             $80 0 hewie-do
                         then
                     then
@@ -575,17 +601,17 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             else
                 4 -25.0 0.0 43.31 7 5 0 zone
                 hewie-who 4 9 char-zone-bits? not if
-                    3 ebit-clear
+                    gear3-turning ebit-clear
                 then
             then
         then
         hewie-who char-here? hewie-who 0 char-cond? and if
-            2 ebit? not if
+            gear2-turning ebit? not if
                 5 -40.37 0.0 -40.38 4 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 5 9 char-zone-bits? if
-                            2 ebit-set
+                            gear2-turning ebit-set
                             $80 0 hewie-do
                         then
                     then
@@ -593,17 +619,17 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             else
                 5 -40.37 0.0 -40.38 6 5 0 zone
                 hewie-who 5 9 char-zone-bits? not if
-                    2 ebit-clear
+                    gear2-turning ebit-clear
                 then
             then
         then
         hewie-who char-here? hewie-who 0 char-cond? and if
-            1 ebit? not if
+            gear1-turning ebit? not if
                 6 48.58 0.0 -48.58 4 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 6 9 char-zone-bits? if
-                            1 ebit-set
+                            gear1-turning ebit-set
                             $80 0 hewie-do
                         then
                     then
@@ -611,17 +637,17 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             else
                 6 48.58 0.0 -48.58 6 5 0 zone
                 hewie-who 6 9 char-zone-bits? not if
-                    1 ebit-clear
+                    gear1-turning ebit-clear
                 then
             then
         then
         hewie-who char-here? hewie-who 0 char-cond? and if
-            0 ebit? not if
+            gear0-turning ebit? not if
                 7 57.25 0.0 57.25 5 5 0 zone
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 7 9 char-zone-bits? if
-                            0 ebit-set
+                            gear0-turning ebit-set
                             $80 0 hewie-do
                         then
                     then
@@ -629,7 +655,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             else
                 7 57.25 0.0 57.25 7 5 0 zone
                 hewie-who 7 9 char-zone-bits? not if
-                    0 ebit-clear
+                    gear0-turning ebit-clear
                 then
             then
         then
@@ -682,28 +708,28 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     self-wait-done
     hewie-bark
     self-wait-done
-    2 8 var? if
+    gear-var 8 var? if
         $37 57.25 57.25 -175 $204 5 self-move-to
         self-wait-done
-    else 2 7 var? if
+    else gear-var 7 var? if
         $5C 48.58 -48.58 -84 $204 5 self-move-to
         self-wait-done
-    else 2 6 var? if
+    else gear-var 6 var? if
         $FA -40.37 -40.38 10 $204 5 self-move-to
         self-wait-done
-    else 2 5 var? if
+    else gear-var 5 var? if
         $1B -25.0 43.31 111 $204 5 self-move-to
         self-wait-done
-    else 2 4 var? if
+    else gear-var 4 var? if
         $3F 34.65 20.0 -151 $204 5 self-move-to
         self-wait-done
-    else 2 3 var? if
+    else gear-var 3 var? if
         $6A 8.0 -30.0 -44 $204 5 self-move-to
         self-wait-done
-    else 2 2 var? if
+    else gear-var 2 var? if
         4 -22.0 0.0 89 $204 5 self-move-to
         self-wait-done
-    else 2 1 var? if
+    else gear-var 1 var? if
         $D8 0.0 0.0 89 $204 5 self-move-to
         self-wait-done
     then then then then then then then then
@@ -746,14 +772,14 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 
 : water-tower-7f-1.act04 ( -- )   \ 00441030
     self-wait-done
-    3 -1 var-set
-    4 -1 var-set
-    5 -1 var-set
-    6 -1 var-set
-    7 -1 var-set
-    8 -1 var-set
-    9 -1 var-set
-    $A -1 var-set
+    gear3-var -1 var-set
+    gear4-var -1 var-set
+    gear5-var -1 var-set
+    gear6-var -1 var-set
+    gear7-var -1 var-set
+    gear8-var -1 var-set
+    gear9-var -1 var-set
+    gear10-var -1 var-set
     1 8 water-tower-7f-1.cmd00
     1 7 water-tower-7f-1.cmd00
     1 6 water-tower-7f-1.cmd00

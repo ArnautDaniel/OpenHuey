@@ -4,13 +4,18 @@
 IN: story.rooms.old-mansion-2f-2
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+1 constant blocked-remarked            \ (bit 1) its first remark made: "It won't budge..."
+2 constant hewie-came-along            \ (bit 2) Hewie came in with her (his action 4)
+0 constant bark-frames-var             \ (var 0) frames to his next bark (90, 150 or 30)
+
 : old-mansion-2f-2.enter ( -- )   \ 004086A0
     1 both-halves floor-on
     om2f-2-flag1 story-flag? not if
         hewie-who $56 char-in-room? 119 hewie-action? and if
             $4A 0 65 hewie-to-room
             0 hewie-who 4 action
-            2 ebit-set
+            hewie-came-along ebit-set
         then
     else
         0 part-shown
@@ -54,7 +59,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     om2f-2-flag1 story-flag? not if
         fiona-who 0 char-in-area? fiona-who 0 $50 char-heading? and if
-            1 control-action? 2 ebit? and stalker-who char-here? not and fiona-who 0 char-action? and if
+            1 control-action? hewie-came-along ebit? and stalker-who char-here? not and fiona-who 0 char-action? and if
                 0 fiona-who 1 action
             then
         then
@@ -93,7 +98,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-2f-2.phase5 ( -- )   \ 00408880
-    om2f-2-flag1 story-flag? not hewie-who char-here? and 2 ebit? and if
+    om2f-2-flag1 story-flag? not hewie-who char-here? and hewie-came-along ebit? and if
         $56 0 -1 hewie-to-room
         18000 2 hewie-anim
     then
@@ -135,7 +140,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     camera-restart
     $47 door-unlock
     om2f-2-flag1 story-flag-set
-    2 ebit-clear
+    hewie-came-along ebit-clear
     $57 0 -1 hewie-to-room
     $F $41 fade
     wait-fade
@@ -157,18 +162,18 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     0 self-doorway-fade
     begin
-        0 0 var? if
+        bark-frames-var 0 var? if
             hewie-bark
             self-wait-done
             $32 chance? if
-                0 90 var-set
+                bark-frames-var 90 var-set
             else $32 chance? if
-                0 150 var-set
+                bark-frames-var 150 var-set
             else
-                0 30 var-set
+                bark-frames-var 30 var-set
             then then
         else
-            0 var-dec
+            bark-frames-var var-dec
             yield
         then
     again
@@ -178,8 +183,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    2 ebit? not if
-        1 ebit? not if
+    hewie-came-along ebit? not if
+        blocked-remarked ebit? not if
             0 self-through-exit
             self-wait-done
             rattle-behind-anim play-out
@@ -190,7 +195,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             5 4 player-camera
             4 wait-frames
             0 say   \ "It won't budge. It appears to be blocked by something on the other side of the..."
-            1 ebit-set
+            blocked-remarked ebit-set
         else
             $CB -38.0 -30.0 30 $FFFF 5 self-move-to
             self-wait-done
@@ -204,7 +209,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $CB -38.0 -30.0 30 $FFFF 5 self-move-to
         self-wait-done
         2 say   \ "Hey! Hewie is inside!"
-        0 0 var-set
+        bark-frames-var 0 var-set
     then
     stalkers-stay state-flag-clear
     0 self-scripted

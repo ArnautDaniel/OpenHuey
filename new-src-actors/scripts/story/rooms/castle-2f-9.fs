@@ -4,6 +4,9 @@
 IN: story.rooms.castle-2f-9
 USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant hewie-zone0-noticed         \ (bit 0) Hewie has reacted to zone 0 (once a visit)
+
 : castle-2f-9.enter ( -- )   \ 003F1800
     c1f-14-flag2 story-flag? c3f-2-flag1 story-flag? not and if
         room-sounds
@@ -71,11 +74,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     then
     c1f-14-flag2 story-flag? c3f-2-flag1 story-flag? not and if
         0 -4.53 -46.0 -47.5 $1E 15 0 zone
-        0 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 0 9 char-zone-bits? if
-                        0 ebit-set
+                        hewie-zone0-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 0 var-set
                             0 hewie-who $8A action

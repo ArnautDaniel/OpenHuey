@@ -4,6 +4,11 @@
 IN: story.rooms.castle-1f-9
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant stairs-remarked             \ (bit 0) its first remark made: "Why do the stairs stop halfway?"
+1 constant sound-started               \ (bit 1) its sound started (then kept up)
+2 constant hewie-zone4-noticed         \ (bit 2) Hewie has reacted to zone 4 (once a visit)
+
 \ the rising motes started
 : castle-1f-9.cmd00 ( -- )  effects:rising-motes ;
 \ room 0x25: Fiona is active and in a reaction (action 4) with no character behind it (+0x100
@@ -160,21 +165,21 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             0 1 track 2 action
         then
     then
-    1 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             $40000000 6 0.0 71.0 35.0 0 0 sound
-            1 ebit-set
+            sound-started ebit-set
         then
     else
         $C0000000 6 0.0 71.0 35.0 0 0 sound
     then
     c1f-9-album-medallion story-flag? not if
         4 -33.85 42.7 15.04 $2C 30 0 zone
-        2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone4-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 4 9 char-zone-bits? if
-                        2 ebit-set
+                        hewie-zone4-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 4 var-set
                             0 hewie-who $88 action
@@ -258,9 +263,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     look-low-anim self-anim
     $28 wait-frames
-    0 ebit? not if
+    stairs-remarked ebit? not if
         0 say   \ "Why do the stairs stop halfway?"
-        0 ebit-set
+        stairs-remarked ebit-set
     else
         4 say   \ "The longer I look over the edge, the more I feel like something is going to suck me..."
     then

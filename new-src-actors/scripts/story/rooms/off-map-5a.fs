@@ -6,6 +6,14 @@
 IN: story.rooms.off-map-5a
 USING: room-names story.words story.shared flag-names ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant scene-done-bit              \ (bit 0) its scene (act01) played
+1 constant first-remarked              \ (bit 1) its first remark made (message 3)
+2 constant message-up                  \ (bit 2) the message up (act02's loop)
+3 constant effect-two                  \ (bit 3) ? the effect's second step (cmd00 2)
+4 constant looked-up                   \ (bit 4) ? she looks up after it (sound $72)
+0 constant effect-var                  \ (var 0) ? the effect's frames
+
 \ the three dials (Room5A_ObjectNames, progress vars gSndProgressVars: 0..3, 90 degrees each),
 \ event var 0 the one picked: byte 3 0 set (the original sets the picked one three times), 1 up
 \ / down picks one (event var 0), left / right turns it (event +0x5C 3), cancel leaves (+0x60
@@ -88,7 +96,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $16 $32 char-faces-area? if
         2 unhurried offer-action
     then
-    1 exit-door-open? not 0 ebit? and if
+    1 exit-door-open? not scene-done-bit ebit? and if
         fiona-who 1 char-before-door? if
             0 examine-message
         then
@@ -99,7 +107,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : off-map-5a.phase5 ( -- )   \ 00410DC0
-    0 ebit? stalker-who char-here? not and stalker-who 2 char-cond? and if
+    scene-done-bit ebit? stalker-who char-here? not and stalker-who 2 char-cond? and if
         stalker-who action-end
         2 summon-take
     then
@@ -121,7 +129,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : off-map-5a.act01 ( -- )   \ 00410E10
-    0 ebit-set
+    scene-done-bit ebit-set
     $F $41 fade
     fiona-who $28 5 char-sound
     self-wait-done
@@ -140,21 +148,21 @@ USING: room-names story.words story.shared flag-names ;
         world-frozen state-flag-set
         1 5.0 0.0 0.0 2.0 event-camera
         2 message
-        2 ebit-set
-        0 0 var-set
+        message-up ebit-set
+        effect-var 0 var-set
         begin
-            3 ebit? not if
+            effect-two ebit? not if
                 1 off-map-5a.cmd00
             else
                 2 off-map-5a.cmd00
             then
-            2 ebit? while
+            message-up ebit? while
             yield
         repeat
         2 message-close
         world-frozen state-flag-clear
         0 0.0 0.0 0.0 0.0 event-camera
-        4 ebit? if
+        looked-up ebit? if
             16 wait-frames
             fiona-who $72 5 char-sound
             318.0 10.0 80.0 self-look-at-point
@@ -176,12 +184,12 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -115.0 -75.0 self-turn-to-xz
     self-wait-done
-    1 ebit? not if
+    first-remarked ebit? not if
         3 say
-        1 ebit-set
+        first-remarked ebit-set
     else
         4 say
-        1 ebit-clear
+        first-remarked ebit-clear
     then
     self-idle-or-end
 ;

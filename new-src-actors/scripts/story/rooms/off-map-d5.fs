@@ -4,6 +4,10 @@
 IN: story.rooms.off-map-d5
 USING: room-names story.words story.shared story.clock story-names ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant figure-scene-on             \ (bit 0) the figure's scene begun (act01)
+1 constant cond-was-off                \ (bit 1) the room's condition was false last frame: its hook waits a frame once it holds
+
 \ (as Room109_Cmd00) character kind 0x1A: byte 3 0 starts Kind26_MoveTo(2, -6, 257); else waits
 \ (2) until Kind26_MoveDone says done
 : off-map-d5.cmd00 ( b0 -- )  if  $1A char-wait-done  else  $1A 2 -6e 257e char-animal-go  then ;   \ (as chaos-forest-11's: the animal off to (-6, 257))
@@ -93,7 +97,7 @@ USING: room-names story.words story.shared story.clock story-names ;
     hewie-who 9 char-entered-area? if
         4 exit-prepare
     then
-    0 ebit? x-d5-flag1 story-flag? not and if
+    figure-scene-on ebit? x-d5-flag1 story-flag? not and if
         0 -24.0 8.31 -132.0 $19 10 0 zone
         fiona-who 0 2 char-zone-bits? hewie-who 0 2 char-zone-bits? or if
             x-d5-flag1 story-flag-set
@@ -112,9 +116,9 @@ USING: room-names story.words story.shared story.clock story-names ;
 
 : off-map-d5.phase3 ( -- )   \ 00447560
     off-map-d5.cond00? not if
-        1 ebit-set
-    else 1 ebit? if
-        1 ebit-clear
+        cond-was-off ebit-set
+    else cond-was-off ebit? if
+        cond-was-off ebit-clear
     else
         off-map-d5.cmd02
     then then
@@ -134,7 +138,7 @@ USING: room-names story.words story.shared story.clock story-names ;
 
 : off-map-d5.act01 ( -- )   \ 004475B0
     5 char-start
-    0 ebit-set
+    figure-scene-on ebit-set
     $E char-activate
     $E $9000 1 0 char-anim-hold
     $E -21.17 31.84 -137.07 0 char-to-xyz

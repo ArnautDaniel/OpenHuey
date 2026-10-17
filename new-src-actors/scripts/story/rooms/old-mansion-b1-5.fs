@@ -4,6 +4,22 @@
 IN: story.rooms.old-mansion-b1-5
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant first-time                  \ (bit 0) the story flag not yet set (the first time here)
+1 constant hiding-left                 \ (bit 1) she has come out of hiding (act0C)
+2 constant hewie-along                 \ (bit 2) Hewie came along with her (near, commandable)
+3 constant hewie-in-place              \ (bit 3) Hewie at his place for the scene
+4 constant came-while-hidden           \ (bit 4) the stalker came in while she was hiding
+5 constant hewie-zone0-noticed         \ (bit 5) Hewie has reacted to zone 0 (once a visit)
+6 constant hewie-zone1-noticed         \ (bit 6) Hewie has reacted to zone 1 (once a visit)
+7 constant stalker-waiting             \ (bit 7) the stalker here, not yet about: she is followed
+8 constant sound-started               \ (bit 8) its sound started (then kept up)
+9 constant hewie-away                  \ (bit 9) Hewie not here (or sent off) as the scene ends
+0 constant stage-var                   \ (var 0) ? its scene's stage (2: hiding over)
+1 constant held-var                    \ (var 1) ? she is held (1)
+2 constant search-result-var           \ (var 2) his search's outcome by chance: 0, 1 or 2
+3 constant searched-var                \ (var 3) ? his search done (0 / 1)
+
 \ room 0x51 (Room51_Cmd00_ptmf): byte 3 0 door 0 set going (+0xC); else wait (2) while it moves
 : old-mansion-b1-5.cmd00 ( b0 -- )  0= if  0 1 door-play  else  0 door-wait  then ;   \ (door 0: b0 0 swung, else waited for)
 : old-mansion-b1-5.cmd01 ( -- )  $650 $238 file-once-flag ;
@@ -27,7 +43,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         3 stalker-kind? $22 stalker-kind? or if
             stalker-active? not if
                 om1f-13-flag2 story-flag? not white-mandragora-used story-flag? or if
-                    7 ebit-set
+                    stalker-waiting ebit-set
                     force-followed state-flag-set
                 then
             then
@@ -43,54 +59,54 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-b1-5.act0E ( -- )   \ 0040DC70
-    4 ebit-set
+    came-while-hidden ebit-set
     3 self-is? $22 self-is? or if
         stalker-who char-file-use
     then
     stalker-who camera-follow
-    2 0 var-set
+    search-result-var 0 var-set
     $12 0 pvar? if
         $A chance? if
-            2 2 var-set
+            search-result-var 2 var-set
         then
     else $12 1 pvar? if
         $19 chance? if
-            2 2 var-set
+            search-result-var 2 var-set
         else
-            2 1 var-set
+            search-result-var 1 var-set
         then
     else $12 2 pvar? if
         $32 chance? if
-            2 2 var-set
+            search-result-var 2 var-set
         else
-            2 1 var-set
+            search-result-var 1 var-set
         then
     else $12 3 pvar? if
         $4B chance? if
-            2 2 var-set
+            search-result-var 2 var-set
         else
-            2 1 var-set
+            search-result-var 1 var-set
         then
     then then then then
     stalker-who 2 stalker-command
     3 self-is? $22 self-is? or if
-    else 2 1 var? if
-        2 2 var-set
+    else search-result-var 1 var? if
+        search-result-var 2 var-set
     then then
     2 creature-action? if
-        2 2 var-set
+        search-result-var 2 var-set
     then
-    2 0 var? if
+    search-result-var 0 var? if
         stalker-who 0 stalker-search-delay
         $78 1 summoner-wait
-    else 2 1 var? if
+    else search-result-var 1 var? if
         stalker-who 150 stalker-search-delay
         0 stalker-who $F action
-    else 2 2 var? if
+    else search-result-var 2 var? if
         stalker-who 300 stalker-search-delay
         0 stalker-who $10 action
     then then then
-    3 0 var-set
+    searched-var 0 var-set
     $12 pvar-inc
     exit
 ;
@@ -102,13 +118,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     0 0 0 area-camera
     stalker-who self-is? if
-        7 ebit-clear
+        stalker-waiting ebit-clear
         force-followed state-flag-clear
         fiona-hidden state-flag? if
-            4 ebit-set
+            came-while-hidden ebit-set
             old-mansion-b1-5.act0E
         else
-            4 ebit-clear
+            came-while-hidden ebit-clear
         then
     then
 ;
@@ -123,11 +139,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     4 2 2 1 chars-area-camera
     omb1-5-flag5 story-flag? not omb1-5-flag4 story-flag? not and if
         0 17.96 0.0 -27.69 $F 18 0 zone
-        5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 0 9 char-zone-bits? if
-                        5 ebit-set
+                        hewie-zone0-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 0 var-set
                             0 hewie-who $8A action
@@ -147,11 +163,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     1 1.58 0.0 -9.28 $10 8 0 zone
-    6 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 1 9 char-zone-bits? if
-                    6 ebit-set
+                    hewie-zone1-noticed ebit-set
                     $64 chance? if
                         hewie-zone-var 1 var-set
                         0 hewie-who $92 action
@@ -187,10 +203,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         then
     then
-    8 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             $40000003 6 -32.0 0.0 21.0 0 0 sound
-            8 ebit-set
+            sound-started ebit-set
         then
     else
         $C0000003 6 -32.0 0.0 21.0 0 0 sound
@@ -224,7 +240,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     fiona-who $C char-in-area? fiona-who 90 $3C char-heading? and if
         stalker-who char-here? not if
-            7 ebit? $52 door-locked? not and if
+            stalker-waiting ebit? $52 door-locked? not and if
                 $11 calm offer-action
             else
                 9 calm offer-action
@@ -257,7 +273,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             wait-fade
             world-frozen state-flag-clear
             hewie-who char-here? if
-                9 ebit-clear
+                hewie-away ebit-clear
                 hewie-who 2 char-cond? if
                     0 hewie-who $86 action
                 else
@@ -265,7 +281,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                     hewie-who char-done
                 then
             else
-                9 ebit-set
+                hewie-away ebit-set
             then
             panic-eased
             $FFFF message-prepare
@@ -277,7 +293,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             0 self-idle-anim
             fiona-who $27 15.929 21.234 -2 char-to-xz
             camera-restart
-            9 ebit? not if
+            hewie-away ebit? not if
                 hewie-who 2 char-cond? if
                     hewie-who 0 char-visible
                     hewie-who action-end
@@ -585,7 +601,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-b1-5.act0A ( -- )   \ 0040DB20
     1 self-scripted
-    [: 0 2 var? ;] wait-until
+    [: stage-var 2 var? ;] wait-until
     counter-inc
     2 avoid-prompt
     fiona-who camera-follow
@@ -632,10 +648,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : old-mansion-b1-5.act0C ( -- )   \ 0040DBA0
     1 self-scripted
     counter-inc
-    1 ebit-set
+    hiding-left ebit-set
     fiona-who camera-follow
     fiona-hidden state-flag-clear
-    stalker-who char-here? 0 0 var? and if
+    stalker-who char-here? stage-var 0 var? and if
         stalker-who 0 stalker-command
         stalker-who action-end
     then
@@ -661,24 +677,24 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-b1-5.act09 ( -- )   \ 0040D970
     stalkers-stay state-flag-set
-    4 ebit-clear
-    7 ebit-clear
+    came-while-hidden ebit-clear
+    stalker-waiting ebit-clear
     1 self-scripted
     self-wait-done
-    0 0 var-set
-    1 0 var-set
+    stage-var 0 var-set
+    held-var 0 var-set
     omb1-5-flag4 story-flag? not if
-        0 ebit-set
+        first-time ebit-set
     else
-        0 ebit-clear
+        first-time ebit-clear
     then
     0 counter-set
-    2 ebit-clear
-    3 ebit-clear
-    1 ebit-clear
+    hewie-along ebit-clear
+    hewie-in-place ebit-clear
+    hiding-left ebit-clear
     hewie-who char-busy? not hewie-near-command? and fiona-who hewie-who 30 chars-within? and if
         0 hewie-who $D action-force
-        2 ebit-set
+        hewie-along ebit-set
         hewie-who $B char-file-load
     then
     fiona-who $A char-file-load
@@ -686,16 +702,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $7B 16.59 -25.02 180 $FFFF 5 self-move-to
     self-wait-done
     fiona-who char-file-use
-    2 ebit? if
+    hewie-along ebit? if
         hewie-who self-look-at
         yield
-        [: 3 ebit? ;] wait-until
+        [: hewie-in-place ebit? ;] wait-until
     then
     counter-inc
     1 self-noclip
     self-who self-look-at
     yield
-    0 ebit? not if
+    first-time ebit? not if
         0 room-motion 5 self-anim-blend8
         5 wait-frames
         0 part-hidden
@@ -729,9 +745,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         fiona-who 2 6 char-sound
     then
     begin
-        0 2 pad? not 1 1 var? or if
-            0 1 var? if
-                1 0 var-set
+        0 2 pad? not held-var 1 var? or if
+            stage-var 1 var? if
+                held-var 0 var-set
                 fiona-who seized-sound 5 char-sound
                 stalker-who char-here? if
                     ['] old-mansion-b1-5.act0A goto
@@ -744,8 +760,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             2 panic-calm-in
             6 fiona-calm
             $1E fiona-recovery-lower
-            4 ebit? stalker-who char-here? not and if
-                4 ebit-clear
+            came-while-hidden ebit? stalker-who char-here? not and if
+                came-while-hidden ebit-clear
                 1 avoid-prompt
             then
             yield
@@ -790,10 +806,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $7D 11.91 -21.5 180 $FFFF $A self-move-to
     self-wait-done
     hewie-who char-file-use
-    3 ebit-set
+    hewie-in-place ebit-set
     1 wait-counter
     1 self-noclip
-    0 ebit? not if
+    first-time ebit? not if
         0 room-motion 5 self-anim-blend8
         self-wait-anim
     else
@@ -809,12 +825,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             else
                 hewie-hidden state-flag-clear
                 1 self-noclip
-                1 ebit? if
+                hiding-left ebit? if
                     4 room-motion 0 self-anim-blend
                     7 wait-frames
                     fiona-who 0 6 char-sound
                     self-wait-anim
-                else 0 0 var? if
+                else stage-var 0 var? if
                     2 room-motion 0 blend-out
                 else
                     3 room-motion 0 blend-out
@@ -826,12 +842,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         else
             hewie-hidden state-flag-clear
             1 self-noclip
-            1 ebit? if
+            hiding-left ebit? if
                 4 room-motion 0 self-anim-blend
                 7 wait-frames
                 fiona-who 0 6 char-sound
                 self-wait-anim
-            else 0 0 var? if
+            else stage-var 0 var? if
                 2 room-motion 0 blend-out
             else
                 3 room-motion 0 blend-out
@@ -851,9 +867,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     $7B 14.14 -24.14 180 $FFFF 5 self-move-to
     self-wait-done
-    3 1 var-set
+    searched-var 1 var-set
     1 self-scripted
-    1 1 var-set
+    held-var 1 var-set
     2 room-motion $A self-anim-blend
     $19 wait-frames
     stalker-who 5 6 char-sound
@@ -862,8 +878,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     stalker-who 5 6 char-sound
     $14 threat-raise
     self-wait-anim
-    1 0 var-set
-    3 0 var-set
+    held-var 0 var-set
+    searched-var 0 var-set
     step-back-anim play-out
     0 self-scripted
     $78 1 summoner-wait
@@ -877,23 +893,23 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         self-wait-done
     then
     3 self-is? $22 self-is? or if
-        3 0 var? if
+        searched-var 0 var? if
             $7B 14.14 -24.14 180 $FFFF 5 self-move-to
             self-wait-done
         then
-        3 0 var-set
+        searched-var 0 var-set
     else
         $1D 9.84 -11.27 153 $FFFF 5 self-move-to
         self-wait-done
     then
     1 self-scripted
-    0 1 var-set
+    stage-var 1 var-set
     3 self-is? $22 self-is? or if
         8 3 object-anim
         9 3 object-anim
         1 room-motion $A self-anim-blend
         $10 wait-frames
-        0 2 var-set
+        stage-var 2 var-set
         $A wait-frames
         stalker-who 0 6 char-sound
         self-wait-anim
@@ -940,7 +956,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     counter-inc
     stalkers-stay state-flag-clear
     force-followed state-flag-clear
-    7 ebit-clear
+    stalker-waiting ebit-clear
     omb1-5-flag5 story-flag-set
     0 self-scripted
     self-idle-or-end

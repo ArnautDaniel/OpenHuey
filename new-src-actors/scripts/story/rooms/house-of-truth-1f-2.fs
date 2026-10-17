@@ -4,6 +4,13 @@
 IN: story.rooms.house-of-truth-1f-2
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant rested                      \ (bit 0) she has rested here (her recovery: once a visit)
+1 constant hewie-zone1-noticed         \ (bit 1) Hewie has reacted to zone 1 (once a visit)
+2 constant sound-started               \ (bit 2) its sound started (then kept up)
+0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
+1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+
 \ room 0x88: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
 : house-of-truth-1f-2.cmd00 ( -- )  slam-shake ;
@@ -80,30 +87,30 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : house-of-truth-1f-2.phase1 ( -- )   \ 00432E90
-    2 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             $40000008 6 -60.0 20.0 50.0 0 0 sound
-            2 ebit-set
+            sound-started ebit-set
         then
     else
         $C0000008 6 -60.0 20.0 50.0 0 0 sound
     then
     6 sound-bank-loaded? if
-        1 var-inc
-        1 30 var? if
-            1 0 var-set
-            0 0 var? if
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
                 $40000009 6 -78.0 21.0 46.5 0 0 sound
-            else 0 1 var? if
+            else sound-step-var 1 var? if
                 $4000000A 6 -78.0 21.0 46.5 0 0 sound
-            else 0 2 var? if
+            else sound-step-var 2 var? if
                 $4000000B 6 -78.0 21.0 46.5 0 0 sound
-            else 0 3 var? if
+            else sound-step-var 3 var? if
                 $4000000C 6 -78.0 21.0 46.5 0 0 sound
             then then then then
-            0 var-inc
-            0 4 var? if
-                0 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
@@ -141,11 +148,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         2 map-page
     then
     1 -61.4 0.0 46.49 $14 18 0 zone
-    1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 1 9 char-zone-bits? if
-                    1 ebit-set
+                    hewie-zone1-noticed ebit-set
                     $1E chance? if
                         hewie-zone-var 1 var-set
                         0 hewie-who $88 action
@@ -235,7 +242,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : house-of-truth-1f-2.act00 ( -- )   \ 004332B0
-    0 ebit? not if
+    rested ebit? not if
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
@@ -252,7 +259,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $E4 panic-calm-in
         fiona-calm-reset
         3 avoid-prompt
-        0 ebit-set
+        rested ebit-set
         fiona-who $84 5 char-sound
         $1E wait-frames
         got-doc-recovery story-flag? not if

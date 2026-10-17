@@ -4,6 +4,18 @@
 IN: story.rooms.castle-2f-2
 USING: engine actors room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds stalker.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant fled-scene-done             \ (bit 0) the scene that sends her out played (file $209 given)
+1 constant dool-landed                 \ (bit 1) the falling thing ("dool") has landed
+2 constant hewie-zone0-noticed         \ (bit 2) Hewie has reacted to zone 0 (once a visit)
+3 constant hewie-zone1-noticed         \ (bit 3) Hewie has reacted to zone 1 (once a visit)
+4 constant stalker-scene-on            \ (bit 4) his scene (act0D) under way
+5 constant sound-chosen                \ (bit 5) the next sound picked (act0E)
+7 constant dool-falling                \ (bit 7) the falling thing ("dool") falling
+8 constant area23-reacted              \ (bit 8) her reaction on entering the area made (once a visit)
+0 constant sound-frames-var            \ (var 0) frames to the next sound (180)
+1 constant next-sound-var              \ (var 1) the frames to the next sound, picked by chance (31, 61, 1)
+
 \ ---- the doll ("dool") that falls: +$30 its velocity, +$3C its triangle ($80000000: landed; -1
 \ none) ----
 : dool ( -- addr len )  s" dool" ;
@@ -13,14 +25,14 @@ create dl-at 12 allot
     dup 0< if  drop false exit  then  nav-flags $20020008 and 0= ;
 : dool-dust ( -- )  2 $50 $50 $50 1  dool-at vec@  dust ;   \ (Room20_Cmd04: a grey cloud)
 : dool-lands ( tri -- )
-    7 ebit-clear  0e dool $30 object!  0e dool $34 object!  0e dool $38 object!
-    dup open-floor? 0= if  1 ebit-clear  then
+    dool-falling ebit-clear  0e dool $30 object!  0e dool $34 object!  0e dool $38 object!
+    dup open-floor? 0= if  dool-landed ebit-clear  then
     dup 0< 0= if  dup nav-flags $2018000 and $10000 <> if  dool-dust  then  then
-    $80000000 or dool $3C object-n!  1 ebit-set ;
+    $80000000 or dool $3C object-n!  dool-landed ebit-set ;
 : dool-falls ( -- )   \ (gravity 0.2 a frame; along the floor as it slides; spinning a degree a frame)
     dool $3C object-n@ dup -1 = if  drop exit  then
-    dup $80000000 and if  $7FFFFFFF and open-floor? 0= if  1 ebit-clear  then  exit  then  drop
-    -0.2e dool $34 object+!  1 ebit-clear
+    dup $80000000 and if  $7FFFFFFF and open-floor? 0= if  dool-landed ebit-clear  then  exit  then  drop
+    -0.2e dool $34 object+!  dool-landed ebit-clear
     dool place-y object@ dool $34 object@ f+                           ( F: y )
     dool $30 object@ dool $38 object@  dool-at $20020008 v-nav-move     ( tri ) ( F: y )
     dl-at vec@ dool place-z object! dool place-y object! dool place-x object!
@@ -102,12 +114,12 @@ create dl-at 12 allot
     0 4 track $11 action
     5 1 object-hidden
     got-bisque-doll story-flag? not if
-        1 ebit-clear
+        dool-landed ebit-clear
         c2f-2-flag1 story-flag? c2f-2-flag5 story-flag? not and if
             5 0 object-hidden
             castle-2f-2.cmd01
-            1 ebit-set
-            7 ebit-set
+            dool-landed ebit-set
+            dool-falling ebit-set
         then
     then
     c1f-8-flag1 story-flag? found-file-209 story-flag? not and if
@@ -208,8 +220,8 @@ create dl-at 12 allot
         4 exit-prepare
     then
     c2f-2-flag1 story-flag? not if
-        fiona-who $17 char-entered-area? 8 ebit? not and if
-            8 ebit-set
+        fiona-who $17 char-entered-area? area23-reacted ebit? not and if
+            area23-reacted ebit-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 3 action-force
@@ -262,11 +274,11 @@ create dl-at 12 allot
         then
     then
     got-bisque-doll story-flag? not if
-        1 ebit? if
+        dool-landed ebit? if
             castle-2f-2.cond00? if
                 fiona-who 4 6 char-sound
-                1 ebit-clear
-                7 ebit-clear
+                dool-landed ebit-clear
+                dool-falling ebit-clear
                 1 track action-end
                 0 1 track $B action
             then
@@ -277,11 +289,11 @@ create dl-at 12 allot
     c1f-8-flag1 story-flag? found-file-209 story-flag? not and if
         hewie-who 2 char-in-area? not if
             1 -144.0 0.0 109.0 $1E 20 0 zone
-            3 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+            hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 1 9 char-zone-bits? if
-                            3 ebit-set
+                            hewie-zone1-noticed ebit-set
                             $64 chance? if
                                 hewie-zone-var 1 var-set
                                 0 hewie-who $8A action
@@ -294,11 +306,11 @@ create dl-at 12 allot
     then
     c2f-2-flag2 story-flag? hewie-who 4 char-in-area? not and if
         0 33.656 0.0 111.061 $A 20 0 zone
-        2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 0 9 char-zone-bits? if
-                        2 ebit-set
+                        hewie-zone0-noticed ebit-set
                         $1E chance? if
                             hewie-zone-var 0 var-set
                             0 hewie-who $89 action
@@ -379,7 +391,7 @@ create dl-at 12 allot
         then
     then
     got-bisque-doll story-flag? not if
-        1 ebit? if
+        dool-landed ebit? if
             5 6 castle-2f-2.cond02? if
                 fiona-who 6 3 char-zone-bits? if
                     $F unhurried offer-action
@@ -396,7 +408,7 @@ create dl-at 12 allot
 
 : castle-2f-2.phase5 ( -- )   \ 003FEAD0
     stalker-who char-busy? if
-        4 ebit? if
+        stalker-scene-on ebit? if
             stalker-who action-end
             0 summon-take
         then
@@ -417,7 +429,7 @@ create dl-at 12 allot
     $F $41 fade
     wait-fade
     $209 item-give
-    0 ebit-set
+    fled-scene-done ebit-set
     stalkers-stay state-flag-clear
     $64 threat-raise
     self-wait-anim
@@ -484,7 +496,7 @@ create dl-at 12 allot
     stalker-who 0 stalker-command
     got-bisque-doll story-flag? not if
         castle-2f-2.cmd01
-        1 ebit-set
+        dool-landed ebit-set
     then
     stalker-who $30A -7.812 78.949 179 char-to-xz
     stalker-who 3 3 char-camera
@@ -527,7 +539,7 @@ create dl-at 12 allot
 
 : castle-2f-2.act05 ( -- )   \ 003FECB8
     self-wait-done
-    0 ebit? if
+    fled-scene-done ebit? if
         0 say   \ "I-I have to get out of here!"
     else
         1 say   \ "I still sense a presence inside the room. Best to trust my instincts and not go in."
@@ -580,15 +592,15 @@ create dl-at 12 allot
 ;
 
 : castle-2f-2.act09 ( -- )   \ 003FED60
-    0 180 var-set
+    sound-frames-var 180 var-set
     begin
         yield
         6 sound-bank-loaded? if
-            0 180 var? if
-                0 0 var-set
+            sound-frames-var 180 var? if
+                sound-frames-var 0 var-set
                 $40000002 6 -82.0 0.0 92.0 0 0 sound
             else
-                0 var-inc
+                sound-frames-var var-inc
             then
         then
     again
@@ -637,7 +649,7 @@ create dl-at 12 allot
 ;
 
 : castle-2f-2.act0D ( -- )   \ 003FEE30
-    4 ebit-set
+    stalker-scene-on ebit-set
     self-wait-done
     stalker-who 6 char-file-load
     $1A2 77.27 -192.48 0 $FFFF $A self-move-to
@@ -655,7 +667,7 @@ create dl-at 12 allot
     repeat
     0 self-noclip
     0 self-scripted
-    4 ebit-clear
+    stalker-scene-on ebit-clear
     stalker-who action-end
     0 summon-take
     self-idle-or-end
@@ -663,22 +675,22 @@ create dl-at 12 allot
 
 : castle-2f-2.act0E ( -- )   \ 003FEE70
     begin
-        5 ebit? not if
-            5 ebit-set
+        sound-chosen ebit? not if
+            sound-chosen ebit-set
             $1E chance? if
-                1 31 var-set
+                next-sound-var 31 var-set
             else $32 chance? if
-                1 61 var-set
+                next-sound-var 61 var-set
             else
-                1 1 var-set
+                next-sound-var 1 var-set
             then then
         then
         yield
-        1 var-dec
-        1 0 var? 1 30 var? or 1 60 var? or 1 90 var? or if
+        next-sound-var var-dec
+        next-sound-var 0 var? next-sound-var 30 var? or next-sound-var 60 var? or next-sound-var 90 var? or if
             3 6 -145.0 10.0 150.0 0 0 sound
-            1 0 var? if
-                5 ebit-clear
+            next-sound-var 0 var? if
+                sound-chosen ebit-clear
             then
             $1E chance? if
                 $1E wait-frames

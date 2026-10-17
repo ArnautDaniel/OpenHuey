@@ -4,6 +4,9 @@
 IN: story.rooms.old-mansion-2f-10
 USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant bull-statue-remarked        \ (bit 0) its first remark made: "A bronze statue with a cow-like head. My Greek mythology is "
+
 : old-mansion-2f-10.enter ( -- )   \ 0041B130
     om2f-10-breakable-broken story-flag? not if
         0 keeps-people-off floor-on
@@ -180,8 +183,8 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
     then
     look-at-anim self-anim
     $28 wait-frames
-    0 ebit? not if
-        0 ebit-set
+    bull-statue-remarked ebit? not if
+        bull-statue-remarked ebit-set
         0 say   \ "A bronze statue with a cow-like head. My Greek mythology is kind of rusty, but I th..."
     else
         1 say   \ "It looks like it could come to life at any second."

@@ -4,6 +4,9 @@
 IN: story.rooms.old-mansion-1f-13
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant hewie-away                  \ (bit 0) Hewie not here (or sent off) as the scene ends
+
 : old-mansion-1f-13.cmd00 ( -- )  effects:drips ;   \ (water dripping, rippling)
 \ 1 unless the object at +0x18 exists and its byte +0x28 is 1.
 : old-mansion-1f-13.cond00? ( -- flag )  6 creature-up? 0= ;
@@ -231,7 +234,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     scene-wait-ready
     hewie-who char-here? 0 hewie-side? and if
-        0 ebit-clear
+        hewie-away ebit-clear
         hewie-who 2 char-cond? if
             0 hewie-who $86 action
         else
@@ -239,7 +242,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             hewie-who char-done
         then
     else
-        0 ebit-set
+        hewie-away ebit-set
     then
     fiona-who 1 char-no-shadow
     panic-eased
@@ -258,7 +261,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     8 1 object-hidden
     9 1 object-hidden
     0 part-shown
-    0 ebit? not if
+    hewie-away ebit? not if
         hewie-who 2 char-cond? if
             hewie-who 0 char-visible
             hewie-who action-end

@@ -4,10 +4,19 @@
 IN: story.rooms.old-mansion-1f-20
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
+\ ---- this room's own event bits and script variables ----
+1 constant rotted-knob-remarked        \ (bit 1) its first remark made: "The knob has rotted off. I can't open the door like this."
+2 constant in-zone1                    \ (bit 2) someone in zone 1 (the figure's hops count)
+7 constant hewie-zone2-noticed         \ (bit 7) Hewie has reacted to zone 2 (once a visit)
+9 constant area0-reacted               \ (bit 9) her reaction on entering area 0 made (once a visit)
+0 constant hops-var                    \ (var 0) the figure's hops (5: away)
+1 constant still-var                   \ (var 1) the figure still (0) or hopping
+2 constant call-frames-var             \ (var 2) frames to the figure's next call (60)
+
 : old-mansion-1f-20.enter ( -- )   \ 00439160
     room-sounds
     $1C $18C char-to-tri
-    1 0 var-set
+    still-var 0 var-set
     3 $1C char-loaded? if
         $1C 3 $FF char-load
         3 char-start
@@ -128,13 +137,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     1 12.0 0.0 0.0 5 10 1 zone
     self-who 1 char-in-zone? if
-        2 ebit-set
+        in-zone1 ebit-set
     else
-        2 ebit-clear
+        in-zone1 ebit-clear
     then
-    1 0 var? not if
-        2 var-inc
-        2 60 var? if
+    still-var 0 var? not if
+        call-frames-var var-inc
+        call-frames-var 60 var? if
             $21 chance? if
                 $1C 2 6 char-sound
             else $32 chance? if
@@ -142,15 +151,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             else
                 $1C 4 6 char-sound
             then then
-            2 0 var-set
+            call-frames-var 0 var-set
         then
     then
     2 11.58 0.0 -0.41 $17 16 0 zone
-    7 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 2 9 char-zone-bits? if
-                    7 ebit-set
+                    hewie-zone2-noticed ebit-set
                     $50 chance? if
                         hewie-zone-var 2 var-set
                         0 hewie-who $8A action
@@ -228,9 +237,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         then
     then
-    om3f-1-flag2 story-flag? over-music-c story-flag? not and 9 ebit? not and if
+    om3f-1-flag2 story-flag? over-music-c story-flag? not and area0-reacted ebit? not and if
         fiona-who 0 char-entered-area? if
-            9 ebit-set
+            area0-reacted ebit-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 9 action-force
@@ -294,18 +303,18 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    1 ebit? not if
+    rotted-knob-remarked ebit? not if
         2 say   \ "The knob has rotted off. I can't open the door like this."
-        1 ebit-set
+        rotted-knob-remarked ebit-set
     else
         3 say   \ "The door is completely rotted through and through. A good kick should knock the doo..."
-        1 ebit-clear
+        rotted-knob-remarked ebit-clear
     then
     self-idle-or-end
 ;
 
 : old-mansion-1f-20.act03 ( -- )   \ 004397A0
-    1 0 var-set
+    still-var 0 var-set
     3 $1C char-loaded? not if
         $1C 3 $FF char-load
         3 char-start
@@ -314,27 +323,27 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $1C $900C 1 0 char-anim-hold
     then
     begin
-        2 ebit? if
-            1 0 var-set
-            0 var-inc
-            0 3 var? if
+        in-zone1 ebit? if
+            still-var 0 var-set
+            hops-var var-inc
+            hops-var 3 var? if
                 $21 chance? if
-                    0 5 var-set
+                    hops-var 5 var-set
                 then
             then
-            0 4 var? if
+            hops-var 4 var? if
                 $32 chance? if
-                    0 5 var-set
+                    hops-var 5 var-set
                 then
             then
             $1C 1 6 char-sound
             fiona-who shove-hit-sound 5 char-sound
             $1C $900D 0 3 char-anim-hold
             $1C wait-char-anim
-            0 5 var? if
+            hops-var 5 var? if
                 $1C $900E 0 3 char-anim-hold
                 $10 wait-frames
-                0 0 var-set
+                hops-var 0 var-set
                 1 7.0 11.0 0.0 5 10 0 zone
                 fiona-who 1 3 char-zone-bits? if
                     $1C 0 6 char-sound
@@ -348,13 +357,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 $1C wait-char-anim
             then
             $1C $900C 0 3 char-anim-hold
-            1 0 var-set
+            still-var 0 var-set
         then
         $1C char-at-motion-event? if
             $1C $900C 0 0 char-anim-hold
-            1 0 var-set
+            still-var 0 var-set
         else
-            1 var-inc
+            still-var var-inc
         then
         1 wait-frames
     again

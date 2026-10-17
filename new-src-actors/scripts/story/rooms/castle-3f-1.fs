@@ -4,6 +4,9 @@
 IN: story.rooms.castle-3f-1
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant locked-remarked             \ (bit 0) its first remark made: "The door is locked."
+
 \ room 0x06 (Room06_Cmd00_ptmf): its four objects (the name's 6th letter counting) to their
 \ places
 : castle-3f-1.cmd00 ( -- )   \ (its four objects, "oshi00".."oshi03", to their places)
@@ -131,7 +134,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     0 self-through-exit
     self-wait-done
-    0 ebit? not 2 game-mode? or in-panic? or if
+    locked-remarked ebit? not 2 game-mode? or in-panic? or if
         in-panic? 2 game-mode? or if
             rattle-behind-slow-anim play-out
             -1 self-idle-anim
@@ -142,7 +145,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             7 wait-frames
             1 say   \ "The door is locked."
         then
-        0 ebit-set
+        locked-remarked ebit-set
     else
         4 wait-frames
         fiona-who $12E 0.0 -76.5 180 char-to-xz

@@ -4,6 +4,14 @@
 IN: story.rooms.old-mansion-1f-7
 USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant extractor-remarked          \ (bit 0) its first remark made: "Extractor Born from the swirling sands of chaos, the primord"
+1 constant caught-remarked             \ (bit 1) its first remark made: "Why is this happening to me?!..."
+2 constant hewie-zone0-noticed         \ (bit 2) Hewie has reacted to zone 0 (once a visit)
+3 constant large-device-remarked       \ (bit 3) its first remark made: "It's quite a large and complicated device. It looks like nut"
+4 constant sound-started               \ (bit 4) its sound started (then kept up)
+0 constant used-item-var               \ (var 0) the item she used (9 .. 11)
+
 : old-mansion-1f-7.enter ( -- )   \ 00424B50
     room-sounds
     om1f-7-album-medallion-found story-flag? om1f-7-album-medallion story-flag? not and if
@@ -36,10 +44,10 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 ;
 
 : old-mansion-1f-7.phase1 ( -- )   \ 00424C10
-    4 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             $40000000 6 0.0 11.0 0.0 0 0 sound
-            4 ebit-set
+            sound-started ebit-set
         then
     else
         $C0000000 6 0.0 11.0 0.0 0 0 sound
@@ -70,11 +78,11 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
         then
     then
     0 -1.06 0.0 -0.54 $26 17 0 zone
-    2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 0 9 char-zone-bits? if
-                    2 ebit-set
+                    hewie-zone0-noticed ebit-set
                     $32 chance? if
                         hewie-zone-var 0 var-set
                         0 hewie-who $8A action
@@ -213,27 +221,27 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     $78 wait-frames
     look-close-anim play-out
     reach-out-anim play-out
-    0 9 var? if
+    used-item-var 9 var? if
         9 message-param-room
         0 9 item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 0 10 var? if
+    else used-item-var 10 var? if
         $A message-param-room
         0 $A item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 0 11 var? if
+    else used-item-var 11 var? if
         $B message-param-room
         0 $B item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 0 12 var? if
+    else used-item-var 12 var? if
         $C message-param-room
         0 $C item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 0 16 var? if
+    else used-item-var 16 var? if
         $10 message-param-room
         0 $10 item-tab
         item-fanfare
@@ -252,18 +260,18 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     self-wait-done
     $50 -57.0 55.0 -90 $FFFF 5 self-move-to
     self-wait-done
-    0 ebit? not if
+    extractor-remarked ebit? not if
         $F 6 fade
         wait-fade
         1 say   \ "Extractor Born from the swirling sands of chaos, the primordial element, Prima Mate..."
-        0 ebit-set
+        extractor-remarked ebit-set
         $F 7 fade
         wait-fade
     else
         hand-to-mouth-anim $A self-anim-blend
         2 say   \ "An extractor? This place is full of odd inventions that I've never heard of. It app..."
         self-wait-anim
-        0 ebit-clear
+        extractor-remarked ebit-clear
     then
     $242 item-give
     stalkers-stay state-flag-clear
@@ -275,13 +283,13 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     self-wait-done
     0.0 0.0 self-turn-to-xz
     self-wait-done
-    1 ebit? not if
+    caught-remarked ebit? not if
         4 wait-frames
         fiona-who $BD 12.41 -5.83 -62 char-to-xz
         1 10.0 -10.0 0.0 3.0 event-camera
         world-frozen state-flag-set
         4 say   \ "Why is this happening to me?! Dear god! If I get caught now, I'm sure they will kil..."
-        1 ebit-set
+        caught-remarked ebit-set
         4 wait-frames
         world-frozen state-flag-clear
         0 0.0 0.0 0.0 0.0 event-camera
@@ -295,13 +303,13 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     self-wait-done
     0.0 0.0 self-turn-to-xz
     self-wait-done
-    1 ebit? not if
+    caught-remarked ebit? not if
         4 wait-frames
         fiona-who $C0 -11.799 6.147 121 char-to-xz
         1 10.0 -10.0 0.0 3.0 event-camera
         world-frozen state-flag-set
         4 say   \ "Why is this happening to me?! Dear god! If I get caught now, I'm sure they will kil..."
-        1 ebit-set
+        caught-remarked ebit-set
         4 wait-frames
         world-frozen state-flag-clear
         0 0.0 0.0 0.0 0.0 event-camera
@@ -340,9 +348,9 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     self-wait-done
     look-close-anim self-anim
     $28 wait-frames
-    3 ebit? not if
+    large-device-remarked ebit? not if
         7 say   \ "It's quite a large and complicated device. It looks like nutrients are fed in throu..."
-        3 ebit-set
+        large-device-remarked ebit-set
     else
         8 say   \ "However, come to think of it, maybe nutrients are not fed in... Perhaps they are su..."
     then

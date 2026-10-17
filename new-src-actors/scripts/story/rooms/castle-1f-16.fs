@@ -4,6 +4,15 @@
 IN: story.rooms.castle-1f-16
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant found-her                   \ (bit 0) he has found her hiding: she must flee (the avoid prompt)
+1 constant will-find-her               \ (bit 1) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+2 constant sound-started               \ (bit 2) its sound started (then kept up)
+3 constant red-painting-remarked       \ (bit 3) its first remark made: "A landscape painting composed entirely of the color red. It "
+4 constant came-while-hidden           \ (bit 4) the stalker came in while she was hiding
+0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
+1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+
 \ room 0x1A (D_003FC660): the fan turns
 : castle-1f-16.cmd00 ( -- )  fan-turn ;
 \ room 0x1A: room effect slot 0 made anew as the second TV screen (TvScreenB).
@@ -30,31 +39,31 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 self-is? 6 self-is? or 7 self-is? or if
         stalker-who 1 char-file-load
     then
-    1 ebit-clear
+    will-find-her ebit-clear
     8 0 pvar? if
         0 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else 8 1 pvar? if
         $19 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else 8 2 pvar? if
         $32 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else 8 3 pvar? if
         $4B chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     then then then then
     2 creature-action? if
-        1 ebit-set
+        will-find-her ebit-set
     then
     4 stalker-alert? if
-        1 ebit-clear
+        will-find-her ebit-clear
     then
-    1 ebit? if
+    will-find-her ebit? if
         0 stalker-who 5 action
     else
         $78 1 summoner-wait
@@ -71,7 +80,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 1 -1 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
-            4 ebit-set
+            came-while-hidden ebit-set
             c1f-16-flag2 story-flag? 2 creature-action? not and if
                 2 self-is? 6 self-is? or 7 self-is? or if
                     $78 1 summoner-wait
@@ -83,35 +92,35 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 castle-1f-16.act07
             then
         else
-            4 ebit-clear
+            came-while-hidden ebit-clear
         then
     then
 ;
 
 : castle-1f-16.phase1 ( -- )   \ 003FC110
-    2 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             c1f-16-flag2 story-flag? if
                 $40000001 6 23.0 11.0 9.0 0 0 sound
             then
-            2 ebit-set
+            sound-started ebit-set
         then
     else
-        1 var-inc
-        1 30 var? if
-            1 0 var-set
-            0 0 var? if
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
                 $40000005 6 27.0 15.0 -6.0 0 0 sound
-            else 0 1 var? if
+            else sound-step-var 1 var? if
                 $40000006 6 27.0 15.0 -6.0 0 0 sound
-            else 0 2 var? if
+            else sound-step-var 2 var? if
                 $40000007 6 27.0 15.0 -6.0 0 0 sound
-            else 0 3 var? if
+            else sound-step-var 3 var? if
                 $40000008 6 27.0 15.0 -6.0 0 0 sound
             then then then then
-            0 var-inc
-            0 4 var? if
-                0 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
         c1f-16-flag1 story-flag? if
@@ -254,7 +263,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-16.act04 ( -- )   \ 003FC4C0
-    0 ebit? if
+    found-her ebit? if
         2 avoid-prompt
     then
     1 self-scripted
@@ -264,7 +273,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who slide-sound 5 char-sound
     3 room-motion $A blend-out
     0 self-noclip
-    0 ebit? not if
+    found-her ebit? not if
         stalker-who action-end
     then
     0 self-scripted
@@ -273,7 +282,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-16.act03 ( -- )   \ 003FC420
     stalkers-stay state-flag-set
-    4 ebit-clear
+    came-while-hidden ebit-clear
     1 self-scripted
     fiona-who 0 char-file-load
     self-wait-done
@@ -289,12 +298,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
-    0 ebit-clear
+    found-her ebit-clear
     0 avoid-prompt
     self-who 3 -1 char-camera
     begin
         0 2 pad? not if
-            in-panic? 0 ebit? or if
+            in-panic? found-her ebit? or if
                 in-panic? not if
                     fiona-who seized-sound 5 char-sound
                 then
@@ -303,8 +312,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                4 ebit? stalker-who char-here? not and if
-                    4 ebit-clear
+                came-while-hidden ebit? stalker-who char-here? not and if
+                    came-while-hidden ebit-clear
                     1 avoid-prompt
                 then
                 yield
@@ -339,11 +348,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         stalker-who char-file-use
         0 room-motion $A self-anim-blend
         $1E wait-frames
-        0 ebit-set
+        found-her ebit-set
         self-wait-anim
     else
         there-anim play-out
-        0 ebit-set
+        found-her ebit-set
     then
     10 self-idle-anim
     [: fiona-who char-busy? ;] wait-while
@@ -389,12 +398,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     7 wait-frames
     look-at-anim self-anim
     16 wait-frames
-    3 ebit? not if
+    red-painting-remarked ebit? not if
         1 say   \ "A landscape painting composed entirely of the color red. It seems quite out of plac..."
-        3 ebit-set
+        red-painting-remarked ebit-set
     else
         2 say   \ "The color bears a remarkable resemblance to blood. But... surely this is just red p..."
-        3 ebit-clear
+        red-painting-remarked ebit-clear
     then
     self-wait-anim
     self-idle-or-end

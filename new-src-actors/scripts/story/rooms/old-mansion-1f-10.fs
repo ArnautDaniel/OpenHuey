@@ -4,6 +4,10 @@
 IN: story.rooms.old-mansion-1f-10
 USING: room-names story.words story.shared ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant hewie-zone0-noticed         \ (bit 0) Hewie has reacted to zone 0 (once a visit)
+1 constant hewie-zone1-noticed         \ (bit 1) Hewie has reacted to zone 1 (once a visit)
+
 : old-mansion-1f-10.char-enter ( -- )   \ 0040AC70
     player-who self-is? 0 exit-taken? and if
         player-who 0 char-to-exit
@@ -53,11 +57,11 @@ USING: room-names story.words story.shared ;
         3 exit-prepare
     then
     0 -24.64 2.5 27.03 $14 6 0 zone
-    0 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 0 9 char-zone-bits? if
-                    0 ebit-set
+                    hewie-zone0-noticed ebit-set
                     $1E chance? if
                         hewie-zone-var 0 var-set
                         0 hewie-who $92 action
@@ -76,11 +80,11 @@ USING: room-names story.words story.shared ;
         then
     then
     1 25.74 2.5 -26.39 $14 6 0 zone
-    1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 1 9 char-zone-bits? if
-                    1 ebit-set
+                    hewie-zone1-noticed ebit-set
                     $1E chance? if
                         hewie-zone-var 1 var-set
                         0 hewie-who $8A action

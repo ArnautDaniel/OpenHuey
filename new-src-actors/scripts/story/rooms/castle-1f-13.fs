@@ -4,6 +4,16 @@
 IN: story.rooms.castle-1f-13
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant balcony-remarked            \ (bit 0) its first remark made: "I can't believe the balcony collapsed. It's like something o"
+1 constant false-door-remarked         \ (bit 1) its first remark made: "A door?"
+2 constant false-door-2-remarked       \ (bit 2) its first remark made: "A door?"
+3 constant found-her                   \ (bit 3) he has found her hiding: she must flee (the avoid prompt)
+4 constant will-find-her               \ (bit 4) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+5 constant came-while-hidden           \ (bit 5) the stalker came in while she was hiding
+6 constant stalker-scene-on            \ (bit 6) his scripted scene under way here (stalker): at the room's end he is put back
+0 constant shove-frames-var            \ (var 0) his shove's frames (dust at 60)
+
 \ room 0x08 (Room08_Cmd00_ptmf): the cutscene director's +0x6C 3 (byte 3 0) or 2
 : castle-1f-13.cmd00 ( b0 -- )   \ (the scene's cast leaves actor 3 (b0 0) or 2 be: Cutscene_Mark82)
     if  2  else  3  then  cutscene-leave-alone ;
@@ -82,31 +92,31 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-1f-13.act09 ( -- )   \ 003F2E60
     stalker-who camera-follow
-    4 ebit-clear
+    will-find-her ebit-clear
     $B 0 pvar? if
         0 chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     else $B 1 pvar? if
         $19 chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     else $B 2 pvar? if
         $32 chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     else $B 3 pvar? if
         $4B chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     then then then then
     2 creature-action? if
-        4 ebit-set
+        will-find-her ebit-set
     then
     4 stalker-alert? if
-        4 ebit-clear
+        will-find-her ebit-clear
     then
-    4 ebit? if
+    will-find-her ebit? if
         0 stalker-who $A action
     else
         $78 1 summoner-wait
@@ -150,10 +160,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     then
     stalker-who self-is? if
         fiona-hidden state-flag? if
-            5 ebit-set
+            came-while-hidden ebit-set
             castle-1f-13.act09
         else
-            5 ebit-clear
+            came-while-hidden ebit-clear
         then
     then
 ;
@@ -255,10 +265,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-1f-13.phase5 ( -- )   \ 003F2980
-    stalker-who char-busy? 6 ebit? and if
+    stalker-who char-busy? stalker-scene-on ebit? and if
         stalker-who $1C0 -275.75 41.09 -60 char-to-xz
         stalker-who 0 0 char-camera
-        6 ebit-clear
+        stalker-scene-on ebit-clear
     then
 ;
 
@@ -332,9 +342,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     look-at-anim self-anim
     $28 wait-frames
-    0 ebit? not if
+    balcony-remarked ebit? not if
         0 say   \ "I can't believe the balcony collapsed. It's like something out of a nightmare."
-        0 ebit-set
+        balcony-remarked ebit-set
     else
         1 say   \ "I'm not going to be able to get up there."
     then
@@ -343,12 +353,12 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-1f-13.act02 ( -- )   \ 003F2B00
-    1 ebit? not if
+    false-door-remarked ebit? not if
         2 say   \ "A door?"
         reach-out-anim play-out
         reach-back-anim play-out
         3 say   \ "What?! It's just a wall made to look like a door."
-        1 ebit-set
+        false-door-remarked ebit-set
     else
         4 say   \ "Why would someone do this? Is it just some random prank?"
     then
@@ -356,12 +366,12 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-1f-13.act03 ( -- )   \ 003F2B20
-    2 ebit? not if
+    false-door-2-remarked ebit? not if
         2 say   \ "A door?"
         reach-out-anim play-out
         reach-back-anim play-out
         3 say   \ "What?! It's just a wall made to look like a door."
-        2 ebit-set
+        false-door-2-remarked ebit-set
     else
         4 say   \ "Why would someone do this? Is it just some random prank?"
     then
@@ -375,7 +385,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-1f-13.act05 ( -- )   \ 003F2B40
-    6 ebit-set
+    stalker-scene-on ebit-set
     self-wait-done
     stalker-who $B char-file-load
     stalker-who char-file-use
@@ -407,17 +417,17 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     $A wait-frames
     1 7 -219.0 60.0 14.5 0 0 sound
     0 room-motion 5 self-anim-blend8
-    0 0 var-set
+    shove-frames-var 0 var-set
     begin
         fiona-who self-touching? if
             stalker-who 0 fiona-thrown
         then
-        0 60 var? if
+        shove-frames-var 60 var? if
             0 -283.0 1.0 37.0 0 0 0 0 dust
             0 -280.0 1.0 42.0 0 0 0 0 dust
             stalker-who $B 6 char-sound
         then
-        0 var-inc
+        shove-frames-var var-inc
         self-at-motion-event? not while
         yield
     repeat
@@ -426,7 +436,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     stalker-who 2 stalker-command
     stalker-who 0 stalker-search-delay
     summoner-own-cooldown
-    6 ebit-clear
+    stalker-scene-on ebit-clear
     self-idle-or-end
 ;
 
@@ -459,7 +469,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-1f-13.act08 ( -- )   \ 003F2E20
-    3 ebit? if
+    found-her ebit? if
         2 avoid-prompt
     then
     in-panic? not if
@@ -479,9 +489,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-1f-13.act07 ( -- )   \ 003F2D60
     stalkers-stay state-flag-set
-    5 ebit-clear
+    came-while-hidden ebit-clear
     1 self-scripted
-    3 ebit-clear
+    found-her ebit-clear
     self-wait-done
     $1D4 -267.0 -140.0 -110 $FFFF 5 self-move-to
     self-wait-done
@@ -498,7 +508,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     0 avoid-prompt
     begin
         0 2 pad? not if
-            in-panic? 3 ebit? or if
+            in-panic? found-her ebit? or if
                 in-panic? not if
                     fiona-who seized-sound 5 char-sound
                 then
@@ -507,8 +517,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
                 2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                5 ebit? stalker-who char-here? not and if
-                    5 ebit-clear
+                came-while-hidden ebit? stalker-who char-here? not and if
+                    came-while-hidden ebit-clear
                     1 avoid-prompt
                 then
                 yield
@@ -537,7 +547,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     $1A1 -238.675 -139.193 -90 $FFFF 5 self-move-to
     self-wait-done
     there-anim play-out
-    3 ebit-set
+    found-her ebit-set
     10 self-idle-anim
     [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command

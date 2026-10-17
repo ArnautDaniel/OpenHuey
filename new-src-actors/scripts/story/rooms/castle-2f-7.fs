@@ -4,6 +4,10 @@
 IN: story.rooms.castle-2f-7
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant plate-press-remarked        \ (bit 0) its first remark made: "It's a plate pressing machine."
+0 constant looked-var                  \ (var 0) she has looked at the cage (her remarks in turn)
+
 \ room 0x23 (Room23_Cmd00_ptmf): Fiona's model +0x9A0 / +0x9A8: 0 (byte 3 1) or 0.12 / 0.2
 : castle-2f-7.cmd00 ( b0 -- )  drop ;   \ (Daniella's hair force (her model's springs: not simulated here yet))
 \ room 0x23 (Room23_Cmd01_ptmf): byte 3 0 a progress name, 1 wait for character 3 (2 while not),
@@ -103,7 +107,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     then
     world-held state-flag-set
     c2f-7-flag1 story-flag-set
-    0 ebit-set
+    plate-press-remarked ebit-set
     2 subscreen-open
     [: subscreen-wanted state-flag? ;] wait-while
     yield
@@ -142,13 +146,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-2f-7.act01 ( -- )   \ 00401350
     self-wait-done
-    0 0 var? if
+    looked-var 0 var? if
         -36.2 33.3 self-turn-to-xz
         self-wait-done
         look-at-anim self-anim
         $32 wait-frames
         $D say   \ "Is this a birdcage? It looks like the remaining husk of a bird in the cage."
-        0 1 var-set
+        looked-var 1 var-set
     else
         $E say   \ "The terrible things that people do to animals these days. It's just so upsetting."
     then
@@ -178,9 +182,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         $5A threat-raise
         self-wait-anim
     else plates-under-10? if
-        0 ebit? not if
+        plate-press-remarked ebit? not if
             $11 say   \ "It's a plate pressing machine."
-            0 ebit-set
+            plate-press-remarked ebit-set
         then
         plate-made story-flag? if
             plate-made story-flag-clear
@@ -226,9 +230,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
                 $225 item-give
             then
         then
-    else 0 ebit? not if
+    else plate-press-remarked ebit? not if
         $F say   \ "There's a plate pressing machine here. There are no remaining plates currently so..."
-        0 ebit-set
+        plate-press-remarked ebit-set
     else
         $12 say   \ "There are no plates remaining. I'll have to get rid of some plate-keys before I c..."
     then then then

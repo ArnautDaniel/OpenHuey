@@ -4,6 +4,12 @@
 IN: story.rooms.old-mansion-1f-9
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant plate-press-remarked        \ (bit 0) its first remark made: "It's a plate pressing machine."
+1 constant hewie-sent-off              \ (bit 1) Hewie was here and sent off for the scene
+2 constant rested                      \ (bit 2) she has rested here (her recovery: once a visit)
+4 constant effect-on                   \ (bit 4) the scene's effect (cmd02) on between its cues
+
 \ a lit quad at x -43, z -15.12 .. 5.07, height 30.05 / 10.05
 : old-mansion-1f-9.cmd00 ( b0 -- )  $1B $40  -43.0e 30.053e -15.124e  -43.0e 30.053e 5.068e  -43.0e 10.053e -15.124e  -43.0e 10.053e 5.068e  lit-quad ;   \ (a reflecting window: b0 1 removed, 2 over the whole picture)
 \ the depth range (effect 0x1C) opening with the cutscene from its frame 1156: 1 / 1 / 40 / 100,
@@ -117,9 +123,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     1 self-scripted
     self-wait-done
     plates-under-10? if
-        0 ebit? not if
+        plate-press-remarked ebit? not if
             $11 say   \ "It's a plate pressing machine."
-            0 ebit-set
+            plate-press-remarked ebit-set
         then
         plate-made story-flag-clear
         2 subscreen-open
@@ -132,9 +138,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             $8012 say   \ "You've obtained ."
         then
         plate-made story-flag-set
-    else 0 ebit? not if
+    else plate-press-remarked ebit? not if
         $F say   \ "There's a plate pressing machine here. There are no remaining plates currently so..."
-        0 ebit-set
+        plate-press-remarked ebit-set
     else
         $12 say   \ "There are no plates remaining. I'll have to get rid of some plate-keys before I c..."
     then then
@@ -169,9 +175,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             scene-wait-ready
             wait-fade
             0 cutscene-track 6 action
-            4 ebit-clear
+            effect-on ebit-clear
             hewie-who char-here? if
-                1 ebit-set
+                hewie-sent-off ebit-set
                 hewie-who action-end
                 hewie-who char-done
             then
@@ -192,10 +198,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             4 1 object-hidden
             5 1 object-hidden
             0 part-shown
-            4 ebit? if
+            effect-on ebit? if
                 1 old-mansion-1f-9.cmd02
             then
-            1 ebit? if
+            hewie-sent-off ebit? if
                 hewie-who char-activate
                 $49 0 88 hewie-to-room
             then
@@ -227,7 +233,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : old-mansion-1f-9.act03 ( -- )   \ 004082D0
-    2 ebit? not if
+    rested ebit? not if
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
@@ -245,7 +251,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         fiona-calm-reset
         fiona-who $84 5 char-sound
         3 avoid-prompt
-        2 ebit-set
+        rested ebit-set
         $1E wait-frames
         got-doc-recovery story-flag? not if
             $F 6 fade
@@ -308,10 +314,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     [: 3 cutscene-shot? ;] wait-until
     fiona-who $A char-layer
     0 old-mansion-1f-9.cmd02
-    4 ebit-set
+    effect-on ebit-set
     [: 5 cutscene-shot? ;] wait-until
     1 old-mansion-1f-9.cmd02
-    4 ebit-clear
+    effect-on ebit-clear
     [: 6 cutscene-shot? ;] wait-until
     begin
         $446 cutscene-cue-reached? not while

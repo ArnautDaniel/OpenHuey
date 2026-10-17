@@ -4,6 +4,18 @@
 IN: story.rooms.house-of-truth-1f-7
 USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant hewie-scene-on              \ (bit 0) his scripted scene under way here (hewie): at the room's end he is put back
+1 constant pushed                      \ (bit 1) the push done (act03 waits for it)
+3 constant found-her                   \ (bit 3) he has found her hiding: she must flee (the avoid prompt)
+4 constant will-find-her               \ (bit 4) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+5 constant searched-hiding             \ (bit 5) he has searched her hiding place
+6 constant searching                   \ (bit 6) he is searching (act08)
+7 constant drone-scene-on              \ (bit 7) the drone scene under way (act03)
+8 constant search-started              \ (bit 8) his search begun (phase 1 starts act08)
+9 constant drone-on                    \ (bit 9) the drone sound ($30, bank $47) going
+1 constant push-var                    \ (var 1) ? the push's count down
+
 \ a struggle: byte 3 0 resets Fiona's shake tracking (+0x1AD710 / +0x1AD714); 1 adds her shakes
 \ to script variable byte 4, with a grunt (voice 0x3D or 0x45 at random) when the cool-down
 \ variable byte 6 is out (it then runs 45 / 60), and at 100 the event byte 5 (+0x5C)
@@ -78,37 +90,37 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 ;
 
 : house-of-truth-1f-7.act08 ( -- )   \ 00436180
-    5 ebit-set
-    6 ebit-set
-    4 ebit-clear
+    searched-hiding ebit-set
+    searching ebit-set
+    will-find-her ebit-clear
     $25 0 pvar? if
         $A chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     else $25 1 pvar? if
         $19 chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     else $25 2 pvar? if
         $32 chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     else $25 3 pvar? if
         $4B chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     then then then then
     stalker-who char-unseen? not if
-        4 ebit-set
+        will-find-her ebit-set
     then
     2 creature-action? if
-        4 ebit-set
+        will-find-her ebit-set
     then
-    4 ebit? if
+    will-find-her ebit? if
         0 stalker-who 9 action
     else
         $78 1 summoner-wait
-        8 ebit-clear
+        search-started ebit-clear
     then
     0 stalker-alert? if
         stalker-who 2 stalker-command
@@ -132,13 +144,13 @@ USING: engine common actors messages room-names story.words story.shared flag-na
         fiona-hidden state-flag? if
             house-of-truth-1f-7.act08
         else
-            6 ebit-clear
+            searching ebit-clear
         then
     then
 ;
 
 : house-of-truth-1f-7.phase1 ( -- )   \ 00435AF0
-    9 ebit? if
+    drone-on ebit? if
         $C0000030 $47 0.0 0.0 0.0 0 0 sound
     then
     0 exit-usable? if
@@ -171,7 +183,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     then
     found-file-255 story-flag? ht1f-7-flag1 story-flag? not and if
         hewie-who $10 char-in-area? if
-            0 ebit? not if
+            hewie-scene-on ebit? not if
                 2 game-mode? not if
                     hewie-who 2 char-cond? if
                         hewie-who 1 char-heal
@@ -182,11 +194,11 @@ USING: engine common actors messages room-names story.words story.shared flag-na
             then
         then
     then
-    0 ebit? hewie-who char-busy? not and hewie-who $10 char-in-area? not and if
-        0 ebit-clear
+    hewie-scene-on ebit? hewie-who char-busy? not and hewie-who $10 char-in-area? not and if
+        hewie-scene-on ebit-clear
     then
     hewie-who 2 char-cond? if
-        0 ebit-clear
+        hewie-scene-on ebit-clear
     then
     over-music-f story-flag? if
         ht1f-7-flag2 story-flag? not if
@@ -210,14 +222,14 @@ USING: engine common actors messages room-names story.words story.shared flag-na
         then
     then
     stalker-who 2 char-cond? not if
-        fiona-hidden state-flag? 5 ebit? not and stalker-who char-here? and if
+        fiona-hidden state-flag? searched-hiding ebit? not and stalker-who char-here? and if
             stalker-who char-busy? not if
-                8 ebit-set
+                search-started ebit-set
                 house-of-truth-1f-7.act08
             then
         then
     then
-    7 ebit? stalker-who $17 char-in-area? and if
+    drone-scene-on ebit? stalker-who $17 char-in-area? and if
         0 stalker-who $D action
     then
     house-of-truth-1f-7.cmd03
@@ -242,7 +254,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     then
     ht1f-7-flag1 story-flag? not if
         fiona-who $12 char-in-area? fiona-who -45 $32 char-heading? and if
-            0 ebit? if
+            hewie-scene-on ebit? if
                 0 unhurried offer-action
             then
         then
@@ -262,9 +274,9 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 : house-of-truth-1f-7.phase3 ( -- )   \ 00435CA0
     -72.3 18.0 56.0 -85.0 18.0 56.4 -72.3 -2.0 51.4 -85.0 -2.0 51.4 lights-doorway
     72.0 16.0 -0.1 91.2 16.0 -0.1 72.0 0.0 -2.0 91.2 0.0 -2.0 lights-doorway
-    ht1f-9-flag2 story-flag? 9 ebit? not and if
+    ht1f-9-flag2 story-flag? drone-on ebit? not and if
         $40000030 $47 0.0 0.0 0.0 0 0 sound
-        9 ebit-set
+        drone-on ebit-set
     then
 ;
 
@@ -322,7 +334,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 
 : house-of-truth-1f-7.act01 ( -- )   \ 00435E50
     0 self-scripted
-    0 ebit-set
+    hewie-scene-on ebit-set
     self-wait-done
     -89.0 75.0 self-turn-to-xz
     self-wait-done
@@ -330,7 +342,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
         hewie-bark
         self-wait-done
         2 game-mode? until
-    0 ebit-clear
+    hewie-scene-on ebit-clear
     self-idle-or-end
 ;
 
@@ -411,18 +423,18 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     $F $11 fade
     shared.act95
     $40000030 $47 0.0 0.0 0.0 0 0 sound
-    7 ebit-set
+    drone-scene-on ebit-set
     begin
         self-at-motion-event? if
             0 room-motion self-anim
             4 0 object-anim
         then
-        1 0 var? not if
-            1 var-dec
+        push-var 0 var? not if
+            push-var var-dec
         then
         1 0 1 1 4 house-of-truth-1f-7.cmd00
         1 wait-frames
-        1 ebit? until
+        pushed ebit? until
     self-wait-anim
     fiona-who push-sound 5 char-sound
     1 room-motion self-anim
@@ -431,7 +443,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     stalker-who char-busy? if
         stalker-who action-end
     then
-    7 ebit-clear
+    drone-scene-on ebit-clear
     stalkers-blind state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -473,7 +485,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 ;
 
 : house-of-truth-1f-7.act07 ( -- )   \ 00436150
-    3 ebit? if
+    found-her ebit? if
         2 avoid-prompt
     then
     1 self-scripted
@@ -484,7 +496,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     fiona-who slide-sound 5 char-sound
     3 room-motion $A blend-out
     0 self-noclip
-    3 ebit? not if
+    found-her ebit? not if
         stalker-who action-end
     then
     0 self-scripted
@@ -493,9 +505,9 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 
 : house-of-truth-1f-7.act06 ( -- )   \ 004360A0
     stalkers-stay state-flag-set
-    6 ebit-clear
+    searching ebit-clear
     1 self-scripted
-    5 ebit-clear
+    searched-hiding ebit-clear
     fiona-who 8 char-file-load
     self-wait-done
     self-who self-look-at
@@ -512,13 +524,13 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
-    3 ebit-clear
+    found-her ebit-clear
     0 avoid-prompt
     self-who 6 -1 char-camera
     self-who 1 char-visible
     begin
         0 2 pad? not if
-            in-panic? 3 ebit? or if
+            in-panic? found-her ebit? or if
                 in-panic? not if
                     fiona-who seized-sound 5 char-sound
                 then
@@ -527,8 +539,8 @@ USING: engine common actors messages room-names story.words story.shared flag-na
                 2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                6 ebit? stalker-who char-here? not and if
-                    6 ebit-clear
+                searching ebit? stalker-who char-here? not and if
+                    searching ebit-clear
                     1 avoid-prompt
                 then
                 yield
@@ -554,7 +566,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 
 : house-of-truth-1f-7.act09 ( -- )   \ 004361E0
     self-wait-done
-    8 ebit? not if
+    search-started ebit? not if
         stalker-who 0 char-heading-for? 0 exit-door-open? not and if
             fiona-who 3 self-move-slot
             self-wait-done
@@ -573,11 +585,11 @@ USING: engine common actors messages room-names story.words story.shared flag-na
             self-wait-done
         then
     then
-    8 ebit-clear
+    search-started ebit-clear
     $FE 45.21 54.9 180 $FFFF 5 self-move-to
     self-wait-done
     there-anim play-out
-    3 ebit-set
+    found-her ebit-set
     10 self-idle-anim
     [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
@@ -624,12 +636,12 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 
 : house-of-truth-1f-7.act0D ( -- )   \ 004362D0
     self-wait-done
-    7 ebit? not if
+    drone-scene-on ebit? not if
         self-idle-or-end
     then
     $18E -25.136 68.404 -102 $FFFF 5 self-move-to
     self-wait-done
-    7 ebit? not if
+    drone-scene-on ebit? not if
         self-idle-or-end
     then
     $E04 self-anim

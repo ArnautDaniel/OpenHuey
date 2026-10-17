@@ -4,6 +4,11 @@
 IN: story.rooms.chaos-forest-11
 USING: room-names story.words story.shared story-names ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant maze-dealt                  \ (bit 0) the maze's rooms dealt (once a visit, not in a panic)
+1 constant was-panicking               \ (bit 1) she was in a panic (as she came in, then each frame)
+2 constant figure-scene-on             \ (bit 2) the figure's scene begun (act01)
+
 \ character kind 0x1A: byte 3 0 starts Kind26_MoveTo(2, -6, 257); else waits (2) until
 \ Kind26_MoveDone says done
 : chaos-forest-11.cmd00 ( b0 -- )
@@ -19,7 +24,7 @@ USING: room-names story.words story.shared story-names ;
         deal-things
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     then
     $1E chance? if
         $1A 4 $FF char-load
@@ -96,18 +101,18 @@ USING: room-names story.words story.shared story-names ;
     fiona-who 9 char-entered-area? if
         4 exit-prepare
     then
-    0 ebit? not if
-        1 ebit? not in-panic? and if
-            0 ebit-set
+    maze-dealt ebit? not if
+        was-panicking ebit? not in-panic? and if
+            maze-dealt ebit-set
             deal-things
         then
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     else
-        1 ebit-clear
+        was-panicking ebit-clear
     then
-    2 ebit? cf-11-flag1 story-flag? not and if
+    figure-scene-on ebit? cf-11-flag1 story-flag? not and if
         0 -24.0 8.31 -132.0 $19 10 0 zone
         fiona-who 0 2 char-zone-bits? hewie-who 0 2 char-zone-bits? or if
             cf-11-flag1 story-flag-set
@@ -138,7 +143,7 @@ USING: room-names story.words story.shared story-names ;
 
 : chaos-forest-11.act01 ( -- )   \ 00419680
     5 char-start
-    2 ebit-set
+    figure-scene-on ebit-set
     $E char-activate
     $E $9000 1 0 char-anim-hold
     $E -21.17 31.84 -137.07 0 char-to-xyz

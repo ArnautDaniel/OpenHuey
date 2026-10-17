@@ -4,6 +4,20 @@
 IN: story.rooms.front-garden-3
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant tree-remarked               \ (bit 0) its first remark made: "A large tree is sprawled out here."
+1 constant stalkers-held               \ (bit 1) the stalkers held while Hewie's scene runs
+2 constant next-scene                  \ (bit 2) ? on to act0E (the scene after Hewie is in place)
+3 constant hewie-zone1-noticed         \ (bit 3) Hewie has reacted to zone 1 (once a visit)
+4 constant zone2-reached               \ (bit 4) she reached zone 2 (the opening's next part)
+5 constant opening-started             \ (bit 5) the opening begun (act01: its music, its scripts)
+6 constant hewie-zone3-noticed         \ (bit 6) Hewie has reacted to zone 3 (once a visit)
+7 constant figures-kept                \ (bit 7) ? the opening's figures kept while unset
+8 constant hewie-zone4-noticed         \ (bit 8) Hewie has reacted to zone 4 (once a visit)
+9 constant hewie-scene-on              \ (bit 9) his scripted scene under way here (hewie): at the room's end he is put back
+10 constant hewie-in-place             \ (bit 10) Hewie at his place (act0B)
+0 constant whine-frames-var            \ (var 0) frames to Hewie's next whine (from 30, then 180)
+
 \ the box and the grate, by byte 3: 0 the box's +0x28 on by 0.4; the grate's +0x14 (an angle) 1
 \ back 1.5 degrees, 2 on 0.5, 3 back 0.5
 : front-garden-3.cmd00 ( b0 -- )
@@ -85,7 +99,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     4 part-hidden
     c2f-3-flag1 story-flag? if
         hewie-found-in-wire story-flag? not if
-            0 30 var-set
+            whine-frames-var 30 var-set
             $2A 0 360 hewie-to-room
             0 hewie-who 3 action
             3 part-shown
@@ -215,21 +229,21 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
             then then
         then
     then
-    9 ebit? hewie-who char-busy? not and if
-        1 ebit-clear
+    hewie-scene-on ebit? hewie-who char-busy? not and if
+        stalkers-held ebit-clear
         stalkers-stay state-flag-clear
     then
-    5 ebit? 4 ebit? not and if
+    opening-started ebit? zone2-reached ebit? not and if
         2 225.0 0.0 -44.0 $19 10 0 zone
         fiona-who 2 2 char-zone-bits? if
-            4 ebit-set
+            zone2-reached ebit-set
             3 track action-end
             0 3 track $14 action
         then
     then
-    4 ebit? 7 ebit? not and if
+    zone2-reached ebit? figures-kept ebit? not and if
         fiona-who $B char-entered-area? if
-            7 ebit-clear
+            figures-kept ebit-clear
             3 0 char-remove
             4 0 char-remove
             1 track action-end
@@ -238,24 +252,24 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     then
     c2f-3-flag1 story-flag? if
         hewie-found-in-wire story-flag? not if
-            0 0 var? if
+            whine-frames-var 0 var? if
                 $1E chance? if
                     hewie-who 1 6 char-sound
-                    0 180 var-set
+                    whine-frames-var 180 var-set
                 else
-                    0 60 var-set
+                    whine-frames-var 60 var-set
                 then
             else
-                0 var-dec
+                whine-frames-var var-dec
             then
         then
     then
     1 244.4 11.0 82.19 $2C 13 0 zone
-    3 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 1 9 char-zone-bits? if
-                    3 ebit-set
+                    hewie-zone1-noticed ebit-set
                     $32 chance? if
                         hewie-zone-var 1 var-set
                         0 hewie-who $8A action
@@ -276,11 +290,11 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     grate-open story-flag? not if
         hewie-who $1A char-in-area? if
             3 -23.45 -10.0 138.0 $28 20 0 zone
-            6 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+            hewie-zone3-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 3 9 char-zone-bits? if
-                            6 ebit-set
+                            hewie-zone3-noticed ebit-set
                             $64 chance? if
                                 hewie-zone-var 3 var-set
                                 0 hewie-who $88 action
@@ -293,11 +307,11 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     then
     fg-3-refined-magnesia story-flag? not if
         4 252.44 0.0 -156.9 $30 20 0 zone
-        8 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone4-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 4 9 char-zone-bits? if
-                        8 ebit-set
+                        hewie-zone4-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 4 var-set
                             0 hewie-who $88 action
@@ -378,7 +392,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     then
     fg-3-flag1 story-flag-set
     fg-3-flag2 story-flag-set
-    1 ebit? if
+    stalkers-held ebit? if
         stalkers-stay state-flag-clear
     then
     hewie-who char-busy? if
@@ -448,7 +462,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     0 music-stage
     2 0 0 music
     4 0 0 music
-    5 ebit-set
+    opening-started ebit-set
     0 1 track $12 action
     0 3 track $13 action
     opening-done story-flag-set
@@ -467,9 +481,9 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     c2f-3-flag1 story-flag? not if
         look-at-anim self-anim
         $1E wait-frames
-        0 ebit? not if
+        tree-remarked ebit? not if
             3 say   \ "A large tree is sprawled out here."
-            0 ebit-set
+            tree-remarked ebit-set
         else
             4 say   \ "The branches are well kempt. Looks like someone has put a lot of time and energ..."
         then
@@ -581,7 +595,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         yield
     repeat
     8 wait-counter
-    $A ebit-clear
+    hewie-in-place ebit-clear
     $8275 item-give
     0 self-scripted
     self-idle-or-end
@@ -589,9 +603,9 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 
 : front-garden-3.act09 ( -- )   \ 004050B0
     self-wait-done
-    $A ebit? if
+    hewie-in-place ebit? if
         0 counter-set
-        2 ebit-set
+        next-scene ebit-set
         ['] front-garden-3.act0E goto
     then
     4 wait-frames
@@ -615,7 +629,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     crouch-down-anim play-out
     crouching-anim self-anim
-    $A say   \ "There is a hole-floor here, but it's far too small for me."
+    $A say   \ "There is a hole here, but it's far too small for me."
     crouch-up-anim play-out
     -1 self-idle-anim
     self-idle-or-end
@@ -632,7 +646,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     -1 self-idle-anim
     stalkers-stay state-flag-clear
     0 self-scripted
-    1 ebit-clear
+    stalkers-held ebit-clear
     self-idle-or-end
 ;
 
@@ -664,7 +678,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     $2F door-unlock
     5 4 player-camera
     stalkers-stay state-flag-clear
-    1 ebit-clear
+    stalkers-held ebit-clear
     grate-open story-flag-set
     counter-inc
     1 self-doorway-fade
@@ -678,17 +692,17 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 
 : front-garden-3.act0B ( -- )   \ 00405150
     1 self-scripted
-    9 ebit-set
-    1 ebit-set
-    2 ebit-clear
+    hewie-scene-on ebit-set
+    stalkers-held ebit-set
+    next-scene ebit-clear
     stalkers-stay state-flag-set
     self-wait-done
     hewie-bark
     self-wait-done
     $DC -12.99 136.933 -90 $FFFF $A self-move-to
     self-wait-done
-    9 ebit-clear
-    $A ebit-set
+    hewie-scene-on ebit-clear
+    hewie-in-place ebit-set
     1 self-noclip
     $359 -30.0 137.0 -90 $204 5 self-move-to
     self-wait-done
@@ -697,7 +711,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     begin
         fiona-who $19 char-in-area? if
             44 fiona-started? if
-                $A ebit-clear
+                hewie-in-place ebit-clear
                 ['] front-garden-3.act0C goto
             then
         then
@@ -707,7 +721,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
                 0 2 track $D action
                 ['] front-garden-3.act0F goto
             then
-            2 ebit? if
+            next-scene ebit? if
                 ['] front-garden-3.act0F goto
             then
         then

@@ -4,6 +4,9 @@
 IN: story.rooms.off-map-e6
 USING: room-names story.words story.shared story.clock floor-flags ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant cond-was-off                \ (bit 0) the room's condition was false last frame: its hook waits a frame once it holds
+
 \ the room object named by RoomE6_ObjectNames[0]: +0x24 -25.3, +0x34 0
 : off-map-e6.cmd00 ( -- )  s" kousi" object-here? 0= if  exit  then  -25.3e s" kousi" place-y object!  0e s" kousi" $34 object! ;   \ (the lattice down out of the way)
 \ room 0xE6: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
@@ -54,9 +57,9 @@ USING: room-names story.words story.shared story.clock floor-flags ;
 
 : off-map-e6.phase3 ( -- )   \ 004499E0
     off-map-e6.cond00? not if
-        0 ebit-set
-    else 0 ebit? if
-        0 ebit-clear
+        cond-was-off ebit-set
+    else cond-was-off ebit? if
+        cond-was-off ebit-clear
     else
         off-map-e6.cmd01
     then then

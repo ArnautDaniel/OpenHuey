@@ -4,6 +4,13 @@
 IN: story.rooms.old-mansion-3f-2
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant on-group1                   \ (bit 0) she stepped onto nav group 1 this frame
+4 constant armor-scene-on              \ (bit 4) the armour's scene (act01) under way
+5 constant hewie-zone0-noticed         \ (bit 5) Hewie has reacted to zone 0 (once a visit)
+0 constant steps-var                   \ (var 0) ? how far along the floor's groups she is (0..2)
+1 constant group-var                   \ (var 1) the nav group she was on last frame
+
 \ room 0x63: the script's character walks to Fiona's nav triangle (character move 6, with
 \ 0x204).
 : old-mansion-3f-2.cmd00 ( -- )  fiona-who char-tri dup 0< if  drop exit  then  $204 6 self-move-tri ;   \ (to Fiona's triangle)
@@ -86,41 +93,41 @@ defer old-mansion-3f-2.act07
             then
         then
         fiona-who 1 char-in-nav-group? if
-            1 1 var? not if
-                0 ebit-set
+            group-var 1 var? not if
+                on-group1 ebit-set
             then
-            1 1 var-set
+            group-var 1 var-set
         else fiona-who 2 char-in-nav-group? if
-            1 2 var? not if
-                0 ebit-set
+            group-var 2 var? not if
+                on-group1 ebit-set
             then
-            1 2 var-set
+            group-var 2 var-set
         else fiona-who 3 char-in-nav-group? if
-            1 3 var? not if
-                0 ebit-set
+            group-var 3 var? not if
+                on-group1 ebit-set
             then
-            1 3 var-set
+            group-var 3 var-set
         else
-            1 0 var-set
+            group-var 0 var-set
         then then then
-        0 ebit? if
-            4 ebit? not if
+        on-group1 ebit? if
+            armor-scene-on ebit? not if
                 fiona-who 1 6 char-sound
-                0 0 var? if
+                steps-var 0 var? if
                     panic-eased
                     fiona-who 0 char-action? if
                         0 fiona-who 1 action-force
                     else
                         1 fiona-who 1 action-force
                     then
-                else 0 1 var? if
+                else steps-var 1 var? if
                     panic-eased
                     fiona-who 0 char-action? if
                         0 fiona-who 2 action-force
                     else
                         1 fiona-who 2 action-force
                     then
-                else 0 2 var? if
+                else steps-var 2 var? if
                     panic-eased
                     fiona-who 0 char-action? if
                         0 fiona-who 3 action-force
@@ -128,23 +135,23 @@ defer old-mansion-3f-2.act07
                         1 fiona-who 3 action-force
                     then
                 then then then
-                0 var-inc
-                4 ebit-set
+                steps-var var-inc
+                armor-scene-on ebit-set
             then
-            0 ebit-clear
+            on-group1 ebit-clear
         then
     then
     armor-button-pushed story-flag? not if
-        5 ebit? if
+        hewie-zone0-noticed ebit? if
             $23C item-give
             $8281 item-give
         then
         0 -0.27 0.0 10.71 $51 8 0 zone
-        5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 0 9 char-zone-bits? if
-                        5 ebit-set
+                        hewie-zone0-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 0 var-set
                             0 hewie-who $92 action
@@ -239,7 +246,7 @@ defer old-mansion-3f-2.act07
 : old-mansion-3f-2.act01 ( -- )   \ 00421500
     stalkers-stay state-flag-set
     1 self-scripted
-    4 ebit-set
+    armor-scene-on ebit-set
     $F $44 fade
     self-wait-done
     3 1 movie-play
@@ -270,7 +277,7 @@ defer old-mansion-3f-2.act07
     old-mansion-3f-2.act04
     $F $41 fade
     wait-fade
-    4 ebit-clear
+    armor-scene-on ebit-clear
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -279,7 +286,7 @@ defer old-mansion-3f-2.act07
 : old-mansion-3f-2.act02 ( -- )   \ 004215C0
     stalkers-stay state-flag-set
     1 self-scripted
-    4 ebit-set
+    armor-scene-on ebit-set
     $F $44 fade
     self-wait-done
     5 1 movie-play
@@ -310,7 +317,7 @@ defer old-mansion-3f-2.act07
     old-mansion-3f-2.act04
     $F $41 fade
     wait-fade
-    4 ebit-clear
+    armor-scene-on ebit-clear
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -321,7 +328,7 @@ defer old-mansion-3f-2.act07
     stalkers-stay state-flag-set
     1 self-scripted
     no-pause state-flag-set
-    4 ebit-set
+    armor-scene-on ebit-set
     $F $44 fade
     self-wait-done
     7 1 movie-play
@@ -367,7 +374,7 @@ defer old-mansion-3f-2.act07
                     ['] old-mansion-3f-2.act06 goto
                 then
             then
-            39 fiona-started? 4 ebit? or if
+            39 fiona-started? armor-scene-on ebit? or if
                 self-idle
                 self-wait-done
                 ['] old-mansion-3f-2.act07 goto
@@ -392,7 +399,7 @@ defer old-mansion-3f-2.act07
     $11F $204 6 self-move-tri
     begin
         self-done? not if
-            39 fiona-started? 4 ebit? or if
+            39 fiona-started? armor-scene-on ebit? or if
                 self-idle
                 self-wait-done
                 ['] old-mansion-3f-2.act07 goto
@@ -453,7 +460,7 @@ defer old-mansion-3f-2.act07
     $187 $204 6 self-move-tri
     begin
         self-done? not if
-            39 fiona-started? 4 ebit? or if
+            39 fiona-started? armor-scene-on ebit? or if
                 self-idle
                 self-wait-done
                 ['] old-mansion-3f-2.act07 goto

@@ -4,6 +4,10 @@
 IN: story.rooms.front-garden-2
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant area0-reacted               \ (bit 0) her reaction on entering the area made (once a visit)
+0 constant whine-frames-var            \ (var 0) frames to Hewie's next whine (from 30, then 180)
+
 \ room 0x13: the grate ("kousi"): byte 3 0 shut (turn 0), else swung open a quarter turn.
 : front-garden-2.cmd00 ( b0 -- )  if  pi f2/ fnegate  else  0e  then  s" kousi" turn-y object! ;
 
@@ -32,7 +36,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         7 part-shown
     then
     c2f-3-flag1 story-flag? hewie-found-in-wire story-flag? not and if
-        0 30 var-set
+        whine-frames-var 30 var-set
         0 1 track 6 action
     then
     fg-2-breakable1-broken story-flag? not if
@@ -129,8 +133,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     c2f-3-flag2 story-flag? not hewie-found-in-wire story-flag? and hewie-freed story-flag? not and if
-        fiona-who 0 char-entered-area? 0 ebit? not and if
-            0 ebit-set
+        fiona-who 0 char-entered-area? area0-reacted ebit? not and if
+            area0-reacted ebit-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 2 action-force
@@ -300,13 +304,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : front-garden-2.act06 ( -- )   \ 003F9870
     begin
         yield
-        0 var-dec
-        0 0 var? if
+        whine-frames-var var-dec
+        whine-frames-var 0 var? if
             $1E chance? if
                 $F 6 228.0 5.0 78.0 0 0 sound
-                0 180 var-set
+                whine-frames-var 180 var-set
             else
-                0 60 var-set
+                whine-frames-var 60 var-set
             then
         then
     again

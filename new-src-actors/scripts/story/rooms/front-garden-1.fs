@@ -4,6 +4,9 @@
 IN: story.rooms.front-garden-1
 USING: actors room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant hewie-zone2-noticed         \ (bit 0) Hewie has reacted to zone 2 (once a visit)
+
 \ room 0x00: a grey glow (Effect737D0, size 30) at one of four spots picked by byte 3
 \ (glow4_spot from spot 0): byte 4 0 starts it, its slot kept in event variable byte 3; else it
 \ is removed.
@@ -180,11 +183,11 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     got-broken-marionette story-flag? not if
         hewie-who $F char-in-area? if
             2 -210.0 60.0 -114.0 $4B 20 0 zone
-            0 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+            hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 2 9 char-zone-bits? if
-                            0 ebit-set
+                            hewie-zone2-noticed ebit-set
                             $64 chance? if
                                 hewie-zone-var 2 var-set
                                 0 hewie-who $88 action

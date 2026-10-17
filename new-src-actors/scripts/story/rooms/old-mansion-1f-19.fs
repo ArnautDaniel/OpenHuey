@@ -4,6 +4,13 @@
 IN: story.rooms.old-mansion-1f-19
 USING: room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds stalker.anims ;
 
+\ ---- this room's own event bits and script variables ----
+3 constant found-her                   \ (bit 3) he has found her hiding: she must flee (the avoid prompt)
+4 constant will-find-her               \ (bit 4) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+5 constant came-while-hidden           \ (bit 5) the stalker came in while she was hiding
+6 constant hewie-zone2-noticed         \ (bit 6) Hewie has reacted to zone 2 (once a visit)
+7 constant sound-started               \ (bit 7) its sound started (then kept up)
+
 : old-mansion-1f-19.enter ( -- )   \ 00438D30
     room-sounds
     om3f-1-flag2 story-flag? if
@@ -16,29 +23,29 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
 ;
 
 : old-mansion-1f-19.act06 ( -- )   \ 00439080
-    5 ebit-set
-    4 ebit-clear
+    came-while-hidden ebit-set
+    will-find-her ebit-clear
     $13 0 pvar? if
         $A chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     else $13 1 pvar? if
         $19 chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     else $13 2 pvar? if
         $32 chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     else $13 3 pvar? if
         $4B chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     then then then then
     2 creature-action? if
-        4 ebit-set
+        will-find-her ebit-set
     then
-    4 ebit? if
+    will-find-her ebit? if
         0 stalker-who 7 action
     else
         $78 1 summoner-wait
@@ -67,10 +74,10 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     then
     stalker-who self-is? if
         fiona-hidden state-flag? if
-            5 ebit-set
+            came-while-hidden ebit-set
             old-mansion-1f-19.act06
         else
-            5 ebit-clear
+            came-while-hidden ebit-clear
         then
     then
 ;
@@ -97,11 +104,11 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
         3 0 char-remove
     then
     2 0.75 0.0 -116.99 $14 10 0 zone
-    6 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 2 9 char-zone-bits? if
-                    6 ebit-set
+                    hewie-zone2-noticed ebit-set
                     $1E chance? if
                         hewie-zone-var 2 var-set
                         0 hewie-who $88 action
@@ -119,10 +126,10 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
             then
         then
     then
-    7 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             $40000008 6 0.0 9.0 -125.0 0 0 sound
-            7 ebit-set
+            sound-started ebit-set
         then
     else
         $C0000008 6 0.0 9.0 -125.0 0 0 sound
@@ -191,7 +198,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
 ;
 
 : old-mansion-1f-19.act05 ( -- )   \ 00439050
-    3 ebit? if
+    found-her ebit? if
         2 avoid-prompt
     then
     1 self-scripted
@@ -202,7 +209,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     fiona-who slide-sound 5 char-sound
     3 room-motion $A blend-out
     0 self-noclip
-    3 ebit? not if
+    found-her ebit? not if
         stalker-who action-end
     then
     0 self-scripted
@@ -211,7 +218,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
 
 : old-mansion-1f-19.act04 ( -- )   \ 00438FA0
     stalkers-stay state-flag-set
-    5 ebit-clear
+    came-while-hidden ebit-clear
     1 self-scripted
     fiona-who 0 char-file-load
     self-wait-done
@@ -227,13 +234,13 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
-    3 ebit-clear
+    found-her ebit-clear
     0 avoid-prompt
     self-who 2 -1 char-camera
     self-who 1 char-visible
     begin
         0 2 pad? not if
-            in-panic? 3 ebit? or if
+            in-panic? found-her ebit? or if
                 in-panic? not if
                     fiona-who seized-sound 5 char-sound
                 then
@@ -242,9 +249,9 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
                 2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                5 ebit? if
+                came-while-hidden ebit? if
                     stalker-who char-here? not if
-                        5 ebit-clear
+                        came-while-hidden ebit-clear
                         1 avoid-prompt
                     then
                 then
@@ -288,7 +295,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     else
         there-anim play-out
     then
-    3 ebit-set
+    found-her ebit-set
     10 self-idle-anim
     [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command

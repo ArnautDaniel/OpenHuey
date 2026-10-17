@@ -4,6 +4,15 @@
 IN: story.rooms.castle-1f-19
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant hole-remarked               \ (bit 0) its first remark made: "There is a hole in the wall. I think I can see light on the "
+1 constant splash1-made                \ (bit 1) a splash played once someone steps into its zone (once a visit)
+2 constant splash2-made                \ (bit 2) a splash played once someone steps into its zone (once a visit)
+3 constant splash3-made                \ (bit 3) a splash played once someone steps into its zone (once a visit)
+4 constant splash4-made                \ (bit 4) a splash played once someone steps into its zone (once a visit)
+5 constant hewie-zone4-noticed         \ (bit 5) Hewie has reacted to zone 4 (once a visit)
+6 constant splash5-made                \ (bit 6) a splash played once someone steps into its zone (once a visit)
+
 : castle-1f-19.enter ( -- )   \ 003FD9C0
     room-sounds
     $1A 1.0 0 bgm
@@ -67,11 +76,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-who char-here? if
         118 hewie-action? not if
             4 -11.187 5.0 -117.743 $1E 20 0 zone
-            5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+            hewie-zone4-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 4 9 char-zone-bits? if
-                            5 ebit-set
+                            hewie-zone4-noticed ebit-set
                             $1E chance? if
                                 hewie-zone-var 4 var-set
                                 0 hewie-who $88 action
@@ -129,79 +138,79 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         then
     then
-    1 ebit? not if
+    splash1-made ebit? not if
         0 46.0 0.0 -280.0 $10 4 0 zone
         fiona-who 0 3 char-zone-bits? fiona-who 0 3 char-zone-bits-before? not and if
             fiona-who 5 46.0 0.0 -280.0 2 $40 $50 $40 $80 splash
-            1 ebit-set
+            splash1-made ebit-set
         then
         hewie-who 0 3 char-zone-bits? hewie-who 0 3 char-zone-bits-before? not and if
             hewie-who $A 46.0 0.0 -280.0 2 $40 $50 $40 $80 splash
-            1 ebit-set
+            splash1-made ebit-set
         then
         stalker-who 0 3 char-zone-bits? stalker-who 0 3 char-zone-bits-before? not and if
             stalker-who 5 46.0 0.0 -280.0 2 $40 $50 $40 $80 splash
-            1 ebit-set
+            splash1-made ebit-set
         then
     then
-    2 ebit? not if
+    splash2-made ebit? not if
         1 52.0 0.0 -240.0 $10 4 0 zone
         fiona-who 1 3 char-zone-bits? fiona-who 1 3 char-zone-bits-before? not and if
             fiona-who 5 52.0 0.0 -240.0 2 $40 $50 $40 $80 splash
-            2 ebit-set
+            splash2-made ebit-set
         then
         hewie-who 1 3 char-zone-bits? hewie-who 1 3 char-zone-bits-before? not and if
             hewie-who $A 52.0 0.0 -240.0 2 $40 $50 $40 $80 splash
-            2 ebit-set
+            splash2-made ebit-set
         then
         stalker-who 1 3 char-zone-bits? stalker-who 1 3 char-zone-bits-before? not and if
             stalker-who 5 52.0 0.0 -240.0 2 $40 $50 $40 $80 splash
-            2 ebit-set
+            splash2-made ebit-set
         then
     then
-    3 ebit? not if
+    splash3-made ebit? not if
         2 50.0 0.0 -300.0 $10 4 0 zone
         fiona-who 2 3 char-zone-bits? fiona-who 2 3 char-zone-bits-before? not and if
             fiona-who 5 50.0 0.0 -300.0 2 $40 $50 $40 $80 splash
-            3 ebit-set
+            splash3-made ebit-set
         then
         hewie-who 2 3 char-zone-bits? hewie-who 2 3 char-zone-bits-before? not and if
             hewie-who $A 50.0 0.0 -300.0 2 $40 $50 $40 $80 splash
-            3 ebit-set
+            splash3-made ebit-set
         then
         stalker-who 2 3 char-zone-bits? stalker-who 2 3 char-zone-bits-before? not and if
             stalker-who 5 50.0 0.0 -300.0 2 $40 $50 $40 $80 splash
-            3 ebit-set
+            splash3-made ebit-set
         then
     then
-    4 ebit? not if
+    splash4-made ebit? not if
         3 70.0 0.0 -260.0 $10 4 0 zone
         fiona-who 3 3 char-zone-bits? fiona-who 3 3 char-zone-bits-before? not and if
             fiona-who 5 70.0 0.0 -260.0 2 $40 $50 $40 $80 splash
-            4 ebit-set
+            splash4-made ebit-set
         then
         hewie-who 3 3 char-zone-bits? hewie-who 3 3 char-zone-bits-before? not and if
             hewie-who $A 70.0 0.0 -260.0 2 $40 $50 $40 $80 splash
-            4 ebit-set
+            splash4-made ebit-set
         then
         stalker-who 3 3 char-zone-bits? stalker-who 3 3 char-zone-bits-before? not and if
             stalker-who 5 70.0 0.0 -260.0 2 $40 $50 $40 $80 splash
-            4 ebit-set
+            splash4-made ebit-set
         then
     then
-    6 ebit? not if
+    splash5-made ebit? not if
         5 73.0 0.0 -282.0 $10 4 0 zone
         fiona-who 5 3 char-zone-bits? fiona-who 5 3 char-zone-bits-before? not and if
             fiona-who 5 73.0 0.0 -282.0 2 $40 $50 $40 $80 splash
-            6 ebit-set
+            splash5-made ebit-set
         then
         hewie-who 5 3 char-zone-bits? hewie-who 5 3 char-zone-bits-before? not and if
             hewie-who $A 73.0 0.0 -282.0 2 $40 $50 $40 $80 splash
-            6 ebit-set
+            splash5-made ebit-set
         then
         stalker-who 5 3 char-zone-bits? stalker-who 5 3 char-zone-bits-before? not and if
             stalker-who 5 73.0 0.0 -282.0 2 $40 $50 $40 $80 splash
-            6 ebit-set
+            splash5-made ebit-set
         then
     then
 ;
@@ -321,12 +330,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     4 wait-frames
     hewie-who char-here? 118 hewie-action? and hewie-who 0 char-in-nav-group? and if
         2 say   \ "Hewie's eyes glimmer through the thick shadow that surrounds him."
-    else 0 ebit? not if
-        0 say   \ "There is a hole-floor in the wall. I think I can see light on the other end. This must le..."
-        0 ebit-set
+    else hole-remarked ebit? not if
+        0 say   \ "There is a hole in the wall. I think I can see light on the other end. This must le..."
+        hole-remarked ebit-set
     else
         1 say   \ "I'm sure I can use this somehow... But I'm just too big and will never fit in there."
-        0 ebit-clear
+        hole-remarked ebit-clear
     then then
     4 wait-frames
     crouch-up-anim play-out

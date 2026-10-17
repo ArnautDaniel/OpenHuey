@@ -4,6 +4,11 @@
 IN: story.rooms.chaos-forest-10
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.sounds ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant maze-dealt                  \ (bit 0) the maze's rooms dealt (once a visit, not in a panic)
+1 constant was-panicking               \ (bit 1) she was in a panic (as she came in, then each frame)
+0 constant whine-frames-var            \ (var 0) frames to Hewie's next whine (180 / 60)
+
 \ byte 3: 0 / 1 a named progress call; 2 waits (2) for Progress_Speak(1, 0), then the partner's
 \ message slot shows progress +0x73EDC0; else Progress_SpeechCall and the slot is closed
 : chaos-forest-10.cmd00 ( b0 -- )   \ (Hewie's face: 0 / 1 loaded, 2 shown - his texture 1 - else done and his own again)
@@ -17,7 +22,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         deal-things
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     then
     cf-10-breakable-broken story-flag? not if
         0 keeps-people-off floor-on
@@ -104,27 +109,27 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         then
     then
-    0 ebit? not if
-        1 ebit? not in-panic? and if
-            0 ebit-set
+    maze-dealt ebit? not if
+        was-panicking ebit? not in-panic? and if
+            maze-dealt ebit-set
             deal-things
         then
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     else
-        1 ebit-clear
+        was-panicking ebit-clear
     then
     found-file-247 story-flag? cf-13-flag1 story-flag? not and if
-        0 0 var? if
+        whine-frames-var 0 var? if
             $1E chance? if
                 hewie-who $40000001 6 char-sound
-                0 180 var-set
+                whine-frames-var 180 var-set
             else
-                0 60 var-set
+                whine-frames-var 60 var-set
             then
         else
-            0 var-dec
+            whine-frames-var var-dec
             hewie-who $C0000001 6 char-sound
         then
     then

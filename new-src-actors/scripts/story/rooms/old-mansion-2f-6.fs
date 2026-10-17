@@ -4,6 +4,15 @@
 IN: story.rooms.old-mansion-2f-6
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant medicine-remarked           \ (bit 0) its first remark made: "There's some kind of medicine bottle on the shelf."
+1 constant chemicals-remarked          \ (bit 1) its first remark made: "Several bottles containing various chemicals have been left "
+2 constant rested                      \ (bit 2) she has rested here (her recovery: once a visit)
+3 constant hewie-away                  \ (bit 3) Hewie not here (or sent off) as the scene ends
+4 constant back-from-forest            \ (bit 4) she came back by exit $80 (after the forest)
+5 constant measuring-device-remarked   \ (bit 5) its first remark made: "There is a device which appears to be used for measuring thi"
+6 constant hiding-spot-remarked        \ (bit 6) its first remark made: "I wonder if this could serve as a hiding spot if I'm ever in"
+
 \ room 0x59 (Room59_Cmd00_ptmf): character 0xFE's model +0x9E0 = 0.1 (byte 3 0) or 0
 : old-mansion-2f-6.cmd00 ( b0 -- )  drop ;   \ (the stalker's model's springs (+0x9E0): not simulated here yet)
 
@@ -18,10 +27,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 part-hidden
     cf-13-flag1 story-flag? x-37-flag2 story-flag? not and if
         $80 exit-taken? if
-            4 ebit-set
+            back-from-forest ebit-set
         then
     then
-    4 ebit? not if
+    back-from-forest ebit? not if
         om2f-6-lavender story-flag? not if
             0 4.58 9.0 14.22 flicker-sprite
         then
@@ -35,7 +44,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     0 0 0 area-camera
     fiona-who self-is? if
-        4 ebit? if
+        back-from-forest ebit? if
             fiona-who $4B 0 char-to-tri-facing
             world-held state-flag-set
             0.0 sound-volume-scale
@@ -114,7 +123,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-2f-6.act00 ( -- )   \ 00410230
-    2 ebit? not if
+    rested ebit? not if
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
@@ -132,7 +141,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         fiona-calm-reset
         fiona-who $84 5 char-sound
         3 avoid-prompt
-        2 ebit-set
+        rested ebit-set
         $1E wait-frames
         got-doc-recovery story-flag? not if
             $F 6 fade
@@ -179,7 +188,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     wait-fade
     hewie-who char-here? if
-        3 ebit-clear
+        hewie-away ebit-clear
         hewie-who 2 char-cond? if
             0 hewie-who $86 action
         else
@@ -187,7 +196,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             hewie-who char-done
         then
     else
-        3 ebit-set
+        hewie-away ebit-set
     then
     $10 $FF movie-param
     3 stalker-kind? $22 stalker-kind? or if
@@ -223,7 +232,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     2 2 player-camera
     camera-restart
-    3 ebit? not if
+    hewie-away ebit? not if
         hewie-who 2 char-cond? if
             hewie-who 0 char-visible
             hewie-who action-end
@@ -265,7 +274,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     wait-fade
     hewie-who char-here? if
-        3 ebit-clear
+        hewie-away ebit-clear
         hewie-who 2 char-cond? if
             0 hewie-who $86 action
         else
@@ -273,7 +282,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             hewie-who char-done
         then
     else
-        3 ebit-set
+        hewie-away ebit-set
     then
     force-followed state-flag-set
     yield
@@ -288,7 +297,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     world-held state-flag-set
     9 1 object-hidden
     0 self-idle-anim
-    3 ebit? not if
+    hewie-away ebit? not if
         hewie-who 2 char-cond? if
             hewie-who 0 char-visible
             hewie-who action-end
@@ -327,12 +336,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     32.0 -3.5 self-turn-to-xz
     self-wait-done
-    0 ebit? not if
+    medicine-remarked ebit? not if
         3 say   \ "There's some kind of medicine bottle on the shelf."
-        0 ebit-set
+        medicine-remarked ebit-set
     else
         5 say   \ "The label says Acetic Acid on it."
-        0 ebit-clear
+        medicine-remarked ebit-clear
     then
     self-idle-or-end
 ;
@@ -341,12 +350,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     -29.0 -1.0 self-turn-to-xz
     self-wait-done
-    1 ebit? not if
+    chemicals-remarked ebit? not if
         4 say   \ "Several bottles containing various chemicals have been left out."
-        1 ebit-set
+        chemicals-remarked ebit-set
     else
         6 say   \ "The words Sulfuric Acid are written on one bottle."
-        1 ebit-clear
+        chemicals-remarked ebit-clear
     then
     self-idle-or-end
 ;
@@ -412,8 +421,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         look-low-anim self-anim
     then
     $28 wait-frames
-    5 ebit? not if
-        5 ebit-set
+    measuring-device-remarked ebit? not if
+        measuring-device-remarked ebit-set
         9 say   \ "There is a device which appears to be used for measuring things... I wonder what th..."
     else
         $E say   \ "For some reason this room seems to contain comparatively modern equipment. Still t..."
@@ -426,8 +435,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     -70 self-turn-angle
     self-wait-done
-    6 ebit? not if
-        6 ebit-set
+    hiding-spot-remarked ebit? not if
+        hiding-spot-remarked ebit-set
         $A say   \ "I wonder if this could serve as a hiding spot if I'm ever in a pinch? Oh darn. It'..."
     else
         rattle-front-slow-anim self-anim

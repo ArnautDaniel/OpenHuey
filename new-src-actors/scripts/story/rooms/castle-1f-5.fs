@@ -4,6 +4,16 @@
 IN: story.rooms.castle-1f-5
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant stalker-entrance-on         \ (bit 0) his entrance here under way (followed; Hewie not to attack)
+1 constant box-remarked                \ (bit 1) its first remark made: "There is nothing inside."
+2 constant in-area2                    \ (bit 2) someone in the area (entered, not yet left)
+3 constant tired-remarked              \ (bit 3) her first "I don't feel so hot" made (the next time: rest)
+4 constant painting-remarked           \ (bit 4) its first remark made: "A painting... Several people appear to be clasping their han"
+5 constant stalker-scene-on            \ (bit 5) his scripted scene under way here (stalker): at the room's end he is put back
+6 constant stalker-sent                \ (bit 6) the stalker sent on (action 4), once
+0 constant shove-frames-var            \ (var 0) his shove's frames (dust at 60)
+
 \ room 0x10 (Room10_Cond00_ptmf): the stalker is there, not about, in mode 2, 6 or 7
 : castle-1f-5.cond00? ( -- flag )  stalker-there? stalker-told? 0= and debilitas? and ;
 
@@ -16,7 +26,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 force-followed state-flag-set
                 $C door-open-clear
                 doors-room-in
-                0 ebit-set
+                stalker-entrance-on ebit-set
                 hewie-no-attack state-flag-set
                 stalker-who char-activate
                 $FE $10 161 2 stalker-to-room
@@ -45,7 +55,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 6.0 21.8 -3.2 0 flame-in
     1 29.0 41.8 41.9 0 flame-in
     2 -46.8 93.8 18.5 0 flame-in
-    5 ebit-clear
+    stalker-scene-on ebit-clear
     c1f-6-flag1 story-flag? over-music-b story-flag? not and if
         hewie-who action-end
         hewie-who char-done
@@ -71,7 +81,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 4 3 area-camera
     fiona-who self-is? if
         1 exit-taken? if
-            2 ebit-set
+            in-area2 ebit-set
         then
         c1f-6-flag1 story-flag? over-music-b story-flag? not and if
             fiona-who 1 char-to-exit
@@ -83,7 +93,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     stalker-who self-is? if
-        6 ebit-clear
+        stalker-sent ebit-clear
     then
 ;
 
@@ -115,17 +125,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         1 exit-prepare
     then
     fiona-who $12 char-entered-area? if
-        2 ebit-set
+        in-area2 ebit-set
     then
     fiona-who $12 char-left-area? if
-        2 ebit-clear
+        in-area2 ebit-clear
     then
-    4 stalker-alert? not 6 ebit? not and stalker-who 2 char-cond? not and if
+    4 stalker-alert? not stalker-sent ebit? not and stalker-who 2 char-cond? not and if
         2 stalker-kind-here? 6 stalker-kind-here? or 7 stalker-kind-here? or if
             0 stalker-alert? 2 stalker-alert? or if
-                stalker-who $11 char-in-area? 2 ebit? and if
+                stalker-who $11 char-in-area? in-area2 ebit? and if
                     0 stalker-who 4 action
-                    6 ebit-set
+                    stalker-sent ebit-set
                 then
             then
         then
@@ -227,21 +237,21 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-1f-5.act03 ( -- )   \ 003F7560
     hewie-no-attack state-flag-clear
     force-followed state-flag-clear
-    0 ebit-clear
+    stalker-entrance-on ebit-clear
     stalker-who action-end
     stalker-who char-done
     exit
 ;
 
 : castle-1f-5.phase5 ( -- )   \ 003F74E0
-    0 ebit? if
+    stalker-entrance-on ebit? if
         castle-1f-5.act03
     then
-    5 ebit? stalker-who char-busy? and if
+    stalker-scene-on ebit? stalker-who char-busy? and if
         stalker-who action-end
         stalker-who $196 0 char-to-tri-facing
         stalker-who 0 char-no-shadow
-        5 ebit-clear
+        stalker-scene-on ebit-clear
     then
 ;
 
@@ -256,12 +266,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-5.act01 ( -- )   \ 003F7510
     self-wait-done
-    1 ebit? not if
+    box-remarked ebit? not if
         40.0 -11.0 self-turn-to-xz
         self-wait-done
         reach-out-anim play-out
         2 say   \ "There is nothing inside."
-        1 ebit-set
+        box-remarked ebit-set
     else
         3 say   \ "A second, more-thorough investigation of the box reveals that there is dust inside..."
     then
@@ -294,19 +304,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     stalker-who char-file-use
     1 self-noclip
     1 self-scripted
-    5 ebit-set
+    stalker-scene-on ebit-set
     0 room-motion 5 self-anim-blend8
-    0 0 var-set
+    shove-frames-var 0 var-set
     begin
         fiona-who self-touching? if
             stalker-who 0 fiona-thrown
         then
-        0 60 var? if
+        shove-frames-var 60 var? if
             0 29.0 19.0 25.0 0 0 0 0 dust
             0 36.0 19.0 25.0 0 0 0 0 dust
             stalker-who $B 6 char-sound
         then
-        0 var-inc
+        shove-frames-var var-inc
         0 camera-mode? not if
             stalker-who 1 char-no-shadow
         else
@@ -318,7 +328,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 self-noclip
     0 self-scripted
     stalker-who 0 char-no-shadow
-    5 ebit-clear
+    stalker-scene-on ebit-clear
     stalker-who 2 stalker-command
     self-idle-or-end
 ;
@@ -447,12 +457,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     knocked-anim self-anim
     fiona-who 0 6 char-sound
     $14 wait-frames
-    3 ebit? not if
+    tired-remarked ebit? not if
         5 message   \ "I... I don't feel so hot. It's like I have no energy all of a sudden."
-        3 ebit-set
+        tired-remarked ebit-set
     else
         6 message   \ "I should try to get some rest."
-        3 ebit-clear
+        tired-remarked ebit-clear
     then
     attack-anim $A self-anim-blend
     wait-message
@@ -466,9 +476,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     1 15.0 0.0 0.0 8.0 event-camera
     4 wait-frames
-    4 ebit? not if
+    painting-remarked ebit? not if
         7 say   \ "A painting... Several people appear to be clasping their hands in prayer."
-        4 ebit-set
+        painting-remarked ebit-set
     else
         8 say   \ "If I had the time, I'd like to spend more time taking in the painting's full beauty..."
     then

@@ -4,6 +4,11 @@
 IN: story.rooms.castle-2f-6
 USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant massive-book-remarked       \ (bit 0) its first remark made: "A massive book stands stalwart. It looks quite old. Perhaps "
+1 constant shelves-remarked            \ (bit 1) its first remark made: "Old scholarly masterpieces fill up the shelves. It's almost "
+2 constant hewie-zone0-noticed         \ (bit 2) Hewie has reacted to zone 0 (once a visit)
+
 : castle-2f-6.enter ( -- )   \ 00400C60
     got-lunar-refractor story-flag? not if
         room-sounds
@@ -34,11 +39,11 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     4 2 -1 1 chars-area-camera
     got-lunar-refractor story-flag? not if
         0 3.5 0.0 33.0 $1E 20 0 zone
-        2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 0 9 char-zone-bits? if
-                        2 ebit-set
+                        hewie-zone0-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 0 var-set
                             0 hewie-who $88 action
@@ -174,9 +179,9 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 
 : castle-2f-6.act02 ( -- )   \ 00400F50
     self-wait-done
-    1 ebit? not if
+    shelves-remarked ebit? not if
         8 say   \ "Old scholarly masterpieces fill up the shelves. It's almost as if someone has been..."
-        1 ebit-set
+        shelves-remarked ebit-set
     else
         9 say   \ "Not to state the obvious, but this is clearly the castle study."
     then
@@ -207,9 +212,9 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 
 : castle-2f-6.act04 ( -- )   \ 00400FC0
     self-wait-done
-    0 ebit? not if
+    massive-book-remarked ebit? not if
         $A say   \ "A massive book stands stalwart. It looks quite old. Perhaps it's an antique?"
-        0 ebit-set
+        massive-book-remarked ebit-set
     else
         look-low-anim $A self-anim-blend
         $B say   \ "The script looks almost Latin in nature... But unfortunately, it's all Greek to me."

@@ -4,6 +4,11 @@
 IN: story.rooms.chaos-forest-12
 USING: room-names story.words story.shared story-names fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant maze-dealt                  \ (bit 0) the maze's rooms dealt (once a visit, not in a panic)
+1 constant was-panicking               \ (bit 1) she was in a panic (as she came in, then each frame)
+2 constant figure-scene-on             \ (bit 2) the figure's scene begun (act00)
+
 \ room 0x10A: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
 \ sideways 1 a frame (room_nudge).
 : chaos-forest-12.cmd00 ( b0 -- )  1e room-nudge ;
@@ -22,7 +27,7 @@ USING: room-names story.words story.shared story-names fiona.anims ;
         deal-things
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     then
     cf-12-camomile story-flag? not if
         0 -253.83 5.54 -217.28 flicker-sprite
@@ -90,18 +95,18 @@ USING: room-names story.words story.shared story-names fiona.anims ;
             3 0 char-remove
         then
     then
-    0 ebit? not if
-        1 ebit? not in-panic? and if
-            0 ebit-set
+    maze-dealt ebit? not if
+        was-panicking ebit? not in-panic? and if
+            maze-dealt ebit-set
             deal-things
         then
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     else
-        1 ebit-clear
+        was-panicking ebit-clear
     then
-    2 ebit? cf-12-flag1 story-flag? not and if
+    figure-scene-on ebit? cf-12-flag1 story-flag? not and if
         chaos-forest-12.cond00? if
             cf-12-flag1 story-flag-set
             1 track action-end
@@ -121,7 +126,7 @@ USING: room-names story.words story.shared story-names fiona.anims ;
 
 : chaos-forest-12.act00 ( -- )   \ 00419970
     5 char-start
-    2 ebit-set
+    figure-scene-on ebit-set
     $E char-activate
     $E $9000 1 0 char-anim-hold
     $E -25.61 38.13 -136.96 0 char-to-xyz

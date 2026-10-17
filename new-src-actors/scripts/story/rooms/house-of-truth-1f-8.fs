@@ -4,6 +4,14 @@
 IN: story.rooms.house-of-truth-1f-8
 USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant snagged-remarked            \ (bit 0) its first remark made: "Something seems to be snagged on the other side..."
+1 constant area6-reacted               \ (bit 1) her reaction on entering the area made (once a visit)
+2 constant drone-on                    \ (bit 2) the drone sound ($30, bank $47) going
+0 constant tremor-var                  \ (var 0) ? 5 once the tremor has come
+1 constant sound-step-var              \ (var 1) which of its sounds next (0..3)
+2 constant sound-frames-var            \ (var 2) frames to the next sound (30)
+
 \ room 0x91 (Room91_Cmd00_ptmf): door 0's +0x68 (0)
 : house-of-truth-1f-8.cmd00 ( -- )  0 true -1 doors-id send swing-door ;   \ (door 0 set opening, Doors_SetOpened: swung open here)
 \ script variable 0 down by the player's hit (1 from the weak blow 0x1A, else 5), not below 0
@@ -38,7 +46,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
             house-of-truth-1f-8.cmd02
         then
     else
-        2 ebit-set
+        drone-on ebit-set
     then
 ;
 
@@ -69,7 +77,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 ;
 
 : house-of-truth-1f-8.phase1 ( -- )   \ 00436780
-    2 ebit? if
+    drone-on ebit? if
         $C0000030 $47 0.0 0.0 0.0 0 0 sound
     then
     0 exit-usable? if
@@ -95,8 +103,8 @@ USING: engine common actors messages room-names story.words story.shared flag-na
         2 exit-prepare
     then
     ht1f-9-flag2 story-flag? over-music-f story-flag? not and if
-        fiona-who 6 char-entered-area? 1 ebit? not and if
-            1 ebit-set
+        fiona-who 6 char-entered-area? area6-reacted ebit? not and if
+            area6-reacted ebit-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
@@ -170,21 +178,21 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     then
     house-of-truth-1f-8.cmd03
     6 sound-bank-loaded? if
-        2 var-inc
-        2 30 var? if
-            2 0 var-set
-            1 0 var? if
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
                 $40000005 6 48.0 0.0 115.0 0 0 sound
-            else 1 1 var? if
+            else sound-step-var 1 var? if
                 $40000006 6 48.0 0.0 115.0 0 0 sound
-            else 1 2 var? if
+            else sound-step-var 2 var? if
                 $40000007 6 48.0 0.0 115.0 0 0 sound
-            else 1 3 var? if
+            else sound-step-var 3 var? if
                 $40000008 6 48.0 0.0 115.0 0 0 sound
             then then then then
-            1 var-inc
-            1 4 var? if
-                1 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
@@ -208,9 +216,9 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 ;
 
 : house-of-truth-1f-8.phase3 ( -- )   \ 00436A40
-    ht1f-9-flag2 story-flag? 2 ebit? not and if
+    ht1f-9-flag2 story-flag? drone-on ebit? not and if
         $40000030 $47 0.0 0.0 0.0 0 0 sound
-        2 ebit-set
+        drone-on ebit-set
     then
 ;
 
@@ -256,7 +264,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     tremor-warned-2 story-flag-set
     1 track action-end
     shared.act95
-    0 5 var-set
+    tremor-var 5 var-set
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -319,7 +327,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     0 exit-door-open? not if
         house-of-truth-1f-8.cmd01
         $91 5 -37.0 10.0 177.0 0 0 sound
-        0 0 var? if
+        tremor-var 0 var? if
             $EB door-unlock
             house-of-truth-1f-8.cmd00
             $EB door-open-set
@@ -349,13 +357,13 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 
 : house-of-truth-1f-8.act06 ( -- )   \ 00436C60
     self-wait-done
-    0 ebit? not if
+    snagged-remarked ebit? not if
         0 self-through-exit
         self-wait-done
         rattle-behind-slow-anim play-out
         -1 self-idle-anim
         7 wait-frames
-        0 ebit-set
+        snagged-remarked ebit-set
     then
     0 say   \ "Something seems to be snagged on the other side of the door, keeping it from opening. D..."
     self-idle-or-end

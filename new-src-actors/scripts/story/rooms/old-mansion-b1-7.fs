@@ -4,6 +4,12 @@
 IN: story.rooms.old-mansion-b1-7
 USING: engine common actors messages room-names story.words story.shared story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant tries-var                   \ (var 0) the figure's tries (3: on)
+1 constant stage-var                   \ (var 1) the stage (20 .. 23)
+2 constant frames-var                  \ (var 2) frames to the next stage (90)
+3 constant shaft-var                   \ (var 3) the light shaft's effect
+
 \ one of the fish swimming its way (swim path k), on and on
 : swim ( id k -- )
     {: id k :}
@@ -30,18 +36,18 @@ USING: engine common actors messages room-names story.words story.shared story-n
 \ its slot in event variable 3; 1 its haze on; 2 off.
 : old-mansion-b1-7.cmd01 ( b0 -- )   \ (the beam of light: b0 0 made - kept in variable 3; 1 its haze on, 2 off)
     case
-        0 of  3 effects:light-shaft var-set  endof
-        1 of  3 var @ dup alive? if  1 swap send effect-command  else  drop  then  endof
-        2 of  3 var @ dup alive? if  2 swap send effect-command  else  drop  then  endof
+        0 of  shaft-var effects:light-shaft var-set  endof
+        1 of  shaft-var var @ dup alive? if  1 swap send effect-command  else  drop  then  endof
+        2 of  shaft-var var @ dup alive? if  2 swap send effect-command  else  drop  then  endof
     endcase ;
 
 : old-mansion-b1-7.enter ( -- )   \ 004291C0
     0 1 track 0 action
     0 2 track 1 action
     0 3 track 2 action
-    0 0 var-set
-    1 20 var-set
-    2 90 var-set
+    tries-var 0 var-set
+    stage-var 20 var-set
+    frames-var 90 var-set
     omb1-7-medallion-found story-flag? omb1-7-medallion story-flag? not and if
         0 8.95 1.0 11.89 flicker-sprite
     then
@@ -93,32 +99,32 @@ USING: engine common actors messages room-names story.words story.shared story-n
     fiona-who $B char-left-area? if
         0 map-page
     then
-    0 3 var? if
+    tries-var 3 var? if
         0 game-mode? if
-            2 var-dec
-            2 0 var? if
-                2 90 var-set
-                1 20 var? if
-                    1 21 var-set
-                else 1 21 var? if
-                    1 22 var-set
-                else 1 22 var? if
-                    1 20 var-set
+            frames-var var-dec
+            frames-var 0 var? if
+                frames-var 90 var-set
+                stage-var 20 var? if
+                    stage-var 21 var-set
+                else stage-var 21 var? if
+                    stage-var 22 var-set
+                else stage-var 22 var? if
+                    stage-var 20 var-set
                 then then then
             then
-            1 20 var? if
+            stage-var 20 var? if
                 hewie-who char-here? if
                     $14 hewie-who 100 chars-within? if
                         $14 0.0 hewie-look-char
                     then
                 then
-            else 1 21 var? if
+            else stage-var 21 var? if
                 hewie-who char-here? if
                     $15 hewie-who 100 chars-within? if
                         $15 0.0 hewie-look-char
                     then
                 then
-            else 1 22 var? if
+            else stage-var 22 var? if
                 hewie-who char-here? if
                     $16 hewie-who 100 chars-within? if
                         $16 0.0 hewie-look-char
@@ -179,7 +185,7 @@ USING: engine common actors messages room-names story.words story.shared story-n
     $14 char-activate
     $14 $9000 1 0 char-anim-hold
     $14 37.5 12.5 72.5 0 char-to-xyz
-    0 var-inc
+    tries-var var-inc
     0 old-mansion-b1-7.cmd00
     1 old-mansion-b1-7.cmd00
     self-idle-or-end
@@ -191,7 +197,7 @@ USING: engine common actors messages room-names story.words story.shared story-n
     $15 char-activate
     $15 $9000 1 0 char-anim-hold
     $15 37.5 12.5 72.5 0 char-to-xyz
-    0 var-inc
+    tries-var var-inc
     2 old-mansion-b1-7.cmd00
     3 old-mansion-b1-7.cmd00
     self-idle-or-end
@@ -204,7 +210,7 @@ USING: engine common actors messages room-names story.words story.shared story-n
     $16 char-activate
     $16 $9000 1 0 char-anim-hold
     $16 37.5 12.5 72.5 0 char-to-xyz
-    0 var-inc
+    tries-var var-inc
     4 old-mansion-b1-7.cmd00
     5 old-mansion-b1-7.cmd00
     self-idle-or-end

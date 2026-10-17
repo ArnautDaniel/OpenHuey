@@ -4,6 +4,12 @@
 IN: story.rooms.castle-1f-7
 USING: engine common room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant sound-started               \ (bit 0) its sound started (then kept up)
+1 constant area17-reacted              \ (bit 1) her reaction on entering the area made (once a visit)
+0 constant breaker-var                 \ (var 0) ? the breaker's state (0 / 1)
+7 constant doll-looks-var              \ (var 7) how often she has looked at the doll (her remarks in turn)
+
 \ a lid (pstr_kousi_2, +0x24 its height, +0x34 its speed): byte 3 0 up, 1 shut; 2 falling and
 \ bouncing shut (the first landing clears progress flag 0x50 and, unless the director says no,
 \ the lid falling shut: faster by 0.1 a frame; landed, it bounces back a fifth as fast - the first
@@ -40,7 +46,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 
 : castle-1f-7.enter ( -- )   \ 003FA090
     room-sounds
-    0 0 var-set
+    breaker-var 0 var-set
     $80 exit-taken? if
         1 castle-1f-7.cmd00
         c1f-4-flag1 story-flag-clear
@@ -59,7 +65,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         else
             c1f-4-flag1 story-flag-set
             0 barred-floor floor-off
-            0 1 var-set
+            breaker-var 1 var-set
             0 castle-1f-7.cmd00
         then
     then
@@ -103,12 +109,12 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 ;
 
 : castle-1f-7.phase1 ( -- )   \ 003FA1C0
-    0 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             breaker-lowered story-flag? not if
                 $40000003 6 -10.0 15.0 0.0 0 0 sound
             then
-            0 ebit-set
+            sound-started ebit-set
         then
     else
         $C0000003 6 -10.0 15.0 0.0 0 0 sound
@@ -131,13 +137,13 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         1 exit-prepare
     then
     c1f-4-flag1 story-flag? not if
-        0 0 var-set
+        breaker-var 0 var-set
     else castle-1f-7.cond00? not if
-        0 0 var-set
+        breaker-var 0 var-set
     then then
     hewie-who $15 0 room-doors-state
     c1f-4-flag1 story-flag? if
-        0 0 var? if
+        breaker-var 0 var? if
             fiona-who 0 char-in-nav-group? hewie-who 0 char-in-nav-group? or stalker-who 0 char-in-nav-group? or if
                 hewie-who $15 1 room-doors-state
             else
@@ -148,8 +154,8 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         then
     then
     breaker-lowered story-flag? not if
-        fiona-who $11 char-entered-area? 1 ebit? not and if
-            1 ebit-set
+        fiona-who $11 char-entered-area? area17-reacted ebit? not and if
+            area17-reacted ebit-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
@@ -275,15 +281,15 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 
 : castle-1f-7.act05 ( -- )   \ 003FA510
     self-wait-done
-    7 0 var? if
+    doll-looks-var 0 var? if
         2 say   \ "The doll has been stabbed with small iron sticks... This place is so freakish."
-        7 1 var-set
-    else 7 1 var? if
+        doll-looks-var 1 var-set
+    else doll-looks-var 1 var? if
         3 say   \ "Is someone just trying to scare me?"
-        7 2 var-set
+        doll-looks-var 2 var-set
     else
         4 say   \ "I just want to get out of this room as quickly as possible."
-        7 0 var-set
+        doll-looks-var 0 var-set
     then then
     self-idle-or-end
 ;

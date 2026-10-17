@@ -4,6 +4,11 @@
 IN: story.rooms.old-mansion-1f-24
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+4 constant stalker-waiting             \ (bit 4) the stalker here, not yet about: the encounter to come
+5 constant hewie-zone1-noticed         \ (bit 5) Hewie has reacted to zone 1 (once a visit)
+6 constant struggle-on                 \ (bit 6) the struggle with him under way (act06 / act07)
+
 defer old-mansion-1f-24.act02
 : old-mansion-1f-24.enter ( -- )   \ 0043B020
     room-sounds
@@ -23,12 +28,12 @@ defer old-mansion-1f-24.act02
     white-mandragora-used story-flag? not if
         3 stalker-kind? $22 stalker-kind? or if
             stalker-active? not if
-                4 ebit-set
+                stalker-waiting ebit-set
             then
         then
     then
     1 solid-floor floor-off
-    4 ebit? if
+    stalker-waiting ebit? if
         1 exit-taken? not if
             stalker-who 2 char-file-load
         then
@@ -95,11 +100,11 @@ defer old-mansion-1f-24.act02
     then
     white-mandragora-used story-flag? not if
         1 -76.01 0.0 -50.35 $46 17 0 zone
-        5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 1 9 char-zone-bits? if
-                        5 ebit-set
+                        hewie-zone1-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 1 var-set
                             0 hewie-who $8A action
@@ -125,9 +130,9 @@ defer old-mansion-1f-24.act02
 ;
 
 : old-mansion-1f-24.phase2 ( -- )   \ 0043B2C0
-    4 ebit? if
+    stalker-waiting ebit? if
         fiona-who stalker-who $A 0 $2D char-touching-facing? if
-            6 ebit? not if
+            struggle-on ebit? not if
                 5 unhurried offer-action
             then
         then
@@ -165,7 +170,7 @@ defer old-mansion-1f-24.act02
 ;
 
 : old-mansion-1f-24.phase5 ( -- )   \ 0043B390
-    4 ebit? if
+    stalker-waiting ebit? if
         stalker-no-fear state-flag-clear
         no-stalker-camera state-flag-clear
         1 stalker-who 0 char-model-op
@@ -188,7 +193,7 @@ defer old-mansion-1f-24.act02
     self-wait-anim
     5 room-motion 7 blend-out
     1 room-motion $14 blend-out
-    6 ebit-clear
+    struggle-on ebit-clear
     ['] old-mansion-1f-24.act02 goto
 ;
 
@@ -196,9 +201,9 @@ defer old-mansion-1f-24.act02
     self-wait-anim
     4 room-motion $14 blend-out
     3 room-motion 7 blend-out
-    6 ebit-clear
+    struggle-on ebit-clear
     begin
-        6 ebit? if
+        struggle-on ebit? if
             ['] old-mansion-1f-24.act07 goto
         then
         3 room-motion play-out
@@ -207,7 +212,7 @@ defer old-mansion-1f-24.act02
 
 :noname   \ old-mansion-1f-24.act02 (0043B3B0; deferred: used before it is defined)
     begin
-        6 ebit? if
+        struggle-on ebit? if
             ['] old-mansion-1f-24.act06 goto
         then
         1 room-motion play-out
@@ -243,9 +248,9 @@ defer old-mansion-1f-24.act02
     self-wait-done
     stalker-who $31 -76.0 -56.5 180 char-to-xz
     1 solid-floor floor-on
-    6 ebit-set
+    struggle-on ebit-set
     stalker-who char-file-use
-    6 ebit-clear
+    struggle-on ebit-clear
     0 stalker-who 0 char-model-op
     stalker-who 0 char-silent
     ['] old-mansion-1f-24.act02 goto
@@ -255,8 +260,8 @@ defer old-mansion-1f-24.act02
     1 self-scripted
     hewie-no-attack state-flag-set
     self-wait-done
-    6 ebit-set
-    [: 6 ebit? ;] wait-while
+    struggle-on ebit-set
+    [: struggle-on ebit? ;] wait-while
     $1D 1 item-count? not if
         stalker-who 0 6 char-sound
         0 message   \ "Oh my. What a filthy little princess. A small present from the lord of the manor..."
@@ -274,8 +279,8 @@ defer old-mansion-1f-24.act02
         $5A wait-frames
         wait-message
     then
-    6 ebit-set
-    [: 6 ebit? ;] wait-while
+    struggle-on ebit-set
+    [: struggle-on ebit? ;] wait-while
     0 self-scripted
     hewie-no-attack state-flag-clear
     self-idle-or-end

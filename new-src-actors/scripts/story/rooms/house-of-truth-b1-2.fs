@@ -4,14 +4,18 @@
 IN: story.rooms.house-of-truth-b1-2
 USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
+1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+
 \ room 0x85: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
 : house-of-truth-b1-2.cmd00 ( -- )  slam-shake ;
 
 : house-of-truth-b1-2.enter ( -- )   \ 00432700
     room-sounds
-    0 0 var-set
-    1 0 var-set
+    sound-step-var 0 var-set
+    sound-frames-var 0 var-set
     htb1-2-lavender story-flag? not if
         0 -45.77 5.75 19.99 flicker-sprite
     then
@@ -58,21 +62,21 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     then
     house-of-truth-b1-2.cmd00
     6 sound-bank-loaded? if
-        1 var-inc
-        1 30 var? if
-            1 0 var-set
-            0 0 var? if
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
                 $40000003 6 -41.0 20.0 25.0 0 0 sound
-            else 0 1 var? if
+            else sound-step-var 1 var? if
                 $40000004 6 -41.0 20.0 25.0 0 0 sound
-            else 0 2 var? if
+            else sound-step-var 2 var? if
                 $40000005 6 -41.0 20.0 25.0 0 0 sound
-            else 0 3 var? if
+            else sound-step-var 3 var? if
                 $40000006 6 -41.0 20.0 25.0 0 0 sound
             then then then then
-            0 var-inc
-            0 4 var? if
-                0 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then

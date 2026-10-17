@@ -4,11 +4,29 @@
 IN: story.rooms.castle-2f-12
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
-\ the two doors ("left", "right") opening: byte 3 0 at once (2.25), else a step-floor (0.075)
-: castle-2f-12.cmd00 ( b0 -- )   \ (the two doors opening: 0 at once - 2.25 - else a step-floor of 0.075)
+\ ---- this room's own event bits and script variables ----
+0 constant caged-doll-remarked         \ (bit 0) its first remark made: "Why is there a doll... in a cage? Maybe someone is just tryi"
+1 constant rocking-horse-remarked      \ (bit 1) its first remark made: "It's a child's rocking horse."
+2 constant box-remarked                \ (bit 2) its first remark made: "It's a box, but I can't open it."
+3 constant first-time                  \ (bit 3) the story flag not yet set (the first time here)
+4 constant hiding-left                 \ (bit 4) she has come out of hiding (act09)
+5 constant hewie-along                 \ (bit 5) Hewie came along with her (near, commandable)
+6 constant hewie-in-place              \ (bit 6) Hewie at his place for the scene
+7 constant came-while-hidden           \ (bit 7) the stalker came in while she was hiding
+8 constant crank-turning               \ (bit 8) the crank turning (act11: cmd02 to 180)
+9 constant has-both-items              \ (bit 9) she has both items ($86, $8A)
+10 constant first-given                \ (bit 10) the first item just given
+0 constant stage-var                   \ (var 0) ? its scene's stage (2: hiding over)
+1 constant held-var                    \ (var 1) ? she is held (1)
+2 constant search-result-var           \ (var 2) his search's outcome by chance: 0, 1 or 2
+3 constant searched-var                \ (var 3) ? his search done (0 / 1)
+4 constant crank-var                   \ (var 4) the crank's frames (to 180)
+
+\ the two doors ("left", "right") opening: byte 3 0 at once (2.25), else a step (0.075)
+: castle-2f-12.cmd00 ( b0 -- )   \ (the two doors opening: 0 at once - 2.25 - else a step of 0.075)
     if  0.075e  else  2.25e  then  fdup fnegate s" left" turn-y object+!  s" right" turn-y object+! ;
 \ the three rocking chairs ("movechair_1..3"; +0x30 the rock's phase in degrees, +0x34 its size,
-\ +0x38 how fast it dies down; +0x10 the tilt), by byte 3: 0 all still; 1 a rocking step-floor (6
+\ +0x38 how fast it dies down; +0x10 the tilt), by byte 3: 0 all still; 1 a rocking step (6
 \ degrees; each swing smaller, the first chair creaking at a volume by its size); 2 / 3 set
 fvariable tip  fvariable tip-yaw  fvariable reach
 \ ---- the three rocking chairs ("movechair_1..3": +$30 the rock's phase in degrees, +$34 its size,
@@ -100,52 +118,52 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         stalker-who char-file-use
     then
     stalker-who camera-follow
-    2 0 var-set
+    search-result-var 0 var-set
     6 0 pvar? if
         0 chance? if
-            2 2 var-set
+            search-result-var 2 var-set
         then
     else 6 1 pvar? if
         $19 chance? if
-            2 2 var-set
+            search-result-var 2 var-set
         else
-            2 1 var-set
+            search-result-var 1 var-set
         then
     else 6 2 pvar? if
         $32 chance? if
-            2 2 var-set
+            search-result-var 2 var-set
         else
-            2 1 var-set
+            search-result-var 1 var-set
         then
     else 6 3 pvar? if
         $4B chance? if
-            2 2 var-set
+            search-result-var 2 var-set
         else
-            2 1 var-set
+            search-result-var 1 var-set
         then
     then then then then
     stalker-who 2 stalker-command
     2 self-is? 6 self-is? or 7 self-is? or if
-    else 2 1 var? if
-        2 2 var-set
+    else search-result-var 1 var? if
+        search-result-var 2 var-set
     then then
     2 creature-action? if
-        2 2 var-set
+        search-result-var 2 var-set
     then
     4 stalker-alert? if
-        2 0 var-set
+        search-result-var 0 var-set
     then
-    2 0 var? if
+    search-result-var 0 var? if
         stalker-who 0 stalker-search-delay
         $78 1 summoner-wait
-    else 2 1 var? if
+    else search-result-var 1 var? if
         stalker-who 150 stalker-search-delay
         0 stalker-who 4 action
-    else 2 2 var? if
+    else search-result-var 2 var? if
         stalker-who 300 stalker-search-delay
         0 stalker-who 2 action
     then then then
-    3 0 var-set
+    searched-var 0 var-set
     6 pvar-inc
     exit
 ;
@@ -163,7 +181,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     1 1 -1 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
-            7 ebit-set
+            came-while-hidden ebit-set
             2 self-is? 6 self-is? or 7 self-is? or if
                 c2f-12-flag3 story-flag? not castle-2f-12.cond00? and 2 creature-action? not and if
                     stalker-who camera-follow
@@ -175,7 +193,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
                 castle-2f-12.act0D
             then
         else
-            7 ebit-clear
+            came-while-hidden ebit-clear
         then
     then
 ;
@@ -212,13 +230,13 @@ fvariable tip  fvariable tip-yaw  fvariable reach
             then
         then
     then
-    8 ebit? not if
+    crank-turning ebit? not if
         hewie-who char-here? hewie-who 2 char-cond? not and if
             4 2.09 0.0 -2.09 $14 5 0 zone
             0 game-mode? if
                 hewie-can-command? castle-2f-12.cond00? and if
                     hewie-who 4 9 char-zone-bits? if
-                        4 0 var-set
+                        crank-var 0 var-set
                         0 hewie-who $11 action
                     then
                 then
@@ -278,7 +296,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
 
 : castle-2f-12.act03 ( -- )   \ 00403350
     1 self-scripted
-    [: 0 2 var? ;] wait-until
+    [: stage-var 2 var? ;] wait-until
     counter-inc
     2 avoid-prompt
     fiona-who camera-follow
@@ -325,10 +343,10 @@ fvariable tip  fvariable tip-yaw  fvariable reach
 : castle-2f-12.act09 ( -- )   \ 004034A0
     1 self-scripted
     counter-inc
-    4 ebit-set
+    hiding-left ebit-set
     fiona-who camera-follow
     fiona-hidden state-flag-clear
-    stalker-who char-here? 0 0 var? and if
+    stalker-who char-here? stage-var 0 var? and if
         stalker-who 0 stalker-command
         stalker-who action-end
     then
@@ -354,23 +372,23 @@ fvariable tip  fvariable tip-yaw  fvariable reach
 
 : castle-2f-12.act00 ( -- )   \ 004030A0
     stalkers-stay state-flag-set
-    7 ebit-clear
+    came-while-hidden ebit-clear
     1 self-scripted
     self-wait-done
-    0 0 var-set
-    1 0 var-set
+    stage-var 0 var-set
+    held-var 0 var-set
     c2f-12-flag1 story-flag? not if
-        3 ebit-set
+        first-time ebit-set
     else
-        3 ebit-clear
+        first-time ebit-clear
     then
     0 counter-set
-    5 ebit-clear
-    6 ebit-clear
-    4 ebit-clear
+    hewie-along ebit-clear
+    hewie-in-place ebit-clear
+    hiding-left ebit-clear
     hewie-who char-busy? not hewie-near-command? and fiona-who hewie-who 30 chars-within? and if
         0 hewie-who 1 action-force
-        5 ebit-set
+        hewie-along ebit-set
         hewie-who 5 char-file-load
     then
     fiona-who 4 char-file-load
@@ -378,16 +396,16 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     $B4 16.729 33.985 45 $FFFF 5 self-move-to
     self-wait-done
     fiona-who char-file-use
-    5 ebit? if
+    hewie-along ebit? if
         hewie-who self-look-at
         yield
-        [: 6 ebit? ;] wait-until
+        [: hewie-in-place ebit? ;] wait-until
     then
     counter-inc
     1 self-noclip
     self-who self-look-at
     yield
-    3 ebit? not if
+    first-time ebit? not if
         0 room-motion 5 self-anim-blend8
         5 wait-frames
         0 part-hidden
@@ -418,9 +436,9 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     fiona-hidden state-flag-set
     0 avoid-prompt
     begin
-        0 2 pad? not 1 1 var? or if
-            0 1 var? if
-                1 0 var-set
+        0 2 pad? not held-var 1 var? or if
+            stage-var 1 var? if
+                held-var 0 var-set
                 fiona-who seized-sound 5 char-sound
                 stalker-who char-here? if
                     ['] castle-2f-12.act03 goto
@@ -433,8 +451,8 @@ fvariable tip  fvariable tip-yaw  fvariable reach
             2 panic-calm-in
             6 fiona-calm
             $1E fiona-recovery-lower
-            7 ebit? stalker-who char-here? not and if
-                7 ebit-clear
+            came-while-hidden ebit? stalker-who char-here? not and if
+                came-while-hidden ebit-clear
                 1 avoid-prompt
             then
             yield
@@ -479,10 +497,10 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     $B4 17.237 27.889 45 $FFFF $A self-move-to
     self-wait-done
     hewie-who char-file-use
-    6 ebit-set
+    hewie-in-place ebit-set
     1 wait-counter
     1 self-noclip
-    3 ebit? not if
+    first-time ebit? not if
         0 room-motion 5 self-anim-blend8
         self-wait-anim
     else
@@ -498,12 +516,12 @@ fvariable tip  fvariable tip-yaw  fvariable reach
             else
                 hewie-hidden state-flag-clear
                 1 self-noclip
-                4 ebit? if
+                hiding-left ebit? if
                     4 room-motion 0 self-anim-blend
                     7 wait-frames
                     fiona-who 0 6 char-sound
                     self-wait-anim
-                else 0 0 var? if
+                else stage-var 0 var? if
                     2 room-motion 0 blend-out
                 else
                     3 room-motion 0 blend-out
@@ -515,12 +533,12 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         else
             hewie-hidden state-flag-clear
             1 self-noclip
-            4 ebit? if
+            hiding-left ebit? if
                 4 room-motion 0 self-anim-blend
                 7 wait-frames
                 fiona-who 0 6 char-sound
                 self-wait-anim
-            else 0 0 var? if
+            else stage-var 0 var? if
                 2 room-motion 0 blend-out
             else
                 3 room-motion 0 blend-out
@@ -542,13 +560,13 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         hewie-who 3 self-move-slot
         self-wait-done
     then
-    3 0 var? if
+    searched-var 0 var? if
         $B4 15.0 29.0 45 $FFFF 5 self-move-to
         self-wait-done
     then
-    3 0 var-set
+    searched-var 0 var-set
     1 self-scripted
-    0 1 var-set
+    stage-var 1 var-set
     2 self-is? 6 self-is? or 7 self-is? or if
         0 3 object-anim
         1 3 object-anim
@@ -556,7 +574,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         $C wait-frames
         stalker-who 0 6 char-sound
         4 wait-frames
-        0 2 var-set
+        stage-var 2 var-set
         self-wait-anim
         step-back-anim play-out
         0 self-scripted
@@ -589,9 +607,9 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     then
     $B4 15.0 29.0 45 $FFFF 5 self-move-to
     self-wait-done
-    3 1 var-set
+    searched-var 1 var-set
     1 self-scripted
-    1 1 var-set
+    held-var 1 var-set
     2 room-motion $A self-anim-blend
     $1E wait-frames
     stalker-who $28 5 char-sound
@@ -603,8 +621,8 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     stalker-who $28 5 char-sound
     $A threat-raise
     self-wait-anim
-    1 0 var-set
-    3 0 var-set
+    held-var 0 var-set
+    searched-var 0 var-set
     step-back-anim play-out
     0 self-scripted
     $78 1 summoner-wait
@@ -617,9 +635,9 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     self-wait-done
     look-close-anim self-anim
     $28 wait-frames
-    0 ebit? not if
+    caged-doll-remarked ebit? not if
         3 say   \ "Why is there a doll... in a cage? Maybe someone is just trying to keep one of their..."
-        0 ebit-set
+        caged-doll-remarked ebit-set
     else
         4 say   \ "The doll is so real, it looks like it could move at any second."
     then
@@ -635,9 +653,9 @@ fvariable tip  fvariable tip-yaw  fvariable reach
 
 : castle-2f-12.act08 ( -- )   \ 00403480
     self-wait-done
-    1 ebit? not if
+    rocking-horse-remarked ebit? not if
         6 say   \ "It's a child's rocking horse."
-        1 ebit-set
+        rocking-horse-remarked ebit-set
     else
         7 say   \ "Even if I wanted to revisit my childhood with a quick ride, I don't think this will..."
     then
@@ -652,9 +670,9 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     1 self-scripted
     1 20.0 10.0 0.0 0.0 event-camera
     got-jade-choker story-flag? not if
-        2 ebit? not if
+        box-remarked ebit? not if
             0 say   \ "It's a box, but I can't open it."
-            2 ebit-set
+            box-remarked ebit-set
         else
             1 say   \ "There is a slot here. Don't tell me this is going to be like the last one...?"
         then
@@ -671,9 +689,9 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     stalkers-stay state-flag-set
     1 self-scripted
     $86 1 item-count? $8A 1 item-count? and if
-        9 ebit-clear
+        has-both-items ebit-clear
     else
-        9 ebit-set
+        has-both-items ebit-set
     then
     self-wait-done
     fiona-who $35 0.0 -31.5 180 char-to-xz
@@ -681,7 +699,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     world-frozen state-flag-set
     4 6 0.0 5.0 -39.0 0 0 sound
     $10 wait-frames
-    9 ebit? if
+    has-both-items ebit? if
         0 0.0 3.0 -39.0 flicker-sprite
     then
     self-frames-reset
@@ -692,18 +710,18 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         yield
     repeat
     16 wait-frames
-    9 ebit? if
-        $A ebit-clear
+    has-both-items ebit? if
+        first-given ebit-clear
         $86 1 item-count? not if
             $86 message-param-room
             $86 1 item-give-count
             0 $86 item-tab
             item-fanfare
             $8012 say   \ "You've obtained ."
-            $A ebit-set
+            first-given ebit-set
         then
         $8A 1 item-count? not if
-            $A ebit? if
+            first-given ebit? if
                 16 wait-frames
             then
             $8A message-param-room
@@ -786,8 +804,8 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     self-wait-done
     2.0 -2.0 self-turn-to-xz
     self-wait-done
-    8 ebit-set
-    [: castle-2f-12.cmd02 4 var-inc 4 180 var? ;] wait-until
+    crank-turning ebit-set
+    [: castle-2f-12.cmd02 crank-var var-inc crank-var 180 var? ;] wait-until
     self-idle-or-end
 ;
 

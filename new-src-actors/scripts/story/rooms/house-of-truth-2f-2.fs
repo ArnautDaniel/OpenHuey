@@ -4,6 +4,9 @@
 IN: story.rooms.house-of-truth-2f-2
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant books-remarked              \ (bit 0) its first remark made: "Stacks of books have been arranged neatly on the shelf. Some"
+
 : house-of-truth-2f-2.enter ( -- )   \ 00431DE0
     0 part-shown
     0 1 object-hidden
@@ -225,9 +228,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    0 ebit? not if
+    books-remarked ebit? not if
         4 say   \ "Stacks of books have been arranged neatly on the shelf. Some of the books are in En..."
-        0 ebit-set
+        books-remarked ebit-set
     else
         look-close-anim self-anim
         9 say   \ "One book stands out from the others. It has no title."
@@ -240,7 +243,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         hand-to-mouth-anim self-anim
         $B say   \ "Not that it should surprise me, but this book makes no sense."
         self-wait-anim
-        0 ebit-clear
+        books-remarked ebit-clear
     then
     stalkers-stay state-flag-clear
     0 self-scripted

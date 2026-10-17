@@ -4,6 +4,10 @@
 IN: story.rooms.lake-pathway-2
 USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant bridge-gone-remarked        \ (bit 0) its first remark made: "What!? The bridge is gone! It looks like it has disappeared!"
+1 constant hewie-zone0-noticed         \ (bit 1) Hewie has reacted to zone 0 (once a visit)
+
 \ (as Room2A_Cmd03) the 0x14-byte effect BackdropModel2_vtable started with byte 3 as a word
 : lake-pathway-2.cmd00 ( b0 -- )   \ (the water's light: BackdropModel2 - b0 nonzero 500 across at (0, 50) turning, else 1500 at (775, -420))
     >r 0 $40404040 r> if  0e 27.1e 50e 500e 0.1e 0.05e  else  775e 27.1e -420e 1500e 0.1e 0e  then  effects:caustic drop ;
@@ -59,11 +63,11 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
     then
     over-music-d story-flag? if
         0 -2.26 38.0 -25.57 $1E 15 0 zone
-        1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 0 9 char-zone-bits? if
-                        1 ebit-set
+                        hewie-zone0-noticed ebit-set
                         $1E chance? if
                             hewie-zone-var 0 var-set
                             0 hewie-who $88 action
@@ -87,12 +91,12 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    0 ebit? not if
+    bridge-gone-remarked ebit? not if
         look-low-anim self-anim
         $1E wait-frames
         0 say   \ "What!? The bridge is gone! It looks like it has disappeared!"
         self-wait-anim
-        0 ebit-set
+        bridge-gone-remarked ebit-set
     else
         hands-clasped-anim self-anim
         16 wait-frames

@@ -4,6 +4,10 @@
 IN: story.rooms.old-mansion-1f-5
 USING: room-names story.words story.shared story-names floor-flags fiona.anims fiona.sounds ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant items-missing               \ (bit 0) she lacks the items here: their sparkles shown
+1 constant sound-started               \ (bit 1) its sound started (then kept up)
+
 \ the effect BigFire_vtable (three quad drawers) started with parameter 0
 : old-mansion-1f-5.cmd00 ( -- )  effects:big-fire ;   \ (the fire: smoke, flames, glow)
 
@@ -21,7 +25,7 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims f
         2 -140.37 16.0 -25.97 flicker-sprite
     then
     8 1 item-count? not 9 1 item-count? not and $A 1 item-count? not and $B 1 item-count? not and $C 1 item-count? not and if
-        0 ebit-set
+        items-missing ebit-set
         3 -111.0 17.0 -115.0 flicker-sprite
     then
     om1f-5-refined-magnesia-found story-flag? om1f-5-refined-magnesia story-flag? not and if
@@ -49,10 +53,10 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims f
 ;
 
 : old-mansion-1f-5.phase1 ( -- )   \ 00407C00
-    1 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             $40000000 6 -138.0 11.0 11.0 0 0 sound
-            1 ebit-set
+            sound-started ebit-set
         then
     else
         $C0000000 6 -138.0 11.0 11.0 0 0 sound

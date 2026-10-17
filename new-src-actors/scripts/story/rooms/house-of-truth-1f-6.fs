@@ -4,13 +4,34 @@
 IN: story.rooms.house-of-truth-1f-6
 USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
-\ door 0 swung by script variable 0: byte 3 0 sets it to -90; 1 opens it 10 degrees a step-floor to 0
+\ ---- this room's own event bits and script variables ----
+0 constant door-opened-bit             \ (bit 0) the door opened (act00)
+1 constant half-hid                    \ (bit 1) she half-hid (stage 16)
+2 constant defended                    \ (bit 2) she defended herself (stage 17)
+3 constant waited-out                  \ (bit 3) she waited 300 frames (stage 18)
+4 constant door-open                   \ (bit 4) the door is open (stage 6)
+5 constant offer-taken                 \ (bit 5) its action taken (stage 7)
+6 constant hid                         \ (bit 6) she hid (stage 5)
+7 constant scene-done-bit              \ (bit 7) act05 played (stage 32768)
+8 constant hewie-along                 \ (bit 8) Hewie came along with her (near, commandable)
+9 constant hewie-in-place              \ (bit 9) Hewie at his place for the scene
+10 constant late                       \ (bit 10) the time ran past 2250 (stage 13)
+11 constant exit1-open                 \ (bit 11) exit 1's door open
+12 constant left-area8                 \ (bit 12) she left area 8 (her reaction made)
+13 constant area0-reacted              \ (bit 13) her reaction on entering the area made (once a visit)
+0 constant door-angle-var              \ (var 0) the door's angle (from -90)
+1 constant stage-var                   \ (var 1) the scene's stage (-1 none; 5 .. 18; 32768 done)
+2 constant time-var                    \ (var 2) its time (to 450, 1800, 2250, 2700)
+3 constant tries-var                   \ (var 3) her tries at the door
+4 constant still-frames-var            \ (var 4) her frames standing still (300)
+
+\ door 0 swung by script variable 0: byte 3 0 sets it to -90; 1 opens it 10 degrees a step to 0
 \ (doors +0x74), waiting (2) until there
 : house-of-truth-1f-6.cmd00 ( b0 -- )   \ (door 0 by variable 0: b0 0 it to -90; 1 opened 10 degrees a frame from there to 0)
     case
-        0 of  0 -90 var-set  endof
+        0 of  door-angle-var -90 var-set  endof
         1 of  begin
-                  0 var @ 10 + 0 min  dup 0 swap var-set
+                  door-angle-var var @ 10 + 0 min  dup door-angle-var swap var-set
                   dup s>f  0 true door-swing
                   0< while  yield
               repeat  endof
@@ -19,7 +40,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 \ acceleration +0x38 0, jerk +0x3C 0.005); 1 steps them, its tilt +0x10 = (1 - sin(90 - angle))
 \ * pi/2, waiting (2) until the angle reaches 90; 2 puts it down (sin(pi/2))
 : house-of-truth-1f-6.cmd01 ( b0 -- )   \ ("tana", the shelf, falling over: b0 0 starts it - angle (+0x30), speed,
-    \ acceleration 0, jerk 0.005; 1 a step-floor each frame, its tilt (1 - sin(90 - angle)) x pi/2,
+    \ acceleration 0, jerk 0.005; 1 a step each frame, its tilt (1 - sin(90 - angle)) x pi/2,
     \ till the angle reaches 90; 2 put down)
     {: b0 :}  s" tana" object-here? 0= if  exit  then
     b0 case
@@ -37,8 +58,8 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 defer house-of-truth-1f-6.act02
 : house-of-truth-1f-6.enter ( -- )   \ 00435050
     room-sounds
-    2 -1 var-set
-    1 -1 var-set
+    time-var -1 var-set
+    stage-var -1 var-set
     over-music-e story-flag? not if
         0 1 track 2 action
     then
@@ -79,10 +100,10 @@ defer house-of-truth-1f-6.act02
         1 exit-prepare
     then
     over-music-e story-flag? not if
-        0 ebit? not if
-            $B ebit? $A ebit? and if
-                fiona-who 8 char-left-area? $C ebit? not and if
-                    $C ebit-set
+        door-opened-bit ebit? not if
+            exit1-open ebit? late ebit? and if
+                fiona-who 8 char-left-area? left-area8 ebit? not and if
+                    left-area8 ebit-set
                     panic-eased
                     fiona-who 0 char-action? if
                         0 fiona-who 0 action-force
@@ -91,8 +112,8 @@ defer house-of-truth-1f-6.act02
                     then
                 then
             then
-        else fiona-who 0 char-entered-area? $D ebit? not and if
-            $D ebit-set
+        else fiona-who 0 char-entered-area? area0-reacted ebit? not and if
+            area0-reacted ebit-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who $A action-force
@@ -100,41 +121,41 @@ defer house-of-truth-1f-6.act02
                 1 fiona-who $A action-force
             then
         then then
-        7 ebit? not $B ebit? and if
+        scene-done-bit ebit? not exit1-open ebit? and if
             fiona-who $A char-in-area? if
                 fiona-who 0 char-in-nav-group? not if
                     0 fiona-who 5 action
                 then
             then
         then
-        1 -1 var? if
-            6 ebit? not if
+        stage-var -1 var? if
+            hid ebit? not if
                 fiona-hidden state-flag? if
-                    6 ebit-set
-                    1 5 var-set
+                    hid ebit-set
+                    stage-var 5 var-set
                 then
             then
-            1 ebit? not if
+            half-hid ebit? not if
                 fiona-half-hidden state-flag? if
-                    1 ebit-set
-                    1 16 var-set
+                    half-hid ebit-set
+                    stage-var 16 var-set
                 then
             then
-            2 ebit? not if
+            defended ebit? not if
                 fiona-who 8 char-action? if
-                    2 ebit-set
-                    1 17 var-set
+                    defended ebit-set
+                    stage-var 17 var-set
                 then
             then
-            4 ebit? not if
+            door-open ebit? not if
                 1 exit-door-open? if
-                    4 ebit-set
-                    1 6 var-set
+                    door-open ebit-set
+                    stage-var 6 var-set
                 then
             then
         then
         1 exit-door-open? if
-            $B ebit-set
+            exit1-open ebit-set
         then
     then
     0 0 8 -4 0 zone-at-effect
@@ -163,8 +184,8 @@ defer house-of-truth-1f-6.act02
         then
     then
     over-music-e story-flag? not if
-        1 -1 var? if
-            5 ebit? not if
+        stage-var -1 var? if
+            offer-taken ebit? not if
                 fiona-who $B char-in-area? fiona-who 0 $32 char-heading? and if
                     7 unhurried offer-action
                 then
@@ -174,7 +195,7 @@ defer house-of-truth-1f-6.act02
 ;
 
 : house-of-truth-1f-6.act00 ( -- )   \ 00435250
-    1 32768 var-set
+    stage-var 32768 var-set
     1 track action-end
     stalker-who action-end
     stalker-who char-done
@@ -197,7 +218,7 @@ defer house-of-truth-1f-6.act02
     fiona-who $1A 0.49 -36.88 -21 char-to-xz
     0 0 player-camera
     camera-restart
-    0 ebit-set
+    door-opened-bit ebit-set
     $E9 door-open-set
     $E9 door-unlock
     doors-room-in
@@ -236,8 +257,8 @@ defer house-of-truth-1f-6.act02
     rest-anim $A blend-out
     wait-message
     [: 1 adx? ;] wait-until
-    2 0 var-set
-    4 0 var-set
+    time-var 0 var-set
+    still-frames-var 0 var-set
     2 char-start
     self-idle-or-end
 ;
@@ -247,44 +268,44 @@ defer house-of-truth-1f-6.act02
     yield
     [: 0 adx? ;] wait-until
     0 0.0 $FF bgm
-    1 2 var? if
+    stage-var 2 var? if
         2 say   \ "What are you doing, Fiona? Just where do you intend to run?"
-    else 1 3 var? if
+    else stage-var 3 var? if
         3 say   \ "How adorable you are, Fiona."
-    else 1 4 var? if
+    else stage-var 4 var? if
         4 say   \ "Damn, it's locked!"
-    else 1 5 var? if
+    else stage-var 5 var? if
         5 say   \ "Do you really think you can hide from me there?"
-    else 1 6 var? if
+    else stage-var 6 var? if
         6 say   \ "Aha. Looks like a dead end, dear. How unfortunate."
-    else 1 7 var? if
+    else stage-var 7 var? if
         7 say   \ "I can see you clearly from here, Fiona..."
-    else 1 8 var? if
+    else stage-var 8 var? if
         8 say   \ "That was a close one, eh Fiona?"
-    else 1 9 var? if
+    else stage-var 9 var? if
         9 say   \ "Oh, how I love thee, Azoth!"
-    else 1 10 var? if
+    else stage-var 10 var? if
         $A say   \ "You simply cannot understand."
-    else 1 11 var? if
+    else stage-var 11 var? if
         $B say   \ "Why must you run from me?"
-    else 1 12 var? if
+    else stage-var 12 var? if
         $C say   \ "Everything I do is for the Great Truth!"
-    else 1 13 var? if
+    else stage-var 13 var? if
         $D say   \ "At last! You are mine, Fiona!"
-    else 1 14 var? if
+    else stage-var 14 var? if
         $E say   \ "My dear Fiona..."
-    else 1 15 var? if
+    else stage-var 15 var? if
         $F say   \ "I will have you in my grasp soon enough."
-    else 1 16 var? if
+    else stage-var 16 var? if
         $10 say   \ "Have you longed for me as I long for you?"
-    else 1 17 var? if
+    else stage-var 17 var? if
         $11 say   \ "No need to get so upset, my dear."
-    else 1 18 var? if
+    else stage-var 18 var? if
         $12 say   \ "Well? Have you given up?"
     then then then then then then then then then then then then then then then then then
     [: 1 adx? ;] wait-until
-    1 32768 var? not if
-        1 -1 var-set
+    stage-var 32768 var? not if
+        stage-var -1 var-set
     then
     scene-locked state-flag-clear
     ['] house-of-truth-1f-6.act02 goto
@@ -292,91 +313,91 @@ defer house-of-truth-1f-6.act02
 
 :noname   \ house-of-truth-1f-6.act02 (00435390; deferred: used before it is defined)
     begin
-        1 32768 var? if
+        stage-var 32768 var? if
             yield
         else
-            2 -1 var? not if
-                1 -1 var? if
-                    2 var-inc
-                    2 450 var? if
-                        1 9 var-set
-                    else 2 900 var? if
-                        1 10 var-set
-                    else 2 1350 var? if
-                        1 11 var-set
-                    else 2 1800 var? if
-                        1 12 var-set
-                    else 2 2250 var? if
-                        $A ebit-set
-                        1 13 var-set
-                    else 2 2700 var? if
-                        1 14 var-set
-                    else 2 3150 var? if
-                        1 15 var-set
-                        2 2250 var-set
+            time-var -1 var? not if
+                stage-var -1 var? if
+                    time-var var-inc
+                    time-var 450 var? if
+                        stage-var 9 var-set
+                    else time-var 900 var? if
+                        stage-var 10 var-set
+                    else time-var 1350 var? if
+                        stage-var 11 var-set
+                    else time-var 1800 var? if
+                        stage-var 12 var-set
+                    else time-var 2250 var? if
+                        late ebit-set
+                        stage-var 13 var-set
+                    else time-var 2700 var? if
+                        stage-var 14 var-set
+                    else time-var 3150 var? if
+                        stage-var 15 var-set
+                        time-var 2250 var-set
                     then then then then then then then
                 then
-                3 ebit? not if
-                    1 -1 var? if
+                waited-out ebit? not if
+                    stage-var -1 var? if
                         fiona-who char-busy? not $FF $FF pad? not and -1 control-action? and if
-                            4 var-inc
-                            4 300 var? if
-                                3 ebit-set
-                                1 18 var-set
+                            still-frames-var var-inc
+                            still-frames-var 300 var? if
+                                waited-out ebit-set
+                                stage-var 18 var-set
                             then
                         else
-                            4 0 var-set
+                            still-frames-var 0 var-set
                         then
                     then
                 then
-                1 2 var? if
+                stage-var 2 var? if
                     $1E 1.0 1 bgm
                     house-of-truth-1f-6.act03
-                else 1 3 var? if
+                else stage-var 3 var? if
                     $1F 1.0 1 bgm
                     house-of-truth-1f-6.act03
-                else 1 4 var? if
+                else stage-var 4 var? if
                     house-of-truth-1f-6.act03
-                else 1 5 var? if
+                else stage-var 5 var? if
                     $20 1.0 1 bgm
                     house-of-truth-1f-6.act03
-                else 1 6 var? if
+                else stage-var 6 var? if
                     $21 1.0 1 bgm
                     house-of-truth-1f-6.act03
-                else 1 7 var? if
+                else stage-var 7 var? if
                     $2E 1.0 1 bgm
                     house-of-truth-1f-6.act03
-                else 1 8 var? if
+                else stage-var 8 var? if
                     $22 1.0 1 bgm
                     house-of-truth-1f-6.act03
-                else 1 9 var? if
+                else stage-var 9 var? if
                     $23 1.0 1 bgm
                     house-of-truth-1f-6.act03
-                else 1 10 var? if
+                else stage-var 10 var? if
                     $24 1.0 1 bgm
                     house-of-truth-1f-6.act03
-                else 1 11 var? if
+                else stage-var 11 var? if
                     $25 1.0 1 bgm
                     house-of-truth-1f-6.act03
-                else 1 12 var? if
+                else stage-var 12 var? if
                     $26 1.0 1 bgm
                     house-of-truth-1f-6.act03
-                else 1 13 var? if
+                else stage-var 13 var? if
                     $2F 1.0 1 bgm
                     house-of-truth-1f-6.act03
-                else 1 14 var? if
+                else stage-var 14 var? if
                     $27 1.0 1 bgm
                     house-of-truth-1f-6.act03
-                else 1 15 var? if
+                else stage-var 15 var? if
                     $28 1.0 1 bgm
                     house-of-truth-1f-6.act03
-                else 1 16 var? if
+                else stage-var 16 var? if
                     $29 1.0 1 bgm
                     house-of-truth-1f-6.act03
-                else 1 17 var? if
+                else stage-var 17 var? if
                     $2A 1.0 1 bgm
                     house-of-truth-1f-6.act03
-                else 1 18 var? if
+                else stage-var 18 var? if
                     $2B 1.0 1 bgm
                     house-of-truth-1f-6.act03
                 then then then then then then then then then then then then then then then then then
@@ -387,18 +408,18 @@ defer house-of-truth-1f-6.act02
 ; is house-of-truth-1f-6.act02
 
 : house-of-truth-1f-6.act04 ( -- )   \ 00435670
-    1 32768 var-set
+    stage-var 32768 var-set
     self-wait-done
     0 self-through-exit
     self-wait-done
-    3 0 var? if
-        3 var-inc
-        1 2 var-set
-    else 3 1 var? if
-        3 var-inc
-        1 3 var-set
-    else 3 2 var? if
-        1 4 var-set
+    tries-var 0 var? if
+        tries-var var-inc
+        stage-var 2 var-set
+    else tries-var 1 var? if
+        tries-var var-inc
+        stage-var 3 var-set
+    else tries-var 2 var? if
+        stage-var 4 var-set
     then then then
     rattle-behind-slow-anim play-out
     -1 self-idle-anim
@@ -407,8 +428,8 @@ defer house-of-truth-1f-6.act02
 ;
 
 : house-of-truth-1f-6.act05 ( -- )   \ 004356C0
-    7 ebit-set
-    1 32768 var-set
+    scene-done-bit ebit-set
+    stage-var 32768 var-set
     0 solid-floor floor-on
     self-wait-done
     0 counter-set
@@ -430,39 +451,39 @@ defer house-of-truth-1f-6.act02
     fiona-who 0 6 char-sound
     1 $FF 8 rumble
     1 counter-set
-    1 8 var-set
+    stage-var 8 var-set
     self-idle-or-end
 ;
 
 : house-of-truth-1f-6.act07 ( -- )   \ 00435720
-    5 ebit-set
-    1 7 var-set
+    offer-taken ebit-set
+    stage-var 7 var-set
     self-idle-or-end
 ;
 
 : house-of-truth-1f-6.act08 ( -- )   \ 00435730
-    6 ebit? not if
-        1 32768 var-set
+    hid ebit? not if
+        stage-var 32768 var-set
     then
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
     0 counter-set
-    8 ebit-clear
-    9 ebit-clear
+    hewie-along ebit-clear
+    hewie-in-place ebit-clear
     hewie-who char-busy? not hewie-near-command? and fiona-who hewie-who 30 chars-within? and if
         0 hewie-who 9 action-force
-        8 ebit-set
+        hewie-along ebit-set
         hewie-who 6 char-file-load
     then
     fiona-who 5 char-file-load
     $BD 22.68 -68.27 -90 $FFFF 5 self-move-to
     self-wait-done
     fiona-who char-file-use
-    8 ebit? if
+    hewie-along ebit? if
         hewie-who self-look-at
         yield
-        [: 9 ebit? ;] wait-until
+        [: hewie-in-place ebit? ;] wait-until
     then
     counter-inc
     1 self-noclip
@@ -485,9 +506,9 @@ defer house-of-truth-1f-6.act02
     fiona-hidden state-flag-set
     0 avoid-prompt
     $2D wait-frames
-    6 ebit? not if
-        6 ebit-set
-        1 5 var-set
+    hid ebit? not if
+        hid ebit-set
+        stage-var 5 var-set
     then
     begin
         0 2 pad? not while
@@ -519,7 +540,7 @@ defer house-of-truth-1f-6.act02
     $153 26.2 -63.6 -90 $FFFF $A self-move-to
     self-wait-done
     hewie-who char-file-use
-    9 ebit-set
+    hewie-in-place ebit-set
     1 wait-counter
     1 self-noclip
     1 room-motion 5 self-anim-blend8

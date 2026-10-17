@@ -4,6 +4,9 @@
 IN: story.rooms.old-mansion-1f-14
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant projector-remarked          \ (bit 0) its first remark made: "There's a projector set up here. Its looks rather old, but p"
+
 : old-mansion-1f-14.enter ( -- )   \ 004268B0
     room-sounds
     film-reel-used-om1f-14 story-flag? not if
@@ -164,9 +167,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : old-mansion-1f-14.act01 ( -- )   \ 00426B60
     self-wait-done
     film-reel-used-om1f-14-2 story-flag? not if
-        0 ebit? not if
+        projector-remarked ebit? not if
             1 say   \ "There's a projector set up here. Its looks rather old, but perhaps it still works."
-            0 ebit-set
+            projector-remarked ebit-set
         else
             2 say   \ "The screen is already set up. All I need now is a film to play."
         then

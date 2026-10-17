@@ -4,6 +4,33 @@
 IN: story.rooms.castle-1f-2
 USING: actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.anims stalker.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant bark-scene-on               \ (bit 0) Hewie's bark scene (act03) under way: the stalkers held
+1 constant flowers-remarked            \ (bit 1) its first remark made: "There are beautiful flowers blooming here."
+2 constant ori-raised                  \ (bit 2) the gate's "ori" raised all the way
+3 constant found-her                   \ (bit 3) he has found her hiding: she must flee (the avoid prompt)
+4 constant will-find-her               \ (bit 4) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+5 constant came-through-gate           \ (bit 5) she came in by the gate: no going back that way
+6 constant searched-hiding             \ (bit 6) he has searched her hiding place
+8 constant hewie-zone5-noticed         \ (bit 8) Hewie has reacted to zone 5 (once a visit)
+9 constant hewie-zone6-noticed         \ (bit 9) Hewie has reacted to zone 6 (once a visit)
+10 constant hewie-zone7-noticed        \ (bit 10) Hewie has reacted to zone 7 (once a visit)
+11 constant stalker-scene-on           \ (bit 11) his scripted scene under way here (stalker): at the room's end he is put back
+12 constant stalker-scene-on-2         \ (bit 12) his scene (act10) under way: at the room's end he is put back
+13 constant stalker-scene-done         \ (bit 13) his scene (act10) played
+14 constant fire-remarked              \ (bit 14) its first remark made: "A fire is crisply burning."
+15 constant splash1-made               \ (bit 15) a splash played once someone steps into its zone (once a visit)
+16 constant splash2-made               \ (bit 16) a splash played once someone steps into its zone (once a visit)
+17 constant stalker-scene2-on          \ (bit 17) his second scene (act13) under way
+18 constant searching                  \ (bit 18) he is searching (act0E)
+19 constant sound-started              \ (bit 19) its sound started (then kept up)
+20 constant in-zone4                   \ (bit 20) someone in zone 4: its sound and effects going
+21 constant hewie-barking              \ (bit 21) Hewie's part of the bark scene under way
+22 constant search-started             \ (bit 22) his search begun (phase 1 starts act0E)
+23 constant sound4-playing             \ (bit 23) sound 4 playing (75 frames: act18)
+0 constant embers-var                  \ (var 0) the embers' effect
+1 constant shove-frames-var            \ (var 1) his shove's frames (dust at 49)
+
 \ the room object pstr_ori's +0x24 by byte 3: 0 set (37.978 with progress flag 0x12, else 11), 1
 \ up 0.25 to 37.978 (then event +0x5C (2)), 2 up 0.25, else down 0.25
 : castle-1f-2.cmd00 ( b0 -- )   \ (the cage, "ori": 0 set - up (37.978) once story flag $12, else 11; 1 up 0.25 to the
@@ -12,7 +39,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     case
         0 of  c1f-2-flag1 story-flag? if  37.978e  else  11e  then  s" ori" place-y object!  endof
         1 of  0.25e s" ori" place-y object+!
-              s" ori" place-y object@ 37.978e f< 0= if  2 ebit-set  37.978e s" ori" place-y object!  then  endof
+              s" ori" place-y object@ 37.978e f< 0= if  ori-raised ebit-set  37.978e s" ori" place-y object!  then  endof
         2 of  0.25e s" ori" place-y object+!  endof
         >r -0.25e s" ori" place-y object+! r>
     endcase ;
@@ -24,7 +51,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     \ 2 another lot flung away as it goes out)
     case
         0 of  0  -1 effects:embers  var-set  endof
-        1 of  0 var @ dup alive? if  0 swap send effect-command  else  drop  then  endof
+        1 of  embers-var var @ dup alive? if  0 swap send effect-command  else  drop  then  endof
         >r  1 effects:embers drop  r>
     endcase ;
 \ room 0x02 (D_003F03B0): the drum can's wobble by byte 3 - 0 still (rest height +0x38 = its
@@ -118,43 +145,43 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 ;
 
 : castle-1f-2.act0E ( -- )   \ 003EFED0
-    6 ebit-set
-    $12 ebit-set
-    4 ebit-clear
+    searched-hiding ebit-set
+    searching ebit-set
+    will-find-her ebit-clear
     $C 0 pvar? if
         $19 chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     else $C 1 pvar? if
         $32 chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     else $C 2 pvar? if
         $4B chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     else $C 3 pvar? if
         $4B chance? if
-            4 ebit-set
+            will-find-her ebit-set
         then
     then then then then
     stalker-who char-unseen? not if
-        4 ebit-set
+        will-find-her ebit-set
     then
     2 creature-action? if
-        4 ebit-set
+        will-find-her ebit-set
     then
     4 stalker-alert? if
-        4 ebit-clear
+        will-find-her ebit-clear
     then
     castle-1f-2.cond01? not if
         stalker-who camera-follow
     then
-    4 ebit? if
+    will-find-her ebit? if
         0 stalker-who $F action
     else
         $78 1 summoner-wait
-        $16 ebit-clear
+        search-started ebit-clear
     then
     0 stalker-alert? if
         stalker-who 2 stalker-command
@@ -186,7 +213,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     3 3 3 area-camera
     fiona-who self-is? if
         $80 exit-taken? $81 exit-taken? or if
-            5 ebit-set
+            came-through-gate ebit-set
             fiona-who $324 180 char-to-tri-facing
             fiona-who 0 char-to-exit
             0 0 player-camera
@@ -208,20 +235,20 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         then
     then
     stalker-who self-is? if
-        $D ebit-clear
+        stalker-scene-done ebit-clear
         fiona-hidden state-flag? if
             castle-1f-2.act0E
         else
-            $12 ebit-clear
+            searching ebit-clear
         then
     then
 ;
 
 : castle-1f-2.phase1 ( -- )   \ 003EF0D0
-    $13 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             $40000006 6 276.0 5.0 -146.0 0 0 sound
-            $13 ebit-set
+            sound-started ebit-set
         then
     else
         $C0000001 6 110.0 -10.0 142.0 0 0 sound
@@ -303,9 +330,9 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     then
     4 276.4 -1.0 -145.7 5 10 0 zone
     1 castle-1f-2.cmd03
-    $14 ebit? not if
+    in-zone4 ebit? not if
         self-who 4 char-in-zone? if
-            $14 ebit-set
+            in-zone4 ebit-set
             $40000007 6 276.0 5.0 -146.0 0 0 sound
             2 castle-1f-2.cmd03
             1 castle-1f-2.cmd02
@@ -314,33 +341,33 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             2 castle-1f-2.cmd02
         then
     else fiona-who 8 char-action? not if
-        $14 ebit-clear
+        in-zone4 ebit-clear
     then then
     got-study-key story-flag? got-scrawled-memo story-flag? not and c1f-12-flag1 story-flag? not and if
         fiona-who 7 char-left-area? fiona-who 8 char-left-area? or fiona-who $11 char-left-area? or if
-            $17 ebit? not if
+            sound4-playing ebit? not if
                 0 1 track $18 action
             then
         then
     then
-    5 ebit? if
+    came-through-gate ebit? if
         stalker-who char-here? if
-            5 ebit-clear
+            came-through-gate ebit-clear
         then
     then
     stalker-who 2 char-cond? not if
-        fiona-hidden state-flag? 6 ebit? not and stalker-who char-here? and if
+        fiona-hidden state-flag? searched-hiding ebit? not and stalker-who char-here? and if
             stalker-who char-busy? not if
-                $16 ebit-set
+                search-started ebit-set
                 castle-1f-2.act0E
             then
         then
     then
     stalker-who 5 char-in-area? castle-1f-2.cond00? and if
-        $D ebit? not stalker-who 2 char-cond? not and if
+        stalker-scene-done ebit? not stalker-who 2 char-cond? not and if
             2 stalker-kind-here? 6 stalker-kind-here? or 7 stalker-kind-here? or if
                 0 stalker-alert? 2 stalker-alert? or if
-                    stalker-who char-busy? 4 ebit? and fiona-hidden state-flag? and $B ebit? not and if
+                    stalker-who char-busy? will-find-her ebit? and fiona-hidden state-flag? and stalker-scene-on ebit? not and if
                         stalker-who action-end
                     then
                     0 stalker-who $10 action
@@ -355,11 +382,11 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     then
     got-study-key story-flag? got-scrawled-memo story-flag? not and c1f-12-flag1 story-flag? not and if
         7 -142.16 0.0 179.0 $4B 20 0 zone
-        $A ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone7-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 7 9 char-zone-bits? if
-                        $A ebit-set
+                        hewie-zone7-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 7 var-set
                             0 hewie-who $8A action
@@ -369,14 +396,14 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             then
         then
     then
-    0 ebit? not if
+    bark-scene-on ebit? not if
         hewie-who $19 char-in-area? if
             6 5.346 -9.5 80.917 $28 20 0 zone
-            9 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+            hewie-zone6-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 6 9 char-zone-bits? if
-                            9 ebit-set
+                            hewie-zone6-noticed ebit-set
                             $1E chance? if
                                 hewie-zone-var 6 var-set
                                 0 hewie-who $88 action
@@ -389,11 +416,11 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     then
     c1f-2-flag1 story-flag? not if
         5 50.0 -10.0 164.549 $1E 20 0 zone
-        8 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone5-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 5 9 char-zone-bits? if
-                        8 ebit-set
+                        hewie-zone5-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 5 var-set
                             0 hewie-who $88 action
@@ -412,34 +439,34 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             then
         then
     then
-    $F ebit? not if
+    splash1-made ebit? not if
         $A 28.0 -9.0 72.0 $10 4 0 zone
         fiona-who $A 3 char-zone-bits? fiona-who $A 3 char-zone-bits-before? not and if
             fiona-who 5 28.0 -9.0 72.0 2 $40 $50 $40 $80 splash
-            $F ebit-set
+            splash1-made ebit-set
         then
         hewie-who $A 3 char-zone-bits? hewie-who $A 3 char-zone-bits-before? not and if
             hewie-who $A 28.0 -9.0 72.0 2 $40 $50 $40 $80 splash
-            $F ebit-set
+            splash1-made ebit-set
         then
         stalker-who $A 3 char-zone-bits? stalker-who $A 3 char-zone-bits-before? not and if
             stalker-who 5 28.0 -9.0 72.0 2 $40 $50 $40 $80 splash
-            $F ebit-set
+            splash1-made ebit-set
         then
     then
-    $10 ebit? not if
+    splash2-made ebit? not if
         $B 8.0 -9.0 70.0 $10 4 0 zone
         fiona-who $B 3 char-zone-bits? fiona-who $B 3 char-zone-bits-before? not and if
             fiona-who 5 8.0 -9.0 70.0 2 $40 $50 $40 $80 splash
-            $10 ebit-set
+            splash2-made ebit-set
         then
         hewie-who $B 3 char-zone-bits? hewie-who $B 3 char-zone-bits-before? not and if
             hewie-who $A 8.0 -9.0 70.0 2 $40 $50 $40 $80 splash
-            $10 ebit-set
+            splash2-made ebit-set
         then
         stalker-who $B 3 char-zone-bits? stalker-who $B 3 char-zone-bits-before? not and if
             stalker-who 5 8.0 -9.0 70.0 2 $40 $50 $40 $80 splash
-            $10 ebit-set
+            splash2-made ebit-set
         then
     then
     fiona-hidden state-flag? if
@@ -449,7 +476,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             stalker-who camera-follow
         then
     then
-    35 fiona-started? 45 fiona-started? or hewie-who 2 char-cond? not and stalker-who char-here? not and fiona-who $13 char-in-area? and hewie-who $17 char-in-area? and fiona-who 45 69 $32 char-faces-xz? and 0 ebit? not and if
+    35 fiona-started? 45 fiona-started? or hewie-who 2 char-cond? not and stalker-who char-here? not and fiona-who $13 char-in-area? and hewie-who $17 char-in-area? and fiona-who 45 69 $32 char-faces-xz? and bark-scene-on ebit? not and if
         hewie-may-break-off? if
             0 hewie-who 3 action
         then
@@ -457,9 +484,9 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     44 fiona-started? fiona-who $13 char-in-area? and hewie-who 3 char-in-nav-group? and if
         0 hewie-who 4 action
     then
-    $15 ebit? hewie-who char-busy? not and if
-        $15 ebit-clear
-        0 ebit-clear
+    hewie-barking ebit? hewie-who char-busy? not and if
+        hewie-barking ebit-clear
+        bark-scene-on ebit-clear
         stalkers-stay state-flag-clear
     then
 ;
@@ -494,7 +521,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     fiona-who 9 2 char-zone-bits? fiona-who 276 -146 $32 char-faces-xz? and if
         $12 unhurried offer-action
     then
-    0 exit-door-open? not 5 ebit? and if
+    0 exit-door-open? not came-through-gate ebit? and if
         fiona-who 0 char-before-door? if
             7 examine-message   \ "There is no way I am going back there now!"
         then
@@ -559,20 +586,20 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         hewie-who $101 char-to-tri
         stalkers-stay state-flag-clear
     then
-    0 ebit? if
+    bark-scene-on ebit? if
         stalkers-stay state-flag-clear
     then
-    5 ebit? stalker-who char-here? not and stalker-who 2 char-cond? and if
+    came-through-gate ebit? stalker-who char-here? not and stalker-who 2 char-cond? and if
         stalker-who action-end
         2 summon-take
     then
     stalker-who char-busy? if
-        $C ebit? if
+        stalker-scene-on-2 ebit? if
             stalker-who action-end
             stalker-who $192 180 char-to-tri-facing
-            $C ebit-clear
-            $B ebit-clear
-        else $11 ebit? if
+            stalker-scene-on-2 ebit-clear
+            stalker-scene-on ebit-clear
+        else stalker-scene2-on ebit? if
             stalker-who action-end
             0 summon-take
         then then
@@ -613,7 +640,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             then
         then
         0 self-scripted
-        0 ebit? not if
+        bark-scene-on ebit? not if
             stalkers-stay state-flag-clear
         then
     else
@@ -670,7 +697,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     0 self-scripted
     room-flag-2d state-flag-clear
     stalkers-stay state-flag-clear
-    0 ebit-clear
+    bark-scene-on ebit-clear
     self-idle-or-end
 ;
 
@@ -689,15 +716,15 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 
 : castle-1f-2.act03 ( -- )   \ 003EFA80
     stalkers-stay state-flag-set
-    0 ebit-set
-    $15 ebit-set
+    bark-scene-on ebit-set
+    hewie-barking ebit-set
     self-wait-done
     hewie-bark
     self-wait-done
     $267 52.0 69.0 -90 $FFFF $A self-move-to
     self-wait-done
     room-flag-2d state-flag-set
-    $15 ebit-clear
+    hewie-barking ebit-clear
     1 self-scripted
     3 solid-floor floor-off
     $353 40.0 69.0 -90 $204 5 self-move-to
@@ -779,7 +806,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             item-fanfare
             $8012 say   \ "You've obtained ."
         then
-        0 ebit? not if
+        bark-scene-on ebit? not if
             stalkers-stay state-flag-clear
         then
         0 self-scripted
@@ -802,11 +829,11 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 
 : castle-1f-2.act08 ( -- )   \ 003EFCD0
     self-wait-done
-    1 ebit? not if
+    flowers-remarked ebit? not if
         look-close-anim $A self-anim-blend
         4 say   \ "There are beautiful flowers blooming here."
         self-wait-anim
-        1 ebit-set
+        flowers-remarked ebit-set
     else
         look-low-anim $A self-anim-blend
         5 say   \ "A section of the fence is broken. There is a hole..."
@@ -842,7 +869,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     repeat
     4 solid-floor floor-off
     begin
-        2 ebit? not while
+        ori-raised ebit? not while
         1 castle-1f-2.cmd00
         yield
     repeat
@@ -870,7 +897,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 ;
 
 : castle-1f-2.act0D ( -- )   \ 003EFE90
-    3 ebit? if
+    found-her ebit? if
         2 avoid-prompt
     then
     in-panic? not if
@@ -883,8 +910,8 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     fiona-who slide-sound 5 char-sound
     3 room-motion $A blend-out
     0 self-noclip
-    stalker-who char-busy? $B ebit? not and $11 ebit? not and if
-        3 ebit? not if
+    stalker-who char-busy? stalker-scene-on ebit? not and stalker-scene2-on ebit? not and if
+        found-her ebit? not if
             stalker-who action-end
             stalker-who 0 stalker-command
         then
@@ -895,9 +922,9 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 
 : castle-1f-2.act0C ( -- )   \ 003EFDF0
     stalkers-stay state-flag-set
-    $12 ebit-clear
+    searching ebit-clear
     1 self-scripted
-    6 ebit-clear
+    searched-hiding ebit-clear
     fiona-who 4 char-file-load
     self-wait-done
     self-who self-look-at
@@ -912,15 +939,15 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     self-wait-anim
     1 room-motion $A self-anim-blend
     0 self-noclip
-    0 ebit? not if
+    bark-scene-on ebit? not if
         stalkers-stay state-flag-clear
     then
     fiona-hidden state-flag-set
-    3 ebit-clear
+    found-her ebit-clear
     0 avoid-prompt
     begin
         0 2 pad? not if
-            in-panic? 3 ebit? or if
+            in-panic? found-her ebit? or if
                 in-panic? not if
                     fiona-who seized-sound 5 char-sound
                 then
@@ -929,8 +956,8 @@ USING: actors messages room-names story.words story.shared flag-names story-name
                 2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                $12 ebit? stalker-who char-here? not and if
-                    $12 ebit-clear
+                searching ebit? stalker-who char-here? not and if
+                    searching ebit-clear
                     1 avoid-prompt
                 then
                 yield
@@ -955,7 +982,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 
 : castle-1f-2.act0F ( -- )   \ 003EFF40
     self-wait-done
-    $16 ebit? not if
+    search-started ebit? not if
         stalker-who 0 char-heading-for? 0 exit-door-open? not and if
             fiona-who 3 self-move-slot
             self-wait-done
@@ -974,7 +1001,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             self-wait-done
         then
     then
-    $16 ebit-clear
+    search-started ebit-clear
     2 self-is? 6 self-is? or 7 self-is? or if
         stalker-who 5 char-file-load
     then
@@ -984,11 +1011,11 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         stalker-who char-file-use
         0 room-motion $A self-anim-blend
         $1E wait-frames
-        3 ebit-set
+        found-her ebit-set
         self-wait-anim
     else
         there-anim play-out
-        3 ebit-set
+        found-her ebit-set
     then
     10 self-idle-anim
     [: fiona-who char-busy? ;] wait-while
@@ -997,7 +1024,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 ;
 
 : castle-1f-2.act10 ( -- )   \ 003EFFD0
-    $B ebit-set
+    stalker-scene-on ebit-set
     self-wait-done
     stalker-who 8 char-file-load
     $11 151.535 -15.151 180 $FFFF 5 self-move-to
@@ -1005,19 +1032,19 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     stalker-who char-file-use
     1 self-noclip
     1 self-scripted
-    $C ebit-set
+    stalker-scene-on-2 ebit-set
     0 room-motion 5 self-anim-blend8
-    1 0 var-set
+    shove-frames-var 0 var-set
     begin
         fiona-who self-touching? if
             stalker-who 0 fiona-thrown
         then
-        1 49 var? if
+        shove-frames-var 49 var? if
             0 153.0 -3.7 -51.0 0 0 0 0 dust
             0 148.0 -4.0 -51.0 0 0 0 0 dust
             stalker-who $B 6 char-sound
         then
-        1 var-inc
+        shove-frames-var var-inc
         self-at-motion-event? not while
         yield
     repeat
@@ -1025,10 +1052,10 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     stalker.anims:stand-anim 5 blend-out
     0 self-noclip
     0 self-scripted
-    $C ebit-clear
-    $B ebit-clear
-    6 ebit-clear
-    $D ebit-set
+    stalker-scene-on-2 ebit-clear
+    stalker-scene-on ebit-clear
+    searched-hiding ebit-clear
+    stalker-scene-done ebit-set
     self-idle-or-end
 ;
 
@@ -1059,9 +1086,9 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     self-wait-done
     276.5 -145.9 self-turn-to-xz
     self-wait-done
-    $E ebit? not if
+    fire-remarked ebit? not if
         8 say   \ "A fire is crisply burning."
-        $E ebit-set
+        fire-remarked ebit-set
     else
         9 say   \ "Something's inside. It's a... ripped apart doll?!"
     then
@@ -1069,7 +1096,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 ;
 
 : castle-1f-2.act13 ( -- )   \ 003F00E0
-    $11 ebit-set
+    stalker-scene2-on ebit-set
     self-wait-done
     stalker-who 8 char-file-load
     $381 279.332 -83.7 90 $FFFF $A self-move-to
@@ -1078,17 +1105,17 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     1 self-noclip
     1 self-scripted
     1 room-motion 5 self-anim-blend8
-    1 0 var-set
+    shove-frames-var 0 var-set
     begin
         fiona-who self-touching? if
             stalker-who 0 fiona-thrown
         then
-        1 54 var? if
+        shove-frames-var 54 var? if
             0 306.0 23.0 -79.0 0 0 0 0 dust
             0 306.0 23.0 -85.0 0 0 0 0 dust
             stalker-who $B 6 char-sound
         then
-        1 var-inc
+        shove-frames-var var-inc
         self-at-motion-event? not while
         yield
     repeat
@@ -1096,7 +1123,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     self-wait-done
     0 self-noclip
     0 self-scripted
-    $11 ebit-clear
+    stalker-scene2-on ebit-clear
     stalker-who action-end
     0 summon-take
     self-idle-or-end
@@ -1184,10 +1211,10 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 ;
 
 : castle-1f-2.act18 ( -- )   \ 003F02F0
-    $17 ebit-set
+    sound4-playing ebit-set
     $40000004 6 -142.0 12.0 179.0 0 0 sound
     $4B wait-frames
-    $17 ebit-clear
+    sound4-playing ebit-clear
     self-idle-or-end
 ;
 

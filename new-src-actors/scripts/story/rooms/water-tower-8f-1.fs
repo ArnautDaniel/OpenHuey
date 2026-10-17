@@ -4,6 +4,26 @@
 IN: story.rooms.water-tower-8f-1
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant lying-down                  \ (bit 0) she lies down (act00)
+1 constant stalker-near                \ (bit 1) the stalker came into area 8 while she lay
+2 constant got-up                      \ (bit 2) she got up (her command)
+3 constant hewie-clear                 \ (bit 3) Hewie off the floor: its way changed
+4 constant spot-chosen                 \ (bit 4) a spot chosen with the cursor (confirmed)
+5 constant second-model                \ (bit 5) the second model's turn (act04)
+6 constant model-set                   \ (bit 6) the model set in place: Lorenzo comes
+7 constant drop-remarked               \ (bit 7) its first remark made: "If I fell from here... it would be all over. Come on, Fiona."
+8 constant hewie-zone3-noticed         \ (bit 8) Hewie has reacted to zone 3 (once a visit)
+9 constant final-scene-on              \ (bit 9) the final scene (act01) under way
+0 constant spot-var                    \ (var 0) where she lay (0..2)
+1 constant tint-var                    \ (var 1) Hewie's tint (fading in)
+2 constant model1-var                  \ (var 2) the first model's stage (3 .. 0)
+3 constant model2-var                  \ (var 3) the second model's stage (3 .. 0)
+4 constant model3-var                  \ (var 4) the third model's stage (3 .. 0)
+5 constant model-var                   \ (var 5) the model being set (0..2)
+7 constant cursor-x-var                \ (var 7) the cursor's x
+8 constant cursor-y-var                \ (var 8) the cursor's y
+
 \ the screen fade (renderer +0x70) by script variable 1 with Hewie's light 0xF: byte 3 0 clear
 \ (0x808080), 2 full (0x80808080); 1 fades in by 0x10 a call and 3 back out, waiting (2),
 \ Hewie's +0xE4 set once there
@@ -11,13 +31,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     \ it, alpha on top): b0 0 clear, 2 full; 1 fading in by $10 a frame, 3 back out - then drawn as
     \ he is; the colour: char-tint's, as the original's renderer +0x70 with his layer $F)
     case
-        0 of  1 $808080 var-set  1 $808080 true char-tint  endof
-        2 of  1 $80808080 var-set  1 $80808080 true char-tint  endof
-        1 of  begin  1 var @  1 over true char-tint  $80808080 <> while
-                  1  1 var @ $10000000 +  var-set  yield
+        0 of  tint-var $808080 var-set  1 $808080 true char-tint  endof
+        2 of  tint-var $80808080 var-set  1 $80808080 true char-tint  endof
+        1 of  begin  tint-var var @  1 over true char-tint  $80808080 <> while
+                  1  tint-var var @ $10000000 +  var-set  yield
               repeat  1 0 false char-tint  endof
-        3 of  begin  1 var @  1 over true char-tint  $808080 <> while
-                  1  1 var @ $10000000 -  var-set  yield
+        3 of  begin  tint-var var @  1 over true char-tint  $808080 <> while
+                  1  tint-var var @ $10000000 -  var-set  yield
               repeat  1 0 false char-tint  endof
     endcase ;
 \ (as Room0C_Cmd01, the player only)
@@ -28,11 +48,11 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 : water-tower-8f-1.cmd02 ( b0 -- )   \ (the aiming cursor at variables 7 / 8: b0 0 shown at (246, 242); 1 moved 4 a
     \ frame by the arrows till confirm (event bit 4 set) or cancel (cleared); 2 gone)
     case
-        0 of  7 246 var-set  8 242 var-set  cursor-draw  endof
+        0 of  cursor-x-var 246 var-set  cursor-y-var 242 var-set  cursor-draw  endof
         1 of  begin
                   cursor-step  cursor-draw
-                  menu-confirm? if  4 ebit-set  exit  then
-                  menu-cancel? if  4 ebit-clear  exit  then
+                  menu-confirm? if  spot-chosen ebit-set  exit  then
+                  menu-cancel? if  spot-chosen ebit-clear  exit  then
                   yield
               again  endof
         2 of  cursor-off  endof
@@ -62,7 +82,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 : water-tower-8f-1.cmd06 ( b0 -- )  9 ['] water-light effect-in-var ;   \ (the light on the water below: b0 0 made - kept in variable 9 - else gone)
 \ script variables 7 / 8 (the player's spot) in 151..269 / 171..219
 : water-tower-8f-1.cond00? ( -- flag )   \ (vars 7 / 8, the player's spot, in 151..269 / 171..219)
-    7 var @ $FFFF and $97 $10E within  8 var @ $FFFF and $AB $DC within and ;
+    cursor-x-var var @ $FFFF and $97 $10E within  cursor-y-var var @ $FFFF and $AB $DC within and ;
 \ a room callback: the pursuer's Pursuer_GrabHewieBehind
 : water-tower-8f-1.cond01? ( -- flag )  grab-hewie-behind? ;   \ (the stalker's Pursuer_GrabHewieBehind)
 
@@ -80,7 +100,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         1 part-shown
     then
     wt8f-1-flag1 story-flag? not if
-        2 3 var-set
+        model1-var 3 var-set
         2 part-shown
         3 part-hidden
     else
@@ -88,7 +108,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         3 part-shown
     then
     wt8f-1-flag3 story-flag? not if
-        3 3 var-set
+        model2-var 3 var-set
         4 part-shown
         5 part-hidden
     else
@@ -96,7 +116,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         5 part-shown
     then
     wt8f-1-flag4 story-flag? not if
-        4 3 var-set
+        model3-var 3 var-set
         6 part-shown
         7 part-hidden
     else
@@ -134,27 +154,27 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     3 1 -1 1 chars-area-camera
     4 1 -1 1 chars-area-camera
     0 20000.0 camera-value
-    1 ebit? not 2 ebit? not and if
-        0 ebit? not if
+    stalker-near ebit? not got-up ebit? not and if
+        lying-down ebit? not if
             0 control-action? if
                 fiona-who 5 char-in-area? if
                     fiona-who -6 -12 $3C char-faces-xz? if
                         hewie-may-break-off? if
-                            0 0 var-set
+                            spot-var 0 var-set
                             0 hewie-who 0 action
                         then
                     then
                 else fiona-who 6 char-in-area? if
                     fiona-who -9 10 $3C char-faces-xz? if
                         hewie-may-break-off? if
-                            0 1 var-set
+                            spot-var 1 var-set
                             0 hewie-who 0 action
                         then
                     then
                 else fiona-who 7 char-in-area? if
                     fiona-who 12 7 $3C char-faces-xz? if
                         hewie-may-break-off? if
-                            0 2 var-set
+                            spot-var 2 var-set
                             0 hewie-who 0 action
                         then
                     then
@@ -163,63 +183,63 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         else 45 fiona-started? if
             stalker-who 2 char-cond? not if
                 stalker-free? if
-                    0 0 var? if
+                    spot-var 0 var? if
                         stalker-who 8 char-in-area? if
                             water-tower-8f-1.cond01? if
-                                1 ebit-set
+                                stalker-near ebit-set
                                 wt8f-1-flag1 story-flag? if
                                     panic-eased
                                     0 fiona-who 8 action-force
                                 then
                             then
                         then
-                    else 0 1 var? if
+                    else spot-var 1 var? if
                         stalker-who 9 char-in-area? if
                             water-tower-8f-1.cond01? if
-                                1 ebit-set
+                                stalker-near ebit-set
                             then
                         then
-                    else 0 2 var? if
+                    else spot-var 2 var? if
                         stalker-who $A char-in-area? if
                             water-tower-8f-1.cond01? if
-                                1 ebit-set
+                                stalker-near ebit-set
                             then
                         then
                     then then then
                 then
             then
         else 44 fiona-started? if
-            2 ebit-set
+            got-up ebit-set
         then then then
     then
     wt8f-1-flag1 story-flag? not if
         0 3.0 620.0 79.0 $A 8 0 zone
         fiona-who $C char-in-area? fiona-who 0 char-in-zone? and if
-            5 0 var-set
+            model-var 0 var-set
             0 1 track 6 action
         then
     then
     wt8f-1-flag3 story-flag? not if
         1 -58.0 620.0 54.0 $A 8 0 zone
         fiona-who $D char-in-area? fiona-who 1 char-in-zone? and if
-            5 1 var-set
+            model-var 1 var-set
             0 2 track 6 action
         then
     then
     wt8f-1-flag4 story-flag? not if
         2 -5.0 620.0 -78.0 $A 8 0 zone
         fiona-who $E char-in-area? fiona-who 2 char-in-zone? and if
-            5 2 var-set
+            model-var 2 var-set
             0 3 track 6 action
         then
     then
     c7-second-event story-flag? not if
         3 0.0 620.0 41.0 $11 10 0 zone
-        8 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone3-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 3 9 char-zone-bits? if
-                        8 ebit-set
+                        hewie-zone3-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 3 var-set
                             0 hewie-who $88 action
@@ -271,7 +291,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : water-tower-8f-1.phase3 ( -- )   \ 0042F860
-    9 ebit? not if
+    final-scene-on ebit? not if
         17.4 630.0 89.8 -59.9 630.0 69.0 17.4 580.0 89.8 -59.9 580.0 69.0 lights-doorway
     then
     -51.2 630.0 75.7 -91.2 630.0 6.5 -51.2 580.0 75.7 -91.2 580.0 6.5 lights-doorway
@@ -285,11 +305,11 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 : water-tower-8f-1.phase5 ( -- )   \ 0042F9C0
     hewie-who 0 char-in-nav-group? if
         hewie-who action-end
-        0 0 var? if
+        spot-var 0 var? if
             hewie-who $33 2.82 68.25 14 char-to-xz
-        else 0 1 var? if
+        else spot-var 1 var? if
             hewie-who $38 -64.059 -24.05 -107 char-to-xz
-        else 0 2 var? if
+        else spot-var 2 var? if
             hewie-who $4C 58.05 -31.28 121 char-to-xz
         then then then
     then
@@ -299,13 +319,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     hewie-bark
     self-wait-done
-    0 0 var? if
+    spot-var 0 var? if
         $91 -15.35 -32.75 20 $FFFF $A self-move-to
         self-wait-done
-    else 0 1 var? if
+    else spot-var 1 var? if
         $C7 -22.68 28.06 140 $FFFF $A self-move-to
         self-wait-done
-    else 0 2 var? if
+    else spot-var 2 var? if
         $14 31.63 18.64 -120 $FFFF $A self-move-to
         self-wait-done
     then then then
@@ -313,23 +333,23 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     1 self-noclip
     0 solid-floor floor-off
     0 keeps-fiona-off keeps-pursuers-off or floor-on
-    0 0 var? if
+    spot-var 0 var? if
         $C4 -5.62 -11.6 20 $204 5 self-move-to
         self-wait-done
-    else 0 1 var? if
+    else spot-var 1 var? if
         $C0 -8.96 10.23 140 $204 5 self-move-to
         self-wait-done
-    else 0 2 var? if
+    else spot-var 2 var? if
         $BE 11.74 6.8 -120 $204 5 self-move-to
         self-wait-done
     then then then
     2 water-tower-8f-1.cmd00
     3 water-tower-8f-1.cmd00
-    0 0 var? if
+    spot-var 0 var? if
         hewie-who $D0 -0.12 8.95 5 char-to-xz
-    else 0 1 var? if
+    else spot-var 1 var? if
         hewie-who $FF -7.73 -4.22 -125 char-to-xz
-    else 0 2 var? if
+    else spot-var 2 var? if
         hewie-who $F9 6.6 -4.24 117 char-to-xz
     then then then
     1 self-scripted
@@ -342,10 +362,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     lie-down-anim play-out
     lie-anim $A self-anim-blend
     $A wait-frames
-    0 ebit-set
+    lying-down ebit-set
     begin
-        1 ebit? not 2 ebit? not and while
-        0 0 var? if
+        stalker-near ebit? not got-up ebit? not and while
+        spot-var 0 var? if
             stalker-who 8 char-in-area? if
                 stalker-who self-look-at
                 yield
@@ -356,7 +376,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
                 self-who self-look-at
                 yield
             then then
-        else 0 1 var? if
+        else spot-var 1 var? if
             stalker-who 9 char-in-area? if
                 stalker-who self-look-at
                 yield
@@ -367,7 +387,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
                 self-who self-look-at
                 yield
             then then
-        else 0 2 var? if
+        else spot-var 2 var? if
             stalker-who $A char-in-area? if
                 stalker-who self-look-at
                 yield
@@ -383,13 +403,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     repeat
     self-who self-look-at
     yield
-    1 ebit? if
+    stalker-near ebit? if
         $75 0 hewie-do
-        3 ebit-clear
+        hewie-clear ebit-clear
         begin
-            3 ebit? not if
+            hewie-clear ebit? not if
                 hewie-who $38 char-on-nav-flags? not if
-                    3 ebit-set
+                    hewie-clear ebit-set
                     0 keeps-fiona-off keeps-pursuers-off or floor-off
                     0 solid-floor floor-on
                 then
@@ -398,13 +418,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             yield
         repeat
         hewie-who $38 char-on-nav-flags? if
-            0 0 var? if
+            spot-var 0 var? if
                 $33 2.39 70.98 1.0 100 hewie-go-to
                 self-wait-done
-            else 0 1 var? if
+            else spot-var 1 var? if
                 $38 -61.02 -37.59 1.0 100 hewie-go-to
                 self-wait-done
-            else 0 2 var? if
+            else spot-var 2 var? if
                 $4C 61.9 -34.57 1.0 100 hewie-go-to
                 self-wait-done
             then then then
@@ -414,22 +434,22 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     else
         hewie-bark
         self-wait-done
-        0 0 var? if
+        spot-var 0 var? if
             $33 2.39 70.98 1.0 100 hewie-go-to
             self-wait-done
-        else 0 1 var? if
+        else spot-var 1 var? if
             $38 -61.02 -37.59 1.0 100 hewie-go-to
             self-wait-done
-        else 0 2 var? if
+        else spot-var 2 var? if
             $4C 61.9 -34.57 1.0 100 hewie-go-to
             self-wait-done
         then then then
         0 keeps-fiona-off keeps-pursuers-off or floor-off
         0 solid-floor floor-on
     then
-    0 ebit-clear
-    1 ebit-clear
-    2 ebit-clear
+    lying-down ebit-clear
+    stalker-near ebit-clear
+    got-up ebit-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -450,13 +470,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     hewie-who action-end
     hewie-who char-done
     0 cutscene-track $C action
-    9 ebit-set
+    final-scene-on ebit-set
     panic-eased
     $FFFF message-prepare
     1 result? if
         scene-play
     then
-    9 ebit-clear
+    final-scene-on ebit-clear
     1 water-tower-8f-1.cmd03
     scene-5-pending state-flag-clear
     no-stalker-camera state-flag-clear
@@ -493,9 +513,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     stalker-who $C6 0 room-doors-state
     stalker-who $C7 0 room-doors-state
     0 solid-floor floor-on
-    0 ebit-clear
-    1 ebit-clear
-    2 ebit-clear
+    lying-down ebit-clear
+    stalker-near ebit-clear
+    got-up ebit-clear
     $1B 1.0 0 bgm
     $F $41 fade
     wait-fade
@@ -587,9 +607,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     stalker-who $59 -58.86 10.32 0 char-to-xz
     0 water-tower-8f-1.cmd03
     0 solid-floor floor-on
-    0 ebit-clear
-    1 ebit-clear
-    2 ebit-clear
+    lying-down ebit-clear
+    stalker-near ebit-clear
+    got-up ebit-clear
     scene-5-pending state-flag-set
     9 1.0 0 bgm
     no-stalker-camera state-flag-set
@@ -614,21 +634,21 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     5 message   \ "Choose a location to set the model in. ?:USE ?:CANCEL"
     begin
         1 water-tower-8f-1.cmd02
-        4 ebit? if
-            5 ebit? not water-tower-8f-1.cond00? not or if
+        spot-chosen ebit? if
+            second-model ebit? not water-tower-8f-1.cond00? not or if
                 1 $86 0.0 0.0 0.0 0 0 sound
                 yield
             else
                 0 6 -1.0 632.0 31.0 0 0 sound
                 0 part-shown
                 $23 item-use
-                6 ebit-set
+                model-set ebit-set
                 2 0 char-remove
                 $25 partner-load
                 5 message-close
                 2 water-tower-8f-1.cmd02
                 $1E wait-frames
-                6 ebit? if
+                model-set ebit? if
                     ['] water-tower-8f-1.act07 goto
                 then
                 0 0.0 0.0 0.0 0.0 event-camera
@@ -643,7 +663,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             5 message-close
             2 water-tower-8f-1.cmd02
             $1E wait-frames
-            6 ebit? if
+            model-set ebit? if
                 ['] water-tower-8f-1.act07 goto
             then
             0 0.0 0.0 0.0 0.0 event-camera
@@ -657,22 +677,22 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : water-tower-8f-1.act03 ( -- )   \ 0047ADD0
-    5 ebit-clear
+    second-model ebit-clear
     ['] water-tower-8f-1.act05 goto
 ;
 
 : water-tower-8f-1.act04 ( -- )   \ 0047ADD8
-    5 ebit-set
+    second-model ebit-set
     ['] water-tower-8f-1.act05 goto
 ;
 
 : water-tower-8f-1.act06 ( -- )   \ 00430000
     fiona-who 7 6 char-sound
-    5 0 var? if
+    model-var 0 var? if
         2 water-tower-8f-1.cmd01
         0 -1.0 623.0 77.0 0 0 0 0 dust
         0 4.0 623.0 77.0 0 0 0 0 dust
-        2 0 var? if
+        model1-var 0 var? if
             fiona-who 8 6 char-sound
             0 water-tower-8f-1.cmd04
             3 water-tower-8f-1.cmd04
@@ -680,11 +700,11 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             3 part-shown
             wt8f-1-flag1 story-flag-set
         then
-    else 5 1 var? if
+    else model-var 1 var? if
         3 water-tower-8f-1.cmd01
         0 -59.0 623.0 50.0 0 0 0 0 dust
         0 -55.0 623.0 54.0 0 0 0 0 dust
-        3 0 var? if
+        model2-var 0 var? if
             fiona-who 8 6 char-sound
             1 water-tower-8f-1.cmd04
             4 water-tower-8f-1.cmd04
@@ -692,11 +712,11 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             5 part-shown
             wt8f-1-flag3 story-flag-set
         then
-    else 5 2 var? if
+    else model-var 2 var? if
         4 water-tower-8f-1.cmd01
         0 -8.0 623.0 -77.0 0 0 0 0 dust
         0 -2.0 623.0 -77.0 0 0 0 0 dust
-        4 0 var? if
+        model3-var 0 var? if
             fiona-who 8 6 char-sound
             2 water-tower-8f-1.cmd04
             5 water-tower-8f-1.cmd04
@@ -815,11 +835,11 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     look-low-anim self-anim
     16 wait-frames
-    7 ebit? not if
-        7 ebit-set
+    drop-remarked ebit? not if
+        drop-remarked ebit-set
         7 say   \ "If I fell from here... it would be all over. Come on, Fiona... Best to just keep it..."
     else
-        7 ebit-clear
+        drop-remarked ebit-clear
         8 say   \ "A path has appeared on the surface of the lake. If I can just cross over that path..."
     then
     self-wait-anim
@@ -904,13 +924,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     scene-wait-ready
     0 cutscene-track $C action
-    9 ebit-set
+    final-scene-on ebit-set
     panic-eased
     $FFFF message-prepare
     1 result? if
         scene-play
     then
-    9 ebit-clear
+    final-scene-on ebit-clear
     1 water-tower-8f-1.cmd03
     2 0 char-remove
     $80 exit-check

@@ -4,6 +4,10 @@
 IN: story.rooms.old-mansion-1f-16
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant locked-remarked             \ (bit 0) its first remark made: "The door is locked..."
+1 constant area2-reacted               \ (bit 1) her reaction in area 2 made (once a visit)
+
 \ Room55_Cmd00
 : old-mansion-1f-16.cmd00 ( b0 -- )   \ (Room55: b0 0 the ceiling's glass reflecting (60 x 60 at 45) and the light rippling
     \ up there; else the light rippling low down and drops falling)
@@ -73,9 +77,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 exit-usable? if
         1 exit-check
     then
-    om3f-2-flag1 story-flag? not 1 ebit? not and if
+    om3f-2-flag1 story-flag? not area2-reacted ebit? not and if
         fiona-who 2 char-in-area? if
-            1 ebit-set
+            area2-reacted ebit-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
@@ -170,7 +174,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-16.act01 ( -- )   \ 00420DF0
     self-wait-done
-    0 ebit? not 2 game-mode? or in-panic? or if
+    locked-remarked ebit? not 2 game-mode? or in-panic? or if
         4 self-through-exit
         self-wait-done
         in-panic? 2 game-mode? or if
@@ -183,7 +187,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             7 wait-frames
             0 say   \ "The door is locked..."
         then
-        0 ebit-set
+        locked-remarked ebit-set
     else
         4 wait-frames
         fiona-who $18C -64.3 0.0 -89 char-to-xz

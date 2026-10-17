@@ -4,6 +4,10 @@
 IN: story.rooms.old-mansion-1f-17
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant blue-flame-remarked         \ (bit 0) its first remark made: "'Blue Flame, Secret Ways' Strange title for a picture. Unles"
+1 constant hewie-zone4-noticed         \ (bit 1) Hewie has reacted to zone 4 (once a visit)
+
 \ room 0x5D (Room5D_Cmd00_ptmf): four objects 60 to the left
 : old-mansion-1f-17.cmd00 ( -- )   \ (four objects - the room's strings 2..5 - 60 to the left)
     6 2 do  i room-object 2dup object-here? if  -60e place-x object+!  else  2drop  then  loop ;
@@ -171,11 +175,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     4 68.2 0.0 31.14 $14 12 0 zone
-    1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone4-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 4 9 char-zone-bits? if
-                    1 ebit-set
+                    hewie-zone4-noticed ebit-set
                     $32 chance? if
                         hewie-zone-var 4 var-set
                         0 hewie-who $8A action
@@ -282,12 +286,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     -90 self-turn-angle
     self-wait-done
-    0 ebit? not if
+    blue-flame-remarked ebit? not if
         0 say   \ "'Blue Flame, Secret Ways' Strange title for a picture. Unless it could be some sort..."
-        0 ebit-set
+        blue-flame-remarked ebit-set
     else
         1 say   \ "A female is raising an oil lamp. A blue flame burns brightly from its tip. It's alm..."
-        0 ebit-clear
+        blue-flame-remarked ebit-clear
     then
     self-idle-or-end
 ;

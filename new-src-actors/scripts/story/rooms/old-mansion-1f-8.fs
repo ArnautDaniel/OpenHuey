@@ -4,6 +4,30 @@
 IN: story.rooms.old-mansion-1f-8
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant items-missing               \ (bit 0) she lacks the items here: their sparkles shown
+1 constant hewie-bark-on               \ (bit 1) Hewie's bark (act09) under way
+2 constant grave1-read                 \ (bit 2) the first grave read (act0E)
+3 constant grave2-read                 \ (bit 3) the second grave read (act0F)
+4 constant grave3-read                 \ (bit 4) the third grave read (act10)
+5 constant grave4-read                 \ (bit 5) the fourth grave read (act11)
+6 constant grave5-read                 \ (bit 6) the fifth grave read (act12)
+7 constant grave6-read                 \ (bit 7) the sixth grave read (act13)
+8 constant mausoleum-remarked          \ (bit 8) its first remark made: "Looks to be a mausoleum... There are words written here."
+9 constant splash1-made                \ (bit 9) a splash played once someone steps into its zone (once a visit)
+10 constant splash2-made               \ (bit 10) a splash played once someone steps into its zone (once a visit)
+11 constant hewie-zone6-noticed        \ (bit 11) Hewie has reacted to zone 6 (once a visit)
+12 constant hewie-zone7-noticed        \ (bit 12) Hewie has reacted to zone 7 (once a visit)
+13 constant hewie-scene-on             \ (bit 13) Hewie's scene (act05) under way
+14 constant hewie-bark2-on             \ (bit 14) Hewie's second bark (act08) under way
+15 constant hewie-sent-off             \ (bit 15) Hewie was here and sent off for the scene
+16 constant sound-started              \ (bit 16) its sound started (then kept up)
+17 constant hangers-flag               \ (bit 17) the hanging things' toggle (pushed past: her sounds 4 / 5)
+18 constant stalker-leaving            \ (bit 18) the stalker to be sent on (act23)
+19 constant hewie-scene-on-2           \ (bit 19) his scripted scene under way here (hewie): at the room's end he is put back
+0 constant graves-var                  \ (var 0) the graves read
+1 constant looks-var                   \ (var 1) ? her remarks in turn (0 .. 2)
+
 \ room 0x48 (D_004267F8): the handler's objects 2 and 3 swing (phases 60 degrees apart) - byte 3
 \ 0 sets them still; 1: while slower than 5, Hewie's movement (the squared length of his last
 \ step, +0x3C) past 1 makes them swing for 20 frames (the first also creaks: sounds 4 / 5 by
@@ -19,7 +43,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 1 char-step fdup f* a n $3C object+!
                 a n $3C object@ 1e f> if
                     20e a n $38 object!  0e a n $3C object!
-                    i 0= if  $11 ebit? if  $11 ebit-clear  fiona-who 4 6 char-sound  else  $11 ebit-set  fiona-who 5 6 char-sound  then  then
+                    i 0= if  hangers-flag ebit? if  hangers-flag ebit-clear  fiona-who 4 6 char-sound  else  hangers-flag ebit-set  fiona-who 5 6 char-sound  then  then
                 then
             then
             a n $38 object@ f0> if
@@ -62,7 +86,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         2 -140.37 16.0 -25.97 flicker-sprite
     then
     8 1 item-count? not 9 1 item-count? not and $A 1 item-count? not and $B 1 item-count? not and $C 1 item-count? not and $10 1 item-count? not and if
-        0 ebit-set
+        items-missing ebit-set
         3 -111.0 17.0 -115.0 flicker-sprite
     then
     om1f-12-flag1 story-flag? if
@@ -144,15 +168,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $FE $FFFF -1 2 stalker-to-room
     then then
     old-mansion-1f-8.cmd05
-    $12 ebit-clear
+    stalker-leaving ebit-clear
     exit
 ;
 
 : old-mansion-1f-8.phase1 ( -- )   \ 00425520
-    $10 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             $40000000 6 -138.0 8.0 12.0 0 0 sound
-            $10 ebit-set
+            sound-started ebit-set
         then
     else
         $C0000000 6 -138.0 8.0 12.0 0 0 sound
@@ -231,11 +255,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         then
     then
-    $13 ebit? hewie-who char-busy? not and if
-        1 ebit-clear
-        $E ebit-clear
+    hewie-scene-on-2 ebit? hewie-who char-busy? not and if
+        hewie-bark-on ebit-clear
+        hewie-bark2-on ebit-clear
     then
-    0 ebit? if
+    items-missing ebit? if
         hewie-who char-here? hewie-who 2 char-cond? not and hewie-who char-busy? not and if
             2 game-mode? not stalker-who char-here? not and if
                 0 control-action? if
@@ -265,43 +289,43 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         then
     then
-    9 ebit? not if
+    splash1-made ebit? not if
         4 80.25 7.0 -6.0 $10 4 0 zone
         fiona-who 4 3 char-zone-bits? fiona-who 4 3 char-zone-bits-before? not and if
             fiona-who 5 80.25 7.0 -6.0 2 $40 $50 $40 $80 splash
-            9 ebit-set
+            splash1-made ebit-set
         then
         hewie-who 4 3 char-zone-bits? hewie-who 4 3 char-zone-bits-before? not and if
             hewie-who $A 80.25 7.0 -6.0 2 $40 $50 $40 $80 splash
-            9 ebit-set
+            splash1-made ebit-set
         then
         stalker-who 4 3 char-zone-bits? stalker-who 4 3 char-zone-bits-before? not and if
             stalker-who 5 80.25 7.0 -6.0 2 $40 $50 $40 $80 splash
-            9 ebit-set
+            splash1-made ebit-set
         then
     then
-    $A ebit? not if
+    splash2-made ebit? not if
         5 67.4 7.0 -6.7 $10 4 0 zone
         fiona-who 5 3 char-zone-bits? fiona-who 5 3 char-zone-bits-before? not and if
             fiona-who 5 67.4 7.0 -6.7 2 $40 $50 $40 $80 splash
-            $A ebit-set
+            splash2-made ebit-set
         then
         hewie-who 5 3 char-zone-bits? hewie-who 5 3 char-zone-bits-before? not and if
             hewie-who $A 67.4 7.0 -6.7 2 $40 $50 $40 $80 splash
-            $A ebit-set
+            splash2-made ebit-set
         then
         stalker-who 5 3 char-zone-bits? stalker-who 5 3 char-zone-bits-before? not and if
             stalker-who 5 67.4 7.0 -6.7 2 $40 $50 $40 $80 splash
-            $A ebit-set
+            splash2-made ebit-set
         then
     then
-    0 ebit? if
+    items-missing ebit? if
         6 -111.73 15.0 -115.37 $3C 6 0 zone
-        $B ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone6-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 6 9 char-zone-bits? if
-                        $B ebit-set
+                        hewie-zone6-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 6 var-set
                             0 hewie-who $88 action
@@ -322,11 +346,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     om1f-8-antimony-tube story-flag? not if
         7 77.32 0.0 95.28 $3C 10 0 zone
-        $C ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone7-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 7 9 char-zone-bits? if
-                        $C ebit-set
+                        hewie-zone7-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 7 var-set
                             0 hewie-who $88 action
@@ -345,7 +369,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         then
     then
-    $12 ebit? if
+    stalker-leaving ebit? if
         old-mansion-1f-8.cond00? not if
             old-mansion-1f-8.act23
         then
@@ -358,7 +382,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             1 always offer-action
         then
     then
-    0 ebit? if
+    items-missing ebit? if
         fiona-who $F char-in-area? fiona-who -60 $3C char-heading? and if
             $1D unhurried offer-action
         then
@@ -407,17 +431,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : old-mansion-1f-8.phase5 ( -- )   \ 004259B0
     hewie-who char-busy? if
         hewie-who action-end
-        1 ebit? if
+        hewie-bark-on ebit? if
             hewie-who $1E7 94.1 -5.96 90 char-to-xz
-        else $D ebit? if
+        else hewie-scene-on ebit? if
             hewie-who $BC char-to-tri
             stalkers-stay state-flag-clear
-        else $E ebit? if
+        else hewie-bark2-on ebit? if
             hewie-who $64 char-to-tri
             stalkers-stay state-flag-clear
         then then then
     then
-    $12 ebit? if
+    stalker-leaving ebit? if
         old-mansion-1f-8.act23
     then
 ;
@@ -441,7 +465,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     wait-fade
     world-held state-flag-set
     hewie-who char-here? if
-        $F ebit-set
+        hewie-sent-off ebit-set
         hewie-who action-end
         hewie-who char-done
     then
@@ -454,9 +478,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     $F $51 fade
     $19 1.0 0 bgm
-    $F ebit? if
+    hewie-sent-off ebit? if
         hewie-who char-activate
-        $F ebit-clear
+        hewie-sent-off ebit-clear
         hewie-who $19F 140 char-to-tri-facing
     then
     3 0 char-remove
@@ -482,7 +506,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $14 wait-frames
     fiona-who $72 5 char-sound
     $7D door-unlock
-    $12 ebit-set
+    stalker-leaving ebit-set
     20 self-idle-anim
     $14 wait-frames
     $8008 say   \ "You unlocked the door."
@@ -561,7 +585,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : old-mansion-1f-8.act05 ( -- )   \ 00425C30
     0 counter-set
     0 hewie-who 6 action-force
-    $D ebit-set
+    hewie-scene-on ebit-set
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
@@ -593,7 +617,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     sit-a-while-anim $A blend-out
     3 effect-remove
-    0 ebit-clear
+    items-missing ebit-clear
     10 hewie-trust
     8 message-param-room
     8 1 item-give-count
@@ -610,7 +634,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     0 self-noclip
     stalkers-stay state-flag-clear
-    $D ebit-clear
+    hewie-scene-on ebit-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -636,8 +660,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-8.act08 ( -- )   \ 00425D30
     1 self-scripted
-    $E ebit-set
-    $13 ebit-set
+    hewie-bark2-on ebit-set
+    hewie-scene-on-2 ebit-set
     self-wait-done
     hewie-bark
     self-wait-done
@@ -645,7 +669,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     -84 self-turn-angle
     self-wait-done
-    $13 ebit-clear
+    hewie-scene-on-2 ebit-clear
     1 self-noclip
     $66 129.619 91.48 1.7 10 hewie-go-to
     self-wait-done
@@ -676,19 +700,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 self-noclip
     0 self-scripted
     stalkers-stay state-flag-clear
-    $E ebit-clear
+    hewie-bark2-on ebit-clear
     self-idle-or-end
 ;
 
 : old-mansion-1f-8.act09 ( -- )   \ 00425DF0
-    $13 ebit-set
-    1 ebit-set
+    hewie-scene-on-2 ebit-set
+    hewie-bark-on ebit-set
     self-wait-done
     hewie-bark
     self-wait-done
     $175 92.855 -13.871 -90 $FFFF $A self-move-to
     self-wait-done
-    $13 ebit-clear
+    hewie-scene-on-2 ebit-clear
     1 self-scripted
     2 solid-floor floor-off
     2 keeps-fiona-off keeps-pursuers-off or floor-on
@@ -698,16 +722,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     lie-down-anim $A blend-out
     3600 2 hewie-anim
-    1 ebit-clear
+    hewie-bark-on ebit-clear
     self-idle-or-end
 ;
 
 : old-mansion-1f-8.act0A ( -- )   \ 00425E40
     1 self-scripted
-    1 ebit-set
+    hewie-bark-on ebit-set
     self-wait-done
-    9 ebit-clear
-    $A ebit-clear
+    splash1-made ebit-clear
+    splash2-made ebit-clear
     $175 92.855 -13.871 90 $204 5 self-move-to
     self-wait-done
     -1 self-idle-anim
@@ -716,7 +740,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 0 hewie-do
     2 keeps-fiona-off keeps-pursuers-off or floor-off
     2 solid-floor floor-on
-    1 ebit-clear
+    hewie-bark-on ebit-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -786,15 +810,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     look-low-anim self-anim
     $28 wait-frames
-    2 ebit? 0 0 var? not and 0 1 var? not and if
+    grave1-read ebit? graves-var 0 var? not and graves-var 1 var? not and if
         7 say   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
     else
         1 say   \ "Aureolus Belli (1698-1763)"
     then
-    2 ebit? not if
-        0 var-inc
+    grave1-read ebit? not if
+        graves-var var-inc
     then
-    2 ebit-set
+    grave1-read ebit-set
     self-idle-or-end
 ;
 
@@ -804,15 +828,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     look-close-anim self-anim
     $28 wait-frames
-    3 ebit? 0 0 var? not and 0 1 var? not and if
+    grave2-read ebit? graves-var 0 var? not and graves-var 1 var? not and if
         7 say   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
     else
         2 say   \ "Aureolus Belli (1537-1584)"
     then
-    3 ebit? not if
-        0 var-inc
+    grave2-read ebit? not if
+        graves-var var-inc
     then
-    3 ebit-set
+    grave2-read ebit-set
     self-idle-or-end
 ;
 
@@ -822,15 +846,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     look-low-anim self-anim
     $28 wait-frames
-    4 ebit? 0 0 var? not and 0 1 var? not and if
+    grave3-read ebit? graves-var 0 var? not and graves-var 1 var? not and if
         7 say   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
     else
         3 say   \ "Aureolus Belli (1870-1974)"
     then
-    4 ebit? not if
-        0 var-inc
+    grave3-read ebit? not if
+        graves-var var-inc
     then
-    4 ebit-set
+    grave3-read ebit-set
     self-idle-or-end
 ;
 
@@ -840,15 +864,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     look-low-anim self-anim
     $28 wait-frames
-    5 ebit? 0 0 var? not and 0 1 var? not and if
+    grave4-read ebit? graves-var 0 var? not and graves-var 1 var? not and if
         7 say   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
     else
         4 say   \ "Aureolus Belli (1755-1830)"
     then
-    5 ebit? not if
-        0 var-inc
+    grave4-read ebit? not if
+        graves-var var-inc
     then
-    5 ebit-set
+    grave4-read ebit-set
     self-idle-or-end
 ;
 
@@ -858,15 +882,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     look-low-anim self-anim
     $28 wait-frames
-    6 ebit? 0 0 var? not and 0 1 var? not and if
+    grave5-read ebit? graves-var 0 var? not and graves-var 1 var? not and if
         7 say   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
     else
         5 say   \ "Aureolus Belli (1508-1583)"
     then
-    6 ebit? not if
-        0 var-inc
+    grave5-read ebit? not if
+        graves-var var-inc
     then
-    6 ebit-set
+    grave5-read ebit-set
     self-idle-or-end
 ;
 
@@ -876,15 +900,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     look-low-anim self-anim
     $28 wait-frames
-    7 ebit? 0 0 var? not and 0 1 var? not and if
+    grave6-read ebit? graves-var 0 var? not and graves-var 1 var? not and if
         7 say   \ "There are multiple gravestones all with the same name... Now what in the world coul..."
     else
         6 say   \ "Aureolus Belli (1832-1905)"
     then
-    7 ebit? not if
-        0 var-inc
+    grave6-read ebit? not if
+        graves-var var-inc
     then
-    7 ebit-set
+    grave6-read ebit-set
     self-idle-or-end
 ;
 
@@ -894,17 +918,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     look-low-anim self-anim
     $28 wait-frames
-    8 ebit? not if
+    mausoleum-remarked ebit? not if
         8 say   \ "Looks to be a mausoleum... There are words written here."
         $F 6 fade
         wait-fade
         9 say   \ "Dead spirit craving for life, crawling back from the underworld... Sip of the fresh..."
         $F 7 fade
         wait-fade
-        8 ebit-set
+        mausoleum-remarked ebit-set
     else
         $A say   \ "Spirits? Life-blood? No matter how you cut it, these don't sound like the words of..."
-        8 ebit-clear
+        mausoleum-remarked ebit-clear
     then
     self-idle-or-end
 ;
@@ -954,20 +978,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
             stalkers-stay state-flag-clear
         else
-            1 0 var? if
+            looks-var 0 var? if
                 $D say   \ "It doesn't seem too terribly dangerous... But I get the feeling that if I..."
             then
-            1 1 var? if
+            looks-var 1 var? if
                 $E say   \ "It's almost as if... it wants something..."
             then
-            1 2 var? if
+            looks-var 2 var? if
                 crouch-down-anim play-out
                 $F say   \ "There are traces as if something has recently been ripped to shreds here...."
                 crouch-up-anim play-out
             then
-            1 var-inc
-            1 3 var? if
-                1 0 var-set
+            looks-var var-inc
+            looks-var 3 var? if
+                looks-var 0 var-set
             then
         then
     else
@@ -992,7 +1016,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     world-held state-flag-set
     1 track action-end
     hewie-who char-here? if
-        $F ebit-set
+        hewie-sent-off ebit-set
         hewie-who action-end
         hewie-who char-done
     then
@@ -1003,9 +1027,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         scene-play
     then
     fiona-who $1A2 108.0 -122.0 90 char-to-xz
-    $F ebit? if
+    hewie-sent-off ebit? if
         hewie-who char-activate
-        $F ebit-clear
+        hewie-sent-off ebit-clear
         hewie-who $19F 140 char-to-tri-facing
     then
     om1f-8-flag2 story-flag-set

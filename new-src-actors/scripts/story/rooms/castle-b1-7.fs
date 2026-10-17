@@ -4,6 +4,10 @@
 IN: story.rooms.castle-b1-7
 USING: engine common room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
+\ ---- this room's own event bits and script variables ----
+1 constant stalker-scene-on            \ (bit 1) his scene under way (the door locked against him)
+0 constant wait-var                    \ (var 0) frames to wait (counted down)
+
 \ room 0x1D (Room1D_Cmd00_ptmf): script variable 0 = 2 .. 5 at random
 : castle-b1-7.cmd00 ( -- )  0  4 random 2 +  var-set ;   \ (script variable 0: 2 .. 5 at random)
 \ room 0x1D (Room1D_Cmd01_ptmf): door 0's +0x74 (0, or -0.08 by byte 3)
@@ -105,7 +109,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
             $26 door-lock
         then
     then
-    1 ebit? not if
+    stalker-scene-on ebit? not if
         $26 door-locked? if
             stalker-who $1C char-in-room? if
                 0 2 track 9 action
@@ -116,7 +120,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         0 castle-b1-7.cmd01
         stalker-who 1 stalker-command
         stalkers-stay state-flag-clear
-        1 ebit-clear
+        stalker-scene-on ebit-clear
     then then
     cb1-7-medallion-found story-flag? not if
         1 29.0 0.0 21.0 $A 5 0 zone
@@ -244,7 +248,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     8 wait-frames
     self-who 4 -1 char-camera
     8 wait-frames
-    1 say   \ "There is a small hole-floor in the wall. That could be my way to the key..."
+    1 say   \ "There is a small hole in the wall. That could be my way to the key..."
     8 wait-frames
     3 1 player-camera
     camera-restart
@@ -291,7 +295,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 ;
 
 : castle-b1-7.act09 ( -- )   \ 003FD810
-    1 ebit-set
+    stalker-scene-on ebit-set
     stalkers-stay state-flag-set
     $3C wait-frames
     castle-b1-7.cmd00
@@ -313,8 +317,8 @@ USING: engine common room-names story.words story.shared flag-names story-names 
             16 wait-frames
         then
         $3C wait-frames
-        0 0 var? not while
-        0 var-dec
+        wait-var 0 var? not while
+        wait-var var-dec
         yield
     repeat
     $26 door-locked? if
@@ -329,7 +333,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         stalker-who 1 stalker-command
     then
     stalkers-stay state-flag-clear
-    1 ebit-clear
+    stalker-scene-on ebit-clear
     self-idle-or-end
 ;
 

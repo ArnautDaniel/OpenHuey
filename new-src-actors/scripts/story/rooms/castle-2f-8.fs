@@ -4,6 +4,13 @@
 IN: story.rooms.castle-2f-8
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant earth-doll-remarked         \ (bit 0) its first remark made: "A huge doll made of earth blocks the door. There is a slot-s"
+1 constant sound-started               \ (bit 1) its sound started (then kept up)
+2 constant hewie-zone2-noticed         \ (bit 2) Hewie has reacted to zone 2 (once a visit)
+3 constant calmed-remarked             \ (bit 3) its first remark made: "...... That got my mind off things. I feel a little better n"
+0 constant figure-var                  \ (var 0) ? the figure's dance (cmd02)
+
 \ Room24_Cmd00
 : castle-2f-8.cmd00 ( b0 -- )   \ (the kiln's glow - "jimen", "kama", "sumi" - pulsing: their blend 0.5 + 0.5 cos(phase),
     \ the phase on 12.3 degrees a call; b0 0 at its start, -pi)
@@ -92,10 +99,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-2f-8.phase1 ( -- )   \ 004019D0
-    1 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             $40000009 6 57.0 0.0 -2.0 0 0 sound
-            1 ebit-set
+            sound-started ebit-set
         then
     else
         $C0000009 6 57.0 0.0 -2.0 0 0 sound
@@ -130,11 +137,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     c2f-8-flag3 story-flag? if
         c2f-8-flag2 story-flag? if
             2 43.743 0.0 -29.309 $F 20 0 zone
-            2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+            hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 2 9 char-zone-bits? if
-                            2 ebit-set
+                            hewie-zone2-noticed ebit-set
                             $1E chance? if
                                 hewie-zone-var 2 var-set
                                 0 hewie-who $89 action
@@ -146,11 +153,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         else c2f-8-flag1 story-flag? if
             hewie-who 0 char-in-area? not if
                 2 10.0 0.0 -25.0 $A 20 0 zone
-                2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+                hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                     2 game-mode? not if
                         hewie-can-command? if
                             hewie-who 2 9 char-zone-bits? if
-                                2 ebit-set
+                                hewie-zone2-noticed ebit-set
                                 $1E chance? if
                                     hewie-zone-var 2 var-set
                                     0 hewie-who $89 action
@@ -208,9 +215,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     world-frozen state-flag-set
     1 self-scripted
     1 10.0 -40.0 0.0 0.0 event-camera
-    0 ebit? not if
-        0 say   \ "A huge doll made of earth blocks the door. There is a slot-shaped hole-floor in its chest..."
-        0 ebit-set
+    earth-doll-remarked ebit? not if
+        0 say   \ "A huge doll made of earth blocks the door. There is a slot-shaped hole in its chest..."
+        earth-doll-remarked ebit-set
     else
         3 say   \ "It looks like there is a recess that something thin and flat will fit into."
     then
@@ -522,7 +529,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     [: 0 adx? ;] wait-until
     $F 1 fade
     8 $1300 0 0 char-anim-hold
-    0 0 var-set
+    figure-var 0 var-set
     castle-2f-8.cmd02
     $A wait-frames
     0 0.0 $FF bgm
@@ -544,7 +551,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     no-pause state-flag-clear
     $F $41 fade
     wait-fade
-    3 ebit? not if
+    calmed-remarked ebit? not if
         hand-to-mouth-anim self-anim
         $B say   \ "...... That got my mind off things. I feel a little better now."
         self-wait-anim
@@ -552,7 +559,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         fiona-calm-reset
         3 avoid-prompt
         fiona-who $84 5 char-sound
-        3 ebit-set
+        calmed-remarked ebit-set
         $1E wait-frames
     else
         $C say   \ "...... Just staring at this all day isn't going to get me out of this place any so..."

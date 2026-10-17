@@ -4,6 +4,18 @@
 IN: story.rooms.old-mansion-2f-12
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+1 constant synthesizer-remarked        \ (bit 1) its first remark made: "Synthesizer By separating the platinum half-piece and then s"
+2 constant dials-on                    \ (bit 2) the dials being set (cleared when right)
+3 constant dial-turned                 \ (bit 3) a dial turned this frame
+4 constant dials-right                 \ (bit 4) the dials set right
+5 constant locked-remarked             \ (bit 5) its first remark made: "It's locked. I can't open it..."
+6 constant dial-picked                 \ (bit 6) another dial picked this frame
+0 constant picked-dial-var             \ (var 0) the dial picked
+1 constant used-item-var               \ (var 1) the item she used (8 .. 11)
+2 constant sound-step-var              \ (var 2) which of its sounds next (0..3)
+3 constant sound-frames-var            \ (var 3) frames to the next sound (30)
+
 \ room 0x69 (D_004386F8): the three-dial lock by byte 3 - 0 the dials (and their lit twins) set
 \ to their settings; 1 the player at it: up / down pick the dial (event variable 0; its lit twin
 \ shown), left / right turn it (its setting, sound bit 3), cancel leaves (event bit 2); 2 the
@@ -18,30 +30,30 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 : pick-dial ( old sel -- )   \ (the lit twin of the picked one shown instead)
     {: old sel :}  0 old dial object-hidden!  1 old 3 + dial object-hidden!
     1 sel dial object-hidden!  0 sel 3 + dial object-hidden!
-    0 sel var-set  6 ebit-set ;
+    picked-dial-var sel var-set  dial-picked ebit-set ;
 : turn-dial ( sel -- )   \ (left / right: its setting 0..3 round, sound bit 3)
     {: sel | v :}  sel dial-var progress-var@ to v
     3 menu-repeat? if  v 0= if  3  else  v 1-  then  to v
     else  1 menu-repeat? if  v 3 < if  v 1+  else  0  then  to v  then  then
-    v sel dial-var progress-var@ <> if  sel dial-var v progress-var!  3 ebit-set  then
-    6 ebit-clear ;
+    v sel dial-var progress-var@ <> if  sel dial-var v progress-var!  dial-turned ebit-set  then
+    dial-picked ebit-clear ;
 : dials-step ( -- )   \ (2: the picked dial turning 4 degrees a frame to its setting; there, opened if 1 0 2)
-    {: | sel :}  0 var @ to sel
+    {: | sel :}  picked-dial-var var @ to sel
     sel dial object-here? 0= sel 3 + dial object-here? 0= or if  exit  then
     sel dial turn-y object@ sel dial-angle f- angle-wrap                ( F: d )
     fdup 4e deg>rad f> if  fdrop  -4e deg>rad sel dial turn-y object+!  -4e deg>rad sel 3 + dial turn-y object+!  exit  then
     -4e deg>rad f< if  4e deg>rad sel dial turn-y object+!  4e deg>rad sel 3 + dial turn-y object+!  exit  then
     sel dial-angle sel dial turn-y object!  sel dial-angle sel 3 + dial turn-y object!
     0 dial-var progress-var@ 1 =  1 dial-var progress-var@ 0= and  2 dial-var progress-var@ 2 = and if
-        2 ebit-clear  4 ebit-set
-    else  3 ebit-clear  then ;
+        dials-on ebit-clear  dials-right ebit-set
+    else  dial-turned ebit-clear  then ;
 \ bits 2 off, 4)
 : old-mansion-2f-12.cmd00 ( b0 -- )   \ (0 the dials set; 1 the player at it: up / down pick, left / right turn, cancel leaves
     \ (event flag 2 off); 2 the picked one turning to its setting)
     case
         0 of  6 0 do  i dial object-here? if  i 3 mod dial-angle i dial turn-y object!  then  loop  endof
-        1 of  menu-cancel? if  2 ebit-clear  exit  then
-              0 var @  dup  0 menu-pressed? if  dup 0= if  drop 2  else  1-  then
+        1 of  menu-cancel? if  dials-on ebit-clear  exit  then
+              picked-dial-var var @  dup  0 menu-pressed? if  dup 0= if  drop 2  else  1-  then
               else  2 menu-pressed? if  dup 2 < if  1+  else  drop 0  then  then  then   ( old sel )
               2dup <> if  pick-dial  else  nip turn-dial  then  endof
         2 of  dials-step  endof
@@ -176,21 +188,21 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         then
     then
     6 sound-bank-loaded? if
-        3 var-inc
-        3 30 var? if
-            3 0 var-set
-            2 0 var? if
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
                 $40000005 6 74.0 30.0 -110.0 0 0 sound
-            else 2 1 var? if
+            else sound-step-var 1 var? if
                 $40000006 6 74.0 30.0 -110.0 0 0 sound
-            else 2 2 var? if
+            else sound-step-var 2 var? if
                 $40000007 6 74.0 30.0 -110.0 0 0 sound
-            else 2 3 var? if
+            else sound-step-var 3 var? if
                 $40000008 6 74.0 30.0 -110.0 0 0 sound
             then then then then
-            2 var-inc
-            2 4 var? if
-                2 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
@@ -251,7 +263,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     0 self-through-exit
     self-wait-done
-    5 ebit? not 2 game-mode? or in-panic? or if
+    locked-remarked ebit? not 2 game-mode? or in-panic? or if
         in-panic? 2 game-mode? or if
             rattle-front-slow-anim play-out
             -1 self-idle-anim
@@ -262,7 +274,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             7 wait-frames
             9 say   \ "It's locked. I can't open it... Now how am I going to get this open?"
         then
-        5 ebit-set
+        locked-remarked ebit-set
     else
         crouch-down-anim play-out
         crouching-anim self-anim
@@ -270,7 +282,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         crouch-up-anim play-out
         -1 self-idle-anim
         7 wait-frames
-        5 ebit-clear
+        locked-remarked ebit-clear
     then
     self-idle-or-end
 ;
@@ -286,23 +298,23 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             world-frozen state-flag-set
             1 5.0 0.0 0.0 2.0 event-camera
             2 message   \ "Push the left analog stick, up or down to change the dial setting. right or lef..."
-            2 ebit-set
-            0 0 var-set
+            dials-on ebit-set
+            picked-dial-var 0 var-set
             0 1 object-hidden
             3 0 object-hidden
             begin
-                3 ebit? not if
+                dial-turned ebit? not if
                     1 old-mansion-2f-12.cmd00
-                    3 ebit? if
+                    dial-turned ebit? if
                         1 6 293.0 12.0 -102.0 0 0 sound
                     then
-                    6 ebit? if
+                    dial-picked ebit? if
                         0 6 293.0 12.0 -102.0 0 0 sound
                     then
                 else
                     2 old-mansion-2f-12.cmd00
                 then
-                2 ebit? while
+                dials-on ebit? while
                 yield
             repeat
             2 message-close
@@ -314,7 +326,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             3 1 object-hidden
             4 1 object-hidden
             5 1 object-hidden
-            4 ebit? if
+            dials-right ebit? if
                 2 6 318.0 12.0 -80.0 0 0 sound
                 1 $FF $D2 rumble
                 rest-anim play-out
@@ -351,18 +363,18 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     $7F -103.0 -75.0 -90 $FFFF 5 self-move-to
     self-wait-done
-    1 ebit? not if
+    synthesizer-remarked ebit? not if
         $F 6 fade
         wait-fade
         3 say   \ "Synthesizer By separating the platinum half-piece and then synthesizing it with the..."
-        1 ebit-set
+        synthesizer-remarked ebit-set
         $F 7 fade
         wait-fade
     else
         hand-to-mouth-anim $A self-anim-blend
         4 say   \ "A synthesizer? What a peculiar device. It appears you can insert an item here..."
         self-wait-anim
-        1 ebit-clear
+        synthesizer-remarked ebit-clear
     then
     $244 item-give
     stalkers-stay state-flag-clear
@@ -380,27 +392,27 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     $78 wait-frames
     look-close-anim play-out
     reach-out-anim play-out
-    1 8 var? if
+    used-item-var 8 var? if
         8 message-param-room
         0 8 item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 1 9 var? if
+    else used-item-var 9 var? if
         9 message-param-room
         0 9 item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 1 11 var? if
+    else used-item-var 11 var? if
         $B message-param-room
         0 $B item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 1 12 var? if
+    else used-item-var 12 var? if
         $C message-param-room
         0 $C item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 1 16 var? if
+    else used-item-var 16 var? if
         $10 message-param-room
         0 $10 item-tab
         item-fanfare

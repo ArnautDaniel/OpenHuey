@@ -4,6 +4,16 @@
 IN: story.rooms.castle-1f-15
 USING: engine room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant spear-remarked              \ (bit 0) its first remark made: "This spear decoration serves as an obvious conversation piec"
+1 constant armor-remarked              \ (bit 1) its first remark made: "A suit of armor forged from steel."
+2 constant handrail-remarked           \ (bit 2) its first remark made: "This section of handrail seems to be... gone. They always sa"
+3 constant will-find-her               \ (bit 3) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+4 constant hewie-zone0-noticed         \ (bit 4) Hewie has reacted to zone 0 (once a visit)
+7 constant encounter-done              \ (bit 7) the encounter in area $18 over (whichever way it went)
+8 constant sound-started               \ (bit 8) its sound started (then kept up)
+9 constant encounter-started           \ (bit 9) the encounter in area $18 begun
+
 \ room 0x19 (Room19_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) while
 \ Hewie is controlled: in another room, or 30 or more from the player
 : castle-1f-15.cond00? ( -- flag )
@@ -62,10 +72,10 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
 ;
 
 : castle-1f-15.phase1 ( -- )   \ 003FB520
-    8 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             $40000008 6 -88.0 65.0 -95.0 0 0 sound
-            8 ebit-set
+            sound-started ebit-set
         then
     else
         $C0000008 6 -88.0 65.0 -95.0 0 0 sound
@@ -110,11 +120,11 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
         2 map-page
     then
     0 -88.0 50.0 -94.617 $1E 20 0 zone
-    4 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 0 9 char-zone-bits? if
-                    4 ebit-set
+                    hewie-zone0-noticed ebit-set
                     $1E chance? if
                         hewie-zone-var 0 var-set
                         0 hewie-who $88 action
@@ -186,12 +196,12 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
     fiona-who $14 char-in-area? fiona-who -45 $5A char-heading? and if
         4 unhurried offer-action
     then
-    7 ebit? not 9 ebit? not and if
+    encounter-done ebit? not encounter-started ebit? not and if
         fiona-who $18 char-in-area? if
             2 game-mode? in-panic? not and if
                 castle-1f-15.cond00? if
                     hewie-who char-here? not hewie-who 2 char-cond? or if
-                        9 ebit-set
+                        encounter-started ebit-set
                         panic-eased
                         fiona-who 0 char-action? if
                             0 fiona-who 5 action-force
@@ -199,26 +209,26 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
                             1 fiona-who 5 action-force
                         then
                     else
-                        3 ebit-clear
+                        will-find-her ebit-clear
                         7 0 pvar? if
                             0 chance? if
-                                3 ebit-set
+                                will-find-her ebit-set
                             then
                         else 7 1 pvar? if
                             $32 chance? if
-                                3 ebit-set
+                                will-find-her ebit-set
                             then
                         else 7 2 pvar? if
                             $5A chance? if
-                                3 ebit-set
+                                will-find-her ebit-set
                             then
                         else 7 3 pvar? if
                             $5A chance? if
-                                3 ebit-set
+                                will-find-her ebit-set
                             then
                         then then then then
-                        3 ebit? not if
-                            9 ebit-set
+                        will-find-her ebit? not if
+                            encounter-started ebit-set
                             panic-eased
                             fiona-who 0 char-action? if
                                 0 fiona-who 6 action-force
@@ -226,7 +236,7 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
                                 1 fiona-who 6 action-force
                             then
                         else
-                            9 ebit-set
+                            encounter-started ebit-set
                             panic-eased
                             fiona-who 0 char-action? if
                                 0 fiona-who 7 action-force
@@ -287,9 +297,9 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
 
 : castle-1f-15.act02 ( -- )   \ 003FB9B0
     self-wait-done
-    0 ebit? not if
+    spear-remarked ebit? not if
         1 say   \ "This spear decoration serves as an obvious conversation piece. Hard to believe peop..."
-        0 ebit-set
+        spear-remarked ebit-set
     else
         2 say   \ "I could try using this to protect myself... Damn! No good, it's just too heavy."
     then
@@ -298,9 +308,9 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
 
 : castle-1f-15.act03 ( -- )   \ 003FB9D0
     self-wait-done
-    1 ebit? not if
+    armor-remarked ebit? not if
         3 say   \ "A suit of armor forged from steel."
-        1 ebit-set
+        armor-remarked ebit-set
     else
         4 say   \ "I guess this room serves as a museum of sorts."
     then
@@ -314,9 +324,9 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
     world-frozen state-flag-set
     1 self-scripted
     1 20.0 50.0 15.0 0.0 event-camera
-    2 ebit? not if
+    handrail-remarked ebit? not if
         5 say   \ "This section of handrail seems to be... gone. They always say 'never look down' in..."
-        2 ebit-set
+        handrail-remarked ebit-set
     else
         6 say   \ "If I fell here, there would be no coming back."
     then
@@ -362,7 +372,7 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
     wait-fade
     stalkers-blind state-flag-clear
     $64 threat-raise
-    7 ebit-set
+    encounter-done ebit-set
     $1F resident-flag-set
     0 self-scripted
     self-idle-or-end
@@ -401,7 +411,7 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
     stalkers-blind state-flag-clear
     10 hewie-trust
     $8278 item-give
-    7 ebit-set
+    encounter-done ebit-set
     $1D resident-flag-set
     0 self-scripted
     self-idle-or-end
@@ -436,7 +446,7 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
     $F $41 fade
     wait-fade
     stalkers-blind state-flag-clear
-    7 ebit-set
+    encounter-done ebit-set
     $1E resident-flag-set
     $8279 item-give
     0 self-scripted
@@ -448,7 +458,7 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
     1 self-scripted
     self-wait-done
     look-close-anim $A blend-out
-    7 say   \ "Creaks and pops crackle out of the dubious-looking hole. Everything about the hole-floor scre..."
+    7 say   \ "Creaks and pops crackle out of the dubious-looking hole. Everything about the hole scre..."
     0 answer? if
         $F 0 fade
         wait-fade

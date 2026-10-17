@@ -4,6 +4,9 @@
 IN: story.rooms.old-mansion-2f-9
 USING: room-names story.words story.shared story-names fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+1 constant hewie-zone0-noticed         \ (bit 1) Hewie has reacted to zone 0 (once a visit)
+
 : old-mansion-2f-9.enter ( -- )   \ 00412410
     got-sylvesta-esca story-flag? not if
         0 42.0 63.5 6.6 flicker-sprite
@@ -53,11 +56,11 @@ USING: room-names story.words story.shared story-names fiona.anims ;
         1 exit-prepare
     then
     0 43.86 50.0 6.98 $15 16 0 zone
-    1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 0 9 char-zone-bits? if
-                    1 ebit-set
+                    hewie-zone0-noticed ebit-set
                     $1E chance? if
                         hewie-zone-var 0 var-set
                         0 hewie-who $92 action

@@ -4,6 +4,12 @@
 IN: story.rooms.chaos-forest-13
 USING: actors room-names story.words story.shared flag-names story-names ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant maze-dealt                  \ (bit 0) the maze's rooms dealt (once a visit, not in a panic)
+1 constant was-panicking               \ (bit 1) she was in a panic (as she came in, then each frame)
+2 constant doorway-lit                 \ (bit 2) the doorway's light on (phase 3)
+3 constant effect-on                   \ (bit 3) the scene's effect (cmd00) on between its cues
+
 \ byte 3 0: a 0x4480 effect is spawned and its slot kept in event var 0; else that slot's effect
 \ is removed
 : chaos-forest-13.cmd00 ( b0 -- )  0 ['] effects:ash effect-in-var ;   \ (ash flakes rising: b0 0 made - kept in variable 0 - else gone)
@@ -17,7 +23,7 @@ USING: actors room-names story.words story.shared flag-names story-names ;
         deal-things
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     then
 ;
 
@@ -60,21 +66,21 @@ USING: actors room-names story.words story.shared flag-names story-names ;
             then
         then
     then
-    0 ebit? not if
-        1 ebit? not in-panic? and if
-            0 ebit-set
+    maze-dealt ebit? not if
+        was-panicking ebit? not in-panic? and if
+            maze-dealt ebit-set
             deal-things
         then
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     else
-        1 ebit-clear
+        was-panicking ebit-clear
     then
 ;
 
 : chaos-forest-13.phase3 ( -- )   \ 00419B70
-    2 ebit? if
+    doorway-lit ebit? if
         -60.0 40.0 -30.0 10.0 46.5 -46.0 -60.0 0.0 -40.0 10.0 -10.0 -59.0 lights-doorway
     then
 ;
@@ -105,7 +111,7 @@ USING: actors room-names story.words story.shared flag-names story-names ;
     scene-wait-ready
     3 5 0 char-model-op
     0 cutscene-track 1 action
-    3 ebit-clear
+    effect-on ebit-clear
     panic-eased
     0 message-prepare   \ "Why are you doing this? What did I do? You inherited your father's Azoth. That..."
     1 result? if
@@ -113,8 +119,8 @@ USING: actors room-names story.words story.shared flag-names story-names ;
     then
     stalker-who action-end
     stalker-who char-done
-    2 ebit-clear
-    3 ebit? if
+    doorway-lit ebit-clear
+    effect-on ebit? if
         1 chaos-forest-13.cmd00
     then
     world-held state-flag-set
@@ -149,12 +155,12 @@ USING: actors room-names story.words story.shared flag-names story-names ;
 : chaos-forest-13.act01 ( -- )   \ 00419CB0
     [: 1 cutscene-shot? ;] wait-until
     0 chaos-forest-13.cmd00
-    3 ebit-set
+    effect-on ebit-set
     [: 2 cutscene-shot? ;] wait-until
     1 chaos-forest-13.cmd00
-    3 ebit-clear
+    effect-on ebit-clear
     [: $18 cutscene-shot? ;] wait-until
-    2 ebit-set
+    doorway-lit ebit-set
     self-idle-or-end
 ;
 

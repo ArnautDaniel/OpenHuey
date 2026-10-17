@@ -4,16 +4,24 @@
 IN: story.rooms.off-map-27
 USING: actors messages items room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant gave-first                  \ (bit 0) the first item ($91) given
+1 constant gave-second                 \ (bit 1) the second item ($92) given
+2 constant nothing-left                \ (bit 2) taken: "There is nothing here." from now on
+3 constant something-lacking           \ (bit 3) she lacks one of the items (to be given)
+0 constant lacking-var                 \ (var 0) the items she lacks (each a byte)
+1 constant used-item-var               \ (var 1) the item she used
+
 \ the items 0x91 / 0x92, by byte 3: 0 which of them Fiona lacks (one each) kept in event var 0
 \ (0x91 low byte, 0x92 the next), and event +0x5C(3) when any; 1 they are given back, event
 \ +0x5C(0) / (1)
 : lacking ( item -- n )  1 swap items-of - 0 max ;   \ (short of one)
 : lacks-kept ( -- )   \ (those she lacks into variable 0: $91 the low byte, $92 the next; event bit 3)
-    $91 lacking  $92 lacking 8 lshift or  ?dup if  0 swap var-set  3 ebit-set  then ;
+    $91 lacking  $92 lacking 8 lshift or  ?dup if  lacking-var swap var-set  something-lacking ebit-set  then ;
 : lacks-given ( -- )   \ (and given: event bits 0 / 1)
-    0 var @
-    dup $FF and ?dup if  $91 swap items-id send give-item  0 ebit-set  then
-    8 rshift $FF and ?dup if  $92 swap items-id send give-item  1 ebit-set  then ;
+    lacking-var var @
+    dup $FF and ?dup if  $91 swap items-id send give-item  gave-first ebit-set  then
+    8 rshift $FF and ?dup if  $92 swap items-id send give-item  gave-second ebit-set  then ;
 : off-map-27.cmd00 ( b0 -- )   \ (items $91 / $92 topped up to one each: b0 0 those she lacks kept, 1 given)
     case  0 of  lacks-kept  endof  1 of  lacks-given  endof  endcase ;
 
@@ -25,7 +33,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
         0 0 player-camera
         0 fiona-who 0 action
         0 off-map-27.cmd00
-        0 0 var? not if
+        lacking-var 0 var? not if
             0 -27.75 10.0 5.68 flicker-sprite
         then
     then
@@ -172,28 +180,28 @@ USING: actors messages items room-names story.words story.shared flag-names stor
     self-wait-done
     -28.0 6.0 self-turn-to-xz
     self-wait-done
-    3 ebit? if
-        2 ebit? not if
+    something-lacking ebit? if
+        nothing-left ebit? not if
             reach-out-anim play-out
             4 wait-frames
-            0 ebit-clear
-            1 ebit-clear
+            gave-first ebit-clear
+            gave-second ebit-clear
             1 off-map-27.cmd00
             0 effect-remove
-            0 ebit? if
+            gave-first ebit? if
                 $91 message-param-room
                 0 $91 item-tab
                 item-fanfare
                 $8011 say   \ "You've obtained ."
             then
-            1 ebit? if
+            gave-second ebit? if
                 16 wait-frames
                 $92 message-param-room
                 0 $92 item-tab
                 item-fanfare
                 $8011 say   \ "You've obtained ."
             then
-            2 ebit-set
+            nothing-left ebit-set
             reach-back-anim play-out
         else
             7 say   \ "There is nothing here."
@@ -342,7 +350,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
     $1E wait-frames
     pick-up-anim play-out
     1 effect-remove
-    1 136 var? if
+    used-item-var 136 var? if
         $88 1 item-count? if
             $75 message-param-room
             $75 1 item-give-count
@@ -357,7 +365,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
             $8012 say   \ "You've obtained ."
         then
         x-27-magist-medallion story-flag-set
-    else 1 140 var? if
+    else used-item-var 140 var? if
         $8C 1 item-count? if
             $75 message-param-room
             $75 1 item-give-count
@@ -372,7 +380,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
             $8012 say   \ "You've obtained ."
         then
         x-27-magist-medallion-2 story-flag-set
-    else 1 131 var? if
+    else used-item-var 131 var? if
         $83 1 item-count? if
             $75 message-param-room
             $75 1 item-give-count
@@ -387,7 +395,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
             $8012 say   \ "You've obtained ."
         then
         x-27-magist-medallion-3 story-flag-set
-    else 1 137 var? if
+    else used-item-var 137 var? if
         $89 1 item-count? if
             $75 message-param-room
             $75 1 item-give-count

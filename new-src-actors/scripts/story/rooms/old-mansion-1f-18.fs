@@ -4,6 +4,10 @@
 IN: story.rooms.old-mansion-1f-18
 USING: room-names story.words story.shared story-names fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+1 constant hewie-zone0-noticed         \ (bit 1) Hewie has reacted to zone 0 (once a visit)
+2 constant hewie-zone1-noticed         \ (bit 2) Hewie has reacted to zone 1 (once a visit)
+
 : old-mansion-1f-18.enter ( -- )   \ 00424880
     3 1.0 0 bgm
     0 exit-taken? if
@@ -69,11 +73,11 @@ USING: room-names story.words story.shared story-names fiona.anims ;
         3 exit-prepare
     then
     0 -26.02 2.5 -26.23 $14 6 0 zone
-    1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 0 9 char-zone-bits? if
-                    1 ebit-set
+                    hewie-zone0-noticed ebit-set
                     $1E chance? if
                         hewie-zone-var 0 var-set
                         0 hewie-who $92 action
@@ -92,11 +96,11 @@ USING: room-names story.words story.shared story-names fiona.anims ;
         then
     then
     1 26.56 2.5 25.45 $14 6 0 zone
-    2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 1 9 char-zone-bits? if
-                    2 ebit-set
+                    hewie-zone1-noticed ebit-set
                     $1E chance? if
                         hewie-zone-var 1 var-set
                         0 hewie-who $8A action

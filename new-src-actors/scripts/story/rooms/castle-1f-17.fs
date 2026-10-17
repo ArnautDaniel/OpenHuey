@@ -4,6 +4,11 @@
 IN: story.rooms.castle-1f-17
 USING: room-names story.words story.shared story-names fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant insects-remarked            \ (bit 0) its first remark made: "There are miniature insect models here, too."
+1 constant pool-table-remarked         \ (bit 1) its first remark made: "Looks like an ordinary pool table."
+2 constant hewie-zone2-noticed         \ (bit 2) Hewie has reacted to zone 2 (once a visit)
+
 \ five pendulums (Room1B_ObjectNames[byte 3]) of their own periods and swings: byte 4 0 still at
 \ a phase offset (+0x34) 60 x the index, 1 swinging on (+0x30, +0x14)
 : castle-1f-17.cmd00 ( b0 b1 -- )   \ (pendulum b0 - the room's string b0 - by b1: 0 still at its phase offset (+$34: 60 x b0);
@@ -72,11 +77,11 @@ USING: room-names story.words story.shared story-names fiona.anims ;
         then
     then
     2 20.64 0.0 11.01 9 10 0 zone
-    2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 2 9 char-zone-bits? if
-                    2 ebit-set
+                    hewie-zone2-noticed ebit-set
                     $1E chance? if
                         hewie-zone-var 2 var-set
                         0 hewie-who $89 action
@@ -214,9 +219,9 @@ USING: room-names story.words story.shared story-names fiona.anims ;
 
 : castle-1f-17.act03 ( -- )   \ 003FCA00
     self-wait-done
-    0 ebit? not if
+    insects-remarked ebit? not if
         2 say   \ "There are miniature insect models here, too."
-        0 ebit-set
+        insects-remarked ebit-set
     else
         3 say   \ "What type of a person would decorate a room with these things?"
     then
@@ -225,17 +230,17 @@ USING: room-names story.words story.shared story-names fiona.anims ;
 
 : castle-1f-17.act04 ( -- )   \ 003FCA20
     self-wait-done
-    1 ebit? not if
+    pool-table-remarked ebit? not if
         4 say   \ "Looks like an ordinary pool table."
         rest-anim play-out
         -1 self-idle-anim
         6 message   \ "Why would someone put something like this in here?"
         7 wait-frames
         wait-message
-        1 ebit-set
+        pool-table-remarked ebit-set
     else
         5 say   \ "So maybe whoever lives here likes to play pool while looking at all of these gross..."
-        1 ebit-clear
+        pool-table-remarked ebit-clear
     then
     self-idle-or-end
 ;

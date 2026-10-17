@@ -4,6 +4,12 @@
 IN: story.rooms.castle-1f-1
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant hewie-arrival-on            \ (bit 0) Hewie's arrival scene started (her first time in); over once the stalker is here
+1 constant splash1-made                \ (bit 1) a splash played once someone steps into its zone (once a visit)
+2 constant splash2-made                \ (bit 2) a splash played once someone steps into its zone (once a visit)
+3 constant hewie-zone2-noticed         \ (bit 3) Hewie has reacted to zone 2 (once a visit)
+
 : castle-1f-1.enter ( -- )   \ 003EE770
     garden-door-done story-flag? c1f-1-flag1 story-flag? not and if
         c1f-1-flag1 story-flag-set
@@ -58,7 +64,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 hewie-who $132 0 char-to-tri-facing
             then
             c1f-1-flag2 story-flag-set
-            0 ebit-set
+            hewie-arrival-on ebit-set
             0 1 track 1 action
         then
     then
@@ -101,9 +107,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             2 exit-prepare
         then
     then
-    0 ebit? if
+    hewie-arrival-on ebit? if
         stalker-who char-here? if
-            0 ebit-clear
+            hewie-arrival-on ebit-clear
         then
     then
     c1f-1-refined-magnesia story-flag? not if
@@ -121,11 +127,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         then
         2 -33.33 -16.93 69.69 $28 6 0 zone
-        3 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 2 9 char-zone-bits? if
-                        3 ebit-set
+                        hewie-zone2-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 2 var-set
                             0 hewie-who $88 action
@@ -144,34 +150,34 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         then
     then
-    1 ebit? not if
+    splash1-made ebit? not if
         0 -46.0 -16.0 70.0 $C 4 0 zone
         fiona-who 0 3 char-zone-bits? fiona-who 0 3 char-zone-bits-before? not and if
             fiona-who 5 -46.0 -16.0 70.0 2 $40 $50 $40 $80 splash
-            1 ebit-set
+            splash1-made ebit-set
         then
         hewie-who 0 3 char-zone-bits? hewie-who 0 3 char-zone-bits-before? not and if
             hewie-who $A -46.0 -16.0 70.0 2 $40 $50 $40 $80 splash
-            1 ebit-set
+            splash1-made ebit-set
         then
         stalker-who 0 3 char-zone-bits? stalker-who 0 3 char-zone-bits-before? not and if
             stalker-who 5 -46.0 -16.0 70.0 2 $40 $50 $40 $80 splash
-            1 ebit-set
+            splash1-made ebit-set
         then
     then
-    2 ebit? not if
+    splash2-made ebit? not if
         1 -23.0 -16.0 67.0 $C 4 0 zone
         fiona-who 1 3 char-zone-bits? fiona-who 1 3 char-zone-bits-before? not and if
             fiona-who 5 -23.0 -16.0 67.0 2 $40 $50 $40 $80 splash
-            2 ebit-set
+            splash2-made ebit-set
         then
         hewie-who 1 3 char-zone-bits? hewie-who 1 3 char-zone-bits-before? not and if
             hewie-who $A -23.0 -16.0 67.0 2 $40 $50 $40 $80 splash
-            2 ebit-set
+            splash2-made ebit-set
         then
         stalker-who 1 3 char-zone-bits? stalker-who 1 3 char-zone-bits-before? not and if
             stalker-who 5 -23.0 -16.0 67.0 2 $40 $50 $40 $80 splash
-            2 ebit-set
+            splash2-made ebit-set
         then
     then
     got-doc-crouch-evasion story-flag? not if
@@ -202,7 +208,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             0 unhurried offer-action
         then
     then
-    1 exit-door-open? not 0 ebit? and if
+    1 exit-door-open? not hewie-arrival-on ebit? and if
         fiona-who 1 char-before-door? if
             0 examine-message   \ "It's too dangerous to go back now..."
         then
@@ -214,7 +220,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-1.phase5 ( -- )   \ 003EEC00
-    0 ebit? stalker-who char-here? not and stalker-who 2 char-cond? and if
+    hewie-arrival-on ebit? stalker-who char-here? not and stalker-who 2 char-cond? and if
         stalker-who action-end
         2 summon-take
     then

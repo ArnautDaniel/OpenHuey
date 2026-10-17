@@ -4,6 +4,10 @@
 IN: story.rooms.old-mansion-2f-4
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant purifier-remarked           \ (bit 0) its first remark made: "Purifier The impure yellow mass of filth will set free the s"
+1 constant used-item-var               \ (var 1) the item she used (8 .. 11)
+
 : old-mansion-2f-4.enter ( -- )   \ 0040F490
     room-sounds
     0 both-halves floor-on
@@ -133,18 +137,18 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $A4 -36.0 41.0 -35 $FFFF 5 self-move-to
     self-wait-done
-    0 ebit? not if
+    purifier-remarked ebit? not if
         $F 6 fade
         wait-fade
         3 say   \ "Purifier The impure yellow mass of filth will set free the shining glory of the sac..."
-        0 ebit-set
+        purifier-remarked ebit-set
         $F 7 fade
         wait-fade
     else
         hand-to-mouth-anim $A self-anim-blend
         4 say   \ "A purifier? I've never heard of a device like this before. There is a space to inse..."
         self-wait-anim
-        0 ebit-clear
+        purifier-remarked ebit-clear
     then
     $243 item-give
     stalkers-stay state-flag-clear
@@ -162,27 +166,27 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $78 wait-frames
     look-close-anim play-out
     reach-out-anim play-out
-    1 8 var? if
+    used-item-var 8 var? if
         8 message-param-room
         0 8 item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 1 10 var? if
+    else used-item-var 10 var? if
         $A message-param-room
         0 $A item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 1 11 var? if
+    else used-item-var 11 var? if
         $B message-param-room
         0 $B item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 1 12 var? if
+    else used-item-var 12 var? if
         $C message-param-room
         0 $C item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 1 16 var? if
+    else used-item-var 16 var? if
         $10 message-param-room
         0 $10 item-tab
         item-fanfare

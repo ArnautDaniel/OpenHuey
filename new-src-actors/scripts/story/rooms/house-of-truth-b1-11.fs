@@ -4,6 +4,10 @@
 IN: story.rooms.house-of-truth-b1-11
 USING: room-names story.words story.shared story-names floor-flags stalker.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant stalker-sent                \ (bit 0) the stalker sent off (his action 0, then 1)
+1 constant stalker-sent-2              \ (bit 1) the stalker sent off the second way (his action 2)
+
 \ Room99_Cmd00
 : house-of-truth-b1-11.cmd00 ( -- )  slam-shake ;
 
@@ -40,10 +44,10 @@ USING: room-names story.words story.shared story-names floor-flags stalker.anims
             stalker-who action-end
             1 summon-take
         else
-            0 ebit-set
+            stalker-sent ebit-set
         then
     then
-    0 ebit? stalker-who 0 char-action? and if
+    stalker-sent ebit? stalker-who 0 char-action? and if
         0 stalker-who 0 action
     then
     htb1-12-flag1 story-flag? htb1-11-flag2 story-flag? not and fiona-who $D char-left-area? and if
@@ -53,21 +57,21 @@ USING: room-names story.words story.shared story-names floor-flags stalker.anims
             stalker-who 0 stalker-command
             0 stalker-who 1 action
         else
-            1 ebit-set
+            stalker-sent-2 ebit-set
         then
     then
-    1 ebit? stalker-who 0 char-action? and if
+    stalker-sent-2 ebit? stalker-who 0 char-action? and if
         0 stalker-who 2 action
     then
 ;
 
 : house-of-truth-b1-11.phase5 ( -- )   \ 00443680
-    0 ebit? htb1-11-flag1 story-flag? not and if
+    stalker-sent ebit? htb1-11-flag1 story-flag? not and if
         htb1-11-flag1 story-flag-set
         stalker-who action-end
         1 summon-take
     then
-    1 ebit? htb1-11-flag2 story-flag? not and if
+    stalker-sent-2 ebit? htb1-11-flag2 story-flag? not and if
         htb1-11-flag2 story-flag-set
         $FE $99 310 2 stalker-to-room
         stalker-who 0 stalker-command
@@ -79,7 +83,7 @@ USING: room-names story.words story.shared story-names floor-flags stalker.anims
     self-wait-done
     $1304 play-out
     htb1-11-flag1 story-flag-set
-    0 ebit-clear
+    stalker-sent ebit-clear
     stalker-who action-end
     1 summon-take
     self-idle-or-end
@@ -94,7 +98,7 @@ USING: room-names story.words story.shared story-names floor-flags stalker.anims
     stalker-who 1 1 char-camera
     look-about-3-anim 0 blend-out
     stalker-who 0 stalker-command
-    1 ebit-clear
+    stalker-sent-2 ebit-clear
     htb1-11-flag2 story-flag-set
     0 self-scripted
     self-idle-or-end

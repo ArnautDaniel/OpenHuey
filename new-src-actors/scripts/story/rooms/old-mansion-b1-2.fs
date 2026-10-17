@@ -4,6 +4,18 @@
 IN: story.rooms.old-mansion-b1-2
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant locked-remarked             \ (bit 0) its first remark made: "The door is locked..."
+1 constant locked2-remarked            \ (bit 1) its first remark made: "The door is locked..." (the other door)
+2 constant stalker-scene-on            \ (bit 2) the scene with her (act06) under way
+3 constant wall-breaking               \ (bit 3) the stalker breaking through (at the room's end: broken)
+4 constant hewie-zone3-noticed         \ (bit 4) Hewie has reacted to zone 3 (once a visit)
+5 constant hewie-zone4-noticed         \ (bit 5) Hewie has reacted to zone 4 (once a visit)
+6 constant hewie-zone5-noticed         \ (bit 6) Hewie has reacted to zone 5 (once a visit)
+7 constant hewie-zone6-noticed         \ (bit 7) Hewie has reacted to zone 6 (once a visit)
+0 constant struggle-frames-var         \ (var 0) the struggle's frames (her cry at 12, over at 30)
+1 constant reads-var                   \ (var 1) the book read (the file given at 2)
+
 \ room 0x4B (D_00409910): a lit quad at x -63.65 .. -55.65, z 104.5, from 4 to 21
 : old-mansion-b1-2.cmd00 ( b0 -- )  $1B $80  -63.65e 21.0e 104.5e  -55.65e 21.0e 104.5e  -63.65e 4.0e 104.5e  -55.65e 4.0e 104.5e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
 \ room 0x4B: the curtain ("Curtain") animated by event variable 0 (var0_anim: byte 3 0 forward,
@@ -164,7 +176,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who $12 char-left-area? if
         1 map-page
     then
-    2 ebit? not if
+    stalker-scene-on ebit? not if
         omb1-2-breakable3-broken story-flag? not omb1-2-flag1 story-flag? and if
             3 stalker-kind? $22 stalker-kind? or if
                 stalker-who $1A char-entered-area? stalker-who 0 char-action? and if
@@ -184,11 +196,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     omb1-2-breakable3-broken story-flag? not omb1-2-flag1 story-flag? and if
         3 -60.85 0.0 104.12 $10 6 0 zone
-        4 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone3-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 3 9 char-zone-bits? if
-                        4 ebit-set
+                        hewie-zone3-noticed ebit-set
                         $32 chance? if
                             hewie-zone-var 3 var-set
                             0 hewie-who $93 action
@@ -199,11 +211,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     4 -101.62 0.0 100.21 $14 6 0 zone
-    5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone4-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 4 9 char-zone-bits? if
-                    5 ebit-set
+                    hewie-zone4-noticed ebit-set
                     $1E chance? if
                         hewie-zone-var 4 var-set
                         0 hewie-who $8A action
@@ -222,11 +234,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     5 -132.75 0.0 71.15 $14 12 0 zone
-    6 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone5-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 5 9 char-zone-bits? if
-                    6 ebit-set
+                    hewie-zone5-noticed ebit-set
                     $1E chance? if
                         hewie-zone-var 5 var-set
                         0 hewie-who $8A action
@@ -245,11 +257,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     6 -29.87 0.0 75.83 $14 12 0 zone
-    7 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone6-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 6 9 char-zone-bits? if
-                    7 ebit-set
+                    hewie-zone6-noticed ebit-set
                     $1E chance? if
                         hewie-zone-var 6 var-set
                         0 hewie-who $8A action
@@ -284,7 +296,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who $19 char-in-area? fiona-who 45 $32 char-heading? and if
         5 unhurried offer-action
     then
-    3 ebit? not if
+    wall-breaking ebit? not if
         fiona-who $1A char-in-area? fiona-who 0 $3C char-heading? and if
             omb1-2-breakable3-broken story-flag? not if
                 stalker-who char-here? not if
@@ -300,10 +312,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     else 3 stalker-kind? $22 stalker-kind? or if
         stalker-who char-busy? not if
-            3 ebit-clear
+            wall-breaking ebit-clear
         then
     else
-        3 ebit-clear
+        wall-breaking ebit-clear
     then then
     omb1-2-refined-magnesia story-flag? not if
         7 2 5 5 0 zone-at-effect
@@ -365,7 +377,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-b1-2.phase5 ( -- )   \ 004092C0
-    3 ebit? if
+    wall-breaking ebit? if
         omb1-2-flag1 story-flag-set
         omb1-2-breakable3-broken story-flag-set
         3 stalker-kind? $22 stalker-kind? or if
@@ -383,7 +395,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     2 self-through-exit
     self-wait-done
-    0 ebit? not 2 game-mode? or in-panic? or if
+    locked-remarked ebit? not 2 game-mode? or in-panic? or if
         in-panic? 2 game-mode? or if
             rattle-behind-slow-anim play-out
             -1 self-idle-anim
@@ -394,7 +406,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             7 wait-frames
             1 say   \ "The door is locked..."
         then
-        0 ebit-set
+        locked-remarked ebit-set
     else
         4 wait-frames
         fiona-who $8F 145.0 -75.0 180 char-to-xz
@@ -437,7 +449,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     3 self-through-exit
     self-wait-done
-    1 ebit? not 2 game-mode? or in-panic? or if
+    locked2-remarked ebit? not 2 game-mode? or in-panic? or if
         in-panic? 2 game-mode? or if
             rattle-behind-slow-anim play-out
             -1 self-idle-anim
@@ -448,7 +460,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             7 wait-frames
             1 say   \ "The door is locked..."
         then
-        1 ebit-set
+        locked2-remarked ebit-set
     else
         4 wait-frames
         fiona-who $29 145.0 75.0 0 char-to-xz
@@ -532,7 +544,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-b1-2.act06 ( -- )   \ 00409560
     1 self-scripted
-    2 ebit-set
+    stalker-scene-on ebit-set
     self-wait-done
     fiona-who 0 char-file-load
     $21D -59.65 99.14 0 $FFFF 5 self-move-to
@@ -541,46 +553,46 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     [: 6 sound-bank-loaded? ;] wait-until
     omb1-2-flag1 story-flag? not if
         0 old-mansion-b1-2.cmd00
-        0 0 var-set
+        struggle-frames-var 0 var-set
         0 room-motion 5 self-anim-blend8
         5 wait-frames
         begin
             0 old-mansion-b1-2.cmd01
             yield
-            0 30 var? not while
-            0 12 var? if
+            struggle-frames-var 30 var? not while
+            struggle-frames-var 12 var? if
                 fiona-who 0 6 char-sound
             then
-            0 var-inc
+            struggle-frames-var var-inc
         repeat
         self-wait-anim
         2 old-mansion-b1-2.cmd01
         omb1-2-flag1 story-flag-set
     else
-        0 0 var-set
+        struggle-frames-var 0 var-set
         1 room-motion 5 self-anim-blend8
         5 wait-frames
         begin
             1 old-mansion-b1-2.cmd01
             yield
-            0 28 var? not while
-            0 12 var? if
+            struggle-frames-var 28 var? not while
+            struggle-frames-var 12 var? if
                 fiona-who 0 6 char-sound
             then
-            0 var-inc
+            struggle-frames-var var-inc
         repeat
         self-wait-anim
         3 old-mansion-b1-2.cmd01
         omb1-2-flag1 story-flag-clear
         1 old-mansion-b1-2.cmd00
     then
-    2 ebit-clear
+    stalker-scene-on ebit-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-b1-2.act07 ( -- )   \ 00409610
-    3 ebit-set
+    wall-breaking ebit-set
     self-wait-done
     stalker-who 1 char-file-load
     $21D -59.65 99.14 0 $FFFF 5 self-move-to
@@ -605,7 +617,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -57.0 4.0 104.5 1 404232216 4 -3.5 shards-at
     -61.0 4.0 104.5 1 404232216 4 -3.5 shards-at
     self-wait-anim
-    3 ebit-clear
+    wall-breaking ebit-clear
     self-idle-or-end
 ;
 
@@ -714,8 +726,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hand-to-mouth-anim $A self-anim-blend
     6 say   \ "Glowing SUN, radiant STAR, MOONLIT sky... The words from the title are highlighted in red."
     self-wait-anim
-    1 var-inc
-    1 2 var? if
+    reads-var var-inc
+    reads-var 2 var? if
         $236 item-give
     then
     stalkers-stay state-flag-clear

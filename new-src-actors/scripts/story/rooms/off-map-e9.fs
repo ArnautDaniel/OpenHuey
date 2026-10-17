@@ -4,6 +4,10 @@
 IN: story.rooms.off-map-e9
 USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant cond-was-off                \ (bit 0) the room's condition was false last frame: its hook waits a frame once it holds
+1 constant area16-reacted              \ (bit 1) her and Hewie's reaction in area $10 made
+
 \ room 0xE9: stops the countdown clock (clock_stop: progress +0x1FBEC1 off, the camera director
 \ +0x40 -1).
 : off-map-e9.cmd00 ( -- )  clock-stop ;
@@ -101,9 +105,9 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
             then then then then
         then
     then
-    1 ebit? not if
+    area16-reacted ebit? not if
         fiona-who $10 char-in-area? if
-            1 ebit-set
+            area16-reacted ebit-set
             panic-eased
             0 fiona-who 1 action-force
             0 hewie-who 2 action-force
@@ -126,9 +130,9 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
     -370.0 76.0 110.0 -370.0 76.0 41.0 -370.0 20.0 110.0 -370.0 20.0 41.0 lights-doorway
     -370.0 76.0 38.0 -370.0 76.0 -8.0 -370.0 20.0 39.0 -370.0 20.0 -8.0 lights-doorway
     off-map-e9.cond00? not if
-        0 ebit-set
-    else 0 ebit? if
-        0 ebit-clear
+        cond-was-off ebit-set
+    else cond-was-off ebit? if
+        cond-was-off ebit-clear
     else
         off-map-e9.cmd03
     then then

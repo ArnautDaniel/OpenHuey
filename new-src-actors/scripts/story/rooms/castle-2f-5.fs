@@ -4,6 +4,21 @@
 IN: story.rooms.castle-2f-5
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant portrait-1-remarked         \ (bit 0) its first remark made: "I wonder whose portrait this is?"
+1 constant portrait-2-remarked         \ (bit 1) its first remark made: "The man pictured here has a noble air about him. I wonder ho"
+2 constant portrait-3-remarked         \ (bit 2) its first remark made: "What a powerful piece of art. The eyes really feel like they"
+3 constant sound-started               \ (bit 3) its sound started (then kept up)
+4 constant found-her                   \ (bit 4) he has found her hiding: she must flee (the avoid prompt)
+5 constant will-find-her               \ (bit 5) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+6 constant hewie-along                 \ (bit 6) Hewie came along with her (near, commandable)
+7 constant hewie-in-place              \ (bit 7) Hewie at his place for the scene
+8 constant tired-remarked              \ (bit 8) her first "I don't feel so hot" made (the next time: rest)
+9 constant doll-remarked               \ (bit 9) its first remark made: "There's an antique doll lying here."
+11 constant came-while-hidden          \ (bit 11) the stalker came in while she was hiding
+0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
+1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+
 \ room 0x32: room effect slot 1 made anew as the first TV screen (TvScreenA).
 : castle-2f-5.cmd00 ( -- )  1 0 tv-in ;   \ (room effect 1 the TV showing the screen)
 \ room 0x32 (D_0042C2A8): the fan turns, except while a movie plays
@@ -37,8 +52,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     c2f-3-medallion-found story-flag? c2f-3-medallion story-flag? not and if
         2 -9.0 1.0 -11.0 flicker-sprite
     then
-    0 0 var-set
-    1 0 var-set
+    sound-step-var 0 var-set
+    sound-frames-var 0 var-set
     0 castle-2f-5.cmd02
     0 castle-2f-5.cmd04
     saturnus-hint-on story-flag? not if
@@ -70,28 +85,28 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-2f-5.act04 ( -- )   \ 0042B850
-    5 ebit-clear
+    will-find-her ebit-clear
     2 0 pvar? if
         0 chance? if
-            5 ebit-set
+            will-find-her ebit-set
         then
     else 2 1 pvar? if
         0 chance? if
-            5 ebit-set
+            will-find-her ebit-set
         then
     else 2 2 pvar? if
         $19 chance? if
-            5 ebit-set
+            will-find-her ebit-set
         then
     else 2 3 pvar? if
         $32 chance? if
-            5 ebit-set
+            will-find-her ebit-set
         then
     then then then then
     2 creature-action? if
-        5 ebit-set
+        will-find-her ebit-set
     then
-    5 ebit? if
+    will-find-her ebit? if
         0 stalker-who $B action
     else
         $78 1 summoner-wait
@@ -117,43 +132,43 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     stalker-who self-is? if
         fiona-hidden state-flag? if
-            $B ebit-set
+            came-while-hidden ebit-set
             c2f-3-tv-examined story-flag? if
                 castle-2f-5.act04
             else
                 castle-2f-5.act04
             then
         else
-            $B ebit-clear
+            came-while-hidden ebit-clear
         then
     then
 ;
 
 : castle-2f-5.phase1 ( -- )   \ 0042B200
-    3 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             c2f-3-tv-examined story-flag? if
                 $40000001 6 0.0 3.0 7.0 0 0 sound
             then
             $40000009 6 -42.0 4.0 -63.0 0 0 sound
-            3 ebit-set
+            sound-started ebit-set
         then
     else
-        1 var-inc
-        1 30 var? if
-            1 0 var-set
-            0 0 var? if
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
                 $40000005 6 -47.0 12.0 -28.0 0 0 sound
-            else 0 1 var? if
+            else sound-step-var 1 var? if
                 $40000006 6 -47.0 12.0 -28.0 0 0 sound
-            else 0 2 var? if
+            else sound-step-var 2 var? if
                 $40000007 6 -47.0 12.0 -28.0 0 0 sound
-            else 0 3 var? if
+            else sound-step-var 3 var? if
                 $40000008 6 -47.0 12.0 -28.0 0 0 sound
             then then then then
-            0 var-inc
-            0 4 var? if
-                0 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
         $C0000001 6 0.0 3.0 7.0 0 0 sound
@@ -370,7 +385,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-2f-5.act03 ( -- )   \ 0042B820
-    4 ebit? if
+    found-her ebit? if
         2 avoid-prompt
     then
     1 self-scripted
@@ -381,7 +396,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who slide-sound 5 char-sound
     3 room-motion $A blend-out
     0 self-noclip
-    4 ebit? not if
+    found-her ebit? not if
         stalker-who action-end
     then
     0 self-scripted
@@ -390,24 +405,24 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-2f-5.act01 ( -- )   \ 0042B6E0
     stalkers-stay state-flag-set
-    $B ebit-clear
+    came-while-hidden ebit-clear
     1 self-scripted
     0 counter-set
-    6 ebit-clear
-    7 ebit-clear
+    hewie-along ebit-clear
+    hewie-in-place ebit-clear
     hewie-who char-busy? not hewie-near-command? and fiona-who hewie-who 50 chars-within? and if
         0 hewie-who 2 action-force
-        6 ebit-set
+        hewie-along ebit-set
     then
     fiona-who 8 char-file-load
     self-wait-done
-    6 ebit? if
+    hewie-along ebit? if
         $27 14.5 -37.5 180 $FFFF 5 self-move-to
         self-wait-done
         fiona-who char-file-use
         hewie-who self-look-at
         yield
-        [: 7 ebit? ;] wait-until
+        [: hewie-in-place ebit? ;] wait-until
         counter-inc
         1 self-noclip
         self-who self-look-at
@@ -430,12 +445,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
-    4 ebit-clear
+    found-her ebit-clear
     0 avoid-prompt
     self-who 3 -1 char-camera
     begin
         0 2 pad? not if
-            in-panic? 4 ebit? or if
+            in-panic? found-her ebit? or if
                 in-panic? not if
                     fiona-who seized-sound 5 char-sound
                 then
@@ -444,8 +459,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                $B ebit? stalker-who char-here? not and if
-                    $B ebit-clear
+                came-while-hidden ebit? stalker-who char-here? not and if
+                    came-while-hidden ebit-clear
                     1 avoid-prompt
                 then
                 yield
@@ -476,7 +491,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $88 18.5 -37.5 180 $FFFF $A self-move-to
     self-wait-done
     hewie-who char-file-use
-    7 ebit-set
+    hewie-in-place ebit-set
     1 wait-counter
     1 self-noclip
     0 room-motion 5 blend-out
@@ -729,7 +744,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     else
         there-anim play-out
     then
-    4 ebit-set
+    found-her ebit-set
     10 self-idle-anim
     [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
@@ -787,9 +802,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     look-at-anim self-anim
     $28 wait-frames
     c2f-3-portrait-1-examined story-flag-set
-    0 ebit? not if
+    portrait-1-remarked ebit? not if
         $24 say   \ "I wonder whose portrait this is?"
-        0 ebit-set
+        portrait-1-remarked ebit-set
     else
         $25 say   \ "This sounds really weird, but for some reason, I feel like I've seen this person..."
     then
@@ -811,9 +826,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     look-at-anim self-anim
     $28 wait-frames
     c2f-3-portrait-2-examined story-flag-set
-    1 ebit? not if
+    portrait-2-remarked ebit? not if
         $2D say   \ "The man pictured here has a noble air about him. I wonder how long ago this portr..."
-        1 ebit-set
+        portrait-2-remarked ebit-set
     else c2f-3-portrait-1-examined story-flag? c2f-3-portrait-3-examined story-flag? or if
         $2E say   \ "In this painting the man looks quite young. There is no mistaking that all the pa..."
     else
@@ -833,9 +848,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     look-at-anim self-anim
     $28 wait-frames
     c2f-3-portrait-3-examined story-flag-set
-    2 ebit? not if
+    portrait-3-remarked ebit? not if
         $2B say   \ "What a powerful piece of art. The eyes really feel like they are peering deep int..."
-        2 ebit-set
+        portrait-3-remarked ebit-set
     else c2f-3-portrait-1-examined story-flag? c2f-3-portrait-2-examined story-flag? and if
         $2C say   \ "Every painting features the same person. Perhaps it's the lord of this castle?"
     else
@@ -852,12 +867,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     knocked-anim self-anim
     fiona-who $C 6 char-sound
     $14 wait-frames
-    8 ebit? not if
+    tired-remarked ebit? not if
         $2F message   \ "I... I don't feel so hot. It's like I have no energy all of a sudden."
-        8 ebit-set
+        tired-remarked ebit-set
     else
         $30 message   \ "I should try to get some rest."
-        8 ebit-clear
+        tired-remarked ebit-clear
     then
     attack-anim $A self-anim-blend
     wait-message
@@ -944,9 +959,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who $E8 -25.0 63.0 -5 char-to-xz
     1 20.0 10.0 40.0 0.0 event-camera
     4 wait-frames
-    9 ebit? not if
+    doll-remarked ebit? not if
         1 say   \ "There's an antique doll lying here."
-        9 ebit-set
+        doll-remarked ebit-set
     else
         2 say   \ "They say that bisque dolls are supposedly designed with a specific model in mind......"
     then

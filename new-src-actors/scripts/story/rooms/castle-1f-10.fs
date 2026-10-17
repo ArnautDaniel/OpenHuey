@@ -4,6 +4,11 @@
 IN: story.rooms.castle-1f-10
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant hewie-sent-off              \ (bit 0) Hewie was here and sent off: she leaves by the other way
+1 constant doll-scene-done             \ (bit 1) the figure's doll scene played (act06)
+2 constant doll-to-take                \ (bit 2) the doll on show, to be taken
+
 \ the stalker in play is chasing (+0x153C 2, 6 or 7, not +0xC4 2) with the progress state 2: in
 \ this room, whether the camera sees it; elsewhere 1
 : castle-1f-10.cond00? ( -- flag )   \ (out of view: Camera_OutOfView)
@@ -34,7 +39,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     got-bisque-doll story-flag? if
         $93 1 item-count? not castle-1f-10.cond01? and if
             0 part-shown
-            2 ebit-set
+            doll-to-take ebit-set
         then
     then
 ;
@@ -101,7 +106,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         fiona-who 2 $14 0 $2D char-touching-facing? if
             c1f-10-flag2 story-flag? not if
                 2 unhurried offer-action
-            else 1 ebit? not if
+            else doll-scene-done ebit? not if
                 6 unhurried offer-action
             then then
         then
@@ -112,7 +117,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who 7 char-in-area? fiona-who 45 $32 char-heading? and if
         5 unhurried offer-action
     then
-    2 ebit? if
+    doll-to-take ebit? if
         fiona-who 8 $3C char-faces-area? if
             7 calm offer-action
         then
@@ -145,7 +150,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-who char-here? if
         hewie-who action-end
         hewie-who char-done
-        0 ebit-set
+        hewie-sent-off ebit-set
     then
     $20 door-open-set
     doors-room-in
@@ -160,7 +165,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     world-held state-flag-set
     0 exit-prepare
     $20 door-open-clear
-    0 ebit? if
+    hewie-sent-off ebit? if
         $80 exit-check
     else
         $81 exit-check
@@ -277,7 +282,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 $9002 0 7 char-anim-hold
     2 wait-char-anim
     2 $9001 1 7 char-anim-hold
-    1 ebit-set
+    doll-scene-done ebit-set
     self-idle-or-end
 ;
 
@@ -292,7 +297,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
     else
         $93 1 item-give-count
-        2 ebit-clear
+        doll-to-take ebit-clear
         0 part-hidden
         0 $93 item-tab
         item-fanfare

@@ -4,6 +4,15 @@
 IN: story.rooms.castle-b1-2
 USING: room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds stalker.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant rested                      \ (bit 0) she has rested here (her recovery: once a visit)
+1 constant locked-remarked             \ (bit 1) its first remark made: "The door is locked..."
+2 constant found-her                   \ (bit 2) he has found her hiding: she must flee (the avoid prompt)
+3 constant will-find-her               \ (bit 3) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+4 constant found-her-2                 \ (bit 4) he has found her hiding: she must flee
+5 constant came-while-hidden           \ (bit 5) the stalker came in while she was hiding
+0 constant crawl-frames-var            \ (var 0) her crawl's frames (to 28)
+
 \ room 0x14: the curtain ("Cartain") animated by event variable 0 (var0_obj_anim: byte 3 picks
 \ the frame range and direction).
 : castle-b1-2.cmd00 ( b0 -- )  s" Cartain" curtain ;
@@ -28,31 +37,31 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
         stalker-who 1 char-file-load
     then
     stalker-who camera-follow
-    3 ebit-clear
+    will-find-her ebit-clear
     $F 0 pvar? if
         0 chance? if
-            3 ebit-set
+            will-find-her ebit-set
         then
     else $F 1 pvar? if
         0 chance? if
-            3 ebit-set
+            will-find-her ebit-set
         then
     else $F 2 pvar? if
         $19 chance? if
-            3 ebit-set
+            will-find-her ebit-set
         then
     else $F 3 pvar? if
         $19 chance? if
-            3 ebit-set
+            will-find-her ebit-set
         then
     then then then then
     2 creature-action? if
-        3 ebit-set
+        will-find-her ebit-set
     then
     4 stalker-alert? if
-        3 ebit-clear
+        will-find-her ebit-clear
     then
-    3 ebit? if
+    will-find-her ebit? if
         0 stalker-who 8 action
     else
         $78 1 summoner-wait
@@ -74,10 +83,10 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     1 2 -1 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
-            5 ebit-set
+            came-while-hidden ebit-set
             castle-b1-2.act07
         else
-            5 ebit-clear
+            came-while-hidden ebit-clear
         then
     then
 ;
@@ -156,7 +165,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
 ;
 
 : castle-b1-2.act01 ( -- )   \ 003F9BD0
-    0 ebit? not if
+    rested ebit? not if
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
@@ -173,7 +182,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
         $E4 panic-calm-in
         fiona-calm-reset
         3 avoid-prompt
-        0 ebit-set
+        rested ebit-set
         fiona-who $84 5 char-sound
         $1E wait-frames
         got-doc-recovery story-flag? not if
@@ -224,7 +233,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
 
 : castle-b1-2.act03 ( -- )   \ 003F9CF0
     self-wait-done
-    1 ebit? not 2 game-mode? or in-panic? or if
+    locked-remarked ebit? not 2 game-mode? or in-panic? or if
         1 self-through-exit
         self-wait-done
         in-panic? 2 game-mode? or if
@@ -237,7 +246,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
             7 wait-frames
             3 say   \ "The door is locked..."
         then
-        1 ebit-set
+        locked-remarked ebit-set
     else
         $95 -58.5 9.5 -105 $FFFF 5 self-move-to
         self-wait-done
@@ -277,8 +286,8 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    0 0 var-set
-    4 ebit? if
+    crawl-frames-var 0 var-set
+    found-her-2 ebit? if
         counter-inc
     then
     2 room-motion 5 self-anim-blend8
@@ -286,8 +295,8 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     begin
         2 castle-b1-2.cmd00
         yield
-        0 28 var? not while
-        0 var-inc
+        crawl-frames-var 28 var? not while
+        crawl-frames-var var-inc
     repeat
     3 castle-b1-2.cmd00
     in-panic? not if
@@ -295,7 +304,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     then
     self-wait-anim
     0 self-noclip
-    4 ebit? if
+    found-her-2 ebit? if
         2 wait-counter
     then
     0 self-scripted
@@ -303,26 +312,26 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
 ;
 
 : castle-b1-2.act09 ( -- )   \ 003F9F80
-    2 ebit? if
+    found-her ebit? if
         2 avoid-prompt
     then
     1 self-scripted
     fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    0 0 var-set
+    crawl-frames-var 0 var-set
     3 room-motion 5 self-anim-blend8
     5 wait-frames
     begin
         5 castle-b1-2.cmd00
         yield
-        0 18 var? not while
-        0 var-inc
+        crawl-frames-var 18 var? not while
+        crawl-frames-var var-inc
     repeat
     3 castle-b1-2.cmd00
     self-wait-anim
     0 self-noclip
-    2 ebit? not if
+    found-her ebit? not if
         stalker-who action-end
         stalker-who char-here? if
             stalker-who 0 stalker-command
@@ -334,7 +343,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
 
 : castle-b1-2.act05 ( -- )   \ 003F9D90
     stalkers-stay state-flag-set
-    5 ebit-clear
+    came-while-hidden ebit-clear
     1 self-scripted
     fiona-who 0 char-file-load
     self-wait-done
@@ -345,29 +354,29 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     fiona-who char-file-use
     self-who self-look-at
     yield
-    0 0 var-set
+    crawl-frames-var 0 var-set
     0 room-motion 5 self-anim-blend8
     5 wait-frames
     begin
         0 castle-b1-2.cmd00
         yield
-        0 54 var? not while
-        0 var-inc
+        crawl-frames-var 54 var? not while
+        crawl-frames-var var-inc
     repeat
     self-wait-anim
     4 castle-b1-2.cmd00
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
-    2 ebit-clear
-    4 ebit-clear
+    found-her ebit-clear
+    found-her-2 ebit-clear
     0 counter-set
     0 avoid-prompt
     begin
-        4 ebit? if
+        found-her-2 ebit? if
             ['] castle-b1-2.act06 goto
         else 0 2 pad? not if
-            in-panic? 2 ebit? or if
+            in-panic? found-her ebit? or if
                 in-panic? not if
                     fiona-who seized-sound 5 char-sound
                 then
@@ -376,8 +385,8 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
                 2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                5 ebit? stalker-who char-here? not and if
-                    5 ebit-clear
+                came-while-hidden ebit? stalker-who char-here? not and if
+                    came-while-hidden ebit-clear
                     1 avoid-prompt
                 then
                 yield
@@ -390,13 +399,13 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
             fiona-who camera-follow
             fiona-hidden state-flag-clear
             1 self-noclip
-            0 0 var-set
+            crawl-frames-var 0 var-set
             1 room-motion 0 self-anim-blend8
             begin
                 1 castle-b1-2.cmd00
                 yield
-                0 21 var? not while
-                0 var-inc
+                crawl-frames-var 21 var? not while
+                crawl-frames-var var-inc
             repeat
             3 castle-b1-2.cmd00
             self-wait-anim
@@ -422,7 +431,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     $10 58.883 -8.841 180 $FFFF 5 self-move-to
     self-wait-done
     2 self-is? 6 self-is? or 7 self-is? or if
-        4 ebit-set
+        found-her-2 ebit-set
         1 self-scripted
         yield
         stalker-who char-file-use
@@ -433,7 +442,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
         0 self-scripted
     else
         there-anim play-out
-        2 ebit-set
+        found-her ebit-set
     then
     10 self-idle-anim
     [: fiona-who char-busy? ;] wait-while

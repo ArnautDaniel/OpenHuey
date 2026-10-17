@@ -4,6 +4,9 @@
 IN: story.rooms.off-map-34
 USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
+\ ---- this room's own event bits and script variables ----
+5 constant came-while-hidden           \ (bit 5) the stalker came in while she was hiding
+
 : off-map-34.char-enter ( -- )   \ 00442950
     fiona-who self-is? if
         cf-13-flag1 story-flag? if
@@ -221,10 +224,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     then
     stalker-who self-is? if
         fiona-hidden state-flag? if
-            5 ebit-set
+            came-while-hidden ebit-set
             9 call-action   \ (this room has no script 9: the original reads past its table)
         else
-            5 ebit-clear
+            came-while-hidden ebit-clear
         then
     then
 ;

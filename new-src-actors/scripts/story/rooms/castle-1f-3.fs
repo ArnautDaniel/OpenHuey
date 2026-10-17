@@ -4,6 +4,14 @@
 IN: story.rooms.castle-1f-3
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant bookshelf-remarked          \ (bit 0) its first remark made: "A wealth of information, right before your fingertips... A l"
+1 constant harp-remarked               \ (bit 1) its first remark made: "This harp is so large and bulky... It's hard to imagine peop"
+2 constant chase-scene-on              \ (bit 2) the chase scene under way: at the room's end the stalkers let go
+3 constant item-scene-on               \ (bit 3) the item's scene (act05) under way
+4 constant hewie-zone3-noticed         \ (bit 4) Hewie has reacted to zone 3 (once a visit)
+5 constant creepy-thing-remarked       \ (bit 5) its first remark made: "W-What is this thing? It is really giving me the creeps. Why"
+
 \ room 0x09 (Room09_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) is in
 \ another room than 9 (the player about too)
 : castle-1f-3.cond00? ( -- flag )  hunting-debilitas? stalker-room 9 <> and ;
@@ -80,11 +88,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     3 13.13 0.0 -30.63 $1C 11 0 zone
-    4 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone3-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 3 9 char-zone-bits? if
-                    4 ebit-set
+                    hewie-zone3-noticed ebit-set
                     $32 chance? if
                         hewie-zone-var 3 var-set
                         0 hewie-who $8A action
@@ -152,14 +160,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-3.phase5 ( -- )   \ 003F34D8
-    2 ebit? if
+    chase-scene-on ebit? if
         stalkers-stay state-flag-clear
         force-chased state-flag-clear
     then
 ;
 
 : castle-1f-3.act00 ( -- )   \ 003F34F0
-    2 ebit? if
+    chase-scene-on ebit? if
         stalkers-stay state-flag-clear
         1 track action-end
     then
@@ -273,7 +281,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-3.act05 ( -- )   \ 003F36B0
-    3 ebit-set
+    item-scene-on ebit-set
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
@@ -320,11 +328,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $8012 say   \ "You've obtained ."
         reach-back-anim play-out
     then
-    2 ebit? not if
+    chase-scene-on ebit? not if
         stalkers-stay state-flag-clear
     then
     0 self-scripted
-    3 ebit-clear
+    item-scene-on ebit-clear
     self-idle-or-end
 ;
 
@@ -381,9 +389,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-3.act0A ( -- )   \ 003F38B0
     self-wait-done
-    0 ebit? not if
+    bookshelf-remarked ebit? not if
         2 say   \ "A wealth of information, right before your fingertips... A lot of the books seem to..."
-        0 ebit-set
+        bookshelf-remarked ebit-set
     else
         3 say   \ "Maybe they wouldn't mind if I took a few of these books... Nah, I'm sure they would..."
     then
@@ -398,9 +406,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $10 wait-frames
     look-at-anim self-anim
     $37 wait-frames
-    1 ebit? not if
+    harp-remarked ebit? not if
         4 say   \ "This harp is so large and bulky... It's hard to imagine people actually play these..."
-        1 ebit-set
+        harp-remarked ebit-set
     else
         5 say   \ "Trying to play that for long stints of time would probably give even the most exper..."
     then
@@ -415,7 +423,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     force-chased state-flag-set
     1 self-scripted
     c1f-3-bookshelf-hint story-flag-set
-    2 ebit-set
+    chase-scene-on ebit-set
     self-wait-done
     rest-anim $A self-anim-blend
     6 message   \ "That bookshelf... I wonder if I can hide behind it?"
@@ -429,10 +437,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-3.act0D ( -- )   \ 003F3960
     $F0 wait-frames
-    [: 3 ebit? ;] wait-while
+    [: item-scene-on ebit? ;] wait-while
     stalkers-stay state-flag-clear
     force-chased state-flag-clear
-    2 ebit-clear
+    chase-scene-on ebit-clear
     self-idle-or-end
 ;
 
@@ -452,9 +460,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 10.0 20.0 -30.0 0.0 event-camera
     c1f-3-flag1 story-flag? not if
         8 say   \ "What... is this? I probably shouldn't go snooping around things I know nothing about."
-    else 5 ebit? not if
+    else creepy-thing-remarked ebit? not if
         9 say   \ "W-What is this thing? It is really giving me the creeps. Why would anyone in their..."
-        5 ebit-set
+        creepy-thing-remarked ebit-set
     else
         $A say   \ "I think I'll refrain from touching it... Heck, even looking at it makes my skin cr..."
     then then

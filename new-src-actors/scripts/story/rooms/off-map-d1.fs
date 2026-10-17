@@ -4,6 +4,9 @@
 IN: story.rooms.off-map-d1
 USING: room-names story.words story.shared story.clock ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant cond-was-off                \ (bit 0) the room's condition was false last frame: its hook waits a frame once it holds
+
 \ as Room106_Cmd00
 : off-map-d1.cmd00 ( -- )  effects:one-drip ;   \ (as chaos-forest-8's: a drop falling now and then)
 \ room 0xD1: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
@@ -56,9 +59,9 @@ USING: room-names story.words story.shared story.clock ;
 
 : off-map-d1.phase3 ( -- )   \ 00446CF0
     off-map-d1.cond00? not if
-        0 ebit-set
-    else 0 ebit? if
-        0 ebit-clear
+        cond-was-off ebit-set
+    else cond-was-off ebit? if
+        cond-was-off ebit-clear
     else
         off-map-d1.cmd01
     then then

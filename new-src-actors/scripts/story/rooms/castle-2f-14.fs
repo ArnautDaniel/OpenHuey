@@ -4,6 +4,12 @@
 IN: story.rooms.castle-2f-14
 USING: room-names story.words story.shared flag-names story-names floor-flags hewie.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant bridge-remarked             \ (bit 0) its first remark made: "It's a suspended bridge."
+1 constant hewie-zone0-noticed         \ (bit 1) Hewie has reacted to zone 0 (once a visit)
+2 constant statue-remarked             \ (bit 2) its first remark made: "The body of a beast and the head of a bird... What a strange"
+3 constant bridge-crossing             \ (bit 3) the stalker on the bridge (its floor opened for him)
+
 \ room 0x2F (Room2F_Cond00_ptmf): the pursuer's Pursuer_GrabHewieBehind
 : castle-2f-14.cond00? ( b0 -- flag )  drop grab-hewie-behind? ;   \ (the stalker's Pursuer_GrabHewieBehind)
 
@@ -67,11 +73,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags he
                 0 hewie-who 5 action
             else stalker-who 2 char-cond? not stalker-who 8 char-in-area? and if
                 stalker-free? if
-                    3 ebit? not if
+                    bridge-crossing ebit? not if
                         0 solid-floor floor-off
                         0 keeps-fiona-off keeps-pursuers-off or floor-on
                         0 castle-2f-14.cond00? if
-                            3 ebit-set
+                            bridge-crossing ebit-set
                             0 1 track 6 action
                         else
                             0 solid-floor floor-on
@@ -94,11 +100,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags he
     then
     c2f-13-medallion story-flag? not hewie-who 7 char-in-area? and if
         0 -149.92 60.0 -50.71 $36 36 0 zone
-        1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 0 9 char-zone-bits? if
-                        1 ebit-set
+                        hewie-zone0-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 0 var-set
                             0 hewie-who $88 action
@@ -187,9 +193,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags he
 
 : castle-2f-14.act02 ( -- )   \ 00412C50
     self-wait-done
-    0 ebit? not if
+    bridge-remarked ebit? not if
         0 say   \ "It's a suspended bridge."
-        0 ebit-set
+        bridge-remarked ebit-set
     else
         1 say   \ "If I lower the bridge somehow, I can use it to cross."
     then
@@ -260,7 +266,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags he
     self-wait-done
     0 solid-floor floor-on
     0 keeps-fiona-off keeps-pursuers-off or floor-off
-    3 ebit-clear
+    bridge-crossing ebit-clear
     self-idle-or-end
 ;
 
@@ -287,7 +293,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags he
     else
         0 solid-floor floor-on
         0 keeps-fiona-off keeps-pursuers-off or floor-off
-        3 ebit-clear
+        bridge-crossing ebit-clear
         5 hewie-trust
     then
     self-idle-or-end
@@ -297,12 +303,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags he
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    2 ebit? not if
+    statue-remarked ebit? not if
         3 say   \ "The body of a beast and the head of a bird... What a strange-looking statue."
-        2 ebit-set
+        statue-remarked ebit-set
     else
         4 say   \ "Some ancient castles used to line their walls with gargoyles, as it was believed to..."
-        2 ebit-clear
+        statue-remarked ebit-clear
     then
     self-idle-or-end
 ;

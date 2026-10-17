@@ -4,8 +4,15 @@
 IN: story.rooms.front-garden-5
 USING: actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.sounds stalker.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant found-her                   \ (bit 0) he has found her hiding: she must flee (the avoid prompt)
+1 constant will-find-her               \ (bit 1) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+2 constant came-while-hidden           \ (bit 2) the stalker came in while she was hiding
+0 constant fall-frames-var             \ (var 0) the falling thing's frames
+1 constant fall-fx-var                 \ (var 1) the falling thing's effect
+
 \ a hanging thing (the room's +0x34 (byte 3 + 2) object) swinging, by byte 4: 0 / 2 set going
-\ (12 degrees) away from the partner / Fiona; 1 a step-floor (22.5 degrees of its swing, shrinking to
+\ (12 degrees) away from the partner / Fiona; 1 a step (22.5 degrees of its swing, shrinking to
 \ 0.4 at each end; under half a degree it stops) - 2 while it swings
 : swing-step ( a n -- settled? )   \ (on 22.5 degrees of its swing, shrinking near the middle)
     {: a n :}
@@ -36,19 +43,19 @@ fvariable sw-dx  fvariable sw-dz
 \ 160), by byte 3: 0 started (event var 0 the frame count); 1 a frame (2 while falling): it
 \ drifts 0.5 a frame in x and falls 0.05 x n(n+1)/2, gone below -10
 : front-garden-5.fall ( -- going? )   \ (cmd01's frame of falling: false once gone)
-    0 var @ 1+ {: n :}
+    fall-frames-var var @ 1+ {: n :}
     3e  0.05e n n 1+ * 2/ s>f f*  f-  fdup -10e f> 0= if
-        fdrop  1 var @ dup alive? if  kill  else  drop  then  false exit
+        fdrop  fall-fx-var var @ dup alive? if  kill  else  drop  then  false exit
     then
-    -276.5e 0.5e n s>f f* f+ f>cell  f>cell  160e f>cell  1 var @ dup alive? if  send effect-place  else  drop 2drop drop  then
-    0 n var-set  true ;
+    -276.5e 0.5e n s>f f* f+ f>cell  f>cell  160e f>cell  fall-fx-var var @ dup alive? if  send effect-place  else  drop 2drop drop  then
+    fall-frames-var n var-set  true ;
 : front-garden-5.cmd01 ( b0 -- )   \ (something dropped from (-276.5, 3, 160): b0 0 made - kept in variable 1, the frames in
     \ variable 0; 1 falls a frame at a time - on 0.5 in x, down 0.05 more each frame - till below
     \ -10, where it is gone)
-    0= if  0 0 var-set  1  -276.5e 3e 160e effects:loop-sprite  var-set  exit  then
+    0= if  fall-frames-var 0 var-set  1  -276.5e 3e 160e effects:loop-sprite  var-set  exit  then
     begin  front-garden-5.fall while  yield  repeat ;
 \ room 0x2D: two hanging things (the room's objects 4 and 5) that Fiona pushes as she walks by:
-\ past a step-floor total of 5 they swing for 20 frames and the first toggles event flag 3 with a
+\ past a step total of 5 they swing for 20 frames and the first toggles event flag 3 with a
 \ sound (hangers_swing).
 : front-garden-5.cmd02 ( b0 -- )  4 2 1 3 1 2  5e hangers-swing ;   \ (Fiona's step's length past 5; event flag 3)
 \ Hewie (in state 0x7F, +0xF3564) within 5 of the spot by byte 3: 0 (-259.5, 190), 1 (-276, 160)
@@ -97,31 +104,31 @@ fvariable sw-dx  fvariable sw-dz
 
 : front-garden-5.act09 ( -- )   \ 00406180
     stalker-who camera-follow
-    1 ebit-clear
+    will-find-her ebit-clear
     $A 0 pvar? if
         0 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else $A 1 pvar? if
         $19 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else $A 2 pvar? if
         $32 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else $A 3 pvar? if
         $4B chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     then then then then
     2 creature-action? if
-        1 ebit-set
+        will-find-her ebit-set
     then
     4 stalker-alert? if
-        1 ebit-clear
+        will-find-her ebit-clear
     then
-    1 ebit? if
+    will-find-her ebit? if
         0 stalker-who $A action
     else
         $78 1 summoner-wait
@@ -138,10 +145,10 @@ fvariable sw-dx  fvariable sw-dz
     0 0 0 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
-            2 ebit-set
+            came-while-hidden ebit-set
             front-garden-5.act09
         else
-            2 ebit-clear
+            came-while-hidden ebit-clear
         then
     then
 ;
@@ -423,7 +430,7 @@ fvariable sw-dx  fvariable sw-dz
 ;
 
 : front-garden-5.act08 ( -- )   \ 00406150
-    0 ebit? if
+    found-her ebit? if
         2 avoid-prompt
     then
     fiona-hidden state-flag-clear
@@ -440,9 +447,9 @@ fvariable sw-dx  fvariable sw-dz
 
 : front-garden-5.act07 ( -- )   \ 00406090
     stalkers-stay state-flag-set
-    2 ebit-clear
+    came-while-hidden ebit-clear
     1 self-scripted
-    0 ebit-clear
+    found-her ebit-clear
     self-wait-done
     $E5 -74.756 82.505 -90 $FFFF 5 self-move-to
     self-wait-done
@@ -459,7 +466,7 @@ fvariable sw-dx  fvariable sw-dz
     0 avoid-prompt
     begin
         0 2 pad? not if
-            in-panic? 0 ebit? or if
+            in-panic? found-her ebit? or if
                 in-panic? not if
                     fiona-who seized-sound 5 char-sound
                 then
@@ -468,8 +475,8 @@ fvariable sw-dx  fvariable sw-dz
                 2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                2 ebit? stalker-who char-here? not and if
-                    2 ebit-clear
+                came-while-hidden ebit? stalker-who char-here? not and if
+                    came-while-hidden ebit-clear
                     1 avoid-prompt
                 then
                 yield
@@ -498,7 +505,7 @@ fvariable sw-dx  fvariable sw-dz
     $1E6 -45.859 82.656 -90 $FFFF 5 self-move-to
     self-wait-done
     there-anim play-out
-    0 ebit-set
+    found-her ebit-set
     10 self-idle-anim
     [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command

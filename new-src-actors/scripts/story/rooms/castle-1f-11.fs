@@ -4,6 +4,11 @@
 IN: story.rooms.castle-1f-11
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant stalker-scene-on            \ (bit 0) his scripted scene under way here (stalker): at the room's end he is put back
+0 constant clamp-hits-var              \ (var 0) the clamp struck so far (the wire loosens at 2)
+1 constant shove-frames-var            \ (var 1) his shove's frames (dust at 89)
+
 \ room 0x03 (Room03_Cmd00_ptmf): three objects turned (-60, -60 degrees about x; -90 about z)
 : castle-1f-11.cmd00 ( -- )   \ (the drawbridge's two halves -60 degrees about x, the lever -90 about z)
     -60e deg>rad s" hanebasi1" turn-x object!  -60e deg>rad s" hanebasi2" turn-x object!
@@ -104,8 +109,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         fiona-who 3 char-in-zone? if
             1 castle-1f-11.cmd01
             1 $FF 4 rumble
-            0 2 var? if
-                0 var-inc
+            clamp-hits-var 2 var? if
+                clamp-hits-var var-inc
                 0 2 track $A action
             else
                 0 1 track 3 action
@@ -206,9 +211,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         hewie-who $CC 32.509 56.979 60 char-to-xz
         stalkers-stay state-flag-clear
     then
-    stalker-who char-busy? 0 ebit? and if
+    stalker-who char-busy? stalker-scene-on ebit? and if
         stalker-who $8F 2.4 -76.445 90 char-to-xz
-        0 ebit-clear
+        stalker-scene-on ebit-clear
     then
 ;
 
@@ -266,7 +271,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     stalkers-stay state-flag-clear
     0 self-scripted
     stalker-who 3 0 room-doors-state
-    0 ebit-clear
+    stalker-scene-on ebit-clear
     self-idle-or-end
 ;
 
@@ -287,8 +292,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         1 self-scripted
         fiona-who $8E -6.625 -82.651 -144 char-to-xz
         1 10.0 15.0 0.0 0.0 event-camera
-        0 0 var? if
-            0 say   \ "A clamp is fixed to a wire winding device. It's rusted solid-floor but if I hit it wi..."
+        clamp-hits-var 0 var? if
+            0 say   \ "A clamp is fixed to a wire winding device. It's rusted solid but if I hit it wi..."
         else
             1 say   \ "The wire seems to have loosened a bit."
         then
@@ -305,7 +310,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-1f-11.act03 ( -- )   \ 003F0A30
     fiona-who 0 6 char-sound
     [: fiona-free? ;] wait-until
-    0 var-inc
+    clamp-hits-var var-inc
     self-idle-or-end
 ;
 
@@ -333,7 +338,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-11.act05 ( -- )   \ 003F0AA0
-    0 ebit-set
+    stalker-scene-on ebit-set
     self-wait-done
     stalker-who char-file-use
     1 self-noclip
@@ -348,24 +353,24 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $13C -45.739 -73.201 90 $FFFF $A self-move-to
     self-wait-done
     0 room-motion 5 self-anim-blend8
-    1 0 var-set
+    shove-frames-var 0 var-set
     begin
         fiona-who self-touching? if
             stalker-who 0 fiona-thrown
         then
-        1 89 var? if
+        shove-frames-var 89 var? if
             0 5.0 115.0 -70.0 0 0 0 0 dust
             0 5.0 115.0 -76.0 0 0 0 0 dust
             stalker-who $B 6 char-sound
         then
-        1 var-inc
+        shove-frames-var var-inc
         self-at-motion-event? not while
         yield
     repeat
     stalker-who 0 stalker-command
     0 self-noclip
     0 self-scripted
-    0 ebit-clear
+    stalker-scene-on ebit-clear
     summoner-own-cooldown
     self-idle-or-end
 ;

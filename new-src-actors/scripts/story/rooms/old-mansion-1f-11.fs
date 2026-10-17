@@ -4,6 +4,13 @@
 IN: story.rooms.old-mansion-1f-11
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant water-remarked              \ (bit 0) its first remark made: "The path is obstructed by water..."
+1 constant stalker-scene-on            \ (bit 1) the scene with her (act03) under way
+2 constant wall-breaking               \ (bit 2) the stalker breaking through (at the room's end: broken)
+4 constant hewie-zone0-noticed         \ (bit 4) Hewie has reacted to zone 0 (once a visit)
+0 constant struggle-frames-var         \ (var 0) the struggle's frames (her cry at 12, over at 30)
+
 \ room 0x4E (D_0040B4D8): a lit quad at x -44 .. -36, z 60, from 54 to 71
 : old-mansion-1f-11.cmd00 ( b0 -- )  $1B $80  -44.0e 71.0e 60.0e  -36.0e 71.0e 60.0e  -44.0e 54.0e 60.0e  -36.0e 54.0e 60.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
 \ room 0x4E: the curtain ("Curtain_2") animated by event variable 0 (var0_anim: byte 3 0
@@ -115,7 +122,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
         3 exit-prepare
     then
-    1 ebit? not if
+    stalker-scene-on ebit? not if
         om1f-11-breakable-broken story-flag? not om1f-11-flag1 story-flag? and if
             3 stalker-kind? $22 stalker-kind? or if
                 stalker-who $13 char-entered-area? stalker-who 0 char-action? and if
@@ -126,11 +133,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     om1f-11-breakable-broken story-flag? not om1f-11-flag1 story-flag? and if
         0 -39.93 50.0 59.59 $C 6 0 zone
-        4 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 0 9 char-zone-bits? if
-                        4 ebit-set
+                        hewie-zone0-noticed ebit-set
                         $32 chance? if
                             hewie-zone-var 0 var-set
                             0 hewie-who $93 action
@@ -168,7 +175,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     else fiona-who $12 char-in-area? fiona-who -45 $32 char-heading? and if
         2 unhurried offer-action
     then then
-    2 ebit? not if
+    wall-breaking ebit? not if
         fiona-who $13 char-in-area? fiona-who 0 $3C char-heading? and if
             om1f-11-breakable-broken story-flag? not if
                 stalker-who char-here? not if
@@ -184,10 +191,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     else 3 stalker-kind? $22 stalker-kind? or if
         stalker-who char-busy? not if
-            2 ebit-clear
+            wall-breaking ebit-clear
         then
     else
-        2 ebit-clear
+        wall-breaking ebit-clear
     then then
     om1f-11-album-medallion-found story-flag? om1f-11-album-medallion story-flag? not and if
         3 0 5 5 0 zone-at-effect
@@ -198,7 +205,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-1f-11.phase5 ( -- )   \ 0040B200
-    2 ebit? if
+    wall-breaking ebit? if
         om1f-11-flag1 story-flag-set
         om1f-11-breakable-broken story-flag-set
         3 stalker-kind? $22 stalker-kind? or if
@@ -230,12 +237,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-1f-11.act02 ( -- )   \ 0040B250
-    0 ebit? not if
+    water-remarked ebit? not if
         self-wait-done
         -90 self-turn-angle
         self-wait-done
         1 say   \ "The path is obstructed by water. I can't get through..."
-        0 ebit-set
+        water-remarked ebit-set
     else
         stalkers-stay state-flag-set
         1 self-scripted
@@ -255,7 +262,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-11.act03 ( -- )   \ 0040B2A0
     1 self-scripted
-    1 ebit-set
+    stalker-scene-on ebit-set
     self-wait-done
     fiona-who 0 char-file-load
     $56 -40.0 54.64 0 $FFFF 5 self-move-to
@@ -264,46 +271,46 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     [: 6 sound-bank-loaded? ;] wait-until
     om1f-11-flag1 story-flag? not if
         0 old-mansion-1f-11.cmd00
-        0 0 var-set
+        struggle-frames-var 0 var-set
         0 room-motion 5 self-anim-blend8
         5 wait-frames
         begin
             0 old-mansion-1f-11.cmd01
             yield
-            0 30 var? not while
-            0 12 var? if
+            struggle-frames-var 30 var? not while
+            struggle-frames-var 12 var? if
                 fiona-who 0 6 char-sound
             then
-            0 var-inc
+            struggle-frames-var var-inc
         repeat
         self-wait-anim
         2 old-mansion-1f-11.cmd01
         om1f-11-flag1 story-flag-set
     else
-        0 0 var-set
+        struggle-frames-var 0 var-set
         1 room-motion 5 self-anim-blend8
         5 wait-frames
         begin
             1 old-mansion-1f-11.cmd01
             yield
-            0 28 var? not while
-            0 12 var? if
+            struggle-frames-var 28 var? not while
+            struggle-frames-var 12 var? if
                 fiona-who 0 6 char-sound
             then
-            0 var-inc
+            struggle-frames-var var-inc
         repeat
         self-wait-anim
         3 old-mansion-1f-11.cmd01
         om1f-11-flag1 story-flag-clear
         1 old-mansion-1f-11.cmd00
     then
-    1 ebit-clear
+    stalker-scene-on ebit-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-1f-11.act04 ( -- )   \ 0040B350
-    2 ebit-set
+    wall-breaking ebit-set
     self-wait-done
     stalker-who 1 char-file-load
     $56 -40.0 54.64 0 $FFFF 5 self-move-to
@@ -328,7 +335,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -37.0 54.0 60.0 0 538976288 4 -3.5 shards-at
     -41.0 54.0 60.0 0 538976288 4 -3.5 shards-at
     self-wait-anim
-    2 ebit-clear
+    wall-breaking ebit-clear
     self-idle-or-end
 ;
 

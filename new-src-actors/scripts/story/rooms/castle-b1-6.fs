@@ -4,19 +4,26 @@
 IN: story.rooms.castle-b1-6
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant pulley-remarked             \ (bit 0) its first remark made: "A pulley system used to wind up rope... Looks like this is u"
+1 constant chandelier-remarked         \ (bit 1) its first remark made: "What a fancy chandelier. It must have been quite expensive."
+2 constant area7-reacted               \ (bit 2) her reaction on entering area 7 made (once a visit)
+0 constant jar1-var                    \ (var 0) the first jar's strength (25: broken at 0)
+1 constant jar2-var                    \ (var 1) the second jar's strength (25: broken at 0)
+
 \ room 0x0C (Room0C_Cmd01_ptmf): script variable byte 3 down by the player's hit (byte 4: 1 from
 \ the weak blow 0x1A, else 5) or the pursuer's (+0x108), not below 0
 : castle-b1-6.cmd01 ( b0 b1 -- )   \ (script variable b0 down by the hit: b1 Fiona's - 1 from her weak blow ($1A), else 5;
     \ else the stalker's - his attack's blow under way, if any - not below 0)
     if  fiona-move-sub $1A = if  1  else  5  then  else  stalker-blow?  then        ( var k )
-    dup 0> if  over var @ swap - 0 max var-set  else  2drop  then ;
+    dup 0> if  over var @ swap - jar1-var max var-set  else  2drop  then ;
 \ room 0x0C (Room0C_Cmd02_ptmf): the screen darkened as the cutscene runs past frame 0x4AE (32 a
 \ frame, up to 0x80)
 : castle-b1-6.cmd02 ( -- )   \ (the screen darkened as the scene runs past frame $4AE: 32 a frame, to $80 - full
     \ before it, as the original's unsigned count gives)
     cutscene-frame $4AE - dup 0< if  drop $80  else  5 lshift $80 min  then  screen-fill ;
 \ room 0x0C (Room0C_Cmd03_ptmf): three objects (pair byte 4) swing: byte 3 0 set up (rest +0x30,
-\ phase +0x34 half a turn apart, swing +0x3C 0.75 / 0.5), 1 a step-floor (phase on 60 degrees, the
+\ phase +0x34 half a turn apart, swing +0x3C 0.75 / 0.5), 1 a step (phase on 60 degrees, the
 \ swing down 0.1, x = rest + swing x sin(phase); 2 once still), 2 all to x 10. 2 while any
 : swings-step ( pair -- still? )   \ (Room0C_Cmd03 1: each on 60 degrees, its swing down 0.1; still - to x 10)
     {: pair | moving a n :}  0 to moving
@@ -47,13 +54,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     1 part-shown
     6 1 object-hidden
     cb1-6-flag4 story-flag? not if
-        0 25 var-set
+        jar1-var 25 var-set
     else
         $D 1 object-hidden
         5 part-shown
     then
     cb1-6-flag5 story-flag? not if
-        1 25 var-set
+        jar2-var 25 var-set
     else
         $E 1 object-hidden
         3 part-shown
@@ -95,8 +102,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     9 1 0 1 chars-area-camera
     $A 0 -1 1 chars-area-camera
     $B 1 0 1 chars-area-camera
-    got-saturnus-key story-flag? cb1-6-flag1 story-flag? not and cb1-6-flag2 story-flag? not and fiona-who 7 char-entered-area? and 2 ebit? not and if
-        2 ebit-set
+    got-saturnus-key story-flag? cb1-6-flag1 story-flag? not and cb1-6-flag2 story-flag? not and fiona-who 7 char-entered-area? and area7-reacted ebit? not and if
+        area7-reacted ebit-set
         panic-eased
         fiona-who 0 char-action? if
             0 fiona-who 0 action-force
@@ -447,9 +454,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-b1-6.act05 ( -- )   \ 003F4E30
-    1 ebit? not if
+    chandelier-remarked ebit? not if
         $F say   \ "What a fancy chandelier. It must have been quite expensive."
-        1 ebit-set
+        chandelier-remarked ebit-set
     else
         look-low-anim $A self-anim-blend
         $10 say   \ "I-I could have been killed... I guess fate was smiling on me today... for now."
@@ -462,12 +469,12 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     found-file-20b story-flag? if
         $E say   \ "It's broken beyond repair..."
-    else 0 ebit? not if
+    else pulley-remarked ebit? not if
         $C say   \ "A pulley system used to wind up rope... Looks like this is used to raise and lower..."
-        0 ebit-set
+        pulley-remarked ebit-set
     else
         $D say   \ "It is tightly fastened... Must be to make sure the chandelier doesn't accidentally..."
-        0 ebit-clear
+        pulley-remarked ebit-clear
     then then
     self-idle-or-end
 ;
@@ -497,7 +504,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             0 1 castle-b1-6.cmd01
         then
     then
-    0 0 var? if
+    jar1-var 0 var? if
         10.0 10.0 -35.0 0 -2144325584 3 -9.0 shards-at
         $D 1 object-hidden
         5 part-shown
@@ -520,7 +527,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             1 1 castle-b1-6.cmd01
         then
     then
-    1 0 var? if
+    jar2-var 0 var? if
         10.0 10.0 35.0 0 -2144325584 3 -9.0 shards-at
         $E 1 object-hidden
         3 part-shown

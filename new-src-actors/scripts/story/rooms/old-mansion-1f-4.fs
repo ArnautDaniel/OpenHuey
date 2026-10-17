@@ -4,6 +4,15 @@
 IN: story.rooms.old-mansion-1f-4
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant transmuter-remarked         \ (bit 0) its first remark made: "Transmuter Synthesizing two objects together is a task any f"
+1 constant in-zone0                    \ (bit 1) someone in zone 0 (the figure's hops count)
+2 constant hewie-zone2-noticed         \ (bit 2) Hewie has reacted to zone 2 (once a visit)
+3 constant incubator-remarked          \ (bit 3) its first remark made: "Is this some kind of incubator? There is something inside..."
+0 constant hops-var                    \ (var 0) the figure's hops (5: away)
+1 constant used-item-var               \ (var 1) the item she used (8 .. 10)
+2 constant call-frames-var             \ (var 2) the figure's frames (its calls at 21 and 66)
+
 : old-mansion-1f-4.enter ( -- )   \ 004070F0
     room-sounds
     $12 1.0 0 bgm
@@ -13,7 +22,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         1 part-shown
     then
     $1C 3 char-to-tri
-    2 0 var-set
+    call-frames-var 0 var-set
     3 $1C char-loaded? if
         $1C 3 $FF char-load
         3 char-start
@@ -100,14 +109,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     4 2 2 1 chars-area-camera
     0 55.0 0.0 -20.0 5 10 1 zone
     self-who 0 char-in-zone? if
-        1 ebit-set
+        in-zone0 ebit-set
     else
-        1 ebit-clear
+        in-zone0 ebit-clear
     then
-    2 21 var? if
+    call-frames-var 21 var? if
         $1C 2 6 char-sound
     then
-    2 66 var? if
+    call-frames-var 66 var? if
         $1C 2 6 char-sound
     then
     1 45.1 0.0 31.88 $1C 18 0 zone
@@ -120,11 +129,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     2 54.4 0.0 -20.46 $19 16 0 zone
-    2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 2 9 char-zone-bits? if
-                    2 ebit-set
+                    hewie-zone2-noticed ebit-set
                     $50 chance? if
                         hewie-zone-var 2 var-set
                         0 hewie-who $8A action
@@ -238,27 +247,27 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $78 wait-frames
     look-close-anim play-out
     reach-out-anim play-out
-    1 8 var? if
+    used-item-var 8 var? if
         8 message-param-room
         0 8 item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 1 9 var? if
+    else used-item-var 9 var? if
         9 message-param-room
         0 9 item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 1 10 var? if
+    else used-item-var 10 var? if
         $A message-param-room
         0 $A item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 1 12 var? if
+    else used-item-var 12 var? if
         $C message-param-room
         0 $C item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 1 16 var? if
+    else used-item-var 16 var? if
         $10 message-param-room
         0 $10 item-tab
         item-fanfare
@@ -280,18 +289,18 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $E 38.0 18.0 20 $FFFF 5 self-move-to
     self-wait-done
-    0 ebit? not if
+    transmuter-remarked ebit? not if
         $F 6 fade
         wait-fade
         0 say   \ "Transmuter Synthesizing two objects together is a task any fool could surely comple..."
-        0 ebit-set
+        transmuter-remarked ebit-set
         $F 7 fade
         wait-fade
     else
         hand-to-mouth-anim $A self-anim-blend
         1 say   \ "A transmuter? I've never heard of such a device before... It appears you can insert..."
         self-wait-anim
-        0 ebit-clear
+        transmuter-remarked ebit-clear
     then
     $245 item-give
     stalkers-stay state-flag-clear
@@ -326,20 +335,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $1C 0 char-visible
     then
     begin
-        1 ebit? if
-            2 0 var-set
-            0 var-inc
-            0 3 var? if
+        in-zone0 ebit? if
+            call-frames-var 0 var-set
+            hops-var var-inc
+            hops-var 3 var? if
                 $21 chance? if
-                    0 5 var-set
+                    hops-var 5 var-set
                 then
             then
-            0 4 var? if
+            hops-var 4 var? if
                 $32 chance? if
-                    0 5 var-set
+                    hops-var 5 var-set
                 then
             then
-            0 5 var? if
+            hops-var 5 var? if
                 0 panic-stage? if
                     1 panic-stage
                 else
@@ -354,17 +363,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             $1C $9001 0 3 char-anim-hold
             $1C wait-char-anim
             $1C $9000 0 3 char-anim-hold
-            2 0 var-set
-            0 5 var? if
+            call-frames-var 0 var-set
+            hops-var 5 var? if
                 $1C wait-char-anim
-                0 0 var-set
+                hops-var 0 var-set
             then
         then
         $1C char-at-motion-event? if
             $1C $9000 0 0 char-anim-hold
-            2 0 var-set
+            call-frames-var 0 var-set
         else
-            2 var-inc
+            call-frames-var var-inc
         then
         1 wait-frames
     again
@@ -403,9 +412,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     4 wait-frames
     look-close-anim self-anim
     $28 wait-frames
-    3 ebit? not if
+    incubator-remarked ebit? not if
         6 say   \ "Is this some kind of incubator? There is something inside..."
-        3 ebit-set
+        incubator-remarked ebit-set
     else
         7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
     then
@@ -423,9 +432,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     look-close-anim self-anim
     $28 wait-frames
-    3 ebit? not if
+    incubator-remarked ebit? not if
         6 say   \ "Is this some kind of incubator? There is something inside..."
-        3 ebit-set
+        incubator-remarked ebit-set
     else
         7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
     then
@@ -439,9 +448,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     look-close-anim self-anim
     $28 wait-frames
-    3 ebit? not if
+    incubator-remarked ebit? not if
         6 say   \ "Is this some kind of incubator? There is something inside..."
-        3 ebit-set
+        incubator-remarked ebit-set
     else
         7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
     then
@@ -455,9 +464,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     look-close-anim self-anim
     $28 wait-frames
-    3 ebit? not if
+    incubator-remarked ebit? not if
         6 say   \ "Is this some kind of incubator? There is something inside..."
-        3 ebit-set
+        incubator-remarked ebit-set
     else
         7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
     then
@@ -472,9 +481,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     om1f-4-flag1 story-flag? not if
         look-close-anim self-anim
         $28 wait-frames
-        3 ebit? not if
+        incubator-remarked ebit? not if
             6 say   \ "Is this some kind of incubator? There is something inside..."
-            3 ebit-set
+            incubator-remarked ebit-set
         else
             7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
         then
@@ -494,9 +503,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     look-close-anim self-anim
     $28 wait-frames
-    3 ebit? not if
+    incubator-remarked ebit? not if
         6 say   \ "Is this some kind of incubator? There is something inside..."
-        3 ebit-set
+        incubator-remarked ebit-set
     else
         7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
     then
@@ -515,9 +524,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         4 wait-frames
         look-close-anim self-anim
         $28 wait-frames
-        3 ebit? not if
+        incubator-remarked ebit? not if
             6 say   \ "Is this some kind of incubator? There is something inside..."
-            3 ebit-set
+            incubator-remarked ebit-set
         else
             7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
         then
@@ -542,9 +551,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     look-close-anim self-anim
     $28 wait-frames
-    3 ebit? not if
+    incubator-remarked ebit? not if
         6 say   \ "Is this some kind of incubator? There is something inside..."
-        3 ebit-set
+        incubator-remarked ebit-set
     else
         7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
     then

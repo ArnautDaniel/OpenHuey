@@ -4,6 +4,10 @@
 IN: story.rooms.off-map-d7
 USING: room-names story.words story.shared story.clock story-names ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant figure-scene-on             \ (bit 0) the figure's scene begun
+1 constant cond-was-off                \ (bit 1) the room's condition was false last frame: its hook waits a frame once it holds
+
 \ as Room107_Cmd00
 : off-map-d7.cmd00 ( b0 -- )  2e room-nudge ;   \ (as chaos-forest-9's)
 \ room 0xD7: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
@@ -36,7 +40,7 @@ USING: room-names story.words story.shared story.clock story-names ;
     player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
     then
-    0 ebit? x-d7-flag1 story-flag? not and if
+    figure-scene-on ebit? x-d7-flag1 story-flag? not and if
         off-map-d7.cond01? if
             x-d7-flag1 story-flag-set
             1 track action-end
@@ -47,9 +51,9 @@ USING: room-names story.words story.shared story.clock story-names ;
 
 : off-map-d7.phase3 ( -- )   \ 00447B00
     off-map-d7.cond01? not if
-        1 ebit-set
-    else 1 ebit? if
-        1 ebit-clear
+        cond-was-off ebit-set
+    else cond-was-off ebit? if
+        cond-was-off ebit-clear
     else
         off-map-d7.cmd01
     then then

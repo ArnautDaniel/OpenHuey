@@ -4,6 +4,9 @@
 IN: story.rooms.off-map-e2
 USING: room-names story.words story.shared story.clock floor-flags ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant cond-was-off                \ (bit 0) the room's condition was false last frame: its hook waits a frame once it holds
+
 \ room 0xE2: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
 : off-map-e2.cmd00 ( -- )  clock-draw ;   \ (each frame: the clock)
@@ -194,9 +197,9 @@ USING: room-names story.words story.shared story.clock floor-flags ;
 
 : off-map-e2.phase3 ( -- )   \ 00448CD0
     off-map-e2.cond00? not if
-        0 ebit-set
-    else 0 ebit? if
-        0 ebit-clear
+        cond-was-off ebit-set
+    else cond-was-off ebit? if
+        cond-was-off ebit-clear
     else
         off-map-e2.cmd00
     then then

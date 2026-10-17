@@ -4,8 +4,22 @@
 IN: story.rooms.castle-1f-4
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant no-knob-remarked            \ (bit 0) its first remark made: "What? There's no knob... Now what do I do? Wait... There is "
+1 constant locked-remarked             \ (bit 1) its first remark made: "It won't open. Maybe I need a key or something?"
+2 constant chair-remarked              \ (bit 2) its first remark made: "Why in the world is there a chair here?"
+3 constant sparkle-shown               \ (bit 3) the item's sparkle shown (not yet taken)
+4 constant hewie-zone3-noticed         \ (bit 4) Hewie has reacted to zone 3 (once a visit)
+5 constant hewie-in-zone5              \ (bit 5) Hewie in zone 5 (his action there made)
+6 constant shaking                     \ (bit 6) the trap shaking (act08: rumble, dust)
+0 constant way-in-var                  \ (var 0) ? how she came in (0 / 1)
+1 constant way-frames-var              \ (var 1) ? 0, 12 or 24 by the way she came in
+2 constant shakes-var                  \ (var 2) the trap shaken so far (it gives at 2)
+3 constant sound-step-var              \ (var 3) which of its sounds next (0..3)
+4 constant sound-frames-var            \ (var 4) frames to the next sound (30)
+
 \ room 0x0F: the floor plate ("fumi_yuka") fading: its +0x24 toward 1 while event variable 0 is
-\ unset, toward 0 once set; byte 3 0 at once, else by 0.2 a step-floor (var_fade).
+\ unset, toward 0 once set; byte 3 0 at once, else by 0.2 a step (var_fade).
 : castle-1f-4.cmd00 ( b0 -- )  s" fumi_yuka" 0 var-fade ;   \ (the floor plate fading with event variable 0)
 \ room 0x0F (Room0F_Cmd01_ptmf): three objects' +0x14 back to 0
 : castle-1f-4.cmd01 ( -- )   \ (the hook, the puppet and its door turned back)
@@ -36,8 +50,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     $80 exit-taken? if
         c1f-4-flag1 story-flag-set
-        0 1 var-set
-        1 24 var-set
+        way-in-var 1 var-set
+        way-frames-var 24 var-set
     else
         3 exit-taken? if
         else
@@ -46,14 +60,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
         c1f-4-flag2 story-flag? if
             c1f-4-flag1 story-flag-set
-            0 1 var-set
-            1 12 var-set
+            way-in-var 1 var-set
+            way-frames-var 12 var-set
         else c1f-4-flag1 story-flag? not if
-            0 0 var-set
-            1 0 var-set
+            way-in-var 0 var-set
+            way-frames-var 0 var-set
         else
-            0 1 var-set
-            1 24 var-set
+            way-in-var 1 var-set
+            way-frames-var 24 var-set
         then then
     then
     0 castle-1f-4.cmd00
@@ -63,13 +77,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 22.8 14.65 68.75 0 flame-in
     c1f-4-flag4 story-flag? not if
         1 part-shown
-        3 ebit-clear
+        sparkle-shown ebit-clear
     else
         2 part-shown
         c1f-4-refined-antimony story-flag? not if
             1 140.0 -9.0 94.0 flicker-sprite
         then
-        3 ebit-set
+        sparkle-shown ebit-set
     then
     got-cracked-plate-key story-flag? not if
         4 part-shown
@@ -81,8 +95,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     else
         5 part-shown
     then
-    3 0 var-set
-    4 0 var-set
+    sound-step-var 0 var-set
+    sound-frames-var 0 var-set
     1 $2300 sound-volume
 ;
 
@@ -182,15 +196,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who 9 char-left-area? if
         2 exit-prepare
     then
-    0 0 var? if
+    way-in-var 0 var? if
         hewie-who $D char-in-area? if
             c1f-4-flag1 story-flag-set
-            0 1 var-set
+            way-in-var 1 var-set
             hewie-who 0 6 char-sound
             0 1 track $D action
         else fiona-who $D char-in-area? if
             c1f-4-flag1 story-flag-set
-            0 1 var-set
+            way-in-var 1 var-set
             fiona-who 0 6 char-sound
             broken-marionette-used story-flag? c1f-4-flag3 story-flag? not and breaker-lowered story-flag? not and if
                 0 fiona-who $A action
@@ -199,13 +213,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         else stalker-who $D char-in-area? if
             c1f-4-flag1 story-flag-set
-            0 1 var-set
+            way-in-var 1 var-set
             stalker-who 0 6 char-sound
             0 1 track $D action
         then then then
     else hewie-who $D char-in-area? not fiona-who $D char-in-area? not and stalker-who $D char-in-area? not and if
         c1f-4-flag1 story-flag-clear
-        0 0 var-set
+        way-in-var 0 var-set
         0 2 track $D action
     then then
     1 castle-1f-4.cmd00
@@ -217,9 +231,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     2 140.0 -10.0 94.0 6 5 0 zone
     c1f-4-flag4 story-flag? not if
-        6 ebit? not if
+        shaking ebit? not if
             fiona-who 2 char-in-zone? if
-                2 2 var? if
+                shakes-var 2 var? if
                     0 4 track $1B action
                 else
                     0 3 track 8 action
@@ -228,21 +242,21 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     6 sound-bank-loaded? if
-        4 var-inc
-        4 30 var? if
-            4 0 var-set
-            3 0 var? if
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
                 $40000005 6 -17.0 22.0 -9.0 0 0 sound
-            else 3 1 var? if
+            else sound-step-var 1 var? if
                 $40000006 6 -17.0 22.0 -9.0 0 0 sound
-            else 3 2 var? if
+            else sound-step-var 2 var? if
                 $40000007 6 -17.0 22.0 -9.0 0 0 sound
-            else 3 3 var? if
+            else sound-step-var 3 var? if
                 $40000008 6 -17.0 22.0 -9.0 0 0 sound
             then then then then
-            3 var-inc
-            3 4 var? if
-                3 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
@@ -258,11 +272,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     c1f-4-flag4 story-flag? not if
         3 140.0 -10.0 94.0 $1E 20 0 zone
-        4 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone3-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 3 9 char-zone-bits? if
-                        4 ebit-set
+                        hewie-zone3-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 3 var-set
                             0 hewie-who $88 action
@@ -273,12 +287,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     hewie-who char-here? hewie-who 0 char-cond? and if
-        5 ebit? not if
+        hewie-in-zone5 ebit? not if
             5 -38.5 0.0 -65.0 5 5 0 zone
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 5 9 char-zone-bits? if
-                        5 ebit-set
+                        hewie-in-zone5 ebit-set
                         $80 0 hewie-do
                     then
                 then
@@ -286,7 +300,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         else
             5 -38.5 0.0 -65.0 7 5 0 zone
             hewie-who 5 9 char-zone-bits? not if
-                5 ebit-clear
+                hewie-in-zone5 ebit-clear
             then
         then
     then
@@ -312,7 +326,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who $F char-in-area? fiona-who -45 $32 char-heading? and if
         $84 calm-hewie-up offer-action
     then
-    3 ebit? c1f-4-refined-antimony story-flag? not and if
+    sparkle-shown ebit? c1f-4-refined-antimony story-flag? not and if
         c1f-4-refined-antimony story-flag? not if
             2 1 5 5 0 zone-at-effect
             fiona-who 2 3 char-zone-bits? if
@@ -395,9 +409,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     world-frozen state-flag-set
     1 self-scripted
     1 20.0 -10.0 0.0 0.0 event-camera
-    0 ebit? not if
+    no-knob-remarked ebit? not if
         $F say   \ "What? There's no knob... Now what do I do? Wait... There is a hook here... Maybe i..."
-        0 ebit-set
+        no-knob-remarked ebit-set
     else
         $10 say   \ "The words 'Pupa Cella' are written here... Puppet room... I believe that is what..."
     then
@@ -411,12 +425,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-4.act03 ( -- )   \ 003F6640
     self-wait-done
-    2 ebit? not if
+    chair-remarked ebit? not if
         $16 say   \ "Why in the world is there a chair here?"
         $C1 0.0 -84.0 0 $FFFF 5 self-move-to
         self-wait-done
         $18 say   \ "This is just a normal chair, right?"
-        2 ebit-set
+        chair-remarked ebit-set
     else
         $17 say   \ "Doesn't make much sense to me... Not that anything in this place does."
     then
@@ -471,9 +485,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     strain-anim 0 self-anim-blend
     16 wait-frames
     let-go-push-anim play-out
-    1 ebit? not if
+    locked-remarked ebit? not if
         $11 message   \ "It won't open. Maybe I need a key or something?"
-        1 ebit-set
+        locked-remarked ebit-set
     else
         $12 message   \ "No luck. Could this be some strange puzzle or just another weird contraption?"
     then
@@ -497,13 +511,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-4.act08 ( -- )   \ 003F67A0
     1 $FF 4 rumble
-    6 ebit-set
+    shaking ebit-set
     fiona-who 9 6 char-sound
     0 139.0 -9.0 91.5 0 0 0 0 dust
     0 139.0 -9.0 94.5 0 0 0 0 dust
     [: fiona-free? ;] wait-until
-    2 var-inc
-    6 ebit-clear
+    shakes-var var-inc
+    shaking ebit-clear
     self-idle-or-end
 ;
 
@@ -557,9 +571,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-4.act0C ( -- )   \ 003F6850
     self-wait-done
-    1 ebit? not if
+    locked-remarked ebit? not if
         $11 say   \ "It won't open. Maybe I need a key or something?"
-        1 ebit-set
+        locked-remarked ebit-set
     else
         $12 say   \ "No luck. Could this be some strange puzzle or just another weird contraption?"
     then
@@ -576,8 +590,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     c1f-4-flag1 story-flag? not if
         begin
-            1 0 var? not c1f-4-flag1 story-flag? not and while
-            1 var-dec
+            way-frames-var 0 var? not c1f-4-flag1 story-flag? not and while
+            way-frames-var var-dec
             1 wait-frames
         repeat
         c1f-4-flag1 story-flag? not if
@@ -592,8 +606,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     else
         begin
-            1 24 var? not c1f-4-flag1 story-flag? and while
-            1 var-inc
+            way-frames-var 24 var? not c1f-4-flag1 story-flag? and while
+            way-frames-var var-inc
             3 wait-frames
         repeat
         c1f-4-flag1 story-flag? if
@@ -614,7 +628,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     65.0 107.0 self-turn-to-xz
     self-wait-done
-    2 ebit? if
+    chair-remarked ebit? if
         2 say   \ "The design and type are identical to the previous chair. They are probably from the..."
     else
         3 say   \ "Your average, run-of-the-mill chair. No unique markings that differentiate this fro..."
@@ -632,7 +646,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     c1f-4-refined-antimony story-flag? not if
         1 140.0 -9.0 94.0 flicker-sprite
     then
-    3 ebit-set
+    sparkle-shown ebit-set
     self-idle-or-end
 ;
 

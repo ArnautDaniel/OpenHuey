@@ -4,13 +4,25 @@
 IN: story.rooms.house-of-truth-1f-4
 USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant generator-remarked          \ (bit 0) its first remark made: "Looks like a power generator. The switch is turned on, but i"
+1 constant generator-on                \ (bit 1) the generator started (act06)
+2 constant stalker-reacted             \ (bit 2) her reaction to the stalker in area $B made
+3 constant hewie-path-open             \ (bit 3) Hewie's way kept open (until he is off it)
+4 constant locked-remarked             \ (bit 4) its first remark made: "The door is locked."
+6 constant demolisher-remarked         \ (bit 6) its first remark made: "This looks like a demolisher. These things are used to smash"
+7 constant door-effect-pending         \ (bit 7) the door's effect (cmd04) to come as she enters area 6
+0 constant generator-var               \ (var 0) ? the generator's state (3: done)
+1 constant run-frames-var              \ (var 1) the generator's frames (to 240)
+2 constant hewie-hp-var                \ (var 2) Hewie's health kept (cmd03)
+
 \ (as RoomC7_Cmd01)
 : house-of-truth-1f-4.cmd00 ( b0 -- )  var-down-by-hit ;
 \ the room object named pstr_dynamo swung: byte 3 0 starts it (rest +0x30 from +0x20, phase
 \ +0x34 0, amplitude +0x3C 1); 1 steps the phase back 60 degrees and the amplitude down 0.25,
 \ height +0x28 = +0x38 + amplitude * sin, waiting (2) until it has died out
 : house-of-truth-1f-4.cmd01 ( b0 -- )   \ ("dynamo" shaken in z: b0 0 starts it - rest where it is (+0x38), phase
-    \ (+0x34) 0, size (+0x3C) 1; 1 a step-floor each frame - the phase back 60 degrees, the size down
+    \ (+0x34) 0, size (+0x3C) 1; 1 a step each frame - the phase back 60 degrees, the size down
     \ 0.25, z the rest's + size x sin - till it dies out)
     {: b0 :}  s" dynamo" object-here? 0= if  exit  then
     b0 0= if
@@ -53,7 +65,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
 : house-of-truth-1f-4.cmd03 ( b0 -- )   \ (Hewie's health kept in variable 2 - b0 0 - or put back from it: 1, 0 there gives 10)
     case
         0 of  2 hewie-hp @ var-set  endof
-        1 of  2 var @ ?dup 0= if  10  then  hewie-id send set-hp  endof
+        1 of  hewie-hp-var var @ ?dup 0= if  10  then  hewie-id send set-hp  endof
     endcase ;
 \ the placed things of kinds 0, 2, 3, 5, 7 and 8 the event manager finds in area 0xB (+0x10):
 \ their timer (+0xE4) to 300000
@@ -62,7 +74,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
 : house-of-truth-1f-4.enter ( -- )   \ 00433CC0
     room-sounds
     found-file-250 story-flag? not ht1f-4-flag1 story-flag? not and if
-        0 3 var-set
+        generator-var 3 var-set
         7 1 object-hidden
         8 0 object-hidden
         9 0 object-hidden
@@ -140,7 +152,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
         1 exit-prepare
     then
     ht1f-4-flag1 story-flag? not if
-        1 ebit? not if
+        generator-on ebit? not if
             0 50.0 0.0 -28.0 5 11 0 zone
             fiona-who 0 char-in-zone? if
                 0 1 track 1 action
@@ -148,9 +160,9 @@ USING: engine common actors messages story.state room-names story.words story.sh
         then
     then
     found-file-250 story-flag? ht1f-4-flag1 story-flag? not and if
-        1 ebit? 2 ebit? not and if
+        generator-on ebit? stalker-reacted ebit? not and if
             stalker-who $B char-in-area? if
-                2 ebit-set
+                stalker-reacted ebit-set
                 panic-eased
                 fiona-who 0 char-action? if
                     0 fiona-who 4 action-force
@@ -158,7 +170,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
                     1 fiona-who 4 action-force
                 then
             else fiona-who $B char-entered-area? if
-                2 ebit-set
+                stalker-reacted ebit-set
                 panic-eased
                 fiona-who 0 char-action? if
                     0 fiona-who 3 action-force
@@ -167,7 +179,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
                 then
             then then
         then
-        3 ebit? if
+        hewie-path-open ebit? if
             fiona-who 6 char-entered-area? if
                 0 house-of-truth-1f-4.cmd03
                 hewie-who action-end
@@ -183,16 +195,16 @@ USING: engine common actors messages story.state room-names story.words story.sh
                     hewie-who $11C char-to-tri
                 then then
                 0 keeps-hewie-off floor-on
-                3 ebit-clear
+                hewie-path-open ebit-clear
             else hewie-who 0 char-in-nav-group? not if
                 0 keeps-hewie-off floor-on
-                3 ebit-clear
+                hewie-path-open ebit-clear
             then then
         then
-        7 ebit? if
+        door-effect-pending ebit? if
             fiona-who 6 char-entered-area? if
                 house-of-truth-1f-4.cmd04
-                7 ebit-clear
+                door-effect-pending ebit-clear
             then
         then
     then
@@ -205,7 +217,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
             then
         then
     then
-    1 ebit? if
+    generator-on ebit? if
         $C0000002 6 24.0 5.0 65.0 0 0 sound
     then
 ;
@@ -237,9 +249,9 @@ USING: engine common actors messages story.state room-names story.words story.sh
     look-low-anim self-anim
     16 wait-frames
     ht1f-4-flag1 story-flag? not if
-        0 ebit? not if
+        generator-remarked ebit? not if
             0 say   \ "Looks like a power generator. The switch is turned on, but it's not getting any..."
-            0 ebit-set
+            generator-remarked ebit-set
         else
             1 say   \ "Maybe something is wrong with the contacts? A good jolt might knock it back int..."
         then
@@ -256,7 +268,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     0 house-of-truth-1f-4.cmd00
     0 house-of-truth-1f-4.cmd01
     1 house-of-truth-1f-4.cmd01
-    0 0 var? if
+    generator-var 0 var? if
         found-file-250 story-flag? not if
             [: fiona-free? ;] wait-until
             panic-eased
@@ -463,23 +475,23 @@ USING: engine common actors messages story.state room-names story.words story.sh
 : house-of-truth-1f-4.act06 ( -- )   \ 004343A0
     0 part-shown
     $40000002 6 24.0 5.0 65.0 0 0 sound
-    1 ebit-set
+    generator-on ebit-set
     0 part-shown
-    3 ebit-set
-    7 ebit-set
-    1 0 var-set
+    hewie-path-open ebit-set
+    door-effect-pending ebit-set
+    run-frames-var 0 var-set
     0 house-of-truth-1f-4.cmd02
     begin
         1 house-of-truth-1f-4.cmd02
         1 wait-frames
-        1 var-inc
-        1 240 var? until
+        run-frames-var var-inc
+        run-frames-var 240 var? until
     $40000001 6 24.0 5.0 65.0 0 0 sound
-    1 ebit-clear
+    generator-on ebit-clear
     0 part-hidden
     2 house-of-truth-1f-4.cmd02
     0 keeps-hewie-off floor-off
-    0 3 var-set
+    generator-var 3 var-set
     0 part-hidden
     self-idle-or-end
 ;
@@ -491,7 +503,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
         self-wait-done
         0 self-through-exit
         self-wait-done
-        4 ebit? not 2 game-mode? or in-panic? or if
+        locked-remarked ebit? not 2 game-mode? or in-panic? or if
             in-panic? 2 game-mode? or if
                 rattle-front-slow-anim play-out
                 -1 self-idle-anim
@@ -502,7 +514,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
                 7 wait-frames
                 4 say   \ "The door is locked."
             then
-            4 ebit-set
+            locked-remarked ebit-set
         else
             4 wait-frames
             fiona-who $BF 90.5 0.0 90 char-to-xz
@@ -515,7 +527,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
             0 0.0 0.0 0.0 0.0 event-camera
             world-frozen state-flag-clear
             0 self-scripted
-            4 ebit-clear
+            locked-remarked ebit-clear
         then
         $251 item-give
     then
@@ -593,9 +605,9 @@ USING: engine common actors messages story.state room-names story.words story.sh
 
 : house-of-truth-1f-4.act0A ( -- )   \ 00434600
     self-wait-done
-    6 ebit? not if
+    demolisher-remarked ebit? not if
         6 say   \ "This looks like a demolisher. These things are used to smash large rocks into bits..."
-        6 ebit-set
+        demolisher-remarked ebit-set
     else
         hand-to-mouth-anim $A blend-out
         7 say   \ "It's not running right now... Maybe there is a power switch somewhere that needs to..."

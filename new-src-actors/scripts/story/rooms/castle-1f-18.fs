@@ -4,6 +4,11 @@
 IN: story.rooms.castle-1f-18
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant torn-picture-remarked       \ (bit 0) its first remark made: "This picture has been ripped out and discarded. I'm no criti"
+1 constant hewie-zone1-noticed         \ (bit 1) Hewie has reacted to zone 1 (once a visit)
+2 constant sound-started               \ (bit 2) its sound started (then kept up)
+
 \ room 0x1C (Room1C_Cmd00_ptmf): room effect 0x1C (a depth range) with the cutscene from frame
 \ 0x14A: near 1 .. 1 + 1.4 t (at most 67.6), far 48.6 + 4 t (at most 230)
 : castle-1f-18.cmd00 ( -- )   \ (the depth range widening with the scene from its frame $14A: near 1 .. 1 + 1.4 t (at most
@@ -84,11 +89,11 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     flowers-laid story-flag? not if
         0 55.0 4.0 -30.0 $A 5 0 zone
         1 55.0 4.0 -30.0 $14 50 0 zone
-        1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 1 9 char-zone-bits? if
-                        1 ebit-set
+                        hewie-zone1-noticed ebit-set
                         $64 chance? if
                             hewie-zone-var 1 var-set
                             0 hewie-who $8A action
@@ -100,11 +105,11 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     else
         0 -34.0 0.0 -44.0 $A 5 0 zone
         1 -34.0 0.0 -44.0 $14 50 0 zone
-        1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 1 9 char-zone-bits? if
-                        1 ebit-set
+                        hewie-zone1-noticed ebit-set
                         $1E chance? if
                             hewie-zone-var 1 var-set
                             0 hewie-who $8A action
@@ -114,14 +119,14 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             then
         then
     then
-    2 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             flowers-laid story-flag? not if
                 $40000000 6 55.0 4.0 -30.0 0 0 sound
             else
                 $40000000 6 -34.0 0.0 -44.0 0 0 sound
             then
-            2 ebit-set
+            sound-started ebit-set
         then
     else flowers-laid story-flag? not if
         castle-1f-18.cmd01
@@ -269,12 +274,12 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-1f-18.act05 ( -- )   \ 003FD050
     self-wait-done
-    0 ebit? not if
+    torn-picture-remarked ebit? not if
         2 say   \ "This picture has been ripped out and discarded. I'm no critic, but it doesn't seem..."
-        0 ebit-set
+        torn-picture-remarked ebit-set
     else
         3 say   \ "Who would do such a thing?!"
-        0 ebit-clear
+        torn-picture-remarked ebit-clear
     then
     self-idle-or-end
 ;

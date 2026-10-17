@@ -4,6 +4,13 @@
 IN: story.rooms.castle-1f-8
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant found-her                   \ (bit 0) he has found her hiding: she must flee (the avoid prompt)
+1 constant will-find-her               \ (bit 1) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+2 constant came-while-hidden           \ (bit 2) the stalker came in while she was hiding
+3 constant hewie-away                  \ (bit 3) Hewie not here (or sent off) as the scene ends
+4 constant stalker-scene-on            \ (bit 4) his scene (act0A) under way
+
 \ room 0x18 (Room18_Cmd00_ptmf): object byte 3's PlacedObject_ToDef
 : castle-1f-8.cmd00 ( b0 -- )   \ (Room18_ObjectNames[b0] back as defined: the telephones' receivers, 4 / 5)
     case
@@ -33,31 +40,31 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 self-is? 6 self-is? or 7 self-is? or if
         stalker-who 3 char-file-load
     then
-    1 ebit-clear
+    will-find-her ebit-clear
     $D 0 pvar? if
         0 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else $D 1 pvar? if
         $19 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else $D 2 pvar? if
         $32 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else $D 3 pvar? if
         $4B chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     then then then then
     2 creature-action? if
-        1 ebit-set
+        will-find-her ebit-set
     then
     4 stalker-alert? if
-        1 ebit-clear
+        will-find-her ebit-clear
     then
-    1 ebit? if
+    will-find-her ebit? if
         0 stalker-who 8 action
     else
         $78 1 summoner-wait
@@ -79,10 +86,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 1 0 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
-            2 ebit-set
+            came-while-hidden ebit-set
             castle-1f-8.act07
         else
-            2 ebit-clear
+            came-while-hidden ebit-clear
         then
     then
 ;
@@ -233,7 +240,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     wait-fade
     0 cutscene-track $C action
     hewie-who char-here? if
-        3 ebit-clear
+        hewie-away ebit-clear
         hewie-who 2 char-cond? if
             0 hewie-who $86 action
         else
@@ -241,7 +248,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             hewie-who char-done
         then
     else
-        3 ebit-set
+        hewie-away ebit-set
     then
     0 part-hidden
     panic-eased
@@ -257,7 +264,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     5 0 object-hidden
     4 castle-1f-8.cmd00
     5 castle-1f-8.cmd00
-    3 ebit? not if
+    hewie-away ebit? not if
         hewie-who 2 char-cond? if
             hewie-who 0 char-visible
             hewie-who action-end
@@ -324,7 +331,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-8.act06 ( -- )   \ 003FB070
-    0 ebit? if
+    found-her ebit? if
         2 avoid-prompt
     then
     1 self-scripted
@@ -334,7 +341,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who slide-sound 5 char-sound
     3 room-motion $A blend-out
     0 self-noclip
-    0 ebit? not if
+    found-her ebit? not if
         stalker-who action-end
     then
     0 self-scripted
@@ -343,7 +350,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-8.act05 ( -- )   \ 003FAFD0
     stalkers-stay state-flag-set
-    2 ebit-clear
+    came-while-hidden ebit-clear
     1 self-scripted
     fiona-who 2 char-file-load
     self-wait-done
@@ -359,12 +366,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
-    0 ebit-clear
+    found-her ebit-clear
     0 avoid-prompt
     self-who 3 -1 char-camera
     begin
         0 2 pad? not if
-            in-panic? 0 ebit? or if
+            in-panic? found-her ebit? or if
                 in-panic? not if
                     fiona-who seized-sound 5 char-sound
                 then
@@ -373,8 +380,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                2 ebit? stalker-who char-here? not and if
-                    2 ebit-clear
+                came-while-hidden ebit? stalker-who char-here? not and if
+                    came-while-hidden ebit-clear
                     1 avoid-prompt
                 then
                 yield
@@ -413,11 +420,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         stalker-who char-file-use
         0 room-motion $A self-anim-blend
         $1E wait-frames
-        0 ebit-set
+        found-her ebit-set
         self-wait-anim
     else
         there-anim play-out
-        0 ebit-set
+        found-her ebit-set
     then
     10 self-idle-anim
     [: fiona-who char-busy? ;] wait-while
@@ -450,11 +457,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-8.act0A ( -- )   \ 003FB1C0
     self-wait-done
-    4 ebit-set
+    stalker-scene-on ebit-set
     stalker-who $DA 100 char-to-tri-facing
     fiona-who 3 self-move-slot
     self-wait-done
-    4 ebit-clear
+    stalker-scene-on ebit-clear
     self-idle-or-end
 ;
 
@@ -518,7 +525,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-8.phase5 ( -- )   \ 0047AA40
-    4 ebit? if
+    stalker-scene-on ebit? if
         stalker-who 0 stalker-command
     then
 ;

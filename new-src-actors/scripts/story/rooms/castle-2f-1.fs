@@ -4,6 +4,12 @@
 IN: story.rooms.castle-2f-1
 USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant dial-in-use                 \ (bit 0) turning the device (the loop runs while it is set)
+1 constant dial-moving                 \ (bit 1) the device turning this frame
+2 constant device-remarked             \ (bit 2) its first remark made: "Huh? What is this? Looks like it pivots at the base..."
+3 constant puzzle-solved               \ (bit 3) the devices set right (progress variables 0 5, 1 2, 3 3): out the other way
+
 \ the dial pstr_syuukouki on progress var 3
 : castle-2f-1.cmd00 ( b0 -- )  s" syuukouki" 3 0 0 dial-step ;   \ (the dial on progress variable 3, from 0 degrees)
 \ room 0x0A (Room0A_Cmd01_ptmf): an effect on its object at -2.88
@@ -193,7 +199,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     then
     world-held state-flag-set
     world-frozen state-flag-clear
-    3 ebit? if
+    puzzle-solved ebit? if
         $80 exit-check
     else
         $81 exit-check
@@ -209,27 +215,27 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     c1f-12-flag1 story-flag? if
         1 say   \ "A device that attracts moonlight? How bizarre."
     else
-        2 ebit? not if
+        device-remarked ebit? not if
             0 say   \ "Huh? What is this? Looks like it pivots at the base..."
-            2 ebit-set
+            device-remarked ebit-set
             8 wait-frames
         then
         world-frozen state-flag-set
         fiona-who $E6 -43.61 1.45 62 char-to-xz
         1 11.0 0.0 0.0 0.0 event-camera
         2 message   \ "Rotate by pressing Right or Left on the left analog stick."
-        0 ebit-set
-        1 ebit-set
+        dial-in-use ebit-set
+        dial-moving ebit-set
         begin
-            0 ebit? while
-            1 ebit? if
+            dial-in-use ebit? while
+            dial-moving ebit? if
                 1 castle-2f-1.cmd00
-                1 ebit? not if
+                dial-moving ebit? not if
                     0 6 -36.0 -102.0 5.0 0 0 sound
                 then
             else
                 2 castle-2f-1.cmd00
-                1 ebit? 3 3 pvar? and if
+                dial-moving ebit? 3 3 pvar? and if
                     1 6 -36.0 -102.0 5.0 0 0 sound
                     castle-2f-1.cmd01
                 then
@@ -241,7 +247,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
         0 0.0 0.0 0.0 0.0 event-camera
         world-frozen state-flag-clear
         0 5 pvar? 1 2 pvar? and 3 3 pvar? and if
-            3 ebit-set
+            puzzle-solved ebit-set
             force-calm state-flag-set
             $F $44 fade
             ['] castle-2f-1.act02 goto

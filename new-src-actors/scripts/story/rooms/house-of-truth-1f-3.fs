@@ -4,6 +4,9 @@
 IN: story.rooms.house-of-truth-1f-3
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant hewie-sent-off              \ (bit 0) Hewie was here and sent off for the scene
+
 : house-of-truth-1f-3.enter ( -- )   \ 00433580
     got-golden-candlestick story-flag? not if
         0 part-shown
@@ -179,7 +182,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     wait-fade
     hewie-who char-here? if
-        0 ebit-set
+        hewie-sent-off ebit-set
         hewie-who action-end
         hewie-who char-done
     then
@@ -194,10 +197,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         scene-play
     then
     fiona-who $BC -12.31 49.96 0 char-to-xz
-    0 ebit? if
+    hewie-sent-off ebit? if
         hewie-who char-activate
         hewie-who $1E4 -15.99 63.61 0 char-to-xz
-        0 ebit-clear
+        hewie-sent-off ebit-clear
     then
     stalker-who char-activate
     $FE $8A 480 2 stalker-to-room

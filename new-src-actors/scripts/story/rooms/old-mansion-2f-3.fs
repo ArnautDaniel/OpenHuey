@@ -4,6 +4,13 @@
 IN: story.rooms.old-mansion-2f-3
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant draught-remarked            \ (bit 0) its first remark made: "I can distinctly feel air coming from inside. I wonder where"
+1 constant hewie-zone1-noticed         \ (bit 1) Hewie has reacted to zone 1 (once a visit)
+2 constant decomposer-remarked         \ (bit 2) its first remark made: "Decomposer The initial step in this grand process begins wit"
+3 constant research-gear-remarked      \ (bit 3) its first remark made: "Shoddy-looking research equipment has been left here."
+0 constant used-item-var               \ (var 0) the item she used (8 .. 10)
+
 \ room 0x56 (Room56_Cmd00_ptmf): creatures 7..9 in the current room on a live triangle
 \ gRoomEventObj says yes to: +0x10, then the creature list's +0x28
 : old-mansion-2f-3.cmd00 ( -- )  homunculi-off-group0 ;
@@ -80,11 +87,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     1 -42.06 0.0 -0.81 $1A 5 0 zone
-    1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 1 9 char-zone-bits? if
-                    1 ebit-set
+                    hewie-zone1-noticed ebit-set
                     $32 chance? if
                         hewie-zone-var 1 var-set
                         0 hewie-who $88 action
@@ -151,18 +158,18 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $A0 29.5 34.5 0 $FFFF 5 self-move-to
     self-wait-done
-    2 ebit? not if
+    decomposer-remarked ebit? not if
         $F 6 fade
         wait-fade
-        3 say   \ "Decomposer The initial step-floor in this grand process begins with a manipulation of the..."
+        3 say   \ "Decomposer The initial step in this grand process begins with a manipulation of the..."
         $F 7 fade
         wait-fade
-        2 ebit-set
+        decomposer-remarked ebit-set
     else
         hand-to-mouth-anim $A self-anim-blend
         4 say   \ "A decomposer? More unusual machines... It appears you can insert an item here..."
         self-wait-anim
-        2 ebit-clear
+        decomposer-remarked ebit-clear
     then
     $241 item-give
     stalkers-stay state-flag-clear
@@ -268,9 +275,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -50.0 0.0 self-turn-to-xz
     self-wait-done
     om2f-2-flag1 story-flag? not if
-        0 ebit? not if
+        draught-remarked ebit? not if
             6 say   \ "I can distinctly feel air coming from inside. I wonder where this leads?"
-            0 ebit-set
+            draught-remarked ebit-set
         else
             7 say   \ "It's too tight of a squeeze for me."
         then
@@ -334,32 +341,32 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $78 wait-frames
     look-close-anim play-out
     reach-out-anim play-out
-    0 8 var? if
+    used-item-var 8 var? if
         8 message-param-room
         0 8 item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 0 9 var? if
+    else used-item-var 9 var? if
         9 message-param-room
         0 9 item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 0 10 var? if
+    else used-item-var 10 var? if
         $A message-param-room
         0 $A item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 0 11 var? if
+    else used-item-var 11 var? if
         $B message-param-room
         0 $B item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 0 12 var? if
+    else used-item-var 12 var? if
         $C message-param-room
         0 $C item-tab
         item-fanfare
         $8012 say   \ "You've obtained ."
-    else 0 16 var? if
+    else used-item-var 16 var? if
         $10 message-param-room
         0 $10 item-tab
         item-fanfare
@@ -380,8 +387,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     look-low-anim self-anim
     $28 wait-frames
-    3 ebit? not if
-        3 ebit-set
+    research-gear-remarked ebit? not if
+        research-gear-remarked ebit-set
         $E say   \ "Shoddy-looking research equipment has been left here."
     else
         $F say   \ "I've seen similar equipment before. It looks almost archaic in nature."
