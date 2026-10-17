@@ -56,6 +56,14 @@ T{ 1 equipped  alchemist-earrings items-of -> -1 0 }T
 testing sorted: by their places in a sort (Items_Sort)
 menu enter  1 game:items send sort-items  leave-actor  deliver
 T{ 1 ids -> camomile lavender feather-boots }T
+testing ... out of order: each kept, in order (a swap)
+: in-order? ( list -- flag )
+    true  over listed 1- 0 ?do  over i item-at item-sort  2 pick i 1+ item-at item-sort > if  drop false  then  loop  nip ;
+variable before   1 listed before !
+onion 1 give  quies 1 give  chicken-jerky 1 give
+T{ 1 in-order? -> 0 }T
+menu enter  1 game:items send sort-items  leave-actor  deliver
+T{ 1 in-order?  1 listed before @ -  onion items-of  quies items-of  chicken-jerky items-of -> -1 3 1 1 1 }T
 
 testing the files: found once each, in order
 $205 -1 game:items send add-file  $205 -1 game:items send add-file  $206 0 game:items send add-file  deliver
