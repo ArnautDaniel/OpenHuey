@@ -136,7 +136,7 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
                 hewie-who 0 9 char-zone-bits? if
                     4 ebit-set
                     $1E chance? if
-                        $1F 0 var-set
+                        hewie-zone-var 0 var-set
                         0 hewie-who $88 action
                     then
                 then
@@ -147,8 +147,8 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 0 9 char-zone-bits? if
-                $1F 0 var-set
-                $1F 16.0 hewie-look-zone
+                hewie-zone-var 0 var-set
+                hewie-zone-var 16.0 hewie-look-zone
             then
         then
     then
@@ -156,8 +156,8 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 16.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 16.0 hewie-look-zone
             then
         then
     then
@@ -165,13 +165,13 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
         5 34.3 0.0 -13.7 $A 5 0 zone
         hewie-who 5 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 c1f-15-camomile-found var-set
-                $1A c1f-15-camomile var-set
-                $1B 0 var-set
-                $1C 34300 var-set
-                $1D 1000 var-set
-                $1E -13700 var-set
-                $1F 5 var-set
+                found-flag-var c1f-15-camomile-found var-set
+                taken-flag-var c1f-15-camomile var-set
+                sparkle-fx-var 0 var-set
+                sparkle-x-var 34300 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var -13700 var-set
+                hewie-zone-var 5 var-set
                 0 hewie-who $8B action
             then
         then
@@ -180,13 +180,13 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
         6 56.3 50.0 -71.5 $A 5 0 zone
         hewie-who 6 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 c1f-15-medallion-found var-set
-                $1A c1f-15-medallion var-set
-                $1B 1 var-set
-                $1C 56300 var-set
-                $1D 51000 var-set
-                $1E -71500 var-set
-                $1F 6 var-set
+                found-flag-var c1f-15-medallion-found var-set
+                taken-flag-var c1f-15-medallion var-set
+                sparkle-fx-var 1 var-set
+                sparkle-x-var 56300 var-set
+                sparkle-y-var 51000 var-set
+                sparkle-z-var -71500 var-set
+                hewie-zone-var 6 var-set
                 0 hewie-who $8B action
             then
         then

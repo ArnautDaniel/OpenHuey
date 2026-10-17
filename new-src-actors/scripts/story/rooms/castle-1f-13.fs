@@ -233,13 +233,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         1 -254.5 0.0 -95.0 $A 5 0 zone
         hewie-who 1 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 c1f-13-antimony-powder-found var-set
-                $1A c1f-13-antimony-powder var-set
-                $1B 0 var-set
-                $1C -254500 var-set
-                $1D 1000 var-set
-                $1E -95000 var-set
-                $1F 1 var-set
+                found-flag-var c1f-13-antimony-powder-found var-set
+                taken-flag-var c1f-13-antimony-powder var-set
+                sparkle-fx-var 0 var-set
+                sparkle-x-var -254500 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var -95000 var-set
+                hewie-zone-var 1 var-set
                 0 hewie-who $8B action
             then
         then

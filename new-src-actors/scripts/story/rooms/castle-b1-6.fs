@@ -149,8 +149,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 2 9 char-zone-bits? if
-                $1F 2 var-set
-                $1F 36.0 hewie-look-zone
+                hewie-zone-var 2 var-set
+                hewie-zone-var 36.0 hewie-look-zone
             then
         then
     then

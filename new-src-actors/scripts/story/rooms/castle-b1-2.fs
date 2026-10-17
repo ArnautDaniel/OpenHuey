@@ -115,13 +115,13 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
         2 -44.9 -8.0 -12.9 $A 5 0 zone
         hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 cb1-2-medallion-found var-set
-                $1A cb1-2-medallion var-set
-                $1B 1 var-set
-                $1C -44900 var-set
-                $1D -7000 var-set
-                $1E -12900 var-set
-                $1F 2 var-set
+                found-flag-var cb1-2-medallion-found var-set
+                taken-flag-var cb1-2-medallion var-set
+                sparkle-fx-var 1 var-set
+                sparkle-x-var -44900 var-set
+                sparkle-y-var -7000 var-set
+                sparkle-z-var -12900 var-set
+                hewie-zone-var 2 var-set
                 0 hewie-who $8B action
             then
         then

@@ -210,8 +210,8 @@ USING: engine common actors messages story.state room-names story.words story.sh
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 3 9 char-zone-bits? if
-                $1F 3 var-set
-                $1F 10.0 hewie-look-zone
+                hewie-zone-var 3 var-set
+                hewie-zone-var 10.0 hewie-look-zone
             then
         then
     then

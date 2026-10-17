@@ -85,7 +85,7 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
                     hewie-who 1 9 char-zone-bits? if
                         2 ebit-set
                         $1E chance? if
-                            $1F 1 var-set
+                            hewie-zone-var 1 var-set
                             0 hewie-who $88 action
                         then
                     then

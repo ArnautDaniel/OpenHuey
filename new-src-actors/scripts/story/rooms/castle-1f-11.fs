@@ -143,8 +143,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         hewie-who char-here? 0 game-mode? and if
             hewie-can-command? if
                 hewie-who 4 9 char-zone-bits? if
-                    $1F 4 var-set
-                    $1F 6.0 hewie-look-zone
+                    hewie-zone-var 4 var-set
+                    hewie-zone-var 6.0 hewie-look-zone
                 then
             then
         then

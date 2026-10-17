@@ -148,6 +148,12 @@ create slot-chars  #chars cells allot  slot-chars #chars cells -1 fill
 : pvar-inc ( n -- )  progress pr.vars + dup c@ 1+ swap c! ;
 : pvars-equal? ( a b -- flag )  progress pr.vars + c@ swap progress pr.vars + c@ = ;
 : var ( var -- addr )  #vars 1- and cells vars + ;
+\ the variables the rooms hand Hewie (his find, shared $8B: the flag his find sets, the flag
+\ taking it sets, its sparkle's effect slot and place in thousandths; the zone he attends to -
+\ his find, his look, shared $8A - then his find's frame count)
+$19 constant found-flag-var   $1A constant taken-flag-var   $1B constant sparkle-fx-var
+$1C constant sparkle-x-var   $1D constant sparkle-y-var   $1E constant sparkle-z-var
+$1F constant hewie-zone-var
 : var-set ( var v -- )  swap var ! ;
 : var? ( var v -- flag )  swap var @ = ;
 : var-inc ( var -- )  var 1 swap +! ;

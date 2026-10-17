@@ -127,13 +127,13 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         1 29.0 0.0 21.0 $A 5 0 zone
         hewie-who 1 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 cb1-7-medallion-found var-set
-                $1A cb1-7-medallion-2 var-set
-                $1B 3 var-set
-                $1C 29000 var-set
-                $1D 1000 var-set
-                $1E 21000 var-set
-                $1F 1 var-set
+                found-flag-var cb1-7-medallion-found var-set
+                taken-flag-var cb1-7-medallion-2 var-set
+                sparkle-fx-var 3 var-set
+                sparkle-x-var 29000 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 21000 var-set
+                hewie-zone-var 1 var-set
                 0 hewie-who $8B action
             then
         then

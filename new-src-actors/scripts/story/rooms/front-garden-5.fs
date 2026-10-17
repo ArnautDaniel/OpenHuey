@@ -251,13 +251,13 @@ fvariable sw-dx  fvariable sw-dz
         3 -228.4 -10.0 103.2 $A 5 0 zone
         hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 fg-5-medallion-found var-set
-                $1A fg-5-medallion var-set
-                $1B 1 var-set
-                $1C -228400 var-set
-                $1D -9000 var-set
-                $1E 103200 var-set
-                $1F 3 var-set
+                found-flag-var fg-5-medallion-found var-set
+                taken-flag-var fg-5-medallion var-set
+                sparkle-fx-var 1 var-set
+                sparkle-x-var -228400 var-set
+                sparkle-y-var -9000 var-set
+                sparkle-z-var 103200 var-set
+                hewie-zone-var 3 var-set
                 0 hewie-who $8B action
             then
         then
@@ -270,8 +270,8 @@ fvariable sw-dx  fvariable sw-dz
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 6 9 char-zone-bits? if
-                $1F 6 var-set
-                $1F 13.0 hewie-look-zone
+                hewie-zone-var 6 var-set
+                hewie-zone-var 13.0 hewie-look-zone
             then
         then
     then
@@ -279,8 +279,8 @@ fvariable sw-dx  fvariable sw-dz
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 7 9 char-zone-bits? if
-                $1F 7 var-set
-                $1F 13.0 hewie-look-zone
+                hewie-zone-var 7 var-set
+                hewie-zone-var 13.0 hewie-look-zone
             then
         then
     then

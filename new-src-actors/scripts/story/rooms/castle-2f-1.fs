@@ -84,13 +84,13 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
         0 39.5 80.0 -38.8 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 c2f-1-refined-magnesia-found var-set
-                $1A c2f-1-refined-magnesia var-set
-                $1B 0 var-set
-                $1C 39500 var-set
-                $1D 81000 var-set
-                $1E -38800 var-set
-                $1F 0 var-set
+                found-flag-var c2f-1-refined-magnesia-found var-set
+                taken-flag-var c2f-1-refined-magnesia var-set
+                sparkle-fx-var 0 var-set
+                sparkle-x-var 39500 var-set
+                sparkle-y-var 81000 var-set
+                sparkle-z-var -38800 var-set
+                hewie-zone-var 0 var-set
                 0 hewie-who $8B action
             then
         then
@@ -99,8 +99,8 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 12.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 12.0 hewie-look-zone
             then
         then
     then
@@ -108,8 +108,8 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 2 9 char-zone-bits? if
-                $1F 2 var-set
-                $1F 8.0 hewie-look-zone
+                hewie-zone-var 2 var-set
+                hewie-zone-var 8.0 hewie-look-zone
             then
         then
     then

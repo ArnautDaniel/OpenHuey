@@ -81,13 +81,13 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims f
         3 -9.11 0.0 -21.78 $A 5 0 zone
         hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-5-refined-magnesia-found var-set
-                $1A om1f-5-refined-magnesia var-set
-                $1B 4 var-set
-                $1C -9110 var-set
-                $1D 1000 var-set
-                $1E -21780 var-set
-                $1F 3 var-set
+                found-flag-var om1f-5-refined-magnesia-found var-set
+                taken-flag-var om1f-5-refined-magnesia var-set
+                sparkle-fx-var 4 var-set
+                sparkle-x-var -9110 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var -21780 var-set
+                hewie-zone-var 3 var-set
                 0 hewie-who $8B action
             then
         then

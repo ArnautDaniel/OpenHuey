@@ -88,8 +88,8 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 13.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 13.0 hewie-look-zone
             then
         then
     then
@@ -97,8 +97,8 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
     hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
             hewie-who 2 9 char-zone-bits? if
-                $1F 2 var-set
-                $1F 15.0 hewie-look-zone
+                hewie-zone-var 2 var-set
+                hewie-zone-var 15.0 hewie-look-zone
             then
         then
     then
@@ -106,8 +106,8 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
     hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
             hewie-who 3 9 char-zone-bits? if
-                $1F 3 var-set
-                $1F 15.0 hewie-look-zone
+                hewie-zone-var 3 var-set
+                hewie-zone-var 15.0 hewie-look-zone
             then
         then
     then

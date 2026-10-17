@@ -136,13 +136,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         2 82.73 30.0 -85.2 $A 5 0 zone
         hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om2f-12-antimony-powder-found var-set
-                $1A om2f-12-antimony-powder var-set
-                $1B 0 var-set
-                $1C 82730 var-set
-                $1D 31000 var-set
-                $1E -85200 var-set
-                $1F 2 var-set
+                found-flag-var om2f-12-antimony-powder-found var-set
+                taken-flag-var om2f-12-antimony-powder var-set
+                sparkle-fx-var 0 var-set
+                sparkle-x-var 82730 var-set
+                sparkle-y-var 31000 var-set
+                sparkle-z-var -85200 var-set
+                hewie-zone-var 2 var-set
                 0 hewie-who $8B action
             then
         then
@@ -151,8 +151,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 3 9 char-zone-bits? if
-                $1F 3 var-set
-                $1F 18.0 hewie-look-zone
+                hewie-zone-var 3 var-set
+                hewie-zone-var 18.0 hewie-look-zone
             then
         then
     then
@@ -160,8 +160,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 4 9 char-zone-bits? if
-                $1F 4 var-set
-                $1F 16.0 hewie-look-zone
+                hewie-zone-var 4 var-set
+                hewie-zone-var 16.0 hewie-look-zone
             then
         then
     then

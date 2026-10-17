@@ -206,13 +206,13 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         0 4.12 104.0 -18.51 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 wt2f-1-medallion-found var-set
-                $1A wt2f-1-medallion var-set
-                $1B 0 var-set
-                $1C 4120 var-set
-                $1D 105000 var-set
-                $1E -18510 var-set
-                $1F 0 var-set
+                found-flag-var wt2f-1-medallion-found var-set
+                taken-flag-var wt2f-1-medallion var-set
+                sparkle-fx-var 0 var-set
+                sparkle-x-var 4120 var-set
+                sparkle-y-var 105000 var-set
+                sparkle-z-var -18510 var-set
+                hewie-zone-var 0 var-set
                 0 hewie-who $8B action
             then
         then
@@ -237,7 +237,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
                     hewie-who 2 9 char-zone-bits? if
                         6 ebit-set
                         $64 chance? if
-                            $1F 2 var-set
+                            hewie-zone-var 2 var-set
                             0 hewie-who $88 action
                         then
                     then

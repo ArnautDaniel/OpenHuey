@@ -288,7 +288,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                     hewie-who 3 9 char-zone-bits? if
                         4 ebit-set
                         $64 chance? if
-                            $1F 3 var-set
+                            hewie-zone-var 3 var-set
                             0 hewie-who $88 action
                         then
                     then

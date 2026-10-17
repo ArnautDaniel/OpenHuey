@@ -172,7 +172,7 @@ defer shared.act97
 
 : shared.act88 ( -- )   \ 003D6470
     self-wait-done
-    $1F self-face-zone
+    hewie-zone-var self-face-zone
     self-wait-done
     hewie-who 1 char-silent
     bark-anim $A self-anim-blend
@@ -191,7 +191,7 @@ defer shared.act97
 
 : shared.act89 ( -- )   \ 003D64A0
     self-wait-done
-    $1F self-face-zone
+    hewie-zone-var self-face-zone
     self-wait-done
     sit-a-while-anim $A self-anim-blend
     self-wait-anim
@@ -204,11 +204,11 @@ defer shared.act97
 
 : shared.act8A ( -- )   \ 003D64C0
     self-wait-done
-    $1F 0 hewie-go-to-zone
+    hewie-zone-var 0 hewie-go-to-zone
     self-wait-done
     stance-anim self-anim
     yield
-    $1F 1 hewie-go-to-zone
+    hewie-zone-var 1 hewie-go-to-zone
     self-frames-reset
     $78 self-wait-frames
     self-who self-look-at
@@ -222,7 +222,7 @@ defer shared.act97
 
 : shared.act8B ( -- )   \ 003D64E0
     self-wait-done
-    $1F self-face-zone
+    hewie-zone-var self-face-zone
     self-wait-done
     hewie-who 1 char-silent
     bark-anim $A self-anim-blend
@@ -238,14 +238,14 @@ defer shared.act97
     yield
     fiona-who self-look-at
     yield
-    $19 story-flag-set-var
+    found-flag-var story-flag-set-var
     5 hewie-trust
-    $1B $1C $1D $1E flicker-sprite-var
-    $1F 0 var-set
+    sparkle-fx-var sparkle-x-var sparkle-y-var sparkle-z-var flicker-sprite-var
+    hewie-zone-var 0 var-set
     begin
         yield
-        $1F var-inc
-        $1A story-flag-var? not 2 game-mode? not and -1 control-action? and $1F 300 var? not and not until
+        hewie-zone-var var-inc
+        taken-flag-var story-flag-var? not 2 game-mode? not and -1 control-action? and hewie-zone-var 300 var? not and not until
     self-who self-look-at
     yield
     hewie-stay-put
@@ -445,7 +445,7 @@ defer shared.act97
 
 : shared.act92 ( -- )   \ 003D6710
     self-wait-done
-    $1F self-face-zone
+    hewie-zone-var self-face-zone
     self-wait-done
     bark-tense-anim $A self-anim-blend
     self-wait-anim
@@ -462,7 +462,7 @@ defer shared.act97
 
 : shared.act93 ( -- )   \ 003D6730
     self-wait-done
-    $1F self-face-zone
+    hewie-zone-var self-face-zone
     self-wait-done
     sit-down-anim $A self-anim-blend
     self-wait-anim

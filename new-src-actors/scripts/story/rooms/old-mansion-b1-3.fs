@@ -364,7 +364,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
                     hewie-who 5 9 char-zone-bits? if
                         $1A ebit-set
                         $32 chance? if
-                            $1F 5 var-set
+                            hewie-zone-var 5 var-set
                             0 hewie-who $92 action
                         then
                     then
@@ -375,8 +375,8 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         hewie-who char-here? 2 game-mode? not and if
             hewie-can-command? if
                 hewie-who 5 9 char-zone-bits? if
-                    $1F 5 var-set
-                    $1F 14.0 hewie-look-zone
+                    hewie-zone-var 5 var-set
+                    hewie-zone-var 14.0 hewie-look-zone
                 then
             then
         then
@@ -388,7 +388,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
                         hewie-who 6 9 char-zone-bits? if
                             $1B ebit-set
                             $64 chance? if
-                                $1F 6 var-set
+                                hewie-zone-var 6 var-set
                                 0 hewie-who $8A action
                             then
                         then
@@ -399,8 +399,8 @@ USING: engine actors messages story.state room-names story.words story.shared fl
             hewie-who char-here? 1 game-mode? and if
                 hewie-can-command? if
                     hewie-who 6 9 char-zone-bits? if
-                        $1F 6 var-set
-                        $1F 6.0 hewie-look-zone
+                        hewie-zone-var 6 var-set
+                        hewie-zone-var 6.0 hewie-look-zone
                     then
                 then
             then

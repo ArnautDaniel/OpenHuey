@@ -158,13 +158,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         7 68.99 0.0 19.99 $A 5 0 zone
         hewie-who 7 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-17-medallion-found var-set
-                $1A om1f-17-medallion var-set
-                $1B 2 var-set
-                $1C 68990 var-set
-                $1D 1000 var-set
-                $1E 19990 var-set
-                $1F 7 var-set
+                found-flag-var om1f-17-medallion-found var-set
+                taken-flag-var om1f-17-medallion var-set
+                sparkle-fx-var 2 var-set
+                sparkle-x-var 68990 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 19990 var-set
+                hewie-zone-var 7 var-set
                 0 hewie-who $8B action
             then
         then
@@ -174,8 +174,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         hewie-who char-here? 0 game-mode? and if
             hewie-can-command? if
                 hewie-who 2 9 char-zone-bits? if
-                    $1F 2 var-set
-                    $1F 22.0 hewie-look-zone
+                    hewie-zone-var 2 var-set
+                    hewie-zone-var 22.0 hewie-look-zone
                 then
             then
         then
@@ -184,8 +184,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 3 9 char-zone-bits? if
-                $1F 3 var-set
-                $1F 22.0 hewie-look-zone
+                hewie-zone-var 3 var-set
+                hewie-zone-var 22.0 hewie-look-zone
             then
         then
     then
@@ -196,7 +196,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 hewie-who 4 9 char-zone-bits? if
                     1 ebit-set
                     $32 chance? if
-                        $1F 4 var-set
+                        hewie-zone-var 4 var-set
                         0 hewie-who $8A action
                     then
                 then
@@ -207,8 +207,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
             hewie-who 4 9 char-zone-bits? if
-                $1F 4 var-set
-                $1F 12.0 hewie-look-zone
+                hewie-zone-var 4 var-set
+                hewie-zone-var 12.0 hewie-look-zone
             then
         then
     then
@@ -216,8 +216,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 5 9 char-zone-bits? if
-                $1F 5 var-set
-                $1F 14.0 hewie-look-zone
+                hewie-zone-var 5 var-set
+                hewie-zone-var 14.0 hewie-look-zone
             then
         then
     then

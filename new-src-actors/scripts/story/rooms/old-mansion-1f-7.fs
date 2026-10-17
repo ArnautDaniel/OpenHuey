@@ -74,8 +74,8 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 2 9 char-zone-bits? if
-                $1F 2 var-set
-                $1F 18.0 hewie-look-zone
+                hewie-zone-var 2 var-set
+                hewie-zone-var 18.0 hewie-look-zone
             then
         then
     then
@@ -86,7 +86,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
                 hewie-who 0 9 char-zone-bits? if
                     2 ebit-set
                     $32 chance? if
-                        $1F 0 var-set
+                        hewie-zone-var 0 var-set
                         0 hewie-who $8A action
                     then
                 then
@@ -97,8 +97,8 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
             hewie-who 0 9 char-zone-bits? if
-                $1F 0 var-set
-                $1F 17.0 hewie-look-zone
+                hewie-zone-var 0 var-set
+                hewie-zone-var 17.0 hewie-look-zone
             then
         then
     then
@@ -106,13 +106,13 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
         1 -30.81 0.0 -21.85 $A 5 0 zone
         hewie-who 1 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-7-album-medallion-found var-set
-                $1A om1f-7-album-medallion var-set
-                $1B 0 var-set
-                $1C -30810 var-set
-                $1D 1000 var-set
-                $1E -21850 var-set
-                $1F 1 var-set
+                found-flag-var om1f-7-album-medallion-found var-set
+                taken-flag-var om1f-7-album-medallion var-set
+                sparkle-fx-var 0 var-set
+                sparkle-x-var -30810 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var -21850 var-set
+                hewie-zone-var 1 var-set
                 0 hewie-who $8B action
             then
         then

@@ -65,6 +65,13 @@ floor is): `2 keeps-people-off floor-on` / `floor-off` on a group of triangles, 
 `tri-floor-off` on one. Its own model parts - a breakable whole or broken, a leaf open or shut -
 are `3 part-shown` / `part-hidden`.
 
+The animations a script plays itself are by name - Fiona's, Hewie's or the stalkers' (each
+script's character is known from the room's calls; tools/story_anims.py), Fiona's story ones
+named from how they look played (fiona/anims.fs) - and a room's own motion file's are `i
+room-motion`. The variables the rooms hand Hewie for his finds and looks are `found-flag-var`
+.. `hewie-zone-var`. A room's own event bits and variables 0..12 stay numbers: each means
+something only in its room.
+
 ## API
 
 Declared in `scripts/messages.fs`.

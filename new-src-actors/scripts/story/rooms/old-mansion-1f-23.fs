@@ -156,13 +156,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         0 0.03 0.0 -85.54 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-23-viride-medallion-found var-set
-                $1A om1f-23-viride-medallion var-set
-                $1B 0 var-set
-                $1C 30 var-set
-                $1D 1000 var-set
-                $1E -85540 var-set
-                $1F 0 var-set
+                found-flag-var om1f-23-viride-medallion-found var-set
+                taken-flag-var om1f-23-viride-medallion var-set
+                sparkle-fx-var 0 var-set
+                sparkle-x-var 30 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var -85540 var-set
+                hewie-zone-var 0 var-set
                 0 hewie-who $8B action
             then
         then
@@ -171,13 +171,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         1 109.8 -10.0 -94.58 $A 5 0 zone
         hewie-who 1 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-23-medallion-found var-set
-                $1A om1f-23-medallion var-set
-                $1B 1 var-set
-                $1C 109800 var-set
-                $1D -9000 var-set
-                $1E -94580 var-set
-                $1F 1 var-set
+                found-flag-var om1f-23-medallion-found var-set
+                taken-flag-var om1f-23-medallion var-set
+                sparkle-fx-var 1 var-set
+                sparkle-x-var 109800 var-set
+                sparkle-y-var -9000 var-set
+                sparkle-z-var -94580 var-set
+                hewie-zone-var 1 var-set
                 0 hewie-who $8B action
             then
         then

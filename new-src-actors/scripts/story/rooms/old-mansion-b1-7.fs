@@ -141,13 +141,13 @@ USING: engine common actors messages room-names story.words story.shared story-n
         0 8.95 0.0 11.89 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 omb1-7-medallion-found var-set
-                $1A omb1-7-medallion var-set
-                $1B 0 var-set
-                $1C 8950 var-set
-                $1D 1000 var-set
-                $1E 11890 var-set
-                $1F 0 var-set
+                found-flag-var omb1-7-medallion-found var-set
+                taken-flag-var omb1-7-medallion var-set
+                sparkle-fx-var 0 var-set
+                sparkle-x-var 8950 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 11890 var-set
+                hewie-zone-var 0 var-set
                 0 hewie-who $8B action
             then
         then

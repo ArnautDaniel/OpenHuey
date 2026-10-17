@@ -180,7 +180,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 hewie-who 2 9 char-zone-bits? if
                     7 ebit-set
                     $50 chance? if
-                        $1F 2 var-set
+                        hewie-zone-var 2 var-set
                         0 hewie-who $8A action
                     then
                 then
@@ -191,8 +191,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-who char-here? 1 game-mode? and if
         hewie-can-command? if
             hewie-who 2 9 char-zone-bits? if
-                $1F 2 var-set
-                $1F 16.0 hewie-look-zone
+                hewie-zone-var 2 var-set
+                hewie-zone-var 16.0 hewie-look-zone
             then
         then
     then
@@ -200,13 +200,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         5 0.34 0.0 62.0 $A 5 0 zone
         hewie-who 5 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-20-medallion-found var-set
-                $1A om1f-20-medallion var-set
-                $1B 1 var-set
-                $1C 340 var-set
-                $1D 1000 var-set
-                $1E 62000 var-set
-                $1F 5 var-set
+                found-flag-var om1f-20-medallion-found var-set
+                taken-flag-var om1f-20-medallion var-set
+                sparkle-fx-var 1 var-set
+                sparkle-x-var 340 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 62000 var-set
+                hewie-zone-var 5 var-set
                 0 hewie-who $8B action
             then
         then
@@ -215,13 +215,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         6 13.99 0.0 94.5 $A 5 0 zone
         hewie-who 6 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-20-medallion-sniffed-2 var-set
-                $1A om1f-20-medallion-2 var-set
-                $1B 2 var-set
-                $1C 13990 var-set
-                $1D 1000 var-set
-                $1E 94500 var-set
-                $1F 6 var-set
+                found-flag-var om1f-20-medallion-sniffed-2 var-set
+                taken-flag-var om1f-20-medallion-2 var-set
+                sparkle-fx-var 2 var-set
+                sparkle-x-var 13990 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 94500 var-set
+                hewie-zone-var 6 var-set
                 0 hewie-who $8B action
             then
         then
@@ -230,13 +230,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         7 -13.99 0.0 126.99 $A 5 0 zone
         hewie-who 7 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-20-medallion-sniffed-3 var-set
-                $1A om1f-20-medallion-3 var-set
-                $1B 3 var-set
-                $1C -13990 var-set
-                $1D 1000 var-set
-                $1E 126990 var-set
-                $1F 7 var-set
+                found-flag-var om1f-20-medallion-sniffed-3 var-set
+                taken-flag-var om1f-20-medallion-3 var-set
+                sparkle-fx-var 3 var-set
+                sparkle-x-var -13990 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 126990 var-set
+                hewie-zone-var 7 var-set
                 0 hewie-who $8B action
             then
         then
@@ -245,13 +245,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         8 -42.23 50.0 236.98 $A 5 0 zone
         hewie-who 8 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-20-prima-magnesia-found var-set
-                $1A om1f-20-prima-magnesia var-set
-                $1B 4 var-set
-                $1C -42230 var-set
-                $1D 51000 var-set
-                $1E 236980 var-set
-                $1F 8 var-set
+                found-flag-var om1f-20-prima-magnesia-found var-set
+                taken-flag-var om1f-20-prima-magnesia var-set
+                sparkle-fx-var 4 var-set
+                sparkle-x-var -42230 var-set
+                sparkle-y-var 51000 var-set
+                sparkle-z-var 236980 var-set
+                hewie-zone-var 8 var-set
                 0 hewie-who $8B action
             then
         then

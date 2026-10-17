@@ -48,13 +48,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         0 37.0 0.0 84.0 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 ht2f-2-viride-medallion-found var-set
-                $1A ht2f-2-viride-medallion var-set
-                $1B 0 var-set
-                $1C 37000 var-set
-                $1D 1000 var-set
-                $1E 84000 var-set
-                $1F 0 var-set
+                found-flag-var ht2f-2-viride-medallion-found var-set
+                taken-flag-var ht2f-2-viride-medallion var-set
+                sparkle-fx-var 0 var-set
+                sparkle-x-var 37000 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 84000 var-set
+                hewie-zone-var 0 var-set
                 0 hewie-who $8B action
             then
         then

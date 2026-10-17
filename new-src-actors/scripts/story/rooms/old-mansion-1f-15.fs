@@ -212,13 +212,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         1 39.16 0.0 -38.76 $A 5 0 zone
         hewie-who 1 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-15-antimony-tube-found var-set
-                $1A om1f-15-antimony-tube var-set
-                $1B 1 var-set
-                $1C 39160 var-set
-                $1D 1000 var-set
-                $1E -38760 var-set
-                $1F 1 var-set
+                found-flag-var om1f-15-antimony-tube-found var-set
+                taken-flag-var om1f-15-antimony-tube var-set
+                sparkle-fx-var 1 var-set
+                sparkle-x-var 39160 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var -38760 var-set
+                hewie-zone-var 1 var-set
                 0 hewie-who $8B action
             then
         then
@@ -227,13 +227,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         2 -23.61 50.0 -61.37 $A 5 0 zone
         hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-15-rubrum-medallion-found var-set
-                $1A om1f-15-rubrum-medallion var-set
-                $1B 2 var-set
-                $1C -23610 var-set
-                $1D 51000 var-set
-                $1E -61370 var-set
-                $1F 2 var-set
+                found-flag-var om1f-15-rubrum-medallion-found var-set
+                taken-flag-var om1f-15-rubrum-medallion var-set
+                sparkle-fx-var 2 var-set
+                sparkle-x-var -23610 var-set
+                sparkle-y-var 51000 var-set
+                sparkle-z-var -61370 var-set
+                hewie-zone-var 2 var-set
                 0 hewie-who $8B action
             then
         then
@@ -246,7 +246,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
                     hewie-who 3 9 char-zone-bits? if
                         2 ebit-set
                         $64 chance? if
-                            $1F 3 var-set
+                            hewie-zone-var 3 var-set
                             0 hewie-who $89 action
                         then
                     then
@@ -260,7 +260,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
                     hewie-who 4 9 char-zone-bits? if
                         3 ebit-set
                         $64 chance? if
-                            $1F 4 var-set
+                            hewie-zone-var 4 var-set
                             0 hewie-who $89 action
                         then
                     then
@@ -274,7 +274,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
                     hewie-who 4 9 char-zone-bits? if
                         5 ebit-set
                         $64 chance? if
-                            $1F 4 var-set
+                            hewie-zone-var 4 var-set
                             0 hewie-who $88 action
                         then
                     then

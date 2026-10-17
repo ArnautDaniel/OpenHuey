@@ -294,7 +294,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
                 hewie-who 1 9 char-zone-bits? if
                     3 ebit-set
                     $32 chance? if
-                        $1F 1 var-set
+                        hewie-zone-var 1 var-set
                         0 hewie-who $8A action
                     then
                 then
@@ -305,8 +305,8 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 16.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 16.0 hewie-look-zone
             then
         then
     then
@@ -319,7 +319,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
                         hewie-who 3 9 char-zone-bits? if
                             6 ebit-set
                             $64 chance? if
-                                $1F 3 var-set
+                                hewie-zone-var 3 var-set
                                 0 hewie-who $88 action
                             then
                         then
@@ -336,7 +336,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
                     hewie-who 4 9 char-zone-bits? if
                         8 ebit-set
                         $64 chance? if
-                            $1F 4 var-set
+                            hewie-zone-var 4 var-set
                             0 hewie-who $88 action
                         then
                     then
@@ -347,8 +347,8 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         hewie-who char-here? 0 game-mode? and if
             hewie-can-command? if
                 hewie-who 4 9 char-zone-bits? if
-                    $1F 4 var-set
-                    $1F 0.0 hewie-look-zone
+                    hewie-zone-var 4 var-set
+                    hewie-zone-var 0.0 hewie-look-zone
                 then
             then
         then

@@ -100,7 +100,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
                     hewie-who 1 9 char-zone-bits? if
                         1 ebit-set
                         $64 chance? if
-                            $1F 1 var-set
+                            hewie-zone-var 1 var-set
                             0 hewie-who $8A action
                         then
                     then
@@ -116,7 +116,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
                     hewie-who 1 9 char-zone-bits? if
                         1 ebit-set
                         $1E chance? if
-                            $1F 1 var-set
+                            hewie-zone-var 1 var-set
                             0 hewie-who $8A action
                         then
                     then

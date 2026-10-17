@@ -275,13 +275,13 @@ create dl-at 12 allot
         2 -11.6 0.0 142.2 $A 5 0 zone
         hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 c2f-2-album-medallion-found var-set
-                $1A c2f-2-album-medallion var-set
-                $1B 2 var-set
-                $1C -11600 var-set
-                $1D 1000 var-set
-                $1E 142200 var-set
-                $1F 2 var-set
+                found-flag-var c2f-2-album-medallion-found var-set
+                taken-flag-var c2f-2-album-medallion var-set
+                sparkle-fx-var 2 var-set
+                sparkle-x-var -11600 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 142200 var-set
+                hewie-zone-var 2 var-set
                 0 hewie-who $8B action
             then
         then
@@ -308,7 +308,7 @@ create dl-at 12 allot
                         hewie-who 1 9 char-zone-bits? if
                             3 ebit-set
                             $64 chance? if
-                                $1F 1 var-set
+                                hewie-zone-var 1 var-set
                                 0 hewie-who $8A action
                             then
                         then
@@ -325,7 +325,7 @@ create dl-at 12 allot
                     hewie-who 0 9 char-zone-bits? if
                         2 ebit-set
                         $1E chance? if
-                            $1F 0 var-set
+                            hewie-zone-var 0 var-set
                             0 hewie-who $89 action
                         then
                     then
@@ -342,8 +342,8 @@ create dl-at 12 allot
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 3 9 char-zone-bits? if
-                $1F 3 var-set
-                $1F 18.0 hewie-look-zone
+                hewie-zone-var 3 var-set
+                hewie-zone-var 18.0 hewie-look-zone
             then
         then
     then
@@ -351,8 +351,8 @@ create dl-at 12 allot
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 4 9 char-zone-bits? if
-                $1F 4 var-set
-                $1F 14.0 hewie-look-zone
+                hewie-zone-var 4 var-set
+                hewie-zone-var 14.0 hewie-look-zone
             then
         then
     then
@@ -360,8 +360,8 @@ create dl-at 12 allot
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 5 9 char-zone-bits? if
-                $1F 5 var-set
-                $1F 28.0 hewie-look-zone
+                hewie-zone-var 5 var-set
+                hewie-zone-var 28.0 hewie-look-zone
             then
         then
     then

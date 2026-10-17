@@ -211,13 +211,13 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         3 22.9 0.0 -9.7 $A 5 0 zone
         hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 c2f-12-refined-antimony-found var-set
-                $1A c2f-12-refined-antimony var-set
-                $1B 2 var-set
-                $1C 22900 var-set
-                $1D 1000 var-set
-                $1E -9700 var-set
-                $1F 3 var-set
+                found-flag-var c2f-12-refined-antimony-found var-set
+                taken-flag-var c2f-12-refined-antimony var-set
+                sparkle-fx-var 2 var-set
+                sparkle-x-var 22900 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var -9700 var-set
+                hewie-zone-var 3 var-set
                 0 hewie-who $8B action
             then
         then

@@ -76,8 +76,8 @@ USING: room-names story.words story.shared story-names fiona.anims ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 17.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 17.0 hewie-look-zone
             then
         then
     then
@@ -88,7 +88,7 @@ USING: room-names story.words story.shared story-names fiona.anims ;
                 hewie-who 2 9 char-zone-bits? if
                     2 ebit-set
                     $1E chance? if
-                        $1F 2 var-set
+                        hewie-zone-var 2 var-set
                         0 hewie-who $89 action
                     then
                 then
@@ -99,8 +99,8 @@ USING: room-names story.words story.shared story-names fiona.anims ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 3 9 char-zone-bits? if
-                $1F 3 var-set
-                $1F 11.0 hewie-look-zone
+                hewie-zone-var 3 var-set
+                hewie-zone-var 11.0 hewie-look-zone
             then
         then
     then
@@ -108,8 +108,8 @@ USING: room-names story.words story.shared story-names fiona.anims ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 4 9 char-zone-bits? if
-                $1F 4 var-set
-                $1F 13.0 hewie-look-zone
+                hewie-zone-var 4 var-set
+                hewie-zone-var 13.0 hewie-look-zone
             then
         then
     then
@@ -117,8 +117,8 @@ USING: room-names story.words story.shared story-names fiona.anims ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 5 9 char-zone-bits? if
-                $1F 5 var-set
-                $1F 13.0 hewie-look-zone
+                hewie-zone-var 5 var-set
+                hewie-zone-var 13.0 hewie-look-zone
             then
         then
     then
@@ -126,8 +126,8 @@ USING: room-names story.words story.shared story-names fiona.anims ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 6 9 char-zone-bits? if
-                $1F 6 var-set
-                $1F 11.0 hewie-look-zone
+                hewie-zone-var 6 var-set
+                hewie-zone-var 11.0 hewie-look-zone
             then
         then
     then
@@ -135,8 +135,8 @@ USING: room-names story.words story.shared story-names fiona.anims ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 7 9 char-zone-bits? if
-                $1F 7 var-set
-                $1F 11.0 hewie-look-zone
+                hewie-zone-var 7 var-set
+                hewie-zone-var 11.0 hewie-look-zone
             then
         then
     then

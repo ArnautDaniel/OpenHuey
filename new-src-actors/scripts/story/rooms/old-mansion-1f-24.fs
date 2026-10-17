@@ -129,7 +129,7 @@ defer old-mansion-1f-24.act02
                     hewie-who 1 9 char-zone-bits? if
                         5 ebit-set
                         $64 chance? if
-                            $1F 1 var-set
+                            hewie-zone-var 1 var-set
                             0 hewie-who $8A action
                         then
                     then
@@ -140,8 +140,8 @@ defer old-mansion-1f-24.act02
         hewie-who char-here? 1 game-mode? and if
             hewie-can-command? if
                 hewie-who 1 9 char-zone-bits? if
-                    $1F 1 var-set
-                    $1F 17.0 hewie-look-zone
+                    hewie-zone-var 1 var-set
+                    hewie-zone-var 17.0 hewie-look-zone
                 then
             then
         then
