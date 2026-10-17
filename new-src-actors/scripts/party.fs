@@ -20,20 +20,19 @@ create his-dances  $1B00 , $1C00 , $1B03 , $1C01 , $1C03 , $1B04 , $1C05 , $1C06
 $1300 constant golem-dance   $37 constant dance-music
 
 \ ---- the line-up: she where she is, facing the camera; the golems in a row behind her ----
-create here 12 allot   create eye 12 allot   create spot 12 allot
+create her-place /vec allot   create eye /vec allot   create spot /vec allot
 fvariable facing   \ (toward the camera)
-fvariable ob-back  fvariable ob-side  fvariable ob-s  fvariable ob-c
 : fiona-id ( -- id )  s" fiona" actor-named ;
 : hewie-id ( -- id )  s" hewie" actor-named ;
 : line-up ( -- )
-    here fiona-id body-at vec-copy
-    camera cam.x sf@ eye sf!  here 4 + sf@ eye 4 + sf!  camera cam.z sf@ eye 8 + sf!
-    here eye vec-heading facing f! ;
+    her-place fiona-id body-at vec-copy
+    camera cam.x sf@ eye v.x sf!  her-place v.y sf@ eye v.y sf!  camera cam.z sf@ eye v.z sf!
+    her-place eye vec-heading facing f! ;
 : out-by ( F: back side -- )   \ (spot = her place moved `back` away from the camera, `side` across)
-    ob-side f!  ob-back f!  facing f@ fsin ob-s f!  facing f@ fcos ob-c f!
-    here sf@  ob-s f@ ob-back f@ f* f-  ob-c f@ ob-side f@ f* f+  spot sf!
-    here 8 + sf@  ob-c f@ ob-back f@ f* f-  ob-s f@ ob-side f@ f* f-  spot 8 + sf!
-    spot sf@  here 4 + sf@  spot 8 + sf@  nav-floor drop  spot 4 + sf! ;
+    {: F: back side | F: s c :}  facing f@ fsin to s  facing f@ fcos to c
+    her-place v.x sf@  s back f* f-  c side f* f+  spot v.x sf!
+    her-place v.z sf@  c back f* f-  s side f* f-  spot v.z sf!
+    spot v.x sf@  her-place v.y sf@  spot v.z sf@  nav-floor drop  spot v.y sf! ;
 : place-msg ( F: x y z yaw -- ) ( -- x y z yaw )  xyzw>cells ;
 
 state: party-state
@@ -45,19 +44,20 @@ state: party-state
   cell field was-wearing   \ (her costume before: progress variable $26)
   cell field settle-t      \ frames before the models are taken (her costume's model loading)
 end-state
-: costume-var ( -- addr )  progress pr.vars $26 + ;
+$26 constant costume-var#   \ (the progress variable her costume is kept in)
+: costume-var ( -- addr )  progress pr.vars costume-var# + ;
 : dress ( n -- )  dup costume-var c!  fiona-id send costume ;
 
 : golem ( i -- addr )  cells golems + ;
-variable ga   \ (the golem being set up)
 : golems-in ( -- )
+    {: | ga :}
     #golems 0 do
-        s" O_GLM/GLM_000" actor-load  dup i golem !  actor ga !
+        s" O_GLM/GLM_000" actor-load  dup i golem !  actor to ga
         golem-back  i #golems 1- 2/ - s>f golem-gap f*  out-by
-        spot sf@ ga @ act.x sf!  spot 4 + sf@ ga @ act.y sf!  spot 8 + sf@ ga @ act.z sf!  facing f@ ga @ act.yaw sf!
-        1 ga @ act.visible l!  1 ga @ act.loop l!
+        spot v.x sf@ ga act.x sf!  spot v.y sf@ ga act.y sf!  spot v.z sf@ ga act.z sf!  facing f@ ga act.yaw sf!
+        1 ga act.visible l!  1 ga act.loop l!
         i golem @ golem-dance motion!
-        i 30 * s>f  ga @ act.frame sf!   \ (each a little behind the one before)
+        i 30 * s>f  ga act.frame sf!   \ (each a little behind the one before)
     loop ;
 : golems-out ( -- )  #golems 0 do  i golem @ dup 0< 0= if  actor-free  else  drop  then  -1 i golem !  loop ;
 
@@ -78,7 +78,7 @@ variable ga   \ (the golem being set up)
     {: model last :}  model motion-done?
     model actor act.frame sf@ f>s  dup last @ <  swap last !  or ;
 : dancing ( -- )   \ (their models read afresh: hers changes with her costume)
-    0 char-model her-model !  1 char-model his-model !
+    fiona-who char-model her-model !  hewie-who char-model his-model !
     1 her-t +!  1 his-t +!   \ (and, whatever, 10 s each)
     her-model @ her-last came-round?  her-t @ 300 > or if  her-next  then
     his-model @ his-last came-round?  his-t @ 300 > or if  his-next  then ;
@@ -90,7 +90,7 @@ behaviour partying
       costume-var c@ was-wearing !  0 dress   \ (her regular clothes)
       hewie-id send join-fiona
       line-up  golems-in
-      here vec@ facing f@ place-msg  fiona-id send place
+      her-place vec@ facing f@ place-msg  fiona-id send place
       0e hewie-side out-by  spot vec@ facing f@ place-msg  hewie-id send place
       -1 fiona-id send scripted  -1 hewie-id send scripted
       dance-music 1 1e bgm  10 settle-t !
@@ -98,7 +98,7 @@ behaviour partying
   on tick ( -- )
       settle-t @ if  -1 settle-t +!  exit  then
       her-model @ 0< if   \ (their models, once they are placed: the story's slots 0 and 1)
-          0 char-model her-model !  1 char-model his-model !
+          fiona-who char-model her-model !  hewie-who char-model his-model !
           her-next  his-next  exit
       then
       dancing ;

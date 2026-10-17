@@ -61,31 +61,30 @@ PRIVATE>
 \ min, max, step - in thousandths, so all of it fits in cells.
 
 <PRIVATE
-0 constant flag        \ on / off
-1 constant count       \ min .. max by 1
-2 constant doubling    \ 1 2 4 8 ...
-3 constant number      \ a float, min .. max by step (thousandths)
-4 constant choice      \ a count shown by name (step: the names)
-5 constant action      \ runs a word (the field: its execution token)
+\ the kinds: on / off; a count, min .. max by 1; doubling, 1 2 4 8 ...; a float, min .. max by
+\ step (thousandths); a count shown by name (step: the names); runs a word (the field: its word)
+enum: item-kind  flag count doubling number choice action ;
 
-7 constant item-cells
-create items 48 item-cells * cells allot
+begin-structure /item
+  field: i.label  field: i.len  field: i.field  field: i.kind  field: i.lo  field: i.hi  field: i.step
+end-structure
+48 constant most-items
+create items most-items /item * allot
 variable #items
 
+: rec ( i -- addr )  /item * items + ;
 : item ( label-addr label-len field-xt kind min max step -- )
-    #items @ item-cells * cells items + >r
-    r@ 6 cells + !  r@ 5 cells + !  r@ 4 cells + !  r@ 3 cells + !  r@ 2 cells + !
-    keep r@ cell+ !  r> !
+    {: a n xt k lo hi st | r :}  #items @ rec to r
+    a n keep r i.len !  r i.label !  xt r i.field !  k r i.kind !  lo r i.lo !  hi r i.hi !  st r i.step !
     1 #items +! ;
 
-: rec ( i -- addr ) item-cells * cells items + ;
-: label ( rec -- addr len )  dup @ swap cell+ @ ;
-: kind ( rec -- k ) 3 cells + @ ;
-: slot ( rec -- x ) 2 cells + @ ;                 \ the field word (an action: its word)
+: label ( rec -- addr len )  dup i.label @ swap i.len @ ;
+: kind ( rec -- k )  i.kind @ ;
+: slot ( rec -- x )  i.field @ ;                 \ the field word (an action: its word)
 : field ( rec -- addr ) slot gfx swap execute ;
-: lo ( rec -- n ) 4 cells + @ ;
-: hi ( rec -- n ) 5 cells + @ ;
-: step ( rec -- n ) 6 cells + @ ;
+: lo ( rec -- n )  i.lo @ ;
+: hi ( rec -- n )  i.hi @ ;
+: step ( rec -- n )  i.step @ ;
 
 variable tbl
 \ names for a choice: `s" a" s" b" s" c" 3 names` gives a table: count, then (addr, len) pairs
