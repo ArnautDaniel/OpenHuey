@@ -166,7 +166,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-1f-3.act00 ( -- )   \ 003F34F0
     2 ebit? if
         stalkers-stay state-flag-clear
-        $F1 action-end
+        1 track action-end
     then
     1 self-scripted
     c1f-3-bookshelf-examined story-flag-set
@@ -191,7 +191,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         scene-wait-ready
     then
     wait-fade
-    0 $F9 3 action
+    0 cutscene-track 3 action
     hewie-who char-here? if
         0 hewie-who 2 action-force
         c1f-3-flag2 story-flag-set
@@ -292,7 +292,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         scene-wait-ready
         wait-fade
         fiona-who 1 char-no-shadow
-        0 $F2 $E action
+        0 2 track $E action
         panic-eased
         7 message-prepare   \ "Fiona. I see you've finally awakened... There's something that I've wanted..."
         1 result? if
@@ -301,7 +301,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $FF 1.0 0 bgm
         wait-fade
         fiona-who 0 char-no-shadow
-        $F2 action-end
+        2 track action-end
         1 part-hidden
         2 part-shown
         2 0 object-hidden
@@ -451,7 +451,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     10 self-idle-anim
     wait-message
     0 self-scripted
-    0 $F1 $D action
+    0 1 track $D action
     self-idle-or-end
 ;
 
@@ -519,7 +519,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     scene-wait-ready
     fiona-who 1 char-no-shadow
-    0 $F2 $E action
+    0 2 track $E action
     panic-eased
     7 message-prepare   \ "Fiona. I see you've finally awakened... There's something that I've wanted to s..."
     1 result? if
@@ -527,7 +527,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     $FF 1.0 0 bgm
     fiona-who 0 char-no-shadow
-    $F2 action-end
+    2 track action-end
     $80 exit-check
     events-held state-flag-clear
     hewie-who action-end
@@ -546,7 +546,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     yield
     scene-wait-ready
-    0 $F9 3 action
+    0 cutscene-track 3 action
     fiona-who 1 char-no-shadow
     stalker-who 1 char-no-shadow
     panic-eased
@@ -572,7 +572,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     yield
     scene-wait-ready
-    0 $F9 3 action
+    0 cutscene-track 3 action
     fiona-who 1 char-no-shadow
     stalker-who 1 char-no-shadow
     panic-eased

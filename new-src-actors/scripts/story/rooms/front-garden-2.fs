@@ -33,7 +33,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     c2f-3-flag1 story-flag? hewie-found-in-wire story-flag? not and if
         0 30 var-set
-        0 $F1 6 action
+        0 1 track 6 action
     then
     fg-2-breakable1-broken story-flag? not if
         2 keeps-people-off floor-on

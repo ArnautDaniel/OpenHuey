@@ -347,7 +347,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     got-study-key story-flag? got-scrawled-memo story-flag? not and c1f-12-flag1 story-flag? not and if
         fiona-who 7 char-left-area? fiona-who 8 char-left-area? or fiona-who $11 char-left-area? or if
             $17 ebit? not if
-                0 $F1 $18 action
+                0 1 track $18 action
             then
         then
     then
@@ -641,7 +641,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             self-wait-anim
             c1f-2-flag1 story-flag-set
             $5F $1F9 noise
-            0 $F1 $A action
+            0 1 track $A action
             got-saturnus-key story-flag? not if
                 1 0 443 4 0 -1 0 0.0 creature-place
                 $25 0 217 4 0 -1 0 0.0 creature-place
@@ -754,7 +754,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             35 fiona-started? 45 fiona-started? or if
                 hewie-may-break-off? if
                     0 counter-set
-                    0 $F2 $B action
+                    0 2 track $B action
                     ['] castle-1f-2.act05 goto
                 then
             then
@@ -762,7 +762,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         fiona-who $14 char-in-area? if
             44 fiona-started? 35 fiona-started? or 45 fiona-started? or if
                 0 counter-set
-                0 $F2 $B action
+                0 2 track $B action
                 ['] castle-1f-2.act05 goto
             then
         then
@@ -789,7 +789,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             yield
             scene-wait-ready
             wait-fade
-            0 $F9 $16 action
+            0 cutscene-track $16 action
             hewie-who char-here? hewie-who 2 char-cond? and if
                 0 hewie-who $86 action
             then
@@ -1253,7 +1253,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     yield
     yield
     scene-wait-ready
-    0 $F9 $16 action
+    0 cutscene-track $16 action
     1 0.9 camera-value
     $B 1 char-no-shadow
     panic-eased

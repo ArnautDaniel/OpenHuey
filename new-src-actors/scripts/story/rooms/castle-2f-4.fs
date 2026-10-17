@@ -16,7 +16,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0 part-shown
     1 0 1 effect-string
     1 part-hidden
-    0 $F1 2 action
+    0 1 track 2 action
 ;
 
 : castle-2f-4.char-enter ( -- )   \ 00429E60
@@ -70,7 +70,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     yield
     scene-wait-ready
     wait-fade
-    0 $F9 1 action
+    0 cutscene-track 1 action
     $21 room-preload
     movie-opaque state-flag-set
     panic-eased
@@ -130,13 +130,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-2f-4.act03 ( -- )   \ 0042A010
     self-wait-done
-    0 $F1 2 action
+    0 1 track 2 action
     1 2 movie-play
     0 cutscene-start
     yield
     yield
     scene-wait-ready
-    0 $F9 1 action
+    0 cutscene-track 1 action
     movie-opaque state-flag-set
     panic-eased
     9 message-prepare   \ "No---------!! No...This isn't real... It's just a dream... This can't be happen..."

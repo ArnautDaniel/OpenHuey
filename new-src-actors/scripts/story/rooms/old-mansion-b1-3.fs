@@ -479,7 +479,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     yield
     scene-wait-ready
     wait-fade
-    0 $F9 $13 action
+    0 cutscene-track $13 action
     self-who 1 char-visible
     hewie-who char-here? if
         0 hewie-who 1 action-force
@@ -1145,7 +1145,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     yield
     yield
     scene-wait-ready
-    0 $F9 $13 action
+    0 cutscene-track $13 action
     self-who 1 char-visible
     $10 $FF movie-param
     panic-eased

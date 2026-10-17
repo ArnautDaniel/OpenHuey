@@ -31,7 +31,7 @@ USING: room-names story.words story.shared story-names fiona.anims ;
     1 1 castle-1f-17.cmd00
     3 1 castle-1f-17.cmd00
     4 1 castle-1f-17.cmd00
-    0 $F1 6 action
+    0 1 track 6 action
 ;
 
 : castle-1f-17.char-enter ( -- )   \ 003FC6F0

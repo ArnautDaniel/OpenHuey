@@ -148,7 +148,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 old-mansion-1f-12.cond00? if
                     4 ebit-set
                     om1f-12-flag4 story-flag-set
-                    0 $F1 $C action
+                    0 1 track $C action
                 then
             then
         then
@@ -447,7 +447,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     2 part-hidden
     1 old-mansion-1f-12.cmd02
     0 ebit? if
-        0 $F9 8 action
+        0 cutscene-track 8 action
     then
     $10 $C8 movie-param
     panic-eased
@@ -712,7 +712,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     yield
     scene-wait-ready
-    0 $F9 8 action
+    0 cutscene-track 8 action
     $10 $C8 movie-param
     panic-eased
     $FFFF message-prepare

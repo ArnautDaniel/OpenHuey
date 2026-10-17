@@ -150,11 +150,11 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
                 0 ebit? not if
                     fiona-who $D char-left-area? if
                         0 ebit-set
-                        0 $F2 1 action
+                        0 2 track 1 action
                     then
                 then
                 fiona-who 5 char-entered-area? if
-                    $F2 action-end
+                    2 track action-end
                 then
                 fiona-who $E char-entered-area? if
                     $FE $C2 825 1 stalker-to-room
@@ -330,7 +330,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         $37 self-wait-frames
         fiona-who 0 6 char-sound
         self-wait-anim
-        0 $F3 3 action
+        0 3 track 3 action
         wt2f-1-flag3 story-flag-set
         2 1 object-hidden
         3 1 object-hidden
@@ -354,7 +354,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         $37 self-wait-frames
         fiona-who 0 6 char-sound
         self-wait-anim
-        0 $F3 3 action
+        0 3 track 3 action
         wt2f-1-flag3 story-flag-clear
         2 1 object-hidden
         3 1 object-hidden

@@ -123,7 +123,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     $EB door-locked? if
         4 -37.0 0.0 177.0 7 20 0 zone
         fiona-who 4 char-in-zone? if
-            0 $F1 4 action
+            0 1 track 4 action
         then
         hewie-who char-here? hewie-who 2 char-cond? not and fiona-who $C char-in-area? and hewie-who $C char-in-area? and fiona-who -37 177 $3C char-faces-xz? and 0 control-action? and if
             hewie-may-break-off? if
@@ -258,7 +258,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     $40000030 $47 0.0 0.0 0.0 0 0 sound
     $F $11 fade
     wait-fade
-    0 $F1 3 action
+    0 1 track 3 action
     self-frames-reset
     8 self-wait-frames
     fiona-who seized-sound 5 char-sound
@@ -273,7 +273,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     tremor-warned story-flag-set
     5 1.0 0 bgm
     tremor-warned-2 story-flag-set
-    $F1 action-end
+    1 track action-end
     shared.act95
     0 5 var-set
     stalkers-stay state-flag-clear

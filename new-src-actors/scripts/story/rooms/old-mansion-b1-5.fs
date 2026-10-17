@@ -609,7 +609,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-who char-done
     stalker-who action-end
     stalker-who char-done
-    0 $F9 $13 action
+    0 cutscene-track $13 action
     $10 $28 movie-param
     panic-eased
     $FFFF message-prepare
@@ -1155,7 +1155,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     yield
     scene-wait-ready
-    0 $F9 $13 action
+    0 cutscene-track $13 action
     $10 $28 movie-param
     panic-eased
     $FFFF message-prepare

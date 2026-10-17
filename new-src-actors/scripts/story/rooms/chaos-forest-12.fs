@@ -16,7 +16,7 @@ USING: room-names story.words story.shared story-names fiona.anims ;
     $19 1.0 0 bgm
     cf-12-flag1 story-flag? not if
         $E 5 $FF char-load
-        0 $F1 0 action
+        0 1 track 0 action
     then
     $1F 0 pvar? if
         deal-things
@@ -136,8 +136,8 @@ USING: room-names story.words story.shared story-names fiona.anims ;
     2 ebit? cf-12-flag1 story-flag? not and if
         chaos-forest-12.cond00? if
             cf-12-flag1 story-flag-set
-            $F1 action-end
-            0 $F1 2 action
+            1 track action-end
+            0 1 track 2 action
         then
     then
 ;

@@ -93,7 +93,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags he
         yield
     repeat
     fiona-who char-file-use
-    0 $F2 6 action
+    0 2 track 6 action
     0 room-motion self-anim
     self-wait-anim
     self-frames-reset
@@ -118,7 +118,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags he
     self-wait-done
     fiona-who self-turn-to
     self-wait-done
-    0 $F1 4 action
+    0 1 track 4 action
     self-idle-or-end
 ;
 
@@ -130,7 +130,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags he
     self-wait-done
     fiona-who self-turn-to
     self-wait-done
-    0 $F1 4 action
+    0 1 track 4 action
     self-idle-or-end
 ;
 
@@ -142,7 +142,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags he
     self-wait-done
     fiona-who self-turn-to
     self-wait-done
-    0 $F1 4 action
+    0 1 track 4 action
     self-idle-or-end
 ;
 

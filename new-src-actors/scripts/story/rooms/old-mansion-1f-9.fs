@@ -182,7 +182,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             yield
             scene-wait-ready
             wait-fade
-            0 $F9 6 action
+            0 cutscene-track 6 action
             4 ebit-clear
             hewie-who char-here? if
                 1 ebit-set
@@ -449,7 +449,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     scene-wait-ready
     wait-fade
-    0 $F9 6 action
+    0 cutscene-track 6 action
     3 4 0 char-model-op
     $13 char-activate
     panic-eased

@@ -33,7 +33,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         1 -283.8 1.0 15.5 flicker-sprite
     then
     $1E chance? if
-        0 $F1 6 action
+        0 1 track 6 action
     else
         $1A action-end
         $1A char-done

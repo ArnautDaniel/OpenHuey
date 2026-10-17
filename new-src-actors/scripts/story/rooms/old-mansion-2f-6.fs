@@ -203,9 +203,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     $10 $FF movie-param
     3 stalker-kind? $22 stalker-kind? or if
-        0 $F9 $D action
+        0 cutscene-track $D action
     else
-        0 $F9 $C action
+        0 cutscene-track $C action
     then
     panic-eased
     $FFFF message-prepare
@@ -290,7 +290,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     force-followed state-flag-set
     yield
     force-followed state-flag-clear
-    0 $F9 $C action
+    0 cutscene-track $C action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -543,7 +543,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     scene-wait-ready
     $10 $FF movie-param
     3 4 0 char-model-op
-    0 $F9 $C action
+    0 cutscene-track $C action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -570,7 +570,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     scene-wait-ready
     3 4 0 char-model-op
     $10 $FF movie-param
-    0 $F9 $D action
+    0 cutscene-track $D action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -598,7 +598,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     scene-wait-ready
     $10 $FF movie-param
     3 5 0 char-model-op
-    0 $F9 $C action
+    0 cutscene-track $C action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -625,7 +625,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     scene-wait-ready
     3 5 0 char-model-op
     $10 $FF movie-param
-    0 $F9 $C action
+    0 cutscene-track $C action
     panic-eased
     $FFFF message-prepare
     1 result? if

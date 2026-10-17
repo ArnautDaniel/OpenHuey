@@ -138,7 +138,7 @@ defer house-of-truth-1f-9.act0F
     1 58.7 10.0 -29.9 1 flame-in
     ht1f-9-flag1 story-flag? if
         0 part-shown
-        0 $F1 9 action
+        0 1 track 9 action
         4 3 var-set
         5 3 var-set
     then
@@ -232,13 +232,13 @@ defer house-of-truth-1f-9.act0F
         3 ebit? not if
             9 ebit? if
                 3 ebit-set
-                0 $F2 $B action
+                0 2 track $B action
             then
         then
         4 ebit? not if
             fiona-who 5 char-in-area? hewie-who 5 char-in-area? or stalker-who 5 char-in-area? or if
                 4 ebit-set
-                0 $F3 $C action
+                0 3 track $C action
             then
         else 6 ebit? if
             fiona-who 7 char-in-area? fiona-who 0 char-action? and if
@@ -254,7 +254,7 @@ defer house-of-truth-1f-9.act0F
         5 ebit? not if
             fiona-who 6 char-in-area? hewie-who 6 char-in-area? or stalker-who 6 char-in-area? or if
                 5 ebit-set
-                0 $F4 $D action
+                0 4 track $D action
             then
         else 7 ebit? if
             fiona-who 8 char-in-area? fiona-who 0 char-action? and if
@@ -516,7 +516,7 @@ defer house-of-truth-1f-9.act0F
     0 creatures-clear
     $A ebit-clear
     $10 $C8 movie-param
-    0 $F9 8 action
+    0 cutscene-track 8 action
     $FF 1.0 0 bgm
     panic-eased
     9 message-prepare   \ "Your effort is for naught. How long do you plan to keep this up? Let's finish t..."
@@ -524,7 +524,7 @@ defer house-of-truth-1f-9.act0F
         scene-play
     then
     wait-fade
-    $F9 action-end
+    cutscene-track action-end
     $1F $7B $32 $2A $64 $24 $2C $36 $4E 0 9 effect-string
     $8080805E 0 1 screen-blend
     0 self-idle-anim
@@ -542,7 +542,7 @@ defer house-of-truth-1f-9.act0F
     hewie-who $97 180 char-to-tri-facing
     4 0 object-hidden
     5 0 object-hidden
-    0 $F1 9 action
+    0 1 track 9 action
     4 3 var-set
     5 3 var-set
     $ED door-open-clear
@@ -553,7 +553,7 @@ defer house-of-truth-1f-9.act0F
     4 ebit-clear
     5 ebit-clear
     7 20 var-set
-    0 $F5 $F action
+    0 5 track $F action
     $A ebit? not if
         0 0 house-of-truth-1f-9.cmd0C
     then
@@ -570,10 +570,10 @@ defer house-of-truth-1f-9.act0F
 
 : house-of-truth-1f-9.act05 ( -- )   \ 004374E0
     $FF 1.0 0 bgm
-    $F2 action-end
-    $F3 action-end
-    $F4 action-end
-    $F5 action-end
+    2 track action-end
+    3 track action-end
+    4 track action-end
+    5 track action-end
     4 ebit-clear
     5 ebit-clear
     6 ebit-clear
@@ -923,7 +923,7 @@ defer house-of-truth-1f-9.act0F
     scene-wait-ready
     0 part-shown
     $10 $C8 movie-param
-    0 $F9 8 action
+    0 cutscene-track 8 action
     panic-eased
     9 message-prepare   \ "Your effort is for naught. How long do you plan to keep this up? Let's finish t..."
     1 result? if

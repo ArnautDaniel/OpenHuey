@@ -74,7 +74,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
             c1f-1-flag2 story-flag-set
             0 ebit-set
-            0 $F1 1 action
+            0 1 track 1 action
         then
     then
 ;

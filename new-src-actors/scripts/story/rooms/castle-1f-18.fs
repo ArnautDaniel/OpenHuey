@@ -171,7 +171,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     scene-wait-ready
     wait-fade
     0 part-shown
-    0 $F9 3 action
+    0 cutscene-track 3 action
     hewie-who char-here? hewie-who 2 char-cond? and if
         0 hewie-who $86 action
     then
@@ -319,7 +319,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     scene-wait-ready
     0 part-shown
-    0 $F9 8 action
+    0 cutscene-track 8 action
     begin
         6 sound-bank-loaded? not while
         yield

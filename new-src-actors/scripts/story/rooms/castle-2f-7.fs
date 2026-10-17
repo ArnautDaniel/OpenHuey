@@ -121,7 +121,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         yield
         yield
         scene-wait-ready
-        0 $F9 4 action
+        0 cutscene-track 4 action
         panic-eased
         $FFFF message-prepare
         1 result? if
@@ -142,7 +142,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         $8012 message   \ "You've obtained ."
         wait-message
         begin
-            $F9 char-busy? while
+            cutscene-track char-busy? while
             yield
         repeat
         $225 item-give
@@ -232,7 +232,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
                 yield
                 scene-wait-ready
                 wait-fade
-                0 $F9 4 action
+                0 cutscene-track 4 action
                 panic-eased
                 $FFFF message-prepare
                 1 result? if
@@ -250,7 +250,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
                 $8012 message   \ "You've obtained ."
                 wait-message
                 begin
-                    $F9 char-busy? while
+                    cutscene-track char-busy? while
                     yield
                 repeat
                 $225 item-give
@@ -296,7 +296,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     scene-wait-ready
     0 castle-2f-7.cmd01
     0 castle-2f-7.cmd00
-    0 $F9 7 action
+    0 cutscene-track 7 action
     panic-eased
     0 message-prepare   \ "Where is he?! Where is the old man? Where's he hiding? I won't let him touch he..."
     1 result? if
@@ -348,7 +348,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     yield
     scene-wait-ready
-    0 $F9 4 action
+    0 cutscene-track 4 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -379,7 +379,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     scene-wait-ready
     0 castle-2f-7.cmd01
     0 castle-2f-7.cmd00
-    0 $F9 7 action
+    0 cutscene-track 7 action
     panic-eased
     0 message-prepare   \ "Where is he?! Where is the old man? Where's he hiding? I won't let him touch he..."
     1 result? if

@@ -245,7 +245,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     scene-wait-ready
     wait-fade
-    0 $F9 $C action
+    0 cutscene-track $C action
     hewie-who char-here? if
         3 ebit-clear
         hewie-who 2 char-cond? if
@@ -535,7 +535,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     yield
     scene-wait-ready
-    0 $F9 $C action
+    0 cutscene-track $C action
     0 34.2 18.3 14.2 1 flame-in
     1 34.2 18.3 -14.2 1 flame-in
     2 -34.2 18.3 -14.2 1 flame-in

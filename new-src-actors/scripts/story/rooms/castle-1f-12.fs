@@ -335,7 +335,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-who char-here? hewie-who 2 char-cond? and if
         0 hewie-who $86 action
     then
-    0 $F9 9 action
+    0 cutscene-track 9 action
     $1E $C8 movie-param
     panic-eased
     $FFFF message-prepare
@@ -513,7 +513,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     yield
     scene-wait-ready
-    0 $F9 9 action
+    0 cutscene-track 9 action
     $1E $C8 movie-param
     panic-eased
     $FFFF message-prepare

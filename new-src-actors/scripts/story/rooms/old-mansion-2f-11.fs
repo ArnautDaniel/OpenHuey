@@ -114,7 +114,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     2 -14.5 0.0 -31.0 9 15 0 zone
     om2f-11-flag1 story-flag? not if
         fiona-who 0 char-in-zone? fiona-who 1 char-in-zone? or fiona-who 2 char-in-zone? or if
-            0 $F1 $B action
+            0 1 track $B action
         then
     then
     4 21.19 0.0 -20.13 $C 10 0 zone
@@ -452,11 +452,11 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
 ;
 
 : old-mansion-2f-11.act0B ( -- )   \ 004222A0
-    0 $F2 3 action
-    0 $F4 8 action
+    0 2 track 3 action
+    0 4 track 8 action
     0 var-inc
     0 3 var? if
-        0 $F3 2 action
+        0 3 track 2 action
     else
         1 old-mansion-2f-11.cmd01
     then

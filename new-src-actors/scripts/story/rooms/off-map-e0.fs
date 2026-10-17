@@ -22,7 +22,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
 : off-map-e0.enter ( -- )   \ 004480B0
     room-sounds
     0 part-shown
-    0 $F1 0 action
+    0 1 track 0 action
     1 part-hidden
     hewie-controlled? if
         6 ebit-set

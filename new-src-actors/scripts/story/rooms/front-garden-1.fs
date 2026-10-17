@@ -110,7 +110,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
                 fiona-who -204 -117 $32 char-faces-xz? if
                     35 fiona-started? if
                         0 counter-set
-                        0 $F1 $C action
+                        0 1 track $C action
                         0 hewie-who $B action-force
                     then
                 then
@@ -147,43 +147,43 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     c2f-3-flag1 story-flag? if
         fiona-who $C char-entered-area? if
             $1E chance? if
-                0 $F8 8 action
+                0 8 track 8 action
             then
         then
         fiona-who $C char-left-area? if
             $1E chance? if
-                0 $F8 8 action
+                0 8 track 8 action
             then
         then
         fiona-who $D char-entered-area? if
             $1E chance? if
-                0 $F7 8 action
+                0 7 track 8 action
             then
         then
         fiona-who $D char-left-area? if
             $1E chance? if
-                0 $F7 8 action
+                0 7 track 8 action
             then
         then
         fiona-who $E char-entered-area? if
             $1E chance? if
-                0 $F6 8 action
+                0 6 track 8 action
             then
         then
         fiona-who $E char-left-area? if
             $1E chance? if
-                0 $F5 8 action
+                0 5 track 8 action
             then
         then
         $14 chance? if
             1 chance? if
-                0 $F8 8 action
+                0 8 track 8 action
             else 1 chance? if
-                0 $F7 8 action
+                0 7 track 8 action
             else 1 chance? if
-                0 $F6 8 action
+                0 6 track 8 action
             else 1 chance? if
-                0 $F5 8 action
+                0 5 track 8 action
             then then then then
         then
     then
@@ -323,7 +323,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     hewie-who char-here? hewie-who 2 char-cond? and if
         0 hewie-who $86 action
     then
-    0 $F9 $10 action
+    0 cutscene-track $10 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -407,7 +407,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : front-garden-1.act08 ( -- )   \ 003EDF50
-    $F8 self-is? if
+    8 track self-is? if
         3 part-hidden
         0 1 front-garden-1.cmd00
         yield
@@ -473,7 +473,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
         yield
         3 part-shown
         0 0 front-garden-1.cmd00
-    else $F7 self-is? if
+    else 7 track self-is? if
         4 part-hidden
         1 1 front-garden-1.cmd00
         yield
@@ -539,7 +539,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
         yield
         4 part-shown
         1 0 front-garden-1.cmd00
-    else $F6 self-is? if
+    else 6 track self-is? if
         5 part-hidden
         2 1 front-garden-1.cmd00
         yield
@@ -605,7 +605,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
         yield
         5 part-shown
         2 0 front-garden-1.cmd00
-    else $F5 self-is? if
+    else 5 track self-is? if
         6 part-hidden
         3 1 front-garden-1.cmd00
         yield
@@ -880,7 +880,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     $A -327.5 82.0 236.3 $E $80 $80 $80 $50 specks
     $A -372.5 82.0 236.3 $E $80 $80 $80 $50 specks
     0 part-shown
-    0 $F9 $10 action
+    0 cutscene-track $10 action
     panic-eased
     $FFFF message-prepare
     1 result? if

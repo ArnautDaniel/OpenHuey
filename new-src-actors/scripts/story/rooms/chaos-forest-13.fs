@@ -113,7 +113,7 @@ USING: actors room-names story.words story.shared flag-names story-names ;
     yield
     scene-wait-ready
     3 5 0 char-model-op
-    0 $F9 1 action
+    0 cutscene-track 1 action
     3 ebit-clear
     panic-eased
     0 message-prepare   \ "Why are you doing this? What did I do? You inherited your father's Azoth. That..."
@@ -188,7 +188,7 @@ USING: actors room-names story.words story.shared flag-names story-names ;
     yield
     scene-wait-ready
     3 5 0 char-model-op
-    0 $F9 1 action
+    0 cutscene-track 1 action
     panic-eased
     0 message-prepare   \ "Why are you doing this? What did I do? You inherited your father's Azoth. That..."
     1 result? if

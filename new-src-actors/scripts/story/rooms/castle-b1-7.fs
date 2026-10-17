@@ -113,11 +113,11 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     1 ebit? not if
         $26 door-locked? if
             stalker-who $1C char-in-room? if
-                0 $F2 9 action
+                0 2 track 9 action
             then
         then
     else $26 door-locked? not if
-        $F2 action-end
+        2 track action-end
         0 castle-b1-7.cmd01
         stalker-who 1 stalker-command
         stalkers-stay state-flag-clear
@@ -239,7 +239,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     begin
         35 fiona-started? 44 fiona-started? or 2 game-mode? not and fiona-who 6 char-in-area? and fiona-who -12 -25 $32 char-faces-xz? and if
             0 counter-set
-            0 $F1 6 action
+            0 1 track 6 action
             ['] castle-b1-7.act03 goto
         then
         yield

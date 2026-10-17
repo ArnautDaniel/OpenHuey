@@ -201,21 +201,21 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         0 3.0 620.0 79.0 $A 8 0 zone
         fiona-who $C char-in-area? fiona-who 0 char-in-zone? and if
             5 0 var-set
-            0 $F1 6 action
+            0 1 track 6 action
         then
     then
     wt8f-1-flag3 story-flag? not if
         1 -58.0 620.0 54.0 $A 8 0 zone
         fiona-who $D char-in-area? fiona-who 1 char-in-zone? and if
             5 1 var-set
-            0 $F2 6 action
+            0 2 track 6 action
         then
     then
     wt8f-1-flag4 story-flag? not if
         2 -5.0 620.0 -78.0 $A 8 0 zone
         fiona-who $E char-in-area? fiona-who 2 char-in-zone? and if
             5 2 var-set
-            0 $F3 6 action
+            0 3 track 6 action
         then
     then
     c7-second-event story-flag? not if
@@ -457,7 +457,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     stalker-who char-done
     hewie-who action-end
     hewie-who char-done
-    0 $F9 $C action
+    0 cutscene-track $C action
     9 ebit-set
     panic-eased
     $FFFF message-prepare
@@ -477,7 +477,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     yield
     scene-wait-ready
-    0 $F9 $D action
+    0 cutscene-track $D action
     panic-eased
     0 message-prepare   \ "Fiona!"
     1 result? if
@@ -581,7 +581,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     yield
     scene-wait-ready
-    0 $F9 $B action
+    0 cutscene-track $B action
     $10 $50 movie-param
     panic-eased
     3 message-prepare   \ "Fiona! Why must you defy me? Why do you run? Let me into your womb!"
@@ -771,7 +771,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     scene-wait-ready
     $2D $41 movie-param
-    0 $F9 $11 action
+    0 cutscene-track $11 action
     panic-eased
     1 message-prepare   \ "Riccardo... You were always... incomplete. But now, I will have your Azoth. You..."
     1 result? if
@@ -917,7 +917,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     yield
     scene-wait-ready
-    0 $F9 $B action
+    0 cutscene-track $B action
     $10 $50 movie-param
     panic-eased
     3 message-prepare   \ "Fiona! Why must you defy me? Why do you run? Let me into your womb!"
@@ -948,7 +948,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     yield
     scene-wait-ready
-    0 $F9 $C action
+    0 cutscene-track $C action
     9 ebit-set
     panic-eased
     $FFFF message-prepare
@@ -981,7 +981,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     yield
     scene-wait-ready
-    0 $F9 $D action
+    0 cutscene-track $D action
     panic-eased
     0 message-prepare   \ "Fiona!"
     1 result? if
@@ -1019,7 +1019,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     scene-wait-ready
     $2D $41 movie-param
-    0 $F9 $11 action
+    0 cutscene-track $11 action
     panic-eased
     1 message-prepare   \ "Riccardo... You were always... incomplete. But now, I will have your Azoth. You..."
     1 result? if

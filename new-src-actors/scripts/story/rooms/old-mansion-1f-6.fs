@@ -33,7 +33,7 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
         $1C 20.0 0.0 -105.0 0 char-to-xyz
         $1C $9006 1 0 char-anim-hold
     then
-    0 $F1 0 action
+    0 1 track 0 action
     hunted state-flag-set
     om1f-6-medallion story-flag? not if
         0 -119.67 9.0 151.64 flicker-sprite

@@ -39,7 +39,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         1 1 1 effect-string
         1 noise-level
     then
-    0 $F1 $12 action
+    0 1 track $12 action
     c2f-3-medallion-found story-flag? c2f-3-medallion story-flag? not and if
         2 -9.0 1.0 -11.0 flicker-sprite
     then
@@ -695,7 +695,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     wait-fade
     1 castle-2f-3.cmd02
     1 castle-2f-3.cmd04
-    0 $F9 $A action
+    0 cutscene-track $A action
     panic-eased
     0 message-prepare   \ "I've gathered some clothes for you. Wait. Don't go. Um, excuse me, but where ar..."
     1 result? if
@@ -738,7 +738,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     wait-fade
     $204 item-give
     2 30 var-set
-    0 $F2 $1A action
+    0 2 track $1A action
     self-idle-or-end
 ;
 
@@ -840,7 +840,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     yield
     scene-wait-ready
-    0 $F9 $25 action
+    0 cutscene-track $25 action
     $21 0 176 hewie-to-room
     $FE $21 20 2 stalker-to-room
     panic-eased
@@ -987,7 +987,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         yield
         scene-wait-ready
         wait-fade
-        0 $F9 $21 action
+        0 cutscene-track $21 action
         panic-eased
         8 message-prepare   \ "Wait a minute... I remember being in the car with..."
         1 result? if
@@ -1544,7 +1544,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     3 3 $FF char-load
     3 char-start
     $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
-    0 $F1 $12 action
+    0 1 track $12 action
     0 castle-2f-3.cmd02
     0 castle-2f-3.cmd04
     1 part-shown
@@ -1557,7 +1557,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     wait-fade
     1 castle-2f-3.cmd02
     1 castle-2f-3.cmd04
-    0 $F9 $A action
+    0 cutscene-track $A action
     panic-eased
     0 message-prepare   \ "I've gathered some clothes for you. Wait. Don't go. Um, excuse me, but where ar..."
     1 result? if
@@ -1624,7 +1624,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     4 char-start
     5 char-start
     $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
-    0 $F1 $12 action
+    0 1 track $12 action
     0 castle-2f-3.cmd02
     0 castle-2f-3.cmd04
     1 part-shown
@@ -1635,7 +1635,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     scene-wait-ready
     wait-fade
-    0 $F9 $21 action
+    0 cutscene-track $21 action
     panic-eased
     8 message-prepare   \ "Wait a minute... I remember being in the car with..."
     1 result? if
@@ -1692,7 +1692,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-2f-3.act29 ( -- )   \ 00400980
     self-wait-done
-    0 $F1 $12 action
+    0 1 track $12 action
     0 castle-2f-3.cmd02
     0 castle-2f-3.cmd04
     2 3 $FF char-load
@@ -1702,7 +1702,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     yield
     scene-wait-ready
-    0 $F9 $25 action
+    0 cutscene-track $25 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -1720,7 +1720,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-2f-3.act2A ( -- )   \ 00400A30
     self-wait-done
-    0 $F1 $12 action
+    0 1 track $12 action
     0 castle-2f-3.cmd02
     0 castle-2f-3.cmd04
     7 2 movie-play

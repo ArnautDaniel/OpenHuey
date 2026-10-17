@@ -305,7 +305,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     hewie-who action-end
     hewie-who char-done
     $14 $64 movie-param
-    0 $F9 $B action
+    0 cutscene-track $B action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -383,7 +383,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     hewie-who char-here? if
         0 hewie-who 4 action-force
     then
-    $F8 action-end
+    8 track action-end
     $F $14 fade
     7 0 movie-play
     6 cutscene-start
@@ -713,7 +713,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
         1 house-of-truth-1f-7.cmd01
     then then
     $14 $64 movie-param
-    0 $F9 $B action
+    0 cutscene-track $B action
     panic-eased
     $FFFF message-prepare
     1 result? if

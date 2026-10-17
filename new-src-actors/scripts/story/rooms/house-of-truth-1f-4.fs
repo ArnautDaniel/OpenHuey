@@ -153,7 +153,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
         1 ebit? not if
             0 50.0 0.0 -28.0 5 11 0 zone
             fiona-who 0 char-in-zone? if
-                0 $F1 1 action
+                0 1 track 1 action
             then
         then
     then
@@ -283,7 +283,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
                 1 fiona-who 2 action-force
             then
         else
-            0 $F2 6 action
+            0 2 track 6 action
         then
     then
     self-frames-reset
@@ -311,7 +311,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     yield
     yield
     scene-wait-ready
-    0 $F9 9 action
+    0 cutscene-track 9 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -357,7 +357,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     stalkers-stay state-flag-clear
     scene-locked state-flag-clear
     0 self-scripted
-    0 $F2 6 action
+    0 2 track 6 action
     self-idle-or-end
 ;
 
@@ -372,7 +372,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     $F $54 fade
     self-wait-done
     wait-fade
-    $F2 action-end
+    2 track action-end
     hewie-who action-end
     hewie-who char-done
     stalker-who action-end
@@ -405,7 +405,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     self-wait-done
     wait-fade
     $40000001 6 sound-stop
-    $F2 action-end
+    2 track action-end
     hewie-who action-end
     hewie-who char-done
     stalker-who action-end
@@ -720,7 +720,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     yield
     yield
     scene-wait-ready
-    0 $F9 9 action
+    0 cutscene-track 9 action
     panic-eased
     $FFFF message-prepare
     1 result? if

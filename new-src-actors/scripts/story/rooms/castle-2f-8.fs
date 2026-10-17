@@ -98,7 +98,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         0 -1 player-camera
     then then
     1 0 -1 area-camera
-    0 $F1 4 action
+    0 1 track 4 action
 ;
 
 : castle-2f-8.phase1 ( -- )   \ 004019D0

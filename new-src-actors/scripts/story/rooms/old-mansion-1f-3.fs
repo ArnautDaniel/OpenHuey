@@ -15,7 +15,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $1C 6.38 0.0 -112.79 170 char-to-xyz
         $1C $9002 1 0 char-anim-hold
     then
-    0 $F1 1 action
+    0 1 track 1 action
     hunted state-flag-set
     om2f-3-flag1 story-flag? if
         hewie-who char-here? hewie-who 0 char-in-nav-group? and if

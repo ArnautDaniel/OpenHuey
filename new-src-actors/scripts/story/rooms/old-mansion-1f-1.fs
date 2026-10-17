@@ -174,7 +174,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     hewie-who 0 char-cond!
     $2E 0 49 hewie-to-room
     0 hewie-who $86 action
-    0 $F9 2 action
+    0 cutscene-track 2 action
     3 4 0 char-model-op
     panic-eased
     $FFFF message-prepare
@@ -305,7 +305,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     yield
     scene-wait-ready
-    0 $F9 2 action
+    0 cutscene-track 2 action
     3 4 0 char-model-op
     panic-eased
     $FFFF message-prepare

@@ -670,7 +670,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     -1 self-idle-anim
     $C6 room-preload
     $10 $FF movie-param
-    0 $F9 2 action
+    0 cutscene-track 2 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -749,7 +749,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     $28 self-wait-frames
     $F 6 fade
     wait-fade
-    0 message
+    0 message   \ "All life on the surface of the planet stretches out below the stars' radiant light. All..."
     wait-message
     $F 7 fade
     wait-fade
@@ -783,7 +783,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     yield
     scene-wait-ready
     $10 $FF movie-param
-    0 $F9 2 action
+    0 cutscene-track 2 action
     panic-eased
     $FFFF message-prepare
     1 result? if

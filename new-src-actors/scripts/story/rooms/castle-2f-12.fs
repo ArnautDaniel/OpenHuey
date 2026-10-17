@@ -69,7 +69,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         1 0 object-hidden
     then
     0 castle-2f-12.cmd01
-    0 $F1 $13 action
+    0 1 track $13 action
     c2f-12-flag2 story-flag? not if
         2 castle-2f-12.cmd01
         c2f-12-flag2 story-flag-set

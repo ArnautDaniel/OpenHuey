@@ -112,13 +112,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     cb1-6-flag4 story-flag? not if
         0 10.0 0.0 -37.0 7 20 0 zone
         stalker-who 0 char-in-zone? fiona-who 0 char-in-zone? or if
-            0 $F1 8 action
+            0 1 track 8 action
         then
     then
     cb1-6-flag5 story-flag? not if
         1 10.0 0.0 37.0 7 20 0 zone
         stalker-who 1 char-in-zone? fiona-who 1 char-in-zone? or if
-            0 $F2 9 action
+            0 2 track 9 action
         then
     then
     cb1-6-flag1 story-flag? cb1-6-flag2 story-flag? not and if
@@ -309,7 +309,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     wait-fade
     hewie-who action-end
     hewie-who char-done
-    0 $F9 7 action
+    0 cutscene-track 7 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -334,7 +334,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     yield
     scene-wait-ready
-    0 $F9 $A action
+    0 cutscene-track $A action
     panic-eased
     2 message-prepare   \ "It's OK, Hewie... He can't come after us anymore... Good boy. Calm down, Hewie..."
     1 result? if
@@ -668,7 +668,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     yield
     scene-wait-ready
-    0 $F9 7 action
+    0 cutscene-track 7 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -706,7 +706,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     yield
     scene-wait-ready
-    0 $F9 $A action
+    0 cutscene-track $A action
     panic-eased
     2 message-prepare   \ "It's OK, Hewie... He can't come after us anymore... Good boy. Calm down, Hewie..."
     1 result? if

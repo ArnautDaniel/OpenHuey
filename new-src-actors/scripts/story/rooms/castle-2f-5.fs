@@ -33,7 +33,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         1 1 1 effect-string
         1 noise-level
     then
-    0 $F1 $12 action
+    0 1 track $12 action
     c2f-3-medallion-found story-flag? c2f-3-medallion story-flag? not and if
         2 -9.0 1.0 -11.0 flicker-sprite
     then
@@ -975,7 +975,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     stalker-who 1 -1 char-camera
     stalker-who $80808080 1 char-tint
     stalker-who $1E char-layer
-    0 $F9 9 action
+    0 cutscene-track 9 action
     panic-eased
     $1A message-prepare   \ "I am not complete."
     1 result? if
@@ -1211,7 +1211,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-2f-5.act23 ( -- )   \ 0042C0F0
     self-wait-done
-    0 $F1 $12 action
+    0 1 track $12 action
     0 castle-2f-5.cmd02
     0 castle-2f-5.cmd04
     1 part-shown
@@ -1242,7 +1242,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $FE $32 212 2 stalker-to-room
     stalker-who $80808080 1 char-tint
     stalker-who $1E char-layer
-    0 $F9 9 action
+    0 cutscene-track 9 action
     panic-eased
     $1A message-prepare   \ "I am not complete."
     1 result? if

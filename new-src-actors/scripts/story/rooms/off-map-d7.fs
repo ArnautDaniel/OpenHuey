@@ -19,7 +19,7 @@ USING: room-names story.words story.shared story.clock story-names ;
     $19 1.0 0 bgm
     x-d7-flag1 story-flag? not if
         $E 5 $FF char-load
-        0 $F1 0 action
+        0 1 track 0 action
     then
     off-map-d7.cmd02
 ;
@@ -48,8 +48,8 @@ USING: room-names story.words story.shared story.clock story-names ;
     0 ebit? x-d7-flag1 story-flag? not and if
         off-map-d7.cond01? if
             x-d7-flag1 story-flag-set
-            $F1 action-end
-            0 $F1 1 action
+            1 track action-end
+            0 1 track 1 action
         then
     then
 ;

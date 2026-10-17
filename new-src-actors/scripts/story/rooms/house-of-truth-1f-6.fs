@@ -40,7 +40,7 @@ defer house-of-truth-1f-6.act02
     2 -1 var-set
     1 -1 var-set
     over-music-e story-flag? not if
-        0 $F1 2 action
+        0 1 track 2 action
     then
     0 79.7 11.1 -39.8 0 flame-in
 ;
@@ -180,7 +180,7 @@ defer house-of-truth-1f-6.act02
 
 : house-of-truth-1f-6.act00 ( -- )   \ 00435250
     1 32768 var-set
-    $F1 action-end
+    1 track action-end
     stalker-who action-end
     stalker-who char-done
     scene-locked state-flag-set
@@ -452,7 +452,7 @@ defer house-of-truth-1f-6.act02
     0 solid-floor floor-on
     self-wait-done
     0 counter-set
-    0 $F2 6 action
+    0 2 track 6 action
     self-frames-reset
     8 self-wait-frames
     $FFFF message-close

@@ -289,7 +289,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     force-calm state-flag-set
     yield
     force-calm state-flag-clear
-    0 $F9 9 action
+    0 cutscene-track 9 action
     $10 $28 movie-param
     panic-eased
     $FFFF message-prepare
@@ -460,7 +460,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     scene-wait-ready
     self-who 1 char-visible
-    0 $F9 9 action
+    0 cutscene-track 9 action
     $10 $28 movie-param
     panic-eased
     $FFFF message-prepare

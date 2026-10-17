@@ -74,7 +74,7 @@ create dl-at 12 allot
 : castle-2f-2.enter ( -- )   \ 003FE460
     room-sounds
     c2f-2-flag1 story-flag? not if
-        0 $F2 9 action
+        0 2 track 9 action
     then
     c2f-2-flag2 story-flag? not if
         0 0 0 $36B $3AF obstacle-place
@@ -99,7 +99,7 @@ create dl-at 12 allot
     then
     3 0 castle-2f-2.cmd02
     4 0 castle-2f-2.cmd02
-    0 $F4 $11 action
+    0 4 track $11 action
     5 1 object-hidden
     got-bisque-doll story-flag? not if
         1 ebit-clear
@@ -113,7 +113,7 @@ create dl-at 12 allot
     c1f-8-flag1 story-flag? found-file-209 story-flag? not and if
         $80 exit-taken? if
         else
-            0 $F3 $E action
+            0 3 track $E action
         then
     then
 ;
@@ -292,8 +292,8 @@ create dl-at 12 allot
                 fiona-who 4 6 char-sound
                 1 ebit-clear
                 7 ebit-clear
-                $F1 action-end
-                0 $F1 $B action
+                1 track action-end
+                0 1 track $B action
             then
             5 6 castle-2f-2.cond02? if
             then
@@ -468,7 +468,7 @@ create dl-at 12 allot
     -1 self-idle-anim
     self-frames-reset
     7 self-wait-frames
-    $F3 action-end
+    3 track action-end
     look-close-anim self-anim
     self-frames-reset
     $16 self-wait-frames
@@ -484,7 +484,7 @@ create dl-at 12 allot
 
 : castle-2f-2.act03 ( -- )   \ 003FEB70
     self-wait-done
-    $F2 action-end
+    2 track action-end
     $F $54 fade
     wait-fade
     $FE $20 552 2 stalker-to-room

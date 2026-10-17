@@ -6,7 +6,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : chaos-forest-1.enter ( -- )   \ 0041DD20
     room-sounds
-    0 $F2 3 action
+    0 2 track 3 action
     $1C $2F char-to-tri
     1 0 var-set
     3 $1C char-loaded? if
@@ -16,7 +16,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $1C 22.0 -16.0 145.0 0 char-to-xyz
         $1C $9008 1 0 char-anim-hold
     then
-    0 $F1 1 action
+    0 1 track 1 action
     hunted state-flag-set
     got-forest-map story-flag? not if
         0 part-shown
@@ -149,7 +149,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     stalkers-stay state-flag-set
     1 self-scripted
     3 0 char-remove
-    $F1 action-end
+    1 track action-end
     2 ebit-set
     begin
         loader-done? while

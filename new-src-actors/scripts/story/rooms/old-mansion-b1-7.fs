@@ -36,9 +36,9 @@ USING: engine common actors messages room-names story.words story.shared story-n
     endcase ;
 
 : old-mansion-b1-7.enter ( -- )   \ 004291C0
-    0 $F1 0 action
-    0 $F2 1 action
-    0 $F3 2 action
+    0 1 track 0 action
+    0 2 track 1 action
+    0 3 track 2 action
     0 0 var-set
     1 20 var-set
     2 90 var-set

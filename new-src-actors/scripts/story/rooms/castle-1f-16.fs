@@ -11,7 +11,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-16.enter ( -- )   \ 003FC060
     room-sounds
-    0 $F1 0 action
+    0 1 track 0 action
     castle-1f-16.cmd01
     c1f-16-flag2 story-flag? not if
         0 part-shown

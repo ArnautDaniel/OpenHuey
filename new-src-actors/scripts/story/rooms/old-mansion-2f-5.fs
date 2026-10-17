@@ -39,7 +39,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $1C -3.0 0.0 43.0 -45 char-to-xyz
         $1C $9004 1 0 char-anim-hold
     then
-    0 $F1 0 action
+    0 1 track 0 action
     hunted state-flag-set
     om3f-1-flag2 story-flag? if
         om2f-5-flag1 story-flag? not if

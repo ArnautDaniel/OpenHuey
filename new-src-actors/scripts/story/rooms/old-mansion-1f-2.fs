@@ -244,7 +244,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     else
         3 ebit-set
     then
-    0 $F9 2 action
+    0 cutscene-track 2 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -264,7 +264,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             hewie-who $E5 26.55 54.18 -129 char-to-xz
         then
     then
-    $F9 action-end
+    cutscene-track action-end
     4 1 object-hidden
     5 1 object-hidden
     6 1 object-hidden
@@ -311,7 +311,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-who char-here? hewie-who 2 char-cond? and if
         0 hewie-who $86 action
     then
-    0 $F9 3 action
+    0 cutscene-track 3 action
     $10 $FF movie-param
     panic-eased
     $FFFF message-prepare
@@ -319,7 +319,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         scene-play
     then
     wait-fade
-    $F9 action-end
+    cutscene-track action-end
     0 8 var? if
         8 item-use
     else 0 9 var? if
@@ -538,7 +538,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     scene-wait-ready
     0 11 var-set
-    0 $F9 2 action
+    0 cutscene-track 2 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -567,7 +567,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     scene-wait-ready
     0 9 var-set
-    0 $F9 3 action
+    0 cutscene-track 3 action
     $10 $FF movie-param
     panic-eased
     $FFFF message-prepare

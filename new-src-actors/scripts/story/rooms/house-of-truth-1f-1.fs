@@ -338,7 +338,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     yield
     scene-wait-ready
-    0 $F9 5 action
+    0 cutscene-track 5 action
     $10 $FF movie-param
     0 effect-remove
     panic-eased
@@ -486,7 +486,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     yield
     scene-wait-ready
-    0 $F9 5 action
+    0 cutscene-track 5 action
     $10 $FF movie-param
     panic-eased
     $FFFF message-prepare

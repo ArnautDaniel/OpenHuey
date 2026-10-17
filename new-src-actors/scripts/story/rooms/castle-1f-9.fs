@@ -172,7 +172,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     c1f-9-flag1 story-flag? not if
         castle-1f-9.cond00? if
             c1f-9-flag1 story-flag-set
-            0 $F1 2 action
+            0 1 track 2 action
         then
     then
     1 ebit? not if

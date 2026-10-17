@@ -224,7 +224,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     1 self-scripted
     tremor-warned story-flag-clear
     $FF 1.0 0 bgm
-    $F8 action-end
+    8 track action-end
     $F $14 fade
     self-wait-done
     wait-fade
@@ -243,7 +243,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     yield
     yield
     scene-wait-ready
-    0 $F9 5 action
+    0 cutscene-track 5 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -485,7 +485,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     yield
     yield
     scene-wait-ready
-    0 $F9 5 action
+    0 cutscene-track 5 action
     panic-eased
     $FFFF message-prepare
     1 result? if

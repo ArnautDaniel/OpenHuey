@@ -242,10 +242,10 @@ fvariable sw-dx  fvariable sw-dz
     5 -276.0 -10.0 160.0 5 15 0 zone
     4 -259.5 -10.0 190.0 5 15 0 zone
     fiona-who 4 char-in-zone? if
-        0 $F1 $D action
+        0 1 track $D action
     then
     fiona-who 5 char-in-zone? if
-        0 $F1 $E action
+        0 1 track $E action
     then
     fg-5-medallion-found story-flag? not if
         3 -228.4 -10.0 103.2 $A 5 0 zone
@@ -386,7 +386,7 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     hewie-bark
     self-wait-done
-    0 $F1 $B action
+    0 1 track $B action
     $1C -236.0 160.0 -90 $FFFF $A self-move-to
     self-wait-done
     1 self-scripted
@@ -400,7 +400,7 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     hewie-bark
     self-wait-done
-    0 $F1 $C action
+    0 1 track $C action
     $161 -220.0 190.0 -90 $FFFF $A self-move-to
     self-wait-done
     1 self-scripted
@@ -528,7 +528,7 @@ fvariable sw-dx  fvariable sw-dz
     repeat
     hewie-who snap-sound 5 char-sound
     fg-5-flag1 story-flag? not if
-        0 $F2 $F action
+        0 2 track $F action
     then
     1 0 front-garden-5.cmd00
     1 1 front-garden-5.cmd00

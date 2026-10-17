@@ -100,7 +100,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         $80 exit-taken? if
             fiona-who $C7 -60 char-to-tri-facing
             1 30.0 15.0 0.0 0.0 event-camera
-            0 $F0 7 action
+            0 0 track 7 action
         then
     then
     hewie-who self-is? if
@@ -157,7 +157,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
             else
                 c1f-4-flag1 story-flag-clear
                 0 barred-floor floor-on
-                0 $F1 3 action
+                0 1 track 3 action
             then
         then
     then

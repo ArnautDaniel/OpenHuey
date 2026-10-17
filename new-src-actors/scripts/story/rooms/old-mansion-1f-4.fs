@@ -21,7 +21,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $1C 55.0 0.0 -20.0 90 char-to-xyz
         $1C $9000 1 0 char-anim-hold
     then
-    0 $F1 4 action
+    0 1 track 4 action
     hunted state-flag-set
     om1f-4-chicken-jerky story-flag? not if
         0 -51.07 1.0 19.59 flicker-sprite

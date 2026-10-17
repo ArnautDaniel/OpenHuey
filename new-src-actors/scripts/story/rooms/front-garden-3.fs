@@ -260,8 +260,8 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         2 225.0 0.0 -44.0 $19 10 0 zone
         fiona-who 2 2 char-zone-bits? if
             4 ebit-set
-            $F3 action-end
-            0 $F3 $14 action
+            3 track action-end
+            0 3 track $14 action
         then
     then
     4 ebit? 7 ebit? not and if
@@ -269,8 +269,8 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
             7 ebit-clear
             3 0 char-remove
             4 0 char-remove
-            $F1 action-end
-            $F3 action-end
+            1 track action-end
+            3 track action-end
         then
     then
     c2f-3-flag1 story-flag? if
@@ -489,8 +489,8 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     2 0 0 music
     4 0 0 music
     5 ebit-set
-    0 $F1 $12 action
-    0 $F3 $13 action
+    0 1 track $12 action
+    0 3 track $13 action
     opening-done story-flag-set
     $16 1.0 0 bgm
     in-play state-flag-clear
@@ -777,7 +777,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         fiona-who $17 char-in-area? if
             44 fiona-started? 35 fiona-started? or 45 fiona-started? or if
                 0 counter-set
-                0 $F2 $D action
+                0 2 track $D action
                 ['] front-garden-3.act0F goto
             then
             2 ebit? if

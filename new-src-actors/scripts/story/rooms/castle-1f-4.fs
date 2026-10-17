@@ -211,7 +211,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             c1f-4-flag1 story-flag-set
             0 1 var-set
             hewie-who 0 6 char-sound
-            0 $F1 $D action
+            0 1 track $D action
         else fiona-who $D char-in-area? if
             c1f-4-flag1 story-flag-set
             0 1 var-set
@@ -219,24 +219,24 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             broken-marionette-used story-flag? c1f-4-flag3 story-flag? not and breaker-lowered story-flag? not and if
                 0 fiona-who $A action
             else
-                0 $F1 $D action
+                0 1 track $D action
             then
         else stalker-who $D char-in-area? if
             c1f-4-flag1 story-flag-set
             0 1 var-set
             stalker-who 0 6 char-sound
-            0 $F1 $D action
+            0 1 track $D action
         then then then
     else hewie-who $D char-in-area? not fiona-who $D char-in-area? not and stalker-who $D char-in-area? not and if
         c1f-4-flag1 story-flag-clear
         0 0 var-set
-        0 $F2 $D action
+        0 2 track $D action
     then then
     1 castle-1f-4.cmd00
     broken-marionette-used story-flag? not if
         0 -28.0 0.0 15.0 $A 15 0 zone
         fiona-who 0 char-in-zone? if
-            0 $F5 $1C action
+            0 5 track $1C action
         then
     then
     2 140.0 -10.0 94.0 6 5 0 zone
@@ -244,9 +244,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         6 ebit? not if
             fiona-who 2 char-in-zone? if
                 2 2 var? if
-                    0 $F4 $1B action
+                    0 4 track $1B action
                 else
-                    0 $F3 8 action
+                    0 3 track 8 action
                 then
             then
         then
@@ -375,7 +375,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     yield
     scene-wait-ready
-    0 $F9 $11 action
+    0 cutscene-track $11 action
     panic-eased
     0 message-prepare   \ "Exire Debilitas! Please excuse me, Miss. I am Riccardo, keeper of the castle. S..."
     1 result? if
@@ -402,7 +402,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 item-use
     7 door-unlock
     broken-marionette-used story-flag-set
-    0 $F0 5 action
+    0 0 track 5 action
     1 wait-counter
     fiona-who $1DD -4.507 15.509 -90 char-to-xz
     0 self-idle-anim
@@ -483,7 +483,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-who char-here? hewie-who 2 char-cond? and if
         0 hewie-who $86 action
     then
-    0 $F9 $18 action
+    0 cutscene-track $18 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -905,7 +905,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     yield
     scene-wait-ready
-    0 $F9 $11 action
+    0 cutscene-track $11 action
     panic-eased
     0 message-prepare   \ "Exire Debilitas! Please excuse me, Miss. I am Riccardo, keeper of the castle. S..."
     1 result? if
@@ -933,7 +933,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     3 0 object-hidden
     4 0 object-hidden
     0 22.8 14.65 68.75 0 flame-in
-    0 $F9 $18 action
+    0 cutscene-track $18 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -960,7 +960,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     137.0 -10.0 90.0 0 -2145378272 1 0.0 shards-at
     137.0 -10.0 95.0 0 -2145378272 1 0.0 shards-at
     castle-1f-4.cmd02
-    0 $F1 $F action
+    0 1 track $F action
     begin
         fiona-free? not while
         yield

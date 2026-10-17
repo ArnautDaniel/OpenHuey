@@ -5,7 +5,7 @@ The scripts name messages by number (`6 message`: the room's own table; `$8012`:
 bit 15; bit 14 the tutorials'). This runs the game headless (it needs the game's data): it goes
 to each room in turn and lays out the messages that room's script names, then writes each one's
 text after the line that shows it - `6 message   \\ "The gate is closed. ..."` - where the line has
-no comment yet. A room that doesn't come in when asked (left as it is) gets none; the shared
+no comment yet. A room with no data on the disc (off-map-5a) gets none; the shared
 scripts get only the system's and the tutorials' (they run in any room).
 
     tools/story_messages.py [path/to/hga]     (default: ../build/new-src-actors/hga)
@@ -55,9 +55,11 @@ def probe(rooms, glob_ids):
     lines = ["IN: msgdump", "USING: engine game-state actors messages room-names game ;",
              ": frames  0 ?do game-tick loop ;",
              ': .text ( id -- )  dup . ." |" message-layout 0 ?do  i message-lines 0 ?do  j i message-line type ."  "  loop  loop  cr ;',
-             ": .room ( room -- )  . room-id . cr ;"]
+             ": .room ( room -- )  . room-id . cr ;",
+             # (a frame at a time until it is in: a room may send her straight on - water-tower-7f-1)
+             ": arrive ( room -- )  20 0 do  1 frames  room-id over = if  leave  then  loop  drop ;"]
     for r, ids in sorted(rooms.items()):
-        lines.append(f'{r} -1 rooms send go-to-room  4 frames  ." @{r} " {r} .room')
+        lines.append(f'{r} -1 rooms send go-to-room  {r} arrive  ." @{r} " {r} .room')
         lines.append(" ".join(f"{i} .text" for i in sorted(ids)))
     lines.append('." @* -1 -1 " cr')
     lines.append(" ".join(f"{i} .text" for i in sorted(glob_ids)))

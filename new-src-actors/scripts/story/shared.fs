@@ -20,7 +20,7 @@ defer shared.act97
     stalker-gift
     0 counter? not if
         $83 $85 0.0 0.0 0.0 0 0 sound
-        0 $F9 $8C action-force
+        0 cutscene-track $8C action-force
     then
     self-frames-reset
     8 self-wait-frames
@@ -484,9 +484,9 @@ defer shared.act97
 : shared.act95 ( -- )   \ 003D6750
     ht1f-9-flag2 story-flag? if
         over-music-f story-flag? found-file-257 story-flag? not and if
-            0 $F8 $97 action
+            0 8 track $97 action
         else
-            0 $F8 $96 action
+            0 8 track $96 action
         then
     then
     exit
@@ -551,21 +551,21 @@ defer shared.act97
 ; is shared.act97
 
 : shared.act98 ( -- )   \ 003D6820
-    fading? not world-held state-flag? not and $F8 char-busy? not and if
+    fading? not world-held state-flag? not and 8 track char-busy? not and if
         fiona-who char-busy? not fiona-half-hidden state-flag? or if
             shared-flag1 story-flag? not if
                 $708 room-frames-reached? 6 sound-bank-loaded? and if
-                    0 $F8 $99 action
+                    0 8 track $99 action
                     shared-flag1 story-flag-set
                 then
             else shared-flag2 story-flag? not if
                 $1194 room-frames-reached? if
-                    0 $F8 $9A action
+                    0 8 track $9A action
                     shared-flag2 story-flag-set
                 then
             else shared-flag3 story-flag? not if
                 $1C20 room-frames-reached? if
-                    0 $F8 $9B action
+                    0 8 track $9B action
                     shared-flag3 story-flag-set
                 then
             else shared-flag4 story-flag? not if

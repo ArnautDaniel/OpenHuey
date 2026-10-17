@@ -324,7 +324,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     stalker-who char-done
     3 4 0 char-model-op
     3 char-start
-    0 $F9 1 action
+    0 cutscene-track 1 action
     2 part-shown
     stalker-who char-activate
     panic-eased
@@ -485,7 +485,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     hewie-who char-done
     0 part-hidden
     1 part-shown
-    0 $F9 3 action
+    0 cutscene-track 3 action
     $1E 1 object-hidden
     om3f-1-flag3 story-flag? not if
         9 part-shown
@@ -729,7 +729,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     wait-fade
     0 part-hidden
     1 part-shown
-    0 $F9 3 action
+    0 cutscene-track 3 action
     $1E 1 object-hidden
     om3f-1-flag3 story-flag? not if
         9 part-shown
@@ -888,7 +888,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     0 old-mansion-3f-1.cmd01
     3 4 0 char-model-op
     3 char-start
-    0 $F9 1 action
+    0 cutscene-track 1 action
     2 part-shown
     panic-eased
     0 message-prepare   \ "Hewie! Blood, Flesh Woman. You vile creature. You lure the man into your filthy..."
@@ -975,7 +975,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     scene-wait-ready
     0 part-hidden
     1 part-shown
-    0 $F9 3 action
+    0 cutscene-track 3 action
     $1E 1 object-hidden
     9 part-shown
     $1E $C8 movie-param

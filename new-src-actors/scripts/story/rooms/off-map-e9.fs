@@ -66,43 +66,43 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
     $2E 3 pvar? if
         fiona-who $C char-entered-area? if
             $1E chance? if
-                0 $F8 0 action
+                0 8 track 0 action
             then
         then
         fiona-who $C char-left-area? if
             $1E chance? if
-                0 $F8 0 action
+                0 8 track 0 action
             then
         then
         fiona-who $D char-entered-area? if
             $1E chance? if
-                0 $F7 0 action
+                0 7 track 0 action
             then
         then
         fiona-who $D char-left-area? if
             $1E chance? if
-                0 $F7 0 action
+                0 7 track 0 action
             then
         then
         fiona-who $E char-entered-area? if
             $1E chance? if
-                0 $F6 0 action
+                0 6 track 0 action
             then
         then
         fiona-who $E char-left-area? if
             $1E chance? if
-                0 $F5 0 action
+                0 5 track 0 action
             then
         then
         $14 chance? if
             1 chance? if
-                0 $F8 0 action
+                0 8 track 0 action
             else 1 chance? if
-                0 $F7 0 action
+                0 7 track 0 action
             else 1 chance? if
-                0 $F6 0 action
+                0 6 track 0 action
             else 1 chance? if
-                0 $F5 0 action
+                0 5 track 0 action
             then then then then
         then
     then
@@ -140,7 +140,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 ;
 
 : off-map-e9.act00 ( -- )   \ 0044A570
-    $F8 self-is? if
+    8 track self-is? if
         3 part-hidden
         3 1 off-map-e9.cmd02
         yield
@@ -206,7 +206,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
         yield
         3 part-shown
         3 0 off-map-e9.cmd02
-    else $F7 self-is? if
+    else 7 track self-is? if
         4 part-hidden
         4 1 off-map-e9.cmd02
         yield
@@ -272,7 +272,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
         yield
         4 part-shown
         4 0 off-map-e9.cmd02
-    else $F6 self-is? if
+    else 6 track self-is? if
         5 part-hidden
         5 1 off-map-e9.cmd02
         yield
@@ -338,7 +338,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
         yield
         5 part-shown
         5 0 off-map-e9.cmd02
-    else $F5 self-is? if
+    else 5 track self-is? if
         6 part-hidden
         6 1 off-map-e9.cmd02
         yield

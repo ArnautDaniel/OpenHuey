@@ -100,7 +100,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         3 barred-floor floor-on
         $26 3 $FF char-load
         om1f-8-flag2 story-flag? if
-            0 $F1 $1C action
+            0 1 track $1C action
         then
         0 old-mansion-1f-8.cmd02
     then
@@ -464,7 +464,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         hewie-who action-end
         hewie-who char-done
     then
-    $F1 action-end
+    1 track action-end
     3 char-start
     panic-eased
     $FFFF message-prepare
@@ -785,7 +785,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     force-calm state-flag-clear
     fiona-who 1 char-no-shadow
-    0 $F9 $1F action
+    0 cutscene-track $1F action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -1015,7 +1015,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 old-mansion-1f-8.cmd01
                 look-close-anim self-anim
                 self-wait-anim
-                0 $F1 $1E action
+                0 1 track $1E action
                 self-frames-reset
                 $F self-wait-frames
                 fiona-who seized-sound 5 char-sound
@@ -1076,7 +1076,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     scene-wait-ready
     wait-fade
     world-held state-flag-set
-    $F1 action-end
+    1 track action-end
     hewie-who char-here? if
         $F ebit-set
         hewie-who action-end
@@ -1095,7 +1095,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         hewie-who $19F 140 char-to-tri-facing
     then
     om1f-8-flag2 story-flag-set
-    0 $F1 $1C action
+    0 1 track $1C action
     fiona-who 8 char-file-load
     fiona-who char-file-use
     3 room-motion self-anim
@@ -1202,7 +1202,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     scene-wait-ready
     3 4 0 char-model-op
     fiona-who 1 char-no-shadow
-    0 $F9 $1F action
+    0 cutscene-track $1F action
     panic-eased
     $FFFF message-prepare
     1 result? if

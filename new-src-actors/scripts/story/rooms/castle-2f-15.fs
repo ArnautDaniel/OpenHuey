@@ -97,7 +97,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                         0 keeps-fiona-off keeps-pursuers-off or floor-on
                         0 castle-2f-15.cond00? if
                             2 ebit-set
-                            0 $F1 4 action
+                            0 1 track 4 action
                         else
                             0 solid-floor floor-on
                             0 keeps-fiona-off keeps-pursuers-off or floor-off

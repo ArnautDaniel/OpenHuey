@@ -1,6 +1,8 @@
 \ story/rooms/off-map-5a.fs - the event scripts of room off-map-5a ($5A; (on no map page)).
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
+\ (The room has no data on the disc - no ST_05A.PAC: it is never entered, and its messages'
+\ texts aren't known; its scripts are kept as the executable has them.)
 IN: story.rooms.off-map-5a
 USING: room-names story.words story.shared flag-names ;
 

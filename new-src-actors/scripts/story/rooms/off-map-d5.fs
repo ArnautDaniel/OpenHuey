@@ -20,11 +20,11 @@ USING: room-names story.words story.shared story.clock story-names ;
     $19 1.0 0 bgm
     $1E chance? if
         $1A 4 $FF char-load
-        0 $F1 0 action
+        0 1 track 0 action
     then
     x-d5-flag1 story-flag? not if
         $E 5 $FF char-load
-        0 $F2 1 action
+        0 2 track 1 action
     then
 ;
 
@@ -142,8 +142,8 @@ USING: room-names story.words story.shared story.clock story-names ;
         0 -24.0 8.31 -132.0 $19 10 0 zone
         fiona-who 0 2 char-zone-bits? hewie-who 0 2 char-zone-bits? or if
             x-d5-flag1 story-flag-set
-            $F2 action-end
-            0 $F2 2 action
+            2 track action-end
+            0 2 track 2 action
         then
     then
 ;

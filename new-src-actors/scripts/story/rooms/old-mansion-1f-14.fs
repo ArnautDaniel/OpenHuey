@@ -134,7 +134,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         3 4 0 char-model-op
         $FE $53 43 2 stalker-to-room
         stalker-who 0 0 char-camera
-        0 $F9 7 action
+        0 cutscene-track 7 action
         panic-eased
         0 message-prepare   \ "What is this? I was being filmed. Who's there? Why are you after me? What d..."
         1 result? if
@@ -300,7 +300,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     scene-wait-ready
     3 4 0 char-model-op
     $FE $53 43 2 stalker-to-room
-    0 $F9 7 action
+    0 cutscene-track 7 action
     panic-eased
     0 message-prepare   \ "What is this? I was being filmed. Who's there? Why are you after me? What do yo..."
     1 result? if

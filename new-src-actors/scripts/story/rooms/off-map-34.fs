@@ -31,7 +31,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     yield
     yield
     scene-wait-ready
-    0 $F9 1 action
+    0 cutscene-track 1 action
     panic-eased
     0 message-prepare   \ "Ah, you're up. Fiona... I've decided you shall give birth to me. Don't worry, I..."
     1 result? if
@@ -169,7 +169,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     yield
     yield
     scene-wait-ready
-    0 $F9 1 action
+    0 cutscene-track 1 action
     panic-eased
     0 message-prepare   \ "Ah, you're up. Fiona... I've decided you shall give birth to me. Don't worry, I..."
     1 result? if

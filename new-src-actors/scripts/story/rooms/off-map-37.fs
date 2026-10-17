@@ -24,7 +24,7 @@ defer off-map-37.act00
     $10C door-lock
     $10D door-lock
     1.0 sound-volume-scale
-    0 $F1 $D action
+    0 1 track $D action
     1.0 sound-volume-scale
     0 part-shown
 ;

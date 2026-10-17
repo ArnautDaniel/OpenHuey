@@ -169,7 +169,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
                 then
                 fiona-who $D char-entered-area? fiona-who $E char-entered-area? or if
                     wt4f-1-flag2 story-flag-set
-                    0 $F1 1 action
+                    0 1 track 1 action
                 then
             else wt4f-1-flag1 story-flag? if
                 5 ebit? not if
@@ -309,7 +309,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         $37 self-wait-frames
         fiona-who 0 6 char-sound
         self-wait-anim
-        0 $F3 3 action
+        0 3 track 3 action
         wt4f-1-flag3 story-flag-set
         2 1 object-hidden
         3 1 object-hidden
@@ -338,7 +338,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         $37 self-wait-frames
         fiona-who 0 6 char-sound
         self-wait-anim
-        0 $F3 3 action
+        0 3 track 3 action
         wt4f-1-flag3 story-flag-clear
         2 1 object-hidden
         3 1 object-hidden

@@ -27,7 +27,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $1C 39.3 0.0 50.4 -90 char-to-xyz
         $1C $900A 1 0 char-anim-hold
     then
-    0 $F1 0 action
+    0 1 track 0 action
     hunted state-flag-set
     omb1-1-album-medallion story-flag? not if
         1 -6.17 39.94 -29.06 flicker-sprite

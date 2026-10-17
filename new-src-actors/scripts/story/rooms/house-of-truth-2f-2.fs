@@ -121,7 +121,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     yield
     scene-wait-ready
-    0 $F9 $A action
+    0 cutscene-track $A action
     panic-eased
     0 message-prepare   \ "Who's there? Poor Fiona... Riccardo put you through quite a bit, didn't he? Unl..."
     1 result? if
@@ -352,7 +352,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     yield
     yield
     scene-wait-ready
-    0 $F9 $A action
+    0 cutscene-track $A action
     panic-eased
     0 message-prepare   \ "Who's there? Poor Fiona... Riccardo put you through quite a bit, didn't he? Unl..."
     1 result? if

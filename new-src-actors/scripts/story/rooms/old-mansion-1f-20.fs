@@ -15,7 +15,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $1C 12.0 0.0 0.0 -90 char-to-xyz
         $1C $900C 1 0 char-anim-hold
     then
-    0 $F1 3 action
+    0 1 track 3 action
     hunted state-flag-set
     om1f-20-breakable-broken story-flag? not if
         0 part-shown

@@ -64,7 +64,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     yield
     scene-wait-ready
     wait-fade
-    0 $F9 3 action
+    0 cutscene-track 3 action
     panic-eased
     0 message-prepare   \ "Thanks, Hewie. Hewie!"
     1 result? if
@@ -123,7 +123,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     yield
     scene-wait-ready
     wait-fade
-    0 $F9 3 action
+    0 cutscene-track 3 action
     panic-eased
     0 message-prepare   \ "Thanks, Hewie. Hewie!"
     1 result? if

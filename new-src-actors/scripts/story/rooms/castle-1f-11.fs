@@ -115,9 +115,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             1 $FF 4 rumble
             0 2 var? if
                 0 var-inc
-                0 $F2 $A action
+                0 2 track $A action
             else
-                0 $F1 3 action
+                0 1 track 3 action
             then
         then
     then
