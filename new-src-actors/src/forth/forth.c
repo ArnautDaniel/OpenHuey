@@ -1234,6 +1234,13 @@ PRIM(p_locals_begin) {
         if (local_index(f, s, n) >= 0) {
             forth_error(f, "{: a local named twice");
         }
+        {   /* (`to`, `if`, `loop` ... named by a local would stop meaning themselves) */
+            Word *w = forth_find(f, s, n);
+
+            if (w != NULL && (w->flags & WORD_IMMEDIATE)) {
+                forth_error(f, "{: a local can't take an immediate word's name: %.*s", (int)n, s);
+            }
+        }
         f->locals.is_float[f->locals.n] = (char)is_float;
         snprintf(f->locals.names[f->locals.n++], WORD_NAME_MAX + 1, "%.*s", (int)n, s);
     }

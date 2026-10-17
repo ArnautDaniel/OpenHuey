@@ -102,9 +102,9 @@ create no-avoid 13 cells allot  no-avoid 13 cells 0 fill
     her-exit @ 0< if  -1  else  her-room @ her-exit @ 1 exit-way  then  {: from :}   \ (the half of her room she came in by)
     8 0 do
         room i leads-elsewhere? if
-            room i 1 exit-way  {: to :}
-            her-room @ from room to 1  near if 1 else 2 then  no-avoid route-sides 0< 0=
-            near 0=  to 2 u< 0= or  and if   \ (next door: not into halves 0 / 1)
+            room i 1 exit-way  {: way-in :}   \ (the half of the room the exit opens onto)
+            her-room @ from room way-in 1  near if 1 else 2 then  no-avoid route-sides 0< 0=
+            near 0=  way-in 2 u< 0= or  and if   \ (next door: not into halves 0 / 1)
                 room i called @ plan s-id @ send stalker-summoned
                 true unloop exit
             then

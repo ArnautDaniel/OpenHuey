@@ -65,6 +65,7 @@ IN: forth
 : +field ( n size "name" -- n' )  create over , +  does> @ + ;
 : field: ( n "name" -- n' )  1 cells +field ;
 : cfield: ( n "name" -- n' )  1 +field ;   \ (a byte: c@ c!)
+: lfield: ( n "name" -- n' )  4 +field ;   \ (32 bits: l@ l!)
 : ffield: ( n "name" -- n' )  1 floats +field ;
 : sffield: ( n "name" -- n' )  4 +field ;   \ (a 32-bit float, as the engine's: sf@ sf!)
 : end-structure ( addr n -- )  swap ! ;

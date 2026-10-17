@@ -72,9 +72,14 @@ makes the names after it floats, until `|`), `c` and `y` starting at 0, the rest
 gives its value; `to name` stores into it. They last until the word returns (`exit` too), the
 return stack still free for `>r` and loops; a quotation has its own. A definition may have
 several `{: :}`: each takes its values where it stands. The first makes the frame, so it can't be
-inside an `if` or a loop; later ones can (`... do  i thing {: t :}  ... loop`). Prefer them
+inside an `if` or a loop; later ones can (`... do  i thing {: t :}  ... loop`). A local can't
+take the name of an immediate word (`to`, `if`, `loop` ...): it would stop meaning itself. Prefer them
 to stack juggling (`2 pick`, `rot`, `>r` chains) and to scratch variables:
 `: centred ( addr len x y -- )  {: addr len x y :}  ... ;`.
+
+Records: `begin-structure /point  ffield: p.x  ffield: p.y  end-structure` (`field:` a cell,
+`ffield:` a float, `sffield:` / `lfield:` 32 bits, `cfield:` a byte, `n +field` n bytes); `/vec`
+(vectors.fs) is the engine's three 32-bit floats (`v.x v.y v.z`).
 
 Enumerations: `enum: mood  calm wary tense angry ;` makes the constants `calm` .. `angry` (0 up; a
 number in the list sets the next: `enum: act  $36 hide  $52 lie-down ;`) and `mood>name ( n --

@@ -648,9 +648,9 @@ $40 constant music-eased   \ (kind bit: the music eased with it, over 90 frames)
 : music-to ( kind -- volume | -1 )   \ (silent going out, full coming back; -1 the other kinds)
     $F and  dup fade-to-black = if  drop 0 exit  then  fade-from-black = if  255  else  -1  then ;
 : fade-music ( kind -- )
-    dup music-frames  swap music-to   {: frames to :}
-    frames 0= to 0< or if  exit  then
-    0 frames to  music-id send music-op ;   \ (the stage music's volume over those frames)
+    dup music-frames  swap music-to   {: frames volume :}
+    frames 0= volume 0< or if  exit  then
+    0 frames volume  music-id send music-op ;   \ (the stage music's volume over those frames)
 : fade ( frames kind -- )
     dup fade-music  $F and  dup 8 <  over 1 and 0<> and if  world-held state-flag-clear  then   \ (1 3 5 7)
     over 0> fading !  screen-id send fade ;
