@@ -47,7 +47,7 @@ enum: dog-costume  own-coat shepherd-coat third-coat ;
 : creature ( slot -- id )  dup cells cr-ages + @ 2 < if  cells cr-ids + @  else  drop -1  then ;
 : creature-slot ( id -- slot | -1 )
     dup 0< if  drop -1 exit  then
-    10 0 do  dup i creature = if  drop i unloop exit  then  loop  drop -1 ;
+    #creatures 0 do  dup i creature = if  drop i unloop exit  then  loop  drop -1 ;
 : creature-up? ( slot -- flag )  cells cr-ups + @ 0<> ;
 : cond-of ( id -- n )
     dup her = if  drop fiona-cond @ exit  then  pursuer? if  st-cond @  else  0  then ;

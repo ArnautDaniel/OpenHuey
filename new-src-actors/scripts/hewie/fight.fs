@@ -298,9 +298,8 @@ $2008000 constant water-floor   \ (a floor's nav flags: water)
 : reachable? ( id -- flag )  dup with? 0= if  drop false exit  then  dup body-tri swap body-at plan-to ;
 : chase? ( -- flag )  pursuer dup with? if  dup mode-of unreachable-mode <> swap reachable? and  else  drop false  then ;
 : her-held? ( sub -- flag )  her with? fiona-mode @ thrown-mode = and  swap fiona-sub @ = and ;
-4 constant creature-struck   8 constant creature-holding   \ (a creature's move mode)
 : holding-her ( -- id | -1 )   \ (a homunculus, slots 7..9)
-    10 7 do  i creature dup mode-of creature-holding = over reachable? and if  unloop exit  then  drop  loop  -1 ;
+    #creatures first-homunculus do  i creature dup mode-of creature-holding = over reachable? and if  unloop exit  then  drop  loop  -1 ;
 : nearest-creature ( -- id | -1 )   \ (up, not struck, one he can get to: the nearest)
     -1 0e {: best F: best-d :}
     10 0 do

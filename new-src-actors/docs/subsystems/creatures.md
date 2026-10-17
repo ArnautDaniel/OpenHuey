@@ -13,7 +13,7 @@ kept across rooms, coming after her. Two classes, as in the original (`src/game/
   (hiding, held) it hangs about near her. Holding item $8D (in the equipment's slot 3) keeps
   them away.
 - **Homunculi** (CreatureB, slots 7..9; O_HMB/HMB_000): small walking figures that watch her,
-  follow, grab her and can be struck - **C3, not built**.
+  follow, grab her and can be struck (`scripts/creatures/homunculus.fs`).
 
 The kind-$19 creature (an event character, `Kind25_*`) and room $4F's commands (the spirits that
 vanish at a spot there) are separate; not built.
@@ -32,6 +32,12 @@ progress, the story's questions. Each creature is an actor of its own (`spirit` 
 stand anywhere on the mesh - its paths keep off $40080, and put somewhere at random it keeps to
 its floor of a split room) and draws its glow through the engine's particles (`spirit-new`: the six glows
 and trail, the vanishing burst).
+
+By name: the slots and how a creature moves (`creature-move`: free, about her, struck, holding
+her) are in `messages.fs`, shared with Fiona, Hewie, the things and the story; the floor flags
+the creatures mind are in `creatures/her.fs`; a spirit's kinds in `creatures/state.fs`; a
+homunculus's states (`hstate#`), animations and sounds at the top of its file. The off-screen
+trip record is a structure (`/trip`, `creatures/trip.fs`).
 
 ## API
 

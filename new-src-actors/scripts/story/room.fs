@@ -77,7 +77,7 @@ behaviour playing-room
       self subscribe tick  self subscribe frame-end
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing  self subscribe moving
       self subscribe stalker-doing  self subscribe stalker-blow  self subscribe item-event  self subscribe item-var  self subscribe item-event-bit  100 st-age !  -1 st-blow !
-      self subscribe creature-doing  self subscribe noise-was  self subscribe summoner-cooldown-is  self subscribe fiona-struck-by  self subscribe fiona-shakes  self subscribe fiona-shaking  self subscribe hewie-health  self subscribe keri-fell  self subscribe fiona-unseen  self subscribe fiona-message  10 0 do  100 i cells cr-ages + !  loop
+      self subscribe creature-doing  self subscribe noise-was  self subscribe summoner-cooldown-is  self subscribe fiona-struck-by  self subscribe fiona-shakes  self subscribe fiona-shaking  self subscribe hewie-health  self subscribe keri-fell  self subscribe fiona-unseen  self subscribe fiona-message  #creatures 0 do  100 i cells cr-ages + !  loop
       0 phase
       #chars 0 do  i char-enter  loop
       remember-chars
@@ -113,7 +113,7 @@ behaviour playing-room
   on frame-end ( -- )
       st-age @ 100 < if  1 st-age +!  then
       loud-here @ if  -1 loud-here +!  then  count-arrows  fill-frame
-      10 0 do  i cells cr-ages +  dup @ 100 < if  1 swap +!  else  drop  then  loop
+      #creatures 0 do  i cells cr-ages +  dup @ 100 < if  1 swap +!  else  drop  then  loop
       3 phase  remember-chars  draw-scene
       going @ 0< 0= if  going @  -1 going !  -1 leaving !  rooms-id send go-through  then ;
   on room-leave ( -- )  4 phase ;

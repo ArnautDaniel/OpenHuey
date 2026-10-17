@@ -91,7 +91,7 @@ $29020008 constant his-floor-stops   \ (the floors Hewie can't stand on)
     her-tri @ her-at 2 pick body-at blocked-floor v-walk  over body-tri <> if  drop false exit  then   \ (Actor_TriTo: her own floor)
     her-at swap body-at vec-heading facing-diff 45e deg>rad f< ;
 : any-creature-ahead? ( -- flag )
-    10 0 do  i cells her-creatures + @ creature-ahead? if  true unloop exit  then  loop  false ;
+    #creatures 0 do  i cells her-creatures + @ creature-ahead? if  true unloop exit  then  loop  false ;
 : call-action ( -- code )   \ up: go there (calm), go for it (chased, or a creature ahead while followed)
     her-danger @ chased = if  dog-ok? dog-mode @ engaged-mode = and if  attack-now-cmd  else  go-for-it-cmd  then  exit  then
     her-danger @ followed = any-creature-ahead? and if  go-for-it-cmd exit  then

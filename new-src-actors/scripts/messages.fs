@@ -35,9 +35,14 @@ message show-avoid ( row -- )                 \ (the avoid prompt) its row shown
 message event-shot ( on dist pitch yaw rise -- )   \ the story's own shot of the one followed, or back (thousandths; 0x82)
 
 \ ---- creatures (docs/subsystems/creatures.md) ----
+\ the slots: spirits 0..6 (the story's own one 6), homunculi 7..9; a homunculus's kind has bit 7
+10 constant #creatures   6 constant story-spirit   7 constant first-homunculus   $80 constant homunculus-kind
+\ how a creature moves (creature-doing's mode, the original's +0xF8): as it will; hanging about
+\ her (she can't be reached); struck or going; holding her down
+enum: creature-move  creature-free 2 creature-about 4 creature-struck 8 creature-holding ;
 message creature-place ( room level tri kind reach which yaw height -- )   \ (creatures) the story's 0x8A: one placed (height f>cell)
 message creature-clear ( slot -- )           \ (creatures) the creature in that slot gone (a room's command: Room56)
-message creatures-clear ( which -- )         \ (creatures) 0 all, 1 slots 0..6, 2 slots 7..9 gone (0xCB)
+message creatures-clear ( which -- )         \ (creatures) 0 all, 1 the spirits (0..6), 2 the homunculi (7..9) gone (0xCB)
 message creature-count ( n other -- )        \ (creatures) how many to scatter about (0x99)
 message spirit-setup ( slot room level tri kind reach -- )   \ (a spirit) who it is and where
 message homunculus-setup ( slot room level tri kind sight yaw height -- )   \ (a homunculus) who it is, where, facing (degrees), dropped from (f>cell)
@@ -45,8 +50,8 @@ message homunculus-kept ( slot -- )         \ (a homunculus) as its progress rec
 message spirit-sent ( slot room company -- )  \ (a spirit) new in that room, sent after her: resting first (company: someone up in her room)
 message spirit-kept ( slot -- )              \ (a spirit) as its progress record says (a loaded game)
 message creature-gone ( slot -- )            \ (creatures) it has vanished: its slot is free
-message creature-doing ( slot room mode up -- )  \ broadcast each frame by each creature: where, how it moves (2: about her), up (after her: what Hewie goes for)
-message fiona-request ( kind x y z threat -- )   \ (Fiona) a request from there (Progress_Noise; xyz>cells, threat f>cell): $D a spirit touched her (she falls), 3 a red one's going (grabbed), $C homunculi (held down), 2 a blow
+message creature-doing ( slot room mode up -- )  \ broadcast each frame by each creature: where, how it moves (creature-move), up (after her: what Hewie goes for)
+message fiona-request ( kind x y z threat -- )   \ (Fiona) a request from there (Progress_Noise; xyz>cells, threat f>cell): request-kind
 message game-loaded ( -- )                   \ broadcast: a save's progress is back (saves.fs) - rebuild from it
 
 \ ---- doors (docs/subsystems/doors.md) ----

@@ -46,7 +46,7 @@ behaviour hewie-own
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe write-save
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe frame-end
       self subscribe stalker-doing  self subscribe creature-doing  self subscribe scene  -1 st-id !  100 st-age !  -1 his-grip !
-      10 0 do  -1 i cells cr-ids + !  100 i cells cr-ages + !  loop ;
+      #creatures 0 do  -1 i cells cr-ids + !  100 i cells cr-ages + !  loop ;
   on join-fiona ( -- )  s" fiona" actor-named his-fiona !  room-id fiona-room !  join  1 his-model @ cast-as ;
   on part-from-fiona ( -- )  part  1 -1 cast-as ;
   on hewie-costume ( kind -- )  dress ;
@@ -147,7 +147,7 @@ behaviour hewie-own
   on frame-end ( -- )
       along? if  his-done @  anim-done?  his-model @ 0 0 1 motion-events  broadcast moving  then
       st-age @ 100 < if  1 st-age +!  then
-      10 0 do  i cells cr-ages + dup @ 100 < if  1 swap +!  else  drop  then  loop ;
+      #creatures 0 do  i cells cr-ages + dup @ 100 < if  1 swap +!  else  drop  then  loop ;
   \ the stalker (H3: hewie/fight.fs): what he is doing; his answers to the attack; thrown off;
   \ struck - by him, by her, by a door (answered `blow-taken` when it struck)
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
@@ -163,7 +163,7 @@ behaviour hewie-own
   on silent ( on -- )  0<> his-hushed ! ;   \ (the scripts' 0x3D)
   on creature-doing ( slot room mode up -- )   \ (each remembered; one up in his room: hostile - what-next)
       {: slot room mode up :}
-      slot 10 u< if  sender slot cells cr-ids + !  mode slot cells cr-modes + !  up slot cells cr-ups + !  0 slot cells cr-ages + !  then
+      slot #creatures u< if  sender slot cells cr-ids + !  mode slot cells cr-modes + !  up slot cells cr-ups + !  0 slot cells cr-ages + !  then
       along? up and if  room self body-room = if  2 his-creature-t !  then  then ;
   on fetch-this ( thing -- )   \ (Fiona_StateLetGo: her ball thrown, while all's calm)
       along? his-danger @ calm = and his-action @ fetch-act <> and if  his-follows !  else  drop  then ;

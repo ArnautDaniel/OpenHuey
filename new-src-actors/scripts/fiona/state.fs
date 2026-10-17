@@ -1,7 +1,7 @@
 \ fiona/state.fs - Fiona's state: one actor's fields (docs/subsystems/fiona.md). `fiona enter`
 \ at the console shows them.
 IN: fiona.state
-USING: actors paths vectors ;
+USING: actors messages paths vectors ;
 
 state: fiona-state
   cell field her-model          \ her model (an Actor)
@@ -126,7 +126,7 @@ state: fiona-state
   cell field her-fade           \ 0..$80: how much of her shows (fading out while unseen, back in after)
   cell field her-hold  cell field her-hold-k   \ held by homunculi: the hold's frames, the shakes that may still count
   cell field her-carried-t      \ frames since a homunculus in her room said it was holding (move 8)
-  10 cells field her-creatures    \ each creature slot's actor, as it last told her (creature-doing; -1 none)
+  #creatures cells field her-creatures    \ each creature slot's actor, as it last told her (creature-doing; -1 none)
   cell field her-blow-n        \ her blows, numbered (a creature takes each once: Fiona_BlowCreatures' skip)
 end-state
 \ her-sub's that others test: pushing (fiona/push.fs), letting go of a thing (fiona/letgo.fs: how)

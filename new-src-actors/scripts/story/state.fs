@@ -3,7 +3,7 @@
 \ The room's scripts all run as its actor - the phases in its handlers, the action scripts as
 \ its coroutines - so they share this state as the original's scripts share the event object.
 IN: story.state
-USING: actors ;
+USING: actors messages ;
 
 32 constant #vars       \ script variables
 32 constant #zones      \ zones (cylinders the scripts set each frame)
@@ -72,5 +72,5 @@ state: room-state
   cell field summoner-secs       \ the summoner's cooldown left (seconds)
   cell field loud-here           \ a noise of $20 or more made in this room lately (frames left)
   cell field fiona-unseen         \ she can't be seen (fiona-unseen: item $89, still)
-  10 cells field cr-rooms  10 cells field cr-modes  10 cells field cr-ages  10 cells field cr-ids
+  #creatures cells field cr-rooms  #creatures cells field cr-modes  #creatures cells field cr-ages  #creatures cells field cr-ids
 end-state

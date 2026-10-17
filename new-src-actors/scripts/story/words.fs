@@ -1480,7 +1480,7 @@ fvariable sx  fvariable sy  fvariable sz
 : creatures-clear ( which -- )  creatures-id send creatures-clear ;          \ 0xCB: 0 all, 1 spirits, 2 homunculi
 \ the creatures in play here all on the floor of level 0 (Room48: Creatures_Call2C)
 : creatures-here-level0 ( -- )
-    10 0 do  i creature-in-room? if  0 i cells cr-ids + @ send set-level  then  loop ;
+    #creatures 0 do  i creature-in-room? if  0 i cells cr-ids + @ send set-level  then  loop ;
 \ the homunculi (slots 7..9) here on a triangle of nav group 0 gone (Room56)
 : homunculi-off-group0 ( -- )
     10 7 do

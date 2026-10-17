@@ -179,7 +179,7 @@ $1C constant softened-layer
 
 behaviour free
   on spawned ( -- )  self cam-player!
-      -1 her-model !  -1 her-hit-who !  -1 her-shake-count !  her-creatures 10 cells -1 fill  progress pr.vars $26 + c@ wear  2e 15e body-size
+      -1 her-model !  -1 her-hit-who !  -1 her-shake-count !  her-creatures #creatures cells -1 fill  progress pr.vars $26 + c@ wear  2e 15e body-size
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe camera-cut  self subscribe write-save  self subscribe creature-doing
       self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown  self subscribe scene  self subscribe stalker-doing ;
   on leaving-room ( room exit -- )  2drop  through-door ;
@@ -201,9 +201,9 @@ behaviour free
   on throw-down ( who recover -- )  thrown-down ;   \ (the story's 0xB2)
   on look-hold ( who frames -- )  her-look-hold !  her-look-who !  1 her-look-on ! ;   \ (the story's 0x96: Fiona_SetTarget)
   on creature-doing ( slot room mode up -- )   \ (a homunculus in her room holding her; each creature remembered)
-      drop
-      2 pick 0 10 within if  sender  3 pick cells her-creatures + !  then
-      8 =  swap self body-room =  and  swap 7 >= and if  2 her-carried-t !  then ;
+      {: slot room mode up :}
+      slot 0 #creatures within if  sender slot cells her-creatures + !  then
+      mode creature-holding =  room self body-room = and  slot first-homunculus >= and if  2 her-carried-t !  then ;
   on write-save ( -- )   \ (saves.fs) her costume and place
       her-costume @ .  self body-pos .at  self body-yaw .f  ." fiona-was" cr
       self cam-setup-of swap . . ." fiona-camera" cr ;   \ (the new game; the story's 0x97)

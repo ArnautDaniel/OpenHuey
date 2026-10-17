@@ -2,7 +2,7 @@
 \ at the console shows them. Where he is is his body (the engine's body operations move it);
 \ the comments give the original's offsets in Hewie (+0xF35..) where they help to compare.
 IN: hewie.state
-USING: actors paths vectors ;
+USING: actors messages paths vectors ;
 
 state: hewie-state
   cell field his-model          \ his model (an Actor)
@@ -127,7 +127,7 @@ state: hewie-state
   cell field st-alert            \ the stalker's alert: his mode (+0x16C8; 1..3 hunting)
   \ the creatures, as each tells (creature-doing): its actor, move mode (8 holding her down, 4
   \ struck or going), up (after her), frames since (by slot: spirits 0..6, homunculi 7..9)
-  10 cells field cr-ids  10 cells field cr-modes  10 cells field cr-ups  10 cells field cr-ages
+  #creatures cells field cr-ids  #creatures cells field cr-modes  #creatures cells field cr-ups  #creatures cells field cr-ages
   cell field his-scuffled   \ scuffled with him this meeting (+0xF368A; till another his-hold-call)
   \ at the stalker (hewie/fight.fs): the grip (+0x104: 0 head on, 1 / 2 a flank, -1 none yet),
   \ biting (+0xF36B4: 0 / 1 biting, 2 let go, 3 thrown), bites left (+0xF36B8), the chance to

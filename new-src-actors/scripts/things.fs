@@ -77,7 +77,6 @@ end-state
     body  body body-dims fdrop margin s>f f+  it @  1e thing-reaches? ;
 : in-reach? ( body -- flag )   \ (a magnesia's: across, 10 high)
     dup 0< if  drop false exit  then  it @  kind reach s>f  10e thing-reaches? ;
-7 constant first-homunculus   \ (the creatures' slots 7..9)
 : homunculus ( slot -- id )  first-homunculus - cells homunculi + @ ;
 : homunculi-tread? ( -- flag )
     false  first-homunculus 3 + first-homunculus do  i homunculus 0 treads? or  loop ;
