@@ -206,6 +206,13 @@ message scripted ( on -- )                   \ (room -> a character) a script of
 \ at the point, 14 turn to a character (a: its actor), 15 turn to the heading, 17 walk the way to
 \ the spot with animation a (blend b), arriving as it ends
 message scripted-move ( kind a b x y z yaw -- )   \ (to a character; floats f>cell; a / b: as the kind says)
+\ the story's moves (Fiona_Requests' commands): stand; her idle's step; through a door at exit a,
+\ opening it / shutting it; walk / run to the spot; an animation (a), blended (a over b frames),
+\ blended with no time of its own; walk / run there by a path; look at a character (a) / a point;
+\ turn to a character / to the move's heading; an idle (b); walk to the spot in an animation (a)
+enum: move-kind  1 stand-move idle-step-move open-door-move shut-door-move walk-move run-move
+    anim-move blend-move blend8-move walk-path-move run-path-move look-move look-point-move
+    turn-to-who-move turn-to-heading-move idle-anim-move walk-anim-move ;
 message moving ( done ended events -- )      \ broadcast at each frame's end by a character: its move done, its animation ended, its motion's event keys
 message hold-anim ( anim flags blend -- )    \ (to a character) play this animation and stay in it (the scripts' 0x9D: its flags - 1 loops - and frames faded in)
 message show ( on -- )                       \ (to a character) shown or hidden (the scripts' 0x1F)

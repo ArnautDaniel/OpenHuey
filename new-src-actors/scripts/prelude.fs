@@ -79,6 +79,7 @@ IN: forth
 : 0>= ( n -- flag ) 0< 0= ;
 
 \ ---- floats ----
+: fnip ( F: a b -- b )  fswap fdrop ;
 3.14159265358979 fconstant pi
 : f2*  2e f* ;
 : f2/  0.5e f* ;

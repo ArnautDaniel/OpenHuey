@@ -6,7 +6,7 @@
 \ walking to a spot, turning; `hold-anim`), reporting each frame's end (`moving`). Given another's
 \ model (`cast-dress`: the scripts' hand-over, Pursuer_GiveMotionBanks) it wears that.
 IN: cast
-USING: engine game-state actors messages common facts ;
+USING: engine game-state actors messages common vectors facts ;
 
 \ ---- the kinds' figures (their ModelFiles: the first file, its name less the extension) ----
 : kind-file ( kind -- addr len | 0 0 )
@@ -21,22 +21,24 @@ USING: engine game-state actors messages common facts ;
         38 of  s" O_HND/HND_000"  endof
         >r 0 0 r>
     endcase ;
+9 constant hanging-lorenzo   13 constant fiona-double   14 constant crow   15 constant crow-2
+18 constant fiona-double-2   26 constant rabbit   33 constant kind-33
 $2C020028 constant cast-floor   \ (the Pursuer's: NPC_BlockFlags)
 \ the hard setting's textures (Kind09_ModelFiles: Lorenzo's hanging figure, LRM_000H)
 : kind-textures ( kind -- addr len | 0 0 )
-    9 = hard-mode? and if  s" O_LRM/LRM_000H"  else  0 0  then ;
+    hanging-lorenzo = hard-mode? and if  s" O_LRM/LRM_000H"  else  0 0  then ;
 \ the kinds' motion tables - their fades (each model class's SecondaryMotion; the plain model's
 \ kinds have none): Fiona's doubles hers, the crows', Lorenzo's hanging figure's, kind 33's
 $3D5CC0 constant fiona-motions   $429C10 constant crow-motions
 $424250 constant hanging-lorenzo-motions   $42C730 constant kind33-motions
 : kind-motions ( kind -- vaddr | 0 )
     case
-        13 of  fiona-motions  endof   18 of  fiona-motions  endof
-        14 of  crow-motions  endof    15 of  crow-motions  endof
-        9 of  hanging-lorenzo-motions  endof   33 of  kind33-motions  endof
+        fiona-double of  fiona-motions  endof   fiona-double-2 of  fiona-motions  endof
+        crow of  crow-motions  endof           crow-2 of  crow-motions  endof
+        hanging-lorenzo of  hanging-lorenzo-motions  endof   kind-33 of  kind33-motions  endof
         >r 0 r>
     endcase ;
-: crow? ( kind -- flag )  14 - 2 u< ;
+: crow? ( kind -- flag )  dup crow = swap crow-2 = or ;
 
 <PRIVATE
 state: cast-state
@@ -47,14 +49,14 @@ state: cast-state
   cell field anim
   cell field act               \ what it does each frame (an xt)
   cell field mv-done  cell field mv-kind  cell field mv-a  cell field mv-b
-  12 field mv-at  1 floats field mv-yaw
-  \ an animal's ways (the rabbits, kind 26: Kind26_Behaviour) - what it is doing (+0x1624) and
-  \ whether that just began (+0x1628), its count (+0x162C), its home (+0x1634) and where it runs
-  \ off to (+0x163C), its footstep sound (+0x1630), its feet down (+0x16A8), whom it watches
+  /vec field mv-at  1 floats field mv-yaw
+  \ an animal's ways (the rabbits: Kind26_Behaviour) - what it is doing and whether that just
+  \ began, its count, its footstep sound, its feet down, its home and where it runs off to, whom
+  \ it watches, the one nearest
   cell field an-doing  cell field an-new  cell field an-t  cell field an-sound
   cell field an-left  cell field an-right
   1 floats field an-home-x  1 floats field an-home-z  1 floats field an-run-x  1 floats field an-run-z
-  12 field an-watch  12 field an-near
+  /vec field an-watch  /vec field an-near
   cell field st-actor  cell field st-room-is   \ (the stalker, as he tells: stalker-doing)
 end-state
 : him ( -- a )  model @ actor ;
@@ -65,89 +67,103 @@ end-state
     dup anim !  model @ swap  2dup motion-entry nip  motion-play ;
 : ended? ( -- flag )  him act.mflags l@ $20 and 0<> ;
 : done ( -- )  -1 mv-done ! ;
-\ its root motion this frame, turned and moved by it
-fvariable rm-turn  fvariable rm-x  fvariable rm-z
-: root@ ( -- )  model @ root-delta  rm-z f!  fdrop rm-x f!  rm-turn f! ;
-: root-move ( -- )  root@  yaw rm-turn f@ f+ angle-wrap body-turn  rm-x f@ rm-z f@ body-move-local ;
 : still ( -- ) ;
+: settle ( -- )  done  ['] still act ! ;
+\ its root motion this frame: the turn, and the step across and ahead
+: root@ ( F: -- turn x z )  model @ root-delta  fswap fdrop ;   \ (no rise)
+: root-move ( -- )  root@ {: F: turn x z :}  yaw turn f+ angle-wrap body-turn  x z body-move-local ;
 \ ---- the story's moves ----
 : turning ( -- )   \ to its heading, 10 degrees a frame
-    mv-yaw f@ 10e deg>rad body-turn-toward f0= if  done  ['] still act !  then ;
+    mv-yaw f@ 10e deg>rad body-turn-toward f0= if  settle  then ;
 : walking ( -- )   \ toward the spot, by its walk's root motion (a slow step if it has none)
-    root@  rm-z f@ fabs 0.01e f< if  0.6e  else  rm-z f@  then          ( F: step )
+    root@ fnip fnip  fdup fabs 0.01e f< if  fdrop 0.6e  then  {: F: step :}
     self mv-at body-heading-to 10e deg>rad body-turn-toward fdrop
-    my-at mv-at vec-dist-xz fover f< if
-        fdrop  mv-at vec@ body-place-at  mv-yaw f@ body-turn  0 play-now  done  ['] still act ! exit
+    my-at mv-at vec-dist-xz step f< if
+        mv-at vec@ body-place-at  mv-yaw f@ body-turn  0 play-now  settle exit
     then
-    0e fswap body-move-local ;
-\ ---- an animal (Kind26_Behaviour, animal_step): grazing (0, turned to whom it watches, 1..2 s),
-\ looking up (1), turning home (4) and back to grazing (5); someone within 30 - alert (2, turning
-\ away; the original takes the point's y for its z, kept); within 20 - off it runs (3) to its
-\ spot, there its sound and done ----
+    0e step body-move-local ;
+\ ---- an animal (Kind26_Behaviour, animal_step): grazing (turned to whom it watches, 1..2 s),
+\ looking up, turning home and back to grazing; someone within 30 - alert (turning away; the
+\ original takes the point's y for its z, kept); within 20 - off it runs to its spot, there its
+\ sound and done ----
+enum: animal-doing  grazing looking-up alert running-off turning-home back-to-grazing ;
+$9000 constant graze-anim   $9001 constant look-up-anim   $9002 constant turn-anim   $9003 constant run-anim
+1e8 fconstant nobody-near
 : near-sq ( id -- ) ( F: -- d2 )   \ (one in its room: the squared distance, its place in an-near)
-    dup 0< if  drop 1e8 exit  then  dup body? 0= if  drop 1e8 exit  then
-    dup body-room self body-room <> if  drop 1e8 exit  then
+    dup 0< if  drop nobody-near exit  then  dup body? 0= if  drop nobody-near exit  then
+    dup body-room self body-room <> if  drop nobody-near exit  then
     body-at  dup my-at vec-dist fdup f*  an-near swap vec-copy ;
-create who-at 12 allot
+create who-at /vec allot
+: nearer ( F: best d2 -- best' )   \ (the nearer kept, and its place in who-at)
+    fover fover f> if  fnip  who-at an-near vec-copy  else  fdrop  then ;
 : nearest-sq ( -- ) ( F: -- d2 )   \ (Kind26_NearestDistSq: Fiona, Hewie, the stalker; its place in who-at)
     s" fiona" actor-named near-sq  who-at an-near vec-copy
-    s" hewie" actor-named near-sq  fover fover f> if  fswap fdrop  who-at an-near vec-copy  else  fdrop  then
-    st-actor @ near-sq  fover fover f> if  fswap fdrop  who-at an-near vec-copy  else  fdrop  then ;
+    s" hewie" actor-named near-sq nearer
+    st-actor @ near-sq nearer ;
 : an-go ( doing -- )  an-doing !  1 an-new ! ;
 : an-face ( F: x z -- )   \ (turned 0.3 of the way to it)
-    my-at 8 + sf@ f-  fswap my-at sf@ f-  fswap fatan2 angle-wrap        ( F: a )
+    {: F: x z :}  x my-at v.x sf@ f-  z my-at v.z sf@ f-  fatan2 angle-wrap   \ (its heading: atan2 of across over ahead)
     yaw f- angle-wrap 0.3e f*  yaw f+ angle-wrap body-turn ;
 : an-anim ( anim -- )  an-new @ if  play-now  0 an-new !  else  drop  then ;
+: graze ( F: d2 -- )
+    an-new @ if  graze-anim play-now  rnd 1e f+ 60e f* f>s an-t !  0 an-new !  then
+    an-watch v.x sf@ an-watch v.z sf@ an-face
+    -1 an-t +!  an-t @ 0< if
+        2500e f<= rnd 0.8e f< 0= or if  looking-up an-doing !  else  turning-home an-doing !  then  1 an-new !  0 an-t !
+    else  fdrop  then ;
+: be-alert ( -- )   \ (turned away from it: the y for z, the original's)
+    an-new @ if  turn-anim play-now  0 an-new !  an-watch who-at vec-copy  then
+    my-at v.x sf@ an-watch v.x sf@ f- 100e f* my-at v.x sf@ f+
+    my-at v.y sf@ an-watch v.y sf@ f- 100e f* my-at v.y sf@ f+  an-face
+    ended? if  grazing an-go  then ;
+: run-off ( -- ran-off? )
+    run-anim an-anim  an-run-x f@ an-run-z f@ an-face
+    an-run-z f@ my-at v.z sf@ f- fdup f*  an-run-x f@ my-at v.x sf@ f- fdup f* f+ 1e f< if
+        an-sound @ 1+ 6 0 0 my-at vec@ sound-at  true exit
+    then  false ;
 : animal-ways ( -- ran-off? )
-    nearest-sq                                                        ( F: d2 )
-    an-doing @ 3 <> fdup 400e f< and if  3 an-go  then
-    an-doing @ dup 3 <> swap 2 <> and fdup 900e f< and if  2 an-go  then
+    nearest-sq  {: F: d2 :}
+    an-doing @ running-off <>  d2 400e f< and if  running-off an-go  then
+    an-doing @ dup running-off <> swap alert <> and  d2 900e f< and if  alert an-go  then
     an-doing @ case
-        0 of  an-new @ if  $9000 play-now  rnd 1e f+ 60e f* f>s an-t !  0 an-new !  then
-              an-watch sf@ an-watch 8 + sf@ an-face
-              -1 an-t +!  an-t @ 0< if
-                  fdup 2500e f<= rnd 0.8e f< 0= or if  1 an-doing !  else  4 an-doing !  then  1 an-new !  0 an-t !
-              then  endof
-        1 of  $9001 an-anim  ended? rnd 0.5e f< and if  0 an-go  then  endof
-        4 of  an-new @ if  5 an-t !  0 an-new !  then
-              an-home-x f@ an-home-z f@ an-face  -1 an-t +!  an-t @ 0< if  5 an-go  then  endof
-        5 of  $9002 an-anim  ended? if  0 an-go  then  endof
-        2 of  an-new @ if  $9002 play-now  0 an-new !  an-watch who-at vec-copy  then
-              my-at sf@ an-watch sf@ f- 100e f* my-at sf@ f+
-              my-at 4 + sf@ an-watch 4 + sf@ f- 100e f* my-at 4 + sf@ f+  an-face   \ (y for z: the original's)
-              ended? if  0 an-go  then  endof
-        3 of  $9003 an-anim  an-run-x f@ an-run-z f@ an-face
-              an-run-z f@ my-at 8 + sf@ f- fdup f*  an-run-x f@ my-at sf@ f- fdup f* f+ 1e f< if
-                  fdrop  an-sound @ 1+ 6 0 0 my-at vec@ sound-at  true exit
-              then  endof
-    endcase  fdrop false ;
+        grazing of  d2 graze  endof
+        looking-up of  look-up-anim an-anim  ended? rnd 0.5e f< and if  grazing an-go  then  endof
+        turning-home of  an-new @ if  5 an-t !  0 an-new !  then
+              an-home-x f@ an-home-z f@ an-face  -1 an-t +!  an-t @ 0< if  back-to-grazing an-go  then  endof
+        back-to-grazing of  turn-anim an-anim  ended? if  grazing an-go  then  endof
+        alert of  be-alert  endof
+        running-off of  run-off exit  endof
+    endcase  false ;
 : free-move ( -- )   \ (its root motion added as it is: no floor holds an animal)
-    root@  yaw rm-turn f@ f+ angle-wrap body-turn
-    rm-x f@ rm-z f@ yaw rotate-by  rm-z f!  rm-x f!                  \ (the step, turned)
-    my-at sf@ rm-x f@ f+  my-at 4 + sf@  my-at 8 + sf@ rm-z f@ f+  body-place-at ;
+    root@ {: F: turn x z :}  yaw turn f+ angle-wrap body-turn
+    x z yaw rotate-by  {: F: dx dz :}                                 \ (the step, turned)
+    my-at v.x sf@ dx f+  my-at v.y sf@  my-at v.z sf@ dz f+  body-place-at ;
 : animal ( -- )   \ (animal_step: its ways, moved by its animation, a footstep as a foot comes down)
     animal-ways  free-move
-    model @ 1 foot-down?  model @ 0 foot-down?                       ( l r )
-    over an-left @ 0= and  over an-right @ 0= and or  an-sound @ -1 <> and if
+    model @ 1 foot-down?  model @ 0 foot-down?  {: left right :}
+    left an-left @ 0= and  right an-right @ 0= and or  an-sound @ -1 <> and if
         an-sound @ 6 0 0 my-at vec@ sound-at
-    then  an-right !  an-left !
-    if  done  ['] still act !  then ;
+    then  right an-right !  left an-left !
+    if  settle  then ;
 : animal-go ( sound F: x z -- )   \ (Kind26_MoveToB: grazing here, off to (x, z) when one comes near)
-    an-run-z f!  an-run-x f!  an-sound !  0 an-go  60 an-t !
-    my-at sf@ an-home-x f!  my-at 8 + sf@ an-home-z f!  1 an-left !  1 an-right !
+    an-run-z f!  an-run-x f!  an-sound !  grazing an-go  60 an-t !
+    my-at v.x sf@ an-home-x f!  my-at v.z sf@ an-home-z f!  1 an-left !  1 an-right !
     0 mv-done !  ['] animal act ! ;
 : start-move ( kind -- )
     0 mv-done !  dup mv-kind !
     case
-        7 of  mv-a @ play-now  done  ['] root-move act !  endof
-        8 of  mv-a @ play-now  done  ['] root-move act !  endof
-        9 of  mv-a @ play-now  done  ['] root-move act !  endof
-        16 of  mv-b @ play-now  done  ['] root-move act !  endof
-        14 of  ['] turning act !  endof   15 of  ['] turning act !  endof
-        5 of  $200 play-now  ['] walking act !  endof   6 of  $202 play-now  ['] walking act !  endof
-        10 of  $200 play-now  ['] walking act !  endof   11 of  $202 play-now  ['] walking act !  endof
-        17 of  mv-a @ play-now  ['] walking act !  endof
-        1 of  0 play-now  done  ['] still act !  endof
+        anim-move of  mv-a @ play-now  done  ['] root-move act !  endof
+        blend-move of  mv-a @ play-now  done  ['] root-move act !  endof
+        blend8-move of  mv-a @ play-now  done  ['] root-move act !  endof
+        idle-anim-move of  mv-b @ play-now  done  ['] root-move act !  endof
+        turn-to-who-move of  ['] turning act !  endof
+        turn-to-heading-move of  ['] turning act !  endof
+        walk-move of  $200 play-now  ['] walking act !  endof
+        run-move of  $202 play-now  ['] walking act !  endof
+        walk-path-move of  $200 play-now  ['] walking act !  endof
+        run-path-move of  $202 play-now  ['] walking act !  endof
+        walk-anim-move of  mv-a @ play-now  ['] walking act !  endof
+        stand-move of  0 play-now  settle  endof
         >r done r>   \ (the looks, the doors' uses: nothing for it)
     endcase ;
 
@@ -159,8 +175,8 @@ create who-at 12 allot
 : model-load ( file len id -- model )   \ (its kind's textures when it has its own)
     kind-textures dup if  actor-load-textured  else  2drop actor-load  then ;
 : load ( file len id -- )
-    >r  unload  r@ model-load model !  r@ who !  r@ model @ cast-as
-    r> kind-motions ?dup if  model @ swap motion-table  then
+    {: id :}  unload  id model-load model !  id who !  id model @ cast-as
+    id kind-motions ?dup if  model @ swap motion-table  then
     0 him act.visible l!  -1 shown !  -1 mv-done !  ['] still act !  0 play-now ;
 : dress ( model -- )   \ (another's model worn: its files loaded for this one)
     who @ 0< if  drop exit  then
@@ -170,15 +186,15 @@ create who-at 12 allot
 : crow-9000s? ( -- flag )  anim @ $9000 - 2 u< ;
 : crow-parts ( -- )
     who @ crow? 0= if  exit  then
-    crow-9000s?  model @ 5 2 pick actor-part-show
-    0=  model @ 3 2 pick actor-part-show  model @ 4 rot actor-part-show ;
+    crow-9000s? {: on :}
+    model @ 5 on actor-part-show  model @ 3 on 0= actor-part-show  model @ 4 on 0= actor-part-show ;
 \ its model where its body is, seen in the room being played
 : pose ( -- )
     model @ 0< if  exit  then
     crow-parts
     in-scene @ if  exit  then   \ (a cutscene's: shown by its shots, body or none - the golem has none)
     self body? 0= if  0 him act.visible l!  exit  then
-    my-at sf@ him act.x sf!  my-at 4 + sf@ him act.y sf!  my-at 8 + sf@ him act.z sf!
+    my-at v.x sf@ him act.x sf!  my-at v.y sf@ him act.y sf!  my-at v.z sf@ him act.z sf!
     yaw him act.yaw sf!
     self body-room room-id =  shown @ and  0<> 1 and  him act.visible l! ;
 PRIVATE>
@@ -212,11 +228,11 @@ behaviour figure
   on hold-anim ( anim flags blend -- )   \ (as asked: a take-off at once, not over its motion table's fade)
       {: a fl bl :}  model @ a has-motion? if  a anim !  model @ a bl fl motion-play  then
       done  ['] root-move act ! ;
-  on animal-go ( sound x z -- )  >r cell>f r> cell>f  animal-go ;   \ (the rooms' commands: the rabbits)
+  on animal-go ( sound x z -- )  {: sound x z :}  sound x cell>f z cell>f animal-go ;   \ (the rooms' commands: the rabbits)
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
-      2drop 2drop 2drop 2drop  st-room-is !  sender st-actor ! ;
+      2drop 2drop 2drop 2drop  st-room-is !  sender st-actor ! ;   \ (who he is, and his room)
   on noclip ( on -- )  if  0  else  cast-floor  then  body-mask! ;   \ (the story's 0x20: through blocked floor)
 end-behaviour
 
 : cast-spawn ( slot -- id )
-    figure cast-state  rot case  3 of  s" cast3"  endof  4 of  s" cast4"  endof  >r s" cast5" r>  endcase  spawn ;
+    {: slot :}  figure cast-state  slot case  3 of  s" cast3"  endof  4 of  s" cast4"  endof  >r s" cast5" r>  endcase  spawn ;
