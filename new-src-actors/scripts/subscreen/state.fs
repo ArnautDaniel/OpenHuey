@@ -54,7 +54,7 @@ state: subscreen-state
   cell field art-loaded   \ the menu's own art (SUBBASE) is in
   cell field back-bank    \ which art is in the background group: 0 the menu's, 1 the plate's, 2 the slots'
   \ the slot machine
-  cell field slot-state   \ 0 choosing a medallion, 1 none to put in, 2 rolling, 3 what came out
+  cell field slot-state   \ (enum: slot-machine, subscreen/slots.fs)
   6 cells field stock     \ how many of each medallion she has
   cell field slot-cursor  cell field medal
   10 cells field rows     \ each row's symbol (-1 not rolled yet)
