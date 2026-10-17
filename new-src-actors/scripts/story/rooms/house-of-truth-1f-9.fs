@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-9
-USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names ;
+USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ ---- the debris falling from above ("keri0".."keri5", each carried by a kind-9 thing: free
 \ while hidden) and the traps set round the middle (kind 10) - the things actor's ----
@@ -137,7 +137,7 @@ defer house-of-truth-1f-9.act0F
     0 -36.4 13.4 54.4 1 flame-in
     1 58.7 10.0 -29.9 1 flame-in
     ht1f-9-flag1 story-flag? if
-        0 1 $14 door-bits
+        0 part-shown
         0 $F1 9 action
         4 3 var-set
         5 3 var-set
@@ -155,7 +155,7 @@ defer house-of-truth-1f-9.act0F
     else
         $B ebit-set
     then
-    1 0 $18000020 nav-group
+    0 keeps-pursuers-off keeps-people-off or hole-floor or floor-on
     $A 1 object-hidden
     $B 1 object-hidden
     $C 1 object-hidden
@@ -511,7 +511,7 @@ defer house-of-truth-1f-9.act0F
     wait-fade
     hewie-who action-end
     hewie-who char-done
-    0 1 $14 door-bits
+    0 part-shown
     $26 item-use
     0 creatures-clear
     $A ebit-clear
@@ -921,7 +921,7 @@ defer house-of-truth-1f-9.act0F
     yield
     yield
     scene-wait-ready
-    0 1 $14 door-bits
+    0 part-shown
     $10 $C8 movie-param
     0 $F9 8 action
     panic-eased

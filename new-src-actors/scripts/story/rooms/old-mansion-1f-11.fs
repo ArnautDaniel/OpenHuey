@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-11
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x4E (D_0040B4D8): a lit quad at x -44 .. -36, z 60, from 54 to 71
 : old-mansion-1f-11.cmd00 ( b0 -- )  $1B $80  -44.0e 71.0e 60.0e  -36.0e 71.0e 60.0e  -44.0e 54.0e 60.0e  -36.0e 54.0e 60.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -16,12 +16,12 @@ USING: room-names story.words story.shared flag-names story-names ;
     room-sounds
     $11 1.0 0 bgm
     omb1-5-flag3 story-flag? not if
-        0 1 $14 door-bits
-        1 0 $10020000 nav-group
+        0 part-shown
+        0 barred-floor hole-floor or floor-on
     else
-        1 1 $14 door-bits
-        1 1 $10020000 nav-group
-        1 2 $300000 nav-group
+        1 part-shown
+        1 barred-floor hole-floor or floor-on
+        2 both-halves floor-on
         hewie-who char-here? if
             hewie-who 1 char-in-nav-group? hewie-who 2 char-in-nav-group? or if
                 hewie-who $D char-to-tri
@@ -29,8 +29,8 @@ USING: room-names story.words story.shared flag-names story-names ;
         then
     then
     om1f-11-breakable-broken story-flag? not if
-        2 0 $14 door-bits
-        3 1 $14 door-bits
+        2 part-hidden
+        3 part-shown
         om1f-11-flag1 story-flag? not if
             3 old-mansion-1f-11.cmd01
             1 old-mansion-1f-11.cmd00
@@ -39,10 +39,10 @@ USING: room-names story.words story.shared flag-names story-names ;
             0 old-mansion-1f-11.cmd00
         then
     else
-        2 1 $14 door-bits
-        3 0 $14 door-bits
+        2 part-shown
+        3 part-hidden
         1 old-mansion-1f-11.cmd00
-        1 4 $2008000 nav-group
+        4 water-floor floor-on
     then
     om1f-11-album-medallion-found story-flag? om1f-11-album-medallion story-flag? not and if
         0 13.96 51.0 -5.34 flicker-sprite
@@ -353,9 +353,9 @@ USING: room-names story.words story.shared flag-names story-names ;
     om1f-11-breakable-broken story-flag-set
     stalker-who 1 6 char-sound
     stalker-who 1 stalker-rage
-    2 1 $14 door-bits
-    3 0 $14 door-bits
-    1 4 $2008000 nav-group
+    2 part-shown
+    3 part-hidden
+    4 water-floor floor-on
     1 old-mansion-1f-11.cmd00
     -37.0 66.0 60.0 0 538976288 4 -15.5 shards-at
     -41.0 66.0 60.0 0 538976288 4 -15.5 shards-at

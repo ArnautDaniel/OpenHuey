@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-7
-USING: engine common actors messages room-names story.words story.shared flag-names story-names ;
+USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ a struggle: byte 3 0 resets Fiona's shake tracking (+0x1AD710 / +0x1AD714); 1 adds her shakes
 \ to script variable byte 4, with a grunt (voice 0x3D or 0x45 at random) when the cool-down
@@ -38,26 +38,26 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 : house-of-truth-1f-7.enter ( -- )   \ 00435990
     room-sounds
     got-cane-of-caduceus story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
     else
-        0 0 $14 door-bits
+        0 part-hidden
     then
     ht1f-7-flag1 story-flag? not if
         2 0 object-hidden
         3 0 object-hidden
-        1 0 8 nav-group
+        0 solid-floor floor-on
     else
         2 1 object-hidden
         3 1 object-hidden
     then
     4 0 object-hidden
     over-music-f story-flag? not if
-        1 0 $14 door-bits
-        2 1 $14 door-bits
+        1 part-hidden
+        2 part-shown
     else
-        1 1 8 nav-group
-        1 1 $14 door-bits
-        2 0 $14 door-bits
+        1 solid-floor floor-on
+        1 part-shown
+        2 part-hidden
     then
     0 -59.1 18.5 -16.0 1 flame-in
     1 -10.4 17.5 -26.3 1 flame-in
@@ -313,7 +313,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     then
     2 1 object-hidden
     3 1 object-hidden
-    0 0 8 nav-group
+    0 solid-floor floor-off
     ht1f-7-flag1 story-flag-set
     fiona-who $B3 -74.86 74.73 -91 char-to-xz
     hewie-who char-activate
@@ -360,7 +360,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
-    0 0 $14 door-bits
+    0 part-hidden
     got-cane-of-caduceus story-flag-set
     $26 message-param-room
     $26 1 item-give-count
@@ -400,7 +400,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     then
     $50 resident-flag-set
     4 0 object-hidden
-    1 1 8 nav-group
+    1 solid-floor floor-on
     ht1f-7-flag2 story-flag-set
     fiona-who 5 char-file-load
     fiona-who char-file-use
@@ -695,8 +695,8 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 
 : house-of-truth-1f-7.act0F ( -- )   \ 00436340
     self-wait-done
-    0 1 $14 door-bits
-    2 1 $14 door-bits
+    0 part-shown
+    2 part-shown
     0 -59.1 18.5 -16.0 1 flame-in
     1 -10.4 17.5 -26.3 1 flame-in
     2 84.1 19.8 -2.3 1 flame-in
@@ -733,7 +733,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     self-wait-done
     2 1 object-hidden
     3 1 object-hidden
-    1 1 $14 door-bits
+    1 part-shown
     0 -59.1 18.5 -16.0 1 flame-in
     1 -10.4 17.5 -26.3 1 flame-in
     2 84.1 19.8 -2.3 1 flame-in

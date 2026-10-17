@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-37
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ Room37_Cmd00
 : off-map-37.cmd00 ( -- )  fan-turn ;
@@ -26,7 +26,7 @@ defer off-map-37.act00
     1.0 sound-volume-scale
     0 $F1 $D action
     1.0 sound-volume-scale
-    0 1 $14 door-bits
+    0 part-shown
 ;
 
 : off-map-37.char-enter ( -- )   \ 00445C20

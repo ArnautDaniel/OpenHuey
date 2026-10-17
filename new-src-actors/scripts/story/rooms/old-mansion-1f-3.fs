@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-3
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-1f-3.enter ( -- )   \ 0041CA90
     room-sounds
@@ -21,8 +21,8 @@ USING: room-names story.words story.shared flag-names story-names ;
         hewie-who char-here? hewie-who 0 char-in-nav-group? and if
             hewie-who $13 char-to-tri
         then
-        0 1 $14 door-bits
-        1 0 $20000 nav-group
+        0 part-shown
+        0 barred-floor floor-on
     then
     om1f-3-medallion story-flag? not if
         0 -10.64 9.5 -116.64 flicker-sprite

@@ -6,7 +6,7 @@
 \ hurt he is the likelier), else Fiona; the homunculi it reaches are bitten. On a step or by a
 \ ladder (a sloped floor) he can't leap: he runs at it and bites.
 IN: hewie.pounce
-USING: engine game-state actors messages common facts paths vectors flag-names hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states hewie.fight ;
+USING: engine game-state actors messages common facts paths vectors flag-names hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states hewie.fight floor-flags ;
 
 \ ---- whom his mouth reaches (Progress_CharNear: his head's bone within 3 of them) ----
 $1F constant his-head-bone

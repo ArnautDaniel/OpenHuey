@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-3
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x56 (Room56_Cmd00_ptmf): creatures 7..9 in the current room on a live triangle
 \ gRoomEventObj says yes to: +0x10, then the creature list's +0x28
@@ -11,10 +11,10 @@ USING: room-names story.words story.shared flag-names story-names ;
 : old-mansion-2f-3.enter ( -- )   \ 0040ED10
     room-sounds
     om2f-3-flag1 story-flag? not if
-        0 1 $14 door-bits
-        1 0 $1000000 nav-group
+        0 part-shown
+        0 keeps-hewie-off floor-on
     else
-        1 0 $10020000 nav-group
+        0 barred-floor hole-floor or floor-on
     then
     hewie-who char-here? hewie-who 1 char-in-nav-group? and if
         hewie-who $A8 char-to-tri
@@ -23,13 +23,13 @@ USING: room-names story.words story.shared flag-names story-names ;
         hewie-who char-here? 119 hewie-action? and if
             hewie-who $96 -78.0 0.0 90 char-to-xz
             18000 2 hewie-anim
-            1 1 $B0 nav-group
+            1 keeps-fiona-off keeps-pursuers-off or floor-edge or floor-on
         else
-            1 1 $B8 nav-group
+            1 solid-floor keeps-fiona-off or keeps-pursuers-off or floor-edge or floor-on
         then
     else
-        1 1 $14 door-bits
-        1 1 $88 nav-group
+        1 part-shown
+        1 solid-floor floor-edge or floor-on
     then
 ;
 
@@ -163,7 +163,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     2 ebit? not if
         $F 6 fade
         wait-fade
-        3 message   \ "Decomposer The initial step in this grand process begins with a manipulation of the..."
+        3 message   \ "Decomposer The initial step-floor in this grand process begins with a manipulation of the..."
         wait-message
         $F 7 fade
         wait-fade
@@ -236,8 +236,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     fiona-who 0 char-in-nav-group? if
         fiona-who $68 160 char-to-tri-facing
     then
-    0 0 $14 door-bits
-    1 0 $10020000 nav-group
+    0 part-hidden
+    0 barred-floor hole-floor or floor-on
     -1 self-idle-anim
     self-frames-reset
     7 self-wait-frames
@@ -256,7 +256,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     $A8 -30.0 0.0 -90 $FFFF $A self-move-to
     self-wait-done
     1 self-scripted
-    0 1 8 nav-group
+    1 solid-floor floor-off
     $96 -78.0 0.0 -90 $204 5 self-move-to
     self-wait-done
     18000 2 hewie-anim
@@ -272,7 +272,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-anim
     0 0 hewie-anim
     0 0 hewie-do
-    1 1 8 nav-group
+    1 solid-floor floor-on
     0 self-scripted
     self-idle-or-end
 ;

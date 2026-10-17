@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-3f-2
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x63: the script's character walks to Fiona's nav triangle (character move 6, with
 \ 0x204).
@@ -25,10 +25,10 @@ defer old-mansion-3f-2.act07
                 hewie-who $195 char-to-tri
             then
         then
-        1 0 $1000000 nav-group
-        1 1 $1000000 nav-group
-        1 2 $1000000 nav-group
-        1 3 $1000000 nav-group
+        0 keeps-hewie-off floor-on
+        1 keeps-hewie-off floor-on
+        2 keeps-hewie-off floor-on
+        3 keeps-hewie-off floor-on
     then
     6 0.0 24.0 -60.0 $A $80 $80 $80 $40 specks
     6 0.0 24.0 12.0 $A $80 $80 $80 $40 specks
@@ -205,7 +205,7 @@ defer old-mansion-3f-2.act07
     hewie-who char-here? hewie-who 2 char-cond? and if
         0 hewie-who $86 action
     then
-    0 0 $14 door-bits
+    0 part-hidden
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -242,7 +242,7 @@ defer old-mansion-3f-2.act07
     $14 1 object-hidden
     $15 1 object-hidden
     $16 1 object-hidden
-    0 1 $14 door-bits
+    0 part-shown
     exit
 ;
 
@@ -264,7 +264,7 @@ defer old-mansion-3f-2.act07
         then
     then
     self-who 1 char-visible
-    0 0 $14 door-bits
+    0 part-hidden
     $14 $78 movie-param
     panic-eased
     $FFFF message-prepare
@@ -304,7 +304,7 @@ defer old-mansion-3f-2.act07
         then
     then
     self-who 1 char-visible
-    0 0 $14 door-bits
+    0 part-hidden
     $14 $78 movie-param
     panic-eased
     $FFFF message-prepare
@@ -343,7 +343,7 @@ defer old-mansion-3f-2.act07
     hewie-who action-end
     hewie-who char-done
     self-who 1 char-visible
-    0 0 $14 door-bits
+    0 part-hidden
     $10 $46 movie-param
     panic-eased
     $FFFF message-prepare
@@ -361,7 +361,7 @@ defer old-mansion-3f-2.act07
     self-wait-done
     hewie-bark
     self-wait-done
-    0 0 $1000000 nav-group
+    0 keeps-hewie-off floor-off
     old-mansion-3f-2.cmd00
     begin
         self-done? not if
@@ -387,7 +387,7 @@ defer old-mansion-3f-2.act07
             hewie-who 0 char-in-nav-group? if
                 ['] old-mansion-3f-2.act07 goto
             else
-                1 0 $1000000 nav-group
+                0 keeps-hewie-off floor-on
             then
             self-idle-or-end
         then
@@ -398,7 +398,7 @@ defer old-mansion-3f-2.act07
     self-wait-done
     hewie-bark
     self-wait-done
-    0 0 $1000000 nav-group
+    0 keeps-hewie-off floor-off
     $11F $204 6 self-move-tri
     begin
         self-done? not if
@@ -414,7 +414,7 @@ defer old-mansion-3f-2.act07
             then
             yield
         else
-            1 0 $1000000 nav-group
+            0 keeps-hewie-off floor-on
             self-idle-or-end
         then
     again
@@ -463,7 +463,7 @@ defer old-mansion-3f-2.act07
     self-wait-done
     hewie-bark
     self-wait-done
-    0 0 $1000000 nav-group
+    0 keeps-hewie-off floor-off
     $187 $204 6 self-move-tri
     begin
         self-done? not if
@@ -479,7 +479,7 @@ defer old-mansion-3f-2.act07
             then
             yield
         else
-            1 0 $1000000 nav-group
+            0 keeps-hewie-off floor-on
             self-idle-or-end
         then
     again
@@ -502,10 +502,10 @@ defer old-mansion-3f-2.act07
             fiona-who 2 6 char-sound
             armor-button-pushed story-flag-set
             30 hewie-trust
-            0 0 $1000000 nav-group
-            0 1 $1000000 nav-group
-            0 2 $1000000 nav-group
-            0 3 $1000000 nav-group
+            0 keeps-hewie-off floor-off
+            1 keeps-hewie-off floor-off
+            2 keeps-hewie-off floor-off
+            3 keeps-hewie-off floor-off
             $905 self-anim
             self-wait-anim
         then

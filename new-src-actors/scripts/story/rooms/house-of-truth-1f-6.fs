@@ -2,9 +2,9 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-6
-USING: engine common actors messages room-names story.words story.shared flag-names story-names ;
+USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags ;
 
-\ door 0 swung by script variable 0: byte 3 0 sets it to -90; 1 opens it 10 degrees a step to 0
+\ door 0 swung by script variable 0: byte 3 0 sets it to -90; 1 opens it 10 degrees a step-floor to 0
 \ (doors +0x74), waiting (2) until there
 : house-of-truth-1f-6.cmd00 ( b0 -- )   \ (door 0 by variable 0: b0 0 it to -90; 1 opened 10 degrees a frame from there to 0)
     case
@@ -19,7 +19,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 \ acceleration +0x38 0, jerk +0x3C 0.005); 1 steps them, its tilt +0x10 = (1 - sin(90 - angle))
 \ * pi/2, waiting (2) until the angle reaches 90; 2 puts it down (sin(pi/2))
 : house-of-truth-1f-6.cmd01 ( b0 -- )   \ ("tana", the shelf, falling over: b0 0 starts it - angle (+0x30), speed,
-    \ acceleration 0, jerk 0.005; 1 a step each frame, its tilt (1 - sin(90 - angle)) x pi/2,
+    \ acceleration 0, jerk 0.005; 1 a step-floor each frame, its tilt (1 - sin(90 - angle)) x pi/2,
     \ till the angle reaches 90; 2 put down)
     {: b0 :}  s" tana" object-here? 0= if  exit  then
     b0 case
@@ -449,7 +449,7 @@ defer house-of-truth-1f-6.act02
 : house-of-truth-1f-6.act05 ( -- )   \ 004356C0
     7 ebit-set
     1 32768 var-set
-    1 0 8 nav-group
+    0 solid-floor floor-on
     self-wait-done
     0 counter-set
     0 $F2 6 action
@@ -517,7 +517,7 @@ defer house-of-truth-1f-6.act02
     $8001 5 self-anim-blend8
     self-frames-reset
     5 self-wait-frames
-    0 0 $14 door-bits
+    0 part-hidden
     3 0 object-hidden
     4 0 object-hidden
     3 1 object-anim

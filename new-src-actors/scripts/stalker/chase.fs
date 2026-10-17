@@ -6,7 +6,7 @@
 \ floor, he attacks - his table for how she stands (`fiona-plight`): a combo (stalker/attack.fs),
 \ a taunt, a step round her. Losing sight of her he goes to where she is.
 IN: stalker.chase
-USING: engine game-state actors messages common facts flag-names paths vectors stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.head stalker.names stalker.anims ;
+USING: engine game-state actors messages common facts flag-names paths vectors stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.head stalker.names stalker.anims floor-flags ;
 
 : close-reach ( F: -- d )  hard-mode? if  40e  else  50e  then ;   \ (+0x17E4)
 \ his chase table: frames walking at her and stalking her by how he finds her - not facing him
@@ -86,13 +86,13 @@ defer take-her ( type -- )   defer lunge ( -- )   defer grab-dog ( -- )   \ (sta
 \ walk for at most 60 frames; whom he bumps into on the way a light blow (Pursuer_RaiseThreat:
 \ kind 4, damage 5, threat 10). None to go to: nothing new
 create wd-at /vec allot
-: my-level ( -- bits )  self body-tri nav-flags divider-sides and ;
+: my-level ( -- bits )  self body-tri nav-flags both-halves and ;
 : wander-tri ( -- tri | -1 )
     {: | t :}
     nav-tris 0 ?do
         rnd nav-tris s>f f* f>s  nav-tris 1- min  to t
-        t nav-flags  dup self body-mask and 0=  over divider-sides and my-level = and
-        swap divider-sides and divider-sides <> and if
+        t nav-flags  dup self body-mask and 0=  over both-halves and my-level = and
+        swap both-halves and both-halves <> and if
             t tri-center wd-at vec!  t wd-at plan 0> if
                 my-path my-at path-rest 20e f< 0= if  t unloop exit  then
             then

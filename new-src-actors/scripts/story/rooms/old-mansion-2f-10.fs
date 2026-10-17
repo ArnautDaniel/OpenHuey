@@ -2,17 +2,17 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-10
-USING: room-names story.words story.shared story-names ;
+USING: room-names story.words story.shared story-names floor-flags ;
 
 : old-mansion-2f-10.enter ( -- )   \ 0041B130
     om2f-10-breakable-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
         om2f-10-weeping-stone story-flag? not if
             0 -10.5 1.0 -0.4 flicker-sprite
         then
@@ -128,9 +128,9 @@ USING: room-names story.words story.shared story-names ;
         0 -10.5 0.0 -0.4 5 8 1 zone
         self-who 0 char-in-zone? if
             om2f-10-breakable-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             -10.5 0.0 -0.4 0 -2143272896 0 0.0 shards-at
             $88 5 -10.5 0.0 -0.4 0 0 sound
             $40 $7B noise

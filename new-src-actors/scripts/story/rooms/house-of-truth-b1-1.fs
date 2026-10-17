@@ -2,14 +2,14 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-1
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x84: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
 : house-of-truth-b1-1.cmd00 ( -- )  slam-shake ;
 
 : house-of-truth-b1-1.enter ( -- )   \ 00432420
-    0 1 $14 door-bits
+    0 part-shown
     0 1 object-hidden
     1 1 object-hidden
     2 1 object-hidden
@@ -55,7 +55,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     9 3 $FF char-load
     3 char-start
-    0 0 $14 door-bits
+    0 part-hidden
     4 0 movie-play
     3 cutscene-start
     yield
@@ -122,7 +122,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     hewie-who char-done
     hewie-who char-activate
     $85 0 82 hewie-to-room
-    0 1 $14 door-bits
+    0 part-shown
     0 1 object-hidden
     1 1 object-hidden
     2 1 object-hidden

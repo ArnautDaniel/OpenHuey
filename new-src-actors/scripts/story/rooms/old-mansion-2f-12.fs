@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-12
-USING: engine room-names story.words story.shared flag-names story-names ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x69 (D_004386F8): the three-dial lock by byte 3 - 0 the dials (and their lit twins) set
 \ to their settings; 1 the player at it: up / down pick the dial (event variable 0; its lit twin
@@ -65,22 +65,22 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     7 160.0 51.9 -62.7 1 flame-in
     8 215.7 21.9 -62.6 1 flame-in
     om2f-12-breakable1-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
     then
     om2f-12-breakable2-broken story-flag? not if
-        1 1 $8000000 nav-group
-        2 1 $14 door-bits
-        3 0 $14 door-bits
+        1 keeps-people-off floor-on
+        2 part-shown
+        3 part-hidden
     else
-        0 1 $8000000 nav-group
-        2 0 $14 door-bits
-        3 1 $14 door-bits
+        1 keeps-people-off floor-off
+        2 part-hidden
+        3 part-shown
     then
     0 $C 0.812 0.687 0.187 0.312 zone-rect
     1 $3FFF sound-volume
@@ -169,9 +169,9 @@ USING: engine room-names story.words story.shared flag-names story-names ;
         0 -114.0 30.0 -48.0 5 8 1 zone
         self-who 0 char-in-zone? if
             om2f-12-breakable1-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             -114.0 30.0 -48.0 0 -2144325584 0 0.0 shards-at
             $88 5 -114.0 30.0 -48.0 0 0 sound
             $40 $DD noise
@@ -181,9 +181,9 @@ USING: engine room-names story.words story.shared flag-names story-names ;
         1 -114.0 30.0 -42.0 5 8 1 zone
         self-who 1 char-in-zone? if
             om2f-12-breakable2-broken story-flag-set
-            0 1 $8000000 nav-group
-            2 0 $14 door-bits
-            3 1 $14 door-bits
+            1 keeps-people-off floor-off
+            2 part-hidden
+            3 part-shown
             -114.0 30.0 -42.0 0 -2144325584 0 0.0 shards-at
             $88 5 -114.0 30.0 -42.0 0 0 sound
             $40 $DF noise

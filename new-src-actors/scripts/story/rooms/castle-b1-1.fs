@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-1
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x12 (Room12_Cmd00_ptmf): byte 3 0: the smoke puffs (SmokePuffs_vtable), their slot in
 \ script variable 0; else that slot started
@@ -11,17 +11,17 @@ USING: room-names story.words story.shared flag-names story-names ;
 : castle-b1-1.enter ( -- )   \ 003F8200
     room-sounds
     got-castle-sketch story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
     then
     0 -35.8 -50.5 -27.25 0 flame-in
     cb1-1-breakable1-broken story-flag? not if
-        1 0 $8000000 nav-group
-        1 1 $14 door-bits
-        2 0 $14 door-bits
+        0 keeps-people-off floor-on
+        1 part-shown
+        2 part-hidden
     else
-        0 0 $8000000 nav-group
-        1 0 $14 door-bits
-        2 1 $14 door-bits
+        0 keeps-people-off floor-off
+        1 part-hidden
+        2 part-shown
         cb1-1-chicken-jerky story-flag? not if
             1 -52.5 -59.05 -1.5 flicker-sprite
         then
@@ -35,7 +35,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     then
     hewie-found-in-wire story-flag? found-file-208 story-flag? not and if
         force-followed state-flag-set
-        1 1 $1000010 nav-group
+        1 keeps-fiona-off keeps-hewie-off or floor-on
         3 char-start
         3 char-activate
         0 3 0 char-model-op
@@ -50,13 +50,13 @@ USING: room-names story.words story.shared flag-names story-names ;
     1 0 -19.5 -26.0 -31.0 4.0 4.0 100.0 0.0 10.0 wanderer
     2 0 -53.0 -22.0 -11.0 4.0 5.0 80.0 0.0 30.0 wanderer
     cb1-1-breakable2-broken story-flag? not if
-        3 1 $14 door-bits
-        4 0 $14 door-bits
-        1 2 $20000 nav-group
+        3 part-shown
+        4 part-hidden
+        2 barred-floor floor-on
     else
-        3 0 $14 door-bits
-        4 1 $14 door-bits
-        0 2 $20000 nav-group
+        3 part-hidden
+        4 part-shown
+        2 barred-floor floor-off
     then
     1 $2300 sound-volume
 ;
@@ -267,9 +267,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         fiona-who 5 char-in-zone? if
             fiona-who 0 6 char-sound
             1 $FF 4 rumble
-            3 0 $14 door-bits
-            4 1 $14 door-bits
-            0 2 $20000 nav-group
+            3 part-hidden
+            4 part-shown
+            2 barred-floor floor-off
             cb1-1-breakable2-broken story-flag-set
             0 8 0.234 0.5 0.328 0.5 zone-rect
             19.0 -40.0 -32.0 0 -2144325584 2 0.0 shards-at
@@ -305,9 +305,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         1 -52.5 -60.05 -1.5 5 8 1 zone
         self-who 1 char-in-zone? if
             cb1-1-breakable1-broken story-flag-set
-            0 0 $8000000 nav-group
-            1 0 $14 door-bits
-            2 1 $14 door-bits
+            0 keeps-people-off floor-off
+            1 part-hidden
+            2 part-shown
             -52.5 -60.05 -1.5 0 -2146424784 0 0.0 shards-at
             3 6 -52.5 -60.05 -1.5 0 0 sound
             $40 $209 noise
@@ -529,7 +529,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     $902 self-anim
     self-wait-anim
-    0 0 $14 door-bits
+    0 part-hidden
     5 message-param-room
     5 1 item-give-count
     0 5 item-tab

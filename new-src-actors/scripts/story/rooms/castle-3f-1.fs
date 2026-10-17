@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-3f-1
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x06 (Room06_Cmd00_ptmf): its four objects (the name's 6th letter counting) to their
 \ places
@@ -218,7 +218,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         hewie-who action-end
         hewie-who char-done
         $11 room-preload
-        0 1 $14 door-bits
+        0 part-shown
         panic-eased
         0 message-prepare   \ "Dinner is served, Miss. Dinner is served, Miss."
         1 result? if
@@ -229,7 +229,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         3 action-end
         3 char-done
         $80 exit-check
-        0 0 $14 door-bits
+        0 part-hidden
     else
         $609 self-anim
         self-frames-reset
@@ -271,7 +271,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     yield
     yield
     scene-wait-ready
-    0 1 $14 door-bits
+    0 part-shown
     panic-eased
     0 message-prepare   \ "Dinner is served, Miss. Dinner is served, Miss."
     1 result? if
@@ -280,7 +280,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     world-held state-flag-set
     3 action-end
     3 char-done
-    0 0 $14 door-bits
+    0 part-hidden
     2 0 char-remove
     $80 exit-check
     events-held state-flag-clear

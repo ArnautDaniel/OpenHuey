@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e9
-USING: room-names story.words story.shared flag-names story.clock ;
+USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 
 \ room 0xE9: stops the countdown clock (clock_stop: progress +0x1FBEC1 off, the camera director
 \ +0x40 -1).
@@ -22,12 +22,12 @@ USING: room-names story.words story.shared flag-names story.clock ;
         $1F $AC $60 $26 $50 $19 $1F $12 $80 0 9 effect-string
     else
         $80C0F2AA 0 1 screen-blend
-        3 1 $14 door-bits
-        4 1 $14 door-bits
-        5 1 $14 door-bits
-        6 1 $14 door-bits
-        7 1 $14 door-bits
-        8 1 $14 door-bits
+        3 part-shown
+        4 part-shown
+        5 part-shown
+        6 part-shown
+        7 part-shown
+        8 part-shown
         3 0 off-map-e9.cmd02
         4 0 off-map-e9.cmd02
         5 0 off-map-e9.cmd02
@@ -39,7 +39,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
         $A -327.5 82.0 236.3 $E $80 $80 $80 $50 specks
         $A -372.5 82.0 236.3 $E $80 $80 $80 $50 specks
     then
-    0 0 $14 door-bits
+    0 part-hidden
 ;
 
 : off-map-e9.char-enter ( -- )   \ 0044A380
@@ -141,268 +141,268 @@ USING: room-names story.words story.shared flag-names story.clock ;
 
 : off-map-e9.act00 ( -- )   \ 0044A570
     $F8 self-is? if
-        3 0 $14 door-bits
+        3 part-hidden
         3 1 off-map-e9.cmd02
         yield
-        3 1 $14 door-bits
+        3 part-shown
         3 0 off-map-e9.cmd02
         yield
-        3 0 $14 door-bits
+        3 part-hidden
         3 1 off-map-e9.cmd02
         self-frames-reset
         4 self-wait-frames
         $32 chance? if
-            3 1 $14 door-bits
+            3 part-shown
             3 0 off-map-e9.cmd02
             self-frames-reset
             2 self-wait-frames
-            3 0 $14 door-bits
+            3 part-hidden
             3 1 off-map-e9.cmd02
             yield
-            3 1 $14 door-bits
+            3 part-shown
             3 0 off-map-e9.cmd02
             yield
-            3 0 $14 door-bits
+            3 part-hidden
             3 1 off-map-e9.cmd02
             self-frames-reset
             8 self-wait-frames
         then
         $19 chance? if
-            3 1 $14 door-bits
+            3 part-shown
             3 0 off-map-e9.cmd02
             self-frames-reset
             2 self-wait-frames
-            3 0 $14 door-bits
+            3 part-hidden
             3 1 off-map-e9.cmd02
             yield
-            3 1 $14 door-bits
+            3 part-shown
             3 0 off-map-e9.cmd02
             yield
-            3 0 $14 door-bits
+            3 part-hidden
             3 1 off-map-e9.cmd02
             self-frames-reset
             self-wait-16
         then
         5 chance? if
-            3 1 $14 door-bits
+            3 part-shown
             3 0 off-map-e9.cmd02
             yield
-            3 0 $14 door-bits
+            3 part-hidden
             3 1 off-map-e9.cmd02
             yield
-            3 1 $14 door-bits
+            3 part-shown
             3 0 off-map-e9.cmd02
             yield
-            3 0 $14 door-bits
+            3 part-hidden
             3 1 off-map-e9.cmd02
             self-frames-reset
             $20 self-wait-frames
         then
-        3 1 $14 door-bits
+        3 part-shown
         3 0 off-map-e9.cmd02
         yield
-        3 0 $14 door-bits
+        3 part-hidden
         3 1 off-map-e9.cmd02
         yield
-        3 1 $14 door-bits
+        3 part-shown
         3 0 off-map-e9.cmd02
     else $F7 self-is? if
-        4 0 $14 door-bits
+        4 part-hidden
         4 1 off-map-e9.cmd02
         yield
-        4 1 $14 door-bits
+        4 part-shown
         4 0 off-map-e9.cmd02
         yield
-        4 0 $14 door-bits
+        4 part-hidden
         4 1 off-map-e9.cmd02
         self-frames-reset
         4 self-wait-frames
         $32 chance? if
-            4 1 $14 door-bits
+            4 part-shown
             4 0 off-map-e9.cmd02
             self-frames-reset
             2 self-wait-frames
-            4 0 $14 door-bits
+            4 part-hidden
             4 1 off-map-e9.cmd02
             yield
-            4 1 $14 door-bits
+            4 part-shown
             4 0 off-map-e9.cmd02
             yield
-            4 0 $14 door-bits
+            4 part-hidden
             4 1 off-map-e9.cmd02
             self-frames-reset
             8 self-wait-frames
         then
         $19 chance? if
-            4 1 $14 door-bits
+            4 part-shown
             4 0 off-map-e9.cmd02
             self-frames-reset
             2 self-wait-frames
-            4 0 $14 door-bits
+            4 part-hidden
             4 1 off-map-e9.cmd02
             yield
-            4 1 $14 door-bits
+            4 part-shown
             4 0 off-map-e9.cmd02
             yield
-            4 0 $14 door-bits
+            4 part-hidden
             4 1 off-map-e9.cmd02
             self-frames-reset
             self-wait-16
         then
         5 chance? if
-            4 1 $14 door-bits
+            4 part-shown
             4 0 off-map-e9.cmd02
             yield
-            4 0 $14 door-bits
+            4 part-hidden
             4 1 off-map-e9.cmd02
             yield
-            4 1 $14 door-bits
+            4 part-shown
             4 0 off-map-e9.cmd02
             yield
-            4 0 $14 door-bits
+            4 part-hidden
             4 1 off-map-e9.cmd02
             self-frames-reset
             $20 self-wait-frames
         then
-        4 1 $14 door-bits
+        4 part-shown
         4 0 off-map-e9.cmd02
         yield
-        4 0 $14 door-bits
+        4 part-hidden
         4 1 off-map-e9.cmd02
         yield
-        4 1 $14 door-bits
+        4 part-shown
         4 0 off-map-e9.cmd02
     else $F6 self-is? if
-        5 0 $14 door-bits
+        5 part-hidden
         5 1 off-map-e9.cmd02
         yield
-        5 1 $14 door-bits
+        5 part-shown
         5 0 off-map-e9.cmd02
         yield
-        5 0 $14 door-bits
+        5 part-hidden
         5 1 off-map-e9.cmd02
         self-frames-reset
         4 self-wait-frames
         $32 chance? if
-            5 1 $14 door-bits
+            5 part-shown
             5 0 off-map-e9.cmd02
             self-frames-reset
             2 self-wait-frames
-            5 0 $14 door-bits
+            5 part-hidden
             5 1 off-map-e9.cmd02
             yield
-            5 1 $14 door-bits
+            5 part-shown
             5 0 off-map-e9.cmd02
             yield
-            5 0 $14 door-bits
+            5 part-hidden
             5 1 off-map-e9.cmd02
             self-frames-reset
             8 self-wait-frames
         then
         $19 chance? if
-            5 1 $14 door-bits
+            5 part-shown
             5 0 off-map-e9.cmd02
             self-frames-reset
             2 self-wait-frames
-            5 0 $14 door-bits
+            5 part-hidden
             5 1 off-map-e9.cmd02
             yield
-            5 1 $14 door-bits
+            5 part-shown
             5 0 off-map-e9.cmd02
             yield
-            5 0 $14 door-bits
+            5 part-hidden
             5 1 off-map-e9.cmd02
             self-frames-reset
             self-wait-16
         then
         5 chance? if
-            5 1 $14 door-bits
+            5 part-shown
             5 0 off-map-e9.cmd02
             yield
-            5 0 $14 door-bits
+            5 part-hidden
             5 1 off-map-e9.cmd02
             yield
-            5 1 $14 door-bits
+            5 part-shown
             5 0 off-map-e9.cmd02
             yield
-            5 0 $14 door-bits
+            5 part-hidden
             5 1 off-map-e9.cmd02
             self-frames-reset
             $20 self-wait-frames
         then
-        5 1 $14 door-bits
+        5 part-shown
         5 0 off-map-e9.cmd02
         yield
-        5 0 $14 door-bits
+        5 part-hidden
         5 1 off-map-e9.cmd02
         yield
-        5 1 $14 door-bits
+        5 part-shown
         5 0 off-map-e9.cmd02
     else $F5 self-is? if
-        6 0 $14 door-bits
+        6 part-hidden
         6 1 off-map-e9.cmd02
         yield
-        6 1 $14 door-bits
+        6 part-shown
         6 0 off-map-e9.cmd02
         yield
-        6 0 $14 door-bits
+        6 part-hidden
         6 1 off-map-e9.cmd02
         self-frames-reset
         4 self-wait-frames
         $32 chance? if
-            6 1 $14 door-bits
+            6 part-shown
             6 0 off-map-e9.cmd02
             self-frames-reset
             2 self-wait-frames
-            6 0 $14 door-bits
+            6 part-hidden
             6 1 off-map-e9.cmd02
             yield
-            6 1 $14 door-bits
+            6 part-shown
             6 0 off-map-e9.cmd02
             yield
-            6 0 $14 door-bits
+            6 part-hidden
             6 1 off-map-e9.cmd02
             self-frames-reset
             8 self-wait-frames
         then
         $19 chance? if
-            6 1 $14 door-bits
+            6 part-shown
             6 0 off-map-e9.cmd02
             self-frames-reset
             2 self-wait-frames
-            6 0 $14 door-bits
+            6 part-hidden
             6 1 off-map-e9.cmd02
             yield
-            6 1 $14 door-bits
+            6 part-shown
             6 0 off-map-e9.cmd02
             yield
-            6 0 $14 door-bits
+            6 part-hidden
             6 1 off-map-e9.cmd02
             self-frames-reset
             self-wait-16
         then
         5 chance? if
-            6 1 $14 door-bits
+            6 part-shown
             6 0 off-map-e9.cmd02
             yield
-            6 0 $14 door-bits
+            6 part-hidden
             6 1 off-map-e9.cmd02
             yield
-            6 1 $14 door-bits
+            6 part-shown
             6 0 off-map-e9.cmd02
             yield
-            6 0 $14 door-bits
+            6 part-hidden
             6 1 off-map-e9.cmd02
             self-frames-reset
             $20 self-wait-frames
         then
-        6 1 $14 door-bits
+        6 part-shown
         6 0 off-map-e9.cmd02
         yield
-        6 0 $14 door-bits
+        6 part-hidden
         6 1 off-map-e9.cmd02
         yield
-        6 1 $14 door-bits
+        6 part-shown
         6 0 off-map-e9.cmd02
     then then then then
     self-idle-or-end

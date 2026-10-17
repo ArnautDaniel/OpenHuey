@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d6
-USING: room-names story.words story.shared flag-names story.clock ;
+USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 
 \ (as Room105_Cmd00) pushed by the character slot byte 4 names
 : off-map-d6.cmd00 ( b0 b1 -- )  swing-three-by ;   \ (as chaos-forest-7's, pushed by character slot b1)
@@ -191,7 +191,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
     0 self-scripted
     0 self-noclip
     stalkers-stay state-flag-clear
-    0 0 $40000 nav-group
+    0 floor-flag-40000 floor-off
     self-idle-or-end
 ;
 
@@ -201,7 +201,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
     self-wait-done
     $19A 70.5 -5.5 90 $FFFF $A self-move-to
     self-wait-done
-    1 0 $40000 nav-group
+    0 floor-flag-40000 floor-on
     2 ebit-clear
     1 self-noclip
     0 ebit-clear
@@ -240,7 +240,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
             0 self-scripted
             0 self-noclip
             stalkers-stay state-flag-clear
-            0 0 $40000 nav-group
+            0 floor-flag-40000 floor-off
             self-idle-or-end
         then
     again

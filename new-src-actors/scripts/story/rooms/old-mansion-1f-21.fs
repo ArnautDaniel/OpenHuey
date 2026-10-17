@@ -2,47 +2,47 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-21
-USING: room-names story.words story.shared story-names ;
+USING: room-names story.words story.shared story-names floor-flags ;
 
 : old-mansion-1f-21.enter ( -- )   \ 00439B10
     om1f-21-breakable1-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
         om1f-21-album-medallion story-flag? not if
             0 20.0 1.0 -72.5 flicker-sprite
         then
     then
     om1f-21-breakable2-broken story-flag? not if
-        1 3 $8000000 nav-group
-        2 1 $14 door-bits
-        3 0 $14 door-bits
+        3 keeps-people-off floor-on
+        2 part-shown
+        3 part-hidden
     else
-        0 3 $8000000 nav-group
-        2 0 $14 door-bits
-        3 1 $14 door-bits
+        3 keeps-people-off floor-off
+        2 part-hidden
+        3 part-shown
     then
     om1f-21-breakable3-broken story-flag? not if
-        1 2 $8000000 nav-group
-        4 1 $14 door-bits
-        5 0 $14 door-bits
+        2 keeps-people-off floor-on
+        4 part-shown
+        5 part-hidden
     else
-        0 2 $8000000 nav-group
-        4 0 $14 door-bits
-        5 1 $14 door-bits
+        2 keeps-people-off floor-off
+        4 part-hidden
+        5 part-shown
     then
     om1f-21-breakable4-broken story-flag? not if
-        1 1 $8000000 nav-group
-        6 1 $14 door-bits
-        7 0 $14 door-bits
+        1 keeps-people-off floor-on
+        6 part-shown
+        7 part-hidden
     else
-        0 1 $8000000 nav-group
-        6 0 $14 door-bits
-        7 1 $14 door-bits
+        1 keeps-people-off floor-off
+        6 part-hidden
+        7 part-shown
     then
     0 6 0.345 0.687 0.187 0.312 zone-rect
     om3f-1-flag2 story-flag? if
@@ -178,9 +178,9 @@ USING: room-names story.words story.shared story-names ;
         2 6.4 0.0 -132.4 5 8 1 zone
         self-who 2 char-in-zone? if
             om1f-21-breakable2-broken story-flag-set
-            0 3 $8000000 nav-group
-            2 0 $14 door-bits
-            3 1 $14 door-bits
+            3 keeps-people-off floor-off
+            2 part-hidden
+            3 part-shown
             6.4 0.0 -132.4 0 -2145378272 0 0.0 shards-at
             $88 5 6.4 0.0 -132.4 0 0 sound
             $40 $100 noise
@@ -190,9 +190,9 @@ USING: room-names story.words story.shared story-names ;
         3 -63.9 0.0 -147.4 5 8 1 zone
         self-who 3 char-in-zone? if
             om1f-21-breakable3-broken story-flag-set
-            0 2 $8000000 nav-group
-            4 0 $14 door-bits
-            5 1 $14 door-bits
+            2 keeps-people-off floor-off
+            4 part-hidden
+            5 part-shown
             -63.9 0.0 -147.4 0 -2145378272 0 0.0 shards-at
             $88 5 -63.9 0.0 -147.4 0 0 sound
             $40 $112 noise
@@ -202,9 +202,9 @@ USING: room-names story.words story.shared story-names ;
         4 -68.8 0.0 -156.4 5 8 1 zone
         self-who 4 char-in-zone? if
             om1f-21-breakable4-broken story-flag-set
-            0 1 $8000000 nav-group
-            6 0 $14 door-bits
-            7 1 $14 door-bits
+            1 keeps-people-off floor-off
+            6 part-hidden
+            7 part-shown
             -68.8 0.0 -156.4 0 -2145378272 0 0.0 shards-at
             $88 5 -68.8 0.0 -156.4 0 0 sound
             $40 $115 noise
@@ -222,9 +222,9 @@ USING: room-names story.words story.shared story-names ;
         0 20.0 0.0 -72.5 5 8 1 zone
         self-who 0 char-in-zone? if
             om1f-21-breakable1-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             20.0 0.0 -72.5 0 -2145378272 0 0.0 shards-at
             $88 5 20.0 0.0 -72.5 0 0 sound
             $40 $35 noise

@@ -2,11 +2,11 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-12
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x4F (Room4F_Cmd00_ptmf): object byte 3 by byte 4: 0 up (+0x10 0), 1 down (-0.65), 2
-\ lowered a step (0.02, not during a movie); once down, events bit 3
-: old-mansion-1f-12.cmd00 ( b0 b1 -- )   \ (object b0 - the room's string - tipped by b1: 0 up, 1 down (-0.65), 2 lowered a step
+\ lowered a step-floor (0.02, not during a movie); once down, events bit 3
+: old-mansion-1f-12.cmd00 ( b0 b1 -- )   \ (object b0 - the room's string - tipped by b1: 0 up, 1 down (-0.65), 2 lowered a step-floor
     \ (0.02; not while a movie plays), down - event flag 3)
     {: k op | a n :}  k room-object to n to a  a n object-here? 0= if  exit  then
     op case
@@ -42,28 +42,28 @@ USING: room-names story.words story.shared flag-names story-names ;
         2 1 old-mansion-1f-12.cmd00
     then
     om1f-12-flag4 story-flag? if
-        0 1 $14 door-bits
-        3 1 $14 door-bits
+        0 part-shown
+        3 part-shown
         8 1 object-hidden
     else
-        0 0 $14 door-bits
-        3 0 $14 door-bits
+        0 part-hidden
+        3 part-hidden
         8 0 object-hidden
     then
     got-film-reel story-flag? if
-        4 0 $14 door-bits
+        4 part-hidden
     else
-        4 1 $14 door-bits
+        4 part-shown
     then
     om1f-12-flag1 story-flag? if
-        5 0 $14 door-bits
-        6 1 $14 door-bits
-        1 1 $14 door-bits
+        5 part-hidden
+        6 part-shown
+        1 part-shown
         old-mansion-1f-12.cmd01
     else
-        5 1 $14 door-bits
-        6 0 $14 door-bits
-        2 1 $14 door-bits
+        5 part-shown
+        6 part-hidden
+        2 part-shown
         0 old-mansion-1f-12.cmd02
     then
     got-torn-letter story-flag? not om1f-12-flag2 story-flag? not and if
@@ -343,7 +343,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         self-wait-done
         $900 self-anim
         self-wait-anim
-        4 0 $14 door-bits
+        4 part-hidden
         got-film-reel story-flag-set
         $E message-param-room
         $E 1 item-give-count
@@ -444,7 +444,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     yield
     scene-wait-ready
     wait-fade
-    2 0 $14 door-bits
+    2 part-hidden
     1 old-mansion-1f-12.cmd02
     0 ebit? if
         0 $F9 8 action
@@ -463,7 +463,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     camera-restart
     0 ebit? if
         1 1 old-mansion-1f-12.cmd00
-        5 0 $14 door-bits
+        5 part-hidden
         6 1 movie-play
         5 cutscene-start
         yield
@@ -483,14 +483,14 @@ USING: room-names story.words story.shared flag-names story-names ;
         $4F 0 163 hewie-to-room
         hewie-who $A3 -22.21 -11.73 -45 char-to-xz
         50 hewie-trust
-        1 1 $14 door-bits
-        6 1 $14 door-bits
+        1 part-shown
+        6 part-shown
         old-mansion-1f-12.cmd01
         4 6 sound-stop
         om1f-12-flag1 story-flag-set
     else
-        2 1 $14 door-bits
-        5 1 $14 door-bits
+        2 part-shown
+        5 part-shown
         0 old-mansion-1f-12.cmd02
     then
     $F $51 fade
@@ -645,7 +645,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 : old-mansion-1f-12.act0C ( -- )   \ 0040BEB0
     self-frames-reset
     self-wait-16
-    0 1 $14 door-bits
+    0 part-shown
     0 6 -38.0 5.0 -8.0 0 0 sound
     6 ebit-clear
     begin
@@ -706,7 +706,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     0 1 old-mansion-1f-12.cmd00
     2 1 old-mansion-1f-12.cmd00
-    5 1 $14 door-bits
+    5 part-shown
     4 1 movie-play
     3 cutscene-start
     yield

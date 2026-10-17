@@ -4,7 +4,7 @@
 \ does there (Pursuer_PickFromTable over Debilitas_AttackTable's "searched": walk on, or look
 \ about), and his mode with its clock (Pursuer_ModesSearching).
 IN: stalker.search
-USING: engine game-state actors messages common facts flag-names paths vectors stalker.state stalker.senses stalker.moving stalker.spots stalker.head stalker.names stalker.anims ;
+USING: engine game-state actors messages common facts flag-names paths vectors stalker.state stalker.senses stalker.moving stalker.spots stalker.head stalker.names stalker.anims floor-flags ;
 
 : here-played? ( -- flag )  in-game @ if  self body-room room-id =  else  false  then ;
 \ his search's phase: none, walking to a stop, searching it
@@ -19,12 +19,11 @@ enum: search-phase#  no-search to-stop at-the-stop ;
     over 0<  route-end @ 8 < 0= or if  2drop exit  then
     route-end @ stop  tuck cell+ !  !  1 route-end +! ;
 \ Npc_RandomTri: a triangle of the room he may stand on (his floor; not both sides of a divider)
-$300000 constant divider-sides
 : random-tri ( -- tri )
     here-played? 0= nav-tris 0= or if  -1 exit  then
     1000 0 do
         rnd nav-tris s>f f* f>s  nav-tris 1- min
-        dup nav-flags self body-mask and 0=  over nav-flags divider-sides and divider-sides <> and if  unloop exit  then
+        dup nav-flags self body-mask and 0=  over nav-flags both-halves and both-halves <> and if  unloop exit  then
         drop
     loop  -1 ;
 \ Pursuer_AddSearchStops: n stops - each 60 in 100 the room's next search spot while it has

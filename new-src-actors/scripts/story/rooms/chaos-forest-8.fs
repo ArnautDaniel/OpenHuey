@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-8
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x106: starts a water drip effect (OneDrip, 0xC0 bytes).
 : chaos-forest-8.cmd00 ( -- )  effects:one-drip ;   \ (a drop falling now and then)
@@ -19,73 +19,73 @@ USING: room-names story.words story.shared flag-names story-names ;
         1 ebit-set
     then
     cf-8-breakable1-broken story-flag? not if
-        1 2 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        2 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 2 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        2 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
         cf-8-medallion story-flag? not if
             0 -367.0 1.0 -118.7 flicker-sprite
         then
     then
     cf-8-breakable2-broken story-flag? not if
-        1 1 $8000000 nav-group
-        2 1 $14 door-bits
-        3 0 $14 door-bits
+        1 keeps-people-off floor-on
+        2 part-shown
+        3 part-hidden
     else
-        0 1 $8000000 nav-group
-        2 0 $14 door-bits
-        3 1 $14 door-bits
+        1 keeps-people-off floor-off
+        2 part-hidden
+        3 part-shown
     then
     cf-8-breakable3-broken story-flag? not if
-        1 0 $8000000 nav-group
-        4 1 $14 door-bits
-        5 0 $14 door-bits
+        0 keeps-people-off floor-on
+        4 part-shown
+        5 part-hidden
     else
-        0 0 $8000000 nav-group
-        4 0 $14 door-bits
-        5 1 $14 door-bits
+        0 keeps-people-off floor-off
+        4 part-hidden
+        5 part-shown
     then
     cf-8-breakable4-broken story-flag? not if
-        1 3 $8000000 nav-group
-        7 1 $14 door-bits
-        6 0 $14 door-bits
+        3 keeps-people-off floor-on
+        7 part-shown
+        6 part-hidden
     else
-        0 3 $8000000 nav-group
-        7 0 $14 door-bits
-        6 1 $14 door-bits
+        3 keeps-people-off floor-off
+        7 part-hidden
+        6 part-shown
     then
     cf-8-breakable5-broken story-flag? not if
-        1 4 $8000000 nav-group
-        9 1 $14 door-bits
-        8 0 $14 door-bits
+        4 keeps-people-off floor-on
+        9 part-shown
+        8 part-hidden
     else
-        0 4 $8000000 nav-group
-        9 0 $14 door-bits
-        8 1 $14 door-bits
+        4 keeps-people-off floor-off
+        9 part-hidden
+        8 part-shown
         cf-8-chicken-jerky story-flag? not if
             1 -275.5 1.0 -96.0 flicker-sprite
         then
     then
     cf-8-breakable6-broken story-flag? not if
-        1 5 $8000000 nav-group
-        $B 1 $14 door-bits
-        $A 0 $14 door-bits
+        5 keeps-people-off floor-on
+        $B part-shown
+        $A part-hidden
     else
-        0 5 $8000000 nav-group
-        $B 0 $14 door-bits
-        $A 1 $14 door-bits
+        5 keeps-people-off floor-off
+        $B part-hidden
+        $A part-shown
     then
     cf-8-breakable7-broken story-flag? not if
-        1 6 $8000000 nav-group
-        $D 1 $14 door-bits
-        $C 0 $14 door-bits
+        6 keeps-people-off floor-on
+        $D part-shown
+        $C part-hidden
     else
-        0 6 $8000000 nav-group
-        $D 0 $14 door-bits
-        $C 1 $14 door-bits
+        6 keeps-people-off floor-off
+        $D part-hidden
+        $C part-shown
     then
     0 9 0.812 0.687 0.187 0.312 zone-rect
     chaos-forest-8.cmd00
@@ -158,9 +158,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         1 -376.0 0.0 -115.9 5 8 1 zone
         self-who 1 char-in-zone? if
             cf-8-breakable2-broken story-flag-set
-            0 1 $8000000 nav-group
-            2 0 $14 door-bits
-            3 1 $14 door-bits
+            1 keeps-people-off floor-off
+            2 part-hidden
+            3 part-shown
             -376.0 0.0 -115.9 0 -2143272896 0 0.0 shards-at
             $88 5 -376.0 0.0 -115.9 0 0 sound
             $40 $F0 noise
@@ -170,9 +170,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         2 -381.0 0.0 -106.4 5 8 1 zone
         self-who 2 char-in-zone? if
             cf-8-breakable3-broken story-flag-set
-            0 0 $8000000 nav-group
-            4 0 $14 door-bits
-            5 1 $14 door-bits
+            0 keeps-people-off floor-off
+            4 part-hidden
+            5 part-shown
             -381.0 0.0 -106.4 0 -2143272896 0 0.0 shards-at
             $88 5 -381.0 0.0 -106.4 0 0 sound
             $40 $E6 noise
@@ -182,9 +182,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         3 -275.5 0.0 -105.0 5 8 1 zone
         self-who 3 char-in-zone? if
             cf-8-breakable4-broken story-flag-set
-            0 3 $8000000 nav-group
-            7 0 $14 door-bits
-            6 1 $14 door-bits
+            3 keeps-people-off floor-off
+            7 part-hidden
+            6 part-shown
             -275.5 0.0 -105.0 0 -2143272896 0 0.0 shards-at
             $88 5 -275.5 0.0 -105.0 0 0 sound
             $40 $84 noise
@@ -194,9 +194,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         5 -244.5 0.0 -105.0 5 8 1 zone
         self-who 5 char-in-zone? if
             cf-8-breakable6-broken story-flag-set
-            0 5 $8000000 nav-group
-            $B 0 $14 door-bits
-            $A 1 $14 door-bits
+            5 keeps-people-off floor-off
+            $B part-hidden
+            $A part-shown
             -244.5 0.0 -105.0 0 -2143272896 0 0.0 shards-at
             $88 5 -244.5 0.0 -105.0 0 0 sound
             $40 $8E noise
@@ -206,9 +206,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         6 -244.5 0.0 -96.0 5 8 1 zone
         self-who 6 char-in-zone? if
             cf-8-breakable7-broken story-flag-set
-            0 6 $8000000 nav-group
-            $D 0 $14 door-bits
-            $C 1 $14 door-bits
+            6 keeps-people-off floor-off
+            $D part-hidden
+            $C part-shown
             -244.5 0.0 -96.0 0 -2143272896 0 0.0 shards-at
             $88 5 -244.5 0.0 -96.0 0 0 sound
             $40 $F7 noise
@@ -239,9 +239,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 -367.0 0.0 -118.7 5 8 1 zone
         self-who 0 char-in-zone? if
             cf-8-breakable1-broken story-flag-set
-            0 2 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            2 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             -367.0 0.0 -118.7 0 -2143272896 0 0.0 shards-at
             $88 5 -367.0 0.0 -118.7 0 0 sound
             $40 $E8 noise
@@ -257,9 +257,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         4 -275.5 0.0 -96.0 5 8 1 zone
         self-who 4 char-in-zone? if
             cf-8-breakable5-broken story-flag-set
-            0 4 $8000000 nav-group
-            9 0 $14 door-bits
-            8 1 $14 door-bits
+            4 keeps-people-off floor-off
+            9 part-hidden
+            8 part-shown
             -275.5 0.0 -96.0 0 -2143272896 0 0.0 shards-at
             $88 5 -275.5 0.0 -96.0 0 0 sound
             $40 $FE noise

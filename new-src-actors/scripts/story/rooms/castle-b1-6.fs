@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-6
-USING: engine room-names story.words story.shared flag-names story-names ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x0C (Room0C_Cmd01_ptmf): script variable byte 3 down by the player's hit (byte 4: 1 from
 \ the weak blow 0x1A, else 5) or the pursuer's (+0x108), not below 0
@@ -16,7 +16,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     \ before it, as the original's unsigned count gives)
     cutscene-frame $4AE - dup 0< if  drop $80  else  5 lshift $80 min  then  screen-fill ;
 \ room 0x0C (Room0C_Cmd03_ptmf): three objects (pair byte 4) swing: byte 3 0 set up (rest +0x30,
-\ phase +0x34 half a turn apart, swing +0x3C 0.75 / 0.5), 1 a step (phase on 60 degrees, the
+\ phase +0x34 half a turn apart, swing +0x3C 0.75 / 0.5), 1 a step-floor (phase on 60 degrees, the
 \ swing down 0.1, x = rest + swing x sin(phase); 2 once still), 2 all to x 10. 2 while any
 : swings-step ( pair -- still? )   \ (Room0C_Cmd03 1: each on 60 degrees, its swing down 0.1; still - to x 10)
     {: pair | moving a n :}  0 to moving
@@ -42,36 +42,36 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     room-sounds
     $15 1.0 0 bgm
     got-saturnus-key story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
     then
-    1 1 $14 door-bits
+    1 part-shown
     6 1 object-hidden
     cb1-6-flag4 story-flag? not if
         0 25 var-set
     else
         $D 1 object-hidden
-        5 1 $14 door-bits
+        5 part-shown
     then
     cb1-6-flag5 story-flag? not if
         1 25 var-set
     else
         $E 1 object-hidden
-        3 1 $14 door-bits
+        3 part-shown
     then
     found-file-20b story-flag? not if
         9 0 object-hidden
         $A 1 object-hidden
         cb1-6-flag2 story-flag? if
-            7 1 $14 door-bits
-            1 0 8 nav-group
+            7 part-shown
+            0 solid-floor floor-on
         then
     else
         9 1 object-hidden
         $A 0 object-hidden
-        1 0 8 nav-group
+        0 solid-floor floor-on
     then
     0 8 0.0 0.0 0.25 0.25 zone-rect
-    6 0 $14 door-bits
+    6 part-hidden
     1 $2300 sound-volume
 ;
 
@@ -202,7 +202,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     yield
     scene-wait-ready
     wait-fade
-    1 0 $14 door-bits
+    1 part-hidden
     hewie-who char-activate
     $C 0 209 hewie-to-room
     $FE $C 206 2 stalker-to-room
@@ -218,7 +218,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     stalker-who 0 char-no-shadow
     found-file-209 story-flag-set
     $11 door-unlock
-    1 1 $14 door-bits
+    1 part-shown
     6 1 object-hidden
     $28 door-open-clear
     $28 door-lock
@@ -273,8 +273,8 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     fiona-who $11C 56.239 -3.659 -45 char-to-xz
     $C 0 78 hewie-to-room
     hewie-who $4E 57.799 0.951 0 char-to-xz
-    7 1 $14 door-bits
-    1 0 8 nav-group
+    7 part-shown
+    0 solid-floor floor-on
     1 0 player-camera
     camera-restart
     $28 door-open-clear
@@ -340,7 +340,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     1 result? if
         scene-play
     then
-    6 0 $14 door-bits
+    6 part-hidden
     scene-5-pending state-flag-clear
     hewie-no-attack state-flag-clear
     stalkers-blind state-flag-clear
@@ -356,7 +356,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     $28 door-unlock
     doors-room-in
     $A 0 object-hidden
-    1 0 8 nav-group
+    0 solid-floor floor-on
     found-file-20b story-flag-set
     0 panic-stage
     $15 1.0 0 bgm
@@ -436,7 +436,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
             hewie-who 0 char-cond!
             $28 door-open-set
             doors-room-in
-            0 0 $14 door-bits
+            0 part-hidden
             got-saturnus-key story-flag-set
             $15 1.0 0 bgm
             $F $41 fade
@@ -524,7 +524,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     0 0 var? if
         10.0 10.0 -35.0 0 -2144325584 3 -9.0 shards-at
         $D 1 object-hidden
-        5 1 $14 door-bits
+        5 part-shown
         cb1-6-flag4 story-flag-set
         1 6 10.0 10.0 -40.0 0 0 sound
     else
@@ -548,7 +548,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     1 0 var? if
         10.0 10.0 35.0 0 -2144325584 3 -9.0 shards-at
         $E 1 object-hidden
-        3 1 $14 door-bits
+        3 part-shown
         cb1-6-flag5 story-flag-set
         1 6 10.0 10.0 40.0 0 0 sound
     else
@@ -564,10 +564,10 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 : castle-b1-6.act0A ( -- )   \ 003F4FB0
     begin
         5 cutscene-shot? if
-            6 1 $14 door-bits
+            6 part-shown
         then
         6 cutscene-shot? if
-            6 0 $14 door-bits
+            6 part-hidden
         then
         cutscene-near-end? not while
         yield
@@ -586,13 +586,13 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 
 : castle-b1-6.act0C ( -- )   \ 003F4FE0
     self-wait-done
-    0 1 $14 door-bits
-    1 1 $14 door-bits
+    0 part-shown
+    1 part-shown
     6 1 object-hidden
     9 0 object-hidden
     $A 1 object-hidden
     0 8 0.0 0.0 0.25 0.25 zone-rect
-    6 0 $14 door-bits
+    6 part-hidden
     $A00 self-anim
     self-frames-reset
     $28 self-wait-frames
@@ -607,7 +607,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     1 result? if
         scene-play
     then
-    0 0 $14 door-bits
+    0 part-hidden
     $80 exit-check
     events-held state-flag-clear
     hewie-who action-end
@@ -620,7 +620,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     9 0 object-hidden
     $A 1 object-hidden
     0 8 0.0 0.0 0.25 0.25 zone-rect
-    6 0 $14 door-bits
+    6 part-hidden
     -1 self-idle-anim
     $1B partner-load
     2 char-start
@@ -629,7 +629,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     yield
     yield
     scene-wait-ready
-    1 0 $14 door-bits
+    1 part-hidden
     hewie-who char-activate
     $C 0 209 hewie-to-room
     $FE $C 206 2 stalker-to-room
@@ -642,7 +642,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     then
     stalker-who 0 char-no-shadow
     2 0 char-remove
-    1 1 $14 door-bits
+    1 part-shown
     6 1 object-hidden
     $80 exit-check
     events-held state-flag-clear
@@ -654,13 +654,13 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 : castle-b1-6.act0E ( -- )   \ 003F5170
     self-wait-done
     $D 1 object-hidden
-    5 1 $14 door-bits
+    5 part-shown
     $E 1 object-hidden
-    3 1 $14 door-bits
+    3 part-shown
     9 0 object-hidden
     $A 1 object-hidden
     0 8 0.0 0.0 0.25 0.25 zone-rect
-    6 0 $14 door-bits
+    6 part-hidden
     $1B partner-load
     2 char-start
     8 0 movie-play
@@ -685,7 +685,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 : castle-b1-6.act0F ( -- )   \ 003F5230
     self-wait-done
     0 8 0.0 0.0 0.25 0.25 zone-rect
-    6 0 $14 door-bits
+    6 part-hidden
     $1B partner-load
     2 char-start
     9 1 object-hidden
@@ -712,7 +712,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     1 result? if
         scene-play
     then
-    6 0 $14 door-bits
+    6 part-hidden
     2 0 char-remove
     $80 exit-check
     events-held state-flag-clear
@@ -726,7 +726,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     9 0 object-hidden
     $A 1 object-hidden
     0 8 0.0 0.0 0.25 0.25 zone-rect
-    6 0 $14 door-bits
+    6 part-hidden
     $1B partner-load
     2 char-start
     $C 0 movie-play

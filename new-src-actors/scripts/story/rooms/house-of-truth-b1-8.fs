@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-8
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x96: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
@@ -16,7 +16,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         stalker-who 1 1 char-camera
     then
     $31 1.0 0 bgm
-    1 0 $5000000 nav-group
+    0 keeps-hewie-off keeps-stalkers-off or floor-on
     stalker-who $96 1 room-doors-state
     hewie-who $96 1 room-doors-state
 ;

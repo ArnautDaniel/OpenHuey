@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-7
-USING: engine common room-names story.words story.shared flag-names story-names ;
+USING: engine common room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ a lid (pstr_kousi_2, +0x24 its height, +0x34 its speed): byte 3 0 up, 1 shut; 2 falling and
 \ bouncing shut (the first landing clears progress flag 0x50 and, unless the director says no,
@@ -54,24 +54,24 @@ USING: engine common room-names story.words story.shared flag-names story-names 
             c1f-4-flag1 story-flag-clear
         then
         c1f-4-flag2 story-flag? not c1f-4-flag1 story-flag? not and if
-            1 0 $20000 nav-group
+            0 barred-floor floor-on
             1 castle-1f-7.cmd00
         else
             c1f-4-flag1 story-flag-set
-            0 0 $20000 nav-group
+            0 barred-floor floor-off
             0 1 var-set
             0 castle-1f-7.cmd00
         then
     then
     breaker-lowered story-flag? not if
         2 0 object-hidden
-        0 0 $14 door-bits
-        1 1 $14 door-bits
-        1 1 $1000000 nav-group
+        0 part-hidden
+        1 part-shown
+        1 keeps-hewie-off floor-on
     else
         2 1 object-hidden
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 part-shown
+        1 part-hidden
     then
 ;
 
@@ -156,7 +156,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
                 hewie-who $15 1 room-doors-state
             else
                 c1f-4-flag1 story-flag-clear
-                1 0 $20000 nav-group
+                0 barred-floor floor-on
                 0 $F1 3 action
             then
         then
@@ -256,11 +256,11 @@ USING: engine common room-names story.words story.shared flag-names story-names 
             $32 self-wait-frames
             0 6 -44.0 18.0 36.0 0 0 sound
             3 6 sound-stop
-            1 0 $14 door-bits
+            1 part-hidden
             breaker-lowered story-flag-set
             40 hewie-trust
             stalker-who $15 0 room-doors-state
-            0 1 $1000000 nav-group
+            1 keeps-hewie-off floor-off
             9 door-unlock
             self-wait-anim
             $8277 item-give
@@ -407,8 +407,8 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     self-wait-done
     1 castle-1f-7.cmd00
     2 0 object-hidden
-    0 0 $14 door-bits
-    1 1 $14 door-bits
+    0 part-hidden
+    1 part-shown
     1 1 movie-play
     0 cutscene-start
     yield

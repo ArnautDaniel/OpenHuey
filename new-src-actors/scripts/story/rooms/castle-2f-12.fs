@@ -2,13 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-12
-USING: engine room-names story.words story.shared flag-names story-names ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
 
-\ the two doors ("left", "right") opening: byte 3 0 at once (2.25), else a step (0.075)
-: castle-2f-12.cmd00 ( b0 -- )   \ (the two doors opening: 0 at once - 2.25 - else a step of 0.075)
+\ the two doors ("left", "right") opening: byte 3 0 at once (2.25), else a step-floor (0.075)
+: castle-2f-12.cmd00 ( b0 -- )   \ (the two doors opening: 0 at once - 2.25 - else a step-floor of 0.075)
     if  0.075e  else  2.25e  then  fdup fnegate s" left" turn-y object+!  s" right" turn-y object+! ;
 \ the three rocking chairs ("movechair_1..3"; +0x30 the rock's phase in degrees, +0x34 its size,
-\ +0x38 how fast it dies down; +0x10 the tilt), by byte 3: 0 all still; 1 a rocking step (6
+\ +0x38 how fast it dies down; +0x10 the tilt), by byte 3: 0 all still; 1 a rocking step-floor (6
 \ degrees; each swing smaller, the first chair creaking at a volume by its size); 2 / 3 set
 fvariable tip  fvariable tip-yaw  fvariable reach
 \ ---- the three rocking chairs ("movechair_1..3": +$30 the rock's phase in degrees, +$34 its size,
@@ -55,16 +55,16 @@ fvariable tip  fvariable tip-yaw  fvariable reach
 
 : castle-2f-12.enter ( -- )   \ 00402D50
     room-sounds
-    1 1 $1000000 nav-group
-    1 1 $4000000 nav-group
+    1 keeps-hewie-off floor-on
+    1 keeps-stalkers-off floor-on
     c2f-12-flag1 story-flag? if
-        0 1 $14 door-bits
-        1 1 $20000 nav-group
+        0 part-shown
+        1 barred-floor floor-on
         0 1 object-hidden
         1 1 object-hidden
     else
-        0 0 $14 door-bits
-        0 1 $20000 nav-group
+        0 part-hidden
+        1 barred-floor floor-off
         0 0 object-hidden
         1 0 object-hidden
     then
@@ -75,13 +75,13 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         c2f-12-flag2 story-flag-set
     then
     c2f-12-breakable-broken story-flag? not if
-        1 0 $8000000 nav-group
-        1 1 $14 door-bits
-        2 0 $14 door-bits
+        0 keeps-people-off floor-on
+        1 part-shown
+        2 part-hidden
     else
-        0 0 $8000000 nav-group
-        1 0 $14 door-bits
-        2 1 $14 door-bits
+        0 keeps-people-off floor-off
+        1 part-hidden
+        2 part-shown
         c2f-12-medallion story-flag? not if
             1 -17.5 1.0 47.0 flicker-sprite
         then
@@ -270,9 +270,9 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         2 -17.5 0.0 47.0 5 8 1 zone
         self-who 2 char-in-zone? if
             c2f-12-breakable-broken story-flag-set
-            0 0 $8000000 nav-group
-            1 0 $14 door-bits
-            2 1 $14 door-bits
+            0 keeps-people-off floor-off
+            1 part-hidden
+            2 part-shown
             -17.5 0.0 47.0 0 -2143272896 0 0.0 shards-at
             $88 5 -17.5 0.0 47.0 0 0 sound
             $40 $48 noise
@@ -301,7 +301,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     self-wait-anim
     0 self-noclip
     c2f-12-flag1 story-flag-set
-    1 1 $20000 nav-group
+    1 barred-floor floor-on
     0 self-scripted
     self-idle-or-end
 ;
@@ -364,7 +364,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         self-wait-done
     then
     c2f-12-flag1 story-flag-set
-    1 1 $20000 nav-group
+    1 barred-floor floor-on
     0 self-scripted
     self-idle-or-end
 ;
@@ -411,7 +411,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         $8000 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
-        0 0 $14 door-bits
+        0 part-hidden
         0 0 object-hidden
         1 0 object-hidden
         0 0 object-anim
@@ -424,7 +424,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         $8001 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
-        0 0 $14 door-bits
+        0 part-hidden
         0 0 object-hidden
         1 0 object-hidden
         0 1 object-anim
@@ -438,7 +438,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         self-wait-anim
     then
     0 self-noclip
-    0 1 $20000 nav-group
+    1 barred-floor floor-off
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
     0 avoid-prompt
@@ -493,7 +493,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
                 self-wait-done
             then
             c2f-12-flag1 story-flag-clear
-            0 1 $20000 nav-group
+            1 barred-floor floor-off
             0 self-scripted
             self-idle-or-end
         then

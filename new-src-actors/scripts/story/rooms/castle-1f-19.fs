@@ -2,21 +2,21 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-19
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-1f-19.enter ( -- )   \ 003FD9C0
     room-sounds
     $1A 1.0 0 bgm
     hewie-who char-here? 119 hewie-action? and if
-        0 0 8 nav-group
-        1 0 $B0 nav-group
+        0 solid-floor floor-off
+        0 keeps-fiona-off keeps-pursuers-off or floor-edge or floor-on
         hewie-who $12C char-on-tri? not if
             hewie-who $12C -12.0 -106.0 0 char-to-xz
             1800 2 hewie-anim
         then
     else
-        0 0 $30 nav-group
-        1 0 $88 nav-group
+        0 keeps-fiona-off keeps-pursuers-off or floor-off
+        0 solid-floor floor-edge or floor-on
         hewie-who 0 char-in-nav-group? if
             hewie-who $47 char-to-tri
         then
@@ -250,8 +250,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     $47 -12.0 -125.0 0 $FFFF $A self-move-to
     self-wait-done
     1 self-scripted
-    0 0 8 nav-group
-    1 0 $30 nav-group
+    0 solid-floor floor-off
+    0 keeps-fiona-off keeps-pursuers-off or floor-on
     $12C -12.0 -106.0 0 $204 5 self-move-to
     self-wait-done
     3600 2 hewie-anim
@@ -267,8 +267,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-anim
     0 0 hewie-anim
     0 0 hewie-do
-    0 0 $30 nav-group
-    1 0 8 nav-group
+    0 keeps-fiona-off keeps-pursuers-off or floor-off
+    0 solid-floor floor-on
     0 self-scripted
     self-idle-or-end
 ;
@@ -322,8 +322,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     0 0 hewie-do
     hewie-who $2F -90 char-to-tri-facing
     hewie-timid state-flag-clear
-    0 0 $30 nav-group
-    1 0 8 nav-group
+    0 keeps-fiona-off keeps-pursuers-off or floor-off
+    0 solid-floor floor-on
     0 self-scripted
     self-idle-or-end
 ;
@@ -348,7 +348,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         2 message   \ "Hewie's eyes glimmer through the thick shadow that surrounds him."
         wait-message
     else 0 ebit? not if
-        0 message   \ "There is a hole in the wall. I think I can see light on the other end. This must le..."
+        0 message   \ "There is a hole-floor in the wall. I think I can see light on the other end. This must le..."
         wait-message
         0 ebit-set
     else

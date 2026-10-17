@@ -2,13 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-4
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-2f-4.enter ( -- )   \ 0040F490
     room-sounds
-    1 0 $300000 nav-group
+    0 both-halves floor-on
     om2f-2-flag1 story-flag? if
-        0 1 $14 door-bits
+        0 part-shown
         2 1 object-hidden
     then
     om2f-4-viride-medallion story-flag? not if

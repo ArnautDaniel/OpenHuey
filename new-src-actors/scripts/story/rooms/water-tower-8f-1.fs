@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-8f-1
-USING: engine room-names story.words story.shared flag-names story-names ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ the screen fade (renderer +0x70) by script variable 1 with Hewie's light 0xF: byte 3 0 clear
 \ (0x808080), 2 full (0x80808080); 1 fades in by 0x10 a call and 3 back out, waiting (2),
@@ -70,40 +70,40 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     room-sounds
     $1B 1.0 0 bgm
     c7-second-event story-flag? not if
-        0 0 $14 door-bits
-        1 0 $14 door-bits
+        0 part-hidden
+        1 part-hidden
         8 1 object-hidden
         9 1 object-hidden
         $A 1 object-hidden
     else
-        0 1 $14 door-bits
-        1 1 $14 door-bits
+        0 part-shown
+        1 part-shown
     then
     wt8f-1-flag1 story-flag? not if
         2 3 var-set
-        2 1 $14 door-bits
-        3 0 $14 door-bits
+        2 part-shown
+        3 part-hidden
     else
-        2 0 $14 door-bits
-        3 1 $14 door-bits
+        2 part-hidden
+        3 part-shown
     then
     wt8f-1-flag3 story-flag? not if
         3 3 var-set
-        4 1 $14 door-bits
-        5 0 $14 door-bits
+        4 part-shown
+        5 part-hidden
     else
-        4 0 $14 door-bits
-        5 1 $14 door-bits
+        4 part-hidden
+        5 part-shown
     then
     wt8f-1-flag4 story-flag? not if
         4 3 var-set
-        6 1 $14 door-bits
-        7 0 $14 door-bits
+        6 part-shown
+        7 part-hidden
     else
-        6 0 $14 door-bits
-        7 1 $14 door-bits
+        6 part-hidden
+        7 part-shown
     then
-    8 1 $14 door-bits
+    8 part-shown
     0 water-tower-8f-1.cmd06
 ;
 
@@ -316,8 +316,8 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     then then then
     1 self-scripted
     1 self-noclip
-    0 0 8 nav-group
-    1 0 $30 nav-group
+    0 solid-floor floor-off
+    0 keeps-fiona-off keeps-pursuers-off or floor-on
     0 0 var? if
         $C4 -5.62 -11.6 20 $204 5 self-move-to
         self-wait-done
@@ -398,8 +398,8 @@ USING: engine room-names story.words story.shared flag-names story-names ;
             3 ebit? not if
                 hewie-who $38 char-on-nav-flags? not if
                     3 ebit-set
-                    0 0 $30 nav-group
-                    1 0 8 nav-group
+                    0 keeps-fiona-off keeps-pursuers-off or floor-off
+                    0 solid-floor floor-on
                 then
             then
             117 hewie-action? while
@@ -416,8 +416,8 @@ USING: engine room-names story.words story.shared flag-names story-names ;
                 $4C 61.9 -34.57 1.0 100 hewie-go-to
                 self-wait-done
             then then then
-            0 0 $30 nav-group
-            1 0 8 nav-group
+            0 keeps-fiona-off keeps-pursuers-off or floor-off
+            0 solid-floor floor-on
         then
     else
         hewie-bark
@@ -432,8 +432,8 @@ USING: engine room-names story.words story.shared flag-names story-names ;
             $4C 61.9 -34.57 1.0 100 hewie-go-to
             self-wait-done
         then then then
-        0 0 $30 nav-group
-        1 0 8 nav-group
+        0 keeps-fiona-off keeps-pursuers-off or floor-off
+        0 solid-floor floor-on
     then
     0 ebit-clear
     1 ebit-clear
@@ -500,7 +500,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     stalker-who $C5 0 room-doors-state
     stalker-who $C6 0 room-doors-state
     stalker-who $C7 0 room-doors-state
-    1 0 8 nav-group
+    0 solid-floor floor-on
     0 ebit-clear
     1 ebit-clear
     2 ebit-clear
@@ -567,7 +567,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     $F $44 fade
     $FF 1.0 0 bgm
     wait-fade
-    8 0 $14 door-bits
+    8 part-hidden
     1 water-tower-8f-1.cmd06
     0 0.0 0.0 0.0 0.0 event-camera
     world-frozen state-flag-clear
@@ -588,8 +588,8 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     1 result? if
         scene-play
     then
-    1 1 $14 door-bits
-    8 1 $14 door-bits
+    1 part-shown
+    8 part-shown
     0 water-tower-8f-1.cmd06
     $100 door-open-clear
     $100 door-lock
@@ -603,7 +603,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     $FE $C7 89 2 stalker-to-room
     stalker-who $59 -58.86 10.32 0 char-to-xz
     0 water-tower-8f-1.cmd03
-    1 0 8 nav-group
+    0 solid-floor floor-on
     0 ebit-clear
     1 ebit-clear
     2 ebit-clear
@@ -639,7 +639,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
                 yield
             else
                 0 6 -1.0 632.0 31.0 0 0 sound
-                0 1 $14 door-bits
+                0 part-shown
                 $23 item-use
                 6 ebit-set
                 2 0 char-remove
@@ -697,8 +697,8 @@ USING: engine room-names story.words story.shared flag-names story-names ;
             fiona-who 8 6 char-sound
             0 water-tower-8f-1.cmd04
             3 water-tower-8f-1.cmd04
-            2 0 $14 door-bits
-            3 1 $14 door-bits
+            2 part-hidden
+            3 part-shown
             wt8f-1-flag1 story-flag-set
         then
     else 5 1 var? if
@@ -709,8 +709,8 @@ USING: engine room-names story.words story.shared flag-names story-names ;
             fiona-who 8 6 char-sound
             1 water-tower-8f-1.cmd04
             4 water-tower-8f-1.cmd04
-            4 0 $14 door-bits
-            5 1 $14 door-bits
+            4 part-hidden
+            5 part-shown
             wt8f-1-flag3 story-flag-set
         then
     else 5 2 var? if
@@ -721,8 +721,8 @@ USING: engine room-names story.words story.shared flag-names story-names ;
             fiona-who 8 6 char-sound
             2 water-tower-8f-1.cmd04
             5 water-tower-8f-1.cmd04
-            6 0 $14 door-bits
-            7 1 $14 door-bits
+            6 part-hidden
+            7 part-shown
             wt8f-1-flag4 story-flag-set
         then
     then then then
@@ -904,11 +904,11 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 
 : water-tower-8f-1.act13 ( -- )   \ 00430410
     self-wait-done
-    0 1 $14 door-bits
-    2 1 $14 door-bits
-    4 1 $14 door-bits
-    6 1 $14 door-bits
-    8 1 $14 door-bits
+    0 part-shown
+    2 part-shown
+    4 part-shown
+    6 part-shown
+    8 part-shown
     0 20000.0 camera-value
     $25 partner-load
     2 char-start
@@ -934,12 +934,12 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 
 : water-tower-8f-1.act14 ( -- )   \ 004304C0
     self-wait-done
-    0 1 $14 door-bits
-    1 1 $14 door-bits
-    3 1 $14 door-bits
-    5 1 $14 door-bits
-    7 1 $14 door-bits
-    8 1 $14 door-bits
+    0 part-shown
+    1 part-shown
+    3 part-shown
+    5 part-shown
+    7 part-shown
+    8 part-shown
     0 20000.0 camera-value
     $25 partner-load
     2 char-start
@@ -967,12 +967,12 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 
 : water-tower-8f-1.act15 ( -- )   \ 00430580
     self-wait-done
-    0 1 $14 door-bits
-    1 1 $14 door-bits
-    3 1 $14 door-bits
-    5 1 $14 door-bits
-    7 1 $14 door-bits
-    8 1 $14 door-bits
+    0 part-shown
+    1 part-shown
+    3 part-shown
+    5 part-shown
+    7 part-shown
+    8 part-shown
     0 20000.0 camera-value
     $17 3 $FF char-load
     3 char-start
@@ -999,12 +999,12 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 
 : water-tower-8f-1.act16 ( -- )   \ 00430630
     self-wait-done
-    0 1 $14 door-bits
-    1 1 $14 door-bits
-    3 1 $14 door-bits
-    5 1 $14 door-bits
-    7 1 $14 door-bits
-    8 1 $14 door-bits
+    0 part-shown
+    1 part-shown
+    3 part-shown
+    5 part-shown
+    7 part-shown
+    8 part-shown
     0 20000.0 camera-value
     $17 3 $FF char-load
     $B 4 $FF char-load

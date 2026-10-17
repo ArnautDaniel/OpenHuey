@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-6
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names floor-flags ;
 
 \ room 0x104: three hanging things that Fiona pushes as she walks by, swinging (swing_three).
 : chaos-forest-6.cmd00 ( b0 -- )  swing-three ;
@@ -175,13 +175,13 @@ USING: room-names story.words story.shared flag-names ;
     0 self-scripted
     0 self-noclip
     stalkers-stay state-flag-clear
-    0 0 8 nav-group
+    0 solid-floor floor-off
     self-idle-or-end
 ;
 
 : chaos-forest-6.act00 ( -- )   \ 00417DE0
     stalkers-stay state-flag-set
-    1 0 8 nav-group
+    0 solid-floor floor-on
     2 ebit-clear
     1 self-scripted
     1 self-noclip
@@ -223,7 +223,7 @@ USING: room-names story.words story.shared flag-names ;
             0 self-scripted
             0 self-noclip
             stalkers-stay state-flag-clear
-            0 0 8 nav-group
+            0 solid-floor floor-off
             self-idle-or-end
         then
     again

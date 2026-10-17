@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-16
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x1A (D_003FC660): the fan turns
 : castle-1f-16.cmd00 ( -- )  fan-turn ;
@@ -14,10 +14,10 @@ USING: room-names story.words story.shared flag-names story-names ;
     0 $F1 0 action
     castle-1f-16.cmd01
     c1f-16-flag2 story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
         0 0 1 effect-string
     else
-        0 0 $14 door-bits
+        0 part-hidden
         0 1 1 effect-string
         1 noise-level
     then
@@ -134,10 +134,10 @@ USING: room-names story.words story.shared flag-names story-names ;
     6 2 -1 1 chars-area-camera
     7 2 -1 1 chars-area-camera
     c1f-16-flag2 story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
         0 0 1 effect-string
     else
-        0 0 $14 door-bits
+        0 part-hidden
         0 1 1 effect-string
     then
 ;

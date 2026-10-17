@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e0
-USING: room-names story.words story.shared flag-names story.clock ;
+USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 
 \ RoomE0_Cmd00
 : off-map-e0.cmd00 ( -- )  fiona-who 0 char-to-exit ;   \ (Fiona to exit 0: Character_ChooseExit)
@@ -21,9 +21,9 @@ USING: room-names story.words story.shared flag-names story.clock ;
 
 : off-map-e0.enter ( -- )   \ 004480B0
     room-sounds
-    0 1 $14 door-bits
+    0 part-shown
     0 $F1 0 action
-    1 0 $14 door-bits
+    1 part-hidden
     hewie-controlled? if
         6 ebit-set
     then

@@ -6,14 +6,14 @@
 \ He is spawned with the game but comes in only when told (`join-fiona`: the story, or the
 \ console); `part-from-fiona` sends him off.
 IN: hewie
-USING: engine actors messages common paths vectors saves hewie-names hewie.state hewie.body hewie.anims hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.mind hewie.scripted hewie.fetch ;
+USING: engine actors messages common paths vectors saves hewie-names hewie.state hewie.body hewie.anims hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.mind hewie.scripted hewie.fetch floor-flags ;
 
 \ at heel: behind her and a little to her side (where she is when that isn't floor), her way
 create heel-at /vec allot
 : heel ( -- )
     her body-yaw {: F: a :}  fiona-at vec@ {: F: x y z :}
     x  a fsin -14e f*  a fcos 8e f* f+  f+   y   z  a fcos -14e f*  a fsin -8e f* f+  f+  heel-at vec!
-    heel-at his-floor v-tri-in dup 0< if  drop  heel-at fiona-at vec-copy  her body-tri  then  {: tri :}
+    heel-at hewie-floor v-tri-in dup 0< if  drop  heel-at fiona-at vec-copy  her body-tri  then  {: tri :}
     room-id tri heel-at vec@ body-place  a his-yaw! ;
 : along? ( -- flag )  self body? ;   \ in the game (his body in the house)
 : join ( -- )
@@ -41,7 +41,7 @@ behaviour hewie-own
       6 0 do  16 i cells his-skill + !  loop   \ (Hewie_LoadState: his skills at fetching, middling)
       s" O_HEW/HEW_000" actor-load dup his-model !  $3D5F90 motion-table   \ (his motion table: fades and flags)
       0 him-model act.visible l!
-      2.5e 5e body-size  his-floor body-mask!  body-off
+      2.5e 5e body-size  hewie-floor body-mask!  body-off
       s" fiona" actor-named his-fiona !
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe write-save
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe frame-end

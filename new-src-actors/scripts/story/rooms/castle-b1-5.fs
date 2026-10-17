@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-5
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x0B (Room0B_Cond00_ptmf): the player is 20 .. 120 from (x, z) = s16 bytes 3..4, 5..6
 : castle-b1-5.cond00? ( b0 b1 b2 b3 -- flag )   \ (x, z: s16 bytes 3..4, 5..6)
@@ -12,8 +12,8 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-b1-5.enter ( -- )   \ 003F43C0
     room-sounds
-    1 0 $1000000 nav-group
-    1 0 $10000000 nav-group
+    0 keeps-hewie-off floor-on
+    0 hole-floor floor-on
     fiona-who 0 char-file-load
     1 $2300 sound-volume
 ;

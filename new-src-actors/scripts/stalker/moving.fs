@@ -3,7 +3,7 @@
 \ and stepped onto it), turning on the spot when the way goes off to one side, his walk for his
 \ mode, standing.
 IN: stalker.moving
-USING: engine game-state actors messages common facts flag-names paths vectors stalker-names stalker.state stalker.senses stalker.tables stalker.anims ;
+USING: engine game-state actors messages common facts flag-names paths vectors stalker-names stalker.state stalker.senses stalker.tables stalker.anims floor-flags ;
 
 : model ( -- a )  my-model @ actor ;
 : sound ( id bank -- )   \ Pursuer_Sound: at him (not while the world is held, nor silenced)
@@ -16,7 +16,6 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
 \ the second) the sound his kit gives that motion for it (bank 7) - a blow's swish, a fall's
 \ thud; a fall onto water - his triangle's water bits - a splash instead (bank 6) ----
 $1 constant first-key   $10 constant second-key
-$2008000 constant water-floor
 $1D constant splash-sound    \ (bank 6)
 $8000 constant soundless-anims   \ (animations with the top bit: none of their sounds)
 : key-sound ( key -- n | -1 )   \ (0 the first, 1 the second)
@@ -72,7 +71,6 @@ $8000 constant soundless-anims   \ (animations with the top bit: none of their s
 \ wood 2, stone 4, metal 6, grass 8, water $14 in bank 6), higher the faster he goes (0.6 .. 1.4
 \ a frame), and a noise the others hear (louder striding out). Standing still he is on both
 \ feet and his count starts over. In rooms 7 / $106 the water ripples ----
-$8000 constant wood-floor   $10000 constant stone-floor   $18000 constant metal-floor   $2000000 constant grass-floor
 $1C constant step-noise   $1F constant stride-noise
 create left-at /vec allot  create right-at /vec allot
 : feet ( -- l r )   \ (Motion_FootPos, a frame back)

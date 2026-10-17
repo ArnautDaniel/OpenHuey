@@ -2,15 +2,15 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-4
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-1f-4.enter ( -- )   \ 004070F0
     room-sounds
     $12 1.0 0 bgm
     om1f-4-flag1 story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
     else
-        1 1 $14 door-bits
+        1 part-shown
     then
     $1C 3 char-to-tri
     2 0 var-set
@@ -27,59 +27,59 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 -51.07 1.0 19.59 flicker-sprite
     then
     1 $2300 sound-volume
-    1 $77 $10000000 nav-tri-flags
-    1 $48 $10000000 nav-tri-flags
-    1 $75 $10000000 nav-tri-flags
-    1 $46 $10000000 nav-tri-flags
-    1 $52 $10000000 nav-tri-flags
-    1 $81 $10000000 nav-tri-flags
-    1 2 $10000000 nav-tri-flags
-    1 $61 $10000000 nav-tri-flags
-    1 $70 $10000000 nav-tri-flags
-    1 $3E $10000000 nav-tri-flags
-    1 $39 $10000000 nav-tri-flags
-    1 0 $10000000 nav-tri-flags
-    1 $71 $10000000 nav-tri-flags
-    1 $3F $10000000 nav-tri-flags
-    1 $4B $10000000 nav-tri-flags
-    1 $7A $10000000 nav-tri-flags
-    1 $4A $10000000 nav-tri-flags
-    1 $79 $10000000 nav-tri-flags
-    1 $45 $10000000 nav-tri-flags
-    1 $74 $10000000 nav-tri-flags
-    1 $5F $10000000 nav-tri-flags
-    1 $85 $10000000 nav-tri-flags
-    1 $51 $10000000 nav-tri-flags
-    1 $80 $10000000 nav-tri-flags
-    1 $4C $10000000 nav-tri-flags
-    1 $7B $10000000 nav-tri-flags
-    1 $3C $10000000 nav-tri-flags
-    1 $6F $10000000 nav-tri-flags
-    1 $4E $10000000 nav-tri-flags
-    1 $7D $10000000 nav-tri-flags
-    1 $86 $10000000 nav-tri-flags
-    1 $60 $10000000 nav-tri-flags
-    1 $54 $10000000 nav-tri-flags
-    1 $83 $10000000 nav-tri-flags
-    1 6 $10000000 nav-tri-flags
-    1 $63 $10000000 nav-tri-flags
-    1 $14 $10000000 nav-tri-flags
-    1 $6D $10000000 nav-tri-flags
-    1 $4D $10000000 nav-tri-flags
-    1 $7C $10000000 nav-tri-flags
-    1 $18 $10000000 nav-tri-flags
-    1 $23 $10000000 nav-tri-flags
-    1 $41 $10000000 nav-tri-flags
-    1 $72 $10000000 nav-tri-flags
-    1 $76 $10000000 nav-tri-flags
-    1 $47 $10000000 nav-tri-flags
-    1 $78 $10000000 nav-tri-flags
-    1 $49 $10000000 nav-tri-flags
-    1 $53 $10000000 nav-tri-flags
-    1 $82 $10000000 nav-tri-flags
-    1 $5A $10000000 nav-tri-flags
-    1 $84 $10000000 nav-tri-flags
-    1 $3B $10000000 nav-tri-flags
+    $77 hole-floor tri-floor-on
+    $48 hole-floor tri-floor-on
+    $75 hole-floor tri-floor-on
+    $46 hole-floor tri-floor-on
+    $52 hole-floor tri-floor-on
+    $81 hole-floor tri-floor-on
+    2 hole-floor tri-floor-on
+    $61 hole-floor tri-floor-on
+    $70 hole-floor tri-floor-on
+    $3E hole-floor tri-floor-on
+    $39 hole-floor tri-floor-on
+    0 hole-floor tri-floor-on
+    $71 hole-floor tri-floor-on
+    $3F hole-floor tri-floor-on
+    $4B hole-floor tri-floor-on
+    $7A hole-floor tri-floor-on
+    $4A hole-floor tri-floor-on
+    $79 hole-floor tri-floor-on
+    $45 hole-floor tri-floor-on
+    $74 hole-floor tri-floor-on
+    $5F hole-floor tri-floor-on
+    $85 hole-floor tri-floor-on
+    $51 hole-floor tri-floor-on
+    $80 hole-floor tri-floor-on
+    $4C hole-floor tri-floor-on
+    $7B hole-floor tri-floor-on
+    $3C hole-floor tri-floor-on
+    $6F hole-floor tri-floor-on
+    $4E hole-floor tri-floor-on
+    $7D hole-floor tri-floor-on
+    $86 hole-floor tri-floor-on
+    $60 hole-floor tri-floor-on
+    $54 hole-floor tri-floor-on
+    $83 hole-floor tri-floor-on
+    6 hole-floor tri-floor-on
+    $63 hole-floor tri-floor-on
+    $14 hole-floor tri-floor-on
+    $6D hole-floor tri-floor-on
+    $4D hole-floor tri-floor-on
+    $7C hole-floor tri-floor-on
+    $18 hole-floor tri-floor-on
+    $23 hole-floor tri-floor-on
+    $41 hole-floor tri-floor-on
+    $72 hole-floor tri-floor-on
+    $76 hole-floor tri-floor-on
+    $47 hole-floor tri-floor-on
+    $78 hole-floor tri-floor-on
+    $49 hole-floor tri-floor-on
+    $53 hole-floor tri-floor-on
+    $82 hole-floor tri-floor-on
+    $5A hole-floor tri-floor-on
+    $84 hole-floor tri-floor-on
+    $3B hole-floor tri-floor-on
 ;
 
 : old-mansion-1f-4.char-enter ( -- )   \ 00407300
@@ -200,8 +200,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     1 $FF 8 rumble
     $F04 self-anim
     self-wait-anim
-    0 0 $14 door-bits
-    1 1 $14 door-bits
+    0 part-hidden
+    1 part-shown
     $42 0 105 $80 5 -1 $68 40.0 creature-place
     $42 0 23 $80 10 -1 $5A 0.0 creature-place
     om1f-4-flag1 story-flag-set

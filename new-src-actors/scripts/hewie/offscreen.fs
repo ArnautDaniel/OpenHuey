@@ -4,7 +4,7 @@
 \ room he is put there (Hewie_Arrive). Off screen nothing moves him but time: each stretch to
 \ the next door takes its length at his pace.
 IN: hewie.offscreen
-USING: engine actors common paths vectors messages hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.model hewie.moving hewie.states ;
+USING: engine actors common paths vectors messages hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.model hewie.moving hewie.states floor-flags ;
 
 defer when-idle ( -- )   ' noop is when-idle     \ Hewie_WhenIdle (hewie.mind)
 : avoid-clear ( -- )  his-avoid 13 cells 0 fill ;
@@ -105,7 +105,7 @@ create ex-at /vec allot
 : fiona-left ( exit -- )
     his-room room-id <> if  drop exit  then
     his-hp @ 0= if  1 hp!  hurt-cond cond!  then
-    0 his-2b !  his-floor body-mask!
+    0 his-2b !  hewie-floor body-mask!
     avoid-clear  0 his-at-door !  1 his-hide !
     dup 0< 0= if  dup exit-reachable? if  0 his-hide !  1 his-at-door !  then  then
     his-hide @ if

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-2
-USING: actors messages room-names story.words story.shared flag-names story-names ;
+USING: actors messages room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ the room object pstr_ori's +0x24 by byte 3: 0 set (37.978 with progress flag 0x12, else 11), 1
 \ up 0.25 to 37.978 (then event +0x5C (2)), 2 up 0.25, else down 0.25
@@ -60,38 +60,38 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 
 : castle-1f-2.enter ( -- )   \ 003EEDF0
     room-sounds
-    0 1 $14 door-bits
-    5 1 $14 door-bits
-    1 3 $38 nav-group
+    0 part-shown
+    5 part-shown
+    3 solid-floor keeps-fiona-off or keeps-pursuers-off or floor-on
     0 castle-1f-2.cmd00
     c1f-2-flag1 story-flag? not if
-        1 4 8 nav-group
+        4 solid-floor floor-on
         2 0 object-hidden
-        6 0 $14 door-bits
+        6 part-hidden
     else
         2 1 object-hidden
-        6 1 $14 door-bits
+        6 part-shown
     then
     c1f-2-breakable1-broken story-flag? not if
-        1 1 $8000000 nav-group
-        1 1 $14 door-bits
-        2 0 $14 door-bits
+        1 keeps-people-off floor-on
+        1 part-shown
+        2 part-hidden
     else
-        0 1 $8000000 nav-group
-        1 0 $14 door-bits
-        2 1 $14 door-bits
+        1 keeps-people-off floor-off
+        1 part-hidden
+        2 part-shown
         c1f-2-viola-medallion story-flag? not if
             0 215.5 0.0 2.6 flicker-sprite
         then
     then
     c1f-2-breakable2-broken story-flag? not if
-        1 2 $8000000 nav-group
-        3 1 $14 door-bits
-        4 0 $14 door-bits
+        2 keeps-people-off floor-on
+        3 part-shown
+        4 part-hidden
     else
-        0 2 $8000000 nav-group
-        3 0 $14 door-bits
-        4 1 $14 door-bits
+        2 keeps-people-off floor-off
+        3 part-hidden
+        4 part-shown
         got-onion story-flag? not if
             2 290.5 0.0 -99.5 flicker-sprite
         then
@@ -109,12 +109,12 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     $E 122.8 19.0 103.2 $E $80 $80 $80 $40 specks
     $C 63.3 19.0 151.6 $10 $80 $80 $80 $40 specks
     8 34.2 19.0 92.1 $C $80 $80 $80 $40 specks
-    1 $38B $10000000 nav-tri-flags
-    1 $1B9 $10000000 nav-tri-flags
-    1 $38C $10000000 nav-tri-flags
-    1 $38D $10000000 nav-tri-flags
-    1 $386 $10000000 nav-tri-flags
-    1 $38E $10000000 nav-tri-flags
+    $38B hole-floor tri-floor-on
+    $1B9 hole-floor tri-floor-on
+    $38C hole-floor tri-floor-on
+    $38D hole-floor tri-floor-on
+    $386 hole-floor tri-floor-on
+    $38E hole-floor tri-floor-on
 ;
 
 : castle-1f-2.act0E ( -- )   \ 003EFED0
@@ -537,9 +537,9 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         0 215.5 -1.0 2.6 5 8 1 zone
         self-who 0 char-in-zone? if
             c1f-2-breakable1-broken story-flag-set
-            0 1 $8000000 nav-group
-            1 0 $14 door-bits
-            2 1 $14 door-bits
+            1 keeps-people-off floor-off
+            1 part-hidden
+            2 part-shown
             215.5 -1.0 2.6 0 -2145378272 0 0.0 shards-at
             3 6 215.5 -1.0 2.6 0 0 sound
             $40 $377 noise
@@ -555,9 +555,9 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         1 290.5 -1.0 -99.5 5 8 1 zone
         self-who 1 char-in-zone? if
             c1f-2-breakable2-broken story-flag-set
-            0 2 $8000000 nav-group
-            3 0 $14 door-bits
-            4 1 $14 door-bits
+            2 keeps-people-off floor-off
+            3 part-hidden
+            4 part-shown
             290.5 -1.0 -99.5 1 -2145378272 0 0.0 shards-at
             $88 5 290.5 -1.0 -99.5 0 0 sound
             $40 $380 noise
@@ -700,10 +700,10 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     self-wait-done
     $353 37.0 69.0 90 $FFFF $A self-move-to
     self-wait-done
-    0 0 8 nav-group
+    0 solid-floor floor-off
     $267 52.0 69.0 90 $204 5 self-move-to
     self-wait-done
-    1 3 8 nav-group
+    3 solid-floor floor-on
     -1 self-idle-anim
     0 self-scripted
     room-flag-2d state-flag-clear
@@ -738,10 +738,10 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     room-flag-2d state-flag-set
     $15 ebit-clear
     1 self-scripted
-    0 3 8 nav-group
+    3 solid-floor floor-off
     $353 40.0 69.0 -90 $204 5 self-move-to
     self-wait-done
-    1 0 8 nav-group
+    0 solid-floor floor-on
     $100 self-anim
     self-wait-anim
     1 self-anim
@@ -869,14 +869,14 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     world-frozen state-flag-set
     1 self-scripted
     1 10.0 20.0 0.0 0.0 event-camera
-    5 0 $14 door-bits
+    5 part-hidden
     4 message   \ "There are beautiful flowers blooming here."
     wait-message
     self-frames-reset
     self-wait-16
     world-frozen state-flag-clear
     0 0.0 0.0 0.0 0.0 event-camera
-    5 1 $14 door-bits
+    5 part-shown
     0 self-scripted
     self-idle-or-end
 ;
@@ -889,7 +889,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         1 castle-1f-2.cmd00
         yield
     repeat
-    0 4 8 nav-group
+    4 solid-floor floor-off
     begin
         2 ebit? not while
         1 castle-1f-2.cmd00

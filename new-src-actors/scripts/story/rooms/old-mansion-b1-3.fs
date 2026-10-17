@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-3
-USING: engine actors messages story.state room-names story.words story.shared flag-names story-names ;
+USING: engine actors messages story.state room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ four room objects (Room4C_ObjectNames) pressed in (+0x24 down 0.2 to -0.7, a sound as each
 \ starts) while event flag i is set, else back up 0.2 to 0; byte 3 0 all reset
@@ -67,9 +67,9 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         $F 0 object-hidden
         $10 1 object-hidden
     then
-    2 1 $14 door-bits
+    2 part-shown
     $E 1 object-hidden
-    5 0 $14 door-bits
+    5 part-hidden
     omb1-3-camomile story-flag? not if
         5 -20.96 8.5 5.57 flicker-sprite
     then
@@ -777,7 +777,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         $8000 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
-        2 0 $14 door-bits
+        2 part-hidden
         $E 0 object-hidden
         $E 0 object-anim
         self-frames-reset

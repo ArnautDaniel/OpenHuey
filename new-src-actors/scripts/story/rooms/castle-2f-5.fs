@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-5
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x32: room effect slot 1 made anew as the first TV screen (TvScreenA).
 : castle-2f-5.cmd00 ( -- )  1 0 tv-in ;   \ (room effect 1 the TV showing the screen)
@@ -26,10 +26,10 @@ USING: room-names story.words story.shared flag-names story-names ;
     room-sounds
     castle-2f-5.cmd00
     c2f-3-tv-examined story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
         1 0 1 effect-string
     else
-        0 0 $14 door-bits
+        0 part-hidden
         1 1 1 effect-string
         1 noise-level
     then
@@ -42,19 +42,19 @@ USING: room-names story.words story.shared flag-names story-names ;
     0 castle-2f-5.cmd02
     0 castle-2f-5.cmd04
     saturnus-hint-on story-flag? not if
-        1 1 $14 door-bits
-        2 0 $14 door-bits
-        3 0 $14 door-bits
-        4 0 $14 door-bits
-        5 0 $14 door-bits
-        6 0 $14 door-bits
+        1 part-shown
+        2 part-hidden
+        3 part-hidden
+        4 part-hidden
+        5 part-hidden
+        6 part-hidden
     else
-        1 0 $14 door-bits
-        2 0 $14 door-bits
-        3 0 $14 door-bits
-        4 0 $14 door-bits
-        5 1 $14 door-bits
-        6 1 $14 door-bits
+        1 part-hidden
+        2 part-hidden
+        3 part-hidden
+        4 part-hidden
+        5 part-shown
+        6 part-shown
     then
     $E 1 object-hidden
     $F 1 object-hidden
@@ -187,10 +187,10 @@ USING: room-names story.words story.shared flag-names story-names ;
         1 exit-prepare
     then
     c2f-3-tv-examined story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
         1 0 1 effect-string
     else
-        0 0 $14 door-bits
+        0 part-hidden
         1 1 1 effect-string
     then
     over-music-b story-flag? saturnus-hint-on story-flag? not and if
@@ -591,12 +591,12 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 : castle-2f-5.act09 ( -- )   \ 0042B920
-    1 1 $14 door-bits
-    2 0 $14 door-bits
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 0 $14 door-bits
-    6 0 $14 door-bits
+    1 part-shown
+    2 part-hidden
+    3 part-hidden
+    4 part-hidden
+    5 part-hidden
+    6 part-hidden
     $E 1 object-hidden
     $F 1 object-hidden
     $10 1 object-hidden
@@ -624,12 +624,12 @@ USING: room-names story.words story.shared flag-names story-names ;
         $A03 cutscene-cue-reached? not while
         yield
     repeat
-    1 0 $14 door-bits
-    2 1 $14 door-bits
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 0 $14 door-bits
-    6 0 $14 door-bits
+    1 part-hidden
+    2 part-shown
+    3 part-hidden
+    4 part-hidden
+    5 part-hidden
+    6 part-hidden
     begin
         $B cutscene-shot? not while
         yield
@@ -654,32 +654,32 @@ USING: room-names story.words story.shared flag-names story-names ;
         $A70 cutscene-cue-reached? not while
         yield
     repeat
-    1 0 $14 door-bits
-    2 0 $14 door-bits
-    3 1 $14 door-bits
-    4 0 $14 door-bits
-    5 0 $14 door-bits
-    6 0 $14 door-bits
+    1 part-hidden
+    2 part-hidden
+    3 part-shown
+    4 part-hidden
+    5 part-hidden
+    6 part-hidden
     begin
         $A89 cutscene-cue-reached? not while
         yield
     repeat
-    1 0 $14 door-bits
-    2 0 $14 door-bits
-    3 0 $14 door-bits
-    4 1 $14 door-bits
-    5 0 $14 door-bits
-    6 0 $14 door-bits
+    1 part-hidden
+    2 part-hidden
+    3 part-hidden
+    4 part-shown
+    5 part-hidden
+    6 part-hidden
     begin
         $AB7 cutscene-cue-reached? not while
         yield
     repeat
-    1 0 $14 door-bits
-    2 0 $14 door-bits
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 1 $14 door-bits
-    6 1 $14 door-bits
+    1 part-hidden
+    2 part-hidden
+    3 part-hidden
+    4 part-hidden
+    5 part-shown
+    6 part-shown
     $E 0 object-hidden
     $F 0 object-hidden
     $10 0 object-hidden
@@ -711,23 +711,23 @@ USING: room-names story.words story.shared flag-names story-names ;
         $BF3 cutscene-cue-reached? not while
         yield
     repeat
-    1 0 $14 door-bits
-    2 0 $14 door-bits
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 1 $14 door-bits
-    6 0 $14 door-bits
+    1 part-hidden
+    2 part-hidden
+    3 part-hidden
+    4 part-hidden
+    5 part-shown
+    6 part-hidden
     0 castle-2f-5.cmd04
     begin
         $CD2 cutscene-cue-reached? not while
         yield
     repeat
-    1 0 $14 door-bits
-    2 0 $14 door-bits
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 1 $14 door-bits
-    6 1 $14 door-bits
+    1 part-hidden
+    2 part-hidden
+    3 part-hidden
+    4 part-hidden
+    5 part-shown
+    6 part-shown
     begin
         $10 cutscene-shot? not while
         4 castle-2f-5.cmd04
@@ -1007,12 +1007,12 @@ USING: room-names story.words story.shared flag-names story-names ;
     1 wait-counter
     2 counter-set
     force-calm state-flag-clear
-    1 0 $14 door-bits
-    2 0 $14 door-bits
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 1 $14 door-bits
-    6 1 $14 door-bits
+    1 part-hidden
+    2 part-hidden
+    3 part-hidden
+    4 part-hidden
+    5 part-shown
+    6 part-shown
     subscreen-locked state-flag-clear
     $231 item-give
     $F $51 fade
@@ -1214,12 +1214,12 @@ USING: room-names story.words story.shared flag-names story-names ;
     0 $F1 $12 action
     0 castle-2f-5.cmd02
     0 castle-2f-5.cmd04
-    1 1 $14 door-bits
-    2 0 $14 door-bits
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 0 $14 door-bits
-    6 0 $14 door-bits
+    1 part-shown
+    2 part-hidden
+    3 part-hidden
+    4 part-hidden
+    5 part-hidden
+    6 part-hidden
     $E 1 object-hidden
     $F 1 object-hidden
     $10 1 object-hidden

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-13
-USING: engine room-names story.words story.shared flag-names story-names ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x08 (Room08_Cmd00_ptmf): the cutscene director's +0x6C 3 (byte 3 0) or 2
 : castle-1f-13.cmd00 ( b0 -- )   \ (the scene's cast leaves actor 3 (b0 0) or 2 be: Cutscene_Mark82)
@@ -22,9 +22,9 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 
 : castle-1f-13.enter ( -- )   \ 003F2500
     0 $35 castle-1f-13.cond00? if
-        0 1 $14 door-bits
+        0 part-shown
     else
-        1 1 $14 door-bits
+        1 part-shown
     then
     found-file-227 story-flag? if
         found-file-227-2 story-flag? not if

@@ -13,7 +13,7 @@
 \ panic's height - or a hard blow; crouched under it, it passes over) - and else its debris
 \ where it lands. Its impact: a noise where he stands.
 IN: stalker.riccardo
-USING: engine game-state actors messages common facts flag-names paths vectors stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.chase stalker.pursue stalker.names stalker.anims stalker.sounds effects ;
+USING: engine game-state actors messages common facts flag-names paths vectors stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.chase stalker.pursue stalker.names stalker.anims stalker.sounds effects floor-flags ;
 
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
 \ his waits (his kit's): frames walking, stalking, walking once seen, stalking when far, the
@@ -105,7 +105,6 @@ defer ric-begin ( -- )
 \ floor there; aimed level straight ahead to where the floor gives out, 15 up - none against a
 \ wall. Its debris there: a brown cloud (Riccardo_Debris) ----
 $31 constant gun-bone
-$80 constant floor-edge   $4000 constant wall-floor
 create hit-at /vec allot   create probe /vec allot
 : slam? ( -- flag )  anim @ dup shot-down-anim = over shot-down-2-anim = or over aim-down-anim = or  swap taunt-anim = or ;
 : swing? ( -- flag )  anim @ dup swing-anim = swap swing-2-anim = or ;

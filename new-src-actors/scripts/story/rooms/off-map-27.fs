@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-27
-USING: actors messages items room-names story.words story.shared flag-names story-names ;
+USING: actors messages items room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ the items 0x91 / 0x92, by byte 3: 0 which of them Fiona lacks (one each) kept in event var 0
 \ (0x91 low byte, 0x92 the next), and event +0x5C(3) when any; 1 they are given back, event
@@ -30,7 +30,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
         then
     then
     fg-3-flag3 story-flag? if
-        0 1 $14 door-bits
+        0 part-shown
     then
 ;
 

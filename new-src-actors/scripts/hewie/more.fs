@@ -3,7 +3,7 @@
 \ attack; stepping away from his target; pushed back or out by a door; at one of the cast;
 \ keeping near his target; round to its flank.
 IN: hewie.more
-USING: engine game-state actors messages common facts paths vectors flag-names hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states hewie.fight ;
+USING: engine game-state actors messages common facts paths vectors flag-names hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states hewie.fight floor-flags ;
 
 \ ---- sit-then-act (the story's): once he has stopped, sitting a while (30 frames), then up and
 \ on to the action it gave (Hewie_State23D8 / State1C58) ----
@@ -30,7 +30,7 @@ create behind-at /vec allot
     ox c f*  oz s f* f+  fiona-at v.x sf@ f+  behind-at v.x sf!
     oz c f*  ox s f* f-  fiona-at v.z sf@ f+  behind-at v.z sf!
     fiona-at v.y sf@ behind-at v.y sf!
-    behind-at his-floor v-tri-in dup 0< if  drop  behind-at fiona-at vec-copy  her body-tri  then ;
+    behind-at hewie-floor v-tri-in dup 0< if  drop  behind-at fiona-at vec-copy  her body-tri  then ;
 : facing-away? ( -- flag )  his-heading f@ pi f+ his-yaw f- angle-wrap fabs pi f2/ f< ;
 : st-keep-behind ( -- )
     her-with? 0= fiona-busy? or if  to-default exit  then
@@ -52,7 +52,7 @@ create behind-at /vec allot
 
 \ ---- back-on-floor-act: off the floor he may stand on - back toward his spot 0.4 a frame,
 \ facing it; on it again, himself (Hewie_StateBackOnMesh) ----
-: on-his-floor? ( -- flag )  his-tri dup 0< if  drop false exit  then  nav-flags his-floor and 0= ;
+: on-his-floor? ( -- flag )  his-tri dup 0< if  drop false exit  then  nav-flags hewie-floor and 0= ;
 : st-back-on-mesh ( -- )
     on-his-floor? if  0 his-2d !  0 his-2b !  to-default exit  then
     1 his-no-root !

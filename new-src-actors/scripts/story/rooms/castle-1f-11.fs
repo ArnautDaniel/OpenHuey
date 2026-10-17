@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-11
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x03 (Room03_Cmd00_ptmf): three objects turned (-60, -60 degrees about x; -90 about z)
 : castle-1f-11.cmd00 ( -- )   \ (the drawbridge's two halves -60 degrees about x, the lever -90 about z)
@@ -24,37 +24,37 @@ USING: room-names story.words story.shared flag-names story-names ;
         castle-1f-11.cmd00
     then
     c1f-11-breakable1-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
         c1f-11-beef-jerky story-flag? not if
             0 72.5 49.0 8.5 flicker-sprite
         then
     then
     c1f-11-breakable2-broken story-flag? not if
-        1 2 $8000000 nav-group
-        3 1 $14 door-bits
-        2 0 $14 door-bits
+        2 keeps-people-off floor-on
+        3 part-shown
+        2 part-hidden
     else
-        0 2 $8000000 nav-group
-        3 0 $14 door-bits
-        2 1 $14 door-bits
+        2 keeps-people-off floor-off
+        3 part-hidden
+        2 part-shown
         c1f-11-magnesia story-flag? not if
             1 53.0 114.0 -113.5 flicker-sprite
         then
     then
     c1f-11-breakable3-broken story-flag? not if
-        1 1 $8000000 nav-group
-        5 1 $14 door-bits
-        4 0 $14 door-bits
+        1 keeps-people-off floor-on
+        5 part-shown
+        4 part-hidden
     else
-        0 1 $8000000 nav-group
-        5 0 $14 door-bits
-        4 1 $14 door-bits
+        1 keeps-people-off floor-off
+        5 part-hidden
+        4 part-shown
     then
     0 0 0.812 0.687 0.187 0.312 zone-rect
     $A 3.5 30.7 49.9 $10 $80 $80 $80 $40 specks
@@ -156,9 +156,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 72.5 48.0 8.5 5 8 1 zone
         self-who 0 char-in-zone? if
             c1f-11-breakable1-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             72.5 48.0 8.5 0 -2142220208 0 0.0 shards-at
             $88 5 72.5 48.0 8.5 0 0 sound
             $40 $111 noise
@@ -174,9 +174,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         1 53.0 113.0 -113.5 5 8 1 zone
         self-who 1 char-in-zone? if
             c1f-11-breakable2-broken story-flag-set
-            0 2 $8000000 nav-group
-            3 0 $14 door-bits
-            2 1 $14 door-bits
+            2 keeps-people-off floor-off
+            3 part-hidden
+            2 part-shown
             53.0 113.0 -113.5 0 -2143272896 0 0.0 shards-at
             $88 5 53.0 113.0 -113.5 0 0 sound
             $40 $122 noise
@@ -192,9 +192,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         2 53.0 113.0 -107.0 5 8 1 zone
         self-who 2 char-in-zone? if
             c1f-11-breakable3-broken story-flag-set
-            0 1 $8000000 nav-group
-            5 0 $14 door-bits
-            4 1 $14 door-bits
+            1 keeps-people-off floor-off
+            5 part-hidden
+            4 part-shown
             53.0 113.0 -107.0 0 -2143272896 0 0.0 shards-at
             $88 5 53.0 113.0 -107.0 0 0 sound
             $40 $123 noise
@@ -300,7 +300,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         fiona-who $8E -6.625 -82.651 -144 char-to-xz
         1 10.0 15.0 0.0 0.0 event-camera
         0 0 var? if
-            0 message   \ "A clamp is fixed to a wire winding device. It's rusted solid but if I hit it wi..."
+            0 message   \ "A clamp is fixed to a wire winding device. It's rusted solid-floor but if I hit it wi..."
             wait-message
         else
             1 message   \ "The wire seems to have loosened a bit."

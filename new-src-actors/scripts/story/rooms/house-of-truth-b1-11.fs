@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-11
-USING: room-names story.words story.shared story-names ;
+USING: room-names story.words story.shared story-names floor-flags ;
 
 \ Room99_Cmd00
 : house-of-truth-b1-11.cmd00 ( -- )  slam-shake ;
@@ -130,7 +130,7 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 : house-of-truth-b1-11.enter ( -- )   \ 0047AFA0
-    1 1 8 nav-group
+    1 solid-floor floor-on
 ;
 
 : house-of-truth-b1-11.phase2 ( -- )   \ 0047AFA8

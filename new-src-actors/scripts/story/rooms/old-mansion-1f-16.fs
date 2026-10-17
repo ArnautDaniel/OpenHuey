@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-16
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ Room55_Cmd00
 : old-mansion-1f-16.cmd00 ( b0 -- )   \ (Room55: b0 0 the ceiling's glass reflecting (60 x 60 at 45) and the light rippling
@@ -18,10 +18,10 @@ USING: room-names story.words story.shared flag-names story-names ;
     room-sounds
     $11 1.0 0 bgm
     om2f-12-flag1 story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
         0 old-mansion-1f-16.cmd00
     else
-        1 1 $14 door-bits
+        1 part-shown
         1 old-mansion-1f-16.cmd00
     then
     om1f-16-refined-magnesia story-flag? not if
@@ -327,7 +327,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     hewie-who char-done
     0 creatures-clear
     $5A $FF movie-param
-    0 0 $14 door-bits
+    0 part-hidden
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -347,7 +347,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     yield
     scene-wait-ready
     $5A $FF movie-param
-    0 0 $14 door-bits
+    0 part-hidden
     0 old-mansion-1f-16.cmd00
     panic-eased
     $FFFF message-prepare

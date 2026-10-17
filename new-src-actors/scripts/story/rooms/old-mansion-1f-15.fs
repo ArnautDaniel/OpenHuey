@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-15
-USING: engine actors messages room-names story.words story.shared flag-names story-names ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ the moving bookshelves (Room54_GroupStep): group g's four (the colour's book and its three
 \ shelves) - op 0 at their stop; 1 / 2 back 0.25 a frame in x / z to it (event bit 0 cleared
@@ -51,62 +51,62 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     0 0 var-set
     1 0 var-set
     got-cathedral-secrets story-flag? not if
-        1 1 $14 door-bits
+        1 part-shown
     then
     got-occult-philosophy story-flag? not if
-        2 1 $14 door-bits
+        2 part-shown
     then
     got-wisemans-crafts story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
     then
     books-placed story-flag? not if
-        1 4 $20000 nav-group
-        1 5 $1000000 nav-group
+        4 barred-floor floor-on
+        5 keeps-hewie-off floor-on
         8 1 object-hidden
     else
-        1 5 $20000 nav-group
+        5 barred-floor floor-on
         2 0 old-mansion-1f-15.cmd00
     then
     lectern-0-book-1 story-flag? if
-        $B 1 $14 door-bits
+        $B part-shown
     then
     lectern-0-book-2 story-flag? if
-        $A 1 $14 door-bits
+        $A part-shown
     then
     lectern-1-book-0 story-flag? if
-        9 1 $14 door-bits
+        9 part-shown
     then
     lectern-1-book-1 story-flag? not if
-        1 2 $20000 nav-group
-        1 3 $1000000 nav-group
-        1 $18A $10000000 nav-tri-flags
-        1 $1D3 $10000000 nav-tri-flags
+        2 barred-floor floor-on
+        3 keeps-hewie-off floor-on
+        $18A hole-floor tri-floor-on
+        $1D3 hole-floor tri-floor-on
         4 1 object-hidden
     else
-        1 3 $20000 nav-group
-        1 $187 $10000000 nav-tri-flags
-        1 $1D0 $10000000 nav-tri-flags
-        1 $188 $10000000 nav-tri-flags
-        1 $1D1 $10000000 nav-tri-flags
+        3 barred-floor floor-on
+        $187 hole-floor tri-floor-on
+        $1D0 hole-floor tri-floor-on
+        $188 hole-floor tri-floor-on
+        $1D1 hole-floor tri-floor-on
         1 0 old-mansion-1f-15.cmd00
     then
     lectern-1-book-2 story-flag? if
-        8 1 $14 door-bits
+        8 part-shown
     then
     lectern-2-book-0 story-flag? if
-        6 1 $14 door-bits
+        6 part-shown
     then
     lectern-2-book-1 story-flag? if
-        7 1 $14 door-bits
+        7 part-shown
     then
     lectern-2-book-2 story-flag? not if
-        1 0 $20000 nav-group
-        1 1 $1000000 nav-group
+        0 barred-floor floor-on
+        1 keeps-hewie-off floor-on
         0 1 object-hidden
-        0 6 $200 nav-group
+        6 floor-flag-200 floor-off
         old-mansion-1f-15.cmd01
     else
-        1 1 $20000 nav-group
+        1 barred-floor floor-on
         0 0 old-mansion-1f-15.cmd00
     then
     om1f-15-flag1 story-flag? not if
@@ -114,7 +114,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     else
         0 0 0 $87 $148 obstacle-place
     then
-    1 7 $10000000 nav-group
+    7 hole-floor floor-on
     om1f-15-refined-antimony story-flag? not if
         0 36.86 51.0 -27.91 flicker-sprite
     then
@@ -463,8 +463,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     repeat
     $C 6 sound-stop
     $D 6 0.0 -52.5 10.0 0 0 sound
-    0 4 $20000 nav-group
-    1 5 $20000 nav-group
+    4 barred-floor floor-off
+    5 barred-floor floor-on
     self-frames-reset
     self-wait-16
     0 0.0 0.0 0.0 0.0 event-camera
@@ -493,7 +493,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $904 self-anim
     self-wait-anim
     fiona-who $E 6 char-sound
-    $B 1 $14 door-bits
+    $B part-shown
     lectern-0-book-1 story-flag-set
     $16 item-use
     $905 self-anim
@@ -516,7 +516,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $904 self-anim
     self-wait-anim
     fiona-who $E 6 char-sound
-    $A 1 $14 door-bits
+    $A part-shown
     lectern-0-book-2 story-flag-set
     $17 item-use
     $905 self-anim
@@ -539,7 +539,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $904 self-anim
     self-wait-anim
     fiona-who $E 6 char-sound
-    9 1 $14 door-bits
+    9 part-shown
     lectern-1-book-0 story-flag-set
     $15 item-use
     $905 self-anim
@@ -559,12 +559,12 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $C5 30.0 49.0 90 $FFFF 5 self-move-to
     self-wait-done
     3 5 old-mansion-1f-15.cmd00
-    0 $18A $10000000 nav-tri-flags
-    0 $1D3 $10000000 nav-tri-flags
-    1 $187 $10000000 nav-tri-flags
-    1 $1D0 $10000000 nav-tri-flags
-    1 $188 $10000000 nav-tri-flags
-    1 $1D1 $10000000 nav-tri-flags
+    $18A hole-floor tri-floor-off
+    $1D3 hole-floor tri-floor-off
+    $187 hole-floor tri-floor-on
+    $1D0 hole-floor tri-floor-on
+    $188 hole-floor tri-floor-on
+    $1D1 hole-floor tri-floor-on
     1 25.0 20.0 50.0 2.0 event-camera
     hewie-who char-here? 0 hewie-side? and if
         4 ebit-clear
@@ -597,8 +597,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     repeat
     $C 6 sound-stop
     $D 6 39.0 21.0 10.0 0 0 sound
-    0 2 $20000 nav-group
-    1 3 $20000 nav-group
+    2 barred-floor floor-off
+    3 barred-floor floor-on
     self-frames-reset
     self-wait-16
     0 0.0 0.0 0.0 0.0 event-camera
@@ -629,7 +629,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $904 self-anim
     self-wait-anim
     fiona-who $E 6 char-sound
-    8 1 $14 door-bits
+    8 part-shown
     lectern-1-book-2 story-flag-set
     $17 item-use
     $905 self-anim
@@ -652,7 +652,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $904 self-anim
     self-wait-anim
     fiona-who $E 6 char-sound
-    6 1 $14 door-bits
+    6 part-shown
     lectern-2-book-0 story-flag-set
     $15 item-use
     $905 self-anim
@@ -675,7 +675,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $904 self-anim
     self-wait-anim
     fiona-who $E 6 char-sound
-    7 1 $14 door-bits
+    7 part-shown
     lectern-2-book-1 story-flag-set
     $16 item-use
     $905 self-anim
@@ -724,9 +724,9 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     repeat
     $C 6 sound-stop
     $D 6 0.0 0.0 10.0 0 0 sound
-    0 0 $20000 nav-group
-    1 1 $20000 nav-group
-    1 6 $200 nav-group
+    0 barred-floor floor-off
+    1 barred-floor floor-on
+    6 floor-flag-200 floor-on
     old-mansion-1f-15.cmd01
     self-frames-reset
     self-wait-16
@@ -756,7 +756,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
-    1 0 $14 door-bits
+    1 part-hidden
     got-cathedral-secrets story-flag-set
     $15 message-param-room
     $15 1 item-give-count
@@ -779,7 +779,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
-    2 0 $14 door-bits
+    2 part-hidden
     got-occult-philosophy story-flag-set
     $16 message-param-room
     $16 1 item-give-count
@@ -802,7 +802,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
-    0 0 $14 door-bits
+    0 part-hidden
     got-wisemans-crafts story-flag-set
     $17 message-param-room
     $17 1 item-give-count
@@ -826,7 +826,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         $904 self-anim
         self-wait-anim
         lectern-0-book-1 story-flag? if
-            $B 0 $14 door-bits
+            $B part-hidden
             lectern-0-book-1 story-flag-clear
             $905 self-anim
             $16 message-param-room
@@ -836,7 +836,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             $8012 message   \ "You've obtained ."
             wait-message
         else
-            $A 0 $14 door-bits
+            $A part-hidden
             lectern-0-book-2 story-flag-clear
             $905 self-anim
             $17 message-param-room
@@ -874,7 +874,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         $904 self-anim
         self-wait-anim
         lectern-1-book-0 story-flag? if
-            9 0 $14 door-bits
+            9 part-hidden
             lectern-1-book-0 story-flag-clear
             $905 self-anim
             $15 message-param-room
@@ -884,7 +884,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             $8012 message   \ "You've obtained ."
             wait-message
         else
-            8 0 $14 door-bits
+            8 part-hidden
             lectern-1-book-2 story-flag-clear
             $905 self-anim
             $17 message-param-room
@@ -922,7 +922,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         $904 self-anim
         self-wait-anim
         lectern-2-book-0 story-flag? if
-            6 0 $14 door-bits
+            6 part-hidden
             lectern-2-book-0 story-flag-clear
             $905 self-anim
             $15 message-param-room
@@ -932,7 +932,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             $8012 message   \ "You've obtained ."
             wait-message
         else
-            7 0 $14 door-bits
+            7 part-hidden
             lectern-2-book-1 story-flag-clear
             $905 self-anim
             $16 message-param-room

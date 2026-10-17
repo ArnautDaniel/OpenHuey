@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-5
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ Room93_Cmd00
 : house-of-truth-b1-5.cmd00 ( -- )  slam-shake ;
@@ -18,7 +18,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 -117.05 1.0 101.81 flicker-sprite
     then
     $31 1.0 0 bgm
-    1 0 $5000000 nav-group
+    0 keeps-hewie-off keeps-stalkers-off or floor-on
     stalker-who $93 1 room-doors-state
     hewie-who $93 1 room-doors-state
 ;

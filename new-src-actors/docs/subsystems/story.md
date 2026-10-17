@@ -59,6 +59,12 @@ name is written out. Fiona's action offered on her action button is `act when of
 `when` the original's kind by when it may be: `unhurried` (not in a panic; chased, her "no time"
 message instead), `always`, `calm` (not in a panic), `calm-hewie-up`.
 
+The ways a room opens and closes are its nav triangles' flags, by name (scripts/floor-flags.fs:
+who each keeps off - `keeps-people-off`, `keeps-hewie-off`, `solid-floor`, ... - and what the
+floor is): `2 keeps-people-off floor-on` / `floor-off` on a group of triangles, `tri-floor-on` /
+`tri-floor-off` on one. Its own model parts - a breakable whole or broken, a leaf open or shut -
+are `3 part-shown` / `part-hidden`.
+
 ## API
 
 Declared in `scripts/messages.fs`.

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e3
-USING: room-names story.words story.shared flag-names story.clock ;
+USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 
 \ room 0xE3: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
@@ -17,9 +17,9 @@ USING: room-names story.words story.shared flag-names story.clock ;
     then
     0 0 -19.5 -26.0 -31.0 4.0 4.0 100.0 0.0 10.0 wanderer
     1 0 -53.0 -22.0 -11.0 4.0 5.0 80.0 0.0 30.0 wanderer
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    0 2 $20000 nav-group
+    3 part-hidden
+    4 part-hidden
+    2 barred-floor floor-off
     1 $2300 sound-volume
 ;
 

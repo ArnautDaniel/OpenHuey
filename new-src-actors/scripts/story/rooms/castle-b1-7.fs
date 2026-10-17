@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-7
-USING: engine common room-names story.words story.shared flag-names story-names ;
+USING: engine common room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x1D (Room1D_Cmd00_ptmf): script variable 0 = 2 .. 5 at random
 : castle-b1-7.cmd00 ( -- )  0  4 random 2 +  var-set ;   \ (script variable 0: 2 .. 5 at random)
@@ -39,13 +39,13 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         1 -12.0 -40.0 -25.0 flicker-sprite
     then
     cb1-7-breakable-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
         cb1-7-medallion story-flag? not if
             2 31.0 -40.0 13.0 flicker-sprite
         then
@@ -145,9 +145,9 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         0 31.0 -41.0 13.0 5 8 1 zone
         self-who 0 char-in-zone? if
             cb1-7-breakable-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             31.0 -41.0 13.0 0 -2143272896 0 0.0 shards-at
             $88 5 31.0 -41.0 13.0 0 0 sound
             $40 $1B0 noise
@@ -257,7 +257,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     self-who 4 -1 char-camera
     self-frames-reset
     8 self-wait-frames
-    1 message   \ "There is a small hole in the wall. That could be my way to the key..."
+    1 message   \ "There is a small hole-floor in the wall. That could be my way to the key..."
     wait-message
     self-frames-reset
     8 self-wait-frames

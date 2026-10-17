@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-6
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x59 (Room59_Cmd00_ptmf): character 0xFE's model +0x9E0 = 0.1 (byte 3 0) or 0
 : old-mansion-2f-6.cmd00 ( b0 -- )  drop ;   \ (the stalker's model's springs (+0x9E0): not simulated here yet)
@@ -15,7 +15,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     om2f-6-flag1 story-flag? if
         9 1 object-hidden
     then
-    0 0 $14 door-bits
+    0 part-hidden
     cf-13-flag1 story-flag? x-37-flag2 story-flag? not and if
         $80 exit-taken? if
             4 ebit-set
@@ -406,13 +406,13 @@ USING: room-names story.words story.shared flag-names story-names ;
     yield
     yield
     scene-wait-ready
-    0 1 $14 door-bits
+    0 part-shown
     panic-eased
     0 message-prepare   \ "Another 2 or 3 days, at most..."
     1 result? if
         scene-play
     then
-    0 0 $14 door-bits
+    0 part-hidden
     3 0 char-remove
     $C0 room-preload
     world-held state-flag-set
@@ -533,7 +533,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-2f-6.act0E ( -- )   \ 00410810
     self-wait-done
-    0 0 $14 door-bits
+    0 part-hidden
     3 partner-load
     2 char-start
     1 1 movie-play
@@ -560,7 +560,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-2f-6.act0F ( -- )   \ 004108B0
     self-wait-done
-    0 0 $14 door-bits
+    0 part-hidden
     3 partner-load
     2 char-start
     3 1 movie-play
@@ -588,7 +588,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-2f-6.act10 ( -- )   \ 00410950
     self-wait-done
-    0 0 $14 door-bits
+    0 part-hidden
     4 partner-load
     2 char-start
     5 1 movie-play
@@ -615,7 +615,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-2f-6.act11 ( -- )   \ 004109F0
     self-wait-done
-    0 0 $14 door-bits
+    0 part-hidden
     4 partner-load
     2 char-start
     7 1 movie-play
@@ -642,7 +642,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-2f-6.act12 ( -- )   \ 00410A90
     self-wait-done
-    0 0 $14 door-bits
+    0 part-hidden
     $17 3 $FF char-load
     3 char-start
     $C 0 movie-play
@@ -650,13 +650,13 @@ USING: room-names story.words story.shared flag-names story-names ;
     yield
     yield
     scene-wait-ready
-    0 1 $14 door-bits
+    0 part-shown
     panic-eased
     0 message-prepare   \ "Another 2 or 3 days, at most..."
     1 result? if
         scene-play
     then
-    0 0 $14 door-bits
+    0 part-hidden
     3 0 char-remove
     $80 exit-check
     events-held state-flag-clear

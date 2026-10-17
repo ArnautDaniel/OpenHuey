@@ -5,7 +5,7 @@
 \ dragged off) or walking (8: carried off); grabbed outright (Fiona_StateGrabbed /
 \ Fiona_StateHeld: held, at its end the game's over). The game's end is the `caught` flag.
 IN: fiona.seized
-USING: engine vectors game-state actors messages common facts flag-names keys paths rumble fiona.state fiona.anims fiona.sounds fiona.model fiona.controls fiona.moving fiona.fear fiona.doors fiona.hurt ;
+USING: engine vectors game-state actors messages common facts flag-names keys paths rumble fiona.state fiona.anims fiona.sounds fiona.model fiona.controls fiona.moving fiona.fear fiona.doors fiona.hurt floor-flags ;
 
 defer to-idle ( -- )
 : leader ( -- id )  her-hit-who @ ;
@@ -129,7 +129,7 @@ create gb-at /vec allot
         held-down-anim -1 play-table  ['] held her-act ! exit
     then
     her-yaw f@ 17e gb-at her-at vec-ahead   \ (pulled back where she's free to be and 17 ahead is clear)
-    room-to-throw? if  her-tri @ dup 0< if  drop -1  else  her-at gb-at step-floor v-walk  then  else  -1  then
+    room-to-throw? if  her-tri @ dup 0< if  drop -1  else  her-at gb-at doorway-or-step v-walk  then  else  -1  then
     0< if  held-anim  else  0 her-fall-turn !  pulled-back-anim  then  -1 play-table
     ['] held her-act ! ; is grabbed
 

@@ -2,16 +2,16 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-14
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-1f-14.enter ( -- )   \ 004268B0
     room-sounds
     film-reel-used-om1f-14 story-flag? not if
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 part-hidden
+        1 part-shown
     then
     8 0 object-hidden
     9 0 object-hidden
@@ -121,8 +121,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     world-held state-flag-set
     $E item-use
     3 stalker-kind? $22 stalker-kind? or if
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 part-hidden
+        1 part-shown
         film-reel-used-om1f-14 story-flag-set
         yield
         yield
@@ -289,8 +289,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     9 0 object-hidden
     3 partner-load
     2 char-start
-    0 0 $14 door-bits
-    1 1 $14 door-bits
+    0 part-hidden
+    1 part-shown
     yield
     yield
     7 0 movie-play

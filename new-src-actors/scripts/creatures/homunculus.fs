@@ -4,7 +4,7 @@
 \ when it gets close; struck it reels and gets up - with no strength left, or its time out, it
 \ leaves. It moves by its animations' root motion.
 IN: creatures.homunculus
-USING: engine game-state actors messages common facts flag-names paths vectors creatures.trip creatures.her ;
+USING: engine game-state actors messages common facts flag-names paths vectors creatures.trip creatures.her floor-flags ;
 
 \ ---- its states (+0x69 the wanted one, +0x62 the one running): watching her, quiet or
 \ chattering; reeling from a blow; grabbing her; leaving; after her (the doors' 6 and 8:
@@ -60,8 +60,8 @@ end-state
 : my-at ( -- v )  self body-at ;
 : k ( -- n )  kind @ homunculus-kind xor ;
 : walks-anywhere? ( -- flag )  k 8 10 within ;   \ (kinds 8 / 9)
-: path-mask ( -- m )  walks-anywhere? if  path-off-floor  else  no-go-floor  then ;
-: stand-mask ( -- m )  walks-anywhere? if  0  else  no-go-floor  then ;
+: path-mask ( -- m )  walks-anywhere? if  creature-path-floor  else  creature-floor  then ;
+: stand-mask ( -- m )  walks-anywhere? if  0  else  creature-floor  then ;
 : full-strength ( -- n )  k case  1 of 6 endof  2 of 7 endof  >r 5 r>  endcase ;   \ (D_0042C460)
 5 minutes constant time-out
 
@@ -198,7 +198,7 @@ fvariable try-turn
     t 0< if
         my-path path-left? 0= if
             her-tri 0< if  exit  then
-            her-tri nav-flags no-go-floor and if  her-off-floor become exit  then
+            her-tri nav-flags creature-floor and if  her-off-floor become exit  then
             her-tri her-at plan 0= if  sees-her? 0= if  out-of-sight become  then  exit  then
         then
         walk-path drop
@@ -211,7 +211,7 @@ fvariable try-turn
     0 held-off !  chasing become ;
 : hang-back ( -- )  walk-anim first  hidden? if  20e approach  else  watching become  then ;
 : about-off-floor ( -- )   \ her triangle one it can't stand on
-    walk-anim first  her-tri nav-flags no-go-floor and if  5e approach  else  watching become  then ;
+    walk-anim first  her-tri nav-flags creature-floor and if  5e approach  else  watching become  then ;
 : circle-her ( -- )  walk-anim first  her-unseen @ if  20e approach  else  chasing become  then ;
 : turn-to-her ( -- )  walk-anim first  her-at 20 faces? if  chasing become  else  her-at turn-to  then ;
 : go-to-its-spot ( -- )   \ to its spot in rooms $8F / $91 (a triangle by kind), then to her
@@ -289,7 +289,6 @@ create grab-spots  0 , -2 ,   0 , 2 ,   2 , 0 ,   -2 , 0 ,
 : holdable? ( -- flag )   \ (Fiona_CanInteract $C: not on a ladder or down; thrown - only held down)
     her-mode @ thrown-mode = if  her-sub @ held-down-r =  else  her-mode @ dup ladder-mode = swap down-mode = or 0=  then ;
 enum: grab#  making-for-her seizing holding-her letting-go ;
-$10 constant grab-off-floor   \ (another flag kept off as it makes for her)
 75 constant grab-threat       \ (her fright as it lets go)
 $80 constant grab-noise
 : grab-her ( -- )
@@ -299,7 +298,7 @@ $80 constant grab-noise
             my-path path-left? 0= if
                 next-grab-spot  target v-tri dup target-tri !
                 dup 0< if  drop exit  then
-                dup nav-flags no-go-floor grab-off-floor or and if  drop exit  then
+                dup nav-flags creature-floor keeps-fiona-off or and if  drop exit  then
                 target plan 0= if  exit  then
             then
             creature-holding move-mode !

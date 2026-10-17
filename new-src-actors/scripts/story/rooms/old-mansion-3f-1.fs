@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-3f-1
-USING: actors messages room-names story.words story.shared flag-names story-names ;
+USING: actors messages room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x60 (D_00429148): the floor light (room effect 0x1B, 20 x 20 at y -0.2) by byte 3 - 1
 \ removed with its glow effect (event variable 1); 0 made, with the glow (FloorGlow_vtable);
@@ -27,7 +27,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 \ room 0x60 (Room60_Cmd03_ptmf): character 0xFE's model +0x9FC 0.4 / +0xA00 1 (byte 3 0), or 0
 : old-mansion-3f-1.cmd03 ( b0 -- )  drop ;   \ (the stalker's model's springs (+0x9FC / +0xA00): not simulated here yet)
 \ character 0xFE's model +0x9E0 / +0x9E4 / +0x9E8: byte 3 0 -0.2 / 0.2 / -0.2; 1 eases them by
-\ script variable 6 (a step a call, waiting (2) for 60) to 0 / 0.3 / 0; else 0 / 0.3 / 0
+\ script variable 6 (a step-floor a call, waiting (2) for 60) to 0 / 0.3 / 0; else 0 / 0.3 / 0
 : old-mansion-3f-1.cmd04 ( b0 -- )   \ (the stalker's springs eased by variable 6 over 60 frames: the springs
     \ aren't simulated here yet - the wait is kept)
     1 = if  begin  6 var-inc  6 var @ 61 < while  yield  repeat  then ;
@@ -36,11 +36,11 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 
 : old-mansion-3f-1.enter ( -- )   \ 004280A0
     room-sounds
-    9 0 $14 door-bits
-    $A 0 $14 door-bits
+    9 part-hidden
+    $A part-hidden
     om3f-1-flag2 story-flag? not if
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 part-shown
+        1 part-hidden
         0 0 0 $217 $4E2 obstacle-place
         1 1 0 $12D $3F3 obstacle-place
         2 2 0 $249 $519 obstacle-place
@@ -49,11 +49,11 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         1 ebit-clear
         2 ebit-clear
         3 ebit-clear
-        7 0 $14 door-bits
+        7 part-hidden
         0 0 var-set
     else
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 part-hidden
+        1 part-shown
         0 0 0 $20A $4D8 obstacle-place
         1 1 0 $153 $415 obstacle-place
         2 2 0 $15C $41E obstacle-place
@@ -66,13 +66,13 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         1 ebit-set
         2 ebit-set
         3 ebit-set
-        7 1 $14 door-bits
+        7 part-shown
         0 0 var-set
-        1 0 8 nav-group
+        0 solid-floor floor-on
         om3f-1-flag3 story-flag? not if
-            9 1 $14 door-bits
+            9 part-shown
         else
-            $A 1 $14 door-bits
+            $A part-shown
         then
         got-mars-key story-flag? not if
             got-mars-key story-flag? not if
@@ -80,12 +80,12 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             then
         then
     then
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 0 $14 door-bits
-    6 0 $14 door-bits
-    8 1 $14 door-bits
-    2 0 $14 door-bits
+    3 part-hidden
+    4 part-hidden
+    5 part-hidden
+    6 part-hidden
+    8 part-shown
+    2 part-hidden
     4 1 object-hidden
     5 1 object-hidden
     6 1 object-hidden
@@ -222,41 +222,41 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     then
     3 old-mansion-3f-1.cmd00
     0 0 var? if
-        3 0 $14 door-bits
-        4 0 $14 door-bits
-        5 0 $14 door-bits
-        6 0 $14 door-bits
-        8 1 $14 door-bits
+        3 part-hidden
+        4 part-hidden
+        5 part-hidden
+        6 part-hidden
+        8 part-shown
     else 0 1 var? if
-        3 1 $14 door-bits
-        4 0 $14 door-bits
-        5 0 $14 door-bits
-        6 0 $14 door-bits
-        8 0 $14 door-bits
+        3 part-shown
+        4 part-hidden
+        5 part-hidden
+        6 part-hidden
+        8 part-hidden
     else 0 2 var? if
-        3 0 $14 door-bits
-        4 1 $14 door-bits
-        5 0 $14 door-bits
-        6 0 $14 door-bits
-        8 0 $14 door-bits
+        3 part-hidden
+        4 part-shown
+        5 part-hidden
+        6 part-hidden
+        8 part-hidden
     else 0 3 var? if
-        3 0 $14 door-bits
-        4 0 $14 door-bits
-        5 1 $14 door-bits
-        6 0 $14 door-bits
-        8 0 $14 door-bits
+        3 part-hidden
+        4 part-hidden
+        5 part-shown
+        6 part-hidden
+        8 part-hidden
     else 0 4 var? if
-        3 0 $14 door-bits
-        4 0 $14 door-bits
-        5 0 $14 door-bits
-        6 1 $14 door-bits
-        8 0 $14 door-bits
+        3 part-hidden
+        4 part-hidden
+        5 part-hidden
+        6 part-shown
+        8 part-hidden
     else
-        3 0 $14 door-bits
-        4 0 $14 door-bits
-        5 0 $14 door-bits
-        6 0 $14 door-bits
-        8 1 $14 door-bits
+        3 part-hidden
+        4 part-hidden
+        5 part-hidden
+        6 part-hidden
+        8 part-shown
     then then then then then
 ;
 
@@ -325,7 +325,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     3 4 0 char-model-op
     3 char-start
     0 $F9 1 action
-    2 1 $14 door-bits
+    2 part-shown
     stalker-who char-activate
     panic-eased
     0 message-prepare   \ "Hewie! Blood, Flesh Woman. You vile creature. You lure the man into your filthy..."
@@ -336,7 +336,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     fiona-who $247 -0.592 1.575 180 char-to-xz
     hewie-who $2CF 0.346 -5.781 180 char-to-xz
     stalker-who $50D -1.47 -23.64 0 char-to-xz
-    2 0 $14 door-bits
+    2 part-hidden
     3 0 char-remove
     2 old-mansion-3f-1.cmd01
     1 old-mansion-3f-1.cmd03
@@ -483,14 +483,14 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     fiona-who 1 char-visible
     hewie-who action-end
     hewie-who char-done
-    0 0 $14 door-bits
-    1 1 $14 door-bits
+    0 part-hidden
+    1 part-shown
     0 $F9 3 action
     $1E 1 object-hidden
     om3f-1-flag3 story-flag? not if
-        9 1 $14 door-bits
+        9 part-shown
     else
-        $A 1 $14 door-bits
+        $A part-shown
     then
     panic-eased
     $FFFF message-prepare
@@ -505,13 +505,13 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     stalkers-blind state-flag-clear
     force-calm state-flag-clear
     2 0 char-remove
-    7 1 $14 door-bits
+    7 part-shown
     0 0 var-set
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 0 $14 door-bits
-    6 0 $14 door-bits
-    8 1 $14 door-bits
+    3 part-hidden
+    4 part-hidden
+    5 part-hidden
+    6 part-hidden
+    8 part-shown
     4 1 object-hidden
     5 1 object-hidden
     6 1 object-hidden
@@ -549,7 +549,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     1 self-anim
     2 2 player-camera
     camera-restart
-    1 0 8 nav-group
+    0 solid-floor floor-on
     1 old-mansion-3f-1.cmd00
     0 1 old-mansion-3f-1.cmd02
     1 1 old-mansion-3f-1.cmd02
@@ -727,14 +727,14 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     yield
     scene-wait-ready
     wait-fade
-    0 0 $14 door-bits
-    1 1 $14 door-bits
+    0 part-hidden
+    1 part-shown
     0 $F9 3 action
     $1E 1 object-hidden
     om3f-1-flag3 story-flag? not if
-        9 1 $14 door-bits
+        9 part-shown
     else
-        $A 1 $14 door-bits
+        $A part-shown
     then
     $1E $C8 movie-param
     panic-eased
@@ -751,13 +751,13 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     stalkers-blind state-flag-clear
     force-calm state-flag-clear
     2 0 char-remove
-    7 1 $14 door-bits
+    7 part-shown
     0 0 var-set
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 0 $14 door-bits
-    6 0 $14 door-bits
-    8 1 $14 door-bits
+    3 part-hidden
+    4 part-hidden
+    5 part-hidden
+    6 part-hidden
+    8 part-shown
     4 1 object-hidden
     5 1 object-hidden
     6 1 object-hidden
@@ -796,7 +796,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     $29 0 hewie-do
     2 2 player-camera
     camera-restart
-    1 0 8 nav-group
+    0 solid-floor floor-on
     1 old-mansion-3f-1.cmd00
     0 1 old-mansion-3f-1.cmd02
     1 1 old-mansion-3f-1.cmd02
@@ -838,11 +838,11 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 
 : old-mansion-3f-1.act0A ( -- )   \ 00428D10
     self-wait-done
-    9 0 $14 door-bits
-    $A 0 $14 door-bits
-    8 1 $14 door-bits
-    0 1 $14 door-bits
-    1 0 $14 door-bits
+    9 part-hidden
+    $A part-hidden
+    8 part-shown
+    0 part-shown
+    1 part-hidden
     0 0 0 $217 $4E2 obstacle-place
     1 1 0 $12D $3F3 obstacle-place
     2 2 0 $249 $519 obstacle-place
@@ -851,7 +851,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     1 ebit-clear
     2 ebit-clear
     3 ebit-clear
-    7 0 $14 door-bits
+    7 part-hidden
     4 1 object-hidden
     5 1 object-hidden
     6 1 object-hidden
@@ -889,13 +889,13 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     3 4 0 char-model-op
     3 char-start
     0 $F9 1 action
-    2 1 $14 door-bits
+    2 part-shown
     panic-eased
     0 message-prepare   \ "Hewie! Blood, Flesh Woman. You vile creature. You lure the man into your filthy..."
     1 result? if
         scene-play
     then
-    2 0 $14 door-bits
+    2 part-hidden
     3 0 char-remove
     2 old-mansion-3f-1.cmd01
     1 old-mansion-3f-1.cmd03
@@ -911,10 +911,10 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 
 : old-mansion-3f-1.act0B ( -- )   \ 00428E70
     self-wait-done
-    9 0 $14 door-bits
-    $A 0 $14 door-bits
-    0 0 $14 door-bits
-    1 1 $14 door-bits
+    9 part-hidden
+    $A part-hidden
+    0 part-hidden
+    1 part-shown
     0 0 0 $20A $4D8 obstacle-place
     1 1 0 $153 $415 obstacle-place
     2 2 0 $15C $41E obstacle-place
@@ -927,13 +927,13 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     1 ebit-set
     2 ebit-set
     3 ebit-set
-    7 0 $14 door-bits
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 0 $14 door-bits
-    6 1 $14 door-bits
-    8 0 $14 door-bits
-    2 0 $14 door-bits
+    7 part-hidden
+    3 part-hidden
+    4 part-hidden
+    5 part-hidden
+    6 part-shown
+    8 part-hidden
+    2 part-hidden
     4 1 object-hidden
     5 1 object-hidden
     6 1 object-hidden
@@ -973,11 +973,11 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     yield
     yield
     scene-wait-ready
-    0 0 $14 door-bits
-    1 1 $14 door-bits
+    0 part-hidden
+    1 part-shown
     0 $F9 3 action
     $1E 1 object-hidden
-    9 1 $14 door-bits
+    9 part-shown
     $1E $C8 movie-param
     panic-eased
     $FFFF message-prepare
@@ -987,12 +987,12 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     2 6 sound-stop
     $1E 1 object-hidden
     2 0 char-remove
-    7 1 $14 door-bits
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 0 $14 door-bits
-    6 0 $14 door-bits
-    8 1 $14 door-bits
+    7 part-shown
+    3 part-hidden
+    4 part-hidden
+    5 part-hidden
+    6 part-hidden
+    8 part-shown
     4 1 object-hidden
     5 1 object-hidden
     6 1 object-hidden

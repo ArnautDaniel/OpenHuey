@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-9
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ the rising motes started
 : castle-1f-9.cmd00 ( -- )  effects:rising-motes ;
@@ -13,22 +13,22 @@ USING: room-names story.words story.shared flag-names story-names ;
 : castle-1f-9.enter ( -- )   \ 00402330
     room-sounds
     c1f-9-breakable1-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
     then
     c1f-9-breakable2-broken story-flag? not if
-        1 1 $8000000 nav-group
-        2 1 $14 door-bits
-        3 0 $14 door-bits
+        1 keeps-people-off floor-on
+        2 part-shown
+        3 part-hidden
     else
-        0 1 $8000000 nav-group
-        2 0 $14 door-bits
-        3 1 $14 door-bits
+        1 keeps-people-off floor-off
+        2 part-hidden
+        3 part-shown
         c1f-9-magnesia story-flag? not if
             1 -5.5 1.0 -99.0 flicker-sprite
         then
@@ -133,9 +133,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 -30.0 0.0 -85.4 5 8 1 zone
         self-who 0 char-in-zone? if
             c1f-9-breakable1-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             -30.0 0.0 -85.4 0 -2145378272 0 0.0 shards-at
             $88 5 -30.0 0.0 -85.4 0 0 sound
             $40 $1E7 noise
@@ -235,9 +235,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         1 -5.5 0.0 -99.0 5 8 1 zone
         self-who 1 char-in-zone? if
             c1f-9-breakable2-broken story-flag-set
-            0 1 $8000000 nav-group
-            2 0 $14 door-bits
-            3 1 $14 door-bits
+            1 keeps-people-off floor-off
+            2 part-hidden
+            3 part-shown
             -5.5 0.0 -99.0 0 -2145378272 0 0.0 shards-at
             $88 5 -5.5 0.0 -99.0 0 0 sound
             $40 $1F1 noise
@@ -392,8 +392,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     hewie-who camera-follow
     $3E -30.81 100.0 180 $FFFF $A self-move-to
     self-wait-done
-    0 2 8 nav-group
-    1 2 $30 nav-group
+    2 solid-floor floor-off
+    2 keeps-fiona-off keeps-pursuers-off or floor-on
     $CF -35.0 20.3 0.2 50 hewie-go-to
     self-wait-done
     hewie-who 2 -1 char-camera
@@ -419,13 +419,13 @@ USING: room-names story.words story.shared flag-names story-names ;
     then
     $50 -35.79 15.06 100 $FFFF $A self-move-to
     self-wait-done
-    0 3 8 nav-group
-    1 3 $30 nav-group
+    3 solid-floor floor-off
+    3 keeps-fiona-off keeps-pursuers-off or floor-on
     1 counter-set
     $196 18.0 6.0 0.1 100 hewie-go-to
     self-wait-done
-    1 2 8 nav-group
-    1 3 8 nav-group
+    2 solid-floor floor-on
+    3 solid-floor floor-on
     stalkers-stay state-flag-clear
     $25 0 406 hewie-to-room
     self-idle-or-end

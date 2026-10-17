@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-7
-USING: engine room-names story.words story.shared flag-names story-names ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x23 (Room23_Cmd00_ptmf): Fiona's model +0x9A0 / +0x9A8: 0 (byte 3 1) or 0.12 / 0.2
 : castle-2f-7.cmd00 ( b0 -- )  drop ;   \ (Daniella's hair force (her model's springs: not simulated here yet))
@@ -39,11 +39,11 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     fiona-who self-is? if
         $80 exit-taken? if
             0 fiona-who 6 action
-            0 1 $14 door-bits
-            1 0 $14 door-bits
+            0 part-shown
+            1 part-hidden
         else
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 part-hidden
+            1 part-shown
         then
     then
 ;
@@ -366,8 +366,8 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     0 0 -39.0 6.0 31.0 3.0 3.0 0.0 0.0 -60.0 wanderer
     6 1 object-hidden
     self-who 1 char-visible
-    0 1 $14 door-bits
-    1 0 $14 door-bits
+    0 part-shown
+    1 part-hidden
     3 3 $FF char-load
     4 4 $FF char-load
     3 char-start

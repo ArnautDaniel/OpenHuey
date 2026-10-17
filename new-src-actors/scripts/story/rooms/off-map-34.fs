@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-34
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : off-map-34.char-enter ( -- )   \ 00442950
     fiona-who self-is? if
@@ -47,111 +47,111 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 : off-map-34.act01 ( -- )   \ 00442A20
-    0 1 $14 door-bits
-    1 1 $14 door-bits
-    2 0 $14 door-bits
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 0 $14 door-bits
+    0 part-shown
+    1 part-shown
+    2 part-hidden
+    3 part-hidden
+    4 part-hidden
+    5 part-hidden
     begin
         $547 cutscene-cue-reached? not while
         self-frames-reset
         1 self-wait-frames
     repeat
-    0 1 $14 door-bits
-    1 0 $14 door-bits
-    2 0 $14 door-bits
-    3 0 $14 door-bits
-    4 1 $14 door-bits
-    5 0 $14 door-bits
+    0 part-shown
+    1 part-hidden
+    2 part-hidden
+    3 part-hidden
+    4 part-shown
+    5 part-hidden
     begin
         $569 cutscene-cue-reached? not while
         self-frames-reset
         1 self-wait-frames
     repeat
-    0 1 $14 door-bits
-    1 1 $14 door-bits
-    2 0 $14 door-bits
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 0 $14 door-bits
+    0 part-shown
+    1 part-shown
+    2 part-hidden
+    3 part-hidden
+    4 part-hidden
+    5 part-hidden
     begin
         $587 cutscene-cue-reached? not while
         self-frames-reset
         1 self-wait-frames
     repeat
-    0 0 $14 door-bits
-    1 1 $14 door-bits
-    2 0 $14 door-bits
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 1 $14 door-bits
+    0 part-hidden
+    1 part-shown
+    2 part-hidden
+    3 part-hidden
+    4 part-hidden
+    5 part-shown
     begin
         $592 cutscene-cue-reached? not while
         self-frames-reset
         1 self-wait-frames
     repeat
-    0 0 $14 door-bits
-    1 0 $14 door-bits
-    2 0 $14 door-bits
-    3 1 $14 door-bits
-    4 0 $14 door-bits
-    5 1 $14 door-bits
+    0 part-hidden
+    1 part-hidden
+    2 part-hidden
+    3 part-shown
+    4 part-hidden
+    5 part-shown
     begin
         $59E cutscene-cue-reached? not while
         self-frames-reset
         1 self-wait-frames
     repeat
-    0 1 $14 door-bits
-    1 0 $14 door-bits
-    2 1 $14 door-bits
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 0 $14 door-bits
+    0 part-shown
+    1 part-hidden
+    2 part-shown
+    3 part-hidden
+    4 part-hidden
+    5 part-hidden
     begin
         $5AE cutscene-cue-reached? not while
         self-frames-reset
         1 self-wait-frames
     repeat
-    0 1 $14 door-bits
-    1 0 $14 door-bits
-    2 0 $14 door-bits
-    3 1 $14 door-bits
-    4 0 $14 door-bits
-    5 0 $14 door-bits
+    0 part-shown
+    1 part-hidden
+    2 part-hidden
+    3 part-shown
+    4 part-hidden
+    5 part-hidden
     begin
         $5D4 cutscene-cue-reached? not while
         self-frames-reset
         1 self-wait-frames
     repeat
-    0 0 $14 door-bits
-    1 1 $14 door-bits
-    2 0 $14 door-bits
-    3 1 $14 door-bits
-    4 0 $14 door-bits
-    5 1 $14 door-bits
+    0 part-hidden
+    1 part-shown
+    2 part-hidden
+    3 part-shown
+    4 part-hidden
+    5 part-shown
     begin
         $5EE cutscene-cue-reached? not while
         self-frames-reset
         1 self-wait-frames
     repeat
-    0 1 $14 door-bits
-    1 0 $14 door-bits
-    2 0 $14 door-bits
-    3 0 $14 door-bits
-    4 1 $14 door-bits
-    5 0 $14 door-bits
+    0 part-shown
+    1 part-hidden
+    2 part-hidden
+    3 part-hidden
+    4 part-shown
+    5 part-hidden
     begin
         $610 cutscene-cue-reached? not while
         self-frames-reset
         1 self-wait-frames
     repeat
-    0 1 $14 door-bits
-    1 1 $14 door-bits
-    2 0 $14 door-bits
-    3 0 $14 door-bits
-    4 0 $14 door-bits
-    5 0 $14 door-bits
+    0 part-shown
+    1 part-shown
+    2 part-hidden
+    3 part-hidden
+    4 part-hidden
+    5 part-hidden
     begin
         cutscene-near-end? not while
         self-frames-reset

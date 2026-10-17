@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-9
-USING: engine room-names story.words story.shared flag-names story-names ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ a lit quad at x -43, z -15.12 .. 5.07, height 30.05 / 10.05
 : old-mansion-1f-9.cmd00 ( b0 -- )  $1B $40  -43.0e 30.053e -15.124e  -43.0e 30.053e 5.068e  -43.0e 10.053e -15.124e  -43.0e 10.053e 5.068e  lit-quad ;   \ (a reflecting window: b0 1 removed, 2 over the whole picture)
@@ -22,10 +22,10 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     om1f-9-refined-magnesia-found story-flag? om1f-9-refined-magnesia story-flag? not and if
         1 7.72 1.0 15.08 flicker-sprite
     then
-    1 $78 $10000000 nav-tri-flags
-    1 $41 $10000000 nav-tri-flags
-    1 $79 $10000000 nav-tri-flags
-    1 $42 $10000000 nav-tri-flags
+    $78 hole-floor tri-floor-on
+    $41 hole-floor tri-floor-on
+    $79 hole-floor tri-floor-on
+    $42 hole-floor tri-floor-on
 ;
 
 : old-mansion-1f-9.char-enter ( -- )   \ 00407F80
@@ -44,7 +44,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
         3 1 object-hidden
         4 1 object-hidden
         5 1 object-hidden
-        0 1 $14 door-bits
+        0 part-shown
     then
 ;
 
@@ -205,7 +205,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
             3 1 object-hidden
             4 1 object-hidden
             5 1 object-hidden
-            0 1 $14 door-bits
+            0 part-shown
             4 ebit? if
                 1 old-mansion-1f-9.cmd02
             then
@@ -465,7 +465,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     3 1 object-hidden
     4 1 object-hidden
     5 1 object-hidden
-    0 1 $14 door-bits
+    0 part-shown
     2 0 char-remove
     $80 exit-check
     events-held state-flag-clear

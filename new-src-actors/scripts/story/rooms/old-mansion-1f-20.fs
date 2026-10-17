@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-20
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-1f-20.enter ( -- )   \ 00439160
     room-sounds
@@ -18,10 +18,10 @@ USING: room-names story.words story.shared flag-names story-names ;
     0 $F1 3 action
     hunted state-flag-set
     om1f-20-breakable-broken story-flag? not if
-        0 1 $14 door-bits
-        1 0 $20000 nav-group
+        0 part-shown
+        0 barred-floor floor-on
     else
-        1 1 $14 door-bits
+        1 part-shown
     then
     om1f-20-weeping-stone story-flag? not if
         0 12.3 8.5 177.61 flicker-sprite
@@ -140,9 +140,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 -50.0 50.0 355.0 6 12 0 zone
         fiona-who 0 char-in-zone? if
             fiona-who 5 6 char-sound
-            0 0 $14 door-bits
-            1 1 $14 door-bits
-            0 0 $20000 nav-group
+            0 part-hidden
+            1 part-shown
+            0 barred-floor floor-off
             $64 door-unlock
             om1f-20-breakable-broken story-flag-set
             0 6 0.25 0.5 0.25 0.5 zone-rect

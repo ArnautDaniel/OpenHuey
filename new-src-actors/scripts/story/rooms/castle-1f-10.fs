@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-10
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ the stalker in play is chasing (+0x153C 2, 6 or 7, not +0xC4 2) with the progress state 2: in
 \ this room, whether the camera sees it; elsewhere 1
@@ -21,7 +21,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         1 11.0 12.0 -58.5 flicker-sprite
     then
     found-file-20b story-flag? c1f-10-flag1 story-flag? not and if
-        1 0 $1000010 nav-group
+        0 keeps-fiona-off keeps-hewie-off or floor-on
         3 char-start
         2 char-activate
         2 $9000 1 0 char-anim-hold
@@ -30,10 +30,10 @@ USING: room-names story.words story.shared flag-names story-names ;
     8 25.0 12.0 19.0 4 $80 $80 $80 $20 specks
     8 9.4 7.3 -57.3 8 $60 $60 $60 $40 specks
     8 -12.0 21.0 -27.0 8 $70 $70 $70 $40 specks
-    0 0 $14 door-bits
+    0 part-hidden
     got-bisque-doll story-flag? if
         $93 1 item-count? not castle-1f-10.cond01? and if
-            0 1 $14 door-bits
+            0 part-shown
             2 ebit-set
         then
     then
@@ -313,7 +313,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else
         $93 1 item-give-count
         2 ebit-clear
-        0 0 $14 door-bits
+        0 part-hidden
         0 $93 item-tab
         item-fanfare
         $8011 message   \ "You've obtained ."

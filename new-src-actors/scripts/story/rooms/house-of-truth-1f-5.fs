@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-5
-USING: engine actors messages room-names story.words story.shared flag-names story-names ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x8D: three grey smoke effects (Effect79B00, size 60) at the room's spots 7, 4, 3
 \ (grey_three).
@@ -10,7 +10,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     7 60e 0e 0.5e 0.5e stones-falling  4 60e 0e 0e 0.5e stones-falling  3 60e 0e 0e 1e stones-falling ;
 \ byte 3: 0 made (lights 0x14 on characters 3 and 0) and 1 lit on character 3 (second kind, size
 \ 1, sparks from its own slot); 2 ending, 3 ended; 4 / 6 sized 1 / 0.5; 5 / 7 shrinking with
-\ variable 1 (a step a call, to 0.5 + v / 200 or v / 334)
+\ variable 1 (a step-floor a call, to 0.5 + v / 200 or v / 334)
 : marker! ( v -- )   \ (the marker kept in variable 0 told: -1 done, -2 a pause, else its size x 1000)
     0 var @ dup alive? if  send effect-command  else  2drop  then ;
 : shrunk ( -- v )  1 var @ 1- 0 max  dup 1 swap var-set ;   \ (variable 1 down a step)
@@ -41,13 +41,13 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         stalkers-stay state-flag-set
     then
     over-music-f story-flag? if
-        1 0 $20000 nav-group
-        0 1 $14 door-bits
+        0 barred-floor floor-on
+        0 part-shown
     else
-        1 1 $14 door-bits
+        1 part-shown
     then
     found-file-257 story-flag? if
-        2 1 $14 door-bits
+        2 part-shown
     then
     tremor-warned story-flag? if
         5 1.0 0 bgm
@@ -237,7 +237,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     force-followed state-flag-set
     3 char-start
     4 char-start
-    0 1 $14 door-bits
+    0 part-shown
     1 0 movie-play
     0 cutscene-start
     yield
@@ -259,7 +259,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     $8D 0 123 hewie-to-room
     hewie-who $7B -20 char-to-tri-facing
     hewie-no-attack state-flag-clear
-    2 1 $14 door-bits
+    2 part-shown
     $EA door-open-clear
     $EA door-lock
     doors-room-in
@@ -479,7 +479,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     $1F 4 $FF char-load
     3 char-start
     4 char-start
-    0 1 $14 door-bits
+    0 part-shown
     1 0 movie-play
     0 cutscene-start
     yield

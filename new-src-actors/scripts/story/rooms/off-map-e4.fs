@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e4
-USING: room-names story.words story.shared story.clock ;
+USING: room-names story.words story.shared story.clock floor-flags ;
 
 \ (as Room0F_Cmd00) the room object RoomE4_ObjectNames by event variable 2
 : off-map-e4.cmd00 ( b0 -- )  s" fumi_yuka" 2 var-fade ;   \ (as castle-1f-4's, by event variable 2)
@@ -14,7 +14,7 @@ USING: room-names story.words story.shared story.clock ;
 
 : off-map-e4.enter ( -- )   \ 00449250
     room-sounds
-    0 0 $14 door-bits
+    0 part-hidden
     1 0 object-hidden
     2 0 object-hidden
     3 0 object-hidden
@@ -24,11 +24,11 @@ USING: room-names story.words story.shared story.clock ;
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
     0 22.8 14.65 68.75 0 flame-in
-    1 1 $14 door-bits
-    2 0 $14 door-bits
-    3 1 $14 door-bits
-    4 0 $14 door-bits
-    5 1 $14 door-bits
+    1 part-shown
+    2 part-hidden
+    3 part-shown
+    4 part-hidden
+    5 part-shown
     0 0 var-set
     1 0 var-set
     1 $2300 sound-volume

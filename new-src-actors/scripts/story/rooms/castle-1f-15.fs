@@ -479,7 +479,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     self-wait-done
     $A02 $A self-anim-blend
     self-wait-anim
-    7 message   \ "Creaks and pops crackle out of the dubious-looking hole. Everything about the hole scre..."
+    7 message   \ "Creaks and pops crackle out of the dubious-looking hole. Everything about the hole-floor scre..."
     wait-message
     0 answer? if
         $F 0 fade

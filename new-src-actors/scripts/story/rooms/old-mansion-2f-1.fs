@@ -2,12 +2,12 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-1
-USING: room-names story.words story.shared story-names ;
+USING: room-names story.words story.shared story-names floor-flags ;
 
 : old-mansion-2f-1.enter ( -- )   \ 00407E70
-    1 1 $14 door-bits
-    1 1 $20000 nav-group
-    1 3 $300000 nav-group
+    1 part-shown
+    1 barred-floor floor-on
+    3 both-halves floor-on
 ;
 
 : old-mansion-2f-1.char-enter ( -- )   \ 00407E90

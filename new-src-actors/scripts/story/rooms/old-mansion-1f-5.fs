@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-5
-USING: room-names story.words story.shared story-names ;
+USING: room-names story.words story.shared story-names floor-flags ;
 
 \ the effect BigFire_vtable (three quad drawers) started with parameter 0
 : old-mansion-1f-5.cmd00 ( -- )  effects:big-fire ;   \ (the fire: smoke, flames, glow)
@@ -10,7 +10,7 @@ USING: room-names story.words story.shared story-names ;
 : old-mansion-1f-5.enter ( -- )   \ 00407AE0
     room-sounds
     $19 1.0 0 bgm
-    1 1 $300000 nav-group
+    1 both-halves floor-on
     om1f-8-beef-jerky story-flag? not if
         0 122.09 8.28 10.26 flicker-sprite
     then

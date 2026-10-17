@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-2
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x4B (D_00409910): a lit quad at x -63.65 .. -55.65, z 104.5, from 4 to 21
 : old-mansion-b1-2.cmd00 ( b0 -- )  $1B $80  -63.65e 21.0e 104.5e  -55.65e 21.0e 104.5e  -63.65e 4.0e 104.5e  -55.65e 4.0e 104.5e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -20,25 +20,25 @@ USING: room-names story.words story.shared flag-names story-names ;
         then
     then
     omb1-2-breakable1-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
         omb1-2-viola-medallion story-flag? not if
             0 13.5 -9.0 -75.0 flicker-sprite
         then
     then
     omb1-2-breakable2-broken story-flag? not if
-        1 1 $8000000 nav-group
-        2 1 $14 door-bits
-        3 0 $14 door-bits
+        1 keeps-people-off floor-on
+        2 part-shown
+        3 part-hidden
     else
-        0 1 $8000000 nav-group
-        2 0 $14 door-bits
-        3 1 $14 door-bits
+        1 keeps-people-off floor-off
+        2 part-hidden
+        3 part-shown
         omb1-2-rubrum-medallion story-flag? not if
             1 13.5 -9.0 -59.5 flicker-sprite
         then
@@ -46,8 +46,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     0 4 0.5 0.5 0.25 0.5 zone-rect
     1 $B 0.4 0.0 0.2 0.5 zone-rect
     omb1-2-breakable3-broken story-flag? not if
-        4 0 $14 door-bits
-        5 1 $14 door-bits
+        4 part-hidden
+        5 part-shown
         omb1-2-flag1 story-flag? not if
             3 old-mansion-b1-2.cmd01
             1 old-mansion-b1-2.cmd00
@@ -56,10 +56,10 @@ USING: room-names story.words story.shared flag-names story-names ;
             0 old-mansion-b1-2.cmd00
         then
     else
-        4 1 $14 door-bits
-        5 0 $14 door-bits
+        4 part-shown
+        5 part-hidden
         1 old-mansion-b1-2.cmd00
-        1 2 $2008000 nav-group
+        2 water-floor floor-on
     then
     omb1-2-refined-magnesia story-flag? not if
         2 -109.83 12.0 72.62 flicker-sprite
@@ -360,9 +360,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 13.5 -10.0 -75.0 5 8 1 zone
         self-who 0 char-in-zone? if
             omb1-2-breakable1-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             13.5 -10.0 -75.0 0 -2145378272 0 0.0 shards-at
             $88 5 13.5 -10.0 -75.0 0 0 sound
             $40 $23A noise
@@ -378,9 +378,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         1 13.5 -10.0 -59.5 5 8 1 zone
         self-who 1 char-in-zone? if
             omb1-2-breakable2-broken story-flag-set
-            0 1 $8000000 nav-group
-            2 0 $14 door-bits
-            3 1 $14 door-bits
+            1 keeps-people-off floor-off
+            2 part-hidden
+            3 part-shown
             13.5 -10.0 -59.5 0 -2146430960 0 0.0 shards-at
             $88 5 13.5 -10.0 -59.5 0 0 sound
             $40 $234 noise
@@ -661,9 +661,9 @@ USING: room-names story.words story.shared flag-names story-names ;
     omb1-2-breakable3-broken story-flag-set
     stalker-who 1 6 char-sound
     stalker-who 1 stalker-rage
-    4 1 $14 door-bits
-    5 0 $14 door-bits
-    1 2 $2008000 nav-group
+    4 part-shown
+    5 part-hidden
+    2 water-floor floor-on
     1 old-mansion-b1-2.cmd00
     -57.0 16.0 104.5 1 404232216 4 -15.5 shards-at
     -61.0 16.0 104.5 1 404232216 4 -15.5 shards-at

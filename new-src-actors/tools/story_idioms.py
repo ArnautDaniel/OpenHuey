@@ -65,6 +65,53 @@ def offers(text):
     return OFFER.subn(lambda m: f"{m.group(1)} {WHEN[int(m.group(2))]} offer-action", text)
 
 
+# the nav flags by name (scripts/floor-flags.fs), a mask as its flags or-ed; set / cleared on a
+# group (nav-group) or a triangle (nav-tri-flags): floor-on / floor-off, tri-floor-on / -off;
+# the rooms' model parts (door-bits on base $14): part-shown / part-hidden
+def floor_names():
+    out = {}
+    for line in (ROOT / "scripts/floor-flags.fs").read_text().split("\n"):
+        for t, name in re.findall(r"(?<!\S)(\$?[0-9A-Fa-f]+) constant (\S+)", line.split("\\")[0]):
+            out.setdefault(int(t[1:], 16) if t.startswith("$") else int(t), name)
+    return out
+
+
+FLOORS = floor_names()
+SINGLE = {v: n for v, n in FLOORS.items() if v & (v - 1) == 0}
+
+
+def mask(t):
+    v = int(t[1:], 16) if t.startswith("$") else int(t)
+    if v in FLOORS:
+        return FLOORS[v]
+    names, rest = [], v
+    if rest & 0x2008000 == 0x2008000:
+        names.append("water-floor")
+        rest &= ~0x2008000
+    for b in range(32):
+        if rest & (1 << b):
+            if (1 << b) not in SINGLE:
+                return None
+            names.append(SINGLE[1 << b])
+    return names[0] + "".join(f" {n} or" for n in names[1:])
+
+
+NAV = re.compile(r"(?<!\S)([01])\s+(\S+)\s+(\$?[0-9A-Fa-f]+)\s+(nav-group|nav-tri-flags)(?!\S)")
+PARTS = re.compile(r"(?<!\S)(\S+)\s+([01])\s+\$14\s+door-bits(?!\S)")
+
+
+def floors(text):
+    def nav(m):
+        names = mask(m.group(3))
+        if names is None:
+            return m.group(0)
+        word = ("floor-" if m.group(4) == "nav-group" else "tri-floor-") + ("on" if m.group(1) == "1" else "off")
+        return f"{m.group(2)} {names} {word}"
+    text, a = NAV.subn(nav, text)
+    text, b = PARTS.subn(lambda m: f"{m.group(1)} part-{'shown' if m.group(2) == '1' else 'hidden'}", text)
+    return text, a + b
+
+
 def main():
     pats = [(name, pattern(seq)) for name, seq in IDIOMS]
     pats += [(name, shaped(seq)) for name, seq in SHAPED]
@@ -78,6 +125,11 @@ def main():
             counts[name] += n
         t, n = offers(t)
         counts["offer-action"] = counts.get("offer-action", 0) + n
+        t2, n = floors(t)
+        if n and "floor-flags" not in t2.split("\n", 8)[4] + t2.split("\n", 8)[5]:
+            t2 = re.sub(r"^(USING:[^;\n]*?)( ;)", r"\1 floor-flags\2", t2, count=1, flags=re.M)
+        t = t2
+        counts["floors, parts"] = counts.get("floors, parts", 0) + n
         if t != s:
             f.write_text(t)
     for name, n in counts.items():

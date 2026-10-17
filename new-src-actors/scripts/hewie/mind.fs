@@ -2,7 +2,7 @@
 \ notices, his own decisions, his mode's behaviour (calm / wary / tense), what he does next by
 \ his trust (the weighted lists), and his body as it is shown (overlays, neck, feet, sounds).
 IN: hewie.mind
-USING: engine actors common facts paths vectors messages hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.fetch hewie.exits flag-names ;
+USING: engine actors common facts paths vectors messages hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.fetch hewie.exits flag-names floor-flags ;
 
 $FF constant no-call   \ (his-call: nobody called him; 0 Fiona)
 \ report_fiona_near: how near she is, for the story (1 within 20, 2 within 50, 3 further)
@@ -456,7 +456,7 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
     0 his-broke !  0 his-hits !  -1 his-look-char !  0 his-scene-req !  0 his-look-pt? !
     hewie-hidden state-flag-clear ;
 : think ( -- )   \ Hewie_Think: a frame of his while a script has him
-    his-2b @ if  0  else  his-floor  then  body-mask!
+    his-2b @ if  0  else  hewie-floor  then  body-mask!
     1 his-snd-t +!  his-snd-t @ 3000 > if  3000 his-snd-t !  then
     alert  his-cond @ down-cond <> if  report-near  then
     0 his-no-root !  1 his-root-ok !
@@ -477,7 +477,7 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
             show-him  tell-doing exit
         then
     then
-    his-2b @ if  through-mask  else  his-floor  then  body-mask!
+    his-2b @ if  through-mask  else  hewie-floor  then  body-mask!
     his-root-ok @ fit-floor
     0 his-no-root !  1 his-root-ok !
     cutscene-active? if  standing-frame  else  own-decisions  then

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-7
-USING: engine common actors messages room-names story.words story.shared story-names ;
+USING: engine common actors messages room-names story.words story.shared story-names floor-flags ;
 
 \ one of the fish swimming its way (swim path k), on and on
 : swim ( id k -- )
@@ -47,7 +47,7 @@ USING: engine common actors messages room-names story.words story.shared story-n
     then
     1 $2300 sound-volume
     0 old-mansion-b1-7.cmd01
-    1 2 $10000000 nav-group
+    2 hole-floor floor-on
 ;
 
 : old-mansion-b1-7.char-enter ( -- )   \ 00429210

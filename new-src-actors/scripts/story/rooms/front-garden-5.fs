@@ -2,10 +2,10 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-5
-USING: actors messages room-names story.words story.shared flag-names story-names ;
+USING: actors messages room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ a hanging thing (the room's +0x34 (byte 3 + 2) object) swinging, by byte 4: 0 / 2 set going
-\ (12 degrees) away from the partner / Fiona; 1 a step (22.5 degrees of its swing, shrinking to
+\ (12 degrees) away from the partner / Fiona; 1 a step-floor (22.5 degrees of its swing, shrinking to
 \ 0.4 at each end; under half a degree it stops) - 2 while it swings
 : swing-step ( a n -- settled? )   \ (on 22.5 degrees of its swing, shrinking near the middle)
     {: a n :}
@@ -48,7 +48,7 @@ fvariable sw-dx  fvariable sw-dz
     0= if  0 0 var-set  1  -276.5e 3e 160e effects:loop-sprite  var-set  exit  then
     begin  front-garden-5.fall while  yield  repeat ;
 \ room 0x2D: two hanging things (the room's objects 4 and 5) that Fiona pushes as she walks by:
-\ past a step total of 5 they swing for 20 frames and the first toggles event flag 3 with a
+\ past a step-floor total of 5 they swing for 20 frames and the first toggles event flag 3 with a
 \ sound (hangers_swing).
 : front-garden-5.cmd02 ( b0 -- )  4 2 1 3 1 2  5e hangers-swing ;   \ (Fiona's step's length past 5; event flag 3)
 \ Hewie (in state 0x7F, +0xF3564) within 5 of the spot by byte 3: 0 (-259.5, 190), 1 (-276, 160)
@@ -64,18 +64,18 @@ fvariable sw-dx  fvariable sw-dz
     $16 1.0 0 bgm
     0 1 object-hidden
     1 1 object-hidden
-    2 1 $14 door-bits
+    2 part-shown
     c2f-3-flag1 story-flag? not if
         $1F $AC $60 $26 $50 $19 $1F $12 $80 0 9 effect-string
     then
     fg-5-breakable-broken story-flag? not if
-        1 2 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        2 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 2 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        2 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
         fg-5-beef-jerky story-flag? not if
             2 -14.0 -9.0 97.0 flicker-sprite
         then
@@ -317,9 +317,9 @@ fvariable sw-dx  fvariable sw-dz
         0 -14.0 -10.0 97.0 5 8 1 zone
         self-who 0 char-in-zone? if
             fg-5-breakable-broken story-flag-set
-            0 2 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            2 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             -14.0 -10.0 97.0 0 -2143272896 0 0.0 shards-at
             3 6 -14.0 -10.0 97.0 0 0 sound
             $40 $10A noise
@@ -346,12 +346,12 @@ fvariable sw-dx  fvariable sw-dz
     $14C -90.0 115.0 -90 $FFFF $A self-move-to
     self-wait-done
     1 self-scripted
-    0 0 8 nav-group
-    1 0 $30 nav-group
+    0 solid-floor floor-off
+    0 keeps-fiona-off keeps-pursuers-off or floor-on
     $155 -130.0 115.0 1.5 35 hewie-go-to
     self-wait-done
-    0 0 $30 nav-group
-    1 0 8 nav-group
+    0 keeps-fiona-off keeps-pursuers-off or floor-off
+    0 solid-floor floor-on
     0 self-scripted
     self-idle-or-end
 ;
@@ -360,12 +360,12 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     hewie-bark
     self-wait-done
-    0 1 8 nav-group
+    1 solid-floor floor-off
     $63 -130.0 180.0 -90 $FFFF $A self-move-to
     self-wait-done
     $137 $FFFF $B self-move-tri
     self-wait-done
-    0 1 $30 nav-group
+    1 keeps-fiona-off keeps-pursuers-off or floor-off
     self-idle-or-end
 ;
 
@@ -373,12 +373,12 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     hewie-bark
     self-wait-done
-    0 1 8 nav-group
+    1 solid-floor floor-off
     $39 -230.0 180.0 90 $FFFF $A self-move-to
     self-wait-done
     $1B9 $FFFF $B self-move-tri
     self-wait-done
-    0 1 $30 nav-group
+    1 keeps-fiona-off keeps-pursuers-off or floor-off
     self-idle-or-end
 ;
 
@@ -417,12 +417,12 @@ fvariable sw-dx  fvariable sw-dz
     $4E -170.0 115.0 90 $FFFF $A self-move-to
     self-wait-done
     1 self-scripted
-    0 0 8 nav-group
-    1 0 $30 nav-group
+    0 solid-floor floor-off
+    0 keeps-fiona-off keeps-pursuers-off or floor-on
     $155 -130.0 115.0 1.5 35 hewie-go-to
     self-wait-done
-    0 0 $30 nav-group
-    1 0 8 nav-group
+    0 keeps-fiona-off keeps-pursuers-off or floor-off
+    0 solid-floor floor-on
     0 self-scripted
     self-idle-or-end
 ;

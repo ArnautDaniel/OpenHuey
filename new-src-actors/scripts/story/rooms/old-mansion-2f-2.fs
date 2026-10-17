@@ -2,10 +2,10 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-2
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-2f-2.enter ( -- )   \ 004086A0
-    1 1 $300000 nav-group
+    1 both-halves floor-on
     om2f-2-flag1 story-flag? not if
         hewie-who $56 char-in-room? 119 hewie-action? and if
             $4A 0 65 hewie-to-room
@@ -13,7 +13,7 @@ USING: room-names story.words story.shared flag-names story-names ;
             2 ebit-set
         then
     else
-        0 1 $14 door-bits
+        0 part-shown
         2 1 object-hidden
     then
     om2f-4-viride-medallion story-flag? not if
@@ -143,7 +143,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     wait-fade
     world-held state-flag-set
     50 hewie-trust
-    0 1 $14 door-bits
+    0 part-shown
     2 1 object-hidden
     0 self-idle-anim
     fiona-who $CB -38.75 -31.7 0 char-to-xz

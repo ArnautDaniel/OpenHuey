@@ -5,10 +5,10 @@ IN: story.rooms.old-mansion-2f-11
 USING: engine actors messages vectors story.state room-names story.words story.shared flag-names story-names ;
 
 \ room 0x62 (Room62_Cmd00_ptmf): object byte 4 swings: byte 3 0 starts it (phase +0x30 0, size
-\ +0x34 0.01; object 0 with sound 7), else a step (+0x10 = size x sin(phase), phase on 60
+\ +0x34 0.01; object 0 with sound 7), else a step-floor (+0x10 = size x sin(phase), phase on 60
 \ degrees, the size down 0.001); 2 until it is still
 : old-mansion-2f-11.cmd00 ( b0 b1 -- )   \ (object b1 - the room's string - swinging: b0 0 starts it (size 0.01; the first with its
-    \ sound 7), else a step each frame till it is still)
+    \ sound 7), else a step-floor each frame till it is still)
     {: op k | a n :}  k room-object to n to a  a n object-here? 0= if  exit  then
     op 0= if
         0e a n $30 object!  0.01e a n $34 object!

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-9
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-2f-9.enter ( -- )   \ 003F1800
     c1f-14-flag2 story-flag? c3f-2-flag1 story-flag? not and if
@@ -10,7 +10,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         force-followed state-flag-set
         stalker-no-fear state-flag-set
         no-stalker-camera state-flag-set
-        1 0 $1000010 nav-group
+        0 keeps-fiona-off keeps-hewie-off or floor-on
         stalker-who char-activate
         $FE 5 354 2 stalker-to-room
         0 stalker-who 0 char-model-op

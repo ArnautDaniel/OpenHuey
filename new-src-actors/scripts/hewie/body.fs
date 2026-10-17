@@ -2,9 +2,8 @@
 \ operations), Fiona's and the others' bodies (facts), whom he is with, his way over the floor,
 \ chance, and the words that choose his next action (filled in by hewie.actions).
 IN: hewie.body
-USING: items engine game-state actors messages common facts paths vectors flag-names hewie-names hewie.state ;
+USING: items engine game-state actors messages common facts paths vectors flag-names hewie-names hewie.state floor-flags ;
 
-$29020008 constant his-floor   \ the nav triangles he can't stand on
 8 constant through-mask       \ ... going through blocked floor
 
 \ ---- chance (the original's gRandom: 0 <= r < 1) ----
@@ -70,10 +69,9 @@ enum: dog-costume  own-coat shepherd-coat third-coat ;
 
 \ ---- his way over the floor (Hewie_PlanTo / Hewie_PlanAndGo) ----
 \ triangles either side of a room's divider (their nav flags)
-$100000 constant near-side   $200000 constant far-side
-: side-of ( tri -- bits )  nav-flags near-side far-side or and ;
+: side-of ( tri -- bits )  nav-flags one-half other-half or and ;
 : across? ( tri -- flag )   \ the other side of the divider from him
-    side-of his-tri side-of {: a b :}  a far-side = b near-side = and  a near-side = b far-side = and or ;
+    side-of his-tri side-of {: a b :}  a other-half = b one-half = and  a one-half = b other-half = and or ;
 \ a way to v on `tri` (not across the divider): true if there is one
 : plan-to ( tri v -- flag )
     {: tri v :}  tri across? if  false exit  then

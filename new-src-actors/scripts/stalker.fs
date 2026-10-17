@@ -3,7 +3,7 @@
 \ tables, his numbers, his model; in the house - placed, standing, growling, telling the danger
 \ he is about; searching the room (stalker/search.fs: his modes, his route of stops, walking).
 IN: stalker
-USING: engine game-state actors messages common facts flag-names room-names paths vectors hewie-names stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.leads stalker.pursue stalker.grab stalker.struck stalker.bitten stalker.riccardo stalker.lorenzo2 stalker.ladder stalker.head stalker.names stalker.anims stalker.sounds ;
+USING: engine game-state actors messages common facts flag-names room-names paths vectors hewie-names stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.leads stalker.pursue stalker.grab stalker.struck stalker.bitten stalker.riccardo stalker.lorenzo2 stalker.ladder stalker.head stalker.names stalker.anims stalker.sounds floor-flags ;
 
 : me ( -- id )  self ;
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
@@ -220,8 +220,6 @@ end-behaviour
 : bodied ( floor -- ) ( F: width height -- )
     body-size  dup my-floor !  body-mask!  body-off  0 in-game !
     self subscribe tick  self subscribe entered-room  self subscribe write-save  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
-$2C020068 constant debilitas-floor   \ (Debilitas_BlockFlags: the triangles he can't stand on)
-$2C020028 constant pursuer-floor     \ (NPC_BlockFlags: the Pursuer's)
 
 \ ---- Debilitas (debilitas.c Debilitas_Setup, DebilitasModel): 70 health (hard: 110), 5 across,
 \ 20 tall; his model O_DB0/DB0_000, its motion table, his sounds (bank 7); his own rooms (his

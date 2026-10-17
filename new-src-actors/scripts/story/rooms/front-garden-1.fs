@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-1
-USING: actors room-names story.words story.shared flag-names story-names ;
+USING: actors room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x00: a grey glow (Effect737D0, size 30) at one of four spots picked by byte 3
 \ (glow4_spot from spot 0): byte 4 0 starts it, its slot kept in event variable byte 3; else it
@@ -17,12 +17,12 @@ USING: actors room-names story.words story.shared flag-names story-names ;
         $1F $AC $60 $26 $50 $19 $1F $12 $80 0 9 effect-string
     else
         $80C0F2AA 0 1 screen-blend
-        3 1 $14 door-bits
-        4 1 $14 door-bits
-        5 1 $14 door-bits
-        6 1 $14 door-bits
-        7 1 $14 door-bits
-        8 1 $14 door-bits
+        3 part-shown
+        4 part-shown
+        5 part-shown
+        6 part-shown
+        7 part-shown
+        8 part-shown
         0 0 front-garden-1.cmd00
         1 0 front-garden-1.cmd00
         2 0 front-garden-1.cmd00
@@ -35,18 +35,18 @@ USING: actors room-names story.words story.shared flag-names story-names ;
         $A -372.5 82.0 236.3 $E $80 $80 $80 $50 specks
     then
     got-broken-marionette story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
     else
-        0 0 $14 door-bits
+        0 part-hidden
     then
     fg-1-breakable-broken story-flag? not if
-        1 1 $8000000 nav-group
-        1 1 $14 door-bits
-        2 0 $14 door-bits
+        1 keeps-people-off floor-on
+        1 part-shown
+        2 part-hidden
     else
-        0 1 $8000000 nav-group
-        1 0 $14 door-bits
-        2 1 $14 door-bits
+        1 keeps-people-off floor-off
+        1 part-hidden
+        2 part-shown
     then
     0 4 0.0 0.687 0.187 0.312 zone-rect
     fg-1-medallion-found story-flag? fg-1-medallion story-flag? not and if
@@ -121,9 +121,9 @@ USING: actors room-names story.words story.shared flag-names story-names ;
         0 -284.0 60.0 -97.0 5 8 1 zone
         self-who 0 char-in-zone? if
             fg-1-breakable-broken story-flag-set
-            0 1 $8000000 nav-group
-            1 0 $14 door-bits
-            2 1 $14 door-bits
+            1 keeps-people-off floor-off
+            1 part-hidden
+            2 part-shown
             -284.0 60.0 -97.0 0 -2143272896 0 0.0 shards-at
             $88 5 -284.0 60.0 -97.0 0 0 sound
             $40 $185 noise
@@ -408,268 +408,268 @@ USING: actors room-names story.words story.shared flag-names story-names ;
 
 : front-garden-1.act08 ( -- )   \ 003EDF50
     $F8 self-is? if
-        3 0 $14 door-bits
+        3 part-hidden
         0 1 front-garden-1.cmd00
         yield
-        3 1 $14 door-bits
+        3 part-shown
         0 0 front-garden-1.cmd00
         yield
-        3 0 $14 door-bits
+        3 part-hidden
         0 1 front-garden-1.cmd00
         self-frames-reset
         4 self-wait-frames
         $32 chance? if
-            3 1 $14 door-bits
+            3 part-shown
             0 0 front-garden-1.cmd00
             self-frames-reset
             2 self-wait-frames
-            3 0 $14 door-bits
+            3 part-hidden
             0 1 front-garden-1.cmd00
             yield
-            3 1 $14 door-bits
+            3 part-shown
             0 0 front-garden-1.cmd00
             yield
-            3 0 $14 door-bits
+            3 part-hidden
             0 1 front-garden-1.cmd00
             self-frames-reset
             8 self-wait-frames
         then
         $19 chance? if
-            3 1 $14 door-bits
+            3 part-shown
             0 0 front-garden-1.cmd00
             self-frames-reset
             2 self-wait-frames
-            3 0 $14 door-bits
+            3 part-hidden
             0 1 front-garden-1.cmd00
             yield
-            3 1 $14 door-bits
+            3 part-shown
             0 0 front-garden-1.cmd00
             yield
-            3 0 $14 door-bits
+            3 part-hidden
             0 1 front-garden-1.cmd00
             self-frames-reset
             self-wait-16
         then
         5 chance? if
-            3 1 $14 door-bits
+            3 part-shown
             0 0 front-garden-1.cmd00
             yield
-            3 0 $14 door-bits
+            3 part-hidden
             0 1 front-garden-1.cmd00
             yield
-            3 1 $14 door-bits
+            3 part-shown
             0 0 front-garden-1.cmd00
             yield
-            3 0 $14 door-bits
+            3 part-hidden
             0 1 front-garden-1.cmd00
             self-frames-reset
             $20 self-wait-frames
         then
-        3 1 $14 door-bits
+        3 part-shown
         0 0 front-garden-1.cmd00
         yield
-        3 0 $14 door-bits
+        3 part-hidden
         0 1 front-garden-1.cmd00
         yield
-        3 1 $14 door-bits
+        3 part-shown
         0 0 front-garden-1.cmd00
     else $F7 self-is? if
-        4 0 $14 door-bits
+        4 part-hidden
         1 1 front-garden-1.cmd00
         yield
-        4 1 $14 door-bits
+        4 part-shown
         1 0 front-garden-1.cmd00
         yield
-        4 0 $14 door-bits
+        4 part-hidden
         1 1 front-garden-1.cmd00
         self-frames-reset
         4 self-wait-frames
         $32 chance? if
-            4 1 $14 door-bits
+            4 part-shown
             1 0 front-garden-1.cmd00
             self-frames-reset
             2 self-wait-frames
-            4 0 $14 door-bits
+            4 part-hidden
             1 1 front-garden-1.cmd00
             yield
-            4 1 $14 door-bits
+            4 part-shown
             1 0 front-garden-1.cmd00
             yield
-            4 0 $14 door-bits
+            4 part-hidden
             1 1 front-garden-1.cmd00
             self-frames-reset
             8 self-wait-frames
         then
         $19 chance? if
-            4 1 $14 door-bits
+            4 part-shown
             1 0 front-garden-1.cmd00
             self-frames-reset
             2 self-wait-frames
-            4 0 $14 door-bits
+            4 part-hidden
             1 1 front-garden-1.cmd00
             yield
-            4 1 $14 door-bits
+            4 part-shown
             1 0 front-garden-1.cmd00
             yield
-            4 0 $14 door-bits
+            4 part-hidden
             1 1 front-garden-1.cmd00
             self-frames-reset
             self-wait-16
         then
         5 chance? if
-            4 1 $14 door-bits
+            4 part-shown
             1 0 front-garden-1.cmd00
             yield
-            4 0 $14 door-bits
+            4 part-hidden
             1 1 front-garden-1.cmd00
             yield
-            4 1 $14 door-bits
+            4 part-shown
             1 0 front-garden-1.cmd00
             yield
-            4 0 $14 door-bits
+            4 part-hidden
             1 1 front-garden-1.cmd00
             self-frames-reset
             $20 self-wait-frames
         then
-        4 1 $14 door-bits
+        4 part-shown
         1 0 front-garden-1.cmd00
         yield
-        4 0 $14 door-bits
+        4 part-hidden
         1 1 front-garden-1.cmd00
         yield
-        4 1 $14 door-bits
+        4 part-shown
         1 0 front-garden-1.cmd00
     else $F6 self-is? if
-        5 0 $14 door-bits
+        5 part-hidden
         2 1 front-garden-1.cmd00
         yield
-        5 1 $14 door-bits
+        5 part-shown
         2 0 front-garden-1.cmd00
         yield
-        5 0 $14 door-bits
+        5 part-hidden
         2 1 front-garden-1.cmd00
         self-frames-reset
         4 self-wait-frames
         $32 chance? if
-            5 1 $14 door-bits
+            5 part-shown
             2 0 front-garden-1.cmd00
             self-frames-reset
             2 self-wait-frames
-            5 0 $14 door-bits
+            5 part-hidden
             2 1 front-garden-1.cmd00
             yield
-            5 1 $14 door-bits
+            5 part-shown
             2 0 front-garden-1.cmd00
             yield
-            5 0 $14 door-bits
+            5 part-hidden
             2 1 front-garden-1.cmd00
             self-frames-reset
             8 self-wait-frames
         then
         $19 chance? if
-            5 1 $14 door-bits
+            5 part-shown
             2 0 front-garden-1.cmd00
             self-frames-reset
             2 self-wait-frames
-            5 0 $14 door-bits
+            5 part-hidden
             2 1 front-garden-1.cmd00
             yield
-            5 1 $14 door-bits
+            5 part-shown
             2 0 front-garden-1.cmd00
             yield
-            5 0 $14 door-bits
+            5 part-hidden
             2 1 front-garden-1.cmd00
             self-frames-reset
             self-wait-16
         then
         5 chance? if
-            5 1 $14 door-bits
+            5 part-shown
             2 0 front-garden-1.cmd00
             yield
-            5 0 $14 door-bits
+            5 part-hidden
             2 1 front-garden-1.cmd00
             yield
-            5 1 $14 door-bits
+            5 part-shown
             2 0 front-garden-1.cmd00
             yield
-            5 0 $14 door-bits
+            5 part-hidden
             2 1 front-garden-1.cmd00
             self-frames-reset
             $20 self-wait-frames
         then
-        5 1 $14 door-bits
+        5 part-shown
         2 0 front-garden-1.cmd00
         yield
-        5 0 $14 door-bits
+        5 part-hidden
         2 1 front-garden-1.cmd00
         yield
-        5 1 $14 door-bits
+        5 part-shown
         2 0 front-garden-1.cmd00
     else $F5 self-is? if
-        6 0 $14 door-bits
+        6 part-hidden
         3 1 front-garden-1.cmd00
         yield
-        6 1 $14 door-bits
+        6 part-shown
         3 0 front-garden-1.cmd00
         yield
-        6 0 $14 door-bits
+        6 part-hidden
         3 1 front-garden-1.cmd00
         self-frames-reset
         4 self-wait-frames
         $32 chance? if
-            6 1 $14 door-bits
+            6 part-shown
             3 0 front-garden-1.cmd00
             self-frames-reset
             2 self-wait-frames
-            6 0 $14 door-bits
+            6 part-hidden
             3 1 front-garden-1.cmd00
             yield
-            6 1 $14 door-bits
+            6 part-shown
             3 0 front-garden-1.cmd00
             yield
-            6 0 $14 door-bits
+            6 part-hidden
             3 1 front-garden-1.cmd00
             self-frames-reset
             8 self-wait-frames
         then
         $19 chance? if
-            6 1 $14 door-bits
+            6 part-shown
             3 0 front-garden-1.cmd00
             self-frames-reset
             2 self-wait-frames
-            6 0 $14 door-bits
+            6 part-hidden
             3 1 front-garden-1.cmd00
             yield
-            6 1 $14 door-bits
+            6 part-shown
             3 0 front-garden-1.cmd00
             yield
-            6 0 $14 door-bits
+            6 part-hidden
             3 1 front-garden-1.cmd00
             self-frames-reset
             self-wait-16
         then
         5 chance? if
-            6 1 $14 door-bits
+            6 part-shown
             3 0 front-garden-1.cmd00
             yield
-            6 0 $14 door-bits
+            6 part-hidden
             3 1 front-garden-1.cmd00
             yield
-            6 1 $14 door-bits
+            6 part-shown
             3 0 front-garden-1.cmd00
             yield
-            6 0 $14 door-bits
+            6 part-hidden
             3 1 front-garden-1.cmd00
             self-frames-reset
             $20 self-wait-frames
         then
-        6 1 $14 door-bits
+        6 part-shown
         3 0 front-garden-1.cmd00
         yield
-        6 0 $14 door-bits
+        6 part-hidden
         3 1 front-garden-1.cmd00
         yield
-        6 1 $14 door-bits
+        6 part-shown
         3 0 front-garden-1.cmd00
     then then then then
     self-idle-or-end
@@ -698,9 +698,9 @@ USING: actors room-names story.words story.shared flag-names story-names ;
     self-wait-done
     hewie-bark
     self-wait-done
-    0 0 8 nav-group
-    1 0 $10 nav-group
-    1 0 $20 nav-group
+    0 solid-floor floor-off
+    0 keeps-fiona-off floor-on
+    0 keeps-pursuers-off floor-on
     $208 -206.0 -116.0 138 $FFFF $A self-move-to
     self-wait-done
     $1C03 self-anim
@@ -714,12 +714,12 @@ USING: actors room-names story.words story.shared flag-names story-names ;
     $8012 message   \ "You've obtained ."
     wait-message
     self-wait-done
-    0 0 $14 door-bits
+    0 part-hidden
     40 hewie-trust
     fiona-who camera-follow
     $54 $FFFF $B self-move-tri
     self-wait-done
-    1 0 8 nav-group
+    0 solid-floor floor-on
     1 counter-set
     0 self-scripted
     self-idle-or-end
@@ -820,12 +820,12 @@ USING: actors room-names story.words story.shared flag-names story-names ;
 : front-garden-1.act11 ( -- )   \ 003EE450
     self-wait-done
     $80C0F2AA 0 1 screen-blend
-    3 1 $14 door-bits
-    4 1 $14 door-bits
-    5 1 $14 door-bits
-    6 1 $14 door-bits
-    7 1 $14 door-bits
-    8 1 $14 door-bits
+    3 part-shown
+    4 part-shown
+    5 part-shown
+    6 part-shown
+    7 part-shown
+    8 part-shown
     0 0 front-garden-1.cmd00
     1 0 front-garden-1.cmd00
     2 0 front-garden-1.cmd00
@@ -836,7 +836,7 @@ USING: actors room-names story.words story.shared flag-names story-names ;
     $10 -368.0 100.8 165.0 $C $80 $80 $80 $40 specks
     $A -327.5 82.0 236.3 $E $80 $80 $80 $50 specks
     $A -372.5 82.0 236.3 $E $80 $80 $80 $50 specks
-    0 1 $14 door-bits
+    0 part-shown
     3 1 movie-play
     2 cutscene-start
     yield
@@ -863,12 +863,12 @@ USING: actors room-names story.words story.shared flag-names story-names ;
     yield
     scene-wait-ready
     $80C0F2AA 0 1 screen-blend
-    3 1 $14 door-bits
-    4 1 $14 door-bits
-    5 1 $14 door-bits
-    6 1 $14 door-bits
-    7 1 $14 door-bits
-    8 1 $14 door-bits
+    3 part-shown
+    4 part-shown
+    5 part-shown
+    6 part-shown
+    7 part-shown
+    8 part-shown
     0 0 front-garden-1.cmd00
     1 0 front-garden-1.cmd00
     2 0 front-garden-1.cmd00
@@ -879,7 +879,7 @@ USING: actors room-names story.words story.shared flag-names story-names ;
     $10 -368.0 100.8 165.0 $C $80 $80 $80 $40 specks
     $A -327.5 82.0 236.3 $E $80 $80 $80 $50 specks
     $A -372.5 82.0 236.3 $E $80 $80 $80 $50 specks
-    0 1 $14 door-bits
+    0 part-shown
     0 $F9 $10 action
     panic-eased
     $FFFF message-prepare

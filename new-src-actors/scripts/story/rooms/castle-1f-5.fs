@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-5
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x10 (Room10_Cond00_ptmf): the stalker is there, not about, in mode 2, 6 or 7
 : castle-1f-5.cond00? ( -- flag )  stalker-there? stalker-told? 0= and debilitas? and ;
@@ -27,13 +27,13 @@ USING: room-names story.words story.shared flag-names story-names ;
         then
     then
     c1f-5-breakable-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
         c1f-5-antimony-powder story-flag? not if
             3 41.0 1.0 -19.0 flicker-sprite
         then
@@ -214,9 +214,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 41.0 0.0 -19.0 5 8 1 zone
         self-who 0 char-in-zone? if
             c1f-5-breakable-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             41.0 0.0 -19.0 0 -2146430960 0 0.0 shards-at
             $88 5 41.0 0.0 -19.0 0 0 sound
             $40 $232 noise

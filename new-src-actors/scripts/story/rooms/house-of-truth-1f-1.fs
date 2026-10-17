@@ -2,20 +2,20 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-1
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : house-of-truth-1f-1.enter ( -- )   \ 00430AB0
     room-sounds
     ht1f-1-flag1 story-flag? not if
-        0 1 $14 door-bits
-        1 0 $14 door-bits
-        0 1 8 nav-group
-        1 0 8 nav-group
+        0 part-shown
+        1 part-hidden
+        1 solid-floor floor-off
+        0 solid-floor floor-on
     else
-        0 0 $14 door-bits
-        1 1 $14 door-bits
-        0 0 8 nav-group
-        1 1 8 nav-group
+        0 part-hidden
+        1 part-shown
+        0 solid-floor floor-off
+        1 solid-floor floor-on
     then
     0 -24.6 22.1 -26.4 1 flame-in
     ht1f-1-album-medallion-found story-flag? ht1f-1-album-medallion story-flag? not and if
@@ -31,36 +31,36 @@ USING: room-names story.words story.shared flag-names story-names ;
             $81 0 321 4 10 -1 0 0.0 creature-place
         then
     then
-    1 $51 $10000000 nav-tri-flags
-    1 $21C $10000000 nav-tri-flags
-    1 $2F $10000000 nav-tri-flags
-    1 $54 $10000000 nav-tri-flags
-    1 $23B $10000000 nav-tri-flags
-    1 $43 $10000000 nav-tri-flags
-    1 $22C $10000000 nav-tri-flags
-    1 $44 $10000000 nav-tri-flags
-    1 $22D $10000000 nav-tri-flags
-    1 $45 $10000000 nav-tri-flags
-    1 $22E $10000000 nav-tri-flags
-    1 $46 $10000000 nav-tri-flags
-    1 $22F $10000000 nav-tri-flags
-    1 $40 $10000000 nav-tri-flags
-    1 $229 $10000000 nav-tri-flags
-    1 $3D $10000000 nav-tri-flags
-    1 $226 $10000000 nav-tri-flags
-    1 $3A $10000000 nav-tri-flags
-    1 $224 $10000000 nav-tri-flags
-    1 $28 $10000000 nav-tri-flags
-    1 $216 $10000000 nav-tri-flags
-    1 $2D $10000000 nav-tri-flags
-    1 $21A $10000000 nav-tri-flags
-    1 $53 $10000000 nav-tri-flags
-    1 $21E $10000000 nav-tri-flags
-    1 $31 $10000000 nav-tri-flags
-    1 $56 $10000000 nav-tri-flags
-    1 $23D $10000000 nav-tri-flags
-    1 $4B $10000000 nav-tri-flags
-    1 $234 $10000000 nav-tri-flags
+    $51 hole-floor tri-floor-on
+    $21C hole-floor tri-floor-on
+    $2F hole-floor tri-floor-on
+    $54 hole-floor tri-floor-on
+    $23B hole-floor tri-floor-on
+    $43 hole-floor tri-floor-on
+    $22C hole-floor tri-floor-on
+    $44 hole-floor tri-floor-on
+    $22D hole-floor tri-floor-on
+    $45 hole-floor tri-floor-on
+    $22E hole-floor tri-floor-on
+    $46 hole-floor tri-floor-on
+    $22F hole-floor tri-floor-on
+    $40 hole-floor tri-floor-on
+    $229 hole-floor tri-floor-on
+    $3D hole-floor tri-floor-on
+    $226 hole-floor tri-floor-on
+    $3A hole-floor tri-floor-on
+    $224 hole-floor tri-floor-on
+    $28 hole-floor tri-floor-on
+    $216 hole-floor tri-floor-on
+    $2D hole-floor tri-floor-on
+    $21A hole-floor tri-floor-on
+    $53 hole-floor tri-floor-on
+    $21E hole-floor tri-floor-on
+    $31 hole-floor tri-floor-on
+    $56 hole-floor tri-floor-on
+    $23D hole-floor tri-floor-on
+    $4B hole-floor tri-floor-on
+    $234 hole-floor tri-floor-on
 ;
 
 : house-of-truth-1f-1.char-enter ( -- )   \ 00430C40
@@ -356,8 +356,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     stalker-who char-done
     stalker-who 3 char-file-load
     stalker-who char-file-use
-    0 0 8 nav-group
-    1 1 $1000010 nav-group
+    0 solid-floor floor-off
+    1 keeps-fiona-off keeps-hewie-off or floor-on
     $FE $81 457 2 stalker-to-room
     stalker-who $1C9 -53.111 33.905 -82 char-to-xz
     stalker-who char-activate
@@ -366,8 +366,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     no-stalker-camera state-flag-set
     stalker-no-fear state-flag-set
     0 0 player-camera
-    0 0 $14 door-bits
-    1 1 $14 door-bits
+    0 part-hidden
+    1 part-shown
     $E0 door-unlock
     $24 item-use
     2 ebit-set
@@ -428,8 +428,8 @@ USING: room-names story.words story.shared flag-names story-names ;
         6 cutscene-shot? not while
         yield
     repeat
-    0 0 $14 door-bits
-    1 1 $14 door-bits
+    0 part-hidden
+    1 part-shown
     begin
         cutscene-near-end? not while
         yield
@@ -478,7 +478,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : house-of-truth-1f-1.act08 ( -- )   \ 004313B0
     self-wait-done
-    0 1 $14 door-bits
+    0 part-shown
     $B 3 $FF char-load
     3 char-start
     2 1 movie-play

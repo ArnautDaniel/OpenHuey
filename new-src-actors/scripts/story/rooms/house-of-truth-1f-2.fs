@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-2
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x88: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
@@ -11,13 +11,13 @@ USING: room-names story.words story.shared flag-names story-names ;
 : house-of-truth-1f-2.enter ( -- )   \ 00432CA0
     room-sounds
     ht1f-2-breakable-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
         ht1f-2-refined-antimony story-flag? not if
             1 -0.4 71.0 -123.2 flicker-sprite
         then
@@ -29,32 +29,32 @@ USING: room-names story.words story.shared flag-names story-names ;
     ht1f-2-prima-magnesia-found story-flag? ht1f-2-prima-magnesia story-flag? not and if
         2 35.0 71.0 33.0 flicker-sprite
     then
-    1 $51 $10000000 nav-tri-flags
-    1 $21C $10000000 nav-tri-flags
-    1 $2F $10000000 nav-tri-flags
-    1 $54 $10000000 nav-tri-flags
-    1 $23B $10000000 nav-tri-flags
-    1 $43 $10000000 nav-tri-flags
-    1 $22C $10000000 nav-tri-flags
-    1 $350 $10000000 nav-tri-flags
-    1 $41 $10000000 nav-tri-flags
-    1 $22D $10000000 nav-tri-flags
-    1 $354 $10000000 nav-tri-flags
-    1 $232 $10000000 nav-tri-flags
-    1 $355 $10000000 nav-tri-flags
-    1 $34C $10000000 nav-tri-flags
-    1 $35C $10000000 nav-tri-flags
-    1 $351 $10000000 nav-tri-flags
-    1 $48 $10000000 nav-tri-flags
-    1 $235 $10000000 nav-tri-flags
-    1 $356 $10000000 nav-tri-flags
-    1 $234 $10000000 nav-tri-flags
-    1 $4B $10000000 nav-tri-flags
-    1 $23D $10000000 nav-tri-flags
-    1 $56 $10000000 nav-tri-flags
-    1 $31 $10000000 nav-tri-flags
-    1 $21E $10000000 nav-tri-flags
-    1 $53 $10000000 nav-tri-flags
+    $51 hole-floor tri-floor-on
+    $21C hole-floor tri-floor-on
+    $2F hole-floor tri-floor-on
+    $54 hole-floor tri-floor-on
+    $23B hole-floor tri-floor-on
+    $43 hole-floor tri-floor-on
+    $22C hole-floor tri-floor-on
+    $350 hole-floor tri-floor-on
+    $41 hole-floor tri-floor-on
+    $22D hole-floor tri-floor-on
+    $354 hole-floor tri-floor-on
+    $232 hole-floor tri-floor-on
+    $355 hole-floor tri-floor-on
+    $34C hole-floor tri-floor-on
+    $35C hole-floor tri-floor-on
+    $351 hole-floor tri-floor-on
+    $48 hole-floor tri-floor-on
+    $235 hole-floor tri-floor-on
+    $356 hole-floor tri-floor-on
+    $234 hole-floor tri-floor-on
+    $4B hole-floor tri-floor-on
+    $23D hole-floor tri-floor-on
+    $56 hole-floor tri-floor-on
+    $31 hole-floor tri-floor-on
+    $21E hole-floor tri-floor-on
+    $53 hole-floor tri-floor-on
 ;
 
 : house-of-truth-1f-2.char-enter ( -- )   \ 00432DF0
@@ -209,9 +209,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 -0.4 70.0 -123.2 5 8 1 zone
         self-who 0 char-in-zone? if
             ht1f-2-breakable-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             -0.4 70.0 -123.2 0 -2145378272 0 0.0 shards-at
             $88 5 -0.4 70.0 -123.2 0 0 sound
             $40 $34E noise

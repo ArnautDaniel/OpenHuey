@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-3
-USING: engine room-names story.words story.shared flag-names story-names ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-2f-3.cmd00 ( -- )  1 0 tv-in ;   \ (room effect 1 the TV showing the screen)
 \ room 0x21 (D_00400B98): the fan turns, except while a movie plays
@@ -32,10 +32,10 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     room-sounds
     castle-2f-3.cmd00
     c2f-3-tv-examined story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
         1 0 1 effect-string
     else
-        0 0 $14 door-bits
+        0 part-hidden
         1 1 1 effect-string
         1 noise-level
     then
@@ -50,9 +50,9 @@ USING: engine room-names story.words story.shared flag-names story-names ;
         $3D door-lock
     then
     found-file-201 story-flag? found-file-202 story-flag? not and if
-        1 1 $14 door-bits
+        1 part-shown
     else
-        1 0 $14 door-bits
+        1 part-hidden
     then
     0 0 var-set
     1 0 var-set
@@ -227,10 +227,10 @@ USING: engine room-names story.words story.shared flag-names story-names ;
         1 exit-prepare
     then
     c2f-3-tv-examined story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
         1 0 1 effect-string
     else
-        0 0 $14 door-bits
+        0 part-hidden
         1 1 1 effect-string
     then
     found-file-202 story-flag? not if
@@ -707,7 +707,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     world-held state-flag-set
     fiona-who 0 char-no-shadow
     3 0 char-remove
-    1 1 $14 door-bits
+    1 part-shown
     2 castle-2f-3.cmd05
     $3C door-open-clear
     doors-room-in
@@ -911,7 +911,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
             0 $28 castle-2f-3.cmd06
         then
         3 cutscene-shot? if
-            1 1 $14 door-bits
+            1 part-shown
         then
         $15 cutscene-shot? if
             0 castle-2f-3.cmd05
@@ -1007,7 +1007,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
         begin
             yield
             4 sound-bank-loaded? until
-        1 0 $14 door-bits
+        1 part-hidden
         fiona-who $21 5.752 -41.411 178 char-to-xz
         1 1 player-camera
         camera-restart
@@ -1353,7 +1353,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
             castle-2f-3.cmd03
         then
         5 cutscene-shot? if
-            1 0 $14 door-bits
+            1 part-hidden
         then
         cutscene-near-end? not while
         yield
@@ -1538,7 +1538,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 
 : castle-2f-3.act27 ( -- )   \ 004006F0
     self-wait-done
-    1 1 $14 door-bits
+    1 part-shown
     1 fiona-costume
     0 char-in
     3 3 $FF char-load
@@ -1547,7 +1547,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     0 $F1 $12 action
     0 castle-2f-3.cmd02
     0 castle-2f-3.cmd04
-    1 1 $14 door-bits
+    1 part-shown
     fiona-who 1 char-no-shadow
     1 2 movie-play
     0 cutscene-start
@@ -1627,7 +1627,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     0 $F1 $12 action
     0 castle-2f-3.cmd02
     0 castle-2f-3.cmd04
-    1 1 $14 door-bits
+    1 part-shown
     $D 1 char-no-shadow
     3 0 movie-play
     2 cutscene-start

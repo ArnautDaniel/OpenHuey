@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-4
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ character kind 0x1A: byte 3 0 starts Kind26_MoveToB(2, -290, 42); else waits (2) until
 \ Kind26_MoveDoneB says done
@@ -17,13 +17,13 @@ USING: room-names story.words story.shared flag-names story-names ;
         $1F $AC $60 $26 $50 $19 $1F $12 $80 0 9 effect-string
     then
     fg-4-breakable-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
     then
     0 5 0.812 0.687 0.187 0.312 zone-rect
     fg-4-camomile story-flag? not if
@@ -76,9 +76,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 -120.0 0.0 -13.0 5 8 1 zone
         self-who 0 char-in-zone? if
             fg-4-breakable-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             -120.0 0.0 -13.0 0 -2143272896 0 0.0 shards-at
             $88 5 -120.0 0.0 -13.0 0 0 sound
             $40 $124 noise

@@ -7,7 +7,7 @@
 \ closing in); struck (Hewie_TakeBlow: by the stalker, by her, by a door) - his yelp, pushed back
 \ (StateMoveAlong), then down or on (Hewie_AfterYelp).
 IN: hewie.fight
-USING: engine game-state actors messages common facts paths vectors flag-names stalker-names hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states ;
+USING: engine game-state actors messages common facts paths vectors flag-names stalker-names hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states floor-flags ;
 
 \ ---- his fight's animations: the leap, the bite, letting go - at the near flank, the far one,
 \ head on, his leg; thrown off at a flank (hanging on), held on again or flung, at the top of
@@ -103,7 +103,6 @@ defer after-yelp ( -- )   \ (yelped, below)
     anim@ flung-anim = if  his-cond @ down-cond <> if  get-up-anim play  else  after-yelp  then  exit  then
     anim@ get-up-anim = if  after-yelp  then ;
 \ his splash into water (the ripple in rooms 7 / $106)
-$2008000 constant water-floor   \ (a floor's nav flags: water)
 : splash-here ( -- )
     his-tri dup 0< if  drop exit  then  nav-flags water-floor and water-floor <> if  exit  then
     splash-sound 6 0 0 his-at vec@ his-sound  flooded? if  1 his-at water-step  then ;

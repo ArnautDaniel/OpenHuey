@@ -2,17 +2,17 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-1
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-b1-1.enter ( -- )   \ 00415BA0
     omb1-1-breakable-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
         omb1-1-chicken-jerky story-flag? not if
             0 60.5 0.9 -33.4 flicker-sprite
         then
@@ -33,17 +33,17 @@ USING: room-names story.words story.shared flag-names story-names ;
         1 -6.17 39.94 -29.06 flicker-sprite
     then
     1 $2300 sound-volume
-    1 1 8 nav-group
-    1 $51 $10000000 nav-tri-flags
-    1 $50 $10000000 nav-tri-flags
-    1 $EF $10000000 nav-tri-flags
-    1 $DB $10000000 nav-tri-flags
-    1 $FA $10000000 nav-tri-flags
-    1 $F9 $10000000 nav-tri-flags
-    1 $55 $10000000 nav-tri-flags
-    1 $DA $10000000 nav-tri-flags
-    1 $F3 $10000000 nav-tri-flags
-    1 $F8 $10000000 nav-tri-flags
+    1 solid-floor floor-on
+    $51 hole-floor tri-floor-on
+    $50 hole-floor tri-floor-on
+    $EF hole-floor tri-floor-on
+    $DB hole-floor tri-floor-on
+    $FA hole-floor tri-floor-on
+    $F9 hole-floor tri-floor-on
+    $55 hole-floor tri-floor-on
+    $DA hole-floor tri-floor-on
+    $F3 hole-floor tri-floor-on
+    $F8 hole-floor tri-floor-on
 ;
 
 : old-mansion-b1-1.char-enter ( -- )   \ 00415C90
@@ -241,9 +241,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 60.5 -0.1 -33.4 5 8 1 zone
         self-who 0 char-in-zone? if
             omb1-1-breakable-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             60.5 -0.1 -33.4 0 -2144325584 0 0.0 shards-at
             $88 5 60.5 -0.1 -33.4 0 0 sound
             $40 $123 noise
@@ -479,8 +479,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     $C -59.57 -30.97 90 $FFFF $A self-move-to
     self-wait-done
-    0 1 8 nav-group
-    1 1 $30 nav-group
+    1 solid-floor floor-off
+    1 keeps-fiona-off keeps-pursuers-off or floor-on
     $129 -11.17 -29.06 0.3 50 hewie-go-to
     self-wait-done
     $1C03 $A self-anim-blend
@@ -511,7 +511,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     $C -59.57 -30.97 2.0 50 hewie-go-to
     self-wait-done
-    1 1 8 nav-group
+    1 solid-floor floor-on
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end

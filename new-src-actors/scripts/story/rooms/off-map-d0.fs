@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d0
-USING: room-names story.words story.shared flag-names story.clock ;
+USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 
 \ RoomD0_Cmd00
 : off-map-d0.cmd00 ( -- )  clock-stop ;
@@ -14,8 +14,8 @@ USING: room-names story.words story.shared flag-names story.clock ;
 : off-map-d0.cond00? ( -- flag )  true ;   \ (the progress object's +0x7C: ProgressBase_Slot7C, always 1)
 
 : off-map-d0.enter ( -- )   \ 004469C0
-    0 $16F 8 nav-tri-flags
-    0 $174 8 nav-tri-flags
+    $16F solid-floor tri-floor-off
+    $174 solid-floor tri-floor-off
     $19 1.0 0 bgm
     $10 54.3 20.2 154.5 $E $80 $80 $80 $40 specks
     $10 -53.5 20.2 154.5 $E $80 $80 $80 $40 specks

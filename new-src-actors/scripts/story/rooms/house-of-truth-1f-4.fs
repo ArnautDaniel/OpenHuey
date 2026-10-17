@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-4
-USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names ;
+USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ (as RoomC7_Cmd01)
 : house-of-truth-1f-4.cmd00 ( b0 -- )  var-down-by-hit ;
@@ -10,7 +10,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
 \ +0x34 0, amplitude +0x3C 1); 1 steps the phase back 60 degrees and the amplitude down 0.25,
 \ height +0x28 = +0x38 + amplitude * sin, waiting (2) until it has died out
 : house-of-truth-1f-4.cmd01 ( b0 -- )   \ ("dynamo" shaken in z: b0 0 starts it - rest where it is (+0x38), phase
-    \ (+0x34) 0, size (+0x3C) 1; 1 a step each frame - the phase back 60 degrees, the size down
+    \ (+0x34) 0, size (+0x3C) 1; 1 a step-floor each frame - the phase back 60 degrees, the size down
     \ 0.25, z the rest's + size x sin - till it dies out)
     {: b0 :}  s" dynamo" object-here? 0= if  exit  then
     b0 0= if
@@ -100,7 +100,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
             0 0.0 -2.2 65.0 flicker-sprite
         then
     then
-    0 0 $14 door-bits
+    0 part-hidden
     ht1f-4-flag1 story-flag? not if
         force-followed state-flag-set
     then
@@ -192,10 +192,10 @@ USING: engine common actors messages story.state room-names story.words story.sh
                 else
                     hewie-who $11C char-to-tri
                 then then
-                1 0 $1000000 nav-group
+                0 keeps-hewie-off floor-on
                 3 ebit-clear
             else hewie-who 0 char-in-nav-group? not if
-                1 0 $1000000 nav-group
+                0 keeps-hewie-off floor-on
                 3 ebit-clear
             then then
         then
@@ -450,12 +450,12 @@ USING: engine common actors messages story.state room-names story.words story.sh
     $15 1 object-hidden
     $16 1 object-hidden
     0 0.0 -2.2 65.0 flicker-sprite
-    0 0 $14 door-bits
+    0 part-hidden
     1 exit-prepare
     $F $51 fade
     wait-fade
     $48 resident-flag-set
-    0 0 $1000000 nav-group
+    0 keeps-hewie-off floor-off
     scene-locked state-flag-clear
     scene-5-pending state-flag-clear
     0 self-scripted
@@ -486,10 +486,10 @@ USING: engine common actors messages story.state room-names story.words story.sh
 ;
 
 : house-of-truth-1f-4.act06 ( -- )   \ 004343A0
-    0 1 $14 door-bits
+    0 part-shown
     $40000002 6 24.0 5.0 65.0 0 0 sound
     1 ebit-set
-    0 1 $14 door-bits
+    0 part-shown
     3 ebit-set
     7 ebit-set
     1 0 var-set
@@ -502,11 +502,11 @@ USING: engine common actors messages story.state room-names story.words story.sh
         1 240 var? until
     $40000001 6 24.0 5.0 65.0 0 0 sound
     1 ebit-clear
-    0 0 $14 door-bits
+    0 part-hidden
     2 house-of-truth-1f-4.cmd02
-    0 0 $1000000 nav-group
+    0 keeps-hewie-off floor-off
     0 3 var-set
-    0 0 $14 door-bits
+    0 part-hidden
     self-idle-or-end
 ;
 
@@ -582,112 +582,112 @@ USING: engine common actors messages story.state room-names story.words story.sh
 ;
 
 : house-of-truth-1f-4.act09 ( -- )   \ 004344F0
-    0 0 $14 door-bits
+    0 part-hidden
     begin
         $F cutscene-cue-reached? not while
         yield
     repeat
-    0 1 $14 door-bits
+    0 part-shown
     begin
         $12 cutscene-cue-reached? not while
         yield
     repeat
-    0 0 $14 door-bits
+    0 part-hidden
     begin
         $13 cutscene-cue-reached? not while
         yield
     repeat
-    0 1 $14 door-bits
+    0 part-shown
     begin
         $14 cutscene-cue-reached? not while
         yield
     repeat
-    0 0 $14 door-bits
+    0 part-hidden
     begin
         $17 cutscene-cue-reached? not while
         yield
     repeat
-    0 1 $14 door-bits
+    0 part-shown
     begin
         $28 cutscene-cue-reached? not while
         yield
     repeat
-    0 0 $14 door-bits
+    0 part-hidden
     begin
         $29 cutscene-cue-reached? not while
         yield
     repeat
-    0 1 $14 door-bits
+    0 part-shown
     begin
         $2A cutscene-cue-reached? not while
         yield
     repeat
-    0 0 $14 door-bits
+    0 part-hidden
     begin
         $2B cutscene-cue-reached? not while
         yield
     repeat
-    0 1 $14 door-bits
+    0 part-shown
     begin
         $2C cutscene-cue-reached? not while
         yield
     repeat
-    0 0 $14 door-bits
+    0 part-hidden
     begin
         $31 cutscene-cue-reached? not while
         yield
     repeat
-    0 1 $14 door-bits
+    0 part-shown
     begin
         $37 cutscene-cue-reached? not while
         yield
     repeat
-    0 0 $14 door-bits
+    0 part-hidden
     begin
         $38 cutscene-cue-reached? not while
         yield
     repeat
-    0 1 $14 door-bits
+    0 part-shown
     begin
         $39 cutscene-cue-reached? not while
         yield
     repeat
-    0 0 $14 door-bits
+    0 part-hidden
     begin
         $3A cutscene-cue-reached? not while
         yield
     repeat
-    0 1 $14 door-bits
+    0 part-shown
     begin
         $3B cutscene-cue-reached? not while
         yield
     repeat
-    0 0 $14 door-bits
+    0 part-hidden
     begin
         $3C cutscene-cue-reached? not while
         yield
     repeat
-    0 1 $14 door-bits
+    0 part-shown
     begin
         $53 cutscene-cue-reached? not while
         yield
     repeat
-    0 0 $14 door-bits
+    0 part-hidden
     begin
         $54 cutscene-cue-reached? not while
         yield
     repeat
-    0 1 $14 door-bits
+    0 part-shown
     begin
         $63 cutscene-cue-reached? not while
         yield
     repeat
-    0 0 $14 door-bits
+    0 part-hidden
     begin
         $64 cutscene-cue-reached? not while
         yield
     repeat
-    0 1 $14 door-bits
+    0 part-shown
     begin
         cutscene-near-end? not while
         yield

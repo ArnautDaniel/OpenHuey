@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-33
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : off-map-33.char-enter ( -- )   \ 00442DA0
     fiona-who self-is? if
@@ -55,7 +55,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     1 self-wait-frames
     begin
         4 cutscene-shot? if
-            0 0 $14 door-bits
+            0 part-hidden
         then
         cutscene-near-end? not while
         yield
@@ -65,7 +65,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : off-map-33.act02 ( -- )   \ 00442EA0
     self-wait-done
-    0 1 $14 door-bits
+    0 part-shown
     $17 3 $FF char-load
     3 char-start
     fiona-who 1 char-visible
@@ -94,7 +94,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 : off-map-33.enter ( -- )   \ 0047AF70
-    0 1 $14 door-bits
+    0 part-shown
 ;
 
 : off-map-33.phase1 ( -- )   \ 0047AF78

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-6
-USING: engine actors messages room-names story.words story.shared flag-names story-names ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ Room66_Cmd00
 : old-mansion-b1-6.cmd00 ( b0 -- )   \ (character 8 wading, moved by its animation - the cast does that; as a
@@ -52,22 +52,22 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
 
 : old-mansion-b1-6.enter ( -- )   \ 0041E110
     room-sounds
-    0 1 $14 door-bits
-    1 4 $20000 nav-group
+    0 part-shown
+    4 barred-floor floor-on
     omb1-6-flag2 story-flag? not if
-        1 0 $20000 nav-group
+        0 barred-floor floor-on
         0 0 old-mansion-b1-6.cmd01
     then
     omb1-6-flag3 story-flag? not if
-        1 1 $20000 nav-group
+        1 barred-floor floor-on
         1 0 old-mansion-b1-6.cmd01
     then
     omb1-6-flag4 story-flag? not if
-        1 2 $20000 nav-group
+        2 barred-floor floor-on
         2 0 old-mansion-b1-6.cmd01
     then
     omb1-6-flag5 story-flag? not if
-        1 3 $20000 nav-group
+        3 barred-floor floor-on
         3 0 old-mansion-b1-6.cmd01
     then
     omb1-6-medallion story-flag? not if
@@ -430,7 +430,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
         $5A self-wait-frames
     then
     omb1-6-flag5 story-flag-set
-    0 3 $20000 nav-group
+    3 barred-floor floor-off
     3 ebit-set
     self-idle-or-end
 ;
@@ -551,7 +551,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
         $5A self-wait-frames
     then
     omb1-6-flag2 story-flag-set
-    0 0 $20000 nav-group
+    0 barred-floor floor-off
     3 ebit-set
     self-idle-or-end
 ;
@@ -604,7 +604,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
         $5A self-wait-frames
     then
     omb1-6-flag4 story-flag-set
-    0 2 $20000 nav-group
+    2 barred-floor floor-off
     3 ebit-set
     self-idle-or-end
 ;
@@ -665,7 +665,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
         $5A self-wait-frames
     then
     omb1-6-flag3 story-flag-set
-    0 1 $20000 nav-group
+    1 barred-floor floor-off
     3 ebit-set
     self-idle-or-end
 ;
@@ -896,8 +896,8 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
         scene-wait-ready
         3 char-start
         wait-fade
-        0 0 $14 door-bits
-        0 4 $20000 nav-group
+        0 part-hidden
+        4 barred-floor floor-off
         hewie-who char-here? if
             0 hewie-who $10 action-force
         then
@@ -922,8 +922,8 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
             0 hewie-who $10 action-force
         then
         3 char-start
-        0 0 $14 door-bits
-        0 4 $20000 nav-group
+        0 part-hidden
+        4 barred-floor floor-off
         fiona-who $5E 92.522 -37.951 -62 char-to-xz
         8 $196 75.0 -40.0 0 char-to-xz
         8 1 -1 char-camera
@@ -955,8 +955,8 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     8 action-end
     8 char-done
     3 0 char-remove
-    0 1 $14 door-bits
-    1 4 $20000 nav-group
+    0 part-shown
+    4 barred-floor floor-on
     fiona-who camera-follow
     camera-restart
     $F $41 fade
@@ -1071,11 +1071,11 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     fiona-who $5D 75.0 -30.0 180 char-to-xz
     1 30.0 -10.0 0.0 4.0 event-camera
     self-who 1 char-visible
-    0 0 $14 door-bits
+    0 part-hidden
     8 char-activate
-    0 4 $20000 nav-group
+    4 barred-floor floor-off
     8 $196 75.0 -40.0 0 char-to-xz
-    1 4 $20000 nav-group
+    4 barred-floor floor-on
     begin
         0 adx? not while
         yield
@@ -1095,7 +1095,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     $F 0 fade
     wait-fade
     $1F $7C $74 $78 $5A $44 $46 $52 $4B 0 9 effect-string
-    0 1 $14 door-bits
+    0 part-shown
     8 action-end
     8 char-done
     3 0 char-remove

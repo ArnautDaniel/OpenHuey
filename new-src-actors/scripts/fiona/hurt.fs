@@ -5,13 +5,12 @@
 \ caught (a hold: she flinches in his grip and pulls free) - the fright it carries, and getting
 \ up again. How she stands for an attack (`fiona-plight`) is told each frame.
 IN: fiona.hurt
-USING: engine vectors game-state actors messages common facts flag-names rumble items.names fiona.state fiona.anims fiona.sounds fiona.model fiona.moving fiona.fear ;
+USING: engine vectors game-state actors messages common facts flag-names rumble items.names fiona.state fiona.anims fiona.sounds fiona.model fiona.moving fiona.fear floor-flags ;
 
 defer to-idle ( -- )
 \ how he holds her (her-hit-how): by the arm, from the side, from behind, from the front; a door's
 1 constant by-arm   2 constant by-side   3 constant from-behind   4 constant from-front   5 constant by-door
 $8000 constant stumbles   \ (a blow's flag: she stumbles)
-$80001 constant step-floor   \ (a floor's nav flags: a step or a doorway)
 defer grabbed ( -- )   \ (seized outright: fiona.seized)
 defer held-down ( -- )   \ (held by homunculi: fiona.seized)
 defer knocked-off ( -- )   \ (struck on a ladder: fiona.ladder)
@@ -39,7 +38,7 @@ defer drop-door ( -- )   ' noop is drop-door   \ (a door she held let go: fiona.
 : by-a-ladder? ( -- flag )
     nav-links 0 ?do  her-at i nav-link-at? if  true unloop exit  then  loop  false ;
 : on-step? ( -- flag )
-    her-tri @ dup 0< 0= if  nav-flags step-floor 2 or and if  true exit  then  else  drop  then
+    her-tri @ dup 0< 0= if  nav-flags doorway-or-step 2 or and if  true exit  then  else  drop  then
     at-a-door?  by-a-ladder? or ;
 : mode-in? ( m1 m2 -- flag )  her-mode @ tuck = >r = r> or ;   \ (her mode is one of the two)
 7 constant on-rungs-sub
@@ -155,12 +154,12 @@ create from-pt /vec allot
 \ on open floor, else as from behind
 : flinch ( -- )
     her-led @ if  exit  then
-    -1 her-hit-who !  by-arm  her-tri @ dup 0< 0= if  nav-flags step-floor and if  drop from-behind  then  else  drop  then  her-hit-how !
+    -1 her-hit-who !  by-arm  her-tri @ dup 0< 0= if  nav-flags doorway-or-step and if  drop from-behind  then  else  drop  then  her-hit-how !
     react-mode her-mode !  flinch-doing her-doing !  ['] flinching her-act ! ;
 \ his grip: by the arm (1) only on open floor, facing him (else from behind, 3)
 : grip ( how -- how' )
     dup by-arm <> if  exit  then  drop
-    her-tri @ dup 0< 0= if  nav-flags step-floor and if  from-behind exit  then  else  drop  then
+    her-tri @ dup 0< 0= if  nav-flags doorway-or-step and if  from-behind exit  then  else  drop  then
     striker? 0= if  from-behind exit  then
     her-at her-hit-who @ body-at vec-heading her-yaw f@ f- angle-wrap fabs pi f2/ f< by-arm from-behind ? ;
 
@@ -217,7 +216,7 @@ create door-pt /vec allot
 : knocked-or-thrown? ( r -- flag )  dup thrown-r = swap step-knock-r grabbed-r within or ;
 : by-somebody? ( -- flag )  her-hit-who @ dup 0< if  drop false exit  then  s" hewie" actor-named <> ;
 : room-to-throw? ( -- flag )   \ (Actor_TriFreeFor: not on a floor nothing stands on, nor at a door or a ladder)
-    her-tri @ dup 0< 0= if  nav-flags step-floor and if  false exit  then  else  drop  then
+    her-tri @ dup 0< 0= if  nav-flags doorway-or-step and if  false exit  then  else  drop  then
     at-a-door? by-a-ladder? or 0= ;
 
 \ ---- Fiona_React: the blow taken - its fright to her panic, what she was doing dropped, the

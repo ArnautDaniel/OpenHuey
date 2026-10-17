@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-10
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ byte 3: 0 / 1 a named progress call; 2 waits (2) for Progress_Speak(1, 0), then the partner's
 \ message slot shows progress +0x73EDC0; else Progress_SpeechCall and the slot is closed
@@ -20,13 +20,13 @@ USING: room-names story.words story.shared flag-names story-names ;
         1 ebit-set
     then
     cf-10-breakable-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
         cf-10-medallion story-flag? not if
             0 76.5 -25.5 134.5 flicker-sprite
         then
@@ -176,9 +176,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 76.5 -26.5 134.5 5 8 1 zone
         self-who 0 char-in-zone? if
             cf-10-breakable-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             76.5 -26.5 134.5 0 -2144325584 0 0.0 shards-at
             $88 5 76.5 -26.5 134.5 0 0 sound
             $40 $262 noise

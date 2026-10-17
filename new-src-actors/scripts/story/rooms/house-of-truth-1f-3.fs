@@ -2,11 +2,11 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-3
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : house-of-truth-1f-3.enter ( -- )   \ 00433580
     got-golden-candlestick story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
     then
     0 -42.5 45.4 -36.9 1 flame-in
     1 -72.4 17.2 -7.1 1 flame-in
@@ -254,7 +254,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     $902 self-anim
     self-wait-anim
-    0 0 $14 door-bits
+    0 part-hidden
     got-golden-candlestick story-flag-set
     items-40-as-70 story-flag? not if
         $24E item-add

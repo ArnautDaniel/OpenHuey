@@ -1,11 +1,10 @@
 \ fiona/moving.fs - how Fiona moves (Fiona_StateIdleMove, the turning states, Fiona_Footsteps):
 \ her animations' root motion moves her over her floor; she stands, rests, walks and runs.
 IN: fiona.moving
-USING: engine game-state actors messages common vectors facts items.names fiona.state fiona.anims fiona.model fiona.controls flag-names ;
+USING: engine game-state actors messages common vectors facts items.names fiona.state fiona.anims fiona.model fiona.controls flag-names floor-flags ;
 
-$28020018 constant her-floor-mask   \ (the nav triangles she can't stand on: the game's FIONA_NAV_MASK)
 : blocked-floor ( -- mask )   \ (none - the story's 0x20: through anything)
-    her-noclip @ if  0  else  her-floor-mask  then ;
+    her-noclip @ if  0  else  fiona-floor  then ;
 
 \ ---- her animation's root motion this frame (Motion_RootMovement / Motion_RootRotation): its
 \ turn, and its step across, up, ahead ----

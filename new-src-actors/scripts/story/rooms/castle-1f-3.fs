@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-3
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x09 (Room09_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) is in
 \ another room than 9 (the player about too)
@@ -12,28 +12,28 @@ USING: room-names story.words story.shared flag-names story-names ;
     c1f-3-flag1 story-flag? not if
         4 1.0 0 bgm
     then
-    0 4 $1000000 nav-group
+    4 keeps-hewie-off floor-off
     c1f-3-bookshelf-examined story-flag? not if
-        1 0 $800088 nav-group
-        1 1 $40 nav-group
+        0 solid-floor floor-edge or pushable or floor-on
+        1 keeps-debilitas-off floor-on
     else
         2 1 object-hidden
-        0 0 $800088 nav-group
-        0 1 $40 nav-group
-        0 1 $14 door-bits
-        1 2 8 nav-group
-        1 3 $40 nav-group
+        0 solid-floor floor-edge or pushable or floor-off
+        1 keeps-debilitas-off floor-off
+        0 part-shown
+        2 solid-floor floor-on
+        3 keeps-debilitas-off floor-on
     then
     c1f-3-camomile story-flag? not if
         0 -6.0 11.5 -46.0 flicker-sprite
     then
     got-garden-key story-flag? not if
-        3 1 $14 door-bits
+        3 part-shown
     then
     c1f-3-flag1 story-flag? not if
-        1 1 $14 door-bits
+        1 part-shown
     else
-        2 1 $14 door-bits
+        2 part-shown
     then
     c2f-3-flag1 story-flag? not if
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
@@ -244,7 +244,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     $D 4.0 13.0 0 $FFFF $A self-move-to
     self-wait-done
-    1 4 $1000000 nav-group
+    4 keeps-hewie-off floor-on
     self-idle-or-end
 ;
 
@@ -302,8 +302,8 @@ USING: room-names story.words story.shared flag-names story-names ;
         wait-fade
         fiona-who 0 char-no-shadow
         $F2 action-end
-        1 0 $14 door-bits
-        2 1 $14 door-bits
+        1 part-hidden
+        2 part-shown
         2 0 object-hidden
         0 self-idle-anim
         fiona-who $13C 23.771 -27.607 -73 char-to-xz
@@ -320,7 +320,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         self-frames-reset
         4 self-wait-frames
         got-garden-key story-flag-set
-        3 0 $14 door-bits
+        3 part-hidden
         $14 message-param-room
         $14 1 item-give-count
         0 $14 item-tab
@@ -478,8 +478,8 @@ USING: room-names story.words story.shared flag-names story-names ;
         4 cutscene-shot? not while
         yield
     repeat
-    1 0 $14 door-bits
-    2 1 $14 door-bits
+    1 part-hidden
+    2 part-shown
     self-idle-or-end
 ;
 
@@ -510,8 +510,8 @@ USING: room-names story.words story.shared flag-names story-names ;
 : castle-1f-3.act10 ( -- )   \ 003F3A00
     self-wait-done
     4 1.0 0 bgm
-    3 1 $14 door-bits
-    1 1 $14 door-bits
+    3 part-shown
+    1 part-shown
     $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     4 4 movie-play
     3 cutscene-start
@@ -537,7 +537,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-1f-3.act11 ( -- )   \ 003F3AB0
     self-wait-done
-    2 1 $14 door-bits
+    2 part-shown
     $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     2 3 $FF char-load
     3 char-start
@@ -564,7 +564,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-1f-3.act12 ( -- )   \ 003F3B60
     self-wait-done
-    2 1 $14 door-bits
+    2 part-shown
     2 3 $FF char-load
     3 char-start
     1 4 movie-play

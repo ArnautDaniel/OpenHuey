@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-8
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x48 (D_004267F8): the handler's objects 2 and 3 swing (phases 60 degrees apart) - byte 3
 \ 0 sets them still; 1: while slower than 5, Hewie's movement (the squared length of his last
@@ -47,10 +47,10 @@ USING: room-names story.words story.shared flag-names story-names ;
 : old-mansion-1f-8.enter ( -- )   \ 004252D0
     room-sounds
     $19 1.0 0 bgm
-    1 0 $300000 nav-group
+    0 both-halves floor-on
     $7D door-locked? if
-        0 4 $200000 nav-group
-        1 4 $100000 nav-group
+        4 other-half floor-off
+        4 one-half floor-on
     then
     om1f-8-beef-jerky story-flag? not if
         0 122.09 8.28 10.26 flicker-sprite
@@ -73,15 +73,15 @@ USING: room-names story.words story.shared flag-names story-names ;
         then
     then
     hewie-who char-here? 119 hewie-action? and if
-        0 2 8 nav-group
-        1 2 $B0 nav-group
+        2 solid-floor floor-off
+        2 keeps-fiona-off keeps-pursuers-off or floor-edge or floor-on
         hewie-who 8 char-on-tri? not if
             hewie-who 8 76.218 -13.075 90 char-to-xz
             1800 2 hewie-anim
         then
     else
-        0 2 $30 nav-group
-        1 2 $88 nav-group
+        2 keeps-fiona-off keeps-pursuers-off or floor-off
+        2 solid-floor floor-edge or floor-on
         hewie-who 2 char-in-nav-group? if
             hewie-who $175 char-to-tri
         then
@@ -97,7 +97,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         stalker-who char-done
     then
     white-mandragora-used story-flag? not if
-        1 3 $20000 nav-group
+        3 barred-floor floor-on
         $26 3 $FF char-load
         om1f-8-flag2 story-flag? if
             0 $F1 $1C action
@@ -148,8 +148,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     $79 $89 door-copy
     $79 door-reopen-unlock
     exits-rebuild
-    0 4 $100000 nav-group
-    1 4 $200000 nav-group
+    4 one-half floor-off
+    4 other-half floor-on
     hewie-who char-here? if
         0 hewie-side
     then
@@ -449,7 +449,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     $18 item-use
     $7C door-unlock
     white-mandragora-used story-flag-set
-    0 3 $20000 nav-group
+    3 barred-floor floor-off
     $F $54 fade
     $FF 1.0 0 bgm
     5 0 movie-play
@@ -736,8 +736,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     $13 ebit-clear
     1 self-scripted
-    0 2 8 nav-group
-    1 2 $30 nav-group
+    2 solid-floor floor-off
+    2 keeps-fiona-off keeps-pursuers-off or floor-on
     8 76.218 -13.075 -90 $204 5 self-move-to
     self-wait-done
     90 self-turn-angle
@@ -761,8 +761,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-anim
     0 0 hewie-anim
     0 0 hewie-do
-    0 2 $30 nav-group
-    1 2 8 nav-group
+    2 keeps-fiona-off keeps-pursuers-off or floor-off
+    2 solid-floor floor-on
     1 ebit-clear
     0 self-scripted
     self-idle-or-end

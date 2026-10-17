@@ -6,7 +6,7 @@
 \ walking to a spot, turning; `hold-anim`), reporting each frame's end (`moving`). Given another's
 \ model (`cast-dress`: the scripts' hand-over, Pursuer_GiveMotionBanks) it wears that.
 IN: cast
-USING: engine game-state actors messages common vectors facts ;
+USING: engine game-state actors messages common vectors facts floor-flags ;
 
 \ ---- the kinds' figures (their ModelFiles: the first file, its name less the extension) ----
 : kind-file ( kind -- addr len | 0 0 )
@@ -23,7 +23,6 @@ USING: engine game-state actors messages common vectors facts ;
     endcase ;
 9 constant hanging-lorenzo   13 constant fiona-double   14 constant crow   15 constant crow-2
 18 constant fiona-double-2   26 constant rabbit   33 constant kind-33
-$2C020028 constant cast-floor   \ (the Pursuer's: NPC_BlockFlags)
 \ the hard setting's textures (Kind09_ModelFiles: Lorenzo's hanging figure, LRM_000H)
 : kind-textures ( kind -- addr len | 0 0 )
     hanging-lorenzo = hard-mode? and if  s" O_LRM/LRM_000H"  else  0 0  then ;
@@ -202,7 +201,7 @@ PRIVATE>
 behaviour figure
   on spawned ( -- )
       -1 who !  -1 model !  ['] still act !  -1 mv-done !
-      2e 15e body-size  cast-floor body-mask!  body-off
+      2e 15e body-size  pursuer-floor body-mask!  body-off
       -1 st-actor !  self subscribe tick  self subscribe frame-end  self subscribe scene  self subscribe stalker-doing ;
   on cast-load ( id -- )
       dup kind-file dup 0= if  2drop drop exit  then  rot load ;
@@ -216,7 +215,7 @@ behaviour figure
   \ the story's
   on place ( x y z yaw -- )
       cell>f mv-yaw f!  cells>xyz mv-at vec!
-      room-id  mv-at cast-floor v-tri-in  mv-at vec@ body-place  mv-yaw f@ body-turn ;
+      room-id  mv-at pursuer-floor v-tri-in  mv-at vec@ body-place  mv-yaw f@ body-turn ;
   on to-exit ( exit -- )
       0 exit-spot dup 0< if  drop fdrop fdrop fdrop exit  then      ( tri ) ( F: x y z )
       room-id swap body-place ;
@@ -231,7 +230,7 @@ behaviour figure
   on animal-go ( sound x z -- )  {: sound x z :}  sound x cell>f z cell>f animal-go ;   \ (the rooms' commands: the rabbits)
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
       2drop 2drop 2drop 2drop  st-room-is !  sender st-actor ! ;   \ (who he is, and his room)
-  on noclip ( on -- )  if  0  else  cast-floor  then  body-mask! ;   \ (the story's 0x20: through blocked floor)
+  on noclip ( on -- )  if  0  else  pursuer-floor  then  body-mask! ;   \ (the story's 0x20: through blocked floor)
 end-behaviour
 
 : cast-spawn ( slot -- id )

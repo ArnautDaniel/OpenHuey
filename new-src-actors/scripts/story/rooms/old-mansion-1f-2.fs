@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-2
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ the scales ("tenbin") and their pans ("sara_l", "sara_r"): level (byte 3 0) or tipped
 : old-mansion-1f-2.cmd00 ( b0 -- )   \ (the scales, "tenbin", and their pans: level (0) or tipped 25 degrees)
@@ -32,9 +32,9 @@ USING: room-names story.words story.shared flag-names story-names ;
     7 1 object-hidden
     8 1 object-hidden
     medallion-40-done story-flag? not if
-        1 0 $20000 nav-group
+        0 barred-floor floor-on
     else
-        0 1 $14 door-bits
+        0 part-shown
         9 1 object-hidden
         $A 1 object-hidden
     then
@@ -282,8 +282,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     $D 0 object-hidden
     $E 0 object-hidden
     0 old-mansion-1f-2.cmd00
-    0 0 $20000 nav-group
-    0 1 $14 door-bits
+    0 barred-floor floor-off
+    0 part-shown
     9 1 object-hidden
     $A 1 object-hidden
     0 ebit-set

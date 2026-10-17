@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-3
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ the box and the grate, by byte 3: 0 the box's +0x28 on by 0.4; the grate's +0x14 (an angle) 1
 \ back 1.5 degrees, 2 on 0.5, 3 back 0.5
@@ -28,7 +28,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 
 : front-garden-3.enter ( -- )   \ 00404740
     room-sounds
-    1 1 8 nav-group
+    1 solid-floor floor-on
     opening-done story-flag? not if
         0 resident-flag? if
             fg-3-flag3 story-flag-set
@@ -81,16 +81,16 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     else
         $16 1.0 0 bgm
     then
-    3 0 $14 door-bits
-    4 0 $14 door-bits
+    3 part-hidden
+    4 part-hidden
     c2f-3-flag1 story-flag? if
         hewie-found-in-wire story-flag? not if
             0 30 var-set
             $2A 0 360 hewie-to-room
             0 hewie-who 3 action
-            3 1 $14 door-bits
+            3 part-shown
         else
-            4 1 $14 door-bits
+            4 part-shown
         then
     then
     c2f-3-flag1 story-flag? not if
@@ -103,21 +103,21 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         1 front-garden-3.cmd03
     then
     grate-open story-flag? not if
-        1 2 $20000 nav-group
+        2 barred-floor floor-on
     else
         2 1 object-hidden
         3 1 object-hidden
-        2 1 $14 door-bits
+        2 part-shown
     then
     0 $A 0.812 0.687 0.187 0.312 zone-rect
     fg-3-breakable-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
         fg-3-magnesia story-flag? not if
             0 185.7 0.9 -35.4 flicker-sprite
         then
@@ -392,9 +392,9 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         0 185.7 -0.1 -35.4 5 8 1 zone
         self-who 0 char-in-zone? if
             fg-3-breakable-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             185.7 -0.1 -35.4 0 -2144325584 0 0.0 shards-at
             $88 5 185.7 -0.1 -35.4 0 0 sound
             $40 $2CF noise
@@ -422,7 +422,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         hewie-who 3 char-in-nav-group? if
             hewie-who action-end
             hewie-who $282 235.0 -126.0 0 char-to-xz
-            1 3 8 nav-group
+            3 solid-floor floor-on
             stalkers-stay state-flag-clear
         then
     then
@@ -448,8 +448,8 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     $F $54 fade
     $FF 1.0 0 bgm
     wait-fade
-    3 0 $14 door-bits
-    4 1 $14 door-bits
+    3 part-hidden
+    4 part-shown
     panic-eased
     0 message-prepare   \ "Go, now. And don't get caught this time. Go..."
     1 result? if
@@ -679,7 +679,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     $800 self-anim
     self-wait-anim
     $801 self-anim
-    $A message   \ "There is a hole here, but it's far too small for me."
+    $A message   \ "There is a hole-floor here, but it's far too small for me."
     wait-message
     $802 self-anim
     self-wait-anim
@@ -731,7 +731,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     counter-inc
     self-frames-reset
     8 self-wait-frames
-    0 2 $20000 nav-group
+    2 barred-floor floor-off
     $2F door-unlock
     5 4 player-camera
     stalkers-stay state-flag-clear
@@ -825,8 +825,8 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     $1B3 232.55 -97.32 173 $FFFF $A self-move-to
     self-wait-done
-    0 3 8 nav-group
-    1 3 $30 nav-group
+    3 solid-floor floor-off
+    3 keeps-fiona-off keeps-pursuers-off or floor-on
     $1A1 238.0 -135.0 1.0 35 hewie-go-to
     self-wait-done
     fg-3-refined-magnesia story-flag? not if
@@ -856,7 +856,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     $1A1 238.0 -135.0 1.0 35 hewie-go-to
     self-wait-done
-    1 3 8 nav-group
+    3 solid-floor floor-on
     0 self-scripted
     stalkers-stay state-flag-clear
     self-idle-or-end
@@ -923,7 +923,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     yield
     yield
     scene-wait-ready
-    4 1 $14 door-bits
+    4 part-shown
     panic-eased
     0 message-prepare   \ "Go, now. And don't get caught this time. Go..."
     1 result? if

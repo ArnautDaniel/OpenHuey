@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-4f-1
-USING: engine actors messages room-names story.words story.shared flag-names story-names ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ (as RoomC2_Cmd00, the room object named RoomC3_ObjectNames, opening to -pi/2)
 : water-tower-4f-1.cmd00 ( b0 -- )   \ (as water-tower-2f-1's, opening the other way: -90 degrees)
@@ -37,24 +37,24 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         $FF door-unlock
         $101 door-unlock
     then then
-    2 0 $14 door-bits
-    3 0 $14 door-bits
+    2 part-hidden
+    3 part-hidden
     0 0 object-hidden
     1 1 object-hidden
     2 1 object-hidden
     3 1 object-hidden
     wt4f-1-flag3 story-flag? not if
         0 water-tower-4f-1.cmd00
-        0 1 $14 door-bits
-        1 0 $14 door-bits
-        1 0 $10020000 nav-group
-        0 1 $10020000 nav-group
+        0 part-shown
+        1 part-hidden
+        0 barred-floor hole-floor or floor-on
+        1 barred-floor hole-floor or floor-off
     else
         1 water-tower-4f-1.cmd00
-        0 0 $14 door-bits
-        1 1 $14 door-bits
-        1 1 $10020000 nav-group
-        0 0 $10020000 nav-group
+        0 part-hidden
+        1 part-shown
+        1 barred-floor hole-floor or floor-on
+        0 barred-floor hole-floor or floor-off
     then
     wt4f-1-flag2 story-flag? if
         4 1 object-hidden
@@ -75,11 +75,11 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     then
     0 0 0.812 0.687 0.187 0.312 zone-rect
     wt4f-1-breakable-broken story-flag? not if
-        5 1 $14 door-bits
-        6 0 $14 door-bits
+        5 part-shown
+        6 part-hidden
     else
-        5 0 $14 door-bits
-        6 1 $14 door-bits
+        5 part-hidden
+        6 part-shown
         wt4f-1-camomile story-flag? not if
             1 -86.45 47.0 -8.0 flicker-sprite
         then
@@ -241,8 +241,8 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         2 -86.45 46.0 -8.0 5 8 1 zone
         self-who 2 char-in-zone? if
             wt4f-1-breakable-broken story-flag-set
-            5 0 $14 door-bits
-            6 1 $14 door-bits
+            5 part-hidden
+            6 part-shown
             -86.45 46.0 -8.0 0 -2145378272 0 0.0 shards-at
             $88 5 -86.45 46.0 -8.0 0 0 sound
             $40 $131 noise
@@ -270,20 +270,20 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     3 ebit-clear
     wt4f-1-flag3 story-flag? not if
         2 ebit-clear
-        1 1 $10000030 nav-group
+        1 keeps-fiona-off keeps-pursuers-off or hole-floor or floor-on
         hewie-who char-here? hewie-who 1 char-in-nav-group? and if
             0 hewie-who 2 action-force
         else
-            1 1 $1000000 nav-group
+            1 keeps-hewie-off floor-on
             3 ebit-set
         then
     else
         2 ebit-set
-        1 0 $10000030 nav-group
+        0 keeps-fiona-off keeps-pursuers-off or hole-floor or floor-on
         hewie-who char-here? hewie-who 0 char-in-nav-group? and if
             0 hewie-who 2 action-force
         else
-            1 0 $1000000 nav-group
+            0 keeps-hewie-off floor-on
             3 ebit-set
         then
     then
@@ -297,8 +297,8 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         $8004 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
-        0 0 $14 door-bits
-        1 0 $14 door-bits
+        0 part-hidden
+        1 part-hidden
         2 1 object-hidden
         3 0 object-hidden
         3 0 object-anim
@@ -313,8 +313,8 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         wt4f-1-flag3 story-flag-set
         2 1 object-hidden
         3 1 object-hidden
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 part-hidden
+        1 part-shown
         $C3 0 1055 $A 4 -1 0 0.0 creature-place
         $C3 0 1053 $A 6 -1 0 0.0 creature-place
         $C3 0 618 $A 7 -1 0 0.0 creature-place
@@ -326,8 +326,8 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         $8003 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
-        0 0 $14 door-bits
-        1 0 $14 door-bits
+        0 part-hidden
+        1 part-hidden
         2 0 object-hidden
         3 1 object-hidden
         2 0 object-anim
@@ -342,8 +342,8 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         wt4f-1-flag3 story-flag-clear
         2 1 object-hidden
         3 1 object-hidden
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 part-shown
+        1 part-hidden
     then
     0 self-scripted
     stalkers-stay state-flag-clear
@@ -397,7 +397,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
             2 water-tower-4f-1.cmd00
             3 ebit? not if
                 hewie-who 1 char-in-nav-group? not if
-                    1 1 $1000000 nav-group
+                    1 keeps-hewie-off floor-on
                     3 ebit-set
                 then
             then
@@ -407,11 +407,11 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
             hewie-who action-end
             hewie-who $260 char-to-tri
         then
-        1 1 $10020000 nav-group
-        0 0 $10020000 nav-group
-        0 0 $1000000 nav-group
-        0 0 $30 nav-group
-        0 1 $30 nav-group
+        1 barred-floor hole-floor or floor-on
+        0 barred-floor hole-floor or floor-off
+        0 keeps-hewie-off floor-off
+        0 keeps-fiona-off keeps-pursuers-off or floor-off
+        1 keeps-fiona-off keeps-pursuers-off or floor-off
         1 water-tower-4f-1.cmd00
     else
         2 6 -45.0 142.0 0.0 0 0 sound
@@ -421,7 +421,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
             3 water-tower-4f-1.cmd00
             3 ebit? not if
                 hewie-who 1 char-in-nav-group? not if
-                    1 0 $1000000 nav-group
+                    0 keeps-hewie-off floor-on
                     3 ebit-set
                 then
             then
@@ -431,11 +431,11 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
             hewie-who action-end
             hewie-who $260 char-to-tri
         then
-        1 0 $10020000 nav-group
-        0 1 $10020000 nav-group
-        0 1 $1000000 nav-group
-        0 0 $30 nav-group
-        0 1 $30 nav-group
+        0 barred-floor hole-floor or floor-on
+        1 barred-floor hole-floor or floor-off
+        1 keeps-hewie-off floor-off
+        0 keeps-fiona-off keeps-pursuers-off or floor-off
+        1 keeps-fiona-off keeps-pursuers-off or floor-off
         0 water-tower-4f-1.cmd00
     then
     wt4f-1-flag3 story-flag? not if

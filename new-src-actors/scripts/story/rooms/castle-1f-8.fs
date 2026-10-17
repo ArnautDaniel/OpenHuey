@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-8
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x18 (Room18_Cmd00_ptmf): object byte 3's PlacedObject_ToDef
 : castle-1f-8.cmd00 ( b0 -- )   \ (Room18_ObjectNames[b0] back as defined: the telephones' receivers, 4 / 5)
@@ -25,7 +25,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     c1f-8-magnesia story-flag? not if
         5 0.0 8.5 25.0 flicker-sprite
     then
-    0 1 $14 door-bits
+    0 part-shown
     1 $2300 sound-volume
 ;
 
@@ -257,7 +257,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else
         3 ebit-set
     then
-    0 0 $14 door-bits
+    0 part-hidden
     panic-eased
     0 message-prepare   \ "Fiona... Who is this? You must pay attention now, Fiona. Be wary of Riccardo......"
     1 result? if
@@ -266,7 +266,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     world-held state-flag-set
     fiona-who 0 char-no-shadow
     3 0 char-remove
-    0 1 $14 door-bits
+    0 part-shown
     4 0 object-hidden
     5 0 object-hidden
     4 castle-1f-8.cmd00
@@ -540,7 +540,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     1 34.2 18.3 -14.2 1 flame-in
     2 -34.2 18.3 -14.2 1 flame-in
     3 -34.2 18.3 14.2 1 flame-in
-    0 0 $14 door-bits
+    0 part-hidden
     panic-eased
     0 message-prepare   \ "Fiona... Who is this? You must pay attention now, Fiona. Be wary of Riccardo......"
     1 result? if

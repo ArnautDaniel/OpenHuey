@@ -339,6 +339,11 @@ $80 constant any-door
 \ ---- the nav mesh's flag groups (the room's: its scripts open and close ways) ----
 : nav-group ( set group bits -- )  rot 1 = -rot nav-group! ;
 : nav-tri-flags ( set tri bits -- )  rot 1 = -rot nav-tri-flags! ;
+\ (the flags - floor-flags.fs - set or cleared on a group's triangles, or one triangle's)
+: floor-on ( group flags -- )  1 -rot nav-group ;
+: floor-off ( group flags -- )  0 -rot nav-group ;
+: tri-floor-on ( tri flags -- )  1 -rot nav-tri-flags ;
+: tri-floor-off ( tri flags -- )  0 -rot nav-tri-flags ;
 
 \ ---- sounds and noises ----
 2 constant plain-sound   \ (a bank's top bits: where - plainly; else at the point)
@@ -1059,6 +1064,11 @@ fvariable hs-push
 \ ---- the doors' models by part: bit a + 1 + b of every door's group mask (Doors_SetBits) - a
 \ door's batches in group g are drawn while bit g is on (0 always) ----
 : door-bits ( a set b -- )  rot 1+ +  swap door-group! ;
+\ the rooms' own parts (groups from $15: the rooms' scripts use base $14) shown or hidden - a
+\ breakable whole or broken, a door's open or shut leaf, ...
+$14 constant room-parts
+: part-shown ( part -- )  1 room-parts door-bits ;
+: part-hidden ( part -- )  0 room-parts door-bits ;
 
 \ ---- the room's lights (0x90): op 0 light back to the room's own; 1 its intensity, 2 its
 \ shadows' reach, times k ----

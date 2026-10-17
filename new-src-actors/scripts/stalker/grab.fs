@@ -6,15 +6,14 @@
 \ lunge (her panic calming down: on into his seize) and his grab at Hewie (Debilitas_Actions
 \ $1002 / $1003).
 IN: stalker.grab
-USING: engine game-state actors messages common facts flag-names paths vectors stalker.anims stalker.names stalker.state stalker.senses stalker.moving stalker.search stalker.attack stalker.chase ;
+USING: engine game-state actors messages common facts flag-names paths vectors stalker.anims stalker.names stalker.state stalker.senses stalker.moving stalker.search stalker.attack stalker.chase floor-flags ;
 
 : fright ( F: amount -- )  f>cell panic-id send fright ;
 \ her answer to his taking her (answer): none yet, taken, refused, broke free
 enum: seize-answer  no-answer she-came she-refused she-broke-free ;
-$80001 constant no-stand-floor   \ (a floor's nav flags: where nothing may stand)
 \ her floor free for him to take her on (Actor_TriFreeFor: not where nothing may stand)
 : her-floor-free? ( -- flag )
-    fiona body-tri dup 0< if  drop false exit  then  nav-flags no-stand-floor and 0= ;
+    fiona body-tri dup 0< if  drop false exit  then  nav-flags doorway-or-step and 0= ;
 \ she may be taken (Pursuer_MayGoForTarget: not out of reach - struck, seized -, not with the
 \ stalkers blind)
 : may-take? ( -- flag )  her-plight @ unreachable-plight <>  stalkers-blind state-flag? 0= and ;

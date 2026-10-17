@@ -4,7 +4,7 @@
 IN: story.rooms.house-of-truth-1f-10
 USING: room-names story.words story.shared flag-names story-names ;
 
-\ (as Room2D_Cmd02) three hanging things (+0x34 0..2), pushed by the square of Fiona's step past
+\ (as Room2D_Cmd02) three hanging things (+0x34 0..2), pushed by the square of Fiona's step-floor past
 \ 1, event flag 4 with sounds 4 / 5
 : house-of-truth-1f-10.cmd00 ( b0 -- )  0 3 0 4 4 5  1e hangers-swing ;   \ (her step's square past 1; event flag 4)
 
@@ -199,7 +199,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     $A02 $A self-anim-blend
     self-wait-anim
-    0 message   \ "A pungent odor and chapped, dry air coming from inside the hole wreak havoc on the sens..."
+    0 message   \ "A pungent odor and chapped, dry air coming from inside the hole-floor wreak havoc on the sens..."
     wait-message
     0 answer? if
         $F 0 fade

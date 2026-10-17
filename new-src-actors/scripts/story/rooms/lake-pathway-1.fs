@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.lake-pathway-1
-USING: room-names story.words story.shared story-names ;
+USING: room-names story.words story.shared story-names floor-flags ;
 
 \ an effect TurningModel_vtable (8 bytes), not started
 : lake-pathway-1.cmd00 ( -- )  0 $40404040  400e 27.1e -125e  1000e 0.5e 0e  effects:caustic drop ;   \ (the water's light, turning: TurningModel)
@@ -10,9 +10,9 @@ USING: room-names story.words story.shared story-names ;
 : lake-pathway-1.enter ( -- )   \ 00441520
     $18 1.0 0 bgm
     c7-second-event story-flag? not over-music-d story-flag? or if
-        1 0 $10020000 nav-group
+        0 barred-floor hole-floor or floor-on
     else
-        0 1 $14 door-bits
+        0 part-shown
     then
     lp-1-lavender story-flag? not if
         0 19.59 39.0 -247.61 flicker-sprite

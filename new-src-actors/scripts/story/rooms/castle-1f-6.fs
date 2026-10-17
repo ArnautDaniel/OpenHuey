@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-6
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-1f-6.enter ( -- )   \ 003F7920
     0 1.2 15.55 -24.813 0 flame-in
@@ -19,9 +19,9 @@ USING: room-names story.words story.shared flag-names story-names ;
     $B 1.908 15.55 24.905 0 flame-in
     $C -0.597 15.55 25.104 0 flame-in
     got-cracked-plate-key-2 story-flag? not if
-        1 1 $14 door-bits
+        1 part-shown
     else
-        1 0 $14 door-bits
+        1 part-hidden
     then
     c1f-6-medallion-found story-flag? c1f-6-medallion story-flag? not and if
         $E 34.2 1.0 60.5 flicker-sprite
@@ -284,7 +284,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-frames-reset
     4 self-wait-frames
     got-cracked-plate-key-2 story-flag-set
-    1 0 $14 door-bits
+    1 part-hidden
     $13 message-param-room
     $13 1 item-give-count
     0 $13 item-tab
@@ -311,7 +311,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     3 char-start
     0 exit-prepare
     $32 $FF movie-param
-    0 1 $14 door-bits
+    0 part-shown
     panic-eased
     2 message-prepare   \ "My creator said he made me the perfect woman... But I cannot taste or experienc..."
     1 result? if
@@ -327,7 +327,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     camera-restart
     c1f-6-flag1 story-flag-set
     $80 exit-check
-    0 0 $14 door-bits
+    0 part-hidden
     self-idle-or-end
 ;
 
@@ -429,7 +429,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     $1D 3 $FF char-load
     3 char-start
     $32 $FF movie-param
-    0 1 $14 door-bits
+    0 part-shown
     panic-eased
     2 message-prepare   \ "My creator said he made me the perfect woman... But I cannot taste or experienc..."
     1 result? if
@@ -438,7 +438,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     3 0 char-remove
     3 action-end
     3 char-done
-    0 0 $14 door-bits
+    0 part-hidden
     2 0 char-remove
     $80 exit-check
     events-held state-flag-clear

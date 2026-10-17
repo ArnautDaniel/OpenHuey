@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-8
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ Room24_Cmd00
 : castle-2f-8.cmd00 ( b0 -- )   \ (the kiln's glow - "jimen", "kama", "sumi" - pulsing: their blend 0.5 + 0.5 cos(phase),
@@ -39,33 +39,33 @@ USING: room-names story.words story.shared flag-names story-names ;
     golem-down
     room-sounds
     c2f-8-flag3 story-flag? not if
-        1 0 $20000 nav-group
-        1 5 $800000 nav-group
-        1 1 $4000000 nav-group
-        0 1 $14 door-bits
+        0 barred-floor floor-on
+        5 pushable floor-on
+        1 keeps-stalkers-off floor-on
+        0 part-shown
     else
-        0 0 $14 door-bits
+        0 part-hidden
         c2f-8-flag2 story-flag? if
-            1 2 $20000 nav-group
-            1 6 $800000 nav-group
-            1 3 $4000000 nav-group
-            1 1 $14 door-bits
+            2 barred-floor floor-on
+            6 pushable floor-on
+            3 keeps-stalkers-off floor-on
+            1 part-shown
         else c2f-8-flag1 story-flag? if
-            2 1 $14 door-bits
+            2 part-shown
         then then
     then
     got-old-parchment story-flag? not if
-        5 1 $14 door-bits
+        5 part-shown
     then
     castle-2f-8.cmd01
     c2f-8-breakable-broken story-flag? not if
-        1 4 $8000000 nav-group
-        3 1 $14 door-bits
-        4 0 $14 door-bits
+        4 keeps-people-off floor-on
+        3 part-shown
+        4 part-hidden
     else
-        0 4 $8000000 nav-group
-        3 0 $14 door-bits
-        4 1 $14 door-bits
+        4 keeps-people-off floor-off
+        3 part-hidden
+        4 part-shown
     then
     0 7 0.812 0.687 0.187 0.312 zone-rect
     c2f-8-flag1 story-flag? got-obsidian-choker story-flag? not and if
@@ -128,9 +128,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 34.0 0.0 29.0 5 8 1 zone
         self-who 0 char-in-zone? if
             c2f-8-breakable-broken story-flag-set
-            0 4 $8000000 nav-group
-            3 0 $14 door-bits
-            4 1 $14 door-bits
+            4 keeps-people-off floor-off
+            3 part-hidden
+            4 part-shown
             34.0 0.0 29.0 0 -2144325584 0 0.0 shards-at
             $88 5 34.0 0.0 29.0 0 0 sound
             $40 $FF noise
@@ -219,7 +219,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     1 self-scripted
     1 10.0 -40.0 0.0 0.0 event-camera
     0 ebit? not if
-        0 message   \ "A huge doll made of earth blocks the door. There is a slot-shaped hole in its chest..."
+        0 message   \ "A huge doll made of earth blocks the door. There is a slot-shaped hole-floor in its chest..."
         wait-message
         0 ebit-set
     else
@@ -305,7 +305,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
-    5 0 $14 door-bits
+    5 part-hidden
     got-old-parchment story-flag-set
     $A0 message-param-room
     $A0 1 item-give-count
@@ -398,7 +398,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     scene-wait-ready
     wait-fade
     8 char-activate
-    0 0 $14 door-bits
+    0 part-hidden
     self-who 1 char-visible
     $F $3C movie-param
     2 0 char-remove
@@ -417,13 +417,13 @@ USING: room-names story.words story.shared flag-names story-names ;
     $13 door-unlock
     c2f-8-flag3 story-flag-set
     1 0 0 music
-    0 0 $20000 nav-group
-    0 5 $800000 nav-group
-    0 1 $4000000 nav-group
-    1 2 $20000 nav-group
-    1 6 $800000 nav-group
-    1 3 $4000000 nav-group
-    1 1 $14 door-bits
+    0 barred-floor floor-off
+    5 pushable floor-off
+    1 keeps-stalkers-off floor-off
+    2 barred-floor floor-on
+    6 pushable floor-on
+    3 keeps-stalkers-off floor-on
+    1 part-shown
     self-who 0 char-visible
     $F $51 fade
     $16 resident-flag-set
@@ -443,9 +443,9 @@ USING: room-names story.words story.shared flag-names story-names ;
     yield
     scene-wait-ready
     wait-fade
-    0 0 $14 door-bits
+    0 part-hidden
     self-who 1 char-visible
-    2 1 $14 door-bits
+    2 part-shown
     0 10.0 1.0 -25.0 flicker-sprite
     $F $96 movie-param
     2 0 char-remove
@@ -469,9 +469,9 @@ USING: room-names story.words story.shared flag-names story-names ;
     $13 door-unlock
     c2f-8-flag3 story-flag-set
     1 0 0 music
-    0 0 $20000 nav-group
-    0 5 $800000 nav-group
-    0 1 $4000000 nav-group
+    0 barred-floor floor-off
+    5 pushable floor-off
+    1 keeps-stalkers-off floor-off
     self-who 0 char-visible
     $F $51 fade
     $17 resident-flag-set
@@ -491,7 +491,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     yield
     yield
     scene-wait-ready
-    0 0 $14 door-bits
+    0 part-hidden
     self-who 1 char-visible
     $F $3C movie-param
     panic-eased
@@ -517,9 +517,9 @@ USING: room-names story.words story.shared flag-names story-names ;
     yield
     yield
     scene-wait-ready
-    0 0 $14 door-bits
+    0 part-hidden
     self-who 1 char-visible
-    2 1 $14 door-bits
+    2 part-shown
     $F $96 movie-param
     panic-eased
     $FFFF message-prepare
@@ -550,15 +550,15 @@ USING: room-names story.words story.shared flag-names story-names ;
     fiona-who $EE 10.0 -20.0 180 char-to-xz
     1 23.0 -12.0 0.0 5.0 event-camera
     self-who 1 char-visible
-    0 0 $14 door-bits
+    0 part-hidden
     8 char-activate
-    0 0 $20000 nav-group
-    0 5 $800000 nav-group
-    0 1 $4000000 nav-group
+    0 barred-floor floor-off
+    5 pushable floor-off
+    1 keeps-stalkers-off floor-off
     8 $EF 10.0 -30.0 0 char-to-xz
-    1 0 $20000 nav-group
-    1 5 $800000 nav-group
-    1 1 $4000000 nav-group
+    0 barred-floor floor-on
+    5 pushable floor-on
+    1 keeps-stalkers-off floor-on
     begin
         0 adx? not while
         yield
@@ -578,7 +578,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     $F 0 fade
     wait-fade
     $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
-    0 1 $14 door-bits
+    0 part-shown
     8 action-end
     8 char-done
     3 0 char-remove

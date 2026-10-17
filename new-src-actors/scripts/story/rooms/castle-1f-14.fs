@@ -2,41 +2,41 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-14
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-1f-14.enter ( -- )   \ 003F5540
     c1f-14-viride-medallion-found story-flag? c1f-14-viride-medallion story-flag? not and if
         1 -70.0 61.0 54.1 flicker-sprite
     then
     c1f-14-breakable1-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
     then
     c1f-14-breakable2-broken story-flag? not if
-        1 1 $8000000 nav-group
-        2 1 $14 door-bits
-        3 0 $14 door-bits
+        1 keeps-people-off floor-on
+        2 part-shown
+        3 part-hidden
     else
-        0 1 $8000000 nav-group
-        2 0 $14 door-bits
-        3 1 $14 door-bits
+        1 keeps-people-off floor-off
+        2 part-hidden
+        3 part-shown
         c1f-14-chicken-jerky story-flag? not if
             0 -68.0 1.0 -58.0 flicker-sprite
         then
     then
     c1f-14-breakable3-broken story-flag? not if
-        1 2 $8000000 nav-group
-        4 1 $14 door-bits
-        5 0 $14 door-bits
+        2 keeps-people-off floor-on
+        4 part-shown
+        5 part-hidden
     else
-        0 2 $8000000 nav-group
-        4 0 $14 door-bits
-        5 1 $14 door-bits
+        2 keeps-people-off floor-off
+        4 part-hidden
+        5 part-shown
         c1f-14-antimony-powder story-flag? not if
             2 -66.0 1.0 55.0 flicker-sprite
         then
@@ -155,9 +155,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 -61.0 0.0 -52.0 5 8 1 zone
         self-who 0 char-in-zone? if
             c1f-14-breakable1-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             -61.0 0.0 -52.0 0 -2144325584 0 0.0 shards-at
             $88 5 -61.0 0.0 -52.0 0 0 sound
             $40 $55 noise
@@ -167,9 +167,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         1 -68.0 0.0 -58.0 5 8 1 zone
         self-who 1 char-in-zone? if
             c1f-14-breakable2-broken story-flag-set
-            0 1 $8000000 nav-group
-            2 0 $14 door-bits
-            3 1 $14 door-bits
+            1 keeps-people-off floor-off
+            2 part-hidden
+            3 part-shown
             -68.0 0.0 -58.0 0 -2144325584 0 0.0 shards-at
             $88 5 -68.0 0.0 -58.0 0 0 sound
             $40 $2BF noise
@@ -185,9 +185,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         2 -66.0 0.0 55.0 5 8 1 zone
         self-who 2 char-in-zone? if
             c1f-14-breakable3-broken story-flag-set
-            0 2 $8000000 nav-group
-            4 0 $14 door-bits
-            5 1 $14 door-bits
+            2 keeps-people-off floor-off
+            4 part-hidden
+            5 part-shown
             -66.0 0.0 55.0 0 -2145378272 0 0.0 shards-at
             $88 5 -66.0 0.0 55.0 0 0 sound
             $40 $295 noise

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-8
-USING: engine common actors messages room-names story.words story.shared flag-names story-names ;
+USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x91 (Room91_Cmd00_ptmf): door 0's +0x68 (0)
 : house-of-truth-1f-8.cmd00 ( -- )  0 true -1 doors-id send swing-door ;   \ (door 0 set opening, Doors_SetOpened: swung open here)
@@ -23,8 +23,8 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     2 97.6 29.5 144.8 1 flame-in
     4 101.9 66.0 87.4 4 flame-in
     ht1f-9-flag2 story-flag? if
-        1 0 $20000 nav-group
-        0 1 $14 door-bits
+        0 barred-floor floor-on
+        0 part-shown
     then
     tremor-warned story-flag? if
         5 1.0 0 bgm

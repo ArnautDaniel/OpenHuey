@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-1
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : chaos-forest-1.enter ( -- )   \ 0041DD20
     room-sounds
@@ -19,7 +19,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     0 $F1 1 action
     hunted state-flag-set
     got-forest-map story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
     then
     $10 54.3 20.2 154.5 $E $80 $80 $80 $40 specks
     $10 -53.5 20.2 154.5 $E $80 $80 $80 $40 specks
@@ -229,7 +229,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-frames-reset
     4 self-wait-frames
     got-forest-map story-flag-set
-    0 0 $14 door-bits
+    0 part-hidden
     $1F message-param-room
     $1F 1 item-give-count
     0 $1F item-tab

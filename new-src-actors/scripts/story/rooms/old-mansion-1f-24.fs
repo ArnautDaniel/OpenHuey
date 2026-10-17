@@ -2,19 +2,19 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-24
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 defer old-mansion-1f-24.act02
 : old-mansion-1f-24.enter ( -- )   \ 0043B020
     room-sounds
     om1f-24-breakable-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
         om1f-24-beef-jerky story-flag? not if
             0 -97.5 1.0 1.0 flicker-sprite
         then
@@ -27,7 +27,7 @@ defer old-mansion-1f-24.act02
             then
         then
     then
-    0 1 8 nav-group
+    1 solid-floor floor-off
     4 ebit? if
         1 exit-taken? not if
             stalker-who 2 char-file-load
@@ -176,9 +176,9 @@ defer old-mansion-1f-24.act02
         0 -97.5 0.0 1.0 5 8 1 zone
         self-who 0 char-in-zone? if
             om1f-24-breakable-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             -97.5 0.0 1.0 0 -2145378272 0 0.0 shards-at
             $88 5 -97.5 0.0 1.0 0 0 sound
             $40 $B4 noise
@@ -281,7 +281,7 @@ defer old-mansion-1f-24.act02
     1 self-scripted
     self-wait-done
     stalker-who $31 -76.0 -56.5 180 char-to-xz
-    1 1 8 nav-group
+    1 solid-floor floor-on
     6 ebit-set
     stalker-who char-file-use
     6 ebit-clear

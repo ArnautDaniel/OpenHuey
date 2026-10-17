@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-18
-USING: engine room-names story.words story.shared flag-names story-names ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x1C (Room1C_Cmd00_ptmf): room effect 0x1C (a depth range) with the cutscene from frame
 \ 0x14A: near 1 .. 1 + 1.4 t (at most 67.6), far 48.6 + 4 t (at most 230)
@@ -43,12 +43,12 @@ USING: engine room-names story.words story.shared flag-names story-names ;
         8 0 $32 0 $14 $FF $E2 0 butterflies
         9 0 $30 0 $10 $FF $E2 0 butterflies
         $A 0 $30 0 $C $FF $E6 0 butterflies
-        1 0 $20000000 nav-group
-        1 1 $1000000 nav-group
+        0 keeps-people-off-2 floor-on
+        1 keeps-hewie-off floor-on
     else
-        0 1 $14 door-bits
+        0 part-shown
         castle-1f-18.act06
-        1 1 $20000000 nav-group
+        1 keeps-people-off-2 floor-on
     then
 ;
 
@@ -170,7 +170,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     yield
     scene-wait-ready
     wait-fade
-    0 1 $14 door-bits
+    0 part-shown
     0 $F9 3 action
     hewie-who char-here? hewie-who 2 char-cond? and if
         0 hewie-who $86 action
@@ -190,9 +190,9 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     $26 door-unlock
     flowers-laid story-flag-set
     castle-1f-18.act06
-    0 0 $20000000 nav-group
-    0 1 $1000000 nav-group
-    1 1 $20000000 nav-group
+    0 keeps-people-off-2 floor-off
+    1 keeps-hewie-off floor-off
+    1 keeps-people-off-2 floor-on
     $F $41 fade
     wait-fade
     stalkers-stay state-flag-clear
@@ -318,7 +318,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     yield
     yield
     scene-wait-ready
-    0 1 $14 door-bits
+    0 part-shown
     0 $F9 8 action
     begin
         6 sound-bank-loaded? not while

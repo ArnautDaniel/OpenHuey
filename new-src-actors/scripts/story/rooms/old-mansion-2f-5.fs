@@ -2,29 +2,29 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-5
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-2f-5.enter ( -- )   \ 0040F910
     room-sounds
     3 0 var-set
     4 0 var-set
     om2f-5-breakable1-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
     then
     om2f-5-breakable2-broken story-flag? not if
-        1 1 $8000000 nav-group
-        2 1 $14 door-bits
-        3 0 $14 door-bits
+        1 keeps-people-off floor-on
+        2 part-shown
+        3 part-hidden
     else
-        0 1 $8000000 nav-group
-        2 0 $14 door-bits
-        3 1 $14 door-bits
+        1 keeps-people-off floor-off
+        2 part-hidden
+        3 part-shown
         om2f-5-medallion story-flag? not if
             0 10.5 1.0 -28.0 flicker-sprite
         then
@@ -137,9 +137,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 -10.3 0.0 -93.8 5 8 1 zone
         self-who 0 char-in-zone? if
             om2f-5-breakable1-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             -10.3 0.0 -93.8 0 -2145378256 0 0.0 shards-at
             $88 5 -10.3 0.0 -93.8 0 0 sound
             $40 $E1 noise
@@ -221,9 +221,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         1 10.5 0.0 -28.0 5 8 1 zone
         self-who 1 char-in-zone? if
             om2f-5-breakable2-broken story-flag-set
-            0 1 $8000000 nav-group
-            2 0 $14 door-bits
-            3 1 $14 door-bits
+            1 keeps-people-off floor-off
+            2 part-hidden
+            3 part-shown
             10.5 0.0 -28.0 0 -2145378256 0 0.0 shards-at
             $88 5 10.5 0.0 -28.0 0 0 sound
             $40 $1AD noise

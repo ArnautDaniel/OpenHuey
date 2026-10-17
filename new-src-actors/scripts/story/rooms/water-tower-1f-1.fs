@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-1f-1
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0xC1: the summoner's countdown (progress +0x764) has run out.
 : water-tower-1f-1.cond00? ( -- flag )  summoner-done? ;
@@ -16,9 +16,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 -39.66 1.0 0.99 flicker-sprite
     then
     1 $2300 sound-volume
-    1 $1F $10000000 nav-tri-flags
-    1 $2F $10000000 nav-tri-flags
-    1 $89 $10000000 nav-tri-flags
+    $1F hole-floor tri-floor-on
+    $2F hole-floor tri-floor-on
+    $89 hole-floor tri-floor-on
 ;
 
 : water-tower-1f-1.char-enter ( -- )   \ 0043ECC0

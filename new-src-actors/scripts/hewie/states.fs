@@ -6,7 +6,7 @@
 \ dashing, the stance, barking, being down); praise and her commands. The stalkers and the
 \ story's moves are in the later files.
 IN: hewie.states
-USING: engine game-state actors messages common facts paths vectors hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving flag-names ;
+USING: engine game-state actors messages common facts paths vectors hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving flag-names floor-flags ;
 
 \ ---- how he is treated: the progress's counters (for the dog's level at the end) ----
 : counter+ ( n addr -- )  tuck l@ + 0 10000 clamp swap l! ;
@@ -368,7 +368,6 @@ create kn-at /vec allot
     then
     his-hp @ if  1 his-2d !  ['] st-back-up behave  then ;
 \ Hewie_StateSlope (off-slope-act): on a slope - off it the freest way, then the default action
-1 constant slope-floor   \ (a floor's nav flag: sloped)
 : st-slope ( -- )
     his-tri nav-flags slope-floor and 0= if  to-default exit  then
     his-t1 @ 0< if

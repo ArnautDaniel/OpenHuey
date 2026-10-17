@@ -9,12 +9,11 @@
 \ Pushing on, the floor 2.2 ahead pushable: again, else strain. The stick let go: straining she
 \ lets go ($1202), else free. The stalker touching her: free at once.
 IN: fiona.push
-USING: engine vectors game-state actors messages common obstacles rumble fiona.state fiona.anims fiona.sounds fiona.model fiona.moving fiona.slam ;
+USING: engine vectors game-state actors messages common obstacles rumble fiona.state fiona.anims fiona.sounds fiona.model fiona.moving fiona.slam floor-flags ;
 
 defer to-idle   ' noop is to-idle        \ (fiona.fs)
 <PRIVATE
 : obstacles-id ( -- id )  s" obstacles" actor-named ;
-$800000 constant pushable                \ (NAV_PUSHABLE)
 
 \ ---- something to push ahead (Fiona_FindPushable) ----
 create probe /vec allot

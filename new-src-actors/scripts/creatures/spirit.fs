@@ -4,7 +4,7 @@
 \ it vanishes in a burst of light and she falls; its time out first, it fades away. Its look -
 \ bobbing, the trail, the burst - is the engine's (`spirit-new`: game/particles.c).
 IN: creatures.spirit
-USING: engine game-state actors messages common facts flag-names paths vectors creatures.trip creatures.state creatures.her ;
+USING: engine game-state actors messages common facts flag-names paths vectors creatures.trip creatures.state creatures.her floor-flags ;
 
 $8B constant burst-sound   $8C constant fade-sound   \ (its sounds: bank 5)
 $80 constant vanish-noise   \ (a blue one's going: how loud, in its room)
@@ -17,10 +17,10 @@ $80 constant vanish-noise   \ (a blue one's going: how loud, in its room)
 : my-at ( -- v )  self body-at ;
 : x-z ( v -- ) ( F: -- x z )  dup v.x sf@  v.z sf@ ;
 : measure-her ( -- )  in-play? if  my-at her-at vec-dist-xz her-dist f!  then ;
-: path-mask ( -- mask )  path-off-floor ;   \ (its paths keep off these; it may stand and float anywhere)
+: path-mask ( -- mask )  creature-path-floor ;   \ (its paths keep off these; it may stand and float anywhere)
 : may-stand? ( tri -- flag )   \ put somewhere at random: on its floor of a split room (level 0 / 1:
     dup 0< if  drop false exit  then  nav-flags                   \ not on the other's half; else
-    dup never-floor and if  drop false exit  then                \ not where both halves meet)
+    dup solid-floor and if  drop false exit  then                \ not where both halves meet)
     both-halves and  level @ case
         0 of  one-half and 0=  endof
         1 of  other-half and 0=  endof
@@ -80,7 +80,7 @@ $80 constant vanish-noise   \ (a blue one's going: how loud, in its room)
     her-mode @ ladder-mode = if  exit  then
     gave-up @ 0= if
         straight-at-her if  exit  then
-        self body-tri nav-flags uncrossable and if  lifetime time !  then   \ (a triangle it can't cross: it gives up)
+        self body-tri nav-flags barred-floor and if  lifetime time !  then   \ (a triangle it can't cross: it gives up)
     then
     her-tri her-at path-to  follow-path ;
 
@@ -96,7 +96,7 @@ create spot /vec allot   fvariable turn   fvariable off
     16 random turn-of turn f!
     spot v-tri  dup hang-tri !
     dup 0< over self body-tri = or if  drop false exit  then
-    nav-flags no-go-floor and 0= ;
+    nav-flags creature-floor and 0= ;
 : find-spot ( -- )  0e turn f!  -1 hang-tri !  17 0 do  i spot-try if  hang-at spot vec-copy  unloop exit  then  loop  -1 hang-tri ! ;
 : hang-about ( -- )
     hang-again @ if  0 hang-again !  my-path path-clear  find-spot  then

@@ -2,10 +2,10 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-12
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ two dials (byte 3: pstr_syuukouki2 on var 0, pstr_syuukouki1 on var 1, from -90 degrees), byte
-\ 4 the step
+\ 4 the step-floor
 : castle-1f-12.cmd00 ( b0 b1 -- )   \ (the two dials: b0 0 "syuukouki2" on progress variable 0, else "syuukouki1" on 1; b1 the step)
     swap if  s" syuukouki1" 1  else  s" syuukouki2" 0  then  -90 1 dial-step ;
 \ room 0x04 (Room04_Cmd01_ptmf): five objects turned -75 / 75 degrees in turn
@@ -24,27 +24,27 @@ USING: room-names story.words story.shared flag-names story-names ;
 : castle-1f-12.enter ( -- )   \ 003F0DF0
     c1f-12-flag1 story-flag? not if
         room-sounds
-        1 1 $20000 nav-group
+        1 barred-floor floor-on
     else
         castle-1f-12.cmd01
-        0 1 $20000 nav-group
+        1 barred-floor floor-off
     then
     lunar-refractor-used story-flag? not if
-        2 1 $14 door-bits
+        2 part-shown
         2 1 object-hidden
     else
-        2 0 $14 door-bits
+        2 part-hidden
         0 0 castle-1f-12.cmd00
     then
     1 0 castle-1f-12.cmd00
     c1f-12-breakable-broken story-flag? not if
-        1 0 $8000000 nav-group
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 keeps-people-off floor-on
+        0 part-shown
+        1 part-hidden
     else
-        0 0 $8000000 nav-group
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 keeps-people-off floor-off
+        0 part-hidden
+        1 part-shown
         c1f-12-medallion story-flag? not if
             0 -73.5 -102.0 55.5 flicker-sprite
         then
@@ -174,9 +174,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 -73.5 -103.0 55.5 5 8 1 zone
         self-who 0 char-in-zone? if
             c1f-12-breakable-broken story-flag-set
-            0 0 $8000000 nav-group
-            0 0 $14 door-bits
-            1 1 $14 door-bits
+            0 keeps-people-off floor-off
+            0 part-hidden
+            1 part-shown
             -73.5 -103.0 55.5 0 -2144325584 0 0.0 shards-at
             $88 5 -73.5 -103.0 55.5 0 0 sound
             $40 $1E3 noise
@@ -343,7 +343,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         scene-play
     then
     1 castle-1f-12.cmd02
-    2 0 $14 door-bits
+    2 part-hidden
     1 1 object-hidden
     2 0 object-hidden
     0 self-idle-anim
@@ -394,7 +394,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 0 castle-1f-12.cmd00
         1 0 castle-1f-12.cmd00
         castle-1f-12.cmd01
-        0 1 $20000 nav-group
+        1 barred-floor floor-off
         5 0 creature-count
         camera-restart
         force-calm state-flag-clear
@@ -506,7 +506,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-1f-12.act0A ( -- )   \ 003F1610
     self-wait-done
-    2 1 $14 door-bits
+    2 part-shown
     2 1 object-hidden
     3 1 movie-play
     0 cutscene-start

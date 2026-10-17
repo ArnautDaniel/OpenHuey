@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-13
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-1f-13.cmd00 ( -- )  effects:drips ;   \ (water dripping, rippling)
 \ 1 unless the object at +0x18 exists and its byte +0x28 is 1.
@@ -26,7 +26,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         7 0 object-hidden
         8 0 object-hidden
         9 0 object-hidden
-        0 0 $14 door-bits
+        0 part-hidden
     else
         2 1 object-hidden
         3 1 object-hidden
@@ -36,13 +36,13 @@ USING: room-names story.words story.shared flag-names story-names ;
         7 1 object-hidden
         8 1 object-hidden
         9 1 object-hidden
-        0 1 $14 door-bits
+        0 part-shown
     then
     $10 -54.6 28.6 -20.0 $E $80 $80 $80 $40 specks
     $10 54.6 29.0 -20.0 $E $80 $80 $80 $40 specks
     $10 -7.5 5.0 53.5 $E $80 $80 $80 $40 specks
     $10 0.0 64.8 -20.5 $E $80 $80 $80 $40 specks
-    1 0 $10000000 nav-group
+    0 hole-floor floor-on
 ;
 
 : old-mansion-1f-13.char-enter ( -- )   \ 0040E480
@@ -273,7 +273,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     7 1 object-hidden
     8 1 object-hidden
     9 1 object-hidden
-    0 1 $14 door-bits
+    0 part-shown
     0 ebit? not if
         hewie-who 2 char-cond? if
             hewie-who 0 char-visible

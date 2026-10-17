@@ -7,7 +7,7 @@
 \ (stay / come), 4 right (praise; held: more), 5 left (scold). They are read only under state
 \ flag 0xD (the story: Hewie is hers to command) and not 0x2B.
 IN: fiona.commands
-USING: engine vectors game-state actors messages hewie-names common facts keys fiona.state fiona.anims fiona.model fiona.moving fiona.spots fiona.looks flag-names ;
+USING: engine vectors game-state actors messages hewie-names common facts keys fiona.state fiona.anims fiona.model fiona.moving fiona.spots fiona.looks flag-names floor-flags ;
 
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
@@ -58,13 +58,12 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
 : mark-action-start ( code -- )
     her-sub !  her-heading f@ her-act-yaw f!  her-tri @ her-act-tri !  her-act-at her-at vec-copy ;
 create ch-at /vec allot
-$29020008 constant his-floor-stops   \ (the floors Hewie can't stand on)
 : go-spot ( -- )
     dog-ok? 0= if  exit  then
-    hewie-id body-tri dog-at his-floor-stops her-act-yaw f@ 15e v-free     ( F: d )
+    hewie-id body-tri dog-at hewie-floor her-act-yaw f@ 15e v-free     ( F: d )
     fdup 5e f> if
         5e f-  her-act-yaw f@ fswap ch-at her-act-at vec-ahead
-        her-tri @ her-at ch-at his-floor-stops v-walk dup 0< if  drop  else  her-act-tri !  her-act-at ch-at vec-copy  then
+        her-tri @ her-at ch-at hewie-floor v-walk dup 0< if  drop  else  her-act-tri !  her-act-at ch-at vec-copy  then
     else  fdrop  then ;
 : command-hewie ( -- )
     plain-commands state-flag? 0= if

@@ -2,15 +2,15 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-2f-2
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : house-of-truth-2f-2.enter ( -- )   \ 00431DE0
-    0 1 $14 door-bits
+    0 part-shown
     0 1 object-hidden
     1 1 object-hidden
     2 1 object-hidden
     got-mystery-sketch story-flag? not if
-        1 1 $14 door-bits
+        1 part-shown
     then
     ht2f-2-viride-medallion-found story-flag? ht2f-2-viride-medallion story-flag? not and if
         0 37.0 1.0 84.0 flicker-sprite
@@ -111,7 +111,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     stalker-who char-done
     $10 3 $FF char-load
     $B partner-load
-    0 0 $14 door-bits
+    0 part-hidden
     self-wait-done
     fiona-who $28 5 char-sound
     3 char-start
@@ -154,7 +154,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-frames-reset
     4 self-wait-frames
     got-mystery-sketch story-flag-set
-    1 0 $14 door-bits
+    1 part-hidden
     $27 message-param-room
     $27 1 item-give-count
     0 $27 item-tab

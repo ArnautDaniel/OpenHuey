@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-13
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x6A (D_00438CE0): a lit quad at x 120, z 47 .. 39, from 4 to 21
 : old-mansion-2f-13.cmd00 ( b0 -- )  $1B $80  120.0e 21.0e 47.0e  120.0e 21.0e 39.0e  120.0e 4.0e 47.0e  120.0e 4.0e 39.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -15,8 +15,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     room-sounds
     2 0 object-hidden
     om2f-13-breakable-broken story-flag? not if
-        0 1 $14 door-bits
-        1 0 $14 door-bits
+        0 part-shown
+        1 part-hidden
         om2f-13-flag1 story-flag? not if
             3 old-mansion-2f-13.cmd01
             1 old-mansion-2f-13.cmd00
@@ -25,10 +25,10 @@ USING: room-names story.words story.shared flag-names story-names ;
             0 old-mansion-2f-13.cmd00
         then
     else
-        0 0 $14 door-bits
-        1 1 $14 door-bits
+        0 part-hidden
+        1 part-shown
         1 old-mansion-2f-13.cmd00
-        1 0 $2008000 nav-group
+        0 water-floor floor-on
     then
     om2f-13-rubrum-medallion-found story-flag? om2f-13-rubrum-medallion story-flag? not and if
         0 88.5 1.0 71.56 flicker-sprite
@@ -302,9 +302,9 @@ USING: room-names story.words story.shared flag-names story-names ;
     stalker-who 1 6 char-sound
     om2f-13-breakable-broken story-flag-set
     stalker-who 1 stalker-rage
-    0 0 $14 door-bits
-    1 1 $14 door-bits
-    1 0 $2008000 nav-group
+    0 part-hidden
+    1 part-shown
+    0 water-floor floor-on
     1 old-mansion-2f-13.cmd00
     120.0 16.0 45.0 0 943208504 4 -15.5 shards-at
     120.0 16.0 41.0 0 943208504 4 -15.5 shards-at

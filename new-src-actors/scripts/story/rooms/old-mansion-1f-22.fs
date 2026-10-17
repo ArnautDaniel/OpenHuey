@@ -2,20 +2,20 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-22
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-1f-22.enter ( -- )   \ 0043A120
     room-sounds
-    1 0 $1000000 nav-group
-    1 0 $4000000 nav-group
+    0 keeps-hewie-off floor-on
+    0 keeps-stalkers-off floor-on
     om1f-22-flag1 story-flag? if
-        0 1 $14 door-bits
-        1 0 $20000 nav-group
+        0 part-shown
+        0 barred-floor floor-on
         0 1 object-hidden
         1 1 object-hidden
     else
-        0 0 $14 door-bits
-        0 0 $20000 nav-group
+        0 part-hidden
+        0 barred-floor floor-off
         0 0 object-hidden
         1 0 object-hidden
     then
@@ -179,7 +179,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-anim
     0 self-noclip
     om1f-22-flag1 story-flag-set
-    1 0 $20000 nav-group
+    0 barred-floor floor-on
     0 self-scripted
     self-idle-or-end
 ;
@@ -242,7 +242,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         self-wait-done
     then
     om1f-22-flag1 story-flag-set
-    1 0 $20000 nav-group
+    0 barred-floor floor-on
     0 self-scripted
     self-idle-or-end
 ;
@@ -289,7 +289,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         $8000 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
-        0 0 $14 door-bits
+        0 part-hidden
         0 0 object-hidden
         1 0 object-hidden
         0 0 object-anim
@@ -302,7 +302,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         $8001 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
-        0 0 $14 door-bits
+        0 part-hidden
         0 0 object-hidden
         1 0 object-hidden
         0 1 object-anim
@@ -316,7 +316,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         self-wait-anim
     then
     0 self-noclip
-    0 0 $20000 nav-group
+    0 barred-floor floor-off
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
     0 avoid-prompt
@@ -373,7 +373,7 @@ USING: room-names story.words story.shared flag-names story-names ;
                 self-wait-done
             then
             om1f-22-flag1 story-flag-clear
-            0 0 $20000 nav-group
+            0 barred-floor floor-off
             0 self-scripted
             self-idle-or-end
         then

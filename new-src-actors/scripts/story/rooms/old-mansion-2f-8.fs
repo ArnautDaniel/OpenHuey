@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-8
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x5C (Room5C_Cmd00_ptmf): the dial (+0x7C, 0..1) from script variable 0 by byte 3: 0
 \ 0x2B..0x38 (/ 13, +0x74 0 / +0x78 1), 1 0xC..0x20 (/ 20), 2 7..0x12 (/ 11) (+0x74 1 / +0x78 0)
@@ -24,11 +24,11 @@ USING: room-names story.words story.shared flag-names story-names ;
     1 0 var-set
     2 0 var-set
     $5A door-not-closed-off? not if
-        2 1 $14 door-bits
-        1 1 8 nav-group
+        2 part-shown
+        1 solid-floor floor-on
     then
     om2f-8-flag1 story-flag? if
-        3 1 $14 door-bits
+        3 part-shown
     then
     2 48.8 10.3 -50.7 0 flame-in
     1 $2300 sound-volume
@@ -373,7 +373,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     $5D room-preload
     self-frames-reset
     self-wait-16
-    3 1 $14 door-bits
+    3 part-shown
     self-frames-reset
     8 self-wait-frames
     $F $44 fade
@@ -385,7 +385,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-2f-8.act02 ( -- )   \ 00411690
     1 self-scripted
-    3 1 $14 door-bits
+    3 part-shown
     self-wait-done
     camera-restart
     world-held state-flag-clear

@@ -10,7 +10,7 @@
 \ (`bite`) take his health; a hard one makes him stumble. Growled and barked at (`snap`) his
 \ temper rises too; past what he stands he goes for Hewie a while.
 IN: stalker.bitten
-USING: engine game-state actors messages common facts flag-names paths vectors stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.tables stalker.attack stalker.chase stalker.struck stalker.doorway stalker.names stalker.anims stalker.sounds ;
+USING: engine game-state actors messages common facts flag-names paths vectors stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.tables stalker.attack stalker.chase stalker.struck stalker.doorway stalker.names stalker.anims stalker.sounds floor-flags ;
 
 : temper+ ( n -- )  temper @ + 1000 min temper ! ;
 : temper# ( cell -- n )  cells temper-table + @ ;
@@ -25,7 +25,6 @@ enum: bite-how#  held-by-dog throwing-dog dog-let-go ;
 \ offset in his frame by kind, round him from Hewie's side (head on and the leg: from the other
 \ side) 10 degrees at a time either way until one is on the floor and Hewie can run straight
 \ there ----
-$29020008 constant hewie-floor   \ (the floors Hewie can't stand on)
 create gs-at /vec allot
 : try-heading ( F: ox oz r -- ) ( -- tri | -1 )   \ the offset turned by r from where he stands
     {: F: ox oz r :}

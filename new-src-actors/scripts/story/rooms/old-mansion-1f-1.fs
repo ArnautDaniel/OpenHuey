@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-1
-USING: engine room-names story.words story.shared flag-names story-names ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ a lit quad at x -15.96, z -2 .. 6, height 111 / 91
 : old-mansion-1f-1.cmd00 ( b0 -- )  $1B $80  -15.959e 111.0e -2.0e  -15.959e 111.0e 6.0e  -15.959e 91.0e -2.0e  -15.959e 91.0e 6.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -19,7 +19,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     room-sounds
     found-file-234 story-flag? not if
         0 old-mansion-1f-1.cmd00
-        0 1 $14 door-bits
+        0 part-shown
         found-file-233 story-flag? if
             force-followed state-flag-set
             stalker-no-fear state-flag-set
@@ -29,11 +29,11 @@ USING: engine room-names story.words story.shared flag-names story-names ;
             $FE $2E 104 2 stalker-to-room
             stalker-who 1 1 char-camera
             0 3 1 action
-            1 0 $1000000 nav-group
+            0 keeps-hewie-off floor-on
         then
     else
-        1 1 $14 door-bits
-        1 1 $2008000 nav-group
+        1 part-shown
+        1 water-floor floor-on
     then
 ;
 
@@ -223,7 +223,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
         yield
     repeat
     stalker-who 0 char-silent
-    1 0 $20000 nav-group
+    0 barred-floor floor-on
     1 counter-set
     stalker-who 5 6 char-sound
     begin
@@ -297,7 +297,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-1f-1.act04 ( -- )   \ 0041D700
     self-wait-done
-    0 1 $14 door-bits
+    0 part-shown
     3 partner-load
     2 char-start
     1 0 movie-play

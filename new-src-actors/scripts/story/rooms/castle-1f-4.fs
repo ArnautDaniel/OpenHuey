@@ -2,10 +2,10 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-4
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 \ room 0x0F: the floor plate ("fumi_yuka") fading: its +0x24 toward 1 while event variable 0 is
-\ unset, toward 0 once set; byte 3 0 at once, else by 0.2 a step (var_fade).
+\ unset, toward 0 once set; byte 3 0 at once, else by 0.2 a step-floor (var_fade).
 : castle-1f-4.cmd00 ( b0 -- )  s" fumi_yuka" 0 var-fade ;   \ (the floor plate fading with event variable 0)
 \ room 0x0F (Room0F_Cmd01_ptmf): three objects' +0x14 back to 0
 : castle-1f-4.cmd01 ( -- )   \ (the hook, the puppet and its door turned back)
@@ -21,18 +21,18 @@ USING: room-names story.words story.shared flag-names story-names ;
 : castle-1f-4.enter ( -- )   \ 003F5EC0
     room-sounds
     broken-marionette-used story-flag? if
-        0 0 $14 door-bits
+        0 part-hidden
         2 0 object-hidden
         3 0 object-hidden
         4 0 object-hidden
     else
-        0 1 $14 door-bits
+        0 part-shown
         2 0 object-hidden
         3 0 object-hidden
         4 0 object-hidden
     then
     7 door-locked? if
-        1 0 $800008 nav-group
+        0 solid-floor pushable or floor-on
     then
     $80 exit-taken? if
         c1f-4-flag1 story-flag-set
@@ -62,24 +62,24 @@ USING: room-names story.words story.shared flag-names story-names ;
     then
     0 22.8 14.65 68.75 0 flame-in
     c1f-4-flag4 story-flag? not if
-        1 1 $14 door-bits
+        1 part-shown
         3 ebit-clear
     else
-        2 1 $14 door-bits
+        2 part-shown
         c1f-4-refined-antimony story-flag? not if
             1 140.0 -9.0 94.0 flicker-sprite
         then
         3 ebit-set
     then
     got-cracked-plate-key story-flag? not if
-        4 1 $14 door-bits
+        4 part-shown
     else
-        4 0 $14 door-bits
+        4 part-hidden
     then
     8 door-locked? if
-        5 0 $14 door-bits
+        5 part-hidden
     else
-        5 1 $14 door-bits
+        5 part-shown
     then
     3 0 var-set
     4 0 var-set
@@ -132,11 +132,11 @@ USING: room-names story.words story.shared flag-names story-names ;
             0.0 sound-volume-scale
             world-held state-flag-set
             0 fiona-who 0 action
-            3 0 $14 door-bits
+            3 part-hidden
             7 0 object-hidden
             8 0 object-hidden
         else
-            3 1 $14 door-bits
+            3 part-shown
             7 1 object-hidden
             8 1 object-hidden
         then
@@ -476,7 +476,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     yield
     scene-wait-ready
     wait-fade
-    0 0 $14 door-bits
+    0 part-hidden
     2 0 object-hidden
     3 0 object-hidden
     4 0 object-hidden
@@ -490,7 +490,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         scene-play
     then
     1 castle-1f-4.cmd04
-    0 0 $800008 nav-group
+    0 solid-floor pushable or floor-off
     castle-1f-4.cmd01
     hewie-who 0 char-visible
     hewie-who action-end
@@ -755,7 +755,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-frames-reset
     4 self-wait-frames
     got-cracked-plate-key story-flag-set
-    4 0 $14 door-bits
+    4 part-hidden
     $12 message-param-room
     $12 1 item-give-count
     0 $12 item-tab
@@ -800,7 +800,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     $902 self-anim
     self-wait-anim
     fiona-who $C 6 char-sound
-    5 1 $14 door-bits
+    5 part-shown
     self-frames-reset
     $1E self-wait-frames
     fiona-who $72 5 char-sound
@@ -889,11 +889,11 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-1f-4.act19 ( -- )   \ 003F6C20
     self-wait-done
-    0 1 $14 door-bits
+    0 part-shown
     2 0 object-hidden
     3 0 object-hidden
     4 0 object-hidden
-    1 1 $14 door-bits
+    1 part-shown
     $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     0 22.8 14.65 68.75 0 flame-in
     4 3 $FF char-load
@@ -928,7 +928,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     yield
     yield
     scene-wait-ready
-    0 0 $14 door-bits
+    0 part-hidden
     2 0 object-hidden
     3 0 object-hidden
     4 0 object-hidden
@@ -952,8 +952,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     c1f-4-flag4 story-flag-set
     fiona-who 9 6 char-sound
     $4000000A 6 140.0 -10.0 92.0 0 0 sound
-    1 0 $14 door-bits
-    2 1 $14 door-bits
+    1 part-hidden
+    2 part-shown
     0 139.0 -9.0 91.5 0 0 0 0 dust
     0 139.0 -9.0 94.5 0 0 0 0 dust
     0 2 0.7 0.5 0.3 0.125 zone-rect

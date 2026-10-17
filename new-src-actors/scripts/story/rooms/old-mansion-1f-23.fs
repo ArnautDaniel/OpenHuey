@@ -2,14 +2,14 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-23
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-1f-23.enter ( -- )   \ 0043A8F0
     room-sounds
     0 0 var-set
     1 0 var-set
     got-mansion-sketch story-flag? not if
-        0 1 $14 door-bits
+        0 part-shown
     then
     om1f-23-viride-medallion-found story-flag? om1f-23-viride-medallion story-flag? not and if
         0 0.03 1.0 -85.54 flicker-sprite
@@ -18,38 +18,38 @@ USING: room-names story.words story.shared flag-names story-names ;
         1 109.8 -9.0 -94.58 flicker-sprite
     then
     1 $2300 sound-volume
-    1 $9D $10000000 nav-tri-flags
-    1 $8D $10000000 nav-tri-flags
-    1 $2B $10000000 nav-tri-flags
-    1 $90 $10000000 nav-tri-flags
-    1 $8A $10000000 nav-tri-flags
-    1 $C3 $10000000 nav-tri-flags
-    1 $87 $10000000 nav-tri-flags
-    1 $7C $10000000 nav-tri-flags
-    1 $BA $10000000 nav-tri-flags
-    1 $9E $10000000 nav-tri-flags
-    1 $8F $10000000 nav-tri-flags
-    1 $2E $10000000 nav-tri-flags
-    1 $92 $10000000 nav-tri-flags
-    1 $8C $10000000 nav-tri-flags
-    1 $C6 $10000000 nav-tri-flags
-    1 $88 $10000000 nav-tri-flags
-    1 $C2 $10000000 nav-tri-flags
-    1 $86 $10000000 nav-tri-flags
-    1 $B8 $10000000 nav-tri-flags
-    1 $7A $10000000 nav-tri-flags
-    1 $BE $10000000 nav-tri-flags
-    1 $80 $10000000 nav-tri-flags
-    1 $C0 $10000000 nav-tri-flags
-    1 $84 $10000000 nav-tri-flags
-    1 $B3 $10000000 nav-tri-flags
-    1 $1E $10000000 nav-tri-flags
-    1 $9F $10000000 nav-tri-flags
-    1 $42 $10000000 nav-tri-flags
-    1 $BD $10000000 nav-tri-flags
-    1 $7F $10000000 nav-tri-flags
-    1 $BB $10000000 nav-tri-flags
-    1 $7D $10000000 nav-tri-flags
+    $9D hole-floor tri-floor-on
+    $8D hole-floor tri-floor-on
+    $2B hole-floor tri-floor-on
+    $90 hole-floor tri-floor-on
+    $8A hole-floor tri-floor-on
+    $C3 hole-floor tri-floor-on
+    $87 hole-floor tri-floor-on
+    $7C hole-floor tri-floor-on
+    $BA hole-floor tri-floor-on
+    $9E hole-floor tri-floor-on
+    $8F hole-floor tri-floor-on
+    $2E hole-floor tri-floor-on
+    $92 hole-floor tri-floor-on
+    $8C hole-floor tri-floor-on
+    $C6 hole-floor tri-floor-on
+    $88 hole-floor tri-floor-on
+    $C2 hole-floor tri-floor-on
+    $86 hole-floor tri-floor-on
+    $B8 hole-floor tri-floor-on
+    $7A hole-floor tri-floor-on
+    $BE hole-floor tri-floor-on
+    $80 hole-floor tri-floor-on
+    $C0 hole-floor tri-floor-on
+    $84 hole-floor tri-floor-on
+    $B3 hole-floor tri-floor-on
+    $1E hole-floor tri-floor-on
+    $9F hole-floor tri-floor-on
+    $42 hole-floor tri-floor-on
+    $BD hole-floor tri-floor-on
+    $7F hole-floor tri-floor-on
+    $BB hole-floor tri-floor-on
+    $7D hole-floor tri-floor-on
 ;
 
 : old-mansion-1f-23.act02 ( -- )   \ 0043AE10
@@ -408,7 +408,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-frames-reset
     4 self-wait-frames
     got-mansion-sketch story-flag-set
-    0 0 $14 door-bits
+    0 part-hidden
     $1E message-param-room
     $1E 1 item-give-count
     0 $1E item-tab
