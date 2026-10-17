@@ -10,7 +10,7 @@
 \ still 5 frames. Off screen, she being chased, the stalker making for that door decides for
 \ himself (`blow` all the same: struck only when he is right behind it).
 IN: fiona.slam
-USING: engine game-state actors messages common doors rumble stalker-names fiona.state fiona.model ;
+USING: engine vectors game-state actors messages common doors rumble stalker-names fiona.state fiona.anims fiona.model ;
 
 : doors-id ( -- id )  s" doors" actor-named ;
 \ the stalker in her room (the one in the game: stalker-names), Hewie in her room

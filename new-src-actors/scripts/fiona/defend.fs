@@ -6,7 +6,7 @@
 \ stumble). A blow is a `blow` to whom it reaches; struck home she's held still 5 frames.
 \ Hewie is told when she shoves or kicks without him being struck (Fiona_HewieReact 10 / 11).
 IN: fiona.defend
-USING: engine game-state actors messages common keys facts flag-names rumble fiona.state fiona.model fiona.moving fiona.slam fiona.fear fiona.controls fiona.looks ;
+USING: engine vectors game-state actors messages common keys facts flag-names rumble fiona.state fiona.anims fiona.model fiona.moving fiona.slam fiona.fear fiona.controls fiona.looks ;
 
 defer to-idle ( -- )
 \ the shove's steps move her every frame - held still by a blow that landed, its frozen frame's

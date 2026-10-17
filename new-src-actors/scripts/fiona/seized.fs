@@ -5,7 +5,7 @@
 \ dragged off) or walking (8: carried off); grabbed outright (Fiona_StateGrabbed /
 \ Fiona_StateHeld: held, at its end the game's over). The game's end is the `caught` flag.
 IN: fiona.seized
-USING: engine game-state actors messages common facts flag-names keys paths rumble fiona.state fiona.model fiona.controls fiona.moving fiona.fear fiona.doors fiona.hurt ;
+USING: engine vectors game-state actors messages common facts flag-names keys paths rumble fiona.state fiona.anims fiona.model fiona.controls fiona.moving fiona.fear fiona.doors fiona.hurt ;
 
 defer to-idle ( -- )
 : leader ( -- id )  her-hit-who @ ;

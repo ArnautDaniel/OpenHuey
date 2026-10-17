@@ -100,6 +100,31 @@ message panic ( stage level -- )             \ broadcast each frame
 enum: panic-stage  composed shaken scared terrified panicking calming-down ;
 
 \ ---- Fiona (docs/subsystems/fiona.md) ----
+\ Fiona's mode (the original's moveMode): moving on her own; led (a door, a scripted move, a walk
+\ to a spot); on a ladder; thrown or stumbling; defending (a shove, a kick); request 9; down;
+\ reacting (a flinch, fleeing, caught); held; commanding Hewie; letting go of a thing
+enum: fiona-mode  own-mode 2 led-mode ladder-mode thrown-mode 8 defend-mode request-9-mode down-mode
+    react-mode held-mode command-mode throw-mode ;
+\ what she is doing (+0x1AD580, the story's condition 0x3F): nothing; turning to push; on a
+\ ladder; at a door; a shove; a kick; letting go of a thing; flinching; thrown; down;
+\ commanding; fleeing; a panic attack; out of breath; the story's moves - an animation, walking
+\ to a spot, along a path, running there, along a path, turning to someone, to a heading,
+\ walking in an animation
+enum: fiona-doing  free-doing push-doing ladder-doing door-doing 5 shove-doing kick-doing let-go-doing
+    flinch-doing 10 thrown-doing down-doing command-doing flee-doing attack-doing breathless-doing
+    $11 anim-doing walk-to-doing walk-path-doing run-to-doing run-path-doing turn-who-doing
+    turn-heading-doing walk-anim-doing ;
+\ her condition: well, hurt, down
+enum: fiona-cond  well-cond hurt-cond down-cond ;
+\ what a stalker or a creature asks of her (Fiona_Reaction's requests): a blow, a harder blow, a
+\ grab, a throw, a door pushed into her, a hold; led away; held down by homunculi; a spirit
+enum: request-kind  1 blow-request heavy-blow-request grab-request throw-request door-request
+    hold-request $A lead-request $C homunculi-request spirit-request ;
+\ her commands to Hewie (the right stick's gestures; Fiona_HewieCommandAction): go there; get up;
+\ stay; ($26: nobody gives it); come; a pat; praise from afar; tending him when he's down; a scold
+\ near; come back; go for it; go for it now (chased); a scold from afar; her cry for help
+enum: hewie-command  $23 go-there-cmd rouse-cmd stay-cmd cmd-26 come-cmd pat-cmd praise-cmd
+    tend-cmd scold-near-cmd come-back-cmd go-for-it-cmd attack-now-cmd scold-cmd help-cmd ;
 message flinch ( -- )                       \ (Fiona) flinching as if caught, nobody holding her (a room's command: action $B / $21)
 message count-shakes ( on? -- )             \ (Fiona) her shakes counted from now (Fiona_Shakes: the story's old-mansion-b1-3), or not
 message fiona-shakes ( n -- )               \ broadcast each frame while counting: her shakes so far

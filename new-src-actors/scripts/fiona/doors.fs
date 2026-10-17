@@ -4,7 +4,7 @@
 \ of the door, opens or shuts it by hand (her animation 0x600 + its kind, the door swinging with
 \ her) and lets it go as she steps out. A locked door she tries, and gives up.
 IN: fiona.doors
-USING: engine keys actors messages common paths doors fiona.state fiona.model fiona.moving fiona.spots ;
+USING: engine vectors keys actors messages common paths doors fiona.state fiona.anims fiona.model fiona.moving fiona.spots ;
 
 : doors-id ( -- id )  s" doors" actor-named ;
 defer to-idle   ' noop is to-idle      \ (fiona.fs)

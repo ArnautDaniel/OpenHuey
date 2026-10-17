@@ -1,7 +1,7 @@
 \ fiona/voice.fs - her voice and the sounds of her motions on their key frames (Fiona_Voice,
 \ Fiona_MotionSounds). Her gesture lines are the commands' (fiona/commands.fs command-sounds).
 IN: fiona.voice
-USING: engine game-state actors messages common fiona.state fiona.model fiona.fear fiona.commands ;
+USING: engine vectors game-state actors messages common fiona.state fiona.anims fiona.model fiona.fear fiona.commands ;
 
 \ Fiona_Voice: her cry, muffled ($1C, bank 6) when her mouth is under water - a triangle with
 \ the water's flags ($2008000) between her feet and her head

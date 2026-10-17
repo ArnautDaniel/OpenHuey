@@ -7,7 +7,7 @@
 \ of the item is used - if her hand isn't past a wall; then she stands again. Throwing, Hewie is
 \ told (Fiona_HewieReact 12).
 IN: fiona.letgo
-USING: engine game-state actors messages common keys facts flag-names fiona.state fiona.model fiona.moving fiona.slam ;
+USING: engine vectors game-state actors messages common keys facts flag-names fiona.state fiona.anims fiona.model fiona.moving fiona.slam ;
 
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
 : events ( -- bits )  her-model @ 0 -1 1 motion-events ;   \ (her motion's key events this frame)

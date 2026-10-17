@@ -9,7 +9,7 @@
 \ Pushing on, the floor 2.2 ahead pushable: again, else strain. The stick let go: straining she
 \ lets go ($1202), else free. The stalker touching her: free at once.
 IN: fiona.push
-USING: engine game-state actors messages common obstacles rumble fiona.state fiona.model fiona.moving fiona.slam ;
+USING: engine vectors game-state actors messages common obstacles rumble fiona.state fiona.anims fiona.model fiona.moving fiona.slam ;
 
 defer to-idle   ' noop is to-idle        \ (fiona.fs)
 <PRIVATE

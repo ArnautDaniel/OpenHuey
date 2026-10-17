@@ -664,8 +664,11 @@ PRIM(p_0gt) { Cell *s = top(f, 1); *s = *s > 0 ? -1 : 0; }
 /* ---- memory ---- */
 
 static void *addr(Forth *f, Cell a) {
-    if (a == 0) {
-        forth_error(f, "null address");
+    /* (nothing is mapped in the lowest 64 KiB, nor at a "negative" address: a number where an
+     * address belongs - a value fetched again, a field's offset used alone - is an error here,
+     * not a crash) */
+    if ((UCell)a < 0x10000 || a < 0) {
+        forth_error(f, a == 0 ? "null address" : "not an address: %ld (a number where an address belongs?)", (long)a);
     }
     return (void *)a;
 }

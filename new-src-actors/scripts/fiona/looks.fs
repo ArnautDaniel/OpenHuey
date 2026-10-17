@@ -5,7 +5,7 @@
 \ story's moves 12 / 13). The head bone ($35) takes the pitch and half the turn, the bone below
 \ it ($2B) the other half.
 IN: fiona.looks
-USING: engine actors common fiona.state fiona.model fiona.slam ;
+USING: engine messages vectors actors common fiona.state fiona.anims fiona.model fiona.slam ;
 
 : head-bone ( -- b )  her-costume @ 1 = if  $35  else  $21  then ;   \ (FionaModel / EventHumanModel +0x8B0)
 : neck-bone ( -- b )  her-costume @ 1 = if  $2B  else  $17  then ;   \ (+0x8B4)

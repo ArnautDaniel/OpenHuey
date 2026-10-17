@@ -2,13 +2,13 @@
 \ walk and run as she feels (Fiona_IdleAnim, Fiona_WalkLook, Fiona_RunLook). Her place on
 \ the model and her body follow from her state.
 IN: fiona.model
-USING: engine actors fiona.state ;
+USING: engine actors vectors messages fiona.state fiona.anims ;
 
 : her ( -- a )  her-model @ actor ;
-: her-pos ( F: -- x y z )  her-at dup sf@ dup 4 + sf@ 8 + sf@ ;
+: her-pos ( F: -- x y z )  her-at vec@ ;
 \ the model and the body where she is
 : show-her ( -- )
-    her-at sf@ her act.x sf!  her-at 4 + sf@ her act.y sf!  her-at 8 + sf@ her act.z sf!
+    her-at v.x sf@ her act.x sf!  her-at v.y sf@ her act.y sf!  her-at v.z sf@ her act.z sf!
     her-yaw f@ her act.yaw sf!
     room-id her-tri @ her-pos body-place  her-yaw f@ body-turn ;
 
@@ -16,87 +16,96 @@ USING: engine actors fiona.state ;
 : anim@ ( -- id )  her-model @ motion@ ;
 \ Motion_Start: the animation (with a variant: -1 none), blended over `blend` frames, with flags
 \ (1 loops, 8 no time of its own); one her model lacks: nothing
-variable ps-a  variable ps-v  variable ps-b  variable ps-f
 : start ( anim variant blend flags -- )
-    ps-f !  ps-b !  ps-v !  ps-a !
-    her-model @ ps-a @ has-motion? 0= if  exit  then
+    {: anim variant blend flags :}
+    her-model @ anim has-motion? 0= if  exit  then
     1e her act.rate sf!
-    her-model @ ps-a @ ps-b @ ps-f @ motion-play
-    ps-v @ dup her-variant !  her-model @ swap motion-variant ;
+    her-model @ anim blend flags motion-play
+    variant her-variant !  her-model @ variant motion-variant ;
 : entry ( anim -- blend flags )  her-model @ swap motion-entry nip ;   \ its table's fade and flags
 : play-table ( anim variant -- )  over entry start ;                 \ Motion_PlayTable
-: play-blend ( anim n variant -- )  2 pick entry nip >r swap r> start ;   \ blended over n frames
+: play-blend ( anim n variant -- )  {: anim n variant :}  anim variant n  anim entry nip  start ;   \ blended over n frames
 : weight! ( F: w -- )  her act.vweight sf! ;      \ the animation against its variant
 : settled? ( -- flag )  her act.fade sf@ 0e f<= ;  \ faded in
 : ended? ( -- flag )  her act.mflags l@ $20 and 0<> ;   \ came to its end this frame
 
-\ the group an animation belongs to (Fiona_AnimGroup): 0 standing, 1 walking, 2 running, 3 out
-\ of breath, 4 0xB01, 5 resting, 6 0x12xx, 7 a ladder, 8 its top, 9 0x403, 10 0xE01, 11 others
+\ the group an animation belongs to (Fiona_AnimGroup)
+enum: anim-group  standing-group walking-group running-group breathless-group lying-group resting-group pushing-group climbing-group hanging-group
+    turning-to-flee-group kicking-group other-group ;
 : anim-group ( anim -- g )
     case
-        0 of 0 endof  2 of 0 endof  3 of 0 endof  4 of 0 endof  5 of 0 endof
-        1 of 5 endof
-        $200 of 1 endof  $201 of 1 endof  $204 of 1 endof  $208 of 1 endof
-        $400 of 1 endof  $401 of 1 endof  $402 of 1 endof
-        $202 of 2 endof  $203 of 2 endof  $205 of 2 endof  $206 of 2 endof
-        $207 of 3 endof  $B01 of 4 endof
-        $1200 of 6 endof  $1201 of 6 endof  $1202 of 6 endof  $1203 of 6 endof
-        $700 of 7 endof  $701 of 7 endof  $702 of 7 endof  $703 of 7 endof
-        $704 of 7 endof  $705 of 7 endof  $706 of 7 endof  $707 of 7 endof
-        $708 of 8 endof  $709 of 8 endof  $403 of 9 endof  $E01 of 10 endof
-        >r 11 r>
+        stand-anim of standing-group endof  attack-anim of standing-group endof  3 of standing-group endof
+        4 of standing-group endof  chased-stand-anim of standing-group endof
+        rest-anim of resting-group endof
+        walk-anim of walking-group endof  walk-shaken-anim of walking-group endof  walk-scared-anim of walking-group endof
+        walk-chased-anim of walking-group endof
+        turn-left-anim of walking-group endof  turn-right-anim of walking-group endof  turn-round-anim of walking-group endof
+        run-anim of running-group endof  run-shaken-anim of running-group endof  run-scared-anim of running-group endof
+        panic-run-anim of running-group endof
+        out-of-breath-anim of breathless-group endof  lying-anim of lying-group endof
+        lean-anim of pushing-group endof  push-anim of pushing-group endof  let-go-push-anim of pushing-group endof  strain-anim of pushing-group endof
+        on-ladder-top-anim of climbing-group endof  rung-down-anim of climbing-group endof  rung-down-end-anim of climbing-group endof
+        off-ladder-foot-anim of climbing-group endof  on-ladder-foot-anim of climbing-group endof  rung-up-anim of climbing-group endof
+        rung-up-end-anim of climbing-group endof  off-ladder-top-anim of climbing-group endof
+        ladder-hold-anim of hanging-group endof  ladder-hold-2-anim of hanging-group endof
+        flee-turn-anim of turning-to-flee-group endof  kick-anim of kicking-group endof
+        >r other-group r>
     endcase ;
 : group ( -- g )  anim@ anim-group ;
 
 \ ---- her looks: how she stands, walks and runs as she feels ----
-: idle-base ( -- anim )  her-danger @ 2 = if  5  else  0  then ;
+: idle-base ( -- anim )  her-danger @ chased = if  chased-stand-anim  else  stand-anim  then ;
 : weight-moved? ( F: w -- flag )  her-blend-w f@ f- fabs 0.1e f> ;
-fvariable calm-a  fvariable calm-b
-: feel ( -- )   \ a: (100 - fear) / 60, b: (1800 - recovery) / 1800
-    100e her-fear f@ f- 60e f/ calm-a f!  1800 her-recovery @ - s>f 1800e f/ calm-b f! ;
+\ how she feels: her fear's ease - (100 - fear) / 60; her recovery's - (1800 - its count) / 1800
+: fear-ease ( F: -- a )  100e her-fear f@ f- 60e f/ ;
+: recovery-ease ( F: -- b )  1800 her-recovery @ - s>f 1800e f/ ;
+\ the variants of her idle and moves: shaken (by her fear), scared (by her recovery), out of breath
+2 constant shaken-variant   3 constant scared-variant   4 constant breathless-variant
 : idle-play ( anim blend variant -- )  over -1 = if  nip play-table  else  play-blend  then ;
 : playing? ( anim variant -- flag )  her-variant @ = swap anim@ = and ;
 \ Fiona_IdleAnim: out of breath (variant 4, its weight eased toward the panic), shaken (2, by
 \ her fear) or frightened (3, by her recovery); weight 1 is her plain idle
 : idle-anim ( blend -- )
-    her-mode @ 0= if  0 her-sub !  then
+    {: blend :}
+    her-mode @ own-mode = if  0 her-sub !  then
     her-fear-bits @ 1 and if
-        idle-base 4 playing? 0= if  idle-base over 4 idle-play  then  drop
-        90e her-panic-level f@ f- 15e f/ 0e fmax                      ( F: t )
-        her-tired-w f@ fover f< if  her-tired-w f@ 0.05e f+ fmin  else  her-tired-w f@ 0.05e f- fmax  then
+        idle-base breathless-variant playing? 0= if  idle-base blend breathless-variant idle-play  then
+        90e her-panic-level f@ f- 15e f/ 0e fmax  {: F: t :}            \ (the weight eased toward the panic)
+        her-tired-w f@ t f< if  her-tired-w f@ 0.05e f+ t fmin  else  her-tired-w f@ 0.05e f- t fmax  then
         fdup her-tired-w f!  weight! exit
     then
-    feel
-    calm-b f@ 0.5e f< 0=  calm-b f@ calm-a f@ 0.25e f+ f>= and if
-        calm-a f@ 1e f< if
-            idle-base 2 playing? 0=  calm-a f@ weight-moved? or if  idle-base over 2 idle-play  then
-            drop calm-a f@ weight!  calm-a f@ her-blend-w f!
+    fear-ease recovery-ease  {: F: a b :}
+    b 0.5e f< 0=  b a 0.25e f+ f>= and if
+        a 1e f< if
+            idle-base shaken-variant playing? 0=  a weight-moved? or if  idle-base blend shaken-variant idle-play  then
+            a weight!  a her-blend-w f!
         else
-            idle-base -1 playing? 0= if  idle-base over -1 idle-play  then
-            drop 1e weight!
+            idle-base -1 playing? 0= if  idle-base blend -1 idle-play  then
+            1e weight!
         then  exit
     then
-    idle-base 3 playing? 0=  calm-b f@ weight-moved? or if  idle-base over 3 idle-play  then
-    drop calm-b f@ weight!  calm-b f@ her-blend-w f! ;
+    idle-base scared-variant playing? 0=  b weight-moved? or if  idle-base blend scared-variant idle-play  then
+    b weight!  b her-blend-w f! ;
 
 \ Fiona_WalkLook / Fiona_RunLook: the walk (0x200; chased 0x208) or run (0x202) alone, or blended
 \ with its frightened (0x204 / 0x205) or shaken (0x201 / 0x203) variant; panicking, the panic
 \ run 0x206
-variable look-base  variable look-scared  variable look-shaken
-: look-blend ( var -- ) ( F: w -- )
-    look-base @ over playing? if  fdup weight-moved? 0= if  drop  else  look-base @ swap play-table  then
-    else  look-base @ swap play-table  then
+: look-blend ( base variant -- ) ( F: w -- )   \ the move blended with a variant (anew if the weight moved on)
+    {: base variant :}
+    base variant playing? 0=  fdup weight-moved? or if  base variant play-table  then
     fdup weight!  her-blend-w f! ;
-: move-look ( -- )
-    feel
-    calm-b f@ 0.5e f<  calm-b f@ calm-a f@ 0.25e f+ f< or if  calm-b f@ look-scared @ look-blend exit  then
-    calm-a f@ 1e f< if  calm-a f@ look-shaken @ look-blend exit  then
-    look-base @ -1 playing? 0= if  look-base @ -1 play-table  then  1e weight! ;
+: move-look ( base scared shaken -- )
+    {: base scared shaken :}  fear-ease recovery-ease  {: F: a b :}
+    b 0.5e f<  b a 0.25e f+ f< or if  b base scared look-blend exit  then
+    a 1e f< if  a base shaken look-blend exit  then
+    base -1 playing? 0= if  base -1 play-table  then  1e weight! ;
+\ the walk and the run (their subs: her moving on her own); the variants are their own animations
+1 constant walk-sub   2 constant run-sub
 : walk-look ( -- )
-    her-mode @ 0= if  1 her-sub !  then
-    her-danger @ 2 = if  $208  else  $200  then  look-base !  $204 look-scared !  $201 look-shaken !  move-look ;
+    her-mode @ own-mode = if  walk-sub her-sub !  then
+    her-danger @ chased = if  walk-chased-anim  else  walk-anim  then  walk-scared-anim walk-shaken-anim  move-look ;
 : run-look ( -- )
-    her-mode @ 0= if  2 her-sub !  then
-    her-fear-bits @ 2 and if  anim@ $206 <> if  $206 -1 play-table  1e weight!  then  exit  then
-    $202 look-base !  $205 look-scared !  $203 look-shaken !  move-look ;
+    her-mode @ own-mode = if  run-sub her-sub !  then
+    her-fear-bits @ 2 and if  anim@ panic-run-anim <> if  panic-run-anim -1 play-table  1e weight!  then  exit  then
+    run-anim run-scared-anim run-shaken-anim move-look ;
 : stand ( -- )  0 her-rest !  -1 idle-anim ;   \ Fiona_Stand

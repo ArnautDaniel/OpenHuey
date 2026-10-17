@@ -3,7 +3,7 @@
 \ to the heading - a quarter turn (0x400 / 0x401) or a half turn (0x402) on the way, else a
 \ straight last part - and ends with a stop. Doors and the story's moves use it.
 IN: fiona.spots
-USING: engine common paths fiona.state fiona.model fiona.moving ;
+USING: engine messages vectors common paths fiona.state fiona.anims fiona.model fiona.moving ;
 
 \ the walk's flags (her-wk): 1 turning left, 2 a quarter turn, 4 a half turn, 8 the last part,
 \ $10 there, $20 stopping, $40 the last part started, $100 the turn animation is half weighted
@@ -60,7 +60,7 @@ USING: engine common paths fiona.state fiona.model fiona.moving ;
     8 wk? 0= if   \ on the way: the step by how well she faces its next point, turning 8 degrees
         settled? if  walk-look  then
         her-path her-at 3e path-ahead drop  her-at ahead vec-heading         ( F: yaw )
-        root@ rm-z f@ 0e fmax                                                 ( F: yaw fwd )
+        root-step fnip 0e fmax                                                ( F: yaw fwd )
         fover her-yaw f@ f- fcos 1e f+ 2e f/ f* her-wk-step f!
         her-yaw f@ fswap 8e deg>rad turn-toward fdrop her-yaw f!
     else
@@ -68,7 +68,7 @@ USING: engine common paths fiona.state fiona.model fiona.moving ;
         6 wk? if   \ turning on the way: the step is the turn's root motion
             0e her-wk-step f!
             settled? if
-                root@  2 wk? if  rm-x f@  else  rm-z f@  then  fabs
+                root-step  2 wk? if  fdrop  else  fnip  then  fabs
                 $100 wk? if  her-wk-speed f@ f*  then  0.05e fmax her-wk-step f!
             then
         else  her-wk-step f@ 0.05e fmax her-wk-step f!  then

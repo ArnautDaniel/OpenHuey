@@ -7,7 +7,7 @@
 \ (stay / come), 4 right (praise; held: more), 5 left (scold). They are read only under state
 \ flag 0xD (the story: Hewie is hers to command) and not 0x2B.
 IN: fiona.commands
-USING: engine game-state actors messages common facts keys fiona.state fiona.model fiona.moving fiona.spots fiona.looks flag-names ;
+USING: engine vectors game-state actors messages common facts keys fiona.state fiona.anims fiona.model fiona.moving fiona.spots fiona.looks flag-names ;
 
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
 : acoustics-id ( -- id )  s" acoustics" actor-named ;

@@ -4,7 +4,7 @@
 \ panic run until she's out of breath; stumbling or falling as she runs into something; getting
 \ up again. The panic itself is its own actor (panic.fs): she hears its stage and level.
 IN: fiona.fear
-USING: engine keys game-state actors messages common facts fiona.state fiona.model fiona.controls fiona.moving fiona.slam flag-names ;
+USING: engine vectors keys game-state actors messages common facts fiona.state fiona.anims fiona.model fiona.controls fiona.moving fiona.slam flag-names ;
 
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
@@ -84,13 +84,14 @@ create probe 12 allot  create up-was 12 allot  variable up-tri
             her-fear-bits @ 1 and 0= if  $B02 -1 play-table  then
         else anim@ $B02 = ended? and if  to-idle exit  then then
     then
-    root@  rm-z f@ f0> dup if   \ (turned toward the stick - not where 4 ahead can't be got to)
-        her-yaw f@  her-yaw f@ her-heading f@ rm-z f@ 10e f* deg>rad turn-toward fdrop her-yaw f!
+    root-step {: F: rx rz :}
+    rz f0> dup if   \ (turned toward the stick - not where 4 ahead can't be got to)
+        her-yaw f@  her-yaw f@ her-heading f@ rz 10e f* deg>rad turn-toward fdrop her-yaw f!
         probe-ok? if  fdrop  else  her-yaw f!  then
     then
-    root-turn  her-yaw f@ her-heading f!
+    root-turn fdrop fdrop fdrop  her-yaw f@ her-heading f!
     up-was her-at vec-copy  her-tri @ up-tri !
-    rm-x f@ rm-z f@ her-yaw f@ rotate-by  her-at blocked-floor 1 or v-nav-move  dup 0< if  drop  else  her-tri !  then
+    rx rz her-yaw f@ rotate-by  her-at blocked-floor 1 or v-nav-move  dup 0< if  drop  else  her-tri !  then
     if  probe-ok? 0= if  her-at up-was vec-copy  up-tri @ her-tri !  then  then   \ (moved off: back)
     her-attack-t @ $97 < if  shakes-now if  2 panic-id send panic-shorten  2 her-attack-t +!  then  then ;
 : fallen ( -- )
@@ -98,7 +99,7 @@ create probe 12 allot  create up-was 12 allot  variable up-tri
         ['] getting-up her-act ! exit  then
     her-fall-turn @ -1 = if  root-move
     else
-        root@ rm-x f@ rm-z f@ her-fall-yaw f@ rotate-by move-by
+        root-step her-fall-yaw f@ rotate-by move-by
         her-fall-turn @ 0= if
             her-yaw f@ her-fall-yaw f@ 20e deg>rad turn-toward f0= if  1 her-fall-turn !  then  her-yaw f!
         then
@@ -118,7 +119,7 @@ create probe 12 allot  create up-was 12 allot  variable up-tri
 \ (one time in five, at most every 30 frames) a fall; at full fear the panic attack ----
 create next-at 12 allot
 : blocked-ahead? ( -- flag )   \ (the root motion's step ahead lands off her floor)
-    root@  rm-x f@ rm-z f@  her-still @ if  her-heading f@  else  stick-heading  then  rotate-by
+    root-step  her-still @ if  her-heading f@  else  stick-heading  then  rotate-by
     her-at 8 + sf@ f+ next-at 8 + sf!  her-at sf@ f+ next-at sf!  her-at 4 + sf@ next-at 4 + sf!
     her-tri @ her-at next-at blocked-floor v-walk 0< ;   \ (not reached straight over her floor: Actor_TriTo)
 : panic-controls ( -- done? )
@@ -155,7 +156,7 @@ create behind-pt 12 allot   \ (her radius behind her: a door slammed as she turn
     then
     events 2 and if  0 her-mode !  costume 8 <> if  10e add-fear  then  then
     12e deg>rad turn-to-heading fdrop
-    root@ rm-x f@ rm-z f@ her-heading f@ rotate-by move-by ;
+    root-step her-heading f@ rotate-by move-by ;
 : flee-start ( -- )
     root-move
     settled? 0= if  exit  then

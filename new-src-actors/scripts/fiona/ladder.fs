@@ -11,7 +11,7 @@
 \ event $20 she is put by that end and free. Her moves on it are her animations' own,
 \ up and down too.
 IN: fiona.ladder
-USING: engine game-state actors messages common keys facts flag-names rumble fiona.state fiona.model fiona.moving fiona.spots fiona.controls fiona.slam fiona.fear fiona.voice ;
+USING: engine vectors game-state actors messages common keys facts flag-names rumble fiona.state fiona.anims fiona.model fiona.moving fiona.spots fiona.controls fiona.slam fiona.fear fiona.voice ;
 
 defer to-idle   ' noop is to-idle        \ (fiona.fs)
 : events ( -- bits )  her act.mflags l@ ;   \ (MOTION_EVENTS: the motion's flags; $20 come round)
@@ -21,9 +21,9 @@ defer to-idle   ' noop is to-idle        \ (fiona.fs)
 
 \ ---- moved by her animation's root motion, free of the floor (up and down too) ----
 : climb-move ( -- )
-    root-turn  rm-x f@ rm-z f@ her-yaw f@ rotate-by                    ( F: dx dz )
-    her-at 8 + sf@ f+ her-at 8 + sf!  her-at sf@ f+ her-at sf!
-    her-at 4 + sf@ rm-y f@ f+ her-at 4 + sf! ;
+    root-turn {: F: x y z :}  x z her-yaw f@ rotate-by {: F: dx dz :}
+    her-at v.x sf@ dx f+ her-at v.x sf!  her-at v.z sf@ dz f+ her-at v.z sf!
+    her-at v.y sf@ y f+ her-at v.y sf! ;
 \ where she stands off it at an end (kFionaMeetOffsets: the foot 2.1 out, the top 1.7 back from it)
 : off-offset ( side -- side ) ( F: -- ox oz )  0e  dup if  6.6709e  else  -7.1132e  then ;
 \ her triangle at an end (after each move: off at the foot or on from it - the foot's; else the top's)
@@ -52,7 +52,7 @@ defer to-idle   ' noop is to-idle        \ (fiona.fs)
     0 her-mode !  off-ladder ;
 
 \ ---- on it (Fiona_StateOnLadder): as each move comes round, the stick picks the next ----
-: stick-up ( F: -- v )  sz f@ fnegate ;   \ (the stick's up; W)
+: stick-up ( F: -- v )  sz fnegate ;   \ (the stick's up; W)
 : rung-down ( -- )   \ (from $700 / $702 / $706 / $708: off at the foot within 18, else the next rung)
     0 end-y her-at 4 + sf@ f- 18e f< if
         0 stalker-on if  anim@ $708 <> if  $708 play-own  then  exit  then

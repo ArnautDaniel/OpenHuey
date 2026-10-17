@@ -5,7 +5,7 @@
 \ caught (a hold: she flinches in his grip and pulls free) - the fright it carries, and getting
 \ up again. How she stands for an attack (`fiona-plight`) is told each frame.
 IN: fiona.hurt
-USING: engine game-state actors messages common facts flag-names rumble fiona.state fiona.model fiona.moving fiona.fear ;
+USING: engine vectors game-state actors messages common facts flag-names rumble fiona.state fiona.anims fiona.model fiona.moving fiona.fear ;
 
 defer to-idle ( -- )
 defer grabbed ( -- )   \ (seized outright: fiona.seized)
@@ -94,7 +94,7 @@ create from-pt 12 allot
 \ panicking she stays down and gets up as from a panic fall ----
 : pull-back ( -- )
     her-fall-turn @ -1 = if  root-move exit  then
-    root@ rm-x f@ rm-z f@ her-fall-yaw f@ rotate-by move-by
+    root-step her-fall-yaw f@ rotate-by move-by
     her-fall-turn @ 0= if
         her-yaw f@ her-fall-yaw f@ 20e deg>rad turn-toward f0= if  1 her-fall-turn !  then  her-yaw f!
     then ;

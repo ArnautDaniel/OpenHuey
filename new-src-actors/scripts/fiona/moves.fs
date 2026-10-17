@@ -3,7 +3,7 @@
 \ looks; each sets her move done (+0xE1) as the original's do. She reports at each frame's end
 \ (`moving`: done, her animation ended).
 IN: fiona.moves
-USING: engine common paths fiona.state fiona.model fiona.moving fiona.spots ;
+USING: engine messages vectors common paths fiona.state fiona.anims fiona.model fiona.moving fiona.spots ;
 
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
 defer door-use ( exit opens? -- )   ' 2drop is door-use   \ (fiona/doors.fs scripted-door)
@@ -24,13 +24,12 @@ create there 12 allot
     her-move @ 17 = her-move-a @ 0< or if  her-move-at blocked-floor v-tri-in  else  her-move-a @  then ;
 : plan ( -- ok? )   \ (curved, as the original's: Character_WaypointsCurve)
     her-path her-tri @ her-at spot-tri her-move-at blocked-floor path-plan-curved 0> ;
-fvariable turn-left  fvariable stepping
 : path-step ( -- arrived? )
-    root@
+    root-step fnip {: F: fwd :}
     her-path her-at 3e path-ahead drop  her-at ahead vec-heading            ( F: toward )
-    her-yaw f@ fswap 10e deg>rad turn-toward  turn-left f!  her-yaw f!
-    rm-z f@ f0< if  0e  else  rm-z f@  pi turn-left f@ f-  pi f/ f*  then  stepping f!
-    her-path her-at stepping f@ path-ahead                                   ( i )
+    her-yaw f@ fswap 10e deg>rad turn-toward  {: F: left :}  her-yaw f!
+    fwd f0< if  0e  else  fwd  pi left f-  pi f/ f*  then  {: F: stepping :}   \ (less the sharper the turn)
+    her-path her-at stepping path-ahead                                      ( i )
     ahead blocked-floor v-tri-in dup 0< if  drop  else  her-tri !  then
     her-at ahead vec-copy  her-path path-i!
     her-path path-left? 0= ;
@@ -58,11 +57,11 @@ fvariable turn-left  fvariable stepping
 : idle-step ( -- )   \ Fiona_StateIdleStep: standing played out - done; else her idle
     settled? if  group 0= if  done  else  -1 idle-anim  then  then  root-move ;
 : turning ( -- )
-    her-yaw f@ her-heading f@ 10e deg>rad turn-toward  turn-left f!  her-yaw f!
+    her-yaw f@ her-heading f@ 10e deg>rad turn-toward  {: F: left :}  her-yaw f!
     settled? 0= if  exit  then
-    group if  turn-left f@ pi f2/ f< if  -1 idle-anim  then  exit  then
-    turn-left f@ f0= if  ['] idle-step her-act !  exit  then
-    her-heading f@ her-yaw f@ f- angle-wrap f0< if  $400  else  $401  then
+    group if  left pi f2/ f< if  -1 idle-anim  then  exit  then
+    left f0= if  ['] idle-step her-act !  exit  then
+    her-heading f@ her-yaw f@ f- angle-wrap f0< if  turn-left-anim  else  turn-right-anim  then
     dup anim@ <> if  -1 play-table  else  drop  then ;
 
 \ ---- 17: the walk's animation along the way, arriving as it ends (Fiona_StateCmdWalkAnim) ----
