@@ -19,56 +19,30 @@ USING: room-names story.words story.shared flag-names ;
 
 : house-of-truth-b1-2.char-enter ( -- )   \ 00432730
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 2 2 char-camera
-                0 camera-follow
-            else
-                1 2 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            2 2 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 2 2 char-camera
-            0 camera-follow
-        else
-            1 2 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        2 2 player-camera
     then then
     1 2 2 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         $98 story-flag? not $80 exit-taken? and if
             world-held state-flag-set
-            $FF panic-stage? if
-                3 panic-stage
-            then
-            0 0 1 action-force
+            panic-eased
+            0 fiona-who 1 action-force
         then
     then
 ;
@@ -86,10 +60,10 @@ USING: room-names story.words story.shared flag-names ;
     5 1 1 1 chars-area-camera
     6 2 2 1 chars-area-camera
     7 1 1 1 chars-area-camera
-    0 2 char-entered-area? if
+    fiona-who 2 char-entered-area? if
         0 exit-prepare
     then
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
     house-of-truth-b1-2.cmd00
@@ -115,22 +89,22 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : house-of-truth-b1-2.phase2 ( -- )   \ 004328A0
-    0 8 $32 char-faces-area? if
+    fiona-who 8 $32 char-faces-area? if
         5 $84 3 scene-change
     then
     $95 story-flag? not if
-        0 1 char-group-bit4? if
+        fiona-who 1 char-before-door? if
             5 0 1 scene-change
         then
     then
     -2147483646 scene-request? if
-        0 0 char-group-bit4? if
+        fiona-who 0 char-before-door? if
             5 3 1 scene-change
         then
     then
     $2E3 story-flag? not if
         0 0 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
+        fiona-who 0 3 char-zone-bits? if
             5 2 4 scene-change
         then
     then
@@ -158,70 +132,14 @@ USING: room-names story.words story.shared flag-names ;
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    0 message-prepare
+    scene-wait-ready
+    panic-eased
+    0 message-prepare   \ "The great Aureolus Belli once said, 'The most valuable thing in this world is t..."
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
-    0 $27 -0.18 14.47 -79 char-to-xz
-    hewie-controlled? not if
-        0 1 1 char-camera
-        0 camera-follow
-    else
-        1 1 1 char-camera
-        1 camera-follow
-    then
+    fiona-who $27 -0.18 14.47 -79 char-to-xz
+    1 1 player-camera
     camera-restart
     $EF door-open-clear
     $E9 door-lock
@@ -249,16 +167,15 @@ USING: room-names story.words story.shared flag-names ;
         4 self-wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $2E3 story-flag-set
             0 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $903 self-anim
@@ -274,16 +191,16 @@ USING: room-names story.words story.shared flag-names ;
     $FF panic-stage? 2 game-mode? or if
         $60A self-anim
         self-wait-anim
-        -1 self-move-16
+        -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
     else
         $608 self-anim
         self-wait-anim
-        -1 self-move-16
+        -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
-        1 message
+        1 message   \ "It's locked. I can't open it. I guess they have no intention of letting me go home..."
         wait-message
     then
     self-idle-or-end
@@ -295,66 +212,16 @@ USING: room-names story.words story.shared flag-names ;
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    0 message-prepare
+    scene-wait-ready
+    panic-eased
+    0 message-prepare   \ "The great Aureolus Belli once said, 'The most valuable thing in this world is t..."
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 

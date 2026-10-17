@@ -68,7 +68,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
         4 ebit-set
         summoner-on state-flag-clear
     then
-    $FE action-end
+    stalker-who action-end
     1 summon-take
     $2DF story-flag? not if
         0 -71.41 143.0 -7.67 flicker-sprite
@@ -89,50 +89,26 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
 
 : water-tower-4f-1.char-enter ( -- )   \ 0043F9F0
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 3 char-camera
-                0 camera-follow
-            else
-                1 0 3 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 3 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 3 char-camera
-            0 camera-follow
-        else
-            1 0 3 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 3 player-camera
     then then
     0 0 3 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 3 2 char-camera
-                0 camera-follow
-            else
-                1 3 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            3 2 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 3 2 char-camera
-            0 camera-follow
-        else
-            1 3 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        3 2 player-camera
     then then
     1 3 2 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         1 exit-taken? if
             7 map-page
         then
@@ -141,17 +117,17 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
 
 : water-tower-4f-1.phase1 ( -- )   \ 0043FA80
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             0 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
     hewie-controlled? not if
-        0 1 char-in-area? 0 char-busy? not and if
+        fiona-who 1 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 1 char-in-area? 1 char-busy? not and if
+    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then
     4 0 3 1 chars-area-camera
@@ -164,34 +140,34 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     $B 3 2 1 chars-area-camera
     $14 1 0 1 chars-area-camera
     $13 6 5 1 chars-area-camera
-    0 2 char-entered-area? if
+    fiona-who 2 char-entered-area? if
         0 exit-prepare
     then
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    0 $15 char-entered-area? if
+    fiona-who $15 char-entered-area? if
         4 map-page
     then
-    0 $15 char-left-area? 0 $16 char-entered-area? or if
+    fiona-who $15 char-left-area? fiona-who $16 char-entered-area? or if
         5 map-page
     then
-    0 $16 char-left-area? 0 $17 char-entered-area? or if
+    fiona-who $16 char-left-area? fiona-who $17 char-entered-area? or if
         6 map-page
     then
-    0 $17 char-left-area? if
+    fiona-who $17 char-left-area? if
         7 map-page
     then
-    0 $10 char-entered-area? 0 $11 char-entered-area? or 0 $12 char-entered-area? or if
-        0 0 3 char-camera
+    fiona-who $10 char-entered-area? fiona-who $11 char-entered-area? or fiona-who $12 char-entered-area? or if
+        fiona-who 0 3 char-camera
     then
     $8D story-flag? $8E story-flag? not and if
-        4 stalker-kind? $17 stalker-kind? or $FE char-here? not and if
+        4 stalker-kind? $17 stalker-kind? or stalker-who char-here? not and if
             $33A story-flag? not if
-                0 $F char-entered-area? if
-                    0 5 4 char-camera
+                fiona-who $F char-entered-area? if
+                    fiona-who 5 4 char-camera
                 then
-                0 $D char-entered-area? 0 $E char-entered-area? or if
+                fiona-who $D char-entered-area? fiona-who $E char-entered-area? or if
                     $33A story-flag-set
                     0 $F1 1 action
                 then
@@ -208,13 +184,13 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
                 else 1 ebit? not stalkers-stay state-flag? not and if
                     $342 story-flag? not if
                         $FE $C3 249 2 stalker-to-room
-                        $FE 0 stalker-mode
-                        stalker-item-cooldown
+                        stalker-who 0 stalker-command
+                        summoner-own-cooldown
                         5 ebit-clear
                     else
                         $FE $C3 944 2 stalker-to-room
-                        $FE 0 stalker-mode
-                        stalker-item-cooldown
+                        stalker-who 0 stalker-command
+                        summoner-own-cooldown
                         5 ebit-clear
                     then
                 then then then then
@@ -222,10 +198,10 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
         then
     then
     4 stalker-kind? $17 stalker-kind? or if
-        $FE char-busy? not stalker-active? and if
+        stalker-who char-busy? not stalker-active? and if
             water-tower-4f-1.cond00? if
-                $FE char-unseen? if
-                    $FE action-end
+                stalker-who char-unseen? if
+                    stalker-who action-end
                     1 summon-take
                 then
             then
@@ -233,14 +209,14 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     then
     $34D story-flag? not if
         1 -47.23 142.0 1.87 $26 10 0 zone
-        6 ebit? not 1 char-here? and 1 0 char-C4? and if
+        6 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
-                    1 1 9 char-zone-bits? if
+                    hewie-who 1 9 char-zone-bits? if
                         6 ebit-set
                         $64 chance? if
                             $1F 1 var-set
-                            0 1 $88 action
+                            0 hewie-who $88 action
                         then
                     then
                 then
@@ -250,31 +226,31 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
 ;
 
 : water-tower-4f-1.phase2 ( -- )   \ 0043FC10
-    0 $C char-in-area? 0 90 $32 char-heading? and if
+    fiona-who $C char-in-area? fiona-who 90 $32 char-heading? and if
         1 ebit? not if
             5 0 0 scene-change
         then
     then
     $2DF story-flag? not if
         0 0 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
+        fiona-who 0 3 char-zone-bits? if
             5 4 4 scene-change
         then
     then
     $2F8 story-flag? not if
         2 -86.45 46.0 -8.0 5 8 1 zone
-        $FF 2 char-in-zone? if
+        self-who 2 char-in-zone? if
             $2F8 story-flag-set
             5 0 $14 door-bits
             6 1 $14 door-bits
-            -86.45 46.0 -8.0 0 -2145378272 0 0.0 scene-effect-8C
+            -86.45 46.0 -8.0 0 -2145378272 0 0.0 shards-at
             $88 5 -86.45 46.0 -8.0 0 0 sound
             $40 $131 noise
             1 -86.45 47.0 -8.0 flicker-sprite
         then
     else $2F9 story-flag? not if
         2 1 5 5 0 zone-at-effect
-        0 2 3 char-zone-bits? if
+        fiona-who 2 3 char-zone-bits? if
             5 5 4 scene-change
         then
     then then
@@ -295,8 +271,8 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     $342 story-flag? not if
         2 ebit-clear
         1 1 $10000030 nav-group
-        1 char-here? 1 1 char-in-nav-group? and if
-            0 1 2 action-force
+        hewie-who char-here? hewie-who 1 char-in-nav-group? and if
+            0 hewie-who 2 action-force
         else
             1 1 $1000000 nav-group
             3 ebit-set
@@ -304,8 +280,8 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     else
         2 ebit-set
         1 0 $10000030 nav-group
-        1 char-here? 1 0 char-in-nav-group? and if
-            0 1 2 action-force
+        hewie-who char-here? hewie-who 0 char-in-nav-group? and if
+            0 hewie-who 2 action-force
         else
             1 0 $1000000 nav-group
             3 ebit-set
@@ -313,12 +289,12 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     then
     self-wait-done
     things-clear
-    0 5 char-file-load
+    fiona-who 5 char-file-load
     $166 73.23 -0.48 180 $FFFF 5 self-move-to
     self-wait-done
-    0 char-file-use
+    fiona-who char-file-use
     $342 story-flag? not if
-        $8004 5 self-anim-9
+        $8004 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         0 0 $14 door-bits
@@ -328,10 +304,10 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
         3 0 object-anim
         self-frames-reset
         $19 self-wait-frames
-        0 1 6 char-sound
+        fiona-who 1 6 char-sound
         self-frames-reset
         $37 self-wait-frames
-        0 0 6 char-sound
+        fiona-who 0 6 char-sound
         self-wait-anim
         0 $F3 3 action
         $342 story-flag-set
@@ -347,7 +323,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
         $C3 0 615 $A 6 -1 0 0.0 creature-place
         $34D story-flag-set
     else
-        $8003 5 self-anim-9
+        $8003 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         0 0 $14 door-bits
@@ -357,10 +333,10 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
         2 0 object-anim
         self-frames-reset
         $19 self-wait-frames
-        0 1 6 char-sound
+        fiona-who 1 6 char-sound
         self-frames-reset
         $37 self-wait-frames
-        0 0 6 char-sound
+        fiona-who 0 6 char-sound
         self-wait-anim
         0 $F3 3 action
         $342 story-flag-clear
@@ -386,8 +362,8 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     $8C story-flag? not if
         $13 7 54.0 112.0 -56.0 0 0 sound
         $FE $C3 830 2 stalker-to-room
-        $FE 0 stalker-mode
-        stalker-item-cooldown
+        stalker-who 0 stalker-command
+        summoner-own-cooldown
         $8C story-flag-set
     then
     self-idle-or-end
@@ -420,16 +396,16 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
             0 var-inc
             2 water-tower-4f-1.cmd00
             3 ebit? not if
-                1 1 char-in-nav-group? not if
+                hewie-who 1 char-in-nav-group? not if
                     1 1 $1000000 nav-group
                     3 ebit-set
                 then
             then
             yield
         repeat
-        1 char-here? 1 1 char-in-nav-group? and if
-            1 action-end
-            1 $260 char-to-tri
+        hewie-who char-here? hewie-who 1 char-in-nav-group? and if
+            hewie-who action-end
+            hewie-who $260 char-to-tri
         then
         1 1 $10020000 nav-group
         0 0 $10020000 nav-group
@@ -444,16 +420,16 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
             0 var-inc
             3 water-tower-4f-1.cmd00
             3 ebit? not if
-                1 1 char-in-nav-group? not if
+                hewie-who 1 char-in-nav-group? not if
                     1 0 $1000000 nav-group
                     3 ebit-set
                 then
             then
             yield
         repeat
-        1 char-here? 1 0 char-in-nav-group? and if
-            1 action-end
-            1 $260 char-to-tri
+        hewie-who char-here? hewie-who 0 char-in-nav-group? and if
+            hewie-who action-end
+            hewie-who $260 char-to-tri
         then
         1 0 $10020000 nav-group
         0 1 $10020000 nav-group
@@ -484,16 +460,15 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
         4 self-wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $2DF story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -513,16 +488,15 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
         4 self-wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $2F9 story-flag-set
             1 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim

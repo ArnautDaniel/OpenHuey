@@ -31,141 +31,93 @@ USING: room-names story.words story.shared ;
 
 : chaos-forest-12.char-enter ( -- )   \ 00419770
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        1 1 player-camera
     then then
     0 1 1 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        0 0 player-camera
     then then
     1 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        0 0 player-camera
     then then
     2 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 3 exit-taken? and if
-            0 3 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 3 exit-taken? and if
+            fiona-who 3 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 3 exit-taken? and if
-        1 3 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 3 exit-taken? and if
+        hewie-who 3 char-to-exit
+        0 0 player-camera
     then then
     3 0 0 area-camera
 ;
 
 : chaos-forest-12.phase1 ( -- )   \ 00419870
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             0 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
     hewie-controlled? not if
-        0 1 char-in-area? 0 char-busy? not and if
+        fiona-who 1 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 1 char-in-area? 1 char-busy? not and if
+    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then
-    0 2 char-in-area? 0 char-busy? not and if
+    fiona-who 2 char-in-area? fiona-who char-busy? not and if
         $86 story-flag? $88 story-flag? not and if
             $17 3 2 char-load
         then
         2 exit-check
     then
     hewie-controlled? not if
-        0 3 char-in-area? 0 char-busy? not and if
+        fiona-who 3 char-in-area? fiona-who char-busy? not and if
             3 exit-check
         then
-    else 1 3 char-in-area? 1 char-busy? not and if
+    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
         3 exit-check
     then then
     $C 0 0 1 chars-area-camera
     $D 1 1 1 chars-area-camera
-    0 4 char-entered-area? if
+    fiona-who 4 char-entered-area? if
         0 exit-prepare
     then
-    0 5 char-entered-area? 0 6 char-entered-area? or 0 8 char-entered-area? or if
+    fiona-who 5 char-entered-area? fiona-who 6 char-entered-area? or fiona-who 8 char-entered-area? or if
         1 exit-prepare
     then
-    0 7 char-entered-area? if
+    fiona-who 7 char-entered-area? if
         $86 story-flag? $88 story-flag? not and if
             $17 3 2 char-load
         then
         2 exit-prepare
     then
-    0 9 char-entered-area? if
+    fiona-who 9 char-entered-area? if
         3 exit-prepare
     then
-    0 7 char-left-area? if
+    fiona-who 7 char-left-area? if
         $86 story-flag? $88 story-flag? not and if
             3 0 char-remove
         then
@@ -193,14 +145,14 @@ USING: room-names story.words story.shared ;
 : chaos-forest-12.phase2 ( -- )   \ 00419950
     $2C7 story-flag? not if
         0 0 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
+        fiona-who 0 3 char-zone-bits? if
             5 1 4 scene-change
         then
     then
 ;
 
 : chaos-forest-12.act00 ( -- )   \ 00419970
-    5 char-unload
+    5 char-start
     2 ebit-set
     $E char-activate
     $E $9000 1 0 char-anim-hold
@@ -226,16 +178,15 @@ USING: room-names story.words story.shared ;
         4 self-wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $2C7 story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim

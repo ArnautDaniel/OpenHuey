@@ -128,94 +128,46 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
 
 : old-mansion-1f-15.char-enter ( -- )   \ 00426EF0
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 1 -1 char-camera
-                0 camera-follow
-            else
-                1 1 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            1 -1 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 1 -1 char-camera
-            0 camera-follow
-        else
-            1 1 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        1 -1 player-camera
     then then
     1 1 -1 area-camera
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 -1 char-camera
-                0 camera-follow
-            else
-                1 0 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 -1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 -1 char-camera
-            0 camera-follow
-        else
-            1 0 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 -1 player-camera
     then then
     0 0 -1 area-camera
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 0 -1 char-camera
-                0 camera-follow
-            else
-                1 0 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            0 -1 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 0 -1 char-camera
-            0 camera-follow
-        else
-            1 0 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        0 -1 player-camera
     then then
     2 0 -1 area-camera
     hewie-controlled? not if
-        0 self-is? 3 exit-taken? and if
-            0 3 char-to-exit
-            hewie-controlled? not if
-                0 0 -1 char-camera
-                0 camera-follow
-            else
-                1 0 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 3 exit-taken? and if
+            fiona-who 3 char-to-exit
+            0 -1 player-camera
         then
-    else 1 self-is? 3 exit-taken? and if
-        1 3 char-to-exit
-        hewie-controlled? not if
-            0 0 -1 char-camera
-            0 camera-follow
-        else
-            1 0 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 3 exit-taken? and if
+        hewie-who 3 char-to-exit
+        0 -1 player-camera
     then then
     3 0 -1 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         2 exit-taken? 3 exit-taken? or if
             3 map-page
         then
@@ -239,16 +191,16 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $25 1 -1 1 chars-area-camera
     $26 1 -1 -1 chars-area-camera
     $27 2 0 1 chars-area-camera
-    0 4 char-entered-area? if
+    fiona-who 4 char-entered-area? if
         1 exit-prepare
     then
-    0 5 char-entered-area? if
+    fiona-who 5 char-entered-area? if
         0 exit-prepare
     then
-    0 6 char-entered-area? if
+    fiona-who 6 char-entered-area? if
         2 exit-prepare
     then
-    0 7 char-entered-area? if
+    fiona-who 7 char-entered-area? if
         3 exit-prepare
     then
     0 $148 obstacle-on? if
@@ -258,7 +210,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     then
     $2A7 story-flag? not if
         1 39.16 0.0 -38.76 $A 5 0 zone
-        1 1 3 char-zone-bits? if
+        hewie-who 1 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
                 $19 679 var-set
                 $1A 680 var-set
@@ -267,13 +219,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
                 $1D 1000 var-set
                 $1E -38760 var-set
                 $1F 1 var-set
-                0 1 $8B action
+                0 hewie-who $8B action
             then
         then
     then
     $2B1 story-flag? not if
         2 -23.61 50.0 -61.37 $A 5 0 zone
-        1 2 3 char-zone-bits? if
+        hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
                 $19 689 var-set
                 $1A 690 var-set
@@ -282,48 +234,48 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
                 $1D 51000 var-set
                 $1E -61370 var-set
                 $1F 2 var-set
-                0 1 $8B action
+                0 hewie-who $8B action
             then
         then
     then
     $64 story-flag? not if
         3 -31.67 0.0 -62.5 $B 10 0 zone
-        2 ebit? not 1 char-here? and 1 0 char-C4? and if
+        2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
-                    1 3 9 char-zone-bits? if
+                    hewie-who 3 9 char-zone-bits? if
                         2 ebit-set
                         $64 chance? if
                             $1F 3 var-set
-                            0 1 $89 action
+                            0 hewie-who $89 action
                         then
                     then
                 then
             then
         then
         4 -15.49 0.0 -61.46 $B 10 0 zone
-        3 ebit? not 1 char-here? and 1 0 char-C4? and if
+        3 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
-                    1 4 9 char-zone-bits? if
+                    hewie-who 4 9 char-zone-bits? if
                         3 ebit-set
                         $64 chance? if
                             $1F 4 var-set
-                            0 1 $89 action
+                            0 hewie-who $89 action
                         then
                     then
                 then
             then
         then
         4 -15.49 0.0 -61.46 $B 10 0 zone
-        5 ebit? not 1 char-here? and 1 0 char-C4? and if
+        5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
-                    1 4 9 char-zone-bits? if
+                    hewie-who 4 9 char-zone-bits? if
                         5 ebit-set
                         $64 chance? if
                             $1F 4 var-set
-                            0 1 $88 action
+                            0 hewie-who $88 action
                         then
                     then
                 then
@@ -357,119 +309,119 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
 
 : old-mansion-1f-15.phase2 ( -- )   \ 004272A0
     $63 story-flag? not if
-        0 9 $32 char-faces-area? if
+        fiona-who 9 $32 char-faces-area? if
             5 9 4 scene-change
         then
     then
     $64 story-flag? not if
-        0 $B char-in-area? $62 story-flag? and if
+        fiona-who $B char-in-area? $62 story-flag? and if
             5 $A 4 scene-change
         then
     then
     $65 story-flag? not if
-        0 $A char-in-area? 0 90 $32 char-heading? and if
+        fiona-who $A char-in-area? fiona-who 90 $32 char-heading? and if
             5 $B 4 scene-change
         then
     then
     $66 story-flag? not if
-        0 $D char-in-area? 0 -45 $32 char-heading? and if
+        fiona-who $D char-in-area? fiona-who -45 $32 char-heading? and if
             $67 story-flag? $68 story-flag? or if
                 5 $C 4 scene-change
             else
                 5 $C 0 scene-change
             then
         then
-        0 $C char-in-area? 0 45 $32 char-heading? and if
+        fiona-who $C char-in-area? fiona-who 45 $32 char-heading? and if
             5 $10 0 scene-change
         then
     else
-        0 $10 char-in-area? 0 -45 $32 char-heading? and if
+        fiona-who $10 char-in-area? fiona-who -45 $32 char-heading? and if
             5 $F 0 scene-change
         then
-        0 $F char-in-area? 0 45 $32 char-heading? and if
+        fiona-who $F char-in-area? fiona-who 45 $32 char-heading? and if
             5 $10 0 scene-change
         then
     then
     $6A story-flag? not if
-        0 $11 char-in-area? 0 45 $32 char-heading? and if
+        fiona-who $11 char-in-area? fiona-who 45 $32 char-heading? and if
             $69 story-flag? $6B story-flag? or if
                 5 $D 4 scene-change
             else
                 5 $D 0 scene-change
             then
         then
-    else 0 $13 char-in-area? 0 45 $32 char-heading? and if
+    else fiona-who $13 char-in-area? fiona-who 45 $32 char-heading? and if
         5 $11 0 scene-change
     then then
     $6E story-flag? not if
-        0 $14 char-in-area? 0 90 $32 char-heading? and if
+        fiona-who $14 char-in-area? fiona-who 90 $32 char-heading? and if
             $6C story-flag? $6D story-flag? or if
                 5 $E 4 scene-change
             else
                 5 $E 0 scene-change
             then
         then
-        0 $15 char-in-area? 0 0 $32 char-heading? and if
+        fiona-who $15 char-in-area? fiona-who 0 $32 char-heading? and if
             5 $13 0 scene-change
         then
     else
-        0 $17 char-in-area? 0 90 $32 char-heading? and if
+        fiona-who $17 char-in-area? fiona-who 90 $32 char-heading? and if
             5 $12 0 scene-change
         then
-        0 $18 char-in-area? 0 0 $32 char-heading? and if
+        fiona-who $18 char-in-area? fiona-who 0 $32 char-heading? and if
             5 $13 0 scene-change
         then
     then
-    0 $19 char-in-area? 0 90 $32 char-heading? and if
+    fiona-who $19 char-in-area? fiona-who 90 $32 char-heading? and if
         5 $12 0 scene-change
     then
-    0 $1B char-in-area? 0 0 $32 char-heading? and if
+    fiona-who $1B char-in-area? fiona-who 0 $32 char-heading? and if
         5 $13 0 scene-change
     then
-    0 $1C char-in-area? 0 90 $32 char-heading? and if
+    fiona-who $1C char-in-area? fiona-who 90 $32 char-heading? and if
         5 $14 0 scene-change
     then
-    0 $1D char-in-area? 0 0 $32 char-heading? and if
+    fiona-who $1D char-in-area? fiona-who 0 $32 char-heading? and if
         5 $15 0 scene-change
     then
-    0 $20 char-in-area? 0 -45 $32 char-heading? and if
+    fiona-who $20 char-in-area? fiona-who -45 $32 char-heading? and if
         5 $16 0 scene-change
     then
-    0 $21 char-in-area? 0 $22 char-in-area? or 0 45 $32 char-heading? and if
+    fiona-who $21 char-in-area? fiona-who $22 char-in-area? or fiona-who 45 $32 char-heading? and if
         5 $17 0 scene-change
     then
-    0 $1E char-in-area? 0 90 $32 char-heading? and if
+    fiona-who $1E char-in-area? fiona-who 90 $32 char-heading? and if
         5 $18 0 scene-change
     then
-    0 $1F char-in-area? 0 0 $32 char-heading? and if
+    fiona-who $1F char-in-area? fiona-who 0 $32 char-heading? and if
         5 $19 0 scene-change
     then
     $66 story-flag? not if
-        0 $1A char-in-area? 0 90 $32 char-heading? and if
+        fiona-who $1A char-in-area? fiona-who 90 $32 char-heading? and if
             5 $1A 0 scene-change
         then
     then
-    0 8 char-in-area? 0 22 $32 char-heading? and if
+    fiona-who 8 char-in-area? fiona-who 22 $32 char-heading? and if
         5 $84 3 scene-change
     then
-    0 $23 $32 char-faces-area? if
+    fiona-who $23 $32 char-faces-area? if
         5 $84 3 scene-change
     then
     $273 story-flag? not if
         0 0 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
+        fiona-who 0 3 char-zone-bits? if
             5 $1B 4 scene-change
         then
     then
     $2A7 story-flag? $2A8 story-flag? not and if
         1 1 5 5 0 zone-at-effect
-        0 1 3 char-zone-bits? if
+        fiona-who 1 3 char-zone-bits? if
             5 $1C 4 scene-change
         then
     then
     $2B1 story-flag? $2B2 story-flag? not and if
         2 2 5 5 0 zone-at-effect
-        0 2 3 char-zone-bits? if
+        fiona-who 2 3 char-zone-bits? if
             5 $1D 4 scene-change
         then
     then
@@ -482,20 +434,20 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $36 35.0 -52.0 -90 $FFFF 5 self-move-to
     self-wait-done
     1 25.0 20.0 -50.0 2.0 event-camera
-    1 char-here? 0 hewie-side? and if
+    hewie-who char-here? 0 hewie-side? and if
         4 ebit-clear
-        1 2 char-C4? if
-            0 1 $86 action
+        hewie-who 2 char-cond? if
+            0 hewie-who $86 action
         else
-            1 action-end
-            1 char-done
+            hewie-who action-end
+            hewie-who char-done
         then
     else
         4 ebit-set
     then
     $904 self-anim
     self-wait-anim
-    0 $E 6 char-sound
+    fiona-who $E 6 char-sound
     8 0 object-hidden
     $66 story-flag-set
     $15 item-use
@@ -517,13 +469,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-16
     0 0.0 0.0 0.0 0.0 event-camera
     4 ebit? not if
-        1 2 char-C4? if
-            1 0 char-visible
-            1 action-end
+        hewie-who 2 char-cond? if
+            hewie-who 0 char-visible
+            hewie-who action-end
         else
-            1 char-activate
+            hewie-who char-activate
             $54 0 221 hewie-to-room
-            1 $DD -27.0 37.0 60 char-to-xz
+            hewie-who $DD -27.0 37.0 60 char-to-xz
         then
     then
     stalkers-stay state-flag-clear
@@ -540,7 +492,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     1 25.0 20.0 -50.0 2.0 event-camera
     $904 self-anim
     self-wait-anim
-    0 $E 6 char-sound
+    fiona-who $E 6 char-sound
     $B 1 $14 door-bits
     $67 story-flag-set
     $16 item-use
@@ -563,7 +515,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     1 25.0 20.0 -50.0 2.0 event-camera
     $904 self-anim
     self-wait-anim
-    0 $E 6 char-sound
+    fiona-who $E 6 char-sound
     $A 1 $14 door-bits
     $68 story-flag-set
     $17 item-use
@@ -586,7 +538,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     1 25.0 20.0 50.0 2.0 event-camera
     $904 self-anim
     self-wait-anim
-    0 $E 6 char-sound
+    fiona-who $E 6 char-sound
     9 1 $14 door-bits
     $69 story-flag-set
     $15 item-use
@@ -614,20 +566,20 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     1 $188 $10000000 nav-tri-flags
     1 $1D1 $10000000 nav-tri-flags
     1 25.0 20.0 50.0 2.0 event-camera
-    1 char-here? 0 hewie-side? and if
+    hewie-who char-here? 0 hewie-side? and if
         4 ebit-clear
-        1 2 char-C4? if
-            0 1 $86 action
+        hewie-who 2 char-cond? if
+            0 hewie-who $86 action
         else
-            1 action-end
-            1 char-done
+            hewie-who action-end
+            hewie-who char-done
         then
     else
         4 ebit-set
     then
     $904 self-anim
     self-wait-anim
-    0 $E 6 char-sound
+    fiona-who $E 6 char-sound
     4 0 object-hidden
     $6A story-flag-set
     $16 item-use
@@ -651,16 +603,16 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-16
     0 0.0 0.0 0.0 0.0 event-camera
     4 ebit? not if
-        1 2 char-C4? if
-            1 0 char-visible
-            1 action-end
+        hewie-who 2 char-cond? if
+            hewie-who 0 char-visible
+            hewie-who action-end
         else
-            1 char-activate
+            hewie-who char-activate
             $54 0 22 hewie-to-room
-            1 $16 -41.0 -4.0 -100 char-to-xz
+            hewie-who $16 -41.0 -4.0 -100 char-to-xz
         then
     then
-    $FF self-look-at
+    self-who self-look-at
     yield
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -676,7 +628,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     1 25.0 20.0 50.0 2.0 event-camera
     $904 self-anim
     self-wait-anim
-    0 $E 6 char-sound
+    fiona-who $E 6 char-sound
     8 1 $14 door-bits
     $6B story-flag-set
     $17 item-use
@@ -699,7 +651,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     1 30.0 0.0 0.0 2.0 event-camera
     $904 self-anim
     self-wait-anim
-    0 $E 6 char-sound
+    fiona-who $E 6 char-sound
     6 1 $14 door-bits
     $6C story-flag-set
     $15 item-use
@@ -722,7 +674,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     1 30.0 0.0 0.0 2.0 event-camera
     $904 self-anim
     self-wait-anim
-    0 $E 6 char-sound
+    fiona-who $E 6 char-sound
     7 1 $14 door-bits
     $6D story-flag-set
     $16 item-use
@@ -743,20 +695,20 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $C6 0.0 43.0 180 $FFFF 5 self-move-to
     self-wait-done
     1 30.0 0.0 0.0 2.0 event-camera
-    1 char-here? 0 hewie-side? and if
+    hewie-who char-here? 0 hewie-side? and if
         4 ebit-clear
-        1 2 char-C4? if
-            0 1 $86 action
+        hewie-who 2 char-cond? if
+            0 hewie-who $86 action
         else
-            1 action-end
-            1 char-done
+            hewie-who action-end
+            hewie-who char-done
         then
     else
         4 ebit-set
     then
     $904 self-anim
     self-wait-anim
-    0 $E 6 char-sound
+    fiona-who $E 6 char-sound
     0 0 object-hidden
     $6E story-flag-set
     $17 item-use
@@ -780,13 +732,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-16
     0 0.0 0.0 0.0 0.0 event-camera
     4 ebit? not if
-        1 2 char-C4? if
-            1 0 char-visible
-            1 action-end
+        hewie-who 2 char-cond? if
+            hewie-who 0 char-visible
+            hewie-who action-end
         else
-            1 char-activate
+            hewie-who char-activate
             $54 0 255 hewie-to-room
-            1 $FF 38.0 -20.0 90 char-to-xz
+            hewie-who $FF 38.0 -20.0 90 char-to-xz
         then
     then
     stalkers-stay state-flag-clear
@@ -798,7 +750,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     -35.0 66.0 self-turn-to-xz
     self-wait-done
-    0 message
+    0 message   \ "There is a book lying on the table."
     wait-message
     $902 self-anim
     self-wait-anim
@@ -809,9 +761,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $15 message-param-room
     $15 1 item-give-count
     0 $15 item-tab
-    0 $F9 $8C action-force
-    $83 $85 0.0 0.0 0.0 0 0 sound
-    $8012 message
+    item-fanfare
+    $8012 message   \ "You've obtained ."
     wait-message
     $903 self-anim
     self-wait-anim
@@ -822,7 +773,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     -25.0 -60.0 self-turn-to-xz
     self-wait-done
-    1 message
+    1 message   \ "There is a book below the stand..."
     wait-message
     $900 self-anim
     self-wait-anim
@@ -833,9 +784,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $16 message-param-room
     $16 1 item-give-count
     0 $16 item-tab
-    0 $F9 $8C action-force
-    $83 $85 0.0 0.0 0.0 0 0 sound
-    $8012 message
+    item-fanfare
+    $8012 message   \ "You've obtained ."
     wait-message
     $901 self-anim
     self-wait-anim
@@ -846,7 +796,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1.0 -30.0 self-turn-to-xz
     self-wait-done
-    2 message
+    2 message   \ "One of the books stands out from the rest."
     wait-message
     $902 self-anim
     self-wait-anim
@@ -857,9 +807,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $17 message-param-room
     $17 1 item-give-count
     0 $17 item-tab
-    0 $F9 $8C action-force
-    $83 $85 0.0 0.0 0.0 0 0 sound
-    $8012 message
+    item-fanfare
+    $8012 message   \ "You've obtained ."
     wait-message
     $903 self-anim
     self-wait-anim
@@ -883,9 +832,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             $16 message-param-room
             $16 1 item-give-count
             0 $16 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8012 message
+            item-fanfare
+            $8012 message   \ "You've obtained ."
             wait-message
         else
             $A 0 $14 door-bits
@@ -894,9 +842,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             $17 message-param-room
             $17 1 item-give-count
             0 $17 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8012 message
+            item-fanfare
+            $8012 message   \ "You've obtained ."
             wait-message
         then
         self-frames-reset
@@ -905,7 +852,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         self-wait-16
         self-wait-anim
     else
-        $A message
+        $A message   \ "The books have been arranged by author. The shelf is full of books written by some..."
         wait-message
         self-frames-reset
         4 self-wait-frames
@@ -933,9 +880,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             $15 message-param-room
             $15 1 item-give-count
             0 $15 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8012 message
+            item-fanfare
+            $8012 message   \ "You've obtained ."
             wait-message
         else
             8 0 $14 door-bits
@@ -944,9 +890,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             $17 message-param-room
             $17 1 item-give-count
             0 $17 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8012 message
+            item-fanfare
+            $8012 message   \ "You've obtained ."
             wait-message
         then
         self-frames-reset
@@ -955,7 +900,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         self-wait-16
         self-wait-anim
     else
-        $B message
+        $B message   \ "The books have been arranged by author. The books are all written by a person name..."
         wait-message
         self-frames-reset
         4 self-wait-frames
@@ -983,9 +928,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             $15 message-param-room
             $15 1 item-give-count
             0 $15 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8012 message
+            item-fanfare
+            $8012 message   \ "You've obtained ."
             wait-message
         else
             7 0 $14 door-bits
@@ -994,9 +938,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             $16 message-param-room
             $16 1 item-give-count
             0 $16 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8012 message
+            item-fanfare
+            $8012 message   \ "You've obtained ."
             wait-message
         then
         self-frames-reset
@@ -1005,7 +948,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         self-wait-16
         self-wait-anim
     else
-        $C message
+        $C message   \ "The books have been arranged by author. The shelf seems to contain books by Nichol..."
         wait-message
         self-frames-reset
         4 self-wait-frames
@@ -1020,7 +963,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     -90 self-turn-angle
     self-wait-done
-    3 message
+    3 message   \ "The books have been arranged by author. This shelf is full of books written by someone..."
     wait-message
     self-idle-or-end
 ;
@@ -1029,7 +972,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    3 message
+    3 message   \ "The books have been arranged by author. This shelf is full of books written by someone..."
     wait-message
     self-idle-or-end
 ;
@@ -1038,7 +981,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    4 message
+    4 message   \ "The books have been arranged by author. These books are all written by a person named A..."
     wait-message
     self-idle-or-end
 ;
@@ -1047,7 +990,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    5 message
+    5 message   \ "The books have been arranged by author. This shelf seems to contain books by Nicholai F..."
     wait-message
     self-idle-or-end
 ;
@@ -1056,7 +999,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    5 message
+    5 message   \ "The books have been arranged by author. This shelf seems to contain books by Nicholai F..."
     wait-message
     self-idle-or-end
 ;
@@ -1065,7 +1008,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    6 message
+    6 message   \ "The books have been arranged by author. Sangerman is the author of these books."
     wait-message
     self-idle-or-end
 ;
@@ -1074,7 +1017,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    6 message
+    6 message   \ "The books have been arranged by author. Sangerman is the author of these books."
     wait-message
     self-idle-or-end
 ;
@@ -1083,7 +1026,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     -90 self-turn-angle
     self-wait-done
-    7 message
+    7 message   \ "The books have been arranged by author. These books are authored by Paraculeus."
     wait-message
     self-idle-or-end
 ;
@@ -1092,7 +1035,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    7 message
+    7 message   \ "The books have been arranged by author. These books are authored by Paraculeus."
     wait-message
     self-idle-or-end
 ;
@@ -1101,7 +1044,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    7 message
+    7 message   \ "The books have been arranged by author. These books are authored by Paraculeus."
     wait-message
     self-idle-or-end
 ;
@@ -1110,7 +1053,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    7 message
+    7 message   \ "The books have been arranged by author. These books are authored by Paraculeus."
     wait-message
     self-idle-or-end
 ;
@@ -1120,7 +1063,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     1 ebit? not if
         180 self-turn-angle
         self-wait-done
-        8 message
+        8 message   \ "The books have been arranged by author. The books are all written by a person named..."
         wait-message
         1 ebit-set
     else
@@ -1129,7 +1072,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         $A00 self-anim
         self-frames-reset
         self-wait-16
-        9 message
+        9 message   \ "There is a door atop this bookshelf... Why would anyone build a door of all things..."
         wait-message
         1 ebit-clear
         self-wait-anim
@@ -1148,16 +1091,15 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         4 self-wait-frames
         $94 message-param-room
         $94 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $273 story-flag-set
             0 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -1177,16 +1119,15 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         4 self-wait-frames
         $97 message-param-room
         $97 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $2A8 story-flag-set
             1 effect-remove
             $97 1 item-give-count
             0 $97 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -1206,16 +1147,15 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         4 self-wait-frames
         $73 message-param-room
         $73 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $2B2 story-flag-set
             2 effect-remove
             $73 1 item-give-count
             0 $73 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim

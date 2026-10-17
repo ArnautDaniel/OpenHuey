@@ -23,41 +23,29 @@ USING: actors room-names story.words story.shared flag-names ;
 
 : chaos-forest-13.char-enter ( -- )   \ 00419AA0
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
 ;
 
 : chaos-forest-13.phase1 ( -- )   \ 00419AE0
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             0 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
-    0 2 char-entered-area? if
+    fiona-who 2 char-entered-area? if
         0 exit-prepare
     then
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         $87 story-flag? chaos-forest-13.cond00? not or if
             $AE story-flag? not if
                 $C0 room-preload
@@ -68,18 +56,16 @@ USING: actors room-names story.words story.shared flag-names ;
             $34 room-preload
         then
     then
-    0 1 char-entered-area? if
+    fiona-who 1 char-entered-area? if
         $86 story-flag? $88 story-flag? not and if
             4 0 char-remove
             5 0 char-remove
             $88 story-flag-set
-            $FF panic-stage? if
-                3 panic-stage
-            then
-            0 0 char-action? if
-                0 0 0 action-force
+            panic-eased
+            fiona-who 0 char-action? if
+                0 fiona-who 0 action-force
             else
-                1 0 0 action-force
+                1 fiona-who 0 action-force
             then
         then
     then
@@ -105,10 +91,10 @@ USING: actors room-names story.words story.shared flag-names ;
 : chaos-forest-13.act00 ( -- )   \ 00419BB0
     1 self-scripted
     summoner-on state-flag-clear
-    $FE action-end
-    $FE char-done
-    1 action-end
-    1 char-done
+    stalker-who action-end
+    stalker-who char-done
+    hewie-who action-end
+    hewie-who char-done
     self-wait-done
     $F $54 fade
     $FF 1.0 0 bgm
@@ -120,72 +106,22 @@ USING: actors room-names story.words story.shared flag-names ;
     0 creatures-clear
     $88 story-flag-set
     $17 3 $FF char-load
-    3 char-unload
+    3 char-start
     1 2 movie-play
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     3 5 0 char-model-op
     0 $F9 1 action
     3 ebit-clear
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    0 message-prepare
+    panic-eased
+    0 message-prepare   \ "Why are you doing this? What did I do? You inherited your father's Azoth. That..."
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
-    $FE action-end
-    $FE char-done
+    stalker-who action-end
+    stalker-who char-done
     2 ebit-clear
     3 ebit? if
         1 chaos-forest-13.cmd00
@@ -244,76 +180,26 @@ USING: actors room-names story.words story.shared flag-names ;
     self-wait-done
     4 partner-load
     $17 3 $FF char-load
-    2 char-unload
-    3 char-unload
+    2 char-start
+    3 char-start
     1 2 movie-play
     0 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     3 5 0 char-model-op
     0 $F9 1 action
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    0 message-prepare
+    panic-eased
+    0 message-prepare   \ "Why are you doing this? What did I do? You inherited your father's Azoth. That..."
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     2 0 char-remove
     3 0 char-remove
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 

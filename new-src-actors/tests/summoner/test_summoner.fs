@@ -34,9 +34,9 @@ variable was  his-room was !  0 story.words:summon-take  2 frames
 T{ in-game?  [: took-room @ ;] its  was @ =  [: away @ 4500 >= ;] its -> 0 -1 -1 }T
 
 testing the cooldown (0x5A, 0x5B): set, less, his own
-T{ 10 0 story.words:item-cooldown 1 frames [: cooldown @ ;] its -> 300 }T
-T{ 4 1 story.words:item-cooldown 1 frames [: cooldown @ ;] its -> 180 }T
-T{ story.words:stalker-item-cooldown 1 frames [: cooldown @ ;] its -> 2700 }T
+T{ 10 0 story.words:summoner-wait 1 frames [: cooldown @ ;] its -> 300 }T
+T{ 4 1 story.words:summoner-wait 1 frames [: cooldown @ ;] its -> 180 }T
+T{ story.words:summoner-own-cooldown 1 frames [: cooldown @ ;] its -> 2700 }T
 
 testing a loud noise calls him in (3 s waited, his last taking's wait over): after her
 [: 900 waited ! 10000 away ! ;] its

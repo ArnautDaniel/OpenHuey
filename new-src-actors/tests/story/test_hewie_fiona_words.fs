@@ -15,16 +15,16 @@ USING: tester engine game-state actors messages common room-names game debug fla
 
 free-play  front-garden-2 room!  20 frames  game:hewie send join-fiona  20 frames
 testing his action told (0x24) and set (0x39): lying by her (1)
-[: 1 0 hewie-action ;] in-room  2 frames
+[: 1 0 hewie-do ;] in-room  2 frames
 T{ [: his-action @ ;] his  [: 1 hewie-action?  $15 hewie-action? ;] in-room -> 1 -1 0 }T
 testing ... she may command him then (0x4C), near enough (0x0F), he may be broken off (0x31), can reach her (0x5A)
-T{ [: hewie-can-command?  hewie-near-command?  hewie-stays?  hewie-reachable? ;] in-room -> -1 -1 -1 -1 }T
+T{ [: hewie-can-command?  hewie-near-command?  hewie-may-break-off?  hewie-reachable? ;] in-room -> -1 -1 -1 -1 }T
 testing ... angry (0xC4: his mood 3): not
-[: 3 hewie-mode ;] in-room  2 frames
-T{ [: his-mood @ ;] his  [: hewie-can-command?  hewie-stays? ;] in-room -> 3 0 0 }T
-[: 0 hewie-mode ;] in-room  2 frames
+[: 3 hewie-mood ;] in-room  2 frames
+T{ [: his-mood @ ;] his  [: hewie-can-command?  hewie-may-break-off? ;] in-room -> 3 0 0 }T
+[: 0 hewie-mood ;] in-room  2 frames
 testing his trust (0x85), his half of the room (0xD0, 0x33), his wait (0xBD)
-variable was  [: his-trust-points @ ;] his was !  [: 300 hewie-trust  1 hewie-side  hewie-stay-300 ;] in-room  2 frames
+variable was  [: his-trust-points @ ;] his was !  [: 300 hewie-trust  1 hewie-side  hewie-stay-put ;] in-room  2 frames
 T{ [: his-trust-points @ ;] his was @ -  [: his-way @  his-pet-time @ 290 > ;] his  [: 1 hewie-side? ;] in-room -> 300 1 -1 -1 }T
 testing a point to look to (0xC5): zone 3 (in variable 5), 2 higher - he has none
 [: 3 2 10 1  140e 124e -200e zone  5 3 var-set  5 2e hewie-look-zone ;] in-room  [: 0 his-smells ! ;] his
@@ -34,7 +34,7 @@ T{ [: his-scent sf@ f>s  his-scent 4 + sf@ f>s  his-scent 8 + sf@ f>s ;] his -> 
 testing his bark (0x78: his move 0x12, action 0x45)
 [: hewie-bark ;] in-room
 T{ [: [: his-action @ $45 = ;] his ;] 10 soon -> -1 }T
-[: 0 0 hewie-action ;] in-room  10 frames
+[: 0 0 hewie-do ;] in-room  10 frames
 testing through blocked floor and left alone, as the script's own (0x20, 0x21)
 [: ctx-who @ >r  1 ctx-who !  1 self-noclip  1 self-scripted  r> ctx-who ! ;] in-room  2 frames
 T{ [: his-2b @  his-2d @ ;] his -> 1 1 }T
@@ -52,6 +52,6 @@ T{ game:panic enter  panic:level f@ f>s  leave-actor -> 60 }T   \ (half lasting,
 T{ game:panic enter  panic:level f@ 79e f>  panic:stage @  leave-actor -> -1 2 }T   \ (80, easing)
 [: 40 panic-level ;] in-room  2 frames
 T{ game:panic enter  panic:level f@ 79e f>  leave-actor -> -1 }T
-[: $80 panic-grow ;] in-room  2 frames
+[: $80 panic-calm-in ;] in-room  2 frames
 T{ game:panic enter  panic:level f@ 10e f<  leave-actor -> -1 }T
 test-summary

@@ -12,35 +12,23 @@ USING: room-names story.words story.shared ;
 
 : old-mansion-2f-1.char-enter ( -- )   \ 00407E90
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 2 2 char-camera
-                0 camera-follow
-            else
-                1 2 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            2 2 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 2 2 char-camera
-            0 camera-follow
-        else
-            1 2 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        2 2 player-camera
     then then
     0 2 2 area-camera
 ;
 
 : old-mansion-2f-1.phase2 ( -- )   \ 00407ED0
     $45 story-flag? if
-        0 $10 char-in-area? 0 0 $32 char-heading? and if
+        fiona-who $10 char-in-area? fiona-who 0 $32 char-heading? and if
             5 0 0 scene-change
         then
-        0 $11 char-in-area? 0 90 $32 char-heading? and if
+        fiona-who $11 char-in-area? fiona-who 90 $32 char-heading? and if
             5 1 0 scene-change
         then
     then
@@ -59,7 +47,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    0 message
+    0 message   \ "The floor has collapsed! But I literally just crossed through here seconds ago..."
     wait-message
     self-idle-or-end
 ;
@@ -68,7 +56,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    0 message
+    0 message   \ "The floor has collapsed! But I literally just crossed through here seconds ago..."
     wait-message
     self-idle-or-end
 ;

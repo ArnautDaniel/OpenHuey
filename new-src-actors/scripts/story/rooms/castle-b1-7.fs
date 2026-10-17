@@ -16,7 +16,7 @@ USING: engine common room-names story.words story.shared flag-names ;
 
 : castle-b1-7.act04 ( -- )   \ 003FD720
     room-flag-2d state-flag-clear
-    1 char-here? 1 hewie-side? and if
+    hewie-who char-here? 1 hewie-side? and if
         $1E 0 -1 hewie-to-room
         1800 2 hewie-anim
     then
@@ -25,16 +25,16 @@ USING: engine common room-names story.words story.shared flag-names ;
 
 : castle-b1-7.enter ( -- )   \ 003FD370
     room-sounds
-    1 $1E char-in-room? 119 hewie-action? and if
+    hewie-who $1E char-in-room? 119 hewie-action? and if
         room-flag-2d state-flag-set
         $1D 1 252 hewie-to-room
         8 story-flag? not if
-            0 1 2 action
+            0 hewie-who 2 action
         then
     else
         castle-b1-7.act04
     then
-    0 30.0 -27.65 -9.8 0 effect-86
+    0 30.0 -27.65 -9.8 0 flame-in
     8 story-flag? not if
         1 -12.0 -40.0 -25.0 flicker-sprite
     then
@@ -59,28 +59,16 @@ USING: engine common room-names story.words story.shared flag-names ;
 
 : castle-b1-7.char-enter ( -- )   \ 003FD420
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 -1 char-camera
-                0 camera-follow
-            else
-                1 0 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 -1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 -1 char-camera
-            0 camera-follow
-        else
-            1 0 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 -1 player-camera
     then then
     0 0 -1 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         0 exit-taken? if
             2 map-page
         then
@@ -96,21 +84,21 @@ USING: engine common room-names story.words story.shared flag-names ;
     3 1 0 1 chars-area-camera
     4 2 -1 1 chars-area-camera
     5 3 1 1 chars-area-camera
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         2 map-page
     then
-    0 4 char-entered-area? if
+    fiona-who 4 char-entered-area? if
         1 map-page
     then
     0 0 8 -4 0 zone-at-effect
-    0 0 3 char-zone-bits? 0 0 3 char-zone-bits-before? not and if
-        0 0 char-effect-moving
+    fiona-who 0 3 char-zone-bits? fiona-who 0 3 char-zone-bits-before? not and if
+        fiona-who 0 char-effect-moving
     then
-    1 0 3 char-zone-bits? 1 0 3 char-zone-bits-before? not and if
-        1 0 char-effect-moving
+    hewie-who 0 3 char-zone-bits? hewie-who 0 3 char-zone-bits-before? not and if
+        hewie-who 0 char-effect-moving
     then
-    $FE 0 3 char-zone-bits? $FE 0 3 char-zone-bits-before? not and if
-        $FE 0 char-effect-moving
+    stalker-who 0 3 char-zone-bits? stalker-who 0 3 char-zone-bits-before? not and if
+        stalker-who 0 char-effect-moving
     then
     0 $1ED obstacle-on? if
         $26 door-locked? if
@@ -124,20 +112,20 @@ USING: engine common room-names story.words story.shared flag-names ;
     then
     1 ebit? not if
         $26 door-locked? if
-            $FE $1C char-in-room? if
+            stalker-who $1C char-in-room? if
                 0 $F2 9 action
             then
         then
     else $26 door-locked? not if
         $F2 action-end
         0 castle-b1-7.cmd01
-        $FE 1 stalker-mode
+        stalker-who 1 stalker-command
         stalkers-stay state-flag-clear
         1 ebit-clear
     then then
     $252 story-flag? not if
         1 29.0 0.0 21.0 $A 5 0 zone
-        1 1 3 char-zone-bits? if
+        hewie-who 1 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
                 $19 594 var-set
                 $1A 595 var-set
@@ -146,7 +134,7 @@ USING: engine common room-names story.words story.shared flag-names ;
                 $1D 1000 var-set
                 $1E 21000 var-set
                 $1F 1 var-set
-                0 1 $8B action
+                0 hewie-who $8B action
             then
         then
     then
@@ -155,37 +143,37 @@ USING: engine common room-names story.words story.shared flag-names ;
 : castle-b1-7.phase2 ( -- )   \ 003FD580
     $201 story-flag? not if
         0 31.0 -41.0 13.0 5 8 1 zone
-        $FF 0 char-in-zone? if
+        self-who 0 char-in-zone? if
             $201 story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
-            31.0 -41.0 13.0 0 -2143272896 0 0.0 scene-effect-8C
+            31.0 -41.0 13.0 0 -2143272896 0 0.0 shards-at
             $88 5 31.0 -41.0 13.0 0 0 sound
             $40 $1B0 noise
             2 31.0 -40.0 13.0 flicker-sprite
         then
     else $22D story-flag? not if
         0 2 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
+        fiona-who 0 3 char-zone-bits? if
             5 7 4 scene-change
         then
     then then
-    0 7 $3C char-faces-area? if
+    fiona-who 7 $3C char-faces-area? if
         5 1 0 scene-change
     then
-    1 char-here? not 1 hewie-side? not or 8 story-flag? not and 0 6 char-in-area? and 0 -12 -25 $32 char-faces-xz? and if
+    hewie-who char-here? not 1 hewie-side? not or 8 story-flag? not and fiona-who 6 char-in-area? and fiona-who -12 -25 $32 char-faces-xz? and if
         5 5 0 scene-change
     then
     -2147483646 scene-request? if
         5 8 1 scene-change
     then
-    0 8 char-in-area? 0 0 $32 char-heading? and if
+    fiona-who 8 char-in-area? fiona-who 0 $32 char-heading? and if
         5 $B 0 scene-change
     then
     $252 story-flag? $253 story-flag? not and if
         1 3 5 5 0 zone-at-effect
-        0 1 3 char-zone-bits? if
+        fiona-who 1 3 char-zone-bits? if
             5 $A 4 scene-change
         then
     then
@@ -211,9 +199,8 @@ USING: engine common room-names story.words story.shared flag-names ;
     3 message-param-room
     3 1 item-give-count
     0 3 item-tab
-    0 $F9 $8C action-force
-    $83 $85 0.0 0.0 0.0 0 0 sound
-    $8012 message
+    item-fanfare
+    $8012 message   \ "You've obtained ."
     wait-message
     40 hewie-trust
     $827C item-give
@@ -224,7 +211,7 @@ USING: engine common room-names story.words story.shared flag-names ;
 
 : castle-b1-7.act01 ( -- )   \ 0047AA88
     self-wait-done
-    2 message
+    2 message   \ "The furniture is covered with freshly washed sheets."
     wait-message
     self-idle-or-end
 ;
@@ -244,13 +231,13 @@ USING: engine common room-names story.words story.shared flag-names ;
 
 : castle-b1-7.act02 ( -- )   \ 003FD6C0
     self-wait-done
-    1 $FC 0 char-to-tri-facing
+    hewie-who $FC 0 char-to-tri-facing
     1 self-anim
     self-wait-anim
-    0 self-look-at
+    fiona-who self-look-at
     yield
     begin
-        35 fiona-started? 44 fiona-started? or 2 game-mode? not and 0 6 char-in-area? and 0 -12 -25 $32 char-faces-xz? and if
+        35 fiona-started? 44 fiona-started? or 2 game-mode? not and fiona-who 6 char-in-area? and fiona-who -12 -25 $32 char-faces-xz? and if
             0 counter-set
             0 $F1 6 action
             ['] castle-b1-7.act03 goto
@@ -263,24 +250,18 @@ USING: engine common room-names story.words story.shared flag-names ;
     self-wait-done
     $A01 $A self-anim-blend
     self-wait-anim
-    0 message
+    0 message   \ "Looks like a key or something is lying on the ground. I can't reach it from here..."
     wait-message
     self-frames-reset
     8 self-wait-frames
-    $FF 4 -1 char-camera
+    self-who 4 -1 char-camera
     self-frames-reset
     8 self-wait-frames
-    1 message
+    1 message   \ "There is a small hole in the wall. That could be my way to the key..."
     wait-message
     self-frames-reset
     8 self-wait-frames
-    hewie-controlled? not if
-        0 3 1 char-camera
-        0 camera-follow
-    else
-        1 3 1 char-camera
-        1 camera-follow
-    then
+    3 1 player-camera
     camera-restart
     self-idle-or-end
 ;
@@ -291,10 +272,8 @@ USING: engine common room-names story.words story.shared flag-names ;
         yield
     repeat
     counter-inc
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    0 0 0 action-force
+    panic-eased
+    0 fiona-who 0 action-force
     self-idle-or-end
 ;
 
@@ -309,16 +288,15 @@ USING: engine common room-names story.words story.shared flag-names ;
         4 self-wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $22D story-flag-set
             2 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -331,7 +309,7 @@ USING: engine common room-names story.words story.shared flag-names ;
     self-wait-done
     -90 self-turn-angle
     self-wait-done
-    3 message
+    3 message   \ "All of this stuff is blocking the door and I can't get out."
     wait-message
     self-idle-or-end
 ;
@@ -375,10 +353,10 @@ USING: engine common room-names story.words story.shared flag-names ;
         else $4B chance? if
             $31B story-flag-set
         then then
-        $FE action-end
-        $FE char-done
+        stalker-who action-end
+        stalker-who char-done
     else
-        $FE 1 stalker-mode
+        stalker-who 1 stalker-command
     then
     stalkers-stay state-flag-clear
     1 ebit-clear
@@ -396,16 +374,15 @@ USING: engine common room-names story.words story.shared flag-names ;
         4 self-wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $253 story-flag-set
             3 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -419,23 +396,22 @@ USING: engine common room-names story.words story.shared flag-names ;
     $2FD story-flag? not if
         0 self-turn-angle
         self-wait-done
-        4 message
+        4 message   \ "Huh? There is something in the drain."
         wait-message
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $2FD story-flag-set
             $70 1 item-give-count
             0 $70 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
     else
-        5 message
+        5 message   \ "There's nothing particularly interesting here."
         wait-message
     then
     self-idle-or-end

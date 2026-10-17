@@ -22,49 +22,31 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-2f-14.char-enter ( -- )   \ 004129A0
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         $E story-flag? not if
-            0 $4D -45 char-to-tri-facing
-            1 char-activate
-            1 char-here? if
-                1 $120 -45 char-to-tri-facing
+            fiona-who $4D -45 char-to-tri-facing
+            hewie-who char-activate
+            hewie-who char-here? if
+                hewie-who $120 -45 char-to-tri-facing
             then
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+            0 0 player-camera
             camera-restart
-            0 0 0 action
+            0 fiona-who 0 action
         then
     then
-    1 self-is? if
+    hewie-who self-is? if
         118 hewie-action? not if
-            1 $2B char-on-tri? 1 $140 char-on-tri? or 1 $1DF char-on-tri? or if
-                1 $13C -90 char-to-tri-facing
+            hewie-who $2B char-on-tri? hewie-who $140 char-on-tri? or hewie-who $1DF char-on-tri? or if
+                hewie-who $13C -90 char-to-tri-facing
             then
         then
     then
@@ -78,17 +60,17 @@ USING: room-names story.words story.shared flag-names ;
     3 1 1 1 chars-area-camera
     $B 0 0 1 chars-area-camera
     $C 2 2 1 chars-area-camera
-    0 2 char-entered-area? if
+    fiona-who 2 char-entered-area? if
         3 map-page
     then
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         4 map-page
     then
-    1 char-here? 1 2 char-C4? not and 1 char-busy? not and if
-        1 $2B char-on-tri? 1 $140 char-on-tri? or 1 $1DF char-on-tri? or if
+    hewie-who char-here? hewie-who 2 char-cond? not and hewie-who char-busy? not and if
+        hewie-who $2B char-on-tri? hewie-who $140 char-on-tri? or hewie-who $1DF char-on-tri? or if
             44 fiona-started? if
-                0 1 5 action
-            else $FE 2 char-C4? not $FE 8 char-in-area? and if
+                0 hewie-who 5 action
+            else stalker-who 2 char-cond? not stalker-who 8 char-in-area? and if
                 stalker-free? if
                     3 ebit? not if
                         0 0 8 nav-group
@@ -105,26 +87,26 @@ USING: room-names story.words story.shared flag-names ;
             then then
         else 2 game-mode? not if
             0 control-action? if
-                -163 97 -50 point-on-camera? not 0 char-unseen? not and 1 char-unseen? not and if
-                    0 -163 -50 $32 char-faces-xz? if
-                        hewie-stays? if
-                            0 1 3 action
+                -163 97 -50 point-on-camera? not fiona-who char-unseen? not and hewie-who char-unseen? not and if
+                    fiona-who -163 -50 $32 char-faces-xz? if
+                        hewie-may-break-off? if
+                            0 hewie-who 3 action
                         then
                     then
                 then
             then
         then then
     then
-    $260 story-flag? not 1 7 char-in-area? and if
+    $260 story-flag? not hewie-who 7 char-in-area? and if
         0 -149.92 60.0 -50.71 $36 36 0 zone
-        1 ebit? not 1 char-here? and 1 0 char-C4? and if
+        1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
-                    1 0 9 char-zone-bits? if
+                    hewie-who 0 9 char-zone-bits? if
                         1 ebit-set
                         $64 chance? if
                             $1F 0 var-set
-                            0 1 $88 action
+                            0 hewie-who $88 action
                         then
                     then
                 then
@@ -132,9 +114,9 @@ USING: room-names story.words story.shared flag-names ;
         then
     then
     0 -149.92 60.0 -50.71 $36 36 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 0 9 char-zone-bits? if
+            hewie-who 0 9 char-zone-bits? if
                 $1F 0 var-set
                 $1F 36.0 hewie-look-zone
             then
@@ -144,27 +126,27 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-2f-14.phase2 ( -- )   \ 00412B60
     $E story-flag? if
-        0 9 char-in-area? if
+        fiona-who 9 char-in-area? if
             5 1 0 scene-change
         then
     then
-    0 4 char-in-area? 0 90 $2D char-heading? and if
+    fiona-who 4 char-in-area? fiona-who 90 $2D char-heading? and if
         5 2 0 scene-change
     then
-    0 $A char-in-area? 0 45 $32 char-heading? and if
+    fiona-who $A char-in-area? fiona-who 45 $32 char-heading? and if
         5 7 0 scene-change
     then
 ;
 
 : castle-2f-14.phase5 ( -- )   \ 00412B90
-    1 char-here? if
+    hewie-who char-here? if
         118 hewie-action? if
-            1 $2B char-on-tri? 1 $140 char-on-tri? or 1 $1DF char-on-tri? or if
-                1 $140 -149.0 -51.0 -90 char-to-xz
+            hewie-who $2B char-on-tri? hewie-who $140 char-on-tri? or hewie-who $1DF char-on-tri? or if
+                hewie-who $140 -149.0 -51.0 -90 char-to-xz
                 150 2 hewie-anim
             then
-        else 1 0 char-in-nav-group? 1 $2B char-on-tri? or 1 $140 char-on-tri? or 1 $1DF char-on-tri? or if
-            1 $13C char-to-tri
+        else hewie-who 0 char-in-nav-group? hewie-who $2B char-on-tri? or hewie-who $140 char-on-tri? or hewie-who $1DF char-on-tri? or if
+            hewie-who $13C char-to-tri
         then then
     then
 ;
@@ -188,7 +170,7 @@ USING: room-names story.words story.shared flag-names ;
     1 self-scripted
     8 room-preload
     self-wait-done
-    2 message
+    2 message   \ "If I choose my footing carefully, I should be able to get down this way... Climb down?..."
     wait-message
     0 answer? if
         $F 4 fade
@@ -198,7 +180,7 @@ USING: room-names story.words story.shared flag-names ;
         0 $86 0.0 0.0 0.0 0 0 sound
         self-frames-reset
         $B4 self-wait-frames
-        1 char-here? if
+        hewie-who char-here? if
             $2F 0 288 hewie-to-room
         then
         $82 exit-check
@@ -213,11 +195,11 @@ USING: room-names story.words story.shared flag-names ;
 : castle-2f-14.act02 ( -- )   \ 00412C50
     self-wait-done
     0 ebit? not if
-        0 message
+        0 message   \ "It's a suspended bridge."
         wait-message
         0 ebit-set
     else
-        1 message
+        1 message   \ "If I lower the bridge somehow, I can use it to cross."
         wait-message
     then
     self-idle-or-end
@@ -225,34 +207,33 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-2f-14.act03 ( -- )   \ 00412C70
     self-wait-done
-    1 0 char-file-load
+    hewie-who 0 char-file-load
     hewie-bark
     self-wait-done
     $AE -152.54 -106.55 0 $FFFF $A self-move-to
     self-wait-done
-    1 char-file-use
+    hewie-who char-file-use
     1 self-noclip
-    $8000 5 self-anim-9
+    $8000 5 self-anim-blend8
     self-wait-anim
     0 0 $30 nav-group
     0 self-noclip
     $260 story-flag? not if
         $260 story-flag? not if
-            fiona-half-hidden state-flag? 0 char-busy? not or if
+            fiona-half-hidden state-flag? fiona-who char-busy? not or if
                 $70 $63 item-count? not if
                     10 hewie-trust
                 then
                 $70 message-param-room
                 $70 $63 item-count? if
-                    $8010 message
+                    $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
                     wait-message
                 else
                     $260 story-flag-set
                     $70 1 item-give-count
                     0 $70 item-tab
-                    0 $F9 $8C action-force
-                    $83 $85 0.0 0.0 0.0 0 0 sound
-                    $8011 message
+                    item-fanfare
+                    $8011 message   \ "You've obtained ."
                     wait-message
                 then
                 $260 story-flag? if
@@ -312,13 +293,13 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-2f-14.act06 ( -- )   \ 00412E00
-    $75 0 hewie-action
+    $75 0 hewie-do
     begin
         117 hewie-action? while
         yield
     repeat
-    1 $2B char-on-tri? 1 $140 char-on-tri? or 1 $1DF char-on-tri? or if
-        0 1 4 action
+    hewie-who $2B char-on-tri? hewie-who $140 char-on-tri? or hewie-who $1DF char-on-tri? or if
+        0 hewie-who 4 action
     else
         1 0 8 nav-group
         0 0 $30 nav-group
@@ -333,11 +314,11 @@ USING: room-names story.words story.shared flag-names ;
     90 self-turn-angle
     self-wait-done
     2 ebit? not if
-        3 message
+        3 message   \ "The body of a beast and the head of a bird... What a strange-looking statue."
         wait-message
         2 ebit-set
     else
-        4 message
+        4 message   \ "Some ancient castles used to line their walls with gargoyles, as it was believed to..."
         wait-message
         2 ebit-clear
     then

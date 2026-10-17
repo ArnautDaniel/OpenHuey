@@ -32,50 +32,26 @@ USING: room-names story.words story.shared ;
 
 : old-mansion-1f-5.char-enter ( -- )   \ 00407B70
     hewie-controlled? not if
-        0 self-is? 3 exit-taken? and if
-            0 3 char-to-exit
-            hewie-controlled? not if
-                0 4 4 char-camera
-                0 camera-follow
-            else
-                1 4 4 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 3 exit-taken? and if
+            fiona-who 3 char-to-exit
+            4 4 player-camera
         then
-    else 1 self-is? 3 exit-taken? and if
-        1 3 char-to-exit
-        hewie-controlled? not if
-            0 4 4 char-camera
-            0 camera-follow
-        else
-            1 4 4 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 3 exit-taken? and if
+        hewie-who 3 char-to-exit
+        4 4 player-camera
     then then
     3 4 4 area-camera
     hewie-controlled? not if
-        0 self-is? 4 exit-taken? and if
-            0 4 char-to-exit
-            hewie-controlled? not if
-                0 2 2 char-camera
-                0 camera-follow
-            else
-                1 2 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 4 exit-taken? and if
+            fiona-who 4 char-to-exit
+            2 2 player-camera
         then
-    else 1 self-is? 4 exit-taken? and if
-        1 4 char-to-exit
-        hewie-controlled? not if
-            0 2 2 char-camera
-            0 camera-follow
-        else
-            1 2 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 4 exit-taken? and if
+        hewie-who 4 char-to-exit
+        2 2 player-camera
     then then
     4 2 2 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         3 exit-taken? if
             2 map-page
         then
@@ -95,15 +71,15 @@ USING: room-names story.words story.shared ;
         3 exit-check
     then
     hewie-controlled? not if
-        0 4 char-in-area? 0 char-busy? not and if
+        fiona-who 4 char-in-area? fiona-who char-busy? not and if
             4 exit-check
         then
-    else 1 4 char-in-area? 1 char-busy? not and if
+    else hewie-who 4 char-in-area? hewie-who char-busy? not and if
         4 exit-check
     then then
     $2AB story-flag? not if
         3 -9.11 0.0 -21.78 $A 5 0 zone
-        1 3 3 char-zone-bits? if
+        hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
                 $19 683 var-set
                 $1A 684 var-set
@@ -112,25 +88,25 @@ USING: room-names story.words story.shared ;
                 $1D 1000 var-set
                 $1E -21780 var-set
                 $1F 3 var-set
-                0 1 $8B action
+                0 hewie-who $8B action
             then
         then
     then
 ;
 
 : old-mansion-1f-5.phase2 ( -- )   \ 00407CB0
-    0 $19 char-in-area? 0 -45 $32 char-heading? and if
+    fiona-who $19 char-in-area? fiona-who -45 $32 char-heading? and if
         5 0 0 scene-change
     then
     $26F story-flag? not if
         1 1 5 5 0 zone-at-effect
-        0 1 3 char-zone-bits? if
+        fiona-who 1 3 char-zone-bits? if
             5 3 4 scene-change
         then
     then
     $2AB story-flag? $2AC story-flag? not and if
         3 4 5 5 0 zone-at-effect
-        0 3 3 char-zone-bits? if
+        fiona-who 3 3 char-zone-bits? if
             5 5 4 scene-change
         then
     then
@@ -144,23 +120,23 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     $21 0 pvar? if
         $21 pvar-inc
-        $11 message
+        $11 message   \ "Smells like burnt meat. A dreadful odor indeed... They must be cooking an animal'..."
         wait-message
     else $21 1 pvar? if
         1 6 -138.0 5.0 5.0 0 0 sound
         self-frames-reset
         $10 self-wait-frames
-        0 $43 5 char-sound
+        fiona-who $43 5 char-sound
         $F00 self-anim
         $21 pvar-inc
         $FF panic-stage? not if
             3 panic-stage
         then
-        $12 message
+        $12 message   \ "Wait a second! It's still moving in there! It's being cooked alive!"
         wait-message
     else
         $21 pvar-inc
-        $13 message
+        $13 message   \ "The more I look, the more it seems to resemble a human child... But certainly suc..."
         wait-message
     then then
     self-idle-or-end
@@ -185,16 +161,15 @@ USING: room-names story.words story.shared ;
         4 self-wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $26F story-flag-set
             1 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -218,16 +193,15 @@ USING: room-names story.words story.shared ;
         4 self-wait-frames
         $95 message-param-room
         $95 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $2AC story-flag-set
             4 effect-remove
             $95 1 item-give-count
             0 $95 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim

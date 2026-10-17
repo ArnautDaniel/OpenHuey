@@ -17,36 +17,22 @@ USING: room-names story.words story.shared flag-names ;
 
 : house-of-truth-b1-1.char-enter ( -- )   \ 00432440
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         $80 exit-taken? if
-            0 $2A 0 char-to-tri-facing
+            fiona-who $2A 0 char-to-tri-facing
             world-held state-flag-set
             0.0 sound-volume-scale
-            $FF panic-stage? if
-                3 panic-stage
-            then
-            0 0 0 action-force
+            panic-eased
+            0 fiona-who 0 action-force
         then
     then
 ;
@@ -64,83 +50,27 @@ USING: room-names story.words story.shared flag-names ;
 : house-of-truth-b1-1.act00 ( -- )   \ 004324B0
     stalkers-stay state-flag-set
     1 self-scripted
-    $FE action-end
-    $FE char-done
+    stalker-who action-end
+    stalker-who char-done
     self-wait-done
     9 3 $FF char-load
-    3 char-unload
+    3 char-start
     0 0 $14 door-bits
     4 0 movie-play
     3 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    0 message-prepare
+    scene-wait-ready
+    panic-eased
+    0 message-prepare   \ "Daddy? Ah, Fiona... My dear holder of Azoth! What's going on? You're not my......"
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     3 0 char-remove
-    $FE action-end
-    $FE char-done
-    0 $25 -1.96 -22.63 0 char-to-xz
-    hewie-controlled? not if
-        0 0 0 char-camera
-        0 camera-follow
-    else
-        1 0 0 char-camera
-        1 camera-follow
-    then
+    stalker-who action-end
+    stalker-who char-done
+    fiona-who $25 -1.96 -22.63 0 char-to-xz
+    0 0 player-camera
     camera-restart
     $95 story-flag-set
     1 0 0 music
@@ -182,15 +112,15 @@ USING: room-names story.words story.shared flag-names ;
     then then then
     effects-arena-flip
     1 char-in
-    $FE char-activate
+    stalker-who char-activate
     $FE $84 44 2 stalker-to-room
-    $FE $2C -140 char-to-tri-facing
-    $FE 0 0 char-camera
+    stalker-who $2C -140 char-to-tri-facing
+    stalker-who 0 0 char-camera
     summoner-on state-flag-set
-    stalker-item-cooldown
-    1 action-end
-    1 char-done
-    1 char-activate
+    summoner-own-cooldown
+    hewie-who action-end
+    hewie-who char-done
+    hewie-who char-activate
     $85 0 82 hewie-to-room
     0 1 $14 door-bits
     0 1 object-hidden
@@ -209,74 +139,24 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     9 3 $FF char-load
     $A 4 $FF char-load
-    3 char-unload
-    4 char-unload
+    3 char-start
+    4 char-start
     4 0 movie-play
     3 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
-    $FF panic-stage? if
-        3 panic-stage
-    then
-    0 message-prepare
+    scene-wait-ready
+    panic-eased
+    0 message-prepare   \ "Daddy? Ah, Fiona... My dear holder of Azoth! What's going on? You're not my......"
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     3 0 char-remove
     4 0 char-remove
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 

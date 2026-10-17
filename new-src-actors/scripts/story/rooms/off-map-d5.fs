@@ -30,151 +30,91 @@ USING: room-names story.words story.shared story.clock ;
 
 : off-map-d5.char-enter ( -- )   \ 00447330
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 3 3 char-camera
-                0 camera-follow
-            else
-                1 3 3 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            3 3 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 3 3 char-camera
-            0 camera-follow
-        else
-            1 3 3 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        3 3 player-camera
     then then
     1 3 3 area-camera
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        1 1 player-camera
     then then
     2 1 1 area-camera
     hewie-controlled? not if
-        0 self-is? 3 exit-taken? and if
-            0 3 char-to-exit
-            hewie-controlled? not if
-                0 2 2 char-camera
-                0 camera-follow
-            else
-                1 2 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 3 exit-taken? and if
+            fiona-who 3 char-to-exit
+            2 2 player-camera
         then
-    else 1 self-is? 3 exit-taken? and if
-        1 3 char-to-exit
-        hewie-controlled? not if
-            0 2 2 char-camera
-            0 camera-follow
-        else
-            1 2 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 3 exit-taken? and if
+        hewie-who 3 char-to-exit
+        2 2 player-camera
     then then
     3 2 2 area-camera
     hewie-controlled? not if
-        0 self-is? 4 exit-taken? and if
-            0 4 char-to-exit
-            hewie-controlled? not if
-                0 2 2 char-camera
-                0 camera-follow
-            else
-                1 2 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 4 exit-taken? and if
+            fiona-who 4 char-to-exit
+            2 2 player-camera
         then
-    else 1 self-is? 4 exit-taken? and if
-        1 4 char-to-exit
-        hewie-controlled? not if
-            0 2 2 char-camera
-            0 camera-follow
-        else
-            1 2 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 4 exit-taken? and if
+        hewie-who 4 char-to-exit
+        2 2 player-camera
     then then
     4 2 2 area-camera
 ;
 
 : off-map-d5.phase1 ( -- )   \ 00447460
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             0 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
     hewie-controlled? not if
-        0 1 char-in-area? 0 char-busy? not and if
+        fiona-who 1 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 1 char-in-area? 1 char-busy? not and if
+    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then
     hewie-controlled? not if
-        0 2 char-in-area? 0 char-busy? not and if
+        fiona-who 2 char-in-area? fiona-who char-busy? not and if
             2 exit-check
         then
-    else 1 2 char-in-area? 1 char-busy? not and if
+    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
         2 exit-check
     then then
     hewie-controlled? not if
-        0 3 char-in-area? 0 char-busy? not and if
+        fiona-who 3 char-in-area? fiona-who char-busy? not and if
             3 exit-check
         then
-    else 1 3 char-in-area? 1 char-busy? not and if
+    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
         3 exit-check
     then then
     hewie-controlled? not if
-        0 4 char-in-area? 0 char-busy? not and if
+        fiona-who 4 char-in-area? fiona-who char-busy? not and if
             4 exit-check
         then
-    else 1 4 char-in-area? 1 char-busy? not and if
+    else hewie-who 4 char-in-area? hewie-who char-busy? not and if
         4 exit-check
     then then
     $A 3 3 1 chars-area-camera
@@ -183,24 +123,24 @@ USING: room-names story.words story.shared story.clock ;
     $D 2 2 1 chars-area-camera
     $E 0 0 1 chars-area-camera
     $F 3 3 1 chars-area-camera
-    1 5 char-entered-area? if
+    hewie-who 5 char-entered-area? if
         0 exit-prepare
     then
-    1 6 char-entered-area? if
+    hewie-who 6 char-entered-area? if
         1 exit-prepare
     then
-    1 7 char-entered-area? if
+    hewie-who 7 char-entered-area? if
         2 exit-prepare
     then
-    1 8 char-entered-area? if
+    hewie-who 8 char-entered-area? if
         3 exit-prepare
     then
-    1 9 char-entered-area? if
+    hewie-who 9 char-entered-area? if
         4 exit-prepare
     then
     0 ebit? $35B story-flag? not and if
         0 -24.0 8.31 -132.0 $19 10 0 zone
-        0 0 2 char-zone-bits? 1 0 2 char-zone-bits? or if
+        fiona-who 0 2 char-zone-bits? hewie-who 0 2 char-zone-bits? or if
             $35B story-flag-set
             $F2 action-end
             0 $F2 2 action
@@ -226,7 +166,7 @@ USING: room-names story.words story.shared story.clock ;
 ;
 
 : off-map-d5.act00 ( -- )   \ 00447580
-    4 char-unload
+    4 char-start
     $1A char-activate
     $1A 1 3.0 235.0 180 char-to-xz
     $1A $9000 1 0 char-anim-hold
@@ -238,7 +178,7 @@ USING: room-names story.words story.shared story.clock ;
 ;
 
 : off-map-d5.act01 ( -- )   \ 004475B0
-    5 char-unload
+    5 char-start
     0 ebit-set
     $E char-activate
     $E $9000 1 0 char-anim-hold

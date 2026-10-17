@@ -29,47 +29,23 @@ USING: room-names story.words story.shared ;
 
 : castle-2f-11.char-enter ( -- )   \ 003FE350
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        0 0 player-camera
     then then
     1 0 0 area-camera
 ;
@@ -81,16 +57,16 @@ USING: room-names story.words story.shared ;
     1 exit-usable? if
         1 exit-check
     then
-    0 2 char-entered-area? if
+    fiona-who 2 char-entered-area? if
         0 exit-prepare
     then
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
     0 -366.29 0.0 -24.86 $23 29 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 0 9 char-zone-bits? if
+            hewie-who 0 9 char-zone-bits? if
                 $1F 0 var-set
                 $1F 29.0 hewie-look-zone
             then
@@ -99,7 +75,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-2f-11.phase2 ( -- )   \ 003FE420
-    0 4 char-in-area? 0 30 $32 char-heading? and if
+    fiona-who 4 char-in-area? fiona-who 30 $32 char-heading? and if
         5 0 0 scene-change
     then
 ;
@@ -108,7 +84,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     60 self-turn-angle
     self-wait-done
-    0 message
+    0 message   \ "This crest... Why is it slanted like this?"
     wait-message
     self-idle-or-end
 ;

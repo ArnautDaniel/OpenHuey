@@ -18,47 +18,23 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-2f-4.char-enter ( -- )   \ 0040F4C0
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 2 -1 char-camera
-                0 camera-follow
-            else
-                1 2 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            2 -1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 2 -1 char-camera
-            0 camera-follow
-        else
-            1 2 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        2 -1 player-camera
     then then
     0 2 -1 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        0 0 player-camera
     then then
     1 0 0 area-camera
 ;
@@ -74,18 +50,18 @@ USING: room-names story.words story.shared flag-names ;
     6 2 -1 1 chars-area-camera
     7 1 1 1 chars-area-camera
     8 2 -1 1 chars-area-camera
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         0 exit-prepare
         3 0 char-remove
     then
-    0 4 char-entered-area? if
+    fiona-who 4 char-entered-area? if
         1 exit-prepare
         $1C 3 1 char-load
     then
     0 -44.47 0.0 54.87 $1E 16 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 0 9 char-zone-bits? if
+            hewie-who 0 9 char-zone-bits? if
                 $1F 0 var-set
                 $1F 18.0 hewie-look-zone
             then
@@ -94,22 +70,22 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-2f-4.phase2 ( -- )   \ 0040F5B0
-    0 $D char-in-area? 0 -15 $32 char-heading? and if
+    fiona-who $D char-in-area? fiona-who -15 $32 char-heading? and if
         5 2 0 scene-change
     then
-    0 $F char-in-area? 0 20 $3C char-heading? and if
+    fiona-who $F char-in-area? fiona-who 20 $3C char-heading? and if
         5 8 0 scene-change
     then
-    0 $10 char-in-area? 0 45 $3C char-heading? and if
+    fiona-who $10 char-in-area? fiona-who 45 $3C char-heading? and if
         5 9 0 scene-change
     then
     $27C story-flag? not if
         1 0 5 5 0 zone-at-effect
-        0 1 3 char-zone-bits? if
+        fiona-who 1 3 char-zone-bits? if
             5 7 4 scene-change
         then
     then
-    0 $11 char-in-area? 0 90 $32 char-heading? and if
+    fiona-who $11 char-in-area? fiona-who 90 $32 char-heading? and if
         5 1 0 scene-change
     then
 ;
@@ -120,12 +96,12 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     $A4 -36.0 41.0 -35 $FFFF 5 self-move-to
     self-wait-done
-    0 3 6 char-sound
+    fiona-who 3 6 char-sound
     self-frames-reset
     $78 self-wait-frames
     $A02 self-anim
     self-wait-anim
-    6 message
+    6 message   \ "Oh my! It actually transformed..."
     wait-message
     $902 self-anim
     self-wait-anim
@@ -133,9 +109,8 @@ USING: room-names story.words story.shared flag-names ;
     $A message-param-room
     $A 1 item-give-count
     0 $A item-tab
-    0 $F9 $8C action-force
-    $83 $85 0.0 0.0 0.0 0 0 sound
-    $8012 message
+    item-fanfare
+    $8012 message   \ "You've obtained ."
     wait-message
     $903 self-anim
     self-wait-anim
@@ -150,17 +125,17 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    9 message
+    9 message   \ "There is something written here... I... think I can just about make it out..."
     wait-message
     $F 6 fade
     wait-fade
-    $A message
+    $A message   \ "Torva Temporarily gives anxiety to those who use it, making them feel panicked. Weltig..."
     wait-message
     $F 7 fade
     wait-fade
     $48 subscreen-bit? not $49 subscreen-bit? not or if
         $1D01 self-anim
-        $B message
+        $B message   \ "Names for chemicals or medicine or something... Looks like their effects are liste..."
         wait-message
         self-wait-anim
         $48 subscreen-bit
@@ -180,14 +155,14 @@ USING: room-names story.words story.shared flag-names ;
     0 ebit? not if
         $F 6 fade
         wait-fade
-        3 message
+        3 message   \ "Purifier The impure yellow mass of filth will set free the shining glory of the sac..."
         wait-message
         0 ebit-set
         $F 7 fade
         wait-fade
     else
         $1D01 $A self-anim-blend
-        4 message
+        4 message   \ "A purifier? I've never heard of a device like this before. There is a space to inse..."
         wait-message
         self-wait-anim
         0 ebit-clear
@@ -204,7 +179,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     $A4 -36.0 41.0 -35 $FFFF 5 self-move-to
     self-wait-done
-    0 3 6 char-sound
+    fiona-who 3 6 char-sound
     self-frames-reset
     $78 self-wait-frames
     $A02 self-anim
@@ -214,42 +189,37 @@ USING: room-names story.words story.shared flag-names ;
     1 8 var? if
         8 message-param-room
         0 8 item-tab
-        0 $F9 $8C action-force
-        $83 $85 0.0 0.0 0.0 0 0 sound
-        $8012 message
+        item-fanfare
+        $8012 message   \ "You've obtained ."
         wait-message
     else 1 10 var? if
         $A message-param-room
         0 $A item-tab
-        0 $F9 $8C action-force
-        $83 $85 0.0 0.0 0.0 0 0 sound
-        $8012 message
+        item-fanfare
+        $8012 message   \ "You've obtained ."
         wait-message
     else 1 11 var? if
         $B message-param-room
         0 $B item-tab
-        0 $F9 $8C action-force
-        $83 $85 0.0 0.0 0.0 0 0 sound
-        $8012 message
+        item-fanfare
+        $8012 message   \ "You've obtained ."
         wait-message
     else 1 12 var? if
         $C message-param-room
         0 $C item-tab
-        0 $F9 $8C action-force
-        $83 $85 0.0 0.0 0.0 0 0 sound
-        $8012 message
+        item-fanfare
+        $8012 message   \ "You've obtained ."
         wait-message
     else 1 16 var? if
         $10 message-param-room
         0 $10 item-tab
-        0 $F9 $8C action-force
-        $83 $85 0.0 0.0 0.0 0 0 sound
-        $8012 message
+        item-fanfare
+        $8012 message   \ "You've obtained ."
         wait-message
     then then then then then
     $903 self-anim
     self-wait-anim
-    5 message
+    5 message   \ "No transformation occurred. I guess it didn't work. Maybe I should try a different item?"
     wait-message
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -279,16 +249,15 @@ USING: room-names story.words story.shared flag-names ;
         4 self-wait-frames
         $74 message-param-room
         $74 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $27C story-flag-set
             0 effect-remove
             $74 1 item-give-count
             0 $74 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $903 self-anim
@@ -302,7 +271,7 @@ USING: room-names story.words story.shared flag-names ;
     0.6 5.2 self-turn-to-xz
     self-wait-done
     $A01 self-anim
-    7 message
+    7 message   \ "The desk is covered in strange research equipment. What kind of research could possibly..."
     wait-message
     self-idle-or-end
 ;
@@ -312,7 +281,7 @@ USING: room-names story.words story.shared flag-names ;
     46.8 0.0 self-turn-to-xz
     self-wait-done
     $A01 self-anim
-    8 message
+    8 message   \ "There seems to be a passage to another one here. A warm wind is blowing in from that di..."
     wait-message
     self-idle-or-end
 ;

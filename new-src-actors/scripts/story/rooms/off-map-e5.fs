@@ -44,9 +44,9 @@ USING: room-names story.words story.shared flag-names story.clock ;
         1 ebit-set
     then
     1 ebit? if
-        0 $FE 3 action
+        0 stalker-who 3 action
     else
-        $78 1 item-cooldown
+        $78 1 summoner-wait
     then
     $32 pvar-inc
     exit
@@ -54,28 +54,16 @@ USING: room-names story.words story.shared flag-names story.clock ;
 
 : off-map-e5.char-enter ( -- )   \ 00449590
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
-    $FE self-is? if
+    stalker-who self-is? if
         fiona-hidden state-flag? if
             3 ebit-set
             off-map-e5.act02
@@ -96,12 +84,12 @@ USING: room-names story.words story.shared flag-names story.clock ;
     8 3 -1 1 chars-area-camera
     9 1 -1 1 chars-area-camera
     0 62.08 0.0 -16.33 $A 5 0 zone
-    1 0 8 char-zone-bits? if
-        0 char-here? if
-            0 char-busy? not $FF panic-stage? not and fiona-free? and if
+    hewie-who 0 8 char-zone-bits? if
+        fiona-who char-here? if
+            fiona-who char-busy? not $FF panic-stage? not and fiona-free? and if
                 -1 control-action? not if
-                    $FE char-here? not if
-                        0 0 0 action
+                    stalker-who char-here? not if
+                        0 fiona-who 0 action
                     then
                 then
             then
@@ -120,11 +108,11 @@ USING: room-names story.words story.shared flag-names story.clock ;
 ;
 
 : off-map-e5.phase5 ( -- )   \ 00449660
-    0 char-busy? if
+    fiona-who char-busy? if
         stalkers-stay state-flag-clear
         fiona-hidden state-flag-clear
-        0 action-end
-        0 $15 62.35 -10.65 0 char-to-xz
+        fiona-who action-end
+        fiona-who $15 62.35 -10.65 0 char-to-xz
     then
 ;
 
@@ -137,7 +125,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
     2 ebit? if
         counter-inc
     then
-    $8002 5 self-anim-9
+    $8002 5 self-anim-blend8
     self-frames-reset
     5 self-wait-frames
     begin
@@ -148,14 +136,14 @@ USING: room-names story.words story.shared flag-names story.clock ;
     repeat
     3 off-map-e5.cmd00
     $FF panic-stage? not if
-        0 $43 5 char-sound
+        fiona-who $43 5 char-sound
     then
     self-wait-anim
     0 self-noclip
     2 ebit? if
         2 wait-counter
     then
-    $FE action-end
+    stalker-who action-end
     0 self-scripted
     self-idle-or-end
 ;
@@ -168,7 +156,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
     fiona-hidden state-flag-clear
     1 self-noclip
     0 0 var-set
-    $8003 5 self-anim-9
+    $8003 5 self-anim-blend8
     self-frames-reset
     5 self-wait-frames
     begin
@@ -181,9 +169,9 @@ USING: room-names story.words story.shared flag-names story.clock ;
     self-wait-anim
     0 self-noclip
     0 ebit? not if
-        $FE action-end
-        $FE char-here? if
-            $FE 0 stalker-mode
+        stalker-who action-end
+        stalker-who char-here? if
+            stalker-who 0 stalker-command
         then
     then
     0 self-scripted
@@ -193,17 +181,17 @@ USING: room-names story.words story.shared flag-names story.clock ;
 : off-map-e5.act00 ( -- )   \ 00449680
     stalkers-stay state-flag-set
     1 self-scripted
-    0 0 char-file-load
+    fiona-who 0 char-file-load
     self-wait-done
     $15 60.918 -14.76 180 $FFFF $A self-move-to
     self-wait-done
     3 ebit-clear
     1 self-noclip
-    0 char-file-use
-    $FF self-look-at
+    fiona-who char-file-use
+    self-who self-look-at
     yield
     0 0 var-set
-    $8000 5 self-anim-9
+    $8000 5 self-anim-blend8
     self-frames-reset
     5 self-wait-frames
     begin
@@ -227,28 +215,28 @@ USING: room-names story.words story.shared flag-names story.clock ;
         else -1 control-action? if
             $FF panic-stage? 0 ebit? or if
                 $FF panic-stage? not if
-                    0 $43 5 char-sound
+                    fiona-who $43 5 char-sound
                 then
                 ['] off-map-e5.act04 goto
             else
-                2 panic-grow
+                2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                3 ebit? $FE char-here? not and if
+                3 ebit? stalker-who char-here? not and if
                     3 ebit-clear
                     1 avoid-prompt
                 then
                 yield
             then
         else
-            $FE char-here? if
-                $FE action-end
+            stalker-who char-here? if
+                stalker-who action-end
                 ['] off-map-e5.act04 goto
             then
             fiona-hidden state-flag-clear
             1 self-noclip
             0 0 var-set
-            $8001 0 self-anim-9
+            $8001 0 self-anim-blend8
             begin
                 1 off-map-e5.cmd00
                 yield
@@ -266,12 +254,12 @@ USING: room-names story.words story.shared flag-names story.clock ;
 
 : off-map-e5.act03 ( -- )   \ 004497F0
     self-wait-done
-    $FE 0 char-heading-for? 0 exit-door-open? not and if
-        0 3 self-move-slot
+    stalker-who 0 char-heading-for? 0 exit-door-open? not and if
+        fiona-who 3 self-move-slot
         self-wait-done
     then
-    $FE 1 char-heading-for? 1 exit-door-open? not and if
-        1 3 self-move-slot
+    stalker-who 1 char-heading-for? 1 exit-door-open? not and if
+        hewie-who 3 self-move-slot
         self-wait-done
     then
     $FA $FFFF 6 self-move-tri
@@ -281,12 +269,12 @@ USING: room-names story.words story.shared flag-names story.clock ;
     $1601 self-anim
     self-wait-anim
     0 ebit-set
-    10 self-move-16
+    10 self-idle-anim
     begin
-        0 char-busy? while
+        fiona-who char-busy? while
         yield
     repeat
-    $FE 0 stalker-mode
+    stalker-who 0 stalker-command
     self-idle-or-end
 ;
 

@@ -12,65 +12,59 @@ USING: room-names story.words story.shared flag-names ;
     $347 story-flag-set
     $354 story-flag? if
         $FE $95 124 2 stalker-to-room
-        $FE 0 stalker-mode
-        $FE 1 1 char-camera
+        stalker-who 0 stalker-command
+        stalker-who 1 1 char-camera
     then
     $2E5 story-flag? not if
         0 -119.22 1.0 -96.82 flicker-sprite
     then
     $31 1.0 0 bgm
     1 0 $5000000 nav-group
-    $FE $95 1 room-doors-state
-    1 $95 1 room-doors-state
+    stalker-who $95 1 room-doors-state
+    hewie-who $95 1 room-doors-state
 ;
 
 : house-of-truth-b1-7.char-enter ( -- )   \ 00444530
-    0 self-is? if
+    fiona-who self-is? if
         $80 exit-taken? if
-            0 $129 129.0 0.0 -90 char-to-xz
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+            fiona-who $129 129.0 0.0 -90 char-to-xz
+            0 0 player-camera
             $95 0 235 hewie-to-room
-            1 $EB -90 char-to-tri-facing
-            0 0 2 action
+            hewie-who $EB -90 char-to-tri-facing
+            0 fiona-who 2 action
         then
     then
 ;
 
 : house-of-truth-b1-7.phase1 ( -- )   \ 00444570
     0 ebit? not if
-        0 0 char-in-area? if
+        fiona-who 0 char-in-area? if
             0 ebit-set
-            0 0 char-action? if
-                0 0 0 action-force
+            fiona-who 0 char-action? if
+                0 fiona-who 0 action-force
             else
-                1 0 0 action-force
+                1 fiona-who 0 action-force
             then
         then
-        0 1 char-in-area? if
+        fiona-who 1 char-in-area? if
             0 ebit-set
-            0 0 char-action? if
-                0 0 1 action-force
+            fiona-who 0 char-action? if
+                0 fiona-who 1 action-force
             else
-                1 0 1 action-force
+                1 fiona-who 1 action-force
             then
         then
     then
     4 0 0 1 chars-area-camera
     5 1 1 1 chars-area-camera
-    0 2 char-entered-area? if
+    fiona-who 2 char-entered-area? if
         $346 story-flag? not if
             $94 room-preload
         else
             $87 room-preload
         then
     then
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         $348 story-flag? not if
             $96 room-preload
         else
@@ -82,12 +76,12 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : house-of-truth-b1-7.phase2 ( -- )   \ 004445D0
-    0 6 char-in-area? 0 -45 $32 char-heading? and if
+    fiona-who 6 char-in-area? fiona-who -45 $32 char-heading? and if
         5 3 0 scene-change
     then
     $2E5 story-flag? not if
         0 0 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
+        fiona-who 0 3 char-zone-bits? if
             5 4 4 scene-change
         then
     then
@@ -132,7 +126,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     $F 6 fade
     wait-fade
-    3 message
+    3 message   \ "The colors, like the unique memories of the mind, may only come once in a lifetime."
     wait-message
     $F 7 fade
     wait-fade
@@ -152,16 +146,15 @@ USING: room-names story.words story.shared flag-names ;
         4 self-wait-frames
         $61 message-param-room
         $61 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $2E5 story-flag-set
             0 effect-remove
             $61 1 item-give-count
             0 $61 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim

@@ -26,35 +26,23 @@ USING: room-names story.words story.shared story.clock ;
 
 : off-map-d7.char-enter ( -- )   \ 00447A90
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
 ;
 
 : off-map-d7.phase1 ( -- )   \ 00447AD0
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             0 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
     0 ebit? $35E story-flag? not and if
@@ -85,7 +73,7 @@ USING: room-names story.words story.shared story.clock ;
 ;
 
 : off-map-d7.act00 ( -- )   \ 00447B20
-    5 char-unload
+    5 char-start
     $E char-activate
     $E $9000 1 0 char-anim-hold
     $E -339.86 125.95 -391.22 0 char-to-xyz

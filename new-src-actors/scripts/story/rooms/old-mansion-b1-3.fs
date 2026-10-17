@@ -37,17 +37,17 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     room-sounds
     0 old-mansion-b1-3.cmd00
     $48 story-flag? not if
-        0 -0.5 18.5 -35.5 2 effect-86
-        1 9.5 18.5 -35.0 2 effect-86
-        2 4.8 25.5 -37.5 2 effect-86
-        3 4.8 6.2 -33.4 2 effect-86
+        0 -0.5 18.5 -35.5 2 flame-in
+        1 9.5 18.5 -35.0 2 flame-in
+        2 4.8 25.5 -37.5 2 flame-in
+        3 4.8 6.2 -33.4 2 flame-in
     else
-        0 -0.5 18.5 -35.5 3 effect-86
-        1 9.5 18.5 -35.0 3 effect-86
-        2 4.8 25.5 -37.5 3 effect-86
-        3 4.8 6.2 -33.4 3 effect-86
+        0 -0.5 18.5 -35.5 3 flame-in
+        1 9.5 18.5 -35.0 3 flame-in
+        2 4.8 25.5 -37.5 3 flame-in
+        3 4.8 6.2 -33.4 3 flame-in
     then
-    3 char-unload
+    3 char-start
     $11 char-activate
     $49 story-flag? if
         0 old-mansion-b1-3.cmd02
@@ -99,9 +99,9 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         $18 ebit-set
     then
     $18 ebit? if
-        0 $FE $10 action
+        0 stalker-who $10 action
     else
-        $78 1 item-cooldown
+        $78 1 summoner-wait
     then
     $17 pvar-inc
     exit
@@ -109,28 +109,16 @@ USING: engine actors messages story.state room-names story.words story.shared fl
 
 : old-mansion-b1-3.char-enter ( -- )   \ 00409A80
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 -1 char-camera
-                0 camera-follow
-            else
-                1 0 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 -1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 -1 char-camera
-            0 camera-follow
-        else
-            1 0 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 -1 player-camera
     then then
     0 0 -1 area-camera
-    $FE self-is? if
+    stalker-who self-is? if
         fiona-hidden state-flag? if
             $19 ebit-set
             old-mansion-b1-3.act0F
@@ -147,43 +135,43 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     1 0 -1 1 chars-area-camera
     2 1 -1 1 chars-area-camera
     0 ebit-clear
-    0 $89 char-on-tri? 0 $B1 char-on-tri? or if
+    fiona-who $89 char-on-tri? fiona-who $B1 char-on-tri? or if
         0 ebit-set
     then
-    1 $89 char-on-tri? 1 $B1 char-on-tri? or 1 char-here? and if
+    hewie-who $89 char-on-tri? hewie-who $B1 char-on-tri? or hewie-who char-here? and if
         0 ebit-set
     then
-    $FE $89 char-on-tri? $FE $B1 char-on-tri? or $FE char-here? and if
+    stalker-who $89 char-on-tri? stalker-who $B1 char-on-tri? or stalker-who char-here? and if
         0 ebit-set
     then
     1 ebit-clear
-    0 $90 char-on-tri? 0 $B2 char-on-tri? or if
+    fiona-who $90 char-on-tri? fiona-who $B2 char-on-tri? or if
         1 ebit-set
     then
-    1 $90 char-on-tri? 1 $B2 char-on-tri? or 1 char-here? and if
+    hewie-who $90 char-on-tri? hewie-who $B2 char-on-tri? or hewie-who char-here? and if
         1 ebit-set
     then
-    $FE $90 char-on-tri? $FE $B2 char-on-tri? or $FE char-here? and if
+    stalker-who $90 char-on-tri? stalker-who $B2 char-on-tri? or stalker-who char-here? and if
         1 ebit-set
     then
     2 ebit-clear
-    0 $97 char-on-tri? 0 $B3 char-on-tri? or if
+    fiona-who $97 char-on-tri? fiona-who $B3 char-on-tri? or if
         2 ebit-set
     then
-    1 $97 char-on-tri? 1 $B3 char-on-tri? or 1 char-here? and if
+    hewie-who $97 char-on-tri? hewie-who $B3 char-on-tri? or hewie-who char-here? and if
         2 ebit-set
     then
-    $FE $97 char-on-tri? $FE $B3 char-on-tri? or $FE char-here? and if
+    stalker-who $97 char-on-tri? stalker-who $B3 char-on-tri? or stalker-who char-here? and if
         2 ebit-set
     then
     3 ebit-clear
-    0 $83 char-on-tri? 0 $B0 char-on-tri? or if
+    fiona-who $83 char-on-tri? fiona-who $B0 char-on-tri? or if
         3 ebit-set
     then
-    1 $83 char-on-tri? 1 $B0 char-on-tri? or 1 char-here? and if
+    hewie-who $83 char-on-tri? hewie-who $B0 char-on-tri? or hewie-who char-here? and if
         3 ebit-set
     then
-    $FE $83 char-on-tri? $FE $B0 char-on-tri? or $FE char-here? and if
+    stalker-who $83 char-on-tri? stalker-who $B0 char-on-tri? or stalker-who char-here? and if
         3 ebit-set
     then
     1 old-mansion-b1-3.cmd00
@@ -249,10 +237,10 @@ USING: engine actors messages story.state room-names story.words story.shared fl
                 5 ebit-clear
                 6 ebit-clear
                 7 ebit-clear
-                0 -0.5 18.5 -35.5 2 effect-86
-                1 9.5 18.5 -35.0 2 effect-86
-                2 4.8 25.5 -37.5 2 effect-86
-                3 4.8 6.2 -33.4 2 effect-86
+                0 -0.5 18.5 -35.5 2 flame-in
+                1 9.5 18.5 -35.0 2 flame-in
+                2 4.8 25.5 -37.5 2 flame-in
+                3 4.8 6.2 -33.4 2 flame-in
                 0 0 var-set
             then
             $1C ebit-set
@@ -268,10 +256,10 @@ USING: engine actors messages story.state room-names story.words story.shared fl
                 5 ebit-clear
                 6 ebit-clear
                 7 ebit-clear
-                0 -0.5 18.5 -35.5 2 effect-86
-                1 9.5 18.5 -35.0 2 effect-86
-                2 4.8 25.5 -37.5 2 effect-86
-                3 4.8 6.2 -33.4 2 effect-86
+                0 -0.5 18.5 -35.5 2 flame-in
+                1 9.5 18.5 -35.0 2 flame-in
+                2 4.8 25.5 -37.5 2 flame-in
+                3 4.8 6.2 -33.4 2 flame-in
                 0 0 var-set
             then
             $1D ebit-set
@@ -279,116 +267,114 @@ USING: engine actors messages story.state room-names story.words story.shared fl
             $1D ebit-clear
         then
         4 ebit? 5 ebit? and 6 ebit? and 7 ebit? and if
-            0 char-busy? not if
+            fiona-who char-busy? not if
                 $48 story-flag-set
-                $FF panic-stage? if
-                    3 panic-stage
-                then
-                0 0 char-action? if
-                    0 0 0 action-force
+                panic-eased
+                fiona-who 0 char-action? if
+                    0 fiona-who 0 action-force
                 else
-                    1 0 0 action-force
+                    1 fiona-who 0 action-force
                 then
             then
         then
     then
-    1 char-here? 1 0 char-C4? and if
+    hewie-who char-here? hewie-who 0 char-cond? and if
         $E ebit? not if
             0 23.0 0.0 -22.5 5 5 0 zone
             2 game-mode? not if
                 hewie-can-command? if
-                    1 0 9 char-zone-bits? if
+                    hewie-who 0 9 char-zone-bits? if
                         $E ebit-set
-                        $80 0 hewie-action
+                        $80 0 hewie-do
                     then
                 then
             then
         else
             0 23.0 0.0 -22.5 7 5 0 zone
-            1 0 9 char-zone-bits? not if
+            hewie-who 0 9 char-zone-bits? not if
                 $E ebit-clear
             then
         then
     then
-    1 char-here? 1 0 char-C4? and if
+    hewie-who char-here? hewie-who 0 char-cond? and if
         $F ebit? not if
             1 11.0 0.0 -22.5 5 5 0 zone
             2 game-mode? not if
                 hewie-can-command? if
-                    1 1 9 char-zone-bits? if
+                    hewie-who 1 9 char-zone-bits? if
                         $F ebit-set
-                        $80 0 hewie-action
+                        $80 0 hewie-do
                     then
                 then
             then
         else
             1 11.0 0.0 -22.5 7 5 0 zone
-            1 1 9 char-zone-bits? not if
+            hewie-who 1 9 char-zone-bits? not if
                 $F ebit-clear
             then
         then
     then
-    1 char-here? 1 0 char-C4? and if
+    hewie-who char-here? hewie-who 0 char-cond? and if
         $10 ebit? not if
             2 -1.0 0.0 -22.5 5 5 0 zone
             2 game-mode? not if
                 hewie-can-command? if
-                    1 2 9 char-zone-bits? if
+                    hewie-who 2 9 char-zone-bits? if
                         $10 ebit-set
-                        $80 0 hewie-action
+                        $80 0 hewie-do
                     then
                 then
             then
         else
             2 -1.0 0.0 -22.5 7 5 0 zone
-            1 2 9 char-zone-bits? not if
+            hewie-who 2 9 char-zone-bits? not if
                 $10 ebit-clear
             then
         then
     then
-    1 char-here? 1 0 char-C4? and if
+    hewie-who char-here? hewie-who 0 char-cond? and if
         $11 ebit? not if
             3 -13.0 0.0 -22.5 5 5 0 zone
             2 game-mode? not if
                 hewie-can-command? if
-                    1 3 9 char-zone-bits? if
+                    hewie-who 3 9 char-zone-bits? if
                         $11 ebit-set
-                        $80 0 hewie-action
+                        $80 0 hewie-do
                     then
                 then
             then
         else
             3 -13.0 0.0 -22.5 7 5 0 zone
-            1 3 9 char-zone-bits? not if
+            hewie-who 3 9 char-zone-bits? not if
                 $11 ebit-clear
             then
         then
     then
     $15 ebit? $16 ebit? not and if
         4 10.8 0.0 14.07 $A 200 0 zone
-        1 4 char-in-zone? if
+        hewie-who 4 char-in-zone? if
             $16 ebit-set
         then
     then
     $15 ebit? not if
         5 37.99 0.0 24.16 $14 14 0 zone
-        $1A ebit? not 1 char-here? and 1 0 char-C4? and if
+        $1A ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
-                    1 5 9 char-zone-bits? if
+                    hewie-who 5 9 char-zone-bits? if
                         $1A ebit-set
                         $32 chance? if
                             $1F 5 var-set
-                            0 1 $92 action
+                            0 hewie-who $92 action
                         then
                     then
                 then
             then
         then
         5 37.99 0.0 24.16 $14 14 0 zone
-        1 char-here? 2 game-mode? not and if
+        hewie-who char-here? 2 game-mode? not and if
             hewie-can-command? if
-                1 5 9 char-zone-bits? if
+                hewie-who 5 9 char-zone-bits? if
                     $1F 5 var-set
                     $1F 14.0 hewie-look-zone
                 then
@@ -396,23 +382,23 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         then
         $48 story-flag? not if
             6 11.81 0.0 -0.03 $14 6 0 zone
-            $1B ebit? not 1 char-here? and 1 0 char-C4? and if
+            $1B ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                 2 game-mode? not if
                     hewie-can-command? if
-                        1 6 9 char-zone-bits? if
+                        hewie-who 6 9 char-zone-bits? if
                             $1B ebit-set
                             $64 chance? if
                                 $1F 6 var-set
-                                0 1 $8A action
+                                0 hewie-who $8A action
                             then
                         then
                     then
                 then
             then
             6 11.81 0.0 -0.03 $14 6 0 zone
-            1 char-here? 1 game-mode? and if
+            hewie-who char-here? 1 game-mode? and if
                 hewie-can-command? if
-                    1 6 9 char-zone-bits? if
+                    hewie-who 6 9 char-zone-bits? if
                         $1F 6 var-set
                         $1F 6.0 hewie-look-zone
                     then
@@ -431,10 +417,10 @@ USING: engine actors messages story.state room-names story.words story.shared fl
 ;
 
 : old-mansion-b1-3.phase2 ( -- )   \ 0040A020
-    0 3 char-in-area? 0 90 $32 char-heading? and if
+    fiona-who 3 char-in-area? fiona-who 90 $32 char-heading? and if
         5 3 0 scene-change
     then
-    0 4 char-in-area? 0 10 0 $32 char-faces-xz? and if
+    fiona-who 4 char-in-area? fiona-who 10 0 $32 char-faces-xz? and if
         $48 story-flag? not if
             5 2 0 scene-change
         else $49 story-flag? not if
@@ -443,39 +429,39 @@ USING: engine actors messages story.state room-names story.words story.shared fl
             5 4 0 scene-change
         then then
     then
-    0 5 char-in-area? 0 45 $32 char-heading? and if
+    fiona-who 5 char-in-area? fiona-who 45 $32 char-heading? and if
         $330 story-flag? not if
             5 6 0 scene-change
-        else $FE char-here? not if
+        else stalker-who char-here? not if
             5 6 5 scene-change
         else
-            $8016 examine-message
+            $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then then
     then
-    0 6 char-in-area? 0 0 $32 char-heading? and if
+    fiona-who 6 char-in-area? fiona-who 0 $32 char-heading? and if
         5 7 0 scene-change
     then
-    0 7 char-in-area? 0 55 $32 char-heading? and if
+    fiona-who 7 char-in-area? fiona-who 55 $32 char-heading? and if
         5 8 0 scene-change
     then
-    0 8 char-in-area? 0 45 $32 char-heading? and if
+    fiona-who 8 char-in-area? fiona-who 45 $32 char-heading? and if
         5 9 0 scene-change
     then
-    0 9 char-in-area? 0 0 $32 char-heading? and if
+    fiona-who 9 char-in-area? fiona-who 0 $32 char-heading? and if
         5 $A 0 scene-change
     then
-    0 $A char-in-area? 0 -22 $32 char-heading? and if
+    fiona-who $A char-in-area? fiona-who -22 $32 char-heading? and if
         5 $B 0 scene-change
     then
-    0 $B char-in-area? 0 -45 $32 char-heading? and if
+    fiona-who $B char-in-area? fiona-who -45 $32 char-heading? and if
         5 $C 0 scene-change
     then
-    0 $C char-in-area? 0 -45 $32 char-heading? and if
+    fiona-who $C char-in-area? fiona-who -45 $32 char-heading? and if
         5 $D 0 scene-change
     then
     $26A story-flag? not if
         7 5 5 5 0 zone-at-effect
-        0 7 3 char-zone-bits? if
+        fiona-who 7 3 char-zone-bits? if
             5 $12 4 scene-change
         then
     then
@@ -491,84 +477,34 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     6 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     wait-fade
     0 $F9 $13 action
-    $FF 1 char-visible
-    1 char-here? if
-        0 1 1 action-force
+    self-who 1 char-visible
+    hewie-who char-here? if
+        0 hewie-who 1 action-force
         1 wait-counter
     then
     $10 $FF movie-param
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     wait-fade
     50 hewie-trust
-    0 self-move-16
+    0 self-idle-anim
     camera-restart
-    $FF 0 char-visible
+    self-who 0 char-visible
     counter-inc
-    0 -0.5 18.5 -35.5 3 effect-86
-    1 9.5 18.5 -35.0 3 effect-86
-    2 4.8 25.5 -37.5 3 effect-86
-    3 4.8 6.2 -33.4 3 effect-86
+    0 -0.5 18.5 -35.5 3 flame-in
+    1 9.5 18.5 -35.0 3 flame-in
+    2 4.8 25.5 -37.5 3 flame-in
+    3 4.8 6.2 -33.4 3 flame-in
     $11 $9005 1 0 char-anim-hold
     $11 9.97 0.0 -0.59 0 char-to-xyz
     $11 0 char-no-shadow
-    $FE $4C 0 room-doors-state
+    stalker-who $4C 0 room-doors-state
     $F $41 fade
     wait-fade
     $827E item-give
@@ -579,13 +515,13 @@ USING: engine actors messages story.state room-names story.words story.shared fl
 
 : old-mansion-b1-3.act01 ( -- )   \ 0040A200
     begin
-        1 char-busy? not while
+        hewie-who char-busy? not while
         yield
     repeat
-    $FF 1 char-visible
+    self-who 1 char-visible
     counter-inc
     2 wait-counter
-    $FF 0 char-visible
+    self-who 0 char-visible
     self-idle-or-end
 ;
 
@@ -596,7 +532,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     $47 story-flag? not if
         $8D 9.0 10.0 180 $FFFF 5 self-move-to
         self-wait-done
-        0 message
+        0 message   \ "A corpse. There are traces that suggest this person was heavily tortured... There i..."
         wait-message
         0 answer? if
             $F $44 fade
@@ -604,77 +540,27 @@ USING: engine actors messages story.state room-names story.words story.shared fl
             4 cutscene-start
             yield
             yield
-            2 cutscene-control
-            begin
-                3 cutscene-control
-                2 cutscene-mode? not while
-                yield
-            repeat
+            scene-wait-ready
             wait-fade
-            1 char-here? 1 2 char-C4? and if
-                0 1 $86 action
+            hewie-who char-here? hewie-who 2 char-cond? and if
+                0 hewie-who $86 action
             then
-            $FF panic-stage? if
-                3 panic-stage
-            then
+            panic-eased
             $FFFF message-prepare
             1 result? if
-                6 cutscene-control
-                1.0 movie-volume
-                effects-arena-flip
-                yield
-                movie-skipped state-flag-clear
-                $F 1 fade
-                $A cutscene-control
-                begin
-                    movie-skipped state-flag? not if
-                        7 cutscene-control
-                        cutscene-near-end? if
-                            $F 0 fade
-                        then
-                        $C cutscene-control
-                        0 cutscene-control
-                        4 cutscene-control
-                        -1 result? not if
-                            5 cutscene-mode? not 4 cutscene-mode? not and if
-                                yield
-                                false
-                            else
-                                true
-                            then
-                        else
-                            true
-                        then
-                    else
-                        true
-                    then
-                until
-                $FFFF message-close
-                $F9 action-end
-                $B cutscene-control
-                wait-fade
-                1 cutscene-control
-                world-held state-flag-set
-                effects-arena-flip
-                begin
-                    movie-playing? while
-                    yield
-                repeat
-                yield
-                pause-wanted state-flag-set
-                8 cutscene-control
+                scene-play
             then
             wait-fade
-            0 self-move-16
-            0 $2F 10.8 14.07 180 char-to-xz
+            0 self-idle-anim
+            fiona-who $2F 10.8 14.07 180 char-to-xz
             $11 9.97 0.0 -0.59 0 char-to-xyz
             $11 $9005 0 0 char-anim-hold
             camera-restart
-            1 0 char-visible
-            1 action-end
+            hewie-who 0 char-visible
+            hewie-who action-end
             world-held state-flag-set
-            0 8 char-file-load
-            0 char-file-use
+            fiona-who 8 char-file-load
+            fiona-who char-file-use
             world-held state-flag-clear
             $F $41 fade
         then
@@ -682,21 +568,21 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     0 answer? if
         self-wait-done
         $47 story-flag? if
-            0 8 char-file-load
-            0 char-file-use
+            fiona-who 8 char-file-load
+            fiona-who char-file-use
             1 27.0 10.0 -40.0 0.0 event-camera
-            0 $2F 10.8 14.07 180 char-to-xz
+            fiona-who $2F 10.8 14.07 180 char-to-xz
             $11 9.97 0.0 -0.59 0 char-to-xyz
             1 self-scripted
             $11 $9000 0 0 char-anim-hold
             $8002 5 self-anim-blend
             self-frames-reset
             $17 self-wait-frames
-            0 5 6 char-sound
+            fiona-who 5 6 char-sound
             self-wait-anim
         else
             1 27.0 10.0 -40.0 0.0 event-camera
-            0 $2F 12.34 13.19 180 char-to-xz
+            fiona-who $2F 12.34 13.19 180 char-to-xz
             $11 9.97 0.0 -0.59 0 char-to-xyz
             1 self-scripted
             $11 $9001 0 0 char-anim-hold
@@ -709,12 +595,12 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         0 old-mansion-b1-3.cmd01
         begin
             hewie-can-command? if
-                $61 0 hewie-action
+                $61 0 hewie-do
             then
             0 control-action? 1 control-action? or if
                 $1F ebit? not if
                     $1F ebit-set
-                    0 $38 5 char-sound
+                    fiona-who $38 5 char-sound
                 then
             then
             $1F ebit? if
@@ -730,7 +616,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
                 $A threat-add
                 1 0 var-set
             then
-            panic-98? if
+            panic-near-full? if
                 $13 ebit-set
                 $14 ebit-set
             then
@@ -765,7 +651,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         $15 ebit-clear
         0 0.0 0.0 0.0 0.0 event-camera
         hewie-can-command? if
-            0 0 hewie-action
+            0 0 hewie-do
         then
         $11 $9003 0 5 char-anim-hold
         $8005 3 self-anim-blend
@@ -788,20 +674,20 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     self-wait-done
     world-frozen state-flag-set
     1 20.0 -15.0 0.0 0.0 event-camera
-    0 $97 5.0 -27.0 180 char-to-xz
+    fiona-who $97 5.0 -27.0 180 char-to-xz
     self-frames-reset
     4 self-wait-frames
-    3 message
+    3 message   \ "Is this a tool used to torture innocent victims? Tiny letters are engraved..."
     wait-message
     $F 6 fade
     wait-fade
-    9 message
+    9 message   \ "Fire is essentially composed of hotness and dryness. Air differs only from fire in that..."
     wait-message
     $F 7 fade
     wait-fade
     0 0.0 0.0 0.0 0.0 event-camera
     world-frozen state-flag-clear
-    4 message
+    4 message   \ "'Hotness and dryness form the element of fire' What could it mean?"
     wait-message
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -813,11 +699,11 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     10.0 0.0 self-turn-to-xz
     self-wait-done
     $D ebit? not if
-        1 message
+        1 message   \ "Any remaining life energy has been totally drained away. Did the statue suck its li..."
         wait-message
         $D ebit-set
     else
-        2 message
+        2 message   \ "Strange, but the expression on its face looks somehow... peaceful. Maybe it was her..."
         wait-message
         $D ebit-clear
     then
@@ -837,9 +723,8 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     $F message-param-room
     $F 1 item-give-count
     0 $F item-tab
-    0 $F9 $8C action-force
-    $83 $85 0.0 0.0 0.0 0 0 sound
-    $8012 message
+    item-fanfare
+    $8012 message   \ "You've obtained ."
     wait-message
     $903 self-anim
     self-wait-anim
@@ -852,20 +737,20 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     then
     1 self-scripted
     self-wait-done
-    0 camera-follow
+    fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    $8002 5 self-anim-9
+    $8002 5 self-anim-blend8
     self-frames-reset
     5 self-wait-frames
-    0 2 6 char-sound
+    fiona-who 2 6 char-sound
     $E 2 object-anim
     self-wait-anim
     0 self-noclip
     $17 ebit? not if
-        $FE action-end
-        $FE char-here? if
-            $FE 0 stalker-mode
+        stalker-who action-end
+        stalker-who char-here? if
+            stalker-who 0 stalker-command
         then
     then
     0 self-scripted
@@ -877,19 +762,19 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         self-wait-done
         $3C 32.0 20.63 90 $FFFF 5 self-move-to
         self-wait-done
-        $13 message
+        $13 message   \ "Huge spikes jut out from inside the iron maiden, rendering the device unusable as..."
         wait-message
     else
         stalkers-stay state-flag-set
         $19 ebit-clear
         1 self-scripted
-        0 9 char-file-load
+        fiona-who 9 char-file-load
         self-wait-done
         $3C 32.0 20.63 90 $FFFF 5 self-move-to
         self-wait-done
         1 self-noclip
-        0 char-file-use
-        $8000 5 self-anim-9
+        fiona-who char-file-use
+        $8000 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         2 0 $14 door-bits
@@ -897,30 +782,30 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         $E 0 object-anim
         self-frames-reset
         $24 self-wait-frames
-        0 2 6 char-sound
+        fiona-who 2 6 char-sound
         self-wait-anim
-        -1 self-move-16
+        -1 self-idle-anim
         0 self-noclip
         stalkers-stay state-flag-clear
         fiona-hidden state-flag-set
         $17 ebit-clear
         0 avoid-prompt
         $18 1 item-count? $19 1 item-count? or $1A 1 item-count? or $1B 1 item-count? or $1C 1 item-count? or if
-            0 3 6 char-sound
+            fiona-who 3 6 char-sound
         then
-        $FF 3 -1 char-camera
+        self-who 3 -1 char-camera
         begin
             0 2 pad? not if
                 $FF panic-stage? $17 ebit? or if
                     $FF panic-stage? not if
-                        0 $43 5 char-sound
+                        fiona-who $43 5 char-sound
                     then
                     ['] old-mansion-b1-3.act0E goto
                 else
-                    2 panic-grow
+                    2 panic-calm-in
                     6 fiona-calm
                     $1E fiona-recovery-lower
-                    $19 ebit? $FE char-here? not and if
+                    $19 ebit? stalker-who char-here? not and if
                         $19 ebit-clear
                         1 avoid-prompt
                     then
@@ -931,16 +816,16 @@ USING: engine actors messages story.state room-names story.words story.shared fl
                 true
             then
         until
-        $FE char-here? if
+        stalker-who char-here? if
             ['] old-mansion-b1-3.act0E goto
         then
-        0 camera-follow
+        fiona-who camera-follow
         fiona-hidden state-flag-clear
         1 self-noclip
-        $8001 5 self-anim-9
+        $8001 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
-        0 2 6 char-sound
+        fiona-who 2 6 char-sound
         $E 1 object-anim
         self-wait-anim
         0 self-noclip
@@ -953,12 +838,12 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    0 9 char-file-load
+    fiona-who 9 char-file-load
     5 9.83 27.45 0 $FFFF 5 self-move-to
     self-wait-done
-    0 char-file-use
+    fiona-who char-file-use
     $330 story-flag? not if
-        $8004 5 self-anim-9
+        $8004 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         $A 1 object-hidden
@@ -969,14 +854,14 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         $10 0 object-anim
         self-frames-reset
         $19 self-wait-frames
-        0 1 6 char-sound
+        fiona-who 1 6 char-sound
         self-frames-reset
         $37 self-wait-frames
-        0 0 6 char-sound
+        fiona-who 0 6 char-sound
         self-wait-anim
         $330 story-flag-set
     else
-        $8003 5 self-anim-9
+        $8003 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         $A 0 object-hidden
@@ -987,13 +872,13 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         $F 0 object-anim
         self-frames-reset
         $19 self-wait-frames
-        0 1 6 char-sound
+        fiona-who 1 6 char-sound
         self-frames-reset
         $37 self-wait-frames
-        0 0 6 char-sound
+        fiona-who 0 6 char-sound
         self-frames-reset
         5 self-wait-frames
-        0 7 6 char-sound
+        fiona-who 7 6 char-sound
         self-wait-anim
         $330 story-flag-clear
     then
@@ -1006,7 +891,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     self-wait-done
     110 self-turn-angle
     self-wait-done
-    $A message
+    $A message   \ "The oven burns an angry red. I'd rather not even think about the kind of things they b..."
     wait-message
     self-idle-or-end
 ;
@@ -1016,11 +901,11 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     90 self-turn-angle
     self-wait-done
     $C ebit? not if
-        $B message
+        $B message   \ "Is this a birdcage? It just seems too large to be a cage for birds."
         wait-message
         $C ebit-set
     else
-        $C message
+        $C message   \ "Could it have housed a person? No. No one could fit inside it."
         wait-message
         $C ebit-clear
     then
@@ -1031,7 +916,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    $D message
+    $D message   \ "There's a handle that winds the attached rope up. Looks like this was used as a stretc..."
     wait-message
     self-idle-or-end
 ;
@@ -1040,7 +925,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     self-wait-done
     -45 self-turn-angle
     self-wait-done
-    $E message
+    $E message   \ "Thin-bladed sabers line the wall. Several of them appear to be coated with rust and ca..."
     wait-message
     self-idle-or-end
 ;
@@ -1050,15 +935,15 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     -90 self-turn-angle
     self-wait-done
     $12 ebit? not if
-        $F message
+        $F message   \ "A circuit breaker."
         wait-message
         $12 ebit-set
     else
         10.0 10.0 0.0 self-look-at-point
         yield
-        $10 message
+        $10 message   \ "The end of the cord connects to that chair... Which can mean only one thing. This..."
         wait-message
-        $FF self-look-at
+        self-who self-look-at
         yield
     then
     self-idle-or-end
@@ -1071,7 +956,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     $A01 self-anim
     self-frames-reset
     self-wait-16
-    $12 message
+    $12 message   \ "Restraints, a whip, and various surgical instruments. Dried blood covers all of the s..."
     wait-message
     self-wait-anim
     self-idle-or-end
@@ -1082,14 +967,12 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         1 self-scripted
         things-clear
         0 counter-set
-        $FF panic-stage? if
-            3 panic-stage
-        then
-        0 0 $11 action-force
+        panic-eased
+        0 fiona-who $11 action-force
         1 self-scripted
         self-wait-done
-        $FE 0 char-heading-for? 0 exit-door-open? not and if
-            0 3 self-move-slot
+        stalker-who 0 char-heading-for? 0 exit-door-open? not and if
+            fiona-who 3 self-move-slot
             self-wait-done
         then
         $3C 32.0 20.63 90 $FFFF 5 self-move-to
@@ -1100,8 +983,8 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         again
     else
         self-wait-done
-        $FE 0 char-heading-for? 0 exit-door-open? not and if
-            0 3 self-move-slot
+        stalker-who 0 char-heading-for? 0 exit-door-open? not and if
+            fiona-who 3 self-move-slot
             self-wait-done
         then
         7 26.16 27.36 118 $FFFF 5 self-move-to
@@ -1109,12 +992,12 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         $1601 self-anim
         self-wait-anim
         $17 ebit-set
-        10 self-move-16
+        10 self-idle-anim
         begin
-            0 char-busy? while
+            fiona-who char-busy? while
             yield
         repeat
-        $FE 0 stalker-mode
+        stalker-who 0 stalker-command
     then
     self-idle-or-end
 ;
@@ -1128,50 +1011,22 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     $11 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     wait-fade
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     $A 1 object-hidden
     $B 1 object-hidden
     3 stalker-kind? $22 stalker-kind? or if
         3 4 0 char-model-op
     then
     $10 $50 movie-param
-    0 1 char-visible
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    fiona-who 1 char-visible
+    panic-eased
     $FFFF message-prepare
     1 result? if
         movie-loop
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        $F 1 fade
-        $A cutscene-control
-        begin
-            7 cutscene-control
-            $C cutscene-control
-            0 cutscene-control
-            4 cutscene-control
-            -1 result? not if
-                5 cutscene-mode? not 4 cutscene-mode? not and if
-                    yield
-                    false
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
+        scene-play-through
     then
     $2E resident-flag-set
     0 game-over-flag
@@ -1190,16 +1045,15 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         4 self-wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $26A story-flag-set
             5 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $903 self-anim
@@ -1221,17 +1075,12 @@ USING: engine actors messages story.state room-names story.words story.shared fl
 : old-mansion-b1-3.act14 ( -- )   \ 0040A980
     self-wait-done
     3 partner-load
-    2 char-unload
+    2 char-start
     $12 1 movie-play
     $11 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     $A 1 object-hidden
     $B 1 object-hidden
     $F 0 object-hidden
@@ -1239,63 +1088,18 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     $E 1 object-hidden
     3 4 0 char-model-op
     $10 $50 movie-param
-    0 1 char-visible
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    fiona-who 1 char-visible
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
-    0 0 char-visible
+    fiona-who 0 char-visible
     2 0 char-remove
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
@@ -1307,73 +1111,23 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     $10 0 object-hidden
     $E 1 object-hidden
     $11 3 $FF char-load
-    3 char-unload
+    3 char-start
     $F $44 fade
     5 0 movie-play
     4 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    scene-wait-ready
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
     3 0 char-remove
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 
@@ -1385,76 +1139,26 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     $10 0 object-hidden
     $E 1 object-hidden
     $11 3 $FF char-load
-    3 char-unload
+    3 char-start
     7 1 movie-play
     6 cutscene-start
     yield
     yield
-    2 cutscene-control
-    begin
-        3 cutscene-control
-        2 cutscene-mode? not while
-        yield
-    repeat
+    scene-wait-ready
     0 $F9 $13 action
-    $FF 1 char-visible
+    self-who 1 char-visible
     $10 $FF movie-param
-    $FF panic-stage? if
-        3 panic-stage
-    then
+    panic-eased
     $FFFF message-prepare
     1 result? if
-        6 cutscene-control
-        1.0 movie-volume
-        effects-arena-flip
-        yield
-        movie-skipped state-flag-clear
-        $F 1 fade
-        $A cutscene-control
-        begin
-            movie-skipped state-flag? not if
-                7 cutscene-control
-                cutscene-near-end? if
-                    $F 0 fade
-                then
-                $C cutscene-control
-                0 cutscene-control
-                4 cutscene-control
-                -1 result? not if
-                    5 cutscene-mode? not 4 cutscene-mode? not and if
-                        yield
-                        false
-                    else
-                        true
-                    then
-                else
-                    true
-                then
-            else
-                true
-            then
-        until
-        $FFFF message-close
-        $F9 action-end
-        $B cutscene-control
-        wait-fade
-        1 cutscene-control
-        world-held state-flag-set
-        effects-arena-flip
-        begin
-            movie-playing? while
-            yield
-        repeat
-        yield
-        pause-wanted state-flag-set
-        8 cutscene-control
+        scene-play
     then
-    $FF 0 char-visible
+    self-who 0 char-visible
     3 0 char-remove
     $80 exit-check
     events-held state-flag-clear
-    1 action-end
-    1 char-done
+    hewie-who action-end
+    hewie-who char-done
     self-idle-or-end
 ;
 

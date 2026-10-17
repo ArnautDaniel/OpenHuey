@@ -24,75 +24,39 @@ USING: room-names story.words story.shared ;
             $5F 0 259 4 8 -1 0 0.0 creature-place
         then
     then
-    1 12.4 17.3 -45.0 1 effect-86
+    1 12.4 17.3 -45.0 1 flame-in
     1 $2300 sound-volume
 ;
 
 : old-mansion-2f-10.char-enter ( -- )   \ 0041B1B0
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 2 2 char-camera
-                0 camera-follow
-            else
-                1 2 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            2 2 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 2 2 char-camera
-            0 camera-follow
-        else
-            1 2 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        2 2 player-camera
     then then
     0 2 2 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        1 1 player-camera
     then then
     1 1 1 area-camera
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        0 0 player-camera
     then then
     2 0 0 area-camera
 ;
@@ -111,82 +75,82 @@ USING: room-names story.words story.shared ;
     7 1 1 1 chars-area-camera
     8 0 0 1 chars-area-camera
     9 2 2 1 chars-area-camera
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         0 exit-prepare
     then
-    0 4 char-entered-area? if
+    fiona-who 4 char-entered-area? if
         1 exit-prepare
     then
-    0 5 char-entered-area? if
+    fiona-who 5 char-entered-area? if
         2 exit-prepare
     then
     1 5.8 0.0 15.45 $F 13 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 1 9 char-zone-bits? if
+            hewie-who 1 9 char-zone-bits? if
                 $1F 1 var-set
                 $1F 13.0 hewie-look-zone
             then
         then
     then
     2 -65.87 0.0 11.35 $B 15 0 zone
-    1 char-here? 2 game-mode? not and if
+    hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
-            1 2 9 char-zone-bits? if
+            hewie-who 2 9 char-zone-bits? if
                 $1F 2 var-set
                 $1F 15.0 hewie-look-zone
             then
         then
     then
     3 -66.99 0.0 -11.47 $B 15 0 zone
-    1 char-here? 2 game-mode? not and if
+    hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
-            1 3 9 char-zone-bits? if
+            hewie-who 3 9 char-zone-bits? if
                 $1F 3 var-set
                 $1F 15.0 hewie-look-zone
             then
         then
     then
     6 1 8 -4 0 zone-at-effect
-    0 6 3 char-zone-bits? 0 6 3 char-zone-bits-before? not and if
-        0 1 char-effect-moving
+    fiona-who 6 3 char-zone-bits? fiona-who 6 3 char-zone-bits-before? not and if
+        fiona-who 1 char-effect-moving
     then
-    1 6 3 char-zone-bits? 1 6 3 char-zone-bits-before? not and if
-        1 1 char-effect-moving
+    hewie-who 6 3 char-zone-bits? hewie-who 6 3 char-zone-bits-before? not and if
+        hewie-who 1 char-effect-moving
     then
-    $FE 6 3 char-zone-bits? $FE 6 3 char-zone-bits-before? not and if
-        $FE 1 char-effect-moving
+    stalker-who 6 3 char-zone-bits? stalker-who 6 3 char-zone-bits-before? not and if
+        stalker-who 1 char-effect-moving
     then
 ;
 
 : old-mansion-2f-10.phase2 ( -- )   \ 0041B370
     $233 story-flag? not if
         0 -10.5 0.0 -0.4 5 8 1 zone
-        $FF 0 char-in-zone? if
+        self-who 0 char-in-zone? if
             $233 story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
-            -10.5 0.0 -0.4 0 -2143272896 0 0.0 scene-effect-8C
+            -10.5 0.0 -0.4 0 -2143272896 0 0.0 shards-at
             $88 5 -10.5 0.0 -0.4 0 0 sound
             $40 $7B noise
             0 -10.5 1.0 -0.4 flicker-sprite
         then
     else $274 story-flag? not if
         0 0 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
+        fiona-who 0 3 char-zone-bits? if
             5 0 4 scene-change
         then
     then then
     4 -67.5 0.0 -11.5 8 10 0 zone
-    0 4 8 char-zone-bits? if
-        0 -67 -11 $3C char-faces-xz? if
+    fiona-who 4 8 char-zone-bits? if
+        fiona-who -67 -11 $3C char-faces-xz? if
             5 1 0 scene-change
         then
     then
     5 -67.5 0.0 11.5 8 10 0 zone
-    0 5 8 char-zone-bits? if
-        0 -67 11 $3C char-faces-xz? if
+    fiona-who 5 8 char-zone-bits? if
+        fiona-who -67 11 $3C char-faces-xz? if
             5 1 0 scene-change
         then
     then
@@ -208,16 +172,15 @@ USING: room-names story.words story.shared ;
         4 self-wait-frames
         $9B message-param-room
         $9B $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $274 story-flag-set
             0 effect-remove
             $9B 1 item-give-count
             0 $9B item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -228,7 +191,7 @@ USING: room-names story.words story.shared ;
 
 : old-mansion-2f-10.act01 ( -- )   \ 0041B520
     self-wait-done
-    0 4 8 char-zone-bits? if
+    fiona-who 4 8 char-zone-bits? if
         -67.5 -11.5 self-turn-to-xz
         self-wait-done
     else
@@ -240,10 +203,10 @@ USING: room-names story.words story.shared ;
     $28 self-wait-frames
     0 ebit? not if
         0 ebit-set
-        0 message
+        0 message   \ "A bronze statue with a cow-like head. My Greek mythology is kind of rusty, but I th..."
         wait-message
     else
-        1 message
+        1 message   \ "It looks like it could come to life at any second."
         wait-message
     then
     self-wait-anim

@@ -54,7 +54,7 @@ fvariable sw-dx  fvariable sw-dz
 \ Hewie (in state 0x7F, +0xF3564) within 5 of the spot by byte 3: 0 (-259.5, 190), 1 (-276, 160)
 \ (others: what the caller left)
 : front-garden-5.cond00? ( b0 -- flag )   \ (the spot: 0 (-259.5, 190), 1 (-276, 160))
-    1 char-here 0=  hewie-action $7F <> or if  drop false exit  then
+    1 char-here 0=  hewie-do $7F <> or if  drop false exit  then
     dup 1 u> if  drop true exit  then   \ (others: no distance - the original's zeros)
     0= if  -259.5e 190e  else  -276e 160e  then
     1 char-at 8 + sf@ f- fdup f*  fswap 1 char-at sf@ f- fdup f* f+ fsqrt 5e f< ;
@@ -96,7 +96,7 @@ fvariable sw-dx  fvariable sw-dz
 ;
 
 : front-garden-5.act09 ( -- )   \ 00406180
-    $FE camera-follow
+    stalker-who camera-follow
     1 ebit-clear
     $A 0 pvar? if
         0 chance? if
@@ -122,9 +122,9 @@ fvariable sw-dx  fvariable sw-dz
         1 ebit-clear
     then
     1 ebit? if
-        0 $FE $A action
+        0 stalker-who $A action
     else
-        $78 1 item-cooldown
+        $78 1 summoner-wait
     then
     $A pvar-inc
     exit
@@ -132,28 +132,16 @@ fvariable sw-dx  fvariable sw-dz
 
 : front-garden-5.char-enter ( -- )   \ 00405B80
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
-    $FE self-is? if
+    stalker-who self-is? if
         fiona-hidden state-flag? if
             2 ebit-set
             front-garden-5.act09
@@ -165,10 +153,10 @@ fvariable sw-dx  fvariable sw-dz
 
 : front-garden-5.phase1 ( -- )   \ 00405BD0
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             0 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
     1 0 0 1 chars-area-camera
@@ -178,73 +166,73 @@ fvariable sw-dx  fvariable sw-dz
     $C 1 1 1 chars-area-camera
     $D 1 1 1 chars-area-camera
     0 game-mode? if
-        1 char-here? 1 2 char-C4? not and if
-            0 char-unseen? not 1 char-unseen? not and if
-                0 -130 115 $32 char-faces-xz? -130 -10 115 point-on-camera? not and if
-                    1 3 char-in-area? if
+        hewie-who char-here? hewie-who 2 char-cond? not and if
+            fiona-who char-unseen? not hewie-who char-unseen? not and if
+                fiona-who -130 115 $32 char-faces-xz? -130 -10 115 point-on-camera? not and if
+                    hewie-who 3 char-in-area? if
                         35 fiona-started? if
-                            hewie-stays? if
-                                0 1 0 action
+                            hewie-may-break-off? if
+                                0 hewie-who 0 action
                             then
                         else 44 fiona-started? if
-                            0 3 char-in-area? not if
-                                hewie-stays? if
-                                    0 1 0 action
+                            fiona-who 3 char-in-area? not if
+                                hewie-may-break-off? if
+                                    0 hewie-who 0 action
                                 then
                             then
                         then then
-                    else 1 3 char-in-area? not if
+                    else hewie-who 3 char-in-area? not if
                         35 fiona-started? if
-                            hewie-stays? if
-                                0 1 5 action
+                            hewie-may-break-off? if
+                                0 hewie-who 5 action
                             then
                         else 44 fiona-started? if
-                            0 3 char-in-area? if
-                                hewie-stays? if
-                                    0 1 5 action
-                                then
-                            then
-                        then then
-                    then then
-                then
-                0 -180 180 $32 char-faces-xz? -180 5 180 point-on-camera? not and if
-                    1 4 char-in-area? not if
-                        35 fiona-started? if
-                            hewie-stays? if
-                                0 1 1 action
-                            then
-                        else 44 fiona-started? if
-                            0 4 char-in-area? if
-                                hewie-stays? if
-                                    0 1 1 action
-                                then
-                            then
-                        then then
-                    else 1 4 char-in-area? if
-                        35 fiona-started? if
-                            hewie-stays? if
-                                0 1 2 action
-                            then
-                        else 44 fiona-started? if
-                            0 4 char-in-area? not if
-                                hewie-stays? if
-                                    0 1 2 action
+                            fiona-who 3 char-in-area? if
+                                hewie-may-break-off? if
+                                    0 hewie-who 5 action
                                 then
                             then
                         then then
                     then then
                 then
-                0 -276 160 $1E char-faces-xz? -276 -10 160 point-on-camera? not and if
+                fiona-who -180 180 $32 char-faces-xz? -180 5 180 point-on-camera? not and if
+                    hewie-who 4 char-in-area? not if
+                        35 fiona-started? if
+                            hewie-may-break-off? if
+                                0 hewie-who 1 action
+                            then
+                        else 44 fiona-started? if
+                            fiona-who 4 char-in-area? if
+                                hewie-may-break-off? if
+                                    0 hewie-who 1 action
+                                then
+                            then
+                        then then
+                    else hewie-who 4 char-in-area? if
+                        35 fiona-started? if
+                            hewie-may-break-off? if
+                                0 hewie-who 2 action
+                            then
+                        else 44 fiona-started? if
+                            fiona-who 4 char-in-area? not if
+                                hewie-may-break-off? if
+                                    0 hewie-who 2 action
+                                then
+                            then
+                        then then
+                    then then
+                then
+                fiona-who -276 160 $1E char-faces-xz? -276 -10 160 point-on-camera? not and if
                     35 fiona-started? if
-                        hewie-stays? if
-                            0 1 3 action
+                        hewie-may-break-off? if
+                            0 hewie-who 3 action
                         then
                     then
                 then
-                0 -260 190 $1E char-faces-xz? -260 -10 190 point-on-camera? not and if
+                fiona-who -260 190 $1E char-faces-xz? -260 -10 190 point-on-camera? not and if
                     35 fiona-started? if
-                        hewie-stays? if
-                            0 1 4 action
+                        hewie-may-break-off? if
+                            0 hewie-who 4 action
                         then
                     then
                 then
@@ -253,15 +241,15 @@ fvariable sw-dx  fvariable sw-dz
     then
     5 -276.0 -10.0 160.0 5 15 0 zone
     4 -259.5 -10.0 190.0 5 15 0 zone
-    0 4 char-in-zone? if
+    fiona-who 4 char-in-zone? if
         0 $F1 $D action
     then
-    0 5 char-in-zone? if
+    fiona-who 5 char-in-zone? if
         0 $F1 $E action
     then
     $23E story-flag? not if
         3 -228.4 -10.0 103.2 $A 5 0 zone
-        1 3 3 char-zone-bits? if
+        hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
                 $19 574 var-set
                 $1A 575 var-set
@@ -270,27 +258,27 @@ fvariable sw-dx  fvariable sw-dz
                 $1D -9000 var-set
                 $1E 103200 var-set
                 $1F 3 var-set
-                0 1 $8B action
+                0 hewie-who $8B action
             then
         then
     then
     2 -97.0 -4.0 82.0 $E 20 0 zone
-    0 2 8 char-zone-bits? if
+    fiona-who 2 8 char-zone-bits? if
         1 front-garden-5.cmd02
     then
     6 -275.96 -10.0 159.38 $14 13 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 6 9 char-zone-bits? if
+            hewie-who 6 9 char-zone-bits? if
                 $1F 6 var-set
                 $1F 13.0 hewie-look-zone
             then
         then
     then
     7 -259.2 -10.0 189.64 $14 13 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 7 9 char-zone-bits? if
+            hewie-who 7 9 char-zone-bits? if
                 $1F 7 var-set
                 $1F 13.0 hewie-look-zone
             then
@@ -300,52 +288,52 @@ fvariable sw-dx  fvariable sw-dz
 
 : front-garden-5.phase2 ( -- )   \ 00405E30
     0 story-flag? if
-        0 9 char-in-area? if
-            $FE char-here? not if
+        fiona-who 9 char-in-area? if
+            stalker-who char-here? not if
                 5 7 5 scene-change
             else
-                $8016 examine-message
+                $8016 examine-message   \ "I have to get away! I don't have time for this!"
             then
         then
     then
     $23A story-flag? if
         $23B story-flag? not if
             1 0 5 5 0 zone-at-effect
-            0 1 3 char-zone-bits? if
+            fiona-who 1 3 char-zone-bits? if
                 5 $10 4 scene-change
             then
         then
     then
     $23E story-flag? $23F story-flag? not and if
         3 1 5 5 0 zone-at-effect
-        0 3 3 char-zone-bits? if
+        fiona-who 3 3 char-zone-bits? if
             5 $11 4 scene-change
         then
     then
-    0 $E char-in-area? 0 90 $3C char-heading? and if
+    fiona-who $E char-in-area? fiona-who 90 $3C char-heading? and if
         5 $12 0 scene-change
     then
     $212 story-flag? not if
         0 -14.0 -10.0 97.0 5 8 1 zone
-        $FF 0 char-in-zone? if
+        self-who 0 char-in-zone? if
             $212 story-flag-set
             0 2 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
-            -14.0 -10.0 97.0 0 -2143272896 0 0.0 scene-effect-8C
+            -14.0 -10.0 97.0 0 -2143272896 0 0.0 shards-at
             3 6 -14.0 -10.0 97.0 0 0 sound
             $40 $10A noise
             2 -14.0 -9.0 97.0 flicker-sprite
         then
     else $284 story-flag? not if
         0 2 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
+        fiona-who 0 3 char-zone-bits? if
             5 $13 4 scene-change
         then
     then then
     $2F5 story-flag? not if
         8 3 5 5 0 zone-at-effect
-        0 8 3 char-zone-bits? if
+        fiona-who 8 3 char-zone-bits? if
             5 $14 4 scene-change
         then
     then
@@ -448,7 +436,7 @@ fvariable sw-dx  fvariable sw-dz
         2 avoid-prompt
     then
     fiona-hidden state-flag-clear
-    0 camera-follow
+    fiona-who camera-follow
     stalkers-stay state-flag-set
     $C3 -67.3 79.93 89 $207 5 self-move-to
     self-wait-done
@@ -484,14 +472,14 @@ fvariable sw-dx  fvariable sw-dz
         0 2 pad? not if
             $FF panic-stage? 0 ebit? or if
                 $FF panic-stage? not if
-                    0 $43 5 char-sound
+                    fiona-who $43 5 char-sound
                 then
                 ['] front-garden-5.act08 goto
             else
-                2 panic-grow
+                2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                2 ebit? $FE char-here? not and if
+                2 ebit? stalker-who char-here? not and if
                     2 ebit-clear
                     1 avoid-prompt
                 then
@@ -499,8 +487,8 @@ fvariable sw-dx  fvariable sw-dz
             then
         else
             fiona-hidden state-flag-clear
-            0 camera-follow
-            $FE action-end
+            fiona-who camera-follow
+            stalker-who action-end
             2 game-mode? if
                 ['] front-garden-5.act08 goto
             then
@@ -524,12 +512,12 @@ fvariable sw-dx  fvariable sw-dz
     $1601 self-anim
     self-wait-anim
     0 ebit-set
-    10 self-move-16
+    10 self-idle-anim
     begin
-        0 char-busy? while
+        fiona-who char-busy? while
         yield
     repeat
-    $FE 0 stalker-mode
+    stalker-who 0 stalker-command
     self-idle-or-end
 ;
 
@@ -538,7 +526,7 @@ fvariable sw-dx  fvariable sw-dz
         1 front-garden-5.cond00? not while
         yield
     repeat
-    1 $6C 5 char-sound
+    hewie-who $6C 5 char-sound
     $23A story-flag? not if
         0 $F2 $F action
     then
@@ -552,21 +540,21 @@ fvariable sw-dx  fvariable sw-dz
         0 front-garden-5.cond00? not while
         yield
     repeat
-    1 $6C 5 char-sound
+    hewie-who $6C 5 char-sound
     0 0 front-garden-5.cmd00
     0 1 front-garden-5.cmd00
     self-idle-or-end
 ;
 
 : front-garden-5.act0D ( -- )   \ 00406250
-    0 $8F 5 char-sound
+    fiona-who $8F 5 char-sound
     0 2 front-garden-5.cmd00
     0 1 front-garden-5.cmd00
     self-idle-or-end
 ;
 
 : front-garden-5.act0E ( -- )   \ 00406270
-    0 $8F 5 char-sound
+    fiona-who $8F 5 char-sound
     1 2 front-garden-5.cmd00
     1 1 front-garden-5.cmd00
     self-idle-or-end
@@ -593,16 +581,15 @@ fvariable sw-dx  fvariable sw-dz
         4 self-wait-frames
         $72 message-param-room
         $72 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $23B story-flag-set
             0 effect-remove
             $72 1 item-give-count
             0 $72 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -622,16 +609,15 @@ fvariable sw-dx  fvariable sw-dz
         4 self-wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $23F story-flag-set
             1 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -648,16 +634,16 @@ fvariable sw-dx  fvariable sw-dz
     4 self-wait-frames
     $1200 self-anim
     self-wait-anim
-    0 0 6 char-sound
+    fiona-who 0 6 char-sound
     $1203 self-anim
     self-frames-reset
     self-wait-16
     $1202 self-anim
     self-wait-anim
-    -1 self-move-16
+    -1 self-idle-anim
     self-frames-reset
     7 self-wait-frames
-    0 message
+    0 message   \ "The hinge is rusted solid. Try as I may, I can't open this door."
     wait-message
     self-idle-or-end
 ;
@@ -673,16 +659,15 @@ fvariable sw-dx  fvariable sw-dz
         4 self-wait-frames
         $61 message-param-room
         $61 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $284 story-flag-set
             2 effect-remove
             $61 1 item-give-count
             0 $61 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -702,16 +687,15 @@ fvariable sw-dx  fvariable sw-dz
         4 self-wait-frames
         $90 message-param-room
         $90 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $2F5 story-flag-set
             3 effect-remove
             $90 1 item-give-count
             0 $90 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim

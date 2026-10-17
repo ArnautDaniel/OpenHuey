@@ -44,25 +44,13 @@ USING: room-names story.words story.shared flag-names story.clock ;
 
 : off-map-e9.char-enter ( -- )   \ 0044A380
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 -1 char-camera
-                0 camera-follow
-            else
-                1 0 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 -1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 -1 char-camera
-            0 camera-follow
-        else
-            1 0 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 -1 player-camera
     then then
     0 0 -1 area-camera
 ;
@@ -76,32 +64,32 @@ USING: room-names story.words story.shared flag-names story.clock ;
     8 2 0 1 chars-area-camera
     9 0 -1 1 chars-area-camera
     $2E 3 pvar? if
-        0 $C char-entered-area? if
+        fiona-who $C char-entered-area? if
             $1E chance? if
                 0 $F8 0 action
             then
         then
-        0 $C char-left-area? if
+        fiona-who $C char-left-area? if
             $1E chance? if
                 0 $F8 0 action
             then
         then
-        0 $D char-entered-area? if
+        fiona-who $D char-entered-area? if
             $1E chance? if
                 0 $F7 0 action
             then
         then
-        0 $D char-left-area? if
+        fiona-who $D char-left-area? if
             $1E chance? if
                 0 $F7 0 action
             then
         then
-        0 $E char-entered-area? if
+        fiona-who $E char-entered-area? if
             $1E chance? if
                 0 $F6 0 action
             then
         then
-        0 $E char-left-area? if
+        fiona-who $E char-left-area? if
             $1E chance? if
                 0 $F5 0 action
             then
@@ -119,13 +107,11 @@ USING: room-names story.words story.shared flag-names story.clock ;
         then
     then
     1 ebit? not if
-        0 $10 char-in-area? if
+        fiona-who $10 char-in-area? if
             1 ebit-set
-            $FF panic-stage? if
-                3 panic-stage
-            then
-            0 0 1 action-force
-            0 1 2 action-force
+            panic-eased
+            0 fiona-who 1 action-force
+            0 hewie-who 2 action-force
         then
     then
 ;

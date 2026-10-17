@@ -23,106 +23,70 @@ USING: room-names story.words story.shared ;
 : lake-pathway-1.char-enter ( -- )   \ 00441560
     $8E story-flag? not $94 story-flag? or if
         hewie-controlled? not if
-            0 self-is? 0 exit-taken? and if
-                0 0 char-to-exit
-                hewie-controlled? not if
-                    0 1 1 char-camera
-                    0 camera-follow
-                else
-                    1 1 1 char-camera
-                    1 camera-follow
-                then
+            fiona-who self-is? 0 exit-taken? and if
+                fiona-who 0 char-to-exit
+                1 1 player-camera
             then
-        else 1 self-is? 0 exit-taken? and if
-            1 0 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        else hewie-who self-is? 0 exit-taken? and if
+            hewie-who 0 char-to-exit
+            1 1 player-camera
         then then
         0 1 1 area-camera
     else
         hewie-controlled? not if
-            0 self-is? 0 exit-taken? and if
-                0 0 char-to-exit
-                hewie-controlled? not if
-                    0 0 0 char-camera
-                    0 camera-follow
-                else
-                    1 0 0 char-camera
-                    1 camera-follow
-                then
+            fiona-who self-is? 0 exit-taken? and if
+                fiona-who 0 char-to-exit
+                0 0 player-camera
             then
-        else 1 self-is? 0 exit-taken? and if
-            1 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        else hewie-who self-is? 0 exit-taken? and if
+            hewie-who 0 char-to-exit
+            0 0 player-camera
         then then
         0 0 0 area-camera
     then
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        0 0 player-camera
     then then
     1 0 0 area-camera
 ;
 
 : lake-pathway-1.phase1 ( -- )   \ 00441620
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             0 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
     hewie-controlled? not if
-        0 1 char-in-area? 0 char-busy? not and if
+        fiona-who 1 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 1 char-in-area? 1 char-busy? not and if
+    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then
-    0 2 char-entered-area? if
+    fiona-who 2 char-entered-area? if
         0 exit-prepare
     then
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
     $8E story-flag? not if
         1 -4.8 38.0 -171.89 $35 15 0 zone
-        2 ebit? not 1 char-here? and 1 0 char-C4? and if
+        2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
-                    1 1 9 char-zone-bits? if
+                    hewie-who 1 9 char-zone-bits? if
                         2 ebit-set
                         $1E chance? if
                             $1F 1 var-set
-                            0 1 $88 action
+                            0 hewie-who $88 action
                         then
                     then
                 then
@@ -133,18 +97,18 @@ USING: room-names story.words story.shared ;
 
 : lake-pathway-1.phase2 ( -- )   \ 004416A0
     $8E story-flag? if
-        0 4 char-in-area? 0 0 $32 char-heading? and if
+        fiona-who 4 char-in-area? fiona-who 0 $32 char-heading? and if
             5 0 0 scene-change
         then
-        0 5 char-in-area? 0 90 $32 char-heading? and if
+        fiona-who 5 char-in-area? fiona-who 90 $32 char-heading? and if
             5 0 0 scene-change
         then
-    else 0 6 char-in-area? 0 0 $32 char-heading? and if
+    else fiona-who 6 char-in-area? fiona-who 0 $32 char-heading? and if
         5 1 0 scene-change
     then then
     $2E0 story-flag? not if
         0 0 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
+        fiona-who 0 3 char-zone-bits? if
             5 2 4 scene-change
         then
     then
@@ -153,18 +117,18 @@ USING: room-names story.words story.shared ;
 : lake-pathway-1.act00 ( -- )   \ 004416F0
     self-wait-done
     0 ebit? not if
-        0 4 char-in-area? if
-            0 message
+        fiona-who 4 char-in-area? if
+            0 message   \ "His limbs are twisted into unnatural positions. It looks so painful... But I gu..."
             $A01 self-anim
             self-wait-anim
         else
             180 self-turn-angle
             self-wait-done
-            1 message
+            1 message   \ "No one could withstand a fall like that. No one."
             $A00 self-anim
             self-wait-anim
         then
-        -1 self-move-16
+        -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
         wait-message
@@ -172,7 +136,7 @@ USING: room-names story.words story.shared ;
     else
         $900 self-anim
         self-wait-anim
-        2 message
+        2 message   \ "His skin... It's so dry and leathery. This body... There is something that just doe..."
         wait-message
         $901 self-anim
         self-wait-anim
@@ -185,14 +149,14 @@ USING: room-names story.words story.shared ;
     self-wait-done
     1 ebit? not if
         1 ebit-set
-        3 message
+        3 message   \ "The path has collapsed... So, all of this was on top of a lake."
         wait-message
     else
         1 ebit-clear
         $A02 self-anim
         self-frames-reset
         $28 self-wait-frames
-        4 message
+        4 message   \ "There's a light coming from the other side of the lake. I've got to find a way to g..."
         wait-message
         self-wait-anim
     then
@@ -210,16 +174,15 @@ USING: room-names story.words story.shared ;
         4 self-wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $2E0 story-flag-set
             0 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim

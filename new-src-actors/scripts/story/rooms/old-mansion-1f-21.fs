@@ -57,94 +57,46 @@ USING: room-names story.words story.shared ;
 
 : old-mansion-1f-21.char-enter ( -- )   \ 00439C00
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 2 1 char-camera
-                0 camera-follow
-            else
-                1 2 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            2 1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 2 1 char-camera
-            0 camera-follow
-        else
-            1 2 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        2 1 player-camera
     then then
     0 2 1 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 3 -1 char-camera
-                0 camera-follow
-            else
-                1 3 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            3 -1 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 3 -1 char-camera
-            0 camera-follow
-        else
-            1 3 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        3 -1 player-camera
     then then
     1 3 -1 area-camera
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 0 -1 char-camera
-                0 camera-follow
-            else
-                1 0 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            0 -1 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 0 -1 char-camera
-            0 camera-follow
-        else
-            1 0 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        0 -1 player-camera
     then then
     2 0 -1 area-camera
     hewie-controlled? not if
-        0 self-is? 3 exit-taken? and if
-            0 3 char-to-exit
-            hewie-controlled? not if
-                0 1 0 char-camera
-                0 camera-follow
-            else
-                1 1 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 3 exit-taken? and if
+            fiona-who 3 char-to-exit
+            1 0 player-camera
         then
-    else 1 self-is? 3 exit-taken? and if
-        1 3 char-to-exit
-        hewie-controlled? not if
-            0 1 0 char-camera
-            0 camera-follow
-        else
-            1 1 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 3 exit-taken? and if
+        hewie-who 3 char-to-exit
+        1 0 player-camera
     then then
     3 1 0 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         3 exit-taken? if
             2 map-page
         then
@@ -159,17 +111,17 @@ USING: room-names story.words story.shared ;
         1 exit-check
     then
     hewie-controlled? not if
-        0 2 char-in-area? 0 char-busy? not and if
+        fiona-who 2 char-in-area? fiona-who char-busy? not and if
             2 exit-check
         then
-    else 1 2 char-in-area? 1 char-busy? not and if
+    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
         2 exit-check
     then then
     hewie-controlled? not if
-        0 3 char-in-area? 0 char-busy? not and if
+        fiona-who 3 char-in-area? fiona-who char-busy? not and if
             3 exit-check
         then
-    else 1 3 char-in-area? 1 char-busy? not and if
+    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
         3 exit-check
     then then
     $A 0 -1 1 chars-area-camera
@@ -178,45 +130,45 @@ USING: room-names story.words story.shared ;
     $D 2 1 1 chars-area-camera
     $E 2 1 1 chars-area-camera
     $F 3 -1 1 chars-area-camera
-    0 4 char-entered-area? if
+    fiona-who 4 char-entered-area? if
         0 exit-prepare
     then
-    0 6 char-entered-area? if
+    fiona-who 6 char-entered-area? if
         1 exit-prepare
     then
-    0 5 char-entered-area? 0 7 char-entered-area? or 0 8 char-entered-area? or if
+    fiona-who 5 char-entered-area? fiona-who 7 char-entered-area? or fiona-who 8 char-entered-area? or if
         2 exit-prepare
     then
-    0 9 char-entered-area? if
+    fiona-who 9 char-entered-area? if
         3 exit-prepare
     then
-    0 9 char-entered-area? if
+    fiona-who 9 char-entered-area? if
         2 map-page
     then
-    0 9 char-left-area? if
+    fiona-who 9 char-left-area? if
         1 map-page
     then
-    0 6 char-entered-area? if
+    fiona-who 6 char-entered-area? if
         $1C 3 1 char-load
     then
-    0 7 char-entered-area? if
+    fiona-who 7 char-entered-area? if
         3 0 char-remove
     then
-    0 4 char-entered-area? if
+    fiona-who 4 char-entered-area? if
         $1C 3 0 char-load
     then
-    0 5 char-entered-area? if
+    fiona-who 5 char-entered-area? if
         3 0 char-remove
     then
     1 19.93 0.0 -73.33 $D 10 0 zone
-    6 ebit? not 1 char-here? and 1 0 char-C4? and if
+    6 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
-                1 1 9 char-zone-bits? if
+                hewie-who 1 9 char-zone-bits? if
                     6 ebit-set
                     $1E chance? if
                         $1F 1 var-set
-                        0 1 $89 action
+                        0 hewie-who $89 action
                     then
                 then
             then
@@ -224,36 +176,36 @@ USING: room-names story.words story.shared ;
     then
     $2CE story-flag? not if
         2 6.4 0.0 -132.4 5 8 1 zone
-        $FF 2 char-in-zone? if
+        self-who 2 char-in-zone? if
             $2CE story-flag-set
             0 3 $8000000 nav-group
             2 0 $14 door-bits
             3 1 $14 door-bits
-            6.4 0.0 -132.4 0 -2145378272 0 0.0 scene-effect-8C
+            6.4 0.0 -132.4 0 -2145378272 0 0.0 shards-at
             $88 5 6.4 0.0 -132.4 0 0 sound
             $40 $100 noise
         then
     then
     $2CF story-flag? not if
         3 -63.9 0.0 -147.4 5 8 1 zone
-        $FF 3 char-in-zone? if
+        self-who 3 char-in-zone? if
             $2CF story-flag-set
             0 2 $8000000 nav-group
             4 0 $14 door-bits
             5 1 $14 door-bits
-            -63.9 0.0 -147.4 0 -2145378272 0 0.0 scene-effect-8C
+            -63.9 0.0 -147.4 0 -2145378272 0 0.0 shards-at
             $88 5 -63.9 0.0 -147.4 0 0 sound
             $40 $112 noise
         then
     then
     $2D0 story-flag? not if
         4 -68.8 0.0 -156.4 5 8 1 zone
-        $FF 4 char-in-zone? if
+        self-who 4 char-in-zone? if
             $2D0 story-flag-set
             0 1 $8000000 nav-group
             6 0 $14 door-bits
             7 1 $14 door-bits
-            -68.8 0.0 -156.4 0 -2145378272 0 0.0 scene-effect-8C
+            -68.8 0.0 -156.4 0 -2145378272 0 0.0 shards-at
             $88 5 -68.8 0.0 -156.4 0 0 sound
             $40 $115 noise
         then
@@ -262,25 +214,25 @@ USING: room-names story.words story.shared ;
 
 : old-mansion-1f-21.phase2 ( -- )   \ 00439F10
     -2147483646 scene-request? if
-        0 0 char-group-bit4? if
+        fiona-who 0 char-before-door? if
             5 0 1 scene-change
         then
     then
     $21E story-flag? not if
         0 20.0 0.0 -72.5 5 8 1 zone
-        $FF 0 char-in-zone? if
+        self-who 0 char-in-zone? if
             $21E story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
-            20.0 0.0 -72.5 0 -2145378272 0 0.0 scene-effect-8C
+            20.0 0.0 -72.5 0 -2145378272 0 0.0 shards-at
             $88 5 20.0 0.0 -72.5 0 0 sound
             $40 $35 noise
             0 20.0 1.0 -72.5 flicker-sprite
         then
     else $28E story-flag? not if
         0 0 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
+        fiona-who 0 3 char-zone-bits? if
             5 1 4 scene-change
         then
     then then
@@ -293,12 +245,12 @@ USING: room-names story.words story.shared ;
 
 : old-mansion-1f-21.act00 ( -- )   \ 0043A020
     self-wait-done
-    $FE self-touching? not if
+    stalker-who self-touching? not if
         $44 self-through-door
         self-wait-done
-        $FE self-touching? not if
+        stalker-who self-touching? not if
             $FF panic-stage? not if
-                0 $44 char-not-at-door? if
+                fiona-who $44 char-not-at-door? if
                     $609 self-anim
                 else
                     $608 self-anim
@@ -306,10 +258,10 @@ USING: room-names story.words story.shared ;
                 self-frames-reset
                 $14 self-wait-frames
                 $FF panic-stage? not if
-                    0 $72 5 char-sound
+                    fiona-who $72 5 char-sound
                     $44 door-unlock
-                    $8008 message
-                    20 self-move-16
+                    $8008 message   \ "You unlocked the door."
+                    20 self-idle-anim
                     self-frames-reset
                     $14 self-wait-frames
                     wait-message
@@ -331,16 +283,15 @@ USING: room-names story.words story.shared ;
         4 self-wait-frames
         $71 message-param-room
         $71 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $28E story-flag-set
             0 effect-remove
             $71 1 item-give-count
             0 $71 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim

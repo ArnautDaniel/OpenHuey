@@ -28,7 +28,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-1f-16.act07 ( -- )   \ 003FC590
     2 self-is? 6 self-is? or 7 self-is? or if
-        $FE 1 char-file-load
+        stalker-who 1 char-file-load
     then
     1 ebit-clear
     8 0 pvar? if
@@ -55,9 +55,9 @@ USING: room-names story.words story.shared flag-names ;
         1 ebit-clear
     then
     1 ebit? if
-        0 $FE 5 action
+        0 stalker-who 5 action
     else
-        $78 1 item-cooldown
+        $78 1 summoner-wait
     then
     8 pvar-inc
     exit
@@ -65,34 +65,22 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-1f-16.char-enter ( -- )   \ 003FC0A0
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 1 -1 char-camera
-                0 camera-follow
-            else
-                1 1 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            1 -1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 1 -1 char-camera
-            0 camera-follow
-        else
-            1 1 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        1 -1 player-camera
     then then
     0 1 -1 area-camera
-    $FE self-is? if
+    stalker-who self-is? if
         fiona-hidden state-flag? if
             4 ebit-set
             $30A story-flag? 2 creature-action? not and if
                 2 self-is? 6 self-is? or 7 self-is? or if
-                    $78 1 item-cooldown
-                    0 $FE 6 action
+                    $78 1 summoner-wait
+                    0 stalker-who 6 action
                 else
                     castle-1f-16.act07
                 then
@@ -155,28 +143,28 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-1f-16.phase2 ( -- )   \ 003FC220
-    0 8 $32 char-faces-area? if
+    fiona-who 8 $32 char-faces-area? if
         5 $84 3 scene-change
     then
-    0 9 char-in-area? 0 60 $5A char-heading? and if
+    fiona-who 9 char-in-area? fiona-who 60 $5A char-heading? and if
         5 2 0 scene-change
     then
-    0 $A char-in-area? 0 45 $3C char-heading? and if
-        $FE char-here? not if
+    fiona-who $A char-in-area? fiona-who 45 $3C char-heading? and if
+        stalker-who char-here? not if
             5 3 5 scene-change
         else
-            $8016 examine-message
+            $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
     then
-    0 $B char-in-area? 0 -72 $32 char-heading? and if
+    fiona-who $B char-in-area? fiona-who -72 $32 char-heading? and if
         5 8 0 scene-change
     then
-    0 $C char-in-area? 0 0 $32 char-heading? and if
+    fiona-who $C char-in-area? fiona-who 0 $32 char-heading? and if
         5 9 0 scene-change
     then
     $226 story-flag? not if
         0 1 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
+        fiona-who 0 3 char-zone-bits? if
             5 1 4 scene-change
         then
     then
@@ -212,16 +200,15 @@ USING: room-names story.words story.shared flag-names ;
         4 self-wait-frames
         $92 message-param-room
         $92 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $226 story-flag-set
             1 effect-remove
             $92 1 item-give-count
             0 $92 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $903 self-anim
@@ -240,7 +227,7 @@ USING: room-names story.words story.shared flag-names ;
     9 0 pvar? 9 1 pvar? or if
         $30A story-flag? not if
             $30A story-flag-set
-            0 0 6 char-sound
+            fiona-who 0 6 char-sound
             $309 story-flag? not if
                 3 $86 0.0 0.0 0.0 0 0 sound
             else
@@ -249,7 +236,7 @@ USING: room-names story.words story.shared flag-names ;
             $40 7 noise
             1 noise-level
         else
-            0 2 6 char-sound
+            fiona-who 2 6 char-sound
             1 6 sound-stop
             $30A story-flag-clear
             0 noise-level
@@ -258,10 +245,10 @@ USING: room-names story.words story.shared flag-names ;
             1 self-scripted
             $5A threat-add
             1 $FF 8 rumble
-            0 $43 5 char-sound
+            fiona-who $43 5 char-sound
             $F04 self-anim
             self-wait-anim
-            -1 self-move-16
+            -1 self-idle-anim
             self-frames-reset
             7 self-wait-frames
             $902 self-anim
@@ -288,15 +275,15 @@ USING: room-names story.words story.shared flag-names ;
         2 avoid-prompt
     then
     1 self-scripted
-    0 camera-follow
+    fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    0 $7E 5 char-sound
+    fiona-who $7E 5 char-sound
     $8003 $A self-anim-blend
     self-wait-anim
     0 self-noclip
     0 ebit? not if
-        $FE action-end
+        stalker-who action-end
     then
     0 self-scripted
     self-idle-or-end
@@ -306,15 +293,15 @@ USING: room-names story.words story.shared flag-names ;
     stalkers-stay state-flag-set
     4 ebit-clear
     1 self-scripted
-    0 0 char-file-load
+    fiona-who 0 char-file-load
     self-wait-done
-    0 char-file-use
+    fiona-who char-file-use
     $CC $8004 5 -4.7 -39.3 90 self-walk-anim
     self-wait-done
     1 self-noclip
     1 self-scripted
-    0 $7E 5 char-sound
-    $8005 $A self-anim-9
+    fiona-who $7E 5 char-sound
+    $8005 $A self-anim-blend8
     self-wait-anim
     $8001 $A self-anim-blend
     0 self-noclip
@@ -322,35 +309,35 @@ USING: room-names story.words story.shared flag-names ;
     fiona-hidden state-flag-set
     0 ebit-clear
     0 avoid-prompt
-    $FF 3 -1 char-camera
+    self-who 3 -1 char-camera
     begin
         0 2 pad? not if
             $FF panic-stage? 0 ebit? or if
                 $FF panic-stage? not if
-                    0 $43 5 char-sound
+                    fiona-who $43 5 char-sound
                 then
                 ['] castle-1f-16.act04 goto
             else
-                2 panic-grow
+                2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                4 ebit? $FE char-here? not and if
+                4 ebit? stalker-who char-here? not and if
                     4 ebit-clear
                     1 avoid-prompt
                 then
                 yield
             then
         else
-            $FE char-here? if
+            stalker-who char-here? if
                 ['] castle-1f-16.act04 goto
             then
-            0 camera-follow
+            fiona-who camera-follow
             fiona-hidden state-flag-clear
             1 self-noclip
-            $8002 5 self-anim-9
+            $8002 5 self-anim-blend8
             self-frames-reset
             5 self-wait-frames
-            0 $7E 5 char-sound
+            fiona-who $7E 5 char-sound
             self-wait-anim
             0 self-noclip
             0 self-scripted
@@ -361,14 +348,14 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-1f-16.act05 ( -- )   \ 003FC4F0
     self-wait-done
-    $FE 0 char-heading-for? 0 exit-door-open? not and if
-        0 3 self-move-slot
+    stalker-who 0 char-heading-for? 0 exit-door-open? not and if
+        fiona-who 3 self-move-slot
         self-wait-done
     then
     $CE -12.0 -37.0 90 $FFFF 5 self-move-to
     self-wait-done
     2 self-is? 6 self-is? or 7 self-is? or if
-        $FE char-file-use
+        stalker-who char-file-use
         $8000 $A self-anim-blend
         self-frames-reset
         $1E self-wait-frames
@@ -379,19 +366,19 @@ USING: room-names story.words story.shared flag-names ;
         self-wait-anim
         0 ebit-set
     then
-    10 self-move-16
+    10 self-idle-anim
     begin
-        0 char-busy? while
+        fiona-who char-busy? while
         yield
     repeat
-    $FE 0 stalker-mode
+    stalker-who 0 stalker-command
     self-idle-or-end
 ;
 
 : castle-1f-16.act06 ( -- )   \ 003FC540
     self-wait-done
-    $FE 0 char-heading-for? 0 exit-door-open? not and if
-        0 3 self-move-slot
+    stalker-who 0 char-heading-for? 0 exit-door-open? not and if
+        fiona-who 3 self-move-slot
         self-wait-done
     then
     7 14.0 18.0 120 $FFFF 5 self-move-to
@@ -399,12 +386,12 @@ USING: room-names story.words story.shared flag-names ;
     $602 self-anim
     self-frames-reset
     $12 self-wait-frames
-    $FE 2 6 char-sound
+    stalker-who 2 6 char-sound
     1 6 sound-stop
     $30A story-flag-clear
     0 noise-level
     9 pvar-inc
-    $FE 3 stalker-mode
+    stalker-who 3 stalker-command
     0 self-anim
     self-wait-anim
     self-frames-reset
@@ -416,7 +403,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -145 self-turn-angle
     self-wait-done
-    0 message
+    0 message   \ "It would be nice to freshen up a bit... But there's a crack in this mirror and I can't..."
     wait-message
     self-idle-or-end
 ;
@@ -427,18 +414,18 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     $402 self-anim
     self-wait-anim
-    -1 self-move-16
+    -1 self-idle-anim
     self-frames-reset
     7 self-wait-frames
     $A00 self-anim
     self-frames-reset
     self-wait-16
     3 ebit? not if
-        1 message
+        1 message   \ "A landscape painting composed entirely of the color red. It seems quite out of plac..."
         wait-message
         3 ebit-set
     else
-        2 message
+        2 message   \ "The color bears a remarkable resemblance to blood. But... surely this is just red p..."
         wait-message
         3 ebit-clear
     then

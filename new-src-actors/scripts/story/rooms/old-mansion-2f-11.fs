@@ -67,47 +67,23 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
 
 : old-mansion-2f-11.char-enter ( -- )   \ 00421CD0
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        1 1 player-camera
     then then
     0 1 1 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        1 1 player-camera
     then then
     1 1 1 area-camera
 ;
@@ -117,48 +93,48 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
         0 exit-check
     then
     hewie-controlled? not if
-        0 1 char-in-area? 0 char-busy? not and if
+        fiona-who 1 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 1 char-in-area? 1 char-busy? not and if
+    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then
     4 1 1 -1 chars-area-camera
     5 0 0 1 chars-area-camera
     6 2 -1 1 chars-area-camera
     7 1 1 1 chars-area-camera
-    0 2 char-entered-area? if
+    fiona-who 2 char-entered-area? if
         0 exit-prepare
     then
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
     0 3.0 0.0 -35.5 9 15 0 zone
     1 -5.75 0.0 -33.25 9 15 0 zone
     2 -14.5 0.0 -31.0 9 15 0 zone
     $72 story-flag? not if
-        0 0 char-in-zone? 0 1 char-in-zone? or 0 2 char-in-zone? or if
+        fiona-who 0 char-in-zone? fiona-who 1 char-in-zone? or fiona-who 2 char-in-zone? or if
             0 $F1 $B action
         then
     then
     4 21.19 0.0 -20.13 $C 10 0 zone
-    1 ebit? not 1 char-here? and 1 0 char-C4? and if
+    1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
-                1 4 9 char-zone-bits? if
+                hewie-who 4 9 char-zone-bits? if
                     1 ebit-set
                     $1E chance? if
                         $1F 4 var-set
-                        0 1 $89 action
+                        0 hewie-who $89 action
                     then
                 then
             then
         then
     then
     5 19.29 0.0 -1.64 $14 22 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 5 9 char-zone-bits? if
+            hewie-who 5 9 char-zone-bits? if
                 $1F 5 var-set
                 $1F 22.0 hewie-look-zone
             then
@@ -187,50 +163,50 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
 
 : old-mansion-2f-11.phase2 ( -- )   \ 00421EF0
     -2147483646 scene-request? if
-        0 0 char-group-bit4? if
+        fiona-who 0 char-before-door? if
             5 0 1 scene-change
         then
     then
     $72 story-flag? $53 story-flag? not and if
         3 0 5 5 0 zone-at-effect
-        0 3 2 char-zone-bits? if
+        fiona-who 3 2 char-zone-bits? if
             5 1 4 scene-change
         then
     then
-    0 8 char-in-area? 0 90 $32 char-heading? and if
+    fiona-who 8 char-in-area? fiona-who 90 $32 char-heading? and if
         5 $84 3 scene-change
     then
-    0 9 char-in-area? 0 60 $32 char-heading? and if
+    fiona-who 9 char-in-area? fiona-who 60 $32 char-heading? and if
         5 4 0 scene-change
     then
-    0 $A char-in-area? 0 -10 $32 char-heading? and if
+    fiona-who $A char-in-area? fiona-who -10 $32 char-heading? and if
         5 5 0 scene-change
     then
-    0 $B char-in-area? 0 90 $32 char-heading? and if
+    fiona-who $B char-in-area? fiona-who 90 $32 char-heading? and if
         5 7 0 scene-change
     then
-    0 $C char-in-area? 0 0 $32 char-heading? and if
+    fiona-who $C char-in-area? fiona-who 0 $32 char-heading? and if
         5 7 0 scene-change
     then
-    0 $D char-in-area? 0 -80 $32 char-heading? and if
+    fiona-who $D char-in-area? fiona-who -80 $32 char-heading? and if
         5 7 0 scene-change
     then
-    0 $E char-in-area? 0 90 $32 char-heading? and if
+    fiona-who $E char-in-area? fiona-who 90 $32 char-heading? and if
         5 7 0 scene-change
     then
-    0 $10 char-in-area? 0 -45 $32 char-heading? and if
+    fiona-who $10 char-in-area? fiona-who -45 $32 char-heading? and if
         5 7 0 scene-change
     then
     $26C story-flag? not if
         6 1 5 5 0 zone-at-effect
-        0 6 3 char-zone-bits? if
+        fiona-who 6 3 char-zone-bits? if
             5 6 4 scene-change
         then
     then
-    0 $11 char-in-area? 0 -45 $32 char-heading? and if
+    fiona-who $11 char-in-area? fiona-who -45 $32 char-heading? and if
         5 9 0 scene-change
     then
-    0 $12 char-in-area? 0 -45 $32 char-heading? and if
+    fiona-who $12 char-in-area? fiona-who -45 $32 char-heading? and if
         5 $A 0 scene-change
     then
 ;
@@ -241,12 +217,12 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
 
 : old-mansion-2f-11.act00 ( -- )   \ 00422000
     self-wait-done
-    $FE self-touching? not if
+    stalker-who self-touching? not if
         $67 self-through-door
         self-wait-done
-        $FE self-touching? not if
+        stalker-who self-touching? not if
             $FF panic-stage? not if
-                0 $67 char-not-at-door? if
+                fiona-who $67 char-not-at-door? if
                     $609 self-anim
                 else
                     $608 self-anim
@@ -254,10 +230,10 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
                 self-frames-reset
                 $14 self-wait-frames
                 $FF panic-stage? not if
-                    0 $72 5 char-sound
+                    fiona-who $72 5 char-sound
                     $67 door-unlock
-                    $8008 message
-                    20 self-move-16
+                    $8008 message   \ "You unlocked the door."
+                    20 self-idle-anim
                     self-frames-reset
                     $14 self-wait-frames
                     wait-message
@@ -281,9 +257,8 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     $D message-param-room
     $D 1 item-give-count
     0 $D item-tab
-    0 $F9 $8C action-force
-    $83 $85 0.0 0.0 0.0 0 0 sound
-    $8012 message
+    item-fanfare
+    $8012 message   \ "You've obtained ."
     wait-message
     $901 self-anim
     self-wait-anim
@@ -308,13 +283,13 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     5.19 -34.0 self-turn-to-xz
     self-wait-done
     0 ebit? not $72 story-flag? or if
-        0 message
+        0 message   \ "There is a rusty stepladder here. It really is in bad shape. If I were to try climb..."
         wait-message
         0 ebit-set
     else
         $A00 self-anim
         self-wait-anim
-        1 message
+        1 message   \ "There is something on top of the stepladder... I bet if I shake it a bit, I can get..."
         wait-message
         0 ebit-clear
     then
@@ -328,16 +303,16 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     -20 self-turn-angle
     self-wait-done
     $331 story-flag? not if
-        2 message
+        2 message   \ "Mountains of books have been piled up here. Are these journals?"
         wait-message
         $331 story-flag-set
     else
-        3 message
+        3 message   \ "The dates on these journals are just too spread out for the same man to have writte..."
         wait-message
     then
     $F 6 fade
     wait-fade
-    4 message
+    4 message   \ "February 8th, 1784 I have decided to summon that renowned master alchemist to the castl..."
     wait-message
     $F 7 fade
     wait-fade
@@ -358,16 +333,15 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
         4 self-wait-frames
         $92 message-param-room
         $92 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $26C story-flag-set
             1 effect-remove
             $92 1 item-give-count
             0 $92 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -378,22 +352,22 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
 
 : old-mansion-2f-11.act07 ( -- )   \ 00422190
     self-wait-done
-    0 $B char-in-area? if
+    fiona-who $B char-in-area? if
         180 self-turn-angle
         self-wait-done
-    else 0 $C char-in-area? if
+    else fiona-who $C char-in-area? if
         0 self-turn-angle
         self-wait-done
-    else 0 $D char-in-area? if
+    else fiona-who $D char-in-area? if
         160 self-turn-angle
         self-wait-done
-    else 0 $E char-in-area? if
+    else fiona-who $E char-in-area? if
         180 self-turn-angle
         self-wait-done
-    else 0 $F char-in-area? if
+    else fiona-who $F char-in-area? if
         0 self-turn-angle
         self-wait-done
-    else 0 $10 char-in-area? if
+    else fiona-who $10 char-in-area? if
         -90 self-turn-angle
         self-wait-done
     then then then then then then
@@ -401,15 +375,15 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     self-frames-reset
     $28 self-wait-frames
     1 0 var? if
-        5 message
+        5 message   \ "What an incredible number of books."
         wait-message
         1 var-inc
     else 1 1 var? if
-        6 message
+        6 message   \ "They are written in various languages. Whomever read all of these must have had a s..."
         wait-message
         1 var-inc
     else 1 2 var? if
-        7 message
+        7 message   \ "Hmpf! What am I doing? It's not like I can even read the titles or anything."
         wait-message
         1 0 var-set
     then then then
@@ -429,17 +403,17 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     self-wait-done
     -90 self-turn-angle
     self-wait-done
-    8 message
+    8 message   \ "Something is written here..."
     wait-message
     $F 6 fade
     wait-fade
-    $A message
+    $A message   \ "Some combinations can be used to aid animals as well. Here are a few: Esca Slightly re..."
     wait-message
     $F 7 fade
     wait-fade
     $63 subscreen-bit? not $65 subscreen-bit? not or if
         $1D01 self-anim
-        $B message
+        $B message   \ "I wonder what these combinations are supposed to mean?"
         wait-message
         self-wait-anim
         $63 subscreen-bit
@@ -456,17 +430,17 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     self-wait-done
     -90 self-turn-angle
     self-wait-done
-    8 message
+    8 message   \ "Something is written here..."
     wait-message
     $F 6 fade
     wait-fade
-    9 message
+    9 message   \ "The grand refining process can also yield several precarious items as well. I have list..."
     wait-message
     $F 7 fade
     wait-fade
     $46 subscreen-bit? not $47 subscreen-bit? not or if
         $1D01 self-anim
-        $B message
+        $B message   \ "I wonder what these combinations are supposed to mean?"
         wait-message
         self-wait-anim
         $46 subscreen-bit

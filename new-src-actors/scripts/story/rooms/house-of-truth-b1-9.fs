@@ -11,59 +11,47 @@ USING: room-names story.words story.shared flag-names ;
 : house-of-truth-b1-9.enter ( -- )   \ 00437D60
     1 0 8 nav-group
     1 2 $5000000 nav-group
-    $FE $F3 1 door-lock-for
-    1 $F3 1 door-lock-for
+    stalker-who $F3 1 door-lock-for
+    hewie-who $F3 1 door-lock-for
 ;
 
 : house-of-truth-b1-9.char-enter ( -- )   \ 00437D80
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 2 2 char-camera
-                0 camera-follow
-            else
-                1 2 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            2 2 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 2 2 char-camera
-            0 camera-follow
-        else
-            1 2 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        2 2 player-camera
     then then
     1 2 2 area-camera
 ;
 
 : house-of-truth-b1-9.phase1 ( -- )   \ 00437DC0
     0 ebit? not if
-        0 0 char-in-area? if
+        fiona-who 0 char-in-area? if
             0 ebit-set
-            0 0 char-action? if
-                0 0 0 action-force
+            fiona-who 0 char-action? if
+                0 fiona-who 0 action-force
             else
-                1 0 0 action-force
+                1 fiona-who 0 action-force
             then
         then
     then
     hewie-controlled? not if
-        0 1 char-in-area? 0 char-busy? not and if
+        fiona-who 1 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 1 char-in-area? 1 char-busy? not and if
+    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then
     8 0 0 1 chars-area-camera
     9 2 2 1 chars-area-camera
-    0 4 char-entered-area? if
+    fiona-who 4 char-entered-area? if
         $87 room-preload
     then
-    0 5 char-entered-area? if
+    fiona-who 5 char-entered-area? if
         1 exit-prepare
     then
     house-of-truth-b1-9.cmd00
@@ -78,7 +66,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     wait-fade
     world-held state-flag-set
-    $FE action-end
+    stalker-who action-end
     1 summon-take
     0 room-frames-set
     $31 1.0 0 bgm

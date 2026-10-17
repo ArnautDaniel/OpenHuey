@@ -21,15 +21,9 @@ USING: actors messages items room-names story.words story.shared flag-names ;
     room-sounds
     $36 1.0 0 bgm
     $FE exit-taken? if
-        0 $60 -90 char-to-tri-facing
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
-        0 0 0 action
+        fiona-who $60 -90 char-to-tri-facing
+        0 0 player-camera
+        0 fiona-who 0 action
         0 off-map-27.cmd00
         0 0 var? not if
             0 -27.75 10.0 5.68 flicker-sprite
@@ -47,34 +41,34 @@ USING: actors messages items room-names story.words story.shared flag-names ;
 ;
 
 : off-map-27.phase2 ( -- )   \ 0041C420
-    0 0 char-in-area? 0 45 $32 char-heading? and if
+    fiona-who 0 char-in-area? fiona-who 45 $32 char-heading? and if
         5 1 0 scene-change
     then
-    0 1 char-in-area? 0 -90 $37 char-heading? and if
+    fiona-who 1 char-in-area? fiona-who -90 $37 char-heading? and if
         5 5 0 scene-change
     then
-    0 2 char-in-area? 0 90 $37 char-heading? and if
+    fiona-who 2 char-in-area? fiona-who 90 $37 char-heading? and if
         $AE story-flag? not if
             5 3 0 scene-change
         else
             5 6 0 scene-change
         then
     then
-    0 1 2 char-zone-bits? if
-        0 -50 $3C char-heading? if
+    fiona-who 1 2 char-zone-bits? if
+        fiona-who -50 $3C char-heading? if
             5 2 0 scene-change
         then
     then
-    0 2 2 char-zone-bits? if
-        0 -45 $3C char-heading? if
+    fiona-who 2 2 char-zone-bits? if
+        fiona-who -45 $3C char-heading? if
             5 4 0 scene-change
         then
     then
-    0 4 char-in-area? 0 45 $32 char-heading? and if
+    fiona-who 4 char-in-area? fiona-who 45 $32 char-heading? and if
         5 $A 0 scene-change
     then
     $AE story-flag? if
-        0 3 char-in-area? 0 90 $37 char-heading? and if
+        fiona-who 3 char-in-area? fiona-who 90 $37 char-heading? and if
             5 7 0 scene-change
         then
     then
@@ -89,7 +83,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
         $89 story-flag? $34B story-flag? not and if
             $F 6 fade
             wait-fade
-            $40AB message
+            $40AB message   \ "'Costumes' You are now able to change costumes. Change into alternate costu..."
             wait-message
             $F 7 fade
             wait-fade
@@ -97,7 +91,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
             $AB message-param-room
             $AB 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
-            $801B message
+            $801B message   \ "has been saved to your file."
             wait-message
         then
     then
@@ -130,16 +124,16 @@ USING: actors messages items room-names story.words story.shared flag-names ;
     180 self-turn-angle
     self-wait-done
     $34B story-flag? not if
-        $40 message
+        $40 message   \ "A chest used to store clothes."
         wait-message
     else $26 3 pvar? if
-        $57 message
+        $57 message   \ "Is this the outfit I was wearing while in the castle? Change into this outfit? YE..."
         wait-message
         0 answer? if
             $F $44 fade
             wait-fade
             world-held state-flag-set
-            0 0 6 char-sound
+            fiona-who 0 6 char-sound
             self-frames-reset
             $3C self-wait-frames
             new-game-sounds state-flag-set
@@ -151,19 +145,19 @@ USING: actors messages items room-names story.words story.shared flag-names ;
             begin
                 yield
                 4 sound-bank-loaded? until
-            0 3 -0.912 -13.497 180 char-to-xz
+            fiona-who 3 -0.912 -13.497 180 char-to-xz
             camera-restart
             $F $41 fade
             wait-fade
         then
     else
-        $58 message
+        $58 message   \ "The 'Under the Scalpel' outfit that I just removed is here. Change into this outf..."
         wait-message
         0 answer? if
             $F $44 fade
             wait-fade
             world-held state-flag-set
-            0 0 6 char-sound
+            fiona-who 0 6 char-sound
             self-frames-reset
             $3C self-wait-frames
             new-game-sounds state-flag-set
@@ -175,7 +169,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
             begin
                 yield
                 4 sound-bank-loaded? until
-            0 3 -0.912 -13.497 180 char-to-xz
+            fiona-who 3 -0.912 -13.497 180 char-to-xz
             camera-restart
             $F $41 fade
             wait-fade
@@ -201,9 +195,8 @@ USING: actors messages items room-names story.words story.shared flag-names ;
             0 ebit? if
                 $91 message-param-room
                 0 $91 item-tab
-                0 $F9 $8C action-force
-                $83 $85 0.0 0.0 0.0 0 0 sound
-                $8011 message
+                item-fanfare
+                $8011 message   \ "You've obtained ."
                 wait-message
             then
             1 ebit? if
@@ -211,20 +204,19 @@ USING: actors messages items room-names story.words story.shared flag-names ;
                 self-wait-16
                 $92 message-param-room
                 0 $92 item-tab
-                0 $F9 $8C action-force
-                $83 $85 0.0 0.0 0.0 0 0 sound
-                $8011 message
+                item-fanfare
+                $8011 message   \ "You've obtained ."
                 wait-message
             then
             2 ebit-set
             $903 self-anim
             self-wait-anim
         else
-            7 message
+            7 message   \ "There is nothing here."
             wait-message
         then
     else
-        6 message
+        6 message   \ "What a strange machine... I wonder what they use it for?"
         wait-message
     then
     self-idle-or-end
@@ -233,11 +225,11 @@ USING: actors messages items room-names story.words story.shared flag-names ;
 : off-map-27.act05 ( -- )   \ 0041C640
     1 self-scripted
     self-wait-done
-    8 message
+    8 message   \ "There is something written here."
     wait-message
     $F 6 fade
     wait-fade
-    9 message
+    9 message   \ "'Variatio Machina' By using a medallions, one can actually transform items into new thi..."
     wait-message
     $F 7 fade
     wait-fade
@@ -250,7 +242,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
     180 self-turn-angle
     self-wait-done
     1 20.0 10.0 0.0 0.0 event-camera
-    $41 message
+    $41 message   \ "A chest used to store clothes. Change clothes? YES NO"
     wait-message
     0 answer? if
         $FF 1.0 0 bgm
@@ -261,7 +253,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
         repeat
         0 0.0 0.0 0.0 0.0 event-camera
         $26 $28 pvars-equal? not $27 $29 pvars-equal? not or if
-            0 0 6 char-sound
+            fiona-who 0 6 char-sound
         then
         $26 $28 pvars-equal? not if
             $26 1 pvar? if
@@ -320,14 +312,14 @@ USING: actors messages items room-names story.words story.shared flag-names ;
             begin
                 yield
                 4 sound-bank-loaded? until
-            -1 self-move-16
+            -1 self-idle-anim
             self-frames-reset
             7 self-wait-frames
         then
         $27 $29 pvars-equal? not if
             1 char-in
-            1 char-here? if
-                1 2 char-C4? if
+            hewie-who char-here? if
+                hewie-who 2 char-cond? if
                     $1002 hewie-anim-set
                 else
                     1 hewie-anim-set
@@ -354,11 +346,11 @@ USING: actors messages items room-names story.words story.shared flag-names ;
     self-wait-done
     $368 story-flag? not $369 story-flag? not and $36A story-flag? not and $36B story-flag? not and if
         $1D01 self-anim
-        $A message
+        $A message   \ "What on earth could this machine be for? There's a slot on it..."
         wait-message
         self-wait-anim
     else
-        $B message
+        $B message   \ "This must be a machine that dispenses something if a certain Plate-key is inserted."
         wait-message
     then
     self-idle-or-end
@@ -370,12 +362,12 @@ USING: actors messages items room-names story.words story.shared flag-names ;
     self-wait-done
     $902 self-anim
     self-wait-anim
-    0 4 6 char-sound
+    fiona-who 4 6 char-sound
     self-frames-reset
     4 self-wait-frames
     $903 self-anim
     self-wait-anim
-    0 5 6 char-sound
+    fiona-who 5 6 char-sound
     1 -11.0 3.0 -17.0 flicker-sprite
     self-frames-reset
     self-wait-16
@@ -389,17 +381,15 @@ USING: actors messages items room-names story.words story.shared flag-names ;
             $75 message-param-room
             $75 1 item-give-count
             0 $75 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8012 message
+            item-fanfare
+            $8012 message   \ "You've obtained ."
             wait-message
         else
             $88 message-param-room
             $88 1 item-give-count
             0 $88 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8012 message
+            item-fanfare
+            $8012 message   \ "You've obtained ."
             wait-message
         then
         $368 story-flag-set
@@ -408,17 +398,15 @@ USING: actors messages items room-names story.words story.shared flag-names ;
             $75 message-param-room
             $75 1 item-give-count
             0 $75 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8012 message
+            item-fanfare
+            $8012 message   \ "You've obtained ."
             wait-message
         else
             $8C message-param-room
             $8C 1 item-give-count
             0 $8C item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8012 message
+            item-fanfare
+            $8012 message   \ "You've obtained ."
             wait-message
         then
         $369 story-flag-set
@@ -427,17 +415,15 @@ USING: actors messages items room-names story.words story.shared flag-names ;
             $75 message-param-room
             $75 1 item-give-count
             0 $75 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8012 message
+            item-fanfare
+            $8012 message   \ "You've obtained ."
             wait-message
         else
             $83 message-param-room
             $83 1 item-give-count
             0 $83 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8012 message
+            item-fanfare
+            $8012 message   \ "You've obtained ."
             wait-message
         then
         $36A story-flag-set
@@ -446,17 +432,15 @@ USING: actors messages items room-names story.words story.shared flag-names ;
             $75 message-param-room
             $75 1 item-give-count
             0 $75 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8012 message
+            item-fanfare
+            $8012 message   \ "You've obtained ."
             wait-message
         else
             $89 message-param-room
             $89 1 item-give-count
             0 $89 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8012 message
+            item-fanfare
+            $8012 message   \ "You've obtained ."
             wait-message
         then
         $36B story-flag-set
@@ -472,7 +456,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
     self-wait-done
     $902 self-anim
     self-wait-anim
-    0 4 6 char-sound
+    fiona-who 4 6 char-sound
     self-frames-reset
     4 self-wait-frames
     $903 self-anim
@@ -480,7 +464,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
     self-frames-reset
     $1E self-wait-frames
     $1D01 self-anim
-    $C message
+    $C message   \ "Nothing happened. Nothing at all."
     wait-message
     self-wait-anim
     self-idle-or-end
@@ -492,17 +476,17 @@ USING: actors messages items room-names story.words story.shared flag-names ;
     self-wait-done
     8.0 -4.0 self-turn-to-xz
     self-wait-done
-    $D message
+    $D message   \ "The book looks almost archaic in nature. Wait, something is written here..."
     wait-message
     $F 6 fade
     wait-fade
-    $E message
+    $E message   \ "Quies Restores a small amount of stamina. Mundus Calms the nerves of those who use it."
     wait-message
     $F 7 fade
     wait-fade
     $42 subscreen-bit? not $44 subscreen-bit? not or if
         $1D01 self-anim
-        $F message
+        $F message   \ "I wonder what these combinations are supposed to mean?"
         wait-message
         self-wait-anim
         $42 subscreen-bit

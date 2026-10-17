@@ -52,50 +52,26 @@ USING: engine common actors messages room-names story.words story.shared ;
 
 : old-mansion-b1-7.char-enter ( -- )   \ 00429210
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        1 1 player-camera
     then then
     1 1 1 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         0 exit-taken? if
             1 map-page
         then
@@ -115,16 +91,16 @@ USING: engine common actors messages room-names story.words story.shared ;
     7 2 2 1 chars-area-camera
     8 1 1 1 chars-area-camera
     9 2 2 1 chars-area-camera
-    0 2 char-entered-area? if
+    fiona-who 2 char-entered-area? if
         0 exit-prepare
     then
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    0 $B char-entered-area? if
+    fiona-who $B char-entered-area? if
         1 map-page
     then
-    0 $B char-left-area? if
+    fiona-who $B char-left-area? if
         0 map-page
     then
     0 3 var? if
@@ -141,20 +117,20 @@ USING: engine common actors messages room-names story.words story.shared ;
                 then then then
             then
             1 20 var? if
-                1 char-here? if
-                    $14 1 100 chars-within? if
+                hewie-who char-here? if
+                    $14 hewie-who 100 chars-within? if
                         $14 0.0 hewie-look-char
                     then
                 then
             else 1 21 var? if
-                1 char-here? if
-                    $15 1 100 chars-within? if
+                hewie-who char-here? if
+                    $15 hewie-who 100 chars-within? if
                         $15 0.0 hewie-look-char
                     then
                 then
             else 1 22 var? if
-                1 char-here? if
-                    $16 1 100 chars-within? if
+                hewie-who char-here? if
+                    $16 hewie-who 100 chars-within? if
                         $16 0.0 hewie-look-char
                     then
                 then
@@ -163,7 +139,7 @@ USING: engine common actors messages room-names story.words story.shared ;
     then
     $2A5 story-flag? not if
         0 8.95 0.0 11.89 $A 5 0 zone
-        1 0 3 char-zone-bits? if
+        hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
                 $19 677 var-set
                 $1A 678 var-set
@@ -172,19 +148,19 @@ USING: engine common actors messages room-names story.words story.shared ;
                 $1D 1000 var-set
                 $1E 11890 var-set
                 $1F 0 var-set
-                0 1 $8B action
+                0 hewie-who $8B action
             then
         then
     then
 ;
 
 : old-mansion-b1-7.phase2 ( -- )   \ 004293E0
-    0 $A char-in-area? if
+    fiona-who $A char-in-area? if
         5 4 0 scene-change
     then
     $2A5 story-flag? $2A6 story-flag? not and if
         0 0 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
+        fiona-who 0 3 char-zone-bits? if
             5 3 4 scene-change
         then
     then
@@ -209,7 +185,7 @@ USING: engine common actors messages room-names story.words story.shared ;
 
 : old-mansion-b1-7.act00 ( -- )   \ 00429430
     $14 3 $FF char-load
-    3 char-unload
+    3 char-start
     $14 char-activate
     $14 $9000 1 0 char-anim-hold
     $14 37.5 12.5 72.5 0 char-to-xyz
@@ -221,7 +197,7 @@ USING: engine common actors messages room-names story.words story.shared ;
 
 : old-mansion-b1-7.act01 ( -- )   \ 00429460
     $15 4 $FF char-load
-    4 char-unload
+    4 char-start
     $15 char-activate
     $15 $9000 1 0 char-anim-hold
     $15 37.5 12.5 72.5 0 char-to-xyz
@@ -233,7 +209,7 @@ USING: engine common actors messages room-names story.words story.shared ;
 
 : old-mansion-b1-7.act02 ( -- )   \ 00429490
     $16 5 $FF char-load
-    5 char-unload
+    5 char-start
     self-frames-reset
     $A self-wait-frames
     $16 char-activate
@@ -256,16 +232,15 @@ USING: engine common actors messages room-names story.words story.shared ;
         4 self-wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $2A6 story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -278,8 +253,8 @@ USING: engine common actors messages room-names story.words story.shared ;
     self-wait-done
     1 self-anim
     self-wait-anim
-    -1 self-move-16
-    0 message
+    -1 self-idle-anim
+    0 message   \ "An aquarium? Schools of strange fish glide through the water."
     self-frames-reset
     7 self-wait-frames
     wait-message

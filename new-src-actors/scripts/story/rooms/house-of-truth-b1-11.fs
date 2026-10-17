@@ -9,110 +9,86 @@ USING: room-names story.words story.shared ;
 
 : house-of-truth-b1-11.char-enter ( -- )   \ 00443560
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        1 1 player-camera
     then then
     2 1 1 area-camera
     hewie-controlled? not if
-        0 self-is? 3 exit-taken? and if
-            0 3 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 3 exit-taken? and if
+            fiona-who 3 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 3 exit-taken? and if
-        1 3 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 3 exit-taken? and if
+        hewie-who 3 char-to-exit
+        1 1 player-camera
     then then
     3 1 1 area-camera
 ;
 
 : house-of-truth-b1-11.phase1 ( -- )   \ 004435E0
     hewie-controlled? not if
-        0 2 char-in-area? 0 char-busy? not and if
+        fiona-who 2 char-in-area? fiona-who char-busy? not and if
             2 exit-check
         then
-    else 1 2 char-in-area? 1 char-busy? not and if
+    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
         2 exit-check
     then then
     hewie-controlled? not if
-        0 3 char-in-area? 0 char-busy? not and if
+        fiona-who 3 char-in-area? fiona-who char-busy? not and if
             3 exit-check
         then
-    else 1 3 char-in-area? 1 char-busy? not and if
+    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
         3 exit-check
     then then
-    0 6 char-entered-area? if
+    fiona-who 6 char-entered-area? if
         2 exit-prepare
     then
-    0 7 char-entered-area? if
+    fiona-who 7 char-entered-area? if
         3 exit-prepare
     then
     house-of-truth-b1-11.cmd00
-    $A8 story-flag? $A9 story-flag? not and 0 $B char-entered-area? and if
-        $FE char-here? not if
+    $A8 story-flag? $A9 story-flag? not and fiona-who $B char-entered-area? and if
+        stalker-who char-here? not if
             $A9 story-flag-set
-            $FE action-end
+            stalker-who action-end
             1 summon-take
         else
             0 ebit-set
         then
     then
-    0 ebit? $FE 0 char-action? and if
-        0 $FE 0 action
+    0 ebit? stalker-who 0 char-action? and if
+        0 stalker-who 0 action
     then
-    $AA story-flag? $AB story-flag? not and 0 $D char-left-area? and if
-        $FE char-here? not if
+    $AA story-flag? $AB story-flag? not and fiona-who $D char-left-area? and if
+        stalker-who char-here? not if
             $AB story-flag-set
             $FE $99 310 2 stalker-to-room
-            $FE 0 stalker-mode
-            0 $FE 1 action
+            stalker-who 0 stalker-command
+            0 stalker-who 1 action
         else
             1 ebit-set
         then
     then
-    1 ebit? $FE 0 char-action? and if
-        0 $FE 2 action
+    1 ebit? stalker-who 0 char-action? and if
+        0 stalker-who 2 action
     then
 ;
 
 : house-of-truth-b1-11.phase5 ( -- )   \ 00443680
     0 ebit? $A9 story-flag? not and if
         $A9 story-flag-set
-        $FE action-end
+        stalker-who action-end
         1 summon-take
     then
     1 ebit? $AB story-flag? not and if
         $AB story-flag-set
         $FE $99 310 2 stalker-to-room
-        $FE 0 stalker-mode
+        stalker-who 0 stalker-command
     then
 ;
 
@@ -123,21 +99,21 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     $A9 story-flag-set
     0 ebit-clear
-    $FE action-end
+    stalker-who action-end
     1 summon-take
     self-idle-or-end
 ;
 
 : house-of-truth-b1-11.act01 ( -- )   \ 004436D0
     1 self-scripted
-    $FF 1 char-visible
+    self-who 1 char-visible
     self-wait-done
-    $FF 0 char-visible
-    $FE $136 0 char-to-tri-facing
-    $FE 1 1 char-camera
+    self-who 0 char-visible
+    stalker-who $136 0 char-to-tri-facing
+    stalker-who 1 1 char-camera
     $1305 0 self-anim-blend
     self-wait-anim
-    $FE 0 stalker-mode
+    stalker-who 0 stalker-command
     1 ebit-clear
     $AB story-flag-set
     0 self-scripted
@@ -149,7 +125,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     $1304 self-anim
     self-wait-anim
-    $FF 1 char-visible
+    self-who 1 char-visible
     ['] house-of-truth-b1-11.act01 goto
 ;
 

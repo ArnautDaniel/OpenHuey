@@ -9,12 +9,11 @@ USING: actors messages vectors ;
 32 constant #effects    \ the room's effect slots (RoomEffects: 0x20)
 
 \ ---- the characters the scripts know, by slot: Fiona, Hewie, the stalker, the event figures
-\ (3..5); in a script by id - 0 Fiona, 1 Hewie, the script's own, the stalker, the figures by
-\ the id they were loaded as ----
+\ (3..5); in a script by id - story.words' fiona-who, hewie-who, self-who, stalker-who, the
+\ figures by the id they were loaded as ----
 enum: char-slot#  fiona-cs hewie-cs stalker-cs first-figure-cs ;
 6 constant #chars
 : figure-cs? ( cs -- flag )  first-figure-cs #chars within ;
-$FF constant self-who   $FE constant stalker-who
 
 \ ---- the scripts: a room's phases - entered; each frame, before the commands and after them;
 \ the frame's end; leaving; left (the next room in); a character entering ----

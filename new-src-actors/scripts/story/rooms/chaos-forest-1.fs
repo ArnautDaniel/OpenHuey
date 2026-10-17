@@ -11,7 +11,7 @@ USING: room-names story.words story.shared flag-names ;
     1 0 var-set
     3 $1C char-loaded? if
         $1C 3 $FF char-load
-        3 char-unload
+        3 char-start
         $1C char-activate
         $1C 22.0 -16.0 145.0 0 char-to-xyz
         $1C $9008 1 0 char-anim-hold
@@ -27,68 +27,44 @@ USING: room-names story.words story.shared flag-names ;
 
 : chaos-forest-1.char-enter ( -- )   \ 0041DD90
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 3 3 char-camera
-                0 camera-follow
-            else
-                1 3 3 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            3 3 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 3 3 char-camera
-            0 camera-follow
-        else
-            1 3 3 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        3 3 player-camera
     then then
     0 3 3 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        0 0 player-camera
     then then
     1 0 0 area-camera
 ;
 
 : chaos-forest-1.phase1 ( -- )   \ 0041DE10
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             0 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
     $86 story-flag? not if
-        0 1 char-in-area? if
-            0 0 0 action
+        fiona-who 1 char-in-area? if
+            0 fiona-who 0 action
         then
     else hewie-controlled? not if
-        0 1 char-in-area? 0 char-busy? not and if
+        fiona-who 1 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 1 char-in-area? 1 char-busy? not and if
+    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then then
     2 0 0 1 chars-area-camera
@@ -104,14 +80,14 @@ USING: room-names story.words story.shared flag-names ;
     $C 5 5 1 chars-area-camera
     $D 4 4 1 chars-area-camera
     $E 5 -1 1 chars-area-camera
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         0 exit-prepare
     then
-    0 2 char-entered-area? if
+    fiona-who 2 char-entered-area? if
         1 exit-prepare
     then
     0 22.0 -16.0 145.0 5 10 1 zone
-    $FF 0 char-in-zone? if
+    self-who 0 char-in-zone? if
         0 ebit-set
     else
         0 ebit-clear
@@ -130,23 +106,23 @@ USING: room-names story.words story.shared flag-names ;
         then
     then
     1 22.39 -16.0 144.46 $15 15 0 zone
-    1 ebit? not 1 char-here? and 1 0 char-C4? and if
+    1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
-                1 1 9 char-zone-bits? if
+                hewie-who 1 9 char-zone-bits? if
                     1 ebit-set
                     $50 chance? if
                         $1F 1 var-set
-                        0 1 $8A action
+                        0 hewie-who $8A action
                     then
                 then
             then
         then
     then
     1 22.39 -16.0 144.46 $15 15 0 zone
-    1 char-here? 1 game-mode? and if
+    hewie-who char-here? 1 game-mode? and if
         hewie-can-command? if
-            1 1 9 char-zone-bits? if
+            hewie-who 1 9 char-zone-bits? if
                 $1F 1 var-set
                 $1F 15.0 hewie-look-zone
             then
@@ -163,7 +139,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : chaos-forest-1.phase2 ( -- )   \ 0041DF70
     $336 story-flag? not if
-        0 $F char-in-area? 0 90 $32 char-heading? and if
+        fiona-who $F char-in-area? fiona-who 90 $32 char-heading? and if
             5 2 4 scene-change
         then
     then
@@ -180,7 +156,7 @@ USING: room-names story.words story.shared flag-names ;
         yield
     repeat
     $E 3 $FF char-load
-    $F 4 char-load-2
+    $F 4 figure-load
     $F $44 fade
     self-wait-done
     wait-fade
@@ -192,7 +168,7 @@ USING: room-names story.words story.shared flag-names ;
 : chaos-forest-1.act01 ( -- )   \ 0041DFC0
     3 $1C char-loaded? not if
         $1C 3 $FF char-load
-        3 char-unload
+        3 char-start
         $1C char-activate
         $1C 22.0 -16.0 145.0 0 char-to-xyz
         $1C $9008 1 0 char-anim-hold
@@ -218,12 +194,12 @@ USING: room-names story.words story.shared flag-names ;
                 else
                     $F threat-raise
                 then
-                $FE 0 stalker-mode
+                stalker-who 0 stalker-command
                 $1C 0 6 char-sound
             else
                 $1C 1 6 char-sound
             then
-            0 $8F 5 char-sound
+            fiona-who $8F 5 char-sound
             $1C $9009 0 3 char-anim-hold
             $1C wait-char-anim
             $1C $9008 0 3 char-anim-hold
@@ -257,9 +233,8 @@ USING: room-names story.words story.shared flag-names ;
     $1F message-param-room
     $1F 1 item-give-count
     0 $1F item-tab
-    0 $F9 $8C action-force
-    $83 $85 0.0 0.0 0.0 0 0 sound
-    $8012 message
+    item-fanfare
+    $8012 message   \ "You've obtained ."
     wait-message
     $903 self-anim
     self-wait-anim

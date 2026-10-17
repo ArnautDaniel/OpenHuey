@@ -22,25 +22,13 @@ USING: room-names story.words story.shared ;
 
 : castle-b1-3.char-enter ( -- )   \ 003FA7C0
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
 ;
@@ -58,13 +46,13 @@ USING: room-names story.words story.shared ;
 : castle-b1-3.phase2 ( -- )   \ 003FA820
     $2D3 story-flag? not if
         0 0 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
+        fiona-who 0 3 char-zone-bits? if
             5 0 4 scene-change
         then
     then
     $3E story-flag? not if
         1 1 5 5 0 zone-at-effect
-        0 1 3 char-zone-bits? if
+        fiona-who 1 3 char-zone-bits? if
             5 1 4 scene-change
         then
     then
@@ -91,9 +79,8 @@ USING: room-names story.words story.shared ;
         $81 message-param-room
         $81 1 item-give-count
         0 $81 item-tab
-        0 $F9 $8C action-force
-        $83 $85 0.0 0.0 0.0 0 0 sound
-        $8012 message
+        item-fanfare
+        $8012 message   \ "You've obtained ."
         wait-message
         $903 self-anim
         self-wait-anim
@@ -109,16 +96,15 @@ USING: room-names story.words story.shared ;
             4 self-wait-frames
             $75 message-param-room
             $75 $63 item-count? if
-                $8010 message
+                $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
                 wait-message
             else
                 $2D3 story-flag-set
                 0 effect-remove
                 $75 1 item-give-count
                 0 $75 item-tab
-                0 $F9 $8C action-force
-                $83 $85 0.0 0.0 0.0 0 0 sound
-                $8011 message
+                item-fanfare
+                $8011 message   \ "You've obtained ."
                 wait-message
             then
             $903 self-anim
@@ -141,9 +127,8 @@ USING: room-names story.words story.shared ;
     $28 message-param-room
     $28 1 item-give-count
     0 $28 item-tab
-    0 $F9 $8C action-force
-    $83 $85 0.0 0.0 0.0 0 0 sound
-    $8012 message
+    item-fanfare
+    $8012 message   \ "You've obtained ."
     wait-message
     $903 self-anim
     self-wait-anim

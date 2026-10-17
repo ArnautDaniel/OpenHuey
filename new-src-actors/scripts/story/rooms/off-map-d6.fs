@@ -35,9 +35,9 @@ USING: room-names story.words story.shared flag-names story.clock ;
         1 ebit-set
     then
     1 ebit? if
-        0 $FE 3 action
+        0 stalker-who 3 action
     else
-        $78 1 item-cooldown
+        $78 1 summoner-wait
     then
     $2F pvar-inc
     exit
@@ -45,95 +45,47 @@ USING: room-names story.words story.shared flag-names story.clock ;
 
 : off-map-d6.char-enter ( -- )   \ 00447680
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 1 1 char-camera
-                0 camera-follow
-            else
-                1 1 1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            1 1 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 1 1 char-camera
-            0 camera-follow
-        else
-            1 1 1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        1 1 player-camera
     then then
     1 1 1 area-camera
     hewie-controlled? not if
-        0 self-is? 2 exit-taken? and if
-            0 2 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 2 exit-taken? and if
+            fiona-who 2 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 2 exit-taken? and if
-        1 2 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 2 exit-taken? and if
+        hewie-who 2 char-to-exit
+        0 0 player-camera
     then then
     2 0 0 area-camera
     hewie-controlled? not if
-        0 self-is? 3 exit-taken? and if
-            0 3 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 3 exit-taken? and if
+            fiona-who 3 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 3 exit-taken? and if
-        1 3 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 3 exit-taken? and if
+        hewie-who 3 char-to-exit
+        0 0 player-camera
     then then
     3 0 0 area-camera
-    $FE self-is? if
-        fiona-hidden state-flag? $FE 1 char-heading-for? and if
+    stalker-who self-is? if
+        fiona-hidden state-flag? stalker-who 1 char-heading-for? and if
             2 ebit-set
             off-map-d6.act02
         else
@@ -144,62 +96,62 @@ USING: room-names story.words story.shared flag-names story.clock ;
 
 : off-map-d6.phase1 ( -- )   \ 00447790
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             0 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
     hewie-controlled? not if
-        0 1 char-in-area? 0 char-busy? not and if
+        fiona-who 1 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 1 char-in-area? 1 char-busy? not and if
+    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then
     hewie-controlled? not if
-        0 2 char-in-area? 0 char-busy? not and if
+        fiona-who 2 char-in-area? fiona-who char-busy? not and if
             2 exit-check
         then
-    else 1 2 char-in-area? 1 char-busy? not and if
+    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
         2 exit-check
     then then
     hewie-controlled? not if
-        0 3 char-in-area? 0 char-busy? not and if
+        fiona-who 3 char-in-area? fiona-who char-busy? not and if
             3 exit-check
         then
-    else 1 3 char-in-area? 1 char-busy? not and if
+    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
         3 exit-check
     then then
-    1 4 char-entered-area? if
+    hewie-who 4 char-entered-area? if
         0 exit-prepare
     then
-    1 6 char-entered-area? if
+    hewie-who 6 char-entered-area? if
         2 exit-prepare
     then
-    1 7 char-entered-area? if
+    hewie-who 7 char-entered-area? if
         3 exit-prepare
     then
     1 70.5 5.0 -5.5 $14 10 0 zone
-    1 1 8 char-zone-bits? if
-        0 char-here? 0 1 char-heading-for? and if
-            0 char-busy? not $FF panic-stage? not and fiona-free? and if
+    hewie-who 1 8 char-zone-bits? if
+        fiona-who char-here? fiona-who 1 char-heading-for? and if
+            fiona-who char-busy? not $FF panic-stage? not and fiona-free? and if
                 -1 control-action? not if
-                    $FE char-here? not if
-                        0 0 0 action
-                    else $FE 1 char-heading-for? not if
-                        0 0 0 action
+                    stalker-who char-here? not if
+                        0 fiona-who 0 action
+                    else stalker-who 1 char-heading-for? not if
+                        0 fiona-who 0 action
                     then then
                 then
             then
         then
     then
     0 70.5 5.0 -5.5 5 10 0 zone
-    0 0 8 char-zone-bits? if
+    fiona-who 0 8 char-zone-bits? if
         1 0 off-map-d6.cmd00
-    else 1 0 8 char-zone-bits? if
+    else hewie-who 0 8 char-zone-bits? if
         1 1 off-map-d6.cmd00
-    else $FE 0 8 char-zone-bits? if
+    else stalker-who 0 8 char-zone-bits? if
         1 2 off-map-d6.cmd00
     then then then
     2 0 off-map-d6.cmd00
@@ -216,11 +168,11 @@ USING: room-names story.words story.shared flag-names story.clock ;
 ;
 
 : off-map-d6.phase5 ( -- )   \ 004478B0
-    0 char-busy? if
+    fiona-who char-busy? if
         fiona-hidden state-flag-clear
         stalkers-stay state-flag-clear
-        0 action-end
-        0 $E7 90.99 -3.17 90 char-to-xz
+        fiona-who action-end
+        fiona-who $E7 90.99 -3.17 90 char-to-xz
     then
 ;
 
@@ -230,11 +182,11 @@ USING: room-names story.words story.shared flag-names story.clock ;
     then
     fiona-hidden state-flag-clear
     stalkers-stay state-flag-set
-    $FE self-look-at
+    stalker-who self-look-at
     yield
     4 $14 self-anim-blend
     self-wait-anim
-    $FF self-look-at
+    self-who self-look-at
     yield
     0 self-scripted
     0 self-noclip
@@ -263,14 +215,14 @@ USING: room-names story.words story.shared flag-names story.clock ;
         -1 control-action? if
             $FF panic-stage? 0 ebit? or if
                 $FF panic-stage? not if
-                    0 $43 5 char-sound
+                    fiona-who $43 5 char-sound
                 then
                 ['] off-map-d6.act01 goto
             else
-                2 panic-grow
+                2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                2 ebit? $FE char-here? not and if
+                2 ebit? stalker-who char-here? not and if
                     2 ebit-clear
                     1 avoid-prompt
                 then
@@ -278,7 +230,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
             then
         else
             fiona-hidden state-flag-clear
-            $FE action-end
+            stalker-who action-end
             2 game-mode? if
                 ['] off-map-d6.act01 goto
             then
@@ -301,12 +253,12 @@ USING: room-names story.words story.shared flag-names story.clock ;
     $1601 self-anim
     self-wait-anim
     0 ebit-set
-    10 self-move-16
+    10 self-idle-anim
     begin
-        0 char-busy? while
+        fiona-who char-busy? while
         yield
     repeat
-    $FE 0 stalker-mode
+    stalker-who 0 stalker-command
     self-idle-or-end
 ;
 

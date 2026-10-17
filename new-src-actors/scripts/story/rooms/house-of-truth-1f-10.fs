@@ -17,7 +17,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : house-of-truth-1f-10.act04 ( -- )   \ 00443CF0
-    $FE camera-follow
+    stalker-who camera-follow
     1 ebit-clear
     $24 0 pvar? if
         $A chance? if
@@ -40,9 +40,9 @@ USING: room-names story.words story.shared flag-names ;
         1 ebit-set
     then
     1 ebit? if
-        0 $FE 5 action
+        0 stalker-who 5 action
     else
-        $78 1 item-cooldown
+        $78 1 summoner-wait
     then
     $24 pvar-inc
     exit
@@ -50,44 +50,26 @@ USING: room-names story.words story.shared flag-names ;
 
 : house-of-truth-1f-10.char-enter ( -- )   \ 00443890
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 2 2 char-camera
-                0 camera-follow
-            else
-                1 2 2 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            2 2 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 2 2 char-camera
-            0 camera-follow
-        else
-            1 2 2 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        2 2 player-camera
     then then
     0 2 2 area-camera
-    0 self-is? if
+    fiona-who self-is? if
         $FE exit-taken? if
-            0 $7E 60.0 45.0 180 char-to-xz
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
-            0 0 1 action
+            fiona-who $7E 60.0 45.0 180 char-to-xz
+            0 0 player-camera
+            0 fiona-who 1 action
         then
         0 exit-taken? if
             2 map-page
         then
     then
-    $FE self-is? if
+    stalker-who self-is? if
         fiona-hidden state-flag? if
             2 ebit-set
             house-of-truth-1f-10.act04
@@ -126,50 +108,50 @@ USING: room-names story.words story.shared flag-names ;
         then
     then
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             0 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
     1 0 0 1 chars-area-camera
     2 1 1 1 chars-area-camera
     4 0 0 1 chars-area-camera
     5 2 2 1 chars-area-camera
-    0 7 char-entered-area? if
+    fiona-who 7 char-entered-area? if
         0 exit-prepare
     then
-    0 8 char-entered-area? if
+    fiona-who 8 char-entered-area? if
         $27 room-preload
     then
-    0 9 char-entered-area? if
+    fiona-who 9 char-entered-area? if
         1 map-page
     then
-    0 9 char-left-area? if
+    fiona-who 9 char-left-area? if
         2 map-page
     then
     0 30.47 0.0 -9.97 $B 10 0 zone
-    0 0 8 char-zone-bits? if
+    fiona-who 0 8 char-zone-bits? if
         1 house-of-truth-1f-10.cmd00
     then
     1 60.49 0.0 45.99 $14 18 0 zone
-    3 ebit? not 1 char-here? and 1 0 char-C4? and if
+    3 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
-                1 1 9 char-zone-bits? if
+                hewie-who 1 9 char-zone-bits? if
                     3 ebit-set
                     $1E chance? if
                         $1F 1 var-set
-                        0 1 $88 action
+                        0 hewie-who $88 action
                     then
                 then
             then
         then
     then
     1 60.49 0.0 45.99 $14 18 0 zone
-    1 char-here? 0 game-mode? and if
+    hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
-            1 1 9 char-zone-bits? if
+            hewie-who 1 9 char-zone-bits? if
                 $1F 1 var-set
                 $1F 18.0 hewie-look-zone
             then
@@ -178,22 +160,22 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : house-of-truth-1f-10.phase2 ( -- )   \ 00443AB0
-    0 $A char-in-area? 0 0 $3C char-heading? and if
-        $FE char-here? not if
+    fiona-who $A char-in-area? fiona-who 0 $3C char-heading? and if
+        stalker-who char-here? not if
             5 2 5 scene-change
         else
-            $8016 examine-message
+            $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
     then
-    0 3 char-in-area? 0 90 $32 char-heading? and if
+    fiona-who 3 char-in-area? fiona-who 90 $32 char-heading? and if
         5 $84 3 scene-change
     then
-    0 6 char-in-area? 0 0 $32 char-heading? and if
+    fiona-who 6 char-in-area? fiona-who 0 $32 char-heading? and if
         5 0 0 scene-change
     then
     $2E1 story-flag? not if
         2 0 5 5 0 zone-at-effect
-        0 2 3 char-zone-bits? if
+        fiona-who 2 3 char-zone-bits? if
             5 6 4 scene-change
         then
     then
@@ -217,12 +199,12 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     $A02 $A self-anim-blend
     self-wait-anim
-    0 message
+    0 message   \ "A pungent odor and chapped, dry air coming from inside the hole wreak havoc on the sens..."
     wait-message
     0 answer? if
         $F 0 fade
         wait-fade
-        0 $7E 5 char-sound
+        fiona-who $7E 5 char-sound
         world-held state-flag-set
         $FE exit-check
     else
@@ -236,7 +218,7 @@ USING: room-names story.words story.shared flag-names ;
     1 self-scripted
     self-wait-done
     camera-restart
-    0 $7E 5 char-sound
+    fiona-who $7E 5 char-sound
     1 map-page
     $F 1 fade
     wait-fade
@@ -250,7 +232,7 @@ USING: room-names story.words story.shared flag-names ;
         2 avoid-prompt
     then
     fiona-hidden state-flag-clear
-    0 camera-follow
+    fiona-who camera-follow
     stalkers-stay state-flag-set
     $11F 32.119 -37.94 180 $207 5 self-move-to
     self-wait-done
@@ -286,14 +268,14 @@ USING: room-names story.words story.shared flag-names ;
         0 2 pad? not if
             $FF panic-stage? 0 ebit? or if
                 $FF panic-stage? not if
-                    0 $43 5 char-sound
+                    fiona-who $43 5 char-sound
                 then
                 ['] house-of-truth-1f-10.act03 goto
             else
-                2 panic-grow
+                2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                2 ebit? $FE char-here? not and if
+                2 ebit? stalker-who char-here? not and if
                     2 ebit-clear
                     1 avoid-prompt
                 then
@@ -301,8 +283,8 @@ USING: room-names story.words story.shared flag-names ;
             then
         else
             fiona-hidden state-flag-clear
-            0 camera-follow
-            $FE action-end
+            fiona-who camera-follow
+            stalker-who action-end
             2 game-mode? if
                 ['] house-of-truth-1f-10.act03 goto
             then
@@ -326,12 +308,12 @@ USING: room-names story.words story.shared flag-names ;
     $1601 self-anim
     self-wait-anim
     0 ebit-set
-    10 self-move-16
+    10 self-idle-anim
     begin
-        0 char-busy? while
+        fiona-who char-busy? while
         yield
     repeat
-    $FE 0 stalker-mode
+    stalker-who 0 stalker-command
     self-idle-or-end
 ;
 
@@ -346,16 +328,15 @@ USING: room-names story.words story.shared flag-names ;
         4 self-wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $2E1 story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $903 self-anim

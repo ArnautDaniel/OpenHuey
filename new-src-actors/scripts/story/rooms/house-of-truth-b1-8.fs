@@ -12,55 +12,49 @@ USING: room-names story.words story.shared flag-names ;
     $348 story-flag-set
     $354 story-flag? if
         $FE $96 2 2 stalker-to-room
-        $FE 0 stalker-mode
-        $FE 1 1 char-camera
+        stalker-who 0 stalker-command
+        stalker-who 1 1 char-camera
     then
     $31 1.0 0 bgm
     1 0 $5000000 nav-group
-    $FE $96 1 room-doors-state
-    1 $96 1 room-doors-state
+    stalker-who $96 1 room-doors-state
+    hewie-who $96 1 room-doors-state
 ;
 
 : house-of-truth-b1-8.char-enter ( -- )   \ 00444710
-    0 self-is? if
+    fiona-who self-is? if
         $80 exit-taken? if
-            0 $129 129.0 0.0 -90 char-to-xz
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+            fiona-who $129 129.0 0.0 -90 char-to-xz
+            0 0 player-camera
             $96 0 235 hewie-to-room
-            1 $EB -90 char-to-tri-facing
-            0 0 2 action
+            hewie-who $EB -90 char-to-tri-facing
+            0 fiona-who 2 action
         then
     then
 ;
 
 : house-of-truth-b1-8.phase1 ( -- )   \ 00444750
     1 ebit? not if
-        0 0 char-in-area? if
+        fiona-who 0 char-in-area? if
             1 ebit-set
-            0 0 char-action? if
-                0 0 0 action-force
+            fiona-who 0 char-action? if
+                0 fiona-who 0 action-force
             else
-                1 0 0 action-force
+                1 fiona-who 0 action-force
             then
         then
-        0 1 char-in-area? if
+        fiona-who 1 char-in-area? if
             1 ebit-set
-            0 0 char-action? if
-                0 0 1 action-force
+            fiona-who 0 char-action? if
+                0 fiona-who 1 action-force
             else
-                1 0 1 action-force
+                1 fiona-who 1 action-force
             then
         then
     then
     4 0 0 1 chars-area-camera
     5 1 1 1 chars-area-camera
-    0 2 char-entered-area? if
+    fiona-who 2 char-entered-area? if
         $345 story-flag? $346 story-flag? and $347 story-flag? and $348 story-flag? and if
             0 ebit-set
             $88 room-preload
@@ -69,7 +63,7 @@ USING: room-names story.words story.shared flag-names ;
             $87 room-preload
         then
     then
-    0 3 char-entered-area? if
+    fiona-who 3 char-entered-area? if
         $345 story-flag? not if
             $93 room-preload
         else
@@ -81,7 +75,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : house-of-truth-b1-8.phase2 ( -- )   \ 004447C0
-    0 6 char-in-area? 0 -45 $32 char-heading? and if
+    fiona-who 6 char-in-area? fiona-who -45 $32 char-heading? and if
         5 3 0 scene-change
     then
 ;
@@ -129,7 +123,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     $F 6 fade
     wait-fade
-    4 message
+    4 message   \ "All colors must, in the end, form black. This is mankind's inevitable fate."
     wait-message
     $F 7 fade
     wait-fade

@@ -6,63 +6,33 @@ USING: room-names story.words story.shared ;
 
 : off-map-0d.char-enter ( -- )   \ 003F5490
     hewie-controlled? not if
-        0 self-is? 1 exit-taken? and if
-            0 1 char-to-exit
-            hewie-controlled? not if
-                0 5 -1 char-camera
-                0 camera-follow
-            else
-                1 5 -1 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 1 exit-taken? and if
+            fiona-who 1 char-to-exit
+            5 -1 player-camera
         then
-    else 1 self-is? 1 exit-taken? and if
-        1 1 char-to-exit
-        hewie-controlled? not if
-            0 5 -1 char-camera
-            0 camera-follow
-        else
-            1 5 -1 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 1 exit-taken? and if
+        hewie-who 1 char-to-exit
+        5 -1 player-camera
     then then
     1 5 -1 area-camera
 ;
 
 : off-map-0d.phase1 ( -- )   \ 003F54D0
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             1 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         1 exit-check
     then then
-    0 $BB char-on-tri? 0 $1C7 char-on-tri? or if
-        hewie-controlled? not if
-            0 2 -1 char-camera
-            0 camera-follow
-        else
-            1 2 -1 char-camera
-            1 camera-follow
-        then
+    fiona-who $BB char-on-tri? fiona-who $1C7 char-on-tri? or if
+        2 -1 player-camera
     then
-    0 $1D0 char-on-tri? 0 $E0 char-on-tri? or if
-        hewie-controlled? not if
-            0 4 -1 char-camera
-            0 camera-follow
-        else
-            1 4 -1 char-camera
-            1 camera-follow
-        then
+    fiona-who $1D0 char-on-tri? fiona-who $E0 char-on-tri? or if
+        4 -1 player-camera
     then
-    0 $1F1 char-on-tri? 0 $1ED char-on-tri? or 0 $EA char-on-tri? or if
-        hewie-controlled? not if
-            0 5 -1 char-camera
-            0 camera-follow
-        else
-            1 5 -1 char-camera
-            1 camera-follow
-        then
+    fiona-who $1F1 char-on-tri? fiona-who $1ED char-on-tri? or fiona-who $EA char-on-tri? or if
+        5 -1 player-camera
     then
 ;
 

@@ -30,30 +30,24 @@ defer off-map-37.act00
 ;
 
 : off-map-37.char-enter ( -- )   \ 00445C20
-    0 self-is? if
+    fiona-who self-is? if
         0 exit-taken? if
             $32 1.0 0 bgm
             world-held state-flag-set
             $2B 0 pvar-set
-            $FF panic-stage? if
-                3 panic-stage
-            then
-            0 0 $A action-force
+            panic-eased
+            0 fiona-who $A action-force
         then
         $80 exit-taken? if
             world-held state-flag-set
-            $FF panic-stage? if
-                3 panic-stage
-            then
-            0 0 $B action-force
+            panic-eased
+            0 fiona-who $B action-force
         then
         $81 exit-taken? if
             $32 1.0 0 bgm
             world-held state-flag-set
-            $FF panic-stage? if
-                3 panic-stage
-            then
-            0 0 $C action-force
+            panic-eased
+            0 fiona-who $C action-force
         then
     then
 ;
@@ -66,9 +60,9 @@ defer off-map-37.act00
 ;
 
 : off-map-37.phase2 ( -- )   \ 00445C90
-    0 $C char-in-area? 0 45 $3C char-heading? and if
-        0 char-busy? not if
-            3 message
+    fiona-who $C char-in-area? fiona-who 45 $3C char-heading? and if
+        fiona-who char-busy? not if
+            3 message   \ "PLAY TYPE LIST"
         else
             3 message-close
         then
@@ -76,9 +70,9 @@ defer off-map-37.act00
     else
         3 message-close
     then
-    0 6 char-in-area? 0 -45 $3C char-heading? and if
-        0 char-busy? not if
-            $14 message
+    fiona-who 6 char-in-area? fiona-who -45 $3C char-heading? and if
+        fiona-who char-busy? not if
+            $14 message   \ "ART GALLERY"
         else
             $14 message-close
         then
@@ -86,9 +80,9 @@ defer off-map-37.act00
     else
         $14 message-close
     then
-    0 $15 char-in-area? 0 90 $32 char-heading? and if
-        0 char-busy? not if
-            $40 message
+    fiona-who $15 char-in-area? fiona-who 90 $32 char-heading? and if
+        fiona-who char-busy? not if
+            $40 message   \ "CHANGING AREA"
         else
             $40 message-close
         then
@@ -96,9 +90,9 @@ defer off-map-37.act00
     else
         $40 message-close
     then
-    0 4 char-in-area? 0 90 $3C char-heading? and if
-        0 char-busy? not if
-            1 message
+    fiona-who 4 char-in-area? fiona-who 90 $3C char-heading? and if
+        fiona-who char-busy? not if
+            1 message   \ "MUSIC GALLERY"
         else
             1 message-close
         then
@@ -106,9 +100,9 @@ defer off-map-37.act00
     else
         1 message-close
     then
-    0 $1B $2D char-faces-area? if
-        0 char-busy? not if
-            0 message
+    fiona-who $1B $2D char-faces-area? if
+        fiona-who char-busy? not if
+            0 message   \ "MOVIE GALLERY"
         else
             0 message-close
         then
@@ -116,9 +110,9 @@ defer off-map-37.act00
     else
         0 message-close
     then
-    0 0 char-group-bit4? if
-        0 char-busy? not if
-            $15 message
+    fiona-who 0 char-before-door? if
+        fiona-who char-busy? not if
+            $15 message   \ "MINI-GAME"
         else
             $15 message-close
         then
@@ -126,9 +120,9 @@ defer off-map-37.act00
     else
         $15 message-close
     then
-    0 1 char-group-bit4? if
-        0 char-busy? not if
-            $16 message
+    fiona-who 1 char-before-door? if
+        fiona-who char-busy? not if
+            $16 message   \ "EXIT"
         else
             $16 message-close
         then
@@ -136,9 +130,9 @@ defer off-map-37.act00
     else
         $16 message-close
     then
-    0 5 char-in-area? 0 90 $3C char-heading? and if
-        0 char-busy? not if
-            2 message
+    fiona-who 5 char-in-area? fiona-who 90 $3C char-heading? and if
+        fiona-who char-busy? not if
+            2 message   \ "CHARACTER GALLERY"
         else
             2 message-close
         then
@@ -399,17 +393,17 @@ defer off-map-37.act00
     repeat
     $2A $FF pvar? not if
         $2A $41 pvar? if
-            1 1 char-silent
+            hewie-who 1 char-silent
             0 5 movie-play
             yield
             yield
-            2 cutscene-control
+            movie-restart-op cutscene-control
             1 result? if
                 1.0 movie-volume
                 yield
                 world-held state-flag-set
                 begin
-                    0 cutscene-control
+                    movie-state-op cutscene-control
                     -1 result? not if
                         6 2 pad? not if
                             yield
@@ -421,7 +415,7 @@ defer off-map-37.act00
                         true
                     then
                 until
-                1 cutscene-control
+                movie-stop-op cutscene-control
                 begin
                     movie-playing? while
                     yield
@@ -430,20 +424,14 @@ defer off-map-37.act00
                 world-held state-flag-clear
             then
             world-held state-flag-set
-            0 $11B -34.0 60.0 180 char-to-xz
-            hewie-controlled? not if
-                0 2 2 char-camera
-                0 camera-follow
-            else
-                1 2 2 char-camera
-                1 camera-follow
-            then
+            fiona-who $11B -34.0 60.0 180 char-to-xz
+            2 2 player-camera
             $37 0 267 hewie-to-room
-            1 $10B 0 char-to-tri-facing
-            1 1 1 char-camera
+            hewie-who $10B 0 char-to-tri-facing
+            hewie-who 1 1 char-camera
             yield
             camera-restart
-            1 0 char-silent
+            hewie-who 0 char-silent
             ['] off-map-37.act00 goto
         else
             off-map-37.act03
@@ -521,19 +509,19 @@ defer off-map-37.act00
     wait-fade
     $2E $FF pvar? not if
         $10C door-unlock
-        0 3 self-move-slot
+        fiona-who 3 self-move-slot
         self-wait-done
-        0 1 9 action
+        0 hewie-who 9 action
         $76 -16.0 -82.0 180 $FFFF 5 self-move-to
         self-wait-done
-        2 char-unload
+        2 char-start
         $FF 1.0 0 bgm
         $F 0 fade
         wait-fade
         fiona-calm-reset
         0 panic-stage
-        1 action-end
-        1 char-done
+        hewie-who action-end
+        hewie-who char-done
         world-held state-flag-set
         $26 1 pvar? if
             1 fiona-costume
@@ -571,8 +559,8 @@ defer off-map-37.act00
         then then then
         effects-arena-flip
         1 char-in
-        1 action-end
-        1 char-done
+        hewie-who action-end
+        hewie-who char-done
         hewie-no-attack state-flag-clear
         stalkers-blind state-flag-clear
         $80 exit-check
@@ -599,7 +587,7 @@ defer off-map-37.act00
     repeat
     0 0.0 0.0 0.0 0.0 event-camera
     $26 $28 pvars-equal? not $27 $29 pvars-equal? not or if
-        0 $10 6 char-sound
+        fiona-who $10 6 char-sound
     then
     $26 $28 pvars-equal? not if
         $26 1 pvar? if
@@ -658,14 +646,14 @@ defer off-map-37.act00
         begin
             yield
             4 sound-bank-loaded? until
-        -1 self-move-16
+        -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
     then
     $27 $29 pvars-equal? not if
         1 char-in
-        1 char-here? if
-            1 2 char-C4? if
+        hewie-who char-here? if
+            hewie-who 2 char-cond? if
                 $1002 hewie-anim-set
             else
                 1 hewie-anim-set
@@ -776,7 +764,7 @@ defer off-map-37.act00
 : off-map-37.act08 ( -- )   \ 00446680
     self-wait-done
     $10D door-unlock
-    1 3 self-move-slot
+    hewie-who 3 self-move-slot
     self-wait-done
     $F 0 fade
     $FF 1.0 0 bgm
@@ -797,8 +785,8 @@ defer off-map-37.act00
 ;
 
 : off-map-37.act09 ( -- )   \ 004466C0
-    1 char-full-health
-    1 0 char-set-C4
+    hewie-who char-full-health
+    hewie-who 0 char-cond!
     self-wait-done
     $76 -16.0 -82.0 180 $FFFF $A self-move-to
     self-wait-done
@@ -811,17 +799,11 @@ defer off-map-37.act00
     self-wait-done
     $2A 0 pvar-set
     $2B 0 pvar-set
-    0 $15 0 char-to-tri-facing
-    hewie-controlled? not if
-        0 1 1 char-camera
-        0 camera-follow
-    else
-        1 1 1 char-camera
-        1 camera-follow
-    then
+    fiona-who $15 0 char-to-tri-facing
+    1 1 player-camera
     $37 0 267 hewie-to-room
-    1 $10B 0 char-to-tri-facing
-    1 1 1 char-camera
+    hewie-who $10B 0 char-to-tri-facing
+    hewie-who 1 1 char-camera
     yield
     camera-restart
     in-play state-flag-clear
@@ -830,7 +812,7 @@ defer off-map-37.act00
     $10 resident-flag? not if
         $F 6 fade
         wait-fade
-        $40AC message
+        $40AC message   \ "'Secret Room' Various extras, game info, and a mini-game are contained within...."
         wait-message
         $F 7 fade
         wait-fade
@@ -838,7 +820,7 @@ defer off-map-37.act00
         $AC message-param-room
         $AC 1 item-give-count
         $83 $85 0.0 0.0 0.0 0 0 sound
-        $801B message
+        $801B message   \ "has been saved to your file."
         self-frames-reset
         $1E self-wait-frames
         wait-message
@@ -914,17 +896,11 @@ defer off-map-37.act00
 
 : off-map-37.act0B ( -- )   \ 00446880
     self-wait-done
-    0 $11B -34.0 60.0 180 char-to-xz
-    hewie-controlled? not if
-        0 2 2 char-camera
-        0 camera-follow
-    else
-        1 2 2 char-camera
-        1 camera-follow
-    then
+    fiona-who $11B -34.0 60.0 180 char-to-xz
+    2 2 player-camera
     $37 0 267 hewie-to-room
-    1 $10B 0 char-to-tri-facing
-    1 1 1 char-camera
+    hewie-who $10B 0 char-to-tri-facing
+    hewie-who 1 1 char-camera
     yield
     camera-restart
     ['] off-map-37.act00 goto
@@ -936,18 +912,12 @@ defer off-map-37.act00
     self-wait-done
     0 panic-stage
     fiona-calm-reset
-    0 $13 -16.0 -66.5 0 char-to-xz
+    fiona-who $13 -16.0 -66.5 0 char-to-xz
     0 0 self-anim-blend
-    hewie-controlled? not if
-        0 1 1 char-camera
-        0 camera-follow
-    else
-        1 1 1 char-camera
-        1 camera-follow
-    then
+    1 1 player-camera
     music-stage-end
-    1 $C4 -10.03 -61.53 0 char-to-xz
-    1 1 1 char-camera
+    hewie-who $C4 -10.03 -61.53 0 char-to-xz
+    hewie-who 1 1 char-camera
     yield
     camera-restart
     $F $51 fade

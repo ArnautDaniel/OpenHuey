@@ -45,35 +45,23 @@ USING: room-names story.words story.shared ;
 
 : chaos-forest-9.char-enter ( -- )   \ 00418B60
     hewie-controlled? not if
-        0 self-is? 0 exit-taken? and if
-            0 0 char-to-exit
-            hewie-controlled? not if
-                0 0 0 char-camera
-                0 camera-follow
-            else
-                1 0 0 char-camera
-                1 camera-follow
-            then
+        fiona-who self-is? 0 exit-taken? and if
+            fiona-who 0 char-to-exit
+            0 0 player-camera
         then
-    else 1 self-is? 0 exit-taken? and if
-        1 0 char-to-exit
-        hewie-controlled? not if
-            0 0 0 char-camera
-            0 camera-follow
-        else
-            1 0 0 char-camera
-            1 camera-follow
-        then
+    else hewie-who self-is? 0 exit-taken? and if
+        hewie-who 0 char-to-exit
+        0 0 player-camera
     then then
     0 0 0 area-camera
 ;
 
 : chaos-forest-9.phase1 ( -- )   \ 00418BA0
     hewie-controlled? not if
-        0 0 char-in-area? 0 char-busy? not and if
+        fiona-who 0 char-in-area? fiona-who char-busy? not and if
             0 exit-check
         then
-    else 1 0 char-in-area? 1 char-busy? not and if
+    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
     0 ebit? not if
@@ -99,29 +87,29 @@ USING: room-names story.words story.shared ;
 : chaos-forest-9.phase2 ( -- )   \ 00418BF0
     $21C story-flag? not if
         0 -298.4 71.6 -365.4 5 8 1 zone
-        $FF 0 char-in-zone? if
+        self-who 0 char-in-zone? if
             $21C story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
-            -298.4 71.6 -365.4 0 -2144325584 0 0.0 scene-effect-8C
+            -298.4 71.6 -365.4 0 -2144325584 0 0.0 shards-at
             $88 5 -298.4 71.6 -365.4 0 0 sound
             $40 $BA noise
             0 -298.4 72.6 -365.4 flicker-sprite
         then
     else $2CB story-flag? not if
         0 0 5 5 0 zone-at-effect
-        0 0 3 char-zone-bits? if
+        fiona-who 0 3 char-zone-bits? if
             5 1 4 scene-change
         then
     then then
-    0 1 char-in-area? 0 90 $2D char-heading? and if
+    fiona-who 1 char-in-area? fiona-who 90 $2D char-heading? and if
         5 3 0 scene-change
     then
 ;
 
 : chaos-forest-9.act00 ( -- )   \ 00418C90
-    5 char-unload
+    5 char-start
     2 ebit-set
     $E char-activate
     $E $9000 1 0 char-anim-hold
@@ -147,16 +135,15 @@ USING: room-names story.words story.shared ;
         4 self-wait-frames
         $94 message-param-room
         $94 $63 item-count? if
-            $8010 message
+            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
             $2CB story-flag-set
             0 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
-            0 $F9 $8C action-force
-            $83 $85 0.0 0.0 0.0 0 0 sound
-            $8011 message
+            item-fanfare
+            $8011 message   \ "You've obtained ."
             wait-message
         then
         $901 self-anim
@@ -182,13 +169,13 @@ USING: room-names story.words story.shared ;
     3 ebit? not if
         $A02 5 self-anim-blend
         self-wait-anim
-        0 message
+        0 message   \ "It's... a lake, I think. Looks like there some kind of a... tower erected in the ce..."
         wait-message
         3 ebit-set
     else
         $1D02 5 self-anim-blend
         self-wait-anim
-        1 message
+        1 message   \ "I'm not going to be able to go any further this way. Better go back and find a way..."
         wait-message
     then
     self-idle-or-end
